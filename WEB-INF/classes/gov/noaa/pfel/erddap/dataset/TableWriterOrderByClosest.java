@@ -60,7 +60,10 @@ public class TableWriterOrderByClosest extends TableWriterAll {
     otherTableWriter = tOtherTableWriter;
     if (tOrderByCsv == null || tOrderByCsv.trim().length() == 0)
       throw new SimpleException(
-          EDStatic.bilingual(language, EDStatic.queryErrorAr, EDStatic.queryErrorOrderByClosestAr)
+          EDStatic.bilingual(
+                  language,
+                  EDStatic.messages.queryErrorAr,
+                  EDStatic.messages.queryErrorOrderByClosestAr)
               + (language == 0 ? " " : "\n")
               + "no CSV.");
     String csv[] = String2.split(tOrderByCsv, ',');
@@ -80,7 +83,10 @@ public class TableWriterOrderByClosest extends TableWriterAll {
 
     if (csv.length < 2)
       throw new SimpleException(
-          EDStatic.bilingual(language, EDStatic.queryErrorAr, EDStatic.queryErrorOrderByClosestAr)
+          EDStatic.bilingual(
+                  language,
+                  EDStatic.messages.queryErrorAr,
+                  EDStatic.messages.queryErrorOrderByClosestAr)
               + (language == 0 ? " " : "\n")
               + "CSV.length<2.");
 
@@ -92,7 +98,10 @@ public class TableWriterOrderByClosest extends TableWriterAll {
     numberTimeUnits = Calendar2.parseNumberTimeUnits(csv[csv.length - 1]); // throws Exception
     if (numberTimeUnits[0] <= 0)
       throw new SimpleException(
-          EDStatic.bilingual(language, EDStatic.queryErrorAr, EDStatic.queryErrorOrderByClosestAr)
+          EDStatic.bilingual(
+                  language,
+                  EDStatic.messages.queryErrorAr,
+                  EDStatic.messages.queryErrorOrderByClosestAr)
               + (language == 0 ? " " : "\n")
               + "number="
               + numberTimeUnits[0]

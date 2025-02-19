@@ -79,7 +79,7 @@ public class ArchiveADataset {
     GregorianCalendar gcZ = Calendar2.newGCalendarZulu();
     String isoTime = Calendar2.formatAsISODateTimeTZ(gcZ);
     String compactTime = Calendar2.formatAsCompactDateTime(gcZ) + "Z";
-    String aadDir = EDStatic.bigParentDirectory + "ArchiveADataset/";
+    String aadDir = EDStatic.config.bigParentDirectory + "ArchiveADataset/";
     File2.makeDirectory(aadDir);
     String logFileName = aadDir + "log_" + compactTime + ".txt";
     String2.setupLog(
@@ -212,7 +212,7 @@ public class ArchiveADataset {
           get(
               args,
               whichArg++,
-              EDStatic.adminEmail, // default
+              EDStatic.config.adminEmail, // default
               "What is a contact email address for this archive\n"
                   + "(it will be written in the READ_ME.txt file in the archive)");
 

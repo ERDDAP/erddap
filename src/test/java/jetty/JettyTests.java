@@ -144,7 +144,7 @@ class JettyTests {
   @ValueSource(booleans = {false, true})
   @TagJetty
   void testCorsFilter(boolean enableCors) throws Exception {
-    EDStatic.enableCors = enableCors;
+    EDStatic.config.enableCors = enableCors;
 
     HttpClient client = HttpClient.newHttpClient();
     URI uri = server.getURI().resolve("/erddap/index.html");
@@ -162,12 +162,12 @@ class JettyTests {
   }
 
   private void validateCorsHeaders(HttpResponse<?> response) {
-    if (EDStatic.enableCors && response.request().method().equalsIgnoreCase("OPTIONS")) {
+    if (EDStatic.config.enableCors && response.request().method().equalsIgnoreCase("OPTIONS")) {
       assertEquals(204, response.statusCode());
     } else {
       assertEquals(200, response.statusCode());
     }
-    if (EDStatic.enableCors) {
+    if (EDStatic.config.enableCors) {
       assertTrue(response.headers().firstValue("Access-Control-Allow-Origin").isPresent());
       assertEquals("*", response.headers().firstValue("Access-Control-Allow-Origin").get());
       assertTrue(response.headers().firstValue("Access-Control-Allow-Methods").isPresent());
@@ -176,7 +176,7 @@ class JettyTests {
           response.headers().firstValue("Access-Control-Allow-Methods").get());
       assertTrue(response.headers().firstValue("Access-Control-Allow-Headers").isPresent());
       assertEquals(
-          EDStatic.corsAllowHeaders,
+          EDStatic.config.corsAllowHeaders,
           response.headers().firstValue("Access-Control-Allow-Headers").get());
     } else {
       assertFalse(response.headers().firstValue("Access-Control-Allow-Origin").isPresent());
@@ -212,7 +212,7 @@ class JettyTests {
     assertEquals("ERDDAP_version_string=" + EDStatic.erddapVersion + "\n", response.body());
 
     // test json response using Accept header including deployment info
-    EDStatic.deploymentInfo = "integration testing with jetty";
+    EDStatic.config.deploymentInfo = "integration testing with jetty";
     response =
         client.send(
             HttpRequest.newBuilder(server.getURI().resolve("/erddap/version"))
@@ -227,7 +227,7 @@ class JettyTests {
     assertTrue(jsonResponse.has("version_full"));
     assertEquals(EDStatic.erddapVersion, jsonResponse.getString("version_full"));
     assertTrue(jsonResponse.has("deployment_info"));
-    assertEquals(EDStatic.deploymentInfo, jsonResponse.getString("deployment_info"));
+    assertEquals(EDStatic.config.deploymentInfo, jsonResponse.getString("deployment_info"));
 
     // test json response using query parameter including deployment info
     response =
@@ -4958,7 +4958,7 @@ class JettyTests {
     String2.log("\n*** Erddap.testBasic");
     int po;
     int language = 0;
-    EDStatic.sosActive =
+    EDStatic.config.sosActive =
         false; // currently, never true because sos is unfinished //some other tests may have
     // left this as true
 
@@ -6140,22 +6140,22 @@ class JettyTests {
         "{\n"
             + "  \"table\": {\n"
             + "    \"columnNames\": [\"griddap\", \"Subset\", \"tabledap\", \"Make A Graph\", "
-            + (EDStatic.sosActive ? "\"sos\", " : "")
-            + (EDStatic.wcsActive ? "\"wcs\", " : "")
-            + (EDStatic.wmsActive ? "\"wms\", " : "")
-            + (EDStatic.filesActive ? "\"files\", " : "")
-            + (EDStatic.authentication.length() > 0 ? "\"Accessible\", " : "")
+            + (EDStatic.config.sosActive ? "\"sos\", " : "")
+            + (EDStatic.config.wcsActive ? "\"wcs\", " : "")
+            + (EDStatic.config.wmsActive ? "\"wms\", " : "")
+            + (EDStatic.config.filesActive ? "\"files\", " : "")
+            + (EDStatic.config.authentication.length() > 0 ? "\"Accessible\", " : "")
             + "\"Title\", \"Summary\", \"FGDC\", \"ISO 19115\", \"Info\", \"Background Info\", \"RSS\", "
-            + (EDStatic.subscriptionSystemActive ? "\"Email\", " : "")
+            + (EDStatic.config.subscriptionSystemActive ? "\"Email\", " : "")
             + "\"Institution\", \"Dataset ID\"],\n"
             + "    \"columnTypes\": [\"String\", \"String\", \"String\", \"String\", "
-            + (EDStatic.sosActive ? "\"String\", " : "")
-            + (EDStatic.wcsActive ? "\"String\", " : "")
-            + (EDStatic.wmsActive ? "\"String\", " : "")
-            + (EDStatic.filesActive ? "\"String\", " : "")
-            + (EDStatic.authentication.length() > 0 ? "\"String\", " : "")
+            + (EDStatic.config.sosActive ? "\"String\", " : "")
+            + (EDStatic.config.wcsActive ? "\"String\", " : "")
+            + (EDStatic.config.wmsActive ? "\"String\", " : "")
+            + (EDStatic.config.filesActive ? "\"String\", " : "")
+            + (EDStatic.config.authentication.length() > 0 ? "\"String\", " : "")
             + "\"String\", \"String\", \"String\", \"String\", \"String\", \"String\", \"String\", "
-            + (EDStatic.subscriptionSystemActive ? "\"String\", " : "")
+            + (EDStatic.config.subscriptionSystemActive ? "\"String\", " : "")
             + "\"String\", \"String\"],\n"
             + "    \"rows\": [\n";
     Test.ensureEqual(results.substring(0, expected.length()), expected, "results=\n" + results);
@@ -6170,14 +6170,14 @@ class JettyTests {
             + "\"http://localhost:"
             + PORT
             + "/erddap/tabledap/erdGlobecBottle.graph\", "
-            + (EDStatic.sosActive ? "\"\", " : "")
+            + (EDStatic.config.sosActive ? "\"\", " : "")
             + // currently, it isn't made available via sos
-            (EDStatic.wcsActive ? "\"\", " : "")
-            + (EDStatic.wmsActive ? "\"\", " : "")
-            + (EDStatic.filesActive
+            (EDStatic.config.wcsActive ? "\"\", " : "")
+            + (EDStatic.config.wmsActive ? "\"\", " : "")
+            + (EDStatic.config.filesActive
                 ? "\"http://localhost:" + PORT + "/erddap/files/erdGlobecBottle/\", "
                 : "")
-            + (EDStatic.authentication.length() > 0 ? "\"public\", " : "")
+            + (EDStatic.config.authentication.length() > 0 ? "\"public\", " : "")
             + "\"GLOBEC NEP Rosette Bottle Data (2002)\", \"GLOBEC (GLOBal "
             + "Ocean ECosystems Dynamics) NEP (Northeast Pacific)\\nRosette Bottle Data from "
             + "New Horizon Cruise (NH0207: 1-19 August 2002).\\nNotes:\\nPhysical data "
@@ -6223,7 +6223,7 @@ class JettyTests {
             "\"http://localhost:"
             + PORT
             + "/erddap/rss/erdGlobecBottle.rss\", "
-            + (EDStatic.subscriptionSystemActive
+            + (EDStatic.config.subscriptionSystemActive
                 ? "\"http://localhost:"
                     + PORT
                     + "/erddap/subscriptions/add.html?datasetID=erdGlobecBottle&showErrors=false&email=\", "
@@ -6348,7 +6348,7 @@ class JettyTests {
     Test.ensureTrue(results.indexOf("directory") >= 0, "results=\n" + results);
     Test.ensureTrue(results.indexOf("ERDDAP, Version") >= 0, "results=\n" + results);
 
-    String localName = EDStatic.fullTestCacheDirectory + "46012_2005.csv";
+    String localName = EDStatic.config.fullTestCacheDirectory + "46012_2005.csv";
     File2.delete(localName);
     SSR.downloadFile( // throws Exception if trouble
         EDStatic.erddapUrl + "/files/testTableAscii/subdir/46012_2005.csv",
@@ -6359,7 +6359,7 @@ class JettyTests {
     File2.delete(localName);
 
     // sos
-    if (EDStatic.sosActive) {
+    if (EDStatic.config.sosActive) {
       results =
           SSR.getUrlResponseStringUnchanged(
               EDStatic.erddapUrl + "/sos/index.html?" + EDStatic.defaultPIppQuery);
@@ -6417,7 +6417,7 @@ class JettyTests {
     }
 
     // wcs
-    if (EDStatic.wcsActive) {
+    if (EDStatic.config.wcsActive) {
       results =
           SSR.getUrlResponseStringUnchanged(
               EDStatic.erddapUrl + "/wcs/index.html?" + EDStatic.defaultPIppQuery);
@@ -6479,7 +6479,7 @@ class JettyTests {
     }
 
     // wms
-    if (EDStatic.wmsActive) {
+    if (EDStatic.config.wmsActive) {
       results =
           SSR.getUrlResponseStringUnchanged(
               EDStatic.erddapUrl + "/wms/index.html?" + EDStatic.defaultPIppQuery);
@@ -6567,7 +6567,7 @@ class JettyTests {
         "results=\n" + results);
 
     // subscriptions
-    if (EDStatic.subscriptionSystemActive) {
+    if (EDStatic.config.subscriptionSystemActive) {
       results = SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + "/subscriptions/index.html");
       Test.ensureTrue(results.indexOf("Add a new subscription") >= 0, "results=\n" + results);
       Test.ensureTrue(results.indexOf("Validate a subscription") >= 0, "results=\n" + results);
@@ -6611,7 +6611,7 @@ class JettyTests {
     }
 
     // slideSorter
-    if (EDStatic.slideSorterActive) {
+    if (EDStatic.config.slideSorterActive) {
       results = SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + "/slidesorter.html");
       Test.ensureTrue(
           results.indexOf(
@@ -6669,21 +6669,21 @@ class JettyTests {
             + "/erddap/tabledap/index.csv?"
             + EDStatic.defaultPIppQuery
             + "\n"
-            + (EDStatic.sosActive
+            + (EDStatic.config.sosActive
                 ? "sos,http://localhost:"
                     + PORT
                     + "/erddap/sos/index.csv?"
                     + EDStatic.defaultPIppQuery
                     + "\n"
                 : "")
-            + (EDStatic.wcsActive
+            + (EDStatic.config.wcsActive
                 ? "wcs,http://localhost:"
                     + PORT
                     + "/erddap/wcs/index.csv?"
                     + EDStatic.defaultPIppQuery
                     + "\n"
                 : "")
-            + (EDStatic.wmsActive
+            + (EDStatic.config.wmsActive
                 ? "wms,http://localhost:"
                     + PORT
                     + "/erddap/wms/index.csv?"
@@ -6746,7 +6746,7 @@ class JettyTests {
             + PORT
             + "/erddap/tabledap/index.htmlTable?page=1&amp;itemsPerPage=1000</a>\n"
             + "</tr>\n"
-            + (EDStatic.sosActive
+            + (EDStatic.config.sosActive
                 ? "<tr>\n"
                     + "<td>sos\n"
                     + "<td><a href=\"http&#x3a;&#x2f;&#x2f;localhost&#x3a;8080&#x2f;erddap&#x2f;sos&#x2f;index&#x2e;htmlTable&#x3f;page&#x3d;1&#x26;itemsPerPage&#x3d;1000\">http://localhost:"
@@ -6788,23 +6788,25 @@ class JettyTests {
             + "      [\"tabledap\", \"http://localhost:"
             + PORT
             + "/erddap/tabledap/index.json?page=1&itemsPerPage=1000\"]"
-            + (EDStatic.sosActive || EDStatic.wcsActive || EDStatic.wmsActive ? "," : "")
+            + (EDStatic.config.sosActive || EDStatic.config.wcsActive || EDStatic.config.wmsActive
+                ? ","
+                : "")
             + "\n"
-            + (EDStatic.sosActive
+            + (EDStatic.config.sosActive
                 ? "      [\"sos\", \"http://localhost:"
                     + PORT
                     + "/erddap/sos/index.json?page=1&itemsPerPage=1000\"]"
-                    + (EDStatic.wcsActive || EDStatic.wmsActive ? "," : "")
+                    + (EDStatic.config.wcsActive || EDStatic.config.wmsActive ? "," : "")
                     + "\n"
                 : "")
-            + (EDStatic.wcsActive
+            + (EDStatic.config.wcsActive
                 ? "      [\"wcs\", \"http://localhost:"
                     + PORT
                     + "/erddap/wcs/index.json?page=1&itemsPerPage=1000\"]"
-                    + (EDStatic.wmsActive ? "," : "")
+                    + (EDStatic.config.wmsActive ? "," : "")
                     + "\n"
                 : "")
-            + (EDStatic.wmsActive
+            + (EDStatic.config.wmsActive
                 ? "      [\"wms\", \"http://localhost:"
                     + PORT
                     + "/erddap/wms/index.json?page=1&itemsPerPage=1000\"]\n"
@@ -6836,17 +6838,17 @@ class JettyTests {
             + "tabledap[9]http://localhost:"
             + PORT
             + "/erddap/tabledap/index.tsv?page=1&itemsPerPage=1000[10]\n"
-            + (EDStatic.sosActive
+            + (EDStatic.config.sosActive
                 ? "sos[9]http://localhost:"
                     + PORT
                     + "/erddap/sos/index.tsv?page=1&itemsPerPage=1000[10]\n"
                 : "")
-            + (EDStatic.wcsActive
+            + (EDStatic.config.wcsActive
                 ? "wcs[9]http://localhost:"
                     + PORT
                     + "/erddap/wcs/index.tsv?page=1&itemsPerPage=1000[10]\n"
                 : "")
-            + (EDStatic.wmsActive
+            + (EDStatic.config.wmsActive
                 ? "wms[9]http://localhost:"
                     + PORT
                     + "/erddap/wms/index.tsv?page=1&itemsPerPage=1000[10]\n"
@@ -6905,7 +6907,7 @@ class JettyTests {
             + PORT
             + "/erddap/tabledap/index.xhtml?page=1&amp;itemsPerPage=1000</td>\n"
             + "</tr>\n"
-            + (EDStatic.sosActive
+            + (EDStatic.config.sosActive
                 ? "<tr>\n"
                     + "<td>sos</td>\n"
                     + "<td>http://localhost:"
@@ -6913,7 +6915,7 @@ class JettyTests {
                     + "/erddap/sos/index.xhtml?page=1&amp;itemsPerPage=1000</td>\n"
                     + "</tr>\n"
                 : "")
-            + (EDStatic.wcsActive
+            + (EDStatic.config.wcsActive
                 ? "<tr>\n"
                     + "<td>wcs</td>\n"
                     + "<td>http://localhost:"
@@ -6921,7 +6923,7 @@ class JettyTests {
                     + "/erddap/wcs/index.xhtml?page=1&amp;itemsPerPage=1000</td>\n"
                     + "</tr>\n"
                 : "")
-            + (EDStatic.wmsActive
+            + (EDStatic.config.wmsActive
                 ? "<tr>\n"
                     + "<td>wms</td>\n"
                     + "<td>http://localhost:"
@@ -11075,10 +11077,10 @@ class JettyTests {
     results = SSR.getUrlResponseStringUnchanged(baseUrl + tQuery);
     expected =
         "*GLOBAL*,Conventions,\"COARDS, CF-1.6, ACDD-1.3, NCCSV-1.2\"\n"
-            + (EDStatic.useSaxParser ? "*GLOBAL*,_FillValue,1.0E35f\n" : "")
+            + (EDStatic.config.useSaxParser ? "*GLOBAL*,_FillValue,1.0E35f\n" : "")
             + "*GLOBAL*,cdm_data_type,TimeSeries\n"
             + "*GLOBAL*,cdm_timeseries_variables,\"array, station, wmo_platform_code, longitude, latitude, depth\"\n"
-            + (EDStatic.useSaxParser ? "*GLOBAL*,CREATION_DATE,hh:mm  D-MMM-YYYY\n" : "")
+            + (EDStatic.config.useSaxParser ? "*GLOBAL*,CREATION_DATE,hh:mm  D-MMM-YYYY\n" : "")
             + "*GLOBAL*,creator_email,Dai.C.McClurg@noaa.gov\n"
             + "*GLOBAL*,creator_name,GTMBA Project Office/NOAA/PMEL\n"
             + "*GLOBAL*,creator_type,group\n"
@@ -11105,9 +11107,9 @@ class JettyTests {
             + "*GLOBAL*,keywords,\"buoys, centered, daily, depth, Earth Science > Oceans > Ocean Temperature > Sea Surface Temperature, identifier, noaa, ocean, oceans, pirata, pmel, quality, rama, sea, sea_surface_temperature, source, station, surface, tao, temperature, time, triton\"\n"
             + "*GLOBAL*,keywords_vocabulary,GCMD Science Keywords\n"
             + "*GLOBAL*,license,\"Request for Acknowledgement: If you use these data in publications or presentations, please acknowledge the GTMBA Project Office of NOAA/PMEL. Also, we would appreciate receiving a preprint and/or reprint of publications utilizing the data for inclusion in our bibliography. Relevant publications should be sent to: GTMBA Project Office, NOAA/Pacific Marine Environmental Laboratory, 7600 Sand Point Way NE, Seattle, WA 98115\\n\\nThe data may be used and redistributed for free but is not intended\\nfor legal use, since it may contain inaccuracies. Neither the data\\nContributor, ERD, NOAA, nor the United States Government, nor any\\nof their employees or contractors, makes any warranty, express or\\nimplied, including warranties of merchantability and fitness for a\\nparticular purpose, or assumes any legal liability for the accuracy,\\ncompleteness, or usefulness, of this information.\"\n"
-            + (EDStatic.useSaxParser ? "*GLOBAL*,missing_value,1.0E35f\n" : "")
+            + (EDStatic.config.useSaxParser ? "*GLOBAL*,missing_value,1.0E35f\n" : "")
             + "*GLOBAL*,Northernmost_Northing,21.0d\n"
-            + (EDStatic.useSaxParser ? "*GLOBAL*,platform_code,CODE\n" : "")
+            + (EDStatic.config.useSaxParser ? "*GLOBAL*,platform_code,CODE\n" : "")
             + "*GLOBAL*,project,\"TAO/TRITON, RAMA, PIRATA\"\n"
             + "*GLOBAL*,Request_for_acknowledgement,\"If you use these data in publications or presentations, please acknowledge the GTMBA Project Office of NOAA/PMEL. Also, we would appreciate receiving a preprint and/or reprint of publications utilizing the data for inclusion in our bibliography. Relevant publications should be sent to: GTMBA Project Office, NOAA/Pacific Marine Environmental Laboratory, 7600 Sand Point Way NE, Seattle, WA 98115\"\n"
             + "*GLOBAL*,sourceUrl,(local files)\n"
@@ -11276,10 +11278,10 @@ class JettyTests {
     results = SSR.getUrlResponseStringUnchanged(baseUrl + tQuery);
     expected =
         "*GLOBAL*,Conventions,\"COARDS, CF-1.6, ACDD-1.3, NCCSV-1.2\"\n"
-            + (EDStatic.useSaxParser ? "*GLOBAL*,_FillValue,1.0E35f\n" : "")
+            + (EDStatic.config.useSaxParser ? "*GLOBAL*,_FillValue,1.0E35f\n" : "")
             + "*GLOBAL*,cdm_data_type,TimeSeries\n"
             + "*GLOBAL*,cdm_timeseries_variables,\"array, station, wmo_platform_code, longitude, latitude, depth\"\n"
-            + (EDStatic.useSaxParser ? "*GLOBAL*,CREATION_DATE,hh:mm  D-MMM-YYYY\n" : "")
+            + (EDStatic.config.useSaxParser ? "*GLOBAL*,CREATION_DATE,hh:mm  D-MMM-YYYY\n" : "")
             + "*GLOBAL*,creator_email,Dai.C.McClurg@noaa.gov\n"
             + "*GLOBAL*,creator_name,GTMBA Project Office/NOAA/PMEL\n"
             + "*GLOBAL*,creator_type,group\n"
@@ -11317,9 +11319,9 @@ class JettyTests {
             + "*GLOBAL*,keywords,\"buoys, centered, daily, depth, Earth Science > Oceans > Ocean Temperature > Sea Surface Temperature, identifier, noaa, ocean, oceans, pirata, pmel, quality, rama, sea, sea_surface_temperature, source, station, surface, tao, temperature, time, triton\"\n"
             + "*GLOBAL*,keywords_vocabulary,GCMD Science Keywords\n"
             + "*GLOBAL*,license,\"Request for Acknowledgement: If you use these data in publications or presentations, please acknowledge the GTMBA Project Office of NOAA/PMEL. Also, we would appreciate receiving a preprint and/or reprint of publications utilizing the data for inclusion in our bibliography. Relevant publications should be sent to: GTMBA Project Office, NOAA/Pacific Marine Environmental Laboratory, 7600 Sand Point Way NE, Seattle, WA 98115\\n\\nThe data may be used and redistributed for free but is not intended\\nfor legal use, since it may contain inaccuracies. Neither the data\\nContributor, ERD, NOAA, nor the United States Government, nor any\\nof their employees or contractors, makes any warranty, express or\\nimplied, including warranties of merchantability and fitness for a\\nparticular purpose, or assumes any legal liability for the accuracy,\\ncompleteness, or usefulness, of this information.\"\n"
-            + (EDStatic.useSaxParser ? "*GLOBAL*,missing_value,1.0E35f\n" : "")
+            + (EDStatic.config.useSaxParser ? "*GLOBAL*,missing_value,1.0E35f\n" : "")
             + "*GLOBAL*,Northernmost_Northing,21.0d\n"
-            + (EDStatic.useSaxParser ? "*GLOBAL*,platform_code,CODE\n" : "")
+            + (EDStatic.config.useSaxParser ? "*GLOBAL*,platform_code,CODE\n" : "")
             + "*GLOBAL*,project,\"TAO/TRITON, RAMA, PIRATA\"\n"
             + "*GLOBAL*,Request_for_acknowledgement,\"If you use these data in publications or presentations, please acknowledge the GTMBA Project Office of NOAA/PMEL. Also, we would appreciate receiving a preprint and/or reprint of publications utilizing the data for inclusion in our bibliography. Relevant publications should be sent to: GTMBA Project Office, NOAA/Pacific Marine Environmental Laboratory, 7600 Sand Point Way NE, Seattle, WA 98115\"\n"
             + "*GLOBAL*,sourceUrl,(local files)\n"
@@ -11522,10 +11524,10 @@ class JettyTests {
             null,
             null,
             "",
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             "EDDGridLonPM180_testGridWithDepth2",
             ".das");
-    results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+    results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
     po = results.indexOf("depth {");
     Test.ensureTrue(po >= 0, "results=\n" + results);
     expected =
@@ -11535,18 +11537,18 @@ class JettyTests {
             + "    Float64 actual_range 5.01, 5375.0;\n"
             + // 2014-01-17 was 5.0, 5374.0
             "    String axis \"Z\";\n"
-            + (EDStatic.useSaxParser
+            + (EDStatic.config.useSaxParser
                 ? "    String grads_dim \"z\";\n" + "    String grads_mapping \"levels\";\n"
                 : "")
             + "    String ioos_category \"Location\";\n"
             + "    String long_name \"Depth\";\n"
-            + (EDStatic.useSaxParser
+            + (EDStatic.config.useSaxParser
                 ? "    Float64 maximum 5375.0;\n"
                     + "    Float64 minimum 5.01;\n"
                     + "    String name \"Depth\";\n"
                 : "")
             + "    String positive \"down\";\n"
-            + (EDStatic.useSaxParser ? "    Float32 resolution 137.69205;\n" : "")
+            + (EDStatic.config.useSaxParser ? "    Float32 resolution 137.69205;\n" : "")
             + "    String standard_name \"depth\";\n"
             + "    String units \"m\";\n"
             + "  }";
@@ -11560,10 +11562,10 @@ class JettyTests {
             null,
             null,
             "",
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             "EDDGridLonPM180_testGridWithDepth2",
             ".fgdc");
-    results = File2.directReadFromUtf8File(EDStatic.fullTestCacheDirectory + tName);
+    results = File2.directReadFromUtf8File(EDStatic.config.fullTestCacheDirectory + tName);
     po = results.indexOf("<vertdef>");
     Test.ensureTrue(po >= 0, "po=-1 results=\n" + results);
     expected =
@@ -11586,10 +11588,10 @@ class JettyTests {
             null,
             null,
             "",
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             "EDDGridLonPM180_testGridWithDepth2",
             ".iso19115");
-    results = File2.directReadFromUtf8File(EDStatic.fullTestCacheDirectory + tName);
+    results = File2.directReadFromUtf8File(EDStatic.config.fullTestCacheDirectory + tName);
 
     po = results.indexOf("codeListValue=\"vertical\">");
     Test.ensureTrue(po >= 0, "po=-1 results=\n" + results);
@@ -11744,10 +11746,10 @@ class JettyTests {
             null,
             null,
             "temp%5B(2008-11-15)%5D%5B(5)%5D%5B(-75):100:(75)%5D%5B(-90):100:(63.6)%5D",
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             "EDDGridLonPM180_testGridWithDepthPreWMS",
             ".csv");
-    results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+    results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
     expected =
         "time,depth,latitude,longitude,temp\n"
             + "UTC,m,degrees_north,degrees_east,degree_C\n"
@@ -11828,7 +11830,7 @@ class JettyTests {
 
     EDDGridFromDap gridDataset = (EDDGridFromDap) EDDTestDataset.gettestActualRange();
     String tName, results, expected;
-    String dir = EDStatic.fullTestCacheDirectory;
+    String dir = EDStatic.config.fullTestCacheDirectory;
 
     // overall kml
     tName =
@@ -12183,7 +12185,7 @@ class JettyTests {
               + //
               "      :axis = \"T\";\n"
               + //
-              (EDStatic.useSaxParser
+              (EDStatic.config.useSaxParser
                   ? "      :grads_dim = \"t\";\n"
                       + //
                       "      :grads_mapping = \"linear\";\n"
@@ -12194,7 +12196,7 @@ class JettyTests {
               + "      :ioos_category = \"Time\";\n"
               + //
               "      :long_name = \"Centered Time\";\n"
-              + (EDStatic.useSaxParser
+              + (EDStatic.config.useSaxParser
                   ? "      :maximum = \"00z15dec2010\";\n"
                       + "      :minimum = \"00z15jan1871\";\n"
                       + "      :resolution = 30.43657f; // float\n"
@@ -12217,18 +12219,18 @@ class JettyTests {
               + //
               "      :axis = \"Z\";\n"
               + //
-              (EDStatic.useSaxParser
+              (EDStatic.config.useSaxParser
                   ? "      :grads_dim = \"z\";\n" + "      :grads_mapping = \"levels\";\n"
                   : "")
               + "      :ioos_category = \"Location\";\n"
               + "      :long_name = \"Depth\";\n"
-              + (EDStatic.useSaxParser
+              + (EDStatic.config.useSaxParser
                   ? "      :maximum = 5375.0; // double\n"
                       + "      :minimum = 5.01; // double\n"
                       + "      :name = \"Depth\";\n"
                   : "")
               + "      :positive = \"down\";\n"
-              + (EDStatic.useSaxParser ? "      :resolution = 137.69205f; // float\n" : "")
+              + (EDStatic.config.useSaxParser ? "      :resolution = 137.69205f; // float\n" : "")
               + "      :standard_name = \"depth\";\n"
               + //
               "      :units = \"m\";\n"
@@ -12243,14 +12245,14 @@ class JettyTests {
               + //
               "      :axis = \"Y\";\n"
               + //
-              (EDStatic.useSaxParser
+              (EDStatic.config.useSaxParser
                   ? "      :grads_dim = \"y\";\n"
                       + "      :grads_mapping = \"linear\";\n"
                       + "      :grads_size = \"330\";\n"
                   : "")
               + "      :ioos_category = \"Location\";\n"
               + "      :long_name = \"Latitude\";\n"
-              + (EDStatic.useSaxParser
+              + (EDStatic.config.useSaxParser
                   ? "      :maximum = 89.25; // double\n"
                       + "      :minimum = -75.25; // double\n"
                       + "      :resolution = 0.5f; // float\n"
@@ -12269,14 +12271,14 @@ class JettyTests {
               + //
               "      :axis = \"X\";\n"
               + //
-              (EDStatic.useSaxParser
+              (EDStatic.config.useSaxParser
                   ? "      :grads_dim = \"x\";\n"
                       + "      :grads_mapping = \"linear\";\n"
                       + "      :grads_size = \"720\";\n"
                   : "")
               + "      :ioos_category = \"Location\";\n"
               + "      :long_name = \"Longitude\";\n"
-              + (EDStatic.useSaxParser
+              + (EDStatic.config.useSaxParser
                   ? "      :maximum = 359.75; // double\n"
                       + "      :minimum = 0.25; // double\n"
                       + "      :resolution = 0.5f; // float\n"
@@ -12610,10 +12612,10 @@ class JettyTests {
             null,
             null,
             griddapUserDapQuery,
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             eddGrid2.className() + "_Itself",
             ".xhtml");
-    results = File2.directReadFromUtf8File(EDStatic.fullTestCacheDirectory + tName);
+    results = File2.directReadFromUtf8File(EDStatic.config.fullTestCacheDirectory + tName);
     // String2.log(results);
     expected =
         "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
@@ -12805,10 +12807,10 @@ class JettyTests {
             null,
             null,
             "",
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             gridDataset.className() + "_Entire",
             ".das");
-    results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+    results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
     // String2.log(results);
     expected =
         "Attributes {\n"
@@ -13107,10 +13109,10 @@ class JettyTests {
             null,
             null,
             "",
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             gridDataset.className() + "_Entire",
             ".dds");
-    results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+    results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
     // String2.log(results);
     expected =
         "Dataset {\n"
@@ -13162,10 +13164,10 @@ class JettyTests {
             null,
             null,
             query,
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             gridDataset.className() + "_Axis",
             ".asc");
-    results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+    results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
     // String2.log(results);
     expected =
         "Dataset {\n"
@@ -13211,12 +13213,12 @@ class JettyTests {
             null,
             null,
             query,
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             gridDataset.className() + "_Axis",
             ".csv");
-    results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+    results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
     // String2.log(results);
-    // Test.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
+    // Test.displayInBrowser("file://" + EDStatic.config.fullTestCacheDirectory + tName);
     expected =
         "time,longitude\n"
             + "UTC,degrees_east\n"
@@ -13242,12 +13244,12 @@ class JettyTests {
             null,
             null,
             query,
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             gridDataset.className() + "_AxisG.A",
             ".csv");
-    results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+    results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
     // String2.log(results);
-    // Test.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
+    // Test.displayInBrowser("file://" + EDStatic.config.fullTestCacheDirectory + tName);
     // expected = "time,longitude\n" +
     // "UTC,degrees_east\n" +
     // "2002-07-08T00:00:00Z,360.0\n" +
@@ -13269,12 +13271,12 @@ class JettyTests {
             null,
             null,
             query,
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             gridDataset.className() + "_Axis",
             ".dods");
     results =
         String2.annotatedString(
-            File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName));
+            File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName));
     // String2.log(results);
     expected =
         "Dataset {[10]\n"
@@ -13305,11 +13307,11 @@ class JettyTests {
             null,
             null,
             matlabAxisQuery,
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             gridDataset.className() + "_Axis",
             ".mat");
-    String2.log(".mat test file is " + EDStatic.fullTestCacheDirectory + tName);
-    results = File2.hexDump(EDStatic.fullTestCacheDirectory + tName, 1000000);
+    String2.log(".mat test file is " + EDStatic.config.fullTestCacheDirectory + tName);
+    results = File2.hexDump(EDStatic.config.fullTestCacheDirectory + tName, 1000000);
     String2.log(results);
     expected =
         "4d 41 54 4c 41 42 20 35   2e 30 20 4d 41 54 2d 66   MATLAB 5.0 MAT-f |\n"
@@ -13363,7 +13365,7 @@ class JettyTests {
     Test.ensureEqual(
         results.substring(0, 71 * 4) + results.substring(71 * 7), // remove the creation dateTime
         expected,
-        "RESULTS(" + EDStatic.fullTestCacheDirectory + tName + ")=\n" + results);
+        "RESULTS(" + EDStatic.config.fullTestCacheDirectory + tName + ")=\n" + results);
 
     // .ncHeader
     String2.log("\n*** EDDGridFromErddap test get .NCHEADER axis data\n");
@@ -13374,10 +13376,10 @@ class JettyTests {
             null,
             null,
             query,
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             gridDataset.className() + "_Axis",
             ".ncHeader");
-    results = File2.directReadFromUtf8File(EDStatic.fullTestCacheDirectory + tName);
+    results = File2.directReadFromUtf8File(EDStatic.config.fullTestCacheDirectory + tName);
     // String2.log(results);
     expected =
         // "netcdf EDDGridFromErddap_Axis.nc {\n" +
@@ -13461,10 +13463,10 @@ class JettyTests {
             null,
             null,
             userDapQuery,
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             gridDataset.className() + "_Data",
             ".csv");
-    results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+    results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
     expected = // missing values are "NaN"
         // pre 2010-10-26 was
         "time,latitude,longitude,chlorophyll\n"
@@ -13522,10 +13524,10 @@ class JettyTests {
             null,
             null,
             "chlorophyll." + userDapQuery,
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             gridDataset.className() + "_DotNotation",
             ".csv");
-    results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+    results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
     // expected =
     // // pre 2010-10-26 was
     // // "time, altitude, latitude, longitude, chlorophyll\n" +
@@ -13579,10 +13581,10 @@ class JettyTests {
             null,
             null,
             userDapQuery,
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             gridDataset.className() + "_Data",
             ".nc");
-    results = NcHelper.ncdump(EDStatic.fullTestCacheDirectory + tName, "");
+    results = NcHelper.ncdump(EDStatic.config.fullTestCacheDirectory + tName, "");
     expected =
         "netcdf EDDGridFromErddap_Data.nc {\n"
             + //
@@ -14112,7 +14114,7 @@ class JettyTests {
     String2.log("\n*** EDDGridFromEtopo.testFiles(" + tDatasetID + ")\n");
     String results, expected;
 
-    String etopoFilePath = File2.getWebInfParentDirectory() + "WEB-INF/ref/etopo1_ice_g_i2.bin";
+    String etopoFilePath = File2.getRefDirectory() + "etopo1_ice_g_i2.bin";
     long etopoLastModifiedMillis = File2.getLastModified(etopoFilePath);
 
     // get /files/datasetID/.csv
@@ -14442,7 +14444,7 @@ class JettyTests {
     int language = 0;
     String tName, userDapQuery, results, expected;
     int po;
-    String dir = EDStatic.fullTestCacheDirectory;
+    String dir = EDStatic.config.fullTestCacheDirectory;
 
     EDDGrid eddGrid = (EDDGrid) EDDTestDataset.gettest_erdVHNchlamday_Lon0360();
 
@@ -14602,7 +14604,7 @@ class JettyTests {
     int language = 0;
 
     String tName, results, expected, expected2, expected3, userDapQuery;
-    String tDir = EDStatic.fullTestCacheDirectory;
+    String tDir = EDStatic.config.fullTestCacheDirectory;
     int tPo;
     userDapQuery = "longitude,NO3,time,ship&latitude%3E0&time%3E=2002-08-03";
 
@@ -15387,7 +15389,7 @@ class JettyTests {
     // debugMode = true;
     String tName, userDapQuery, results, expected;
     int po;
-    String dir = EDStatic.fullTestCacheDirectory;
+    String dir = EDStatic.config.fullTestCacheDirectory;
     EDDGrid eddGrid = null;
 
     // test notApplicable (dataset maxLon already <180)
@@ -15400,7 +15402,7 @@ class JettyTests {
                   + "The child longitude axis has no values >180 (max=179.9792)!")
           < 0) throw t;
     }
-    if (EDStatic.useSaxParser) {
+    if (EDStatic.config.useSaxParser) {
       Test.ensureEqual(eddGrid, null, "Dataset should be null from exception during construction.");
     }
 
@@ -15828,7 +15830,7 @@ class JettyTests {
             // lon=180
             "&.vec="; // avoid get cached response
     String baseName = "EDDGridFromNcFilesTestSpeed";
-    String baseOut = EDStatic.fullTestCacheDirectory + baseName;
+    String baseOut = EDStatic.config.fullTestCacheDirectory + baseName;
     String extensions[] =
         new String[] {
           ".asc",
@@ -16357,7 +16359,7 @@ class JettyTests {
   @org.junit.jupiter.api.Test
   @TagJetty
   void testInPortXml() throws Throwable {
-    String dir = EDStatic.fullTestCacheDirectory;
+    String dir = EDStatic.config.fullTestCacheDirectory;
     String gridTable = "grid"; // grid or table
     String tDatasetID = "erdSWchlamday";
     String fileName = "ErddapToInPort_" + tDatasetID + ".xml";
@@ -17261,7 +17263,7 @@ class JettyTests {
     context.setMajorLoad(false);
     context.setErddap(new Erddap());
     context.setLastLuceneUpdate(0);
-    context.setDatasetsRegex(EDStatic.datasetsRegex);
+    context.setDatasetsRegex(EDStatic.config.datasetsRegex);
     context.setReallyVerbose(false);
 
     factory = SAXParserFactory.newInstance();

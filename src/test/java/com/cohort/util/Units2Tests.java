@@ -925,7 +925,7 @@ class Units2Tests {
     Attributes atts = new Attributes(); // use it as a hashmap: canon -> source
     for (int i = 0; i < sa.size(); i++) {
       String s = sa.get(i);
-      Unit units = Units2.unitFormat.parse(s);
+      Unit units = ucar.units.StandardUnitFormat.instance().parse(s);
       String canon = units.getCanonicalString();
       String already = atts.getString(canon);
       if (already != null)

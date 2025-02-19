@@ -30,8 +30,8 @@ import java.util.Arrays;
  * for axis[1+].
  *
  * <p>If there is an exception while creating the first child, this throws the exception. If there
- * is an exception while creating other children, this emails EDStatic.emailEverythingToCsv and
- * continues.
+ * is an exception while creating other children, this emails EDStatic.config.emailEverythingToCsv
+ * and continues.
  *
  * <p>Children created by this method are held privately. They are not separately accessible
  * datasets (e.g., by queries or by flag files).
@@ -75,7 +75,7 @@ public class EDDGridSideBySide extends EDDGrid {
     String tAccessibleTo = null;
     String tGraphsAccessibleTo = null;
     boolean tAccessibleViaWMS = true;
-    boolean tAccessibleViaFiles = EDStatic.defaultAccessibleViaFiles;
+    boolean tAccessibleViaFiles = EDStatic.config.defaultAccessibleViaFiles;
     int tMatchAxisNDigits = DEFAULT_MATCH_AXIS_N_DIGITS;
     StringArray tOnChange = new StringArray();
     String tFgdcFile = null;
@@ -175,7 +175,7 @@ public class EDDGridSideBySide extends EDDGrid {
     }
     if (messages.length() > 0) {
       EDStatic.email(
-          EDStatic.emailEverythingToCsv,
+          EDStatic.config.emailEverythingToCsv,
           "Error in EDDGridSideBySide constructor for " + tDatasetID,
           messages.toString());
     }
@@ -245,7 +245,8 @@ public class EDDGridSideBySide extends EDDGrid {
     setAccessibleTo(tAccessibleTo);
     setGraphsAccessibleTo(tGraphsAccessibleTo);
     if (!tAccessibleViaWMS)
-      accessibleViaWMS = String2.canonical(MessageFormat.format(EDStatic.noXxxAr[0], "WMS"));
+      accessibleViaWMS =
+          String2.canonical(MessageFormat.format(EDStatic.messages.noXxxAr[0], "WMS"));
     onChange = tOnChange;
     fgdcFile = tFgdcFile;
     iso19115File = tIso19115File;
@@ -265,7 +266,7 @@ public class EDDGridSideBySide extends EDDGrid {
         break;
       }
     }
-    accessibleViaFiles = EDStatic.filesActive && tAccessibleViaFiles && cAccessibleViaFiles;
+    accessibleViaFiles = EDStatic.config.filesActive && tAccessibleViaFiles && cAccessibleViaFiles;
 
     // check the siblings and create childStopsAt
     EDDGrid firstChild = childDatasets[0];
@@ -514,7 +515,7 @@ public class EDDGridSideBySide extends EDDGrid {
   /**
    * This gets data (not yet standardized) from the data source for this EDDGrid. Because this is
    * called by GridDataAccessor, the request won't be the full user's request, but will be a partial
-   * request (for less than EDStatic.partialRequestMaxBytes).
+   * request (for less than EDStatic.config.partialRequestMaxBytes).
    *
    * @param language the index of the selected language
    * @param tDirTable If EDDGridFromFiles, this MAY be the dirTable, else null.

@@ -778,10 +778,10 @@ class EDDTableFromAwsXmlFilesTests {
             null,
             null,
             "",
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             eddTable.className() + "_Entire",
             ".das");
-    results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+    results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
     // String2.log(results);
     expected =
         "Attributes {\n"
@@ -1151,10 +1151,10 @@ class EDDTableFromAwsXmlFilesTests {
             null,
             null,
             "",
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             eddTable.className() + "_Entire",
             ".dds");
-    results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+    results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
     // String2.log(results);
     expected =
         "Dataset {\n"
@@ -1220,10 +1220,10 @@ class EDDTableFromAwsXmlFilesTests {
             null,
             null,
             userDapQuery,
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             eddTable.className() + "_1",
             ".csv");
-    results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+    results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
     // String2.log(results);
     expected =
         "fileName,station_id,station,city_state_zip,city_state,site_url,altitude,time,aux_temp,aux_temp_rate,dew_point,feels_like,gust_time,gust_direction,gust_speed,humidity,humidity_high,humidity_low,humidity_rate,indoor_temp,indoor_temp_rate,light,light_rate,moon_phase_moon_phase_img,moon_phase,pressure,pressure_high,pressure_low,pressure_rate,rain_month,rain_rate,rain_rate_max,rain_today,rain_year,temp,temp_high,temp_low,temp_rate,sunrise,sunset,wet_bulb,wind_speed,wind_speed_avg,wind_direction,wind_direction_avg\n"

@@ -68,7 +68,7 @@ public class TableWriterUnits extends TableWriter {
 
     if (toUnits == null || !(toUnits.equals("UDUNITS") || toUnits.equals("UCUM")))
       throw new SimpleException(
-          EDStatic.simpleBilingual(language, EDStatic.queryErrorAr)
+          EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
               + "toUnits="
               + fromUnits
               + " must be UDUNITS or UCUM.");

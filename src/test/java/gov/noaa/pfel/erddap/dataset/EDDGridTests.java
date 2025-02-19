@@ -240,7 +240,7 @@ class EDDGridTests {
             "testGeotif",
             ".geotif");
 
-    // Test.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
+    // Test.displayInBrowser("file://" + EDStatic.config.fullTestCacheDirectory + tName);
     Image2Tests.testImagesIdentical(
         tName, "EDDGrid_testGeotif" + ".tif", "EDDGrid_testGeotif" + "_diff.png");
   }
@@ -662,7 +662,7 @@ class EDDGridTests {
    *
    * @param eddGrid EDDGrid that saveAsImage is called on.
    * @param dir Directory used for temporary/cache files.
-   * @param requestUrl The part of the user's request, after EDStatic.baseUrl, before '?'.
+   * @param requestUrl The part of the user's request, after EDStatic.config.baseUrl, before '?'.
    * @param userDapQuery An OPeNDAP DAP-style query string, still percentEncoded (shouldn't be
    *     null). e.g., ATssta[45:1:45][0:1:0][120:10:140][130:10:160]
    * @param fileTypeName File type being requested (eg: .transparentPng)
@@ -789,7 +789,7 @@ class EDDGridTests {
 
     // *** check netcdf response
     String2.log("\n+++ GetCoverage\n" + wcsQuery1);
-    fileName = EDStatic.fullTestCacheDirectory + "testWcsBA_2.nc";
+    fileName = EDStatic.config.fullTestCacheDirectory + "testWcsBA_2.nc";
     String endOfRequest = "myEndOfRequest";
     eddGrid.wcsGetCoverage(
         0,
@@ -805,7 +805,7 @@ class EDDGridTests {
 
     // *** check png response
     String2.log("\n+++ GetCoverage\n" + wcsQuery1);
-    fileName = EDStatic.fullTestCacheDirectory + "testWcsBA_3.png";
+    fileName = EDStatic.config.fullTestCacheDirectory + "testWcsBA_3.png";
     eddGrid.wcsGetCoverage(
         0,
         "someIPAddress",
@@ -845,7 +845,7 @@ class EDDGridTests {
     EDDGrid gridDataset = (EDDGrid) EDDTestDataset.getetopo180();
     String tName;
     int language = 0;
-    String tDir = EDStatic.fullTestCacheDirectory;
+    String tDir = EDStatic.config.fullTestCacheDirectory;
 
     // *** test getting graphs
     String2.log("\n****************** EDDGrid test get graphs\n");

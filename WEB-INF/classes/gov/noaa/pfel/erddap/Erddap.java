@@ -97,8 +97,8 @@ import org.json.JSONTokener;
  * in EDStatic.
  *
  * <p>Authorization is specified by roles tags and accessibleTo tags in datasets.xml. <br>
- * If a user isn't authorized to use a dataset, then EDStatic.listPrivateDatasets determines whether
- * the dataset appears on lists of datasets (e.g., categorize or search). <br>
+ * If a user isn't authorized to use a dataset, then EDStatic.config.listPrivateDatasets determines
+ * whether the dataset appears on lists of datasets (e.g., categorize or search). <br>
  * If a user isn't authorized to use a dataset and requests info about that dataset,
  * EDStatic.redirectToLogin is called. <br>
  * These policies are enforced by checking edd.isAccessibleTo results from gridDatasetHashMap and
@@ -215,11 +215,11 @@ public class Erddap extends HttpServlet {
     // rename log.txt to preserve it so it can be analyzed if there was trouble before restart
     // In timestamp, change ':' to '.' so suitable for file names
     String timeStamp = String2.replaceAll(Calendar2.getCurrentISODateTimeStringLocal(), ":", ".");
-    String newLogTxt = EDStatic.fullLogsDirectory + "log.txt";
-    String BPD = EDStatic.bigParentDirectory;
+    String newLogTxt = EDStatic.config.fullLogsDirectory + "log.txt";
+    String BPD = EDStatic.config.bigParentDirectory;
     try {
       String oldLogTxt = BPD + "log.txt";
-      String logTextAr = EDStatic.fullLogsDirectory + "logArchivedAt" + timeStamp + ".txt";
+      String logTextAr = EDStatic.config.fullLogsDirectory + "logArchivedAt" + timeStamp + ".txt";
       if (File2.isFile(oldLogTxt)) {
         // pre ERDDAP version 1.15
         File2.copy(oldLogTxt, logTextAr);
@@ -233,8 +233,9 @@ public class Erddap extends HttpServlet {
       // rename log.txt.previous to preserve it so it can be analyzed if there was trouble before
       // restart
       String oldLogTxtP = BPD + "log.txt.previous";
-      String newLogTxtP = EDStatic.fullLogsDirectory + "log.txt.previous";
-      String logTextArP = EDStatic.fullLogsDirectory + "logPreviousArchivedAt" + timeStamp + ".txt";
+      String newLogTxtP = EDStatic.config.fullLogsDirectory + "log.txt.previous";
+      String logTextArP =
+          EDStatic.config.fullLogsDirectory + "logPreviousArchivedAt" + timeStamp + ".txt";
       if (File2.isFile(oldLogTxtP)) {
         // pre ERDDAP version 1.15
         File2.copy(oldLogTxtP, logTextArP);
@@ -251,7 +252,7 @@ public class Erddap extends HttpServlet {
         false, // tLogToSystemOut, tLogToSystemErr,
         newLogTxt,
         true,
-        EDStatic.logMaxSizeMB
+        EDStatic.config.logMaxSizeMB
             * Math2
                 .BytesPerMB); // fileName, append, maxSize (will be 1 .. 2000, so no int overflow)
     String2.log(
@@ -263,7 +264,7 @@ public class Erddap extends HttpServlet {
             + "logFile="
             + String2.logFileName()
             + " logMaxSizeMB="
-            + EDStatic.logMaxSizeMB
+            + EDStatic.config.logMaxSizeMB
             + "\n"
             + String2.standardHelpAboutMessage()
             + "\n"
@@ -285,25 +286,26 @@ public class Erddap extends HttpServlet {
 
     // on start up, always delete all files from fullPublicDirectory and fullCacheDirectory
     File2.deleteAllFiles(
-        EDStatic.fullPublicDirectory, true, false); // recursive, deleteEmptySubdirectories
+        EDStatic.config.fullPublicDirectory, true, false); // recursive, deleteEmptySubdirectories
     File2.deleteAllFiles(
-        EDStatic.fullCacheDirectory,
+        EDStatic.config.fullCacheDirectory,
         true,
         false); // in EDStatic, was true, true, but then subdirs created
     // delete cache subdirs other than starting with "_" (i.e., the dataset dirs, not _test)
-    String tFD[] = new File(EDStatic.fullCacheDirectory).list();
+    String tFD[] = new File(EDStatic.config.fullCacheDirectory).list();
     StringBuilder rdErrors = new StringBuilder();
     for (String fd : tFD) {
       if (fd != null
           && fd.length() > 0
           && !fd.startsWith("_")
-          && File2.isDirectory(EDStatic.fullCacheDirectory + fd)) {
+          && File2.isDirectory(EDStatic.config.fullCacheDirectory + fd)) {
         try {
-          rdErrors.append(RegexFilenameFilter.recursiveDelete(EDStatic.fullCacheDirectory + fd));
+          rdErrors.append(
+              RegexFilenameFilter.recursiveDelete(EDStatic.config.fullCacheDirectory + fd));
         } catch (Throwable t) {
           rdErrors.append(
               "ERROR in recursiveDelete("
-                  + EDStatic.fullCacheDirectory
+                  + EDStatic.config.fullCacheDirectory
                   + fd
                   + "):\n"
                   + MustBe.throwableToString(t));
@@ -312,8 +314,8 @@ public class Erddap extends HttpServlet {
     }
     if (rdErrors.length() > 0)
       EDStatic.email(
-          EDStatic.emailEverythingToCsv,
-          "Unable to completely clean " + EDStatic.fullCacheDirectory,
+          EDStatic.config.emailEverythingToCsv,
+          "Unable to completely clean " + EDStatic.config.fullCacheDirectory,
           rdErrors.toString());
 
     // copy (not rename!) subscriptionsV1.txt to preserve it
@@ -330,12 +332,13 @@ public class Erddap extends HttpServlet {
     File2.delete(BPD + "private"); // delete it
 
     // initialize Lucene
-    if (EDStatic.useLuceneSearchEngine) EDStatic.initializeLucene();
+    if (EDStatic.config.useLuceneSearchEngine) EDStatic.initializeLucene();
 
     // make new catInfo with first level hashMaps
-    int nCat = EDStatic.categoryAttributes.length;
+    int nCat = EDStatic.config.categoryAttributes.length;
     for (int cat = 0; cat < nCat; cat++)
-      categoryInfo.put(EDStatic.categoryAttributes[cat], new ConcurrentHashMap(16, 0.75f, 4));
+      categoryInfo.put(
+          EDStatic.config.categoryAttributes[cat], new ConcurrentHashMap(16, 0.75f, 4));
 
     // start RunLoadDatasets
     runLoadDatasets = new RunLoadDatasets(this);
@@ -451,7 +454,7 @@ public class Erddap extends HttpServlet {
   /** Get the Url of a request without the language code. */
   public String getUrlWithoutLang(HttpServletRequest request) {
     String requestUrl = request.getRequestURI();
-    int protocolStart = EDStatic.warName.length() + 2;
+    int protocolStart = EDStatic.config.warName.length() + 2;
     int langCodeEnd = requestUrl.indexOf("/", protocolStart);
     if (langCodeEnd < 0)
       // there is nothing after hostURL/erddap, no changes needed
@@ -465,7 +468,7 @@ public class Erddap extends HttpServlet {
       return requestUrl;
     }
     protocolStart = langCodeEnd + 1;
-    return "/" + EDStatic.warName + "/" + requestUrl.substring(protocolStart);
+    return "/" + EDStatic.config.warName + "/" + requestUrl.substring(protocolStart);
   }
 
   /**
@@ -566,7 +569,7 @@ public class Erddap extends HttpServlet {
                 requestNumber,
                 response,
                 429, // 429=Too Many Requests
-                EDStatic.oneRequestAtATimeAr[language]);
+                EDStatic.messages.oneRequestAtATimeAr[language]);
             // FUTURE? email yesterday's list to erddap admin when generating daily report
             // so they can consider blacklisting them?
             return;
@@ -574,8 +577,8 @@ public class Erddap extends HttpServlet {
         }
 
         // if (debugMode) String2.log(">> requestUrl=" + requestUrl);
-        if (getUrlWithoutLang(request).startsWith("/" + EDStatic.warName + "/download/")
-            || getUrlWithoutLang(request).startsWith("/" + EDStatic.warName + "/images/")) {
+        if (getUrlWithoutLang(request).startsWith("/" + EDStatic.config.warName + "/download/")
+            || getUrlWithoutLang(request).startsWith("/" + EDStatic.config.warName + "/images/")) {
           // small static content (e.g., erddap.css) is exempt from request limits
           //   (but still counts toward ipAddressMaxRequests above)
           // so don't wait
@@ -615,9 +618,9 @@ public class Erddap extends HttpServlet {
                 200); // millis. Not Math2.sleep() because we want to allow InterruptedException
             if (System.currentTimeMillis() - start > 120000) // 120s * 1000 millis/s
             throw new TimeoutException(
-                  EDStatic.timeoutOtherRequestsAr[language]
+                  EDStatic.messages.timeoutOtherRequestsAr[language]
                       + " "
-                      + EDStatic.oneRequestAtATimeAr[language]);
+                      + EDStatic.messages.oneRequestAtATimeAr[language]);
           }
         }
       }
@@ -634,11 +637,11 @@ public class Erddap extends HttpServlet {
 
       // requestUrl should start with /erddap/
       // deal with /erddap
-      if (!requestUrl.startsWith("/" + EDStatic.warName + "/")) {
+      if (!requestUrl.startsWith("/" + EDStatic.config.warName + "/")) {
         sendRedirect(response, tErddapUrl + "/index.html");
         return;
       }
-      int protocolStart = EDStatic.warName.length() + 2; // lead and trailing /
+      int protocolStart = EDStatic.config.warName.length() + 2; // lead and trailing /
 
       // identify language code, if any
       int langCodeEnd = requestUrl.indexOf("/", protocolStart);
@@ -802,17 +805,18 @@ public class Erddap extends HttpServlet {
         doInformationHtml(language, request, response, loggedInAs, endOfRequest, queryString);
       } else if (endOfRequest.equals("legal.html")) {
         doLegalHtml(language, request, response, loggedInAs, endOfRequest, queryString);
-      } else if (endOfRequest.equals("login.html") && EDStatic.authentication.length() > 0) {
+      } else if (endOfRequest.equals("login.html") && EDStatic.config.authentication.length() > 0) {
         doLogin(language, request, response, loggedInAs, endOfRequest, queryString);
       } else if (endOfRequest.equals("loginGoogle.html")
-          && (EDStatic.authentication.equals("google")
-              || EDStatic.authentication.equals("oauth2"))) {
+          && (EDStatic.config.authentication.equals("google")
+              || EDStatic.config.authentication.equals("oauth2"))) {
         doLoginGoogle(language, request, response, loggedInAs);
       } else if (endOfRequest.equals("loginOrcid.html")
-          && (EDStatic.authentication.equals("orcid")
-              || EDStatic.authentication.equals("oauth2"))) {
+          && (EDStatic.config.authentication.equals("orcid")
+              || EDStatic.config.authentication.equals("oauth2"))) {
         doLoginOrcid(language, request, response, loggedInAs);
-      } else if (endOfRequest.equals("logout.html") && EDStatic.authentication.length() > 0) {
+      } else if (endOfRequest.equals("logout.html")
+          && EDStatic.config.authentication.length() > 0) {
         doLogout(language, request, response, loggedInAs, endOfRequest, queryString);
       } else if (endOfRequest.equals("rest.html")) {
         doRestHtml(language, request, response, loggedInAs, endOfRequest, queryString);
@@ -830,16 +834,18 @@ public class Erddap extends HttpServlet {
       } else if (endOfRequest.equals("status.html")) {
         doStatus(language, request, response, loggedInAs, endOfRequest, queryString);
       } else if (endOfRequest.startsWith("dataProviderForm")) {
-        if (!EDStatic.dataProviderFormActive)
+        if (!EDStatic.config.dataProviderFormActive)
           sendResourceNotFoundError(
               requestNumber,
               request,
               response,
               EDStatic.bilingual(
                   language,
-                  MessageFormat.format(EDStatic.disabledAr[0], EDStatic.dataProviderFormAr[0]),
                   MessageFormat.format(
-                      EDStatic.disabledAr[language], EDStatic.dataProviderFormAr[language])));
+                      EDStatic.messages.disabledAr[0], EDStatic.messages.dataProviderFormAr[0]),
+                  MessageFormat.format(
+                      EDStatic.messages.disabledAr[language],
+                      EDStatic.messages.dataProviderFormAr[language])));
         else if (endOfRequest.equals("dataProviderForm.html"))
           doDataProviderForm(language, request, response, loggedInAs, endOfRequest, queryString);
         else if (endOfRequest.equals("dataProviderForm1.html"))
@@ -931,7 +937,7 @@ public class Erddap extends HttpServlet {
         int slowdown = 0;
         if (EDStatic.isClientAbortException(t))
           String2.log("#" + requestNumber + " Error: ClientAbortException");
-        else slowdown = EDStatic.slowDownTroubleMillis;
+        else slowdown = EDStatic.config.slowDownTroubleMillis;
 
         // "failure" includes clientAbort and there is no data
         long responseTime = System.currentTimeMillis() - doGetTime;
@@ -1002,7 +1008,7 @@ public class Erddap extends HttpServlet {
   }
 
   private void recordRequestResponseTime(int responseStatus, String requestUrl, long responseTime) {
-    int protocolStart = EDStatic.warName.length() + 2; // lead and trailing /
+    int protocolStart = EDStatic.config.warName.length() + 2; // lead and trailing /
 
     // identify language code, if any
     int langCodeEnd = requestUrl.indexOf("/", protocolStart);
@@ -1076,7 +1082,7 @@ public class Erddap extends HttpServlet {
     for (String plainFileType : plainFileTypes) {
 
       // index.pft  - return a list of resources
-      if (requestUrl.equals("/" + EDStatic.warName + "/index" + plainFileType)) {
+      if (requestUrl.equals("/" + EDStatic.config.warName + "/index" + plainFileType)) {
 
         String fileTypeName = File2.getExtension(requestUrl);
         EDStatic.tally.add("Main Resources List (since startup)", fileTypeName);
@@ -1088,9 +1094,9 @@ public class Erddap extends HttpServlet {
         table.addColumn("URL", urlCol);
         StringArray resources =
             new StringArray(new String[] {"info", "search", "categorize", "griddap", "tabledap"});
-        if (EDStatic.sosActive) resources.add("sos");
-        if (EDStatic.wcsActive) resources.add("wcs");
-        if (EDStatic.wmsActive) resources.add("wms");
+        if (EDStatic.config.sosActive) resources.add("sos");
+        if (EDStatic.config.wcsActive) resources.add("wcs");
+        if (EDStatic.config.wmsActive) resources.add("wms");
         for (int r = 0; r < resources.size(); r++) {
           resourceCol.add(resources.get(r));
           urlCol.add(
@@ -1119,7 +1125,7 @@ public class Erddap extends HttpServlet {
     }
 
     // only thing left should be erddap/index.html request
-    if (!requestUrl.equals("/" + EDStatic.warName + "/index.html")) {
+    if (!requestUrl.equals("/" + EDStatic.config.warName + "/index.html")) {
       sendResourceNotFoundError(requestNumber, request, response, "index.html expected");
       return;
     }
@@ -1147,7 +1153,7 @@ public class Erddap extends HttpServlet {
               + "<td style=\"width:60%;\" class=\"T\">\n");
 
       // *** left column: theShortDescription
-      writer.write(EDStatic.theShortDescriptionHtml(language, tErddapUrl));
+      writer.write(EDStatic.messages.theShortDescriptionHtml(language, tErddapUrl));
 
       // thin vertical line between text columns
       writer.write(
@@ -1159,7 +1165,7 @@ public class Erddap extends HttpServlet {
               "<td style=\"width:38%;\" class=\"T\">\n");
 
       // *** the right column: Get Started with ERDDAP
-      writer.write("<h2>" + EDStatic.getStartedHtmlAr[language] + "</h2>\n" + "<ul>");
+      writer.write("<h2>" + EDStatic.messages.getStartedHtmlAr[language] + "</h2>\n" + "<ul>");
 
       // display a search form
       writer.write("\n<li>");
@@ -1174,7 +1180,7 @@ public class Erddap extends HttpServlet {
               + EDStatic.encodedDefaultPIppQuery
               + "\">"
               + MessageFormat.format(
-                  EDStatic.indexViewAllAr[language],
+                  EDStatic.messages.indexViewAllAr[language],
                   // below is one of few places where number isn't converted to string
                   // (so 1000's separator is used to format the number):
                   gridDatasetHashMap.size() + tableDatasetHashMap.size())
@@ -1189,7 +1195,7 @@ public class Erddap extends HttpServlet {
       writer.write(
           "\n<li><h3>"
               + MessageFormat.format(
-                  EDStatic.indexSearchWithAr[language],
+                  EDStatic.messages.indexSearchWithAr[language],
                   getAdvancedSearchLink(language, loggedInAs, EDStatic.defaultPIppQuery))
               + "</h3>\n");
 
@@ -1197,19 +1203,19 @@ public class Erddap extends HttpServlet {
       writer.write(
           "\n<li>"
               + "<h3>"
-              + EDStatic.protocolSearchHtmlAr[language]
+              + EDStatic.messages.protocolSearchHtmlAr[language]
               + "</h3>\n"
-              + EDStatic.protocolSearch2HtmlAr[language]
+              + EDStatic.messages.protocolSearch2HtmlAr[language]
               +
               // "<br>Click on a protocol to see a list of datasets which are available via that
               // protocol in ERDDAP." +
               "<br>&nbsp;\n"
               + "<table class=\"erd commonBGColor\">\n"
               + "  <tr><th>"
-              + EDStatic.indexProtocolAr[language]
+              + EDStatic.messages.indexProtocolAr[language]
               + "</th>"
               + "<th>"
-              + EDStatic.indexDescriptionAr[language]
+              + EDStatic.messages.indexDescriptionAr[language]
               + "</th></tr>\n"
               + "  <tr>\n"
               + "    <td><a rel=\"bookmark\" "
@@ -1219,20 +1225,20 @@ public class Erddap extends HttpServlet {
               + EDStatic.encodedDefaultPIppQuery
               + "\""
               + " title=\""
-              + MessageFormat.format(EDStatic.protocolClickAr[language], "griddap")
+              + MessageFormat.format(EDStatic.messages.protocolClickAr[language], "griddap")
               + "\">"
-              + MessageFormat.format(EDStatic.indexDatasetsAr[language], "griddap")
+              + MessageFormat.format(EDStatic.messages.indexDatasetsAr[language], "griddap")
               + "</a> </td>\n"
               + "    <td>"
-              + EDStatic.EDDGridDapDescriptionAr[language]
+              + EDStatic.messages.EDDGridDapDescriptionAr[language]
               + "\n"
               + "      <a rel=\"help\" href=\""
               +
-              // EDStatic.EDDGridErddapUrlExample + //2021-09-22 no, always go local
+              // EDStatic.messages.EDDGridErddapUrlExample + //2021-09-22 no, always go local
               tErddapUrl
               + "/"
               + "griddap/documentation.html\">"
-              + MessageFormat.format(EDStatic.indexDocumentationAr[language], "griddap")
+              + MessageFormat.format(EDStatic.messages.indexDocumentationAr[language], "griddap")
               + "</a>\n"
               + "    </td>\n"
               + "  </tr>\n"
@@ -1244,20 +1250,20 @@ public class Erddap extends HttpServlet {
               + EDStatic.encodedDefaultPIppQuery
               + "\""
               + " title=\""
-              + MessageFormat.format(EDStatic.protocolClickAr[language], "tabledap")
+              + MessageFormat.format(EDStatic.messages.protocolClickAr[language], "tabledap")
               + "\">"
-              + MessageFormat.format(EDStatic.indexDatasetsAr[language], "tabledap")
+              + MessageFormat.format(EDStatic.messages.indexDatasetsAr[language], "tabledap")
               + "</a></td>\n"
               + "    <td>"
-              + EDStatic.EDDTableDapDescriptionAr[language]
+              + EDStatic.messages.EDDTableDapDescriptionAr[language]
               + "\n"
               + "      <a rel=\"help\" href=\""
               +
-              // EDStatic.EDDTableErddapUrlExample + //2021-09-22 no, always go local
+              // EDStatic.messages.EDDTableErddapUrlExample + //2021-09-22 no, always go local
               tErddapUrl
               + "/"
               + "tabledap/documentation.html\">"
-              + MessageFormat.format(EDStatic.indexDocumentationAr[language], "tabledap")
+              + MessageFormat.format(EDStatic.messages.indexDocumentationAr[language], "tabledap")
               + "</a>\n"
               + "    </td>\n"
               + "  </tr>\n"
@@ -1267,25 +1273,25 @@ public class Erddap extends HttpServlet {
               + tErddapUrl
               + "/files/\""
               + " title=\""
-              + MessageFormat.format(EDStatic.protocolClickAr[language], "files")
+              + MessageFormat.format(EDStatic.messages.protocolClickAr[language], "files")
               + "\">"
-              + MessageFormat.format(EDStatic.indexDatasetsAr[language], "\"files\"")
+              + MessageFormat.format(EDStatic.messages.indexDatasetsAr[language], "\"files\"")
               + "</a></td>\n"
               + "    <td>"
-              + EDStatic.filesDescriptionAr[language]
+              + EDStatic.messages.filesDescriptionAr[language]
               + " "
-              + EDStatic.warningAr[language]
+              + EDStatic.messages.warningAr[language]
               + " "
-              + EDStatic.filesWarningAr[language]
+              + EDStatic.messages.filesWarningAr[language]
               + "\n"
               + "      <a rel=\"help\" href=\""
               + tErddapUrl
               + "/files/documentation.html\">"
-              + MessageFormat.format(EDStatic.indexDocumentationAr[language], "\"files\"")
+              + MessageFormat.format(EDStatic.messages.indexDocumentationAr[language], "\"files\"")
               + "</a>\n"
               + "    </td>\n"
               + "  </tr>\n");
-      if (EDStatic.sosActive)
+      if (EDStatic.config.sosActive)
         writer.write(
             "  <tr>\n"
                 + "    <td><a rel=\"bookmark\" "
@@ -1295,21 +1301,21 @@ public class Erddap extends HttpServlet {
                 + EDStatic.encodedDefaultPIppQuery
                 + "\""
                 + " title=\""
-                + MessageFormat.format(EDStatic.protocolClickAr[language], "SOS")
+                + MessageFormat.format(EDStatic.messages.protocolClickAr[language], "SOS")
                 + "\">"
-                + MessageFormat.format(EDStatic.indexDatasetsAr[language], "SOS")
+                + MessageFormat.format(EDStatic.messages.indexDatasetsAr[language], "SOS")
                 + "</a></td>\n"
                 + "    <td>"
-                + EDStatic.sosDescriptionHtmlAr[language]
+                + EDStatic.messages.sosDescriptionHtmlAr[language]
                 + "\n"
                 + "      <a rel=\"help\" href=\""
                 + tErddapUrl
                 + "/sos/documentation.html\">"
-                + MessageFormat.format(EDStatic.indexDocumentationAr[language], "SOS")
+                + MessageFormat.format(EDStatic.messages.indexDocumentationAr[language], "SOS")
                 + "</a>\n"
                 + "    </td>\n"
                 + "  </tr>\n");
-      if (EDStatic.wcsActive)
+      if (EDStatic.config.wcsActive)
         writer.write(
             "  <tr>\n"
                 + "    <td><a rel=\"bookmark\" "
@@ -1319,21 +1325,21 @@ public class Erddap extends HttpServlet {
                 + EDStatic.encodedDefaultPIppQuery
                 + "\""
                 + " title=\""
-                + MessageFormat.format(EDStatic.protocolClickAr[language], "WCS")
+                + MessageFormat.format(EDStatic.messages.protocolClickAr[language], "WCS")
                 + "\">"
-                + MessageFormat.format(EDStatic.indexDatasetsAr[language], "WCS")
+                + MessageFormat.format(EDStatic.messages.indexDatasetsAr[language], "WCS")
                 + "</a></td>\n"
                 + "    <td>"
-                + EDStatic.wcsDescriptionHtmlAr[language]
+                + EDStatic.messages.wcsDescriptionHtmlAr[language]
                 + "\n"
                 + "      <a rel=\"help\" href=\""
                 + tErddapUrl
                 + "/wcs/documentation.html\">"
-                + MessageFormat.format(EDStatic.indexDocumentationAr[language], "WCS")
+                + MessageFormat.format(EDStatic.messages.indexDocumentationAr[language], "WCS")
                 + "</a>\n"
                 + "    </td>\n"
                 + "  </tr>\n");
-      if (EDStatic.wmsActive)
+      if (EDStatic.config.wmsActive)
         writer.write(
             "  <tr>\n"
                 + "    <td><a rel=\"bookmark\" "
@@ -1343,17 +1349,17 @@ public class Erddap extends HttpServlet {
                 + EDStatic.encodedDefaultPIppQuery
                 + "\""
                 + " title=\""
-                + MessageFormat.format(EDStatic.protocolClickAr[language], "WMS")
+                + MessageFormat.format(EDStatic.messages.protocolClickAr[language], "WMS")
                 + "\">"
-                + MessageFormat.format(EDStatic.indexDatasetsAr[language], "WMS")
+                + MessageFormat.format(EDStatic.messages.indexDatasetsAr[language], "WMS")
                 + "</a></td>\n"
                 + "    <td>"
-                + EDStatic.wmsDescriptionHtmlAr[language]
+                + EDStatic.messages.wmsDescriptionHtmlAr[language]
                 + "\n"
                 + "      <a rel=\"help\" href=\""
                 + tErddapUrl
                 + "/wms/documentation.html\">"
-                + MessageFormat.format(EDStatic.indexDocumentationAr[language], "WMS")
+                + MessageFormat.format(EDStatic.messages.indexDocumentationAr[language], "WMS")
                 + "</a>\n"
                 + "    </td>\n"
                 + "  </tr>\n");
@@ -1366,23 +1372,23 @@ public class Erddap extends HttpServlet {
       // connections to OpenSearch and SRU
       writer.write(
           "<li><h3>"
-              + EDStatic.indexDevelopersSearchAr[language]
+              + EDStatic.messages.indexDevelopersSearchAr[language]
               + "</h3>\n"
               + "  <ul>\n"
               + "  <li><a rel=\"help\" href=\""
               + tErddapUrl
               + "/rest.html\">"
-              + EDStatic.indexRESTfulSearchAr[language]
+              + EDStatic.messages.indexRESTfulSearchAr[language]
               + "</a>\n"
               + "  <li><a rel=\"help\" href=\""
               + tErddapUrl
               + "/tabledap/allDatasets.html\">"
-              + EDStatic.indexAllDatasetsSearchAr[language]
+              + EDStatic.messages.indexAllDatasetsSearchAr[language]
               + "</a>\n"
               + "  <li><a rel=\"bookmark\" href=\""
               + tErddapUrl
               + "/opensearch1.1/index.html\">"
-              + EDStatic.indexOpenSearchAr[language]
+              + EDStatic.messages.indexOpenSearchAr[language]
               + "</a>\n"
               + "  </ul>\n"
               + "\n");
@@ -1390,10 +1396,12 @@ public class Erddap extends HttpServlet {
       // Search Multiple ERDDAPs
       writer.write(
           "<li><h3>"
-              + EDStatic.searchMultipleERDDAPsAr[language]
+              + EDStatic.messages.searchMultipleERDDAPsAr[language]
               + "</h3>\n"
               + String2.replaceAll(
-                  EDStatic.searchMultipleERDDAPsDescriptionAr[language], "&erddapUrl;", tErddapUrl)
+                  EDStatic.messages.searchMultipleERDDAPsDescriptionAr[language],
+                  "&erddapUrl;",
+                  tErddapUrl)
               + "\n");
 
       // end of search/protocol options list
@@ -1404,85 +1412,85 @@ public class Erddap extends HttpServlet {
               """);
 
       // converters
-      if (EDStatic.convertersActive)
+      if (EDStatic.config.convertersActive)
         writer.write(
             "<p><strong><a class=\"selfLink\" id=\"converters\" href=\"#converters\" rel=\"bookmark\">"
-                + EDStatic.indexConvertersAr[language]
+                + EDStatic.messages.indexConvertersAr[language]
                 + "</a></strong>\n"
                 + "<br>"
-                + EDStatic.indexDescribeConvertersAr[language]
+                + EDStatic.messages.indexDescribeConvertersAr[language]
                 + "\n"
                 + "<table class=\"erd commonBGColor\">\n"
                 + "<tr><td><a rel=\"bookmark\" href=\""
                 + tErddapUrl
                 + "/convert/oceanicAtmosphericAcronyms.html\">"
-                + EDStatic.acronymsAr[language]
+                + EDStatic.messages.acronymsAr[language]
                 + "</a></td>\n"
                 + "    <td>"
-                + EDStatic.convertOAAcronymsToFromAr[language]
+                + EDStatic.messages.convertOAAcronymsToFromAr[language]
                 + "</td></tr>\n"
                 + "<tr><td><a rel=\"bookmark\" href=\""
                 + tErddapUrl
                 + "/convert/fipscounty.html\">"
-                + EDStatic.FIPSCountyCodesAr[language]
+                + EDStatic.messages.FIPSCountyCodesAr[language]
                 + "</a></td>\n"
                 + "    <td>"
-                + EDStatic.convertFipsCountyAr[language]
+                + EDStatic.messages.convertFipsCountyAr[language]
                 + "</td></tr>\n"
                 + "<tr><td><a rel=\"bookmark\" href=\""
                 + tErddapUrl
                 + "/convert/interpolate.html\">"
-                + EDStatic.interpolateAr[language]
+                + EDStatic.messages.interpolateAr[language]
                 + "</a></td>\n"
                 + "    <td>"
-                + EDStatic.convertInterpolateAr[language]
+                + EDStatic.messages.convertInterpolateAr[language]
                 + "</td></tr>\n"
                 + "<tr><td><a rel=\"bookmark\" href=\""
                 + tErddapUrl
                 + "/convert/keywords.html\">"
-                + EDStatic.keywordsAr[language]
+                + EDStatic.messages.keywordsAr[language]
                 + "</a></td>\n"
                 + "    <td>"
-                + EDStatic.convertKeywordsAr[language]
+                + EDStatic.messages.convertKeywordsAr[language]
                 + "</td></tr>\n"
                 + "<tr><td><a rel=\"bookmark\" href=\""
                 + tErddapUrl
                 + "/convert/time.html\">"
-                + EDStatic.timeAr[language]
+                + EDStatic.messages.timeAr[language]
                 + "</a></td>\n"
                 + "    <td>"
-                + EDStatic.convertTimeAr[language]
+                + EDStatic.messages.convertTimeAr[language]
                 + "</td></tr>\n"
                 + "<tr><td><a rel=\"bookmark\" href=\""
                 + tErddapUrl
                 + "/convert/units.html\">"
-                + EDStatic.unitsAr[language]
+                + EDStatic.messages.unitsAr[language]
                 + "</a></td>\n"
                 + "    <td>"
-                + EDStatic.convertUnitsAr[language]
+                + EDStatic.messages.convertUnitsAr[language]
                 + "</td></tr>\n"
                 + "<tr><td><a rel=\"bookmark\" href=\""
                 + tErddapUrl
                 + "/convert/urls.html\">URLs</a></td>\n"
                 + "    <td>"
-                + EDStatic.convertURLsAr[language]
+                + EDStatic.messages.convertURLsAr[language]
                 + "</td></tr>\n"
                 + "<tr><td><a rel=\"bookmark\" href=\""
                 + tErddapUrl
                 + "/convert/oceanicAtmosphericVariableNames.html\">"
-                + EDStatic.variableNamesAr[language]
+                + EDStatic.messages.variableNamesAr[language]
                 + "</a></td>\n"
                 + "    <td>"
-                + EDStatic.convertOAVariableNamesToFromAr[language]
+                + EDStatic.messages.convertOAVariableNamesToFromAr[language]
                 + "</td></tr>\n"
                 + "</table>\n"
                 + "\n");
 
       // metadata
-      if (EDStatic.fgdcActive || EDStatic.iso19115Active) {
+      if (EDStatic.config.fgdcActive || EDStatic.config.iso19115Active) {
         writer.write(
             "<p><strong><a class=\"selfLink\" id=\"metadata\" href=\"#metadata\" rel=\"bookmark\">"
-                + EDStatic.indexMetadataAr[language]
+                + EDStatic.messages.indexMetadataAr[language]
                 + "</a></strong>\n"
                 + "<br>");
         String fgdcLink1 =
@@ -1490,96 +1498,105 @@ public class Erddap extends HttpServlet {
                 + "href=\""
                 + tErddapUrl
                 + "/"
-                + EDStatic.fgdcXmlDirectory
+                + EDConfig.fgdcXmlDirectory
                 + "\">FGDC&nbsp;Web&nbsp;Accessible&nbsp;Folder&nbsp;(WAF)</a>\n";
         String fgdcLink2 = // &#8209; is a non-breaking hyphen
             "<a rel=\"help\" href=\"https://www.fgdc.gov/standards/projects/FGDC-standards-projects/metadata/base-metadata/index_html\"\n"
                 + ">FGDC&#8209;STD&#8209;001&#8209;1998"
-                + EDStatic.externalLinkHtml(language, tErddapUrl)
+                + EDStatic.messages.externalLinkHtml(language, tErddapUrl)
                 + "</a>";
         String isoLink1 =
             "<br><a rel=\"bookmark\" "
                 + "href=\""
                 + tErddapUrl
                 + "/"
-                + EDStatic.iso19115XmlDirectory
+                + EDConfig.iso19115XmlDirectory
                 + "\">ISO&nbsp;19115&nbsp;Web&nbsp;Accessible&nbsp;Folder&nbsp;(WAF)</a>\n";
         String isoLink2 = // &#8209; is a non-breaking hyphen
             "<a rel=\"help\" href=\"https://en.wikipedia.org/wiki/Geospatial_metadata\"\n"
                 + ">ISO&nbsp;19115&#8209;2/19139"
-                + EDStatic.externalLinkHtml(language, tErddapUrl)
+                + EDStatic.messages.externalLinkHtml(language, tErddapUrl)
                 + "</a>";
-        if (EDStatic.fgdcActive && EDStatic.iso19115Active)
+        if (EDStatic.config.fgdcActive && EDStatic.config.iso19115Active)
           writer.write(
               MessageFormat.format(
-                  EDStatic.indexWAF2Ar[language], fgdcLink1, fgdcLink2, isoLink1, isoLink2));
-        else if (EDStatic.fgdcActive)
-          writer.write(MessageFormat.format(EDStatic.indexWAF1Ar[language], fgdcLink1, fgdcLink2));
-        else writer.write(MessageFormat.format(EDStatic.indexWAF1Ar[language], isoLink1, isoLink2));
+                  EDStatic.messages.indexWAF2Ar[language],
+                  fgdcLink1,
+                  fgdcLink2,
+                  isoLink1,
+                  isoLink2));
+        else if (EDStatic.config.fgdcActive)
+          writer.write(
+              MessageFormat.format(EDStatic.messages.indexWAF1Ar[language], fgdcLink1, fgdcLink2));
+        else
+          writer.write(
+              MessageFormat.format(EDStatic.messages.indexWAF1Ar[language], isoLink1, isoLink2));
         writer.write("\n\n");
       }
 
       // REST services
       writer.write(
           "<p><strong><a class=\"selfLink\" id=\"services\" href=\"#services\" rel=\"bookmark\">"
-              + EDStatic.indexServicesAr[language]
+              + EDStatic.messages.indexServicesAr[language]
               + "</a></strong>\n"
               + "<br>"
-              + MessageFormat.format(EDStatic.indexDescribeServicesAr[language], tErddapUrl)
+              + MessageFormat.format(
+                  EDStatic.messages.indexDescribeServicesAr[language], tErddapUrl)
               + "\n\n");
 
       // And
       writer.write(
           "<p><strong><a class=\"selfLink\" id=\"otherFeatures\" href=\"#otherFeatures\" rel=\"bookmark\">"
-              + EDStatic.otherFeaturesAr[language]
+              + EDStatic.messages.otherFeaturesAr[language]
               + "</a></strong>\n"
               + "<table class=\"erd commonBGColor\">\n"
               + "<tr><td><a rel=\"bookmark\" href=\""
               + tErddapUrl
               + "/status.html\">"
-              + EDStatic.statusAr[language]
+              + EDStatic.messages.statusAr[language]
               + "</a></td>\n"
               + "    <td>"
-              + EDStatic.statusHtmlAr[language]
+              + EDStatic.messages.statusHtmlAr[language]
               + "</td></tr>\n"
-              + (EDStatic.outOfDateDatasetsActive
+              + (EDStatic.config.outOfDateDatasetsActive
                   ? "<tr><td><a rel=\"bookmark\" href=\""
                       + tErddapUrl
                       + "/outOfDateDatasets.html\">"
-                      + EDStatic.outOfDateDatasetsAr[language]
+                      + EDStatic.messages.outOfDateDatasetsAr[language]
                       + "</a></td>\n"
                       + "    <td>"
-                      + EDStatic.outOfDateHtmlAr[language]
+                      + EDStatic.messages.outOfDateHtmlAr[language]
                       + "</td></tr>\n"
                   : "")
-              + (EDStatic.subscriptionSystemActive
+              + (EDStatic.config.subscriptionSystemActive
                   ? "<tr><td><a rel=\"bookmark\" href=\""
                       + tErddapUrl
                       + "/subscriptions/index.html\">"
-                      + EDStatic.subscriptionsTitleAr[language]
+                      + EDStatic.messages.subscriptionsTitleAr[language]
                       + "</a></td>\n"
                       + "    <td>"
-                      + String2.replaceAll(EDStatic.subscription0HtmlAr[language], "<br>", " ")
+                      + String2.replaceAll(
+                          EDStatic.messages.subscription0HtmlAr[language], "<br>", " ")
                       + "</td></tr>\n"
                   : "")
-              + (EDStatic.slideSorterActive
+              + (EDStatic.config.slideSorterActive
                   ? "<tr><td><a rel=\"bookmark\" href=\""
                       + tErddapUrl
                       + "/slidesorter.html\">"
-                      + EDStatic.slideSorterAr[language]
+                      + EDStatic.messages.slideSorterAr[language]
                       + "</a></td>\n"
                       + "    <td>"
-                      + EDStatic.ssUsePlainAr[language]
+                      + EDStatic.messages.ssUsePlainAr[language]
                       + "</td></tr>\n"
                   : "")
-              + (EDStatic.dataProviderFormActive
+              + (EDStatic.config.dataProviderFormActive
                   ? "<tr><td><a rel=\"bookmark\" href=\""
                       + tErddapUrl
                       + "/dataProviderForm.html\">"
-                      + EDStatic.dataProviderFormAr[language]
+                      + EDStatic.messages.dataProviderFormAr[language]
                       + "</a></td>\n"
                       + "    <td>"
-                      + EDStatic.dataProviderFormShortDescriptionAr[language]
+                      + EDStatic.messages.dataProviderFormShortDescriptionAr[language]
                       + "</td></tr>\n"
                   : "")
               + "</table>\n\n");
@@ -1628,7 +1645,7 @@ public class Erddap extends HttpServlet {
             "Embed Images",
             out);
     try {
-      writer.write(EDStatic.imagesEmbedAr[language]);
+      writer.write(EDStatic.messages.imagesEmbedAr[language]);
     } catch (Throwable t) {
       EDStatic.rethrowClientAbortException(t); // first thing in catch{}
       writer.write(EDStatic.htmlForException(language, t));
@@ -1640,7 +1657,7 @@ public class Erddap extends HttpServlet {
 
   /**
    * This responds by sending out the "Information" Html page (information.html,
-   * EDStatic.theLongDescriptionHtml).
+   * EDStatic.messages.theLongDescriptionHtml).
    *
    * @param language the index of the selected language
    * @param loggedInAs the name of the logged in user (or null if not logged in)
@@ -1666,9 +1683,10 @@ public class Erddap extends HttpServlet {
             out);
     try {
       writer.write("<div class=\"standard_width\">\n");
-      writer.write(EDStatic.youAreHere(language, loggedInAs, EDStatic.informationAr[language]));
+      writer.write(
+          EDStatic.youAreHere(language, loggedInAs, EDStatic.messages.informationAr[language]));
       // writer.write(EDStatic.youAreHere(language, loggedInAs, "Information"));
-      writer.write(EDStatic.theLongDescriptionHtml(language, tErddapUrl));
+      writer.write(EDStatic.messages.theLongDescriptionHtml(language, tErddapUrl));
       writer.write("</div>\n");
       endHtmlWriter(language, out, writer, tErddapUrl, loggedInAs, false);
     } catch (Throwable t) {
@@ -1707,10 +1725,11 @@ public class Erddap extends HttpServlet {
     try {
       writer.write(
           "<div class=\"standard_width\">\n"
-              + EDStatic.youAreHere(language, loggedInAs, EDStatic.legalNoticesTitleAr[language])
-              + EDStatic.legalNoticesAr[language]
+              + EDStatic.youAreHere(
+                  language, loggedInAs, EDStatic.messages.legalNoticesTitleAr[language])
+              + EDStatic.messages.legalNoticesAr[language]
               + "\n"
-              + EDStatic.standardGeneralDisclaimerAr[language]
+              + EDStatic.messages.standardGeneralDisclaimerAr[language]
               + "\n\n"
               + EDStatic.legal(language, tErddapUrl));
       writer.write("</div>\n");
@@ -1821,7 +1840,7 @@ public class Erddap extends HttpServlet {
       if (session != null) {
         // it is stored on server.  user doesn't have access, so can't spoof it
         //  (except by guessing the sessionID number (a long) and storing a cookie with it?)
-        session.removeAttribute("loggedInAs:" + EDStatic.warName);
+        session.removeAttribute("loggedInAs:" + EDStatic.config.warName);
         session.invalidate(); // forget any related info
       }
       session = request.getSession(); // make one if one doesn't exist
@@ -1842,7 +1861,7 @@ public class Erddap extends HttpServlet {
       String aud = jo.optString("aud");
       String verified = jo.optString("email_verified");
       String expires = jo.optString("exp");
-      if (!EDStatic.googleClientID.equals(aud)) // ensure this is request for my server
+      if (!EDStatic.config.googleClientID.equals(aud)) // ensure this is request for my server
       throw new SimpleException(msg + "unexpected aud=" + aud);
       if (email != null) email = email.toLowerCase(); // so case insensitive, to avoid trouble
       if (EDStatic.subscriptions == null) String2.ensureEmailAddress(email);
@@ -1865,11 +1884,11 @@ public class Erddap extends HttpServlet {
       throw new SimpleException(msg + "expires=" + expires + " isn't valid.");
 
       // success
-      session.setAttribute("loggedInAs:" + EDStatic.warName, email);
+      session.setAttribute("loggedInAs:" + EDStatic.config.warName, email);
       Math2.sleep(500); // give session changes time to take effect
       loginSucceeded(email);
       // sendRedirect(response, loginUrl + "?message=" +
-      //    SSR.minimalPercentEncode(EDStatic.loginSucceededAr[language]));
+      //    SSR.minimalPercentEncode(EDStatic.messages.loginSucceededAr[language]));
       return;
 
     } catch (Throwable t) {
@@ -1877,7 +1896,7 @@ public class Erddap extends HttpServlet {
       String2.log("Caught: " + MustBe.throwableToString(t));
       loginFailed(email == null ? "(unknown)" : email);
       // sendRedirect(response, loginUrl + "?message=" +
-      //    SSR.minimalPercentEncode(EDStatic.loginFailedAr[language] + ": " +
+      //    SSR.minimalPercentEncode(EDStatic.messages.loginFailedAr[language] + ": " +
       //        MustBe.getShortErrorMessage(t)));
       return;
     }
@@ -1913,7 +1932,7 @@ public class Erddap extends HttpServlet {
       if (session != null) {
         // it is stored on server.  user doesn't have access, so can't spoof it
         //  (except by guessing the sessionID number (a long) and storing a cookie with it?)
-        session.removeAttribute("loggedInAs:" + EDStatic.warName);
+        session.removeAttribute("loggedInAs:" + EDStatic.config.warName);
         session.invalidate(); // forget any related info
       }
       session = request.getSession(); // make one if one doesn't exist
@@ -1924,9 +1943,9 @@ public class Erddap extends HttpServlet {
           SSR.postFormGetResponseString( // throws Exception
               "https://orcid.org/oauth/token?"
                   + "client_id="
-                  + EDStatic.orcidClientID
+                  + EDStatic.config.orcidClientID
                   + "&client_secret="
-                  + EDStatic.orcidClientSecret
+                  + EDStatic.config.orcidClientSecret
                   + "&grant_type=authorization_code"
                   + "&redirect_uri="
                   + SSR.minimalPercentEncode(EDStatic.erddapHttpsUrl(language) + "/loginOrcid.html")
@@ -1981,12 +2000,14 @@ public class Erddap extends HttpServlet {
       }
 
       // success
-      session.setAttribute("loggedInAs:" + EDStatic.warName, orcid);
+      session.setAttribute("loggedInAs:" + EDStatic.config.warName, orcid);
       Math2.sleep(500); // give session changes time to take effect
       loginSucceeded(orcid);
       sendRedirect(
           response,
-          loginUrl + "?message=" + SSR.minimalPercentEncode(EDStatic.loginSucceededAr[language]));
+          loginUrl
+              + "?message="
+              + SSR.minimalPercentEncode(EDStatic.messages.loginSucceededAr[language]));
       return;
     } catch (Throwable t) {
       EDStatic.rethrowClientAbortException(t); // first thing in catch{}
@@ -2001,7 +2022,9 @@ public class Erddap extends HttpServlet {
           loginUrl
               + "?message="
               + SSR.minimalPercentEncode(
-                  EDStatic.loginFailedAr[language] + ": " + MustBe.getShortErrorMessage(t)));
+                  EDStatic.messages.loginFailedAr[language]
+                      + ": "
+                      + MustBe.getShortErrorMessage(t)));
       return;
     }
   }
@@ -2043,7 +2066,7 @@ public class Erddap extends HttpServlet {
     }
 
     // *** CUSTOM
-    if (EDStatic.authentication.equals("custom")) {
+    if (EDStatic.config.authentication.equals("custom")) {
 
       // is user trying to log in?
       // use getParameter because form info should have been POST'd
@@ -2066,7 +2089,7 @@ public class Erddap extends HttpServlet {
                   + "?message="
                   + SSR.minimalPercentEncode(
                       MessageFormat.format(
-                          EDStatic.loginAttemptBlockedAr[language],
+                          EDStatic.messages.loginAttemptBlockedAr[language],
                           user,
                           "" + minutesUntilLoginAttempt)));
           return;
@@ -2077,20 +2100,20 @@ public class Erddap extends HttpServlet {
             HttpSession session = request.getSession(); // make one if one doesn't exist
             // it is stored on server.  user doesn't have access, so can't spoof it
             //  (except by guessing the sessionID number (a long) and storing a cookie with it?)
-            session.setAttribute("loggedInAs:" + EDStatic.warName, user);
+            session.setAttribute("loggedInAs:" + EDStatic.config.warName, user);
             Math2.sleep(500); // give session changes time to take effect
             loginSucceeded(user);
             sendRedirect(
                 response,
                 loginUrl
                     + "?message="
-                    + SSR.minimalPercentEncode(EDStatic.loginSucceededAr[language]));
+                    + SSR.minimalPercentEncode(EDStatic.messages.loginSucceededAr[language]));
             return;
           } else {
             // invalid login;  if currently logged in, logout
             HttpSession session = request.getSession(false); // don't make one if one doesn't exist
             if (session != null) {
-              session.removeAttribute("loggedInAs:" + EDStatic.warName);
+              session.removeAttribute("loggedInAs:" + EDStatic.config.warName);
               session.invalidate(); // forget any related info
               Math2.sleep(500); // give session changes time to take effect
             }
@@ -2100,9 +2123,9 @@ public class Erddap extends HttpServlet {
                 loginUrl
                     + "?message="
                     + SSR.minimalPercentEncode(
-                        EDStatic.loginFailedAr[language]
+                        EDStatic.messages.loginFailedAr[language]
                             + ": "
-                            + EDStatic.loginInvalidAr[language]));
+                            + EDStatic.messages.loginInvalidAr[language]));
             return;
           }
         } catch (Throwable t) {
@@ -2112,7 +2135,9 @@ public class Erddap extends HttpServlet {
               loginUrl
                   + "?message="
                   + SSR.minimalPercentEncode(
-                      EDStatic.loginFailedAr[language] + ": " + MustBe.getShortErrorMessage(t)));
+                      EDStatic.messages.loginFailedAr[language]
+                          + ": "
+                          + MustBe.getShortErrorMessage(t)));
           return;
         }
       }
@@ -2125,58 +2150,61 @@ public class Erddap extends HttpServlet {
               loggedInAs,
               "login.html", // was endOfRequest,
               queryString,
-              EDStatic.LogInAr[language],
+              EDStatic.messages.loginAr[language],
               out);
       try {
         writer.write("<div class=\"standard_width\">\n");
-        writer.write(EDStatic.youAreHere(language, loggedInAs, EDStatic.LogInAr[language]));
+        writer.write(
+            EDStatic.youAreHere(language, loggedInAs, EDStatic.messages.loginAr[language]));
 
         // show message from EDStatic.redirectToLogin (which redirects to here) or logout.html
         writer.write(standoutMessage);
 
-        writer.write(EDStatic.loginDescribeCustomAr[language]);
+        writer.write(EDStatic.messages.loginDescribeCustomAr[language]);
 
         if (loggedInAs.equals(EDStatic.loggedInAsHttps)) {
 
           String tProblems =
               String2.replaceAll(
-                  EDStatic.loginProblemsAr[language],
+                  EDStatic.messages.loginProblemsAr[language],
                   "&initialHelp;",
-                  EDStatic.loginProblemExactAr[language] + EDStatic.loginProblem3TimesAr[language]);
+                  EDStatic.messages.loginProblemExactAr[language]
+                      + EDStatic.messages.loginProblem3TimesAr[language]);
           tProblems =
               String2.replaceAll(
                   tProblems,
                   "&info;",
-                  EDStatic.loginUserNameAndPasswordAr[language]); // it's in loginProblemExact
+                  EDStatic.messages
+                      .loginUserNameAndPasswordAr[language]); // it's in loginProblemExact
           tProblems = String2.replaceAll(tProblems, "&erddapUrl;", tErddapUrl); // it's in cookies
 
           // show the login form
           writer.write(
               "<p><strong>"
-                  + EDStatic.loginNotAr[language]
+                  + EDStatic.messages.loginNotAr[language]
                   + "</strong>\n"
-                  + EDStatic.loginPublicAccessAr[language]
+                  + EDStatic.messages.loginPublicAccessAr[language]
                   +
                   // use POST, not GET, so that form params (password!) aren't in url (and so
                   // browser history, etc.)
                   "<form action=\"login.html\" method=\"post\" id=\"login_form\">\n"
                   + "<p><strong>"
-                  + EDStatic.loginToLogInAr[language]
+                  + EDStatic.messages.loginToLogInAr[language]
                   + ":</strong>\n"
                   + "<table class=\"compact\">\n"
                   + "  <tr>\n"
                   + "    <td>"
-                  + EDStatic.loginUserNameAr[language]
+                  + EDStatic.messages.loginUserNameAr[language]
                   + ":&nbsp;</td>\n"
                   + "    <td><input type=\"text\" size=\"30\" value=\"\" name=\"user\" id=\"user\"/></td>\n"
                   + "  </tr>\n"
                   + "  <tr>\n"
                   + "    <td>"
-                  + EDStatic.loginPasswordAr[language]
+                  + EDStatic.messages.loginPasswordAr[language]
                   + ":&nbsp;</td>\n"
                   + "    <td><input type=\"password\" size=\"20\" value=\"\" name=\"password\" id=\"password\" autocomplete=\"off\"/>\n"
                   + "      <input type=\"submit\" value=\""
-                  + EDStatic.LogInAr[language]
+                  + EDStatic.messages.loginAr[language]
                   + "\"/></td>\n"
                   + "  </tr>\n"
                   + "</table>\n"
@@ -2189,18 +2217,18 @@ public class Erddap extends HttpServlet {
           writer.write(
               "<p><span class=\"successColor\">"
                   + MessageFormat.format(
-                      EDStatic.loginAsAr[language], "<strong>" + loggedInAs + "</strong>")
+                      EDStatic.messages.loginAsAr[language], "<strong>" + loggedInAs + "</strong>")
                   + "</span>\n"
                   + "(<a href=\""
                   + EDStatic.erddapUrl(loggedInAs, language)
                   + "/logout.html\">"
-                  + EDStatic.logoutAr[language]
+                  + EDStatic.messages.logoutAr[language]
                   + "</a>)\n"
                   + "<p>"
-                  + EDStatic.loginBackAr[language]
+                  + EDStatic.messages.loginBackAr[language]
                   + "\n"
                   + String2.replaceAll(
-                      EDStatic.loginProblemsAfterAr[language], "&secondPart;", ""));
+                      EDStatic.messages.loginProblemsAfterAr[language], "&secondPart;", ""));
         }
         writer.write("</div>\n");
         endHtmlWriter(language, out, writer, tErddapUrl, loggedInAs, false);
@@ -2222,7 +2250,7 @@ public class Erddap extends HttpServlet {
     //  b) Unless the email is deleted before reaching GoodGeorge,
     //    at least GoodGeorge will know when someone is doing this.
     //  c) ??? Offer a link to withdraw this invitation / log out that email address.
-    if (EDStatic.authentication.equals("email")) {
+    if (EDStatic.config.authentication.equals("email")) {
 
       int offerValidMinutes = 15;
       // Is user submitting any info (from form or email)?
@@ -2274,7 +2302,7 @@ public class Erddap extends HttpServlet {
                   + "?message="
                   + SSR.minimalPercentEncode(
                       MessageFormat.format(
-                          EDStatic.loginAttemptBlockedAr[language],
+                          EDStatic.messages.loginAttemptBlockedAr[language],
                           email,
                           "" + minutesUntilLoginAttempt)));
           return;
@@ -2295,9 +2323,9 @@ public class Erddap extends HttpServlet {
                     + email
                     + " .\n"
                     + "If you didn't make this request, please contact the ERDDAP administrator,\n"
-                    + EDStatic.adminIndividualName
+                    + EDStatic.config.adminIndividualName
                     + " (email: "
-                    + EDStatic.adminEmail
+                    + EDStatic.config.adminEmail
                     + "), to report this abuse.\n"
                     + "\n"
                     + "To log in to ERDDAP, click on this link\n"
@@ -2316,7 +2344,7 @@ public class Erddap extends HttpServlet {
                     + "is only valid in the same browser that you used to make the login request.");
         if (error.length() == 0) {
           session.setAttribute(
-              "loggingInAs:" + EDStatic.warName, email + "\n" + expires + "\n" + newNonce);
+              "loggingInAs:" + EDStatic.config.warName, email + "\n" + expires + "\n" + newNonce);
           Math2.sleep(500); // give session changes time to take effect
           sendRedirect(
               response,
@@ -2329,7 +2357,7 @@ public class Erddap extends HttpServlet {
                           + "Wait for the email. Then click the link in the email to log in."));
           return;
         } else { // trouble
-          session.removeAttribute("loggingInAs:" + EDStatic.warName);
+          session.removeAttribute("loggingInAs:" + EDStatic.config.warName);
           session.invalidate(); // forget any related info
           Math2.sleep(500); // give session changes time to take effect
           sendRedirect(response, loginUrl + "?message=" + SSR.minimalPercentEncode(error));
@@ -2340,7 +2368,9 @@ public class Erddap extends HttpServlet {
         // does nonce match info stored in session?
         HttpSession session = request.getSession(false); // make one if one doesn't exist
         String info =
-            session == null ? "" : (String) session.getAttribute("loggingInAs:" + EDStatic.warName);
+            session == null
+                ? ""
+                : (String) session.getAttribute("loggingInAs:" + EDStatic.config.warName);
         String parts[] = String2.split(info, '\n');
         if (parts == null
             || parts.length != 3
@@ -2357,27 +2387,29 @@ public class Erddap extends HttpServlet {
             !nonce.equalsIgnoreCase(parts[2])) { // wrong nonce?
           // failure
           if (session != null) {
-            session.removeAttribute("loggingInAs:" + EDStatic.warName);
+            session.removeAttribute("loggingInAs:" + EDStatic.config.warName);
             session.invalidate(); // forget any related info
             Math2.sleep(500); // give session changes time to take effect
           }
           loginFailed(email);
           sendRedirect(
               response,
-              loginUrl + "?message=" + SSR.minimalPercentEncode(EDStatic.loginFailedAr[language]));
+              loginUrl
+                  + "?message="
+                  + SSR.minimalPercentEncode(EDStatic.messages.loginFailedAr[language]));
           return;
 
         } else {
           // success
-          session.removeAttribute("loggingInAs:" + EDStatic.warName);
-          session.setAttribute("loggedInAs:" + EDStatic.warName, email);
+          session.removeAttribute("loggingInAs:" + EDStatic.config.warName);
+          session.setAttribute("loggedInAs:" + EDStatic.config.warName, email);
           Math2.sleep(500); // give session changes time to take effect
           loginSucceeded(email);
           sendRedirect(
               response,
               loginUrl
                   + "?message="
-                  + SSR.minimalPercentEncode(EDStatic.loginSucceededAr[language]));
+                  + SSR.minimalPercentEncode(EDStatic.messages.loginSucceededAr[language]));
           return;
         }
       }
@@ -2390,27 +2422,28 @@ public class Erddap extends HttpServlet {
               loggedInAs,
               "login.html", // was endOfRequest,
               queryString,
-              EDStatic.LogInAr[language],
+              EDStatic.messages.loginAr[language],
               out);
       try {
         writer.write("<div class=\"standard_width\">\n");
-        writer.write(EDStatic.youAreHere(language, loggedInAs, EDStatic.LogInAr[language]));
+        writer.write(
+            EDStatic.youAreHere(language, loggedInAs, EDStatic.messages.loginAr[language]));
 
         // show message from EDStatic.redirectToLogin (which redirects to here) or logout.html
         writer.write(standoutMessage);
 
-        writer.write(EDStatic.loginDescribeEmailAr[language]);
+        writer.write(EDStatic.messages.loginDescribeEmailAr[language]);
 
         if (loggedInAs.equals(EDStatic.loggedInAsHttps)) {
 
           // show the login form
           String tProblems =
               String2.replaceAll(
-                  EDStatic.loginProblemsAr[language],
+                  EDStatic.messages.loginProblemsAr[language],
                   "&initialHelp;",
-                  EDStatic.loginProblemSameBrowserAr[language]
-                      + EDStatic.loginProblemExpireAr[language]
-                      + EDStatic.loginProblem3TimesAr[language]);
+                  EDStatic.messages.loginProblemSameBrowserAr[language]
+                      + EDStatic.messages.loginProblemExpireAr[language]
+                      + EDStatic.messages.loginProblem3TimesAr[language]);
           tProblems =
               String2.replaceAll(
                   tProblems, "&offerValidMinutes;", "" + offerValidMinutes); // it's in expire
@@ -2418,25 +2451,25 @@ public class Erddap extends HttpServlet {
 
           writer.write(
               "<p><strong>"
-                  + EDStatic.loginNotAr[language]
+                  + EDStatic.messages.loginNotAr[language]
                   + "</strong>\n"
-                  + EDStatic.loginPublicAccessAr[language]
+                  + EDStatic.messages.loginPublicAccessAr[language]
                   +
                   // use POST, not GET, so that form params (password!) aren't in url (and so
                   // browser history, etc.)
                   "\n"
                   + "<p><strong>"
-                  + EDStatic.loginToLogInAr[language]
+                  + EDStatic.messages.loginToLogInAr[language]
                   + ":</strong>\n"
                   + "<form action=\"login.html\" method=\"post\" id=\"login_form\">"
                   + "<table class=\"compact\">\n"
                   + "  <tr>\n"
                   + "    <td>"
-                  + EDStatic.loginYourEmailAddressAr[language]
+                  + EDStatic.messages.loginYourEmailAddressAr[language]
                   + ":&nbsp;</td>\n"
                   + "    <td><input type=\"text\" size=\"60\" value=\"\" name=\"email\" id=\"email\"/>\n"
                   + "      <input type=\"submit\" value=\""
-                  + EDStatic.LogInAr[language]
+                  + EDStatic.messages.loginAr[language]
                   + "\"/></td>\n"
                   + "  </tr>\n"
                   + "</table></form>\n"
@@ -2448,18 +2481,18 @@ public class Erddap extends HttpServlet {
           writer.write(
               "<p><span class=\"successColor\">"
                   + MessageFormat.format(
-                      EDStatic.loginAsAr[language], "<strong>" + loggedInAs + "</strong>")
+                      EDStatic.messages.loginAsAr[language], "<strong>" + loggedInAs + "</strong>")
                   + "</span>\n"
                   + "(<a href=\""
                   + EDStatic.erddapUrl(loggedInAs, language)
                   + "/logout.html\">"
-                  + EDStatic.logoutAr[language]
+                  + EDStatic.messages.logoutAr[language]
                   + "</a>)\n"
                   + "<p>"
-                  + EDStatic.loginBackAr[language]
+                  + EDStatic.messages.loginBackAr[language]
                   + "\n"
                   + String2.replaceAll(
-                      EDStatic.loginProblemsAfterAr[language], "&secondPart;", ""));
+                      EDStatic.messages.loginProblemsAfterAr[language], "&secondPart;", ""));
         }
         writer.write("</div>\n");
         endHtmlWriter(language, out, writer, tErddapUrl, loggedInAs, false);
@@ -2474,9 +2507,9 @@ public class Erddap extends HttpServlet {
     }
 
     // *** google, orcid, oauth2
-    boolean isGoogle = EDStatic.authentication.equals("google");
-    boolean isOrcid = EDStatic.authentication.equals("orcid");
-    boolean isOauth2 = EDStatic.authentication.equals("oauth2");
+    boolean isGoogle = EDStatic.config.authentication.equals("google");
+    boolean isOrcid = EDStatic.config.authentication.equals("orcid");
+    boolean isOauth2 = EDStatic.config.authentication.equals("oauth2");
     if (isGoogle || isOrcid || isOauth2) {
 
       // Google login.html
@@ -2492,7 +2525,7 @@ public class Erddap extends HttpServlet {
               loggedInAs,
               "login.html", // was endOfRequest,
               queryString,
-              EDStatic.LogInAr[language],
+              EDStatic.messages.loginAr[language],
               (isGoogle || isOauth2
                   ? "<script src=\"https://accounts.google.com/gsi/client\" async defer></script>\n"
                   : ""),
@@ -2500,30 +2533,31 @@ public class Erddap extends HttpServlet {
 
       try {
         writer.write("<div class=\"standard_width\">\n");
-        writer.write(EDStatic.youAreHere(language, loggedInAs, EDStatic.LogInAr[language]));
+        writer.write(
+            EDStatic.youAreHere(language, loggedInAs, EDStatic.messages.loginAr[language]));
 
         // show message from EDStatic.redirectToLogin (which redirects to here) or logout.html
         writer.write(standoutMessage);
 
         writer.write(
             isGoogle
-                ? EDStatic.loginDescribeGoogleAr[language]
+                ? EDStatic.messages.loginDescribeGoogleAr[language]
                 : isOrcid
-                    ? EDStatic.loginDescribeOrcidAr[language]
-                    : EDStatic.loginDescribeOauth2Ar[language]);
+                    ? EDStatic.messages.loginDescribeOrcidAr[language]
+                    : EDStatic.messages.loginDescribeOauth2Ar[language]);
 
         if (loggedInAs.equals(EDStatic.loggedInAsHttps)) {
 
           // login page for google/orcid/oauth2
           String tProblems =
               String2.replaceAll(
-                  EDStatic.loginProblemsAr[language],
+                  EDStatic.messages.loginProblemsAr[language],
                   "&initialHelp;",
                   isGoogle
-                      ? EDStatic.loginProblemGoogleAgainAr[language]
+                      ? EDStatic.messages.loginProblemGoogleAgainAr[language]
                       : isOrcid
-                          ? EDStatic.loginProblemOrcidAgainAr[language]
-                          : EDStatic.loginProblemOauth2AgainAr[language]);
+                          ? EDStatic.messages.loginProblemOrcidAgainAr[language]
+                          : EDStatic.messages.loginProblemOauth2AgainAr[language]);
           tProblems = String2.replaceAll(tProblems, "&erddapUrl;", tErddapUrl); // it's in cookies
 
           // show the login button
@@ -2551,19 +2585,19 @@ public class Erddap extends HttpServlet {
                       : "")
                   + "\n"
                   + "<p><strong>"
-                  + EDStatic.loginNotAr[language]
+                  + EDStatic.messages.loginNotAr[language]
                   + "</strong>\n"
-                  + EDStatic.loginPublicAccessAr[language]
+                  + EDStatic.messages.loginPublicAccessAr[language]
                   + "<p>"
-                  + EDStatic.loginToLogInAr[language]
+                  + EDStatic.messages.loginToLogInAr[language]
                   + ":\n"
                   + "<ul>\n"
                   + (isGoogle || isOauth2
                       ? "<li>"
-                          + EDStatic.loginGoogleSignInAr[language]
+                          + EDStatic.messages.loginGoogleSignInAr[language]
                           + "\n"
                           + "  <div id=\"g_id_onload\" data-client_id=\""
-                          + EDStatic.googleClientID
+                          + EDStatic.config.googleClientID
                           + "\"  data-callback=\"onSignIn\" data-itp_support=\"true\" data-use_fedcm_for_prompt=\"true\" ></div>"
                           + "  <div class=\"g_id_signin\" data-type=\"standard\"></div>"
                           + "\n<br>&nbsp;\n"
@@ -2576,10 +2610,10 @@ public class Erddap extends HttpServlet {
                       // Orcid web page then redirects user to redirect_uri (loginOrcid.html) with
                       // one-time-use 6-digit code
                       "<li>"
-                          + (isOauth2 ? EDStatic.orCommaAr[language] + " " : "")
+                          + (isOauth2 ? EDStatic.messages.orCommaAr[language] + " " : "")
                           + "<a rel=\"help\" href=\"https://orcid.org/oauth/authorize?"
                           + "client_id="
-                          + EDStatic.orcidClientID
+                          + EDStatic.config.orcidClientID
                           + // and add & to start of next line
                           "&response_type=code"
                           + "&scope=/authenticate"
@@ -2588,7 +2622,7 @@ public class Erddap extends HttpServlet {
                               EDStatic.erddapHttpsUrl(language) + "/loginOrcid.html")
                           + "\" \n"
                           + "  ><img style=\"vertical-align:middle;\" src=\"images/orcid_24x24.png\" alt=\"ORCID iD icon\"/>&nbsp;"
-                          + EDStatic.loginOrcidSignInAr[language]
+                          + EDStatic.messages.loginOrcidSignInAr[language]
                           + "</a>\n"
                           + "  <br>&nbsp;\n"
                       : "")
@@ -2605,20 +2639,22 @@ public class Erddap extends HttpServlet {
           writer.write(
               "<p><span class=\"successColor\">"
                   + MessageFormat.format(
-                      EDStatic.loginAsAr[language], "<strong>" + loggedInAs + "</strong>")
+                      EDStatic.messages.loginAsAr[language], "<strong>" + loggedInAs + "</strong>")
                   + "</span>\n"
                   + "(<a href=\""
                   + EDStatic.erddapUrl(loggedInAs, language)
                   + "/logout.html\">"
-                  + EDStatic.logoutAr[language]
+                  + EDStatic.messages.logoutAr[language]
                   + "</a>)\n"
                   + "<p>"
-                  + EDStatic.loginBackAr[language]
+                  + EDStatic.messages.loginBackAr[language]
                   + "\n"
                   + String2.replaceAll(
-                      EDStatic.loginProblemsAfterAr[language],
+                      EDStatic.messages.loginProblemsAfterAr[language],
                       "&secondPart;",
-                      isOrcid || isOauth2 ? EDStatic.loginProblemOrcidAgainAr[language] : ""));
+                      isOrcid || isOauth2
+                          ? EDStatic.messages.loginProblemOrcidAgainAr[language]
+                          : ""));
         }
         writer.write("</div>\n");
         endHtmlWriter(language, out, writer, tErddapUrl, loggedInAs, false);
@@ -2634,7 +2670,7 @@ public class Erddap extends HttpServlet {
 
     // *** Other
     // alternative: lowSendError(requestNumber, response, HttpServletResponse.SC_UNAUTHORIZED,
-    //    EDStatic.loginCanNotAr[language]);
+    //    EDStatic.messages.loginCanNotAr[language]);
     OutputStream out = getHtmlOutputStreamUtf8(request, response);
     Writer writer =
         getHtmlWriterUtf8(
@@ -2642,15 +2678,15 @@ public class Erddap extends HttpServlet {
             loggedInAs,
             "login.html", // was endOfRequest,
             queryString,
-            EDStatic.LogInAr[language],
+            EDStatic.messages.loginAr[language],
             out);
     try {
       writer.write(
           "<div class=\"standard_width\">\n"
-              + EDStatic.youAreHere(language, loggedInAs, EDStatic.LogInAr[language])
+              + EDStatic.youAreHere(language, loggedInAs, EDStatic.messages.loginAr[language])
               + standoutMessage
               + "<p><span class=\"highlightColor\">"
-              + EDStatic.loginCanNotAr[language]
+              + EDStatic.messages.loginCanNotAr[language]
               + "</span>\n");
       writer.write("</div>\n");
       endHtmlWriter(language, out, writer, tErddapUrl, loggedInAs, false);
@@ -2667,7 +2703,8 @@ public class Erddap extends HttpServlet {
     // because any of these errors could be in a script
     // and it's good to slow the script down (prevent 100 bad requests/second)
     // and if it's a human they won't even notice a short delay
-    if (EDStatic.slowDownTroubleMillis > 0) Math2.sleep(EDStatic.slowDownTroubleMillis);
+    if (EDStatic.config.slowDownTroubleMillis > 0)
+      Math2.sleep(EDStatic.config.slowDownTroubleMillis);
   }
 
   /**
@@ -2691,7 +2728,7 @@ public class Erddap extends HttpServlet {
 
     // user wasn't logged in?
     String encodedYouWerentLoggedIn =
-        "?message=" + SSR.minimalPercentEncode(EDStatic.loginAreNotAr[language]);
+        "?message=" + SSR.minimalPercentEncode(EDStatic.messages.loginAreNotAr[language]);
     if (loggedInAs == null || loggedInAs.equals(EDStatic.loggedInAsHttps)) {
       // user wasn't logged in
       sendRedirect(response, loginUrl + encodedYouWerentLoggedIn);
@@ -2704,25 +2741,26 @@ public class Erddap extends HttpServlet {
       HttpSession session =
           request.getSession(false); // false = don't make a session if none currently
       if (session != null) { // should always be !null
-        session.removeAttribute("loggedInAs:" + EDStatic.warName);
+        session.removeAttribute("loggedInAs:" + EDStatic.config.warName);
         session.invalidate(); // forget any related info
         Math2.sleep(500); // give session changes time to take effect
         EDStatic.tally.add("Log out (since startup)", "success");
         EDStatic.tally.add("Log out (since last daily report)", "success");
       }
       String encodedSuccessMessage =
-          "?message=" + SSR.minimalPercentEncode(EDStatic.logoutSuccessAr[language]);
+          "?message=" + SSR.minimalPercentEncode(EDStatic.messages.logoutSuccessAr[language]);
 
       // *** CUSTOM, EMAIL, ORCID logout
-      if (EDStatic.authentication.equals("custom")
-          || EDStatic.authentication.equals("email")
-          || EDStatic.authentication.equals("orcid")) {
+      if (EDStatic.config.authentication.equals("custom")
+          || EDStatic.config.authentication.equals("email")
+          || EDStatic.config.authentication.equals("orcid")) {
         sendRedirect(response, loginUrl + encodedSuccessMessage);
         return;
       }
 
       // *** GOOGLE and OAUTH2 (act as if user used google)
-      if (EDStatic.authentication.equals("google") || EDStatic.authentication.equals("oauth2")) {
+      if (EDStatic.config.authentication.equals("google")
+          || EDStatic.config.authentication.equals("oauth2")) {
 
         // send user to web page that signs out then redirects to login.html
         // see https://developers.google.com/identity/sign-in/web/
@@ -2733,9 +2771,9 @@ public class Erddap extends HttpServlet {
                 loggedInAs,
                 "logout.html", // was endOfRequest,
                 queryString,
-                EDStatic.LogOutAr[language],
+                EDStatic.messages.LogOutAr[language],
                 "<meta name=\"google-signin-client_id\" content=\""
-                    + EDStatic.googleClientID
+                    + EDStatic.config.googleClientID
                     + "\">\n",
                 out);
 
@@ -2743,10 +2781,10 @@ public class Erddap extends HttpServlet {
           HtmlWidgets widgets =
               new HtmlWidgets(
                   false, // tHtmlTooltips,
-                  EDStatic.imageDir);
+                  EDStatic.config.imageDir);
           writer.write(
               "<div class=\"standard_width\">\n"
-                  + EDStatic.youAreHere(language, loggedInAs, EDStatic.LogOutAr[language])
+                  + EDStatic.youAreHere(language, loggedInAs, EDStatic.messages.LogOutAr[language])
                   +
                   // "Logging out and redirecting back to login.html.\n" +
                   // Sequence of events here was very difficult to set up.
@@ -2769,14 +2807,15 @@ public class Erddap extends HttpServlet {
                   // "  onload = mySignOff;\n" +
                   "</script>\n"
                   + MessageFormat.format(
-                      EDStatic.loginPartwayAsAr[language], "<strong>" + loggedInAs + "</strong>")
+                      EDStatic.messages.loginPartwayAsAr[language],
+                      "<strong>" + loggedInAs + "</strong>")
                   + "\n"
                   + widgets.htmlButton(
                       "button",
                       "logout",
                       "",
-                      EDStatic.LogOutAr[language],
-                      EDStatic.LogOutAr[language],
+                      EDStatic.messages.LogOutAr[language],
+                      EDStatic.messages.LogOutAr[language],
                       "onclick=\"signOut();\""));
           writer.write("</div>\n");
           endHtmlWriter(language, out, writer, tErddapUrl, loggedInAs, false);
@@ -2827,21 +2866,24 @@ public class Erddap extends HttpServlet {
             tLoggedInAs,
             "dataProviderForm.html", // was endOfRequest,
             queryString,
-            EDStatic.dataProviderFormAr[language],
+            EDStatic.messages.dataProviderFormAr[language],
             out);
     String dataProviderFormLongDescriptionHTML =
-        EDStatic.dataProviderFormLongDescriptionHTMLAr[language]
+        EDStatic.messages
+            .dataProviderFormLongDescriptionHTMLAr[language]
             .replaceAll(
-                "&safeEmail;", XML.encodeAsHTML(SSR.getSafeEmailAddress(EDStatic.adminEmail)))
+                "&safeEmail;",
+                XML.encodeAsHTML(SSR.getSafeEmailAddress(EDStatic.config.adminEmail)))
             .replaceAll(
                 "&htmlTooltipImage;",
                 EDStatic.htmlTooltipImage(
-                    language, tLoggedInAs, EDStatic.dataProviderFormSuccessAr[language]))
+                    language, tLoggedInAs, EDStatic.messages.dataProviderFormSuccessAr[language]))
             .replaceAll("&tErddapUrl;", tErddapUrl);
     try {
       writer.write(
           "<div class=\"standard_width\">\n"
-              + EDStatic.youAreHere(language, tLoggedInAs, EDStatic.dataProviderFormAr[language]));
+              + EDStatic.youAreHere(
+                  language, tLoggedInAs, EDStatic.messages.dataProviderFormAr[language]));
 
       // begin text
       writer.write(dataProviderFormLongDescriptionHTML /*
@@ -2851,7 +2893,7 @@ public class Erddap extends HttpServlet {
 "<li>You fill out a 4-part form. When you finish a part,\n" +
 "  the information you just entered is\n"+
 "  sent to the administrator of this ERDDAP (<kbd>" +
-    XML.encodeAsHTML(SSR.getSafeEmailAddress(EDStatic.adminEmail)) + "</kbd>).\n" +
+    XML.encodeAsHTML(SSR.getSafeEmailAddress(EDStatic.config.adminEmail)) + "</kbd>).\n" +
 "<li>The ERDDAP administrator will contact you to figure out the best way to\n" +
 "  transfer the data and to work out other details.\n" +
 "  &nbsp;\n" +
@@ -2895,12 +2937,12 @@ public class Erddap extends HttpServlet {
 "  number of datasets, there are probably ways that we can work together to\n" +
 "  (semi-)automate the process of getting the datasets into ERDDAP.\n" +
 "  Please email the administrator of this ERDDAP\n" +
-"  (<kbd>" + XML.encodeAsHTML(SSR.getSafeEmailAddress(EDStatic.adminEmail)) + "</kbd>)\n" +
+"  (<kbd>" + XML.encodeAsHTML(SSR.getSafeEmailAddress(EDStatic.config.adminEmail)) + "</kbd>)\n" +
 "  to discuss the options.\n" +
 "<p><strong>Need help?</strong>\n" +
 "<br>If you have questions or need help while filling out this form,\n" +
 "  please send an email to the administrator of this ERDDAP\n" +
-"  (<kbd>" + XML.encodeAsHTML(SSR.getSafeEmailAddress(EDStatic.adminEmail)) + "</kbd>).\n" +
+"  (<kbd>" + XML.encodeAsHTML(SSR.getSafeEmailAddress(EDStatic.config.adminEmail)) + "</kbd>).\n" +
 "  <br>&nbsp;\n" +
 "\n" +
 
@@ -3012,7 +3054,7 @@ public class Erddap extends HttpServlet {
               language, "Frequency", 0, frequencyOption, frequencyOptions.length - 1, errorMsgSB);
       if (errorMsgSB.length() > 0)
         errorMsgSB.insert(
-            0, EDStatic.dpf_fixProblemAr[language]
+            0, EDStatic.messages.dpf_fixProblemAr[language]
             // "<br>Please fix these problems, then 'Submit' this part of the form again.\n"
             );
 
@@ -3020,7 +3062,7 @@ public class Erddap extends HttpServlet {
 
       // if this is a submission,
       boolean isSubmission =
-          EDStatic.submitAr[0].equals(request.getParameter(EDStatic.submitAr[0]));
+          EDStatic.messages.submitAr[0].equals(request.getParameter(EDStatic.messages.submitAr[0]));
       if (isSubmission && errorMsgSB.length() == 0) {
         // convert the info into pseudo datasets.xml
         String content =
@@ -3047,12 +3089,12 @@ public class Erddap extends HttpServlet {
         // log the content to /logs/dataProviderForm.log
         String error =
             File2.appendFileUtf8(
-                EDStatic.fullLogsDirectory + "dataProviderForm.log", "*** " + content);
+                EDStatic.config.fullLogsDirectory + "dataProviderForm.log", "*** " + content);
         if (error.length() > 0)
           String2.log(String2.ERROR + " while writing to logs/dataProviderForm.log:\n" + error);
         // email the content to the admin
         EDStatic.email(
-            EDStatic.adminEmail, "Data Provider Form - Part 1, from " + fromInfo, content);
+            EDStatic.config.adminEmail, "Data Provider Form - Part 1, from " + fromInfo, content);
 
         // redirect to part 2
         sendRedirect(
@@ -3077,12 +3119,12 @@ public class Erddap extends HttpServlet {
               tLoggedInAs,
               "dataProviderForm1.html", // was endOfRequest,
               queryString,
-              EDStatic.dataProviderFormP1Ar[language],
+              EDStatic.messages.dataProviderFormP1Ar[language],
               out);
       writer.write(
           "<div class=\"standard_width\">\n"
               + EDStatic.youAreHere(
-                  language, tLoggedInAs, EDStatic.dataProviderFormP1Ar[language]));
+                  language, tLoggedInAs, EDStatic.messages.dataProviderFormP1Ar[language]));
 
       // begin form
       String formName = "f1";
@@ -3106,12 +3148,12 @@ public class Erddap extends HttpServlet {
 
       // begin text
       String dataProviderFormPart1 =
-          EDStatic.dataProviderFormPart1Ar[language].replaceAll(
-              "&safeEmail;", XML.encodeAsHTML(SSR.getSafeEmailAddress(EDStatic.adminEmail)));
+          EDStatic.messages.dataProviderFormPart1Ar[language].replaceAll(
+              "&safeEmail;", XML.encodeAsHTML(SSR.getSafeEmailAddress(EDStatic.config.adminEmail)));
       writer.write(dataProviderFormPart1 /*
 "This is part 1 (of 4) of the Data Provider Form.\n" +
 "<br>Need help? Send an email to the administrator of this ERDDAP (<kbd>" +
-    XML.encodeAsHTML(SSR.getSafeEmailAddress(EDStatic.adminEmail)) + "</kbd>).\n" +
+    XML.encodeAsHTML(SSR.getSafeEmailAddress(EDStatic.config.adminEmail)) + "</kbd>).\n" +
 "<br>&nbsp;\n" +
 "\n"
 */);
@@ -3122,7 +3164,8 @@ public class Erddap extends HttpServlet {
 
       // Contact Info
       String dataProviderContactInfo =
-          EDStatic.dataProviderContactInfoAr[language]
+          EDStatic.messages
+              .dataProviderContactInfoAr[language]
               .replace(
                   "&widgetYourName;",
                   widgets.textField(
@@ -3156,9 +3199,11 @@ widgets.textField("emailAddress", "", //tooltip
 "\n"
 */);
       String dataProviderData =
-          EDStatic.dataProviderDataAr[language]
+          EDStatic.messages
+              .dataProviderDataAr[language]
               .replaceAll(
-                  "&safeEmail;", XML.encodeAsHTML(SSR.getSafeEmailAddress(EDStatic.adminEmail)))
+                  "&safeEmail;",
+                  XML.encodeAsHTML(SSR.getSafeEmailAddress(EDStatic.config.adminEmail)))
               .replace(
                   "&widgetGriddedOptions;",
                   widgets.select("griddedOption", "", 1, griddedOptions, griddedOption, ""))
@@ -3184,7 +3229,7 @@ widgets.textField("emailAddress", "", //tooltip
 "<p>If your dataset is already served via an OPeNDAP server,\n" +
 "skip this form and just email the dataset's OPeNDAP URL\n" +
 "to the administrator of this ERDDAP \n" +
-"  (<kbd>" + XML.encodeAsHTML(SSR.getSafeEmailAddress(EDStatic.adminEmail)) + "</kbd>).\n" +
+"  (<kbd>" + XML.encodeAsHTML(SSR.getSafeEmailAddress(EDStatic.config.adminEmail)) + "</kbd>).\n" +
 "<p>How is your gridded data stored?\n" +
 widgets.select("griddedOption", "", 1, griddedOptions, griddedOption, "") +
 "\n" +
@@ -3236,10 +3281,16 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
 
       // Submit
       writer.write(
-          EDStatic.dpf_submitAr[language]
+          EDStatic.messages
+              .dpf_submitAr[language]
               .replace(
                   "&widgetSubmitButton;",
-                  widgets.button("submit", EDStatic.submitAr[0], "", EDStatic.submitAr[0], ""))
+                  widgets.button(
+                      "submit",
+                      EDStatic.messages.submitAr[0],
+                      "",
+                      EDStatic.messages.submitAr[0],
+                      ""))
               .replace("&partNumberA;", "1")
               .replace("&partNumberB;", "2")
           /*
@@ -3301,7 +3352,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       };
       int defaultCdmDataType = String2.indexOf(cdmDataTypes, "Other");
       int tCdmDataType = String2.indexOf(cdmDataTypes, request.getParameter("cdm_data_type"));
-      String cdmDataTypeHelp = EDStatic.cdmDataTypeHelpAr[language];
+      String cdmDataTypeHelp = EDStatic.messages.cdmDataTypeHelpAr[language];
       /*
       "CDM is Unidata's Common Data Model, a way of categorizing datasets" +
       "<br>based on the geometry of the dataset. Pick the cdm_data_type which" +
@@ -3418,13 +3469,13 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
         errorMsgSB.insert(
             0,
             // "<br>Please fix these problems, then 'Submit' this part of the form again.\n");
-            EDStatic.dpf_fixProblemAr[language]);
+            EDStatic.messages.dpf_fixProblemAr[language]);
 
       String fromInfo = tYourName + " <" + tEmailAddress + "> at " + tTimestamp;
 
       // if this is a submission,
       boolean isSubmission =
-          EDStatic.submitAr[0].equals(request.getParameter(EDStatic.submitAr[0]));
+          EDStatic.messages.submitAr[0].equals(request.getParameter(EDStatic.messages.submitAr[0]));
       if (isSubmission && errorMsgSB.length() == 0) {
         // convert the info into pseudo datasets.xml
         String tcdmType =
@@ -3521,12 +3572,12 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
         // log the content to /logs/dataProviderForm.log
         String error =
             File2.appendFileUtf8(
-                EDStatic.fullLogsDirectory + "dataProviderForm.log", "*** " + content);
+                EDStatic.config.fullLogsDirectory + "dataProviderForm.log", "*** " + content);
         if (error.length() > 0)
           String2.log(String2.ERROR + " while writing to logs/dataProviderForm.log:\n" + error);
         // email the content to the admin
         EDStatic.email(
-            EDStatic.adminEmail, "Data Provider Form - Part 2, from " + fromInfo, content);
+            EDStatic.config.adminEmail, "Data Provider Form - Part 2, from " + fromInfo, content);
 
         // redirect to part 3
         sendRedirect(
@@ -3551,12 +3602,12 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
               tLoggedInAs,
               "dataProviderForm2.html", // was endOfRequest,
               queryString,
-              EDStatic.dataProviderFormP2Ar[language],
+              EDStatic.messages.dataProviderFormP2Ar[language],
               out);
       writer.write(
           "<div class=\"standard_width\">\n"
               + EDStatic.youAreHere(
-                  language, tLoggedInAs, EDStatic.dataProviderFormP2Ar[language]));
+                  language, tLoggedInAs, EDStatic.messages.dataProviderFormP2Ar[language]));
 
       // begin form
       String formName = "f1";
@@ -3584,15 +3635,17 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
 
       // begin text
       String dataProviderFormPart2Header =
-          EDStatic.dataProviderFormPart2HeaderAr[language]
+          EDStatic.messages
+              .dataProviderFormPart2HeaderAr[language]
               .replace("&fromInfo;", XML.encodeAsHTML(fromInfo))
               .replace(
-                  "&safeEmail;", XML.encodeAsHTML(SSR.getSafeEmailAddress(EDStatic.adminEmail)));
+                  "&safeEmail;",
+                  XML.encodeAsHTML(SSR.getSafeEmailAddress(EDStatic.config.adminEmail)));
       writer.write(dataProviderFormPart2Header /*
 "This is part 2 (of 4) of the Data Provider Form\n" +
 "<br>from " + XML.encodeAsHTML(fromInfo) + ".\n" +
 "<br>Need help? Send an email to the administrator of this ERDDAP (<kbd>" +
-    XML.encodeAsHTML(SSR.getSafeEmailAddress(EDStatic.adminEmail)) + "</kbd>).\n" +
+    XML.encodeAsHTML(SSR.getSafeEmailAddress(EDStatic.config.adminEmail)) + "</kbd>).\n" +
 "<br>&nbsp;\n" +
 "\n"
 */);
@@ -3602,7 +3655,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
         writer.write("<span class=\"warningColor\">" + errorMsgSB + "</span> " + "<br>&nbsp;\n");
 
       // Global Metadata
-      writer.write(EDStatic.dataProviderFormPart2GlobalMetadataAr[language] /*
+      writer.write(EDStatic.messages.dataProviderFormPart2GlobalMetadataAr[language] /*
 "<h2>Global Metadata</h2>\n" +
 "Global metadata is information about the entire dataset. It is a set of\n" +
 "<kbd>attribute=value</kbd> pairs, for example,\n" +
@@ -3620,15 +3673,15 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
               // Required
               "<tr>\n"
               + "  <td colspan=\"3\"><strong>"
-              + EDStatic.requiredAr[language]
+              + EDStatic.messages.requiredAr[language]
               + "</strong>\n"
               + "</tr>\n"
               + "<tr>\n"
               + "<td>"
-              + EDStatic.dpf_titleAr[language]
+              + EDStatic.messages.dpf_titleAr[language]
               + "<td>&nbsp;"
               + EDStatic.htmlTooltipImage(
-                  language, tLoggedInAs, EDStatic.dpf_titleTooltipAr[language])
+                  language, tLoggedInAs, EDStatic.messages.dpf_titleTooltipAr[language])
               +
               //      "This is a short (&lt;=80 characters) description of the dataset. For
               // example," +
@@ -3639,10 +3692,10 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
               + "</tr>\n"
               + "<tr>\n"
               + "<td>"
-              + EDStatic.dpf_summaryAr[language]
+              + EDStatic.messages.dpf_summaryAr[language]
               + "<td>&nbsp;"
               + EDStatic.htmlTooltipImage(
-                  language, tLoggedInAs, EDStatic.dpf_summaryTooltipAr[language]
+                  language, tLoggedInAs, EDStatic.messages.dpf_summaryTooltipAr[language]
                   // "This is a paragraph describing the dataset.  (&lt;=500 characters)" +
                   // "<br>The summary should answer these questions:" +
                   // "<br>&bull; Who created the dataset?" +
@@ -3662,10 +3715,10 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
               + "</tr>\n"
               + "<tr>\n"
               + "<td>"
-              + EDStatic.dpf_creatorNameAr[language]
+              + EDStatic.messages.dpf_creatorNameAr[language]
               + "<td>&nbsp;"
               + EDStatic.htmlTooltipImage(
-                  language, tLoggedInAs, EDStatic.dpf_creatorNameTooltipAr[language]
+                  language, tLoggedInAs, EDStatic.messages.dpf_creatorNameTooltipAr[language]
                   // "This is the name of the primary person, group, institution," +
                   // "<br>or position that created the data. For example," +
                   // "<br><kbd>John Smith</kbd>"
@@ -3676,10 +3729,10 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
               + "</tr>\n"
               + "<tr>\n"
               + "<td>"
-              + EDStatic.dpf_creatorTypeAr[language]
+              + EDStatic.messages.dpf_creatorTypeAr[language]
               + "<td>&nbsp;"
               + EDStatic.htmlTooltipImage(
-                  language, tLoggedInAs, EDStatic.dpf_creatorTypeTooltipAr[language]
+                  language, tLoggedInAs, EDStatic.messages.dpf_creatorTypeTooltipAr[language]
                   // "This identifies the creator_name (above) as a person," +
                   // "<br>group, institution, or position."
                   )
@@ -3689,10 +3742,10 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
               + "</tr>\n"
               + "<tr>\n"
               + "<td>"
-              + EDStatic.dpf_creatorEmailAr[language]
+              + EDStatic.messages.dpf_creatorEmailAr[language]
               + "<td>&nbsp;"
               + EDStatic.htmlTooltipImage(
-                  language, tLoggedInAs, EDStatic.dpf_creatorEmailTooltipAr[language]
+                  language, tLoggedInAs, EDStatic.messages.dpf_creatorEmailTooltipAr[language]
                   // "This is the best contact email address for the creator of this data." +
                   // "<br>Use your judgment &mdash; the creator_email might be for a" +
                   // "<br>different entity than the creator_name." +
@@ -3704,10 +3757,10 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
               + "</tr>\n"
               + "<tr>\n"
               + "<td>"
-              + EDStatic.dpf_institutionAr[language]
+              + EDStatic.messages.dpf_institutionAr[language]
               + "<td>&nbsp;"
               + EDStatic.htmlTooltipImage(
-                  language, tLoggedInAs, EDStatic.dpf_institutionTooltipAr[language]
+                  language, tLoggedInAs, EDStatic.messages.dpf_institutionTooltipAr[language]
                   // "This is the short/abbreviated form of the name of the primary" +
                   // "<br>organization that created the data. For example," +
                   // "<br><kbd>NOAA NMFS SWFSC</kbd>"
@@ -3718,10 +3771,10 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
               + "</tr>\n"
               + "<tr>\n"
               + "<td>"
-              + EDStatic.dpf_infoUrlAr[language]
+              + EDStatic.messages.dpf_infoUrlAr[language]
               + "<td>&nbsp;"
               + EDStatic.htmlTooltipImage(
-                  language, tLoggedInAs, EDStatic.dpf_infoUrlTooltipAr[language]
+                  language, tLoggedInAs, EDStatic.messages.dpf_infoUrlTooltipAr[language]
                   // "This is a URL with information about this dataset." +
                   // "<br>For example, <kbd>http://spray.ucsd.edu</kbd>" +
                   // "<br>If there is no URL related to the dataset, provide" +
@@ -3733,20 +3786,21 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
               + "</tr>\n"
               + "<tr>\n"
               + "<td>"
-              + EDStatic.dpf_licenseAr[language]
+              + EDStatic.messages.dpf_licenseAr[language]
               + "<td>&nbsp;"
               + EDStatic.htmlTooltipImage(
                   language,
                   tLoggedInAs,
-                  EDStatic.dpf_licenseTooltipAr[language].replace(
+                  EDStatic.messages.dpf_licenseTooltipAr[language].replace(
                       "&standardLicense;",
-                      String2.replaceAll(EDStatic.standardLicense, "\n", "<br>"))
+                      String2.replaceAll(EDStatic.messages.standardLicense, "\n", "<br>"))
                   // "This is the license and disclaimer for use of this data." +
                   // "<br>ERDDAP has a standard license, which you can use via
                   // <kbd>[standard]</kbd>" +
                   // "<br>You can either add to that or replace it. (&lt;=500 characters)" +
                   // "<br>The text of the standard license is:" +
-                  // "<br><kbd>" + String2.replaceAll(EDStatic.standardLicense, "\n", "<br>") +
+                  // "<br><kbd>" + String2.replaceAll(EDStatic.messages.standardLicense, "\n",
+                  // "<br>") +
                   // "</kbd>"
                   )
               + "&nbsp;"
@@ -3774,19 +3828,19 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
               // Optional
               "<tr>\n"
               + "<td><strong>"
-              + EDStatic.optionalAr[language]
+              + EDStatic.messages.optionalAr[language]
               + "</strong>"
               + "<td>&nbsp;"
               + "<td>("
-              + EDStatic.dpf_provideIfAvailableAr[language]
+              + EDStatic.messages.dpf_provideIfAvailableAr[language]
               + ")"
               + "</tr>\n"
               + "<tr>\n"
               + "<td>"
-              + EDStatic.dpf_acknowledgementAr[language]
+              + EDStatic.messages.dpf_acknowledgementAr[language]
               + "<td>&nbsp;"
               + EDStatic.htmlTooltipImage(
-                  language, tLoggedInAs, EDStatic.dpf_acknowledgementTooltipAr[language]
+                  language, tLoggedInAs, EDStatic.messages.dpf_acknowledgementTooltipAr[language]
                   // "Optional: This is the place to acknowledge various types of support for" +
                   // "<br>the project that produced this data. (&lt;=350 characters) For example," +
                   // "<br><kbd>This project received additional funding from the NOAA" +
@@ -3802,10 +3856,10 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
               + "</tr>\n"
               + "<tr>\n"
               + "<td>"
-              + EDStatic.dpf_historyAr[language]
+              + EDStatic.messages.dpf_historyAr[language]
               + "<td>&nbsp;"
               + EDStatic.htmlTooltipImage(
-                  language, tLoggedInAs, EDStatic.dpf_historyTooltipAr[language]
+                  language, tLoggedInAs, EDStatic.messages.dpf_historyTooltipAr[language]
                   // "Optional: This is a list of the actions (one per line) which led to the
                   // creation of this data." +
                   // "<br>Ideally, each line includes a timestamp and a description of the action.
@@ -3827,7 +3881,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
               + "<td>id"
               + "<td>&nbsp;"
               + EDStatic.htmlTooltipImage(
-                  language, tLoggedInAs, EDStatic.dpf_idTooltipAr[language]
+                  language, tLoggedInAs, EDStatic.messages.dpf_idTooltipAr[language]
                   // "Optional: This is an identifier for the dataset, as provided by" +
                   // "<br>its naming authority. The combination of \"naming authority\"" +
                   // "<br>and the \"id\" should be globally unique, but the id can be" +
@@ -3843,10 +3897,10 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
               + "</tr>"
               + "<tr>\n"
               + "<td>"
-              + EDStatic.dpf_namingAuthorityAr[language]
+              + EDStatic.messages.dpf_namingAuthorityAr[language]
               + "<td>&nbsp;"
               + EDStatic.htmlTooltipImage(
-                  language, tLoggedInAs, EDStatic.dpf_namingAuthorityTooltipAr[language]
+                  language, tLoggedInAs, EDStatic.messages.dpf_namingAuthorityTooltipAr[language]
                   // "Optional: This is the organization that provided the id (above) for the
                   // dataset." +
                   // "<br>The naming authority should be uniquely specified by this attribute." +
@@ -3860,10 +3914,10 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
               + "</tr>"
               + "<tr>\n"
               + "<td>"
-              + EDStatic.dpf_productVersionAr[language]
+              + EDStatic.messages.dpf_productVersionAr[language]
               + "<td>&nbsp;"
               + EDStatic.htmlTooltipImage(
-                  language, tLoggedInAs, EDStatic.dpf_productVersionTooltipAr[language]
+                  language, tLoggedInAs, EDStatic.messages.dpf_productVersionTooltipAr[language]
                   // "Optional: This is the version identifier of this data. For example, if you" +
                   // "<br>plan to add new data yearly, you might use the year as the version
                   // identifier." +
@@ -3875,10 +3929,10 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
               + "</tr>"
               + "<tr>\n"
               + "<td>"
-              + EDStatic.dpf_referencesAr[language]
+              + EDStatic.messages.dpf_referencesAr[language]
               + "<td>&nbsp;"
               + EDStatic.htmlTooltipImage(
-                  language, tLoggedInAs, EDStatic.dpf_referencesTooltipAr[language]
+                  language, tLoggedInAs, EDStatic.messages.dpf_referencesTooltipAr[language]
                   // "Optional: This is one or more published or web-based references" +
                   // "<br>that describe the data or methods used to produce it. URL's and" +
                   // "<br>DOI's are recommend. (&lt;=500 characters) For example,\n" +
@@ -3897,10 +3951,10 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
               + "</tr>\n"
               + "<tr>\n"
               + "<td>"
-              + EDStatic.dpf_commentAr[language]
+              + EDStatic.messages.dpf_commentAr[language]
               + "<td>&nbsp;"
               + EDStatic.htmlTooltipImage(
-                  language, tLoggedInAs, EDStatic.dpf_commentTooltipAr[language]
+                  language, tLoggedInAs, EDStatic.messages.dpf_commentTooltipAr[language]
                   // "Optional: This is miscellaneous information about the data, not" +
                   // "<br>captured elsewhere. (&lt;=350 characters) For example," +
                   // "<br><kbd>No animals were harmed during the collection of this data.</kbd>"
@@ -3923,10 +3977,16 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
 
       // Submit
       writer.write(
-          EDStatic.dpf_submitAr[language]
+          EDStatic.messages
+              .dpf_submitAr[language]
               .replace(
                   "&widgetSubmitButton;",
-                  widgets.button("submit", EDStatic.submitAr[0], "", EDStatic.submitAr[0], ""))
+                  widgets.button(
+                      "submit",
+                      EDStatic.messages.submitAr[0],
+                      "",
+                      EDStatic.messages.submitAr[0],
+                      ""))
               .replace("&partNumberA;", "2")
               .replace("&partNumberB;", "3")
           // "<h2>Finished with part 2?</h2>\n" +
@@ -3984,9 +4044,9 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       String dataTypeOptions[] = {
         "(unknown)", "String", "boolean", "byte", "short", "int", "long", "float", "double"
       };
-      String dataTypeHelp = EDStatic.dpf_dataTypeHelpAr[language];
+      String dataTypeHelp = EDStatic.messages.dpf_dataTypeHelpAr[language];
       int ioosUnknown = EDV.IOOS_CATEGORIES.indexOf("Unknown");
-      String ioosCategoryHelp = EDStatic.dpf_ioosCategoryHelpAr[language];
+      String ioosCategoryHelp = EDStatic.messages.dpf_ioosCategoryHelpAr[language];
 
       String tYourName = request.getParameter("yourName"),
           tEmailAddress = request.getParameter("emailAddress"),
@@ -4078,7 +4138,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       }
       if (errorMsgSB.length() > 0)
         errorMsgSB.insert(
-            0, EDStatic.dpf_fixProblemAr[language]
+            0, EDStatic.messages.dpf_fixProblemAr[language]
             // "<br>Please fix these problems, then 'Submit' this part of the form again.\n"
             );
 
@@ -4086,7 +4146,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
 
       // if this is a submission,
       boolean isSubmission =
-          EDStatic.submitAr[0].equals(request.getParameter(EDStatic.submitAr[0]));
+          EDStatic.messages.submitAr[0].equals(request.getParameter(EDStatic.messages.submitAr[0]));
       if (isSubmission && errorMsgSB.length() == 0) {
         // convert the info into pseudo datasets.xml
         StringBuilder content = new StringBuilder();
@@ -4154,12 +4214,12 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
         // log the content to /logs/dataProviderForm.log
         String error =
             File2.appendFileUtf8(
-                EDStatic.fullLogsDirectory + "dataProviderForm.log", "*** " + content);
+                EDStatic.config.fullLogsDirectory + "dataProviderForm.log", "*** " + content);
         if (error.length() > 0)
           String2.log(String2.ERROR + " while writing to logs/dataProviderForm.log:\n" + error);
         // email the content to the admin
         EDStatic.email(
-            EDStatic.adminEmail,
+            EDStatic.config.adminEmail,
             "Data Provider Form - Part 3, from " + fromInfo,
             content.toString());
 
@@ -4186,12 +4246,12 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
               tLoggedInAs,
               "dataProviderForm3.html", // was endOfRequest,
               queryString,
-              EDStatic.dataProviderFormP3Ar[language],
+              EDStatic.messages.dataProviderFormP3Ar[language],
               out);
       writer.write(
           "<div class=\"standard_width\">\n"
               + EDStatic.youAreHere(
-                  language, tLoggedInAs, EDStatic.dataProviderFormP3Ar[language]));
+                  language, tLoggedInAs, EDStatic.messages.dataProviderFormP3Ar[language]));
 
       // begin form
       String formName = "f1";
@@ -4219,14 +4279,17 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
 
       // begin text
       writer.write(
-          EDStatic.dpf_part3HeaderAr[language]
+          EDStatic.messages
+              .dpf_part3HeaderAr[language]
               .replace("&fromInfo;", XML.encodeAsHTML(fromInfo))
               .replace(
-                  "&safeEmail;", XML.encodeAsHTML(SSR.getSafeEmailAddress(EDStatic.adminEmail)))
+                  "&safeEmail;",
+                  XML.encodeAsHTML(SSR.getSafeEmailAddress(EDStatic.config.adminEmail)))
           // "This is part 3 (of 4) of the Data Provider Form\n" +
           // "<br>from " + XML.encodeAsHTML(fromInfo) + ".\n" +
           // "<br>Need help? Send an email to the administrator of this ERDDAP (<kbd>" +
-          //     XML.encodeAsHTML(SSR.getSafeEmailAddress(EDStatic.adminEmail)) + "</kbd>).\n" +
+          //     XML.encodeAsHTML(SSR.getSafeEmailAddress(EDStatic.config.adminEmail)) +
+          // "</kbd>).\n" +
           // "<br>&nbsp;\n" +
           // "\n"
           );
@@ -4237,7 +4300,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
 
       // Variable Metadata
       writer.write(
-          EDStatic.dpf_variableMetadataAr[language].replace(
+          EDStatic.messages.dpf_variableMetadataAr[language].replace(
               "&widgetSelectGroup;", widgets.select("group", "", 1, groupOptions, tGroup, ""))
           // "<h2>Variable Metadata</h2>\n" +
           // "Variable metadata is information that is specific to a given variable within\n" +
@@ -4280,11 +4343,11 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                 + "</tr>\n"
                 + "<tr>\n"
                 + "  <td>"
-                + EDStatic.dpf_sourceNameAr[language]
+                + EDStatic.messages.dpf_sourceNameAr[language]
                 + "\n"
                 + "  <td>&nbsp;"
                 + EDStatic.htmlTooltipImage(
-                    language, tLoggedInAs, EDStatic.dpf_sourceNameTooltipAr[language]
+                    language, tLoggedInAs, EDStatic.messages.dpf_sourceNameTooltipAr[language]
                     // "This is the name of this variable currently used by the data source." +
                     // "<br>For example, <kbd>wt</kbd>" +
                     // "<br>This is case-sensitive."
@@ -4295,22 +4358,22 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                 + "</tr>\n"
                 + "<tr>\n"
                 + "  <td>"
-                + EDStatic.dpf_destinationNameAr[language]
+                + EDStatic.messages.dpf_destinationNameAr[language]
                 + "\n"
                 + "  <td>&nbsp;"
                 + EDStatic.htmlTooltipImage(
-                    language, tLoggedInAs, EDStatic.dpf_destinationNameTooltipAr[language])
+                    language, tLoggedInAs, EDStatic.messages.dpf_destinationNameTooltipAr[language])
                 + "&nbsp;\n"
                 + "  <td>\n"
                 + widgets.textField("destinationName" + var, "", 20, 60, tDestinationName[var], "")
                 + "</tr>\n"
                 + "<tr>\n"
                 + "  <td>"
-                + EDStatic.dpf_longNameAr[language]
+                + EDStatic.messages.dpf_longNameAr[language]
                 + "\n"
                 + "  <td>&nbsp;"
                 + EDStatic.htmlTooltipImage(
-                    language, tLoggedInAs, EDStatic.dpf_longNameTooltipAr[language]
+                    language, tLoggedInAs, EDStatic.messages.dpf_longNameTooltipAr[language]
                     // "This is a longer, written-out version of the destinationName." +
                     // "<br>For example, <kbd>Water Temperature</kbd>" +
                     // "<br>Among other uses, it will be used as an axis title on graphs." +
@@ -4324,11 +4387,11 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                 + "</tr>\n"
                 + "<tr>\n"
                 + "  <td>"
-                + EDStatic.dpf_standardNameAr[language]
+                + EDStatic.messages.dpf_standardNameAr[language]
                 + "\n"
                 + "  <td>&nbsp;"
                 + EDStatic.htmlTooltipImage(
-                    language, tLoggedInAs, EDStatic.dpf_standardNameTooltipAr[language]
+                    language, tLoggedInAs, EDStatic.messages.dpf_standardNameTooltipAr[language]
                     // "Optional: This is the name from the CF Standard Name Table" +
                     // "<br>&nbsp;&nbsp;which is most appropriate for this variable.\n" +
                     // "<br>For example, <kbd>sea_water_temperature</kbd>." +
@@ -4346,13 +4409,13 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                     40,
                     120,
                     tStandardName[var],
-                    EDStatic.commonStandardNames,
+                    EDStatic.messages.commonStandardNames,
                     "",
                     null)
                 + "</tr>\n"
                 + "<tr>\n"
                 + "  <td>"
-                + EDStatic.dpf_dataTypeAr[language]
+                + EDStatic.messages.dpf_dataTypeAr[language]
                 + "\n"
                 + "  <td>&nbsp;"
                 + EDStatic.htmlTooltipImage(language, tLoggedInAs, dataTypeHelp)
@@ -4362,11 +4425,11 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                 + "</tr>\n"
                 + "<tr>\n"
                 + "  <td>"
-                + EDStatic.dpf_fillValueAr[language]
+                + EDStatic.messages.dpf_fillValueAr[language]
                 + "\n"
                 + "  <td>&nbsp;"
                 + EDStatic.htmlTooltipImage(
-                    language, tLoggedInAs, EDStatic.dpf_fillValueTooltipAr[language]
+                    language, tLoggedInAs, EDStatic.messages.dpf_fillValueTooltipAr[language]
                     // "For numeric variables, this is the value that is used in the" +
                     // "<br>data file to indicate a missing value for this variable.\n" +
                     // "<br>For example, <kbd>-999</kbd> ." +
@@ -4385,22 +4448,22 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                 + "</tr>\n"
                 + "<tr>\n"
                 + "  <td>"
-                + EDStatic.dpf_unitsAr[language]
+                + EDStatic.messages.dpf_unitsAr[language]
                 + "\n"
                 + "  <td>&nbsp;"
                 + EDStatic.htmlTooltipImage(
-                    language, tLoggedInAs, EDStatic.dpf_unitsTooltipAr[language])
+                    language, tLoggedInAs, EDStatic.messages.dpf_unitsTooltipAr[language])
                 + "&nbsp;\n"
                 + "  <td>\n"
                 + widgets.textField("units" + var, "", 20, 80, tUnits[var], "")
                 + "</tr>\n"
                 + "<tr>\n"
                 + "  <td>"
-                + EDStatic.dpf_rangeAr[language]
+                + EDStatic.messages.dpf_rangeAr[language]
                 + "\n"
                 + "  <td>&nbsp;"
                 + EDStatic.htmlTooltipImage(
-                    language, tLoggedInAs, EDStatic.dpf_rangeTooltipAr[language]
+                    language, tLoggedInAs, EDStatic.messages.dpf_rangeTooltipAr[language]
                     // "For numeric variables, this specifies the typical range of values." +
                     // "<br>For example, <kbd>minimum=32.0</kbd> and <kbd>maximum=37.0</kbd> ." +
                     // "<br>The range should include about 98% of the values." +
@@ -4417,7 +4480,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                 + "</tr>\n"
                 + "<tr>\n"
                 + "  <td>"
-                + EDStatic.dpf_ioosCategoryAr[language]
+                + EDStatic.messages.dpf_ioosCategoryAr[language]
                 + "\n"
                 + "  <td>&nbsp;"
                 + EDStatic.htmlTooltipImage(language, tLoggedInAs, ioosCategoryHelp)
@@ -4428,11 +4491,11 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                 + "</tr>\n"
                 + "<tr>\n"
                 + "  <td>"
-                + EDStatic.dpf_commentAr[language]
+                + EDStatic.messages.dpf_commentAr[language]
                 + "\n"
                 + "  <td>&nbsp;"
                 + EDStatic.htmlTooltipImage(
-                    language, tLoggedInAs, EDStatic.dpf_commentTooltipAr[language]
+                    language, tLoggedInAs, EDStatic.messages.dpf_commentTooltipAr[language]
                     // "Optional: This is miscellaneous information about this variable, not
                     // captured" +
                     // "<br>elsewhere. For example," +
@@ -4454,10 +4517,16 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
 
       // Submit
       writer.write(
-          EDStatic.dpf_submitAr[language]
+          EDStatic.messages
+              .dpf_submitAr[language]
               .replace(
                   "&widgetSubmitButton;",
-                  widgets.button("submit", EDStatic.submitAr[0], "", EDStatic.submitAr[0], ""))
+                  widgets.button(
+                      "submit",
+                      EDStatic.messages.submitAr[0],
+                      "",
+                      EDStatic.messages.submitAr[0],
+                      ""))
               .replace("&partNumberA;", "3")
               .replace("&partNumberB;", "4")
 
@@ -4533,7 +4602,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
               language, "Other Comments", "", tOtherComments, 500, errorMsgSB);
       if (errorMsgSB.length() > 0)
         errorMsgSB.insert(
-            0, EDStatic.dpf_fixProblemAr[language]
+            0, EDStatic.messages.dpf_fixProblemAr[language]
             // "<br>Please fix these problems, then 'Submit' this part of the form again.\n"
             );
 
@@ -4541,7 +4610,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
 
       // if this is a submission,
       boolean isSubmission =
-          EDStatic.submitAr[0].equals(request.getParameter(EDStatic.submitAr[0]));
+          EDStatic.messages.submitAr[0].equals(request.getParameter(EDStatic.messages.submitAr[0]));
       if (isSubmission && errorMsgSB.length() == 0) {
         // convert the info into pseudo datasets.xml
         String content =
@@ -4561,12 +4630,12 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
         // log the content to /logs/dataProviderForm.log
         String error =
             File2.appendFileUtf8(
-                EDStatic.fullLogsDirectory + "dataProviderForm.log", "*** " + content);
+                EDStatic.config.fullLogsDirectory + "dataProviderForm.log", "*** " + content);
         if (error.length() > 0)
           String2.log(String2.ERROR + " while writing to logs/dataProviderForm.log:\n" + error);
         // email the content to the admin
         EDStatic.email(
-            EDStatic.adminEmail, "Data Provider Form - Part 4, from " + fromInfo, content);
+            EDStatic.config.adminEmail, "Data Provider Form - Part 4, from " + fromInfo, content);
 
         // redirect to Done
         sendRedirect(
@@ -4591,12 +4660,12 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
               tLoggedInAs,
               "dataProviderForm4.html", // was endOfRequest,
               queryString,
-              EDStatic.dataProviderFormP4Ar[language],
+              EDStatic.messages.dataProviderFormP4Ar[language],
               out);
       writer.write(
           "<div class=\"standard_width\">\n"
               + EDStatic.youAreHere(
-                  language, tLoggedInAs, EDStatic.dataProviderFormP4Ar[language]));
+                  language, tLoggedInAs, EDStatic.messages.dataProviderFormP4Ar[language]));
       // EDStatic.youAreHere(language, tLoggedInAs, "Data Provider Form - Part 4"));
 
       // begin form
@@ -4625,14 +4694,17 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
 
       // begin text
       writer.write(
-          EDStatic.dpf_part4HeaderAr[language]
+          EDStatic.messages
+                  .dpf_part4HeaderAr[language]
                   .replace("&fromInfo;", XML.encodeAsHTML(fromInfo))
                   .replace(
-                      "&safeEmail", XML.encodeAsHTML(SSR.getSafeEmailAddress(EDStatic.adminEmail)))
+                      "&safeEmail",
+                      XML.encodeAsHTML(SSR.getSafeEmailAddress(EDStatic.config.adminEmail)))
               // "This is part 4 (of 4) of the Data Provider Form\n" +
               // "<br>from " + XML.encodeAsHTML(fromInfo) + ".\n" +
               // "<br>Need help? Send an email to the administrator of this ERDDAP (<kbd>" +
-              //     XML.encodeAsHTML(SSR.getSafeEmailAddress(EDStatic.adminEmail)) + "</kbd>).\n" +
+              //     XML.encodeAsHTML(SSR.getSafeEmailAddress(EDStatic.config.adminEmail)) +
+              // "</kbd>).\n" +
               // "<br>&nbsp;\n"
               + "\n");
 
@@ -4642,7 +4714,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
 
       // other comments
       writer.write(
-          EDStatic.dpf_otherCommentAr[language]
+          EDStatic.messages.dpf_otherCommentAr[language]
               + "\n"
               +
               // "<h2>Other Comments</h2>\n" +
@@ -4662,9 +4734,10 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
 
       // Submit
       writer.write(
-          EDStatic.dpf_finishPart4Ar[language].replace(
+          EDStatic.messages.dpf_finishPart4Ar[language].replace(
               "&widgetSubmitButton;",
-              widgets.button("submit", EDStatic.submitAr[0], "", EDStatic.submitAr[0], ""))
+              widgets.button(
+                  "submit", EDStatic.messages.submitAr[0], "", EDStatic.messages.submitAr[0], ""))
           // "<h2>Finished with part 4?</h2>\n" +
           // "Click\n" +
           // widgets.button("submit", "Submit", "", "Submit", "") +
@@ -4737,17 +4810,18 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
               tLoggedInAs,
               "dataProviderFormDone.html", // was endOfRequest,
               queryString,
-              EDStatic.dataProviderFormDoneAr[language],
+              EDStatic.messages.dataProviderFormDoneAr[language],
               out);
       writer.write(
           "<div class=\"standard_width\">\n"
               + EDStatic.youAreHere(
-                  language, tLoggedInAs, EDStatic.dataProviderFormDoneAr[language]));
+                  language, tLoggedInAs, EDStatic.messages.dataProviderFormDoneAr[language]));
       // EDStatic.youAreHere(language, tLoggedInAs, "Data Provider Form - Done"));
 
       // begin text
       writer.write(
-          EDStatic.dpf_congratulationAr[language]
+          EDStatic.messages
+              .dpf_congratulationAr[language]
               .replace("&tTimestamp;", XML.encodeAsHTML(tTimestamp))
               .replaceAll("&tErddapUrl;", tErddapUrl)
               .replace("&tYourName;", XML.encodeAsHTML(tYourName))
@@ -4806,10 +4880,10 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     try {
       writer.write(
           "<div class=\"standard_width\">\n"
-              + EDStatic.youAreHere(language, loggedInAs, EDStatic.statusAr[language])
+              + EDStatic.youAreHere(language, loggedInAs, EDStatic.messages.statusAr[language])
               + "<pre>");
       StringBuilder sb = new StringBuilder();
-      EDStatic.addIntroStatistics(sb, EDStatic.showLoadErrorsOnStatusPage, this);
+      EDStatic.addIntroStatistics(sb, EDStatic.config.showLoadErrorsOnStatusPage, this);
 
       // append number of active threads
       String traces = MustBe.allStackTraces(true, true);
@@ -4882,19 +4956,21 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
               + EDStatic.encodedDefaultPIppQuery
               + "&#x26;searchFor=temperature";
       String htmlQueryUrlWithSpaces = htmlQueryUrl + "%20wind%20speed";
-      String griddapExample = tErddapUrl + "/griddap/" + EDStatic.EDDGridIdExample;
-      String tabledapExample = tErddapUrl + "/tabledap/" + EDStatic.EDDTableIdExample;
+      String griddapExample = tErddapUrl + "/griddap/" + EDStatic.messages.EDDGridIdExample;
+      String tabledapExample = tErddapUrl + "/tabledap/" + EDStatic.messages.EDDTableIdExample;
 
       String modifiedRestfulHTML =
-          EDStatic.restfulHTMLAr[language]
-              .replaceAll("&externalLinkHtml;", EDStatic.externalLinkHtml(language, tErddapUrl))
+          EDStatic.messages
+              .restfulHTMLAr[language]
+              .replaceAll(
+                  "&externalLinkHtml;", EDStatic.messages.externalLinkHtml(language, tErddapUrl))
               .replaceAll("&htmlQueryUrl;", htmlQueryUrl)
               .replaceAll("&jsonQueryUrl;", jsonQueryUrl)
               .replaceAll("&htmlQueryUrlWithSpaces;", htmlQueryUrlWithSpaces)
               .replaceAll("&tErddapUrl;", tErddapUrl)
               .replaceAll(
                   "&acceptEncodingHtmlh3tErddapUrl;",
-                  EDStatic.acceptEncodingHtml(language, "h3", tErddapUrl))
+                  EDStatic.messages.acceptEncodingHtml(language, "h3", tErddapUrl))
               .replaceAll("&plainLinkExamples1;", plainLinkExamples(tErddapUrl, "/index", ""))
               .replaceAll(
                   "&plainLinkExamples2;",
@@ -4902,7 +4978,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
               .replaceAll(
                   "&plainLinkExamples3;",
                   plainLinkExamples(
-                      tErddapUrl, "/info/" + EDStatic.EDDGridIdExample + "/index", ""))
+                      tErddapUrl, "/info/" + EDStatic.messages.EDDGridIdExample + "/index", ""))
               .replaceAll(
                   "&plainLinkExamples4;",
                   plainLinkExamples(
@@ -4938,15 +5014,16 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                       "/categorize/standard_name/time/index", // 8
                       EDStatic.encodedDefaultPIppQuery))
               .replaceAll("&encodedDefaultPIppQuery;", EDStatic.encodedDefaultPIppQuery)
-              .replaceAll("&advancedSearch;", EDStatic.advancedSearchAr[language]);
+              .replaceAll("&advancedSearch;", EDStatic.messages.advancedSearchAr[language]);
 
       writer.write(
           "<div class=\"standard_width\">\n"
-              + EDStatic.youAreHere(language, loggedInAs, EDStatic.indexServicesAr[language])
+              + EDStatic.youAreHere(
+                  language, loggedInAs, EDStatic.messages.indexServicesAr[language])
               +
               // EDStatic.youAreHere(language, loggedInAs, "RESTful Web Services") +
               "<h2 style=\"text-align:center;\"><a class=\"selfLink\" id=\"WebService\" href=\"#WebService\" rel=\"bookmark\">"
-              + EDStatic.accessRESTFULAr[language]
+              + EDStatic.messages.accessRESTFULAr[language]
               + "</a></h2>\n"
               + modifiedRestfulHTML
           /*
@@ -5147,7 +5224,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
           "\n" +
 
           //compression
-          EDStatic.acceptEncodingHtml("h3", tErddapUrl) +
+          EDStatic.messages.acceptEncodingHtml("h3", tErddapUrl) +
           "\n" +
 
           //accessUrls
@@ -5166,7 +5243,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
           "  <br>" + tErddapUrl + "/info/<i>datasetID</i>/index<i>.fileType</i>\n" +
           "  <br>for example,\n" +
           "  <br>" + plainLinkExamples(tErddapUrl,
-              "/info/" + EDStatic.EDDGridIdExample + "/index", "") + //3
+              "/info/" + EDStatic.messages.EDDGridIdExample + "/index", "") + //3
           "  <br>&nbsp;\n" +
           "<li>To get the results of <strong>full text searches</strong> for datasets\n" +
           "  (using \"searchFor=wind%20speed\" as the example), use\n" +
@@ -5189,7 +5266,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
               "&amp;searchFor=wind%20speed") +
           "  <br>But experiment with\n" +
           "    <a href=\"" + tErddapUrl + "/search/advanced.html?" +
-              EDStatic.encodedDefaultPIppQuery + "\">" + EDStatic.advancedSearch + "</a>\n" +
+              EDStatic.encodedDefaultPIppQuery + "\">" + EDStatic.messages.advancedSearch + "</a>\n" +
           "    in a browser to figure out all of the optional parameters.\n" +
           "  (Your program or script may need to \n" +
           "    <a class=\"N\" rel=\"help\" href=\"https://en.wikipedia.org/wiki/Percent-encoding\">percent-encode" +
@@ -5214,7 +5291,8 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       int tDasIndex = EDDTable.dataFileTypeNames.indexOf(".das");
       int tDdsIndex = EDDTable.dataFileTypeNames.indexOf(".dds");
       String restfulGetAllDataset =
-          EDStatic.restfulGetAllDatasetAr[language]
+          EDStatic.messages
+              .restfulGetAllDatasetAr[language]
               .replace(
                   "&plainLinkExamples1;",
                   plainLinkExamples(tErddapUrl, "/griddap/index", EDStatic.encodedAllPIppQuery))
@@ -5236,38 +5314,40 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
               EDStatic.encodedAllPIppQuery)
           */
           );
-      if (EDStatic.sosActive)
+      if (EDStatic.config.sosActive)
         writer.write(
             "  <li>"
-                + EDStatic.forSOSUseAr[language]
+                + EDStatic.messages.forSOSUseAr[language]
                 + "\n<br>"
                 +
                 // "  <li>For SOS: use\n<br>" +
                 plainLinkExamples(tErddapUrl, "/sos/index", EDStatic.encodedAllPIppQuery));
-      if (EDStatic.wcsActive)
+      if (EDStatic.config.wcsActive)
         writer.write(
             "  <li>"
-                + EDStatic.forWCSUseAr[language]
+                + EDStatic.messages.forWCSUseAr[language]
                 + "\n<br>"
                 +
                 // "  <li>For WCS: use\n<br>" +
                 plainLinkExamples(tErddapUrl, "/wcs/index", EDStatic.encodedAllPIppQuery));
-      if (EDStatic.wmsActive)
+      if (EDStatic.config.wmsActive)
         writer.write(
             "  <li>"
-                + EDStatic.forWMSUseAr[language]
+                + EDStatic.messages.forWMSUseAr[language]
                 + "\n<br>"
                 +
                 // "  <li>For WMS: use\n<br>" +
                 plainLinkExamples(tErddapUrl, "/wms/index", EDStatic.encodedAllPIppQuery));
 
       String restfulHTMLContinued =
-          EDStatic.restfulHTMLContinuedAr[language]
+          EDStatic.messages
+              .restfulHTMLContinuedAr[language]
               .replaceAll("&tErddapUrl;", tErddapUrl)
               .replace(
                   "&dataFiletypeInfo1;",
                   XML.encodeAsHTMLAttribute(EDDTable.dataFileTypeInfo.get(tDdsIndex)))
-              .replaceAll("&externalLinkHtml;", EDStatic.externalLinkHtml(language, tErddapUrl))
+              .replaceAll(
+                  "&externalLinkHtml;", EDStatic.messages.externalLinkHtml(language, tErddapUrl))
               .replaceAll("&griddapExample;", griddapExample)
               .replaceAll("&tabledapExample;", tabledapExample)
               .replace(
@@ -5323,39 +5403,39 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                 "    <br>&nbsp;\n" +
                 "  </ul>\n"
                 */);
-      if (EDStatic.sosActive || EDStatic.wcsActive || EDStatic.wmsActive) {
-        writer.write(EDStatic.restfulProtocolsAr[language] /*
+      if (EDStatic.config.sosActive || EDStatic.config.wcsActive || EDStatic.config.wmsActive) {
+        writer.write(EDStatic.messages.restfulProtocolsAr[language] /*
                 "<li><a class=\"selfLink\" id=\"OtherProtocols\" href=\"#OtherProtocols\" rel=\"bookmark\"\n" +
                 ">ERDDAP's other protocols</a> also have web services that you can use.\n" +
                 "  See\n" +
                 "  <ul>\n"
                 */);
-        if (EDStatic.sosActive)
+        if (EDStatic.config.sosActive)
           writer.write(
               // "    <li><a rel=\"help\" href=\"" + tErddapUrl +
               // "/sos/documentation.html\">ERDDAP's SOS documentation</a>\n");
               "    <li><a rel=\"help\" href=\""
                   + tErddapUrl
                   + "/sos/documentation.html\">"
-                  + EDStatic.SOSDocumentationAr[language]
+                  + EDStatic.messages.SOSDocumentationAr[language]
                   + "</a>\n");
-        if (EDStatic.wcsActive)
+        if (EDStatic.config.wcsActive)
           writer.write(
               // "   <li><a rel=\"help\" href=\"" + tErddapUrl + "/wcs/documentation.html\">ERDDAP's
               // WCS documentation</a>\n");
               "   <li><a rel=\"help\" href=\""
                   + tErddapUrl
                   + "/wcs/documentation.html\">"
-                  + EDStatic.WCSDocumentationAr[language]
+                  + EDStatic.messages.WCSDocumentationAr[language]
                   + "</a>\n");
-        if (EDStatic.wmsActive)
+        if (EDStatic.config.wmsActive)
           writer.write(
               // "    <li><a rel=\"help\" href=\"" + tErddapUrl +
               // "/wms/documentation.html\">ERDDAP's WMS documentation</a>\n");
               "    <li><a rel=\"help\" href=\""
                   + tErddapUrl
                   + "/wms/documentation.html\">"
-                  + EDStatic.WMSDocumentationAr[language]
+                  + EDStatic.messages.WMSDocumentationAr[language]
                   + "</a>\n");
         writer.write(
             """
@@ -5364,7 +5444,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                 """);
       }
       String subscriptionOfferRss =
-          EDStatic.subscriptionOfferRssAr[language].replace("&tErddapUrl;", tErddapUrl);
+          EDStatic.messages.subscriptionOfferRssAr[language].replace("&tErddapUrl;", tErddapUrl);
       writer.write(
           subscriptionOfferRss
           /*
@@ -5376,8 +5456,8 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
           */
           );
       String subscriptionOfferUrl =
-          EDStatic.subscriptionOfferUrlAr[language].replace("&tErddapUrl;", tErddapUrl);
-      if (EDStatic.subscriptionSystemActive)
+          EDStatic.messages.subscriptionOfferUrlAr[language].replace("&tErddapUrl;", tErddapUrl);
+      if (EDStatic.config.subscriptionSystemActive)
         writer.write(
             subscriptionOfferUrl
             /*
@@ -5390,68 +5470,68 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
             );
       writer.write(
           "<li>"
-              + EDStatic.converterWebServiceAr[language]
+              + EDStatic.messages.converterWebServiceAr[language]
               + "\n"
               +
               // "<li>ERDDAP offers several converters as web pages and as web services:\n" +
-              (EDStatic.convertersActive
+              (EDStatic.config.convertersActive
                   ? "  <ul>\n"
                       + "  <li><a rel=\"bookmark\" href=\""
                       + tErddapUrl
                       + "/convert/oceanicAtmosphericAcronyms.html#computerProgram\">"
-                      + EDStatic.convertOAAcronymsToFromAr[language]
+                      + EDStatic.messages.convertOAAcronymsToFromAr[language]
                       + "</a>\n"
                       + "  <li><a rel=\"bookmark\" href=\""
                       + tErddapUrl
                       + "/convert/oceanicAtmosphericVariableNames.html#computerProgram\">"
-                      + EDStatic.convertOAVariableNamesToFromAr[language]
+                      + EDStatic.messages.convertOAVariableNamesToFromAr[language]
                       + "</a>\n"
                       + "  <li><a rel=\"bookmark\" href=\""
                       + tErddapUrl
                       + "/convert/fipscounty.html#computerProgram\">"
-                      + EDStatic.convertFipsCountyAr[language]
+                      + EDStatic.messages.convertFipsCountyAr[language]
                       + "</a>\n"
                       + "  <li><a rel=\"bookmark\" href=\""
                       + tErddapUrl
                       + "/convert/keywords.html#computerProgram\">"
-                      + EDStatic.convertKeywordsAr[language]
+                      + EDStatic.messages.convertKeywordsAr[language]
                       + "</a>\n"
                       + "  <li><a rel=\"bookmark\" href=\""
                       + tErddapUrl
                       + "/convert/time.html#computerProgram\">"
-                      + EDStatic.convertTimeAr[language]
+                      + EDStatic.messages.convertTimeAr[language]
                       + "</a>\n"
                       + "  <li><a rel=\"bookmark\" href=\""
                       + tErddapUrl
                       + "/convert/units.html#computerProgram\">"
-                      + EDStatic.convertUnitsAr[language]
+                      + EDStatic.messages.convertUnitsAr[language]
                       + "</a>\n"
                       + "  <li><a rel=\"bookmark\" href=\""
                       + tErddapUrl
                       + "/convert/urls.html#computerProgram\">"
-                      + EDStatic.convertURLsAr[language]
+                      + EDStatic.messages.convertURLsAr[language]
                       + "</a>\n"
                       + "    <br>&nbsp;\n"
                       + "  </ul>\n"
                   : "<br> ("
-                      + MessageFormat.format(EDStatic.disabledAr[language], "convert")
+                      + MessageFormat.format(EDStatic.messages.disabledAr[language], "convert")
                       + ")\n<br>&nbsp;\n"));
       String outOfDateKeepTrack =
-          EDStatic.outOfDateKeepTrackAr[language].replace("&tErddapUrl;", tErddapUrl);
-      if (EDStatic.outOfDateDatasetsActive) writer.write(outOfDateKeepTrack /*
+          EDStatic.messages.outOfDateKeepTrackAr[language].replace("&tErddapUrl;", tErddapUrl);
+      if (EDStatic.config.outOfDateDatasetsActive) writer.write(outOfDateKeepTrack /*
                 "<li>ERDDAP has a system to keep track of\n" +
                 "    <a rel=\"help\" href=\"" + tErddapUrl + "/outOfDateDatasets.html\">Out-Of-Date Datasets</a>.\n" +
                 "    See the Options at the bottom of that web page.\n" +
                 "  <br>&nbsp;\n"
                 */);
-      writer.write("</ul>\n" + EDStatic.additionalLinksAr[language] + "\n");
+      writer.write("</ul>\n" + EDStatic.messages.additionalLinksAr[language] + "\n");
       // "If you have suggestions for additional links, contact <kbd>bob dot simons at noaa dot
       // gov</kbd>.\n");
 
       // JavaPrograms
       // setup.html always from coastwatch's erddap
       writer.write(
-          EDStatic.javaProgramsHTMLAr[language]
+          EDStatic.messages.javaProgramsHTMLAr[language]
           /*
           "<h2><a class=\"selfLink\" id=\"JavaPrograms\" href=\"#JavaPrograms\" rel=\"bookmark\">Using ERDDAP as a Data Source within Your Java Program</a></h2>\n" +
           "As described above, since Java programs can access data available on the web, you can\n" +
@@ -5466,7 +5546,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
           );
 
       // login
-      writer.write(EDStatic.loginHTMLAr[language] /*
+      writer.write(EDStatic.messages.loginHTMLAr[language] /*
                 "<h2><a class=\"selfLink\" id=\"login\" href=\"#login\" rel=\"bookmark\">Log in to access private datasets.</a></h2>\n" +
                 "Many ERDDAP installations don't have authentication enabled and thus\n" +
                 "don't provide any way for users to login, nor do they have any private datasets.\n" +
@@ -5483,7 +5563,8 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
 
       // erddap version
       writer.write(
-          EDStatic.erddapVersionHTMLAr[language]
+          EDStatic.messages
+              .erddapVersionHTMLAr[language]
               .replaceAll(
                   "&versionLink;", "<a href=\"&tErddapUrl;/version\">&tErddapUrl;/version</a>")
               .replaceAll(
@@ -5562,7 +5643,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       writer.write(pre);
       writer.write("categorize/index.html");
       writer.write(postMed);
-      if (EDStatic.convertersActive) {
+      if (EDStatic.config.convertersActive) {
         writer.write(pre);
         writer.write("convert/index.html");
         writer.write(postMed);
@@ -5609,14 +5690,14 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       writer.write(pre);
       writer.write("information.html");
       writer.write(postHigh);
-      if (EDStatic.fgdcActive) {
+      if (EDStatic.config.fgdcActive) {
         writer.write(pre);
-        writer.write(EDStatic.fgdcXmlDirectory);
+        writer.write(EDConfig.fgdcXmlDirectory);
         writer.write(postLow);
       }
-      if (EDStatic.iso19115Active) {
+      if (EDStatic.config.iso19115Active) {
         writer.write(pre);
-        writer.write(EDStatic.iso19115XmlDirectory);
+        writer.write(EDConfig.iso19115XmlDirectory);
         writer.write(postLow);
       }
       writer.write(pre);
@@ -5631,12 +5712,12 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       writer.write(pre);
       writer.write("search/index.html?" + EDStatic.encodedAllPIppQuery);
       writer.write(postHigh);
-      if (EDStatic.slideSorterActive) {
+      if (EDStatic.config.slideSorterActive) {
         writer.write(pre);
         writer.write("slidesorter.html");
         writer.write(postHigh);
       }
-      if (EDStatic.sosActive) {
+      if (EDStatic.config.sosActive) {
         writer.write(pre);
         writer.write("sos/documentation.html");
         writer.write(postHigh);
@@ -5644,7 +5725,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
         writer.write("sos/index.html?" + EDStatic.encodedAllPIppQuery);
         writer.write(postHigh);
       }
-      if (EDStatic.subscriptionSystemActive) {
+      if (EDStatic.config.subscriptionSystemActive) {
         writer.write(pre);
         writer.write("subscriptions/index.html");
         writer.write(postHigh);
@@ -5667,7 +5748,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       writer.write(pre);
       writer.write("tabledap/index.html?" + EDStatic.encodedAllPIppQuery);
       writer.write(postHigh);
-      if (EDStatic.wcsActive) {
+      if (EDStatic.config.wcsActive) {
         writer.write(pre);
         writer.write("wcs/documentation.html");
         writer.write(postHigh);
@@ -5675,7 +5756,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
         writer.write("wcs/index.html?" + EDStatic.encodedAllPIppQuery);
         writer.write(postHigh);
       }
-      if (EDStatic.wmsActive) {
+      if (EDStatic.config.wmsActive) {
         writer.write(pre);
         writer.write("wms/documentation.html");
         writer.write(postHigh);
@@ -5685,8 +5766,8 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       }
 
       // special links only for ERD's erddap
-      if (EDStatic.baseUrl.equals("http://coastwatch.pfeg.noaa.gov")
-          || EDStatic.baseUrl.equals("https://coastwatch.pfeg.noaa.gov")) {
+      if (EDStatic.config.baseUrl.equals("http://coastwatch.pfeg.noaa.gov")
+          || EDStatic.config.baseUrl.equals("https://coastwatch.pfeg.noaa.gov")) {
         writer.write(pre);
         writer.write("download/AccessToPrivateDatasets.html");
         writer.write(postHigh);
@@ -5794,8 +5875,8 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       }
 
       // write the category urls
-      for (int ca1 = 0; ca1 < EDStatic.categoryAttributes.length; ca1++) {
-        String ca1InURL = EDStatic.categoryAttributesInURLs[ca1];
+      for (int ca1 = 0; ca1 < EDStatic.config.categoryAttributes.length; ca1++) {
+        String ca1InURL = EDStatic.config.categoryAttributesInURLs[ca1];
         StringArray cats = categoryInfo(ca1InURL);
         int nCats = cats.size();
         String catPre = pre + "categorize/" + ca1InURL + "/";
@@ -5875,7 +5956,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       throws Throwable {
 
     String tErddapUrl = EDStatic.erddapUrl(loggedInAs, language);
-    String requestUrl = request.getRequestURI(); // post EDStatic.baseUrl, pre "?"
+    String requestUrl = request.getRequestURI(); // post EDStatic.config.baseUrl, pre "?"
     boolean hasDatasetID = datasetIDStartsAt < requestUrl.length();
     String endOfRequestUrl =
         hasDatasetID
@@ -5898,7 +5979,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
         writer.write(
             "<div class=\"standard_width\">\n"
                 + EDStatic.youAreHere(
-                    language, loggedInAs, protocol, EDStatic.documentationAr[language]));
+                    language, loggedInAs, protocol, EDStatic.messages.documentationAr[language]));
         if (protocol.equals("griddap"))
           EDDGrid.writeGeneralDapHtmlInstructions(language, tErddapUrl, writer, true);
         else if (protocol.equals("tabledap"))
@@ -5991,7 +6072,8 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       writer.write("<div class=\"standard_width\">\n");
       try {
         writer.write(
-            EDStatic.youAreHere(language, loggedInAs, protocol, EDStatic.helpAr[language]));
+            EDStatic.youAreHere(
+                language, loggedInAs, protocol, EDStatic.messages.helpAr[language]));
         // writer.write(EDStatic.youAreHere(language, loggedInAs, protocol, "Help"));
         writer.flush(); // Steve Souder says: the sooner you can send some html to user, the better
         if (protocol.equals("griddap"))
@@ -6089,8 +6171,8 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
           response,
           EDStatic.bilingual(
               language,
-              MessageFormat.format(EDStatic.unknownDatasetIDAr[0], id),
-              MessageFormat.format(EDStatic.unknownDatasetIDAr[language], id)));
+              MessageFormat.format(EDStatic.messages.unknownDatasetIDAr[0], id),
+              MessageFormat.format(EDStatic.messages.unknownDatasetIDAr[language], id)));
       return;
     }
     if (!dataset.isAccessibleTo(
@@ -6158,11 +6240,16 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
             && // e.g., .jsonlCSV .jsonlKVP
             !fileTypeName.equals(".ncoJson"))
           throw new SimpleException(
-              EDStatic.bilingual(language, EDStatic.queryErrorAr, EDStatic.errorJsonpNotAllowedAr));
+              EDStatic.bilingual(
+                  language,
+                  EDStatic.messages.queryErrorAr,
+                  EDStatic.messages.errorJsonpNotAllowedAr));
         if (!String2.isJsonpNameSafe(jsonp))
           throw new SimpleException(
               EDStatic.bilingual(
-                  language, EDStatic.queryErrorAr, EDStatic.errorJsonpFunctionNameAr));
+                  language,
+                  EDStatic.messages.queryErrorAr,
+                  EDStatic.messages.errorJsonpFunctionNameAr));
       }
     }
 
@@ -6222,7 +6309,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     // make the outputStream for the response
     String cacheDir = dataset.cacheDirectory(); // it is created by EDD.ensureValid
     OutputStreamSource outputStreamSource;
-    if (EDStatic.awsS3OutputBucketUrl == null) {
+    if (EDStatic.config.awsS3OutputBucketUrl == null) {
       outputStreamSource =
           new OutputStreamFromHttpResponse(
               request,
@@ -6360,7 +6447,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       throws Throwable {
 
     String tErddapUrl = EDStatic.erddapUrl(loggedInAs, language);
-    String requestUrl = request.getRequestURI(); // post EDStatic.baseUrl, pre "?"
+    String requestUrl = request.getRequestURI(); // post EDStatic.config.baseUrl, pre "?"
     String fullRequestUrl = EDStatic.baseUrl(loggedInAs) + requestUrl;
     String roles[] = EDStatic.getRoles(loggedInAs);
     // String2.log(">>fullRequestUrl=" + fullRequestUrl);
@@ -6372,13 +6459,16 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     // beware malicious url, e.g., internal /../
     if (endOfRequestUrl.indexOf("/../") >= 0)
       throw new SimpleException(
-          EDStatic.simpleBilingual(language, EDStatic.queryErrorAr) + "/../ is not allowed!");
+          EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
+              + "/../ is not allowed!");
     if (endOfRequestUrl.startsWith("/") || endOfRequestUrl.indexOf("//") >= 0)
       throw new SimpleException(
-          EDStatic.simpleBilingual(language, EDStatic.queryErrorAr) + "// is not allowed!");
+          EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
+              + "// is not allowed!");
     if (endOfRequestUrl.indexOf('\\') >= 0)
       throw new SimpleException(
-          EDStatic.simpleBilingual(language, EDStatic.queryErrorAr) + "\\ is not allowed!");
+          EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
+              + "\\ is not allowed!");
 
     // is request for documentation.html?
     if (endOfRequestUrl.equals("documentation.html")) {
@@ -6389,7 +6479,10 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
               loggedInAs,
               "files/documentation.html", // was endOfRequest,
               queryString,
-              "ERDDAP " + EDStatic.EDDFilesAr[language] + " " + EDStatic.documentationAr[language],
+              "ERDDAP "
+                  + EDStatic.messages.EDDFilesAr[language]
+                  + " "
+                  + EDStatic.messages.documentationAr[language],
               out);
       try {
         writer.write("<div class=\"standard_width\">\n");
@@ -6398,9 +6491,9 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                 language,
                 loggedInAs,
                 "files/",
-                EDStatic.EDDFilesAr,
-                EDStatic.documentationAr[language]));
-        writer.write(EDStatic.filesDocumentation(language, tErddapUrl));
+                EDStatic.messages.EDDFilesAr,
+                EDStatic.messages.documentationAr[language]));
+        writer.write(EDStatic.messages.filesDocumentation(language, tErddapUrl));
         writer.write("""
 
                 </div>
@@ -6433,8 +6526,8 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
           response,
           EDStatic.bilingual(
               language,
-              MessageFormat.format(EDStatic.unknownDatasetIDAr[0], "\"\""),
-              MessageFormat.format(EDStatic.unknownDatasetIDAr[language], "\"\"")));
+              MessageFormat.format(EDStatic.messages.unknownDatasetIDAr[0], "\"\""),
+              MessageFormat.format(EDStatic.messages.unknownDatasetIDAr[language], "\"\"")));
       return;
 
     } else if (slashPoNP > 0) {
@@ -6569,17 +6662,18 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
 
         writer.write(
             "<div class=\"standard_width\">\n"
-                + EDStatic.youAreHere(language, loggedInAs, EDStatic.EDDFilesAr[language])
-                + EDStatic.filesDescriptionAr[language]
+                + EDStatic.youAreHere(language, loggedInAs, EDStatic.messages.EDDFilesAr[language])
+                + EDStatic.messages.filesDescriptionAr[language]
                 + "\n<br><span class=\"warningColor\">"
-                + EDStatic.warningAr[language]
+                + EDStatic.messages.warningAr[language]
                 + "</span> "
-                + EDStatic.filesWarningAr[language]
+                + EDStatic.messages.filesWarningAr[language]
                 + "\n"
                 + "(<a rel=\"help\" href=\""
                 + tErddapUrl
                 + "/files/documentation.html\">"
-                + MessageFormat.format(EDStatic.indexDocumentationAr[language], "\"files\"")
+                + MessageFormat.format(
+                    EDStatic.messages.indexDocumentationAr[language], "\"files\"")
                 + "</a>"
                 + ", including <a rel=\"help\" href=\""
                 + tErddapUrl
@@ -6592,7 +6686,8 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                 fullRequestUrl,
                 queryString, // may have sort instructions
                 EDStatic.imageDirUrl(loggedInAs, language) + "fileIcons/",
-                EDStatic.imageDirUrl(loggedInAs, language) + EDStatic.questionMarkImageFile,
+                EDStatic.imageDirUrl(loggedInAs, language)
+                    + EDStatic.messages.questionMarkImageFile,
                 true,
                 subDirNames,
                 subDirDes)); // addParentDir
@@ -6619,8 +6714,8 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
           response,
           EDStatic.bilingual(
               language,
-              MessageFormat.format(EDStatic.unknownDatasetIDAr[0], id),
-              MessageFormat.format(EDStatic.unknownDatasetIDAr[language], id)));
+              MessageFormat.format(EDStatic.messages.unknownDatasetIDAr[0], id),
+              MessageFormat.format(EDStatic.messages.unknownDatasetIDAr[language], id)));
       return;
     }
 
@@ -6637,7 +6732,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     }
     if (!edd.accessibleViaFiles()) {
       if (verbose)
-        String2.log(EDStatic.resourceNotFoundAr[language] + "accessibleViaFilesDir=\"\"");
+        String2.log(EDStatic.messages.resourceNotFoundAr[language] + "accessibleViaFilesDir=\"\"");
       sendResourceNotFoundError(
           requestNumber, request, response, "This dataset is not accessible via /files/ .");
       return;
@@ -6671,8 +6766,8 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
             response,
             EDStatic.bilingual(
                 language,
-                EDStatic.resourceNotFoundAr[0] + "directory=" + nextPath,
-                EDStatic.resourceNotFoundAr[language] + "directory=" + nextPath));
+                EDStatic.messages.resourceNotFoundAr[0] + "directory=" + nextPath,
+                EDStatic.messages.resourceNotFoundAr[language] + "directory=" + nextPath));
         return;
       }
       Table fileTable = (Table) o2[0];
@@ -6687,8 +6782,8 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
             response,
             EDStatic.bilingual(
                 language,
-                EDStatic.resourceNotFoundAr[0] + "directory=" + nextPath,
-                EDStatic.resourceNotFoundAr[language] + "directory=" + nextPath));
+                EDStatic.messages.resourceNotFoundAr[0] + "directory=" + nextPath,
+                EDStatic.messages.resourceNotFoundAr[language] + "directory=" + nextPath));
         return;
       }
 
@@ -6734,13 +6829,14 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
         writer.write("<div class=\"standard_width\">\n");
         writer.write(
             nextPath.length() == 0
-                ? EDStatic.youAreHere(language, loggedInAs, "files/", EDStatic.EDDFilesAr, id)
+                ? EDStatic.youAreHere(
+                    language, loggedInAs, "files/", EDStatic.messages.EDDFilesAr, id)
                 : "\n<h1>"
                     + EDStatic.erddapHref(language, tErddapUrl)
                     + "\n &gt; <a rel=\"contents\" href=\""
                     + XML.encodeAsHTMLAttribute(EDStatic.protocolUrl(tErddapUrl, "files"))
                     + "\">"
-                    + EDStatic.EDDFilesAr[language]
+                    + EDStatic.messages.EDDFilesAr[language]
                     + "</a>"
                     + "\n &gt; <a rel=\"contents\" href=\""
                     + XML.encodeAsHTMLAttribute(
@@ -6751,19 +6847,20 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                     + "\n &gt; "
                     + XML.encodeAsXML(nextPath)
                     + "</h1>\n");
-        writer.write(EDStatic.filesDescriptionAr[language] + "\n");
+        writer.write(EDStatic.messages.filesDescriptionAr[language] + "\n");
         if (!(edd instanceof EDDTableFromFileNames))
           writer.write(
               "<br><span class=\"warningColor\">"
-                  + EDStatic.warningAr[language]
+                  + EDStatic.messages.warningAr[language]
                   + "</span> "
-                  + EDStatic.filesWarningAr[language]
+                  + EDStatic.messages.filesWarningAr[language]
                   + "\n");
         writer.write(
             " (<a rel=\"help\" href=\""
                 + tErddapUrl
                 + "/files/documentation.html\">"
-                + MessageFormat.format(EDStatic.indexDocumentationAr[language], "\"files\"")
+                + MessageFormat.format(
+                    EDStatic.messages.indexDocumentationAr[language], "\"files\"")
                 + "</a>"
                 + ", including <a rel=\"help\" href=\""
                 + tErddapUrl
@@ -6778,7 +6875,8 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                 fullRequestUrl,
                 queryString, // may have sort instructions
                 EDStatic.imageDirUrl(loggedInAs, language) + "fileIcons/",
-                EDStatic.imageDirUrl(loggedInAs, language) + EDStatic.questionMarkImageFile,
+                EDStatic.imageDirUrl(loggedInAs, language)
+                    + EDStatic.messages.questionMarkImageFile,
                 true,
                 subDirs,
                 null)); // addParentDir
@@ -6805,8 +6903,8 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
           response,
           EDStatic.bilingual(
               language,
-              MessageFormat.format(EDStatic.errorFileNotFoundAr[0], nameAndExt),
-              MessageFormat.format(EDStatic.errorFileNotFoundAr[language], nameAndExt)));
+              MessageFormat.format(EDStatic.messages.errorFileNotFoundAr[0], nameAndExt),
+              MessageFormat.format(EDStatic.messages.errorFileNotFoundAr[language], nameAndExt)));
       return;
     }
 
@@ -6820,7 +6918,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       // remote, including public AWS S3
       sendRedirect(response, localDir + nameAndExt);
 
-    } else if (EDStatic.awsS3OutputBucketUrl != null) {
+    } else if (EDStatic.config.awsS3OutputBucketUrl != null) {
       // need lock to ensure other thread isn't working with local file?
       if (edd.filesInPrivateS3Bucket()) {
         String cacheDir =
@@ -6842,13 +6940,16 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       // copy to awsS3OutputBucket and redirect
       String contentType = OutputStreamFromHttpResponse.getFileContentType(request, ext, ext);
       String fullAwsUrl =
-          EDStatic.awsS3OutputBucketUrl
+          EDStatic.config.awsS3OutputBucketUrl
               + edd.datasetID()
               + "/"
               + (nextPath == null ? "" : nextPath)
               + nameAndExt;
       SSR.uploadFileToAwsS3(
-          EDStatic.awsS3OutputTransferManager, localDir + nameAndExt, fullAwsUrl, contentType);
+          EDStatic.config.awsS3OutputTransferManager,
+          localDir + nameAndExt,
+          fullAwsUrl,
+          contentType);
       response.sendRedirect(fullAwsUrl);
 
     } else {
@@ -6909,8 +7010,9 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
           response,
           EDStatic.bilingual(
               language,
-              MessageFormat.format(EDStatic.unsupportedFileTypeAr[0], fileTypeName),
-              MessageFormat.format(EDStatic.unsupportedFileTypeAr[language], fileTypeName)));
+              MessageFormat.format(EDStatic.messages.unsupportedFileTypeAr[0], fileTypeName),
+              MessageFormat.format(
+                  EDStatic.messages.unsupportedFileTypeAr[language], fileTypeName)));
       return;
     }
 
@@ -6940,13 +7042,13 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
         EDD edd = gridDatasetHashMap.get(tids.get(ti));
         if ((edd != null
                 && // if just deleted
-                (EDStatic.listPrivateDatasets || edd.isAccessibleTo(roles)))
+                (EDStatic.config.listPrivateDatasets || edd.isAccessibleTo(roles)))
             || edd.graphsAccessibleToPublic()) { // griddap requests may be graphics requests {
           titles.add(edd.title());
           ids.add(edd.datasetID());
         }
       }
-      description = EDStatic.EDDGridDapDescriptionAr[language];
+      description = EDStatic.messages.EDDGridDapDescriptionAr[language];
     } else if (protocol.equals("tabledap")) {
       StringArray tids = tableDatasetIDs();
       int ntids = tids.size();
@@ -6956,14 +7058,14 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
         EDD edd = tableDatasetHashMap.get(tids.get(ti));
         if ((edd != null
                 && // if just deleted
-                (EDStatic.listPrivateDatasets || edd.isAccessibleTo(roles)))
+                (EDStatic.config.listPrivateDatasets || edd.isAccessibleTo(roles)))
             || edd.graphsAccessibleToPublic()) { // tabledap requests may be graphics requests
           titles.add(edd.title());
           ids.add(edd.datasetID());
         }
       }
-      description = EDStatic.EDDTableDapDescriptionAr[language];
-    } else if (EDStatic.sosActive && protocol.equals("sos")) {
+      description = EDStatic.messages.EDDTableDapDescriptionAr[language];
+    } else if (EDStatic.config.sosActive && protocol.equals("sos")) {
       StringArray tids = tableDatasetIDs();
       int ntids = tids.size();
       titles = new StringArray(ntids, false);
@@ -6973,15 +7075,16 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
         if (edd != null
             && // if just deleted
             edd.accessibleViaSOS().length() == 0
-            && (EDStatic.listPrivateDatasets || edd.isAccessibleTo(roles))) {
+            && (EDStatic.config.listPrivateDatasets || edd.isAccessibleTo(roles))) {
           // no edd.graphsAccessibleToPublic() since sos requests are all data requests
           titles.add(edd.title());
           ids.add(edd.datasetID());
         }
       }
       description =
-          EDStatic.sosDescriptionHtmlAr[language] + "\nFor details, see the 'S'OS links below.";
-    } else if (EDStatic.wcsActive && protocol.equals("wcs")) {
+          EDStatic.messages.sosDescriptionHtmlAr[language]
+              + "\nFor details, see the 'S'OS links below.";
+    } else if (EDStatic.config.wcsActive && protocol.equals("wcs")) {
       StringArray tids = gridDatasetIDs();
       int ntids = tids.size();
       titles = new StringArray(ntids, false);
@@ -6991,14 +7094,14 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
         if (edd != null
             && // if just deleted
             edd.accessibleViaWCS().length() == 0
-            && (EDStatic.listPrivateDatasets || edd.isAccessibleTo(roles))) {
+            && (EDStatic.config.listPrivateDatasets || edd.isAccessibleTo(roles))) {
           // no edd.graphsAccessibleToPublic() since wcs requests are all data requests
           titles.add(edd.title());
           ids.add(edd.datasetID());
         }
       }
-      description = EDStatic.wcsDescriptionHtmlAr[language];
-    } else if (EDStatic.wmsActive && protocol.equals("wms")) {
+      description = EDStatic.messages.wcsDescriptionHtmlAr[language];
+    } else if (EDStatic.config.wmsActive && protocol.equals("wms")) {
       StringArray tids = gridDatasetIDs();
       int ntids = tids.size();
       titles = new StringArray(ntids, false);
@@ -7008,14 +7111,14 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
         if (edd != null
             && // if just deleted
             edd.accessibleViaWMS().length() == 0
-            && (EDStatic.listPrivateDatasets
+            && (EDStatic.config.listPrivateDatasets
                 || edd.isAccessibleTo(roles)
                 || edd.graphsAccessibleToPublic())) { // all wms requests are graphics requests
           titles.add(edd.title());
           ids.add(edd.datasetID());
         }
       }
-      description = EDStatic.wmsDescriptionHtmlAr[language];
+      description = EDStatic.messages.wmsDescriptionHtmlAr[language];
     } else {
       sendResourceNotFoundError(
           requestNumber,
@@ -7023,8 +7126,8 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
           response,
           EDStatic.bilingual(
               language,
-              MessageFormat.format(EDStatic.unknownProtocolAr[0], protocol),
-              MessageFormat.format(EDStatic.unknownProtocolAr[language], protocol)));
+              MessageFormat.format(EDStatic.messages.unknownProtocolAr[0], protocol),
+              MessageFormat.format(EDStatic.messages.unknownProtocolAr[language], protocol)));
       return;
     }
 
@@ -7046,7 +7149,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
 
     // reduce datasetIDs to ones on requested page
     // IMPORTANT!!! For this to work correctly, datasetIDs must be
-    //  accessibleTo loggedInAs (or EDStatic.listPrivateDatasets)
+    //  accessibleTo loggedInAs (or EDStatic.config.listPrivateDatasets)
     //  and in final sorted order.
     //  (True here)
     // Order of removal: more efficient to remove items at end, then items at beginning.
@@ -7059,7 +7162,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       error =
           new String[] {
             MessageFormat.format(
-                EDStatic.noDatasetWithAr[language], "protocol=\"" + protocol + "\""),
+                EDStatic.messages.noDatasetWithAr[language], "protocol=\"" + protocol + "\""),
             ""
           };
     } else if (page > lastPage) {
@@ -7078,17 +7181,19 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     // you can't use noLongLinesAtSpace for fear of  "<a <br>href..."
     if (protocol.equals("tabledap"))
       description +=
-          "\n" + MessageFormat.format(EDStatic.tabledapVideoIntroAr[language], tErddapUrl) + "\n";
+          "\n"
+              + MessageFormat.format(EDStatic.messages.tabledapVideoIntroAr[language], tErddapUrl)
+              + "\n";
     if (!protocol.equals("sos")) {
       String base =
-          // protocol.equals("tabledap")? EDStatic.EDDTableErddapUrlExample + "tabledap" :
+          // protocol.equals("tabledap")? EDStatic.messages.EDDTableErddapUrlExample + "tabledap" :
           // //2021-09-22 no, always go local
-          // protocol.equals("griddap")?  EDStatic.EDDGridErddapUrlExample  + "griddap" :
+          // protocol.equals("griddap")?  EDStatic.messages.EDDGridErddapUrlExample  + "griddap" :
           tErddapUrl + "/" + protocol;
       description +=
           "\n"
               + MessageFormat.format(
-                  EDStatic.seeProtocolDocumentationAr[language],
+                  EDStatic.messages.seeProtocolDocumentationAr[language],
                   base + "/documentation.html",
                   uProtocol)
               + "\n";
@@ -7099,7 +7204,10 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     if (pft >= 0) {
       if (error != null)
         throw new SimpleException(
-            EDStatic.simpleBilingual(language, EDStatic.queryErrorAr) + error[0] + " " + error[1]);
+            EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
+                + error[0]
+                + " "
+                + error[1]);
 
       // make the plain table with the dataset list
       table = makePlainDatasetTable(language, loggedInAs, ids, sortByTitle, fileTypeName);
@@ -7128,11 +7236,11 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
             loggedInAs,
             protocol + "/index.html", // was endOfRequest,
             queryString,
-            MessageFormat.format(EDStatic.listOfDatasetsAr[language], uProtocol),
+            MessageFormat.format(EDStatic.messages.listOfDatasetsAr[language], uProtocol),
             out);
     try {
       String refine =
-          EDStatic.orRefineSearchWithAr[language]
+          EDStatic.messages.orRefineSearchWithAr[language]
               + getAdvancedSearchLink(
                   language,
                   loggedInAs,
@@ -7150,7 +7258,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
               "</h2>\n",
           //Or, View All Datasets
           "&nbsp;\n" +
-          "<br>" + getSearchFormHtml(language, request, loggedInAs, EDStatic.orCommaAr[language], ":\n<br>", "") +
+          "<br>" + getSearchFormHtml(language, request, loggedInAs, EDStatic.messages.orCommaAr[language], ":\n<br>", "") +
           "<br>" + getCategoryLinksHtml(request, tErddapUrl) +
           "<br>&nbsp;\n" +
           "<br>" + refine);
@@ -7179,14 +7287,14 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
         writer.write(
             "\n"
                 + "<p>"
-                + EDStatic.restfulInformationFormatsAr[language]
+                + EDStatic.messages.restfulInformationFormatsAr[language]
                 + " \n("
                 + plainFileTypesString
                 + // not links, which would be indexed by search engines
                 ") <a rel=\"help\" href=\""
                 + tErddapUrl
                 + "/rest.html\">"
-                + EDStatic.restfulViaServiceAr[language]
+                + EDStatic.messages.restfulViaServiceAr[language]
                 + "</a>.\n");
       } else {
         writer.write(
@@ -7240,15 +7348,15 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       String queryString)
       throws Throwable {
 
-    if (!EDStatic.sosActive) {
+    if (!EDStatic.config.sosActive) {
       sendResourceNotFoundError(
           requestNumber,
           request,
           response,
           EDStatic.bilingual(
               language,
-              MessageFormat.format(EDStatic.disabledAr[0], "SOS"),
-              MessageFormat.format(EDStatic.disabledAr[language], "SOS")));
+              MessageFormat.format(EDStatic.messages.disabledAr[0], "SOS"),
+              MessageFormat.format(EDStatic.messages.disabledAr[language], "SOS")));
     }
     /*
     This isn't finished!   Reference server (ndbcSOS) is in flux and ...
@@ -7256,7 +7364,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     */
 
     String tErddapUrl = EDStatic.erddapUrl(loggedInAs, language);
-    String requestUrl = request.getRequestURI(); // post EDStatic.baseUrl, pre "?"
+    String requestUrl = request.getRequestURI(); // post EDStatic.config.baseUrl, pre "?"
     String endOfRequestUrl =
         datasetIDStartsAt >= requestUrl.length() ? "" : requestUrl.substring(datasetIDStartsAt);
 
@@ -7302,8 +7410,8 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
           response,
           EDStatic.bilingual(
               language,
-              MessageFormat.format(EDStatic.unknownDatasetIDAr[0], tDatasetID),
-              MessageFormat.format(EDStatic.unknownDatasetIDAr[language], tDatasetID)));
+              MessageFormat.format(EDStatic.messages.unknownDatasetIDAr[0], tDatasetID),
+              MessageFormat.format(EDStatic.messages.unknownDatasetIDAr[language], tDatasetID)));
       return;
     }
 
@@ -7415,10 +7523,11 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       // if service= is present, it must be service=SOS     //technically, it is required
       String tService = queryMap.get("service");
       if (tService != null && !tService.equals("SOS"))
-        // this format EDStatic.queryErrorAr[language] + "xxx=" is parsed by Erddap section "deal
+        // this format EDStatic.messages.queryErrorAr[language] + "xxx=" is parsed by Erddap section
+        // "deal
         // with SOS error"
         throw new SimpleException(
-            EDStatic.simpleBilingual(language, EDStatic.queryErrorAr)
+            EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
                 + "service='"
                 + tService
                 + "' must be 'SOS'.");
@@ -7455,11 +7564,12 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
           String version = queryMap.get("version"); // map keys are lowercase
 
           if (version == null || !version.equals(EDDTable.sosVersion))
-            // this format EDStatic.queryErrorAr[language] + "xxx=" is parsed by Erddap section
+            // this format EDStatic.messages.queryErrorAr[language] + "xxx=" is parsed by Erddap
+            // section
             // "deal
             // with SOS error"
             throw new SimpleException(
-                EDStatic.simpleBilingual(language, EDStatic.queryErrorAr)
+                EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
                     + "version='"
                     + version
                     + "' must be '"
@@ -7471,11 +7581,12 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
           String outputFormat = queryMap.get("outputformat"); // map keys are lowercase
 
           if (outputFormat == null || !outputFormat.equals(EDDTable.sosDSOutputFormat))
-            // this format EDStatic.queryErrorAr[language] + "xxx=" is parsed by Erddap section
+            // this format EDStatic.messages.queryErrorAr[language] + "xxx=" is parsed by Erddap
+            // section
             // "deal
             // with SOS error"
             throw new SimpleException(
-                EDStatic.simpleBilingual(language, EDStatic.queryErrorAr)
+                EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
                     + "outputFormat='"
                     + outputFormat
                     + "' must be '"
@@ -7486,11 +7597,12 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
           String procedure = queryMap.get("procedure"); // map keys are lowercase
 
           if (procedure == null)
-            // this format EDStatic.queryErrorAr[language] + "xxx=" is parsed by Erddap section
+            // this format EDStatic.messages.queryErrorAr[language] + "xxx=" is parsed by Erddap
+            // section
             // "deal
             // with SOS error"
             throw new SimpleException(
-                EDStatic.simpleBilingual(language, EDStatic.queryErrorAr)
+                EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
                     + "procedure=''.  Please specify a procedure.");
           String sensorGmlNameStart = eddTable.getSosGmlNameStart("sensor");
           String shortName =
@@ -7506,11 +7618,12 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
           if (!shortName.equals(eddTable.datasetID())
               && // all
               eddTable.sosOfferings.indexOf(shortName) < 0) // 1 station
-            // this format EDStatic.queryErrorAr[language] + "xxx=" is parsed by Erddap section
+            // this format EDStatic.messages.queryErrorAr[language] + "xxx=" is parsed by Erddap
+            // section
             // "deal
             // with SOS error"
             throw new SimpleException(
-                EDStatic.simpleBilingual(language, EDStatic.queryErrorAr)
+                EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
                     + "procedure="
                     + procedure
                     + " isn't a valid long or short sensor name.");
@@ -7523,9 +7636,11 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
           //        sensor.equals(EDV.TIME_NAME) ||
           //
           // sensor.equals(eddTable.dataVariableDestinationNames()[eddTable.sosOfferingIndex]))
-          //    this format EDStatic.queryErrorAr[0] + "xxx=" is parsed by Erddap section "deal with
+          //    this format EDStatic.messages.queryErrorAr[0] + "xxx=" is parsed by Erddap section
+          // "deal with
           // SOS error"
-          //    throw new SimpleException(EDStatic.simpleBilingual(language, EDStatic.queryErrorAr)
+          //    throw new SimpleException(EDStatic.simpleBilingual(language,
+          // EDStatic.messages.queryErrorAr)
           // +
           //        "procedure=" + procedure + " isn't valid because \"" + sensor + "\" isn't valid
           // sensor name.");
@@ -7547,11 +7662,12 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
 
           String fileTypeName = EDDTable.sosResponseFormatToFileTypeName(responseFormat);
           if (fileTypeName == null)
-            // this format EDStatic.queryErrorAr[language] + "xxx=" is parsed by Erddap section
+            // this format EDStatic.messages.queryErrorAr[language] + "xxx=" is parsed by Erddap
+            // section
             // "deal
             // with SOS error"
             throw new SimpleException(
-                EDStatic.simpleBilingual(language, EDStatic.queryErrorAr)
+                EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
                     + "responseFormat="
                     + responseFormat
                     + " is invalid.");
@@ -7594,11 +7710,12 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
           return;
         }
         default ->
-            // this format EDStatic.queryErrorAr[language] + "xxx=" is parsed by Erddap section
+            // this format EDStatic.messages.queryErrorAr[language] + "xxx=" is parsed by Erddap
+            // section
             // "deal
             // with SOS error"
             throw new SimpleException(
-                EDStatic.simpleBilingual(language, EDStatic.queryErrorAr)
+                EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
                     + "request="
                     + tRequest
                     + " is not supported.");
@@ -7641,8 +7758,8 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
         String locator = null; // default
 
         // catch InvalidParameterValue
-        // Look for EDStatic.queryErrorAr[language] + "xxx="
-        String qe = EDStatic.queryErrorAr[language];
+        // Look for EDStatic.messages.queryErrorAr[language] + "xxx="
+        String qe = EDStatic.messages.queryErrorAr[language];
         int qepo = error.indexOf(qe);
         int epo = error.indexOf('=');
         if (qepo >= 0 && epo > qepo && epo - qepo < 17 + 20) {
@@ -7695,15 +7812,15 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       String queryString)
       throws Throwable {
 
-    if (!EDStatic.sosActive) {
+    if (!EDStatic.config.sosActive) {
       sendResourceNotFoundError(
           requestNumber,
           request,
           response,
           EDStatic.bilingual(
               language,
-              MessageFormat.format(EDStatic.disabledAr[0], "SOS"),
-              MessageFormat.format(EDStatic.disabledAr[language], "SOS")));
+              MessageFormat.format(EDStatic.messages.disabledAr[0], "SOS"),
+              MessageFormat.format(EDStatic.messages.disabledAr[language], "SOS")));
       return;
     }
 
@@ -7720,9 +7837,10 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     try {
       writer.write(
           "<div class=\"standard_width\">\n"
-              + EDStatic.youAreHere(language, loggedInAs, EDStatic.SOSAr[language])
+              + EDStatic.youAreHere(language, loggedInAs, EDStatic.messages.SOSAr[language])
               + "\n"
-              + EDStatic.sosOverview1Ar[language]
+              + EDStatic.messages
+                  .sosOverview1Ar[language]
                   .replaceAll("&tErddapUrl;", tErddapUrl)
                   .replaceAll("&encodedDefaultPIppQuery;", EDStatic.encodedDefaultPIppQuery)
               +
@@ -7739,8 +7857,9 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
               "<p>" +
               */
               String2.replaceAll(
-                  EDStatic.sosLongDescriptionHtmlAr[language], "&erddapUrl;", tErddapUrl)
-              + EDStatic.sosOverview2Ar[language]
+                  EDStatic.messages.sosLongDescriptionHtmlAr[language], "&erddapUrl;", tErddapUrl)
+              + EDStatic.messages
+                  .sosOverview2Ar[language]
                   .replace("&tErddapUrl;", tErddapUrl)
                   .replace("&encodedDefaultPIppQuery;", EDStatic.encodedDefaultPIppQuery)
               +
@@ -7795,20 +7914,20 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       String queryString)
       throws Throwable {
 
-    if (!EDStatic.wcsActive) {
+    if (!EDStatic.config.wcsActive) {
       sendResourceNotFoundError(
           requestNumber,
           request,
           response,
           EDStatic.bilingual(
               language,
-              MessageFormat.format(EDStatic.disabledAr[0], "WCS"),
-              MessageFormat.format(EDStatic.disabledAr[language], "WCS")));
+              MessageFormat.format(EDStatic.messages.disabledAr[0], "WCS"),
+              MessageFormat.format(EDStatic.messages.disabledAr[language], "WCS")));
       return;
     }
 
     String tErddapUrl = EDStatic.erddapUrl(loggedInAs, language);
-    String requestUrl = request.getRequestURI(); // post EDStatic.baseUrl, pre "?"
+    String requestUrl = request.getRequestURI(); // post EDStatic.config.baseUrl, pre "?"
     String endOfRequestUrl =
         datasetIDStartsAt >= requestUrl.length() ? "" : requestUrl.substring(datasetIDStartsAt);
 
@@ -7853,8 +7972,8 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
           response,
           EDStatic.bilingual(
               language,
-              MessageFormat.format(EDStatic.unknownDatasetIDAr[0], tDatasetID),
-              MessageFormat.format(EDStatic.unknownDatasetIDAr[language], tDatasetID)));
+              MessageFormat.format(EDStatic.messages.unknownDatasetIDAr[0], tDatasetID),
+              MessageFormat.format(EDStatic.messages.unknownDatasetIDAr[language], tDatasetID)));
       return;
     }
 
@@ -7950,7 +8069,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       String tService = queryMap.get("service");
       if (tService != null && !tService.equals("WCS"))
         throw new SimpleException(
-            EDStatic.simpleBilingual(language, EDStatic.queryErrorAr)
+            EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
                 + "service='"
                 + tService
                 + "' must be 'WCS'.");
@@ -8005,7 +8124,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
           int fi = String2.caseInsensitiveIndexOf(EDDGrid.wcsRequestFormats100, requestFormat);
           if (fi < 0)
             throw new SimpleException(
-                EDStatic.simpleBilingual(language, EDStatic.queryErrorAr)
+                EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
                     + "format="
                     + requestFormat
                     + " isn't supported.");
@@ -8020,7 +8139,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
               fileExtension = EDDGrid.imageFileTypeExtensions.get(efe);
             } else {
               throw new SimpleException(
-                  EDStatic.simpleBilingual(language, EDStatic.queryErrorAr)
+                  EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
                       + "format="
                       + requestFormat
                       + " isn't supported!");
@@ -8045,7 +8164,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
         }
         default ->
             throw new SimpleException(
-                EDStatic.simpleBilingual(language, EDStatic.queryErrorAr)
+                EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
                     + "request='"
                     + tRequest
                     + "' is not supported.");
@@ -8111,15 +8230,15 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       String queryString)
       throws Throwable {
 
-    if (!EDStatic.wcsActive) {
+    if (!EDStatic.config.wcsActive) {
       sendResourceNotFoundError(
           requestNumber,
           request,
           response,
           EDStatic.bilingual(
               language,
-              MessageFormat.format(EDStatic.disabledAr[0], "WCS"),
-              MessageFormat.format(EDStatic.disabledAr[language], "WCS")));
+              MessageFormat.format(EDStatic.messages.disabledAr[0], "WCS"),
+              MessageFormat.format(EDStatic.messages.disabledAr[language], "WCS")));
       return;
     }
 
@@ -8136,11 +8255,12 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     try {
       writer.write(
           "<div class=\"standard_width\">\n"
-              + EDStatic.youAreHere(language, loggedInAs, EDStatic.WCSAr[language])
+              + EDStatic.youAreHere(language, loggedInAs, EDStatic.messages.WCSAr[language])
               +
               // EDStatic.youAreHere(language, loggedInAs, "Web Coverage Service (WCS)") +
               "\n"
-              + EDStatic.wcsOverview1Ar[language]
+              + EDStatic.messages
+                  .wcsOverview1Ar[language]
                   .replace("&tErddapUrl;", tErddapUrl)
                   .replace("&encodedDefaultPIppQuery;", EDStatic.encodedDefaultPIppQuery)
               +
@@ -8161,10 +8281,10 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
               "\n"
               + "<p>"
               + String2.replaceAll(
-                  EDStatic.wcsLongDescriptionHtmlAr[language], "&erddapUrl;", tErddapUrl)
+                  EDStatic.messages.wcsLongDescriptionHtmlAr[language], "&erddapUrl;", tErddapUrl)
               + "\n"
-              + EDStatic.wcsOverview2Ar[language].replace(
-                  "&externalLinkHtml;", EDStatic.externalLinkHtml(language, tErddapUrl))
+              + EDStatic.messages.wcsOverview2Ar[language].replace(
+                  "&externalLinkHtml;", EDStatic.messages.externalLinkHtml(language, tErddapUrl))
               +
               // "\n" +
               // "<p>WCS clients send HTTP POST or GET requests (specially formed URLs) to the WCS
@@ -8211,20 +8331,20 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       String queryString)
       throws Throwable {
 
-    if (!EDStatic.wmsActive) {
+    if (!EDStatic.config.wmsActive) {
       sendResourceNotFoundError(
           requestNumber,
           request,
           response,
           EDStatic.bilingual(
               language,
-              MessageFormat.format(EDStatic.disabledAr[0], "WMS"),
-              MessageFormat.format(EDStatic.disabledAr[language], "WMS")));
+              MessageFormat.format(EDStatic.messages.disabledAr[0], "WMS"),
+              MessageFormat.format(EDStatic.messages.disabledAr[language], "WMS")));
       return;
     }
 
     String tErddapUrl = EDStatic.erddapUrl(loggedInAs, language);
-    String requestUrl = request.getRequestURI(); // post EDStatic.baseUrl, pre "?"
+    String requestUrl = request.getRequestURI(); // post EDStatic.config.baseUrl, pre "?"
     String endOfRequestUrl =
         datasetIDStartsAt >= requestUrl.length() ? "" : requestUrl.substring(datasetIDStartsAt);
     int slashPo = endOfRequestUrl.indexOf('/'); // between datasetID/endEnd
@@ -8269,7 +8389,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
             response,
             loggedInAs,
             "1.1.0",
-            EDStatic.wmsSampleDatasetID,
+            EDStatic.config.wmsSampleDatasetID,
             endOfRequest,
             queryString);
         return;
@@ -8282,7 +8402,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
             response,
             loggedInAs,
             "1.1.1",
-            EDStatic.wmsSampleDatasetID,
+            EDStatic.config.wmsSampleDatasetID,
             endOfRequest,
             queryString);
         return;
@@ -8295,7 +8415,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
             response,
             loggedInAs,
             "1.3.0",
-            EDStatic.wmsSampleDatasetID,
+            EDStatic.config.wmsSampleDatasetID,
             endOfRequest,
             queryString);
         return;
@@ -8316,8 +8436,8 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
           response,
           EDStatic.bilingual(
               language,
-              MessageFormat.format(EDStatic.unknownDatasetIDAr[0], tDatasetID),
-              MessageFormat.format(EDStatic.unknownDatasetIDAr[language], tDatasetID)));
+              MessageFormat.format(EDStatic.messages.unknownDatasetIDAr[0], tDatasetID),
+              MessageFormat.format(EDStatic.messages.unknownDatasetIDAr[language], tDatasetID)));
       return;
     }
 
@@ -8400,9 +8520,9 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
 
     // error
     throw new SimpleException(
-        EDStatic.queryErrorAr[0]
+        EDStatic.messages.queryErrorAr[0]
             + MessageFormat.format(
-                EDStatic.queryErrorInvalidAr[0], "endEnd=" + String2.toJson(endEnd)));
+                EDStatic.messages.queryErrorInvalidAr[0], "endEnd=" + String2.toJson(endEnd)));
   }
 
   /**
@@ -8427,15 +8547,15 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       String queryString)
       throws Throwable {
 
-    if (!EDStatic.wmsActive) {
+    if (!EDStatic.config.wmsActive) {
       sendResourceNotFoundError(
           requestNumber,
           request,
           response,
           EDStatic.bilingual(
               language,
-              MessageFormat.format(EDStatic.disabledAr[0], "WMS"),
-              MessageFormat.format(EDStatic.disabledAr[language], "WMS")));
+              MessageFormat.format(EDStatic.messages.disabledAr[0], "WMS"),
+              MessageFormat.format(EDStatic.messages.disabledAr[language], "WMS")));
       return;
     }
 
@@ -8448,7 +8568,8 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       // must be service=WMS     but I don't require it
       // String tService = queryMap.get("service");
       // if (tService == null || !tService.equals("WMS"))
-      //    throw new SimpleException(EDStatic.simpleBilingual(language, EDStatic.queryErrorAr) +
+      //    throw new SimpleException(EDStatic.simpleBilingual(language,
+      // EDStatic.messages.queryErrorAr) +
       //        "service='" + tService + "' must be 'WMS'.");
 
       // deal with different request=
@@ -8470,7 +8591,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       // if (tRequest.equals("GetFeatureInfo")) { //optional, not yet supported
 
       throw new SimpleException(
-          EDStatic.simpleBilingual(language, EDStatic.queryErrorAr)
+          EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
               + "request='"
               + tRequest
               + "' isn't supported.");
@@ -8535,28 +8656,30 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       String queryString)
       throws Throwable {
 
-    if (!EDStatic.wmsActive) {
+    if (!EDStatic.config.wmsActive) {
       sendResourceNotFoundError(
           requestNumber,
           request,
           response,
           EDStatic.bilingual(
               language,
-              MessageFormat.format(EDStatic.disabledAr[0], "WMS"),
-              MessageFormat.format(EDStatic.disabledAr[language], "WMS")));
+              MessageFormat.format(EDStatic.messages.disabledAr[0], "WMS"),
+              MessageFormat.format(EDStatic.messages.disabledAr[language], "WMS")));
       return;
     }
 
     String tErddapUrl = EDStatic.erddapUrl(loggedInAs, language);
-    String e0 = tErddapUrl + "/wms/" + EDStatic.wmsSampleDatasetID + "/" + EDD.WMS_SERVER + "?";
+    String e0 =
+        tErddapUrl + "/wms/" + EDStatic.config.wmsSampleDatasetID + "/" + EDD.WMS_SERVER + "?";
     String ec = "service=WMS&#x26;request=GetCapabilities&#x26;version=";
     String e1 = "service=WMS&#x26;version=";
     String e2 =
-        "&#x26;request=GetMap&#x26;bbox="; // + EDStatic.wmsSampleBBox + "&#x26;"; //needs c or s
+        "&#x26;request=GetMap&#x26;bbox="; // + EDStatic.config.wmsSampleBBox + "&#x26;"; //needs c
+    // or s
     // this section of code is in 2 places
     int bbox[] =
         String2.toIntArray(
-            String2.split(EDStatic.wmsSampleBBox110, ',')); // extract info from 110 version
+            String2.split(EDStatic.config.wmsSampleBBox110, ',')); // extract info from 110 version
     int tHeight = ((bbox[3] - bbox[1]) * 360) / Math.max(1, bbox[2] - bbox[0]);
     tHeight = Math2.minMaxDef(10, 600, 180, tHeight);
     String e2b =
@@ -8564,12 +8687,13 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
             + tHeight
             + "&#x26;bgcolor=0x808080&#x26;layers=";
     // Land,erdBAssta5day:sst,Coastlines,LakesAndRivers,Nations,States
-    String e3 = EDStatic.wmsSampleDatasetID + EDD.WMS_SEPARATOR + EDStatic.wmsSampleVariable;
+    String e3 =
+        EDStatic.config.wmsSampleDatasetID + EDD.WMS_SEPARATOR + EDStatic.config.wmsSampleVariable;
     String e4 = "&#x26;styles=&#x26;format=image/png";
     String et = "&#x26;transparent=TRUE";
     String st =
-        String2.isSomething(EDStatic.wmsSampleTime)
-            ? XML.encodeAsHTMLAttribute("&time=" + EDStatic.wmsSampleTime)
+        String2.isSomething(EDStatic.config.wmsSampleTime)
+            ? XML.encodeAsHTMLAttribute("&time=" + EDStatic.config.wmsSampleTime)
             : "";
 
     String tWmsGetCapabilities110 = e0 + ec + "1.1.0";
@@ -8580,7 +8704,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
             + e1
             + "1.1.0"
             + e2
-            + EDStatic.wmsSampleBBox110
+            + EDStatic.config.wmsSampleBBox110
             + st
             + "&#x26;s"
             + e2b
@@ -8593,7 +8717,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
             + e1
             + "1.1.1"
             + e2
-            + EDStatic.wmsSampleBBox110
+            + EDStatic.config.wmsSampleBBox110
             + st
             + "&#x26;s"
             + e2b
@@ -8606,7 +8730,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
             + e1
             + "1.3.0"
             + e2
-            + EDStatic.wmsSampleBBox130
+            + EDStatic.config.wmsSampleBBox130
             + st
             + "&#x26;c"
             + e2b
@@ -8615,11 +8739,41 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
             + ",Coastlines,Nations"
             + e4;
     String tWmsTransparentExample110 =
-        e0 + e1 + "1.1.0" + e2 + EDStatic.wmsSampleBBox110 + st + "&#x26;s" + e2b + e3 + e4 + et;
+        e0
+            + e1
+            + "1.1.0"
+            + e2
+            + EDStatic.config.wmsSampleBBox110
+            + st
+            + "&#x26;s"
+            + e2b
+            + e3
+            + e4
+            + et;
     String tWmsTransparentExample111 =
-        e0 + e1 + "1.1.1" + e2 + EDStatic.wmsSampleBBox110 + st + "&#x26;s" + e2b + e3 + e4 + et;
+        e0
+            + e1
+            + "1.1.1"
+            + e2
+            + EDStatic.config.wmsSampleBBox110
+            + st
+            + "&#x26;s"
+            + e2b
+            + e3
+            + e4
+            + et;
     String tWmsTransparentExample130 =
-        e0 + e1 + "1.3.0" + e2 + EDStatic.wmsSampleBBox130 + st + "&#x26;c" + e2b + e3 + e4 + et;
+        e0
+            + e1
+            + "1.3.0"
+            + e2
+            + EDStatic.config.wmsSampleBBox130
+            + st
+            + "&#x26;c"
+            + e2b
+            + e3
+            + e4
+            + et;
 
     // What is WMS?   (generic)
     OutputStream out = getHtmlOutputStreamUtf8(request, response);
@@ -8636,9 +8790,9 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
           "<a href=\""
               + tErddapUrl
               + "/wms/"
-              + EDStatic.wmsSampleDatasetID
+              + EDStatic.config.wmsSampleDatasetID
               + "/index.html\">"
-              + EDStatic.likeThisAr[language]
+              + EDStatic.messages.likeThisAr[language]
               + "</a>";
       String datasetListRef =
           "  See the <a rel=\"bookmark\" href=\""
@@ -8656,24 +8810,29 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       writer.write(
           // see almost identical documentation at ...
           "<div class=\"standard_width\">\n"
-              + EDStatic.youAreHere(language, loggedInAs, "wms", EDStatic.documentationAr[language])
+              + EDStatic.youAreHere(
+                  language, loggedInAs, "wms", EDStatic.messages.documentationAr[language])
               +
               // EDStatic.youAreHere(language, loggedInAs, "wms", "Documentation") +
               String2.replaceAll(
-                  EDStatic.wmsLongDescriptionHtmlAr[language], "&erddapUrl;", tErddapUrl)
+                  EDStatic.messages.wmsLongDescriptionHtmlAr[language], "&erddapUrl;", tErddapUrl)
               + "\n"
               + datasetListRef
               +
               // "<p>\n" +
-              EDStatic.WMSDocumentation1Ar[language]
-                  .replaceAll("&externalLinkHtml;", EDStatic.externalLinkHtml(language, tErddapUrl))
+              EDStatic.messages
+                  .WMSDocumentation1Ar[language]
+                  .replaceAll(
+                      "&externalLinkHtml;",
+                      EDStatic.messages.externalLinkHtml(language, tErddapUrl))
                   .replaceAll("&tErddapUrl;", tErddapUrl)
                   .replace("&WMSSERVER;", EDD.WMS_SERVER)
                   .replace("&e0;", e0)
                   .replaceAll("&datasetListRef;", datasetListRef)
                   .replaceAll(
                       "&makeAGraphRef;",
-                      EDStatic.magAr[language]) // was link to embed.html link but this is better
+                      EDStatic.messages
+                          .magAr[language]) // was link to embed.html link but this is better
                   .replaceAll("&makeAGraphListRef;", makeAGraphListRef)
                   .replaceAll("&likeThis;", likeThis)
                   .replace(
@@ -8763,9 +8922,12 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
 
       // GetCapabilities
       writer.write(
-          EDStatic.WMSGetCapabilitiesAr[language]
+          EDStatic.messages
+                  .WMSGetCapabilitiesAr[language]
                   .replaceAll("&tWmsGetCapabilities130;", tWmsGetCapabilities130)
-                  .replaceAll("&externalLinkHtml;", EDStatic.externalLinkHtml(language, tErddapUrl))
+                  .replaceAll(
+                      "&externalLinkHtml;",
+                      EDStatic.messages.externalLinkHtml(language, tErddapUrl))
               +
               // "<h2><a class=\"selfLink\" id=\"GetCapabilities\" href=\"#GetCapabilities\"
               // rel=\"bookmark\">Forming GetCapabilities URLs</a></h2>\n" +
@@ -8818,13 +8980,16 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
 
       // getMap
       writer.write(
-          EDStatic.WMSGetMapAr[language]
+          EDStatic.messages
+                  .WMSGetMapAr[language]
                   .replaceAll("&tErddapUrl;", tErddapUrl)
                   .replaceAll("&tWmsOpaqueExample130;", tWmsOpaqueExample130)
                   .replaceAll(
                       "&tWmsOpaqueExample130Replaced;",
                       String2.replaceAll(tWmsOpaqueExample130, "&", "<wbr>&"))
-                  .replaceAll("&externalLinkHtml;", EDStatic.externalLinkHtml(language, tErddapUrl))
+                  .replaceAll(
+                      "&externalLinkHtml;",
+                      EDStatic.messages.externalLinkHtml(language, tErddapUrl))
               +
               // "<h2><a class=\"selfLink\" id=\"GetMap\" href=\"#GetMap\" rel=\"bookmark\">Forming
               // GetMap URLs</a></h2>\n" +
@@ -9037,7 +9202,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
               "\n");
 
       // notes
-      writer.write(EDStatic.WMSNotesAr[language]);
+      writer.write(EDStatic.messages.WMSNotesAr[language]);
 
       writer.write(
           // 1.3.0 examples
@@ -9070,7 +9235,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
               + "  </tr>\n"
               + "  <tr>\n"
               + "    <td class=\"N\"><strong> In <a rel=\"bookmark\" href=\"https://leafletjs.com\">Leaflet"
-              + EDStatic.externalLinkHtml(language, tErddapUrl)
+              + EDStatic.messages.externalLinkHtml(language, tErddapUrl)
               + "</a> </strong></td> \n"
               + "    <td><a href=\""
               + tErddapUrl
@@ -9111,7 +9276,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
               + "  </tr>\n"
               + "  <tr>\n"
               + "    <td class=\"N\"><strong> In <a rel=\"bookmark\" href=\"https://leafletjs.com\">Leaflet"
-              + EDStatic.externalLinkHtml(language, tErddapUrl)
+              + EDStatic.messages.externalLinkHtml(language, tErddapUrl)
               + "</a> </strong></td> \n"
               + "    <td><a href=\""
               + tErddapUrl
@@ -9152,7 +9317,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
               + "  </tr>\n"
               + "  <tr>\n"
               + "    <td class=\"N\"><strong> In <a rel=\"bookmark\" href=\"https://leafletjs.com\">Leaflet"
-              + EDStatic.externalLinkHtml(language, tErddapUrl)
+              + EDStatic.messages.externalLinkHtml(language, tErddapUrl)
               + "</a> </strong></td> \n"
               + "    <td><a href=\""
               + tErddapUrl
@@ -9179,7 +9344,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
    *
    * <p>Similarly, if request if from one dataset's wms, this method can cache results in separate
    * dataset directories. (Which is good, because dataset's cache is emptied when dataset reloaded.)
-   * Otherwise, it uses EDStatic.fullWmsCacheDirectory.
+   * Otherwise, it uses EDStatic.config.fullWmsCacheDirectory.
    *
    * @param language the index of the selected language
    * @param requestNumber The requestNumber assigned to this request by doGet().
@@ -9198,15 +9363,15 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       Map<String, String> queryMap)
       throws Throwable {
 
-    if (!EDStatic.wmsActive) {
+    if (!EDStatic.config.wmsActive) {
       sendResourceNotFoundError(
           requestNumber,
           request,
           response,
           EDStatic.bilingual(
               language,
-              MessageFormat.format(EDStatic.disabledAr[0], "WMS"),
-              MessageFormat.format(EDStatic.disabledAr[language], "WMS")));
+              MessageFormat.format(EDStatic.messages.disabledAr[0], "WMS"),
+              MessageFormat.format(EDStatic.messages.disabledAr[language], "WMS")));
       return;
     }
 
@@ -9295,7 +9460,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
               return;
             } else {
               String2.log(
-                  EDStatic.errorInternalAr[0]
+                  EDStatic.messages.errorInternalAr[0]
                       + "\"/griddap/\" should have been in "
                       + "EDDGridFromErddap.getNextLocalSourceErddapUrl()="
                       + tUrl
@@ -9310,7 +9475,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       if (mainDatasetID != null) fileName = mainDatasetID + "_" + fileName;
       String cacheDir =
           mainDatasetID == null
-              ? EDStatic.fullWmsCacheDirectory
+              ? EDStatic.config.fullWmsCacheDirectory
               : EDD.cacheDirectory(mainDatasetID);
       if (reallyVerbose) String2.log("doWmsGetMap cacheDir=" + cacheDir);
 
@@ -9319,7 +9484,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       if (tVersion == null) tVersion = "1.3.0";
       if (!tVersion.equals("1.1.0") && !tVersion.equals("1.1.1") && !tVersion.equals("1.3.0"))
         throw new SimpleException(
-            EDStatic.simpleBilingual(language, EDStatic.queryErrorAr)
+            EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
                 + "VERSION="
                 + tVersion
                 + " must be '1.1.0', '1.1.1', or '1.3.0'.");
@@ -9368,13 +9533,13 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
         exceptions = "XML"; // fall back
         if (tVersion.equals("1.1.0") || tVersion.equals("1.1.1"))
           throw new SimpleException(
-              EDStatic.simpleBilingual(language, EDStatic.queryErrorAr)
+              EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
                   + "EXCEPTIONS="
                   + oExceptions
                   + " must be one of 'application/vnd.ogc.se_xml', 'application/vnd.ogc.se_blank', or 'application/vnd.ogc.se_inimage'.");
         else // 1.3.0+
         throw new SimpleException(
-              EDStatic.simpleBilingual(language, EDStatic.queryErrorAr)
+              EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
                   + "EXCEPTIONS="
                   + oExceptions
                   + " must be one of 'XML', 'BLANK', or 'INIMAGE'.");
@@ -9383,7 +9548,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       if (width < 2 || width > EDD.WMS_MAX_WIDTH) {
         exceptions = "XML"; // fall back
         throw new SimpleException(
-            EDStatic.simpleBilingual(language, EDStatic.queryErrorAr)
+            EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
                 + "WIDTH="
                 + width
                 + " must be between 2 and "
@@ -9393,7 +9558,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       if (height < 2 || height > EDD.WMS_MAX_HEIGHT) {
         exceptions = "XML"; // fall back
         throw new SimpleException(
-            EDStatic.simpleBilingual(language, EDStatic.queryErrorAr)
+            EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
                 + "HEIGHT="
                 + height
                 + " must be between 2 and "
@@ -9403,7 +9568,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       if (format == null || !format.equalsIgnoreCase("image/png")) {
         exceptions = "XML"; // fall back
         throw new SimpleException(
-            EDStatic.simpleBilingual(language, EDStatic.queryErrorAr)
+            EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
                 + "FORMAT="
                 + format
                 + " must be image/png.");
@@ -9426,7 +9591,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       }
       if (layers.length > EDD.WMS_MAX_LAYERS)
         throw new SimpleException(
-            EDStatic.simpleBilingual(language, EDStatic.queryErrorAr)
+            EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
                 + "The number of LAYERS="
                 + layers.length
                 + " must not be more than "
@@ -9447,7 +9612,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       String styles[] = String2.split(stylesCsv, ',');
       if (layers.length != styles.length)
         throw new SimpleException(
-            EDStatic.simpleBilingual(language, EDStatic.queryErrorAr)
+            EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
                 + "The number of STYLES="
                 + styles.length
                 + " must equal the number of LAYERS="
@@ -9459,7 +9624,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       crs = "CRS:84";
       if (!crs.equals("CRS:84") && !crs.equals("EPSG:4326")) {
         throw new SimpleException(
-            EDStatic.simpleBilingual(language, EDStatic.queryErrorAr)
+            EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
                 + "SRS="
                 + crs
                 + " must be EPSG:4326"
@@ -9475,12 +9640,13 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
 
       if (bboxCsv == null || bboxCsv.length() == 0)
         throw new SimpleException(
-            EDStatic.simpleBilingual(language, EDStatic.queryErrorAr) + "BBOX must be specified.");
+            EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
+                + "BBOX must be specified.");
       // bboxCsv = "-180,-90,180,90";  //be lenient, default to full range
       double bbox[] = String2.toDoubleArray(String2.split(bboxCsv, ','));
       if (bbox.length != 4)
         throw new SimpleException(
-            EDStatic.simpleBilingual(language, EDStatic.queryErrorAr)
+            EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
                 + "BBOX length="
                 + bbox.length
                 + " must be 4.");
@@ -9493,13 +9659,13 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
           || !Double.isFinite(maxx)
           || !Double.isFinite(maxy))
         throw new SimpleException(
-            EDStatic.simpleBilingual(language, EDStatic.queryErrorAr)
+            EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
                 + "invalid number in BBOX="
                 + bboxCsv
                 + ".");
       if (minx >= maxx)
         throw new SimpleException(
-            EDStatic.simpleBilingual(language, EDStatic.queryErrorAr)
+            EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
                 + "BBOX minx="
                 + minx
                 + " must be < maxx="
@@ -9507,7 +9673,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                 + ".");
       if (miny >= maxy)
         throw new SimpleException(
-            EDStatic.simpleBilingual(language, EDStatic.queryErrorAr)
+            EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
                 + "BBOX miny="
                 + miny
                 + " must be < maxy="
@@ -9528,7 +9694,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
         isNonDataLayer = true;
         // Land/LandMask not distinguished below, so consolidate images
         if (layersCsv.equals("LandMask")) layersCsv = "Land";
-        cacheDir = EDStatic.fullWmsCacheDirectory + layersCsv + "/";
+        cacheDir = EDStatic.config.fullWmsCacheDirectory + layersCsv + "/";
         fileName = layersCsv + "_" + String2.md5Hex12(bboxCsv + "w" + width + "h" + height);
       }
 
@@ -9614,7 +9780,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
         int spo = layers[layeri].indexOf(EDD.WMS_SEPARATOR);
         if (spo <= 0 || spo >= layers[layeri].length() - 1)
           throw new SimpleException(
-              EDStatic.simpleBilingual(language, EDStatic.queryErrorAr)
+              EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
                   + "LAYER="
                   + layers[layeri]
                   + " is invalid (invalid separator position).");
@@ -9623,7 +9789,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
         EDDGrid eddGrid = gridDatasetHashMap.get(datasetID);
         if (eddGrid == null)
           throw new SimpleException(
-              EDStatic.simpleBilingual(language, EDStatic.queryErrorAr)
+              EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
                   + "LAYER="
                   + layers[layeri]
                   + " is invalid (dataset not found).");
@@ -9636,21 +9802,21 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
         }
         if (eddGrid.accessibleViaWMS().length() > 0)
           throw new SimpleException(
-              EDStatic.simpleBilingual(language, EDStatic.queryErrorAr)
+              EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
                   + "LAYER="
                   + layers[layeri]
                   + " is invalid (not accessible via WMS).");
         int dvi = String2.indexOf(eddGrid.dataVariableDestinationNames(), destVar);
         if (dvi < 0)
           throw new SimpleException(
-              EDStatic.simpleBilingual(language, EDStatic.queryErrorAr)
+              EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
                   + "LAYER="
                   + layers[layeri]
                   + " is invalid (variable not found).");
         EDV tDataVariable = eddGrid.dataVariables()[dvi];
         if (!tDataVariable.hasColorBarMinMax())
           throw new SimpleException(
-              EDStatic.simpleBilingual(language, EDStatic.queryErrorAr)
+              EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
                   + "LAYER="
                   + layers[layeri]
                   + " is invalid (variable doesn't have valid colorBarMinimum/Maximum).");
@@ -9659,7 +9825,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
         if (!styles[layeri].isEmpty()
             && !styles[layeri].equalsIgnoreCase("default")) { // nonstandard?  but allow it
           throw new SimpleException(
-              EDStatic.simpleBilingual(language, EDStatic.queryErrorAr)
+              EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
                   + "For LAYER="
                   + layers[layeri]
                   + ", STYLE="
@@ -9755,7 +9921,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
             new GridDataAccessor(
                 language,
                 eddGrid,
-                "/" + EDStatic.warName + "/griddap/" + datasetID + ".dods",
+                "/" + EDStatic.config.warName + "/griddap/" + datasetID + ".dods",
                 tQuery.toString(),
                 false, // Grid needs column-major order
                 true)) { // convertToNaN
@@ -9777,7 +9943,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
         double minData = tDataVariable.combinedAttributes().getDouble("colorBarMinimum");
         double maxData = tDataVariable.combinedAttributes().getDouble("colorBarMaximum");
         String palette = tDataVariable.combinedAttributes().getString("colorBarPalette");
-        if (String2.indexOf(EDStatic.palettes, palette) < 0)
+        if (String2.indexOf(EDStatic.messages.palettes, palette) < 0)
           palette = Math2.almostEqual(3, -minData, maxData) ? "BlueWhiteRed" : "Rainbow";
         int nSections = tDataVariable.combinedAttributes().getInt("colorBarNSections");
         if (nSections > 100) nSections = -1;
@@ -9788,14 +9954,14 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
         if (EDV.VALID_SCALES.indexOf(scale) < 0) scale = "Linear";
         String cptFullName =
             CompoundColorMap.makeCPT(
-                EDStatic.fullPaletteDirectory,
+                EDStatic.config.fullPaletteDirectory,
                 palette,
                 scale,
                 minData,
                 maxData,
                 nSections,
                 paletteContinuous,
-                EDStatic.fullCptCacheDirectory);
+                EDStatic.config.fullCptCacheDirectory);
 
         // draw the data on the map
         // for now, just cartesian  -- BEWARE: it may be stretched!
@@ -9886,7 +10052,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
           msg = String2.noLongLines(msg, (width * 10 / 6) / tHeight, "    ");
           String lines[] = msg.split("\\n"); // not String2.split which trims
           g.setColor(Color.black);
-          g.setFont(new Font(EDStatic.fontFamily, Font.PLAIN, tHeight));
+          g.setFont(new Font(EDStatic.config.fontFamily, Font.PLAIN, tHeight));
           int ty = tHeight * 2;
           for (String line : lines) {
             g.drawString(line, tHeight, ty);
@@ -9938,15 +10104,15 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       Map<String, String> queryMap)
       throws Throwable {
 
-    if (!EDStatic.wmsActive) {
+    if (!EDStatic.config.wmsActive) {
       sendResourceNotFoundError(
           requestNumber,
           request,
           response,
           EDStatic.bilingual(
               language,
-              MessageFormat.format(EDStatic.disabledAr[0], "WMS"),
-              MessageFormat.format(EDStatic.disabledAr[language], "WMS")));
+              MessageFormat.format(EDStatic.messages.disabledAr[0], "WMS"),
+              MessageFormat.format(EDStatic.messages.disabledAr[language], "WMS")));
       return;
     }
 
@@ -9956,7 +10122,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     if (tVersion == null) tVersion = "1.3.0";
     if (!tVersion.equals("1.1.0") && !tVersion.equals("1.1.1") && !tVersion.equals("1.3.0"))
       throw new SimpleException(
-          EDStatic.simpleBilingual(language, EDStatic.queryErrorAr)
+          EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
               + "In an ERDDAP WMS getCapabilities query, VERSION="
               + tVersion
               + " is not supported.");
@@ -9980,8 +10146,8 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
           response,
           EDStatic.bilingual(
               language,
-              MessageFormat.format(EDStatic.notAvailableAr[0], tDatasetID),
-              MessageFormat.format(EDStatic.notAvailableAr[language], tDatasetID)));
+              MessageFormat.format(EDStatic.messages.notAvailableAr[0], tDatasetID),
+              MessageFormat.format(EDStatic.messages.notAvailableAr[language], tDatasetID)));
       return;
     }
     if (!eddGrid.isAccessibleTo(roles) && !eddGrid.graphsAccessibleToPublic()) {
@@ -10069,38 +10235,38 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
               + "    <ContactInformation>\n"
               + "      <ContactPersonPrimary>\n"
               + "        <ContactPerson>"
-              + XML.encodeAsXML(EDStatic.adminIndividualName)
+              + XML.encodeAsXML(EDStatic.config.adminIndividualName)
               + "</ContactPerson>\n"
               + "        <ContactOrganization>"
-              + XML.encodeAsXML(EDStatic.adminInstitution)
+              + XML.encodeAsXML(EDStatic.config.adminInstitution)
               + "</ContactOrganization>\n"
               + "      </ContactPersonPrimary>\n"
               + "      <ContactPosition>"
-              + XML.encodeAsXML(EDStatic.adminPosition)
+              + XML.encodeAsXML(EDStatic.config.adminPosition)
               + "</ContactPosition>\n"
               + "      <ContactAddress>\n"
               + "        <AddressType>postal</AddressType>\n"
               + "        <Address>"
-              + XML.encodeAsXML(EDStatic.adminAddress)
+              + XML.encodeAsXML(EDStatic.config.adminAddress)
               + "</Address>\n"
               + "        <City>"
-              + XML.encodeAsXML(EDStatic.adminCity)
+              + XML.encodeAsXML(EDStatic.config.adminCity)
               + "</City>\n"
               + "        <StateOrProvince>"
-              + XML.encodeAsXML(EDStatic.adminStateOrProvince)
+              + XML.encodeAsXML(EDStatic.config.adminStateOrProvince)
               + "</StateOrProvince>\n"
               + "        <PostCode>"
-              + XML.encodeAsXML(EDStatic.adminPostalCode)
+              + XML.encodeAsXML(EDStatic.config.adminPostalCode)
               + "</PostCode>\n"
               + "        <Country>"
-              + XML.encodeAsXML(EDStatic.adminCountry)
+              + XML.encodeAsXML(EDStatic.config.adminCountry)
               + "</Country>\n"
               + "      </ContactAddress>\n"
               + "      <ContactVoiceTelephone>"
-              + XML.encodeAsXML(EDStatic.adminPhone)
+              + XML.encodeAsXML(EDStatic.config.adminPhone)
               + "</ContactVoiceTelephone>\n"
               + "      <ContactElectronicMailAddress>"
-              + XML.encodeAsXML(EDStatic.adminEmail)
+              + XML.encodeAsXML(EDStatic.config.adminEmail)
               + "</ContactElectronicMailAddress>\n"
               + "    </ContactInformation>\n"
               + "    <Fees>"
@@ -10341,7 +10507,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
             // ???is CRS:88 the most appropriate  (see spec 6.7.5 and B.6)
             // "EPSG:5030" means "meters above the WGS84 ellipsoid."
             avUnits = "EPSG:5030"; // here just 1.1.0 or 1.1.1
-          } else if (EDStatic.units_standard.equals("UDUNITS")) {
+          } else if (EDStatic.config.units_standard.equals("UDUNITS")) {
             // convert other udnits to ucum   (this is in WMS GetCapabilities)
             avUnits = Units2.safeUdunitsToUcum(avUnits);
           }
@@ -10375,7 +10541,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
           defaultValue =
               av.destinationToString(
                   (avi == eddGrid.depthIndex() ? -1 : 1) * av.lastDestinationValue());
-        } else if (EDStatic.units_standard.equals("UDUNITS")) {
+        } else if (EDStatic.config.units_standard.equals("UDUNITS")) {
           // convert other udnits to ucum (this is in WMS GetCapabilites)
           avUnits = Units2.safeUdunitsToUcum(avUnits);
         }
@@ -10687,23 +10853,23 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
 
     if (queryString == null) queryString = "";
 
-    if (!EDStatic.wmsActive) {
+    if (!EDStatic.config.wmsActive) {
       sendResourceNotFoundError(
           requestNumber,
           request,
           response,
           EDStatic.bilingual(
               language,
-              MessageFormat.format(EDStatic.disabledAr[0], "WMS"),
-              MessageFormat.format(EDStatic.disabledAr[language], "WMS")));
+              MessageFormat.format(EDStatic.messages.disabledAr[0], "WMS"),
+              MessageFormat.format(EDStatic.messages.disabledAr[language], "WMS")));
       return;
     }
-    boolean wmsClientActive = EDStatic.wmsClientActive;
+    boolean wmsClientActive = EDStatic.config.wmsClientActive;
 
     String tErddapUrl = EDStatic.erddapUrl(loggedInAs, language);
     if (!tVersion.equals("1.1.0") && !tVersion.equals("1.1.1") && !tVersion.equals("1.3.0"))
       throw new SimpleException(
-          EDStatic.simpleBilingual(language, EDStatic.queryErrorAr)
+          EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
               + "WMS version="
               + tVersion
               + " must be 1.1.0, 1.1.1, or 1.3.0.");
@@ -10711,7 +10877,9 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     EDStatic.tally.add("WMS doWmsDemo (since startup)", tDatasetID);
 
     String tWmsSampleBBox =
-        tVersion.equals("1.3.0") ? EDStatic.wmsSampleBBox130 : EDStatic.wmsSampleBBox110;
+        tVersion.equals("1.3.0")
+            ? EDStatic.config.wmsSampleBBox130
+            : EDStatic.config.wmsSampleBBox110;
     String csrs = tVersion.equals("1.1.0") || tVersion.equals("1.1.1") ? "srs" : "crs";
 
     EDDGrid eddGrid = gridDatasetHashMap.get(tDatasetID);
@@ -10738,13 +10906,14 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     int timei = eddGrid.timeIndex();
     if (loni < 0 || lati < 0)
       throw new SimpleException(
-          EDStatic.resourceNotFoundAr[language]
+          EDStatic.messages.resourceNotFoundAr[language]
               + "datasetID="
               + tDatasetID
               + " doesn't have longitude and latitude dimensions.");
     if (eddGrid.accessibleViaWMS().length() > 0)
       throw new SimpleException(
-          EDStatic.simpleBilingual(language, EDStatic.queryErrorAr) + eddGrid.accessibleViaWMS());
+          EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
+              + eddGrid.accessibleViaWMS());
 
     EDVGridAxis gaa[] = eddGrid.axisVariables();
     String options[][] = new String[gaa.length][];
@@ -10865,7 +11034,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       StringArray olNames =
           StringArray.fromCSV(
               "Land, Coastlines, LakesAndRivers"
-                  + (EDStatic.politicalBoundariesActive ? ", Nations, States" : ""));
+                  + (EDStatic.config.politicalBoundariesActive ? ", Nations, States" : ""));
       for (int i = 0; i < olNames.size(); i++)
         scripts.append(
             "    "
@@ -10899,7 +11068,9 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
               + ".addTo(map);\n"
               + "  overlays.Coastlines.addTo(map);\n"
               + "  overlays.LakesAndRivers.addTo(map);\n"
-              + (EDStatic.politicalBoundariesActive ? "  overlays.Nations.addTo(map);\n" : "")
+              + (EDStatic.config.politicalBoundariesActive
+                  ? "  overlays.Nations.addTo(map);\n"
+                  : "")
               + "</script>\n");
     }
 
@@ -10920,7 +11091,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
               + "/griddap/"
               + tDatasetID
               + ".graph\">"
-              + EDStatic.magAr[language]
+              + EDStatic.messages.magAr[language]
               + "</a>";
       writer.write(
           EDStatic.startBodyHtml(
@@ -10938,14 +11109,14 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
         writer.write(
             "\n<p><span class=\"warningColor\">"
                 + MessageFormat.format(
-                    EDStatic.noXxxBecauseAr[language],
+                    EDStatic.messages.noXxxBecauseAr[language],
                     "Leaflet",
-                    MessageFormat.format(EDStatic.noXxxNotActiveAr[language], "Leaflet"))
+                    MessageFormat.format(EDStatic.messages.noXxxNotActiveAr[language], "Leaflet"))
                 + "</span>\n\n");
       } else if (!thisWmsClientActive) {
         writer.write(
             "\n<p><span class=\"warningColor\">"
-                + MessageFormat.format(EDStatic.noXxxAr[language], "Leaflet")
+                + MessageFormat.format(EDStatic.messages.noXxxAr[language], "Leaflet")
                 + "</span>\n\n");
       } else {
         // write all the leaflet stuff
@@ -10955,7 +11126,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
             "<br>"
                 + String2.replaceAll( // these are actually Leaflet instructions
                     String2.replaceAll(
-                        EDStatic.wmsInstructionsAr[language], "&wmsVersion;", tVersion),
+                        EDStatic.messages.wmsInstructionsAr[language], "&wmsVersion;", tVersion),
                     "&erddapUrl;",
                     tErddapUrl));
         StringBuilder tAxisConstraintsSB = new StringBuilder();
@@ -11061,12 +11232,14 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       writer.flush(); // Steve Souder says: the sooner you can send some html to user, the better
 
       // *** What is WMS?
-      String e0 = tErddapUrl + "/wms/" + EDStatic.wmsSampleDatasetID + "/" + EDD.WMS_SERVER + "?";
+      String e0 =
+          tErddapUrl + "/wms/" + EDStatic.config.wmsSampleDatasetID + "/" + EDD.WMS_SERVER + "?";
       String e1 = "service=WMS&#x26;version=";
       // this section of code is in 2 places
       int bbox[] =
           String2.toIntArray(
-              String2.split(EDStatic.wmsSampleBBox110, ',')); // extract info from 110 version
+              String2.split(
+                  EDStatic.config.wmsSampleBBox110, ',')); // extract info from 110 version
       int tHeight = ((bbox[3] - bbox[1]) * 360) / Math.max(1, bbox[2] - bbox[0]);
       tHeight = Math2.minMaxDef(10, 600, 180, tHeight);
       String e2 =
@@ -11078,7 +11251,10 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
               + tHeight
               + "&#x26;bgcolor=0x808080&#x26;layers=";
       // Land,erdBAssta5day:sst,Coastlines,LakesAndRivers,Nations,States
-      String e3 = EDStatic.wmsSampleDatasetID + EDD.WMS_SEPARATOR + EDStatic.wmsSampleVariable;
+      String e3 =
+          EDStatic.config.wmsSampleDatasetID
+              + EDD.WMS_SEPARATOR
+              + EDStatic.config.wmsSampleVariable;
       String e4 = "&#x26;styles=&#x26;format=image/png";
       String et = "&#x26;transparent=TRUE";
 
@@ -11109,7 +11285,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       writer.write(
           "<h2><a class=\"selfLink\" id=\"description\" href=\"#description\" rel=\"bookmark\">What</a> is WMS?</h2>\n"
               + String2.replaceAll(
-                  EDStatic.wmsLongDescriptionHtmlAr[language], "&erddapUrl;", tErddapUrl)
+                  EDStatic.messages.wmsLongDescriptionHtmlAr[language], "&erddapUrl;", tErddapUrl)
               + "\n"
               + datasetListRef
               + "\n"
@@ -11118,10 +11294,10 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
               + "<li> <strong>In theory, anyone can download, install, and use WMS client software.</strong>\n"
               + "  <br>Some clients are: \n"
               + "    <a href=\"https://www.esri.com/software/arcgis/\">ArcGIS"
-              + EDStatic.externalLinkHtml(language, tErddapUrl)
+              + EDStatic.messages.externalLinkHtml(language, tErddapUrl)
               + "</a> and\n"
               + "    <a href=\"http://udig.refractions.net//\">uDig"
-              + EDStatic.externalLinkHtml(language, tErddapUrl)
+              + EDStatic.messages.externalLinkHtml(language, tErddapUrl)
               + "</a>. \n"
               + "  To make a client work, you would install the software on your computer.\n"
               + "  Then, you would enter the URL of the WMS service into the client.\n"
@@ -11141,21 +11317,21 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
               + "\n"
               + "    and selecting the .kml file type (an OGC\n"
               + "  standard) to load images into <a href=\"https://www.google.com/earth/\">Google Earth"
-              + EDStatic.externalLinkHtml(language, tErddapUrl)
+              + EDStatic.messages.externalLinkHtml(language, tErddapUrl)
               + "</a> provides\n"
               + "     a good (non-WMS) map client.\n"
               + makeAGraphListRef
               + "<li> <strong>Web page authors can embed a WMS client in a web page.</strong>\n"
               + "  <br>For the map above, ERDDAP is using \n"
               + "    <a rel=\"bookmark\" href=\"https://leafletjs.com\">Leaflet"
-              + EDStatic.externalLinkHtml(language, tErddapUrl)
+              + EDStatic.messages.externalLinkHtml(language, tErddapUrl)
               + "</a>, which is a very versatile WMS client.\n"
               + "  Leaflet doesn't automatically deal with dimensions other than longitude and latitude\n"
               + "  (e.g., time), so you will have to write JavaScript (or other scripting code) to do that.\n"
               + "  (Adventurous JavaScript programmers can look at the Souce Code for this web page.)\n"
               + "  Another commonly used JavaScript WMS client is\n"
               + "    <a rel=\"bookmark\" href=\"https://openlayers.org/\">OpenLayers"
-              + EDStatic.externalLinkHtml(language, tErddapUrl)
+              + EDStatic.messages.externalLinkHtml(language, tErddapUrl)
               + "</a>.\n"
               + "  <br>&nbsp;\n"
               + "<li> <strong>A person with a browser or a computer program can generate special WMS URLs.</strong>\n"
@@ -11233,7 +11409,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     String tErddapUrl = EDStatic.erddapUrl(loggedInAs, language);
     String fileIconsDir = EDStatic.imageDirUrl(loggedInAs, language) + "fileIcons/";
     String questionMarkUrl =
-        EDStatic.imageDirUrl(loggedInAs, language) + EDStatic.questionMarkImageFile;
+        EDStatic.imageDirUrl(loggedInAs, language) + EDStatic.messages.questionMarkImageFile;
 
     String urlParts[] =
         String2.split(
@@ -11267,7 +11443,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       if (verbose) String2.log(startFailureLog + reason);
       EDStatic.tally.add(startTallySinceStartup, reason);
       EDStatic.tally.add(startTallySinceDailyReport, reason);
-      if (verbose) String2.log(EDStatic.resourceNotFoundAr[0] + reason);
+      if (verbose) String2.log(EDStatic.messages.resourceNotFoundAr[0] + reason);
       sendResourceNotFoundError(requestNumber, request, response, reason);
       return;
     }
@@ -11325,7 +11501,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       if (verbose) String2.log(startFailureLog + reason);
       EDStatic.tally.add(startTallySinceStartup, reason);
       EDStatic.tally.add(startTallySinceDailyReport, reason);
-      if (verbose) String2.log(EDStatic.resourceNotFoundAr[0] + reason);
+      if (verbose) String2.log(EDStatic.messages.resourceNotFoundAr[0] + reason);
       sendResourceNotFoundError(requestNumber, request, response, reason);
       return;
     }
@@ -11385,7 +11561,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       if (verbose) String2.log(startFailureLog + reason);
       EDStatic.tally.add(startTallySinceStartup, reason);
       EDStatic.tally.add(startTallySinceDailyReport, reason);
-      if (verbose) String2.log(EDStatic.resourceNotFoundAr[0] + reason);
+      if (verbose) String2.log(EDStatic.messages.resourceNotFoundAr[0] + reason);
       sendResourceNotFoundError(requestNumber, request, response, reason);
       return;
     }
@@ -11503,7 +11679,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       if (verbose) String2.log(startFailureLog + reason);
       EDStatic.tally.add(startTallySinceStartup, reason);
       EDStatic.tally.add(startTallySinceDailyReport, reason);
-      if (verbose) String2.log(EDStatic.resourceNotFoundAr[0] + reason);
+      if (verbose) String2.log(EDStatic.messages.resourceNotFoundAr[0] + reason);
       sendResourceNotFoundError(requestNumber, request, response, reason);
       return;
     }
@@ -11513,7 +11689,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     if (verbose) String2.log(startFailureLog + reason);
     EDStatic.tally.add(startTallySinceStartup, reason);
     EDStatic.tally.add(startTallySinceDailyReport, reason);
-    if (verbose) String2.log(EDStatic.resourceNotFoundAr[0] + reason);
+    if (verbose) String2.log(EDStatic.messages.resourceNotFoundAr[0] + reason);
     sendResourceNotFoundError(requestNumber, request, response, reason);
   }
 
@@ -11602,21 +11778,21 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       String queryString)
       throws Throwable {
 
-    if (!EDStatic.geoServicesRestActive) {
+    if (!EDStatic.config.geoServicesRestActive) {
       sendResourceNotFoundError(
           requestNumber,
           request,
           response,
           EDStatic.bilingual(
               language,
-              MessageFormat.format(EDStatic.disabledAr[0], "GeoServices REST"),
-              MessageFormat.format(EDStatic.disabledAr[language], "GeoServices REST")));
+              MessageFormat.format(EDStatic.messages.disabledAr[0], "GeoServices REST"),
+              MessageFormat.format(EDStatic.messages.disabledAr[language], "GeoServices REST")));
       return;
     }
 
     String tErddapUrl = EDStatic.erddapUrl(loggedInAs, language);
     String erddapRestServices =
-        "/" + EDStatic.warName + "/rest/services"; // ESRI uses relative URLs
+        "/" + EDStatic.config.warName + "/rest/services"; // ESRI uses relative URLs
     String roles[] = EDStatic.getRoles(loggedInAs);
     String teor = String2.replaceAll(endOfRequest, "//", "/"); // bypasses a common ArcGIS problem
     if (teor.endsWith("/")) teor = teor.substring(0, teor.length() - 1); // so no empty part at end
@@ -11714,7 +11890,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
         if (edd != null
             && // if just deleted
             edd.accessibleViaGeoServicesRest().length() == 0
-            && (EDStatic.listPrivateDatasets || edd.isAccessibleTo(roles))
+            && (EDStatic.config.listPrivateDatasets || edd.isAccessibleTo(roles))
         // ESRI REST: treat as if all requests are data requests
         ) {
           ids.add(edd.datasetID());
@@ -11766,7 +11942,9 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                   // which ESRI makes freely reusable under the Open Web Foundation Agreement
                   "<p>"
                   + String2.replaceAll(
-                      EDStatic.geoServicesDescriptionAr[language], "&erddapUrl;", tErddapUrl)
+                      EDStatic.messages.geoServicesDescriptionAr[language],
+                      "&erddapUrl;",
+                      tErddapUrl)
                   + "\n"
                   +
                   // then mimic ESRI servers  (except for <div>)
@@ -12010,7 +12188,8 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     // just "/rest/services/[tDatasetID]/[tDestName]"
     if (nUrlParts == 4) {
       if (verbose)
-        String2.log(EDStatic.resourceNotFoundAr[language] + "nParts=" + nUrlParts + " !=4");
+        String2.log(
+            EDStatic.messages.resourceNotFoundAr[language] + "nParts=" + nUrlParts + " !=4");
       sendResourceNotFoundError(requestNumber, request, response, "nQueryParts!=4");
       return;
     }
@@ -12019,7 +12198,8 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
 
     // ensure urlParts[4]=ImageServer
     if (!urlParts[4].equals("ImageServer")) {
-      if (verbose) String2.log(EDStatic.resourceNotFoundAr[language] + "ImageServer expected");
+      if (verbose)
+        String2.log(EDStatic.messages.resourceNotFoundAr[language] + "ImageServer expected");
       sendResourceNotFoundError(requestNumber, request, response, "ImageServer expected");
       return;
     }
@@ -12721,7 +12901,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                   "{\n"
                       + "  \"href\" : \""
                       + tErddapUrl
-                      + relativeUrl.substring(EDStatic.warName.length() + 1)
+                      + relativeUrl.substring(EDStatic.config.warName.length() + 1)
                       + "/exportImage/"
                       + virtualFileName
                       + fileExtension
@@ -12813,7 +12993,10 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
           } else {
             if (verbose)
               String2.log(
-                  EDStatic.resourceNotFoundAr[language] + "!isFile " + actualDir + tFileName);
+                  EDStatic.messages.resourceNotFoundAr[language]
+                      + "!isFile "
+                      + actualDir
+                      + tFileName);
             sendResourceNotFoundError(requestNumber, request, response, "file doesn't exist");
             return;
           }
@@ -12821,7 +13004,8 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
 
         } else {
           if (verbose)
-            String2.log(EDStatic.resourceNotFoundAr[language] + "nParts=" + nUrlParts + " !=7");
+            String2.log(
+                EDStatic.messages.resourceNotFoundAr[language] + "nParts=" + nUrlParts + " !=7");
           sendResourceNotFoundError(requestNumber, request, response, "incorrect nParts");
           return;
         }
@@ -12840,7 +13024,8 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       }
       default -> {
         if (verbose)
-          String2.log(EDStatic.resourceNotFoundAr[language] + "unknown [5]=" + urlParts[5]);
+          String2.log(
+              EDStatic.messages.resourceNotFoundAr[language] + "unknown [5]=" + urlParts[5]);
         sendResourceNotFoundError(requestNumber, request, response, "");
         return;
       }
@@ -12881,7 +13066,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
         || !String2.isPrintable(requestUrl)
         || requestUrl.indexOf("%0") >= 0) { // percent-encoded ASCII char <16, e.g., %00
       throw new SimpleException(
-          EDStatic.simpleBilingual(language, EDStatic.queryErrorAr)
+          EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
               + "Some characters are never allowed in requests.");
     }
     String dir = File2.getWebInfParentDirectory() + protocol + "/";
@@ -12995,7 +13180,8 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
             + fileSize
             + (range == null ? "" : ", Range request=" + String2.annotatedString(range));
     String extLC = File2.getExtension(fileNameAndExt).toLowerCase();
-    boolean rangeRequestAllowed = String2.indexOf(EDStatic.extensionsNoRangeRequests, extLC) < 0;
+    boolean rangeRequestAllowed =
+        String2.indexOf(EDStatic.messages.extensionsNoRangeRequests, extLC) < 0;
     if (range != null) {
       if (!rangeRequestAllowed) {
         String2.log(msg);
@@ -13158,7 +13344,8 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
             requestNumber,
             request,
             response,
-            EDStatic.bilingual(language, EDStatic.rssNoAr[0], EDStatic.rssNoAr[language]));
+            EDStatic.bilingual(
+                language, EDStatic.messages.rssNoAr[0], EDStatic.messages.rssNoAr[language]));
         return;
       }
     }
@@ -13181,7 +13368,8 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
           requestNumber,
           request,
           response,
-          EDStatic.bilingual(language, EDStatic.rssNoAr[0], EDStatic.rssNoAr[language]));
+          EDStatic.bilingual(
+              language, EDStatic.messages.rssNoAr[0], EDStatic.messages.rssNoAr[language]));
       return;
     }
 
@@ -13243,7 +13431,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
         // And ok of it isn't even in datasets.xml.  Unknown files are removed.
         EDStatic.tally.add("SetDatasetFlag (since startup)", datasetID);
         EDStatic.tally.add("SetDatasetFlag (since last daily report)", datasetID);
-        File2.writeToFileUtf8(EDStatic.fullResetFlagDirectory + datasetID, datasetID);
+        File2.writeToFileUtf8(EDStatic.config.fullResetFlagDirectory + datasetID, datasetID);
         message = "SUCCESS: The flag has been set.";
         delaySeconds = 0;
       }
@@ -13298,7 +13486,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
           "version_full": "%s",
           "deployment_info": "%s"
         }"""
-                .formatted(ev, EDStatic.erddapVersion, EDStatic.deploymentInfo));
+                .formatted(ev, EDStatic.erddapVersion, EDStatic.config.deploymentInfo));
       } else {
         writer.write("ERDDAP_version=" + ev + "\n");
       }
@@ -13346,28 +13534,30 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       String queryString)
       throws Throwable {
 
-    if (!EDStatic.outOfDateDatasetsActive) {
+    if (!EDStatic.config.outOfDateDatasetsActive) {
       sendResourceNotFoundError(
           requestNumber,
           request,
           response,
           EDStatic.bilingual(
               language,
-              MessageFormat.format(EDStatic.disabledAr[0], EDStatic.outOfDateDatasetsAr[0]),
               MessageFormat.format(
-                  EDStatic.disabledAr[language], EDStatic.outOfDateDatasetsAr[language])));
+                  EDStatic.messages.disabledAr[0], EDStatic.messages.outOfDateDatasetsAr[0]),
+              MessageFormat.format(
+                  EDStatic.messages.disabledAr[language],
+                  EDStatic.messages.outOfDateDatasetsAr[language])));
       return;
     }
 
     // constants
     String tErddapUrl = EDStatic.erddapUrl(loggedInAs, language);
-    int refreshEveryNMinutes = Math2.roundToInt(EDStatic.loadDatasetsMinMillis / 60000.0);
+    int refreshEveryNMinutes = Math2.roundToInt(EDStatic.config.loadDatasetsMinMillis / 60000.0);
 
     // parse endOfRequest
     String start = "outOfDateDatasets.";
     if (!endOfRequest.startsWith(start))
       throw new SimpleException(
-          EDStatic.simpleBilingual(language, EDStatic.queryErrorAr)
+          EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
               + "An outOfDateDatasets request must start with \""
               + start
               + "\".");
@@ -13378,7 +13568,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       isPlainType = true;
     } else {
       throw new SimpleException(
-          EDStatic.simpleBilingual(language, EDStatic.queryErrorAr)
+          EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
               + "The fileType must be one of "
               + plainFileTypesString
               + ".");
@@ -13389,7 +13579,8 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
         (EDDTableFromAllDatasets) tableDatasetHashMap.get(EDDTableFromAllDatasets.DATASET_ID);
     if (allDatasets == null)
       throw new SimpleException(
-          EDStatic.resourceNotFoundAr[language] + "outOfDateDatasets is currently not available.");
+          EDStatic.messages.resourceNotFoundAr[language]
+              + "outOfDateDatasets is currently not available.");
 
     // parse queryString
     StringArray resultsVars = new StringArray();
@@ -13434,7 +13625,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     }
 
     // generate html response
-    String shortTitle = EDStatic.outOfDateDatasetsAr[language];
+    String shortTitle = EDStatic.messages.outOfDateDatasetsAr[language];
     OutputStream out = getHtmlOutputStreamUtf8(request, response);
     Writer writer =
         getHtmlWriterUtf8(
@@ -13504,21 +13695,21 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       // write html response
       writer.write("<div class=\"standard_width\">");
       writer.write(EDStatic.youAreHere(language, loggedInAs, shortTitle));
-      writer.write(XML.encodeAsHTML(EDStatic.advc_outOfDateAr[language]));
+      writer.write(XML.encodeAsHTML(EDStatic.messages.advc_outOfDateAr[language]));
       writer.write("\n<p>");
       if (table.nRows() == 0) {
         writer.write(
             "["
-                + MessageFormat.format(EDStatic.nMatchingAr[language], "0")
+                + MessageFormat.format(EDStatic.messages.nMatchingAr[language], "0")
                 + " "
-                + EDStatic.advn_outOfDateAr[language]
+                + EDStatic.messages.advn_outOfDateAr[language]
                 + "]");
       } else {
         writer.write(
-            MessageFormat.format(EDStatic.nMatchingAr[language], "" + table.nRows())
+            MessageFormat.format(EDStatic.messages.nMatchingAr[language], "" + table.nRows())
                 + " "
                 + MessageFormat.format(
-                    EDStatic.generatedAtAr[language],
+                    EDStatic.messages.generatedAtAr[language],
                     "<span class=\"N\">" + currentTimeZulu + "</span>")
                 + "\n<br>");
         table.saveAsHtmlTable(
@@ -13536,18 +13727,19 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       writer.write(
           "<p>"
               + MessageFormat.format(
-                  EDStatic.generatedAtAr[language],
+                  EDStatic.messages.generatedAtAr[language],
                   "<span class=\"N\">" + currentTimeZulu + "</span>")
               + "\n<br>"
-              + MessageFormat.format(EDStatic.autoRefreshAr[language], "" + refreshEveryNMinutes)
+              + MessageFormat.format(
+                  EDStatic.messages.autoRefreshAr[language], "" + refreshEveryNMinutes)
               + "\n");
 
       // addConstraints
       writer.write(
           "<h3><a class=\"selfLink\" id=\"Options\" href=\"#Options\" rel=\"bookmark\">"
-              + EDStatic.optionsAr[language]
+              + EDStatic.messages.optionsAr[language]
               + "</a></h3>\n"
-              + XML.encodeAsHTML(EDStatic.addConstraintsAr[language])
+              + XML.encodeAsHTML(EDStatic.messages.addConstraintsAr[language])
               + "<br><a rel=\"bookmark\" href=\""
               + tErddapUrl
               + "/"
@@ -13557,20 +13749,21 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
               + "/"
               + start
               + "html?&amp;outOfDate&gt;=0.5</a> .\n"
-              + String2.replaceAll(EDStatic.percentEncodeAr[language], "&erddapUrl;", tErddapUrl));
+              + String2.replaceAll(
+                  EDStatic.messages.percentEncodeAr[language], "&erddapUrl;", tErddapUrl));
 
       // list plain file types
       writer.write(
           "\n"
               + "<p>"
-              + EDStatic.restfulInformationFormatsAr[language]
+              + EDStatic.messages.restfulInformationFormatsAr[language]
               + " \n("
               + plainFileTypesString
               + // not links, which would be indexed by search engines
               ") <a rel=\"help\" href=\""
               + tErddapUrl
               + "/rest.html\">"
-              + EDStatic.restfulViaServiceAr[language]
+              + EDStatic.messages.restfulViaServiceAr[language]
               + "</a>.\n");
 
       writer.write("</div>\n");
@@ -13606,15 +13799,15 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       throws Throwable {
 
     // first thing
-    if (!EDStatic.slideSorterActive) {
+    if (!EDStatic.config.slideSorterActive) {
       sendResourceNotFoundError(
           requestNumber,
           request,
           response,
           EDStatic.bilingual(
               language,
-              MessageFormat.format(EDStatic.disabledAr[0], "SlideSorter"),
-              MessageFormat.format(EDStatic.disabledAr[language], "SlideSorter")));
+              MessageFormat.format(EDStatic.messages.disabledAr[0], "SlideSorter"),
+              MessageFormat.format(EDStatic.messages.disabledAr[language], "SlideSorter")));
       return;
     }
 
@@ -13630,7 +13823,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     String gapPx = gap + "px";
     int defaultContentWidth = 360;
     String bgColor = "#ffffff"; // before ERDDAP v2: was "#d7dcdd" here; ERDDAP was "#ccccff";
-    String ssBePatientAlt = "alt=\"" + EDStatic.ssBePatientAr[language] + "\" ";
+    String ssBePatientAlt = "alt=\"" + EDStatic.messages.ssBePatientAr[language] + "\" ";
 
     // DON'T use GET-style params, use POST-style (request.getParameter)
 
@@ -13650,7 +13843,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
             loggedInAs,
             "slidesorter.html", // was endOfRequest,
             queryString,
-            EDStatic.slideSorterAr[language],
+            EDStatic.messages.slideSorterAr[language],
             out);
     try {
       writer.write(HtmlWidgets.dragDropScript(EDStatic.imageDirUrl(loggedInAs, language)));
@@ -13658,9 +13851,9 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
           EDStatic.youAreHereWithHelp(
               language,
               loggedInAs,
-              EDStatic.slideSorterAr[language],
+              EDStatic.messages.slideSorterAr[language],
               "<div class=\"standard_max_width\">"
-                  + EDStatic.ssInstructionsHtmlAr[language]
+                  + EDStatic.messages.ssInstructionsHtmlAr[language]
                   + "</div>"));
       writer.write(HtmlWidgets.ifJavaScriptDisabled + "\n");
 
@@ -13766,8 +13959,8 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
           ext = pngExts[tSize];
           tUrl = preExt + pngExts[tSize] + qAndPost;
 
-          contentWidth = EDStatic.imageWidths[tSize];
-          contentHeight = EDStatic.imageHeights[tSize];
+          contentWidth = EDStatic.messages.imageWidths[tSize];
+          contentHeight = EDStatic.messages.imageHeights[tSize];
           content =
               "<img src=\""
                   + XML.encodeAsHTMLAttribute(tUrl)
@@ -13793,13 +13986,13 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
               || lcExt.equals(".jpeg")
               || lcExt.equals(".jpg")) {
             // give all images a fixed square size
-            contentWidth = EDStatic.imageWidths[tSize];
+            contentWidth = EDStatic.messages.imageWidths[tSize];
             contentHeight = contentWidth;
           } else {
             // everything else is html content
             // sizes: small, wide, wide&high
-            contentWidth = EDStatic.imageWidths[tSize == 0 ? 1 : 2];
-            contentHeight = EDStatic.imageWidths[tSize] * 3 / 4; // yes, widths; make wide
+            contentWidth = EDStatic.messages.imageWidths[tSize == 0 ? 1 : 2];
+            contentHeight = EDStatic.messages.imageWidths[tSize] * 3 / 4; // yes, widths; make wide
           }
           content =
               "<iframe src=\""
@@ -14031,8 +14224,8 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
             widgets.button(
                 "button",
                 "submit" + newSlide,
-                EDStatic.clickToSubmitAr[language],
-                EDStatic.submitAr[language], // button label
+                EDStatic.messages.clickToSubmitAr[language],
+                EDStatic.messages.submitAr[language], // button label
                 "style=\"cursor:default;\" onClick=\"setHidden(); " + dFormName + ".submit();\""));
         writer.write(
             "</td>\n"
@@ -14121,12 +14314,12 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
           widgets.button(
               "button",
               "submit" + newSlide,
-              EDStatic.clickToSubmitAr[language],
-              EDStatic.submitAr[language], // button label
+              EDStatic.messages.clickToSubmitAr[language],
+              EDStatic.messages.submitAr[language], // button label
               "style=\"cursor:default;\" onClick=\"setHidden(); " + dFormName + ".submit();\""));
       writer.write(
           "<a class=\"selfLink\" id=\"instructions\" href=\"#instructions\" rel=\"bookmark\">&nbsp;</a><p>");
-      writer.write(EDStatic.ssInstructionsHtmlAr[language]);
+      writer.write(EDStatic.messages.ssInstructionsHtmlAr[language]);
       writer.write("</div>\n");
 
       // end form
@@ -14208,7 +14401,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       throws Throwable {
 
     String tErddapUrl = EDStatic.erddapUrl(loggedInAs, language);
-    String requestUrl = request.getRequestURI(); // post EDStatic.baseUrl, pre "?"
+    String requestUrl = request.getRequestURI(); // post EDStatic.config.baseUrl, pre "?"
     String fileTypeName = "";
     String searchFor = "";
     /* retired 2017-10-27 String youAreHereTable =
@@ -14283,11 +14476,11 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
               EDStatic.bilingual(
                   language, // or SC_NO_CONTENT error?
                   MessageFormat.format(
-                      EDStatic.searchWithQueryAr[0],
+                      EDStatic.messages.searchWithQueryAr[0],
                       fileTypeName,
                       "?page=1&itemsPerPage=1000&searchFor=wind+temperature"),
                   MessageFormat.format(
-                      EDStatic.searchWithQueryAr[language],
+                      EDStatic.messages.searchWithQueryAr[language],
                       fileTypeName,
                       "?page=1&itemsPerPage=1000&searchFor=wind+temperature")));
           return;
@@ -14313,7 +14506,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
 
       // reduce datasetIDs to ones on requested page
       // IMPORTANT!!! For this to work correctly, datasetIDs must be
-      //  accessibleTo loggedInAs (or EDStatic.listPrivateDatasets)
+      //  accessibleTo loggedInAs (or EDStatic.config.listPrivateDatasets)
       //  and in final sorted order.
       //  (True here)
       // Order of removal: more efficient to remove items at end, then items at beginning.
@@ -14340,13 +14533,14 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                 loggedInAs,
                 "search/index.html", // was endOfRequest,
                 queryString,
-                EDStatic.searchTitleAr[language],
+                EDStatic.messages.searchTitleAr[language],
                 out);
         try {
           // you are here    Search
           writer.write(
               "<div class=\"standard_width\">\n"
-                  + EDStatic.youAreHere(language, loggedInAs, EDStatic.searchTitleAr[language]));
+                  + EDStatic.youAreHere(
+                      language, loggedInAs, EDStatic.messages.searchTitleAr[language]));
           // youAreHereTable);
 
           // display the search form
@@ -14375,7 +14569,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                 nMatchingHtml
                     + "\n"
                     + "<span class=\"N\">("
-                    + EDStatic.orRefineSearchWithAr[language]
+                    + EDStatic.messages.orRefineSearchWithAr[language]
                     + getAdvancedSearchLink(language, loggedInAs, queryString)
                     + ")</span>\n"
                     + "<br>&nbsp;\n"); // necessary for the blank line before the table (not <p>)
@@ -14396,14 +14590,14 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
             writer.write(
                 "\n"
                     + "<p>"
-                    + EDStatic.restfulInformationFormatsAr[language]
+                    + EDStatic.messages.restfulInformationFormatsAr[language]
                     + " \n("
                     + plainFileTypesString
                     + // not links, which would be indexed by search engines
                     ") <a rel=\"help\" href=\""
                     + tErddapUrl
                     + "/rest.html\">"
-                    + EDStatic.restfulViaServiceAr[language]
+                    + EDStatic.messages.restfulViaServiceAr[language]
                     + "</a>.\n");
 
           } else {
@@ -14435,7 +14629,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       // show the results in other file types
       if (error != null)
         throw new SimpleException(
-            EDStatic.resourceNotFoundAr[language] + error[0] + " " + error[1]);
+            EDStatic.messages.resourceNotFoundAr[language] + error[0] + " " + error[1]);
 
       Table table =
           makePlainDatasetTable(language, loggedInAs, datasetIDs, sortByTitle, fileTypeName);
@@ -14473,13 +14667,14 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
               loggedInAs,
               "search/index.html", // was endOfRequest,
               queryString,
-              EDStatic.searchTitleAr[language],
+              EDStatic.messages.searchTitleAr[language],
               out);
       try {
         // you are here      Search
         writer.write(
             "<div class=\"standard_width\">\n"
-                + EDStatic.youAreHere(language, loggedInAs, EDStatic.searchTitleAr[language]));
+                + EDStatic.youAreHere(
+                    language, loggedInAs, EDStatic.messages.searchTitleAr[language]));
         // youAreHereTable);
 
         // write (error and) search form
@@ -14539,11 +14734,11 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       throws Throwable {
 
     String tErddapUrl = EDStatic.erddapUrl(loggedInAs, language);
-    String requestUrl = request.getRequestURI(); // post EDStatic.baseUrl, pre "?"
+    String requestUrl = request.getRequestURI(); // post EDStatic.config.baseUrl, pre "?"
     String descriptionUrl = tErddapUrl + "/" + protocol + "/description.xml";
     String serviceWord = "search";
     String serviceUrl = tErddapUrl + "/" + protocol + "/" + serviceWord;
-    String tImageDirUrl = tErddapUrl + "/" + EDStatic.IMAGES_DIR; // has trailing /
+    String tImageDirUrl = tErddapUrl + "/" + EDStatic.config.IMAGES_DIR; // has trailing /
     String niceProtocol = "OpenSearch 1.1";
 
     String endOfRequestUrl =
@@ -14553,7 +14748,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
 
     // search standard_names for a good exampleSearchTerm
     String exampleSearchTerm = "datasetID"; // default    latitude?
-    int snpo = String2.indexOf(EDStatic.categoryAttributes, "standard_name");
+    int snpo = String2.indexOf(EDStatic.config.categoryAttributes, "standard_name");
     if (snpo >= 0) { // "standard_name" is a categoryAttribute
       String tryTerms[] = {
         "temperature",
@@ -14595,8 +14790,10 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
               niceProtocol,
               out);
       String openSearchDescription =
-          EDStatic.openSearchDescriptionAr[language]
-              .replaceAll("&externalLinkHtml;", EDStatic.externalLinkHtml(language, tErddapUrl))
+          EDStatic.messages
+              .openSearchDescriptionAr[language]
+              .replaceAll(
+                  "&externalLinkHtml;", EDStatic.messages.externalLinkHtml(language, tErddapUrl))
               .replaceAll("&niceProtocol;", niceProtocol)
               .replaceAll("&descriptionUrl;", descriptionUrl)
               .replaceAll("&sampleUrl;", sampleUrl)
@@ -14645,10 +14842,10 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
 
     // *** respond to /description.xml
     if (endOfRequestUrl.equals("description.xml")) {
-      // extract the unique single keywords from EDStatic.keywords,
+      // extract the unique single keywords from EDStatic.config.keywords,
       // and make them space separated
       // ??? or do this from all keywords of all datasets?
-      String tKeywords = EDStatic.keywords.toLowerCase();
+      String tKeywords = EDStatic.config.keywords.toLowerCase();
       tKeywords = String2.replaceAll(tKeywords, '>', ' ');
       tKeywords = String2.replaceAll(tKeywords, '|', ' ');
       tKeywords = String2.replaceAll(tKeywords, '\"', ' ');
@@ -14678,7 +14875,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                 "  <ShortName>ERDDAP</ShortName>\n"
                 + // <=16 chars
                 "  <Description>The ERDDAP at "
-                + XML.encodeAsXML(EDStatic.adminInstitution)
+                + XML.encodeAsXML(EDStatic.config.adminInstitution)
                 + // <=1024 chars
                 " is a data server that gives you a simple, consistent way to download subsets of "
                 + "scientific datasets in common file formats and make graphs and maps.</Description>\n"
@@ -14693,7 +14890,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                 + template
                 + "&#x26;format=rss\"/>\n"
                 + "  <Contact>"
-                + XML.encodeAsXML(EDStatic.adminEmail)
+                + XML.encodeAsXML(EDStatic.config.adminEmail)
                 + "</Contact>\n"
                 + "  <Tags>"
                 + XML.encodeAsXML(tKeywords)
@@ -14701,35 +14898,35 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                 + "  <LongName>ERDDAP"
                 + // <=48 characters
                 XML.encodeAsXML(
-                    EDStatic.adminInstitution.length() <= 38
-                        ? " at " + EDStatic.adminInstitution
+                    EDStatic.config.adminInstitution.length() <= 38
+                        ? " at " + EDStatic.config.adminInstitution
                         : "")
                 + "</LongName>\n"
                 + "  <Image height=\""
-                + EDStatic.googleEarthLogoFileHeight
+                + EDStatic.config.googleEarthLogoFileHeight
                 + "\" "
                 + // preferred image first
                 "width=\""
-                + EDStatic.googleEarthLogoFileWidth
+                + EDStatic.config.googleEarthLogoFileWidth
                 + "\">"
                 + // type=\"image/png\" is optional
-                XML.encodeAsXML(tImageDirUrl + EDStatic.googleEarthLogoFile)
+                XML.encodeAsXML(tImageDirUrl + EDStatic.config.googleEarthLogoFile)
                 + "</Image>\n"
                 + "  <Image height=\""
-                + EDStatic.highResLogoImageFileHeight
+                + EDStatic.config.highResLogoImageFileHeight
                 + "\" "
                 + "width=\""
-                + EDStatic.highResLogoImageFileWidth
+                + EDStatic.config.highResLogoImageFileWidth
                 + "\">"
-                + XML.encodeAsXML(tImageDirUrl + EDStatic.highResLogoImageFile)
+                + XML.encodeAsXML(tImageDirUrl + EDStatic.config.highResLogoImageFile)
                 + "</Image>\n"
                 + "  <Image height=\""
-                + EDStatic.lowResLogoImageFileHeight
+                + EDStatic.config.lowResLogoImageFileHeight
                 + "\" "
                 + "width=\""
-                + EDStatic.lowResLogoImageFileWidth
+                + EDStatic.config.lowResLogoImageFileWidth
                 + "\">"
-                + XML.encodeAsXML(tImageDirUrl + EDStatic.lowResLogoImageFile)
+                + XML.encodeAsXML(tImageDirUrl + EDStatic.config.lowResLogoImageFile)
                 + "</Image>\n"
                 +
                 // ???need more and better examples
@@ -14740,14 +14937,14 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                 + // <=64 chars
                 "  <Attribution>"
                 + // credit for search results    <=256 chars
-                XML.encodeAsXML(String2.noLongerThanDots(EDStatic.adminInstitution, 256))
+                XML.encodeAsXML(String2.noLongerThanDots(EDStatic.config.adminInstitution, 256))
                 + "</Attribution>\n"
                 + "  <SyndicationRight>"
                 + (loggedInAs == null ? "open" : "private")
                 + "</SyndicationRight>\n"
                 + "  <AdultContent>false</AdultContent>\n"
                 + "  <Language>"
-                + EDStatic.langCodeAr[language]
+                + EDStatic.messages.langCodeAr[language]
                 + "</Language>\n"
                 + "  <InputEncoding>UTF-8</InputEncoding>\n"
                 + "  <OutputEncoding>UTF-8</OutputEncoding>\n"
@@ -14796,7 +14993,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
 
     // reduce datasetIDs to ones on requested page
     // IMPORTANT!!! For this to work correctly, datasetIDs must be
-    //  accessibleTo loggedInAs (or EDStatic.listPrivateDatasets)
+    //  accessibleTo loggedInAs (or EDStatic.config.listPrivateDatasets)
     //  and in final sorted order.
     //  (True here)
     // Order of removal: more efficient to remove items at end, then items at beginning.
@@ -14855,10 +15052,10 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                 + "</updated>\n"
                 + "  <author> \n"
                 + "    <name>"
-                + XML.encodeAsXML(EDStatic.adminIndividualName)
+                + XML.encodeAsXML(EDStatic.config.adminIndividualName)
                 + "</name>\n"
                 + "    <email>"
-                + XML.encodeAsXML(EDStatic.adminEmail)
+                + XML.encodeAsXML(EDStatic.config.adminEmail)
                 + "</email>\n"
                 + "  </author> \n"
                 +
@@ -15104,13 +15301,13 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                 + "/search/advanced.html"
                 + EDStatic.questionQuery(paramString))
         + "\">"
-        + String2.replaceAll(EDStatic.advancedSearchAr[language], " ", "&nbsp;")
+        + String2.replaceAll(EDStatic.messages.advancedSearchAr[language], " ", "&nbsp;")
         + "</a>&nbsp;"
         + EDStatic.htmlTooltipImage(
             language,
             loggedInAs,
             "<div class=\"narrow_max_width\">"
-                + EDStatic.advancedSearchTooltipAr[language]
+                + EDStatic.messages.advancedSearchTooltipAr[language]
                 + "</div>")
         + "</span>";
   }
@@ -15139,9 +15336,9 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       throws Throwable {
 
     String tErddapUrl = EDStatic.erddapUrl(loggedInAs, language);
-    String requestUrl = request.getRequestURI(); // post EDStatic.baseUrl, pre "?"
-    String catAtts[] = EDStatic.categoryAttributes;
-    String catAttsInURLs[] = EDStatic.categoryAttributesInURLs;
+    String requestUrl = request.getRequestURI(); // post EDStatic.config.baseUrl, pre "?"
+    String catAtts[] = EDStatic.config.categoryAttributes;
+    String catAttsInURLs[] = EDStatic.config.categoryAttributesInURLs;
     int nCatAtts = catAtts.length;
     String ANY = "(ANY)"; // don't translate so consistent on all erddaps?
 
@@ -15155,7 +15352,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     if (!endOfRequestUrl.equals("advanced.html")
         && !endsWithPlainFileType(endOfRequestUrl, "advanced")) {
       // unsupported fileType
-      if (verbose) String2.log(EDStatic.resourceNotFoundAr[language] + "!advanced");
+      if (verbose) String2.log(EDStatic.messages.resourceNotFoundAr[language] + "!advanced");
       sendResourceNotFoundError(requestNumber, request, response, "");
       return;
     }
@@ -15200,7 +15397,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
         maxLon = td;
       } else {
         throw new SimpleException(
-            EDStatic.simpleBilingual(language, EDStatic.queryErrorAr)
+            EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
                 + "minLon="
                 + minLon
                 + " > maxLon="
@@ -15214,7 +15411,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
         maxLat = td;
       } else {
         throw new SimpleException(
-            EDStatic.simpleBilingual(language, EDStatic.queryErrorAr)
+            EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
                 + "minLat="
                 + minLat
                 + " > maxLat="
@@ -15270,7 +15467,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
         maxTimeD = td;
       } else {
         throw new SimpleException(
-            EDStatic.simpleBilingual(language, EDStatic.queryErrorAr)
+            EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
                 + "minTime="
                 + minTimeParam
                 + " > maxTime="
@@ -15319,29 +15516,29 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     // protocol
     StringBuilder protocolTooltip =
         new StringBuilder(
-            EDStatic.protocolSearch2HtmlAr[language]
+            EDStatic.messages.protocolSearch2HtmlAr[language]
                 + "\n<p><strong>griddap</strong> - "
-                + EDStatic.EDDGridDapDescriptionAr[language]
+                + EDStatic.messages.EDDGridDapDescriptionAr[language]
                 + "\n<p><strong>tabledap</strong> - "
-                + EDStatic.EDDTableDapDescriptionAr[language]);
+                + EDStatic.messages.EDDTableDapDescriptionAr[language]);
     StringArray protocols = new StringArray();
     protocols.add(ANY);
     protocols.add("griddap");
     protocols.add("tabledap");
-    if (EDStatic.wmsActive) {
+    if (EDStatic.config.wmsActive) {
       protocols.add("WMS");
       protocolTooltip.append(
-          "\n<p><strong>WMS</strong> - " + EDStatic.wmsDescriptionHtmlAr[language]);
+          "\n<p><strong>WMS</strong> - " + EDStatic.messages.wmsDescriptionHtmlAr[language]);
     }
-    if (EDStatic.wcsActive) {
+    if (EDStatic.config.wcsActive) {
       protocols.add("WCS");
       protocolTooltip.append(
-          "\n<p><strong>WCS</strong> - " + EDStatic.wcsDescriptionHtmlAr[language]);
+          "\n<p><strong>WCS</strong> - " + EDStatic.messages.wcsDescriptionHtmlAr[language]);
     }
-    if (EDStatic.sosActive) {
+    if (EDStatic.config.sosActive) {
       protocols.add("SOS");
       protocolTooltip.append(
-          "\n<p><strong>SOS</strong> - " + EDStatic.sosDescriptionHtmlAr[language]);
+          "\n<p><strong>SOS</strong> - " + EDStatic.messages.sosDescriptionHtmlAr[language]);
     }
     String tProt = request.getParameter("protocol");
     int whichProtocol = protocols.indexOfIgnoreCase(tProt);
@@ -15385,7 +15582,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
               loggedInAs,
               "search/advanced.html", // was endOfRequest,
               queryString,
-              EDStatic.advancedSearchAr[language],
+              EDStatic.messages.advancedSearchAr[language],
               out);
       try {
         HtmlWidgets widgets =
@@ -15400,16 +15597,16 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                 + EDStatic.youAreHere(
                     language,
                     loggedInAs,
-                    EDStatic.advancedSearchAr[language]
+                    EDStatic.messages.advancedSearchAr[language]
                         + " "
                         + EDStatic.htmlTooltipImage(
                             language,
                             loggedInAs,
                             "<div class=\"narrow_max_width\">"
-                                + EDStatic.advancedSearchTooltipAr[language]
+                                + EDStatic.messages.advancedSearchTooltipAr[language]
                                 + "</div>"))
                 + "\n\n"
-                + EDStatic.advancedSearchDirectionsAr[language]
+                + EDStatic.messages.advancedSearchDirectionsAr[language]
                 + "\n"
                 + HtmlWidgets.ifJavaScriptDisabled
                 + "\n"
@@ -15423,15 +15620,15 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
         // full text search...
         writer.write(
             "<p><strong>"
-                + EDStatic.searchFullTextHtmlAr[language]
+                + EDStatic.messages.searchFullTextHtmlAr[language]
                 + "</strong>\n"
                 + EDStatic.htmlTooltipImage(
-                    language, loggedInAs, EDStatic.searchHintsTooltipAr[language])
+                    language, loggedInAs, EDStatic.messages.searchHintsTooltipAr[language])
                 + "\n"
                 + "<br>"
                 + widgets.textField(
                     "searchFor",
-                    MessageFormat.format(EDStatic.searchTipAr[language], "noaa wind"),
+                    MessageFormat.format(EDStatic.messages.searchTipAr[language], "noaa wind"),
                     70,
                     255,
                     searchFor,
@@ -15446,13 +15643,13 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                 widgets.beginTable("class=\"compact nowrap\"")
                 + "<tr>\n"
                 + "  <td colspan=\"2\"><strong>"
-                + EDStatic.categoryTitleHtmlAr[language]
+                + EDStatic.messages.categoryTitleHtmlAr[language]
                 + "</strong>\n"
                 + EDStatic.htmlTooltipImage(
                     language,
                     loggedInAs,
                     "<div class=\"narrow_max_width\">"
-                        + EDStatic.advancedSearchCategoryTooltipAr[language]
+                        + EDStatic.messages.advancedSearchCategoryTooltipAr[language]
                         + "</div>")
                 + "  </td>\n"
                 + "</tr>\n"
@@ -15483,9 +15680,9 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
         }
 
         // bounding box...
-        String mapTooltip = EDStatic.advancedSearchMapTooltipAr[language];
-        String lonTooltip = mapTooltip + EDStatic.advancedSearchLonTooltipAr[language];
-        String timeTooltip = EDStatic.advancedSearchTimeTooltipAr[language];
+        String mapTooltip = EDStatic.messages.advancedSearchMapTooltipAr[language];
+        String lonTooltip = mapTooltip + EDStatic.messages.advancedSearchLonTooltipAr[language];
+        String timeTooltip = EDStatic.messages.advancedSearchTimeTooltipAr[language];
         String twoClickMap[] =
             HtmlWidgets.myTwoClickMap540Big(
                 language,
@@ -15503,13 +15700,13 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                 // lon lat time ranges
                 "<tr>\n"
                 + "  <td colspan=\"2\"><strong>"
-                + EDStatic.advancedSearchBoundsAr[language]
+                + EDStatic.messages.advancedSearchBoundsAr[language]
                 + "</strong>\n"
                 + EDStatic.htmlTooltipImage(
                     language,
                     loggedInAs,
                     "<div class=\"standard_max_width\">"
-                        + EDStatic.advancedSearchRangeTooltipAr[language]
+                        + EDStatic.messages.advancedSearchRangeTooltipAr[language]
                         + "<p>"
                         + lonTooltip
                         + "</div>")
@@ -15520,13 +15717,15 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                 // max lat
                 "<tr>\n"
                 + "  <td class=\"N\">"
-                + EDStatic.advancedSearchMaxLatAr[language]
+                + EDStatic.messages.advancedSearchMaxLatAr[language]
                 + "</td>\n"
                 + "  <td>&nbsp;=&nbsp;"
                 + "    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;\n"
                 + widgets.textField(
                     "maxLat",
-                    EDStatic.advancedSearchMaxLatAr[language] + " (-90 to 90)<p>" + mapTooltip,
+                    EDStatic.messages.advancedSearchMaxLatAr[language]
+                        + " (-90 to 90)<p>"
+                        + mapTooltip,
                     8,
                     12,
                     (Double.isNaN(maxLat) ? "" : "" + maxLat),
@@ -15539,13 +15738,13 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                 // min max lon
                 "<tr>\n"
                 + "  <td class=\"N\">"
-                + EDStatic.advancedSearchMinMaxLonAr[language]
+                + EDStatic.messages.advancedSearchMinMaxLonAr[language]
                 + "</td>\n"
                 + "  <td>&nbsp;=&nbsp;"
                 + widgets.textField(
                     "minLon",
                     "<div class=\"standard_max_width\">"
-                        + EDStatic.advancedSearchMinLonAr[language]
+                        + EDStatic.messages.advancedSearchMinLonAr[language]
                         + "<p>"
                         + lonTooltip
                         + "</div>",
@@ -15557,7 +15756,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                 + widgets.textField(
                     "maxLon",
                     "<div class=\"standard_max_width\">"
-                        + EDStatic.advancedSearchMaxLonAr[language]
+                        + EDStatic.messages.advancedSearchMaxLonAr[language]
                         + "<p>"
                         + lonTooltip
                         + "</div>",
@@ -15572,13 +15771,15 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                 // min lat
                 "<tr>\n"
                 + "  <td class=\"N\">"
-                + EDStatic.advancedSearchMinLatAr[language]
+                + EDStatic.messages.advancedSearchMinLatAr[language]
                 + "</td>\n"
                 + "  <td>&nbsp;=&nbsp;"
                 + "    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;\n"
                 + widgets.textField(
                     "minLat",
-                    EDStatic.advancedSearchMinLatAr[language] + " (-90 to 90)<p>" + mapTooltip,
+                    EDStatic.messages.advancedSearchMinLatAr[language]
+                        + " (-90 to 90)<p>"
+                        + mapTooltip,
                     8,
                     12,
                     (Double.isNaN(minLat) ? "" : "" + minLat),
@@ -15588,8 +15789,8 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                     "button",
                     "",
                     "",
-                    EDStatic.advancedSearchClearHelpAr[language],
-                    EDStatic.advancedSearchClearAr[language],
+                    EDStatic.messages.advancedSearchClearHelpAr[language],
+                    EDStatic.messages.advancedSearchClearAr[language],
                     "onClick='f1.minLon.value=\"\"; f1.maxLon.value=\"\"; "
                         + "f1.minLat.value=\"\"; f1.maxLat.value=\"\"; "
                         + "((document.all)? document.all.rubberBand : "
@@ -15618,12 +15819,12 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                 // time
                 "<tr>\n"
                 + "  <td class=\"N\">"
-                + EDStatic.advancedSearchMinTimeAr[language]
+                + EDStatic.messages.advancedSearchMinTimeAr[language]
                 + "</td>\n"
                 + "  <td>&nbsp;=&nbsp;"
                 + widgets.textField(
                     "minTime",
-                    EDStatic.advancedSearchMinTimeAr[language] + "<p>" + timeTooltip,
+                    EDStatic.messages.advancedSearchMinTimeAr[language] + "<p>" + timeTooltip,
                     27,
                     40,
                     minTimeParam,
@@ -15632,12 +15833,12 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                 + "</tr>\n"
                 + "<tr>\n"
                 + "  <td class=\"N\">"
-                + EDStatic.advancedSearchMaxTimeAr[language]
+                + EDStatic.messages.advancedSearchMaxTimeAr[language]
                 + "</td>\n"
                 + "  <td>&nbsp;=&nbsp;"
                 + widgets.textField(
                     "maxTime",
-                    EDStatic.advancedSearchMaxTimeAr[language] + "<p>" + timeTooltip,
+                    EDStatic.messages.advancedSearchMaxTimeAr[language] + "<p>" + timeTooltip,
                     27,
                     40,
                     maxTimeParam,
@@ -15656,9 +15857,9 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                     "submit",
                     null,
                     null,
-                    EDStatic.searchClickTipAr[language],
+                    EDStatic.messages.searchClickTipAr[language],
                     "<span style=\"font-size:large;\"><strong>"
-                        + EDStatic.searchButtonAr[language]
+                        + EDStatic.messages.searchButtonAr[language]
                         + "</strong></span>",
                     "")
                 + "\n"
@@ -15891,7 +16092,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
         // display datasets
         writer.write(
             // "<br>&nbsp;\n" +
-            "<hr>\n" + "<h2>" + EDStatic.advancedSearchResultsAr[language] + "</h2>\n");
+            "<hr>\n" + "<h2>" + EDStatic.messages.advancedSearchResultsAr[language] + "</h2>\n");
         if (searchPerformed) {
           if (resultsTable.nRows() == 0) {
             writer.write(
@@ -15899,10 +16100,10 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                     + XML.encodeAsHTML(MustBe.THERE_IS_NO_DATA)
                     + "</strong>\n"
                     + (searchFor.length() > 0
-                        ? "<br>" + EDStatic.searchSpellingAr[language] + "\n"
+                        ? "<br>" + EDStatic.messages.searchSpellingAr[language] + "\n"
                         : "")
                     + "<br>"
-                    + EDStatic.advancedSearchFewerCriteriaAr[language]
+                    + EDStatic.messages.advancedSearchFewerCriteriaAr[language]
                     + "\n"
                     + "</div>\n"); // which controls width
           } else {
@@ -15936,24 +16137,24 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
             writer.write(
                 "\n"
                     + "<p>"
-                    + EDStatic.restfulInformationFormatsAr[language]
+                    + EDStatic.messages.restfulInformationFormatsAr[language]
                     + " \n("
                     + plainFileTypesString
                     + // not links, which would be indexed by search engines
                     ") <a rel=\"help\" href=\""
                     + tErddapUrl
                     + "/rest.html\">"
-                    + EDStatic.restfulViaServiceAr[language]
+                    + EDStatic.messages.restfulViaServiceAr[language]
                     + "</a>.\n"
                     + "<p>"
-                    + EDStatic.advancedSearchErrorHandlingAr[language]
+                    + EDStatic.messages.advancedSearchErrorHandlingAr[language]
                     + "\n");
           }
         } else {
           writer.write(
               MessageFormat.format(
-                  EDStatic.advancedSearchNoCriteriaAr[language],
-                  EDStatic.searchButtonAr[language],
+                  EDStatic.messages.advancedSearchNoCriteriaAr[language],
+                  EDStatic.messages.searchButtonAr[language],
                   tErddapUrl,
                   "" + pipp[1]));
         }
@@ -15991,11 +16192,12 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
         throw new SimpleException(
             EDStatic.bilingual(
                 language,
-                EDStatic.queryErrorAr[0]
-                    + MessageFormat.format(EDStatic.advancedSearchWithCriteriaAr[0], fileTypeName),
-                EDStatic.queryErrorAr[language]
+                EDStatic.messages.queryErrorAr[0]
                     + MessageFormat.format(
-                        EDStatic.advancedSearchWithCriteriaAr[language], fileTypeName)));
+                        EDStatic.messages.advancedSearchWithCriteriaAr[0], fileTypeName),
+                EDStatic.messages.queryErrorAr[language]
+                    + MessageFormat.format(
+                        EDStatic.messages.advancedSearchWithCriteriaAr[language], fileTypeName)));
       }
     }
   }
@@ -16037,7 +16239,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
    * @param language the index of the selected language
    * @param loggedInAs the name of the logged in user (or null if not logged in). This is used to
    *     determine if the user has the right to know if a given dataset exists. (But dataset will be
-   *     matched if EDStatic.listPrivateDatasets.)
+   *     matched if EDStatic.config.listPrivateDatasets.)
    * @param tDatasetIDs The datasets to be considered (usually allDatasetIDs()). The order (sorted
    *     or not) is irrelevant.
    * @param searchFor the Google-like string of search terms.
@@ -16078,7 +16280,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
    * @param language the index of the selected language
    * @param loggedInAs the name of the logged in user (or null if not logged in). This is used to
    *     determine if the user has the right to know if a given dataset exists. (But dataset will be
-   *     matched if EDStatic.listPrivateDatasets.)
+   *     matched if EDStatic.config.listPrivateDatasets.)
    * @param tDatasetIDs The datasets to be considered (usually allDatasetIDs()). The order (sorted
    *     or not) is irrelevant.
    * @param searchFor the Google-like string of search terms. Special cases: "" and "all" return all
@@ -16117,7 +16319,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     // if failure (e.g., at startup, before Lucene indexes are made),
     //  temporarily go back to original search
     IndexSearcher indexSearcher =
-        EDStatic.useLuceneSearchEngine ? EDStatic.luceneIndexSearcher() : null;
+        EDStatic.config.useLuceneSearchEngine ? EDStatic.luceneIndexSearcher() : null;
 
     if (indexSearcher != null && EDStatic.luceneDocNToDatasetID != null) {
       // If useLuceneSearchEngine=true and searcher is valid,
@@ -16280,7 +16482,9 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       } catch (Throwable t) {
         EDStatic.rethrowClientAbortException(t); // first thing in catch{}
         throw new SimpleException(
-            EDStatic.resourceNotFoundAr[language] + EDStatic.searchNotAvailableAr[language], t);
+            EDStatic.messages.resourceNotFoundAr[language]
+                + EDStatic.messages.searchNotAvailableAr[language],
+            t);
       }
     }
 
@@ -16311,7 +16515,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       if (edd == null) edd = tableDatasetHashMap.get(tId);
       if (edd == null) // just deleted?
       continue;
-      if (!EDStatic.listPrivateDatasets
+      if (!EDStatic.config.listPrivateDatasets
           && !edd.isAccessibleTo(roles)
           && !edd.graphsAccessibleToPublic()) // search for datasets is always a metadata request
       continue;
@@ -16357,7 +16561,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
    *
    * @param loggedInAs the name of the logged in user (or null if not logged in). This is used to
    *     determine if the user has the right to know if a given dataset exists. (But dataset will be
-   *     matched if EDStatic.listPrivateDatasets.)
+   *     matched if EDStatic.config.listPrivateDatasets.)
    * @param tDatasetIDs The datasets to be considered (usually allDatasetIDs()). The order (sorted
    *     or not) is irrelevant.
    * @param graphOrMetadataRequest use true if this is for a graph or metadata request so that
@@ -16380,7 +16584,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       if (edd == null) edd = tableDatasetHashMap.get(tID);
       if (edd == null) // just deleted?
       continue;
-      if (EDStatic.listPrivateDatasets
+      if (EDStatic.config.listPrivateDatasets
           || edd.isAccessibleTo(roles)
           || (graphOrMetadataRequest && edd.graphsAccessibleToPublic())) {
         titlePa.add(edd.title());
@@ -16418,7 +16622,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       throws Throwable {
 
     String tErddapUrl = EDStatic.erddapUrl(loggedInAs, language);
-    String requestUrl = request.getRequestURI(); // post EDStatic.baseUrl, pre "?"
+    String requestUrl = request.getRequestURI(); // post EDStatic.config.baseUrl, pre "?"
     String endOfRequestUrl =
         datasetIDStartsAt >= requestUrl.length() ? "" : requestUrl.substring(datasetIDStartsAt);
     String fileTypeName = File2.getExtension(endOfRequestUrl);
@@ -16439,10 +16643,10 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     // parse endOfRequestUrl into parts
     String parts[] = String2.split(endOfRequestUrl, '/');
     String attributeInURL = parts.length < 1 ? "" : parts[0];
-    int whichAttribute = String2.indexOf(EDStatic.categoryAttributesInURLs, attributeInURL);
+    int whichAttribute = String2.indexOf(EDStatic.config.categoryAttributesInURLs, attributeInURL);
     if (reallyVerbose)
       String2.log("  attributeInURL=" + attributeInURL + " which=" + whichAttribute);
-    String attribute = whichAttribute < 0 ? "" : EDStatic.categoryAttributes[whichAttribute];
+    String attribute = whichAttribute < 0 ? "" : EDStatic.config.categoryAttributes[whichAttribute];
 
     String categoryName = parts.length < 2 ? "" : parts[1];
     if (reallyVerbose) String2.log("  categoryName=" + categoryName);
@@ -16480,11 +16684,12 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
           //    EDStatic.encodedPassThroughPIppQueryPage1(request) + "\">" +
           // EDStatic.viewAllDatasetsHtml + "</a>\n" +
           //// Or, search text
-          // "<p>" + getSearchFormHtml(language, request, loggedInAs, EDStatic.orCommaAr[language],
+          // "<p>" + getSearchFormHtml(language, request, loggedInAs,
+          // EDStatic.messages.orCommaAr[language],
           // ":\n<br>", "") +
           // Use <p> below if other options above are enabled.
           "<span class=\"N\">("
-              + EDStatic.orRefineSearchWithAr[language]
+              + EDStatic.messages.orRefineSearchWithAr[language]
               + getAdvancedSearchLink(
                   language,
                   loggedInAs,
@@ -16492,7 +16697,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
               + ")</span>\n";
 
     String youAreHere =
-        EDStatic.youAreHere(language, loggedInAs, EDStatic.categoryTitleHtmlAr[language]);
+        EDStatic.youAreHere(language, loggedInAs, EDStatic.messages.categoryTitleHtmlAr[language]);
     // String youAreHereTable =
     //    getYouAreHereTable(youAreHere, refine) +
     //    "\n" + HtmlWidgets.ifJavaScriptDisabled + "\n";
@@ -16533,7 +16738,8 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
               fileTypeName);
         } else {
           if (verbose)
-            String2.log(EDStatic.resourceNotFoundAr[language] + "not index" + fileTypeName);
+            String2.log(
+                EDStatic.messages.resourceNotFoundAr[language] + "not index" + fileTypeName);
           sendResourceNotFoundError(requestNumber, request, response, "");
           return;
         }
@@ -16639,7 +16845,9 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
         } else {
           if (verbose)
             String2.log(
-                EDStatic.resourceNotFoundAr[language] + "unknown categoryName=" + categoryName);
+                EDStatic.messages.resourceNotFoundAr[language]
+                    + "unknown categoryName="
+                    + categoryName);
           sendResourceNotFoundError(requestNumber, request, response, "");
           return;
         }
@@ -16664,7 +16872,9 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                 writer,
                 request,
                 MessageFormat.format(
-                    EDStatic.categoryNotAnOptionAr[language], attributeInURL, categoryName));
+                    EDStatic.messages.categoryNotAnOptionAr[language],
+                    attributeInURL,
+                    categoryName));
             writer.write("<hr>\n");
           }
           writer.write("<p>");
@@ -16732,7 +16942,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
 
     // reduce datasetIDs to ones on requested page
     // IMPORTANT!!! For this to work correctly, datasetIDs must be
-    //  accessibleTo loggedInAs (or EDStatic.listPrivateDatasets)
+    //  accessibleTo loggedInAs (or EDStatic.config.listPrivateDatasets)
     //  and in final sorted order.
     //  (true here)
     // Order of removal: more efficient to remove items at end, then items at beginning.
@@ -16823,7 +17033,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
         writer.write(
             "<h3>3) "
                 + MessageFormat.format(
-                    EDStatic.resultsOfSearchForAr[language],
+                    EDStatic.messages.resultsOfSearchForAr[language],
                     "\n<span class=\"N\"><kbd>"
                         + attributeInURL
                         + " = "
@@ -16853,14 +17063,14 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
         writer.write(
             "\n"
                 + "<p>"
-                + EDStatic.restfulInformationFormatsAr[language]
+                + EDStatic.messages.restfulInformationFormatsAr[language]
                 + " \n("
                 + plainFileTypesString
                 + // not links, which would be indexed by search engines
                 ") <a rel=\"help\" href=\""
                 + tErddapUrl
                 + "/rest.html\">"
-                + EDStatic.restfulViaServiceAr[language]
+                + EDStatic.messages.restfulViaServiceAr[language]
                 + "</a>.\n");
 
         writer.write("</div>\n");
@@ -16876,7 +17086,8 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       return;
     }
 
-    if (verbose) String2.log(EDStatic.resourceNotFoundAr[language] + "end of doCategorize");
+    if (verbose)
+      String2.log(EDStatic.messages.resourceNotFoundAr[language] + "end of doCategorize");
     sendResourceNotFoundError(requestNumber, request, response, "");
   }
 
@@ -16905,14 +17116,14 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       throws Throwable {
 
     String tErddapUrl = EDStatic.erddapUrl(loggedInAs, language);
-    String requestUrl = request.getRequestURI(); // post EDStatic.baseUrl, pre "?"
+    String requestUrl = request.getRequestURI(); // post EDStatic.config.baseUrl, pre "?"
     String requestUrlNoLang = getUrlWithoutLang(request);
     String endOfRequestUrl =
         datasetIDStartsAt >= requestUrl.length() ? "" : requestUrl.substring(datasetIDStartsAt);
 
-    if (requestUrlNoLang.equals("/" + EDStatic.warName + "/info")
-        || requestUrlNoLang.equals("/" + EDStatic.warName + "/info/")
-        || requestUrlNoLang.equals("/" + EDStatic.warName + "/info/index.htm")) {
+    if (requestUrlNoLang.equals("/" + EDStatic.config.warName + "/info")
+        || requestUrlNoLang.equals("/" + EDStatic.config.warName + "/info/")
+        || requestUrlNoLang.equals("/" + EDStatic.config.warName + "/info/index.htm")) {
       sendRedirect(
           response, tErddapUrl + "/info/index.html?" + EDStatic.passThroughPIppQueryPage1(request));
       return;
@@ -16936,8 +17147,9 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
           response,
           EDStatic.bilingual(
               language,
-              MessageFormat.format(EDStatic.unsupportedFileTypeAr[0], fileTypeName),
-              MessageFormat.format(EDStatic.unsupportedFileTypeAr[language], fileTypeName)));
+              MessageFormat.format(EDStatic.messages.unsupportedFileTypeAr[0], fileTypeName),
+              MessageFormat.format(
+                  EDStatic.messages.unsupportedFileTypeAr[language], fileTypeName)));
       return;
     }
     EDStatic.tally.add("Info File Type (since startup)", fileTypeName);
@@ -16975,7 +17187,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
 
       // reduce tIDs to ones on requested page
       // IMPORTANT!!! For this to work correctly, datasetIDs must be
-      //  accessibleTo loggedInAs (or EDStatic.listPrivateDatasets)
+      //  accessibleTo loggedInAs (or EDStatic.config.listPrivateDatasets)
       //  and in final sorted order.
       //  (True here)
       // Order of removal: more efficient to remove items at end, then items at beginning.
@@ -17005,7 +17217,8 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                 "info/index.html", // was endOfRequest,
                 queryString,
                 MessageFormat.format(
-                    EDStatic.listOfDatasetsAr[language], EDStatic.listAllAr[language]),
+                    EDStatic.messages.listOfDatasetsAr[language],
+                    EDStatic.messages.listAllAr[language]),
                 out);
         try {
           // you are here  View All Datasets
@@ -17044,13 +17257,14 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                       language,
                       loggedInAs,
                       MessageFormat.format(
-                          EDStatic.listOfDatasetsAr[language], EDStatic.listAllAr[language]))
+                          EDStatic.messages.listOfDatasetsAr[language],
+                          EDStatic.messages.listAllAr[language]))
                   + secondLine
                   + nMatchingHtml);
 
           /*//Or, search text
           "&nbsp;\n" +
-          "<br>" + getSearchFormHtml(language, request, loggedInAs, EDStatic.orCommaAr[language], ":\n<br>", "") +
+          "<br>" + getSearchFormHtml(language, request, loggedInAs, EDStatic.messages.orCommaAr[language], ":\n<br>", "") +
           //Or, by category
           "<p>" + getCategoryLinksHtml(request, tErddapUrl) +
           //Or,
@@ -17070,19 +17284,19 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
             writer.write(
                 "\n"
                     + "<p>"
-                    + EDStatic.restfulInformationFormatsAr[language]
+                    + EDStatic.messages.restfulInformationFormatsAr[language]
                     + " \n("
                     + plainFileTypesString
                     + // not links, which would be indexed by search engines
                     ") <a rel=\"help\" href=\""
                     + tErddapUrl
                     + "/rest.html\">"
-                    + EDStatic.restfulViaServiceAr[language]
+                    + EDStatic.messages.restfulViaServiceAr[language]
                     + "</a>.\n");
           }
 
           // jsonld
-          if (EDStatic.jsonldActive) { // && isSchemaDotOrgEnabled()){
+          if (EDStatic.config.jsonldActive) { // && isSchemaDotOrgEnabled()){
             try {
               writer.flush(); // so content above is sent to user ASAP while this content is created
               String roles[] = EDStatic.getRoles(loggedInAs);
@@ -17097,7 +17311,8 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                 continue;
                 boolean isAccessible = edd.isAccessibleTo(roles);
                 boolean graphsAccessible = isAccessible || edd.graphsAccessibleToPublic();
-                if (!EDStatic.listPrivateDatasets && !isAccessible && !graphsAccessible) continue;
+                if (!EDStatic.config.listPrivateDatasets && !isAccessible && !graphsAccessible)
+                  continue;
                 datasets.add(edd);
               }
               // javascript version:
@@ -17126,7 +17341,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       } else {
         if (error != null)
           throw new SimpleException(
-              EDStatic.resourceNotFoundAr[language] + error[0] + " " + error[1]);
+              EDStatic.messages.resourceNotFoundAr[language] + error[0] + " " + error[1]);
 
         Table table = makePlainDatasetTable(language, loggedInAs, tIDs, sortByTitle, fileTypeName);
         sendPlainTable(
@@ -17150,8 +17365,9 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
           response,
           EDStatic.bilingual(
               language,
-              MessageFormat.format(EDStatic.infoRequestFormAr[0], EDStatic.warName),
-              MessageFormat.format(EDStatic.infoRequestFormAr[language], EDStatic.warName)));
+              MessageFormat.format(EDStatic.messages.infoRequestFormAr[0], EDStatic.config.warName),
+              MessageFormat.format(
+                  EDStatic.messages.infoRequestFormAr[language], EDStatic.config.warName)));
       return;
     }
     String tID = parts[0];
@@ -17164,8 +17380,8 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
           response,
           EDStatic.bilingual(
               language,
-              MessageFormat.format(EDStatic.unknownDatasetIDAr[0], tID),
-              MessageFormat.format(EDStatic.unknownDatasetIDAr[language], tID)));
+              MessageFormat.format(EDStatic.messages.unknownDatasetIDAr[0], tID),
+              MessageFormat.format(EDStatic.messages.unknownDatasetIDAr[language], tID)));
       return;
     }
     if (!edd.isAccessibleTo(EDStatic.getRoles(loggedInAs)) && !edd.graphsAccessibleToPublic()) {
@@ -17303,7 +17519,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
               "info/" + tID + "/index.html", // was endOfRequest,
               queryString,
               MessageFormat.format(
-                  EDStatic.infoAboutFromAr[language], edd.title(), edd.institution()),
+                  EDStatic.messages.infoAboutFromAr[language], edd.title(), edd.institution()),
               out);
       try {
         writer.write("<div class=\"wide_max_width\">\n"); // not standard_width
@@ -17317,12 +17533,12 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
         dsTable.saveAsHtmlTable(writer, "commonBGColor", null, 1, false, -1, false, false);
 
         // html format the valueSA values
-        String externalLinkHtml = EDStatic.externalLinkHtml(language, tErddapUrl);
+        String externalLinkHtml = EDStatic.messages.externalLinkHtml(language, tErddapUrl);
         for (int i = 0; i < valueSA.size(); i++) {
           String s = valueSA.get(i);
           if (String2.isUrl(s)) {
             // display as a link
-            boolean isLocal = s.startsWith(EDStatic.baseUrl);
+            boolean isLocal = s.startsWith(EDStatic.config.baseUrl);
             s = XML.encodeAsHTMLAttribute(s);
             valueSA.set(
                 i, "<a href=\"" + s + "\">" + s + (isLocal ? "" : externalLinkHtml) + "</a>");
@@ -17336,7 +17552,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
         }
 
         // display the info table
-        writer.write("<h2>" + EDStatic.infoTableTitleHtmlAr[language] + "</h2>");
+        writer.write("<h2>" + EDStatic.messages.infoTableTitleHtmlAr[language] + "</h2>");
 
         // ******** custom table writer (to change color on "variable" rows)
         writer.write("<table class=\"erd commonBGColor\">\n");
@@ -17371,18 +17587,18 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
         writer.write(
             "\n"
                 + "<p>"
-                + EDStatic.restfulInformationFormatsAr[language]
+                + EDStatic.messages.restfulInformationFormatsAr[language]
                 + " \n("
                 + plainFileTypesString
                 + // not links, which would be indexed by search engines
                 ") <a rel=\"help\" href=\""
                 + tErddapUrl
                 + "/rest.html\">"
-                + EDStatic.restfulViaServiceAr[language]
+                + EDStatic.messages.restfulViaServiceAr[language]
                 + "</a>.\n");
 
         // jsonld
-        if (EDStatic.jsonldActive) { // javascript: && EDStatic.isSchemaDotOrgEnabled()) {
+        if (EDStatic.config.jsonldActive) { // javascript: && EDStatic.isSchemaDotOrgEnabled()) {
           try {
             String tId = parts[0];
             boolean isAllDatasets = tId.equals(EDDTableFromAllDatasets.DATASET_ID);
@@ -17414,7 +17630,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       return;
     }
 
-    if (verbose) String2.log(EDStatic.resourceNotFoundAr[language] + "end of doInfo");
+    if (verbose) String2.log(EDStatic.messages.resourceNotFoundAr[language] + "end of doInfo");
     sendResourceNotFoundError(requestNumber, request, response, "");
   }
 
@@ -17433,7 +17649,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
             + "  \"@context\": \"http://schema.org\",\n"
             + "  \"@type\": \"DataCatalog\",\n"
             + "  \"name\": "
-            + String2.toJson65536("ERDDAP Data Server at " + EDStatic.adminInstitution)
+            + String2.toJson65536("ERDDAP Data Server at " + EDStatic.config.adminInstitution)
             + ",\n"
             + "  \"url\": "
             + String2.toJson65536(baseUrl)
@@ -17441,31 +17657,31 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
             + "  \"publisher\": {\n"
             + "    \"@type\": \"Organization\",\n"
             + "    \"name\": "
-            + String2.toJson65536(EDStatic.adminInstitution)
+            + String2.toJson65536(EDStatic.config.adminInstitution)
             + ",\n"
             + "    \"address\": {\n"
             + "      \"@type\": \"PostalAddress\",\n"
             + "      \"addressCountry\": "
-            + String2.toJson65536(EDStatic.adminCountry)
+            + String2.toJson65536(EDStatic.config.adminCountry)
             + ",\n"
             + "      \"addressLocality\": "
-            + String2.toJson65536(EDStatic.adminAddress + ", " + EDStatic.adminCity)
+            + String2.toJson65536(EDStatic.config.adminAddress + ", " + EDStatic.config.adminCity)
             + ",\n"
             + "      \"addressRegion\": "
-            + String2.toJson65536(EDStatic.adminStateOrProvince)
+            + String2.toJson65536(EDStatic.config.adminStateOrProvince)
             + ",\n"
             + "      \"postalCode\": "
-            + String2.toJson65536(EDStatic.adminPostalCode)
+            + String2.toJson65536(EDStatic.config.adminPostalCode)
             + "\n"
             + "    },\n"
             + "    \"telephone\": "
-            + String2.toJson65536(EDStatic.adminPhone)
+            + String2.toJson65536(EDStatic.config.adminPhone)
             + ",\n"
             + "    \"email\": "
-            + String2.toJson65536(EDStatic.adminEmail)
+            + String2.toJson65536(EDStatic.config.adminEmail)
             + ",\n"
             + "    \"sameAs\": "
-            + String2.toJson65536(EDStatic.adminInstitutionUrl)
+            + String2.toJson65536(EDStatic.config.adminInstitutionUrl)
             + "\n"
             + "  },\n"
             + "  \"fileFormat\": [\n"
@@ -17584,7 +17800,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
             + "  \"includedInDataCatalog\": {\n"
             + "    \"@type\": \"DataCatalog\",\n"
             + "    \"name\": "
-            + String2.toJson65536("ERDDAP Data Server at " + EDStatic.adminInstitution)
+            + String2.toJson65536("ERDDAP Data Server at " + EDStatic.config.adminInstitution)
             + ",\n"
             + "    \"sameAs\": "
             + String2.toJson65536(baseUrl)
@@ -17816,15 +18032,15 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       String queryString)
       throws Throwable {
 
-    if (!EDStatic.subscriptionSystemActive || EDStatic.subscriptions == null) {
+    if (!EDStatic.config.subscriptionSystemActive || EDStatic.subscriptions == null) {
       sendResourceNotFoundError(
           requestNumber,
           request,
           response,
           EDStatic.bilingual(
               language,
-              MessageFormat.format(EDStatic.disabledAr[0], "subscriptions"),
-              MessageFormat.format(EDStatic.disabledAr[language], "subscriptions")));
+              MessageFormat.format(EDStatic.messages.disabledAr[0], "subscriptions"),
+              MessageFormat.format(EDStatic.messages.disabledAr[language], "subscriptions")));
       return;
     }
 
@@ -17897,7 +18113,8 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
         return;
       }
       default -> {
-        if (verbose) String2.log(EDStatic.resourceNotFoundAr[language] + "end of Subscriptions");
+        if (verbose)
+          String2.log(EDStatic.messages.resourceNotFoundAr[language] + "end of Subscriptions");
         sendResourceNotFoundError(requestNumber, request, response, "");
         return;
       }
@@ -17912,18 +18129,19 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
             loggedInAs,
             "subscriptions/index.html", // was endOfRequest,
             queryString,
-            EDStatic.subscriptionsTitleAr[language],
+            EDStatic.messages.subscriptionsTitleAr[language],
             out);
     try {
       writer.write(
           "<div class=\"standard_width\">\n"
-              + EDStatic.youAreHere(language, loggedInAs, EDStatic.subscriptionsTitleAr[language])
-              + EDStatic.subscription0HtmlAr[language]
-              + MessageFormat.format(EDStatic.subscription1HtmlAr[language], tErddapUrl)
+              + EDStatic.youAreHere(
+                  language, loggedInAs, EDStatic.messages.subscriptionsTitleAr[language])
+              + EDStatic.messages.subscription0HtmlAr[language]
+              + MessageFormat.format(EDStatic.messages.subscription1HtmlAr[language], tErddapUrl)
               + "\n");
       writer.write(
           "<p><strong>"
-              + EDStatic.optionsAr[language]
+              + EDStatic.messages.optionsAr[language]
               + ":</strong>\n"
               + "<ul>\n"
               + "<li> <a rel=\"bookmark\" href=\""
@@ -17931,28 +18149,28 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
               + "/"
               + Subscriptions.ADD_HTML
               + "\">"
-              + EDStatic.subscriptionAddAr[language]
+              + EDStatic.messages.subscriptionAddAr[language]
               + "</a>\n"
               + "<li> <a rel=\"bookmark\" href=\""
               + tErddapUrl
               + "/"
               + Subscriptions.VALIDATE_HTML
               + "\">"
-              + EDStatic.subscriptionValidateAr[language]
+              + EDStatic.messages.subscriptionValidateAr[language]
               + "</a>\n"
               + "<li> <a rel=\"bookmark\" href=\""
               + tErddapUrl
               + "/"
               + Subscriptions.LIST_HTML
               + "\">"
-              + EDStatic.subscriptionListAr[language]
+              + EDStatic.messages.subscriptionListAr[language]
               + "</a>\n"
               + "<li> <a rel=\"bookmark\" href=\""
               + tErddapUrl
               + "/"
               + Subscriptions.REMOVE_HTML
               + "\">"
-              + EDStatic.subscriptionRemoveAr[language]
+              + EDStatic.messages.subscriptionRemoveAr[language]
               + "</a>\n"
               + "</ul>\n");
       writer.write("</div>\n");
@@ -17978,7 +18196,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
   private String requestSubscriptionListHtml(int language, String tErddapUrl, String tEmail) {
     return "<br>&nbsp;\n"
         + "<p>"
-        + EDStatic.subscriptionEmailListAr[language].replace(
+        + EDStatic.messages.subscriptionEmailListAr[language].replace(
             "&subListUrl;",
             tErddapUrl
                 + "/"
@@ -18015,15 +18233,15 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       String queryString)
       throws Throwable {
 
-    if (!EDStatic.subscriptionSystemActive || EDStatic.subscriptions == null) {
+    if (!EDStatic.config.subscriptionSystemActive || EDStatic.subscriptions == null) {
       sendResourceNotFoundError(
           requestNumber,
           request,
           response,
           EDStatic.bilingual(
               language,
-              MessageFormat.format(EDStatic.disabledAr[0], "subscriptions"),
-              MessageFormat.format(EDStatic.disabledAr[language], "subscriptions")));
+              MessageFormat.format(EDStatic.messages.disabledAr[0], "subscriptions"),
+              MessageFormat.format(EDStatic.messages.disabledAr[language], "subscriptions")));
       return;
     }
 
@@ -18050,12 +18268,12 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     if (tEmail.length() == 0) {
       trouble +=
           "<li><span class=\"warningColor\">"
-              + EDStatic.subscriptionEmailUnspecifiedAr[language]
+              + EDStatic.messages.subscriptionEmailUnspecifiedAr[language]
               + "</span>\n";
     } else if (tEmail.length() > Subscriptions.EMAIL_LENGTH) {
       trouble +=
           "<li><span class=\"warningColor\">"
-              + EDStatic.subscriptionEmailTooLongAr[language]
+              + EDStatic.messages.subscriptionEmailTooLongAr[language]
               + "</span>\n";
     } else if (!String2.isEmailAddress(tEmail)
         || // tests syntax
@@ -18063,13 +18281,13 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
         || tEmail.startsWith("your.email")) {
       trouble +=
           "<li><span class=\"warningColor\">"
-              + EDStatic.subscriptionEmailInvalidAr[language]
+              + EDStatic.messages.subscriptionEmailInvalidAr[language]
               + "</span>\n";
     } else if (EDStatic.subscriptions.testEmailValid(tEmail).length()
         > 0) { // tests syntax and blacklist
       trouble +=
           "<li><span class=\"warningColor\">"
-              + EDStatic.subscriptionEmailOnBlacklistAr[language]
+              + EDStatic.messages.subscriptionEmailOnBlacklistAr[language]
               + "</span>\n";
     }
     if (trouble.length() > 0)
@@ -18079,19 +18297,19 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     if (tDatasetID.length() == 0) {
       trouble +=
           "<li><span class=\"warningColor\">"
-              + EDStatic.subscriptionIDUnspecifiedAr[language]
+              + EDStatic.messages.subscriptionIDUnspecifiedAr[language]
               + "</span>\n";
     } else if (tDatasetID.length() > Subscriptions.DATASETID_LENGTH) {
       trouble +=
           "<li><span class=\"warningColor\">"
-              + EDStatic.subscriptionIDTooLongAr[language]
+              + EDStatic.messages.subscriptionIDTooLongAr[language]
               + "</span>\n";
       tDatasetID =
           ""; // Security: if it was bad, don't show it in form (could be malicious java script)
     } else if (!String2.isFileNameSafe(tDatasetID)) {
       trouble +=
           "<li><span class=\"warningColor\">"
-              + EDStatic.subscriptionIDInvalidAr[language]
+              + EDStatic.messages.subscriptionIDInvalidAr[language]
               + "</span>\n";
       tDatasetID =
           ""; // Security: if it was bad, don't show it in form (could be malicious java script)
@@ -18106,7 +18324,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       if (edd == null) {
         trouble +=
             "<li><span class=\"warningColor\">"
-                + EDStatic.subscriptionIDInvalidAr[language]
+                + EDStatic.messages.subscriptionIDInvalidAr[language]
                 + "</span>\n";
         tDatasetID =
             ""; // Security: if it was bad, don't show it in form (could be malicious java script)
@@ -18125,7 +18343,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     } else if (tAction.length() > Subscriptions.ACTION_LENGTH) {
       trouble +=
           "<li><span class=\"warningColor\">"
-              + EDStatic.subscriptionUrlTooLongAr[language]
+              + EDStatic.messages.subscriptionUrlTooLongAr[language]
               + "</span>\n";
       tAction =
           ""; // Security: if it was bad, don't show it in form (could be malicious java script)
@@ -18144,14 +18362,14 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
         || tAction.startsWith("https://192.168.")) {
       trouble +=
           "<li><span class=\"warningColor\">"
-              + EDStatic.subscriptionUrlInvalidAr[language]
+              + EDStatic.messages.subscriptionUrlInvalidAr[language]
               + "</span>\n";
       tAction =
           ""; // Security: if it was bad, don't show it in form (could be malicious java script)
     } else if (tAction.indexOf('<') >= 0 || tAction.indexOf('>') >= 0) { // prevent e.g., <script>
       trouble +=
           "<li><span class=\"warningColor\">"
-              + EDStatic.subscriptionUrlInvalidAr[language]
+              + EDStatic.messages.subscriptionUrlInvalidAr[language]
               + "</span>\n";
       tAction =
           ""; // Security: if it was bad, don't show it in form (could be malicious java script)
@@ -18168,7 +18386,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
             loggedInAs,
             "subscriptions/add.html", // was endOfRequest,
             queryString,
-            EDStatic.subscriptionAddAr[language],
+            EDStatic.messages.subscriptionAddAr[language],
             out);
     try {
       writer.write(
@@ -18179,19 +18397,19 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                   language,
                   loggedInAs,
                   protocol,
-                  EDStatic.subscriptionsTitleAr,
-                  EDStatic.subscriptionAddAr[language])
-              + EDStatic.subscription0HtmlAr[language]
-              + MessageFormat.format(EDStatic.subscription1HtmlAr[language], tErddapUrl)
+                  EDStatic.messages.subscriptionsTitleAr,
+                  EDStatic.messages.subscriptionAddAr[language])
+              + EDStatic.messages.subscription0HtmlAr[language]
+              + MessageFormat.format(EDStatic.messages.subscription1HtmlAr[language], tErddapUrl)
               + "\n"
-              + MessageFormat.format(EDStatic.subscription2HtmlAr[language], tErddapUrl)
+              + MessageFormat.format(EDStatic.messages.subscription2HtmlAr[language], tErddapUrl)
               + "\n");
 
       if (trouble.length() > 0) {
         if (tShowErrors)
           writer.write(
               "<p><span class=\"warningColor\">"
-                  + EDStatic.subscriptionAddErrorAr[language]
+                  + EDStatic.messages.subscriptionAddErrorAr[language]
                   + "</span>\n"
                   + "<ul>\n"
                   + trouble
@@ -18211,12 +18429,12 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
             EDStatic.tally.add("Subscriptions (since startup)", "Add successful");
             EDStatic.tally.add("Subscriptions (since last daily report)", "Add successful");
           }
-          writer.write(EDStatic.subscriptionAddSuccessAr[language] + "\n");
+          writer.write(EDStatic.messages.subscriptionAddSuccessAr[language] + "\n");
         } catch (Throwable t) {
           EDStatic.rethrowClientAbortException(t); // first thing in catch{}
           writer.write(
               "<p><span class=\"warningColor\">"
-                  + EDStatic.subscriptionAddErrorAr[language]
+                  + EDStatic.messages.subscriptionAddErrorAr[language]
                   + "\n<br>"
                   + XML.encodeAsHTML(MustBe.getShortErrorMessage(t))
                   + "</span>\n");
@@ -18231,41 +18449,41 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       }
 
       // show the form
-      String urlTT = EDStatic.subscriptionUrlHtmlAr[language];
+      String urlTT = EDStatic.messages.subscriptionUrlHtmlAr[language];
       writer.write(
           widgets.beginForm("addSub", "GET", tErddapUrl + "/" + Subscriptions.ADD_HTML, "")
-              + MessageFormat.format(EDStatic.subscriptionAddHtmlAr[language], tErddapUrl)
+              + MessageFormat.format(EDStatic.messages.subscriptionAddHtmlAr[language], tErddapUrl)
               + "\n"
               + widgets.beginTable("class=\"compact nowrap\"")
               + "<tr>\n"
               + "  <td>"
-              + EDStatic.theDatasetIDAr[language]
+              + EDStatic.messages.theDatasetIDAr[language]
               + ":&nbsp;</td>\n"
               + "  <td>"
               + widgets.textField(
                   "datasetID",
-                  "For example, " + EDStatic.EDDGridIdExample,
+                  "For example, " + EDStatic.messages.EDDGridIdExample,
                   30,
                   Subscriptions.DATASETID_LENGTH,
                   tDatasetID,
                   "")
               + " ("
-              + EDStatic.requiredAr[language]
+              + EDStatic.messages.requiredAr[language]
               + ")</td>\n"
               + "</tr>\n"
               + "<tr>\n"
               + "  <td>"
-              + EDStatic.yourEmailAddressAr[language]
+              + EDStatic.messages.yourEmailAddressAr[language]
               + ":&nbsp;</td>\n"
               + "  <td>"
               + widgets.textField("email", "", 53, Subscriptions.EMAIL_LENGTH, tEmail, "")
               + " ("
-              + EDStatic.requiredAr[language]
+              + EDStatic.messages.requiredAr[language]
               + ")</td>\n"
               + "</tr>\n"
               + "<tr>\n"
               + "  <td>"
-              + EDStatic.theUrlActionAr[language]
+              + EDStatic.messages.theUrlActionAr[language]
               + ":&nbsp;</td>\n"
               + "  <td>"
               + widgets.textField("action", urlTT, 53, Subscriptions.ACTION_LENGTH, tAction, "")
@@ -18273,7 +18491,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
               + "    "
               + EDStatic.htmlTooltipImage(language, loggedInAs, urlTT)
               + "  ("
-              + EDStatic.optionalAr[language]
+              + EDStatic.messages.optionalAr[language]
               + ")</td>\n"
               + "</tr>\n"
               + "<tr>\n"
@@ -18281,18 +18499,18 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
               + widgets.button(
                   "submit",
                   null,
-                  EDStatic.clickToSubmitAr[language],
-                  EDStatic.submitAr[language],
+                  EDStatic.messages.clickToSubmitAr[language],
+                  EDStatic.messages.submitAr[language],
                   "")
               + "\n"
               + "    <br>"
-              + EDStatic.subscriptionAdd2Ar[language]
+              + EDStatic.messages.subscriptionAdd2Ar[language]
               + "\n"
               + "  </td>\n"
               + "</tr>\n"
               + widgets.endTable()
               + widgets.endForm()
-              + EDStatic.subscriptionAbuseAr[language]
+              + EDStatic.messages.subscriptionAbuseAr[language]
               + "\n");
 
       // link to list of subscriptions
@@ -18337,15 +18555,15 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       String queryString)
       throws Throwable {
 
-    if (!EDStatic.subscriptionSystemActive || EDStatic.subscriptions == null) {
+    if (!EDStatic.config.subscriptionSystemActive || EDStatic.subscriptions == null) {
       sendResourceNotFoundError(
           requestNumber,
           request,
           response,
           EDStatic.bilingual(
               language,
-              MessageFormat.format(EDStatic.disabledAr[0], "subscriptions"),
-              MessageFormat.format(EDStatic.disabledAr[language], "subscriptions")));
+              MessageFormat.format(EDStatic.messages.disabledAr[0], "subscriptions"),
+              MessageFormat.format(EDStatic.messages.disabledAr[language], "subscriptions")));
       return;
     }
 
@@ -18360,12 +18578,12 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     if (tEmail.length() == 0) {
       trouble +=
           "<li><span class=\"warningColor\">"
-              + EDStatic.subscriptionEmailUnspecifiedAr[language]
+              + EDStatic.messages.subscriptionEmailUnspecifiedAr[language]
               + "</span>\n";
     } else if (tEmail.length() > Subscriptions.EMAIL_LENGTH) {
       trouble +=
           "<li><span class=\"warningColor\">"
-              + EDStatic.subscriptionEmailTooLongAr[language]
+              + EDStatic.messages.subscriptionEmailTooLongAr[language]
               + "</span>\n";
     } else if (!String2.isEmailAddress(tEmail)
         || // tests syntax
@@ -18373,13 +18591,13 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
         || tEmail.startsWith("your.email")) {
       trouble +=
           "<li><span class=\"warningColor\">"
-              + EDStatic.subscriptionEmailInvalidAr[language]
+              + EDStatic.messages.subscriptionEmailInvalidAr[language]
               + "</span>\n";
     } else if (EDStatic.subscriptions.testEmailValid(tEmail).length()
         > 0) { // tests syntax and blacklist
       trouble +=
           "<li><span class=\"warningColor\">"
-              + EDStatic.subscriptionEmailOnBlacklistAr[language]
+              + EDStatic.messages.subscriptionEmailOnBlacklistAr[language]
               + "</span>\n";
     }
     if (trouble.length() > 0)
@@ -18397,7 +18615,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
             loggedInAs,
             "subscriptions/list.html", // was endOfRequest,
             queryString,
-            EDStatic.subscriptionListAr[language],
+            EDStatic.messages.subscriptionListAr[language],
             out);
     try {
       writer.write(
@@ -18406,17 +18624,17 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                   language,
                   loggedInAs,
                   protocol,
-                  EDStatic.subscriptionsTitleAr,
-                  EDStatic.subscriptionListAr[language])
-              + EDStatic.subscription0HtmlAr[language]
-              + MessageFormat.format(EDStatic.subscription1HtmlAr[language], tErddapUrl)
+                  EDStatic.messages.subscriptionsTitleAr,
+                  EDStatic.messages.subscriptionListAr[language])
+              + EDStatic.messages.subscription0HtmlAr[language]
+              + MessageFormat.format(EDStatic.messages.subscription1HtmlAr[language], tErddapUrl)
               + "\n");
 
       if (queryString != null && queryString.length() > 0) {
         if (trouble.length() > 0) {
           writer.write(
               "<p><span class=\"warningColor\">"
-                  + EDStatic.subscriptionListErrorAr[language]
+                  + EDStatic.messages.subscriptionListErrorAr[language]
                   + "</span>\n"
                   + "<ul>\n"
                   + trouble
@@ -18429,7 +18647,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
             String tError = EDStatic.email(tEmail, "Subscriptions List", tList);
             if (tError.length() > 0) throw new SimpleException(tError);
 
-            writer.write(EDStatic.subscriptionListSuccessAr[language] + "\n");
+            writer.write(EDStatic.messages.subscriptionListSuccessAr[language] + "\n");
             // end of document
             writer.write("</div>\n");
             endHtmlWriter(language, out, writer, tErddapUrl, loggedInAs, false);
@@ -18442,7 +18660,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
             EDStatic.rethrowClientAbortException(t); // first thing in catch{}
             writer.write(
                 "<p><span class=\"warningColor\">"
-                    + EDStatic.subscriptionListErrorAr[language]
+                    + EDStatic.messages.subscriptionListErrorAr[language]
                     + "\n"
                     + "<br>"
                     + XML.encodeAsHTML(MustBe.getShortErrorMessage(t))
@@ -18460,12 +18678,12 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       // show the form
       writer.write(
           widgets.beginForm("listSub", "GET", tErddapUrl + "/" + Subscriptions.LIST_HTML, "")
-              + MessageFormat.format(EDStatic.subscriptionListHtmlAr[language], tErddapUrl)
+              + MessageFormat.format(EDStatic.messages.subscriptionListHtmlAr[language], tErddapUrl)
               + "\n"
               + widgets.beginTable("class=\"compact\"")
               + "<tr>\n"
               + "  <td>"
-              + EDStatic.yourEmailAddressAr[language]
+              + EDStatic.messages.yourEmailAddressAr[language]
               + ":&nbsp;</td>\n"
               + "  <td>"
               + widgets.textField("email", "", 60, Subscriptions.EMAIL_LENGTH, tEmail, "")
@@ -18476,14 +18694,14 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
               + widgets.button(
                   "submit",
                   null,
-                  EDStatic.clickToSubmitAr[language],
-                  EDStatic.submitAr[language],
+                  EDStatic.messages.clickToSubmitAr[language],
+                  EDStatic.messages.submitAr[language],
                   "")
               + "</td>\n"
               + "</tr>\n"
               + widgets.endTable()
               + widgets.endForm()
-              + EDStatic.subscriptionAbuseAr[language]
+              + EDStatic.messages.subscriptionAbuseAr[language]
               + "\n");
       writer.write("</div>\n");
       endHtmlWriter(language, out, writer, tErddapUrl, loggedInAs, false);
@@ -18522,15 +18740,15 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       String queryString)
       throws Throwable {
 
-    if (!EDStatic.subscriptionSystemActive || EDStatic.subscriptions == null) {
+    if (!EDStatic.config.subscriptionSystemActive || EDStatic.subscriptions == null) {
       sendResourceNotFoundError(
           requestNumber,
           request,
           response,
           EDStatic.bilingual(
               language,
-              MessageFormat.format(EDStatic.disabledAr[0], "subscriptions"),
-              MessageFormat.format(EDStatic.disabledAr[language], "subscriptions")));
+              MessageFormat.format(EDStatic.messages.disabledAr[0], "subscriptions"),
+              MessageFormat.format(EDStatic.messages.disabledAr[language], "subscriptions")));
       return;
     }
 
@@ -18547,12 +18765,12 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     if (tSubscriptionID.length() == 0) {
       trouble +=
           "<li><span class=\"warningColor\">"
-              + EDStatic.subscriptionIDUnspecifiedAr[language]
+              + EDStatic.messages.subscriptionIDUnspecifiedAr[language]
               + "</span>\n";
     } else if (!tSubscriptionID.matches("[0-9]{1,10}")) {
       trouble +=
           "<li><span class=\"warningColor\">"
-              + EDStatic.subscriptionIDInvalidAr[language]
+              + EDStatic.messages.subscriptionIDInvalidAr[language]
               + "</span>\n";
       tSubscriptionID =
           ""; // Security: if it was bad, don't show it in form (could be malicious java script)
@@ -18561,12 +18779,12 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     if (tKey.length() == 0) {
       trouble +=
           "<li><span class=\"warningColor\">"
-              + EDStatic.subscriptionKeyUnspecifiedAr[language]
+              + EDStatic.messages.subscriptionKeyUnspecifiedAr[language]
               + "</span>\n";
     } else if (!tKey.matches("[0-9]{1,10}")) {
       trouble +=
           "<li><span class=\"warningColor\">"
-              + EDStatic.subscriptionKeyInvalidAr[language]
+              + EDStatic.messages.subscriptionKeyInvalidAr[language]
               + "</span>\n";
       tKey = ""; // Security: if it was bad, don't show it in form (could be malicious java script)
     }
@@ -18582,7 +18800,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
             loggedInAs,
             "subscriptions/validate.html", // was endOfRequest,
             queryString,
-            EDStatic.subscriptionValidateAr[language],
+            EDStatic.messages.subscriptionValidateAr[language],
             out);
     try {
       writer.write(
@@ -18591,17 +18809,17 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                   language,
                   loggedInAs,
                   protocol,
-                  EDStatic.subscriptionsTitleAr,
-                  EDStatic.subscriptionValidateAr[language])
-              + EDStatic.subscription0HtmlAr[language]
-              + MessageFormat.format(EDStatic.subscription1HtmlAr[language], tErddapUrl)
+                  EDStatic.messages.subscriptionsTitleAr,
+                  EDStatic.messages.subscriptionValidateAr[language])
+              + EDStatic.messages.subscription0HtmlAr[language]
+              + MessageFormat.format(EDStatic.messages.subscription1HtmlAr[language], tErddapUrl)
               + "\n");
 
       if (queryString != null && queryString.length() > 0) {
         if (trouble.length() > 0) {
           writer.write(
               "<p><span class=\"warningColor\">"
-                  + EDStatic.subscriptionValidateErrorAr[language]
+                  + EDStatic.messages.subscriptionValidateErrorAr[language]
                   + "</span>\n"
                   + "<ul>\n"
                   + trouble
@@ -18616,14 +18834,14 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
             if (message.length() > 0) {
               writer.write(
                   "<p><span class=\"warningColor\">"
-                      + EDStatic.subscriptionValidateErrorAr[language]
+                      + EDStatic.messages.subscriptionValidateErrorAr[language]
                       + "\n"
                       + "<br>"
                       + message
                       + "</span>\n");
 
             } else {
-              writer.write(EDStatic.subscriptionValidateSuccessAr[language] + "\n");
+              writer.write(EDStatic.messages.subscriptionValidateSuccessAr[language] + "\n");
 
               // tally
               EDStatic.tally.add("Subscriptions (since startup)", "Validate successful");
@@ -18633,7 +18851,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
             EDStatic.rethrowClientAbortException(t); // first thing in catch{}
             writer.write(
                 "<p><span class=\"warningColor\">"
-                    + EDStatic.subscriptionValidateErrorAr[language]
+                    + EDStatic.messages.subscriptionValidateErrorAr[language]
                     + "\n"
                     + "<br>"
                     + XML.encodeAsHTML(MustBe.getShortErrorMessage(t))
@@ -18651,12 +18869,13 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       writer.write(
           widgets.beginForm(
                   "validateSub", "GET", tErddapUrl + "/" + Subscriptions.VALIDATE_HTML, "")
-              + MessageFormat.format(EDStatic.subscriptionValidateHtmlAr[language], tErddapUrl)
+              + MessageFormat.format(
+                  EDStatic.messages.subscriptionValidateHtmlAr[language], tErddapUrl)
               + "\n"
               + widgets.beginTable("class=\"compact\"")
               + "<tr>\n"
               + "  <td>"
-              + EDStatic.theSubscriptionIDAr[language]
+              + EDStatic.messages.theSubscriptionIDAr[language]
               + ":&nbsp;</td>\n"
               + "  <td>"
               + widgets.textField("subscriptionID", "", 15, 15, tSubscriptionID, "")
@@ -18664,7 +18883,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
               + "</tr>\n"
               + "<tr>\n"
               + "  <td>"
-              + EDStatic.theKeyAr[language]
+              + EDStatic.messages.theKeyAr[language]
               + ":&nbsp;</td>\n"
               + "  <td>"
               + widgets.textField("key", "", 15, 15, tKey, "")
@@ -18675,8 +18894,8 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
               + widgets.button(
                   "submit",
                   null,
-                  EDStatic.clickToSubmitAr[language],
-                  EDStatic.submitAr[language],
+                  EDStatic.messages.clickToSubmitAr[language],
+                  EDStatic.messages.submitAr[language],
                   "")
               + "</td>\n"
               + "</tr>\n"
@@ -18722,15 +18941,15 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       String queryString)
       throws Throwable {
 
-    if (!EDStatic.subscriptionSystemActive || EDStatic.subscriptions == null) {
+    if (!EDStatic.config.subscriptionSystemActive || EDStatic.subscriptions == null) {
       sendResourceNotFoundError(
           requestNumber,
           request,
           response,
           EDStatic.bilingual(
               language,
-              MessageFormat.format(EDStatic.disabledAr[0], "subscriptions"),
-              MessageFormat.format(EDStatic.disabledAr[language], "subscriptions")));
+              MessageFormat.format(EDStatic.messages.disabledAr[0], "subscriptions"),
+              MessageFormat.format(EDStatic.messages.disabledAr[language], "subscriptions")));
       return;
     }
 
@@ -18747,12 +18966,12 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     if (tSubscriptionID.length() == 0) {
       trouble +=
           "<li><span class=\"warningColor\">"
-              + EDStatic.subscriptionIDUnspecifiedAr[language]
+              + EDStatic.messages.subscriptionIDUnspecifiedAr[language]
               + "</span>\n";
     } else if (!tSubscriptionID.matches("[0-9]{1,10}")) {
       trouble +=
           "<li><span class=\"warningColor\">"
-              + EDStatic.subscriptionIDInvalidAr[language]
+              + EDStatic.messages.subscriptionIDInvalidAr[language]
               + "</span>\n";
       tSubscriptionID =
           ""; // Security: if it was bad, don't show it in form (could be malicious java script)
@@ -18761,12 +18980,12 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     if (tKey.length() == 0) {
       trouble +=
           "<li><span class=\"warningColor\">"
-              + EDStatic.subscriptionKeyUnspecifiedAr[language]
+              + EDStatic.messages.subscriptionKeyUnspecifiedAr[language]
               + "</span>\n";
     } else if (!tKey.matches("[0-9]{1,10}")) {
       trouble +=
           "<li><span class=\"warningColor\">"
-              + EDStatic.subscriptionKeyInvalidAr[language]
+              + EDStatic.messages.subscriptionKeyInvalidAr[language]
               + "</span>\n";
       tKey = ""; // Security: if it was bad, don't show it in form (could be malicious java script)
     }
@@ -18782,7 +19001,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
             loggedInAs,
             "subscriptions/remove.html", // was endOfRequest,
             queryString,
-            EDStatic.subscriptionRemoveAr[language],
+            EDStatic.messages.subscriptionRemoveAr[language],
             out);
     try {
       writer.write(
@@ -18791,17 +19010,17 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                   language,
                   loggedInAs,
                   protocol,
-                  EDStatic.subscriptionsTitleAr,
-                  EDStatic.subscriptionRemoveAr[language])
-              + EDStatic.subscription0HtmlAr[language]
-              + MessageFormat.format(EDStatic.subscription1HtmlAr[language], tErddapUrl)
+                  EDStatic.messages.subscriptionsTitleAr,
+                  EDStatic.messages.subscriptionRemoveAr[language])
+              + EDStatic.messages.subscription0HtmlAr[language]
+              + MessageFormat.format(EDStatic.messages.subscription1HtmlAr[language], tErddapUrl)
               + "\n");
 
       if (queryString != null && queryString.length() > 0) {
         if (trouble.length() > 0) {
           writer.write(
               "<p><span class=\"warningColor\">"
-                  + EDStatic.subscriptionRemoveErrorAr[language]
+                  + EDStatic.messages.subscriptionRemoveErrorAr[language]
                   + "</span>\n"
                   + "<ul>\n"
                   + trouble
@@ -18816,12 +19035,12 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
             if (message.length() > 0)
               writer.write(
                   "<p><span class=\"warningColor\">"
-                      + EDStatic.subscriptionRemoveErrorAr[language]
+                      + EDStatic.messages.subscriptionRemoveErrorAr[language]
                       + "\n"
                       + "<br>"
                       + message
                       + "</span>\n");
-            else writer.write(EDStatic.subscriptionRemoveSuccessAr[language] + "\n");
+            else writer.write(EDStatic.messages.subscriptionRemoveSuccessAr[language] + "\n");
 
             // tally
             EDStatic.tally.add("Subscriptions (since startup)", "Remove successful");
@@ -18830,7 +19049,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
             EDStatic.rethrowClientAbortException(t); // first thing in catch{}
             writer.write(
                 "<p><span class=\"warningColor\">"
-                    + EDStatic.subscriptionRemoveErrorAr[language]
+                    + EDStatic.messages.subscriptionRemoveErrorAr[language]
                     + "\n"
                     + "<br>"
                     + XML.encodeAsHTML(MustBe.getShortErrorMessage(t))
@@ -18849,12 +19068,13 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       // show the form
       writer.write(
           widgets.beginForm("removeSub", "GET", tErddapUrl + "/" + Subscriptions.REMOVE_HTML, "")
-              + MessageFormat.format(EDStatic.subscriptionRemoveHtmlAr[language], tErddapUrl)
+              + MessageFormat.format(
+                  EDStatic.messages.subscriptionRemoveHtmlAr[language], tErddapUrl)
               + "\n"
               + widgets.beginTable("class=\"compact\"")
               + "<tr>\n"
               + "  <td>"
-              + EDStatic.theSubscriptionIDAr[language]
+              + EDStatic.messages.theSubscriptionIDAr[language]
               + ":&nbsp;</td>\n"
               + "  <td>"
               + widgets.textField("subscriptionID", "", 15, 15, tSubscriptionID, "")
@@ -18862,7 +19082,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
               + "</tr>\n"
               + "<tr>\n"
               + "  <td>"
-              + EDStatic.theKeyAr[language]
+              + EDStatic.messages.theKeyAr[language]
               + ":&nbsp;</td>\n"
               + "  <td>"
               + widgets.textField("key", "", 15, 15, tKey, "")
@@ -18873,8 +19093,8 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
               + widgets.button(
                   "submit",
                   null,
-                  EDStatic.clickToSubmitAr[language],
-                  EDStatic.submitAr[language],
+                  EDStatic.messages.clickToSubmitAr[language],
+                  EDStatic.messages.submitAr[language],
                   "")
               + "</td>\n"
               + "</tr>\n"
@@ -18885,7 +19105,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       writer.write(
           requestSubscriptionListHtml(language, tErddapUrl, "")
               + "<br>"
-              + EDStatic.subscriptionRemove2Ar[language]
+              + EDStatic.messages.subscriptionRemove2Ar[language]
               + "\n");
       writer.write("</div>\n");
       endHtmlWriter(language, out, writer, tErddapUrl, loggedInAs, false);
@@ -18924,20 +19144,20 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       throws Throwable {
 
     // first thing
-    if (!EDStatic.convertersActive) {
+    if (!EDStatic.config.convertersActive) {
       sendResourceNotFoundError(
           requestNumber,
           request,
           response,
           EDStatic.bilingual(
               language,
-              MessageFormat.format(EDStatic.disabledAr[0], "convert"),
-              MessageFormat.format(EDStatic.disabledAr[language], "convert")));
+              MessageFormat.format(EDStatic.messages.disabledAr[0], "convert"),
+              MessageFormat.format(EDStatic.messages.disabledAr[language], "convert")));
       return;
     }
 
     String tErddapUrl = EDStatic.erddapUrl(loggedInAs, language);
-    String requestUrl = request.getRequestURI(); // post EDStatic.baseUrl, pre "?"
+    String requestUrl = request.getRequestURI(); // post EDStatic.config.baseUrl, pre "?"
     String endOfRequestUrl =
         datasetIDStartsAt >= requestUrl.length() ? "" : requestUrl.substring(datasetIDStartsAt);
 
@@ -18983,7 +19203,8 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       } catch (Throwable t) {
         EDStatic.rethrowClientAbortException(t); // first thing in catch{}
         String2.log(MustBe.throwableToString(t));
-        throw new SimpleException(EDStatic.simpleBilingual(language, EDStatic.queryErrorAr) + t);
+        throw new SimpleException(
+            EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr) + t);
       }
       return;
 
@@ -19031,7 +19252,8 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       } catch (Throwable t) {
         EDStatic.rethrowClientAbortException(t); // first thing in catch{}
         String2.log(MustBe.throwableToString(t));
-        throw new SimpleException(EDStatic.simpleBilingual(language, EDStatic.queryErrorAr) + t);
+        throw new SimpleException(
+            EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr) + t);
       }
       return;
 
@@ -19064,7 +19286,8 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       } catch (Throwable t) {
         EDStatic.rethrowClientAbortException(t); // first thing in catch{}
         String2.log(MustBe.throwableToString(t));
-        throw new SimpleException(EDStatic.simpleBilingual(language, EDStatic.queryErrorAr) + t);
+        throw new SimpleException(
+            EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr) + t);
       }
       return;
 
@@ -19152,7 +19375,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
           queryString);
       return;
     } else {
-      if (verbose) String2.log(EDStatic.resourceNotFoundAr[language] + "end of convert");
+      if (verbose) String2.log(EDStatic.messages.resourceNotFoundAr[language] + "end of convert");
       sendResourceNotFoundError(requestNumber, request, response, "");
       return;
     }
@@ -19171,10 +19394,10 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     try {
       writer.write(
           "<div class=\"standard_width\">"
-              + EDStatic.youAreHere(language, loggedInAs, EDStatic.convertAr[language])
+              + EDStatic.youAreHere(language, loggedInAs, EDStatic.messages.convertAr[language])
               +
               // EDStatic.youAreHere(language, loggedInAs, "convert") +
-              EDStatic.convertHtmlAr[language]
+              EDStatic.messages.convertHtmlAr[language]
               + "\n"
               +
               // "<p>Options:\n" +
@@ -19182,56 +19405,56 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
               + "<li><a rel=\"bookmark\" href=\""
               + tErddapUrl
               + "/convert/oceanicAtmosphericAcronyms.html\"><strong>"
-              + EDStatic.acronymsAr[language]
+              + EDStatic.messages.acronymsAr[language]
               + "</strong></a> - "
-              + EDStatic.convertOAAcronymsToFromAr[language]
+              + EDStatic.messages.convertOAAcronymsToFromAr[language]
               + "\n"
               + "<li><a rel=\"bookmark\" href=\""
               + tErddapUrl
               + "/convert/fipscounty.html\"><strong>"
-              + EDStatic.FIPSCountyCodesAr[language]
+              + EDStatic.messages.FIPSCountyCodesAr[language]
               + "</strong></a> - "
-              + EDStatic.convertFipsCountyAr[language]
+              + EDStatic.messages.convertFipsCountyAr[language]
               + "\n"
               + "<li><a rel=\"bookmark\" href=\""
               + tErddapUrl
               + "/convert/interpolate.html\"><strong>"
-              + EDStatic.interpolateAr[language]
+              + EDStatic.messages.interpolateAr[language]
               + "</strong></a> - "
-              + EDStatic.convertInterpolateAr[language]
+              + EDStatic.messages.convertInterpolateAr[language]
               + "\n"
               + "<li><a rel=\"bookmark\" href=\""
               + tErddapUrl
               + "/convert/keywords.html\"><strong>"
-              + EDStatic.keywordsAr[language]
+              + EDStatic.messages.keywordsAr[language]
               + "</strong></a> - "
-              + EDStatic.convertKeywordsAr[language]
+              + EDStatic.messages.convertKeywordsAr[language]
               + "\n"
               + "<li><a rel=\"bookmark\" href=\""
               + tErddapUrl
               + "/convert/time.html\"><strong>"
-              + EDStatic.timeAr[language]
+              + EDStatic.messages.timeAr[language]
               + "</strong></a> - "
-              + EDStatic.convertTimeAr[language]
+              + EDStatic.messages.convertTimeAr[language]
               + "\n"
               + "<li><a rel=\"bookmark\" href=\""
               + tErddapUrl
               + "/convert/units.html\"><strong>"
-              + EDStatic.unitsAr[language]
+              + EDStatic.messages.unitsAr[language]
               + "</strong></a> - "
-              + EDStatic.convertUnitsAr[language]
+              + EDStatic.messages.convertUnitsAr[language]
               + "\n"
               + "<li><a rel=\"bookmark\" href=\""
               + tErddapUrl
               + "/convert/urls.html\"><strong>URLs</strong></a> - "
-              + EDStatic.convertURLsAr[language]
+              + EDStatic.messages.convertURLsAr[language]
               + "\n"
               + "<li><a rel=\"bookmark\" href=\""
               + tErddapUrl
               + "/convert/oceanicAtmosphericVariableNames.html\"><strong>"
-              + EDStatic.variableNamesAr[language]
+              + EDStatic.messages.variableNamesAr[language]
               + "</strong></a> - "
-              + EDStatic.convertOAVariableNamesToFromAr[language]
+              + EDStatic.messages.convertOAVariableNamesToFromAr[language]
               + "\n"
               + "</ul>\n");
       writer.write("</div>\n");
@@ -19269,15 +19492,15 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       throws Throwable {
 
     // first thing
-    if (!EDStatic.convertersActive) {
+    if (!EDStatic.config.convertersActive) {
       sendResourceNotFoundError(
           requestNumber,
           request,
           response,
           EDStatic.bilingual(
               language,
-              MessageFormat.format(EDStatic.disabledAr[0], "convert"),
-              MessageFormat.format(EDStatic.disabledAr[language], "convert")));
+              MessageFormat.format(EDStatic.messages.disabledAr[0], "convert"),
+              MessageFormat.format(EDStatic.messages.disabledAr[language], "convert")));
       return;
     }
 
@@ -19310,7 +19533,8 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     } catch (Throwable t) {
       EDStatic.rethrowClientAbortException(t); // first thing in catch{}
       String2.log(MustBe.throwableToString(t));
-      throw new SimpleException(EDStatic.simpleBilingual(language, EDStatic.queryErrorAr) + t);
+      throw new SimpleException(
+          EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr) + t);
     }
     if (toCode) {
       // process code=,   a toCode query
@@ -19349,7 +19573,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                 + "\") at the end of the URL.";
       if (tError != null)
         throw new SimpleException(
-            EDStatic.simpleBilingual(language, EDStatic.queryErrorAr) + tError);
+            EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr) + tError);
 
       // respond to a valid request
       OutputStream out =
@@ -19394,15 +19618,15 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                   + XML.encodeAsHTMLAttribute(
                       EDStatic.protocolUrl(EDStatic.erddapUrl(loggedInAs, language), "convert"))
                   + "\">"
-                  + EDStatic.convertAr[language]
+                  + EDStatic.messages.convertAr[language]
                   + "</a>"
                   + "\n &gt; "
-                  + EDStatic.FIPSCountyCodesAr[language]
+                  + EDStatic.messages.FIPSCountyCodesAr[language]
                   + "</h1>\n")
               + "<h2>"
-              + EDStatic.convertFipsCountyAr[language]
+              + EDStatic.messages.convertFipsCountyAr[language]
               + "</h2>\n"
-              + EDStatic.convertFipsCountyIntroAr[language]
+              + EDStatic.messages.convertFipsCountyIntroAr[language]
               + "\n");
 
       // Convert from Code to County
@@ -19411,7 +19635,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
               + "\n"
               + widgets.beginForm("getCounty", "GET", tErddapUrl + "/convert/fipscounty.html", "")
               + MessageFormat.format(
-                  EDStatic.convertToACountyNameAr[language],
+                  EDStatic.messages.convertToACountyNameAr[language],
                   "</strong>\n"
                       + widgets.textField(
                           "code",
@@ -19429,7 +19653,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                   null,
                   "Convert",
                   "",
-                  "<strong>" + EDStatic.convertAr[language] + "</strong>",
+                  "<strong>" + EDStatic.messages.convertAr[language] + "</strong>",
                   "")
               + "\n");
 
@@ -19458,7 +19682,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
           "<br>"
               + widgets.beginForm("getCode", "GET", tErddapUrl + "/convert/fipscounty.html", "")
               + MessageFormat.format(
-                  EDStatic.convertToAFIPSCodeAr[language],
+                  EDStatic.messages.convertToAFIPSCodeAr[language],
                   "</strong>\n"
                       + widgets.select(
                           "county",
@@ -19470,7 +19694,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                       + "\n<strong>")
               + "\n&nbsp;&nbsp;"
               +
-              // widgets.button("submit", null, "", EDStatic.convertAr[language], "") +
+              // widgets.button("submit", null, "", EDStatic.messages.convertAr[language], "") +
               "\n");
 
       if (toCode) {
@@ -19493,10 +19717,10 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
           "<p><a rel=\"bookmark\" href=\""
               + tErddapUrl
               + "/convert/fipscounty.html\">"
-              + EDStatic.resetTheFormAr[language]
+              + EDStatic.messages.resetTheFormAr[language]
               + "</a>\n"
               + "<p>"
-              + EDStatic.convertBypassAr[language]
+              + EDStatic.messages.convertBypassAr[language]
               + "\n");
 
       // get the entire list
@@ -19506,11 +19730,12 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
               + plainLinkExamples(tErddapUrl, "/convert/fipscounty", ""));
 
       // notes
-      writer.write(EDStatic.convertFipsCountyNotesAr[language]);
+      writer.write(EDStatic.messages.convertFipsCountyNotesAr[language]);
 
       // Info about .txt fips service option
       writer.write(
-          MessageFormat.format(EDStatic.convertFipsCountyServiceAr[language], tErddapUrl) + "\n");
+          MessageFormat.format(EDStatic.messages.convertFipsCountyServiceAr[language], tErddapUrl)
+              + "\n");
 
       writer.write("</div>\n");
       endHtmlWriter(language, out, writer, tErddapUrl, loggedInAs, false);
@@ -19548,15 +19773,15 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       throws Throwable {
 
     // first thing
-    if (!EDStatic.convertersActive) {
+    if (!EDStatic.config.convertersActive) {
       sendResourceNotFoundError(
           requestNumber,
           request,
           response,
           EDStatic.bilingual(
               language,
-              MessageFormat.format(EDStatic.disabledAr[0], "convert"),
-              MessageFormat.format(EDStatic.disabledAr[language], "convert")));
+              MessageFormat.format(EDStatic.messages.disabledAr[0], "convert"),
+              MessageFormat.format(EDStatic.messages.disabledAr[language], "convert")));
       return;
     }
 
@@ -19589,7 +19814,8 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     } catch (Throwable t) {
       EDStatic.rethrowClientAbortException(t); // first thing in catch{}
       String2.log(MustBe.throwableToString(t));
-      throw new SimpleException(EDStatic.simpleBilingual(language, EDStatic.queryErrorAr) + t);
+      throw new SimpleException(
+          EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr) + t);
     }
     StringArray acronymSA = (StringArray) oaTable.getColumn(0);
     StringArray fullNameSA = (StringArray) oaTable.getColumn(1);
@@ -19636,7 +19862,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                 + "\") at the end of the URL.";
       if (tError != null)
         throw new SimpleException(
-            EDStatic.simpleBilingual(language, EDStatic.queryErrorAr) + tError);
+            EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr) + tError);
 
       // respond to a valid request
       OutputStream out =
@@ -19681,15 +19907,15 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                   + XML.encodeAsHTMLAttribute(
                       EDStatic.protocolUrl(EDStatic.erddapUrl(loggedInAs, language), "convert"))
                   + "\">"
-                  + EDStatic.convertAr[language]
+                  + EDStatic.messages.convertAr[language]
                   + "</a>"
                   + "\n &gt; "
-                  + EDStatic.convertOAAcronymsAr[language]
+                  + EDStatic.messages.convertOAAcronymsAr[language]
                   + "</h1>\n")
               + "<h2>"
-              + EDStatic.convertOAAcronymsToFromAr[language]
+              + EDStatic.messages.convertOAAcronymsToFromAr[language]
               + "</h2>\n"
-              + EDStatic.convertOAAcronymsIntroAr[language]
+              + EDStatic.messages.convertOAAcronymsIntroAr[language]
               + "\n");
 
       // Convert from Acronym to FullName
@@ -19699,7 +19925,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
               + widgets.beginForm(
                   "getFullName", "GET", tErddapUrl + "/convert/oceanicAtmosphericAcronyms.html", "")
               + MessageFormat.format(
-                  EDStatic.convertToAFullNameAr[language],
+                  EDStatic.messages.convertToAFullNameAr[language],
                   "</strong>\n"
                       + widgets.textField(
                           "acronym",
@@ -19717,7 +19943,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                   null,
                   "Convert",
                   "",
-                  "<strong>" + EDStatic.convertAr[language] + "</strong>",
+                  "<strong>" + EDStatic.messages.convertAr[language] + "</strong>",
                   "")
               + "\n");
 
@@ -19748,7 +19974,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
               + widgets.beginForm(
                   "getAcronym", "GET", tErddapUrl + "/convert/oceanicAtmosphericAcronyms.html", "")
               + MessageFormat.format(
-                  EDStatic.convertToAnAcronymAr[language],
+                  EDStatic.messages.convertToAnAcronymAr[language],
                   "<br></strong>\n"
                       + widgets.select(
                           "fullName",
@@ -19780,10 +20006,10 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
           "<p><a rel=\"bookmark\" href=\""
               + tErddapUrl
               + "/convert/oceanicAtmosphericAcronyms.html\">"
-              + EDStatic.resetTheFormAr[language]
+              + EDStatic.messages.resetTheFormAr[language]
               + "</a>\n"
               + "<p>"
-              + EDStatic.convertBypassAr[language]
+              + EDStatic.messages.convertBypassAr[language]
               + "\n");
 
       // get the entire list
@@ -19793,11 +20019,12 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
               + plainLinkExamples(tErddapUrl, "/convert/oceanicAtmosphericAcronyms", ""));
 
       // notes
-      writer.write(EDStatic.convertOAAcronymsNotesAr[language]);
+      writer.write(EDStatic.messages.convertOAAcronymsNotesAr[language]);
 
       // Info about .txt fips service option
       writer.write(
-          MessageFormat.format(EDStatic.convertOAAcronymsServiceAr[language], tErddapUrl) + "\n");
+          MessageFormat.format(EDStatic.messages.convertOAAcronymsServiceAr[language], tErddapUrl)
+              + "\n");
 
       writer.write("</div>\n");
       endHtmlWriter(language, out, writer, tErddapUrl, loggedInAs, false);
@@ -19837,15 +20064,15 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       throws Throwable {
 
     // first thing
-    if (!EDStatic.convertersActive) {
+    if (!EDStatic.config.convertersActive) {
       sendResourceNotFoundError(
           requestNumber,
           request,
           response,
           EDStatic.bilingual(
               language,
-              MessageFormat.format(EDStatic.disabledAr[0], "convert"),
-              MessageFormat.format(EDStatic.disabledAr[language], "convert")));
+              MessageFormat.format(EDStatic.messages.disabledAr[0], "convert"),
+              MessageFormat.format(EDStatic.messages.disabledAr[language], "convert")));
       return;
     }
 
@@ -19879,7 +20106,8 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     } catch (Throwable t) {
       EDStatic.rethrowClientAbortException(t); // first thing in catch{}
       String2.log(MustBe.throwableToString(t));
-      throw new SimpleException(EDStatic.simpleBilingual(language, EDStatic.queryErrorAr) + t);
+      throw new SimpleException(
+          EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr) + t);
     }
     StringArray variableNameSA = (StringArray) oaTable.getColumn(0);
     StringArray fullNameSA = (StringArray) oaTable.getColumn(1);
@@ -19926,7 +20154,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                 + "\") at the end of the URL.";
       if (tError != null)
         throw new SimpleException(
-            EDStatic.simpleBilingual(language, EDStatic.queryErrorAr) + tError);
+            EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr) + tError);
 
       // respond to a valid request
       OutputStream out =
@@ -19971,15 +20199,15 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                   + XML.encodeAsHTMLAttribute(
                       EDStatic.protocolUrl(EDStatic.erddapUrl(loggedInAs, language), "convert"))
                   + "\">"
-                  + EDStatic.convertAr[language]
+                  + EDStatic.messages.convertAr[language]
                   + "</a>"
                   + "\n &gt; "
-                  + EDStatic.convertOAVariableNamesAr[language]
+                  + EDStatic.messages.convertOAVariableNamesAr[language]
                   + "</h1>\n")
               + "<h2>"
-              + EDStatic.convertOAVariableNamesToFromAr[language]
+              + EDStatic.messages.convertOAVariableNamesToFromAr[language]
               + "</h2>\n"
-              + EDStatic.convertOAVariableNamesIntroAr[language]
+              + EDStatic.messages.convertOAVariableNamesIntroAr[language]
               + "\n");
 
       // Convert from VariableName to FullName
@@ -19992,7 +20220,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                   tErddapUrl + "/convert/oceanicAtmosphericVariableNames.html",
                   "")
               + MessageFormat.format(
-                  EDStatic.convertToFullNameAr[language],
+                  EDStatic.messages.convertToFullNameAr[language],
                   "</strong>\n"
                       + widgets.textField(
                           "variableName",
@@ -20012,7 +20240,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                   null,
                   "Convert",
                   "",
-                  "<strong>" + EDStatic.convertAr[language] + "</strong>",
+                  "<strong>" + EDStatic.messages.convertAr[language] + "</strong>",
                   "")
               + "\n");
 
@@ -20047,7 +20275,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                   tErddapUrl + "/convert/oceanicAtmosphericVariableNames.html",
                   "")
               + MessageFormat.format(
-                  EDStatic.convertToVariableNameAr[language],
+                  EDStatic.messages.convertToVariableNameAr[language],
                   "</strong>\n"
                       + widgets.select(
                           "fullName",
@@ -20059,7 +20287,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                       + "\n<strong>")
               + "\n&nbsp;&nbsp;"
               +
-              // widgets.button("submit", null, "", EDStatic.convertAr[language], "") +
+              // widgets.button("submit", null, "", EDStatic.messages.convertAr[language], "") +
               "\n");
 
       if (toVariableName) {
@@ -20082,10 +20310,10 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
           "<p><a rel=\"bookmark\" href=\""
               + tErddapUrl
               + "/convert/oceanicAtmosphericVariableNames.html\">"
-              + EDStatic.resetTheFormAr[language]
+              + EDStatic.messages.resetTheFormAr[language]
               + "</a>\n"
               + "<p>"
-              + EDStatic.convertBypassAr[language]
+              + EDStatic.messages.convertBypassAr[language]
               + "\n");
 
       // get the entire list
@@ -20095,11 +20323,12 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
               + plainLinkExamples(tErddapUrl, "/convert/oceanicAtmosphericVariableNames", ""));
 
       // notes
-      writer.write(EDStatic.convertOAVariableNamesNotesAr[language]);
+      writer.write(EDStatic.messages.convertOAVariableNamesNotesAr[language]);
 
       // Info about .txt service option
       writer.write(
-          MessageFormat.format(EDStatic.convertOAVariableNamesServiceAr[language], tErddapUrl)
+          MessageFormat.format(
+                  EDStatic.messages.convertOAVariableNamesServiceAr[language], tErddapUrl)
               + "\n");
 
       writer.write("</div>\n");
@@ -20138,15 +20367,15 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       throws Throwable {
 
     // first thing
-    if (!EDStatic.convertersActive) {
+    if (!EDStatic.config.convertersActive) {
       sendResourceNotFoundError(
           requestNumber,
           request,
           response,
           EDStatic.bilingual(
               language,
-              MessageFormat.format(EDStatic.disabledAr[0], "convert"),
-              MessageFormat.format(EDStatic.disabledAr[language], "convert")));
+              MessageFormat.format(EDStatic.messages.disabledAr[0], "convert"),
+              MessageFormat.format(EDStatic.messages.disabledAr[language], "convert")));
       return;
     }
 
@@ -20207,7 +20436,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                 + "\") at the end of the URL.";
       if (tError != null)
         throw new SimpleException(
-            EDStatic.simpleBilingual(language, EDStatic.queryErrorAr) + tError);
+            EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr) + tError);
 
       // respond to a valid request
       OutputStream out =
@@ -20248,15 +20477,15 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                   + XML.encodeAsHTMLAttribute(
                       EDStatic.protocolUrl(EDStatic.erddapUrl(loggedInAs, language), "convert"))
                   + "\">"
-                  + EDStatic.convertAr[language]
+                  + EDStatic.messages.convertAr[language]
                   + "</a>"
                   + "\n &gt; "
-                  + EDStatic.keywordsAr[language]
+                  + EDStatic.messages.keywordsAr[language]
                   + "</h1>\n")
               + "<h2>"
-              + EDStatic.convertKeywordsAr[language]
+              + EDStatic.messages.convertKeywordsAr[language]
               + "</h2>\n"
-              + EDStatic.convertKeywordsIntroAr[language]
+              + EDStatic.messages.convertKeywordsIntroAr[language]
               + "\n");
 
       // Convert from CF to GCMD
@@ -20266,11 +20495,11 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
               + "\n"
               + widgets.beginForm("getGCMD", "GET", tErddapUrl + "/convert/keywords.html", "")
               + MessageFormat.format(
-                  EDStatic.convertToGCMDAr[language],
+                  EDStatic.messages.convertToGCMDAr[language],
                   "</strong>\n<br>"
                       + widgets.select(
                           "cf",
-                          EDStatic.convertKeywordsCfTooltipAr[language],
+                          EDStatic.messages.convertKeywordsCfTooltipAr[language],
                           1,
                           CfToFromGcmd.cfNames,
                           String2.indexOf(CfToFromGcmd.cfNames, selectedCF),
@@ -20303,11 +20532,11 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
           "<br>"
               + widgets.beginForm("getCF", "GET", tErddapUrl + "/convert/keywords.html", "")
               + MessageFormat.format(
-                  EDStatic.convertToCFStandardNamesAr[language],
+                  EDStatic.messages.convertToCFStandardNamesAr[language],
                   "</strong>\n<br>"
                       + widgets.select(
                           "gcmd",
-                          EDStatic.convertKeywordsGcmdTooltipAr[language],
+                          EDStatic.messages.convertKeywordsGcmdTooltipAr[language],
                           1,
                           CfToFromGcmd.gcmdKeywords,
                           String2.indexOf(CfToFromGcmd.gcmdKeywords, selectedGCMD),
@@ -20340,11 +20569,11 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
               + "<li><a rel=\"bookmark\" href=\""
               + tErddapUrl
               + "/convert/keywords.html\">"
-              + EDStatic.resetTheFormAr[language]
+              + EDStatic.messages.resetTheFormAr[language]
               + "</a>\n"
               + "  <br>&nbsp;\n"
               + "<li>"
-              + EDStatic.convertBypassAr[language]
+              + EDStatic.messages.convertBypassAr[language]
               + "\n"
               + "  <br>&nbsp;\n"
               +
@@ -20359,14 +20588,14 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
               + "  <br>"
               + plainLinkExamples(tErddapUrl, "/convert/keywordsCf", "")
               + "  <br>Source: <a rel=\"bookmark\" href=\"https://cfconventions.org/Data/cf-standard-names/18/build/cf-standard-name-table.html\">Version 18, dated 22 July 2011"
-              + EDStatic.externalLinkHtml(language, tErddapUrl)
+              + EDStatic.messages.externalLinkHtml(language, tErddapUrl)
               + "</a>.\n"
               + "  <br>&nbsp;\n"
               + "<li>View/download the entire GCMD Science Keywords list in these file types:"
               + "  <br>"
               + plainLinkExamples(tErddapUrl, "/convert/keywordsGcmd", "")
               + "  <br>Source: <a rel=\"bookmark\" href=\"https://wiki.earthdata.nasa.gov/display/CMR/GCMD+Keyword+Access\">the version dated 2008-02-05"
-              + EDStatic.externalLinkHtml(language, tErddapUrl)
+              + EDStatic.messages.externalLinkHtml(language, tErddapUrl)
               + "</a>.\n"
               + "    The requested citation is<kbd>\n"
               + "  <br>Olsen, L.M., G. Major, K. Shein, J. Scialdone, R. Vogel, S. Leicester,\n"
@@ -20377,11 +20606,12 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
               + "\n");
 
       // notes
-      writer.write(EDStatic.convertKeywordsNotesAr[language]);
+      writer.write(EDStatic.messages.convertKeywordsNotesAr[language]);
 
       // Info about .txt time service option
       writer.write(
-          MessageFormat.format(EDStatic.convertKeywordsServiceAr[language], tErddapUrl) + "\n");
+          MessageFormat.format(EDStatic.messages.convertKeywordsServiceAr[language], tErddapUrl)
+              + "\n");
 
       writer.write("</div>\n");
       endHtmlWriter(language, out, writer, tErddapUrl, loggedInAs, false);
@@ -20436,15 +20666,15 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       throws Throwable {
 
     // first thing
-    if (!EDStatic.convertersActive) {
+    if (!EDStatic.config.convertersActive) {
       sendResourceNotFoundError(
           requestNumber,
           request,
           response,
           EDStatic.bilingual(
               language,
-              MessageFormat.format(EDStatic.disabledAr[0], "convert"),
-              MessageFormat.format(EDStatic.disabledAr[language], "convert")));
+              MessageFormat.format(EDStatic.messages.disabledAr[0], "convert"),
+              MessageFormat.format(EDStatic.messages.disabledAr[language], "convert")));
       return;
     }
 
@@ -20534,15 +20764,16 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                   + XML.encodeAsHTMLAttribute(
                       EDStatic.protocolUrl(EDStatic.erddapUrl(loggedInAs, language), "convert"))
                   + "\">"
-                  + EDStatic.convertAr[language]
+                  + EDStatic.messages.convertAr[language]
                   + "</a>"
                   + "\n &gt; "
-                  + EDStatic.interpolateAr[language]
+                  + EDStatic.messages.interpolateAr[language]
                   + "</h1>\n")
               + "<h2>"
-              + EDStatic.convertInterpolateAr[language]
+              + EDStatic.messages.convertInterpolateAr[language]
               + "</h2>\n"
-              + MessageFormat.format(EDStatic.convertInterpolateIntroAr[language], idVarExample));
+              + MessageFormat.format(
+                  EDStatic.messages.convertInterpolateIntroAr[language], idVarExample));
 
       // convert
       String tableCSV = "tableCSV";
@@ -20553,9 +20784,11 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
               + widgets.beginForm(formName, "GET", tErddapUrl + "/convert/interpolate.html", "")
               + widgets.beginTable("class=\"compact\"")
               + "<tr><td>"
-              + EDStatic.convertInterpolateTLLTableAr[language]
+              + EDStatic.messages.convertInterpolateTLLTableAr[language]
               + EDStatic.htmlTooltipImage(
-                  language, loggedInAs, EDStatic.convertInterpolateTLLTableHelpAr[language])
+                  language,
+                  loggedInAs,
+                  EDStatic.messages.convertInterpolateTLLTableHelpAr[language])
               + "</td>\n"
               +
               // default maxHttpHeaderSize (in server.xml) is 4096 bytes
@@ -20565,12 +20798,13 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
               + "</textarea>"
               + "</td></tr>\n"
               + "<tr><td>"
-              + EDStatic.convertInterpolateDatasetIDVariableAr[language]
+              + EDStatic.messages.convertInterpolateDatasetIDVariableAr[language]
               + EDStatic.htmlTooltipImage(
                   language,
                   loggedInAs,
                   MessageFormat.format(
-                      EDStatic.convertInterpolateDatasetIDVariableHelpAr[language], idVarExample))
+                      EDStatic.messages.convertInterpolateDatasetIDVariableHelpAr[language],
+                      idVarExample))
               + "</td>\n"
               + "<td class=\"N\">"
               + widgets.textField(
@@ -20583,7 +20817,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
               + // other
               "</td></tr>\n"
               + "<tr><td>&nbsp;&nbsp;&nbsp;"
-              + EDStatic.optionsAr[language]
+              + EDStatic.messages.optionsAr[language]
               + ":"
               + "</td>\n"
               + "<td class=\"N\">&nbsp;&nbsp;&nbsp;"
@@ -20633,7 +20867,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
               "\n"
               + "</td></tr>\n"
               + "<tr><td>"
-              + EDStatic.EDDFileTypeAr[language]
+              + EDStatic.messages.EDDFileTypeAr[language]
               + "</td>\n"
               + "<td>"
               + widgets.select("fileType", "", 1, plainFileTypes, 1, "")
@@ -20643,8 +20877,8 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                   "button",
                   null,
                   "Convert",
-                  EDStatic.clickToSubmitAr[language],
-                  "<strong>" + EDStatic.convertAr[language] + "</strong>",
+                  EDStatic.messages.clickToSubmitAr[language],
+                  "<strong>" + EDStatic.messages.convertAr[language] + "</strong>",
                   "onclick=\"var d = document;\n"
                       + "window.location='"
                       + tErddapUrl
@@ -20658,16 +20892,16 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
               + widgets.endForm()
               + "\n");
 
-      writer.write("<br>&nbsp;\n" + "<p>" + EDStatic.convertBypassAr[language] + "\n");
+      writer.write("<br>&nbsp;\n" + "<p>" + EDStatic.messages.convertBypassAr[language] + "\n");
 
       // notes
-      writer.write("<p>" + EDStatic.convertInterpolateNotesAr[language] + "\n");
+      writer.write("<p>" + EDStatic.messages.convertInterpolateNotesAr[language] + "\n");
 
       // Info about service / plainFileType option.
       // Safest to just point to jplMURSST41 at coastwatch ERDDAP.
       writer.write(
           MessageFormat.format(
-                  EDStatic.convertInterpolateServiceAr[language],
+                  EDStatic.messages.convertInterpolateServiceAr[language],
                   """
                           <pre><a rel="help" \
                           href="https://coastwatch.pfeg.noaa.gov/erddap/convert/interpolate.htmlTable?TimeLatLonTable=time%2Clatitude%2Clongitude%0A2020-01-01T06%3A00%3A00Z%2C35.580%2C-122.550%0A2020-01-01T12%3A00%3A00Z%2C35.576%2C-122.553%0A2020-01-01T18%3A00%3A00Z%2C35.572%2C-122.568%0A2020-01-02T00%3A00%3A00Z%2C35.569%2C-122.571%0A&amp;requestCSV=jplMURSST41%2Fanalysed_sst%2FBilinear%2F4"\
@@ -20715,14 +20949,14 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     if (debugMode) String2.log("\n*** interpolate");
     if (!String2.isSomething(TLLTable))
       throw new SimpleException(
-          EDStatic.simpleBilingual(language, EDStatic.queryErrorAr)
+          EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
               + MessageFormat.format(
-                  EDStatic.queryErrorInvalidAr[language], "TimeLatLonTable (nothing)"));
+                  EDStatic.messages.queryErrorInvalidAr[language], "TimeLatLonTable (nothing)"));
     if (!String2.isSomething(requestCSV))
       throw new SimpleException(
-          EDStatic.simpleBilingual(language, EDStatic.queryErrorAr)
+          EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
               + MessageFormat.format(
-                  EDStatic.queryErrorInvalidAr[language], "requestCSV (nothing)"));
+                  EDStatic.messages.queryErrorInvalidAr[language], "requestCSV (nothing)"));
 
     // split requestCSV
     // poor man's enumeration of INTERPOLATE_ALGORITHMS
@@ -20757,13 +20991,13 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
         throw new SimpleException(
             EDStatic.bilingual(
                 language,
-                EDStatic.queryErrorAr[0]
+                EDStatic.messages.queryErrorAr[0]
                     + MessageFormat.format(
-                        EDStatic.queryErrorInvalidAr[0],
+                        EDStatic.messages.queryErrorInvalidAr[0],
                         "datasetID/variable/algorithm/nearby value=\"" + requestParts[dv] + "\""),
-                EDStatic.queryErrorAr[language]
+                EDStatic.messages.queryErrorAr[language]
                     + MessageFormat.format(
-                        EDStatic.queryErrorInvalidAr[language],
+                        EDStatic.messages.queryErrorInvalidAr[language],
                         "datasetID/variable/algorithm/nearby value=\"" + requestParts[dv] + "\"")));
       datasetIDs[dv] = tParts[0];
       variable[dv] = tParts[1];
@@ -20775,15 +21009,17 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
         throw new SimpleException(
             EDStatic.bilingual(
                 language,
-                EDStatic.queryErrorAr[0]
+                EDStatic.messages.queryErrorAr[0]
                     + MessageFormat.format(
-                        EDStatic.queryErrorInvalidAr[0], "algorithm in " + requestParts[dv])
+                        EDStatic.messages.queryErrorInvalidAr[0],
+                        "algorithm in " + requestParts[dv])
                     + " (must be one of "
                     + String2.toCSSVString(INTERPOLATE_ALGORITHMS)
                     + ")",
-                EDStatic.queryErrorAr[language]
+                EDStatic.messages.queryErrorAr[language]
                     + MessageFormat.format(
-                        EDStatic.queryErrorInvalidAr[language], "algorithm in " + requestParts[dv])
+                        EDStatic.messages.queryErrorInvalidAr[language],
+                        "algorithm in " + requestParts[dv])
                     + " (must be one of "
                     + String2.toCSSVString(INTERPOLATE_ALGORITHMS)
                     + ")"));
@@ -20802,13 +21038,13 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
             throw new SimpleException(
                 EDStatic.bilingual(
                     language,
-                    EDStatic.queryErrorAr[0]
+                    EDStatic.messages.queryErrorAr[0]
                         + MessageFormat.format(
-                            EDStatic.queryErrorInvalidAr[0],
+                            EDStatic.messages.queryErrorInvalidAr[0],
                             "For algorithm=Bilinear, 'nearby' must be 4."),
-                    EDStatic.queryErrorAr[language]
+                    EDStatic.messages.queryErrorAr[language]
                         + MessageFormat.format(
-                            EDStatic.queryErrorInvalidAr[language],
+                            EDStatic.messages.queryErrorInvalidAr[language],
                             "For algorithm=Bilinear, 'nearby' must be 4.")));
           is3D[dv] = false;
           radius[dv] = 1;
@@ -20822,12 +21058,13 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
           throw new SimpleException(
               EDStatic.bilingual(
                   language,
-                  EDStatic.queryErrorAr[0]
+                  EDStatic.messages.queryErrorAr[0]
                       + MessageFormat.format(
-                          EDStatic.queryErrorInvalidAr[0], "'nearby' value in " + requestParts[dv]),
-                  EDStatic.queryErrorAr[language]
+                          EDStatic.messages.queryErrorInvalidAr[0],
+                          "'nearby' value in " + requestParts[dv]),
+                  EDStatic.messages.queryErrorAr[language]
                       + MessageFormat.format(
-                          EDStatic.queryErrorInvalidAr[language],
+                          EDStatic.messages.queryErrorInvalidAr[language],
                           "'nearby' value in " + requestParts[dv])));
         }
       }
@@ -20841,9 +21078,10 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
         throw new SimpleException(
             EDStatic.bilingual(
                 language,
-                MessageFormat.format(EDStatic.errorNotFoundAr[0], "datasetID=" + datasetIDs[dv]),
                 MessageFormat.format(
-                    EDStatic.errorNotFoundAr[language], "datasetID=" + datasetIDs[dv])));
+                    EDStatic.messages.errorNotFoundAr[0], "datasetID=" + datasetIDs[dv]),
+                MessageFormat.format(
+                    EDStatic.messages.errorNotFoundAr[language], "datasetID=" + datasetIDs[dv])));
       edv[dv] =
           eddGrid[dv].findDataVariableByDestinationName(
               variable[dv]); // throws SimpleException if not found
@@ -20873,26 +21111,28 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       throw new SimpleException(
           EDStatic.bilingual(
               language,
-              EDStatic.queryErrorAr[0]
-                  + MessageFormat.format(EDStatic.queryErrorInvalidAr[0], "TimeLatLonTable"),
-              EDStatic.queryErrorAr[language]
+              EDStatic.messages.queryErrorAr[0]
                   + MessageFormat.format(
-                      EDStatic.queryErrorInvalidAr[language], "TimeLatLonTable")));
+                      EDStatic.messages.queryErrorInvalidAr[0], "TimeLatLonTable"),
+              EDStatic.messages.queryErrorAr[language]
+                  + MessageFormat.format(
+                      EDStatic.messages.queryErrorInvalidAr[language], "TimeLatLonTable")));
     }
     int nRows = sourceTable.nRows();
     if (nRows == 0)
       throw new SimpleException(
           EDStatic.bilingual(
               language,
-              EDStatic.queryErrorAr[0]
+              EDStatic.messages.queryErrorAr[0]
                   + MessageFormat.format(
-                      EDStatic.queryErrorInvalidAr[0], "TimeLatLonTable (nRows=0)"),
-              EDStatic.queryErrorAr[language]
+                      EDStatic.messages.queryErrorInvalidAr[0], "TimeLatLonTable (nRows=0)"),
+              EDStatic.messages.queryErrorAr[language]
                   + MessageFormat.format(
-                      EDStatic.queryErrorInvalidAr[language], "TimeLatLonTable (nRows=0)")));
+                      EDStatic.messages.queryErrorInvalidAr[language],
+                      "TimeLatLonTable (nRows=0)")));
     if (nRows > 100) // I don't object to more, but there is more danger of a timeout.
     throw new SimpleException(
-          EDStatic.simpleBilingual(language, EDStatic.queryErrorAr)
+          EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
               + "The TLLTable must not have more than 100 rows.");
 
     // manual simplify
@@ -20928,7 +21168,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
             new DoubleArray(sourceTimePA); // assume they are already epoch seconds. String->double
       } else {
         throw new SimpleException(
-            EDStatic.simpleBilingual(language, EDStatic.queryErrorAr)
+            EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
                 + "Unrecognized string time format in 'time' column.");
       }
     } else {
@@ -21450,7 +21690,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
 
           } else {
             throw new SimpleException(
-                EDStatic.errorInternalAr[0]
+                EDStatic.messages.errorInternalAr[0]
                     + "Unexpected algorithm="
                     + INTERPOLATE_ALGORITHMS[algorithm[dv]]);
           }
@@ -21507,15 +21747,15 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       throws Throwable {
 
     // first thing
-    if (!EDStatic.convertersActive) {
+    if (!EDStatic.config.convertersActive) {
       sendResourceNotFoundError(
           requestNumber,
           request,
           response,
           EDStatic.bilingual(
               language,
-              MessageFormat.format(EDStatic.disabledAr[0], "convert"),
-              MessageFormat.format(EDStatic.disabledAr[language], "convert")));
+              MessageFormat.format(EDStatic.messages.disabledAr[0], "convert"),
+              MessageFormat.format(EDStatic.messages.disabledAr[language], "convert")));
       return;
     }
 
@@ -21541,16 +21781,16 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     String answerUnits = "";
     String numberTooltip =
         "<div class=\"narrow_max_width\">"
-            + MessageFormat.format(EDStatic.convertTimeNumberTooltipAr[language], defaultN)
+            + MessageFormat.format(EDStatic.messages.convertTimeNumberTooltipAr[language], defaultN)
             + "</div>";
     String stringTimeTooltip =
         "<div class=\"narrow_max_width\">"
             + MessageFormat.format(
-                EDStatic.convertTimeStringTimeTooltipAr[language], defaultIsoTime)
+                EDStatic.messages.convertTimeStringTimeTooltipAr[language], defaultIsoTime)
             + "</div>";
     String unitsTooltip =
         "<div class=\"narrow_max_width\">"
-            + EDStatic.convertTimeUnitsTooltipAr[language]
+            + EDStatic.messages.convertTimeUnitsTooltipAr[language]
             + "</div>";
 
     // only 0 or 1 of these will be true
@@ -21580,7 +21820,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
 
     String tError = null;
     if (queryStringTime.length() > 0 && queryIsoTime.length() > 0)
-      tError = EDStatic.convertTimeTwoTimeErrorAr[language];
+      tError = EDStatic.messages.convertTimeTwoTimeErrorAr[language];
 
     // a query either succeeds (and sets all answer...)
     //  or fails (doesn't change answer... and sets tError)
@@ -21591,7 +21831,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     try {
       int sincePo = queryUnits.toLowerCase().indexOf(" since ");
       if (sincePo <= 0) {
-        unitsError = EDStatic.convertTimeNoSinceErrorAr[language];
+        unitsError = EDStatic.messages.convertTimeNoSinceErrorAr[language];
       } else {
         answerUnits = Calendar2.cleanUpNumericTimeUnits(queryUnits);
         tbf = Calendar2.getTimeBaseAndFactor(answerUnits);
@@ -21599,7 +21839,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     } catch (Throwable t) {
       EDStatic.rethrowClientAbortException(t); // first thing in catch{}
       answerUnits = "";
-      unitsError = EDStatic.convertTimeUnitsErrorAr[language];
+      unitsError = EDStatic.messages.convertTimeUnitsErrorAr[language];
     }
 
     // do the calculation
@@ -21608,7 +21848,8 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       if (cleanString) {
         answerFormat = Calendar2.tryToFindFormat(queryStringTime);
         answerIsoTime = Calendar2.tryToIsoString(queryStringTime);
-        if (answerIsoTime.length() == 0) tError = EDStatic.convertTimeStringFormatErrorAr[language];
+        if (answerIsoTime.length() == 0)
+          tError = EDStatic.messages.convertTimeStringFormatErrorAr[language];
 
       } else if (cleanUnits) {
         // answerUnits already set
@@ -21621,14 +21862,14 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
           // process stringTime=,   a toNumeric query
           queryIsoTime = Calendar2.tryToIsoString(queryStringTime);
           if (queryIsoTime.length() == 0)
-            tError = EDStatic.convertTimeStringFormatErrorAr[language];
+            tError = EDStatic.messages.convertTimeStringFormatErrorAr[language];
         }
 
         if (tError == null) {
           // process isoTime=,   a toNumeric query
           epochSeconds = Calendar2.safeIsoStringToEpochSeconds(queryIsoTime);
           if (Double.isNaN(epochSeconds)) {
-            tError = EDStatic.convertTimeIsoFormatErrorAr[language];
+            tError = EDStatic.messages.convertTimeIsoFormatErrorAr[language];
           } else {
             // success
             answerIsoTime = queryIsoTime;
@@ -21645,7 +21886,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
         // process n=,   a toString query
         double tN = String2.parseDouble(queryN);
         if (Double.isNaN(tN)) {
-          tError = EDStatic.convertTimeNumberErrorAr[language];
+          tError = EDStatic.messages.convertTimeNumberErrorAr[language];
         } else if (unitsError != null) {
           tError = unitsError;
         } else {
@@ -21656,7 +21897,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
           // epochSeconds + " " +
           //    tbf[0] + ", " + tbf[1] + ", " + tN);
           if (answerIsoTime.length() == 0)
-            tError = EDStatic.convertTimeNumericTimeErrorAr[language];
+            tError = EDStatic.messages.convertTimeNumericTimeErrorAr[language];
           else
             answerN =
                 tN == Math2.roundToLong(tN)
@@ -21675,10 +21916,10 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
 
       // throw exception?
       if (tError == null && !cleanString && !cleanUnits && !toNumeric && !toString)
-        tError = EDStatic.convertTimeParametersErrorAr[language];
+        tError = EDStatic.messages.convertTimeParametersErrorAr[language];
       if (tError != null)
         throw new SimpleException(
-            EDStatic.simpleBilingual(language, EDStatic.queryErrorAr) + tError);
+            EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr) + tError);
 
       // respond to a valid request
       OutputStream out =
@@ -21722,15 +21963,15 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                   + XML.encodeAsHTMLAttribute(
                       EDStatic.protocolUrl(EDStatic.erddapUrl(loggedInAs, language), "convert"))
                   + "\">"
-                  + EDStatic.convertAr[language]
+                  + EDStatic.messages.convertAr[language]
                   + "</a>"
                   + "\n &gt; "
-                  + EDStatic.timeAr[language]
+                  + EDStatic.messages.timeAr[language]
                   + "</h1>\n")
               + "<h2>"
-              + EDStatic.convertTimeAr[language]
+              + EDStatic.messages.convertTimeAr[language]
               + "</h2>\n"
-              + EDStatic.convertTimeIntroAr[language]
+              + EDStatic.messages.convertTimeIntroAr[language]
               + "\n");
 
       // Convert from a String Time to Numeric Time n units
@@ -21738,7 +21979,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
           "<br>"
               + widgets.beginForm("toNumeric", "GET", tErddapUrl + "/convert/time.html", "")
               + MessageFormat.format(
-                  EDStatic.convertToNumericTimeAr[language],
+                  EDStatic.messages.convertToNumericTimeAr[language],
                   "</strong>\n"
                       + widgets.textField(
                           "stringTime",
@@ -21764,7 +22005,8 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                           "")
                       + ".")
               + "\n<br>"
-              + widgets.htmlButton("submit", null, "Convert", "", EDStatic.convertAr[language], "")
+              + widgets.htmlButton(
+                  "submit", null, "Convert", "", EDStatic.messages.convertAr[language], "")
               + "\n");
 
       if (toNumeric) {
@@ -21792,7 +22034,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
           "<br>"
               + widgets.beginForm("toString", "GET", tErddapUrl + "/convert/time.html", "")
               + MessageFormat.format(
-                  EDStatic.convertToStringTimeAr[language],
+                  EDStatic.messages.convertToStringTimeAr[language],
                   "</strong>\n<br>"
                       + widgets.textField(
                           "n",
@@ -21813,7 +22055,8 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                           "")
                       + "\n<br><strong>")
               + "\n"
-              + widgets.htmlButton("submit", null, "Convert", "", EDStatic.convertAr[language], "")
+              + widgets.htmlButton(
+                  "submit", null, "Convert", "", EDStatic.messages.convertAr[language], "")
               + "\n");
 
       if (toString) {
@@ -21838,7 +22081,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
           "<br>"
               + widgets.beginForm("cleanString", "GET", tErddapUrl + "/convert/time.html", "")
               + MessageFormat.format(
-                  EDStatic.convertAnyStringTimeAr[language],
+                  EDStatic.messages.convertAnyStringTimeAr[language],
                   "</strong>\n"
                       + widgets.textField(
                           "stringTime",
@@ -21849,7 +22092,8 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                           "")
                       + "\n<br><strong>")
               + "\n"
-              + widgets.htmlButton("submit", null, "Convert", "", EDStatic.convertAr[language], "")
+              + widgets.htmlButton(
+                  "submit", null, "Convert", "", EDStatic.messages.convertAr[language], "")
               + "\n");
 
       if (cleanString) {
@@ -21871,7 +22115,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
           "<br>"
               + widgets.beginForm("cleanUnits", "GET", tErddapUrl + "/convert/time.html", "")
               + MessageFormat.format(
-                  EDStatic.convertToProperTimeUnitsAr[language],
+                  EDStatic.messages.convertToProperTimeUnitsAr[language],
                   "</strong>\n"
                       + widgets.textField(
                           "units",
@@ -21882,7 +22126,8 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                           "")
                       + "\n<br><strong>")
               + "\n"
-              + widgets.htmlButton("submit", null, "Convert", "", EDStatic.convertAr[language], "")
+              + widgets.htmlButton(
+                  "submit", null, "Convert", "", EDStatic.messages.convertAr[language], "")
               + "\n");
 
       if (cleanUnits) {
@@ -21903,23 +22148,24 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
           "<br><a rel=\"bookmark\" href=\""
               + tErddapUrl
               + "/convert/time.html\">"
-              + EDStatic.resetTheFormAr[language]
+              + EDStatic.messages.resetTheFormAr[language]
               + "</a>\n"
               + "<p>"
-              + EDStatic.convertBypassAr[language]
+              + EDStatic.messages.convertBypassAr[language]
               + "\n");
 
       // notes
       writer.write(
           MessageFormat.format(
-                  EDStatic.convertTimeNotesAr[language],
+                  EDStatic.messages.convertTimeNotesAr[language],
                   tErddapUrl,
-                  EDStatic.convertTimeUnitsHelpAr[language])
+                  EDStatic.messages.convertTimeUnitsHelpAr[language])
               + "\n");
 
       // Info about .txt time service option
       writer.write(
-          MessageFormat.format(EDStatic.convertTimeServiceAr[language], tErddapUrl) + "\n");
+          MessageFormat.format(EDStatic.messages.convertTimeServiceAr[language], tErddapUrl)
+              + "\n");
 
       writer.write("</div>\n");
       endHtmlWriter(language, out, writer, tErddapUrl, loggedInAs, false);
@@ -21957,15 +22203,15 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       throws Throwable {
 
     // first thing
-    if (!EDStatic.convertersActive) {
+    if (!EDStatic.config.convertersActive) {
       sendResourceNotFoundError(
           requestNumber,
           request,
           response,
           EDStatic.bilingual(
               language,
-              MessageFormat.format(EDStatic.disabledAr[0], "convert"),
-              MessageFormat.format(EDStatic.disabledAr[language], "convert")));
+              MessageFormat.format(EDStatic.messages.disabledAr[0], "convert"),
+              MessageFormat.format(EDStatic.messages.disabledAr[language], "convert")));
       return;
     }
 
@@ -22002,7 +22248,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       // throw exception?
       if (tStandardizeUdunits.length() == 0 && tUdunits.length() == 0 && tUcum.length() == 0) {
         throw new SimpleException(
-            EDStatic.simpleBilingual(language, EDStatic.queryErrorAr)
+            EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
                 + "Missing parameter (STANDARDIZE_UDUNITS, UDUNITS or UCUM).");
       }
 
@@ -22048,22 +22294,22 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                   + XML.encodeAsHTMLAttribute(
                       EDStatic.protocolUrl(EDStatic.erddapUrl(loggedInAs, language), "convert"))
                   + "\">"
-                  + EDStatic.convertAr[language]
+                  + EDStatic.messages.convertAr[language]
                   + "</a>"
                   + "\n &gt; "
-                  + EDStatic.unitsAr[language]
+                  + EDStatic.messages.unitsAr[language]
                   + "</h1>\n")
               + "<h2>"
-              + EDStatic.convertUnitsAr[language]
+              + EDStatic.messages.convertUnitsAr[language]
               + "</h2>\n"
-              + EDStatic.convertUnitsIntroAr[language]);
+              + EDStatic.messages.convertUnitsIntroAr[language]);
 
       // convert to ucum
       writer.write(
           "<br>"
               + // necessary for the blank line before start of form (not <p>)
               widgets.beginForm("getUcum", "GET", tErddapUrl + "/convert/units.html", "")
-              + EDStatic.convertFromUDUNITSToUCUMAr[language]
+              + EDStatic.messages.convertFromUDUNITSToUCUMAr[language]
               + "\n"
               + "<br>UDUNITS:\n"
               + widgets.textField(
@@ -22079,7 +22325,12 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                   "")
               + " "
               + widgets.htmlButton(
-                  "submit", null, "Convert to UCUM", "", EDStatic.convertToUCUMAr[language], "")
+                  "submit",
+                  null,
+                  "Convert to UCUM",
+                  "",
+                  EDStatic.messages.convertToUCUMAr[language],
+                  "")
               + "\n");
 
       if (tUdunits.length() == 0) writer.write("<br>&nbsp;\n");
@@ -22097,7 +22348,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       writer.write(
           "<br>"
               + widgets.beginForm("getUdunits", "GET", tErddapUrl + "/convert/units.html", "")
-              + EDStatic.convertFromUCUMToUDUNITSAr[language]
+              + EDStatic.messages.convertFromUCUMToUDUNITSAr[language]
               + "\n"
               + "<br>UCUM:\n"
               + widgets.textField(
@@ -22113,7 +22364,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                   null,
                   "Convert to UDUNITS",
                   "",
-                  EDStatic.convertToUDUNITSAr[language],
+                  EDStatic.messages.convertToUDUNITSAr[language],
                   "")
               + "\n");
 
@@ -22135,9 +22386,9 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
               + // necessary for the blank line before start of form (not <p>)
               widgets.beginForm("standarizeUdunits", "GET", tErddapUrl + "/convert/units.html", "")
               + "<strong>"
-              + EDStatic.orCommaAr[language]
+              + EDStatic.messages.orCommaAr[language]
               + "</strong>\n"
-              + EDStatic.convertStandardizeUDUNITSAr[language]
+              + EDStatic.messages.convertStandardizeUDUNITSAr[language]
               + "\n"
               + "<br>UDUNITS:\n"
               + widgets.textField(
@@ -22157,7 +22408,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                   null,
                   "Standardize UDUNITS",
                   "",
-                  EDStatic.convertStandardizeUDUNITSAr[language],
+                  EDStatic.messages.convertStandardizeUDUNITSAr[language],
                   "")
               + "\n");
 
@@ -22172,25 +22423,28 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
 
       writer.write(widgets.endForm() + "\n");
 
-      writer.write("<p>" + EDStatic.convertBypassAr[language] + "\n");
+      writer.write("<p>" + EDStatic.messages.convertBypassAr[language] + "\n");
 
       // notes
-      writer.write(EDStatic.convertUnitsNotesAr[language]);
+      writer.write(EDStatic.messages.convertUnitsNotesAr[language]);
       writer.write('\n');
 
       // Info about service / .txt option
       writer.write(
-          MessageFormat.format(EDStatic.convertUnitsServiceAr[language], tErddapUrl) + "\n");
+          MessageFormat.format(EDStatic.messages.convertUnitsServiceAr[language], tErddapUrl)
+              + "\n");
       writer.write('\n');
 
       // info about syntax differences
-      writer.write(EDStatic.convertUnitsComparisonAr[language]);
+      writer.write(EDStatic.messages.convertUnitsComparisonAr[language]);
       writer.write('\n');
 
       // info about tabledap unitsFilter &units("UCUM")
       writer.write(
           MessageFormat.format(
-                  EDStatic.convertUnitsFilterAr[language], tErddapUrl, EDStatic.units_standard)
+                  EDStatic.messages.convertUnitsFilterAr[language],
+                  tErddapUrl,
+                  EDStatic.config.units_standard)
               + "\n");
 
       writer.write("</div>\n");
@@ -22229,15 +22483,15 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       throws Throwable {
 
     // first thing
-    if (!EDStatic.convertersActive) {
+    if (!EDStatic.config.convertersActive) {
       sendResourceNotFoundError(
           requestNumber,
           request,
           response,
           EDStatic.bilingual(
               language,
-              MessageFormat.format(EDStatic.disabledAr[0], "convert"),
-              MessageFormat.format(EDStatic.disabledAr[language], "convert")));
+              MessageFormat.format(EDStatic.messages.disabledAr[0], "convert"),
+              MessageFormat.format(EDStatic.messages.disabledAr[language], "convert")));
       return;
     }
 
@@ -22255,7 +22509,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       // throw exception?
       if (rText.length() == 0) {
         throw new SimpleException(
-            EDStatic.simpleBilingual(language, EDStatic.queryErrorAr)
+            EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
                 + "Missing parameter (text).");
       }
 
@@ -22298,20 +22552,20 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                   + XML.encodeAsHTMLAttribute(
                       EDStatic.protocolUrl(EDStatic.erddapUrl(loggedInAs, language), "convert"))
                   + "\">"
-                  + EDStatic.convertAr[language]
+                  + EDStatic.messages.convertAr[language]
                   + "</a>"
                   + "\n &gt; URLs</h1>\n")
               + "<h2>"
-              + EDStatic.convertURLsAr[language]
+              + EDStatic.messages.convertURLsAr[language]
               + "</h2>\n"
-              + EDStatic.convertURLsIntroAr[language]);
+              + EDStatic.messages.convertURLsIntroAr[language]);
 
       // convert
       writer.write(
           "<p>"
               + widgets.beginForm("convertURLs", "GET", tErddapUrl + "/convert/urls.html", "")
               + "<strong>"
-              + EDStatic.convertURLsAr[language]
+              + EDStatic.messages.convertURLsAr[language]
               + "</strong>\n"
               + "<br>"
               + "<textarea name=\"text\" cols=\"80\" rows=\"6\" maxlength=\"1000\" wrap=\"soft\">"
@@ -22323,7 +22577,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                   null,
                   "Convert",
                   "",
-                  "<strong>" + EDStatic.convertAr[language] + "</strong>",
+                  "<strong>" + EDStatic.messages.convertAr[language] + "</strong>",
                   "")
               + "\n");
 
@@ -22334,12 +22588,13 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       writer.write(widgets.endForm() + "\n");
 
       // notes
-      writer.write(EDStatic.convertURLsNotesAr[language]);
+      writer.write(EDStatic.messages.convertURLsNotesAr[language]);
       writer.write('\n');
 
       // Info about service / .txt option
       writer.write(
-          MessageFormat.format(EDStatic.convertURLsServiceAr[language], tErddapUrl) + "\n");
+          MessageFormat.format(EDStatic.messages.convertURLsServiceAr[language], tErddapUrl)
+              + "\n");
       writer.write('\n');
 
       writer.write("</div>\n");
@@ -22524,7 +22779,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     if (brPo < 0) brPo = error.length();
     writer.write(
         "<span class=\"warningColor\">"
-            + EDStatic.errorTitleAr[language]
+            + EDStatic.messages.errorTitleAr[language]
             + ": "
             + error.substring(0, brPo)
             + "</span>"
@@ -22572,7 +22827,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     widgets.enterTextSubmitsForm = true;
     StringBuilder sb = new StringBuilder();
     sb.append(widgets.beginForm("search", "GET", tErddapUrl + "/search/index.html", ""));
-    sb.append(pretext + EDStatic.searchDoFullTextHtmlAr[language] + posttext);
+    sb.append(pretext + EDStatic.messages.searchDoFullTextHtmlAr[language] + posttext);
     int pipp[] = EDStatic.getRequestedPIpp(request);
     sb.append(widgets.hidden("page", "1")); // new search always resets to page 1
     sb.append(widgets.hidden("itemsPerPage", "" + pipp[1]));
@@ -22581,22 +22836,23 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     sb.append(
         widgets.textField(
             "searchFor",
-            MessageFormat.format(EDStatic.searchTipAr[language], "noaa wind"),
+            MessageFormat.format(EDStatic.messages.searchTipAr[language], "noaa wind"),
             40,
             255,
             searchFor,
             ""));
     widgets.htmlTooltips = true;
     sb.append(
-        EDStatic.htmlTooltipImage(language, loggedInAs, EDStatic.searchHintsTooltipAr[language]));
+        EDStatic.htmlTooltipImage(
+            language, loggedInAs, EDStatic.messages.searchHintsTooltipAr[language]));
     widgets.htmlTooltips = false;
     sb.append(
         widgets.htmlButton(
             "submit",
             null,
             null,
-            EDStatic.searchClickTipAr[language],
-            EDStatic.searchButtonAr[language],
+            EDStatic.messages.searchClickTipAr[language],
+            EDStatic.messages.searchButtonAr[language],
             ""));
     widgets.htmlTooltips = true;
     sb.append("\n");
@@ -22621,28 +22877,28 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     table.addColumn("Categorize", csa);
     if (fileTypeName.equals(".html")) {
       // 1 column: links
-      for (int cat = 0; cat < EDStatic.categoryAttributesInURLs.length; cat++) {
+      for (int cat = 0; cat < EDStatic.config.categoryAttributesInURLs.length; cat++) {
         csa.add(
             "<a href=\""
                 + tErddapUrl
                 + "/categorize/"
-                + EDStatic.categoryAttributesInURLs[cat]
+                + EDStatic.config.categoryAttributesInURLs[cat]
                 + "/index.html?"
                 + EDStatic.encodedPassThroughPIppQueryPage1(request)
                 + "\">"
-                + EDStatic.categoryAttributesInURLs[cat]
+                + EDStatic.config.categoryAttributesInURLs[cat]
                 + "</a>");
       }
     } else {
       // 2 columns: categorize, url
       StringArray usa = new StringArray();
       table.addColumn("URL", usa);
-      for (int cat = 0; cat < EDStatic.categoryAttributesInURLs.length; cat++) {
-        csa.add(EDStatic.categoryAttributesInURLs[cat]);
+      for (int cat = 0; cat < EDStatic.config.categoryAttributesInURLs.length; cat++) {
+        csa.add(EDStatic.config.categoryAttributesInURLs[cat]);
         usa.add(
             tErddapUrl
                 + "/categorize/"
-                + EDStatic.categoryAttributesInURLs[cat]
+                + EDStatic.config.categoryAttributesInURLs[cat]
                 + "/index"
                 + fileTypeName
                 + "?"
@@ -22668,7 +22924,9 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     int cn = catTable.nRows();
     StringBuilder sb =
         new StringBuilder(
-            EDStatic.orCommaAr[language] + EDStatic.categoryTitleHtmlAr[language] + ":");
+            EDStatic.messages.orCommaAr[language]
+                + EDStatic.messages.categoryTitleHtmlAr[language]
+                + ":");
     for (int row = 0; row < cn; row++) {
       if (row % 4 == 0) sb.append("\n<br>");
       sb.append(catTable.getStringData(0, row) + (row < cn - 1 ? ", \n" : "\n"));
@@ -22703,14 +22961,15 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       for (int row = 0; row < n; row++)
         sb.append(table.getStringData(0, row) + (row < n - 1 ? ", \n" : ""));
       sb.append(")\n");
-      String tCategoryHtml = String2.replaceAll(EDStatic.categoryHtmlAr[language], "<br>", "");
+      String tCategoryHtml =
+          String2.replaceAll(EDStatic.messages.categoryHtmlAr[language], "<br>", "");
       writer.write(
           "<h3>"
-              + EDStatic.categoryTitleHtmlAr[language]
+              + EDStatic.messages.categoryTitleHtmlAr[language]
               + "</h3>\n"
               + MessageFormat.format(tCategoryHtml, sb.toString())
               + "\n"
-              + EDStatic.category3HtmlAr[language]
+              + EDStatic.messages.category3HtmlAr[language]
               + "\n");
       return;
     }
@@ -22718,17 +22977,17 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     // categorize page
     String tCategoryHtml =
         String2.replaceAll(
-            MessageFormat.format(EDStatic.categoryHtmlAr[language], ""),
+            MessageFormat.format(EDStatic.messages.categoryHtmlAr[language], ""),
             "  ",
             " "); // {0}="" leads to 2 adjacent spaces
     writer.write(
-        // "<h3>" + EDStatic.categoryTitleHtml + "</h3>\n" +
+        // "<h3>" + EDStatic.messages.categoryTitleHtml + "</h3>\n" +
         "<h3>1) "
-            + EDStatic.categoryPickAttributeAr[language]
+            + EDStatic.messages.categoryPickAttributeAr[language]
             + "&nbsp;"
             + EDStatic.htmlTooltipImage(language, loggedInAs, tCategoryHtml)
             + "</h3>\n");
-    String attsInURLs[] = EDStatic.categoryAttributesInURLs;
+    String attsInURLs[] = EDStatic.config.categoryAttributesInURLs;
     HtmlWidgets widgets =
         new HtmlWidgets(true, EDStatic.imageDirUrl(loggedInAs, language)); // true=htmlTooltips
     writer.write(
@@ -22773,10 +23032,10 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     String values[] = categoryInfo(attribute).toArray();
     writer.write(
         "<h3>2) "
-            + MessageFormat.format(EDStatic.categorySearchHtmlAr[language], attributeInURL)
+            + MessageFormat.format(EDStatic.messages.categorySearchHtmlAr[language], attributeInURL)
             + ":&nbsp;"
             + EDStatic.htmlTooltipImage(
-                language, loggedInAs, EDStatic.categoryClickHtmlAr[language])
+                language, loggedInAs, EDStatic.messages.categoryClickHtmlAr[language])
             + "</h3>\n");
     if (values.length == 0) {
       writer.write(MustBe.THERE_IS_NO_DATA);
@@ -22917,19 +23176,19 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     table.addColumn("Subset", subCol);
     table.addColumn("tabledap", tdCol);
     table.addColumn("Make A Graph", magCol);
-    if (EDStatic.sosActive) table.addColumn("sos", sosCol);
-    if (EDStatic.wcsActive) table.addColumn("wcs", wcsCol);
-    if (EDStatic.wmsActive) table.addColumn("wms", wmsCol);
-    if (EDStatic.filesActive) table.addColumn("files", filesCol);
-    if (EDStatic.authentication.length() > 0) table.addColumn("Accessible", accessCol);
+    if (EDStatic.config.sosActive) table.addColumn("sos", sosCol);
+    if (EDStatic.config.wcsActive) table.addColumn("wcs", wcsCol);
+    if (EDStatic.config.wmsActive) table.addColumn("wms", wmsCol);
+    if (EDStatic.config.filesActive) table.addColumn("files", filesCol);
+    if (EDStatic.config.authentication.length() > 0) table.addColumn("Accessible", accessCol);
     int sortOn = table.addColumn("Title", titleCol);
     table.addColumn("Summary", summaryCol);
-    if (EDStatic.fgdcActive) table.addColumn("FGDC", fgdcCol);
-    if (EDStatic.iso19115Active) table.addColumn("ISO 19115", iso19115Col);
+    if (EDStatic.config.fgdcActive) table.addColumn("FGDC", fgdcCol);
+    if (EDStatic.config.iso19115Active) table.addColumn("ISO 19115", iso19115Col);
     table.addColumn("Info", infoCol);
     table.addColumn("Background Info", backgroundCol);
     table.addColumn("RSS", rssCol);
-    if (EDStatic.subscriptionSystemActive) table.addColumn("Email", emailCol);
+    if (EDStatic.config.subscriptionSystemActive) table.addColumn("Email", emailCol);
     table.addColumn("Institution", institutionCol);
     table.addColumn("Dataset ID", idCol);
     for (int i = 0; i < datasetIDs.size(); i++) {
@@ -22941,7 +23200,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       boolean isAllDatasets = tId.equals(EDDTableFromAllDatasets.DATASET_ID);
       boolean isAccessible = edd.isAccessibleTo(roles);
       boolean graphsAccessible = isAccessible || edd.graphsAccessibleToPublic();
-      if (!EDStatic.listPrivateDatasets && !isAccessible && !graphsAccessible) continue;
+      if (!EDStatic.config.listPrivateDatasets && !isAccessible && !graphsAccessible) continue;
 
       // just show things (URLs, info) that user has access to
       String daps =
@@ -22980,7 +23239,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
           graphsAccessible && edd.accessibleViaFGDC().length() == 0
               ? tErddapUrl
                   + "/"
-                  + EDStatic.fgdcXmlDirectory
+                  + EDConfig.fgdcXmlDirectory
                   + edd.datasetID()
                   + EDD.fgdcSuffix
                   + ".xml"
@@ -22989,7 +23248,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
           graphsAccessible && edd.accessibleViaISO19115().length() == 0
               ? tErddapUrl
                   + "/"
-                  + EDStatic.iso19115XmlDirectory
+                  + EDConfig.iso19115XmlDirectory
                   + edd.datasetID()
                   + EDD.iso19115Suffix
                   + ".xml"
@@ -23004,7 +23263,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
               ? EDStatic.erddapUrl + "/rss/" + edd.datasetID() + ".rss"
               : ""); // never https url
       emailCol.add(
-          graphsAccessible && EDStatic.subscriptionSystemActive && !isAllDatasets
+          graphsAccessible && EDStatic.config.subscriptionSystemActive && !isAllDatasets
               ? tErddapUrl
                   + "/"
                   + Subscriptions.ADD_HTML
@@ -23060,56 +23319,58 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     table.addColumn("Sub-<br>set", subCol);
     table.addColumn("Table<br>DAP<br>Data", tdCol);
     table.addColumn("Make<br>A<br>Graph", magCol);
-    if (EDStatic.sosActive) table.addColumn("S<br>O<br>S", sosCol);
-    if (EDStatic.wcsActive) table.addColumn("W<br>C<br>S", wcsCol);
-    if (EDStatic.wmsActive) table.addColumn("W<br>M<br>S", wmsCol);
-    if (EDStatic.filesActive) table.addColumn("Source<br>Data<br>Files", filesCol);
+    if (EDStatic.config.sosActive) table.addColumn("S<br>O<br>S", sosCol);
+    if (EDStatic.config.wcsActive) table.addColumn("W<br>C<br>S", wcsCol);
+    if (EDStatic.config.wmsActive) table.addColumn("W<br>M<br>S", wmsCol);
+    if (EDStatic.config.filesActive) table.addColumn("Source<br>Data<br>Files", filesCol);
     String accessTip =
-        EDStatic.dtAccessibleAr[language]
+        EDStatic.messages.dtAccessibleAr[language]
             + // "You are logged in and ...
             "<br>\"public\" = "
-            + EDStatic.dtAccessiblePublicAr[language];
+            + EDStatic.messages.dtAccessiblePublicAr[language];
     if (isLoggedIn)
       accessTip +=
           "<br>\"yes\" = "
-              + EDStatic.dtAccessibleYesAr[language]
+              + EDStatic.messages.dtAccessibleYesAr[language]
               + // "You are logged in and ...
-              (EDStatic.listPrivateDatasets
-                  ? "<br>\"no\" = " + EDStatic.dtAccessibleNoAr[language]
+              (EDStatic.config.listPrivateDatasets
+                  ? "<br>\"no\" = " + EDStatic.messages.dtAccessibleNoAr[language]
                   : ""); // "You are logged in and ...
-    if (EDStatic.authentication.length() > 0
+    if (EDStatic.config.authentication.length() > 0
         && !isLoggedIn
         && // this erddap supports logging in
-        EDStatic.listPrivateDatasets)
-      accessTip += "<br>\"log in \" = " + EDStatic.dtAccessibleLogInAr[language];
-    accessTip += "<br>\"graphs\" = " + EDStatic.dtAccessibleGraphsAr[language];
-    if (EDStatic.authentication.length() > 0)
+        EDStatic.config.listPrivateDatasets)
+      accessTip += "<br>\"log in \" = " + EDStatic.messages.dtAccessibleLogInAr[language];
+    accessTip += "<br>\"graphs\" = " + EDStatic.messages.dtAccessibleGraphsAr[language];
+    if (EDStatic.config.authentication.length() > 0)
       table.addColumn(
           "Acces-<br>sible<br>" + EDStatic.htmlTooltipImage(language, loggedInAs, accessTip),
           accessCol);
     String loginHref =
-        EDStatic.authentication.length() == 0
+        EDStatic.config.authentication.length() == 0
             ? "no"
             : "<a rel=\"bookmark\" href=\""
                 + EDStatic.erddapHttpsUrl(language)
                 + "/login.html\" "
                 + "title=\""
-                + EDStatic.dtLogInAr[language]
+                + EDStatic.messages.dtLogInAr[language]
                 + "\">log in</a>";
     table.addColumn("Title", titleCol);
     int sortOn = table.addColumn("Plain Title", plainTitleCol);
     table.addColumn("Sum-<br>mary", summaryCol);
     table.addColumn(
-        (EDStatic.fgdcActive ? "FGDC,<br>" : "")
-            + (EDStatic.iso19115Active ? "ISO,<br>" : "")
-            + (EDStatic.fgdcActive || EDStatic.iso19115Active ? "Metadata" : "Meta-<br>data"),
+        (EDStatic.config.fgdcActive ? "FGDC,<br>" : "")
+            + (EDStatic.config.iso19115Active ? "ISO,<br>" : "")
+            + (EDStatic.config.fgdcActive || EDStatic.config.iso19115Active
+                ? "Metadata"
+                : "Meta-<br>data"),
         infoCol);
     table.addColumn("Back-<br>ground<br>Info", backgroundCol);
     table.addColumn("RSS", rssCol);
-    if (EDStatic.subscriptionSystemActive) table.addColumn("E<br>mail", emailCol);
+    if (EDStatic.config.subscriptionSystemActive) table.addColumn("E<br>mail", emailCol);
     table.addColumn("Institution", institutionCol);
     table.addColumn("Dataset ID", idCol);
-    String externalLinkHtml = EDStatic.externalLinkHtml(language, tErddapUrl);
+    String externalLinkHtml = EDStatic.messages.externalLinkHtml(language, tErddapUrl);
     for (int i = 0; i < datasetIDs.size(); i++) {
       String tId = datasetIDs.get(i);
       EDD edd = gridDatasetHashMap.get(tId);
@@ -23119,7 +23380,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       boolean isAllDatasets = tId.equals(EDDTableFromAllDatasets.DATASET_ID);
       boolean isAccessible = edd.isAccessibleTo(roles);
       boolean graphsAccessible = isAccessible || edd.graphsAccessibleToPublic();
-      if (!EDStatic.listPrivateDatasets && !isAccessible && !graphsAccessible) continue;
+      if (!EDStatic.config.listPrivateDatasets && !isAccessible && !graphsAccessible) continue;
 
       // just show things (URLs, info) user has access to
       String daps =
@@ -23132,7 +23393,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
               + tId
               + ".html\" "
               + "title=\""
-              + MessageFormat.format(EDStatic.dtDAFAr[language], edd.dapProtocol())
+              + MessageFormat.format(EDStatic.messages.dtDAFAr[language], edd.dapProtocol())
               + "\" "
               + ">data</a>&nbsp;";
       gdCol.add(isAccessible && edd instanceof EDDGrid ? daps : "&nbsp;");
@@ -23145,7 +23406,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                   + tId
                   + ".subset\" "
                   + "title=\""
-                  + EDStatic.dtSubsetAr[language]
+                  + EDStatic.messages.dtSubsetAr[language]
                   + "\" "
                   + ">set</a>"
               : "&nbsp;");
@@ -23162,7 +23423,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                   + tId
                   + ".graph\" "
                   + "title=\""
-                  + EDStatic.dtMAGAr[language]
+                  + EDStatic.messages.dtMAGAr[language]
                   + "\" "
                   + ">graph</a>"
               : "&nbsp;");
@@ -23175,7 +23436,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                   + tId
                   + "/index.html\" "
                   + "title=\""
-                  + EDStatic.dtSOSAr[language]
+                  + EDStatic.messages.dtSOSAr[language]
                   + "\" >"
                   + "S</a>&nbsp;"
               : "&nbsp;");
@@ -23188,7 +23449,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                   + tId
                   + "/index.html\" "
                   + "title=\""
-                  + EDStatic.dtWCSAr[language]
+                  + EDStatic.messages.dtWCSAr[language]
                   + "\" >"
                   + "C</a>&nbsp;"
               : "&nbsp;");
@@ -23202,7 +23463,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                   + tId
                   + "/index.html\" "
                   + "title=\""
-                  + EDStatic.dtWMSAr[language]
+                  + EDStatic.messages.dtWMSAr[language]
                   + "\" >"
                   + "M</a>&nbsp;"
               : "&nbsp;");
@@ -23215,7 +23476,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                   + tId
                   + "/\" "
                   + "title=\""
-                  + EDStatic.dtFilesAr[language]
+                  + EDStatic.messages.dtFilesAr[language]
                   + "\" >"
                   + "files</a>&nbsp;"
               : "&nbsp;");
@@ -23247,36 +23508,38 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                   +
                   // fgdc
                   (edd.accessibleViaFGDC().length() > 0
-                      ? (EDStatic.fgdcActive ? "&nbsp;&nbsp;&nbsp;" : "")
+                      ? (EDStatic.config.fgdcActive ? "&nbsp;&nbsp;&nbsp;" : "")
                       : "&nbsp;<a rel=\"chapter\" "
                           + "href=\""
                           + tErddapUrl
                           + "/"
-                          + EDStatic.fgdcXmlDirectory
+                          + EDConfig.fgdcXmlDirectory
                           + edd.datasetID()
                           + EDD.fgdcSuffix
                           + ".xml\" "
                           + "title=\""
                           + XML.encodeAsHTMLAttribute(
-                              MessageFormat.format(EDStatic.metadataDownloadAr[language], "FGDC"))
+                              MessageFormat.format(
+                                  EDStatic.messages.metadataDownloadAr[language], "FGDC"))
                           + "\" >F</a>")
                   + "\n"
                   +
                   // iso
                   (edd.accessibleViaISO19115().length() > 0
-                      ? (EDStatic.iso19115Active ? "&nbsp;&nbsp;&nbsp;&nbsp;" : "")
+                      ? (EDStatic.config.iso19115Active ? "&nbsp;&nbsp;&nbsp;&nbsp;" : "")
                       : "&nbsp;<a rel=\"chapter\" "
                           + "href=\""
                           + tErddapUrl
                           + "/"
-                          + EDStatic.iso19115XmlDirectory
+                          + EDConfig.iso19115XmlDirectory
                           + edd.datasetID()
                           + EDD.iso19115Suffix
                           + ".xml\" "
                           + "title=\""
                           + XML.encodeAsHTMLAttribute(
                               MessageFormat.format(
-                                  EDStatic.metadataDownloadAr[language], "ISO 19115-2/19139"))
+                                  EDStatic.messages.metadataDownloadAr[language],
+                                  "ISO 19115-2/19139"))
                           + "\" >&nbsp;I&nbsp;</a>")
                   +
                   // dataset metadata
@@ -23289,7 +23552,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                   + "/index.html\" "
                   + // here, always .html
                   "title=\""
-                  + EDStatic.clickInfoAr[language]
+                  + EDStatic.messages.clickInfoAr[language]
                   + "\" >M</a>"
                   + "\n&nbsp;");
       backgroundCol.add(
@@ -23300,13 +23563,13 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                   + XML.encodeAsHTML(edd.infoUrl())
                   + "\" "
                   + "title=\""
-                  + EDStatic.clickBackgroundInfoAr[language]
+                  + EDStatic.messages.clickBackgroundInfoAr[language]
                   + "\" >background"
-                  + (edd.infoUrl().startsWith(EDStatic.baseUrl) ? "" : externalLinkHtml)
+                  + (edd.infoUrl().startsWith(EDStatic.config.baseUrl) ? "" : externalLinkHtml)
                   + "</a>");
       rssCol.add(graphsAccessible && !isAllDatasets ? edd.rssHref(language, loggedInAs) : "&nbsp;");
       emailCol.add(
-          graphsAccessible && EDStatic.subscriptionSystemActive && !isAllDatasets
+          graphsAccessible && EDStatic.config.subscriptionSystemActive && !isAllDatasets
               ? edd.emailHref(language, loggedInAs)
               : "&nbsp;");
       String tInstitution = edd.institution();
@@ -23380,14 +23643,16 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
           throw new SimpleException(
               EDStatic.bilingual(
                   language,
-                  EDStatic.queryErrorAr[0] + EDStatic.errorJsonpNotAllowedAr[0],
-                  EDStatic.queryErrorAr[language] + EDStatic.errorJsonpNotAllowedAr[language]));
+                  EDStatic.messages.queryErrorAr[0] + EDStatic.messages.errorJsonpNotAllowedAr[0],
+                  EDStatic.messages.queryErrorAr[language]
+                      + EDStatic.messages.errorJsonpNotAllowedAr[language]));
         if (!String2.isJsonpNameSafe(jsonp))
           throw new SimpleException(
               EDStatic.bilingual(
                   language,
-                  EDStatic.queryErrorAr[0] + EDStatic.errorJsonpFunctionNameAr[0],
-                  EDStatic.queryErrorAr[language] + EDStatic.errorJsonpFunctionNameAr[language]));
+                  EDStatic.messages.queryErrorAr[0] + EDStatic.messages.errorJsonpFunctionNameAr[0],
+                  EDStatic.messages.queryErrorAr[language]
+                      + EDStatic.messages.errorJsonpFunctionNameAr[language]));
       }
     }
 
@@ -23470,7 +23735,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
         // (e.g., all Advanced Search requests have fileName=AdvancedSearch)
         String ncFileName = fileName + "_" + Math2.random(Integer.MAX_VALUE) + ".nc";
         table.saveAsFlatNc(
-            EDStatic.fullPlainFileNcCacheDirectory + ncFileName,
+            EDStatic.config.fullPlainFileNcCacheDirectory + ncFileName,
             "row",
             false); // convertToFakeMissingValues
 
@@ -23480,13 +23745,13 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
             requestNumber,
             request,
             response,
-            EDStatic.fullPlainFileNcCacheDirectory,
+            EDStatic.config.fullPlainFileNcCacheDirectory,
             "_plainFileNc/", // dir that appears to users (but it doesn't normally)
             ncFileName,
             out,
             outSource.usingCompression());
         // if simpleDelete fails, cache cleaning will delete it later
-        File2.simpleDelete(EDStatic.fullPlainFileNcCacheDirectory + ncFileName);
+        File2.simpleDelete(EDStatic.config.fullPlainFileNcCacheDirectory + ncFileName);
       }
       case ".nccsv" -> TableWriterNccsv.writeAllAndFinish(language, null, null, table, outSource);
       case ".tsv" ->
@@ -23515,11 +23780,12 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
           throw new SimpleException(
               EDStatic.bilingual(
                   language,
-                  EDStatic.queryErrorAr[0]
-                      + MessageFormat.format(EDStatic.unsupportedFileTypeAr[0], fileTypeName),
-                  EDStatic.queryErrorAr[language]
+                  EDStatic.messages.queryErrorAr[0]
                       + MessageFormat.format(
-                          EDStatic.unsupportedFileTypeAr[language], fileTypeName)));
+                          EDStatic.messages.unsupportedFileTypeAr[0], fileTypeName),
+                  EDStatic.messages.queryErrorAr[language]
+                      + MessageFormat.format(
+                          EDStatic.messages.unsupportedFileTypeAr[language], fileTypeName)));
     }
 
     // essential
@@ -23637,14 +23903,14 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       try {
         StringArray actions = null;
 
-        if (EDStatic.subscriptionSystemActive) {
+        if (EDStatic.config.subscriptionSystemActive) {
           // get subscription actions
           try { // beware exceptions from subscriptions
             actions = EDStatic.subscriptions.listActions(tDatasetID);
           } catch (Throwable listT) {
             String content = MustBe.throwableToString(listT);
             String2.log(subject + ":\n" + content);
-            EDStatic.email(EDStatic.emailEverythingToCsv, subject, content);
+            EDStatic.email(EDStatic.config.emailEverythingToCsv, subject, content);
             actions = new StringArray();
           }
         } else actions = new StringArray();
@@ -23662,7 +23928,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
           if (verbose) String2.log("doing action[" + a + "]=" + tAction);
           try {
             if (tAction.startsWith("http://") || tAction.startsWith("https://")) {
-              if (tAction.indexOf("/" + EDStatic.warName + "/setDatasetFlag.txt?") > 0
+              if (tAction.indexOf("/" + EDStatic.config.warName + "/setDatasetFlag.txt?") > 0
                   && EDStatic.urlIsThisComputer(tAction)) {
                 // a dataset on this ERDDAP! just set the flag
                 // e.g.,
@@ -23716,7 +23982,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       } catch (Throwable subT) {
         String content = MustBe.throwableToString(subT);
         String2.log(subject + ":\n" + content);
-        EDStatic.email(EDStatic.emailEverythingToCsv, subject, content);
+        EDStatic.email(EDStatic.config.emailEverythingToCsv, subject, content);
       }
     }
   }
@@ -23769,7 +24035,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
 
     // update dataset's Document in Lucene Index
     int nDatasetIDs = datasetIDs.size();
-    if (EDStatic.useLuceneSearchEngine && nDatasetIDs > 0) {
+    if (EDStatic.config.useLuceneSearchEngine && nDatasetIDs > 0) {
 
       try {
         // gc to avoid out-of-memory
@@ -23818,11 +24084,11 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
 
         // any exception is pretty horrible
         //  e.g., out of memory, index corrupt, IO exception
-        EDStatic.useLuceneSearchEngine = false;
+        EDStatic.config.useLuceneSearchEngine = false;
         String subject = String2.ERROR + " in updateLucene()";
         String content = MustBe.throwableToString(t);
         String2.log(subject + ":\n" + content);
-        EDStatic.email(EDStatic.emailEverythingToCsv, subject, content);
+        EDStatic.email(EDStatic.config.emailEverythingToCsv, subject, content);
 
         // abandon the changes and the indexWriter
         if (EDStatic.luceneIndexWriter != null) {

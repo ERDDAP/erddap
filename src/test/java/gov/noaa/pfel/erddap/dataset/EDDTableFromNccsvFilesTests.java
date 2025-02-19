@@ -318,7 +318,7 @@ class EDDTableFromNccsvFilesTests {
     // testVerboseOn();
     int language = 0;
     String tName, results, tResults, expected, userDapQuery;
-    String dir = EDStatic.fullTestCacheDirectory;
+    String dir = EDStatic.config.fullTestCacheDirectory;
     String today =
         Calendar2.getCurrentISODateTimeStringZulu()
             .substring(0, 14); // 14 is enough to check hour. Hard to
@@ -1083,7 +1083,7 @@ class EDDTableFromNccsvFilesTests {
     int language = 0;
     String tName, results, tResults, expected;
     EDV edv;
-    String dir = EDStatic.fullTestCacheDirectory;
+    String dir = EDStatic.config.fullTestCacheDirectory;
     String today =
         Calendar2.getCurrentISODateTimeStringZulu()
             .substring(0, 14); // 14 is enough to check hour. Hard to
@@ -2954,8 +2954,8 @@ class EDDTableFromNccsvFilesTests {
      * "longitude,latitude,time&time=%221992-01-01T00:00:00Z%22" +
      * "&longitude>=-132.0&longitude<=-112.0&latitude>=30.0&latitude<=50.0" +
      * "&distinct()&.draw=markers&.colorBar=|D||||",
-     * EDStatic.fullTestCacheDirectory, edd.className() + "_SVGraph", ".png");
-     * Test.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
+     * EDStatic.config.fullTestCacheDirectory, edd.className() + "_SVGraph", ".png");
+     * Test.displayInBrowser("file://" + EDStatic.config.fullTestCacheDirectory + tName);
      *
      * } catch (Throwable t) {
      * throw new

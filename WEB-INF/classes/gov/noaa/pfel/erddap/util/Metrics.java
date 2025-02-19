@@ -1,5 +1,6 @@
 package gov.noaa.pfel.erddap.util;
 
+import com.cohort.util.String2;
 import gov.noaa.pfel.coastwatch.sgt.GSHHS;
 import gov.noaa.pfel.coastwatch.sgt.SgtMap;
 import gov.noaa.pfel.coastwatch.sgt.SgtUtil;
@@ -7,11 +8,19 @@ import io.prometheus.metrics.core.metrics.Counter;
 import io.prometheus.metrics.core.metrics.Gauge;
 import io.prometheus.metrics.core.metrics.Histogram;
 import io.prometheus.metrics.core.metrics.Info;
+import io.prometheus.metrics.core.metrics.StateSet;
 import io.prometheus.metrics.instrumentation.jvm.JvmMetrics;
 import io.prometheus.metrics.model.registry.PrometheusRegistry;
 import io.prometheus.metrics.model.snapshots.Unit;
 import java.awt.ImageCapabilities;
 import java.awt.image.BufferedImage;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Metrics {
 
@@ -169,7 +178,7 @@ public class Metrics {
     info.setLabelValues(
         doubleVersion,
         EDStatic.erddapVersion,
-        EDStatic.deploymentInfo != null ? EDStatic.deploymentInfo : "");
+        EDStatic.config.deploymentInfo != null ? EDStatic.config.deploymentInfo : "");
 
     Info graphicsInfo =
         Info.builder()
@@ -186,5 +195,39 @@ public class Metrics {
     } catch (Throwable t) {
       graphicsInfo.setLabelValues("unknown");
     }
+
+    addFeatureFlagMetrics();
   }
+
+  public void addFeatureFlagMetrics() {
+    List<String> featureFlags = new ArrayList<>();
+    Field[] fields = EDStatic.config.getClass().getFields();
+    for (Field field : fields) {
+      if (field.isAnnotationPresent(FeatureFlag.class)) {
+        featureFlags.add(field.getName());
+      }
+    }
+    String[] flags = featureFlags.toArray(new String[featureFlags.size()]);
+
+    StateSet stateSet =
+        StateSet.builder().name("feature_flags").help("Feature flags").states(flags).register();
+
+    for (Field field : fields) {
+      if (field.isAnnotationPresent(FeatureFlag.class)) {
+        try {
+          if (field.getBoolean(EDStatic.config)) {
+            stateSet.setTrue(field.getName());
+          } else {
+            stateSet.setFalse(field.getName());
+          }
+        } catch (Exception e) {
+          String2.log("Error making feature_flags metric with feature: " + field.getName());
+        }
+      }
+    }
+  }
+
+  @Retention(RetentionPolicy.RUNTIME)
+  @Target(ElementType.FIELD)
+  public @interface FeatureFlag {}
 }

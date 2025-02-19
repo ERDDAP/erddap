@@ -42,21 +42,13 @@ public class Boundaries {
    */
   public static final boolean debug = false;
 
-  public static final String REF_DIRECTORY =
-      File2.getWebInfParentDirectory()
-          + // with / separator and / at the end
-          "WEB-INF/ref/";
-
   /**
    * The nationalBoundary and stateBoundary files must be in the refDirectory. "gshhs_?.b"
    * (?=f|h|i|l|c) files. The files are from the GSHHS project
    * (https://www.ngdc.noaa.gov/mgg/shorelines/gshhs.html 2009-10-28 v2.0). GPL license:
    * http://www.soest.hawaii.edu/pwessel/gshhs/README.TXT landMaskDir should have slash at end.
    */
-  public String directory =
-      File2.getWebInfParentDirectory()
-          + // with / separator and / at the end
-          "WEB-INF/ref/";
+  public static final String REF_DIRECTORY = File2.getRefDirectory();
 
   /**
    * Since boundary SGTLines are time-consuming to contruct, this caches the last cacheSize used
@@ -134,10 +126,8 @@ public class Boundaries {
    * @param fileNames the 5 file names
    * @param fileFormat MATLAB_FORMAT or GMT_FORMAT
    */
-  public Boundaries(
-      String id, String directory, ImmutableList<String> fileNames, BoundaryCounter counter) {
+  public Boundaries(String id, ImmutableList<String> fileNames, BoundaryCounter counter) {
     this.id = id;
-    this.directory = directory;
     this.fileNames = fileNames;
     this.counter = counter;
   }
@@ -181,7 +171,8 @@ public class Boundaries {
       // And the request is usually a large part of whole world. Most paths will be used.
       counter.increment(Metrics.BoundaryRequest.coarse);
       tCoarse = "*";
-      sgtLine = readSgtLineDouble(directory + fileNames.get(resolution), west, east, south, north);
+      sgtLine =
+          readSgtLineDouble(REF_DIRECTORY + fileNames.get(resolution), west, east, south, north);
 
     } else {
 
@@ -202,7 +193,8 @@ public class Boundaries {
 
           // not in cache, make SgtLine
           sgtLine =
-              readSgtLineDouble(directory + fileNames.get(resolution), west, east, south, north);
+              readSgtLineDouble(
+                  REF_DIRECTORY + fileNames.get(resolution), west, east, south, north);
 
           // cache full?
           if (cache.size() == CACHE_SIZE) {
@@ -691,7 +683,6 @@ public class Boundaries {
   public static Boundaries getNationalBoundaries() {
     return new Boundaries(
         "NationalBoundaries",
-        REF_DIRECTORY,
         NATIONAL_FILE_NAMES,
         new BoundaryCounter(
             "national_boundaries_request_total", "Requests for national boundaries"));
@@ -701,7 +692,6 @@ public class Boundaries {
   public static Boundaries getStateBoundaries() {
     return new Boundaries(
         "StateBoundaries",
-        REF_DIRECTORY,
         STATE_FILE_NAMES,
         new BoundaryCounter("state_boundaries_request_total", "Requests for state boundaries"));
   }
@@ -710,7 +700,6 @@ public class Boundaries {
   public static Boundaries getRivers() {
     return new Boundaries(
         "Rivers",
-        REF_DIRECTORY,
         RIVER_FILE_NAMES,
         new BoundaryCounter("river_boundaries_request_total", "Requests for river boundaries"));
   }
