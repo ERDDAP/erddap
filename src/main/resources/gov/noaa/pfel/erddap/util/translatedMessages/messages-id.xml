@@ -95,11 +95,11 @@ Kemudian, ERDDAP akan menambahkan semuanya
 <advl_institution>Lembaga</advl_institution>
 <advc_dataStructure>ERDDAP memperlakukan setiap kumpulan data sebagai kumpulan data &#39;kisi&#39; atau &#39;tabel&#39;.</advc_dataStructure>
 <advl_dataStructure>Struktur data</advl_dataStructure>
-<advr_dataStructure>https://erddap.github.io/setupDatasetsXml.html#dataStructures</advr_dataStructure>
+<advr_dataStructure>https://erddap.github.io/docs/server-admin/datasets#why-just-two-basic-data-structures</advr_dataStructure>
 <advl_cdm_data_type>Tipe Model Data Umum</advl_cdm_data_type>
-<advr_cdm_data_type>https://erddap.github.io/setupDatasetsXml.html#cdm_data_type</advr_cdm_data_type>
+<advr_cdm_data_type>https://erddap.github.io/docs/server-admin/datasets#cdm_data_type</advr_cdm_data_type>
 <advl_class>Kelas ERDDAP</advl_class>
-<advr_class>https://erddap.github.io/setupDatasetsXml.html#datasetTypes</advr_class>
+<advr_class>https://erddap.github.io/docs/server-admin/datasets#list-of-types-datasets</advr_class>
 <advl_title>Judul</advl_title>
 <advl_minLongitude>Bujur Minimum</advl_minLongitude>
 <advl_maxLongitude>Bujur Maksimum</advl_maxLongitude>
@@ -144,7 +144,7 @@ Kemudian, ERDDAP akan menambahkan semuanya
 <advn_outOfDate><![CDATA[
 
 Tampaknya, tidak ada kumpulan data yang memiliki atribut
-<a rel="help" href="https://erddap.github.io/setupDatasetsXml.html#testOutOfDate"
+<a rel="help" href="https://erddap.github.io/docs/server-admin/datasets#testoutofdate"
 ><kbd>testOutOfDate</kbd></a> .
 Mungkin tidak ada kumpulan data yang hampir real-time di ERDDAP ini.
 
@@ -1892,7 +1892,7 @@ Ini termasuk:
 <ul>
 <li><a class="selfLink" id="databases" href="#databases" rel="bookmark">Data</a> yang saat ini disimpan dalam database relasional.
 <br>Silakan baca informasi tentang tipe dataset
-<a rel="help" href="https://erddap.github.io/setupDatasetsXml.html#EDDTableFromDatabase">EDDTableFromDatabase</a> di ERDDAP, terutama ~2 layar informasi awal yang membahas tentang perlunya membuat tabel yang didenormalisasi.
+<a rel="help" href="https://erddap.github.io/docs/server-admin/datasets#eddtablefromdatabase">EDDTableFromDatabase</a> di ERDDAP, terutama ~2 layar informasi awal yang membahas tentang perlunya membuat tabel yang didenormalisasi.
 Ini mungkin terdengar gila.
 Harap cukup percaya untuk membaca alasannya.
 <br>&nbsp;
@@ -3258,7 +3258,7 @@ File kedua versi memiliki ekstensi .nc dan dapat dibaca oleh program yang membac
 <a rel="help" href="https://anaconda.org/eumetsat/ncview">melalui Conda <img
        src="https://coastwatch.pfeg.noaa.gov/erddap/images/external.png" alt=" (external link)"
        title="Tautan ke situs web eksternal ini bukan merupakan suatu dukungan."></a>).
-<li><a rel="help" href="https://erddap.github.io/setupDatasetsXml.html#NCO">NCO</a>, alat baris perintah yang kuat untuk memodifikasi file .nc secara permanen.
+<li><a rel="help" href="https://erddap.github.io/docs/server-admin/datasets#netcdf-operators-nco">NCO</a>, alat baris perintah yang kuat untuk memodifikasi file .nc secara permanen.
 <li><a rel="help" href="https://www.unidata.ucar.edu/downloads/netcdf/">NetCDF -C dan NetCDF - Java <img
        src="https://coastwatch.pfeg.noaa.gov/erddap/images/external.png" alt=" (external link)"
        title="Tautan ke situs web eksternal ini bukan merupakan suatu dukungan."></a>, pustaka perangkat lunak utama untuk C, C++, Fortran, atau Java untuk membaca dan menulis file .nc .
@@ -3670,7 +3670,7 @@ Seperti dijelaskan di atas, karena program Java dapat mengakses data yang tersed
 <p>Atau, karena ERDDAP adalah program sumber terbuka, Anda juga dapat mengatur salinan ERDDAP Anda sendiri di server Anda sendiri (dapat diakses publik atau tidak) untuk menyajikan data Anda sendiri.
 Program Java Anda bisa mendapatkan data dari salinan ERDDAP tersebut.
 Lihat
-<a rel="help" href="https://erddap.github.io/setup.html">Mengatur ERDDAP Anda Sendiri</a> .
+<a rel="help" href="https://erddap.github.io/docs/server-admin/deploy-install">Mengatur ERDDAP Anda Sendiri</a> .
   
 ]]></javaProgramsHTML>
 
@@ -3757,7 +3757,7 @@ Banyak penginstalan ERDDAP yang tidak mengaktifkan autentikasi sehingga tidak me
 Saat ini, ERDDAP hanya mendukung autentikasi melalui akun email yang dikelola Google, yang mencakup akun email di NOAA dan banyak universitas.
 Jika autentikasi ERDDAP diaktifkan, siapa pun yang memiliki akun email yang dikelola Google dapat masuk, namun mereka hanya akan memiliki akses ke kumpulan data pribadi yang secara eksplisit telah diizinkan oleh administrator ERDDAP untuk diakses.
 Untuk instruksi masuk ke ERDDAP dari browser atau melalui skrip, lihat
-<a rel="help" href="https://erddap.github.io/AccessToPrivateDatasets.html">Akses ke Kumpulan Data Pribadi di ERDDAP</a> .
+<a rel="help" href="https://erddap.github.io/docs/user/AccessToPrivateDatasets">Akses ke Kumpulan Data Pribadi di ERDDAP</a> .
   
 ]]></loginHTML>
 <loginAttemptBlocked>GALAT: Upaya masuk untuk {0} diblokir sementara setelah 3 kali gagal.
@@ -4453,7 +4453,7 @@ Misalnya, manusia dapat menggunakan URL ini untuk melakukan Pencarian Teks Lengk
 Ada banyak fitur di ERDDAP yang dapat digunakan oleh program komputer atau script yang Anda tulis.
 Anda dapat menggunakannya untuk membangun aplikasi web atau layanan web lain di atas ERDDAP, sehingga ERDDAP melakukan sebagian besar pekerjaan! Jadi jika Anda mempunyai ide untuk antarmuka yang lebih baik terhadap data yang disajikan ERDDAP atau halaman web yang memerlukan cara mudah untuk mengakses data, kami mendorong Anda untuk membangun aplikasi web, layanan web, atau halaman web Anda sendiri dan menggunakan ERDDAP sebagai dasar.
 Sistem Anda dapat memperoleh data, grafik, dan informasi lainnya dari ERDDAP ERD atau dari instalasi ERDDAP lainnya, atau Anda dapat<!-- setup always from coastwatch's erddap -->
-<a rel="help" href="https://erddap.github.io/setup.html">siapkan server ERDDAP Anda sendiri</a>, yang dapat diakses publik atau hanya dapat diakses secara pribadi.
+<a rel="help" href="https://erddap.github.io/docs/server-admin/deploy-install">siapkan server ERDDAP Anda sendiri</a>, yang dapat diakses publik atau hanya dapat diakses secara pribadi.
 <h3><a class="selfLink" id="requests" href="#requests" rel="bookmark">Permintaan URL RESTful</a></h3>
 Permintaan informasi antarmuka pengguna dari ERDDAP (misalnya, hasil pencarian) menggunakan standar universal web untuk permintaan:
 <a rel="help" href="https://en.wikipedia.org/wiki/Uniform_Resource_Locator">URL &externalLinkHtml;</a> dikirim melalui
@@ -4513,7 +4513,7 @@ ERDDAP dapat mengembalikan hasil antarmuka pengguna sebagai tabel data dalam tip
 <li>.nc - file biner NetCDF -3 yang datar, seperti tabel.
 (<a rel="help" href="https://www.unidata.ucar.edu/software/netcdf/">lagi&nbsp;informasi &externalLinkHtml;</a>)
 <li>.nccsv - file CSV ASCII yang datar, seperti tabel, seperti NetCDF .
-(<a rel="help" href="https://erddap.github.io/NCCSV.html">lagi&nbsp;informasi &externalLinkHtml;</a>)
+(<a rel="help" href="https://erddap.github.io/docs/user/nccsv-1.20">lagi&nbsp;informasi &externalLinkHtml;</a>)
 <li>.tsv - tabel teks ASCII yang dipisahkan tab.
 (<a rel="help" href="https://jkorpela.fi/TSV.html">lagi&nbsp;informasi &externalLinkHtml;</a>)
 <li>.xhtml - file XHTML (XML) dengan data dalam tabel.
@@ -5224,7 +5224,7 @@ Ini tersirat.)
 <p><a rel="help" href="&erddapUrl;/information.html"><strong>Cari tahu lebih lanjut tentang ERDDAP .</strong></a>
 <p><strong>Penyedia Data:
 Anda dapat
-<a rel="help" href="https://erddap.github.io/setup.html">mengatur server ERDDAP Anda sendiri</a> dan menyajikan data Anda sendiri.</strong> ERDDAP gratis dan sumber terbuka.
+<a rel="help" href="https://erddap.github.io/docs/server-admin/deploy-install">mengatur server ERDDAP Anda sendiri</a> dan menyajikan data Anda sendiri.</strong> ERDDAP gratis dan sumber terbuka.
 Ia menggunakan lisensi mirip Apache, sehingga Anda dapat melakukan apa pun yang Anda inginkan dengannya.
 Tampilan ERDDAP dapat disesuaikan, sehingga ERDDAP Anda akan mencerminkan institusi Anda, bukan NOAA .
 Upaya kecil untuk mendirikan ERDDAP membawa banyak manfaat.
@@ -5582,7 +5582,7 @@ Ini tersirat.)
 <br>&nbsp;
 <li><strong><a class="selfLink" id="localAndRemote" href="#localAndRemote" rel="bookmark">ERDDAP bisa mendapatkan data dari sumber data lokal (di hard drive server) dan jarak jauh (diakses melalui web).</a></strong>
 <br>Lihat
-<a rel="help" href="https://erddap.github.io/setupDatasetsXml.html#datasetTypes">daftar tipe sumber data</a> yang dapat diakses ERDDAP .
+<a rel="help" href="https://erddap.github.io/docs/server-admin/datasets#list-of-types-datasets">daftar tipe sumber data</a> yang dapat diakses ERDDAP .
 <br>&nbsp;
 <li><strong><a class="selfLink" id="scientificData" href="#scientificData" rel="bookmark">ERDDAP dapat menyajikan banyak jenis data ilmiah, tidak hanya data oseanografi saja.</a></strong>
 <br>ERDDAP adalah server data yang ditulis di
@@ -5736,8 +5736,8 @@ Saat Anda meminta data atau grafik dari
       title="Tautan ke situs web eksternal ini bukan merupakan suatu dukungan."></a>) mendeskripsikan data.
 ERDDAP memungkinkan (dan mendorong) administrator untuk mendeskripsikan metadata yang akan ditambahkan ke kumpulan data dan variabelnya saat itu juga.
 Lihat
-<a rel="help" href="https://erddap.github.io/setupDatasetsXml.html#addAttributes">bagian addAttributes</a> pada
-<a rel="help" href="https://erddap.github.io/setupDatasetsXml.html">petunjuk untuk administrator</a> .
+<a rel="help" href="https://erddap.github.io/docs/server-admin/datasets#addattributes">bagian addAttributes</a> pada
+<a rel="help" href="https://erddap.github.io/docs/server-admin/datasets">petunjuk untuk administrator</a> .
 <br>&nbsp;
 <li><strong><a class="selfLink" id="images" href="#images" rel="bookmark"
  >ERDDAP memungkinkan Anda meminta file gambar .png dan .pdf dengan grafik dan peta</a></strong>
@@ -5887,7 +5887,7 @@ Pengguna yang telah login dapat mengakses kumpulan data publik dan kumpulan data
 Pengguna harus menggunakan https:
 (Secure Sockets Layer) untuk masuk dan mengakses kumpulan data pribadi.
 Kumpulan data dapat dikonfigurasi agar grafik dan peta dapat diakses publik, namun data hanya dapat diakses oleh pengguna yang berwenang.
-(<a rel="help" href="https://erddap.github.io/setup.html#security">informasi lebih lanjut</a>)
+(<a rel="help" href="https://erddap.github.io/docs/server-admin/additional-information#security">informasi lebih lanjut</a>)
 <br>&nbsp;
 <li><strong><a class="selfLink" id="chunks" href="#chunks" rel="bookmark">ERDDAP memproses data dalam beberapa bagian.</a></strong>
 <br>Untuk menghemat memori (masalah besar) dan membuat respons dimulai lebih cepat, ERDDAP memproses permintaan data dalam beberapa bagian — berulang kali mengambil sebagian data dari sumber, membersihkannya (misalnya, menambahkan
@@ -5909,15 +5909,15 @@ ia menerima permintaan dari pengguna; mendapatkan data dari sumber data jarak ja
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
       title="Tautan ke situs web eksternal ini bukan merupakan suatu dukungan."></a> :
 Namun ERDDAP juga memiliki kemampuan untuk secara aktif mendapatkan semua data yang tersedia dari sumber data jarak jauh dan
-<a rel="help" href="https://erddap.github.io/setupDatasetsXml.html#EDDGridCopy">menyimpan salinan data lokal</a> .
+<a rel="help" href="https://erddap.github.io/docs/server-admin/datasets#eddgridcopy">menyimpan salinan data lokal</a> .
 <a rel="help" href="https://en.wikipedia.org/wiki/Push_technology">Teknologi Push <img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
       title="Tautan ke situs web eksternal ini bukan merupakan suatu dukungan."></a> :
 Dengan menggunakan
 <a href="#subscriptions">layanan berlangganan</a> ERDDAP, server data lain dapat diberitahu segera setelah data baru tersedia sehingga mereka dapat meminta data tersebut (dengan menarik data tersebut).
-<a rel="help"  href="https://erddap.github.io/setupDatasetsXml.html#EDDGridFromErddap">EDDGrid FromErddap</a> dan
-<a rel="help"  href="https://erddap.github.io/setupDatasetsXml.html#EDDTableFromErddap">EDDTableFromErddap</a> ERDDAP menggunakan layanan berlangganan dan
-<a rel="help" href="https://erddap.github.io/setup.html#flag">sistem flag</a> ERDDAP sehingga mereka akan segera diberitahu ketika data baru tersedia.
+<a rel="help"  href="https://erddap.github.io/docs/server-admin/datasets#eddfromerddap">EDDGrid FromErddap</a> dan
+<a rel="help"  href="https://erddap.github.io/docs/server-admin/datasets#eddfromerddap">EDDTableFromErddap</a> ERDDAP menggunakan layanan berlangganan dan
+<a rel="help" href="https://erddap.github.io/docs/server-admin/additional-information#flag">sistem flag</a> ERDDAP sehingga mereka akan segera diberitahu ketika data baru tersedia.
 Anda dapat mengombinasikan hal ini dengan efek yang luar biasa:
 jika Anda membungkus EDDGrid Copy di sekitar kumpulan data EDDGrid FromErddap (atau membungkus EDDTableCopy di sekitar kumpulan data EDDTableFromErddap), ERDDAP akan secara otomatis membuat dan memelihara salinan lokal dari kumpulan data ERDDAP yang lain.
 Karena layanan berlangganan bekerja segera setelah data baru tersedia, teknologi push menyebarkan data dengan sangat cepat (dalam hitungan detik).
@@ -6007,10 +6007,10 @@ Alasan tersebut saja yang membenarkan biaya pengembangan ERDDAP .
 (Saya rasa dapat ditunjukkan bahwa ERDDAP telah menghemat lebih banyak waktu ilmuwan NOAA daripada yang saya habiskan untuk mengembangkan ERDDAP .
 Waktu=Uang.) Namun manfaat sampingnya adalah organisasi lain dapat
 <a rel="bookmark" 
-href="https://erddap.github.io/setup.html">mengunduh, menginstal, dan menggunakan ERDDAP</a> <strong>secara gratis</strong> untuk mendistribusikan produk mereka.
+href="https://erddap.github.io/docs/server-admin/deploy-install">mengunduh, menginstal, dan menggunakan ERDDAP</a> <strong>secara gratis</strong> untuk mendistribusikan produk mereka.
 data ilmiah.
 <p><a rel="bookmark" 
-href="https://erddap.github.io/setup.html#organizations"
+href="https://erddap.github.io/#who-uses-erddap"
 >Lebih dari 90 organisasi di setidaknya 14 negara menggunakan ERDDAP</a> .
 Mungkin ada yang namanya makan siang gratis.
 <p>ERDDAP adalah program Java .
@@ -6124,14 +6124,14 @@ Sekarang, tolong anggap saja itu sebagai nama, bukan akronim.
 <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/images/erddapTalk/erdData.html">di sini</a> .
 <br>&nbsp;
 <p><strong><a class="selfLink" id="setup" href="#setup" rel="bookmark">Anda dapat</a></strong>
-<a rel="help" href="https://erddap.github.io/setup.html"><strong>Mengatur Server ERDDAP Anda Sendiri</strong></a> dan menyajikan data Anda sendiri.
+<a rel="help" href="https://erddap.github.io/docs/server-admin/deploy-install"><strong>Mengatur Server ERDDAP Anda Sendiri</strong></a> dan menyajikan data Anda sendiri.
 <ul>
 <li>Upaya kecil untuk mendirikan ERDDAP membawa banyak manfaat.
 <li>Jika Anda sudah memiliki layanan web untuk mendistribusikan data Anda, Anda dapat mengatur ERDDAP untuk mengakses data Anda melalui layanan yang ada atau melalui file sumber atau database.
 Kemudian, orang-orang akan memiliki cara lain untuk mengakses data Anda dan akan dapat mengunduh data tersebut dalam format file tambahan atau dalam bentuk grafik atau peta.
 <li>Jika Anda memiliki kumpulan data yang banyak diminati, Anda dapat menginstal
 <a rel="help" 
-  href="https://erddap.github.io/grids.html"
+  href="https://erddap.github.io/docs/server-admin/scaling"
   >beberapa ERDDAP yang bekerja sama</a> untuk meningkatkan dan memenuhi kebutuhan pusat distribusi data yang besar.
 </ul>
 <h2><a class="selfLink" id="contact" href="#contact" rel="bookmark">Hubungi kami</a></h2>
@@ -7757,7 +7757,7 @@ Ada
 <li>Variabel data WAJIB mempunyai variabel sumbu bujur dan lintang.
 (Variabel sumbu lainnya bersifat OPSIONAL.)
 <li>HARUS ada beberapa nilai garis bujur antara -180 dan 180.
-<li><a rel="help" href="https://erddap.github.io/setupDatasetsXml.html#colorBar">Atribut colorBarMinimum dan colorBarMaximum</a> HARUS ditentukan.
+<li><a rel="help" href="https://erddap.github.io/docs/server-admin/datasets#color-bar-attributes">Atribut colorBarMinimum dan colorBarMaximum</a> HARUS ditentukan.
 (Atribut bilah warna lainnya bersifat OPSIONAL.)
 </ul>
 <li><strong>Lapisan data kisi:</strong> Dalam WMS ERDDAP, semua variabel data dalam kumpulan data kisi yang menggunakan dimensi bujur dan lintang tersedia melalui WMS .

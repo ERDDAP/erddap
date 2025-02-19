@@ -52,13 +52,13 @@
 <br>
 <a rel="help" href="#slideShows">Slide Shows</a> | 
 <a rel="help" href="#programmersGuide">Programmer's Guide</a> | 
-<a rel="help" href="https://erddap.github.io/changes.html">List of Changes</a> | 
+<a rel="help" href="https://erddap.github.io/changes">List of Changes</a> | 
 <a rel="license" href="#credits">Credits</a> | 
 <a rel="license" href="#license">License</a> |
 <a rel="help" href="#contact">Contact</a>
 <br>&nbsp;
 <br>And see the related document 
-<a rel="help" href="https://erddap.github.io/setupDatasetsXml.html"><strong>Working with the datasets.xml File</strong></a>
+<a rel="help" href="https://erddap.github.io/docs/server-admin/datasets"><strong>Working with the datasets.xml File</strong></a>
 </div>
 
 <p>ERDDAP™ is a
@@ -422,7 +422,7 @@ and post your question there.
 <li><strong><a class="selfLink" id="useCtrlF" href="#useCtrlF" rel="bookmark">Use Ctrl-F To Find Things On This Web Page</a></strong> 
 <br>All of the information about administering ERDDAP™ 
 (other than 
-<a rel="help" href="https://erddap.github.io/setupDatasetsXml.html"
+<a rel="help" href="https://erddap.github.io/docs/server-admin/datasets"
 >working with datasets.xml</a>)
 is on this one, very long, .html web page,
 not several .html pages as some people prefer.
@@ -505,7 +505,7 @@ Our plan to avoid problems is:
 
   <li>Watch for out-of-date datasets via the <i>baseUrl</i>/erddap/outOfDateDatasets.html web page
     which is based on the optional  
-    <a rel="help" href="https://erddap.github.io/setupDatasetsXml.html#testOutOfDate"
+    <a rel="help" href="https://erddap.github.io/docs/server-admin/datasets#testoutofdate"
       >testOutOfDate</a> global attribute.
     <br>&nbsp;
 
@@ -533,7 +533,7 @@ Our plan to avoid problems is:
      ><strong>Blacklist users making multiple simultaneous requests!</strong></a>
     <br>If it is clear that some user is making more than one simultaneous request, 
     repeatedly and continuously, then add their IP address to ERDDAP's 
-    <a rel="help" href="https://erddap.github.io/setupDatasetsXml.html#requestBlacklist"
+    <a rel="help" href="https://erddap.github.io/docs/server-admin/datasets#requestBlacklist"
       >&lt;requestBlacklist&gt;</a> in your datasets.xml file.  
     Sometimes the requests are all from one IP address. 
     Sometimes they are from multiple IP addresses, but clearly the same user.
@@ -639,7 +639,7 @@ Our plan to avoid problems is:
      have to pester THREDDS frequently to see if the dataset has changed.
      See 
      <a rel="help"  
-    href="https://erddap.github.io/setupDatasetsXml.html#updateEveryNMillis"
+    href="https://erddap.github.io/docs/server-admin/datasets#updateEveryNMillis"
     ><kbd>&lt;updateEveryNMillis&gt;</kbd></a>.
    <li>The load is split between 2 RAIDS and 2 servers, 
      instead of the request being hard on both ERDDAP™ and THREDDS.
@@ -723,7 +723,7 @@ Our plan to avoid problems is:
       <li>If the requests seem <strong>stupid, insane, excessive, or malicious,</strong>
         or if you can't resolve the problem any other way, 
         consider temporarily or permanently adding the user's IP address to the 
-        <a rel="help" href="https://erddap.github.io/setupDatasetsXml.html#requestBlacklist"
+        <a rel="help" href="https://erddap.github.io/docs/server-admin/datasets#requestBlacklist"
       >&lt;requestBlacklist&gt; in your datasets.xml file</a>.      
 
         <br>&nbsp;
@@ -770,14 +770,14 @@ Our plan to avoid problems is:
         requirement will be much, much larger. It is probably better to just
         accept that such datasets will be slow in certain circumstances.
       <li>The configuration of the 
-<a rel="help" href="https://erddap.github.io/setupDatasetsXml.html#subsetVariables"
+<a rel="help" href="https://erddap.github.io/docs/server-admin/datasets#subsetVariables"
  ><kbd>&lt;subsetVariables&gt;</kbd></a> tag has a huge influence on how ERDDAP™ handles EDDTable datasets.
       <li>You may be able to increase the 
-<a rel="help" href="https://erddap.github.io/setupDatasetsXml.html#databaseSpeed"
+<a rel="help" href="https://erddap.github.io/docs/server-admin/datasets#databaseSpeed"
         >speed of an EDDTableFromDatabase</a> dataset.
       <li>Many EDDTable datasets can be sped up by 
         <a rel="help" 
-href="https://erddap.github.io/setupDatasetsXml.html#EDDTableFromFiles"
+href="https://erddap.github.io/docs/server-admin/datasets#EDDTableFromFiles"
         >storing a copy of the data in NetCDF Contiguous Ragged Array files</a>,
         which ERDDAP™ can read very quickly.        
       </ul>
@@ -987,7 +987,7 @@ href="https://erddap.github.io/setupDatasetsXml.html#EDDTableFromFiles"
   them to email you to work out the problems. Then, you can encourage them
   to run just one script at a time and to fix the problems in their script
   (e.g., requesting data from a remote dataset that can't respond before timing out).
-  See <a rel="help" href="https://erddap.github.io/setupDatasetsXml.html#requestBlacklist"
+  See <a rel="help" href="https://erddap.github.io/docs/server-admin/datasets#requestBlacklist"
       >&lt;requestBlacklist&gt; in your datasets.xml file</a>.
 
   <p>In extreme circumstances, Java may freeze for a minute or two 
@@ -1076,7 +1076,7 @@ href="https://erddap.github.io/setupDatasetsXml.html#EDDTableFromFiles"
       These are pretty rare.
     <li>Anything else is just an informative message. 
       You can control how much information is logged with 
-      <a rel="help" href="https://erddap.github.io/setupDatasetsXml.html#logLevel"><kbd>&lt;logLevel&gt;</kbd></a>
+      <a rel="help" href="https://erddap.github.io/docs/server-admin/datasets#logLevel"><kbd>&lt;logLevel&gt;</kbd></a>
       datasets.xml.
     <li>Dataset reloads and user responses that take &gt;10 seconds to finish (successfully or unsuccessfully) are
       marked with "(&gt;10s!)". Thus, you can search the log.txt file for this phrase to find
@@ -1345,7 +1345,7 @@ href="https://erddap.github.io/setupDatasetsXml.html#EDDTableFromFiles"
     <br>&nbsp;
 
   <li>Note that if the dataset's xml includes     
-<a rel="help" href="https://erddap.github.io/setupDatasetsXml.html#active"><kbd>active="false"</kbd></a>,
+<a rel="help" href="https://erddap.github.io/docs/server-admin/datasets#active"><kbd>active="false"</kbd></a>,
     a flag will cause the dataset to be made inactive 
     (if it is active), and in any case, not reloaded.
     <br>&nbsp;
@@ -1393,7 +1393,7 @@ href="https://erddap.github.io/setupDatasetsXml.html#EDDTableFromFiles"
   <br>If a dataset is active in ERDDAP™ and you want to deactivate it temporarily or permanently:
     <ol>
     <li>In datasets.xml for the dataset, set <a rel="help"
-      href="https://erddap.github.io/setupDatasetsXml.html#active"
+      href="https://erddap.github.io/docs/server-admin/datasets#active"
       ><kbd>active="false"</kbd></a> in the dataset tag.
     <li>Wait for ERDDAP™ to remove the dataset during the next major reload 
       or <a rel="help" href="#flag">set a flag</a>
@@ -1574,7 +1574,7 @@ href="https://erddap.github.io/setupDatasetsXml.html#EDDTableFromFiles"
     But ERDDAP™ will notice this type of change soon and automatically 
     if the dataset is using the 
     <a rel="help"  
-    href="https://erddap.github.io/setupDatasetsXml.html#updateEveryNMillis"
+    href="https://erddap.github.io/docs/server-admin/datasets#updateEveryNMillis"
     ><kbd>&lt;updateEveryNMillis&gt;</kbd></a>
     system.
   <li>It should only rarely be necessary for you to delete these files.
@@ -1591,7 +1591,7 @@ href="https://erddap.github.io/setupDatasetsXml.html#EDDTableFromFiles"
     reloading the dataset may take considerable time.
   <li>To delete a dataset's stored information files when ERDDAP™ isn't running, run 
     <a rel="help"  
-    href="https://erddap.github.io/setupDatasetsXml.html#DasDds"
+    href="https://erddap.github.io/docs/server-admin/datasets#DasDds"
     >DasDds</a> for that dataset
     (which is easier than figuring in which directory the info is located and 
     deleting the files by hand).
@@ -1656,7 +1656,7 @@ href="https://erddap.github.io/setupDatasetsXml.html#EDDTableFromFiles"
         title="This link to an external website does not constitute an endorsement."></a>)
       to find out the range of IP addresses from that source and blacklist the
       entire range. See the
-      <a rel="help" href="https://erddap.github.io/setupDatasetsXml.html#requestBlacklist"
+      <a rel="help" href="https://erddap.github.io/docs/server-admin/datasets#requestBlacklist"
         ><kbd>&lt;requestBlacklist&gt;</kbd> documentation</a>.
       <br>&nbsp;
     </ul>
@@ -1725,12 +1725,12 @@ For tabular datasets, it is often great if you save the data from the current da
         title="This link to an external website does not constitute an endorsement."></a> 
 Contiguous Ragged Array data files (request .ncCF files from ERDDAP) and then make a new dataset. 
 These files can be handled very efficiently with ERDDAP's
-<a rel="help" href="https://erddap.github.io/setupDatasetsXml.html#EDDTableFromNcCFFiles">EDDTableFromNcCFFiles</a>).
+<a rel="help" href="https://erddap.github.io/docs/server-admin/datasets#EDDTableFromNcCFFiles">EDDTableFromNcCFFiles</a>).
 If they are logically organized (each with data for a chunk of space and time), 
 ERDDAP™ can extract data from them very quickly.
 
 <li>For tabular datasets that use the 
-<a rel="help" href="https://erddap.github.io/setupDatasetsXml.html#subsetVariables">&lt;subsetVariables&gt;</a> 
+<a rel="help" href="https://erddap.github.io/docs/server-admin/datasets#subsetVariables">&lt;subsetVariables&gt;</a> 
 attribute, ERDDAP™ makes a table of unique combinations of the values of
 those variables. 
 For huge datasets or when &lt;subsetVariables&gt; is misconfigured,
@@ -1850,14 +1850,14 @@ and tell them the dataset is no longer available and ask them to change their sc
 make the troubled dataset inactive. Sometimes it doesn't, so all the requests
 to it just lead to errors. If so, fix the problem with the dataset or (if you can't)
 set the dataset to 
-<a rel="help" href="https://erddap.github.io/setupDatasetsXml.html#active">active="false"</a>.
+<a rel="help" href="https://erddap.github.io/docs/server-admin/datasets#active">active="false"</a>.
 Of course, this may lead to problem #2.
 
 <p>Sometimes the errors aren't so bad, notably, if ERDDAP™ can detect the error
 and respond very quickly (&lt;=1ms). So you may decide to take no action.
 
 <p>If all else fails, there is a universal solution: 
-add the user's IP number to the <a rel="help" href="https://erddap.github.io/setupDatasetsXml.html#requestBlacklist">&lt;requestBlacklist&gt;</a>.
+add the user's IP number to the <a rel="help" href="https://erddap.github.io/docs/server-admin/datasets#requestBlacklist">&lt;requestBlacklist&gt;</a>.
 This isn't as bad or as drastic an option as it might seem. 
 The user will then get an error message saying s/he has been blacklisted and 
 telling them your (the ERDDAP™ administrator's) email address.  
@@ -1972,7 +1972,7 @@ Sitemap: http://<strong><i>your.institutions.url</i></strong>/erddap/sitemap.xml
       title="This link to an external website does not constitute an endorsement."></a>: 
     ERDDAP™ also has the ability to actively get all of the available data  
     from a remote data source and 
-    <a rel="help" href="https://erddap.github.io/setupDatasetsXml.html#EDDGridCopy">store 
+    <a rel="help" href="https://erddap.github.io/docs/server-admin/datasets#eddgridcopy">store 
     a local copy of the data</a>.
   <li><a rel="help" href="https://en.wikipedia.org/wiki/Push_technology">Push Technology<img 
       src="../images/external.png" alt=" (external link)" 
@@ -1982,8 +1982,8 @@ Sitemap: http://<strong><i>your.institutions.url</i></strong>/erddap/sitemap.xml
     other data servers can be notified as soon 
     as new data is available so that they can request the data (by pulling the data).
   <li>ERDDAP's 
-<a rel="help" href="https://erddap.github.io/setupDatasetsXml.html#EDDGridFromErddap">EDDGridFromErddap</a> and
-<a rel="help" href="https://erddap.github.io/setupDatasetsXml.html#EDDTableFromErddap">EDDTableFromErddap</a> use ERDDAP's subscription services and 
+<a rel="help" href="https://erddap.github.io/docs/server-admin/datasets#eddfromerddap">EDDGridFromErddap</a> and
+<a rel="help" href="https://erddap.github.io/docs/server-admin/datasets#eddfromerddap">EDDTableFromErddap</a> use ERDDAP's subscription services and 
     <a rel="help" href="#flag">flag system</a> so that it will be notified immediately when new data is available. 
   <li>You can combine these to great effect: if you wrap an EDDGridCopy around an EDDGridFromErddap 
     dataset (or wrap an EDDTableCopy around an EDDTableFromErddap dataset),
@@ -2031,12 +2031,12 @@ built-in security system. When the security system is in use:
       title="This link to an external website does not constitute an endorsement."></a>.
   <ul>
   <li>The ERDDAP™ administrator defines users with the
-    <a rel="help" href="https://erddap.github.io/setupDatasetsXml.html#user"><kbd>&lt;user&gt;</kbd></a>
+    <a rel="help" href="https://erddap.github.io/docs/server-admin/datasets#user"><kbd>&lt;user&gt;</kbd></a>
     tag in datasets.xml.
     Each user has a username, a password (if <kbd>authentication=custom</kbd>), 
     and one or more roles. 
   <li>The ERDDAP™ administrator defines which roles have access to a given dataset via the
-    <a rel="help" href="https://erddap.github.io/setupDatasetsXml.html#accessibleTo"><kbd>&lt;accessibleTo&gt;</kbd></a>
+    <a rel="help" href="https://erddap.github.io/docs/server-admin/datasets#accessibleTo"><kbd>&lt;accessibleTo&gt;</kbd></a>
     tag in datasets.xml for any dataset that shouldn't have public access.
   </ul>
 <li>The user's login status (and a link to log in/out) will be shown at the top
@@ -2111,7 +2111,7 @@ Please note that this header is only valid on a HTTPS VirtualHost.
   (and RSS readers) who are logged in and authorized to use that dataset.
   This makes RSS not very useful for fully private datasets.
   <p>If a dataset is private but its 
-  <a rel="help" href="https://erddap.github.io/setupDatasetsXml.html#graphsAccessibleTo"><kbd>&lt;graphsAccessibleTo&gt;</kbd></a>
+  <a rel="help" href="https://erddap.github.io/docs/server-admin/datasets#graphsAccessibleTo"><kbd>&lt;graphsAccessibleTo&gt;</kbd></a>
   is set to 
   <kbd>public</kbd>, the dataset's RSS is accessible to anyone.
 <li>Email subscriptions can only be set up when a user has access to a dataset.
@@ -2190,13 +2190,13 @@ Please note that this header is only valid on a HTTPS VirtualHost.
 and change the location of the certificateKeystoreFile.
 
 <li><a class="selfLink" id="authorization" href="#authorization" rel="bookmark">In datasets.xml, create a</a>
-  <a rel="help" href="https://erddap.github.io/setupDatasetsXml.html#user"><kbd>&lt;user&gt;</kbd></a>
+  <a rel="help" href="https://erddap.github.io/docs/server-admin/datasets#user"><kbd>&lt;user&gt;</kbd></a>
   tag for each user with username, password (if <kbd>authorization=custom</kbd>), 
     and roles information.
   This is the authorization part of ERDDAP's security system.
       <br>&nbsp;
 <li>In datasets.xml, add an
-  <a rel="help" href="https://erddap.github.io/setupDatasetsXml.html#accessibleTo"
+  <a rel="help" href="https://erddap.github.io/docs/server-admin/datasets#accessibleTo"
   ><kbd>&lt;accessibleTo&gt;</kbd></a>
   tag to each dataset that shouldn't have public access.
   <kbd>&lt;accessibleTo&gt;</kbd> lets you specify which roles have access to that dataset.
@@ -2268,7 +2268,7 @@ So you are freed from that responsibility.
   The <kbd>custom</kbd> approach requires you to collect a user's Name and 
   a hash digest of their Password 
   (use your phone! email isn't secure!) and store them in datasets.xml in  
-    <a rel="help" href="https://erddap.github.io/setupDatasetsXml.html#user"><kbd>&lt;user&gt;</kbd></a> tags.
+    <a rel="help" href="https://erddap.github.io/docs/server-admin/datasets#user"><kbd>&lt;user&gt;</kbd></a> tags.
 
   <p>With the <kbd>custom</kbd> option, no one can log in until you 
   (the ERDDAP™ administrator) create a <kbd>&lt;user&gt;</kbd> tag for the user,
@@ -2345,7 +2345,7 @@ So you are freed from that responsibility.
   you don't ever have to deal with passwords or their hash digests.
   All you need to create is a 
   <a rel="help" 
-  href="https://erddap.github.io/setupDatasetsXml.html#user"
+  href="https://erddap.github.io/docs/server-admin/datasets#user"
   ><kbd>&lt;user&gt;</kbd></a>
   tag for a user in datasets.xml is the user's email address,
   which ERDDAP™ uses as the user's name.
@@ -2381,7 +2381,7 @@ So you are freed from that responsibility.
 
   <li>In your datasets.xml, create 
     <a rel="help" 
-      href="https://erddap.github.io/setupDatasetsXml.html#user"
+      href="https://erddap.github.io/docs/server-admin/datasets#user"
       ><kbd>&lt;user&gt;</kbd></a>    
     tags for each user who will have access to private datasets.
     <br>Use the user's email address as the <kbd>username</kbd> in the tag.
@@ -2472,7 +2472,7 @@ So you are freed from that responsibility.
   you don't ever have to deal with passwords or their hash digests.
   All you need to create is a 
   <a rel="help" 
-  href="https://erddap.github.io/setupDatasetsXml.html#user"
+  href="https://erddap.github.io/docs/server-admin/datasets#user"
   ><kbd>&lt;user&gt;</kbd></a>
   tag for a user in datasets.xml which specifies the user's Google email address
   or Orcid account number as the username attribute.
@@ -2547,7 +2547,7 @@ So you are freed from that responsibility.
 
     <li>In your datasets.xml, create a
       <a rel="help" 
-      href="https://erddap.github.io/setupDatasetsXml.html#user"
+      href="https://erddap.github.io/docs/server-admin/datasets#user"
       ><kbd>&lt;user&gt;</kbd></a>    
       tag for each user who will have access to private datasets.
       For the <kbd>username</kbd> attribute in the tag:
@@ -2603,7 +2603,7 @@ So you are freed from that responsibility.
 
     <li>In your datasets.xml, create a
       <a rel="help" 
-      href="https://erddap.github.io/setupDatasetsXml.html#user"
+      href="https://erddap.github.io/docs/server-admin/datasets#user"
       ><kbd>&lt;user&gt;</kbd></a>    
       tag for each user who will have access to private datasets.
       For the <kbd>username</kbd> attribute in the tag:
@@ -2674,9 +2674,9 @@ So how can ERDDAP™ get the data for restricted access datasets? Some options a
   <br>&nbsp;
 <li>The data source can be on a public website, but require a login to get the data.
   The two types of dataset that ERDDAP™ can log on to access are 
-    <a rel="help" href="https://erddap.github.io/setupDatasetsXml.html#EDDTableFromDatabase"
+    <a rel="help" href="https://erddap.github.io/docs/server-admin/datasets#eddtablefromdatabase"
       >EDDTableFromDatabase</a> and
-    <a rel="help" href="https://erddap.github.io/setupDatasetsXml.html#EDDTableFromCassandra"
+    <a rel="help" href="https://erddap.github.io/docs/server-admin/datasets#EDDTableFromCassandra"
       >EDDTableFromCassandra</a>.
   These datasets support (and should always use) user names 
   (create an ERDDAP™ user who only has read-only privileges),
@@ -2685,7 +2685,7 @@ So how can ERDDAP™ get the data for restricted access datasets? Some options a
   <p>But in general, currently, ERDDAP™ can't deal with these data sources because it has no
   provisions for logging on to the data source.
   This is the reason why access to 
-    <a rel="help" href="https://erddap.github.io/setupDatasetsXml.html#EDDGridFromErddap"
+    <a rel="help" href="https://erddap.github.io/docs/server-admin/datasets#eddfromerddap"
       >EDDGridFromErddap and EDDTableFromErddap</a> datasets
   can't be restricted.
   Currently, the local ERDDAP™ has no way to login and access the metadata information 
@@ -2745,7 +2745,7 @@ you can add their IP address to the blacklist.
 You can add the IP address of troublesome users, bots, and 
 <a rel="help" href="https://en.wikipedia.org/wiki/Denial-of-service_attack">Denial-of-service</a>
 attackers to the ERDDAP
-<a rel="help" href="https://erddap.github.io/setupDatasetsXml.html#requestBlacklist"
+<a rel="help" href="https://erddap.github.io/docs/server-admin/datasets#requestBlacklist"
 >blacklist</a>, so that future requests from them will be immediately rejected.
 This setting is in datasets.xml so that you can quickly add an IP address to the list
 and then <a rel="help" href="#flag">flag</a>
@@ -2760,11 +2760,11 @@ Some types of datasets (notably, EDDTableFromDatabase) present additional securi
 (e.g., SQL injection)
 and have their own security measures. See the information for those types 
 of datasets in 
-<a rel="help" href="https://erddap.github.io/setupDatasetsXml.html"
+<a rel="help" href="https://erddap.github.io/docs/server-admin/datasets"
 >Working with the datasets.xml File</a>,
 notably 
 <a rel="help"
-href="https://erddap.github.io/setupDatasetsXml.html#databaseSecurity"
+href="https://erddap.github.io/docs/server-admin/datasets#databaseSecurity"
 >EDDTableFromDatabase security</a>.
 
 <li>Security Audit -- 
@@ -2860,7 +2860,7 @@ These are details that you don't need to know until a need arises.
 <li><strong><a class="selfLink" id="heavyLoads" href="#heavyLoads" rel="bookmark">Heavy Loads / Constraints</a></strong>  
   <br>With heavy use, a standalone ERDDAP™ may be constrained by various problems. 
   For more information, see the 
-    <a rel="help" href="https://erddap.github.io/grids.html#heavyLoads">list of 
+    <a rel="help" href="https://erddap.github.io/docs/server-admin/scaling#heavyLoads">list of 
     constraints and solutions</a>.
   <br>&nbsp;
   
@@ -2870,7 +2870,7 @@ These are details that you don't need to know until a need arises.
   For such situations, ERDDAP™ has features that make it easy to construct scalable grids 
   (also called clusters or federations) of ERDDAPs  which allow the system to handle very heavy use
   (e.g., for a large data center). For more information, see  
-    <a rel="help" href="https://erddap.github.io/grids.html">grids, clusters, 
+    <a rel="help" href="https://erddap.github.io/docs/server-admin/scaling">grids, clusters, 
       and federations of ERDDAPs</a>.
   <br>&nbsp;
 
@@ -2892,7 +2892,7 @@ These are details that you don't need to know until a need arises.
   You can use these services to set up a single ERDDAP™ 
   or a grid/cluster of ERDDAPs to handle very heavy use.
   For more information, see  
-  <a rel="help" href="https://erddap.github.io/grids.html#cloudComputing">cloud 
+  <a rel="help" href="https://erddap.github.io/docs/server-admin/scaling#cloudComputing">cloud 
     computing with ERDDAP™</a>.
   <br>&nbsp;
 
@@ -3348,7 +3348,7 @@ href="https://tools.ietf.org/html/draft-kunze-bagit-14">BagIt v0.97 specificatio
   </ul>
   Not surprisingly, the 
   <a rel="help" 
-  href="https://erddap.github.io/setupDatasetsXml.html#globalAttributes"
+  href="https://erddap.github.io/docs/server-admin/datasets#globalAttributes"
   >global and variable metadata</a> 
   that ERDDAP™ encourages/requires is almost exactly the same in-file 
   CF and ACDD metadata that NCEI encourages/requires,
@@ -3435,7 +3435,7 @@ href="https://coastwatch.pfeg.noaa.gov/erddap/tabledap/documentation.html#ncCFMA
     how the archived data is further subsetted into different data files.
     For datasets that have
     <br><a rel="help" 
-    href="https://erddap.github.io/setupDatasetsXml.html#cdm_data_type"
+    href="https://erddap.github.io/docs/server-admin/datasets#cdm_data_type"
     ><kbd>cdm_data_type</kbd></a><kbd>=TimeSeries|TimeSeriesProfile|Trajectory|TrajectoryProfile</kbd>
     <br>you should almost always specify the variable that has the 
     <kbd>cf_role=timeseries_id</kbd> (e.g., stationID) 
@@ -3550,7 +3550,7 @@ Government or the National Oceanic and Atmospheric Administration.</strong>
   href="https://coastwatch.pfeg.noaa.gov/erddap/images/erddapTalk/ERDDAP_OnePage.pdf"
   >A One Page Description of ERDDAP™ (.pdf)</a>
 <li><a rel="help" 
-  href="https://erddap.github.io/grids.html"
+  href="https://erddap.github.io/docs/server-admin/scaling"
   >ERDDAP: Heavy Loads, Grids, Clusters, Federations, and Cloud Computing</a>
 <li><a rel="help" 
   href="https://coastwatch.pfeg.noaa.gov/erddap/images/erddapTalk/erdData.html"
@@ -3744,7 +3744,7 @@ The <a rel="help" href="https://github.com/ERDDAP/erddap/blob/main/PROGRAMMER_GU
 <h2><a class="selfLink" id="changes" href="#changes" rel="bookmark">List of Changes</a></h2>
 
 The  
-<a rel="help" href="https://erddap.github.io/changes.html">List of Changes</a>
+<a rel="help" href="https://erddap.github.io/changes">List of Changes</a>
 for each ERDDAP™ release is now on a separate web page.
 
 
@@ -3795,7 +3795,7 @@ Bob re-licensed to be open source) into a web service.
 <p>Much credit goes to the many ERDDAP™ administrators and users who have made
   suggestions and comments which have led to many improvements in ERDDAP.
   Many are mentioned by name in the
-  <a rel="help" href="https://erddap.github.io/changes.html">List of Changes</a>.
+  <a rel="help" href="https://erddap.github.io/changes">List of Changes</a>.
   Thank you all (named and unnamed) very much.
   Thus, ERDDAP™ is a great example of
   <a rel="bookmark" href="https://en.wikipedia.org/wiki/User_innovation">User-Driven Innovation<img

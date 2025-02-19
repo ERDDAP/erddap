@@ -862,7 +862,7 @@ class EDDTableFromHttpGetTests {
                 "stationID, time",
                 "stationID/2months",
                 "JohnSmith_JohnSmithKey, HOBOLogger_HOBOLoggerKey, QCScript59_QCScript59Key",
-                "https://erddap.github.io/setupDatasetsXml.html",
+                "https://erddap.github.io/docs/server-admin/datasets",
                 "NOAA NMFS SWFSC ERD",
                 "This is my great summary.",
                 "My Great Title",
@@ -883,7 +883,7 @@ class EDDTableFromHttpGetTests {
                   "stationID, time",
                   "stationID/2months",
                   "JohnSmith_JohnSmithKey, HOBOLogger_HOBOLoggerKey, QCScript59_QCScript59Key",
-                  "https://erddap.github.io/setupDatasetsXml.html",
+                  "https://erddap.github.io/docs/server-admin/datasets",
                   "NOAA NMFS SWFSC ERD",
                   "This is my great summary.",
                   "My Great Title"
@@ -928,7 +928,7 @@ class EDDTableFromHttpGetTests {
             + "        <att name=\"httpGetDirectoryStructure\">stationID/2months</att>\n"
             + "        <att name=\"httpGetKeys\">JohnSmith_JohnSmithKey, HOBOLogger_HOBOLoggerKey, QCScript59_QCScript59Key</att>\n"
             + "        <att name=\"httpGetRequiredVariables\">stationID, time</att>\n"
-            + "        <att name=\"infoUrl\">https://erddap.github.io/setupDatasetsXml.html</att>\n"
+            + "        <att name=\"infoUrl\">https://erddap.github.io/docs/server-admin/datasets</att>\n"
             + "        <att name=\"institution\">NOAA NMFS SWFSC ERD</att>\n"
             + "        <att name=\"keywords\">air, airTemp, author, center, command, data, erd, fisheries, great, identifier, marine, national, nmfs, noaa, science, service, southwest, station, stationID, swfsc, temperature, time, timestamp, title, water, waterTemp</att>\n"
             + "        <att name=\"license\">[standard]</att>\n"
@@ -1197,7 +1197,7 @@ class EDDTableFromHttpGetTests {
     expected =
         "    String httpGetDirectoryStructure \"stationID/2months\";\n"
             + "    String httpGetRequiredVariables \"stationID, time\";\n"
-            + "    String infoUrl \"https://erddap.github.io/setupDatasetsXml.html\";\n"
+            + "    String infoUrl \"https://erddap.github.io/docs/server-admin/datasets\";\n"
             + "    String institution \"NOAA NMFS SWFSC ERD\";\n"
             + "    String keywords \"air, airTemp, author, center, command, data, erd, fisheries, great, identifier, latitude, longitude, marine, national, nmfs, noaa, science, service, southwest, station, stationID, swfsc, temperature, time, timestamp, title, water, waterTemp\";\n"
             + "    String license \"The data may be used and redistributed for free but is not intended\n"

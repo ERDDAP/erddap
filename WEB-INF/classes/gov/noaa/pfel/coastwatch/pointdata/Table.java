@@ -3413,9 +3413,9 @@ public class Table {
   }
 
   /**
-   * This reads an NCCSV .csv file from a URL or a file. See https://erddap.github.io/NCCSV.html .
-   * *SCALAR* and dataType attributes are processed and removed. This just calls readNccsv(fullName,
-   * true).
+   * This reads an NCCSV .csv file from a URL or a file. See
+   * https://erddap.github.io/docs/user/nccsv-1.20 . *SCALAR* and dataType attributes are processed
+   * and removed. This just calls readNccsv(fullName, true).
    *
    * @param fullName a URL or the name of a file
    * @throws Exception if trouble
@@ -3446,7 +3446,7 @@ public class Table {
   }
 
   /**
-   * This reads an NCCSV .csv file. See https://erddap.github.io/NCCSV.html . *SCALAR* and
+   * This reads an NCCSV .csv file. See https://erddap.github.io/docs/user/nccsv-1.20 . *SCALAR* and
    * *DATA_TYPE* attributes are processed and removed.
    *
    * @param fullName for error messages only
@@ -3673,9 +3673,9 @@ public class Table {
   }
 
   /**
-   * This saves this table in an NCCSV .csv file. See https://erddap.github.io/NCCSV.html . This can
-   * be a metadata table -- where scalar vars have 1 value and others have 0 values. This doesn't
-   * close the writer at the end.
+   * This saves this table in an NCCSV .csv file. See https://erddap.github.io/docs/user/nccsv-1.20
+   * . This can be a metadata table -- where scalar vars have 1 value and others have 0 values. This
+   * doesn't close the writer at the end.
    *
    * @param firstDataRow 0..
    * @param lastDataRow exclusive (use Integer.MAX_VALUE for all rows). If first = last,

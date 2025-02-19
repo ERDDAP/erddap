@@ -728,7 +728,7 @@ public class EDDTableFromErddap extends EDDTable implements FromErddap {
     "   send an email to the admin asking that s/he add onChange tags to the datasets.\n" +
     "   See the EDDTableFromErddap documentation.\n" +
     " * The XML needed for EDDTableFromErddap in datasets.xml has few options.  See\n" +
-    "   https://erddap.github.io/setupDatasetsXml.html#EDDTableFromErddap .\n" +
+    "   https://erddap.github.io/docs/server-admin/datasets#eddfromerddap .\n" +
     "   If you want to alter a dataset's metadata or make other changes to a dataset,\n" +
     "   use EDDTableFromDapSequence to access the dataset instead of EDDTableFromErddap.\n" +
     " * If the remote ERDDAP is version 1.12 or below, this will generate incorrect, useless results.\n" +

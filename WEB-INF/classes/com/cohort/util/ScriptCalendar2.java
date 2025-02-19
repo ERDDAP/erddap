@@ -101,7 +101,7 @@ public class ScriptCalendar2 {
    * This converts a sourceTime string into a double with epochSeconds.
    *
    * @param sourceTime a formatted time string
-   * @param dateTimeFormat See https://erddap.github.io/setupDatasetsXml.html#stringTimeUnits
+   * @param dateTimeFormat See https://erddap.github.io/docs/server-admin/datasets#string-time-units
    * @param timeZoneString For a list of valid timezone ID's, see the "TZ database names" column in
    *     the table at https://en.wikipedia.org/wiki/List_of_tz_database_time_zones . If this is null
    *     or "", Zulu will be used.
@@ -116,7 +116,7 @@ public class ScriptCalendar2 {
    * A variant of parseToEpochSeconds that uses the Zulu time zone.
    *
    * @param sourceTime a formatted time string
-   * @param dateTimeFormat See https://erddap.github.io/setupDatasetsXml.html#stringTimeUnits
+   * @param dateTimeFormat See https://erddap.github.io/docs/server-admin/datasets#string-time-units
    * @return the epochSeconds value or NaN if trouble
    */
   public static double parseToEpochSeconds(String sourceTime, String dateTimeFormat) {

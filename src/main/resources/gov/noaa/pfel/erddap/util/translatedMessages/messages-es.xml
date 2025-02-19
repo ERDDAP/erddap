@@ -95,11 +95,11 @@ Luego, ERDDAP agregará todos
 <advl_institution>Institución</advl_institution>
 <advc_dataStructure>ERDDAP trata cada conjunto de datos como un conjunto de datos de &#39;cuadrícula&#39; o de &#39;tabla&#39;.</advc_dataStructure>
 <advl_dataStructure>Estructura de datos</advl_dataStructure>
-<advr_dataStructure>https://erddap.github.io/setupDatasetsXml.html#dataStructures</advr_dataStructure>
+<advr_dataStructure>https://erddap.github.io/docs/server-admin/datasets#why-just-two-basic-data-structures</advr_dataStructure>
 <advl_cdm_data_type>Tipo de modelo de datos común</advl_cdm_data_type>
-<advr_cdm_data_type>https://erddap.github.io/setupDatasetsXml.html#cdm_data_type</advr_cdm_data_type>
+<advr_cdm_data_type>https://erddap.github.io/docs/server-admin/datasets#cdm_data_type</advr_cdm_data_type>
 <advl_class>Clase ERDDAP</advl_class>
-<advr_class>https://erddap.github.io/setupDatasetsXml.html#datasetTypes</advr_class>
+<advr_class>https://erddap.github.io/docs/server-admin/datasets#list-of-types-datasets</advr_class>
 <advl_title>Título</advl_title>
 <advl_minLongitude>Longitud mínima</advl_minLongitude>
 <advl_maxLongitude>Longitud máxima</advl_maxLongitude>
@@ -144,7 +144,7 @@ Luego, ERDDAP agregará todos
 <advn_outOfDate><![CDATA[
 
 Aparentemente, ningún conjunto de datos tiene el atributo
-<a rel="help" href="https://erddap.github.io/setupDatasetsXml.html#testOutOfDate"
+<a rel="help" href="https://erddap.github.io/docs/server-admin/datasets#testoutofdate"
 ><kbd>testOutOfDate</kbd></a> .
 Quizás no haya conjuntos de datos casi en tiempo real en este ERDDAP .
 
@@ -1985,7 +1985,7 @@ Esto incluye:
 <ul>
 <li><a class="selfLink" id="databases" href="#databases" rel="bookmark">Datos</a> que actualmente están almacenados en una base de datos relacional.
 <br>Lea la información sobre el tipo de conjunto de datos
-<a rel="help" href="https://erddap.github.io/setupDatasetsXml.html#EDDTableFromDatabase">EDDTableFromDatabase</a> en ERDDAP, especialmente las ~2 pantallas iniciales de información que hablan sobre la necesidad de crear una tabla desnormalizada.
+<a rel="help" href="https://erddap.github.io/docs/server-admin/datasets#eddtablefromdatabase">EDDTableFromDatabase</a> en ERDDAP, especialmente las ~2 pantallas iniciales de información que hablan sobre la necesidad de crear una tabla desnormalizada.
 Esto puede parecer una locura.
 Confíe lo suficiente como para leer el fundamento de esto.
 <br>&nbsp;
@@ -3358,7 +3358,7 @@ Los archivos de ambas versiones tienen la extensión .nc y pueden ser leídos po
 <a rel="help" href="https://anaconda.org/eumetsat/ncview">a través de Conda <img
        src="https://coastwatch.pfeg.noaa.gov/erddap/images/external.png" alt=" (external link)"
        title="Este enlace a un sitio web externo no constituye un respaldo."></a>).
-<li><a rel="help" href="https://erddap.github.io/setupDatasetsXml.html#NCO">NCO</a>, una potente herramienta de línea de comandos para modificar permanentemente archivos .nc .
+<li><a rel="help" href="https://erddap.github.io/docs/server-admin/datasets#netcdf-operators-nco">NCO</a>, una potente herramienta de línea de comandos para modificar permanentemente archivos .nc .
 <li><a rel="help" href="https://www.unidata.ucar.edu/downloads/netcdf/">NetCDF -C y NetCDF - Java <img
        src="https://coastwatch.pfeg.noaa.gov/erddap/images/external.png" alt=" (external link)"
        title="Este enlace a un sitio web externo no constituye un respaldo."></a>, las principales bibliotecas de software para C, C++, Fortran o Java para leer y escribir archivos .nc .
@@ -3774,7 +3774,7 @@ Como se describió anteriormente, dado que los programas Java pueden acceder a d
 <p>O, dado que ERDDAP es un programa de código abierto, también puede configurar su propia copia de ERDDAP en su propio servidor (accesible públicamente o no) para servir sus propios datos.
 Sus programas Java pueden obtener datos de esa copia de ERDDAP .
 Consulte
-<a rel="help" href="https://erddap.github.io/setup.html">Configurar su propio ERDDAP</a> .
+<a rel="help" href="https://erddap.github.io/docs/server-admin/deploy-install">Configurar su propio ERDDAP</a> .
   
 ]]></javaProgramsHTML>
 
@@ -3861,7 +3861,7 @@ Muchas instalaciones ERDDAP no tienen habilitada la autenticación y, por lo tan
 Actualmente, ERDDAP solo admite la autenticación a través de cuentas de correo electrónico administradas por Google, que incluyen cuentas de correo electrónico de NOAA y muchas universidades.
 Si un ERDDAP tiene habilitada la autenticación, cualquier persona con una cuenta de correo electrónico administrada por Google puede iniciar sesión, pero solo tendrá acceso a los conjuntos de datos privados a los que el administrador ERDDAP les haya autorizado explícitamente a acceder.
 Para obtener instrucciones sobre cómo iniciar sesión en ERDDAP desde un navegador o mediante un script, consulte
-<a rel="help" href="https://erddap.github.io/AccessToPrivateDatasets.html">Acceso a conjuntos de datos privados en ERDDAP</a> .
+<a rel="help" href="https://erddap.github.io/docs/user/AccessToPrivateDatasets">Acceso a conjuntos de datos privados en ERDDAP</a> .
   
 ]]></loginHTML>
 <loginAttemptBlocked>ERROR: Los intentos de inicio de sesión para {0} se bloquean temporalmente después de 3 intentos fallidos.
@@ -4559,7 +4559,7 @@ Por ejemplo, los humanos pueden usar esta URL para realizar una búsqueda de tex
 Hay muchas funciones en ERDDAP que pueden ser utilizadas por programas de computadora o scripts que usted escriba.
 Puede usarlos para crear otras aplicaciones web o servicios web además de ERDDAP, ¡haciendo que ERDDAP haga la mayor parte del trabajo! Entonces, si tiene una idea para una mejor interfaz para los datos que proporciona ERDDAP o una página web que necesita una manera fácil de acceder a los datos, le recomendamos que cree su propia aplicación web, servicio web o página web y utilice ERDDAP como base.
 Su sistema puede obtener datos, gráficos y otra información del ERDDAP de ERD o de otras instalaciones ERDDAP, o puede<!-- setup always from coastwatch's erddap -->
-<a rel="help" href="https://erddap.github.io/setup.html">Configure su propio servidor ERDDAP</a>, que puede ser de acceso público o simplemente de acceso privado.
+<a rel="help" href="https://erddap.github.io/docs/server-admin/deploy-install">Configure su propio servidor ERDDAP</a>, que puede ser de acceso público o simplemente de acceso privado.
 <h3><a class="selfLink" id="requests" href="#requests" rel="bookmark">Solicitudes de URL RESTful</a></h3>
 Las solicitudes de información de la interfaz de usuario de ERDDAP (por ejemplo, resultados de búsqueda) utilizan el estándar universal de la web para solicitudes:
 <a rel="help" href="https://en.wikipedia.org/wiki/Uniform_Resource_Locator">URL &externalLinkHtml;</a> enviado vía
@@ -4629,7 +4629,7 @@ un archivo binario NetCDF -3 plano, similar a una tabla.
 (<a rel="help" href="https://www.unidata.ucar.edu/software/netcdf/">más&nbsp;información &externalLinkHtml;</a>)
 <li>.nccsv :
 un archivo CSV ASCII plano, similar a una tabla, similar a NetCDF .
-(<a rel="help" href="https://erddap.github.io/NCCSV.html">más&nbsp;información &externalLinkHtml;</a>)
+(<a rel="help" href="https://erddap.github.io/docs/user/nccsv-1.20">más&nbsp;información &externalLinkHtml;</a>)
 <li>.tsv :
 una tabla de texto ASCII separada por tabulaciones.
 (<a rel="help" href="https://jkorpela.fi/TSV.html">más&nbsp;información &externalLinkHtml;</a>)
@@ -5346,7 +5346,7 @@ Está implícito).
 <p><a rel="help" href="&erddapUrl;/information.html"><strong>Obtenga más información sobre ERDDAP .</strong></a>
 <p><strong>Proveedores de datos:
 puede
-<a rel="help" href="https://erddap.github.io/setup.html">configurar su propio servidor ERDDAP</a> y servir sus propios datos.</strong> ERDDAP es gratuito y de código abierto.
+<a rel="help" href="https://erddap.github.io/docs/server-admin/deploy-install">configurar su propio servidor ERDDAP</a> y servir sus propios datos.</strong> ERDDAP es gratuito y de código abierto.
 Utiliza licencias similares a Apache, por lo que puedes hacer lo que quieras con él.
 La apariencia de ERDDAP es personalizable, por lo que su ERDDAP reflejará su institución, no NOAA .
 El pequeño esfuerzo de establecer ERDDAP trae muchos beneficios.
@@ -5705,7 +5705,7 @@ Está implícito).
 <br>&nbsp;
 <li><strong><a class="selfLink" id="localAndRemote" href="#localAndRemote" rel="bookmark">ERDDAP puede obtener datos de fuentes de datos locales (en el disco duro del servidor) y remotas (a las que se accede a través de la web).</a></strong>
 <br>Consulte la
-<a rel="help" href="https://erddap.github.io/setupDatasetsXml.html#datasetTypes">lista de tipos de fuentes de datos</a> a las que ERDDAP puede acceder.
+<a rel="help" href="https://erddap.github.io/docs/server-admin/datasets#list-of-types-datasets">lista de tipos de fuentes de datos</a> a las que ERDDAP puede acceder.
 <br>&nbsp;
 <li><strong><a class="selfLink" id="scientificData" href="#scientificData" rel="bookmark">ERDDAP puede servir para muchos tipos de datos científicos, no sólo datos oceanográficos.</a></strong>
 <br>ERDDAP es un servidor de datos escrito en
@@ -5860,8 +5860,8 @@ Cuando solicita datos o un gráfico de un
       title="Este enlace a un sitio web externo no constituye un respaldo."></a>) describiendo los datos.
 ERDDAP permite (y alienta) al administrador a describir los metadatos que se agregarán a los conjuntos de datos y sus variables sobre la marcha.
 Consulte la
-<a rel="help" href="https://erddap.github.io/setupDatasetsXml.html#addAttributes">sección addAttributes</a> de las
-<a rel="help" href="https://erddap.github.io/setupDatasetsXml.html">instrucciones para administradores</a> .
+<a rel="help" href="https://erddap.github.io/docs/server-admin/datasets#addattributes">sección addAttributes</a> de las
+<a rel="help" href="https://erddap.github.io/docs/server-admin/datasets">instrucciones para administradores</a> .
 <br>&nbsp;
 <li><strong><a class="selfLink" id="images" href="#images" rel="bookmark"
  >ERDDAP le permite solicitar archivos de imágenes .png y .pdf con gráficos y mapas</a></strong>
@@ -6017,7 +6017,7 @@ Los usuarios que hayan iniciado sesión pueden acceder a conjuntos de datos púb
 Los usuarios deben utilizar https:
 (Secure Sockets Layer) para iniciar sesión y acceder a conjuntos de datos privados.
 Los conjuntos de datos se pueden configurar para que tengan gráficos y mapas accesibles públicamente, pero solo los usuarios autorizados pueden acceder a los datos.
-(<a rel="help" href="https://erddap.github.io/setup.html#security">más información</a>)
+(<a rel="help" href="https://erddap.github.io/docs/server-admin/additional-information#security">más información</a>)
 <br>&nbsp;
 <li><strong><a class="selfLink" id="chunks" href="#chunks" rel="bookmark">ERDDAP procesa datos en fragmentos.</a></strong>
 <br>Para ahorrar memoria (un gran problema) y hacer que las respuestas comiencen antes, ERDDAP procesa las solicitudes de datos en fragmentos:
@@ -6041,15 +6041,15 @@ recibe una solicitud de un usuario; obtiene datos de una fuente de datos remota;
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
       title="Este enlace a un sitio web externo no constituye un respaldo."></a> :
 Pero ERDDAP también tiene la capacidad de obtener activamente todos los datos disponibles de una fuente de datos remota y
-<a rel="help" href="https://erddap.github.io/setupDatasetsXml.html#EDDGridCopy">almacenar una copia local de los datos</a> .
+<a rel="help" href="https://erddap.github.io/docs/server-admin/datasets#eddgridcopy">almacenar una copia local de los datos</a> .
 <a rel="help" href="https://en.wikipedia.org/wiki/Push_technology">Tecnología Push <img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
       title="Este enlace a un sitio web externo no constituye un respaldo."></a> :
 Al utilizar
 <a href="#subscriptions">los servicios de suscripción</a> de ERDDAP, se puede notificar a otros servidores de datos tan pronto como haya nuevos datos disponibles para que puedan solicitarlos (extrayendo los datos).
-<a rel="help"  href="https://erddap.github.io/setupDatasetsXml.html#EDDGridFromErddap">EDDGrid FromErddap</a> y
-<a rel="help"  href="https://erddap.github.io/setupDatasetsXml.html#EDDTableFromErddap">EDDTableFromErddap</a> de ERDDAP utilizan los servicios de suscripción y
-<a rel="help" href="https://erddap.github.io/setup.html#flag">el sistema de indicadores</a> de ERDDAP para que se les notifique inmediatamente cuando haya nuevos datos disponibles.
+<a rel="help"  href="https://erddap.github.io/docs/server-admin/datasets#eddfromerddap">EDDGrid FromErddap</a> y
+<a rel="help"  href="https://erddap.github.io/docs/server-admin/datasets#eddfromerddap">EDDTableFromErddap</a> de ERDDAP utilizan los servicios de suscripción y
+<a rel="help" href="https://erddap.github.io/docs/server-admin/additional-information#flag">el sistema de indicadores</a> de ERDDAP para que se les notifique inmediatamente cuando haya nuevos datos disponibles.
 Puede combinarlos con gran efecto:
 si envuelve una copia EDDGrid alrededor de un conjunto de datos EDDGrid FromErddap (o envuelve una EDDTableCopy alrededor de un conjunto de datos EDDTableFromErddap), ERDDAP creará y mantendrá automáticamente una copia local del conjunto de datos de otro ERDDAP .
 Debido a que los servicios de suscripción funcionan tan pronto como hay nuevos datos disponibles, la tecnología push difunde los datos muy rápidamente (en cuestión de segundos).
@@ -6140,9 +6140,9 @@ Esa sola razón justifica el gasto de desarrollar ERDDAP .
 Tiempo = Dinero).
 Pero el beneficio adicional es que cualquier otra organización puede
 <a rel="bookmark" 
-href="https://erddap.github.io/setup.html">descargar, instalar y usar ERDDAP</a> <strong>de forma gratuita</strong> para distribuir sus Datos científicos.
+href="https://erddap.github.io/docs/server-admin/deploy-install">descargar, instalar y usar ERDDAP</a> <strong>de forma gratuita</strong> para distribuir sus Datos científicos.
 <p><a rel="bookmark" 
-href="https://erddap.github.io/setup.html#organizations"
+href="https://erddap.github.io/#who-uses-erddap"
 >Más de 90 organizaciones en al menos 14 países utilizan ERDDAP</a> .
 Quizás exista algo llamado un almuerzo gratis.
 <p>ERDDAP es un programa Java .
@@ -6260,14 +6260,14 @@ Ahora, piense en ello como un nombre, no como un acrónimo.
 <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/images/erddapTalk/erdData.html">aquí</a> .
 <br>&nbsp;
 <p><strong><a class="selfLink" id="setup" href="#setup" rel="bookmark">Puede</a></strong>
-<a rel="help" href="https://erddap.github.io/setup.html"><strong>configurar su propio servidor ERDDAP</strong></a> y servir sus propios datos.
+<a rel="help" href="https://erddap.github.io/docs/server-admin/deploy-install"><strong>configurar su propio servidor ERDDAP</strong></a> y servir sus propios datos.
 <ul>
 <li>El pequeño esfuerzo de establecer ERDDAP trae muchos beneficios.
 <li>Si ya tiene un servicio web para distribuir sus datos, puede configurar ERDDAP para acceder a sus datos a través del servicio existente o mediante los archivos de origen o la base de datos.
 Luego, las personas tendrán otra forma de acceder a sus datos y podrán descargarlos en formatos de archivo adicionales o como gráficos o mapas.
 <li>Si tiene conjuntos de datos que tienen una gran demanda, puede instalar
 <a rel="help" 
-  href="https://erddap.github.io/grids.html"
+  href="https://erddap.github.io/docs/server-admin/scaling"
   >varios ERDDAP que funcionen juntos</a> para ampliar y satisfacer las necesidades de un gran centro de distribución de datos.
 </ul>
 <h2><a class="selfLink" id="contact" href="#contact" rel="bookmark">Contáctenos</a></h2>
@@ -7896,7 +7896,7 @@ Hay
 (Otras variables del eje son OPCIONALES).
 <li>DEBE haber algunos valores de longitud entre -180 y 180.
 <li>Se DEBEN especificar los
-<a rel="help" href="https://erddap.github.io/setupDatasetsXml.html#colorBar">atributos colorBarMinimum y colorBarMaximum</a> .
+<a rel="help" href="https://erddap.github.io/docs/server-admin/datasets#color-bar-attributes">atributos colorBarMinimum y colorBarMaximum</a> .
 (Otros atributos de la barra de colores son OPCIONALES).
 </ul>
 <li><strong>Capas de datos de cuadrícula:</strong> en WMS de ERDDAP, todas las variables de datos en conjuntos de datos de cuadrícula que utilizan dimensiones de longitud y latitud están disponibles a través de WMS .

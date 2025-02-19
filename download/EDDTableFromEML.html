@@ -60,7 +60,7 @@ or as a database-like table (with a column for each type of information
 and a row for each observation). ERDDAP™ is Free and Open Source Software, 
 so anyone can 
 <a rel="help" 
-href="https://erddap.github.io/setup.html"
+href="https://erddap.github.io/docs/server-admin/deploy-install"
 >download and install ERDDAP™</a> 
 to serve their data.
 
@@ -68,12 +68,12 @@ to serve their data.
 chunk of XML describing the dataset to a file called datasets.xml.
 (There is  
 <a rel="help" 
-href="https://erddap.github.io/setupDatasetsXml.html"
+href="https://erddap.github.io/docs/server-admin/datasets"
 >thorough documentation for datasets.xml</a>.)
 Although it is possible to generate the chunk of XML for datasets.xml entirely 
 by hand, ERDDAP™ comes with a tool called
 <a rel="help" 
-href="https://erddap.github.io/setupDatasetsXml.html#Tools"
+href="https://erddap.github.io/docs/server-admin/datasets#Tools"
 ><strong>GenerateDatasetsXml</strong></a> which can generate the rough draft of the chunk
 of XML needed for a given dataset based on some source of information about the dataset.
 
@@ -88,7 +88,7 @@ which uses the information in an
 XML file to generate the chunk of XML for datasets.xml 
 to create an 
 <a rel="help"
- href="https://erddap.github.io/setupDatasetsXml.html#EDDTableFromAsciiFiles"
+ href="https://erddap.github.io/docs/server-admin/datasets#EDDTableFromAsciiFiles"
  >EDDTableFromAsciiFiles</a>
 dataset from each data table in an EML file.
 This works very well for most EML files, mostly because EML files do an excellent
@@ -133,7 +133,7 @@ or a batch of EML files:
   <br>Recommended for LTER groups: combine "lter" plus the group, e.g., lterSbc .
   <br>If you enter "null", there will be no &lt;accessibleTo&gt; tag in the output.
   <br>See <a rel="help"
-    href="https://erddap.github.io/setupDatasetsXml.html#accessibleTo"
+    href="https://erddap.github.io/docs/server-admin/datasets#accessibleTo"
     >accessibleTo</a>.  
 <li>localTimeZone (e.g., US/Pacific)? 
   <br>If a time variable indicates that it has local time values, this time
@@ -323,7 +323,7 @@ There are two possible solutions:
   where the date and time columns are merged into one column. Then rerun GenerateDatasetsXml
   so it finds the new column.
 <li>Use the <a rel="help" 
-  href="https://erddap.github.io/setupDatasetsXml.html#scriptSourceNames"
+  href="https://erddap.github.io/docs/server-admin/datasets#scriptSourceNames"
   >Derived Variables</a> feature in ERDDAP™ to define a new variable in datasets.xml
   which is created by concatenating the date and the time columns. One of the examples
   deals specifically with this situation.
@@ -424,7 +424,7 @@ to match the column names in the data file.
   GenerateDatasetsXml tries to convert the incorrectly defined
   formats in the EML files into 
   <br><a rel="help" 
-    href="https://erddap.github.io/setupDatasetsXml.html#stringTimeUnits"
+    href="https://erddap.github.io/docs/server-admin/datasets#stringTimeUnits"
     >the date/time format that ERDDAP™ requires</a>, which is almost
   identical to for Java/Joda time format specification, but is slightly more forgiving.
 

@@ -2597,7 +2597,7 @@ public class Erddap extends HttpServlet {
                   + "\n"
                   + "<p><strong><a class=\"selfLink\" id=\"scripts\" href=\"#scripts\" rel=\"bookmark\">Accessing Private Datasets via Scripts</a></strong>\n"
                   + "<p>For instructions on logging into ERDDAP and accessing private datasets via scripts, see\n"
-                  + "<br><a rel=\"help\" href=\"https://erddap.github.io/AccessToPrivateDatasets.html\">Access to Private Datasets in ERDDAP</a>.\n"
+                  + "<br><a rel=\"help\" href=\"https://erddap.github.io/docs/user/AccessToPrivateDatasets\">Access to Private Datasets in ERDDAP</a>.\n"
                   + "\n");
 
         } else {
@@ -3197,7 +3197,7 @@ widgets.select("griddedOption", "", 1, griddedOptions, griddedOption, "") +
 "<ul>\n" +
 "<li><a class=\"selfLink\" id=\"databases\" href=\"#databases\" rel=\"bookmark\">Data</a> that is currently stored in a relational database.\n" +
 "  <br>Please read the information about the\n" +
-"  <a rel=\"help\" href=\"https://erddap.github.io/setupDatasetsXml.html#EDDTableFromDatabase\">EDDTableFromDatabase</a>\n" +
+"  <a rel=\"help\" href=\"https://erddap.github.io/docs/server-admin/datasets#eddtablefromdatabase\">EDDTableFromDatabase</a>\n" +
 "  dataset type in ERDDAP, especially the initial ~2 screens of information which\n" +
 "  talk about the need to create a denormalized table. That may sound crazy. Please\n" +
 "  trust enough to read the rationale for this.\n" +
@@ -5085,7 +5085,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
               "(<a rel=\"help\" href=\"https://www.unidata.ucar.edu/software/netcdf/\">more&nbsp;information" +
               EDStatic.externalLinkHtml(language, tErddapUrl) + "</a>)\n" +
           "<li>.nccsv - a flat, table-like, NetCDF-like, ASCII CSV file.\n" +
-              "(<a rel=\"help\" href=\"https://erddap.github.io/NCCSV.html\">more&nbsp;information" +
+              "(<a rel=\"help\" href=\"https://erddap.github.io/docs/user/nccsv-1.20\">more&nbsp;information" +
               EDStatic.externalLinkHtml(language, tErddapUrl) + "</a>)\n" +
           "<li>.tsv - a tab-separated ASCII text table.\n" +
               "(<a rel=\"help\" href=\"https://jkorpela.fi/TSV.html\">more&nbsp;information" +
@@ -5477,7 +5477,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                 "can log in, but they will only have access to the private datasets\n" +
                 "that the ERDDAP administrator has explicitly authorized them to access.\n" +
                 "For instructions on logging into ERDDAP from a browser or via a script, see\n" +
-                "<a rel=\"help\" href=\"https://erddap.github.io/AccessToPrivateDatasets.html\">Access to Private Datasets in ERDDAP</a>.\n" +
+                "<a rel=\"help\" href=\"https://erddap.github.io/docs/user/AccessToPrivateDatasets\">Access to Private Datasets in ERDDAP</a>.\n" +
                 "\n"
                 */);
 

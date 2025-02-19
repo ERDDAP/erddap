@@ -355,7 +355,7 @@ public class EDDTableFromFileNames extends EDDTable {
                     .add("cdm_data_type", "other")
                     .add(
                         "infoUrl",
-                        "https://erddap.github.io/setupDatasetsXml.html#EDDTableFromFileNames")
+                        "https://erddap.github.io/docs/server-admin/datasets#eddtablefromfilenames")
                     .add("institution", "NOAA")
                     .add("license", "[standard]")
                     .add("sourceUrl", "(local files)")

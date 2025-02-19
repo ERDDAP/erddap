@@ -328,7 +328,7 @@ class EDDTableFromDapSequenceTests {
       // 2017-05-05T16:27:08Z
       // "http://localhost:8080/cwexperimental/tabledap/testNccsvScalar.das</att>\n" +
       expected =
-          "        <att name=\"infoUrl\">https://erddap.github.io/NCCSV.html</att>\n"
+          "        <att name=\"infoUrl\">https://erddap.github.io/docs/user/nccsv-1.20</att>\n"
               + "        <att name=\"institution\">NOAA NMFS SWFSC ERD, NOAA PMEL</att>\n"
               + "        <att name=\"keywords\">center, data, demonstration, Earth Science &gt; Oceans &gt; Ocean Temperature &gt; Sea Surface Temperature, environmental, erd, fisheries, identifier, laboratory, latitude, long, longitude, marine, national, nccsv, nmfs, noaa, ocean, oceans, pacific, pmel, science, sea, sea_surface_temperature, service, ship, southwest, sst, status, surface, swfsc, temperature, test, testLong, time, trajectory</att>\n"
               + "        <att name=\"keywords_vocabulary\">GCMD Science Keywords</att>\n"

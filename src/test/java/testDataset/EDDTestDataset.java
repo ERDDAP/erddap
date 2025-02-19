@@ -30234,7 +30234,7 @@ public class EDDTestDataset {
         + //
         "        <att name=\"httpGetRequiredVariables\">stationID, time</att>\n"
         + //
-        "        <att name=\"infoUrl\">https://erddap.github.io/setupDatasetsXml.html</att>\n"
+        "        <att name=\"infoUrl\">https://erddap.github.io/docs/server-admin/datasets</att>\n"
         + //
         "        <att name=\"institution\">NOAA NMFS SWFSC ERD</att>\n"
         + //

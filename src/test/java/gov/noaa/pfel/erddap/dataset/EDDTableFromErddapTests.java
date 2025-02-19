@@ -127,7 +127,7 @@ class EDDTableFromErddapTests {
             + "*GLOBAL*,geospatial_lon_max,-130.2576d\n"
             + "*GLOBAL*,geospatial_lon_min,-132.1591d\n"
             + "*GLOBAL*,geospatial_lon_units,degrees_east\n"
-            + "*GLOBAL*,infoUrl,https://erddap.github.io/NCCSV.html\n"
+            + "*GLOBAL*,infoUrl,https://erddap.github.io/docs/user/nccsv-1.20\n"
             + "*GLOBAL*,institution,\"NOAA NMFS SWFSC ERD, NOAA PMEL\"\n"
             + "*GLOBAL*,keywords,\"center, data, demonstration, Earth Science > Oceans > Ocean Temperature > Sea Surface Temperature, environmental, erd, fisheries, identifier, laboratory, latitude, long, longitude, marine, national, nccsv, nmfs, noaa, ocean, oceans, pacific, pmel, science, sea, sea_surface_temperature, service, ship, southwest, sst, status, surface, swfsc, temperature, test, testLong, time, trajectory\"\n"
             + "*GLOBAL*,keywords_vocabulary,GCMD Science Keywords\n"
@@ -256,7 +256,7 @@ class EDDTableFromErddapTests {
         "http://127.0.0.1:8080/cwexperimental/tabledap/"
             + (tRedirect ? "testNccsvScalar11" : tID)
             + ".nccsv\n"
-            + "*GLOBAL*,infoUrl,https://erddap.github.io/NCCSV.html\n"
+            + "*GLOBAL*,infoUrl,https://erddap.github.io/docs/user/nccsv-1.20\n"
             + "*GLOBAL*,institution,\"NOAA NMFS SWFSC ERD, NOAA PMEL\"\n"
             + "*GLOBAL*,keywords,\"center, data, demonstration, Earth Science > Oceans > Ocean Temperature > Sea Surface Temperature, environmental, erd, fisheries, identifier, laboratory, latitude, long, longitude, marine, national, nccsv, nmfs, noaa, ocean, oceans, pacific, pmel, science, sea, sea_surface_temperature, service, ship, southwest, sst, status, surface, swfsc, temperature, test, testLong, time, trajectory\"\n"
             + "*GLOBAL*,keywords_vocabulary,GCMD Science Keywords\n"

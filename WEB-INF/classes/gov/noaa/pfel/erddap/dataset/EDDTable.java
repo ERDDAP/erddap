@@ -292,8 +292,8 @@ public abstract class EDDTable extends EDD {
           "https://linux.die.net/man/1/ncdump", // ncCFMAHeader
           //        "https://www.unidata.ucar.edu/software/netcdf/", //nc4
           //        "https://linux.die.net/man/1/ncdump", //nc4Header
-          "https://erddap.github.io/NCCSV.html",
-          "https://erddap.github.io/NCCSV.html",
+          "https://erddap.github.io/docs/user/nccsv-1.20",
+          "https://erddap.github.io/docs/user/nccsv-1.20",
           "https://nco.sourceforge.net/nco.html#json",
           "https://odv.awi.de/en/documentation/", // odv
           "https://parquet.apache.org/",
@@ -10695,7 +10695,7 @@ public abstract class EDDTable extends EDD {
             + "can log in, but they will only have access to the private datasets\n"
             + "that the ERDDAP administrator has explicitly authorized them to access.\n"
             + "For instructions on logging into ERDDAP from a browser or via a script, see\n"
-            + "<a rel=\"help\" href=\"https://erddap.github.io/AccessToPrivateDatasets.html\"\n"
+            + "<a rel=\"help\" href=\"https://erddap.github.io/docs/user/AccessToPrivateDatasets\"\n"
             + "      >Access to Private Datasets in ERDDAP</a>.\n"
             + "\n"
             + "<li><a class=\"selfLink\" id=\"dataModel\" href=\"#dataModel\" rel=\"bookmark\"><strong>Data Model</strong></a>\n"
@@ -10704,7 +10704,7 @@ public abstract class EDDTable extends EDD {
             + "  <ul>\n"
             + "  <li>Each column is also known as a \"data variable\" (or just a \"variable\").\n"
             + "    Each data variable has data of one\n"
-            + "    <a rel=\"help\" href=\"https://erddap.github.io/setupDatasetsXml.html#dataTypes\">data type</a>.\n"
+            + "    <a rel=\"help\" href=\"https://erddap.github.io/docs/server-admin/datasets#data-types\">data type</a>.\n"
             + "    Each data variable has a name composed of a letter (A-Z, a-z) and then 0 or more\n"
             + "    characters (A-Z, a-z, 0-9, _).\n"
             + "    Each data variable has metadata which is a set of Key=Value pairs.\n"
@@ -10721,7 +10721,7 @@ public abstract class EDDTable extends EDD {
             + "    <li>Each Key is a String consisting of a letter (A-Z, a-z) and then 0 or more other\n"
             + "      characters (A-Z, a-z, 0-9, '_').\n"
             + "    <li>Each Value is an array of one (usually) or more values of one\n"
-            + "      <a rel=\"help\" href=\"https://erddap.github.io/setupDatasetsXml.html#dataTypes\">data type</a>.\n"
+            + "      <a rel=\"help\" href=\"https://erddap.github.io/docs/server-admin/datasets#data-types\">data type</a>.\n"
             + "      <br>&nbsp;\n"
             + "    </ul>\n"
             + "  </ul>\n"
