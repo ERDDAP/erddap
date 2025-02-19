@@ -84,11 +84,11 @@ messages-de.xml 和 -ga 有许多链接重复。我怀疑还有更多这样的�
 <advl_institution>机构</advl_institution>
 <advc_dataStructure>ERDDAP 将每个数据集视为“网格”或“表格”数据集。</advc_dataStructure>
 <advl_dataStructure>数据结构</advl_dataStructure>
-<advr_dataStructure>https://erddap.github.io/setupDatasetsXml.html#dataStructures</advr_dataStructure>
+<advr_dataStructure>https://erddap.github.io/docs/server-admin/datasets#why-just-two-basic-data-structures</advr_dataStructure>
 <advl_cdm_data_type>通用数据模型类型</advl_cdm_data_type>
-<advr_cdm_data_type>https://erddap.github.io/setupDatasetsXml.html#cdm_data_type</advr_cdm_data_type>
+<advr_cdm_data_type>https://erddap.github.io/docs/server-admin/datasets#cdm_data_type</advr_cdm_data_type>
 <advl_class>ERDDAP 类</advl_class>
-<advr_class>https://erddap.github.io/setupDatasetsXml.html#datasetTypes</advr_class>
+<advr_class>https://erddap.github.io/docs/server-admin/datasets#list-of-types-datasets</advr_class>
 <advl_title>标题</advl_title>
 <advl_minLongitude>最小经度</advl_minLongitude>
 <advl_maxLongitude>最大经度</advl_maxLongitude>
@@ -132,7 +132,7 @@ messages-de.xml 和 -ga 有许多链接重复。我怀疑还有更多这样的�
 <advl_outOfDate>过时的索引</advl_outOfDate>
 <advn_outOfDate><![CDATA[
 
-显然，没有数据集具有<a rel="help" href="https://erddap.github.io/setupDatasetsXml.html#testOutOfDate"
+显然，没有数据集具有<a rel="help" href="https://erddap.github.io/docs/server-admin/datasets#testoutofdate"
 ><kbd>testOutOfDate</kbd></a>属性。也许这个ERDDAP中没有近实时数据集。
 
 ]]></advn_outOfDate>
@@ -1500,7 +1500,7 @@ href="{0}/convert/time.txt?units=SEC%20SINCE%20Jan%202%2C%201985"
 <br>ERDDAP还可以提供可以<i>表示</i>为单个数据库式表格的数据，其中每种类型的数据都有一列，每个观察值都有一行。这包括：
 <ul>
 <li>当前存储在关系数据库中的<a class="selfLink" id="databases" href="#databases" rel="bookmark">数据</a>。
-<br>请阅读有关ERDDAP中<a rel="help" href="https://erddap.github.io/setupDatasetsXml.html#EDDTableFromDatabase">EDDTableFromDatabase</a>数据集类型的信息，尤其是最初约 2 个屏幕的信息，其中讨论了创建非规范化表的必要性。这听起来可能很疯狂。请足够信任并阅读其基本原理。
+<br>请阅读有关ERDDAP中<a rel="help" href="https://erddap.github.io/docs/server-admin/datasets#eddtablefromdatabase">EDDTableFromDatabase</a>数据集类型的信息，尤其是最初约 2 个屏幕的信息，其中讨论了创建非规范化表的必要性。这听起来可能很疯狂。请足够信任并阅读其基本原理。
 <br>&nbsp;
 <li>所有<i>现场</i>数据。
 <br>示例：来自一个或多个类似仪器的时间序列、来自 CTD 或一组 CTD 的配置文件数据、或船舶巡航期间收集的数据（几年内的类似巡航）。
@@ -2686,7 +2686,7 @@ ERDDAP的主要功能之一是，它允许您以任何您想要的文件格式�
        title="此外部网站链接并不构成认可。"></a> （也可以<a rel="help" href="https://anaconda.org/eumetsat/ncview">通过Conda</a>安装<a rel="help" href="https://anaconda.org/eumetsat/ncview"><img
        src="https://coastwatch.pfeg.noaa.gov/erddap/images/external.png" alt=" (external link)"
        title="此外部网站链接并不构成认可。"></a> ）。
-<li><a rel="help" href="https://erddap.github.io/setupDatasetsXml.html#NCO">NCO</a> ，一个强大的命令行工具，用于永久修改.nc文件。
+<li><a rel="help" href="https://erddap.github.io/docs/server-admin/datasets#netcdf-operators-nco">NCO</a> ，一个强大的命令行工具，用于永久修改.nc文件。
 <li><a rel="help" href="https://www.unidata.ucar.edu/downloads/netcdf/">NetCDF -C 和NetCDF - Java <img
        src="https://coastwatch.pfeg.noaa.gov/erddap/images/external.png" alt=" (external link)"
        title="此外部网站链接并不构成认可。"></a> ，C、C++、Fortran 或Java读写.nc文件的主要软件库。
@@ -3018,7 +3018,7 @@ href="https://groups.google.com/forum/#!forum/erddap"><img
 
   
 <h2><a class="selfLink" id="JavaPrograms" href="#JavaPrograms" rel="bookmark">在Java程序中使用ERDDAP作为数据源</a></h2>如上所述，由于Java程序可以访问网络上可用的数据，因此您可以编写一个Java程序来访问任何可公开访问的ERDDAP安装中的数据。
-<p>或者，由于ERDDAP是一个全开源程序，您也可以在自己的服务器（可公开访问或不可公开访问）上设置自己的ERDDAP副本，以提供自己的数据。您的Java程序可以从该ERDDAP副本中获取数据。请参阅<a rel="help" href="https://erddap.github.io/setup.html">设置您自己的ERDDAP</a> 。
+<p>或者，由于ERDDAP是一个全开源程序，您也可以在自己的服务器（可公开访问或不可公开访问）上设置自己的ERDDAP副本，以提供自己的数据。您的Java程序可以从该ERDDAP副本中获取数据。请参阅<a rel="help" href="https://erddap.github.io/docs/server-admin/deploy-install">设置您自己的ERDDAP</a> 。
   
 ]]></javaProgramsHTML>
 
@@ -3085,7 +3085,7 @@ justGenerateAndViewHtml 消息可以包含 &protocolName; 。
 
   
 <h2><a class="selfLink" id="login" href="#login" rel="bookmark">登录以访问私人数据集。</a></h2>许多ERDDAP安装未启用身份验证，因此不为用户提供任何登录方式，也没有任何私人数据集。
-<p>某些ERDDAP安装确实启用了身份验证。目前， ERDDAP仅支持通过 Google 管理的电子邮件帐户进行身份验证，其中包括NOAA和许多大学的电子邮件帐户。如果ERDDAP启用了身份验证，则任何拥有 Google 管理的电子邮件帐户的人都可以登录，但他们只能访问ERDDAP管理员明确授权他们访问的私有数据集。有关从浏览器或通过脚本登录ERDDAP的说明，请参阅<a rel="help" href="https://erddap.github.io/AccessToPrivateDatasets.html">访问ERDDAP中的私有数据集</a>。
+<p>某些ERDDAP安装确实启用了身份验证。目前， ERDDAP仅支持通过 Google 管理的电子邮件帐户进行身份验证，其中包括NOAA和许多大学的电子邮件帐户。如果ERDDAP启用了身份验证，则任何拥有 Google 管理的电子邮件帐户的人都可以登录，但他们只能访问ERDDAP管理员明确授权他们访问的私有数据集。有关从浏览器或通过脚本登录ERDDAP的说明，请参阅<a rel="help" href="https://erddap.github.io/docs/user/AccessToPrivateDatasets">访问ERDDAP中的私有数据集</a>。
   
 ]]></loginHTML>
 <loginAttemptBlocked>错误：{0} 的登录尝试在 3 次尝试失败后被暂时阻止。
@@ -3718,7 +3718,7 @@ ERDDAP具有以下特点：
 <br>通过将 URL 中的文件扩展名从 .html 更改为.json （或 .csv、 .htmlTable 、 .jsonlCSV1 、 .xhtml等）：
 <br><a href="&jsonQueryUrl;">&jsonQueryUrl;</a>
 <br>我们得到一个 URL，计算机程序或Java Script 脚本可以使用它来以更适合计算机程序的格式（如<a rel="help" href="https://www.json.org/">JSON &externalLinkHtml;</a>获取相同的信息。
-<h3><a class="selfLink" id="BuildThings" href="#BuildThings" rel="bookmark">在ERDDAP之上构建事物</a></h3>ERDDAP中有许多功能可供您编写的计算机程序或脚本使用。您可以使用它们在ERDDAP之上构建其他 Web 应用程序或 Web 服务，让ERDDAP完成大部分工作！因此，如果您有更好的ERDDAP数据接口或需要轻松访问数据的网页的想法，我们鼓励您构建自己的 Web 应用程序、Web 服务或网页并使用ERDDAP作为基础。您的系统可以从ERD的ERDDAP或其他ERDDAP安装中获取数据、图表和其他信息，或者您可以<!-- setup always from coastwatch's erddap --><a rel="help" href="https://erddap.github.io/setup.html">建立您自己的ERDDAP服务器</a>，可以公开访问或仅供私人访问。
+<h3><a class="selfLink" id="BuildThings" href="#BuildThings" rel="bookmark">在ERDDAP之上构建事物</a></h3>ERDDAP中有许多功能可供您编写的计算机程序或脚本使用。您可以使用它们在ERDDAP之上构建其他 Web 应用程序或 Web 服务，让ERDDAP完成大部分工作！因此，如果您有更好的ERDDAP数据接口或需要轻松访问数据的网页的想法，我们鼓励您构建自己的 Web 应用程序、Web 服务或网页并使用ERDDAP作为基础。您的系统可以从ERD的ERDDAP或其他ERDDAP安装中获取数据、图表和其他信息，或者您可以<!-- setup always from coastwatch's erddap --><a rel="help" href="https://erddap.github.io/docs/server-admin/deploy-install">建立您自己的ERDDAP服务器</a>，可以公开访问或仅供私人访问。
 <h3><a class="selfLink" id="requests" href="#requests" rel="bookmark">RESTful URL 请求</a></h3>ERDDAP对用户界面信息（例如搜索结果）的请求使用 Web 的通用请求标准：通过<a href="https://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html#sec9.3">HTTP GET &externalLinkHtml;</a>
 <a rel="help" href="https://en.wikipedia.org/wiki/Uniform_Resource_Locator">&externalLinkHtml;发送的 URL</a> &amp;externalLinkHtml;。这与您在网页上填写表单并单击<kbd>Submit</kbd>时浏览器使用的机制相同。要使用HTTP GET ，您需要生成一个特殊格式的 URL（可能包含查询）并使用HTTP GET发送。您可以手动生成这些 URL 并将其输入到浏览器的地址文本字段中（例如，
 <br><a href="&jsonQueryUrl;">&jsonQueryUrl;</a> ）
@@ -3750,7 +3750,7 @@ ERDDAP具有以下特点：
 <li>.jsonlKVP - 带有 Key:Value 对的 JSON 行文件。（<a rel="help" href="https://jsonlines.org/">更多&nbsp;信息&externalLinkHtml;</a>)
 <li>.mat - MATLAB 二进制文件。（<a rel="help" href="https://www.mathworks.com/">更多&nbsp;信息&externalLinkHtml;</a>)
 <li>.nc - 一个扁平的、表格状的NetCDF -3 二进制文件。（<a rel="help" href="https://www.unidata.ucar.edu/software/netcdf/">更多&nbsp;信息&externalLinkHtml;</a>)
-<li>.nccsv - 一个平面的、表格状的、类似NetCDF的 ASCII CSV 文件。（<a rel="help" href="https://erddap.github.io/NCCSV.html">更多&nbsp;信息&externalLinkHtml;</a>)
+<li>.nccsv - 一个平面的、表格状的、类似NetCDF的 ASCII CSV 文件。（<a rel="help" href="https://erddap.github.io/docs/user/nccsv-1.20">更多&nbsp;信息&externalLinkHtml;</a>)
 <li>.tsv - 制表符分隔的 ASCII 文本表。（<a rel="help" href="https://jkorpela.fi/TSV.html">更多&nbsp;信息&externalLinkHtml;</a>)
 <li>.xhtml - 包含表格数据的 XHTML (XML) 文件。（<a rel="help" href="https://www.w3schools.com/html/html_tables.asp">更多&nbsp;信息&externalLinkHtml;</a>)
 </ul>
@@ -4340,7 +4340,7 @@ make it easier for you to get scientific data.-->
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
     title="此外部网站链接并不构成认可。"></a> （5 分钟内！）感谢 Rich Signell。（视频中有一个小错误：搜索数据集时，不要在搜索词之间使用<kbd>AND</kbd> 。这是隐含的。）
 <p><a rel="help" href="&erddapUrl;/information.html"><strong>了解有关ERDDAP更多信息。</strong></a>
-<p><strong>数据提供者：您可以<a rel="help" href="https://erddap.github.io/setup.html">设置自己的ERDDAP服务器</a>并提供自己的数据。ERDDAP</strong>是免费ERDDAP开源ERDDAP 。它使用类似 Apache 的许可证，因此您可以用它做任何您想做的事情。ERDDAP 的外观是可定制的，因此您的ERDDAP将反映您的机构，而不是NOAA 。设置ERDDAP小小努力可以带来许多好处。如果您已经有用于分发数据的 Web 服务，则可以设置ERDDAP以通过现有服务或通过源文件或数据库访问您的数据。然后，人们将有另一种方式访问​​您的数据，并能够以其他文件格式或图表或地图的形式下载数据。至少 14 个国家的 90 多个组织已经安装了ERDDAP
+<p><strong>数据提供者：您可以<a rel="help" href="https://erddap.github.io/docs/server-admin/deploy-install">设置自己的ERDDAP服务器</a>并提供自己的数据。ERDDAP</strong>是免费ERDDAP开源ERDDAP 。它使用类似 Apache 的许可证，因此您可以用它做任何您想做的事情。ERDDAP 的外观是可定制的，因此您的ERDDAP将反映您的机构，而不是NOAA 。设置ERDDAP小小努力可以带来许多好处。如果您已经有用于分发数据的 Web 服务，则可以设置ERDDAP以通过现有服务或通过源文件或数据库访问您的数据。然后，人们将有另一种方式访问​​您的数据，并能够以其他文件格式或图表或地图的形式下载数据。至少 14 个国家的 90 多个组织已经安装了ERDDAP
 <a rel="bookmark"
 href="https://www.ngdc.noaa.gov/wiki/index.php/Data_Access_Technical_Recommendations#Software_implementations">NOAA数据访问程序指令<img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
@@ -4646,7 +4646,7 @@ ERDDAP是一个数据服务器，它为您提供一种简单、一致的方式�
 感谢 Rich Signell。（视频中有一个小错误：搜索数据集时，不要在搜索词之间使用<kbd>AND</kbd> 。这是隐含的。）
 <br>&nbsp;
 <li><strong><a class="selfLink" id="localAndRemote" href="#localAndRemote" rel="bookmark">ERDDAP可以从本地（在服务器硬盘上）和远程（通过网络访问）数据源获取数据。</a></strong>
-<br>查看ERDDAP可以访问的<a rel="help" href="https://erddap.github.io/setupDatasetsXml.html#datasetTypes">数据源类型列表</a>。
+<br>查看ERDDAP可以访问的<a rel="help" href="https://erddap.github.io/docs/server-admin/datasets#list-of-types-datasets">数据源类型列表</a>。
 <br>&nbsp;
 <li><strong><a class="selfLink" id="scientificData" href="#scientificData" rel="bookmark">ERDDAP可以提供多种类型的科学数据，而不仅仅是海洋数据。</a></strong>
 <br>ERDDAP是一个由<a title="美国国家海洋和大气管理局" rel="bookmark" href="https://www.noaa.gov">NOAA</a>
@@ -4748,7 +4748,7 @@ ERDDAP还提供数据访问表单（网页），帮助人们创建OPeNDAP请求�
       title="此外部网站链接并不构成认可。"></a> （例如，
 <a rel="help" href="https://cfconventions.org/Data/cf-conventions/cf-conventions-1.8/cf-conventions.html">CF 元数据<img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
-      title="此外部网站链接并不构成认可。"></a>) 描述数据。ERDDAP ERDDAP （并鼓励）管理员描述将动态添加到数据集及其变量的元数据。请参阅<a rel="help" href="https://erddap.github.io/setupDatasetsXml.html">管理员说明</a>的<a rel="help" href="https://erddap.github.io/setupDatasetsXml.html#addAttributes">addAttributes 部分</a>。
+      title="此外部网站链接并不构成认可。"></a>) 描述数据。ERDDAP ERDDAP （并鼓励）管理员描述将动态添加到数据集及其变量的元数据。请参阅<a rel="help" href="https://erddap.github.io/docs/server-admin/datasets">管理员说明</a>的<a rel="help" href="https://erddap.github.io/docs/server-admin/datasets#addattributes">addAttributes 部分</a>。
 <br>&nbsp;
 <li><strong><a class="selfLink" id="images" href="#images" rel="bookmark"
  >ERDDAP允许您请求带有图表和地图的 .png 和 .pdf 图像文件</a></strong>
@@ -4833,7 +4833,7 @@ ERDDAP还提供数据访问表单（网页），帮助人们创建OPeNDAP请求�
 <br>这些功能可用于在ERDDAP之上构建另一个 Web 服务（让ERDDAP完成所有工作！）。
 ERDDAP并非旨在成为高级数据探索/图形服务。相反， ERDDAP旨在为此类网站和程序提供服务。因此，如果您对ERDDAP所服务数据的更好接口有想法，我们鼓励您构建自己的 Web 应用程序或 Web 服务，并使用ERDDAP作为基础。阅读有关ERDDAP的<a rel="help" href="&erddapUrl;/rest.html">计算机程序服务 的</a>更多信息。
 <br>&nbsp;
-<li><strong><a class="selfLink" id="security" href="#security" rel="bookmark">安全性</a></strong>- 默认情况下， ERDDAP作为完全公共的服务器运行，没有登录系统，也没有数据访问限制。但是， ERDDAP管理员可以配置ERDDAP ，将部分或全部数据集的访问权限限制为已登录并分配了特定角色的用户ERDDAP具有内置的身份验证（登录）方法。如果ERDDAP安装已启用身份验证，则每个网页顶部都会有一个“登录”链接。用户无需登录即可访问公开可用的数据集。已登录的用户可以访问公共数据集和允许他们访问的私有数据集。用户必须使用 https:（安全套接字层）登录并访问私有数据集。可以配置数据集，使图表和地图可公开访问，但数据仅供授权用户访问。（<a rel="help" href="https://erddap.github.io/setup.html#security">更多信息</a>）
+<li><strong><a class="selfLink" id="security" href="#security" rel="bookmark">安全性</a></strong>- 默认情况下， ERDDAP作为完全公共的服务器运行，没有登录系统，也没有数据访问限制。但是， ERDDAP管理员可以配置ERDDAP ，将部分或全部数据集的访问权限限制为已登录并分配了特定角色的用户ERDDAP具有内置的身份验证（登录）方法。如果ERDDAP安装已启用身份验证，则每个网页顶部都会有一个“登录”链接。用户无需登录即可访问公开可用的数据集。已登录的用户可以访问公共数据集和允许他们访问的私有数据集。用户必须使用 https:（安全套接字层）登录并访问私有数据集。可以配置数据集，使图表和地图可公开访问，但数据仅供授权用户访问。（<a rel="help" href="https://erddap.github.io/docs/server-admin/additional-information#security">更多信息</a>）
 <br>&nbsp;
 <li><strong><a class="selfLink" id="chunks" href="#chunks" rel="bookmark">ERDDAP按块处理数据。</a></strong>
 <br>为了节省内存（一个大问题）并加快响应速度， ERDDAP以分块形式处理数据请求——反复从源获取数据块，清理数据（例如，添加<a rel="help" href="https://en.wikipedia.org/wiki/Metadata">元数据<img 
@@ -4847,10 +4847,10 @@ ERDDAP并非旨在成为高级数据探索/图形服务。相反， ERDDAP旨在
 <br>通常， ERDDAP充当中介：它接受用户的请求；从远程数据源获取数据；重新格式化数据；然后将其发送给用户。
 <a rel="help" href="https://en.wikipedia.org/wiki/Pull_technology">Pull技术<img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
-      title="此外部网站链接并不构成认可。"></a> ：但ERDDAP还具有从远程数据源主动获取所有可用数据并<a rel="help" href="https://erddap.github.io/setupDatasetsXml.html#EDDGridCopy">存储数据本地副本的</a>能力。
+      title="此外部网站链接并不构成认可。"></a> ：但ERDDAP还具有从远程数据源主动获取所有可用数据并<a rel="help" href="https://erddap.github.io/docs/server-admin/datasets#eddgridcopy">存储数据本地副本的</a>能力。
 <a rel="help" href="https://en.wikipedia.org/wiki/Push_technology">Push技术<img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
-      title="此外部网站链接并不构成认可。"></a> ：通过使用ERDDAP的<a href="#subscriptions">订阅服务</a>，其他数据服务器可以在有新数据时立即得到通知ERDDAP以便它们可以请求数据（通过拉取数据）。ERDDAP 的<a rel="help"  href="https://erddap.github.io/setupDatasetsXml.html#EDDGridFromErddap">EDDGrid FromErddap</a>和<a rel="help"  href="https://erddap.github.io/setupDatasetsXml.html#EDDTableFromErddap">EDDTableFromErddap</a>使用ERDDAP的订阅服务和<a rel="help" href="https://erddap.github.io/setup.html#flag">标志系统</a>，以便在有新数据可用时立即得到通知。您可以将它们结合起来以获得更好的效果：如果将EDDGrid Copy 包装在EDDGrid FromErddap 数据集周围（或将 EDDTableCopy 包装在 EDDTableFromErddap 数据集周围）， ERDDAP将自动创建并维护另一个ERDDAP数据集的本地副本。由于订阅服务在有新数据可用时立即工作，因此推送技术可以非常快速地（几秒钟内）传播数据。
+      title="此外部网站链接并不构成认可。"></a> ：通过使用ERDDAP的<a href="#subscriptions">订阅服务</a>，其他数据服务器可以在有新数据时立即得到通知ERDDAP以便它们可以请求数据（通过拉取数据）。ERDDAP 的<a rel="help"  href="https://erddap.github.io/docs/server-admin/datasets#eddfromerddap">EDDGrid FromErddap</a>和<a rel="help"  href="https://erddap.github.io/docs/server-admin/datasets#eddfromerddap">EDDTableFromErddap</a>使用ERDDAP的订阅服务和<a rel="help" href="https://erddap.github.io/docs/server-admin/additional-information#flag">标志系统</a>，以便在有新数据可用时立即得到通知。您可以将它们结合起来以获得更好的效果：如果将EDDGrid Copy 包装在EDDGrid FromErddap 数据集周围（或将 EDDTableCopy 包装在 EDDTableFromErddap 数据集周围）， ERDDAP将自动创建并维护另一个ERDDAP数据集的本地副本。由于订阅服务在有新数据可用时立即工作，因此推送技术可以非常快速地（几秒钟内）传播数据。
 <p>这种架构让每个ERDDAP管理员负责确定其ERDDAP的数据来源。其他ERDDAP管理员也可以这样做。管理员之间无需协调。如果许多ERDDAP管理员链接到彼此的ERDDAP ，则形成了一个数据分发网络。数据将快速、高效、自动地从数据源（ ERDDAP和其他服务器）传播到网络中任何位置的数据重新分发站点（ ERDDAP ）。给定的ERDDAP既可以是某些数据集的数据源，也可以是其他数据集的重新分发站点。由此产生的网络大致类似于使用<a rel="bookmark" href="https://www.unidata.ucar.edu/software/idd/">Unidata的 IDD/IDM</a>等程序设置的数据分发网络<a rel="bookmark" href="https://www.unidata.ucar.edu/software/idd/"><img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
       title="此外部网站链接并不构成认可。"></a> ，但结构不太严格。
@@ -4886,9 +4886,9 @@ DODS系统在互联网上创建并使用了 dods:
 
 <p>是的，我是ERDDAP的主要开发者。我是一名获得全额资助的联邦雇员。我的资金不是“软”钱，所以我不接受或依赖补助金。我花了一半以上的时间来开发ERDDAP 。其余时间则用于管理数据集。这项工作对ERDDAP很有用，因为我需要处理真实数据集才能详细了解ERDDAP需要做什么。我的老板全力支持我在ERDDAP上的工作，因为它实现了我被雇用的使命：让渔业科学家（主要是，但实际上是每个人）更容易从各种来源获取科学数据。
 <p><a class="selfLink" id="miraculous" href="#miraculous" rel="bookmark">软件的神奇之处在于复制它不需要任何成本。</a>因此，为了完成我的工作，我编写了ERDDAP供ERD使用。我认为这是我完成工作的最佳方式。仅凭这个原因就值得花费大量资金开发ERDDAP 。（我认为可以证明ERDDAP为NOAA科学家节省的时间比我花在开发ERDDAP上的时间还要多。时间=金钱。）但附带的好处是，任何其他组织都可以<strong>免费</strong><a rel="bookmark" 
-href="https://erddap.github.io/setup.html">下载、安装和使用ERDDAP</a>来分发他们的科学数据。
+href="https://erddap.github.io/docs/server-admin/deploy-install">下载、安装和使用ERDDAP</a>来分发他们的科学数据。
 <p><a rel="bookmark" 
-href="https://erddap.github.io/setup.html#organizations"
+href="https://erddap.github.io/#who-uses-erddap"
 >至少有 14 个国家的 90 多个组织使用ERDDAP</a> 。也许真的有免费的午餐。
 <p>ERDDAP是一个Java程序。每个版本的源代码都在<a rel="bookmark" href="https://github.com/ERDDAP">GitHub</a>上<a rel="bookmark" href="https://github.com/ERDDAP"><img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
@@ -4947,12 +4947,12 @@ I am sure we can work something out.&lt;/sarc&gt;) -->
 <p><strong><a class="selfLink" id="dataDistributionSystems" href="#dataDistributionSystems" rel="bookmark">数据分发系统指南</a></strong>
 <br>鲍勃对数据分发系统设计和评估的看法可以<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/images/erddapTalk/erdData.html">在这里</a>找到。
 <br>&nbsp;
-<p><strong><a class="selfLink" id="setup" href="#setup" rel="bookmark">您可以</a></strong><a rel="help" href="https://erddap.github.io/setup.html"><strong>设置自己的ERDDAP服务器</strong></a>并提供您自己的数据。
+<p><strong><a class="selfLink" id="setup" href="#setup" rel="bookmark">您可以</a></strong><a rel="help" href="https://erddap.github.io/docs/server-admin/deploy-install"><strong>设置自己的ERDDAP服务器</strong></a>并提供您自己的数据。
 <ul>
 <li>建立ERDDAP小小努力就能带来许多好处。
 <li>如果您已经拥有用于分发数据的 Web 服务，则可以设置ERDDAP以通过现有服务或源文件或数据库访问您的数据。然后，人们将有另一种方式访问​​您的数据，并能够以其他文件格式或图表或地图的形式下载数据。
 <li>如果您拥有需求量很大的数据集，则可以安装<a rel="help" 
-  href="https://erddap.github.io/grids.html"
+  href="https://erddap.github.io/docs/server-admin/scaling"
   >多个ERDDAP ，它们协同工作</a>以扩大规模并满足大型数据分发中心的需求。
 </ul>
 <h2><a class="selfLink" id="contact" href="#contact" rel="bookmark">联系我们</a></h2>如果您对ERDDAP有任何问题、建议或意见（不是针对此特定的ERDDAP安装），请发送电子邮件至<kbd>erd dot data at noaa dot gov</kbd> ，并附上与您的问题或意见直接相关的ERDDAP URL。
@@ -6492,7 +6492,7 @@ GetCapabilities请求返回一个 XML 文档，该文档提供有关服务的背
 <li>数据变量必须是网格变量。
 <li>数据变量必须具有经度和纬度轴变量。（其他轴变量是可选的。）
 <li>必须有一些介于 -180 和 180 之间的经度值。
-<li>必须指定<a rel="help" href="https://erddap.github.io/setupDatasetsXml.html#colorBar">colorBarMinimum和colorBarMaximum属性</a>。（其他颜色条属性是可选的。）
+<li>必须指定<a rel="help" href="https://erddap.github.io/docs/server-admin/datasets#color-bar-attributes">colorBarMinimum和colorBarMaximum属性</a>。（其他颜色条属性是可选的。）
 </ul>
 <li><strong>网格数据层：</strong>在ERDDAP的WMS中，网格数据集中使用经度和纬度维度的所有数据变量都可通过WMS获得。每个这样的变量都可用作WMS层，名称为<i>datasetID</i> &WMSSEPARATOR; <i>variableName</i> 。每个这样的层都是透明的（即，数据值以一系列颜色表示，缺失值以透明像素表示）。
 <li><strong>表数据层：</strong>目前在ERDDAP的WMS中，表数据集中的数据变量无法通过WMS获得。

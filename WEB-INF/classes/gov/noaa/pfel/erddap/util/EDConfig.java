@@ -239,6 +239,7 @@ public class EDConfig {
   @FeatureFlag public boolean enableCors;
   @FeatureFlag public boolean includeNcCFSubsetVariables;
   @FeatureFlag public boolean useSharedWatchService = true;
+  @FeatureFlag public boolean redirectDocumentationToGitHubIo = true;
 
   public EDConfig(String webInfParentDirectory) throws Exception {
     fullPaletteDirectory = webInfParentDirectory + "WEB-INF/cptfiles/";
@@ -616,6 +617,8 @@ public class EDConfig {
     warName = getSetupEVString(setup, ev, "warName", "erddap");
     includeNcCFSubsetVariables = getSetupEVBoolean(setup, ev, "includeNcCFSubsetVariables", false);
     useSharedWatchService = getSetupEVBoolean(setup, ev, "useSharedWatchService", true);
+    redirectDocumentationToGitHubIo =
+        getSetupEVBoolean(setup, ev, "redirectDocumentationToGitHubIo", true);
     deploymentInfo = getSetupEVString(setup, ev, "deploymentInfo", "");
 
     // ensure images exist and get their sizes

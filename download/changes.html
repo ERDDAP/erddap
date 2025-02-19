@@ -38,6 +38,10 @@
 
 <div class="standard_width"> 
 
+<h1 style="color:red;">This copy of the documentation is no longer kept up to date.</h1>
+<div>Please visit <a href="https://erddap.github.io/changes">the new documentation site.</a></div>
+
+
 &nbsp;
 
 <h1 style="text-align:center;">ERDDAP™ Changes</h1>
@@ -93,14 +97,14 @@ those great suggestions coming!
         <br>&nbsp;
       <li>The removeMVRows parameter in EDDTableFromMultidimNcFiles will now have an effect. Setting it to false may
         significantly speed up some queries, but this may not be suitable for all datasets. For more information see
-        the <a href="https://erddap.github.io/setupDatasetsXml.html#removeMVRows">description of the parameter</a>.
+        the <a href="https://erddap.github.io/docs/server-admin/datasets#removeMVRows">description of the parameter</a>.
           <br>&nbsp;
       <li>Datasets (EDDTableFromNcFiles and EDDGridFromNcFiles) using zarr files are now supported. They must include "zarr"
-        in either the fileNameRegex or pathRegex. See the <a href="https://erddap.github.io/setupDatasetsXml.html#zarr">zarr
+        in either the fileNameRegex or pathRegex. See the <a href="https://erddap.github.io/docs/server-admin/datasets#zarr">zarr
         secion in the datasets documentation</a> for more details.
         <br>&nbsp;
       <li>New dataset type, EDDTableFromParquetFiles is now supported. See the
-        <a href="https://erddap.github.io/setupDatasetsXml.html#EDDTableFromParquetFiles">EDDTableFromParquetFiles
+        <a href="https://erddap.github.io/docs/server-admin/datasets#EDDTableFromParquetFiles">EDDTableFromParquetFiles
         secion in the datasets documentation</a> for more details.
         <br>&nbsp;
       <li><a href="https://prometheus.io/">Prometheus metrics</a> are now available at <kbd>/erddap/metrics</kbd>.
@@ -314,7 +318,7 @@ in ERDDAP™ version 2.20 (released 2022-09-30)</h2>
   <li>IMPROVED: We re-enabled the old memory management system (Math2.ensureMemoryAvailable) and modified
     the new memory management system (EDStatic.shedThisRequest) to work better with it. 
     See <a rel="help"
-        href="https://erddap.github.io/setup.html#MemoryStatus"
+        href="https://erddap.github.io/docs/server-admin/deploy-install#MemoryStatus"
         >Memory Status</a> for details.
      <br>&nbsp;
 
@@ -364,7 +368,7 @@ in ERDDAP™ version 2.19 (released 2022-09-01)</h2>
 
     <p>Don't forget to make the ERDDAP-related changes to Tomcat's server.xml and context.xml 
     when you upgrade Tomcat. See ERDDAP's 
-    <a rel="help" href="https://erddap.github.io/setup.html#tomcat"
+    <a rel="help" href="https://erddap.github.io/docs/server-admin/deploy-install#tomcat"
         >Tomcat installation instructions</a>.    
 
     <p>My impression of Java 17 is that it prefers more processing power and memory 
@@ -429,7 +433,7 @@ in ERDDAP™ version 2.19 (released 2022-09-01)</h2>
     number of file changes (default=10) that will be processed by the updateEveryNMillis system.
     A larger number (100?) may be useful when it is very important that the dataset be kept always up-to-date.
     See the <a rel="help" 
-        href="https://erddap.github.io/setupDatasetsXml.html#updateMaxEvents"
+        href="https://erddap.github.io/docs/server-admin/datasets#updateMaxEvents"
         >updateMaxEvents documentation</a>.
     Thanks to John Maurer.
     <br>&nbsp;
@@ -813,7 +817,7 @@ in ERDDAP™ version 2.14 (released 2021-07-02)</h2>
   <li>NEW: EDDGridLon0360 which makes a gridded dataset with longitude values &gt;=0 and &lt;=360
     from a gridded dataset with longitude values &gt;=-180 and &lt;=180.
     See the <a rel="help" 
-        href="https://erddap.github.io/setupDatasetsXml.html#EDDGridLon0360"
+        href="https://erddap.github.io/docs/server-admin/datasets#EDDGridLon0360"
         >EDDGridLon0360 documentation</a>.
     Thanks to Dale Robinson.
     <br>&nbsp;
@@ -877,7 +881,7 @@ in ERDDAP™ version 2.12 (released 2021-05-14)</h2>
 &lt;ipAddressUnlimited&gt;&lt;/ipAddressUnlimited&gt;  &lt;!-- default=empty --&gt;  </pre>
     For further information, see
     <a rel="help"
-        href="https://erddap.github.io/setupDatasetsXml.html#ipAddressMaxRequests">ipAddressMaxRequests</a>.
+        href="https://erddap.github.io/docs/server-admin/datasets#ipAddressMaxRequests">ipAddressMaxRequests</a>.
      ERDDAP™ also now prints the "Number of unique users (since startup)" on the status.html page.
     <br>Thanks to the person in China attacking my ERDDAP™ installation.
   <br>&nbsp;
@@ -925,7 +929,7 @@ in ERDDAP™ version 2.12 (released 2021-05-14)</h2>
     </ul>
     To find out more, or if you see this problem on your ERDDAP™, see
     <a rel="help"
-        href="https://erddap.github.io/setup.html#TooManyOpenFiles"
+        href="https://erddap.github.io/docs/server-admin/deploy-install#TooManyOpenFiles"
         >Too Many Open Files</a>.
     <br>Thanks to the person in China attacking my ERDDAP™ installation.
     <br>&nbsp;
@@ -975,7 +979,7 @@ in ERDDAP™ version 2.12 (released 2021-05-14)</h2>
     which will search through a collection of gridded .nc (and related) files
     to find files with duplicate time values. See 
     <a rel="help"
-        href="https://erddap.github.io/setupDatasetsXml.html#findDuplicateTime">findDuplicateTime</a>
+        href="https://erddap.github.io/docs/server-admin/datasets#findDuplicateTime">findDuplicateTime</a>
     <br>&nbsp;
 
   <li>NEW: datasets.xml can now include a &lt;palettes&gt; tag which overrides 
@@ -988,12 +992,12 @@ in ERDDAP™ version 2.12 (released 2021-05-14)</h2>
       Together, these changes let you add palettes 
       and have the changes persist when you install a new version of ERDDAP.
       See the <a rel="help"
-        href="https://erddap.github.io/setupDatasetsXml.html#palettes">palettes documentation</a>
+        href="https://erddap.github.io/docs/server-admin/datasets#palettes">palettes documentation</a>
       <br>Thanks to Jennifer Sevadjian, Melanie Abecassis, and perhaps other CoastWatch people.
     <br>&nbsp;
 
   <li>CHANGED: <a rel="help"
-        href="https://erddap.github.io/setupDatasetsXml.html#slowDownTroubleMillis">&lt;slowDownTroubleMillis&gt;</a>
+        href="https://erddap.github.io/docs/server-admin/datasets#slowDownTroubleMillis">&lt;slowDownTroubleMillis&gt;</a>
         is now used for all failed requests, not just a few types.
     <br>&nbsp;
 
@@ -1214,7 +1218,7 @@ in ERDDAP™ version 2.10 (released 2020-11-05)</h2>
 
       <li>In datasets.xml, search for <kbd>&lt;sourceName&gt;=</kbd> (note the '=' sign, which identifies a
         <a rel="help"
-        href="https://erddap.github.io/setupDatasetsXml.html#fixedValue">fixed-value sourceName</a>).
+        href="https://erddap.github.io/docs/server-admin/datasets#fixedValue">fixed-value sourceName</a>).
         For most ERDDAP™ setups, these are rare.
         If any of the values after '=' are strings (not numbers), you MUST now enclose the
         string in double quotes. For example,
@@ -1251,7 +1255,7 @@ in ERDDAP™ version 2.10 (released 2020-11-05)</h2>
           missing_value attributes, and the suggested new _FillValue attributes.
           See
           <a rel="help"
-          href="https://erddap.github.io/setupDatasetsXml.html#addFillValueAttributes"
+          href="https://erddap.github.io/docs/server-admin/datasets#addFillValueAttributes"
           >Add _FillValue Attributes</a>
           for more information and instructions.          
         <br>&nbsp;
@@ -1266,7 +1270,7 @@ in ERDDAP™ version 2.10 (released 2020-11-05)</h2>
     The latest version of Tomcat 8.5+ is also fine for now.
     We cleaned up ERDDAP's 
     <a rel="help"
-        href="https://erddap.github.io/setup.html#tomcat"
+        href="https://erddap.github.io/docs/server-admin/deploy-install#tomcat"
         >Tomcat installation instructions</a>.
 
     <p>The latest version of Java 8 (not Java 9, 10, 11, ...) from 
@@ -1289,7 +1293,7 @@ in ERDDAP™ version 2.10 (released 2020-11-05)</h2>
     <br>&lt;sourceName&gt;=Math2.anglePM180(row.columnDouble("lon"))&lt;/sourceName&gt; 
     <br>For details, see 
       <a rel="help"
-      href="https://erddap.github.io/setupDatasetsXml.html#scriptSourceNames"
+      href="https://erddap.github.io/docs/server-admin/datasets#scriptSourceNames"
       >Script SourceNames</a>
     <br>Thanks to Bob Simons (who planned this before ERDDAP™ v1.0 and finally found a way to implement it),
       Kevin O'Brien, Roland Schweitzer, John Maurer,
@@ -1300,7 +1304,7 @@ in ERDDAP™ version 2.10 (released 2020-11-05)</h2>
     Note that many file types (e.g., .das, .dds, .nc3) don't support all of these new 
     data types. 
     See the <a rel="help"
-        href="https://erddap.github.io/setupDatasetsXml.html#dataTypes"
+        href="https://erddap.github.io/docs/server-admin/datasets#dataTypes"
         >Data Type documentation</a> for details about how ERDDAP™ deals with these differences.
     Notably, since (OPeN)DAP, notably the .dds response, doesn't support
       signed bytes, longs, or ulongs, you may want to use ERDDAP's tabular representation
@@ -1321,7 +1325,7 @@ in ERDDAP™ version 2.10 (released 2020-11-05)</h2>
       The resulting problems include: new files not being added to the dataset, 
       and/or errors when you try to access the data.
       If a dataset has problems, the first thing to try is to
-      <a rel="help" href="https://erddap.github.io/setup.html#hardFlag"
+      <a rel="help" href="https://erddap.github.io/docs/server-admin/deploy-install#hardFlag"
       >set a hardFlag</a> for the dataset.
       If that doesn't resolve the problem, then you have to look at log.txt to see the 
       error messages, delve into the datasets.xml for the dataset, 
@@ -1331,7 +1335,7 @@ in ERDDAP™ version 2.10 (released 2020-11-05)</h2>
 
   <li>IMPROVED: There is now 
     <a rel="help"
-        href="https://erddap.github.io/setupDatasetsXml.html#ErddapAndS3Buckets"
+        href="https://erddap.github.io/docs/server-admin/datasets#ErddapAndS3Buckets"
         >better documentation/advice</a>
     for how to create a dataset from files in AWS S3 buckets.
     Thanks to Micah Wengren.
@@ -1358,7 +1362,7 @@ in ERDDAP™ version 2.10 (released 2020-11-05)</h2>
       The assumption is that the dataset will rely on the value of the new
       &lt;defaultAccessibleViaFiles&gt; tag in setup.xml.
       See <a rel="help"
-        href="https://erddap.github.io/setupDatasetsXml.html#accessibleViaFiles"
+        href="https://erddap.github.io/docs/server-admin/datasets#accessibleViaFiles"
         >accessibleViaFiles</a>.
       <br>&nbsp;
 
@@ -1426,7 +1430,7 @@ in ERDDAP™ version 2.10 (released 2020-11-05)</h2>
 
     <p>WARNING: It is possible this will cause problems for some existing datasets
     (e.g., cause new files to be labeled "bad").  If so,  
-    <a rel="help" href="https://erddap.github.io/setup.html#hardFlag"
+    <a rel="help" href="https://erddap.github.io/docs/server-admin/deploy-install#hardFlag"
     >set a hardFlag</a> for the dataset so that all of the source files will be reread with the
     new system.
 
@@ -1441,7 +1445,7 @@ in ERDDAP™ version 2.10 (released 2020-11-05)</h2>
       will be able to say it does have relevant data (although all the actual rows of data
       will show NaN).
       See the <a rel="help"
-        href="https://erddap.github.io/setupDatasetsXml.html#fixedValue"
+        href="https://erddap.github.io/docs/server-admin/datasets#fixedValue"
         >fixed value documentation</a>.
       <br>Thanks to Mathew Biddle.
       <br>&nbsp;
@@ -1454,7 +1458,7 @@ in ERDDAP™ version 2.10 (released 2020-11-05)</h2>
     <br><kbd>&lt;skipHeaderToRegex&gt;\*\*\* END OF HEADER.*&lt;/skipHeaderToRegex&gt;</kbd>
     <br>will ignore all lines up to and including a line that starts with "*** END OF HEADER".
       See the <a rel="help"
-        href="https://erddap.github.io/setupDatasetsXml.html#skipHeaderToRegex"
+        href="https://erddap.github.io/docs/server-admin/datasets#skipHeaderToRegex"
         >&lt;skipHeaderToRegex&gt; documentation</a>.
     <br>Thanks to Eli Hunter
       <br>&nbsp;
@@ -1466,7 +1470,7 @@ in ERDDAP™ version 2.10 (released 2020-11-05)</h2>
     <br><kbd>&lt;skipLinesRegex&gt;#.*&lt;/skipLinesRegex&gt;</kbd>
     <br>will skip all lines which start with "#".
       See the <a rel="help"
-        href="https://erddap.github.io/setupDatasetsXml.html#skipLinesRegex"
+        href="https://erddap.github.io/docs/server-admin/datasets#skipLinesRegex"
         >&lt;skipLinesRegex&gt; documentation</a>.
     <br>Thanks to Eli Hunter.
     <br>&nbsp;
@@ -1478,7 +1482,7 @@ in ERDDAP™ version 2.10 (released 2020-11-05)</h2>
     for users to add <kbd>&amp;addVariablesWhere(<i>attributeName, attributeValue</i>)</kbd>
     to the request.     
     <br>See the <a rel="help"
-        href="https://erddap.github.io/setupDatasetsXml.html#addVariablesWhere"
+        href="https://erddap.github.io/docs/server-admin/datasets#addVariablesWhere"
         ><kbd>&amp;addVariablesWhere</kbd> documentation</a>.
     <br>Thanks to Aurelie Briand, et al.
     <br>&nbsp;
@@ -1692,7 +1696,7 @@ in ERDDAP™ version 2.02 (released 2019-08-21)</h2>
     directly from AWS. 
     ERDDAP™ administrators can 
     <br><a rel="help"
-        href="https://erddap.github.io/setupDatasetsXml.html#AwsS3Buckets"
+        href="https://erddap.github.io/docs/server-admin/datasets#AwsS3Buckets"
         >read directions for how to do this for other S3 buckets</a>. 
     Thanks to Andy Ziegler and NOAA.
     <br>&nbsp;
@@ -1731,7 +1735,7 @@ in ERDDAP™ version 2.02 (released 2019-08-21)</h2>
 
   <li>IMPROVED: There is now 
       <a rel="help"
-        href="https://erddap.github.io/setupDatasetsXml.html#AwsS3Files"
+        href="https://erddap.github.io/docs/server-admin/datasets#AwsS3Files"
         >ERDDAP™ AWS S3 documentation</a>, 
         which describes how to get ERDDAP™ to work with data files in AWS S3 buckets.
     <br>Also, ERDDAP™ now uses new features in the AWS S3 Java API. 
@@ -1755,7 +1759,7 @@ in ERDDAP™ version 2.02 (released 2019-08-21)</h2>
     at the end of the IP addresses so that you can blacklist a bigger chunk
     of IP addresses, e.g., 110.52.*.* (China Unicom Tianjin).
     See the documentation for <a rel="help"
-        href="https://erddap.github.io/setupDatasetsXml.html#requestBlacklist"
+        href="https://erddap.github.io/docs/server-admin/datasets#requestBlacklist"
         >&lt;requestBlacklist&gt;</a>
     Thanks to China Unicom and China Telecom.
       <br>&nbsp;
@@ -1806,7 +1810,7 @@ in ERDDAP™ version 2.01 (released 2019-07-02)</h2>
   <li>IMPROVED: GenerateDatasetsXml no longer prints a lengthy warning at the top of the output. 
     Instead, please see 
     <a rel="help"
-        href="https://erddap.github.io/setupDatasetsXml.html#EditingGDXOutput"
+        href="https://erddap.github.io/docs/server-admin/datasets#EditingGDXOutput"
         >Editing GenerateDatasetsXml Output</a>.
     Thanks to Steven Baum.
   <li>IMPROVED: GenerateDatasetsXml now makes slightly different recommendations 
@@ -1861,7 +1865,7 @@ in ERDDAP™ version 2.00 (released 2019-06-26)</h2>
     as they are finished; they don't have to wait for the next release of ERDDAP.
     Your group is welcome to contribute, too! See the 
     <a rel="help"
-        href="https://erddap.github.io/setup.html#programmersGuide"
+        href="https://erddap.github.io/docs/server-admin/deploy-install#programmersGuide"
         >ERDDAP™ Programmer's Guide</a>.
     <br>&nbsp;
   <li>We hope you like ERDDAP™ v2.00. We look forward to the next 10 years of
@@ -1909,7 +1913,7 @@ in ERDDAP™ version 2.00 (released 2019-06-26)</h2>
     ORCID is widely used by researchers to uniquely identify themselves.
     ORCID accounts are free and don't have the privacy issues that Google accounts have.
     See ERDDAP's <a rel="help"
-        href="https://erddap.github.io/setup.html#authenticationOrcid"
+        href="https://erddap.github.io/docs/server-admin/deploy-install#authenticationOrcid"
         >Orcid authentication instructions</a>.
     Thanks to BCO-DMO (Adam Shepard, Danie Kinkade, etc.).
     <br>&nbsp;
@@ -2022,20 +2026,20 @@ in ERDDAP™ version 2.00 (released 2019-06-26)</h2>
     For security reasons, it is important to keep your Java version up-to-date.
     See ERDDAP's
       <a rel="help"
-        href="https://erddap.github.io/setup.html#java"
+        href="https://erddap.github.io/docs/server-admin/deploy-install#java"
         >Java installation instructions</a>.
     <br>&nbsp;
 
   <li>TO DO: AdoptOpenJDK's Java needs a small addition to your Tomcat installation:
      see the <a rel="help"
-        href="https://erddap.github.io/setup.html#ResourcesCache"
+        href="https://erddap.github.io/docs/server-admin/deploy-install#ResourcesCache"
         >Resources Cache instructions</a>. I think that this is a replacement for
         the -XX:MaxPermSize setting, which (Adopt)OpenJDK no longer supports.
     <br>&nbsp;
   <li>TO DO: The new default and recommend &lt;fontFamily&gt; setting in setup.xml is
       <br><kbd>DejaVu Sans</kbd> which are built into AdoptOpenJDK's Java. See the 
     <br><a rel="help"
-        href="https://erddap.github.io/setup.html#fonts"
+        href="https://erddap.github.io/docs/server-admin/deploy-install#fonts"
         >revised font installation instructions</a>.
     <br>&nbsp;
   <li>TO DO: Many tags are moving from setup.xml to datasets.xml.
@@ -2099,7 +2103,7 @@ in ERDDAP™ version 2.00 (released 2019-06-26)</h2>
       from setup.xml.
       It is better to have these tags in datasets.xml. And there are now better descriptions in 
       <a rel="help" 
-        href="https://erddap.github.io/setupDatasetsXml.html#basicStructure"
+        href="https://erddap.github.io/docs/server-admin/datasets#basicStructure"
         >setupDatasetsXml.html</a>.
     </ol>
   
@@ -2131,7 +2135,7 @@ in ERDDAP™ version 2.00 (released 2019-06-26)</h2>
     that the dataset is unchanging, except by aggregation. 
     See 
     <a rel="help"
-        href="https://erddap.github.io/setupDatasetsXml.html#EDDTableFromHttpGet"
+        href="https://erddap.github.io/docs/server-admin/datasets#EDDTableFromHttpGet"
         >EDDTableFromHttpGet</a>.
     Thanks to OOI (from long ago and now) for talking about the need for this
     and Eugene Burger for the reminder about working on what is important.
@@ -2153,7 +2157,7 @@ in ERDDAP™ version 2.00 (released 2019-06-26)</h2>
     then it has saved you about $30,000.
 
     <p>See the <a rel="help"
-        href="https://erddap.github.io/setupDatasetsXml.html#ExternallyCompressedFiles"
+        href="https://erddap.github.io/docs/server-admin/datasets#ExternallyCompressedFiles"
         >Externally Compressed Files documentation</a>.
     Thanks to Benoit Perrimond and Paloma de la Vallee.
 
@@ -2166,7 +2170,7 @@ in ERDDAP™ version 2.00 (released 2019-06-26)</h2>
     into a local cache with a limited size, 
     which is useful when working with cloud-based (e.g., S3) data files.
     See the 
-    <a href="https://erddap.github.io/setupDatasetsXml.html#cacheFromUrl" rel="bookmark"
+    <a href="https://erddap.github.io/docs/server-admin/datasets#cacheFromUrl" rel="bookmark"
     >cacheFromUrl documentation</a> for details.
     Thanks to Bob Simons and Roy Mendelssohn (who for years have been writing scripts
     to handle making local copies of remote dataset files), Lloyd Cotten, Eugene Burger, 
@@ -2187,7 +2191,7 @@ in ERDDAP™ version 2.00 (released 2019-06-26)</h2>
   <li>NEW: All EDDGrid and all EDDTableFromFiles datasets support an <kbd>&lt;nThreads&gt;</kbd> setting,
     which tells ERDDAP™ how many threads to use when responding to a request.
     See the 
-    <a rel="help" href="https://erddap.github.io/setupDatasetsXml.html#nThreads"
+    <a rel="help" href="https://erddap.github.io/docs/server-admin/datasets#nThreads"
         >nThreads documentation</a> for details.
     Thanks to Rob Bochenek of Axiom Data Science, Eugene Burger, 
     Conor Delaney (when he was at Amazon Web Services), and Google Cloud Platform.
@@ -2202,7 +2206,7 @@ in ERDDAP™ version 2.00 (released 2019-06-26)</h2>
     reads the files. 
     See 
     <a rel="help"
-        href="https://erddap.github.io/setupDatasetsXml.html#EDDTableFromFiles_standardizeWhat"
+        href="https://erddap.github.io/docs/server-admin/datasets#EDDTableFromFiles_standardizeWhat"
         >EDDTableFromFile's standardizeWhat</a>.
     One of ERDDAP's main goals is to make data files and datasets accessible
     in a consistent way. standardizeWhat is an important new tool to make that a reality.    
@@ -2300,7 +2304,7 @@ in ERDDAP™ version 2.00 (released 2019-06-26)</h2>
     <br>&nbsp;
   <li>NEW: EDDTableFromMultidimNcFiles now has a 
     <a rel="help"
-        href="https://erddap.github.io/setupDatasetsXml.html#treatDimensionsAs"
+        href="https://erddap.github.io/docs/server-admin/datasets#treatDimensionsAs"
         >treatDimensionsAs</a> option, that tells ERDDAP™ to treat certain
      dimensions (e.g., LAT and LON) as if they were other dimensions (e.g., TIME).
      This is useful for some incorrect files that use different dimensions for
@@ -2313,7 +2317,7 @@ in ERDDAP™ version 2.00 (released 2019-06-26)</h2>
     The format is 
     <br><kbd>***replaceFromFileName,<i>dataType</i>,<i>extractRegex</i>,<i>captureGroupNumber</i></kbd>
     <br>See <a rel="help"
-        href="https://erddap.github.io/setupDatasetsXml.html#EDDGridFromFiles_AggregationViaFileNames"
+        href="https://erddap.github.io/docs/server-admin/datasets#EDDGridFromFiles_AggregationViaFileNames"
         >this documentation</a>.
     Thanks to the NOAA Pathfinder Daily aggregation dataset.
     <br>&nbsp;
@@ -2322,25 +2326,25 @@ in ERDDAP™ version 2.00 (released 2019-06-26)</h2>
     <br><kbd>***pathName,<i>dataType</i>,<i>extractRegex</i>,<i>captureGroupNumber</i></kbd>
     <br>For this, the path name always uses '/' as the directory separator character, never '\'.
     <br>See <a rel="help"
-        href="https://erddap.github.io/setupDatasetsXml.html#EDDGridFromFiles_AggregationViaFileNames"
+        href="https://erddap.github.io/docs/server-admin/datasets#EDDGridFromFiles_AggregationViaFileNames"
         >this documentation</a>.
     Thanks to Paloma de la Vallee.
     <br>&nbsp;
   <li>NEW: Now, all EDDTableFrom...Files datasets support additional pseudo variable sourceNames
     which extract information from the file's fileName (just filename.ext)
     (see <a rel="help"
-        href="https://erddap.github.io/setupDatasetsXml.html#fileNameSourceNames"
+        href="https://erddap.github.io/docs/server-admin/datasets#fileNameSourceNames"
         >***fileName</a>)
     or from the file's full pathName (/dir1/dir2/filename.ext)
     (see <a rel="help"
-        href="https://erddap.github.io/setupDatasetsXml.html#pathNameSourceNames"
+        href="https://erddap.github.io/docs/server-admin/datasets#pathNameSourceNames"
         >***pathName</a>).
     Thanks to Paloma de la Vallee.
     <br>&nbsp;
   <li>NEW: If an EDDGrid dataset has one or more very large dimensions (e.g., millions of values) 
     which take up a lot of memory, you can set the new 
     <a rel="help"
-        href="https://erddap.github.io/setupDatasetsXml.html#dimensionValuesInMemory"
+        href="https://erddap.github.io/docs/server-admin/datasets#dimensionValuesInMemory"
         >&lt;dimensionValuesInMemory&gt;</a>
     setting to <kbd>false</kbd> (the default is <kbd>true</kbd>),
     which causes the dataset to store the values on disk and retrieve them when needed.
@@ -2356,7 +2360,7 @@ in ERDDAP™ version 2.00 (released 2019-06-26)</h2>
     on a given line (e.g., incorrect number of items), it logs a warning message 
     ("WARNING: Skipping line #"... " unexpected number of items..." 
     to the 
-    <a rel="help" href="https://erddap.github.io/setup.html#log">log.txt file</a> 
+    <a rel="help" href="https://erddap.github.io/docs/server-admin/deploy-install#log">log.txt file</a> 
     and then continues to read the rest of the data file.
     Thus, it is your responsibility to look periodically (or write a script to do so)
     for that message in the log.txt so that you can fix the problems in the data
@@ -2518,7 +2522,7 @@ in ERDDAP™ version 1.82 (released 2018-01-26)</h2>
       You can also click on the file link to view the file full screen in your browser.
       See the
       <a rel="help"
-        href="https://erddap.github.io/setupDatasetsXml.html#MediaFiles"
+        href="https://erddap.github.io/docs/server-admin/datasets#MediaFiles"
         >Media Files documentation</a>.
       Note that different browsers support different file types, so 
       the examples may not work in your browser.
@@ -2654,7 +2658,7 @@ in ERDDAP™ version 1.82 (released 2018-01-26)</h2>
 </pre>
       <p>There are additional ways you can   
       <a rel="help"
-        href="https://erddap.github.io/setup.html#customize"
+        href="https://erddap.github.io/docs/server-admin/deploy-install#customize"
         >customize ERDDAP™</a>
       so ERDDAP's web pages reflect your organization instead of NOAA ERD.
   <li>TO DO: 
@@ -2703,7 +2707,7 @@ in ERDDAP™ version 1.82 (released 2018-01-26)</h2>
       consider making similar changes to erddap2.css (in the same directory).
   <li>NEW: ERDDAP's web pages now have a large number of almost invisible
       <a rel="help"
-        href="https://erddap.github.io/setupDatasetsXml.html#InternalLinks"
+        href="https://erddap.github.io/docs/server-admin/datasets#InternalLinks"
         >internal links</a> (the text is black and not underlined). 
       If you hover over one of these links (usually the first few words of
       headings and paragraphs), the cursor becomes a hand.
@@ -2770,7 +2774,7 @@ in ERDDAP™ version 1.82 (released 2018-01-26)</h2>
   <li>TO DO (optional, but recommended): 
     For each near-real-time and forecast dataset in your ERDDAP™, please add a     
     <a rel="help"
-    href="https://erddap.github.io/setupDatasetsXml.html#InternalLinks"
+    href="https://erddap.github.io/docs/server-admin/datasets#InternalLinks"
     >&lt;testOutOfDate&gt;</a> tag with a value in the form
     <kbd>now-<i>nUnits</i></kbd>, e.g., <kbd>now-2days</kbd>.
     If the maximum time value for the dataset is older than that value,
@@ -2815,10 +2819,10 @@ in ERDDAP™ version 1.82 (released 2018-01-26)</h2>
 
   <li>NEW: There are new dataset types which can read data from audio files:
     <br><a rel="help"
-    href="https://erddap.github.io/setupDatasetsXml.html#EDDGridFromAudioFiles"
+    href="https://erddap.github.io/docs/server-admin/datasets#EDDGridFromAudioFiles"
     >EDDGridFromAudioFiles</a>, which treats audio data as gridded data.
     <br><a rel="help"
-    href="https://erddap.github.io/setupDatasetsXml.html#EDDTableFromAudioFiles"
+    href="https://erddap.github.io/docs/server-admin/datasets#EDDTableFromAudioFiles"
     >EDDTableFromAudioFiles</a>, which treats audio data as tabular data data.
     Thanks to Jim Potemra, Rich Signell, OOI, and Carrie Wall Bell
     for requests for audio/hydrophone file support.
@@ -2826,7 +2830,7 @@ in ERDDAP™ version 1.82 (released 2018-01-26)</h2>
       <ul>
       <li>NEW: ERDDAP™ now has a system to automatically
         <a rel="help"
-        href="https://erddap.github.io/setup.html#updateUrls"
+        href="https://erddap.github.io/docs/server-admin/deploy-install#updateUrls"
         >update out-of-date URLs</a> both in GenerateDatasetsXml and when loading datasets.
         If you have suggestions for additional URLs that should be caught and updated, 
         or if you think this should be turned into a service (like the Converters),
@@ -2941,7 +2945,7 @@ in ERDDAP™ version 1.82 (released 2018-01-26)</h2>
     a <kbd>now-nUnits</kbd> (e.g., now-2years) time.
     See the 
     <a rel="help"
-    href="https://erddap.github.io/setupDatasetsXml.html#onlySince"
+    href="https://erddap.github.io/docs/server-admin/datasets#onlySince"
     >onlySince documentation</a>.
     Thanks to Drew P.
   <li>IMPROVED: If available, ERDDAP™ will show the https URL
@@ -2978,11 +2982,11 @@ in ERDDAP™ version 1.82 (released 2018-01-26)</h2>
     as the default.
   <li>NEW: There is now an optional 
     <a rel="help"
-    href="https://erddap.github.io/setupDatasetsXml.html#fileAccessSuffix"
+    href="https://erddap.github.io/docs/server-admin/datasets#fileAccessSuffix"
     ><kbd>fileAccessSuffix</kbd> attribute</a>.
     which can be used with the existing 
     <a rel="help"
-    href="https://erddap.github.io/setupDatasetsXml.html#fileAccessBaseUrl"
+    href="https://erddap.github.io/docs/server-admin/datasets#fileAccessBaseUrl"
     ><kbd>fileAccessBaseUrl</kbd> attribute</a>.
   <li>IMPROVED: To increase security, this version was compiled with the latest
     Java JDK v8u162.
@@ -3098,7 +3102,7 @@ in ERDDAP™ version 1.80 (released 2017-08-04)</h2>
   <li>COMPILER CHANGES: If you recompile ERDDAP™, note that the -cp classpath parameter 
     needed for the command line is now much shorter than before. See the new -cp setting in 
     <a rel="help"
-    href="https://erddap.github.io/setup.html#developmentEnvironment"
+    href="https://erddap.github.io/docs/server-admin/deploy-install#developmentEnvironment"
     >this documentation</a>.
     Thanks to Charles Carleton and NCEI.
   <li>NEW OPTION in GenerateDatasetsXml: EDDTableFromBcodmo, which is 
@@ -3146,7 +3150,7 @@ in ERDDAP™ version 1.80 (released 2017-08-04)</h2>
     <br>&lt;att name="colorBarNSections"&gt;<i>anInteger</i>&lt;/att&gt; 
     <br>(default=-1, which says to let ERDDAP™ decide).    
     See the <a rel="help"
-    href="https://erddap.github.io/setupDatasetsXml.html#colorBar"
+    href="https://erddap.github.io/docs/server-admin/datasets#color-bar-attributes"
     >colorBar settings</a>.
   <li>IMPROVED: the state boundary color on maps was purple 
     (Deep Purple for you Baby Boomers).
@@ -3197,7 +3201,7 @@ in ERDDAP™ version 1.76 (released 2017-05-12)</h2>
       more and more of the characters in the 
       query part of the request URL must be 
     <a rel="help"
-    href="https://erddap.github.io/setupDatasetsXml.html#PercentEncoded"
+    href="https://erddap.github.io/docs/server-admin/datasets#PercentEncoded"
     ><strong>Percent Encoded</strong></a>
       for security reasons. 
       Browsers take care of percent encoding for you. 
@@ -3208,7 +3212,7 @@ in ERDDAP™ version 1.76 (released 2017-05-12)</h2>
     Now it treats them more like 1-character-long UCS-2 (Unicode) Strings. 
     See the
         <a rel="help" 
-      href="https://erddap.github.io/setupDatasetsXml.html#charData"
+      href="https://erddap.github.io/docs/server-admin/datasets#charData"
       >char documentation</a>.
     Thanks to Aurelie Briand and the Argo project.
   <li>IMPROVED: Previously, ERDDAP™ offered little support for <strong>Unicode characters</strong> 
@@ -3221,7 +3225,7 @@ in ERDDAP™ version 1.76 (released 2017-05-12)</h2>
     ERDDAP™ writes any characters above character #255 with the JSON-like
     \u<i>hhhh</i> syntax. See
     <a rel="help" 
-      href="https://erddap.github.io/setupDatasetsXml.html#StringData"
+      href="https://erddap.github.io/docs/server-admin/datasets#StringData"
       >String data</a>.
   <li>IMPROVED: In .nc files written by ERDDAP™,  
     char variables to be interpreted as Strings will have the attribute
@@ -3246,7 +3250,7 @@ in ERDDAP™ version 1.76 (released 2017-05-12)</h2>
     when writing long data to various file types. . 
     See the 
         <a rel="help" 
-      href="https://erddap.github.io/setupDatasetsXml.html#longData"
+      href="https://erddap.github.io/docs/server-admin/datasets#longData"
       >long documentation</a>.
     Thanks to the Ireland's Marine Institute, Craig Risien, Rich Signell, 
       Christopher Wingard and OOI.
@@ -3255,7 +3259,7 @@ in ERDDAP™ version 1.76 (released 2017-05-12)</h2>
     that would be in a comparable .nc file.
     See the 
     <a rel="help" 
-      href="https://erddap.github.io/NCCSV.html"
+      href="https://erddap.github.io/docs/user/nccsv-1.20"
       >NCCSV Specification</a>.
     Thanks to Steve Hankin.
   <li>NEW: <strong>orderByClosest filter</strong> lets you specify how the 
@@ -3300,7 +3304,7 @@ in ERDDAP™ version 1.76 (released 2017-05-12)</h2>
     Thanks to Damian Smyth, Rob Fuller, Adam Leadbetter, and Ireland's Marine Institute.
   <li>NEW: There is new documentation describing 
     <a rel="help"
-    href="https://erddap.github.io/AccessToPrivateDatasets.html"
+    href="https://erddap.github.io/docs/user/AccessToPrivateDatasets"
     ><strong>How to Access Private Datasets in ERDDAP™ via Scripts</strong></a>.
     Thanks to Lynn DeWitt.
   <li>IMPROVED: The minimum extent of the <strong>OpenLayers</strong> map was 2 degrees and is
@@ -3354,7 +3358,7 @@ in ERDDAP™ version 1.76 (released 2017-05-12)</h2>
     </ul>
   <li>NEW: ERDDAP's 
   <a rel="help"
-        href="https://erddap.github.io/setup.html#ArchiveADataset"
+        href="https://erddap.github.io/docs/server-admin/deploy-install#ArchiveADataset"
         >ArchiveADataset tool</a>   
     can now create 
     <a rel="help"
@@ -3377,7 +3381,7 @@ in ERDDAP™ version 1.76 (released 2017-05-12)</h2>
     Thanks to our troublesome RAID.
   <li>NEW: a new, optional (but recommended) parameter for EDDTableFromCassandra datasets:
     <a rel="help" 
-    href="https://erddap.github.io/setupDatasetsXml.html#CassandraPartitionKeyCSV"
+    href="https://erddap.github.io/docs/server-admin/datasets#CassandraPartitionKeyCSV"
     ><strong>&lt;partitionKeyCSV&gt;</strong></a>.
     Thanks to Ocean Networks Canada.
   <li>NEW: EDDTableFromAsciiFiles now supports <strong>&lt;columnSeparator&gt;</strong>
@@ -3388,11 +3392,11 @@ in ERDDAP™ version 1.76 (released 2017-05-12)</h2>
     Thanks to Sky Bristol and Abigail Benson.
   <li>New: the new dataset type, 
      <a rel="help" 
-    href="https://erddap.github.io/setupDatasetsXml.html#EDDTableFromNccsvFiles"
+    href="https://erddap.github.io/docs/server-admin/datasets#EDDTableFromNccsvFiles"
     ><strong>EDDTableFromNccsvFiles</strong></a>, 
     can make a dataset by aggregating
     <a rel="help" 
-      href="https://erddap.github.io/NCCSV.html"
+      href="https://erddap.github.io/docs/user/nccsv-1.20"
       >NCCSV .csv files</a>.
     Thanks to Steve Hankin.
   <li>IMPROVED: <strong>EDDTableFromErddap</strong> now uses .nccsv to get information
@@ -3532,7 +3536,7 @@ in ERDDAP™ version 1.74 (released 2016-10-07)</h2>
   when you install a new version of ERDDAP™ or when you have made certain types 
   of changes to a dataset's definition in datasets.xml.
   See <a rel="help" 
-  href="https://erddap.github.io/setup.html#hardFlag"
+  href="https://erddap.github.io/docs/server-admin/deploy-install#hardFlag"
   >this documentation</a>.
   Thanks to John Kerfoot and all the Argo groups.
   <br>&nbsp;
@@ -3553,7 +3557,7 @@ in ERDDAP™ version 1.74 (released 2016-10-07)</h2>
   by making the data available via a web service.
   <br>See 
   <a rel="help" 
-  href="https://erddap.github.io/EDDTableFromEML.html"
+  href="https://erddap.github.io/docs/server-admin/EDDTableFromEML"
   >this documentation</a>.
   Thanks to Margaret O'Brien, LTER, and EML.
   <br>&nbsp;
@@ -3575,7 +3579,7 @@ in ERDDAP™ version 1.74 (released 2016-10-07)</h2>
   (erd.data at noaa.gov is happy to help.)
   <br>See 
   <a rel="help" 
-  href="https://erddap.github.io/setupDatasetsXml.html#EDDTableFromInPort"
+  href="https://erddap.github.io/docs/server-admin/datasets#EDDTableFromInPort"
   >this documentation</a>.
   Thanks to Evan Howell and Melanie Abecassis.
   <br>&nbsp;
@@ -3676,10 +3680,10 @@ in ERDDAP™ version 1.74 (released 2016-10-07)</h2>
   <br>&nbsp;
 <li>BUG FIX: If the dataset is EDDTableFromDatabase and a query has
   <a rel="help"
-    href="https://erddap.github.io/setupDatasetsXml.html#sourceCanOrderBy"
+    href="https://erddap.github.io/docs/server-admin/datasets#sourceCanOrderBy"
     >sourceCanOrderBy</a> and/or
     <a rel="help"
-    href="https://erddap.github.io/setupDatasetsXml.html#sourceCanDoDistinct"
+    href="https://erddap.github.io/docs/server-admin/datasets#sourceCanDoDistinct"
     >sourceCanDoDistinct</a>, 
   then the database may (depending on settings in datasets.xml) 
   partly or completely handle <strong>only the first</strong> orderBy..() or distinct().
@@ -3700,7 +3704,7 @@ in ERDDAP™ version 1.74 (released 2016-10-07)</h2>
   to standard values so files with different values can be aggregated.
   Because of this change, after you install this new version of ERDDAP™, please set a 
   <a rel="help" 
-    href="https://erddap.github.io/setup.html#hardFlag"
+    href="https://erddap.github.io/docs/server-admin/deploy-install#hardFlag"
   >hardFlag</a> for each EDDGridFromNcFilesUnpacked dataset in your ERDDAP.
   <br>&nbsp;
 <li>IMPROVED: EDDTableFromNcCFFiles can now handle files that have multiple sample_dimension's.
@@ -3724,7 +3728,7 @@ in ERDDAP™ version 1.72 (released 2016-05-12)</h2>
   <ul>
   <li>NEW EDDTableFromMultidimNcFiles 
       <a rel="help"
-      href="https://erddap.github.io/setupDatasetsXml.html#EDDTableFromMultidimNcFiles"
+      href="https://erddap.github.io/docs/server-admin/datasets#EDDTableFromMultidimNcFiles"
     >EDDTableFromMultidimNcFiles</a>
     is a new alternative to EDDTableFromNcFiles.
     It is designed to deal with groups of files with several variables 
@@ -3779,17 +3783,17 @@ in ERDDAP™ version 1.70 (released 2016-04-15)</h2>
     Thanks to Favio Medrano.
   <li>The new 
   <a rel="help"
-    href="https://erddap.github.io/setupDatasetsXml.html#EDDTableAggregateRows"
+    href="https://erddap.github.io/docs/server-admin/datasets#EDDTableAggregateRows"
     >EDDTableAggregateRows</a> allows you to make a merged EDDTable dataset
     from two or more EDDTable datasets
     which have the same data variables using the same units.
     Thanks To Kevin O'Brien.  
   <li>New options for EDDTableFromDatabase
     (<a rel="help"
-    href="https://erddap.github.io/setupDatasetsXml.html#sourceCanOrderBy"
+    href="https://erddap.github.io/docs/server-admin/datasets#sourceCanOrderBy"
     >sourceCanOrderBy</a> and
     <a rel="help"
-    href="https://erddap.github.io/setupDatasetsXml.html#sourceCanDoDistinct"
+    href="https://erddap.github.io/docs/server-admin/datasets#sourceCanDoDistinct"
     >sourceCanDoDistinct</a>)
     let you specify whether ERDDAP™, the database, or both, handle
     distinct and orderBy (and all variants) constraints.
@@ -3797,7 +3801,7 @@ in ERDDAP™ version 1.70 (released 2016-04-15)</h2>
   <li>You can now make a private dataset's graphs and metadata available to 
     the public via the new 
     <a rel="help"
-    href="https://erddap.github.io/setupDatasetsXml.html#graphsAccessibleTo"
+    href="https://erddap.github.io/docs/server-admin/datasets#graphsAccessibleTo"
     >&lt;graphsAccessibleTo&gt;public&lt;/graphsAccessibleTo&gt;</a>
     tag.
     Thanks to Emanuele Lombardi.
@@ -3849,14 +3853,14 @@ in ERDDAP™ version 1.70 (released 2016-04-15)</h2>
     <li>The authentication=openid option was removed. It was out-of-date.
     <li>The new, recommended, 
       <a rel="help"
-      href="https://erddap.github.io/setup.html#authenticationGoogle"
+      href="https://erddap.github.io/docs/server-admin/deploy-install#authenticationGoogle"
       >authentication=google</a>
       option uses Google Sign-In
       (based on OAuth 2.0) to allow anyone with a Google email account
       (including Google managed accounts like @noaa.gov) to log in.
     <li>The new, 
       <a rel="help"
-      href="https://erddap.github.io/setup.html#authenticationEmail"
+      href="https://erddap.github.io/docs/server-admin/deploy-install#authenticationEmail"
       >authentication=email</a>
       option is a back up for authentication=google.
       It allows users with a &lt;user&gt; tag in datasets.xml 
@@ -3867,7 +3871,7 @@ in ERDDAP™ version 1.70 (released 2016-04-15)</h2>
 &lt;!-- If you want to restrict access to some datasets, 
 you need to specify the method used for logging on (authentication).
 See the info at 
-https://erddap.github.io/setup.html#security
+https://erddap.github.io/docs/server-admin/additional-information#security
 Currently, the options are: "" (logins not supported, the default), 
 "custom", "email", and "google" (recommended).  
 [No longer supported: "basic", "openid"]
@@ -3926,7 +3930,7 @@ the default).
 You should only use "MD5" or "SHA256" if you need to match 
 values stored that way in an external password database.
 See the info at 
-https://erddap.github.io/setup.html#security
+https://erddap.github.io/docs/server-admin/additional-information#security
 --&gt; </pre>
 
     <li>In your setup.xml, please change the description for &lt;baseHttpsUrl&gt; 
@@ -3939,7 +3943,7 @@ If you make a proxy so that ":8443" isn't needed,
 then don't use ":8443" here.
 This is relevant even if &lt;authentication&gt; is "".
 See the instructions at 
-https://erddap.github.io/setup.html#security
+https://erddap.github.io/docs/server-admin/additional-information#security
 For example:
 For running/testing on your personal computer:
   &lt;baseHttpsUrl&gt;https://localhost:8443&lt;/baseHttpsUrl&gt;                  
@@ -4039,7 +4043,7 @@ number so that the local dataset stays reasonably up-to-date. --&gt;
       when you compile or run ERDDAP™ or one of its tools, 
       compare your command line's classpath to ERDDAP's
       <a rel="help"
-      href="https://erddap.github.io/setup.html#classpath"
+      href="https://erddap.github.io/docs/server-admin/deploy-install#classpath"
       >current classpath</a>      
       to figure out which .jars are missing from your classpath.
     </ul>    
@@ -4057,7 +4061,7 @@ in ERDDAP™ version 1.68 (released 2016-02-08)</h2>
 <li><strong>Things ERDDAP™ Administrators Need to Know and Do:</strong> 
   <ul>
   <li><a rel="help"
-    href="https://erddap.github.io/setupDatasetsXml.html#EDDGridFromFiles_AggregationViaFileNames"
+    href="https://erddap.github.io/docs/server-admin/datasets#EDDGridFromFiles_AggregationViaFileNames"
     >EDDGridFromFiles Aggregation via File Names or Global Metadata</a> -- 
     <br>All variations of EDDGridFromFiles can now aggregate a group of files 
     by adding a new leftmost
@@ -4197,7 +4201,7 @@ in ERDDAP™ version 1.66 (released 2016-01-19)</h2>
     Thanks to Filipe Rocha Freire.
 
   <li>The new 
-    <a rel="help" href="https://erddap.github.io/setup.html#ArchiveADataset"
+    <a rel="help" href="https://erddap.github.io/docs/server-admin/deploy-install#ArchiveADataset"
     >ArchiveADataset</a> 
     tool simplifies making a .tar.gz archive with a 
     subset of a dataset in a format that is suitable for archiving (notably, at NOAA's NCEI).
@@ -4206,7 +4210,7 @@ in ERDDAP™ version 1.66 (released 2016-01-19)</h2>
 
   <li>The new dataset type 
 <a rel="help"
-href="https://erddap.github.io/setupDatasetsXml.html#EDDGridFromNcFilesUnpacked"
+href="https://erddap.github.io/docs/server-admin/datasets#EDDGridFromNcFilesUnpacked"
 >EDDGridFromNcFilesUnpacked</a>    
 is a variant of EDDGridFromNcFiles.
 The difference is that this class unpacks
@@ -4226,11 +4230,11 @@ with different values of
 in different files in a collection.
 Otherwise, you would have to use a tool like 
 <a rel="help"
-href="https://erddap.github.io/setupDatasetsXml.html#NcML"
+href="https://erddap.github.io/docs/server-admin/datasets#NcML"
 >NcML</a>
 or
 <a rel="help"
-href="https://erddap.github.io/setupDatasetsXml.html#NCO"
+href="https://erddap.github.io/docs/server-admin/datasets#netcdf-operators-nco"
 >NCO</a>
 to modify each file
 to remove the differences so that the files could be handled by 
@@ -4241,7 +4245,7 @@ Thanks to Philippe Makowski.
 
   <li>The new dataset type 
 <a rel="help"
-href="https://erddap.github.io/setupDatasetsXml.html#EDDGridLonPM180"
+href="https://erddap.github.io/docs/server-admin/datasets#EDDGridLonPM180"
 >EDDGridLonPM180</a>
     lets you change datasets 
     that have some longitude values greater than 180 (e.g., the range 0 to 360)
@@ -4255,7 +4259,7 @@ href="https://erddap.github.io/setupDatasetsXml.html#EDDGridLonPM180"
     This bug is fixed in ERDDAP™ v1.68.
   <li>In 
 <a rel="help"
-href="https://erddap.github.io/setupDatasetsXml.html#GenerateDatasetsXml"
+href="https://erddap.github.io/docs/server-admin/datasets#GenerateDatasetsXml"
 >GenerateDatasetsXml</a>, a new special dataset type, EDDGridLonPM180FromErddapCatalog,
     lets you generate the datasets.xml for EDDGridLonPM180 datasets
     from all of the EDDGrid datasets in an ERDDAP
@@ -4264,7 +4268,7 @@ href="https://erddap.github.io/setupDatasetsXml.html#GenerateDatasetsXml"
   <li>For all EDDGrid datasets, in datasets.xml you can now use the 
     optional 
 <br><a rel="help" 
-href="https://erddap.github.io/setupDatasetsXml.html#accessibleViaWMS"
+href="https://erddap.github.io/docs/server-admin/datasets#accessibleViaWMS"
 ><kbd>&lt;accessibleViaWMS&gt;true|false&lt;/accessibleViaWMS&gt;</kbd></a> (default=true).
     Setting this to false forcibly disables the WMS service for this dataset.
     If true, the dataset may still not be accessible via WMS for other reasons
@@ -4285,7 +4289,7 @@ href="https://erddap.github.io/setupDatasetsXml.html#accessibleViaWMS"
 
   <li>In setup.xml, you can now specify the maximum size for the 
     <a rel="help" 
-    href="https://erddap.github.io/setup.html#log"
+    href="https://erddap.github.io/docs/server-admin/deploy-install#log"
     >log file</a>
     (when it is renamed to log.txt.previous and a new log.txt is created), in MegaBytes.
     The minimum allowed is 1. The maximum allowed is 2000. The default is 20 (MB).
@@ -4294,11 +4298,11 @@ href="https://erddap.github.io/setupDatasetsXml.html#accessibleViaWMS"
 
   <li>In datasets.xml, 
     <a rel="help" 
-    href="https://erddap.github.io/setupDatasetsXml.html#fgdcFile"
+    href="https://erddap.github.io/docs/server-admin/datasets#fgdcFile"
     ><kbd>&lt;fgdcFile&gt;</kbd></a>
      or 
     <a rel="help" 
-    href="https://erddap.github.io/setupDatasetsXml.html#iso19115File"
+    href="https://erddap.github.io/docs/server-admin/datasets#iso19115File"
     ><kbd>&lt;iso19115File&gt;</kbd></a>     
     can now be a local file (as before)
     or a URL (which will be downloaded so there is a local copy).
@@ -4331,7 +4335,7 @@ href="https://erddap.github.io/setupDatasetsXml.html#accessibleViaWMS"
     partial message, which won't be completed until the next chunk is written.
   <li>Bug fix related to inotify and the 
     <a rel="help" 
-    href="https://erddap.github.io/setupDatasetsXml.html#updateEveryNMillis"
+    href="https://erddap.github.io/docs/server-admin/datasets#updateEveryNMillis"
     ><kbd>&lt;updateEveryNMillis&gt;</kbd></a> system for EDDGridFromFiles
     and EDDTableFromFiles datasets: It is no longer necessary to 
     specify a large of fs.inotify.max_user_watches or fs.inotify.max_user_instances.
@@ -4388,7 +4392,7 @@ in ERDDAP™ version 1.64 (released 2015-08-19)</h2>
     (no more security updates) in April 2015.
     This version of ERDDAP™ will not work with versions of Java below 1.8.
     If you update from Java 1.7x (or earlier), you should also update Tomcat.
-    See the <a rel="help" href="https://erddap.github.io/setup.html"
+    See the <a rel="help" href="https://erddap.github.io/docs/server-admin/deploy-install"
     >ERDDAP™ Set Up Instructions</a> for download links and advice.
 
   <li>New Data Provider Form.
@@ -4406,7 +4410,7 @@ in ERDDAP™ version 1.64 (released 2015-08-19)</h2>
     but the ERDDAP™ administrator still has to complete the datasets.xml chunk 
     and deal with getting the data file(s) from the provider or connecting to the database.
     For more information, see the 
-<a rel="help" href="https://erddap.github.io/setupDatasetsXml.html#DataProviderForm"
+<a rel="help" href="https://erddap.github.io/docs/server-admin/datasets#DataProviderForm"
 >Data&nbsp;Provider&nbsp;Form&nbsp;description</a>.
 
   <li>New &lt;matchAxisNDigits&gt;
@@ -4468,7 +4472,7 @@ in ERDDAP™ version 1.64 (released 2015-08-19)</h2>
   <li>Programmers: new /lib .jar files.
     <br>If you compile ERDDAP™, please note the new .jar files in the 
     classpath -cp parameter listed in the ERDDAP™ 
-    <a rel="help" href="https://erddap.github.io/setup.html#programmersGuide"
+    <a rel="help" href="https://erddap.github.io/docs/server-admin/deploy-install#programmersGuide"
     >Programmer's Guide</a>.
 
   <li>sea_water_practical_salinity
@@ -4541,7 +4545,7 @@ in ERDDAP™ version 1.62 (released 2015-06-08)</h2>
     variables that have valid_range, valid_min, or valid_max have the
     correct values when the datasets appear in the new version of ERDDAP.
     See 
-    <a rel="help" href="https://erddap.github.io/setupDatasetsXml.html#valid_range"
+    <a rel="help" href="https://erddap.github.io/docs/server-admin/datasets#valid_range"
     >valid_range/min/max documentation</a>.
 
   <li>ACDD-1.3
@@ -4558,7 +4562,7 @@ in ERDDAP™ version 1.62 (released 2015-06-08)</h2>
     which was ratified in early 2015 and is referred to as "ACDD-1.3".
     Fortunately, ACDD-1.3 is highly backward compatible with version 1.0.
     We RECOMMEND that you 
-    <a rel="help" href="https://erddap.github.io/setupDatasetsXml.html#switchToACDD13"
+    <a rel="help" href="https://erddap.github.io/docs/server-admin/datasets#switchToACDD13"
     >switch to ACDD-1.3</a>. It isn't hard.
   <li>GenerateDatasetsXml Attributes
     <br>There were a large number of changes to 
@@ -4572,7 +4576,7 @@ in ERDDAP™ version 1.62 (released 2015-06-08)</h2>
     and changes to the old servers, it is getting harder for ERDDAP™ to 
     automatically detect the server type from the server's responses. 
     The use of 
-    <a rel="help" href="https://erddap.github.io/setupDatasetsXml.html#EDDTableFromSOSSkeletonXML"
+    <a rel="help" href="https://erddap.github.io/docs/server-admin/datasets#EDDTableFromSOSSkeletonXML"
     >&lt;sosServerType&gt;</a> (with a value of 
     IOOS_NDBC, IOOS_NOS, OOSTethys, or WHOI) is now STRONGLY RECOMMENDED. 
     If any of your datasets of this type have problems in the new version of ERDDAP,
@@ -4613,7 +4617,7 @@ in ERDDAP™ version 1.60 (released 2015-03-12)</h2>
 <li><strong>Things ERDDAP™ Administrators Need to Know and Do:</strong> 
   <ul>
   <li>STRONGLY RECOMMENDED: Update your server's <a rel="help"
-    href="https://erddap.github.io/setup.html#robots">robots.txt</a> 
+    href="https://erddap.github.io/docs/server-admin/deploy-install#robots">robots.txt</a> 
     file to include:<kbd>
     <br>Disallow: /erddap/files/</kbd>
   <li>INotify Problem and Solution:
@@ -4674,7 +4678,7 @@ in ERDDAP™ version 1.58 (released 2015-02-25)</h2>
     ERDDAP™ supports accessing the latest data, 
     even if it is after the currently-known last time.
     Note that the new 
-    <a rel="help" href="https://erddap.github.io/setupDatasetsXml.html#updateFiles"
+    <a rel="help" href="https://erddap.github.io/docs/server-admin/datasets#updateFiles"
     >&lt;updateEveryNMillis&gt;</a>
     support in EDDGridFromFiles and EDDTableFromFiles datasets 
     updates the time variable's destinationMax.
@@ -4686,7 +4690,7 @@ in ERDDAP™ version 1.58 (released 2015-02-25)</h2>
 <li><strong>Things ERDDAP™ Administrators Need to Know and Do:</strong> 
   <ul>
   <li>STRONGLY RECOMMENDED: Update your server's <a rel="help"
-    href="https://erddap.github.io/setup.html#robots"
+    href="https://erddap.github.io/docs/server-admin/deploy-install#robots"
     >robots.txt</a> 
     file to include:<kbd>
     <br>Disallow: /files/
@@ -4702,20 +4706,20 @@ in ERDDAP™ version 1.58 (released 2015-02-25)</h2>
     <li>Set the erdVH... datasets to <kbd>active="false"</kbd>.
     </ul>
   <li>All EDDGridFromFiles and EDDTableFromFiles subclasses now support 
-    <a rel="help" href="https://erddap.github.io/setupDatasetsXml.html#accessibleViaFiles"
+    <a rel="help" href="https://erddap.github.io/docs/server-admin/datasets#accessibleViaFiles"
     >&lt;accessibleViaFiles&gt;</a> to make the source data files
     accessible via the "files" systems.
     By default, this system is off for each dataset. 
     You need to add the tag to enable it.
     Thanks to Philippe Makowski.
   <li>All EDDGridFromFiles and EDDTableFromFiles subclasses now support
-    <a rel="help" href="https://erddap.github.io/setupDatasetsXml.html#updateFiles"
+    <a rel="help" href="https://erddap.github.io/docs/server-admin/datasets#updateFiles"
     >&lt;updateEveryNMillis&gt;</a>. 
     By default, this system is off for each dataset. 
     You need to add the tag to enable it.
     Thanks to Dominic Fuller-Rowell and NGDC.
   <li>The new <a rel="help" 
-    href="https://erddap.github.io/setupDatasetsXml.html#EDDTableFromFileNames"
+    href="https://erddap.github.io/docs/server-admin/datasets#EDDTableFromFileNames"
     >EDDTableFromFileNames</a> 
     creates a dataset from information about a group of files 
     in the server's file system, 
@@ -4730,12 +4734,12 @@ in ERDDAP™ version 1.58 (released 2015-02-25)</h2>
     Special thanks to Philippe Makowski, who persisted when I was
     slow to appreciate the beauty of this idea.
   <li>The new <a rel="help" 
-    href="https://erddap.github.io/setupDatasetsXml.html#EDDGridFromEDDTable"
+    href="https://erddap.github.io/docs/server-admin/datasets#EDDGridFromEDDTable"
     >EDDGridFromEDDTable</a> 
     lets you convert a tabular dataset into a gridded dataset.
     Thanks to Ocean Networks Canada.
   <li>The new <a rel="help" 
-    href="https://erddap.github.io/setupDatasetsXml.html#EDDGridFromMergeIRFiles"
+    href="https://erddap.github.io/docs/server-admin/datasets#EDDGridFromMergeIRFiles"
     >EDDGridFromMergeIRFiles</a> 
     aggregates data from a group of local MergeIR .gz files.
     EDDGridFromMergeIRFiles has the distinction of being the first chunk
@@ -4769,10 +4773,10 @@ in ERDDAP™ version 1.56 (released 2014-12-16)</h2>
 <li><strong>Things ERDDAP™ Administrators Need to Know and Do:</strong> 
   <ul>
   <li>You probably already know about 
-    <a rel="help" href="https://erddap.github.io/setupDatasetsXml.html#EDDGridFromErddap"
+    <a rel="help" href="https://erddap.github.io/docs/server-admin/datasets#eddfromerddap"
     >EDDGridFromErddap</a>
     and 
-    <a rel="help" href="https://erddap.github.io/setupDatasetsXml.html#EDDTableFromErddap"
+    <a rel="help" href="https://erddap.github.io/docs/server-admin/datasets#eddfromerddap"
     >EDDTableFromErddap</a>
     which let you link to datasets in other ERDDAPs and have them appear
     in your ERDDAP. User requests for actual data from these datasets get 
@@ -4783,11 +4787,11 @@ in ERDDAP™ version 1.56 (released 2014-12-16)</h2>
     ones you want into your datasets.xml.    
     Thanks to Conor Delaney.
   <li>If you compile ERDDAP™, you need to add some new .jar files to your 
-    <a rel="help" href="https://erddap.github.io/setup.html#developmentEnvironment"
+    <a rel="help" href="https://erddap.github.io/docs/server-admin/deploy-install#developmentEnvironment"
     >classpath 
     -cp switch</a> for javac and java.
   <li>The new 
-    <a rel="help" href="https://erddap.github.io/setupDatasetsXml.html#EDDTableFromCassandra"
+    <a rel="help" href="https://erddap.github.io/docs/server-admin/datasets#EDDTableFromCassandra"
     >EDDTableFromCassandra</a>
     handles getting data from 
     <a rel="help" 
@@ -4796,7 +4800,7 @@ in ERDDAP™ version 1.56 (released 2014-12-16)</h2>
       title="This link to an external website does not constitute an endorsement."></a>.
     Thanks to Ocean Networks Canada.
   <li>The new 
-    <a rel="help" href="https://erddap.github.io/setupDatasetsXml.html#EDDTableFromColumnarAsciiFiles"
+    <a rel="help" href="https://erddap.github.io/docs/server-admin/datasets#EDDTableFromColumnarAsciiFiles"
     >EDDTableFromColumnarAsciiFiles</a>
     handles getting data from ASCII data files with fixed-width columns.
     Thanks to Philippe Makowski.
@@ -4947,7 +4951,7 @@ in ERDDAP™ version 1.48 (released 2014-09-04)</h2>
     to safe Matlab variable names. 
     But I still strongly recommend that you create datasetIDs that are valid variable names:
     starting with a letter and then just using A-Z, a-z, 0-9, and _. 
-    See <a href="https://erddap.github.io/setupDatasetsXml.html#datasetID"
+    See <a href="https://erddap.github.io/docs/server-admin/datasets#datasetID"
     >datasetID</a>.
     Thanks to Luke Campbell.
   <li>Bug fix in EDDTableFromDatabase: With some types of databases, 
@@ -4974,7 +4978,7 @@ in ERDDAP™ version 1.48 (released 2014-09-04)</h2>
     I don't want the name to highlight ERD. 
     I want ERDDAP™ to highlight your institution and your data.  
   <li>PLEASE 
-    <a href="https://erddap.github.io/setup.html#customize">customize
+    <a href="https://erddap.github.io/docs/server-admin/deploy-install#customize">customize
     the appearance of your ERDDAP™ installation to highlight your institution and your data</a>. 
     With an hour's work, you can make nice improvements that will last forever.  
   <li>In setup.xml, the &lt;displayDiagnosticInfo&gt; option is now always ignored
@@ -4992,7 +4996,7 @@ in ERDDAP™ version 1.48 (released 2014-09-04)</h2>
     and never put their results on the clipboard.
   <li>GenerateDatasetsXml now supports a -i command line parameter which inserts the output 
     into the specified file at a specified place. See the 
-    <a href="https://erddap.github.io/setupDatasetsXml.html#GenerateDatasetsXml"
+    <a href="https://erddap.github.io/docs/server-admin/datasets#GenerateDatasetsXml"
     >documentation</a>.  Thanks to Terry Rankine.
   <li>EDDTableFromDatabase now supports &lt;columnNameQuotes&gt;&lt;/columnNameQuotes&gt;,
     with valid values " (the default), ', or nothing.
@@ -5100,14 +5104,14 @@ in ERDDAP™ version 1.44 (released 2013-05-30)</h2>
     (Shouldn't NOAA be doing this?)
 
   <li>The new 
-    <a href="https://erddap.github.io/setupDatasetsXml.html#EDDTableFromWFSFiles"
+    <a href="https://erddap.github.io/docs/server-admin/datasets#EDDTableFromWFSFiles"
     >EDDTableFromWFSFiles</a> makes a local copy of all of the data from an
     ArcGIS MapServer WFS server
     and so the data can then be re-served quickly to ERDDAP™ users.
     Thanks to Christy Caudill.
 
   <li>The new
-    <a href="https://erddap.github.io/setupDatasetsXml.html#EDDTableFromEDDGrid"
+    <a href="https://erddap.github.io/docs/server-admin/datasets#EDDTableFromEDDGrid"
     >EDDTableFromEDDGrid</a> lets you create an EDDTable dataset from an EDDGrid dataset.
     Some common reasons for doing this are:
     <ul>
@@ -5195,12 +5199,12 @@ in ERDDAP™ version 1.44 (released 2013-05-30)</h2>
     with minimal demands on the data source,
     but at the cost of slightly slowing down the processing of some user requests.
     See 
-    <a href="https://erddap.github.io/setupDatasetsXml.html#updateEveryNMillis"
+    <a href="https://erddap.github.io/docs/server-admin/datasets#updateEveryNMillis"
     >&lt;updateEveryNMillis&gt;</a>
     <br>Thanks to Michael Barry and OOICI.
 
   <li>EDDGridFromNcFiles, EDDTableFromNcFiles, and EDDTableFromNcCFFiles now support 
-    <a href="https://erddap.github.io/setupDatasetsXml.html#NcML"
+    <a href="https://erddap.github.io/docs/server-admin/datasets#NcML"
     >NcML .ncml</a> 
     source files in place of .nc files.
     Thanks to Jose B Rodriguez Rueda.
@@ -5220,7 +5224,7 @@ in ERDDAP™ version 1.44 (released 2013-05-30)</h2>
     <br>so you can specify the type of SOS server (so ERDDAP™ doesn't have to figure it out).
     Valid values of <kbd>&lt;<i>serverType</i>&gt;</kbd> are 
     <kbd>IOOS_NDBC, IOOS_NOS, OOSTethys,</kbd> and <kbd>WHOI</kbd> (a newly supported serverType).
-    See <a href="https://erddap.github.io/setupDatasetsXml.html#EDDTableFromSOS"
+    See <a href="https://erddap.github.io/docs/server-admin/datasets#EDDTableFromSOS"
     >EDDTableFromSOS</a>.
     Thanks to Derrick Snowden and Janet Fredericks.
 
@@ -5288,7 +5292,7 @@ in ERDDAP™ version 1.42 (released 2012-11-26)</h2>
   <li>ERDDAP™ once again can run with Java 1.6.  (ERDDAP™ v1.40 required Java 1.7.)
     We still strongly recommend using the latest version of Java 1.7.
   <li>A new dataset type, 
-    <a href="https://erddap.github.io/setupDatasetsXml.html#EDDTableFromAwsXmlFiles"
+    <a href="https://erddap.github.io/docs/server-admin/datasets#EDDTableFromAwsXmlFiles"
     >EDDTableFromAwsXmlFiles</a>, 
     can read data from a set of
     Automatic Weather Station (AWS) XML data files.
@@ -5345,7 +5349,7 @@ in ERDDAP™ version 1.40 (released 2012-10-25)</h2>
       src="../images/external.png" alt=" (external link)" 
       title="This link to an external website does not constitute an endorsement."></a> 
     for the ERDDAP™ project as well as the more general
-    <a href="https://erddap.github.io/setup.html#programmersGuide"
+    <a href="https://erddap.github.io/docs/server-admin/deploy-install#programmersGuide"
     >ERDDAP™ Programmer's Guide</a>.
     (This was announced separately a few weeks after the ERDDAP™ 1.38 release.)
   <li>GenerateDatasetsXml has been improved.
@@ -5359,14 +5363,14 @@ in ERDDAP™ version 1.40 (released 2012-10-25)</h2>
     <ul>
     <li>Internally, ERDDAP™ now handles times at millisecond precision (not seconds).
     <li>You can now optionally specify the time precision for a given dataset, see
-      <a href="https://erddap.github.io/setupDatasetsXml.html#time_precision"
+      <a href="https://erddap.github.io/docs/server-admin/datasets#time_precision"
       >time_precision</a>.  For example, you might set a dataset to display time values
       with date precision (e.g., 1970-01-01).
     <li>Your current datasets will use the default settings, so they are unaffected
       by these changes and will continue to display time with seconds precision.
     </ul>
     Thanks to Servet Cizmeli and Philip Goldstein.
-  <li><a href="https://erddap.github.io/setupDatasetsXml.html#EDDTableFromNcCFFiles"
+  <li><a href="https://erddap.github.io/docs/server-admin/datasets#EDDTableFromNcCFFiles"
   >EDDTableFromNcCFFiles</a>
     is a new dataset <kbd>type</kbd> which you can use in your datasets.xml file.
     It can read data from any of the numerous file formats defined by the     
@@ -5504,7 +5508,7 @@ in ERDDAP™ version 1.38 (released 2012-04-21)</h2>
     <br>So, <strong>good dataset metadata leads to good ERDDAP-generated 
     ISO 19115 and FGDC metadata.</strong>
     <br><strong>See the new documentation for the many new RECOMMENDED
-    <a rel="help" href="https://erddap.github.io/setupDatasetsXml.html#globalAttributes"
+    <a rel="help" href="https://erddap.github.io/docs/server-admin/datasets#globalAttributes"
     >Global Attributes</a>.</strong>  
 
   <li>In datasets.xml, if you want to tell ERDDAP™ to use a pre-made 
@@ -5541,9 +5545,9 @@ in ERDDAP™ version 1.38 (released 2012-04-21)</h2>
     has changed slightly because both classes were just rewritten to be more efficient
     (both classes now always make a local copy of all of the remote data files).
     See the documentation for setting up these classes:
-    <a href="https://erddap.github.io/setupDatasetsXml.html#EDDTableFromHyraxFiles"
+    <a href="https://erddap.github.io/docs/server-admin/datasets#EDDTableFromHyraxFiles"
     >EDDTableFromHyraxFiles</a> and
-    <a href="https://erddap.github.io/setupDatasetsXml.html#EDDTableFromThreddsFiles"
+    <a href="https://erddap.github.io/docs/server-admin/datasets#EDDTableFromThreddsFiles"
     >EDDTableFromThreddsFiles</a>.
     In particular, see the revised comments about <kbd>&lt;fileDir&gt;</kbd> (now irrelevant)
     and <kbd>&lt;sourceUrl&gt;</kbd> (now essential).
@@ -5562,7 +5566,7 @@ in ERDDAP™ version 1.38 (released 2012-04-21)</h2>
     Thanks to Kevin O'Brien.
 
   <li>If you use EDDTableFromDatabase, see the improved 
-    <a href="https://erddap.github.io/setupDatasetsXml.html#EDDTableFromDatabase"
+    <a href="https://erddap.github.io/docs/server-admin/datasets#eddtablefromdatabase"
     >"Speed" documentation</a> 
     for additional suggestions to improve performance.
     Thanks to Kevin O'Brien.
@@ -5583,7 +5587,7 @@ in ERDDAP™ version 1.38 (released 2012-04-21)</h2>
     metadata for the datasets in your ERDDAP.
 
   <li>Dealing with Bots -- Please read this advice to
-    <a href="https://erddap.github.io/setup.html#robots">prevent
+    <a href="https://erddap.github.io/docs/server-admin/deploy-install#robots">prevent
     bots from crawling your ERDDAP™ in a stupid way</a>.
 
   <li>Translation -- The text on ERDDAP's web pages is now mostly
@@ -5842,12 +5846,12 @@ in ERDDAP™ version 1.30 (released 2011-04-29)</h2>
     If you are using Tomcat 6, consider upgrading to Tomcat version 7.
 
   <li>Please follow all of the instructions for
-    <a href="https://erddap.github.io/setup.html#initialSetup"
+    <a href="https://erddap.github.io/docs/server-admin/deploy-install#initialSetup"
     >setting up a new ERDDAP™</a>, but where relevant,
     you will be copying files from your old installation to the new installation,
     notably the [tomcat]/content/erddap directory and files. 
     As part of that, note the 
-      <a href="https://erddap.github.io/setup.html#tomcat"
+      <a href="https://erddap.github.io/docs/server-admin/deploy-install#tomcat"
       >new Tomcat setup recommendations</a>.
 
   <li>The default erddap.css is now included in the erddap.war file.
@@ -5912,7 +5916,7 @@ in ERDDAP™ version 1.30 (released 2011-04-29)</h2>
       Notably, each dataset MUST have the correct metadata and variables related to the
       cdm_data_type. If not, the dataset won't load and will throw an error.
       See the documentation for 
-        <a href="https://erddap.github.io/setupDatasetsXml.html#cdm_data_type"
+        <a href="https://erddap.github.io/docs/server-admin/datasets#cdm_data_type"
         >cdm_data_type</a>.
     <li>FYI: There is a new dataset type: EDDTableFromAsciiServiceNOS.
     <li>FYI: There are three newly allowed ioos_category options: Hydrology, Quality (e.g., for 
@@ -5926,7 +5930,7 @@ in ERDDAP™ version 1.30 (released 2011-04-29)</h2>
       <br>&nbsp;&nbsp;<kbd>&lt;att name="long_name"&gt;Altitude&lt;/att&gt;</kbd>
       <br>(or a slightly different long_name in special cases).
     <li>Optional: All EDDTableFromFiles subclasses support variable 
-      <a href="https://erddap.github.io/setupDatasetsXml.html#globalSourceNames"
+      <a href="https://erddap.github.io/docs/server-admin/datasets#globalSourceNames"
       >sourceName=global:...</a> 
       to convert global metadata from each file into a data variable. Thanks to Lynn DeWitt.
     </ul>
@@ -6134,7 +6138,7 @@ in ERDDAP™ version 1.24 (released 2010-08-06)</h2>
       <li>New <kbd>&amp;.land=<i>value</i></kbd>, where <i>value</i> can be "under" (show topography) or
         "over" (just show bathymetry).
         If not specified, the default is set by 
-          <a href="https://erddap.github.io/setupDatasetsXml.html#drawLandMask"
+          <a href="https://erddap.github.io/docs/server-admin/datasets#drawLandMask"
           >drawLandMask</a> in datasets.xml or setup.xml. 
         Thanks to POST.
       <li>New: lines in the legend that are too long are automatically broken into multiple lines. 
@@ -6180,7 +6184,7 @@ in ERDDAP™ version 1.24 (released 2010-08-06)</h2>
   There are lots of changes. Sorry. But each one brings some nice benefits.
   <ul>
   <li>Big changes to GenerateDatasetXml -- it now often asks more questions (see the relevant
-    <a href="https://erddap.github.io/setupDatasetsXml.html#datasetTypes"
+    <a href="https://erddap.github.io/docs/server-admin/datasets#list-of-types-datasets"
     >datasetTypes</a> information) and now always generates essentially
     ready-to-use content for datasets.xml.
     You are still responsible for the setup, so you should still review the
@@ -6395,7 +6399,7 @@ This particular ERDDAP™ installation has oceanographic data
     explicitly so that other software can properly interact with your database. Thanks/sorry Michael Urzen.
   <li>HIGHLY RECOMMENDED: In datasets.xml, to enable .subset web pages for faceted search of your tabular datasets, 
     you need to add 
-      <a href="https://erddap.github.io/setupDatasetsXml.html#subsetVariables"
+      <a href="https://erddap.github.io/docs/server-admin/datasets#subsetVariables"
       ><kbd>&lt;subsetVariables&gt;</kbd></a> to the dataset's global attributes. 
   <li>RECOMMENDED: In datasets.xml, if you have the dataset with datasetID="pmelGtsppp", 
     please change it to be
@@ -6404,11 +6408,11 @@ This particular ERDDAP™ installation has oceanographic data
     <br>&nbsp;&nbsp;<kbd>&lt;dataset type="EDDTableFromErddap" datasetID="erdGtsppBest"&gt;    <br>&nbsp;&nbsp;&nbsp;&nbsp;&lt;sourceUrl&gt;https://coastwatch.pfeg.noaa.gov/erddap/tabledap/erdGtsppBest&lt;/sourceUrl&gt;
     <br>&nbsp;&nbsp;&lt;/dataset&gt;</kbd>
   <li>RECOMMENDED: In datasets.xml, there are new valid options for the 
-     <a href="https://erddap.github.io/setupDatasetsXml.html#cdm_data_type"
+     <a href="https://erddap.github.io/docs/server-admin/datasets#cdm_data_type"
      ><kbd>&lt;cdm_data_type&gt;</kbd></a> global attribute, 
      so you should review/change the value for your datasets.
   <li>In datasets.xml, the new 
-    <a href="https://erddap.github.io/setupDatasetsXml.html#sourceNeedsExpandedFP_EQ"
+    <a href="https://erddap.github.io/docs/server-admin/datasets#sourceNeedsExpandedFP_EQ"
     ><kbd>&lt;sourceNeedsExpandedFP_EQ&gt;</kbd></a> is helpful if the source server doesn't   
     consistently handle <kbd>&amp;<i>variable</i>=<i>value</i></kbd> tests correctly
     (because of the 
@@ -6420,13 +6424,13 @@ This particular ERDDAP™ installation has oceanographic data
       so you don't need to make
     any changes.
   <li>New 
-    <a href="https://erddap.github.io/setupDatasetsXml.html#EDDTableFromAsciiFiles"
+    <a href="https://erddap.github.io/docs/server-admin/datasets#EDDTableFromAsciiFiles"
     >EDDTableFromAsciiFiles</a>. Thanks to Jerry Yun Pan.
   <li>New
-    <a href="https://erddap.github.io/setupDatasetsXml.html#EDDTableFromThreddsFiles"
+    <a href="https://erddap.github.io/docs/server-admin/datasets#EDDTableFromThreddsFiles"
     >EDDTableFromThreddsFiles</a>.  Thanks to Roy Mendelssohn.
   <li>Changes to 
-    <a href="https://erddap.github.io/setupDatasetsXml.html#EDDTableFromNcFiles"
+    <a href="https://erddap.github.io/docs/server-admin/datasets#EDDTableFromNcFiles"
     >EDDTableFromNcFiles</a> lets it be used with a wider range of files. 
   <li>EDDTableFromBMDE has been disabled. There are no longer any active, appropriate, data sources.
   <li>In GenerateDatasetXml, the new EDDGridFromThreddsCatalog harvests an entire THREDDS catalog
@@ -6498,7 +6502,7 @@ in ERDDAP™ version 1.20 (released 2009-07-02)</h2>
 <pre>
 &lt;!-- If you want to restrict access to some datasets, you need to 
 specify the method used for logging on (authentication). See the info 
-at https://erddap.github.io/setup.html#security
+at https://erddap.github.io/docs/server-admin/additional-information#security
 Currently, the options are: "" (logins not supported, the default),
 "custom", "openid". Note that openid login doesn't work when testing 
 with localhost (https://127.0.0.1:8443).
@@ -6511,7 +6515,7 @@ The options (in order of increasing security) are: "plaintext", "MD5",
 or "UEPMD5" (MD5(UserName:ERDDAP:Password), the default).
 You should only use "plaintext" or "MD5" if you need to match values 
 stored that way in an external password database.  See the info at
-https://erddap.github.io/setup.html#security
+https://erddap.github.io/docs/server-admin/additional-information#security
 --&gt;
 &lt;passwordEncoding&gt;UEPMD5&lt;/passwordEncoding&gt;
 
@@ -6537,10 +6541,10 @@ The default is 10000.
 </pre>
 
 <li>New dataset types 
-  <a href="https://erddap.github.io/setupDatasetsXml.html#EDDGridCopy"
+  <a href="https://erddap.github.io/docs/server-admin/datasets#eddgridcopy"
   >EDDGridCopy</a>
   and
-  <a href="https://erddap.github.io/setupDatasetsXml.html#EDDTableCopy"
+  <a href="https://erddap.github.io/docs/server-admin/datasets#EDDTableCopy"
   >EDDTableCopy</a>
   make and maintain a local copy 
   of another EDDGrid or EDDTable dataset's data and serve data from the local copy. 
@@ -6562,21 +6566,21 @@ The default is 10000.
 
   <p>These dataset types are part of a complete set of features that simplify 
   the creation of 
-  <a href="https://erddap.github.io/grids.html"
+  <a href="https://erddap.github.io/docs/server-admin/scaling"
   >grids/clusters/federations of ERDDAPs</a> 
   to handle very heavy loads (e.g., in a data center).
 
 <li>New dataset type
-  <a href="https://erddap.github.io/setupDatasetsXml.html#EDDTableFromDatabase"
+  <a href="https://erddap.github.io/docs/server-admin/datasets#eddtablefromdatabase"
   >EDDTableFromDatabase</a>
   gets data from a local or remote database table.
 <li>ERDDAP™ now has a 
-  <a href="https://erddap.github.io/setup.html#security">security</a> 
+  <a href="https://erddap.github.io/docs/server-admin/additional-information#security">security</a> 
   system that supports
   authentication (letting users log in)
   and authorization (granting them access to certain private datasets).
 <li>There are 
-  <a href="https://erddap.github.io/setupDatasetsXml.html#Tools"
+  <a href="https://erddap.github.io/docs/server-admin/datasets#Tools"
   >two, new, command-line tools</a>
     to help ERDDAP™ administrators generate the XML for a new dataset 
   in datasets.xml:
@@ -6589,7 +6593,7 @@ The default is 10000.
   For security reasons, they only supported
   a few dataset types. The new command line tools are a better solution.
 <li>The new 
-  <a href="https://erddap.github.io/setup.html#statusPage">status page</a> 
+  <a href="https://erddap.github.io/docs/server-admin/deploy-install#statusPage">status page</a> 
   lets anyone (but notably administrators)
   view the status of an ERDDAP™ 
   from any browser by going to [baseUrl]/erddap/status.html .
@@ -6610,16 +6614,16 @@ The default is 10000.
   or "yy" or "YY" (for formatted String dateTimes).
   But please still use the destinationName "time" for the main dateTime variable.
 <li>ERDDAP™ now generates a 
-  <a href="https://erddap.github.io/setup.html#sitemap">sitemap.xml</a> 
+  <a href="https://erddap.github.io/docs/server-admin/deploy-install#sitemap">sitemap.xml</a> 
   file, which tells
   search engines that your ERDDAP
   only needs to be crawled every month.
   ERDDAP™ administrators, please follow 
-  <a href="https://erddap.github.io/setup.html#sitemap">these instructions</a> 
+  <a href="https://erddap.github.io/docs/server-admin/deploy-install#sitemap">these instructions</a> 
   to notify the search engines about the new sitemap.xml file.
 <li>ERDDAP's error messages are now much shorter and geared to clients (not programmers).
    Thanks to Greg Williams.
-<li><a href="https://erddap.github.io/setupDatasetsXml.html#requestBlacklist"
+<li><a href="https://erddap.github.io/docs/server-admin/datasets#requestBlacklist"
   ><kbd>&lt;requestBlacklist&gt;</kbd></a>
 now also supports IP addresses where the last number has been replaced by *.
 <li>Requests for .json and .geoJson files may now include an optional 
@@ -6632,7 +6636,7 @@ now also supports IP addresses where the last number has been replaced by *.
   If originally there was no query, leave off the "&amp;" in your query.
   Thanks to Greg Williams.
 <li>Lots of new statistics were added to the 
-  <a href="https://erddap.github.io/setup.html#dailyReport">Daily Report</a>.
+  <a href="https://erddap.github.io/docs/server-admin/deploy-install#dailyReport">Daily Report</a>.
 <li>On web pages with lists of datasets, institution and id are now at the far right.
   This moves subscription and other more useful columns into view on narrow computer screens.
 <li>On all web pages, the page's title (based on the <kbd>&lt;title&gt;</kbd> 
@@ -6680,7 +6684,7 @@ constraints correctly if the
     then deploy the new ERDDAP.</strong>
     It's always a good idea to do that when installing a new version.
   <li>Please add 
-    <a href="https://erddap.github.io/setupDatasetsXml.html#requestBlacklist"
+    <a href="https://erddap.github.io/docs/server-admin/datasets#requestBlacklist"
     ><kbd>&lt;requestBlacklist&gt;&lt;/requestBlacklist&gt;</kbd></a>
     to your datasets.xml.
     This can be used to specify a list of client IP addresses to be blocked 
@@ -6693,7 +6697,7 @@ constraints correctly if the
 <li>ERDDAP™ once again allows (but still doesn't recommend) the "%26" encoding of "&amp;" in request URLs 
   (see the <a href="#percent26">related v1.14 change</a>). 
 <li>Several new additions to the Tally section of the 
-  <a href="https://erddap.github.io/setup.html#dailyReport">Daily Report</a>.
+  <a href="https://erddap.github.io/docs/server-admin/deploy-install#dailyReport">Daily Report</a>.
 <li>Small bug fixes in generateDatasetsXml.
 <li>A few small bug fixes.
   <br>&nbsp;
@@ -6737,7 +6741,7 @@ in ERDDAP™ version 1.14 (released 2009-03-17)</h2>
 <li>ERDDAP™ administrators, please:
   <ul>
   <li>Add the following to your 
-    <a href="https://erddap.github.io/setup.html#setup.xml">setup.xml</a>
+    <a href="https://erddap.github.io/docs/server-admin/deploy-install#setup.xml">setup.xml</a>
     file (and change the flagKeyKey value):
     <pre>
 &lt;!-- ERDDAP™ has a service that lets remote users set a flag
@@ -6767,14 +6771,14 @@ affected. See also the subscriptionEmailBlacklist in datasets.xml.
 --&gt;
 &lt;subscriptionSystemActive&gt;true&lt;/subscriptionSystemActive&gt;  </pre>
   <li>On the line after <kbd>&lt;emailUserName&gt;</kbd> in your
-    <a href="https://erddap.github.io/setup.html#setup.xml">setup.xml</a> file,
+    <a href="https://erddap.github.io/docs/server-admin/deploy-install#setup.xml">setup.xml</a> file,
     add
     <br><kbd>&lt;emailPassword&gt;<i>myPassword</i>&lt;/emailPassword&gt;
       &lt;!-- optional; if absent, emails
       can't be sent to non-local addresses &gt;</kbd>
     <br>and enter your real password.
   <li>You can change <kbd>&lt;wmsSampleBBox&gt;</kbd> in your
-    <a href="https://erddap.github.io/setup.html#setup.xml">setup.xml</a> file
+    <a href="https://erddap.github.io/docs/server-admin/deploy-install#setup.xml">setup.xml</a> file
     to include longitude values up to 360, e.g., 
     <pre>
 &lt;!-- The bounding box values are 
@@ -6792,7 +6796,7 @@ affected. See also the subscriptionEmailBlacklist in datasets.xml.
       which determines the overall order of the data returned.
     </ol>
     For details, see 
-    <a href="https://erddap.github.io/setupDatasetsXml.html#EDDTableFromFiles"
+    <a href="https://erddap.github.io/docs/server-admin/datasets#EDDTableFromFiles"
     >EDDTableFromFiles</a>.
   <li>In the past, for EDDTableFromDapSequence, for OPeNDAP DRDS servers, in datasets.xml, we used 
     <kbd>&lt;sourceCanConstrainStringsRegex&gt;~=&lt;/sourceCanConstrainStringRegex&gt;</kbd>.
@@ -6800,7 +6804,7 @@ affected. See also the subscriptionEmailBlacklist in datasets.xml.
     <kbd>&lt;sourceCanConstrainStringsRegex&gt;&lt;/sourceCanConstrainStringRegex&gt;</kbd>
     so that regex constraints are not passed to the source, but are instead handled by ERDDAP.
   <li>Revamped handling of sourceCanConstrain... in datasets.xml by 
-    <a href="https://erddap.github.io/setupDatasetsXml.html#EDDTableFromDapSequence"
+    <a href="https://erddap.github.io/docs/server-admin/datasets#EDDTableFromDapSequence"
     >EDDTableFromDapSequence</a> 
     and (internally) all EDDTable dataset types.  
     The new system is simpler and better reflects the variability of different data sources.
@@ -6808,35 +6812,35 @@ affected. See also the subscriptionEmailBlacklist in datasets.xml.
   </ul>
 <li>There are several new features which are useful by themselves, 
   but when combined, also facilitate the creation of 
-  <a href="https://erddap.github.io/setup.html#grids"
+  <a href="https://erddap.github.io/docs/server-admin/deploy-install#grids"
   >grids/clusters/federations of ERDDAPs</a>.
   <ul>
   <li>New dataset types:
     <ul>
-    <li><a href="https://erddap.github.io/setupDatasetsXml.html#EDDGridFromErddap"
+    <li><a href="https://erddap.github.io/docs/server-admin/datasets#eddfromerddap"
     >EDDGridFromErddap</a> 
       and 
-      <a href="https://erddap.github.io/setupDatasetsXml.html#EDDTableFromErddap"
+      <a href="https://erddap.github.io/docs/server-admin/datasets#eddfromerddap"
       >EDDTableFromErddap</a>
       which let one ERDDAP™ include a dataset 
       from another ERDDAP™ in a very simple and very efficient way.
-    <li><a href="https://erddap.github.io/setupDatasetsXml.html#EDDGridFromFiles"
+    <li><a href="https://erddap.github.io/docs/server-admin/datasets#EDDGridFromFiles"
     >EDDGridFromFiles</a> 
       (and its subclass, 
-      <a href="https://erddap.github.io/setupDatasetsXml.html#EDDGridFromNcFiles"
+      <a href="https://erddap.github.io/docs/server-admin/datasets#EDDGridFromNcFiles"
       >EDDGridFromNcFiles</a> 
       which can read NetCDF .nc, 
       GRIB .grb, and HDF .hdf files).
-    <li><a href="https://erddap.github.io/setupDatasetsXml.html#EDDTableFromNcFiles"
+    <li><a href="https://erddap.github.io/docs/server-admin/datasets#EDDTableFromNcFiles"
     >EDDTableFromNcFiles</a>
       which can read NetCDF .nc which have a table-like structure.
     </ul>
   <li>RunLoadDatasets and LoadDatasets were revamped so that ERDDAP™ is very responsive to reloading 
     datasets based on files in the 
-      <a href="https://erddap.github.io/setup.html#flag">flag</a> 
+      <a href="https://erddap.github.io/docs/server-admin/additional-information#flag">flag</a> 
       directory (often &lt;5 seconds if main loadDatasets is currently done).
   <li>New service to allow 
-    <a href="https://erddap.github.io/setup.html#setDatasetFlag">a URL to create a flag file</a> 
+    <a href="https://erddap.github.io/docs/server-admin/deploy-install#setDatasetFlag">a URL to create a flag file</a> 
     for a given dataset, e.g.,
    <br>https://coastwatch.pfeg.noaa.gov/erddap/setDatasetFlag.txt?datasetID=rPmelTao&amp;flagKey=123456789
    <br>creates a flag file in the flag directory for rPmelTao (although the flagKey here is wrong). 
@@ -6845,17 +6849,17 @@ affected. See also the subscriptionEmailBlacklist in datasets.xml.
     which will be done when a specific dataset is created (when ERDDAP™ is restarted) and 
     whenever the dataset changes in any way.
     This system can be disabled via <kbd>&lt;subscriptionSystemActive&gt;</kbd>
-    in your <a href="https://erddap.github.io/setup.html#setup.xml">setup.xml</a> file.
+    in your <a href="https://erddap.github.io/docs/server-admin/deploy-install#setup.xml">setup.xml</a> file.
     The ERDDAP™ 
-    <a href="https://erddap.github.io/setup.html#dailyReport">Daily Report</a> 
+    <a href="https://erddap.github.io/docs/server-admin/deploy-install#dailyReport">Daily Report</a> 
     now lists all of the subscriptions and includes
     the URL needed to cancel each one, in case you feel the system is being abused.
     In datasets.xml, there is a new, optional 
-      <a href="https://erddap.github.io/setupDatasetsXml.html#subscriptionsEmailBlacklist"
+      <a href="https://erddap.github.io/docs/server-admin/datasets#subscriptionsEmailBlacklist"
       ><kbd>&lt;subscriptionsEmailBlacklist&gt;</kbd></a> tag so that administrators 
     can specify a comma-separated list of email addresses which are immediately blacklisted from the 
     subscription system.
-  <li>New <a href="https://erddap.github.io/setupDatasetsXml.html#onChange"
+  <li>New <a href="https://erddap.github.io/docs/server-admin/datasets#onChange"
   ><kbd>&lt;onChange&gt;</kbd></a> 
         attribute in datasets.xml lets the ERDDAP™ administrator specify an action 
     which will be done when a specific dataset is created (when ERDDAP™ is restarted) and 
@@ -6865,7 +6869,7 @@ affected. See also the subscriptionEmailBlacklist in datasets.xml.
   <li>Emails from ERDDAP™ now always prepend the subject and content with [erddapUrl],
     so that it will be clear which ERDDAP™ this came from (in case you administer multiple ERDDAPs).
   <li>More extensive statistics gathering for the 
-    <a href="https://erddap.github.io/setup.html#dailyReport">Daily Report</a> email.
+    <a href="https://erddap.github.io/docs/server-admin/deploy-install#dailyReport">Daily Report</a> email.
   <li>New log file [bigParentDirectory]/emailLogYEAR-MM-DD.txt logs all emails sent by ERDDAP™ each day.
     This is especially useful if your server can't actually send emails -- you can at least read them 
     in the log.
@@ -6911,15 +6915,15 @@ affected. See also the subscriptionEmailBlacklist in datasets.xml.
 <li>New sliders on some Data Access Forms and Make A Graph web pages.
   They simplify (crude) specification of the desired data and offer good visual feedback.
 <li>A new option for the <kbd>&lt;dataset&gt;</kbd> tags in datasets.xml: 
-    <a href="https://erddap.github.io/setupDatasetsXml.html#active"
+    <a href="https://erddap.github.io/docs/server-admin/datasets#active"
     >active="false"</a>.
 <li>References to ERD's ERDDAP™ changed from coastwatch.pfel (still works via proxy)
   to coastwatch.pfeg (preferred).
 <li>New support for 
-    <a href="https://erddap.github.io/setupDatasetsXml.html#data_min"
+    <a href="https://erddap.github.io/docs/server-admin/datasets#data_min"
     >data_min and data_max</a> variable metadata attributes.
 <li>A partial solution to the 
-  <a href="https://erddap.github.io/setup.html#waitThenTryAgain"
+  <a href="https://erddap.github.io/docs/server-admin/deploy-install#waitThenTryAgain"
     >WaitThenTryAgain / Partial Results Exception</a>:
   Now, some requests that previously failed when a data source change was detected
   will succeed because ERDDAP™ will reload the dataset and re-request the data automatically,
@@ -6957,7 +6961,7 @@ in ERDDAP™ version 1.10 (released 2008-10-14)</h2>
 <ul>
 <li>New "colorBar" metadata for data variables in datasets.xml defines the default color bar settings 
   for graphs and maps. See 
-<a href="https://erddap.github.io/setupDatasetsXml.html#colorBar"
+<a href="https://erddap.github.io/docs/server-admin/datasets#color-bar-attributes"
 >more information</a>.
   This is important because it greatly improves the appearance of the default graphs and maps 
   produced by Make A Graph and because the default graphs and maps now have a consistent color
@@ -6968,14 +6972,14 @@ in ERDDAP™ version 1.10 (released 2008-10-14)</h2>
   different protocols (DAP, WMS, ... more in future).  See the
 <a href="https://coastwatch.pfeg.noaa.gov/erddap/wms/documentation.html">client documentation</a>.
   Or the
-<a href="https://erddap.github.io/setupDatasetsXml.html#WMS"
+<a href="https://erddap.github.io/docs/server-admin/datasets#WMS"
 >documentation for administrators</a>. 
   Or  
 <a href="https://coastwatch.pfeg.noaa.gov/erddap/wms/index.html">try it out</a>. 
 <li> New support for longitude values &gt;180 in .kml files.
 <li> New cdm_data_type: Other .
 <li> ERDDAP™ now supports "boolean" source dataType.  See
-<a href="https://erddap.github.io/setupDatasetsXml.html#booleanData"
+<a href="https://erddap.github.io/docs/server-admin/datasets#booleanData"
 >more information</a>
   This will become useful for the future EDDTableFromDatabase.
 <li> New EDDTableFromBMDE supports DiGIR/BMDE data sources.
@@ -6991,7 +6995,7 @@ in ERDDAP™ version 1.10 (released 2008-10-14)</h2>
 <li>In datasets.xml, for any EDDTableFromSOS datasets, change "observedProperty" metadata to 
   "sourceObservedProperty".
 <li>The rules for an axisVariable or dataVariable's destinationName are now 
-  <a href="https://erddap.github.io/setupDatasetsXml.html#dataVariable"
+  <a href="https://erddap.github.io/docs/server-admin/datasets#dataVariable"
   >stricter</a>. 
   You need to check that your variable names are valid.
   Either check them by hand, or run ERDDAP™ and look at the error messages in the report that is 
@@ -7001,11 +7005,11 @@ in ERDDAP™ version 1.10 (released 2008-10-14)</h2>
   <br> &nbsp; &lt;att name="colorBarMinimum" type="double"&gt;0&lt;/att&gt;
   <br> &nbsp; &lt;att name="colorBarMaximum" type="double"&gt;32&lt;/att&gt;</kbd>
   <br>See
-<a href="https://erddap.github.io/setupDatasetsXml.html#WMS"
+<a href="https://erddap.github.io/docs/server-admin/datasets#WMS"
 >more information</a>.
 
 <li>Add the following to your 
-<a href="https://erddap.github.io/setup.html#setup.xml">setup.xml</a>
+<a href="https://erddap.github.io/docs/server-admin/deploy-install#setup.xml">setup.xml</a>
 file (but customize it with your information): <pre>
 
 &lt;!-- drawLand specifies the default Make A Graph setting for 
@@ -7097,11 +7101,11 @@ in ERDDAP™ version 1.08 (released 2008-07-13)</h2>
   <li><strong>Things ERDDAP™ administrators should do to upgrade to this version:</strong>
     <ul>
     <li>Move <kbd>&lt;theShortDescriptionHtml&gt;</kbd> from your messages.xml to your 
-      <a href="https://erddap.github.io/setup.html#setup.xml">setup.xml</a> file.
+      <a href="https://erddap.github.io/docs/server-admin/deploy-install#setup.xml">setup.xml</a> file.
       It specifies the text that appears in the middle of the left side of the ERDDAP™ home page. 
       Also, add <kbd>&lt;h1&gt;ERDDAP&lt;/h1&gt;</kbd> (or some other headline) to the top of it.
       <strong>Or,</strong> copy <kbd>&lt;theShortDescriptionHtml&gt;</kbd> in the new 
-        <a href="https://erddap.github.io/setup.html#setup.xml">setup.xml</a> 
+        <a href="https://erddap.github.io/docs/server-admin/deploy-install#setup.xml">setup.xml</a> 
         file (from the new erddapContent.zip) into your setup.xml.
       <br>&nbsp;
     </ul>

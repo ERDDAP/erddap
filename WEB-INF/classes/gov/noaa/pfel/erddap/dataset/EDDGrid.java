@@ -222,8 +222,8 @@ public abstract class EDDGrid extends EDD {
           "https://docs.unidata.ucar.edu/netcdf-java/current/userguide/ncml_overview.html", // ncml
           //        "https://www.unidata.ucar.edu/software/netcdf/", //nc4
           //        "https://linux.die.net/man/1/ncdump", //nc4Header
-          "https://erddap.github.io/NCCSV.html",
-          "https://erddap.github.io/NCCSV.html",
+          "https://erddap.github.io/docs/user/nccsv-1.20",
+          "https://erddap.github.io/docs/user/nccsv-1.20",
           "https://nco.sourceforge.net/nco.html#json",
           "https://odv.awi.de/en/documentation/", // odv
           "https://parquet.apache.org/",
@@ -9354,7 +9354,7 @@ public abstract class EDDGrid extends EDD {
 
   /**
    * This writes the requested axis or grid data to the outputStream in NCCSV
-   * (https://erddap.github.io/NCCSV.html) format. If no exception is thrown, the data was
+   * (https://erddap.github.io/docs/user/nccsv-1.20) format. If no exception is thrown, the data was
    * successfully written.
    *
    * @param language the index of the selected language
@@ -13518,7 +13518,7 @@ public abstract class EDDGrid extends EDD {
             + "can log in, but they will only have access to the private datasets\n"
             + "that the ERDDAP administrator has explicitly authorized them to access.\n"
             + "For instructions on logging into ERDDAP from a browser or via a script, see\n"
-            + "<a rel=\"help\" href=\"https://erddap.github.io/AccessToPrivateDatasets.html\">Access to Private Datasets in ERDDAP</a>.\n"
+            + "<a rel=\"help\" href=\"https://erddap.github.io/docs/user/AccessToPrivateDatasets\">Access to Private Datasets in ERDDAP</a>.\n"
             + "\n"
             + "<li><strong><a class=\"selfLink\" id=\"longTimeRange\" href=\"#longTimeRange\" rel=\"bookmark\">Requests for a long time range</a></strong> (&gt;30 time points) from a gridded dataset\n"
             + "are prone to time out failures, which often appear as Proxy Errors, because it\n"
@@ -13533,7 +13533,7 @@ public abstract class EDDGrid extends EDD {
             + "Then make all the requests (each for a different chunk of time) needed to get\n"
             + "all of the data.\n"
             + "An ERDDAP administrator can lessen this problem by increasing the\n"
-            + "<a rel=\"help\" href=\"https://erddap.github.io/setup.html#ApacheTimeout\">Apache timeout settings</a>.\n"
+            + "<a rel=\"help\" href=\"https://erddap.github.io/docs/server-admin/deploy-install#apache-timeout\">Apache timeout settings</a>.\n"
             + "<br>&nbsp;\n"
             + "<li><a class=\"selfLink\" id=\"dataModel\" href=\"#dataModel\" rel=\"bookmark\"><strong>Data Model</strong></a>\n"
             + "  <br>Each griddap dataset can be represented as:\n"
@@ -13542,7 +13542,7 @@ public abstract class EDDGrid extends EDD {
             + "      associated dimension with the same name.\n"
             + "      <ul>\n"
             + "      <li>Each axis variable has data of one specific data type.\n"
-            + "        See the <a rel=\"help\" href=\"https://erddap.github.io/setupDatasetsXml.html#dataTypes\">Data Type documentation</a> for details.\n"
+            + "        See the <a rel=\"help\" href=\"https://erddap.github.io/docs/server-admin/datasets#data-types\">Data Type documentation</a> for details.\n"
             + "        If the data source has a dimension with a size but no values, ERDDAP uses the integer values\n"
             + "        0, 1, 2, ...\n"
             + "        Axis variables can't contain char or String data.\n"
@@ -13568,7 +13568,7 @@ public abstract class EDDGrid extends EDD {
             + "      <ul>\n"
             + "      <li>All data variables use all of the axis variables, in order, as their dimensions.\n"
             + "      <li>Each data variable has data of one\n"
-            + "        <a rel=\"help\" href=\"https://erddap.github.io/setupDatasetsXml.html#dataTypes\">data type</a>.\n"
+            + "        <a rel=\"help\" href=\"https://erddap.github.io/docs/server-admin/datasets#data-types\">data type</a>.\n"
             + "      <li>Missing values are allowed.\n"
             + "      <li>Each data variable has a name composed of a letter (A-Z, a-z) and then 0\n"
             + "        or more characters (A-Z, a-z, 0-9, _).\n"
@@ -13583,7 +13583,7 @@ public abstract class EDDGrid extends EDD {
             + "      <li>Each Key is a String consisting of a letter (A-Z, a-z) and then 0 or more other\n"
             + "        characters (A-Z, a-z, 0-9, '_').\n"
             + "      <li>Each Value is an array of one (usually) or more values of one\n"
-            + "        <a rel=\"help\" href=\"https://erddap.github.io/setupDatasetsXml.html#dataTypes\">data type</a>.\n"
+            + "        <a rel=\"help\" href=\"https://erddap.github.io/docs/server-admin/datasets#data-types\">data type</a>.\n"
             + "      <br>&nbsp;\n"
             + "      </ul>\n"
             + "  </ul>\n"

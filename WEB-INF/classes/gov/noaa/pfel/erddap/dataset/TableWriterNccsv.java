@@ -21,9 +21,9 @@ import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * TableWriterNccsv provides a way to write a table to an NCCSV file (see
- * https://erddap.github.io/NCCSV.html ) outputStream in chunks so that the whole table doesn't have
- * to be in memory at one time. This is used by EDDTable. The outputStream isn't obtained until the
- * first call to writeSome().
+ * https://erddap.github.io/docs/user/nccsv-1.20 ) outputStream in chunks so that the whole table
+ * doesn't have to be in memory at one time. This is used by EDDTable. The outputStream isn't
+ * obtained until the first call to writeSome().
  *
  * @author Bob Simons (was bob.simons@noaa.gov, now BobSimons2.00@gmail.com) 2017-04-06
  */
