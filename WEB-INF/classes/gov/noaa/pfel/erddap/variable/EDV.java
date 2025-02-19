@@ -554,12 +554,12 @@ public class EDV {
     if (hasColorBarMinMax && tMin >= tMax) // this may change if flipped range is allowed
     throw new IllegalArgumentException(
           "colorBarMinimum=" + tMin + " must be less than colorBarMaximum=" + tMax + ".");
-    if (tPalette != null && String2.indexOf(EDStatic.palettes, tPalette) < 0)
+    if (tPalette != null && String2.indexOf(EDStatic.messages.palettes, tPalette) < 0)
       throw new IllegalArgumentException(
           "colorBarPalette="
               + tPalette
               + " must be one of "
-              + String2.toCSSVString(EDStatic.palettes)
+              + String2.toCSSVString(EDStatic.messages.palettes)
               + " (default='Rainbow').");
     if (tContinuous != null && !tContinuous.equals("true") && !tContinuous.equals("false"))
       throw new IllegalArgumentException(
@@ -824,7 +824,7 @@ public class EDV {
       combinedAttributes.remove(DECIMAL_DIGITS);
     }
 
-    if (EDStatic.variablesMustHaveIoosCategory) {
+    if (EDStatic.config.variablesMustHaveIoosCategory) {
       String ic = combinedAttributes().getString("ioos_category");
       Test.ensureSomethingUnicode(ic, errorInMethod + "ioos_category");
       Test.ensureTrue(
@@ -1079,8 +1079,8 @@ public class EDV {
   }
 
   /**
-   * The destination units for this variable (presumably using the EDStatic.units_standard, e.g.,
-   * UDUNITS).
+   * The destination units for this variable (presumably using the EDStatic.config.units_standard,
+   * e.g., UDUNITS).
    *
    * @return the destination units for this variable (e.g., "m") (may be null).
    */
@@ -1096,7 +1096,7 @@ public class EDV {
   public String ucumUnits() {
     // not yet set?
     if ("\u0000".equals(ucumUnits)) {
-      if ("UDUNITS".equals(EDStatic.units_standard)) {
+      if ("UDUNITS".equals(EDStatic.config.units_standard)) {
         try {
           ucumUnits = Units2.udunitsToUcum(units()); // null returns null
         } catch (Throwable t) {

@@ -26,7 +26,7 @@ public class EDDGridFromFilesHandler extends BaseGridHandler {
   private String tFileNameRegex = ".*";
   private boolean tRecursive = false;
   private String tPathRegex = ".*";
-  private boolean tAccessibleViaFiles = EDStatic.defaultAccessibleViaFiles;
+  private boolean tAccessibleViaFiles = EDStatic.config.defaultAccessibleViaFiles;
   private String tMetadataFrom = MF_LAST;
   private int tMatchAxisNDigits = DEFAULT_MATCH_AXIS_N_DIGITS;
   private String tCacheFromUrl = null;

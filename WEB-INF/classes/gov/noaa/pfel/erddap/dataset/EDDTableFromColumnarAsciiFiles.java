@@ -654,7 +654,7 @@ public class EDDTableFromColumnarAsciiFiles extends EDDTableFromFiles {
 
     boolean pauseForErrors = false;
     String resultsFileName =
-        EDStatic.fullLogsDirectory
+        EDStatic.config.fullLogsDirectory
             + "fromEML_"
             + Calendar2.getCompactCurrentISODateTimeStringLocal()
             + ".log";
@@ -1873,7 +1873,7 @@ public class EDDTableFromColumnarAsciiFiles extends EDDTableFromFiles {
                 + "The data file and EML file have different column names.\n"
                 + "ERDDAP would like to equate these pairs of names:\n"
                 + differ;
-        if (!EDStatic.developmentMode) {
+        if (!EDStatic.config.developmentMode) {
           te =
               String2.getStringFromSystemIn(
                   "WARNING for"
@@ -2511,7 +2511,7 @@ public class EDDTableFromColumnarAsciiFiles extends EDDTableFromFiles {
         localTimeZone; // from TZ at https://en.wikipedia.org/wiki/List_of_tz_database_time_zones
     StringArray names;
     String resultsFileName =
-        EDStatic.fullLogsDirectory
+        EDStatic.config.fullLogsDirectory
             + "fromEML_"
             + Calendar2.getCompactCurrentISODateTimeStringLocal()
             + ".log";

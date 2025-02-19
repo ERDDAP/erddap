@@ -27,7 +27,7 @@ class EDDTableAggregateRowsTests {
     String results, query, tName, expected;
     // DasDds.main(new String[]{"miniNdbc410", "-verbose"});
     EDDTable tedd = (EDDTable) EDDTestDataset.getminiNdbc410();
-    String dir = EDStatic.fullTestCacheDirectory;
+    String dir = EDStatic.config.fullTestCacheDirectory;
     int tPo;
     int language = 0;
 
@@ -418,7 +418,7 @@ class EDDTableAggregateRowsTests {
     String results, query, tName, expected;
     // DasDds.main(new String[]{"miniNdbc410", "-verbose"});
     EDDTable tedd = (EDDTable) EDDTestDataset.getTS_SLEV_TAD();
-    String dir = EDStatic.fullTestCacheDirectory;
+    String dir = EDStatic.config.fullTestCacheDirectory;
     int tPo;
     int language = 0;
 

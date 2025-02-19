@@ -54,7 +54,7 @@ public class TableWriterOrderByMinMax extends TableWriterAll {
     super(tLanguage, tEdd, tNewHistory, tDir, tFileNameNoExt);
     otherTableWriter = tOtherTableWriter;
     String err =
-        EDStatic.simpleBilingual(language, EDStatic.queryErrorAr)
+        EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
             + "No column names were specified for 'orderByMinMax'.";
     if (tOrderByCsv == null || tOrderByCsv.trim().length() == 0) throw new SimpleException(err);
     orderBy = String2.split(tOrderByCsv, ',');

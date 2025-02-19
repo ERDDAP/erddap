@@ -47,8 +47,7 @@ import java.util.concurrent.locks.ReentrantLock;
 public class EDDGridFromEtopo extends EDDGrid {
 
   /** Properties of the datafile */
-  protected static final String fileName =
-      File2.getWebInfParentDirectory() + "WEB-INF/ref/etopo1_ice_g_i2.bin";
+  protected static final String fileName = File2.getRefDirectory() + "etopo1_ice_g_i2.bin";
 
   protected static final double fileMinLon = -180, fileMaxLon = 180;
   protected static final double fileMinLat = -90, fileMaxLat = 90;
@@ -83,7 +82,7 @@ public class EDDGridFromEtopo extends EDDGrid {
     if (verbose) String2.log("\n*** constructing EDDGridFromEtopo(xmlReader)...");
     String tDatasetID = xmlReader.attributeValue("datasetID");
     boolean tAccessibleViaWMS = true;
-    boolean tAccessibleViaFiles = EDStatic.defaultAccessibleViaFiles;
+    boolean tAccessibleViaFiles = EDStatic.config.defaultAccessibleViaFiles;
     int tnThreads = -1; // interpret invalid values (like -1) as EDStatic.nGridThreads
     boolean tDimensionValuesInMemory = true;
 
@@ -145,8 +144,9 @@ public class EDDGridFromEtopo extends EDDGrid {
         is180 || datasetID.equals("etopo360"),
         errorInMethod + "datasetID must be \"etopo180\" or \"etopo360\".");
     if (!tAccessibleViaWMS)
-      accessibleViaWMS = String2.canonical(MessageFormat.format(EDStatic.noXxxAr[0], "WMS"));
-    accessibleViaFiles = EDStatic.filesActive && tAccessibleViaFiles;
+      accessibleViaWMS =
+          String2.canonical(MessageFormat.format(EDStatic.messages.noXxxAr[0], "WMS"));
+    accessibleViaFiles = EDStatic.config.filesActive && tAccessibleViaFiles;
     nThreads = tnThreads; // interpret invalid values (like -1) as EDStatic.nGridThreads
     dimensionValuesInMemory = tDimensionValuesInMemory;
 
@@ -172,7 +172,7 @@ public class EDDGridFromEtopo extends EDDGrid {
     sourceGlobalAttributes.add("institution", "NOAA NGDC");
     sourceGlobalAttributes.add("keywords", "Oceans > Bathymetry/Seafloor Topography > Bathymetry");
     sourceGlobalAttributes.add("keywords_vocabulary", "GCMD Science Keywords");
-    sourceGlobalAttributes.add("license", EDStatic.standardLicense);
+    sourceGlobalAttributes.add("license", EDStatic.messages.standardLicense);
     sourceGlobalAttributes.add("naming_authority", "gov.noaa.pfeg.coastwatch");
     sourceGlobalAttributes.add("project", "NOAA NGDC ETOPO");
     sourceGlobalAttributes.add("projection", "geographic");
@@ -269,7 +269,7 @@ public class EDDGridFromEtopo extends EDDGrid {
   /**
    * This gets data (not yet standardized) from the data source for this EDDGrid. Because this is
    * called by GridDataAccessor, the request won't be the full user's request, but will be a partial
-   * request (for less than EDStatic.partialRequestMaxBytes).
+   * request (for less than EDStatic.config.partialRequestMaxBytes).
    *
    * @param language the index of the selected language
    * @param tDirTable If EDDGridFromFiles, this MAY be the dirTable, else null.

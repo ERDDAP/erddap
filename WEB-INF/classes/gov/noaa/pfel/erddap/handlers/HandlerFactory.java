@@ -35,7 +35,7 @@ public class HandlerFactory {
     EDStatic.cldStartMillis = timeToLoadThisDataset;
     EDStatic.cldDatasetID = datasetID;
 
-    if (EDStatic.useEddReflection) {
+    if (EDStatic.config.useEddReflection) {
       // use reflection to discover handlers
       EDD.EDDClassInfo eddClassInfo = EDD.EDD_CLASS_INFO_MAP.get(datasetType);
       if (eddClassInfo == null || !eddClassInfo.hasSaxHandlerClass()) {
@@ -224,9 +224,10 @@ public class HandlerFactory {
     // Test third: look at flag/age  or active=false
     if (!skip) {
       // always check both flag locations
-      boolean isFlagged = File2.delete(EDStatic.fullResetFlagDirectory + datasetID);
-      boolean isBadFilesFlagged = File2.delete(EDStatic.fullBadFilesFlagDirectory + datasetID);
-      boolean isHardFlagged = File2.delete(EDStatic.fullHardFlagDirectory + datasetID);
+      boolean isFlagged = File2.delete(EDStatic.config.fullResetFlagDirectory + datasetID);
+      boolean isBadFilesFlagged =
+          File2.delete(EDStatic.config.fullBadFilesFlagDirectory + datasetID);
+      boolean isHardFlagged = File2.delete(EDStatic.config.fullHardFlagDirectory + datasetID);
       if (isFlagged) {
         String2.log(
             "*** reloading datasetID=" + datasetID + " because it was in the flag directory.");

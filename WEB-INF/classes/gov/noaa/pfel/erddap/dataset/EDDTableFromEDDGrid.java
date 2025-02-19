@@ -67,7 +67,7 @@ public class EDDTableFromEDDGrid extends EDDTable {
     Attributes tAddGlobalAttributes = null;
     String tAccessibleTo = null;
     String tGraphsAccessibleTo = null;
-    boolean tAccessibleViaFiles = EDStatic.defaultAccessibleViaFiles;
+    boolean tAccessibleViaFiles = EDStatic.config.defaultAccessibleViaFiles;
     StringArray tOnChange = new StringArray();
     String tFgdcFile = null;
     String tIso19115File = null;
@@ -253,7 +253,7 @@ public class EDDTableFromEDDGrid extends EDDTable {
     }
     // for rest of constructor, use temporary, stable tChildDataset reference.
     accessibleViaFiles =
-        EDStatic.filesActive && tAccessibleViaFiles && tChildDataset.accessibleViaFiles;
+        EDStatic.config.filesActive && tAccessibleViaFiles && tChildDataset.accessibleViaFiles;
 
     // global attributes
     localSourceUrl = tChildDataset.localSourceUrl;
@@ -268,7 +268,7 @@ public class EDDTableFromEDDGrid extends EDDTable {
     String tLicense = combinedGlobalAttributes.getString("license");
     if (tLicense != null)
       combinedGlobalAttributes.set(
-          "license", String2.replaceAll(tLicense, "[standard]", EDStatic.standardLicense));
+          "license", String2.replaceAll(tLicense, "[standard]", EDStatic.messages.standardLicense));
     combinedGlobalAttributes.removeValue("\"null\"");
 
     maxAxis0 = combinedGlobalAttributes.getInt("maxAxis0");
@@ -390,7 +390,7 @@ public class EDDTableFromEDDGrid extends EDDTable {
       if (tChildDataset == null) {
         EDD.requestReloadASAP(localChildDatasetID);
         throw new WaitThenTryAgainException(
-            EDStatic.simpleBilingual(language, EDStatic.waitThenTryAgainAr)
+            EDStatic.simpleBilingual(language, EDStatic.messages.waitThenTryAgainAr)
                 + "\n(underlying local datasetID="
                 + localChildDatasetID
                 + " not found)");
@@ -434,7 +434,7 @@ public class EDDTableFromEDDGrid extends EDDTable {
    *
    * @param language the index of the selected language
    * @param loggedInAs the user's login name if logged in (or null if not logged in).
-   * @param requestUrl the part of the user's request, after EDStatic.baseUrl, before '?'.
+   * @param requestUrl the part of the user's request, after EDStatic.config.baseUrl, before '?'.
    * @param userDapQuery the part of the user's request after the '?', still percentEncoded, may be
    *     null.
    * @param tableWriter
@@ -529,12 +529,13 @@ public class EDDTableFromEDDGrid extends EDDTable {
                   MustBe.THERE_IS_NO_DATA
                       + " ("
                       + MessageFormat.format(
-                          EDStatic.queryErrorNeverTrueAr[0], conVar + conOp + conValD)
+                          EDStatic.messages.queryErrorNeverTrueAr[0], conVar + conOp + conValD)
                       + ")",
                   MustBe.THERE_IS_NO_DATA
                       + " ("
                       + MessageFormat.format(
-                          EDStatic.queryErrorNeverTrueAr[language], conVar + conOp + conValD)
+                          EDStatic.messages.queryErrorNeverTrueAr[language],
+                          conVar + conOp + conValD)
                       + ")"));
       }
     }
@@ -552,7 +553,7 @@ public class EDDTableFromEDDGrid extends EDDTable {
                 MustBe.THERE_IS_NO_DATA
                     + " "
                     + MessageFormat.format(
-                        EDStatic.queryErrorNeverTrueAr[0],
+                        EDStatic.messages.queryErrorNeverTrueAr[0],
                         edvga.destinationName()
                             + ">="
                             + avMin[av]
@@ -563,7 +564,7 @@ public class EDDTableFromEDDGrid extends EDDTable {
                 MustBe.THERE_IS_NO_DATA
                     + " "
                     + MessageFormat.format(
-                        EDStatic.queryErrorNeverTrueAr[language],
+                        EDStatic.messages.queryErrorNeverTrueAr[language],
                         edvga.destinationName()
                             + ">="
                             + avMin[av]
@@ -590,7 +591,9 @@ public class EDDTableFromEDDGrid extends EDDTable {
 
     StringBuilder gridDapQuery = new StringBuilder();
     String gridRequestUrl =
-        "/griddap/" + tChildDataset.datasetID() + ".dods"; // after EDStatic.baseUrl, before '?'
+        "/griddap/"
+            + tChildDataset.datasetID()
+            + ".dods"; // after EDStatic.config.baseUrl, before '?'
 
     if (resultsDvNames.size() > 0 || constraintsDvNames.size() > 0) {
       // handle a request for 1+ data variables (in results or constraint variables)
@@ -645,7 +648,7 @@ public class EDDTableFromEDDGrid extends EDDTable {
               findDataVariableByDestinationName(queryDV[dv].destinationName());
 
         // make a table to hold a chunk of the results
-        int chunkNRows = EDStatic.partialRequestMaxCells / (childDatasetNAV + nQueryDV);
+        int chunkNRows = EDStatic.config.partialRequestMaxCells / (childDatasetNAV + nQueryDV);
         Table tTable =
             makeEmptySourceTable(
                 sourceTableVars,
@@ -669,7 +672,8 @@ public class EDDTableFromEDDGrid extends EDDTable {
             if (debugMode) String2.log(tTable.dataToString(5));
             if (Thread.currentThread().isInterrupted())
               throw new SimpleException(
-                  "EDDTableFromEDDGrid.getDataForDapQuery" + EDStatic.caughtInterruptedAr[0]);
+                  "EDDTableFromEDDGrid.getDataForDapQuery"
+                      + EDStatic.messages.caughtInterruptedAr[0]);
 
             standardizeResultsTable(
                 language,
@@ -748,7 +752,7 @@ public class EDDTableFromEDDGrid extends EDDTable {
       NDimensionalIndex ndIndex = new NDimensionalIndex(ndShape);
 
       // make a table to hold a chunk of the results
-      int chunkNRows = EDStatic.partialRequestMaxCells / nActiveEdvga;
+      int chunkNRows = EDStatic.config.partialRequestMaxCells / nActiveEdvga;
       Table tTable = new Table(); // source table, but source here is tChildDataset's destination
       PrimitiveArray paAr[] = new PrimitiveArray[nActiveEdvga];
       for (int aav = 0; aav < nActiveEdvga; aav++) {
@@ -769,7 +773,8 @@ public class EDDTableFromEDDGrid extends EDDTable {
         if (++cumNRows >= chunkNRows) {
           if (Thread.currentThread().isInterrupted())
             throw new SimpleException(
-                "EDDTableFromDatabase.getDataForDapQuery" + EDStatic.caughtInterruptedAr[0]);
+                "EDDTableFromDatabase.getDataForDapQuery"
+                    + EDStatic.messages.caughtInterruptedAr[0]);
 
           standardizeResultsTable(
               language,
@@ -803,8 +808,8 @@ public class EDDTableFromEDDGrid extends EDDTable {
       throw new SimpleException(
           EDStatic.bilingual(
               language,
-              EDStatic.queryErrorAr[0] + " No results variables?!",
-              EDStatic.queryErrorAr[language] + " No results variables?!"));
+              EDStatic.messages.queryErrorAr[0] + " No results variables?!",
+              EDStatic.messages.queryErrorAr[language] + " No results variables?!"));
     }
   }
 
@@ -899,7 +904,9 @@ public class EDDTableFromEDDGrid extends EDDTable {
       String tSummary =
           (tMaxAxis0 > 0
                   ? MessageFormat.format(
-                          EDStatic.EDDTableFromEDDGridSummaryAr[language], tDatasetID, tMaxAxis0)
+                          EDStatic.messages.EDDTableFromEDDGridSummaryAr[language],
+                          tDatasetID,
+                          tMaxAxis0)
                       + "\n"
                   : "")
               + summaryPA.getString(row);

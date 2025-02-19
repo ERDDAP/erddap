@@ -54,8 +54,10 @@ public class SgtUtil {
 
   public static final int LEGEND_BELOW = 1;
 
-  public static final com.lowagie.text.Rectangle PDF_LANDSCAPE = PageSize.LETTER.rotate();
-  public static final com.lowagie.text.Rectangle PDF_PORTRAIT = PageSize.LETTER;
+  public enum PDFPageSize {
+    LETTER_PORTRAIT,
+    LETTER_LANDSCAPE,
+  }
 
   public static final double DEFAULT_AXIS_LABEL_HEIGHT = 0.12;
   public static final double DEFAULT_LABEL_HEIGHT =
@@ -600,11 +602,10 @@ public class SgtUtil {
    * @return an object[] with 0=g2D, 1=document, 2=pdfContentByte, 3=pdfTemplate
    * @throws Exception if trouble
    */
-  public static Object[] createPdf(
-      com.lowagie.text.Rectangle pageSize, int bbWidth, int bbHeight, String fullFileName)
+  public static Object[] createPdf(PDFPageSize size, int bbWidth, int bbHeight, String fullFileName)
       throws Exception {
     return createPdf(
-        pageSize, bbWidth, bbHeight, new BufferedOutputStream(new FileOutputStream(fullFileName)));
+        size, bbWidth, bbHeight, new BufferedOutputStream(new FileOutputStream(fullFileName)));
   }
 
   /**
@@ -619,8 +620,9 @@ public class SgtUtil {
    * @throws Exception if trouble
    */
   public static Object[] createPdf(
-      com.lowagie.text.Rectangle pageSize, int bbWidth, int bbHeight, OutputStream outputStream)
-      throws Exception {
+      PDFPageSize size, int bbWidth, int bbHeight, OutputStream outputStream) throws Exception {
+    com.lowagie.text.Rectangle pageSize =
+        size == PDFPageSize.LETTER_PORTRAIT ? PageSize.LETTER : PageSize.LETTER.rotate();
     // currently, this uses itext
     // see the sample program:
     //

@@ -27,7 +27,7 @@ class EDDTableFromInvalidCRAFilesTests {
     // testVerboseOn();
     int language = 0;
     String tName, results, expected, userDapQuery;
-    String testCacheDir = EDStatic.fullTestCacheDirectory;
+    String testCacheDir = EDStatic.config.fullTestCacheDirectory;
 
     String id = "testInvalidCRAFiles";
     EDDTableFromInvalidCRAFiles.deleteCachedDatasetInfo(id);

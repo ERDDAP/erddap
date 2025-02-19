@@ -69,7 +69,7 @@ public class EDDGridAggregateExistingDimension extends EDDGrid {
     String tAccessibleTo = null;
     String tGraphsAccessibleTo = null;
     boolean tAccessibleViaWMS = true;
-    boolean tAccessibleViaFiles = EDStatic.defaultAccessibleViaFiles;
+    boolean tAccessibleViaFiles = EDStatic.config.defaultAccessibleViaFiles;
     StringArray tOnChange = new StringArray();
     String tFgdcFile = null;
     String tIso19115File = null;
@@ -257,7 +257,8 @@ public class EDDGridAggregateExistingDimension extends EDDGrid {
     setAccessibleTo(tAccessibleTo);
     setGraphsAccessibleTo(tGraphsAccessibleTo);
     if (!tAccessibleViaWMS)
-      accessibleViaWMS = String2.canonical(MessageFormat.format(EDStatic.noXxxAr[0], "WMS"));
+      accessibleViaWMS =
+          String2.canonical(MessageFormat.format(EDStatic.messages.noXxxAr[0], "WMS"));
     onChange = tOnChange;
     fgdcFile = tFgdcFile;
     iso19115File = tIso19115File;
@@ -333,7 +334,8 @@ public class EDDGridAggregateExistingDimension extends EDDGrid {
       // sourceValues0=" + sourceValues0 + "\n");
       if (childDatasets[sib + 1].accessibleViaFiles) childAccessibleViaFiles = true;
     }
-    accessibleViaFiles = EDStatic.filesActive && tAccessibleViaFiles && childAccessibleViaFiles;
+    accessibleViaFiles =
+        EDStatic.config.filesActive && tAccessibleViaFiles && childAccessibleViaFiles;
 
     // create the aggregate dataset
     if (reallyVerbose) String2.log("\n+++ Creating the aggregate dataset\n");
@@ -521,7 +523,7 @@ public class EDDGridAggregateExistingDimension extends EDDGrid {
   /**
    * This gets data (not yet standardized) from the data source for this EDDGrid. Because this is
    * called by GridDataAccessor, the request won't be the full user's request, but will be a partial
-   * request (for less than EDStatic.partialRequestMaxBytes).
+   * request (for less than EDStatic.config.partialRequestMaxBytes).
    *
    * @param language the index of the selected language
    * @param tDirTable If EDDGridFromFiles, this MAY be the dirTable, else null.

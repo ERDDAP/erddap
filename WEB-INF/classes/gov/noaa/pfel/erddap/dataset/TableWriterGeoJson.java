@@ -76,8 +76,9 @@ public class TableWriterGeoJson extends TableWriter {
       throw new SimpleException(
           EDStatic.bilingual(
               language,
-              EDStatic.queryErrorAr[0] + EDStatic.errorJsonpFunctionNameAr[0],
-              EDStatic.queryErrorAr[language] + EDStatic.errorJsonpFunctionNameAr[language]));
+              EDStatic.messages.queryErrorAr[0] + EDStatic.messages.errorJsonpFunctionNameAr[0],
+              EDStatic.messages.queryErrorAr[language]
+                  + EDStatic.messages.errorJsonpFunctionNameAr[language]));
   }
 
   /**
@@ -111,9 +112,9 @@ public class TableWriterGeoJson extends TableWriter {
         throw new SimpleException(
             EDStatic.bilingual(
                 language,
-                EDStatic.queryErrorAr[0]
+                EDStatic.messages.queryErrorAr[0]
                     + "Requests for GeoJSON data must include the longitude and latitude variables.",
-                EDStatic.queryErrorAr[language]
+                EDStatic.messages.queryErrorAr[language]
                     + "Requests for GeoJSON data must include the longitude and latitude variables."));
       // it is unclear to me if specification supports altitude in coordinates info...
       isTimeStamp = new boolean[nColumns];

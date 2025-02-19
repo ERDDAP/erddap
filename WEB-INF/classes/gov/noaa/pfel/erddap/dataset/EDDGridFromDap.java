@@ -215,7 +215,7 @@ public class EDDGridFromDap extends EDDGrid {
    *     </ul>
    *     Special case: value="null" causes that item to be removed from combinedGlobalAttributes.
    *     Special case: if combinedGlobalAttributes name="license", any instance of "[standard]" will
-   *     be converted to the EDStatic.standardLicense.
+   *     be converted to the EDStatic.messages.standardLicense.
    * @param tAxisVariables is an Object[nAxisVariables][3]: <br>
    *     [0]=String sourceName (the name of the data variable in the dataset source), <br>
    *     [1]=String destinationName (the name to be presented to the ERDDAP user, or null to use the
@@ -277,7 +277,8 @@ public class EDDGridFromDap extends EDDGrid {
     setAccessibleTo(tAccessibleTo);
     setGraphsAccessibleTo(tGraphsAccessibleTo);
     if (!tAccessibleViaWMS)
-      accessibleViaWMS = String2.canonical(MessageFormat.format(EDStatic.noXxxAr[0], "WMS"));
+      accessibleViaWMS =
+          String2.canonical(MessageFormat.format(EDStatic.messages.noXxxAr[0], "WMS"));
     onChange = tOnChange;
     fgdcFile = tFgdcFile;
     iso19115File = tIso19115File;
@@ -294,7 +295,7 @@ public class EDDGridFromDap extends EDDGrid {
 
     // quickRestart
     Attributes quickRestartAttributes = null;
-    if (EDStatic.quickRestart
+    if (EDStatic.config.quickRestart
         && EDStatic.initialLoadDatasets()
         && File2.isFile(quickRestartFullFileName())) {
       // try to do quick initialLoadDatasets()
@@ -349,7 +350,7 @@ public class EDDGridFromDap extends EDDGrid {
     String tLicense = combinedGlobalAttributes.getString("license");
     if (tLicense != null)
       combinedGlobalAttributes.set(
-          "license", String2.replaceAll(tLicense, "[standard]", EDStatic.standardLicense));
+          "license", String2.replaceAll(tLicense, "[standard]", EDStatic.messages.standardLicense));
     combinedGlobalAttributes.removeValue("\"null\"");
     if (combinedGlobalAttributes.getString("cdm_data_type") == null)
       combinedGlobalAttributes.add("cdm_data_type", "Grid");
@@ -638,7 +639,7 @@ public class EDDGridFromDap extends EDDGrid {
     int newSize = dad.getSize();
     if (newSize < oldSize)
       throw new WaitThenTryAgainException(
-          EDStatic.simpleBilingual(language, EDStatic.waitThenTryAgainAr)
+          EDStatic.simpleBilingual(language, EDStatic.messages.waitThenTryAgainAr)
               + "\n("
               + msg
               + "["
@@ -692,7 +693,7 @@ public class EDDGridFromDap extends EDDGrid {
     }
     if (oldValues.elementType() != newValues.elementType()) // they're canonical, so != works
     throw new WaitThenTryAgainException(
-          EDStatic.simpleBilingual(language, EDStatic.waitThenTryAgainAr)
+          EDStatic.simpleBilingual(language, EDStatic.messages.waitThenTryAgainAr)
               + "\n("
               + msg
               + edvga.destinationName()
@@ -706,7 +707,7 @@ public class EDDGridFromDap extends EDDGrid {
     // ensure last old value is unchanged
     if (oldValues.getDouble(oldSize - 1) != newValues.getDouble(0)) // they should be exactly equal
     throw new WaitThenTryAgainException(
-          EDStatic.simpleBilingual(language, EDStatic.waitThenTryAgainAr)
+          EDStatic.simpleBilingual(language, EDStatic.messages.waitThenTryAgainAr)
               + "\n("
               + msg
               + edvga.destinationName()
@@ -742,7 +743,7 @@ public class EDDGridFromDap extends EDDGrid {
     String error = edvga.isAscending() ? newValues.isAscending() : newValues.isDescending();
     if (error.length() > 0)
       throw new WaitThenTryAgainException(
-          EDStatic.simpleBilingual(language, EDStatic.waitThenTryAgainAr)
+          EDStatic.simpleBilingual(language, EDStatic.messages.waitThenTryAgainAr)
               + "\n("
               + edvga.destinationName()
               + " was "
@@ -945,7 +946,7 @@ public class EDDGridFromDap extends EDDGrid {
   /**
    * This gets source data (not yet converted to destination data) from the data source for this
    * EDDGrid. Because this is called by GridDataAccessor, the request won't be the full user's
-   * request, but will be a partial request (for less than EDStatic.partialRequestMaxBytes).
+   * request, but will be a partial request (for less than EDStatic.config.partialRequestMaxBytes).
    *
    * @param language the index of the selected language
    * @param tDirTable If EDDGridFromFiles, this MAY be the dirTable, else null.
@@ -995,9 +996,9 @@ public class EDDGridFromDap extends EDDGrid {
         throw t instanceof WaitThenTryAgainException
             ? t
             : new WaitThenTryAgainException(
-                EDStatic.simpleBilingual(language, EDStatic.waitThenTryAgainAr)
+                EDStatic.simpleBilingual(language, EDStatic.messages.waitThenTryAgainAr)
                     + "\n("
-                    + EDStatic.errorFromDataSource
+                    + EDStatic.messages.errorFromDataSource
                     + t
                     + ")",
                 t);
@@ -1030,7 +1031,7 @@ public class EDDGridFromDap extends EDDGrid {
             String tError = results[av].almostEqual(pa[av + 1]);
             if (tError.length() > 0)
               throw new WaitThenTryAgainException(
-                  EDStatic.simpleBilingual(language, EDStatic.waitThenTryAgainAr)
+                  EDStatic.simpleBilingual(language, EDStatic.messages.waitThenTryAgainAr)
                       + "\nDetails: The axis values for dataVariable=0,axis="
                       + av
                       + ")\ndon't equal the axis values for dataVariable="
@@ -1044,7 +1045,7 @@ public class EDDGridFromDap extends EDDGrid {
 
       } else {
         throw new WaitThenTryAgainException(
-            EDStatic.simpleBilingual(language, EDStatic.waitThenTryAgainAr)
+            EDStatic.simpleBilingual(language, EDStatic.messages.waitThenTryAgainAr)
                 + "\nDetails: An unexpected data structure was returned from the source (size observed="
                 + pa.length
                 + ", expected="

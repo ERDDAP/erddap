@@ -12,10 +12,8 @@ import com.cohort.array.PrimitiveArray;
 import com.cohort.array.StringArray;
 import com.cohort.util.Calendar2;
 import com.cohort.util.File2;
-import com.cohort.util.Image2;
 import com.cohort.util.Math2;
 import com.cohort.util.MustBe;
-import com.cohort.util.ResourceBundle2;
 import com.cohort.util.SimpleException;
 import com.cohort.util.String2;
 import com.cohort.util.String2LogOutputStream;
@@ -50,16 +48,12 @@ import gov.noaa.pfel.erddap.dataset.EDDTable;
 import gov.noaa.pfel.erddap.dataset.EDDTableFromCassandra;
 import gov.noaa.pfel.erddap.dataset.GridDataAccessor;
 import gov.noaa.pfel.erddap.dataset.OutputStreamFromHttpResponse;
-import gov.noaa.pfel.erddap.dataset.TableWriterHtmlTable;
-import gov.noaa.pfel.erddap.http.CorsResponseFilter;
 import gov.noaa.pfel.erddap.variable.EDV;
 import gov.noaa.pfel.erddap.variable.EDVGridAxis;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
-import java.awt.Color;
-import java.awt.Image;
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -75,7 +69,6 @@ import java.lang.ref.Cleaner;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.FileSystems;
-import java.nio.file.Path;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -84,7 +77,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -100,7 +92,6 @@ import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.NIOFSDirectory;
-import software.amazon.awssdk.transfer.s3.S3TransferManager;
 
 /**
  * This class holds a lot of static information set from the setup.xml and messages.xml files and
@@ -108,18 +99,7 @@ import software.amazon.awssdk.transfer.s3.S3TransferManager;
  */
 public class EDStatic {
 
-  public static final Cleaner cleaner = Cleaner.create();
-
-  /**
-   * These are options used to control behavior for testing. They should be their default values
-   * during normal operation. Better encapsulation of EDStatic initilization would mean we can get
-   * rid of these.
-   */
-  public static boolean skipEmailThread = false;
-
-  public static boolean forceSynchronousLoading = false;
-
-  public static boolean usePrometheusMetrics = true;
+  public static Cleaner cleaner = Cleaner.create();
 
   /** The all lowercase name for the program that appears in urls. */
   public static final String programname = "erddap";
@@ -216,12 +196,6 @@ public class EDStatic {
    */
   public static final String erddapVersion = "2.25_1"; // see comment above
 
-  /**
-   * This is almost always false. During development, Bob sets this to true. No one else needs to.
-   * If true, ERDDAP uses setup2.xml and datasets2.xml (and messages2.xml if it exists).
-   */
-  public static boolean developmentMode = false;
-
   /** This identifies the dods server/version that this mimics. */
   public static final String dapVersion = "DAP/2.0";
 
@@ -231,26 +205,11 @@ public class EDStatic {
   // both reply with server version, neither replies with coreVersion
   // spec says #.#.#, but Gallagher says #.# is fine.
 
-  /**
-   * contentDirectory is the local directory on this computer, e.g., [tomcat]/content/erddap/ It
-   * will have a slash at the end.
-   */
-  public static String contentDirectory;
-
   public static final String INSTITUTION = "institution";
   public static final int TITLE_DOT_LENGTH = 95; // max nChar before inserting newlines
 
-  // fgdc and iso19115XmlDirectory are used for virtual URLs.
-  public static final String fgdcXmlDirectory = "metadata/fgdc/xml/"; // virtual
-  public static final String iso19115XmlDirectory = "metadata/iso19115/xml/"; // virtual
-  public static final String DOWNLOAD_DIR = "download/";
-  public static final String IMAGES_DIR = "images/";
-  public static final String PUBLIC_DIR = "public/";
-  public static final String fullPaletteDirectory;
-  public static final String fullPublicDirectory;
-  public static final String downloadDir; // local directory on this computer
-  public static final String imageDir; // local directory on this computer
-  public static final Metrics metrics;
+  public static EDConfig config;
+  public static Metrics metrics;
   public static final Tally tally = new Tally();
   public static int[] emailThreadFailedDistribution24 = new int[String2.TimeDistributionSize];
   public static int[] emailThreadSucceededDistribution24 = new int[String2.TimeDistributionSize];
@@ -381,81 +340,12 @@ public class EDStatic {
   public static final int DEFAULT_decompressedCacheMaxMinutesOld = 15;
   public static final int DEFAULT_nGridThreads = 1;
   public static final int DEFAULT_nTableThreads = 1;
-  public static String DEFAULT_palettes[] = null; // set when messages.xml is read
-  public static Set<String> DEFAULT_palettes_set = null; // set when messages.xml is read
   public static int decompressedCacheMaxGB = DEFAULT_decompressedCacheMaxGB;
   public static int decompressedCacheMaxMinutesOld = DEFAULT_decompressedCacheMaxMinutesOld;
   public static int nGridThreads = DEFAULT_nGridThreads; // will be a valid number 1+
   public static int nTableThreads = DEFAULT_nTableThreads; // will be a valid number 1+
   public static String convertInterpolateRequestCSVExample = null; // may be null or ""
   public static String convertInterpolateDatasetIDVariableList[] = new String[0]; // may be [0]
-
-  // things that were in setup.xml (discouraged) and are now in datasets.xml (v2.00+)
-  public static final int DEFAULT_cacheMinutes = 60;
-  public static final String DEFAULT_drawLandMask = "under";
-  public static final int DEFAULT_graphBackgroundColorInt = 0xffccccff;
-  public static final int DEFAULT_loadDatasetsMinMinutes = 15;
-  public static final int DEFAULT_loadDatasetsMaxMinutes = 60;
-  public static final String DEFAULT_logLevel = "info"; // warning|info|all
-  public static final int DEFAULT_partialRequestMaxBytes =
-      490000000; // this is just below tds default <opendap><binLimit> of 500MB
-  public static final int DEFAULT_partialRequestMaxCells = 10000000;
-  public static final int DEFAULT_slowDownTroubleMillis = 1000;
-  public static final int DEFAULT_unusualActivity = 10000;
-  public static final int DEFAULT_updateMaxEvents = 10;
-  public static final int DEFAULT_unusualActivityFailPercent = 25;
-  public static final boolean DEFAULT_showLoadErrorsOnStatusPage = true;
-  public static long cacheMillis = DEFAULT_cacheMinutes * Calendar2.MILLIS_PER_MINUTE;
-  public static String drawLandMask = DEFAULT_drawLandMask;
-  public static boolean emailDiagnosticsToErdData = true;
-  public static Color graphBackgroundColor =
-      new Color(DEFAULT_graphBackgroundColorInt, true); // hasAlpha
-  public static long loadDatasetsMinMillis =
-      DEFAULT_loadDatasetsMinMinutes * Calendar2.MILLIS_PER_MINUTE;
-  public static long loadDatasetsMaxMillis =
-      DEFAULT_loadDatasetsMaxMinutes * Calendar2.MILLIS_PER_MINUTE;
-  // logLevel handled specially by setLogLevel
-  public static int partialRequestMaxBytes = DEFAULT_partialRequestMaxBytes;
-  public static int partialRequestMaxCells = DEFAULT_partialRequestMaxCells;
-  public static int slowDownTroubleMillis = DEFAULT_slowDownTroubleMillis;
-  public static int unusualActivity = DEFAULT_unusualActivity;
-  public static int updateMaxEvents = DEFAULT_updateMaxEvents;
-  public static int unusualActivityFailPercent = DEFAULT_unusualActivityFailPercent;
-  public static boolean showLoadErrorsOnStatusPage = DEFAULT_showLoadErrorsOnStatusPage;
-
-  // not translated
-  public static final
-  String // these are set by setup.xml (deprecated) and/or messages.xml and/or datasets.xml (v2.00+)
-      DEFAULT_standardLicense;
-  public static String standardLicense;
-  public static final String DEFAULT_startHeadHtml; // see xxx() methods
-  public static String startHeadHtml; // see xxx() methods
-
-  // translated
-  public static final String
-          [] // these are set by setup.xml (deprecated) and/or messages.xml and/or datasets.xml
-      // (v2.00+)
-      DEFAULT_standardContactAr;
-  public static final String[] DEFAULT_standardDataLicensesAr;
-  public static final String[] DEFAULT_standardDisclaimerOfEndorsementAr;
-  public static final String[] DEFAULT_standardDisclaimerOfExternalLinksAr;
-  public static final String[] DEFAULT_standardGeneralDisclaimerAr;
-  public static final String[] DEFAULT_standardPrivacyPolicyAr;
-  public static final String[] DEFAULT_startBodyHtmlAr;
-  public static final String[] DEFAULT_theShortDescriptionHtmlAr;
-  public static final String[] DEFAULT_endBodyHtmlAr;
-  public static final String[] standardContactAr;
-  public static final String[] standardDataLicensesAr;
-  public static final String[] standardDisclaimerOfEndorsementAr;
-  public static final String[] standardDisclaimerOfExternalLinksAr;
-  public static final String[] standardGeneralDisclaimerAr;
-  public static final String[] standardPrivacyPolicyAr;
-  public static final String[] startBodyHtmlAr;
-  public static final String[] theShortDescriptionHtmlAr;
-  public static final String[] endBodyHtmlAr;
-  public static String // in messages.xml and perhaps in datasets.xml (v2.00+)
-      commonStandardNames[];
-  public static final String[] DEFAULT_commonStandardNames;
 
   // Default max of 25 copy tasks at a time, so different datasets have a chance.
   // Otherwise, some datasets could take months to do all the tasks.
@@ -615,150 +505,6 @@ public class EDStatic {
   public static final String DONT_LOG_THIS_EMAIL = "!!! DON'T LOG THIS EMAIL: ";
 
   /**
-   * These values are loaded from the [contentDirectory]setup.xml file. See comments in the
-   * [contentDirectory]setup.xml file.
-   */
-  public static final String baseUrl;
-
-  public static final String baseHttpsUrl; // won't be null, may be "(not specified)"
-  public static String bigParentDirectory;
-  public static final String adminInstitution;
-  public static final String adminInstitutionUrl;
-  public static final String adminIndividualName;
-  public static final String adminPosition;
-  public static final String adminPhone;
-  public static final String adminAddress;
-  public static final String adminCity;
-  public static final String adminStateOrProvince;
-  public static final String adminPostalCode;
-  public static final String adminCountry;
-  public static final String adminEmail;
-  public static final String accessConstraints;
-  public static final String accessRequiresAuthorization;
-  public static final String fees;
-  public static final String keywords;
-  public static final String units_standard;
-
-  public static String // the unencoded EDDGrid...Example attributes
-      EDDGridErddapUrlExample;
-  public static String EDDGridIdExample;
-  public static String EDDGridDimensionExample;
-  public static String EDDGridNoHyperExample;
-  public static String EDDGridDimNamesExample;
-  public static String EDDGridDataTimeExample;
-  public static String EDDGridDataValueExample;
-  public static String EDDGridDataIndexExample;
-  public static String EDDGridGraphExample;
-  public static String EDDGridMapExample;
-  public static String EDDGridMatlabPlotExample;
-
-  public static final String // variants encoded to be Html Examples
-      EDDGridDimensionExampleHE;
-  public static final String EDDGridDataIndexExampleHE;
-  public static final String EDDGridDataValueExampleHE;
-  public static final String EDDGridDataTimeExampleHE;
-  public static final String EDDGridGraphExampleHE;
-  public static final String EDDGridMapExampleHE;
-
-  public static final String // variants encoded to be Html Attributes
-      EDDGridDimensionExampleHA;
-  public static final String EDDGridDataIndexExampleHA;
-  public static final String EDDGridDataValueExampleHA;
-  public static final String EDDGridDataTimeExampleHA;
-  public static final String EDDGridGraphExampleHA;
-  public static final String EDDGridMapExampleHA;
-  public static final String EDDTableFromHttpGetDatasetDescription;
-  public static final String EDDTableFromHttpGetAuthorDescription;
-  public static final String EDDTableFromHttpGetTimestampDescription;
-
-  public static String // the unencoded EDDTable...Example attributes
-      EDDTableErddapUrlExample;
-  public static String EDDTableIdExample;
-  public static String EDDTableVariablesExample;
-  public static String EDDTableConstraintsExample;
-  public static String EDDTableDataTimeExample;
-  public static String EDDTableDataValueExample;
-  public static String EDDTableGraphExample;
-  public static String EDDTableMapExample;
-  public static String EDDTableMatlabPlotExample;
-
-  public static final String // variants encoded to be Html Examples
-      EDDTableConstraintsExampleHE;
-  public static final String EDDTableDataTimeExampleHE;
-  public static final String EDDTableDataValueExampleHE;
-  public static final String EDDTableGraphExampleHE;
-  public static final String EDDTableMapExampleHE;
-
-  public static final String // variants encoded to be Html Attributes
-      EDDTableConstraintsExampleHA;
-  public static final String EDDTableDataTimeExampleHA;
-  public static final String EDDTableDataValueExampleHA;
-  public static final String EDDTableGraphExampleHA;
-  public static final String EDDTableMapExampleHA;
-
-  public static
-  String /* For the wcs examples, pick one of your grid datasets that has longitude and latitude axes.
-         The sample variable must be a variable in the sample grid dataset.
-         The bounding box values are minx,miny,maxx,maxy.
-         */ wcsSampleDatasetID = "jplMURSST41";
-  public static String wcsSampleVariable = "analysed_sst";
-  public static String wcsSampleBBox = "-179.98,-89.98,179.98,89.98";
-  public static String wcsSampleAltitude = "0";
-  public static String wcsSampleTime = "2002-06-01T09:00:00Z";
-
-  public static String /* For the wms examples, pick one of your grid datasets that has longitude
-      and latitude axes.
-      The sample variable must be a variable in the sample grid dataset.
-      The bounding box values are minx,miny,maxx,maxy.
-      The default for wmsActive is "true".
-      */
-      wmsSampleDatasetID = "jplMURSST41";
-  public static String wmsSampleVariable = "analysed_sst";
-  public static
-  String /* The bounding box values are minLongitude,minLatitude,maxLongitude,maxLatitude.
-         Longitude values within -180 to 180, or 0 to 360, are now okay. */
-      wmsSampleBBox110 = "-179.99,-89.99,180.0,89.99";
-  public static String wmsSampleBBox130 = "-89.99,-179.99,89.99,180.0";
-  public static String wmsSampleTime = "2002-06-01T09:00:00Z";
-  public static String sosFeatureOfInterest;
-  public static String sosUrnBase;
-  public static String sosBaseGmlName;
-  public static String sosStandardNamePrefix;
-  public static String
-      authentication; // will be one of "", "custom", "email", "google", "orcid", "oauth2". If
-  public static final String // baseHttpsUrl doesn't start with https:, this will be "".
-      datasetsRegex;
-  public static final String emailEverythingToCsv;
-  public static final String emailDailyReportToCsv;
-  public static final String emailSubscriptionsFrom;
-  public static final String flagKeyKey;
-  public static final String fontFamily;
-  public static final String
-      googleClientID; // if authentication=google or oauth2, this will be something
-  public static final String
-      orcidClientID; // if authentication=orcid  or oauth2, this will be something
-  public static final String
-      orcidClientSecret; // if authentication=orcid  or oauth2, this will be something
-  public static final String googleEarthLogoFile;
-  public static final String highResLogoImageFile;
-  public static String legendTitle1;
-  public static String legendTitle2;
-  public static final String lowResLogoImageFile;
-  public static final String
-      passwordEncoding; // will be one of "MD5", "UEPMD5", "SHA256", "UEPSHA256"
-  public static String questionMarkImageFile;
-  public static final String searchEngine;
-  public static final String warName;
-
-  public static final String accessibleViaNC4; // "" if accessible, else message why not
-  public static final int lowResLogoImageFileWidth;
-  public static final int lowResLogoImageFileHeight;
-  public static final int highResLogoImageFileWidth;
-  public static final int highResLogoImageFileHeight;
-  public static final int googleEarthLogoFileWidth;
-  public static final int googleEarthLogoFileHeight;
-
-  /**
    * These are special because other loggedInAs must be String2.justPrintable loggedInAsHttps is for
    * using https without being logged in, but &amp;loginInfo; indicates user isn't logged in. It is
    * a reserved username -- LoadDatasets prohibits defining a user with that name. Tab is useful
@@ -774,1062 +520,36 @@ public class EDStatic {
   public static final ImmutableList<String> anyoneLoggedInRoles = ImmutableList.of(anyoneLoggedIn);
   public static final int minimumPasswordLength = 8;
 
-  // these are all non-null if in awsS3Output mode, otherwise all are null
-  public static String awsS3OutputBucketUrl = null; // ends in slash
-  public static String awsS3OutputBucket = null; // the short name of the bucket
-  public static S3TransferManager awsS3OutputTransferManager = null;
-  // public static S3Client          awsS3OutputClient          = null;
-
-  public static final boolean listPrivateDatasets;
-  public static boolean reallyVerbose;
-  public static final boolean subscriptionSystemActive;
-  public static final boolean convertersActive;
-  public static final boolean slideSorterActive;
-  public static final boolean fgdcActive;
-  public static final boolean iso19115Active;
-  public static final boolean jsonldActive;
-  public static final boolean geoServicesRestActive;
-  public static final boolean filesActive;
-  public static final boolean defaultAccessibleViaFiles;
-  public static final boolean dataProviderFormActive;
-  public static final boolean outOfDateDatasetsActive;
-  public static final boolean politicalBoundariesActive;
-  public static final boolean wmsClientActive;
-  public static boolean sosActive;
-  public static final boolean wcsActive;
-  public static final boolean wmsActive;
-  public static boolean quickRestart;
-  public static final boolean subscribeToRemoteErddapDataset;
-  public static
-  boolean // if useLuceneSearchEngine=false (a setting, or after error), original search engine will
-      // be
-      // used
-      useLuceneSearchEngine;
-  public static final boolean variablesMustHaveIoosCategory;
-  public static boolean verbose;
-  public static boolean useSaxParser;
-  public static boolean updateSubsRssOnFileChanges;
-  public static final boolean useEddReflection;
-  public static boolean enableCors;
-  public static final String corsAllowHeaders;
-  public static final String[] corsAllowOrigin;
-  public static final String[]
-      categoryAttributes; // as it appears in metadata (and used for hashmap)
-  public static final String[] categoryAttributesInURLs; // fileNameSafe (as used in URLs)
-  public static final boolean[] categoryIsGlobal;
-  public static int variableNameCategoryAttributeIndex = -1;
-  public static final int logMaxSizeMB;
-  public static String deploymentInfo;
-
   public static String[] DEFAULT_displayAttributeAr = {"summary", "license"};
   public static String[] DEFAULT_displayInfoAr = {"Summary", "License"};
   public static String[] displayAttributeAr = DEFAULT_displayAttributeAr;
   public static String[] displayInfoAr = DEFAULT_displayInfoAr;
 
-  public static final String emailSmtpHost;
-  public static final String emailUserName;
-  public static final String emailFromAddress;
-  public static final String emailPassword;
-  public static final String emailProperties;
-  public static int emailSmtpPort = 0; // <=0 means inactive
   private static String emailLogDate = "";
   private static BufferedWriter emailLogFile;
-  private static boolean emailIsActive = false; // ie if actual emails will be sent
 
   // these are set as a consequence of setup.xml info
-  public static final SgtGraph sgtGraph;
-  public static final String erddapUrl; // without slash at end
-  public static final String
-      erddapHttpsUrl; // without slash at end   (may be useless, but won't be null)
-  public static final String
-      preferredErddapUrl; // without slash at end   (https if avail, else http)
-  public static final String fullDatasetDirectory; // all the Directory's have slash at end
-  public static final String fullFileVisitorDirectory;
-  public static final String fullCacheDirectory;
-  public static final String fullDecompressedDirectory;
-  public static final String fullDecompressedGenerateDatasetsXmlDirectory;
-  public static final String fullLogsDirectory;
-  public static final String fullCopyDirectory;
-  public static final String fullLuceneDirectory;
-  public static final String fullResetFlagDirectory;
-  public static final String fullBadFilesFlagDirectory;
-  public static final String fullHardFlagDirectory;
-  public static final String fullCptCacheDirectory;
-  public static final String fullPlainFileNcCacheDirectory;
-  public static final String fullSgtMapTopographyCacheDirectory;
-  public static final String fullTestCacheDirectory;
-  public static final String fullWmsCacheDirectory;
+  public static SgtGraph sgtGraph;
+  public static String erddapUrl; // without slash at end
+  public static String erddapHttpsUrl; // without slash at end   (may be useless, but won't be null)
+  public static String preferredErddapUrl; // without slash at end   (https if avail, else http)
   public static String computerName; // e.g., coastwatch (or "")
-  public static Subscriptions subscriptions; // null if !EDStatic.subscriptionSystemActive
+  public static Subscriptions subscriptions; // null if !EDStatic.config.subscriptionSystemActive
+
+  public static boolean reallyVerbose;
+  public static boolean verbose;
 
   /**
    * These values are loaded from the [contentDirectory]messages.xml file (if present) or
    * .../classes/gov/noaapfel/erddap/util/messages.xml.
    */
+  public static EDMessages messages;
 
-  // NOT TRANSLATED
-  public static final String admKeywords;
-
-  public static final String admSubsetVariables;
-  public static final String advl_datasetID;
-  public static final String advr_cdm_data_type;
-  public static final String advr_class;
-  public static final String advr_dataStructure;
-  public static final String EDDChangedWasnt;
-  public static final String EDDChangedDifferentNVar;
-  public static final String EDDChanged2Different;
-  public static final String EDDChanged1Different;
-  public static final String EDDChangedCGADifferent;
-  public static final String EDDChangedAxesDifferentNVar;
-  public static final String EDDChangedAxes2Different;
-  public static final String EDDChangedAxes1Different;
-  public static final String EDDChangedNoValue;
-  public static final String EDDChangedTableToGrid;
-  public static final String EDDFgdc;
-  public static final String EDDIso19115;
-  public static final String EDDSimilarDifferentNVar;
-  public static final String EDDSimilarDifferent;
-  public static final String[] extensionsNoRangeRequests; // an array of extensions (not translated)
-  public static final String inotifyFixCommands;
-  public static String legal;
-  public static String palettes[]; // an array of palettes
-  public static String palettes0[]; // the array of palettes with a blank [0] item inserted
   public static final ImmutableList<String> paletteSections =
       ImmutableList.of(
           "", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16",
           "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "30", "31",
           "32", "33", "34", "35", "36", "37", "38", "39", "40");
-  public static final String sparqlP01toP02pre;
-  public static final String sparqlP01toP02post;
-
-  // TRANSLATED
-  private static final String[] // private to force use via methods, e.g., acceptEncodingHtml()
-      acceptEncodingHtmlAr;
-  private static final String[] filesDocumentationAr;
-  public static final String[] accessRESTFULAr;
-  public static final String[] acronymsAr;
-  public static final String[] addConstraintsAr;
-  public static final String[] addVarWhereAttNameAr;
-  public static final String[] addVarWhereAttValueAr;
-  public static final String[] addVarWhereAr;
-  public static final String[] additionalLinksAr;
-  public static final String[] admSummaryAr;
-  public static final String[] admTitleAr;
-  public static final String[] advc_accessibleAr;
-  public static final String[] advl_accessibleAr;
-  public static final String[] advl_institutionAr;
-  public static final String[] advc_dataStructureAr;
-  public static final String[] advl_dataStructureAr;
-  public static final String[] advl_cdm_data_typeAr;
-  public static final String[] advl_classAr;
-  public static final String[] advl_titleAr;
-  public static final String[] advl_minLongitudeAr;
-  public static final String[] advl_maxLongitudeAr;
-  public static final String[] advl_longitudeSpacingAr;
-  public static final String[] advl_minLatitudeAr;
-  public static final String[] advl_maxLatitudeAr;
-  public static final String[] advl_latitudeSpacingAr;
-  public static final String[] advl_minAltitudeAr;
-  public static final String[] advl_maxAltitudeAr;
-  public static final String[] advl_minTimeAr;
-  public static final String[] advc_maxTimeAr;
-  public static final String[] advl_maxTimeAr;
-  public static final String[] advl_timeSpacingAr;
-  public static final String[] advc_griddapAr;
-  public static final String[] advl_griddapAr;
-  public static final String[] advl_subsetAr;
-  public static final String[] advc_tabledapAr;
-  public static final String[] advl_tabledapAr;
-  public static final String[] advl_MakeAGraphAr;
-  public static final String[] advc_sosAr;
-  public static final String[] advl_sosAr;
-  public static final String[] advl_wcsAr;
-  public static final String[] advl_wmsAr;
-  public static final String[] advc_filesAr;
-  public static final String[] advl_filesAr;
-  public static final String[] advc_fgdcAr;
-  public static final String[] advl_fgdcAr;
-  public static final String[] advc_iso19115Ar;
-  public static final String[] advl_iso19115Ar;
-  public static final String[] advc_metadataAr;
-  public static final String[] advl_metadataAr;
-  public static final String[] advl_sourceUrlAr;
-  public static final String[] advl_infoUrlAr;
-  public static final String[] advl_rssAr;
-  public static final String[] advc_emailAr;
-  public static final String[] advl_emailAr;
-  public static final String[] advl_summaryAr;
-  public static final String[] advc_testOutOfDateAr;
-  public static final String[] advl_testOutOfDateAr;
-  public static final String[] advc_outOfDateAr;
-  public static final String[] advl_outOfDateAr;
-  public static final String[] advn_outOfDateAr;
-  public static final String[] advancedSearchAr;
-  public static final String[] advancedSearchResultsAr;
-  public static final String[] advancedSearchDirectionsAr;
-  public static final String[] advancedSearchTooltipAr;
-  public static final String[] advancedSearchBoundsAr;
-  public static final String[] advancedSearchMinLatAr;
-  public static final String[] advancedSearchMaxLatAr;
-  public static final String[] advancedSearchMinLonAr;
-  public static final String[] advancedSearchMaxLonAr;
-  public static final String[] advancedSearchMinMaxLonAr;
-  public static final String[] advancedSearchMinTimeAr;
-  public static final String[] advancedSearchMaxTimeAr;
-  public static final String[] advancedSearchClearAr;
-  public static final String[] advancedSearchClearHelpAr;
-  public static final String[] advancedSearchCategoryTooltipAr;
-  public static final String[] advancedSearchRangeTooltipAr;
-  public static final String[] advancedSearchMapTooltipAr;
-  public static final String[] advancedSearchLonTooltipAr;
-  public static final String[] advancedSearchTimeTooltipAr;
-  public static final String[] advancedSearchWithCriteriaAr;
-  public static final String[] advancedSearchFewerCriteriaAr;
-  public static final String[] advancedSearchNoCriteriaAr;
-  public static final String[] advancedSearchErrorHandlingAr;
-  public static final String[] autoRefreshAr;
-  public static final String[] blacklistMsgAr;
-  public static final String[] BroughtToYouByAr;
-  public static final String[] categoryTitleHtmlAr;
-  public static final String[] categoryHtmlAr;
-  public static final String[] category3HtmlAr;
-  public static final String[] categoryPickAttributeAr;
-  public static final String[] categorySearchHtmlAr;
-  public static final String[] categorySearchDifferentHtmlAr;
-  public static final String[] categoryClickHtmlAr;
-  public static final String[] categoryNotAnOptionAr;
-  public static final String[] caughtInterruptedAr;
-  public static final String[] cdmDataTypeHelpAr;
-  public static final String[] clickAccessAr;
-  public static final String[] clickBackgroundInfoAr;
-  public static final String[] clickERDDAPAr;
-  public static final String[] clickInfoAr;
-  public static final String[] clickToSubmitAr;
-  public static final String[] convertAr;
-  public static final String[] convertBypassAr;
-  public static final String[] convertToAFullNameAr;
-  public static final String[] convertToAnAcronymAr;
-  public static final String[] convertToACountyNameAr;
-  public static final String[] convertToAFIPSCodeAr;
-  public static final String[] convertToGCMDAr;
-  public static final String[] convertToCFStandardNamesAr;
-  public static final String[] convertToNumericTimeAr;
-  public static final String[] convertToStringTimeAr;
-  public static final String[] convertAnyStringTimeAr;
-  public static final String[] convertToProperTimeUnitsAr;
-  public static final String[] convertFromUDUNITSToUCUMAr;
-  public static final String[] convertFromUCUMToUDUNITSAr;
-  public static final String[] convertToUCUMAr;
-  public static final String[] convertToUDUNITSAr;
-  public static final String[] convertStandardizeUDUNITSAr;
-  public static final String[] convertToFullNameAr;
-  public static final String[] convertToVariableNameAr;
-  public static final String[] converterWebServiceAr;
-  public static final String[] convertOAAcronymsAr;
-  public static final String[] convertOAAcronymsToFromAr;
-  public static final String[] convertOAAcronymsIntroAr;
-  public static final String[] convertOAAcronymsNotesAr;
-  public static final String[] convertOAAcronymsServiceAr;
-  public static final String[] convertOAVariableNamesAr;
-  public static final String[] convertOAVariableNamesToFromAr;
-  public static final String[] convertOAVariableNamesIntroAr;
-  public static final String[] convertOAVariableNamesNotesAr;
-  public static final String[] convertOAVariableNamesServiceAr;
-  public static final String[] convertFipsCountyAr;
-  public static final String[] convertFipsCountyIntroAr;
-  public static final String[] convertFipsCountyNotesAr;
-  public static final String[] convertFipsCountyServiceAr;
-  public static final String[] convertHtmlAr;
-  public static final String[] convertInterpolateAr;
-  public static final String[] convertInterpolateIntroAr;
-  public static final String[] convertInterpolateTLLTableAr;
-  public static final String[] convertInterpolateTLLTableHelpAr;
-  public static final String[] convertInterpolateDatasetIDVariableAr;
-  public static final String[] convertInterpolateDatasetIDVariableHelpAr;
-  public static final String[] convertInterpolateNotesAr;
-  public static final String[] convertInterpolateServiceAr;
-  public static final String[] convertKeywordsAr;
-  public static final String[] convertKeywordsCfTooltipAr;
-  public static final String[] convertKeywordsGcmdTooltipAr;
-  public static final String[] convertKeywordsIntroAr;
-  public static final String[] convertKeywordsNotesAr;
-  public static final String[] convertKeywordsServiceAr;
-  public static final String[] convertTimeAr;
-  public static final String[] convertTimeReferenceAr;
-  public static final String[] convertTimeIntroAr;
-  public static final String[] convertTimeNotesAr;
-  public static final String[] convertTimeServiceAr;
-  public static final String[] convertTimeNumberTooltipAr;
-  public static final String[] convertTimeStringTimeTooltipAr;
-  public static final String[] convertTimeUnitsTooltipAr;
-  public static final String[] convertTimeUnitsHelpAr;
-  public static final String[] convertTimeIsoFormatErrorAr;
-  public static final String[] convertTimeNoSinceErrorAr;
-  public static final String[] convertTimeNumberErrorAr;
-  public static final String[] convertTimeNumericTimeErrorAr;
-  public static final String[] convertTimeParametersErrorAr;
-  public static final String[] convertTimeStringFormatErrorAr;
-  public static final String[] convertTimeTwoTimeErrorAr;
-  public static final String[] convertTimeUnitsErrorAr;
-  public static final String[] convertUnitsAr;
-  public static final String[] convertUnitsComparisonAr;
-  public static final String[] convertUnitsFilterAr;
-  public static final String[] convertUnitsIntroAr;
-  public static final String[] convertUnitsNotesAr;
-  public static final String[] convertUnitsServiceAr;
-  public static final String[] convertURLsAr;
-  public static final String[] convertURLsIntroAr;
-  public static final String[] convertURLsNotesAr;
-  public static final String[] convertURLsServiceAr;
-  public static final String[] cookiesHelpAr;
-  public static final String[] copyImageToClipboardAr;
-  public static final String[] copyTextToClipboardAr;
-  public static final String[] copyToClipboardNotAvailableAr;
-  public static final String[] dafAr;
-  public static final String[] dafGridBypassTooltipAr;
-  public static final String[] dafGridTooltipAr;
-  public static final String[] dafTableBypassTooltipAr;
-  public static final String[] dafTableTooltipAr;
-  public static final String[] dasTitleAr;
-  public static final String[] dataAccessNotAllowedAr;
-  public static final String[] databaseUnableToConnectAr;
-  public static final String[] dataProviderFormAr;
-  public static final String[] dataProviderFormP1Ar;
-  public static final String[] dataProviderFormP2Ar;
-  public static final String[] dataProviderFormP3Ar;
-  public static final String[] dataProviderFormP4Ar;
-  public static final String[] dataProviderFormDoneAr;
-  public static final String[] dataProviderFormSuccessAr;
-  public static final String[] dataProviderFormShortDescriptionAr;
-  public static final String[] dataProviderFormLongDescriptionHTMLAr;
-  public static final String[] dataProviderFormPart1Ar;
-  public static final String[] dataProviderFormPart2HeaderAr;
-  public static final String[] dataProviderFormPart2GlobalMetadataAr;
-  public static final String[] dataProviderContactInfoAr;
-  public static final String[] dataProviderDataAr;
-  public static final String[] documentationAr;
-  public static final String[] dpf_submitAr;
-  public static final String[] dpf_fixProblemAr;
-  public static final String[] dpf_yourNameAr;
-  public static final String[] dpf_emailAddressAr;
-  public static final String[] dpf_TimestampAr;
-  public static final String[] dpf_frequencyAr;
-  public static final String[] dpf_titleAr;
-  public static final String[] dpf_titleTooltipAr;
-  public static final String[] dpf_summaryAr;
-  public static final String[] dpf_summaryTooltipAr;
-  public static final String[] dpf_creatorNameAr;
-  public static final String[] dpf_creatorNameTooltipAr;
-  public static final String[] dpf_creatorTypeAr;
-  public static final String[] dpf_creatorTypeTooltipAr;
-  public static final String[] dpf_creatorEmailAr;
-  public static final String[] dpf_creatorEmailTooltipAr;
-  public static final String[] dpf_institutionAr;
-  public static final String[] dpf_institutionTooltipAr;
-  public static final String[] dpf_infoUrlAr;
-  public static final String[] dpf_infoUrlTooltipAr;
-  public static final String[] dpf_licenseAr;
-  public static final String[] dpf_licenseTooltipAr;
-  public static final String[] dpf_howYouStoreDataAr;
-  public static final String[] dpf_provideIfAvailableAr;
-  public static final String[] dpf_acknowledgementAr;
-  public static final String[] dpf_acknowledgementTooltipAr;
-  public static final String[] dpf_historyAr;
-  public static final String[] dpf_historyTooltipAr;
-  public static final String[] dpf_idTooltipAr;
-  public static final String[] dpf_namingAuthorityAr;
-  public static final String[] dpf_namingAuthorityTooltipAr;
-  public static final String[] dpf_productVersionAr;
-  public static final String[] dpf_productVersionTooltipAr;
-  public static final String[] dpf_referencesAr;
-  public static final String[] dpf_referencesTooltipAr;
-  public static final String[] dpf_commentAr;
-  public static final String[] dpf_commentTooltipAr;
-  public static final String[] dpf_dataTypeHelpAr;
-  public static final String[] dpf_ioosCategoryAr;
-  public static final String[] dpf_ioosCategoryHelpAr;
-  public static final String[] dpf_part3HeaderAr;
-  public static final String[] dpf_variableMetadataAr;
-  public static final String[] dpf_sourceNameAr;
-  public static final String[] dpf_sourceNameTooltipAr;
-  public static final String[] dpf_destinationNameAr;
-  public static final String[] dpf_destinationNameTooltipAr;
-  public static final String[] dpf_longNameAr;
-  public static final String[] dpf_longNameTooltipAr;
-  public static final String[] dpf_standardNameAr;
-  public static final String[] dpf_standardNameTooltipAr;
-  public static final String[] dpf_dataTypeAr;
-  public static final String[] dpf_fillValueAr;
-  public static final String[] dpf_fillValueTooltipAr;
-  public static final String[] dpf_unitsAr;
-  public static final String[] dpf_unitsTooltipAr;
-  public static final String[] dpf_rangeAr;
-  public static final String[] dpf_rangeTooltipAr;
-  public static final String[] dpf_part4HeaderAr;
-  public static final String[] dpf_otherCommentAr;
-  public static final String[] dpf_finishPart4Ar;
-  public static final String[] dpf_congratulationAr;
-  public static final String[] disabledAr;
-  public static final String[] distinctValuesTooltipAr;
-  public static final String[] doWithGraphsAr;
-  public static final String[] dtAccessibleAr;
-  public static final String[] dtAccessiblePublicAr;
-  public static final String[] dtAccessibleYesAr;
-  public static final String[] dtAccessibleGraphsAr;
-  public static final String[] dtAccessibleNoAr;
-  public static final String[] dtAccessibleLogInAr;
-  public static final String[] dtLogInAr;
-  public static final String[] dtDAFAr;
-  public static final String[] dtFilesAr;
-  public static final String[] dtMAGAr;
-  public static final String[] dtSOSAr;
-  public static final String[] dtSubsetAr;
-  public static final String[] dtWCSAr;
-  public static final String[] dtWMSAr;
-  public static final String[] EasierAccessToScientificDataAr;
-  public static final String[] EDDDatasetIDAr;
-  public static final String[] EDDFgdcMetadataAr;
-  public static final String[] EDDFilesAr;
-  public static final String[] EDDIso19115MetadataAr;
-  public static final String[] EDDMetadataAr;
-  public static final String[] EDDBackgroundAr;
-  public static final String[] EDDClickOnSubmitHtmlAr;
-  public static final String[] EDDInstitutionAr;
-  public static final String[] EDDInformationAr;
-  public static final String[] EDDSummaryAr;
-  public static final String[] EDDDatasetTitleAr;
-  public static final String[] EDDDownloadDataAr;
-  public static final String[] EDDMakeAGraphAr;
-  public static final String[] EDDMakeAMapAr;
-  public static final String[] EDDFileTypeAr;
-  public static final String[] EDDFileTypeInformationAr;
-  public static final String[] EDDSelectFileTypeAr;
-  public static final String[] EDDMinimumAr;
-  public static final String[] EDDMaximumAr;
-  public static final String[] EDDConstraintAr;
-  public static final String[] EDDGridDapDescriptionAr;
-  public static final String[] EDDGridDapLongDescriptionAr;
-  public static final String[] EDDGridDownloadDataTooltipAr;
-  public static final String[] EDDGridDimensionAr;
-  public static final String[] EDDGridDimensionRangesAr;
-  public static final String[] EDDGridFirstAr;
-  public static final String[] EDDGridLastAr;
-  public static final String[] EDDGridStartAr;
-  public static final String[] EDDGridStopAr;
-  public static final String[] EDDGridStartStopTooltipAr;
-  public static final String[] EDDGridStrideAr;
-  public static final String[] EDDGridNValuesAr;
-  public static final String[] EDDGridNValuesHtmlAr;
-  public static final String[] EDDGridSpacingAr;
-  public static final String[] EDDGridJustOneValueAr;
-  public static final String[] EDDGridEvenAr;
-  public static final String[] EDDGridUnevenAr;
-  public static final String[] EDDGridDimensionTooltipAr;
-  public static final String[] EDDGridDimensionFirstTooltipAr;
-  public static final String[] EDDGridDimensionLastTooltipAr;
-  public static final String[] EDDGridVarHasDimTooltipAr;
-  public static final String[] EDDGridSSSTooltipAr;
-  public static final String[] EDDGridStartTooltipAr;
-  public static final String[] EDDGridStopTooltipAr;
-  public static final String[] EDDGridStrideTooltipAr;
-  public static final String[] EDDGridSpacingTooltipAr;
-  public static final String[] EDDGridDownloadTooltipAr;
-  public static final String[] EDDGridGridVariableHtmlAr;
-  public static final String[] EDDGridCheckAllAr;
-  public static final String[] EDDGridCheckAllTooltipAr;
-  public static final String[] EDDGridUncheckAllAr;
-  public static final String[] EDDGridUncheckAllTooltipAr;
-  public static final String[] EDDTableConstraintsAr;
-  public static final String[] EDDTableTabularDatasetTooltipAr;
-  public static final String[] EDDTableVariableAr;
-  public static final String[] EDDTableCheckAllAr;
-  public static final String[] EDDTableCheckAllTooltipAr;
-  public static final String[] EDDTableUncheckAllAr;
-  public static final String[] EDDTableUncheckAllTooltipAr;
-  public static final String[] EDDTableMinimumTooltipAr;
-  public static final String[] EDDTableMaximumTooltipAr;
-  public static final String[] EDDTableCheckTheVariablesAr;
-  public static final String[] EDDTableSelectAnOperatorAr;
-  public static final String[] EDDTableFromEDDGridSummaryAr;
-  public static final String[] EDDTableOptConstraint1HtmlAr;
-  public static final String[] EDDTableOptConstraint2HtmlAr;
-  public static final String[] EDDTableOptConstraintVarAr;
-  public static final String[] EDDTableNumericConstraintTooltipAr;
-  public static final String[] EDDTableStringConstraintTooltipAr;
-  public static final String[] EDDTableTimeConstraintTooltipAr;
-  public static final String[] EDDTableConstraintTooltipAr;
-  public static final String[] EDDTableSelectConstraintTooltipAr;
-  public static final String[] EDDTableDapDescriptionAr;
-  public static final String[] EDDTableDapLongDescriptionAr;
-  public static final String[] EDDTableDownloadDataTooltipAr;
-  public static final String[] erddapIsAr;
-  public static final String[] erddapVersionHTMLAr;
-  public static final String[] errorTitleAr;
-  public static final String[] errorRequestUrlAr;
-  public static final String[] errorRequestQueryAr;
-  public static final String[] errorTheErrorAr;
-  public static final String[] errorCopyFromAr;
-  public static final String[] errorFileNotFoundAr;
-  public static final String[] errorFileNotFoundImageAr;
-  public static final String[] errorInternalAr;
-  public static final String[] errorJsonpFunctionNameAr;
-  public static final String[] errorJsonpNotAllowedAr;
-  public static final String[] errorMoreThan2GBAr;
-  public static final String[] errorNotFoundAr;
-  public static final String[] errorNotFoundInAr;
-  public static final String[] errorOdvLLTGridAr;
-  public static final String[] errorOdvLLTTableAr;
-  public static final String[] errorOnWebPageAr;
-  public static final String[] externalLinkAr;
-  public static final String[] externalWebSiteAr;
-  public static final String[] fileHelp_ascAr;
-  public static final String[] fileHelp_csvAr;
-  public static final String[] fileHelp_csvpAr;
-  public static final String[] fileHelp_csv0Ar;
-  public static final String[] fileHelp_dataTableAr;
-  public static final String[] fileHelp_dasAr;
-  public static final String[] fileHelp_ddsAr;
-  public static final String[] fileHelp_dodsAr;
-  public static final String[] fileHelpGrid_esriAsciiAr;
-  public static final String[] fileHelpTable_esriCsvAr;
-  public static final String[] fileHelp_fgdcAr;
-  public static final String[] fileHelp_geoJsonAr;
-  public static final String[] fileHelp_graphAr;
-  public static final String[] fileHelpGrid_helpAr;
-  public static final String[] fileHelpTable_helpAr;
-  public static final String[] fileHelp_htmlAr;
-  public static final String[] fileHelp_htmlTableAr;
-  public static final String[] fileHelp_iso19115Ar;
-  public static final String[] fileHelp_itxGridAr;
-  public static final String[] fileHelp_itxTableAr;
-  public static final String[] fileHelp_jsonAr;
-  public static final String[] fileHelp_jsonlCSV1Ar;
-  public static final String[] fileHelp_jsonlCSVAr;
-  public static final String[] fileHelp_jsonlKVPAr;
-  public static final String[] fileHelp_matAr;
-  public static final String[] fileHelpGrid_nc3Ar;
-  public static final String[] fileHelpGrid_nc4Ar;
-  public static final String[] fileHelpTable_nc3Ar;
-  public static final String[] fileHelpTable_nc4Ar;
-  public static final String[] fileHelp_nc3HeaderAr;
-  public static final String[] fileHelp_nc4HeaderAr;
-  public static final String[] fileHelp_nccsvAr;
-  public static final String[] fileHelp_nccsvMetadataAr;
-  public static final String[] fileHelp_ncCFAr;
-  public static final String[] fileHelp_ncCFHeaderAr;
-  public static final String[] fileHelp_ncCFMAAr;
-  public static final String[] fileHelp_ncCFMAHeaderAr;
-  public static final String[] fileHelp_ncmlAr;
-  public static final String[] fileHelp_ncoJsonAr;
-  public static final String[] fileHelpGrid_odvTxtAr;
-  public static final String[] fileHelpTable_odvTxtAr;
-  public static final String[] fileHelp_parquetAr;
-  public static final String[] fileHelp_parquet_with_metaAr;
-  public static final String[] fileHelp_subsetAr;
-  public static final String[] fileHelp_timeGapsAr;
-  public static final String[] fileHelp_tsvAr;
-  public static final String[] fileHelp_tsvpAr;
-  public static final String[] fileHelp_tsv0Ar;
-  public static final String[] fileHelp_wavAr;
-  public static final String[] fileHelp_xhtmlAr;
-  public static final String[] fileHelp_geotifAr; // graphical
-  public static final String[] fileHelpGrid_kmlAr;
-  public static final String[] fileHelpTable_kmlAr;
-  public static final String[] fileHelp_smallPdfAr;
-  public static final String[] fileHelp_pdfAr;
-  public static final String[] fileHelp_largePdfAr;
-  public static final String[] fileHelp_smallPngAr;
-  public static final String[] fileHelp_pngAr;
-  public static final String[] fileHelp_largePngAr;
-  public static final String[] fileHelp_transparentPngAr;
-  public static final String[] filesDescriptionAr;
-  public static final String[] filesSortAr;
-  public static final String[] filesWarningAr;
-  public static final String[] findOutChangeAr;
-  public static final String[] FIPSCountyCodesAr;
-  public static final String[] forSOSUseAr;
-  public static final String[] forWCSUseAr;
-  public static final String[] forWMSUseAr;
-  public static final String[] functionsAr;
-  public static final String[] functionTooltipAr;
-  public static final String[] functionDistinctCheckAr;
-  public static final String[] functionDistinctTooltipAr;
-  public static final String[] functionOrderByExtraAr;
-  public static final String[] functionOrderByTooltipAr;
-  public static final String[] functionOrderBySortAr;
-  public static final String[] functionOrderBySort1Ar;
-  public static final String[] functionOrderBySort2Ar;
-  public static final String[] functionOrderBySort3Ar;
-  public static final String[] functionOrderBySort4Ar;
-  public static final String[] functionOrderBySortLeastAr;
-  public static final String[] functionOrderBySortRowMaxAr;
-  public static final String[] generatedAtAr;
-  public static final String[] geoServicesDescriptionAr;
-  public static final String[] getStartedHtmlAr;
-  public static final String[] helpAr;
-  public static final String[] htmlTableMaxMessageAr;
-  public static final String[] imageDataCourtesyOfAr;
-  public static final String[] imagesEmbedAr;
-  public static final String[] indexViewAllAr;
-  public static final String[] indexSearchWithAr;
-  public static final String[] indexDevelopersSearchAr;
-  public static final String[] indexProtocolAr;
-  public static final String[] indexDescriptionAr;
-  public static final String[] indexDatasetsAr;
-  public static final String[] indexDocumentationAr;
-  public static final String[] indexRESTfulSearchAr;
-  public static final String[] indexAllDatasetsSearchAr;
-  public static final String[] indexOpenSearchAr;
-  public static final String[] indexServicesAr;
-  public static final String[] indexDescribeServicesAr;
-  public static final String[] indexMetadataAr;
-  public static final String[] indexWAF1Ar;
-  public static final String[] indexWAF2Ar;
-  public static final String[] indexConvertersAr;
-  public static final String[] indexDescribeConvertersAr;
-  public static final String[] infoAboutFromAr;
-  public static final String[] infoTableTitleHtmlAr;
-  public static final String[] infoRequestFormAr;
-  public static final String[] informationAr;
-  public static final String[] inotifyFixAr;
-  public static final String[] interpolateAr;
-  public static final String[] javaProgramsHTMLAr;
-  public static final String[] justGenerateAndViewAr;
-  public static final String[] justGenerateAndViewTooltipAr;
-  public static final String[] justGenerateAndViewUrlAr;
-  public static final String[] justGenerateAndViewGraphUrlTooltipAr;
-  public static final String[] keywordsAr;
-  public static final String[] langCodeAr;
-  public static final String[] legalNoticesAr;
-  public static final String[] legalNoticesTitleAr;
-  public static final String[] licenseAr;
-  public static final String[] likeThisAr;
-  public static final String[] listAllAr;
-  public static final String[] listOfDatasetsAr;
-  public static final String[] LogInAr;
-  public static final String[] loginAr;
-  public static final String[] loginHTMLAr;
-  public static final String[] loginAttemptBlockedAr;
-  public static final String[] loginDescribeCustomAr;
-  public static final String[] loginDescribeEmailAr;
-  public static final String[] loginDescribeGoogleAr;
-  public static final String[] loginDescribeOrcidAr;
-  public static final String[] loginDescribeOauth2Ar;
-  public static final String[] loginErddapAr;
-  public static final String[] loginCanNotAr;
-  public static final String[] loginAreNotAr;
-  public static final String[] loginToLogInAr;
-  public static final String[] loginEmailAddressAr;
-  public static final String[] loginYourEmailAddressAr;
-  public static final String[] loginUserNameAr;
-  public static final String[] loginPasswordAr;
-  public static final String[] loginUserNameAndPasswordAr;
-  public static final String[] loginGoogleSignInAr;
-  public static final String[] loginOrcidSignInAr;
-  public static final String[] loginOpenIDAr;
-  public static final String[] loginOpenIDOrAr;
-  public static final String[] loginOpenIDCreateAr;
-  public static final String[] loginOpenIDFreeAr;
-  public static final String[] loginOpenIDSameAr;
-  public static final String[] loginAsAr;
-  public static final String[] loginPartwayAsAr;
-  public static final String[] loginFailedAr;
-  public static final String[] loginSucceededAr;
-  public static final String[] loginInvalidAr;
-  public static final String[] loginNotAr;
-  public static final String[] loginBackAr;
-  public static final String[] loginProblemExactAr;
-  public static final String[] loginProblemExpireAr;
-  public static final String[] loginProblemGoogleAgainAr;
-  public static final String[] loginProblemOrcidAgainAr;
-  public static final String[] loginProblemOauth2AgainAr;
-  public static final String[] loginProblemSameBrowserAr;
-  public static final String[] loginProblem3TimesAr;
-  public static final String[] loginProblemsAr;
-  public static final String[] loginProblemsAfterAr;
-  public static final String[] loginPublicAccessAr;
-  public static final String[] LogOutAr;
-  public static final String[] logoutAr;
-  public static final String[] logoutOpenIDAr;
-  public static final String[] logoutSuccessAr;
-  public static final String[] magAr;
-  public static final String[] magAxisXAr;
-  public static final String[] magAxisYAr;
-  public static final String[] magAxisColorAr;
-  public static final String[] magAxisStickXAr;
-  public static final String[] magAxisStickYAr;
-  public static final String[] magAxisVectorXAr;
-  public static final String[] magAxisVectorYAr;
-  public static final String[] magAxisHelpGraphXAr;
-  public static final String[] magAxisHelpGraphYAr;
-  public static final String[] magAxisHelpMarkerColorAr;
-  public static final String[] magAxisHelpSurfaceColorAr;
-  public static final String[] magAxisHelpStickXAr;
-  public static final String[] magAxisHelpStickYAr;
-  public static final String[] magAxisHelpMapXAr;
-  public static final String[] magAxisHelpMapYAr;
-  public static final String[] magAxisHelpVectorXAr;
-  public static final String[] magAxisHelpVectorYAr;
-  public static final String[] magAxisVarHelpAr;
-  public static final String[] magAxisVarHelpGridAr;
-  public static final String[] magConstraintHelpAr;
-  public static final String[] magDocumentationAr;
-  public static final String[] magDownloadAr;
-  public static final String[] magDownloadTooltipAr;
-  public static final String[] magFileTypeAr;
-  public static final String[] magGraphTypeAr;
-  public static final String[] magGraphTypeTooltipGridAr;
-  public static final String[] magGraphTypeTooltipTableAr;
-  public static final String[] magGSAr;
-  public static final String[] magGSMarkerTypeAr;
-  public static final String[] magGSSizeAr;
-  public static final String[] magGSColorAr;
-  public static final String[] magGSColorBarAr;
-  public static final String[] magGSColorBarTooltipAr;
-  public static final String[] magGSContinuityAr;
-  public static final String[] magGSContinuityTooltipAr;
-  public static final String[] magGSScaleAr;
-  public static final String[] magGSScaleTooltipAr;
-  public static final String[] magGSMinAr;
-  public static final String[] magGSMinTooltipAr;
-  public static final String[] magGSMaxAr;
-  public static final String[] magGSMaxTooltipAr;
-  public static final String[] magGSNSectionsAr;
-  public static final String[] magGSNSectionsTooltipAr;
-  public static final String[] magGSLandMaskAr;
-  public static final String[] magGSLandMaskTooltipGridAr;
-  public static final String[] magGSLandMaskTooltipTableAr;
-  public static final String[] magGSVectorStandardAr;
-  public static final String[] magGSVectorStandardTooltipAr;
-  public static final String[] magGSYAscendingTooltipAr;
-  public static final String[] magGSYAxisMinAr;
-  public static final String[] magGSYAxisMaxAr;
-  public static final String[] magGSYRangeMinTooltipAr;
-  public static final String[] magGSYRangeMaxTooltipAr;
-  public static final String[] magGSYRangeTooltipAr;
-  public static final String[] magGSYScaleTooltipAr;
-  public static final String[] magItemFirstAr;
-  public static final String[] magItemPreviousAr;
-  public static final String[] magItemNextAr;
-  public static final String[] magItemLastAr;
-  public static final String[] magJust1ValueAr;
-  public static final String[] magRangeAr;
-  public static final String[] magRangeToAr;
-  public static final String[] magRedrawAr;
-  public static final String[] magRedrawTooltipAr;
-  public static final String[] magTimeRangeAr;
-  public static final String[] magTimeRangeFirstAr;
-  public static final String[] magTimeRangeBackAr;
-  public static final String[] magTimeRangeForwardAr;
-  public static final String[] magTimeRangeLastAr;
-  public static final String[] magTimeRangeTooltipAr;
-  public static final String[] magTimeRangeTooltip2Ar;
-  public static final String[] magTimesVaryAr;
-  public static final String[] magViewUrlAr;
-  public static final String[] magZoomAr;
-  public static final String[] magZoomCenterAr;
-  public static final String[] magZoomCenterTooltipAr;
-  public static final String[] magZoomInAr;
-  public static final String[] magZoomInTooltipAr;
-  public static final String[] magZoomOutAr;
-  public static final String[] magZoomOutTooltipAr;
-  public static final String[] magZoomALittleAr;
-  public static final String[] magZoomDataAr;
-  public static final String[] magZoomOutDataAr;
-  public static final String[] magGridTooltipAr;
-  public static final String[] magTableTooltipAr;
-  public static final String[] metadataDownloadAr;
-  public static final String[] moreInformationAr;
-  public static final String[] nMatching1Ar;
-  public static final String[] nMatchingAr;
-  public static final String[] nMatchingAlphabeticalAr;
-  public static final String[] nMatchingMostRelevantAr;
-  public static final String[] nMatchingPageAr;
-  public static final String[] nMatchingCurrentAr;
-  public static final String[] noDataFixedValueAr;
-  public static final String[] noDataNoLLAr;
-  public static final String[] noDatasetWithAr;
-  public static final String[] noPage1Ar;
-  public static final String[] noPage2Ar;
-  public static final String[] notAllowedAr;
-  public static final String[] notAuthorizedAr;
-  public static final String[] notAuthorizedForDataAr;
-  public static final String[] notAvailableAr;
-  public static final String[] noteAr;
-  public static final String[] noXxxAr;
-  public static final String[] noXxxBecauseAr;
-  public static final String[] noXxxBecause2Ar;
-  public static final String[] noXxxNotActiveAr;
-  public static final String[] noXxxNoAxis1Ar;
-  public static final String[] noXxxNoColorBarAr;
-  public static final String[] noXxxNoCdmDataTypeAr;
-  public static final String[] noXxxNoLLAr;
-  public static final String[] noXxxNoLLEvenlySpacedAr;
-  public static final String[] noXxxNoLLGt1Ar;
-  public static final String[] noXxxNoLLTAr;
-  public static final String[] noXxxNoLonIn180Ar;
-  public static final String[] noXxxNoNonStringAr;
-  public static final String[] noXxxNo2NonStringAr;
-  public static final String[] noXxxNoStationAr;
-  public static final String[] noXxxNoStationIDAr;
-  public static final String[] noXxxNoSubsetVariablesAr;
-  public static final String[] noXxxNoOLLSubsetVariablesAr;
-  public static final String[] noXxxNoMinMaxAr;
-  public static final String[] noXxxItsGriddedAr;
-  public static final String[] noXxxItsTabularAr;
-  public static final String[] oneRequestAtATimeAr;
-  public static final String[] openSearchDescriptionAr;
-  public static final String[] optionalAr;
-  public static final String[] optionsAr;
-  public static final String[] orAListOfValuesAr;
-  public static final String[] orRefineSearchWithAr;
-  public static final String[] orSearchWithAr;
-  public static final String[] orCommaAr;
-  public static final String[] otherFeaturesAr;
-  public static final String[] outOfDateDatasetsAr;
-  public static final String[] outOfDateKeepTrackAr;
-  public static final String[] outOfDateHtmlAr;
-  public static final String[] patientDataAr;
-  public static final String[] patientYourGraphAr;
-  public static final String[] percentEncodeAr;
-  public static final String[] pickADatasetAr;
-  public static final String[] protocolSearchHtmlAr;
-  public static final String[] protocolSearch2HtmlAr;
-  public static final String[] protocolClickAr;
-  public static final String[] queryErrorAr;
-  public static final String[] queryError180Ar;
-  public static final String[] queryError1ValueAr;
-  public static final String[] queryError1VarAr;
-  public static final String[] queryError2VarAr;
-  public static final String[] queryErrorActualRangeAr;
-  public static final String[] queryErrorAdjustedAr;
-  public static final String[] queryErrorAscendingAr;
-  public static final String[] queryErrorConstraintNaNAr;
-  public static final String[] queryErrorEqualSpacingAr;
-  public static final String[] queryErrorExpectedAtAr;
-  public static final String[] queryErrorFileTypeAr;
-  public static final String[] queryErrorInvalidAr;
-  public static final String[] queryErrorLLAr;
-  public static final String[] queryErrorLLGt1Ar;
-  public static final String[] queryErrorLLTAr;
-  public static final String[] queryErrorNeverTrueAr;
-  public static final String[] queryErrorNeverBothTrueAr;
-  public static final String[] queryErrorNotAxisAr;
-  public static final String[] queryErrorNotExpectedAtAr;
-  public static final String[] queryErrorNotFoundAfterAr;
-  public static final String[] queryErrorOccursTwiceAr;
-  public static final String[] queryErrorOrderByClosestAr;
-  public static final String[] queryErrorOrderByLimitAr;
-  public static final String[] queryErrorOrderByMeanAr;
-  public static final String[] queryErrorOrderBySumAr;
-  public static final String[] queryErrorOrderByVariableAr;
-  public static final String[] queryErrorUnknownVariableAr;
-  public static final String[] queryErrorGrid1AxisAr;
-  public static final String[] queryErrorGridAmpAr;
-  public static final String[] queryErrorGridDiagnosticAr;
-  public static final String[] queryErrorGridBetweenAr;
-  public static final String[] queryErrorGridLessMinAr;
-  public static final String[] queryErrorGridGreaterMaxAr;
-  public static final String[] queryErrorGridMissingAr;
-  public static final String[] queryErrorGridNoAxisVarAr;
-  public static final String[] queryErrorGridNoDataVarAr;
-  public static final String[] queryErrorGridNotIdenticalAr;
-  public static final String[] queryErrorGridSLessSAr;
-  public static final String[] queryErrorLastEndPAr;
-  public static final String[] queryErrorLastExpectedAr;
-  public static final String[] queryErrorLastUnexpectedAr;
-  public static final String[] queryErrorLastPMInvalidAr;
-  public static final String[] queryErrorLastPMIntegerAr;
-  public static final String[] rangesFromToAr;
-  public static final String[] requiredAr;
-  public static final String[] resetTheFormAr;
-  public static final String[] resetTheFormWasAr;
-  public static final String[] resourceNotFoundAr;
-  public static final String[] restfulWebServicesAr;
-  public static final String[] restfulHTMLAr;
-  public static final String[] restfulHTMLContinuedAr;
-  public static final String[] restfulGetAllDatasetAr;
-  public static final String[] restfulProtocolsAr;
-  public static final String[] SOSDocumentationAr;
-  public static final String[] WCSDocumentationAr;
-  public static final String[] WMSDocumentationAr;
-  public static final String[] requestFormatExamplesHtmlAr;
-  public static final String[] resultsFormatExamplesHtmlAr;
-  public static final String[] resultsOfSearchForAr;
-  public static final String[] restfulInformationFormatsAr;
-  public static final String[] restfulViaServiceAr;
-  public static final String[] rowsAr;
-  public static final String[] rssNoAr;
-  public static final String[] searchTitleAr;
-  public static final String[] searchDoFullTextHtmlAr;
-  public static final String[] searchFullTextHtmlAr;
-  public static final String[] searchHintsLuceneTooltipAr;
-  public static final String[] searchHintsOriginalTooltipAr;
-  public static final String[] searchHintsTooltipAr;
-  public static final String[] searchButtonAr;
-  public static final String[] searchClickTipAr;
-  public static final String[] searchMultipleERDDAPsAr;
-  public static final String[] searchMultipleERDDAPsDescriptionAr;
-  public static final String[] searchNotAvailableAr;
-  public static final String[] searchTipAr;
-  public static final String[] searchSpellingAr;
-  public static final String[] searchFewerWordsAr;
-  public static final String[] searchWithQueryAr;
-  public static final String[] seeProtocolDocumentationAr;
-  public static final String[] selectNextAr;
-  public static final String[] selectPreviousAr;
-  public static final String[] shiftXAllTheWayLeftAr;
-  public static final String[] shiftXLeftAr;
-  public static final String[] shiftXRightAr;
-  public static final String[] shiftXAllTheWayRightAr;
-  public static final String[] slideSorterAr;
-  public static final String[] SOSAr;
-  public static final String[] sosDescriptionHtmlAr;
-  public static final String[] sosLongDescriptionHtmlAr;
-  public static final String[] sosOverview1Ar;
-  public static final String[] sosOverview2Ar;
-  public static final String[] ssUseAr;
-  public static final String[] ssUsePlainAr;
-  public static final String[] ssBePatientAr;
-  public static final String[] ssInstructionsHtmlAr;
-  public static final String[] standardShortDescriptionHtmlAr;
-  public static final String[] statusAr;
-  public static final String[] statusHtmlAr;
-  public static final String[] submitAr;
-  public static final String[] submitTooltipAr;
-  public static final String[] subscriptionOfferRssAr;
-  public static final String[] subscriptionOfferUrlAr;
-  public static final String[] subscriptionsTitleAr;
-  public static final String[] subscriptionEmailListAr;
-  public static final String[] subscriptionAddAr;
-  public static final String[] subscriptionAddHtmlAr;
-  public static final String[] subscriptionValidateAr;
-  public static final String[] subscriptionValidateHtmlAr;
-  public static final String[] subscriptionListAr;
-  public static final String[] subscriptionListHtmlAr;
-  public static final String[] subscriptionRemoveAr;
-  public static final String[] subscriptionRemoveHtmlAr;
-  public static final String[] subscriptionAbuseAr;
-  public static final String[] subscriptionAddErrorAr;
-  public static final String[] subscriptionAdd2Ar;
-  public static final String[] subscriptionAddSuccessAr;
-  public static final String[] subscriptionEmailAr;
-  public static final String[] subscriptionEmailOnBlacklistAr;
-  public static final String[] subscriptionEmailInvalidAr;
-  public static final String[] subscriptionEmailTooLongAr;
-  public static final String[] subscriptionEmailUnspecifiedAr;
-  public static final String[] subscription0HtmlAr;
-  public static final String[] subscription1HtmlAr;
-  public static final String[] subscription2HtmlAr;
-  public static final String[] subscriptionIDInvalidAr;
-  public static final String[] subscriptionIDTooLongAr;
-  public static final String[] subscriptionIDUnspecifiedAr;
-  public static final String[] subscriptionKeyInvalidAr;
-  public static final String[] subscriptionKeyUnspecifiedAr;
-  public static final String[] subscriptionListErrorAr;
-  public static final String[] subscriptionListSuccessAr;
-  public static final String[] subscriptionRemoveErrorAr;
-  public static final String[] subscriptionRemove2Ar;
-  public static final String[] subscriptionRemoveSuccessAr;
-  public static final String[] subscriptionRSSAr;
-  public static final String[] subscriptionsNotAvailableAr;
-  public static final String[] subscriptionUrlHtmlAr;
-  public static final String[] subscriptionUrlInvalidAr;
-  public static final String[] subscriptionUrlTooLongAr;
-  public static final String[] subscriptionValidateErrorAr;
-  public static final String[] subscriptionValidateSuccessAr;
-  public static final String[] subsetAr;
-  public static final String[] subsetSelectAr;
-  public static final String[] subsetNMatchingAr;
-  public static final String[] subsetInstructionsAr;
-  public static final String[] subsetOptionAr;
-  public static final String[] subsetOptionsAr;
-  public static final String[] subsetRefineMapDownloadAr;
-  public static final String[] subsetRefineSubsetDownloadAr;
-  public static final String[] subsetClickResetClosestAr;
-  public static final String[] subsetClickResetLLAr;
-  public static final String[] subsetMetadataAr;
-  public static final String[] subsetCountAr;
-  public static final String[] subsetPercentAr;
-  public static final String[] subsetViewSelectAr;
-  public static final String[] subsetViewSelectDistinctCombosAr;
-  public static final String[] subsetViewSelectRelatedCountsAr;
-  public static final String[] subsetWhenAr;
-  public static final String[] subsetWhenNoConstraintsAr;
-  public static final String[] subsetWhenCountsAr;
-  public static final String[] subsetComboClickSelectAr;
-  public static final String[] subsetNVariableCombosAr;
-  public static final String[] subsetShowingAllRowsAr;
-  public static final String[] subsetShowingNRowsAr;
-  public static final String[] subsetChangeShowingAr;
-  public static final String[] subsetNRowsRelatedDataAr;
-  public static final String[] subsetViewRelatedChangeAr;
-  public static final String[] subsetTotalCountAr;
-  public static final String[] subsetViewAr;
-  public static final String[] subsetViewCheckAr;
-  public static final String[] subsetViewCheck1Ar;
-  public static final String[] subsetViewDistinctMapAr;
-  public static final String[] subsetViewRelatedMapAr;
-  public static final String[] subsetViewDistinctDataCountsAr;
-  public static final String[] subsetViewDistinctDataAr;
-  public static final String[] subsetViewRelatedDataCountsAr;
-  public static final String[] subsetViewRelatedDataAr;
-  public static final String[] subsetViewDistinctMapTooltipAr;
-  public static final String[] subsetViewRelatedMapTooltipAr;
-  public static final String[] subsetViewDistinctDataCountsTooltipAr;
-  public static final String[] subsetViewDistinctDataTooltipAr;
-  public static final String[] subsetViewRelatedDataCountsTooltipAr;
-  public static final String[] subsetViewRelatedDataTooltipAr;
-  public static final String[] subsetWarnAr;
-  public static final String[] subsetWarn10000Ar;
-  public static final String[] subsetTooltipAr;
-  public static final String[] subsetNotSetUpAr;
-  public static final String[] subsetLongNotShownAr;
-  public static final String[] tabledapVideoIntroAr;
-  public static final String[] theDatasetIDAr;
-  public static final String[] theKeyAr;
-  public static final String[] theSubscriptionIDAr;
-  public static final String[] theUrlActionAr;
-  public static final String[] ThenAr;
-  public static final String[] thisParticularErddapAr;
-  public static final String[] timeAr;
-  public static final String[] timeoutOtherRequestsAr;
-  public static final String[] unitsAr;
-  public static final String[] unknownDatasetIDAr;
-  public static final String[] unknownProtocolAr;
-  public static final String[] unsupportedFileTypeAr;
-  public static final String[] updateUrlsFrom; // not Ar. They were arrays before and now
-  public static final String[] updateUrlsTo; // not Ar
-  public static final String[] updateUrlsSkipAttributes; // not Ar
-  public static final String[] usingGriddapAr;
-  public static final String[] usingTabledapAr;
-  public static final String[] variableNamesAr;
-  public static final String[] viewAllDatasetsHtmlAr;
-  public static final String[] waitThenTryAgainAr;
-  public static final String[] warningAr;
-  public static final String[] WCSAr;
-  public static final String[] wcsDescriptionHtmlAr;
-  public static final String[] wcsLongDescriptionHtmlAr;
-  public static final String[] wcsOverview1Ar;
-  public static final String[] wcsOverview2Ar;
-  public static final String[] wmsDescriptionHtmlAr;
-  public static final String[] WMSDocumentation1Ar;
-  public static final String[] WMSGetCapabilitiesAr;
-  public static final String[] WMSGetMapAr;
-  public static final String[] WMSNotesAr;
-  public static final String[] wmsInstructionsAr;
-  public static final String[] wmsLongDescriptionHtmlAr;
-  public static final String[] wmsManyDatasetsAr;
-  public static final String[] yourEmailAddressAr;
-  public static final String[] zoomInAr;
-  public static final String[] zoomOutAr;
-  public static final int[] imageWidths;
-  public static final int[] imageHeights;
-  public static final int[] pdfWidths;
-  public static final int[] pdfHeights;
-  private static final String[] theLongDescriptionHtmlAr; // see the xxx() methods
-  public static final String errorFromDataSource = String2.ERROR + " from data source: ";
-  public static final int nLanguages = TranslateMessages.languageList.size();
 
   /**
    * These are only created/used by GenerateDatasetsXml threads. See the related methods below that
@@ -1838,9 +558,13 @@ public class EDStatic {
   private static Table gdxAcronymsTable;
 
   private static Map<String, String> gdxAcronymsHashMap, gdxVariableNamesHashMap;
-  public static boolean useSharedWatchService = true;
 
-  public static boolean redirectDocumentationToGitHubIo = true;
+  private static boolean initialized = false;
+
+  // When doing JettyTests, the servlet gets torn down and so it calls EDStatic.destroy.
+  // However we aren't actually done testing at that point, so we don't want to call destroy
+  // during testing. This should only be set to tru during testing.
+  public static boolean testingDontDestroy = false;
 
   /**
    * This static block reads this class's static String values from contentDirectory, which must
@@ -1851,20 +575,20 @@ public class EDStatic {
    * @throws RuntimeException if trouble
    */
   static {
+    String webInfParentDirectory = File2.getWebInfParentDirectory();
+    // route calls to a logger to com.cohort.util.String2Log
+    String2.setupCommonsLogging(-1);
+    init(webInfParentDirectory);
+  }
+
+  public static void init(String webInfParentDirectory) {
+    if (initialized) {
+      return;
+    }
+    initialized = true;
     String erdStartup = "EDStatic Low Level Startup";
     String errorInMethod = "";
     try {
-      String webInfParentDirectory = File2.getWebInfParentDirectory();
-
-      fullPaletteDirectory = webInfParentDirectory + "WEB-INF/cptfiles/";
-      fullPublicDirectory = webInfParentDirectory + PUBLIC_DIR;
-      downloadDir = webInfParentDirectory + DOWNLOAD_DIR; // local directory on this computer
-      imageDir = webInfParentDirectory + IMAGES_DIR; // local directory on this computer
-
-      skipEmailThread = Boolean.parseBoolean(System.getProperty("skipEmailThread"));
-
-      // route calls to a logger to com.cohort.util.String2Log
-      String2.setupCommonsLogging(-1);
       SSR.erddapVersion = erddapVersion;
 
       String eol = String2.lineSeparator;
@@ -1881,97 +605,10 @@ public class EDStatic {
               + eol
               + String2.standardHelpAboutMessage());
 
-      // **** find contentDirectory
-      String ecd = "erddapContentDirectory"; // the name of the environment variable
-      errorInMethod =
-          "Couldn't find 'content' directory ([tomcat]/content/erddap/ ?) "
-              + "because '"
-              + ecd
-              + "' environment variable not found "
-              + "and couldn't find '/webapps/' "
-              + // with / separator and / at the end
-              " (and 'content/erddap' should be a sibling of <tomcat>/webapps): ";
-      contentDirectory = System.getProperty(ecd);
-      if (contentDirectory == null) {
-        // Or, it must be sibling of webapps
-        // e.g., c:/programs/_tomcat/webapps/erddap/WEB-INF/classes/[these classes]
-        // On windows, contentDirectory may have spaces as %20(!)
-        contentDirectory = File2.getClassPath(); // access a resource folder
-        int po = contentDirectory.indexOf("/webapps/");
-        contentDirectory =
-            contentDirectory.substring(0, po) + "/content/erddap/"; // exception if po=-1
-      } else {
-        contentDirectory = File2.addSlash(contentDirectory);
-      }
-      Test.ensureTrue(
-          File2.isDirectory(contentDirectory),
-          "contentDirectory (" + contentDirectory + ") doesn't exist.");
-
-      // **** setup.xml  *************************************************************
-      // This is read BEFORE messages.xml. If that is a problem for something,
-      //  defer reading it in setup and add it to the messages section.
-      // read static Strings from setup.xml
-      String setupFileName = contentDirectory + "setup" + (developmentMode ? "2" : "") + ".xml";
-      errorInMethod = "ERROR while reading " + setupFileName + ": ";
-      ResourceBundle2 setup = ResourceBundle2.fromXml(XML.parseXml(setupFileName, false));
-      Map<String, String> ev = System.getenv();
-
-      // logLevel may be: warning, info(default), all
-      setLogLevel(getSetupEVString(setup, ev, "logLevel", DEFAULT_logLevel));
-
-      usePrometheusMetrics = getSetupEVBoolean(setup, ev, "usePrometheusMetrics", true);
+      config = new EDConfig(webInfParentDirectory);
       metrics = new Metrics();
-      metrics.initialize(usePrometheusMetrics);
 
-      bigParentDirectory = getSetupEVNotNothingString(setup, ev, "bigParentDirectory", "");
-      bigParentDirectory = File2.addSlash(bigParentDirectory);
-      Path bpd = Path.of(bigParentDirectory);
-      if (!bpd.isAbsolute()) {
-        if (!File2.isDirectory(bigParentDirectory)) {
-          bigParentDirectory = File2.getWebInfParentDirectory() + bigParentDirectory;
-        }
-      }
-      Test.ensureTrue(
-          File2.isDirectory(bigParentDirectory),
-          "bigParentDirectory (" + bigParentDirectory + ") doesn't exist.");
-
-      // email  (do early on so email can be sent if trouble later in this method)
-      emailSmtpHost = getSetupEVString(setup, ev, "emailSmtpHost", (String) null);
-      emailSmtpPort = getSetupEVInt(setup, ev, "emailSmtpPort", 25);
-      emailUserName = getSetupEVString(setup, ev, "emailUserName", (String) null);
-      emailPassword = getSetupEVString(setup, ev, "emailPassword", (String) null);
-      emailProperties = getSetupEVString(setup, ev, "emailProperties", (String) null);
-      emailFromAddress = getSetupEVString(setup, ev, "emailFromAddress", (String) null);
-      emailEverythingToCsv = getSetupEVString(setup, ev, "emailEverythingTo", ""); // won't be null
-      emailDailyReportToCsv =
-          Optional.ofNullable(getSetupEVString(setup, ev, "emailDailyReportTo", (String) null))
-              .orElse(getSetupEVString(setup, ev, "emailDailyReportsTo", ""));
-      emailIsActive = // ie if actual emails will be sent
-          String2.isSomething(emailSmtpHost)
-              && emailSmtpPort > 0
-              && String2.isSomething(emailUserName)
-              && String2.isSomething(emailPassword)
-              && String2.isEmailAddress(emailFromAddress);
-
-      String tsar[] = String2.split(emailEverythingToCsv, ',');
-      if (emailEverythingToCsv.length() > 0)
-        for (String s : tsar)
-          if (!String2.isEmailAddress(s)
-              || s.startsWith("your.")) // prohibit the default email addresses
-          throw new RuntimeException(
-                "setup.xml error: invalid email address=" + s + " in <emailEverythingTo>.");
-      emailSubscriptionsFrom = tsar.length > 0 ? tsar[0] : ""; // won't be null
-
-      tsar = String2.split(emailDailyReportToCsv, ',');
-      if (emailDailyReportToCsv.length() > 0) {
-        for (String s : tsar)
-          if (!String2.isEmailAddress(s)
-              || s.startsWith("your.")) // prohibit the default email addresses
-          throw new RuntimeException(
-                "setup.xml error: invalid email address=" + s + " in <emailDailyReportTo>.");
-      }
-
-      if (!skipEmailThread) {
+      if (!config.skipEmailThread) {
         ensureEmailThreadIsRunningIfNeeded();
       }
       ensureTouchThreadIsRunningIfNeeded();
@@ -1979,55 +616,13 @@ public class EDStatic {
       // test of email
       // Test.error("This is a test of emailing an error in Erddap constructor.");
 
-      // *** set up directories  //all with slashes at end
-      // before 2011-12-30, was fullDatasetInfoDirectory datasetInfo/; see conversion below
-      fullDatasetDirectory = bigParentDirectory + "dataset/";
-      fullFileVisitorDirectory = fullDatasetDirectory + "_FileVisitor/";
-      FileVisitorDNLS.FILE_VISITOR_DIRECTORY = fullFileVisitorDirectory;
-      File2.deleteAllFiles(
-          fullFileVisitorDirectory); // no temp file list can be active at ERDDAP restart
-      fullCacheDirectory = bigParentDirectory + "cache/";
-      fullDecompressedDirectory = bigParentDirectory + "decompressed/";
-      fullDecompressedGenerateDatasetsXmlDirectory =
-          bigParentDirectory + "decompressed/GenerateDatasetsXml/";
-      fullResetFlagDirectory = bigParentDirectory + "flag/";
-      fullBadFilesFlagDirectory = bigParentDirectory + "badFilesFlag/";
-      fullHardFlagDirectory = bigParentDirectory + "hardFlag/";
-      fullLogsDirectory = bigParentDirectory + "logs/";
-      fullCopyDirectory = bigParentDirectory + "copy/";
-      fullLuceneDirectory = bigParentDirectory + "lucene/";
-
-      Test.ensureTrue(
-          File2.isDirectory(fullPaletteDirectory),
-          "fullPaletteDirectory (" + fullPaletteDirectory + ") doesn't exist.");
-      errorInMethod =
-          "ERROR while creating directories: "; // File2.makeDir throws exception if failure
-      File2.makeDirectory(fullPublicDirectory); // make it, because Git doesn't track empty dirs
-      File2.makeDirectory(fullDatasetDirectory);
-      File2.makeDirectory(fullCacheDirectory);
-      File2.makeDirectory(fullDecompressedDirectory);
-      File2.makeDirectory(fullDecompressedGenerateDatasetsXmlDirectory);
-      File2.makeDirectory(fullResetFlagDirectory);
-      File2.makeDirectory(fullBadFilesFlagDirectory);
-      File2.makeDirectory(fullHardFlagDirectory);
-      File2.makeDirectory(fullLogsDirectory);
-      File2.makeDirectory(fullCopyDirectory);
-      File2.makeDirectory(fullLuceneDirectory);
-
-      String2.log(
-          "bigParentDirectory="
-              + bigParentDirectory
-              + eol
-              + "webInfParentDirectory="
-              + webInfParentDirectory);
-
       // are bufferedImages hardware accelerated?
       String2.log(SgtUtil.isBufferedImageAccelerated());
 
       // 2011-12-30 convert /datasetInfo/[datasetID]/ to
       //                   /dataset/[last2char]/[datasetID]/
       // to prepare for huge number of datasets
-      String oldBaseDir = bigParentDirectory + "datasetInfo/"; // the old name
+      String oldBaseDir = config.bigParentDirectory + "datasetInfo/"; // the old name
       if (File2.isDirectory(oldBaseDir)) {
         errorInMethod = "ERROR while converting from oldBaseDir=" + oldBaseDir + ": ";
         try {
@@ -2066,275 +661,19 @@ public class EDStatic {
           String2.log("WARNING: " + MustBe.throwableToString(t));
         }
       }
-
-      // make some subdirectories of fullCacheDirectory
-      // '_' distinguishes from dataset cache dirs
-      errorInMethod = "ERROR while creating directories: ";
-      fullCptCacheDirectory = fullCacheDirectory + "_cpt/";
-      fullPlainFileNcCacheDirectory = fullCacheDirectory + "_plainFileNc/";
-      fullSgtMapTopographyCacheDirectory = fullCacheDirectory + "_SgtMapTopography/";
-      fullTestCacheDirectory = fullCacheDirectory + "_test/";
-      fullWmsCacheDirectory =
-          fullCacheDirectory + "_wms/"; // for all-datasets WMS and subdirs for non-data layers
-      SgtGraph.fullTestCacheDir = fullTestCacheDirectory;
-      File2.makeDirectory(fullCptCacheDirectory);
-      File2.makeDirectory(fullPlainFileNcCacheDirectory);
-      File2.makeDirectory(fullSgtMapTopographyCacheDirectory);
-      File2.makeDirectory(fullTestCacheDirectory);
-      File2.makeDirectory(fullWmsCacheDirectory);
-      File2.makeDirectory(fullWmsCacheDirectory + "Land"); // includes LandMask
-      File2.makeDirectory(fullWmsCacheDirectory + "Coastlines");
-      File2.makeDirectory(fullWmsCacheDirectory + "LakesAndRivers");
-      File2.makeDirectory(fullWmsCacheDirectory + "Nations");
-      File2.makeDirectory(fullWmsCacheDirectory + "States");
-
-      // get other info from setup.xml
-      errorInMethod = "ERROR while reading " + setupFileName + ": ";
-      baseUrl = getSetupEVNotNothingString(setup, ev, "baseUrl", errorInMethod);
-      baseHttpsUrl =
-          getSetupEVString(
-              setup, ev, "baseHttpsUrl", "(not specified)"); // not "" (to avoid relative urls)
-      categoryAttributes =
-          String2.split(getSetupEVNotNothingString(setup, ev, "categoryAttributes", ""), ',');
-      int nCat = categoryAttributes.length;
-      categoryAttributesInURLs = new String[nCat];
-      categoryIsGlobal = new boolean[nCat]; // initially all false
-      for (int cati = 0; cati < nCat; cati++) {
-        String cat = categoryAttributes[cati];
-        if (cat.startsWith("global:")) {
-          categoryIsGlobal[cati] = true;
-          cat = cat.substring(7);
-          categoryAttributes[cati] = cat;
-        } else if (cat.equals("institution")) { // legacy special case
-          categoryIsGlobal[cati] = true;
-        }
-        categoryAttributesInURLs[cati] = String2.modifyToBeFileNameSafe(cat);
-      }
-      variableNameCategoryAttributeIndex = String2.indexOf(categoryAttributes, "variableName");
-
-      String wmsActiveString = getSetupEVString(setup, ev, "wmsActive", "");
-      wmsActive = !String2.isSomething(wmsActiveString) || String2.parseBoolean(wmsActiveString);
-      wmsSampleDatasetID = getSetupEVString(setup, ev, "wmsSampleDatasetID", wmsSampleDatasetID);
-      wmsSampleVariable = getSetupEVString(setup, ev, "wmsSampleVariable", wmsSampleVariable);
-      wmsSampleBBox110 = getSetupEVString(setup, ev, "wmsSampleBBox110", wmsSampleBBox110);
-      wmsSampleBBox130 = getSetupEVString(setup, ev, "wmsSampleBBox130", wmsSampleBBox130);
-      wmsSampleTime = getSetupEVString(setup, ev, "wmsSampleTime", wmsSampleTime);
-
-      adminInstitution = getSetupEVNotNothingString(setup, ev, "adminInstitution", errorInMethod);
-      adminInstitutionUrl =
-          getSetupEVNotNothingString(setup, ev, "adminInstitutionUrl", errorInMethod);
-      adminIndividualName =
-          getSetupEVNotNothingString(setup, ev, "adminIndividualName", errorInMethod);
-      adminPosition = getSetupEVNotNothingString(setup, ev, "adminPosition", errorInMethod);
-      adminPhone = getSetupEVNotNothingString(setup, ev, "adminPhone", errorInMethod);
-      adminAddress = getSetupEVNotNothingString(setup, ev, "adminAddress", errorInMethod);
-      adminCity = getSetupEVNotNothingString(setup, ev, "adminCity", errorInMethod);
-      adminStateOrProvince =
-          getSetupEVNotNothingString(setup, ev, "adminStateOrProvince", errorInMethod);
-      adminPostalCode = getSetupEVNotNothingString(setup, ev, "adminPostalCode", errorInMethod);
-      adminCountry = getSetupEVNotNothingString(setup, ev, "adminCountry", errorInMethod);
-      adminEmail = getSetupEVNotNothingString(setup, ev, "adminEmail", errorInMethod);
-
-      if (adminInstitution.startsWith("Your"))
-        throw new RuntimeException(
-            "setup.xml error: invalid <adminInstitution>=" + adminInstitution);
-      if (!adminInstitutionUrl.startsWith("http") || !String2.isUrl(adminInstitutionUrl))
-        throw new RuntimeException(
-            "setup.xml error: invalid <adminInstitutionUrl>=" + adminInstitutionUrl);
-      if (adminIndividualName.startsWith("Your"))
-        throw new RuntimeException(
-            "setup.xml error: invalid <adminIndividualName>=" + adminIndividualName);
-      // if (adminPosition.length() == 0)
-      //    throw new RuntimeException("setup.xml error: invalid <adminPosition>=" + adminPosition);
-      if (adminPhone.indexOf("999-999") >= 0)
-        throw new RuntimeException("setup.xml error: invalid <adminPhone>=" + adminPhone);
-      if (adminAddress.equals("123 Main St."))
-        throw new RuntimeException("setup.xml error: invalid <adminAddress>=" + adminAddress);
-      if (adminCity.equals("Some Town"))
-        throw new RuntimeException("setup.xml error: invalid <adminCity>=" + adminCity);
-      // if (adminStateOrProvince.length() == 0)
-      //    throw new RuntimeException("setup.xml error: invalid <adminStateOrProvince>=" +
-      // adminStateOrProvince);
-      if (adminPostalCode.equals("99999"))
-        throw new RuntimeException("setup.xml error: invalid <adminPostalCode>=" + adminPostalCode);
-      // if (adminCountry.length() == 0)
-      //    throw new RuntimeException("setup.xml error: invalid <adminCountry>=" + adminCountry);
-      if (!String2.isEmailAddress(adminEmail)
-          || adminEmail.startsWith("your.")) // prohibit default adminEmail
-      throw new RuntimeException("setup.xml error: invalid <adminEmail>=" + adminEmail);
-
-      accessConstraints = getSetupEVNotNothingString(setup, ev, "accessConstraints", errorInMethod);
-      accessRequiresAuthorization =
-          getSetupEVNotNothingString(setup, ev, "accessRequiresAuthorization", errorInMethod);
-      fees = getSetupEVNotNothingString(setup, ev, "fees", errorInMethod);
-      keywords = getSetupEVNotNothingString(setup, ev, "keywords", errorInMethod);
-
-      awsS3OutputBucketUrl = getSetupEVString(setup, ev, "awsS3OutputBucketUrl", (String) null);
-      if (!String2.isSomething(awsS3OutputBucketUrl)) awsS3OutputBucketUrl = null;
-      if (awsS3OutputBucketUrl != null) {
-
-        // ensure that it is valid
-        awsS3OutputBucketUrl = File2.addSlash(awsS3OutputBucketUrl);
-        String bro[] = String2.parseAwsS3Url(awsS3OutputBucketUrl);
-        if (bro == null)
-          throw new RuntimeException(
-              "The value of <awsS3OutputBucketUrl> specified in setup.xml doesn't match this regular expression: "
-                  + String2.AWS_S3_REGEX());
-
-        awsS3OutputBucket = bro[0];
-        String region = bro[1];
-
-        // build the awsS3OutputTransferManager
-        awsS3OutputTransferManager = SSR.buildS3TransferManager(region);
-
-        // note that I could set LifecycleRule(s) for the bucket via
-        // awsS3OutputClient.putBucketLifecycleConfiguration
-        // but LifecycleRule precision seems to be days, not e.g., minutes
-        // So make my own system
-      }
-
-      units_standard = getSetupEVString(setup, ev, "units_standard", "UDUNITS");
-
-      fgdcActive = getSetupEVBoolean(setup, ev, "fgdcActive", true);
-      iso19115Active = getSetupEVBoolean(setup, ev, "iso19115Active", true);
-      jsonldActive = getSetupEVBoolean(setup, ev, "jsonldActive", true);
-      // until geoServicesRest is finished, it is always inactive
-      geoServicesRestActive =
-          false; // getSetupEVBoolean(setup, ev,          "geoServicesRestActive",      false);
-      filesActive = getSetupEVBoolean(setup, ev, "filesActive", true);
-      defaultAccessibleViaFiles =
-          getSetupEVBoolean(
-              setup, ev, "defaultAccessibleViaFiles", false); // false matches historical behavior
-      dataProviderFormActive = getSetupEVBoolean(setup, ev, "dataProviderFormActive", true);
-      outOfDateDatasetsActive = getSetupEVBoolean(setup, ev, "outOfDateDatasetsActive", true);
-      politicalBoundariesActive = getSetupEVBoolean(setup, ev, "politicalBoundariesActive", true);
-      wmsClientActive = getSetupEVBoolean(setup, ev, "wmsClientActive", true);
-      SgtMap.drawPoliticalBoundaries = politicalBoundariesActive;
-
-      // until SOS is finished, it is always inactive
-      sosActive = false; //        sosActive                  = getSetupEVBoolean(setup, ev,
-      // "sosActive",                  false);
-      if (sosActive) {
-        sosFeatureOfInterest =
-            getSetupEVNotNothingString(setup, ev, "sosFeatureOfInterest", errorInMethod);
-        sosStandardNamePrefix =
-            getSetupEVNotNothingString(setup, ev, "sosStandardNamePrefix", errorInMethod);
-        sosUrnBase = getSetupEVNotNothingString(setup, ev, "sosUrnBase", errorInMethod);
-
-        // make the sosGmlName, e.g., https://coastwatch.pfeg.noaa.gov -> gov.noaa.pfeg.coastwatch
-        sosBaseGmlName = baseUrl;
-        int po = sosBaseGmlName.indexOf("//");
-        if (po > 0) sosBaseGmlName = sosBaseGmlName.substring(po + 2);
-        po = sosBaseGmlName.indexOf(":");
-        if (po > 0) sosBaseGmlName = sosBaseGmlName.substring(0, po);
-        StringArray sbgn = new StringArray(String2.split(sosBaseGmlName, '.'));
-        sbgn.reverse();
-        sosBaseGmlName = String2.toSVString(sbgn.toArray(), ".", false);
-      }
-
-      // until it is finished, it is always inactive
-      wcsActive =
-          false; // getSetupEVBoolean(setup, ev,          "wcsActive",                  false);
-
-      authentication = getSetupEVString(setup, ev, "authentication", "");
-      datasetsRegex = getSetupEVString(setup, ev, "datasetsRegex", ".*");
-      drawLandMask = getSetupEVString(setup, ev, "drawLandMask", (String) null); // new name
-      if (drawLandMask == null) // 2014-08-28 changed defaults below to "under". It will be in v1.48
-      drawLandMask =
-            getSetupEVString(
-                setup, ev, "drawLand", DEFAULT_drawLandMask); // old name. DEFAULT...="under"
-      int tdlm = SgtMap.drawLandMask_OPTIONS.indexOf(drawLandMask);
-      if (tdlm < 1) drawLandMask = DEFAULT_drawLandMask; // "under"
-      flagKeyKey = getSetupEVNotNothingString(setup, ev, "flagKeyKey", errorInMethod);
-      if (flagKeyKey.toUpperCase().indexOf("CHANGE THIS") >= 0)
-        // really old default: "A stitch in time saves nine. CHANGE THIS!!!"
-        // current default:    "CHANGE THIS TO YOUR FAVORITE QUOTE"
-        throw new RuntimeException(
-            String2.ERROR
-                + ": You must change the <flagKeyKey> in setup.xml to a new, unique, non-default value. "
-                + "NOTE that this will cause the flagKeys used by your datasets to change. "
-                + "Any subscriptions using the old flagKeys will need to be redone.");
-      fontFamily = getSetupEVString(setup, ev, "fontFamily", "DejaVu Sans");
-      graphBackgroundColor =
-          new Color(
-              String2.parseInt(
-                  getSetupEVString(
-                      setup, ev, "graphBackgroundColor", "" + DEFAULT_graphBackgroundColorInt)),
-              true); // hasAlpha
-      googleClientID = getSetupEVString(setup, ev, "googleClientID", (String) null);
-      orcidClientID = getSetupEVString(setup, ev, "orcidClientID", (String) null);
-      orcidClientSecret = getSetupEVString(setup, ev, "orcidClientSecret", (String) null);
-      googleEarthLogoFile =
-          getSetupEVNotNothingString(setup, ev, "googleEarthLogoFile", errorInMethod);
-      highResLogoImageFile =
-          getSetupEVNotNothingString(setup, ev, "highResLogoImageFile", errorInMethod);
-      listPrivateDatasets = getSetupEVBoolean(setup, ev, "listPrivateDatasets", false);
-      logMaxSizeMB =
-          Math2.minMax(1, 2000, getSetupEVInt(setup, ev, "logMaxSizeMB", 20)); // 2048MB=2GB
-
-      // v2.00: these are now also in datasets.xml
-      cacheMillis = getSetupEVInt(setup, ev, "cacheMinutes", DEFAULT_cacheMinutes) * 60000L;
-      loadDatasetsMinMillis =
-          Math.max(
-                  1,
-                  getSetupEVInt(
-                      setup, ev, "loadDatasetsMinMinutes", DEFAULT_loadDatasetsMinMinutes))
-              * 60000L;
-      loadDatasetsMaxMillis =
-          getSetupEVInt(setup, ev, "loadDatasetsMaxMinutes", DEFAULT_loadDatasetsMaxMinutes)
-              * 60000L;
-      loadDatasetsMaxMillis = Math.max(loadDatasetsMinMillis * 2, loadDatasetsMaxMillis);
-      partialRequestMaxBytes =
-          getSetupEVInt(setup, ev, "partialRequestMaxBytes", DEFAULT_partialRequestMaxBytes);
-      partialRequestMaxCells =
-          getSetupEVInt(setup, ev, "partialRequestMaxCells", DEFAULT_partialRequestMaxCells);
-      unusualActivity = getSetupEVInt(setup, ev, "unusualActivity", DEFAULT_unusualActivity);
-      showLoadErrorsOnStatusPage =
-          getSetupEVBoolean(
-              setup, ev, "showLoadErrorsOnStatusPage", DEFAULT_showLoadErrorsOnStatusPage);
-
-      lowResLogoImageFile =
-          getSetupEVNotNothingString(setup, ev, "lowResLogoImageFile", errorInMethod);
-      quickRestart = getSetupEVBoolean(setup, ev, "quickRestart", true);
-      passwordEncoding = getSetupEVString(setup, ev, "passwordEncoding", "UEPSHA256");
-      searchEngine = getSetupEVString(setup, ev, "searchEngine", "original");
-
-      subscribeToRemoteErddapDataset =
-          getSetupEVBoolean(setup, ev, "subscribeToRemoteErddapDataset", true);
-      subscriptionSystemActive = getSetupEVBoolean(setup, ev, "subscriptionSystemActive", true);
-      convertersActive = getSetupEVBoolean(setup, ev, "convertersActive", true);
-      useSaxParser = getSetupEVBoolean(setup, ev, "useSaxParser", false);
-      updateSubsRssOnFileChanges = getSetupEVBoolean(setup, ev, "updateSubsRssOnFileChanges", true);
-      useEddReflection = getSetupEVBoolean(setup, ev, "useEddReflection", false);
-      enableCors = getSetupEVBoolean(setup, ev, "enableCors", false);
-      corsAllowHeaders =
-          getSetupEVString(setup, ev, "corsAllowHeaders", CorsResponseFilter.DEFAULT_ALLOW_HEADERS);
-      corsAllowOrigin =
-          String2.split(
-              String2.toLowerCase(getSetupEVString(setup, ev, "corsAllowOrigin", (String) null)),
-              ',');
-      slideSorterActive = getSetupEVBoolean(setup, ev, "slideSorterActive", true);
-      variablesMustHaveIoosCategory =
-          getSetupEVBoolean(setup, ev, "variablesMustHaveIoosCategory", true);
-      warName = getSetupEVString(setup, ev, "warName", "erddap");
-      useSharedWatchService = getSetupEVBoolean(setup, ev, "useSharedWatchService", true);
-      deploymentInfo = getSetupEVString(setup, ev, "deploymentInfo", "");
-      redirectDocumentationToGitHubIo =
-          getSetupEVBoolean(setup, ev, "redirectDocumentationToGitHubIo", true);
-
       // use Lucence?
-      if (searchEngine.equals("lucene")) {
-        useLuceneSearchEngine = true;
+      if (config.searchEngine.equals("lucene")) {
+        config.useLuceneSearchEngine = true;
         luceneDocNToDatasetID = new ConcurrentHashMap<>();
       } else {
         Test.ensureEqual(
-            searchEngine,
+            config.searchEngine,
             "original",
             "<searchEngine> must be \"original\" (the default) or \"lucene\".");
       }
 
       errorInMethod = "ERROR while initializing SgtGraph: ";
-      sgtGraph = new SgtGraph(fontFamily);
+      sgtGraph = new SgtGraph(config.fontFamily);
 
       // ensure erddapVersion is okay
       int upo = erddapVersion.indexOf('_');
@@ -2354,6 +693,7 @@ public class EDStatic {
 
       // ensure authentication setup is okay
       errorInMethod = "ERROR while checking authentication setup: ";
+      String authentication = config.authentication;
       if (authentication == null) authentication = "";
       authentication = authentication.trim().toLowerCase();
       if (!authentication.isEmpty()
@@ -2366,42 +706,43 @@ public class EDStatic {
             "setup.xml error: authentication="
                 + authentication
                 + " must be (nothing)|custom|email|google|orcid|oauth2.");
-      if (!authentication.isEmpty() && !baseHttpsUrl.startsWith("https://"))
+      if (!authentication.isEmpty() && !config.baseHttpsUrl.startsWith("https://"))
         throw new RuntimeException(
             "setup.xml error: "
                 + ": For any <authentication> other than \"\", the baseHttpsUrl="
-                + baseHttpsUrl
+                + config.baseHttpsUrl
                 + " must start with \"https://\".");
       if ((authentication.equals("google") || authentication.equals("auth2"))
-          && !String2.isSomething(googleClientID))
+          && !String2.isSomething(config.googleClientID))
         throw new RuntimeException(
             "setup.xml error: "
                 + ": When authentication=google or oauth2, you must provide your <googleClientID>.");
       if ((authentication.equals("orcid") || authentication.equals("auth2"))
-          && (!String2.isSomething(orcidClientID) || !String2.isSomething(orcidClientSecret)))
+          && (!String2.isSomething(config.orcidClientID)
+              || !String2.isSomething(config.orcidClientSecret)))
         throw new RuntimeException(
             "setup.xml error: "
                 + ": When authentication=orcid or oauth2, you must provide your <orcidClientID> and <orcidClientSecret>.");
       if (authentication.equals("custom")
-          && (!passwordEncoding.equals("MD5")
-              && !passwordEncoding.equals("UEPMD5")
-              && !passwordEncoding.equals("SHA256")
-              && !passwordEncoding.equals("UEPSHA256")))
+          && (!config.passwordEncoding.equals("MD5")
+              && !config.passwordEncoding.equals("UEPMD5")
+              && !config.passwordEncoding.equals("SHA256")
+              && !config.passwordEncoding.equals("UEPSHA256")))
         throw new RuntimeException(
             "setup.xml error: When authentication=custom, passwordEncoding="
-                + passwordEncoding
+                + config.passwordEncoding
                 + " must be MD5|UEPMD5|SHA256|UEPSHA256.");
       // String2.log("authentication=" + authentication);
 
       // things set as a consequence of setup.xml
-      erddapUrl = baseUrl + "/" + warName;
-      erddapHttpsUrl = baseHttpsUrl + "/" + warName;
-      preferredErddapUrl = baseHttpsUrl.startsWith("https://") ? erddapHttpsUrl : erddapUrl;
+      erddapUrl = config.baseUrl + "/" + config.warName;
+      erddapHttpsUrl = config.baseHttpsUrl + "/" + config.warName;
+      preferredErddapUrl = config.baseHttpsUrl.startsWith("https://") ? erddapHttpsUrl : erddapUrl;
 
-      if (subscriptionSystemActive) {
+      if (config.subscriptionSystemActive) {
         subscriptions =
             new Subscriptions(
-                bigParentDirectory + "subscriptionsV1.txt",
+                config.bigParentDirectory + "subscriptionsV1.txt",
                 48, // maxHoursPending,
                 preferredErddapUrl); // prefer https url
       }
@@ -2414,7 +755,8 @@ public class EDStatic {
       // copy all <contentDirectory>images/ (and subdirectories) files to imageDir (and
       // subdirectories)
       String tFiles[] =
-          RegexFilenameFilter.recursiveFullNameList(contentDirectory + "images/", ".+", false);
+          RegexFilenameFilter.recursiveFullNameList(
+              config.contentDirectory + "images/", ".+", false);
       for (String file : tFiles) {
         int tpo = file.indexOf("/images/");
         if (tpo < 0) tpo = file.indexOf("\\images\\");
@@ -2424,1823 +766,20 @@ public class EDStatic {
         }
         String tName = file.substring(tpo + 8);
         if (verbose) String2.log("  copying images/ file: " + tName);
-        File2.copy(contentDirectory + "images/" + tName, imageDir + tName);
+        File2.copy(config.contentDirectory + "images/" + tName, config.imageDir + tName);
       }
-
-      // ensure images exist and get their sizes
-      Image tImage = Image2.getImage(imageDir + lowResLogoImageFile, 10000, false);
-      lowResLogoImageFileWidth = tImage.getWidth(null);
-      lowResLogoImageFileHeight = tImage.getHeight(null);
-      tImage = Image2.getImage(imageDir + highResLogoImageFile, 10000, false);
-      highResLogoImageFileWidth = tImage.getWidth(null);
-      highResLogoImageFileHeight = tImage.getHeight(null);
-      tImage = Image2.getImage(imageDir + googleEarthLogoFile, 10000, false);
-      googleEarthLogoFileWidth = tImage.getWidth(null);
-      googleEarthLogoFileHeight = tImage.getHeight(null);
-
       // copy all <contentDirectory>cptfiles/ files to cptfiles
       tFiles =
-          RegexFilenameFilter.list(contentDirectory + "cptfiles/", ".+\\.cpt"); // not recursive
+          RegexFilenameFilter.list(
+              config.contentDirectory + "cptfiles/", ".+\\.cpt"); // not recursive
       for (String tFile : tFiles) {
         if (verbose) String2.log("  copying cptfiles/ file: " + tFile);
-        File2.copy(contentDirectory + "cptfiles/" + tFile, fullPaletteDirectory + tFile);
-      }
-
-      // **** messages.xml *************************************************************
-      // This is read AFTER setup.xml. If that is a problem for something, defer reading it in setup
-      // and add it below.
-      // Read static messages from messages(2).xml in contentDirectory.
-      errorInMethod = "ERROR while reading messages.xml: ";
-      ResourceBundle2[] messagesAr = new ResourceBundle2[nLanguages];
-      String messagesFileName = contentDirectory + "messages.xml";
-      if (File2.isFile(messagesFileName)) {
-        String2.log("Using custom messages.xml from " + messagesFileName);
-        // messagesAr[0] is either the custom messages.xml or the one provided by Erddap
-        messagesAr[0] = ResourceBundle2.fromXml(XML.parseXml(messagesFileName, false));
-      } else {
-        // use default messages.xml
-        String2.log("Custom messages.xml not found at " + messagesFileName);
-        // use String2.getClass(), not ClassLoader.getSystemResource (which fails in Tomcat)
-        URL messagesResourceFile = Resources.getResource("gov/noaa/pfel/erddap/util/messages.xml");
-        // messagesAr[0] is either the custom messages.xml or the one provided by Erddap
-        messagesAr[0] = ResourceBundle2.fromXml(XML.parseXml(messagesResourceFile, false));
-        String2.log("Using default messages.xml from  " + messagesFileName);
-      }
-
-      for (int tl = 1; tl < nLanguages; tl++) {
-        String tName = "messages-" + TranslateMessages.languageCodeList.get(tl) + ".xml";
-        errorInMethod = "ERROR while reading " + tName + ": ";
-        URL messageFile = new URL(TranslateMessages.translatedMessagesDir + tName);
-        messagesAr[tl] = ResourceBundle2.fromXml(XML.parseXml(messageFile, false));
-      }
-
-      // read all the static Strings from messages.xml
-      errorInMethod = "ERROR while reading from all the messages.xml files: ";
-      acceptEncodingHtmlAr = getNotNothingString(messagesAr, "acceptEncodingHtml", errorInMethod);
-      accessRESTFULAr = getNotNothingString(messagesAr, "accessRestful", errorInMethod);
-      acronymsAr = getNotNothingString(messagesAr, "acronyms", errorInMethod);
-      addConstraintsAr = getNotNothingString(messagesAr, "addConstraints", errorInMethod);
-      addVarWhereAttNameAr = getNotNothingString(messagesAr, "addVarWhereAttName", errorInMethod);
-      addVarWhereAttValueAr = getNotNothingString(messagesAr, "addVarWhereAttValue", errorInMethod);
-      addVarWhereAr = getNotNothingString(messagesAr, "addVarWhere", errorInMethod);
-      additionalLinksAr = getNotNothingString(messagesAr, "additionalLinks", errorInMethod);
-      admKeywords = messagesAr[0].getNotNothingString("admKeywords", errorInMethod);
-      admSubsetVariables = messagesAr[0].getNotNothingString("admSubsetVariables", errorInMethod);
-      admSummaryAr = getNotNothingString(messagesAr, "admSummary", errorInMethod);
-      admTitleAr = getNotNothingString(messagesAr, "admTitle", errorInMethod);
-      advl_datasetID = messagesAr[0].getNotNothingString("advl_datasetID", errorInMethod);
-      advc_accessibleAr = getNotNothingString(messagesAr, "advc_accessible", errorInMethod);
-      advl_accessibleAr = getNotNothingString(messagesAr, "advl_accessible", errorInMethod);
-      advl_institutionAr = getNotNothingString(messagesAr, "advl_institution", errorInMethod);
-      advc_dataStructureAr = getNotNothingString(messagesAr, "advc_dataStructure", errorInMethod);
-      advl_dataStructureAr = getNotNothingString(messagesAr, "advl_dataStructure", errorInMethod);
-      advr_dataStructure = messagesAr[0].getNotNothingString("advr_dataStructure", errorInMethod);
-      advl_cdm_data_typeAr = getNotNothingString(messagesAr, "advl_cdm_data_type", errorInMethod);
-      advr_cdm_data_type = messagesAr[0].getNotNothingString("advr_cdm_data_type", errorInMethod);
-      advl_classAr = getNotNothingString(messagesAr, "advl_class", errorInMethod);
-      advr_class = messagesAr[0].getNotNothingString("advr_class", errorInMethod);
-      advl_titleAr = getNotNothingString(messagesAr, "advl_title", errorInMethod);
-      advl_minLongitudeAr = getNotNothingString(messagesAr, "advl_minLongitude", errorInMethod);
-      advl_maxLongitudeAr = getNotNothingString(messagesAr, "advl_maxLongitude", errorInMethod);
-      advl_longitudeSpacingAr =
-          getNotNothingString(messagesAr, "advl_longitudeSpacing", errorInMethod);
-      advl_minLatitudeAr = getNotNothingString(messagesAr, "advl_minLatitude", errorInMethod);
-      advl_maxLatitudeAr = getNotNothingString(messagesAr, "advl_maxLatitude", errorInMethod);
-      advl_latitudeSpacingAr =
-          getNotNothingString(messagesAr, "advl_latitudeSpacing", errorInMethod);
-      advl_minAltitudeAr = getNotNothingString(messagesAr, "advl_minAltitude", errorInMethod);
-      advl_maxAltitudeAr = getNotNothingString(messagesAr, "advl_maxAltitude", errorInMethod);
-      advl_minTimeAr = getNotNothingString(messagesAr, "advl_minTime", errorInMethod);
-      advc_maxTimeAr = getNotNothingString(messagesAr, "advc_maxTime", errorInMethod);
-      advl_maxTimeAr = getNotNothingString(messagesAr, "advl_maxTime", errorInMethod);
-      advl_timeSpacingAr = getNotNothingString(messagesAr, "advl_timeSpacing", errorInMethod);
-      advc_griddapAr = getNotNothingString(messagesAr, "advc_griddap", errorInMethod);
-      advl_griddapAr = getNotNothingString(messagesAr, "advl_griddap", errorInMethod);
-      advl_subsetAr = getNotNothingString(messagesAr, "advl_subset", errorInMethod);
-      advc_tabledapAr = getNotNothingString(messagesAr, "advc_tabledap", errorInMethod);
-      advl_tabledapAr = getNotNothingString(messagesAr, "advl_tabledap", errorInMethod);
-      advl_MakeAGraphAr = getNotNothingString(messagesAr, "advl_MakeAGraph", errorInMethod);
-      advc_sosAr = getNotNothingString(messagesAr, "advc_sos", errorInMethod);
-      advl_sosAr = getNotNothingString(messagesAr, "advl_sos", errorInMethod);
-      advl_wcsAr = getNotNothingString(messagesAr, "advl_wcs", errorInMethod);
-      advl_wmsAr = getNotNothingString(messagesAr, "advl_wms", errorInMethod);
-      advc_filesAr = getNotNothingString(messagesAr, "advc_files", errorInMethod);
-      advl_filesAr = getNotNothingString(messagesAr, "advl_files", errorInMethod);
-      advc_fgdcAr = getNotNothingString(messagesAr, "advc_fgdc", errorInMethod);
-      advl_fgdcAr = getNotNothingString(messagesAr, "advl_fgdc", errorInMethod);
-      advc_iso19115Ar = getNotNothingString(messagesAr, "advc_iso19115", errorInMethod);
-      advl_iso19115Ar = getNotNothingString(messagesAr, "advl_iso19115", errorInMethod);
-      advc_metadataAr = getNotNothingString(messagesAr, "advc_metadata", errorInMethod);
-      advl_metadataAr = getNotNothingString(messagesAr, "advl_metadata", errorInMethod);
-      advl_sourceUrlAr = getNotNothingString(messagesAr, "advl_sourceUrl", errorInMethod);
-      advl_infoUrlAr = getNotNothingString(messagesAr, "advl_infoUrl", errorInMethod);
-      advl_rssAr = getNotNothingString(messagesAr, "advl_rss", errorInMethod);
-      advc_emailAr = getNotNothingString(messagesAr, "advc_email", errorInMethod);
-      advl_emailAr = getNotNothingString(messagesAr, "advl_email", errorInMethod);
-      advl_summaryAr = getNotNothingString(messagesAr, "advl_summary", errorInMethod);
-      advc_testOutOfDateAr = getNotNothingString(messagesAr, "advc_testOutOfDate", errorInMethod);
-      advl_testOutOfDateAr = getNotNothingString(messagesAr, "advl_testOutOfDate", errorInMethod);
-      advc_outOfDateAr = getNotNothingString(messagesAr, "advc_outOfDate", errorInMethod);
-      advl_outOfDateAr = getNotNothingString(messagesAr, "advl_outOfDate", errorInMethod);
-      advn_outOfDateAr = getNotNothingString(messagesAr, "advn_outOfDate", errorInMethod);
-      advancedSearchAr = getNotNothingString(messagesAr, "advancedSearch", errorInMethod);
-      advancedSearchResultsAr =
-          getNotNothingString(messagesAr, "advancedSearchResults", errorInMethod);
-      advancedSearchDirectionsAr =
-          getNotNothingString(messagesAr, "advancedSearchDirections", errorInMethod);
-      advancedSearchTooltipAr =
-          getNotNothingString(messagesAr, "advancedSearchTooltip", errorInMethod);
-      advancedSearchBoundsAr =
-          getNotNothingString(messagesAr, "advancedSearchBounds", errorInMethod);
-      advancedSearchMinLatAr =
-          getNotNothingString(messagesAr, "advancedSearchMinLat", errorInMethod);
-      advancedSearchMaxLatAr =
-          getNotNothingString(messagesAr, "advancedSearchMaxLat", errorInMethod);
-      advancedSearchMinLonAr =
-          getNotNothingString(messagesAr, "advancedSearchMinLon", errorInMethod);
-      advancedSearchMaxLonAr =
-          getNotNothingString(messagesAr, "advancedSearchMaxLon", errorInMethod);
-      advancedSearchMinMaxLonAr =
-          getNotNothingString(messagesAr, "advancedSearchMinMaxLon", errorInMethod);
-      advancedSearchMinTimeAr =
-          getNotNothingString(messagesAr, "advancedSearchMinTime", errorInMethod);
-      advancedSearchMaxTimeAr =
-          getNotNothingString(messagesAr, "advancedSearchMaxTime", errorInMethod);
-      advancedSearchClearAr = getNotNothingString(messagesAr, "advancedSearchClear", errorInMethod);
-      advancedSearchClearHelpAr =
-          getNotNothingString(messagesAr, "advancedSearchClearHelp", errorInMethod);
-      advancedSearchCategoryTooltipAr =
-          getNotNothingString(messagesAr, "advancedSearchCategoryTooltip", errorInMethod);
-      advancedSearchRangeTooltipAr =
-          getNotNothingString(messagesAr, "advancedSearchRangeTooltip", errorInMethod);
-      advancedSearchMapTooltipAr =
-          getNotNothingString(messagesAr, "advancedSearchMapTooltip", errorInMethod);
-      advancedSearchLonTooltipAr =
-          getNotNothingString(messagesAr, "advancedSearchLonTooltip", errorInMethod);
-      advancedSearchTimeTooltipAr =
-          getNotNothingString(messagesAr, "advancedSearchTimeTooltip", errorInMethod);
-      advancedSearchWithCriteriaAr =
-          getNotNothingString(messagesAr, "advancedSearchWithCriteria", errorInMethod);
-      advancedSearchFewerCriteriaAr =
-          getNotNothingString(messagesAr, "advancedSearchFewerCriteria", errorInMethod);
-      advancedSearchNoCriteriaAr =
-          getNotNothingString(messagesAr, "advancedSearchNoCriteria", errorInMethod);
-      advancedSearchErrorHandlingAr =
-          getNotNothingString(messagesAr, "advancedSearchErrorHandling", errorInMethod);
-      PrimitiveArray.ArrayAddN = messagesAr[0].getNotNothingString("ArrayAddN", errorInMethod);
-      PrimitiveArray.ArrayAppendTables =
-          messagesAr[0].getNotNothingString("ArrayAppendTables", errorInMethod);
-      PrimitiveArray.ArrayAtInsert =
-          messagesAr[0].getNotNothingString("ArrayAtInsert", errorInMethod);
-      PrimitiveArray.ArrayDiff = messagesAr[0].getNotNothingString("ArrayDiff", errorInMethod);
-      PrimitiveArray.ArrayDifferentSize =
-          messagesAr[0].getNotNothingString("ArrayDifferentSize", errorInMethod);
-      PrimitiveArray.ArrayDifferentValue =
-          messagesAr[0].getNotNothingString("ArrayDifferentValue", errorInMethod);
-      PrimitiveArray.ArrayDiffString =
-          messagesAr[0].getNotNothingString("ArrayDiffString", errorInMethod);
-      PrimitiveArray.ArrayMissingValue =
-          messagesAr[0].getNotNothingString("ArrayMissingValue", errorInMethod);
-      PrimitiveArray.ArrayNotAscending =
-          messagesAr[0].getNotNothingString("ArrayNotAscending", errorInMethod);
-      PrimitiveArray.ArrayNotDescending =
-          messagesAr[0].getNotNothingString("ArrayNotDescending", errorInMethod);
-      PrimitiveArray.ArrayNotEvenlySpaced =
-          messagesAr[0].getNotNothingString("ArrayNotEvenlySpaced", errorInMethod);
-      PrimitiveArray.ArrayRemove = messagesAr[0].getNotNothingString("ArrayRemove", errorInMethod);
-      PrimitiveArray.ArraySubsetStart =
-          messagesAr[0].getNotNothingString("ArraySubsetStart", errorInMethod);
-      PrimitiveArray.ArraySubsetStride =
-          messagesAr[0].getNotNothingString("ArraySubsetStride", errorInMethod);
-      autoRefreshAr = getNotNothingString(messagesAr, "autoRefresh", errorInMethod);
-      blacklistMsgAr = getNotNothingString(messagesAr, "blacklistMsg", errorInMethod);
-      BroughtToYouByAr = getNotNothingString(messagesAr, "BroughtToYouBy", errorInMethod);
-
-      categoryTitleHtmlAr = getNotNothingString(messagesAr, "categoryTitleHtml", errorInMethod);
-      categoryHtmlAr = getNotNothingString(messagesAr, "categoryHtml", errorInMethod);
-      category3HtmlAr = getNotNothingString(messagesAr, "category3Html", errorInMethod);
-      categoryPickAttributeAr =
-          getNotNothingString(messagesAr, "categoryPickAttribute", errorInMethod);
-      categorySearchHtmlAr = getNotNothingString(messagesAr, "categorySearchHtml", errorInMethod);
-      categorySearchDifferentHtmlAr =
-          getNotNothingString(messagesAr, "categorySearchDifferentHtml", errorInMethod);
-      categoryClickHtmlAr = getNotNothingString(messagesAr, "categoryClickHtml", errorInMethod);
-      categoryNotAnOptionAr = getNotNothingString(messagesAr, "categoryNotAnOption", errorInMethod);
-      caughtInterruptedAr = getNotNothingString(messagesAr, "caughtInterrupted", errorInMethod);
-      for (int tl = 0; tl < nLanguages; tl++)
-        caughtInterruptedAr[tl] = " " + caughtInterruptedAr[tl];
-
-      cdmDataTypeHelpAr = getNotNothingString(messagesAr, "cdmDataTypeHelp", errorInMethod);
-
-      clickAccessAr = getNotNothingString(messagesAr, "clickAccess", errorInMethod);
-      clickBackgroundInfoAr = getNotNothingString(messagesAr, "clickBackgroundInfo", errorInMethod);
-      clickERDDAPAr = getNotNothingString(messagesAr, "clickERDDAP", errorInMethod);
-      clickInfoAr = getNotNothingString(messagesAr, "clickInfo", errorInMethod);
-      clickToSubmitAr = getNotNothingString(messagesAr, "clickToSubmit", errorInMethod);
-      HtmlWidgets.comboBoxAltAr = getNotNothingString(messagesAr, "comboBoxAlt", errorInMethod);
-      convertAr = getNotNothingString(messagesAr, "convert", errorInMethod);
-      convertBypassAr = getNotNothingString(messagesAr, "convertBypass", errorInMethod);
-
-      convertToAFullNameAr = getNotNothingString(messagesAr, "convertToAFullName", errorInMethod);
-      convertToAnAcronymAr = getNotNothingString(messagesAr, "convertToAnAcronym", errorInMethod);
-      convertToACountyNameAr =
-          getNotNothingString(messagesAr, "convertToACountyName", errorInMethod);
-      convertToAFIPSCodeAr = getNotNothingString(messagesAr, "convertToAFIPSCode", errorInMethod);
-      convertToGCMDAr = getNotNothingString(messagesAr, "convertToGCMD", errorInMethod);
-      convertToCFStandardNamesAr =
-          getNotNothingString(messagesAr, "convertToCFStandardNames", errorInMethod);
-      convertToNumericTimeAr =
-          getNotNothingString(messagesAr, "convertToNumericTime", errorInMethod);
-      convertToStringTimeAr = getNotNothingString(messagesAr, "convertToStringTime", errorInMethod);
-      convertAnyStringTimeAr =
-          getNotNothingString(messagesAr, "convertAnyStringTime", errorInMethod);
-      convertToProperTimeUnitsAr =
-          getNotNothingString(messagesAr, "convertToProperTimeUnits", errorInMethod);
-      convertFromUDUNITSToUCUMAr =
-          getNotNothingString(messagesAr, "convertFromUDUNITSToUCUM", errorInMethod);
-      convertFromUCUMToUDUNITSAr =
-          getNotNothingString(messagesAr, "convertFromUCUMToUDUNITS", errorInMethod);
-      convertToUCUMAr = getNotNothingString(messagesAr, "convertToUCUM", errorInMethod);
-      convertToUDUNITSAr = getNotNothingString(messagesAr, "convertToUDUNITS", errorInMethod);
-      convertStandardizeUDUNITSAr =
-          getNotNothingString(messagesAr, "convertStandardizeUDUNITS", errorInMethod);
-      convertToFullNameAr = getNotNothingString(messagesAr, "convertToFullName", errorInMethod);
-      convertToVariableNameAr =
-          getNotNothingString(messagesAr, "convertToVariableName", errorInMethod);
-
-      converterWebServiceAr = getNotNothingString(messagesAr, "converterWebService", errorInMethod);
-      convertOAAcronymsAr = getNotNothingString(messagesAr, "convertOAAcronyms", errorInMethod);
-      convertOAAcronymsToFromAr =
-          getNotNothingString(messagesAr, "convertOAAcronymsToFrom", errorInMethod);
-      convertOAAcronymsIntroAr =
-          getNotNothingString(messagesAr, "convertOAAcronymsIntro", errorInMethod);
-      convertOAAcronymsNotesAr =
-          getNotNothingString(messagesAr, "convertOAAcronymsNotes", errorInMethod);
-      convertOAAcronymsServiceAr =
-          getNotNothingString(messagesAr, "convertOAAcronymsService", errorInMethod);
-      convertOAVariableNamesAr =
-          getNotNothingString(messagesAr, "convertOAVariableNames", errorInMethod);
-      convertOAVariableNamesToFromAr =
-          getNotNothingString(messagesAr, "convertOAVariableNamesToFrom", errorInMethod);
-      convertOAVariableNamesIntroAr =
-          getNotNothingString(messagesAr, "convertOAVariableNamesIntro", errorInMethod);
-      convertOAVariableNamesNotesAr =
-          getNotNothingString(messagesAr, "convertOAVariableNamesNotes", errorInMethod);
-      convertOAVariableNamesServiceAr =
-          getNotNothingString(messagesAr, "convertOAVariableNamesService", errorInMethod);
-      convertFipsCountyAr = getNotNothingString(messagesAr, "convertFipsCounty", errorInMethod);
-      convertFipsCountyIntroAr =
-          getNotNothingString(messagesAr, "convertFipsCountyIntro", errorInMethod);
-      convertFipsCountyNotesAr =
-          getNotNothingString(messagesAr, "convertFipsCountyNotes", errorInMethod);
-      convertFipsCountyServiceAr =
-          getNotNothingString(messagesAr, "convertFipsCountyService", errorInMethod);
-      convertHtmlAr = getNotNothingString(messagesAr, "convertHtml", errorInMethod);
-      convertInterpolateAr = getNotNothingString(messagesAr, "convertInterpolate", errorInMethod);
-      convertInterpolateIntroAr =
-          getNotNothingString(messagesAr, "convertInterpolateIntro", errorInMethod);
-      convertInterpolateTLLTableAr =
-          getNotNothingString(messagesAr, "convertInterpolateTLLTable", errorInMethod);
-      convertInterpolateTLLTableHelpAr =
-          getNotNothingString(messagesAr, "convertInterpolateTLLTableHelp", errorInMethod);
-      convertInterpolateDatasetIDVariableAr =
-          getNotNothingString(messagesAr, "convertInterpolateDatasetIDVariable", errorInMethod);
-      convertInterpolateDatasetIDVariableHelpAr =
-          getNotNothingString(messagesAr, "convertInterpolateDatasetIDVariableHelp", errorInMethod);
-      convertInterpolateNotesAr =
-          getNotNothingString(messagesAr, "convertInterpolateNotes", errorInMethod);
-      convertInterpolateServiceAr =
-          getNotNothingString(messagesAr, "convertInterpolateService", errorInMethod);
-      convertKeywordsAr = getNotNothingString(messagesAr, "convertKeywords", errorInMethod);
-      convertKeywordsCfTooltipAr =
-          getNotNothingString(messagesAr, "convertKeywordsCfTooltip", errorInMethod);
-      convertKeywordsGcmdTooltipAr =
-          getNotNothingString(messagesAr, "convertKeywordsGcmdTooltip", errorInMethod);
-      convertKeywordsIntroAr =
-          getNotNothingString(messagesAr, "convertKeywordsIntro", errorInMethod);
-      convertKeywordsNotesAr =
-          getNotNothingString(messagesAr, "convertKeywordsNotes", errorInMethod);
-      convertKeywordsServiceAr =
-          getNotNothingString(messagesAr, "convertKeywordsService", errorInMethod);
-
-      convertTimeAr = getNotNothingString(messagesAr, "convertTime", errorInMethod);
-      convertTimeReferenceAr =
-          getNotNothingString(messagesAr, "convertTimeReference", errorInMethod);
-      convertTimeIntroAr = getNotNothingString(messagesAr, "convertTimeIntro", errorInMethod);
-      convertTimeNotesAr = getNotNothingString(messagesAr, "convertTimeNotes", errorInMethod);
-      convertTimeServiceAr = getNotNothingString(messagesAr, "convertTimeService", errorInMethod);
-      convertTimeNumberTooltipAr =
-          getNotNothingString(messagesAr, "convertTimeNumberTooltip", errorInMethod);
-      convertTimeStringTimeTooltipAr =
-          getNotNothingString(messagesAr, "convertTimeStringTimeTooltip", errorInMethod);
-      convertTimeUnitsTooltipAr =
-          getNotNothingString(messagesAr, "convertTimeUnitsTooltip", errorInMethod);
-      convertTimeUnitsHelpAr =
-          getNotNothingString(messagesAr, "convertTimeUnitsHelp", errorInMethod);
-      convertTimeIsoFormatErrorAr =
-          getNotNothingString(messagesAr, "convertTimeIsoFormatError", errorInMethod);
-      convertTimeNoSinceErrorAr =
-          getNotNothingString(messagesAr, "convertTimeNoSinceError", errorInMethod);
-      convertTimeNumberErrorAr =
-          getNotNothingString(messagesAr, "convertTimeNumberError", errorInMethod);
-      convertTimeNumericTimeErrorAr =
-          getNotNothingString(messagesAr, "convertTimeNumericTimeError", errorInMethod);
-      convertTimeParametersErrorAr =
-          getNotNothingString(messagesAr, "convertTimeParametersError", errorInMethod);
-      convertTimeStringFormatErrorAr =
-          getNotNothingString(messagesAr, "convertTimeStringFormatError", errorInMethod);
-      convertTimeTwoTimeErrorAr =
-          getNotNothingString(messagesAr, "convertTimeTwoTimeError", errorInMethod);
-      convertTimeUnitsErrorAr =
-          getNotNothingString(messagesAr, "convertTimeUnitsError", errorInMethod);
-      convertUnitsAr = getNotNothingString(messagesAr, "convertUnits", errorInMethod);
-      convertUnitsComparisonAr =
-          getNotNothingString(messagesAr, "convertUnitsComparison", errorInMethod);
-      convertUnitsFilterAr = getNotNothingString(messagesAr, "convertUnitsFilter", errorInMethod);
-      for (int tl = 0; tl < nLanguages; tl++) {
-        convertUnitsComparisonAr[tl] =
-            convertUnitsComparisonAr[tl]
-                .replaceAll(
-                    "&C;",
-                    "C") // these handled this way be cause you can't just avoid translating all
-                // words with 'C'
-                .replaceAll("&g;", "g") // "
-                .replaceAll("&F;", "F") // "
-                .replaceAll("&NTU;", "NTU")
-                .replaceAll("&ntu;", "ntu")
-                .replaceAll("&PSU;", "PSU")
-                .replaceAll("&psu;", "psu");
-      }
-
-      convertUnitsIntroAr = getNotNothingString(messagesAr, "convertUnitsIntro", errorInMethod);
-      convertUnitsNotesAr = getNotNothingString(messagesAr, "convertUnitsNotes", errorInMethod);
-      for (int tl = 0; tl < nLanguages; tl++)
-        convertUnitsNotesAr[tl] =
-            convertUnitsNotesAr[tl].replace("&unitsStandard;", units_standard);
-      convertUnitsServiceAr = getNotNothingString(messagesAr, "convertUnitsService", errorInMethod);
-      convertURLsAr = getNotNothingString(messagesAr, "convertURLs", errorInMethod);
-      convertURLsIntroAr = getNotNothingString(messagesAr, "convertURLsIntro", errorInMethod);
-      convertURLsNotesAr = getNotNothingString(messagesAr, "convertURLsNotes", errorInMethod);
-      convertURLsServiceAr = getNotNothingString(messagesAr, "convertURLsService", errorInMethod);
-      cookiesHelpAr = getNotNothingString(messagesAr, "cookiesHelp", errorInMethod);
-      copyImageToClipboardAr =
-          getNotNothingString(messagesAr, "copyImageToClipboard", errorInMethod);
-      copyTextToClipboardAr = getNotNothingString(messagesAr, "copyTextToClipboard", errorInMethod);
-      copyToClipboardNotAvailableAr =
-          getNotNothingString(messagesAr, "copyToClipboardNotAvailable", errorInMethod);
-
-      dafAr = getNotNothingString(messagesAr, "daf", errorInMethod);
-      dafGridBypassTooltipAr =
-          getNotNothingString(messagesAr, "dafGridBypassTooltip", errorInMethod);
-      dafGridTooltipAr = getNotNothingString(messagesAr, "dafGridTooltip", errorInMethod);
-      dafTableBypassTooltipAr =
-          getNotNothingString(messagesAr, "dafTableBypassTooltip", errorInMethod);
-      dafTableTooltipAr = getNotNothingString(messagesAr, "dafTableTooltip", errorInMethod);
-      dasTitleAr = getNotNothingString(messagesAr, "dasTitle", errorInMethod);
-      dataAccessNotAllowedAr =
-          getNotNothingString(messagesAr, "dataAccessNotAllowed", errorInMethod);
-      databaseUnableToConnectAr =
-          getNotNothingString(messagesAr, "databaseUnableToConnect", errorInMethod);
-      dataProviderFormAr = getNotNothingString(messagesAr, "dataProviderForm", errorInMethod);
-      dataProviderFormP1Ar = getNotNothingString(messagesAr, "dataProviderFormP1", errorInMethod);
-      dataProviderFormP2Ar = getNotNothingString(messagesAr, "dataProviderFormP2", errorInMethod);
-      dataProviderFormP3Ar = getNotNothingString(messagesAr, "dataProviderFormP3", errorInMethod);
-      dataProviderFormP4Ar = getNotNothingString(messagesAr, "dataProviderFormP4", errorInMethod);
-      dataProviderFormDoneAr =
-          getNotNothingString(messagesAr, "dataProviderFormDone", errorInMethod);
-      dataProviderFormSuccessAr =
-          getNotNothingString(messagesAr, "dataProviderFormSuccess", errorInMethod);
-      dataProviderFormShortDescriptionAr =
-          getNotNothingString(messagesAr, "dataProviderFormShortDescription", errorInMethod);
-      dataProviderFormLongDescriptionHTMLAr =
-          getNotNothingString(messagesAr, "dataProviderFormLongDescriptionHTML", errorInMethod);
-      disabledAr = getNotNothingString(messagesAr, "disabled", errorInMethod);
-      dataProviderFormPart1Ar =
-          getNotNothingString(messagesAr, "dataProviderFormPart1", errorInMethod);
-      dataProviderFormPart2HeaderAr =
-          getNotNothingString(messagesAr, "dataProviderFormPart2Header", errorInMethod);
-      dataProviderFormPart2GlobalMetadataAr =
-          getNotNothingString(messagesAr, "dataProviderFormPart2GlobalMetadata", errorInMethod);
-      dataProviderContactInfoAr =
-          getNotNothingString(messagesAr, "dataProviderContactInfo", errorInMethod);
-      dataProviderDataAr = getNotNothingString(messagesAr, "dataProviderData", errorInMethod);
-      documentationAr = getNotNothingString(messagesAr, "documentation", errorInMethod);
-
-      dpf_submitAr = getNotNothingString(messagesAr, "dpf_submit", errorInMethod);
-      dpf_fixProblemAr = getNotNothingString(messagesAr, "dpf_fixProblem", errorInMethod);
-      dpf_yourNameAr = getNotNothingString(messagesAr, "dpf_yourName", errorInMethod);
-      dpf_emailAddressAr = getNotNothingString(messagesAr, "dpf_emailAddress", errorInMethod);
-      dpf_TimestampAr = getNotNothingString(messagesAr, "dpf_Timestamp", errorInMethod);
-      dpf_frequencyAr = getNotNothingString(messagesAr, "dpf_frequency", errorInMethod);
-      dpf_titleAr = getNotNothingString(messagesAr, "dpf_title", errorInMethod);
-      dpf_titleTooltipAr = getNotNothingString(messagesAr, "dpf_titleTooltip", errorInMethod);
-      dpf_summaryAr = getNotNothingString(messagesAr, "dpf_summary", errorInMethod);
-      dpf_summaryTooltipAr = getNotNothingString(messagesAr, "dpf_summaryTooltip", errorInMethod);
-      dpf_creatorNameAr = getNotNothingString(messagesAr, "dpf_creatorName", errorInMethod);
-      dpf_creatorNameTooltipAr =
-          getNotNothingString(messagesAr, "dpf_creatorNameTooltip", errorInMethod);
-      dpf_creatorTypeAr = getNotNothingString(messagesAr, "dpf_creatorType", errorInMethod);
-      dpf_creatorTypeTooltipAr =
-          getNotNothingString(messagesAr, "dpf_creatorTypeTooltip", errorInMethod);
-      dpf_creatorEmailAr = getNotNothingString(messagesAr, "dpf_creatorEmail", errorInMethod);
-      dpf_creatorEmailTooltipAr =
-          getNotNothingString(messagesAr, "dpf_creatorEmailTooltip", errorInMethod);
-      dpf_institutionAr = getNotNothingString(messagesAr, "dpf_institution", errorInMethod);
-      dpf_institutionTooltipAr =
-          getNotNothingString(messagesAr, "dpf_institutionTooltip", errorInMethod);
-      dpf_infoUrlAr = getNotNothingString(messagesAr, "dpf_infoUrl", errorInMethod);
-      dpf_infoUrlTooltipAr = getNotNothingString(messagesAr, "dpf_infoUrlTooltip", errorInMethod);
-      dpf_licenseAr = getNotNothingString(messagesAr, "dpf_license", errorInMethod);
-      dpf_licenseTooltipAr = getNotNothingString(messagesAr, "dpf_licenseTooltip", errorInMethod);
-      dpf_howYouStoreDataAr = getNotNothingString(messagesAr, "dpf_howYouStoreData", errorInMethod);
-      dpf_provideIfAvailableAr =
-          getNotNothingString(messagesAr, "dpf_provideIfAvailable", errorInMethod);
-      dpf_acknowledgementAr = getNotNothingString(messagesAr, "dpf_acknowledgement", errorInMethod);
-      dpf_acknowledgementTooltipAr =
-          getNotNothingString(messagesAr, "dpf_acknowledgementTooltip", errorInMethod);
-      dpf_historyAr = getNotNothingString(messagesAr, "dpf_history", errorInMethod);
-      dpf_historyTooltipAr = getNotNothingString(messagesAr, "dpf_historyTooltip", errorInMethod);
-      dpf_idTooltipAr = getNotNothingString(messagesAr, "dpf_idTooltip", errorInMethod);
-      dpf_namingAuthorityAr = getNotNothingString(messagesAr, "dpf_namingAuthority", errorInMethod);
-      dpf_namingAuthorityTooltipAr =
-          getNotNothingString(messagesAr, "dpf_namingAuthorityTooltip", errorInMethod);
-      dpf_productVersionAr = getNotNothingString(messagesAr, "dpf_productVersion", errorInMethod);
-      dpf_productVersionTooltipAr =
-          getNotNothingString(messagesAr, "dpf_productVersionTooltip", errorInMethod);
-      dpf_referencesAr = getNotNothingString(messagesAr, "dpf_references", errorInMethod);
-      dpf_referencesTooltipAr =
-          getNotNothingString(messagesAr, "dpf_referencesTooltip", errorInMethod);
-      dpf_commentAr = getNotNothingString(messagesAr, "dpf_comment", errorInMethod);
-      dpf_commentTooltipAr = getNotNothingString(messagesAr, "dpf_commentTooltip", errorInMethod);
-      dpf_dataTypeHelpAr = getNotNothingString(messagesAr, "dpf_dataTypeHelp", errorInMethod);
-      dpf_ioosCategoryAr = getNotNothingString(messagesAr, "dpf_ioosCategory", errorInMethod);
-      dpf_ioosCategoryHelpAr =
-          getNotNothingString(messagesAr, "dpf_ioosCategoryHelp", errorInMethod);
-      dpf_part3HeaderAr = getNotNothingString(messagesAr, "dpf_part3Header", errorInMethod);
-      dpf_variableMetadataAr =
-          getNotNothingString(messagesAr, "dpf_variableMetadata", errorInMethod);
-      dpf_sourceNameAr = getNotNothingString(messagesAr, "dpf_sourceName", errorInMethod);
-      dpf_sourceNameTooltipAr =
-          getNotNothingString(messagesAr, "dpf_sourceNameTooltip", errorInMethod);
-      dpf_destinationNameAr = getNotNothingString(messagesAr, "dpf_destinationName", errorInMethod);
-      dpf_destinationNameTooltipAr =
-          getNotNothingString(messagesAr, "dpf_destinationNameTooltip", errorInMethod);
-
-      dpf_longNameAr = getNotNothingString(messagesAr, "dpf_longName", errorInMethod);
-      dpf_longNameTooltipAr = getNotNothingString(messagesAr, "dpf_longNameTooltip", errorInMethod);
-      dpf_standardNameAr = getNotNothingString(messagesAr, "dpf_standardName", errorInMethod);
-      dpf_standardNameTooltipAr =
-          getNotNothingString(messagesAr, "dpf_standardNameTooltip", errorInMethod);
-      dpf_dataTypeAr = getNotNothingString(messagesAr, "dpf_dataType", errorInMethod);
-      dpf_fillValueAr = getNotNothingString(messagesAr, "dpf_fillValue", errorInMethod);
-      dpf_fillValueTooltipAr =
-          getNotNothingString(messagesAr, "dpf_fillValueTooltip", errorInMethod);
-      dpf_unitsAr = getNotNothingString(messagesAr, "dpf_units", errorInMethod);
-      dpf_unitsTooltipAr = getNotNothingString(messagesAr, "dpf_unitsTooltip", errorInMethod);
-      dpf_rangeAr = getNotNothingString(messagesAr, "dpf_range", errorInMethod);
-      dpf_rangeTooltipAr = getNotNothingString(messagesAr, "dpf_rangeTooltip", errorInMethod);
-      dpf_part4HeaderAr = getNotNothingString(messagesAr, "dpf_part4Header", errorInMethod);
-      dpf_otherCommentAr = getNotNothingString(messagesAr, "dpf_otherComment", errorInMethod);
-      dpf_finishPart4Ar = getNotNothingString(messagesAr, "dpf_finishPart4", errorInMethod);
-      dpf_congratulationAr = getNotNothingString(messagesAr, "dpf_congratulation", errorInMethod);
-
-      distinctValuesTooltipAr =
-          getNotNothingString(messagesAr, "distinctValuesTooltip", errorInMethod);
-      doWithGraphsAr = getNotNothingString(messagesAr, "doWithGraphs", errorInMethod);
-
-      dtAccessibleAr = getNotNothingString(messagesAr, "dtAccessible", errorInMethod);
-      dtAccessiblePublicAr = getNotNothingString(messagesAr, "dtAccessiblePublic", errorInMethod);
-      dtAccessibleYesAr = getNotNothingString(messagesAr, "dtAccessibleYes", errorInMethod);
-      dtAccessibleGraphsAr = getNotNothingString(messagesAr, "dtAccessibleGraphs", errorInMethod);
-      dtAccessibleNoAr = getNotNothingString(messagesAr, "dtAccessibleNo", errorInMethod);
-      dtAccessibleLogInAr = getNotNothingString(messagesAr, "dtAccessibleLogIn", errorInMethod);
-      dtLogInAr = getNotNothingString(messagesAr, "dtLogIn", errorInMethod);
-      dtDAFAr = getNotNothingString(messagesAr, "dtDAF", errorInMethod);
-      dtFilesAr = getNotNothingString(messagesAr, "dtFiles", errorInMethod);
-      dtMAGAr = getNotNothingString(messagesAr, "dtMAG", errorInMethod);
-      dtSOSAr = getNotNothingString(messagesAr, "dtSOS", errorInMethod);
-      dtSubsetAr = getNotNothingString(messagesAr, "dtSubset", errorInMethod);
-      dtWCSAr = getNotNothingString(messagesAr, "dtWCS", errorInMethod);
-      dtWMSAr = getNotNothingString(messagesAr, "dtWMS", errorInMethod);
-
-      EasierAccessToScientificDataAr =
-          getNotNothingString(messagesAr, "EasierAccessToScientificData", errorInMethod);
-      EDDDatasetIDAr = getNotNothingString(messagesAr, "EDDDatasetID", errorInMethod);
-      EDDFgdc = messagesAr[0].getNotNothingString("EDDFgdc", errorInMethod);
-      EDDFgdcMetadataAr = getNotNothingString(messagesAr, "EDDFgdcMetadata", errorInMethod);
-      EDDFilesAr = getNotNothingString(messagesAr, "EDDFiles", errorInMethod);
-      EDDIso19115 = messagesAr[0].getNotNothingString("EDDIso19115", errorInMethod);
-      EDDIso19115MetadataAr = getNotNothingString(messagesAr, "EDDIso19115Metadata", errorInMethod);
-      EDDMetadataAr = getNotNothingString(messagesAr, "EDDMetadata", errorInMethod);
-      EDDBackgroundAr = getNotNothingString(messagesAr, "EDDBackground", errorInMethod);
-      EDDClickOnSubmitHtmlAr =
-          getNotNothingString(messagesAr, "EDDClickOnSubmitHtml", errorInMethod);
-      EDDInformationAr = getNotNothingString(messagesAr, "EDDInformation", errorInMethod);
-      EDDInstitutionAr = getNotNothingString(messagesAr, "EDDInstitution", errorInMethod);
-      EDDSummaryAr = getNotNothingString(messagesAr, "EDDSummary", errorInMethod);
-      EDDDatasetTitleAr = getNotNothingString(messagesAr, "EDDDatasetTitle", errorInMethod);
-      EDDDownloadDataAr = getNotNothingString(messagesAr, "EDDDownloadData", errorInMethod);
-      EDDMakeAGraphAr = getNotNothingString(messagesAr, "EDDMakeAGraph", errorInMethod);
-      EDDMakeAMapAr = getNotNothingString(messagesAr, "EDDMakeAMap", errorInMethod);
-      EDDFileTypeAr = getNotNothingString(messagesAr, "EDDFileType", errorInMethod);
-      EDDFileTypeInformationAr =
-          getNotNothingString(messagesAr, "EDDFileTypeInformation", errorInMethod);
-      EDDSelectFileTypeAr = getNotNothingString(messagesAr, "EDDSelectFileType", errorInMethod);
-      EDDMinimumAr = getNotNothingString(messagesAr, "EDDMinimum", errorInMethod);
-      EDDMaximumAr = getNotNothingString(messagesAr, "EDDMaximum", errorInMethod);
-      EDDConstraintAr = getNotNothingString(messagesAr, "EDDConstraint", errorInMethod);
-
-      EDDChangedWasnt = messagesAr[0].getNotNothingString("EDDChangedWasnt", errorInMethod);
-      EDDChangedDifferentNVar =
-          messagesAr[0].getNotNothingString("EDDChangedDifferentNVar", errorInMethod);
-      EDDChanged2Different =
-          messagesAr[0].getNotNothingString("EDDChanged2Different", errorInMethod);
-      EDDChanged1Different =
-          messagesAr[0].getNotNothingString("EDDChanged1Different", errorInMethod);
-      EDDChangedCGADifferent =
-          messagesAr[0].getNotNothingString("EDDChangedCGADifferent", errorInMethod);
-      EDDChangedAxesDifferentNVar =
-          messagesAr[0].getNotNothingString("EDDChangedAxesDifferentNVar", errorInMethod);
-      EDDChangedAxes2Different =
-          messagesAr[0].getNotNothingString("EDDChangedAxes2Different", errorInMethod);
-      EDDChangedAxes1Different =
-          messagesAr[0].getNotNothingString("EDDChangedAxes1Different", errorInMethod);
-      EDDChangedNoValue = messagesAr[0].getNotNothingString("EDDChangedNoValue", errorInMethod);
-      EDDChangedTableToGrid =
-          messagesAr[0].getNotNothingString("EDDChangedTableToGrid", errorInMethod);
-
-      EDDSimilarDifferentNVar =
-          messagesAr[0].getNotNothingString("EDDSimilarDifferentNVar", errorInMethod);
-      EDDSimilarDifferent = messagesAr[0].getNotNothingString("EDDSimilarDifferent", errorInMethod);
-
-      EDDGridDownloadTooltipAr =
-          getNotNothingString(messagesAr, "EDDGridDownloadTooltip", errorInMethod);
-      EDDGridDapDescriptionAr =
-          getNotNothingString(messagesAr, "EDDGridDapDescription", errorInMethod);
-      EDDGridDapLongDescriptionAr =
-          getNotNothingString(messagesAr, "EDDGridDapLongDescription", errorInMethod);
-      EDDGridDownloadDataTooltipAr =
-          getNotNothingString(messagesAr, "EDDGridDownloadDataTooltip", errorInMethod);
-      EDDGridDimensionAr = getNotNothingString(messagesAr, "EDDGridDimension", errorInMethod);
-      EDDGridDimensionRangesAr =
-          getNotNothingString(messagesAr, "EDDGridDimensionRanges", errorInMethod);
-      EDDGridFirstAr = getNotNothingString(messagesAr, "EDDGridFirst", errorInMethod);
-      EDDGridLastAr = getNotNothingString(messagesAr, "EDDGridLast", errorInMethod);
-      EDDGridStartAr = getNotNothingString(messagesAr, "EDDGridStart", errorInMethod);
-      EDDGridStopAr = getNotNothingString(messagesAr, "EDDGridStop", errorInMethod);
-      EDDGridStartStopTooltipAr =
-          getNotNothingString(messagesAr, "EDDGridStartStopTooltip", errorInMethod);
-      EDDGridStrideAr = getNotNothingString(messagesAr, "EDDGridStride", errorInMethod);
-      EDDGridNValuesAr = getNotNothingString(messagesAr, "EDDGridNValues", errorInMethod);
-      EDDGridNValuesHtmlAr = getNotNothingString(messagesAr, "EDDGridNValuesHtml", errorInMethod);
-      EDDGridSpacingAr = getNotNothingString(messagesAr, "EDDGridSpacing", errorInMethod);
-      EDDGridJustOneValueAr = getNotNothingString(messagesAr, "EDDGridJustOneValue", errorInMethod);
-      EDDGridEvenAr = getNotNothingString(messagesAr, "EDDGridEven", errorInMethod);
-      EDDGridUnevenAr = getNotNothingString(messagesAr, "EDDGridUneven", errorInMethod);
-      EDDGridDimensionTooltipAr =
-          getNotNothingString(messagesAr, "EDDGridDimensionTooltip", errorInMethod);
-      EDDGridDimensionFirstTooltipAr =
-          getNotNothingString(messagesAr, "EDDGridDimensionFirstTooltip", errorInMethod);
-      EDDGridDimensionLastTooltipAr =
-          getNotNothingString(messagesAr, "EDDGridDimensionLastTooltip", errorInMethod);
-      EDDGridVarHasDimTooltipAr =
-          getNotNothingString(messagesAr, "EDDGridVarHasDimTooltip", errorInMethod);
-      EDDGridSSSTooltipAr = getNotNothingString(messagesAr, "EDDGridSSSTooltip", errorInMethod);
-      EDDGridStartTooltipAr = getNotNothingString(messagesAr, "EDDGridStartTooltip", errorInMethod);
-      EDDGridStopTooltipAr = getNotNothingString(messagesAr, "EDDGridStopTooltip", errorInMethod);
-      EDDGridStrideTooltipAr =
-          getNotNothingString(messagesAr, "EDDGridStrideTooltip", errorInMethod);
-      EDDGridSpacingTooltipAr =
-          getNotNothingString(messagesAr, "EDDGridSpacingTooltip", errorInMethod);
-      EDDGridGridVariableHtmlAr =
-          getNotNothingString(messagesAr, "EDDGridGridVariableHtml", errorInMethod);
-      EDDGridCheckAllAr = getNotNothingString(messagesAr, "EDDGridCheckAll", errorInMethod);
-      EDDGridCheckAllTooltipAr =
-          getNotNothingString(messagesAr, "EDDGridCheckAllTooltip", errorInMethod);
-      EDDGridUncheckAllAr = getNotNothingString(messagesAr, "EDDGridUncheckAll", errorInMethod);
-      EDDGridUncheckAllTooltipAr =
-          getNotNothingString(messagesAr, "EDDGridUncheckAllTooltip", errorInMethod);
-
-      // default EDDGrid...Example
-      EDDGridErddapUrlExample =
-          messagesAr[0].getNotNothingString("EDDGridErddapUrlExample", errorInMethod);
-      EDDGridIdExample = messagesAr[0].getNotNothingString("EDDGridIdExample", errorInMethod);
-      EDDGridDimensionExample =
-          messagesAr[0].getNotNothingString("EDDGridDimensionExample", errorInMethod);
-      EDDGridNoHyperExample =
-          messagesAr[0].getNotNothingString("EDDGridNoHyperExample", errorInMethod);
-      EDDGridDimNamesExample =
-          messagesAr[0].getNotNothingString("EDDGridDimNamesExample", errorInMethod);
-      EDDGridDataTimeExample =
-          messagesAr[0].getNotNothingString("EDDGridDataTimeExample", errorInMethod);
-      EDDGridDataValueExample =
-          messagesAr[0].getNotNothingString("EDDGridDataValueExample", errorInMethod);
-      EDDGridDataIndexExample =
-          messagesAr[0].getNotNothingString("EDDGridDataIndexExample", errorInMethod);
-      EDDGridGraphExample = messagesAr[0].getNotNothingString("EDDGridGraphExample", errorInMethod);
-      EDDGridMapExample = messagesAr[0].getNotNothingString("EDDGridMapExample", errorInMethod);
-      EDDGridMatlabPlotExample =
-          messagesAr[0].getNotNothingString("EDDGridMatlabPlotExample", errorInMethod);
-
-      // admin provides EDDGrid...Example
-      EDDGridErddapUrlExample =
-          getSetupEVString(setup, ev, "EDDGridErddapUrlExample", EDDGridErddapUrlExample);
-      EDDGridIdExample = getSetupEVString(setup, ev, "EDDGridIdExample", EDDGridIdExample);
-      EDDGridDimensionExample =
-          getSetupEVString(setup, ev, "EDDGridDimensionExample", EDDGridDimensionExample);
-      EDDGridNoHyperExample =
-          getSetupEVString(setup, ev, "EDDGridNoHyperExample", EDDGridNoHyperExample);
-      EDDGridDimNamesExample =
-          getSetupEVString(setup, ev, "EDDGridDimNamesExample", EDDGridDimNamesExample);
-      EDDGridDataIndexExample =
-          getSetupEVString(setup, ev, "EDDGridDataIndexExample", EDDGridDataIndexExample);
-      EDDGridDataValueExample =
-          getSetupEVString(setup, ev, "EDDGridDataValueExample", EDDGridDataValueExample);
-      EDDGridDataTimeExample =
-          getSetupEVString(setup, ev, "EDDGridDataTimeExample", EDDGridDataTimeExample);
-      EDDGridGraphExample = getSetupEVString(setup, ev, "EDDGridGraphExample", EDDGridGraphExample);
-      EDDGridMapExample = getSetupEVString(setup, ev, "EDDGridMapExample", EDDGridMapExample);
-      EDDGridMatlabPlotExample =
-          getSetupEVString(setup, ev, "EDDGridMatlabPlotExample", EDDGridMatlabPlotExample);
-
-      // variants encoded to be Html Examples
-      EDDGridDimensionExampleHE = XML.encodeAsHTML(EDDGridDimensionExample);
-      EDDGridDataIndexExampleHE = XML.encodeAsHTML(EDDGridDataIndexExample);
-      EDDGridDataValueExampleHE = XML.encodeAsHTML(EDDGridDataValueExample);
-      EDDGridDataTimeExampleHE = XML.encodeAsHTML(EDDGridDataTimeExample);
-      EDDGridGraphExampleHE = XML.encodeAsHTML(EDDGridGraphExample);
-      EDDGridMapExampleHE = XML.encodeAsHTML(EDDGridMapExample);
-
-      // variants encoded to be Html Attributes
-      EDDGridDimensionExampleHA =
-          XML.encodeAsHTMLAttribute(SSR.pseudoPercentEncode(EDDGridDimensionExample));
-      EDDGridDataIndexExampleHA =
-          XML.encodeAsHTMLAttribute(SSR.pseudoPercentEncode(EDDGridDataIndexExample));
-      EDDGridDataValueExampleHA =
-          XML.encodeAsHTMLAttribute(SSR.pseudoPercentEncode(EDDGridDataValueExample));
-      EDDGridDataTimeExampleHA =
-          XML.encodeAsHTMLAttribute(SSR.pseudoPercentEncode(EDDGridDataTimeExample));
-      EDDGridGraphExampleHA =
-          XML.encodeAsHTMLAttribute(SSR.pseudoPercentEncode(EDDGridGraphExample));
-      EDDGridMapExampleHA = XML.encodeAsHTMLAttribute(SSR.pseudoPercentEncode(EDDGridMapExample));
-
-      EDDTableConstraintsAr = getNotNothingString(messagesAr, "EDDTableConstraints", errorInMethod);
-      EDDTableDapDescriptionAr =
-          getNotNothingString(messagesAr, "EDDTableDapDescription", errorInMethod);
-      EDDTableDapLongDescriptionAr =
-          getNotNothingString(messagesAr, "EDDTableDapLongDescription", errorInMethod);
-      EDDTableDownloadDataTooltipAr =
-          getNotNothingString(messagesAr, "EDDTableDownloadDataTooltip", errorInMethod);
-      EDDTableTabularDatasetTooltipAr =
-          getNotNothingString(messagesAr, "EDDTableTabularDatasetTooltip", errorInMethod);
-      EDDTableVariableAr = getNotNothingString(messagesAr, "EDDTableVariable", errorInMethod);
-      EDDTableCheckAllAr = getNotNothingString(messagesAr, "EDDTableCheckAll", errorInMethod);
-      EDDTableCheckAllTooltipAr =
-          getNotNothingString(messagesAr, "EDDTableCheckAllTooltip", errorInMethod);
-      EDDTableUncheckAllAr = getNotNothingString(messagesAr, "EDDTableUncheckAll", errorInMethod);
-      EDDTableUncheckAllTooltipAr =
-          getNotNothingString(messagesAr, "EDDTableUncheckAllTooltip", errorInMethod);
-      EDDTableMinimumTooltipAr =
-          getNotNothingString(messagesAr, "EDDTableMinimumTooltip", errorInMethod);
-      EDDTableMaximumTooltipAr =
-          getNotNothingString(messagesAr, "EDDTableMaximumTooltip", errorInMethod);
-      EDDTableCheckTheVariablesAr =
-          getNotNothingString(messagesAr, "EDDTableCheckTheVariables", errorInMethod);
-      EDDTableSelectAnOperatorAr =
-          getNotNothingString(messagesAr, "EDDTableSelectAnOperator", errorInMethod);
-      EDDTableFromEDDGridSummaryAr =
-          getNotNothingString(messagesAr, "EDDTableFromEDDGridSummary", errorInMethod);
-      EDDTableOptConstraint1HtmlAr =
-          getNotNothingString(messagesAr, "EDDTableOptConstraint1Html", errorInMethod);
-      EDDTableOptConstraint2HtmlAr =
-          getNotNothingString(messagesAr, "EDDTableOptConstraint2Html", errorInMethod);
-      EDDTableOptConstraintVarAr =
-          getNotNothingString(messagesAr, "EDDTableOptConstraintVar", errorInMethod);
-      EDDTableNumericConstraintTooltipAr =
-          getNotNothingString(messagesAr, "EDDTableNumericConstraintTooltip", errorInMethod);
-      EDDTableStringConstraintTooltipAr =
-          getNotNothingString(messagesAr, "EDDTableStringConstraintTooltip", errorInMethod);
-      EDDTableTimeConstraintTooltipAr =
-          getNotNothingString(messagesAr, "EDDTableTimeConstraintTooltip", errorInMethod);
-      EDDTableConstraintTooltipAr =
-          getNotNothingString(messagesAr, "EDDTableConstraintTooltip", errorInMethod);
-      EDDTableSelectConstraintTooltipAr =
-          getNotNothingString(messagesAr, "EDDTableSelectConstraintTooltip", errorInMethod);
-
-      // default EDDGrid...Example
-      EDDTableErddapUrlExample =
-          messagesAr[0].getNotNothingString("EDDTableErddapUrlExample", errorInMethod);
-      EDDTableIdExample = messagesAr[0].getNotNothingString("EDDTableIdExample", errorInMethod);
-      EDDTableVariablesExample =
-          messagesAr[0].getNotNothingString("EDDTableVariablesExample", errorInMethod);
-      EDDTableConstraintsExample =
-          messagesAr[0].getNotNothingString("EDDTableConstraintsExample", errorInMethod);
-      EDDTableDataValueExample =
-          messagesAr[0].getNotNothingString("EDDTableDataValueExample", errorInMethod);
-      EDDTableDataTimeExample =
-          messagesAr[0].getNotNothingString("EDDTableDataTimeExample", errorInMethod);
-      EDDTableGraphExample =
-          messagesAr[0].getNotNothingString("EDDTableGraphExample", errorInMethod);
-      EDDTableMapExample = messagesAr[0].getNotNothingString("EDDTableMapExample", errorInMethod);
-      EDDTableMatlabPlotExample =
-          messagesAr[0].getNotNothingString("EDDTableMatlabPlotExample", errorInMethod);
-
-      // admin provides EDDGrid...Example
-      EDDTableErddapUrlExample =
-          getSetupEVString(setup, ev, "EDDTableErddapUrlExample", EDDTableErddapUrlExample);
-      EDDTableIdExample = getSetupEVString(setup, ev, "EDDTableIdExample", EDDTableIdExample);
-      EDDTableVariablesExample =
-          getSetupEVString(setup, ev, "EDDTableVariablesExample", EDDTableVariablesExample);
-      EDDTableConstraintsExample =
-          getSetupEVString(setup, ev, "EDDTableConstraintsExample", EDDTableConstraintsExample);
-      EDDTableDataValueExample =
-          getSetupEVString(setup, ev, "EDDTableDataValueExample", EDDTableDataValueExample);
-      EDDTableDataTimeExample =
-          getSetupEVString(setup, ev, "EDDTableDataTimeExample", EDDTableDataTimeExample);
-      EDDTableGraphExample =
-          getSetupEVString(setup, ev, "EDDTableGraphExample", EDDTableGraphExample);
-      EDDTableMapExample = getSetupEVString(setup, ev, "EDDTableMapExample", EDDTableMapExample);
-      EDDTableMatlabPlotExample =
-          getSetupEVString(setup, ev, "EDDTableMatlabPlotExample", EDDTableMatlabPlotExample);
-
-      // variants encoded to be Html Examples
-      EDDTableConstraintsExampleHE = XML.encodeAsHTML(EDDTableConstraintsExample);
-      EDDTableDataTimeExampleHE = XML.encodeAsHTML(EDDTableDataTimeExample);
-      EDDTableDataValueExampleHE = XML.encodeAsHTML(EDDTableDataValueExample);
-      EDDTableGraphExampleHE = XML.encodeAsHTML(EDDTableGraphExample);
-      EDDTableMapExampleHE = XML.encodeAsHTML(EDDTableMapExample);
-
-      // variants encoded to be Html Attributes
-      EDDTableConstraintsExampleHA =
-          XML.encodeAsHTMLAttribute(SSR.pseudoPercentEncode(EDDTableConstraintsExample));
-      EDDTableDataTimeExampleHA =
-          XML.encodeAsHTMLAttribute(SSR.pseudoPercentEncode(EDDTableDataTimeExample));
-      EDDTableDataValueExampleHA =
-          XML.encodeAsHTMLAttribute(SSR.pseudoPercentEncode(EDDTableDataValueExample));
-      EDDTableGraphExampleHA =
-          XML.encodeAsHTMLAttribute(SSR.pseudoPercentEncode(EDDTableGraphExample));
-      EDDTableMapExampleHA = XML.encodeAsHTMLAttribute(SSR.pseudoPercentEncode(EDDTableMapExample));
-
-      EDDTableFromHttpGetDatasetDescription =
-          XML.decodeEntities( // because this is used as plain text
-              messagesAr[0].getNotNothingString(
-                  "EDDTableFromHttpGetDatasetDescription", errorInMethod));
-      EDDTableFromHttpGetAuthorDescription =
-          messagesAr[0].getNotNothingString("EDDTableFromHttpGetAuthorDescription", errorInMethod);
-      EDDTableFromHttpGetTimestampDescription =
-          messagesAr[0].getNotNothingString(
-              "EDDTableFromHttpGetTimestampDescription", errorInMethod);
-
-      errorTitleAr = getNotNothingString(messagesAr, "errorTitle", errorInMethod);
-      erddapIsAr = getNotNothingString(messagesAr, "erddapIs", errorInMethod);
-      erddapVersionHTMLAr = getNotNothingString(messagesAr, "erddapVersionHTML", errorInMethod);
-      errorRequestUrlAr = getNotNothingString(messagesAr, "errorRequestUrl", errorInMethod);
-      errorRequestQueryAr = getNotNothingString(messagesAr, "errorRequestQuery", errorInMethod);
-      errorTheErrorAr = getNotNothingString(messagesAr, "errorTheError", errorInMethod);
-      errorCopyFromAr = getNotNothingString(messagesAr, "errorCopyFrom", errorInMethod);
-      errorFileNotFoundAr = getNotNothingString(messagesAr, "errorFileNotFound", errorInMethod);
-      errorFileNotFoundImageAr =
-          getNotNothingString(messagesAr, "errorFileNotFoundImage", errorInMethod);
-      errorInternalAr = getNotNothingString(messagesAr, "errorInternal", errorInMethod);
-      for (int tl = 0; tl < nLanguages; tl++) errorInternalAr[tl] += " ";
-
-      errorJsonpFunctionNameAr =
-          getNotNothingString(messagesAr, "errorJsonpFunctionName", errorInMethod);
-      errorJsonpNotAllowedAr =
-          getNotNothingString(messagesAr, "errorJsonpNotAllowed", errorInMethod);
-      errorMoreThan2GBAr = getNotNothingString(messagesAr, "errorMoreThan2GB", errorInMethod);
-      errorNotFoundAr = getNotNothingString(messagesAr, "errorNotFound", errorInMethod);
-      errorNotFoundInAr = getNotNothingString(messagesAr, "errorNotFoundIn", errorInMethod);
-      errorOdvLLTGridAr = getNotNothingString(messagesAr, "errorOdvLLTGrid", errorInMethod);
-      errorOdvLLTTableAr = getNotNothingString(messagesAr, "errorOdvLLTTable", errorInMethod);
-      errorOnWebPageAr = getNotNothingString(messagesAr, "errorOnWebPage", errorInMethod);
-      HtmlWidgets.errorXWasntSpecifiedAr =
-          getNotNothingString(messagesAr, "errorXWasntSpecified", errorInMethod);
-      HtmlWidgets.errorXWasTooLongAr =
-          getNotNothingString(messagesAr, "errorXWasTooLong", errorInMethod);
-      extensionsNoRangeRequests =
-          StringArray.arrayFromCSV(
-              messagesAr[0].getNotNothingString("extensionsNoRangeRequests", errorInMethod),
-              ",",
-              true,
-              false); // trim, keepNothing
-
-      externalLinkAr = getNotNothingString(messagesAr, "externalLink", errorInMethod);
-      for (int tl = 0; tl < nLanguages; tl++) externalLinkAr[tl] = " " + externalLinkAr[tl];
-
-      externalWebSiteAr = getNotNothingString(messagesAr, "externalWebSite", errorInMethod);
-      fileHelp_ascAr = getNotNothingString(messagesAr, "fileHelp_asc", errorInMethod);
-      fileHelp_csvAr = getNotNothingString(messagesAr, "fileHelp_csv", errorInMethod);
-      fileHelp_csvpAr = getNotNothingString(messagesAr, "fileHelp_csvp", errorInMethod);
-      fileHelp_csv0Ar = getNotNothingString(messagesAr, "fileHelp_csv0", errorInMethod);
-      fileHelp_dataTableAr = getNotNothingString(messagesAr, "fileHelp_dataTable", errorInMethod);
-      fileHelp_dasAr = getNotNothingString(messagesAr, "fileHelp_das", errorInMethod);
-      fileHelp_ddsAr = getNotNothingString(messagesAr, "fileHelp_dds", errorInMethod);
-      fileHelp_dodsAr = getNotNothingString(messagesAr, "fileHelp_dods", errorInMethod);
-      fileHelpGrid_esriAsciiAr =
-          getNotNothingString(messagesAr, "fileHelpGrid_esriAscii", errorInMethod);
-      fileHelpTable_esriCsvAr =
-          getNotNothingString(messagesAr, "fileHelpTable_esriCsv", errorInMethod);
-      fileHelp_fgdcAr = getNotNothingString(messagesAr, "fileHelp_fgdc", errorInMethod);
-      fileHelp_geoJsonAr = getNotNothingString(messagesAr, "fileHelp_geoJson", errorInMethod);
-      fileHelp_graphAr = getNotNothingString(messagesAr, "fileHelp_graph", errorInMethod);
-      fileHelpGrid_helpAr = getNotNothingString(messagesAr, "fileHelpGrid_help", errorInMethod);
-      fileHelpTable_helpAr = getNotNothingString(messagesAr, "fileHelpTable_help", errorInMethod);
-      fileHelp_htmlAr = getNotNothingString(messagesAr, "fileHelp_html", errorInMethod);
-      fileHelp_htmlTableAr = getNotNothingString(messagesAr, "fileHelp_htmlTable", errorInMethod);
-      fileHelp_iso19115Ar = getNotNothingString(messagesAr, "fileHelp_iso19115", errorInMethod);
-      fileHelp_itxGridAr = getNotNothingString(messagesAr, "fileHelp_itxGrid", errorInMethod);
-      fileHelp_itxTableAr = getNotNothingString(messagesAr, "fileHelp_itxTable", errorInMethod);
-      fileHelp_jsonAr = getNotNothingString(messagesAr, "fileHelp_json", errorInMethod);
-      fileHelp_jsonlCSV1Ar = getNotNothingString(messagesAr, "fileHelp_jsonlCSV1", errorInMethod);
-      fileHelp_jsonlCSVAr = getNotNothingString(messagesAr, "fileHelp_jsonlCSV", errorInMethod);
-      fileHelp_jsonlKVPAr = getNotNothingString(messagesAr, "fileHelp_jsonlKVP", errorInMethod);
-      fileHelp_matAr = getNotNothingString(messagesAr, "fileHelp_mat", errorInMethod);
-      fileHelpGrid_nc3Ar = getNotNothingString(messagesAr, "fileHelpGrid_nc3", errorInMethod);
-      fileHelpGrid_nc4Ar = getNotNothingString(messagesAr, "fileHelpGrid_nc4", errorInMethod);
-      fileHelpTable_nc3Ar = getNotNothingString(messagesAr, "fileHelpTable_nc3", errorInMethod);
-      fileHelpTable_nc4Ar = getNotNothingString(messagesAr, "fileHelpTable_nc4", errorInMethod);
-      fileHelp_nc3HeaderAr = getNotNothingString(messagesAr, "fileHelp_nc3Header", errorInMethod);
-      fileHelp_nc4HeaderAr = getNotNothingString(messagesAr, "fileHelp_nc4Header", errorInMethod);
-      fileHelp_nccsvAr = getNotNothingString(messagesAr, "fileHelp_nccsv", errorInMethod);
-      fileHelp_nccsvMetadataAr =
-          getNotNothingString(messagesAr, "fileHelp_nccsvMetadata", errorInMethod);
-      fileHelp_ncCFAr = getNotNothingString(messagesAr, "fileHelp_ncCF", errorInMethod);
-      fileHelp_ncCFHeaderAr = getNotNothingString(messagesAr, "fileHelp_ncCFHeader", errorInMethod);
-      fileHelp_ncCFMAAr = getNotNothingString(messagesAr, "fileHelp_ncCFMA", errorInMethod);
-      fileHelp_ncCFMAHeaderAr =
-          getNotNothingString(messagesAr, "fileHelp_ncCFMAHeader", errorInMethod);
-      fileHelp_ncmlAr = getNotNothingString(messagesAr, "fileHelp_ncml", errorInMethod);
-      fileHelp_ncoJsonAr = getNotNothingString(messagesAr, "fileHelp_ncoJson", errorInMethod);
-      fileHelpGrid_odvTxtAr = getNotNothingString(messagesAr, "fileHelpGrid_odvTxt", errorInMethod);
-      fileHelpTable_odvTxtAr =
-          getNotNothingString(messagesAr, "fileHelpTable_odvTxt", errorInMethod);
-      fileHelp_parquetAr = getNotNothingString(messagesAr, "fileHelp_parquet", errorInMethod);
-      fileHelp_parquet_with_metaAr =
-          getNotNothingString(messagesAr, "fileHelp_parquet_with_meta", errorInMethod);
-      fileHelp_subsetAr = getNotNothingString(messagesAr, "fileHelp_subset", errorInMethod);
-      fileHelp_timeGapsAr = getNotNothingString(messagesAr, "fileHelp_timeGaps", errorInMethod);
-      fileHelp_tsvAr = getNotNothingString(messagesAr, "fileHelp_tsv", errorInMethod);
-      fileHelp_tsvpAr = getNotNothingString(messagesAr, "fileHelp_tsvp", errorInMethod);
-      fileHelp_tsv0Ar = getNotNothingString(messagesAr, "fileHelp_tsv0", errorInMethod);
-      fileHelp_wavAr = getNotNothingString(messagesAr, "fileHelp_wav", errorInMethod);
-      fileHelp_xhtmlAr = getNotNothingString(messagesAr, "fileHelp_xhtml", errorInMethod);
-      fileHelp_geotifAr = getNotNothingString(messagesAr, "fileHelp_geotif", errorInMethod);
-      fileHelpGrid_kmlAr = getNotNothingString(messagesAr, "fileHelpGrid_kml", errorInMethod);
-      fileHelpTable_kmlAr = getNotNothingString(messagesAr, "fileHelpTable_kml", errorInMethod);
-      fileHelp_smallPdfAr = getNotNothingString(messagesAr, "fileHelp_smallPdf", errorInMethod);
-      fileHelp_pdfAr = getNotNothingString(messagesAr, "fileHelp_pdf", errorInMethod);
-      fileHelp_largePdfAr = getNotNothingString(messagesAr, "fileHelp_largePdf", errorInMethod);
-      fileHelp_smallPngAr = getNotNothingString(messagesAr, "fileHelp_smallPng", errorInMethod);
-      fileHelp_pngAr = getNotNothingString(messagesAr, "fileHelp_png", errorInMethod);
-      fileHelp_largePngAr = getNotNothingString(messagesAr, "fileHelp_largePng", errorInMethod);
-      fileHelp_transparentPngAr =
-          getNotNothingString(messagesAr, "fileHelp_transparentPng", errorInMethod);
-      filesDescriptionAr = getNotNothingString(messagesAr, "filesDescription", errorInMethod);
-      filesDocumentationAr = getNotNothingString(messagesAr, "filesDocumentation", errorInMethod);
-      filesSortAr = getNotNothingString(messagesAr, "filesSort", errorInMethod);
-      filesWarningAr = getNotNothingString(messagesAr, "filesWarning", errorInMethod);
-      findOutChangeAr = getNotNothingString(messagesAr, "findOutChange", errorInMethod);
-      FIPSCountyCodesAr = getNotNothingString(messagesAr, "FIPSCountyCodes", errorInMethod);
-      forSOSUseAr = getNotNothingString(messagesAr, "forSOSUse", errorInMethod);
-      forWCSUseAr = getNotNothingString(messagesAr, "forWCSUse", errorInMethod);
-      forWMSUseAr = getNotNothingString(messagesAr, "forWMSUse", errorInMethod);
-      functionsAr = getNotNothingString(messagesAr, "functions", errorInMethod);
-      functionTooltipAr = getNotNothingString(messagesAr, "functionTooltip", errorInMethod);
-      for (int tl = 0; tl < nLanguages; tl++)
-        functionTooltipAr[tl] = MessageFormat.format(functionTooltipAr[tl], "distinct()");
-
-      functionDistinctCheckAr =
-          getNotNothingString(messagesAr, "functionDistinctCheck", errorInMethod);
-      functionDistinctTooltipAr =
-          getNotNothingString(messagesAr, "functionDistinctTooltip", errorInMethod);
-      for (int tl = 0; tl < nLanguages; tl++)
-        functionDistinctTooltipAr[tl] =
-            MessageFormat.format(functionDistinctTooltipAr[tl], "distinct()");
-
-      functionOrderByExtraAr =
-          getNotNothingString(messagesAr, "functionOrderByExtra", errorInMethod);
-      functionOrderByTooltipAr =
-          getNotNothingString(messagesAr, "functionOrderByTooltip", errorInMethod);
-      functionOrderBySortAr = getNotNothingString(messagesAr, "functionOrderBySort", errorInMethod);
-      functionOrderBySort1Ar =
-          getNotNothingString(messagesAr, "functionOrderBySort1", errorInMethod);
-      functionOrderBySort2Ar =
-          getNotNothingString(messagesAr, "functionOrderBySort2", errorInMethod);
-      functionOrderBySort3Ar =
-          getNotNothingString(messagesAr, "functionOrderBySort3", errorInMethod);
-      functionOrderBySort4Ar =
-          getNotNothingString(messagesAr, "functionOrderBySort4", errorInMethod);
-      functionOrderBySortLeastAr =
-          getNotNothingString(messagesAr, "functionOrderBySortLeast", errorInMethod);
-      functionOrderBySortRowMaxAr =
-          getNotNothingString(messagesAr, "functionOrderBySortRowMax", errorInMethod);
-      generatedAtAr = getNotNothingString(messagesAr, "generatedAt", errorInMethod);
-      geoServicesDescriptionAr =
-          getNotNothingString(messagesAr, "geoServicesDescription", errorInMethod);
-      getStartedHtmlAr = getNotNothingString(messagesAr, "getStartedHtml", errorInMethod);
-      helpAr = getNotNothingString(messagesAr, "help", errorInMethod);
-      TableWriterHtmlTable.htmlTableMaxMB =
-          messagesAr[0].getInt("htmlTableMaxMB", TableWriterHtmlTable.htmlTableMaxMB);
-      htmlTableMaxMessageAr = getNotNothingString(messagesAr, "htmlTableMaxMessage", errorInMethod);
-
-      imageDataCourtesyOfAr = getNotNothingString(messagesAr, "imageDataCourtesyOf", errorInMethod);
-      imageWidths =
-          String2.toIntArray(
-              String2.split(messagesAr[0].getNotNothingString("imageWidths", errorInMethod), ','));
-      imageHeights =
-          String2.toIntArray(
-              String2.split(messagesAr[0].getNotNothingString("imageHeights", errorInMethod), ','));
-      imagesEmbedAr = getNotNothingString(messagesAr, "imagesEmbed", errorInMethod);
-      indexViewAllAr = getNotNothingString(messagesAr, "indexViewAll", errorInMethod);
-      indexSearchWithAr = getNotNothingString(messagesAr, "indexSearchWith", errorInMethod);
-      indexDevelopersSearchAr =
-          getNotNothingString(messagesAr, "indexDevelopersSearch", errorInMethod);
-      indexProtocolAr = getNotNothingString(messagesAr, "indexProtocol", errorInMethod);
-      indexDescriptionAr = getNotNothingString(messagesAr, "indexDescription", errorInMethod);
-      indexDatasetsAr = getNotNothingString(messagesAr, "indexDatasets", errorInMethod);
-      indexDocumentationAr = getNotNothingString(messagesAr, "indexDocumentation", errorInMethod);
-      indexRESTfulSearchAr = getNotNothingString(messagesAr, "indexRESTfulSearch", errorInMethod);
-      indexAllDatasetsSearchAr =
-          getNotNothingString(messagesAr, "indexAllDatasetsSearch", errorInMethod);
-      indexOpenSearchAr = getNotNothingString(messagesAr, "indexOpenSearch", errorInMethod);
-      indexServicesAr = getNotNothingString(messagesAr, "indexServices", errorInMethod);
-      indexDescribeServicesAr =
-          getNotNothingString(messagesAr, "indexDescribeServices", errorInMethod);
-      indexMetadataAr = getNotNothingString(messagesAr, "indexMetadata", errorInMethod);
-      indexWAF1Ar = getNotNothingString(messagesAr, "indexWAF1", errorInMethod);
-      indexWAF2Ar = getNotNothingString(messagesAr, "indexWAF2", errorInMethod);
-      indexConvertersAr = getNotNothingString(messagesAr, "indexConverters", errorInMethod);
-      indexDescribeConvertersAr =
-          getNotNothingString(messagesAr, "indexDescribeConverters", errorInMethod);
-      infoAboutFromAr = getNotNothingString(messagesAr, "infoAboutFrom", errorInMethod);
-      infoTableTitleHtmlAr = getNotNothingString(messagesAr, "infoTableTitleHtml", errorInMethod);
-      infoRequestFormAr = getNotNothingString(messagesAr, "infoRequestForm", errorInMethod);
-      informationAr = getNotNothingString(messagesAr, "information", errorInMethod);
-      inotifyFixAr = getNotNothingString(messagesAr, "inotifyFix", errorInMethod);
-      inotifyFixCommands = messagesAr[0].getNotNothingString("inotifyFixCommands", errorInMethod);
-      for (int tl = 0; tl < nLanguages; tl++)
-        inotifyFixAr[tl] = MessageFormat.format(inotifyFixAr[tl], inotifyFixCommands);
-      interpolateAr = getNotNothingString(messagesAr, "interpolate", errorInMethod);
-      javaProgramsHTMLAr = getNotNothingString(messagesAr, "javaProgramsHTML", errorInMethod);
-      justGenerateAndViewAr = getNotNothingString(messagesAr, "justGenerateAndView", errorInMethod);
-      justGenerateAndViewTooltipAr =
-          getNotNothingString(messagesAr, "justGenerateAndViewTooltip", errorInMethod);
-      justGenerateAndViewUrlAr =
-          getNotNothingString(messagesAr, "justGenerateAndViewUrl", errorInMethod);
-      justGenerateAndViewGraphUrlTooltipAr =
-          getNotNothingString(messagesAr, "justGenerateAndViewGraphUrlTooltip", errorInMethod);
-      keywordsAr = getNotNothingString(messagesAr, "keywords", errorInMethod);
-      langCodeAr = getNotNothingString(messagesAr, "langCode", errorInMethod);
-
-      legal = messagesAr[0].getNotNothingString("legal", errorInMethod);
-      legal = getSetupEVString(setup, ev, "legal", legal); // optionally in setup.xml
-      legalNoticesAr = getNotNothingString(messagesAr, "legalNotices", errorInMethod);
-      legalNoticesTitleAr = getNotNothingString(messagesAr, "legalNoticesTitle", errorInMethod);
-
-      legendTitle1 = messagesAr[0].getString("legendTitle1", "");
-      legendTitle2 = messagesAr[0].getString("legendTitle2", "");
-      legendTitle1 =
-          getSetupEVString(setup, ev, "legendTitle1", legendTitle1); // optionally in setup.xml
-      legendTitle2 =
-          getSetupEVString(setup, ev, "legendTitle2", legendTitle2); // optionally in setup.xml
-
-      licenseAr = getNotNothingString(messagesAr, "license", errorInMethod);
-      likeThisAr = getNotNothingString(messagesAr, "likeThis", errorInMethod);
-      listAllAr = getNotNothingString(messagesAr, "listAll", errorInMethod);
-      listOfDatasetsAr = getNotNothingString(messagesAr, "listOfDatasets", errorInMethod);
-      LogInAr = getNotNothingString(messagesAr, "LogIn", errorInMethod);
-      loginAr = getNotNothingString(messagesAr, "login", errorInMethod);
-      loginHTMLAr = getNotNothingString(messagesAr, "loginHTML", errorInMethod);
-      loginAttemptBlockedAr = getNotNothingString(messagesAr, "loginAttemptBlocked", errorInMethod);
-      loginDescribeCustomAr = getNotNothingString(messagesAr, "loginDescribeCustom", errorInMethod);
-      loginDescribeEmailAr = getNotNothingString(messagesAr, "loginDescribeEmail", errorInMethod);
-      loginDescribeGoogleAr = getNotNothingString(messagesAr, "loginDescribeGoogle", errorInMethod);
-      loginDescribeOrcidAr = getNotNothingString(messagesAr, "loginDescribeOrcid", errorInMethod);
-      loginDescribeOauth2Ar = getNotNothingString(messagesAr, "loginDescribeOauth2", errorInMethod);
-      loginCanNotAr = getNotNothingString(messagesAr, "loginCanNot", errorInMethod);
-      loginAreNotAr = getNotNothingString(messagesAr, "loginAreNot", errorInMethod);
-      loginToLogInAr = getNotNothingString(messagesAr, "loginToLogIn", errorInMethod);
-      loginEmailAddressAr = getNotNothingString(messagesAr, "loginEmailAddress", errorInMethod);
-      loginYourEmailAddressAr =
-          getNotNothingString(messagesAr, "loginYourEmailAddress", errorInMethod);
-      loginUserNameAr = getNotNothingString(messagesAr, "loginUserName", errorInMethod);
-      loginPasswordAr = getNotNothingString(messagesAr, "loginPassword", errorInMethod);
-      loginUserNameAndPasswordAr =
-          getNotNothingString(messagesAr, "loginUserNameAndPassword", errorInMethod);
-      loginGoogleSignInAr = getNotNothingString(messagesAr, "loginGoogleSignIn", errorInMethod);
-      loginOrcidSignInAr = getNotNothingString(messagesAr, "loginOrcidSignIn", errorInMethod);
-      loginErddapAr = getNotNothingString(messagesAr, "loginErddap", errorInMethod);
-      loginOpenIDAr = getNotNothingString(messagesAr, "loginOpenID", errorInMethod);
-      loginOpenIDOrAr = getNotNothingString(messagesAr, "loginOpenIDOr", errorInMethod);
-      loginOpenIDCreateAr = getNotNothingString(messagesAr, "loginOpenIDCreate", errorInMethod);
-      loginOpenIDFreeAr = getNotNothingString(messagesAr, "loginOpenIDFree", errorInMethod);
-      loginOpenIDSameAr = getNotNothingString(messagesAr, "loginOpenIDSame", errorInMethod);
-      loginAsAr = getNotNothingString(messagesAr, "loginAs", errorInMethod);
-      loginPartwayAsAr = getNotNothingString(messagesAr, "loginPartwayAs", errorInMethod);
-      loginFailedAr = getNotNothingString(messagesAr, "loginFailed", errorInMethod);
-      loginSucceededAr = getNotNothingString(messagesAr, "loginSucceeded", errorInMethod);
-      loginInvalidAr = getNotNothingString(messagesAr, "loginInvalid", errorInMethod);
-      loginNotAr = getNotNothingString(messagesAr, "loginNot", errorInMethod);
-      loginBackAr = getNotNothingString(messagesAr, "loginBack", errorInMethod);
-      loginProblemExactAr = getNotNothingString(messagesAr, "loginProblemExact", errorInMethod);
-      loginProblemExpireAr = getNotNothingString(messagesAr, "loginProblemExpire", errorInMethod);
-      loginProblemGoogleAgainAr =
-          getNotNothingString(messagesAr, "loginProblemGoogleAgain", errorInMethod);
-      loginProblemOrcidAgainAr =
-          getNotNothingString(messagesAr, "loginProblemOrcidAgain", errorInMethod);
-      loginProblemOauth2AgainAr =
-          getNotNothingString(messagesAr, "loginProblemOauth2Again", errorInMethod);
-      loginProblemSameBrowserAr =
-          getNotNothingString(messagesAr, "loginProblemSameBrowser", errorInMethod);
-      loginProblem3TimesAr = getNotNothingString(messagesAr, "loginProblem3Times", errorInMethod);
-      loginProblemsAr = getNotNothingString(messagesAr, "loginProblems", errorInMethod);
-      loginProblemsAfterAr = getNotNothingString(messagesAr, "loginProblemsAfter", errorInMethod);
-      loginPublicAccessAr = getNotNothingString(messagesAr, "loginPublicAccess", errorInMethod);
-      LogOutAr = getNotNothingString(messagesAr, "LogOut", errorInMethod);
-      logoutAr = getNotNothingString(messagesAr, "logout", errorInMethod);
-      logoutOpenIDAr = getNotNothingString(messagesAr, "logoutOpenID", errorInMethod);
-      logoutSuccessAr = getNotNothingString(messagesAr, "logoutSuccess", errorInMethod);
-      magAr = getNotNothingString(messagesAr, "mag", errorInMethod);
-      magAxisXAr = getNotNothingString(messagesAr, "magAxisX", errorInMethod);
-      magAxisYAr = getNotNothingString(messagesAr, "magAxisY", errorInMethod);
-      magAxisColorAr = getNotNothingString(messagesAr, "magAxisColor", errorInMethod);
-      magAxisStickXAr = getNotNothingString(messagesAr, "magAxisStickX", errorInMethod);
-      magAxisStickYAr = getNotNothingString(messagesAr, "magAxisStickY", errorInMethod);
-      magAxisVectorXAr = getNotNothingString(messagesAr, "magAxisVectorX", errorInMethod);
-      magAxisVectorYAr = getNotNothingString(messagesAr, "magAxisVectorY", errorInMethod);
-      magAxisHelpGraphXAr = getNotNothingString(messagesAr, "magAxisHelpGraphX", errorInMethod);
-      magAxisHelpGraphYAr = getNotNothingString(messagesAr, "magAxisHelpGraphY", errorInMethod);
-      magAxisHelpMarkerColorAr =
-          getNotNothingString(messagesAr, "magAxisHelpMarkerColor", errorInMethod);
-      magAxisHelpSurfaceColorAr =
-          getNotNothingString(messagesAr, "magAxisHelpSurfaceColor", errorInMethod);
-      magAxisHelpStickXAr = getNotNothingString(messagesAr, "magAxisHelpStickX", errorInMethod);
-      magAxisHelpStickYAr = getNotNothingString(messagesAr, "magAxisHelpStickY", errorInMethod);
-      magAxisHelpMapXAr = getNotNothingString(messagesAr, "magAxisHelpMapX", errorInMethod);
-      magAxisHelpMapYAr = getNotNothingString(messagesAr, "magAxisHelpMapY", errorInMethod);
-      magAxisHelpVectorXAr = getNotNothingString(messagesAr, "magAxisHelpVectorX", errorInMethod);
-      magAxisHelpVectorYAr = getNotNothingString(messagesAr, "magAxisHelpVectorY", errorInMethod);
-      magAxisVarHelpAr = getNotNothingString(messagesAr, "magAxisVarHelp", errorInMethod);
-      magAxisVarHelpGridAr = getNotNothingString(messagesAr, "magAxisVarHelpGrid", errorInMethod);
-      magConstraintHelpAr = getNotNothingString(messagesAr, "magConstraintHelp", errorInMethod);
-      magDocumentationAr = getNotNothingString(messagesAr, "magDocumentation", errorInMethod);
-      magDownloadAr = getNotNothingString(messagesAr, "magDownload", errorInMethod);
-      magDownloadTooltipAr = getNotNothingString(messagesAr, "magDownloadTooltip", errorInMethod);
-      magFileTypeAr = getNotNothingString(messagesAr, "magFileType", errorInMethod);
-      magGraphTypeAr = getNotNothingString(messagesAr, "magGraphType", errorInMethod);
-      magGraphTypeTooltipGridAr =
-          getNotNothingString(messagesAr, "magGraphTypeTooltipGrid", errorInMethod);
-      magGraphTypeTooltipTableAr =
-          getNotNothingString(messagesAr, "magGraphTypeTooltipTable", errorInMethod);
-      magGSAr = getNotNothingString(messagesAr, "magGS", errorInMethod);
-      magGSMarkerTypeAr = getNotNothingString(messagesAr, "magGSMarkerType", errorInMethod);
-      magGSSizeAr = getNotNothingString(messagesAr, "magGSSize", errorInMethod);
-      magGSColorAr = getNotNothingString(messagesAr, "magGSColor", errorInMethod);
-      magGSColorBarAr = getNotNothingString(messagesAr, "magGSColorBar", errorInMethod);
-      magGSColorBarTooltipAr =
-          getNotNothingString(messagesAr, "magGSColorBarTooltip", errorInMethod);
-      magGSContinuityAr = getNotNothingString(messagesAr, "magGSContinuity", errorInMethod);
-      magGSContinuityTooltipAr =
-          getNotNothingString(messagesAr, "magGSContinuityTooltip", errorInMethod);
-      magGSScaleAr = getNotNothingString(messagesAr, "magGSScale", errorInMethod);
-      magGSScaleTooltipAr = getNotNothingString(messagesAr, "magGSScaleTooltip", errorInMethod);
-      magGSMinAr = getNotNothingString(messagesAr, "magGSMin", errorInMethod);
-      magGSMinTooltipAr = getNotNothingString(messagesAr, "magGSMinTooltip", errorInMethod);
-      magGSMaxAr = getNotNothingString(messagesAr, "magGSMax", errorInMethod);
-      magGSMaxTooltipAr = getNotNothingString(messagesAr, "magGSMaxTooltip", errorInMethod);
-      magGSNSectionsAr = getNotNothingString(messagesAr, "magGSNSections", errorInMethod);
-      magGSNSectionsTooltipAr =
-          getNotNothingString(messagesAr, "magGSNSectionsTooltip", errorInMethod);
-      magGSLandMaskAr = getNotNothingString(messagesAr, "magGSLandMask", errorInMethod);
-      magGSLandMaskTooltipGridAr =
-          getNotNothingString(messagesAr, "magGSLandMaskTooltipGrid", errorInMethod);
-      magGSLandMaskTooltipTableAr =
-          getNotNothingString(messagesAr, "magGSLandMaskTooltipTable", errorInMethod);
-      magGSVectorStandardAr = getNotNothingString(messagesAr, "magGSVectorStandard", errorInMethod);
-      magGSVectorStandardTooltipAr =
-          getNotNothingString(messagesAr, "magGSVectorStandardTooltip", errorInMethod);
-      magGSYAscendingTooltipAr =
-          getNotNothingString(messagesAr, "magGSYAscendingTooltip", errorInMethod);
-      magGSYAxisMinAr = getNotNothingString(messagesAr, "magGSYAxisMin", errorInMethod);
-      magGSYAxisMaxAr = getNotNothingString(messagesAr, "magGSYAxisMax", errorInMethod);
-      magGSYRangeMinTooltipAr =
-          getNotNothingString(messagesAr, "magGSYRangeMinTooltip", errorInMethod);
-      magGSYRangeMaxTooltipAr =
-          getNotNothingString(messagesAr, "magGSYRangeMaxTooltip", errorInMethod);
-      magGSYRangeTooltipAr = getNotNothingString(messagesAr, "magGSYRangeTooltip", errorInMethod);
-      magGSYScaleTooltipAr = getNotNothingString(messagesAr, "magGSYScaleTooltip", errorInMethod);
-      magItemFirstAr = getNotNothingString(messagesAr, "magItemFirst", errorInMethod);
-      magItemPreviousAr = getNotNothingString(messagesAr, "magItemPrevious", errorInMethod);
-      magItemNextAr = getNotNothingString(messagesAr, "magItemNext", errorInMethod);
-      magItemLastAr = getNotNothingString(messagesAr, "magItemLast", errorInMethod);
-      magJust1ValueAr = getNotNothingString(messagesAr, "magJust1Value", errorInMethod);
-      magRangeAr = getNotNothingString(messagesAr, "magRange", errorInMethod);
-      magRangeToAr = getNotNothingString(messagesAr, "magRangeTo", errorInMethod);
-      magRedrawAr = getNotNothingString(messagesAr, "magRedraw", errorInMethod);
-      magRedrawTooltipAr = getNotNothingString(messagesAr, "magRedrawTooltip", errorInMethod);
-      magTimeRangeAr = getNotNothingString(messagesAr, "magTimeRange", errorInMethod);
-      magTimeRangeFirstAr = getNotNothingString(messagesAr, "magTimeRangeFirst", errorInMethod);
-      magTimeRangeBackAr = getNotNothingString(messagesAr, "magTimeRangeBack", errorInMethod);
-      magTimeRangeForwardAr = getNotNothingString(messagesAr, "magTimeRangeForward", errorInMethod);
-      magTimeRangeLastAr = getNotNothingString(messagesAr, "magTimeRangeLast", errorInMethod);
-      magTimeRangeTooltipAr = getNotNothingString(messagesAr, "magTimeRangeTooltip", errorInMethod);
-      magTimeRangeTooltip2Ar =
-          getNotNothingString(messagesAr, "magTimeRangeTooltip2", errorInMethod);
-      magTimesVaryAr = getNotNothingString(messagesAr, "magTimesVary", errorInMethod);
-      magViewUrlAr = getNotNothingString(messagesAr, "magViewUrl", errorInMethod);
-      magZoomAr = getNotNothingString(messagesAr, "magZoom", errorInMethod);
-      magZoomCenterAr = getNotNothingString(messagesAr, "magZoomCenter", errorInMethod);
-      magZoomCenterTooltipAr =
-          getNotNothingString(messagesAr, "magZoomCenterTooltip", errorInMethod);
-      magZoomInAr = getNotNothingString(messagesAr, "magZoomIn", errorInMethod);
-      magZoomInTooltipAr = getNotNothingString(messagesAr, "magZoomInTooltip", errorInMethod);
-      magZoomOutAr = getNotNothingString(messagesAr, "magZoomOut", errorInMethod);
-      magZoomOutTooltipAr = getNotNothingString(messagesAr, "magZoomOutTooltip", errorInMethod);
-      magZoomALittleAr = getNotNothingString(messagesAr, "magZoomALittle", errorInMethod);
-      magZoomDataAr = getNotNothingString(messagesAr, "magZoomData", errorInMethod);
-      magZoomOutDataAr = getNotNothingString(messagesAr, "magZoomOutData", errorInMethod);
-      magGridTooltipAr = getNotNothingString(messagesAr, "magGridTooltip", errorInMethod);
-      magTableTooltipAr = getNotNothingString(messagesAr, "magTableTooltip", errorInMethod);
-
-      Math2.memory = messagesAr[0].getNotNothingString("memory", errorInMethod);
-      Math2.memoryTooMuchData =
-          messagesAr[0].getNotNothingString("memoryTooMuchData", errorInMethod);
-      Math2.memoryArraySize = messagesAr[0].getNotNothingString("memoryArraySize", errorInMethod);
-      Math2.memoryThanCurrentlySafe =
-          messagesAr[0].getNotNothingString("memoryThanCurrentlySafe", errorInMethod);
-      Math2.memoryThanSafe = messagesAr[0].getNotNothingString("memoryThanSafe", errorInMethod);
-
-      metadataDownloadAr = getNotNothingString(messagesAr, "metadataDownload", errorInMethod);
-      moreInformationAr = getNotNothingString(messagesAr, "moreInformation", errorInMethod);
-
-      MustBe.THERE_IS_NO_DATA =
-          messagesAr[0].getNotNothingString("MustBeThereIsNoData", errorInMethod);
-      MustBe.NotNull = messagesAr[0].getNotNothingString("MustBeNotNull", errorInMethod);
-      MustBe.NotEmpty = messagesAr[0].getNotNothingString("MustBeNotEmpty", errorInMethod);
-      MustBe.InternalError =
-          messagesAr[0].getNotNothingString("MustBeInternalError", errorInMethod);
-      MustBe.OutOfMemoryError =
-          messagesAr[0].getNotNothingString("MustBeOutOfMemoryError", errorInMethod);
-
-      nMatching1Ar = getNotNothingString(messagesAr, "nMatching1", errorInMethod);
-      nMatchingAr = getNotNothingString(messagesAr, "nMatching", errorInMethod);
-      nMatchingAlphabeticalAr =
-          getNotNothingString(messagesAr, "nMatchingAlphabetical", errorInMethod);
-      nMatchingMostRelevantAr =
-          getNotNothingString(messagesAr, "nMatchingMostRelevant", errorInMethod);
-      nMatchingPageAr = getNotNothingString(messagesAr, "nMatchingPage", errorInMethod);
-      nMatchingCurrentAr = getNotNothingString(messagesAr, "nMatchingCurrent", errorInMethod);
-      noDataFixedValueAr = getNotNothingString(messagesAr, "noDataFixedValue", errorInMethod);
-      noDataNoLLAr = getNotNothingString(messagesAr, "noDataNoLL", errorInMethod);
-      noDatasetWithAr = getNotNothingString(messagesAr, "noDatasetWith", errorInMethod);
-      noPage1Ar = getNotNothingString(messagesAr, "noPage1", errorInMethod);
-      noPage2Ar = getNotNothingString(messagesAr, "noPage2", errorInMethod);
-      notAllowedAr = getNotNothingString(messagesAr, "notAllowed", errorInMethod);
-      notAuthorizedAr = getNotNothingString(messagesAr, "notAuthorized", errorInMethod);
-      notAuthorizedForDataAr =
-          getNotNothingString(messagesAr, "notAuthorizedForData", errorInMethod);
-      notAvailableAr = getNotNothingString(messagesAr, "notAvailable", errorInMethod);
-      noteAr = getNotNothingString(messagesAr, "note", errorInMethod);
-      noXxxAr = getNotNothingString(messagesAr, "noXxx", errorInMethod);
-      noXxxBecauseAr = getNotNothingString(messagesAr, "noXxxBecause", errorInMethod);
-      noXxxBecause2Ar = getNotNothingString(messagesAr, "noXxxBecause2", errorInMethod);
-      noXxxNotActiveAr = getNotNothingString(messagesAr, "noXxxNotActive", errorInMethod);
-      noXxxNoAxis1Ar = getNotNothingString(messagesAr, "noXxxNoAxis1", errorInMethod);
-      noXxxNoCdmDataTypeAr = getNotNothingString(messagesAr, "noXxxNoCdmDataType", errorInMethod);
-      noXxxNoColorBarAr = getNotNothingString(messagesAr, "noXxxNoColorBar", errorInMethod);
-      noXxxNoLLAr = getNotNothingString(messagesAr, "noXxxNoLL", errorInMethod);
-      noXxxNoLLEvenlySpacedAr =
-          getNotNothingString(messagesAr, "noXxxNoLLEvenlySpaced", errorInMethod);
-      noXxxNoLLGt1Ar = getNotNothingString(messagesAr, "noXxxNoLLGt1", errorInMethod);
-      noXxxNoLLTAr = getNotNothingString(messagesAr, "noXxxNoLLT", errorInMethod);
-      noXxxNoLonIn180Ar = getNotNothingString(messagesAr, "noXxxNoLonIn180", errorInMethod);
-      noXxxNoNonStringAr = getNotNothingString(messagesAr, "noXxxNoNonString", errorInMethod);
-      noXxxNo2NonStringAr = getNotNothingString(messagesAr, "noXxxNo2NonString", errorInMethod);
-      noXxxNoStationAr = getNotNothingString(messagesAr, "noXxxNoStation", errorInMethod);
-      noXxxNoStationIDAr = getNotNothingString(messagesAr, "noXxxNoStationID", errorInMethod);
-      noXxxNoSubsetVariablesAr =
-          getNotNothingString(messagesAr, "noXxxNoSubsetVariables", errorInMethod);
-      noXxxNoOLLSubsetVariablesAr =
-          getNotNothingString(messagesAr, "noXxxNoOLLSubsetVariables", errorInMethod);
-      noXxxNoMinMaxAr = getNotNothingString(messagesAr, "noXxxNoMinMax", errorInMethod);
-      noXxxItsGriddedAr = getNotNothingString(messagesAr, "noXxxItsGridded", errorInMethod);
-      noXxxItsTabularAr = getNotNothingString(messagesAr, "noXxxItsTabular", errorInMethod);
-      oneRequestAtATimeAr = getNotNothingString(messagesAr, "oneRequestAtATime", errorInMethod);
-      openSearchDescriptionAr =
-          getNotNothingString(messagesAr, "openSearchDescription", errorInMethod);
-      optionalAr = getNotNothingString(messagesAr, "optional", errorInMethod);
-      optionsAr = getNotNothingString(messagesAr, "options", errorInMethod);
-      orAListOfValuesAr = getNotNothingString(messagesAr, "orAListOfValues", errorInMethod);
-      orRefineSearchWithAr = getNotNothingString(messagesAr, "orRefineSearchWith", errorInMethod);
-      orSearchWithAr = getNotNothingString(messagesAr, "orSearchWith", errorInMethod);
-      orCommaAr = getNotNothingString(messagesAr, "orComma", errorInMethod);
-      for (int tl = 0; tl < nLanguages; tl++) {
-        orRefineSearchWithAr[tl] += " ";
-        orSearchWithAr[tl] += " ";
-        orCommaAr[tl] += " ";
-      }
-      otherFeaturesAr = getNotNothingString(messagesAr, "otherFeatures", errorInMethod);
-      outOfDateDatasetsAr = getNotNothingString(messagesAr, "outOfDateDatasets", errorInMethod);
-      outOfDateHtmlAr = getNotNothingString(messagesAr, "outOfDateHtml", errorInMethod);
-      outOfDateKeepTrackAr = getNotNothingString(messagesAr, "outOfDateKeepTrack", errorInMethod);
-
-      // just one set of palettes info (from messagesAr[0])
-      palettes = String2.split(messagesAr[0].getNotNothingString("palettes", errorInMethod), ',');
-      DEFAULT_palettes = palettes; // used by LoadDatasets if palettes tag is empty
-      DEFAULT_palettes_set = String2.stringArrayToSet(palettes);
-      palettes0 = new String[palettes.length + 1];
-      palettes0[0] = "";
-      System.arraycopy(palettes, 0, palettes0, 1, palettes.length);
-
-      patientDataAr = getNotNothingString(messagesAr, "patientData", errorInMethod);
-      patientYourGraphAr = getNotNothingString(messagesAr, "patientYourGraph", errorInMethod);
-
-      pdfWidths =
-          String2.toIntArray(
-              String2.split(messagesAr[0].getNotNothingString("pdfWidths", errorInMethod), ','));
-      pdfHeights =
-          String2.toIntArray(
-              String2.split(messagesAr[0].getNotNothingString("pdfHeights", errorInMethod), ','));
-
-      percentEncodeAr = getNotNothingString(messagesAr, "percentEncode", errorInMethod);
-      pickADatasetAr = getNotNothingString(messagesAr, "pickADataset", errorInMethod);
-      protocolSearchHtmlAr = getNotNothingString(messagesAr, "protocolSearchHtml", errorInMethod);
-      protocolSearch2HtmlAr = getNotNothingString(messagesAr, "protocolSearch2Html", errorInMethod);
-      protocolClickAr = getNotNothingString(messagesAr, "protocolClick", errorInMethod);
-      queryErrorAr = getNotNothingString(messagesAr, "queryError", errorInMethod);
-      for (int tl = 0; tl < nLanguages; tl++) queryErrorAr[tl] += " ";
-      queryError180Ar = getNotNothingString(messagesAr, "queryError180", errorInMethod);
-      queryError1ValueAr = getNotNothingString(messagesAr, "queryError1Value", errorInMethod);
-      queryError1VarAr = getNotNothingString(messagesAr, "queryError1Var", errorInMethod);
-      queryError2VarAr = getNotNothingString(messagesAr, "queryError2Var", errorInMethod);
-      queryErrorActualRangeAr =
-          getNotNothingString(messagesAr, "queryErrorActualRange", errorInMethod);
-      queryErrorAdjustedAr = getNotNothingString(messagesAr, "queryErrorAdjusted", errorInMethod);
-      queryErrorAscendingAr = getNotNothingString(messagesAr, "queryErrorAscending", errorInMethod);
-      queryErrorConstraintNaNAr =
-          getNotNothingString(messagesAr, "queryErrorConstraintNaN", errorInMethod);
-      queryErrorEqualSpacingAr =
-          getNotNothingString(messagesAr, "queryErrorEqualSpacing", errorInMethod);
-      queryErrorExpectedAtAr =
-          getNotNothingString(messagesAr, "queryErrorExpectedAt", errorInMethod);
-      queryErrorFileTypeAr = getNotNothingString(messagesAr, "queryErrorFileType", errorInMethod);
-      queryErrorInvalidAr = getNotNothingString(messagesAr, "queryErrorInvalid", errorInMethod);
-      queryErrorLLAr = getNotNothingString(messagesAr, "queryErrorLL", errorInMethod);
-      queryErrorLLGt1Ar = getNotNothingString(messagesAr, "queryErrorLLGt1", errorInMethod);
-      queryErrorLLTAr = getNotNothingString(messagesAr, "queryErrorLLT", errorInMethod);
-      queryErrorNeverTrueAr = getNotNothingString(messagesAr, "queryErrorNeverTrue", errorInMethod);
-      queryErrorNeverBothTrueAr =
-          getNotNothingString(messagesAr, "queryErrorNeverBothTrue", errorInMethod);
-      queryErrorNotAxisAr = getNotNothingString(messagesAr, "queryErrorNotAxis", errorInMethod);
-      queryErrorNotExpectedAtAr =
-          getNotNothingString(messagesAr, "queryErrorNotExpectedAt", errorInMethod);
-      queryErrorNotFoundAfterAr =
-          getNotNothingString(messagesAr, "queryErrorNotFoundAfter", errorInMethod);
-      queryErrorOccursTwiceAr =
-          getNotNothingString(messagesAr, "queryErrorOccursTwice", errorInMethod);
-
-      queryErrorOrderByClosestAr =
-          getNotNothingString(messagesAr, "queryErrorOrderByClosest", errorInMethod);
-      queryErrorOrderByLimitAr =
-          getNotNothingString(messagesAr, "queryErrorOrderByLimit", errorInMethod);
-      queryErrorOrderByMeanAr =
-          getNotNothingString(messagesAr, "queryErrorOrderByMean", errorInMethod);
-      queryErrorOrderBySumAr =
-          getNotNothingString(messagesAr, "queryErrorOrderBySum", errorInMethod);
-
-      queryErrorOrderByVariableAr =
-          getNotNothingString(messagesAr, "queryErrorOrderByVariable", errorInMethod);
-      queryErrorUnknownVariableAr =
-          getNotNothingString(messagesAr, "queryErrorUnknownVariable", errorInMethod);
-
-      queryErrorGrid1AxisAr = getNotNothingString(messagesAr, "queryErrorGrid1Axis", errorInMethod);
-      queryErrorGridAmpAr = getNotNothingString(messagesAr, "queryErrorGridAmp", errorInMethod);
-      queryErrorGridDiagnosticAr =
-          getNotNothingString(messagesAr, "queryErrorGridDiagnostic", errorInMethod);
-      queryErrorGridBetweenAr =
-          getNotNothingString(messagesAr, "queryErrorGridBetween", errorInMethod);
-      queryErrorGridLessMinAr =
-          getNotNothingString(messagesAr, "queryErrorGridLessMin", errorInMethod);
-      queryErrorGridGreaterMaxAr =
-          getNotNothingString(messagesAr, "queryErrorGridGreaterMax", errorInMethod);
-      queryErrorGridMissingAr =
-          getNotNothingString(messagesAr, "queryErrorGridMissing", errorInMethod);
-      queryErrorGridNoAxisVarAr =
-          getNotNothingString(messagesAr, "queryErrorGridNoAxisVar", errorInMethod);
-      queryErrorGridNoDataVarAr =
-          getNotNothingString(messagesAr, "queryErrorGridNoDataVar", errorInMethod);
-      queryErrorGridNotIdenticalAr =
-          getNotNothingString(messagesAr, "queryErrorGridNotIdentical", errorInMethod);
-      queryErrorGridSLessSAr =
-          getNotNothingString(messagesAr, "queryErrorGridSLessS", errorInMethod);
-      queryErrorLastEndPAr = getNotNothingString(messagesAr, "queryErrorLastEndP", errorInMethod);
-      queryErrorLastExpectedAr =
-          getNotNothingString(messagesAr, "queryErrorLastExpected", errorInMethod);
-      queryErrorLastUnexpectedAr =
-          getNotNothingString(messagesAr, "queryErrorLastUnexpected", errorInMethod);
-      queryErrorLastPMInvalidAr =
-          getNotNothingString(messagesAr, "queryErrorLastPMInvalid", errorInMethod);
-      queryErrorLastPMIntegerAr =
-          getNotNothingString(messagesAr, "queryErrorLastPMInteger", errorInMethod);
-
-      questionMarkImageFile =
-          messagesAr[0].getNotNothingString("questionMarkImageFile", errorInMethod);
-      questionMarkImageFile =
-          getSetupEVString(setup, ev, "questionMarkImageFile", questionMarkImageFile); // optional
-
-      rangesFromToAr = getNotNothingString(messagesAr, "rangesFromTo", errorInMethod);
-      requiredAr = getNotNothingString(messagesAr, "required", errorInMethod);
-      requestFormatExamplesHtmlAr =
-          getNotNothingString(messagesAr, "requestFormatExamplesHtml", errorInMethod);
-      resetTheFormAr = getNotNothingString(messagesAr, "resetTheForm", errorInMethod);
-      resetTheFormWasAr = getNotNothingString(messagesAr, "resetTheFormWas", errorInMethod);
-      resourceNotFoundAr = getNotNothingString(messagesAr, "resourceNotFound", errorInMethod);
-      for (int tl = 0; tl < nLanguages; tl++) resourceNotFoundAr[tl] += " ";
-      restfulWebServicesAr = getNotNothingString(messagesAr, "restfulWebServices", errorInMethod);
-      restfulHTMLAr = getNotNothingString(messagesAr, "restfulHTML", errorInMethod);
-      restfulHTMLContinuedAr =
-          getNotNothingString(messagesAr, "restfulHTMLContinued", errorInMethod);
-      restfulGetAllDatasetAr =
-          getNotNothingString(messagesAr, "restfulGetAllDataset", errorInMethod);
-      restfulProtocolsAr = getNotNothingString(messagesAr, "restfulProtocols", errorInMethod);
-      SOSDocumentationAr = getNotNothingString(messagesAr, "SOSDocumentation", errorInMethod);
-      WCSDocumentationAr = getNotNothingString(messagesAr, "WCSDocumentation", errorInMethod);
-      WMSDocumentationAr = getNotNothingString(messagesAr, "WMSDocumentation", errorInMethod);
-      resultsFormatExamplesHtmlAr =
-          getNotNothingString(messagesAr, "resultsFormatExamplesHtml", errorInMethod);
-      resultsOfSearchForAr = getNotNothingString(messagesAr, "resultsOfSearchFor", errorInMethod);
-      restfulInformationFormatsAr =
-          getNotNothingString(messagesAr, "restfulInformationFormats", errorInMethod);
-      restfulViaServiceAr = getNotNothingString(messagesAr, "restfulViaService", errorInMethod);
-      rowsAr = getNotNothingString(messagesAr, "rows", errorInMethod);
-      rssNoAr = getNotNothingString(messagesAr, "rssNo", errorInMethod);
-      searchTitleAr = getNotNothingString(messagesAr, "searchTitle", errorInMethod);
-      searchDoFullTextHtmlAr =
-          getNotNothingString(messagesAr, "searchDoFullTextHtml", errorInMethod);
-      searchFullTextHtmlAr = getNotNothingString(messagesAr, "searchFullTextHtml", errorInMethod);
-      searchButtonAr = getNotNothingString(messagesAr, "searchButton", errorInMethod);
-      searchClickTipAr = getNotNothingString(messagesAr, "searchClickTip", errorInMethod);
-      searchHintsLuceneTooltipAr =
-          getNotNothingString(messagesAr, "searchHintsLuceneTooltip", errorInMethod);
-      searchHintsOriginalTooltipAr =
-          getNotNothingString(messagesAr, "searchHintsOriginalTooltip", errorInMethod);
-      searchHintsTooltipAr = getNotNothingString(messagesAr, "searchHintsTooltip", errorInMethod);
-      searchMultipleERDDAPsAr =
-          getNotNothingString(messagesAr, "searchMultipleERDDAPs", errorInMethod);
-      searchMultipleERDDAPsDescriptionAr =
-          getNotNothingString(messagesAr, "searchMultipleERDDAPsDescription", errorInMethod);
-      searchNotAvailableAr = getNotNothingString(messagesAr, "searchNotAvailable", errorInMethod);
-      searchTipAr = getNotNothingString(messagesAr, "searchTip", errorInMethod);
-      searchSpellingAr = getNotNothingString(messagesAr, "searchSpelling", errorInMethod);
-      searchFewerWordsAr = getNotNothingString(messagesAr, "searchFewerWords", errorInMethod);
-      searchWithQueryAr = getNotNothingString(messagesAr, "searchWithQuery", errorInMethod);
-      selectNextAr = getNotNothingString(messagesAr, "selectNext", errorInMethod);
-      selectPreviousAr = getNotNothingString(messagesAr, "selectPrevious", errorInMethod);
-      shiftXAllTheWayLeftAr = getNotNothingString(messagesAr, "shiftXAllTheWayLeft", errorInMethod);
-      shiftXLeftAr = getNotNothingString(messagesAr, "shiftXLeft", errorInMethod);
-      shiftXRightAr = getNotNothingString(messagesAr, "shiftXRight", errorInMethod);
-      shiftXAllTheWayRightAr =
-          getNotNothingString(messagesAr, "shiftXAllTheWayRight", errorInMethod);
-
-      Attributes.signedToUnsignedAttNames =
-          StringArray.arrayFromCSV(
-              messagesAr[0].getNotNothingString("signedToUnsignedAttNames", errorInMethod));
-
-      seeProtocolDocumentationAr =
-          getNotNothingString(messagesAr, "seeProtocolDocumentation", errorInMethod);
-
-      slideSorterAr = getNotNothingString(messagesAr, "slideSorter", errorInMethod);
-      SOSAr = getNotNothingString(messagesAr, "SOS", errorInMethod);
-      sosDescriptionHtmlAr = getNotNothingString(messagesAr, "sosDescriptionHtml", errorInMethod);
-      sosLongDescriptionHtmlAr =
-          getNotNothingString(messagesAr, "sosLongDescriptionHtml", errorInMethod);
-      sosOverview1Ar = getNotNothingString(messagesAr, "sosOverview1", errorInMethod);
-      sosOverview2Ar = getNotNothingString(messagesAr, "sosOverview2", errorInMethod);
-      sparqlP01toP02pre = messagesAr[0].getNotNothingString("sparqlP01toP02pre", errorInMethod);
-      sparqlP01toP02post = messagesAr[0].getNotNothingString("sparqlP01toP02post", errorInMethod);
-      ssUseAr = getNotNothingString(messagesAr, "ssUse", errorInMethod);
-      ssUsePlainAr = getNotNothingString(messagesAr, "ssUse", errorInMethod); // start with this
-      for (int tl = 0; tl < nLanguages; tl++)
-        ssUsePlainAr[tl] = XML.removeHTMLTags(ssUsePlainAr[tl]);
-
-      ssBePatientAr = getNotNothingString(messagesAr, "ssBePatient", errorInMethod);
-      ssInstructionsHtmlAr = getNotNothingString(messagesAr, "ssInstructionsHtml", errorInMethod);
-
-      statusAr = getNotNothingString(messagesAr, "status", errorInMethod);
-      statusHtmlAr = getNotNothingString(messagesAr, "statusHtml", errorInMethod);
-      submitAr = getNotNothingString(messagesAr, "submit", errorInMethod);
-      submitTooltipAr = getNotNothingString(messagesAr, "submitTooltip", errorInMethod);
-      subscriptionOfferRssAr =
-          getNotNothingString(messagesAr, "subscriptionOfferRss", errorInMethod);
-      subscriptionOfferUrlAr =
-          getNotNothingString(messagesAr, "subscriptionOfferUrl", errorInMethod);
-      subscriptionsTitleAr = getNotNothingString(messagesAr, "subscriptionsTitle", errorInMethod);
-      subscriptionEmailListAr =
-          getNotNothingString(messagesAr, "subscriptionEmailList", errorInMethod);
-      subscriptionAddAr = getNotNothingString(messagesAr, "subscriptionAdd", errorInMethod);
-      subscriptionValidateAr =
-          getNotNothingString(messagesAr, "subscriptionValidate", errorInMethod);
-      subscriptionListAr = getNotNothingString(messagesAr, "subscriptionList", errorInMethod);
-      subscriptionRemoveAr = getNotNothingString(messagesAr, "subscriptionRemove", errorInMethod);
-      subscription0HtmlAr = getNotNothingString(messagesAr, "subscription0Html", errorInMethod);
-      subscription1HtmlAr = getNotNothingString(messagesAr, "subscription1Html", errorInMethod);
-      subscription2HtmlAr = getNotNothingString(messagesAr, "subscription2Html", errorInMethod);
-      subscriptionAbuseAr = getNotNothingString(messagesAr, "subscriptionAbuse", errorInMethod);
-      subscriptionAddErrorAr =
-          getNotNothingString(messagesAr, "subscriptionAddError", errorInMethod);
-      subscriptionAddHtmlAr = getNotNothingString(messagesAr, "subscriptionAddHtml", errorInMethod);
-      subscriptionAdd2Ar = getNotNothingString(messagesAr, "subscriptionAdd2", errorInMethod);
-      subscriptionAddSuccessAr =
-          getNotNothingString(messagesAr, "subscriptionAddSuccess", errorInMethod);
-      subscriptionEmailAr = getNotNothingString(messagesAr, "subscriptionEmail", errorInMethod);
-      subscriptionEmailOnBlacklistAr =
-          getNotNothingString(messagesAr, "subscriptionEmailOnBlacklist", errorInMethod);
-      subscriptionEmailInvalidAr =
-          getNotNothingString(messagesAr, "subscriptionEmailInvalid", errorInMethod);
-      subscriptionEmailTooLongAr =
-          getNotNothingString(messagesAr, "subscriptionEmailTooLong", errorInMethod);
-      subscriptionEmailUnspecifiedAr =
-          getNotNothingString(messagesAr, "subscriptionEmailUnspecified", errorInMethod);
-      subscriptionIDInvalidAr =
-          getNotNothingString(messagesAr, "subscriptionIDInvalid", errorInMethod);
-      subscriptionIDTooLongAr =
-          getNotNothingString(messagesAr, "subscriptionIDTooLong", errorInMethod);
-      subscriptionIDUnspecifiedAr =
-          getNotNothingString(messagesAr, "subscriptionIDUnspecified", errorInMethod);
-      subscriptionKeyInvalidAr =
-          getNotNothingString(messagesAr, "subscriptionKeyInvalid", errorInMethod);
-      subscriptionKeyUnspecifiedAr =
-          getNotNothingString(messagesAr, "subscriptionKeyUnspecified", errorInMethod);
-      subscriptionListErrorAr =
-          getNotNothingString(messagesAr, "subscriptionListError", errorInMethod);
-      subscriptionListHtmlAr =
-          getNotNothingString(messagesAr, "subscriptionListHtml", errorInMethod);
-      subscriptionListSuccessAr =
-          getNotNothingString(messagesAr, "subscriptionListSuccess", errorInMethod);
-      subscriptionRemoveErrorAr =
-          getNotNothingString(messagesAr, "subscriptionRemoveError", errorInMethod);
-      subscriptionRemoveHtmlAr =
-          getNotNothingString(messagesAr, "subscriptionRemoveHtml", errorInMethod);
-      subscriptionRemove2Ar = getNotNothingString(messagesAr, "subscriptionRemove2", errorInMethod);
-      subscriptionRemoveSuccessAr =
-          getNotNothingString(messagesAr, "subscriptionRemoveSuccess", errorInMethod);
-      subscriptionRSSAr = getNotNothingString(messagesAr, "subscriptionRSS", errorInMethod);
-      subscriptionsNotAvailableAr =
-          getNotNothingString(messagesAr, "subscriptionsNotAvailable", errorInMethod);
-      subscriptionUrlHtmlAr = getNotNothingString(messagesAr, "subscriptionUrlHtml", errorInMethod);
-      subscriptionUrlInvalidAr =
-          getNotNothingString(messagesAr, "subscriptionUrlInvalid", errorInMethod);
-      subscriptionUrlTooLongAr =
-          getNotNothingString(messagesAr, "subscriptionUrlTooLong", errorInMethod);
-      subscriptionValidateErrorAr =
-          getNotNothingString(messagesAr, "subscriptionValidateError", errorInMethod);
-      subscriptionValidateHtmlAr =
-          getNotNothingString(messagesAr, "subscriptionValidateHtml", errorInMethod);
-      subscriptionValidateSuccessAr =
-          getNotNothingString(messagesAr, "subscriptionValidateSuccess", errorInMethod);
-      subsetAr = getNotNothingString(messagesAr, "subset", errorInMethod);
-      subsetSelectAr = getNotNothingString(messagesAr, "subsetSelect", errorInMethod);
-      subsetNMatchingAr = getNotNothingString(messagesAr, "subsetNMatching", errorInMethod);
-      subsetInstructionsAr = getNotNothingString(messagesAr, "subsetInstructions", errorInMethod);
-      subsetOptionAr = getNotNothingString(messagesAr, "subsetOption", errorInMethod);
-      subsetOptionsAr = getNotNothingString(messagesAr, "subsetOptions", errorInMethod);
-      subsetRefineMapDownloadAr =
-          getNotNothingString(messagesAr, "subsetRefineMapDownload", errorInMethod);
-      subsetRefineSubsetDownloadAr =
-          getNotNothingString(messagesAr, "subsetRefineSubsetDownload", errorInMethod);
-      subsetClickResetClosestAr =
-          getNotNothingString(messagesAr, "subsetClickResetClosest", errorInMethod);
-      subsetClickResetLLAr = getNotNothingString(messagesAr, "subsetClickResetLL", errorInMethod);
-      subsetMetadataAr = getNotNothingString(messagesAr, "subsetMetadata", errorInMethod);
-      subsetCountAr = getNotNothingString(messagesAr, "subsetCount", errorInMethod);
-      subsetPercentAr = getNotNothingString(messagesAr, "subsetPercent", errorInMethod);
-      subsetViewSelectAr = getNotNothingString(messagesAr, "subsetViewSelect", errorInMethod);
-      subsetViewSelectDistinctCombosAr =
-          getNotNothingString(messagesAr, "subsetViewSelectDistinctCombos", errorInMethod);
-      subsetViewSelectRelatedCountsAr =
-          getNotNothingString(messagesAr, "subsetViewSelectRelatedCounts", errorInMethod);
-      subsetWhenAr = getNotNothingString(messagesAr, "subsetWhen", errorInMethod);
-      subsetWhenNoConstraintsAr =
-          getNotNothingString(messagesAr, "subsetWhenNoConstraints", errorInMethod);
-      subsetWhenCountsAr = getNotNothingString(messagesAr, "subsetWhenCounts", errorInMethod);
-      subsetComboClickSelectAr =
-          getNotNothingString(messagesAr, "subsetComboClickSelect", errorInMethod);
-      subsetNVariableCombosAr =
-          getNotNothingString(messagesAr, "subsetNVariableCombos", errorInMethod);
-      subsetShowingAllRowsAr =
-          getNotNothingString(messagesAr, "subsetShowingAllRows", errorInMethod);
-      subsetShowingNRowsAr = getNotNothingString(messagesAr, "subsetShowingNRows", errorInMethod);
-      subsetChangeShowingAr = getNotNothingString(messagesAr, "subsetChangeShowing", errorInMethod);
-      subsetNRowsRelatedDataAr =
-          getNotNothingString(messagesAr, "subsetNRowsRelatedData", errorInMethod);
-      subsetViewRelatedChangeAr =
-          getNotNothingString(messagesAr, "subsetViewRelatedChange", errorInMethod);
-      subsetTotalCountAr = getNotNothingString(messagesAr, "subsetTotalCount", errorInMethod);
-      subsetViewAr = getNotNothingString(messagesAr, "subsetView", errorInMethod);
-      subsetViewCheckAr = getNotNothingString(messagesAr, "subsetViewCheck", errorInMethod);
-      subsetViewCheck1Ar = getNotNothingString(messagesAr, "subsetViewCheck1", errorInMethod);
-      subsetViewDistinctMapAr =
-          getNotNothingString(messagesAr, "subsetViewDistinctMap", errorInMethod);
-      subsetViewRelatedMapAr =
-          getNotNothingString(messagesAr, "subsetViewRelatedMap", errorInMethod);
-      subsetViewDistinctDataCountsAr =
-          getNotNothingString(messagesAr, "subsetViewDistinctDataCounts", errorInMethod);
-      subsetViewDistinctDataAr =
-          getNotNothingString(messagesAr, "subsetViewDistinctData", errorInMethod);
-      subsetViewRelatedDataCountsAr =
-          getNotNothingString(messagesAr, "subsetViewRelatedDataCounts", errorInMethod);
-      subsetViewRelatedDataAr =
-          getNotNothingString(messagesAr, "subsetViewRelatedData", errorInMethod);
-      subsetViewDistinctMapTooltipAr =
-          getNotNothingString(messagesAr, "subsetViewDistinctMapTooltip", errorInMethod);
-      subsetViewRelatedMapTooltipAr =
-          getNotNothingString(messagesAr, "subsetViewRelatedMapTooltip", errorInMethod);
-      subsetViewDistinctDataCountsTooltipAr =
-          getNotNothingString(messagesAr, "subsetViewDistinctDataCountsTooltip", errorInMethod);
-      subsetViewDistinctDataTooltipAr =
-          getNotNothingString(messagesAr, "subsetViewDistinctDataTooltip", errorInMethod);
-      subsetViewRelatedDataCountsTooltipAr =
-          getNotNothingString(messagesAr, "subsetViewRelatedDataCountsTooltip", errorInMethod);
-      subsetViewRelatedDataTooltipAr =
-          getNotNothingString(messagesAr, "subsetViewRelatedDataTooltip", errorInMethod);
-      subsetWarnAr = getNotNothingString(messagesAr, "subsetWarn", errorInMethod);
-      subsetWarn10000Ar = getNotNothingString(messagesAr, "subsetWarn10000", errorInMethod);
-      subsetTooltipAr = getNotNothingString(messagesAr, "subsetTooltip", errorInMethod);
-      subsetNotSetUpAr = getNotNothingString(messagesAr, "subsetNotSetUp", errorInMethod);
-      subsetLongNotShownAr = getNotNothingString(messagesAr, "subsetLongNotShown", errorInMethod);
-
-      tabledapVideoIntroAr = getNotNothingString(messagesAr, "tabledapVideoIntro", errorInMethod);
-      theDatasetIDAr = getNotNothingString(messagesAr, "theDatasetID", errorInMethod);
-      theKeyAr = getNotNothingString(messagesAr, "theKey", errorInMethod);
-      theSubscriptionIDAr = getNotNothingString(messagesAr, "theSubscriptionID", errorInMethod);
-      theUrlActionAr = getNotNothingString(messagesAr, "theUrlAction", errorInMethod);
-      theLongDescriptionHtmlAr =
-          getNotNothingString(messagesAr, "theLongDescriptionHtml", errorInMethod);
-      timeAr = getNotNothingString(messagesAr, "time", errorInMethod);
-      ThenAr = getNotNothingString(messagesAr, "Then", errorInMethod);
-      thisParticularErddapAr =
-          getNotNothingString(messagesAr, "thisParticularErddap", errorInMethod);
-      timeoutOtherRequestsAr =
-          getNotNothingString(messagesAr, "timeoutOtherRequests", errorInMethod);
-      HtmlWidgets.twoClickMapDefaultTooltipAr =
-          getNotNothingString(messagesAr, "twoClickMapDefaultTooltip", errorInMethod);
-
-      unitsAr = getNotNothingString(messagesAr, "units", errorInMethod);
-      unknownDatasetIDAr = getNotNothingString(messagesAr, "unknownDatasetID", errorInMethod);
-      unknownProtocolAr = getNotNothingString(messagesAr, "unknownProtocol", errorInMethod);
-      unsupportedFileTypeAr = getNotNothingString(messagesAr, "unsupportedFileType", errorInMethod);
-      String tStandardizeUdunits[] =
-          String2.split(
-              messagesAr[0].getNotNothingString("standardizeUdunits", errorInMethod) + "\n",
-              '\n'); // +\n\n since xml content is trimmed.
-      String tUcumToUdunits[] =
-          String2.split(
-              messagesAr[0].getNotNothingString("ucumToUdunits", errorInMethod) + "\n",
-              '\n'); // +\n\n since xml content is trimmed.
-      String tUdunitsToUcum[] =
-          String2.split(
-              messagesAr[0].getNotNothingString("udunitsToUcum", errorInMethod) + "\n",
-              '\n'); // +\n\n since xml content is trimmed.
-      String tUpdateUrls[] =
-          String2.split(
-              messagesAr[0].getNotNothingString("updateUrls", errorInMethod) + "\n",
-              '\n'); // +\n\n since xml content is trimmed.
-
-      updateUrlsSkipAttributes =
-          StringArray.arrayFromCSV(
-              messagesAr[0].getNotNothingString("updateUrlsSkipAttributes", errorInMethod));
-
-      usingGriddapAr = getNotNothingString(messagesAr, "usingGriddap", errorInMethod);
-      usingTabledapAr = getNotNothingString(messagesAr, "usingTabledap", errorInMethod);
-      variableNamesAr = getNotNothingString(messagesAr, "variableNames", errorInMethod);
-      viewAllDatasetsHtmlAr = getNotNothingString(messagesAr, "viewAllDatasetsHtml", errorInMethod);
-      waitThenTryAgainAr = getNotNothingString(messagesAr, "waitThenTryAgain", errorInMethod);
-      gov.noaa.pfel.erddap.dataset.WaitThenTryAgainException.waitThenTryAgain =
-          waitThenTryAgainAr[0];
-      warningAr = getNotNothingString(messagesAr, "warning", errorInMethod);
-      WCSAr = getNotNothingString(messagesAr, "WCS", errorInMethod);
-      wcsDescriptionHtmlAr = getNotNothingString(messagesAr, "wcsDescriptionHtml", errorInMethod);
-      wcsLongDescriptionHtmlAr =
-          getNotNothingString(messagesAr, "wcsLongDescriptionHtml", errorInMethod);
-      wcsOverview1Ar = getNotNothingString(messagesAr, "wcsOverview1", errorInMethod);
-      wcsOverview2Ar = getNotNothingString(messagesAr, "wcsOverview2", errorInMethod);
-      wmsDescriptionHtmlAr = getNotNothingString(messagesAr, "wmsDescriptionHtml", errorInMethod);
-      wmsInstructionsAr = getNotNothingString(messagesAr, "wmsInstructions", errorInMethod);
-      wmsLongDescriptionHtmlAr =
-          getNotNothingString(messagesAr, "wmsLongDescriptionHtml", errorInMethod);
-      wmsManyDatasetsAr = getNotNothingString(messagesAr, "wmsManyDatasets", errorInMethod);
-      WMSDocumentation1Ar = getNotNothingString(messagesAr, "WMSDocumentation1", errorInMethod);
-      WMSGetCapabilitiesAr = getNotNothingString(messagesAr, "WMSGetCapabilities", errorInMethod);
-      WMSGetMapAr = getNotNothingString(messagesAr, "WMSGetMap", errorInMethod);
-      for (int tl = 0; tl < nLanguages; tl++) {
-        WMSGetCapabilitiesAr[tl] =
-            WMSGetCapabilitiesAr[tl] // some things should stay in English
-                .replaceAll("&serviceWMS;", "service=WMS")
-                .replaceAll("&version;", "version")
-                .replaceAll("&requestGetCapabilities;", "request=GetCapabilities");
-        WMSGetMapAr[tl] =
-            WMSGetMapAr[tl] // lots of things should stay in English
-                .replaceAll("&WMSSERVER;", EDD.WMS_SERVER)
-                .replaceAll("&WMSSEPARATOR;", Character.toString(EDD.WMS_SEPARATOR))
-                .replaceAll("&serviceWMS;", "service=WMS")
-                .replaceAll("&version;", "version")
-                .replaceAll("&requestGetMap;", "request=GetMap")
-                .replaceAll("&TRUE;", "TRUE")
-                .replaceAll("&FALSE;", "FALSE")
-                .replaceAll("&layers;", "layers")
-                .replaceAll("&styles;", "styles")
-                .replaceAll("&width;", "width")
-                .replaceAll("&height;", "height")
-                .replaceAll("&format;", "format")
-                .replaceAll("&transparentTRUEFALSE;", "transparent=<i>TRUE|FALSE</i>")
-                .replaceAll("&bgcolor;", "bgcolor")
-                .replaceAll("&exceptions;", "exceptions")
-                .replaceAll("&time;", "time")
-                .replaceAll("&elevation;", "elevation");
-      }
-
-      WMSNotesAr = getNotNothingString(messagesAr, "WMSNotes", errorInMethod);
-      for (int tl = 0; tl < nLanguages; tl++)
-        WMSNotesAr[tl] =
-            WMSNotesAr[tl].replace("&WMSSEPARATOR;", Character.toString(EDD.WMS_SEPARATOR));
-
-      yourEmailAddressAr = getNotNothingString(messagesAr, "yourEmailAddress", errorInMethod);
-      zoomInAr = getNotNothingString(messagesAr, "zoomIn", errorInMethod);
-      zoomOutAr = getNotNothingString(messagesAr, "zoomOut", errorInMethod);
-
-      for (int tl = 0; tl < nLanguages; tl++) {
-        blacklistMsgAr[tl] = MessageFormat.format(blacklistMsgAr[tl], adminEmail);
-      }
-
-      standardShortDescriptionHtmlAr =
-          getNotNothingString(messagesAr, "standardShortDescriptionHtml", errorInMethod);
-      for (int tl = 0; tl < nLanguages; tl++) {
-        standardShortDescriptionHtmlAr[tl] =
-            String2.replaceAll(
-                standardShortDescriptionHtmlAr[tl],
-                "&convertTimeReference;",
-                convertersActive ? convertTimeReferenceAr[tl] : "");
-        standardShortDescriptionHtmlAr[tl] =
-            String2.replaceAll(
-                standardShortDescriptionHtmlAr[tl],
-                "&wmsManyDatasets;",
-                wmsActive ? wmsManyDatasetsAr[tl] : "");
-      }
-
-      // just one
-      DEFAULT_commonStandardNames =
-          String2.canonical(
-              StringArray.arrayFromCSV(
-                  messagesAr[0].getNotNothingString("DEFAULT_commonStandardNames", errorInMethod)));
-      commonStandardNames = DEFAULT_commonStandardNames;
-      DEFAULT_standardLicense = messagesAr[0].getNotNothingString("standardLicense", errorInMethod);
-      standardLicense = getSetupEVString(setup, ev, "standardLicense", DEFAULT_standardLicense);
-
-      // [language]
-      DEFAULT_standardContactAr = getNotNothingString(messagesAr, "standardContact", errorInMethod);
-      standardContactAr = getSetupEVString(setup, ev, "standardContact", DEFAULT_standardContactAr);
-      DEFAULT_standardDataLicensesAr =
-          getNotNothingString(messagesAr, "standardDataLicenses", errorInMethod);
-      standardDataLicensesAr =
-          getSetupEVString(setup, ev, "standardDataLicenses", DEFAULT_standardDataLicensesAr);
-      DEFAULT_standardDisclaimerOfExternalLinksAr =
-          getNotNothingString(messagesAr, "standardDisclaimerOfExternalLinks", errorInMethod);
-      standardDisclaimerOfExternalLinksAr =
-          getSetupEVString(
-              setup,
-              ev,
-              "standardDisclaimerOfExternalLinks",
-              DEFAULT_standardDisclaimerOfExternalLinksAr);
-      DEFAULT_standardDisclaimerOfEndorsementAr =
-          getNotNothingString(messagesAr, "standardDisclaimerOfEndorsement", errorInMethod);
-      standardDisclaimerOfEndorsementAr =
-          getSetupEVString(
-              setup,
-              ev,
-              "standardDisclaimerOfEndorsement",
-              DEFAULT_standardDisclaimerOfEndorsementAr);
-      DEFAULT_standardGeneralDisclaimerAr =
-          getNotNothingString(messagesAr, "standardGeneralDisclaimer", errorInMethod);
-      standardGeneralDisclaimerAr =
-          getSetupEVString(
-              setup, ev, "standardGeneralDisclaimer", DEFAULT_standardGeneralDisclaimerAr);
-      DEFAULT_standardPrivacyPolicyAr =
-          getNotNothingString(messagesAr, "standardPrivacyPolicy", errorInMethod);
-      standardPrivacyPolicyAr =
-          getSetupEVString(setup, ev, "standardPrivacyPolicy", DEFAULT_standardPrivacyPolicyAr);
-
-      DEFAULT_startHeadHtml = messagesAr[0].getNotNothingString("startHeadHtml5", errorInMethod);
-      startHeadHtml = getSetupEVString(setup, ev, "startHeadHtml5", DEFAULT_startHeadHtml);
-      DEFAULT_startBodyHtmlAr = getNotNothingString(messagesAr, "startBodyHtml5", errorInMethod);
-      startBodyHtmlAr = getSetupEVString(setup, ev, "startBodyHtml5", DEFAULT_startBodyHtmlAr);
-      DEFAULT_theShortDescriptionHtmlAr =
-          getNotNothingString(messagesAr, "theShortDescriptionHtml", errorInMethod);
-      theShortDescriptionHtmlAr =
-          getSetupEVString(setup, ev, "theShortDescriptionHtml", DEFAULT_theShortDescriptionHtmlAr);
-      DEFAULT_endBodyHtmlAr = getNotNothingString(messagesAr, "endBodyHtml5", errorInMethod);
-      endBodyHtmlAr = getSetupEVString(setup, ev, "endBodyHtml5", DEFAULT_endBodyHtmlAr);
-
-      // ensure HTML5
-      Test.ensureTrue(
-          startHeadHtml.startsWith("<!DOCTYPE html>"),
-          "<startHeadHtml5> must start with \"<!DOCTYPE html>\".");
-      for (int tl = 0; tl < nLanguages; tl++) {
-        DEFAULT_standardDataLicensesAr[tl] =
-            String2.replaceAll(
-                DEFAULT_standardDataLicensesAr[tl],
-                "&license;",
-                "<kbd>license</kbd>"); // so not translated
-        standardDataLicensesAr[tl] =
-            String2.replaceAll(standardDataLicensesAr[tl], "&license;", "<kbd>license</kbd>");
-        standardContactAr[tl] =
-            String2.replaceAll(
-                standardContactAr[tl], "&adminEmail;", SSR.getSafeEmailAddress(adminEmail));
-        startBodyHtmlAr[tl] =
-            String2.replaceAll(startBodyHtmlAr[tl], "&erddapVersion;", erddapVersion);
-        endBodyHtmlAr[tl] = String2.replaceAll(endBodyHtmlAr[tl], "&erddapVersion;", erddapVersion);
-      }
-
-      Test.ensureEqual(imageWidths.length, 3, "imageWidths.length must be 3.");
-      Test.ensureEqual(imageHeights.length, 3, "imageHeights.length must be 3.");
-      Test.ensureEqual(pdfWidths.length, 3, "pdfWidths.length must be 3.");
-      Test.ensureEqual(pdfHeights.length, 3, "pdfHeights.length must be 3.");
-
-      int nStandardizeUdunits = tStandardizeUdunits.length / 3;
-      for (int i = 0; i < nStandardizeUdunits; i++) {
-        int i3 = i * 3;
-        Test.ensureTrue(
-            String2.isSomething(tStandardizeUdunits[i3]),
-            "standardizeUdunits line #" + (i3 + 0) + " is empty.");
-        Test.ensureTrue(
-            String2.isSomething(tStandardizeUdunits[i3 + 1]),
-            "standardizeUdunits line #" + (i3 + 1) + " is empty.");
-        Test.ensureEqual(
-            tStandardizeUdunits[i3 + 2].trim(),
-            "",
-            "standardizeUdunits line #" + (i3 + 2) + " isn't empty.");
-        Units2.standardizeUdunitsHM.put(
-            String2.canonical(tStandardizeUdunits[i3].trim()),
-            String2.canonical(tStandardizeUdunits[i3 + 1].trim()));
-      }
-
-      int nUcumToUdunits = tUcumToUdunits.length / 3;
-      for (int i = 0; i < nUcumToUdunits; i++) {
-        int i3 = i * 3;
-        Test.ensureTrue(
-            String2.isSomething(tUcumToUdunits[i3]),
-            "ucumToUdunits line #" + (i3 + 0) + " is empty.");
-        Test.ensureTrue(
-            String2.isSomething(tUcumToUdunits[i3 + 1]),
-            "ucumToUdunits line #" + (i3 + 1) + " is empty.");
-        Test.ensureEqual(
-            tUcumToUdunits[i3 + 2].trim(), "", "ucumToUdunits line #" + (i3 + 2) + " isn't empty.");
-        Units2.ucumToUdunitsHM.put(
-            String2.canonical(tUcumToUdunits[i3].trim()),
-            String2.canonical(tUcumToUdunits[i3 + 1].trim()));
-      }
-
-      int nUdunitsToUcum = tUdunitsToUcum.length / 3;
-      for (int i = 0; i < nUdunitsToUcum; i++) {
-        int i3 = i * 3;
-        Test.ensureTrue(
-            String2.isSomething(tUdunitsToUcum[i3]),
-            "udunitsToUcum line #" + (i3 + 0) + " is empty.");
-        Test.ensureTrue(
-            String2.isSomething(tUdunitsToUcum[i3 + 1]),
-            "udunitsToUcum line #" + (i3 + 1) + " is empty.");
-        Test.ensureEqual(
-            tUdunitsToUcum[i3 + 2].trim(), "", "udunitsToUcum line #" + (i3 + 2) + " isn't empty.");
-        Units2.udunitsToUcumHM.put(
-            String2.canonical(tUdunitsToUcum[i3].trim()),
-            String2.canonical(tUdunitsToUcum[i3 + 1].trim()));
-      }
-
-      int nUpdateUrls = tUpdateUrls.length / 3;
-      updateUrlsFrom = new String[nUpdateUrls];
-      updateUrlsTo = new String[nUpdateUrls];
-      for (int i = 0; i < nUpdateUrls; i++) {
-        int i3 = i * 3;
-        updateUrlsFrom[i] = String2.canonical(tUpdateUrls[i3].trim());
-        updateUrlsTo[i] = String2.canonical(tUpdateUrls[i3 + 1].trim());
-        Test.ensureTrue(
-            String2.isSomething(tUpdateUrls[i3]), "updateUrls line #" + (i3 + 0) + " is empty.");
-        Test.ensureTrue(
-            String2.isSomething(tUpdateUrls[i3 + 1]),
-            "updateUrls line #" + (i3 + 1) + " is empty.");
-        Test.ensureEqual(
-            tUpdateUrls[i3 + 2].trim(), "", "updateUrls line #" + (i3 + 0) + " isn't empty.");
-      }
-
-      for (String palette : palettes) {
-        String tName = fullPaletteDirectory + palette + ".cpt";
-        Test.ensureTrue(
-            File2.isFile(tName),
-            "\"" + palette + "\" is listed in <palettes>, but there is no file " + tName);
+        File2.copy(
+            config.contentDirectory + "cptfiles/" + tFile, config.fullPaletteDirectory + tFile);
       }
 
       // try to create an nc4 file
-      accessibleViaNC4 = ".nc4 is not yet supported.";
+      config.accessibleViaNC4 = ".nc4 is not yet supported.";
       /* DISABLED until nc4 is thread safe -- next netcdf-java
               String testNc4Name = fullTestCacheDirectory +
                   "testNC4_" + Calendar2.getCompactCurrentISODateTimeStringLocal() + ".nc";
@@ -4288,51 +827,8 @@ public class EDStatic {
               }
       //        File2.delete(testNc4Name);
       */
-
-      String tEmail = SSR.getSafeEmailAddress(adminEmail);
-      for (int tl = 0; tl < nLanguages; tl++) {
-        searchHintsTooltipAr[tl] =
-            "<div class=\"standard_max_width\">"
-                + searchHintsTooltipAr[tl]
-                + "\n"
-                + (useLuceneSearchEngine
-                    ? searchHintsLuceneTooltipAr[tl]
-                    : searchHintsOriginalTooltipAr[tl])
-                + "</div>";
-        advancedSearchDirectionsAr[tl] =
-            String2.replaceAll(
-                advancedSearchDirectionsAr[tl], "&searchButton;", searchButtonAr[tl]);
-
-        loginProblemsAr[tl] =
-            String2.replaceAll(loginProblemsAr[tl], "&cookiesHelp;", cookiesHelpAr[tl]);
-        loginProblemsAr[tl] =
-            String2.replaceAll(loginProblemsAr[tl], "&adminContact;", adminContact()) + "\n\n";
-        loginProblemsAfterAr[tl] =
-            String2.replaceAll(loginProblemsAfterAr[tl], "&adminContact;", adminContact()) + "\n\n";
-        loginPublicAccessAr[tl] += "\n";
-        logoutSuccessAr[tl] += "\n";
-
-        filesDocumentationAr[tl] =
-            String2.replaceAll(filesDocumentationAr[tl], "&adminEmail;", tEmail);
-
-        doWithGraphsAr[tl] =
-            String2.replaceAll(doWithGraphsAr[tl], "&ssUse;", slideSorterActive ? ssUseAr[tl] : "");
-
-        theLongDescriptionHtmlAr[tl] =
-            String2.replaceAll(
-                theLongDescriptionHtmlAr[tl], "&ssUse;", slideSorterActive ? ssUseAr[tl] : "");
-        theLongDescriptionHtmlAr[tl] =
-            String2.replaceAll(
-                theLongDescriptionHtmlAr[tl],
-                "&requestFormatExamplesHtml;",
-                requestFormatExamplesHtmlAr[tl]);
-        theLongDescriptionHtmlAr[tl] =
-            String2.replaceAll(
-                theLongDescriptionHtmlAr[tl],
-                "&resultsFormatExamplesHtml;",
-                resultsFormatExamplesHtmlAr[tl]);
-      }
-
+      metrics.initialize(config.usePrometheusMetrics);
+      messages = new EDMessages(config.contentDirectory);
       try {
         computerName = System.getenv("COMPUTERNAME"); // windows
         if (computerName == null) computerName = System.getenv("HOSTNAME"); // linux
@@ -4366,119 +862,6 @@ public class EDStatic {
       //        String2.returnLoggingToSystemOut();
       throw new RuntimeException(errorInMethod);
     }
-  }
-
-  /** This does getNotNothingString for each messages[]. */
-  private static String[] getNotNothingString(
-      ResourceBundle2 messages[], String name, String errorInMethod) {
-
-    int nMessages = messages.length;
-    String ar[] = new String[nMessages];
-    for (int i = 0; i < nMessages; i++)
-      ar[i] = messages[i].getNotNothingString(name, errorInMethod + "When language=" + i + ", ");
-    return ar;
-  }
-
-  /**
-   * This gets a string from setup.xml or environmentalVariables (preferred).
-   *
-   * @param setup from setup.xml
-   * @param ev from System.getenv()
-   * @param paramName If present in ev, it will be ERDDAP_paramName.
-   * @param tDefault the default value
-   * @return the desired value (or the default if it isn't defined anywhere)
-   */
-  private static String getSetupEVString(
-      ResourceBundle2 setup, Map<String, String> ev, String paramName, String tDefault) {
-    String value = ev.get("ERDDAP_" + paramName);
-    if (String2.isSomething(value)) {
-      String2.log("got " + paramName + " from ERDDAP_" + paramName);
-      return value;
-    }
-    return setup.getString(paramName, tDefault);
-  }
-
-  /**
-   * A variant of getSetupEVString that works with an array of tDefault.
-   *
-   * @param setup from setup.xml
-   * @param ev from System.getenv()
-   * @param paramName If present in ev, it will be ERDDAP_paramName.
-   * @param tDefault the default value
-   * @return the desired value (or the default if it isn't defined anywhere)
-   */
-  private static String[] getSetupEVString(
-      ResourceBundle2 setup, Map<String, String> ev, String paramName, String tDefault[]) {
-    String value = ev.get("ERDDAP_" + paramName);
-    int n = tDefault.length;
-    if (String2.isSomething(value)) {
-      String2.log("got " + paramName + " from ERDDAP_" + paramName);
-      for (int i = 0; i < n; i++) tDefault[i] = value;
-      return tDefault;
-    }
-    for (int i = 0; i < n; i++) tDefault[i] = setup.getString(paramName, tDefault[i]);
-    return tDefault;
-  }
-
-  /**
-   * This gets a boolean from setup.xml or environmentalVariables (preferred).
-   *
-   * @param setup from setup.xml
-   * @param ev from System.getenv()
-   * @param paramName If present in ev, it will be ERDDAP_paramName.
-   * @param tDefault the default value
-   * @return the desired value (or the default if it isn't defined anywhere)
-   */
-  private static boolean getSetupEVBoolean(
-      ResourceBundle2 setup, Map<String, String> ev, String paramName, boolean tDefault) {
-    String value = ev.get("ERDDAP_" + paramName);
-    if (value != null) {
-      String2.log("got " + paramName + " from ERDDAP_" + paramName);
-      return String2.parseBoolean(value);
-    }
-    return setup.getBoolean(paramName, tDefault);
-  }
-
-  /**
-   * This gets an int from setup.xml or environmentalVariables (preferred).
-   *
-   * @param setup from setup.xml
-   * @param ev from System.getenv()
-   * @param paramName If present in ev, it will be ERDDAP_paramName.
-   * @param tDefault the default value
-   * @return the desired value (or the default if it isn't defined anywhere)
-   */
-  private static int getSetupEVInt(
-      ResourceBundle2 setup, Map<String, String> ev, String paramName, int tDefault) {
-    String value = ev.get("ERDDAP_" + paramName);
-    if (value != null) {
-      int valuei = String2.parseInt(value);
-      if (valuei < Integer.MAX_VALUE) {
-        String2.log("got " + paramName + " from ERDDAP_" + paramName);
-        return valuei;
-      }
-    }
-    return setup.getInt(paramName, tDefault);
-  }
-
-  /**
-   * This gets a string from setup.xml or environmentalVariables (preferred).
-   *
-   * @param setup from setup.xml
-   * @param ev from System.getenv()
-   * @param paramName If present in ev, it will be ERDDAP_paramName.
-   * @param errorInMethod the start of an Error message
-   * @return the desired value
-   * @throws RuntimeException if there is no value for key
-   */
-  private static String getSetupEVNotNothingString(
-      ResourceBundle2 setup, Map<String, String> ev, String paramName, String errorInMethod) {
-    String value = ev.get("ERDDAP_" + paramName);
-    if (String2.isSomething(value)) {
-      String2.log("got " + paramName + " from ERDDAP_" + paramName);
-      return value;
-    }
-    return setup.getNotNothingString(paramName, errorInMethod);
   }
 
   /**
@@ -4567,7 +950,9 @@ public class EDStatic {
    *     end).
    */
   public static String baseUrl(String loggedInAs) {
-    return loggedInAs == null ? baseUrl : baseHttpsUrl; // works because of loggedInAsHttps
+    return loggedInAs == null
+        ? config.baseUrl
+        : config.baseHttpsUrl; // works because of loggedInAsHttps
   }
 
   /**
@@ -4601,7 +986,7 @@ public class EDStatic {
    * @param tUrl
    */
   public static boolean urlIsThisComputer(String tUrl) {
-    return tUrl.startsWith(baseUrl)
+    return tUrl.startsWith(config.baseUrl)
         || tUrl.startsWith(preferredErddapUrl)
         || // will be baseHttpsUrl if active
         urlIsLocalhost(tUrl);
@@ -4628,58 +1013,7 @@ public class EDStatic {
    * @return returns the appropriate image directory URL (with slash at end).
    */
   public static String imageDirUrl(String loggedInAs, int language) {
-    return erddapUrl(loggedInAs, language) + "/" + IMAGES_DIR;
-  }
-
-  /**
-   * This returns the html needed to display the external.png image with the warning that the link
-   * is to an external website.
-   *
-   * @param language the index of the selected language
-   * @param tErddapUrl
-   * @return the html needed to display the external.png image and messages.
-   */
-  public static String externalLinkHtml(int language, String tErddapUrl) {
-    return "<img\n"
-        + "    src=\""
-        + tErddapUrl
-        + "/images/external.png\" "
-        + "alt=\""
-        + externalLinkAr[language]
-        + "\"\n"
-        + "    title=\""
-        + externalWebSiteAr[language]
-        + "\">";
-  }
-
-  /**
-   * This returns the html documentation for acceptEncoding.
-   *
-   * @param language the index of the selected language
-   * @param headingType e.g., h2 or h3
-   * @param tErddapUrl
-   * @return the html needed to document acceptEncodig.
-   */
-  public static String acceptEncodingHtml(int language, String headingType, String tErddapUrl) {
-    String s =
-        String2.replaceAll(
-            acceptEncodingHtmlAr[language], "&headingType;", "<" + headingType + ">");
-    s = String2.replaceAll(s, "&sheadingType;", "</" + headingType + ">");
-    return String2.replaceAll(s, "&externalLinkHtml;", externalLinkHtml(language, tErddapUrl));
-  }
-
-  /**
-   * This returns the html documentation for the /files/ system.
-   *
-   * @param language the index of the selected language
-   * @param tErddapUrl
-   * @return the html needed to document acceptEncodig.
-   */
-  public static String filesDocumentation(int language, String tErddapUrl) {
-    return String2.replaceAll(
-        filesDocumentationAr[language],
-        "&acceptEncodingHtml;",
-        acceptEncodingHtml(language, "h3", tErddapUrl));
+    return erddapUrl(loggedInAs, language) + "/" + EDConfig.IMAGES_DIR;
   }
 
   /**
@@ -4868,7 +1202,7 @@ public class EDStatic {
    */
   public static String htmlTooltipImage(int language, String loggedInAs, String html) {
     return HtmlWidgets.htmlTooltipImage(
-        imageDirUrl(loggedInAs, language) + questionMarkImageFile, "?", html, "");
+        imageDirUrl(loggedInAs, language) + messages.questionMarkImageFile, "?", html, "");
   }
 
   /**
@@ -5000,7 +1334,8 @@ public class EDStatic {
         String addr = emailAddressesSA.get(i);
         String err =
             subscriptions == null
-                ? // don't use EDStatic.subscriptionSystemActive for this test -- it's a separate
+                ? // don't use EDStatic.config.subscriptionSystemActive for this test -- it's a
+                // separate
                 // issue
                 String2.testEmailAddress(addr)
                 : // tests syntax
@@ -5048,7 +1383,7 @@ public class EDStatic {
         emailLogFile =
             File2.getBufferedWriterUtf8(
                 new FileOutputStream(
-                    fullLogsDirectory + "emailLog" + date + ".txt", true)); // true=append
+                    config.fullLogsDirectory + "emailLog" + date + ".txt", true)); // true=append
       }
 
       // write the email to the log
@@ -5087,7 +1422,7 @@ public class EDStatic {
     if (!String2.isSomething(emailAddressesCSSV)) {
       String2.log("Email not sent because no To address.");
 
-    } else if (emailIsActive) {
+    } else if (config.emailIsActive) {
       // send email
       synchronized (emailList) {
         emailList.add(
@@ -5167,7 +1502,7 @@ public class EDStatic {
           requestNumber,
           response,
           HttpServletResponse.SC_FORBIDDEN, // a.k.a. Error 403
-          blacklistMsgAr[language]);
+          messages.blacklistMsgAr[language]);
       return true;
     }
     return false;
@@ -5270,7 +1605,7 @@ public class EDStatic {
     synchronized (emailList) {
       ensureEmailThreadIsRunningIfNeeded(); // clients (like this class) are responsible for
       // checking on it
-      if (emailIsActive) {
+      if (config.emailIsActive) {
         long tElapsedTime = emailThread == null ? -1 : emailThread.elapsedTime();
         sb.append(
             "EmailThread has sent "
@@ -5393,7 +1728,7 @@ public class EDStatic {
     sb.append('\n');
     sb.append('\n');
 
-    if (emailIsActive) {
+    if (config.emailIsActive) {
       sb.append("EmailThread Failed Time Distribution (since last Daily Report):\n");
       sb.append(String2.getTimeDistributionStatistics(emailThreadFailedDistribution24));
       sb.append('\n');
@@ -5459,7 +1794,7 @@ public class EDStatic {
   /**
    * This returns the user's login name (or null if not logged in).
    *
-   * <p>This relies on EDStatic.authentication
+   * <p>This relies on EDStatic.config.authentication
    *
    * <p>This is safe to use this after outputStream has been written to -- this won't make a session
    * if the user doesn't have one.
@@ -5476,7 +1811,7 @@ public class EDStatic {
     if (!fullRequestUrl.startsWith("https://")) return null;
 
     // request is via https, but authentication=""?  then can't be logged in
-    if (authentication.length() == 0) return loggedInAsHttps;
+    if (config.authentication.length() == 0) return loggedInAsHttps;
 
     // see if user is logged in
     // NOTE: session is associated with https urls, not http urls!
@@ -5489,12 +1824,12 @@ public class EDStatic {
 
     // session != null
     String loggedInAs = null;
-    if (authentication.equals("custom")
-        || authentication.equals("email")
-        || authentication.equals("google")
-        || authentication.equals("orcid")
-        || authentication.equals("oauth2")) {
-      loggedInAs = (String) session.getAttribute("loggedInAs:" + warName);
+    if (config.authentication.equals("custom")
+        || config.authentication.equals("email")
+        || config.authentication.equals("google")
+        || config.authentication.equals("orcid")
+        || config.authentication.equals("oauth2")) {
+      loggedInAs = (String) session.getAttribute("loggedInAs:" + config.warName);
 
       // } else if (authentication.equals("openid"))
       //    loggedInAs = OpenIdFilter.getCurrentUser(session);
@@ -5514,7 +1849,7 @@ public class EDStatic {
             + "_"
             + basis
             + "_"
-            + flagKeyKey);
+            + config.flagKeyKey);
   }
 
   /**
@@ -5631,7 +1966,7 @@ public class EDStatic {
 
     // generate observedPassword from plaintextPassword via passwordEncoding
     String observed =
-        switch (passwordEncoding) {
+        switch (config.passwordEncoding) {
           case "MD5" -> String2.md5Hex(plaintextPassword); // it will be lowercase
           case "UEPMD5" ->
               String2.md5Hex(username + ":ERDDAP:" + plaintextPassword); // it will be lowercase
@@ -5640,7 +1975,8 @@ public class EDStatic {
           case "UEPSHA256" ->
               String2.passwordDigest(
                   "SHA-256", username + ":ERDDAP:" + plaintextPassword); // it will be lowercase
-          default -> throw new RuntimeException("Unexpected passwordEncoding=" + passwordEncoding);
+          default ->
+              throw new RuntimeException("Unexpected passwordEncoding=" + config.passwordEncoding);
         };
     // only for debugging:
     // String2.log("username=" + username + " plaintextPassword=" + plaintextPassword +
@@ -5718,8 +2054,8 @@ public class EDStatic {
         message =
             MessageFormat.format(
                 graphsAccessibleToPublic
-                    ? notAuthorizedForDataAr[language]
-                    : notAuthorizedAr[language],
+                    ? messages.notAuthorizedForDataAr[language]
+                    : messages.notAuthorizedAr[language],
                 loggedInAsHttps.equals(loggedInAs) ? "" : loggedInAs,
                 datasetID);
 
@@ -5751,7 +2087,7 @@ public class EDStatic {
    *     user isn't logged in.
    */
   public static String getLoginHtml(int language, String loggedInAs) {
-    if (authentication.isEmpty()) {
+    if (config.authentication.isEmpty()) {
       // user can't log in
       return "";
     } else {
@@ -5759,7 +2095,7 @@ public class EDStatic {
       return loggedInAs == null || loggedInAsHttps.equals(loggedInAs)
           ? // ie not logged in
           // always use the erddapHttpsUrl for login/logout pages
-          "<a href=\"" + tUrl + "/login.html\">" + loginAr[language] + "</a>"
+          "<a href=\"" + tUrl + "/login.html\">" + messages.loginAr[language] + "</a>"
           : "<a href=\""
               + tUrl
               + "/login.html\"><strong>"
@@ -5768,7 +2104,7 @@ public class EDStatic {
               + "<a href=\""
               + tUrl
               + "/logout.html\">"
-              + logoutAr[language]
+              + messages.logoutAr[language]
               + "</a>";
     }
   }
@@ -5823,13 +2159,14 @@ public class EDStatic {
 
     String tErddapUrl = erddapUrl(loggedInAs, language);
     String s =
-        startBodyHtmlAr[
+        messages
+            .startBodyHtmlAr[
             0]; // It's hard for admins to customized this for all languages. So for now, just use
     // language=0.
     s =
         String2.replaceAll(
-            s, "&EasierAccessToScientificData;", EasierAccessToScientificDataAr[language]);
-    s = String2.replaceAll(s, "&BroughtToYouBy;", BroughtToYouByAr[language]);
+            s, "&EasierAccessToScientificData;", messages.EasierAccessToScientificDataAr[language]);
+    s = String2.replaceAll(s, "&BroughtToYouBy;", messages.BroughtToYouByAr[language]);
     if (String2.isSomething(otherBody))
       s = String2.replaceAll(s, "<body>", "<body " + otherBody + ">");
     s = String2.replaceAll(s, "&loginInfo;", getLoginHtml(language, loggedInAs));
@@ -5850,7 +2187,7 @@ public class EDStatic {
                         "onchange=\"window.location.href='"
                             + baseUrl(loggedInAs)
                             + "/"
-                            + warName
+                            + config.warName
                             + "/' + "
                             + "(this.selectedIndex == 0? '' : this[this.selectedIndex].value + '/') + '"
                             + // e.g., de
@@ -5883,7 +2220,7 @@ public class EDStatic {
    * @param loggedInAs
    */
   public static String endBodyHtml(int language, String tErddapUrl, String loggedInAs) {
-    String s = String2.replaceAll(endBodyHtmlAr[language], "&erddapUrl;", tErddapUrl);
+    String s = String2.replaceAll(messages.endBodyHtmlAr[language], "&erddapUrl;", tErddapUrl);
     if (language > 0)
       s =
           s.replace(
@@ -5904,18 +2241,20 @@ public class EDStatic {
    *     if user is logged in)
    */
   public static String legal(int language, String tErddapUrl) {
-    StringBuilder tsb = new StringBuilder(legal);
-    String2.replaceAll(tsb, "[standardContact]", standardContactAr[language] + "\n\n");
-    String2.replaceAll(tsb, "[standardDataLicenses]", standardDataLicensesAr[language] + "\n\n");
+    StringBuilder tsb = new StringBuilder(messages.legal);
+    String2.replaceAll(tsb, "[standardContact]", messages.standardContactAr[language] + "\n\n");
+    String2.replaceAll(
+        tsb, "[standardDataLicenses]", messages.standardDataLicensesAr[language] + "\n\n");
     String2.replaceAll(
         tsb,
         "[standardDisclaimerOfExternalLinks]",
-        standardDisclaimerOfExternalLinksAr[language] + "\n\n");
+        messages.standardDisclaimerOfExternalLinksAr[language] + "\n\n");
     String2.replaceAll(
         tsb,
         "[standardDisclaimerOfEndorsement]",
-        standardDisclaimerOfEndorsementAr[language] + "\n\n");
-    String2.replaceAll(tsb, "[standardPrivacyPolicy]", standardPrivacyPolicyAr[language] + "\n\n");
+        messages.standardDisclaimerOfEndorsementAr[language] + "\n\n");
+    String2.replaceAll(
+        tsb, "[standardPrivacyPolicy]", messages.standardPrivacyPolicyAr[language] + "\n\n");
     String2.replaceAll(tsb, "&erddapUrl;", tErddapUrl);
     return tsb.toString();
   }
@@ -5927,7 +2266,7 @@ public class EDStatic {
    * @param addToTitle has not yet been encodeAsHTML(addToTitle).
    */
   public static String startHeadHtml(int language, String tErddapUrl, String addToTitle) {
-    String ts = startHeadHtml;
+    String ts = messages.startHeadHtml;
 
     if (addToTitle.length() > 0)
       ts = String2.replaceAll(ts, "</title>", " - " + XML.encodeAsHTML(addToTitle) + "</title>");
@@ -5935,7 +2274,7 @@ public class EDStatic {
         String2.replaceAll(
             ts,
             "&langCode;",
-            langCodeAr[language]
+            messages.langCodeAr[language]
                 + (language == 0
                     ? ""
                     : "-x-mtfrom-en")); // see https://cloud.google.com/translate/markup
@@ -5950,28 +2289,9 @@ public class EDStatic {
     return String2.replaceAll(ts, "&erddapUrl;", tErddapUrl);
   }
 
-  public static String theLongDescriptionHtml(int language, String tErddapUrl) {
-    return String2.replaceAll(theLongDescriptionHtmlAr[language], "&erddapUrl;", tErddapUrl);
-  }
-
-  public static String theShortDescriptionHtml(int language, String tErddapUrl) {
-    String s =
-        theShortDescriptionHtmlAr[
-            0]; // from datasets.xml or messages.xml.  Always use English, but parts (most) will be
-    // translated.
-    s = String2.replaceAll(s, "&erddapIs;", erddapIsAr[language]);
-    s = String2.replaceAll(s, "&thisParticularErddap;", thisParticularErddapAr[language]);
-    s =
-        String2.replaceAll(
-            s, "[standardShortDescriptionHtml]", standardShortDescriptionHtmlAr[language]);
-    s = String2.replaceAll(s, "&requestFormatExamplesHtml;", requestFormatExamplesHtmlAr[language]);
-    s = String2.replaceAll(s, "&erddapUrl;", tErddapUrl); // do last
-    return s;
-  }
-
   public static String erddapHref(int language, String tErddapUrl) {
     return "<a title=\""
-        + clickERDDAPAr[language]
+        + messages.clickERDDAPAr[language]
         + "\" \n"
         + "rel=\"start\" "
         + "href=\""
@@ -5998,9 +2318,9 @@ public class EDStatic {
   }
 
   public static String adminContact() {
-    String ae = String2.replaceAll(adminEmail, "@", " at ");
+    String ae = String2.replaceAll(config.adminEmail, "@", " at ");
     ae = String2.replaceAll(ae, ".", " dot ");
-    return adminIndividualName + " (email: " + ae + ")";
+    return config.adminIndividualName + " (email: " + ae + ")";
   }
 
   /**
@@ -6017,7 +2337,7 @@ public class EDStatic {
     String message = MustBe.throwableToShortString(t);
     return "<p>&nbsp;<hr>\n"
         + "<p><span class=\"warningColor\"><strong>"
-        + errorOnWebPageAr[language]
+        + messages.errorOnWebPageAr[language]
         + "</strong></span>\n"
         + "<pre>"
         + XML.encodeAsPreHTML(message, 100)
@@ -6029,9 +2349,13 @@ public class EDStatic {
    * tomcat is stopped.
    */
   public static void destroy() {
+    if (testingDontDestroy) {
+      return;
+    }
     try {
       if (subscriptions != null) {
         subscriptions.close();
+        subscriptions = null;
       }
       String names[] = String2.toStringArray(runningThreads.keySet().toArray());
       String2.log(
@@ -6096,8 +2420,8 @@ public class EDStatic {
       }
 
       // finally
-      if (useLuceneSearchEngine) String2.log("stopping lucene...");
-      useLuceneSearchEngine = false;
+      if (config.useLuceneSearchEngine) String2.log("stopping lucene...");
+      config.useLuceneSearchEngine = false;
       luceneIndexSearcher = null;
       try {
         if (luceneIndexReader != null) luceneIndexReader.close();
@@ -6114,8 +2438,29 @@ public class EDStatic {
       }
       luceneIndexWriter = null;
 
+      if (touchThread != null) {
+        touchThread.interrupt();
+        touchThread = null;
+      }
+
+      if (taskThread != null) {
+        taskThread.interrupt();
+        taskThread = null;
+      }
+
+      if (emailThread != null) {
+        emailThread.interrupt();
+        emailThread = null;
+      }
+
     } catch (Throwable t) {
       String2.log(MustBe.throwableToString(t));
+    } finally {
+      initialized = false;
+      cleaner = null;
+      messages = null;
+      config = null;
+      metrics = null;
     }
   }
 
@@ -6181,7 +2526,7 @@ public class EDStatic {
                   + Calendar2.elapsedTimeString(maxTime)
                   + ") at "
                   + Calendar2.getCurrentISODateTimeStringLocalTZ();
-          email(emailEverythingToCsv, "emailThread Stalled", tError);
+          email(config.emailEverythingToCsv, "emailThread Stalled", tError);
           String2.log(tError);
 
           stopThread(emailThread, 10); // short time; it is already in trouble
@@ -6225,7 +2570,7 @@ public class EDStatic {
                   + Calendar2.elapsedTimeString(maxTime)
                   + ") at "
                   + Calendar2.getCurrentISODateTimeStringLocalTZ();
-          email(emailEverythingToCsv, "taskThread Stalled", tError);
+          email(config.emailEverythingToCsv, "taskThread Stalled", tError);
           String2.log(tError);
 
           stopThread(taskThread, 10); // short time; it is already in trouble
@@ -6271,7 +2616,7 @@ public class EDStatic {
                   + Calendar2.elapsedTimeString(maxTime)
                   + ") at "
                   + Calendar2.getCurrentISODateTimeStringLocalTZ();
-          email(emailEverythingToCsv, "touchThread Stalled", tError);
+          email(config.emailEverythingToCsv, "touchThread Stalled", tError);
           String2.log(tError);
 
           stopThread(touchThread, 10); // short time; it is already in trouble
@@ -6300,7 +2645,7 @@ public class EDStatic {
   public static void ensureEmailThreadIsRunningIfNeeded() {
     synchronized (emailList) {
       // this checks if it is running and not stalled
-      if (!emailIsActive || isEmailThreadRunning()) return;
+      if (!config.emailIsActive || isEmailThreadRunning()) return;
 
       // emailIsActive && emailThread isn't running
       // need to start a new emailThread
@@ -6669,7 +3014,7 @@ public class EDStatic {
               + (System.currentTimeMillis() - tTime)
               + "ms");
     } catch (Throwable t) {
-      useLuceneSearchEngine = false;
+      config.useLuceneSearchEngine = false;
       throw new RuntimeException(t);
     }
   }
@@ -6732,7 +3077,7 @@ public class EDStatic {
           if (!initialLoadDatasets()) {
             String subject = String2.ERROR + " while creating Lucene Searcher";
             String msg = MustBe.throwableToString(t);
-            email(emailEverythingToCsv, subject, msg);
+            email(config.emailEverythingToCsv, subject, msg);
             String2.log(subject + "\n" + msg);
           }
 
@@ -6841,7 +3186,10 @@ public class EDStatic {
       String functionName = jsonp.substring(7); // it will be because it starts with .jsonp=
       if (!String2.isJsonpNameSafe(functionName))
         throw new SimpleException(
-            bilingual(language, errorJsonpFunctionNameAr[0], errorJsonpFunctionNameAr[language]));
+            bilingual(
+                language,
+                messages.errorJsonpFunctionNameAr[0],
+                messages.errorJsonpFunctionNameAr[language]));
       return ".jsonp=" + SSR.minimalPercentEncode(functionName) + "&";
     } catch (Throwable t) {
       String2.log(MustBe.throwableToString(t));
@@ -6925,8 +3273,8 @@ public class EDStatic {
     if (searchFor == null) searchFor = "";
     return new String[] {
       MustBe.THERE_IS_NO_DATA,
-      (searchFor.length() > 0 ? searchSpellingAr[language] + " " : "")
-          + (searchFor.indexOf(' ') >= 0 ? searchFewerWordsAr[language] : "")
+      (searchFor.length() > 0 ? messages.searchSpellingAr[language] + " " : "")
+          + (searchFor.indexOf(' ') >= 0 ? messages.searchFewerWordsAr[language] : "")
     };
   }
 
@@ -6940,8 +3288,8 @@ public class EDStatic {
    */
   public static String[] noPage(int language, int page, int lastPage) {
     return new String[] {
-      MessageFormat.format(noPage1Ar[language], "" + page, "" + lastPage),
-      MessageFormat.format(noPage2Ar[language], "" + page, "" + lastPage)
+      MessageFormat.format(messages.noPage1Ar[language], "" + page, "" + lastPage),
+      MessageFormat.format(messages.noPage2Ar[language], "" + page, "" + lastPage)
     };
   }
 
@@ -6960,14 +3308,14 @@ public class EDStatic {
   public static String nMatchingDatasetsHtml(
       int language, int nMatches, int page, int lastPage, boolean relevant, String urlWithQuery) {
 
-    if (nMatches == 1) return nMatching1Ar[language];
+    if (nMatches == 1) return messages.nMatching1Ar[language];
 
     StringBuilder results =
         new StringBuilder(
             MessageFormat.format(
                     relevant
-                        ? nMatchingMostRelevantAr[language]
-                        : nMatchingAlphabeticalAr[language],
+                        ? messages.nMatchingMostRelevantAr[language]
+                        : messages.nMatchingAlphabeticalAr[language],
                     "" + nMatches)
                 + "\n");
 
@@ -7004,7 +3352,7 @@ public class EDStatic {
           "&nbsp;"
               + page
               + "&nbsp;("
-              + nMatchingCurrentAr[language]
+              + messages.nMatchingCurrentAr[language]
               + ")&nbsp;\n"); // always show current page
       if (page <= lastPage - 2)
         sb.append(
@@ -7024,7 +3372,7 @@ public class EDStatic {
       results.append(
           "&nbsp;&nbsp;"
               + MessageFormat.format(
-                  nMatchingPageAr[language], "" + page, "" + lastPage, sb.toString())
+                  messages.nMatchingPageAr[language], "" + page, "" + lastPage, sb.toString())
               + "\n");
     }
 
@@ -7050,8 +3398,9 @@ public class EDStatic {
         "gov.noaa.pfel.",
         "gov.noaa.pfeg.");
 
-    int n = updateUrlsFrom.length;
-    for (int i = 0; i < n; i++) String2.replaceAll(sb, updateUrlsFrom[i], updateUrlsTo[i]);
+    int n = messages.updateUrlsFrom.length;
+    for (int i = 0; i < n; i++)
+      String2.replaceAll(sb, messages.updateUrlsFrom[i], messages.updateUrlsTo[i]);
     return sb.toString();
   }
 
@@ -7076,7 +3425,7 @@ public class EDStatic {
 
     // updateUrls in all attributes
     for (String name : names) {
-      if (String2.indexOf(updateUrlsSkipAttributes, name) >= 0) continue;
+      if (String2.indexOf(messages.updateUrlsSkipAttributes, name) >= 0) continue;
       PrimitiveArray pa = addAtts.get(name);
       if (pa == null && sourceAtts != null) pa = sourceAtts.get(name);
       if (pa != null && pa.size() > 0 && pa.elementType() == PAType.STRING) {
@@ -7268,7 +3617,7 @@ public class EDStatic {
         lastAssignedTask.put(tDatasetID, lastTask);
         ensureTaskThreadIsRunningIfNeeded(); // ensure info is up-to-date
 
-        if (EDStatic.forceSynchronousLoading) {
+        if (config.forceSynchronousLoading) {
           while (lastFinishedTask.get() < lastTask) {
             Thread.sleep(2000);
           }
@@ -7373,7 +3722,7 @@ public class EDStatic {
               + "Active requests:\n"
               + String2.toNewlineString(activeRequestLines);
       String2.log(report);
-      email(emailEverythingToCsv, "Dangerously High Memory Use!!!", report);
+      email(config.emailEverythingToCsv, "Dangerously High Memory Use!!!", report);
     }
 
     // memory use is too high, so shed this request
@@ -7394,7 +3743,7 @@ public class EDStatic {
         requestNumber,
         response,
         503, // Service Unavailable
-        waitThenTryAgainAr[language]);
+        messages.waitThenTryAgainAr[language]);
     metrics.shedRequests.inc();
     return true;
   }
@@ -7504,14 +3853,14 @@ public class EDStatic {
 
       // log the error
       String tErrorLC = tError.toLowerCase();
-      if (tError.indexOf(resourceNotFoundAr[0]) >= 0
+      if (tError.indexOf(messages.resourceNotFoundAr[0]) >= 0
           || tError.indexOf(MustBe.THERE_IS_NO_DATA)
               >= 0) { // check this first, since may also be Query error
         errorNo = HttpServletResponse.SC_NOT_FOUND; // http error 404  (might succeed later)
         // I wanted to use 204 No Content or 205 (similar) but browsers don't show any change for
         // these codes
 
-      } else if (tError.indexOf(queryErrorAr[0]) >= 0) {
+      } else if (tError.indexOf(messages.queryErrorAr[0]) >= 0) {
         errorNo = HttpServletResponse.SC_BAD_REQUEST; // http error 400 (won't succeed later)
 
       } else if (tError.indexOf(REQUESTED_RANGE_NOT_SATISFIABLE) >= 0) {
@@ -7571,7 +3920,7 @@ public class EDStatic {
 
       } else {
         // everything else
-        if (tError.indexOf("NullPointerException") >= 0 && emailDiagnosticsToErdData) {
+        if (tError.indexOf("NullPointerException") >= 0 && config.emailDiagnosticsToErdData) {
           // email stack trace for all NullPointerExceptions to erd.data@noaa.gov (i.e., ERDDAP
           // development team)
           email(
@@ -7628,7 +3977,7 @@ public class EDStatic {
       // because any of these errors could be in a script
       // and it's good to slow the script down (prevent 100 bad requests/second)
       // and if it's a human they won't even notice a short delay
-      if (slowDownTroubleMillis > 0) Math2.sleep(slowDownTroubleMillis);
+      if (config.slowDownTroubleMillis > 0) Math2.sleep(config.slowDownTroubleMillis);
 
       // put the HTTP status code name at the start of the message (from Wikipedia list
       // https://en.wikipedia.org/wiki/List_of_HTTP_status_codes
@@ -7668,7 +4017,7 @@ public class EDStatic {
               + String2.toJson(msg, 65536, false)
               + ";\n"
               + "}\n";
-      if (msg.indexOf(blacklistMsgAr[0]) < 0)
+      if (msg.indexOf(messages.blacklistMsgAr[0]) < 0)
         String2.log(
             "*** lowSendError for request #"
                 + requestNumber
@@ -7817,20 +4166,21 @@ public class EDStatic {
       // delete old index files
       // Index will be recreated, and Lucense throws exception if it tries to read from old
       // indices.
-      File2.deleteAllFiles(fullLuceneDirectory);
+      File2.deleteAllFiles(config.fullLuceneDirectory);
 
       // Since I recreate index when erddap restarted, I can change anything
       //  (e.g., Directory type, Version) any time
       //  (no worries about compatibility with existing index).
       // ??? For now, use NIOFSDirectory,
       //  See NIOFSDirectory javadocs (I need to stop using thread.interrupt).
-      luceneDirectory = new NIOFSDirectory(FileSystems.getDefault().getPath(fullLuceneDirectory));
+      luceneDirectory =
+          new NIOFSDirectory(FileSystems.getDefault().getPath(config.fullLuceneDirectory));
 
       // At start of ERDDAP, always create a new index.  Never re-use existing index.
       // Do it here to use true and also to ensure it can be done.
       createLuceneIndexWriter(true); // throws exception if trouble
     } catch (Throwable t) {
-      useLuceneSearchEngine = false;
+      config.useLuceneSearchEngine = false;
       throw new RuntimeException(t);
     }
   }
