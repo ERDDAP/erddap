@@ -507,7 +507,7 @@ class EDDTableFromNccsvFilesTests {
 
     expected =
         "http://127.0.0.1:8080/cwexperimental/tabledap/testNccsvScalar11.das\";\n"
-            + "    String infoUrl \"https://erddap.github.io/NCCSV.html\";\n"
+            + "    String infoUrl \"https://erddap.github.io/docs/user/nccsv-1.20\";\n"
             + "    String institution \"NOAA NMFS SWFSC ERD, NOAA PMEL\";\n"
             + "    String keywords \"center, data, demonstration, Earth Science > Oceans > Ocean Temperature > Sea Surface Temperature, environmental, erd, fisheries, identifier, laboratory, latitude, long, longitude, marine, national, nccsv, nmfs, noaa, ocean, oceans, pacific, pmel, science, sea, sea_surface_temperature, service, ship, southwest, sst, status, surface, swfsc, temperature, test, testLong, time, trajectory\";\n"
             + "    String keywords_vocabulary \"GCMD Science Keywords\";\n"
@@ -740,7 +740,7 @@ class EDDTableFromNccsvFilesTests {
             + "*GLOBAL*,geospatial_lon_max,-130.2576d\n"
             + "*GLOBAL*,geospatial_lon_min,-132.1591d\n"
             + "*GLOBAL*,geospatial_lon_units,degrees_east\n"
-            + "*GLOBAL*,infoUrl,https://erddap.github.io/NCCSV.html\n"
+            + "*GLOBAL*,infoUrl,https://erddap.github.io/docs/user/nccsv-1.20\n"
             + "*GLOBAL*,institution,\"NOAA NMFS SWFSC ERD, NOAA PMEL\"\n"
             + "*GLOBAL*,keywords,\"center, data, demonstration, Earth Science > Oceans > Ocean Temperature > Sea Surface Temperature, environmental, erd, fisheries, identifier, laboratory, latitude, long, longitude, marine, national, nccsv, nmfs, noaa, ocean, oceans, pacific, pmel, science, sea, sea_surface_temperature, service, ship, southwest, sst, status, surface, swfsc, temperature, test, testLong, time, trajectory\"\n"
             + "*GLOBAL*,keywords_vocabulary,GCMD Science Keywords\n"
@@ -873,7 +873,7 @@ class EDDTableFromNccsvFilesTests {
     expected =
         // T17:35:08Z (local files)\\n2017-04-18T17:35:08Z
         "http://127.0.0.1:8080/cwexperimental/tabledap/testNccsvScalar11.nccsv\n"
-            + "*GLOBAL*,infoUrl,https://erddap.github.io/NCCSV.html\n"
+            + "*GLOBAL*,infoUrl,https://erddap.github.io/docs/user/nccsv-1.20\n"
             + "*GLOBAL*,institution,\"NOAA NMFS SWFSC ERD, NOAA PMEL\"\n"
             + "*GLOBAL*,keywords,\"center, data, demonstration, Earth Science > Oceans > Ocean Temperature > Sea Surface Temperature, environmental, erd, fisheries, identifier, laboratory, latitude, long, longitude, marine, national, nccsv, nmfs, noaa, ocean, oceans, pacific, pmel, science, sea, sea_surface_temperature, service, ship, southwest, sst, status, surface, swfsc, temperature, test, testLong, time, trajectory\"\n"
             + "*GLOBAL*,keywords_vocabulary,GCMD Science Keywords\n"
@@ -1008,7 +1008,7 @@ class EDDTableFromNccsvFilesTests {
     expected =
         // 2017-04-18T17:41:53Z (local files)\\n2017-04-18T17:41:53Z
         "http://127.0.0.1:8080/cwexperimental/tabledap/testNccsvScalar11.nccsv?time,ship,sst&time=2017-03-23T02:45\"\n"
-            + "*GLOBAL*,infoUrl,https://erddap.github.io/NCCSV.html\n"
+            + "*GLOBAL*,infoUrl,https://erddap.github.io/docs/user/nccsv-1.20\n"
             + "*GLOBAL*,institution,\"NOAA NMFS SWFSC ERD, NOAA PMEL\"\n"
             + "*GLOBAL*,keywords,\"center, data, demonstration, Earth Science > Oceans > Ocean Temperature > Sea Surface Temperature, environmental, erd, fisheries, identifier, laboratory, latitude, long, longitude, marine, national, nccsv, nmfs, noaa, ocean, oceans, pacific, pmel, science, sea, sea_surface_temperature, service, ship, southwest, sst, status, surface, swfsc, temperature, test, testLong, time, trajectory\"\n"
             + "*GLOBAL*,keywords_vocabulary,GCMD Science Keywords\n"
@@ -1840,7 +1840,7 @@ class EDDTableFromNccsvFilesTests {
     expected =
         "http://127.0.0.1:8080/cwexperimental/tabledap/testNccsvScalar11.nc\";[10]\n"
             + "  :id = \"testNccsvScalar11\";[10]\n"
-            + "  :infoUrl = \"https://erddap.github.io/NCCSV.html\";[10]\n"
+            + "  :infoUrl = \"https://erddap.github.io/docs/user/nccsv-1.20\";[10]\n"
             + "  :institution = \"NOAA NMFS SWFSC ERD, NOAA PMEL\";[10]\n"
             + "  :keywords = \"center, data, demonstration, Earth Science > Oceans > Ocean Temperature > Sea Surface Temperature, environmental, erd, fisheries, identifier, laboratory, latitude, long, longitude, marine, national, nccsv, nmfs, noaa, ocean, oceans, pacific, pmel, science, sea, sea_surface_temperature, service, ship, southwest, sst, status, surface, swfsc, temperature, test, testLong, time, trajectory\";[10]\n"
             + "  :keywords_vocabulary = \"GCMD Science Keywords\";[10]\n"
@@ -2051,7 +2051,7 @@ class EDDTableFromNccsvFilesTests {
     expected =
         "http://127.0.0.1:8080/cwexperimental/tabledap/testNccsvScalar11.ncCF\";[10]\n"
             + "  :id = \"testNccsvScalar11\";[10]\n"
-            + "  :infoUrl = \"https://erddap.github.io/NCCSV.html\";[10]\n"
+            + "  :infoUrl = \"https://erddap.github.io/docs/user/nccsv-1.20\";[10]\n"
             + "  :institution = \"NOAA NMFS SWFSC ERD, NOAA PMEL\";[10]\n"
             + "  :keywords = \"center, data, demonstration, Earth Science > Oceans > Ocean Temperature > Sea Surface Temperature, environmental, erd, fisheries, identifier, laboratory, latitude, long, longitude, marine, national, nccsv, nmfs, noaa, ocean, oceans, pacific, pmel, science, sea, sea_surface_temperature, service, ship, southwest, sst, status, surface, swfsc, temperature, test, testLong, time, trajectory\";[10]\n"
             + "  :keywords_vocabulary = \"GCMD Science Keywords\";[10]\n"
@@ -2251,7 +2251,7 @@ class EDDTableFromNccsvFilesTests {
     expected =
         "http://127.0.0.1:8080/cwexperimental/tabledap/testNccsvScalar11.ncCFMA\";[10]\n"
             + "  :id = \"testNccsvScalar11\";[10]\n"
-            + "  :infoUrl = \"https://erddap.github.io/NCCSV.html\";[10]\n"
+            + "  :infoUrl = \"https://erddap.github.io/docs/user/nccsv-1.20\";[10]\n"
             + "  :institution = \"NOAA NMFS SWFSC ERD, NOAA PMEL\";[10]\n"
             + "  :keywords = \"center, data, demonstration, Earth Science > Oceans > Ocean Temperature > Sea Surface Temperature, environmental, erd, fisheries, identifier, laboratory, latitude, long, longitude, marine, national, nccsv, nmfs, noaa, ocean, oceans, pacific, pmel, science, sea, sea_surface_temperature, service, ship, southwest, sst, status, surface, swfsc, temperature, test, testLong, time, trajectory\";[10]\n"
             + "  :keywords_vocabulary = \"GCMD Science Keywords\";[10]\n"
@@ -2346,7 +2346,7 @@ class EDDTableFromNccsvFilesTests {
     // 2017-07-28T15:33:25Z (local files)\\n2017-07-28T15:33:25Z
     expected =
         "http://127.0.0.1:8080/cwexperimental/tabledap/testNccsvScalar11.ncoJson\"},[10]\n"
-            + "    \"infoUrl\": {\"type\": \"char\", \"data\": \"https://erddap.github.io/NCCSV.html\"},[10]\n"
+            + "    \"infoUrl\": {\"type\": \"char\", \"data\": \"https://erddap.github.io/docs/user/nccsv-1.20\"},[10]\n"
             + "    \"institution\": {\"type\": \"char\", \"data\": \"NOAA NMFS SWFSC ERD, NOAA PMEL\"},[10]\n"
             + "    \"keywords\": {\"type\": \"char\", \"data\": \"center, data, demonstration, Earth Science > Oceans > Ocean Temperature > Sea Surface Temperature, environmental, erd, fisheries, identifier, laboratory, latitude, long, longitude, marine, national, nccsv, nmfs, noaa, ocean, oceans, pacific, pmel, science, sea, sea_surface_temperature, service, ship, southwest, sst, status, surface, swfsc, temperature, test, testLong, time, trajectory\"},[10]\n"
             + "    \"keywords_vocabulary\": {\"type\": \"char\", \"data\": \"GCMD Science Keywords\"},[10]\n"
@@ -2553,7 +2553,7 @@ class EDDTableFromNccsvFilesTests {
     // 2017-07-28T15:33:25Z (local files)\\n2017-07-28T15:33:25Z
     expected =
         "http://127.0.0.1:8080/cwexperimental/tabledap/testNccsvScalar11.ncoJson?&.jsonp=myFunctionName\"},[10]\n"
-            + "    \"infoUrl\": {\"type\": \"char\", \"data\": \"https://erddap.github.io/NCCSV.html\"},[10]\n"
+            + "    \"infoUrl\": {\"type\": \"char\", \"data\": \"https://erddap.github.io/docs/user/nccsv-1.20\"},[10]\n"
             + "    \"institution\": {\"type\": \"char\", \"data\": \"NOAA NMFS SWFSC ERD, NOAA PMEL\"},[10]\n"
             + "    \"keywords\": {\"type\": \"char\", \"data\": \"center, data, demonstration, Earth Science > Oceans > Ocean Temperature > Sea Surface Temperature, environmental, erd, fisheries, identifier, laboratory, latitude, long, longitude, marine, national, nccsv, nmfs, noaa, ocean, oceans, pacific, pmel, science, sea, sea_surface_temperature, service, ship, southwest, sst, status, surface, swfsc, temperature, test, testLong, time, trajectory\"},[10]\n"
             + "    \"keywords_vocabulary\": {\"type\": \"char\", \"data\": \"GCMD Science Keywords\"},[10]\n"
@@ -2733,7 +2733,7 @@ class EDDTableFromNccsvFilesTests {
             "<CreateTime>9999-99-99T99:99:99");
     // String2.log(results);
     expected =
-        "//<Creator>https://erddap.github.io/NCCSV.html</Creator>[10]\n"
+        "//<Creator>https://erddap.github.io/docs/user/nccsv-1.20</Creator>[10]\n"
             + "//<CreateTime>9999-99-99T99:99:99</CreateTime>[10]\n"
             + "//<Encoding>UTF-8</Encoding>[10]\n"
             + "//<Software>ERDDAP - Version "

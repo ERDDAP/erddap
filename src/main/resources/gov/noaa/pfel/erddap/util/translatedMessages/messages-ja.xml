@@ -89,11 +89,11 @@ x-gzip=gzip および x-compress=compress と記載されています。
 <advl_institution>機関</advl_institution>
 <advc_dataStructure>ERDDAP は、各データセットを「グリッド」データセットまたは「テーブル」データセットとして扱います。</advc_dataStructure>
 <advl_dataStructure>データ構造</advl_dataStructure>
-<advr_dataStructure>https://erddap.github.io/setupDatasetsXml.html#dataStructures</advr_dataStructure>
+<advr_dataStructure>https://erddap.github.io/docs/server-admin/datasets#why-just-two-basic-data-structures</advr_dataStructure>
 <advl_cdm_data_type>共通データモデルタイプ</advl_cdm_data_type>
-<advr_cdm_data_type>https://erddap.github.io/setupDatasetsXml.html#cdm_data_type</advr_cdm_data_type>
+<advr_cdm_data_type>https://erddap.github.io/docs/server-admin/datasets#cdm_data_type</advr_cdm_data_type>
 <advl_class>ERDDAP クラス</advl_class>
-<advr_class>https://erddap.github.io/setupDatasetsXml.html#datasetTypes</advr_class>
+<advr_class>https://erddap.github.io/docs/server-admin/datasets#list-of-types-datasets</advr_class>
 <advl_title>タイトル</advl_title>
 <advl_minLongitude>最小経度</advl_minLongitude>
 <advl_maxLongitude>最大経度</advl_maxLongitude>
@@ -138,7 +138,7 @@ x-gzip=gzip および x-compress=compress と記載されています。
 <advn_outOfDate><![CDATA[
 
 どうやら、
-<a rel="help" href="https://erddap.github.io/setupDatasetsXml.html#testOutOfDate"
+<a rel="help" href="https://erddap.github.io/docs/server-admin/datasets#testoutofdate"
 ><kbd>testOutOfDate</kbd></a>属性を持つデータセットはありません。おそらく、このERDDAPにはほぼリアルタイムのデータセットが存在しないのでしょう。
 
 ]]></advn_outOfDate>
@@ -1628,7 +1628,7 @@ Sea Surface Temperature ) が含まれます。各行は、データの異なる
 <br>ERDDAP 、各データ タイプごとに列があり、各観測ごとに行がある、単一のデータベースのようなテーブルとして<i>表す</i>ことができるデータも提供できます。これには次のものが含まれます。
 <ul>
 <li>現在リレーショナル データベースに保存されている<a class="selfLink" id="databases" href="#databases" rel="bookmark">データ</a>。
-<br>ERDDAPの<a rel="help" href="https://erddap.github.io/setupDatasetsXml.html#EDDTableFromDatabase">EDDTableFromDatabase</a>データセット タイプに関する情報、特に非正規化テーブルを作成する必要性について説明している最初の 2 画面ほどの情報を読んでください。おかしいように聞こえるかもしれません。この根拠を十分に信頼して読んでください。
+<br>ERDDAPの<a rel="help" href="https://erddap.github.io/docs/server-admin/datasets#eddtablefromdatabase">EDDTableFromDatabase</a>データセット タイプに関する情報、特に非正規化テーブルを作成する必要性について説明している最初の 2 画面ほどの情報を読んでください。おかしいように聞こえるかもしれません。この根拠を十分に信頼して読んでください。
 <br>&nbsp;
 <li>すべて<i>現場</i>データです。
 <br>例:
@@ -2893,7 +2893,7 @@ ERDDAPの主な機能の 1 つは、データセットのサブセットを (デ
 <a rel="help" href="https://anaconda.org/eumetsat/ncview"><img
        src="https://coastwatch.pfeg.noaa.gov/erddap/images/external.png" alt=" (external link)"
        title="この外部ウェブサイトへのリンクは推奨を意味するものではありません。"></a> ）。
-<li><a rel="help" href="https://erddap.github.io/setupDatasetsXml.html#NCO">NCO</a> 、 .ncファイルを永続的に変更するための強力なコマンドライン ツールです。
+<li><a rel="help" href="https://erddap.github.io/docs/server-admin/datasets#netcdf-operators-nco">NCO</a> 、 .ncファイルを永続的に変更するための強力なコマンドライン ツールです。
 <li><a rel="help" href="https://www.unidata.ucar.edu/downloads/netcdf/">NetCDF -C およびNetCDF - Java <img
        src="https://coastwatch.pfeg.noaa.gov/erddap/images/external.png" alt=" (external link)"
        title="この外部ウェブサイトへのリンクは推奨を意味するものではありません。"></a> .ncファイルを読み書きするための C、C++、Fortran、またはJavaの主要なソフトウェア ライブラリ。
@@ -3254,7 +3254,7 @@ ERDDAPの Web ページをバイパスして、任意のコンピュータ プ�
   
 <h2><a class="selfLink" id="JavaPrograms" href="#JavaPrograms" rel="bookmark">Javaプログラム内でERDDAPデータ ソースとして使用する</a></h2>前述のように、 Javaプログラムは Web 上で利用可能なデータにアクセスできるため、公開されている任意のERDDAPインストールからデータにアクセスするJavaプログラムを作成できます。
 <p>または、 ERDDAP完全にオープン ソースのプログラムであるため、独自のサーバー (公開されているかどうかに関係なく) にERDDAPの独自のコピーをセットアップして、独自のデータを提供できます。Java プログラムは、そのERDDAPのコピーからデータを取得できます。
-<a rel="help" href="https://erddap.github.io/setup.html">「独自のERDDAPをセットアップする」</a>を参照してJava 。
+<a rel="help" href="https://erddap.github.io/docs/server-admin/deploy-install">「独自のERDDAPをセットアップする」</a>を参照してJava 。
   
 ]]></javaProgramsHTML>
 
@@ -3325,7 +3325,7 @@ ERDDAP の水平凡例の場合、legendTitle1 と 2 は同じ行に配置され
   
 <h2><a class="selfLink" id="login" href="#login" rel="bookmark">プライベートデータセットにアクセスするにはログインしてください。</a></h2>多くのERDDAPインストールでは認証が有効になっていないため、ユーザーがログインする方法が提供されておらず、プライベート データセットもありません。
 <p>一部のERDDAPインストールでは、認証が有効になっています。現在、 ERDDAP ERDDAP Google が管理するメール アカウント（ NOAAや多くの大学のメール アカウントを含む）による認証のみをサポートしています。ERDDAP で認証が有効になっている場合、Google が管理するメール アカウントを持つユーザーは誰でもログインできますが、アクセスできるのはERDDAP管理者が明示的にアクセスを許可したプライベート データセットのみです。ブラウザまたはスクリプトからERDDAPにログインする手順については、
-<a rel="help" href="https://erddap.github.io/AccessToPrivateDatasets.html">ERDDAPのプライベート データセットへのアクセスを</a>ご覧ください。
+<a rel="help" href="https://erddap.github.io/docs/user/AccessToPrivateDatasets">ERDDAPのプライベート データセットへのアクセスを</a>ご覧ください。
   
 ]]></loginHTML>
 <loginAttemptBlocked>エラー: {0} のログイン試行は 3 回失敗したため一時的にブロックされています。
@@ -3973,7 +3973,7 @@ ERDDAP次の両方です:
 <br>URL 内のファイル拡張子を .html から.json (または .csv、 .htmlTable 、 .jsonlCSV1 、 .xhtmlなど) に変更すると、次のようになります。
 <br><a href="&jsonQueryUrl;">&jsonQueryUrl;</a>
 <br>コンピュータ プログラムまたはJava Script スクリプトが<a rel="help" href="https://www.json.org/">、JSON &externalLinkHtml;</a>などのよりコンピュータ プログラムに適した形式で同じ情報を取得するために使用できる URL を取得します。
-<h3><a class="selfLink" id="BuildThings" href="#BuildThings" rel="bookmark">ERDDAPの上に構築する</a></h3>ERDDAPには、あなたが書いたコンピュータ プログラムやスクリプトで使用できる機能が多数あります。それらを使用して、 ERDDAPの上に他の Web アプリケーションや Web サービスを構築し、ほとんどの作業をERDDAP任せることができます。したがって、 ERDDAPが提供するデータへのより優れたインターフェイスや、データに簡単にアクセスできる Web ページのアイデアがある場合は、独自の Web アプリケーション、Web サービス、または Web ページを構築し、 ERDDAP基盤として使用することをお勧めします。システムは、 ERDのERDDAPまたは他のERDDAPインストールからデータ、グラフ、およびその他の情報を取得できます。<!-- setup always from coastwatch's erddap -->パブリックにアクセス可能、またはプライベートにアクセス可能な<a rel="help" href="https://erddap.github.io/setup.html">独自のERDDAPサーバーをセットアップします</a>。
+<h3><a class="selfLink" id="BuildThings" href="#BuildThings" rel="bookmark">ERDDAPの上に構築する</a></h3>ERDDAPには、あなたが書いたコンピュータ プログラムやスクリプトで使用できる機能が多数あります。それらを使用して、 ERDDAPの上に他の Web アプリケーションや Web サービスを構築し、ほとんどの作業をERDDAP任せることができます。したがって、 ERDDAPが提供するデータへのより優れたインターフェイスや、データに簡単にアクセスできる Web ページのアイデアがある場合は、独自の Web アプリケーション、Web サービス、または Web ページを構築し、 ERDDAP基盤として使用することをお勧めします。システムは、 ERDのERDDAPまたは他のERDDAPインストールからデータ、グラフ、およびその他の情報を取得できます。<!-- setup always from coastwatch's erddap -->パブリックにアクセス可能、またはプライベートにアクセス可能な<a rel="help" href="https://erddap.github.io/docs/server-admin/deploy-install">独自のERDDAPサーバーをセットアップします</a>。
 <h3><a class="selfLink" id="requests" href="#requests" rel="bookmark">RESTful URL リクエスト</a></h3>ERDDAPからのユーザー インターフェイス情報 (検索結果など) の要求には、Web のユニバーサル スタンダードである、
 <a href="https://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html#sec9.3">HTTP GET &externalLinkHtml;</a>
 <a rel="help" href="https://en.wikipedia.org/wiki/Uniform_Resource_Locator">&externalLinkHtml;経由で送信される URL</a> &amp;externalLinkHtml; が使用されます。これは、Web ページのフォームに入力して<kbd>Submit</kbd>をクリックしたときにブラウザーが使用するメカニズムと同じです。HTTP HTTP GET使用するには、特別に形成された URL (クエリを含む場合があります) を生成し、 HTTP GETで送信します。これらの URL を手動で作成し、ブラウザーのアドレス テキスト フィールドに入力することができます (例:
@@ -4003,7 +4003,7 @@ ERDDAP次の両方です:
 <li>.jsonlKVP - キーと値のペアを含む JSON ライン ファイル。(<a rel="help" href="https://jsonlines.org/">詳細&nbsp;情報&externalLinkHtml;</a>)
 <li>.mat - MATLAB バイナリ ファイル。(<a rel="help" href="https://www.mathworks.com/">詳細&nbsp;情報&externalLinkHtml;</a>)
 <li>.nc - フラットな表形式のNetCDF -3 バイナリ ファイル。(<a rel="help" href="https://www.unidata.ucar.edu/software/netcdf/">詳細&nbsp;情報&externalLinkHtml;</a>)
-<li>.nccsv - フラットで表のような、 NetCDFのような ASCII CSV ファイル。(<a rel="help" href="https://erddap.github.io/NCCSV.html">詳細&nbsp;情報&externalLinkHtml;</a>)
+<li>.nccsv - フラットで表のような、 NetCDFのような ASCII CSV ファイル。(<a rel="help" href="https://erddap.github.io/docs/user/nccsv-1.20">詳細&nbsp;情報&externalLinkHtml;</a>)
 <li>.tsv - タブで区切られた ASCII テキスト テーブル。(<a rel="help" href="https://jkorpela.fi/TSV.html">詳細&nbsp;情報&externalLinkHtml;</a>)
 <li>.xhtml - テーブル形式のデータを含む XHTML (XML) ファイル。(<a rel="help" href="https://www.w3schools.com/html/html_tables.asp">詳細&nbsp;情報&externalLinkHtml;</a>)
 </ul>
@@ -4610,7 +4610,7 @@ make it easier for you to get scientific data.-->
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
     title="この外部ウェブサイトへのリンクは推奨を意味するものではありません。"></a> (5 分で！) Rich Signell に感謝します。(ビデオには小さな間違いが 1 つあります。データセットを検索するときに、検索語の間に<kbd>AND</kbd>を使用しないでください。これは暗黙的です。)
 <p><a rel="help" href="&erddapUrl;/information.html"><strong>ERDDAPについて詳しくご覧ください。</strong></a>
-<p><strong>データ プロバイダー:<a rel="help" href="https://erddap.github.io/setup.html">独自のERDDAPサーバーを設定し</a>、独自のデータを提供できます。ERDDAP</strong> ERDDAP無料のオープン ソースですERDDAPのようなライセンスを使用しているため、自由に使用できます。ERDDAP の外観はカスタマイズ可能なので、 ERDDAP NOAAではなく、所属機関を反映したものになります。ERDDAP ERDDAP設定するためのわずかな労力で、多くのメリットが得られます。データを配布するための Web サービスを既にお持ちの場合は、既存のサービスまたはソース ファイルやデータベースを介してデータにアクセスするようにERDDAPを設定できます。そうすれば、人々はデータにアクセスする別の方法を持つようになり、追加のファイル形式、グラフ、マップとしてデータをダウンロードできるようになります。ERDDAP ERDDAP 、少なくとも 14 か国の 90 を超える組織でインストールされています。NOAA
+<p><strong>データ プロバイダー:<a rel="help" href="https://erddap.github.io/docs/server-admin/deploy-install">独自のERDDAPサーバーを設定し</a>、独自のデータを提供できます。ERDDAP</strong> ERDDAP無料のオープン ソースですERDDAPのようなライセンスを使用しているため、自由に使用できます。ERDDAP の外観はカスタマイズ可能なので、 ERDDAP NOAAではなく、所属機関を反映したものになります。ERDDAP ERDDAP設定するためのわずかな労力で、多くのメリットが得られます。データを配布するための Web サービスを既にお持ちの場合は、既存のサービスまたはソース ファイルやデータベースを介してデータにアクセスするようにERDDAPを設定できます。そうすれば、人々はデータにアクセスする別の方法を持つようになり、追加のファイル形式、グラフ、マップとしてデータをダウンロードできるようになります。ERDDAP ERDDAP 、少なくとも 14 か国の 90 を超える組織でインストールされています。NOAA
 <a rel="bookmark"
 href="https://www.ngdc.noaa.gov/wiki/index.php/Data_Access_Technical_Recommendations#Software_implementations">NOAAデータ アクセス手順指令<img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
@@ -4915,7 +4915,7 @@ ERDDAP ?
 Rich Signell に感謝します。(ビデオには小さな間違いが 1 つあります。データセットを検索するときに、検索語の間に<kbd>AND</kbd>使用しないでください。これは暗黙的です。)
 <br>&nbsp;
 <li><strong><a class="selfLink" id="localAndRemote" href="#localAndRemote" rel="bookmark">ERDDAP 、ローカル (サーバーのハード ドライブ上) およびリモート (Web 経由でアクセス) のデータ ソースからデータを取得できます。</a></strong>
-<br>ERDDAPがアクセスできる<a rel="help" href="https://erddap.github.io/setupDatasetsXml.html#datasetTypes">データ ソースの種類のリスト</a>を参照してください。
+<br>ERDDAPがアクセスできる<a rel="help" href="https://erddap.github.io/docs/server-admin/datasets#list-of-types-datasets">データ ソースの種類のリスト</a>を参照してください。
 <br>&nbsp;
 <li><strong><a class="selfLink" id="scientificData" href="#scientificData" rel="bookmark">ERDDAP海洋データだけでなく、さまざまな種類の科学データを提供できます。</a></strong>
 <br>ERDDAP 、
@@ -5035,7 +5035,7 @@ setup.xml の<kbd>&lt;units_standard&gt;</kbd>タグでこれを指定できま�
       title="この外部ウェブサイトへのリンクは推奨を意味するものではありません。"></a> （例えば、
 <a rel="help" href="https://cfconventions.org/Data/cf-conventions/cf-conventions-1.8/cf-conventions.html">CFメタデータ<img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
-      title="この外部ウェブサイトへのリンクは推奨を意味するものではありません。"></a>) でデータを記述します。ERDDAP ERDDAP 、管理者がデータセットとその変数にオンザフライで追加されるメタデータを記述できます (また、記述することを推奨します)。<a rel="help" href="https://erddap.github.io/setupDatasetsXml.html">管理者向けの指示</a>の<a rel="help" href="https://erddap.github.io/setupDatasetsXml.html#addAttributes">addAttributes セクション</a>を参照してください。
+      title="この外部ウェブサイトへのリンクは推奨を意味するものではありません。"></a>) でデータを記述します。ERDDAP ERDDAP 、管理者がデータセットとその変数にオンザフライで追加されるメタデータを記述できます (また、記述することを推奨します)。<a rel="help" href="https://erddap.github.io/docs/server-admin/datasets">管理者向けの指示</a>の<a rel="help" href="https://erddap.github.io/docs/server-admin/datasets#addattributes">addAttributes セクション</a>を参照してください。
 <br>&nbsp;
 <li><strong><a class="selfLink" id="images" href="#images" rel="bookmark"
  >ERDDAP 、グラフや地図を含む.pngおよび.pdf画像ファイルをリクエストできます。</a></strong>
@@ -5133,7 +5133,7 @@ RSSクライアントは、変更を探すためにRSS XML ドキュメントを
 <br>これらの機能を使用すると、 ERDDAP上に別の Web サービスを構築できます (ERDDAPにすべての作業を実行させます)。ERDDAP ERDDAP 、高レベルのデータ探索/グラフ作成サービスではありません。代わりに、 ERDDAP 、そのような Web サイトやプログラムにサービスを提供することを目的としています。したがって、 ERDDAPが提供するデータへのより優れたインターフェイスのアイデアがある場合は、独自の Web アプリケーションまたは Web サービスを構築し、 ERDDAP基盤として使用することをお勧めします。ERDDAP の<a rel="help" href="&erddapUrl;/rest.html">コンピューター プログラム向けサービスの</a>詳細についてはERDDAPこちらをご覧ください。
 <br>&nbsp;
 <li><strong><a class="selfLink" id="security" href="#security" rel="bookmark">セキュリティ</a></strong>- デフォルトでは、 ERDDAPログイン システムがなく、データ アクセスに制限のない完全なパブリック サーバーとして実行されます。ただし、 ERDDAP管理者は、 ERDDAPを構成しERDDAP 、ログインして特定のロールERDDAP割り当てられたユーザーのみが一部またはすべてのデータセットにアクセスできるように制限できます。ERDDAP には、認証 (ログイン) の方法が組み込まれています。ERDDAP インストールで認証が有効になっている場合は、各 Web ページの上部に [ログイン] リンクが表示されます。ユーザーは、パブリックに利用可能なデータセットにアクセスするためにログインする必要はありません。ログインしたユーザーは、パブリック データセットと、アクセスが許可されているプラ​​イベート データセットにアクセスできます。ユーザーは、ログインしてプライベート データセットにアクセスするには、https:
-(Secure Sockets Layer) を使用する必要があります。データセットは、グラフとマップはパブリックにアクセスできるように構成できますが、データは承認されたユーザーのみがアクセスできます。(<a rel="help" href="https://erddap.github.io/setup.html#security">詳細情報</a>)
+(Secure Sockets Layer) を使用する必要があります。データセットは、グラフとマップはパブリックにアクセスできるように構成できますが、データは承認されたユーザーのみがアクセスできます。(<a rel="help" href="https://erddap.github.io/docs/server-admin/additional-information#security">詳細情報</a>)
 <br>&nbsp;
 <li><strong><a class="selfLink" id="chunks" href="#chunks" rel="bookmark">ERDDAPデータをチャンク単位で処理します。</a></strong>
 <br>メモリを節約し（これは大きな問題です）、応答を早く開始するために、 ERDDAPデータ要求をチャンクで処理します。つまり、ソースからデータのチャンクを繰り返し取得し、それをクリーンアップします（たとえば、<a rel="help" href="https://en.wikipedia.org/wiki/Metadata">メタデータ</a>を追加します）。
@@ -5150,11 +5150,11 @@ PushとPull技術</a></strong>
 <a rel="help" href="https://en.wikipedia.org/wiki/Pull_technology">Pullテクノロジー<img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
       title="この外部ウェブサイトへのリンクは推奨を意味するものではありません。"></a> :
-しかし、 ERDDAPは、リモート データ ソースから利用可能なすべてのデータをアクティブに取得し、<a rel="help" href="https://erddap.github.io/setupDatasetsXml.html#EDDGridCopy">そのデータのローカル コピーを保存する</a>機能もあります。
+しかし、 ERDDAPは、リモート データ ソースから利用可能なすべてのデータをアクティブに取得し、<a rel="help" href="https://erddap.github.io/docs/server-admin/datasets#eddgridcopy">そのデータのローカル コピーを保存する</a>機能もあります。
 <a rel="help" href="https://en.wikipedia.org/wiki/Push_technology">Pushテクノロジー<img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
       title="この外部ウェブサイトへのリンクは推奨を意味するものではありません。"></a> :
-ERDDAPの<a href="#subscriptions">サブスクリプション サービス</a>を使用すると、新しいデータが利用可能になるとすぐに他のデータ サーバーに通知され、データを要求できます (データをプルすることによって)。ERDDAP の<a rel="help"  href="https://erddap.github.io/setupDatasetsXml.html#EDDGridFromErddap">EDDGrid FromErddap</a>と<a rel="help"  href="https://erddap.github.io/setupDatasetsXml.html#EDDTableFromErddap">EDDTableFromErddap</a>は、 ERDDAPのサブスクリプション サービスと<a rel="help" href="https://erddap.github.io/setup.html#flag">フラグ システム</a>を使用して、新しいデータが利用可能にERDDAPとすぐに通知されるようにします。これらを組み合わせると、大きな効果が得られます。EDDGrid Copy をEDDGrid FromErddap データセットにラップすると (または EDDTableCopy をEDDGridデータセットにラップすると)、 ERDDAP別のERDDAPのデータセットのローカル コピーを自動的に作成して維持します。サブスクリプション サービスは新しいデータが利用可能になるとすぐに機能するため、プッシュ テクノロジーはデータを非常に速く (数秒以内に) 配信します。
+ERDDAPの<a href="#subscriptions">サブスクリプション サービス</a>を使用すると、新しいデータが利用可能になるとすぐに他のデータ サーバーに通知され、データを要求できます (データをプルすることによって)。ERDDAP の<a rel="help"  href="https://erddap.github.io/docs/server-admin/datasets#eddfromerddap">EDDGrid FromErddap</a>と<a rel="help"  href="https://erddap.github.io/docs/server-admin/datasets#eddfromerddap">EDDTableFromErddap</a>は、 ERDDAPのサブスクリプション サービスと<a rel="help" href="https://erddap.github.io/docs/server-admin/additional-information#flag">フラグ システム</a>を使用して、新しいデータが利用可能にERDDAPとすぐに通知されるようにします。これらを組み合わせると、大きな効果が得られます。EDDGrid Copy をEDDGrid FromErddap データセットにラップすると (または EDDTableCopy をEDDGridデータセットにラップすると)、 ERDDAP別のERDDAPのデータセットのローカル コピーを自動的に作成して維持します。サブスクリプション サービスは新しいデータが利用可能になるとすぐに機能するため、プッシュ テクノロジーはデータを非常に速く (数秒以内に) 配信します。
 <p>このアーキテクチャでは、各ERDDAP管理者が自分のERDDAPのデータがどこから来るのかを決定する責任を負います。他のERDDAP管理者も同様に行うことができます。管理者間の調整は必要ありません。多くのERDDAP管理者が互いのERDDAPにリンクすると、データ配布ネットワークが形成されます。データは、データ ソース (ERDDAPおよび他のサーバー) からネットワーク内の任意の場所にあるデータ再配布サイト (ERDDAP ) に、迅速かつ効率的に自動的に配布されます。特定のERDDAP 、一部のデータセットのデータ ソースであると同時に、他のデータセットの再配布サイトにもなります。結果として得られるネットワークは<a rel="bookmark" href="https://www.unidata.ucar.edu/software/idd/">、 Unidataの IDD/IDM</a>などのプログラムで設定されるデータ配布ネットワークとほぼ同じです。
 <a rel="bookmark" href="https://www.unidata.ucar.edu/software/idd/"><img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
@@ -5200,9 +5200,9 @@ ERDDAP ?
 
 <p>はい、私はERDDAPのメイン開発者です。私は完全に資金提供を受けている連邦政府職員です。私の資金は「ソフト」マネーではないので、助成金を受け取ったり、それに頼ったりすることはありません。私は時間の半分以上をERDDAP開発に費やしています。残りの時間はデータセットの管理に費やしています。その作業はERDDAPに役立ちます。なぜなら、 ERDDAPで何をする必要があるかを詳細に知るには、実際のデータセットを扱う必要があるからです。私の上司は、私が雇われた目的である、水産科学者 (主に、しかし実際にはすべての人) がさまざまなソースから科学的データを簡単に取得できるようにすることをERDDAPでの作業を全面的にサポートしています。
 <p><a class="selfLink" id="miraculous" href="#miraculous" rel="bookmark">ソフトウェアの素晴らしいところは、複製にコストがかからないことです。</a>そこで、私は自分の仕事をするために、 ERDで使用するためにERDDAPを書きました。これが私にとって最善の方法だと思っています。その理由だけでも、 ERDDAPの開発費用は正当化されます。(ERDDAPによってNOAA科学者の時間が節約された時間は、私がERDDAP開発に費やした時間よりも長いと証明できると思います。時間 = お金です。) しかし、副次的な利点として、他の組織が ERDDAP を<strong>無料で</strong><a rel="bookmark" 
-href="https://erddap.github.io/setup.html">ERDDAP 、インストール、使用して、</a>科学データを配布できます。
+href="https://erddap.github.io/docs/server-admin/deploy-install">ERDDAP 、インストール、使用して、</a>科学データを配布できます。
 <p><a rel="bookmark" 
-href="https://erddap.github.io/setup.html#organizations"
+href="https://erddap.github.io/#who-uses-erddap"
 >少なくとも 14 か国の 90 を超える組織がERDDAPを使用しています</a>。無料のランチというものがあるのか​​もしれません。
 <p>ERDDAPはJavaプログラムです。すべてのバージョンのソースコードは<a rel="bookmark" href="https://github.com/ERDDAP">GitHub</a>にあります。
 <a rel="bookmark" href="https://github.com/ERDDAP"><img 
@@ -5269,12 +5269,12 @@ I am sure we can work something out.&lt;/sarc&gt;) -->
 <p><strong><a class="selfLink" id="dataDistributionSystems" href="#dataDistributionSystems" rel="bookmark">データ配信システムのガイドライン</a></strong>
 <br>データ配信システムの設計と評価に関する Bob の意見は、<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/images/erddapTalk/erdData.html">こちらで</a>ご覧いただけます。
 <br>&nbsp;
-<p><a rel="help" href="https://erddap.github.io/setup.html"><strong>独自のERDDAPサーバーをセットアップして</strong></a><strong><a class="selfLink" id="setup" href="#setup" rel="bookmark">、</a></strong>独自のデータを提供できます。
+<p><a rel="help" href="https://erddap.github.io/docs/server-admin/deploy-install"><strong>独自のERDDAPサーバーをセットアップして</strong></a><strong><a class="selfLink" id="setup" href="#setup" rel="bookmark">、</a></strong>独自のデータを提供できます。
 <ul>
 <li>ERDDAPを設定するための小さな労力は、多くの利点をもたらします。
 <li>データを配布するための Web サービスがすでにある場合は、既存のサービスまたはソース ファイルやデータベース経由でデータにアクセスするようにERDDAPを設定できます。これにより、ユーザーはデータにアクセスする別の方法を持つようになり、追加のファイル形式、グラフ、マップとしてデータをダウンロードできるようになります。
 <li>需要の高いデータセットがある場合は、<a rel="help" 
-  href="https://erddap.github.io/grids.html"
+  href="https://erddap.github.io/docs/server-admin/scaling"
   >複数のERDDAPをインストールして連携させ</a>、スケールアップして大規模なデータ配布センターのニーズを満たすことができます。
 </ul>
 <h2><a class="selfLink" id="contact" href="#contact" rel="bookmark">お問い合わせ</a></h2>ERDDAP全般 (この特定のERDDAPインストールではなく) に関する質問、提案、またはコメントがある場合は、 <kbd>erd dot data at noaa dot gov</kbd>に電子メールを送信し、質問またはコメントに直接関連するERDDAP URL を含めてください。
@@ -6821,7 +6821,7 @@ crs=<i>名前空間:識別子</i></td>
 <li>データ変数はグリッド変数である必要があります。
 <li>データ変数には、経度と緯度の軸変数が必要です。(他の軸変数はオプションです。)
 <li>-180 から 180 までの間に経度の値がいくつかある必要があります。
-<li><a rel="help" href="https://erddap.github.io/setupDatasetsXml.html#colorBar">colorBarMinimumとcolorBarMaximum属性</a>を指定する必要があります。(その他のカラーバー属性はオプションです。)
+<li><a rel="help" href="https://erddap.github.io/docs/server-admin/datasets#color-bar-attributes">colorBarMinimumとcolorBarMaximum属性</a>を指定する必要があります。(その他のカラーバー属性はオプションです。)
 </ul>
 <li><strong>グリッド データ レイヤー:</strong> ERDDAPのWMSでは、経度と緯度のディメンションを使用するグリッド データセット内のすべてのデータ変数がWMSを介して利用できます。このような各変数は、 <i>datasetID</i> &WMSSEPARATOR; <i>variableName</i>という名前のWMSレイヤーとして利用できます。このような各レイヤーは透明です (つまり、データ値は色の範囲として表され、欠損値は透明なピクセルで表されます)。
 <li><strong>テーブル データ レイヤー:</strong>現在、 ERDDAPのWMSでは、テーブル データセット内のデータ変数はWMS経由では利用できません。

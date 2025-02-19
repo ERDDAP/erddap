@@ -11480,8 +11480,8 @@ public abstract class EDD {
 
              DIRECTIONS:
              * Read about this type of dataset in
-               https://erddap.github.io/setupDatasetsXml.html .
-             * Read https://erddap.github.io/setupDatasetsXml.html#addAttributes
+               https://erddap.github.io/docs/server-admin/datasets .
+             * Read https://erddap.github.io/docs/server-admin/datasets#global-attributes
                so that you understand about sourceAttributes and addAttributes.
              * Note: Global sourceAttributes and variable sourceAttributes are listed
                below as comments, for informational purposes only.

@@ -180,7 +180,7 @@ public class ArchiveADataset {
               + "\n"
               + "Press ^D or ^C to exit this program at any time.\n"
               + "For detailed information, see\n"
-              + "https://erddap.github.io/setup.html#ArchiveADataset");
+              + "https://erddap.github.io/docs/server-admin/additional-information#archiveadataset");
 
       // get bagitMode
       int whichArg = 0;

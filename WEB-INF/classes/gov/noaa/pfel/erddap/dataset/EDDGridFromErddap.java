@@ -1081,7 +1081,7 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
     "   send an email to the admin asking that s/he add onChange tags to the datasets.\n" +
     "   See the EDDGridFromErddap documentation.\n" +
     " * The XML needed for EDDGridFromErddap in datasets.xml has few options.  See\n" +
-    "   https://erddap.github.io/setupDatasetsXml.html#EDDGridFromErddap .\n" +
+    "   https://erddap.github.io/docs/server-admin/datasets#eddfromerddap .\n" +
     "   If you want to alter a dataset's metadata or make other changes to a dataset,\n" +
     "   use EDDGridFromDap to access the dataset instead of EDDGridFromErddap.\n" +
     "-->\n");

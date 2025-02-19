@@ -238,6 +238,7 @@ public class EDConfig {
   @FeatureFlag public final boolean useEddReflection;
   @FeatureFlag public boolean enableCors;
   @FeatureFlag public boolean useSharedWatchService = true;
+  @FeatureFlag public boolean redirectDocumentationToGitHubIo = true;
 
   public EDConfig(String webInfParentDirectory) throws Exception {
     fullPaletteDirectory = webInfParentDirectory + "WEB-INF/cptfiles/";
@@ -614,6 +615,8 @@ public class EDConfig {
         getSetupEVBoolean(setup, ev, "variablesMustHaveIoosCategory", true);
     warName = getSetupEVString(setup, ev, "warName", "erddap");
     useSharedWatchService = getSetupEVBoolean(setup, ev, "useSharedWatchService", true);
+    redirectDocumentationToGitHubIo =
+        getSetupEVBoolean(setup, ev, "redirectDocumentationToGitHubIo", true);
     deploymentInfo = getSetupEVString(setup, ev, "deploymentInfo", "");
 
     // ensure images exist and get their sizes
