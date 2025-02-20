@@ -171,6 +171,7 @@ class EDDTableFromNcCFFilesTests {
             + "        <att name=\"keywords\">1984-2004, altitude, animals, animals/vertebrates, aquatic, atmosphere, biological, biology, biosphere, calcofi, california, classification, coastal, code, common, cooperative, count, cruise, data, earth, Earth Science &gt; Atmosphere &gt; Altitude &gt; Station Height, Earth Science &gt; Biological Classification &gt; Animals/Vertebrates &gt; Fish, Earth Science &gt; Biosphere &gt; Aquatic Ecosystems &gt; Coastal Habitat, Earth Science &gt; Biosphere &gt; Aquatic Ecosystems &gt; Marine Habitat, Earth Science &gt; Oceans &gt; Aquatic Sciences &gt; Fisheries, ecosystems, fish, fisheries, habitat, height, identifier, investigations, larvae, latitude, line, line_station, longitude, marine, name, number, observed, obsScientific, obsUnits, obsValue, occupancy, ocean, oceanic, oceans, order, science, sciences, scientific, ship, start, station, time, tow, units, value, vertebrates</att>\n"
             + "        <att name=\"Metadata_Conventions\">null</att>\n"
             + "        <att name=\"standard_name_vocabulary\">CF Standard Name Table v70</att>\n"
+            + "        <att name=\"subsetVariables\">line_station</att>\n"
             + "    </addAttributes>\n"
             + "    <dataVariable>\n"
             + "        <sourceName>line_station</sourceName>\n"
@@ -1316,7 +1317,8 @@ class EDDTableFromNcCFFilesTests {
         0, // standardizeWhat
         null,
         null,
-        null);
+        null,
+        false);
     results = table.dataToString();
     expected = // depth/time are unexpected order because of .ncCF file read then flatten
         "array,station,wmo_platform_code,longitude,latitude,depth,time,LON_502,QX_5502,LAT_500,QY_5500\n"
@@ -1376,7 +1378,8 @@ class EDDTableFromNcCFFilesTests {
         0, // standardizeWhat
         null,
         null,
-        null);
+        null,
+        false);
     results = table.dataToString();
     expected = // depth/time are unexpected order because of .ncCF file read then flatten
         "array,station,wmo_platform_code,longitude,latitude,depth,time,LON_502,QX_5502,LAT_500,QY_5500\n"
@@ -1451,7 +1454,8 @@ class EDDTableFromNcCFFilesTests {
         0, // standardizeWhat
         null,
         null,
-        null);
+        null,
+        false);
     Test.ensureSomethingUnicode(table.globalAttributes(), "historical global attributes");
 
     table = new Table();
@@ -1461,7 +1465,8 @@ class EDDTableFromNcCFFilesTests {
         0, // standardizeWhat
         null,
         null,
-        null);
+        null,
+        false);
     Test.ensureSomethingUnicode(table.globalAttributes(), "realtime global attributes");
 
     String id = "UMaineAccB01";
@@ -2450,7 +2455,8 @@ class EDDTableFromNcCFFilesTests {
         0, // standardizeWhat
         null,
         null,
-        null);
+        null,
+        false);
     results = table.toString(5);
     results = String2.replaceAll(results, '\t', ' ');
     expected =
@@ -2556,7 +2562,8 @@ class EDDTableFromNcCFFilesTests {
         0, // standardizeWhat
         null,
         null,
-        null);
+        null,
+        false);
     results = table.dataToString();
     results = String2.replaceAll(results, '\t', ' ');
     expected =
@@ -2816,7 +2823,8 @@ class EDDTableFromNcCFFilesTests {
         0, // standardizeWhat
         null,
         null,
-        null);
+        null,
+        false);
 
     results = table.dataToString(5);
     expected = "zztop\n";

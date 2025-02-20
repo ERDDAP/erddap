@@ -237,6 +237,7 @@ public class EDConfig {
   @FeatureFlag public boolean updateSubsRssOnFileChanges;
   @FeatureFlag public final boolean useEddReflection;
   @FeatureFlag public boolean enableCors;
+  @FeatureFlag public boolean includeNcCFSubsetVariables;
   @FeatureFlag public boolean useSharedWatchService = true;
   @FeatureFlag public boolean redirectDocumentationToGitHubIo = true;
 
@@ -614,6 +615,7 @@ public class EDConfig {
     variablesMustHaveIoosCategory =
         getSetupEVBoolean(setup, ev, "variablesMustHaveIoosCategory", true);
     warName = getSetupEVString(setup, ev, "warName", "erddap");
+    includeNcCFSubsetVariables = getSetupEVBoolean(setup, ev, "includeNcCFSubsetVariables", false);
     useSharedWatchService = getSetupEVBoolean(setup, ev, "useSharedWatchService", true);
     redirectDocumentationToGitHubIo =
         getSetupEVBoolean(setup, ev, "redirectDocumentationToGitHubIo", true);

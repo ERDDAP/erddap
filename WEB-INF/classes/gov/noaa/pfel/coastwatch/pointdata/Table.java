@@ -6776,6 +6776,7 @@ public class Table {
    * @param conOps The corresponding operators. Remember that regex constraints will be tested on
    *     the source values!
    * @param conValues The corresponding values.
+   * @param includeSubsetVariables whether or not to add subset variables to the attributes.
    * @throws Exception if trouble. No matching data is not an error and returns an empty table (0
    *     rows and 0 columns).
    */
@@ -6785,7 +6786,8 @@ public class Table {
       int standardizeWhat,
       StringArray conNames,
       StringArray conOps,
-      StringArray conValues)
+      StringArray conValues,
+      boolean includeSubsetVariables)
       throws Exception {
     // FUTURE optimization: instead of reading all of 1D obs variables,
     // find first and last set bit in obsKeep, just read a range of values,
@@ -7535,8 +7537,11 @@ public class Table {
       globalAttributes.set(cdmOuterName, subsetVars.toString()); // may be "", that's okay
       if (cdmInnerName != null)
         globalAttributes.set(cdmInnerName, ""); // nLevel=2 will set it properly below
-      globalAttributes.set(
-          "subsetVariables", subsetVars.toString()); // nLevel=2 will set it properly below
+
+      if (includeSubsetVariables) {
+        globalAttributes.set(
+            "subsetVariables", subsetVars.toString()); // nLevel=2 will set it properly below
+      }
 
       // apply constraints  (if there is data)
       BitSet outerKeep = null; // implies outerTable.nColumns = 0, so assume all are good
@@ -8261,7 +8266,9 @@ public class Table {
         innerTableNRows = innerTable.nRows();
         globalAttributes.set(cdmInnerName, cdmInnerVars.toString()); // may be "", that's okay
         subsetVars.append(cdmInnerVars);
-        globalAttributes.set("subsetVariables", subsetVars.toString()); // may be "", that's okay
+        if (includeSubsetVariables) {
+          globalAttributes.set("subsetVariables", subsetVars.toString()); // may be "", that's okay
+        }
 
         // read the outerIndexPA from vars[indexVar] and ensure valid
         // next 3 lines: as if no indexVar (outerDim == scalarDim)
