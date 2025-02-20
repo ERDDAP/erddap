@@ -5167,6 +5167,7 @@ public abstract class EDDTable extends EDD {
       double xMin = Double.NaN, xMax = Double.NaN, yMin = Double.NaN, yMax = Double.NaN;
       boolean xAscending = true, yAscending = true; // this is what controls flipping of the axes
       String xScale = "", yScale = ""; // (default) or Linear or Log
+      double aspect = Double.NaN;
       double fontScale = 1, vectorStandard = Double.NaN;
       String currentDrawLandMask = null; // not yet set
       StringBuilder title2 = new StringBuilder();
@@ -5348,6 +5349,12 @@ public abstract class EDDTable extends EDD {
             if (!yScale.equals("Log") && !yScale.equals("Linear"))
               yScale = ""; // "" -> (the default)
           }
+          if(pParts.length > 4){
+            aspect = String2.parseDouble(pParts[4]);
+            if(aspect < 0.01 || aspect > 100){
+                aspect = Double.NaN;
+            }
+          }
           if (reallyVerbose)
             String2.log(
                 ".yRange min="
@@ -5357,7 +5364,9 @@ public abstract class EDDTable extends EDD {
                     + " ascending="
                     + yAscending
                     + " scale="
-                    + yScale);
+                    + yScale
+                    + " aspect="
+                    + aspect);
 
           // ignore any unrecognized .something
         } else if (ampPart.startsWith(".")) {
