@@ -900,7 +900,7 @@ class ArchiveADatasetTests {
     // extract tar from .gzip
     String cmd = SSR.windows7Zip + " -y e " + sourceFullName + " -o" + sourceDir + " -r";
     long cmdTime = System.currentTimeMillis();
-    TestSSR.dosShell(cmd, timeOutMinutes * 60);
+    TestSSR.dosOrCShell(cmd, timeOutMinutes * 60);
     String2.log("  cmd time=" + Calendar2.elapsedTimeString(System.currentTimeMillis() - cmdTime));
 
     // extract from the .tar file   //gtspp4_at199001.tar
@@ -917,7 +917,7 @@ class ArchiveADatasetTests {
             + (makeBaseDir ? sourceJustName + "/" : "")
             + " -r";
     cmdTime = System.currentTimeMillis();
-    TestSSR.dosShell(cmd, timeOutMinutes * 60);
+    TestSSR.dosOrCShell(cmd, timeOutMinutes * 60);
     String2.log("  cmd time=" + Calendar2.elapsedTimeString(System.currentTimeMillis() - cmdTime));
 
     // delete the .tar file

@@ -17806,7 +17806,7 @@ class EDDTableFromNcFilesTests {
       for (int attempt = 0; attempt < nAttempts; attempt++) {
         if (attempt % 8 == 0) {
           String2.log(cmd);
-          TestSSR.dosShell(cmd, 30 * 60); // 10 minutes*60 seconds
+          TestSSR.dosOrCShell(cmd, 30 * 60); // 10 minutes*60 seconds
           // File2.deleteAllFiles(tempDir); //previous method
         }
         Math2.gc("bobConsolidateGtsppTgz (between attempts)", waitSeconds * 1000L); // gtspp:
@@ -17974,7 +17974,7 @@ class EDDTableFromNcFilesTests {
              */
           }
 
-          TestSSR.dosShell(cmd, 30 * 60); // 10 minutes*60 seconds
+          TestSSR.dosOrCShell(cmd, 30 * 60); // 10 minutes*60 seconds
           String2.log(
               "  cmd time=" + Calendar2.elapsedTimeString(System.currentTimeMillis() - cmdTime));
 

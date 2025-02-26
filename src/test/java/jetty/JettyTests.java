@@ -13853,7 +13853,7 @@ class JettyTests {
     // response
 
     // * request no byte range
-    al = TestSSR.dosShell(req, timeOutSeconds);
+    al = TestSSR.dosOrCShell(req, timeOutSeconds);
     list = al.subList(0, 8);
     results = String2.annotatedString(String2.toNewlineString(list.toArray()));
     Test.ensureTrue(results.contains("HTTP/1.1 200 OK"), results);
@@ -13862,7 +13862,7 @@ class JettyTests {
     Test.ensureTrue(results.contains("Content-Length: 57600044"), results);
 
     // * request short byte range
-    al = TestSSR.dosShell(req + "-H \"Range: bytes=0-30\"", timeOutSeconds);
+    al = TestSSR.dosOrCShell(req + "-H \"Range: bytes=0-30\"", timeOutSeconds);
     list = al.subList(0, 8);
     results = String2.annotatedString(String2.toNewlineString(list.toArray()));
     Test.ensureTrue(
@@ -13873,7 +13873,7 @@ class JettyTests {
     Test.ensureTrue(results.contains("Content-Range: bytes 0-30/57600044"), results);
 
     // * request bytes=0- which is what <audio> seems to do
-    al = TestSSR.dosShell(req + "-H \"Range: bytes=0-\"", timeOutSeconds);
+    al = TestSSR.dosOrCShell(req + "-H \"Range: bytes=0-\"", timeOutSeconds);
     list = al.subList(0, 8);
     results = String2.annotatedString(String2.toNewlineString(list.toArray()));
     Test.ensureTrue(
@@ -13884,7 +13884,7 @@ class JettyTests {
     Test.ensureTrue(results.contains("Content-Range: bytes 0-57600043/57600044"), results);
 
     // * request bytes=[start]- which is what <audio> seems to do
-    al = TestSSR.dosShell(req + "-H \"Range: bytes=50000000-\"", timeOutSeconds);
+    al = TestSSR.dosOrCShell(req + "-H \"Range: bytes=50000000-\"", timeOutSeconds);
     list = al.subList(0, 8);
     results = String2.annotatedString(String2.toNewlineString(list.toArray()));
     Test.ensureTrue(
@@ -13895,7 +13895,7 @@ class JettyTests {
     Test.ensureTrue(results.contains("Content-Range: bytes 50000000-57600043/57600044"), results);
 
     // * request images/wz_tooltip.js
-    al = TestSSR.dosShell(reqBase + "images/wz_tooltip.js -i", timeOutSeconds);
+    al = TestSSR.dosOrCShell(reqBase + "images/wz_tooltip.js -i", timeOutSeconds);
     list = al.subList(0, 5);
     results = String2.annotatedString(String2.toNewlineString(list.toArray()));
     Test.ensureTrue(results.contains("HTTP/1.1 200 OK"), results);
@@ -16185,7 +16185,7 @@ class JettyTests {
     outName = baseOut + "Warmup.csvp.csv";
     SSR.downloadFile(
         baseRequest + ".csvp" + userDapQuery + Math2.random(1000), outName, tryToCompress);
-    // was al = SSR.dosShell(baseRequest + ".csvp" + userDapQuery +
+    // was al = SSR.dosOrCShell(baseRequest + ".csvp" + userDapQuery +
     // Math2.random(1000) +
     // " -o " + outName, timeOutSeconds);
     // String2.log(String2.toNewlineString(al.toArray()));
@@ -16193,13 +16193,13 @@ class JettyTests {
     outName = baseOut + "Warmup.png.png";
     SSR.downloadFile(
         baseRequest + ".png" + userDapQuery + Math2.random(1000), outName, tryToCompress);
-    // al = SSR.dosShell(baseRequest + ".png" + userDapQuery + Math2.random(1000) +
+    // al = SSR.dosOrCShell(baseRequest + ".png" + userDapQuery + Math2.random(1000) +
     // " -o " + outName, timeOutSeconds);
 
     outName = baseOut + "Warmup.pdf.pdf";
     SSR.downloadFile(
         baseRequest + ".pdf" + userDapQuery + Math2.random(1000), outName, tryToCompress);
-    // al = SSR.dosShell(baseRequest + ".pdf" + userDapQuery + Math2.random(1000) +
+    // al = SSR.dosOrCShell(baseRequest + ".pdf" + userDapQuery + Math2.random(1000) +
     // " -o " + outName, timeOutSeconds);
 
     lastTest = Math.min(lastTest, extensions.length - 1);
@@ -16217,7 +16217,7 @@ class JettyTests {
       outName = baseOut + chance + dotExt;
       SSR.downloadFile(
           baseRequest + dotExt + userDapQuery + Math2.random(1000), outName, tryToCompress);
-      // al = SSR.dosShell(baseRequest + dotExt + userDapQuery + Math2.random(1000) +
+      // al = SSR.dosOrCShell(baseRequest + dotExt + userDapQuery + Math2.random(1000) +
       // " -o " + outName, timeOutSeconds);
 
       time = System.currentTimeMillis() - time;
