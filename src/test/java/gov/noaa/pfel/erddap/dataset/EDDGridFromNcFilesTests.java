@@ -14073,10 +14073,13 @@ class EDDGridFromNcFilesTests {
             + "\n"; // dimensionsCSV,
     // reloadMinutes,
     // cacheFromUrl
+    String tDatasetID = EDDGridFromNcFiles.suggestDatasetID("Geolocation_Fields/" + dir + regex);
     String expected =
         "<!-- NOTE! The source for this dataset has nGridVariables=38,\n"
             + "  but this dataset will only serve 37 because the others use different dimensions. -->\n"
-            + "<dataset type=\"EDDGridFromNcFiles\" datasetID=\"rtech_ffdb_6544_1c68\" active=\"true\">\n"
+            + "<dataset type=\"EDDGridFromNcFiles\" datasetID=\""
+            + tDatasetID
+            + "\" active=\"true\">\n"
             + "    <reloadEveryNMinutes>10080</reloadEveryNMinutes>\n"
             + "    <updateEveryNMillis>10000</updateEveryNMillis>\n"
             + "    <fileDir>"
@@ -15044,7 +15047,6 @@ class EDDGridFromNcFilesTests {
             + "\nresults=\n"
             + results);
     // ensure it is ready-to-use by making a dataset from it
-    String tDatasetID = EDDGridFromNcFiles.suggestDatasetID("Geolocation_Fields/" + dir + regex);
     EDD.deleteCachedDatasetInfo(tDatasetID);
     EDD edd = EDDGridFromNcFiles.oneFromXmlFragment(null, results);
     Test.ensureEqual(edd.datasetID(), tDatasetID, "");
