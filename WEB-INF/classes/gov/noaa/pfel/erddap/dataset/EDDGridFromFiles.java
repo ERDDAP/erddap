@@ -546,7 +546,7 @@ public abstract class EDDGridFromFiles extends EDDGrid implements WatchUpdateHan
     setReloadEveryNMinutes(tReloadEveryNMinutes);
     setUpdateEveryNMillis(tUpdateEveryNMillis);
     fileTableInMemory = tFileTableInMemory;
-    fileDir = File2.addSlash(tFileDir);
+    fileDir = File2.forwardSlashDir(tFileDir);
     fileNameRegex = tFileNameRegex;
     recursive = tRecursive;
     pathRegex = tPathRegex == null || tPathRegex.length() == 0 ? ".*" : tPathRegex;
@@ -573,7 +573,7 @@ public abstract class EDDGridFromFiles extends EDDGrid implements WatchUpdateHan
     if (!String2.isSomething(fileDir))
       throw new IllegalArgumentException(errorInMethod + "fileDir wasn't specified.");
     filesAreLocal = !String2.isTrulyRemote(fileDir);
-    if (filesAreLocal) fileDir = File2.addSlash(fileDir);
+    if (filesAreLocal) fileDir = File2.forwardSlashDir(fileDir);
     if (fileNameRegex == null || fileNameRegex.length() == 0) fileNameRegex = ".*";
     if (metadataFrom == null) metadataFrom = "";
     if (metadataFrom.length() == 0) metadataFrom = MF_LAST;
@@ -815,7 +815,7 @@ public abstract class EDDGridFromFiles extends EDDGrid implements WatchUpdateHan
     // get sourceAxisValues and sourceAxisAttributes from an existing file (if any)
     // Last one should succeed and usually has newest (most?) data variables.
     for (int i = ftFileList.size() - 1; i >= 0; i--) {
-      String tDir = dirList.get(ftDirIndex.get(i));
+      String tDir = File2.forwardSlashDir(dirList.get(ftDirIndex.get(i)));
       String tName = ftFileList.get(i);
 
       // ensure file size and lastMod are unchanged (i.e., file is unchanged)

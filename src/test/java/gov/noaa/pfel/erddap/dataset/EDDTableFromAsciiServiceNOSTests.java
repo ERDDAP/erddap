@@ -56,6 +56,9 @@ class EDDTableFromAsciiServiceNOSTests {
         "nosCoopsCA"
       })
   @TagIncompleteTest // "this.stationTable" is null
+  // EDDTableFromAsciiServiceNOS requires loading the stationTable from a file
+  // if there is no file, it attempts to make a request of the dataset (during
+  // the constructor), which fails because the stationTable is null.
   void testNosCoops(String idRegex) throws Throwable {
     // String2.log("\n******************
     // EDDTableFromAsciiServiceNOS.testNosCoopsWL\n");

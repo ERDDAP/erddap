@@ -30,7 +30,7 @@ public class EDDTableFromAsciiServiceHandler extends BaseTableHandler {
   private EDD getDataset(Object[][] ttDataVariables) throws Throwable {
     EDD dataset;
 
-    if (datasetType.equals("\"EDDTableFromAsciiServiceNOS\"")) {
+    if (datasetType.equals("EDDTableFromAsciiServiceNOS")) {
       dataset =
           new EDDTableFromAsciiServiceNOS(
               datasetID,
@@ -76,8 +76,7 @@ public class EDDTableFromAsciiServiceHandler extends BaseTableHandler {
               "beforeData8",
               "beforeData9",
               "beforeData10" ->
-          tBeforeData[String2.parseInt(localName.substring(10, localName.length() - 1))] =
-              contentStr;
+          tBeforeData[String2.parseInt(localName.substring(10, localName.length()))] = contentStr;
       case "afterData" -> tAfterData = contentStr;
       case "noData" -> tNoData = contentStr;
       default -> {

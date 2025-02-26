@@ -8,7 +8,7 @@ import com.cohort.util.Test;
 import gov.noaa.pfel.erddap.GenerateDatasetsXml;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import org.junit.jupiter.api.BeforeAll;
-import tags.TagIncompleteTest;
+import tags.TagMissingDataset;
 import testDataset.Initialization;
 
 class EDDTableFromOBISTests {
@@ -123,7 +123,7 @@ class EDDTableFromOBISTests {
 
   /** rutgers obis, failing since 2011-01 */
   @org.junit.jupiter.api.Test
-  @TagIncompleteTest
+  @TagMissingDataset
   void testRutgers() throws Throwable {
     // testVerboseOn();
     int language = 0;
@@ -564,7 +564,7 @@ class EDDTableFromOBISTests {
 
   /** fishbase stopped working in 2009-01 */
   @org.junit.jupiter.api.Test
-  @TagIncompleteTest
+  @TagMissingDataset
   void testFishbase() throws Throwable {
     // testVerboseOn();
     int language = 0;
@@ -638,18 +638,16 @@ class EDDTableFromOBISTests {
       Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
       // expected error didn't occur!
-      String2.pressEnterToContinue(
-          "\n" + MustBe.getStackTrace() + "An expected error didn't occur at the above location.");
-
+      Test.error(MustBe.getStackTrace() + "An expected error didn't occur at the above location.");
     } catch (Throwable t) {
-      String2.pressEnterToContinue(
+      String2.log(
           MustBe.throwableToString(t) + "\nExpected obis fishbase error (since ~2009-01-20).");
     }
   }
 
   /** This works but not useful. seamap is split into ~150 chunks. */
   @org.junit.jupiter.api.Test
-  @TagIncompleteTest
+  @TagMissingDataset
   void testSeamap() throws Throwable {
     // testVerboseOn();
     int language = 0;
@@ -768,7 +766,7 @@ class EDDTableFromOBISTests {
 
   /** I have never gotten argos or other aadc datasets to work. */
   @org.junit.jupiter.api.Test
-  @TagIncompleteTest
+  @TagMissingDataset
   void testArgos() throws Throwable {
 
     // testVerboseOn();

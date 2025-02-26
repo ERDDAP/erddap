@@ -3,10 +3,7 @@ package gov.noaa.pfel.erddap;
 import com.cohort.util.String2;
 import com.cohort.util.Test;
 import gov.noaa.pfel.coastwatch.pointdata.Table;
-import gov.noaa.pfel.coastwatch.util.SSR;
-import gov.noaa.pfel.erddap.dataset.EDD;
 import gov.noaa.pfel.erddap.dataset.EDDGrid;
-import gov.noaa.pfel.erddap.util.EDStatic;
 import java.util.concurrent.ConcurrentHashMap;
 import org.junit.jupiter.api.BeforeAll;
 import tags.TagIncompleteTest;
@@ -389,46 +386,6 @@ class ErddapTests {
 
     // debugMode = oDebugMode;
 
-  }
-
-  /**
-   * This repeatedly gets the info/index.html web page and ensures it is without error. It is best
-   * to run this when many datasets are loaded. For a harder test: run this in 4 threads
-   * simultaneously.
-   */
-  @org.junit.jupiter.api.Test
-  @TagIncompleteTest // wasn't run as a test, this is for load testing
-  void testHammerGetDatasets() throws Throwable {
-    Erddap.verbose = true;
-    Erddap.reallyVerbose = true;
-    EDD.testVerboseOn();
-    String results, expected;
-    String2.log("\n*** Erddap.testHammerGetDatasets");
-    int count = -5; // let it warm up
-    long sumTime = 0;
-
-    while (true) {
-      if (count == 0) sumTime = 0;
-      sumTime -= System.currentTimeMillis();
-      // if uncompressed, it is 1Thread=280 4Threads=900ms
-      results =
-          SSR.getUrlResponseStringUnchanged(
-              EDStatic.erddapUrl + "/info/index.html?" + EDStatic.defaultPIppQuery);
-      // if compressed, it is 1Thread=1575 4=Threads=5000ms
-      // results = SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl +
-      // "/info/index.html?" + EDStatic.defaultPIppQuery);
-      sumTime += System.currentTimeMillis();
-      count++;
-      if (count > 0) String2.log("count=" + count + " AvgTime=" + (sumTime / count));
-      expected = "List of All Datasets";
-      Test.ensureTrue(
-          results.indexOf(expected) >= 0,
-          "results=\n" + results.substring(0, Math.min(results.length(), 5000)));
-      expected = "dataset(s)";
-      Test.ensureTrue(
-          results.indexOf(expected) >= 0,
-          "results=\n" + results.substring(0, Math.min(results.length(), 5000)));
-    }
   }
 
   /**

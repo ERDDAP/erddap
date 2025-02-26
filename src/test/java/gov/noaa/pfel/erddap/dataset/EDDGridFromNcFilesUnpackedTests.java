@@ -16,7 +16,6 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import tags.TagImageComparison;
-import tags.TagIncompleteTest;
 import testDataset.EDDTestDataset;
 import testDataset.Initialization;
 import ucar.ma2.Section;
@@ -35,7 +34,6 @@ class EDDGridFromNcFilesUnpackedTests {
    * @throws Throwable if touble
    */
   @org.junit.jupiter.api.Test
-  @TagIncompleteTest
   void testGenerateDatasetsXml() throws Throwable {
 
     // String2.log("\n*** EDDGridFromNcFilesUnpacked.testGenerateDatasetsXml");

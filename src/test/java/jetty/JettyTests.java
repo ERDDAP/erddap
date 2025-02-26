@@ -64,6 +64,7 @@ import java.util.Arrays;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.regex.Pattern;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
@@ -79,6 +80,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import tags.TagFlaky;
 import tags.TagImageComparison;
+import tags.TagIncompleteTest;
 import tags.TagJetty;
 import tags.TagThredds;
 import testDataset.EDDTestDataset;
@@ -144,6 +146,7 @@ class JettyTests {
   @ValueSource(booleans = {false, true})
   @TagJetty
   void testCorsFilter(boolean enableCors) throws Exception {
+    boolean initialCors = EDStatic.config.enableCors;
     EDStatic.config.enableCors = enableCors;
 
     HttpClient client = HttpClient.newHttpClient();
@@ -159,6 +162,7 @@ class JettyTests {
     HttpRequest postRequest =
         HttpRequest.newBuilder(uri).POST(HttpRequest.BodyPublishers.noBody()).build();
     validateCorsHeaders(client.send(postRequest, HttpResponse.BodyHandlers.discarding()));
+    EDStatic.config.enableCors = initialCors;
   }
 
   private void validateCorsHeaders(HttpResponse<?> response) {
@@ -7872,8 +7876,8 @@ class JettyTests {
           results, // This fails rarely (at minute transitions). Just rerun it.
           "com.cohort.util.SimpleException: Your query produced no matching results. "
               + "\\(time="
-              + s.substring(0, 17)
-              + ".{2}Z is outside of the variable's actual_range: "
+              + s.substring(0, 10)
+              + ".{9}Z is outside of the variable's actual_range: "
               + "2002-05-30T03:21:00Z to 2002-08-19T20:18:00Z\\)",
           "results=\n" + results);
     }
@@ -13827,6 +13831,84 @@ class JettyTests {
     /* */
   }
 
+  /** EDDGridFromAudioFiles */
+  /** This tests byte range requests to /files/ */
+  @org.junit.jupiter.api.Test
+  @TagJetty
+  void testByteRangeRequest() throws Throwable {
+
+    // String2.log("\n*** EDDGridFromAudioFiles.testByteRangeRequest\n");
+    // testVerboseOn();
+
+    String results, results2, expected;
+    List<String> al;
+    List<String> list;
+    int po;
+    int timeOutSeconds = 120;
+    String reqBase = "curl http://localhost:8080/erddap/";
+    String req =
+        reqBase + "files/testGridWav/aco_acoustic.20141119_001500.wav -i "; // -i includes header in
+    // response
+
+    // * request no byte range
+    al = TestSSR.dosShell(req, timeOutSeconds);
+    list = al.subList(0, 8);
+    results = String2.annotatedString(String2.toNewlineString(list.toArray()));
+    Test.ensureTrue(results.contains("HTTP/1.1 200 OK"), results);
+    Test.ensureTrue(results.contains("Content-Encoding: identity"), results);
+    Test.ensureTrue(results.contains("Content-Type: audio/wav"), results);
+    Test.ensureTrue(results.contains("Content-Length: 57600044"), results);
+
+    // * request short byte range
+    al = TestSSR.dosShell(req + "-H \"Range: bytes=0-30\"", timeOutSeconds);
+    list = al.subList(0, 8);
+    results = String2.annotatedString(String2.toNewlineString(list.toArray()));
+    Test.ensureTrue(
+        results.contains("HTTP/1.1 206 Partial Content"), results); // 206=SC_PARTIAL_CONTENT
+    Test.ensureTrue(results.contains("Content-Encoding: identity"), results);
+    Test.ensureTrue(results.contains("Content-Type: audio/wav"), results);
+    Test.ensureTrue(results.contains("Content-Length: 31"), results);
+    Test.ensureTrue(results.contains("Content-Range: bytes 0-30/57600044"), results);
+
+    // * request bytes=0- which is what <audio> seems to do
+    al = TestSSR.dosShell(req + "-H \"Range: bytes=0-\"", timeOutSeconds);
+    list = al.subList(0, 8);
+    results = String2.annotatedString(String2.toNewlineString(list.toArray()));
+    Test.ensureTrue(
+        results.contains("HTTP/1.1 206 Partial Content"), results); // 206=SC_PARTIAL_CONTENT
+    Test.ensureTrue(results.contains("Content-Encoding: identity"), results);
+    Test.ensureTrue(results.contains("Content-Type: audio/wav"), results);
+    Test.ensureTrue(results.contains("Content-Length: 57600044"), results);
+    Test.ensureTrue(results.contains("Content-Range: bytes 0-57600043/57600044"), results);
+
+    // * request bytes=[start]- which is what <audio> seems to do
+    al = TestSSR.dosShell(req + "-H \"Range: bytes=50000000-\"", timeOutSeconds);
+    list = al.subList(0, 8);
+    results = String2.annotatedString(String2.toNewlineString(list.toArray()));
+    Test.ensureTrue(
+        results.contains("HTTP/1.1 206 Partial Content"), results); // 206=SC_PARTIAL_CONTENT
+    Test.ensureTrue(results.contains("Content-Encoding: identity"), results);
+    Test.ensureTrue(results.contains("Content-Type: audio/wav"), results);
+    Test.ensureTrue(results.contains("Content-Length: 7600044"), results);
+    Test.ensureTrue(results.contains("Content-Range: bytes 50000000-57600043/57600044"), results);
+
+    // * request images/wz_tooltip.js
+    al = TestSSR.dosShell(reqBase + "images/wz_tooltip.js -i", timeOutSeconds);
+    list = al.subList(0, 5);
+    results = String2.annotatedString(String2.toNewlineString(list.toArray()));
+    Test.ensureTrue(results.contains("HTTP/1.1 200 OK"), results);
+    Test.ensureTrue(
+        results.contains("Cache-Control: PUBLIC, max-age=604800, must-revalidate"), results);
+
+    list = al.subList(4, 10);
+    results = String2.annotatedString(String2.toNewlineString(list.toArray()));
+    Test.ensureTrue(results.contains("Content-Encoding: identity"), results);
+    Test.ensureTrue(results.contains("Accept-Ranges: bytes"), results);
+    Test.ensureTrue(
+        results.contains("Content-Type: application/x-javascript;charset=utf-8"), results);
+    Test.ensureTrue(results.contains("Content-Length: 37974"), results);
+  }
+
   /**
    * This tests the /files/ "files" system. This requires nceiPH53sstn1day and testGridFromErddap in
    * the local ERDDAP.
@@ -14082,6 +14164,71 @@ class JettyTests {
     Test.ensureEqual(results, expected, "results=\n" + results);
   }
 
+  /** This tests that a dataset can be quick restarted, */
+  @org.junit.jupiter.api.Test
+  void testQuickRestart2_EDDGridFromNcFiles() throws Throwable {
+    String2.log("\n*** EDDGridFromNcFiles.testQuickRestart2\n");
+    String datasetID = "testGriddedNcFiles";
+    String fullName =
+        Path.of(
+                JettyTests.class
+                    .getResource("/largeFiles/erdQSwind1day/subfolder/erdQSwind1day_20080108_10.nc")
+                    .toURI())
+            .toString();
+    long timestamp = File2.getLastModified(fullName); // orig 2009-01-07T11:55 local
+    try {
+      // restart local erddap
+      // String2.pressEnterToContinue(
+      // "Restart the local erddap with quickRestart=true and with datasetID=" +
+      // datasetID + " .\n" +
+      // "Wait until all datasets are loaded.");
+      Math2.sleep(30000); // allow tasks to finish
+
+      // change the file's timestamp
+      File2.setLastModified(fullName, timestamp - 60000); // 1 minute earlier
+      Math2.sleep(1000);
+
+      // request info from that dataset
+      // .csv with data from one file
+      String2.log("\n*** .nc test read from one file\n");
+      String userDapQuery = "y_wind[(1.1999664e9)][0][(36.5)][(230):3:(238)]";
+      String results =
+          SSR.getUrlResponseStringUnchanged(
+              EDStatic.erddapUrl + "/griddap/" + datasetID + ".csv?" + userDapQuery);
+      String expected =
+          // verified with
+          // https://coastwatch.pfeg.noaa.gov/erddap/griddap/erdQSwind1day.csv?y_wind[(1.1999664e9)][0][(36.5)][(230):3:(238)]
+          "time,altitude,latitude,longitude,y_wind\n"
+              + "UTC,m,degrees_north,degrees_east,m s-1\n"
+              + "2008-01-10T12:00:00Z,0.0,36.625,230.125,3.555585\n"
+              + "2008-01-10T12:00:00Z,0.0,36.625,230.875,2.82175\n"
+              + "2008-01-10T12:00:00Z,0.0,36.625,231.625,4.539375\n"
+              + "2008-01-10T12:00:00Z,0.0,36.625,232.375,4.975015\n"
+              + "2008-01-10T12:00:00Z,0.0,36.625,233.125,5.643055\n"
+              + "2008-01-10T12:00:00Z,0.0,36.625,233.875,2.72394\n"
+              + "2008-01-10T12:00:00Z,0.0,36.625,234.625,1.39762\n"
+              + "2008-01-10T12:00:00Z,0.0,36.625,235.375,2.10711\n"
+              + "2008-01-10T12:00:00Z,0.0,36.625,236.125,3.019165\n"
+              + "2008-01-10T12:00:00Z,0.0,36.625,236.875,3.551915\n"
+              + "2008-01-10T12:00:00Z,0.0,36.625,237.625,NaN\n"; // test of NaN
+      Test.ensureEqual(results, expected, "\nresults=\n" + results);
+
+      // request status.html
+      SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + "/status.html");
+      // Math2.sleep(1000);
+      // Test.displayInBrowser("file://" + EDStatic.config.bigParentDirectory +
+      // "logs/log.txt");
+
+      // String2.pressEnterToContinue(
+      // "Look at log.txt to see if update was run and successfully " +
+      // "noticed the changed file.");
+
+    } finally {
+      // change timestamp back to original
+      File2.setLastModified(fullName, timestamp);
+    }
+  }
+
   /** EDDGridFromEtopo */
 
   /**
@@ -14256,6 +14403,44 @@ class JettyTests {
             + "})";
     Test.ensureTrue(
         results.indexOf(expected2) >= 0, "results=\n" + String2.annotatedString(results));
+  }
+
+  /**
+   * This repeatedly gets the info/index.html web page and ensures it is without error. It is best
+   * to run this when many datasets are loaded. For a harder test: run this in 4 threads
+   * simultaneously.
+   */
+  @org.junit.jupiter.api.Test
+  @TagJetty
+  void testHammerGetDatasets() throws Throwable {
+    Erddap.verbose = true;
+    Erddap.reallyVerbose = true;
+    EDD.testVerboseOn();
+    String results, expected;
+    String2.log("\n*** Erddap.testHammerGetDatasets");
+    long sumTime = 0;
+    // count = -5 to let it warm up
+    for (int count = -5; count < 1000; count++) {
+      if (count == 0) sumTime = 0;
+      sumTime -= System.currentTimeMillis();
+      // if uncompressed, it is 1Thread=280 4Threads=900ms
+      results =
+          SSR.getUrlResponseStringUnchanged(
+              EDStatic.erddapUrl + "/info/index.html?" + EDStatic.defaultPIppQuery);
+      // if compressed, it is 1Thread=1575 4=Threads=5000ms
+      // results = SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl +
+      // "/info/index.html?" + EDStatic.defaultPIppQuery);
+      sumTime += System.currentTimeMillis();
+      if (count > 0) String2.log("count=" + count + " AvgTime=" + (sumTime / count));
+      expected = "List of All Datasets";
+      Test.ensureTrue(
+          results.indexOf(expected) >= 0,
+          "results=\n" + results.substring(0, Math.min(results.length(), 10000)));
+      expected = "matching datasets";
+      Test.ensureTrue(
+          results.indexOf(expected) >= 0,
+          "results=\n" + results.substring(0, Math.min(results.length(), 10000)));
+    }
   }
 
   /** EDDGridCopy */
@@ -15778,6 +15963,91 @@ class JettyTests {
 
     // String2.log("\n*** EDDGridLonPM180.test120to320 finished.");
     // debugMode = oDebugMode;
+  }
+
+  /** This tests hardFlag. */
+  @org.junit.jupiter.api.Test
+  @TagJetty
+  @TagIncompleteTest
+  void testHardFlag() throws Throwable {
+    // String2.log("\n*** EDDGridLonPM180.testHardFlag()\n" +
+    // "This test requires hawaii_d90f_20ee_c4cb and
+    // hawaii_d90f_20ee_c4cb_LonPM180\n" +
+    // "be loaded in the local ERDDAP.");
+
+    // set hardFlag
+    String startTime = Calendar2.getCurrentISODateTimeStringLocalTZ();
+    Math2.sleep(1000);
+    File2.writeToFile88591(
+        EDStatic.config.fullHardFlagDirectory + "hawaii_d90f_20ee_c4cb_LonPM180", "test");
+    String2.log(
+        "I just set a hardFlag for hawaii_d90f_20ee_c4cb_LonPM180.\n"
+            + "Now I'm waiting 180 seconds.");
+    Math2.sleep(180000);
+    // flush the log file
+    String tIndex = SSR.getUrlResponseStringUnchanged("http://localhost:8080/erddap/status.html");
+    Math2.sleep(30000);
+
+    // read the log file
+    String tLog = File2.readFromFileUtf8(EDStatic.config.fullLogsDirectory + "log.txt")[1];
+    String expected = // ***
+        /*
+         * "deleting cached dataset info for datasetID=hawaii_d90f_20ee_c4cb_LonPM180Child\n"
+         * +
+         * "\\*\\*\\* unloading datasetID=hawaii_d90f_20ee_c4cb_LonPM180\n" +
+         * "\\*\\*\\* deleting cached dataset info for datasetID=hawaii_d90f_20ee_c4cb_LonPM180\n"
+         * +
+         * "\n" +
+         * "\\*\\*\\* RunLoadDatasets is starting a new hardFlag LoadDatasets thread at (..........T..............)\n"
+         * +
+         * "\n" +
+         * "\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\n"
+         * +
+         * "LoadDatasets.run EDStatic.config.developmentMode=true ..........T..............\n"
+         * +
+         * "  datasetsRegex=\\(hawaii_d90f_20ee_c4cb_LonPM180\\) inputStream=null majorLoad=false"
+         * ;
+         */
+
+        "deleting cached dataset info for datasetID=hawaii_d90f_20ee_c4cb_LonPM180Child\n"
+            + "File2.deleteIfOld\\(/erddapBPD/dataset/ld/hawaii_d90f_20ee_c4cb_LonPM180Child/\\) nDir=   . nDeleted=   . nRemain=   .\n"
+            + "\\*\\*\\* unloading datasetID=hawaii_d90f_20ee_c4cb_LonPM180\n"
+            + "nActions=0\n"
+            + "\\*\\*\\* deleting cached dataset info for datasetID=hawaii_d90f_20ee_c4cb_LonPM180\n"
+            + "File2.deleteIfOld\\(/erddapBPD/dataset/80/hawaii_d90f_20ee_c4cb_LonPM180/  \\) nDir=   . nDeleted=   . nRemain=   .\n"
+            + "\n"
+            + "\\*\\*\\* RunLoadDatasets is starting a new hardFlag LoadDatasets thread at (..........T..............)\n"
+            + "\n"
+            + "\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\n"
+            + "LoadDatasets.run EDStatic.config.developmentMode=true ..........T..............\n"
+            + "  datasetsRegex=\\(hawaii_d90f_20ee_c4cb_LonPM180\\) inputStream=null majorLoad=false";
+
+    int po = Math.max(0, tLog.lastIndexOf(expected.substring(0, 78)));
+    int po2 = tLog.indexOf("majorLoad=false", po) + 15;
+    String tResults = tLog.substring(po, po2);
+    String2.log("\ntResults=<quote>" + tResults + "</quote>\n");
+    Test.testLinesMatch(tResults, expected, "tResults and expected don't match!");
+
+    // so far so good, tResults matches expected
+    int po3 = tResults.indexOf("thread at ");
+    String reloadTime = tResults.substring(po3 + 10, po3 + 35);
+    String2.log(" startTime=" + startTime + "\n" + "reloadTime=" + reloadTime);
+    Test.ensureTrue(
+        startTime.compareTo(reloadTime) < 0,
+        "startTime (" + startTime + ") is after reloadTime(" + reloadTime + ")?!");
+
+    // test that child was successfully constructed after that
+    int po4 =
+        tLog.indexOf(
+            "*** EDDGridFromErddap hawaii_d90f_20ee_c4cb_LonPM180Child constructor finished. TIME=",
+            po);
+    Test.ensureTrue(po4 > po, "po4=" + po4 + " isn't greater than po=" + po + " !");
+
+    // test that parent was successfully constructed after that
+    int po5 =
+        tLog.indexOf(
+            "*** EDDGridLonPM180 hawaii_d90f_20ee_c4cb_LonPM180 constructor finished. TIME=", po4);
+    Test.ensureTrue(po5 > po4, "po5=" + po5 + " isn't greater than po4=" + po4 + " !");
   }
 
   /** EDDGridFromNcFiles */
@@ -17304,5 +17574,265 @@ class JettyTests {
     EDDGridFromEtopo eddGridFromEtopo =
         (EDDGridFromEtopo) context.getErddap().gridDatasetHashMap.get("etopo180");
     assertEquals("etopo180", eddGridFromEtopo.datasetID());
+  }
+
+  /** EDDTableFromAsciiFiles */
+
+  /**
+   * This tests the /files/ "files" system. This requires testTableAscii in the localhost ERDDAP.
+   */
+  @org.junit.jupiter.api.Test
+  @TagJetty
+  void testFiles_EDDTableFromAsciiFiles() throws Throwable {
+    String results, expected;
+
+    // get /files/datasetID/.csv
+    results =
+        SSR.getUrlResponseStringNewline("http://localhost:8080/erddap/files/testTableAscii/.csv");
+    expected =
+        "Name,Last modified,Size,Description\n"
+            + "subdir/,NaN,NaN,\n"
+            + "31201_2009.csv,TIMESTAMP,201320,\n"
+            + "46026_2005.csv,TIMESTAMP,621644,\n"
+            + "46028_2005.csv,TIMESTAMP,623250,\n";
+    results = results.replaceAll(",[0-9]{13},", ",TIMESTAMP,");
+    Test.ensureEqual(results, expected, "results=\n" + results);
+
+    // get /files/datasetID/
+    results = SSR.getUrlResponseStringNewline("http://localhost:8080/erddap/files/testTableAscii/");
+    Test.ensureTrue(results.indexOf("subdir&#x2f;") > 0, "results=\n" + results);
+    Test.ensureTrue(results.indexOf("subdir/") > 0, "results=\n" + results);
+    Test.ensureTrue(results.indexOf("31201&#x5f;2009&#x2e;csv") > 0, "results=\n" + results);
+    Test.ensureTrue(results.indexOf(">201320<") > 0, "results=\n" + results);
+
+    // get /files/datasetID/subdir/.csv
+    results =
+        SSR.getUrlResponseStringNewline(
+            "http://localhost:8080/erddap/files/testTableAscii/subdir/.csv");
+    expected =
+        "Name,Last modified,Size,Description\n"
+            + "46012_2005.csv,TIMESTAMP,622197,\n"
+            + "46012_2006.csv,TIMESTAMP,621812,\n";
+    results = results.replaceAll(",[0-9]{13},", ",TIMESTAMP,");
+    Test.ensureEqual(results, expected, "results=\n" + results);
+
+    // download a file in root
+    results =
+        SSR.getUrlResponseStringNewline(
+            "http://localhost:8080/erddap/files/testTableAscii/31201_2009.csv");
+    expected =
+        "This is a header line.\n"
+            + "*** END OF HEADER\n"
+            + "# a comment line\n"
+            + "longitude, latitude, altitude, time, station, wd, wspd, atmp, wtmp\n"
+            + "# a comment line\n"
+            + "degrees_east, degrees_north, m, UTC, , degrees_true, m s-1, degree_C, degree_C\n"
+            + "# a comment line\n"
+            + "-48.13, -27.7, 0.0, 2005-04-19T00:00:00Z, 31201, NaN, NaN, NaN, 24.4\n"
+            + "# a comment line\n"
+            + "#-48.13, -27.7, 0.0, 2005-04-19T01:00:00Z, 31201, NaN, NaN, NaN, 24.4\n"
+            + "-48.13, -27.7, 0.0, 2005-04-19T01:00:00Z, 31201, NaN, NaN, NaN, 24.4\n";
+    Test.ensureEqual(results.substring(0, expected.length()), expected, "results=\n" + results);
+
+    // download a file in subdir
+    results =
+        SSR.getUrlResponseStringNewline(
+            "http://localhost:8080/erddap/files/testTableAscii/subdir/46012_2005.csv");
+    expected =
+        "This is a header line.\n"
+            + "*** END OF HEADER\n"
+            + "# a comment line\n"
+            + "longitude, latitude, altitude, time, station, wd, wspd, atmp, wtmp\n"
+            + "# a comment line\n"
+            + "degrees_east, degrees_north, m, UTC, , degrees_true, m s-1, degree_C, degree_C\n"
+            + "# a comment line\n"
+            + "-122.88, 37.36, 0.0, 2005-01-01T00:00:00Z, 46012, 190, 8.2, 11.8, 12.5\n"
+            + "# a comment line\n"
+            + "# a comment line\n"
+            + "-122.88, 37.36, 0.0, 2005-01-01T01:00:00Z, 46012, 214, 8.4, 10.4, 12.5\n";
+    Test.ensureEqual(results.substring(0, expected.length()), expected, "results=\n" + results);
+
+    // try to download a non-existent dataset
+    try {
+      results = SSR.getUrlResponseStringNewline("http://localhost:8080/erddap/files/gibberish/");
+    } catch (Exception e) {
+      results = e.toString();
+    }
+    expected =
+        "java.io.IOException: HTTP status code=404 java.io.FileNotFoundException: http://localhost:8080/erddap/files/gibberish/\n"
+            + "(Error {\n"
+            + "    code=404;\n"
+            + "    message=\"Not Found: Currently unknown datasetID=gibberish\";\n"
+            + "})";
+    Test.ensureEqual(results, expected, "results=\n" + results);
+
+    // try to download a non-existent directory
+    try {
+      results =
+          SSR.getUrlResponseStringNewline(
+              "http://localhost:8080/erddap/files/testTableAscii/gibberish/");
+    } catch (Exception e) {
+      results = e.toString();
+    }
+    expected =
+        "java.io.IOException: HTTP status code=404 java.io.FileNotFoundException: http://localhost:8080/erddap/files/testTableAscii/gibberish/\n"
+            + "(Error {\n"
+            + "    code=404;\n"
+            + "    message=\"Not Found: Resource not found: directory=gibberish/\";\n"
+            + "})";
+    Test.ensureEqual(results, expected, "results=\n" + results);
+
+    // try to download a non-existent file
+    try {
+      results =
+          SSR.getUrlResponseStringNewline(
+              "http://localhost:8080/erddap/files/testTableAscii/gibberish.csv");
+    } catch (Exception e) {
+      results = e.toString();
+    }
+    expected =
+        "java.io.IOException: HTTP status code=404 java.io.FileNotFoundException: http://localhost:8080/erddap/files/testTableAscii/gibberish.csv\n"
+            + "(Error {\n"
+            + "    code=404;\n"
+            + "    message=\"Not Found: File not found: gibberish.csv .\";\n"
+            + "})";
+    Test.ensureEqual(results, expected, "results=\n" + results);
+
+    // try to download a non-existent file in existant subdir
+    try {
+      results =
+          SSR.getUrlResponseStringNewline(
+              "http://localhost:8080/erddap/files/testTableAscii/subdir/gibberish.csv");
+    } catch (Exception e) {
+      results = e.toString();
+    }
+    expected =
+        "java.io.IOException: HTTP status code=404 java.io.FileNotFoundException: http://localhost:8080/erddap/files/testTableAscii/subdir/gibberish.csv\n"
+            + "(Error {\n"
+            + "    code=404;\n"
+            + "    message=\"Not Found: File not found: gibberish.csv .\";\n"
+            + "})";
+    Test.ensureEqual(results, expected, "results=\n" + results);
+  }
+
+  /** This tests that a dataset can be quick restarted. */
+  @org.junit.jupiter.api.Test
+  @TagJetty
+  void testQuickRestart_EDDTableFromAsciiFiles() throws Throwable {
+    // String2.log("\n*** EDDTableFromAsciiFiles.testQuickRestart\n");
+    String datasetID = "testTableAscii";
+    String dataDir =
+        Path.of(EDDTestDataset.class.getResource("/data/asciiNdbc/").toURI()).toString();
+    String fullName = dataDir + "/46012_2005.csv";
+    long timestamp = File2.getLastModified(fullName); // orig 2009-08-05T08:49 local
+    try {
+      // restart local erddap
+      //   String2.pressEnterToContinue(
+      //       "Restart the local erddap with quickRestart=true and with datasetID="
+      //           + datasetID
+      //           + " .\n"
+      //           + "Wait until all datasets are loaded.");
+
+      // change the file's timestamp
+      File2.setLastModified(fullName, timestamp - 60000); // 1 minute earlier
+      Math2.sleep(1000);
+
+      // request info from that dataset
+      // .csv for one lat,lon,time
+      // 46012 -122.879997 37.360001
+      String userDapQuery =
+          "&longitude=-122.88&latitude=37.36&time%3E=2005-07-01&time%3C2005-07-01T10";
+      String results =
+          SSR.getUrlResponseStringUnchanged(
+              EDStatic.erddapUrl + "/tabledap/" + datasetID + ".csv?" + userDapQuery);
+      // String2.log(results);
+      String expected =
+          "longitude,latitude,altitude,time,station,wd,wspd,atmp,wtmp\n"
+              + "degrees_east,degrees_north,m,UTC,,m s-1,m s-1,degree_C,degree_C\n"
+              + "-122.88,37.36,0,2005-07-01T00:00:00Z,46012,294,2.6,12.7,13.4\n"
+              + "-122.88,37.36,0,2005-07-01T01:00:00Z,46012,297,3.5,12.6,13.0\n"
+              + "-122.88,37.36,0,2005-07-01T02:00:00Z,46012,315,4.0,12.2,12.9\n"
+              + "-122.88,37.36,0,2005-07-01T03:00:00Z,46012,325,4.2,11.9,12.8\n"
+              + "-122.88,37.36,0,2005-07-01T04:00:00Z,46012,330,4.1,11.8,12.8\n"
+              + "-122.88,37.36,0,2005-07-01T05:00:00Z,46012,321,4.9,11.8,12.8\n"
+              + "-122.88,37.36,0,2005-07-01T06:00:00Z,46012,320,4.4,12.1,12.8\n"
+              + "-122.88,37.36,0,2005-07-01T07:00:00Z,46012,325,3.8,12.4,12.8\n"
+              + "-122.88,37.36,0,2005-07-01T08:00:00Z,46012,298,4.0,12.5,12.8\n"
+              + "-122.88,37.36,0,2005-07-01T09:00:00Z,46012,325,4.0,12.5,12.8\n";
+      Test.ensureEqual(results, expected, "\nresults=\n" + results);
+
+      // request status.html
+      SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + "/status.html");
+      Math2.sleep(1000);
+      //   Test.displayInBrowser("file://" + EDStatic.config.bigParentDirectory + "logs/log.txt");
+
+      //   String2.pressEnterToContinue(
+      //       "Look at log.txt to see if update was run and successfully "
+      //           + "noticed the changed file.");
+
+    } finally {
+      // change timestamp back to original
+      File2.setLastModified(fullName, timestamp);
+    }
+  }
+
+  /** EDDTableFromErddap */
+
+  /** testGenerateDatasetsXml */
+  @org.junit.jupiter.api.Test
+  @TagJetty
+  void testGenerateDatasetsXml_EDDTableFromErddap() throws Throwable {
+    // testVerboseOn();
+    int po;
+
+    // test local generateDatasetsXml. In tests, always use non-https url.
+    String results = EDDTableFromErddap.generateDatasetsXml(EDStatic.erddapUrl, true) + "\n";
+    String2.log("results=\n" + results);
+
+    // GenerateDatasetsXml
+    String gdxResults =
+        new GenerateDatasetsXml()
+            .doIt(
+                new String[] {
+                  "-verbose", "EDDTableFromErddap", EDStatic.erddapUrl, "true", "-1"
+                }, // keep original names?, defaultStandardizeWhat
+                false); // doIt loop?
+    Test.ensureEqual(gdxResults, results, "Unexpected results from GenerateDatasetsXml.doIt.");
+
+    String expected =
+        "<dataset type=\"EDDTableFromErddap\" datasetID=\"erdGlobecBottle\" active=\"true\">\n"
+            + "    <!-- GLOBEC NEP Rosette Bottle Data (2002) -->\n"
+            + "    <sourceUrl>http://localhost:8080/erddap/tabledap/erdGlobecBottle</sourceUrl>\n"
+            + "</dataset>\n";
+    String fragment = expected;
+    String2.log("\nresults=\n" + results);
+    po = results.indexOf(expected.substring(0, 70));
+    Test.ensureEqual(results.substring(po, po + expected.length()), expected, "");
+
+    expected =
+        "<!-- Of the datasets above, the following datasets are EDDTableFromErddap's at the remote ERDDAP.\n";
+    po = results.indexOf(expected.substring(0, 20));
+    Test.ensureEqual(
+        results.substring(po, po + expected.length()), expected, "results=\n" + results);
+    // try {
+    //   Test.ensureTrue(results.indexOf("rGlobecBottle", po) > 0, "results=\n" + results);
+    // } catch (Throwable t) {
+    //   throw new RuntimeException(
+    //       "Unexpected error. This test requires rGlobecBottle in localhost ERDDAP.", t);
+    // }
+
+    /*
+     * //ensure it is ready-to-use by making a dataset from it
+     * //NO - don't mess with existing erdGlobecBottle
+     * String tDatasetID = "erdGlobecBottle";
+     * EDD.deleteCachedDatasetInfo(tDatasetID);
+     * EDD edd = oneFromXmlFragment(null, fragment);
+     * Test.ensureEqual(edd.title(), "GLOBEC NEP Rosette Bottle Data (2002)", "");
+     * Test.ensureEqual(edd.datasetID(), tDatasetID, "");
+     * Test.ensureEqual(String2.toCSSVString(edd.dataVariableDestinationNames()),
+     * "cruise_id, ship, cast, longitude, latitude, time, bottle_posn, chl_a_total, chl_a_10um, phaeo_total, phaeo_10um, sal00, sal11, temperature0, temperature1, fluor_v, xmiss_v, PO4, N_N, NO3, Si, NO2, NH4, oxygen, par"
+     * ,
+     * "");
+     */
   }
 }

@@ -69,12 +69,12 @@ class EDDTableFromNcFilesTests {
 
   /** testGenerateDatasetsXml */
   @org.junit.jupiter.api.Test
-  @TagIncompleteTest
+  @TagLargeFiles
   void testGenerateDatasetsXml() throws Throwable {
-    String2.pressEnterToContinue(
-        "\nDownload NDBC_41004_met.nc from coastwatch\n"
-            + "https://coastwatch.pfeg.noaa.gov/erddap/files/cwwcNDBCMet/nrt/ \n"
-            + "to /u00/data/points/ndbcMet2/nrt/ .");
+    // String2.pressEnterToContinue(
+    //     "\nDownload NDBC_41004_met.nc from coastwatch\n"
+    //         + "https://coastwatch.pfeg.noaa.gov/erddap/files/cwwcNDBCMet/nrt/ \n"
+    //         + "to /u00/data/points/ndbcMet2/nrt/ .");
 
     try {
       String results =
@@ -790,7 +790,7 @@ class EDDTableFromNcFilesTests {
 
   /** testGenerateDatasetsXml2 */
   @org.junit.jupiter.api.Test
-  @TagIncompleteTest
+  @TagMissingDataset
   void testGenerateDatasetsXml2() throws Throwable {
     String results =
         EDDTableFromNcFiles.generateDatasetsXml(
@@ -6151,7 +6151,7 @@ class EDDTableFromNcFilesTests {
   } // end of testGlobal
 
   @org.junit.jupiter.api.Test
-  @TagIncompleteTest
+  @TagMissingDataset
   void testGenerateBreakUpPostDatasetsXml() throws Throwable {
     // String tFileDir, String tFileNameRegex, String sampleFileName,
     // int tReloadEveryNMinutes,
