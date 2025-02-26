@@ -7041,6 +7041,8 @@ class JettyTests {
           // to be
           // down
           // (temporary?) early 2025
+          // pcreview site down early 2025
+          "https://www.pcreview.co.uk/threads/datetime-accounts-for-leap-seconds.1357623/",
         };
     // https://unitsofmeasure.org/ucum.html fails in tests because of certificate,
     // but succeeds in my browser. Others are like this, too.
