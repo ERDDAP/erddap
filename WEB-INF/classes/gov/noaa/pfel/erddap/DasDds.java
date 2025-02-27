@@ -27,8 +27,8 @@ public class DasDds {
   Writer outFile = null;
 
   public DasDds() {
-    logFileName = EDStatic.fullLogsDirectory + "DasDds.log";
-    outFileName = EDStatic.fullLogsDirectory + "DasDds.out";
+    logFileName = EDStatic.config.fullLogsDirectory + "DasDds.log";
+    outFileName = EDStatic.config.fullLogsDirectory + "DasDds.out";
   }
 
   private void printToBoth(String s) throws IOException {
@@ -100,8 +100,8 @@ public class DasDds {
     try {
 
       // delete the old log files (pre 1.48 names)
-      File2.delete(EDStatic.fullLogsDirectory + "DasDdsLog.txt");
-      File2.delete(EDStatic.fullLogsDirectory + "DasDdsLog.txt.previous");
+      File2.delete(EDStatic.config.fullLogsDirectory + "DasDdsLog.txt");
+      File2.delete(EDStatic.config.fullLogsDirectory + "DasDdsLog.txt.previous");
 
       String datasetID = "";
       if (args == null) args = new String[0];

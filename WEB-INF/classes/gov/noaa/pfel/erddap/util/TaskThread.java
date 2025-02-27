@@ -12,6 +12,7 @@ import com.cohort.util.String2;
 import gov.noaa.pfel.coastwatch.griddata.OpendapHelper;
 import gov.noaa.pfel.coastwatch.util.SSR;
 import gov.noaa.pfel.erddap.dataset.EDD;
+import io.prometheus.metrics.model.snapshots.Unit;
 
 /**
  * This does a series of tasks.
@@ -238,11 +239,21 @@ public class TaskThread extends Thread {
                 + Calendar2.elapsedTimeString(tElapsedTime));
         String2.distributeTime(tElapsedTime, EDStatic.taskThreadSucceededDistribution24);
         String2.distributeTime(tElapsedTime, EDStatic.taskThreadSucceededDistributionTotal);
+        EDStatic.metrics
+            .taskThreadDuration
+            .labelValues(Metrics.ThreadStatus.success.name(), "" + taskType)
+            .observe(Unit.millisToSeconds(tElapsedTime));
 
       } catch (Throwable t) {
         long tElapsedTime = elapsedTime();
         String2.distributeTime(tElapsedTime, EDStatic.taskThreadFailedDistribution24);
         String2.distributeTime(tElapsedTime, EDStatic.taskThreadFailedDistributionTotal);
+        Object taskOA[] = EDStatic.taskList.get(EDStatic.nextTask.get() - 1);
+        Integer taskType = (Integer) taskOA[0];
+        EDStatic.metrics
+            .taskThreadDuration
+            .labelValues(Metrics.ThreadStatus.fail.name(), "" + taskType)
+            .observe(Unit.millisToSeconds(tElapsedTime));
         String subject =
             "TaskThread error: task #"
                 + (EDStatic.nextTask.get() - 1)
@@ -250,7 +261,7 @@ public class TaskThread extends Thread {
                 + Calendar2.elapsedTimeString(tElapsedTime);
         String content = taskSummary + "\n" + MustBe.throwableToString(t);
         String2.log("%%% " + subject + "\n" + content);
-        EDStatic.email(EDStatic.emailEverythingToCsv, subject, content);
+        EDStatic.email(EDStatic.config.emailEverythingToCsv, subject, content);
       }
 
       // whether succeeded or failed

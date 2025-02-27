@@ -53,7 +53,7 @@ public class AxisDataAccessor {
    *
    * @param language the index of the selected language
    * @param tEDDGrid
-   * @param tRequestUrl the part of the user's request, after EDStatic.baseUrl, before '?'.
+   * @param tRequestUrl the part of the user's request, after EDStatic.config.baseUrl, before '?'.
    * @param tUserDapQuery the part after the '?', still percentEncoded, may be null.
    * @param tConstraints
    * @throws Throwable if trouble
@@ -88,7 +88,7 @@ public class AxisDataAccessor {
     // fix up global attributes (always to a local COPY of global attributes)
     // remove acdd-style and google-style bounding box
     EDD.addToHistory(globalAttributes, eddGrid.publicSourceUrl());
-    EDD.addToHistory(globalAttributes, EDStatic.baseUrl + tRequestUrl + "?" + tUserDapQuery);
+    EDD.addToHistory(globalAttributes, EDStatic.config.baseUrl + tRequestUrl + "?" + tUserDapQuery);
     globalAttributes.remove("geospatial_lon_min");
     globalAttributes.remove("geospatial_lon_max");
     globalAttributes.remove("geospatial_lon_resolution");

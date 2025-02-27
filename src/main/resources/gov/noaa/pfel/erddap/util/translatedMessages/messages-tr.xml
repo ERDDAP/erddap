@@ -96,11 +96,11 @@ Daha sonra ERDDAP bunların hepsini ekleyecektir.
 <advl_institution>Kurum</advl_institution>
 <advc_dataStructure>ERDDAP, her veri kümesini bir &#39;grid&#39; veya &#39;tablo&#39; veri kümesi olarak ele alır.</advc_dataStructure>
 <advl_dataStructure>Veri yapısı</advl_dataStructure>
-<advr_dataStructure>https://erddap.github.io/setupDatasetsXml.html#dataStructures</advr_dataStructure>
+<advr_dataStructure>https://erddap.github.io/docs/server-admin/datasets#why-just-two-basic-data-structures</advr_dataStructure>
 <advl_cdm_data_type>Ortak Veri Modeli Türü</advl_cdm_data_type>
-<advr_cdm_data_type>https://erddap.github.io/setupDatasetsXml.html#cdm_data_type</advr_cdm_data_type>
+<advr_cdm_data_type>https://erddap.github.io/docs/server-admin/datasets#cdm_data_type</advr_cdm_data_type>
 <advl_class>ERDDAP Sınıfı</advl_class>
-<advr_class>https://erddap.github.io/setupDatasetsXml.html#datasetTypes</advr_class>
+<advr_class>https://erddap.github.io/docs/server-admin/datasets#list-of-types-datasets</advr_class>
 <advl_title>Başlık</advl_title>
 <advl_minLongitude>Minimum Boylam</advl_minLongitude>
 <advl_maxLongitude>Maksimum Boylam</advl_maxLongitude>
@@ -145,7 +145,7 @@ Daha sonra ERDDAP bunların hepsini ekleyecektir.
 <advn_outOfDate><![CDATA[
 
 Görünüşe göre hiçbir veri kümesi
-<a rel="help" href="https://erddap.github.io/setupDatasetsXml.html#testOutOfDate"
+<a rel="help" href="https://erddap.github.io/docs/server-admin/datasets#testoutofdate"
 ><kbd>testOutOfDate</kbd></a> niteliğine sahip değil.
 Belki de bu ERDDAP gerçek zamanlıya yakın veri kümeleri yoktur.
 
@@ -1941,7 +1941,7 @@ Bu içerir:
 <li>Şu anda ilişkisel bir veritabanında depolanan
 <a class="selfLink" id="databases" href="#databases" rel="bookmark">veriler</a> .
 <br>Lütfen ERDDAP içindeki
-<a rel="help" href="https://erddap.github.io/setupDatasetsXml.html#EDDTableFromDatabase">EDDTableFromDatabase</a> veri kümesi türü hakkındaki bilgileri, özellikle denormalize edilmiş bir tablo oluşturma ihtiyacından bahseden ilk ~2 bilgi ekranını okuyun.
+<a rel="help" href="https://erddap.github.io/docs/server-admin/datasets#eddtablefromdatabase">EDDTableFromDatabase</a> veri kümesi türü hakkındaki bilgileri, özellikle denormalize edilmiş bir tablo oluşturma ihtiyacından bahseden ilk ~2 bilgi ekranını okuyun.
 Bu çılgınca gelebilir.
 Lütfen bunun gerekçesini okuyacak kadar güvenin.
 <br>&nbsp;
@@ -3327,7 +3327,7 @@ Her iki sürümün dosyaları da .nc uzantısına sahiptir ve .nc dosyalarını 
 <a rel="help" href="https://anaconda.org/eumetsat/ncview"><img
        src="https://coastwatch.pfeg.noaa.gov/erddap/images/external.png" alt=" (external link)"
        title="Harici bir web sitesine verilen bu bağlantı, bir onay anlamına gelmez."></a>).
-<li><a rel="help" href="https://erddap.github.io/setupDatasetsXml.html#NCO">NCO</a>, .nc dosyalarını kalıcı olarak değiştirmek için güçlü bir komut satırı aracı.
+<li><a rel="help" href="https://erddap.github.io/docs/server-admin/datasets#netcdf-operators-nco">NCO</a>, .nc dosyalarını kalıcı olarak değiştirmek için güçlü bir komut satırı aracı.
 <li><a rel="help" href="https://www.unidata.ucar.edu/downloads/netcdf/">NetCDF -C ve NetCDF - Java <img
        src="https://coastwatch.pfeg.noaa.gov/erddap/images/external.png" alt=" (external link)"
        title="Harici bir web sitesine verilen bu bağlantı, bir onay anlamına gelmez."></a> .nc dosyalarını okumak ve yazmak için C, C++, Fortran veya Java yönelik ana yazılım kitaplıkları.
@@ -3753,7 +3753,7 @@ Yukarıda açıklandığı gibi, Java programları web&#39;de bulunan verilere e
 <p>Veya, ERDDAP tamamen açık kaynaklı bir program olduğundan, kendi verilerinizi sunmak için kendi ERDDAP kopyanızı kendi sunucunuza (herkese açık olsun veya olmasın) da kurabilirsiniz.
 Java programlarınız ERDDAP bu kopyasından veri alabilir.
 Bkz.
-<a rel="help" href="https://erddap.github.io/setup.html">Kendi ERDDAP Kurun</a> .
+<a rel="help" href="https://erddap.github.io/docs/server-admin/deploy-install">Kendi ERDDAP Kurun</a> .
   
 ]]></javaProgramsHTML>
 
@@ -3842,7 +3842,7 @@ Varsayılan değer hiçbir şey değildir (kullanılmamış).
 Şu anda ERDDAP yalnızca, NOAA ve birçok üniversitedeki e-posta hesaplarını içeren, Google tarafından yönetilen e-posta hesapları aracılığıyla kimlik doğrulamayı desteklemektedir.
 Bir ERDDAP kimlik doğrulama etkinleştirilmişse, Google tarafından yönetilen e-posta hesabına sahip herkes giriş yapabilir ancak bu kişiler yalnızca ERDDAP yöneticisinin açıkça erişmesine izin verdiği özel veri kümelerine erişebilir.
 Bir tarayıcıdan veya komut dosyası aracılığıyla ERDDAP oturum açma talimatları için bkz.
-<a rel="help" href="https://erddap.github.io/AccessToPrivateDatasets.html">ERDDAP Özel Veri Kümelerine Erişim</a> .
+<a rel="help" href="https://erddap.github.io/docs/user/AccessToPrivateDatasets">ERDDAP Özel Veri Kümelerine Erişim</a> .
   
 ]]></loginHTML>
 <loginAttemptBlocked>HATA: {0} için giriş yapma girişimleri, 3 başarısız denemeden sonra geçici olarak engelleniyor.
@@ -4541,7 +4541,7 @@ ERDDAP bilgisayar programlarının veya yazdığınız scriptlerin kullanabilece
 Bunları, ERDDAP üzerine başka web uygulamaları veya web hizmetleri oluşturmak için kullanabilirsiniz; böylece işin çoğunu ERDDAP yapar! Bu nedenle, ERDDAP sunduğu verilere yönelik daha iyi bir arayüz veya verilere erişmenin kolay bir yoluna ihtiyaç duyan bir web sayfası fikriniz varsa, kendi web uygulamanızı, web hizmetinizi veya web sayfanızı oluşturmanızı ve ERDDAP kaynak olarak kullanmanızı öneririz.
 temel.
 Sisteminiz ERD ERDDAP veya diğer ERDDAP kurulumlarından veri, grafik ve diğer bilgileri alabilir veya<!-- setup always from coastwatch's erddap --> Herkese açık veya yalnızca özel olarak erişilebilen
-<a rel="help" href="https://erddap.github.io/setup.html">kendi ERDDAP sunucunuzu kurun</a> .
+<a rel="help" href="https://erddap.github.io/docs/server-admin/deploy-install">kendi ERDDAP sunucunuzu kurun</a> .
 <h3><a class="selfLink" id="requests" href="#requests" rel="bookmark">RESTful URL İstekleri</a></h3>
 ERDDAP gelen kullanıcı arayüzü bilgilerine yönelik talepler (örneğin, arama sonuçları), istekler için web&#39;in evrensel standardını kullanır:
 <a rel="help" href="https://en.wikipedia.org/wiki/Uniform_Resource_Locator">URLs &externalLinkHtml;</a>
@@ -4600,7 +4600,7 @@ ERDDAP kullanıcı arayüzü sonuçlarını şu yaygın, bilgisayar programı do
 <li>.nc - düz, tablo benzeri bir NetCDF -3 ikili dosyası.
 (<a rel="help" href="https://www.unidata.ucar.edu/software/netcdf/">Daha&nbsp;bilgi &externalLinkHtml;</a>)
 <li>.nccsv - düz, tablo benzeri, NetCDF benzeri, ASCII CSV dosyası.
-(<a rel="help" href="https://erddap.github.io/NCCSV.html">Daha&nbsp;bilgi &externalLinkHtml;</a>)
+(<a rel="help" href="https://erddap.github.io/docs/user/nccsv-1.20">Daha&nbsp;bilgi &externalLinkHtml;</a>)
 <li>.tsv - sekmeyle ayrılmış bir ASCII metin tablosu.
 (<a rel="help" href="https://jkorpela.fi/TSV.html">Daha&nbsp;bilgi &externalLinkHtml;</a>)
 <li>.xhtml - bir tablodaki verileri içeren bir XHTML (XML) dosyası.
@@ -5319,7 +5319,7 @@ veri kümelerini ararken, arama terimleri arasında <kbd>AND</kbd> kullanmayın.
 Bu örtülüdür.)
 <p><a rel="help" href="&erddapUrl;/information.html"><strong>ERDDAP hakkında daha fazla bilgi edinin.</strong></a>
 <p><strong>Veri Sağlayıcılar:
-<a rel="help" href="https://erddap.github.io/setup.html">Kendi ERDDAP sunucunuzu kurabilir</a>, kendi verilerinizi servis edebilirsiniz.</strong> ERDDAP ücretsiz ve açık kaynaktır.
+<a rel="help" href="https://erddap.github.io/docs/server-admin/deploy-install">Kendi ERDDAP sunucunuzu kurabilir</a>, kendi verilerinizi servis edebilirsiniz.</strong> ERDDAP ücretsiz ve açık kaynaktır.
 Apache benzeri lisanslar kullanır, böylece onunla istediğiniz her şeyi yapabilirsiniz.
 ERDDAP görünümü özelleştirilebilir, dolayısıyla ERDDAP NOAA değil kurumunuzu yansıtacaktır.
 ERDDAP kurmak için gösterilen küçük çaba birçok faydayı beraberinde getiriyor.
@@ -5679,7 +5679,7 @@ Bu örtülüdür.)
 <br>&nbsp;
 <li><strong><a class="selfLink" id="localAndRemote" href="#localAndRemote" rel="bookmark">ERDDAP yerel (sunucunun sabit sürücüsündeki) ve uzak (web üzerinden erişilen) veri kaynaklarından veri alabilir.</a></strong>
 <br>ERDDAP erişebileceği
-<a rel="help" href="https://erddap.github.io/setupDatasetsXml.html#datasetTypes">veri kaynağı türlerinin listesine</a> bakın.
+<a rel="help" href="https://erddap.github.io/docs/server-admin/datasets#list-of-types-datasets">veri kaynağı türlerinin listesine</a> bakın.
 <br>&nbsp;
 <li><strong><a class="selfLink" id="scientificData" href="#scientificData" rel="bookmark">ERDDAP yalnızca oşinografik veriler değil, birçok türde bilimsel veri sunabilir.</a></strong>
 <br>ERDDAP
@@ -5835,8 +5835,8 @@ Bir
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
       title="Harici bir web sitesine verilen bu bağlantı, bir onay teşkil etmez."></a>) verileri açıklamaktadır.
 ERDDAP yöneticinin veri kümelerine ve değişkenlerine anında eklenecek meta verileri tanımlamasına olanak tanır (ve bunu teşvik eder).
-<a rel="help" href="https://erddap.github.io/setupDatasetsXml.html">Yöneticilere yönelik talimatların</a>
-<a rel="help" href="https://erddap.github.io/setupDatasetsXml.html#addAttributes">addAttributes bölümüne</a> bakın.
+<a rel="help" href="https://erddap.github.io/docs/server-admin/datasets">Yöneticilere yönelik talimatların</a>
+<a rel="help" href="https://erddap.github.io/docs/server-admin/datasets#addattributes">addAttributes bölümüne</a> bakın.
 <br>&nbsp;
 <li><strong><a class="selfLink" id="images" href="#images" rel="bookmark"
  >ERDDAP grafikler ve haritalar içeren .png ve .pdf resim dosyalarını talep etmenizi sağlar</a></strong>
@@ -5993,7 +5993,7 @@ Oturum açan kullanıcılar, genel veri kümelerine ve erişimlerine izin verile
 Kullanıcılar oturum açmak ve özel veri kümelerine erişmek için https:
 (Güvenli Yuva Katmanı) kullanmalıdır.
 Veri kümeleri, grafik ve haritaların herkesin erişimine açık olacak şekilde yapılandırılabilir, ancak verilere yalnızca yetkili kullanıcılar erişebilir.
-(<a rel="help" href="https://erddap.github.io/setup.html#security">daha fazla bilgi</a>)
+(<a rel="help" href="https://erddap.github.io/docs/server-admin/additional-information#security">daha fazla bilgi</a>)
 <br>&nbsp;
 <li><strong><a class="selfLink" id="chunks" href="#chunks" rel="bookmark">ERDDAP verileri parçalar halinde işler.</a></strong>
 <br>Bellekten tasarruf etmek (büyük bir sorun) ve yanıtların daha erken başlamasını sağlamak için ERDDAP veri isteklerini parçalar halinde işler; sürekli olarak kaynaktan bir yığın veri alır ve onu temizler (örneğin,
@@ -6017,16 +6017,16 @@ kullanıcıdan bir talep alır; uzak bir veri kaynağından veri alır; verileri
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
       title="Harici bir web sitesine verilen bu bağlantı, bir onay teşkil etmez."></a> :
 Ancak ERDDAP ayrıca mevcut tüm verileri uzak bir veri kaynağından aktif olarak alma ve
-<a rel="help" href="https://erddap.github.io/setupDatasetsXml.html#EDDGridCopy">verilerin yerel bir kopyasını saklama</a> yeteneğine de sahiptir.
+<a rel="help" href="https://erddap.github.io/docs/server-admin/datasets#eddgridcopy">verilerin yerel bir kopyasını saklama</a> yeteneğine de sahiptir.
 <a rel="help" href="https://en.wikipedia.org/wiki/Push_technology">Push Teknolojisi <img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
       title="Harici bir web sitesine verilen bu bağlantı, bir onay teşkil etmez."></a> :
 ERDDAP
 <a href="#subscriptions">abonelik servisleri</a> kullanılarak, diğer veri sunucuları yeni veri geldiğinde anında bilgilendirilerek veri talep edebilirler (veri çekerek).
 ERDDAP
-<a rel="help"  href="https://erddap.github.io/setupDatasetsXml.html#EDDGridFromErddap">EDDGrid FromErddap</a> ve
-<a rel="help"  href="https://erddap.github.io/setupDatasetsXml.html#EDDTableFromErddap">EDDTableFromErddap&#39;ları,</a> yeni veriler mevcut olduğunda anında bilgilendirilmeleri için ERDDAP abonelik hizmetlerini ve
-<a rel="help" href="https://erddap.github.io/setup.html#flag">işaretleme sistemini</a> kullanır.
+<a rel="help"  href="https://erddap.github.io/docs/server-admin/datasets#eddfromerddap">EDDGrid FromErddap</a> ve
+<a rel="help"  href="https://erddap.github.io/docs/server-admin/datasets#eddfromerddap">EDDTableFromErddap&#39;ları,</a> yeni veriler mevcut olduğunda anında bilgilendirilmeleri için ERDDAP abonelik hizmetlerini ve
+<a rel="help" href="https://erddap.github.io/docs/server-admin/additional-information#flag">işaretleme sistemini</a> kullanır.
 Bunları harika bir etki elde etmek için birleştirebilirsiniz:
 Bir EDDGrid Kopyasını bir EDDGrid FromErddap veri kümesinin etrafına sararsanız (veya bir EDDTableCopy&#39;yi bir EDDTableFromErddap veri kümesinin etrafına sararsanız), ERDDAP otomatik olarak başka bir ERDDAP veri kümesinin yerel bir kopyasını oluşturacak ve muhafaza edecektir.
 Abonelik hizmetleri yeni veriler elde edilir edilmez çalışmaya başladığından, push teknolojisi verileri çok hızlı bir şekilde (saniyeler içinde) yayar.
@@ -6120,9 +6120,9 @@ Tek başına bu neden bile ERDDAP geliştirme masrafını haklı çıkarıyor.
 (Sanırım ERDDAP benim ERDDAP geliştirmek için harcadığımdan daha fazla NOAA bilim insanının zamanından tasarruf ettiği gösterilebilir.
 Zaman=Para.) Ancak bunun yan faydası, başka herhangi bir kuruluşun kendi dağıtımını yapmak için ERDDAP&#39;ı <strong>ücretsiz olarak</strong>
 <a rel="bookmark" 
-href="https://erddap.github.io/setup.html">ERDDAP, kurabilmesi ve kullanabilmesidir.</a> bilimsel veriler.
+href="https://erddap.github.io/docs/server-admin/deploy-install">ERDDAP, kurabilmesi ve kullanabilmesidir.</a> bilimsel veriler.
 <p><a rel="bookmark" 
-href="https://erddap.github.io/setup.html#organizations"
+href="https://erddap.github.io/#who-uses-erddap"
 >En az 14 ülkede 90&#39;ın üzerinde kuruluş ERDDAP kullanıyor</a> .
 Belki bedava öğle yemeği diye bir şey vardır.
 <p>ERDDAP bir Java programıdır.
@@ -6241,14 +6241,14 @@ NOAA / NMFS / SWFSC / ERD .</kbd>
 <br>Bob&#39;un veri dağıtım sistemlerinin tasarımı ve değerlendirilmesi hakkındaki görüşlerine
 <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/images/erddapTalk/erdData.html">buradan</a> ulaşabilirsiniz.
 <br>&nbsp;
-<p><a rel="help" href="https://erddap.github.io/setup.html"><strong>Kendi ERDDAP Sunucunuzu Kurup</strong></a>, kendi verilerinizi servis <strong><a class="selfLink" id="setup" href="#setup" rel="bookmark">edebilirsiniz</a></strong> .
+<p><a rel="help" href="https://erddap.github.io/docs/server-admin/deploy-install"><strong>Kendi ERDDAP Sunucunuzu Kurup</strong></a>, kendi verilerinizi servis <strong><a class="selfLink" id="setup" href="#setup" rel="bookmark">edebilirsiniz</a></strong> .
 <ul>
 <li>ERDDAP kurmak için gösterilen küçük çaba birçok faydayı beraberinde getiriyor.
 <li>Verilerinizi dağıtmak için halihazırda bir web hizmetiniz varsa, ERDDAP verilerinize mevcut hizmet aracılığıyla veya kaynak dosyalar veya veritabanı aracılığıyla erişecek şekilde ayarlayabilirsiniz.
 Böylece insanlar verilerinize erişmenin başka bir yoluna sahip olacak ve verileri ek dosya formatlarında veya grafik veya harita olarak indirebilecekler.
 <li>Yüksek talep gören veri kümeleriniz varsa ölçeği büyütmek ve büyük bir veri dağıtım merkezinin ihtiyaçlarını karşılamak için
 <a rel="help" 
-  href="https://erddap.github.io/grids.html"
+  href="https://erddap.github.io/docs/server-admin/scaling"
   >birlikte çalışan birden fazla ERDDAP</a> kurabilirsiniz.
 </ul>
 <h2><a class="selfLink" id="contact" href="#contact" rel="bookmark">Bize Ulaşın</a></h2>
@@ -7883,7 +7883,7 @@ veri kümesi olmalıdır.
 <li>Veri değişkeninin boylam ve enlem ekseni değişkenlerine sahip olması ZORUNLUDUR.
 (Diğer eksen değişkenleri OPSİYONELDİR.)
 <li>-180 ile 180 arasında bazı boylam değerleri OLMALIDIR.
-<li><a rel="help" href="https://erddap.github.io/setupDatasetsXml.html#colorBar">colorBarMinimum ve colorBarMaximum niteliklerinin</a> belirtilmesi ZORUNLUDUR.
+<li><a rel="help" href="https://erddap.github.io/docs/server-admin/datasets#color-bar-attributes">colorBarMinimum ve colorBarMaximum niteliklerinin</a> belirtilmesi ZORUNLUDUR.
 (Diğer renk çubuğu nitelikleri İSTEĞE BAĞLIDIR.)
 </ul>
 <li><strong>Grid veri katmanları:</strong> ERDDAP WMS, grid veri kümelerinde enlem ve boylam boyutlarını kullanan tüm veri değişkenleri WMS aracılığıyla mevcuttur.

@@ -35,7 +35,7 @@ class SubscriptionsTests {
     Test.ensureTrue(Integer.valueOf(17).equals(Integer.valueOf(17)), "");
 
     // test empty system
-    String ffName = EDStatic.fullTestCacheDirectory + "subscriptionsV1.txt";
+    String ffName = EDStatic.config.fullTestCacheDirectory + "subscriptionsV1.txt";
     File2.delete(ffName);
     Subscriptions sub = new Subscriptions(ffName, 72, EDStatic.erddapHttpsUrl);
     Test.ensureEqual(sub.persistentTable.nRows(), 0, "");

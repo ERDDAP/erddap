@@ -226,7 +226,7 @@ public abstract class EDDTableFromFiles extends EDDTable implements WatchUpdateH
     String tFileNameRegex = ".*";
     boolean tRecursive = false;
     String tPathRegex = ".*";
-    boolean tAccessibleViaFiles = EDStatic.defaultAccessibleViaFiles;
+    boolean tAccessibleViaFiles = EDStatic.config.defaultAccessibleViaFiles;
     String tMetadataFrom = MF_LAST;
     String tPreExtractRegex = "", tPostExtractRegex = "", tExtractRegex = "";
     String tColumnNameForExtract = "";
@@ -855,7 +855,9 @@ public abstract class EDDTableFromFiles extends EDDTable implements WatchUpdateH
         String qrName = quickRestartFullFileName(tDatasetID);
         long tCreationTime = System.currentTimeMillis(); // used below
 
-        if (EDStatic.quickRestart && EDStatic.initialLoadDatasets() && File2.isFile(qrName)) {
+        if (EDStatic.config.quickRestart
+            && EDStatic.initialLoadDatasets()
+            && File2.isFile(qrName)) {
 
           // quickRestart
           // set creationTimeMillis to time of previous creation, so next time
@@ -934,7 +936,9 @@ public abstract class EDDTableFromFiles extends EDDTable implements WatchUpdateH
         String qrName = quickRestartFullFileName(tDatasetID);
         long tCreationTime = System.currentTimeMillis(); // used below
 
-        if (EDStatic.quickRestart && EDStatic.initialLoadDatasets() && File2.isFile(qrName)) {
+        if (EDStatic.config.quickRestart
+            && EDStatic.initialLoadDatasets()
+            && File2.isFile(qrName)) {
 
           // quickRestart
           // set creationTimeMillis to time of previous creation, so next time
@@ -1011,11 +1015,11 @@ public abstract class EDDTableFromFiles extends EDDTable implements WatchUpdateH
         return tEDDTable;
       }
       case "EDDTableFromWFSFiles" -> {
-        String fileDir = EDStatic.fullCopyDirectory + tDatasetID + "/";
+        String fileDir = EDStatic.config.fullCopyDirectory + tDatasetID + "/";
         String fileName = "data.tsv";
         long tCreationTime = System.currentTimeMillis(); // used below
 
-        if (EDStatic.quickRestart
+        if (EDStatic.config.quickRestart
             && EDStatic.initialLoadDatasets()
             && File2.isFile(fileDir + fileName)) {
 
@@ -1181,7 +1185,7 @@ public abstract class EDDTableFromFiles extends EDDTable implements WatchUpdateH
    *     </ul>
    *     Special case: value="null" causes that item to be removed from combinedGlobalAttributes.
    *     Special case: if combinedGlobalAttributes name="license", any instance of
-   *     value="[standard]" will be converted to the EDStatic.standardLicense.
+   *     value="[standard]" will be converted to the EDStatic.messages.standardLicense.
    * @param tDataVariables is an Object[nDataVariables][3 or 4]: <br>
    *     [0]=String sourceName (the name of the data variable in the dataset source, without the
    *     outer or inner sequence name), <br>
@@ -1347,7 +1351,7 @@ public abstract class EDDTableFromFiles extends EDDTable implements WatchUpdateH
         tStandardizeWhat < 0 || tStandardizeWhat == Integer.MAX_VALUE
             ? defaultStandardizeWhat()
             : tStandardizeWhat;
-    accessibleViaFiles = EDStatic.filesActive && tAccessibleViaFiles;
+    accessibleViaFiles = EDStatic.config.filesActive && tAccessibleViaFiles;
     nThreads = tNThreads;
 
     preExtractRegex = tPreExtractRegex;
@@ -1683,7 +1687,7 @@ public abstract class EDDTableFromFiles extends EDDTable implements WatchUpdateH
     }
 
     // skip loading until after intial loadDatasets?
-    if (!EDStatic.forceSynchronousLoading
+    if (!EDStatic.config.forceSynchronousLoading
         && fileTable.nRows() == 0
         && EDStatic.initialLoadDatasets()) {
       requestReloadASAP();
@@ -1701,7 +1705,7 @@ public abstract class EDDTableFromFiles extends EDDTable implements WatchUpdateH
     // set up WatchDirectory
     if (updateEveryNMillis > 0) {
       try {
-        if (EDStatic.useSharedWatchService) {
+        if (EDStatic.config.useSharedWatchService) {
           SharedWatchService.watchDirectory(fileDir, recursive, pathRegex, this, datasetID);
         } else {
           watchDirectory = WatchDirectory.watchDirectoryAll(fileDir, recursive, pathRegex);
@@ -1710,8 +1714,8 @@ public abstract class EDDTableFromFiles extends EDDTable implements WatchUpdateH
         updateEveryNMillis = 0; // disable the inotify system for this instance
         String subject = String2.ERROR + " in " + datasetID + " constructor (inotify)";
         msg = MustBe.throwableToString(t);
-        if (msg.indexOf("inotify instances") >= 0) msg += EDStatic.inotifyFixAr[0];
-        EDStatic.email(EDStatic.adminEmail, subject, msg);
+        if (msg.indexOf("inotify instances") >= 0) msg += EDStatic.messages.inotifyFixAr[0];
+        EDStatic.email(EDStatic.config.adminEmail, subject, msg);
         msg = "";
       }
     }
@@ -1719,7 +1723,8 @@ public abstract class EDDTableFromFiles extends EDDTable implements WatchUpdateH
     // doQuickRestart?
     boolean doQuickRestart =
         fileTable.nRows() > 0
-            && (testQuickRestart || (EDStatic.quickRestart && EDStatic.initialLoadDatasets()));
+            && (testQuickRestart
+                || (EDStatic.config.quickRestart && EDStatic.initialLoadDatasets()));
     if (verbose) String2.log("doQuickRestart=" + doQuickRestart);
 
     if (doQuickRestart) {
@@ -1901,7 +1906,8 @@ public abstract class EDDTableFromFiles extends EDDTable implements WatchUpdateH
       elapsedTime = System.currentTimeMillis();
       while (tFileListPo < tFileNamePA.size()) {
         if (Thread.currentThread().isInterrupted())
-          throw new SimpleException("EDDTableFromFiles.init" + EDStatic.caughtInterruptedAr[0]);
+          throw new SimpleException(
+              "EDDTableFromFiles.init" + EDStatic.messages.caughtInterruptedAr[0]);
 
         int tDirI = tFileDirIndexPA.get(tFileListPo);
         String tFileS = tFileNamePA.get(tFileListPo);
@@ -2209,7 +2215,7 @@ public abstract class EDDTableFromFiles extends EDDTable implements WatchUpdateH
     // send email with bad file info
     if (!badFileMap.isEmpty()) {
       String emailSB = badFileMapToString(badFileMap, dirList) + msg + "\n\n";
-      EDStatic.email(EDStatic.emailEverythingToCsv, errorInMethod + "Bad Files", emailSB);
+      EDStatic.email(EDStatic.config.emailEverythingToCsv, errorInMethod + "Bad Files", emailSB);
     }
     // if (debugMode) String2.log(">> EDDTableFromFiles " +
     // Calendar2.getCurrentISODateTimeStringLocalTZ() + " finished sending email
@@ -2277,7 +2283,7 @@ public abstract class EDDTableFromFiles extends EDDTable implements WatchUpdateH
     String tLicense = combinedGlobalAttributes.getString("license");
     if (tLicense != null)
       combinedGlobalAttributes.set(
-          "license", String2.replaceAll(tLicense, "[standard]", EDStatic.standardLicense));
+          "license", String2.replaceAll(tLicense, "[standard]", EDStatic.messages.standardLicense));
     combinedGlobalAttributes.removeValue("\"null\"");
     // if (debugMode) String2.log(">> EDDTableFromFiles " +
     // Calendar2.getCurrentISODateTimeStringLocalTZ() + " finished making
@@ -2561,7 +2567,7 @@ public abstract class EDDTableFromFiles extends EDDTable implements WatchUpdateH
     // if cacheFromUrl is remote ERDDAP /files/, subscribe to the dataset
     // This is like code in EDDGridFromFiles but "/tabledap/"
     if (!doQuickRestart
-        && EDStatic.subscribeToRemoteErddapDataset
+        && EDStatic.config.subscribeToRemoteErddapDataset
         && cacheFromUrl != null
         && cacheFromUrl.startsWith("http")
         && cacheFromUrl.indexOf("/erddap/files/") > 0) {
@@ -3199,13 +3205,13 @@ public abstract class EDDTableFromFiles extends EDDTable implements WatchUpdateH
 
     // If too many events, call for reload.
     // This method isn't as nearly as efficient as full reload.
-    if (nEvents > EDStatic.updateMaxEvents) {
+    if (nEvents > EDStatic.config.updateMaxEvents) {
       if (reallyVerbose)
         String2.log(
             msg
                 + nEvents
                 + ">"
-                + EDStatic.updateMaxEvents
+                + EDStatic.config.updateMaxEvents
                 + " file events, so I called requestReloadASAP() instead of making changes here.");
       requestReloadASAP();
       return false;
@@ -3235,7 +3241,8 @@ public abstract class EDDTableFromFiles extends EDDTable implements WatchUpdateH
     int nChanges = 0; // BadFiles or FileTable
     for (int evi = 0; evi < nEvents; evi++) {
       if (Thread.currentThread().isInterrupted())
-        throw new SimpleException("EDDTableFromFiles.lowUpdate" + EDStatic.caughtInterruptedAr[0]);
+        throw new SimpleException(
+            "EDDTableFromFiles.lowUpdate" + EDStatic.messages.caughtInterruptedAr[0]);
 
       String fullName = contexts.get(evi);
       String dirName = File2.getDirectory(fullName);
@@ -3436,7 +3443,7 @@ public abstract class EDDTableFromFiles extends EDDTable implements WatchUpdateH
       }
 
       // after changes all in place
-      if (EDStatic.updateSubsRssOnFileChanges) {
+      if (EDStatic.config.updateSubsRssOnFileChanges) {
         Erddap.tryToDoActions(datasetID(), this, "", changed(snapshot));
       }
     }
@@ -3478,7 +3485,7 @@ public abstract class EDDTableFromFiles extends EDDTable implements WatchUpdateH
   @Override
   public boolean lowUpdate(int language, String msg, long startUpdateMillis) throws Throwable {
 
-    if (EDStatic.useSharedWatchService) {
+    if (EDStatic.config.useSharedWatchService) {
       SharedWatchService.processEvents();
       return false;
     }
@@ -4298,7 +4305,7 @@ public abstract class EDDTableFromFiles extends EDDTable implements WatchUpdateH
    *
    * @param language the index of the selected language
    * @param loggedInAs the user's login name if logged in (or null if not logged in).
-   * @param requestUrl the part of the user's request, after EDStatic.baseUrl, before '?'.
+   * @param requestUrl the part of the user's request, after EDStatic.config.baseUrl, before '?'.
    * @param userDapQuery the part of the user's request after the '?', still percentEncoded, may be
    *     null.
    * @param tableWriter
@@ -4962,8 +4969,8 @@ public abstract class EDDTableFromFiles extends EDDTable implements WatchUpdateH
         throw t;
         // throw t instanceof WaitThenTryAgainException? t :
         // new WaitThenTryAgainException(
-        // EDStatic.simpleBilingual(language, EDStatic.waitThenTryAgainAr) +
-        // "\n(" + EDStatic.errorFromDataSource + tToString + ")", t);
+        // EDStatic.simpleBilingual(language, EDStatic.messages.waitThenTryAgainAr) +
+        // "\n(" + EDStatic.messages.errorFromDataSource + tToString + ")", t);
       }
 
     } finally {

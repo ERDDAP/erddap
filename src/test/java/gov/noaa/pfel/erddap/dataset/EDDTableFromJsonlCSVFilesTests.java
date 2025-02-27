@@ -249,7 +249,7 @@ class EDDTableFromJsonlCSVFilesTests {
     // *****************\n");
     // testVerboseOn();
     String tName, results, tResults, expected, userDapQuery;
-    String dir = EDStatic.fullTestCacheDirectory;
+    String dir = EDStatic.config.fullTestCacheDirectory;
     String today =
         Calendar2.getCurrentISODateTimeStringZulu()
             .substring(0, 14); // 14 is enough to check hour. Hard to
@@ -493,7 +493,7 @@ class EDDTableFromJsonlCSVFilesTests {
     // *****************\n");
     // testVerboseOn();
     String tName, results, expected;
-    String dir = EDStatic.fullTestCacheDirectory;
+    String dir = EDStatic.config.fullTestCacheDirectory;
     int language = 0;
 
     String id = "testBase64Image";

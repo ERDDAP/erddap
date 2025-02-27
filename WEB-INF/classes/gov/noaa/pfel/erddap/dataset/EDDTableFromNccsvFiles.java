@@ -19,7 +19,7 @@ import gov.noaa.pfel.erddap.variable.*;
 
 /**
  * This class represents a table of data from a collection of NCCSV files. See
- * https://erddap.github.io/NCCSV.html .
+ * https://erddap.github.io/docs/user/nccsv-1.20 .
  *
  * @author Bob Simons (was bob.simons@noaa.gov, now BobSimons2.00@gmail.com) 2017-04-17
  */

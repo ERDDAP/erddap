@@ -9,7 +9,7 @@ import java.nio.file.Path;
 
 public class EDDTestDataset {
   public static void generateDatasetsXml() throws URISyntaxException, FileNotFoundException {
-    if (EDStatic.useSaxParser) {
+    if (EDStatic.config.useSaxParser) {
       // This section writes xml files that represent parts of a dataset. These are to show using
       // XInclude
       // to load information into the datasets.xml file.
@@ -55,7 +55,7 @@ public class EDDTestDataset {
     try (PrintWriter datasetsXml = new PrintWriter("development/test/datasets.xml")) {
       datasetsXml.append(
           "<?xml version=\"1.0\" encoding=\"ISO-8859-1\" ?>\n"
-              + (EDStatic.useSaxParser ? "<!DOCTYPE note [<!ENTITY deg '&#176;'>]>\n" : "")
+              + (EDStatic.config.useSaxParser ? "<!DOCTYPE note [<!ENTITY deg '&#176;'>]>\n" : "")
               + "<erddapDatasets xmlns:xi=\"http://www.w3.org/2001/XInclude\">\n"
               // Try to set this so the datasets that need to load in the background have a chance
               // and this runs again before the jetty tests to ensure all the datasets are loaded.
@@ -219,8 +219,8 @@ public class EDDTestDataset {
       datasetsXml.append(xmlFragment_erdMH1chla1day());
       datasetsXml.append(xmlFragment_erdMH1chla8day());
       datasetsXml.append(xmlFragment_erdMH1chlamday());
-      datasetsXml.append(xmlFragment_nceiPH53sstd1day(EDStatic.useSaxParser));
-      datasetsXml.append(xmlFragment_nceiPH53sstn1day(EDStatic.useSaxParser));
+      datasetsXml.append(xmlFragment_nceiPH53sstd1day(EDStatic.config.useSaxParser));
+      datasetsXml.append(xmlFragment_nceiPH53sstn1day(EDStatic.config.useSaxParser));
       datasetsXml.append(xmlFragment_testGridFromErddap());
       datasetsXml.append(xmlFragment_testUnsignedGrid());
       datasetsXml.append(xmlFragment_testGridNThreads());
@@ -236,7 +236,7 @@ public class EDDTestDataset {
       // currently loaded
       // datasetsXml.append(xmlFragment_testGroups());// sourceAxisValues null
       datasetsXml.append(xmlFragment_testIslandShift());
-      datasetsXml.append(xmlFragment_testMinimalReadSource(EDStatic.useSaxParser));
+      datasetsXml.append(xmlFragment_testMinimalReadSource(EDStatic.config.useSaxParser));
       // datasetsXml.append(xmlFragment_nosCoopsWLR6()); //stationTable=null
       // datasetsXml.append(xmlFragment_nosCoopsWLR1()); //stationTable=null
       // datasetsXml.append(xmlFragment_nosCoopsWLV6()); //stationTable=null
@@ -30234,7 +30234,7 @@ public class EDDTestDataset {
         + //
         "        <att name=\"httpGetRequiredVariables\">stationID, time</att>\n"
         + //
-        "        <att name=\"infoUrl\">https://erddap.github.io/setupDatasetsXml.html</att>\n"
+        "        <att name=\"infoUrl\">https://erddap.github.io/docs/server-admin/datasets</att>\n"
         + //
         "        <att name=\"institution\">NOAA NMFS SWFSC ERD</att>\n"
         + //
@@ -68497,10 +68497,9 @@ public class EDDTestDataset {
         "        <att name=\"Westernmost_Easting\" type=\"float\">-124.32333</att>\n"
         + //
         "    </sourceAttributes -->\n"
-        + //
-        "    <addAttributes>\n"
-        + //
-        "        <att name=\"keywords\">1984-2004,\n"
+        + "    <addAttributes>\n"
+        + "        <att name=\"subsetVariables\">line_station</att>\n"
+        + "        <att name=\"keywords\">1984-2004,\n"
         + //
         "Atmosphere &gt; Altitude &gt; Station Height,\n"
         + //

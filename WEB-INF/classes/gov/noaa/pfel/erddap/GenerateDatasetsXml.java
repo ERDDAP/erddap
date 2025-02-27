@@ -36,8 +36,8 @@ public class GenerateDatasetsXml {
   String outFileName = null;
 
   public GenerateDatasetsXml() {
-    logFileName = EDStatic.fullLogsDirectory + "GenerateDatasetsXml.log";
-    outFileName = EDStatic.fullLogsDirectory + "GenerateDatasetsXml.out";
+    logFileName = EDStatic.config.fullLogsDirectory + "GenerateDatasetsXml.log";
+    outFileName = EDStatic.config.fullLogsDirectory + "GenerateDatasetsXml.out";
   }
 
   private void printToBoth(String s) throws IOException {
@@ -113,8 +113,8 @@ public class GenerateDatasetsXml {
 
     try {
       // delete the old-system log files (pre 1.48 names)
-      File2.delete(EDStatic.fullLogsDirectory + "GenerateDatasetsXmlLog.txt");
-      File2.delete(EDStatic.fullLogsDirectory + "GenerateDatasetsXmlLog.txt.previous");
+      File2.delete(EDStatic.config.fullLogsDirectory + "GenerateDatasetsXmlLog.txt");
+      File2.delete(EDStatic.config.fullLogsDirectory + "GenerateDatasetsXmlLog.txt.previous");
 
       if (args == null) args = new String[0];
       String eddType = "EDDGridFromDap";
@@ -264,7 +264,7 @@ public class GenerateDatasetsXml {
                       + "  correct.  *YOU* ARE RESPONSIBLE FOR ENSURING THE CORRECTNESS OF THE XML\n"
                       + "  THAT YOU ADD TO ERDDAP'S datasets.xml FILE.\n"
                       + "For detailed information, see\n"
-                      + "https://erddap.github.io/setupDatasetsXml.html\n"
+                      + "https://erddap.github.io/docs/server-admin/datasets\n"
                       + "\n"
                       + "The EDDType options are:\n"
                       + eddTypesString
@@ -1243,7 +1243,10 @@ public class GenerateDatasetsXml {
       String datasetsXmlName = insert.substring(2, npo);
       if (datasetsXmlName.length() == 0) {
         datasetsXmlName =
-            EDStatic.contentDirectory + "datasets" + (EDStatic.developmentMode ? "2" : "") + ".xml";
+            EDStatic.config.contentDirectory
+                + "datasets"
+                + (EDStatic.config.developmentMode ? "2" : "")
+                + ".xml";
         String2.log("datasetsXmlName not specified, so using " + datasetsXmlName);
       }
       if (!File2.isFile(datasetsXmlName))

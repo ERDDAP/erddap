@@ -61,10 +61,10 @@ class EDDGridCopyTests {
             null,
             null,
             "",
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             eddGrid.className() + "_Entire",
             ".das");
-    results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+    results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
     // String2.log(results);
     expected =
         "Attributes {\n"
@@ -244,10 +244,10 @@ class EDDGridCopyTests {
             null,
             null,
             "",
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             eddGrid.className() + "_Entire",
             ".dds");
-    results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+    results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
     // String2.log(results);
     expected =
         "Dataset {\n"
@@ -295,10 +295,10 @@ class EDDGridCopyTests {
             null,
             null,
             userDapQuery,
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             eddGrid.className() + "_Data1",
             ".csv");
-    results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+    results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
     // String2.log(results);
     expected =
         // verified with
@@ -328,10 +328,10 @@ class EDDGridCopyTests {
             null,
             null,
             userDapQuery,
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             eddGrid.className() + "_Data1",
             ".csv");
-    results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+    results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
     // String2.log(results);
     expected =
         // verified with
@@ -358,7 +358,7 @@ class EDDGridCopyTests {
     String tName;
     EDDGrid eddGrid = null;
     String tDatasetID = "testOnlySince";
-    String copyDatasetDir = EDStatic.fullCopyDirectory + tDatasetID + "/";
+    String copyDatasetDir = EDStatic.config.fullCopyDirectory + tDatasetID + "/";
     int language = 0;
 
     try {
@@ -384,10 +384,11 @@ class EDDGridCopyTests {
             null,
             null,
             "time",
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             eddGrid.className() + "_time",
             ".csv");
-    String2.log("\n" + File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName));
+    String2.log(
+        "\n" + File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName));
     String2.pressEnterToContinue(
         "The time values shown should only include times since "
             + Calendar2.epochSecondsToIsoStringTZ(Calendar2.nowStringToEpochSeconds("now-3days"))

@@ -66,9 +66,9 @@ public class OutputStreamViaAwsS3 extends BufferedOutputStream {
     String contentType = (String) fileTypeInfo[0];
     // copy to AWS bucket
     // tell Aws about other file attributes when file accessed as from web site
-    String fullAwsUrl = EDStatic.awsS3OutputBucketUrl + parent.fileName + parent.extension;
+    String fullAwsUrl = EDStatic.config.awsS3OutputBucketUrl + parent.fileName + parent.extension;
     SSR.uploadFileToAwsS3(
-        EDStatic.awsS3OutputTransferManager, fullLocalFileName, fullAwsUrl, contentType);
+        EDStatic.config.awsS3OutputTransferManager, fullLocalFileName, fullAwsUrl, contentType);
 
     // EDStatic.awsS3OutputClient.putObject(objectRequest, localPath);
 

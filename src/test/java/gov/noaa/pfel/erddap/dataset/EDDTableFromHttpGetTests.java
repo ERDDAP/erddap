@@ -862,7 +862,7 @@ class EDDTableFromHttpGetTests {
                 "stationID, time",
                 "stationID/2months",
                 "JohnSmith_JohnSmithKey, HOBOLogger_HOBOLoggerKey, QCScript59_QCScript59Key",
-                "https://erddap.github.io/setupDatasetsXml.html",
+                "https://erddap.github.io/docs/server-admin/datasets",
                 "NOAA NMFS SWFSC ERD",
                 "This is my great summary.",
                 "My Great Title",
@@ -883,7 +883,7 @@ class EDDTableFromHttpGetTests {
                   "stationID, time",
                   "stationID/2months",
                   "JohnSmith_JohnSmithKey, HOBOLogger_HOBOLoggerKey, QCScript59_QCScript59Key",
-                  "https://erddap.github.io/setupDatasetsXml.html",
+                  "https://erddap.github.io/docs/server-admin/datasets",
                   "NOAA NMFS SWFSC ERD",
                   "This is my great summary.",
                   "My Great Title"
@@ -928,7 +928,7 @@ class EDDTableFromHttpGetTests {
             + "        <att name=\"httpGetDirectoryStructure\">stationID/2months</att>\n"
             + "        <att name=\"httpGetKeys\">JohnSmith_JohnSmithKey, HOBOLogger_HOBOLoggerKey, QCScript59_QCScript59Key</att>\n"
             + "        <att name=\"httpGetRequiredVariables\">stationID, time</att>\n"
-            + "        <att name=\"infoUrl\">https://erddap.github.io/setupDatasetsXml.html</att>\n"
+            + "        <att name=\"infoUrl\">https://erddap.github.io/docs/server-admin/datasets</att>\n"
             + "        <att name=\"institution\">NOAA NMFS SWFSC ERD</att>\n"
             + "        <att name=\"keywords\">air, airTemp, author, center, command, data, erd, fisheries, great, identifier, marine, national, nmfs, noaa, science, service, southwest, station, stationID, swfsc, temperature, time, timestamp, title, water, waterTemp</att>\n"
             + "        <att name=\"license\">[standard]</att>\n"
@@ -1068,7 +1068,7 @@ class EDDTableFromHttpGetTests {
     String dataDir =
         Path.of(EDDTestDataset.class.getResource("/data/points/testFromHttpGet/").toURI())
             .toString();
-    String dir = EDStatic.fullTestCacheDirectory;
+    String dir = EDStatic.config.fullTestCacheDirectory;
     String today =
         Calendar2.getCurrentISODateTimeStringZulu()
             .substring(0, 14); // 14 is enough to check hour. Hard to
@@ -1197,7 +1197,7 @@ class EDDTableFromHttpGetTests {
     expected =
         "    String httpGetDirectoryStructure \"stationID/2months\";\n"
             + "    String httpGetRequiredVariables \"stationID, time\";\n"
-            + "    String infoUrl \"https://erddap.github.io/setupDatasetsXml.html\";\n"
+            + "    String infoUrl \"https://erddap.github.io/docs/server-admin/datasets\";\n"
             + "    String institution \"NOAA NMFS SWFSC ERD\";\n"
             + "    String keywords \"air, airTemp, author, center, command, data, erd, fisheries, great, identifier, latitude, longitude, marine, national, nmfs, noaa, science, service, southwest, station, stationID, swfsc, temperature, time, timestamp, title, water, waterTemp\";\n"
             + "    String license \"The data may be used and redistributed for free but is not intended\n"
@@ -1307,7 +1307,7 @@ class EDDTableFromHttpGetTests {
             "2,station2_2016-05.jsonl,532,-1.0,station2,station2,0,2016-05-29T02:00:00Z,2016-05-29T03:00:00Z,0,10.2,10.2,0,-150.3,-150.3,0,16.2,16.3,0,17.2,17.3,0,1.531153321058E9,1.531153324151E9,0,JohnSmith,JohnSmith,0,0,0,0\n";
     Test.ensureLinesMatch(results, expected, "");
 
-    EDStatic.developmentMode = true;
+    EDStatic.config.developmentMode = true;
     // push a bunch of data into the dataset: 2 stations, 2 time periods
     for (int i = 0; i < 4; i++) {
       // apr
@@ -1378,7 +1378,7 @@ class EDDTableFromHttpGetTests {
               eddTable.className() + "_insert4_" + i,
               ".insert");
     }
-    EDStatic.developmentMode = false;
+    EDStatic.config.developmentMode = false;
 
     // look at last response file
     results = File2.directReadFrom88591File(dir + tName);
@@ -1546,7 +1546,7 @@ class EDDTableFromHttpGetTests {
             + "\\d{2}:\\d{2}\\.\\d{3}Z,JohnSmith,0\n";
     Test.ensureLinesMatch(results, versioningExpected, "\nresults=\n" + results);
 
-    EDStatic.developmentMode = true;
+    EDStatic.config.developmentMode = true;
     // overwrite and delete a bunch of data
     for (int i = 0; i < 2; i++) {
       // overwrite the first 2
@@ -1611,7 +1611,7 @@ class EDDTableFromHttpGetTests {
               eddTable.className() + "_delete8_" + i,
               ".delete");
     }
-    EDStatic.developmentMode = false;
+    EDStatic.config.developmentMode = false;
 
     // .csv all data (with processing)
     userDapQuery = "";

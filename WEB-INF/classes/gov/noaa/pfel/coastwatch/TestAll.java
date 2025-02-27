@@ -49,11 +49,12 @@ public class TestAll {
     String2.setupCommonsLogging(-1);
 
     // set log file to <bigParentDir>/logs/TestAll.out
-    EDStatic.quickRestart = false; // also, this forces EDStatic instantiation when running TestAll
+    EDStatic.config.quickRestart =
+        false; // also, this forces EDStatic instantiation when running TestAll
     String2.setupLog(
         true,
         false, // output to system.out and a file:
-        EDStatic.fullLogsDirectory + "TestAll.log",
+        EDStatic.config.fullLogsDirectory + "TestAll.log",
         false,
         1000000000); // append?
     EDD.testVerboseOn();
@@ -71,8 +72,8 @@ public class TestAll {
     // this might cause small problems for a public running erddap
     // but Bob only uses this on laptop, with private erddap.
     File2.deleteAllFiles(
-        EDStatic.fullPublicDirectory, true, false); // recursive, deleteEmptySubdirectories
-    File2.deleteAllFiles(EDStatic.fullCacheDirectory, true, false);
+        EDStatic.config.fullPublicDirectory, true, false); // recursive, deleteEmptySubdirectories
+    File2.deleteAllFiles(EDStatic.config.fullCacheDirectory, true, false);
 
     // make it appear that initialLoadDatasets() is not true
     EDStatic.majorLoadDatasetsTimeSeriesSB.append("\n");
@@ -328,7 +329,7 @@ public class TestAll {
 
     //    s = Projects.makeAwsS3FilesDatasets(".*"); //all: .*   tests: nrel-pds-wtk\\.yaml,
     // silo\\.yaml (has ?Name: but ? doesn't show in EditPlus)
-    //    File2.writeToFileUtf8(EDStatic.bigParentDirectory + "logs/awsS3Files.txt", s);
+    //    File2.writeToFileUtf8(EDStatic.config.bigParentDirectory + "logs/awsS3Files.txt", s);
     //    String2.log(EDD.testDasDds("radar_vola"));
 
     /*
@@ -453,7 +454,7 @@ public class TestAll {
     //        String2.setClipboardString(s); String2.log(s);
 
     /*   //tallyXml
-       String tfn = EDStatic.fullLogsDirectory + "tallyLterSbsStorageUnitsMV.log";
+       String tfn = EDStatic.config.fullLogsDirectory + "tallyLterSbsStorageUnitsMV.log";
        File2.writeToFileUtf8(tfn,
            FileVisitorDNLS.tallyXml(
            "/u00/data/points/lterSbc/", "knb-lter-sbc\\.\\d+", false,
@@ -1215,7 +1216,7 @@ public class TestAll {
     // of testAll
 
     if (errorSB != null && errorSB.length() > 0) {
-      String fileName = EDStatic.fullLogsDirectory + "/TestAllErrorSB.txt";
+      String fileName = EDStatic.config.fullLogsDirectory + "/TestAllErrorSB.txt";
       String2.log(
           File2.writeToFileUtf8(
               fileName,

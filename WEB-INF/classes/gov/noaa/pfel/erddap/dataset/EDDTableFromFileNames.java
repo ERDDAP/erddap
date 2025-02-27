@@ -243,7 +243,7 @@ public class EDDTableFromFileNames extends EDDTable {
    *     </ul>
    *     Special case: value="null" causes that item to be removed from combinedGlobalAttributes.
    *     Special case: if combinedGlobalAttributes name="license", any instance of
-   *     value="[standard]" will be converted to the EDStatic.standardLicense.
+   *     value="[standard]" will be converted to the EDStatic.messages.standardLicense.
    * @param tDataVariables is an Object[nDataVariables][3]: <br>
    *     [0]=String sourceName (the name of the data variable in the dataset source, without the
    *     outer or inner sequence name), <br>
@@ -311,7 +311,7 @@ public class EDDTableFromFileNames extends EDDTable {
     fileDir = tFileDir;
     fileNameRegex = tFileNameRegex;
     accessibleViaFiles =
-        EDStatic.filesActive; // default for this dataset is 'true' and not changeable
+        EDStatic.config.filesActive; // default for this dataset is 'true' and not changeable
 
     if (!String2.isSomething(fileDir))
       throw new IllegalArgumentException(errorInMethod + "fileDir wasn't specified.");
@@ -355,7 +355,7 @@ public class EDDTableFromFileNames extends EDDTable {
                     .add("cdm_data_type", "other")
                     .add(
                         "infoUrl",
-                        "https://erddap.github.io/setupDatasetsXml.html#EDDTableFromFileNames")
+                        "https://erddap.github.io/docs/server-admin/datasets#eddtablefromfilenames")
                     .add("institution", "NOAA")
                     .add("license", "[standard]")
                     .add("sourceUrl", "(local files)")
@@ -445,7 +445,7 @@ public class EDDTableFromFileNames extends EDDTable {
     String tLicense = combinedGlobalAttributes.getString("license");
     if (tLicense != null)
       combinedGlobalAttributes.set(
-          "license", String2.replaceAll(tLicense, "[standard]", EDStatic.standardLicense));
+          "license", String2.replaceAll(tLicense, "[standard]", EDStatic.messages.standardLicense));
     combinedGlobalAttributes.removeValue("\"null\"");
 
     // useCachedInfo?
@@ -455,7 +455,7 @@ public class EDDTableFromFileNames extends EDDTable {
         from == fromRemoteFiles) {
       String qrName = quickRestartFullFileName();
 
-      if (EDStatic.quickRestart && EDStatic.initialLoadDatasets() && File2.isFile(qrName)) {
+      if (EDStatic.config.quickRestart && EDStatic.initialLoadDatasets() && File2.isFile(qrName)) {
 
         // try to do quickRestart
         // set creationTimeMillis to time of previous creation, so next time
@@ -1144,7 +1144,7 @@ public class EDDTableFromFileNames extends EDDTable {
    *
    * @param language the index of the selected language
    * @param loggedInAs the user's login name if logged in (or null if not logged in).
-   * @param requestUrl the part of the user's request, after EDStatic.baseUrl, before '?'.
+   * @param requestUrl the part of the user's request, after EDStatic.config.baseUrl, before '?'.
    * @param userDapQuery the part of the user's request after the '?', still percentEncoded, may be
    *     null.
    * @param tableWriter

@@ -365,7 +365,8 @@ public class TableTests {
           0, // standardizeWhat=0
           StringArray.fromCSV("time"),
           StringArray.fromCSV(">"),
-          StringArray.fromCSV("3426.69"));
+          StringArray.fromCSV("3426.69"),
+          false);
     else {
       TableFromMultidimNcFile reader = new TableFromMultidimNcFile(table);
       reader.readMultidimNc(
@@ -409,7 +410,8 @@ public class TableTests {
           0, // standardizeWhat=0
           null,
           null,
-          null);
+          null,
+          false);
     else {
       TableFromMultidimNcFile reader = new TableFromMultidimNcFile(table);
       reader.readMultidimNc(
@@ -459,7 +461,8 @@ public class TableTests {
           0, // standardizeWhat=0
           StringArray.fromCSV("latitude"),
           StringArray.fromCSV("<"),
-          StringArray.fromCSV("39.1"));
+          StringArray.fromCSV("39.1"),
+          false);
     else {
       TableFromMultidimNcFile reader = new TableFromMultidimNcFile(table);
       reader.readMultidimNc(
@@ -492,7 +495,8 @@ public class TableTests {
           0, // standardizeWhat=0
           StringArray.fromCSV("discharge"),
           StringArray.fromCSV(">"),
-          StringArray.fromCSV("5400"));
+          StringArray.fromCSV("5400"),
+          false);
     else {
       TableFromMultidimNcFile reader = new TableFromMultidimNcFile(table);
       reader.readMultidimNc(
@@ -535,7 +539,8 @@ public class TableTests {
           0, // standardizeWhat=0
           StringArray.fromCSV("station"),
           StringArray.fromCSV("="),
-          StringArray.fromCSV("1463500.0"));
+          StringArray.fromCSV("1463500.0"),
+          false);
     else {
       TableFromMultidimNcFile reader = new TableFromMultidimNcFile(table);
       reader.readMultidimNc(
@@ -588,7 +593,7 @@ public class TableTests {
     if (readAsNcCF)
       table.readNcCF(
           fileName, null, 0, // standardizeWhat=0
-          null, null, null);
+          null, null, null, false);
     else {
       TableFromMultidimNcFile reader = new TableFromMultidimNcFile(table);
       reader.readMultidimNc(
@@ -637,7 +642,8 @@ public class TableTests {
           0, // standardizeWhat=0
           StringArray.fromCSV("discharge"),
           StringArray.fromCSV(">"),
-          StringArray.fromCSV("5400"));
+          StringArray.fromCSV("5400"),
+          false);
     else {
       TableFromMultidimNcFile reader = new TableFromMultidimNcFile(table);
       reader.readMultidimNc(
@@ -680,7 +686,8 @@ public class TableTests {
           0, // standardizeWhat=0
           StringArray.fromCSV("station,discharge"),
           StringArray.fromCSV("=,>"),
-          StringArray.fromCSV("1463500.0,5400"));
+          StringArray.fromCSV("1463500.0,5400"),
+          false);
     else {
       TableFromMultidimNcFile reader = new TableFromMultidimNcFile(table);
       reader.readMultidimNc(
@@ -4046,7 +4053,7 @@ public class TableTests {
             + "*GLOBAL*,creator_type,person\n"
             + "*GLOBAL*,creator_url,https://www.pfeg.noaa.gov\n"
             + "*GLOBAL*,featureType,trajectory\n"
-            + "*GLOBAL*,infoUrl,https://coastwatch.pfeg.noaa.gov/erddap/download/NCCSV.html\n"
+            + "*GLOBAL*,infoUrl,https://erddap.github.io/docs/user/nccsv-1.20\n"
             + "*GLOBAL*,institution,\"NOAA NMFS SWFSC ERD, NOAA PMEL\"\n"
             + "*GLOBAL*,keywords,\"NOAA, sea, ship, sst, surface, temperature, trajectory\"\n"
             + "*GLOBAL*,license,\"\"\"NCCSV Demonstration\"\" by Bob Simons and Steve Hankin is licensed under CC BY 4.0, https://creativecommons.org/licenses/by/4.0/ .\"\n"
@@ -4111,7 +4118,7 @@ public class TableTests {
             + "*GLOBAL*,creator_type,person\n"
             + "*GLOBAL*,creator_url,https://www.pfeg.noaa.gov\n"
             + "*GLOBAL*,featureType,trajectory\n"
-            + "*GLOBAL*,infoUrl,https://coastwatch.pfeg.noaa.gov/erddap/download/NCCSV.html\n"
+            + "*GLOBAL*,infoUrl,https://erddap.github.io/docs/user/nccsv-1.20\n"
             + "*GLOBAL*,institution,\"NOAA NMFS SWFSC ERD, NOAA PMEL\"\n"
             + "*GLOBAL*,keywords,\"NOAA, sea, ship, sst, surface, temperature, trajectory\"\n"
             + "*GLOBAL*,license,\"\"\"NCCSV Demonstration\"\" by Bob Simons and Steve Hankin is licensed under CC BY 4.0, https://creativecommons.org/licenses/by/4.0/ .\"\n"
@@ -4189,7 +4196,7 @@ public class TableTests {
             + "*GLOBAL*,creator_type,person\n"
             + "*GLOBAL*,creator_url,https://www.pfeg.noaa.gov\n"
             + "*GLOBAL*,featureType,trajectory\n"
-            + "*GLOBAL*,infoUrl,https://coastwatch.pfeg.noaa.gov/erddap/download/NCCSV.html\n"
+            + "*GLOBAL*,infoUrl,https://erddap.github.io/docs/user/nccsv-1.20\n"
             + "*GLOBAL*,institution,\"NOAA NMFS SWFSC ERD, NOAA PMEL\"\n"
             + "*GLOBAL*,keywords,\"NOAA, sea, ship, sst, surface, temperature, trajectory\"\n"
             + "*GLOBAL*,license,\"\"\"NCCSV Demonstration\"\" by Bob Simons and Steve Hankin is licensed under CC BY 4.0, https://creativecommons.org/licenses/by/4.0/ .\"\n"
@@ -4281,7 +4288,7 @@ public class TableTests {
             + "*GLOBAL*,creator_type,person\n"
             + "*GLOBAL*,creator_url,https://www.pfeg.noaa.gov\n"
             + "*GLOBAL*,featureType,trajectory\n"
-            + "*GLOBAL*,infoUrl,https://coastwatch.pfeg.noaa.gov/erddap/download/NCCSV.html\n"
+            + "*GLOBAL*,infoUrl,https://erddap.github.io/docs/user/nccsv-1.20\n"
             + "*GLOBAL*,institution,\"NOAA NMFS SWFSC ERD, NOAA PMEL\"\n"
             + "*GLOBAL*,keywords,\"NOAA, sea, ship, sst, surface, temperature, trajectory\"\n"
             + "*GLOBAL*,license,\"\"\"NCCSV Demonstration\"\" by Bob Simons and Steve Hankin is licensed under CC BY 4.0, https://creativecommons.org/licenses/by/4.0/ .\"\n"
@@ -8385,7 +8392,8 @@ public class TableTests {
         0, // standardizeWhat=0
         null,
         null,
-        null);
+        null,
+        false);
     results = table.dataToString(5);
     expected =
         // with netcdf-java 4.6.5 and before, the last 3 vars had 0's.
@@ -8419,7 +8427,8 @@ public class TableTests {
         0, // standardizeWhat=0
         null,
         null,
-        null);
+        null,
+        false);
     results = table.dataToString(5);
     expected =
         // was
@@ -8447,7 +8456,8 @@ public class TableTests {
         0, // standardizeWhat=0
         null,
         null,
-        null);
+        null,
+        false);
     results = table.dataToString(5);
     expected =
         // was
@@ -8474,7 +8484,8 @@ public class TableTests {
         0, // standardizeWhat=0
         null,
         null,
-        null);
+        null,
+        false);
     results = table.dataToString(5);
     expected =
         // was
@@ -8501,7 +8512,8 @@ public class TableTests {
         0, // standardizeWhat=0
         null,
         null,
-        null);
+        null,
+        false);
     results = table.dataToString(5);
     expected =
         // was
@@ -8513,7 +8525,7 @@ public class TableTests {
     // test reading WHOLE file (should just catch z_obs dimension)
     table.readNcCF(
         fileName, null, 0, // standardizeWhat=0
-        null, null, null);
+        null, null, null, false);
     results = table.dataToString(3);
     expected =
         // note it catches z_obs dimension (z, z_WODflag, z_sigfig), not others.
@@ -8563,6 +8575,10 @@ public class TableTests {
     Test.ensureEqual(results, expected, "results=\n" + results);
 
     results = table.globalAttributes().getString("subsetVariables");
+    expected = null;
+    Test.ensureEqual(results, expected, "results=\n" + results);
+
+    results = table.globalAttributes().getString("cdm_profile_variables");
     expected =
         "country, WOD_cruise_identifier, originators_cruise_identifier, wod_unique_cast, "
             + "lat, lon, time, date, GMT_time, Access_no, Project, Platform, Institute, "
@@ -8576,10 +8592,6 @@ public class TableTests {
             + "Chlorophyll_uncalibrated, Conductivit_row_size, crs, WODf, WODfp, WODfd";
     Test.ensureEqual(results, expected, "results=\n" + results);
 
-    results = table.globalAttributes().getString("cdm_profile_variables");
-    // same expected
-    Test.ensureEqual(results, expected, "results=\n" + results);
-
     // test reading row_size vars -- are they actually read?
     table.readNcCF(
         fileName,
@@ -8589,7 +8601,8 @@ public class TableTests {
         0, // standardizeWhat=0
         null,
         null,
-        null);
+        null,
+        false);
     results = table.dataToString(7);
     expected = // verified with dumpString above
         "Temperature_row_size,Salinity_row_size,Oxygen_row_size,Pressure_row_size,Chlorophyll_row_size\n"
@@ -8601,6 +8614,23 @@ public class TableTests {
             + "34,34,0,34,34\n"
             + "34,34,0,34,34\n"
             + "...\n";
+    Test.ensureEqual(results, expected, "results=\n" + results);
+
+    table.readNcCF(
+        fileName, null, 0, // standardizeWhat=0
+        null, null, null, true);
+    results = table.globalAttributes().getString("subsetVariables");
+    expected =
+        "country, WOD_cruise_identifier, originators_cruise_identifier, wod_unique_cast, "
+            + "lat, lon, time, date, GMT_time, Access_no, Project, Platform, Institute, "
+            + "Cast_Tow_number, Orig_Stat_Num, Bottom_Depth, Cast_Duration, Cast_Direction, "
+            + "High_res_pair, dataset, dbase_orig, origflagset, Temperature_row_size, "
+            + "Temperature_WODprofileflag, Temperature_Scale, Temperature_Instrument, "
+            + "Salinity_row_size, Salinity_WODprofileflag, Salinity_Scale, Salinity_Instrument, "
+            + "Oxygen_row_size, Oxygen_WODprofileflag, Oxygen_Instrument, Oxygen_Original_units, "
+            + "Pressure_row_size, "
+            + "Chlorophyll_row_size, Chlorophyll_WODprofileflag, Chlorophyll_Instrument, "
+            + "Chlorophyll_uncalibrated, Conductivit_row_size, crs, WODf, WODfp, WODfd";
     Test.ensureEqual(results, expected, "results=\n" + results);
 
     // test request for vars with 2 different sample_dimensions
@@ -8615,7 +8645,8 @@ public class TableTests {
           0, // standardizeWhat=0
           null,
           null,
-          null);
+          null,
+          false);
       results = table.dataToString(5);
 
     } catch (Throwable t2) {
@@ -8645,7 +8676,7 @@ public class TableTests {
 
     table.readNcCF(
         fileName, null, 0, // standardizeWhat=0
-        null, null, null);
+        null, null, null, false);
     // String2.log(table.toCSVString());
     results = table.dataToString(5);
     expected =
@@ -8664,7 +8695,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV(""),
         StringArray.fromCSV(""),
-        StringArray.fromCSV(""));
+        StringArray.fromCSV(""),
+        false);
     results = table.dataToString(5);
     // expected is same
     Test.ensureEqual(results, expected, "results=\n" + results);
@@ -8688,7 +8720,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("obs"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("2"));
+        StringArray.fromCSV("2"),
+        false);
     results = table.dataToString();
     expected = "obs,lat,time,temperature\n" + "2,10.0,71,21.193731\n";
     Test.ensureEqual(results, expected, "results=\n" + results);
@@ -8699,7 +8732,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("time"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("71"));
+        StringArray.fromCSV("71"),
+        false);
     results = table.dataToString();
     expected = "obs,lat,time,temperature\n" + "2,10.0,71,21.193731\n";
     Test.ensureEqual(results, expected, "results=\n" + results);
@@ -8710,7 +8744,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("21.193731"));
+        StringArray.fromCSV("21.193731"),
+        false);
     results = table.dataToString();
     expected = "obs,lat,time,temperature\n" + "2,10.0,71,21.193731\n";
     Test.ensureEqual(results, expected, "results=\n" + results);
@@ -8723,7 +8758,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("obs"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("2"));
+        StringArray.fromCSV("2"),
+        false);
     results = table.dataToString();
     expected = "obs\n" + "2\n";
     Test.ensureEqual(results, expected, "results=\n" + results);
@@ -8738,7 +8774,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("21.193731"));
+        StringArray.fromCSV("21.193731"),
+        false);
     results = table.dataToString();
     expected = "temperature\n" + "21.193731\n";
     Test.ensureEqual(results, expected, "results=\n" + results);
@@ -8750,7 +8787,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("obs"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
 
     table.readNcCF(
@@ -8759,7 +8797,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("time"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
 
     table.readNcCF(
@@ -8768,7 +8807,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
 
     table.readNcCF(
@@ -8777,7 +8817,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("obs"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
 
     table.readNcCF(
@@ -8786,7 +8827,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
 
     // String2.log("\n*** Table.testReadNcCFPoint finished successfully");
@@ -8815,7 +8857,8 @@ public class TableTests {
         0, // standardizeWhat=0
         null,
         null,
-        null);
+        null,
+        true);
     // String2.log(table.toCSVString());
     results = table.dataToString(5);
     expected =
@@ -8847,6 +8890,44 @@ public class TableTests {
     Test.ensureEqual(
         gatts.getString("subsetVariables"), "id, longitude, latitude, time", gatts.toString());
 
+    table.readNcCF(
+        profileFileName,
+        null,
+        0, // standardizeWhat=0
+        null,
+        null,
+        null,
+        false);
+    // String2.log(table.toCSVString());
+    results = table.dataToString(5);
+    expected =
+        "id,longitude,latitude,time,altitude,chlorophyll,chlorophyll_qc,oxygen,oxygen_qc,pressure,pressure_qc,salinity,salinity_qc,temperature,temperature_qc\n"
+            + "465958,163.08,39.0,1.107754559E9,-2.0,,,,,,,,,10.1,0.0\n"
+            + "465958,163.08,39.0,1.107754559E9,-58.0,,,,,,,,,9.9,0.0\n"
+            + "465958,163.08,39.0,1.107754559E9,-96.0,,,,,,,,,9.2,0.0\n"
+            + "465958,163.08,39.0,1.107754559E9,-138.0,,,,,,,,,8.8,0.0\n"
+            + "465958,163.08,39.0,1.107754559E9,-158.0,,,,,,,,,8.1,0.0\n"
+            + "...\n";
+    Test.ensureEqual(results, expected, "");
+    Test.ensureEqual(table.nRows(), 118, table.toString());
+    results = table.columnAttributes(0).toString();
+    expected =
+        "    actual_range=465958i,848984i\n"
+            + "    cf_role=profile_id\n"
+            + "    colorBarMaximum=1000000.0d\n"
+            + "    colorBarMinimum=0.0d\n"
+            + "    ioos_category=Identifier\n"
+            + "    long_name=Sequence ID\n"
+            + "    missing_value=2147483647i\n";
+    Test.ensureEqual(results, expected, "results=\n" + results);
+    gatts = table.globalAttributes();
+    Test.ensureEqual(gatts.getString("cdm_data_type"), "Profile", gatts.toString());
+    Test.ensureEqual(
+        gatts.getString("cdm_profile_variables"),
+        "id, longitude, latitude, time",
+        gatts.toString());
+    Test.ensureEqual(gatts.getString("subsetVariables"), null, gatts.toString());
+
     //
     // String2.log("\n\n** Test 1 non-existent loadVar test:ncCFcc.set(27)");
     table.readNcCF(
@@ -8855,7 +8936,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV(""),
         StringArray.fromCSV(""),
-        StringArray.fromCSV(""));
+        StringArray.fromCSV(""),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -8868,7 +8950,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("id"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("zztop"));
+        StringArray.fromCSV("zztop"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -8878,7 +8961,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("id"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("zztop"));
+        StringArray.fromCSV("zztop"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -8888,7 +8972,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("longitude"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -8898,7 +8983,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("time"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -8908,7 +8994,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -8921,7 +9008,8 @@ public class TableTests {
         0, // standardizeWhat=0
         null,
         null,
-        null);
+        null,
+        true);
     results = table.dataToString();
     expected =
         "longitude,latitude,time,id\n"
@@ -8947,7 +9035,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("id"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -8957,7 +9046,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("latitude"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -8967,7 +9057,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("time"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -8980,7 +9071,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("id"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("848984"));
+        StringArray.fromCSV("848984"),
+        true);
     results = table.dataToString();
     expected = "longitude,latitude,time,id\n" + "214.66,54.8,1.107759959E9,848984\n";
     Test.ensureEqual(results, expected, "results=\n" + results);
@@ -9001,7 +9093,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("id"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("zztop"));
+        StringArray.fromCSV("zztop"),
+        false);
     Test.ensureEqual(table.nColumns(), 0, "");
     Test.ensureEqual(table.nRows(), 0, "");
 
@@ -9013,7 +9106,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("id,temperature"),
         StringArray.fromCSV("=,>="),
-        StringArray.fromCSV("848984,5"));
+        StringArray.fromCSV("848984,5"),
+        true);
     results = table.dataToString();
     expected =
         "longitude,latitude,time,altitude,temperature,temperature_qc,id\n"
@@ -9039,7 +9133,8 @@ public class TableTests {
         0, // standardizeWhat=0
         null,
         null,
-        null);
+        null,
+        true);
     results = table.dataToString();
     expected =
         "salinity,temperature\n"
@@ -9065,7 +9160,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("salinity"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        true);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -9078,7 +9174,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV(">"),
-        StringArray.fromCSV("24.5"));
+        StringArray.fromCSV("24.5"),
+        false);
     results = table.dataToString();
     expected = "temperature\n" + "24.8\n" + "24.7\n" + "25.0\n" + "24.9\n";
     Test.ensureEqual(results, expected, "results=\n" + results);
@@ -9095,7 +9192,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-195"));
+        StringArray.fromCSV("-195"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -9109,7 +9207,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("zzStation"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("WXURP"));
+        StringArray.fromCSV("WXURP"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -9121,7 +9220,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("zzStation"),
         StringArray.fromCSV("!="),
-        new StringArray(new String[] {""}));
+        new StringArray(new String[] {""}),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -9135,7 +9235,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("zzStation"),
         StringArray.fromCSV("="),
-        new StringArray(new String[] {"99"}));
+        new StringArray(new String[] {"99"}),
+        false);
     Test.ensureEqual(table.nRows(), 118, "");
     Test.ensureEqual(table.nColumns(), 1, "");
 
@@ -9157,7 +9258,7 @@ public class TableTests {
       // constraints");
       table.readNcCF(
           fileName, null, 0, // standardizeWhat=0
-          null, null, null);
+          null, null, null, true);
       // String2.log(table.toString());
       results = table.dataToString(5);
       expected =
@@ -9188,7 +9289,8 @@ public class TableTests {
           0, // standardizeWhat=0
           StringArray.fromCSV("line_station"),
           StringArray.fromCSV("="),
-          StringArray.fromCSV("-12345"));
+          StringArray.fromCSV("-12345"),
+          false);
       Test.ensureEqual(table.nRows(), 0, "");
       Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -9198,7 +9300,8 @@ public class TableTests {
           0, // standardizeWhat=0
           StringArray.fromCSV("longitude"),
           StringArray.fromCSV("="),
-          StringArray.fromCSV("-12345"));
+          StringArray.fromCSV("-12345"),
+          false);
       Test.ensureEqual(table.nRows(), 0, "");
       Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -9208,7 +9311,8 @@ public class TableTests {
           0, // standardizeWhat=0
           StringArray.fromCSV("time"),
           StringArray.fromCSV("="),
-          StringArray.fromCSV("-12345"));
+          StringArray.fromCSV("-12345"),
+          false);
       Test.ensureEqual(table.nRows(), 0, "");
       Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -9218,7 +9322,8 @@ public class TableTests {
           0, // standardizeWhat=0
           StringArray.fromCSV("obsValue"),
           StringArray.fromCSV("="),
-          StringArray.fromCSV("-12345"));
+          StringArray.fromCSV("-12345"),
+          false);
       Test.ensureEqual(table.nRows(), 0, "");
       Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -9231,7 +9336,8 @@ public class TableTests {
           0, // standardizeWhat=0
           null,
           null,
-          null);
+          null,
+          true);
       results = table.dataToString();
       expected =
           "line_station\n"
@@ -9251,7 +9357,8 @@ public class TableTests {
           0, // standardizeWhat=0
           StringArray.fromCSV("line_station"),
           StringArray.fromCSV("="),
-          StringArray.fromCSV("-12345"));
+          StringArray.fromCSV("-12345"),
+          false);
       Test.ensureEqual(table.nRows(), 0, "");
       Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -9264,7 +9371,8 @@ public class TableTests {
           0, // standardizeWhat=0
           StringArray.fromCSV("line_station"),
           StringArray.fromCSV("="),
-          StringArray.fromCSV("083.3_100"));
+          StringArray.fromCSV("083.3_100"),
+          true);
       results = table.dataToString();
       expected = "line_station\n" + "083.3_100\n";
       Test.ensureEqual(results, expected, "results=\n" + results);
@@ -9282,7 +9390,8 @@ public class TableTests {
           0, // standardizeWhat=0
           StringArray.fromCSV("line_station"),
           StringArray.fromCSV("="),
-          StringArray.fromCSV("zztop"));
+          StringArray.fromCSV("zztop"),
+          false);
       Test.ensureEqual(table.nRows(), 0, "");
       Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -9295,7 +9404,8 @@ public class TableTests {
           0, // standardizeWhat=0
           StringArray.fromCSV("line_station,obsValue"),
           StringArray.fromCSV("=,="),
-          StringArray.fromCSV("083.3_100,1"));
+          StringArray.fromCSV("083.3_100,1"),
+          true);
       results = table.dataToString();
       expected =
           "longitude,latitude,altitude,time,line_station,obsScientific,obsValue,obsUnits\n"
@@ -9319,7 +9429,8 @@ public class TableTests {
           0, // standardizeWhat=0
           StringArray.fromCSV("line_station,obsValue"),
           StringArray.fromCSV("=,="),
-          StringArray.fromCSV("083.3_100,-9"));
+          StringArray.fromCSV("083.3_100,-9"),
+          true);
       Test.ensureEqual(table.nRows(), 0, "");
       Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -9331,7 +9442,8 @@ public class TableTests {
           0, // standardizeWhat=0
           null,
           null,
-          null);
+          null,
+          true);
       results = table.dataToString();
       expected =
           "obsScientific,obsValue,obsUnits\n"
@@ -9370,7 +9482,8 @@ public class TableTests {
           0, // standardizeWhat=0
           StringArray.fromCSV("obsScientific"),
           StringArray.fromCSV("="),
-          StringArray.fromCSV("-12345"));
+          StringArray.fromCSV("-12345"),
+          true);
       Test.ensureEqual(table.nRows(), 0, "");
       Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -9383,7 +9496,8 @@ public class TableTests {
           0, // standardizeWhat=0
           StringArray.fromCSV("obsValue"),
           StringArray.fromCSV("="),
-          StringArray.fromCSV("4"));
+          StringArray.fromCSV("4"),
+          true);
       results = table.dataToString();
       expected =
           "obsScientific,obsValue,obsUnits\n"
@@ -9396,6 +9510,30 @@ public class TableTests {
       Test.ensureEqual(gatts.getString("cdm_timeseries_variables"), null, gatts.toString());
       Test.ensureEqual(gatts.getString("subsetVariables"), null, gatts.toString());
 
+      table.clear();
+      table.readNcCF(
+          fileName,
+          StringArray.fromCSV("obsScientific,obsValue,obsUnits,zztop"),
+          0, // standardizeWhat=0
+          StringArray.fromCSV("obsValue"),
+          StringArray.fromCSV("="),
+          StringArray.fromCSV("4"),
+          false);
+      results = table.dataToString();
+      expected =
+          "obsScientific,obsValue,obsUnits\n"
+              + "Danaphos oculatus,4,number of larvae\n"
+              + "Protomyctophum crockeri,4,number of larvae\n"
+              + "Total Fish Larvae,4,number of larvae\n";
+      Test.ensureEqual(results, expected, "results=\n" + results);
+      gatts = table.globalAttributes();
+      Test.ensureEqual(gatts.getString("cdm_data_type"), "TimeSeries", gatts.toString());
+      Test.ensureEqual(gatts.getString("cdm_timeseries_variables"), null, gatts.toString());
+      Test.ensureEqual(
+          gatts.getString("subsetVariables"),
+          "line_station, line, station, longitude, latitude, altitude, time, cruise, shipName, shipCode, occupy, obsCommon, obsScientific, obsValue, obsUnits",
+          gatts.toString());
+
       // String2.log("\n\n** Test nLevels=1/" + fileType +
       // " just obs loadVars, constraints, NO_DATA");
       table.readNcCF(
@@ -9404,7 +9542,8 @@ public class TableTests {
           0, // standardizeWhat=0
           StringArray.fromCSV("obsValue"),
           StringArray.fromCSV("="),
-          StringArray.fromCSV("-99"));
+          StringArray.fromCSV("-99"),
+          false);
       Test.ensureEqual(table.nRows(), 0, "");
       Test.ensureEqual(table.nColumns(), 0, "");
     } // end nLevels=1 type loop
@@ -9419,7 +9558,8 @@ public class TableTests {
           0, // standardizeWhat=0
           null,
           null,
-          null);
+          null,
+          false);
       throw new SimpleException("Shouldn't get here.");
 
     } catch (Exception e) {
@@ -9438,7 +9578,8 @@ public class TableTests {
           0, // standardizeWhat=0
           null,
           null,
-          null);
+          null,
+          false);
       throw new SimpleException("Shouldn't get here.");
 
     } catch (Exception e) {
@@ -9472,7 +9613,7 @@ public class TableTests {
     // String2.log(NcHelper.ncdump(fileName, "-h"));
     table.readNcCF(
         fileName, null, 0, // standardizeWhat=0
-        null, null, null);
+        null, null, null, false);
     // String2.log(table.toString());
     // Table.debugMode = oDebug;
   }
@@ -9575,7 +9716,7 @@ public class TableTests {
 
     table.readNcCF(
         fileName, null, 0, // standardizeWhat=0
-        null, null, null);
+        null, null, null, false);
     os.reset();
     table.saveAsDAS(os, Table.SEQUENCE_NAME);
     results = os.toString();
@@ -9932,7 +10073,7 @@ public class TableTests {
 
     table.readNcCF(
         fileName, null, 0, // standardizeWhat=0
-        null, null, null);
+        null, null, null, false);
     os.reset();
     table.saveAsDDS(os, Table.SEQUENCE_NAME);
     results = os.toString();
@@ -10002,7 +10143,7 @@ public class TableTests {
     // String2.log(results);
     table.readNcCF(
         fileName, null, 0, // standardizeWhat=0
-        null, null, null);
+        null, null, null, false);
     // String2.log(table.dataToString());
     results = table.dataToString(5);
     expected =
@@ -10069,9 +10210,10 @@ public class TableTests {
       /* */
       // String2.log("\n\n** Test nLevels=2/" + fileType + " no loadVars, no
       // constraints");
+      table.clear();
       table.readNcCF(
           fileName, null, 0, // standardizeWhat=0
-          null, null, null);
+          null, null, null, true);
       // String2.log(table.toString());
       results = table.dataToString(5);
       expected =
@@ -10112,7 +10254,8 @@ public class TableTests {
           0, // standardizeWhat=0
           StringArray.fromCSV("cruise"),
           StringArray.fromCSV("="),
-          StringArray.fromCSV("-12345"));
+          StringArray.fromCSV("-12345"),
+          false);
       Test.ensureEqual(table.nRows(), 0, msg);
       Test.ensureEqual(table.nColumns(), 0, msg);
 
@@ -10122,7 +10265,8 @@ public class TableTests {
           0, // standardizeWhat=0
           StringArray.fromCSV("latitude"),
           StringArray.fromCSV("="),
-          StringArray.fromCSV("-12345"));
+          StringArray.fromCSV("-12345"),
+          false);
       Test.ensureEqual(table.nRows(), 0, msg);
       Test.ensureEqual(table.nColumns(), 0, msg);
 
@@ -10132,7 +10276,8 @@ public class TableTests {
           0, // standardizeWhat=0
           StringArray.fromCSV("depth"),
           StringArray.fromCSV("="),
-          StringArray.fromCSV("-12345"));
+          StringArray.fromCSV("-12345"),
+          false);
       Test.ensureEqual(table.nRows(), 0, msg);
       Test.ensureEqual(table.nColumns(), 0, msg);
 
@@ -10142,7 +10287,8 @@ public class TableTests {
           0, // standardizeWhat=0
           StringArray.fromCSV("temperature"),
           StringArray.fromCSV("="),
-          StringArray.fromCSV("-12345"));
+          StringArray.fromCSV("-12345"),
+          false);
       Test.ensureEqual(table.nRows(), 0, msg);
       Test.ensureEqual(table.nColumns(), 0, msg);
 
@@ -10153,7 +10299,8 @@ public class TableTests {
           0, // standardizeWhat=0
           StringArray.fromCSV("latitude"),
           StringArray.fromCSV("="),
-          StringArray.fromCSV("-12345"));
+          StringArray.fromCSV("-12345"),
+          false);
       Test.ensureEqual(table.nRows(), 0, msg);
       Test.ensureEqual(table.nColumns(), 0, msg);
 
@@ -10163,7 +10310,8 @@ public class TableTests {
           0, // standardizeWhat=0
           StringArray.fromCSV("depth"),
           StringArray.fromCSV("="),
-          StringArray.fromCSV("-12345"));
+          StringArray.fromCSV("-12345"),
+          false);
       Test.ensureEqual(table.nRows(), 0, msg);
       Test.ensureEqual(table.nColumns(), 0, msg);
 
@@ -10173,7 +10321,8 @@ public class TableTests {
           0, // standardizeWhat=0
           StringArray.fromCSV("temperature"),
           StringArray.fromCSV("="),
-          StringArray.fromCSV("-12345"));
+          StringArray.fromCSV("-12345"),
+          false);
       Test.ensureEqual(table.nRows(), 0, msg);
       Test.ensureEqual(table.nColumns(), 0, msg);
 
@@ -10184,7 +10333,8 @@ public class TableTests {
           0, // standardizeWhat=0
           StringArray.fromCSV("depth"),
           StringArray.fromCSV("="),
-          StringArray.fromCSV("-12345"));
+          StringArray.fromCSV("-12345"),
+          false);
       Test.ensureEqual(table.nRows(), 0, msg);
       Test.ensureEqual(table.nColumns(), 0, msg);
 
@@ -10194,7 +10344,8 @@ public class TableTests {
           0, // standardizeWhat=0
           StringArray.fromCSV("temperature"),
           StringArray.fromCSV("="),
-          StringArray.fromCSV("-12345"));
+          StringArray.fromCSV("-12345"),
+          false);
       Test.ensureEqual(table.nRows(), 0, "");
       Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -10205,7 +10356,8 @@ public class TableTests {
           0, // standardizeWhat=0
           StringArray.fromCSV("latitude"),
           StringArray.fromCSV("="),
-          StringArray.fromCSV("-12345"));
+          StringArray.fromCSV("-12345"),
+          false);
       Test.ensureEqual(table.nRows(), 0, "");
       Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -10215,7 +10367,8 @@ public class TableTests {
           0, // standardizeWhat=0
           StringArray.fromCSV("temperature"),
           StringArray.fromCSV("="),
-          StringArray.fromCSV("-12345"));
+          StringArray.fromCSV("-12345"),
+          false);
       Test.ensureEqual(table.nRows(), 0, "");
       Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -10226,7 +10379,8 @@ public class TableTests {
           0, // standardizeWhat=0
           StringArray.fromCSV("latitude"),
           StringArray.fromCSV("="),
-          StringArray.fromCSV("-12345"));
+          StringArray.fromCSV("-12345"),
+          false);
       Test.ensureEqual(table.nRows(), 0, "");
       Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -10236,7 +10390,8 @@ public class TableTests {
           0, // standardizeWhat=0
           StringArray.fromCSV("cruise"),
           StringArray.fromCSV("="),
-          StringArray.fromCSV("-12345"));
+          StringArray.fromCSV("-12345"),
+          false);
       Test.ensureEqual(table.nRows(), 0, "");
       Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -10247,7 +10402,8 @@ public class TableTests {
           0, // standardizeWhat=0
           StringArray.fromCSV("depth"),
           StringArray.fromCSV("="),
-          StringArray.fromCSV("-12345"));
+          StringArray.fromCSV("-12345"),
+          false);
       Test.ensureEqual(table.nRows(), 0, "");
       Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -10257,7 +10413,8 @@ public class TableTests {
           0, // standardizeWhat=0
           StringArray.fromCSV("cruise"),
           StringArray.fromCSV("="),
-          StringArray.fromCSV("-12345"));
+          StringArray.fromCSV("-12345"),
+          false);
       Test.ensureEqual(table.nRows(), 0, "");
       Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -10268,7 +10425,8 @@ public class TableTests {
           0, // standardizeWhat=0
           StringArray.fromCSV("temperature"),
           StringArray.fromCSV("="),
-          StringArray.fromCSV("-12345"));
+          StringArray.fromCSV("-12345"),
+          false);
       Test.ensureEqual(table.nRows(), 0, "");
       Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -10278,7 +10436,8 @@ public class TableTests {
           0, // standardizeWhat=0
           StringArray.fromCSV("cruise"),
           StringArray.fromCSV("="),
-          StringArray.fromCSV("-12345"));
+          StringArray.fromCSV("-12345"),
+          false);
       Test.ensureEqual(table.nRows(), 0, "");
       Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -10289,7 +10448,8 @@ public class TableTests {
           0, // standardizeWhat=0
           StringArray.fromCSV("cruise"),
           StringArray.fromCSV("="),
-          StringArray.fromCSV("-12345"));
+          StringArray.fromCSV("-12345"),
+          false);
       Test.ensureEqual(table.nRows(), 0, "");
       Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -10299,7 +10459,8 @@ public class TableTests {
           0, // standardizeWhat=0
           StringArray.fromCSV("latitude"),
           StringArray.fromCSV("="),
-          StringArray.fromCSV("-12345"));
+          StringArray.fromCSV("-12345"),
+          false);
       Test.ensureEqual(table.nRows(), 0, "");
       Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -10309,7 +10470,8 @@ public class TableTests {
           0, // standardizeWhat=0
           StringArray.fromCSV("temperature"),
           StringArray.fromCSV("="),
-          StringArray.fromCSV("-12345"));
+          StringArray.fromCSV("-12345"),
+          false);
       Test.ensureEqual(table.nRows(), 0, "");
       Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -10319,7 +10481,8 @@ public class TableTests {
           0, // standardizeWhat=0
           StringArray.fromCSV("depth"),
           StringArray.fromCSV("="),
-          StringArray.fromCSV("-12345"));
+          StringArray.fromCSV("-12345"),
+          false);
       Test.ensureEqual(table.nRows(), 0, "");
       Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -10332,7 +10495,8 @@ public class TableTests {
           0, // standardizeWhat=0
           StringArray.fromCSV("platform"),
           StringArray.fromCSV("="),
-          StringArray.fromCSV("33P2"));
+          StringArray.fromCSV("33P2"),
+          true);
       results = table.dataToString();
       expected = "platform,cruise\n" + "33P2,Q990046312\n";
       Test.ensureEqual(results, expected, msg + "results=\n" + results);
@@ -10354,7 +10518,8 @@ public class TableTests {
           0, // standardizeWhat=0
           StringArray.fromCSV("platform"),
           StringArray.fromCSV("="),
-          StringArray.fromCSV("zztop"));
+          StringArray.fromCSV("zztop"),
+          false);
       Test.ensureEqual(table.nRows(), 0, "");
       Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -10368,7 +10533,8 @@ public class TableTests {
           0, // standardizeWhat=0
           null,
           null,
-          null);
+          null,
+          true);
       results = table.dataToString();
       expected =
           // before: 4th row with mv's is removed
@@ -10400,7 +10566,8 @@ public class TableTests {
           0, // standardizeWhat=0
           StringArray.fromCSV("station_id"),
           StringArray.fromCSV("="),
-          StringArray.fromCSV("13933177"));
+          StringArray.fromCSV("13933177"),
+          true);
       results = table.dataToString();
       expected = "station_id,type\n" + "13933177,BA\n";
       Test.ensureEqual(results, expected, msg + "results=\n" + results);
@@ -10421,7 +10588,8 @@ public class TableTests {
           0, // standardizeWhat=0
           StringArray.fromCSV("station_id"),
           StringArray.fromCSV("="),
-          StringArray.fromCSV("zztop"));
+          StringArray.fromCSV("zztop"),
+          false);
       Test.ensureEqual(table.nRows(), 0, "");
       Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -10433,7 +10601,8 @@ public class TableTests {
           0, // standardizeWhat=0
           null,
           null,
-          null);
+          null,
+          true);
       results = table.dataToString();
       expected =
           "cruise,org,type,station_id,longitude,latitude,time,platform\n"
@@ -10469,7 +10638,8 @@ public class TableTests {
           0, // standardizeWhat=0
           StringArray.fromCSV("platform,station_id"),
           StringArray.fromCSV("=,="),
-          StringArray.fromCSV("33P2,13968850"));
+          StringArray.fromCSV("33P2,13968850"),
+          true);
       results = table.dataToString();
       expected =
           "cruise,org,type,station_id,longitude,latitude,time,platform\n"
@@ -10499,7 +10669,8 @@ public class TableTests {
           0, // standardizeWhat=0
           StringArray.fromCSV("platform,station_id"),
           StringArray.fromCSV("=,="),
-          StringArray.fromCSV("33P2,zztop"));
+          StringArray.fromCSV("33P2,zztop"),
+          false);
       Test.ensureEqual(table.nRows(), 0, "");
       Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -10511,7 +10682,8 @@ public class TableTests {
           0, // standardizeWhat=0
           StringArray.fromCSV("platform,salinity"),
           StringArray.fromCSV("=,>="),
-          StringArray.fromCSV("33P2,35.98"));
+          StringArray.fromCSV("33P2,35.98"),
+          true);
       results = table.dataToString();
       expected =
           "salinity,platform,cruise\n"
@@ -10536,7 +10708,8 @@ public class TableTests {
           0, // standardizeWhat=0
           StringArray.fromCSV("platform,salinity"),
           StringArray.fromCSV("=,="),
-          StringArray.fromCSV("33P2,-100"));
+          StringArray.fromCSV("33P2,-100"),
+          true);
       Test.ensureEqual(table.nRows(), 0, "");
       Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -10548,7 +10721,8 @@ public class TableTests {
           0, // standardizeWhat=0
           null,
           null,
-          null);
+          null,
+          true);
       results = table.dataToString();
       expected =
           "latitude,longitude,time,salinity\n"
@@ -10631,7 +10805,8 @@ public class TableTests {
           0, // standardizeWhat=0
           StringArray.fromCSV("time,salinity"),
           StringArray.fromCSV("=,="),
-          StringArray.fromCSV("1.335216E9,35.77"));
+          StringArray.fromCSV("1.335216E9,35.77"),
+          true);
       results = table.dataToString();
       expected = "latitude,longitude,time,salinity\n" + "-75.43,176.64,1.335216E9,35.77\n";
       Test.ensureEqual(results, expected, msg + "results=\n" + results);
@@ -10655,7 +10830,8 @@ public class TableTests {
           0, // standardizeWhat=0
           StringArray.fromCSV("time,salinity"),
           StringArray.fromCSV("=,="),
-          StringArray.fromCSV("1.335216E9,-1000"));
+          StringArray.fromCSV("1.335216E9,-1000"),
+          false);
       Test.ensureEqual(table.nRows(), 0, "");
       Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -10667,7 +10843,8 @@ public class TableTests {
           0, // standardizeWhat=0
           StringArray.fromCSV("salinity"),
           StringArray.fromCSV("="),
-          StringArray.fromCSV("35.77"));
+          StringArray.fromCSV("35.77"),
+          true);
       results = table.dataToString();
       expected = "temperature,salinity\n" + "-1.1,35.77\n" + "-1.12,35.77\n";
       Test.ensureEqual(results, expected, msg + "results=\n" + results);
@@ -10687,7 +10864,8 @@ public class TableTests {
           0, // standardizeWhat=0
           StringArray.fromCSV("salinity"),
           StringArray.fromCSV("="),
-          StringArray.fromCSV("-1000"));
+          StringArray.fromCSV("-1000"),
+          false);
       Test.ensureEqual(table.nRows(), 0, "");
       Test.ensureEqual(table.nColumns(), 0, "");
     } // end nLevels=2 type loop
@@ -10719,7 +10897,7 @@ public class TableTests {
     // String2.log(NcHelper.ncdump(fileName, ""));
     table.readNcCF(
         fileName, null, 0, // standardizeWhat=0
-        null, null, null);
+        null, null, null, false);
     results = table.dataToString(18);
     expected =
         /*
@@ -10769,7 +10947,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("profile"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -10779,7 +10958,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -10789,7 +10969,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("z"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -10799,7 +10980,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -10810,7 +10992,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -10820,7 +11003,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("z"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -10830,7 +11014,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -10841,7 +11026,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("z"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -10851,7 +11037,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -10862,7 +11049,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -10872,7 +11060,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -10883,7 +11072,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -10893,7 +11083,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("profile"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -10904,7 +11095,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("z"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -10914,7 +11106,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("profile"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -10925,7 +11118,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -10935,7 +11129,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("profile"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -10946,7 +11141,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("profile"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -10956,7 +11152,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -10966,7 +11163,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -10976,7 +11174,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("z"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -10987,7 +11186,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("11"));
+        StringArray.fromCSV("11"),
+        false);
     results = table.dataToString();
     expected =
         "profile,lat,lon,temperature\n"
@@ -11006,7 +11206,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("11.956788"));
+        StringArray.fromCSV("11.956788"),
+        false);
     results = table.dataToString();
     expected = "profile,lat,lon,temperature\n" + "1,11.0,95.0,11.956788\n";
     Test.ensureEqual(results, expected, "results=\n" + results);
@@ -11018,7 +11219,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("11"));
+        StringArray.fromCSV("11"),
+        false);
     results = table.dataToString();
     expected =
         "lat,temperature\n"
@@ -11043,7 +11245,7 @@ public class TableTests {
     // String2.log(NcHelper.ncdump(fileName, "-h"));
     table.readNcCF(
         fileName, null, 0, // standardizeWhat=0
-        null, null, null);
+        null, null, null, false);
     results = table.dataToString(45);
     expected =
         "lat,lon,profile,time,alt,temperature,humidity,wind_speed\n"
@@ -11110,7 +11312,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("profile"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -11120,7 +11323,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -11130,7 +11334,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("alt"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -11140,7 +11345,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -11151,7 +11357,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -11161,7 +11368,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("alt"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -11171,7 +11379,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -11182,7 +11391,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("alt"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -11192,7 +11402,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -11203,7 +11414,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -11213,7 +11425,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -11224,7 +11437,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -11234,7 +11448,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("profile"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -11245,7 +11460,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("alt"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -11255,7 +11471,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("profile"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -11266,7 +11483,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -11276,7 +11494,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("profile"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -11287,7 +11506,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("profile"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -11297,7 +11517,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -11307,7 +11528,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -11317,7 +11539,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("alt"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -11335,7 +11558,7 @@ public class TableTests {
     // String2.log(NcHelper.ncdump(fileName, ""));
     table.readNcCF(
         fileName, null, 0, // standardizeWhat=0
-        null, null, null);
+        null, null, null, false);
     // String2.log(table.dataToString());
     results = table.dataToString(20);
     expected =
@@ -11377,7 +11600,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("profile,temperature"),
         StringArray.fromCSV("=,="),
-        StringArray.fromCSV("3,13.634793"));
+        StringArray.fromCSV("3,13.634793"),
+        false);
     results = table.dataToString();
     expected = "profile,temperature\n" + "3,13.634793\n";
     Test.ensureEqual(results, expected, "results=\n" + results);
@@ -11389,7 +11613,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("profile"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -11399,7 +11624,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -11409,7 +11635,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("z"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -11419,7 +11646,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -11430,7 +11658,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -11440,7 +11669,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("z"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -11450,7 +11680,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -11461,7 +11692,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("z"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -11471,7 +11703,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -11482,7 +11715,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -11492,7 +11726,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -11503,7 +11738,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -11513,7 +11749,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("profile"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -11524,7 +11761,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("z"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -11534,7 +11772,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("profile"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -11545,7 +11784,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -11555,7 +11795,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("profile"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -11566,7 +11807,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("profile"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -11576,7 +11818,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -11586,7 +11829,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -11596,7 +11840,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("z"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -11607,7 +11852,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("profile,z"),
         StringArray.fromCSV("=,="),
-        StringArray.fromCSV("3,0.013856917"));
+        StringArray.fromCSV("3,0.013856917"),
+        false);
     results = table.dataToString();
     expected = "profile,z\n" + "3,0.013856917\n";
     Test.ensureEqual(results, expected, "results=\n" + results);
@@ -11619,7 +11865,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("z"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-10000"));
+        StringArray.fromCSV("-10000"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -11630,7 +11877,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat,z"),
         StringArray.fromCSV("=,="),
-        StringArray.fromCSV("93,0.594338")); // actual values, but never in this combination
+        StringArray.fromCSV("93,0.594338"),
+        false); // actual values, but never in this combination
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -11641,7 +11889,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("humidity"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-10000"));
+        StringArray.fromCSV("-10000"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
     // } catch (Exception e) {
@@ -11661,7 +11910,7 @@ public class TableTests {
     // String2.log(NcHelper.ncdump(fileName, ""));
     table.readNcCF(
         fileName, null, 0, // standardizeWhat=0
-        null, null, null);
+        null, null, null, false);
     results = table.dataToString(55);
     expected = // z[obs] is in the innerTable
         "lat,lon,profile,time,z,temperature,humidity\n"
@@ -11737,7 +11986,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("profile"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -11747,7 +11997,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("z"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -11757,7 +12008,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -11768,7 +12020,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("z"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -11778,7 +12031,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -11789,7 +12043,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("profile"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -11799,7 +12054,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -11810,7 +12066,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("z"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -11821,7 +12078,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -11854,7 +12112,7 @@ public class TableTests {
     // so outer=time and inner is station!
     table.readNcCF(
         fileName, null, 0, // standardizeWhat=0
-        null, null, null);
+        null, null, null, false);
     results = table.dataToString(12);
     expected =
         "lat,lon,station_name,alt,time,temperature,humidity\n"
@@ -11890,7 +12148,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -11900,7 +12159,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("alt"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -11910,7 +12170,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("time"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -11920,7 +12181,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -11931,7 +12193,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -11941,7 +12204,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("alt"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -11951,7 +12215,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("time"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -11962,7 +12227,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -11972,7 +12238,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("alt"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -11982,7 +12249,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -11993,7 +12261,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -12003,7 +12272,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("time"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -12013,7 +12283,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -12024,7 +12295,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -12034,7 +12306,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("alt"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -12045,7 +12318,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -12055,7 +12329,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("time"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -12066,7 +12341,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -12076,7 +12352,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -12087,7 +12364,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("time"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -12097,7 +12375,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -12108,7 +12387,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("alt"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -12118,7 +12398,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("time"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -12129,7 +12410,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("alt"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -12139,7 +12421,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -12150,7 +12433,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -12160,7 +12444,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -12171,7 +12456,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("station_name"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -12182,7 +12468,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -12193,7 +12480,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("alt"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -12204,7 +12492,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("time"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -12215,7 +12504,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -12226,7 +12516,8 @@ public class TableTests {
         0, // standardizeWhat=0
         null,
         null,
-        null);
+        null,
+        false);
     results = table.dataToString();
     expected =
         "station_name,lat,lon\n"
@@ -12249,7 +12540,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat"),
         StringArray.fromCSV(">"),
-        StringArray.fromCSV("150"));
+        StringArray.fromCSV("150"),
+        false);
     results = table.dataToString();
     expected =
         "station_name,lat,lon\n"
@@ -12265,7 +12557,8 @@ public class TableTests {
         0, // standardizeWhat=0
         null,
         null,
-        null);
+        null,
+        false);
     results = table.dataToString(5);
     expected = "time\n" + "0\n" + "3600\n" + "7200\n" + "10800\n" + "14400\n" + "...\n";
     Test.ensureEqual(results, expected, "results=\n" + results);
@@ -12278,7 +12571,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("time,time"),
         StringArray.fromCSV(">,<"),
-        StringArray.fromCSV("7000,11000"));
+        StringArray.fromCSV("7000,11000"),
+        false);
     results = table.dataToString();
     expected = "time\n" + "7200\n" + "10800\n";
     Test.ensureEqual(results, expected, "results=\n" + results);
@@ -12290,7 +12584,8 @@ public class TableTests {
         0, // standardizeWhat=0
         null,
         null,
-        null);
+        null,
+        false);
     results = table.dataToString();
     expected =
         "station_name,lat,lon,time\n"
@@ -12331,7 +12626,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("time"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("345600"));
+        StringArray.fromCSV("345600"),
+        false);
     results = table.dataToString();
     expected =
         "station_name,lat,lon,time\n"
@@ -12354,7 +12650,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("165"));
+        StringArray.fromCSV("165"),
+        false);
     results = table.dataToString();
     expected =
         "station_name,lat,lon,time\n"
@@ -12375,7 +12672,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("time,lat"),
         StringArray.fromCSV("=,="),
-        StringArray.fromCSV("345600,165"));
+        StringArray.fromCSV("345600,165"),
+        false);
     results = table.dataToString();
     expected = "station_name,lat,lon,time\n" + "Station-5,165.0,125.0,345600\n";
     Test.ensureEqual(results, expected, "results=\n" + results);
@@ -12387,7 +12685,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("time,lat"),
         StringArray.fromCSV("=,="),
-        StringArray.fromCSV("345600,165"));
+        StringArray.fromCSV("345600,165"),
+        false);
     results = table.dataToString();
     expected =
         "lat,lon,station_name,alt,time,temperature,humidity\n"
@@ -12402,7 +12701,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("time,lat"),
         StringArray.fromCSV("=,="),
-        StringArray.fromCSV("345600,165"));
+        StringArray.fromCSV("345600,165"),
+        false);
     results = table.dataToString();
     expected = "lat,time,temperature,humidity\n" + "165.0,345600,38.457962,28.075706\n";
     Test.ensureEqual(results, expected, "results=\n" + results);
@@ -12414,7 +12714,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("time,lat"),
         StringArray.fromCSV("=,="),
-        StringArray.fromCSV("345600,165"));
+        StringArray.fromCSV("345600,165"),
+        false);
     results = table.dataToString();
     expected =
         "lat,lon,station_name,time,temperature\n" + "165.0,125.0,Station-5,345600,38.457962\n";
@@ -12427,7 +12728,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("time,lat"),
         StringArray.fromCSV("=,="),
-        StringArray.fromCSV("345600,165"));
+        StringArray.fromCSV("345600,165"),
+        false);
     results = table.dataToString();
     expected = "time,lat,temperature\n" + "345600,165.0,38.457962\n";
     Test.ensureEqual(results, expected, "results=\n" + results);
@@ -12445,7 +12747,7 @@ public class TableTests {
     // String2.log(NcHelper.ncdump(fileName, "-h"));
     table.readNcCF(
         fileName, null, 0, // standardizeWhat=0
-        null, null, null);
+        null, null, null, false);
     results = table.dataToString(24);
     expected =
         "lat,lon,station_elevation,station_info,station_name,alt,time,temperature,humidity\n"
@@ -12492,7 +12794,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -12502,7 +12805,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("alt"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -12512,7 +12816,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -12523,7 +12828,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("alt"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -12533,7 +12839,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -12544,7 +12851,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -12554,7 +12862,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -12565,7 +12874,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -12575,7 +12885,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("alt"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -12586,7 +12897,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -12596,7 +12908,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("alt"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -12606,7 +12919,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -12617,7 +12931,8 @@ public class TableTests {
         0, // standardizeWhat=0
         null,
         null,
-        null);
+        null,
+        false);
     results = table.dataToString();
     expected =
         "station_name,lat,lon\n"
@@ -12640,7 +12955,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat"),
         StringArray.fromCSV(">"),
-        StringArray.fromCSV("155"));
+        StringArray.fromCSV("155"),
+        false);
     results = table.dataToString();
     expected = "station_name,lat,lon\n" + "Station-5,161.0,100.0\n" + "Station-7,176.0,85.0\n";
     Test.ensureEqual(results, expected, "results=\n" + results);
@@ -12654,7 +12970,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("150"));
+        StringArray.fromCSV("150"),
+        false);
     results = table.dataToString();
     expected =
         // metadata mv=-999.9 for temp and humidity, so 9e36 below are "valid" values
@@ -12708,7 +13025,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat,humidity"),
         StringArray.fromCSV("=,="),
-        StringArray.fromCSV("150,43"));
+        StringArray.fromCSV("150,43"),
+        false);
     results = table.dataToString();
     expected =
         "lat,time,temperature,humidity\n" + "150.0,28800,1.0,43.0\n" + "150.0,10800,33.0,43.0\n";
@@ -12721,7 +13039,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("time,temperature"),
         StringArray.fromCSV("=,="),
-        StringArray.fromCSV("7200,33"));
+        StringArray.fromCSV("7200,33"),
+        false);
     results = table.dataToString();
     expected =
         // "22,150.0,73.0,2.6002314,1,Station-1,4.052759,7200,33.0,88.0\n" + from above
@@ -12735,7 +13054,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("time,lon"),
         StringArray.fromCSV("=,="),
-        StringArray.fromCSV("7200,73"));
+        StringArray.fromCSV("7200,73"),
+        false);
     results = table.dataToString();
     expected = "time,lon,alt,temperature\n" + "7200,73.0,4.052759,33.0\n";
     Test.ensureEqual(results, expected, "results=\n" + results);
@@ -12748,7 +13068,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lon,temperature"),
         StringArray.fromCSV("=,="),
-        StringArray.fromCSV("73,33"));
+        StringArray.fromCSV("73,33"),
+        false);
     results = table.dataToString();
     expected =
         "time,lon,alt,temperature\n" + "7200,73.0,4.052759,33.0\n" + "25200,73.0,4.052759,33.0\n";
@@ -12761,7 +13082,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("time,temperature"),
         StringArray.fromCSV("=,="),
-        StringArray.fromCSV("7200,33"));
+        StringArray.fromCSV("7200,33"),
+        false);
     results = table.dataToString();
     expected = "time,lon,alt,temperature\n" + "7200,73.0,4.052759,33.0\n";
     Test.ensureEqual(results, expected, "results=\n" + results);
@@ -12793,7 +13115,7 @@ public class TableTests {
     // String2.log(NcHelper.ncdump(fileName, "-h"));
     table.readNcCF(
         fileName, null, 0, // standardizeWhat=0
-        null, null, null);
+        null, null, null, false);
     results = table.dataToString(20);
     expected =
         "lat,lon,trajectory_info,trajectory_name,time,z,temperature,humidity\n"
@@ -12837,7 +13159,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("trajectory_name"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -12847,7 +13170,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -12857,7 +13181,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("z"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -12867,7 +13192,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -12878,7 +13204,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -12888,7 +13215,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("z"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -12898,7 +13226,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -12909,7 +13238,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("z"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -12919,7 +13249,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -12930,7 +13261,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -12940,7 +13272,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -12951,7 +13284,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -12961,7 +13295,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("trajectory_name"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -12972,7 +13307,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("z"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -12982,7 +13318,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("trajectory_name"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -12993,7 +13330,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -13003,7 +13341,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("trajectory_name"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -13014,7 +13353,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("trajectory_name"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -13024,7 +13364,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -13034,7 +13375,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -13044,7 +13386,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("z"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -13061,7 +13404,7 @@ public class TableTests {
     // String2.log(NcHelper.ncdump(fileName, ""));
     table.readNcCF(
         fileName, null, 0, // standardizeWhat=0
-        null, null, null);
+        null, null, null, false);
     results = table.dataToString(5);
     expected =
         "lat,lon,trajectory_info,trajectory_name,time,z,temperature,humidity\n"
@@ -13089,7 +13432,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("trajectory_name"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -13099,7 +13443,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -13109,7 +13454,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("z"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -13119,7 +13465,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -13130,7 +13477,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -13140,7 +13488,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("z"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -13150,7 +13499,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -13161,7 +13511,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("z"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -13171,7 +13522,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -13182,7 +13534,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -13192,7 +13545,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -13203,7 +13557,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -13213,7 +13568,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("trajectory_name"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -13224,7 +13580,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("z"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -13234,7 +13591,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("trajectory_name"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -13245,7 +13603,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -13255,7 +13614,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("trajectory_name"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -13266,7 +13626,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("trajectory_name"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -13276,7 +13637,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -13286,7 +13648,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -13296,7 +13659,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("z"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -13313,7 +13677,7 @@ public class TableTests {
     // String2.log(NcHelper.ncdump(fileName, ""));
     table.readNcCF(
         fileName, null, 0, // standardizeWhat=0
-        null, null, null);
+        null, null, null, false);
     results = table.dataToString(5);
     expected =
         "lat,lon,trajectory_info,trajectory_name,time,z,temperature,humidity\n"
@@ -13341,7 +13705,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("trajectory_name"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -13351,7 +13716,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -13361,7 +13727,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("z"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -13371,7 +13738,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -13382,7 +13750,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -13392,7 +13761,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("z"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -13402,7 +13772,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -13413,7 +13784,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("z"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -13423,7 +13795,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -13434,7 +13807,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -13444,7 +13818,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -13455,7 +13830,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -13465,7 +13841,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("trajectory_name"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -13476,7 +13853,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("z"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -13486,7 +13864,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("trajectory_name"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -13497,7 +13876,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -13507,7 +13887,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("trajectory_name"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -13518,7 +13899,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("trajectory_name"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -13528,7 +13910,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -13538,7 +13921,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -13548,7 +13932,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("z"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -13593,7 +13978,7 @@ public class TableTests {
     // String2.log(NcHelper.ncdump(fileName, "-h"));
     table.readNcCF(
         fileName, null, 0, // standardizeWhat=0
-        null, null, null);
+        null, null, null, false);
     results = table.dataToString(5);
     expected =
         "lat,lon,station_info,station_name,alt,time,temperature\n"
@@ -13619,7 +14004,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("station_name"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -13629,7 +14015,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -13639,7 +14026,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("alt"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -13649,7 +14037,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -13660,7 +14049,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -13670,7 +14060,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("alt"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -13680,7 +14071,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -13691,7 +14083,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("alt"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -13701,7 +14094,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -13712,7 +14106,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -13722,7 +14117,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -13733,7 +14129,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -13743,7 +14140,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("station_name"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -13754,7 +14152,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("alt"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -13764,7 +14163,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("station_name"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -13775,7 +14175,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("alt"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -13785,7 +14186,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("station_name"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -13796,7 +14198,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -13806,7 +14209,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("station_name"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -13817,7 +14221,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("station_name"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -13827,7 +14232,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -13837,7 +14243,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -13847,7 +14254,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("alt"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -13864,7 +14272,7 @@ public class TableTests {
     // String2.log(NcHelper.ncdump(fileName, "-h"));
     table.readNcCF(
         fileName, null, 0, // standardizeWhat=0
-        null, null, null);
+        null, null, null, false);
     results = table.dataToString();
     expected =
         "lat,lon,station_info,station_name,alt,time,temperature\n"
@@ -13901,7 +14309,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("station_name"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -13911,7 +14320,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -13921,7 +14331,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("alt"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -13931,7 +14342,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -13942,7 +14354,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -13952,7 +14365,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("alt"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -13962,7 +14376,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -13973,7 +14388,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("alt"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -13983,7 +14399,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -13994,7 +14411,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -14004,7 +14422,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -14015,7 +14434,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -14025,7 +14445,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("station_name"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -14036,7 +14457,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("alt"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -14046,7 +14468,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("station_name"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -14057,7 +14480,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("alt"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -14067,7 +14491,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("station_name"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -14078,7 +14503,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -14088,7 +14514,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("station_name"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -14099,7 +14526,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("station_name"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -14109,7 +14537,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -14119,7 +14548,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -14129,7 +14559,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("alt"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -14141,7 +14572,7 @@ public class TableTests {
     // String2.log(NcHelper.ncdump(fileName, "-h"));
     table.readNcCF(
         fileName, null, 0, // standardizeWhat=0
-        null, null, null);
+        null, null, null, false);
     results = table.dataToString(12);
     expected =
         "lat,lon,alt,station_info,station_name,time,temperature,humidity\n"
@@ -14174,7 +14605,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("station_name"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -14184,7 +14616,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -14194,7 +14627,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("alt"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -14204,7 +14638,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -14215,7 +14650,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -14225,7 +14661,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("alt"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -14235,7 +14672,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -14246,7 +14684,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("alt"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -14256,7 +14695,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -14267,7 +14707,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -14277,7 +14718,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -14288,7 +14730,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -14298,7 +14741,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("station_name"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -14309,7 +14753,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("alt"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -14319,7 +14764,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("station_name"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -14330,7 +14776,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("alt"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -14340,7 +14787,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("station_name"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -14351,7 +14799,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -14361,7 +14810,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("station_name"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -14372,7 +14822,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("station_name"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -14382,7 +14833,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -14392,7 +14844,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -14402,7 +14855,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("alt"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -14416,7 +14870,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("station_name"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("Station1"));
+        StringArray.fromCSV("Station1"),
+        false);
     results = table.dataToString(12);
     expected =
         "lat,lon,alt,station_info,station_name,time,temperature,humidity\n"
@@ -14449,7 +14904,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("station_name"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -14459,7 +14915,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -14469,7 +14926,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("alt"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -14479,7 +14937,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -14490,7 +14949,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -14500,7 +14960,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("alt"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -14510,7 +14971,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -14521,7 +14983,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("alt"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -14531,7 +14994,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -14542,7 +15006,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -14552,7 +15017,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -14563,7 +15029,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -14573,7 +15040,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("station_name"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -14584,7 +15052,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("alt"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -14594,7 +15063,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("station_name"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -14605,7 +15075,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("alt"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -14615,7 +15086,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("station_name"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -14626,7 +15098,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -14636,7 +15109,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("station_name"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -14647,7 +15121,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("station_name"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -14657,7 +15132,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -14667,7 +15143,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -14677,7 +15154,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("alt"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -14690,7 +15168,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("station_name"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("Station1"));
+        StringArray.fromCSV("Station1"),
+        false);
     results = table.dataToString();
     expected = "lat,lon,station_name\n" + "37.5,-76.5,Station1\n";
     Test.ensureEqual(results, expected, "results=\n" + results);
@@ -14714,7 +15193,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-5"));
+        StringArray.fromCSV("-5"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -14729,7 +15209,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-5"));
+        StringArray.fromCSV("-5"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -14744,7 +15225,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("alt"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("10000"));
+        StringArray.fromCSV("10000"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -14758,7 +15240,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-5"));
+        StringArray.fromCSV("-5"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -14773,7 +15256,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("time"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-5"));
+        StringArray.fromCSV("-5"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -14788,7 +15272,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("alt"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("10000"));
+        StringArray.fromCSV("10000"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -14803,7 +15288,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("time"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-5"));
+        StringArray.fromCSV("-5"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -14818,7 +15304,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-5"));
+        StringArray.fromCSV("-5"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -14833,7 +15320,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("alt"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("10000"));
+        StringArray.fromCSV("10000"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -14848,7 +15336,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-5"));
+        StringArray.fromCSV("-5"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -14866,7 +15355,7 @@ public class TableTests {
     // String2.log(NcHelper.ncdump(fileName, "-h"));
     table.readNcCF(
         fileName, null, 0, // standardizeWhat=0
-        null, null, null);
+        null, null, null, false);
     results = table.dataToString();
     expected =
         // file has:
@@ -14901,7 +15390,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("station_name"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -14911,7 +15401,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -14921,7 +15412,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("height"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -14931,7 +15423,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -14942,7 +15435,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -14952,7 +15446,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("height"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -14962,7 +15457,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -14973,7 +15469,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("height"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -14983,7 +15480,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -14994,7 +15492,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -15004,7 +15503,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -15015,7 +15515,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -15025,7 +15526,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("station_name"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -15036,7 +15538,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("height"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -15046,7 +15549,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("station_name"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -15057,7 +15561,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("height"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -15067,7 +15572,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("station_name"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -15078,7 +15584,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -15088,7 +15595,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("station_name"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -15099,7 +15607,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("station_name"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -15109,7 +15618,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -15119,7 +15629,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -15129,7 +15640,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("height"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -15145,7 +15657,7 @@ public class TableTests {
     // String2.log(NcHelper.ncdump(fileName, ""));
     table.readNcCF(
         fileName, null, 0, // standardizeWhat=0
-        null, null, null);
+        null, null, null, false);
     results = table.dataToString();
     expected =
         "lat,lon,station_info,station_name,profile,time,height,temperature\n"
@@ -15172,7 +15684,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("station_name"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -15182,7 +15695,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -15192,7 +15706,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("height"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -15202,7 +15717,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -15213,7 +15729,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -15223,7 +15740,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("height"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -15233,7 +15751,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -15244,7 +15763,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("height"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -15254,7 +15774,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -15265,7 +15786,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -15275,7 +15797,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -15286,7 +15809,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -15296,7 +15820,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("station_name"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -15307,7 +15832,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("height"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -15317,7 +15843,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("station_name"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -15328,7 +15855,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("height"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -15338,7 +15866,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("station_name"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -15349,7 +15878,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -15359,7 +15889,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("station_name"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -15370,7 +15901,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("station_name"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -15380,7 +15912,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -15390,7 +15923,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -15400,7 +15934,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("height"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -15413,7 +15948,8 @@ public class TableTests {
         0, // standardizeWhat=0
         null,
         null,
-        null);
+        null,
+        false);
     results = table.dataToString();
     expected = "lat,lon,station_info,station_name\n" + "37.5,-76.5,0,Station1\n";
     Test.ensureEqual(results, expected, "results=\n" + results);
@@ -15434,7 +15970,8 @@ public class TableTests {
         0, // standardizeWhat=0
         null,
         null,
-        null);
+        null,
+        false);
     results = table.dataToString();
     expected = "time,profile\n" + "0,0\n" + "3600,1\n" + "7200,2\n" + "10800,3\n";
     Test.ensureEqual(results, expected, "results=\n" + results);
@@ -15458,7 +15995,8 @@ public class TableTests {
         0, // standardizeWhat=0
         null,
         null,
-        null);
+        null,
+        false);
     results = table.dataToString();
     expected =
         "station_info,station_name,lon,lat,time,profile\n"
@@ -15483,7 +16021,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV(">="),
-        StringArray.fromCSV("8"));
+        StringArray.fromCSV("8"),
+        false);
     results = table.dataToString();
     expected =
         "station_info,temperature,station_name\n"
@@ -15507,7 +16046,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV(">="),
-        StringArray.fromCSV("8"));
+        StringArray.fromCSV("8"),
+        false);
     results = table.dataToString();
     expected = "temperature,time\n" + "8.4,7200\n" + "9.2,10800\n" + "8.3,10800\n";
     Test.ensureEqual(results, expected, "results=\n" + results);
@@ -15533,7 +16073,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV(">="),
-        StringArray.fromCSV("100"));
+        StringArray.fromCSV("100"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -15547,7 +16088,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("station_info"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("10"));
+        StringArray.fromCSV("10"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -15561,7 +16103,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("profile"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-5"));
+        StringArray.fromCSV("-5"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -15574,7 +16117,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV(">="),
-        StringArray.fromCSV("100"));
+        StringArray.fromCSV("100"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -15589,7 +16133,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("station_info"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("10"));
+        StringArray.fromCSV("10"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -15604,7 +16149,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("profile"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-5"));
+        StringArray.fromCSV("-5"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -15619,7 +16165,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("station_info"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("10"));
+        StringArray.fromCSV("10"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -15634,7 +16181,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV(">="),
-        StringArray.fromCSV("100"));
+        StringArray.fromCSV("100"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -15649,7 +16197,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("profile"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-1"));
+        StringArray.fromCSV("-1"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -15664,7 +16213,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV(">="),
-        StringArray.fromCSV("100"));
+        StringArray.fromCSV("100"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -15711,7 +16261,7 @@ public class TableTests {
     // String2.log(NcHelper.ncdump(fileName, "-h"));
     table.readNcCF(
         fileName, null, 0, // standardizeWhat=0
-        null, null, null);
+        null, null, null, false);
     results = table.dataToString();
     expected =
         "lat,lon,trajectory,alt,time,temperature,salinity\n"
@@ -15750,7 +16300,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("trajectory"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -15760,7 +16311,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -15770,7 +16322,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("alt"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -15780,7 +16333,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -15791,7 +16345,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -15801,7 +16356,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("alt"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -15811,7 +16367,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -15822,7 +16379,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("alt"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -15832,7 +16390,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -15843,7 +16402,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -15853,7 +16413,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -15864,7 +16425,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -15874,7 +16436,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("trajectory"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -15885,7 +16448,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("alt"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -15895,7 +16459,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("trajectory"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -15906,7 +16471,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("alt"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -15916,7 +16482,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("trajectory"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -15927,7 +16494,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -15937,7 +16505,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("trajectory"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -15948,7 +16517,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("trajectory"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -15958,7 +16528,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -15968,7 +16539,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -15978,7 +16550,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("alt"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -15994,7 +16567,7 @@ public class TableTests {
     // String2.log(NcHelper.ncdump(fileName, ""));
     table.readNcCF(
         fileName, null, 0, // standardizeWhat=0
-        null, null, null);
+        null, null, null, false);
     results = table.dataToString(14);
     expected =
         "lat,lon,trajectory,alt,time,temperature,salinity\n"
@@ -16030,7 +16603,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("trajectory"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -16040,7 +16614,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -16050,7 +16625,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("alt"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -16060,7 +16636,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -16071,7 +16648,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -16081,7 +16659,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("alt"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -16091,7 +16670,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -16102,7 +16682,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("alt"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -16112,7 +16693,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -16123,7 +16705,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -16133,7 +16716,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -16144,7 +16728,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -16154,7 +16739,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("trajectory"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -16165,7 +16751,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("alt"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -16175,7 +16762,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("trajectory"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -16186,7 +16774,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("alt"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -16196,7 +16785,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("trajectory"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -16207,7 +16797,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -16217,7 +16808,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("trajectory"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -16228,7 +16820,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("trajectory"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -16238,7 +16831,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -16248,7 +16842,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -16258,7 +16853,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("alt"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -16271,7 +16867,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("trajectory"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("1"));
+        StringArray.fromCSV("1"),
+        false);
     results = table.dataToString();
     expected =
         "lat,lon,trajectory,alt,time,temperature,salinity\n"
@@ -16322,7 +16919,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("trajectory"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("2"));
+        StringArray.fromCSV("2"),
+        false);
     results = table.dataToString();
     expected =
         "lat,lon,trajectory,time\n" + "22.20038,-74.5625,2,0\n" + "39.905518,-15.35749,2,3600\n";
@@ -16350,7 +16948,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-5"));
+        StringArray.fromCSV("-5"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -16365,7 +16964,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("trajectory"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-5"));
+        StringArray.fromCSV("-5"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -16380,7 +16980,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("100"));
+        StringArray.fromCSV("100"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -16394,7 +16995,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-5"));
+        StringArray.fromCSV("-5"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -16409,7 +17011,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("trajectory"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-5"));
+        StringArray.fromCSV("-5"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -16424,7 +17027,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("100"));
+        StringArray.fromCSV("100"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -16439,7 +17043,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("trajectory"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-5"));
+        StringArray.fromCSV("-5"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -16454,7 +17059,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-5"));
+        StringArray.fromCSV("-5"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -16469,7 +17075,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("100"));
+        StringArray.fromCSV("100"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -16484,7 +17091,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-5"));
+        StringArray.fromCSV("-5"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -16497,7 +17105,7 @@ public class TableTests {
     // String2.log(NcHelper.ncdump(fileName, ""));
     table.readNcCF(
         fileName, null, 0, // standardizeWhat=0
-        null, null, null);
+        null, null, null, false);
     results = table.dataToString();
     expected =
         "trajectory,lat,lon,time,z,temperature,humidity\n"
@@ -16539,7 +17147,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("trajectory"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -16549,7 +17158,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -16559,7 +17169,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("z"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -16569,7 +17180,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -16580,7 +17192,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -16590,7 +17203,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("z"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -16600,7 +17214,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -16611,7 +17226,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("z"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -16621,7 +17237,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -16632,7 +17249,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -16642,7 +17260,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -16653,7 +17272,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -16663,7 +17283,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("trajectory"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -16674,7 +17295,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("z"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -16684,7 +17306,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("trajectory"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -16695,7 +17318,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("z"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -16705,7 +17329,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("trajectory"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -16716,7 +17341,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -16726,7 +17352,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("trajectory"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -16737,7 +17364,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("trajectory"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -16747,7 +17375,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -16757,7 +17386,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -16767,7 +17397,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("z"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -16780,7 +17411,8 @@ public class TableTests {
         0, // standardizeWhat=0
         null,
         null,
-        null);
+        null,
+        false);
     results = table.dataToString(20);
     expected = "trajectory\n" + "0\n" + "1\n" + "2\n" + "3\n" + "4\n";
     Test.ensureEqual(results, expected, "results=\n" + results);
@@ -16798,7 +17430,8 @@ public class TableTests {
         0, // standardizeWhat=0
         null,
         null,
-        null);
+        null,
+        false);
     results = table.dataToString();
     expected =
         "time,trajectory\n"
@@ -16843,7 +17476,8 @@ public class TableTests {
         0, // standardizeWhat=0
         null,
         null,
-        null);
+        null,
+        false);
     results = table.dataToString();
     expected =
         "lon,lat,time,trajectory\n"
@@ -16887,7 +17521,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV(">="),
-        StringArray.fromCSV("39"));
+        StringArray.fromCSV("39"),
+        false);
     results = table.dataToString();
     expected =
         "trajectory,temperature\n"
@@ -16929,7 +17564,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV(">="),
-        StringArray.fromCSV("39"));
+        StringArray.fromCSV("39"),
+        false);
     results = table.dataToString();
     expected =
         "temperature,time\n"
@@ -16977,7 +17613,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV(">="),
-        StringArray.fromCSV("100"));
+        StringArray.fromCSV("100"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -16992,7 +17629,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("trajectory"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("10"));
+        StringArray.fromCSV("10"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -17007,7 +17645,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("time"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-5"));
+        StringArray.fromCSV("-5"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -17021,7 +17660,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV(">="),
-        StringArray.fromCSV("100"));
+        StringArray.fromCSV("100"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -17036,7 +17676,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("z"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-5"));
+        StringArray.fromCSV("-5"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -17051,7 +17692,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("trajectory"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-5"));
+        StringArray.fromCSV("-5"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -17066,7 +17708,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("trajectory"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-10"));
+        StringArray.fromCSV("-10"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -17081,7 +17724,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV(">="),
-        StringArray.fromCSV("100"));
+        StringArray.fromCSV("100"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -17096,7 +17740,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("z"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-1"));
+        StringArray.fromCSV("-1"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -17111,7 +17756,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV(">="),
-        StringArray.fromCSV("100"));
+        StringArray.fromCSV("100"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
     // } catch (Exception e) {
@@ -18475,7 +19121,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("trajectory_name"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -18485,7 +19132,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -18495,7 +19143,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("z"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -18505,7 +19154,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -18516,7 +19166,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -18526,7 +19177,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("z"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -18536,7 +19188,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -18547,7 +19200,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("z"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -18557,7 +19211,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -18568,7 +19223,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -18578,7 +19234,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -18589,7 +19246,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -18599,7 +19257,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("trajectory_name"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -18610,7 +19269,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("z"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -18620,7 +19280,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("trajectory_name"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -18631,7 +19292,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -18641,7 +19303,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("trajectory_name"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -18652,7 +19315,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("trajectory_name"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -18662,7 +19326,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -18672,7 +19337,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -18682,13 +19348,14 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("z"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
     table.readNcCF(
         fileName, null, 0, // standardizeWhat=0
-        null, null, null);
+        null, null, null, false);
     results = table.dataToString(55);
     expected =
         // rows that a human thinks should be rejected are kept

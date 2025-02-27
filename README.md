@@ -62,4 +62,4 @@ Below are relevant links for getting involved with the ERDDAP&trade; community a
 
 ## Deploying ERDDAP&trade; Operationally
 
-Instructions for installing ERDDAP&trade; in Apache Tomcat are available at: https://erddap.github.io/setup.html.
+Instructions for installing ERDDAP&trade; in Apache Tomcat are available at: https://erddap.github.io/docs/server-admin/deploy-install.

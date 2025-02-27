@@ -367,7 +367,7 @@ class EDDGridFromAudioFilesTests {
     // delete cached info
     if (deleteCachedDatasetInfo) EDDGridFromAudioFiles.deleteCachedDatasetInfo("testGridWav");
     EDDGrid edd = (EDDGrid) EDDTestDataset.gettestGridWav();
-    String dir = EDStatic.fullTestCacheDirectory;
+    String dir = EDStatic.config.fullTestCacheDirectory;
     String tName, results, expected, dapQuery;
     int po;
     String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 10);

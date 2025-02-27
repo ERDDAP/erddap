@@ -33,6 +33,9 @@
 </ul>
 
 
+<h1 style="color:red;">This copy of the documentation is no longer kept up to date.</h1>
+<div>Please visit <a href="https://erddap.github.io/docs/user/nccsv-1.10">the new documentation site.</a></div>
+
 <p>&nbsp;
 
 <h2><a class="selfLink" id="Introduction" href="#Introduction" rel="bookmark">Introduction</a></h2>
@@ -89,18 +92,18 @@ that can be created from them can be used by an
 >ERDDAP™ data server</a>
 (via the  
 <a rel="bookmark"
-href="https://erddap.github.io/setupDatasetsXml.html#EDDTableFromNccsvFiles"
+href="https://erddap.github.io/docs/server-admin/datasets#EDDTableFromNccsvFiles"
 >EDDTableFromNccsvFiles</a> 
 and 
 <a rel="bookmark"
-href="https://erddap.github.io/setupDatasetsXml.html#EDDTableFromNcFiles"
+href="https://erddap.github.io/docs/server-admin/datasets#EDDTableFromNcFiles"
 >EDDTableFromNcFiles</a> dataset types), 
 but this specification is external to ERDDAP. 
 ERDDAP™ has several required global attributes and many recommended global 
 and variable attributes, mostly based on CF and ACDD attributes (see 
 <br><a rel="bookmark"
-href="https://erddap.github.io/setupDatasetsXml.html#globalAttributes"
->https://erddap.github.io/setupDatasetsXml.html#globalAttributes</a>).
+href="https://erddap.github.io/docs/server-admin/datasets#globalAttributes"
+>https://erddap.github.io/docs/server-admin/datasets#globalAttributes</a>).
 
 <p><a class="selfLink" id="Balance" href="#Balance" rel="bookmark"><strong>Balance</strong></a> &mdash; 
 The design of the NCCSV format is a balance of several requirements:
@@ -504,8 +507,8 @@ Since it is envisioned that most NCCSV files, or the .nc files
 created from them, will be read into ERDDAP,
 it is strongly recommended that NCCSV files include the metadata attributes
 which are required or recommended by ERDDAP™ (see 
-<br><a rel="bookmark" href="https://erddap.github.io/setupDatasetsXml.html#globalAttributes"
->https://erddap.github.io/setupDatasetsXml.html#globalAttributes</a>). 
+<br><a rel="bookmark" href="https://erddap.github.io/docs/server-admin/datasets#globalAttributes"
+>https://erddap.github.io/docs/server-admin/datasets#globalAttributes</a>). 
 The attributes are almost all from the CF and ACDD metadata standards and 
 serve to properly describe the dataset (who, what, when, where, why, how)
 to someone who otherwise knows
@@ -641,8 +644,8 @@ ISO 8601:2004(E) dateTime format, e.g., 1970-01-01T00:00:00Z .
 You can control the precision with the ERDDAP-specific attribute
 <kbd>time_precision</kbd>. See 
 <br><a rel="bookmark" 
-href="https://erddap.github.io/setupDatasetsXml.html#time_precision"
->https://erddap.github.io/setupDatasetsXml.html#time_precision</a>.
+href="https://erddap.github.io/docs/server-admin/datasets#time_precision"
+>https://erddap.github.io/docs/server-admin/datasets#time_precision</a>.
 
 <p><a class="selfLink" id="TimeZone" href="#TimeZone" rel="bookmark">Time Zone</a> &mdash; 
 The default time zone for dateTime values is the Zulu (or GMT) 
@@ -651,8 +654,8 @@ If a dateTime variable has dateTime values from a different time zone,
 you must specify this with the ERDDAP-specific attribute <kbd>time_zone</kbd>.
 This is a requirement for ERDDAP™ (see 
 <br><a rel="bookmark" 
-href="https://erddap.github.io/setupDatasetsXml.html#time_zone"
->https://erddap.github.io/setupDatasetsXml.html#time_zone</a>).
+href="https://erddap.github.io/docs/server-admin/datasets#time_zone"
+>https://erddap.github.io/docs/server-admin/datasets#time_zone</a>).
 
 
 <h3><a class="selfLink" id="DegreeValues" href="#DegreeValues" rel="bookmark">Degree Values</a></h3>
@@ -686,8 +689,8 @@ An NCCSV file may contain CF Discrete Sampling Geometry
   in the metadata section identifying which variables are associated 
   with each timeSeries, trajectory, or profile as required by ERDDAP™ (see 
 <br><a rel="bookmark"
-href="https://erddap.github.io/setupDatasetsXml.html#cdm_data_type"
->https://erddap.github.io/setupDatasetsXml.html#cdm_data_type</a>), e.g.,
+href="https://erddap.github.io/docs/server-admin/datasets#cdm_data_type"
+>https://erddap.github.io/docs/server-admin/datasets#cdm_data_type</a>), e.g.,
   <br><kbd>*GLOBAL*,cdm_trajectory_variables,"ship"</kbd>
   <br>or
   <br><kbd>*GLOBAL*,cdm_timeseries_variables,"station_id,lat,lon"</kbd>
@@ -706,7 +709,7 @@ Here is a sample file which demonstrates many of the features of an NCCSV file:
 *GLOBAL*,creator_type,person
 *GLOBAL*,creator_url,https://www.pfeg.noaa.gov
 *GLOBAL*,featureType,trajectory
-*GLOBAL*,infoUrl,https://erddap.github.io/NCCSV.html
+*GLOBAL*,infoUrl,https://erddap.github.io/docs/user/nccsv-1.20
 *GLOBAL*,institution,"NOAA NMFS SWFSC ERD, NOAA PMEL"
 *GLOBAL*,license,"""NCCSV Demonstration"" by Bob Simons and Steve Hankin is
     licensed under CC BY 4.0, https://creativecommons.org/licenses/by/4.0/ ."

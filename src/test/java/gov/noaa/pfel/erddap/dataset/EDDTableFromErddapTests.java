@@ -127,7 +127,7 @@ class EDDTableFromErddapTests {
             + "*GLOBAL*,geospatial_lon_max,-130.2576d\n"
             + "*GLOBAL*,geospatial_lon_min,-132.1591d\n"
             + "*GLOBAL*,geospatial_lon_units,degrees_east\n"
-            + "*GLOBAL*,infoUrl,https://erddap.github.io/NCCSV.html\n"
+            + "*GLOBAL*,infoUrl,https://erddap.github.io/docs/user/nccsv-1.20\n"
             + "*GLOBAL*,institution,\"NOAA NMFS SWFSC ERD, NOAA PMEL\"\n"
             + "*GLOBAL*,keywords,\"center, data, demonstration, Earth Science > Oceans > Ocean Temperature > Sea Surface Temperature, environmental, erd, fisheries, identifier, laboratory, latitude, long, longitude, marine, national, nccsv, nmfs, noaa, ocean, oceans, pacific, pmel, science, sea, sea_surface_temperature, service, ship, southwest, sst, status, surface, swfsc, temperature, test, testLong, time, trajectory\"\n"
             + "*GLOBAL*,keywords_vocabulary,GCMD Science Keywords\n"
@@ -256,7 +256,7 @@ class EDDTableFromErddapTests {
         "http://127.0.0.1:8080/cwexperimental/tabledap/"
             + (tRedirect ? "testNccsvScalar11" : tID)
             + ".nccsv\n"
-            + "*GLOBAL*,infoUrl,https://erddap.github.io/NCCSV.html\n"
+            + "*GLOBAL*,infoUrl,https://erddap.github.io/docs/user/nccsv-1.20\n"
             + "*GLOBAL*,institution,\"NOAA NMFS SWFSC ERD, NOAA PMEL\"\n"
             + "*GLOBAL*,keywords,\"center, data, demonstration, Earth Science > Oceans > Ocean Temperature > Sea Surface Temperature, environmental, erd, fisheries, identifier, laboratory, latitude, long, longitude, marine, national, nccsv, nmfs, noaa, ocean, oceans, pacific, pmel, science, sea, sea_surface_temperature, service, ship, southwest, sst, status, surface, swfsc, temperature, test, testLong, time, trajectory\"\n"
             + "*GLOBAL*,keywords_vocabulary,GCMD Science Keywords\n"
@@ -487,10 +487,10 @@ class EDDTableFromErddapTests {
             null,
             null,
             "",
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             eddTable.className() + "_Entire",
             ".das");
-    results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+    results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
     // String2.log(results);
     expected = // see OpendapHelper.EOL for comments
         "Attributes {\n"
@@ -528,10 +528,10 @@ class EDDTableFromErddapTests {
             null,
             null,
             "",
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             eddTable.className() + "_Entire",
             ".dds");
-    results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+    results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
     // String2.log(results);
     expected =
         "Dataset {\n"
@@ -578,10 +578,10 @@ class EDDTableFromErddapTests {
             null,
             null,
             "&id=%22ae1001c011%22", // "&id=\"ae1001c011\"",
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             eddTable.className() + "_Data",
             ".csv");
-    results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+    results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
     // String2.log(results);
     expected =
         "prof,id,cast,cruise,time,longitude,lon360,latitude,depth,ocean_temperature_1,ocean_temperature_2,ocean_dissolved_oxygen_concentration_1_mLperL,ocean_dissolved_oxygen_concentration_2_mLperL,photosynthetically_active_radiation,ocean_chlorophyll_a_concentration_factoryCal,ocean_chlorophyll_fluorescence_raw,ocean_practical_salinity_1,ocean_practical_salinity_2,ocean_sigma_t,sea_water_nutrient_bottle_number,sea_water_phosphate_concentration,sea_water_silicate_concentration,sea_water_nitrate_concentration,sea_water_nitrite_concentration,sea_water_ammonium_concentration,ocean_dissolved_oxygen_concentration_1_mMperkg,ocean_dissolved_oxygen_concentration_2_mMperkg,ocean_oxygen_saturation_1\n"

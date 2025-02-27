@@ -328,7 +328,7 @@ class EDDTableFromDapSequenceTests {
       // 2017-05-05T16:27:08Z
       // "http://localhost:8080/cwexperimental/tabledap/testNccsvScalar.das</att>\n" +
       expected =
-          "        <att name=\"infoUrl\">https://erddap.github.io/NCCSV.html</att>\n"
+          "        <att name=\"infoUrl\">https://erddap.github.io/docs/user/nccsv-1.20</att>\n"
               + "        <att name=\"institution\">NOAA NMFS SWFSC ERD, NOAA PMEL</att>\n"
               + "        <att name=\"keywords\">center, data, demonstration, Earth Science &gt; Oceans &gt; Ocean Temperature &gt; Sea Surface Temperature, environmental, erd, fisheries, identifier, laboratory, latitude, long, longitude, marine, national, nccsv, nmfs, noaa, ocean, oceans, pacific, pmel, science, sea, sea_surface_temperature, service, ship, southwest, sst, status, surface, swfsc, temperature, test, testLong, time, trajectory</att>\n"
               + "        <att name=\"keywords_vocabulary\">GCMD Science Keywords</att>\n"
@@ -584,10 +584,10 @@ class EDDTableFromDapSequenceTests {
               null,
               null,
               tq,
-              EDStatic.fullTestCacheDirectory,
+              EDStatic.config.fullTestCacheDirectory,
               tedd.className() + "_GraphArgo",
               ".png");
-      // Test.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
+      // Test.displayInBrowser("file://" + EDStatic.config.fullTestCacheDirectory + tName);
     }
 
     if (false) {
@@ -609,10 +609,10 @@ class EDDTableFromDapSequenceTests {
               null,
               null,
               tq,
-              EDStatic.fullTestCacheDirectory,
+              EDStatic.config.fullTestCacheDirectory,
               tedd.className() + "_GraphArgo30",
               ".png");
-      Test.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
+      Test.displayInBrowser("file://" + EDStatic.config.fullTestCacheDirectory + tName);
     }
   }
 
@@ -639,20 +639,20 @@ class EDDTableFromDapSequenceTests {
             null,
             null,
             tq,
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             tedd.className() + "_Argo",
             ".png");
-    Test.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
+    Test.displayInBrowser("file://" + EDStatic.config.fullTestCacheDirectory + tName);
     tName =
         tedd.makeNewFileForDapQuery(
             language,
             null,
             null,
             tq,
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             tedd.className() + "_Argo",
             ".csv");
-    String results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+    String results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
     // String2.log(results);
     // String expected =
     // "";
@@ -729,10 +729,10 @@ class EDDTableFromDapSequenceTests {
             null,
             null,
             baseQuery,
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             tedd.className() + "_psdac",
             ".csv");
-    results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+    results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
     // String2.log(results);
     Test.ensureEqual(results, expected, "results=\n" + results);
 
@@ -743,10 +743,10 @@ class EDDTableFromDapSequenceTests {
             null,
             null,
             baseQuery + "&station=\"T402\"",
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             tedd.className() + "_psdacNonTime",
             ".csv");
-    results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+    results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
     Test.ensureEqual(results, expected, "results=\n" + results);
 
     // basicQuery + String> String< constraints that shouldn't change the results
@@ -756,10 +756,10 @@ class EDDTableFromDapSequenceTests {
             null,
             null,
             baseQuery + "&station>\"T3\"&station<\"T5\"",
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             tedd.className() + "_psdacGTLT",
             ".csv");
-    results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+    results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
     Test.ensureEqual(results, expected, "results=\n" + results);
 
     // REGEX: If dataset is setup with sourceCanConstraintStringRegex ~=, THIS WORKS
@@ -774,10 +774,10 @@ class EDDTableFromDapSequenceTests {
             null,
             null,
             baseQuery + "&station=~\"T40.\"",
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             tedd.className() + "_psdacRegex",
             ".csv");
-    results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+    results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
     Test.ensureEqual(results, expected, "results=\n" + results);
 
     // REGEX: If dataset is setup with sourceCanConstraintStringRegex ~=, THIS
@@ -793,10 +793,10 @@ class EDDTableFromDapSequenceTests {
             null,
             null,
             baseQuery + "&station=~\"(T402|t403)\"",
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             tedd.className() + "_psdacRegex",
             ".csv");
-    results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+    results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
     Test.ensureEqual(results, expected, "results=\n" + results);
 
     // basicQuery + time= (a string= test) constraint that shouldn't change the
@@ -807,10 +807,10 @@ class EDDTableFromDapSequenceTests {
             null,
             null,
             baseQuery + "&time=2002-06-25T14:55:00Z",
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             tedd.className() + "_psdacTime",
             ".csv");
-    results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+    results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
     Test.ensureEqual(results, expected, "results=\n" + results);
   }
 
@@ -831,10 +831,10 @@ class EDDTableFromDapSequenceTests {
             null,
             null,
             baseQuery,
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             tedd.className() + "_newport",
             ".csv");
-    results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+    results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
     expected = "\n";
     Test.ensureEqual(results, expected, "results=\n" + results);
   }
@@ -951,10 +951,10 @@ class EDDTableFromDapSequenceTests {
             null,
             null,
             baseQuery,
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             tedd.className() + "_CalCaltch",
             ".csv");
-    results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+    results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
     expected = "\n";
     Test.ensureEqual(results, expected, "results=\n" + results);
   }
@@ -981,10 +981,10 @@ class EDDTableFromDapSequenceTests {
             null,
             null,
             query,
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             edd.className() + "_FP_EQ",
             ".csv");
-    results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+    results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
     expected = // pre 2015-12-28 was sorted lexically, now case insensitive. pre 2013-05-28
         // wasn't sorted
         "longitude,latitude,time,common_name\n"
@@ -1032,10 +1032,10 @@ class EDDTableFromDapSequenceTests {
             null,
             null,
             query,
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             edd.className() + "_RWL",
             ".csv");
-    results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+    results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
     // trouble: java.time (was Joda) doesn't like space-padded hour values
 
     expected = "zztop\n";
@@ -1069,10 +1069,10 @@ class EDDTableFromDapSequenceTests {
             "longitude,latitude,time&time=%221992-01-01T00:00:00Z%22"
                 + "&longitude>=-132.0&longitude<=-112.0&latitude>=30.0&latitude<=50.0"
                 + "&distinct()&.draw=markers&.colorBar=|D||||",
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             edd.className() + "_SVGraph",
             ".png");
-    Test.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
+    Test.displayInBrowser("file://" + EDStatic.config.fullTestCacheDirectory + tName);
   }
 
   /** Test that info from subsetVariables gets back to variable's ranges */
@@ -1098,12 +1098,12 @@ class EDDTableFromDapSequenceTests {
             null,
             null,
             "",
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             edd.className() + "_Entire",
             ".das");
     String results =
         String2.annotatedString(
-            File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName));
+            File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName));
     String tResults;
     String expected =
         "Attributes {[10]\n"

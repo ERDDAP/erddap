@@ -43,7 +43,7 @@ class EDDTableFromDatabaseTests {
     password = "MyPassword";
     String connectionProps[] =
         new String[] {"user", EDDTableFromDatabase.testUser, "password", password};
-    String dir = EDStatic.fullTestCacheDirectory;
+    String dir = EDStatic.config.fullTestCacheDirectory;
     int language = 0;
 
     // list catalogs
@@ -313,7 +313,7 @@ class EDDTableFromDatabaseTests {
     // testVerboseOn();
     int language = 0;
     long eTime;
-    String dir = EDStatic.fullTestCacheDirectory;
+    String dir = EDStatic.config.fullTestCacheDirectory;
     String results, expected;
 
     EDDTableFromDatabase tedd =
@@ -854,7 +854,7 @@ class EDDTableFromDatabaseTests {
   @TagMissingDataset
   void testNonExistentVariable() throws Throwable {
     String2.log("\n*** EDDTableFromDatabase.testNonExistentVariable()");
-    String dir = EDStatic.fullTestCacheDirectory;
+    String dir = EDStatic.config.fullTestCacheDirectory;
     String results = "not set";
     int language = 0;
     try {
@@ -886,7 +886,7 @@ class EDDTableFromDatabaseTests {
   @TagMissingDataset
   void testNonExistentTable() throws Throwable {
     String2.log("\n*** EDDTableFromDatabase.testNonExistentTable()");
-    String dir = EDStatic.fullTestCacheDirectory;
+    String dir = EDStatic.config.fullTestCacheDirectory;
     String results = "not set";
     int language = 0;
     try {
