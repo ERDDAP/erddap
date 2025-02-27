@@ -38,10 +38,12 @@ import gov.noaa.pfel.coastwatch.sgt.SgtUtil;
 import gov.noaa.pfel.coastwatch.util.HtmlWidgets;
 import gov.noaa.pfel.coastwatch.util.RegexFilenameFilter;
 import gov.noaa.pfel.coastwatch.util.SSR;
+import gov.noaa.pfel.erddap.dataset.metadata.MetadataBuilder;
 import gov.noaa.pfel.erddap.util.*;
 import gov.noaa.pfel.erddap.variable.*;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.xml.bind.JAXBException;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics2D;
@@ -51,6 +53,7 @@ import java.io.BufferedWriter;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.OutputStream;
 import java.io.Writer;
 import java.net.URL;
@@ -70,6 +73,9 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.util.zip.ZipOutputStream;
 import org.apache.commons.jexl3.JexlScript;
 import org.apache.commons.jexl3.MapContext;
+import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.storage.UnsupportedStorageException;
+import org.opengis.metadata.Metadata;
 import ucar.ma2.*;
 import ucar.nc2.*;
 import ucar.nc2.write.NetcdfFileFormat;
@@ -21695,6 +21701,28 @@ public abstract class EDDTable extends EDD {
             + "</metadata>\n");
   }
 
+  private void lower_writeISO19115(int language, Writer writer)
+      throws UnsupportedStorageException, DataStoreException, JAXBException, IOException {
+
+    Metadata metadata =
+        MetadataBuilder.buildMetadata(
+            datasetID,
+            creationTimeMillis(),
+            combinedGlobalAttributes(),
+            dataVariables(),
+            !String2.isSomething(accessibleViaWMS()),
+            !String2.isSomething(accessibleViaSubset()));
+    // System.out.println(org.apache.sis.xml.XML.marshal(metadata));
+    /*
+     * By default the XML schema is the most recent version of the standard supported
+     * by Apache SIS. But the legacy version published in 2007 is still in wide use.
+     * The legacy version can be requested with the `METADATA_VERSION` property.
+     */
+    // Map<String,String> config = Map.of(org.apache.sis.xml.XML.METADATA_VERSION, "2007");
+
+    writer.write(org.apache.sis.xml.XML.marshal(metadata));
+  }
+
   /**
    * This writes the dataset's ISO 19115-2/19139 XML to the writer. <br>
    * The template is initially based on EDDGrid.writeISO19115 <br>
@@ -21727,6 +21755,11 @@ public abstract class EDDTable extends EDD {
   @Override
   public void writeISO19115(int language, Writer writer) throws Throwable {
     // FUTURE: support datasets with x,y (and not longitude,latitude)?
+
+    if (EDStatic.useNewIsoWriter) {
+      lower_writeISO19115(language, writer);
+      return;
+    }
 
     if (lonIndex < 0 || latIndex < 0)
       throw new SimpleException(
