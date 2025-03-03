@@ -6861,47 +6861,95 @@ class EDDTableFromNcFilesTests {
             ".iso19115");
     results = File2.directReadFromUtf8File(dir + tName);
 
-    expected =
-        "<gmd:EX_Extent>\n"
-            + "          <gmd:geographicElement>\n"
-            + "            <gmd:EX_GeographicBoundingBox>\n"
-            + "              <gmd:extentTypeCode>\n"
-            + "                <gco:Boolean>1</gco:Boolean>\n"
-            + "              </gmd:extentTypeCode>\n"
-            + "              <gmd:westBoundLongitude>\n"
-            + "                <gco:Decimal>-180.0</gco:Decimal>\n"
-            + "              </gmd:westBoundLongitude>\n"
-            + "              <gmd:eastBoundLongitude>\n"
-            + "                <gco:Decimal>180.0</gco:Decimal>\n"
-            + "              </gmd:eastBoundLongitude>\n"
-            + "              <gmd:southBoundLatitude>\n"
-            + "                <gco:Decimal>-25.0</gco:Decimal>\n"
-            + "              </gmd:southBoundLatitude>\n"
-            + "              <gmd:northBoundLatitude>\n"
-            + "                <gco:Decimal>21.0</gco:Decimal>\n"
-            + "              </gmd:northBoundLatitude>\n"
-            + "            </gmd:EX_GeographicBoundingBox>\n"
-            + "          </gmd:geographicElement>\n"
-            + "          <gmd:temporalElement>\n"
-            + "            <gmd:EX_TemporalExtent>\n"
-            + "              <gmd:extent>\n"
-            + "                <gml:TimePeriod gml:id=\"ED_gmdExtent_timePeriod_id\">\n"
-            + "                  <gml:description>seconds</gml:description>\n"
-            + "                  <gml:beginPosition>YYYY-MM-DDT12:00:00Z</gml:beginPosition>\n"
-            + "                  <gml:endPosition( indeterminatePosition=\"now\" />|>20.{8}T12:00:00Z</gml:endPosition>)\n"
-            + // important test
-            "                </gml:TimePeriod>\n"
-            + "              </gmd:extent>\n"
-            + "            </gmd:EX_TemporalExtent>\n"
-            + "          </gmd:temporalElement>\n"
-            + "          <gmd:verticalElement>\n"
-            + "            <gmd:EX_VerticalExtent>\n"
-            + "              <gmd:minimumValue><gco:Real>3.0</gco:Real></gmd:minimumValue>\n"
-            + "              <gmd:maximumValue><gco:Real>MAX</gco:Real></gmd:maximumValue>\n"
-            + "              <gmd:verticalCRS gco:nilReason=\"missing\"/>\n"
-            + "            </gmd:EX_VerticalExtent>\n"
-            + "          </gmd:verticalElement>\n"
-            + "        </gmd:EX_Extent>";
+    if (EDStatic.config.useSisISO19115) {
+      expected =
+          "<gex:EX_Extent>\n"
+              + "          <gex:description>\n"
+              + "            <gco:CharacterString>boundingExtent</gco:CharacterString>\n"
+              + "          </gex:description>\n"
+              + "          <gex:geographicElement>\n"
+              + "            <gex:EX_GeographicBoundingBox>\n"
+              + "              <gex:extentTypeCode>\n"
+              + "                <gco:Boolean>true</gco:Boolean>\n"
+              + "              </gex:extentTypeCode>\n"
+              + "              <gex:westBoundLongitude>\n"
+              + "                <gco:Decimal>-180.0</gco:Decimal>\n"
+              + "              </gex:westBoundLongitude>\n"
+              + "              <gex:eastBoundLongitude>\n"
+              + "                <gco:Decimal>180.0</gco:Decimal>\n"
+              + "              </gex:eastBoundLongitude>\n"
+              + "              <gex:southBoundLatitude>\n"
+              + "                <gco:Decimal>-25.0</gco:Decimal>\n"
+              + "              </gex:southBoundLatitude>\n"
+              + "              <gex:northBoundLatitude>\n"
+              + "                <gco:Decimal>21.0</gco:Decimal>\n"
+              + "              </gex:northBoundLatitude>\n"
+              + "            </gex:EX_GeographicBoundingBox>\n"
+              + "          </gex:geographicElement>\n"
+              + "          <gex:temporalElement>\n"
+              + "            <gex:EX_TemporalExtent>\n"
+              + "              <gex:extent>\n"
+              + "                <gml:TimePeriod>\n"
+              + "                  <gml:beginPosition>1977-11-06T07:00:00-05:00</gml:beginPosition>\n"
+              + "                  <gml:endPosition>2022-01-02T07:00:00-05:00</gml:endPosition>\n"
+              + "                </gml:TimePeriod>\n"
+              + "              </gex:extent>\n"
+              + "            </gex:EX_TemporalExtent>\n"
+              + "          </gex:temporalElement>\n"
+              + "          <gex:verticalElement>\n"
+              + "            <gex:EX_VerticalExtent>\n"
+              + "              <gex:minimumValue>\n"
+              + "                <gco:Real>3.0</gco:Real>\n"
+              + "              </gex:minimumValue>\n"
+              + "              <gex:maximumValue>\n"
+              + "                <gco:Real>8.0</gco:Real>\n"
+              + "              </gex:maximumValue>\n"
+              + "            </gex:EX_VerticalExtent>\n"
+              + "          </gex:verticalElement>\n"
+              + "        </gex:EX_Extent>";
+    } else {
+      expected =
+          "<gmd:EX_Extent>\n"
+              + "          <gmd:geographicElement>\n"
+              + "            <gmd:EX_GeographicBoundingBox>\n"
+              + "              <gmd:extentTypeCode>\n"
+              + "                <gco:Boolean>1</gco:Boolean>\n"
+              + "              </gmd:extentTypeCode>\n"
+              + "              <gmd:westBoundLongitude>\n"
+              + "                <gco:Decimal>-180.0</gco:Decimal>\n"
+              + "              </gmd:westBoundLongitude>\n"
+              + "              <gmd:eastBoundLongitude>\n"
+              + "                <gco:Decimal>180.0</gco:Decimal>\n"
+              + "              </gmd:eastBoundLongitude>\n"
+              + "              <gmd:southBoundLatitude>\n"
+              + "                <gco:Decimal>-25.0</gco:Decimal>\n"
+              + "              </gmd:southBoundLatitude>\n"
+              + "              <gmd:northBoundLatitude>\n"
+              + "                <gco:Decimal>21.0</gco:Decimal>\n"
+              + "              </gmd:northBoundLatitude>\n"
+              + "            </gmd:EX_GeographicBoundingBox>\n"
+              + "          </gmd:geographicElement>\n"
+              + "          <gmd:temporalElement>\n"
+              + "            <gmd:EX_TemporalExtent>\n"
+              + "              <gmd:extent>\n"
+              + "                <gml:TimePeriod gml:id=\"ED_gmdExtent_timePeriod_id\">\n"
+              + "                  <gml:description>seconds</gml:description>\n"
+              + "                  <gml:beginPosition>YYYY-MM-DDT12:00:00Z</gml:beginPosition>\n"
+              + "                  <gml:endPosition( indeterminatePosition=\"now\" />|>20.{8}T12:00:00Z</gml:endPosition>)\n"
+              + // important test
+              "                </gml:TimePeriod>\n"
+              + "              </gmd:extent>\n"
+              + "            </gmd:EX_TemporalExtent>\n"
+              + "          </gmd:temporalElement>\n"
+              + "          <gmd:verticalElement>\n"
+              + "            <gmd:EX_VerticalExtent>\n"
+              + "              <gmd:minimumValue><gco:Real>3.0</gco:Real></gmd:minimumValue>\n"
+              + "              <gmd:maximumValue><gco:Real>MAX</gco:Real></gmd:maximumValue>\n"
+              + "              <gmd:verticalCRS gco:nilReason=\"missing\"/>\n"
+              + "            </gmd:EX_VerticalExtent>\n"
+              + "          </gmd:verticalElement>\n"
+              + "        </gmd:EX_Extent>";
+    }
     results =
         results.replaceAll(
             "<gml:beginPosition>....-..-..T12:00:00Z", "<gml:beginPosition>YYYY-MM-DDT12:00:00Z");
@@ -6909,19 +6957,27 @@ class EDDTableFromNcFilesTests {
         results.replaceAll(
             "<gmd:maximumValue><gco:Real>[0-9]+.[0-9]+</gco:Real></gmd:maximumValue>",
             "<gmd:maximumValue><gco:Real>MAX</gco:Real></gmd:maximumValue>");
-    po = results.indexOf("<gmd:EX_Extent>");
-    int po2 = results.indexOf("</gmd:EX_Extent>", po + 10);
+    int po2 = -1;
+    if (EDStatic.config.useSisISO19115) {
+      po = results.indexOf("<gex:EX_Extent>");
+      po2 = results.indexOf("</gex:EX_Extent>", po + 10);
+    } else {
+      po = results.indexOf("<gmd:EX_Extent>");
+      po2 = results.indexOf("</gmd:EX_Extent>", po + 10);
+    }
     if (po < 0 || po2 < 0) String2.log("po=" + po + " po2=" + po2 + " results=\n" + results);
     Test.ensureLinesMatch(results.substring(po, po2 + 16), expected, "results=\n" + results);
 
-    po = results.indexOf("<gml:TimePeriod gml:id=\"DI_gmdExtent_timePeriod_id\">");
-    Test.ensureTrue(po >= 0, results);
-    po = results.indexOf("<gml:TimePeriod gml:id=\"ED_gmdExtent_timePeriod_id\">");
-    Test.ensureTrue(po >= 0, results);
-    po = results.indexOf("<gml:TimePeriod gml:id=\"OD_gmdExtent_timePeriod_id\">");
-    Test.ensureTrue(po >= 0, results);
-    po = results.indexOf("<gml:TimePeriod gml:id=\"SUB_gmdExtent_timePeriod_id\">");
-    Test.ensureTrue(po >= 0, results);
+    if (!EDStatic.config.useSisISO19115) {
+      po = results.indexOf("<gml:TimePeriod gml:id=\"DI_gmdExtent_timePeriod_id\">");
+      Test.ensureTrue(po >= 0, results);
+      po = results.indexOf("<gml:TimePeriod gml:id=\"ED_gmdExtent_timePeriod_id\">");
+      Test.ensureTrue(po >= 0, results);
+      po = results.indexOf("<gml:TimePeriod gml:id=\"OD_gmdExtent_timePeriod_id\">");
+      Test.ensureTrue(po >= 0, results);
+      po = results.indexOf("<gml:TimePeriod gml:id=\"SUB_gmdExtent_timePeriod_id\">");
+      Test.ensureTrue(po >= 0, results);
+    }
     po = results.indexOf(">OPeNDAP:OPeNDAP<");
     Test.ensureTrue(po >= 0, results);
     po = results.indexOf(">ERDDAP:tabledap<");

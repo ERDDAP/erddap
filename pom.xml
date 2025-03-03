@@ -948,6 +948,12 @@
             <artifactId>sis-storage</artifactId>
             <version>1.4</version>
         </dependency>
+        <dependency>
+            <groupId>com.sun.xml.bind</groupId>
+            <artifactId>jaxb-impl</artifactId>
+            <version>4.0.5</version>
+            <scope>runtime</scope>
+        </dependency>
 
         <!-- Version options: https://artifacts.unidata.ucar.edu/#browse/browse:unidata-all:edu%2Fwisc%2Fssec%2Fvisad  
              Marked as needed by dependency:analyze - ->

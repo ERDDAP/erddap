@@ -566,8 +566,6 @@ public class EDStatic {
   // during testing. This should only be set to tru during testing.
   public static boolean testingDontDestroy = false;
 
-  public static boolean useNewIsoWriter = true;
-
   /**
    * This static block reads this class's static String values from contentDirectory, which must
    * contain setup.xml and datasets.xml (and may contain messages.xml). It may be a defined

@@ -16654,7 +16654,7 @@ public abstract class EDDGrid extends EDD {
             + "</metadata>\n");
   }
 
-  private void lower_writeISO19115(int language, Writer writer)
+  private void lower_writeISO19115(Writer writer)
       throws UnsupportedStorageException, DataStoreException, JAXBException, IOException {
 
     Metadata metadata =
@@ -16666,7 +16666,6 @@ public abstract class EDDGrid extends EDD {
             axisVariables(),
             !String2.isSomething(accessibleViaWMS()),
             false);
-    // System.out.println(org.apache.sis.xml.XML.marshal(metadata));
     /*
      * By default the XML schema is the most recent version of the standard supported
      * by Apache SIS. But the legacy version published in 2007 is still in wide use.
@@ -16703,8 +16702,8 @@ public abstract class EDDGrid extends EDD {
   public void writeISO19115(int language, Writer writer) throws Throwable {
     // FUTURE: support datasets with x,y (and not longitude,latitude)
 
-    if (EDStatic.useNewIsoWriter) {
-      lower_writeISO19115(language, writer);
+    if (EDStatic.config.useSisISO19115) {
+      lower_writeISO19115(writer);
       return;
     }
 

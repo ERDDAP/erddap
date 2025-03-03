@@ -316,6 +316,7 @@ public class MetadataBuilder {
         accessibleViaSubset);
   }
 
+  @SuppressWarnings("JavaUtilDate") // The api uses dates, so we need to build a date
   private static Metadata buildMetadata(
       String datasetId,
       long creationDate,
@@ -350,7 +351,7 @@ public class MetadataBuilder {
       dates.add(new DefaultCitationDate(DateTime.parse(dateIssued).toDate(), DateType.PUBLICATION));
     }
 
-    String domain = EDStatic.baseUrl;
+    String domain = EDStatic.config.baseUrl;
     if (domain.startsWith("http://")) domain = domain.substring(7);
     else if (domain.startsWith("https://")) domain = domain.substring(8);
     String contributorName = attributes.getString("contributor_name");
@@ -407,7 +408,9 @@ public class MetadataBuilder {
     DefaultDataIdentification dataId = new DefaultDataIdentification();
     dataId.setCitation(dataCitation);
     dataId.setAbstract(new EDDInternationalString(attributes.getString("summary")));
-    dataId.setCredits(List.of(acknowledgement));
+    if (String2.isSomething(acknowledgement)) {
+      dataId.setCredits(List.of(acknowledgement));
+    }
     dataId.setPointOfContacts(
         List.of(responsiblePartyWithRole(creatorParty, Role.POINT_OF_CONTACT)));
     dataId.setDescriptiveKeywords(getKeywords(attributes, standardNames));
@@ -647,21 +650,22 @@ public class MetadataBuilder {
     admin.setRole(role);
     DefaultContact contact = new DefaultContact();
     DefaultTelephone phone = new DefaultTelephone();
-    phone.setNumber(EDStatic.adminPhone);
+    phone.setNumber(EDStatic.config.adminPhone);
     phone.setNumberType(UnsupportedCodeList.VOICE);
     contact.setPhones(List.of(phone));
     DefaultAddress address = new DefaultAddress();
-    address.setDeliveryPoints(List.of(EDStatic.adminAddress));
-    address.setCity(new EDDInternationalString(EDStatic.adminCity));
-    address.setAdministrativeArea(new EDDInternationalString(EDStatic.adminStateOrProvince));
-    address.setCountry(new EDDInternationalString(EDStatic.adminCountry));
-    address.setPostalCode(EDStatic.adminPostalCode);
-    address.setElectronicMailAddresses(List.of(EDStatic.adminEmail));
+    address.setDeliveryPoints(List.of(EDStatic.config.adminAddress));
+    address.setCity(new EDDInternationalString(EDStatic.config.adminCity));
+    address.setAdministrativeArea(new EDDInternationalString(EDStatic.config.adminStateOrProvince));
+    address.setCountry(new EDDInternationalString(EDStatic.config.adminCountry));
+    address.setPostalCode(EDStatic.config.adminPostalCode);
+    address.setElectronicMailAddresses(List.of(EDStatic.config.adminEmail));
     contact.setAddresses(List.of(address));
     DefaultIndividual individual =
-        new DefaultIndividual(EDStatic.adminIndividualName, EDStatic.adminPosition, contact);
+        new DefaultIndividual(
+            EDStatic.config.adminIndividualName, EDStatic.config.adminPosition, contact);
     DefaultOrganisation institution =
-        new DefaultOrganisation(EDStatic.adminInstitution, null, individual, contact);
+        new DefaultOrganisation(EDStatic.config.adminInstitution, null, individual, contact);
     admin.setParties(List.of(individual, institution));
     return admin;
   }
@@ -671,11 +675,17 @@ public class MetadataBuilder {
     DefaultResponsibleParty responsibleParty = new DefaultResponsibleParty();
     DefaultContact contact = new DefaultContact();
     DefaultAddress address = new DefaultAddress();
-    address.setElectronicMailAddresses(List.of(email));
+    if (String2.isSomething(email)) {
+      address.setElectronicMailAddresses(List.of(email));
+    }
     contact.setAddresses(List.of(address));
     if (String2.isSomething(url)) {
       DefaultOnlineResource infoLink = new DefaultOnlineResource();
-      infoLink.setLinkage(URI.create(url));
+      try {
+        infoLink.setLinkage(URI.create(url));
+      } catch (Exception e) {
+        String2.log("Bad url when making iso metadata. " + e.getMessage());
+      }
       infoLink.setProtocol("information");
       infoLink.setApplicationProfile("web browser");
       infoLink.setName("Background Information");
@@ -692,6 +702,7 @@ public class MetadataBuilder {
     if (String2.isSomething(institution)) {
       parties.add(new DefaultOrganisation(institution, null, individual, contact));
     }
+    responsibleParty.setRole(role);
     responsibleParty.setParties(parties);
     return responsibleParty;
   }
@@ -723,7 +734,9 @@ public class MetadataBuilder {
   private static Dimension dimFromAxis(EDVGridAxis axis) {
     DefaultDimension dim = new DefaultDimension();
     dim.setDimensionSize(axis.sourceValues().size());
-    dim.setResolution(axis.averageSpacing());
+    if (!Double.isNaN(axis.averageSpacing())) {
+      dim.setResolution(Math.abs(axis.averageSpacing()));
+    }
     if (axis instanceof EDVLonGridAxis) {
       dim.setDimensionName(DimensionNameType.COLUMN);
     } else if (axis instanceof EDVLatGridAxis) {
@@ -744,7 +757,7 @@ public class MetadataBuilder {
     List<Keywords> keywordsList = new ArrayList<>();
     String keywords = attributes.getString("keywords");
     if (keywords == null) { // use the crude, ERDDAP keywords
-      keywords = EDStatic.keywords;
+      keywords = EDStatic.config.keywords;
     }
     String project = attributes.getString("project");
     if (project == null) project = attributes.getString("institution");
