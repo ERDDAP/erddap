@@ -150,7 +150,7 @@ public class HandlerFactory {
         case "EDDTableFromDatabase" -> {
           return new EDDTableFromDatabaseHandler(saxHandler, datasetID, completeState);
         }
-        case "EDDTableFromAsciiService" -> {
+        case "EDDTableFromAsciiService", "EDDTableFromAsciiServiceNOS" -> {
           return new EDDTableFromAsciiServiceHandler(
               saxHandler, datasetID, completeState, datasetType);
         }

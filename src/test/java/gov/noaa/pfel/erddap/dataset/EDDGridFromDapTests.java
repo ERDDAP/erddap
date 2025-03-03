@@ -159,8 +159,7 @@ class EDDGridFromDapTests {
     // testVerboseOn();
     int language = 0;
     EDDGridFromDap gridDataset;
-    String name, tName, axisDapQuery, results, expected, error;
-    int tPo;
+    String tName, results, expected, error;
     String userDapQuery = "chlorophyll[(2007-02-06)][][(29):10:(50)][(225):10:(247)]";
     String graphDapQuery = "chlorophyll[0:10:200][][(29)][(225)]";
     String mapDapQuery = "chlorophyll[200][][(29):(50)][(225):(247)]"; // stride irrelevant
@@ -3792,7 +3791,7 @@ class EDDGridFromDapTests {
     boolean doGraphicsTests = false;
     // String2.log("\n*** EDDGridFromDap.test for pmelOscar");
     // testVerboseOn();
-    String name, tName, results, tResults, expected, userDapQuery;
+    String tName, results, tResults, expected, userDapQuery;
     String today =
         Calendar2.getCurrentISODateTimeStringZulu().substring(0, 14); // 14 is enough to check
     // hour. Hard
@@ -4322,7 +4321,7 @@ class EDDGridFromDapTests {
     // String2.log("\n*** EDDGridFromDap.testDescendinglat");
     // testVerboseOn();
     int tSize;
-    String name, tName, results, tResults, expected, userDapQuery;
+    String tName, results, tResults, expected, userDapQuery;
     EDDGrid eddGrid = (EDDGrid) EDDTestDataset.getusgsCeCrm10();
     // if need a different test dataset in the future:
     EDVGridAxis edvga;
@@ -4718,7 +4717,7 @@ class EDDGridFromDapTests {
   void testForEllyn() throws Throwable {
     String2.log("\n*** EDDGridFromDap.testForEllyn");
     // testVerboseOn();
-    String name, tName, results, tResults, expected, userDapQuery;
+    String tName, results, tResults, expected, userDapQuery;
     String today = Calendar2.getCurrentISODateTimeStringZulu() + "Z";
     int language = 0;
 
@@ -5923,7 +5922,7 @@ class EDDGridFromDapTests {
 
   /** This tests non-nc-"Grid" data variable (dimensions don't have axis/coordinate variable). */
   @org.junit.jupiter.api.Test
-  @TagIncompleteTest
+  @TagMissingDataset
   void testNoAxisVariable() throws Throwable {
 
     // testVerboseOn();
@@ -6096,11 +6095,11 @@ class EDDGridFromDapTests {
 
   /** This tests a climatology time problem. */
   @org.junit.jupiter.api.Test
-  @TagIncompleteTest
+  @TagMissingDataset
   void testClimatologyTime() throws Throwable {
     // String2.log("\n*** EDDGridFromDap.testClimatologyTime");
     // testVerboseOn();
-    String name, tName, results, tResults, expected, userDapQuery;
+    String tName, results, expected, userDapQuery;
     int language = 0;
 
     try {
@@ -6186,7 +6185,6 @@ class EDDGridFromDapTests {
    * https://www.unidata.ucar.edu/software/thredds/current/tds/reference/ThreddsConfigXMLFile.html#opendap
    * partialRequestMaxBytes=10^8 stays well under that.
    */
-  @org.junit.jupiter.api.Test
   @ParameterizedTest
   @ValueSource(ints = {2, 4, 6, 96})
   @TagThredds
@@ -6555,7 +6553,7 @@ class EDDGridFromDapTests {
     int language = 0;
 
     EDDGridFromDap gridDataset = (EDDGridFromDap) EDDTestDataset.geterdBAssta5day();
-    String name, tName, results, expected;
+    String tName, results, expected;
 
     tName =
         gridDataset.makeNewFileForDapQuery(
@@ -7131,7 +7129,7 @@ class EDDGridFromDapTests {
     String baseName;
 
     EDDGrid gridDataset = (EDDGridFromDap) EDDTestDataset.gethawaii_d90f_20ee_c4cb();
-    String tName, result, dir = Image2Tests.urlToAbsolutePath(Image2Tests.OBS_DIR);
+    String tName, dir = Image2Tests.urlToAbsolutePath(Image2Tests.OBS_DIR);
     // depth on Y axis
     baseName = gridDataset.className() + "_surfaceGraphB0";
     tName =
@@ -9234,7 +9232,7 @@ class EDDGridFromDapTests {
     // String2.log("\n*** EDDGridFromDap.testUInt16");
     int language = 0;
     // testVerboseOn();
-    String name, tName, results, tResults, expected, userDapQuery, url;
+    String tName, results, expected, userDapQuery, url;
     String baseUrl =
         "https://thredds.jpl.nasa.gov/thredds/dodsC/ncml_aggregation/OceanTemperature/modis/aqua/4um/4km/aggregate__MODIS_AQUA_L3_SST_MID_IR_8DAY_4KM_NIGHTTIME_v2019.0.ncml";
     try {
@@ -9941,7 +9939,7 @@ class EDDGridFromDapTests {
     // String2.log("\n*** EDDGridFromDap.testScale1Offset0");
     int language = 0;
     // testVerboseOn();
-    String name, tName, results, tResults, expected, userDapQuery;
+    String tName, results, expected, userDapQuery;
 
     EDDGrid eddGrid = null;
 

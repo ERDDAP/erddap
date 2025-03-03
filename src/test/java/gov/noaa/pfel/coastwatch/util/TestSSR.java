@@ -849,7 +849,7 @@ public class TestSSR {
    * @throws Exception if exitStatus of cmd is not 0 (or other fatal error)
    * @see #shell
    */
-  public static List<String> dosShell(String commandLine, int timeOutSeconds) throws Exception {
+  private static List<String> dosShell(String commandLine, int timeOutSeconds) throws Exception {
     PipeToStringArray outCatcher = new PipeToStringArray();
     PipeToStringArray errCatcher = new PipeToStringArray();
 

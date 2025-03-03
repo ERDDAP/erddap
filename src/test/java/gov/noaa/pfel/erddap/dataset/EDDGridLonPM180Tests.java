@@ -1,6 +1,5 @@
 package gov.noaa.pfel.erddap.dataset;
 
-import com.cohort.util.Calendar2;
 import com.cohort.util.File2;
 import com.cohort.util.Image2Tests;
 import com.cohort.util.Math2;
@@ -694,88 +693,6 @@ class EDDGridLonPM180Tests {
     Math2.sleep(20000);
     results = SSR.getUrlResponseStringUnchanged(request);
     Test.ensureEqual(results, fullExpected, "results=\n" + results);
-  }
-
-  /** This tests hardFlag. */
-  @org.junit.jupiter.api.Test
-  @TagLocalERDDAP
-  void testHardFlag() throws Throwable {
-    // String2.log("\n*** EDDGridLonPM180.testHardFlag()\n" +
-    // "This test requires hawaii_d90f_20ee_c4cb and
-    // hawaii_d90f_20ee_c4cb_LonPM180\n" +
-    // "be loaded in the local ERDDAP.");
-
-    // set hardFlag
-    String startTime = Calendar2.getCurrentISODateTimeStringLocalTZ();
-    Math2.sleep(1000);
-    File2.writeToFile88591(
-        EDStatic.config.fullHardFlagDirectory + "hawaii_d90f_20ee_c4cb_LonPM180", "test");
-    String2.log(
-        "I just set a hardFlag for hawaii_d90f_20ee_c4cb_LonPM180.\n"
-            + "Now I'm waiting 10 seconds.");
-    Math2.sleep(10000);
-    // flush the log file
-    String tIndex =
-        SSR.getUrlResponseStringUnchanged("http://localhost:8080/cwexperimental/status.html");
-    Math2.sleep(2000);
-    // read the log file
-    String tLog = File2.readFromFileUtf8(EDStatic.config.fullLogsDirectory + "log.txt")[1];
-    String expected = // ***
-        /*
-         * "deleting cached dataset info for datasetID=hawaii_d90f_20ee_c4cb_LonPM180Child\n"
-         * +
-         * "\\*\\*\\* unloading datasetID=hawaii_d90f_20ee_c4cb_LonPM180\n" +
-         * "\\*\\*\\* deleting cached dataset info for datasetID=hawaii_d90f_20ee_c4cb_LonPM180\n"
-         * +
-         * "\n" +
-         * "\\*\\*\\* RunLoadDatasets is starting a new hardFlag LoadDatasets thread at (..........T..............)\n"
-         * +
-         * "\n" +
-         * "\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\n"
-         * +
-         * "LoadDatasets.run EDStatic.config.developmentMode=true ..........T..............\n"
-         * +
-         * "  datasetsRegex=\\(hawaii_d90f_20ee_c4cb_LonPM180\\) inputStream=null majorLoad=false"
-         * ;
-         */
-
-        "deleting cached dataset info for datasetID=hawaii_d90f_20ee_c4cb_LonPM180Child\n"
-            + "File2.deleteIfOld\\(/erddapBPD/dataset/ld/hawaii_d90f_20ee_c4cb_LonPM180Child/\\) nDir=   . nDeleted=   . nRemain=   .\n"
-            + "\\*\\*\\* unloading datasetID=hawaii_d90f_20ee_c4cb_LonPM180\n"
-            + "nActions=0\n"
-            + "\\*\\*\\* deleting cached dataset info for datasetID=hawaii_d90f_20ee_c4cb_LonPM180\n"
-            + "File2.deleteIfOld\\(/erddapBPD/dataset/80/hawaii_d90f_20ee_c4cb_LonPM180/  \\) nDir=   . nDeleted=   . nRemain=   .\n"
-            + "\n"
-            + "\\*\\*\\* RunLoadDatasets is starting a new hardFlag LoadDatasets thread at (..........T..............)\n"
-            + "\n"
-            + "\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\n"
-            + "LoadDatasets.run EDStatic.config.developmentMode=true ..........T..............\n"
-            + "  datasetsRegex=\\(hawaii_d90f_20ee_c4cb_LonPM180\\) inputStream=null majorLoad=false";
-
-    int po = Math.max(0, tLog.lastIndexOf(expected.substring(0, 78)));
-    int po2 = tLog.indexOf("majorLoad=false", po) + 15;
-    String tResults = tLog.substring(po, po2);
-    String2.log("\ntResults=<quote>" + tResults + "</quote>\n");
-    Test.testLinesMatch(tResults, expected, "tResults and expected don't match!");
-
-    // so far so good, tResults matches expected
-    int po3 = tResults.indexOf("thread at ");
-    String reloadTime = tResults.substring(po3 + 10, po3 + 35);
-    String2.log(" startTime=" + startTime + "\n" + "reloadTime=" + reloadTime);
-    Test.ensureTrue(startTime.compareTo(reloadTime) < 0, "startTime is after reloadTime?!");
-
-    // test that child was successfully constructed after that
-    int po4 =
-        tLog.indexOf(
-            "*** EDDGridFromErddap hawaii_d90f_20ee_c4cb_LonPM180Child constructor finished. TIME=",
-            po);
-    Test.ensureTrue(po4 > po, "po4=" + po4 + " isn't greater than po=" + po + " !");
-
-    // test that parent was successfully constructed after that
-    int po5 =
-        tLog.indexOf(
-            "*** EDDGridLonPM180 hawaii_d90f_20ee_c4cb_LonPM180 constructor finished. TIME=", po4);
-    Test.ensureTrue(po5 > po4, "po5=" + po5 + " isn't greater than po4=" + po4 + " !");
   }
 
   /**

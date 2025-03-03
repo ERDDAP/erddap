@@ -590,10 +590,6 @@ public class Table {
   public static final String ERD_TABLE_CSS =
       "<link href=\"https://coastwatch.pfeg.noaa.gov/erddap/images/erddap2.css\" rel=\"stylesheet\" type=\"text/css\">";
 
-  // this is used to find out if all readNcCF code is tested: cc=code coverage
-  // Bits are set to true when chunk of code is tested.
-  public static BitSet ncCFcc = null; // null=inactive, new BitSet() = active
-
   /** An arrayList to hold 0 or more PrimitiveArray's with data. */
   protected final ArrayList<PrimitiveArray> columns = new ArrayList<>();
 
@@ -6828,7 +6824,6 @@ public class Table {
     } else {
       if (debugMode) msg.append("  Debug: 0 constraints\n");
     }
-    if (ncCFcc != null) ncCFcc.set(0);
 
     // clear the table
     clear();
@@ -6919,7 +6914,6 @@ public class Table {
 
       // deal with pointType
       if (pointType) {
-        if (ncCFcc != null) ncCFcc.set(1);
         ncFile.close();
         if (debugMode) msg.append("PointType.  loadVars=").append(loadVariableNames).append("\n");
         StringArray loadCon = new StringArray(loadVariableNames);
@@ -6998,7 +6992,6 @@ public class Table {
       int nLoadOrConVariablesInFile = 0;
       // if (debugMode) String2.log("Debug: nVars=" + nVars);
       for (int v = 0; v < nVars; v++) {
-        if (ncCFcc != null) ncCFcc.set(2);
         vars[v] = varsList.get(v);
         varNames[v] = vars[v].getFullName();
         varIsChar[v] = vars[v].getDataType() == DataType.CHAR;
@@ -7034,7 +7027,6 @@ public class Table {
 
         // scalars
         if (varNDims[v] <= 0) {
-          if (ncCFcc != null) ncCFcc.set(3);
           hasScalarVars = true;
           varNDims[v] = 1;
           varUsesDim[v][nDims] = true;
@@ -7043,36 +7035,27 @@ public class Table {
 
         // go through the dimensions
         for (int d = 0; d < varNDims[v]; d++) {
-          if (ncCFcc != null) ncCFcc.set(4);
           int whichDim = dimsList.indexOf(vars[v].getDimension(d));
           if (whichDim >= 0) { // a shared dim
-            if (ncCFcc != null) ncCFcc.set(12);
             varUsesDim[v][whichDim] = true;
           }
 
           // detect multiDim dimensions
           if (nLevels == 1 && varNDims[v] == 2) {
-            if (ncCFcc != null) ncCFcc.set(10);
             if (d == 0) {
-              if (ncCFcc != null) ncCFcc.set(5);
               outerDim = checkConsistent(errorInMethod, varNames[v], outerDim, whichDim);
             }
             if (d == 1) {
-              if (ncCFcc != null) ncCFcc.set(6);
               obsDim = checkConsistent(errorInMethod, varNames[v], obsDim, whichDim);
             }
           } else if (nLevels == 2 && varNDims[v] == 3) {
-            if (ncCFcc != null) ncCFcc.set(11);
             if (d == 0) {
-              if (ncCFcc != null) ncCFcc.set(7);
               outerDim = checkConsistent(errorInMethod, varNames[v], outerDim, whichDim);
             }
             if (d == 1) {
-              if (ncCFcc != null) ncCFcc.set(8);
               innerDim = checkConsistent(errorInMethod, varNames[v], innerDim, whichDim);
             }
             if (d == 2) {
-              if (ncCFcc != null) ncCFcc.set(9);
               obsDim = checkConsistent(errorInMethod, varNames[v], obsDim, whichDim);
             }
           }
@@ -7127,7 +7110,6 @@ public class Table {
           // keep this sample_dimension info  (If !isRequired, then may be temporary.)
           if (debugMode) msg.append("\nDebug:  keeping sample_dimension=").append(sd);
 
-          if (ncCFcc != null) ncCFcc.set(13);
           rowSizeVar = v;
           rowSizeVarIsRequired = isRequired;
           // this is an internal variable. Request can't include it or constrain it.
@@ -7177,10 +7159,8 @@ public class Table {
                     + varNames[v]
                     + ") have an instance_dimension attribute.");
           // this is an internal variable in the file. Request can't request it or constrain it.
-          if (ncCFcc != null) ncCFcc.set(14);
           indexVar = v;
           if (varInLoadOrConVariables[v]) {
-            if (ncCFcc != null) ncCFcc.set(15);
             varInLoadOrConVariables[v] = false;
             nLoadOrConVariablesInFile--;
             int i = loadVariableNames.indexOf(varNames[v]);
@@ -7232,11 +7212,6 @@ public class Table {
 
       // if outerDim not found, try using scalarDim (scalar vars)
       if (outerDim == -1 && hasScalarVars) {
-        if (ncCFcc != null) { // some things removed, so 3 flags are set
-          ncCFcc.set(16);
-          ncCFcc.set(17);
-          ncCFcc.set(18);
-        }
         outerDim = nDims;
         outerDimName = scalarDimName;
         outerDimSize = scalarDimSize;
@@ -7247,10 +7222,8 @@ public class Table {
       if (rowSizeVar < 0 && indexVar < 0 && outerDim == nDims && innerDim < 0 && obsDim < 0) {
 
         // if nLevels=1, read via readNDNc
-        if (ncCFcc != null) ncCFcc.set(19);
         if (nLevels == 1) {
           if (debugMode) String2.log("  Debug: nLevels=1, outerDim=scalarDim, read via readNDNc");
-          if (ncCFcc != null) ncCFcc.set(20);
           ncFile.close();
           StringArray loadCon = new StringArray(loadVariableNames);
           if (loadCon.size() > 0) // if loadVars specified, then add conNames
@@ -7290,19 +7263,14 @@ public class Table {
         if (debugMode) String2.log("  Debug: nLevels=2, outerDim=scalarDim");
         for (int v = 0; v < nVars; v++) {
           // first: go through the dimensions
-          if (ncCFcc != null) ncCFcc.set(21);
           for (int d = 0; d < varNDims[v]; d++) {
-            if (ncCFcc != null) ncCFcc.set(22);
             int whichDim = dimsList.indexOf(vars[v].getDimension(d));
             if (whichDim >= 0) { // not scalarDim
               if (varNDims[v] == 2) { // var[innerDim][obsDim]
-                if (ncCFcc != null) ncCFcc.set(23);
                 if (d == 0) {
-                  if (ncCFcc != null) ncCFcc.set(24);
                   innerDim = checkConsistent(errorInMethod, varNames[v], innerDim, whichDim);
                 }
                 if (d == 1) {
-                  if (ncCFcc != null) ncCFcc.set(25);
                   obsDim = checkConsistent(errorInMethod, varNames[v], obsDim, whichDim);
                 }
               }
@@ -7312,7 +7280,6 @@ public class Table {
           // second: trick code below into adding outerDim=scalarDim to all vars
           //  (scalar vars already have it)(vars using other dims don't)
           if (!varUsesDim[v][nDims]) {
-            if (ncCFcc != null) ncCFcc.set(26);
             varUsesDim[v][nDims] = true;
             varNDims[v]++;
           }
@@ -7389,7 +7356,6 @@ public class Table {
                 + obsDimSize
                 + "]");
       }
-      if (ncCFcc != null) ncCFcc.set(27);
       if (nLoadOrConVariablesInFile == 0) {
         if (verbose)
           String2.log(
@@ -7427,11 +7393,9 @@ public class Table {
       //  so a missing var might get converted to all -999.
       for (int con = 0; con < nCon; con++) {
         // if conName is in the file, can't quick reject, so continue;
-        if (ncCFcc != null) ncCFcc.set(28);
         String tConName = conNames.get(con);
         int v = String2.indexOf(varNames, tConName);
         if (v >= 0) {
-          if (ncCFcc != null) ncCFcc.set(29);
           continue;
         }
 
@@ -7450,7 +7414,6 @@ public class Table {
         }
 
         if (rejectFile) {
-          if (ncCFcc != null) ncCFcc.set(30);
           if (verbose)
             String2.log(
                 "  readNcCF "
@@ -7483,13 +7446,10 @@ public class Table {
         //    " inLoadOrConVars=" + varInLoadOrConVariables[v] +
         //    " varNDims[v]=" + varNDims[v] +
         //    " varUsesDim[v][outerDim]=" + varUsesDim[v][outerDim]);
-        if (ncCFcc != null) ncCFcc.set(31);
         if ((varInLoadOrConVariables[v] || multidimensional)
             && varNDims[v] == 1
             && varUsesDim[v][outerDim]) { // ensure correct dim
-          if (ncCFcc != null) ncCFcc.set(32);
           if (varInLoadOrConVariables[v]) {
-            if (ncCFcc != null) ncCFcc.set(33);
             nLoadOrConVariablesInOuterTable++;
             if (varAtts[v].get("instance_dimension") == null)
               // don't include if dimension, since var isn't in results table
@@ -7548,12 +7508,9 @@ public class Table {
       int outerNGood = -1; // implies not tested, so assume all are good
       if (outerTable.nColumns() > 0) { // it will be for multidimensional
 
-        if (ncCFcc != null) ncCFcc.set(34);
         if (multidimensional) {
-          if (ncCFcc != null) ncCFcc.set(35);
           outerKeep = outerTable.rowsWithData();
         } else {
-          if (ncCFcc != null) ncCFcc.set(36);
           outerKeep = new BitSet();
           outerKeep.set(0, outerTable.nRows());
         }
@@ -7561,7 +7518,6 @@ public class Table {
         // apply user constraints
         outerNGood = outerTable.tryToApplyConstraints(-1, conNames, conOps, conValues, outerKeep);
         if (outerNGood == 0) {
-          if (ncCFcc != null) ncCFcc.set(37);
           if (verbose)
             String2.log(
                 "  readNcCF "
@@ -7588,7 +7544,6 @@ public class Table {
           outerTable.justKeep(outerKeep);
           // globalAttributes already set
           // copy outerTable to this table
-          if (ncCFcc != null) ncCFcc.set(38);
           int noc = outerTable.nColumns();
           for (int c = 0; c < noc; c++)
             addColumn(
@@ -7637,15 +7592,12 @@ public class Table {
         if (debugMode) String2.log("  Debug: read nLevels=1 obs data");
 
         // request is for obs vars only (not feature data), so read all of the data
-        if (ncCFcc != null) ncCFcc.set(39);
         if (outerTableNColumns == 0 && !multidimensional) { // and so outerKeep=null
           if (debugMode)
             String2.log("  Debug: obs vars only (not feature data), so read all of the data");
           readAs = "obs vars only";
-          if (ncCFcc != null) ncCFcc.set(40);
           for (int v = 0; v < nVars; v++) {
             if (varInLoadOrConVariables[v]) {
-              if (ncCFcc != null) ncCFcc.set(41);
               int dim0 = dimsList.indexOf(vars[v].getDimension(0));
               if (dim0 == obsDim) { // ensure correct dim.  obsDim can't be scalardim
                 PrimitiveArray pa = NcHelper.getPrimitiveArray(vars[v]);
@@ -7666,11 +7618,9 @@ public class Table {
         } else {
 
           // nLevels=1 indexed ragged array
-          if (ncCFcc != null) ncCFcc.set(42);
           if (indexVar >= 0) {
             if (debugMode) String2.log("  Debug: read nLevels=1 indexed ragged");
             readAs = "indexed ragged";
-            if (ncCFcc != null) ncCFcc.set(43);
 
             // insert the indexVar (which is the keyColumn) at col=0
             PrimitiveArray indexVarPA = NcHelper.getPrimitiveArray(vars[indexVar]);
@@ -7733,7 +7683,6 @@ public class Table {
           } else if (rowSizeVar >= 0) {
             if (debugMode) String2.log("  Debug: nLevels=1 contiguous ragged array");
             readAs = "contiguous ragged";
-            if (ncCFcc != null) ncCFcc.set(44);
 
             // read the rowSizesPA
             PrimitiveArray rowSizesPA = NcHelper.getPrimitiveArray(vars[rowSizeVar]);
@@ -7855,7 +7804,6 @@ public class Table {
           } else {
             if (debugMode) String2.log("  Debug: nLevels=1 multidimensional");
             readAs = "multidim";
-            if (ncCFcc != null) ncCFcc.set(45);
 
             // see unitTestDataDir/CFPointConventions/timeSeries/
             //    timeSeries-Orthogonal-Multidimenstional-MultipleStations-H.2.1
@@ -7895,7 +7843,6 @@ public class Table {
                       + ") nRows="
                       + innerTableNRows);
             if (innerTableNColumns > 0) {
-              if (ncCFcc != null) ncCFcc.set(46);
 
               // apply constraints to innerTable  (but keep all innerTable rows)
               innerKeep = innerTable.rowsWithData();
@@ -7937,7 +7884,6 @@ public class Table {
                   == nLoadOrConVariablesInOuterTable + nLoadOrConVariablesInInnerTable) {
                 // user requested e.g., outer=station[10] and inner=time[810740],
                 //  but user didn't request observations[station][time]
-                if (ncCFcc != null) ncCFcc.set(47);
 
                 // justKeep good rows of innerTable
                 innerTable.justKeep(innerKeep);
@@ -7961,7 +7907,6 @@ public class Table {
                 // just want vars in innerTable?
                 if (justInnerTable) {
                   // finish up
-                  if (ncCFcc != null) ncCFcc.set(48);
                   tryToApplyConstraintsAndKeep(
                       -1, conNames, conOps, conValues); // may be 0 rows left
                   if (nRows() == 0) removeAllColumns();
@@ -7987,9 +7932,7 @@ public class Table {
 
                 if (nLoadOrConVariablesInOuterTable > 0) {
                   // join justKeep rows of outerTable (e.g., stations)
-                  if (ncCFcc != null) ncCFcc.set(49);
                   if (outerKeep != null) {
-                    if (ncCFcc != null) ncCFcc.set(50);
                     outerTable.justKeep(outerKeep);
                   }
                   outerTableNRows = outerTable.nRows();
@@ -8017,7 +7960,6 @@ public class Table {
                   // and the index to outerTable
                   IntArray outerIndexPA = new IntArray();
                   for (int oRow = 0; oRow < outerTableNRows; oRow++) {
-                    if (ncCFcc != null) ncCFcc.set(51);
                     for (int iCol = 0; iCol < innerTableNColumns; iCol++)
                       getColumn(iCol).append(innerTable.getColumn(iCol));
                     outerIndexPA.addN(innerTableNRows, oRow); // 2015-05-26 add->addN !
@@ -8060,7 +8002,6 @@ public class Table {
             // make obsKeep (with outerKeep and innerKeep info) and
             // make outerKeyColumn (with row#'s in outerTable) and
             // make innerKeyColumn (with row#'s in innerTable)
-            if (ncCFcc != null) ncCFcc.set(52);
             BitSet obsKeep = new BitSet(outerDimSize * obsDimSize); // all are false
             IntArray outerKeyColumnPA = new IntArray(outerDimSize * obsDimSize, false);
             IntArray innerKeyColumnPA = new IntArray(outerDimSize * obsDimSize, false);
@@ -8115,12 +8056,10 @@ public class Table {
                       + innerKeyColumnPA.size());
             // read the keep rows of requested variable[outer][obs]
             for (int v = 0; v < nVars; v++) {
-              if (ncCFcc != null) ncCFcc.set(53);
               if (varInLoadOrConVariables[v]
                   && varNDims[v] == 2
                   && varUsesDim[v][outerDim]
                   && varUsesDim[v][obsDim]) { // dim order checked above
-                if (ncCFcc != null) ncCFcc.set(54);
                 PrimitiveArray pa = NcHelper.getPrimitiveArray(vars[v]);
                 if (debugMode)
                   String2.log("  Debug: read var=" + varNames[v] + " pa.size=" + pa.size());
@@ -8169,7 +8108,6 @@ public class Table {
             // if innerTable.nColumns > 0, join it  (it has its original rows)
             if (innerTable.nColumns() > 0) {
               // insert row number in innerTable (to be the key column)
-              if (ncCFcc != null) ncCFcc.set(55);
               PrimitiveArray keyPA = new IntArray(0, innerTable.nRows() - 1);
               innerTable.addColumn(0, "innerKeyColumn", keyPA, new Attributes());
               join(1, 1, "", innerTable); // innerTable is lookUpTable
@@ -8181,13 +8119,11 @@ public class Table {
 
           // join to add the outerTable columns
           // rearrange the outerTable columns to the loadVariables order
-          if (ncCFcc != null) ncCFcc.set(57);
           outerTable.reorderColumns(loadVariableNames, true); // true, remove unrequested columns
           outerTableNColumns = outerTable.nColumns();
           outerTableNRows = outerTable.nRows();
           if (outerTableNColumns > 0) {
             // insert row number in outerTable (to be the key column)
-            if (ncCFcc != null) ncCFcc.set(56);
             PrimitiveArray keyPA = new IntArray(0, outerTable.nRows() - 1);
             outerTable.addColumn(0, "keyColumn", keyPA, new Attributes());
             join(1, 0, "", outerTable); // outerTable is lookUpTable
@@ -8213,7 +8149,6 @@ public class Table {
         }
 
         // finish up
-        if (ncCFcc != null) ncCFcc.set(58);
         tryToApplyConstraintsAndKeep(-1, conNames, conOps, conValues); // may be 0 rows left
         if (nRows() == 0) removeAllColumns();
         else reorderColumns(loadVariableNames, true); // discard others
@@ -8244,12 +8179,10 @@ public class Table {
       if ((indexVar >= 0 || outerDim == nDims) && rowSizeVar >= 0) {
         if (debugMode) String2.log("  Debug: nLevels=2 files, ragged");
         readAs = "ragged";
-        if (ncCFcc != null) ncCFcc.set(59);
 
         // read variable[innerDim] into innerTable
         StringArray cdmInnerVars = new StringArray();
         for (int v = 0; v < nVars; v++) {
-          if (ncCFcc != null) ncCFcc.set(60);
           if (varInLoadOrConVariables[v]
               && varNDims[v] == 1
               && varUsesDim[v][innerDim]) { // ensure correct dim
@@ -8277,7 +8210,6 @@ public class Table {
         int indexFV = Integer.MAX_VALUE;
         if (indexVar >= 0) {
           // then replace if indexVar exists
-          if (ncCFcc != null) ncCFcc.set(61);
           outerIndexPA = NcHelper.getPrimitiveArray(vars[indexVar]);
           // no need to unpack the index var
           indexMV = varAtts[indexVar].getInt("missing_value"); // MAX_VALUE if not defined
@@ -8285,7 +8217,6 @@ public class Table {
         }
         int outerIndexSize = outerIndexPA.size();
         if (outerTableNRows > 0) {
-          if (ncCFcc != null) ncCFcc.set(62);
           for (int row = 0; row < outerIndexSize; row++) {
             int index = outerIndexPA.getInt(row);
             if (index >= 0 && index < outerTableNRows) {
@@ -8311,10 +8242,8 @@ public class Table {
         // set up innerKeep with outerIndex info.
         BitSet innerKeep = new BitSet(innerDimSize); // includes outerKeep info
         if (outerKeep == null) {
-          if (ncCFcc != null) ncCFcc.set(63);
           innerKeep.set(0, innerDimSize);
         } else {
-          if (ncCFcc != null) ncCFcc.set(64);
           for (int i = 0; i < innerDimSize; i++)
             if (outerKeep.get(outerIndexPA.getInt(i))) innerKeep.set(i);
         }
@@ -8322,10 +8251,8 @@ public class Table {
         // apply innerTable constraints
         int keepNInner = -1;
         if (innerTableNColumns > 0) {
-          if (ncCFcc != null) ncCFcc.set(65);
           keepNInner = innerTable.tryToApplyConstraints(-1, conNames, conOps, conValues, innerKeep);
           if (keepNInner == 0) {
-            if (ncCFcc != null) ncCFcc.set(66);
             if (verbose)
               String2.log(
                   "  readNcCF "
@@ -8357,9 +8284,7 @@ public class Table {
         // Are we done? Are those all the variables we need that are in the file?
         if (nLoadOrConVariablesInFile == nLoadOrConVariablesInOuterTable + innerTableNColumns) {
           // join with outerTable
-          if (ncCFcc != null) ncCFcc.set(67);
           if (outerTableNColumns > 0) {
-            if (ncCFcc != null) ncCFcc.set(68);
             innerTable.addColumn(0, "outerIndex", outerIndexPA, new Attributes());
             // insert row number in outerTable (to be the key column)
             PrimitiveArray keyPA = new IntArray(0, outerTableNRows - 1);
@@ -8382,7 +8307,6 @@ public class Table {
                 innerTable.columnAttributes(c));
 
           // finish up
-          if (ncCFcc != null) ncCFcc.set(69);
           tryToApplyConstraintsAndKeep(-1, conNames, conOps, conValues); // may be 0 rows left
           if (nRows() == 0) removeAllColumns();
           else reorderColumns(loadVariableNames, true); // discard others
@@ -8411,7 +8335,6 @@ public class Table {
         // and make obsKeep.
         // obsKeep Approach: optimize for situation that takes longest
         //  (outerKeep and innerKeep all true).  This is also a very simple approach.
-        if (ncCFcc != null) ncCFcc.set(70);
         PrimitiveArray rowSizesPA = NcHelper.getPrimitiveArray(vars[rowSizeVar]);
         // no need to unpack rowSizes
         IntArray outerIndexColumnPA = new IntArray();
@@ -8444,7 +8367,6 @@ public class Table {
 
         // read the obsKeep rows of requested variable[obs]
         for (int v = 0; v < nVars; v++) {
-          if (ncCFcc != null) ncCFcc.set(71);
           if (varInLoadOrConVariables[v]
               && varNDims[v] == 1
               && varUsesDim[v][obsDim]) { // ensure correct dim
@@ -8460,7 +8382,6 @@ public class Table {
       } else if (multidimensional) {
         if (debugMode) String2.log("  Debug: nLevels=2 files, multidimensional");
         readAs = "multidim";
-        if (ncCFcc != null) ncCFcc.set(72);
 
         // create outerIndexPA and innerIndexPA, both [outerDim][innerDim]
         int outerXInnerDimSize = outerDimSize * innerDimSize;
@@ -8479,17 +8400,13 @@ public class Table {
         for (int v = 0; v < nVars; v++) {
           // read ALL innerTable variables, not just varInLoadOrConVariables
           // because their all-mv rows determine which chunks of obs table to ignore
-          if (ncCFcc != null) ncCFcc.set(73);
           if (varNDims[v] == 2 && varUsesDim[v][outerDim] && varUsesDim[v][innerDim]) {
             // dim order not checked above, so check it here
             // It's complicated if outerDim is scalarDim.
-            if (ncCFcc != null) ncCFcc.set(74);
             int dim0 = outerDim == nDims ? nDims : dimsList.indexOf(vars[v].getDimension(0));
             int dim1 = dimsList.indexOf(vars[v].getDimension(outerDim == nDims ? 0 : 1));
             if (dim0 == outerDim && dim1 == innerDim) {
-              if (ncCFcc != null) ncCFcc.set(75);
               if (varInLoadOrConVariables[v]) {
-                if (ncCFcc != null) ncCFcc.set(76);
                 nLoadOrConVariablesInInnerTable++;
                 cdmInnerVars.add(varNames[v]); // so in file's order; that's consistent; that's good
               }
@@ -8507,7 +8424,6 @@ public class Table {
                         + ": Unexpected dimension order for "
                         + varNames[v]);
             }
-            if (ncCFcc != null) ncCFcc.set(77); // duplicate of 74
           }
         }
         innerTableNColumns = innerTable.nColumns(); // It has no index columns
@@ -8519,16 +8435,13 @@ public class Table {
         // trouble?  look for truly orthogonal: just variable[innerDim]
         if (innerTableNColumns == 0) {
           if (debugMode) String2.log("  Debug: innerTableNColumns=0");
-          if (ncCFcc != null) ncCFcc.set(78);
 
           // read ALL variable[innerDim] into innerTable
           nLoadOrConVariablesInInnerTable = 0; // should be already
           for (int v = 0; v < nVars; v++) {
             // read ALL innerTable variables, not just varInLoadVariables and varInConstraints
             // because their all-mv rows determine which chunks of obs table to ignore
-            if (ncCFcc != null) ncCFcc.set(79);
             if (varNDims[v] == 1 && varUsesDim[v][innerDim]) { // ensure correct dim
-              if (ncCFcc != null) ncCFcc.set(80);
               if (varInLoadOrConVariables[v]) nLoadOrConVariablesInInnerTable++;
               innerTable.addColumn(
                   innerTable.nColumns(),
@@ -8569,7 +8482,6 @@ public class Table {
           // make outerDimSize-1 duplicates of the rows of the innerTable
           // so it becomes innerTable with variable[outerDim][innerDim]
           for (int col = 0; col < innerTableNColumns; col++) {
-            if (ncCFcc != null) ncCFcc.set(81);
             PrimitiveArray pa = innerTable.getColumn(col);
             PrimitiveArray clone = (PrimitiveArray) pa.clone();
             for (int copy = 1; copy < outerDimSize; copy++) pa.append(clone); // efficient
@@ -8588,7 +8500,6 @@ public class Table {
         int nInnerGood =
             innerTable.tryToApplyConstraints(-1, conNames, conOps, conValues, innerKeep);
         if (nInnerGood == 0) {
-          if (ncCFcc != null) ncCFcc.set(82);
           if (verbose)
             String2.log(
                 "  readNcCF "
@@ -8622,13 +8533,11 @@ public class Table {
 
           // join to add the outerTable columns
           // rearrange the outerTable columns to the loadVariables order
-          if (ncCFcc != null) ncCFcc.set(83);
           outerTable.reorderColumns(loadVariableNames, true); // true, remove unrequested columns
           outerTableNColumns = outerTable.nColumns();
           outerTableNRows = outerTable.nRows();
           if (outerTableNColumns > 0) {
             // join with outerTable
-            if (ncCFcc != null) ncCFcc.set(84);
             innerTable.addColumn(0, "outerIndex", outerIndexPA, new Attributes());
             // insert row number in outerTable (to be the key column)
             PrimitiveArray keyPA = new IntArray(0, outerTableNRows - 1);
@@ -8651,7 +8560,6 @@ public class Table {
                 innerTable.columnAttributes(c));
 
           // finish up
-          if (ncCFcc != null) ncCFcc.set(85);
           tryToApplyConstraintsAndKeep(-1, conNames, conOps, conValues); // may be 0 rows left
           if (nRows() == 0) removeAllColumns();
           else reorderColumns(loadVariableNames, true); // discard others
@@ -8677,7 +8585,6 @@ public class Table {
 
         // * Make interiorTable with var[obs] and var[scalar][obs]?  some files have them
         if (debugMode) String2.log("  Debug: make interiorTable with variable[obs]?");
-        if (ncCFcc != null) ncCFcc.set(86);
         Table interiorTable = new Table();
         int nLoadOrConVariablesInInteriorTable = 0;
         for (int v = 0; v < nVars; v++) {
@@ -8700,14 +8607,12 @@ public class Table {
         BitSet interiorKeep = null; // will be null if no interiorTable columns
         if (interiorTableNColumns > 0) {
           // apply constraints (but keep all the rows)
-          if (ncCFcc != null) ncCFcc.set(87);
           if (debugMode) String2.log("  Debug: interiorTable exists");
           interiorKeep = new BitSet();
           interiorKeep.set(0, interiorTableNRows, true);
           int interiorNKeep =
               interiorTable.tryToApplyConstraints(-1, conNames, conOps, conValues, interiorKeep);
           if (interiorNKeep == 0) {
-            if (ncCFcc != null) ncCFcc.set(88);
             if (verbose)
               String2.log(
                   "  readNcCF "
@@ -8729,7 +8634,6 @@ public class Table {
           if (nLoadOrConVariablesInFile == nLoadOrConVariablesInInteriorTable) {
 
             // justKeep
-            if (ncCFcc != null) ncCFcc.set(89);
             interiorTable.justKeep(interiorKeep); // includes outer info, inner info, mv info
 
             // globalAttributes already set
@@ -8778,7 +8682,6 @@ public class Table {
         // obsKeep Approach: optimize for situation that takes longest
         //  (outerKeep and innerKeep all true).  This is also a very simple approach.
         if (debugMode) String2.log("  Debug: read rowSizesPA and make many IndexColumnPAs");
-        if (ncCFcc != null) ncCFcc.set(90);
         IntArray outerIndexColumnPA = new IntArray();
         IntArray innerIndexColumnPA = new IntArray();
         IntArray interiorIndexColumnPA = new IntArray();
@@ -8807,14 +8710,12 @@ public class Table {
 
         // read the obsKeep rows of requested variable[outerDim][innerDim][obs]
         for (int v = 0; v < nVars; v++) {
-          if (ncCFcc != null) ncCFcc.set(91);
           if (varInLoadOrConVariables[v]
               && varNDims[v] == 3
               && varUsesDim[v][outerDim]
               && // dim order checked above when dims detected
               varUsesDim[v][innerDim]
               && varUsesDim[v][obsDim]) {
-            if (ncCFcc != null) ncCFcc.set(92);
             PrimitiveArray pa = NcHelper.getPrimitiveArray(vars[v]);
             pa.justKeep(obsKeep); // as each var read in, to save memory
             pa.trimToSize();
@@ -8859,7 +8760,6 @@ public class Table {
         // join interiorTable
         if (nLoadOrConVariablesInInteriorTable > 0) {
           // insert row number in interiorTable (to be the key column)
-          if (ncCFcc != null) ncCFcc.set(93);
           PrimitiveArray keyPA = new IntArray(0, interiorTableNRows - 1);
           interiorTable.addColumn(0, "keyColumn", keyPA, new Attributes());
           join(1, 2, "", interiorTable);
@@ -8892,7 +8792,6 @@ public class Table {
       // *** finish up nLevels=2 files
       // first 2 cols of this table are outerTableIndex and innerTableIndex
       if (debugMode) String2.log("  Debug: finish up nLevels=2 files");
-      if (ncCFcc != null) ncCFcc.set(94);
 
       // apply constraints to obs variables
       // (not outer and inner variables, since they were constrained earlier)
@@ -8900,7 +8799,6 @@ public class Table {
       keep.set(0, nRows());
       int cardinality = nRows();
       for (int con = 0; con < nCon; con++) {
-        if (ncCFcc != null) ncCFcc.set(95);
         int v = findColumnNumber(conNames.get(con));
         if (v >= 2) { // an obs variable
           cardinality =
@@ -8925,14 +8823,12 @@ public class Table {
         }
       }
       if (cardinality < nRows()) {
-        if (ncCFcc != null) ncCFcc.set(96);
         justKeep(keep);
       }
 
       // join to add the innerTable columns
       if (innerTableNColumns > 0) {
         // insert row number in innerTable (to be the key column)
-        if (ncCFcc != null) ncCFcc.set(97);
         PrimitiveArray keyPA = new IntArray(0, innerTable.nRows() - 1);
         innerTable.addColumn(0, "keyColumn", keyPA, new Attributes());
         join(1, 1, "", innerTable); // innerTable is lookUpTable
@@ -8942,7 +8838,6 @@ public class Table {
       // join to add the outerTable columns
       if (outerTableNColumns > 0) {
         // insert row number in outerTable (to be the key column)
-        if (ncCFcc != null) ncCFcc.set(98);
         PrimitiveArray keyPA = new IntArray(0, outerTableNRows - 1);
         outerTable.addColumn(0, "keyColumn", keyPA, new Attributes());
         join(1, 0, "", outerTable); // outerTable is lookUpTable
@@ -8955,7 +8850,6 @@ public class Table {
       decodeCharsAndStrings();
       convertToUnsignedPAs();
 
-      if (ncCFcc != null) ncCFcc.set(99);
       if (reallyVerbose)
         String2.log(
             msg

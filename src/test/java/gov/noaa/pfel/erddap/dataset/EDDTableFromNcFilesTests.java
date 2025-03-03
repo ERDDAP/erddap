@@ -69,12 +69,12 @@ class EDDTableFromNcFilesTests {
 
   /** testGenerateDatasetsXml */
   @org.junit.jupiter.api.Test
-  @TagIncompleteTest
+  @TagLargeFiles
   void testGenerateDatasetsXml() throws Throwable {
-    String2.pressEnterToContinue(
-        "\nDownload NDBC_41004_met.nc from coastwatch\n"
-            + "https://coastwatch.pfeg.noaa.gov/erddap/files/cwwcNDBCMet/nrt/ \n"
-            + "to /u00/data/points/ndbcMet2/nrt/ .");
+    // String2.pressEnterToContinue(
+    //     "\nDownload NDBC_41004_met.nc from coastwatch\n"
+    //         + "https://coastwatch.pfeg.noaa.gov/erddap/files/cwwcNDBCMet/nrt/ \n"
+    //         + "to /u00/data/points/ndbcMet2/nrt/ .");
 
     try {
       String results =
@@ -790,7 +790,7 @@ class EDDTableFromNcFilesTests {
 
   /** testGenerateDatasetsXml2 */
   @org.junit.jupiter.api.Test
-  @TagIncompleteTest
+  @TagMissingDataset
   void testGenerateDatasetsXml2() throws Throwable {
     String results =
         EDDTableFromNcFiles.generateDatasetsXml(
@@ -6151,7 +6151,7 @@ class EDDTableFromNcFilesTests {
   } // end of testGlobal
 
   @org.junit.jupiter.api.Test
-  @TagIncompleteTest
+  @TagMissingDataset
   void testGenerateBreakUpPostDatasetsXml() throws Throwable {
     // String tFileDir, String tFileNameRegex, String sampleFileName,
     // int tReloadEveryNMinutes,
@@ -17806,7 +17806,7 @@ class EDDTableFromNcFilesTests {
       for (int attempt = 0; attempt < nAttempts; attempt++) {
         if (attempt % 8 == 0) {
           String2.log(cmd);
-          TestSSR.dosShell(cmd, 30 * 60); // 10 minutes*60 seconds
+          TestSSR.dosOrCShell(cmd, 30 * 60); // 10 minutes*60 seconds
           // File2.deleteAllFiles(tempDir); //previous method
         }
         Math2.gc("bobConsolidateGtsppTgz (between attempts)", waitSeconds * 1000L); // gtspp:
@@ -17974,7 +17974,7 @@ class EDDTableFromNcFilesTests {
              */
           }
 
-          TestSSR.dosShell(cmd, 30 * 60); // 10 minutes*60 seconds
+          TestSSR.dosOrCShell(cmd, 30 * 60); // 10 minutes*60 seconds
           String2.log(
               "  cmd time=" + Calendar2.elapsedTimeString(System.currentTimeMillis() - cmdTime));
 

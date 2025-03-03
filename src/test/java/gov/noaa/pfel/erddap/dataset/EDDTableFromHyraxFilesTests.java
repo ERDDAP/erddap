@@ -10,7 +10,6 @@ import gov.noaa.pfel.erddap.util.EDStatic;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
-import tags.TagIncompleteTest;
 import tags.TagMissingDataset;
 import testDataset.EDDTestDataset;
 import testDataset.Initialization;
@@ -353,9 +352,7 @@ class EDDTableFromHyraxFilesTests {
    */
   @ParameterizedTest
   @ValueSource(booleans = {true, false})
-  @TagIncompleteTest // This fails because source was .gz so created local files were called .gz
-  // even
-  // though they aren't .gz compressed.
+  @TagMissingDataset // The dataset this tries to download is no longer available
   void testJpl(boolean deleteCachedInfoAndOneFile) throws Throwable {
     // String2.log("\n******
     // EDDTableFromHyraxFiles.testJpl(deleteCachedInfoAndOneFile=" +
@@ -371,216 +368,199 @@ class EDDTableFromHyraxFilesTests {
     String deletedFile = "pentad_19870928_v11l35flk.nc.gz";
 
     EDDTable eddTable = null;
-    try {
 
-      // delete the last file in the collection
-      if (deleteCachedInfoAndOneFile) {
-        EDDTableFromHyraxFiles.deleteCachedDatasetInfo(id);
-        File2.delete(EDStatic.config.fullCopyDirectory + id + "/" + deletedFile);
-        Math2.sleep(1000);
-      }
+    // delete the last file in the collection
+    if (deleteCachedInfoAndOneFile) {
+      EDDTableFromHyraxFiles.deleteCachedDatasetInfo(id);
+      File2.delete(EDStatic.config.fullCopyDirectory + id + "/" + deletedFile);
+      Math2.sleep(1000);
+    }
 
-      eddTable = (EDDTable) EDDTestDataset.gettestEDDTableFromHyraxFiles();
+    eddTable = (EDDTable) EDDTestDataset.gettestEDDTableFromHyraxFiles();
 
-      if (deleteCachedInfoAndOneFile) {
-        // String2.pressEnterToContinue(
-        // "\n****** BOB! ******\n" +
-        // "This test just deleted a file:\n" +
-        // EDStatic.config.fullCopyDirectory + id + "/" + deletedFile + "\n" +
-        // "The background task to re-download it should have already started.\n" +
-        // "The remote dataset is really slow.\n" +
-        // "Wait for it to finish background tasks.\n\n");
-        Math2.sleep(5000);
-        eddTable =
-            (EDDTable) EDDTestDataset.gettestEDDTableFromHyraxFiles(); // redownload the dataset
-      }
-    } catch (Throwable t) {
-      throw new RuntimeException(
-          "2019-05 This fails because source was .gz so created local files were called .gz\n"
-              + "even though they aren't .gz compressed.\n"
-              + "Solve this, or better: stop using EDDTableFromHyraxfiles",
-          t);
+    if (deleteCachedInfoAndOneFile) {
+      // String2.pressEnterToContinue(
+      // "\n****** BOB! ******\n" +
+      // "This test just deleted a file:\n" +
+      // EDStatic.config.fullCopyDirectory + id + "/" + deletedFile + "\n" +
+      // "The background task to re-download it should have already started.\n" +
+      // "The remote dataset is really slow.\n" +
+      // "Wait for it to finish background tasks.\n\n");
+      Math2.sleep(5000);
+      eddTable =
+          (EDDTable) EDDTestDataset.gettestEDDTableFromHyraxFiles(); // redownload the dataset
     }
 
     // *** test getting das for entire dataset
-    try {
-      String2.log("\n****************** EDDTableFromHyraxFiles das and dds for entire dataset\n");
-      tName =
-          eddTable.makeNewFileForDapQuery(
-              language,
-              null,
-              null,
-              "",
-              EDStatic.config.fullTestCacheDirectory,
-              eddTable.className() + "_Entire",
-              ".das");
-      results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
-      // String2.log(results);
-      expected =
-          "Attributes {\n"
-              + " s {\n"
-              + "  longitude {\n"
-              + "    String _CoordinateAxisType \"Lon\";\n"
-              + "    Float32 actual_range 0.125, 359.875;\n"
-              + "    String axis \"X\";\n"
-              + "    Float64 colorBarMaximum 180.0;\n"
-              + "    Float64 colorBarMinimum -180.0;\n"
-              + "    String ioos_category \"Location\";\n"
-              + "    String long_name \"Longitude\";\n"
-              + "    String standard_name \"longitude\";\n"
-              + "    String units \"degrees_east\";\n"
-              + "  }\n"
-              + "  latitude {\n"
-              + "    String _CoordinateAxisType \"Lat\";\n"
-              + "    Float32 actual_range -78.375, 78.375;\n"
-              + "    String axis \"Y\";\n"
-              + "    Float64 colorBarMaximum 90.0;\n"
-              + "    Float64 colorBarMinimum -90.0;\n"
-              + "    String ioos_category \"Location\";\n"
-              + "    String long_name \"Latitude\";\n"
-              + "    String standard_name \"latitude\";\n"
-              + "    String units \"degrees_north\";\n"
-              + "  }\n"
-              + "  time {\n"
-              + "    String _CoordinateAxisType \"Time\";\n"
-              + "    Float64 actual_range 5.576256e+8, 5.597856e+8;\n"
-              + "    String avg_period \"0000-00-05 00:00:00\";\n"
-              + "    String axis \"T\";\n"
-              + "    Float64 colorBarMaximum 6300.0;\n"
-              + "    Float64 colorBarMinimum 5700.0;\n"
-              + "    String delta_t \"0000-00-05 00:00:00\";\n"
-              + "    String ioos_category \"Time\";\n"
-              + "    String long_name \"Time\";\n"
-              + "    String standard_name \"time\";\n"
-              + "    String time_origin \"01-JAN-1970 00:00:00\";\n"
-              + "    String units \"seconds since 1970-01-01T00:00:00Z\";\n"
-              + "  }\n"
-              + "  uwnd {\n"
-              + "    Float32 actual_range -17.78368, 25.81639;\n"
-              + "    Float64 colorBarMaximum 15.0;\n"
-              + "    Float64 colorBarMinimum -15.0;\n"
-              + "    String ioos_category \"Wind\";\n"
-              + "    String long_name \"u-wind at 10 meters\";\n"
-              + "    Float32 missing_value -50.001526;\n"
-              + "    String standard_name \"eastward_wind\";\n"
-              + "    String units \"m/s\";\n"
-              + "    Float32 valid_range -50.0, 50.0;\n"
-              + // this is a test of ERDDAP adjusting valid_range by scale_factor
-              // add_offset
-              "  }\n"
-              + "  vwnd {\n"
-              + "    Float32 actual_range -17.49374, 19.36153;\n"
-              + "    Float64 colorBarMaximum 15.0;\n"
-              + "    Float64 colorBarMinimum -15.0;\n"
-              + "    String ioos_category \"Wind\";\n"
-              + "    String long_name \"v-wind at 10 meters\";\n"
-              + "    Float32 missing_value -50.001526;\n"
-              + "    String standard_name \"northward_wind\";\n"
-              + "    String units \"m/s\";\n"
-              + "    Float32 valid_range -50.0, 50.0;\n"
-              + "  }\n"
-              + "  wspd {\n"
-              + "    Float32 actual_range 0.01487931, 27.53731;\n"
-              + "    Float64 colorBarMaximum 15.0;\n"
-              + "    Float64 colorBarMinimum 0.0;\n"
-              + "    String ioos_category \"Wind\";\n"
-              + "    String long_name \"wind speed at 10 meters\";\n"
-              + "    Float32 missing_value -0.001143393;\n"
-              + "    String standard_name \"wind_speed\";\n"
-              + "    String units \"m/s\";\n"
-              + "    Float32 valid_range 0.0, 75.0;\n"
-              + "  }\n"
-              + "  upstr {\n"
-              + "    Float32 actual_range -317.2191, 710.9198;\n"
-              + "    Float64 colorBarMaximum 0.5;\n"
-              + "    Float64 colorBarMinimum -0.5;\n"
-              + "    String ioos_category \"Physical Oceanography\";\n"
-              + "    String long_name \"u-component of pseudostress at 10 meters\";\n"
-              + "    Float32 missing_value -1000.0305;\n"
-              + "    String standard_name \"surface_downward_eastward_stress\";\n"
-              + "    String units \"m2/s2\";\n"
-              + "    Float32 valid_range -1000.0, 1000.0;\n"
-              + "  }\n"
-              + "  vpstr {\n"
-              + "    Float32 actual_range -404.8404, 386.9255;\n"
-              + "    Float64 colorBarMaximum 0.5;\n"
-              + "    Float64 colorBarMinimum -0.5;\n"
-              + "    String ioos_category \"Physical Oceanography\";\n"
-              + "    String long_name \"v-component of pseudostress at 10 meters\";\n"
-              + "    Float32 missing_value -1000.0305;\n"
-              + "    String standard_name \"surface_downward_northward_stress\";\n"
-              + "    String units \"m2/s2\";\n"
-              + "    Float32 valid_range -1000.0, 1000.0;\n"
-              + "  }\n"
-              + "  nobs {\n"
-              + "    Float32 actual_range 0.0, 20.0;\n"
-              + "    Float64 colorBarMaximum 100.0;\n"
-              + "    Float64 colorBarMinimum 0.0;\n"
-              + "    String ioos_category \"Statistics\";\n"
-              + "    String long_name \"number of observations\";\n"
-              + "    Float32 missing_value -1.0;\n"
-              + "    String units \"count\";\n"
-              + "    Float32 valid_range 0.0, 65532.0;\n"
-              + "  }\n"
-              + " }\n"
-              + "  NC_GLOBAL {\n"
-              + "    String cdm_data_type \"Point\";\n"
-              + "    String Conventions \"COARDS, CF-1.6, ACDD-1.3\";\n"
-              + "    Float64 Easternmost_Easting 359.875;\n"
-              + "    String featureType \"Point\";\n"
-              + "    Float64 geospatial_lat_max 78.375;\n"
-              + "    Float64 geospatial_lat_min -78.375;\n"
-              + "    String geospatial_lat_units \"degrees_north\";\n"
-              + "    Float64 geospatial_lon_max 359.875;\n"
-              + "    Float64 geospatial_lon_min 0.125;\n"
-              + "    String geospatial_lon_units \"degrees_east\";\n"
-              + "    String history \"Created by NASA Goddard Space Flight Center under the NASA REASoN CAN: A Cross-Calibrated, Multi-Platform Ocean Surface Wind Velocity Product for Meteorological and Oceanographic Applications\n"
-              + today;
-      tResults = results.substring(0, Math.min(results.length(), expected.length()));
-      Test.ensureEqual(tResults, expected, "\nresults=\n" + results);
+    String2.log("\n****************** EDDTableFromHyraxFiles das and dds for entire dataset\n");
+    tName =
+        eddTable.makeNewFileForDapQuery(
+            language,
+            null,
+            null,
+            "",
+            EDStatic.config.fullTestCacheDirectory,
+            eddTable.className() + "_Entire",
+            ".das");
+    results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
+    // String2.log(results);
+    expected =
+        "Attributes {\n"
+            + " s {\n"
+            + "  longitude {\n"
+            + "    String _CoordinateAxisType \"Lon\";\n"
+            + "    Float32 actual_range 0.125, 359.875;\n"
+            + "    String axis \"X\";\n"
+            + "    Float64 colorBarMaximum 180.0;\n"
+            + "    Float64 colorBarMinimum -180.0;\n"
+            + "    String ioos_category \"Location\";\n"
+            + "    String long_name \"Longitude\";\n"
+            + "    String standard_name \"longitude\";\n"
+            + "    String units \"degrees_east\";\n"
+            + "  }\n"
+            + "  latitude {\n"
+            + "    String _CoordinateAxisType \"Lat\";\n"
+            + "    Float32 actual_range -78.375, 78.375;\n"
+            + "    String axis \"Y\";\n"
+            + "    Float64 colorBarMaximum 90.0;\n"
+            + "    Float64 colorBarMinimum -90.0;\n"
+            + "    String ioos_category \"Location\";\n"
+            + "    String long_name \"Latitude\";\n"
+            + "    String standard_name \"latitude\";\n"
+            + "    String units \"degrees_north\";\n"
+            + "  }\n"
+            + "  time {\n"
+            + "    String _CoordinateAxisType \"Time\";\n"
+            + "    Float64 actual_range 5.576256e+8, 5.597856e+8;\n"
+            + "    String avg_period \"0000-00-05 00:00:00\";\n"
+            + "    String axis \"T\";\n"
+            + "    Float64 colorBarMaximum 6300.0;\n"
+            + "    Float64 colorBarMinimum 5700.0;\n"
+            + "    String delta_t \"0000-00-05 00:00:00\";\n"
+            + "    String ioos_category \"Time\";\n"
+            + "    String long_name \"Time\";\n"
+            + "    String standard_name \"time\";\n"
+            + "    String time_origin \"01-JAN-1970 00:00:00\";\n"
+            + "    String units \"seconds since 1970-01-01T00:00:00Z\";\n"
+            + "  }\n"
+            + "  uwnd {\n"
+            + "    Float32 actual_range -17.78368, 25.81639;\n"
+            + "    Float64 colorBarMaximum 15.0;\n"
+            + "    Float64 colorBarMinimum -15.0;\n"
+            + "    String ioos_category \"Wind\";\n"
+            + "    String long_name \"u-wind at 10 meters\";\n"
+            + "    Float32 missing_value -50.001526;\n"
+            + "    String standard_name \"eastward_wind\";\n"
+            + "    String units \"m/s\";\n"
+            + "    Float32 valid_range -50.0, 50.0;\n"
+            + // this is a test of ERDDAP adjusting valid_range by scale_factor
+            // add_offset
+            "  }\n"
+            + "  vwnd {\n"
+            + "    Float32 actual_range -17.49374, 19.36153;\n"
+            + "    Float64 colorBarMaximum 15.0;\n"
+            + "    Float64 colorBarMinimum -15.0;\n"
+            + "    String ioos_category \"Wind\";\n"
+            + "    String long_name \"v-wind at 10 meters\";\n"
+            + "    Float32 missing_value -50.001526;\n"
+            + "    String standard_name \"northward_wind\";\n"
+            + "    String units \"m/s\";\n"
+            + "    Float32 valid_range -50.0, 50.0;\n"
+            + "  }\n"
+            + "  wspd {\n"
+            + "    Float32 actual_range 0.01487931, 27.53731;\n"
+            + "    Float64 colorBarMaximum 15.0;\n"
+            + "    Float64 colorBarMinimum 0.0;\n"
+            + "    String ioos_category \"Wind\";\n"
+            + "    String long_name \"wind speed at 10 meters\";\n"
+            + "    Float32 missing_value -0.001143393;\n"
+            + "    String standard_name \"wind_speed\";\n"
+            + "    String units \"m/s\";\n"
+            + "    Float32 valid_range 0.0, 75.0;\n"
+            + "  }\n"
+            + "  upstr {\n"
+            + "    Float32 actual_range -317.2191, 710.9198;\n"
+            + "    Float64 colorBarMaximum 0.5;\n"
+            + "    Float64 colorBarMinimum -0.5;\n"
+            + "    String ioos_category \"Physical Oceanography\";\n"
+            + "    String long_name \"u-component of pseudostress at 10 meters\";\n"
+            + "    Float32 missing_value -1000.0305;\n"
+            + "    String standard_name \"surface_downward_eastward_stress\";\n"
+            + "    String units \"m2/s2\";\n"
+            + "    Float32 valid_range -1000.0, 1000.0;\n"
+            + "  }\n"
+            + "  vpstr {\n"
+            + "    Float32 actual_range -404.8404, 386.9255;\n"
+            + "    Float64 colorBarMaximum 0.5;\n"
+            + "    Float64 colorBarMinimum -0.5;\n"
+            + "    String ioos_category \"Physical Oceanography\";\n"
+            + "    String long_name \"v-component of pseudostress at 10 meters\";\n"
+            + "    Float32 missing_value -1000.0305;\n"
+            + "    String standard_name \"surface_downward_northward_stress\";\n"
+            + "    String units \"m2/s2\";\n"
+            + "    Float32 valid_range -1000.0, 1000.0;\n"
+            + "  }\n"
+            + "  nobs {\n"
+            + "    Float32 actual_range 0.0, 20.0;\n"
+            + "    Float64 colorBarMaximum 100.0;\n"
+            + "    Float64 colorBarMinimum 0.0;\n"
+            + "    String ioos_category \"Statistics\";\n"
+            + "    String long_name \"number of observations\";\n"
+            + "    Float32 missing_value -1.0;\n"
+            + "    String units \"count\";\n"
+            + "    Float32 valid_range 0.0, 65532.0;\n"
+            + "  }\n"
+            + " }\n"
+            + "  NC_GLOBAL {\n"
+            + "    String cdm_data_type \"Point\";\n"
+            + "    String Conventions \"COARDS, CF-1.6, ACDD-1.3\";\n"
+            + "    Float64 Easternmost_Easting 359.875;\n"
+            + "    String featureType \"Point\";\n"
+            + "    Float64 geospatial_lat_max 78.375;\n"
+            + "    Float64 geospatial_lat_min -78.375;\n"
+            + "    String geospatial_lat_units \"degrees_north\";\n"
+            + "    Float64 geospatial_lon_max 359.875;\n"
+            + "    Float64 geospatial_lon_min 0.125;\n"
+            + "    String geospatial_lon_units \"degrees_east\";\n"
+            + "    String history \"Created by NASA Goddard Space Flight Center under the NASA REASoN CAN: A Cross-Calibrated, Multi-Platform Ocean Surface Wind Velocity Product for Meteorological and Oceanographic Applications\n"
+            + today;
+    tResults = results.substring(0, Math.min(results.length(), expected.length()));
+    Test.ensureEqual(tResults, expected, "\nresults=\n" + results);
 
-      // + "
-      // https://opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/pentad/flk/1987/M09/\n"
-      // +
-      // today + " http://localhost:8080/cwexperimental/
-      expected =
-          "tabledap/testEDDTableFromHyraxFiles.das\";\n"
-              + "    String infoUrl \"https://opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/pentad/flk/1987/09/.html\";\n"
-              + "    String institution \"NASA JPL\";\n"
-              + "    String keywords \"atlas, atmosphere, atmospheric, component, derived, downward, Earth Science > Atmosphere > Atmospheric Winds > Surface Winds, Earth Science > Atmosphere > Atmospheric Winds > Wind Stress, eastward, eastward_wind, flk, jpl, level, meters, nasa, northward, northward_wind, number, observations, oceanography, physical, physical oceanography, pseudostress, speed, statistics, stress, surface, surface_downward_eastward_stress, surface_downward_northward_stress, time, u-component, u-wind, v-component, v-wind, v1.1, wind, wind_speed, winds\";\n"
-              + "    String keywords_vocabulary \"GCMD Science Keywords\";\n"
-              + "    String license \"The data may be used and redistributed for free but is not intended\n"
-              + "for legal use, since it may contain inaccuracies. Neither the data\n"
-              + "Contributor, ERD, NOAA, nor the United States Government, nor any\n"
-              + "of their employees or contractors, makes any warranty, express or\n"
-              + "implied, including warranties of merchantability and fitness for a\n"
-              + "particular purpose, or assumes any legal liability for the accuracy,\n"
-              + "completeness, or usefulness, of this information.\";\n"
-              + "    Float64 Northernmost_Northing 78.375;\n"
-              + "    String sourceUrl \"https://opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/pentad/flk/1987/09/\";\n"
-              + "    Float64 Southernmost_Northing -78.375;\n"
-              + "    String standard_name_vocabulary \"CF Standard Name Table v55\";\n"
-              + "    String summary \"Time average of level3.0 products.\";\n"
-              + "    String time_coverage_end \"1987-09-28T00:00:00Z\";\n"
-              + "    String time_coverage_start \"1987-09-03T00:00:00Z\";\n"
-              + "    String title \"Atlas FLK v1.1 derived surface winds (level 3.5)\";\n"
-              + "    Float64 Westernmost_Easting 0.125;\n"
-              + "  }\n"
-              + "}\n";
-      int tPo = results.indexOf(expected.substring(0, 17));
-      Test.ensureTrue(tPo >= 0, "tPo=-1 results=\n" + results);
-      Test.ensureEqual(
-          results.substring(tPo, Math.min(results.length(), tPo + expected.length())),
-          expected,
-          "results=\n" + results);
-
-    } catch (Throwable t) {
-      throw new RuntimeException(
-          "2019-05 This fails because source was .gz so created local files were called .gz\n"
-              + "even though they aren't .gz compressed.\n"
-              + "Solve this, or better: stop using EDDTableFromHyraxfiles",
-          t);
-    }
+    // + "
+    // https://opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/pentad/flk/1987/M09/\n"
+    // +
+    // today + " http://localhost:8080/cwexperimental/
+    expected =
+        "tabledap/testEDDTableFromHyraxFiles.das\";\n"
+            + "    String infoUrl \"https://opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/pentad/flk/1987/09/.html\";\n"
+            + "    String institution \"NASA JPL\";\n"
+            + "    String keywords \"atlas, atmosphere, atmospheric, component, derived, downward, Earth Science > Atmosphere > Atmospheric Winds > Surface Winds, Earth Science > Atmosphere > Atmospheric Winds > Wind Stress, eastward, eastward_wind, flk, jpl, level, meters, nasa, northward, northward_wind, number, observations, oceanography, physical, physical oceanography, pseudostress, speed, statistics, stress, surface, surface_downward_eastward_stress, surface_downward_northward_stress, time, u-component, u-wind, v-component, v-wind, v1.1, wind, wind_speed, winds\";\n"
+            + "    String keywords_vocabulary \"GCMD Science Keywords\";\n"
+            + "    String license \"The data may be used and redistributed for free but is not intended\n"
+            + "for legal use, since it may contain inaccuracies. Neither the data\n"
+            + "Contributor, ERD, NOAA, nor the United States Government, nor any\n"
+            + "of their employees or contractors, makes any warranty, express or\n"
+            + "implied, including warranties of merchantability and fitness for a\n"
+            + "particular purpose, or assumes any legal liability for the accuracy,\n"
+            + "completeness, or usefulness, of this information.\";\n"
+            + "    Float64 Northernmost_Northing 78.375;\n"
+            + "    String sourceUrl \"https://opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/pentad/flk/1987/09/\";\n"
+            + "    Float64 Southernmost_Northing -78.375;\n"
+            + "    String standard_name_vocabulary \"CF Standard Name Table v55\";\n"
+            + "    String summary \"Time average of level3.0 products.\";\n"
+            + "    String time_coverage_end \"1987-09-28T00:00:00Z\";\n"
+            + "    String time_coverage_start \"1987-09-03T00:00:00Z\";\n"
+            + "    String title \"Atlas FLK v1.1 derived surface winds (level 3.5)\";\n"
+            + "    Float64 Westernmost_Easting 0.125;\n"
+            + "  }\n"
+            + "}\n";
+    int tPo = results.indexOf(expected.substring(0, 17));
+    Test.ensureTrue(tPo >= 0, "tPo=-1 results=\n" + results);
+    Test.ensureEqual(
+        results.substring(tPo, Math.min(results.length(), tPo + expected.length())),
+        expected,
+        "results=\n" + results);
 
     // *** test getting dds for entire dataset
     tName =

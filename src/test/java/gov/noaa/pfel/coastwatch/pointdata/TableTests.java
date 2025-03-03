@@ -18410,18 +18410,6 @@ public class TableTests {
     TableTests.testObis5354Table(table);
   }
 
-  @org.junit.jupiter.api.Test
-  @TagIncompleteTest
-  // This test relies on setting bits on a static member during all of the
-  // existing tests.
-  // We can probably use normal coverage tooling instead of properly implemnting
-  // this test.
-  void testReadNcCFCodeCoverage() {
-    Table.ncCFcc.flip(0, 100); // there are currently 99 code coverage tests
-    Test.ensureEqual(Table.ncCFcc.toString(), "{}", "Table.readNcCF code coverage");
-    Table.ncCFcc = null; // turn off test of readNcCF code coverage
-  }
-
   /**
    * Make a test Table.
    *

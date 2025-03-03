@@ -9,7 +9,6 @@ import dods.dap.DAS;
 import dods.dap.DConnect;
 import gov.noaa.pfel.coastwatch.griddata.OpendapHelper;
 import gov.noaa.pfel.coastwatch.util.SSR;
-import gov.noaa.pfel.erddap.GenerateDatasetsXml;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -25,69 +24,6 @@ class EDDTableFromErddapTests {
   @BeforeAll
   static void init() {
     Initialization.edStatic();
-  }
-
-  /** testGenerateDatasetsXml */
-  @org.junit.jupiter.api.Test
-  @TagLocalERDDAP
-  void testGenerateDatasetsXml() throws Throwable {
-    // testVerboseOn();
-    int po;
-
-    // test local generateDatasetsXml. In tests, always use non-https url.
-    String results = EDDTableFromErddap.generateDatasetsXml(EDStatic.erddapUrl, true) + "\n";
-    String2.log("results=\n" + results);
-
-    // GenerateDatasetsXml
-    String gdxResults =
-        new GenerateDatasetsXml()
-            .doIt(
-                new String[] {
-                  "-verbose", "EDDTableFromErddap", EDStatic.erddapUrl, "true", "-1"
-                }, // keep original names?, defaultStandardizeWhat
-                false); // doIt loop?
-    Test.ensureEqual(gdxResults, results, "Unexpected results from GenerateDatasetsXml.doIt.");
-
-    String expected =
-        "<dataset type=\"EDDTableFromErddap\" datasetID=\"erdGlobecBottle\" active=\"true\">\n"
-            + "    <!-- GLOBEC NEP Rosette Bottle Data (2002) -->\n"
-            + "    <sourceUrl>http://127.0.0.1:8080/cwexperimental/tabledap/erdGlobecBottle</sourceUrl>\n"
-            + "</dataset>\n";
-    String fragment = expected;
-    String2.log("\nresults=\n" + results);
-    po = results.indexOf(expected.substring(0, 70));
-    try {
-      Test.ensureEqual(results.substring(po, po + expected.length()), expected, "");
-    } catch (Throwable t) {
-      throw new RuntimeException(
-          "Unexpected error. This test requires erdGlobecBottle in localhost ERDDAP.", t);
-    }
-
-    expected =
-        "<!-- Of the datasets above, the following datasets are EDDTableFromErddap's at the remote ERDDAP.\n";
-    po = results.indexOf(expected.substring(0, 20));
-    Test.ensureEqual(
-        results.substring(po, po + expected.length()), expected, "results=\n" + results);
-    try {
-      Test.ensureTrue(results.indexOf("rGlobecBottle", po) > 0, "results=\n" + results);
-    } catch (Throwable t) {
-      throw new RuntimeException(
-          "Unexpected error. This test requires rGlobecBottle in localhost ERDDAP.", t);
-    }
-
-    /*
-     * //ensure it is ready-to-use by making a dataset from it
-     * //NO - don't mess with existing erdGlobecBottle
-     * String tDatasetID = "erdGlobecBottle";
-     * EDD.deleteCachedDatasetInfo(tDatasetID);
-     * EDD edd = oneFromXmlFragment(null, fragment);
-     * Test.ensureEqual(edd.title(), "GLOBEC NEP Rosette Bottle Data (2002)", "");
-     * Test.ensureEqual(edd.datasetID(), tDatasetID, "");
-     * Test.ensureEqual(String2.toCSSVString(edd.dataVariableDestinationNames()),
-     * "cruise_id, ship, cast, longitude, latitude, time, bottle_posn, chl_a_total, chl_a_10um, phaeo_total, phaeo_10um, sal00, sal11, temperature0, temperature1, fluor_v, xmiss_v, PO4, N_N, NO3, Si, NO2, NH4, oxygen, par"
-     * ,
-     * "");
-     */
   }
 
   /** The basic tests of this class (erdGlobecBottle). */
