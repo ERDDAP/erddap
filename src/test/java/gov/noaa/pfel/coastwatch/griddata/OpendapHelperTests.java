@@ -8,13 +8,20 @@ import com.cohort.util.Test;
 import dods.dap.DAS;
 import dods.dap.DConnect;
 import java.nio.file.Path;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.io.TempDir;
 import tags.TagIncompleteTest;
 import tags.TagThredds;
+import testDataset.Initialization;
 
 class OpendapHelperTests {
 
   @TempDir private static Path TEMP_DIR;
+
+  @BeforeAll
+  static void init() {
+    Initialization.edStatic();
+  }
 
   /** This tests getting attibutes, notably the DODS_strlen attribute. */
   @org.junit.jupiter.api.Test

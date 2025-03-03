@@ -45,7 +45,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <erddapcontent.download.version>content1.0.0</erddapcontent.download.version>
         <erddapreffiles.download.version>1.0.0</erddapreffiles.download.version>
-        <netcdfJavaVersion>5.6.0</netcdfJavaVersion>
+        <netcdfJavaVersion>5.7.0</netcdfJavaVersion>
         <test.resources.version>test1.04</test.resources.version>
         <jettyVersion>12.0.15</jettyVersion>
         <error-prone.version>2.27.0</error-prone.version>

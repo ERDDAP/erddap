@@ -14,6 +14,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import tags.TagIncompleteTest;
 import tags.TagMissingDataset;
+import tags.TagSlowTests;
 import tags.TagThredds;
 import testDataset.EDDTestDataset;
 import testDataset.Initialization;
@@ -31,7 +32,8 @@ class EDDTableFromThreddsFilesTests {
    */
   @ParameterizedTest
   @ValueSource(booleans = {true, false})
-  @TagIncompleteTest
+  @TagSlowTests // Very slow
+  @TagIncompleteTest //  Also not consistent output
   void testShipWTEP(boolean deleteCachedInfo) throws Throwable {
     // String2.log("\n****************** EDDTableFromThreddsFiles.testShipWTEP()
     // *****************\n");
@@ -218,6 +220,10 @@ class EDDTableFromThreddsFilesTests {
               + "  conductivity \\{\n"
               + "    Float32 _FillValue -8888.0;\n"
               + "    Float32 actual_range [0-9.]+, [0-9.e+]+;\n"
+              + "    String average_center \"unknown\";\n"
+              + "    Int16 average_length 60;\n"
+              + "    String average_method \"average\";\n"
+              + "    Float32 centerline_offset -9999.0;\n"
               + // 2013-03-26
               // new
               // value
@@ -226,10 +232,15 @@ class EDDTableFromThreddsFilesTests {
               // was
               "    Float64 colorBarMaximum 4.0;\n"
               + "    Float64 colorBarMinimum 0.0;\n"
+              + "    Float32 data_precision -9999.0;\n"
+              + "    Float32 distance_from_bow -9999.0;\n"
+              + "    Float32 height -9999.0;\n"
+              + "    String instrument \"unknown\";\n"
               + "    String ioos_category \"Salinity\";\n"
               + "    String long_name \"Conductivity\";\n"
               + "    Float32 missing_value -9999.0;\n"
               + "    String observation_type \"measured\";\n"
+              + "    String original_units \"siemens meter-1\";\n"
               + "    Int32 qcindex 16;\n"
               + (with
                   ?
@@ -246,7 +257,7 @@ class EDDTableFromThreddsFilesTests {
                       + "    Float32 sampling_rate [0-9.]+;\n"
                       + "    String serial_number \"157\";\n"
                       + "    Float32 special_value -8888.0;\n"
-                  : "")
+                  : "    Float32 sampling_rate -9999.0;\n" + "    Float32 special_value -8888.0;\n")
               + "    String standard_name \"sea_water_electrical_conductivity\";\n"
               + "    String units \"siemens meter-1\";\n"
               + "  \\}\n"

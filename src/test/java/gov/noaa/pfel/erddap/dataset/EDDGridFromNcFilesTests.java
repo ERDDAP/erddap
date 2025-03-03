@@ -4612,7 +4612,6 @@ class EDDGridFromNcFilesTests {
    * identify matching variables.
    */
   @org.junit.jupiter.api.Test
-  @TagIncompleteTest // Cannot load from object array because "this.sourceAxisValues" is null
   void testGenerateDatasetsXmlGroups() throws Throwable {
     // A test for Jessica Hausman
     // the test file is from
@@ -4624,10 +4623,11 @@ class EDDGridFromNcFilesTests {
     int language = 0;
 
     String dataDir =
-        Path.of(EDDGridFromNcFilesTests.class.getResource("/largeFiles/hdf/").toURI()).toString();
+        Path.of(EDDGridFromNcFilesTests.class.getResource("/largeFiles/hdf/").toURI()).toString()
+            + "/";
 
     // test if netcdf java considers group name to have trailing slash
-    NetcdfFile ncFile = NetcdfFiles.open(dataDir + "/Q2011237000100.L2_SCI_V4.0");
+    NetcdfFile ncFile = NetcdfFiles.open(dataDir + "Q2011237000100.L2_SCI_V4.0");
     try {
       Variable var = ncFile.findVariable("Navigation/scat_latfoot");
       Test.ensureEqual(var.getParentGroup().getFullName(), "Navigation", "");
@@ -4638,11 +4638,12 @@ class EDDGridFromNcFilesTests {
       ncFile.close();
     }
     String suggDatasetID =
-        EDDGridFromNcFiles.suggestDatasetID(dataDir + "/Q2011237000100.L2_SCI_V4\\.0");
+        EDDGridFromNcFiles.suggestDatasetID(
+            "Aquarius_Flags/" + dataDir + "Q2011237000100.L2_SCI_V4\\.0");
 
     results =
         EDDGridFromNcFiles.generateDatasetsXml(
-                dataDir + "/",
+                dataDir,
                 "Q2011237000100.L2_SCI_V4\\.0",
                 "",
                 "", // group
@@ -4664,7 +4665,7 @@ class EDDGridFromNcFilesTests {
             + "    <updateEveryNMillis>10000</updateEveryNMillis>\n"
             + "    <fileDir>"
             + dataDir
-            + "/</fileDir>\n"
+            + "</fileDir>\n"
             + "    <fileNameRegex>Q2011237000100.L2_SCI_V4\\.0</fileNameRegex>\n"
             + "    <recursive>true</recursive>\n"
             + "    <pathRegex>.*</pathRegex>\n"
@@ -5023,11 +5024,12 @@ class EDDGridFromNcFilesTests {
         "\nresults=\n" + results.substring(0, 500));
 
     suggDatasetID =
-        EDDGridFromNcFiles.suggestDatasetID(dataDir + "/Q2011237000100.L2_SCI_V4\\\\.0");
+        EDDGridFromNcFiles.suggestDatasetID(
+            "Navigation/" + dataDir + "Q2011237000100.L2_SCI_V4\\.0");
     // *********** test group
     results =
         EDDGridFromNcFiles.generateDatasetsXml(
-                dataDir + "/",
+                dataDir,
                 "Q2011237000100.L2_SCI_V4\\.0",
                 "",
                 "Navigation", // group
@@ -5049,7 +5051,7 @@ class EDDGridFromNcFilesTests {
             + "    <updateEveryNMillis>10000</updateEveryNMillis>\n"
             + "    <fileDir>"
             + dataDir
-            + "/</fileDir>\n"
+            + "</fileDir>\n"
             + "    <fileNameRegex>Q2011237000100.L2_SCI_V4\\.0</fileNameRegex>\n"
             + "    <recursive>true</recursive>\n"
             + "    <pathRegex>.*</pathRegex>\n"
@@ -5610,7 +5612,6 @@ class EDDGridFromNcFilesTests {
    * @throws Throwable if touble
    */
   @org.junit.jupiter.api.Test
-  @TagIncompleteTest // Cannot load from object array because "this.sourceAxisValues" is null
   void testGenerateDatasetsXmlGroups2() throws Throwable {
     // String2.log("\n*** EDDGridFromNcFiles.testGenerateDatasetsXmlGroups2");
     // reallyVerbose = true;
@@ -5621,10 +5622,12 @@ class EDDGridFromNcFilesTests {
     int language = 0;
 
     String fileDir =
-        Path.of(EDDGridFromNcFilesTests.class.getResource("/data/charles/").toURI()).toString();
+        Path.of(EDDGridFromNcFilesTests.class.getResource("/data/charles/").toURI()).toString()
+            + "/";
     String fileRegex = "testGroups2\\.nc"; // just 1 file, don't aggregate
 
-    String suggDatasetID = EDDGridFromNcFiles.suggestDatasetID(fileDir + "/" + fileRegex);
+    String suggDatasetID =
+        EDDGridFromNcFiles.suggestDatasetID("Synthetic_032_-_1/" + fileDir + fileRegex);
 
     /* */
     // *** group="" dimensionsCSV=""
@@ -5666,7 +5669,7 @@ class EDDGridFromNcFilesTests {
             + "    <updateEveryNMillis>10000</updateEveryNMillis>\n"
             + "    <fileDir>"
             + fileDir
-            + "\\</fileDir>\n"
+            + "</fileDir>\n"
             + "    <fileNameRegex>testGroups2\\.nc</fileNameRegex>\n"
             + "    <recursive>true</recursive>\n"
             + "    <pathRegex>.*</pathRegex>\n"
@@ -6051,7 +6054,7 @@ class EDDGridFromNcFilesTests {
     expected = "java.lang.RuntimeException: ERROR: dimension=rgb not found in the file!";
     Test.ensureEqual(results, expected, "results=\n" + results);
 
-    suggDatasetID = EDDGridFromNcFiles.suggestDatasetID(fileDir + "/" + fileRegex);
+    suggDatasetID = EDDGridFromNcFiles.suggestDatasetID("Synthetic_035_-_3/" + fileDir + fileRegex);
 
     /* */
     // group="Synthetic_035_-_3"
@@ -6074,7 +6077,7 @@ class EDDGridFromNcFilesTests {
             + "    <updateEveryNMillis>10000</updateEveryNMillis>\n"
             + "    <fileDir>"
             + fileDir
-            + "/</fileDir>\n"
+            + "</fileDir>\n"
             + "    <fileNameRegex>testGroups2\\.nc</fileNameRegex>\n"
             + "    <recursive>true</recursive>\n"
             + "    <pathRegex>.*</pathRegex>\n"
@@ -6254,8 +6257,10 @@ class EDDGridFromNcFilesTests {
                 null)
             + "\n"; // dimensionsCSV, reloadMinutes, cacheFromUrl
     // only difference is new datasetID
-    results =
-        String2.replaceAll(results, "ncSynthetic_035___3_dc8e_ae64_2f1c", "charles_9f77_002c_68c1");
+    String newDatasetId =
+        EDDGridFromNcFiles.suggestDatasetID(
+            "Synthetic_035_-_3/" + fileDir + fileRegex + "Synthetic_035_-_3/time");
+    results = String2.replaceAll(results, newDatasetId, suggDatasetID);
     String2.log("results=\n" + results);
     Test.ensureEqual(results, expected, "");
 
@@ -8402,7 +8407,7 @@ class EDDGridFromNcFilesTests {
 
     String2.log("\n*** EDDGridFromNcFiles.testLogAxis()");
     String obsDir = Image2Tests.urlToAbsolutePath(Image2Tests.OBS_DIR);
-    String tName, baseName, start, query, results, expected;
+    String tName, baseName, start, query;
     EDDGrid eddGrid;
     int language = 0;
 
@@ -10345,22 +10350,16 @@ class EDDGridFromNcFilesTests {
 
   /** This tests matchAxisNDigits */
   @org.junit.jupiter.api.Test
-  @TagIncompleteTest // Runtime datasets.xml error on or before line #208: AxisVariable=time has
-  // tied
-  // values:
   void testMatchAxisNDigits() throws Throwable {
 
     String2.log("\n *** EDDGridFromNcFiles.testMatchAxisNDigits() ***");
     int language = 0;
 
-    // force reload files
-    File2.delete("/erddapBPD/dataset/ay/erdATssta3day/fileTable.nc");
-
     // load dataset
     // testVerboseOn();
     String tName, results, expected;
     String cDir = EDStatic.config.fullTestCacheDirectory;
-    EDDGrid eddGrid = (EDDGrid) EDDTestDataset.geterdATssta3day();
+    EDDGrid eddGrid = (EDDGrid) EDDTestDataset.gettestMinimalReadSource();
     Table table;
     PrimitiveArray pa1, pa2;
 
@@ -10371,7 +10370,17 @@ class EDDGridFromNcFilesTests {
             language, null, null, "time", cDir, eddGrid.className() + "_tmnd0", ".csv");
     results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
     // String2.log(results);
-    expected = "time\n" + "UTC\n" + "2004-02-18T12:00:00Z\n" + "2004-03-20T12:00:00Z\n";
+    expected =
+        "time\n"
+            + "UTC\n"
+            + "1981-08-25T12:00:00Z\n"
+            + "1981-08-26T12:00:00Z\n"
+            + "1981-08-27T12:00:00Z\n"
+            + "1981-08-28T12:00:00Z\n"
+            + "1981-08-29T12:00:00Z\n"
+            + "1981-08-30T12:00:00Z\n"
+            + "1981-08-31T12:00:00Z\n"
+            + "2020-12-31T12:00:00Z\n";
     Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
     // a further test by hand:
@@ -10384,14 +10393,26 @@ class EDDGridFromNcFilesTests {
     String2.log("\n*** test get one lon, all lats\n");
     tName =
         eddGrid.makeNewFileForDapQuery(
-            language, null, null, "sst[0][0][][0]", cDir, eddGrid.className() + "_tmnd1", ".csv");
+            language,
+            null,
+            null,
+            "wind_speed[0][0][]",
+            cDir,
+            eddGrid.className() + "_tmnd1",
+            ".csv");
     table = new Table();
     table.readASCII(cDir + tName, 0, 2);
     pa1 = table.getColumn("latitude");
 
     tName =
         eddGrid.makeNewFileForDapQuery(
-            language, null, null, "sst[1][0][][0]", cDir, eddGrid.className() + "_tmnd2", ".csv");
+            language,
+            null,
+            null,
+            "wind_speed[1][0][]",
+            cDir,
+            eddGrid.className() + "_tmnd2",
+            ".csv");
     table = new Table();
     table.readASCII(cDir + tName, 0, 2);
     pa2 = table.getColumn("latitude");
@@ -10404,14 +10425,26 @@ class EDDGridFromNcFilesTests {
     String2.log("\n*** test get one lat, all lons\n");
     tName =
         eddGrid.makeNewFileForDapQuery(
-            language, null, null, "sst[0][0][0][]", cDir, eddGrid.className() + "_tmnd3", ".csv");
+            language,
+            null,
+            null,
+            "wind_speed[0][0][0]",
+            cDir,
+            eddGrid.className() + "_tmnd3",
+            ".csv");
     table = new Table();
     table.readASCII(cDir + tName, 0, 2);
     pa1 = table.getColumn("longitude");
 
     tName =
         eddGrid.makeNewFileForDapQuery(
-            language, null, null, "sst[1][0][0][]", cDir, eddGrid.className() + "_tmnd4", ".csv");
+            language,
+            null,
+            null,
+            "wind_speed[1][0][0]",
+            cDir,
+            eddGrid.className() + "_tmnd4",
+            ".csv");
     table = new Table();
     table.readASCII(cDir + tName, 0, 2);
     pa2 = table.getColumn("longitude");
@@ -11714,7 +11747,6 @@ class EDDGridFromNcFilesTests {
    * @throws Throwable if trouble
    */
   @org.junit.jupiter.api.Test
-  @TagIncompleteTest // Cannot load from object array because "this.sourceAxisValues" is null
   @TagImageComparison
   void testSpecialAxis0PathNameInt() throws Throwable {
     // String2.log("\n*** EDDGridFromNcFiles.testSpecialAxis0PathNameInt()\n");
@@ -12853,8 +12885,7 @@ class EDDGridFromNcFilesTests {
   @TagLocalERDDAP
   void testDapErrors() throws Throwable {
     String baseRequest = "http://localhost:8080/cwexperimental/griddap/";
-    String results, expected;
-    int language = 0;
+    String results;
 
     String2.log("\n*** EDDGridFromNcFiles.testDapErrors()");
     String comment =
@@ -14020,7 +14051,6 @@ class EDDGridFromNcFilesTests {
    * @throws Throwable if touble
    */
   @org.junit.jupiter.api.Test
-  @TagIncompleteTest // results != zztop
   void testRTechHdf() throws Throwable {
 
     // String2.log("\n*** EDDGridFromNcFiles.testRTechHdf");
@@ -14043,9 +14073,972 @@ class EDDGridFromNcFilesTests {
             + "\n"; // dimensionsCSV,
     // reloadMinutes,
     // cacheFromUrl
-    String expected = "zztop\n\n";
+    String tDatasetID = EDDGridFromNcFiles.suggestDatasetID("Geolocation_Fields/" + dir + regex);
+    String expected =
+        "<!-- NOTE! The source for this dataset has nGridVariables=38,\n"
+            + "  but this dataset will only serve 37 because the others use different dimensions. -->\n"
+            + "<dataset type=\"EDDGridFromNcFiles\" datasetID=\""
+            + tDatasetID
+            + "\" active=\"true\">\n"
+            + "    <reloadEveryNMinutes>10080</reloadEveryNMinutes>\n"
+            + "    <updateEveryNMillis>10000</updateEveryNMillis>\n"
+            + "    <fileDir>"
+            + dir
+            + "</fileDir>\n"
+            + "    <fileNameRegex>"
+            + regex
+            + "</fileNameRegex>\n"
+            + "    <recursive>true</recursive>\n"
+            + "    <pathRegex>.*</pathRegex>\n"
+            + "    <metadataFrom>last</metadataFrom>\n"
+            + "    <matchAxisNDigits>20</matchAxisNDigits>\n"
+            + "    <fileTableInMemory>false</fileTableInMemory>\n"
+            + "    <!-- sourceAttributes>\n"
+            + "        <att name=\"_History\">Direct read of HDF4 file through CDM library</att>\n"
+            + "        <att name=\"A_coefficient\">  0.9160</att>\n"
+            + "        <att name=\"Ancillary_Files\">ALBE8501; FLUE8501; msw_txt; geoe8501; mwinter_txt</att>\n"
+            + "        <att name=\"Beginning_Acquisition_Date\">2015-01-01T01:42:24</att>\n"
+            + "        <att name=\"East_Bounding_Longitude\" type=\"float\">360.0</att>\n"
+            + "        <att name=\"End_Acquisition_Date\">2015-01-01T03:36:42</att>\n"
+            + "        <att name=\"File_Name\">MT1_L2-FLUX-SCASL1A2-1.06_2015-01-01T01-42-24_V1-00.hdf</att>\n"
+            + "        <att name=\"Flip_End_Scan_Number\">NONE</att>\n"
+            + "        <att name=\"Flip_Start_Scan_Number\">NONE</att>\n"
+            + "        <att name=\"Geom_Cal_File_Version\">9_16</att>\n"
+            + "        <att name=\"HDF4_Version\">4.2.5 (HDF Version 4.2 Release 5, February 17, 2010)</att>\n"
+            + "        <att name=\"HDF_Version\">HDF Version 4.2 Release 5, February 17, 2010</att>\n"
+            + "        <att name=\"Icare_ID\">20150101014230</att>\n"
+            + "        <att name=\"Input_Files\">MT1SCASL1A2_1.06_000_9_16_I_2015_01_01_01_41_24_2015_01_01_03_36_42_16627_16628_172_41_42_BL1_00.h5</att>\n"
+            + "        <att name=\"Level1_Version\">ISRO_SAC_DP-MT1-SCAL1A2SW-VER-1.06F000(ISRO_SAC_DP-MT1-SW_PROD_ID-100_01_L1A2_011_01_L1A3-0007000)</att>\n"
+            + "        <att name=\"list_of_ECMWF_file\">ECMWF_201501010000_v1.2.0_1deg_AN.grb; ECMWF_201501010600_v1.2.0_1deg_AN.grb; ECMWF_201501011200_v1.2.0_1deg_AN.grb; ECMWF_201412312100_v1.2.0_1deg_FC_201412310000.grb; ECMWF_201501010300_v1.2.0_1deg_FC_201412311200.grb; ECMWF_201501010900_v1.2.0_1deg_FC_201412311200.grb</att>\n"
+            + "        <att name=\"Man_End_Scan_Number\">NONE</att>\n"
+            + "        <att name=\"Man_Start_Scan_Number\">NONE</att>\n"
+            + "        <att name=\"Mission\">Megha-Tropiques</att>\n"
+            + "        <att name=\"Nadir_Pixel_Size\">approximately 40 km squared</att>\n"
+            + "        <att name=\"nb_invalid_scan\" type=\"short\">0</att>\n"
+            + "        <att name=\"North_Bounding_Latitude\" type=\"float\">29.84</att>\n"
+            + "        <att name=\"Nskip\">NONE</att>\n"
+            + "        <att name=\"Orbit_End_Number\">16628</att>\n"
+            + "        <att name=\"Orbit_Revolution_Number\">41</att>\n"
+            + "        <att name=\"Orbit_Start_Number\">16627</att>\n"
+            + "        <att name=\"Proc_Param_File_Version\">ISRO_SAC_DP-MT1-SCAL1A2SW-VER-1.06F000(ISRO_SAC_DP-MT1-SW_PROD_ID-100_01_L1A2_011_01_L1A3-0007000)</att>\n"
+            + "        <att name=\"Product_Description\">The product contains one orbit of estimated top of the atmosphere (TOA) SW and LW fluxes as well as scene identifications and some input data (radiances, angles...). In this product, we have two different TOA fluxes: one derived from SEL algorithm, based on the ERBE ADMs (Suttles et al. 1988, 1989) and corresponding inversion methods (Wielicki and Green 1989)) and one derived from SANN algorithm, ScaRaB Artificial Neural Network. You can fin a description of this approach on Viollier et al. (2009).</att>\n"
+            + "        <att name=\"Product_Name\">L2-FLUX-SCASL1A2-1.06</att>\n"
+            + "        <att name=\"Product_Version\">V1-00</att>\n"
+            + "        <att name=\"Production_Center\">ICARE</att>\n"
+            + "        <att name=\"Production_Date\">2015/01/03 02:11:11</att>\n"
+            + "        <att name=\"QF_Product\">100.00</att>\n"
+            + "        <att name=\"Rad_Cal_File_Version\">9_16</att>\n"
+            + "        <att name=\"Sample_Number\" type=\"short\">51</att>\n"
+            + "        <att name=\"Scan_Number\" type=\"short\">1144</att>\n"
+            + "        <att name=\"Sensors\">MT/SCARAB</att>\n"
+            + "        <att name=\"Skip_End_Scan_Number\">NONE</att>\n"
+            + "        <att name=\"Skip_Start_Scan_Number\">NONE</att>\n"
+            + "        <att name=\"SLConf\">110010</att>\n"
+            + "        <att name=\"Software_Version\">3.1.0</att>\n"
+            + "        <att name=\"South_Bounding_Latitude\" type=\"float\">-29.69</att>\n"
+            + "        <att name=\"West_Bounding_Longitude\" type=\"float\">0.0</att>\n"
+            + "    </sourceAttributes -->\n"
+            + "    <addAttributes>\n"
+            + "        <att name=\"_History\">null</att>\n"
+            + "        <att name=\"A_coefficient\">0.9160</att>\n"
+            + "        <att name=\"cdm_data_type\">Grid</att>\n"
+            + "        <att name=\"Conventions\">COARDS, CF-1.10, ACDD-1.3</att>\n"
+            + "        <att name=\"Flip_End_Scan_Number\">null</att>\n"
+            + "        <att name=\"Flip_Start_Scan_Number\">null</att>\n"
+            + "        <att name=\"history\">Direct read of HDF4 file through CDM library</att>\n"
+            + "        <att name=\"infoUrl\">???</att>\n"
+            + "        <att name=\"Input_Files\">null</att>\n"
+            + "        <att name=\"institution\">???</att>\n"
+            + "        <att name=\"keywords\">across, albedo, along, angle, atmosphere, atmospheric, azimuth, channel, colatitude, data, Data_Fields/Across_Track_diagonal_dimension, Data_Fields/Along_Track_diagonal_dimension, Data_Fields/Filtered_Radiance_for_Infrared_Channel, Data_Fields/Filtered_Radiance_for_Solar_Channel, Data_Fields/Filtered_Radiance_for_Synthetic_LW_Channel, Data_Fields/Filtered_Radiance_for_Total_Channel, Data_Fields/Filtered_Radiance_for_Visible_Channel, Data_Fields/Geotype, Data_Fields/Pixel_Orientation, Data_Fields/QF_RD_IR, Data_Fields/QF_RD_LW_Synthetic, Data_Fields/QF_RD_SW, Data_Fields/QF_RD_Total, Data_Fields/QF_RD_Vis, Data_Fields/Quality_Index, Data_Fields/Relative_Azimuth_Angle, Data_Fields/SANN_Albedo_(1), Data_Fields/SANN_Albedo_(2), Data_Fields/SANN_LW_Scene_Identification, Data_Fields/SANN_SW_Scene_Identification, Data_Fields/SANN_TOA_LW_Flux_(1), Data_Fields/SANN_TOA_LW_Flux_(2), Data_Fields/SANN_TOA_SW_Flux_(1), Data_Fields/SANN_TOA_SW_Flux_(2), Data_Fields/SEL_Albedo, Data_Fields/SEL_Scene_Identification, Data_Fields/SEL_TOA_LW_Flux, Data_Fields/SEL_TOA_SW_Flux, Data_Fields/Solar_Zenith_Angle, Data_Fields/Unfiltered_LW_radiance, Data_Fields/Unfiltered_SW_radiance, Data_Fields/Viewing_Azimuth_Angle, Data_Fields/Viewing_Zenith_Angle, diagonal, dimension, earth, Earth Science &gt; Atmosphere &gt; Atmospheric Radiation &gt; Incoming Solar Radiation, Earth Science &gt; Atmosphere &gt; Atmospheric Radiation &gt; Solar Irradiance, Earth Science &gt; Atmosphere &gt; Atmospheric Radiation &gt; Solar Radiation, fields, fields/npix, fields/nscan, filtered, flux, geolocation, Geolocation_Fields/Colatitude_for_radiance_at_surface, Geolocation_Fields/Colatitude_for_radiance_at_TOA, Geolocation_Fields/Longitude_for_radiance_at_surface, Geolocation_Fields/Longitude_for_radiance_at_TOA, Geolocation_Fields/npix, Geolocation_Fields/nscan, geotype, identification, incoming, index, infrared, irradiance, local, longitude, meteorology, npix, nscan, optical, optical properties, orientation, pixel, properties, quality, radiance, radiation, relative, sann, scene, science, sel, solar, solar_zenith_angle, source, surface, synthetic, toa, total, track, unfiltered, viewing, vis, visible, zenith</att>\n"
+            + "        <att name=\"keywords_vocabulary\">GCMD Science Keywords</att>\n"
+            + "        <att name=\"license\">[standard]</att>\n"
+            + "        <att name=\"Man_End_Scan_Number\">null</att>\n"
+            + "        <att name=\"Man_Start_Scan_Number\">null</att>\n"
+            + "        <att name=\"Nskip\">null</att>\n"
+            + "        <att name=\"Skip_End_Scan_Number\">null</att>\n"
+            + "        <att name=\"Skip_Start_Scan_Number\">null</att>\n"
+            + "        <att name=\"standard_name_vocabulary\">CF Standard Name Table v70</att>\n"
+            + "        <att name=\"summary\">Data from a local source.</att>\n"
+            + "        <att name=\"title\">Data from a local source.</att>\n"
+            + "    </addAttributes>\n"
+            + "    <axisVariable>\n"
+            + "        <sourceName>Geolocation_Fields/nscan</sourceName>\n"
+            + "        <destinationName>Geolocation_Fields_nscan</destinationName>\n"
+            + "        <!-- sourceAttributes>\n"
+            + "        </sourceAttributes -->\n"
+            + "        <addAttributes>\n"
+            + "            <att name=\"ioos_category\">Location</att>\n"
+            + "            <att name=\"long_name\">Geolocation Fields/nscan</att>\n"
+            + "        </addAttributes>\n"
+            + "    </axisVariable>\n"
+            + "    <axisVariable>\n"
+            + "        <sourceName>Geolocation_Fields/npix</sourceName>\n"
+            + "        <destinationName>Geolocation_Fields_npix</destinationName>\n"
+            + "        <!-- sourceAttributes>\n"
+            + "        </sourceAttributes -->\n"
+            + "        <addAttributes>\n"
+            + "            <att name=\"ioos_category\">Location</att>\n"
+            + "            <att name=\"long_name\">Geolocation Fields/npix</att>\n"
+            + "        </addAttributes>\n"
+            + "    </axisVariable>\n"
+            + "    <dataVariable>\n"
+            + "        <sourceName>Geolocation_Fields/Colatitude_for_radiance_at_surface</sourceName>\n"
+            + "        <destinationName>Geolocation_Fields_Colatitude_for_radiance_at_surface</destinationName>\n"
+            + "        <dataType>double</dataType>\n"
+            + "        <!-- sourceAttributes>\n"
+            + "            <att name=\"_FillValue\" type=\"short\">-1</att>\n"
+            + "            <att name=\"actual_range\" type=\"shortList\">6001 12014</att>\n"
+            + "            <att name=\"add_offset\" type=\"double\">0.0</att>\n"
+            + "            <att name=\"add_offset_err\" type=\"double\">0.0</att>\n"
+            + "            <att name=\"calibrated_nt\" type=\"int\">23</att>\n"
+            + "            <att name=\"Comments\">Colatitude of samples projected on ground. The Colatitude is between 0 deg to 180 deg with 0 deg is north, 90 deg is equator and 180 deg is south.</att>\n"
+            + "            <att name=\"HDF_Calibration_Equation\">physical_value = scale_factor*(SDS_count - add_offset)</att>\n"
+            + "            <att name=\"long_name\">Colatitude_for_radiance_at_surface</att>\n"
+            + "            <att name=\"Missing_Output\" type=\"short\">-2</att>\n"
+            + "            <att name=\"Num_Fill\" type=\"int\">0</att>\n"
+            + "            <att name=\"Num_Missing_Output\" type=\"int\">0</att>\n"
+            + "            <att name=\"Num_Valid\" type=\"int\">58344</att>\n"
+            + "            <att name=\"Physical_Range\" type=\"doubleList\">60.0 120.0</att>\n"
+            + "            <att name=\"QA_SDS\">N/A</att>\n"
+            + "            <att name=\"scale_factor\" type=\"double\">0.01</att>\n"
+            + "            <att name=\"scale_factor_err\" type=\"double\">0.0</att>\n"
+            + "            <att name=\"units\">Degrees</att>\n"
+            + "            <att name=\"valid_range\" type=\"shortList\">6000 12000</att>\n"
+            + "        </sourceAttributes -->\n"
+            + "        <addAttributes>\n"
+            + "            <att name=\"_FillValue\" type=\"ushort\">65535</att>\n"
+            + "            <att name=\"actual_range\" type=\"doubleList\">6001.0 12014.0</att>\n"
+            + "            <att name=\"colorBarMaximum\" type=\"double\">140.0</att>\n"
+            + "            <att name=\"colorBarMinimum\" type=\"double\">40.0</att>\n"
+            + "            <att name=\"ioos_category\">Location</att>\n"
+            + "            <att name=\"QA_SDS\">null</att>\n"
+            + "            <att name=\"units\">degrees</att>\n"
+            + "        </addAttributes>\n"
+            + "    </dataVariable>\n"
+            + "    <dataVariable>\n"
+            + "        <sourceName>Geolocation_Fields/Longitude_for_radiance_at_surface</sourceName>\n"
+            + "        <destinationName>Geolocation_Fields_Longitude_for_radiance_at_surface</destinationName>\n"
+            + "        <dataType>double</dataType>\n"
+            + "        <!-- sourceAttributes>\n"
+            + "            <att name=\"_FillValue\" type=\"short\">-1</att>\n"
+            + "            <att name=\"actual_range\" type=\"shortList\">0 -29536</att>\n"
+            + "            <att name=\"add_offset\" type=\"double\">0.0</att>\n"
+            + "            <att name=\"add_offset_err\" type=\"double\">0.0</att>\n"
+            + "            <att name=\"calibrated_nt\" type=\"int\">23</att>\n"
+            + "            <att name=\"Comments\">Longitude of samples projected on ground. 0 deg is Greewich meridian.</att>\n"
+            + "            <att name=\"HDF_Calibration_Equation\">physical_value = scale_factor*(SDS_count - add_offset)</att>\n"
+            + "            <att name=\"long_name\">Longitude_for_radiance_at_surface</att>\n"
+            + "            <att name=\"Missing_Output\" type=\"short\">-2</att>\n"
+            + "            <att name=\"Num_Fill\" type=\"int\">0</att>\n"
+            + "            <att name=\"Num_Missing_Output\" type=\"int\">0</att>\n"
+            + "            <att name=\"Num_Valid\" type=\"int\">58344</att>\n"
+            + "            <att name=\"Physical_Range\" type=\"doubleList\">0.0 360.0</att>\n"
+            + "            <att name=\"QA_SDS\">N/A</att>\n"
+            + "            <att name=\"scale_factor\" type=\"double\">0.01</att>\n"
+            + "            <att name=\"scale_factor_err\" type=\"double\">0.0</att>\n"
+            + "            <att name=\"units\">Degrees</att>\n"
+            + "            <att name=\"valid_range\" type=\"shortList\">0 -29536</att>\n"
+            + "        </sourceAttributes -->\n"
+            + "        <addAttributes>\n"
+            + "            <att name=\"_FillValue\" type=\"ushort\">65535</att>\n"
+            + "            <att name=\"actual_range\" type=\"doubleList\">0.0 -29536.0</att>\n"
+            + "            <att name=\"colorBarMaximum\" type=\"double\">0.0</att>\n"
+            + "            <att name=\"colorBarMinimum\" type=\"double\">-200.0</att>\n"
+            + "            <att name=\"ioos_category\">Location</att>\n"
+            + "            <att name=\"QA_SDS\">null</att>\n"
+            + "            <att name=\"units\">degrees</att>\n"
+            + "        </addAttributes>\n"
+            + "    </dataVariable>\n"
+            + "    <dataVariable>\n"
+            + "        <sourceName>Geolocation_Fields/Colatitude_for_radiance_at_TOA</sourceName>\n"
+            + "        <destinationName>Geolocation_Fields_Colatitude_for_radiance_at_TOA</destinationName>\n"
+            + "        <dataType>double</dataType>\n"
+            + "        <!-- sourceAttributes>\n"
+            + "            <att name=\"_FillValue\" type=\"short\">-1</att>\n"
+            + "            <att name=\"actual_range\" type=\"shortList\">6031 11984</att>\n"
+            + "            <att name=\"add_offset\" type=\"double\">0.0</att>\n"
+            + "            <att name=\"add_offset_err\" type=\"double\">0.0</att>\n"
+            + "            <att name=\"calibrated_nt\" type=\"int\">23</att>\n"
+            + "            <att name=\"Comments\">Colatitude of samples projected from top of atmosphere i.e the point where the sensor s optical axis intercepts the 20 km altitude earth envelop. The Colatitude is between 0 deg to 180 with 0 deg is north, 90 deg is equator and 180 deg is south.</att>\n"
+            + "            <att name=\"HDF_Calibration_Equation\">physical_value = scale_factor*(SDS_count - add_offset)</att>\n"
+            + "            <att name=\"long_name\">Colatitude_for_radiance_at_TOA</att>\n"
+            + "            <att name=\"Missing_Output\" type=\"short\">-2</att>\n"
+            + "            <att name=\"Num_Fill\" type=\"int\">0</att>\n"
+            + "            <att name=\"Num_Missing_Output\" type=\"int\">0</att>\n"
+            + "            <att name=\"Num_Valid\" type=\"int\">58344</att>\n"
+            + "            <att name=\"Physical_Range\" type=\"doubleList\">60.0 120.0</att>\n"
+            + "            <att name=\"QA_SDS\">N/A</att>\n"
+            + "            <att name=\"scale_factor\" type=\"double\">0.01</att>\n"
+            + "            <att name=\"scale_factor_err\" type=\"double\">0.0</att>\n"
+            + "            <att name=\"units\">Degrees</att>\n"
+            + "            <att name=\"valid_range\" type=\"shortList\">6000 12000</att>\n"
+            + "        </sourceAttributes -->\n"
+            + "        <addAttributes>\n"
+            + "            <att name=\"_FillValue\" type=\"ushort\">65535</att>\n"
+            + "            <att name=\"actual_range\" type=\"doubleList\">6031.0 11984.0</att>\n"
+            + "            <att name=\"colorBarMaximum\" type=\"double\">140.0</att>\n"
+            + "            <att name=\"colorBarMinimum\" type=\"double\">40.0</att>\n"
+            + "            <att name=\"ioos_category\">Location</att>\n"
+            + "            <att name=\"QA_SDS\">null</att>\n"
+            + "            <att name=\"units\">degrees</att>\n"
+            + "        </addAttributes>\n"
+            + "    </dataVariable>\n"
+            + "    <dataVariable>\n"
+            + "        <sourceName>Geolocation_Fields/Longitude_for_radiance_at_TOA</sourceName>\n"
+            + "        <destinationName>Geolocation_Fields_Longitude_for_radiance_at_TOA</destinationName>\n"
+            + "        <dataType>double</dataType>\n"
+            + "        <!-- sourceAttributes>\n"
+            + "            <att name=\"_FillValue\" type=\"short\">-1</att>\n"
+            + "            <att name=\"actual_range\" type=\"shortList\">0 -29536</att>\n"
+            + "            <att name=\"add_offset\" type=\"double\">0.0</att>\n"
+            + "            <att name=\"add_offset_err\" type=\"double\">0.0</att>\n"
+            + "            <att name=\"calibrated_nt\" type=\"int\">23</att>\n"
+            + "            <att name=\"Comments\">Longitude of samples projected from top of atmosphere i.e the point where the sensor s optical axis intercepts the 20 km altitude earth envelop. 0 deg is Greewich meridian.</att>\n"
+            + "            <att name=\"HDF_Calibration_Equation\">physical_value = scale_factor*(SDS_count - add_offset)</att>\n"
+            + "            <att name=\"long_name\">Longitude_for_radiance_at_TOA</att>\n"
+            + "            <att name=\"Missing_Output\" type=\"short\">-2</att>\n"
+            + "            <att name=\"Num_Fill\" type=\"int\">0</att>\n"
+            + "            <att name=\"Num_Missing_Output\" type=\"int\">0</att>\n"
+            + "            <att name=\"Num_Valid\" type=\"int\">58344</att>\n"
+            + "            <att name=\"Physical_Range\" type=\"doubleList\">0.0 360.0</att>\n"
+            + "            <att name=\"QA_SDS\">N/A</att>\n"
+            + "            <att name=\"scale_factor\" type=\"double\">0.01</att>\n"
+            + "            <att name=\"scale_factor_err\" type=\"double\">0.0</att>\n"
+            + "            <att name=\"units\">Degrees</att>\n"
+            + "            <att name=\"valid_range\" type=\"shortList\">0 -29536</att>\n"
+            + "        </sourceAttributes -->\n"
+            + "        <addAttributes>\n"
+            + "            <att name=\"_FillValue\" type=\"ushort\">65535</att>\n"
+            + "            <att name=\"actual_range\" type=\"doubleList\">0.0 -29536.0</att>\n"
+            + "            <att name=\"colorBarMaximum\" type=\"double\">0.0</att>\n"
+            + "            <att name=\"colorBarMinimum\" type=\"double\">-200.0</att>\n"
+            + "            <att name=\"ioos_category\">Location</att>\n"
+            + "            <att name=\"QA_SDS\">null</att>\n"
+            + "            <att name=\"units\">degrees</att>\n"
+            + "        </addAttributes>\n"
+            + "    </dataVariable>\n"
+            + "    <dataVariable>\n"
+            + "        <sourceName>Data_Fields/Along_Track_diagonal_dimension</sourceName>\n"
+            + "        <destinationName>Data_Fields_Along_Track_diagonal_dimension</destinationName>\n"
+            + "        <dataType>double</dataType>\n"
+            + "        <!-- sourceAttributes>\n"
+            + "            <att name=\"_FillValue\" type=\"short\">-1</att>\n"
+            + "            <att name=\"actual_range\" type=\"shortList\">5812 10016</att>\n"
+            + "            <att name=\"add_offset\" type=\"double\">0.0</att>\n"
+            + "            <att name=\"add_offset_err\" type=\"double\">0.0</att>\n"
+            + "            <att name=\"calibrated_nt\" type=\"int\">23</att>\n"
+            + "            <att name=\"Comments\">Dimension in meters of the along track diagonal of each pixel.</att>\n"
+            + "            <att name=\"HDF_Calibration_Equation\">physical_value = scale_factor*(SDS_count - add_offset)</att>\n"
+            + "            <att name=\"long_name\">Along_Track_diagonal_dimension</att>\n"
+            + "            <att name=\"Missing_Output\" type=\"short\">-2</att>\n"
+            + "            <att name=\"Num_Fill\" type=\"int\">0</att>\n"
+            + "            <att name=\"Num_Missing_Output\" type=\"int\">0</att>\n"
+            + "            <att name=\"Num_Valid\" type=\"int\">58344</att>\n"
+            + "            <att name=\"Physical_Range\" type=\"doubleList\">0.0 200000.0</att>\n"
+            + "            <att name=\"QA_SDS\">N/A</att>\n"
+            + "            <att name=\"scale_factor\" type=\"double\">10.0</att>\n"
+            + "            <att name=\"scale_factor_err\" type=\"double\">0.0</att>\n"
+            + "            <att name=\"units\">Meter</att>\n"
+            + "            <att name=\"valid_range\" type=\"shortList\">0 20000</att>\n"
+            + "        </sourceAttributes -->\n"
+            + "        <addAttributes>\n"
+            + "            <att name=\"_FillValue\" type=\"ushort\">65535</att>\n"
+            + "            <att name=\"actual_range\" type=\"doubleList\">5812.0 10016.0</att>\n"
+            + "            <att name=\"colorBarMaximum\" type=\"double\">110000.0</att>\n"
+            + "            <att name=\"colorBarMinimum\" type=\"double\">50000.0</att>\n"
+            + "            <att name=\"ioos_category\">Unknown</att>\n"
+            + "            <att name=\"QA_SDS\">null</att>\n"
+            + "            <att name=\"units\">meter</att>\n"
+            + "        </addAttributes>\n"
+            + "    </dataVariable>\n"
+            + "    <dataVariable>\n"
+            + "        <sourceName>Data_Fields/Across_Track_diagonal_dimension</sourceName>\n"
+            + "        <destinationName>Data_Fields_Across_Track_diagonal_dimension</destinationName>\n"
+            + "        <dataType>double</dataType>\n"
+            + "        <!-- sourceAttributes>\n"
+            + "            <att name=\"_FillValue\" type=\"short\">-1</att>\n"
+            + "            <att name=\"actual_range\" type=\"shortList\">5843 19819</att>\n"
+            + "            <att name=\"add_offset\" type=\"double\">0.0</att>\n"
+            + "            <att name=\"add_offset_err\" type=\"double\">0.0</att>\n"
+            + "            <att name=\"calibrated_nt\" type=\"int\">23</att>\n"
+            + "            <att name=\"Comments\">Dimension in meters of the across track diagonal of each pixel.</att>\n"
+            + "            <att name=\"HDF_Calibration_Equation\">physical_value = scale_factor*(SDS_count - add_offset)</att>\n"
+            + "            <att name=\"long_name\">Across_Track_diagonal_dimension</att>\n"
+            + "            <att name=\"Missing_Output\" type=\"short\">-2</att>\n"
+            + "            <att name=\"Num_Fill\" type=\"int\">0</att>\n"
+            + "            <att name=\"Num_Missing_Output\" type=\"int\">0</att>\n"
+            + "            <att name=\"Num_Valid\" type=\"int\">58344</att>\n"
+            + "            <att name=\"Physical_Range\" type=\"doubleList\">0.0 200000.0</att>\n"
+            + "            <att name=\"QA_SDS\">N/A</att>\n"
+            + "            <att name=\"scale_factor\" type=\"double\">10.0</att>\n"
+            + "            <att name=\"scale_factor_err\" type=\"double\">0.0</att>\n"
+            + "            <att name=\"units\">Meter</att>\n"
+            + "            <att name=\"valid_range\" type=\"shortList\">0 20000</att>\n"
+            + "        </sourceAttributes -->\n"
+            + "        <addAttributes>\n"
+            + "            <att name=\"_FillValue\" type=\"ushort\">65535</att>\n"
+            + "            <att name=\"actual_range\" type=\"doubleList\">5843.0 19819.0</att>\n"
+            + "            <att name=\"colorBarMaximum\" type=\"double\">250000.0</att>\n"
+            + "            <att name=\"colorBarMinimum\" type=\"double\">50000.0</att>\n"
+            + "            <att name=\"ioos_category\">Unknown</att>\n"
+            + "            <att name=\"QA_SDS\">null</att>\n"
+            + "            <att name=\"units\">meter</att>\n"
+            + "        </addAttributes>\n"
+            + "    </dataVariable>\n"
+            + "    <dataVariable>\n"
+            + "        <sourceName>Data_Fields/Pixel_Orientation</sourceName>\n"
+            + "        <destinationName>Data_Fields_Pixel_Orientation</destinationName>\n"
+            + "        <dataType>double</dataType>\n"
+            + "        <!-- sourceAttributes>\n"
+            + "            <att name=\"_FillValue\" type=\"short\">-1</att>\n"
+            + "            <att name=\"actual_range\" type=\"shortList\">24944 29056</att>\n"
+            + "            <att name=\"add_offset\" type=\"double\">0.0</att>\n"
+            + "            <att name=\"add_offset_err\" type=\"double\">0.0</att>\n"
+            + "            <att name=\"calibrated_nt\" type=\"int\">23</att>\n"
+            + "            <att name=\"Comments\">Pixel orientation on earth.</att>\n"
+            + "            <att name=\"HDF_Calibration_Equation\">physical_value = scale_factor*(SDS_count - add_offset)</att>\n"
+            + "            <att name=\"long_name\">Pixel_Orientation</att>\n"
+            + "            <att name=\"Missing_Output\" type=\"short\">-2</att>\n"
+            + "            <att name=\"Num_Fill\" type=\"int\">0</att>\n"
+            + "            <att name=\"Num_Missing_Output\" type=\"int\">0</att>\n"
+            + "            <att name=\"Num_Valid\" type=\"int\">58344</att>\n"
+            + "            <att name=\"Physical_Range\" type=\"doubleList\">0.0 360.0</att>\n"
+            + "            <att name=\"QA_SDS\">N/A</att>\n"
+            + "            <att name=\"scale_factor\" type=\"double\">0.01</att>\n"
+            + "            <att name=\"scale_factor_err\" type=\"double\">0.0</att>\n"
+            + "            <att name=\"units\">Degrees</att>\n"
+            + "            <att name=\"valid_range\" type=\"shortList\">0 -29536</att>\n"
+            + "        </sourceAttributes -->\n"
+            + "        <addAttributes>\n"
+            + "            <att name=\"_FillValue\" type=\"ushort\">65535</att>\n"
+            + "            <att name=\"actual_range\" type=\"doubleList\">24944.0 29056.0</att>\n"
+            + "            <att name=\"colorBarMaximum\" type=\"double\">300.0</att>\n"
+            + "            <att name=\"colorBarMinimum\" type=\"double\">240.0</att>\n"
+            + "            <att name=\"ioos_category\">Unknown</att>\n"
+            + "            <att name=\"QA_SDS\">null</att>\n"
+            + "            <att name=\"units\">degrees</att>\n"
+            + "        </addAttributes>\n"
+            + "    </dataVariable>\n"
+            + "    <dataVariable>\n"
+            + "        <sourceName>Data_Fields/Viewing_Zenith_Angle</sourceName>\n"
+            + "        <destinationName>Data_Fields_Viewing_Zenith_Angle</destinationName>\n"
+            + "        <dataType>double</dataType>\n"
+            + "        <!-- sourceAttributes>\n"
+            + "            <att name=\"_FillValue\" type=\"short\">-1</att>\n"
+            + "            <att name=\"actual_range\" type=\"shortList\">25 5940</att>\n"
+            + "            <att name=\"add_offset\" type=\"double\">0.0</att>\n"
+            + "            <att name=\"add_offset_err\" type=\"double\">0.0</att>\n"
+            + "            <att name=\"calibrated_nt\" type=\"int\">23</att>\n"
+            + "            <att name=\"Comments\">Viewing zenith angle at pixel center.</att>\n"
+            + "            <att name=\"HDF_Calibration_Equation\">physical_value = scale_factor*(SDS_count - add_offset)</att>\n"
+            + "            <att name=\"long_name\">Viewing_Zenith_Angle</att>\n"
+            + "            <att name=\"Missing_Output\" type=\"short\">-2</att>\n"
+            + "            <att name=\"Num_Fill\" type=\"int\">0</att>\n"
+            + "            <att name=\"Num_Missing_Output\" type=\"int\">0</att>\n"
+            + "            <att name=\"Num_Valid\" type=\"int\">58344</att>\n"
+            + "            <att name=\"Physical_Range\" type=\"doubleList\">0.0 90.0</att>\n"
+            + "            <att name=\"QA_SDS\">N/A</att>\n"
+            + "            <att name=\"scale_factor\" type=\"double\">0.01</att>\n"
+            + "            <att name=\"scale_factor_err\" type=\"double\">0.0</att>\n"
+            + "            <att name=\"units\">Degrees</att>\n"
+            + "            <att name=\"valid_range\" type=\"shortList\">0 9000</att>\n"
+            + "        </sourceAttributes -->\n"
+            + "        <addAttributes>\n"
+            + "            <att name=\"_FillValue\" type=\"ushort\">65535</att>\n"
+            + "            <att name=\"actual_range\" type=\"doubleList\">25.0 5940.0</att>\n"
+            + "            <att name=\"colorBarMaximum\" type=\"double\">90.0</att>\n"
+            + "            <att name=\"colorBarMinimum\" type=\"double\">-90.0</att>\n"
+            + "            <att name=\"ioos_category\">Unknown</att>\n"
+            + "            <att name=\"QA_SDS\">null</att>\n"
+            + "            <att name=\"units\">degrees</att>\n"
+            + "        </addAttributes>\n"
+            + "    </dataVariable>\n"
+            + "    <dataVariable>\n"
+            + "        <sourceName>Data_Fields/Viewing_Azimuth_Angle</sourceName>\n"
+            + "        <destinationName>Data_Fields_Viewing_Azimuth_Angle</destinationName>\n"
+            + "        <dataType>double</dataType>\n"
+            + "        <!-- sourceAttributes>\n"
+            + "            <att name=\"_FillValue\" type=\"short\">-1</att>\n"
+            + "            <att name=\"actual_range\" type=\"shortList\">0 -29537</att>\n"
+            + "            <att name=\"add_offset\" type=\"double\">0.0</att>\n"
+            + "            <att name=\"add_offset_err\" type=\"double\">0.0</att>\n"
+            + "            <att name=\"calibrated_nt\" type=\"int\">23</att>\n"
+            + "            <att name=\"Comments\">Viewing azimuth angle at pixel center.</att>\n"
+            + "            <att name=\"HDF_Calibration_Equation\">physical_value = scale_factor*(SDS_count - add_offset)</att>\n"
+            + "            <att name=\"long_name\">Viewing_Azimuth_Angle</att>\n"
+            + "            <att name=\"Missing_Output\" type=\"short\">-2</att>\n"
+            + "            <att name=\"Num_Fill\" type=\"int\">0</att>\n"
+            + "            <att name=\"Num_Missing_Output\" type=\"int\">0</att>\n"
+            + "            <att name=\"Num_Valid\" type=\"int\">58344</att>\n"
+            + "            <att name=\"Physical_Range\" type=\"doubleList\">0.0 360.0</att>\n"
+            + "            <att name=\"QA_SDS\">N/A</att>\n"
+            + "            <att name=\"scale_factor\" type=\"double\">0.01</att>\n"
+            + "            <att name=\"scale_factor_err\" type=\"double\">0.0</att>\n"
+            + "            <att name=\"units\">Degrees</att>\n"
+            + "            <att name=\"valid_range\" type=\"shortList\">0 -29536</att>\n"
+            + "        </sourceAttributes -->\n"
+            + "        <addAttributes>\n"
+            + "            <att name=\"_FillValue\" type=\"ushort\">65535</att>\n"
+            + "            <att name=\"actual_range\" type=\"doubleList\">0.0 -29537.0</att>\n"
+            + "            <att name=\"colorBarMaximum\" type=\"double\">0.0</att>\n"
+            + "            <att name=\"colorBarMinimum\" type=\"double\">-200.0</att>\n"
+            + "            <att name=\"ioos_category\">Unknown</att>\n"
+            + "            <att name=\"QA_SDS\">null</att>\n"
+            + "            <att name=\"units\">degrees</att>\n"
+            + "        </addAttributes>\n"
+            + "    </dataVariable>\n"
+            + "    <dataVariable>\n"
+            + "        <sourceName>Data_Fields/Solar_Zenith_Angle</sourceName>\n"
+            + "        <destinationName>Data_Fields_Solar_Zenith_Angle</destinationName>\n"
+            + "        <dataType>double</dataType>\n"
+            + "        <!-- sourceAttributes>\n"
+            + "            <att name=\"_FillValue\" type=\"short\">-1</att>\n"
+            + "            <att name=\"actual_range\" type=\"shortList\">3055 14909</att>\n"
+            + "            <att name=\"add_offset\" type=\"double\">0.0</att>\n"
+            + "            <att name=\"add_offset_err\" type=\"double\">0.0</att>\n"
+            + "            <att name=\"calibrated_nt\" type=\"int\">23</att>\n"
+            + "            <att name=\"Comments\">Solar zenith angle at pixel center.</att>\n"
+            + "            <att name=\"HDF_Calibration_Equation\">physical_value = scale_factor*(SDS_count - add_offset)</att>\n"
+            + "            <att name=\"long_name\">Solar_Zenith_Angle</att>\n"
+            + "            <att name=\"Missing_Output\" type=\"short\">-2</att>\n"
+            + "            <att name=\"Num_Fill\" type=\"int\">0</att>\n"
+            + "            <att name=\"Num_Missing_Output\" type=\"int\">0</att>\n"
+            + "            <att name=\"Num_Valid\" type=\"int\">58344</att>\n"
+            + "            <att name=\"Physical_Range\" type=\"doubleList\">0.0 90.0</att>\n"
+            + "            <att name=\"QA_SDS\">N/A</att>\n"
+            + "            <att name=\"scale_factor\" type=\"double\">0.01</att>\n"
+            + "            <att name=\"scale_factor_err\" type=\"double\">0.0</att>\n"
+            + "            <att name=\"units\">Degrees</att>\n"
+            + "            <att name=\"valid_range\" type=\"shortList\">0 9000</att>\n"
+            + "        </sourceAttributes -->\n"
+            + "        <addAttributes>\n"
+            + "            <att name=\"_FillValue\" type=\"ushort\">65535</att>\n"
+            + "            <att name=\"actual_range\" type=\"doubleList\">3055.0 14909.0</att>\n"
+            + "            <att name=\"colorBarMaximum\" type=\"double\">90.0</att>\n"
+            + "            <att name=\"colorBarMinimum\" type=\"double\">-90.0</att>\n"
+            + "            <att name=\"ioos_category\">Unknown</att>\n"
+            + "            <att name=\"QA_SDS\">null</att>\n"
+            + "            <att name=\"standard_name\">solar_zenith_angle</att>\n"
+            + "            <att name=\"units\">degrees</att>\n"
+            + "        </addAttributes>\n"
+            + "    </dataVariable>\n"
+            + "    <dataVariable>\n"
+            + "        <sourceName>Data_Fields/Relative_Azimuth_Angle</sourceName>\n"
+            + "        <destinationName>Data_Fields_Relative_Azimuth_Angle</destinationName>\n"
+            + "        <dataType>double</dataType>\n"
+            + "        <!-- sourceAttributes>\n"
+            + "            <att name=\"_FillValue\" type=\"short\">-1</att>\n"
+            + "            <att name=\"actual_range\" type=\"shortList\">0 -29538</att>\n"
+            + "            <att name=\"add_offset\" type=\"double\">0.0</att>\n"
+            + "            <att name=\"add_offset_err\" type=\"double\">0.0</att>\n"
+            + "            <att name=\"calibrated_nt\" type=\"int\">23</att>\n"
+            + "            <att name=\"Comments\">Relative azimuth angle at pixel center.</att>\n"
+            + "            <att name=\"HDF_Calibration_Equation\">physical_value = scale_factor*(SDS_count - add_offset)</att>\n"
+            + "            <att name=\"long_name\">Relative_Azimuth_Angle</att>\n"
+            + "            <att name=\"Missing_Output\" type=\"short\">-2</att>\n"
+            + "            <att name=\"Num_Fill\" type=\"int\">0</att>\n"
+            + "            <att name=\"Num_Missing_Output\" type=\"int\">0</att>\n"
+            + "            <att name=\"Num_Valid\" type=\"int\">58344</att>\n"
+            + "            <att name=\"Physical_Range\" type=\"doubleList\">0.0 360.0</att>\n"
+            + "            <att name=\"QA_SDS\">N/A</att>\n"
+            + "            <att name=\"scale_factor\" type=\"double\">0.01</att>\n"
+            + "            <att name=\"scale_factor_err\" type=\"double\">0.0</att>\n"
+            + "            <att name=\"units\">Degrees</att>\n"
+            + "            <att name=\"valid_range\" type=\"shortList\">0 -29536</att>\n"
+            + "        </sourceAttributes -->\n"
+            + "        <addAttributes>\n"
+            + "            <att name=\"_FillValue\" type=\"ushort\">65535</att>\n"
+            + "            <att name=\"actual_range\" type=\"doubleList\">0.0 -29538.0</att>\n"
+            + "            <att name=\"colorBarMaximum\" type=\"double\">0.0</att>\n"
+            + "            <att name=\"colorBarMinimum\" type=\"double\">-200.0</att>\n"
+            + "            <att name=\"ioos_category\">Unknown</att>\n"
+            + "            <att name=\"QA_SDS\">null</att>\n"
+            + "            <att name=\"units\">degrees</att>\n"
+            + "        </addAttributes>\n"
+            + "    </dataVariable>\n"
+            + "    <dataVariable>\n"
+            + "        <sourceName>Data_Fields/Filtered_Radiance_for_Visible_Channel</sourceName>\n"
+            + "        <destinationName>Data_Fields_Filtered_Radiance_for_Visible_Channel</destinationName>\n"
+            + "        <dataType>double</dataType>\n"
+            + "        <!-- sourceAttributes>\n"
+            + "            <att name=\"_FillValue\" type=\"short\">-1</att>\n"
+            + "            <att name=\"actual_range\" type=\"shortList\">0 8204</att>\n"
+            + "            <att name=\"add_offset\" type=\"double\">0.0</att>\n"
+            + "            <att name=\"add_offset_err\" type=\"double\">0.0</att>\n"
+            + "            <att name=\"calibrated_nt\" type=\"int\">23</att>\n"
+            + "            <att name=\"Comments\">Raw measurement of channel 1 after count conversion (calibrated radiances).</att>\n"
+            + "            <att name=\"HDF_Calibration_Equation\">physical_value = scale_factor*(SDS_count - add_offset)</att>\n"
+            + "            <att name=\"long_name\">Filtered_Radiance_for_Visible_Channel</att>\n"
+            + "            <att name=\"Missing_Output\" type=\"short\">-2</att>\n"
+            + "            <att name=\"Num_Fill\" type=\"int\">2</att>\n"
+            + "            <att name=\"Num_Missing_Output\" type=\"int\">0</att>\n"
+            + "            <att name=\"Num_Valid\" type=\"int\">58342</att>\n"
+            + "            <att name=\"Physical_Range\" type=\"doubleList\">0.0 120.0</att>\n"
+            + "            <att name=\"QA_SDS\">N/A</att>\n"
+            + "            <att name=\"scale_factor\" type=\"double\">0.01</att>\n"
+            + "            <att name=\"scale_factor_err\" type=\"double\">0.0</att>\n"
+            + "            <att name=\"units\">W m-2 sr-1</att>\n"
+            + "            <att name=\"valid_range\" type=\"shortList\">0 12000</att>\n"
+            + "        </sourceAttributes -->\n"
+            + "        <addAttributes>\n"
+            + "            <att name=\"_FillValue\" type=\"ushort\">65535</att>\n"
+            + "            <att name=\"actual_range\" type=\"doubleList\">0.0 8204.0</att>\n"
+            + "            <att name=\"colorBarMaximum\" type=\"double\">100.0</att>\n"
+            + "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n"
+            + "            <att name=\"ioos_category\">Meteorology</att>\n"
+            + "            <att name=\"QA_SDS\">null</att>\n"
+            + "        </addAttributes>\n"
+            + "    </dataVariable>\n"
+            + "    <dataVariable>\n"
+            + "        <sourceName>Data_Fields/Filtered_Radiance_for_Solar_Channel</sourceName>\n"
+            + "        <destinationName>Data_Fields_Filtered_Radiance_for_Solar_Channel</destinationName>\n"
+            + "        <dataType>double</dataType>\n"
+            + "        <!-- sourceAttributes>\n"
+            + "            <att name=\"_FillValue\" type=\"short\">-1</att>\n"
+            + "            <att name=\"actual_range\" type=\"shortList\">0 29068</att>\n"
+            + "            <att name=\"add_offset\" type=\"double\">0.0</att>\n"
+            + "            <att name=\"add_offset_err\" type=\"double\">0.0</att>\n"
+            + "            <att name=\"calibrated_nt\" type=\"int\">23</att>\n"
+            + "            <att name=\"Comments\">Raw measurement of channel 2 after count conversion (calibrated radiances).</att>\n"
+            + "            <att name=\"HDF_Calibration_Equation\">physical_value = scale_factor*(SDS_count - add_offset)</att>\n"
+            + "            <att name=\"long_name\">Filtered_Radiance_for_Solar_Channel</att>\n"
+            + "            <att name=\"Missing_Output\" type=\"short\">-2</att>\n"
+            + "            <att name=\"Num_Fill\" type=\"int\">0</att>\n"
+            + "            <att name=\"Num_Missing_Output\" type=\"int\">0</att>\n"
+            + "            <att name=\"Num_Valid\" type=\"int\">58344</att>\n"
+            + "            <att name=\"Physical_Range\" type=\"doubleList\">0.0 425.0</att>\n"
+            + "            <att name=\"QA_SDS\">N/A</att>\n"
+            + "            <att name=\"scale_factor\" type=\"double\">0.01</att>\n"
+            + "            <att name=\"scale_factor_err\" type=\"double\">0.0</att>\n"
+            + "            <att name=\"units\">W m-2 sr-1</att>\n"
+            + "            <att name=\"valid_range\" type=\"shortList\">0 -23036</att>\n"
+            + "        </sourceAttributes -->\n"
+            + "        <addAttributes>\n"
+            + "            <att name=\"_FillValue\" type=\"ushort\">65535</att>\n"
+            + "            <att name=\"actual_range\" type=\"doubleList\">0.0 29068.0</att>\n"
+            + "            <att name=\"colorBarMaximum\" type=\"double\">300.0</att>\n"
+            + "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n"
+            + "            <att name=\"ioos_category\">Unknown</att>\n"
+            + "            <att name=\"QA_SDS\">null</att>\n"
+            + "        </addAttributes>\n"
+            + "    </dataVariable>\n"
+            + "    <dataVariable>\n"
+            + "        <sourceName>Data_Fields/Filtered_Radiance_for_Total_Channel</sourceName>\n"
+            + "        <destinationName>Data_Fields_Filtered_Radiance_for_Total_Channel</destinationName>\n"
+            + "        <dataType>double</dataType>\n"
+            + "        <!-- sourceAttributes>\n"
+            + "            <att name=\"_FillValue\" type=\"short\">-1</att>\n"
+            + "            <att name=\"actual_range\" type=\"shortList\">2636 29490</att>\n"
+            + "            <att name=\"add_offset\" type=\"double\">0.0</att>\n"
+            + "            <att name=\"add_offset_err\" type=\"double\">0.0</att>\n"
+            + "            <att name=\"calibrated_nt\" type=\"int\">23</att>\n"
+            + "            <att name=\"Comments\">Raw measurement of channel 3 after count conversion (calibrated radiances).</att>\n"
+            + "            <att name=\"HDF_Calibration_Equation\">physical_value = scale_factor*(SDS_count - add_offset)</att>\n"
+            + "            <att name=\"long_name\">Filtered_Radiance_for_Total_Channel</att>\n"
+            + "            <att name=\"Missing_Output\" type=\"short\">-2</att>\n"
+            + "            <att name=\"Num_Fill\" type=\"int\">0</att>\n"
+            + "            <att name=\"Num_Missing_Output\" type=\"int\">0</att>\n"
+            + "            <att name=\"Num_Valid\" type=\"int\">58344</att>\n"
+            + "            <att name=\"Physical_Range\" type=\"doubleList\">0.0 500.0</att>\n"
+            + "            <att name=\"QA_SDS\">N/A</att>\n"
+            + "            <att name=\"scale_factor\" type=\"double\">0.01</att>\n"
+            + "            <att name=\"scale_factor_err\" type=\"double\">0.0</att>\n"
+            + "            <att name=\"units\">W m-2 sr-1</att>\n"
+            + "            <att name=\"valid_range\" type=\"shortList\">0 -15536</att>\n"
+            + "        </sourceAttributes -->\n"
+            + "        <addAttributes>\n"
+            + "            <att name=\"_FillValue\" type=\"ushort\">65535</att>\n"
+            + "            <att name=\"actual_range\" type=\"doubleList\">2636.0 29490.0</att>\n"
+            + "            <att name=\"colorBarMaximum\" type=\"double\">300.0</att>\n"
+            + "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n"
+            + "            <att name=\"ioos_category\">Unknown</att>\n"
+            + "            <att name=\"QA_SDS\">null</att>\n"
+            + "        </addAttributes>\n"
+            + "    </dataVariable>\n"
+            + "    <dataVariable>\n"
+            + "        <sourceName>Data_Fields/Filtered_Radiance_for_Infrared_Channel</sourceName>\n"
+            + "        <destinationName>Data_Fields_Filtered_Radiance_for_Infrared_Channel</destinationName>\n"
+            + "        <dataType>double</dataType>\n"
+            + "        <!-- sourceAttributes>\n"
+            + "            <att name=\"_FillValue\" type=\"short\">-1</att>\n"
+            + "            <att name=\"actual_range\" type=\"shortList\">0 2734</att>\n"
+            + "            <att name=\"add_offset\" type=\"double\">0.0</att>\n"
+            + "            <att name=\"add_offset_err\" type=\"double\">0.0</att>\n"
+            + "            <att name=\"calibrated_nt\" type=\"int\">23</att>\n"
+            + "            <att name=\"Comments\">Raw measurement of channel 4 after count conversion (calibrated radiances).</att>\n"
+            + "            <att name=\"HDF_Calibration_Equation\">physical_value = scale_factor*(SDS_count - add_offset)</att>\n"
+            + "            <att name=\"long_name\">Filtered_Radiance_for_Infrared_Channel</att>\n"
+            + "            <att name=\"Missing_Output\" type=\"short\">-2</att>\n"
+            + "            <att name=\"Num_Fill\" type=\"int\">0</att>\n"
+            + "            <att name=\"Num_Missing_Output\" type=\"int\">0</att>\n"
+            + "            <att name=\"Num_Valid\" type=\"int\">58344</att>\n"
+            + "            <att name=\"Physical_Range\" type=\"doubleList\">0.0 30.0</att>\n"
+            + "            <att name=\"QA_SDS\">N/A</att>\n"
+            + "            <att name=\"scale_factor\" type=\"double\">0.01</att>\n"
+            + "            <att name=\"scale_factor_err\" type=\"double\">0.0</att>\n"
+            + "            <att name=\"units\">W m-2 sr-1</att>\n"
+            + "            <att name=\"valid_range\" type=\"shortList\">0 3000</att>\n"
+            + "        </sourceAttributes -->\n"
+            + "        <addAttributes>\n"
+            + "            <att name=\"_FillValue\" type=\"ushort\">65535</att>\n"
+            + "            <att name=\"actual_range\" type=\"doubleList\">0.0 2734.0</att>\n"
+            + "            <att name=\"colorBarMaximum\" type=\"double\">30.0</att>\n"
+            + "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n"
+            + "            <att name=\"ioos_category\">Unknown</att>\n"
+            + "            <att name=\"QA_SDS\">null</att>\n"
+            + "        </addAttributes>\n"
+            + "    </dataVariable>\n"
+            + "    <dataVariable>\n"
+            + "        <sourceName>Data_Fields/Filtered_Radiance_for_Synthetic_LW_Channel</sourceName>\n"
+            + "        <destinationName>Data_Fields_Filtered_Radiance_for_Synthetic_LW_Channel</destinationName>\n"
+            + "        <dataType>double</dataType>\n"
+            + "        <!-- sourceAttributes>\n"
+            + "            <att name=\"_FillValue\" type=\"short\">-1</att>\n"
+            + "            <att name=\"actual_range\" type=\"shortList\">2630 10624</att>\n"
+            + "            <att name=\"add_offset\" type=\"double\">0.0</att>\n"
+            + "            <att name=\"add_offset_err\" type=\"double\">0.0</att>\n"
+            + "            <att name=\"calibrated_nt\" type=\"int\">23</att>\n"
+            + "            <att name=\"Comments\">Raw measurement for LW synthetic channel after count conversion (calibrated radiances).</att>\n"
+            + "            <att name=\"HDF_Calibration_Equation\">physical_value = scale_factor*(SDS_count - add_offset)</att>\n"
+            + "            <att name=\"long_name\">Filtered_Radiance_for_Synthetic_LW_Channel</att>\n"
+            + "            <att name=\"Missing_Output\" type=\"short\">-2</att>\n"
+            + "            <att name=\"Num_Fill\" type=\"int\">0</att>\n"
+            + "            <att name=\"Num_Missing_Output\" type=\"int\">0</att>\n"
+            + "            <att name=\"Num_Valid\" type=\"int\">58344</att>\n"
+            + "            <att name=\"Physical_Range\" type=\"doubleList\">0.0 240.0</att>\n"
+            + "            <att name=\"QA_SDS\">N/A</att>\n"
+            + "            <att name=\"scale_factor\" type=\"double\">0.01</att>\n"
+            + "            <att name=\"scale_factor_err\" type=\"double\">0.0</att>\n"
+            + "            <att name=\"units\">W m-2 sr-1</att>\n"
+            + "            <att name=\"valid_range\" type=\"shortList\">0 24000</att>\n"
+            + "        </sourceAttributes -->\n"
+            + "        <addAttributes>\n"
+            + "            <att name=\"_FillValue\" type=\"ushort\">65535</att>\n"
+            + "            <att name=\"actual_range\" type=\"doubleList\">2630.0 10624.0</att>\n"
+            + "            <att name=\"colorBarMaximum\" type=\"double\">120.0</att>\n"
+            + "            <att name=\"colorBarMinimum\" type=\"double\">20.0</att>\n"
+            + "            <att name=\"ioos_category\">Unknown</att>\n"
+            + "            <att name=\"QA_SDS\">null</att>\n"
+            + "        </addAttributes>\n"
+            + "    </dataVariable>\n"
+            + "    <dataVariable>\n"
+            + "        <sourceName>Data_Fields/Unfiltered_SW_radiance</sourceName>\n"
+            + "        <destinationName>Data_Fields_Unfiltered_SW_radiance</destinationName>\n"
+            + "        <dataType>double</dataType>\n"
+            + "        <!-- sourceAttributes>\n"
+            + "            <att name=\"_FillValue\" type=\"short\">-1</att>\n"
+            + "            <att name=\"actual_range\" type=\"shortList\">0 29009</att>\n"
+            + "            <att name=\"add_offset\" type=\"double\">0.0</att>\n"
+            + "            <att name=\"add_offset_err\" type=\"double\">0.0</att>\n"
+            + "            <att name=\"calibrated_nt\" type=\"int\">23</att>\n"
+            + "            <att name=\"Comments\">Correction for underestimation at the shortest wavelengths, domain where the instrument response diminishes.</att>\n"
+            + "            <att name=\"HDF_Calibration_Equation\">physical_value = scale_factor*(SDS_count - add_offset)</att>\n"
+            + "            <att name=\"long_name\">Unfiltered_SW_radiance</att>\n"
+            + "            <att name=\"Missing_Output\" type=\"short\">-2</att>\n"
+            + "            <att name=\"Num_Fill\" type=\"int\">2</att>\n"
+            + "            <att name=\"Num_Missing_Output\" type=\"int\">529</att>\n"
+            + "            <att name=\"Num_Valid\" type=\"int\">57813</att>\n"
+            + "            <att name=\"Physical_Range\" type=\"doubleList\">0.0 425.0</att>\n"
+            + "            <att name=\"QA_SDS\">N/A</att>\n"
+            + "            <att name=\"scale_factor\" type=\"double\">0.01</att>\n"
+            + "            <att name=\"scale_factor_err\" type=\"double\">0.0</att>\n"
+            + "            <att name=\"units\">W m-2 sr-1</att>\n"
+            + "            <att name=\"valid_range\" type=\"shortList\">0 -23036</att>\n"
+            + "        </sourceAttributes -->\n"
+            + "        <addAttributes>\n"
+            + "            <att name=\"_FillValue\" type=\"ushort\">65535</att>\n"
+            + "            <att name=\"actual_range\" type=\"doubleList\">0.0 29009.0</att>\n"
+            + "            <att name=\"colorBarMaximum\" type=\"double\">300.0</att>\n"
+            + "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n"
+            + "            <att name=\"ioos_category\">Unknown</att>\n"
+            + "            <att name=\"QA_SDS\">null</att>\n"
+            + "        </addAttributes>\n"
+            + "    </dataVariable>\n"
+            + "    <dataVariable>\n"
+            + "        <sourceName>Data_Fields/Unfiltered_LW_radiance</sourceName>\n"
+            + "        <destinationName>Data_Fields_Unfiltered_LW_radiance</destinationName>\n"
+            + "        <dataType>double</dataType>\n"
+            + "        <!-- sourceAttributes>\n"
+            + "            <att name=\"_FillValue\" type=\"short\">-1</att>\n"
+            + "            <att name=\"actual_range\" type=\"shortList\">2628 10623</att>\n"
+            + "            <att name=\"add_offset\" type=\"double\">0.0</att>\n"
+            + "            <att name=\"add_offset_err\" type=\"double\">0.0</att>\n"
+            + "            <att name=\"calibrated_nt\" type=\"int\">23</att>\n"
+            + "            <att name=\"Comments\">Subtraction of the SW unfiltered radiance from the Total unfiltered radiance. SW unfiltered radiance is weighted by coefficient A.</att>\n"
+            + "            <att name=\"HDF_Calibration_Equation\">physical_value = scale_factor*(SDS_count - add_offset)</att>\n"
+            + "            <att name=\"long_name\">Unfiltered_LW_radiance</att>\n"
+            + "            <att name=\"Missing_Output\" type=\"short\">-2</att>\n"
+            + "            <att name=\"Num_Fill\" type=\"int\">2</att>\n"
+            + "            <att name=\"Num_Missing_Output\" type=\"int\">529</att>\n"
+            + "            <att name=\"Num_Valid\" type=\"int\">57813</att>\n"
+            + "            <att name=\"Physical_Range\" type=\"doubleList\">0.0 120.0</att>\n"
+            + "            <att name=\"QA_SDS\">N/A</att>\n"
+            + "            <att name=\"scale_factor\" type=\"double\">0.01</att>\n"
+            + "            <att name=\"scale_factor_err\" type=\"double\">0.0</att>\n"
+            + "            <att name=\"units\">W m-2 sr-1</att>\n"
+            + "            <att name=\"valid_range\" type=\"shortList\">0 12000</att>\n"
+            + "        </sourceAttributes -->\n"
+            + "        <addAttributes>\n"
+            + "            <att name=\"_FillValue\" type=\"ushort\">65535</att>\n"
+            + "            <att name=\"actual_range\" type=\"doubleList\">2628.0 10623.0</att>\n"
+            + "            <att name=\"colorBarMaximum\" type=\"double\">120.0</att>\n"
+            + "            <att name=\"colorBarMinimum\" type=\"double\">20.0</att>\n"
+            + "            <att name=\"ioos_category\">Unknown</att>\n"
+            + "            <att name=\"QA_SDS\">null</att>\n"
+            + "        </addAttributes>\n"
+            + "    </dataVariable>\n"
+            + "    <dataVariable>\n"
+            + "        <sourceName>Data_Fields/QF_RD_Vis</sourceName>\n"
+            + "        <destinationName>Data_Fields_QF_RD_Vis</destinationName>\n"
+            + "        <dataType>ushort</dataType>\n"
+            + "        <!-- sourceAttributes>\n"
+            + "            <att name=\"_FillValue\" type=\"short\">-1</att>\n"
+            + "            <att name=\"actual_range\" type=\"shortList\">0 -20480</att>\n"
+            + "            <att name=\"add_offset\" type=\"double\">0.0</att>\n"
+            + "            <att name=\"add_offset_err\" type=\"double\">0.0</att>\n"
+            + "            <att name=\"calibrated_nt\" type=\"int\">23</att>\n"
+            + "            <att name=\"Comments\">Quality flag for samples radiances of channel 1. 16-bits array (0=good, 1=bad). #0:TBD ... #15:TBD</att>\n"
+            + "            <att name=\"HDF_Calibration_Equation\">physical_value = scale_factor*(SDS_count - add_offset)</att>\n"
+            + "            <att name=\"long_name\">QF_RD_Vis</att>\n"
+            + "            <att name=\"Missing_Output\" type=\"short\">-2</att>\n"
+            + "            <att name=\"Num_Fill\" type=\"int\">0</att>\n"
+            + "            <att name=\"Num_Missing_Output\" type=\"int\">0</att>\n"
+            + "            <att name=\"Num_Valid\" type=\"int\">58344</att>\n"
+            + "            <att name=\"QA_SDS\">N/A</att>\n"
+            + "            <att name=\"scale_factor\" type=\"double\">1.0</att>\n"
+            + "            <att name=\"scale_factor_err\" type=\"double\">0.0</att>\n"
+            + "            <att name=\"units\">N/A</att>\n"
+            + "        </sourceAttributes -->\n"
+            + "        <addAttributes>\n"
+            + "            <att name=\"_FillValue\" type=\"ushort\">65535</att>\n"
+            + "            <att name=\"add_offset\">null</att>\n"
+            + "            <att name=\"add_offset_err\">null</att>\n"
+            + "            <att name=\"colorBarMaximum\" type=\"double\">0.0</att>\n"
+            + "            <att name=\"colorBarMinimum\" type=\"double\">-20000.0</att>\n"
+            + "            <att name=\"ioos_category\">Unknown</att>\n"
+            + "            <att name=\"QA_SDS\">null</att>\n"
+            + "            <att name=\"scale_factor\">null</att>\n"
+            + "            <att name=\"scale_factor_err\">null</att>\n"
+            + "            <att name=\"units\">null</att>\n"
+            + "        </addAttributes>\n"
+            + "    </dataVariable>\n"
+            + "    <dataVariable>\n"
+            + "        <sourceName>Data_Fields/QF_RD_SW</sourceName>\n"
+            + "        <destinationName>Data_Fields_QF_RD_SW</destinationName>\n"
+            + "        <dataType>ushort</dataType>\n"
+            + "        <!-- sourceAttributes>\n"
+            + "            <att name=\"_FillValue\" type=\"short\">-1</att>\n"
+            + "            <att name=\"actual_range\" type=\"shortList\">0 12288</att>\n"
+            + "            <att name=\"add_offset\" type=\"double\">0.0</att>\n"
+            + "            <att name=\"add_offset_err\" type=\"double\">0.0</att>\n"
+            + "            <att name=\"calibrated_nt\" type=\"int\">23</att>\n"
+            + "            <att name=\"Comments\">Quality flag for samples radiances of channel 2. 16-bits array (0=good, 1=bad). #0:TBD ... #15:TBD</att>\n"
+            + "            <att name=\"HDF_Calibration_Equation\">physical_value = scale_factor*(SDS_count - add_offset)</att>\n"
+            + "            <att name=\"long_name\">QF_RD_SW</att>\n"
+            + "            <att name=\"Missing_Output\" type=\"short\">-2</att>\n"
+            + "            <att name=\"Num_Fill\" type=\"int\">0</att>\n"
+            + "            <att name=\"Num_Missing_Output\" type=\"int\">0</att>\n"
+            + "            <att name=\"Num_Valid\" type=\"int\">58344</att>\n"
+            + "            <att name=\"QA_SDS\">N/A</att>\n"
+            + "            <att name=\"scale_factor\" type=\"double\">1.0</att>\n"
+            + "            <att name=\"scale_factor_err\" type=\"double\">0.0</att>\n"
+            + "            <att name=\"units\">N/A</att>\n"
+            + "        </sourceAttributes -->\n"
+            + "        <addAttributes>\n"
+            + "            <att name=\"_FillValue\" type=\"ushort\">65535</att>\n"
+            + "            <att name=\"add_offset\">null</att>\n"
+            + "            <att name=\"add_offset_err\">null</att>\n"
+            + "            <att name=\"colorBarMaximum\" type=\"double\">15000.0</att>\n"
+            + "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n"
+            + "            <att name=\"ioos_category\">Unknown</att>\n"
+            + "            <att name=\"QA_SDS\">null</att>\n"
+            + "            <att name=\"scale_factor\">null</att>\n"
+            + "            <att name=\"scale_factor_err\">null</att>\n"
+            + "            <att name=\"units\">null</att>\n"
+            + "        </addAttributes>\n"
+            + "    </dataVariable>\n"
+            + "    <dataVariable>\n"
+            + "        <sourceName>Data_Fields/QF_RD_Total</sourceName>\n"
+            + "        <destinationName>Data_Fields_QF_RD_Total</destinationName>\n"
+            + "        <dataType>ushort</dataType>\n"
+            + "        <!-- sourceAttributes>\n"
+            + "            <att name=\"_FillValue\" type=\"short\">-1</att>\n"
+            + "            <att name=\"actual_range\" type=\"shortList\">0 12296</att>\n"
+            + "            <att name=\"add_offset\" type=\"double\">0.0</att>\n"
+            + "            <att name=\"add_offset_err\" type=\"double\">0.0</att>\n"
+            + "            <att name=\"calibrated_nt\" type=\"int\">23</att>\n"
+            + "            <att name=\"Comments\">Quality flag for samples radiances of channel 3. 16-bits array (0=good, 1=bad). #0:TBD ... #15:TBD</att>\n"
+            + "            <att name=\"HDF_Calibration_Equation\">physical_value = scale_factor*(SDS_count - add_offset)</att>\n"
+            + "            <att name=\"long_name\">QF_RD_Total</att>\n"
+            + "            <att name=\"Missing_Output\" type=\"short\">-2</att>\n"
+            + "            <att name=\"Num_Fill\" type=\"int\">0</att>\n"
+            + "            <att name=\"Num_Missing_Output\" type=\"int\">0</att>\n"
+            + "            <att name=\"Num_Valid\" type=\"int\">58344</att>\n"
+            + "            <att name=\"QA_SDS\">N/A</att>\n"
+            + "            <att name=\"scale_factor\" type=\"double\">1.0</att>\n"
+            + "            <att name=\"scale_factor_err\" type=\"double\">0.0</att>\n"
+            + "            <att name=\"units\">N/A</att>\n"
+            + "        </sourceAttributes -->\n"
+            + "        <addAttributes>\n"
+            + "            <att name=\"_FillValue\" type=\"ushort\">65535</att>\n"
+            + "            <att name=\"add_offset\">null</att>\n"
+            + "            <att name=\"add_offset_err\">null</att>\n"
+            + "            <att name=\"colorBarMaximum\" type=\"double\">15000.0</att>\n"
+            + "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n"
+            + "            <att name=\"ioos_category\">Unknown</att>\n"
+            + "            <att name=\"QA_SDS\">null</att>\n"
+            + "            <att name=\"scale_factor\">null</att>\n"
+            + "            <att name=\"scale_factor_err\">null</att>\n"
+            + "            <att name=\"units\">null</att>\n"
+            + "        </addAttributes>\n"
+            + "    </dataVariable>\n"
+            + "    <dataVariable>\n"
+            + "        <sourceName>Data_Fields/QF_RD_IR</sourceName>\n"
+            + "        <destinationName>Data_Fields_QF_RD_IR</destinationName>\n"
+            + "        <dataType>ushort</dataType>\n"
+            + "        <!-- sourceAttributes>\n"
+            + "            <att name=\"_FillValue\" type=\"short\">-1</att>\n"
+            + "            <att name=\"actual_range\" type=\"shortList\">0 -19456</att>\n"
+            + "            <att name=\"add_offset\" type=\"double\">0.0</att>\n"
+            + "            <att name=\"add_offset_err\" type=\"double\">0.0</att>\n"
+            + "            <att name=\"calibrated_nt\" type=\"int\">23</att>\n"
+            + "            <att name=\"Comments\">Quality flag for samples radiances of channel 4. 16-bits array (0=good, 1=bad). #0:TBD ... #15:TBD</att>\n"
+            + "            <att name=\"HDF_Calibration_Equation\">physical_value = scale_factor*(SDS_count - add_offset)</att>\n"
+            + "            <att name=\"long_name\">QF_RD_IR</att>\n"
+            + "            <att name=\"Missing_Output\" type=\"short\">-2</att>\n"
+            + "            <att name=\"Num_Fill\" type=\"int\">0</att>\n"
+            + "            <att name=\"Num_Missing_Output\" type=\"int\">0</att>\n"
+            + "            <att name=\"Num_Valid\" type=\"int\">58344</att>\n"
+            + "            <att name=\"QA_SDS\">N/A</att>\n"
+            + "            <att name=\"scale_factor\" type=\"double\">1.0</att>\n"
+            + "            <att name=\"scale_factor_err\" type=\"double\">0.0</att>\n"
+            + "            <att name=\"units\">N/A</att>\n"
+            + "        </sourceAttributes -->\n"
+            + "        <addAttributes>\n"
+            + "            <att name=\"_FillValue\" type=\"ushort\">65535</att>\n"
+            + "            <att name=\"add_offset\">null</att>\n"
+            + "            <att name=\"add_offset_err\">null</att>\n"
+            + "            <att name=\"colorBarMaximum\" type=\"double\">0.0</att>\n"
+            + "            <att name=\"colorBarMinimum\" type=\"double\">-15000.0</att>\n"
+            + "            <att name=\"ioos_category\">Unknown</att>\n"
+            + "            <att name=\"QA_SDS\">null</att>\n"
+            + "            <att name=\"scale_factor\">null</att>\n"
+            + "            <att name=\"scale_factor_err\">null</att>\n"
+            + "            <att name=\"units\">null</att>\n"
+            + "        </addAttributes>\n"
+            + "    </dataVariable>\n"
+            + "    <dataVariable>\n"
+            + "        <sourceName>Data_Fields/QF_RD_LW_Synthetic</sourceName>\n"
+            + "        <destinationName>Data_Fields_QF_RD_LW_Synthetic</destinationName>\n"
+            + "        <dataType>ushort</dataType>\n"
+            + "        <!-- sourceAttributes>\n"
+            + "            <att name=\"_FillValue\" type=\"short\">-1</att>\n"
+            + "            <att name=\"actual_range\" type=\"shortList\">0 12296</att>\n"
+            + "            <att name=\"add_offset\" type=\"double\">0.0</att>\n"
+            + "            <att name=\"add_offset_err\" type=\"double\">0.0</att>\n"
+            + "            <att name=\"calibrated_nt\" type=\"int\">23</att>\n"
+            + "            <att name=\"Comments\">Quality flag for samples radiances of LW synthetic channel. 16-bits array (0=good, 1=bad). #0:TBD ... #15:TBD</att>\n"
+            + "            <att name=\"HDF_Calibration_Equation\">physical_value = scale_factor*(SDS_count - add_offset)</att>\n"
+            + "            <att name=\"long_name\">QF_RD_LW_Synthetic</att>\n"
+            + "            <att name=\"Missing_Output\" type=\"short\">-2</att>\n"
+            + "            <att name=\"Num_Fill\" type=\"int\">0</att>\n"
+            + "            <att name=\"Num_Missing_Output\" type=\"int\">0</att>\n"
+            + "            <att name=\"Num_Valid\" type=\"int\">58344</att>\n"
+            + "            <att name=\"QA_SDS\">N/A</att>\n"
+            + "            <att name=\"scale_factor\" type=\"double\">1.0</att>\n"
+            + "            <att name=\"scale_factor_err\" type=\"double\">0.0</att>\n"
+            + "            <att name=\"units\">N/A</att>\n"
+            + "        </sourceAttributes -->\n"
+            + "        <addAttributes>\n"
+            + "            <att name=\"_FillValue\" type=\"ushort\">65535</att>\n"
+            + "            <att name=\"add_offset\">null</att>\n"
+            + "            <att name=\"add_offset_err\">null</att>\n"
+            + "            <att name=\"colorBarMaximum\" type=\"double\">15000.0</att>\n"
+            + "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n"
+            + "            <att name=\"ioos_category\">Unknown</att>\n"
+            + "            <att name=\"QA_SDS\">null</att>\n"
+            + "            <att name=\"scale_factor\">null</att>\n"
+            + "            <att name=\"scale_factor_err\">null</att>\n"
+            + "            <att name=\"units\">null</att>\n"
+            + "        </addAttributes>\n"
+            + "    </dataVariable>\n"
+            + "    <dataVariable>\n"
+            + "        <sourceName>Data_Fields/Geotype</sourceName>\n"
+            + "        <destinationName>Data_Fields_Geotype</destinationName>\n"
+            + "        <dataType>ubyte</dataType>\n"
+            + "        <!-- sourceAttributes>\n"
+            + "            <att name=\"_FillValue\" type=\"byte\">-1</att>\n"
+            + "            <att name=\"actual_range\" type=\"byteList\">1 18</att>\n"
+            + "            <att name=\"add_offset\" type=\"double\">0.0</att>\n"
+            + "            <att name=\"add_offset_err\" type=\"double\">0.0</att>\n"
+            + "            <att name=\"calibrated_nt\" type=\"int\">21</att>\n"
+            + "            <att name=\"Comments\">Surface GeoType</att>\n"
+            + "            <att name=\"HDF_Calibration_Equation\">physical_value = scale_factor*(SDS_count - add_offset)</att>\n"
+            + "            <att name=\"long_name\">Geotype</att>\n"
+            + "            <att name=\"Missing_Output\" type=\"byte\">-2</att>\n"
+            + "            <att name=\"Num_Fill\" type=\"int\">2</att>\n"
+            + "            <att name=\"Num_Missing_Output\" type=\"int\">0</att>\n"
+            + "            <att name=\"Num_Valid\" type=\"int\">58342</att>\n"
+            + "            <att name=\"Physical_Range\" type=\"doubleList\">0.0 20.0</att>\n"
+            + "            <att name=\"QA_SDS\">N/A</att>\n"
+            + "            <att name=\"scale_factor\" type=\"double\">1.0</att>\n"
+            + "            <att name=\"scale_factor_err\" type=\"double\">0.0</att>\n"
+            + "            <att name=\"units\">N/A</att>\n"
+            + "            <att name=\"valid_range\" type=\"byteList\">0 20</att>\n"
+            + "        </sourceAttributes -->\n"
+            + "        <addAttributes>\n"
+            + "            <att name=\"_FillValue\" type=\"ubyte\">255</att>\n"
+            + "            <att name=\"add_offset\">null</att>\n"
+            + "            <att name=\"add_offset_err\">null</att>\n"
+            + "            <att name=\"colorBarMaximum\" type=\"double\">20.0</att>\n"
+            + "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n"
+            + "            <att name=\"ioos_category\">Unknown</att>\n"
+            + "            <att name=\"QA_SDS\">null</att>\n"
+            + "            <att name=\"scale_factor\">null</att>\n"
+            + "            <att name=\"scale_factor_err\">null</att>\n"
+            + "            <att name=\"units\">null</att>\n"
+            + "        </addAttributes>\n"
+            + "    </dataVariable>\n"
+            + "    <dataVariable>\n"
+            + "        <sourceName>Data_Fields/SEL_TOA_SW_Flux</sourceName>\n"
+            + "        <destinationName>Data_Fields_SEL_TOA_SW_Flux</destinationName>\n"
+            + "        <dataType>float</dataType>\n"
+            + "        <!-- sourceAttributes>\n"
+            + "            <att name=\"_FillValue\" type=\"float\">99999.0</att>\n"
+            + "            <att name=\"actual_range\" type=\"floatList\">0.0 32767.0</att>\n"
+            + "            <att name=\"add_offset\" type=\"double\">0.0</att>\n"
+            + "            <att name=\"add_offset_err\" type=\"double\">0.0</att>\n"
+            + "            <att name=\"calibrated_nt\" type=\"int\">5</att>\n"
+            + "            <att name=\"Comments\">The SW unfiltered radiance is converted into flux, using the view and sun angles, the scene identification and the SW Erbe bi-directional function (Suttles et al, 1988). A linear interpolation of BRDF between angles is used in order to remove the discrete nature of the angular model TOA : top of atmosphere (30km altitude as in Erbe).</att>\n"
+            + "            <att name=\"HDF_Calibration_Equation\">physical_value = scale_factor*(SDS_count - add_offset)</att>\n"
+            + "            <att name=\"L2-FLUX_failed_value\" type=\"float\">32767.0</att>\n"
+            + "            <att name=\"long_name\">SEL_TOA_SW_Flux</att>\n"
+            + "            <att name=\"Missing_Output\" type=\"float\">999999.0</att>\n"
+            + "            <att name=\"Num_Fill\" type=\"int\">2</att>\n"
+            + "            <att name=\"Num_Missing_Output\" type=\"int\">529</att>\n"
+            + "            <att name=\"Num_Valid\" type=\"int\">57813</att>\n"
+            + "            <att name=\"Physical_Range\" type=\"doubleList\">0.0 1000.0</att>\n"
+            + "            <att name=\"QA_SDS\">N/A</att>\n"
+            + "            <att name=\"scale_factor\" type=\"double\">1.0</att>\n"
+            + "            <att name=\"scale_factor_err\" type=\"double\">0.0</att>\n"
+            + "            <att name=\"units\">W m-2</att>\n"
+            + "            <att name=\"valid_range\" type=\"floatList\">0.0 1000.0</att>\n"
+            + "        </sourceAttributes -->\n"
+            + "        <addAttributes>\n"
+            + "            <att name=\"add_offset\">null</att>\n"
+            + "            <att name=\"add_offset_err\">null</att>\n"
+            + "            <att name=\"colorBarMaximum\" type=\"double\">40000.0</att>\n"
+            + "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n"
+            + "            <att name=\"ioos_category\">Unknown</att>\n"
+            + "            <att name=\"L2-FLUX_failed_value\">null</att>\n"
+            + "            <att name=\"L2_FLUX_failed_value\" type=\"float\">32767.0</att>\n"
+            + "            <att name=\"QA_SDS\">null</att>\n"
+            + "            <att name=\"scale_factor\">null</att>\n"
+            + "            <att name=\"scale_factor_err\">null</att>\n"
+            + "        </addAttributes>\n"
+            + "    </dataVariable>\n";
     Test.ensureEqual(
-        results,
+        results.length() > expected.length() ? results.substring(0, expected.length()) : results,
         expected,
         "results.length="
             + results.length()
@@ -14053,15 +15046,15 @@ class EDDGridFromNcFilesTests {
             + expected.length()
             + "\nresults=\n"
             + results);
-
     // ensure it is ready-to-use by making a dataset from it
-    String tDatasetID = "erdQSwind1day_52db_1ed3_22ce";
     EDD.deleteCachedDatasetInfo(tDatasetID);
     EDD edd = EDDGridFromNcFiles.oneFromXmlFragment(null, results);
     Test.ensureEqual(edd.datasetID(), tDatasetID, "");
-    Test.ensureEqual(edd.title(), "Wind, QuikSCAT, Global, Science Quality (1 Day Composite)", "");
+    Test.ensureEqual(edd.title(), "Data from a local source.", "");
     Test.ensureEqual(
-        String2.toCSSVString(edd.dataVariableDestinationNames()), "x_wind, y_wind, mod", "");
+        String2.toCSSVString(edd.dataVariableDestinationNames()),
+        "Geolocation_Fields_Colatitude_for_radiance_at_surface, Geolocation_Fields_Longitude_for_radiance_at_surface, Geolocation_Fields_Colatitude_for_radiance_at_TOA, Geolocation_Fields_Longitude_for_radiance_at_TOA, Data_Fields_Along_Track_diagonal_dimension, Data_Fields_Across_Track_diagonal_dimension, Data_Fields_Pixel_Orientation, Data_Fields_Viewing_Zenith_Angle, Data_Fields_Viewing_Azimuth_Angle, Data_Fields_Solar_Zenith_Angle, Data_Fields_Relative_Azimuth_Angle, Data_Fields_Filtered_Radiance_for_Visible_Channel, Data_Fields_Filtered_Radiance_for_Solar_Channel, Data_Fields_Filtered_Radiance_for_Total_Channel, Data_Fields_Filtered_Radiance_for_Infrared_Channel, Data_Fields_Filtered_Radiance_for_Synthetic_LW_Channel, Data_Fields_Unfiltered_SW_radiance, Data_Fields_Unfiltered_LW_radiance, Data_Fields_QF_RD_Vis, Data_Fields_QF_RD_SW, Data_Fields_QF_RD_Total, Data_Fields_QF_RD_IR, Data_Fields_QF_RD_LW_Synthetic, Data_Fields_Geotype, Data_Fields_SEL_TOA_SW_Flux, Data_Fields_SEL_TOA_LW_Flux, Data_Fields_SEL_Scene_Identification, Data_Fields_SEL_Albedo, Data_Fields_SANN_TOA_SW_Flux_1, Data_Fields_SANN_TOA_LW_Flux_1, Data_Fields_SANN_Albedo_1, Data_Fields_SANN_TOA_SW_Flux_2, Data_Fields_SANN_TOA_LW_Flux_2, Data_Fields_SANN_Albedo_2, Data_Fields_SANN_SW_Scene_Identification, Data_Fields_SANN_LW_Scene_Identification, Data_Fields_Quality_Index",
+        "");
 
     // String2.log("\nEDDGridFromNcFiles.testGenerateDatasetsXml passed the test.");
   }
@@ -14773,8 +15766,9 @@ class EDDGridFromNcFilesTests {
       expected =
           "There was a (temporary?) problem.  Wait a minute, then try again.  (In a browser, click the Reload button.)\n"
               + "(Cause: java.io.FileNotFoundException: "
-              + dataDir
+              + File2.forwardSlashDir(dataDir)
               + "erdQSwind1day_20080101_03.nc.gz";
+      results = File2.forwardSlashDir(results);
       Test.ensureEqual(results.substring(0, expected.length()), expected, "\nresults=\n" + results);
 
     } finally {
@@ -14853,7 +15847,7 @@ class EDDGridFromNcFilesTests {
    * @throws Throwable if trouble
    */
   @org.junit.jupiter.api.Test
-  @TagIncompleteTest
+  @TagMissingDataset
   void testGenerateDatasetsXmlWithRemoteHyraxFiles() throws Throwable {
     // String2.log("\n***
     // EDDGridFromNcFiles.testGenerateDatasetsXmlWithRemoteHyraxFiles()\n");
@@ -15419,7 +16413,7 @@ class EDDGridFromNcFilesTests {
    * @throws Throwable if trouble
    */
   @org.junit.jupiter.api.Test
-  @TagMissingDataset // Cannot load from object array because "this.sourceAxisValues" is null
+  @TagMissingDataset
   void testGroups() throws Throwable {
     // String2.log("\n*** EDDGridFromNcFiles.testGroups()\n");
     // testVerboseOn();
@@ -15436,72 +16430,6 @@ class EDDGridFromNcFilesTests {
     // String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 10);
     // String tDir = EDStatic.config.fullTestCacheDirectory;
     // String testName = "EDDGridFromNcFiles_groups";
-  }
-
-  /** This tests that a dataset can be quick restarted, */
-  @org.junit.jupiter.api.Test
-  @TagLocalERDDAP
-  void testQuickRestart2() throws Throwable {
-    String2.log("\n*** EDDGridFromNcFiles.testQuickRestart2\n");
-    String datasetID = "testGriddedNcFiles";
-    String fullName =
-        Path.of(
-                EDDGridFromNcFilesTests.class
-                    .getResource("/largeFiles/erdQSwind1day/subfolder/erdQSwind1day_20080108_10.nc")
-                    .toURI())
-            .toString();
-    long timestamp = File2.getLastModified(fullName); // orig 2009-01-07T11:55 local
-    try {
-      // restart local erddap
-      // String2.pressEnterToContinue(
-      // "Restart the local erddap with quickRestart=true and with datasetID=" +
-      // datasetID + " .\n" +
-      // "Wait until all datasets are loaded.");
-      Math2.sleep(30000); // allow tasks to finish
-
-      // change the file's timestamp
-      File2.setLastModified(fullName, timestamp - 60000); // 1 minute earlier
-      Math2.sleep(1000);
-
-      // request info from that dataset
-      // .csv with data from one file
-      String2.log("\n*** .nc test read from one file\n");
-      String userDapQuery = "y_wind[(1.1999664e9)][0][(36.5)][(230):3:(238)]";
-      String results =
-          SSR.getUrlResponseStringUnchanged(
-              EDStatic.erddapUrl + "/griddap/" + datasetID + ".csv?" + userDapQuery);
-      String expected =
-          // verified with
-          // https://coastwatch.pfeg.noaa.gov/erddap/griddap/erdQSwind1day.csv?y_wind[(1.1999664e9)][0][(36.5)][(230):3:(238)]
-          "time,altitude,latitude,longitude,y_wind\n"
-              + "UTC,m,degrees_north,degrees_east,m s-1\n"
-              + "2008-01-10T12:00:00Z,0.0,36.625,230.125,3.555585\n"
-              + "2008-01-10T12:00:00Z,0.0,36.625,230.875,2.82175\n"
-              + "2008-01-10T12:00:00Z,0.0,36.625,231.625,4.539375\n"
-              + "2008-01-10T12:00:00Z,0.0,36.625,232.375,4.975015\n"
-              + "2008-01-10T12:00:00Z,0.0,36.625,233.125,5.643055\n"
-              + "2008-01-10T12:00:00Z,0.0,36.625,233.875,2.72394\n"
-              + "2008-01-10T12:00:00Z,0.0,36.625,234.625,1.39762\n"
-              + "2008-01-10T12:00:00Z,0.0,36.625,235.375,2.10711\n"
-              + "2008-01-10T12:00:00Z,0.0,36.625,236.125,3.019165\n"
-              + "2008-01-10T12:00:00Z,0.0,36.625,236.875,3.551915\n"
-              + "2008-01-10T12:00:00Z,0.0,36.625,237.625,NaN\n"; // test of NaN
-      Test.ensureEqual(results, expected, "\nresults=\n" + results);
-
-      // request status.html
-      SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + "/status.html");
-      // Math2.sleep(1000);
-      // Test.displayInBrowser("file://" + EDStatic.config.bigParentDirectory +
-      // "logs/log.txt");
-
-      // String2.pressEnterToContinue(
-      // "Look at log.txt to see if update was run and successfully " +
-      // "noticed the changed file.");
-
-    } finally {
-      // change timestamp back to original
-      File2.setLastModified(fullName, timestamp);
-    }
   }
 
   /**

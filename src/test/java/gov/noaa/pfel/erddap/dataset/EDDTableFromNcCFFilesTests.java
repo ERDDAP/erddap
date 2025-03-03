@@ -13,7 +13,6 @@ import java.nio.file.Path;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
-import tags.TagIncompleteTest;
 import tags.TagMissingFile;
 import testDataset.EDDTestDataset;
 import testDataset.Initialization;
@@ -326,8 +325,6 @@ class EDDTableFromNcCFFilesTests {
    * doesn't suggest anything.
    */
   @org.junit.jupiter.api.Test
-  @TagIncompleteTest // Simple ERROR on line #1 of ind199105_ctd.nc *GLOBAL*,Conventions,"...,
-  // NCCSV-..." not found on line 1.
   void testGenerateDatasetsXml2() throws Throwable {
     // testVerboseOn();
     // debugMode = true;
@@ -351,7 +348,7 @@ class EDDTableFromNcCFFilesTests {
     String fileNameRegex = "ind199105_ctd\\.nc";
 
     String results =
-        EDDTableFromNccsvFiles.generateDatasetsXml(
+        EDDTableFromNcCFFiles.generateDatasetsXml(
                 dataDir,
                 fileNameRegex,
                 "",
@@ -471,6 +468,7 @@ class EDDTableFromNcCFFilesTests {
             + "        <att name=\"references\">World Ocean Database 2013. URL:https://data.nodc.noaa.gov/woa/WOD/DOC/wod_intro.pdf</att>\n"
             + "        <att name=\"sourceUrl\">(local files)</att>\n"
             + "        <att name=\"standard_name_vocabulary\">CF Standard Name Table v70</att>\n"
+            + "        <att name=\"subsetVariables\">country, WOD_cruise_identifier, originators_cruise_identifier, wod_unique_cast, lat, lon, time, date, GMT_time, Access_no, Project, Platform, Institute, Cast_Tow_number, Orig_Stat_Num, Bottom_Depth, Cast_Duration, Cast_Direction, High_res_pair, dataset, dbase_orig, origflagset, Temperature_row_size, Temperature_WODprofileflag, Temperature_Scale, Temperature_Instrument, Salinity_row_size, Salinity_WODprofileflag, Salinity_Scale, Salinity_Instrument, Oxygen_row_size, Oxygen_WODprofileflag, Oxygen_Instrument, Oxygen_Original_units, Pressure_row_size, Chlorophyll_row_size, Chlorophyll_WODprofileflag, Chlorophyll_Instrument, Chlorophyll_uncalibrated, Conductivit_row_size, crs, WODf, WODfp, WODfd</att>\n"
             + "        <att name=\"summary\">World Ocean Database - Multi-cast file. Data for multiple casts from the World Ocean Database</att>\n"
             + "        <att name=\"title\">World Ocean Database, Multi-cast file</att>\n"
             + "    </addAttributes>\n"
@@ -2580,14 +2578,13 @@ class EDDTableFromNcCFFilesTests {
    * @throws Throwable if trouble
    */
   @org.junit.jupiter.api.Test
-  @TagIncompleteTest // Unable to open file or file not .nc-compatible.
   void testJP14323() throws Throwable {
     // String2.log("\n****************** EDDTableFromNcCFFiles.testJP14323()
     // *****************\n");
     // testVerboseOn();
     String dir =
-        Path.of(EDDTableFromNcCFFilesTests.class.getResource("/data/nccf/ncei/").toURI())
-            .toString();
+        Path.of(EDDTableFromNcCFFilesTests.class.getResource("/data/nccf/ncei/").toURI()).toString()
+            + "/";
     String sampleName = "biology_JP14323.nc";
     String results, expected;
     Table table;
@@ -2775,7 +2772,7 @@ class EDDTableFromNcCFFilesTests {
             + "  // global attributes:\n"
             + "  :institution = \"National Oceanographic Data Center(NODC), NOAA\";\n"
             + "  :source = \"World Ocean Database\";\n"
-            + "  :references = \"World Ocean Database 2013. URL:https://data.nodc.noaa.gov/woa/WOD/DOC/wod_intro.pdf\";\n"
+            + "  :references = \"World Ocean Database 2013. URL:http://data.nodc.noaa.gov/woa/WOD/DOC/wod_intro.pdf\";\n"
             + "  :title = \"World Ocean Database - Multi-cast file\";\n"
             + "  :summary = \"Data for multiple casts from the World Ocean Database\";\n"
             + "  :id = \"biology_JP14323.nc\";\n"
@@ -2794,24 +2791,23 @@ class EDDTableFromNcCFFilesTests {
             + "  :geospatial_vertical_units = \"meters\";\n"
             + "  :creator_name = \"Ocean Climate Lab/NODC\";\n"
             + "  :creator_email = \"OCLhelp@noaa.gov\";\n"
-            + "  :creator_url = \"https://www.nodc.noaa.gov\";\n"
+            + "  :creator_url = \"http://www.nodc.noaa.gov\";\n"
             + "  :project = \"World Ocean Database\";\n"
-            + "  :acknowledgements = \"\";\n"
-            + "  :processing_level = \"\";\n"
-            + "  :keywords = \"\";\n"
-            + "  :keywords_vocabulary = \"\";\n"
+            + "  :acknowledgements = ;\n"
+            + "  :processing_level = ;\n"
+            + "  :keywords = ;\n"
+            + "  :keywords_vocabulary = ;\n"
             + "  :date_created = \"2016-05-20\";\n"
             + "  :date_modified = \"2016-05-20\";\n"
             + "  :publisher_name = \"US DOC; NESDIS; NATIONAL OCEANOGRAPHIC DATA CENTER - IN295\";\n"
-            + "  :publisher_url = \"https://www.nodc.noaa.gov\";\n"
+            + "  :publisher_url = \"http://www.nodc.noaa.gov\";\n"
             + "  :publisher_email = \"NODC.Services@noaa.gov\";\n"
-            + "  :history = \"\";\n"
-            + "  :license = \"\";\n"
+            + "  :history = ;\n"
+            + "  :license = ;\n"
             + "  :standard_name_vocabulary = \"CF-1.6\";\n"
             + "  :featureType = \"Profile\";\n"
             + "  :cdm_data_type = \"Profile\";\n"
             + "  :Conventions = \"CF-1.6\";\n"
-            + " data:\n"
             + "}\n";
     Test.ensureEqual(results, expected, "results=\n" + results);
 
@@ -2827,7 +2823,14 @@ class EDDTableFromNcCFFilesTests {
         false);
 
     results = table.dataToString(5);
-    expected = "zztop\n";
+    expected =
+        "country,WOD_cruise_identifier,wod_unique_cast,lat,lon,time,date,GMT_time,Access_no,Platform,Institute,dataset,z,z_WODflag,z_sigfig,Temperature_row_size,Temperature_WODprofileflag,Mesh_size,Type_tow,Gear_code,net_mouth_area,GMT_sample_start_time,Biology_Accno,plankton_row_size,crs,WODf,WODfp,WODfd\n"
+            + "JAPAN,JP014323,7935654,36.3,140.61667,73328.7638888359,19701008,18.333332,273,TOKIWA,IBARAKI PREFECTURAL FISHERIES EXPERIMENTAL STATION,bottle/rossette/net,0.0,0,1,1,0,333.0,VERTICAL TOW,Marutoku B Net,0.159,18.333332,273,1,-2147483647,-32767,-32767,-32767\n"
+            + "JAPAN,JP014323,7935655,36.316666,140.7,73328.78125,19701008,18.75,273,TOKIWA,IBARAKI PREFECTURAL FISHERIES EXPERIMENTAL STATION,bottle/rossette/net,0.0,0,1,1,0,333.0,VERTICAL TOW,Marutoku B Net,0.159,18.75,273,1,-2147483647,-32767,-32767,-32767\n"
+            + "JAPAN,JP014323,7935656,36.316666,140.8,73328.82361108065,19701008,19.766666,273,TOKIWA,IBARAKI PREFECTURAL FISHERIES EXPERIMENTAL STATION,bottle/rossette/net,0.0,0,1,1,0,333.0,VERTICAL TOW,Marutoku B Net,0.159,19.766666,273,1,-2147483647,-32767,-32767,-32767\n"
+            + "JAPAN,JP014323,7935657,36.333332,140.9,73328.84722214937,19701008,20.333332,273,TOKIWA,IBARAKI PREFECTURAL FISHERIES EXPERIMENTAL STATION,bottle/rossette/net,0.0,0,1,2,0,333.0,VERTICAL TOW,Marutoku B Net,0.159,20.333332,273,1,-2147483647,-32767,-32767,-32767\n"
+            + "JAPAN,JP014323,7935657,36.333332,140.9,73328.84722214937,19701008,20.333332,273,TOKIWA,IBARAKI PREFECTURAL FISHERIES EXPERIMENTAL STATION,bottle/rossette/net,100.0,0,3,2,0,333.0,VERTICAL TOW,Marutoku B Net,0.159,20.333332,273,1,-2147483647,-32767,-32767,-32767\n"
+            + "...\n";
     Test.ensureEqual(results, expected, "results=\n" + results);
 
     /*
