@@ -5,6 +5,7 @@ import com.cohort.array.StringArray;
 import com.cohort.util.Calendar2;
 import com.cohort.util.Math2;
 import com.cohort.util.String2;
+import com.google.common.collect.ImmutableList;
 import gov.noaa.pfel.erddap.dataset.EDD;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.EDV;
@@ -23,6 +24,13 @@ import gov.noaa.pfel.erddap.variable.EDVTimeStamp;
 import gov.noaa.pfel.erddap.variable.EDVTimeStampGridAxis;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
+import java.text.ParseException;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -67,7 +75,6 @@ import org.apache.sis.metadata.iso.spatial.DefaultDimension;
 import org.apache.sis.metadata.iso.spatial.DefaultGridSpatialRepresentation;
 import org.apache.sis.pending.geoapi.evolution.UnsupportedCodeList;
 import org.apache.sis.util.iso.DefaultNameFactory;
-import org.joda.time.DateTime;
 import org.opengis.metadata.Metadata;
 import org.opengis.metadata.citation.CitationDate;
 import org.opengis.metadata.citation.DateType;
@@ -179,9 +186,14 @@ public class MetadataBuilder {
     extent.setGeographicElements(
         List.of(new DefaultGeographicBoundingBox(lonMin, lonMax, latMin, latMax)));
     if (!minTime.isEmpty() && !maxTime.isEmpty()) {
-      DefaultTemporalExtent tempExtent = new DefaultTemporalExtent();
-      tempExtent.setBounds(DateTime.parse(minTime).toDate(), DateTime.parse(maxTime).toDate());
-      extent.setTemporalElements(List.of(tempExtent));
+      try {
+        DefaultTemporalExtent tempExtent = new DefaultTemporalExtent();
+        tempExtent.setBounds(parseDate(minTime), parseDate(maxTime));
+        extent.setTemporalElements(List.of(tempExtent));
+      } catch (UnsupportedOperationException | ParseException e) {
+        String2.log(
+            "Bad date in bounding extents: " + minTime + " " + maxTime + "\n" + e.getMessage());
+      }
     }
     if (!Double.isNaN(minVert) && !Double.isNaN(maxVert)) {
       extent.setVerticalElements(List.of(new DefaultVerticalExtent(minVert, maxVert, null)));
@@ -295,9 +307,19 @@ public class MetadataBuilder {
     extent.setGeographicElements(
         List.of(new DefaultGeographicBoundingBox(lonMin, lonMax, latMin, latMax)));
     if (!minTime.isEmpty() && !maxTime.isEmpty()) {
-      DefaultTemporalExtent tempExtent = new DefaultTemporalExtent();
-      tempExtent.setBounds(DateTime.parse(minTime).toDate(), DateTime.parse(maxTime).toDate());
-      extent.setTemporalElements(List.of(tempExtent));
+      try {
+        DefaultTemporalExtent tempExtent = new DefaultTemporalExtent();
+        tempExtent.setBounds(parseDate(minTime), parseDate(maxTime));
+        extent.setTemporalElements(List.of(tempExtent));
+      } catch (UnsupportedOperationException | ParseException e) {
+        String2.log(
+            "Bad date in second bounding extents: "
+                + minTime
+                + " "
+                + maxTime
+                + "\n"
+                + e.getMessage());
+      }
     }
     if (!Double.isNaN(minVert) && !Double.isNaN(maxVert)) {
       extent.setVerticalElements(List.of(new DefaultVerticalExtent(minVert, maxVert, null)));
@@ -348,7 +370,11 @@ public class MetadataBuilder {
     dates.add(new DefaultCitationDate(new Date(creationDate), DateType.CREATION));
     String dateIssued = Calendar2.tryToIsoString(attributes.getString("date_issued"));
     if (String2.isSomething(dateIssued)) {
-      dates.add(new DefaultCitationDate(DateTime.parse(dateIssued).toDate(), DateType.PUBLICATION));
+      try {
+        dates.add(new DefaultCitationDate(parseDate(dateIssued), DateType.PUBLICATION));
+      } catch (ParseException e) {
+        String2.log("Bad date in issued citation: " + dateIssued + "\n" + e.getMessage());
+      }
     }
 
     String domain = EDStatic.config.baseUrl;
@@ -827,5 +853,40 @@ public class MetadataBuilder {
       keywordsList.add(standardWords);
     }
     return keywordsList;
+  }
+
+  private static ImmutableList<DateTimeFormatter> formatters =
+      ImmutableList.of(
+          DateTimeFormatter.ISO_DATE_TIME,
+          DateTimeFormatter.ISO_INSTANT,
+          DateTimeFormatter.RFC_1123_DATE_TIME);
+
+  private static Date parseDate(String dateInput) throws ParseException {
+    Date parsedDate = null;
+    try {
+      parsedDate = Date.from(Instant.parse(dateInput));
+    } catch (DateTimeParseException e) {
+      // Do nothing, we are going to attempt a different parsing
+    }
+    for (DateTimeFormatter formatter : formatters) {
+      try {
+        parsedDate = Date.from(LocalDateTime.parse(dateInput, formatter).toInstant(ZoneOffset.UTC));
+      } catch (DateTimeParseException e) {
+        // Ignore and try the next format
+      }
+    }
+    try {
+      parsedDate =
+          Date.from(
+              LocalDate.parse(dateInput, DateTimeFormatter.ISO_DATE)
+                  .atStartOfDay()
+                  .toInstant(ZoneOffset.UTC));
+    } catch (DateTimeParseException e) {
+      // Ignore and try the next format
+    }
+    if (parsedDate == null) {
+      throw new ParseException("Unable to parse date: " + dateInput, 0);
+    }
+    return parsedDate;
   }
 }
