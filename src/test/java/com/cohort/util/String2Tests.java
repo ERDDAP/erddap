@@ -11,6 +11,10 @@ public class String2Tests {
     assertEquals(-1, results[0]);
     assertEquals(-1, results[1]);
 
+    results = String2.findUrl("https://this is definitely not valid URL! \"{><}\"");
+    assertEquals(-1, results[0]);
+    assertEquals(-1, results[1]);
+
     // check a basic whole string url
     results = String2.findUrl("http://www.example.com");
     assertEquals(0, results[0]);
