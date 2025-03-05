@@ -240,6 +240,7 @@ public class EDConfig {
   @FeatureFlag public boolean includeNcCFSubsetVariables;
   @FeatureFlag public boolean useSharedWatchService = true;
   @FeatureFlag public boolean redirectDocumentationToGitHubIo = true;
+  @FeatureFlag public boolean useSisISO19115 = false;
 
   public EDConfig(String webInfParentDirectory) throws Exception {
     fullPaletteDirectory = webInfParentDirectory + "WEB-INF/cptfiles/";
@@ -619,6 +620,7 @@ public class EDConfig {
     useSharedWatchService = getSetupEVBoolean(setup, ev, "useSharedWatchService", true);
     redirectDocumentationToGitHubIo =
         getSetupEVBoolean(setup, ev, "redirectDocumentationToGitHubIo", true);
+    useSisISO19115 = getSetupEVBoolean(setup, ev, "useSisISO19115", false);
     deploymentInfo = getSetupEVString(setup, ev, "deploymentInfo", "");
 
     // ensure images exist and get their sizes

@@ -5655,33 +5655,62 @@ class EDDGridFromDapTests {
 
     po = results.indexOf("codeListValue=\"vertical\">");
     Test.ensureTrue(po >= 0, "po=-1 results=\n" + results);
-    expected =
-        "codeListValue=\"vertical\">vertical</gmd:MD_DimensionNameTypeCode>\n"
-            + "          </gmd:dimensionName>\n"
-            + "          <gmd:dimensionSize>\n"
-            + "            <gco:Integer>40</gco:Integer>\n"
-            + "          </gmd:dimensionSize>\n"
-            + "          <gmd:resolution>\n"
-            + "            <gco:Measure uom=\"m\">137.69205128205127</gco:Measure>\n"
-            + // 2014-01-17
-            // was
-            // 137.66666666666666
-            "          </gmd:resolution>\n"
-            + "        </gmd:MD_Dimension>\n"
-            + "      </gmd:axisDimensionProperties>\n";
+    if (EDStatic.config.useSisISO19115) {
+      expected =
+          "codeListValue=\"vertical\">Vertical</msr:MD_DimensionNameTypeCode>\n"
+              + "          </msr:dimensionName>\n"
+              + "          <msr:dimensionSize>\n"
+              + "            <gco:Integer>40</gco:Integer>\n"
+              + "          </msr:dimensionSize>\n"
+              + "          <msr:resolution>\n"
+              + "            <gco:Measure uom=\"http://www.isotc211.org/2005/resources/uom/gmxUom.xml#xpointer(//*[@gml:id='m'])\">137.69205128205127</gco:Measure>\n"
+              + "          </msr:resolution>\n"
+              + "        </msr:MD_Dimension>\n";
+    } else {
+      expected =
+          "codeListValue=\"vertical\">vertical</gmd:MD_DimensionNameTypeCode>\n"
+              + "          </gmd:dimensionName>\n"
+              + "          <gmd:dimensionSize>\n"
+              + "            <gco:Integer>40</gco:Integer>\n"
+              + "          </gmd:dimensionSize>\n"
+              + "          <gmd:resolution>\n"
+              + "            <gco:Measure uom=\"m\">137.69205128205127</gco:Measure>\n"
+              + // 2014-01-17
+              // was
+              // 137.66666666666666
+              "          </gmd:resolution>\n"
+              + "        </gmd:MD_Dimension>\n"
+              + "      </gmd:axisDimensionProperties>\n";
+    }
     Test.ensureEqual(
         results.substring(po, po + expected.length()), expected, "results=\n" + results);
 
-    po = results.indexOf("<gmd:EX_VerticalExtent>");
-    Test.ensureTrue(po >= 0, "po=-1 results=\n" + results);
-    expected =
-        "<gmd:EX_VerticalExtent>\n"
-            + "              <gmd:minimumValue><gco:Real>-5375.0</gco:Real></gmd:minimumValue>\n"
-            + "              <gmd:maximumValue><gco:Real>-5.01</gco:Real></gmd:maximumValue>\n"
-            + "              <gmd:verticalCRS gco:nilReason=\"missing\"/>\n"
-            + "            </gmd:EX_VerticalExtent>";
-    Test.ensureEqual(
-        results.substring(po, po + expected.length()), expected, "results=\n" + results);
+    if (EDStatic.config.useSisISO19115) {
+      po = results.indexOf("<gex:EX_VerticalExtent>");
+      Test.ensureTrue(po >= 0, "po=-1 results=\n" + results);
+      expected =
+          "<gex:EX_VerticalExtent>\n"
+              + "              <gex:minimumValue>\n"
+              + "                <gco:Real>-5375.0</gco:Real>\n"
+              + "              </gex:minimumValue>\n"
+              + "              <gex:maximumValue>\n"
+              + "                <gco:Real>-5.01</gco:Real>\n"
+              + "              </gex:maximumValue>\n"
+              + "            </gex:EX_VerticalExtent>";
+      Test.ensureEqual(
+          results.substring(po, po + expected.length()), expected, "results=\n" + results);
+    } else {
+      po = results.indexOf("<gmd:EX_VerticalExtent>");
+      Test.ensureTrue(po >= 0, "po=-1 results=\n" + results);
+      expected =
+          "<gmd:EX_VerticalExtent>\n"
+              + "              <gmd:minimumValue><gco:Real>-5375.0</gco:Real></gmd:minimumValue>\n"
+              + "              <gmd:maximumValue><gco:Real>-5.01</gco:Real></gmd:maximumValue>\n"
+              + "              <gmd:verticalCRS gco:nilReason=\"missing\"/>\n"
+              + "            </gmd:EX_VerticalExtent>";
+      Test.ensureEqual(
+          results.substring(po, po + expected.length()), expected, "results=\n" + results);
+    }
   }
 
   /**
