@@ -21,6 +21,7 @@ import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.EDV;
 import java.io.BufferedWriter;
 import java.io.IOException;
+import java.util.List;
 
 /**
  * TableWriterHtmlTable provides a way to write a table to an HTML or XHTML Table outputStream in
@@ -389,20 +390,30 @@ public class TableWriterHtmlTable extends TableWriter {
                           + // just the fileName
                           (isLocal ? "" : externalLinkHtml)
                           + "</a>";
-                } else if (String2.isUrl(s)) {
-                  // display as a link
-                  url = s;
-                  boolean isLocal =
-                      url.startsWith(EDStatic.config.baseUrl)
-                          || (baseHttpsUrlIsSomething
-                              && url.startsWith(EDStatic.config.baseHttpsUrl));
-                  s =
-                      "<a href=\""
-                          + XML.encodeAsHTMLAttribute(url)
-                          + "\">"
-                          + encode(s)
-                          + (isLocal ? "" : externalLinkHtml)
-                          + "</a>";
+                } else if (String2.containsUrl(s)) {
+                  List<String> separatedText = String2.extractUrls(s);
+                  StringBuilder output = new StringBuilder();
+                  for (String text : separatedText) {
+                    if (String2.containsUrl(text)) {
+                      // display as a link
+                      url = text;
+                      boolean isLocal =
+                          url.startsWith(EDStatic.config.baseUrl)
+                              || (baseHttpsUrlIsSomething
+                                  && url.startsWith(EDStatic.config.baseHttpsUrl));
+
+                      output.append(
+                          "<a href=\""
+                              + XML.encodeAsHTMLAttribute(String2.addHttpsForWWW(url))
+                              + "\">"
+                              + encode(text)
+                              + (isLocal ? "" : externalLinkHtml)
+                              + "</a>");
+                    } else {
+                      output.append(encode(text));
+                    }
+                  }
+                  s = output.toString();
                 } else if (String2.isEmailAddress(s)) {
                   // to improve security, convert "@" to " at "
                   s = XML.encodeAsHTMLAttribute(String2.replaceAll(s, "@", " at "));
