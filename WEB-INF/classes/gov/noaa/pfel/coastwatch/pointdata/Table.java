@@ -5124,13 +5124,45 @@ public class Table {
                       + (needEncodingAsHtml ? XML.encodeAsHTML(s) : s)
                       + // just the fileName
                       "</a>";
-            } else if (needEncodingAsHtml && String2.isUrl(s)) {
-              s =
-                  "<a href=\""
-                      + XML.encodeAsHTMLAttribute(s)
-                      + "\">"
-                      + XML.encodeAsHTML(s)
-                      + "</a>";
+            } else if (needEncodingAsHtml && String2.containsUrl(s)) {
+              List<String> separatedText = String2.extractUrls(s);
+              StringBuilder output = new StringBuilder();
+              for (String text : separatedText) {
+                if (String2.containsUrl(text)) {
+                  output.append(
+                      "<a href=\""
+                          + XML.encodeAsHTMLAttribute(String2.addHttpsForWWW(text))
+                          + "\">"
+                          + XML.encodeAsHTML(text)
+                          + "</a>");
+                } else {
+                  output.append(XML.encodeAsHTML(text));
+                }
+              }
+              s = output.toString();
+
+              // Check for href and mouseover to see if there's something like an anchor tag which
+              // the url extraction will mangle.
+            } else if (!needEncodingAsHtml
+                && !s.contains("href=")
+                && !s.contains("onmouseover")
+                && String2.containsUrl(XML.decodeEntities(s))) {
+              s = XML.decodeEntities(s);
+              List<String> separatedText = String2.extractUrls(s);
+              StringBuilder output = new StringBuilder();
+              for (String text : separatedText) {
+                if (String2.containsUrl(text)) {
+                  output.append(
+                      "<a href=\""
+                          + XML.encodeAsHTMLAttribute(String2.addHttpsForWWW(text))
+                          + "\">"
+                          + XML.encodeAsHTML(text)
+                          + "</a>");
+                } else {
+                  output.append(XML.encodeAsHTML(text));
+                }
+              }
+              s = output.toString();
             } else if (!needEncodingAsHtml && String2.isUrl(XML.decodeEntities(s))) {
               s = XML.decodeEntities(s);
               s =

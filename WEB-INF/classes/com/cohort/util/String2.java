@@ -1232,6 +1232,199 @@ public class String2 {
     if (s.length() > 0) throw new RuntimeException(s);
   }
 
+  private static final ImmutableList<String> acceptedProtocols =
+      ImmutableList.of(
+          "https://", // host, path, query, fragment
+          "http://",
+          "https:\\\\", // host, path, query, fragment
+          "http:\\\\",
+          "www.", // host, path, query, fragment
+          "gopher://", // host, path
+          "gopher:\\\\",
+          "file://", // path
+          "file:\\\\",
+          "telnet://", // user:password@host:port /optional
+          "telnet:\\\\",
+          "smtp://", // user:password@host:port
+          "smtp:\\\\",
+          "ftp://", // username:password@host:port /path/to/file
+          "ftp:\\\\",
+          "smb://", // optional- username:password@host:port path/to/file
+          "smb:\\\\");
+  private static Pattern userPassPattern = Pattern.compile("^.{1,50}(:.{1,30})?@");
+  // domain is (chars without a slash or colon).(chars without a slash or colon)
+  private static Pattern domainPattern =
+      Pattern.compile("^[^/\\\\:\\s,?!#)]+\\.[^/\\\\:\\s,?!#)]+(?<![.,?!#)])");
+  private static Pattern portPattern = Pattern.compile("^:\\d+");
+  // Starts with a slash (that wasn't matched in previous sections), then
+  // 0 or more directories, ending in either a directory or .extension, optional / or \.
+  private static Pattern pathPattern =
+      Pattern.compile("^[/\\\\]?([a-zA-Z0-9-_]+[/\\\\])*[^/\\\\:?#,\\s]*[/\\\\]?(?<![.,?!#])");
+  private static Pattern queryPattern =
+      Pattern.compile("^\\?(\".*\"|%22.*%22|[^\\s#])*(?<![.,?!#])");
+  private static Pattern fragmentPattern = Pattern.compile("^#[^.,?!#)\\s]*");
+
+  public static int[] findUrl(String input) {
+    return findUrl(input, 0);
+  }
+
+  public static int[] findUrl(String input, int startIndex) {
+    int[] startStop = {-1, -1};
+    input = input.toLowerCase();
+
+    int curStart = startIndex;
+
+    while (curStart < input.length()) {
+      // should have one of protocol or www (could be both)
+      // (optional) protocol://|\\
+      int urlStart = Integer.MAX_VALUE;
+      int curIndex = curStart;
+      int protocolIndex = -1;
+      for (int i = 0; i < acceptedProtocols.size(); i++) {
+        int found = input.indexOf(acceptedProtocols.get(i), curStart);
+        if (found > -1 && found < urlStart) {
+          urlStart = found;
+          protocolIndex = i;
+          curIndex = urlStart + acceptedProtocols.get(i).length();
+        }
+      }
+      // No protocol, no url
+      if (protocolIndex == -1) {
+        return startStop;
+      }
+
+      // USER NAME:PASSWORD@ (some protocols)
+      // The list is structured so everything ftp and later
+      // will or might have username:password
+      if (protocolIndex >= 9) {
+        Matcher userPassMatcher = userPassPattern.matcher(input.substring(curIndex));
+        if (userPassMatcher.find()) {
+          int userPassStart = userPassMatcher.start(0);
+          int userPassEnd = userPassMatcher.end(0);
+          if (userPassStart == 0) {
+            curIndex += userPassEnd;
+          }
+        }
+      }
+
+      // This shouldn't be relevant in production but is for local testing.
+      if (input.substring(curIndex).startsWith("localhost")) {
+        curIndex += "localhost".length();
+      } else {
+        // HOST
+        // (optional) www. or (optional) subdomain.
+        // domain name.tld (top level domain)
+        Matcher domainMatcher = domainPattern.matcher(input.substring(curIndex));
+        if (domainMatcher.find()) {
+          int domainStart = domainMatcher.start(0);
+          int domainEnd = domainMatcher.end(0);
+          if (domainStart == 0) {
+            curIndex += domainEnd;
+          }
+        } else {
+          // file:\\|// do not need domain
+          if (protocolIndex != 7 && protocolIndex != 8) {
+            curStart = urlStart + acceptedProtocols.get(protocolIndex).length();
+            continue;
+          }
+        }
+      }
+
+      // (optional) :port
+      Matcher portMatcher = portPattern.matcher(input.substring(curIndex));
+      if (portMatcher.find()) {
+        int portStart = portMatcher.start(0);
+        int portEnd = portMatcher.end(0);
+        if (portStart == 0) {
+          curIndex += portEnd;
+        }
+      }
+
+      // (optional) /path/
+      Matcher pathMatcher = pathPattern.matcher(input.substring(curIndex));
+      if (pathMatcher.find()) {
+        int pathStart = pathMatcher.start(0);
+        int pathEnd = pathMatcher.end(0);
+        if (pathStart == 0) {
+          curIndex += pathEnd;
+        }
+      }
+
+      // WEB LIKE EXTENSIONS
+      // (optional) ?query
+      Matcher queryMatcher = queryPattern.matcher(input.substring(curIndex));
+      if (queryMatcher.find()) {
+        int queryStart = queryMatcher.start(0);
+        int queryEnd = queryMatcher.end(0);
+        if (queryStart == 0) {
+          curIndex += queryEnd;
+        }
+      }
+
+      // (optional) #fragment
+      Matcher fragmentMatcher = fragmentPattern.matcher(input.substring(curIndex));
+      if (fragmentMatcher.find()) {
+        int fragmentStart = fragmentMatcher.start(0);
+        int fragmentEnd = fragmentMatcher.end(0);
+        if (fragmentStart == 0) {
+          curIndex += fragmentEnd;
+        }
+      }
+      startStop[0] = urlStart;
+      startStop[1] = curIndex;
+      return startStop;
+    }
+
+    return startStop;
+  }
+
+  /**
+   * Detects a url within a string. The url does not have to be the entire string like with isUrl.
+   *
+   * @param input the text to check for urls
+   * @return if the string contains a url
+   */
+  public static boolean containsUrl(final String input) {
+    int[] results = findUrl(input);
+    return results[0] != -1 && results[1] != -1;
+  }
+
+  /**
+   * This is used when setting href attributs in anchor tags. Specifically this is to make sure
+   * browsers know this is an absolute url and not a relative url.
+   */
+  public static String addHttpsForWWW(final String input) {
+    if (input.startsWith("www.")) {
+      return "https://" + input;
+    }
+    return input;
+  }
+
+  /**
+   * Returns a list of strings, separating urls from text. This is intended to assist wrapping urls
+   * in anchor tags in several locations.
+   *
+   * @param input the text to separate
+   */
+  public static List<String> extractUrls(final String input) {
+    List<String> separatedString = new ArrayList<String>();
+    int curIndex = 0;
+    int[] results = findUrl(input);
+    while (results[1] != -1) {
+      if (results[0] > curIndex) {
+        separatedString.add(input.substring(curIndex, results[0]));
+      }
+      separatedString.add(input.substring(results[0], results[1]));
+      curIndex = results[1];
+      results = findUrl(input, curIndex);
+    }
+
+    if (curIndex < input.length()) {
+      separatedString.add(input.substring(curIndex, input.length()));
+    }
+    return separatedString;
+  }
+
   /**
    * This indicates if 'url' is probably a valid url. This is like isRemote, but returns true for
    * "file://...".
