@@ -184,7 +184,8 @@ public class EDStatic {
    * 2.23 released on 2023-02-27 <br>
    * 2.24 released on 2024-06-07 <br>
    * 2.25 first RC on 2024-10-16 released on 2024-10-31 <br>
-   * 2.25_1 RC 2024-11-07
+   * 2.25_1 RC 2024-11-07 <br>
+   * 2.26 RC on 2025-03-06 <br>
    *
    * <p>For main branch releases, this will be a floating point number with 2 decimal digits, with
    * no additional text. !!! In general, people other than the main ERDDAP developer (Bob) should
@@ -194,7 +195,7 @@ public class EDStatic {
    * anything following it. A request to http.../erddap/version will return just the number (as
    * text). A request to http.../erddap/version_string will return the full string.
    */
-  public static final String erddapVersion = "2.25_1"; // see comment above
+  public static final String erddapVersion = "2.26"; // see comment above
 
   /** This identifies the dods server/version that this mimics. */
   public static final String dapVersion = "DAP/2.0";

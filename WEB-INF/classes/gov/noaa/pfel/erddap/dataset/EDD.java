@@ -565,14 +565,26 @@ public abstract class EDD {
           case "EDDGridCopy" -> {
             return EDDGridCopy.fromXml(erddap, xmlReader);
           }
-          case "EDDGridFromAudioFiles",
-              "EDDGridFromNcFilesUnpacked",
-              "EDDGridFromNcFiles",
-              "EDDGridFromMergeIRFiles",
-              "EDDGridLonPM180",
-              "EDDGridLon0360",
-              "EDDGridSideBySide" -> {
+          case "EDDGridFromAudioFiles" -> {
             return EDDGridFromAudioFiles.fromXml(erddap, xmlReader);
+          }
+          case "EDDGridFromNcFilesUnpacked" -> {
+            return EDDGridFromNcFilesUnpacked.fromXml(erddap, xmlReader);
+          }
+          case "EDDGridFromNcFiles" -> {
+            return EDDGridFromNcFiles.fromXml(erddap, xmlReader);
+          }
+          case "EDDGridFromMergeIRFiles" -> {
+            return EDDGridFromMergeIRFiles.fromXml(erddap, xmlReader);
+          }
+          case "EDDGridLonPM180" -> {
+            return EDDGridLonPM180.fromXml(erddap, xmlReader);
+          }
+          case "EDDGridLon0360" -> {
+            return EDDGridLon0360.fromXml(erddap, xmlReader);
+          }
+          case "EDDGridSideBySide" -> {
+            return EDDGridSideBySide.fromXml(erddap, xmlReader);
           }
           case "EDDGridFromDap" -> {
             return EDDGridFromDap.fromXml(erddap, xmlReader);

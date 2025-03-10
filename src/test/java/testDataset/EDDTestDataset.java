@@ -60,9 +60,13 @@ public class EDDTestDataset {
               // Try to set this so the datasets that need to load in the background have a chance
               // and this runs again before the jetty tests to ensure all the datasets are loaded.
               + "<loadDatasetsMinMinutes>4</loadDatasetsMinMinutes>\n"
-              + "<loadDatasetsMaxMinutes>8</loadDatasetsMaxMinutes>\n"
-              + "<displayInfo>display1,display2</displayInfo>\n"
-              + "<displayAttribute>att1,att2</displayAttribute>\n");
+              + "<loadDatasetsMaxMinutes>8</loadDatasetsMaxMinutes>\n");
+
+      if (EDStatic.config.useSaxParser) {
+        datasetsXml.append(
+            "<displayInfo>display1,display2</displayInfo>\n"
+                + "<displayAttribute>att1,att2</displayAttribute>\n");
+      }
 
       datasetsXml.append(xmlFragment_test_chars());
       datasetsXml.append(xmlFragment_testZarr_compressedData());

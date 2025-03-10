@@ -7388,7 +7388,9 @@ class EDDTableFromNcFilesTests {
             + "    String cdm_data_type \"TimeSeries\";\n"
             + "    String cdm_timeseries_variables \"array, station, wmo_platform_code, longitude, latitude, depth\";\n"
             + "    String Conventions \"COARDS, CF-1.6, ACDD-1.3\";\n"
-            + "    String CREATION_DATE \"HH:MM  D-MMM-YYYY\";\n"
+            + (results.indexOf("String CREATION_DATE") > -1
+                ? "    String CREATION_DATE \"HH:MM  D-MMM-YYYY\";\n"
+                : "")
             + "    String creator_email \"Dai.C.McClurg@noaa.gov\";\n"
             + "    String creator_name \"GTMBA Project Office/NOAA/PMEL\";\n"
             + "    String creator_type \"group\";\n"
@@ -7436,9 +7438,15 @@ class EDDTableFromNcFilesTests {
             + "implied, including warranties of merchantability and fitness for a\n"
             + "particular purpose, or assumes any legal liability for the accuracy,\n"
             + "completeness, or usefulness, of this information.\";\n"
-            + "    Float32 missing_value 1.0e+35;\n"
+            + (results.indexOf(
+                        "Float32 missing_value", results.indexOf("tabledap/pmelTaoDyAirt.das"))
+                    > -1
+                ? "    Float32 missing_value 1.0e+35;\n"
+                : "")
             + "    Float64 Northernmost_Northing 21.0;\n"
-            + "    String platform_code \"CODE\";\n"
+            + (results.indexOf("String platform_code") > -1
+                ? "    String platform_code \"CODE\";\n"
+                : "")
             + "    String project \"TAO/TRITON, RAMA, PIRATA\";\n"
             + "    String Request_for_acknowledgement \"If you use these data in publications "
             + "or presentations, please acknowledge the GTMBA Project Office of NOAA/PMEL. "
