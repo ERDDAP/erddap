@@ -185,7 +185,7 @@ public class EDStatic {
    * 2.24 released on 2024-06-07 <br>
    * 2.25 first RC on 2024-10-16 released on 2024-10-31 <br>
    * 2.25_1 RC 2024-11-07 <br>
-   * 2.26 RC on 2025-03-06 <br>
+   * 2.26 RC on 2025-03-11 <br>
    *
    * <p>For main branch releases, this will be a floating point number with 2 decimal digits, with
    * no additional text. !!! In general, people other than the main ERDDAP developer (Bob) should
