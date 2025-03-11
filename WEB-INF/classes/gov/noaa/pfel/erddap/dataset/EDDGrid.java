@@ -2706,7 +2706,7 @@ public abstract class EDDGrid extends EDD {
       String maxKey = "av_" + av + "_maxValue";
       String attrKey = "av_" + av + "_attr";
       String msg2 = "#" + av + "=" + newSnapshot.get(nameKey);
-      if (!oldSnapshot.get(nameKey).equals(newSnapshot.get(nameKey))) {
+      if (!mapValueMatches(oldSnapshot, newSnapshot, nameKey)) {
         diff.append(
             MessageFormat.format(
                     EDStatic.messages.EDDChangedAxes2Different,
@@ -2716,7 +2716,7 @@ public abstract class EDDGrid extends EDD {
                     newSnapshot.get(nameKey))
                 + "\n");
       }
-      if (!oldSnapshot.get(typeKey).equals(newSnapshot.get(typeKey))) {
+      if (!mapValueMatches(oldSnapshot, newSnapshot, typeKey)) {
         diff.append(
             MessageFormat.format(
                     EDStatic.messages.EDDChangedAxes2Different,
@@ -2726,7 +2726,7 @@ public abstract class EDDGrid extends EDD {
                     newSnapshot.get(typeKey))
                 + "\n");
       }
-      if (!oldSnapshot.get(sourceSizeKey).equals(newSnapshot.get(sourceSizeKey))) {
+      if (!mapValueMatches(oldSnapshot, newSnapshot, sourceSizeKey)) {
         diff.append(
             MessageFormat.format(
                     EDStatic.messages.EDDChangedAxes2Different,
@@ -2736,7 +2736,7 @@ public abstract class EDDGrid extends EDD {
                     newSnapshot.get(sourceSizeKey))
                 + "\n");
       }
-      if (!oldSnapshot.get(minKey).equals(newSnapshot.get(minKey))) {
+      if (!mapValueMatches(oldSnapshot, newSnapshot, minKey)) {
         diff.append(
             MessageFormat.format(
                     EDStatic.messages.EDDChangedAxes2Different,
@@ -2746,7 +2746,7 @@ public abstract class EDDGrid extends EDD {
                     newSnapshot.get(minKey))
                 + "\n");
       }
-      if (!oldSnapshot.get(maxKey).equals(newSnapshot.get(maxKey))) {
+      if (!mapValueMatches(oldSnapshot, newSnapshot, maxKey)) {
         diff.append(
             MessageFormat.format(
                     EDStatic.messages.EDDChangedAxes2Different,

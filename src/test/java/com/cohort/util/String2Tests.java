@@ -39,6 +39,19 @@ public class String2Tests {
     assertEquals(0, results[0]);
     assertEquals(17, results[1]);
 
+    // check for . within a path
+    results = String2.findUrl("https://tds.hycom.org/thredds/dodsC/GLBu0.08/expt_90.9.html");
+    assertEquals(0, results[0]);
+    assertEquals(59, results[1]);
+    results = String2.findUrl("https://doi.org/10.25921/RE9P-PT57");
+    assertEquals(0, results[0]);
+    assertEquals(34, results[1]);
+
+    // check for ? within a fragment
+    results = String2.findUrl("https://data.cencoos.org/#search?type_group=all&query=hab&page=1");
+    assertEquals(0, results[0]);
+    assertEquals(64, results[1]);
+
     // check a complex url (including spaces inside quotes of query)
     results =
         String2.findUrl(
@@ -115,7 +128,7 @@ public class String2Tests {
   @Test
   void testFindUrl_complex() {
     // two urls, find the first
-    int[] results = String2.findUrl("http://cencoos.org/,https://www.axiomdatascience.com");
+    int[] results = String2.findUrl("http://cencoos.org/, https://www.axiomdatascience.com");
     assertEquals(0, results[0]);
     assertEquals(19, results[1]);
 

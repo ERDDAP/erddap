@@ -59,7 +59,7 @@ public class TouchThread extends Thread {
         return; // only return (stop thread) if interrupted
       }
 
-      while (EDStatic.nextTouch.get() < EDStatic.touchList.size()) {
+      while (EDStatic.touchList.hasNext()) {
         String url = null;
         try {
           // check isInterrupted
@@ -73,7 +73,7 @@ public class TouchThread extends Thread {
           // start to do the touch
           // do these things quickly to keep internal consistency
           EDStatic.nextTouch.incrementAndGet();
-          url = EDStatic.touchList.get(EDStatic.nextTouch.get() - 1);
+          url = EDStatic.touchList.getNext();
           lastStartTime = System.currentTimeMillis();
           String2.log(
               "%%% TouchThread started touch #"
@@ -135,8 +135,6 @@ public class TouchThread extends Thread {
           lastStartTime = -1;
           synchronized (EDStatic.touchList) {
             EDStatic.lastFinishedTouch.set(EDStatic.nextTouch.get() - 1);
-            EDStatic.touchList.set(
-                (EDStatic.nextTouch.get() - 1), null); // throw away the touch info (gc)
           }
         }
       }

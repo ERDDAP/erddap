@@ -1284,6 +1284,14 @@ public abstract class EDD {
     return snapshot;
   }
 
+  protected boolean mapValueMatches(
+      Map<String, String> snapshotA, Map<String, String> snapshotB, String key) {
+    if (snapshotA.get(key) == null) {
+      return snapshotB.get(key) == null;
+    }
+    return snapshotA.get(key).equals(snapshotB.get(key));
+  }
+
   /**
    * This tests if 'oldSnapshot' is different from this in any way. <br>
    * This test is from the view of a subscriber who wants to know when a dataset has changed in any
@@ -1321,7 +1329,7 @@ public abstract class EDD {
       String typeKey = "dv_" + dv + "_type";
       String attrKey = "dv_" + dv + "_attr";
       String msg2 = "#" + dv + "=" + newSnapshot.get(nameKey);
-      if (!oldSnapshot.get(nameKey).equals(newSnapshot.get(nameKey))) {
+      if (!mapValueMatches(oldSnapshot, newSnapshot, nameKey)) {
         diff.append(
             MessageFormat.format(
                     EDStatic.messages.EDDChanged2Different,
@@ -1331,7 +1339,7 @@ public abstract class EDD {
                     newSnapshot.get(nameKey))
                 + "\n");
       }
-      if (!oldSnapshot.get(typeKey).equals(newSnapshot.get(typeKey))) {
+      if (!mapValueMatches(oldSnapshot, newSnapshot, typeKey)) {
         diff.append(
             MessageFormat.format(
                     EDStatic.messages.EDDChanged2Different,

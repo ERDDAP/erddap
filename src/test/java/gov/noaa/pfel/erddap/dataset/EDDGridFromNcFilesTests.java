@@ -1,5 +1,7 @@
 package gov.noaa.pfel.erddap.dataset;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import com.cohort.array.PrimitiveArray;
 import com.cohort.util.Calendar2;
 import com.cohort.util.File2;
@@ -13,11 +15,13 @@ import gov.noaa.pfel.coastwatch.pointdata.Table;
 import gov.noaa.pfel.coastwatch.sgt.SgtMap;
 import gov.noaa.pfel.coastwatch.util.FileVisitorDNLS;
 import gov.noaa.pfel.coastwatch.util.SSR;
+import gov.noaa.pfel.coastwatch.util.SharedWatchService;
 import gov.noaa.pfel.erddap.Erddap;
 import gov.noaa.pfel.erddap.GenerateDatasetsXml;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import java.nio.file.Path;
 import java.util.Arrays;
+import java.util.Map;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -15457,6 +15461,150 @@ class EDDGridFromNcFilesTests {
         "Too slow! time/update() = "
             + (cumTime / 1000.0)
             + "ms (diverse results 0.001 - 11.08ms on Bob's M4700)");
+  }
+
+  /**
+   * This tests the EDDGridFromFiles.changed().
+   *
+   * @throws Throwable if trouble
+   */
+  @org.junit.jupiter.api.Test
+  void testChanged() throws Throwable {
+    String datasetId = "testGriddedNcFiles";
+    EDDGridFromNcFiles eddGrid = (EDDGridFromNcFiles) EDDTestDataset.gettestGriddedNcFiles();
+    String dataDir = eddGrid.fileDir;
+    String expected = "";
+    Erddap.rssHashMap.remove(datasetId);
+
+    byte[] rssAr = Erddap.rssHashMap.get(datasetId);
+    String rss = String2.utf8BytesToString(rssAr);
+    Test.ensureEqual(rss, null, "initial_rss");
+    Map<String, String> originalSnapshot = eddGrid.snapshot();
+    assertEquals(expected, eddGrid.changed(originalSnapshot));
+
+    Map<String, String> snapshotDiff;
+
+    // *** rename a data file so it doesn't match regex
+    try {
+      File2.rename(dataDir, "erdQSwind1day_20080101_03.nc.gz", "erdQSwind1day_20080101_03.nc.gz2");
+      Math2.sleep(500);
+      SharedWatchService.processEvents();
+
+      snapshotDiff = eddGrid.snapshot();
+      expected =
+          "The numberOfValues for axisVariable #0=time changed:\n"
+              + "  old=10,\n"
+              + "  new=7.\n"
+              + "The minValue for axisVariable #0=time changed:\n"
+              + "  old=1.1991456E9,\n"
+              + "  new=1.1994048E9.\n"
+              + "The combinedAttribute for axisVariable #0=time changed:\n"
+              + "  old line #2=\"    actual_range=1.1991888E9d,1.1999664E9d\",\n"
+              + "  new line #2=\"    actual_range=1.199448E9d,1.1999664E9d\".\n"
+              + "A combinedGlobalAttribute changed:\n"
+              + "  old line #47=\"    time_coverage_start=2008-01-01T12:00:00Z\",\n"
+              + "  new line #47=\"    time_coverage_start=2008-01-04T12:00:00Z\".\n";
+      assertEquals(expected, eddGrid.changed(originalSnapshot));
+      assertEquals(expected, eddGrid.changed(originalSnapshot));
+
+      rssAr = Erddap.rssHashMap.get(datasetId);
+      rss = String2.utf8BytesToString(rssAr);
+      String rssExpected =
+          "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+              + "<rss version=\"2.0\" xmlns=\"http://backend.userland.com/rss2\">\n"
+              + "  <channel>\n"
+              + "    <title>ERDDAP: Wind, QuikSCAT, Global, Science Quality (1 Day Composite)</title>\n"
+              + "    <description>This RSS feed changes when the dataset changes.</description>\n"
+              + "    <link>&erddapUrl;/griddap/testGriddedNcFiles.html</link>\n"
+              + "    <pubDate>PUBLISHED_DATE</pubDate>\n"
+              + "    <item>\n"
+              + "      <title>This dataset changed YYYY-MM-DDThh:mm:ssZ</title>\n"
+              + "      <link>&erddapUrl;/griddap/testGriddedNcFiles.html</link>\n"
+              + "      <description>The numberOfValues for axisVariable #0=time changed:\n"
+              + "  old=10,\n"
+              + "  new=7.\n"
+              + "The minValue for axisVariable #0=time changed:\n"
+              + "  old=1.1991456E9,\n"
+              + "  new=1.1994048E9.\n"
+              + "The combinedAttribute for axisVariable #0=time changed:\n"
+              + "  old line #2=&quot;    actual_range=1.1991888E9d,1.1999664E9d&quot;,\n"
+              + "  new line #2=&quot;    actual_range=1.199448E9d,1.1999664E9d&quot;.\n"
+              + "A combinedGlobalAttribute changed:\n"
+              + "  old line #47=&quot;    time_coverage_start=2008-01-01T12:00:00Z&quot;,\n"
+              + "  new line #47=&quot;    time_coverage_start=2008-01-04T12:00:00Z&quot;.\n"
+              + "</description>\n"
+              + "    </item>\n"
+              + "  </channel>\n"
+              + "</rss>\n";
+      rss = rss.replaceAll("<pubDate>.*</pubDate>", "<pubDate>PUBLISHED_DATE</pubDate>");
+      rss =
+          rss.replaceAll(
+              "<title>This dataset changed ....-..-..T..:..:..Z</title>",
+              "<title>This dataset changed YYYY-MM-DDThh:mm:ssZ</title>");
+      Test.ensureEqual(rss, rssExpected, "results=\n" + rss);
+
+    } finally {
+      // rename it back to original
+      File2.rename(dataDir, "erdQSwind1day_20080101_03.nc.gz2", "erdQSwind1day_20080101_03.nc.gz");
+      Math2.sleep(500);
+      SharedWatchService.processEvents();
+    }
+
+    expected = "";
+    Map<String, String> snapshot2 = eddGrid.snapshot();
+    assertEquals(expected, eddGrid.changed(originalSnapshot));
+    assertEquals(expected, eddGrid.changed(snapshot2));
+    expected =
+        "The numberOfValues for axisVariable #0=time changed:\n"
+            + "  old=7,\n"
+            + "  new=10.\n"
+            + "The minValue for axisVariable #0=time changed:\n"
+            + "  old=1.1994048E9,\n"
+            + "  new=1.1991456E9.\n"
+            + "The combinedAttribute for axisVariable #0=time changed:\n"
+            + "  old line #2=\"    actual_range=1.199448E9d,1.1999664E9d\",\n"
+            + "  new line #2=\"    actual_range=1.1991888E9d,1.1999664E9d\".\n"
+            + "A combinedGlobalAttribute changed:\n"
+            + "  old line #47=\"    time_coverage_start=2008-01-04T12:00:00Z\",\n"
+            + "  new line #47=\"    time_coverage_start=2008-01-01T12:00:00Z\".\n";
+    assertEquals(expected, eddGrid.changed(snapshotDiff));
+    // *** back to original
+
+    rssAr = Erddap.rssHashMap.get(datasetId);
+    rss = String2.utf8BytesToString(rssAr);
+    String rssExpected =
+        "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+            + "<rss version=\"2.0\" xmlns=\"http://backend.userland.com/rss2\">\n"
+            + "  <channel>\n"
+            + "    <title>ERDDAP: Wind, QuikSCAT, Global, Science Quality (1 Day Composite)</title>\n"
+            + "    <description>This RSS feed changes when the dataset changes.</description>\n"
+            + "    <link>&erddapUrl;/griddap/testGriddedNcFiles.html</link>\n"
+            + "    <pubDate>PUBLISHED_DATE</pubDate>\n"
+            + "    <item>\n"
+            + "      <title>This dataset changed YYYY-MM-DDThh:mm:ssZ</title>\n"
+            + "      <link>&erddapUrl;/griddap/testGriddedNcFiles.html</link>\n"
+            + "      <description>The numberOfValues for axisVariable #0=time changed:\n"
+            + "  old=7,\n"
+            + "  new=10.\n"
+            + "The minValue for axisVariable #0=time changed:\n"
+            + "  old=1.1994048E9,\n"
+            + "  new=1.1991456E9.\n"
+            + "The combinedAttribute for axisVariable #0=time changed:\n"
+            + "  old line #2=&quot;    actual_range=1.199448E9d,1.1999664E9d&quot;,\n"
+            + "  new line #2=&quot;    actual_range=1.1991888E9d,1.1999664E9d&quot;.\n"
+            + "A combinedGlobalAttribute changed:\n"
+            + "  old line #47=&quot;    time_coverage_start=2008-01-04T12:00:00Z&quot;,\n"
+            + "  new line #47=&quot;    time_coverage_start=2008-01-01T12:00:00Z&quot;.\n"
+            + "</description>\n"
+            + "    </item>\n"
+            + "  </channel>\n"
+            + "</rss>\n";
+    rss = rss.replaceAll("<pubDate>.*</pubDate>", "<pubDate>PUBLISHED_DATE</pubDate>");
+    rss =
+        rss.replaceAll(
+            "<title>This dataset changed ....-..-..T..:..:..Z</title>",
+            "<title>This dataset changed YYYY-MM-DDThh:mm:ssZ</title>");
+    Test.ensureEqual(rss, rssExpected, "results=\n" + rss);
   }
 
   /**

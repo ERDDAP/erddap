@@ -425,8 +425,8 @@ public class EDStatic {
   // touchThread variables
   // Funnelling all touchThread tasks through one touchThread ensures that
   //  touches that timeout don't slow down other processes.
-  public static final ArrayList<String> touchList =
-      new ArrayList<>(); // keep here in case TouchThread needs to be restarted
+  public static final RequestQueue<String> touchList =
+      new RequestQueue<>(); // keep here in case TouchThread needs to be restarted
   private static TouchThread touchThread;
 
   // no lastAssignedTouch since not needed
