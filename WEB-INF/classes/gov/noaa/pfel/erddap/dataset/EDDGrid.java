@@ -6647,9 +6647,14 @@ public abstract class EDDGrid extends EDD {
         }
 
         dos.flush(); // essential
+      } catch (Exception e) {
+        String2.log(e.getMessage());
       } finally {
         if (writer != null) {
-          writer.close();
+          try {
+            writer.close();
+          } catch (Exception e) {
+          }
           writer = null;
         }
       }

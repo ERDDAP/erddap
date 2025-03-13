@@ -1,9 +1,17 @@
 package gov.noaa.pfel.erddap;
 
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import com.cohort.util.String2;
 import com.cohort.util.Test;
 import gov.noaa.pfel.coastwatch.pointdata.Table;
 import gov.noaa.pfel.erddap.dataset.EDDGrid;
+import jakarta.servlet.ServletOutputStream;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import java.util.concurrent.ConcurrentHashMap;
 import org.junit.jupiter.api.BeforeAll;
 import tags.TagIncompleteTest;
@@ -14,6 +22,17 @@ class ErddapTests {
   @BeforeAll
   static void init() {
     Initialization.edStatic();
+  }
+
+  @org.junit.jupiter.api.Test
+  void testSitemap() throws Throwable {
+    Erddap erddap = new Erddap();
+    HttpServletRequest request = mock(HttpServletRequest.class);
+    HttpServletResponse response = mock(HttpServletResponse.class);
+    ServletOutputStream outStream = mock(ServletOutputStream.class);
+    when(response.getOutputStream()).thenReturn(outStream);
+    erddap.doSitemap(request, response);
+    verify(response, times(1)).getOutputStream();
   }
 
   /** Test Convert Nearest Data. */
