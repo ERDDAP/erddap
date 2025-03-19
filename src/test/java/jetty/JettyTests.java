@@ -4975,7 +4975,7 @@ class JettyTests {
     results = results.substring(0, po + 7);
     expected =
         "HTTP/1.1 200 OK\n"
-            + "Server: Jetty(12.0.16)\n"
+            + "Server: Jetty(12.0.18)\n"
             + "Date: Today\n"
             + "Content-Type: application/javascript;charset=utf-8\n"
             + "Content-Encoding: identity\n"
@@ -6625,6 +6625,8 @@ class JettyTests {
           // (temporary?) early 2025
           // pcreview site down early 2025
           "https://www.pcreview.co.uk/threads/datetime-accounts-for-leap-seconds.1357623/",
+          // site returns 403 in test, but works in browser
+          "https://www.cnmoc.usff.navy.mil/Our-Commands/United-States-Naval-Observatory/Precise-Time-Department/The-USNO-Master-Clock/Definitions-of-Systems-of-Time/",
         };
     // https://unitsofmeasure.org/ucum.html fails in tests because of certificate,
     // but succeeds in my browser. Others are like this, too.
@@ -16026,7 +16028,7 @@ class JettyTests {
             + //
             "</table>\n"
             + //
-            "<hr/><a href=\"https://jetty.org/\">Powered by Jetty:// 12.0.16</a><hr/>\n"
+            "<hr/><a href=\"https://jetty.org/\">Powered by Jetty:// 12.0.18</a><hr/>\n"
             + //
             "\n"
             + //
@@ -16072,7 +16074,7 @@ class JettyTests {
             + //
             "</table>\n"
             + //
-            "<hr/><a href=\"https://jetty.org/\">Powered by Jetty:// 12.0.16</a><hr/>\n"
+            "<hr/><a href=\"https://jetty.org/\">Powered by Jetty:// 12.0.18</a><hr/>\n"
             + //
             "\n"
             + //
