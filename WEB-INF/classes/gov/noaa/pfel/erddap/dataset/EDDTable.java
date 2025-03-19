@@ -14845,13 +14845,12 @@ public abstract class EDDTable extends EDD {
             true,
             -1);
       }
-
       writer.write(
           "<p>"
               + MessageFormat.format(
                   EDStatic.messages.subsetNVariableCombosAr[language], "" + onRows)
               + "\n");
-      if (onRows > viewValue[current])
+      if (onRows > viewValue[current]) {
         writer.write(
             "<br><span class=\"warningColor\">"
                 + MessageFormat.format(
@@ -14859,7 +14858,9 @@ public abstract class EDDTable extends EDD {
                     "" + Math.min(onRows, viewValue[current]),
                     "" + (onRows - viewValue[current]))
                 + "</span>\n");
-      else writer.write(EDStatic.messages.subsetShowingAllRowsAr[language] + "\n");
+      } else {
+        writer.write(EDStatic.messages.subsetShowingAllRowsAr[language] + "\n");
+      }
       writer.write(
           "<br>"
               + MessageFormat.format(
@@ -15185,15 +15186,28 @@ public abstract class EDDTable extends EDD {
       writer.write(EDStatic.endBodyHtml(language, tErddapUrl, loggedInAs));
       writer.write("\n</html>\n");
       writer.flush(); // essential
-
     } catch (Throwable t) {
       EDStatic.rethrowClientAbortException(t); // first thing in catch{}
-      writer.write(EDStatic.htmlForException(language, t));
-      writer.write("</div>\n");
-      writer.write(EDStatic.endBodyHtml(language, tErddapUrl, loggedInAs));
-      writer.write("\n</html>\n");
-      writer.flush(); // essential
+      try {
+        writer.write(EDStatic.htmlForException(language, t));
+        writer.write("</div>\n");
+        writer.write(EDStatic.endBodyHtml(language, tErddapUrl, loggedInAs));
+        writer.write("\n</html>\n");
+        writer.flush(); // essential
+      } catch (Exception e) {
+        String2.log(
+            "Error while cleaning up from exception (error rethrown after): " + e.getMessage());
+      }
       throw t;
+    } finally {
+      if (writer != null) {
+        try {
+          writer.close();
+        } catch (Exception e) {
+          String2.log(
+              "Error while cleaning up from exception (error rethrown after): " + e.getMessage());
+        }
+      }
     }
   }
 

@@ -3433,7 +3433,13 @@ public abstract class EDDGrid extends EDD {
                               EDStatic.messages.queryErrorFileTypeAr[language], fileTypeName)));
             }
           } finally {
-            fos.close();
+            if (fos != null) {
+              try {
+                fos.close();
+              } catch (Exception e) {
+                String2.log("Error closing stream, log and continue: " + e.getMessage());
+              }
+            }
           }
           File2.rename(cacheFullName + random, cacheFullName);
           if (!ok) // make eligible to be removed from cache in 5 minutes
@@ -6091,7 +6097,11 @@ public abstract class EDDGrid extends EDD {
       writer.flush(); // essential
     } finally {
       if (writer != null) {
-        writer.close();
+        try {
+          writer.close();
+        } catch (Exception e) {
+          String2.log("Error closing writer, log and continue: " + e.getMessage());
+        }
       }
     }
 
@@ -10132,7 +10142,13 @@ public abstract class EDDGrid extends EDD {
           fullOutName,
           time);
     } finally {
-      dos.close();
+      if (dos != null) {
+        try {
+          dos.close();
+        } catch (Exception e) {
+          String2.log("Error closing stream, log and continue: " + e.getMessage());
+        }
+      }
     }
     File2.delete(fullDosName);
 
@@ -11291,7 +11307,11 @@ public abstract class EDDGrid extends EDD {
       writer.flush(); // essential
     } finally {
       if (writer != null) {
-        writer.close();
+        try {
+          writer.close();
+        } catch (Exception e) {
+          String2.log("Error closing writer, log and continue: " + e.getMessage());
+        }
       }
     }
   }

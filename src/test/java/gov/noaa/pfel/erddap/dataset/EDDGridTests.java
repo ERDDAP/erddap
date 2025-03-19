@@ -60,6 +60,52 @@ class EDDGridTests {
     verifyNoMoreInteractions(request);
   }
 
+  @org.junit.jupiter.api.Test
+  void testSaveAsAsc() throws Throwable {
+    EDDGrid eddGrid = (EDDGrid) EDDTestDataset.getetopo180();
+    String mapDapQuery = "altitude%5B(-90.0):(-88.0)%5D%5B(-180.0):(-178.0)%5D";
+    String requestUrl = "/erddap/griddap/etopo180.dods";
+    HttpServletRequest request = mock(HttpServletRequest.class);
+    HttpServletResponse response = mock(HttpServletResponse.class);
+    ServletOutputStream outStream = mock(ServletOutputStream.class);
+    when(request.getHeader("Range")).thenReturn(null);
+    when(response.getOutputStream()).thenReturn(outStream);
+    when(request.getHeader("accept-encoding")).thenReturn("gzip");
+    doThrow(new RuntimeException()).when(outStream).close();
+
+    OutputStreamFromHttpResponse outputStreamSource =
+        new OutputStreamFromHttpResponse(request, response, "temp", ".dods", ".dods");
+    eddGrid.saveAsAsc(0, requestUrl, mapDapQuery, outputStreamSource);
+
+    verify(request).getHeader("Range");
+    verify(request).getHeader("accept-encoding");
+    verify(outStream, times(1)).close();
+    verifyNoMoreInteractions(request);
+  }
+
+  @org.junit.jupiter.api.Test
+  void testSaveAsNcoJson() throws Throwable {
+    EDDGrid eddGrid = (EDDGrid) EDDTestDataset.getetopo180();
+    String mapDapQuery = "altitude%5B(-90.0):(-88.0)%5D%5B(-180.0):(-178.0)%5D";
+    String requestUrl = "/erddap/griddap/etopo180.dods";
+    HttpServletRequest request = mock(HttpServletRequest.class);
+    HttpServletResponse response = mock(HttpServletResponse.class);
+    ServletOutputStream outStream = mock(ServletOutputStream.class);
+    when(request.getHeader("Range")).thenReturn(null);
+    when(response.getOutputStream()).thenReturn(outStream);
+    when(request.getHeader("accept-encoding")).thenReturn("gzip");
+    doThrow(new RuntimeException()).when(outStream).close();
+
+    OutputStreamFromHttpResponse outputStreamSource =
+        new OutputStreamFromHttpResponse(request, response, "temp", ".dods", ".dods");
+    eddGrid.saveAsNcoJson(0, requestUrl, mapDapQuery, outputStreamSource);
+
+    verify(request).getHeader("Range");
+    verify(request).getHeader("accept-encoding");
+    verify(outStream, times(1)).close();
+    verifyNoMoreInteractions(request);
+  }
+
   /**
    * Test saveAsImage, specifically to make sure a transparent png that's partially outside of the
    * range of the dataset still returns the image for the part that is within range.

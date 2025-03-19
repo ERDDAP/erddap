@@ -1,11 +1,21 @@
 package gov.noaa.pfel.erddap.dataset;
 
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.when;
+
 import com.cohort.util.File2;
 import com.cohort.util.String2;
 import com.cohort.util.Test;
 import gov.noaa.pfel.coastwatch.griddata.NcHelper;
 import gov.noaa.pfel.coastwatch.util.SSR;
+import gov.noaa.pfel.erddap.util.EDConfig;
 import gov.noaa.pfel.erddap.util.EDStatic;
+import jakarta.servlet.ServletOutputStream;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import java.io.ByteArrayOutputStream;
 import java.util.Map;
 import org.junit.jupiter.api.BeforeAll;
@@ -21,6 +31,44 @@ class EDDTableTests {
   @BeforeAll
   static void init() {
     Initialization.edStatic();
+  }
+
+  @org.junit.jupiter.api.Test
+  void testSubsetQuery() throws Throwable {
+    int language = 0;
+    String testDir = EDStatic.config.fullTestCacheDirectory;
+    String fileName = "TEMP";
+    String fileType = "csv";
+
+    EDDTable eddTable = (EDDTable) EDDTestDataset.gettestTableColumnarAscii();
+    String userDapQuery = "altitude%5B(-90.0):(-88.0)%5D%5B(-180.0):(-178.0)%5D";
+    String endOfRequest = "tabledap/testTableColumnarAscii.csv";
+    String requestUrl = "/erddap/" + endOfRequest;
+    HttpServletRequest request = mock(HttpServletRequest.class);
+    HttpServletResponse response = mock(HttpServletResponse.class);
+    ServletOutputStream outStream = mock(ServletOutputStream.class);
+    when(request.getHeader("Range")).thenReturn(null);
+    when(response.getOutputStream()).thenReturn(outStream);
+    when(request.getHeader("accept-encoding")).thenReturn("");
+
+    OutputStreamFromHttpResponse outputStreamSource =
+        new OutputStreamFromHttpResponse(request, response, "temp", ".csv", ".csv");
+    eddTable.respondToSubsetQuery(
+        language,
+        request,
+        response,
+        null,
+        requestUrl,
+        endOfRequest,
+        userDapQuery,
+        outputStreamSource,
+        testDir,
+        fileName,
+        fileType);
+    verify(request).getHeader("Range");
+    verify(request).getHeader("accept-encoding");
+    verify(outStream, times(1)).close();
+    verifyNoMoreInteractions(request);
   }
 
   /** Test SOS server using cwwcNDBCMet. */
@@ -2747,6 +2795,6 @@ class EDDTableTests {
     results = results.substring(resultsStart);
     Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
-    EDStatic.config.partialRequestMaxCells = EDStatic.config.DEFAULT_partialRequestMaxCells;
+    EDStatic.config.partialRequestMaxCells = EDConfig.DEFAULT_partialRequestMaxCells;
   }
 }
