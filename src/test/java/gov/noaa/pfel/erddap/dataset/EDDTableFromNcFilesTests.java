@@ -6894,8 +6894,8 @@ class EDDTableFromNcFilesTests {
               + "            <gex:EX_TemporalExtent>\n"
               + "              <gex:extent>\n"
               + "                <gml:TimePeriod>\n"
-              + "                  <gml:beginPosition>1977-11-06T07:00:00-05:00</gml:beginPosition>\n"
-              + "                  <gml:endPosition>2022-01-02T07:00:00-05:00</gml:endPosition>\n"
+              + "                  <gml:beginPosition>YYYY-MM-DDT12:00:00Z</gml:beginPosition>\n"
+              + "                  <gml:endPosition>YYYY-MM-DDT12:00:00Z</gml:endPosition>\n"
               + "                </gml:TimePeriod>\n"
               + "              </gex:extent>\n"
               + "            </gex:EX_TemporalExtent>\n"
@@ -6957,6 +6957,15 @@ class EDDTableFromNcFilesTests {
     results =
         results.replaceAll(
             "<gml:beginPosition>....-..-..T12:00:00Z", "<gml:beginPosition>YYYY-MM-DDT12:00:00Z");
+    results =
+        results.replaceAll(
+            "<gml:beginPosition>....-..-..T..:..:..Z", "<gml:beginPosition>YYYY-MM-DDT12:00:00Z");
+    results =
+        results.replaceAll(
+            "<gml:endPosition>....-..-..T12:00:00Z", "<gml:endPosition>YYYY-MM-DDT12:00:00Z");
+    results =
+        results.replaceAll(
+            "<gml:endPosition>....-..-..T..:..:..Z", "<gml:endPosition>YYYY-MM-DDT12:00:00Z");
     results =
         results.replaceAll(
             "<gmd:maximumValue><gco:Real>[0-9]+.[0-9]+</gco:Real></gmd:maximumValue>",
