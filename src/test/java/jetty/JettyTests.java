@@ -6625,6 +6625,8 @@ class JettyTests {
           // (temporary?) early 2025
           // pcreview site down early 2025
           "https://www.pcreview.co.uk/threads/datetime-accounts-for-leap-seconds.1357623/",
+          // site returns 403 in test, but works in browser
+          "https://www.cnmoc.usff.navy.mil/Our-Commands/United-States-Naval-Observatory/Precise-Time-Department/The-USNO-Master-Clock/Definitions-of-Systems-of-Time/",
         };
     // https://unitsofmeasure.org/ucum.html fails in tests because of certificate,
     // but succeeds in my browser. Others are like this, too.

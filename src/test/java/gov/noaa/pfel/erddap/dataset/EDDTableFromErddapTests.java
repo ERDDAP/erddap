@@ -409,6 +409,7 @@ class EDDTableFromErddapTests {
    * 2016-10-03 to deal with this problem.
    */
   @org.junit.jupiter.api.Test
+  @TagExternalERDDAP
   void testChukchiSea() throws Throwable {
     // testVerboseOn();
     int language = 0;
