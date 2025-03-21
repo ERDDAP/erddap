@@ -6956,16 +6956,17 @@ class EDDTableFromNcFilesTests {
     }
     results =
         results.replaceAll(
-            "<gml:beginPosition>....-..-..T12:00:00Z", "<gml:beginPosition>YYYY-MM-DDT12:00:00Z");
-    results =
-        results.replaceAll(
             "<gml:beginPosition>....-..-..T..:..:..Z", "<gml:beginPosition>YYYY-MM-DDT12:00:00Z");
     results =
         results.replaceAll(
-            "<gml:endPosition>....-..-..T12:00:00Z", "<gml:endPosition>YYYY-MM-DDT12:00:00Z");
+            "<gml:beginPosition>....-..-..T..:..:..-..:..",
+            "<gml:beginPosition>YYYY-MM-DDT12:00:00Z");
     results =
         results.replaceAll(
             "<gml:endPosition>....-..-..T..:..:..Z", "<gml:endPosition>YYYY-MM-DDT12:00:00Z");
+    results =
+        results.replaceAll(
+            "<gml:endPosition>....-..-..T..:..:..-..:..", "<gml:endPosition>YYYY-MM-DDT12:00:00Z");
     results =
         results.replaceAll(
             "<gmd:maximumValue><gco:Real>[0-9]+.[0-9]+</gco:Real></gmd:maximumValue>",
