@@ -539,8 +539,8 @@ class JettyTests {
               + "            <gex:EX_TemporalExtent>\n"
               + "              <gex:extent>\n"
               + "                <gml:TimePeriod>\n"
-              + "                  <gml:beginPosition>2003-01-01T07:00:00-05:00</gml:beginPosition>\n"
-              + "                  <gml:endPosition>2016-10-17T08:00:00-04:00</gml:endPosition>\n"
+              + "                  <gml:beginPosition>YYYY-MM-DDThh:00:00Z</gml:beginPosition>\n"
+              + "                  <gml:endPosition>YYYY-MM-DDThh:00:00Z</gml:endPosition>\n"
               + "                </gml:TimePeriod>\n"
               + "              </gex:extent>\n"
               + "            </gex:EX_TemporalExtent>\n"
@@ -878,8 +878,8 @@ class JettyTests {
               + "            <gex:EX_TemporalExtent>\n"
               + "              <gex:extent>\n"
               + "                <gml:TimePeriod>\n"
-              + "                  <gml:beginPosition>2003-01-01T07:00:00-05:00</gml:beginPosition>\n"
-              + "                  <gml:endPosition>2016-10-17T08:00:00-04:00</gml:endPosition>\n"
+              + "                  <gml:beginPosition>YYYY-MM-DDThh:00:00Z</gml:beginPosition>\n"
+              + "                  <gml:endPosition>YYYY-MM-DDThh:00:00Z</gml:endPosition>\n"
               + "                </gml:TimePeriod>\n"
               + "              </gex:extent>\n"
               + "            </gex:EX_TemporalExtent>\n"
@@ -1052,8 +1052,8 @@ class JettyTests {
               + "                    <gex:EX_TemporalExtent>\n"
               + "                      <gex:extent>\n"
               + "                        <gml:TimePeriod>\n"
-              + "                          <gml:beginPosition>2003-01-01T07:00:00-05:00</gml:beginPosition>\n"
-              + "                          <gml:endPosition>2016-10-17T08:00:00-04:00</gml:endPosition>\n"
+              + "                          <gml:beginPosition>YYYY-MM-DDThh:00:00Z</gml:beginPosition>\n"
+              + "                          <gml:endPosition>YYYY-MM-DDThh:00:00Z</gml:endPosition>\n"
               + "                        </gml:TimePeriod>\n"
               + "                      </gex:extent>\n"
               + "                    </gex:EX_TemporalExtent>\n"
@@ -1345,8 +1345,20 @@ class JettyTests {
               "<gco:Measure uom=\"s\">VALUE</gco:Measure>");
       results =
           results.replaceAll(
-              "<gml:endPosition>....-..-..T..:00:00Z</gml:endPosition>",
+              "<gml:endPosition>....-..-..T..:..:......-..:..</gml:endPosition>",
               "<gml:endPosition>YYYY-MM-DDThh:00:00Z</gml:endPosition>");
+      results =
+          results.replaceAll(
+              "<gml:endPosition>....-..-..T..:..:..Z</gml:endPosition>",
+              "<gml:endPosition>YYYY-MM-DDThh:00:00Z</gml:endPosition>");
+      results =
+          results.replaceAll(
+              "<gml:beginPosition>....-..-..T..:..:......-..:..</gml:beginPosition>",
+              "<gml:beginPosition>YYYY-MM-DDThh:00:00Z</gml:beginPosition>");
+      results =
+          results.replaceAll(
+              "<gml:beginPosition>....-..-..T..:..:..Z</gml:beginPosition>",
+              "<gml:beginPosition>YYYY-MM-DDThh:00:00Z</gml:beginPosition>");
       results =
           results.replaceAll(
               "<gco:Integer>[0-9]+</gco:Integer>", "<gco:Integer>NUMBER</gco:Integer>");
@@ -1883,7 +1895,7 @@ class JettyTests {
               + "              <gmd:extent>\n"
               + "                <gml:TimePeriod gml:id=\"DI_gmdExtent_timePeriod_id\">\n"
               + "                  <gml:description>seconds</gml:description>\n"
-              + "                  <gml:beginPosition>2003-01-01T12:00:00Z</gml:beginPosition>\n"
+              + "                  <gml:beginPosition>YYYY-MM-DDThh:00:00Z</gml:beginPosition>\n"
               + "                  <gml:endPosition>YYYY-MM-DDThh:00:00Z</gml:endPosition>\n"
               + "                </gml:TimePeriod>\n"
               + "              </gmd:extent>\n"
