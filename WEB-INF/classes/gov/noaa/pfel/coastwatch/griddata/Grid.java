@@ -12,7 +12,7 @@ import com.cohort.util.MustBe;
 import com.cohort.util.String2;
 import com.cohort.util.Test;
 import com.google.common.collect.ImmutableList;
-import java.io.RandomAccessFile;
+import gov.noaa.pfel.coastwatch.util.BufferedReadRandomAccessFile;
 import java.util.Arrays;
 import java.util.List;
 import ucar.ma2.*;
@@ -476,9 +476,10 @@ public class Grid {
       // String2.log("tLat=" + tLat + " closestLat=" + closestLat + " offset=" + offsetLat[i]);
     }
 
-    // open the file  (reading should be thread safe)
-    try (RandomAccessFile raf = new RandomAccessFile(fullFileName, "r")) {
-
+    // open the file  (reading is thread safe)
+    try (BufferedReadRandomAccessFile raf =
+        new BufferedReadRandomAccessFile(
+            fullFileName, nLon >= 2 ? offsetLon[1] - offsetLon[0] : 2, nLon)) {
       // fill data array
       // lat is outer loop because file is lat major
       // and loop is backwards since stored top to bottom
@@ -489,8 +490,10 @@ public class Grid {
       int maxSData = Integer.MIN_VALUE;
       for (int tLat = nLat - 1; tLat >= 0; tLat--) {
         for (int tLon = 0; tLon < nLon; tLon++) {
-          raf.seek(offsetLat[tLat] + offsetLon[tLon]);
-          short ts = Short.reverseBytes(raf.readShort()); // reverseBytes since etopo1 is LSB
+          short ts =
+              Short.reverseBytes(
+                  raf.readShort(
+                      offsetLat[tLat] + offsetLon[tLon])); // reverseBytes since etopo1 is LSB
           setData(tLon, tLat, ts);
           minSData = Math.min(minSData, ts);
           maxSData = Math.max(maxSData, ts);

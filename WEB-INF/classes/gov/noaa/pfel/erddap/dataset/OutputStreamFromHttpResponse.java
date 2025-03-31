@@ -99,7 +99,7 @@ public class OutputStreamFromHttpResponse implements OutputStreamSource {
     // or http://www.freeformatter.com/mime-types-list.html#mime-types-list
     String extensionLC = extension.toLowerCase();
     String contentType = null;
-    HashMap headerMap = new HashMap();
+    HashMap<String, String> headerMap = new HashMap<>();
     boolean genericCompressed = false; // true for generic compressed files, e.g., .zip
     boolean otherCompressed =
         false; // true for app specific compressed (but not audio/ image/ video)
@@ -808,16 +808,15 @@ public class OutputStreamFromHttpResponse implements OutputStreamSource {
     // 2020-12-07 this is the section that was inline but now uses the static methods above
     Object fileTypeInfo[] = getFileTypeInfo(request, fileType, extension);
     String contentType = (String) fileTypeInfo[0];
-    HashMap headerMap = (HashMap) fileTypeInfo[1];
+    HashMap<String, String> headerMap = (HashMap<String, String>) fileTypeInfo[1];
     boolean genericCompressed =
         (Boolean) fileTypeInfo[2]; // true for generic compressed files, e.g., .zip
     boolean otherCompressed =
         (Boolean) fileTypeInfo[3]; // true for app specific compressed (but not audio/ image/ video)
 
     response.setContentType(contentType);
-    for (Object o : headerMap.keySet()) {
-      String key = (String) o;
-      response.setHeader(key, (String) headerMap.get(key));
+    for (String key : headerMap.keySet()) {
+      response.setHeader(key, headerMap.get(key));
     }
 
     // set the characterEncoding

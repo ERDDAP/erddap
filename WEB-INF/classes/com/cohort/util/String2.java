@@ -1259,10 +1259,11 @@ public class String2 {
   // Starts with a slash (that wasn't matched in previous sections), then
   // 0 or more directories, ending in either a directory or .extension, optional / or \.
   private static Pattern pathPattern =
-      Pattern.compile("^[/\\\\]?([a-zA-Z0-9-_]+[/\\\\])*[^/\\\\:?#,\\s]*[/\\\\]?(?<![.,?!#])");
+      Pattern.compile(
+          "^[/\\\\]?([a-zA-Z0-9-_.~!$&'()*+,;=:@%\\-]+[/\\\\])*[^/\\\\:?#,\\s]*[/\\\\]?(?<![.,?!#])");
   private static Pattern queryPattern =
       Pattern.compile("^\\?(\".*\"|%22.*%22|[^\\s#])*(?<![.,?!#])");
-  private static Pattern fragmentPattern = Pattern.compile("^#[^.,?!#)\\s]*");
+  private static Pattern fragmentPattern = Pattern.compile("^#[^.,!#)\\s]*(?<![.,?!#])");
 
   public static int[] findUrl(String input) {
     return findUrl(input, 0);

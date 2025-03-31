@@ -21,6 +21,7 @@ import gov.noaa.pfel.coastwatch.griddata.DataHelper;
 import gov.noaa.pfel.coastwatch.griddata.FileNameUtility;
 import gov.noaa.pfel.coastwatch.pointdata.Table;
 import gov.noaa.pfel.coastwatch.sgt.SgtMap;
+import gov.noaa.pfel.coastwatch.util.BufferedReadRandomAccessFile;
 import gov.noaa.pfel.coastwatch.util.SimpleXMLReader;
 import gov.noaa.pfel.erddap.Erddap;
 import gov.noaa.pfel.erddap.handlers.EDDGridFromEtopoHandler;
@@ -31,7 +32,6 @@ import java.io.BufferedOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.FileOutputStream;
-import java.io.RandomAccessFile;
 import java.text.MessageFormat;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -483,7 +483,9 @@ public class EDDGridFromEtopo extends EDDGrid {
     }
 
     // open the file  (reading is thread safe)
-    try (RandomAccessFile raf = new RandomAccessFile(fileName, "r")) {
+    try (BufferedReadRandomAccessFile raf =
+        new BufferedReadRandomAccessFile(
+            fileName, nLons >= 2 ? lonOffsets[1] - lonOffsets[0] : 2, nLons)) {
       // fill data array
       // lat is outer loop because file is lat major
       // and loop is backwards since stored top to bottom
@@ -492,8 +494,7 @@ public class EDDGridFromEtopo extends EDDGrid {
       for (int lati = nLats - 1; lati >= 0; lati--) {
         int po = lati * nLons;
         for (int loni = 0; loni < nLons; loni++) {
-          raf.seek(latOffsets[lati] + lonOffsets[loni]);
-          data[po++] = Short.reverseBytes(raf.readShort());
+          data[po++] = Short.reverseBytes(raf.readShort(latOffsets[lati] + lonOffsets[loni]));
         }
       }
     }

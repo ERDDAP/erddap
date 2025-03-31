@@ -1,5 +1,12 @@
 package gov.noaa.pfel.erddap.dataset;
 
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.when;
+
 import com.cohort.util.File2;
 import com.cohort.util.Image2Tests;
 import com.cohort.util.Math2;
@@ -8,6 +15,9 @@ import com.cohort.util.Test;
 import gov.noaa.pfel.coastwatch.griddata.NcHelper;
 import gov.noaa.pfel.coastwatch.util.SSR;
 import gov.noaa.pfel.erddap.util.EDStatic;
+import jakarta.servlet.ServletOutputStream;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.FileOutputStream;
@@ -25,6 +35,75 @@ class EDDGridTests {
   @BeforeAll
   static void init() {
     Initialization.edStatic();
+  }
+
+  @org.junit.jupiter.api.Test
+  void testSaveAsDODS() throws Throwable {
+    EDDGrid eddGrid = (EDDGrid) EDDTestDataset.getetopo180();
+    String mapDapQuery = "altitude%5B(-90.0):(-88.0)%5D%5B(-180.0):(-178.0)%5D";
+    String requestUrl = "/erddap/griddap/etopo180.dods";
+    HttpServletRequest request = mock(HttpServletRequest.class);
+    HttpServletResponse response = mock(HttpServletResponse.class);
+    ServletOutputStream outStream = mock(ServletOutputStream.class);
+    when(request.getHeader("Range")).thenReturn(null);
+    when(response.getOutputStream()).thenReturn(outStream);
+    when(request.getHeader("accept-encoding")).thenReturn("gzip");
+    doThrow(new RuntimeException()).when(outStream).close();
+
+    OutputStreamFromHttpResponse outputStreamSource =
+        new OutputStreamFromHttpResponse(request, response, "temp", ".dods", ".dods");
+    eddGrid.saveAsDODS(0, requestUrl, mapDapQuery, outputStreamSource);
+
+    verify(request).getHeader("Range");
+    verify(request).getHeader("accept-encoding");
+    verify(outStream, times(1)).close();
+    verifyNoMoreInteractions(request);
+  }
+
+  @org.junit.jupiter.api.Test
+  void testSaveAsAsc() throws Throwable {
+    EDDGrid eddGrid = (EDDGrid) EDDTestDataset.getetopo180();
+    String mapDapQuery = "altitude%5B(-90.0):(-88.0)%5D%5B(-180.0):(-178.0)%5D";
+    String requestUrl = "/erddap/griddap/etopo180.dods";
+    HttpServletRequest request = mock(HttpServletRequest.class);
+    HttpServletResponse response = mock(HttpServletResponse.class);
+    ServletOutputStream outStream = mock(ServletOutputStream.class);
+    when(request.getHeader("Range")).thenReturn(null);
+    when(response.getOutputStream()).thenReturn(outStream);
+    when(request.getHeader("accept-encoding")).thenReturn("gzip");
+    doThrow(new RuntimeException()).when(outStream).close();
+
+    OutputStreamFromHttpResponse outputStreamSource =
+        new OutputStreamFromHttpResponse(request, response, "temp", ".dods", ".dods");
+    eddGrid.saveAsAsc(0, requestUrl, mapDapQuery, outputStreamSource);
+
+    verify(request).getHeader("Range");
+    verify(request).getHeader("accept-encoding");
+    verify(outStream, times(1)).close();
+    verifyNoMoreInteractions(request);
+  }
+
+  @org.junit.jupiter.api.Test
+  void testSaveAsNcoJson() throws Throwable {
+    EDDGrid eddGrid = (EDDGrid) EDDTestDataset.getetopo180();
+    String mapDapQuery = "altitude%5B(-90.0):(-88.0)%5D%5B(-180.0):(-178.0)%5D";
+    String requestUrl = "/erddap/griddap/etopo180.dods";
+    HttpServletRequest request = mock(HttpServletRequest.class);
+    HttpServletResponse response = mock(HttpServletResponse.class);
+    ServletOutputStream outStream = mock(ServletOutputStream.class);
+    when(request.getHeader("Range")).thenReturn(null);
+    when(response.getOutputStream()).thenReturn(outStream);
+    when(request.getHeader("accept-encoding")).thenReturn("gzip");
+    doThrow(new RuntimeException()).when(outStream).close();
+
+    OutputStreamFromHttpResponse outputStreamSource =
+        new OutputStreamFromHttpResponse(request, response, "temp", ".dods", ".dods");
+    eddGrid.saveAsNcoJson(0, requestUrl, mapDapQuery, outputStreamSource);
+
+    verify(request).getHeader("Range");
+    verify(request).getHeader("accept-encoding");
+    verify(outStream, times(1)).close();
+    verifyNoMoreInteractions(request);
   }
 
   /**

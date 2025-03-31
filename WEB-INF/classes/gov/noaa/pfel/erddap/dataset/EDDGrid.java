@@ -2706,7 +2706,7 @@ public abstract class EDDGrid extends EDD {
       String maxKey = "av_" + av + "_maxValue";
       String attrKey = "av_" + av + "_attr";
       String msg2 = "#" + av + "=" + newSnapshot.get(nameKey);
-      if (!oldSnapshot.get(nameKey).equals(newSnapshot.get(nameKey))) {
+      if (!mapValueMatches(oldSnapshot, newSnapshot, nameKey)) {
         diff.append(
             MessageFormat.format(
                     EDStatic.messages.EDDChangedAxes2Different,
@@ -2716,7 +2716,7 @@ public abstract class EDDGrid extends EDD {
                     newSnapshot.get(nameKey))
                 + "\n");
       }
-      if (!oldSnapshot.get(typeKey).equals(newSnapshot.get(typeKey))) {
+      if (!mapValueMatches(oldSnapshot, newSnapshot, typeKey)) {
         diff.append(
             MessageFormat.format(
                     EDStatic.messages.EDDChangedAxes2Different,
@@ -2726,7 +2726,7 @@ public abstract class EDDGrid extends EDD {
                     newSnapshot.get(typeKey))
                 + "\n");
       }
-      if (!oldSnapshot.get(sourceSizeKey).equals(newSnapshot.get(sourceSizeKey))) {
+      if (!mapValueMatches(oldSnapshot, newSnapshot, sourceSizeKey)) {
         diff.append(
             MessageFormat.format(
                     EDStatic.messages.EDDChangedAxes2Different,
@@ -2736,7 +2736,7 @@ public abstract class EDDGrid extends EDD {
                     newSnapshot.get(sourceSizeKey))
                 + "\n");
       }
-      if (!oldSnapshot.get(minKey).equals(newSnapshot.get(minKey))) {
+      if (!mapValueMatches(oldSnapshot, newSnapshot, minKey)) {
         diff.append(
             MessageFormat.format(
                     EDStatic.messages.EDDChangedAxes2Different,
@@ -2746,7 +2746,7 @@ public abstract class EDDGrid extends EDD {
                     newSnapshot.get(minKey))
                 + "\n");
       }
-      if (!oldSnapshot.get(maxKey).equals(newSnapshot.get(maxKey))) {
+      if (!mapValueMatches(oldSnapshot, newSnapshot, maxKey)) {
         diff.append(
             MessageFormat.format(
                     EDStatic.messages.EDDChangedAxes2Different,
@@ -3433,7 +3433,13 @@ public abstract class EDDGrid extends EDD {
                               EDStatic.messages.queryErrorFileTypeAr[language], fileTypeName)));
             }
           } finally {
-            fos.close();
+            if (fos != null) {
+              try {
+                fos.close();
+              } catch (Exception e) {
+                String2.log("Error closing stream, log and continue: " + e.getMessage());
+              }
+            }
           }
           File2.rename(cacheFullName + random, cacheFullName);
           if (!ok) // make eligible to be removed from cache in 5 minutes
@@ -6091,7 +6097,11 @@ public abstract class EDDGrid extends EDD {
       writer.flush(); // essential
     } finally {
       if (writer != null) {
-        writer.close();
+        try {
+          writer.close();
+        } catch (Exception e) {
+          String2.log("Error closing writer, log and continue: " + e.getMessage());
+        }
       }
     }
 
@@ -6647,9 +6657,14 @@ public abstract class EDDGrid extends EDD {
         }
 
         dos.flush(); // essential
+      } catch (Exception e) {
+        String2.log(e.getMessage());
       } finally {
         if (writer != null) {
-          writer.close();
+          try {
+            writer.close();
+          } catch (Exception e) {
+          }
           writer = null;
         }
       }
@@ -10127,7 +10142,13 @@ public abstract class EDDGrid extends EDD {
           fullOutName,
           time);
     } finally {
-      dos.close();
+      if (dos != null) {
+        try {
+          dos.close();
+        } catch (Exception e) {
+          String2.log("Error closing stream, log and continue: " + e.getMessage());
+        }
+      }
     }
     File2.delete(fullDosName);
 
@@ -11286,7 +11307,11 @@ public abstract class EDDGrid extends EDD {
       writer.flush(); // essential
     } finally {
       if (writer != null) {
-        writer.close();
+        try {
+          writer.close();
+        } catch (Exception e) {
+          String2.log("Error closing writer, log and continue: " + e.getMessage());
+        }
       }
     }
   }

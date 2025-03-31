@@ -1,5 +1,7 @@
 package gov.noaa.pfel.erddap.dataset;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import com.cohort.array.Attributes;
 import com.cohort.array.DoubleArray;
 import com.cohort.array.FloatArray;
@@ -21,6 +23,7 @@ import gov.noaa.pfel.coastwatch.sgt.SgtUtil;
 import gov.noaa.pfel.coastwatch.util.FileVisitorDNLS;
 import gov.noaa.pfel.coastwatch.util.RegexFilenameFilter;
 import gov.noaa.pfel.coastwatch.util.SSR;
+import gov.noaa.pfel.coastwatch.util.SharedWatchService;
 import gov.noaa.pfel.coastwatch.util.TestSSR;
 import gov.noaa.pfel.erddap.GenerateDatasetsXml;
 import gov.noaa.pfel.erddap.util.EDStatic;
@@ -37,6 +40,7 @@ import java.util.BitSet;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.junit.jupiter.api.BeforeAll;
@@ -6890,8 +6894,8 @@ class EDDTableFromNcFilesTests {
               + "            <gex:EX_TemporalExtent>\n"
               + "              <gex:extent>\n"
               + "                <gml:TimePeriod>\n"
-              + "                  <gml:beginPosition>1977-11-06T07:00:00-05:00</gml:beginPosition>\n"
-              + "                  <gml:endPosition>2022-01-02T07:00:00-05:00</gml:endPosition>\n"
+              + "                  <gml:beginPosition>YYYY-MM-DDT12:00:00Z</gml:beginPosition>\n"
+              + "                  <gml:endPosition>YYYY-MM-DDT12:00:00Z</gml:endPosition>\n"
               + "                </gml:TimePeriod>\n"
               + "              </gex:extent>\n"
               + "            </gex:EX_TemporalExtent>\n"
@@ -6952,7 +6956,17 @@ class EDDTableFromNcFilesTests {
     }
     results =
         results.replaceAll(
-            "<gml:beginPosition>....-..-..T12:00:00Z", "<gml:beginPosition>YYYY-MM-DDT12:00:00Z");
+            "<gml:beginPosition>....-..-..T..:..:..Z", "<gml:beginPosition>YYYY-MM-DDT12:00:00Z");
+    results =
+        results.replaceAll(
+            "<gml:beginPosition>....-..-..T..:..:..-..:..",
+            "<gml:beginPosition>YYYY-MM-DDT12:00:00Z");
+    results =
+        results.replaceAll(
+            "<gml:endPosition>....-..-..T..:..:..Z", "<gml:endPosition>YYYY-MM-DDT12:00:00Z");
+    results =
+        results.replaceAll(
+            "<gml:endPosition>....-..-..T..:..:..-..:..", "<gml:endPosition>YYYY-MM-DDT12:00:00Z");
     results =
         results.replaceAll(
             "<gmd:maximumValue><gco:Real>[0-9]+.[0-9]+</gco:Real></gmd:maximumValue>",
@@ -7388,7 +7402,9 @@ class EDDTableFromNcFilesTests {
             + "    String cdm_data_type \"TimeSeries\";\n"
             + "    String cdm_timeseries_variables \"array, station, wmo_platform_code, longitude, latitude, depth\";\n"
             + "    String Conventions \"COARDS, CF-1.6, ACDD-1.3\";\n"
-            + "    String CREATION_DATE \"HH:MM  D-MMM-YYYY\";\n"
+            + (results.indexOf("String CREATION_DATE") > -1
+                ? "    String CREATION_DATE \"HH:MM  D-MMM-YYYY\";\n"
+                : "")
             + "    String creator_email \"Dai.C.McClurg@noaa.gov\";\n"
             + "    String creator_name \"GTMBA Project Office/NOAA/PMEL\";\n"
             + "    String creator_type \"group\";\n"
@@ -7436,9 +7452,15 @@ class EDDTableFromNcFilesTests {
             + "implied, including warranties of merchantability and fitness for a\n"
             + "particular purpose, or assumes any legal liability for the accuracy,\n"
             + "completeness, or usefulness, of this information.\";\n"
-            + "    Float32 missing_value 1.0e+35;\n"
+            + (results.indexOf(
+                        "Float32 missing_value", results.indexOf("tabledap/pmelTaoDyAirt.das"))
+                    > -1
+                ? "    Float32 missing_value 1.0e+35;\n"
+                : "")
             + "    Float64 Northernmost_Northing 21.0;\n"
-            + "    String platform_code \"CODE\";\n"
+            + (results.indexOf("String platform_code") > -1
+                ? "    String platform_code \"CODE\";\n"
+                : "")
             + "    String project \"TAO/TRITON, RAMA, PIRATA\";\n"
             + "    String Request_for_acknowledgement \"If you use these data in publications "
             + "or presentations, please acknowledge the GTMBA Project Office of NOAA/PMEL. "
@@ -10112,6 +10134,124 @@ class EDDTableFromNcFilesTests {
             language, null, null, dataQuery, tDir, eddTable.className() + "_update_4d", ".csv");
     results = File2.directReadFrom88591File(tDir + tName);
     Test.ensureEqual(results, originalExpectedData, "\nresults=\n" + results);
+  }
+
+  /**
+   * This tests the EDDTableFromFiles.changed().
+   *
+   * @throws Throwable if trouble
+   */
+  @org.junit.jupiter.api.Test
+  @TagSlowTests
+  void testChanged() throws Throwable {
+    EDDTableFromNcFiles eddTable = (EDDTableFromNcFiles) EDDTestDataset.getminiNdbc();
+    String dataDir = eddTable.fileDir;
+
+    // fix trouble if left in bad state previously
+    if (!File2.isFile(dataDir + "NDBC_41025_met.nc")
+        && File2.isFile(dataDir + "NDBC_41025_met.nc2")) {
+      File2.rename(dataDir, "NDBC_41025_met.nc2", "NDBC_41025_met.nc");
+      Math2.sleep(500);
+      SharedWatchService.processEvents();
+    }
+    Map<String, String> originalSnapshot = eddTable.snapshot();
+    String expected = "";
+    assertEquals(expected, eddTable.changed(originalSnapshot));
+    Map<String, String> snapshotDiff;
+
+    // *** rename a data file so it doesn't match regex
+    try {
+      File2.rename(dataDir, "NDBC_41025_met.nc", "NDBC_41025_met.nc2");
+      Math2.sleep(500);
+      SharedWatchService.processEvents();
+      snapshotDiff = eddTable.snapshot();
+      expected =
+          "The combinedAttribute for dataVariable #1=longitude changed:\n"
+              + "  old line #2=\"    actual_range=-80.41f,-75.402f\",\n"
+              + "  new line #2=\"    actual_range=-80.41f,-78.489f\".\n"
+              + "The combinedAttribute for dataVariable #2=latitude changed:\n"
+              + "  old line #2=\"    actual_range=32.28f,35.006f\",\n"
+              + "  new line #2=\"    actual_range=32.28f,33.848f\".\n"
+              + "The combinedAttribute for dataVariable #3=time changed:\n"
+              + "  old line #2=\"    actual_range=1.048878E9d,1.4220504E9d\",\n"
+              + "  new line #2=\"    actual_range=1.1091708E9d,1.4220468E9d\".\n"
+              + "The combinedAttribute for dataVariable #5=geolon changed:\n"
+              + "  old line #1=\"    actual_range=-80.41f,-75.402f\",\n"
+              + "  new line #1=\"    actual_range=-80.41f,-78.489f\".\n"
+              + "The combinedAttribute for dataVariable #6=geolat changed:\n"
+              + "  old line #1=\"    actual_range=32.28f,35.006f\",\n"
+              + "  new line #1=\"    actual_range=32.28f,33.848f\".\n"
+              + "The combinedAttribute for dataVariable #7=wd changed:\n"
+              + "  old line #2=\"    actual_range=0s,359s\",\n"
+              + "  new line #2=\"    actual_range=0s,350s\".\n"
+              + "The combinedAttribute for dataVariable #10=wvht changed:\n"
+              + "  old line #2=\"    actual_range=0.0f,13.63f\",\n"
+              + "  new line #2=\"    actual_range=0.0f,3.0f\".\n"
+              + "The combinedAttribute for dataVariable #11=dpd changed:\n"
+              + "  old line #2=\"    actual_range=0.0f,30.77f\",\n"
+              + "  new line #2=\"    actual_range=2.0f,18.0f\".\n"
+              + "The combinedAttribute for dataVariable #14=bar changed:\n"
+              + "  old line #2=\"    actual_range=984.5f,1043.2f\",\n"
+              + "  new line #2=\"    actual_range=992.1f,1043.2f\".\n"
+              + "The combinedAttribute for dataVariable #21=wspu changed:\n"
+              + "  old line #2=\"    actual_range=-27.2f,19.1f\",\n"
+              + "  new line #2=\"    actual_range=-14.1f,17.9f\".\n"
+              + "The combinedAttribute for dataVariable #22=wspv changed:\n"
+              + "  old line #2=\"    actual_range=-26.6f,24.2f\",\n"
+              + "  new line #2=\"    actual_range=-26.6f,14.1f\".\n"
+              + "A combinedGlobalAttribute changed:\n"
+              + "  old line #12=\"    geospatial_lat_max=35.006d\",\n"
+              + "  new line #12=\"    geospatial_lat_max=33.848d\".\n";
+      assertEquals(expected, eddTable.changed(originalSnapshot));
+
+    } finally {
+      // rename it back to original
+      File2.rename(dataDir, "NDBC_41025_met.nc2", "NDBC_41025_met.nc");
+      Math2.sleep(500);
+      SharedWatchService.processEvents();
+    }
+    Map<String, String> snapshot2 = eddTable.snapshot();
+    expected = "";
+    assertEquals(expected, eddTable.changed(originalSnapshot));
+    assertEquals(expected, eddTable.changed(snapshot2));
+    expected =
+        "The combinedAttribute for dataVariable #1=longitude changed:\n"
+            + "  old line #2=\"    actual_range=-80.41f,-78.489f\",\n"
+            + "  new line #2=\"    actual_range=-80.41f,-75.402f\".\n"
+            + "The combinedAttribute for dataVariable #2=latitude changed:\n"
+            + "  old line #2=\"    actual_range=32.28f,33.848f\",\n"
+            + "  new line #2=\"    actual_range=32.28f,35.006f\".\n"
+            + "The combinedAttribute for dataVariable #3=time changed:\n"
+            + "  old line #2=\"    actual_range=1.1091708E9d,1.4220468E9d\",\n"
+            + "  new line #2=\"    actual_range=1.048878E9d,1.4220504E9d\".\n"
+            + "The combinedAttribute for dataVariable #5=geolon changed:\n"
+            + "  old line #1=\"    actual_range=-80.41f,-78.489f\",\n"
+            + "  new line #1=\"    actual_range=-80.41f,-75.402f\".\n"
+            + "The combinedAttribute for dataVariable #6=geolat changed:\n"
+            + "  old line #1=\"    actual_range=32.28f,33.848f\",\n"
+            + "  new line #1=\"    actual_range=32.28f,35.006f\".\n"
+            + "The combinedAttribute for dataVariable #7=wd changed:\n"
+            + "  old line #2=\"    actual_range=0s,350s\",\n"
+            + "  new line #2=\"    actual_range=0s,359s\".\n"
+            + "The combinedAttribute for dataVariable #10=wvht changed:\n"
+            + "  old line #2=\"    actual_range=0.0f,3.0f\",\n"
+            + "  new line #2=\"    actual_range=0.0f,13.63f\".\n"
+            + "The combinedAttribute for dataVariable #11=dpd changed:\n"
+            + "  old line #2=\"    actual_range=2.0f,18.0f\",\n"
+            + "  new line #2=\"    actual_range=0.0f,30.77f\".\n"
+            + "The combinedAttribute for dataVariable #14=bar changed:\n"
+            + "  old line #2=\"    actual_range=992.1f,1043.2f\",\n"
+            + "  new line #2=\"    actual_range=984.5f,1043.2f\".\n"
+            + "The combinedAttribute for dataVariable #21=wspu changed:\n"
+            + "  old line #2=\"    actual_range=-14.1f,17.9f\",\n"
+            + "  new line #2=\"    actual_range=-27.2f,19.1f\".\n"
+            + "The combinedAttribute for dataVariable #22=wspv changed:\n"
+            + "  old line #2=\"    actual_range=-26.6f,14.1f\",\n"
+            + "  new line #2=\"    actual_range=-26.6f,24.2f\".\n"
+            + "A combinedGlobalAttribute changed:\n"
+            + "  old line #12=\"    geospatial_lat_max=33.848d\",\n"
+            + "  new line #12=\"    geospatial_lat_max=35.006d\".\n";
+    assertEquals(expected, eddTable.changed(snapshotDiff));
   }
 
   /**

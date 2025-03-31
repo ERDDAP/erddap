@@ -6419,7 +6419,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
           out.close(); // often already closed; closing again does nothing
         }
       } catch (Exception e2) {
-        String2.log(MustBe.throwableToString(e2));
+        String2.log("Logging error, likely from client problem: " + MustBe.throwableToString(e2));
       } // essential, to end compression  //hard to put in finally {}
     }
   }

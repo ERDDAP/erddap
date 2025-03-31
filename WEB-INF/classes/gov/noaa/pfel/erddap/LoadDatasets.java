@@ -794,7 +794,7 @@ public class LoadDatasets extends Thread {
               // trigger subscription and dataset.onChange actions (after new dataset is in place)
               EDD cooDataset = dataset == null ? oldDataset : dataset; // currentOrOld, may be null
 
-              erddap.tryToDoActions(
+              Erddap.tryToDoActions(
                   tId,
                   cooDataset,
                   startError + xmlReader.lineNumber() + " with Subscriptions",
@@ -1714,7 +1714,7 @@ public class LoadDatasets extends Thread {
     changedDatasetIDs.add(tId);
     if (needToUpdateLucene) erddap.updateLucene(changedDatasetIDs);
     // do dataset actions so subscribers know it is gone
-    erddap.tryToDoActions(
+    Erddap.tryToDoActions(
         tId,
         oldEdd,
         null, // default subject
