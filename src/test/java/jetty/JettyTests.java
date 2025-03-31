@@ -1895,7 +1895,7 @@ class JettyTests {
               + "              <gmd:extent>\n"
               + "                <gml:TimePeriod gml:id=\"DI_gmdExtent_timePeriod_id\">\n"
               + "                  <gml:description>seconds</gml:description>\n"
-              + "                  <gml:beginPosition>YYYY-MM-DDThh:00:00Z</gml:beginPosition>\n"
+              + "                   <gml:beginPosition>2003-01-01T12:00:00Z</gml:beginPosition>\n"
               + "                  <gml:endPosition>YYYY-MM-DDThh:00:00Z</gml:endPosition>\n"
               + "                </gml:TimePeriod>\n"
               + "              </gmd:extent>\n"
