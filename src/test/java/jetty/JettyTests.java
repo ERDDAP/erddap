@@ -1333,6 +1333,10 @@ class JettyTests {
               "<gco:DateTime>YYYY-MM-DDThh:mm:ss.mmm-tz:tz</gco:DateTime>");
       results =
           results.replaceAll(
+              "<gco:DateTime>....-..-..T..:..:......Z</gco:DateTime>",
+              "<gco:DateTime>YYYY-MM-DDThh:mm:ss.mmm-tz:tz</gco:DateTime>");
+      results =
+          results.replaceAll(
               "<gco:Measure uom=\\\"s\\\">[0-9]+.[0-9]+</gco:Measure>",
               "<gco:Measure uom=\"s\">VALUE</gco:Measure>");
       results =
