@@ -1,0 +1,12 @@
+apiVersion: 1
+
+providers:
+  - name: 'ERDDAP Dashboards'
+    orgId: 1
+    folder: 'ERDDAP'
+    type: file
+    disableDeletion: false
+    editable: true
+    allowUiUpdates: true
+    options:
+      path: /var/lib/grafana/dashboards
