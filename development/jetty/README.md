@@ -35,6 +35,11 @@ ERDDAP™ can be run in Jetty with the following command:
 ```
 MAVEN_OPTS="-Xms4096m -Xmx4096m" mvn jetty:run -DerddapContentDirectory=development/jetty/config
 ```
+For windows 
+```
+set MAVEN_OPTS=-Xms4096m -Xmx4096m
+mvn jetty:run -DerddapContentDirectory=development/jetty/config
+```
 
 **Access ERDDAP™ at: http://localhost:8080/erddap**.  
 
