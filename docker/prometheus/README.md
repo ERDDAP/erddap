@@ -40,16 +40,6 @@ Edit the `scrape_configs` section in `prometheus.yml` to add additional ERDDAP i
 
   To create all the necessary directories, run these commands:
 
-  ```bash
-  # Create Java API directories
-  mkdir -p "/Users/lareina/Desktop/erddp test/erddap/src/main/java/gov/noaa/pfel/erddap/monitoring/config"
-  mkdir -p "/Users/lareina/Desktop/erddp test/erddap/src/main/java/gov/noaa/pfel/erddap/monitoring/servlet"
-
-  # Create Docker configuration directories
-  mkdir -p "/Users/lareina/Desktop/erddp test/erddap/docker/prometheus/grafana/provisioning/datasources"
-  mkdir -p "/Users/lareina/Desktop/erddp test/erddap/docker/prometheus/grafana/provisioning/dashboards"
-  mkdir -p "/Users/lareina/Desktop/erddp test/erddap/docker/prometheus/grafana/dashboards"
-
   These files form a complete solution that demonstrates:
   1. A clean API design for metrics collection
   2. A Docker-based Prometheus server configuration
