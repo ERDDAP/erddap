@@ -17,7 +17,7 @@ global:
       scrape_interval: 30s
       metrics_path: '/erddap/metrics'
       static_configs:
-        - targets: ['erddap-host:8080']
+        - targets: ['erddap:8080']
           labels:
             instance: 'erddap-primary'
             region: 'primary'

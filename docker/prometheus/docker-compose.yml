@@ -1,40 +1,8 @@
 
-  services:
-    prometheus:
-      image: prom/prometheus:latest
-      container_name: erddap-prometheus
-      volumes:
-        - ./prometheus.yml:/etc/prometheus/prometheus.yml
-        - prometheus_data:/prometheus
-      command:
-        - '--config.file=/etc/prometheus/prometheus.yml'
-        - '--storage.tsdb.path=/prometheus'
-        - '--storage.tsdb.retention.time=30d'
-        - '--web.console.libraries=/etc/prometheus/console_libraries'
-        - '--web.console.templates=/etc/prometheus/consoles'
-        - '--web.enable-lifecycle'
-      ports:
-        - "9090:9090"
-      restart: unless-stopped
-
-    grafana:
-      image: grafana/grafana:latest
-      container_name: erddap-grafana
-      volumes:
-        - grafana_data:/var/lib/grafana
-        - ./grafana/provisioning:/etc/grafana/provisioning
-        - ./grafana/dashboards:/var/lib/grafana/dashboards
-      environment:
-        - GF_SECURITY_ADMIN_USER=admin
-        - GF_SECURITY_ADMIN_PASSWORD=${GF_SECURITY_ADMIN_PASSWORD:-erddapadmin}
-        - GF_USERS_ALLOW_SIGN_UP=false
-        - GF_INSTALL_PLUGINS=grafana-clock-panel,grafana-piechart-panel
-      ports:
-        - "3000:3000"
-      depends_on:
-        - prometheus
-      restart: unless-stopped
-
-  volumes:
-    prometheus_data:
-    grafana_data:
+# NOTE: This docker-compose file has been deprecated.
+# The monitoring services have been moved to the root docker-compose.yml file
+# and can be enabled with the "monitoring" profile:
+#
+# docker-compose --profile monitoring up
+#
+# Please use the root configuration instead of this file.

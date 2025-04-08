@@ -57,4 +57,3 @@
        */
       protected abstract void writeMetrics(HttpServletResponse response) throws IOException;
   }
-
