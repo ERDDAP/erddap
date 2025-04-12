@@ -14,6 +14,11 @@ import com.cohort.util.String2;
 import com.cohort.util.Test;
 import gov.noaa.pfel.coastwatch.griddata.NcHelper;
 import gov.noaa.pfel.coastwatch.util.SSR;
+import gov.noaa.pfel.erddap.filetypes.AsciiFiles;
+import gov.noaa.pfel.erddap.filetypes.DapRequestInfo;
+import gov.noaa.pfel.erddap.filetypes.DodsFiles;
+import gov.noaa.pfel.erddap.filetypes.NcoJsonFiles;
+import gov.noaa.pfel.erddap.filetypes.PngFiles;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import jakarta.servlet.ServletOutputStream;
 import jakarta.servlet.http.HttpServletRequest;
@@ -52,7 +57,23 @@ class EDDGridTests {
 
     OutputStreamFromHttpResponse outputStreamSource =
         new OutputStreamFromHttpResponse(request, response, "temp", ".dods", ".dods");
-    eddGrid.saveAsDODS(0, requestUrl, mapDapQuery, outputStreamSource);
+    DodsFiles dods = new DodsFiles();
+    dods.writeGridToStream(
+        new DapRequestInfo(
+            0,
+            eddGrid,
+            null,
+            outputStreamSource,
+            requestUrl,
+            mapDapQuery,
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            null,
+            null));
 
     verify(request).getHeader("Range");
     verify(request).getHeader("accept-encoding");
@@ -75,7 +96,23 @@ class EDDGridTests {
 
     OutputStreamFromHttpResponse outputStreamSource =
         new OutputStreamFromHttpResponse(request, response, "temp", ".dods", ".dods");
-    eddGrid.saveAsAsc(0, requestUrl, mapDapQuery, outputStreamSource);
+    AsciiFiles ascii = new AsciiFiles();
+    ascii.writeGridToStream(
+        new DapRequestInfo(
+            0,
+            eddGrid,
+            null,
+            outputStreamSource,
+            requestUrl,
+            mapDapQuery,
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            null,
+            null));
 
     verify(request).getHeader("Range");
     verify(request).getHeader("accept-encoding");
@@ -98,7 +135,23 @@ class EDDGridTests {
 
     OutputStreamFromHttpResponse outputStreamSource =
         new OutputStreamFromHttpResponse(request, response, "temp", ".dods", ".dods");
-    eddGrid.saveAsNcoJson(0, requestUrl, mapDapQuery, outputStreamSource);
+    NcoJsonFiles nco = new NcoJsonFiles();
+    nco.writeGridToStream(
+        new DapRequestInfo(
+            0,
+            eddGrid,
+            null,
+            outputStreamSource,
+            requestUrl,
+            mapDapQuery,
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            null,
+            null));
 
     verify(request).getHeader("Range");
     verify(request).getHeader("accept-encoding");
@@ -762,7 +815,8 @@ class EDDGridTests {
     OutputStreamSourceSimple osss = new OutputStreamSourceSimple(baos);
     String filename = dir + Math2.random(Integer.MAX_VALUE) + ".png";
 
-    eddGrid.saveAsImage(
+    PngFiles pngCreator = new PngFiles();
+    pngCreator.saveAsImage(
         0 /* language */,
         null /* loggedInAs */,
         requestUrl,
@@ -770,7 +824,8 @@ class EDDGridTests {
         dir,
         filename,
         osss /* outputStreamSource */,
-        fileTypeName);
+        fileTypeName,
+        eddGrid);
 
     try {
       MessageDigest digest = MessageDigest.getInstance("SHA-256");

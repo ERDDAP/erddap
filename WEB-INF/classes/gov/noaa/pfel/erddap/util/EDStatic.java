@@ -3166,6 +3166,23 @@ public class EDStatic {
     return iar;
   }
 
+  public static String getJsonpFromQuery(int language, String userDapQuery) throws Exception {
+    String parts[] = Table.getDapQueryParts(userDapQuery); // decoded
+    String jsonp = String2.stringStartsWith(parts, ".jsonp="); // may be null
+    if (jsonp != null) {
+      jsonp = jsonp.substring(7);
+      if (!String2.isJsonpNameSafe(jsonp)) {
+        throw new SimpleException(
+            EDStatic.bilingual(
+                language,
+                EDStatic.messages.queryErrorAr[0] + EDStatic.messages.errorJsonpFunctionNameAr[0],
+                EDStatic.messages.queryErrorAr[language]
+                    + EDStatic.messages.errorJsonpFunctionNameAr[language]));
+      }
+    }
+    return jsonp;
+  }
+
   /**
    * This returns the .jsonp=[functionName] part of the request (percent encoded) or "". If not "",
    * it will have "&" at the end.
@@ -3179,19 +3196,9 @@ public class EDStatic {
   public static String passThroughJsonpQuery(int language, HttpServletRequest request) {
     String jsonp = "";
     try {
-      String parts[] =
-          Table.getDapQueryParts(
-              request.getQueryString()); // decoded.  Does some validity checking.
-      jsonp = String2.stringStartsWith(parts, ".jsonp="); // may be null
+      jsonp = EDStatic.getJsonpFromQuery(language, request.getQueryString());
       if (jsonp == null) return "";
-      String functionName = jsonp.substring(7); // it will be because it starts with .jsonp=
-      if (!String2.isJsonpNameSafe(functionName))
-        throw new SimpleException(
-            bilingual(
-                language,
-                messages.errorJsonpFunctionNameAr[0],
-                messages.errorJsonpFunctionNameAr[language]));
-      return ".jsonp=" + SSR.minimalPercentEncode(functionName) + "&";
+      return ".jsonp=" + SSR.minimalPercentEncode(jsonp) + "&";
     } catch (Throwable t) {
       String2.log(MustBe.throwableToString(t));
       return "";

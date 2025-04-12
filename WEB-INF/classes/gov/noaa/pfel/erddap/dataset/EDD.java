@@ -41,7 +41,6 @@ import gov.noaa.pfel.erddap.handlers.SaxHandler;
 import gov.noaa.pfel.erddap.handlers.SaxHandlerClass;
 import gov.noaa.pfel.erddap.handlers.State;
 import gov.noaa.pfel.erddap.util.CfToFromGcmd;
-import gov.noaa.pfel.erddap.util.EDConfig;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.util.EmailThread;
 import gov.noaa.pfel.erddap.util.Subscriptions;
@@ -3973,37 +3972,6 @@ public abstract class EDD {
     }
 
     return displayInfoStr.toString();
-  }
-
-  /**
-   * This returns the kml code for the screenOverlay (which is the KML code which describes
-   * how/where to display the googleEarthLogoFile). This is used by EDD subclasses when creating KML
-   * files.
-   *
-   * @return the kml code for the screenOverlay.
-   */
-  public String getKmlIconScreenOverlay() {
-    return "  <ScreenOverlay id=\"Logo\">\n"
-        + // generic id
-        "    <description>"
-        + EDStatic.preferredErddapUrl
-        + "</description>\n"
-        + "    <name>Logo</name>\n"
-        + // generic name
-        "    <Icon>"
-        + "<href>"
-        + EDStatic.preferredErddapUrl
-        + "/"
-        + EDConfig.IMAGES_DIR
-        + // has trailing /
-        EDStatic.config.googleEarthLogoFile
-        + "</href>"
-        + "</Icon>\n"
-        + "    <overlayXY x=\"0.005\" y=\".04\" xunits=\"fraction\" yunits=\"fraction\"/>\n"
-        + "    <screenXY x=\"0.005\" y=\".04\" xunits=\"fraction\" yunits=\"fraction\"/>\n"
-        + "    <size x=\"0\" y=\"0\" xunits=\"pixels\" yunits=\"pixels\"/>\n"
-        + // 0=original size
-        "  </ScreenOverlay>\n";
   }
 
   /**

@@ -1345,6 +1345,10 @@ class JettyTests {
               "<gco:Measure uom=\"s\">VALUE</gco:Measure>");
       results =
           results.replaceAll(
+              "<gml:endPosition>....-..-..T..:..:..-..:..</gml:endPosition>",
+              "<gml:endPosition>YYYY-MM-DDThh:00:00Z</gml:endPosition>");
+      results =
+          results.replaceAll(
               "<gml:endPosition>....-..-..T..:..:......-..:..</gml:endPosition>",
               "<gml:endPosition>YYYY-MM-DDThh:00:00Z</gml:endPosition>");
       results =
@@ -1354,6 +1358,10 @@ class JettyTests {
       results =
           results.replaceAll(
               "<gml:beginPosition>....-..-..T..:..:......-..:..</gml:beginPosition>",
+              "<gml:beginPosition>YYYY-MM-DDThh:00:00Z</gml:beginPosition>");
+      results =
+          results.replaceAll(
+              "<gml:beginPosition>....-..-..T..:..:..-..:..</gml:beginPosition>",
               "<gml:beginPosition>YYYY-MM-DDThh:00:00Z</gml:beginPosition>");
       results =
           results.replaceAll(
@@ -1895,7 +1903,7 @@ class JettyTests {
               + "              <gmd:extent>\n"
               + "                <gml:TimePeriod gml:id=\"DI_gmdExtent_timePeriod_id\">\n"
               + "                  <gml:description>seconds</gml:description>\n"
-              + "                   <gml:beginPosition>2003-01-01T12:00:00Z</gml:beginPosition>\n"
+              + "                   <gml:beginPosition>YYYY-MM-DDThh:00:00Z</gml:beginPosition>\n"
               + "                  <gml:endPosition>YYYY-MM-DDThh:00:00Z</gml:endPosition>\n"
               + "                </gml:TimePeriod>\n"
               + "              </gmd:extent>\n"
@@ -2000,7 +2008,7 @@ class JettyTests {
               + "              <gmd:extent>\n"
               + "                <gml:TimePeriod gml:id=\"ED_gmdExtent_timePeriod_id\">\n"
               + "                  <gml:description>seconds</gml:description>\n"
-              + "                  <gml:beginPosition>2003-01-01T12:00:00Z</gml:beginPosition>\n"
+              + "                  <gml:beginPosition>YYYY-MM-DDThh:00:00Z</gml:beginPosition>\n"
               + "                  <gml:endPosition>YYYY-MM-DDThh:00:00Z</gml:endPosition>\n"
               + "                </gml:TimePeriod>\n"
               + "              </gmd:extent>\n"
@@ -2136,7 +2144,7 @@ class JettyTests {
               + "              <gmd:extent>\n"
               + "                <gml:TimePeriod gml:id=\"OD_gmdExtent_timePeriod_id\">\n"
               + "                  <gml:description>seconds</gml:description>\n"
-              + "                  <gml:beginPosition>2003-01-01T12:00:00Z</gml:beginPosition>\n"
+              + "                  <gml:beginPosition>YYYY-MM-DDThh:00:00Z</gml:beginPosition>\n"
               + "                  <gml:endPosition>YYYY-MM-DDThh:00:00Z</gml:endPosition>\n"
               + "                </gml:TimePeriod>\n"
               + "              </gmd:extent>\n"
@@ -2272,7 +2280,7 @@ class JettyTests {
               + "              <gmd:extent>\n"
               + "                <gml:TimePeriod gml:id=\"WMS_gmdExtent_timePeriod_id\">\n"
               + "                  <gml:description>seconds</gml:description>\n"
-              + "                  <gml:beginPosition>2003-01-01T12:00:00Z</gml:beginPosition>\n"
+              + "                  <gml:beginPosition>YYYY-MM-DDThh:00:00Z</gml:beginPosition>\n"
               + "                  <gml:endPosition>YYYY-MM-DDThh:00:00Z</gml:endPosition>\n"
               + "                </gml:TimePeriod>\n"
               + "              </gmd:extent>\n"
@@ -2499,6 +2507,10 @@ class JettyTests {
           results.replaceAll(
               "<gml:endPosition>....-..-..T..:00:00Z</gml:endPosition>",
               "<gml:endPosition>YYYY-MM-DDThh:00:00Z</gml:endPosition>");
+      results =
+          results.replaceAll(
+              "<gml:beginPosition>....-..-..T..:00:00-..:..</gml:beginPosition>",
+              "<gml:beginPosition>YYYY-MM-DDThh:00:00Z</gml:beginPosition>");
       results =
           results.replaceAll(
               "<gco:Integer>[0-9]+</gco:Integer>", "<gco:Integer>NUMBER</gco:Integer>");

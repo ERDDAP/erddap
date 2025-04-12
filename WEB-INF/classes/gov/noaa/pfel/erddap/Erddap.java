@@ -36,6 +36,7 @@ import gov.noaa.pfel.coastwatch.util.HtmlWidgets;
 import gov.noaa.pfel.coastwatch.util.RegexFilenameFilter;
 import gov.noaa.pfel.coastwatch.util.SSR;
 import gov.noaa.pfel.erddap.dataset.*;
+import gov.noaa.pfel.erddap.filetypes.TransparentPngFiles;
 import gov.noaa.pfel.erddap.handlers.SaxParsingContext;
 import gov.noaa.pfel.erddap.util.*;
 import gov.noaa.pfel.erddap.variable.*;
@@ -12866,7 +12867,8 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
               OutputStreamSource oss = new OutputStreamSourceSimple(out);
 
               try { // most exceptions written to image.  some throw throwable.
-                tEddGrid.saveAsImage(
+                TransparentPngFiles imageMaker = new TransparentPngFiles();
+                imageMaker.saveAsImage(
                     language,
                     loggedInAs,
                     relativeUrl,
@@ -12874,7 +12876,8 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                     actualDir,
                     virtualFileName,
                     oss,
-                    fileTypeName);
+                    fileTypeName,
+                    tEddGrid);
                 out.close();
               } catch (Throwable t) {
                 sendGeoServicesRestError(
