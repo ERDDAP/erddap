@@ -18,7 +18,7 @@ ERDDAP&trade; is a Java Servlet-based application and can be run in any compatib
 Local development and testing of ERDDAP&trade; code can be done without a production-scale installation.  Two approaches are recommended:
 
 * **Jetty Servlet Container** - see: [ERDDAP&trade; Development with Maven and Jetty](./development/jetty/).
-* **Docker/Tomcat** (building and running an ERDDAP&trade; development Docker image) - see: [ERDDAP&trade; Development with Docker/Tomcat](./development/docker/)
+* **Docker/Tomcat** (building and running an ERDDAP&trade; development Docker image) - see: [ERDDAP&trade; Development with Docker/Tomcat](./DOCKER.md)
 
 For operational ERDDAP&trade; deployment, [Apache Tomcat](https://tomcat.apache.org/) is recommended.  See [Deploying ERDDAP&trade; Operationally](#deploying-erddap-operationally) for instructions.
 
