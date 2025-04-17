@@ -8,7 +8,7 @@ import gov.noaa.pfel.erddap.util.EDStatic;
     fileTypeExtension = ".csv",
     fileTypeName = ".esriCsv",
     infoUrl = "https://support.esri.com/technical-article/000012745",
-    versionAdded = "1.0.0",
+    versionAdded = "1.24.0",
     availableGrid = false)
 public class EsriCsvFiles extends TableWriterFileType {
 

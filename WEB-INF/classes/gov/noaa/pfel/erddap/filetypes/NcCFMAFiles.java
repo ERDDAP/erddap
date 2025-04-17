@@ -6,7 +6,7 @@ import gov.noaa.pfel.erddap.util.EDStatic;
     fileTypeExtension = ".nc",
     fileTypeName = ".ncCFMA",
     infoUrl = "https://www.ncei.noaa.gov/netcdf-templates",
-    versionAdded = "1.0.0",
+    versionAdded = "1.40.0",
     availableGrid = false)
 public class NcCFMAFiles extends NcCFFiles {
   @Override

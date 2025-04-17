@@ -78,6 +78,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
+import org.semver4j.Semver;
 import tags.TagFlaky;
 import tags.TagImageComparison;
 import tags.TagIncompleteTest;
@@ -195,9 +196,8 @@ class JettyTests {
   void testErddapVersionResponse() throws Exception {
     HttpClient client = HttpClient.newHttpClient();
 
-    String erddapShortVersion = EDStatic.erddapVersion;
-    int po = erddapShortVersion.indexOf('_');
-    if (po >= 0) erddapShortVersion = erddapShortVersion.substring(0, po);
+    String erddapShortVersion =
+        EDStatic.erddapVersion.getMajor() + "." + EDStatic.erddapVersion.getMinor();
 
     // test short version string response
     HttpResponse<String> response =
@@ -229,7 +229,7 @@ class JettyTests {
     assertTrue(jsonResponse.has("version"));
     assertEquals(erddapShortVersion, jsonResponse.getString("version"));
     assertTrue(jsonResponse.has("version_full"));
-    assertEquals(EDStatic.erddapVersion, jsonResponse.getString("version_full"));
+    assertEquals(EDStatic.erddapVersion.getVersion(), jsonResponse.getString("version_full"));
     assertTrue(jsonResponse.has("deployment_info"));
     assertEquals(EDStatic.config.deploymentInfo, jsonResponse.getString("deployment_info"));
 
@@ -17481,5 +17481,12 @@ class JettyTests {
      * ,
      * "");
      */
+  }
+
+  @org.junit.jupiter.api.Test
+  @TagJetty
+  void testVersionPage() {
+    Semver version = EDD.getRemoteErddapVersion(EDStatic.erddapUrl + "/");
+    assertEquals(0, version.compareTo(EDStatic.erddapVersion));
   }
 }

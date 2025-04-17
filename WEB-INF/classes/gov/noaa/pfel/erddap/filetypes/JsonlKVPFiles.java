@@ -6,7 +6,7 @@ import gov.noaa.pfel.erddap.util.EDStatic;
     fileTypeExtension = ".jsonl",
     fileTypeName = ".jsonlKVP",
     infoUrl = "https://jsonlines.org/",
-    versionAdded = "1.0.0")
+    versionAdded = "1.82.0")
 public class JsonlKVPFiles extends Jsonl {
 
   public JsonlKVPFiles() {

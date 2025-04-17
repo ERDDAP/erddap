@@ -28,7 +28,7 @@ import java.util.HashSet;
     fileTypeExtension = ".txt",
     fileTypeName = ".odvTxt",
     infoUrl = "https://odv.awi.de/en/documentation/",
-    versionAdded = "1.0.0")
+    versionAdded = "1.24.0")
 public class OdvFiles extends TableWriterFileType {
 
   @Override

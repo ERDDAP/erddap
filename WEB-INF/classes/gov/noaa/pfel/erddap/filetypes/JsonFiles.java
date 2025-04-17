@@ -13,7 +13,7 @@ import gov.noaa.pfel.erddap.util.EDStatic;
     fileTypeExtension = ".json",
     fileTypeName = ".json",
     infoUrl = "https://www.json.org/",
-    versionAdded = "1.0.0")
+    versionAdded = "1.82.0")
 public class JsonFiles extends TableWriterFileType {
 
   @Override

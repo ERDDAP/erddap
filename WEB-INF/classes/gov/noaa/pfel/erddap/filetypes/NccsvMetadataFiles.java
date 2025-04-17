@@ -23,7 +23,7 @@ import java.io.Writer;
     fileTypeExtension = ".csv",
     fileTypeName = ".nccsvMetadata",
     infoUrl = "https://erddap.github.io/docs/user/nccsv-1.20",
-    versionAdded = "1.0.0")
+    versionAdded = "1.76.0")
 public class NccsvMetadataFiles extends FileTypeInterface {
 
   @Override

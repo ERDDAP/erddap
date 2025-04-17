@@ -35,52 +35,8 @@ import gov.noaa.pfel.coastwatch.util.HtmlWidgets;
 import gov.noaa.pfel.coastwatch.util.RegexFilenameFilter;
 import gov.noaa.pfel.coastwatch.util.SSR;
 import gov.noaa.pfel.erddap.dataset.metadata.MetadataBuilder;
-import gov.noaa.pfel.erddap.filetypes.AsciiFiles;
-import gov.noaa.pfel.erddap.filetypes.Csv0Files;
-import gov.noaa.pfel.erddap.filetypes.CsvFiles;
-import gov.noaa.pfel.erddap.filetypes.CsvpFiles;
 import gov.noaa.pfel.erddap.filetypes.DapRequestInfo;
-import gov.noaa.pfel.erddap.filetypes.DasFiles;
-import gov.noaa.pfel.erddap.filetypes.DataTableFiles;
-import gov.noaa.pfel.erddap.filetypes.DdsFiles;
-import gov.noaa.pfel.erddap.filetypes.DodsFiles;
-import gov.noaa.pfel.erddap.filetypes.EsriCsvFiles;
-import gov.noaa.pfel.erddap.filetypes.FgdcFiles;
 import gov.noaa.pfel.erddap.filetypes.FileTypeInterface;
-import gov.noaa.pfel.erddap.filetypes.GeoJsonFiles;
-import gov.noaa.pfel.erddap.filetypes.HtmlTableFiles;
-import gov.noaa.pfel.erddap.filetypes.Iso19115Files;
-import gov.noaa.pfel.erddap.filetypes.ItxFiles;
-import gov.noaa.pfel.erddap.filetypes.JsonFiles;
-import gov.noaa.pfel.erddap.filetypes.JsonlCSV1Files;
-import gov.noaa.pfel.erddap.filetypes.JsonlCSVFiles;
-import gov.noaa.pfel.erddap.filetypes.JsonlKVPFiles;
-import gov.noaa.pfel.erddap.filetypes.KmlFiles;
-import gov.noaa.pfel.erddap.filetypes.LargePdfFiles;
-import gov.noaa.pfel.erddap.filetypes.LargePngFiles;
-import gov.noaa.pfel.erddap.filetypes.MatFiles;
-import gov.noaa.pfel.erddap.filetypes.NcCFFiles;
-import gov.noaa.pfel.erddap.filetypes.NcCFHeaderFiles;
-import gov.noaa.pfel.erddap.filetypes.NcCFMAFiles;
-import gov.noaa.pfel.erddap.filetypes.NcCFMAHeaderFiles;
-import gov.noaa.pfel.erddap.filetypes.NcFiles;
-import gov.noaa.pfel.erddap.filetypes.NcHeaderFiles;
-import gov.noaa.pfel.erddap.filetypes.NccsvFiles;
-import gov.noaa.pfel.erddap.filetypes.NccsvMetadataFiles;
-import gov.noaa.pfel.erddap.filetypes.NcoJsonFiles;
-import gov.noaa.pfel.erddap.filetypes.OdvFiles;
-import gov.noaa.pfel.erddap.filetypes.ParquetFiles;
-import gov.noaa.pfel.erddap.filetypes.ParquetWMetaFiles;
-import gov.noaa.pfel.erddap.filetypes.PdfFiles;
-import gov.noaa.pfel.erddap.filetypes.PngFiles;
-import gov.noaa.pfel.erddap.filetypes.SmallPdfFiles;
-import gov.noaa.pfel.erddap.filetypes.SmallPngFiles;
-import gov.noaa.pfel.erddap.filetypes.TransparentPngFiles;
-import gov.noaa.pfel.erddap.filetypes.Tsv0Files;
-import gov.noaa.pfel.erddap.filetypes.TsvFiles;
-import gov.noaa.pfel.erddap.filetypes.TsvpFiles;
-import gov.noaa.pfel.erddap.filetypes.WavFiles;
-import gov.noaa.pfel.erddap.filetypes.XhtmlTableFiles;
 import gov.noaa.pfel.erddap.util.*;
 import gov.noaa.pfel.erddap.variable.*;
 import jakarta.servlet.http.HttpServletRequest;
@@ -197,181 +153,9 @@ public abstract class EDDTable extends EDD {
   /** This is used in many file types as the row identifier. */
   public static final String ROW_NAME = "row"; // see also Table.ROW_NAME
 
-  /** These are needed for EDD-required methods of the same name. */
-  public static final ImmutableList<String> dataFileTypeNames =
-      ImmutableList.of(
-          // If add new type and not actual-data type (e.g., .das),
-          //  add to graphsAccessibleToFileTypeNames below
-          ".asc",
-          ".csv",
-          ".csvp",
-          ".csv0",
-          ".dataTable",
-          ".das",
-          ".dds",
-          ".dods",
-          ".esriCsv",
-          ".fgdc",
-          ".geoJson",
-          ".graph",
-          ".help",
-          ".html",
-          ".htmlTable",
-          ".iso19115",
-          ".itx",
-          ".json",
-          ".jsonlCSV1",
-          ".jsonlCSV",
-          ".jsonlKVP",
-          ".mat",
-          ".nc",
-          ".ncHeader",
-          ".ncCF",
-          ".ncCFHeader",
-          ".ncCFMA",
-          ".ncCFMAHeader",
-          //        ".nc4", ".nc4Header",
-          ".nccsv",
-          ".nccsvMetadata",
-          ".ncoJson",
-          ".odvTxt",
-          ".parquet",
-          ".parquetWMeta",
-          ".subset",
-          ".tsv",
-          ".tsvp",
-          ".tsv0",
-          ".wav",
-          ".xhtml");
-
-  public static final ImmutableList<String> dataFileTypeExtensions =
-      ImmutableList.of(
-          ".asc",
-          ".csv",
-          ".csv",
-          ".csv",
-          ".json",
-          ".das",
-          ".dds",
-          ".dods",
-          ".csv",
-          ".xml",
-          ".json",
-          ".html",
-          ".html",
-          ".html",
-          ".html",
-          ".xml",
-          ".itx",
-          ".json",
-          ".jsonl",
-          ".jsonl",
-          ".jsonl",
-          ".mat",
-          ".nc",
-          ".txt",
-          ".nc",
-          ".txt",
-          ".nc",
-          ".txt",
-          //        ".nc", ".txt",
-          ".csv",
-          ".csv",
-          ".json",
-          ".txt",
-          ".parquet",
-          ".parquet",
-          ".html",
-          ".tsv",
-          ".tsv",
-          ".tsv",
-          ".wav",
-          ".xhtml");
-  // These all used to have " (It may take a while. Please be patient.)" at the end.
-  public static final String[][]
-      dataFileTypeDescriptionsAr; // [lang][n]  see static constructor below
-  // These are encoded for use as HTML attributes (href)
-  public static final ImmutableList<String> dataFileTypeInfo =
-      ImmutableList.of( // "" if not available
-          "https://docs.opendap.org/index.php/UserGuideOPeNDAPMessages#ASCII_Service", // OPeNDAP
-          // ascii
-          // csv: also see https://www.ietf.org/rfc/rfc4180.txt
-          "https://en.wikipedia.org/wiki/Comma-separated_values", // csv was
-          // "http://www.creativyst.com/Doc/Articles/CSV/CSV01.htm",
-          "https://en.wikipedia.org/wiki/Comma-separated_values", // csv was
-          // "http://www.creativyst.com/Doc/Articles/CSV/CSV01.htm",
-          "https://en.wikipedia.org/wiki/Comma-separated_values", // csv was
-          // "http://www.creativyst.com/Doc/Articles/CSV/CSV01.htm",
-          "https://developers.google.com/chart/interactive/docs/reference#dataparam",
-          "https://docs.opendap.org/index.php/UserGuideOPeNDAPMessages#Dataset_Attribute_Structure", // das
-          "https://docs.opendap.org/index.php/UserGuideOPeNDAPMessages#Dataset_Descriptor_Structure", // dds
-          "https://docs.opendap.org/index.php/UserGuideOPeNDAPMessages#Data_Transmission", // dods
-          "https://support.esri.com/technical-article/000012745", // .esriCsv
-          "https://www.fgdc.gov/standards/projects/FGDC-standards-projects/metadata/base-metadata/index_html", // fgdc
-          "http://wiki.geojson.org/Main_Page", // geoJSON
-          "https://coastwatch.pfeg.noaa.gov/erddap/tabledap/documentation.html#GraphicsCommands", // GraphicsCommands
-          "https://www.opendap.org/pdf/ESE-RFC-004v1.2.pdf", // help
-          "https://docs.opendap.org/index.php/UserGuideOPeNDAPMessages#WWW_Interface_Service", // html
-          "https://www.w3schools.com/html/html_tables.asp", // htmlTable
-          "https://en.wikipedia.org/wiki/Geospatial_metadata", // iso19115
-          "https://www.wavemetrics.net/doc/igorman/II-09%20Data%20Import%20Export.pdf", // igor
-          "https://www.json.org/", // json
-          "https://jsonlines.org/", // jsonlCSV
-          "https://jsonlines.org/", // jsonlCSV
-          "https://jsonlines.org/", // jsonlKVP
-          "https://www.mathworks.com/", // mat
-          "https://www.unidata.ucar.edu/software/netcdf/", // nc
-          "https://linux.die.net/man/1/ncdump", // ncHeader
-          "https://cfconventions.org/Data/cf-conventions/cf-conventions-1.8/cf-conventions.html#discrete-sampling-geometries", // ncCF Discrete Sampling Geometries
-          "https://linux.die.net/man/1/ncdump", // ncCFHeader
-          "https://www.ncei.noaa.gov/netcdf-templates", // .ncCFMA
-          "https://linux.die.net/man/1/ncdump", // ncCFMAHeader
-          //        "https://www.unidata.ucar.edu/software/netcdf/", //nc4
-          //        "https://linux.die.net/man/1/ncdump", //nc4Header
-          "https://erddap.github.io/docs/user/nccsv-1.20",
-          "https://erddap.github.io/docs/user/nccsv-1.20",
-          "https://nco.sourceforge.net/nco.html#json",
-          "https://odv.awi.de/en/documentation/", // odv
-          "https://parquet.apache.org/",
-          "https://parquet.apache.org/",
-          "https://en.wikipedia.org/wiki/Faceted_search", // subset
-          "https://jkorpela.fi/TSV.html", // tsv
-          "https://jkorpela.fi/TSV.html", // tsv
-          "https://jkorpela.fi/TSV.html", // tsv
-          "https://en.wikipedia.org/wiki/WAV", // wav
-          "https://www.w3schools.com/html/html_tables.asp"); // xhtml
-
-  public static final ImmutableList<String> imageFileTypeNames =
-      ImmutableList.of(
-          ".kml",
-          ".smallPdf",
-          ".pdf",
-          ".largePdf",
-          ".smallPng",
-          ".png",
-          ".largePng",
-          ".transparentPng");
-  public static final ImmutableList<String> imageFileTypeExtensions =
-      ImmutableList.of(".kml", ".pdf", ".pdf", ".pdf", ".png", ".png", ".png", ".png");
-  public static final String[][]
-      imageFileTypeDescriptionsAr; // [lang][n]  see static constructor below
-  public static final ImmutableList<String> imageFileTypeInfo =
-      ImmutableList.of(
-          "https://developers.google.com/kml/", // kml
-          "https://www.adobe.com/acrobat/about-adobe-pdf.html", // pdf
-          "https://www.adobe.com/acrobat/about-adobe-pdf.html", // pdf
-          "https://www.adobe.com/acrobat/about-adobe-pdf.html", // pdf
-          "http://www.libpng.org/pub/png/", // png
-          "http://www.libpng.org/pub/png/", // png
-          "http://www.libpng.org/pub/png/", // png
-          "http://www.libpng.org/pub/png/" // png
-          );
-
-  private static final String[][] allFileTypeOptionsAr;
-  private static final String[] allFileTypeNames;
-  private static final String[] publicGraphFileTypeNames;
-  private static final int defaultFileTypeOption;
-  private static final int defaultPublicGraphFileTypeOption;
+  private static final List<String> publicGraphFileTypeNames;
+  private static final String defaultFileTypeOption;
+  private static final String defaultPublicGraphFileTypeOption;
 
   /** SOS static values. */
   public static final String sosServer = "server";
@@ -463,131 +247,32 @@ public abstract class EDDTable extends EDD {
 
   // static constructor
   static {
-    int nDFTN = dataFileTypeNames.size();
-    int nIFTN = imageFileTypeNames.size();
-
-    dataFileTypeDescriptionsAr = new String[EDStatic.messages.nLanguages][nDFTN];
-    imageFileTypeDescriptionsAr = new String[EDStatic.messages.nLanguages][nIFTN];
-
-    for (int tl = 0; tl < EDStatic.messages.nLanguages; tl++) {
-      dataFileTypeDescriptionsAr[tl] =
-          new String[] {
-            EDStatic.messages.fileHelp_ascAr[tl],
-            EDStatic.messages.fileHelp_csvAr[tl],
-            EDStatic.messages.fileHelp_csvpAr[tl],
-            EDStatic.messages.fileHelp_csv0Ar[tl],
-            EDStatic.messages.fileHelp_dataTableAr[tl],
-            EDStatic.messages.fileHelp_dasAr[tl],
-            EDStatic.messages.fileHelp_ddsAr[tl],
-            EDStatic.messages.fileHelp_dodsAr[tl],
-            EDStatic.messages.fileHelpTable_esriCsvAr[tl],
-            EDStatic.messages.fileHelp_fgdcAr[tl],
-            EDStatic.messages.fileHelp_geoJsonAr[tl],
-            EDStatic.messages.fileHelp_graphAr[tl],
-            EDStatic.messages.fileHelpTable_helpAr[tl],
-            EDStatic.messages.fileHelp_htmlAr[tl],
-            EDStatic.messages.fileHelp_htmlTableAr[tl],
-            EDStatic.messages.fileHelp_iso19115Ar[tl],
-            EDStatic.messages.fileHelp_itxTableAr[tl],
-            EDStatic.messages.fileHelp_jsonAr[tl],
-            EDStatic.messages.fileHelp_jsonlCSV1Ar[tl],
-            EDStatic.messages.fileHelp_jsonlCSVAr[tl],
-            EDStatic.messages.fileHelp_jsonlKVPAr[tl],
-            EDStatic.messages.fileHelp_matAr[tl],
-            EDStatic.messages.fileHelpTable_nc3Ar[tl],
-            EDStatic.messages.fileHelp_nc3HeaderAr[tl],
-            EDStatic.messages.fileHelp_ncCFAr[tl],
-            EDStatic.messages.fileHelp_ncCFHeaderAr[tl],
-            EDStatic.messages.fileHelp_ncCFMAAr[tl],
-            EDStatic.messages.fileHelp_ncCFMAHeaderAr[tl],
-            //        EDStatic.messages.fileHelpTable_nc4Ar[tl],
-            //        EDStatic.messages.fileHelp_nc4HeaderAr[tl],
-            EDStatic.messages.fileHelp_nccsvAr[tl],
-            EDStatic.messages.fileHelp_nccsvMetadataAr[tl],
-            EDStatic.messages.fileHelp_ncoJsonAr[tl],
-            EDStatic.messages.fileHelpTable_odvTxtAr[tl],
-            EDStatic.messages.fileHelp_parquetAr[tl],
-            EDStatic.messages.fileHelp_parquet_with_metaAr[tl],
-            EDStatic.messages.fileHelp_subsetAr[tl],
-            EDStatic.messages.fileHelp_tsvAr[tl],
-            EDStatic.messages.fileHelp_tsvpAr[tl],
-            EDStatic.messages.fileHelp_tsv0Ar[tl],
-            EDStatic.messages.fileHelp_wavAr[tl],
-            EDStatic.messages.fileHelp_xhtmlAr[tl]
-          };
-      imageFileTypeDescriptionsAr[tl] =
-          new String[] {
-            EDStatic.messages.fileHelpTable_kmlAr[tl],
-            EDStatic.messages.fileHelp_smallPdfAr[tl],
-            EDStatic.messages.fileHelp_pdfAr[tl],
-            EDStatic.messages.fileHelp_largePdfAr[tl],
-            EDStatic.messages.fileHelp_smallPngAr[tl],
-            EDStatic.messages.fileHelp_pngAr[tl],
-            EDStatic.messages.fileHelp_largePngAr[tl],
-            EDStatic.messages.fileHelp_transparentPngAr[tl]
-          };
-    }
-
     int nSDRF = sosDataResponseFormats.size();
-    Test.ensureEqual(
-        nDFTN,
-        dataFileTypeDescriptionsAr[0].length,
-        "'dataFileTypeNames.length' not equal to 'dataFileTypeDescriptionsAr[0].length'.");
-    Test.ensureEqual(
-        nDFTN,
-        dataFileTypeExtensions.size(),
-        "'dataFileTypeNames.length' not equal to 'dataFileTypeExtensions.length'.");
-    Test.ensureEqual(
-        nDFTN,
-        dataFileTypeInfo.size(),
-        "'dataFileTypeNames.length' not equal to 'dataFileTypeInfo.length'.");
-    Test.ensureEqual(
-        nIFTN,
-        imageFileTypeDescriptionsAr[0].length,
-        "'imageFileTypeNames.length' not equal to 'imageFileTypeDescriptionsAr[0].length'.");
-    Test.ensureEqual(
-        nIFTN,
-        imageFileTypeExtensions.size(),
-        "'imageFileTypeNames.length' not equal to 'imageFileTypeExtensions.length'.");
-    Test.ensureEqual(
-        nIFTN,
-        imageFileTypeInfo.size(),
-        "'imageFileTypeNames.length' not equal to 'imageFileTypeInfo.length'.");
     Test.ensureEqual(
         nSDRF,
         sosTabledapDataResponseTypes.size(),
         "'sosDataResponseFormats.length' not equal to 'sosTabledapDataResponseTypes.length'.");
-    defaultFileTypeOption = dataFileTypeNames.indexOf(".htmlTable");
+    defaultFileTypeOption = ".htmlTable";
 
-    int tExtra = 6;
-    publicGraphFileTypeNames = new String[tExtra + nIFTN];
-    publicGraphFileTypeNames[0] = ".das";
-    publicGraphFileTypeNames[1] = ".dds";
-    publicGraphFileTypeNames[2] = ".fgdc";
-    publicGraphFileTypeNames[3] = ".graph";
-    publicGraphFileTypeNames[4] = ".help";
-    publicGraphFileTypeNames[5] = ".iso19115";
+    List<EDDFileTypeInfo> imageTypes = EDD.getFileTypeOptions(false, true);
+
+    publicGraphFileTypeNames = new ArrayList<String>();
+    publicGraphFileTypeNames.add(".das");
+    publicGraphFileTypeNames.add(".dds");
+    publicGraphFileTypeNames.add(".fgdc");
+    publicGraphFileTypeNames.add(".graph");
+    publicGraphFileTypeNames.add(".help");
+    publicGraphFileTypeNames.add(".iso19115");
 
     // construct allFileTypeOptionsAr
-    allFileTypeOptionsAr = new String[EDStatic.messages.nLanguages][nDFTN + nIFTN];
-    allFileTypeNames = new String[nDFTN + nIFTN];
-    for (int i = 0; i < nDFTN; i++) {
-      for (int tl = 0; tl < EDStatic.messages.nLanguages; tl++)
-        allFileTypeOptionsAr[tl][i] =
-            dataFileTypeNames.get(i) + " - " + dataFileTypeDescriptionsAr[tl][i];
-      allFileTypeNames[i] = dataFileTypeNames.get(i);
-    }
-    for (int i = 0; i < nIFTN; i++) {
-      for (int tl = 0; tl < EDStatic.messages.nLanguages; tl++)
-        allFileTypeOptionsAr[tl][nDFTN + i] =
-            imageFileTypeNames.get(i) + " - " + imageFileTypeDescriptionsAr[tl][i];
-      allFileTypeNames[nDFTN + i] = imageFileTypeNames.get(i);
-      publicGraphFileTypeNames[tExtra + i] = imageFileTypeNames.get(i);
+
+    for (int i = 0; i < imageTypes.size(); i++) {
+      publicGraphFileTypeNames.add(imageTypes.get(i).getFileTypeName());
     }
 
     graphsAccessibleTo_fileTypeNames = new HashSet<>(); // read only, so needn't be thread-safe
-    graphsAccessibleTo_fileTypeNames.addAll(Arrays.asList(publicGraphFileTypeNames));
-    defaultPublicGraphFileTypeOption = String2.indexOf(publicGraphFileTypeNames, ".png");
+    graphsAccessibleTo_fileTypeNames.addAll(publicGraphFileTypeNames);
+    defaultPublicGraphFileTypeOption = ".png";
 
     Test.ensureEqual(
         sosDataResponseFormats.size(),
@@ -2131,124 +1816,6 @@ public abstract class EDDTable extends EDD {
     return false;
   }
 
-  /**
-   * This returns the types of data files that this dataset can be returned as. These are short
-   * descriptive names that are put in the request url after the dataset name and before the "?",
-   * e.g., ".nc".
-   *
-   * @return the types of data files that this dataset can be returned as.
-   */
-  @Override
-  public ImmutableList<String> dataFileTypeNames() {
-    return dataFileTypeNames;
-  }
-
-  /**
-   * This returns the file extensions corresponding to the dataFileTypes. E.g.,
-   * dataFileTypeName=".htmlTable" returns dataFileTypeExtension=".html".
-   *
-   * @return the file extensions corresponding to the dataFileTypes.
-   */
-  @Override
-  public ImmutableList<String> dataFileTypeExtensions() {
-    return dataFileTypeExtensions;
-  }
-
-  /**
-   * This returns descriptions (up to 80 characters long, suitable for a tooltip) corresponding to
-   * the dataFileTypes.
-   *
-   * @param language the index of the selected language
-   * @return descriptions corresponding to the dataFileTypes.
-   */
-  @Override
-  public String[] dataFileTypeDescriptions(int language) {
-    return dataFileTypeDescriptionsAr[language];
-  }
-
-  /**
-   * This returns an info URL corresponding to the dataFileTypes.
-   *
-   * @return an info URL corresponding to the dataFileTypes (an element is "" if not available).
-   */
-  @Override
-  public ImmutableList<String> dataFileTypeInfo() {
-    return dataFileTypeInfo;
-  }
-
-  /**
-   * This returns the types of image files that this dataset can be returned as. These are short
-   * descriptive names that are put in the request url after the dataset name and before the "?",
-   * e.g., ".largePng".
-   *
-   * @return the types of image files that this dataset can be returned as.
-   */
-  @Override
-  public ImmutableList<String> imageFileTypeNames() {
-    return imageFileTypeNames;
-  }
-
-  /**
-   * This returns the file extensions corresponding to the imageFileTypes, e.g.,
-   * imageFileTypeNames=".largePng" returns imageFileTypeExtensions=".png".
-   *
-   * @return the file extensions corresponding to the imageFileTypes.
-   */
-  @Override
-  public ImmutableList<String> imageFileTypeExtensions() {
-    return imageFileTypeExtensions;
-  }
-
-  /**
-   * This returns descriptions corresponding to the imageFileTypes (each is suitable for a tooltip).
-   *
-   * @param language the index of the selected language
-   * @return descriptions corresponding to the imageFileTypes.
-   */
-  @Override
-  public String[] imageFileTypeDescriptions(int language) {
-    return imageFileTypeDescriptionsAr[language];
-  }
-
-  /**
-   * This returns an info URL corresponding to the imageFileTypes.
-   *
-   * @return an info URL corresponding to the imageFileTypes.
-   */
-  @Override
-  public ImmutableList<String> imageFileTypeInfo() {
-    return imageFileTypeInfo;
-  }
-
-  /**
-   * This returns the "[name]" for all dataFileTypes and imageFileTypes.
-   *
-   * @return the "[name]" for all dataFileTypes and imageFileTypes.
-   */
-  public String[] allFileTypeNames() {
-    return allFileTypeNames;
-  }
-
-  /**
-   * This returns the "[name] - [description]" for all dataFileTypes and imageFileTypes.
-   *
-   * @param language the index of the selected language
-   * @return the "[name] - [description]" for all dataFileTypes and imageFileTypes.
-   */
-  @Override
-  public String[] allFileTypeOptions(int language) {
-    return allFileTypeOptionsAr[language];
-  }
-
-  /**
-   * This returns the number of the .htmlTable option
-   *
-   * @return the number of the .htmlTable option
-   */
-  public int defaultFileTypeOption() {
-    return defaultFileTypeOption;
-  }
-
   /** This is a variant of parseUserDapQuery where processAddVariablesWhere is true. */
   public void parseUserDapQuery(
       int language,
@@ -3495,7 +3062,11 @@ public abstract class EDDTable extends EDD {
       return;
     }
 
-    FileTypeInterface fileTypeHandler = null;
+    EDDFileTypeInfo fileInfo = EDD_FILE_TYPE_INFO.get(fileTypeName);
+    if (fileInfo == null) {
+      return;
+    }
+    FileTypeInterface fileTypeHandler = fileInfo.getInstance();
     DapRequestInfo requestInfo =
         new DapRequestInfo(
             language,
@@ -3512,53 +3083,6 @@ public abstract class EDDTable extends EDD {
             ipAddress,
             request,
             response);
-    switch (fileTypeName) {
-      case ".asc" -> fileTypeHandler = new AsciiFiles();
-      case ".csv" -> fileTypeHandler = new CsvFiles();
-      case ".csvp" -> fileTypeHandler = new CsvpFiles();
-      case ".csv0" -> fileTypeHandler = new Csv0Files();
-      case ".das" -> fileTypeHandler = new DasFiles();
-      case ".dataTable" -> fileTypeHandler = new DataTableFiles();
-      case ".dds" -> fileTypeHandler = new DdsFiles();
-      case ".dods" -> fileTypeHandler = new DodsFiles();
-      case ".esriCsv" -> fileTypeHandler = new EsriCsvFiles();
-      case ".fgdc" -> fileTypeHandler = new FgdcFiles();
-      case ".geoJson" -> fileTypeHandler = new GeoJsonFiles();
-      case ".htmlTable" -> fileTypeHandler = new HtmlTableFiles();
-      case ".iso19115" -> fileTypeHandler = new Iso19115Files();
-      case ".itx" -> fileTypeHandler = new ItxFiles();
-      case ".json" -> fileTypeHandler = new JsonFiles();
-      case ".jsonlCSV1" -> fileTypeHandler = new JsonlCSV1Files();
-      case ".jsonlCSV" -> fileTypeHandler = new JsonlCSVFiles();
-      case ".jsonlKVP" -> fileTypeHandler = new JsonlKVPFiles();
-      case ".kml" -> fileTypeHandler = new KmlFiles();
-      case ".mat" -> fileTypeHandler = new MatFiles();
-      case ".nc" -> fileTypeHandler = new NcFiles();
-      case ".ncHeader" -> fileTypeHandler = new NcHeaderFiles();
-      case ".nccsv" -> fileTypeHandler = new NccsvFiles();
-      case ".nccsvMetadata" -> fileTypeHandler = new NccsvMetadataFiles();
-      case ".ncCF" -> fileTypeHandler = new NcCFFiles();
-      case ".ncCFHeader" -> fileTypeHandler = new NcCFHeaderFiles();
-      case ".ncCFMA" -> fileTypeHandler = new NcCFMAFiles();
-      case ".ncCFMAHeader" -> fileTypeHandler = new NcCFMAHeaderFiles();
-      case ".ncoJson" -> fileTypeHandler = new NcoJsonFiles();
-      case ".odvTxt" -> fileTypeHandler = new OdvFiles();
-      case ".parquet" -> fileTypeHandler = new ParquetFiles();
-      case ".parquetWMeta" -> fileTypeHandler = new ParquetWMetaFiles();
-      case ".smallPdf" -> fileTypeHandler = new SmallPdfFiles();
-      case ".pdf" -> fileTypeHandler = new PdfFiles();
-      case ".largePdf" -> fileTypeHandler = new LargePdfFiles();
-      case ".png" -> fileTypeHandler = new PngFiles();
-      case ".smallPng" -> fileTypeHandler = new SmallPngFiles();
-      case ".largePng" -> fileTypeHandler = new LargePngFiles();
-      case ".transparentPng" -> fileTypeHandler = new TransparentPngFiles();
-      case ".tsv" -> fileTypeHandler = new TsvFiles();
-      case ".tsvp" -> fileTypeHandler = new TsvpFiles();
-      case ".tsv0" -> fileTypeHandler = new Tsv0Files();
-      case ".wav" -> fileTypeHandler = new WavFiles();
-      case ".xhtml" -> fileTypeHandler = new XhtmlTableFiles();
-    }
-
     if (fileTypeHandler != null) {
       fileTypeHandler.writeTableToStream(requestInfo);
       return;
@@ -5390,7 +4914,7 @@ public abstract class EDDTable extends EDD {
    * @throws Throwable if trouble
    */
   public void writeDapHtmlForm(int language, String loggedInAs, String userDapQuery, Writer writer)
-      throws Throwable {
+      throws Throwable, Exception {
 
     HtmlWidgets widgets = new HtmlWidgets(true, EDStatic.imageDirUrl(loggedInAs, language));
 
@@ -5916,13 +5440,28 @@ public abstract class EDDTable extends EDD {
             + "/tabledap/documentation.html#fileType\">"
             + EDStatic.messages.moreInformationAr[language]
             + "</a>)\n");
+    List<String> fileTypeDescriptions =
+        EDD_FILE_TYPE_INFO.values().stream()
+            .filter(fileTypeInfo -> fileTypeInfo.getAvailableTable())
+            .map(
+                fileTypeInfo ->
+                    fileTypeInfo.getFileTypeName()
+                        + " - "
+                        + fileTypeInfo.getTableDescription(language))
+            .toList();
+    int defaultIndex =
+        EDD_FILE_TYPE_INFO.values().stream()
+            .filter(fileTypeInfo -> fileTypeInfo.getAvailableTable())
+            .map(fileTypeInfo -> fileTypeInfo.getFileTypeName())
+            .toList()
+            .indexOf(defaultFileTypeOption);
     writer.write(
         widgets.select(
             "fileType",
             EDStatic.messages.EDDSelectFileTypeAr[language],
             1,
-            allFileTypeOptionsAr[language],
-            defaultFileTypeOption,
+            fileTypeDescriptions,
+            defaultIndex,
             ""));
 
     // generate the javaScript
@@ -6364,8 +5903,10 @@ public abstract class EDDTable extends EDD {
             + "  <br>&nbsp;\n"
             + "  <table class=\"erd\" style=\"width:100%; \">\n"
             + "    <tr><th>Data<br>fileTypes</th><th>Description</th><th>Info</th><th>Example</th></tr>\n");
-    for (int i = 0; i < dataFileTypeNames.size(); i++) {
-      String ft = dataFileTypeNames.get(i);
+    List<EDDFileTypeInfo> dataFileTypes = EDD.getFileTypeOptions(false, false);
+    for (int i = 0; i < dataFileTypes.size(); i++) {
+      EDDFileTypeInfo curType = dataFileTypes.get(i);
+      String ft = curType.getFileTypeName();
       String ft1 = ft.substring(1);
       writer.write(
           "    <tr>\n"
@@ -6377,20 +5918,20 @@ public abstract class EDDTable extends EDD {
               + ft
               + "</a></td>\n"
               + "      <td>"
-              + dataFileTypeDescriptionsAr[language][i]
+              + curType.getTableDescription(language)
               + "</td>\n"
               + "      <td class=\"N\">"
-              + (dataFileTypeInfo.get(i).isEmpty()
+              + (curType.getInfoUrl().isEmpty()
                   ? "&nbsp;"
                   : "<a rel=\"help\" href=\""
-                      + XML.encodeAsHTMLAttribute(dataFileTypeInfo.get(i))
+                      + XML.encodeAsHTMLAttribute(curType.getInfoUrl())
                       + "\">info"
                       + EDStatic.messages.externalLinkHtml(language, tErddapUrl)
                       + "</a>")
               + "</td>\n"
               + "      <td class=\"N\"><a rel=\"bookmark\" href=\""
               + datasetBase
-              + dataFileTypeNames.get(i)
+              + curType.getFileTypeName()
               + "?"
               + EDStatic.messages.EDDTableDataTimeExampleHA
               + "\">example</a></td>\n"
@@ -6997,8 +6538,10 @@ public abstract class EDDTable extends EDD {
             + "   <p>The fileType options for downloading images of graphs and maps of table data are:\n"
             + "  <table class=\"erd\" style=\"width:100%; \">\n"
             + "    <tr><th>Image<br>fileTypes</th><th>Description</th><th>Info</th><th>Example</th></tr>\n");
-    for (int i = 0; i < imageFileTypeNames.size(); i++) {
-      String ft = imageFileTypeNames.get(i);
+    List<EDDFileTypeInfo> imageFileTypes = EDD.getFileTypeOptions(false, true);
+    for (int i = 0; i < imageFileTypes.size(); i++) {
+      EDDFileTypeInfo curType = imageFileTypes.get(i);
+      String ft = curType.getFileTypeName();
       String ft1 = ft.substring(1);
       writer.write(
           "    <tr>\n"
@@ -7010,13 +6553,13 @@ public abstract class EDDTable extends EDD {
               + ft
               + "</a></td>\n"
               + "      <td>"
-              + imageFileTypeDescriptionsAr[language][i]
+              + curType.getTableDescription(language)
               + "</td>\n"
               + "      <td class=\"N\">"
-              + (imageFileTypeInfo.get(i) == null || imageFileTypeInfo.get(i).isEmpty()
+              + (curType.getInfoUrl() == null || curType.getInfoUrl().isEmpty()
                   ? "&nbsp;"
                   : "<a rel=\"help\" href=\""
-                      + imageFileTypeInfo.get(i)
+                      + curType.getInfoUrl()
                       + "\">info"
                       + EDStatic.messages.externalLinkHtml(language, tErddapUrl)
                       + "</a>")
@@ -7024,7 +6567,7 @@ public abstract class EDDTable extends EDD {
               + // must be mapExample below because kml doesn't work with graphExample
               "      <td class=\"N\"><a rel=\"bookmark\" href=\""
               + datasetBase
-              + imageFileTypeNames.get(i)
+              + curType.getFileTypeName()
               + "?"
               + EDStatic.messages.EDDTableMapExampleHA
               + "\">example</a></td>\n"
@@ -9759,7 +9302,7 @@ public abstract class EDDTable extends EDD {
                     "land",
                     EDStatic.messages.magGSLandMaskTooltipTableAr[language],
                     1,
-                    String2.immutableListToArray(SgtMap.drawLandMask_OPTIONS),
+                    SgtMap.drawLandMask_OPTIONS,
                     tLand,
                     "")
                 + "</td>\n"
@@ -10082,13 +9625,23 @@ public abstract class EDDTable extends EDD {
       paramName = "fType";
       String htmlEncodedGraphQuery = XML.encodeAsHTMLAttribute(graphQuery.toString());
       boolean tAccessibleTo = isAccessibleTo(EDStatic.getRoles(loggedInAs));
+      List<String> fileTypeOptions =
+          tAccessibleTo
+              ? EDD_FILE_TYPE_INFO.values().stream()
+                  .filter(fileTypeInfo -> fileTypeInfo.getAvailableTable())
+                  .map(fileTypeInfo -> fileTypeInfo.getFileTypeName())
+                  .toList()
+              : publicGraphFileTypeNames;
+      int defaultIndex =
+          fileTypeOptions.indexOf(
+              tAccessibleTo ? defaultFileTypeOption : defaultPublicGraphFileTypeOption);
       writer.write(
           widgets.select(
               paramName,
               EDStatic.messages.EDDSelectFileTypeAr[language],
               1,
-              tAccessibleTo ? allFileTypeNames : publicGraphFileTypeNames,
-              tAccessibleTo ? defaultFileTypeOption : defaultPublicGraphFileTypeOption,
+              fileTypeOptions,
+              defaultIndex,
               "onChange='document.f1.tUrl.value=\""
                   + tErddapUrl
                   + "/tabledap/"
@@ -10144,9 +9697,7 @@ public abstract class EDDTable extends EDD {
               tErddapUrl
                   + "/tabledap/"
                   + datasetID
-                  + (tAccessibleTo
-                      ? allFileTypeNames[defaultFileTypeOption]
-                      : publicGraphFileTypeNames[defaultPublicGraphFileTypeOption])
+                  + (tAccessibleTo ? defaultFileTypeOption : defaultPublicGraphFileTypeOption)
                   + "?"
                   + graphQuery.toString(),
               ""));
@@ -18978,18 +18529,21 @@ public abstract class EDDTable extends EDD {
             + "    <stdorder>\n");
 
     // data file types
-    for (int ft = 0; ft < dataFileTypeNames.size(); ft++)
+    List<EDDFileTypeInfo> dataFileTypes = EDD.getFileTypeOptions(false, false);
+    for (int ft = 0; ft < dataFileTypes.size(); ft++)
       writer.write(
           "      <digform>\n"
               + "        <digtinfo>\n"
               + // digital transfer info
               "          <formname>"
-              + dataFileTypeNames.get(ft)
+              + dataFileTypes.get(ft).getFileTypeName()
               + "</formname>\n"
               + "          <formvern>1</formvern>\n"
               + "          <formspec>"
               + XML.encodeAsXML(
-                  dataFileTypeDescriptionsAr[language][ft] + " " + dataFileTypeInfo.get(ft))
+                  dataFileTypes.get(ft).getTableDescription(language)
+                      + " "
+                      + dataFileTypes.get(ft).getInfoUrl())
               + "</formspec>\n"
               +
               //           I think file decompression technique only used if file *always* encoded.
@@ -19011,18 +18565,21 @@ public abstract class EDDTable extends EDD {
               + "      </digform>\n");
 
     // image file types
-    for (int ft = 0; ft < imageFileTypeNames.size(); ft++)
+    List<EDDFileTypeInfo> imageFileTypes = EDD.getFileTypeOptions(false, true);
+    for (int ft = 0; ft < imageFileTypes.size(); ft++)
       writer.write(
           "      <digform>\n"
               + "        <digtinfo>\n"
               + // digital transfer info
               "          <formname>"
-              + imageFileTypeNames.get(ft)
+              + imageFileTypes.get(ft).getFileTypeName()
               + "</formname>\n"
               + "          <formvern>1</formvern>\n"
               + "          <formspec>"
               + XML.encodeAsXML(
-                  imageFileTypeDescriptionsAr[language][ft] + " " + imageFileTypeInfo.get(ft))
+                  imageFileTypes.get(ft).getTableDescription(language)
+                      + " "
+                      + imageFileTypes.get(ft).getInfoUrl())
               + "</formspec>\n"
               +
               //           I think file decompression technique only used if file *always* encoded.

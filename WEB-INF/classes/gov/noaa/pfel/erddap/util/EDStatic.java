@@ -92,6 +92,7 @@ import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.NIOFSDirectory;
+import org.semver4j.Semver;
 
 /**
  * This class holds a lot of static information set from the setup.xml and messages.xml files and
@@ -186,6 +187,8 @@ public class EDStatic {
    * 2.25 first RC on 2024-10-16 released on 2024-10-31 <br>
    * 2.25_1 RC 2024-11-07 <br>
    * 2.26 RC on 2025-03-11 <br>
+   * The below is kept for historical reference. As of 2.27.0 ERDDAP has transitioned to using
+   * Semantic Versioning.
    *
    * <p>For main branch releases, this will be a floating point number with 2 decimal digits, with
    * no additional text. !!! In general, people other than the main ERDDAP developer (Bob) should
@@ -195,7 +198,7 @@ public class EDStatic {
    * anything following it. A request to http.../erddap/version will return just the number (as
    * text). A request to http.../erddap/version_string will return the full string.
    */
-  public static final String erddapVersion = "2.26"; // see comment above
+  public static final Semver erddapVersion = new Semver("2.26.0");
 
   /** This identifies the dods server/version that this mimics. */
   public static final String dapVersion = "DAP/2.0";
@@ -590,7 +593,7 @@ public class EDStatic {
     String erdStartup = "EDStatic Low Level Startup";
     String errorInMethod = "";
     try {
-      SSR.erddapVersion = erddapVersion;
+      SSR.erddapVersion = erddapVersion.getVersion();
 
       String eol = String2.lineSeparator;
       String2.log(
@@ -602,7 +605,7 @@ public class EDStatic {
               + Calendar2.getCurrentISODateTimeStringLocalTZ()
               + eol
               + "erddapVersion="
-              + erddapVersion
+              + erddapVersion.getVersion()
               + eol
               + String2.standardHelpAboutMessage());
 
@@ -677,20 +680,11 @@ public class EDStatic {
       sgtGraph = new SgtGraph(config.fontFamily);
 
       // ensure erddapVersion is okay
-      int upo = erddapVersion.indexOf('_');
-      double eVer = String2.parseDouble(upo >= 0 ? erddapVersion.substring(0, upo) : erddapVersion);
-      if (upo == -1 && erddapVersion.length() == 4 && eVer > 1.8 && eVer < 10) {
-      } // it's just a number
-      else if ((upo != -1 && upo != 4)
-          || eVer <= 1.8
-          || eVer >= 10
-          || Double.isNaN(eVer)
-          || erddapVersion.indexOf(' ') >= 0
-          || !String2.isAsciiPrintable(erddapVersion))
+      String versionCheck = erddapVersion.getVersion();
+      if (versionCheck.indexOf(' ') >= 0 || !String2.isAsciiPrintable(versionCheck))
         throw new SimpleException(
-            "The format of EDStatic.erddapVersion must be d.dd[_someAsciiText]. (eVer="
-                + eVer
-                + ")");
+            "Invalid ERDDAP version format. Must be a valid Semantic Version and ascii printable"
+                + versionCheck);
 
       // ensure authentication setup is okay
       errorInMethod = "ERROR while checking authentication setup: ";
@@ -3797,7 +3791,7 @@ public class EDStatic {
     response.setHeader(
         "xdods-server",
         serverVersion); // DAP 2.0, 7.1.7 (http header field names are case-insensitive)
-    response.setHeader(programname + "-server", erddapVersion);
+    response.setHeader(programname + "-server", erddapVersion.getVersion());
   }
 
   /** This returns the requester's ip addresses (from x-forwarded-for) or "(unknownIPAddress)". */
@@ -4191,5 +4185,16 @@ public class EDStatic {
       config.useLuceneSearchEngine = false;
       throw new RuntimeException(t);
     }
+  }
+
+  public static Semver getSemver(String version) {
+    Semver semver = Semver.coerce(version);
+    if (semver == null) {
+      semver = Semver.coerce(version + ".0");
+    }
+    if (semver == null) {
+      throw new SimpleException("**SEMVER_ERROR** Could not get semver from version: " + version);
+    }
+    return semver;
   }
 }

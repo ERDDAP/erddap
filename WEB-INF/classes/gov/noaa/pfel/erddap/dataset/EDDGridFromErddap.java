@@ -38,6 +38,7 @@ import java.nio.charset.StandardCharsets;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.BitSet;
+import org.semver4j.Semver;
 
 /**
  * This class represents a grid dataset from an opendap DAP source.
@@ -47,8 +48,8 @@ import java.util.BitSet;
 @SaxHandlerClass(EDDGridFromErddapHandler.class)
 public class EDDGridFromErddap extends EDDGrid implements FromErddap {
 
-  protected double sourceErddapVersion =
-      1.22; // default = last version before /version service was added
+  // default = last version before /version service was added
+  protected Semver sourceErddapVersion = EDStatic.getSemver("1.22");
 
   /**
    * Indicates if data can be transmitted in a compressed form. It is unlikely anyone would want to
@@ -444,7 +445,7 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
     // finalize accessibleViaFiles
     sourceErddapVersion = getRemoteErddapVersion(localSourceUrl);
     if (accessibleViaFiles) {
-      if (sourceErddapVersion < 2.10) {
+      if (sourceErddapVersion.isLowerThan(EDStatic.getSemver("2.10"))) {
         accessibleViaFiles = false;
         String2.log(
             "accessibleViaFiles=false because remote ERDDAP version is <v2.10, so no support for /files/.csv .");
@@ -770,13 +771,8 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
 
   /** This returns the source ERDDAP's version number, e.g., 1.22 */
   @Override
-  public double sourceErddapVersion() {
+  public Semver sourceErddapVersion() {
     return sourceErddapVersion;
-  }
-
-  @Override
-  public int intSourceErddapVersion() {
-    return Math2.roundToInt(sourceErddapVersion * 100);
   }
 
   /** This returns the local version of the source ERDDAP's url. */

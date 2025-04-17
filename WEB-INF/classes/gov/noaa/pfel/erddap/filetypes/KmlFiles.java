@@ -31,7 +31,8 @@ import java.text.MessageFormat;
     fileTypeExtension = ".kml",
     fileTypeName = ".kml",
     infoUrl = "https://developers.google.com/kml/",
-    versionAdded = "1.0.0")
+    versionAdded = "1.0.0",
+    isImage = true)
 public class KmlFiles extends ImageTypes {
 
   @Override

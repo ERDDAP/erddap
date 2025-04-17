@@ -7,7 +7,7 @@ import gov.noaa.pfel.erddap.dataset.TableWriterAllWithMetadata;
     fileTypeExtension = ".parquet",
     fileTypeName = ".parquetWMeta",
     infoUrl = "https://parquet.apache.org/",
-    versionAdded = "1.0.0")
+    versionAdded = "2.25.0")
 public class ParquetWMetaFiles extends ParquetFiles {
   @Override
   public void writeTableToFileFormat(DapRequestInfo requestInfo, TableWriter tableWriter)

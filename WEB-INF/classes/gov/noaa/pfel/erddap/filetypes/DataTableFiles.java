@@ -8,7 +8,7 @@ import gov.noaa.pfel.erddap.util.EDStatic;
     fileTypeExtension = ".json",
     fileTypeName = ".dataTable",
     infoUrl = "https://developers.google.com/chart/interactive/docs/reference#dataparam",
-    versionAdded = "1.0.0",
+    versionAdded = "1.84.0",
     availableGrid = false)
 public class DataTableFiles extends TableWriterFileType {
 

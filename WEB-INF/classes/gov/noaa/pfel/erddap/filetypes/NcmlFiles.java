@@ -21,7 +21,7 @@ import java.io.Writer;
     fileTypeExtension = ".xml",
     fileTypeName = ".ncml",
     infoUrl = "https://docs.unidata.ucar.edu/netcdf-java/current/userguide/ncml_overview.html",
-    versionAdded = "1.0.0",
+    versionAdded = "1.48.0",
     availableTable = false)
 public class NcmlFiles extends FileTypeInterface {
 

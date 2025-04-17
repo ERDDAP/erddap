@@ -9,7 +9,7 @@ import java.io.Writer;
     fileTypeExtension = ".asc",
     fileTypeName = ".timeGaps",
     infoUrl = "https://coastwatch.pfeg.noaa.gov/erddap/griddap/documentation.html#timeGaps",
-    versionAdded = "1.0.0",
+    versionAdded = "1.82.0",
     availableTable = false)
 public class TimeGapsFiles extends FileTypeInterface {
 

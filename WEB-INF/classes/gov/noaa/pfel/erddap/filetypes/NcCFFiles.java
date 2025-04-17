@@ -14,7 +14,7 @@ import gov.noaa.pfel.erddap.util.EDStatic;
     fileTypeName = ".ncCF",
     infoUrl =
         "https://cfconventions.org/Data/cf-conventions/cf-conventions-1.8/cf-conventions.html#discrete-sampling-geometries",
-    versionAdded = "1.0.0",
+    versionAdded = "1.30.0",
     availableGrid = false)
 public class NcCFFiles extends CacheLockFiles {
 

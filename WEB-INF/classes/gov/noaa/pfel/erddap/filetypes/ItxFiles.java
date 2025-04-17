@@ -28,7 +28,7 @@ import java.util.HashSet;
     fileTypeExtension = ".itx",
     fileTypeName = ".itx",
     infoUrl = "https://www.wavemetrics.net/doc/igorman/II-09%20Data%20Import%20Export.pdf",
-    versionAdded = "1.0.0")
+    versionAdded = "1.74.0")
 public class ItxFiles extends TableWriterFileType {
 
   @Override

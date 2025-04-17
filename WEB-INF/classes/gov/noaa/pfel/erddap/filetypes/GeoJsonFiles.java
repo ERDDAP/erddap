@@ -8,7 +8,7 @@ import gov.noaa.pfel.erddap.util.EDStatic;
     fileTypeExtension = ".json",
     fileTypeName = ".geoJson",
     infoUrl = "http://wiki.geojson.org/Main_Page",
-    versionAdded = "1.0.0",
+    versionAdded = "1.82.0",
     availableGrid = false)
 public class GeoJsonFiles extends TableWriterFileType {
 

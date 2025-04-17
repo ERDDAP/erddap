@@ -6,7 +6,7 @@ import gov.noaa.pfel.erddap.util.EDStatic;
     fileTypeExtension = ".tsv",
     fileTypeName = ".tsvp",
     infoUrl = "https://jkorpela.fi/TSV.html",
-    versionAdded = "1.0.0")
+    versionAdded = "1.24.0")
 public class TsvpFiles extends SeparatedValue {
 
   public TsvpFiles() {

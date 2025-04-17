@@ -13,7 +13,7 @@ import gov.noaa.pfel.erddap.util.EDStatic;
     fileTypeExtension = ".csv",
     fileTypeName = ".nccsv",
     infoUrl = "https://erddap.github.io/docs/user/nccsv-1.20",
-    versionAdded = "1.0.0")
+    versionAdded = "1.76.0")
 public class NccsvFiles extends TableWriterFileType {
 
   @Override

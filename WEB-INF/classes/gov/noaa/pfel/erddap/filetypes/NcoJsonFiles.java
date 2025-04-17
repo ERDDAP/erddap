@@ -29,7 +29,7 @@ import java.io.DataInputStream;
     fileTypeExtension = ".json",
     fileTypeName = ".ncoJson",
     infoUrl = "https://nco.sourceforge.net/nco.html#json",
-    versionAdded = "1.0.0")
+    versionAdded = "1.82.0")
 public class NcoJsonFiles extends TableWriterFileType {
 
   @Override

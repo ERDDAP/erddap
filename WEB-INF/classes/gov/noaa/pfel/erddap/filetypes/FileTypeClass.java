@@ -22,4 +22,6 @@ public @interface FileTypeClass {
   boolean availableTable() default true;
 
   boolean availableGrid() default true;
+
+  boolean isImage() default false;
 }
