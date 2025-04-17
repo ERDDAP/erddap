@@ -1473,10 +1473,10 @@ public class Erddap extends HttpServlet {
                 + "<tr><td><a rel=\"bookmark\" href=\""
                 + tErddapUrl
                 + "/convert/color.html\">"
-                + "color data"
+                + "COLOR's"
                 + "</a></td>\n"
                 + "    <td>"
-                + EDStatic.messages.convertUnitsAr[language]
+                + "color data"
                 + "</td></tr>\n"
                 + "<tr><td><a rel=\"bookmark\" href=\""
                 + tErddapUrl
