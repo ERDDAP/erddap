@@ -86,7 +86,6 @@ import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.document.StringField;
 import org.apache.lucene.document.TextField;
-import org.eclipse.jetty.util.ajax.JSON;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.json.JSONTokener;
@@ -14294,17 +14293,18 @@ public abstract class EDD {
               + "): \"/erddap/\" not found in URL.");
       return EDStatic.getSemver("1.22");
     }
-    String vUrl = localSourceUrl.substring(0, po + find.length()) + "version";
+    String vUrl = localSourceUrl.substring(0, po + find.length()) + "version?format=json";
     try {
       List<String> response =
           SSR.getUrlResponseArrayList(vUrl); // has timeout and descriptive error
       double v = Double.NaN;
-      String response0 = response.getFirst();
-      if (response0.contains("version_full")) {
-        JSONObject json = (JSONObject) JSON.parse(response0);
+      String fullResponse = String.join("\n", response);
+      if (fullResponse.contains("version_full")) {
+        JSONObject json = new JSONObject(fullResponse);
         return EDStatic.getSemver(json.getString("version_full"));
       }
 
+      String response0 = response.getFirst();
       if (response0.startsWith("ERDDAP_version=")) {
         v = String2.parseDouble(response0.substring(15));
         if (reallyVerbose) String2.log("  remote ERDDAP version=" + v);
