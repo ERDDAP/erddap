@@ -1472,6 +1472,14 @@ public class Erddap extends HttpServlet {
                 + "</td></tr>\n"
                 + "<tr><td><a rel=\"bookmark\" href=\""
                 + tErddapUrl
+                + "/convert/color.html\">"
+                + "color data"
+                + "</a></td>\n"
+                + "    <td>"
+                + EDStatic.messages.convertUnitsAr[language]
+                + "</td></tr>\n"
+                + "<tr><td><a rel=\"bookmark\" href=\""
+                + tErddapUrl
                 + "/convert/urls.html\">URLs</a></td>\n"
                 + "    <td>"
                 + EDStatic.messages.convertURLsAr[language]
@@ -19548,7 +19556,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
               + tErddapUrl
               + "/convert/color.html\"><strong>COLOR's</strong></a> - "
               + "color data" // need to change this line in future updates for support of multiple
-                             // languages
+              // languages
               + "\n"
               + "</ul>\n");
       writer.write("</div>\n");
@@ -22675,7 +22683,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                   + "\n &gt; Colors</h1>\n")
               + "<h2>"
               + "Convert Data into Colorbar" // need to change this thing for support of multiple
-                                             // languages
+              // languages
               + "</h2>\n");
 
       writer.write(widgets.beginForm("getColor", "GET", tErddapUrl + "/convert/color.html", ""));
