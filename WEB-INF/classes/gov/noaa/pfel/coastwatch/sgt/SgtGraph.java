@@ -53,12 +53,13 @@ public class SgtGraph {
   public static boolean reallyVerbose = false;
 
   private final String fontFamily;
-  public final double defaultAxisLabelHeight = SgtUtil.DEFAULT_AXIS_LABEL_HEIGHT;
-  public final double defaultLabelHeight = SgtUtil.DEFAULT_LABEL_HEIGHT;
-  public final double majorLabelRatio = 1.25; // axisTitleHeight/axisLabelHeight; 1.25 matches SGT
+  public static final double defaultAxisLabelHeight = SgtUtil.DEFAULT_AXIS_LABEL_HEIGHT;
+  public static final double defaultLabelHeight = SgtUtil.DEFAULT_LABEL_HEIGHT;
+  public static final double majorLabelRatio =
+      1.25; // axisTitleHeight/axisLabelHeight; 1.25 matches SGT
 
   public static Color DefaultBackgroundColor = new Color(0xCCCCFF); // just the RGB part (no A)
-  public final int widenOnePoint = 1; // pixels
+  public static final int widenOnePoint = 1; // pixels
 
   /**
    * Constructor. This throws exception if trouble

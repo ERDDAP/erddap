@@ -40,7 +40,6 @@ import java.sql.BatchUpdateException;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.Date;
-import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
@@ -144,7 +143,7 @@ public class Table {
   public boolean allowRaggedRightInReadASCII = false;
 
   /** If true, readOpendap requestes compressed data. I think this should always be true. */
-  public final boolean opendapAcceptDeflate = true;
+  public static final boolean opendapAcceptDeflate = true;
 
   /**
    * Since users use these numbers (not names) from the command line, the value for a given option
@@ -6395,7 +6394,7 @@ public class Table {
             addColumn(a, axisName, columnPAs[a], atts);
             standardizeColumn(standardizeWhat, a);
           }
-          readOrigin = new int[nAxes]; // all 0's
+          // readOrigin = new int[nAxes]; // all 0's
           // readShape = axisLengths
 
           // deal with constraintAxisVarName
@@ -6424,7 +6423,7 @@ public class Table {
                         + constraintLast);
               if (constraintFirst >= 0 && constraintLast >= constraintFirst) {
                 // ok, use it
-                readOrigin[constraintCol] = constraintFirst;
+                // readOrigin[constraintCol] = constraintFirst;
                 axisLengths[constraintCol] = constraintLast - constraintFirst + 1;
                 cpa.removeRange(constraintLast + 1, cpa.size());
                 cpa.removeRange(0, constraintFirst);
@@ -14707,27 +14706,6 @@ public class Table {
   }
 
   /**
-   * Get a connection to an Access .mdb file. MS Access not needed.
-   *
-   * @param fileName (forward slash in example)
-   * @param user use "" if none specified
-   * @param password use "" if none specified
-   */
-  public static Connection getConnectionToMdb(String fileName, String user, String password)
-      throws Exception {
-
-    // from Sareth's answer at
-    // https://stackoverflow.com/questions/9543722/java-create-msaccess-database-file-mdb-0r-accdb-using-java
-    Class.forName("sun.jdbc.odbc.JdbcOdbcDriver"); // included in Java distribution
-    return DriverManager.getConnection(
-        "jdbc:odbc:Driver={Microsoft Access Driver (*.mdb, *.accdb)};"
-            + "DBQ="
-            + fileName, // ";DriverID=22;READONLY=true}",
-        "",
-        ""); // user, password
-  }
-
-  /**
    * This returns a list of schemas (subdirectories of this database) e.g., "public"
    *
    * @return a list of schemas (subdirectories of this database) e.g., "public". Postgres always
@@ -15071,12 +15049,6 @@ public class Table {
       s = String2.toSVString(s, 127);
       if (csvMode) s = String2.replaceAll(s, "\\\"", "\"\"");
       writer.write(s + (col == nColumns - 1 ? "\n" : separator));
-    }
-
-    // get columnTypes
-    boolean isCharArray[] = new boolean[nColumns];
-    for (int col = 0; col < nColumns; col++) {
-      isCharArray[col] = getColumn(col).elementType() == PAType.STRING;
     }
 
     // write the data

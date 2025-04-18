@@ -10960,7 +10960,6 @@ public abstract class EDD {
       } else if (lcu.indexOf("cldc") >= 0
           || // cloud cover
           lcu.indexOf("cloud") >= 0
-          || lcu.indexOf("cloud") >= 0
           || lcu.indexOf("dew point") >= 0
           || lcu.indexOf("dewp") >= 0
           || lcu.indexOf("evapora") >= 0

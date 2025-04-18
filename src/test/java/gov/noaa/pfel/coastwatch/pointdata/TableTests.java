@@ -19447,6 +19447,27 @@ public class TableTests {
   }
 
   /**
+   * Get a connection to an Access .mdb file. MS Access not needed.
+   *
+   * @param fileName (forward slash in example)
+   * @param user use "" if none specified
+   * @param password use "" if none specified
+   */
+  private static Connection getConnectionToMdb(String fileName, String user, String password)
+      throws Exception {
+
+    // from Sareth's answer at
+    // https://stackoverflow.com/questions/9543722/java-create-msaccess-database-file-mdb-0r-accdb-using-java
+    Class.forName("sun.jdbc.odbc.JdbcOdbcDriver"); // included in Java distribution
+    return DriverManager.getConnection(
+        "jdbc:odbc:Driver={Microsoft Access Driver (*.mdb, *.accdb)};"
+            + "DBQ="
+            + fileName, // ";DriverID=22;READONLY=true}",
+        "",
+        ""); // user, password
+  }
+
+  /**
    * DOESN'T WORK. Driver gives error: Exception in thread "main" java.sql.SQLException:
    * [Microsoft][ODBC Microsoft Access Driver]Optional feature not implemented at
    * sun.jdbc.odbc.JdbcOdbc.createSQLException(Unknown Source) ...
@@ -19459,7 +19480,7 @@ public class TableTests {
             .getResource("/notIncludedFiles/calcofi2012/calcofi8102012.accdb")
             .getPath();
     // "c:/fishbase/COUNTRY.mdb";
-    Connection con = Table.getConnectionToMdb(fileName, "", ""); // user, password
+    Connection con = getConnectionToMdb(fileName, "", ""); // user, password
     // String2.log(getSqlSchemas(con).toString());
     // String schema = "";
     // String2.log(getSqlTableNames(con, schema, null).toString()); //null for all

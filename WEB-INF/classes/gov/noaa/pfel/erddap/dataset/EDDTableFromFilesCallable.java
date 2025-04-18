@@ -34,7 +34,6 @@ public class EDDTableFromFilesCallable implements Callable<Table> {
 
   final int language;
   final String identifier;
-  int task;
   final EDDTableFromFiles eddTableFromFiles;
   final String loggedInAs;
   final String requestUrl;
@@ -51,7 +50,6 @@ public class EDDTableFromFilesCallable implements Callable<Table> {
   final StringArray sourceConVars;
   final StringArray sourceConOps;
   final StringArray sourceConValues;
-  TableWriter tableWriter;
 
   public EDDTableFromFilesCallable(
       int tLanguage,

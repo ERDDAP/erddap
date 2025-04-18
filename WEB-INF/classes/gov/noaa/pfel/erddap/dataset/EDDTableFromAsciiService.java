@@ -304,10 +304,6 @@ public abstract class EDDTableFromAsciiService extends EDDTable {
 
     // create structures to hold the sourceAttributes temporarily
     int ndv = tDataVariables.length;
-    String tDataSourceNames[] = new String[ndv];
-    for (int dv = 0; dv < ndv; dv++) {
-      tDataSourceNames[dv] = (String) tDataVariables[dv][0];
-    }
 
     // create dataVariables[]
     dataVariables = new EDV[ndv];

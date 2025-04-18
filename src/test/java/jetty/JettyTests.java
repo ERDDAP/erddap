@@ -1353,7 +1353,15 @@ class JettyTests {
               "<gml:endPosition>YYYY-MM-DDThh:00:00Z</gml:endPosition>");
       results =
           results.replaceAll(
+              "<gml:endPosition>....-..-..T..:..:..-..:..</gml:endPosition>",
+              "<gml:endPosition>YYYY-MM-DDThh:00:00Z</gml:endPosition>");
+      results =
+          results.replaceAll(
               "<gml:beginPosition>....-..-..T..:..:......-..:..</gml:beginPosition>",
+              "<gml:beginPosition>YYYY-MM-DDThh:00:00Z</gml:beginPosition>");
+      results =
+          results.replaceAll(
+              "<gml:beginPosition>....-..-..T..:..:..-..:..</gml:beginPosition>",
               "<gml:beginPosition>YYYY-MM-DDThh:00:00Z</gml:beginPosition>");
       results =
           results.replaceAll(

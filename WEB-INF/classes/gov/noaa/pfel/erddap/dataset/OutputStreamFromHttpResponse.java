@@ -10,6 +10,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.io.BufferedOutputStream;
 import java.io.OutputStream;
 import java.util.HashMap;
+import java.util.Map.Entry;
 import java.util.zip.DeflaterOutputStream;
 import java.util.zip.GZIPOutputStream;
 
@@ -815,8 +816,8 @@ public class OutputStreamFromHttpResponse implements OutputStreamSource {
         (Boolean) fileTypeInfo[3]; // true for app specific compressed (but not audio/ image/ video)
 
     response.setContentType(contentType);
-    for (String key : headerMap.keySet()) {
-      response.setHeader(key, headerMap.get(key));
+    for (Entry<String, String> entry : headerMap.entrySet()) {
+      response.setHeader(entry.getKey(), entry.getValue());
     }
 
     // set the characterEncoding

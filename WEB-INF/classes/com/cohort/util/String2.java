@@ -35,6 +35,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.Vector;
 import java.util.WeakHashMap;
@@ -5041,8 +5042,8 @@ public class String2 {
     ArrayList<String> al = new ArrayList<>();
 
     // synchronize so protected from changes in other threads
-    for (String key : map.keySet()) {
-      al.add(key + ": " + map.get(key));
+    for (Entry<String, String> entry : map.entrySet()) {
+      al.add(entry.getKey() + ": " + entry.getValue());
     }
     al.sort(STRING_COMPARATOR_IGNORE_CASE);
     return toNewlineString(al.toArray(new String[0]));

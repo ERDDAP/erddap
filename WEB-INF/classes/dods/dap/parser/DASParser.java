@@ -773,7 +773,6 @@ public class DASParser implements DASParserConstants {
   private int jj_ntk;
   private Token jj_scanpos, jj_lastpos;
   private int jj_la;
-  public final boolean lookingAhead = false;
   private int jj_gen;
   private final int[] jj_la1 = new int[14];
   private final int[] jj_la1_0 = {
@@ -898,7 +897,7 @@ public class DASParser implements DASParserConstants {
   }
 
   public final Token getToken(int index) {
-    Token t = lookingAhead ? jj_scanpos : token;
+    Token t = token;
     for (int i = 0; i < index; i++) {
       if (t.next != null) t = t.next;
       else t = t.next = token_source.getNextToken();

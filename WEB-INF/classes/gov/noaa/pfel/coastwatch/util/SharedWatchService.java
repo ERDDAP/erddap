@@ -14,6 +14,7 @@ import java.nio.file.WatchKey;
 import java.nio.file.WatchService;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class SharedWatchService {
@@ -159,8 +160,8 @@ public class SharedWatchService {
       handlerIdToHandler.get(handlerId).doReload();
     }
 
-    for (String handlerId : contextsByHandler.keySet()) {
-      handlerIdToHandler.get(handlerId).handleUpdates(contextsByHandler.get(handlerId));
+    for (Entry<String, StringArray> entry : contextsByHandler.entrySet()) {
+      handlerIdToHandler.get(entry.getKey()).handleUpdates(entry.getValue());
     }
   }
 }

@@ -6,7 +6,10 @@ import java.awt.Image;
 import java.awt.image.BufferedImage;
 import java.awt.image.PixelGrabber;
 import java.awt.image.RenderedImage;
+import java.io.BufferedOutputStream;
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.OutputStream;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Path;
@@ -215,7 +218,7 @@ public class Image2Tests {
 
     // if different, save differences as an image file
     RenderedImage image3 = Image2.makeImageFromArray(pixels3, width1, height1, 5000);
-    Image2.saveAsPng(image3, diffName);
+    saveAsPng(image3, diffName);
     String msg =
         cmd
             + "There were "
@@ -231,6 +234,19 @@ public class Image2Tests {
       return "";
     } else {
       return msg;
+    }
+  }
+
+  /**
+   * Save an image (with any number of colors) as a .png file.
+   *
+   * @param image may be a BufferedImage, too
+   * @param fullFileName (e.g., c:\myDir\myFile.png)
+   * @throws Exception if trouble
+   */
+  private static void saveAsPng(RenderedImage image, String fullFileName) throws Exception {
+    try (OutputStream out = new BufferedOutputStream(new FileOutputStream(fullFileName))) {
+      ImageIO.write(image, "png", out);
     }
   }
 

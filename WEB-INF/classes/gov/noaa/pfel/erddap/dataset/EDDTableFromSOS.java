@@ -634,15 +634,13 @@ public class EDDTableFromSOS extends EDDTable {
     stationTable.addColumn("EndTime", new DoubleArray());
     stationTable.addColumn("ID", new StringArray());
     stationTable.addColumn("Procedure", new StringArray());
-    ArrayList tStationHasObsPropAL = new ArrayList(); // for each valid station, the boolean[]
+    ArrayList<boolean[]> tStationHasObsPropAL =
+        new ArrayList<>(); // for each valid station, the boolean[]
     // values that persist for a while
     double tLon = Double.NaN, tLat = Double.NaN, tBeginTime = Double.NaN, tEndTime = Double.NaN;
     String tIndeterminateEnd = null, tStationID = "", tStationProcedure = "";
     double currentEpochSeconds = Calendar2.gcToEpochSeconds(Calendar2.newGCalendarZulu());
     boolean tStationHasObsProp[] = new boolean[uniqueSourceObservedProperties.size()];
-    String tDVNames[] = new String[tDataVariables.length];
-    for (int dv = 0; dv < tDataVariables.length; dv++)
-      tDVNames[dv] = (String) tDataVariables[dv][0];
     // use KVP (KeyValuePair) HTTP GET request to getCapabilities
     // see section 7.2.3 of OGC 06-121r3 (OGC Web Services Common Specification) ver 1.1.0
     String tUrl = localSourceUrl + "?service=SOS&request=GetCapabilities";
@@ -2088,13 +2086,11 @@ public class EDDTableFromSOS extends EDDTable {
     String tDataVariableSourceNames[] = dataVariableSourceNames();
     int nCol = table.nColumns();
     IntArray tableDVI = new IntArray();
-    String tableObservedProperties[] = new String[nCol];
     boolean isStringCol[] = new boolean[nCol];
     for (int col = 0; col < nCol; col++) {
       int dvi = String2.indexOf(tDataVariableSourceNames, table.getColumnName(col));
       tableDVI.add(dvi);
       EDV edv = dataVariables[dvi];
-      tableObservedProperties[col] = edv.combinedAttributes().getString("observedProperty");
       isStringCol[col] = edv.sourceDataPAType().equals(PAType.STRING);
     }
 

@@ -21354,9 +21354,14 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       // repeatedly find a group of points close together, get chunk of data from source, do
       // calculations
       //  (very arbitrary -- there are too many scenarios to optimize)
-      StringBuilder howGrouped = new StringBuilder();
+      StringBuilder howGrouped = null;
+      if (debugMode) {
+        howGrouped = new StringBuilder();
+      }
       while (startOfGroup < nRows) {
-        howGrouped.append(" " + rank[startOfGroup]);
+        if (debugMode) {
+          howGrouped.append(" " + rank[startOfGroup]);
+        }
 
         // find outer bounds of the group (not including radius)
         double minTimeDIndex = timeDIndexPA.get(rank[startOfGroup]);
@@ -21408,7 +21413,9 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
           break;
 
           // yes, keep it
-          howGrouped.append(" " + rank[endOfGroup]);
+          if (debugMode) {
+            howGrouped.append(" " + rank[endOfGroup]);
+          }
           endOfGroup++;
           minTimeDIndex = tMinTimeDIndex;
           minLatDIndex = tMinLatDIndex;
@@ -21417,7 +21424,9 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
           maxLatDIndex = tMaxLatDIndex;
           maxLonDIndex = tMaxLonDIndex;
         }
-        howGrouped.append(",");
+        if (debugMode) {
+          howGrouped.append(",");
+        }
         // String2.log(">> interpolate startOfGroup=" + startOfGroup + " end=" + endOfGroup);
 
         // adjust min/maxLat/LonIndex so it is integers and includes radius
@@ -21787,7 +21796,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
         // prepare for next group
         startOfGroup = endOfGroup;
       }
-      if (debugMode)
+      if (debugMode) {
         String2.log(
             ">> Nearest Data: for dv="
                 + datasetIDs[dv]
@@ -21795,6 +21804,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                 + variable[dv]
                 + " howGrouped:"
                 + howGrouped);
+      }
     }
 
     return sourceTable;

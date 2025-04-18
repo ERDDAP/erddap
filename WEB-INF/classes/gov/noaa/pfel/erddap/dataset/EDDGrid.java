@@ -7591,10 +7591,8 @@ public abstract class EDDGrid extends EDD {
                     + yAscending
                     + " scale="
                     + yScale);
-
-          // just to be clear: ignore any unrecognized .something
-        } else if (ampPart.startsWith(".")) {
         }
+        // just to be clear: ignore any unrecognized .something
       }
       boolean reallySmall = imageWidth < 260; // .smallPng is 240
 
