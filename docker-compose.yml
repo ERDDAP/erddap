@@ -1,3 +1,4 @@
+
 services:
   erddap:
     build: .
@@ -26,5 +27,45 @@ services:
     mem_limit: 256m
     command: tail -F /erddapData/logs/log.txt
 
+  # Monitoring services (part of the monitoring profile)
+  prometheus:
+    image: prom/prometheus:latest
+    profiles: ["monitoring"]
+    container_name: erddap-prometheus
+    volumes:
+      - ./docker/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--storage.tsdb.retention.time=30d'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--web.enable-lifecycle'
+    ports:
+      - "9090:9090"
+    restart: unless-stopped
+
+  grafana:
+    image: grafana/grafana:latest
+    profiles: ["monitoring"]
+    container_name: erddap-grafana
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./docker/prometheus/grafana/provisioning:/etc/grafana/provisioning
+      - ./docker/prometheus/grafana/dashboards:/var/lib/grafana/dashboards
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=${GF_SECURITY_ADMIN_PASSWORD:-erddapadmin}
+      - GF_USERS_ALLOW_SIGN_UP=false
+      - GF_INSTALL_PLUGINS=grafana-clock-panel,grafana-piechart-panel
+    ports:
+      - "3000:3000"
+    depends_on:
+      - prometheus
+    restart: unless-stopped
+
 volumes:
   data:
+  prometheus_data:
+  grafana_data:
