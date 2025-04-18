@@ -4,6 +4,8 @@
  */
 package gov.noaa.pfel.erddap.dataset;
 
+import org.semver4j.Semver;
+
 /**
  * This identifies that extra methods that EDDTableFromErddap and EDDGridFromErddap share.
  *
@@ -12,9 +14,11 @@ package gov.noaa.pfel.erddap.dataset;
 public interface FromErddap {
 
   /** The version of the source ERDDAP. */
-  public double sourceErddapVersion(); // e.g., 1.76
+  // public double sourceErddapVersion(); // e.g., 1.76
 
-  public int intSourceErddapVersion(); // e.g., 176
+  // public int intSourceErddapVersion(); // e.g., 176
+
+  public Semver sourceErddapVersion();
 
   /** This returns the source ERDDAP's local URL. */
   public String getLocalSourceErddapUrl();

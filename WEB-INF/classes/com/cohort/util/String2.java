@@ -6737,10 +6737,4 @@ public class String2 {
     }
     return sb.toString();
   }
-
-  public static String[] immutableListToArray(ImmutableList<String> list) {
-    String[] array = new String[list.size()];
-    array = list.toArray(array);
-    return array;
-  }
 } // End of String2 class.

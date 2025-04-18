@@ -18,6 +18,7 @@ import com.cohort.util.Test;
 import gov.noaa.pfel.coastwatch.griddata.NcHelper;
 import gov.noaa.pfel.coastwatch.util.SSR;
 import gov.noaa.pfel.erddap.GenerateDatasetsXml;
+import gov.noaa.pfel.erddap.dataset.EDD.EDDFileTypeInfo;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.EDVGridAxis;
 import gov.noaa.pfel.erddap.variable.EDVTimeGridAxis;
@@ -26,6 +27,7 @@ import java.io.BufferedOutputStream;
 import java.io.FileOutputStream;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.util.List;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -5356,8 +5358,9 @@ class EDDGridFromDapTests {
     expected = "No error.";
     // was "SimpleException: Query error: For variable=temp axis#1=depth
     // Constraint=\"[(500):(5.01)]\": StartIndex=18 is greater than StopIndex=0.";
-    for (int i = 0; i < EDDGridFromDap.dataFileTypeNames.size(); i++) {
-      String fileType = EDDGridFromDap.dataFileTypeNames.get(i);
+    List<EDDFileTypeInfo> dataTypes = EDD.getFileTypeOptions(true, false);
+    for (int i = 0; i < dataTypes.size(); i++) {
+      String fileType = dataTypes.get(i).getFileTypeName();
 
       // skip the fileTypes that don't look at the query (or don't object to errors in
       // it)

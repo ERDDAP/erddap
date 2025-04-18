@@ -11,7 +11,6 @@ import com.cohort.array.PAType;
 import com.cohort.array.PrimitiveArray;
 import com.cohort.array.StringArray;
 import com.cohort.util.File2;
-import com.cohort.util.Math2;
 import com.cohort.util.MustBe;
 import com.cohort.util.String2;
 import com.cohort.util.Test;
@@ -31,6 +30,7 @@ import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.BitSet;
+import org.semver4j.Semver;
 
 /**
  * This class represents a table of data from an opendap sequence source.
@@ -40,8 +40,8 @@ import java.util.BitSet;
 @SaxHandlerClass(EDDTableFromErddapHandler.class)
 public class EDDTableFromErddap extends EDDTable implements FromErddap {
 
-  protected double sourceErddapVersion =
-      1.22; // default = last version before /version service was added
+  // default = last version before /version service was added
+  protected Semver sourceErddapVersion = EDStatic.getSemver("1.22");
   boolean useNccsv; // when requesting data from the remote ERDDAP
 
   /**
@@ -257,10 +257,11 @@ public class EDDTableFromErddap extends EDDTable implements FromErddap {
       creationTimeMillis = sourceGlobalAttributes.getLong("creationTimeMillis");
       sourceGlobalAttributes.remove("creationTimeMillis");
 
-      sourceErddapVersion = sourceGlobalAttributes.getDouble("sourceErddapVersion");
+      double sourceVersion = sourceGlobalAttributes.getDouble("sourceErddapVersion");
       sourceGlobalAttributes.remove("sourceErddapVersion");
-      if (Double.isNaN(sourceErddapVersion)) sourceErddapVersion = 1.22;
-      useNccsv = intSourceErddapVersion() >= 176;
+      if (Double.isNaN(sourceVersion)) sourceVersion = 1.22;
+      sourceErddapVersion = EDStatic.getSemver(String.valueOf(sourceVersion));
+      useNccsv = sourceErddapVersion.isGreaterThanOrEqualTo(EDStatic.getSemver("1.76"));
 
     } else {
       // !qrMode
@@ -269,7 +270,7 @@ public class EDDTableFromErddap extends EDDTable implements FromErddap {
 
       // For version 1.76+, this uses .nccsv to communicate
       // For version 1.75-, this uses DAP
-      useNccsv = intSourceErddapVersion() >= 176;
+      useNccsv = sourceErddapVersion.isGreaterThanOrEqualTo(EDStatic.getSemver("1.76"));
 
       if (useNccsv) {
         // get sourceTable from remote ERDDAP nccsv
@@ -462,7 +463,7 @@ public class EDDTableFromErddap extends EDDTable implements FromErddap {
 
     // finalize accessibleViaFiles
     if (accessibleViaFiles) {
-      if (sourceErddapVersion < 2.10) {
+      if (sourceErddapVersion.isLowerThan(EDStatic.getSemver("2.10"))) {
         accessibleViaFiles = false;
         String2.log(
             "accessibleViaFiles=false because remote ERDDAP version is <v2.10, so no support for /files/.csv .");
@@ -542,13 +543,8 @@ public class EDDTableFromErddap extends EDDTable implements FromErddap {
 
   /** This returns the source ERDDAP's version number, e.g., 1.22 */
   @Override
-  public double sourceErddapVersion() {
+  public Semver sourceErddapVersion() {
     return sourceErddapVersion;
-  }
-
-  @Override
-  public int intSourceErddapVersion() {
-    return Math2.roundToInt(sourceErddapVersion * 100);
   }
 
   /** This returns the local version of the source ERDDAP's url. */

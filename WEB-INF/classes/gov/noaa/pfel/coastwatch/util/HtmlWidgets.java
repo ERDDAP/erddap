@@ -14,6 +14,7 @@ import gov.noaa.pfel.erddap.util.EDStatic;
 import java.io.File;
 import java.text.MessageFormat;
 import java.util.Iterator;
+import java.util.List;
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
 import javax.imageio.stream.ImageInputStream;
@@ -976,8 +977,7 @@ public class HtmlWidgets {
    * @return the HTML code to display 17 radio buttons with colored backgrounds.
    */
   public String color17(String htmlLabel, String name, String tooltip, int selected, String other) {
-    return color(
-        String2.immutableListToArray(PALETTE17), 17, htmlLabel, name, tooltip, selected, other);
+    return color(PALETTE17, 17, htmlLabel, name, tooltip, selected, other);
   }
 
   /**
@@ -992,7 +992,7 @@ public class HtmlWidgets {
    * @return the HTML code to display radio buttons with colored backgrounds.
    */
   public String color(
-      String[] colors,
+      List<String> colors,
       int perRow,
       String htmlLabel,
       String name,
@@ -1008,17 +1008,17 @@ public class HtmlWidgets {
     boolean hasLabel = htmlLabel != null && htmlLabel.length() > 0;
     if (hasLabel) sb.append("<td class=\"N\">" + htmlLabel + "</td>\n");
     int inRow = 0;
-    for (int i = 0; i < colors.length; i++) {
+    for (int i = 0; i < colors.size(); i++) {
       // a radio button with the appropriate background color
       String checked = i == selected ? " checked" : "";
       sb.append(
           "<td style=\"padding-top:3px; background-color:#"
-              + colors[i]
+              + colors.get(i)
               + "\">"
               + "<input type=\"radio\" name=\""
               + XML.encodeAsHTMLAttribute(name)
               + "\" value=\""
-              + colors[i]
+              + colors.get(i)
               + "\""
               + checked
               + " "
@@ -1028,7 +1028,7 @@ public class HtmlWidgets {
               + "></td>\n");
 
       // new row?
-      if (++inRow % perRow == 0 && i != colors.length - 1)
+      if (++inRow % perRow == 0 && i != colors.size() - 1)
         sb.append("  </tr>\n" + "  <tr>\n" + (hasLabel ? "    <td>&nbsp;</td>\n" : ""));
     }
     sb.append("""
@@ -1056,12 +1056,7 @@ public class HtmlWidgets {
    * @return the HTML code for a list in a box or a dropdown list.
    */
   public String select(
-      String name,
-      String tooltip,
-      int nRows,
-      ImmutableList<String> options,
-      int selected,
-      String other) {
+      String name, String tooltip, int nRows, List<String> options, int selected, String other) {
     String[] arrOptions = new String[options.size()];
     arrOptions = options.toArray(arrOptions);
     return select(name, tooltip, nRows, arrOptions, null, selected, other, false, "");

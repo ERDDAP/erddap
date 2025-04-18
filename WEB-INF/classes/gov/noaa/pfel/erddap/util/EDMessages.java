@@ -2685,9 +2685,11 @@ public class EDMessages {
               "&adminEmail;",
               SSR.getSafeEmailAddress(EDStatic.config.adminEmail));
       startBodyHtmlAr[tl] =
-          String2.replaceAll(startBodyHtmlAr[tl], "&erddapVersion;", EDStatic.erddapVersion);
+          String2.replaceAll(
+              startBodyHtmlAr[tl], "&erddapVersion;", EDStatic.erddapVersion.getVersion());
       endBodyHtmlAr[tl] =
-          String2.replaceAll(endBodyHtmlAr[tl], "&erddapVersion;", EDStatic.erddapVersion);
+          String2.replaceAll(
+              endBodyHtmlAr[tl], "&erddapVersion;", EDStatic.erddapVersion.getVersion());
     }
 
     Test.ensureEqual(imageWidths.length, 3, "imageWidths.length must be 3.");

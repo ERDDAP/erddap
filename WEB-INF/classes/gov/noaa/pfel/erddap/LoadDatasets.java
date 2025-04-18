@@ -1242,7 +1242,7 @@ public class LoadDatasets extends Thread {
                   String2.replaceAll(
                       String2.isSomething(ts) ? ts : EDStatic.messages.DEFAULT_endBodyHtmlAr[0],
                       "&erddapVersion;",
-                      EDStatic.erddapVersion);
+                      EDStatic.erddapVersion.getVersion());
               String2.log("endBodyHtml5 was set.");
 
               break;

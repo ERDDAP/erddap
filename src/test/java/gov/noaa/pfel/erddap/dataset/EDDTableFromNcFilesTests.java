@@ -7004,9 +7004,6 @@ class EDDTableFromNcFilesTests {
   void testLegend() throws Throwable {
 
     int language = 0;
-    String time1 = "now-11months";
-    double time2 = Calendar2.nowStringToEpochSeconds(time1);
-    String time3 = Calendar2.epochSecondsToIsoStringTZ(time2);
     String queries[];
     String dir = Image2Tests.urlToAbsolutePath(Image2Tests.OBS_DIR);
     String tName, baseName, start;
@@ -7017,7 +7014,7 @@ class EDDTableFromNcFilesTests {
     start =
         "longitude,latitude,airPressure&airPressure>900&airPressure!=NaN"
             + "&airPressure=~\"(.*)\"&.marker=1|5&longitude%3E=-180&time%3E=";
-    queries = new String[] {time1, "" + time2, time3};
+    queries = new String[] {"2022-09-01T00:00:00Z", "2022-09", "1661990400"};
     for (int i = 0; i < queries.length; i++) {
       baseName = "EDDTableFromNcFiles_testLegendA" + i;
       tName =
