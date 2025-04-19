@@ -6,6 +6,7 @@ import com.cohort.util.Calendar2;
 import com.cohort.util.File2;
 import com.cohort.util.String2;
 import com.cohort.util.Test;
+import com.cohort.util.TestUtil;
 import gov.noaa.pfel.coastwatch.pointdata.Table;
 import gov.noaa.pfel.erddap.GenerateDatasetsXml;
 import gov.noaa.pfel.erddap.util.EDStatic;
@@ -702,7 +703,7 @@ class EDDTableFromThreddsFilesTests {
       Test.ensureTrue(tPo >= 0, "tPo=-1 results=\n" + results);
       Test.ensureLinesMatch(results.substring(tPo), expected, "results=\n" + results);
     } catch (Throwable t) {
-      Test.knownProblem("This often has small metadata changes.", t);
+      TestUtil.knownProblem("This often has small metadata changes.", t);
     }
 
     // *** test getting dds for entire dataset

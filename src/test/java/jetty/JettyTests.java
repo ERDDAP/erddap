@@ -3972,7 +3972,7 @@ class JettyTests {
     String fileName = TEMP_DIR.toAbsolutePath().toString() + "/tempTable.json";
     table.saveAsJson(fileName, 0, true);
     // String2.log(fileName + "=\n" + File2.readFromFile(fileName)[1]);
-    // Test.displayInBrowser("file://" + fileName); //.json
+    // TestUtil.displayInBrowser("file://" + fileName); //.json
 
     // read it from the file
     String results = File2.directReadFromUtf8File(fileName);
@@ -6164,9 +6164,9 @@ class JettyTests {
      * String s = https://xmlvalidation.com/ ".../xml/validate/?lang=en" +
      * "&url=" + EDStatic.erddapUrl + "/wms/" + EDD.WMS_SERVER + "?service=WMS&" +
      * "request=GetCapabilities&version=";
-     * Test.displayInBrowser(s + "1.1.0");
-     * Test.displayInBrowser(s + "1.1.1");
-     * Test.displayInBrowser(s + "1.3.0");
+     * TestUtil.displayInBrowser(s + "1.1.0");
+     * TestUtil.displayInBrowser(s + "1.1.1");
+     * TestUtil.displayInBrowser(s + "1.3.0");
      */
 
     // more information
@@ -8135,7 +8135,7 @@ class JettyTests {
     tName =
         globecBottle.makeNewFileForDapQuery(
             language, null, null, "", dir, globecBottle.className() + "_Entire", ".html");
-    // Test.displayInBrowser("file://" + dir + tName);
+    // TestUtil.displayInBrowser("file://" + dir + tName);
 
     // *** test make data files
     String2.log("\n*** EDDTableFromNcFiles.test make DATA FILES\n");
@@ -8264,7 +8264,7 @@ class JettyTests {
             dir,
             globecBottle.className() + "_NumRegex",
             ".csv");
-    // Test.displayInBrowser("file://" + dir + tName);
+    // TestUtil.displayInBrowser("file://" + dir + tName);
     results = File2.directReadFrom88591File(dir + tName);
     // String2.log(results);
     expected =
@@ -8297,7 +8297,7 @@ class JettyTests {
     tName =
         globecBottle.makeNewFileForDapQuery(
             language, null, null, tDapQuery, dir, globecBottle.className() + "_StrEq", ".csv");
-    // Test.displayInBrowser("file://" + dir + tName);
+    // TestUtil.displayInBrowser("file://" + dir + tName);
     results = File2.directReadFrom88591File(dir + tName);
     // String2.log(results);
     expected =
@@ -8331,7 +8331,7 @@ class JettyTests {
     tName =
         globecBottle.makeNewFileForDapQuery(
             language, null, null, tDapQuery, dir, globecBottle.className() + "_GTLT", ".csv");
-    // Test.displayInBrowser("file://" + dir + tName);
+    // TestUtil.displayInBrowser("file://" + dir + tName);
     results = File2.directReadFrom88591File(dir + tName);
     // String2.log(results);
     expected =
@@ -8483,7 +8483,7 @@ class JettyTests {
     // tName = globecBottle.makeNewFileForDapQuery(language, null, null,
     // userDapQuery, dir,
     // globecBottle.className() + "_Data", ".dods");
-    // Test.displayInBrowser("file://" + dir + tName);
+    // TestUtil.displayInBrowser("file://" + dir + tName);
     try {
       String2.log("\ndo .dods test");
       String tUrl =
@@ -8666,7 +8666,7 @@ class JettyTests {
             dir,
             globecBottle.className() + "_Data",
             ".htmlTable");
-    // Test.displayInBrowser("file://" + dir + tName);
+    // TestUtil.displayInBrowser("file://" + dir + tName);
     results = File2.directReadFromUtf8File(dir + tName);
     // String2.log(results);
     expected =
@@ -8931,7 +8931,7 @@ class JettyTests {
     tName =
         globecBottle.makeNewFileForDapQuery(
             language, null, null, regexDapQuery, dir, globecBottle.className() + "_Data", ".mat");
-    // Test.displayInBrowser("file://" + dir + tName);
+    // TestUtil.displayInBrowser("file://" + dir + tName);
     results = File2.hexDump(dir + tName, 1000000);
     // String2.log(results);
     Test.ensureEqual(
@@ -9172,7 +9172,7 @@ class JettyTests {
             dir,
             globecBottle.className() + "_Data",
             ".ncHeader");
-    // Test.displayInBrowser("file://" + dir + tName);
+    // TestUtil.displayInBrowser("file://" + dir + tName);
     results = File2.directReadFromUtf8File(dir + tName);
     String2.log(results);
 
@@ -9254,7 +9254,7 @@ class JettyTests {
     tName =
         globecBottle.makeNewFileForDapQuery(
             language, null, null, userDapQuery, dir, globecBottle.className() + "_Data", ".tsv");
-    // Test.displayInBrowser("file://" + dir + tName);
+    // TestUtil.displayInBrowser("file://" + dir + tName);
     results = File2.directReadFrom88591File(dir + tName);
     // String2.log(results);
     expected =
@@ -9273,7 +9273,7 @@ class JettyTests {
     tName =
         globecBottle.makeNewFileForDapQuery(
             language, null, null, userDapQuery, dir, globecBottle.className() + "_Data", ".tsvp");
-    // Test.displayInBrowser("file://" + dir + tName);
+    // TestUtil.displayInBrowser("file://" + dir + tName);
     results = File2.directReadFrom88591File(dir + tName);
     // String2.log(results);
     expected =
@@ -9291,7 +9291,7 @@ class JettyTests {
     tName =
         globecBottle.makeNewFileForDapQuery(
             language, null, null, userDapQuery, dir, globecBottle.className() + "_Data", ".tsv0");
-    // Test.displayInBrowser("file://" + dir + tName);
+    // TestUtil.displayInBrowser("file://" + dir + tName);
     results = File2.directReadFrom88591File(dir + tName);
     // String2.log(results);
     expected = "-124.4\t35.7\t2002-08-03T01:29:00Z\tNew_Horizon\n";
@@ -9307,7 +9307,7 @@ class JettyTests {
     tName =
         globecBottle.makeNewFileForDapQuery(
             language, null, null, userDapQuery, dir, globecBottle.className() + "_Data", ".xhtml");
-    // Test.displayInBrowser("file://" + dir + tName);
+    // TestUtil.displayInBrowser("file://" + dir + tName);
     results = File2.directReadFromUtf8File(dir + tName);
     // String2.log(results);
     expected =
@@ -9445,7 +9445,7 @@ class JettyTests {
       tName =
           eddTable2.makeNewFileForDapQuery(
               language, null, null, userDapQuery, dir, eddTable2.className() + "_Itself", ".xhtml");
-      // Test.displayInBrowser("file://" + dir + tName);
+      // TestUtil.displayInBrowser("file://" + dir + tName);
       results = File2.directReadFromUtf8File(dir + tName);
       // String2.log(results);
       expected =
@@ -9511,7 +9511,7 @@ class JettyTests {
     // tName = globecBottle.makeNewFileForDapQuery(language, null, null,
     // userDapQuery,
     // dir, globecBottle.className() + "_Data", ".dods");
-    // Test.displayInBrowser("file://" + dir + tName);
+    // TestUtil.displayInBrowser("file://" + dir + tName);
     {
       String2.log("\n*** EDDTableFromNcFiles.testNctcdf do netcdf-java opendap test");
       // !!!THIS READS DATA FROM LOCAL ERDDAP SERVER RUNNING ON EDStatic.erddapUrl!!!
@@ -9612,7 +9612,7 @@ class JettyTests {
     }
 
     // OTHER APPROACH: GET .NC FILE -- HOW SPECIFY CONSTRAINT EXPRESSION???
-    // Test.displayInBrowser("file://" + dir + tName);
+    // TestUtil.displayInBrowser("file://" + dir + tName);
     if (false) {
       try {
         String2.log("\n*** do netcdf-java .nc test");
@@ -11308,7 +11308,7 @@ class JettyTests {
             + "&BBOX=-80,-90,80,63.6&WIDTH=256&HEIGHT=256",
         tName,
         false);
-    // Test.displayInBrowser("file://" + tName);
+    // TestUtil.displayInBrowser("file://" + tName);
     Image2Tests.testImagesIdentical(tName, baseName + ".png", baseName + "_diff.png");
 
     // WMS 1.1.0 default elevation
@@ -11324,7 +11324,7 @@ class JettyTests {
             + "&BBOX=-80,-90,80,63.6&WIDTH=256&HEIGHT=256",
         tName,
         false);
-    // Test.displayInBrowser("file://" + tName);
+    // TestUtil.displayInBrowser("file://" + tName);
     Image2Tests.testImagesIdentical(tName, baseName + ".png", baseName + "_diff.png");
 
     // test WMS 1.3.0 service getCapabilities from localhost erddap
@@ -11411,7 +11411,7 @@ class JettyTests {
             + "&BBOX=-75,-90,75,63.6&WIDTH=256&HEIGHT=256",
         tName,
         false);
-    // Test.displayInBrowser("file://" + tName);
+    // TestUtil.displayInBrowser("file://" + tName);
     Image2Tests.testImagesIdentical(tName, baseName + ".png", baseName + "_diff.png");
 
     // WMS 1.1.0 default elevation
@@ -11427,7 +11427,7 @@ class JettyTests {
             + "&BBOX=-75,-90,75,63.6&WIDTH=256&HEIGHT=256",
         tName,
         false);
-    // Test.displayInBrowser("file://" + tName);
+    // TestUtil.displayInBrowser("file://" + tName);
     Image2Tests.testImagesIdentical(tName, baseName + ".png", baseName + "_diff.png");
 
     // test lat beyond dataset range (changed from -75:75 above to -80:80 here)
@@ -11443,7 +11443,7 @@ class JettyTests {
             + "&BBOX=-80,-90,80,63.6&WIDTH=256&HEIGHT=256",
         tName,
         false);
-    // Test.displayInBrowser("file://" + tName);
+    // TestUtil.displayInBrowser("file://" + tName);
     Image2Tests.testImagesIdentical(tName, baseName + ".png", baseName + "_diff.png");
   }
 
@@ -11469,7 +11469,7 @@ class JettyTests {
             dir,
             gridDataset.className() + "_testKml",
             ".kml");
-    // Test.displayInBrowser("file://" + dir + tName);
+    // TestUtil.displayInBrowser("file://" + dir + tName);
     results = File2.directReadFromUtf8File(dir + tName);
     expected =
         "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
@@ -12845,7 +12845,7 @@ class JettyTests {
             ".csv");
     results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
     // String2.log(results);
-    // Test.displayInBrowser("file://" + EDStatic.config.fullTestCacheDirectory + tName);
+    // TestUtil.displayInBrowser("file://" + EDStatic.config.fullTestCacheDirectory + tName);
     expected =
         "time,longitude\n"
             + "UTC,degrees_east\n"
@@ -12876,7 +12876,7 @@ class JettyTests {
             ".csv");
     results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
     // String2.log(results);
-    // Test.displayInBrowser("file://" + EDStatic.config.fullTestCacheDirectory + tName);
+    // TestUtil.displayInBrowser("file://" + EDStatic.config.fullTestCacheDirectory + tName);
     // expected = "time,longitude\n" +
     // "UTC,degrees_east\n" +
     // "2002-07-08T00:00:00Z,360.0\n" +
@@ -13855,7 +13855,7 @@ class JettyTests {
       // request status.html
       SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + "/status.html");
       // Math2.sleep(1000);
-      // Test.displayInBrowser("file://" + EDStatic.config.bigParentDirectory +
+      // TestUtil.displayInBrowser("file://" + EDStatic.config.bigParentDirectory +
       // "logs/log.txt");
 
       // String2.pressEnterToContinue(
@@ -14386,7 +14386,7 @@ class JettyTests {
             Image2Tests.urlToAbsolutePath(Image2Tests.OBS_DIR),
             baseName,
             ".png");
-    // Test.displayInBrowser("file://" + dir + tName);
+    // TestUtil.displayInBrowser("file://" + dir + tName);
     Image2Tests.testImagesIdentical(tName, baseName + ".png", baseName + "_diff.png");
 
     // test of /files/ system for fromErddap in local host dataset
@@ -14829,7 +14829,7 @@ class JettyTests {
     expected2 = "    String _CoordinateAxisType &quot;Lon&quot;;";
     Test.ensureTrue(results.indexOf(expected) > 0, "\nresults=\n" + results);
     Test.ensureTrue(results.indexOf(expected2) > 0, "\nresults=\n" + results);
-    // Test.displayInBrowser("file://" + tDir + tName);
+    // TestUtil.displayInBrowser("file://" + tDir + tName);
 
     // *** test make data files
     String2.log("\n****************** EDDTableCopy.test make DATA FILES\n");
@@ -14909,7 +14909,7 @@ class JettyTests {
     // .dods
     // tName = edd.makeNewFileForDapQuery(language, null, null, userDapQuery, tDir,
     // edd.className() + "_Data", ".dods");
-    // Test.displayInBrowser("file://" + tDir + tName);
+    // TestUtil.displayInBrowser("file://" + tDir + tName);
     String2.log("\ndo .dods test");
     String tUrl =
         EDStatic.erddapUrl
@@ -14953,7 +14953,7 @@ class JettyTests {
             Image2Tests.urlToAbsolutePath(Image2Tests.OBS_DIR),
             baseName,
             ".png");
-    // Test.displayInBrowser("file://" + tDir + tName);
+    // TestUtil.displayInBrowser("file://" + tDir + tName);
     Image2Tests.testImagesIdentical(tName, baseName + ".png", baseName + "_diff.png");
   } // end of testBasic
 
@@ -15597,7 +15597,7 @@ class JettyTests {
             Image2Tests.urlToAbsolutePath(Image2Tests.OBS_DIR),
             baseName,
             ".png");
-    // Test.displayInBrowser("file://" + dir + tName);
+    // TestUtil.displayInBrowser("file://" + dir + tName);
     Image2Tests.testImagesIdentical(tName, baseName + ".png", baseName + "_diff.png");
 
     // String2.log("\n*** EDDGridLonPM180.test120to320 finished.");
@@ -15918,7 +15918,7 @@ class JettyTests {
       // display last image
       if (ext == extensions.length - 1) {
         File2.rename(outName, outName + ".png");
-        // Test.displayInBrowser(outName + ".png"); // complicated to switch to
+        // TestUtil.displayInBrowser(outName + ".png"); // complicated to switch to
         // testImagesIdentical
       }
 
@@ -17407,7 +17407,8 @@ class JettyTests {
       // request status.html
       SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + "/status.html");
       Math2.sleep(1000);
-      //   Test.displayInBrowser("file://" + EDStatic.config.bigParentDirectory + "logs/log.txt");
+      //   TestUtil.displayInBrowser("file://" + EDStatic.config.bigParentDirectory +
+      // "logs/log.txt");
 
       //   String2.pressEnterToContinue(
       //       "Look at log.txt to see if update was run and successfully "

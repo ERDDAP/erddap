@@ -288,14 +288,14 @@ class EDDGridFromEtopoTests {
               obsDir,
               baseName,
               ".png");
-      // Test.displayInBrowser("file://" + EDStatic.config.fullTestCacheDirectory + tName);
+      // TestUtil.displayInBrowser("file://" + EDStatic.config.fullTestCacheDirectory + tName);
       Image2Tests.testImagesIdentical(tName, baseName + ".png", baseName + "_diff.png");
 
       baseName = data360.className() + "_Map360";
       tName =
           data360.makeNewFileForDapQuery(
               language, null, null, "altitude[(-90):(90)][(0):(360)]", obsDir, baseName, ".png");
-      // Test.displayInBrowser("file://" + EDStatic.config.fullTestCacheDirectory + tName);
+      // TestUtil.displayInBrowser("file://" + EDStatic.config.fullTestCacheDirectory + tName);
       Image2Tests.testImagesIdentical(tName, baseName + ".png", baseName + "_diff.png");
 
       baseName = data360.className() + "_TopoUnder";
@@ -309,7 +309,7 @@ class EDDGridFromEtopoTests {
               obsDir,
               baseName,
               ".png");
-      // Test.displayInBrowser("file://" + EDStatic.config.fullTestCacheDirectory + tName);
+      // TestUtil.displayInBrowser("file://" + EDStatic.config.fullTestCacheDirectory + tName);
       Image2Tests.testImagesIdentical(tName, baseName + ".png", baseName + "_diff.png");
 
       // same data subset. Is cached file used?
@@ -324,7 +324,7 @@ class EDDGridFromEtopoTests {
               obsDir,
               baseName,
               ".png");
-      // Test.displayInBrowser("file://" + EDStatic.config.fullTestCacheDirectory + tName);
+      // TestUtil.displayInBrowser("file://" + EDStatic.config.fullTestCacheDirectory + tName);
       Image2Tests.testImagesIdentical(tName, baseName + ".png", baseName + "_diff.png");
     }
 

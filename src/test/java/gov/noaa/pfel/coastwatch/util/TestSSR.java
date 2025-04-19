@@ -10,6 +10,7 @@ import com.cohort.util.Math2;
 import com.cohort.util.MustBe;
 import com.cohort.util.String2;
 import com.cohort.util.Test;
+import com.cohort.util.TestUtil;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -137,7 +138,7 @@ public class TestSSR {
           "dosShell a");
       Test.ensureTrue(File2.isFile(tempGif), "dosShell b");
     } catch (Exception e) {
-      Test.knownProblem(
+      TestUtil.knownProblem(
           "IMAGEMAGICK NOT SET UP ON BOB'S DELL M4700 or Lenovo.", MustBe.throwableToString(e));
     }
     File2.delete(tempGif);

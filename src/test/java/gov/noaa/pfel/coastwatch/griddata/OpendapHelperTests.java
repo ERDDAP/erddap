@@ -5,6 +5,7 @@ import com.cohort.util.File2;
 import com.cohort.util.MustBe;
 import com.cohort.util.String2;
 import com.cohort.util.Test;
+import com.cohort.util.TestUtil;
 import dods.dap.DAS;
 import dods.dap.DConnect;
 import java.nio.file.Path;
@@ -326,7 +327,7 @@ class OpendapHelperTests {
       File2.delete(fileName);
       if (true) throw new RuntimeException("shouldn't get here");
     } catch (OutOfMemoryError oome) {
-      Test.knownProblem(
+      TestUtil.knownProblem(
           "THREDDS OutOfMemoryError. I reported it to John Caron.",
           "2012-03-02 A TDS problem. I reported it to John Caron:\n"
               + MustBe.throwableToString(oome));
@@ -347,7 +348,7 @@ class OpendapHelperTests {
       // gov.noaa.pfel.coastwatch.griddata.OpendapHelper.testDapToNcDArray(OpendapHelper.java:1628)
       // at gov.noaa.pfel.coastwatch.TestAll.main(TestAll.java:723)
     } catch (Throwable t) {
-      Test.knownProblem(
+      TestUtil.knownProblem(
           "\nOutOfMememoryError from TDS bug was expected (but 404 Not Found/ 'Connection cannont be read' is also common)."
               + "\n(server timed out 2013-10-24)",
           t);

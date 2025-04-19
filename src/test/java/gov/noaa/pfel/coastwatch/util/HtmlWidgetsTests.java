@@ -2,7 +2,7 @@ package gov.noaa.pfel.coastwatch.util;
 
 import com.cohort.util.File2;
 import com.cohort.util.String2;
-import com.cohort.util.Test;
+import com.cohort.util.TestUtil;
 import com.cohort.util.XML;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import org.junit.jupiter.api.BeforeAll;
@@ -564,7 +564,7 @@ class HtmlWidgetsTests {
             + "</html>\n");
     String2.log("writeToFile result=" + File2.writeToFileUtf8(fullName, sb.toString()));
 
-    // Test.displayInBrowser("file://" + fullName);
+    // TestUtil.displayInBrowser("file://" + fullName);
     // debugMode = oDebugMode;
   }
 
@@ -576,7 +576,8 @@ class HtmlWidgetsTests {
     // "Try viewing the images and videos to test range requests with public S3
     // buckets/files.");
 
-    Test.displayInBrowser("http://localhost:8080/cwexperimental/files/testPrivateAwsS3MediaFiles/");
+    TestUtil.displayInBrowser(
+        "http://localhost:8080/cwexperimental/files/testPrivateAwsS3MediaFiles/");
 
     // String2.pressEnterToContinue();
   }
@@ -589,7 +590,8 @@ class HtmlWidgetsTests {
     // "Try viewing the images and videos to test range requests with private S3
     // buckets/files.");
 
-    Test.displayInBrowser("http://localhost:8080/cwexperimental/files/testPrivateAwsS3MediaFiles/");
+    TestUtil.displayInBrowser(
+        "http://localhost:8080/cwexperimental/files/testPrivateAwsS3MediaFiles/");
 
     // String2.pressEnterToContinue();
   }

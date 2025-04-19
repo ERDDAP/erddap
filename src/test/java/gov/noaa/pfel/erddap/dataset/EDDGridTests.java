@@ -319,7 +319,7 @@ class EDDGridTests {
             "testGeotif",
             ".geotif");
 
-    // Test.displayInBrowser("file://" + EDStatic.config.fullTestCacheDirectory + tName);
+    // TestUtil.displayInBrowser("file://" + EDStatic.config.fullTestCacheDirectory + tName);
     Image2Tests.testImagesIdentical(
         tName, "EDDGrid_testGeotif" + ".tif", "EDDGrid_testGeotif" + "_diff.png");
   }
@@ -398,7 +398,7 @@ class EDDGridTests {
               tDir,
               gridDataset.className() + "_GraphTiny",
               ".largePng"); // to show it's irrelevant
-      // Test.displayInBrowser("file://" + tDir + tName);
+      // TestUtil.displayInBrowser("file://" + tDir + tName);
       Image2Tests.testImagesIdentical(
           tName,
           "EDDGridTestGraphics_GraphTiny" + ".png",
@@ -413,7 +413,7 @@ class EDDGridTests {
               tDir,
               gridDataset.className() + "_GraphS",
               ".smallPng");
-      // Test.displayInBrowser("file://" + tDir + tName);
+      // TestUtil.displayInBrowser("file://" + tDir + tName);
       Image2Tests.testImagesIdentical(
           tName,
           "EDDGridTestGraphics_GraphSmall" + ".png",
@@ -428,7 +428,7 @@ class EDDGridTests {
               tDir,
               gridDataset.className() + "_Graph",
               ".png");
-      // Test.displayInBrowser("file://" + tDir + tName);
+      // TestUtil.displayInBrowser("file://" + tDir + tName);
       Image2Tests.testImagesIdentical(
           tName,
           "EDDGridTestGraphics_GraphPng" + ".png",
@@ -443,7 +443,7 @@ class EDDGridTests {
               tDir,
               gridDataset.className() + "_GraphL",
               ".largePng");
-      // Test.displayInBrowser("file://" + tDir + tName);
+      // TestUtil.displayInBrowser("file://" + tDir + tName);
       Image2Tests.testImagesIdentical(
           tName, "EDDGridTestGraphics_GraphL" + ".png", "EDDGridTestGraphics_GraphL" + "_diff.png");
 
@@ -456,7 +456,7 @@ class EDDGridTests {
               tDir,
               gridDataset.className() + "_GraphHuge",
               ".smallPng"); // to show it's irrelevant
-      // Test.displayInBrowser("file://" + tDir + tName);
+      // TestUtil.displayInBrowser("file://" + tDir + tName);
       Image2Tests.testImagesIdentical(
           tName,
           "EDDGridTestGraphics_GraphHuge" + ".png",
@@ -474,7 +474,7 @@ class EDDGridTests {
               tDir,
               gridDataset.className() + "_GraphS",
               ".smallPdf");
-      // Test.displayInBrowser("file://" + tDir + tName);
+      // TestUtil.displayInBrowser("file://" + tDir + tName);
 
       tName =
           gridDataset.makeNewFileForDapQuery(
@@ -485,7 +485,7 @@ class EDDGridTests {
               tDir,
               gridDataset.className() + "_Graph",
               ".pdf");
-      // Test.displayInBrowser("file://" + tDir + tName);
+      // TestUtil.displayInBrowser("file://" + tDir + tName);
 
       tName =
           gridDataset.makeNewFileForDapQuery(
@@ -496,7 +496,7 @@ class EDDGridTests {
               tDir,
               gridDataset.className() + "_GraphL",
               ".largePdf");
-      // Test.displayInBrowser("file://" + tDir + tName);
+      // TestUtil.displayInBrowser("file://" + tDir + tName);
     }
 
     // test legend= options
@@ -510,7 +510,7 @@ class EDDGridTests {
               tDir,
               gridDataset.className() + "_GraphLegendOff",
               ".png");
-      // Test.displayInBrowser("file://" + tDir + tName);
+      // TestUtil.displayInBrowser("file://" + tDir + tName);
       Image2Tests.testImagesIdentical(
           tName,
           "EDDGridTestGraphics_LegendOff" + ".png",
@@ -525,7 +525,7 @@ class EDDGridTests {
               tDir,
               gridDataset.className() + "_GraphLegendOnlySmall",
               ".smallPng");
-      // Test.displayInBrowser("file://" + tDir + tName);
+      // TestUtil.displayInBrowser("file://" + tDir + tName);
       Image2Tests.testImagesIdentical(
           tName,
           "EDDGridTestGraphics_LegendOnly" + ".png",
@@ -540,7 +540,7 @@ class EDDGridTests {
               tDir,
               gridDataset.className() + "_GraphLegendOnlyMed",
               ".png");
-      // Test.displayInBrowser("file://" + tDir + tName);
+      // TestUtil.displayInBrowser("file://" + tDir + tName);
       Image2Tests.testImagesIdentical(
           tName,
           "EDDGridTestGraphics_LegendOnlyMed" + ".png",
@@ -555,7 +555,7 @@ class EDDGridTests {
               tDir,
               gridDataset.className() + "_GraphLegendOnlyLarge",
               ".largePng");
-      // Test.displayInBrowser("file://" + tDir + tName);
+      // TestUtil.displayInBrowser("file://" + tDir + tName);
       Image2Tests.testImagesIdentical(
           tName,
           "EDDGridTestGraphics_LegendOnlyLarge" + ".png",
@@ -570,7 +570,7 @@ class EDDGridTests {
               tDir,
               gridDataset.className() + "_GraphTransparentLegendOnly",
               ".transparentPng");
-      // Test.displayInBrowser("file://" + tDir + tName);
+      // TestUtil.displayInBrowser("file://" + tDir + tName);
       Image2Tests.testImagesIdentical(
           tName,
           "EDDGridTestGraphics_LegendOnlyTransparent" + ".png",
@@ -585,7 +585,7 @@ class EDDGridTests {
     // tName = gridDataset.makeNewFileForDapQuery(language, null, null,
     // tempDapQuery,
     // tDir, gridDataset.className() + "_CSGraph", ".png");
-    // Test.displayInBrowser("file://" + tDir + tName);
+    // TestUtil.displayInBrowser("file://" + tDir + tName);
 
     // *** test getting map .png
     if (testAll || false) {
@@ -600,7 +600,7 @@ class EDDGridTests {
               tDir,
               gridDataset.className() + "_MapTiny",
               ".largePng"); // to show it's irrelevant
-      // Test.displayInBrowser("file://" + tDir + tName);
+      // TestUtil.displayInBrowser("file://" + tDir + tName);
       Image2Tests.testImagesIdentical(
           tName,
           "EDDGridTestGraphics_MapTiny" + ".png",
@@ -615,7 +615,7 @@ class EDDGridTests {
               tDir,
               gridDataset.className() + "_MapS",
               ".smallPng");
-      // Test.displayInBrowser("file://" + tDir + tName);
+      // TestUtil.displayInBrowser("file://" + tDir + tName);
       Image2Tests.testImagesIdentical(
           tName,
           "EDDGridTestGraphics_MapSmall" + ".png",
@@ -624,7 +624,7 @@ class EDDGridTests {
       tName =
           gridDataset.makeNewFileForDapQuery(
               language, null, null, mapDapQuery, tDir, gridDataset.className() + "_Map", ".png");
-      // Test.displayInBrowser("file://" + tDir + tName);
+      // TestUtil.displayInBrowser("file://" + tDir + tName);
       Image2Tests.testImagesIdentical(
           tName, "EDDGridTestGraphics_Map" + ".png", "EDDGridTestGraphics_Map" + "_diff.png");
 
@@ -637,7 +637,7 @@ class EDDGridTests {
               tDir,
               gridDataset.className() + "_MapL",
               ".largePng");
-      // Test.displayInBrowser("file://" + tDir + tName);
+      // TestUtil.displayInBrowser("file://" + tDir + tName);
       Image2Tests.testImagesIdentical(
           tName,
           "EDDGridTestGraphics_MapLarge" + ".png",
@@ -652,7 +652,7 @@ class EDDGridTests {
               tDir,
               gridDataset.className() + "_MapHuge",
               ".smallPng"); // to show it's irrelevant
-      // Test.displayInBrowser("file://" + tDir + tName);
+      // TestUtil.displayInBrowser("file://" + tDir + tName);
       Image2Tests.testImagesIdentical(
           tName,
           "EDDGridTestGraphics_MapHuge" + ".png",
@@ -672,7 +672,7 @@ class EDDGridTests {
               tDir,
               gridDataset.className() + "_MapTPSmall",
               ".transparentPng");
-      // Test.displayInBrowser("file://" + tDir + tName);
+      // TestUtil.displayInBrowser("file://" + tDir + tName);
       Image2Tests.testImagesIdentical(
           tName,
           "EDDGridTestGraphics_MapTPSmall" + ".png",
@@ -687,7 +687,7 @@ class EDDGridTests {
               tDir,
               gridDataset.className() + "_MapTP",
               ".transparentPng");
-      // Test.displayInBrowser("file://" + tDir + tName);
+      // TestUtil.displayInBrowser("file://" + tDir + tName);
       Image2Tests.testImagesIdentical(
           tName, "EDDGridTestGraphics_MapTP" + ".png", "EDDGridTestGraphics_MapTP" + "_diff.png");
     }
@@ -703,12 +703,12 @@ class EDDGridTests {
               tDir,
               gridDataset.className() + "_MapS",
               ".smallPdf");
-      // Test.displayInBrowser("file://" + tDir + tName);
+      // TestUtil.displayInBrowser("file://" + tDir + tName);
 
       tName =
           gridDataset.makeNewFileForDapQuery(
               language, null, null, mapDapQuery, tDir, gridDataset.className() + "_Map", ".pdf");
-      // Test.displayInBrowser("file://" + tDir + tName);
+      // TestUtil.displayInBrowser("file://" + tDir + tName);
 
       tName =
           gridDataset.makeNewFileForDapQuery(
@@ -719,7 +719,7 @@ class EDDGridTests {
               tDir,
               gridDataset.className() + "_MapL",
               ".largePdf");
-      // Test.displayInBrowser("file://" + tDir + tName);
+      // TestUtil.displayInBrowser("file://" + tDir + tName);
     }
 
     // test map kml
@@ -731,7 +731,7 @@ class EDDGridTests {
               language, null, null, kmlQuery, tDir, gridDataset.className() + "_Map", ".kml");
       results = File2.directReadFromUtf8File(tDir + tName);
       // String2.log("results=\n" + results);
-      // Test.displayInBrowser("file://" + tDir + tName);
+      // TestUtil.displayInBrowser("file://" + tDir + tName);
     }
   }
 
@@ -795,7 +795,7 @@ class EDDGridTests {
       fos.write(baos.toByteArray());
       fos.flush();
       fos.close();
-      // Test.displayInBrowser("file://" + filename);
+      // TestUtil.displayInBrowser("file://" + filename);
       throw new RuntimeException(ex);
     }
   }
@@ -892,7 +892,7 @@ class EDDGridTests {
         endOfRequest,
         wcsQuery3,
         new OutputStreamSourceSimple(new BufferedOutputStream(new FileOutputStream(fileName))));
-    // Test.displayInBrowser("file://" + fileName);
+    // TestUtil.displayInBrowser("file://" + fileName);
 
     /*
      * //*** observations for all stations and with BBOX (but just same 1 station)

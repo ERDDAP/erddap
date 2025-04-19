@@ -2955,7 +2955,7 @@ class EDDTableFromNccsvFilesTests {
      * "&longitude>=-132.0&longitude<=-112.0&latitude>=30.0&latitude<=50.0" +
      * "&distinct()&.draw=markers&.colorBar=|D||||",
      * EDStatic.config.fullTestCacheDirectory, edd.className() + "_SVGraph", ".png");
-     * Test.displayInBrowser("file://" + EDStatic.config.fullTestCacheDirectory + tName);
+     * TestUtil.displayInBrowser("file://" + EDStatic.config.fullTestCacheDirectory + tName);
      *
      * } catch (Throwable t) {
      * throw new

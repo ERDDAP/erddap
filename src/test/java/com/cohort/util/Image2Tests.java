@@ -285,7 +285,7 @@ public class Image2Tests {
     // if expected doesn't exist, save observed as expected?
     if (!File2.isFile(expected)) {
       if (displayImages) {
-        Test.displayInBrowser("file://" + observed);
+        TestUtil.displayInBrowser("file://" + observed);
       }
       File2.appendFile("missingImage.txt", expected + "\n", File2.UTF_8);
       if (autoCreateMissing) {
@@ -318,9 +318,9 @@ public class Image2Tests {
     // allowNPixelsDifferent
     if (error.length() == 0) return;
     if (displayImages) {
-      Test.displayInBrowser("file://" + observed);
-      Test.displayInBrowser("file://" + expected);
-      if (File2.isFile(diffName)) Test.displayInBrowser("file://" + diffName);
+      TestUtil.displayInBrowser("file://" + observed);
+      TestUtil.displayInBrowser("file://" + expected);
+      if (File2.isFile(diffName)) TestUtil.displayInBrowser("file://" + diffName);
     }
     throw new RuntimeException(
         "testImagesIdentical found differences:\n"

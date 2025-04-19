@@ -446,7 +446,7 @@ class EDDTableCopyTests {
     expected2 = "    String _CoordinateAxisType &quot;Lon&quot;;";
     Test.ensureTrue(results.indexOf(expected) > 0, "\nresults=\n" + results);
     Test.ensureTrue(results.indexOf(expected2) > 0, "\nresults=\n" + results);
-    // Test.displayInBrowser("file://" + tDir + tName);
+    // TestUtil.displayInBrowser("file://" + tDir + tName);
 
     // *** test make data files
     String2.log("\n****************** EDDTableCopy.test make DATA FILES\n");

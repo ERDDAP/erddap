@@ -23890,25 +23890,6 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     response.sendRedirect(url);
   }
 
-  /**
-   * This makes a erddapContent.zip file with the [tomcat]/content/erddap files for distribution.
-   *
-   * @param removeDir e.g., "c:/programs/_tomcat/samples/"
-   * @param destinationDir e.g., "c:/backup/"
-   */
-  public static void makeErddapContentZip(String removeDir, String destinationDir)
-      throws Throwable {
-    String2.log("*** makeErddapContentZip dir=" + destinationDir);
-    String baseDir = removeDir + "content/erddap/";
-    SSR.zip(
-        destinationDir + "erddapContent.zip",
-        new String[] {
-          baseDir + "datasets.xml", baseDir + "setup.xml", baseDir + "images/erddapStart2.css"
-        },
-        10,
-        removeDir);
-  }
-
   public void processDataset(EDD dataset, SaxParsingContext context) {
     // do several things in quick succession...
     // (??? synchronize on (?) if really need avoid inconsistency)

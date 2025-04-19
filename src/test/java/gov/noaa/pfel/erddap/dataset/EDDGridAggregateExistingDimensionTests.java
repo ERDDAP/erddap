@@ -4,6 +4,7 @@ import com.cohort.array.StringArray;
 import com.cohort.util.File2;
 import com.cohort.util.String2;
 import com.cohort.util.Test;
+import com.cohort.util.TestUtil;
 import gov.noaa.pfel.coastwatch.griddata.NcHelper;
 import gov.noaa.pfel.coastwatch.util.SSR;
 import gov.noaa.pfel.erddap.util.EDStatic;
@@ -1010,7 +1011,7 @@ class EDDGridAggregateExistingDimensionTests {
       Test.ensureEqual(sourceUrls.get(740), dir + "20061227.bodas_ts.nc", "");
       String2.log("EDDGridAggregateExistingDimension.testGetDodsIndexUrls finished successfully.");
     } catch (Throwable t) {
-      Test.knownProblem("CSIRO bodas now requires authorization.", "No known examples now.", t);
+      TestUtil.knownProblem("CSIRO bodas now requires authorization.", "No known examples now.", t);
     }
   }
 }

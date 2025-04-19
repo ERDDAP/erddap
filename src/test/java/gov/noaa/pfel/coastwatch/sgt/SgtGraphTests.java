@@ -175,7 +175,7 @@ class SgtGraphTests {
       // view it in browser?
       // Graph of random points seems like its going to fail image diff eery time.
       // if (rep == 0) {
-      //   // Test.displayInBrowser("file://" + fileName);
+      //   // TestUtil.displayInBrowser("file://" + fileName);
       //   Image2Tests.testImagesIdentical(
       //       fileName,
       //       String2.unitTestImagesDir() + "SgtGraphMemoryTest" + rep + ".png",
@@ -960,14 +960,14 @@ class SgtGraphTests {
     }
 
     // view it
-    // Test.displayInBrowser("file://" + fileName + ".png");
+    // TestUtil.displayInBrowser("file://" + fileName + ".png");
     Image2Tests.testImagesIdentical(
         baseImageName + ".png", baseImageName + ".png", baseImageName + "_diff.png");
     Math2.sleep(2000);
 
     if (testAllAndDisplay) {
       for (int ti = 1; ti <= 6; ti++) {
-        // Test.displayInBrowser("file://" + fileName + ti + ".png");
+        // TestUtil.displayInBrowser("file://" + fileName + ti + ".png");
         Image2Tests.testImagesIdentical(
             baseImageName + ti + ".png",
             baseImageName + ti + ".png",
@@ -1209,7 +1209,7 @@ class SgtGraphTests {
     SgtUtil.saveImage(bufferedImage, obsDir + fileName + ".png");
 
     // view it
-    // Test.displayInBrowser("file://" + fileName);
+    // TestUtil.displayInBrowser("file://" + fileName);
     Image2Tests.testImagesIdentical(fileName + ".png", fileName + ".png", fileName + "_diff.png");
 
     Math2.gc("SgtGraph.testSurface (between tests)", 2000);

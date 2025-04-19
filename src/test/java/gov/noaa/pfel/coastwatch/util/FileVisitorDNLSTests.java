@@ -7,6 +7,7 @@ import com.cohort.util.File2;
 import com.cohort.util.Math2;
 import com.cohort.util.String2;
 import com.cohort.util.Test;
+import com.cohort.util.TestUtil;
 import gov.noaa.pfel.coastwatch.pointdata.Table;
 import java.io.BufferedReader;
 import java.io.StringReader;
@@ -29,7 +30,7 @@ class FileVisitorDNLSTests {
     // reallyVerbose = true;
 
     if (true)
-      Test.knownProblem(
+      TestUtil.knownProblem(
           "2020-10-22 FileVisitorDNLS.testThredds is not run now because the sourceUrl often stalls: https://data.nodc.noaa.gov/thredds");
 
     // String url =
@@ -1453,7 +1454,7 @@ class FileVisitorDNLSTests {
             + "/testMakeTgz.tar.gz";
     // try {
     FileVisitorDNLS.makeTgz(dataDir, ".*", true, ".*", tgzName);
-    // Test.displayInBrowser("file://" + tgzName); //works with .tar.gz, not .tgz
+    // TestUtil.displayInBrowser("file://" + tgzName); //works with .tar.gz, not .tgz
     // String2.pressEnterToContinue("Are the contents of the .tar.gz file okay?");
     // } catch (Throwable t) {
     // String2.pressEnterToContinue(MustBe.throwableToString(t));

@@ -160,29 +160,6 @@ public class Test {
   }
 
   /**
-   * If the two BigInteger values are equal, this throws a RuntimeException with the specified
-   * message.
-   *
-   * @param i1
-   * @param i2
-   * @param message
-   */
-  public static void ensureNotEqual(BigInteger i1, BigInteger i2, String message)
-      throws RuntimeException {
-    if (i1 == null && i2 == null) return;
-    if (i1 == null || i1.equals(i2))
-      error(
-          "\n"
-              + String2.ERROR
-              + " in Test.ensureNotEqual(BigInteger):\n"
-              + message
-              + "\nSpecifically: "
-              + i1
-              + " = "
-              + i2);
-  }
-
-  /**
    * This returns true if the two float values are almost equal (5 digits) or both NaN or both
    * infinite.
    *
@@ -223,30 +200,6 @@ public class Test {
   }
 
   /**
-   * This returns true if the two BigInteger values are equal (or both null).
-   *
-   * @param s1
-   * @param s2
-   */
-  public static boolean equal(BigInteger s1, BigInteger s2) {
-    if (s1 == null && s2 == null) return true;
-    if (s1 == null || s2 == null) return false;
-    return s1.equals(s2);
-  }
-
-  /**
-   * This returns true if the two PAOne values are equal (or both null).
-   *
-   * @param s1
-   * @param s2
-   */
-  public static boolean equal(PAOne s1, PAOne s2) {
-    if (s1 == null && s2 == null) return true;
-    if (s1 == null || s2 == null) return false;
-    return s1.equals(s2);
-  }
-
-  /**
    * If the two float values aren't almost equal, this throws a RuntimeException with the specified
    * message.
    *
@@ -281,31 +234,6 @@ public class Test {
           "\n"
               + String2.ERROR
               + " in Test.ensureEqual(double):\n"
-              + message
-              + "\nSpecifically: "
-              + d1
-              + " != "
-              + d2);
-  }
-
-  /**
-   * If the two double values aren't almost equal, this throws a RuntimeException with the specified
-   * message.
-   *
-   * @param significantDigits This let's the caller specify how many digits must be equal.
-   * @param d1
-   * @param d2
-   * @param message
-   */
-  public static void ensureAlmostEqual(int significantDigits, double d1, double d2, String message)
-      throws RuntimeException {
-    if (!Math2.almostEqual(significantDigits, d1, d2))
-      error(
-          "\n"
-              + String2.ERROR
-              + " in Test.ensureAlmostEqual(significantDigits="
-              + significantDigits
-              + ", double):\n"
               + message
               + "\nSpecifically: "
               + d1
@@ -551,65 +479,6 @@ public class Test {
     String error = testLinesMatch(tText, tRegex, message);
     if (error.length() == 0) return;
     error(error);
-  }
-
-  /**
-   * This is like ensureLinesMatch, but will test all lines even if there are failures on individual
-   * lines.
-   *
-   * @param tText a newline-separated block of text
-   * @param tRegex a newline-separated set of regexes
-   * @param message
-   * @throws RuntimeException if a line of tText doesn't match a regex in tRegex
-   */
-  public static void repeatedlyTestLinesMatch(String tText, String tRegex, String message)
-      throws RuntimeException {
-
-    tText = tText == null ? "" : String2.replaceAll(tText, "\r", "");
-    tRegex = tRegex == null ? "" : String2.replaceAll(tRegex, "\r", "");
-    String[] text = String2.splitNoTrim(tText, '\n');
-    String[] regex = String2.splitNoTrim(tRegex, '\n');
-    int n = Math.min(text.length, regex.length);
-    int nDifferences = 0;
-    for (int line = 0; line < n; line++) {
-      // String2.log("t" + line + "=" + text[line] + "\n" +
-      //            "r" + line + "=" + regex[line] + "\n\n");
-      if (!text[line].matches(regex[line]))
-        String2.pressEnterToContinue(
-            message
-                + "\n"
-                + MustBe.getStackTrace()
-                + "\n"
-                + String2.ERROR
-                + " in Test.repeatedlyEnsureLinesMatch():\n"
-                + "Difference #"
-                + ++nDifferences
-                + " is:\n"
-                + "  text ["
-                + line
-                + "]="
-                + String2.annotatedString(text[line])
-                + "\n"
-                + "  regex["
-                + line
-                + "]="
-                + String2.annotatedString(regex[line])
-                + "\n"
-                + "Press Enter to see the next error. ");
-      // testEqual(text[line], regex[line], "");  //diagnostic
-    }
-    if (text.length != regex.length)
-      String2.pressEnterToContinue(
-          message
-              + "\n"
-              + MustBe.getStackTrace()
-              + "\n"
-              + String2.ERROR
-              + " in Test.ensureLinesMatch():\n"
-              + "The number of lines differs: text.length="
-              + text.length
-              + " != regex.length="
-              + regex.length);
   }
 
   /**
@@ -1129,109 +998,6 @@ public class Test {
       ensureSomethingUnicode(name, message + ": an attribute name");
       ensureSomethingUnicode(
           atts.get(name).toString(), message + ": the attribute value for name=" + name);
-    }
-  }
-
-  /**
-   * This is the standard way to display (during the unit tests) information about a known problem
-   * that won't be fixed soon.
-   *
-   * @param title
-   * @param t a related throwable
-   */
-  public static void knownProblem(String title, Throwable t) throws RuntimeException {
-    knownProblem(title, MustBe.throwableToString(t));
-  }
-
-  /**
-   * This is the standard way to display (during the unit tests) information about a known problem
-   * that won't be fixed soon.
-   *
-   * @param title usually all caps
-   * @param msg
-   * @param t a related throwable
-   */
-  public static void knownProblem(String title, String msg, Throwable t) throws RuntimeException {
-    knownProblem(title, msg + "\n" + MustBe.throwableToString(t));
-  }
-
-  public static void knownProblem(String title) throws Exception {
-    knownProblem(title, "");
-  }
-
-  /**
-   * This is the standard way to display (during the unit tests) information about a known problem
-   * that won't be fixed soon.
-   *
-   * @param title usually all caps
-   * @param msg
-   */
-  @SuppressWarnings("DoNotCallSuggester")
-  public static void knownProblem(String title, String msg) throws RuntimeException {
-    throw new RuntimeException(
-        msg
-            + /* String2.beep(1) + */ "\n"
-            + (msg.endsWith("\n") ? "" : "\n")
-            + "*** KNOWN PROBLEM: "
-            + title); // + "\n" +
-    // "Press ^C to stop.  Otherwise, testing will continue in 10 seconds.\n"));
-    // Math2.sleep(10000);
-    // String2.pressEnterToContinue();
-  }
-
-  /**
-   * A simple, static class to display a URL in the system browser. Copied with minimal changes from
-   * http://www.javaworld.com/javaworld/javatips/jw-javatip66.html.
-   *
-   * <p>Under Unix, the system browser is hard-coded to be 'netscape'. Netscape must be in your PATH
-   * for this to work. This has been tested with the following platforms: AIX, HP-UX and Solaris.
-   *
-   * <p>Under Windows, this will bring up the default browser under windows. This has been tested
-   * under Windows 95/98/NT.
-   *
-   * <p>Examples: BrowserControl.displayURL("http://www.javaworld.com")
-   * BrowserControl.displayURL("file://c:\\docs\\index.html")
-   * BrowserContorl.displayURL("file:///user/joe/index.html");
-   *
-   * <p>Note - you must include the url type -- either "http://" or "file://".
-   *
-   * <p>2011-03-08 Before, this threw Exception if trouble. Now it doesn't.
-   *
-   * @param url the file's url (the url must start with either "http://" or "file://").
-   */
-  public static void displayInBrowser(String url) {
-    String2.log(">> displayInBrowser " + url);
-    try {
-      String cmd = null;
-      if (String2.OSIsWindows) {
-        // The default system browser under windows.
-        String WIN_PATH = "rundll32";
-        // The flag to display a url.
-        String WIN_FLAG = "url.dll,FileProtocolHandler";
-        // cmd = 'rundll32 url.dll,FileProtocolHandler http://...'
-        cmd = WIN_PATH + " " + WIN_FLAG + " " + url;
-        Runtime.getRuntime().exec(cmd);
-      } else {
-        // https://linux.die.net/man/1/xdg-open
-        // cmd = 'xdg-open ' + url
-        Process p =
-            Runtime.getRuntime()
-                .exec("xdg-open " + (url.startsWith("file://") ? url.substring(7) : url));
-
-        // wait for exit code -- if it's 0, command worked
-        int exitCode = p.waitFor();
-        if (exitCode != 0) throw new RuntimeException("xdg-open exitCode=" + exitCode);
-      }
-    } catch (Throwable t) {
-      String2.log(
-          String2.ERROR
-              + " while trying to display url="
-              + url
-              + "\n"
-              + "Please use the appropriate program to open and view the file.\n"
-              + "[Underlying error:\n"
-              + MustBe.throwableToString(t)
-              + "]");
     }
   }
 }
