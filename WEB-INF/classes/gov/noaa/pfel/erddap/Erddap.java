@@ -1472,6 +1472,14 @@ public class Erddap extends HttpServlet {
                 + "</td></tr>\n"
                 + "<tr><td><a rel=\"bookmark\" href=\""
                 + tErddapUrl
+                + "/convert/color.html\">"
+                + "COLOR's"
+                + "</a></td>\n"
+                + "    <td>"
+                + "color data"
+                + "</td></tr>\n"
+                + "<tr><td><a rel=\"bookmark\" href=\""
+                + tErddapUrl
                 + "/convert/urls.html\">URLs</a></td>\n"
                 + "    <td>"
                 + EDStatic.messages.convertURLsAr[language]
@@ -19451,6 +19459,17 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
           endOfRequest,
           queryString);
       return;
+    } else if (endOfRequestUrl.equals("color.html") || endOfRequestUrl.equals("color.txt")) {
+      doConvertcolors(
+          language,
+          requestNumber,
+          request,
+          response,
+          loggedInAs,
+          endOfRequestUrl,
+          endOfRequest,
+          queryString);
+      return;
     } else {
       if (verbose) String2.log(EDStatic.messages.resourceNotFoundAr[language] + "end of convert");
       sendResourceNotFoundError(requestNumber, request, response, "");
@@ -19532,6 +19551,12 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
               + EDStatic.messages.variableNamesAr[language]
               + "</strong></a> - "
               + EDStatic.messages.convertOAVariableNamesToFromAr[language]
+              + "\n"
+              + "<li><a rel=\"bookmark\" href=\""
+              + tErddapUrl
+              + "/convert/color.html\"><strong>COLOR's</strong></a> - "
+              + "color data" // need to change this line in future updates for support of multiple
+              // languages
               + "\n"
               + "</ul>\n");
       writer.write("</div>\n");
@@ -22539,6 +22564,215 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
 
     } catch (Throwable t) {
       EDStatic.rethrowClientAbortException(t); // first thing in catch{}
+      writer.write(EDStatic.htmlForException(language, t));
+      writer.write("</div>\n");
+      endHtmlWriter(language, out, writer, tErddapUrl, loggedInAs, false);
+      throw t;
+    }
+  }
+
+  /**
+   * Process erddap/convert/color.html and color.txt.
+   *
+   * @param language the index of the selected language
+   * @param requestNumber The requestNumber assigned to this request by doGet().
+   * @param request The user's request.
+   * @param response The response to be written to.
+   * @param loggedInAs the name of the logged in user (or null if not logged in)
+   * @param endOfRequestUrl color.html or color.txt
+   * @param queryString post "?", still percentEncoded, may be null.
+   * @throws Throwable if trouble
+   */
+  public void doConvertcolors(
+      int language,
+      int requestNumber,
+      HttpServletRequest request,
+      HttpServletResponse response,
+      String loggedInAs,
+      String endOfRequestUrl,
+      String endOfRequest,
+      String queryString)
+      throws Throwable {
+
+    if (!EDStatic.config.convertersActive) {
+      sendResourceNotFoundError(
+          requestNumber,
+          request,
+          response,
+          EDStatic.bilingual(
+              language,
+              MessageFormat.format(EDStatic.messages.disabledAr[0], "convert"),
+              MessageFormat.format(EDStatic.messages.disabledAr[language], "convert")));
+      return;
+    }
+
+    Map<String, String> queryMap = EDD.userQueryHashMap(queryString, false);
+
+    String queryValue = queryMap.getOrDefault("value", "");
+    String palette = queryMap.getOrDefault("p", "Rainbow");
+    String continuity = queryMap.getOrDefault("pc", "C"); // C=Continuous, D=Discrete
+    String scale = queryMap.getOrDefault("ps", "linear");
+    String minStr = queryMap.getOrDefault("pMin", "0");
+    String maxStr = queryMap.getOrDefault("pMax", "20");
+    String nSectionsStr = queryMap.getOrDefault("pSec", "5");
+
+    String hexColor = "";
+    String rgbColor = "";
+    String tError = null;
+    Color color = Color.GRAY;
+
+    double inputValue;
+    double min = 0, max = 20;
+    int nSections = 5;
+    boolean isContinuous = true;
+
+    try {
+      inputValue = Double.parseDouble(queryValue);
+      min = Double.parseDouble(minStr);
+      max = Double.parseDouble(maxStr);
+      nSections = Integer.parseInt(nSectionsStr);
+      isContinuous = !"D".equalsIgnoreCase(continuity);
+
+      CompoundColorMap cColorMap =
+          new CompoundColorMap(
+              EDStatic.config.fullPaletteDirectory,
+              palette,
+              scale,
+              min,
+              max,
+              nSections,
+              isContinuous,
+              SSR.getTempDirectory());
+
+      color = cColorMap.getColor(inputValue);
+      hexColor = String.format("#%02X%02X%02X", color.getRed(), color.getGreen(), color.getBlue());
+      rgbColor =
+          String.format("rgb(%d, %d, %d)", color.getRed(), color.getGreen(), color.getBlue());
+    } catch (Exception e) {
+      inputValue = Double.NaN;
+      tError = "Invalid Input or Parameters";
+    }
+
+    if (endOfRequestUrl.equals("color.txt")) {
+      if (tError != null) {
+        throw new SimpleException(
+            EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr) + tError);
+      }
+
+      OutputStream out =
+          new OutputStreamFromHttpResponse(request, response, "ColorPlotter", ".txt", ".txt")
+              .outputStream(File2.UTF_8);
+      try (Writer writer = File2.getBufferedWriterUtf8(out)) {
+        writer.write("Hex: " + hexColor + "\n");
+        writer.write("RGB: " + rgbColor + "\n");
+        writer.flush();
+        return;
+      }
+    }
+
+    // HTML response section
+    String tErddapUrl = EDStatic.erddapUrl(loggedInAs, language);
+    HtmlWidgets widgets = new HtmlWidgets(true, EDStatic.imageDirUrl(loggedInAs, language));
+    OutputStream out = getHtmlOutputStreamUtf8(request, response);
+    Writer writer =
+        getHtmlWriterUtf8(
+            language, loggedInAs, "convert/color.html", queryString, "Color Plotter", out);
+
+    try {
+      writer.write(
+          "<div class=\"standard_width\">\n"
+              + ("\n<h1 class=\"nowrap\">"
+                  + EDStatic.erddapHref(language, EDStatic.erddapUrl(loggedInAs, language))
+                  + "\n &gt; <a rel=\"contents\" "
+                  + "href=\""
+                  + XML.encodeAsHTMLAttribute(
+                      EDStatic.protocolUrl(EDStatic.erddapUrl(loggedInAs, language), "convert"))
+                  + "\">"
+                  + EDStatic.messages.convertAr[language]
+                  + "</a>"
+                  + "\n &gt; Colors</h1>\n")
+              + "<h2>"
+              + "Convert Data into Colorbar" // need to change this thing for support of multiple
+              // languages
+              + "</h2>\n");
+
+      writer.write(widgets.beginForm("getColor", "GET", tErddapUrl + "/convert/color.html", ""));
+
+      writer.write(
+          "Enter a value (e.g., 12.5): "
+              + widgets.textField("value", "Enter a number", 10, 15, queryValue, "")
+              + "<br>");
+
+      writer.write(
+          "Palette: "
+              + widgets.select(
+                  "p",
+                  "Color palette",
+                  1,
+                  EDStatic.messages.palettes0,
+                  Math.max(0, String2.indexOf(EDStatic.messages.palettes0, palette)),
+                  "")
+              + "<br>");
+
+      writer.write(
+          "Continuity: "
+              + widgets.select(
+                  "pc",
+                  "Continuous or Discrete",
+                  1,
+                  new String[] {"", "Continuous", "Discrete"},
+                  "D".equalsIgnoreCase(continuity) ? 2 : 1,
+                  "")
+              + "<br>");
+
+      writer.write(
+          "Scale: "
+              + widgets.select(
+                  "ps",
+                  "Scale",
+                  1,
+                  EDV.VALID_SCALES0,
+                  Math.max(0, EDV.VALID_SCALES0.indexOf(scale)),
+                  "")
+              + "<br>");
+
+      writer.write(
+          "Min: " + widgets.textField("pMin", "Minimum value", 10, 60, minStr, "") + "<br>");
+      writer.write(
+          "Max: " + widgets.textField("pMax", "Maximum value", 10, 60, maxStr, "") + "<br>");
+
+      writer.write(
+          "Sections: "
+              + widgets.select(
+                  "pSec",
+                  "Number of sections",
+                  1,
+                  EDStatic.paletteSections,
+                  Math.max(0, EDStatic.paletteSections.indexOf(nSectionsStr)),
+                  "")
+              + "<br>");
+
+      writer.write(widgets.htmlButton("submit", null, "Get Color", "", "Get Color", ""));
+
+      if (!queryValue.isEmpty()) {
+        if (tError == null) {
+          writer.write("<br><span>Hex: " + hexColor + "</span>\n");
+          writer.write("<br><span>RGB: " + rgbColor + "</span>\n");
+          writer.write(
+              "<br><div style='height:15px; width:40px; background-color:"
+                  + hexColor
+                  + "; border:1px solid black;'></div>");
+
+        } else {
+          writer.write(
+              "<br><span class=\"warningColor\">" + XML.encodeAsHTML(tError) + "</span>\n");
+        }
+      }
+
+      writer.write("<br>" + widgets.endForm() + "\n</div>\n");
+      endHtmlWriter(language, out, writer, tErddapUrl, loggedInAs, false);
+    } catch (Throwable t) {
+      EDStatic.rethrowClientAbortException(t);
       writer.write(EDStatic.htmlForException(language, t));
       writer.write("</div>\n");
       endHtmlWriter(language, out, writer, tErddapUrl, loggedInAs, false);
