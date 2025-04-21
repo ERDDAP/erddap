@@ -232,7 +232,7 @@ class SgtMapTests {
 
       // get the Grid
       SimpleGrid simpleGrid =
-          new SimpleGrid(bathymetryGrid.data, bathymetryGrid.lon, bathymetryGrid.lat, ""); // title
+          new SimpleGrid(bathymetryGrid.data, bathymetryGrid.lon, bathymetryGrid.lat);
 
       // assign the data
       graph.setData(simpleGrid, new GridAttribute(GridAttribute.RASTER, oceanColorMap));

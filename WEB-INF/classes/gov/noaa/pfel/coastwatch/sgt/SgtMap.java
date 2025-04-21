@@ -896,8 +896,7 @@ public class SgtMap {
 
           // get the Grid
           DataHelper.scale(gridGrid.data, gridScaleFactor * gridAltScaleFactor, gridAltOffset);
-          SimpleGrid simpleGrid =
-              new SimpleGrid(gridGrid.data, gridGrid.lon, gridGrid.lat, ""); // title
+          SimpleGrid simpleGrid = new SimpleGrid(gridGrid.data, gridGrid.lon, gridGrid.lat);
 
           // assign the data
           graph.setData(simpleGrid, new GridAttribute(GridAttribute.RASTER, colorMap));
@@ -1005,7 +1004,7 @@ public class SgtMap {
           DataHelper.scale(
               contourGrid.data, contourScaleFactor * contourAltScaleFactor, contourAltOffset);
           SimpleGrid simpleGrid =
-              new SimpleGrid(contourGrid.data, contourGrid.lon, contourGrid.lat, ""); // title
+              new SimpleGrid(contourGrid.data, contourGrid.lon, contourGrid.lat);
           contourGrid.calculateStats(); // so grid.minData maxData is correct
           double gridMinData = contourGrid.minData;
           double gridMaxData = contourGrid.maxData;
@@ -2044,7 +2043,7 @@ public class SgtMap {
                   + (System.currentTimeMillis() - readTime)
                   + "ms");
         DataHelper.scale(grid.data, gridScaleFactor * gridAltScaleFactor, gridAltOffset);
-        SimpleGrid simpleGrid = new SimpleGrid(grid.data, grid.lon, grid.lat, ""); // title
+        SimpleGrid simpleGrid = new SimpleGrid(grid.data, grid.lon, grid.lat);
 
         // assign the data
         graph.setData(simpleGrid, new GridAttribute(GridAttribute.RASTER, colorMap));

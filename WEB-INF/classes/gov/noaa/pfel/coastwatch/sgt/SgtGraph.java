@@ -1154,17 +1154,16 @@ public class SgtGraph {
               int n = ar.length;
               GeoDate gDate[] = new GeoDate[n];
               for (int i = 0; i < n; i++) gDate[i] = new GeoDate((long) (ar[i] * scaleXIfTime));
-              simpleGrid = new SimpleGrid(gdl.grid1.data, gDate, gdl.grid1.lat, ""); // title
+              simpleGrid = new SimpleGrid(gdl.grid1.data, gDate, gdl.grid1.lat);
               // String2.log(">>gdl.grid1.lat.length=" + gdl.grid1.lat.length);
             } else if (yIsTimeAxis) {
               double ar[] = gdl.grid1.lat;
               int n = ar.length;
               GeoDate gDate[] = new GeoDate[n];
               for (int i = 0; i < n; i++) gDate[i] = new GeoDate((long) (ar[i] * scaleYIfTime));
-              simpleGrid = new SimpleGrid(gdl.grid1.data, gdl.grid1.lon, gDate, ""); // title
+              simpleGrid = new SimpleGrid(gdl.grid1.data, gdl.grid1.lon, gDate);
             } else {
-              simpleGrid =
-                  new SimpleGrid(gdl.grid1.data, gdl.grid1.lon, gdl.grid1.lat, ""); // title
+              simpleGrid = new SimpleGrid(gdl.grid1.data, gdl.grid1.lon, gdl.grid1.lat);
             }
 
             // temp
@@ -1201,8 +1200,7 @@ public class SgtGraph {
             // graph.setClipping(true);
 
             // get the Grid
-            SimpleGrid simpleGrid =
-                new SimpleGrid(gdl.grid1.data, gdl.grid1.lon, gdl.grid1.lat, ""); // title
+            SimpleGrid simpleGrid = new SimpleGrid(gdl.grid1.data, gdl.grid1.lon, gdl.grid1.lat);
             gdl.grid1.calculateStats(); // so grid.minData maxData is correct
             double gridMinData = gdl.grid1.minData;
             double gridMaxData = gdl.grid1.maxData;

@@ -460,9 +460,7 @@ public class Boundaries {
     lon.trimToSize();
     lat.trimToSize();
 
-    SimpleLine line = new SimpleLine(lon.array, lat.array, "Boundary");
-    line.setXMetaData(new SGTMetaData("Longitude", "degrees_E", false, true));
-    line.setYMetaData(new SGTMetaData("Latitude", "degrees_N", false, false));
+    SimpleLine line = new SimpleLine(lon.array, lat.array);
 
     // for (int i = 0; i < lon.size(); i++)
     //    String2.log(String2.left("" + i, 5) +
@@ -570,10 +568,7 @@ public class Boundaries {
     lon.trimToSize();
     lat.trimToSize();
 
-    SimpleLine line = new SimpleLine(lon.array, lat.array, "Boundary");
-    line.setXMetaData(new SGTMetaData("Longitude", "degrees_E", false, true));
-    line.setYMetaData(new SGTMetaData("Latitude", "degrees_N", false, false));
-
+    SimpleLine line = new SimpleLine(lon.array, lat.array);
     return line;
   }
 
