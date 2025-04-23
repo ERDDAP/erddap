@@ -351,6 +351,8 @@ CTD หากไม่เกี่ยวข้องกับ <kbd>TimeSeries</k
 <a rel="help" href="#computerProgram">ข้ามหน้าเว็บนี้</a> และทำการแปลงจากภายในโปรแกรมคอมพิวเตอร์ สคริปต์ หรือหน้าเว็บ
 
 ]]></convertBypass>
+<convertCOLORs>สี</convertCOLORs>
+<convertCOLORsMessage>แปลงค่าเป็นแถบสี</convertCOLORsMessage>
 <convertToAFullName><![CDATA[
 <strong>แปลงจาก {0} เป็นชื่อเต็ม</strong>
 ]]></convertToAFullName>

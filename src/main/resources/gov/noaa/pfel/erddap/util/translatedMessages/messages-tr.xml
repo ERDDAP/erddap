@@ -362,6 +362,8 @@ Veya
 <a rel="help" href="#computerProgram">bu web sayfasını atlayın</a> ve bir bilgisayar programı, komut dosyası veya web sayfası içinden dönüşümler yapın.
 
 ]]></convertBypass>
+<convertCOLORs>Renkler</convertCOLORs>
+<convertCOLORsMessage>Renk çubuğuna dönüştürülür</convertCOLORsMessage>
 <convertToAFullName><![CDATA[
 <strong>{0}&#39;ı tam isme dönüştürün.</strong>
 ]]></convertToAFullName>

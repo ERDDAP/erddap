@@ -348,7 +348,8 @@ a table of datasets is displayed (e.g., when you do a full text search for datas
 Or, <a rel="help" href="#computerProgram">bypass this web page</a>
 and do conversions from within a computer program, script, or web page.
 ]]></convertBypass>
-
+  <convertCOLORs>Colors</convertCOLORs>
+  <convertCOLORsMessage>Convert Values to color bar</convertCOLORsMessage>
 <convertToAFullName><![CDATA[<strong>Convert from {0} to a full name.</strong>]]></convertToAFullName>
 <convertToAnAcronym><![CDATA[<strong>Convert from {0} to an acronym.</strong>]]></convertToAnAcronym>
 

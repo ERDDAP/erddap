@@ -339,6 +339,8 @@ moored buoys، یا اسٹیشن۔
 <a rel="help" href="#computerProgram">اس ویب صفحہ کو نظرانداز کریں</a> اور کمپیوٹر پروگرام، اسکرپٹ، یا ویب صفحہ کے اندر سے تبدیلیاں کریں۔
 
 ]]></convertBypass>
+<convertCOLORs>رنگ</convertCOLORs>
+<convertCOLORsMessage>بار رنگ کرنے کی صلاحیت</convertCOLORsMessage>
 <convertToAFullName><![CDATA[
 <strong>{0} سے پورے نام میں تبدیل کریں۔</strong>
 ]]></convertToAFullName>

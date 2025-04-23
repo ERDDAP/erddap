@@ -363,6 +363,8 @@ Tai
 <a rel="help" href="#computerProgram">ohita tämä verkkosivu</a> ja tee muunnoksia tietokoneohjelmasta, komentosarjasta tai verkkosivusta.
 
 ]]></convertBypass>
+<convertCOLORs>Värit</convertCOLORs>
+<convertCOLORsMessage>Muunna arvot väripalkiksi</convertCOLORsMessage>
 <convertToAFullName><![CDATA[
 <strong>Muunna {0} koko nimeksi.</strong>
 ]]></convertToAFullName>

@@ -335,6 +335,8 @@ CDM 是Unidata的通用資料模型，一種對資料集進行分類的方法
 或者，<a rel="help" href="#computerProgram">繞過此網頁</a>並從電腦程式、腳本或網頁內進行轉換。
 
 ]]></convertBypass>
+<convertCOLORs>顏色</convertCOLORs>
+<convertCOLORsMessage>將數值轉換成顏色列</convertCOLORsMessage>
 <convertToAFullName><![CDATA[
 <strong>從 {0} 轉換為全名。</strong>
 ]]></convertToAFullName>

@@ -253,6 +253,8 @@ public class EDMessages {
   public final String[] clickToSubmitAr;
   public final String[] convertAr;
   public final String[] convertBypassAr;
+  public final String[] convertCOLORsAr;
+  public final String[] convertCOLORsMessageAr;
   public final String[] convertToAFullNameAr;
   public final String[] convertToAnAcronymAr;
   public final String[] convertToACountyNameAr;
@@ -1244,6 +1246,8 @@ public class EDMessages {
     convertAr = getNotNothingString(messagesAr, "convert", errorInMethod);
     convertBypassAr = getNotNothingString(messagesAr, "convertBypass", errorInMethod);
 
+    convertCOLORsAr = getNotNothingString(messagesAr, "convertCOLORs", errorInMethod);
+    convertCOLORsMessageAr = getNotNothingString(messagesAr, "convertCOLORsMessage", errorInMethod);
     convertToAFullNameAr = getNotNothingString(messagesAr, "convertToAFullName", errorInMethod);
     convertToAnAcronymAr = getNotNothingString(messagesAr, "convertToAnAcronym", errorInMethod);
     convertToACountyNameAr = getNotNothingString(messagesAr, "convertToACountyName", errorInMethod);
