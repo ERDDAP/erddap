@@ -361,6 +361,8 @@ O,
 <a rel="help" href="#computerProgram">i-bypass ang web page na ito</a> at gawin ang mga conversion mula sa loob ng isang computer program, script, o web page.
 
 ]]></convertBypass>
+<convertCOLORs>Kulay</convertCOLORs>
+<convertCOLORsMessage>Mga Pamantayang Moral sa kulay ng bar</convertCOLORsMessage>
 <convertToAFullName><![CDATA[
 <strong>I-convert mula sa {0} sa isang buong pangalan.</strong>
 ]]></convertToAFullName>

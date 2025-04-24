@@ -361,6 +361,8 @@ Of
 <a rel="help" href="#computerProgram">sla deze webpagina over</a> en voer conversies uit vanuit een computerprogramma, script of webpagina.
 
 ]]></convertBypass>
+<convertCOLORs>Kleuren</convertCOLORs>
+<convertCOLORsMessage>Waarden omzetten naar kleurbalk</convertCOLORsMessage>
 <convertToAFullName><![CDATA[
 <strong>Converteer van {0} naar een volledige naam.</strong>
 ]]></convertToAFullName>

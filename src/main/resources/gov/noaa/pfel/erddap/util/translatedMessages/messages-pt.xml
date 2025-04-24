@@ -348,6 +348,8 @@ uma tabela de conjuntos de dados é exibida (por exemplo, quando você faz uma p
 Ou
 <a rel="help" href="#computerProgram">ignore esta página da web</a> e faça conversões a partir de um programa de computador, script ou página da web.
 ]]></convertBypass>
+<convertCOLORs>Cores</convertCOLORs>
+<convertCOLORsMessage>Converter valores para barra de cores</convertCOLORsMessage>
 <convertToAFullName><![CDATA[
 <strong>Converter de {0} em um nome completo.</strong>
 ]]></convertToAFullName>

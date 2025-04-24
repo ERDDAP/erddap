@@ -363,6 +363,8 @@ Możesz też
 <a rel="help" href="#computerProgram">ominąć tę stronę internetową</a> i dokonać konwersji z poziomu programu komputerowego, skryptu lub strony internetowej.
 
 ]]></convertBypass>
+<convertCOLORs>Kolory</convertCOLORs>
+<convertCOLORsMessage>Przelicz Wartości do paska kolorów</convertCOLORsMessage>
 <convertToAFullName><![CDATA[
 <strong>Konwertuj z {0} na pełne imię i nazwisko.</strong>
 ]]></convertToAFullName>

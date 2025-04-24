@@ -1473,10 +1473,10 @@ public class Erddap extends HttpServlet {
                 + "<tr><td><a rel=\"bookmark\" href=\""
                 + tErddapUrl
                 + "/convert/color.html\">"
-                + "COLOR's"
+                + EDStatic.messages.convertCOLORsAr[language]
                 + "</a></td>\n"
                 + "    <td>"
-                + "color data"
+                + EDStatic.messages.convertCOLORsMessageAr[language]
                 + "</td></tr>\n"
                 + "<tr><td><a rel=\"bookmark\" href=\""
                 + tErddapUrl
@@ -19554,8 +19554,10 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
               + "\n"
               + "<li><a rel=\"bookmark\" href=\""
               + tErddapUrl
-              + "/convert/color.html\"><strong>COLOR's</strong></a> - "
-              + "color data" // need to change this line in future updates for support of multiple
+              + "/convert/color.html\"><strong>"
+              + EDStatic.messages.convertCOLORsAr[language]
+              + "</strong></a> - "
+              + EDStatic.messages.convertCOLORsMessageAr[language]
               // languages
               + "\n"
               + "</ul>\n");
