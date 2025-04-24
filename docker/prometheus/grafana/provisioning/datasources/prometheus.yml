@@ -4,7 +4,8 @@ datasources:
   - name: Prometheus
     type: prometheus
     access: proxy
-    url: http://prometheus:9090
+    url: http://erddap-prometheus:9090
+    uid: prometheus
     isDefault: true
     editable: false
 
