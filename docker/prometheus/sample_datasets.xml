@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<erddapDatasets>
+  <dataset type="EDDTableFromAsciiFiles" datasetID="sample_data" active="true">
+    <fileDir>/erddapData/datasets/sample</fileDir>
+    <fileNameRegex>.*\.csv</fileNameRegex>
+    <recursive>false</recursive>
+    <pathRegex>.*</pathRegex>
+    <metadataFrom>last</metadataFrom>
+    <accessible>true</accessible>
+    <dataType>String</dataType>
+    <dataStructure>table</dataStructure>
+    <cdm_data_type>Point</cdm_data_type>
+    <title>Sample Oceanographic Data</title>
+    <summary>Sample oceanographic data including temperature, salinity, and oxygen measurements.</summary>
+    <infoUrl>https://coastwatch.pfeg.noaa.gov/erddap/</infoUrl>
+    <institution>NOAA</institution>
+    <sourceUrl>https://coastwatch.pfeg.noaa.gov/erddap/</sourceUrl>
+    <standardNameVocabulary>CF-1.6</standardNameVocabulary>
+    <ioosCategory>Oceanography</ioosCategory>
+    <keywords>oceanography, temperature, salinity, oxygen</keywords>
+  </dataset>
+</erddapDatasets> 
