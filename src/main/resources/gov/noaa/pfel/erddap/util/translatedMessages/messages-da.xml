@@ -349,6 +349,8 @@ en tabel med datasæt vises (f.eks. når du laver en fuldtekstsøgning efter dat
 Eller
 <a rel="help" href="#computerProgram">omgå denne webside</a> og foretag konverteringer fra et computerprogram, et script eller en webside.
 ]]></convertBypass>
+<convertCOLORs>Farver</convertCOLORs>
+<convertCOLORsMessage>Konvertér værdier til farvebjælke</convertCOLORsMessage>
 <convertToAFullName><![CDATA[
 <strong>Konverter fra {0} til et fuldt navn.</strong>
 ]]></convertToAFullName>

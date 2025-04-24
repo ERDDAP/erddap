@@ -345,6 +345,8 @@ CTD のあるステーション。
 または、<a rel="help" href="#computerProgram">この Web ページをバイパスして</a>、コンピュータ プログラム、スクリプト、または Web ページ内から変換を実行します。
 
 ]]></convertBypass>
+<convertCOLORs>カラー</convertCOLORs>
+<convertCOLORsMessage>値をカラーバーに変換する</convertCOLORsMessage>
 <convertToAFullName><![CDATA[
 <strong>{0} をフルネームに変換します。</strong>
 ]]></convertToAFullName>

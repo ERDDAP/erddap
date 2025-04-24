@@ -172,12 +172,11 @@ public class Metrics {
             .help("Information about the ERDDAP build")
             .labelNames("version", "version_full", "deployment_info")
             .register();
-    String doubleVersion = EDStatic.erddapVersion;
-    int po = doubleVersion.indexOf('_');
-    if (po >= 0) doubleVersion = doubleVersion.substring(0, po);
+    String doubleVersion =
+        EDStatic.erddapVersion.getMajor() + "." + EDStatic.erddapVersion.getMinor();
     info.setLabelValues(
         doubleVersion,
-        EDStatic.erddapVersion,
+        EDStatic.erddapVersion.getVersion(),
         EDStatic.config.deploymentInfo != null ? EDStatic.config.deploymentInfo : "");
 
     Info graphicsInfo =

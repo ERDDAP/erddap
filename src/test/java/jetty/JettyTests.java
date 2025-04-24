@@ -78,6 +78,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
+import org.semver4j.Semver;
 import tags.TagFlaky;
 import tags.TagImageComparison;
 import tags.TagIncompleteTest;
@@ -195,9 +196,8 @@ class JettyTests {
   void testErddapVersionResponse() throws Exception {
     HttpClient client = HttpClient.newHttpClient();
 
-    String erddapShortVersion = EDStatic.erddapVersion;
-    int po = erddapShortVersion.indexOf('_');
-    if (po >= 0) erddapShortVersion = erddapShortVersion.substring(0, po);
+    String erddapShortVersion =
+        EDStatic.erddapVersion.getMajor() + "." + EDStatic.erddapVersion.getMinor();
 
     // test short version string response
     HttpResponse<String> response =
@@ -229,7 +229,7 @@ class JettyTests {
     assertTrue(jsonResponse.has("version"));
     assertEquals(erddapShortVersion, jsonResponse.getString("version"));
     assertTrue(jsonResponse.has("version_full"));
-    assertEquals(EDStatic.erddapVersion, jsonResponse.getString("version_full"));
+    assertEquals(EDStatic.erddapVersion.getVersion(), jsonResponse.getString("version_full"));
     assertTrue(jsonResponse.has("deployment_info"));
     assertEquals(EDStatic.config.deploymentInfo, jsonResponse.getString("deployment_info"));
 
@@ -1345,6 +1345,10 @@ class JettyTests {
               "<gco:Measure uom=\"s\">VALUE</gco:Measure>");
       results =
           results.replaceAll(
+              "<gml:endPosition>....-..-..T..:..:..-..:..</gml:endPosition>",
+              "<gml:endPosition>YYYY-MM-DDThh:00:00Z</gml:endPosition>");
+      results =
+          results.replaceAll(
               "<gml:endPosition>....-..-..T..:..:......-..:..</gml:endPosition>",
               "<gml:endPosition>YYYY-MM-DDThh:00:00Z</gml:endPosition>");
       results =
@@ -1903,7 +1907,7 @@ class JettyTests {
               + "              <gmd:extent>\n"
               + "                <gml:TimePeriod gml:id=\"DI_gmdExtent_timePeriod_id\">\n"
               + "                  <gml:description>seconds</gml:description>\n"
-              + "                   <gml:beginPosition>2003-01-01T12:00:00Z</gml:beginPosition>\n"
+              + "                   <gml:beginPosition>YYYY-MM-DDThh:00:00Z</gml:beginPosition>\n"
               + "                  <gml:endPosition>YYYY-MM-DDThh:00:00Z</gml:endPosition>\n"
               + "                </gml:TimePeriod>\n"
               + "              </gmd:extent>\n"
@@ -2008,7 +2012,7 @@ class JettyTests {
               + "              <gmd:extent>\n"
               + "                <gml:TimePeriod gml:id=\"ED_gmdExtent_timePeriod_id\">\n"
               + "                  <gml:description>seconds</gml:description>\n"
-              + "                  <gml:beginPosition>2003-01-01T12:00:00Z</gml:beginPosition>\n"
+              + "                  <gml:beginPosition>YYYY-MM-DDThh:00:00Z</gml:beginPosition>\n"
               + "                  <gml:endPosition>YYYY-MM-DDThh:00:00Z</gml:endPosition>\n"
               + "                </gml:TimePeriod>\n"
               + "              </gmd:extent>\n"
@@ -2144,7 +2148,7 @@ class JettyTests {
               + "              <gmd:extent>\n"
               + "                <gml:TimePeriod gml:id=\"OD_gmdExtent_timePeriod_id\">\n"
               + "                  <gml:description>seconds</gml:description>\n"
-              + "                  <gml:beginPosition>2003-01-01T12:00:00Z</gml:beginPosition>\n"
+              + "                  <gml:beginPosition>YYYY-MM-DDThh:00:00Z</gml:beginPosition>\n"
               + "                  <gml:endPosition>YYYY-MM-DDThh:00:00Z</gml:endPosition>\n"
               + "                </gml:TimePeriod>\n"
               + "              </gmd:extent>\n"
@@ -2280,7 +2284,7 @@ class JettyTests {
               + "              <gmd:extent>\n"
               + "                <gml:TimePeriod gml:id=\"WMS_gmdExtent_timePeriod_id\">\n"
               + "                  <gml:description>seconds</gml:description>\n"
-              + "                  <gml:beginPosition>2003-01-01T12:00:00Z</gml:beginPosition>\n"
+              + "                  <gml:beginPosition>YYYY-MM-DDThh:00:00Z</gml:beginPosition>\n"
               + "                  <gml:endPosition>YYYY-MM-DDThh:00:00Z</gml:endPosition>\n"
               + "                </gml:TimePeriod>\n"
               + "              </gmd:extent>\n"
@@ -2507,6 +2511,10 @@ class JettyTests {
           results.replaceAll(
               "<gml:endPosition>....-..-..T..:00:00Z</gml:endPosition>",
               "<gml:endPosition>YYYY-MM-DDThh:00:00Z</gml:endPosition>");
+      results =
+          results.replaceAll(
+              "<gml:beginPosition>....-..-..T..:00:00-..:..</gml:beginPosition>",
+              "<gml:beginPosition>YYYY-MM-DDThh:00:00Z</gml:beginPosition>");
       results =
           results.replaceAll(
               "<gco:Integer>[0-9]+</gco:Integer>", "<gco:Integer>NUMBER</gco:Integer>");
@@ -17478,5 +17486,12 @@ class JettyTests {
      * ,
      * "");
      */
+  }
+
+  @org.junit.jupiter.api.Test
+  @TagJetty
+  void testVersionPage() {
+    Semver version = EDD.getRemoteErddapVersion(EDStatic.erddapUrl + "/");
+    assertEquals(0, version.compareTo(EDStatic.erddapVersion));
   }
 }

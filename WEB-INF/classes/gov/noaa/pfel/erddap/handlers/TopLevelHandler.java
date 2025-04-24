@@ -499,7 +499,7 @@ public class TopLevelHandler extends State {
             String2.replaceAll(
                 String2.isSomething(ts) ? ts : EDStatic.messages.DEFAULT_endBodyHtmlAr[0],
                 "&erddapVersion;",
-                EDStatic.erddapVersion);
+                EDStatic.erddapVersion.getVersion());
 
         if (reallyVerbose) {
           String2.log("endBodyHtml5 was set.");

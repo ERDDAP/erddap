@@ -9,7 +9,6 @@ import com.cohort.array.CharArray;
 import com.cohort.array.DoubleArray;
 import com.cohort.array.IntArray;
 import com.cohort.array.LongArray;
-import com.cohort.array.NDimensionalIndex;
 import com.cohort.array.PAOne;
 import com.cohort.array.PAType;
 import com.cohort.array.PrimitiveArray;
@@ -27,11 +26,8 @@ import com.cohort.util.Test;
 import com.cohort.util.Units2;
 import com.cohort.util.XML;
 import com.google.common.collect.ImmutableList;
-import gov.noaa.pfel.coastwatch.griddata.Grid;
-import gov.noaa.pfel.coastwatch.griddata.Matlab;
 import gov.noaa.pfel.coastwatch.griddata.NcHelper;
 import gov.noaa.pfel.coastwatch.pointdata.Table;
-import gov.noaa.pfel.coastwatch.sgt.CompoundColorMap;
 import gov.noaa.pfel.coastwatch.sgt.GraphDataLayer;
 import gov.noaa.pfel.coastwatch.sgt.SgtMap;
 import gov.noaa.pfel.coastwatch.sgt.SgtUtil;
@@ -39,25 +35,18 @@ import gov.noaa.pfel.coastwatch.util.HtmlWidgets;
 import gov.noaa.pfel.coastwatch.util.RegexFilenameFilter;
 import gov.noaa.pfel.coastwatch.util.SSR;
 import gov.noaa.pfel.erddap.dataset.metadata.MetadataBuilder;
+import gov.noaa.pfel.erddap.filetypes.DapRequestInfo;
+import gov.noaa.pfel.erddap.filetypes.FileTypeInterface;
 import gov.noaa.pfel.erddap.util.*;
 import gov.noaa.pfel.erddap.variable.*;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.xml.bind.JAXBException;
 import java.awt.Color;
-import java.awt.Font;
-import java.awt.Graphics2D;
-import java.awt.image.BufferedImage;
-import java.io.BufferedOutputStream;
-import java.io.BufferedWriter;
 import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.Writer;
-import java.net.URL;
-import java.nio.file.Path;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -67,9 +56,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
-import java.util.concurrent.locks.ReentrantLock;
 import java.util.zip.ZipOutputStream;
 import org.apache.commons.jexl3.JexlScript;
 import org.apache.commons.jexl3.MapContext;
@@ -167,181 +153,9 @@ public abstract class EDDTable extends EDD {
   /** This is used in many file types as the row identifier. */
   public static final String ROW_NAME = "row"; // see also Table.ROW_NAME
 
-  /** These are needed for EDD-required methods of the same name. */
-  public static final ImmutableList<String> dataFileTypeNames =
-      ImmutableList.of(
-          // If add new type and not actual-data type (e.g., .das),
-          //  add to graphsAccessibleToFileTypeNames below
-          ".asc",
-          ".csv",
-          ".csvp",
-          ".csv0",
-          ".dataTable",
-          ".das",
-          ".dds",
-          ".dods",
-          ".esriCsv",
-          ".fgdc",
-          ".geoJson",
-          ".graph",
-          ".help",
-          ".html",
-          ".htmlTable",
-          ".iso19115",
-          ".itx",
-          ".json",
-          ".jsonlCSV1",
-          ".jsonlCSV",
-          ".jsonlKVP",
-          ".mat",
-          ".nc",
-          ".ncHeader",
-          ".ncCF",
-          ".ncCFHeader",
-          ".ncCFMA",
-          ".ncCFMAHeader",
-          //        ".nc4", ".nc4Header",
-          ".nccsv",
-          ".nccsvMetadata",
-          ".ncoJson",
-          ".odvTxt",
-          ".parquet",
-          ".parquetWMeta",
-          ".subset",
-          ".tsv",
-          ".tsvp",
-          ".tsv0",
-          ".wav",
-          ".xhtml");
-
-  public static final ImmutableList<String> dataFileTypeExtensions =
-      ImmutableList.of(
-          ".asc",
-          ".csv",
-          ".csv",
-          ".csv",
-          ".json",
-          ".das",
-          ".dds",
-          ".dods",
-          ".csv",
-          ".xml",
-          ".json",
-          ".html",
-          ".html",
-          ".html",
-          ".html",
-          ".xml",
-          ".itx",
-          ".json",
-          ".jsonl",
-          ".jsonl",
-          ".jsonl",
-          ".mat",
-          ".nc",
-          ".txt",
-          ".nc",
-          ".txt",
-          ".nc",
-          ".txt",
-          //        ".nc", ".txt",
-          ".csv",
-          ".csv",
-          ".json",
-          ".txt",
-          ".parquet",
-          ".parquet",
-          ".html",
-          ".tsv",
-          ".tsv",
-          ".tsv",
-          ".wav",
-          ".xhtml");
-  // These all used to have " (It may take a while. Please be patient.)" at the end.
-  public static final String[][]
-      dataFileTypeDescriptionsAr; // [lang][n]  see static constructor below
-  // These are encoded for use as HTML attributes (href)
-  public static final ImmutableList<String> dataFileTypeInfo =
-      ImmutableList.of( // "" if not available
-          "https://docs.opendap.org/index.php/UserGuideOPeNDAPMessages#ASCII_Service", // OPeNDAP
-          // ascii
-          // csv: also see https://www.ietf.org/rfc/rfc4180.txt
-          "https://en.wikipedia.org/wiki/Comma-separated_values", // csv was
-          // "http://www.creativyst.com/Doc/Articles/CSV/CSV01.htm",
-          "https://en.wikipedia.org/wiki/Comma-separated_values", // csv was
-          // "http://www.creativyst.com/Doc/Articles/CSV/CSV01.htm",
-          "https://en.wikipedia.org/wiki/Comma-separated_values", // csv was
-          // "http://www.creativyst.com/Doc/Articles/CSV/CSV01.htm",
-          "https://developers.google.com/chart/interactive/docs/reference#dataparam",
-          "https://docs.opendap.org/index.php/UserGuideOPeNDAPMessages#Dataset_Attribute_Structure", // das
-          "https://docs.opendap.org/index.php/UserGuideOPeNDAPMessages#Dataset_Descriptor_Structure", // dds
-          "https://docs.opendap.org/index.php/UserGuideOPeNDAPMessages#Data_Transmission", // dods
-          "https://support.esri.com/technical-article/000012745", // .esriCsv
-          "https://www.fgdc.gov/standards/projects/FGDC-standards-projects/metadata/base-metadata/index_html", // fgdc
-          "http://wiki.geojson.org/Main_Page", // geoJSON
-          "https://coastwatch.pfeg.noaa.gov/erddap/tabledap/documentation.html#GraphicsCommands", // GraphicsCommands
-          "https://www.opendap.org/pdf/ESE-RFC-004v1.2.pdf", // help
-          "https://docs.opendap.org/index.php/UserGuideOPeNDAPMessages#WWW_Interface_Service", // html
-          "https://www.w3schools.com/html/html_tables.asp", // htmlTable
-          "https://en.wikipedia.org/wiki/Geospatial_metadata", // iso19115
-          "https://www.wavemetrics.net/doc/igorman/II-09%20Data%20Import%20Export.pdf", // igor
-          "https://www.json.org/", // json
-          "https://jsonlines.org/", // jsonlCSV
-          "https://jsonlines.org/", // jsonlCSV
-          "https://jsonlines.org/", // jsonlKVP
-          "https://www.mathworks.com/", // mat
-          "https://www.unidata.ucar.edu/software/netcdf/", // nc
-          "https://linux.die.net/man/1/ncdump", // ncHeader
-          "https://cfconventions.org/Data/cf-conventions/cf-conventions-1.8/cf-conventions.html#discrete-sampling-geometries", // ncCF Discrete Sampling Geometries
-          "https://linux.die.net/man/1/ncdump", // ncCFHeader
-          "https://www.ncei.noaa.gov/netcdf-templates", // .ncCFMA
-          "https://linux.die.net/man/1/ncdump", // ncCFMAHeader
-          //        "https://www.unidata.ucar.edu/software/netcdf/", //nc4
-          //        "https://linux.die.net/man/1/ncdump", //nc4Header
-          "https://erddap.github.io/docs/user/nccsv-1.20",
-          "https://erddap.github.io/docs/user/nccsv-1.20",
-          "https://nco.sourceforge.net/nco.html#json",
-          "https://odv.awi.de/en/documentation/", // odv
-          "https://parquet.apache.org/",
-          "https://parquet.apache.org/",
-          "https://en.wikipedia.org/wiki/Faceted_search", // subset
-          "https://jkorpela.fi/TSV.html", // tsv
-          "https://jkorpela.fi/TSV.html", // tsv
-          "https://jkorpela.fi/TSV.html", // tsv
-          "https://en.wikipedia.org/wiki/WAV", // wav
-          "https://www.w3schools.com/html/html_tables.asp"); // xhtml
-
-  public static final ImmutableList<String> imageFileTypeNames =
-      ImmutableList.of(
-          ".kml",
-          ".smallPdf",
-          ".pdf",
-          ".largePdf",
-          ".smallPng",
-          ".png",
-          ".largePng",
-          ".transparentPng");
-  public static final ImmutableList<String> imageFileTypeExtensions =
-      ImmutableList.of(".kml", ".pdf", ".pdf", ".pdf", ".png", ".png", ".png", ".png");
-  public static final String[][]
-      imageFileTypeDescriptionsAr; // [lang][n]  see static constructor below
-  public static final ImmutableList<String> imageFileTypeInfo =
-      ImmutableList.of(
-          "https://developers.google.com/kml/", // kml
-          "https://www.adobe.com/acrobat/about-adobe-pdf.html", // pdf
-          "https://www.adobe.com/acrobat/about-adobe-pdf.html", // pdf
-          "https://www.adobe.com/acrobat/about-adobe-pdf.html", // pdf
-          "http://www.libpng.org/pub/png/", // png
-          "http://www.libpng.org/pub/png/", // png
-          "http://www.libpng.org/pub/png/", // png
-          "http://www.libpng.org/pub/png/" // png
-          );
-
-  private static final String[][] allFileTypeOptionsAr;
-  private static final String[] allFileTypeNames;
-  private static final String[] publicGraphFileTypeNames;
-  private static final int defaultFileTypeOption;
-  private static final int defaultPublicGraphFileTypeOption;
+  private static final List<String> publicGraphFileTypeNames;
+  private static final String defaultFileTypeOption;
+  private static final String defaultPublicGraphFileTypeOption;
 
   /** SOS static values. */
   public static final String sosServer = "server";
@@ -433,131 +247,32 @@ public abstract class EDDTable extends EDD {
 
   // static constructor
   static {
-    int nDFTN = dataFileTypeNames.size();
-    int nIFTN = imageFileTypeNames.size();
-
-    dataFileTypeDescriptionsAr = new String[EDStatic.messages.nLanguages][nDFTN];
-    imageFileTypeDescriptionsAr = new String[EDStatic.messages.nLanguages][nIFTN];
-
-    for (int tl = 0; tl < EDStatic.messages.nLanguages; tl++) {
-      dataFileTypeDescriptionsAr[tl] =
-          new String[] {
-            EDStatic.messages.fileHelp_ascAr[tl],
-            EDStatic.messages.fileHelp_csvAr[tl],
-            EDStatic.messages.fileHelp_csvpAr[tl],
-            EDStatic.messages.fileHelp_csv0Ar[tl],
-            EDStatic.messages.fileHelp_dataTableAr[tl],
-            EDStatic.messages.fileHelp_dasAr[tl],
-            EDStatic.messages.fileHelp_ddsAr[tl],
-            EDStatic.messages.fileHelp_dodsAr[tl],
-            EDStatic.messages.fileHelpTable_esriCsvAr[tl],
-            EDStatic.messages.fileHelp_fgdcAr[tl],
-            EDStatic.messages.fileHelp_geoJsonAr[tl],
-            EDStatic.messages.fileHelp_graphAr[tl],
-            EDStatic.messages.fileHelpTable_helpAr[tl],
-            EDStatic.messages.fileHelp_htmlAr[tl],
-            EDStatic.messages.fileHelp_htmlTableAr[tl],
-            EDStatic.messages.fileHelp_iso19115Ar[tl],
-            EDStatic.messages.fileHelp_itxTableAr[tl],
-            EDStatic.messages.fileHelp_jsonAr[tl],
-            EDStatic.messages.fileHelp_jsonlCSV1Ar[tl],
-            EDStatic.messages.fileHelp_jsonlCSVAr[tl],
-            EDStatic.messages.fileHelp_jsonlKVPAr[tl],
-            EDStatic.messages.fileHelp_matAr[tl],
-            EDStatic.messages.fileHelpTable_nc3Ar[tl],
-            EDStatic.messages.fileHelp_nc3HeaderAr[tl],
-            EDStatic.messages.fileHelp_ncCFAr[tl],
-            EDStatic.messages.fileHelp_ncCFHeaderAr[tl],
-            EDStatic.messages.fileHelp_ncCFMAAr[tl],
-            EDStatic.messages.fileHelp_ncCFMAHeaderAr[tl],
-            //        EDStatic.messages.fileHelpTable_nc4Ar[tl],
-            //        EDStatic.messages.fileHelp_nc4HeaderAr[tl],
-            EDStatic.messages.fileHelp_nccsvAr[tl],
-            EDStatic.messages.fileHelp_nccsvMetadataAr[tl],
-            EDStatic.messages.fileHelp_ncoJsonAr[tl],
-            EDStatic.messages.fileHelpTable_odvTxtAr[tl],
-            EDStatic.messages.fileHelp_parquetAr[tl],
-            EDStatic.messages.fileHelp_parquet_with_metaAr[tl],
-            EDStatic.messages.fileHelp_subsetAr[tl],
-            EDStatic.messages.fileHelp_tsvAr[tl],
-            EDStatic.messages.fileHelp_tsvpAr[tl],
-            EDStatic.messages.fileHelp_tsv0Ar[tl],
-            EDStatic.messages.fileHelp_wavAr[tl],
-            EDStatic.messages.fileHelp_xhtmlAr[tl]
-          };
-      imageFileTypeDescriptionsAr[tl] =
-          new String[] {
-            EDStatic.messages.fileHelpTable_kmlAr[tl],
-            EDStatic.messages.fileHelp_smallPdfAr[tl],
-            EDStatic.messages.fileHelp_pdfAr[tl],
-            EDStatic.messages.fileHelp_largePdfAr[tl],
-            EDStatic.messages.fileHelp_smallPngAr[tl],
-            EDStatic.messages.fileHelp_pngAr[tl],
-            EDStatic.messages.fileHelp_largePngAr[tl],
-            EDStatic.messages.fileHelp_transparentPngAr[tl]
-          };
-    }
-
     int nSDRF = sosDataResponseFormats.size();
-    Test.ensureEqual(
-        nDFTN,
-        dataFileTypeDescriptionsAr[0].length,
-        "'dataFileTypeNames.length' not equal to 'dataFileTypeDescriptionsAr[0].length'.");
-    Test.ensureEqual(
-        nDFTN,
-        dataFileTypeExtensions.size(),
-        "'dataFileTypeNames.length' not equal to 'dataFileTypeExtensions.length'.");
-    Test.ensureEqual(
-        nDFTN,
-        dataFileTypeInfo.size(),
-        "'dataFileTypeNames.length' not equal to 'dataFileTypeInfo.length'.");
-    Test.ensureEqual(
-        nIFTN,
-        imageFileTypeDescriptionsAr[0].length,
-        "'imageFileTypeNames.length' not equal to 'imageFileTypeDescriptionsAr[0].length'.");
-    Test.ensureEqual(
-        nIFTN,
-        imageFileTypeExtensions.size(),
-        "'imageFileTypeNames.length' not equal to 'imageFileTypeExtensions.length'.");
-    Test.ensureEqual(
-        nIFTN,
-        imageFileTypeInfo.size(),
-        "'imageFileTypeNames.length' not equal to 'imageFileTypeInfo.length'.");
     Test.ensureEqual(
         nSDRF,
         sosTabledapDataResponseTypes.size(),
         "'sosDataResponseFormats.length' not equal to 'sosTabledapDataResponseTypes.length'.");
-    defaultFileTypeOption = dataFileTypeNames.indexOf(".htmlTable");
+    defaultFileTypeOption = ".htmlTable";
 
-    int tExtra = 6;
-    publicGraphFileTypeNames = new String[tExtra + nIFTN];
-    publicGraphFileTypeNames[0] = ".das";
-    publicGraphFileTypeNames[1] = ".dds";
-    publicGraphFileTypeNames[2] = ".fgdc";
-    publicGraphFileTypeNames[3] = ".graph";
-    publicGraphFileTypeNames[4] = ".help";
-    publicGraphFileTypeNames[5] = ".iso19115";
+    List<EDDFileTypeInfo> imageTypes = EDD.getFileTypeOptions(false, true);
+
+    publicGraphFileTypeNames = new ArrayList<String>();
+    publicGraphFileTypeNames.add(".das");
+    publicGraphFileTypeNames.add(".dds");
+    publicGraphFileTypeNames.add(".fgdc");
+    publicGraphFileTypeNames.add(".graph");
+    publicGraphFileTypeNames.add(".help");
+    publicGraphFileTypeNames.add(".iso19115");
 
     // construct allFileTypeOptionsAr
-    allFileTypeOptionsAr = new String[EDStatic.messages.nLanguages][nDFTN + nIFTN];
-    allFileTypeNames = new String[nDFTN + nIFTN];
-    for (int i = 0; i < nDFTN; i++) {
-      for (int tl = 0; tl < EDStatic.messages.nLanguages; tl++)
-        allFileTypeOptionsAr[tl][i] =
-            dataFileTypeNames.get(i) + " - " + dataFileTypeDescriptionsAr[tl][i];
-      allFileTypeNames[i] = dataFileTypeNames.get(i);
-    }
-    for (int i = 0; i < nIFTN; i++) {
-      for (int tl = 0; tl < EDStatic.messages.nLanguages; tl++)
-        allFileTypeOptionsAr[tl][nDFTN + i] =
-            imageFileTypeNames.get(i) + " - " + imageFileTypeDescriptionsAr[tl][i];
-      allFileTypeNames[nDFTN + i] = imageFileTypeNames.get(i);
-      publicGraphFileTypeNames[tExtra + i] = imageFileTypeNames.get(i);
+
+    for (int i = 0; i < imageTypes.size(); i++) {
+      publicGraphFileTypeNames.add(imageTypes.get(i).getFileTypeName());
     }
 
     graphsAccessibleTo_fileTypeNames = new HashSet<>(); // read only, so needn't be thread-safe
-    graphsAccessibleTo_fileTypeNames.addAll(Arrays.asList(publicGraphFileTypeNames));
-    defaultPublicGraphFileTypeOption = String2.indexOf(publicGraphFileTypeNames, ".png");
+    graphsAccessibleTo_fileTypeNames.addAll(publicGraphFileTypeNames);
+    defaultPublicGraphFileTypeOption = ".png";
 
     Test.ensureEqual(
         sosDataResponseFormats.size(),
@@ -760,6 +475,20 @@ public abstract class EDDTable extends EDD {
   @Override
   public String dapDescription(int language) {
     return EDStatic.messages.EDDTableDapDescriptionAr[language];
+  }
+
+  public String[] requiredCfRequestVariables() {
+    if (requiredCfRequestVariables == null) {
+      accessibleViaNcCF();
+    }
+    return requiredCfRequestVariables;
+  }
+
+  public String[] outerCfVariables() {
+    if (outerCfVariables == null) {
+      accessibleViaNcCF();
+    }
+    return outerCfVariables;
   }
 
   /**
@@ -2087,124 +1816,6 @@ public abstract class EDDTable extends EDD {
     return false;
   }
 
-  /**
-   * This returns the types of data files that this dataset can be returned as. These are short
-   * descriptive names that are put in the request url after the dataset name and before the "?",
-   * e.g., ".nc".
-   *
-   * @return the types of data files that this dataset can be returned as.
-   */
-  @Override
-  public ImmutableList<String> dataFileTypeNames() {
-    return dataFileTypeNames;
-  }
-
-  /**
-   * This returns the file extensions corresponding to the dataFileTypes. E.g.,
-   * dataFileTypeName=".htmlTable" returns dataFileTypeExtension=".html".
-   *
-   * @return the file extensions corresponding to the dataFileTypes.
-   */
-  @Override
-  public ImmutableList<String> dataFileTypeExtensions() {
-    return dataFileTypeExtensions;
-  }
-
-  /**
-   * This returns descriptions (up to 80 characters long, suitable for a tooltip) corresponding to
-   * the dataFileTypes.
-   *
-   * @param language the index of the selected language
-   * @return descriptions corresponding to the dataFileTypes.
-   */
-  @Override
-  public String[] dataFileTypeDescriptions(int language) {
-    return dataFileTypeDescriptionsAr[language];
-  }
-
-  /**
-   * This returns an info URL corresponding to the dataFileTypes.
-   *
-   * @return an info URL corresponding to the dataFileTypes (an element is "" if not available).
-   */
-  @Override
-  public ImmutableList<String> dataFileTypeInfo() {
-    return dataFileTypeInfo;
-  }
-
-  /**
-   * This returns the types of image files that this dataset can be returned as. These are short
-   * descriptive names that are put in the request url after the dataset name and before the "?",
-   * e.g., ".largePng".
-   *
-   * @return the types of image files that this dataset can be returned as.
-   */
-  @Override
-  public ImmutableList<String> imageFileTypeNames() {
-    return imageFileTypeNames;
-  }
-
-  /**
-   * This returns the file extensions corresponding to the imageFileTypes, e.g.,
-   * imageFileTypeNames=".largePng" returns imageFileTypeExtensions=".png".
-   *
-   * @return the file extensions corresponding to the imageFileTypes.
-   */
-  @Override
-  public ImmutableList<String> imageFileTypeExtensions() {
-    return imageFileTypeExtensions;
-  }
-
-  /**
-   * This returns descriptions corresponding to the imageFileTypes (each is suitable for a tooltip).
-   *
-   * @param language the index of the selected language
-   * @return descriptions corresponding to the imageFileTypes.
-   */
-  @Override
-  public String[] imageFileTypeDescriptions(int language) {
-    return imageFileTypeDescriptionsAr[language];
-  }
-
-  /**
-   * This returns an info URL corresponding to the imageFileTypes.
-   *
-   * @return an info URL corresponding to the imageFileTypes.
-   */
-  @Override
-  public ImmutableList<String> imageFileTypeInfo() {
-    return imageFileTypeInfo;
-  }
-
-  /**
-   * This returns the "[name]" for all dataFileTypes and imageFileTypes.
-   *
-   * @return the "[name]" for all dataFileTypes and imageFileTypes.
-   */
-  public String[] allFileTypeNames() {
-    return allFileTypeNames;
-  }
-
-  /**
-   * This returns the "[name] - [description]" for all dataFileTypes and imageFileTypes.
-   *
-   * @param language the index of the selected language
-   * @return the "[name] - [description]" for all dataFileTypes and imageFileTypes.
-   */
-  @Override
-  public String[] allFileTypeOptions(int language) {
-    return allFileTypeOptionsAr[language];
-  }
-
-  /**
-   * This returns the number of the .htmlTable option
-   *
-   * @return the number of the .htmlTable option
-   */
-  public int defaultFileTypeOption() {
-    return defaultFileTypeOption;
-  }
-
   /** This is a variant of parseUserDapQuery where processAddVariablesWhere is true. */
   public void parseUserDapQuery(
       int language,
@@ -3280,44 +2891,6 @@ public abstract class EDDTable extends EDD {
     long makeTime = System.currentTimeMillis();
     String tErddapUrl = EDStatic.erddapUrl(loggedInAs, language);
 
-    // .das, .dds, and .html requests can be handled without getting data
-    switch (fileTypeName) {
-      case ".das" -> {
-        // .das is always the same regardless of the userDapQuery.
-        // (That's what THREDDS does -- DAP 2.0 7.2.1 is vague.
-        // THREDDs doesn't even object if userDapQuery is invalid.)
-        Table table =
-            makeEmptyDestinationTable(
-                language, requestUrl, "", true); // as if userDapQuery was for everything
-
-        // DAP 2.0 section 3.2.3 says US-ASCII (7bit), so might as well go for compatible common
-        // 8bit
-        table.saveAsDAS(outputStreamSource.outputStream(File2.ISO_8859_1), SEQUENCE_NAME);
-        return;
-      }
-      case ".dds" -> {
-        Table table = makeEmptyDestinationTable(language, requestUrl, userDapQuery, false);
-        // DAP 2.0 section 3.2.3 says US-ASCII (7bit), so might as well go for compatible common
-        // 8bit
-        table.saveAsDDS(outputStreamSource.outputStream(File2.ISO_8859_1), SEQUENCE_NAME);
-        return;
-      }
-      case ".fgdc" -> {
-        if (accessibleViaFGDC.length() == 0) {
-          try (OutputStream out = outputStreamSource.outputStream(File2.UTF_8)) {
-            if (!File2.copy(datasetDir() + datasetID + fgdcSuffix + ".xml", out))
-              throw new SimpleException(String2.ERROR + " while transmitting file.");
-          }
-          // downloads of e.g., erddap2.css don't work right if not closed. (just if gzip'd?)
-        } else {
-          throw new SimpleException(
-              EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
-                  + accessibleViaFGDC);
-        }
-        return;
-      }
-    }
-
     // special EDDTableFromHttpGet file types
     if (this instanceof EDDTableFromHttpGet etfhg
         && (fileTypeName.equals(".insert") || fileTypeName.equals(".delete"))) {
@@ -3341,107 +2914,123 @@ public abstract class EDDTable extends EDD {
       return;
     }
 
-    // .graph
-    if (fileTypeName.equals(".graph")) {
-      respondToGraphQuery(
-          language,
-          request,
-          loggedInAs,
-          requestUrl,
-          endOfRequest,
-          userDapQuery,
-          outputStreamSource,
-          dir,
-          fileName,
-          fileTypeName);
-      return;
-    }
-
-    // .html
-    if (fileTypeName.equals(".html")) {
-      // first
-      Table table =
-          makeEmptyDestinationTable(language, requestUrl, "", true); // das is as if no constraint
-      // it is important that this use outputStreamSource so stream is compressed (if possible)
-      // DAP 2.0 section 3.2.3 says US-ASCII (7bit), so might as well go for compatible unicode
-      // With HTML 5 and for future, best to go with UTF_8. Also, <startHeadHtml> says UTF_8.
-      OutputStream out = outputStreamSource.outputStream(File2.UTF_8);
-      Writer writer = File2.getBufferedWriterUtf8(out);
-      try {
-        writer.write(
-            EDStatic.startHeadHtml(
-                language, tErddapUrl, title() + " - " + EDStatic.messages.dafAr[language]));
-        writer.write("\n" + rssHeadLink());
-        writer.write("\n</head>\n");
-        writer.write(
-            EDStatic.startBodyHtml(
-                language,
-                loggedInAs,
-                "tabledap/" + datasetID + ".html", // was endOfRequest,
-                userDapQuery));
-        writer.write("\n");
-        writer.write(
-            HtmlWidgets.htmlTooltipScript(
-                EDStatic.imageDirUrl(loggedInAs, language))); // this is a link to a script
-        writer.write(
-            HtmlWidgets.dragDropScript(
-                EDStatic.imageDirUrl(loggedInAs, language))); // this is a link to a script
-        writer.flush(); // Steve Souder says: the sooner you can send some html to user, the better
-        writer.write("<div class=\"standard_width\">\n");
-        writer.write(
-            EDStatic.youAreHereWithHelp(
-                language,
-                loggedInAs,
-                dapProtocol,
-                EDStatic.messages.dafAr[language],
-                "<div class=\"standard_max_width\">"
-                    + EDStatic.messages.dafTableTooltipAr[language]
-                    + "<p>"
-                    + EDStatic.messages.EDDTableDownloadDataTooltipAr[language]
-                    + "</ol>\n"
-                    + EDStatic.messages.dafTableBypassTooltipAr[language]
-                    + "</div>"));
-        writeHtmlDatasetInfo(
-            language, loggedInAs, writer, true, false, true, true, userDapQuery, "");
-        if (userDapQuery.length() == 0)
-          userDapQuery =
-              defaultDataQuery(); // after writeHtmlDatasetInfo and before writeDapHtmlForm
-        writeDapHtmlForm(language, loggedInAs, userDapQuery, writer);
-
-        // info at end of page
-
-        // then das (with info about this dataset
-        writer.write("<hr>\n");
-        writer.write(
-            "<h2><a class=\"selfLink\" id=\"DAS\" href=\"#DAS\" rel=\"bookmark\">"
-                + EDStatic.messages.dasTitleAr[language]
-                + "</a></h2>\n"
-                + "<pre style=\"white-space:pre-wrap;\">\n");
-        table.writeDAS(
-            writer, SEQUENCE_NAME, true); // useful so search engines find all relevant words
-        writer.write("</pre>\n");
-
-        // then dap instructions
-        writer.write("<br>&nbsp;\n");
-        writer.write("<hr>\n");
-        writeGeneralDapHtmlInstructions(language, tErddapUrl, writer, false);
-        writer.write("</div>\n");
-        writer.write(EDStatic.endBodyHtml(language, tErddapUrl, loggedInAs));
-        writer.write("\n</html>\n");
-        writer.flush(); // essential
+    // Handle rendering type queries
+    switch (fileTypeName) {
+      case ".graph" -> {
+        respondToGraphQuery(
+            language,
+            request,
+            loggedInAs,
+            requestUrl,
+            endOfRequest,
+            userDapQuery,
+            outputStreamSource,
+            dir,
+            fileName,
+            fileTypeName);
         return;
+      }
+      case ".html" -> {
+        // first
+        Table table =
+            makeEmptyDestinationTable(language, requestUrl, "", true); // das is as if no constraint
+        // it is important that this use outputStreamSource so stream is compressed (if possible)
+        // DAP 2.0 section 3.2.3 says US-ASCII (7bit), so might as well go for compatible unicode
+        // With HTML 5 and for future, best to go with UTF_8. Also, <startHeadHtml> says UTF_8.
+        OutputStream out = outputStreamSource.outputStream(File2.UTF_8);
+        Writer writer = File2.getBufferedWriterUtf8(out);
+        try {
+          writer.write(
+              EDStatic.startHeadHtml(
+                  language, tErddapUrl, title() + " - " + EDStatic.messages.dafAr[language]));
+          writer.write("\n" + rssHeadLink());
+          writer.write("\n</head>\n");
+          writer.write(
+              EDStatic.startBodyHtml(
+                  language,
+                  loggedInAs,
+                  "tabledap/" + datasetID + ".html", // was endOfRequest,
+                  userDapQuery));
+          writer.write("\n");
+          writer.write(
+              HtmlWidgets.htmlTooltipScript(
+                  EDStatic.imageDirUrl(loggedInAs, language))); // this is a link to a script
+          writer.write(
+              HtmlWidgets.dragDropScript(
+                  EDStatic.imageDirUrl(loggedInAs, language))); // this is a link to a script
+          writer
+              .flush(); // Steve Souder says: the sooner you can send some html to user, the better
+          writer.write("<div class=\"standard_width\">\n");
+          writer.write(
+              EDStatic.youAreHereWithHelp(
+                  language,
+                  loggedInAs,
+                  dapProtocol,
+                  EDStatic.messages.dafAr[language],
+                  "<div class=\"standard_max_width\">"
+                      + EDStatic.messages.dafTableTooltipAr[language]
+                      + "<p>"
+                      + EDStatic.messages.EDDTableDownloadDataTooltipAr[language]
+                      + "</ol>\n"
+                      + EDStatic.messages.dafTableBypassTooltipAr[language]
+                      + "</div>"));
+          writeHtmlDatasetInfo(
+              language, loggedInAs, writer, true, false, true, true, userDapQuery, "");
+          if (userDapQuery.length() == 0)
+            userDapQuery =
+                defaultDataQuery(); // after writeHtmlDatasetInfo and before writeDapHtmlForm
+          writeDapHtmlForm(language, loggedInAs, userDapQuery, writer);
 
-      } catch (Exception e) {
-        EDStatic.rethrowClientAbortException(e); // first thing in catch{}
-        String2.log(
-            String2.ERROR
-                + " when writing web page:\n"
-                + MustBe.throwableToString(e)); // before writer.write's
-        writer.write(EDStatic.htmlForException(language, e));
-        writer.write(EDStatic.endBodyHtml(language, tErddapUrl, loggedInAs));
-        writer.write("\n</html>\n");
-        writer.flush(); // essential
-        throw e;
+          // info at end of page
+
+          // then das (with info about this dataset
+          writer.write("<hr>\n");
+          writer.write(
+              "<h2><a class=\"selfLink\" id=\"DAS\" href=\"#DAS\" rel=\"bookmark\">"
+                  + EDStatic.messages.dasTitleAr[language]
+                  + "</a></h2>\n"
+                  + "<pre style=\"white-space:pre-wrap;\">\n");
+          table.writeDAS(
+              writer, SEQUENCE_NAME, true); // useful so search engines find all relevant words
+          writer.write("</pre>\n");
+
+          // then dap instructions
+          writer.write("<br>&nbsp;\n");
+          writer.write("<hr>\n");
+          writeGeneralDapHtmlInstructions(language, tErddapUrl, writer, false);
+          writer.write("</div>\n");
+          writer.write(EDStatic.endBodyHtml(language, tErddapUrl, loggedInAs));
+          writer.write("\n</html>\n");
+          writer.flush(); // essential
+          return;
+
+        } catch (Exception e) {
+          EDStatic.rethrowClientAbortException(e); // first thing in catch{}
+          String2.log(
+              String2.ERROR
+                  + " when writing web page:\n"
+                  + MustBe.throwableToString(e)); // before writer.write's
+          writer.write(EDStatic.htmlForException(language, e));
+          writer.write(EDStatic.endBodyHtml(language, tErddapUrl, loggedInAs));
+          writer.write("\n</html>\n");
+          writer.flush(); // essential
+          throw e;
+        }
+      }
+      case ".subset" -> {
+        respondToSubsetQuery(
+            language,
+            request,
+            response,
+            loggedInAs,
+            requestUrl,
+            endOfRequest,
+            userDapQuery,
+            outputStreamSource,
+            dir,
+            fileName,
+            fileTypeName);
+        return;
       }
     }
 
@@ -3473,622 +3062,31 @@ public abstract class EDDTable extends EDD {
       return;
     }
 
-    switch (fileTypeName) {
-      case ".iso19115" -> {
-        if (accessibleViaISO19115.length() == 0) {
-          try (OutputStream out = outputStreamSource.outputStream(File2.UTF_8)) {
-            if (!File2.copy(datasetDir() + datasetID + iso19115Suffix + ".xml", out))
-              throw new SimpleException(String2.ERROR + " while transmitting file.");
-          }
-          // downloads of e.g., erddap2.css don't work right if not closed. (just if gzip'd?)
-        } else {
-          throw new SimpleException(
-              EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
-                  + accessibleViaISO19115);
-        }
-        return;
-      }
-      case ".nccsvMetadata" -> {
-        Table table = new Table();
-        table.globalAttributes().add(combinedGlobalAttributes());
-        for (int dvi = 0; dvi < dataVariables.length; dvi++) {
-          EDV dv = dataVariables[dvi];
-          Attributes catts = dv.combinedAttributes();
-          PAType tPAType = dv.destinationDataPAType();
-          if (dv instanceof EDVTimeStamp) {
-            // convert to String times
-            tPAType = PAType.STRING;
-            catts = new Attributes(catts); // make changes to a copy
-            String timePre = catts.getString(EDV.TIME_PRECISION);
-            catts.set("units", Calendar2.timePrecisionToTimeFormat(timePre));
-
-            PrimitiveArray pa = catts.get("actual_range");
-            if (pa instanceof DoubleArray && pa.size() == 2) {
-              StringArray sa = new StringArray();
-              for (int i = 0; i < 2; i++)
-                sa.add(Calendar2.epochSecondsToLimitedIsoStringT(timePre, pa.getDouble(i), ""));
-              catts.set("actual_range", sa);
-            }
-          }
-          table.addColumn(
-              dvi, dv.destinationName(), PrimitiveArray.factory(tPAType, 1, false), catts);
-        }
-        Writer writer = File2.getBufferedWriterUtf8(outputStreamSource.outputStream(File2.UTF_8));
-        table.saveAsNccsv(false, true, 0, 0, writer); // catchScalars, writeMetadata, writeDataRows
-
-        return; // catchScalars, writeMetadata, writeDataRows
-      }
-      case ".subset" -> {
-        respondToSubsetQuery(
-            language,
-            request,
-            response,
-            loggedInAs,
-            requestUrl,
-            endOfRequest,
-            userDapQuery,
-            outputStreamSource,
-            dir,
-            fileName,
-            fileTypeName);
-        return;
-      }
-    }
-
-    // *** get the data and write to a tableWriter
-    TableWriter tableWriter = null;
-    TableWriterAllWithMetadata twawm = null;
-    String tNewHistory = getNewHistory(requestUrl, userDapQuery);
-    String jsonp = null;
-    switch (fileTypeName) {
-      case ".asc" ->
-          tableWriter =
-              new TableWriterDodsAscii(
-                  language, this, tNewHistory, outputStreamSource, SEQUENCE_NAME);
-      case ".csv" ->
-          tableWriter =
-              new TableWriterSeparatedValue(
-                  language, this, tNewHistory, outputStreamSource, ",", true, true, '2', "NaN");
-      case ".csvp" ->
-          tableWriter =
-              new TableWriterSeparatedValue(
-                  language, this, tNewHistory, outputStreamSource, ",", true, true, '(', "NaN");
-      case ".csv0" ->
-          tableWriter =
-              new TableWriterSeparatedValue(
-                  language, this, tNewHistory, outputStreamSource, ",", true, false, '0', "NaN");
-      case ".dods" ->
-          tableWriter =
-              new TableWriterDods(language, this, tNewHistory, outputStreamSource, SEQUENCE_NAME);
-      case ".esriCsv" ->
-          tableWriter = new TableWriterEsriCsv(language, this, tNewHistory, outputStreamSource);
-      case ".geoJson",
-          ".json",
-          ".dataTable",
-          ".jsonlCSV1",
-          ".jsonlCSV",
-          ".jsonlKVP",
-          ".ncoJson" -> {
-        // did query include &.jsonp= ?
-        String parts[] = Table.getDapQueryParts(userDapQuery); // decoded
-
-        jsonp = String2.stringStartsWith(parts, ".jsonp="); // may be null
-
-        if (jsonp != null) {
-          jsonp = jsonp.substring(7);
-          if (!String2.isJsonpNameSafe(jsonp))
-            throw new SimpleException(
-                EDStatic.bilingual(
-                    language,
-                    EDStatic.messages.queryErrorAr[0]
-                        + EDStatic.messages.errorJsonpFunctionNameAr[0],
-                    EDStatic.messages.queryErrorAr[language]
-                        + EDStatic.messages.errorJsonpFunctionNameAr[language]));
-        }
-        switch (fileTypeName) {
-          case ".geoJson" ->
-              tableWriter =
-                  new TableWriterGeoJson(language, this, tNewHistory, outputStreamSource, jsonp);
-          case ".json" ->
-              tableWriter =
-                  new TableWriterJson(
-                      language, this, tNewHistory, outputStreamSource, jsonp, true); // writeUnits
-          case ".dataTable" ->
-              tableWriter =
-                  new TableWriterDataTable(
-                      language, this, tNewHistory, outputStreamSource, true); // writeUnits
-          case ".jsonlCSV1" ->
-              tableWriter =
-                  new TableWriterJsonl(
-                      language,
-                      this,
-                      tNewHistory,
-                      outputStreamSource,
-                      true,
-                      false,
-                      jsonp); // writeColNames, writeKVP
-          case ".jsonlCSV" ->
-              tableWriter =
-                  new TableWriterJsonl(
-                      language,
-                      this,
-                      tNewHistory,
-                      outputStreamSource,
-                      false,
-                      false,
-                      jsonp); // writeColNames, writeKVP
-          case ".jsonlKVP" ->
-              tableWriter =
-                  new TableWriterJsonl(
-                      language,
-                      this,
-                      tNewHistory,
-                      outputStreamSource,
-                      false,
-                      true,
-                      jsonp); // writeColNames, writeKVP
-          case ".ncoJson" -> {
-            twawm =
-                new TableWriterAllWithMetadata(
-                    language,
-                    this,
-                    tNewHistory,
-                    dir,
-                    fileName); // used after getDataForDapQuery below...
-
-            tableWriter = twawm;
-          }
-        }
-      }
-      case ".htmlTable" ->
-          tableWriter =
-              new TableWriterHtmlTable(
-                  language,
-                  this,
-                  tNewHistory,
-                  loggedInAs,
-                  endOfRequest,
-                  userDapQuery,
-                  outputStreamSource,
-                  true,
-                  fileName,
-                  false,
-                  "",
-                  "",
-                  true,
-                  true,
-                  -1,
-                  EDStatic.imageDirUrl(loggedInAs, language)
-                      + EDStatic.messages.questionMarkImageFile);
-      case ".itx" -> {
-        // tableWriter = new TableWriterIgor(this, tNewHistory, outputStreamSource);
-        twawm =
-            new TableWriterAllWithMetadata(
-                language,
-                this,
-                tNewHistory,
-                dir,
-                fileName); // used after getDataForDapQuery below...
-
-        tableWriter = twawm;
-      }
-      case ".mat" -> {
-        twawm =
-            new TableWriterAllWithMetadata(
-                language,
-                this,
-                tNewHistory,
-                dir,
-                fileName); // used after getDataForDapQuery below...
-
-        tableWriter = twawm;
-      }
-      case ".nccsv" ->
-          tableWriter = new TableWriterNccsv(language, this, tNewHistory, outputStreamSource);
-      case ".odvTxt" -> {
-        // ensure there is longitude, latitude, time data in the request (else it is useless in ODV)
-        StringArray resultsVariables = new StringArray();
-        parseUserDapQuery(
-            language,
-            userDapQuery,
-            resultsVariables,
-            new StringArray(),
-            new StringArray(),
-            new StringArray(),
-            false);
-        if (resultsVariables.indexOf(EDV.LON_NAME) < 0
-            || resultsVariables.indexOf(EDV.LAT_NAME) < 0
-            || resultsVariables.indexOf(EDV.TIME_NAME) < 0)
-          throw new SimpleException(
-              EDStatic.bilingual(
-                  language,
-                  EDStatic.messages.queryErrorAr[0] + EDStatic.messages.errorOdvLLTTableAr[0],
-                  EDStatic.messages.queryErrorAr[language]
-                      + EDStatic.messages.errorOdvLLTTableAr[language]));
-        twawm =
-            new TableWriterAllWithMetadata(
-                language,
-                this,
-                tNewHistory,
-                dir,
-                fileName); // used after getDataForDapQuery below...
-
-        tableWriter = twawm;
-      }
-      case ".parquet", ".parquetWMeta" -> {
-        twawm =
-            new TableWriterAllWithMetadata(
-                language,
-                this,
-                tNewHistory,
-                dir,
-                fileName); // used after getDataForDapQuery below...
-
-        tableWriter = twawm;
-      }
-      case ".tsv" ->
-          tableWriter =
-              new TableWriterSeparatedValue(
-                  language, this, tNewHistory, outputStreamSource, "\t", false, true, '2', "NaN");
-      case ".tsvp" ->
-          tableWriter =
-              new TableWriterSeparatedValue(
-                  language, this, tNewHistory, outputStreamSource, "\t", false, true, '(', "NaN");
-      case ".tsv0" ->
-          tableWriter =
-              new TableWriterSeparatedValue(
-                  language, this, tNewHistory, outputStreamSource, "\t", false, false, '0', "NaN");
-      case ".wav" -> {
-        if (File2.isFile(dir + fileName + ".wav")) {
-          try (OutputStream out = outputStreamSource.outputStream("")) {
-            if (!File2.copy(dir + fileName + ".wav", out))
-              throw new SimpleException(String2.ERROR + " while transmitting file.");
-          }
-          // downloads of e.g., erddap2.css don't work right if not closed. (just if gzip'd?)
-          return;
-        } else {
-          tableWriter =
-              new TableWriterWav(
-                  language, this, tNewHistory, outputStreamSource, dir, fileName + ".wav");
-        }
-      }
-      case ".xhtml" ->
-          tableWriter =
-              new TableWriterHtmlTable(
-                  language,
-                  this,
-                  tNewHistory,
-                  loggedInAs,
-                  endOfRequest,
-                  userDapQuery,
-                  outputStreamSource,
-                  true,
-                  fileName,
-                  true,
-                  "",
-                  "",
-                  true,
-                  true,
-                  -1,
-                  EDStatic.imageDirUrl(loggedInAs, language)
-                      + EDStatic.messages.questionMarkImageFile);
-    }
-
-    if (tableWriter != null) {
-      TableWriter tTableWriter =
-          encloseTableWriter(
-              language,
-              true, // alwaysDoAll
-              dir,
-              fileName,
-              tableWriter,
-              requestUrl,
-              userDapQuery);
-      if (handleViaFixedOrSubsetVariables(
-          language, loggedInAs, requestUrl, userDapQuery, tTableWriter)) {
-      } else {
-        if (tTableWriter != tableWriter)
-          tTableWriter =
-              encloseTableWriter(
-                  language,
-                  false, // alwaysDoAll
-                  dir,
-                  fileName,
-                  tableWriter,
-                  requestUrl,
-                  userDapQuery);
-        getDataForDapQuery(language, loggedInAs, requestUrl, userDapQuery, tTableWriter);
-      }
-
-      // special case: for these, tableWriter=twawm
-      //  so (unlike e.g., tableWriter is a TableWriterJson), we aren't quite finished.
-      //  Data is in twawm and we need to save it to file.
-      switch (fileTypeName) {
-        case ".mat" -> saveAsMatlab(language, outputStreamSource, twawm, datasetID);
-        case ".itx" -> saveAsIgor(language, outputStreamSource, twawm, datasetID);
-        case ".ncoJson" -> saveAsNcoJson(language, outputStreamSource, twawm, jsonp);
-        case ".odvTxt" ->
-            saveAsODV(language, outputStreamSource, twawm, datasetID, publicSourceUrl(), infoUrl());
-        case ".parquet" -> saveAsParquet(language, outputStreamSource, twawm, datasetID, false);
-        case ".parquetWMeta" -> saveAsParquet(language, outputStreamSource, twawm, datasetID, true);
-      }
-      if (twawm != null) {
-        twawm.close();
-      }
-      tTableWriter.close();
-      tableWriter.close();
+    EDDFileTypeInfo fileInfo = EDD_FILE_TYPE_INFO.get(fileTypeName);
+    if (fileInfo == null) {
       return;
     }
-
-    // *** make a file (then copy it to outputStream)
-    // If update system active or real_time=true, don't cache anything.  Make all files unique.
-    if (updateEveryNMillis > 0 || realTime()) {
-      fileName += "_U" + System.currentTimeMillis(); // useful because it identifies time of request
-      outputStreamSource.setFileName(fileName);
-    }
-
-    // nc files are handled this way because .ncHeader .ncCFHeader, .ncCFMAHeader
-    //  need to call NcHelper.ncdump(aRealFile, "-h").
-    String fileTypeExtension = fileTypeExtension(language, fileTypeName);
-    String fullName = dir + fileName + fileTypeExtension;
-    // Normally, this is cacheDirectory and it already exists,
-    //  but my testing environment (2+ things running) may have removed it.
-    File2.makeDirectory(dir);
-
-    // does the file already exist?
-    // if .ncXHeader, make sure the .nc file exists (and it is the better file to cache)
-    //  [! not really! it will have a different hash/fileName]
-    boolean ncXHeader =
-        fileTypeName.equals(".ncHeader")
-            || fileTypeName.equals(".nc4Header")
-            || fileTypeName.equals(".ncCFHeader")
-            || fileTypeName.equals(".ncCFMAHeader");
-    String cacheFullName = String2.canonical(ncXHeader ? dir + fileName + ".nc" : fullName);
-    int random = Math2.random(Integer.MAX_VALUE);
-
-    // thread-safe creation of the file
-    // (If there are almost simultaneous requests for the same one, only one thread will make it.)
-    ReentrantLock lock = String2.canonicalLock(cacheFullName);
-    if (!lock.tryLock(String2.longTimeoutSeconds, TimeUnit.SECONDS))
-      throw new TimeoutException("Timeout waiting for lock on EDDTable .ncHeader cacheFullName.");
-    try {
-
-      if (File2.isFile(cacheFullName)) { // don't 'touch()'; files for latest data will change
-        if (verbose) String2.log("  reusing cached " + cacheFullName);
-
-      } else if (fileTypeName.equals(".nc") || fileTypeName.equals(".ncHeader")) {
-        // if .ncHeader, make sure the .nc file exists
-        // (and it is the better file to cache)
-        twawm = getTwawmForDapQuery(language, loggedInAs, requestUrl, userDapQuery);
-
-        saveAsFlatNc(
+    FileTypeInterface fileTypeHandler = fileInfo.getInstance();
+    DapRequestInfo requestInfo =
+        new DapRequestInfo(
             language,
-            NetcdfFileFormat.NETCDF3,
-            cacheFullName,
-            twawm); // internally, it writes to temp file, then renames to cacheFullName
-
-        File2.isFile(
-            cacheFullName,
-            5); // for possible waiting thread, wait till file is visible via operating system
-        twawm.close();
-      } else if (fileTypeName.equals(".nc4") || fileTypeName.equals(".nc4Header")) {
-
-        if (EDStatic.config.accessibleViaNC4.length() > 0)
-          throw new SimpleException(
-              EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
-                  + EDStatic.config.accessibleViaNC4);
-
-        // if .nc4Header, make sure the .nc4 file exists
-        // (and it is the better file to cache)
-        twawm = getTwawmForDapQuery(language, loggedInAs, requestUrl, userDapQuery);
-
-        saveAsFlatNc(
-            language,
-            NetcdfFileFormat.NETCDF4,
-            cacheFullName,
-            twawm); // internally, it writes to temp file, then renames to cacheFullName
-
-        File2.isFile(
-            cacheFullName,
-            5); // for possible waiting thread, wait till file is visible via operating system
-        twawm.close();
-      } else if (fileTypeName.equals(".ncCF")
-          || fileTypeName.equals(".ncCFHeader")
-          || fileTypeName.equals(".ncCFMA")
-          || fileTypeName.equals(".ncCFMAHeader")) {
-        // quick reject?
-        if (accessibleViaNcCF().length() > 0)
-          throw new SimpleException(
-              EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
-                  + accessibleViaNcCF);
-
-        // check that query includes required variables
-        if (userDapQuery == null) userDapQuery = "";
-        String varNames = userDapQuery.substring(0, (userDapQuery + "&").indexOf('&'));
-        if (varNames.length() == 0) {
-          // ok since all vars are requested and we know dataset has required variables
-        } else {
-          // queries must include cf_role=timeseries_id var (or profile_id or trajectory_id)
-          // queries must include longitude, latitude, time (and altitude or depth if in dataset)
-          StringBuilder addVars = new StringBuilder();
-          String varList[] = StringArray.arrayFromCSV(SSR.percentDecode(varNames));
-          for (String requiredCfRequestVariable : requiredCfRequestVariables) {
-            if (String2.indexOf(varList, requiredCfRequestVariable) < 0)
-              addVars.append(requiredCfRequestVariable + ",");
-            // throw new SimpleException(EDStatic.simpleBilingual(language,
-            // EDStatic.messages.queryErrorAr) +
-            //    ".ncCF queries for this dataset must include all of these variables: " +
-            // String2.toCSSVString(requiredCfRequestVariables) + ".");
-          }
-          // add missing vars to beginning of userDapQuery (they're outer vars, so beginning is
-          // good)
-          userDapQuery = addVars + userDapQuery;
-
-          // query must include at least one non-outer variable
-          boolean ok = false;
-          for (String s : varList) {
-            if (String2.indexOf(outerCfVariables, s) < 0) {
-              ok = true;
-              break;
-            }
-          }
-          if (!ok) {
-            throw new SimpleException(
-                EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
-                    + ".ncCF and .ncCFMA queries for this dataset must at least one variable not on this list: "
-                    + String2.toCSSVString(outerCfVariables)
-                    + ".");
-          }
-        }
-
-        // get the data
-        twawm = getTwawmForDapQuery(language, loggedInAs, requestUrl, userDapQuery);
-        // if (debug) String2.log("\n>>after twawm, globalAttributes=\n" +
-        // twawm.globalAttributes());
-
-        // make .ncCF or .ncCFMA file
-        boolean nodcMode = fileTypeName.equals(".ncCFMA") || fileTypeName.equals(".ncCFMAHeader");
-        String cdmType = combinedGlobalAttributes.getString("cdm_data_type");
-        if (CDM_POINT.equals(cdmType)) saveAsNcCF0(language, cacheFullName, twawm);
-        else if (CDM_TIMESERIES.equals(cdmType)
-            || CDM_PROFILE.equals(cdmType)
-            || CDM_TRAJECTORY.equals(cdmType))
-          saveAsNcCF1(language, nodcMode, cacheFullName, twawm);
-        else if (CDM_TIMESERIESPROFILE.equals(cdmType) || CDM_TRAJECTORYPROFILE.equals(cdmType))
-          saveAsNcCF2(language, nodcMode, cacheFullName, twawm);
-        else { // shouldn't happen, since accessibleViaNcCF checks this
-          throw new SimpleException("unexpected cdm_data_type=" + cdmType);
-        }
-
-        File2.isFile(
-            cacheFullName,
-            5); // for possible waiting thread, wait till file is visible via operating system
-        twawm.close();
-      } else {
-        // all other types
-        // create random file; and if error, only random file will be created
-        OutputStream fos = new BufferedOutputStream(new FileOutputStream(cacheFullName + random));
-        boolean ok;
-        try {
-          OutputStreamSourceSimple osss = new OutputStreamSourceSimple(fos);
-          if (fileTypeName.equals(".kml")) {
-            ok = saveAsKml(language, loggedInAs, requestUrl, userDapQuery, dir, fileName, osss);
-
-          } else if (imageFileTypeNames.indexOf(fileTypeName) >= 0) {
-            // pdf and png  //do last so .kml caught above
-            ok =
-                saveAsImage(
-                    language,
-                    loggedInAs,
-                    requestUrl,
-                    userDapQuery,
-                    dir,
-                    fileName,
-                    osss,
-                    fileTypeName);
-
-          } else {
-            fos.close();
-            fos = null;
-            File2.delete(cacheFullName + random);
-            throw new SimpleException(
-                EDStatic.bilingual(
-                    language,
-                    EDStatic.messages.queryErrorAr[0]
-                        + MessageFormat.format(
-                            EDStatic.messages.queryErrorFileTypeAr[0], fileTypeName),
-                    EDStatic.messages.queryErrorAr[language]
-                        + MessageFormat.format(
-                            EDStatic.messages.queryErrorFileTypeAr[language], fileTypeName)));
-          }
-        } finally {
-          if (fos != null)
-            try {
-              fos.close();
-            } catch (Exception e) {
-            }
-        }
-        File2.rename(cacheFullName + random, cacheFullName); // make available in an instant
-        if (!ok) // make eligible to be removed from cache in 5 minutes
-        File2.touch(
-              cacheFullName,
-              Math.max(0, EDStatic.config.cacheMillis - 5 * Calendar2.MILLIS_PER_MINUTE));
-
-        File2.isFile(
-            cacheFullName,
-            5); // for possible waiting thread, wait till file is visible via operating system
-      }
-    } finally {
-      lock.unlock();
+            this,
+            getNewHistory(requestUrl, userDapQuery),
+            outputStreamSource,
+            requestUrl,
+            userDapQuery,
+            loggedInAs,
+            endOfRequest,
+            fileName,
+            dir,
+            fileTypeName,
+            ipAddress,
+            request,
+            response);
+    if (fileTypeHandler != null) {
+      fileTypeHandler.writeTableToStream(requestInfo);
+      return;
     }
-
-    // if ncXHeader (.ncHeader, .nc4Header, .ncCFHeader, .ncCFMAHeader), create the underlying .nc
-    // file
-    if (ncXHeader) {
-      // thread-safe creation of the file
-      // (If there are almost simultaneous requests for the same one, only one thread will make it.)
-      fullName = String2.canonical(fullName);
-      ReentrantLock lock2 = String2.canonicalLock(fullName);
-      if (!lock2.tryLock(String2.longTimeoutSeconds, TimeUnit.SECONDS))
-        throw new TimeoutException("Timeout waiting for lock on EDDTable ncXHeader fullName.");
-      try {
-
-        if (!File2.isFile(fullName)) {
-          String error =
-              File2.writeToFileUtf8(
-                  fullName + random,
-                  NcHelper.ncdump(
-                      cacheFullName,
-                      "-h")); // !!!this doesn't do anything to internal " in a String attribute
-          // value.
-          if (error.length() == 0) {
-            File2.rename(fullName + random, fullName); // make available in an instant
-            File2.isFile(
-                fullName,
-                5); // for possible waiting thread, wait till file is visible via operating system
-          } else {
-            throw new RuntimeException(error);
-          }
-        }
-      } finally {
-        lock2.unlock();
-      }
-    }
-
-    // copy file to ...
-    if (EDStatic.config.awsS3OutputBucketUrl == null) {
-
-      // copy file to outputStream
-      // (I delayed getting actual outputStream as long as possible.)
-      try (OutputStream out =
-          outputStreamSource.outputStream(
-              ncXHeader ? File2.UTF_8 : fileTypeName.equals(".kml") ? File2.UTF_8 : "")) {
-        if (!File2.copy(fullName, out)) {
-          // outputStream contentType already set,
-          // so I can't go back to html and display error message
-          // note than the message is thrown if user cancels the transmission; so don't email to me
-          throw new SimpleException(String2.ERROR + " while transmitting file.");
-        }
-      }
-      // downloads of e.g., erddap2.css don't work right if not closed. (just if gzip'd?)
-    } else {
-
-      // copy file to AWS and redirect user
-      String contentType =
-          OutputStreamFromHttpResponse.getFileContentType(request, fileTypeName, fileTypeExtension);
-      String fullAwsUrl =
-          EDStatic.config.awsS3OutputBucketUrl + File2.getNameAndExtension(fullName);
-      SSR.uploadFileToAwsS3(
-          EDStatic.config.awsS3OutputTransferManager, fullName, fullAwsUrl, contentType);
-      response.sendRedirect(fullAwsUrl);
-    }
-
-    // done
-    if (reallyVerbose)
-      String2.log(
-          "\n\\\\** EDDTable.respondToDapQuery finished successfully. TIME="
-              + (System.currentTimeMillis() - makeTime)
-              + "ms");
   }
 
   /**
@@ -4106,7 +3104,7 @@ public abstract class EDDTable extends EDD {
    * @return the (possibly) wrapped tableWriter (or the same tableWriter if no need to enclose it,
    *     e.g., no orderByMax).
    */
-  protected TableWriter encloseTableWriter(
+  public TableWriter encloseTableWriter(
       int language,
       boolean alwaysDoAll,
       String dir,
@@ -4551,1811 +3549,6 @@ public abstract class EDDTable extends EDD {
         table.addColumn(scriptNames.get(sni), pa);
       }
     }
-  }
-
-  /**
-   * This makes a .kml file. The userDapQuery must include the EDV.LON_NAME and EDV.LAT_NAME columns
-   * (and preferably also EDV.ALT_NAME and EDV.TIME_NAME column) in the results variables.
-   *
-   * @param language the index of the selected language
-   * @param loggedInAs the name of the logged in user (or null if not logged in). Normally, this is
-   *     not used to test if this edd is accessibleTo loggedInAs, but it unusual cases
-   *     (EDDTableFromPost?) it could be. Normally, this is just used to determine which erddapUrl
-   *     to use (http vs https).
-   * @param requestUrl I think it's currently just used to add to "history" metadata.
-   * @param userDapQuery the part after the '?', still percentEncoded (shouldn't be null).
-   * @param dir the directory (on this computer's hard drive) to use for temporary/cache files
-   * @param fileName the name for the 'file' (no dir, no extension), which is used to write the
-   *     suggested name for the file to the response header.
-   * @param outputStreamSource
-   * @return true of written ok; false if exception occurred (and written on image)
-   * @throws Throwable if trouble
-   */
-  protected boolean saveAsKml(
-      int language,
-      String loggedInAs,
-      String requestUrl,
-      String userDapQuery,
-      String dir,
-      String fileName,
-      OutputStreamSource outputStreamSource)
-      throws Throwable {
-
-    // before any work is done,
-    //  ensure LON_NAME and LAT_NAME are among resultsVariables
-    String tErddapUrl = EDStatic.erddapUrl(loggedInAs, language);
-    StringArray resultsVariables = new StringArray();
-    StringArray constraintVariables = new StringArray();
-    StringArray constraintOps = new StringArray();
-    StringArray constraintValues = new StringArray();
-    parseUserDapQuery(
-        language,
-        userDapQuery,
-        resultsVariables,
-        constraintVariables,
-        constraintOps,
-        constraintValues, // non-regex EDVTimeStamp conValues will be ""+epochSeconds
-        false);
-    if (resultsVariables.indexOf(EDV.LON_NAME) < 0 || resultsVariables.indexOf(EDV.LAT_NAME) < 0)
-      throw new SimpleException(
-          EDStatic.bilingual(
-              language,
-              EDStatic.messages.queryErrorAr[0]
-                  + MessageFormat.format(EDStatic.messages.queryErrorLLAr[0], ".kml"),
-              EDStatic.messages.queryErrorAr[language]
-                  + MessageFormat.format(EDStatic.messages.queryErrorLLAr[language], ".kml")));
-
-    // get the table with all the data
-    TableWriterAllWithMetadata twawm =
-        getTwawmForDapQuery(language, loggedInAs, requestUrl, userDapQuery);
-    Table table = twawm.cumulativeTable();
-    twawm.releaseResources();
-    twawm.close();
-    table.convertToStandardMissingValues(); // so stored as NaNs
-
-    // double check that lon and lat were found
-    int lonCol = table.findColumnNumber(EDV.LON_NAME);
-    int latCol = table.findColumnNumber(EDV.LAT_NAME);
-    int altCol = table.findColumnNumber(EDV.ALT_NAME);
-    int timeCol = table.findColumnNumber(EDV.TIME_NAME);
-    EDVTime edvTime = timeIndex < 0 ? null : (EDVTime) dataVariables[timeIndex];
-    if (lonCol < 0 || latCol < 0)
-      throw new SimpleException(
-          EDStatic.bilingual(
-              language,
-              EDStatic.messages.queryErrorAr[0]
-                  + MessageFormat.format(EDStatic.messages.queryErrorLLAr[0], ".kml"),
-              EDStatic.messages.queryErrorAr[language]
-                  + MessageFormat.format(EDStatic.messages.queryErrorLLAr[language], ".kml")));
-
-    // remember this may be many stations one time, or one station many times, or many/many
-    // sort table by lat, lon, depth, then time (if possible)
-    if (altCol >= 0 && timeCol >= 0)
-      table.sort(
-          new int[] {lonCol, latCol, altCol, timeCol}, new boolean[] {true, true, true, true});
-    else if (timeCol >= 0)
-      table.sort(new int[] {lonCol, latCol, timeCol}, new boolean[] {true, true, true});
-    else if (altCol >= 0)
-      table.sort(new int[] {lonCol, latCol, altCol}, new boolean[] {true, true, true});
-    else table.sort(new int[] {lonCol, latCol}, new boolean[] {true, true});
-    // String2.log(table.toString("row", 10));
-
-    // get lat and lon range (needed to create icon size and ensure there is data to be plotted)
-    double minLon = Double.NaN, maxLon = Double.NaN, minLat = Double.NaN, maxLat = Double.NaN;
-    if (lonCol >= 0) {
-      double stats[] = table.getColumn(lonCol).calculateStats();
-      minLon = stats[PrimitiveArray.STATS_MIN];
-      maxLon = stats[PrimitiveArray.STATS_MAX];
-    }
-    if (latCol >= 0) {
-      double stats[] = table.getColumn(latCol).calculateStats();
-      minLat = stats[PrimitiveArray.STATS_MIN];
-      maxLat = stats[PrimitiveArray.STATS_MAX];
-    }
-    if (Double.isNaN(minLon) || Double.isNaN(minLat))
-      throw new SimpleException(
-          EDStatic.bilingual(
-              language,
-              MustBe.THERE_IS_NO_DATA + " " + EDStatic.messages.noDataNoLLAr[0],
-              MustBe.THERE_IS_NO_DATA + " " + EDStatic.messages.noDataNoLLAr[language]));
-    double lonRange = maxLon - minLon;
-    double latRange = maxLat - minLat;
-    double maxRange = Math.max(lonRange, latRange);
-
-    // get time range and prep moreTime constraints
-
-    String moreTime = "";
-    double minTime = Double.NaN, maxTime = Double.NaN;
-    if (timeCol >= 0) {
-      // time is in the response
-      double stats[] = table.getColumn(timeCol).calculateStats();
-      minTime = stats[PrimitiveArray.STATS_MIN];
-      maxTime = stats[PrimitiveArray.STATS_MAX];
-      if (!Double.isNaN(minTime)) { // there are time values
-        // at least a week
-        double tMinTime = Math.min(minTime, maxTime - 7 * Calendar2.SECONDS_PER_DAY);
-        moreTime = // >  <
-            "&time%3E="
-                + Calendar2.epochSecondsToLimitedIsoStringT(
-                    edvTime.time_precision(), tMinTime, "NaN")
-                + "&time%3C="
-                + Calendar2.epochSecondsToLimitedIsoStringT(
-                    edvTime.time_precision(), maxTime, "NaN");
-      }
-    } else {
-      // look for time in constraints
-      for (int c = 0; c < constraintVariables.size(); c++) {
-        if (EDV.TIME_NAME.equals(constraintVariables.get(c))) {
-          double tTime = String2.parseDouble(constraintValues.get(c));
-          char ch1 = constraintOps.get(c).charAt(0);
-          if (ch1 == '>' || ch1 == '=')
-            minTime = Double.isNaN(minTime) ? tTime : Math.min(minTime, tTime);
-          if (ch1 == '<' || ch1 == '=')
-            maxTime = Double.isNaN(maxTime) ? tTime : Math.max(maxTime, tTime);
-        }
-      }
-      if (Double.isFinite(minTime))
-        moreTime =
-            "&time%3E="
-                + Calendar2.epochSecondsToLimitedIsoStringT(
-                    edvTime.time_precision(), minTime - 7 * Calendar2.SECONDS_PER_DAY, "NaN");
-      if (Double.isFinite(maxTime))
-        moreTime =
-            "&time%3C="
-                + Calendar2.epochSecondsToLimitedIsoStringT(
-                    edvTime.time_precision(), maxTime + 7 * Calendar2.SECONDS_PER_DAY, "NaN");
-    }
-
-    // Google Earth .kml
-    // (getting the outputStream was delayed until actually needed)
-    BufferedWriter writer =
-        File2.getBufferedWriterUtf8(outputStreamSource.outputStream(File2.UTF_8));
-
-    // collect the units
-    String columnUnits[] = new String[table.nColumns()];
-    boolean columnIsString[] = new boolean[table.nColumns()];
-    boolean columnIsTimeStamp[] = new boolean[table.nColumns()];
-    String columnTimePrecision[] = new String[table.nColumns()];
-    for (int col = 0; col < table.nColumns(); col++) {
-      String units = table.columnAttributes(col).getString("units");
-      // test isTimeStamp before prepending " "
-      columnIsTimeStamp[col] = EDV.TIME_UNITS.equals(units) || EDV.TIME_UCUM_UNITS.equals(units);
-      // String2.log("col=" + col + " name=" + table.getColumnName(col) + " units=" + units + "
-      // isTimestamp=" + columnIsTimeStamp[col]);
-      units = (units == null || units.equals(EDV.UNITLESS)) ? "" : " " + units;
-      columnUnits[col] = units;
-      columnIsString[col] = table.getColumn(col) instanceof StringArray;
-      columnTimePrecision[col] = table.columnAttributes(col).getString(EDV.TIME_PRECISION);
-    }
-
-    // based on kmz example from http://www.coriolis.eu.org/cdc/google_earth.htm
-    // see copy in bob's c:/programs/kml/SE-LATEST-MONTH-STA.kml
-    // kml docs: https://developers.google.com/kml/documentation/kmlreference
-    // CDATA is necessary for url's with queries
-    // kml/description docs recommend \n<br />
-    String courtesy =
-        institution().length() == 0
-            ? ""
-            : MessageFormat.format(
-                EDStatic.messages.imageDataCourtesyOfAr[language], institution());
-    double iconSize =
-        maxRange > 90
-            ? 1.2
-            : maxRange > 45
-                ? 1.0
-                : maxRange > 20 ? .8 : maxRange > 10 ? .6 : maxRange > 5 ? .5 : .4;
-    writer.write( // KML
-        "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
-            + "<kml xmlns=\"http://www.opengis.net/kml/2.2\">\n"
-            + "<Document>\n"
-            +
-            // human-friendly, but descriptive, <name>
-            // name is used as link title -- leads to <description>
-            "  <name>"
-            + XML.encodeAsXML(title())
-            + "</name>\n"
-            +
-            // <description> appears in balloon
-            "  <description><![CDATA["
-            + XML.encodeAsXML(courtesy)
-            + "\n<br />"
-            + String2.replaceAll(XML.encodeAsXML(summary()), "\n", "\n<br />")
-            +
-            // link to download this dataset
-            "\n<br />"
-            + "<a href=\""
-            + XML.encodeAsHTMLAttribute(
-                tErddapUrl
-                    + "/tabledap/"
-                    + // don't use \n for the following lines
-                    datasetID
-                    + ".html?"
-                    + userDapQuery)
-            + // already percentEncoded; XML.encodeAsXML isn't ok
-            "\">View/download more data from this dataset.</a>\n"
-            + "    ]]></description>\n"
-            + "  <open>1</open>\n"
-            + "  <Style id=\"BUOY ON\">\n"
-            + "    <IconStyle>\n"
-            + "      <color>ff0099ff</color>\n"
-            + // abgr   orange
-            "      <scale>"
-            + (3 * iconSize)
-            + "</scale>\n"
-            + "      <Icon>\n"
-            +
-            // see list in Google Earth by right click on icon : Properties : the icon icon
-            // 2011-12-15 was shaded_dot (too fuzzy), now placemark_circle
-            "        <href>https://maps.google.com/mapfiles/kml/shapes/placemark_circle.png</href>\n"
-            + "      </Icon>\n"
-            + "    </IconStyle>\n"
-            + "  </Style>\n"
-            + "  <Style id=\"BUOY OUT\">\n"
-            + "    <IconStyle>\n"
-            + "      <color>ff0099ff</color>\n"
-            + "      <scale>"
-            + (2 * iconSize)
-            + "</scale>\n"
-            + "      <Icon>\n"
-            + "        <href>https://maps.google.com/mapfiles/kml/shapes/placemark_circle.png</href>\n"
-            + "      </Icon>\n"
-            + "    </IconStyle>\n"
-            + "    <LabelStyle><scale>0</scale></LabelStyle>\n"
-            + "  </Style>\n"
-            + "  <StyleMap id=\"BUOY\">\n"
-            + "    <Pair><key>normal</key><styleUrl>#BUOY OUT</styleUrl></Pair>\n"
-            + "    <Pair><key>highlight</key><styleUrl>#BUOY ON</styleUrl></Pair>\n"
-            + "  </StyleMap>\n");
-
-    // just one link for each station (same lat,lon/depth):
-    // LON   LAT DEPTH   TIME    ID  WTMP
-    // -130.36   42.58   0.0 1.1652336E9 NDBC 46002 met  13.458333174387613
-    int nRows = table.nRows(); // there must be at least 1 row
-    int startRow = 0;
-    double startLon = table.getNiceDoubleData(lonCol, startRow);
-    double startLat = table.getNiceDoubleData(latCol, startRow);
-    for (int row = 1; row <= nRows; row++) { // yes, 1...n, since looking at previous row
-      // look for a change in lastLon/Lat
-      if (row == nRows
-          || startLon != table.getNiceDoubleData(lonCol, row)
-          || startLat != table.getNiceDoubleData(latCol, row)) {
-
-        if (!Double.isNaN(startLon) && !Double.isNaN(startLat)) {
-
-          // make a placemark for this station
-          double startLon180 = Math2.anglePM180(startLon);
-          writer.write(
-              "  <Placemark>\n"
-                  + "    <name>"
-                  + "Lat="
-                  + String2.genEFormat10(startLat)
-                  + ", Lon="
-                  + String2.genEFormat10(startLon180)
-                  + "</name>\n"
-                  + "    <description><![CDATA["
-                  +
-                  // kml/description docs recommend \n<br />
-                  XML.encodeAsXML(title)
-                  + "\n<br />"
-                  + XML.encodeAsXML(courtesy));
-
-          // if timeCol exists, find last row with valid time
-          // This solves problem with dapper data (last row for each station has just NaNs)
-          int displayRow = row - 1;
-          if (timeCol >= 0) {
-            while (displayRow - 1 >= startRow
-                && Double.isNaN(
-                    table.getDoubleData(timeCol, displayRow))) // if displayRow is NaN...
-            displayRow--;
-          }
-
-          // display the last row of data  (better than nothing)
-          for (int col = 0; col < table.nColumns(); col++) {
-            double td = table.getNiceDoubleData(col, displayRow);
-            String ts = table.getStringData(col, displayRow);
-            // String2.log("col=" + col + " name=" + table.getColumnName(col) + " units=" +
-            // columnUnits[col] + " isTimestamp=" + columnIsTimeStamp[col]);
-            writer.write(
-                "\n<br />"
-                    + XML.encodeAsXML(
-                        table.getColumnName(col)
-                            + " = "
-                            + (columnIsTimeStamp[col]
-                                ? Calendar2.epochSecondsToLimitedIsoStringT(
-                                    columnTimePrecision[col], td, "")
-                                : columnIsString[col]
-                                    ? ts
-                                    : (Double.isNaN(td) ? "NaN" : ts) + columnUnits[col])));
-          }
-          writer.write(
-              "\n<br /><a href=\""
-                  + XML.encodeAsHTMLAttribute(
-                      tErddapUrl
-                          + "/tabledap/"
-                          + // don't use \n for the following lines
-                          datasetID
-                          + ".htmlTable?"
-                          +
-                          // was SSR.minimalPercentEncode   XML.encodeAsXML isn't ok
-                          // ignore userDapQuery
-                          // get just this station, all variables, at least 7 days
-                          moreTime
-                          + // already percentEncoded
-                          // some data sources like dapper don't respond to lon=startLon
-                          // lat=startLat
-                          "&"
-                          + EDV.LON_NAME
-                          + SSR.minimalPercentEncode(">")
-                          + (startLon - .01)
-                          + // not startLon180
-                          "&"
-                          + EDV.LON_NAME
-                          + SSR.minimalPercentEncode("<")
-                          + (startLon + .01)
-                          + "&"
-                          + EDV.LAT_NAME
-                          + SSR.minimalPercentEncode(">")
-                          + (startLat - .01)
-                          + "&"
-                          + EDV.LAT_NAME
-                          + SSR.minimalPercentEncode("<")
-                          + (startLat + .01))
-                  + "\">View tabular data for this location.</a>\n"
-                  + "\n<br /><a href=\""
-                  + XML.encodeAsHTMLAttribute(
-                      tErddapUrl
-                          + "/tabledap/"
-                          + // don't use \n for the following lines
-                          datasetID
-                          + ".html?"
-                          + userDapQuery)
-                  + // already percentEncoded.  XML.encodeAsXML isn't ok
-                  "\">View/download more data from this dataset.</a>\n"
-                  + "]]></description>\n"
-                  + "    <styleUrl>#BUOY</styleUrl>\n"
-                  + "    <Point>\n"
-                  + "      <coordinates>"
-                  + startLon180
-                  + ","
-                  + startLat
-                  + "</coordinates>\n"
-                  + "    </Point>\n"
-                  + "  </Placemark>\n");
-        }
-
-        // reset startRow...
-        startRow = row;
-        if (startRow == nRows) {
-          // assist with LookAt
-          // it has trouble with 1 point: zoom in forever
-          //  and if lon range crossing dateline
-          double tMaxRange =
-              Math.min(90, maxRange); // 90 is most you can comfortably see, and useful fudge
-          tMaxRange = Math.max(2, tMaxRange); // now it's 2 .. 90
-          // fudge for smaller range
-          if (tMaxRange < 45) tMaxRange *= 1.5;
-          double eyeAt =
-              14.0e6 * tMaxRange / 90.0; // meters, 14e6 shows whole earth (~90 deg comfortably)
-          double lookAtX = Math2.anglePM180((minLon + maxLon) / 2);
-          double lookAtY = (minLat + maxLat) / 2;
-          if (reallyVerbose)
-            String2.log(
-                "KML minLon="
-                    + minLon
-                    + " maxLon="
-                    + maxLon
-                    + " minLat="
-                    + minLat
-                    + " maxLat="
-                    + maxLat
-                    + "\n  maxRange="
-                    + maxRange
-                    + " tMaxRange="
-                    + tMaxRange
-                    + "\n  lookAtX="
-                    + lookAtX
-                    + "  lookAtY="
-                    + lookAtY
-                    + "  eyeAt="
-                    + eyeAt);
-          writer.write(
-              "  <LookAt>\n"
-                  + "    <longitude>"
-                  + lookAtX
-                  + "</longitude>\n"
-                  + "    <latitude>"
-                  + lookAtY
-                  + "</latitude>\n"
-                  + "    <range>"
-                  + eyeAt
-                  + "</range>\n"
-                  + // meters
-                  "  </LookAt>\n");
-        } else {
-          startLon = table.getNiceDoubleData(lonCol, startRow);
-          startLat = table.getNiceDoubleData(latCol, startRow);
-          minLon =
-              Double.isNaN(minLon)
-                  ? startLon
-                  : Double.isNaN(startLon) ? minLon : Math.min(minLon, startLon);
-          maxLon =
-              Double.isNaN(maxLon)
-                  ? startLon
-                  : Double.isNaN(startLon) ? maxLon : Math.max(maxLon, startLon);
-          minLat =
-              Double.isNaN(minLat)
-                  ? startLat
-                  : Double.isNaN(startLat) ? minLat : Math.min(minLat, startLat);
-          maxLat =
-              Double.isNaN(maxLat)
-                  ? startLat
-                  : Double.isNaN(startLat) ? maxLat : Math.max(maxLat, startLat);
-        }
-      } // end processing change in lon, lat, or depth
-    } // end row loop
-
-    // end of kml file
-    writer.write(getKmlIconScreenOverlay() + "  </Document>\n" + "</kml>\n");
-    writer.flush(); // essential
-    return true;
-  }
-
-  /**
-   * This saves the data in the table to the outputStream as an image. If
-   * table.getColumnName(0)=LON_NAME and table.getColumnName(0)=LAT_NAME, this plots the data on a
-   * map. Otherwise, this makes a graph with x=col(0) and y=col(1).
-   *
-   * @param language the index of the selected language
-   * @param loggedInAs the user's login name if logged in (or null if not logged in).
-   * @param requestUrl I think it's currently just used to add to "history" metadata.
-   * @param userDapQuery the part after the '?', still percentEncoded (shouldn't be null).
-   * @param dir the directory (on this computer's hard drive) to use for temporary/cache files
-   * @param fileName the name for the 'file' (no dir, no extension), which is used to write the
-   *     suggested name for the file to the response header and is also used to write the
-   *     [fileTypeName]Info (e.g., .pngInfo) file.
-   * @param outputStreamSource
-   * @param fileTypeName
-   * @return true of written ok; false if exception occurred (and written on image)
-   * @throws Throwable if trouble
-   */
-  public boolean saveAsImage(
-      int language,
-      String loggedInAs,
-      String requestUrl,
-      String userDapQuery,
-      String dir,
-      String fileName,
-      OutputStreamSource outputStreamSource,
-      String fileTypeName)
-      throws Throwable {
-
-    if (reallyVerbose) String2.log("  EDDTable.saveAsImage query=" + userDapQuery);
-    long time = System.currentTimeMillis();
-    if (debugMode) String2.log("saveAsImage 1");
-    // imageFileTypes
-    // determine the size
-    int sizeIndex =
-        fileTypeName.startsWith(".small")
-            ? 0
-            : fileTypeName.startsWith(".medium") ? 1 : fileTypeName.startsWith(".large") ? 2 : 1;
-    boolean pdf = fileTypeName.toLowerCase().endsWith("pdf");
-    boolean png = fileTypeName.toLowerCase().endsWith("png");
-    boolean transparentPng = fileTypeName.equals(".transparentPng");
-    if (!pdf && !png)
-      throw new SimpleException(
-          EDStatic.messages.errorInternalAr[0] + "Unexpected image type=" + fileTypeName);
-    Object pdfInfo[] = null;
-    BufferedImage bufferedImage = null;
-    Graphics2D g2 = null;
-    int imageWidth, imageHeight;
-    if (pdf) {
-      imageWidth = EDStatic.messages.pdfWidths[sizeIndex];
-      imageHeight = EDStatic.messages.pdfHeights[sizeIndex];
-    } else if (transparentPng) {
-      imageWidth = EDStatic.messages.imageWidths[sizeIndex];
-      imageHeight = imageWidth;
-    } else {
-      imageWidth = EDStatic.messages.imageWidths[sizeIndex];
-      imageHeight = EDStatic.messages.imageHeights[sizeIndex];
-    }
-
-    Color transparentColor =
-        transparentPng ? Color.white : null; // getBufferedImage returns white background
-    String drawLegend = LEGEND_BOTTOM;
-    int trim = Integer.MAX_VALUE;
-    boolean ok = true;
-
-    try {
-      // get the user-specified resultsVariables
-      StringArray resultsVariables = new StringArray();
-      StringArray constraintVariables = new StringArray();
-      StringArray constraintOps = new StringArray();
-      StringArray constraintValues = new StringArray();
-      parseUserDapQuery(
-          language,
-          userDapQuery,
-          resultsVariables,
-          constraintVariables,
-          constraintOps,
-          constraintValues, // non-regex EDVTimeStamp conValues will be ""+epochSeconds
-          false);
-      if (debugMode) String2.log("saveAsImage 2");
-
-      if (resultsVariables.size() < 2)
-        throw new SimpleException(
-            EDStatic.bilingual(
-                language,
-                EDStatic.messages.queryErrorAr[0]
-                    + MessageFormat.format(EDStatic.messages.queryError2VarAr[0], fileTypeName),
-                EDStatic.messages.queryErrorAr[language]
-                    + MessageFormat.format(
-                        EDStatic.messages.queryError2VarAr[language], fileTypeName)));
-      // xVar,yVar are 1st and 2nd request variables
-      EDV xVar = findVariableByDestinationName(resultsVariables.get(0));
-      EDV yVar = findVariableByDestinationName(resultsVariables.get(1));
-      EDV zVar = null, tVar = null;
-      String xUnits = xVar.units(); // may be null
-      String yUnits = yVar.units();
-      boolean isMap = false;
-      if (String2.caseInsensitiveIndexOf(EDV.LON_UNITS_VARIANTS, xUnits) >= 0
-          && String2.caseInsensitiveIndexOf(EDV.LAT_UNITS_VARIANTS, yUnits) >= 0) {
-        isMap = true;
-      } else if (String2.caseInsensitiveIndexOf(EDV.LON_UNITS_VARIANTS, yUnits) >= 0
-          && String2.caseInsensitiveIndexOf(EDV.LAT_UNITS_VARIANTS, xUnits) >= 0) {
-        isMap = true;
-        // force x=lon, y=lat
-        EDV e = xVar;
-        xVar = yVar;
-        yVar = e;
-        String s = xUnits;
-        xUnits = yUnits;
-        yUnits = s;
-      }
-      if (resultsVariables.size() >= 3)
-        zVar = findVariableByDestinationName(resultsVariables.get(2));
-      if (resultsVariables.size() >= 4)
-        tVar = findVariableByDestinationName(resultsVariables.get(3));
-
-      // get the table with all the data
-      // errors here will be caught below
-      // drawLegend=Only: Since data is needed early on, no way to not get data if legend doesn't
-      // need it
-      TableWriterAllWithMetadata twawm =
-          getTwawmForDapQuery(language, loggedInAs, requestUrl, userDapQuery);
-      Table table = twawm.cumulativeTable();
-      twawm.releaseResources();
-      twawm.close();
-      table.convertToStandardMissingValues();
-      if (debugMode) String2.log("saveAsImage 3");
-
-      // units
-      int xColN = table.findColumnNumber(xVar.destinationName());
-      int yColN = table.findColumnNumber(yVar.destinationName());
-      int zColN = zVar == null ? -1 : table.findColumnNumber(zVar.destinationName());
-      int tColN = tVar == null ? -1 : table.findColumnNumber(tVar.destinationName());
-      if (xVar instanceof EDVTimeStamp) xUnits = "UTC";
-      if (yVar instanceof EDVTimeStamp) yUnits = "UTC";
-      String zUnits = zVar == null ? null : zVar instanceof EDVTimeStamp ? "UTC" : zVar.units();
-      String tUnits = tVar == null ? null : tVar instanceof EDVTimeStamp ? "UTC" : tVar.units();
-      xUnits = xUnits == null ? "" : " (" + xUnits + ")";
-      yUnits = yUnits == null ? "" : " (" + yUnits + ")";
-      zUnits = zUnits == null ? "" : " (" + zUnits + ")";
-      tUnits = tUnits == null ? "" : " (" + tUnits + ")";
-
-      // extract optional .graphicsSettings from userDapQuery
-      //  xRange, yRange, color and colorbar information
-      //  title2 -- a prettified constraint string
-      boolean drawLines = false;
-      boolean drawLinesAndMarkers = false;
-      boolean drawMarkers = true;
-      boolean drawSticks = false;
-      boolean drawVectors = false;
-      int markerType = GraphDataLayer.MARKER_TYPE_FILLED_SQUARE;
-      int markerSize = GraphDataLayer.MARKER_SIZE_SMALL;
-      Color color = Color.black;
-
-      // set colorBar defaults via zVar attributes
-      String ts;
-      ts = zVar == null ? null : zVar.combinedAttributes().getString("colorBarPalette");
-      String palette = ts == null ? "" : ts;
-      ts = zVar == null ? null : zVar.combinedAttributes().getString("colorBarScale");
-      String scale = ts == null ? "Linear" : ts;
-      double paletteMin =
-          zVar == null ? Double.NaN : zVar.combinedAttributes().getDouble("colorBarMinimum");
-      double paletteMax =
-          zVar == null ? Double.NaN : zVar.combinedAttributes().getDouble("colorBarMaximum");
-      int nSections = zVar == null ? -1 : zVar.combinedAttributes().getInt("colorBarNSections");
-      if (nSections < 0 || nSections >= 100) nSections = -1;
-      ts = zVar == null ? null : zVar.combinedAttributes().getString("colorBarContinuous");
-      boolean continuous = String2.parseBoolean(ts); // defaults to true
-
-      // x/yMin < x/yMax
-      double xMin = Double.NaN, xMax = Double.NaN, yMin = Double.NaN, yMax = Double.NaN;
-      boolean xAscending = true, yAscending = true; // this is what controls flipping of the axes
-      String xScale = "", yScale = ""; // (default) or Linear or Log
-      double fontScale = 1, vectorStandard = Double.NaN;
-      String currentDrawLandMask = null; // not yet set
-      StringBuilder title2 = new StringBuilder();
-      Color bgColor = EDStatic.config.graphBackgroundColor;
-      String ampParts[] =
-          Table.getDapQueryParts(userDapQuery); // decoded.  always at least 1 part (may be "")
-      for (int ap = 0; ap < ampParts.length; ap++) {
-        String ampPart = ampParts[ap];
-        if (debugMode) String2.log("saveAsImage 4 " + ap);
-
-        // .bgColor
-        if (ampPart.startsWith(".bgColor=")) {
-          String pParts[] = String2.split(ampPart.substring(9), '|');
-          if (pParts.length > 0 && pParts[0].length() > 0)
-            bgColor = new Color(String2.parseInt(pParts[0]), true); // hasAlpha
-
-          // .colorBar defaults: palette=""|continuous=C|scale=Linear|min=NaN|max=NaN|nSections=-1
-        } else if (ampPart.startsWith(".colorBar=")) {
-          String pParts[] = String2.split(ampPart.substring(10), '|');
-          if (pParts == null) pParts = new String[0];
-          if (pParts.length > 0 && pParts[0].length() > 0) palette = pParts[0];
-          if (pParts.length > 1 && pParts[1].length() > 0)
-            continuous = !pParts[1].toLowerCase().startsWith("d");
-          if (pParts.length > 2 && pParts[2].length() > 0) scale = pParts[2];
-          if (pParts.length > 3 && pParts[3].length() > 0)
-            paletteMin = String2.parseDouble(pParts[3]);
-          if (pParts.length > 4 && pParts[4].length() > 0)
-            paletteMax = String2.parseDouble(pParts[4]);
-          if (pParts.length > 5 && pParts[5].length() > 0) nSections = String2.parseInt(pParts[5]);
-          if (String2.indexOf(EDStatic.messages.palettes, palette) < 0) palette = "";
-          if (EDV.VALID_SCALES.indexOf(scale) < 0) scale = "Linear";
-          if (nSections < 0 || nSections >= 100) nSections = -1;
-          if (reallyVerbose)
-            String2.log(
-                ".colorBar palette="
-                    + palette
-                    + " continuous="
-                    + continuous
-                    + " scale="
-                    + scale
-                    + " min="
-                    + paletteMin
-                    + " max="
-                    + paletteMax
-                    + " nSections="
-                    + nSections);
-
-          // .color
-        } else if (ampPart.startsWith(".color=")) {
-          int iColor = String2.parseInt(ampPart.substring(7));
-          if (iColor < Integer.MAX_VALUE) {
-            color = new Color(iColor);
-            if (reallyVerbose) String2.log(".color=0x" + Integer.toHexString(iColor));
-          }
-
-          // .draw
-        } else if (ampPart.startsWith(".draw=")) {
-          String tDraw = ampPart.substring(6);
-          // make all false
-          drawLines = false;
-          drawLinesAndMarkers = false;
-          drawMarkers = false;
-          drawSticks = false;
-          drawVectors = false;
-          // set one option to true
-          if (tDraw.equals("sticks") && zVar != null) {
-            drawSticks = true;
-            isMap = false;
-          } else if (isMap && tDraw.equals("vectors") && zVar != null && tVar != null)
-            drawVectors = true;
-          else if (tDraw.equals("lines")) drawLines = true;
-          else if (tDraw.equals("linesAndMarkers")) drawLinesAndMarkers = true;
-          else drawMarkers = true; // default
-
-          // .font
-        } else if (ampPart.startsWith(".font=")) {
-          String pParts[] =
-              String2.split(ampPart.substring(6), '|'); // subparts may be ""; won't be null
-          if (pParts == null) pParts = new String[0];
-          if (pParts.length > 0) fontScale = String2.parseDouble(pParts[0]);
-          fontScale =
-              Double.isNaN(fontScale) ? 1 : fontScale < 0.1 ? 0.1 : fontScale > 10 ? 10 : fontScale;
-          if (reallyVerbose) String2.log(".font= scale=" + fontScale);
-
-          // .land
-        } else if (ampPart.startsWith(".land=")) {
-          String gt = ampPart.substring(6);
-          int which = SgtMap.drawLandMask_OPTIONS.indexOf(gt);
-          if (which >= 1) currentDrawLandMask = gt;
-          if (reallyVerbose) String2.log(".land= currentDrawLandMask=" + currentDrawLandMask);
-
-          // .legend
-        } else if (ampPart.startsWith(".legend=")) {
-          drawLegend = ampPart.substring(8);
-          if (!drawLegend.equals(LEGEND_OFF) && !drawLegend.equals(LEGEND_ONLY))
-            drawLegend = LEGEND_BOTTOM;
-          if (drawLegend.equals(LEGEND_ONLY)) {
-            transparentPng = false; // if it was transparent, it was already png=true, size=1
-            transparentColor = null;
-          }
-
-          // .marker
-        } else if (ampPart.startsWith(".marker=")) {
-          String pParts[] =
-              String2.split(ampPart.substring(8), '|'); // subparts may be ""; won't be null
-          if (pParts == null) pParts = new String[0];
-          if (pParts.length > 0) markerType = String2.parseInt(pParts[0]);
-          if (pParts.length > 1) markerSize = String2.parseInt(pParts[1]);
-          if (markerType < 0 || markerType >= GraphDataLayer.MARKER_TYPES.size())
-            markerType = GraphDataLayer.MARKER_TYPE_FILLED_SQUARE;
-          if (markerSize < 1 || markerSize > 50) markerSize = GraphDataLayer.MARKER_SIZE_SMALL;
-          if (reallyVerbose) String2.log(".marker= type=" + markerType + " size=" + markerSize);
-
-          // .size
-        } else if (ampPart.startsWith(".size=")) {
-          // customSize = true; not used in EDDTable
-          String pParts[] =
-              String2.split(ampPart.substring(6), '|'); // subparts may be ""; won't be null
-          if (pParts == null) pParts = new String[0];
-          if (pParts.length > 0) {
-            int w = String2.parseInt(pParts[0]);
-            if (w > 0 && w <= EDD.WMS_MAX_WIDTH) imageWidth = w;
-          }
-          if (pParts.length > 1) {
-            int h = String2.parseInt(pParts[1]);
-            if (h > 0 && h <= EDD.WMS_MAX_HEIGHT) imageHeight = h;
-          }
-          if (reallyVerbose)
-            String2.log(".size=  imageWidth=" + imageWidth + " imageHeight=" + imageHeight);
-
-          // .trim
-        } else if (ampPart.startsWith(".trim=")) {
-          trim = String2.parseInt(ampPart.substring(6));
-          if (reallyVerbose) String2.log(".trim " + trim);
-
-          // .vec
-        } else if (ampPart.startsWith(".vec=")) {
-          vectorStandard = String2.parseDouble(ampPart.substring(5));
-          if (reallyVerbose) String2.log(".vec " + vectorStandard);
-
-          // .xRange   (supported, but currently not created by the Make A Graph form)
-          //  this is more powerful than xVar constraints
-        } else if (ampPart.startsWith(".xRange=")) {
-          String pParts[] = String2.split(ampPart.substring(8), '|');
-          if (pParts.length > 0) xMin = String2.parseDouble(pParts[0]);
-          if (pParts.length > 1) xMax = String2.parseDouble(pParts[1]);
-          if (pParts.length > 2)
-            // if the param slot is there, the param determines Ascending
-            xAscending = String2.parseBoolean(pParts[2]); // "" -> true(the default)
-          if (pParts.length > 3) {
-            // if the param slot is there, the param determines Scale
-            xScale = String2.toTitleCase(pParts[3].trim()); // "" -> (the default)
-            if (!xScale.equals("Log") && !xScale.equals("Linear"))
-              xScale = ""; // "" -> (the default)
-          }
-          if (reallyVerbose)
-            String2.log(
-                ".xRange min="
-                    + xMin
-                    + " max="
-                    + xMax
-                    + " ascending="
-                    + xAscending
-                    + " xScale="
-                    + xScale);
-
-          // .yRange
-          //  this is more powerful than yVar constraints
-        } else if (ampPart.startsWith(".yRange=")) {
-          String pParts[] = String2.split(ampPart.substring(8), '|');
-          if (pParts.length > 0) yMin = String2.parseDouble(pParts[0]);
-          if (pParts.length > 1) yMax = String2.parseDouble(pParts[1]);
-          if (pParts.length > 2)
-            // if the param slot is there, the param determines Ascending
-            yAscending = String2.parseBoolean(pParts[2]); // "" -> true(the default)
-          if (pParts.length > 3) {
-            // if the param slot is there, the param determines Scale
-            yScale = String2.toTitleCase(pParts[3].trim()); // "" -> (the default)
-            if (!yScale.equals("Log") && !yScale.equals("Linear"))
-              yScale = ""; // "" -> (the default)
-          }
-          if (reallyVerbose)
-            String2.log(
-                ".yRange min="
-                    + yMin
-                    + " max="
-                    + yMax
-                    + " ascending="
-                    + yAscending
-                    + " scale="
-                    + yScale);
-
-          // ignore any unrecognized .something
-        } else if (ampPart.startsWith(".")) {
-
-          // don't do anything with list of vars
-        } else if (ap == 0) {
-
-          // x and yVar constraints
-        } else if (ampPart.startsWith(xVar.destinationName())
-            || // x,y axis ranges indicate x,y var constraints
-            ampPart.startsWith(yVar.destinationName())) {
-          // don't include in title2  (better to leave in, but space often limited)
-
-          // constraints on other vars
-        } else {
-          // add to title2
-          if (title2.length() > 0) title2.append(", ");
-          title2.append(ampPart);
-        }
-      }
-      if (title2.length() > 0) {
-        title2.insert(0, "(");
-        title2.append(")");
-      }
-      if (xScale.length() == 0) {
-        // use the default from colorBarScale
-        xScale = xVar.combinedAttributes().getString("colorBarScale");
-        xScale = xScale == null ? "" : String2.toTitleCase(xScale.trim());
-        if (!xScale.equals("Log")) xScale = "Linear"; // apply "" default -> Linear
-      }
-      boolean xIsLogAxis = !(xVar instanceof EDVTimeStamp) && xScale.equals("Log");
-      if (yScale.length() == 0) {
-        // use the default from colorBarScale
-        yScale = yVar.combinedAttributes().getString("colorBarScale");
-        yScale = yScale == null ? "" : String2.toTitleCase(yScale.trim());
-        if (!yScale.equals("Log")) yScale = "Linear"; // apply "" default -> Linear
-      }
-      boolean yIsLogAxis = !(yVar instanceof EDVTimeStamp) && yScale.equals("Log");
-
-      if (debugMode) String2.log("saveAsImage 5");
-
-      // make colorMap if needed
-      CompoundColorMap colorMap = null;
-      // if (drawLines || drawSticks || drawVectors)
-      //    colorMap = null;
-      // if ((drawLinesAndMarkers || drawMarkers) && zVar == null)
-      //    colorMap = null;
-      if (drawVectors && zVar != null && Double.isNaN(vectorStandard)) {
-        double zStats[] = table.getColumn(zColN).calculateStats();
-        if (zStats[PrimitiveArray.STATS_N] == 0) {
-          vectorStandard = 1;
-        } else {
-          double minMax[] =
-              Math2.suggestLowHigh(
-                  0,
-                  Math.max(
-                      Math.abs(zStats[PrimitiveArray.STATS_MIN]),
-                      Math.abs(zStats[PrimitiveArray.STATS_MAX])));
-          vectorStandard = minMax[1];
-        }
-      }
-      if ((drawLinesAndMarkers || drawMarkers) && zVar != null && colorMap == null) {
-        if ((palette.length() == 0 || Double.isNaN(paletteMin) || Double.isNaN(paletteMax))
-            && zColN >= 0) {
-          // set missing items based on z data
-          double zStats[] = table.getColumn(zColN).calculateStats();
-          if (zStats[PrimitiveArray.STATS_N] > 0) {
-            double minMax[];
-            if (zVar instanceof EDVTimeStamp) {
-              // ???I think this is too crude. Smarter code elsewhere? Or handled by
-              // compoundColorMap?
-              double r20 =
-                  (zStats[PrimitiveArray.STATS_MAX] - zStats[PrimitiveArray.STATS_MIN]) / 20;
-              minMax =
-                  new double[] {
-                    zStats[PrimitiveArray.STATS_MIN] - r20, zStats[PrimitiveArray.STATS_MAX] + r20
-                  };
-            } else {
-              minMax =
-                  Math2.suggestLowHigh(
-                      zStats[PrimitiveArray.STATS_MIN], zStats[PrimitiveArray.STATS_MAX]);
-            }
-
-            if (palette.length() == 0) {
-              if (minMax[1] >= minMax[0] / -2 && minMax[1] <= minMax[0] * -2) {
-                double td = Math.max(minMax[1], -minMax[0]);
-                minMax[0] = -td;
-                minMax[1] = td;
-                palette = "BlueWhiteRed";
-              } else {
-                palette = "Rainbow";
-              }
-            }
-            if (Double.isNaN(paletteMin)) paletteMin = minMax[0];
-            if (Double.isNaN(paletteMax)) paletteMax = minMax[1];
-          }
-        }
-        if (palette.length() == 0 || Double.isNaN(paletteMin) || Double.isNaN(paletteMax)) {
-          String2.log(
-              "Warning in EDDTable.saveAsImage: NaNs not allowed (zVar has no numeric data):"
-                  + " palette="
-                  + palette
-                  + " paletteMin="
-                  + paletteMin
-                  + " paletteMax="
-                  + paletteMax);
-        } else {
-          if (reallyVerbose)
-            String2.log(
-                "create colorBar palette="
-                    + palette
-                    + " continuous="
-                    + continuous
-                    + " scale="
-                    + scale
-                    + " min="
-                    + paletteMin
-                    + " max="
-                    + paletteMax
-                    + " nSections="
-                    + nSections);
-          if (zVar instanceof EDVTimeStamp)
-            colorMap =
-                new CompoundColorMap(
-                    EDStatic.config.fullPaletteDirectory,
-                    palette,
-                    false, // false= data is seconds
-                    paletteMin,
-                    paletteMax,
-                    nSections,
-                    continuous,
-                    EDStatic.config.fullCptCacheDirectory);
-          else
-            colorMap =
-                new CompoundColorMap(
-                    EDStatic.config.fullPaletteDirectory,
-                    palette,
-                    scale,
-                    paletteMin,
-                    paletteMax,
-                    nSections,
-                    continuous,
-                    EDStatic.config.fullCptCacheDirectory);
-        }
-      }
-
-      // x|yVar > >= < <= constraints are relevant to x|yMin|Max (if not already set)
-      StringBuilder constraintTitle = new StringBuilder();
-      for (int con = 0; con < constraintVariables.size(); con++) {
-        String conVar = constraintVariables.get(con);
-        String conOp = constraintOps.get(con);
-        String conVal = constraintValues.get(con);
-        double conValD = String2.parseDouble(conVal); // times are epochSeconds
-        boolean isX = conVar.equals(xVar.destinationName());
-        boolean isY = conVar.equals(yVar.destinationName());
-        if (isX || isY) {
-          boolean isG = conOp.startsWith(">");
-          boolean isL = conOp.startsWith("<");
-          if (isG || isL) {
-            if (isX && isG && Double.isNaN(xMin)) xMin = conValD;
-            else if (isX && isL && Double.isNaN(xMax)) xMax = conValD;
-            else if (isY && isG && Double.isNaN(yMin)) yMin = conValD;
-            else if (isY && isL && Double.isNaN(yMax)) yMax = conValD;
-          }
-
-          // isX and isY constraints not written to legend:
-          //  axis range implies variable constraint  (e.g., lat, lon, time)
-
-        } else {
-
-          // build constraintTitle for legend
-          if (constraintTitle.length() > 0) constraintTitle.append(", ");
-          EDV edv = findDataVariableByDestinationName(conVar);
-          constraintTitle.append(
-              conVar
-                  + conOp
-                  + ((conOp.equals(PrimitiveArray.REGEX_OP)
-                          || edv.destinationDataPAType() == PAType.STRING)
-                      ? String2.toJson(conVal)
-                      : !Double.isFinite(conValD)
-                          ? "NaN"
-                          : edv instanceof EDVTimeStamp
-                              ?
-                              // not time_precision, since query may be more precise
-                              Calendar2.epochSecondsToIsoStringTZ(conValD)
-                              : conVal));
-        }
-      }
-      if (constraintTitle.length() > 0) {
-        constraintTitle.insert(0, '(');
-        constraintTitle.append(')');
-      }
-      if (debugMode) String2.log("saveAsImage 6");
-
-      String varTitle = "";
-      if (drawLines) {
-        varTitle = "";
-      } else if (drawLinesAndMarkers || drawMarkers) {
-        varTitle = zVar == null || colorMap == null ? "" : zVar.longName() + zUnits;
-      } else if (drawSticks) {
-        varTitle =
-            "x="
-                + yVar.destinationName()
-                + (yUnits.equals(zUnits) ? "" : yUnits)
-                + ", y="
-                + zVar.destinationName()
-                + zUnits;
-      } else if (drawVectors) {
-        varTitle =
-            "x="
-                + zVar.destinationName()
-                + (zUnits.equals(tUnits) ? "" : zUnits)
-                + ", y="
-                + tVar.destinationName()
-                + tUnits
-                + ", standard="
-                + (float) vectorStandard;
-      }
-      String yLabel = drawSticks ? varTitle : yVar.longName() + yUnits;
-
-      // make a graphDataLayer
-      GraphDataLayer graphDataLayer =
-          new GraphDataLayer(
-              -1, // which pointScreen
-              xColN,
-              yColN,
-              zColN,
-              tColN,
-              zColN, // x,y,z1,z2,z3 column numbers
-              drawSticks
-                  ? GraphDataLayer.DRAW_STICKS
-                  : drawVectors
-                      ? GraphDataLayer.DRAW_POINT_VECTORS
-                      : drawLines
-                          ? GraphDataLayer.DRAW_LINES
-                          : drawLinesAndMarkers
-                              ? GraphDataLayer.DRAW_MARKERS_AND_LINES
-                              : GraphDataLayer.DRAW_MARKERS, // default
-              true,
-              false,
-              xVar.longName() + xUnits, // x,yAxisTitle  for now, always std units
-              yVar.longName() + yUnits,
-              varTitle.length() > 0 ? varTitle : title,
-              varTitle.length() > 0 ? title : "",
-              constraintTitle.toString(), // title2.toString(),
-              MessageFormat.format(
-                  EDStatic.messages.imageDataCourtesyOfAr[language], institution()),
-              table,
-              null,
-              null,
-              colorMap,
-              color,
-              markerType,
-              markerSize,
-              vectorStandard,
-              GraphDataLayer.REGRESS_NONE);
-      ArrayList<GraphDataLayer> graphDataLayers = new ArrayList<>();
-      graphDataLayers.add(graphDataLayer);
-
-      // setup graphics2D
-      String logoImageFile;
-      if (pdf) {
-        logoImageFile = EDStatic.config.highResLogoImageFile;
-        fontScale *= 1.4; // SgtMap.PDF_FONTSCALE=1.5 is too big
-        // getting the outputStream was delayed as long as possible to allow errors
-        // to be detected and handled before committing to sending results to client
-        pdfInfo =
-            SgtUtil.createPdf(
-                SgtUtil.PDFPageSize.LETTER_PORTRAIT,
-                imageWidth,
-                imageHeight,
-                outputStreamSource.outputStream(File2.UTF_8));
-        g2 = (Graphics2D) pdfInfo[0];
-      } else {
-        logoImageFile =
-            sizeIndex <= 1
-                ? EDStatic.config.lowResLogoImageFile
-                : EDStatic.config.highResLogoImageFile;
-        fontScale *= imageWidth < 500 ? 1 : 1.25;
-        bufferedImage = SgtUtil.getBufferedImage(imageWidth, imageHeight);
-        g2 = (Graphics2D) bufferedImage.getGraphics();
-      }
-      if (reallyVerbose)
-        String2.log(
-            "  sizeIndex="
-                + sizeIndex
-                + " pdf="
-                + pdf
-                + " imageWidth="
-                + imageWidth
-                + " imageHeight="
-                + imageHeight);
-      if (debugMode) String2.log("saveAsImage 7");
-
-      if (isMap) {
-        // create a map
-
-        if (Double.isNaN(xMin) || Double.isNaN(xMax) || Double.isNaN(yMin) || Double.isNaN(yMax)) {
-
-          // calculate the xy axis ranges (this should be in make map!)
-          double xStats[] = table.getColumn(xColN).calculateStats();
-          double yStats[] = table.getColumn(yColN).calculateStats();
-          if (xStats[PrimitiveArray.STATS_N] == 0 || yStats[PrimitiveArray.STATS_N] == 0)
-            throw new SimpleException(
-                EDStatic.bilingual(
-                    language,
-                    EDStatic.messages.queryErrorAr[0] + EDStatic.messages.noDataNoLLAr[0],
-                    EDStatic.messages.queryErrorAr[language]
-                        + EDStatic.messages.noDataNoLLAr[language]));
-
-          // old way  (too tied to big round numbers like 100, 200, 300)
-          // often had big gap on one side
-          // double xLH[] = Math2.suggestLowHigh(
-          //    xStats[PrimitiveArray.STATS_MIN],
-          //    xStats[PrimitiveArray.STATS_MAX]);
-          // double yLH[] = Math2.suggestLowHigh(
-          //    yStats[PrimitiveArray.STATS_MIN],
-          //    yStats[PrimitiveArray.STATS_MAX]);
-
-          // new way
-          double xLH[] = {xStats[PrimitiveArray.STATS_MIN], xStats[PrimitiveArray.STATS_MAX]};
-          double[] sd = Math2.suggestDivisions(xLH[1] - xLH[0]);
-          xLH[0] -= sd[1]; // tight range
-          xLH[1] += sd[1];
-          if (xStats[PrimitiveArray.STATS_N] == 0) {
-            xLH[0] = xVar.destinationMinDouble();
-            xLH[1] = xVar.destinationMaxDouble();
-          }
-
-          double yLH[] = {yStats[PrimitiveArray.STATS_MIN], yStats[PrimitiveArray.STATS_MAX]};
-          sd = Math2.suggestDivisions(yLH[1] - yLH[0]);
-          yLH[0] -= sd[1]; // tight range
-          yLH[1] += sd[1];
-          if (yStats[PrimitiveArray.STATS_N] == 0) {
-            yLH[0] = yVar.destinationMinDouble();
-            yLH[1] = yVar.destinationMaxDouble();
-          }
-
-          // ensure default range at least 1x1 degree
-          double expandBy = (1 - (xLH[1] - xLH[0])) / 2;
-          if (expandBy > 0) {
-            xLH[0] -= expandBy;
-            xLH[1] += expandBy;
-          }
-          expandBy = (1 - (yLH[1] - yLH[0])) / 2;
-          if (expandBy > 0) {
-            yLH[0] -= expandBy;
-            yLH[1] += expandBy;
-          }
-
-          // ensure reasonable for a map
-          if (xLH[0] < -180) xLH[0] = -180;
-          // deal with odd cases like pmelArgoAll: x<0 and >180
-          if (-xLH[0] > xLH[1] - 180) { // i.e., if minX is farther below 0, then maxX is >180
-            if (xLH[1] > 180) xLH[1] = 180;
-          } else {
-            if (xLH[0] < 0) xLH[0] = 0;
-            if (xLH[1] > 360) xLH[1] = 360;
-          }
-          if (yLH[0] < -90) yLH[0] = -90;
-          if (yLH[1] > 90) yLH[1] = 90;
-
-          // make square
-          if (true) {
-            double xRange = xLH[1] - xLH[0];
-            double yRange = yLH[1] - yLH[0];
-            if (xRange > yRange) {
-              double diff2 = (xRange - yRange) / 2;
-              yLH[0] = Math.max(-90, yLH[0] - diff2);
-              yLH[1] = Math.min(90, yLH[1] + diff2);
-            } else {
-              double diff2 = (yRange - xRange) / 2;
-              // deal with odd cases like pmelArgoAll: x<0 and >180
-              if (-xLH[0] > xLH[1] - 180) { // i.e., if minX is farther below 0, than maxX is >180
-                xLH[0] = Math.max(-180, xLH[0] - diff2);
-                xLH[1] = Math.min(180, xLH[1] + diff2);
-              } else {
-                xLH[0] = Math.max(0, xLH[0] - diff2);
-                xLH[1] = Math.min(360, xLH[1] + diff2);
-              }
-            }
-          }
-
-          // set xyMin/Max
-          if (Double.isNaN(xMin) || Double.isNaN(xMax)) {
-            xMin = xLH[0];
-            xMax = xLH[1];
-          }
-          if (Double.isNaN(yMin) || Double.isNaN(yMax)) {
-            yMin = yLH[0];
-            yMax = yLH[1];
-          }
-        }
-
-        // unlike graphs, maps still force xMin < xMax, and yMin < yMax
-        if (xMin > xMax) {
-          double d = xMin;
-          xMin = xMax;
-          xMax = d;
-        }
-        if (yMin > yMax) {
-          double d = yMin;
-          yMin = yMax;
-          yMax = d;
-        }
-
-        int predicted[] =
-            SgtMap.predictGraphSize(1, imageWidth, imageHeight, xMin, xMax, yMin, yMax);
-        Grid bath =
-            transparentPng
-                    || "outline".equals(currentDrawLandMask)
-                    || "off".equals(currentDrawLandMask)
-                    || table.nRows() == 0
-                ? null
-                : SgtMap.createTopographyGrid(
-                    EDStatic.config.fullSgtMapTopographyCacheDirectory,
-                    xMin,
-                    xMax,
-                    yMin,
-                    yMax,
-                    predicted[0],
-                    predicted[1]);
-
-        if (currentDrawLandMask == null) {
-          EDV edv = zVar == null ? yVar : zVar;
-          currentDrawLandMask = edv.drawLandMask(defaultDrawLandMask());
-        }
-
-        if (transparentPng) {
-          // fill with unusual color --> later convert to transparent
-          // Not a great approach to the problem.
-          transparentColor = new Color(0, 3, 1); // not common, not in grayscale, not white
-          g2.setColor(transparentColor);
-          g2.fillRect(0, 0, imageWidth, imageHeight);
-        }
-
-        URL bathyResourceFile =
-            "under".equals(currentDrawLandMask)
-                ? SgtMap.topographyCptFullName
-                : SgtMap.bathymetryCptFullName; // "over": deals better with elevation ~= 0
-        String bathymetryCptFullPath = File2.accessResourceFile(bathyResourceFile.toString());
-        List<PrimitiveArray> mmal =
-            SgtMap.makeMap(
-                transparentPng,
-                SgtUtil.LEGEND_BELOW,
-                EDStatic.messages.legendTitle1,
-                EDStatic.messages.legendTitle2,
-                EDStatic.config.imageDir,
-                logoImageFile,
-                xMin,
-                xMax,
-                yMin,
-                yMax, // predefined min/maxX/Y
-                currentDrawLandMask,
-                bath != null, // plotGridData (bathymetry)
-                bath,
-                1,
-                1,
-                0, // double gridScaleFactor, gridAltScaleFactor, gridAltOffset,
-                bathymetryCptFullPath,
-                null, // SgtMap.TOPOGRAPHY_BOLD_TITLE + " (" + SgtMap.TOPOGRAPHY_UNITS + ")",
-                "",
-                "",
-                "", // MessageFormat.format(EDStatic.imageDataCourtesyOf,
-                // SgtMap.TOPOGRAPHY_COURTESY)
-                "off".equals(currentDrawLandMask)
-                    ? SgtMap.NO_LAKES_AND_RIVERS
-                    : SgtMap.FILL_LAKES_AND_RIVERS,
-                false,
-                null,
-                1,
-                1,
-                1,
-                "",
-                null,
-                "",
-                "",
-                "",
-                "",
-                "", // plot contour
-                graphDataLayers,
-                g2,
-                0,
-                0,
-                imageWidth,
-                imageHeight,
-                0, // no boundaryResAdjust,
-                fontScale);
-
-        writePngInfo(loggedInAs, userDapQuery, fileTypeName, mmal);
-
-      } else {
-        // create a graph
-
-        if (transparentPng) {
-          // fill with unusual color --> later convert to transparent
-          // Not a great approach to the problem.
-          transparentColor = new Color(0, 3, 1); // not common, not in grayscale, not white
-          g2.setColor(transparentColor);
-          g2.fillRect(0, 0, imageWidth, imageHeight);
-        }
-
-        List<PrimitiveArray> mmal =
-            EDStatic.sgtGraph.makeGraph(
-                transparentPng,
-                xVar.longName() + xUnits, // x,yAxisTitle  for now, always std units
-                png && drawLegend.equals(LEGEND_ONLY) ? "." : yLabel, // avoid running into legend
-                SgtUtil.LEGEND_BELOW,
-                EDStatic.messages.legendTitle1,
-                EDStatic.messages.legendTitle2,
-                EDStatic.config.imageDir,
-                logoImageFile,
-                xMin,
-                xMax,
-                xAscending,
-                xVar instanceof EDVTimeStamp,
-                xIsLogAxis,
-                yMin,
-                yMax,
-                yAscending,
-                yVar instanceof EDVTimeStamp,
-                yIsLogAxis,
-                graphDataLayers,
-                g2,
-                0,
-                0,
-                imageWidth,
-                imageHeight,
-                Double.NaN, // graph imageWidth/imageHeight
-                bgColor,
-                fontScale);
-
-        writePngInfo(loggedInAs, userDapQuery, fileTypeName, mmal);
-      }
-      if (debugMode) String2.log("saveAsImage 8");
-
-      // deal with .legend and trim
-      if (png && !transparentPng) {
-        if (drawLegend.equals(LEGEND_OFF)) bufferedImage = SgtUtil.removeLegend(bufferedImage);
-        else if (drawLegend.equals(LEGEND_ONLY))
-          bufferedImage = SgtUtil.extractLegend(bufferedImage);
-
-        // do after removeLegend
-        bufferedImage = SgtUtil.trimBottom(bufferedImage, trim);
-      }
-      if (debugMode) String2.log("saveAsImage 9");
-
-    } catch (WaitThenTryAgainException wttae) {
-      throw wttae;
-
-    } catch (Throwable t) {
-      EDStatic.rethrowClientAbortException(t); // first thing in catch{}
-      ok = false;
-      try {
-        String msg = MustBe.getShortErrorMessage(t);
-        String2.log(MustBe.throwableToString(t)); // log full message with stack trace
-
-        if (png && drawLegend.equals(LEGEND_ONLY)) {
-          // return a transparent 1x1 pixel image
-          bufferedImage = SgtUtil.getBufferedImage(1, 1); // has white background
-          transparentColor = Color.white;
-
-        } else {
-          // write exception info on image
-          double tFontScale = pdf ? 1.25 : 1;
-          int tHeight = Math2.roundToInt(tFontScale * 12);
-
-          if (pdf) {
-            if (pdfInfo == null)
-              pdfInfo =
-                  SgtUtil.createPdf(
-                      SgtUtil.PDFPageSize.LETTER_PORTRAIT,
-                      imageWidth,
-                      imageHeight,
-                      outputStreamSource.outputStream(File2.UTF_8));
-            if (g2 == null) g2 = (Graphics2D) pdfInfo[0];
-          } else {
-            // make a new image (I don't think pdf can work this way -- sent as created)
-            bufferedImage = SgtUtil.getBufferedImage(imageWidth, imageHeight);
-            g2 = (Graphics2D) bufferedImage.getGraphics();
-          }
-          if (transparentPng) {
-            // don't write the message
-            // The "right" thing to do is different in different situations.
-            // But e.g., No Data, should just be a transparent image.
-            transparentColor = Color.white;
-          } else {
-            g2.setClip(0, 0, imageWidth, imageHeight); // unset in case set by sgtGraph
-            msg = String2.noLongLines(msg, (imageWidth * 10 / 6) / tHeight, "    ");
-            String lines[] = msg.split("\\n"); // not String2.split which trims
-            g2.setColor(Color.black);
-            g2.setFont(new Font(EDStatic.config.fontFamily, Font.PLAIN, tHeight));
-            int ty = tHeight * 2;
-            for (String line : lines) {
-              g2.drawString(line, tHeight, ty);
-              ty += tHeight + 2;
-            }
-          }
-        }
-      } catch (Throwable t2) {
-        EDStatic.rethrowClientAbortException(t2); // first thing in catch{}
-        String2.log(
-            String2.ERROR + "2 while creating error image:\n" + MustBe.throwableToString(t2));
-        if (pdf) {
-          if (pdfInfo == null) throw t;
-        } else {
-          if (bufferedImage == null) throw t;
-        }
-        // else fall through to close/save image below
-      }
-    }
-    if (debugMode) String2.log("saveAsImage 9");
-
-    // save image
-    if (pdf) {
-      SgtUtil.closePdf(pdfInfo);
-    } else {
-
-      // getting the outputStream was delayed as long as possible to allow errors
-      // to be detected and handled before committing to sending results to client
-      SgtUtil.saveAsTransparentPng(
-          bufferedImage, transparentColor, outputStreamSource.outputStream(""));
-    }
-
-    outputStreamSource.outputStream("").flush(); // safety
-
-    if (reallyVerbose)
-      String2.log(
-          "  EDDTable.saveAsImage done. TIME=" + (System.currentTimeMillis() - time) + "ms\n");
-    return ok;
-  }
-
-  /**
-   * Save the TableWriterAllWithMetadata data as a Matlab .mat file. This doesn't write attributes
-   * because .mat files don't store attributes. This maintains the data types (Strings become
-   * char[][]).
-   *
-   * @param language the index of the selected language
-   * @param outputStreamSource
-   * @param twawm all the results data, with missingValues stored as destinationMissingValues or
-   *     destinationFillValues (they are converted to NaNs)
-   * @param structureName the name to use for the variable which holds all of the data, usually the
-   *     dataset's internal name (datasetID). If structureName isn't a valid Matlab variable name,
-   *     it will be made so via String2.modifyToBeVariableNameSafe().
-   * @throws Throwable
-   */
-  public void saveAsMatlab(
-      int language,
-      OutputStreamSource outputStreamSource,
-      TableWriterAllWithMetadata twawm,
-      String structureName)
-      throws Throwable {
-    if (reallyVerbose) String2.log("EDDTable.saveAsMatlab");
-    long time = System.currentTimeMillis();
-    structureName = String2.modifyToBeVariableNameSafe(structureName);
-
-    // make sure there is data
-    long tnRows = twawm.nRows();
-    if (tnRows == 0)
-      throw new SimpleException(MustBe.THERE_IS_NO_DATA + " (at start of saveAsMatlab)");
-    if (tnRows >= Integer.MAX_VALUE)
-      throw new SimpleException(
-          Math2.memoryTooMuchData
-              + "  "
-              + MessageFormat.format(
-                  EDStatic.messages.errorMoreThan2GBAr[0],
-                  ".mat",
-                  tnRows + " " + EDStatic.messages.rowsAr[0]));
-    int nCols = twawm.nColumns();
-    int nRows = (int) tnRows; // safe since checked above
-
-    // calculate cumulative size of the structure
-    byte structureNameInfo[] = Matlab.nameInfo(structureName);
-    NDimensionalIndex ndIndex[] = new NDimensionalIndex[nCols];
-    long cumSize = // see 1-32
-        16
-            + // for array flags
-            16
-            + // my structure is always 2 dimensions
-            structureNameInfo.length
-            + 8
-            + // field name length (for all fields)
-            8
-            + nCols * 32L; // field names
-    for (int col = 0; col < nCols; col++) {
-      PAType type = twawm.columnType(col);
-      if (type == PAType.STRING)
-        ndIndex[col] = Matlab.make2DNDIndex(nRows, twawm.columnMaxStringLength(col));
-      else ndIndex[col] = Matlab.make2DNDIndex(nRows);
-      // add size of each cell
-      cumSize +=
-          8
-              + // type and size
-              Matlab.sizeOfNDimensionalArray( // throws exception if too big for Matlab
-                  "", // without column names (they're stored separately)
-                  type,
-                  ndIndex[col]);
-    }
-
-    if (cumSize >= Integer.MAX_VALUE - 1000)
-      throw new SimpleException(
-          Math2.memoryTooMuchData
-              + "  "
-              + MessageFormat.format(
-                  EDStatic.messages.errorMoreThan2GBAr[0],
-                  ".mat",
-                  (cumSize / Math2.BytesPerMB) + " MB"));
-
-    // open a dataOutputStream
-    DataOutputStream stream = new DataOutputStream(outputStreamSource.outputStream(""));
-
-    // *** write Matlab Structure  see 1-32
-    // *** THIS CODE MIMICS Table.saveAsMatlab. If make changes here, make them there, too.
-    //    The code in EDDGrid.saveAsMatlab is similar, too.
-    // write the header
-    Matlab.writeMatlabHeader(stream);
-
-    // write the miMatrix dataType and nBytes
-    stream.writeInt(Matlab.miMATRIX); // dataType
-    stream.writeInt((int) cumSize); // safe since checked above
-
-    // write array flags
-    stream.writeInt(Matlab.miUINT32); // dataType
-    stream.writeInt(8); // fixed nBytes of data
-    stream.writeInt(Matlab.mxSTRUCT_CLASS); // array flags
-    stream.writeInt(0); // reserved; ends on 8 byte boundary
-
-    // write structure's dimension array
-    stream.writeInt(Matlab.miINT32); // dataType
-    stream.writeInt(2 * 4); // nBytes
-    // matlab docs have 2,1, octave has 1,1.
-    // Think of structure as one row of a table, where elements are entire arrays:  e.g., sst.lon
-    // sst.lat sst.sst.
-    // Having multidimensions (e.g., 2 here) lets you have additional rows, e.g., sst(2).lon
-    // sst(2).lat sst(2).sst.
-    // So 1,1 makes sense.
-    stream.writeInt(1);
-    stream.writeInt(1);
-
-    // write structure name
-    stream.write(structureNameInfo, 0, structureNameInfo.length);
-
-    // write length for all field names (always 32)  (short form)
-    stream.writeShort(4); // nBytes
-    stream.writeShort(Matlab.miINT32); // dataType
-    stream.writeInt(32); // 32 bytes per field name
-
-    // write the field names (each 32 bytes)
-    stream.writeInt(Matlab.miINT8); // dataType
-    stream.writeInt(nCols * 32); // 32 bytes per field name
-    String nulls = String2.makeString('\u0000', 32);
-    for (int col = 0; col < nCols; col++)
-      stream.write(
-          String2.toByteArray(String2.noLongerThan(twawm.columnName(col), 31) + nulls),
-          0,
-          32); // EEEK! Better not be longer.
-
-    // write the structure's elements (one for each col)
-    // This is pretty good at conserving memory (just one column in memory at a time).
-    // It would be hard to make more conservative because Strings have
-    // to be written out: all first chars, all second chars, all third chars...
-    for (int col = 0; col < nCols; col++) {
-      PrimitiveArray pa = twawm.column(col);
-      // convert missing values to NaNs  (StringArray and CharArray are unchanged)
-      pa.convertToStandardMissingValues(
-          twawm.columnAttributes(col).getString("_FillValue"),
-          twawm.columnAttributes(col).getString("missing_value"));
-      Matlab.writeNDimensionalArray(
-          stream,
-          "", // without column names (they're stored separately)
-          pa,
-          ndIndex[col]);
-    }
-
-    // this doesn't write attributes because .mat files don't store attributes
-
-    stream.flush(); // essential
-
-    if (reallyVerbose)
-      String2.log(
-          "  EDDTable.saveAsMatlab done. TIME=" + (System.currentTimeMillis() - time) + "ms\n");
-  }
-
-  /**
-   * Save the TableWriterAllWithMetadata data as an NCO .json lvl=2 pedantic file.
-   * https://nco.sourceforge.net/nco.html#json
-   *
-   * <p>Issues (that I have raised with Charlie Zender):
-   *
-   * <ul>
-   *   <li>How should NaN data values be represented? The sample file
-   *       http://dust.ess.uci.edu/tmp/in.json.fmt2 has comments about nan for vars nan_arr and
-   *       nan_scl. Basically, it says they are hard to work with so "comment them out", which is
-   *       not helpful for my purposes. Further test: If I go to https://jsonlint.com/ and enter [1,
-   *       2.0, 1e30], it says it is valid. If I enter [1, 2.0, NaN, 1e30], it says NaN is not
-   *       valid. If I enter [1, 2.0, null, 1e30], it says it is valid. See also
-   *       https://stackoverflow.com/questions/15228651/how-to-parse-json-string-containing-nan-in-node-js
-   *       So my code (PrimitiveArray.toJsonCsvString()) represents them as null. Charlie Zender now
-   *       agrees and will change NCO behavior: use null.
-   *   <li>char vs String (collapse rightmost dimension) variables? I see that for data variables,
-   *       NCO json mimics what is in nc the file and represents the rightmost dimension's chunks as
-   *       strings (see below). But that approach doesn't handle the netcdf-4's clear distinction
-   *       between char and String variables. I see there are examples with data "type"="string" in
-   *       http://dust.ess.uci.edu/tmp/in_grp.json.fmt2 ("string_arr"), but no examples of "string"
-   *       attributes. For now, I'll write string vars as if in nc3 file: char arrays with extra
-   *       dimension for strlen. See writeStringsAsStrings below. char attributes are always written
-   *       as chars.
-   *   <li>The example of a representation of a NUL char in http://dust.ess.uci.edu/tmp/in.json.fmt2
-   *       seems wrong. How is this different than the character 0 (zero)? I think it should be
-   *       json-encoded as "\u0000" (If this were a string (which it isn't here), NUL is a
-   *       terminator so it might be represented as ""). "char_var_nul": { "type": "char",
-   *       "attributes": { "long_name": { "type": "char", "data": "Character variable containing one
-   *       NUL"} }, "data": "0" }, My code writes the json encoding e.g., "\u0000". Charlie Zender
-   *       is thinking about this.
-   * </ul>
-   *
-   * <p>See test of this in EDDTableFromNccsvFiles.testChar().
-   *
-   * @param language the index of the selected language
-   * @param outputStreamSource
-   * @param twawm all the results data, with missingValues stored as destinationMissingValues or
-   *     destinationFillValues (they are converted to NaNs)
-   * @param jsonp the not-percent-encoded jsonp functionName to be prepended to the results (or null
-   *     if none). See https://niryariv.wordpress.com/2009/05/05/jsonp-quickly/ and
-   *     https://bob.pythonmac.org/archives/2005/12/05/remote-json-jsonp/ and
-   *     https://www.raymondcamden.com/2014/03/12/Reprint-What-in-the-heck-is-JSONP-and-why-would-you-use-it/
-   *     . A SimpleException will be thrown if tJsonp is not null but isn't
-   *     String2.isVariableNameSafe.
-   * @throws Throwable
-   */
-  public void saveAsNcoJson(
-      int language,
-      OutputStreamSource outputStreamSource,
-      TableWriterAllWithMetadata twawm,
-      String jsonp)
-      throws Throwable {
-    if (reallyVerbose) String2.log("EDDTable.saveAsNcoJson");
-    long time = System.currentTimeMillis();
-
-    // for now, write strings as if in nc3 file: char arrays with extra dimension for strlen
-    boolean writeStringsAsStrings = false; // if false, they are written as chars
-    String stringOpenBracket = writeStringsAsStrings ? "" : "[";
-    String stringCloseBracket = writeStringsAsStrings ? "" : "]";
-
-    // make sure there is data
-    long nRows = twawm.nRows();
-    if (nRows == 0)
-      throw new SimpleException(MustBe.THERE_IS_NO_DATA + " (at start of saveAsNcoJson)");
-    int nCols = twawm.nColumns();
-
-    // create a writer
-    try (BufferedWriter writer =
-        File2.getBufferedWriterUtf8(outputStreamSource.outputStream(File2.UTF_8))) {
-      if (jsonp != null) writer.write(jsonp + "(");
-
-      // write start
-      writer.write("{\n");
-
-      // write the global attributes
-      writer.write(twawm.globalAttributes().toNcoJsonString("  "));
-
-      // write row dimension
-      // {
-      //  "dimensions": {
-      //    "row": 10,
-      //    "bnd": 2
-      //  }
-      writer.write("  \"dimensions\": {\n" + "    \"row\": " + nRows);
-      String stringDim[] = new String[nCols];
-      if (!writeStringsAsStrings) {
-        for (int col = 0; col < nCols; col++) {
-          boolean isString = twawm.columnType(col) == PAType.STRING;
-          if (isString) {
-            stringDim[col] = String2.toJson(twawm.columnName(col) + NcHelper.StringLengthSuffix);
-            writer.write(
-                ",\n"
-                    + // end of previous line
-                    "    "
-                    + stringDim[col]
-                    + ": "
-                    + Math.max(1, twawm.columnMaxStringLength(col)));
-          }
-        }
-      }
-      writer.write(
-          "\n" + // end of previous line
-              "  },\n"); // end of dimensions
-
-      // write the variables
-      writer.write("  \"variables\": {\n");
-
-      StringBuilder ssb = new StringBuilder(); // reused for string variables
-      for (int col = 0; col < nCols; col++) {
-        //    "att_var": {
-        //      "shape": ["time"],
-        //      "type": "float",
-        //      "attributes": { ... },
-        //      "data": [10.0, 10.10, 10.20, 10.30, 10.40101, 10.50, 10.60, 10.70, 10.80, 10.990]
-        //    }
-        Attributes atts = twawm.columnAttributes(col);
-        String tType = PAType.toCohortString(twawm.columnType(col));
-        boolean isString = tType.equals("String");
-        boolean isChar = tType.equals("char");
-        int bufferSize =
-            (int) Math.min(isChar ? 8192 : 10, nRows); // this is also nPerLine for all except char
-        if (isString) tType = writeStringsAsStrings ? "string" : "char";
-        else if (tType.equals("long")) tType = "int64"; // see
-        // https://www.unidata.ucar.edu/software/netcdf/docs/netcdf_utilities_guide.html#cdl_data_types and NCO JSON examples
-        else if (tType.equals("ulong")) tType = "uint64";
-        writer.write(
-            "    "
-                + String2.toJson(twawm.columnName(col))
-                + ": {\n"
-                + "      \"shape\": [\"row\""
-                + (isString && !writeStringsAsStrings ? ", " + stringDim[col] : "")
-                + "],\n"
-                + "      \"type\": \""
-                + tType
-                + "\",\n");
-        writer.write(atts.toNcoJsonString("      "));
-        writer.write("      \"data\": [");
-        try (DataInputStream dis = twawm.dataInputStream(col)) {
-          // create the bufferPA
-          PrimitiveArray pa = null;
-          long nRowsRead = 0;
-          while (nRowsRead < nRows) {
-            int nToRead = (int) Math.min(bufferSize, nRows - nRowsRead);
-            if (pa == null) {
-              pa = twawm.columnEmptyPA(col);
-              pa.ensureCapacity(nToRead);
-            }
-            pa.clear();
-            pa.setMaxIsMV(twawm.columnMaxIsMV(col)); // reset after clear()
-            pa.readDis(dis, nToRead);
-            if (isChar) {
-              // write it as one string with chars concatenated
-              // see "md5_abc" in in http://dust.ess.uci.edu/tmp/in.json.fmt2
-              //  "shape": ["lev"],          //dim lev size=3
-              //  ...
-              //  "data": ["abc"]
-              // here: write it in buffersize chunks
-              if (nRowsRead == 0) writer.write("\""); // start the string
-              String s = String2.toJson(new String(((CharArray) pa).toArray()));
-              writer.write(s.substring(1, s.length() - 1)); // remove start and end "
-            } else if (isString) {
-              // Arrays of Strings are written oddly: (example from
-              // http://dust.ess.uci.edu/tmp/in.json.fmt2)
-              //    "date_rec": {
-              //      "shape": ["time", "char_dmn_lng26"],
-              //      "type": "char",
-              //      "attributes": ...,
-              //      "data": [["2010-11-01T00:00:00.000000"], ["2010-11-01T01:00:00.000000"],
-              // ["2010-11-01T02:00:00.000000"], ["2010-11-01T03:00:00.000000"],
-              // ["2010-11-01T04:00:00.000000"], ["2010-11-01T05:00:00.000000"],
-              // ["2010-11-01T06:00:00.000000"], ["2010-11-01T07:00:00.000000"],
-              // ["2010-11-01T08:00:00.000000"], ["2010-11-01T09:00:00.000000"]]
-              //    },
-              if (nRowsRead > 0) writer.write(",\n    "); // separate and write on next line
-              ssb.setLength(0);
-              for (int row = 0; row < nToRead; row++)
-                ssb.append(
-                    (row == 0 ? "" : ", ")
-                        + stringOpenBracket
-                        + String2.toJson(pa.getString(row))
-                        + stringCloseBracket);
-              writer.write(ssb.toString());
-            } else {
-              if (nRowsRead > 0) writer.write(",\n    "); // separate and write on next line
-              writer.write(pa.toJsonCsvString());
-            }
-            nRowsRead += nToRead;
-          }
-        }
-        if (isChar) writer.write('\"'); // terminate the string
-        writer.write(
-            "]\n"
-                + // end of data
-                "    }"
-                + (col < nCols - 1 ? ",\n" : "\n")); // end of variable
-      }
-      writer.write(
-          "  }\n" + // end of variables object
-              "}\n"); // end of main object
-      if (jsonp != null) writer.write(")");
-      writer.flush(); // essential
-    } finally {
-      twawm.releaseResources();
-    }
-
-    if (reallyVerbose)
-      String2.log(
-          "  EDDTable.saveAsNcoJson done. TIME=" + (System.currentTimeMillis() - time) + "ms\n");
   }
 
   /**
@@ -7549,450 +4742,6 @@ public abstract class EDDTable extends EDD {
   } // end of saveAsNcCF2
 
   /**
-   * Save the TableWriterAllWithMetadata data as an Igor Text File .itx file. <br>
-   * File reference: in Bob's /programs/igor/ or
-   * https://www.wavemetrics.net/doc/igorman/II-09%20Data%20Import%20Export.pdf <br>
-   * Command reference: in Bob's /programs/igor/ or
-   * https://www.wavemetrics.net/doc/igorman/V-01%20Reference.pdf <br>
-   * The file extension should be .itx
-   *
-   * @param language the index of the selected language
-   * @param outputStreamSource If all goes well, the outputstream is closed at the end.
-   * @param twawm all the results data, with missingValues stored as destinationMissingValues or
-   *     destinationFillValues (they will be converted to NaNs)
-   * @param tDatasetID
-   * @throws Throwable
-   */
-  public static void saveAsIgor(
-      int language,
-      OutputStreamSource outputStreamSource,
-      TableWriterAllWithMetadata twawm,
-      String tDatasetID)
-      throws Throwable {
-
-    if (reallyVerbose) String2.log("EDDTable.saveAsIgor");
-    long time = System.currentTimeMillis();
-    try {
-
-      // make sure there is data but not too much
-      long tnRows = twawm.nRows();
-      if (tnRows == 0)
-        throw new SimpleException(MustBe.THERE_IS_NO_DATA + " (at start of saveAsIgor)");
-      if (tnRows >= Integer.MAX_VALUE)
-        throw new SimpleException(Math2.memoryTooMuchData + " (at start of saveAsIgor)");
-      // the other params are all required by EDD,
-      //  so it's a programming error if they are missing
-
-      // open an OutputStream
-      try (Writer writer =
-          File2.getBufferedWriter(
-              outputStreamSource.outputStream(Table.IgorCharset), Table.IgorCharset)) {
-        writer.write("IGOR" + Table.IgorEndOfLine);
-
-        // write each col as a wave separately, so data type is preserved
-        HashSet<String> colNamesHashset = new HashSet<>();
-        int nCols = twawm.nColumns();
-        for (int col = 0; col < nCols; col++) {
-          Attributes atts = twawm.columnAttributes(col);
-          String units = atts.getString("units");
-          boolean isTimeStamp =
-              units != null && (units.equals(EDV.TIME_UNITS) || units.equals(EDV.TIME_UCUM_UNITS));
-
-          PrimitiveArray pa = twawm.column(col);
-          pa.convertToStandardMissingValues(
-              atts.getString("_FillValue"), atts.getString("missing_value"));
-
-          Table.writeIgorWave(
-              writer,
-              Table.makeUniqueIgorColumnName(twawm.columnName(col), colNamesHashset),
-              "",
-              pa,
-              units,
-              isTimeStamp,
-              "");
-        }
-
-        // done!
-        writer.flush(); // essential
-      }
-    } finally {
-      twawm.releaseResources();
-    }
-
-    if (reallyVerbose)
-      String2.log(
-          "  EDDTable.saveAsIgor done. TIME=" + (System.currentTimeMillis() - time) + "ms\n");
-  }
-
-  /**
-   * Save the TableWriterAllWithMetadata data as an ODV .tsv file. This writes a few attributes.
-   * <br>
-   * See the User's Guide section 16.3 etc. https://odv.awi.de/en/documentation/ (or Bob's
-   * c:/programs/odv/odv4Guide.pdf). <br>
-   * The data must have longitude, latitude, and time columns. <br>
-   * Longitude can be any values (e.g., -180 or 360).
-   *
-   * <p>ODV user who is willing to review sample files: shaun.bell at noaa.gov .
-   *
-   * @param language the index of the selected language
-   * @param outputStreamSource
-   * @param twawm all the results data, with missingValues stored as destinationMissingValues or
-   *     destinationFillValues (they are converted to NaNs)
-   * @param tDatasetID
-   * @param tPublicSourceUrl
-   * @param tInfoUrl
-   * @throws Throwable
-   */
-  public static void saveAsODV(
-      int language,
-      OutputStreamSource outputStreamSource,
-      TableWriterAll twawm,
-      String tDatasetID,
-      String tPublicSourceUrl,
-      String tInfoUrl)
-      throws Throwable {
-
-    if (reallyVerbose) String2.log("EDDTable.saveAsODV");
-    long time = System.currentTimeMillis();
-
-    // make sure there is data
-    long tnRows = twawm.nRows();
-    if (tnRows == 0)
-      throw new SimpleException(MustBe.THERE_IS_NO_DATA + " (at start of saveAsODV)");
-    // the other params are all required by EDD, so it's a programming error if they are missing
-    if (!String2.isSomething(tDatasetID))
-      throw new SimpleException(
-          EDStatic.messages.errorInternalAr[0] + "saveAsODV error: datasetID wasn't specified.");
-    if (!String2.isSomething(tPublicSourceUrl))
-      throw new SimpleException(
-          EDStatic.messages.errorInternalAr[0]
-              + "saveAsODV error: publicSourceUrl wasn't specified.");
-    if (!String2.isSomething(tInfoUrl))
-      throw new SimpleException(
-          EDStatic.messages.errorInternalAr[0] + "saveAsODV error: infoUrl wasn't specified.");
-
-    // make sure there isn't too much data before getting outputStream
-    Table table = twawm.cumulativeTable(); // it checks memory usage
-    // String2.log(">> odv after twawm:\n" + table.dataToString());
-    twawm.releaseResources();
-    int nRows = table.nRows();
-    Attributes globalAtts = table.globalAttributes();
-    // convert numeric missing values to NaN
-    table.convertToStandardMissingValues();
-
-    // ensure there is longitude, latitude, time data in the request (else it is useless in ODV)
-    if (table.findColumnNumber(EDV.LON_NAME) < 0
-        || table.findColumnNumber(EDV.LAT_NAME) < 0
-        || table.findColumnNumber(EDV.TIME_NAME) < 0)
-      throw new SimpleException(
-          EDStatic.bilingual(
-              language,
-              EDStatic.messages.queryErrorAr[0]
-                  + MessageFormat.format(EDStatic.messages.queryErrorLLTAr[0], ".odvTxt"),
-              EDStatic.messages.queryErrorAr[language]
-                  + MessageFormat.format(EDStatic.messages.queryErrorLLTAr[language], ".odvTxt")));
-
-    // Move columns into preferred order, see table 3-1, 3-2, 3-3, 3-4
-    // This would be very complicated if you worked forwards, because some vars are in a couple of
-    // categories.
-    // Easiest way: work backwards, moving vars to col#0.
-
-    // move the "primary variable" (the first DATAVAR) into place
-    // 2010-07-07 email from Stephan Heckendorff says altitude (or similar) if present MUST be
-    // primaryVar
-    int tCol = table.findColumnNumber(EDV.ALT_NAME);
-    if (tCol < 0) tCol = table.findColumnNumberIgnoreCase("depth");
-    if (tCol < 0) tCol = table.findColumnNumberIgnoreCase("pressure");
-    if (tCol < 0) tCol = table.findColumnNumberIgnoreCase("sigma");
-    if (tCol > 0) {
-      table.moveColumn(tCol, 0); // move it to col#0
-    } else {
-      // if it isn't altitude/depth, then it is time ("time_ISO8601")
-      tCol = table.findColumnNumber(EDV.TIME_NAME);
-      table.moveColumn(tCol, 0); // move it to col#0
-      table.setColumnName(0, "time_ISO8601");
-    }
-    String primaryVar = table.getColumnName(0);
-
-    // move METAVAR columns into preferred order (backwards)
-    // Remember all these metavariables
-    //  The set will have a few old names, e.g., latitude, time.
-    //  That's okay. Move them again and change names later.
-    HashSet<String> metavariables = new HashSet<>();
-    // start with outer table colums
-    for (int i = 2; i >= 0; i--) { // work backwards
-      String att =
-          "cdm_" + (i == 0 ? "timeseries" : i == 1 ? "trajectory" : "profile") + "_variables";
-      String value = globalAtts.getString(att);
-      if (!String2.isSomething(value)) continue;
-      StringArray colNames = StringArray.fromCSVNoBlanks(value);
-      for (int i2 = colNames.size() - 1; i2 >= 0; i2--) { // work backwards
-        tCol = table.findColumnNumber(colNames.get(i2));
-        if (tCol > 0) {
-          table.moveColumn(tCol, 0); // move it to col#0
-          metavariables.add(table.getColumnName(0));
-        }
-      }
-    }
-
-    // ERDDAP datasets rarely have Bot. Depth [m] column, and hard to identify,
-    //  and not required, so skip it
-
-    // now move LLT (and give them the preferred names)
-    table.moveColumn(table.findColumnNumber(EDV.LAT_NAME), 0);
-    table.setColumnName(0, "Latitude [degrees_north]");
-    metavariables.add(table.getColumnName(0));
-    table.moveColumn(table.findColumnNumber(EDV.LON_NAME), 0);
-    table.setColumnName(0, "Longitude [degrees_east]");
-    metavariables.add(table.getColumnName(0));
-    tCol = table.findColumnNumber(EDV.TIME_NAME);
-    if (tCol >= 0) { // it may have become "time_ISO8601" above)
-      table.moveColumn(tCol, 0);
-      table.setColumnName(0, "yyyy-mm-ddThh:mm:ss.sss");
-      table.columnAttributes(0).add("long_name", "Time");
-    } else {
-      // make empty column
-      table.addColumn(
-          0,
-          "yyyy-mm-ddThh:mm:ss.sss",
-          PrimitiveArray.factory(PAType.DOUBLE, nRows, ""),
-          new Attributes().add("long_name", "Time"));
-    }
-    metavariables.add(table.getColumnName(0));
-
-    // now add new Type column with '*' data (* means let ODV chose, see section 16.3.3)
-    tCol = table.findColumnNumber("Type");
-    if (tCol >= 0) table.setColumnName(tCol, "OriginalType"); // so not 2 cols named Type
-    table.addColumn(0, "Type", PrimitiveArray.factory(PAType.CHAR, nRows, "*"), new Attributes());
-    metavariables.add(table.getColumnName(0));
-
-    // required Station column
-    tCol = table.findColumnNumberWithAttributeValue("cf_role", "timeseries_id");
-    if (tCol >= 0) {
-      table.moveColumn(tCol, 0);
-      int tCol2 = table.findColumnNumber("Station");
-      if (tCol2 > 0) table.setColumnName(tCol, "OriginalStation"); // so not 2 cols named Station
-      table.setColumnName(0, "Station");
-    } else {
-      // make empty column since this is required
-      table.addColumn(0, "Station", new StringArray(nRows, true), new Attributes());
-    }
-    metavariables.add(table.getColumnName(0));
-
-    // required Cruise column
-    tCol = table.findColumnNumberWithAttributeValue("cf_role", "trajectory_id");
-    if (tCol >= 0) {
-      table.moveColumn(tCol, 0);
-      int tCol2 = table.findColumnNumber("Cruise");
-      if (tCol2 > 0) table.setColumnName(tCol, "OriginalCruise"); // so not 2 cols named Cruise
-      table.setColumnName(0, "Cruise");
-    } else {
-      // make empty column since this is required
-      table.addColumn(0, "Cruise", new StringArray(nRows, true), new Attributes());
-    }
-    metavariables.add(table.getColumnName(0));
-
-    // open an OutputStream
-    Writer writer =
-        File2.getBufferedWriterUtf8(
-            outputStreamSource.outputStream(
-                File2.UTF_8)); // ODV User's Guide 5.2.1 allows for UTF-8
-
-    // figure out DataType
-    String cdm = globalAtts.getString("cdm_data_type");
-    cdm = cdm == null ? "" : cdm.toLowerCase();
-    String dataType =
-        cdm.equals("timeseries")
-            ? "TimeSeries"
-            : cdm.equals("trajectory")
-                ? "Trajectories"
-                : cdm.indexOf("profile") >= 0
-                    ? "Profiles"
-                    : // so also TimeseriesProfile and TrajectoryProfile
-                    "GeneralType";
-
-    // write header.  see Table 16-6 in /programs/odv/odvGuide5.2.1.pdf
-    // ODV says linebreaks can be \n or \r\n (see 2010-06-15 notes)
-    String creator = tPublicSourceUrl;
-    if (creator.startsWith("(")) // (local files) or (local database)
-    creator = tInfoUrl; // a required attribute
-    // ODV says not to encodeAsXML (e.g., < as &lt;) (see 2010-06-15 notes),
-    // but he may have misunderstood. Encoding seems necessary.  (And affects only the creator)
-    writer.write(
-        "//<Creator>"
-            + XML.encodeAsXML(creator)
-            + "</Creator>\n"
-            + // the way to get to the original source
-            "//<CreateTime>"
-            + Calendar2.getCurrentISODateTimeStringZulu()
-            + "</CreateTime>\n"
-            + // nowZ
-            "//<Encoding>UTF-8</Encoding>\n"
-            + "//<Software>ERDDAP - Version "
-            + EDStatic.erddapVersion
-            + "</Software>\n"
-            + // ERDDAP
-            "//<Source>"
-            + EDStatic.preferredErddapUrl
-            + "/tabledap/"
-            + tDatasetID
-            + ".html</Source>\n"
-            + // Data Access Form
-            // "//<SourceLastModified>???</SourceLastModified>\n" + //not available
-            "//<Version>ODV Spreadsheet V4.6</Version>\n"
-            + // of ODV Spreadsheet file       //???proper version number  4.6 is from Table 16-6
-            // "//<MissingValueIndicators></MissingValueIndicators>\n" + //only use for non-empty
-            // cell, non-NaN, e.g., -9999, but I've standardized, so ""
-            "//<DataField>GeneralField</DataField>\n"
-            + // !!! better if Ocean|Atmosphere|Land|IceSheet|SeaIce|Sediment
-            "//<DataType>"
-            + dataType
-            + "</DataType>\n");
-
-    // write column names comment lines  (see 5.2.1)
-    // primaryVariable see 3.1.2 a data var (by default, the first data var)
-    //  which determines sort order within station
-    // (e.g., depth for profiles, or a decimal time var for timeseries and trajectory)
-    int nCols = table.nColumns();
-    PrimitiveArray pas[] = new PrimitiveArray[nCols];
-    StringBuilder colNameLine = new StringBuilder();
-    for (int col = 0; col < nCols; col++) {
-      Attributes atts = table.columnAttributes(col);
-      pas[col] = table.getColumn(col);
-      String colName = table.getColumnName(col);
-      boolean isMeta = metavariables.contains(colName); // note this before adding units to name
-      String units = atts.getString("units");
-
-      if (colName.indexOf('[') < 0
-          && String2.isSomething(units)
-          && !colName.equals("Cruise")
-          && !colName.equals("Station")
-          && !colName.equals("Type")
-          && !colName.equals("yyyy-mm-ddThh:mm:ss.sss")
-          && !colName.equals("time_ISO8601")) {
-        // try to add units
-        // ODV doesn't care about units standards. UDUNITS or UCUM are fine
-        // ODV doesn't allow internal brackets; 2010-06-15 they say use parens
-        units = String2.replaceAll(units, '[', '(');
-        units = String2.replaceAll(units, ']', ')');
-        colName += " [" + units + "]";
-      }
-      colNameLine.append(colName + (col < nCols - 1 ? "\t" : "\n"));
-
-      String tag = isMeta ? "MetaVariable" : "DataVariable";
-      String comment = atts.getString("comment");
-      if (comment == null) {
-        comment = atts.getString("long_name");
-        if (comment == null) // vars created above don't have long_name attributes
-        comment = "";
-      }
-
-      // See Table 3-5 /programs/odv/odvGuide5.2.1.pdf : make ODV type  BYTE, SHORT, ... , TEXT:81
-      // 16.3.3 says station labels can be numeric or TEXT
-      PAType paType = table.getColumn(col).elementType();
-      String odvType = null;
-      if (paType == PAType.BYTE) odvType = "SIGNED_BYTE";
-      else if (paType == PAType.UBYTE) odvType = "BYTE"; // the original byte type
-      else if (paType == PAType.CHAR) odvType = "TEXT:2";
-      else if (paType == PAType.SHORT) odvType = "SHORT";
-      else if (paType == PAType.USHORT) odvType = "UNSIGNED_SHORT";
-      else if (paType == PAType.INT) odvType = "INTEGER";
-      else if (paType == PAType.UINT) odvType = "UNSIGNED_INTEGER";
-      else if (paType == PAType.LONG) odvType = "DOUBLE"; // no long!  so promote
-      else if (paType == PAType.ULONG) odvType = "DOUBLE"; // no ulong! so promote
-      else if (paType == PAType.FLOAT) odvType = "FLOAT";
-      else if (paType == PAType.DOUBLE) odvType = "DOUBLE";
-      else if (paType == PAType.STRING) odvType = "INDEXED_TEXT";
-      else
-        throw new SimpleException(
-            EDStatic.messages.errorInternalAr[0]
-                + "No odvDataType specified for type="
-                + pas[col].elementTypeString()
-                + ".");
-
-      writer.write(
-          "//<"
-              + tag
-              + ">label="
-              + String2.toJson65536(colName)
-              + " value_type=\""
-              + odvType
-              + "\" "
-              +
-              // "qf_schema=\"\" " +  //!!! I don't support the ODV system of quality flag
-              // variables. ODV can't read the file if ="".
-              // "significant_digits=\"???\" " +  //I don't reliably have that information
-              "is_primary_variable=\""
-              + (colName.equals(primaryVar) ? "T" : "F")
-              + "\" "
-              + (String2.isSomething(comment)
-                  ? "comment=" + String2.toJson65536(comment) + " "
-                  : "")
-              + "</"
-              + tag
-              + ">\n");
-    }
-    writer.write(colNameLine.toString());
-
-    // write data
-    int iso8601Col = table.findColumnNumber("time_ISO8601");
-    int yyyyCol = table.findColumnNumber("yyyy-mm-ddThh:mm:ss.sss");
-    for (int row = 0; row < nRows; row++) {
-      for (int col = 0; col < nCols; col++) {
-        writer.write(
-            col == yyyyCol || col == iso8601Col
-                ?
-                // !!!was use variable's time_precision (may be greater than seconds or may be .001
-                // seconds).
-                // 2020-04-14 now this matches format promised above (to ensure ODV can parse it)
-                // ODV ignores time zone info, but okay to specify, e.g., Z (see 2010-06-15 notes)
-                Calendar2.epochSecondsToLimitedIsoStringT(
-                    "1970-01-01T00:00:00.000Z", pas[col].getDouble(row), "")
-                :
-                // missing numeric will be empty cell; that's fine
-                // Now UTF-8, so leave all chars as is
-                pas[col].getUtf8TsvString(row)); // a json-like string without surrounding "'s
-        writer.write(col < nCols - 1 ? '\t' : '\n');
-      }
-    }
-
-    // done!
-    writer.flush(); // essential
-
-    if (reallyVerbose)
-      String2.log(
-          "  EDDTable.saveAsODV done. TIME=" + (System.currentTimeMillis() - time) + "ms\n");
-  }
-
-  public static void saveAsParquet(
-      int language,
-      OutputStreamSource outputStreamSource,
-      TableWriterAllWithMetadata twawm,
-      String datasetID,
-      boolean fullMetadata)
-      throws Throwable {
-    Table table = twawm.cumulativeTable();
-    twawm.releaseResources();
-    String parquetTempFileName =
-        Path.of(
-                EDStatic.config.fullTestCacheDirectory,
-                datasetID + Math2.random(Integer.MAX_VALUE) + ".parquet")
-            .toString();
-    table.writeParquet(parquetTempFileName, fullMetadata);
-
-    try (OutputStream out = outputStreamSource.outputStream(File2.UTF_8)) {
-      if (!File2.copy(parquetTempFileName, out)) {
-        // outputStream contentType already set,
-        // so I can't go back to html and display error message
-        // note than the message is thrown if user cancels the transmission; so don't email to me
-        throw new SimpleException(String2.ERROR + " while transmitting file.");
-      }
-    }
-    // downloads of e.g., erddap2.css don't work right if not closed. (just if gzip'd?)
-    File2.delete(parquetTempFileName);
-  }
-
-  /**
    * This is used by administrators to get the empirical min and max for all non-String variables by
    * doing a request for a time range (sometimes one time point). This could be used by constructors
    * (at the end), but the results vary with different isoDateTimes, and would be wasteful to do
@@ -8165,7 +4914,7 @@ public abstract class EDDTable extends EDD {
    * @throws Throwable if trouble
    */
   public void writeDapHtmlForm(int language, String loggedInAs, String userDapQuery, Writer writer)
-      throws Throwable {
+      throws Throwable, Exception {
 
     HtmlWidgets widgets = new HtmlWidgets(true, EDStatic.imageDirUrl(loggedInAs, language));
 
@@ -8691,13 +5440,28 @@ public abstract class EDDTable extends EDD {
             + "/tabledap/documentation.html#fileType\">"
             + EDStatic.messages.moreInformationAr[language]
             + "</a>)\n");
+    List<String> fileTypeDescriptions =
+        EDD_FILE_TYPE_INFO.values().stream()
+            .filter(fileTypeInfo -> fileTypeInfo.getAvailableTable())
+            .map(
+                fileTypeInfo ->
+                    fileTypeInfo.getFileTypeName()
+                        + " - "
+                        + fileTypeInfo.getTableDescription(language))
+            .toList();
+    int defaultIndex =
+        EDD_FILE_TYPE_INFO.values().stream()
+            .filter(fileTypeInfo -> fileTypeInfo.getAvailableTable())
+            .map(fileTypeInfo -> fileTypeInfo.getFileTypeName())
+            .toList()
+            .indexOf(defaultFileTypeOption);
     writer.write(
         widgets.select(
             "fileType",
             EDStatic.messages.EDDSelectFileTypeAr[language],
             1,
-            allFileTypeOptionsAr[language],
-            defaultFileTypeOption,
+            fileTypeDescriptions,
+            defaultIndex,
             ""));
 
     // generate the javaScript
@@ -9139,8 +5903,10 @@ public abstract class EDDTable extends EDD {
             + "  <br>&nbsp;\n"
             + "  <table class=\"erd\" style=\"width:100%; \">\n"
             + "    <tr><th>Data<br>fileTypes</th><th>Description</th><th>Info</th><th>Example</th></tr>\n");
-    for (int i = 0; i < dataFileTypeNames.size(); i++) {
-      String ft = dataFileTypeNames.get(i);
+    List<EDDFileTypeInfo> dataFileTypes = EDD.getFileTypeOptions(false, false);
+    for (int i = 0; i < dataFileTypes.size(); i++) {
+      EDDFileTypeInfo curType = dataFileTypes.get(i);
+      String ft = curType.getFileTypeName();
       String ft1 = ft.substring(1);
       writer.write(
           "    <tr>\n"
@@ -9152,20 +5918,20 @@ public abstract class EDDTable extends EDD {
               + ft
               + "</a></td>\n"
               + "      <td>"
-              + dataFileTypeDescriptionsAr[language][i]
+              + curType.getTableDescription(language)
               + "</td>\n"
               + "      <td class=\"N\">"
-              + (dataFileTypeInfo.get(i).isEmpty()
+              + (curType.getInfoUrl().isEmpty()
                   ? "&nbsp;"
                   : "<a rel=\"help\" href=\""
-                      + XML.encodeAsHTMLAttribute(dataFileTypeInfo.get(i))
+                      + XML.encodeAsHTMLAttribute(curType.getInfoUrl())
                       + "\">info"
                       + EDStatic.messages.externalLinkHtml(language, tErddapUrl)
                       + "</a>")
               + "</td>\n"
               + "      <td class=\"N\"><a rel=\"bookmark\" href=\""
               + datasetBase
-              + dataFileTypeNames.get(i)
+              + curType.getFileTypeName()
               + "?"
               + EDStatic.messages.EDDTableDataTimeExampleHA
               + "\">example</a></td>\n"
@@ -9772,8 +6538,10 @@ public abstract class EDDTable extends EDD {
             + "   <p>The fileType options for downloading images of graphs and maps of table data are:\n"
             + "  <table class=\"erd\" style=\"width:100%; \">\n"
             + "    <tr><th>Image<br>fileTypes</th><th>Description</th><th>Info</th><th>Example</th></tr>\n");
-    for (int i = 0; i < imageFileTypeNames.size(); i++) {
-      String ft = imageFileTypeNames.get(i);
+    List<EDDFileTypeInfo> imageFileTypes = EDD.getFileTypeOptions(false, true);
+    for (int i = 0; i < imageFileTypes.size(); i++) {
+      EDDFileTypeInfo curType = imageFileTypes.get(i);
+      String ft = curType.getFileTypeName();
       String ft1 = ft.substring(1);
       writer.write(
           "    <tr>\n"
@@ -9785,13 +6553,13 @@ public abstract class EDDTable extends EDD {
               + ft
               + "</a></td>\n"
               + "      <td>"
-              + imageFileTypeDescriptionsAr[language][i]
+              + curType.getTableDescription(language)
               + "</td>\n"
               + "      <td class=\"N\">"
-              + (imageFileTypeInfo.get(i) == null || imageFileTypeInfo.get(i).isEmpty()
+              + (curType.getInfoUrl() == null || curType.getInfoUrl().isEmpty()
                   ? "&nbsp;"
                   : "<a rel=\"help\" href=\""
-                      + imageFileTypeInfo.get(i)
+                      + curType.getInfoUrl()
                       + "\">info"
                       + EDStatic.messages.externalLinkHtml(language, tErddapUrl)
                       + "</a>")
@@ -9799,7 +6567,7 @@ public abstract class EDDTable extends EDD {
               + // must be mapExample below because kml doesn't work with graphExample
               "      <td class=\"N\"><a rel=\"bookmark\" href=\""
               + datasetBase
-              + imageFileTypeNames.get(i)
+              + curType.getFileTypeName()
               + "?"
               + EDStatic.messages.EDDTableMapExampleHA
               + "\">example</a></td>\n"
@@ -12534,7 +9302,7 @@ public abstract class EDDTable extends EDD {
                     "land",
                     EDStatic.messages.magGSLandMaskTooltipTableAr[language],
                     1,
-                    String2.immutableListToArray(SgtMap.drawLandMask_OPTIONS),
+                    SgtMap.drawLandMask_OPTIONS,
                     tLand,
                     "")
                 + "</td>\n"
@@ -12857,13 +9625,23 @@ public abstract class EDDTable extends EDD {
       paramName = "fType";
       String htmlEncodedGraphQuery = XML.encodeAsHTMLAttribute(graphQuery.toString());
       boolean tAccessibleTo = isAccessibleTo(EDStatic.getRoles(loggedInAs));
+      List<String> fileTypeOptions =
+          tAccessibleTo
+              ? EDD_FILE_TYPE_INFO.values().stream()
+                  .filter(fileTypeInfo -> fileTypeInfo.getAvailableTable())
+                  .map(fileTypeInfo -> fileTypeInfo.getFileTypeName())
+                  .toList()
+              : publicGraphFileTypeNames;
+      int defaultIndex =
+          fileTypeOptions.indexOf(
+              tAccessibleTo ? defaultFileTypeOption : defaultPublicGraphFileTypeOption);
       writer.write(
           widgets.select(
               paramName,
               EDStatic.messages.EDDSelectFileTypeAr[language],
               1,
-              tAccessibleTo ? allFileTypeNames : publicGraphFileTypeNames,
-              tAccessibleTo ? defaultFileTypeOption : defaultPublicGraphFileTypeOption,
+              fileTypeOptions,
+              defaultIndex,
               "onChange='document.f1.tUrl.value=\""
                   + tErddapUrl
                   + "/tabledap/"
@@ -12919,9 +9697,7 @@ public abstract class EDDTable extends EDD {
               tErddapUrl
                   + "/tabledap/"
                   + datasetID
-                  + (tAccessibleTo
-                      ? allFileTypeNames[defaultFileTypeOption]
-                      : publicGraphFileTypeNames[defaultPublicGraphFileTypeOption])
+                  + (tAccessibleTo ? defaultFileTypeOption : defaultPublicGraphFileTypeOption)
                   + "?"
                   + graphQuery.toString(),
               ""));
@@ -21681,18 +18457,21 @@ public abstract class EDDTable extends EDD {
             + "    <stdorder>\n");
 
     // data file types
-    for (int ft = 0; ft < dataFileTypeNames.size(); ft++)
+    List<EDDFileTypeInfo> dataFileTypes = EDD.getFileTypeOptions(false, false);
+    for (int ft = 0; ft < dataFileTypes.size(); ft++)
       writer.write(
           "      <digform>\n"
               + "        <digtinfo>\n"
               + // digital transfer info
               "          <formname>"
-              + dataFileTypeNames.get(ft)
+              + dataFileTypes.get(ft).getFileTypeName()
               + "</formname>\n"
               + "          <formvern>1</formvern>\n"
               + "          <formspec>"
               + XML.encodeAsXML(
-                  dataFileTypeDescriptionsAr[language][ft] + " " + dataFileTypeInfo.get(ft))
+                  dataFileTypes.get(ft).getTableDescription(language)
+                      + " "
+                      + dataFileTypes.get(ft).getInfoUrl())
               + "</formspec>\n"
               +
               //           I think file decompression technique only used if file *always* encoded.
@@ -21714,18 +18493,21 @@ public abstract class EDDTable extends EDD {
               + "      </digform>\n");
 
     // image file types
-    for (int ft = 0; ft < imageFileTypeNames.size(); ft++)
+    List<EDDFileTypeInfo> imageFileTypes = EDD.getFileTypeOptions(false, true);
+    for (int ft = 0; ft < imageFileTypes.size(); ft++)
       writer.write(
           "      <digform>\n"
               + "        <digtinfo>\n"
               + // digital transfer info
               "          <formname>"
-              + imageFileTypeNames.get(ft)
+              + imageFileTypes.get(ft).getFileTypeName()
               + "</formname>\n"
               + "          <formvern>1</formvern>\n"
               + "          <formspec>"
               + XML.encodeAsXML(
-                  imageFileTypeDescriptionsAr[language][ft] + " " + imageFileTypeInfo.get(ft))
+                  imageFileTypes.get(ft).getTableDescription(language)
+                      + " "
+                      + imageFileTypes.get(ft).getInfoUrl())
               + "</formspec>\n"
               +
               //           I think file decompression technique only used if file *always* encoded.

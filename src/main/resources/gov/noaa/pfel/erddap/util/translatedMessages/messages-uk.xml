@@ -361,6 +361,8 @@ CTD, якщо вони не пов’язані з <kbd>TimeSeries</kbd> або 
 <a rel="help" href="#computerProgram">пропустіть цю веб-сторінку</a> та виконайте перетворення з комп’ютерної програми, сценарію чи веб-сторінки.
 
 ]]></convertBypass>
+<convertCOLORs>Колір</convertCOLORs>
+<convertCOLORsMessage>Перетворення значень в колір бар</convertCOLORsMessage>
 <convertToAFullName><![CDATA[
 <strong>Перетворити з {0} на повне ім’я.</strong>
 ]]></convertToAFullName>

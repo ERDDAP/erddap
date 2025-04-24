@@ -364,6 +364,8 @@ CTD εάν δεν συσχετίζονται με μια <kbd>TimeSeries</kbd> �
 <a rel="help" href="#computerProgram">παρακάμψτε αυτήν την ιστοσελίδα</a> και πραγματοποιήστε μετατροπές μέσα από ένα πρόγραμμα υπολογιστή, ένα σενάριο ή μια ιστοσελίδα.
 
 ]]></convertBypass>
+<convertCOLORs>Χρώματα</convertCOLORs>
+<convertCOLORsMessage>Μετατροπή τιμών σε γραμμή χρώματος</convertCOLORsMessage>
 <convertToAFullName><![CDATA[
 <strong>Μετατροπή από {0} σε πλήρες όνομα.</strong>
 ]]></convertToAFullName>
