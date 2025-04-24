@@ -4,6 +4,7 @@ import com.cohort.util.Calendar2;
 import com.cohort.util.File2;
 import com.cohort.util.String2;
 import com.cohort.util.Test;
+import com.cohort.util.TestUtil;
 import dods.dap.BaseType;
 import dods.dap.DAS;
 import dods.dap.DBoolean;
@@ -587,7 +588,7 @@ class EDDTableFromDapSequenceTests {
               EDStatic.config.fullTestCacheDirectory,
               tedd.className() + "_GraphArgo",
               ".png");
-      // Test.displayInBrowser("file://" + EDStatic.config.fullTestCacheDirectory + tName);
+      // TestUtil.displayInBrowser("file://" + EDStatic.config.fullTestCacheDirectory + tName);
     }
 
     if (false) {
@@ -612,7 +613,7 @@ class EDDTableFromDapSequenceTests {
               EDStatic.config.fullTestCacheDirectory,
               tedd.className() + "_GraphArgo30",
               ".png");
-      Test.displayInBrowser("file://" + EDStatic.config.fullTestCacheDirectory + tName);
+      TestUtil.displayInBrowser("file://" + EDStatic.config.fullTestCacheDirectory + tName);
     }
   }
 
@@ -642,7 +643,7 @@ class EDDTableFromDapSequenceTests {
             EDStatic.config.fullTestCacheDirectory,
             tedd.className() + "_Argo",
             ".png");
-    Test.displayInBrowser("file://" + EDStatic.config.fullTestCacheDirectory + tName);
+    TestUtil.displayInBrowser("file://" + EDStatic.config.fullTestCacheDirectory + tName);
     tName =
         tedd.makeNewFileForDapQuery(
             language,
@@ -1072,7 +1073,7 @@ class EDDTableFromDapSequenceTests {
             EDStatic.config.fullTestCacheDirectory,
             edd.className() + "_SVGraph",
             ".png");
-    Test.displayInBrowser("file://" + EDStatic.config.fullTestCacheDirectory + tName);
+    TestUtil.displayInBrowser("file://" + EDStatic.config.fullTestCacheDirectory + tName);
   }
 
   /** Test that info from subsetVariables gets back to variable's ranges */

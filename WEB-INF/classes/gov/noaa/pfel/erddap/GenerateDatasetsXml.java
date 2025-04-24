@@ -30,7 +30,7 @@ import java.util.GregorianCalendar;
  */
 public class GenerateDatasetsXml {
 
-  final int language = 0;
+  static final int language = 0;
   Writer outFile = null;
   String logFileName = null;
   String outFileName = null;

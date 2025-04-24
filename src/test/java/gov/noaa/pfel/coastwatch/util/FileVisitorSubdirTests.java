@@ -106,7 +106,7 @@ class FileVisitorSubdirTests {
 
       String2.log("\n*** FileVisitorSubdir.testWAF finished.");
     } catch (Exception e) {
-      // Test.knownProblem(
+      // TestUtil.knownProblem(
       // "2020-08-03 New 'directory' in new InPort system isn't a directory but a web
       // page with other info.", e);
     }

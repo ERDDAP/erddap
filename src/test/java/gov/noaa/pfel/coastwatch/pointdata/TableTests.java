@@ -1337,7 +1337,7 @@ public class TableTests {
         true, // needEncodingAsHtml
         false);
     // String2.log(fileName + "=\n" + File2.directReadFromUtf8File(fileName));
-    // Test.displayInBrowser("file://" + fileName); // .html
+    // TestUtil.displayInBrowser("file://" + fileName); // .html
 
     // read it from the file
     String results = File2.directReadFromUtf8File(fileName);
@@ -18734,7 +18734,7 @@ public class TableTests {
     File2.writeToFile88591(fileName, File2.directReadFrom88591File(dir + "testScalar_1.1.csv"));
 
     // if (haveExcel) {
-    // Test.displayInBrowser("file://" + fileName); //.csv
+    // TestUtil.displayInBrowser("file://" + fileName); //.csv
     // String2.pressEnterToContinue("\nIn Excel, use File : Save As : CSV : as
     // sampleExcel_1.1.csv : yes : yes.");
     // }
@@ -18814,7 +18814,7 @@ public class TableTests {
     // try {
     Test.ensureEqual(results, expected, "results=\n" + results);
     // } catch (Exception e) {
-    // Test.knownProblem(
+    // TestUtil.knownProblem(
     // "1.1: How to keep integer in string att as a string?!",
     // "If I don't actually do Excel 'Save As', the BAD ROW disappears.", e);
     // }
@@ -18825,7 +18825,7 @@ public class TableTests {
     fileName = dir + "sampleExcel_1.2.csv";
     File2.writeToFileUtf8(fileName, File2.directReadFromUtf8File(dir + "testScalar_1.1.csv"));
     // if (haveExcel) {
-    // Test.displayInBrowser("file://" + fileName); //.csv
+    // TestUtil.displayInBrowser("file://" + fileName); //.csv
     // String2.pressEnterToContinue("\nIn Excel, use File : Save As : CSV : as
     // sampleExcel_1.2.csv : yes : yes.");
     // }
@@ -18840,7 +18840,7 @@ public class TableTests {
     // try {
     Test.ensureEqual(results, expected, "results=\n" + results);
     // } catch (Exception e) {
-    // Test.knownProblem(
+    // TestUtil.knownProblem(
     // "1.2: How to keep integer in string att as a string?!",
     // "If I don't actually do Excel 'Save As', the BAD ROW disappears.", e);
     // }
@@ -18934,7 +18934,7 @@ public class TableTests {
             + "...\n";
     Test.ensureEqual(results, expected, "results=\n" + results);
 
-    // Test.displayInBrowser("file://" + fullName); //.wav
+    // TestUtil.displayInBrowser("file://" + fullName); //.wav
     // String2.pressEnterToContinue("Close the audio player if file is okay.");
   }
 
@@ -18983,7 +18983,7 @@ public class TableTests {
             + "-3.0517578E-5,-1.2207031E-4\n"
             + "...\n";
     Test.ensureEqual(results, expected, "results=\n" + results);
-    // Test.displayInBrowser("file://" + fullName); //audio
+    // TestUtil.displayInBrowser("file://" + fullName); //audio
     // String2.pressEnterToContinue("Close the audio player if file is okay.");
   }
 
@@ -19048,7 +19048,7 @@ public class TableTests {
       table.writeWaveFile(outName);
       table.readAudioFile(outName, true, false); // readData, addElapsedTime
       String2.log(table.dataToString(16));
-      // Test.displayInBrowser("file://" + outName); //audio
+      // TestUtil.displayInBrowser("file://" + outName); //audio
 
       // } catch (Exception e) {
       // String2.log(MustBe.throwableToString(e));
@@ -19075,7 +19075,7 @@ public class TableTests {
     // DEAL WITH JAVA 8 BUG
     // boolean java8 = System.getProperty("java.version").startsWith("1.8.");
     // if (java8)
-    // Test.displayInBrowser("file://" + fullName); //.wav
+    // TestUtil.displayInBrowser("file://" + fullName); //.wav
     // else
     this.testReadFloatAudioFile(fullName);
     // String2.pressEnterToContinue("Close the audio player if file is okay.");
@@ -19437,13 +19437,34 @@ public class TableTests {
 
     // } catch (Exception e) {
     // //String2.pressEnterToContinue(
-    // Test.knownProblem(
+    // TestUtil.knownProblem(
     // "KYLE WILCOX'S DSG TEST FILE.",
     // MustBe.throwableToString(e) +
     // "\nI reported this problem to Kyle 2012-10-03" +
     // "\n2013-10-30 Since Kyle changed jobs, it is unlikely he will ever fix
     // this.");
     // }
+  }
+
+  /**
+   * Get a connection to an Access .mdb file. MS Access not needed.
+   *
+   * @param fileName (forward slash in example)
+   * @param user use "" if none specified
+   * @param password use "" if none specified
+   */
+  private static Connection getConnectionToMdb(String fileName, String user, String password)
+      throws Exception {
+
+    // from Sareth's answer at
+    // https://stackoverflow.com/questions/9543722/java-create-msaccess-database-file-mdb-0r-accdb-using-java
+    Class.forName("sun.jdbc.odbc.JdbcOdbcDriver"); // included in Java distribution
+    return DriverManager.getConnection(
+        "jdbc:odbc:Driver={Microsoft Access Driver (*.mdb, *.accdb)};"
+            + "DBQ="
+            + fileName, // ";DriverID=22;READONLY=true}",
+        "",
+        ""); // user, password
   }
 
   /**
@@ -19459,7 +19480,7 @@ public class TableTests {
             .getResource("/notIncludedFiles/calcofi2012/calcofi8102012.accdb")
             .getPath();
     // "c:/fishbase/COUNTRY.mdb";
-    Connection con = Table.getConnectionToMdb(fileName, "", ""); // user, password
+    Connection con = getConnectionToMdb(fileName, "", ""); // user, password
     // String2.log(getSqlSchemas(con).toString());
     // String schema = "";
     // String2.log(getSqlTableNames(con, schema, null).toString()); //null for all

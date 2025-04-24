@@ -1076,7 +1076,7 @@ public class EDMessages {
   public final int[] pdfWidths;
   public final int[] pdfHeights;
   private final String[] theLongDescriptionHtmlAr; // see the xxx() methods
-  public final String errorFromDataSource = String2.ERROR + " from data source: ";
+  public static final String errorFromDataSource = String2.ERROR + " from data source: ";
   public final int nLanguages = TranslateMessages.languageList.size();
 
   public EDMessages(String contentDirectory) throws Exception {

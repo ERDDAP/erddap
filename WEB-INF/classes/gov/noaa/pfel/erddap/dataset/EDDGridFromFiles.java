@@ -151,7 +151,7 @@ public abstract class EDDGridFromFiles extends EDDGrid implements WatchUpdateHan
   protected String cachePartialPathRegex = null; // null if inactive
 
   /** When threshold size is reached, prune cache to fraction*threshold. */
-  protected final double cacheFraction = FileVisitorDNLS.PRUNE_CACHE_DEFAULT_FRACTION;
+  protected static final double cacheFraction = FileVisitorDNLS.PRUNE_CACHE_DEFAULT_FRACTION;
 
   // a system for deriving the source axis values without opening the file
   protected String sourceAxisValuesDataType;

@@ -15,6 +15,7 @@ import com.cohort.util.Math2;
 import com.cohort.util.MustBe;
 import com.cohort.util.String2;
 import com.cohort.util.Test;
+import com.cohort.util.TestUtil;
 import gov.noaa.pfel.coastwatch.griddata.NcHelper;
 import gov.noaa.pfel.coastwatch.util.SSR;
 import gov.noaa.pfel.erddap.GenerateDatasetsXml;
@@ -151,7 +152,7 @@ class EDDGridFromDapTests {
             EDStatic.config.fullTestCacheDirectory,
             gridDataset.className() + "_" + tid + "_Map",
             ".png");
-    Test.displayInBrowser("file://" + EDStatic.config.fullTestCacheDirectory + tName);
+    TestUtil.displayInBrowser("file://" + EDStatic.config.fullTestCacheDirectory + tName);
   }
 
   @org.junit.jupiter.api.Test
@@ -576,7 +577,7 @@ class EDDGridFromDapTests {
             EDStatic.config.fullTestCacheDirectory,
             gridDataset.className() + "_Entire",
             ".html");
-    // Test.displayInBrowser("file://" + EDStatic.config.fullTestCacheDirectory + tName);
+    // TestUtil.displayInBrowser("file://" + EDStatic.config.fullTestCacheDirectory + tName);
 
     // *** test getting das for 1 variable das isn't affected by userDapQuery
     String2.log("\n****************** EDDGridFromDap test 1 variable\n");
@@ -696,7 +697,7 @@ class EDDGridFromDapTests {
             ".csv");
     results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
     // String2.log(results);
-    // Test.displayInBrowser("file://" + EDStatic.config.fullTestCacheDirectory + tName);
+    // TestUtil.displayInBrowser("file://" + EDStatic.config.fullTestCacheDirectory + tName);
     expected =
         "time,longitude\n"
             + "UTC,degrees_east\n"
@@ -718,7 +719,7 @@ class EDDGridFromDapTests {
             ".csvp");
     results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
     // String2.log(results);
-    // Test.displayInBrowser("file://" + EDStatic.config.fullTestCacheDirectory + tName);
+    // TestUtil.displayInBrowser("file://" + EDStatic.config.fullTestCacheDirectory + tName);
     expected =
         "time (UTC),longitude (degrees_east)\n"
             + "2002-07-08T00:00:00Z,360.0\n"
@@ -739,7 +740,7 @@ class EDDGridFromDapTests {
             ".csv");
     results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
     // String2.log(results);
-    // Test.displayInBrowser("file://" + EDStatic.config.fullTestCacheDirectory + tName);
+    // TestUtil.displayInBrowser("file://" + EDStatic.config.fullTestCacheDirectory + tName);
     expected =
         "time,longitude\n"
             + "UTC,degrees_east\n"
@@ -845,7 +846,7 @@ class EDDGridFromDapTests {
             ".json");
     results = File2.directReadFromUtf8File(EDStatic.config.fullTestCacheDirectory + tName);
     // String2.log(results);
-    // Test.displayInBrowser("file://" + EDStatic.config.fullTestCacheDirectory + tName);
+    // TestUtil.displayInBrowser("file://" + EDStatic.config.fullTestCacheDirectory + tName);
     expected =
         "{\n"
             + "  \"table\": {\n"
@@ -876,7 +877,7 @@ class EDDGridFromDapTests {
             ".json");
     results = File2.directReadFromUtf8File(EDStatic.config.fullTestCacheDirectory + tName);
     // String2.log(results);
-    // Test.displayInBrowser("file://" + EDStatic.config.fullTestCacheDirectory + tName);
+    // TestUtil.displayInBrowser("file://" + EDStatic.config.fullTestCacheDirectory + tName);
     expected =
         jsonp
             + "("
@@ -1117,7 +1118,7 @@ class EDDGridFromDapTests {
     String2.log(">> NCO JSON " + EDStatic.config.fullTestCacheDirectory + tName);
     results = File2.directReadFromUtf8File(EDStatic.config.fullTestCacheDirectory + tName);
     // String2.log(results);
-    // Test.displayInBrowser("file://" + EDStatic.config.fullTestCacheDirectory + tName);
+    // TestUtil.displayInBrowser("file://" + EDStatic.config.fullTestCacheDirectory + tName);
     expected =
         "{\n"
             + "  \"attributes\": {\n"
@@ -1228,7 +1229,7 @@ class EDDGridFromDapTests {
             ".ncoJson");
     results = File2.directReadFromUtf8File(EDStatic.config.fullTestCacheDirectory + tName);
     // String2.log(results);
-    // Test.displayInBrowser("file://" + EDStatic.config.fullTestCacheDirectory + tName);
+    // TestUtil.displayInBrowser("file://" + EDStatic.config.fullTestCacheDirectory + tName);
     expected =
         "myFunctionName("
             + "{\n"
@@ -1368,7 +1369,7 @@ class EDDGridFromDapTests {
             ".tsv");
     results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
     // String2.log(results);
-    // Test.displayInBrowser("file://" + EDStatic.config.fullTestCacheDirectory + tName);
+    // TestUtil.displayInBrowser("file://" + EDStatic.config.fullTestCacheDirectory + tName);
     expected =
         "time\tlongitude\n"
             + "UTC\tdegrees_east\n"
@@ -1390,7 +1391,7 @@ class EDDGridFromDapTests {
             ".tsvp");
     results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
     // String2.log(results);
-    // Test.displayInBrowser("file://" + EDStatic.config.fullTestCacheDirectory + tName);
+    // TestUtil.displayInBrowser("file://" + EDStatic.config.fullTestCacheDirectory + tName);
     expected =
         "time (UTC)\tlongitude (degrees_east)\n"
             + "2002-07-08T00:00:00Z\t360.0\n"
@@ -1411,7 +1412,7 @@ class EDDGridFromDapTests {
             ".xhtml");
     results = File2.directReadFromUtf8File(EDStatic.config.fullTestCacheDirectory + tName);
     // String2.log(results);
-    // Test.displayInBrowser("file://" + EDStatic.config.fullTestCacheDirectory + tName);
+    // TestUtil.displayInBrowser("file://" + EDStatic.config.fullTestCacheDirectory + tName);
     expected =
         "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
             + "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\"\n"
@@ -1473,7 +1474,7 @@ class EDDGridFromDapTests {
             ".htmlTable");
     results = File2.directReadFromUtf8File(EDStatic.config.fullTestCacheDirectory + tName);
     // String2.log(results);
-    // Test.displayInBrowser("file://" + EDStatic.config.fullTestCacheDirectory + tName);
+    // TestUtil.displayInBrowser("file://" + EDStatic.config.fullTestCacheDirectory + tName);
     expected =
         EDStatic.startHeadHtml(
                 language, EDStatic.erddapUrl((String) null, language), "EDDGridFromDap_LatAxis")
@@ -1544,7 +1545,7 @@ class EDDGridFromDapTests {
             ".xhtml");
     results = File2.directReadFromUtf8File(EDStatic.config.fullTestCacheDirectory + tName);
     // String2.log(results);
-    // Test.displayInBrowser("file://" + EDStatic.config.fullTestCacheDirectory + tName);
+    // TestUtil.displayInBrowser("file://" + EDStatic.config.fullTestCacheDirectory + tName);
     expected =
         "<tr>\n"
             + "<th>time</th>\n"
@@ -1902,7 +1903,7 @@ class EDDGridFromDapTests {
             // already
             // used
             ".esriAscii");
-    // Test.displayInBrowser("file://" + EDStatic.config.fullTestCacheDirectory + tName);
+    // TestUtil.displayInBrowser("file://" + EDStatic.config.fullTestCacheDirectory + tName);
     results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
     expected = // note that lon values have been shifted from 225 to -135
         "ncols 53\n"
@@ -3538,7 +3539,7 @@ class EDDGridFromDapTests {
       String msg = MustBe.throwableToString(t);
       if (msg.indexOf("ERROR: unsorted axis: ") >= 0) String2.log("\nCommon error:\n" + msg);
       else {
-        Test.knownProblem("STARTING 2013-05-21 DATA SOURCE IS GONE.   FIX IT?", msg);
+        TestUtil.knownProblem("STARTING 2013-05-21 DATA SOURCE IS GONE.   FIX IT?", msg);
       }
     }
   }
@@ -4214,7 +4215,7 @@ class EDDGridFromDapTests {
             eddGrid.className() + "_Map",
             ".png");
     if (doGraphicsTests)
-      Test.displayInBrowser("file://" + EDStatic.config.fullTestCacheDirectory + tName);
+      TestUtil.displayInBrowser("file://" + EDStatic.config.fullTestCacheDirectory + tName);
 
     String transparentQuery =
         "u[(2008-08-06T00:00:00Z)][][][]"
@@ -4229,7 +4230,7 @@ class EDDGridFromDapTests {
             eddGrid.className() + "_Transparent",
             ".transparentPng");
     if (doGraphicsTests)
-      Test.displayInBrowser("file://" + EDStatic.config.fullTestCacheDirectory + tName);
+      TestUtil.displayInBrowser("file://" + EDStatic.config.fullTestCacheDirectory + tName);
 
     String query180 =
         "u[(2008-08-06T00:00:00Z)][][][0:(179)]"
@@ -4244,14 +4245,14 @@ class EDDGridFromDapTests {
             eddGrid.className() + "_Map",
             ".kml");
     if (doGraphicsTests)
-      Test.displayInBrowser("file://" + EDStatic.config.fullTestCacheDirectory + tName);
+      TestUtil.displayInBrowser("file://" + EDStatic.config.fullTestCacheDirectory + tName);
 
     // currently doesn't work, either ERDDAP needs to rearrange lat and lon values
     // or GeotiffWritter needs to accept descending axis values.
     // tName = eddGrid.makeNewFileForDapQuery(language, null, null, query180,
     // EDStatic.config.fullTestCacheDirectory,
     // eddGrid.className() + "_Map", ".geotif");
-    // Test.displayInBrowser("file://" + EDStatic.config.fullTestCacheDirectory + tName);
+    // TestUtil.displayInBrowser("file://" + EDStatic.config.fullTestCacheDirectory + tName);
 
     tName =
         eddGrid.makeNewFileForDapQuery(
@@ -4625,7 +4626,7 @@ class EDDGridFromDapTests {
         eddGrid.makeNewFileForDapQuery(
             language, null, null, mapDapQuery, obsDir, eddGrid.className() + "_Map", ".png");
     if (doGraphicsTests) {
-      // Test.displayInBrowser("file://" + EDStatic.config.fullTestCacheDirectory + tName);
+      // TestUtil.displayInBrowser("file://" + EDStatic.config.fullTestCacheDirectory + tName);
       Image2Tests.testImagesIdentical(
           tName,
           "EDDGridFromDapTestDescendingLat" + ".png",
@@ -4644,7 +4645,7 @@ class EDDGridFromDapTests {
             eddGrid.className() + "_Transparent",
             ".transparentPng");
     if (doGraphicsTests) {
-      // Test.displayInBrowser("file://" + EDStatic.config.fullTestCacheDirectory + tName);
+      // TestUtil.displayInBrowser("file://" + EDStatic.config.fullTestCacheDirectory + tName);
       Image2Tests.testImagesIdentical(
           tName,
           "EDDGridFromDapTestDescendingLatTP" + ".png",
@@ -4664,7 +4665,7 @@ class EDDGridFromDapTests {
             eddGrid.className() + "_Map",
             ".kml");
     // if (doGraphicsTests) {
-    // Test.displayInBrowser("file://" + EDStatic.config.fullTestCacheDirectory + tName);
+    // TestUtil.displayInBrowser("file://" + EDStatic.config.fullTestCacheDirectory + tName);
     // }
 
     // 2013-10-21 this works with new GeotiffWriter (which rearranges lat values)
@@ -4678,7 +4679,7 @@ class EDDGridFromDapTests {
             eddGrid.className() + "_Map",
             ".geotif");
     // if (doGraphicsTests) {
-    // Test.displayInBrowser("file://" + EDStatic.config.fullTestCacheDirectory + tName);
+    // TestUtil.displayInBrowser("file://" + EDStatic.config.fullTestCacheDirectory + tName);
     // }
 
     tName =
@@ -5877,7 +5878,7 @@ class EDDGridFromDapTests {
    * "&FORMAT=image%2Fpng&SERVICE=WMS&REQUEST=GetMap&STYLES=" +
    * "&BBOX=153.6,-90,307.2,63.6&WIDTH=256&HEIGHT=256",
    * tName, false);
-   * Test.displayInBrowser("file://" + tName);
+   * TestUtil.displayInBrowser("file://" + tName);
    *
    * //test WMS 1.1.0 elevation=default
    * tName = EDStatic.config.fullTestCacheDirectory + gridDataset.className() +
@@ -5890,7 +5891,7 @@ class EDDGridFromDapTests {
    * "&FORMAT=image%2Fpng&SERVICE=WMS&REQUEST=GetMap&STYLES=" +
    * "&BBOX=153.6,-90,307.2,63.6&WIDTH=256&HEIGHT=256",
    * tName, false);
-   * Test.displayInBrowser("file://" + tName);
+   * TestUtil.displayInBrowser("file://" + tName);
    *
    *
    * //test WMS 1.3.0 service getCapabilities from localhost erddap
@@ -5934,7 +5935,7 @@ class EDDGridFromDapTests {
    * "&FORMAT=image%2Fpng&SERVICE=WMS&REQUEST=GetMap&STYLES=" +
    * "&BBOX=153.6,-90,307.2,63.6&WIDTH=256&HEIGHT=256",
    * tName, false);
-   * Test.displayInBrowser("file://" + tName);
+   * TestUtil.displayInBrowser("file://" + tName);
    *
    * //test WMS 1.3.0 elevation=default
    * tName = EDStatic.config.fullTestCacheDirectory + gridDataset.className() +
@@ -5947,7 +5948,7 @@ class EDDGridFromDapTests {
    * "&FORMAT=image%2Fpng&SERVICE=WMS&REQUEST=GetMap&STYLES=" +
    * "&BBOX=153.6,-90,307.2,63.6&WIDTH=256&HEIGHT=256",
    * tName, false);
-   * Test.displayInBrowser("file://" + tName);
+   * TestUtil.displayInBrowser("file://" + tName);
    *
    * }
    */
@@ -6121,7 +6122,7 @@ class EDDGridFromDapTests {
       Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
     } catch (Throwable t) {
-      Test.knownProblem("!!!!!!  This test dataset has disappeared.", t);
+      TestUtil.knownProblem("!!!!!!  This test dataset has disappeared.", t);
     }
   }
 
@@ -6163,7 +6164,7 @@ class EDDGridFromDapTests {
       // 2018-01-25 was 12-13?!
       Test.ensureEqual(results, expected, "\nresults=\n" + results);
     } catch (Exception e) {
-      Test.knownProblem(
+      TestUtil.knownProblem(
           "2020-08-20 this now often fails with Http 502 Bad Gateway error after a delay.", e);
     }
   }
@@ -6489,7 +6490,7 @@ class EDDGridFromDapTests {
             EDStatic.config.fullTestCacheDirectory,
             "descendingAxisGeotif",
             ".geotif");
-    Test.displayInBrowser("file://" + EDStatic.config.fullTestCacheDirectory + tName);
+    TestUtil.displayInBrowser("file://" + EDStatic.config.fullTestCacheDirectory + tName);
 
     // NOT FINISHED ADDING FEATURE
     // descending Lat axis AND &.size=width|height
@@ -6497,7 +6498,7 @@ class EDDGridFromDapTests {
     // tName = gridDataset.makeNewFileForDapQuery(language, null, null,
     // "topo[(23):(19)][(-161):(-155)]&.draw=surface&.vars=longitude|latitude|topo&.size=200|300",
     // EDStatic.config.fullTestCacheDirectory, "descendingAxisGeotifSize", ".geotif");
-    // Test.displayInBrowser("file://" + EDStatic.config.fullTestCacheDirectory + tName);
+    // TestUtil.displayInBrowser("file://" + EDStatic.config.fullTestCacheDirectory + tName);
 
     // Mercator Lat axis
     // 2013-10-21 this still fails. Bizarre error is
@@ -6526,7 +6527,7 @@ class EDDGridFromDapTests {
               EDStatic.config.fullTestCacheDirectory,
               "LonBelowAbove180",
               ".geotif");
-      Test.displayInBrowser("file://" + EDStatic.config.fullTestCacheDirectory + tName);
+      TestUtil.displayInBrowser("file://" + EDStatic.config.fullTestCacheDirectory + tName);
     } catch (Throwable t) {
       error = t.toString();
     }
@@ -6560,7 +6561,7 @@ class EDDGridFromDapTests {
               EDStatic.config.fullTestCacheDirectory,
               "MercatorAxisGeotif",
               ".geotif");
-      Test.displayInBrowser("file://" + EDStatic.config.fullTestCacheDirectory + tName);
+      TestUtil.displayInBrowser("file://" + EDStatic.config.fullTestCacheDirectory + tName);
     } catch (Throwable t) {
       error = t.toString();
     }
@@ -7002,7 +7003,7 @@ class EDDGridFromDapTests {
               EDStatic.config.fullTestCacheDirectory,
               baseName,
               ".png");
-      Test.displayInBrowser("file://" + EDStatic.config.fullTestCacheDirectory + tName);
+      TestUtil.displayInBrowser("file://" + EDStatic.config.fullTestCacheDirectory + tName);
       // I can't use testImagesIdentical because the source data is changes every day
       // and old data isn't available.
       // Image2.testImagesIdentical(
@@ -7047,7 +7048,7 @@ class EDDGridFromDapTests {
     String tName =
         gridDataset.makeNewFileForDapQuery(
             language, null, null, mapDapQuery, obsDir, baseName, ".png");
-    // Test.displayInBrowser("file://" + EDStatic.config.fullTestCacheDirectory + tName);
+    // TestUtil.displayInBrowser("file://" + EDStatic.config.fullTestCacheDirectory + tName);
     Image2Tests.testImagesIdentical(tName, baseName + ".png", baseName + "_diff.png");
 
     // some color backgrounds have a problem
@@ -7058,7 +7059,7 @@ class EDDGridFromDapTests {
     tName =
         gridDataset.makeNewFileForDapQuery(
             language, null, null, mapDapQuery, obsDir, baseName, ".png");
-    // Test.displayInBrowser("file://" + EDStatic.config.fullTestCacheDirectory + tName);
+    // TestUtil.displayInBrowser("file://" + EDStatic.config.fullTestCacheDirectory + tName);
     Image2Tests.testImagesIdentical(tName, baseName + ".png", baseName + "_diff.png");
 
     String2.log("\nANTIALIASING PROBLEM SOLVED ITSELF 2018-06-20");
@@ -7173,7 +7174,7 @@ class EDDGridFromDapTests {
             dir,
             baseName,
             ".png");
-    // Test.displayInBrowser("file://" + dir + tName);
+    // TestUtil.displayInBrowser("file://" + dir + tName);
     Image2Tests.testImagesIdentical(tName, baseName + ".png", baseName + "_diff.png");
 
     // Hovmoeller Diagram x=time, y=depth
@@ -7187,7 +7188,7 @@ class EDDGridFromDapTests {
             dir,
             baseName,
             ".png");
-    // Test.displayInBrowser("file://" + dir + tName);
+    // TestUtil.displayInBrowser("file://" + dir + tName);
     Image2Tests.testImagesIdentical(tName, baseName + ".png", baseName + "_diff.png");
 
     // qtot is weird: first 1/3 time complex red blue, 2nd half: big blog red, rest
@@ -7199,7 +7200,7 @@ class EDDGridFromDapTests {
     tName =
         gridDataset.makeNewFileForDapQuery(
             language, null, null, "qtot[1500][][]", dir, baseName, ".png");
-    // Test.displayInBrowser("file://" + dir + tName);
+    // TestUtil.displayInBrowser("file://" + dir + tName);
     Image2Tests.testImagesIdentical(tName, baseName + ".png", baseName + "_diff.png");
 
     // .draw specified
@@ -7207,7 +7208,7 @@ class EDDGridFromDapTests {
     tName =
         gridDataset.makeNewFileForDapQuery(
             language, null, null, "qtot[1500][][]&.draw=surface", dir, baseName, ".png");
-    // Test.displayInBrowser("file://" + dir + tName);
+    // TestUtil.displayInBrowser("file://" + dir + tName);
     Image2Tests.testImagesIdentical(tName, baseName + ".png", baseName + "_diff.png");
 
     // .vars specified
@@ -7221,7 +7222,7 @@ class EDDGridFromDapTests {
             dir,
             baseName,
             ".png");
-    // Test.displayInBrowser("file://" + dir + tName);
+    // TestUtil.displayInBrowser("file://" + dir + tName);
     Image2Tests.testImagesIdentical(tName, baseName + ".png", baseName + "_diff.png");
 
     // .draw specified
@@ -7235,7 +7236,7 @@ class EDDGridFromDapTests {
             dir,
             baseName,
             ".png");
-    // Test.displayInBrowser("file://" + dir + tName);
+    // TestUtil.displayInBrowser("file://" + dir + tName);
     Image2Tests.testImagesIdentical(tName, baseName + ".png", baseName + "_diff.png");
 
     // time on x axis
@@ -7249,7 +7250,7 @@ class EDDGridFromDapTests {
             dir,
             baseName,
             ".png");
-    // Test.displayInBrowser("file://" + dir + tName);
+    // TestUtil.displayInBrowser("file://" + dir + tName);
     Image2Tests.testImagesIdentical(tName, baseName + ".png", baseName + "_diff.png");
 
     // time on y axis
@@ -7263,7 +7264,7 @@ class EDDGridFromDapTests {
             dir,
             baseName,
             ".png");
-    // Test.displayInBrowser("file://" + dir + tName);
+    // TestUtil.displayInBrowser("file://" + dir + tName);
     Image2Tests.testImagesIdentical(tName, baseName + ".png", baseName + "_diff.png");
 
     // 2 x&y axis values
@@ -7277,7 +7278,7 @@ class EDDGridFromDapTests {
             dir,
             baseName,
             ".png");
-    // Test.displayInBrowser("file://" + dir + tName);
+    // TestUtil.displayInBrowser("file://" + dir + tName);
     Image2Tests.testImagesIdentical(tName, baseName + ".png", baseName + "_diff.png");
 
     // 1 x&y axis values
@@ -7289,7 +7290,7 @@ class EDDGridFromDapTests {
     // tName = gridDataset.makeNewFileForDapQuery(language, null, null,
     // "qtot[1500][1200][313]&.draw=surface&.vars=time|X|qtot",
     // dir, gridDataset.className() + "_surfaceGraph1Value", ".png");
-    // Test.displayInBrowser("file://" + dir + tName);
+    // TestUtil.displayInBrowser("file://" + dir + tName);
   }
 
   /** Ensure that packed source atts valid_min, valid_max are unpacked when dataset is loaded. */
@@ -9243,7 +9244,7 @@ class EDDGridFromDapTests {
     try {
       Test.ensureEqual(results, expected, "results=\n" + results);
     } catch (Exception e) {
-      Test.knownProblem(
+      TestUtil.knownProblem(
           "time_coverage_end calculated from data source is WRONG!\n"
               + // I don't know
               // what it
@@ -9950,10 +9951,10 @@ class EDDGridFromDapTests {
               EDStatic.config.fullTestCacheDirectory,
               eddGrid.className() + "uint16",
               ".png");
-      Test.displayInBrowser("file://" + EDStatic.config.fullTestCacheDirectory + tName);
+      TestUtil.displayInBrowser("file://" + EDStatic.config.fullTestCacheDirectory + tName);
 
     } catch (Throwable t) {
-      Test.knownProblem(
+      TestUtil.knownProblem(
           "This dataset has problems with time values in future and incorrect qual_sst4 _FillValue (255 vs 65535) and units (degree_north! -- now fixed). \n"
               + "2020-08-14 I notified podaac, so hopefully this will change.",
           t);
@@ -9989,7 +9990,7 @@ class EDDGridFromDapTests {
       // IntArray isn't sorted in descending
       // order: [0]=373377600 < [1]=373464000.
     } catch (Exception e) {
-      Test.knownProblem(
+      TestUtil.knownProblem(
           "https://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/PH2/sstd/1day time axis isn't in sorted order. "
               + "I've reported to Roy repeatedly. Problem solved then reoccurs.",
           e);
@@ -10248,7 +10249,7 @@ class EDDGridFromDapTests {
       Test.ensureEqual(results, expected, "results=\n" + results);
 
     } catch (Exception e) {
-      Test.knownProblem(
+      TestUtil.knownProblem(
           "2022-07-07 This used to work but now fails with netcdf-java 5.5.2 and 5.5.3 "
               + "because catalogBuilder returns null for remotCatalogService urls. "
               + "I just reported it to netcdf-java developers.",
@@ -11209,7 +11210,7 @@ class EDDGridFromDapTests {
     Test.ensureEqual(
         results.substring(po, po + expected.length()), expected, "results=\n" + results);
     // } catch (Exception e) {
-    //   Test.knownProblem(
+    //   TestUtil.knownProblem(
     //       "2018-06-20 I think actual_ranges change with every new timepoint.",
     //       "Remove those atts in generateDatasetsXml esp from THREDDS or HYRAX?", e);
     // }

@@ -65,7 +65,7 @@ class SgtMapTests {
           Image2Tests.urlToAbsolutePath(Image2Tests.OBS_DIR) + fileName + testImageExtension;
       File2.delete(tName); // old version? delete it
       SgtUtil.saveImage(bufferedImage, tName);
-      // Test.displayInBrowser("file://" + tName);
+      // TestUtil.displayInBrowser("file://" + tName);
       Image2Tests.testImagesIdentical(tName, fileName + ".png", fileName + "_diff.png");
     }
   }
@@ -93,7 +93,7 @@ class SgtMapTests {
       File2.delete(tName); // old version? delete it
       SgtUtil.saveImage(bufferedImage, tName);
       // String2.log("displaying " + tName);
-      // Test.displayInBrowser("file://" + tName);
+      // TestUtil.displayInBrowser("file://" + tName);
       Image2Tests.testImagesIdentical(tName, baseName + ".png", baseName + "_diff.png");
     }
   }
@@ -232,7 +232,7 @@ class SgtMapTests {
 
       // get the Grid
       SimpleGrid simpleGrid =
-          new SimpleGrid(bathymetryGrid.data, bathymetryGrid.lon, bathymetryGrid.lat, ""); // title
+          new SimpleGrid(bathymetryGrid.data, bathymetryGrid.lon, bathymetryGrid.lat);
 
       // assign the data
       graph.setData(simpleGrid, new GridAttribute(GridAttribute.RASTER, oceanColorMap));
@@ -484,7 +484,7 @@ class SgtMapTests {
           regionInfo,
           Image2Tests.urlToAbsolutePath(Image2Tests.OBS_DIR),
           baseName + testImageExtension);
-      // Test.displayInBrowser("file://" + Image2Tests.urlToAbsolutePath(Image2Tests.OBS_DIR) +
+      // TestUtil.displayInBrowser("file://" + Image2Tests.urlToAbsolutePath(Image2Tests.OBS_DIR) +
       // "tempRegionsMap" + testImageExtension);
       Image2Tests.testImagesIdentical(
           baseName + testImageExtension, baseName + ".png", baseName + "_diff.png");
@@ -515,7 +515,7 @@ class SgtMapTests {
           0,
           1); // region=2
       SgtUtil.saveImage(bufferedImage, tName);
-      // Test.displayInBrowser("file://" + SSR.getTempDirectory() + "temp" +
+      // TestUtil.displayInBrowser("file://" + SSR.getTempDirectory() + "temp" +
       // testImageExtension);
       Image2Tests.testImagesIdentical(tName, baseName + ".png", baseName + "_diff.png");
 
@@ -550,7 +550,7 @@ class SgtMapTests {
             // view it in browser?
             if (showInBrowser && rep == 0 && region == 2 && size == 1) {
               String2.log("displaying " + tName);
-              // Test.displayInBrowser("file://" + tName);
+              // TestUtil.displayInBrowser("file://" + tName);
               Image2Tests.testImagesIdentical(tName, baseName + ".png", baseName + "_diff.png");
             }
 
@@ -584,7 +584,7 @@ class SgtMapTests {
             // view it in browser?
             // if (showInBrowser && rep == 0 && region == 2) {
             // String2.log("displaying " + tName);
-            // Test.displayInBrowser("file://" + tName);
+            // TestUtil.displayInBrowser("file://" + tName);
             // }
           }
         }
@@ -621,7 +621,7 @@ class SgtMapTests {
     File2.delete(tName);
     SgtUtil.saveAsTransparentPng(bufferedImage, SgtMap.oceanColor, tName);
     // String2.log(" transparentName = " + tName);
-    // Test.displayInBrowser("file://" + tranName + ".png");
+    // TestUtil.displayInBrowser("file://" + tranName + ".png");
     Image2Tests.testImagesIdentical(tName + ".png", baseName + ".png", baseName + "_diff.png");
   }
 
@@ -686,7 +686,7 @@ class SgtMapTests {
       String tName = Image2Tests.urlToAbsolutePath(Image2Tests.OBS_DIR) + baseName;
       File2.delete(tName + ".png");
       SgtUtil.saveAsTransparentPng(bufferedImage, null, tName); // oceanColor?
-      // Test.displayInBrowser("file://" + tName + ".png");
+      // TestUtil.displayInBrowser("file://" + tName + ".png");
       Image2Tests.testImagesIdentical(tName + ".png", baseName + ".png", baseName + "_diff.png");
     }
   }
@@ -746,7 +746,7 @@ class SgtMapTests {
 
     // view it
     // ImageViewer.display("SgtMap", image);
-    // Test.displayInBrowser("file://" + dir + name);
+    // TestUtil.displayInBrowser("file://" + dir + name);
     Image2Tests.testImagesIdentical(name, baseName + ".png", baseName + "_diff.png");
   }
 
@@ -982,7 +982,7 @@ class SgtMapTests {
       File2.delete(tName); // old version? delete it
       SgtUtil.saveImage(bufferedImage, tName);
       String2.log("displaying " + tName);
-      // Test.displayInBrowser("file://" + tName);
+      // TestUtil.displayInBrowser("file://" + tName);
       Image2Tests.testImagesIdentical(tName, fileName + ".png", fileName + "_diff.png");
     }
   }

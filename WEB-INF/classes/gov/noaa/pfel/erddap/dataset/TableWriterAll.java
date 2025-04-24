@@ -337,7 +337,9 @@ public class TableWriterAll extends TableWriter {
 
     // actually get the data
     for (int col = 0; col < nColumns; col++) table.setColumn(col, column(col));
-    return table;
+
+    cumulativeTable = table;
+    return cumulativeTable;
   }
 
   /**

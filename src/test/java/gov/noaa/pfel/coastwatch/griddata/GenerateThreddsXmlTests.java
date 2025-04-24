@@ -35,7 +35,7 @@ class GenerateThreddsXmlTests {
             "C:/programs/_tomcat/webapps/cwexperimental/WEB-INF/incompleteMainCatalog.xml",
             "c:/u00/xml/");
     String2.log("first catalog.xml=" + sa.get(0));
-    //        Test.displayInBrowser("file://" + sa.get(0));  //.xml
-    //        Test.displayInBrowser("file://f:/u00/xml/catalog.xml");
+    //        TestUtil.displayInBrowser("file://" + sa.get(0));  //.xml
+    //        TestUtil.displayInBrowser("file://f:/u00/xml/catalog.xml");
   }
 }

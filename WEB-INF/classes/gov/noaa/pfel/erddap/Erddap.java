@@ -21363,9 +21363,14 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       // repeatedly find a group of points close together, get chunk of data from source, do
       // calculations
       //  (very arbitrary -- there are too many scenarios to optimize)
-      StringBuilder howGrouped = new StringBuilder();
+      StringBuilder howGrouped = null;
+      if (debugMode) {
+        howGrouped = new StringBuilder();
+      }
       while (startOfGroup < nRows) {
-        howGrouped.append(" " + rank[startOfGroup]);
+        if (debugMode) {
+          howGrouped.append(" " + rank[startOfGroup]);
+        }
 
         // find outer bounds of the group (not including radius)
         double minTimeDIndex = timeDIndexPA.get(rank[startOfGroup]);
@@ -21417,7 +21422,9 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
           break;
 
           // yes, keep it
-          howGrouped.append(" " + rank[endOfGroup]);
+          if (debugMode) {
+            howGrouped.append(" " + rank[endOfGroup]);
+          }
           endOfGroup++;
           minTimeDIndex = tMinTimeDIndex;
           minLatDIndex = tMinLatDIndex;
@@ -21426,7 +21433,9 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
           maxLatDIndex = tMaxLatDIndex;
           maxLonDIndex = tMaxLonDIndex;
         }
-        howGrouped.append(",");
+        if (debugMode) {
+          howGrouped.append(",");
+        }
         // String2.log(">> interpolate startOfGroup=" + startOfGroup + " end=" + endOfGroup);
 
         // adjust min/maxLat/LonIndex so it is integers and includes radius
@@ -21796,7 +21805,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
         // prepare for next group
         startOfGroup = endOfGroup;
       }
-      if (debugMode)
+      if (debugMode) {
         String2.log(
             ">> Nearest Data: for dv="
                 + datasetIDs[dv]
@@ -21804,6 +21813,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                 + variable[dv]
                 + " howGrouped:"
                 + howGrouped);
+      }
     }
 
     return sourceTable;
@@ -24099,25 +24109,6 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     if (verbose) String2.log("redirected to " + url);
     // String2.log(">> " + MustBe.stackTrace());
     response.sendRedirect(url);
-  }
-
-  /**
-   * This makes a erddapContent.zip file with the [tomcat]/content/erddap files for distribution.
-   *
-   * @param removeDir e.g., "c:/programs/_tomcat/samples/"
-   * @param destinationDir e.g., "c:/backup/"
-   */
-  public static void makeErddapContentZip(String removeDir, String destinationDir)
-      throws Throwable {
-    String2.log("*** makeErddapContentZip dir=" + destinationDir);
-    String baseDir = removeDir + "content/erddap/";
-    SSR.zip(
-        destinationDir + "erddapContent.zip",
-        new String[] {
-          baseDir + "datasets.xml", baseDir + "setup.xml", baseDir + "images/erddapStart2.css"
-        },
-        10,
-        removeDir);
   }
 
   public void processDataset(EDD dataset, SaxParsingContext context) {

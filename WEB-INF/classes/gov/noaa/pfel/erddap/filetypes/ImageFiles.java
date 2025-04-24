@@ -1438,7 +1438,6 @@ public abstract class ImageFiles extends ImageTypes {
                     + yScale);
 
           // just to be clear: ignore any unrecognized .something
-        } else if (ampPart.startsWith(".")) {
         }
       }
       boolean reallySmall = imageWidth < 260; // .smallPng is 240
