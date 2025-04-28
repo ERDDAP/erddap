@@ -1,17 +1,78 @@
+# ERDDAP example docker compose stack
+#
+# By default, running this compose file with `docker compose up -d`
+# will build the ERDDAP docker image from source and run it on
+# HTTP port 8080, with ERDDAP available at http://localhost:8080.
+# Note that the automatic image build happens only once. To re-build
+# the image (i.e. after changes are made to the source code), run
+# `docker compose build`.
+#
+# The following environment variables can be set to change behavior,
+# either in an .env file in the same directory as docker-compose.yml,
+# on the command line when executing `docker compose`
+# (e.g. `ERDDAP_MEMORY=8g docker compose up -d`), or by configuring
+# your local environment accordingly.
+#
+# ERDDAP_MEMORY - amount of memory available to ERDDAP JVM (example 6g)
+# ERDDAP_CONTAINER_MEM_LIMIT - overall amount of memory available to ERDDAP container (example 8g)
+# ERDDAP_HOST - hostname for the ERDDAP server (example your.domain)
+# ERDDAP_baseUrl - Base HTTP ERDDAP url (example http://localhost:8080)
+# ERDDAP_baseHttpsUrl - Base HTTPS ERDDAP url (example https://your.domain)
+# ERDDAP_LOCAL_HTTP_PORT - Local port on which to serve ERDDAP HTTP (example 8080)
+# ERDDAP_DEBUG_PORT - Local port on which to run ERDDAP remote debug server (example 8000)
+# NGINX_PROXY_HTTP_PORT - Port for nginx-proxy HTTP (example 80)
+# NGINX_PROXY_HTTPS_PORT - Port for nginx-proxy HTTPS (example 443)
+#
+# Example .env file:
+#
+# ERDDAP_HOST=my.domain
+# ERDDAP_MEMORY=10g
+#
+# More information on setting environment variables for docker compose:
+# https://docs.docker.com/compose/how-tos/environment-variables/set-environment-variables/
+# https://docs.docker.com/compose/how-tos/environment-variables/variable-interpolation/#env-file
+#
+# Automated SSL/TLS/HTTPS using nginx-proxy and acme-companion
+#
+# An nginx server including automated SSL certificate creation and renewal
+# using nginx-proxy and acme-companion can be included in the stack by enabling
+# the `nginx-proxy` profile. Make sure that the `ERDDAP_HOST` environment variable
+# is set to a public hostname routing ports 80 and 443 to your server, and then
+# bring up the stack using `docker compose --profiles nginx-proxy up -d`
+# or set environment variable `COMPOSE_PROFILES=nginx-proxy` and use
+# `docker compose up -d` normally.
+#
+# The included configuration uses HTTP-01 challenges but DNS-01
+# is also possible. See the letsencrypt and acme-companion
+# documentation for more details.
+#
+# https://github.com/nginx-proxy/nginx-proxy
+# https://github.com/nginx-proxy/acme-companion
+# https://letsencrypt.org/docs/
+
 services:
   erddap:
     build: .
     ports:
-      - "${ERDDAP_PORT:-8080}:8080"
+      - "${ERDDAP_LOCAL_HTTP_PORT:-8080}:8080"
       - "${ERDDAP_DEBUG_PORT:-8000}:8000"
     volumes:
       - data:/erddapData
+      # create ./erddapContent directory with datasets.xml and
+      # and uncoment the following line to load custom configuration
+      # ./erddapContent:/usr/local/tomcat/content/erddap
     environment:
       ERDDAP_MEMORY: "${ERDDAP_MEMORY:-4g}"
-      ERDDAP_baseUrl: "http://${ERDDAP_HOST:-localhost}:${ERDDAP_PORT:-8080}"
+      ERDDAP_baseUrl: "${ERDDAP_baseUrl:-http://${ERDDAP_HOST:-localhost:${ERDDAP_LOCAL_HTTP_PORT:-8080}}}"
+      ERDDAP_baseHttpsUrl: "${ERDDAP_baseHttpsUrl:-https://${ERDDAP_HOST:-}}"
       ERDDAP_enableCors: "true"
       #ERDDAP_corsAllowOrigin: "https://some-allowed-domain.com,http://this-one-also.org:8080"
       #JAVA_OPTS: "-agentlib:jdwp=transport=dt_socket,address=*:8000,server=y,suspend=n"
+
+      #for nginx-proxy/acme-companion use below
+      VIRTUAL_HOST: "${ERDDAP_HOST:-}"
+      VIRTUAL_PORT: 8080
+      LETSENCRYPT_HOST: "${ERDDAP_HOST:-}"
     mem_limit: "${ERDDAP_CONTAINER_MEM_LIMIT:-6g}"
     healthcheck:
       test: ["CMD", "curl", "-fl", "http://localhost:8080/erddap/index.html"]
@@ -26,5 +87,34 @@ services:
     mem_limit: 256m
     command: tail -F /erddapData/logs/log.txt
 
+  nginx-proxy:
+    image: nginxproxy/nginx-proxy:1.7
+    ports:
+      - "${NGINX_PROXY_HTTP_PORT:-80}:80"
+      - "${NGINX_PROXY_HTTPS_PORT:-443}:443"
+    volumes:
+      - html:/usr/share/nginx/html
+      - certs:/etc/nginx/certs:ro
+      - /var/run/docker.sock:/tmp/docker.sock:ro
+    environment:
+      DEFAULT_HOST: "${ERDDAP_HOST:-}"
+    profiles:
+      - nginx-proxy
+  acme-companion:
+    image: nginxproxy/acme-companion:2.5
+    volumes_from:
+      - nginx-proxy
+    volumes:
+      - certs:/etc/nginx/certs
+      - acme:/etc/acme.sh
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    environment:
+      DEFAULT_EMAIL: shane@axds.co
+    profiles:
+      - nginx-proxy
+
 volumes:
+  acme:
+  certs:
   data:
+  html:
