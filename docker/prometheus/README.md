@@ -5,7 +5,7 @@ This directory contains Docker configurations for monitoring ERDDAP instances wi
 ## Quick Start
 
 1. Edit `prometheus.yml` to configure your ERDDAP instance URLs
-2. Run `docker-compose up -d`
+2. Run `docker-compose --profile monitoring up -d`
 3. Access Prometheus at http://localhost:9090
 4. Access Grafana at http://localhost:3000 (admin/erddapadmin)
 
