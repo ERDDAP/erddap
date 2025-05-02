@@ -12,8 +12,6 @@
 
 package gov.noaa.pmel.sgt.dm;
 
-import gov.noaa.pmel.sgt.SGLabel;
-import gov.noaa.pmel.util.SoTRange;
 import java.beans.PropertyChangeListener;
 
 /**
@@ -36,21 +34,6 @@ public interface SGTData {
   /** Bob Simons added this to avoid memory leak problems. */
   public void releaseResources() throws Exception;
 
-  /** Get the title. */
-  public String getTitle();
-
-  /**
-   * Get a title formatted for a Key. <code>JPlotLayout</code> will use this if an explicit Key
-   * title is not given in the <code>addData</code> method.
-   *
-   * @see gov.noaa.pmel.sgt.SGLabel
-   * @see gov.noaa.pmel.sgt.ColorKey
-   * @see gov.noaa.pmel.sgt.LineKey
-   * @see gov.noaa.pmel.sgt.PointCollectionKey
-   * @see gov.noaa.pmel.sgt.VectorKey
-   */
-  public SGLabel getKeyTitle();
-
   /**
    * Get the unique identifier. The presence of the identifier is optional, but if it is present it
    * should be unique. This field is used to search for the layer that contains the data.
@@ -61,57 +44,11 @@ public interface SGTData {
    */
   public String getId();
 
-  /**
-   * Create a shallow copy. User should implement using the clone() method, which requires the
-   * Cloneable interface be inherited. If clone() is used, then references to objects are copied NOT
-   * the object itself.
-   *
-   * <p>For example,
-   *
-   * <pre>
-   * public SGTData copy() {
-   *   SGTData newData;
-   *   try {
-   *     newData = (SGTData)clone();
-   *   } catch (CloneNotSupportedException e) {
-   *     newData = null;
-   *   }
-   *   return newData;
-   * }
-   * </pre>
-   *
-   * @return shallow copy
-   * @see java.lang.Object
-   */
-  public SGTData copy();
-
   /** Returns true if the X coordinate is Time. */
   public boolean isXTime();
 
   /** Returns true if the Y coordinate is Time. */
   public boolean isYTime();
-
-  /** Returns the X SGTMetaData. */
-  public SGTMetaData getXMetaData();
-
-  /** Returns the Y SGTMetaData. */
-  public SGTMetaData getYMetaData();
-
-  /**
-   * Returns the range of the X coordinates. If all the data in the array is missing, this method
-   * will return <code>Double.NaN</code> as the start and end values for data of type <code>double
-   * </code> and return <code>GeoDate(Long.MIN_VALUE)</code> for data of type <code>GeoDate</code>.
-   *
-   * @see gov.noaa.pmel.util.GeoDate#isMissing()
-   */
-  public SoTRange getXRange();
-
-  /**
-   * Returns the range of the Y coordinates.
-   *
-   * @see #getXRange()
-   */
-  public SoTRange getYRange();
 
   /** Add a PropertyChangeListener to the listener list. */
   public void addPropertyChangeListener(PropertyChangeListener l);

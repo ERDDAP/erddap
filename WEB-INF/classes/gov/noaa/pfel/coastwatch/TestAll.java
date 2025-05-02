@@ -1224,7 +1224,7 @@ public class TestAll {
                   + Calendar2.getCurrentISODateTimeStringLocalTZ()
                   + "\n"
                   + errorSB));
-      Test.displayInBrowser("file://" + fileName); // .txt
+      //   Test.displayInBrowser("file://" + fileName); // .txt
     }
 
     String2.returnLoggingToSystemOut();

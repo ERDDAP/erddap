@@ -36,7 +36,7 @@ public class TableFromMultidimNcFile {
   private int standardizeWhat;
   private Attributes gridMappingAtts = null;
 
-  private class VarData {
+  private static class VarData {
     public PrimitiveArray pa;
     public Attributes atts;
     public List<Dimension> dims;
@@ -64,7 +64,7 @@ public class TableFromMultidimNcFile {
     }
 
     public static VarData dimsFromVariable(TableFromMultidimNcFile tableMultidim, Variable tVar) {
-      VarData data = tableMultidim.new VarData();
+      VarData data = new VarData();
       data.loadDims(tableMultidim, tVar);
       return data;
     }
@@ -80,7 +80,7 @@ public class TableFromMultidimNcFile {
         }
         return data;
       }
-      VarData data = tableMultidim.new VarData();
+      VarData data = new VarData();
       data.loadDims(tableMultidim, tVar);
 
       if (!tableMultidim.doDimsMatch(nd0, data.nDims, data.dims, other.nDims, other.dims)) {
@@ -99,7 +99,7 @@ public class TableFromMultidimNcFile {
       if (index > -1 && tableMultidim.cachedVarData[index] != null) {
         return tableMultidim.cachedVarData[index];
       }
-      VarData data = tableMultidim.new VarData();
+      VarData data = new VarData();
       data.loadDims(tableMultidim, tVar);
       data.loadArrayAndAttributes(tableMultidim, tVar);
       if (index > -1) {

@@ -361,6 +361,8 @@ Nó,
 <a rel="help" href="#computerProgram">seachnaigh an leathanach gréasáin seo</a> agus déan tiontaithe ó laistigh de chlár ríomhaire, script nó leathanach gréasáin.
 
 ]]></convertBypass>
+<convertCOLORs>Dathanna</convertCOLORs>
+<convertCOLORsMessage>Luachanna a Tiontaigh go barra dath</convertCOLORsMessage>
 <convertToAFullName><![CDATA[
 <strong>Tiontaigh ó {0} go ainm iomlán.</strong>
 ]]></convertToAFullName>

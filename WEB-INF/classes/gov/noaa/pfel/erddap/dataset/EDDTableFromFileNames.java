@@ -82,10 +82,7 @@ public class EDDTableFromFileNames extends EDDTable {
   /** This is the system for getting dir info from files. */
   String fromFilesFileType; // currently must be jsonlCSV  ***fromFiles spec[1]
 
-  String fromFilesFileDir; // remote dir                  ***fromFiles spec[2]
   EDDTableFromFiles fromFilesEDDTable; // the child dataset holding all file dir info
-  Table fromFilesCache3LevelFileTable; // the table with first 3 levels of file table items (usu.
-  // directories), may be null
 
   // standard variable names
   public static final String URL = FileVisitorDNLS.URL; // "url";
@@ -336,7 +333,7 @@ public class EDDTableFromFileNames extends EDDTable {
     if (from == fromFiles) {
       String parts[] = parseFromFiles(fileDir); // it checks that fromFilesFileType is valid
       fromFilesFileType = parts[1]; // currently, only jsonlCSV is valid
-      fromFilesFileDir = parts[2]; // baseDir of local jsonlCSV files with fileNames
+      // fromFilesFileDir = parts[2]; // baseDir of local jsonlCSV files with fileNames
       fileDir = parts[4]; // dir of referenced files, AKA fromFilesRealDir
 
       if (fromFilesFileType.equals("jsonlCSV")) {
@@ -933,11 +930,13 @@ public class EDDTableFromFileNames extends EDDTable {
    */
   public Table readFromFilesCache3LevelFileTable() {
     try {
+      String[] array = new String[FileVisitorDNLS.DNLS_COLUMN_TYPES_SSLL.size()];
+      array = FileVisitorDNLS.DNLS_COLUMN_TYPES_SSLL.toArray(array);
       Table table3 = new Table();
       table3.readJsonlCSV(
           fromFilesCache3LevelFileTable_FileName(),
           new StringArray(FileVisitorDNLS.DNLS_COLUMN_NAMES),
-          String2.immutableListToArray(FileVisitorDNLS.DNLS_COLUMN_TYPES_SSLL),
+          array,
           false); // simplify
       return table3;
     } catch (Exception e) {

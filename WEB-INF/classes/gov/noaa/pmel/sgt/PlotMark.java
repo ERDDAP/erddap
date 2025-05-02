@@ -34,11 +34,11 @@ import javax.swing.*;
  */
 public class PlotMark {
   protected int mark_;
-  protected final int tableSize_ = 51;
+  protected static final int tableSize_ = 51;
   protected int firstPoint_;
   protected int lastPoint_;
   protected double markHeight_;
-  protected final int fillMark_ = 44;
+  protected static final int fillMark_ = 44;
   protected boolean fill_ = false;
   protected boolean circle_ = false;
 
@@ -89,25 +89,10 @@ public class PlotMark {
     setLineAttribute(attr);
   }
 
-  /**
-   * Construct a <code>PlotMark</code> using the code and height from the <code>PointAttribute
-   * </code>.
-   */
-  public PlotMark(PointAttribute attr) {
-    setPointAttribute(attr);
-  }
-
   /** Construct a <code>PlotMark</code> using the code from the mark code. Default height = 0.08. */
   public PlotMark(int mark) {
     setMark(mark);
     markHeight_ = 0.08;
-  }
-
-  /** Set the mark and height from the <code>PointAttribute</code>. */
-  public void setPointAttribute(PointAttribute attr) {
-    int mark = attr.getMark();
-    setMark(mark);
-    markHeight_ = attr.getMarkHeightP() / 8.0;
   }
 
   /** Set the mark and height from the <code>LineAttribute</code>. */

@@ -622,7 +622,7 @@ class EDDTableFromAsciiFilesTests {
               Image2Tests.urlToAbsolutePath(Image2Tests.OBS_DIR),
               baseName,
               ".png");
-      // Test.displayInBrowser("file://" + dir + tName);
+      // TestUtil.displayInBrowser("file://" + dir + tName);
       Image2Tests.testImagesIdentical(tName, baseName + ".png", baseName + "_diff.png");
     }
 

@@ -807,7 +807,7 @@ public class DDSParserTokenManager implements DDSParserConstants {
   }
 
   int curLexState = 0;
-  final int defaultLexState = 0;
+  static final int defaultLexState = 0;
   int jjnewStateCnt;
   int jjround;
   int jjmatchedPos;

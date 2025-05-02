@@ -18,9 +18,7 @@ import com.cohort.array.PrimitiveArray;
 import com.cohort.util.MustBe;
 import com.cohort.util.String2;
 import gov.noaa.pmel.sgt.JPane;
-import gov.noaa.pmel.sgt.SGLabel;
 import gov.noaa.pmel.sgt.dm.SGTData;
-import gov.noaa.pmel.sgt.dm.SGTMetaData;
 import gov.noaa.pmel.util.SoTRange;
 import java.beans.PropertyChangeListener;
 import java.io.Serializable;
@@ -38,8 +36,6 @@ import java.io.Serializable;
  * @see CoordinateSystem
  */
 public class SGTPointsVector implements SGTData, Cloneable, Serializable {
-  String title_;
-  SGLabel keyTitle_ = null;
   String id_ = null;
   double[] xValues, yValues, uValues, vValues;
   SoTRange xRange, yRange;
@@ -86,35 +82,6 @@ public class SGTPointsVector implements SGTData, Cloneable, Serializable {
   }
 
   /**
-   * Create a copy. Creates a shallow copy.
-   *
-   * @see SGTData
-   */
-  @Override
-  public SGTData copy() {
-    return new SGTPointsVector(xValues, yValues, uValues, vValues);
-  }
-
-  /**
-   * Set the vector's title.
-   *
-   * @param title
-   */
-  public void setTitle(String title) {
-    title_ = title;
-  }
-
-  @Override
-  public SGLabel getKeyTitle() {
-    return keyTitle_;
-  }
-
-  /** Set the title formatted for the <code>VectorKey</code>. */
-  public void setKeyTitle(SGLabel title) {
-    keyTitle_ = title;
-  }
-
-  /**
    * Get the unique identifier. The presence of the identifier is optional, but if it is present it
    * should be unique. This field is used to search for the layer that contains the data.
    *
@@ -132,16 +99,6 @@ public class SGTPointsVector implements SGTData, Cloneable, Serializable {
     id_ = ident;
   }
 
-  /**
-   * Get the vector's title.
-   *
-   * @return the title
-   */
-  @Override
-  public String getTitle() {
-    return title_;
-  }
-
   @Override
   public boolean isXTime() {
     return false;
@@ -150,26 +107,6 @@ public class SGTPointsVector implements SGTData, Cloneable, Serializable {
   @Override
   public boolean isYTime() {
     return false;
-  }
-
-  @Override
-  public SGTMetaData getXMetaData() {
-    return null;
-  }
-
-  @Override
-  public SGTMetaData getYMetaData() {
-    return null;
-  }
-
-  @Override
-  public SoTRange getXRange() {
-    return xRange;
-  }
-
-  @Override
-  public SoTRange getYRange() {
-    return yRange;
   }
 
   @Override

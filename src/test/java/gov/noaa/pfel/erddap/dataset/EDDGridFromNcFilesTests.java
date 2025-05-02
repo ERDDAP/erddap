@@ -10,6 +10,7 @@ import com.cohort.util.Math2;
 import com.cohort.util.MustBe;
 import com.cohort.util.String2;
 import com.cohort.util.Test;
+import com.cohort.util.TestUtil;
 import gov.noaa.pfel.coastwatch.griddata.NcHelper;
 import gov.noaa.pfel.coastwatch.pointdata.Table;
 import gov.noaa.pfel.coastwatch.sgt.SgtMap;
@@ -194,7 +195,7 @@ class EDDGridFromNcFilesTests {
       // pre 5.4.1
       Test.ensureEqual(results, expected, "results=\n" + results);
     } catch (Exception e) {
-      Test.knownProblem(
+      TestUtil.knownProblem(
           "2022-07-07 This fails with switch to netcdf v5.5.3 and modules (not netcdfAll). "
               + "I reported to netcdf-java people.",
           e);
@@ -1455,7 +1456,7 @@ class EDDGridFromNcFilesTests {
             obsDir,
             baseName,
             ".png");
-    // Test.displayInBrowser("file://" + tDir + tName);
+    // TestUtil.displayInBrowser("file://" + tDir + tName);
     Image2Tests.testImagesIdentical(tName, baseName + ".png", baseName + "_diff.png");
   }
 
@@ -8425,7 +8426,7 @@ class EDDGridFromNcFilesTests {
       query = "sst[last-7:last][0][(25)][(242)]&.draw=lines&.vars=sst|time";
       baseName = start + "DefaultIsLinear";
       tName = eddGrid.makeNewFileForDapQuery(language, null, null, query, obsDir, baseName, ".png");
-      // Test.displayInBrowser("file://" + tDir + tName);
+      // TestUtil.displayInBrowser("file://" + tDir + tName);
       Image2Tests.testImagesIdentical(tName, baseName + ".png", baseName + "_diff.png");
     }
 
@@ -8435,42 +8436,42 @@ class EDDGridFromNcFilesTests {
       /* */
       baseName = start + "DefaultIsLinear";
       tName = eddGrid.makeNewFileForDapQuery(language, null, null, query, obsDir, baseName, ".png");
-      // Test.displayInBrowser("file://" + tDir + tName);
+      // TestUtil.displayInBrowser("file://" + tDir + tName);
       Image2Tests.testImagesIdentical(tName, baseName + ".png", baseName + "_diff.png");
 
       baseName = start + "5_500DefaultIsAscendingLinear";
       tName =
           eddGrid.makeNewFileForDapQuery(
               language, null, null, query + "&.yRange=5|500||", obsDir, baseName, ".png");
-      // Test.displayInBrowser("file://" + tDir + tName);
+      // TestUtil.displayInBrowser("file://" + tDir + tName);
       Image2Tests.testImagesIdentical(tName, baseName + ".png", baseName + "_diff.png");
 
       baseName = start + "AscendingLinear";
       tName =
           eddGrid.makeNewFileForDapQuery(
               language, null, null, query + "&.yRange=5|500|true|Linear", obsDir, baseName, ".png");
-      // Test.displayInBrowser("file://" + tDir + tName);
+      // TestUtil.displayInBrowser("file://" + tDir + tName);
       Image2Tests.testImagesIdentical(tName, baseName + ".png", baseName + "_diff.png");
 
       baseName = start + "AscendingLog";
       tName =
           eddGrid.makeNewFileForDapQuery(
               language, null, null, query + "&.yRange=5|500|true|log", obsDir, baseName, ".png");
-      // Test.displayInBrowser("file://" + tDir + tName);
+      // TestUtil.displayInBrowser("file://" + tDir + tName);
       Image2Tests.testImagesIdentical(tName, baseName + ".png", baseName + "_diff.png");
 
       baseName = start + "DescendingLog";
       tName =
           eddGrid.makeNewFileForDapQuery(
               language, null, null, query + "&.yRange=5|500|false|Log", obsDir, baseName, ".png");
-      // Test.displayInBrowser("file://" + tDir + tName);
+      // TestUtil.displayInBrowser("file://" + tDir + tName);
       Image2Tests.testImagesIdentical(tName, baseName + ".png", baseName + "_diff.png");
 
       baseName = start + "WideRangeLog";
       tName =
           eddGrid.makeNewFileForDapQuery(
               language, null, null, query + "&.yRange=1e-5|1e5||Log", obsDir, baseName, ".png");
-      // Test.displayInBrowser("file://" + tDir + tName);
+      // TestUtil.displayInBrowser("file://" + tDir + tName);
       Image2Tests.testImagesIdentical(tName, baseName + ".png", baseName + "_diff.png");
 
       baseName = start + "HardIntraDecadeLog";
@@ -8488,7 +8489,7 @@ class EDDGridFromNcFilesTests {
               obsDir,
               baseName,
               ".png");
-      // Test.displayInBrowser("file://" + tDir + tName);
+      // TestUtil.displayInBrowser("file://" + tDir + tName);
       Image2Tests.testImagesIdentical(tName, baseName + ".png", baseName + "_diff.png");
 
       baseName = start + "SuperHardIntraDecadeLog";
@@ -8504,7 +8505,7 @@ class EDDGridFromNcFilesTests {
               obsDir,
               baseName,
               ".png");
-      // Test.displayInBrowser("file://" + tDir + tName);
+      // TestUtil.displayInBrowser("file://" + tDir + tName);
       Image2Tests.testImagesIdentical(tName, baseName + ".png", baseName + "_diff.png");
       /* */
     }
@@ -8518,42 +8519,42 @@ class EDDGridFromNcFilesTests {
 
       baseName = start + "DefaultIsLinear";
       tName = eddGrid.makeNewFileForDapQuery(language, null, null, query, obsDir, baseName, ".png");
-      // Test.displayInBrowser("file://" + tDir + tName);
+      // TestUtil.displayInBrowser("file://" + tDir + tName);
       Image2Tests.testImagesIdentical(tName, baseName + ".png", baseName + "_diff.png");
 
       baseName = start + "5_500DefaultIsAscendingLinear";
       tName =
           eddGrid.makeNewFileForDapQuery(
               language, null, null, query + "&.xRange=5|500||", obsDir, baseName, ".png");
-      // Test.displayInBrowser("file://" + tDir + tName);
+      // TestUtil.displayInBrowser("file://" + tDir + tName);
       Image2Tests.testImagesIdentical(tName, baseName + ".png", baseName + "_diff.png");
 
       baseName = start + "AscendingLinear";
       tName =
           eddGrid.makeNewFileForDapQuery(
               language, null, null, query + "&.xRange=5|500|true|Linear", obsDir, baseName, ".png");
-      // Test.displayInBrowser("file://" + tDir + tName);
+      // TestUtil.displayInBrowser("file://" + tDir + tName);
       Image2Tests.testImagesIdentical(tName, baseName + ".png", baseName + "_diff.png");
 
       baseName = start + "AscendingLog";
       tName =
           eddGrid.makeNewFileForDapQuery(
               language, null, null, query + "&.xRange=5|500|true|log", obsDir, baseName, ".png");
-      // Test.displayInBrowser("file://" + tDir + tName);
+      // TestUtil.displayInBrowser("file://" + tDir + tName);
       Image2Tests.testImagesIdentical(tName, baseName + ".png", baseName + "_diff.png");
 
       baseName = start + "DescendingLog";
       tName =
           eddGrid.makeNewFileForDapQuery(
               language, null, null, query + "&.xRange=5|500|false|Log", obsDir, baseName, ".png");
-      // Test.displayInBrowser("file://" + tDir + tName);
+      // TestUtil.displayInBrowser("file://" + tDir + tName);
       Image2Tests.testImagesIdentical(tName, baseName + ".png", baseName + "_diff.png");
 
       baseName = start + "WideRangeLog";
       tName =
           eddGrid.makeNewFileForDapQuery(
               language, null, null, query + "&.xRange=1e-5|1e5||Log", obsDir, baseName, ".png");
-      // Test.displayInBrowser("file://" + tDir + tName);
+      // TestUtil.displayInBrowser("file://" + tDir + tName);
       Image2Tests.testImagesIdentical(tName, baseName + ".png", baseName + "_diff.png");
 
       baseName = start + "HardIntraDecadeLog";
@@ -8572,7 +8573,7 @@ class EDDGridFromNcFilesTests {
               obsDir,
               baseName,
               ".png");
-      // Test.displayInBrowser("file://" + tDir + tName);
+      // TestUtil.displayInBrowser("file://" + tDir + tName);
       Image2Tests.testImagesIdentical(tName, baseName + ".png", baseName + "_diff.png");
 
       baseName = start + "SuperHardIntraDecadeLog";
@@ -8588,7 +8589,7 @@ class EDDGridFromNcFilesTests {
               obsDir,
               baseName,
               ".png");
-      // Test.displayInBrowser("file://" + tDir + tName);
+      // TestUtil.displayInBrowser("file://" + tDir + tName);
       Image2Tests.testImagesIdentical(tName, baseName + ".png", baseName + "_diff.png");
       /* */
     }
@@ -8613,49 +8614,49 @@ class EDDGridFromNcFilesTests {
 
       baseName = start + "DefaultIsLog";
       tName = eddGrid.makeNewFileForDapQuery(language, null, null, query, obsDir, baseName, ".png");
-      // Test.displayInBrowser("file://" + tDir + tName);
+      // TestUtil.displayInBrowser("file://" + tDir + tName);
       Image2Tests.testImagesIdentical(tName, baseName + ".png", baseName + "_diff.png");
 
       baseName = start + "DefaultIsAscendingLog";
       tName =
           eddGrid.makeNewFileForDapQuery(
               language, null, null, query + "&.yRange=5|500||", obsDir, baseName, ".png");
-      // Test.displayInBrowser("file://" + tDir + tName);
+      // TestUtil.displayInBrowser("file://" + tDir + tName);
       Image2Tests.testImagesIdentical(tName, baseName + ".png", baseName + "_diff.png");
 
       baseName = start + "AscendingLinear";
       tName =
           eddGrid.makeNewFileForDapQuery(
               language, null, null, query + "&.yRange=5|500|true|Linear", obsDir, baseName, ".png");
-      // Test.displayInBrowser("file://" + tDir + tName);
+      // TestUtil.displayInBrowser("file://" + tDir + tName);
       Image2Tests.testImagesIdentical(tName, baseName + ".png", baseName + "_diff.png");
 
       baseName = start + "AscendingLog";
       tName =
           eddGrid.makeNewFileForDapQuery(
               language, null, null, query + "&.yRange=5|500|true|Log", obsDir, baseName, ".png");
-      // Test.displayInBrowser("file://" + tDir + tName);
+      // TestUtil.displayInBrowser("file://" + tDir + tName);
       Image2Tests.testImagesIdentical(tName, baseName + ".png", baseName + "_diff.png");
 
       baseName = start + "DescendingLog";
       tName =
           eddGrid.makeNewFileForDapQuery(
               language, null, null, query + "&.yRange=5|500|false|Log", obsDir, baseName, ".png");
-      // Test.displayInBrowser("file://" + tDir + tName);
+      // TestUtil.displayInBrowser("file://" + tDir + tName);
       Image2Tests.testImagesIdentical(tName, baseName + ".png", baseName + "_diff.png");
 
       baseName = start + "WideRangeLog";
       tName =
           eddGrid.makeNewFileForDapQuery(
               language, null, null, query + "&.yRange=1e-5|1e5||Log", obsDir, baseName, ".png");
-      // Test.displayInBrowser("file://" + tDir + tName);
+      // TestUtil.displayInBrowser("file://" + tDir + tName);
       Image2Tests.testImagesIdentical(tName, baseName + ".png", baseName + "_diff.png");
 
       baseName = start + "WideRangeLog5";
       tName =
           eddGrid.makeNewFileForDapQuery(
               language, null, null, query + "&.yRange=5e-6|5e5||Log", obsDir, baseName, ".png");
-      // Test.displayInBrowser("file://" + tDir + tName);
+      // TestUtil.displayInBrowser("file://" + tDir + tName);
       Image2Tests.testImagesIdentical(tName, baseName + ".png", baseName + "_diff.png");
 
       baseName = start + "WideRangeLogFalse5";
@@ -8668,7 +8669,7 @@ class EDDGridFromNcFilesTests {
               obsDir,
               baseName,
               ".png");
-      // Test.displayInBrowser("file://" + tDir + tName);
+      // TestUtil.displayInBrowser("file://" + tDir + tName);
       Image2Tests.testImagesIdentical(tName, baseName + ".png", baseName + "_diff.png");
       /* */
     }
@@ -8685,49 +8686,49 @@ class EDDGridFromNcFilesTests {
 
       baseName = start + "DefaultIsLinear";
       tName = eddGrid.makeNewFileForDapQuery(language, null, null, query, obsDir, baseName, ".png");
-      // Test.displayInBrowser("file://" + tDir + tName);
+      // TestUtil.displayInBrowser("file://" + tDir + tName);
       Image2Tests.testImagesIdentical(tName, baseName + ".png", baseName + "_diff.png");
 
       baseName = start + "DefaultIsAscendingLinear";
       tName =
           eddGrid.makeNewFileForDapQuery(
               language, null, null, query + "&.xRange=5|500||", obsDir, baseName, ".png");
-      // Test.displayInBrowser("file://" + tDir + tName);
+      // TestUtil.displayInBrowser("file://" + tDir + tName);
       Image2Tests.testImagesIdentical(tName, baseName + ".png", baseName + "_diff.png");
 
       baseName = start + "AscendingLinear";
       tName =
           eddGrid.makeNewFileForDapQuery(
               language, null, null, query + "&.xRange=5|500|true|Linear", obsDir, baseName, ".png");
-      // Test.displayInBrowser("file://" + tDir + tName);
+      // TestUtil.displayInBrowser("file://" + tDir + tName);
       Image2Tests.testImagesIdentical(tName, baseName + ".png", baseName + "_diff.png");
 
       baseName = start + "AscendingLog";
       tName =
           eddGrid.makeNewFileForDapQuery(
               language, null, null, query + "&.xRange=5|500|true|Log", obsDir, baseName, ".png");
-      // Test.displayInBrowser("file://" + tDir + tName);
+      // TestUtil.displayInBrowser("file://" + tDir + tName);
       Image2Tests.testImagesIdentical(tName, baseName + ".png", baseName + "_diff.png");
 
       baseName = start + "DescendingLog";
       tName =
           eddGrid.makeNewFileForDapQuery(
               language, null, null, query + "&.xRange=5|500|false|Log", obsDir, baseName, ".png");
-      // Test.displayInBrowser("file://" + tDir + tName);
+      // TestUtil.displayInBrowser("file://" + tDir + tName);
       Image2Tests.testImagesIdentical(tName, baseName + ".png", baseName + "_diff.png");
 
       baseName = start + "WideRangeLog";
       tName =
           eddGrid.makeNewFileForDapQuery(
               language, null, null, query + "&.xRange=1e-5|1e5||Log", obsDir, baseName, ".png");
-      // Test.displayInBrowser("file://" + tDir + tName);
+      // TestUtil.displayInBrowser("file://" + tDir + tName);
       Image2Tests.testImagesIdentical(tName, baseName + ".png", baseName + "_diff.png");
 
       baseName = start + "WideRangeLog5";
       tName =
           eddGrid.makeNewFileForDapQuery(
               language, null, null, query + "&.xRange=5e-6|5e5||Log", obsDir, baseName, ".png");
-      // Test.displayInBrowser("file://" + tDir + tName);
+      // TestUtil.displayInBrowser("file://" + tDir + tName);
       Image2Tests.testImagesIdentical(tName, baseName + ".png", baseName + "_diff.png");
 
       baseName = start + "HardIntraDecadeLog";
@@ -8746,7 +8747,7 @@ class EDDGridFromNcFilesTests {
               obsDir,
               baseName,
               ".png");
-      // Test.displayInBrowser("file://" + tDir + tName);
+      // TestUtil.displayInBrowser("file://" + tDir + tName);
       Image2Tests.testImagesIdentical(tName, baseName + ".png", baseName + "_diff.png");
 
       baseName = start + "SuperHardIntraDecadeLog";
@@ -8762,7 +8763,7 @@ class EDDGridFromNcFilesTests {
               obsDir,
               baseName,
               ".png");
-      // Test.displayInBrowser("file://" + tDir + tName);
+      // TestUtil.displayInBrowser("file://" + tDir + tName);
       Image2Tests.testImagesIdentical(tName, baseName + ".png", baseName + "_diff.png");
       /* */
     }
@@ -9637,12 +9638,12 @@ class EDDGridFromNcFilesTests {
             obsDir,
             baseName,
             ".png");
-    // Test.displayInBrowser("file://" + tDir + tName); //Known problem, so don't
+    // TestUtil.displayInBrowser("file://" + tDir + tName); //Known problem, so don't
     // switch to testImagesIdentical
     // String tDir = EDStatic.config.fullTestCacheDirectory;
     Image2Tests.testImagesIdentical(tName, baseName + ".png", baseName + "_diff.png");
 
-    // Test.knownProblem("SgtGraph DOESN'T SUPPORT TWO TIME AXES !!!!",
+    // TestUtil.knownProblem("SgtGraph DOESN'T SUPPORT TWO TIME AXES !!!!",
     // "See SgtGraph \"yIsTimeAxis = false;\".");
     // Math2.sleep(10000);
 
@@ -9923,7 +9924,7 @@ class EDDGridFromNcFilesTests {
         "https://data.nodc.noaa.gov/thredds/fileServer/aquarius/nodc_binned_V4.0/"; // catalog.html
 
     if (true)
-      Test.knownProblem(
+      TestUtil.knownProblem(
           "2020-10-26 This needs a new test url. The current one is unreliable: " + dir);
 
     try {
@@ -11275,7 +11276,7 @@ class EDDGridFromNcFilesTests {
             Image2Tests.urlToAbsolutePath(Image2Tests.OBS_DIR),
             baseName,
             ".png");
-    // Test.displayInBrowser("file://" + EDStatic.config.fullTestCacheDirectory + tName);
+    // TestUtil.displayInBrowser("file://" + EDStatic.config.fullTestCacheDirectory + tName);
     Image2Tests.testImagesIdentical(tName, baseName + ".png", baseName + "_diff.png");
   }
 
@@ -11516,7 +11517,7 @@ class EDDGridFromNcFilesTests {
             Image2Tests.urlToAbsolutePath(Image2Tests.OBS_DIR),
             testName + "_img",
             ".png");
-    // Test.displayInBrowser("file://" + tDir + tName);
+    // TestUtil.displayInBrowser("file://" + tDir + tName);
     Image2Tests.testImagesIdentical(tName, testName + ".png", testName + "_diff.png");
   }
 
@@ -11741,7 +11742,7 @@ class EDDGridFromNcFilesTests {
             Image2Tests.urlToAbsolutePath(Image2Tests.OBS_DIR),
             testName + "_img",
             ".png");
-    // Test.displayInBrowser("file://" + tDir + tName);
+    // TestUtil.displayInBrowser("file://" + tDir + tName);
     Image2Tests.testImagesIdentical(tName, testName + ".png", testName + "_diff.png");
   }
 
@@ -11958,7 +11959,7 @@ class EDDGridFromNcFilesTests {
             Image2Tests.urlToAbsolutePath(Image2Tests.OBS_DIR),
             testName + "_img",
             ".png");
-    // Test.displayInBrowser("file://" + tDir + tName);
+    // TestUtil.displayInBrowser("file://" + tDir + tName);
     Image2Tests.testImagesIdentical(tName, testName + ".png", testName + "_diff.png");
   }
 
@@ -12197,7 +12198,7 @@ class EDDGridFromNcFilesTests {
             Image2Tests.urlToAbsolutePath(Image2Tests.OBS_DIR),
             testName + "_img",
             ".png");
-    // Test.displayInBrowser("file://" + tDir + tName);
+    // TestUtil.displayInBrowser("file://" + tDir + tName);
     Image2Tests.testImagesIdentical(tName, testName + ".png", testName + "_diff.png");
   }
 
@@ -18033,7 +18034,7 @@ class EDDGridFromNcFilesTests {
           tDir,
           baseName,
           ".png");
-      // Test.displayInBrowser("file://" + tDir + tName);
+      // TestUtil.displayInBrowser("file://" + tDir + tName);
       // !!! graphing system works correctly, but island location is knownProblem
       // Image2.testImagesIdentical(
       // tDir + tName,

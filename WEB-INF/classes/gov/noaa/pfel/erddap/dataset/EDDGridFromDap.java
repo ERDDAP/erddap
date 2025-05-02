@@ -1875,8 +1875,8 @@ public class EDDGridFromDap extends EDDGrid {
     String2.returnLoggingToSystemOut();
 
     if (oLocalSourceUrl != null) {
-      Test.displayInBrowser(resultsFileName);
-      Test.displayInBrowser(logFileName);
+      // Test.displayInBrowser(resultsFileName);
+      // Test.displayInBrowser(logFileName);
       return;
     }
 

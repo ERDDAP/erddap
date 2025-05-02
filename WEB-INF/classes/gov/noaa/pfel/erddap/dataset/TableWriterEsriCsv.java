@@ -40,14 +40,14 @@ import java.util.HashSet;
 public class TableWriterEsriCsv extends TableWriter {
 
   // set by constructor
-  protected final String separator = ",";
+  protected static final String separator = ",";
   // search for "default esri" in
   // http://www.stata-journal.com/sjpdf.html?articlenum=dm0014
   // or
   // http://docs.google.com/viewer?a=v&q=cache:iwbmxvE9DvIJ:www.stata-journal.com/sjpdf.html%3Farticlenum%3Ddm0014+esri+default+missing+value&hl=en&gl=us&pid=bl&srcid=ADGEESjrRrmh7PoDFjjsViKg06rNXFvycmSNw4U_D9Y2ZpwrS_M6D1KFokTG6UFPQmi1MbkvDtwSRw4f60ui0QXp4Tf0kIL2lVD4ykiei66-N4gZPyq7Jr4FW0N4cZH85iboEUI30AEW&sig=AHIEtbTtN5tHnXlQcP_6Nu8HZXlFHzH56w
   // Int and Float are treated differently, so ArcGIS can determine the type of data.
-  protected final String nanIString = "-9999";
-  protected final String nanFString = "-9999.0";
+  protected static final String nanIString = "-9999";
+  protected static final String nanFString = "-9999.0";
 
   // set by firstTime
   protected boolean isTimeStamp[];

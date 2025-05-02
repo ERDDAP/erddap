@@ -7,6 +7,7 @@ package com.cohort.util;
 import com.cohort.array.StringArray;
 import java.io.File;
 import java.io.Writer;
+import java.lang.ref.WeakReference;
 import java.nio.file.Path;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
@@ -29,7 +30,7 @@ import tags.TagSlowTests;
 
 /** This is a Java program to test all of the methods in com.cohort.util. */
 @Isolated
-class TestUtil {
+public class TestUtil {
 
   @TempDir private static Path TEMP_DIR;
 
@@ -1498,16 +1499,14 @@ class TestUtil {
     Test.ensureEqual(String2.findWholeWord(" a", "a"), 1, "");
 
     // removeValues(Map map, Set set)
-    Map<String, String> map = new HashMap<>();
-    map.put("0", "00");
-    map.put("1", "11");
-    map.put("2", "22");
+    Map<Integer, String> map = new HashMap<>();
+    map.put(0, "00");
+    map.put(1, "11");
+    map.put(2, "22");
     Set<String> set = new HashSet<String>();
     set.add("11");
     set.add("zz");
     String2.removeValues(map, set);
-    Test.ensureEqual(
-        String2.toString(map), "0 = 00\n2 = 22\n", "results=\n" + String2.toString(map));
     Test.ensureEqual(String2.toCSSVString(set), "zz", "");
 
     // noLongLinesAtSpace
@@ -1868,17 +1867,6 @@ class TestUtil {
     Test.ensureEqual(String2.indexOfIgnoreCase(s, "ab", 0), 0, "");
     Test.ensureEqual(String2.indexOfIgnoreCase(s, "JKL", 0), -1, "");
     Test.ensureEqual(String2.indexOfIgnoreCase(s, "jk", 0), 9, "");
-
-    // indexOf(StringBuilder)
-    String2.log("test indexOf(StringBuilder)");
-    StringBuilder abcd = new StringBuilder("abcd");
-    Test.ensureEqual(String2.indexOf(abcd, "a", 0), 0, "a");
-    Test.ensureEqual(String2.indexOf(abcd, "a", 1), -1, "b");
-    Test.ensureEqual(String2.indexOf(abcd, "a", -1), 0, "c");
-    Test.ensureEqual(String2.indexOf(abcd, "cd", 0), 2, "d");
-    Test.ensureEqual(String2.indexOf(abcd, "ce", 0), -1, "e");
-    Test.ensureEqual(String2.indexOf(abcd, "d", 0), 3, "f");
-    Test.ensureEqual(String2.indexOf(abcd, "de", 0), -1, "g");
 
     // indexOf(int[])
     String2.log("test indexOf(int[])");
@@ -2380,14 +2368,6 @@ class TestUtil {
     Test.ensureEqual(sar[0], "1", "b");
     Test.ensureEqual(sar[1], null, "c");
     Test.ensureEqual(sar[2], "333", "d");
-
-    // toString(map)
-    String2.log("test toString(map)");
-    map = new HashMap<>();
-    map.put("key a", "value a");
-    map.put("Bob", "Simons");
-    // order of elements is not specified and may change
-    Test.ensureEqual(String2.toString(map), "key a = value a\nBob = Simons\n", "a");
 
     // toByteArray(s)
     String2.log("test toByteArray(s)");
@@ -2956,26 +2936,6 @@ class TestUtil {
     Test.ensureEqual(String2.trimEnd("AB"), "AB", "");
     Test.ensureEqual(String2.trimEnd(""), "", "");
     Test.ensureEqual(String2.trimEnd(null), null, "");
-
-    // alternate
-    String2.log("test alternate");
-    Test.ensureEqual(String2.alternateToString(null), "    [null]\n", "test a");
-    Test.ensureEqual(
-        String2.alternateGetValue(null, "a"), null, "test b"); // 'get' when arraylist is null
-    ArrayList<Object> alternate = new ArrayList<>();
-    String2.alternateSetValue(alternate, "a", "able"); // "add 'a'");
-    Test.ensureEqual(String2.alternateSetValue(alternate, "b", "bob"), null, "set 'b' bob");
-    Test.ensureEqual(
-        String2.alternateSetValue(alternate, "b", "baker"), "bob", "replace 'bob' with 'baker'");
-    Test.ensureEqual(String2.alternateToString(alternate), "    a=able\n    b=baker\n", "test e");
-    Test.ensureEqual(String2.alternateGetValue(alternate, "a"), "able", "test f");
-    Test.ensureEqual(String2.alternateGetValue(alternate, "b"), "baker", "test g");
-    Test.ensureEqual(
-        String2.alternateGetValue(alternate, "c"), null, "look for something not there");
-    Test.ensureEqual(String2.alternateSetValue(alternate, "a", null), "able", "remove 'a'");
-    Test.ensureEqual(alternate.size(), 2, "size is smaller now");
-    Test.ensureEqual(String2.alternateGetValue(alternate, "a"), null, "'a' is gone");
-    Test.ensureEqual(String2.alternateGetValue(alternate, "b"), "baker", "'b' still there");
 
     // TODO: add test for getClassPath
     // getClassPath (with / separator and / at the end)
@@ -8612,10 +8572,9 @@ class TestUtil {
       if (oMemoryInUse == -1) {
         // initial sizes
         oMemoryInUse = memoryInUse;
-        canSize = String2.canonicalSize(); // added strings should be gc'd after each iteration
+        canSize = canonicalSize(); // added strings should be gc'd after each iteration
         canSHSize =
-            String2
-                .canonicalStringHolderSize(); // added strings should be gc'd after each iteration
+            canonicalStringHolderSize(); // added strings should be gc'd after each iteration
       } else {
         // String2.log(" bytes/string=" + ((memoryInUse - oMemoryInUse) / (n + 0.0)));
         // too inaccurate to be useful
@@ -8626,11 +8585,9 @@ class TestUtil {
         //     // messages.xml
         //     "Unexpected memoryInUse=" + (memoryInUse / Math2.BytesPerMB));
       }
-      Test.ensureEqual(String2.canonicalSize(), canSize, "Unexpected String2.canonicalSize!");
+      Test.ensureEqual(canonicalSize(), canSize, "Unexpected String2.canonicalSize!");
       Test.ensureEqual(
-          String2.canonicalStringHolderSize(),
-          canSHSize,
-          "Unexpected String2.canonicalStringHolderSize!");
+          canonicalStringHolderSize(), canSHSize, "Unexpected String2.canonicalStringHolderSize!");
     }
     // for (int j = 0; j < sa.length; j++) String2.log(">> " + sa[j]);
     // TODO Memory use checks can fail in GitHub runners
@@ -8714,10 +8671,9 @@ class TestUtil {
       //     Test.ensureTrue(time < shouldBe * 3, "Unexpected time");
       if (oMemoryInUse == -1) {
         oMemoryInUse = memoryInUse;
-        canSize = String2.canonicalSize(); // added strings should be gc'd after each iteration
+        canSize = canonicalSize(); // added strings should be gc'd after each iteration
         canSHSize =
-            String2
-                .canonicalStringHolderSize(); // added strings should be gc'd after each iteration
+            canonicalStringHolderSize(); // added strings should be gc'd after each iteration
       } else {
         // String2.log(" bytes/string=" + ((memoryInUse - oMemoryInUse) / (n + 0.0)));
         // too inaccurate to be useful
@@ -8729,11 +8685,9 @@ class TestUtil {
         // Test.ensureTrue(memoryInUse < 50L * Math2.BytesPerMB,
         //         "Unexpected memoryInUse=" + (memoryInUse / Math2.BytesPerMB));
       }
-      Test.ensureEqual(String2.canonicalSize(), canSize, "Unexpected String2.canonicalSize!");
+      Test.ensureEqual(canonicalSize(), canSize, "Unexpected String2.canonicalSize!");
       Test.ensureEqual(
-          String2.canonicalStringHolderSize(),
-          canSHSize,
-          "Unexpected String2.canonicalStringHolderSize!");
+          canonicalStringHolderSize(), canSHSize, "Unexpected String2.canonicalStringHolderSize!");
     }
     // for (int j = 0; j < sa.length; j++) String2.log(">> " + sa[j]);
     // TODO Memory use checks can fail in GitHub runners
@@ -8826,5 +8780,149 @@ class TestUtil {
             + " time="
             + (System.currentTimeMillis() - time)
             + "ms (expected=5109ms which is really fast)");
+  }
+
+  /** This is only used to test canonical. */
+  private static int canonicalSize() {
+    int sum = 0;
+    for (Map<String, WeakReference<String>> stringWeakReferenceMap : String2.canonicalMap)
+      sum += stringWeakReferenceMap.size();
+    return sum;
+  }
+
+  /** This is only used to test canonicalStringHolder. */
+  private static int canonicalStringHolderSize() {
+    int sum = 0;
+    for (Map<StringHolder, WeakReference<StringHolder>> stringHolderWeakReferenceMap :
+        String2.canonicalStringHolderMap) sum += stringHolderWeakReferenceMap.size();
+    return sum;
+  }
+
+  /**
+   * A simple, static class to display a URL in the system browser. Copied with minimal changes from
+   * http://www.javaworld.com/javaworld/javatips/jw-javatip66.html.
+   *
+   * <p>Under Unix, the system browser is hard-coded to be 'netscape'. Netscape must be in your PATH
+   * for this to work. This has been tested with the following platforms: AIX, HP-UX and Solaris.
+   *
+   * <p>Under Windows, this will bring up the default browser under windows. This has been tested
+   * under Windows 95/98/NT.
+   *
+   * <p>Examples: BrowserControl.displayURL("http://www.javaworld.com")
+   * BrowserControl.displayURL("file://c:\\docs\\index.html")
+   * BrowserContorl.displayURL("file:///user/joe/index.html");
+   *
+   * <p>Note - you must include the url type -- either "http://" or "file://".
+   *
+   * <p>2011-03-08 Before, this threw Exception if trouble. Now it doesn't.
+   *
+   * @param url the file's url (the url must start with either "http://" or "file://").
+   */
+  public static void displayInBrowser(String url) {
+    String2.log(">> displayInBrowser " + url);
+    try {
+      String cmd = null;
+      if (String2.OSIsWindows) {
+        // The default system browser under windows.
+        String WIN_PATH = "rundll32";
+        // The flag to display a url.
+        String WIN_FLAG = "url.dll,FileProtocolHandler";
+        // cmd = 'rundll32 url.dll,FileProtocolHandler http://...'
+        cmd = WIN_PATH + " " + WIN_FLAG + " " + url;
+        Runtime.getRuntime().exec(cmd);
+      } else {
+        // https://linux.die.net/man/1/xdg-open
+        // cmd = 'xdg-open ' + url
+        Process p =
+            Runtime.getRuntime()
+                .exec("xdg-open " + (url.startsWith("file://") ? url.substring(7) : url));
+
+        // wait for exit code -- if it's 0, command worked
+        int exitCode = p.waitFor();
+        if (exitCode != 0) throw new RuntimeException("xdg-open exitCode=" + exitCode);
+      }
+    } catch (Throwable t) {
+      String2.log(
+          String2.ERROR
+              + " while trying to display url="
+              + url
+              + "\n"
+              + "Please use the appropriate program to open and view the file.\n"
+              + "[Underlying error:\n"
+              + MustBe.throwableToString(t)
+              + "]");
+    }
+  }
+
+  /**
+   * If the two double values aren't almost equal, this throws a RuntimeException with the specified
+   * message.
+   *
+   * @param significantDigits This let's the caller specify how many digits must be equal.
+   * @param d1
+   * @param d2
+   * @param message
+   */
+  public static void ensureAlmostEqual(int significantDigits, double d1, double d2, String message)
+      throws RuntimeException {
+    if (!Math2.almostEqual(significantDigits, d1, d2))
+      Test.error(
+          "\n"
+              + String2.ERROR
+              + " in Test.ensureAlmostEqual(significantDigits="
+              + significantDigits
+              + ", double):\n"
+              + message
+              + "\nSpecifically: "
+              + d1
+              + " != "
+              + d2);
+  }
+
+  /**
+   * This is the standard way to display (during the unit tests) information about a known problem
+   * that won't be fixed soon.
+   *
+   * @param title
+   * @param t a related throwable
+   */
+  public static void knownProblem(String title, Throwable t) throws RuntimeException {
+    knownProblem(title, MustBe.throwableToString(t));
+  }
+
+  /**
+   * This is the standard way to display (during the unit tests) information about a known problem
+   * that won't be fixed soon.
+   *
+   * @param title usually all caps
+   * @param msg
+   * @param t a related throwable
+   */
+  public static void knownProblem(String title, String msg, Throwable t) throws RuntimeException {
+    knownProblem(title, msg + "\n" + MustBe.throwableToString(t));
+  }
+
+  public static void knownProblem(String title) throws Exception {
+    knownProblem(title, "");
+  }
+
+  /**
+   * This is the standard way to display (during the unit tests) information about a known problem
+   * that won't be fixed soon.
+   *
+   * @param title usually all caps
+   * @param msg
+   */
+  @SuppressWarnings("DoNotCallSuggester")
+  public static void knownProblem(String title, String msg) throws RuntimeException {
+    throw new RuntimeException(
+        msg
+            + /* String2.beep(1) + */ "\n"
+            + (msg.endsWith("\n") ? "" : "\n")
+            + "*** KNOWN PROBLEM: "
+            + title); // + "\n" +
+    // "Press ^C to stop.  Otherwise, testing will continue in 10 seconds.\n"));
+    // Math2.sleep(10000);
+    // String2.pressEnterToContinue();
   }
 }

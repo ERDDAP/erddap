@@ -9,6 +9,7 @@ import static org.mockito.Mockito.when;
 import com.cohort.util.File2;
 import com.cohort.util.String2;
 import com.cohort.util.Test;
+import com.cohort.util.TestUtil;
 import gov.noaa.pfel.coastwatch.griddata.NcHelper;
 import gov.noaa.pfel.coastwatch.util.SSR;
 import gov.noaa.pfel.erddap.util.EDConfig;
@@ -2192,7 +2193,7 @@ class EDDTableTests {
             EDStatic.config.fullTestCacheDirectory,
             eddTable.className() + "_testSos5png",
             ".png");
-    Test.displayInBrowser("file://" + EDStatic.config.fullTestCacheDirectory + fileName);
+    TestUtil.displayInBrowser("file://" + EDStatic.config.fullTestCacheDirectory + fileName);
 
     // *** #6 all stations, 1 obsProp,
     String sosQuery6csv = // no obsProp
@@ -2260,7 +2261,7 @@ class EDDTableTests {
             EDStatic.config.fullTestCacheDirectory,
             eddTable.className() + "_testSos6png",
             ".png");
-    Test.displayInBrowser("file://" + EDStatic.config.fullTestCacheDirectory + fileName);
+    TestUtil.displayInBrowser("file://" + EDStatic.config.fullTestCacheDirectory + fileName);
     /*  */
 
   }

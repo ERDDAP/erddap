@@ -17,6 +17,7 @@ import com.cohort.util.MustBe;
 import com.cohort.util.SimpleException;
 import com.cohort.util.String2;
 import com.cohort.util.Test;
+import com.cohort.util.TestUtil;
 import gov.noaa.pfel.coastwatch.griddata.NcHelper;
 import gov.noaa.pfel.coastwatch.pointdata.Table;
 import gov.noaa.pfel.coastwatch.sgt.SgtUtil;
@@ -6203,7 +6204,7 @@ class EDDTableFromNcFilesTests {
         globecBottle.makeNewFileForDapQuery(
             language, null, null, mapDapQuery, dir, globecBottle.className() + "_MapKml", ".kml");
     // String2.log(File2.readFromFile(dir + tName)[1]);
-    // Test.displayInBrowser("file://" + dir + tName);
+    // TestUtil.displayInBrowser("file://" + dir + tName);
   }
 
   /** The basic graphics tests of this class (testGlobecBottle). */
@@ -6229,7 +6230,7 @@ class EDDTableFromNcFilesTests {
         globecBottle.makeNewFileForDapQuery(
             language, null, null, mapDapQuery, dir, globecBottle.className() + "_MapKml", ".kml");
     // String2.log(File2.readFromFile(dir + tName)[1]);
-    // Test.displayInBrowser("file://" + dir + tName);
+    // TestUtil.displayInBrowser("file://" + dir + tName);
 
     if (doAll) {
 
@@ -6292,7 +6293,7 @@ class EDDTableFromNcFilesTests {
               dir,
               globecBottle.className() + "_GraphPdfSmall2",
               ".smallPdf");
-      // Test.displayInBrowser("file://" + dir + tName);
+      // TestUtil.displayInBrowser("file://" + dir + tName);
 
       tName =
           globecBottle.makeNewFileForDapQuery(
@@ -6303,7 +6304,7 @@ class EDDTableFromNcFilesTests {
               dir,
               globecBottle.className() + "_GraphPdf2",
               ".pdf");
-      // Test.displayInBrowser("file://" + dir + tName);
+      // TestUtil.displayInBrowser("file://" + dir + tName);
 
       tName =
           globecBottle.makeNewFileForDapQuery(
@@ -6314,7 +6315,7 @@ class EDDTableFromNcFilesTests {
               dir,
               globecBottle.className() + "_GraphPdfLarge2",
               ".largePdf");
-      // Test.displayInBrowser("file://" + dir + tName);
+      // TestUtil.displayInBrowser("file://" + dir + tName);
 
       // *** test make MAP
       String2.log("\n*** EDDTableFromNcFiles.test make MAP\n");
@@ -6349,12 +6350,12 @@ class EDDTableFromNcFilesTests {
               dir,
               globecBottle.className() + "_MapS",
               ".smallPdf");
-      // Test.displayInBrowser("file://" + dir + tName);
+      // TestUtil.displayInBrowser("file://" + dir + tName);
 
       tName =
           globecBottle.makeNewFileForDapQuery(
               language, null, null, mapDapQuery, dir, globecBottle.className() + "_MapM", ".pdf");
-      // Test.displayInBrowser("file://" + dir + tName);
+      // TestUtil.displayInBrowser("file://" + dir + tName);
 
       tName =
           globecBottle.makeNewFileForDapQuery(
@@ -6365,14 +6366,14 @@ class EDDTableFromNcFilesTests {
               dir,
               globecBottle.className() + "_MapL",
               ".largePdf");
-      // Test.displayInBrowser("file://" + dir + tName);
+      // TestUtil.displayInBrowser("file://" + dir + tName);
 
       // kml
       tName =
           globecBottle.makeNewFileForDapQuery(
               language, null, null, mapDapQuery, dir, globecBottle.className() + "_MapKml", ".kml");
       // String2.log(File2.readFromFile(dir + tName)[1]);
-      // Test.displayInBrowser("file://" + dir + tName);
+      // TestUtil.displayInBrowser("file://" + dir + tName);
 
       baseName = globecBottle.className() + "_GraphMLegendOff";
       tName =
@@ -7004,9 +7005,6 @@ class EDDTableFromNcFilesTests {
   void testLegend() throws Throwable {
 
     int language = 0;
-    String time1 = "now-11months";
-    double time2 = Calendar2.nowStringToEpochSeconds(time1);
-    String time3 = Calendar2.epochSecondsToIsoStringTZ(time2);
     String queries[];
     String dir = Image2Tests.urlToAbsolutePath(Image2Tests.OBS_DIR);
     String tName, baseName, start;
@@ -7017,7 +7015,7 @@ class EDDTableFromNcFilesTests {
     start =
         "longitude,latitude,airPressure&airPressure>900&airPressure!=NaN"
             + "&airPressure=~\"(.*)\"&.marker=1|5&longitude%3E=-180&time%3E=";
-    queries = new String[] {time1, "" + time2, time3};
+    queries = new String[] {"2022-09-01T00:00:00Z", "2022-09", "1661990400"};
     for (int i = 0; i < queries.length; i++) {
       baseName = "EDDTableFromNcFiles_testLegendA" + i;
       tName =
@@ -7199,13 +7197,13 @@ class EDDTableFromNcFilesTests {
 
       if (test >= kmli) {
         if (extensions[test].toLowerCase().endsWith("png")) {
-          // Test.displayInBrowser("file://" + dir + tName);
+          // TestUtil.displayInBrowser("file://" + dir + tName);
           Image2Tests.testImagesIdentical(
               dir + tName,
               baseName + extensions[test].substring(1) + ".png",
               baseName + extensions[test].substring(1) + "_diff.png");
         } else { // kml pdf
-          // Test.displayInBrowser("file://" + dir + tName);
+          // TestUtil.displayInBrowser("file://" + dir + tName);
           // Google Earth and Acrobat take long time to start up and penalize subsequent
           // tests,
           // so give them time
@@ -9910,7 +9908,7 @@ class EDDTableFromNcFilesTests {
       try {
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
       } catch (Throwable t3) {
-        Test.knownProblem(
+        TestUtil.knownProblem(
             "update() doesn't update subsetVariables (which is fine most of the time).", "", t3);
       }
 
@@ -12414,7 +12412,7 @@ class EDDTableFromNcFilesTests {
             tDir,
             eddTable.className() + "_testPrecision",
             ".htmlTable");
-    // Test.displayInBrowser("file://" + tDir + tName);
+    // TestUtil.displayInBrowser("file://" + tDir + tName);
   }
 
   /**
@@ -12440,42 +12438,42 @@ class EDDTableFromNcFilesTests {
             + "time,atmp&time%3E=2021-01-01T00%3A00%3A00Z&time%3C=2021-01-08T00%3A00%3A00Z"
             + "&station=%2246088%22&.draw=lines&.color=0x000000&.bgColor=0xffccccff";
 
-    Test.displayInBrowser(
+    TestUtil.displayInBrowser(
         dapQuery + "&orderBy(%22atmp%22)"); // goofy request (draw in ascending order of
     // atmp, not
     // time), but ERDDAP does what it was asked
 
-    Test.displayInBrowser(
+    TestUtil.displayInBrowser(
         dapQuery + "&orderByClosest(%22time/1day%22)"); // value each day which is closest
     // to
     // midnight
 
-    Test.displayInBrowser(
+    TestUtil.displayInBrowser(
         dapQuery + "&orderByCount(%22time/1day%22)"); // !!!y axis units should be 'count'
 
-    Test.displayInBrowser(
+    TestUtil.displayInBrowser(
         dapQuery + "&orderByLimit(%22time/1day,4%22)"); // first 4 values from each day
 
-    Test.displayInBrowser(
+    TestUtil.displayInBrowser(
         dapQuery + "&orderByMax(%22time/1day,atmp%22)"); // the max atmp each day (at the
     // time it
     // occurred)
 
-    Test.displayInBrowser(
+    TestUtil.displayInBrowser(
         dapQuery + "&orderByMin(%22time/1day,atmp%22)"); // the max atmp each day (at the
     // time it
     // occurred)
 
-    Test.displayInBrowser(
+    TestUtil.displayInBrowser(
         dapQuery + "&orderByMinMax(%22time/1day,atmp%22)"); // the min and max atmp each
     // day (at
     // the time they occurred).
     // Better if
     // markers.
 
-    Test.displayInBrowser(dapQuery + "&orderByMean(%22time/1day%22)"); // the mean atmp each day
+    TestUtil.displayInBrowser(dapQuery + "&orderByMean(%22time/1day%22)"); // the mean atmp each day
 
-    Test.displayInBrowser(
+    TestUtil.displayInBrowser(
         dapQuery + "&orderBySum(%22time/1day%22)"); // goofy request, but ERDDAP does what
     // it was
     // asked
@@ -13008,7 +13006,7 @@ class EDDTableFromNcFilesTests {
 
         // display?
         if (false) { // String2.indexOf(EDDTable.imageFileTypeNames, dotExt) >= 0
-          // Test.displayInBrowser("file://" + outName);
+          // TestUtil.displayInBrowser("file://" + outName);
           Math2.gc("EDDTableFromNcFiles (between tests)", 5000); // in a test, pause for
           // image display
         }
@@ -13042,7 +13040,7 @@ class EDDTableFromNcFilesTests {
         // display last image
         if (ext == extensions.length - 1) {
           File2.rename(outName, outName + ".png");
-          // Test.displayInBrowser( outName + ".png");
+          // TestUtil.displayInBrowser( outName + ".png");
         }
 
         // data test for .nc (especially string column)
@@ -13095,7 +13093,7 @@ class EDDTableFromNcFilesTests {
     String baseName = eddTable.className() + "_manyYears";
     String tName =
         eddTable.makeNewFileForDapQuery(language, null, null, dapQuery, dir, baseName, ".png");
-    // Test.displayInBrowser("file://" + dir + tName);
+    // TestUtil.displayInBrowser("file://" + dir + tName);
     Image2Tests.testImagesIdentical(tName, baseName + ".png", baseName + "_diff.png");
   }
 
@@ -13600,7 +13598,7 @@ class EDDTableFromNcFilesTests {
       String2.log("\n*** EDDTableFromNcFiles.testNcCFPoint finished.");
 
     } catch (Throwable t) {
-      Test.knownProblem("nwioos source currently isn't working.", "", t);
+      TestUtil.knownProblem("nwioos source currently isn't working.", "", t);
     }
   }
 

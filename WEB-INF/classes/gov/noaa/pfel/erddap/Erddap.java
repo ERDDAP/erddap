@@ -36,6 +36,8 @@ import gov.noaa.pfel.coastwatch.util.HtmlWidgets;
 import gov.noaa.pfel.coastwatch.util.RegexFilenameFilter;
 import gov.noaa.pfel.coastwatch.util.SSR;
 import gov.noaa.pfel.erddap.dataset.*;
+import gov.noaa.pfel.erddap.dataset.EDD.EDDFileTypeInfo;
+import gov.noaa.pfel.erddap.filetypes.TransparentPngFiles;
 import gov.noaa.pfel.erddap.handlers.SaxParsingContext;
 import gov.noaa.pfel.erddap.util.*;
 import gov.noaa.pfel.erddap.variable.*;
@@ -84,6 +86,7 @@ import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.TopDocs;
 import org.json.JSONObject;
 import org.json.JSONTokener;
+import org.semver4j.Semver;
 
 // import org.verisign.joid.consumer.OpenIdFilter;
 
@@ -150,19 +153,6 @@ public class Erddap extends HttpServlet {
 
   public static final String plainFileTypesString = String2.toCSSVString(plainFileTypes);
 
-  // version when new file types added
-  public static final ImmutableList<String> FILE_TYPES_124 =
-      ImmutableList.of(
-          // for old remote erddaps, make .png locally so pngInfo is available
-          ".csvp", ".tsvp", "odvTxt", ".png");
-  public static final ImmutableList<String> FILE_TYPES_148 = ImmutableList.of(".csv0", ".tsv0");
-  public static final ImmutableList<String> FILE_TYPES_174 = ImmutableList.of(".itx");
-  public static final ImmutableList<String> FILE_TYPES_176 =
-      ImmutableList.of(".jsonlCSV", ".jsonlKVP", ".nccsv", ".nccsvMetadata");
-  public static final ImmutableList<String> FILE_TYPES_184 =
-      ImmutableList.of(".dataTable", ".jsonlCSV1");
-  public static final ImmutableList<String> FILE_TYPES_225 =
-      ImmutableList.of(".parquet", ".parquetWMeta");
   // General/relative width is determined by what looks good in Chrome.
   // But Firefox shows TextArea's as very wide, so leads to these values.
   public static final int dpfTFWidth = 56; // data provider form TextField width
@@ -1469,6 +1459,14 @@ public class Erddap extends HttpServlet {
                 + "</a></td>\n"
                 + "    <td>"
                 + EDStatic.messages.convertUnitsAr[language]
+                + "</td></tr>\n"
+                + "<tr><td><a rel=\"bookmark\" href=\""
+                + tErddapUrl
+                + "/convert/color.html\">"
+                + EDStatic.messages.convertCOLORsAr[language]
+                + "</a></td>\n"
+                + "    <td>"
+                + EDStatic.messages.convertCOLORsMessageAr[language]
                 + "</td></tr>\n"
                 + "<tr><td><a rel=\"bookmark\" href=\""
                 + tErddapUrl
@@ -5289,8 +5287,6 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
           "  <br>" +  plainLinkExamples(tErddapUrl, "/categorize/standard_name/time/index", //8
               EDStatic.encodedDefaultPIppQuery)
               */ );
-      int tDasIndex = EDDTable.dataFileTypeNames.indexOf(".das");
-      int tDdsIndex = EDDTable.dataFileTypeNames.indexOf(".dds");
       String restfulGetAllDataset =
           EDStatic.messages
               .restfulGetAllDatasetAr[language]
@@ -5346,14 +5342,14 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
               .replaceAll("&tErddapUrl;", tErddapUrl)
               .replace(
                   "&dataFiletypeInfo1;",
-                  XML.encodeAsHTMLAttribute(EDDTable.dataFileTypeInfo.get(tDdsIndex)))
+                  XML.encodeAsHTMLAttribute(EDD.EDD_FILE_TYPE_INFO.get(".dds").getInfoUrl()))
               .replaceAll(
                   "&externalLinkHtml;", EDStatic.messages.externalLinkHtml(language, tErddapUrl))
               .replaceAll("&griddapExample;", griddapExample)
               .replaceAll("&tabledapExample;", tabledapExample)
               .replace(
                   "&dataFiletypeInfo2;",
-                  XML.encodeAsHTMLAttribute(EDDTable.dataFileTypeInfo.get(tDasIndex)));
+                  XML.encodeAsHTMLAttribute(EDD.EDD_FILE_TYPE_INFO.get(".das").getInfoUrl()));
 
       writer.write(restfulHTMLContinued /*
                 "  <br>&nbsp;\n" +
@@ -5576,7 +5572,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                   "&versionStringResponse;",
                   "<kbd>ERDDAP_version_string=&erddapVersion;_JohnsFork</kbd>")
               .replaceAll("&tErddapUrl;", tErddapUrl)
-              .replaceAll("&erddapVersion;", EDStatic.erddapVersion));
+              .replaceAll("&erddapVersion;", EDStatic.erddapVersion.getVersion()));
       writer.write("</div>\n");
       endHtmlWriter(language, out, writer, tErddapUrl, loggedInAs, false);
 
@@ -6258,10 +6254,13 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     // Note that .html and .graph are handled locally so links on web pages
     //  are for this server and the responses can be handled quickly.
     if (dataset instanceof FromErddap fromErddap) {
-      int sourceVersion = fromErddap.intSourceErddapVersion();
+      Semver sourceVersion = fromErddap.sourceErddapVersion();
       // some requests are handled locally...
-      boolean newOrderBy = sourceVersion < 180 && queryString.indexOf("orderByCount(") >= 0;
-      if (sourceVersion < 200 && queryString.indexOf("orderBy") >= 0) {
+      boolean newOrderBy =
+          sourceVersion.isLowerThan(EDStatic.getSemver("1.80"))
+              && queryString.indexOf("orderByCount(") >= 0;
+      if (sourceVersion.isLowerThan(EDStatic.getSemver("2.0"))
+          && queryString.indexOf("orderBy") >= 0) {
         // more complicated test for new v2.00 orderBy features
         String parts[] = String2.splitNoTrim(queryString, '&');
         for (int p = 1; p < parts.length; p++) { // 1 because 0 is varList
@@ -6274,8 +6273,11 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
           }
         }
       }
-      if (sourceVersion < 216 && queryString.indexOf("orderBySum(") >= 0) newOrderBy = true;
-      if (sourceVersion < 219 && queryString.indexOf("orderByDescending(") >= 0) newOrderBy = true;
+      if (sourceVersion.isLowerThan(EDStatic.getSemver("2.16"))
+          && queryString.indexOf("orderBySum(") >= 0) newOrderBy = true;
+      if (sourceVersion.isLowerThan(EDStatic.getSemver("2.19"))
+          && queryString.indexOf("orderByDescending(") >= 0) newOrderBy = true;
+      EDDFileTypeInfo fileTypeInfo = EDD.EDD_FILE_TYPE_INFO.get(fileTypeName);
       if (newOrderBy
           || !fromErddap.redirect()
           || fileTypeName.equals(".das")
@@ -6286,13 +6288,8 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
           || // pngInfo EDD.readPngInfo makes local file in all cases
           fileTypeName.endsWith("dfInfo")
           || // pdfInfo
-          (sourceVersion < 124 && FILE_TYPES_124.indexOf(fileTypeName) >= 0)
-          || (sourceVersion < 148 && FILE_TYPES_148.indexOf(fileTypeName) >= 0)
-          || (sourceVersion < 174 && FILE_TYPES_174.indexOf(fileTypeName) >= 0)
-          || (sourceVersion < 176 && FILE_TYPES_176.indexOf(fileTypeName) >= 0)
-          || (sourceVersion < 182 && jsonp != null)
-          || (sourceVersion < 184 && FILE_TYPES_184.indexOf(fileTypeName) >= 0)
-          || (sourceVersion < 225 && FILE_TYPES_225.indexOf(fileTypeName) >= 0)
+          (fileTypeInfo != null
+              && fileTypeInfo.getVersionAdded().isGreaterThanOrEqualTo(sourceVersion))
           || fileTypeName.equals(".subset")) {
         // handle locally
       } else {
@@ -7684,11 +7681,9 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
 
             extension = ".xml";
           } else {
-            int po = EDDTable.dataFileTypeNames.indexOf(fileTypeName);
-            if (po >= 0) extension = EDDTable.dataFileTypeExtensions.get(po);
-            else {
-              po = EDDTable.imageFileTypeNames.indexOf(fileTypeName);
-              extension = EDDTable.imageFileTypeExtensions.get(po);
+            EDDFileTypeInfo fileInfo = EDD.EDD_FILE_TYPE_INFO.get(fileTypeName);
+            if (fileInfo != null) {
+              extension = fileInfo.getFileTypeExtension();
             }
           }
 
@@ -8130,21 +8125,16 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                     + requestFormat
                     + " isn't supported.");
           String erddapFormat = EDDGrid.wcsResponseFormats100.get(fi);
-          int efe = EDDGrid.dataFileTypeNames.indexOf(erddapFormat);
           String fileExtension;
-          if (efe >= 0) {
-            fileExtension = EDDGrid.dataFileTypeExtensions.get(efe);
+          EDDFileTypeInfo fileInfo = EDD.EDD_FILE_TYPE_INFO.get(erddapFormat);
+          if (fileInfo != null) {
+            fileExtension = fileInfo.getFileTypeExtension();
           } else {
-            efe = EDDGrid.imageFileTypeNames.indexOf(erddapFormat);
-            if (efe >= 0) {
-              fileExtension = EDDGrid.imageFileTypeExtensions.get(efe);
-            } else {
-              throw new SimpleException(
-                  EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
-                      + "format="
-                      + requestFormat
-                      + " isn't supported!");
-            }
+            throw new SimpleException(
+                EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
+                    + "format="
+                    + requestFormat
+                    + " isn't supported!");
           }
 
           OutputStreamSource outSource =
@@ -8488,12 +8478,12 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
         if (fe.redirect()
             &&
             // earlier versions of wms work ~differently
-            fe.sourceErddapVersion() >= 1.23
+            fe.sourceErddapVersion().isGreaterThanOrEqualTo(EDStatic.getSemver("1.23"))
             && queryString != null
             &&
             // erddap versions before 1.82 handled wms v1.3.0 differently
             (queryString.toLowerCase().indexOf("&version=1.1.") >= 0
-                || fe.sourceErddapVersion() >= 1.82)) {
+                || fe.sourceErddapVersion().isGreaterThanOrEqualTo(EDStatic.getSemver("1.82")))) {
           // https://coastwatch.pfeg.noaa.gov/erddap/wms/erdMHchla8day/request?
           // EXCEPTIONS=INIMAGE&VERSION=1.3.0&SRS=EPSG%3A4326&LAYERS=erdMHchla8day
           // %3Achlorophyll&TIME=2010-07-24T00%3A00%3A00Z&ELEVATION=0.0
@@ -9411,7 +9401,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
           if (fromErddap.redirect()
               &&
               // earlier versions of wms work ~differently
-              fromErddap.sourceErddapVersion() >= 1.23) {
+              fromErddap.sourceErddapVersion().isGreaterThanOrEqualTo(EDStatic.getSemver("1.23"))) {
             // Redirect to remote erddap if request is from one dataset's wms and it's an
             // EDDGridFromErddap.
             // tUrl e.g., https://coastwatch.pfeg.noaa.gov/erddap/griddap/erdBAssta5day
@@ -12866,7 +12856,8 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
               OutputStreamSource oss = new OutputStreamSourceSimple(out);
 
               try { // most exceptions written to image.  some throw throwable.
-                tEddGrid.saveAsImage(
+                TransparentPngFiles imageMaker = new TransparentPngFiles();
+                imageMaker.saveAsImage(
                     language,
                     loggedInAs,
                     relativeUrl,
@@ -12874,7 +12865,8 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                     actualDir,
                     virtualFileName,
                     oss,
-                    fileTypeName);
+                    fileTypeName,
+                    tEddGrid);
                 out.close();
               } catch (Throwable t) {
                 sendGeoServicesRestError(
@@ -13537,10 +13529,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
         new OutputStreamFromHttpResponse(request, response, "version", extension, extension);
     OutputStream out = outSource.outputStream(File2.UTF_8);
     try (Writer writer = File2.getBufferedWriterUtf8(out)) {
-      String ev = EDStatic.erddapVersion;
-      int po = ev.indexOf('_');
-      if (po >= 0) ev = ev.substring(0, po);
-
+      String ev = EDStatic.erddapVersion.getMajor() + "." + EDStatic.erddapVersion.getMinor();
       if (isJsonResponse) {
         writer.write(
             """
@@ -13549,7 +13538,8 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
           "version_full": "%s",
           "deployment_info": "%s"
         }"""
-                .formatted(ev, EDStatic.erddapVersion, EDStatic.config.deploymentInfo));
+                .formatted(
+                    ev, EDStatic.erddapVersion.getVersion(), EDStatic.config.deploymentInfo));
       } else {
         writer.write("ERDDAP_version=" + ev + "\n");
       }
@@ -19451,6 +19441,17 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
           endOfRequest,
           queryString);
       return;
+    } else if (endOfRequestUrl.equals("color.html") || endOfRequestUrl.equals("color.txt")) {
+      doConvertcolors(
+          language,
+          requestNumber,
+          request,
+          response,
+          loggedInAs,
+          endOfRequestUrl,
+          endOfRequest,
+          queryString);
+      return;
     } else {
       if (verbose) String2.log(EDStatic.messages.resourceNotFoundAr[language] + "end of convert");
       sendResourceNotFoundError(requestNumber, request, response, "");
@@ -19532,6 +19533,14 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
               + EDStatic.messages.variableNamesAr[language]
               + "</strong></a> - "
               + EDStatic.messages.convertOAVariableNamesToFromAr[language]
+              + "\n"
+              + "<li><a rel=\"bookmark\" href=\""
+              + tErddapUrl
+              + "/convert/color.html\"><strong>"
+              + EDStatic.messages.convertCOLORsAr[language]
+              + "</strong></a> - "
+              + EDStatic.messages.convertCOLORsMessageAr[language]
+              // languages
               + "\n"
               + "</ul>\n");
       writer.write("</div>\n");
@@ -21354,9 +21363,14 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       // repeatedly find a group of points close together, get chunk of data from source, do
       // calculations
       //  (very arbitrary -- there are too many scenarios to optimize)
-      StringBuilder howGrouped = new StringBuilder();
+      StringBuilder howGrouped = null;
+      if (debugMode) {
+        howGrouped = new StringBuilder();
+      }
       while (startOfGroup < nRows) {
-        howGrouped.append(" " + rank[startOfGroup]);
+        if (debugMode) {
+          howGrouped.append(" " + rank[startOfGroup]);
+        }
 
         // find outer bounds of the group (not including radius)
         double minTimeDIndex = timeDIndexPA.get(rank[startOfGroup]);
@@ -21408,7 +21422,9 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
           break;
 
           // yes, keep it
-          howGrouped.append(" " + rank[endOfGroup]);
+          if (debugMode) {
+            howGrouped.append(" " + rank[endOfGroup]);
+          }
           endOfGroup++;
           minTimeDIndex = tMinTimeDIndex;
           minLatDIndex = tMinLatDIndex;
@@ -21417,7 +21433,9 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
           maxLatDIndex = tMaxLatDIndex;
           maxLonDIndex = tMaxLonDIndex;
         }
-        howGrouped.append(",");
+        if (debugMode) {
+          howGrouped.append(",");
+        }
         // String2.log(">> interpolate startOfGroup=" + startOfGroup + " end=" + endOfGroup);
 
         // adjust min/maxLat/LonIndex so it is integers and includes radius
@@ -21787,7 +21805,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
         // prepare for next group
         startOfGroup = endOfGroup;
       }
-      if (debugMode)
+      if (debugMode) {
         String2.log(
             ">> Nearest Data: for dv="
                 + datasetIDs[dv]
@@ -21795,6 +21813,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                 + variable[dv]
                 + " howGrouped:"
                 + howGrouped);
+      }
     }
 
     return sourceTable;
@@ -22529,6 +22548,215 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
 
     } catch (Throwable t) {
       EDStatic.rethrowClientAbortException(t); // first thing in catch{}
+      writer.write(EDStatic.htmlForException(language, t));
+      writer.write("</div>\n");
+      endHtmlWriter(language, out, writer, tErddapUrl, loggedInAs, false);
+      throw t;
+    }
+  }
+
+  /**
+   * Process erddap/convert/color.html and color.txt.
+   *
+   * @param language the index of the selected language
+   * @param requestNumber The requestNumber assigned to this request by doGet().
+   * @param request The user's request.
+   * @param response The response to be written to.
+   * @param loggedInAs the name of the logged in user (or null if not logged in)
+   * @param endOfRequestUrl color.html or color.txt
+   * @param queryString post "?", still percentEncoded, may be null.
+   * @throws Throwable if trouble
+   */
+  public void doConvertcolors(
+      int language,
+      int requestNumber,
+      HttpServletRequest request,
+      HttpServletResponse response,
+      String loggedInAs,
+      String endOfRequestUrl,
+      String endOfRequest,
+      String queryString)
+      throws Throwable {
+
+    if (!EDStatic.config.convertersActive) {
+      sendResourceNotFoundError(
+          requestNumber,
+          request,
+          response,
+          EDStatic.bilingual(
+              language,
+              MessageFormat.format(EDStatic.messages.disabledAr[0], "convert"),
+              MessageFormat.format(EDStatic.messages.disabledAr[language], "convert")));
+      return;
+    }
+
+    Map<String, String> queryMap = EDD.userQueryHashMap(queryString, false);
+
+    String queryValue = queryMap.getOrDefault("value", "");
+    String palette = queryMap.getOrDefault("p", "Rainbow");
+    String continuity = queryMap.getOrDefault("pc", "C"); // C=Continuous, D=Discrete
+    String scale = queryMap.getOrDefault("ps", "linear");
+    String minStr = queryMap.getOrDefault("pMin", "0");
+    String maxStr = queryMap.getOrDefault("pMax", "20");
+    String nSectionsStr = queryMap.getOrDefault("pSec", "5");
+
+    String hexColor = "";
+    String rgbColor = "";
+    String tError = null;
+    Color color = Color.GRAY;
+
+    double inputValue;
+    double min = 0, max = 20;
+    int nSections = 5;
+    boolean isContinuous = true;
+
+    try {
+      inputValue = Double.parseDouble(queryValue);
+      min = Double.parseDouble(minStr);
+      max = Double.parseDouble(maxStr);
+      nSections = Integer.parseInt(nSectionsStr);
+      isContinuous = !"D".equalsIgnoreCase(continuity);
+
+      CompoundColorMap cColorMap =
+          new CompoundColorMap(
+              EDStatic.config.fullPaletteDirectory,
+              palette,
+              scale,
+              min,
+              max,
+              nSections,
+              isContinuous,
+              SSR.getTempDirectory());
+
+      color = cColorMap.getColor(inputValue);
+      hexColor = String.format("#%02X%02X%02X", color.getRed(), color.getGreen(), color.getBlue());
+      rgbColor =
+          String.format("rgb(%d, %d, %d)", color.getRed(), color.getGreen(), color.getBlue());
+    } catch (Exception e) {
+      inputValue = Double.NaN;
+      tError = "Invalid Input or Parameters";
+    }
+
+    if (endOfRequestUrl.equals("color.txt")) {
+      if (tError != null) {
+        throw new SimpleException(
+            EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr) + tError);
+      }
+
+      OutputStream out =
+          new OutputStreamFromHttpResponse(request, response, "ColorPlotter", ".txt", ".txt")
+              .outputStream(File2.UTF_8);
+      try (Writer writer = File2.getBufferedWriterUtf8(out)) {
+        writer.write("Hex: " + hexColor + "\n");
+        writer.write("RGB: " + rgbColor + "\n");
+        writer.flush();
+        return;
+      }
+    }
+
+    // HTML response section
+    String tErddapUrl = EDStatic.erddapUrl(loggedInAs, language);
+    HtmlWidgets widgets = new HtmlWidgets(true, EDStatic.imageDirUrl(loggedInAs, language));
+    OutputStream out = getHtmlOutputStreamUtf8(request, response);
+    Writer writer =
+        getHtmlWriterUtf8(
+            language, loggedInAs, "convert/color.html", queryString, "Color Plotter", out);
+
+    try {
+      writer.write(
+          "<div class=\"standard_width\">\n"
+              + ("\n<h1 class=\"nowrap\">"
+                  + EDStatic.erddapHref(language, EDStatic.erddapUrl(loggedInAs, language))
+                  + "\n &gt; <a rel=\"contents\" "
+                  + "href=\""
+                  + XML.encodeAsHTMLAttribute(
+                      EDStatic.protocolUrl(EDStatic.erddapUrl(loggedInAs, language), "convert"))
+                  + "\">"
+                  + EDStatic.messages.convertAr[language]
+                  + "</a>"
+                  + "\n &gt; Colors</h1>\n")
+              + "<h2>"
+              + "Convert Data into Colorbar" // need to change this thing for support of multiple
+              // languages
+              + "</h2>\n");
+
+      writer.write(widgets.beginForm("getColor", "GET", tErddapUrl + "/convert/color.html", ""));
+
+      writer.write(
+          "Enter a value (e.g., 12.5): "
+              + widgets.textField("value", "Enter a number", 10, 15, queryValue, "")
+              + "<br>");
+
+      writer.write(
+          "Palette: "
+              + widgets.select(
+                  "p",
+                  "Color palette",
+                  1,
+                  EDStatic.messages.palettes0,
+                  Math.max(0, String2.indexOf(EDStatic.messages.palettes0, palette)),
+                  "")
+              + "<br>");
+
+      writer.write(
+          "Continuity: "
+              + widgets.select(
+                  "pc",
+                  "Continuous or Discrete",
+                  1,
+                  new String[] {"", "Continuous", "Discrete"},
+                  "D".equalsIgnoreCase(continuity) ? 2 : 1,
+                  "")
+              + "<br>");
+
+      writer.write(
+          "Scale: "
+              + widgets.select(
+                  "ps",
+                  "Scale",
+                  1,
+                  EDV.VALID_SCALES0,
+                  Math.max(0, EDV.VALID_SCALES0.indexOf(scale)),
+                  "")
+              + "<br>");
+
+      writer.write(
+          "Min: " + widgets.textField("pMin", "Minimum value", 10, 60, minStr, "") + "<br>");
+      writer.write(
+          "Max: " + widgets.textField("pMax", "Maximum value", 10, 60, maxStr, "") + "<br>");
+
+      writer.write(
+          "Sections: "
+              + widgets.select(
+                  "pSec",
+                  "Number of sections",
+                  1,
+                  EDStatic.paletteSections,
+                  Math.max(0, EDStatic.paletteSections.indexOf(nSectionsStr)),
+                  "")
+              + "<br>");
+
+      writer.write(widgets.htmlButton("submit", null, "Get Color", "", "Get Color", ""));
+
+      if (!queryValue.isEmpty()) {
+        if (tError == null) {
+          writer.write("<br><span>Hex: " + hexColor + "</span>\n");
+          writer.write("<br><span>RGB: " + rgbColor + "</span>\n");
+          writer.write(
+              "<br><div style='height:15px; width:40px; background-color:"
+                  + hexColor
+                  + "; border:1px solid black;'></div>");
+
+        } else {
+          writer.write(
+              "<br><span class=\"warningColor\">" + XML.encodeAsHTML(tError) + "</span>\n");
+        }
+      }
+
+      writer.write("<br>" + widgets.endForm() + "\n</div>\n");
+      endHtmlWriter(language, out, writer, tErddapUrl, loggedInAs, false);
+    } catch (Throwable t) {
+      EDStatic.rethrowClientAbortException(t);
       writer.write(EDStatic.htmlForException(language, t));
       writer.write("</div>\n");
       endHtmlWriter(language, out, writer, tErddapUrl, loggedInAs, false);
@@ -23734,8 +23962,11 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     }
 
     // get outSource
-    int po = EDDTable.dataFileTypeNames.indexOf(fileTypeName);
-    String fileTypeExtension = EDDTable.dataFileTypeExtensions.get(po);
+    EDDFileTypeInfo fileInfo = EDD.EDD_FILE_TYPE_INFO.get(fileTypeName);
+    String fileTypeExtension = null;
+    if (fileInfo != null) {
+      fileTypeExtension = fileInfo.getFileTypeExtension();
+    }
     OutputStreamSource outSource =
         new OutputStreamFromHttpResponse(
             request,
@@ -23878,25 +24109,6 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     if (verbose) String2.log("redirected to " + url);
     // String2.log(">> " + MustBe.stackTrace());
     response.sendRedirect(url);
-  }
-
-  /**
-   * This makes a erddapContent.zip file with the [tomcat]/content/erddap files for distribution.
-   *
-   * @param removeDir e.g., "c:/programs/_tomcat/samples/"
-   * @param destinationDir e.g., "c:/backup/"
-   */
-  public static void makeErddapContentZip(String removeDir, String destinationDir)
-      throws Throwable {
-    String2.log("*** makeErddapContentZip dir=" + destinationDir);
-    String baseDir = removeDir + "content/erddap/";
-    SSR.zip(
-        destinationDir + "erddapContent.zip",
-        new String[] {
-          baseDir + "datasets.xml", baseDir + "setup.xml", baseDir + "images/erddapStart2.css"
-        },
-        10,
-        removeDir);
   }
 
   public void processDataset(EDD dataset, SaxParsingContext context) {

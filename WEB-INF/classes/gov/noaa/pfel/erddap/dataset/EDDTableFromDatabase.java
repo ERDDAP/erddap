@@ -1038,13 +1038,11 @@ public class EDDTableFromDatabase extends EDDTable {
       // preparedStatements (so String values are properly escaped and
       // numbers are assured to be numbers).
       statement = connection.prepareStatement(query.toString());
-      EDV constraintEDVs[] = new EDV[nCv];
       nActiveCV = 0;
       for (int cv = 0; cv < nCv; cv++) {
         if (constraintVariables.get(cv).startsWith("=")) continue;
         nActiveCV++; // +1 since sql uses 1..
         EDV edv = findDataVariableBySourceName(constraintVariables.get(cv));
-        constraintEDVs[cv] = edv;
         PAType tPAType = edv.sourceDataPAType();
         String val = constraintValues.get(cv);
         // String2.log("cv=" + cv + " tPAType=" + tPAType);

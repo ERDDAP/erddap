@@ -184,7 +184,7 @@ public abstract class EDDTableFromFiles extends EDDTable implements WatchUpdateH
   protected String cachePartialPathRegex = null; // null if inactive
 
   /** When threshold size is reached, prune the cache to fraction*threshold. */
-  protected final double cacheFraction = FileVisitorDNLS.PRUNE_CACHE_DEFAULT_FRACTION;
+  protected static final double cacheFraction = FileVisitorDNLS.PRUNE_CACHE_DEFAULT_FRACTION;
 
   /**
    * This returns the default value for standardizeWhat for this subclass. See
