@@ -362,6 +362,8 @@ Eller
 <a rel="help" href="#computerProgram">omgå denne nettsiden</a> og foreta konverteringer fra et dataprogram, skript eller nettside.
 
 ]]></convertBypass>
+<convertCOLORs>Farger</convertCOLORs>
+<convertCOLORsMessage>Konverter verdier til fargelinje</convertCOLORsMessage>
 <convertToAFullName><![CDATA[
 <strong>Konverter fra {0} til et fullt navn.</strong>
 ]]></convertToAFullName>

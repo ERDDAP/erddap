@@ -303,7 +303,7 @@ class EDDTableFromErddapTests {
         url + ".png?" + mapDapQuery,
         Image2Tests.urlToAbsolutePath(Image2Tests.OBS_DIR) + tName,
         true);
-    // Test.displayInBrowser("file://" + dir + tName);
+    // TestUtil.displayInBrowser("file://" + dir + tName);
     Image2Tests.testImagesIdentical(tName, baseName + ".png", baseName + "_diff.png");
   } // end of testBasic
 

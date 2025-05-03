@@ -370,6 +370,8 @@ CTD가 있는 방송국.
 <a rel="help" href="#computerProgram">이 웹페이지를 우회</a> 하고 컴퓨터 프로그램, 스크립트 또는 웹페이지 내에서 변환을 수행합니다.
 
 ]]></convertBypass>
+<convertCOLORs>색상 :</convertCOLORs>
+<convertCOLORsMessage>Values를 색상 바로 변환</convertCOLORsMessage>
 <convertToAFullName><![CDATA[
 <strong>{0}에서 전체 이름으로 변환합니다.</strong>
 ]]></convertToAFullName>

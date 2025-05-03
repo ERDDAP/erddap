@@ -361,6 +361,8 @@ Ou
 <a rel="help" href="#computerProgram">contournez cette page Web</a> et effectuez des conversions à partir d’un programme informatique, d’un script ou d’une page Web.
 
 ]]></convertBypass>
+<convertCOLORs>Couleurs</convertCOLORs>
+<convertCOLORsMessage>Convertir les valeurs en barre de couleurs</convertCOLORsMessage>
 <convertToAFullName><![CDATA[
 <strong>Convertissez de {0} en un nom complet.</strong>
 ]]></convertToAFullName>

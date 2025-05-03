@@ -21,7 +21,6 @@ import jakarta.mail.internet.MimeMessage;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -1760,34 +1759,6 @@ public class SSR {
       String msg = e.toString();
       if (String2.isSomething(msg) && msg.indexOf(urlString) >= 0) throw e;
       throw new Exception(String2.ERROR + " from url=" + urlString + " : " + e, e);
-    }
-  }
-
-  /**
-   * This gets the bytes from a file.
-   *
-   * @param fileName If compressed file, this reads the decompressed, first file in the archive.
-   * @return a byte[] with the response.
-   * @throws Exception if error occurs
-   */
-  public static byte[] getFileBytes(String fileName) throws Exception {
-    try (InputStream is = File2.getDecompressedBufferedInputStream(fileName)) {
-      long time = System.currentTimeMillis();
-      byte buffer[] = new byte[1024];
-      ByteArrayOutputStream baos = new ByteArrayOutputStream();
-      for (int s; (s = is.read(buffer)) != -1; ) baos.write(buffer, 0, s);
-      is.close();
-      if (reallyVerbose)
-        String2.log(
-            "  SSR.getFileBytes "
-                + fileName
-                + " finished. TIME="
-                + (System.currentTimeMillis() - time)
-                + "ms");
-      return baos.toByteArray();
-    } catch (Exception e) {
-      // String2.log(e.toString());
-      throw new Exception("ERROR while reading file=" + fileName + " : " + e, e);
     }
   }
 

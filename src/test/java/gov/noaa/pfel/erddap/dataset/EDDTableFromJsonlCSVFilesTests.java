@@ -651,7 +651,7 @@ class EDDTableFromJsonlCSVFilesTests {
     Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
     // and display it so it can be tested interactively
-    // Test.displayInBrowser("file://" + dir + tName);
+    // TestUtil.displayInBrowser("file://" + dir + tName);
 
   }
 }

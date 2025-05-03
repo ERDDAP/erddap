@@ -47,7 +47,7 @@ public class TableXmlHandler extends DefaultHandler {
    */
   public static boolean verbose = false;
 
-  private final String errorInMethod = String2.ERROR + " in TableXmlHandler:\n";
+  private static final String errorInMethod = String2.ERROR + " in TableXmlHandler:\n";
 
   // set by constructor
   private final Table table;

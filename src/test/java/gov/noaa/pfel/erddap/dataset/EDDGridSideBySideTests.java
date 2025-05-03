@@ -538,14 +538,14 @@ class EDDGridSideBySideTests {
     tName =
         qsWind8.makeNewFileForDapQuery(
             language, null, null, dapQuery, dir, baseName, ".transparentPng");
-    // Test.displayInBrowser("file://" + dir + tName);
+    // TestUtil.displayInBrowser("file://" + dir + tName);
     Image2Tests.testImagesIdentical(tName, baseName + ".png", baseName + "_diff.png");
 
     baseName = "EDDGridSideBySide_testTransparentPng_surface360150";
     tName =
         qsWind8.makeNewFileForDapQuery(
             language, null, null, dapQuery + "&.size=360|150", dir, baseName, ".transparentPng");
-    // Test.displayInBrowser("file://" + dir + tName);
+    // TestUtil.displayInBrowser("file://" + dir + tName);
     Image2Tests.testImagesIdentical(tName, baseName + ".png", baseName + "_diff.png");
 
     // vector map
@@ -557,14 +557,14 @@ class EDDGridSideBySideTests {
     tName =
         qsWind8.makeNewFileForDapQuery(
             language, null, null, dapQuery, dir, baseName, ".transparentPng");
-    // Test.displayInBrowser("file://" + dir + tName);
+    // TestUtil.displayInBrowser("file://" + dir + tName);
     Image2Tests.testImagesIdentical(tName, baseName + ".png", baseName + "_diff.png");
 
     baseName = "EDDGridSideBySide_testTransparentPng_vectors360150";
     tName =
         qsWind8.makeNewFileForDapQuery(
             language, null, null, dapQuery + "&.size=360|150", dir, baseName, ".transparentPng");
-    // Test.displayInBrowser("file://" + dir + tName);
+    // TestUtil.displayInBrowser("file://" + dir + tName);
     Image2Tests.testImagesIdentical(tName, baseName + ".png", baseName + "_diff.png");
 
     // lines on a graph
@@ -578,21 +578,21 @@ class EDDGridSideBySideTests {
     tName =
         qsWind8.makeNewFileForDapQuery(
             language, null, null, dapQuery, dir, baseName, ".transparentPng");
-    // Test.displayInBrowser("file://" + dir + tName);
+    // TestUtil.displayInBrowser("file://" + dir + tName);
     Image2Tests.testImagesIdentical(tName, baseName + ".png", baseName + "_diff.png");
 
     baseName = "EDDGridSideBySide_testPng_lines500400";
     tName =
         qsWind8.makeNewFileForDapQuery(
             language, null, null, dapQuery + "&.size=500|400", dir, baseName, ".png");
-    // Test.displayInBrowser("file://" + dir + tName);
+    // TestUtil.displayInBrowser("file://" + dir + tName);
     Image2Tests.testImagesIdentical(tName, baseName + ".png", baseName + "_diff.png");
 
     baseName = "EDDGridSideBySide_testTransparentPng_lines500400";
     tName =
         qsWind8.makeNewFileForDapQuery(
             language, null, null, dapQuery + "&.size=500|400", dir, baseName, ".transparentPng");
-    // Test.displayInBrowser("file://" + dir + tName);
+    // TestUtil.displayInBrowser("file://" + dir + tName);
     Image2Tests.testImagesIdentical(tName, baseName + ".png", baseName + "_diff.png");
 
     // markers on a graph
@@ -601,14 +601,14 @@ class EDDGridSideBySideTests {
     tName =
         qsWind8.makeNewFileForDapQuery(
             language, null, null, dapQuery, dir, baseName, ".transparentPng");
-    // Test.displayInBrowser("file://" + dir + tName);
+    // TestUtil.displayInBrowser("file://" + dir + tName);
     Image2Tests.testImagesIdentical(tName, baseName + ".png", baseName + "_diff.png");
 
     baseName = "EDDGridSideBySide_testTransparentPng_markers500400";
     tName =
         qsWind8.makeNewFileForDapQuery(
             language, null, null, dapQuery + "&.size=500|400", dir, baseName, ".transparentPng");
-    // Test.displayInBrowser("file://" + dir + tName);
+    // TestUtil.displayInBrowser("file://" + dir + tName);
     Image2Tests.testImagesIdentical(tName, baseName + ".png", baseName + "_diff.png");
 
     // sticks on a graph
@@ -620,14 +620,14 @@ class EDDGridSideBySideTests {
     tName =
         qsWind8.makeNewFileForDapQuery(
             language, null, null, dapQuery, dir, baseName, ".transparentPng");
-    // Test.displayInBrowser("file://" + dir + tName);
+    // TestUtil.displayInBrowser("file://" + dir + tName);
     Image2Tests.testImagesIdentical(tName, baseName + ".png", baseName + "_diff.png");
 
     baseName = "EDDGridSideBySide_testTransparentPng_sticks500500";
     tName =
         qsWind8.makeNewFileForDapQuery(
             language, null, null, dapQuery + "&.size=500|500", dir, baseName, ".transparentPng");
-    // Test.displayInBrowser("file://" + dir + tName);
+    // TestUtil.displayInBrowser("file://" + dir + tName);
     Image2Tests.testImagesIdentical(tName, baseName + ".png", baseName + "_diff.png");
     /* */
   }

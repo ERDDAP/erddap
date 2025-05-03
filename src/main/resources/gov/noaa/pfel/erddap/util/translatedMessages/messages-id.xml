@@ -361,6 +361,8 @@ Atau,
 <a rel="help" href="#computerProgram">lewati halaman web ini</a> dan lakukan konversi dari dalam program komputer, skrip, atau halaman web.
 
 ]]></convertBypass>
+<convertCOLORs>Warna</convertCOLORs>
+<convertCOLORsMessage>Ubah Nilai ke batang warna</convertCOLORsMessage>
 <convertToAFullName><![CDATA[
 <strong>Ubah dari {0} menjadi nama lengkap.</strong>
 ]]></convertToAFullName>

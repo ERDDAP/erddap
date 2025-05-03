@@ -183,7 +183,7 @@ class EDDGridLonPM180Tests {
             Image2Tests.urlToAbsolutePath(Image2Tests.OBS_DIR),
             baseName,
             ".png");
-    // Test.displayInBrowser("file://" + dir + tName);
+    // TestUtil.displayInBrowser("file://" + dir + tName);
     Image2Tests.testImagesIdentical(tName, baseName + ".png", baseName + "_diff.png");
 
     // test of /files/ system for fromErddap in local host dataset
@@ -384,7 +384,7 @@ class EDDGridLonPM180Tests {
             Image2Tests.urlToAbsolutePath(Image2Tests.OBS_DIR),
             baseName,
             ".png");
-    // Test.displayInBrowser("file://" + dir + tName);
+    // TestUtil.displayInBrowser("file://" + dir + tName);
     Image2Tests.testImagesIdentical(tName, baseName + ".png", baseName + "_diff.png");
 
     // THIS TEST NEEDS A NEW DATASET because source is now from tds, so no files
@@ -625,7 +625,7 @@ class EDDGridLonPM180Tests {
             Image2Tests.urlToAbsolutePath(Image2Tests.OBS_DIR),
             baseName,
             ".png");
-    // Test.displayInBrowser("file://" + dir + tName);
+    // TestUtil.displayInBrowser("file://" + dir + tName);
     Image2Tests.testImagesIdentical(tName, baseName + ".png", baseName + "_diff.png");
 
     // !!!??? what's with that gap near lon=0? It's from the source.

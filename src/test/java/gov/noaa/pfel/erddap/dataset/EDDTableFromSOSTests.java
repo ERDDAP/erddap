@@ -7,6 +7,7 @@ import com.cohort.util.MustBe;
 import com.cohort.util.SimpleException;
 import com.cohort.util.String2;
 import com.cohort.util.Test;
+import com.cohort.util.TestUtil;
 import gov.noaa.pfel.erddap.GenerateDatasetsXml;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import java.util.HashMap;
@@ -2683,7 +2684,7 @@ class EDDTableFromSOSTests {
             EDStatic.config.fullTestCacheDirectory,
             eddTable.className() + "_ndbc_testError",
             ".png");
-    Test.displayInBrowser("file://" + EDStatic.config.fullTestCacheDirectory + tName);
+    TestUtil.displayInBrowser("file://" + EDStatic.config.fullTestCacheDirectory + tName);
   }
 
   /**
@@ -4075,16 +4076,16 @@ class EDDTableFromSOSTests {
     // pre 2013-06-28 was -70.5655
     // pre 2013-11-01 was -70.5645150078668
     // give up on =. Use almostEqual
-    Test.ensureAlmostEqual(4, eddTable.sosMinLon.getNiceDouble(which), -70.565, "");
-    Test.ensureAlmostEqual(4, eddTable.sosMaxLon.getNiceDouble(which), -70.565, "");
+    TestUtil.ensureAlmostEqual(4, eddTable.sosMinLon.getNiceDouble(which), -70.565, "");
+    TestUtil.ensureAlmostEqual(4, eddTable.sosMaxLon.getNiceDouble(which), -70.565, "");
     // 2008-07-25 was 42.5232, pre 2008-10-09 was .5226, 2009-03-23 changed
     // pre 2010-07-08 was 42.5261497497559;
     // pre 2013-06-28 was 42.5232
     // pre 2013-11-01 was 42.5223609076606
     // ... It keeps changing.
     // give up on =. Use almostEqual
-    Test.ensureAlmostEqual(4, eddTable.sosMinLat.getNiceDouble(which), 42.5243339538574, "");
-    Test.ensureAlmostEqual(4, eddTable.sosMaxLat.getNiceDouble(which), 42.5243339538574, "");
+    TestUtil.ensureAlmostEqual(4, eddTable.sosMinLat.getNiceDouble(which), 42.5243339538574, "");
+    TestUtil.ensureAlmostEqual(4, eddTable.sosMaxLat.getNiceDouble(which), 42.5243339538574, "");
     Test.ensureEqual(eddTable.sosMinTime.getNiceDouble(which), 9.94734E8, "");
     Test.ensureEqual(eddTable.sosMaxTime.getNiceDouble(which), Double.NaN, "");
     // Test.ensureEqual(String2.toCSSVString(eddTable.sosObservedProperties()),
@@ -4528,14 +4529,14 @@ class EDDTableFromSOSTests {
     // pre 2013-06-28 was -70.5655, "");
     // pre 2013-11-01 was -70.5645150078668
     // give up on =. Use almostEqual
-    Test.ensureAlmostEqual(4, eddTable.sosMinLon.getNiceDouble(which), -70.565, "");
-    Test.ensureAlmostEqual(4, eddTable.sosMaxLon.getNiceDouble(which), -70.565, "");
+    TestUtil.ensureAlmostEqual(4, eddTable.sosMinLon.getNiceDouble(which), -70.565, "");
+    TestUtil.ensureAlmostEqual(4, eddTable.sosMaxLon.getNiceDouble(which), -70.565, "");
     // pre 2010-06-10 was 42.5261497497559
     // pre 2013-06-28 was 42.5232, "");
     // pre 2013-11-01 was 42.5223609076606
     // give up on =. Use almostEqual
-    Test.ensureAlmostEqual(4, eddTable.sosMinLat.getNiceDouble(which), 42.522, "");
-    Test.ensureAlmostEqual(4, eddTable.sosMaxLat.getNiceDouble(which), 42.522, "");
+    TestUtil.ensureAlmostEqual(4, eddTable.sosMinLat.getNiceDouble(which), 42.522, "");
+    TestUtil.ensureAlmostEqual(4, eddTable.sosMaxLat.getNiceDouble(which), 42.522, "");
 
     Test.ensureEqual(eddTable.sosMinTime.getNiceDouble(which), 9.94734E8, "");
     Test.ensureEqual(eddTable.sosMaxTime.getNiceDouble(which), Double.NaN, "");

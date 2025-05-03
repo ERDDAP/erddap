@@ -1178,7 +1178,7 @@ class EDDGridFromNcFilesUnpackedTests {
             Image2Tests.urlToAbsolutePath(Image2Tests.OBS_DIR),
             baseName,
             ".png");
-    // Test.displayInBrowser("file://" + tDir + tName);
+    // TestUtil.displayInBrowser("file://" + tDir + tName);
     Image2Tests.testImagesIdentical(tName, baseName + ".png", baseName + "_diff.png");
 
     NcHelper.debugMode = oNcDebugMode;
@@ -2230,7 +2230,7 @@ class EDDGridFromNcFilesUnpackedTests {
             Image2Tests.urlToAbsolutePath(Image2Tests.OBS_DIR),
             baseName,
             ".png");
-    // Test.displayInBrowser("file://" + tDir + tName);
+    // TestUtil.displayInBrowser("file://" + tDir + tName);
     Image2Tests.testImagesIdentical(tName, baseName + ".png", baseName + "_diff.png");
 
     NcHelper.debugMode = oDebugMode;

@@ -74,9 +74,6 @@ public class ContourLevels implements Cloneable {
         lineAttrMap_.clear();
         lineAttrMap_ = null;
       }
-      solid_ = null;
-      heavy_ = null;
-      dashed_ = null;
       changes_ = null;
       if (JPane.debug) String2.log("sgt.ContourLevels.releaseResources() finished");
     } catch (Throwable t) {

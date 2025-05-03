@@ -296,87 +296,6 @@ public class SgtMap {
   }
 
   /**
-   * This is an alternative version of makeMap which just plots grid data. The parameters match the
-   * same-named parameters for the main makeMap.
-   */
-  public static List<PrimitiveArray> makeMap(
-      int legendPosition,
-      String legendTitle1,
-      String legendTitle2,
-      String imageDir,
-      String logoImageFile,
-      double minX,
-      double maxX,
-      double minY,
-      double maxY,
-      String drawLandMask,
-      boolean plotGridData,
-      Grid gridGrid,
-      double gridScaleFactor,
-      double gridAltScaleFactor,
-      double gridAltOffset,
-      String gridPaletteFileName,
-      String gridBoldTitle,
-      String gridTitle2,
-      String gridTitle3,
-      String gridTitle4,
-      int drawLakesAndRivers,
-      Graphics2D g2,
-      int baseULXPixel,
-      int baseULYPixel,
-      int imageWidthPixels,
-      int imageHeightPixels,
-      int boundaryResAdjust,
-      double fontScale
-      // , String customFileName
-      ) throws Exception {
-
-    return makeMap(
-        false,
-        legendPosition,
-        legendTitle1,
-        legendTitle2,
-        imageDir,
-        logoImageFile,
-        minX,
-        maxX,
-        minY,
-        maxY,
-        drawLandMask,
-        plotGridData,
-        gridGrid,
-        gridScaleFactor,
-        gridAltScaleFactor,
-        gridAltOffset,
-        gridPaletteFileName,
-        gridBoldTitle,
-        gridTitle2,
-        gridTitle3,
-        gridTitle4,
-        drawLakesAndRivers,
-        false, // plotContourData,
-        null, // contourGrid,
-        1,
-        1,
-        0, // double contourScaleFactor, contourAltScaleFactor, contourAltOffset,
-        "10, 14", // contourDrawLinesAt,
-        new Color(0x990099), // contourColor
-        "Contour Bold Title",
-        "cUnits",
-        "Contour Title2 and more text",
-        "2004-01-05 to 2004-01-0C", // contourDateTime,
-        "Data courtesy of blah blah blah", // Contour data
-        new ArrayList<>(), // graphDataLayers
-        g2,
-        baseULXPixel,
-        baseULYPixel,
-        imageWidthPixels,
-        imageHeightPixels,
-        boundaryResAdjust,
-        fontScale);
-  }
-
-  /**
    * This uses SgtMap to plot data on a map. Strings should be "" if not needed. This is not static
    * because it uses boundary.
    *
@@ -977,8 +896,7 @@ public class SgtMap {
 
           // get the Grid
           DataHelper.scale(gridGrid.data, gridScaleFactor * gridAltScaleFactor, gridAltOffset);
-          SimpleGrid simpleGrid =
-              new SimpleGrid(gridGrid.data, gridGrid.lon, gridGrid.lat, ""); // title
+          SimpleGrid simpleGrid = new SimpleGrid(gridGrid.data, gridGrid.lon, gridGrid.lat);
 
           // assign the data
           graph.setData(simpleGrid, new GridAttribute(GridAttribute.RASTER, colorMap));
@@ -1086,7 +1004,7 @@ public class SgtMap {
           DataHelper.scale(
               contourGrid.data, contourScaleFactor * contourAltScaleFactor, contourAltOffset);
           SimpleGrid simpleGrid =
-              new SimpleGrid(contourGrid.data, contourGrid.lon, contourGrid.lat, ""); // title
+              new SimpleGrid(contourGrid.data, contourGrid.lon, contourGrid.lat);
           contourGrid.calculateStats(); // so grid.minData maxData is correct
           double gridMinData = contourGrid.minData;
           double gridMaxData = contourGrid.maxData;
@@ -2125,7 +2043,7 @@ public class SgtMap {
                   + (System.currentTimeMillis() - readTime)
                   + "ms");
         DataHelper.scale(grid.data, gridScaleFactor * gridAltScaleFactor, gridAltOffset);
-        SimpleGrid simpleGrid = new SimpleGrid(grid.data, grid.lon, grid.lat, ""); // title
+        SimpleGrid simpleGrid = new SimpleGrid(grid.data, grid.lon, grid.lat);
 
         // assign the data
         graph.setData(simpleGrid, new GridAttribute(GridAttribute.RASTER, colorMap));

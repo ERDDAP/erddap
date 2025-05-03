@@ -342,6 +342,8 @@ se afișează un tabel cu seturi de date (de exemplu, când efectuați o căutar
 Sau
 <a rel="help" href="#computerProgram">ocoliți această pagină web</a> și faceți conversii dintr-un program de computer, script sau pagină web.
 ]]></convertBypass>
+<convertCOLORs>Culori</convertCOLORs>
+<convertCOLORsMessage>Schimbă valorile în bara de culoare</convertCOLORsMessage>
 <convertToAFullName><![CDATA[
 <strong>Convertiți din {0} într-un nume complet.</strong>
 ]]></convertToAFullName>

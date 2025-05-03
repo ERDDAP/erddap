@@ -37,11 +37,12 @@ import gov.noaa.pfel.coastwatch.util.SSR;
 import gov.noaa.pfel.coastwatch.util.SimpleXMLReader;
 import gov.noaa.pfel.coastwatch.util.Tally;
 import gov.noaa.pfel.erddap.Erddap;
+import gov.noaa.pfel.erddap.filetypes.FileTypeClass;
+import gov.noaa.pfel.erddap.filetypes.FileTypeInterface;
 import gov.noaa.pfel.erddap.handlers.SaxHandler;
 import gov.noaa.pfel.erddap.handlers.SaxHandlerClass;
 import gov.noaa.pfel.erddap.handlers.State;
 import gov.noaa.pfel.erddap.util.CfToFromGcmd;
-import gov.noaa.pfel.erddap.util.EDConfig;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.util.EmailThread;
 import gov.noaa.pfel.erddap.util.Subscriptions;
@@ -88,6 +89,7 @@ import org.apache.lucene.document.TextField;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.json.JSONTokener;
+import org.semver4j.Semver;
 import ucar.nc2.NetcdfFile;
 
 /**
@@ -437,6 +439,113 @@ public abstract class EDD {
    */
   public boolean filesInPrivateS3Bucket() {
     return filesInPrivateS3Bucket;
+  }
+
+  /** Internal class for storing conrete EDD subclass information. */
+  public record EDDFileTypeInfo(
+      Class<? extends FileTypeInterface> fileType, AnnotationInfo annotationInfo) {
+    public String getFileTypeName() {
+      return annotationInfo.getParameterValues().get("fileTypeName").getValue().toString();
+    }
+
+    public String getFileTypeExtension() {
+      return annotationInfo.getParameterValues().get("fileTypeExtension").getValue().toString();
+    }
+
+    public String getInfoUrl() {
+      return annotationInfo.getParameterValues().get("infoUrl").getValue().toString();
+    }
+
+    public Semver getVersionAdded() {
+      return new Semver(
+          annotationInfo.getParameterValues().get("versionAdded").getValue().toString());
+    }
+
+    public boolean getAvailableTable() {
+      return (Boolean) annotationInfo.getParameterValues().get("availableTable").getValue();
+    }
+
+    public boolean getAvailableGrid() {
+      return (Boolean) annotationInfo.getParameterValues().get("availableGrid").getValue();
+    }
+
+    public boolean getIsImage() {
+      return (Boolean) annotationInfo.getParameterValues().get("isImage").getValue();
+    }
+
+    public FileTypeInterface getInstance() {
+      try {
+        return fileType.getConstructor().newInstance();
+      } catch (InstantiationException
+          | IllegalAccessException
+          | IllegalArgumentException
+          | InvocationTargetException
+          | NoSuchMethodException
+          | SecurityException e) {
+        throw new SimpleException(e.getMessage());
+      }
+    }
+
+    public String getTableDescription(int language) {
+      return getInstance().getTableHelpText(language);
+    }
+
+    public String getGridDescription(int language) {
+      return getInstance().getGridHelpText(language);
+    }
+  }
+
+  /** List of all concrete/non-abstact EDD subclass EDDClassInfo */
+  public static final Map<String, EDDFileTypeInfo> EDD_FILE_TYPE_INFO = initEddFileTypeInfoMap();
+
+  public static List<EDDFileTypeInfo> getFileTypeOptions(boolean isGrid, boolean isImage) {
+    return EDD_FILE_TYPE_INFO.values().stream()
+        .filter(
+            fileTypeInfo ->
+                isGrid ? fileTypeInfo.getAvailableGrid() : fileTypeInfo.getAvailableTable())
+        .filter(fileTypeInfo -> isImage == fileTypeInfo.getIsImage())
+        .toList();
+  }
+
+  /**
+   * Scan classpath for concrete/non-abstract EDD subclasses in package gov.noaa.pfel.erddap.dataset
+   * and store metadata for each discovered subclass in map of EDDClassInfo objects.
+   */
+  private static final Map<String, EDDFileTypeInfo> initEddFileTypeInfoMap() {
+    String2.log("Scanning FileType classes in package " + FileTypeInterface.class.getPackageName());
+    try (ScanResult scanResult =
+        new ClassGraph()
+            .enableAnnotationInfo()
+            .enableClassInfo()
+            .enableMethodInfo()
+            .acceptPackages(FileTypeInterface.class.getPackageName())
+            .scan()) {
+      return scanResult.getSubclasses(FileTypeInterface.class).stream()
+          .filter(c -> !c.isAbstract())
+          .filter(c -> c.hasAnnotation(FileTypeClass.class))
+          .collect(
+              Collectors.toUnmodifiableMap(
+                  classInfo -> getFileTypeName(classInfo),
+                  classInfo ->
+                      new EDDFileTypeInfo(
+                          classInfo.loadClass(FileTypeInterface.class),
+                          classInfo.getAnnotationInfo(FileTypeClass.class))));
+    }
+  }
+
+  /**
+   * Get State (Sax handler) class for EDD class from annotation if it exists
+   *
+   * @param eddClassInfo the ClassInfo object to check
+   * @return Optional of a State subclass
+   */
+  private static final String getFileTypeName(ClassInfo classInfo) {
+    return classInfo
+        .getAnnotationInfo(FileTypeClass.class)
+        .getParameterValues()
+        .get("fileTypeName")
+        .getValue()
+        .toString();
   }
 
   /** Internal class for storing conrete EDD subclass information. */
@@ -3230,79 +3339,6 @@ public abstract class EDD {
   }
 
   /**
-   * This returns the types of data files that this dataset can be returned as. These are short
-   * descriptive names that are put in the request url after the dataset name and before the "?",
-   * e.g., ".nc".
-   *
-   * @return the types of data files that this dataset can be returned as (e.g., ".nc").
-   */
-  public abstract ImmutableList<String> dataFileTypeNames();
-
-  /**
-   * This returns the file extensions corresponding to the dataFileTypes. E.g.,
-   * dataFileTypeName=".ncCF" returns dataFileTypeExtension=".nc".
-   *
-   * @return the file extensions corresponding to the dataFileTypes (e.g., ".nc").
-   */
-  public abstract ImmutableList<String> dataFileTypeExtensions();
-
-  /**
-   * This returns descriptions (up to 80 characters long, suitable for a tooltip) corresponding to
-   * the dataFileTypes.
-   *
-   * @param language the index of the selected language
-   * @return descriptions corresponding to the dataFileTypes.
-   */
-  public abstract String[] dataFileTypeDescriptions(int language);
-
-  /**
-   * This returns an info URL corresponding to the dataFileTypes.
-   *
-   * @return an info URL corresponding to the dataFileTypes (an element is "" if not not available)
-   */
-  public abstract ImmutableList<String> dataFileTypeInfo();
-
-  /**
-   * This returns the types of image files that this dataset can be returned as. These are short
-   * descriptive names that are put in the request url after the dataset name and before the "?",
-   * e.g., ".largePng".
-   *
-   * @return the types of image files that this dataset can be returned as (e.g., ".largePng").
-   */
-  public abstract ImmutableList<String> imageFileTypeNames();
-
-  /**
-   * This returns the file extensions corresponding to the imageFileTypes, e.g.,
-   * imageFileTypeNames=".largePng" returns imageFileTypeExtensions=".png".
-   *
-   * @return the file extensions corresponding to the imageFileTypes (e.g., ".png").
-   */
-  public abstract ImmutableList<String> imageFileTypeExtensions();
-
-  /**
-   * This returns descriptions corresponding to the imageFileTypes (each is suitable for a tooltip).
-   *
-   * @param language the index of the selected language
-   * @return descriptions corresponding to the imageFileTypes.
-   */
-  public abstract String[] imageFileTypeDescriptions(int language);
-
-  /**
-   * This returns an info URL corresponding to the imageFileTypes.
-   *
-   * @return an info URL corresponding to the imageFileTypes.
-   */
-  public abstract ImmutableList<String> imageFileTypeInfo();
-
-  /**
-   * This returns the "[name] - [description]" for all dataFileTypes and imageFileTypes.
-   *
-   * @param language the index of the selected language
-   * @return the "[name] - [description]" for all dataFileTypes and imageFileTypes.
-   */
-  public abstract String[] allFileTypeOptions(int language);
-
-  /**
    * This returns the file extension corresponding to a dataFileType or imageFileType.
    *
    * @param language the index of the selected language
@@ -3312,11 +3348,17 @@ public abstract class EDD {
    */
   public String fileTypeExtension(int language, String fileTypeName) throws Throwable {
     // if there is need for speed in the future: use hashmap
-    int po = dataFileTypeNames().indexOf(fileTypeName);
-    if (po >= 0) return dataFileTypeExtensions().get(po);
+    EDDFileTypeInfo fileInfo = EDD_FILE_TYPE_INFO.get(fileTypeName);
+    if (fileInfo != null) {
+      return fileInfo.getFileTypeExtension();
+    }
 
-    po = imageFileTypeNames().indexOf(fileTypeName);
-    if (po >= 0) return imageFileTypeExtensions().get(po);
+    if (".graph".equals(fileTypeName)
+        || ".help".equals(fileTypeName)
+        || ".html".equals(fileTypeName)
+        || ".subset".equals(fileTypeName)) {
+      return ".html";
+    }
 
     // The pngInfo fileTypeNames could be in regular list,
     //  but audience is so small, and normal audience might be confused
@@ -3973,37 +4015,6 @@ public abstract class EDD {
     }
 
     return displayInfoStr.toString();
-  }
-
-  /**
-   * This returns the kml code for the screenOverlay (which is the KML code which describes
-   * how/where to display the googleEarthLogoFile). This is used by EDD subclasses when creating KML
-   * files.
-   *
-   * @return the kml code for the screenOverlay.
-   */
-  public String getKmlIconScreenOverlay() {
-    return "  <ScreenOverlay id=\"Logo\">\n"
-        + // generic id
-        "    <description>"
-        + EDStatic.preferredErddapUrl
-        + "</description>\n"
-        + "    <name>Logo</name>\n"
-        + // generic name
-        "    <Icon>"
-        + "<href>"
-        + EDStatic.preferredErddapUrl
-        + "/"
-        + EDConfig.IMAGES_DIR
-        + // has trailing /
-        EDStatic.config.googleEarthLogoFile
-        + "</href>"
-        + "</Icon>\n"
-        + "    <overlayXY x=\"0.005\" y=\".04\" xunits=\"fraction\" yunits=\"fraction\"/>\n"
-        + "    <screenXY x=\"0.005\" y=\".04\" xunits=\"fraction\" yunits=\"fraction\"/>\n"
-        + "    <size x=\"0\" y=\"0\" xunits=\"pixels\" yunits=\"pixels\"/>\n"
-        + // 0=original size
-        "  </ScreenOverlay>\n";
   }
 
   /**
@@ -10960,7 +10971,6 @@ public abstract class EDD {
       } else if (lcu.indexOf("cldc") >= 0
           || // cloud cover
           lcu.indexOf("cloud") >= 0
-          || lcu.indexOf("cloud") >= 0
           || lcu.indexOf("dew point") >= 0
           || lcu.indexOf("dewp") >= 0
           || lcu.indexOf("evapora") >= 0
@@ -12455,7 +12465,7 @@ public abstract class EDD {
 
       // if the pngInfo file is at a remote ERDDAP, get it and store it as if created here
       if (this instanceof FromErddap fe && !File2.isFile(infoFileName)) {
-        if (fe.intSourceErddapVersion() > 122) {
+        if (fe.sourceErddapVersion().isGreaterThan(EDStatic.getSemver("1.22"))) {
           // if this fails, the method fails since infoFile isn't in the dir anyway
           String tUrl =
               fe.getLocalSourceErddapUrl()
@@ -14266,7 +14276,7 @@ public abstract class EDD {
    * @param localSourceUrl a URL which includes /erddap/
    * @return the version of the remote ERDDAP, or 1.22 if trouble.
    */
-  public static double getRemoteErddapVersion(String localSourceUrl) {
+  public static Semver getRemoteErddapVersion(String localSourceUrl) {
     String find =
         "/erddap/"; // EDStatic.config.warName, but developmentMode is irrelevant/trouble here
     int po = localSourceUrl.indexOf(find);
@@ -14280,21 +14290,29 @@ public abstract class EDD {
               + " in getRemoteErddapVersion("
               + localSourceUrl
               + "): \"/erddap/\" not found in URL.");
-      return 1.22;
+      return EDStatic.getSemver("1.22");
     }
-    String vUrl = localSourceUrl.substring(0, po + find.length()) + "version";
+    String vUrl = localSourceUrl.substring(0, po + find.length()) + "version?format=json";
     try {
       List<String> response =
           SSR.getUrlResponseArrayList(vUrl); // has timeout and descriptive error
       double v = Double.NaN;
+      String fullResponse = String.join("\n", response);
+      if (fullResponse.contains("version_full")) {
+        JSONObject json = new JSONObject(fullResponse);
+        return EDStatic.getSemver(json.getString("version_full"));
+      }
+
       String response0 = response.getFirst();
-      if (response0.startsWith("ERDDAP_version=")) v = String2.parseDouble(response0.substring(15));
-      if (reallyVerbose) String2.log("  remote ERDDAP version=" + v);
-      return Double.isNaN(v) ? 1.22 : v;
+      if (response0.startsWith("ERDDAP_version=")) {
+        v = String2.parseDouble(response0.substring(15));
+        if (reallyVerbose) String2.log("  remote ERDDAP version=" + v);
+        return EDStatic.getSemver(Double.isNaN(v) ? "1.22" : String.valueOf(v));
+      }
     } catch (Throwable t) {
       String2.log(String2.ERROR + " in getRemoteErddapVersion(" + vUrl + ")\n" + t);
-      return 1.22;
     }
+    return EDStatic.getSemver("1.22");
   }
 
   /**

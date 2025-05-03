@@ -177,7 +177,7 @@ class EDDTableFromHttpGetTests {
               Double.NaN);
 
       //   File2.copy(name, name + ".txt");
-      //   Test.displayInBrowser("file://" + name + ".txt");
+      //   TestUtil.displayInBrowser("file://" + name + ".txt");
       return;
     }
 
