@@ -85,6 +85,9 @@ services:
     volumes:
       - data:/erddapData:ro
     mem_limit: 256m
+    depends_on:
+      erddap:
+        condition: service_healthy
     command: tail -F /erddapData/logs/log.txt
 
   # Monitoring services (part of the monitoring profile)
