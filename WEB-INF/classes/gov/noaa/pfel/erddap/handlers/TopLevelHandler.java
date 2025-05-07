@@ -3,6 +3,7 @@ package gov.noaa.pfel.erddap.handlers;
 import com.cohort.array.StringArray;
 import com.cohort.util.Calendar2;
 import com.cohort.util.String2;
+import com.cohort.util.XML;
 import gov.noaa.pfel.coastwatch.sgt.SgtMap;
 import gov.noaa.pfel.coastwatch.util.SSR;
 import gov.noaa.pfel.erddap.dataset.EDD;
@@ -130,7 +131,7 @@ public class TopLevelHandler extends State {
 
   @Override
   public void characters(char[] ch, int start, int length) throws SAXException {
-    data.append(new String(ch, start, length));
+    data.append(XML.decodeEntities(new String(ch, start, length).trim()));
   }
 
   @Override
@@ -170,7 +171,7 @@ public class TopLevelHandler extends State {
       case "cacheMinutes" -> {
         int tnt = String2.parseInt(data.toString());
         EDStatic.config.cacheMillis =
-            (tnt < 1 || tnt == Integer.MAX_VALUE ? EDStatic.config.DEFAULT_cacheMinutes : tnt)
+            (tnt < 1 || tnt == Integer.MAX_VALUE ? EDConfig.DEFAULT_cacheMinutes : tnt)
                 * Calendar2.MILLIS_PER_MINUTE;
 
         if (reallyVerbose) {
@@ -229,7 +230,7 @@ public class TopLevelHandler extends State {
         String ts = data.toString();
         int tnt = SgtMap.drawLandMask_OPTIONS.indexOf(ts);
         EDStatic.config.drawLandMask =
-            tnt < 1 ? EDStatic.config.DEFAULT_drawLandMask : SgtMap.drawLandMask_OPTIONS.get(tnt);
+            tnt < 1 ? EDConfig.DEFAULT_drawLandMask : SgtMap.drawLandMask_OPTIONS.get(tnt);
 
         if (reallyVerbose) {
           String2.log("drawLandMask=" + EDStatic.config.drawLandMask);
@@ -250,7 +251,7 @@ public class TopLevelHandler extends State {
         int tnt =
             String2.isSomething(ts)
                 ? String2.parseInt(ts)
-                : EDStatic.config.DEFAULT_graphBackgroundColorInt;
+                : EDConfig.DEFAULT_graphBackgroundColorInt;
         EDStatic.config.graphBackgroundColor = new Color(tnt, true); // hasAlpha
 
         if (reallyVerbose) {
@@ -303,9 +304,7 @@ public class TopLevelHandler extends State {
       case "loadDatasetsMaxMinutes" -> {
         int tnt = String2.parseInt(data.toString());
         EDStatic.config.loadDatasetsMaxMillis =
-            (tnt < 1 || tnt == Integer.MAX_VALUE
-                    ? EDStatic.config.DEFAULT_loadDatasetsMaxMinutes
-                    : tnt)
+            (tnt < 1 || tnt == Integer.MAX_VALUE ? EDConfig.DEFAULT_loadDatasetsMaxMinutes : tnt)
                 * Calendar2.MILLIS_PER_MINUTE;
 
         if (reallyVerbose) {
@@ -358,7 +357,7 @@ public class TopLevelHandler extends State {
         int tnt = String2.parseInt(data.toString());
         EDStatic.config.partialRequestMaxBytes =
             tnt < 1000000 || tnt == Integer.MAX_VALUE
-                ? EDStatic.config.DEFAULT_partialRequestMaxBytes
+                ? EDConfig.DEFAULT_partialRequestMaxBytes
                 : tnt;
 
         if (reallyVerbose) {
@@ -368,9 +367,7 @@ public class TopLevelHandler extends State {
       case "partialRequestMaxCells" -> {
         int tnt = String2.parseInt(data.toString());
         EDStatic.config.partialRequestMaxCells =
-            tnt < 1000 || tnt == Integer.MAX_VALUE
-                ? EDStatic.config.DEFAULT_partialRequestMaxCells
-                : tnt;
+            tnt < 1000 || tnt == Integer.MAX_VALUE ? EDConfig.DEFAULT_partialRequestMaxCells : tnt;
 
         if (reallyVerbose) {
           String2.log("partialRequestMaxCells=" + EDStatic.config.partialRequestMaxCells);
@@ -523,7 +520,7 @@ public class TopLevelHandler extends State {
       case "unusualActivity" -> {
         int tnt = String2.parseInt(data.toString());
         EDStatic.config.unusualActivity =
-            tnt < 1 || tnt == Integer.MAX_VALUE ? EDStatic.config.DEFAULT_unusualActivity : tnt;
+            tnt < 1 || tnt == Integer.MAX_VALUE ? EDConfig.DEFAULT_unusualActivity : tnt;
 
         if (reallyVerbose) {
           String2.log("unusualActivity=" + EDStatic.config.unusualActivity);
@@ -532,7 +529,7 @@ public class TopLevelHandler extends State {
       case "updateMaxEvents" -> {
         int tnt = String2.parseInt(data.toString());
         EDStatic.config.updateMaxEvents =
-            tnt < 1 || tnt == Integer.MAX_VALUE ? EDStatic.config.DEFAULT_updateMaxEvents : tnt;
+            tnt < 1 || tnt == Integer.MAX_VALUE ? EDConfig.DEFAULT_updateMaxEvents : tnt;
 
         if (reallyVerbose) {
           String2.log("updateMaxEvents=" + EDStatic.config.updateMaxEvents);
@@ -542,7 +539,7 @@ public class TopLevelHandler extends State {
         int tnt = String2.parseInt(data.toString());
         EDStatic.config.unusualActivityFailPercent =
             tnt < 0 || tnt > 100 || tnt == Integer.MAX_VALUE
-                ? EDStatic.config.DEFAULT_unusualActivityFailPercent
+                ? EDConfig.DEFAULT_unusualActivityFailPercent
                 : tnt;
 
         if (reallyVerbose) {

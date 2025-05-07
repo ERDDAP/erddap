@@ -1,9 +1,11 @@
 package gov.noaa.pfel.erddap.handlers;
 
 import com.cohort.array.StringArray;
+import com.cohort.util.SimpleException;
 import com.cohort.util.String2;
 import gov.noaa.pfel.erddap.dataset.EDD;
 import gov.noaa.pfel.erddap.dataset.EDDTableFromDatabase;
+import gov.noaa.pfel.erddap.variable.EDVAlt;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 
@@ -31,6 +33,11 @@ public class EDDTableFromDatabaseHandler extends BaseTableHandler {
       throws SAXException {
     handleAttributes(localName);
     handleDataVariables(localName);
+    switch (localName) {
+      case "altitudeMetersPerSourceUnit" ->
+          throw new SimpleException(EDVAlt.stopUsingAltitudeMetersPerSourceUnit);
+      case "connectionProperty" -> tConnectionProperties.add(attributes.getValue("name"));
+    }
   }
 
   @Override

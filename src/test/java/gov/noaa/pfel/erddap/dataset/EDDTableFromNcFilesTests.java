@@ -7015,7 +7015,7 @@ class EDDTableFromNcFilesTests {
     start =
         "longitude,latitude,airPressure&airPressure>900&airPressure!=NaN"
             + "&airPressure=~\"(.*)\"&.marker=1|5&longitude%3E=-180&time%3E=";
-    queries = new String[] {"2022-09-01T00:00:00Z", "2022-09", "1661990400"};
+    queries = new String[] {"2022-03-01T00:00:00Z", "2022-03", "1646092800"};
     for (int i = 0; i < queries.length; i++) {
       baseName = "EDDTableFromNcFiles_testLegendA" + i;
       tName =
