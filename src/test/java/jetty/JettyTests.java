@@ -6659,6 +6659,9 @@ class JettyTests {
           "https://www.pcreview.co.uk/threads/datetime-accounts-for-leap-seconds.1357623/",
           // site returns 403 in test, but works in browser
           "https://www.cnmoc.usff.navy.mil/Our-Commands/United-States-Naval-Observatory/Precise-Time-Department/The-USNO-Master-Clock/Definitions-of-Systems-of-Time/",
+          // Stackoverflow and stackexchange seem to be error during tests, but work in browser.
+          "https://stackoverflow.com/questions/31136211/how-to-handle-leap-seconds-in-oracle",
+          "https://dba.stackexchange.com/questions/105514/leap-second-in-database-system-postgresql-and-sql-server",
         };
     // https://unitsofmeasure.org/ucum.html fails in tests because of certificate,
     // but succeeds in my browser. Others are like this, too.
