@@ -37,7 +37,6 @@ RUN --mount=type=cache,id=m2_repo,target=/root/.m2/repository \
 FROM tomcat:11.0.7-jdk21-temurin-jammy
 
 RUN apt-get update && apt-get install -y \
-    gosu \
     unzip \
     zip \
     && apt-get clean \
