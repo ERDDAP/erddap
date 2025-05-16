@@ -84,6 +84,8 @@ ENV ERDDAP_VERSION_SUFFIX="docker"
 
 COPY ./docker/entrypoint.sh /entrypoint.sh
 
+VOLUME /erddapData
+
 ENTRYPOINT ["/entrypoint.sh"]
 EXPOSE 8080
 CMD ["catalina.sh", "run"]
