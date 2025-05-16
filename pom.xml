@@ -45,13 +45,16 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <erddapcontent.download.version>content1.0.0</erddapcontent.download.version>
         <erddapreffiles.download.version>1.0.0</erddapreffiles.download.version>
-        <netcdfJavaVersion>5.7.0</netcdfJavaVersion>
+        <netcdfJavaVersion>5.8.0</netcdfJavaVersion>
         <test.resources.version>test1.04</test.resources.version>
-        <jettyVersion>12.0.18</jettyVersion>
+        <jettyVersion>12.0.21</jettyVersion>
         <error-prone.version>2.27.0</error-prone.version>
-        <prometheusVersion>1.3.6</prometheusVersion>
-        <parquetVersion>1.15.1</parquetVersion>
-        <awssdkVersion>2.31.3</awssdkVersion>
+        <prometheusVersion>1.3.7</prometheusVersion>
+        <parquetVersion>1.15.2</parquetVersion>
+        <awssdkVersion>2.31.43</awssdkVersion>
+        <luceneVersion>10.2.1</luceneVersion>
+        <mavenTestPluginVersion>3.5.3</mavenTestPluginVersion>
+        <jacocoMavenVersion>0.8.13</jacocoMavenVersion>
         <download.unpackWhenChanged>true</download.unpackWhenChanged>
     </properties>
 
@@ -370,7 +373,7 @@
             </plugin>
             <plugin>
                 <artifactId>maven-surefire-plugin</artifactId>
-                <version>3.5.2</version>
+                <version>${mavenTestPluginVersion}</version>
                 <configuration>
                     <argLine>${surefire.jacoco.args}</argLine>
                     <additionalClasspathElements>
@@ -382,7 +385,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-failsafe-plugin</artifactId>
-                <version>3.5.2</version>
+                <version>${mavenTestPluginVersion}</version>
                 <executions>
                     <execution>
                         <goals>
@@ -441,7 +444,7 @@
             <plugin>
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
-                <version>0.8.12</version>
+                <version>${jacocoMavenVersion}</version>
                 <executions>
                     <execution>
                     <id>before-unit-test-execution</id>
@@ -660,7 +663,7 @@
             <dependency>
                 <groupId>org.junit</groupId>
                 <artifactId>junit-bom</artifactId>
-                <version>5.12.1</version>
+                <version>5.12.2</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -757,7 +760,7 @@
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-core</artifactId>
-            <version>5.16.1</version>
+            <version>5.17.0</version>
             <scope>test</scope>
         </dependency>
 
@@ -789,7 +792,7 @@
         <dependency>
             <groupId>org.apache.lucene</groupId>
             <artifactId>lucene-core</artifactId>
-            <version>10.1.0</version>
+            <version>${luceneVersion}</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/org.apache.lucene/lucene-queryparser 
@@ -797,7 +800,7 @@
         <dependency>
             <groupId>org.apache.lucene</groupId>
             <artifactId>lucene-queryparser</artifactId>
-            <version>10.1.0</version>
+            <version>${luceneVersion}</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/org.json/json 
@@ -1002,7 +1005,7 @@
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-jexl3</artifactId>
-            <version>3.4.0</version>
+            <version>3.5.0</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/org.postgresql/postgresql 
@@ -1030,7 +1033,7 @@
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
-            <version>33.4.0-jre</version>
+            <version>33.4.8-jre</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/net.jpountz.lz4/lz4 
@@ -1054,7 +1057,13 @@
         <dependency>
             <groupId>io.netty</groupId>
             <artifactId>netty-all</artifactId>
-            <version>4.1.119.Final</version>
+            <version>4.2.1.Final</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/io.netty/netty-handler -->
+        <dependency>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-handler</artifactId>
+            <version>4.2.1.Final</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/org.xerial.snappy/snappy-java 
@@ -1112,14 +1121,14 @@
         <dependency>
             <groupId>software.amazon.awssdk.crt</groupId>
             <artifactId>aws-crt</artifactId>
-            <version>0.36.3</version>
+            <version>0.38.3</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/com.google.auth/google-auth-library-oauth2-http -->
         <dependency>
             <groupId>com.google.auth</groupId>
             <artifactId>google-auth-library-oauth2-http</artifactId>
-            <version>1.33.1</version>
+            <version>1.35.0</version>
         </dependency>
 
         <dependency>
@@ -1178,7 +1187,7 @@
         <dependency>
             <groupId>org.semver4j</groupId>
             <artifactId>semver4j</artifactId>
-            <version>5.6.0</version>
+            <version>5.7.0</version>
         </dependency>
     </dependencies>
 
@@ -1187,12 +1196,12 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-report-plugin</artifactId>
-                <version>3.5.2</version>
+                <version>${mavenTestPluginVersion}</version>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-report-plugin</artifactId>
-                <version>3.5.2</version>
+                <version>${mavenTestPluginVersion}</version>
                 <reportSets>
                     <reportSet>
                         <id>integration-tests</id>
@@ -1205,7 +1214,7 @@
             <plugin>
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
-                <version>0.8.12</version>
+                <version>${jacocoMavenVersion}</version>
                 <reportSets>
                     <reportSet>
                         <reports>

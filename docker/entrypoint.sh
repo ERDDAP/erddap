@@ -58,7 +58,7 @@ if [ "$1" = 'start-tomcat.sh' ] || [ "$1" = 'catalina.sh' ]; then
       done
     fi
 
-    exec gosu $USER_ID "$@"
+    exec setpriv --reuid $USER_ID --regid $GROUP_ID --init-groups "$@"
 fi
 
 exec "$@"
