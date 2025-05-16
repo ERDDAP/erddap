@@ -37,7 +37,6 @@ if [ "$1" = 'start-tomcat.sh' ] || [ "$1" = 'catalina.sh' ]; then
 
     chown -R $USER_ID:$GROUP_ID ${CATALINA_HOME} && find ${CATALINA_HOME}/conf \
         -type d -exec chmod 755 {} \; -o -type f -exec chmod 400 {} \;
-    mkdir -p /erddapData
     chown -R $USER_ID:$GROUP_ID /erddapData
     sync
 
