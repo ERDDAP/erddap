@@ -129,7 +129,7 @@ public class HtmlWidgets {
    * FontSize from 8pt to 10pt config. FontSize = '10pt' // E.g. '9pt' or '12px' - unit is mandatory
    *
    * @param dir a public directory from the web page's point of view (e.g.,
-   *     EDStatic.imageDirUrl(loggedInAs, language)) where wz_tooltip.js can be found.
+   *     EDStatic.imageDirUrl(request, loggedInAs, language)) where wz_tooltip.js can be found.
    */
   public static String htmlTooltipScript(String dir) {
     return "<!-- Big HTML tooltips are generated with wz_tooltip from \n"
@@ -149,8 +149,8 @@ public class HtmlWidgets {
   /**
    * HTML head stuff for leaflet.
    *
-   * @param tErddapUrl e.g, from EDStatic.erddapUrl(loggedInAs, language): ending in "erddap",
-   *     without the trailing slash
+   * @param tErddapUrl e.g, from EDStatic.erddapUrl(request, loggedInAs, language): ending in
+   *     "erddap", without the trailing slash
    */
   public static String leafletHead(String tErddapUrl) {
     return
@@ -267,7 +267,7 @@ public class HtmlWidgets {
    *     (less than 60 char on some browsers).
    * @param tImageDirUrl the public URL for the image dir which has the arrow, p... and m... .gif
    *     files for the 'select' buttons (or null or "" if not needed). Usually from
-   *     EDStatic.imageDirUrl(loggedInAs, language)
+   *     EDStatic.imageDirUrl(request, loggedInAs, language)
    */
   public HtmlWidgets(boolean tHtmlTooltips, String tImageDirUrl) {
     htmlTooltips = tHtmlTooltips;
@@ -1587,8 +1587,8 @@ public class HtmlWidgets {
    * This creates the html to draw an image (e.g., question mark) that has a big html tooltip.
    * htmlTooltipScript (see above) must be already in the document. See tip().
    *
-   * @param imageRef the reference for the question mark image (e.g.,
-   *     EDStatic.imageDirUrl(loggedInAs, language) + EDStatic.messages.questionMarkImageFile)
+   * @param imageRef the reference for the question mark image (e.g., EDStatic.imageDirUrl(request,
+   *     loggedInAs, language) + EDStatic.messages.questionMarkImageFile)
    * @param alt the alt text to be displayed, e.g., "?" (not yet encoded)
    * @param html the html tooltip text, e.g., "Hi,<br>
    *     there!". It needs explicit br tags to set window width correctly. For plain text, use

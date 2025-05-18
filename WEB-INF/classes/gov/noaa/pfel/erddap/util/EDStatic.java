@@ -951,6 +951,21 @@ public class EDStatic {
   }
 
   /**
+   * Return the ERDDAP URL prefix, including scheme, host (and port if specified), and WAR context
+   * path (/erddap), with no trailing slash.
+   *
+   * @param request the request
+   * @param loggedInAs the logged in user
+   * @return the ERDDAP URL prefix (example: http://erddap.yourdomain.com/erddap)
+   */
+  protected static String getErddapUrlPrefix(HttpServletRequest request, String loggedInAs) {
+    if (EDStatic.config.useHeadersForUrl && request != null && request.getHeader("Host") != null) {
+      return request.getScheme() + "://" + request.getHeader("Host") + "/" + config.warName;
+    }
+    return loggedInAs == null ? erddapUrl : erddapHttpsUrl;
+  }
+
+  /**
    * If loggedInAs is null, this returns erddapUrl, else erddapHttpsUrl (neither has slash at end).
    *
    * @param language the index of the selected language
@@ -958,21 +973,29 @@ public class EDStatic {
    * @return If loggedInAs == null, this returns erddapUrl, else erddapHttpsUrl (neither has slash
    *     at end).
    */
-  public static String erddapUrl(String loggedInAs, int language) {
-    return (loggedInAs == null ? erddapUrl : erddapHttpsUrl)
-        + // works because of loggedInAsHttps
-        (language == 0 ? "" : "/" + TranslateMessages.languageCodeList.get(language));
+  public static String erddapUrl(HttpServletRequest request, String loggedInAs, int language) {
+    return getErddapUrlPrefix(request, loggedInAs)
+        + (language == 0 ? "" : "/" + TranslateMessages.languageCodeList.get(language));
   }
 
   /**
-   * If loggedInAs is null, this returns erddapUrl, else erddapHttpsUrl (neither has slash at end).
+   * Returns https ERDDAP url plus optional /languageCode, without slash at end. If useHeaderForUrl
+   * is enabled, the https url is built from the request Host header, as long as either the request
+   * scheme is https or the host doesn't contain a port (i.e. http requests without a port in the
+   * host will result in https urls with the same host). Otherwise erddapHttpsUrl is used.
    *
    * @param language the index of the selected language
    * @return erddapHttpsUrl plus optional /languageCode. (without slash at end).
    */
-  public static String erddapHttpsUrl(int language) {
-    return erddapHttpsUrl
-        + (language == 0 ? "" : "/" + TranslateMessages.languageCodeList.get(language));
+  public static String erddapHttpsUrl(HttpServletRequest request, int language) {
+    String httpsUrl = erddapHttpsUrl;
+    if (EDStatic.config.useHeadersForUrl
+        && request != null
+        && request.getHeader("Host") != null
+        && (request.getScheme() == "https" || !request.getHeader("Host").contains(":"))) {
+      httpsUrl = "https://" + request.getHeader("Host") + "/" + config.warName;
+    }
+    return httpsUrl + (language == 0 ? "" : "/" + TranslateMessages.languageCodeList.get(language));
   }
 
   /**
@@ -1007,8 +1030,8 @@ public class EDStatic {
    * @param language
    * @return returns the appropriate image directory URL (with slash at end).
    */
-  public static String imageDirUrl(String loggedInAs, int language) {
-    return erddapUrl(loggedInAs, language) + "/" + EDConfig.IMAGES_DIR;
+  public static String imageDirUrl(HttpServletRequest request, String loggedInAs, int language) {
+    return erddapUrl(request, loggedInAs, language) + "/" + EDConfig.IMAGES_DIR;
   }
 
   /**
@@ -1029,9 +1052,10 @@ public class EDStatic {
    * @param protocol e.g., tabledap
    * @return the You Are Here html for this EDD subclass.
    */
-  public static String youAreHere(int language, String loggedInAs, String protocol) {
+  public static String youAreHere(
+      HttpServletRequest request, int language, String loggedInAs, String protocol) {
     return "\n<h1 class=\"nowrap\">"
-        + erddapHref(language, erddapUrl(loggedInAs, language))
+        + erddapHref(language, erddapUrl(request, loggedInAs, language))
         + " &gt; "
         + protocol
         + "</h1>\n";
@@ -1049,8 +1073,13 @@ public class EDStatic {
    * @return the You Are Here html for this EDD subclass.
    */
   public static String youAreHere(
-      int language, String loggedInAs, String protocol, String protocolNameAr[], String current) {
-    String tErddapUrl = erddapUrl(loggedInAs, language);
+      HttpServletRequest request,
+      int language,
+      String loggedInAs,
+      String protocol,
+      String protocolNameAr[],
+      String current) {
+    String tErddapUrl = erddapUrl(request, loggedInAs, language);
     return "\n<h1 class=\"nowrap\">"
         + erddapHref(language, tErddapUrl)
         + " &gt; <a rel=\"bookmark\" href=\""
@@ -1095,8 +1124,12 @@ public class EDStatic {
    * @return the You Are Here html for this EDD subclass.
    */
   public static String youAreHere(
-      int language, String loggedInAs, String protocol, String datasetID) {
-    String tErddapUrl = erddapUrl(loggedInAs, language);
+      HttpServletRequest request,
+      int language,
+      String loggedInAs,
+      String protocol,
+      String datasetID) {
+    String tErddapUrl = erddapUrl(request, loggedInAs, language);
     return "\n<h1 class=\"nowrap\">"
         + erddapHref(language, tErddapUrl)
         + "\n &gt; <a rel=\"contents\" "
@@ -1121,14 +1154,18 @@ public class EDStatic {
    * @return the You Are Here html for this EDD subclass.
    */
   public static String youAreHereWithHelp(
-      int language, String loggedInAs, String protocol, String htmlHelp) {
-    String tErddapUrl = erddapUrl(loggedInAs, language);
+      HttpServletRequest request,
+      int language,
+      String loggedInAs,
+      String protocol,
+      String htmlHelp) {
+    String tErddapUrl = erddapUrl(request, loggedInAs, language);
     return "\n<h1 class=\"nowrap\">"
         + erddapHref(language, tErddapUrl)
         + "\n &gt; "
         + protocol
         + "\n"
-        + htmlTooltipImage(language, loggedInAs, htmlHelp)
+        + htmlTooltipImage(request, language, loggedInAs, htmlHelp)
         + "\n</h1>\n";
   }
 
@@ -1143,9 +1180,14 @@ public class EDStatic {
    * @return the You Are Here html for this EDD subclass.
    */
   public static String youAreHereWithHelp(
-      int language, String loggedInAs, String protocol, String datasetID, String htmlHelp) {
+      HttpServletRequest request,
+      int language,
+      String loggedInAs,
+      String protocol,
+      String datasetID,
+      String htmlHelp) {
 
-    String tErddapUrl = erddapUrl(loggedInAs, language);
+    String tErddapUrl = erddapUrl(request, loggedInAs, language);
     return "\n<h1 class=\"nowrap\">"
         + erddapHref(language, tErddapUrl)
         + "\n &gt; <a rel=\"contents\" "
@@ -1157,7 +1199,7 @@ public class EDStatic {
         + "\n &gt; "
         + datasetID
         + "\n"
-        + htmlTooltipImage(language, loggedInAs, htmlHelp)
+        + htmlTooltipImage(request, language, loggedInAs, htmlHelp)
         + "\n</h1>\n";
   }
 
@@ -1175,7 +1217,7 @@ public class EDStatic {
   /*public static String youAreHere(int language, String loggedInAs, String protocol,
       String attribute, String category) {
 
-      String tErddapUrl = erddapUrl(loggedInAs, language);
+      String tErddapUrl = erddapUrl(request, loggedInAs, language);
       String attributeUrl = tErddapUrl + "/" + protocol + "/" + attribute + "/index.html"; //+?defaultPIppQuery
       return
           "\n<h1>" + erddapHref(language, tErddapUrl) +
@@ -1195,9 +1237,10 @@ public class EDStatic {
    *     there!". It needs explicit br tags to set window width correctly. For plain text, generate
    *     html from XML.encodeAsPreHTML(plainText, 82).
    */
-  public static String htmlTooltipImage(int language, String loggedInAs, String html) {
+  public static String htmlTooltipImage(
+      HttpServletRequest request, int language, String loggedInAs, String html) {
     return HtmlWidgets.htmlTooltipImage(
-        imageDirUrl(loggedInAs, language) + messages.questionMarkImageFile, "?", html, "");
+        imageDirUrl(request, loggedInAs, language) + messages.questionMarkImageFile, "?", html, "");
   }
 
   /**
@@ -1207,10 +1250,11 @@ public class EDStatic {
    * @param language the language code number
    * @param edv from an EDDTable
    */
-  public static String htmlTooltipImageEDV(int language, String loggedInAs, EDV edv)
-      throws Throwable {
+  public static String htmlTooltipImageEDV(
+      HttpServletRequest request, int language, String loggedInAs, EDV edv) throws Throwable {
 
     return htmlTooltipImageLowEDV(
+        request,
         language,
         loggedInAs,
         edv.destinationDataPAType(),
@@ -1225,10 +1269,12 @@ public class EDStatic {
    * @param language the language code number
    * @param edvga
    */
-  public static String htmlTooltipImageEDVGA(int language, String loggedInAs, EDVGridAxis edvga)
+  public static String htmlTooltipImageEDVGA(
+      HttpServletRequest request, int language, String loggedInAs, EDVGridAxis edvga)
       throws Throwable {
 
     return htmlTooltipImageLowEDV(
+        request,
         language,
         loggedInAs,
         edvga.destinationDataPAType(),
@@ -1245,9 +1291,11 @@ public class EDStatic {
    * @param allDimString from eddGrid.allDimString()
    */
   public static String htmlTooltipImageEDVG(
-      int language, String loggedInAs, EDV edv, String allDimString) throws Throwable {
+      HttpServletRequest request, int language, String loggedInAs, EDV edv, String allDimString)
+      throws Throwable {
 
     return htmlTooltipImageLowEDV(
+        request,
         language,
         loggedInAs,
         edv.destinationDataPAType(),
@@ -1259,13 +1307,16 @@ public class EDStatic {
    * This returns the html to draw a question mark that has big html tooltip with a variable's name
    * and attributes. htmlTooltipScript (see HtmlWidgets) must be already in the document.
    *
+   * @param request the servlet request
    * @param language the language code number
+   * @param loggedInAs
    * @param destinationDataPAType
    * @param destinationName perhaps with axis information appended (e.g.,
    *     [time][latitude][longitude]
    * @param attributes
    */
   public static String htmlTooltipImageLowEDV(
+      HttpServletRequest request,
       int language,
       String loggedInAs,
       PAType destinationDataPAType,
@@ -1284,6 +1335,7 @@ public class EDStatic {
             false); // htmlEncoding, strictDapMode
     // String2.log("htmlTooltipImage sb=" + sb.toString());
     return htmlTooltipImage(
+        request,
         language,
         loggedInAs,
         "<div class=\"standard_max_width\">" + XML.encodeAsPreHTML(sb.toString()) + "</div>");
@@ -2076,17 +2128,18 @@ public class EDStatic {
    * <p>This is safe to use this after outputStream has been written to -- this won't make a session
    * if the user doesn't have one.
    *
+   * @param request the request
    * @param language the index of the selected language
    * @param loggedInAs the name of the logged in user (or null if not logged in) Special case:
    *     "loggedInAsHttps" is for using https without being logged in, but &amp;loginInfo; indicates
    *     user isn't logged in.
    */
-  public static String getLoginHtml(int language, String loggedInAs) {
+  public static String getLoginHtml(HttpServletRequest request, int language, String loggedInAs) {
     if (config.authentication.isEmpty()) {
       // user can't log in
       return "";
     } else {
-      String tUrl = erddapHttpsUrl(language);
+      String tUrl = erddapHttpsUrl(request, language);
       return loggedInAs == null || loggedInAsHttps.equals(loggedInAs)
           ? // ie not logged in
           // always use the erddapHttpsUrl for login/logout pages
@@ -2111,6 +2164,7 @@ public class EDStatic {
    * <p>This is safe to use this after outputStream has been written to -- this won't make a session
    * if the user doesn't have one.
    *
+   * @param request the request
    * @param language the index of the selected language
    * @param loggedInAs the name of the logged in user (or null if not logged in). Special case:
    *     "loggedInAsHttps" is for using https without being logged in, but &amp;loginInfo; indicates
@@ -2122,8 +2176,12 @@ public class EDStatic {
    *     valid and not malicious).
    */
   public static String startBodyHtml(
-      int language, String loggedInAs, String endOfRequest, String queryString) {
-    return startBodyHtml(language, loggedInAs, endOfRequest, queryString, "");
+      HttpServletRequest request,
+      int language,
+      String loggedInAs,
+      String endOfRequest,
+      String queryString) {
+    return startBodyHtml(request, language, loggedInAs, endOfRequest, queryString, "");
   }
 
   /**
@@ -2150,9 +2208,14 @@ public class EDStatic {
    * @param otherBody other content for the &lt;body&gt; tag, e.g., " onload=\"myFunction()\"".
    */
   public static String startBodyHtml(
-      int language, String loggedInAs, String endOfRequest, String queryString, String otherBody) {
+      HttpServletRequest request,
+      int language,
+      String loggedInAs,
+      String endOfRequest,
+      String queryString,
+      String otherBody) {
 
-    String tErddapUrl = erddapUrl(loggedInAs, language);
+    String tErddapUrl = erddapUrl(request, loggedInAs, language);
     String s =
         messages
             .startBodyHtmlAr[
@@ -2164,7 +2227,7 @@ public class EDStatic {
     s = String2.replaceAll(s, "&BroughtToYouBy;", messages.BroughtToYouByAr[language]);
     if (String2.isSomething(otherBody))
       s = String2.replaceAll(s, "<body>", "<body " + otherBody + ">");
-    s = String2.replaceAll(s, "&loginInfo;", getLoginHtml(language, loggedInAs));
+    s = String2.replaceAll(s, "&loginInfo;", getLoginHtml(request, language, loggedInAs));
     HtmlWidgets widgets = new HtmlWidgets();
     s =
         String2.replaceAll(
@@ -2192,6 +2255,7 @@ public class EDStatic {
                         false,
                         "")
                     + htmlTooltipImage(
+                        request,
                         language,
                         loggedInAs,
                         "<img src=\""
@@ -2203,18 +2267,19 @@ public class EDStatic {
     // place (and this should never happen)
 
     // String2.log(">> EDStatic startBodyHtml=" + s);
-    return String2.replaceAll(s, "&erddapUrl;", erddapUrl(loggedInAs, language));
+    return String2.replaceAll(s, "&erddapUrl;", erddapUrl(request, loggedInAs, language));
   }
 
   /**
    * The endBody HTML.
    *
    * @param language the index of the selected language
-   * @param tErddapUrl from EDStatic.erddapUrl(loggedInAs, language) (erddapUrl, or erddapHttpsUrl
-   *     if user is logged in)
+   * @param tErddapUrl from EDStatic.erddapUrl(request, loggedInAs, language) (erddapUrl, or
+   *     erddapHttpsUrl if user is logged in)
    * @param loggedInAs
    */
-  public static String endBodyHtml(int language, String tErddapUrl, String loggedInAs) {
+  public static String endBodyHtml(
+      HttpServletRequest request, int language, String tErddapUrl, String loggedInAs) {
     String s = String2.replaceAll(messages.endBodyHtmlAr[language], "&erddapUrl;", tErddapUrl);
     if (language > 0)
       s =
@@ -2223,7 +2288,7 @@ public class EDStatic {
               "<br><img src=\""
                   + tErddapUrl
                   + "/images/TranslatedByGoogle.png\" alt=\"Translated by Google\">\n"
-                  + htmlTooltipImage(language, loggedInAs, translationDisclaimer)
+                  + htmlTooltipImage(request, language, loggedInAs, translationDisclaimer)
                   + "<hr>");
     return s;
   }
@@ -2232,8 +2297,8 @@ public class EDStatic {
    * The content of the legal web page.
    *
    * @param language the index of the selected language
-   * @param tErddapUrl from EDStatic.erddapUrl(loggedInAs, language) (erddapUrl, or erddapHttpsUrl
-   *     if user is logged in)
+   * @param tErddapUrl from EDStatic.erddapUrl(request, loggedInAs, language) (erddapUrl, or
+   *     erddapHttpsUrl if user is logged in)
    */
   public static String legal(int language, String tErddapUrl) {
     StringBuilder tsb = new StringBuilder(messages.legal);

@@ -2613,7 +2613,7 @@ public abstract class EDDGrid extends EDD {
       throws Throwable {
 
     try {
-      String tErddapUrl = EDStatic.erddapUrl(loggedInAs, language);
+      String tErddapUrl = EDStatic.erddapUrl(request, loggedInAs, language);
       // save data to outputStream
       switch (fileTypeName) {
         case ".graph" -> {
@@ -2645,6 +2645,7 @@ public abstract class EDDGrid extends EDD {
             writer.write("\n</head>\n");
             writer.write(
                 EDStatic.startBodyHtml(
+                    request,
                     language,
                     loggedInAs,
                     "griddap/" + datasetID + ".html", // was endOfRequest,
@@ -2652,15 +2653,18 @@ public abstract class EDDGrid extends EDD {
             writer.write("\n");
             writer.write(
                 HtmlWidgets.htmlTooltipScript(
-                    EDStatic.imageDirUrl(loggedInAs, language))); // this is a link to a script
+                    EDStatic.imageDirUrl(
+                        request, loggedInAs, language))); // this is a link to a script
             writer.write(
                 HtmlWidgets.dragDropScript(
-                    EDStatic.imageDirUrl(loggedInAs, language))); // this is a link to a script
+                    EDStatic.imageDirUrl(
+                        request, loggedInAs, language))); // this is a link to a script
             writer.flush(); // Steve Souder says: the sooner you can send some html to user, the
             // better
             writer.write("<div class=\"standard_width\">\n");
             writer.write(
                 EDStatic.youAreHereWithHelp(
+                    request,
                     language,
                     loggedInAs,
                     dapProtocol,
@@ -2673,11 +2677,11 @@ public abstract class EDDGrid extends EDD {
                         + EDStatic.messages.dafGridBypassTooltipAr[language]
                         + "</div>"));
             writeHtmlDatasetInfo(
-                language, loggedInAs, writer, true, false, true, true, userDapQuery, "");
+                request, language, loggedInAs, writer, true, false, true, true, userDapQuery, "");
             if (userDapQuery.length() == 0)
               userDapQuery =
                   defaultDataQuery(); // after writeHtmlDatasetInfo and before writeDapHtmlForm
-            writeDapHtmlForm(language, loggedInAs, userDapQuery, writer);
+            writeDapHtmlForm(request, language, loggedInAs, userDapQuery, writer);
 
             // End of page / other info
 
@@ -2703,14 +2707,14 @@ public abstract class EDDGrid extends EDD {
                             """);
             writeGeneralDapHtmlInstructions(language, tErddapUrl, writer, false);
             writer.write("</div>\n");
-            writer.write(EDStatic.endBodyHtml(language, tErddapUrl, loggedInAs));
+            writer.write(EDStatic.endBodyHtml(request, language, tErddapUrl, loggedInAs));
             writer.write("</html>");
             writer.close();
 
           } catch (Exception e) {
             EDStatic.rethrowClientAbortException(e); // first thing in catch{}
             writer.write(EDStatic.htmlForException(language, e));
-            writer.write(EDStatic.endBodyHtml(language, tErddapUrl, loggedInAs));
+            writer.write(EDStatic.endBodyHtml(request, language, tErddapUrl, loggedInAs));
             writer.write("</html>");
             writer.close();
             throw e;
@@ -2819,12 +2823,13 @@ public abstract class EDDGrid extends EDD {
       throw new SimpleException(
           EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr) + accessibleViaMAG());
 
-    String tErddapUrl = EDStatic.erddapUrl(loggedInAs, language);
+    String tErddapUrl = EDStatic.erddapUrl(request, loggedInAs, language);
     String formName = "f1"; // change JavaScript below if this changes
     OutputStream out = outputStreamSource.outputStream(File2.UTF_8);
     Writer writer = File2.getBufferedWriterUtf8(out);
     try {
-      HtmlWidgets widgets = new HtmlWidgets(true, EDStatic.imageDirUrl(loggedInAs, language));
+      HtmlWidgets widgets =
+          new HtmlWidgets(true, EDStatic.imageDirUrl(request, loggedInAs, language));
 
       // write the header
       writer.write(
@@ -2834,6 +2839,7 @@ public abstract class EDDGrid extends EDD {
       writer.write("\n</head>\n");
       writer.write(
           EDStatic.startBodyHtml(
+              request,
               language,
               loggedInAs,
               "griddap/" + datasetID + ".graph", // was endOfRequest,
@@ -2841,14 +2847,15 @@ public abstract class EDDGrid extends EDD {
       writer.write("\n");
       writer.write(
           HtmlWidgets.htmlTooltipScript(
-              EDStatic.imageDirUrl(loggedInAs, language))); // this is a link to a script
+              EDStatic.imageDirUrl(request, loggedInAs, language))); // this is a link to a script
       writer.write(
           HtmlWidgets.dragDropScript(
-              EDStatic.imageDirUrl(loggedInAs, language))); // this is a link to a script
+              EDStatic.imageDirUrl(request, loggedInAs, language))); // this is a link to a script
       writer.flush(); // Steve Souder says: the sooner you can send some html to user, the better
       writer.write("<div class=\"standard_width\">\n");
       writer.write(
           EDStatic.youAreHereWithHelp(
+              request,
               language,
               loggedInAs,
               "griddap",
@@ -2856,7 +2863,8 @@ public abstract class EDDGrid extends EDD {
               "<div class=\"standard_max_width\">"
                   + EDStatic.messages.magGridTooltipAr[language]
                   + "</div>"));
-      writeHtmlDatasetInfo(language, loggedInAs, writer, true, true, true, false, userDapQuery, "");
+      writeHtmlDatasetInfo(
+          request, language, loggedInAs, writer, true, true, true, false, userDapQuery, "");
       if (userDapQuery.length() == 0)
         userDapQuery =
             defaultGraphQuery(); // after writeHtmlDatasetInfo and before Table.getDapQueryParts
@@ -3453,6 +3461,7 @@ public abstract class EDDGrid extends EDD {
           " "
               + // spacer
               EDStatic.htmlTooltipImage(
+                  request,
                   language,
                   loggedInAs,
                   "<div class=\"standard_max_width\">"
@@ -3499,6 +3508,7 @@ public abstract class EDDGrid extends EDD {
             " "
                 + // spacer
                 EDStatic.htmlTooltipImage(
+                    request,
                     language,
                     loggedInAs,
                     MessageFormat.format(EDStatic.messages.magAxisVarHelpAr[language], varHelp[v])
@@ -3521,6 +3531,7 @@ public abstract class EDDGrid extends EDD {
               + EDStatic.messages.EDDGridDimensionRangesAr[language]
               + " "
               + EDStatic.htmlTooltipImage(
+                  request,
                   language,
                   loggedInAs,
                   EDStatic.messages.EDDGridDimensionTooltipAr[0]
@@ -3532,6 +3543,7 @@ public abstract class EDDGrid extends EDD {
               + EDStatic.messages.EDDGridStartAr[language]
               + " "
               + EDStatic.htmlTooltipImage(
+                  request,
                   language,
                   loggedInAs,
                   EDStatic.messages.EDDGridDimensionTooltipAr[language]
@@ -3545,6 +3557,7 @@ public abstract class EDDGrid extends EDD {
               + EDStatic.messages.EDDGridStopAr[0]
               + " "
               + EDStatic.htmlTooltipImage(
+                  request,
                   language,
                   loggedInAs,
                   EDStatic.messages.EDDGridDimensionTooltipAr[0]
@@ -3569,7 +3582,7 @@ public abstract class EDDGrid extends EDD {
                 + edvga.destinationName()
                 + " "
                 + tUnits
-                + EDStatic.htmlTooltipImageEDVGA(language, loggedInAs, edvga)
+                + EDStatic.htmlTooltipImageEDVGA(request, language, loggedInAs, edvga)
                 + "</td>\n");
 
         for (int ss = 0; ss < 2; ss++) { // 0=start, 1=stop
@@ -3589,7 +3602,7 @@ public abstract class EDDGrid extends EDD {
               buttons.append(
                   "<td class=\"B\">\n"
                       + HtmlWidgets.htmlTooltipImage(
-                          EDStatic.imageDirUrl(loggedInAs, language) + "arrowLL.gif",
+                          EDStatic.imageDirUrl(request, loggedInAs, language) + "arrowLL.gif",
                           "|<",
                           EDStatic.messages.magItemFirstAr[language],
                           "class=\"B\" "
@@ -3614,7 +3627,7 @@ public abstract class EDDGrid extends EDD {
               buttons.append(
                   "<td class=\"B\">\n"
                       + HtmlWidgets.htmlTooltipImage(
-                          EDStatic.imageDirUrl(loggedInAs, language) + "minus.gif",
+                          EDStatic.imageDirUrl(request, loggedInAs, language) + "minus.gif",
                           "-",
                           EDStatic.messages.magItemPreviousAr[language],
                           "class=\"B\" "
@@ -3635,7 +3648,7 @@ public abstract class EDDGrid extends EDD {
               buttons.append(
                   "<td class=\"B\">\n"
                       + HtmlWidgets.htmlTooltipImage(
-                          EDStatic.imageDirUrl(loggedInAs, language) + "plus.gif",
+                          EDStatic.imageDirUrl(request, loggedInAs, language) + "plus.gif",
                           "+",
                           EDStatic.messages.magItemNextAr[language],
                           "class=\"B\" "
@@ -3653,7 +3666,7 @@ public abstract class EDDGrid extends EDD {
               buttons.append(
                   "<td class=\"B\">\n"
                       + HtmlWidgets.htmlTooltipImage(
-                          EDStatic.imageDirUrl(loggedInAs, language) + "arrowRR.gif",
+                          EDStatic.imageDirUrl(request, loggedInAs, language) + "arrowRR.gif",
                           ">|",
                           EDStatic.messages.magItemLastAr[language],
                           // the word "last" works for all datasets
@@ -4414,7 +4427,7 @@ public abstract class EDDGrid extends EDD {
               + "title=\"griddap documentation\">"
               + EDStatic.messages.magDocumentationAr[language]
               + "</a>\n"
-              + EDStatic.htmlTooltipImage(language, loggedInAs, genViewHtml)
+              + EDStatic.htmlTooltipImage(request, language, loggedInAs, genViewHtml)
               + ")\n");
       writer.write("""
               </td></tr>
@@ -4443,7 +4456,10 @@ public abstract class EDDGrid extends EDD {
             EDStatic.messages.magZoomCenterAr[language]
                 + "\n"
                 + EDStatic.htmlTooltipImage(
-                    language, loggedInAs, EDStatic.messages.magZoomCenterTooltipAr[language])
+                    request,
+                    language,
+                    loggedInAs,
+                    EDStatic.messages.magZoomCenterTooltipAr[language])
                 + "<br><strong>"
                 + EDStatic.messages.magZoomAr[language]
                 + ":</strong>\n");
@@ -4466,7 +4482,7 @@ public abstract class EDDGrid extends EDD {
 
         writer.write(
             // HtmlWidgets.htmlTooltipImage(
-            //    EDStatic.imageDirUrl(loggedInAs, language) + "arrowDD.gif",
+            //    EDStatic.imageDirUrl(request, loggedInAs, language) + "arrowDD.gif",
             widgets.button(
                 "button",
                 "",
@@ -4780,7 +4796,7 @@ public abstract class EDDGrid extends EDD {
             writer.write(
                 "&nbsp;"
                     + HtmlWidgets.htmlTooltipImage(
-                        EDStatic.imageDirUrl(loggedInAs, language) + "arrowLL.gif",
+                        EDStatic.imageDirUrl(request, loggedInAs, language) + "arrowLL.gif",
                         "|<",
                         MessageFormat.format(
                                 EDStatic.messages.magTimeRangeFirstAr[language], timeRangeString)
@@ -4810,7 +4826,7 @@ public abstract class EDDGrid extends EDD {
             writer.write(
                 "&nbsp;"
                     + HtmlWidgets.htmlTooltipImage(
-                        EDStatic.imageDirUrl(loggedInAs, language) + "minus.gif",
+                        EDStatic.imageDirUrl(request, loggedInAs, language) + "minus.gif",
                         "-",
                         MessageFormat.format(
                                 EDStatic.messages.magTimeRangeBackAr[language], timeRangeString)
@@ -4847,7 +4863,7 @@ public abstract class EDDGrid extends EDD {
             writer.write(
                 "&nbsp;"
                     + HtmlWidgets.htmlTooltipImage(
-                        EDStatic.imageDirUrl(loggedInAs, language) + "plus.gif",
+                        EDStatic.imageDirUrl(request, loggedInAs, language) + "plus.gif",
                         "+",
                         MessageFormat.format(
                                 EDStatic.messages.magTimeRangeForwardAr[language], timeRangeString)
@@ -4890,7 +4906,7 @@ public abstract class EDDGrid extends EDD {
             writer.write(
                 "&nbsp;"
                     + HtmlWidgets.htmlTooltipImage(
-                        EDStatic.imageDirUrl(loggedInAs, language) + "arrowRR.gif",
+                        EDStatic.imageDirUrl(request, loggedInAs, language) + "arrowRR.gif",
                         ">|",
                         MessageFormat.format(
                                 EDStatic.messages.magTimeRangeLastAr[language], timeRangeString)
@@ -4998,7 +5014,7 @@ public abstract class EDDGrid extends EDD {
           // all the way left
           writer.write(
               HtmlWidgets.htmlTooltipImage(
-                      EDStatic.imageDirUrl(loggedInAs, language) + "arrowLL.gif",
+                      EDStatic.imageDirUrl(request, loggedInAs, language) + "arrowLL.gif",
                       "|<",
                       EDStatic.messages.shiftXAllTheWayLeftAr[language],
                       "class=\"B\" "
@@ -5020,7 +5036,7 @@ public abstract class EDDGrid extends EDD {
           int howMuch = Math.min(tRange2, tStartIndex);
           writer.write(
               HtmlWidgets.htmlTooltipImage(
-                      EDStatic.imageDirUrl(loggedInAs, language) + "minus.gif",
+                      EDStatic.imageDirUrl(request, loggedInAs, language) + "minus.gif",
                       "-",
                       EDStatic.messages.shiftXLeftAr[language],
                       "class=\"B\" "
@@ -5046,7 +5062,7 @@ public abstract class EDDGrid extends EDD {
           int howMuch = Math.min(tRange2, tSize1 - tStopIndex);
           writer.write(
               HtmlWidgets.htmlTooltipImage(
-                      EDStatic.imageDirUrl(loggedInAs, language) + "plus.gif",
+                      EDStatic.imageDirUrl(request, loggedInAs, language) + "plus.gif",
                       "+",
                       EDStatic.messages.shiftXRightAr[0],
                       "class=\"B\" "
@@ -5067,7 +5083,7 @@ public abstract class EDDGrid extends EDD {
           // all the way right
           writer.write(
               HtmlWidgets.htmlTooltipImage(
-                  EDStatic.imageDirUrl(loggedInAs, language) + "arrowRR.gif",
+                  EDStatic.imageDirUrl(request, loggedInAs, language) + "arrowRR.gif",
                   ">|",
                   EDStatic.messages.shiftXAllTheWayRightAr[language],
                   "class=\"B\" "
@@ -5173,7 +5189,7 @@ public abstract class EDDGrid extends EDD {
               EDV.SLIDER_PIXELS - 1));
 
       writer.write("</div>\n"); // standard_width
-      writer.write(EDStatic.endBodyHtml(language, tErddapUrl, loggedInAs));
+      writer.write(EDStatic.endBodyHtml(request, language, tErddapUrl, loggedInAs));
       writer.write("</html>");
       if (!dimensionValuesInMemory) setDimensionValuesToNull();
 
@@ -5185,7 +5201,7 @@ public abstract class EDDGrid extends EDD {
               + " when writing web page:\n"
               + MustBe.throwableToString(e)); // before writer.write's
       writer.write(EDStatic.htmlForException(language, e));
-      writer.write(EDStatic.endBodyHtml(language, tErddapUrl, loggedInAs));
+      writer.write(EDStatic.endBodyHtml(request, language, tErddapUrl, loggedInAs));
       writer.write("</html>");
       if (!dimensionValuesInMemory) setDimensionValuesToNull();
 
@@ -6236,6 +6252,7 @@ public abstract class EDDGrid extends EDD {
    * This writes an HTML form requesting info from this dataset (like the OPeNDAP Data Access
    * forms).
    *
+   * @param request the request
    * @param language the index of the selected language
    * @param loggedInAs the name of the logged in user (or null if not logged in). Normally, this is
    *     not used to test if this edd is accessibleTo loggedInAs, but it unusual cases
@@ -6245,11 +6262,16 @@ public abstract class EDDGrid extends EDD {
    * @param writer
    * @throws Throwable if trouble
    */
-  public void writeDapHtmlForm(int language, String loggedInAs, String userDapQuery, Writer writer)
+  public void writeDapHtmlForm(
+      HttpServletRequest request,
+      int language,
+      String loggedInAs,
+      String userDapQuery,
+      Writer writer)
       throws Throwable {
 
     // parse userDapQuery
-    String tErddapUrl = EDStatic.erddapUrl(loggedInAs, language);
+    String tErddapUrl = EDStatic.erddapUrl(request, loggedInAs, language);
     if (userDapQuery == null) userDapQuery = "";
     userDapQuery = userDapQuery.trim();
     StringArray destinationNames = new StringArray();
@@ -6270,7 +6292,8 @@ public abstract class EDDGrid extends EDD {
 
     // beginning of form   ("form1" is used in javascript below")
     writer.write(HtmlWidgets.ifJavaScriptDisabled + "\n");
-    HtmlWidgets widgets = new HtmlWidgets(true, EDStatic.imageDirUrl(loggedInAs, language));
+    HtmlWidgets widgets =
+        new HtmlWidgets(true, EDStatic.imageDirUrl(request, loggedInAs, language));
     String formName = "form1";
     writer.write("&nbsp;\n"); // necessary for the blank line before the form (not <p>)
     writer.write(widgets.beginForm(formName, "GET", "", ""));
@@ -6292,6 +6315,7 @@ public abstract class EDDGrid extends EDD {
             + EDStatic.messages.EDDGridDimensionAr[language]
             + " "
             + EDStatic.htmlTooltipImage(
+                request,
                 language,
                 loggedInAs,
                 dimHelp + EDStatic.messages.EDDGridVarHasDimTooltipAr[language])
@@ -6299,17 +6323,17 @@ public abstract class EDDGrid extends EDD {
             + "  <th class=\"L\">"
             + EDStatic.messages.EDDGridStartAr[language]
             + " "
-            + EDStatic.htmlTooltipImage(language, loggedInAs, startTooltip)
+            + EDStatic.htmlTooltipImage(request, language, loggedInAs, startTooltip)
             + " </th>\n"
             + "  <th class=\"L\">"
             + EDStatic.messages.EDDGridStrideAr[language]
             + " "
-            + EDStatic.htmlTooltipImage(language, loggedInAs, strideTooltip)
+            + EDStatic.htmlTooltipImage(request, language, loggedInAs, strideTooltip)
             + " </th>\n"
             + "  <th class=\"L\">"
             + EDStatic.messages.EDDGridStopAr[language]
             + " "
-            + EDStatic.htmlTooltipImage(language, loggedInAs, stopTooltip)
+            + EDStatic.htmlTooltipImage(request, language, loggedInAs, stopTooltip)
             + " </th>\n"
             +
             // "  <th class=\"L\">&nbsp;" + EDStatic.messages.EDDGridFirst + " " +
@@ -6319,13 +6343,14 @@ public abstract class EDDGrid extends EDD {
             + EDStatic.messages.EDDGridNValuesAr[language]
             + " "
             + EDStatic.htmlTooltipImage(
-                language, loggedInAs, EDStatic.messages.EDDGridNValuesHtmlAr[language])
+                request, language, loggedInAs, EDStatic.messages.EDDGridNValuesHtmlAr[language])
             + "</th>\n"
             + "  <th class=\"L\">"
             + gap
             + EDStatic.messages.EDDGridSpacingAr[language]
             + " "
             + EDStatic.htmlTooltipImage(
+                request,
                 language,
                 loggedInAs,
                 "<div class=\"narrow_max_width\">"
@@ -6374,7 +6399,7 @@ public abstract class EDDGrid extends EDD {
               ""));
 
       writer.write(extra + " ");
-      writer.write(EDStatic.htmlTooltipImageEDVGA(language, loggedInAs, edvga));
+      writer.write(EDStatic.htmlTooltipImageEDVGA(request, language, loggedInAs, edvga));
       writer.write("&nbsp;</td>\n");
 
       // set default start, stride, stop
@@ -6521,7 +6546,8 @@ public abstract class EDDGrid extends EDD {
               ""));
 
       writer.write(extra + " ");
-      writer.write(EDStatic.htmlTooltipImageEDVG(language, loggedInAs, edv, allDimString()));
+      writer.write(
+          EDStatic.htmlTooltipImageEDVG(request, language, loggedInAs, edv, allDimString()));
       writer.write("</td>\n");
 
       // end of row
@@ -6651,7 +6677,7 @@ public abstract class EDDGrid extends EDD {
             + tErddapUrl
             + "/griddap/documentation.html\" "
             + "title=\"griddap documentation\">Documentation&nbsp;/&nbsp;Bypass&nbsp;this&nbsp;form</a>)\n"
-            + EDStatic.htmlTooltipImage(language, loggedInAs, genViewHtml));
+            + EDStatic.htmlTooltipImage(request, language, loggedInAs, genViewHtml));
 
     // submit
     writer.write(
@@ -6696,8 +6722,8 @@ public abstract class EDDGrid extends EDD {
    * This writes HTML info on forming OPeNDAP DAP-style requests for this type of dataset.
    *
    * @param language the index of the selected language
-   * @param tErddapUrl from EDStatic.erddapUrl(loggedInAs, language) (erddapUrl, or erddapHttpsUrl
-   *     if user is logged in)
+   * @param tErddapUrl from EDStatic.erddapUrl(request, loggedInAs, language) (erddapUrl, or
+   *     erddapHttpsUrl if user is logged in)
    * @param writer to which will be written HTML info on forming OPeNDAP DAP-style requests for this
    *     type of dataset.
    * @param complete if false, this just writes a paragraph and shows a link to
@@ -8401,18 +8427,20 @@ public abstract class EDDGrid extends EDD {
   /**
    * This responds by writing WCS info for this dataset.
    *
+   * @param request the request
    * @param language the index of the selected language
    * @param loggedInAs the name of the logged in user (or null if not logged in). Caller should have
    *     already checked that user has access to this dataset.
    */
-  public void wcsInfo(int language, String loggedInAs, Writer writer) throws Throwable {
+  public void wcsInfo(HttpServletRequest request, int language, String loggedInAs, Writer writer)
+      throws Throwable {
 
-    String tErddapUrl = EDStatic.erddapUrl(loggedInAs, language);
+    String tErddapUrl = EDStatic.erddapUrl(request, loggedInAs, language);
     String wcsUrl = tErddapUrl + "/wcs/" + datasetID + "/" + EDDGrid.wcsServer;
     String getCapabilities = wcsUrl + "?service=WCS&amp;request=GetCapabilities";
     String wcsExample = wcsUrl + "?NotYetFinished"; // EDStatic.wcsSampleStation;
     writer.write(
-        EDStatic.youAreHere(language, loggedInAs, "Web Coverage Service (WCS)")
+        EDStatic.youAreHere(request, language, loggedInAs, "Web Coverage Service (WCS)")
             + "\n"
             + "<h2>Overview</h2>\n"
             + "In addition to making data available via \n"
@@ -8462,19 +8490,21 @@ public abstract class EDDGrid extends EDD {
    * called if accessibleViaWCS is true and loggedInAs has access to this dataset (so redirected to
    * login, instead of getting an error here).
    *
+   * @param request the request
    * @param language the index of the selected language
    * @param loggedInAs the name of the logged in user (or null if not logged in).
    * @param version Currently, only "1.0.0" is supported.
    * @param writer In the end, the writer is flushed, not closed.
    */
-  public void wcsGetCapabilities(int language, String loggedInAs, String version, Writer writer)
+  public void wcsGetCapabilities(
+      HttpServletRequest request, int language, String loggedInAs, String version, Writer writer)
       throws Throwable {
 
     if (accessibleViaWCS().length() > 0)
       throw new SimpleException(
           EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr) + accessibleViaWCS());
 
-    String tErddapUrl = EDStatic.erddapUrl(loggedInAs, language);
+    String tErddapUrl = EDStatic.erddapUrl(request, loggedInAs, language);
     String wcsUrl = tErddapUrl + "/wcs/" + datasetID + "/" + wcsServer;
     String titleXml = XML.encodeAsXML(title());
     String keywordsSA[] = keywords();
@@ -9579,15 +9609,17 @@ public abstract class EDDGrid extends EDD {
    * Currently, this just works as a WCS 1.0.0 server. <br>
    * The caller should have already checked loggedInAs and accessibleViaWCS().
    *
+   * @param request the servlet request
    * @param language the index of the selected language
    * @param loggedInAs the name of the logged in user (or null if not logged in). This doesn't check
    *     if eddGrid is accessible to loggedInAs. The caller should do that.
    * @param writer afterwards, the writer is flushed, not closed
    * @throws Throwable if trouble (there shouldn't be)
    */
-  public void wcsDatasetHtml(int language, String loggedInAs, Writer writer) throws Throwable {
+  public void wcsDatasetHtml(
+      HttpServletRequest request, int language, String loggedInAs, Writer writer) throws Throwable {
 
-    String tErddapUrl = EDStatic.erddapUrl(loggedInAs, language);
+    String tErddapUrl = EDStatic.erddapUrl(request, loggedInAs, language);
 
     String wcsUrl = tErddapUrl + "/wcs/" + datasetID + "/" + wcsServer;
     String destName0 = dataVariables[0].destinationName();
@@ -9641,15 +9673,20 @@ public abstract class EDDGrid extends EDD {
     // writer.write(EDStatic.startBodyHtml(language, loggedInAs,
     //    "wcs/" + datasetID + "/index.html", //was endOfRequest,
     //    queryString) + "\n");
-    // writer.write(HtmlWidgets.htmlTooltipScript(EDStatic.imageDirUrl(loggedInAs, language)));
+    // writer.write(HtmlWidgets.htmlTooltipScript(EDStatic.imageDirUrl(request, loggedInAs,
+    // language)));
     // writer.flush(); //Steve Souder says: the sooner you can send some html to user, the better
 
     // *** html body content
     writer.write("<div class=\"standard_width\">\n");
     writer.write(
         EDStatic.youAreHere(
-            language, loggedInAs, "wcs", datasetID)); // wcs must be lowercase for link to work
-    writeHtmlDatasetInfo(language, loggedInAs, writer, true, true, true, true, "", "");
+            request,
+            language,
+            loggedInAs,
+            "wcs",
+            datasetID)); // wcs must be lowercase for link to work
+    writeHtmlDatasetInfo(request, language, loggedInAs, writer, true, true, true, true, "", "");
 
     String datasetListRef =
         "<br>See the\n"

@@ -16418,13 +16418,13 @@ class EDDTableFromNcFilesTests {
     String dir = TEMP_DIR.toAbsolutePath().toString() + "/";
     String fileName = dir + "tableTestSpeedDAF.txt";
     Writer writer = File2.getBufferedFileWriterUtf8(fileName);
-    tableDataset.writeDapHtmlForm(language, null, "", writer);
+    tableDataset.writeDapHtmlForm(null, language, null, "", writer);
 
     // time it DAF
     String2.log("start timing");
     long time = System.currentTimeMillis();
     int n = 100; // use 1000 so it dominates program run time if profiling
-    for (int i = 0; i < n; i++) tableDataset.writeDapHtmlForm(language, null, "", writer);
+    for (int i = 0; i < n; i++) tableDataset.writeDapHtmlForm(null, language, null, "", writer);
     float results = ((System.currentTimeMillis() - time) / (float) n);
     double expected = 12.4;
     String msg =

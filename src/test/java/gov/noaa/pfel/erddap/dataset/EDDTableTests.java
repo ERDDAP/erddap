@@ -1,5 +1,6 @@
 package gov.noaa.pfel.erddap.dataset;
 
+import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -68,6 +69,9 @@ class EDDTableTests {
         fileType);
     verify(request).getHeader("Range");
     verify(request).getHeader("accept-encoding");
+    if (EDStatic.config.useHeadersForUrl) {
+      verify(request, atLeastOnce()).getHeader("Host");
+    }
     verify(outStream, times(1)).close();
     verifyNoMoreInteractions(request);
   }
@@ -98,7 +102,7 @@ class EDDTableTests {
         EDD.userQueryHashMap(
             "seRvIcE=SOS&ReQueSt=GetCapabilities&sEctIons=gibberish,All",
             true); // true=names toLowerCase
-    eddTable.sosGetCapabilities(language, queryMap, writer, null);
+    eddTable.sosGetCapabilities(null, language, queryMap, writer, null);
     results = writer.toString();
     expected =
         "<?xml version=\"1.0\"?>\n"
@@ -455,7 +459,7 @@ class EDDTableTests {
     // stored as /programs/sos/ndbcSosCurrentsDescribeSensor90810.xml
     String2.log("\n+++ DescribeSensor all");
     writer = new java.io.StringWriter();
-    eddTable.sosDescribeSensor(language, null, eddTable.datasetID, writer);
+    eddTable.sosDescribeSensor(null, language, null, eddTable.datasetID, writer);
     results = writer.toString();
     // String2.log(results);
     expected =
@@ -902,7 +906,7 @@ class EDDTableTests {
     // DescribeSensor 41004
     String2.log("\n+++ DescribeSensor 41004");
     writer = new java.io.StringWriter();
-    eddTable.sosDescribeSensor(language, null, "41004", writer);
+    eddTable.sosDescribeSensor(null, language, null, "41004", writer);
     results = writer.toString();
     // String2.log(results);
     expected =
@@ -1365,7 +1369,7 @@ class EDDTableTests {
     // stored as /programs/sos/ndbcSosCurrentsDescribeSensor90810.xml
     String2.log("\n+++ DescribeSensor 41004:wtmp");
     writer = new java.io.StringWriter();
-    eddTable.sosDescribeSensor(language, null, "41004", writer);
+    eddTable.sosDescribeSensor(null, language, null, "41004", writer);
     results = writer.toString();
     String2.log(results);
     expected =
@@ -1518,7 +1522,7 @@ class EDDTableTests {
             "&responseFormat=text/csv"
             + "&eventTime=2008-08-01T00:00:00Z/2008-08-01T01:00:00Z";
     String2.log("\n+++ GetObservations for 1 station  CSV\n" + sosQuery1);
-    String dapQuery1[] = eddTable.sosQueryToDapQuery(language, null, sosQuery1);
+    String dapQuery1[] = eddTable.sosQueryToDapQuery(null, language, null, sosQuery1);
     String2.log("\nsosQuery1=" + sosQuery1 + "\n\ndapQuery1=" + dapQuery1[0]);
     Test.ensureEqual(
         dapQuery1[0],
@@ -1527,7 +1531,15 @@ class EDDTableTests {
     baos = new ByteArrayOutputStream();
     osss = new OutputStreamSourceSimple(baos);
     eddTable.sosGetObservation(
-        language, endOfRequest, sosQuery1Csv, "someIPAddress", null, osss, dir, "testSos1Sta");
+        null,
+        language,
+        endOfRequest,
+        sosQuery1Csv,
+        "someIPAddress",
+        null,
+        osss,
+        dir,
+        "testSos1Sta");
     results = baos.toString(File2.UTF_8);
     String2.log(results);
     expected =
@@ -1556,7 +1568,7 @@ class EDDTableTests {
     baos = new ByteArrayOutputStream();
     osss = new OutputStreamSourceSimple(baos);
     eddTable.sosGetObservation(
-        language, endOfRequest, sosQuery1, "someIPAddress", null, osss, dir, "testSos1");
+        null, language, endOfRequest, sosQuery1, "someIPAddress", null, osss, dir, "testSos1");
     results = baos.toString(File2.UTF_8);
     String2.log(results);
     expected =
@@ -1716,7 +1728,7 @@ class EDDTableTests {
     baos = new ByteArrayOutputStream();
     osss = new OutputStreamSourceSimple(baos);
     eddTable.sosGetObservation(
-        language, endOfRequest, sosQuery1b, "someIPAddress", null, osss, dir, "testSos1b");
+        null, language, endOfRequest, sosQuery1b, "someIPAddress", null, osss, dir, "testSos1b");
     results = baos.toString(File2.UTF_8);
     String2.log(results);
     expected = // changes when I update ndbc
@@ -1737,7 +1749,7 @@ class EDDTableTests {
             "&responseFormat=text/csv"
             + "&eventTime=2008-08-01T00:00:00Z/2008-08-01T01:00:00Z"
             + "&featureOfInterest=BBOX:-79.10,32.4,-79.08,32.6";
-    String dapQuery2[] = eddTable.sosQueryToDapQuery(language, null, sosQuery2);
+    String dapQuery2[] = eddTable.sosQueryToDapQuery(null, language, null, sosQuery2);
     String2.log("\nsosQuery2=" + sosQuery2 + "\n\ndapQuery2=" + dapQuery2[0]);
     Test.ensureEqual(
         dapQuery2[0],
@@ -1749,7 +1761,7 @@ class EDDTableTests {
     baos = new ByteArrayOutputStream();
     osss = new OutputStreamSourceSimple(baos);
     eddTable.sosGetObservation(
-        language, endOfRequest, sosQuery2, "someIPAddress", null, osss, dir, "testSos2");
+        null, language, endOfRequest, sosQuery2, "someIPAddress", null, osss, dir, "testSos2");
     results = baos.toString(File2.UTF_8);
     String2.log(results);
     expected =
@@ -1773,7 +1785,7 @@ class EDDTableTests {
             "&responseFormat=text/csv"
             + "&eventTime=2008-08-01T00:00:00Z/2008-08-01T01:00:00Z"
             + "&featureOfInterest=BBOX:-79.10,32.4,-79.08,32.6";
-    String dapQuery2b[] = eddTable.sosQueryToDapQuery(language, null, sosQuery2b);
+    String dapQuery2b[] = eddTable.sosQueryToDapQuery(null, language, null, sosQuery2b);
     String2.log("\nsosQuery2b=" + sosQuery2b + "\n\ndapQuery2b=" + dapQuery2b[0]);
     Test.ensureEqual(
         dapQuery2b[0],
@@ -1784,7 +1796,7 @@ class EDDTableTests {
     baos = new ByteArrayOutputStream();
     osss = new OutputStreamSourceSimple(baos);
     eddTable.sosGetObservation(
-        language, endOfRequest, sosQuery2b, "someIPAddress", null, osss, dir, "testSos2b");
+        null, language, endOfRequest, sosQuery2b, "someIPAddress", null, osss, dir, "testSos2b");
     results = baos.toString(File2.UTF_8);
     String2.log(results);
     expected =
@@ -1808,7 +1820,7 @@ class EDDTableTests {
             "&responseFormat=text/xml;schema=%22ioos/0.6.1%22"
             + "&eventTime=2008-08-01T00:00:00Z/2008-08-01T01:00:00Z"
             + "&featureOfInterest=BBOX:-79.10,32.4,-79.08,32.6";
-    String dapQuery2c[] = eddTable.sosQueryToDapQuery(language, null, sosQuery2c);
+    String dapQuery2c[] = eddTable.sosQueryToDapQuery(null, language, null, sosQuery2c);
     String2.log("\nsosQuery2c=" + sosQuery2c + "\n\ndapQuery2c=" + dapQuery2c[0]);
     Test.ensureEqual(
         dapQuery2c[0],
@@ -1820,7 +1832,7 @@ class EDDTableTests {
     baos = new ByteArrayOutputStream();
     osss = new OutputStreamSourceSimple(baos);
     eddTable.sosGetObservation(
-        language, endOfRequest, sosQuery2c, "someIPAddress", null, osss, dir, "testSos2c");
+        null, language, endOfRequest, sosQuery2c, "someIPAddress", null, osss, dir, "testSos2c");
     results = baos.toString(File2.UTF_8);
     String2.log(results);
     expected =
@@ -2062,7 +2074,7 @@ class EDDTableTests {
             + "&responseFormat=text/csv"
             + "&eventTime=2008-08-01T00:00:00Z/2008-08-01T01:00:00Z"
             + "&featureOfInterest=BBOX:-79.9,32.4,-79.0,33.0";
-    String dapQuery3[] = eddTable.sosQueryToDapQuery(language, null, sosQuery3);
+    String dapQuery3[] = eddTable.sosQueryToDapQuery(null, language, null, sosQuery3);
     String2.log("\nsosQuery3=" + sosQuery3 + "\n\ndapQuery3=" + dapQuery3[0]);
     Test.ensureEqual(
         dapQuery3[0],
@@ -2075,7 +2087,7 @@ class EDDTableTests {
     baos = new ByteArrayOutputStream();
     osss = new OutputStreamSourceSimple(baos);
     eddTable.sosGetObservation(
-        language, endOfRequest, sosQuery3, "someIPAddress", null, osss, dir, "testSos3");
+        null, language, endOfRequest, sosQuery3, "someIPAddress", null, osss, dir, "testSos3");
     results = baos.toString(File2.UTF_8);
     String2.log(results);
     expected =
@@ -2097,7 +2109,7 @@ class EDDTableTests {
             "&responseFormat=text/csv"
             + "&eventTime=2008-08-01T00:00:00Z/2008-08-01T01:00:00Z"
             + "&featureOfInterest=BBOX:-79.9,32.4,-79.0,33.0";
-    String dapQuery4[] = eddTable.sosQueryToDapQuery(language, null, sosQuery4);
+    String dapQuery4[] = eddTable.sosQueryToDapQuery(null, language, null, sosQuery4);
     String2.log("\nsosQuery4=" + sosQuery4 + "\n\ndapQuery4=" + dapQuery4[0]);
     Test.ensureEqual(
         dapQuery4[0],
@@ -2108,7 +2120,7 @@ class EDDTableTests {
     baos = new ByteArrayOutputStream();
     osss = new OutputStreamSourceSimple(baos);
     eddTable.sosGetObservation(
-        language, endOfRequest, sosQuery4, "someIPAddress", null, osss, dir, "testSos4");
+        null, language, endOfRequest, sosQuery4, "someIPAddress", null, osss, dir, "testSos4");
     results = baos.toString(File2.UTF_8);
     expected =
         "longitude, latitude, time, station, wd, wspd, gst, wvht, dpd, apd, mwd, bar, atmp, wtmp, dewp, vis, ptdy, tide, wspu, wspv\n"
@@ -2141,7 +2153,7 @@ class EDDTableTests {
             "&responseFormat=image/png"
             + "&eventTime=2008-07-25T00:00:00Z/2008-08-01T00:00:00Z";
 
-    String dapQuery5[] = eddTable.sosQueryToDapQuery(language, null, sosQuery5csv);
+    String dapQuery5[] = eddTable.sosQueryToDapQuery(null, language, null, sosQuery5csv);
     String2.log("\nsosQuery5csv=" + sosQuery5csv + "\n\ndapQuery5=" + dapQuery5[0]);
     Test.ensureEqual(
         dapQuery5[0],
@@ -2152,7 +2164,15 @@ class EDDTableTests {
     baos = new ByteArrayOutputStream();
     osss = new OutputStreamSourceSimple(baos);
     eddTable.sosGetObservation(
-        language, endOfRequest, sosQuery5csv, "someIPAddress", null, osss, dir, "testSos5csv");
+        null,
+        language,
+        endOfRequest,
+        sosQuery5csv,
+        "someIPAddress",
+        null,
+        osss,
+        dir,
+        "testSos5csv");
     results = baos.toString(File2.UTF_8);
     String2.log(results);
     expected =
@@ -2175,7 +2195,7 @@ class EDDTableTests {
 
     // #5png get png -> time series
     String2.log("\n+++ 5png: GetObservations for 1 station, 1 obsProp\n" + sosQuery5png);
-    dapQuery5 = eddTable.sosQueryToDapQuery(language, null, sosQuery5png);
+    dapQuery5 = eddTable.sosQueryToDapQuery(null, language, null, sosQuery5png);
     String2.log("\nsosQuery5png=" + sosQuery5png + "\n\ndapQuery5=" + dapQuery5[0]);
     Test.ensureEqual(
         dapQuery5[0],
@@ -2183,7 +2203,7 @@ class EDDTableTests {
             + "&time>=2008-07-25T00:00:00Z&time<=2008-08-01T00:00:00Z"
             + "&.draw=linesAndMarkers&.marker=5|4&.color=0xFF9900",
         "");
-    String dapQuery = eddTable.sosQueryToDapQuery(language, null, sosQuery5png)[0];
+    String dapQuery = eddTable.sosQueryToDapQuery(null, language, null, sosQuery5png)[0];
     fileName =
         eddTable.makeNewFileForDapQuery(
             language,
@@ -2203,7 +2223,7 @@ class EDDTableTests {
             "&observedProperty=wtmp"
             + "&responseFormat=text/csv"
             + "&eventTime=2008-08-01T00:00:00Z/2008-08-01T01:00:00Z";
-    String dapQuery6[] = eddTable.sosQueryToDapQuery(language, null, sosQuery6csv);
+    String dapQuery6[] = eddTable.sosQueryToDapQuery(null, language, null, sosQuery6csv);
     String2.log("\nsosQuery6csv=" + sosQuery6csv + "\n\ndapQuery6csv=" + dapQuery6[0]);
     Test.ensureEqual(
         dapQuery6[0],
@@ -2212,7 +2232,15 @@ class EDDTableTests {
     baos = new ByteArrayOutputStream();
     osss = new OutputStreamSourceSimple(baos);
     eddTable.sosGetObservation(
-        language, endOfRequest, sosQuery6csv, "someIPAddress", null, osss, dir, "testSos6csv");
+        null,
+        language,
+        endOfRequest,
+        sosQuery6csv,
+        "someIPAddress",
+        null,
+        osss,
+        dir,
+        "testSos6csv");
     results = baos.toString(File2.UTF_8);
     String2.log(results);
     expected =
@@ -2246,7 +2274,7 @@ class EDDTableTests {
             "&observedProperty=wtmp"
             + "&responseFormat=image/png"
             + "&eventTime=2008-08-01T00:00:00Z/2008-08-01T01:00:00Z";
-    dapQuery6 = eddTable.sosQueryToDapQuery(language, null, sosQuery6png);
+    dapQuery6 = eddTable.sosQueryToDapQuery(null, language, null, sosQuery6png);
     String2.log("\nsosQuery6png=" + sosQuery6png + "\n\ndapQuery6png=" + dapQuery6[0]);
     Test.ensureEqual(
         dapQuery6[0],
@@ -2286,7 +2314,7 @@ class EDDTableTests {
         EDD.userQueryHashMap(
             "seRvIcE=SOS&ReQueSt=GetCapabilities&sEctIons=gibberish,All",
             true); // true=names toLowerCase
-    eddTable.sosGetCapabilities(language, queryMap, writer, null);
+    eddTable.sosGetCapabilities(null, language, queryMap, writer, null);
     results = writer.toString();
     String2.log(results.substring(0, 7000));
     String2.log("\n...\n");
@@ -2308,7 +2336,7 @@ class EDDTableTests {
     baos = new ByteArrayOutputStream();
     osss = new OutputStreamSourceSimple(baos);
     eddTable.sosGetObservation(
-        language, endOfRequest, sosQuery1, "someIPAddress", null, osss, dir, "testSosCurBB");
+        null, language, endOfRequest, sosQuery1, "someIPAddress", null, osss, dir, "testSosCurBB");
     /*
      * from eddTableSos.testNdbcSosCurrents
      * "&longitude=-87.94&latitude>=29.1&latitude<29.2&time>=2008-06-01T14:00&time<=2008-06-01T14:30",
@@ -2351,7 +2379,7 @@ class EDDTableTests {
     baos = new ByteArrayOutputStream();
     osss = new OutputStreamSourceSimple(baos);
     eddTable.sosGetObservation(
-        language, endOfRequest, sosQuery2, "someIPAddress", null, osss, dir, "testSosCurSta");
+        null, language, endOfRequest, sosQuery2, "someIPAddress", null, osss, dir, "testSosCurSta");
     results = baos.toString(File2.UTF_8);
     String2.log(results);
     // expected = same data
@@ -2372,7 +2400,15 @@ class EDDTableTests {
     baos = new ByteArrayOutputStream();
     osss = new OutputStreamSourceSimple(baos);
     eddTable.sosGetObservation(
-        language, endOfRequest, sosQuery3, "someIPAddress", null, osss, dir, "testSosCurSta2");
+        null,
+        language,
+        endOfRequest,
+        sosQuery3,
+        "someIPAddress",
+        null,
+        osss,
+        dir,
+        "testSosCurSta2");
     results = baos.toString(File2.UTF_8);
     // String2.log(results);
     expected =
@@ -2524,7 +2560,7 @@ class EDDTableTests {
     baos = new ByteArrayOutputStream();
     osss = new OutputStreamSourceSimple(baos);
     eddTable.sosGetObservation(
-        language, endOfRequest, sosQuery1, "someIPAddress", null, osss, dir, "testGomoos");
+        null, language, endOfRequest, sosQuery1, "someIPAddress", null, osss, dir, "testGomoos");
     results = baos.toString(File2.UTF_8);
     // String2.log(results);
     expected =
@@ -2564,7 +2600,7 @@ class EDDTableTests {
     baos = new ByteArrayOutputStream();
     osss = new OutputStreamSourceSimple(baos);
     eddTable.sosGetObservation(
-        language, endOfRequest, sosQuery1, "someIPAddress", null, osss, dir, "testSos1Sta");
+        null, language, endOfRequest, sosQuery1, "someIPAddress", null, osss, dir, "testSos1Sta");
     results = baos.toString(File2.UTF_8);
     String2.log(results);
     expected =
