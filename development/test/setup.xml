@@ -393,5 +393,6 @@ If an attribute is a global attribute, identify it by prefixing it with "global:
 <usePrometheusMetrics>true</usePrometheusMetrics>
 <showLoadErrorsOnStatusPage>true</showLoadErrorsOnStatusPage>
 <useSisISO19115>true</useSisISO19115>
+<useHeadersForUrl>true</useHeadersForUrl>
 </erddapSetup>
 

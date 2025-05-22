@@ -1477,10 +1477,12 @@ class EDDGridFromDapTests {
     // TestUtil.displayInBrowser("file://" + EDStatic.config.fullTestCacheDirectory + tName);
     expected =
         EDStatic.startHeadHtml(
-                language, EDStatic.erddapUrl((String) null, language), "EDDGridFromDap_LatAxis")
+                language,
+                EDStatic.erddapUrl(null, (String) null, language),
+                "EDDGridFromDap_LatAxis")
             + "\n"
             + "</head>\n"
-            + EDStatic.startBodyHtml(language, null, "griddap/erdMHchla8day.html", tQuery)
+            + EDStatic.startBodyHtml(null, language, null, "griddap/erdMHchla8day.html", tQuery)
             + // 2022-11-22
             // .html
             // because
@@ -1527,7 +1529,7 @@ class EDDGridFromDapTests {
             + "</tr>\n"
             + "</table>\n"
             + EDStatic.endBodyHtml(
-                language, EDStatic.erddapUrl((String) null, language), (String) null)
+                null, language, EDStatic.erddapUrl(null, (String) null, language), (String) null)
             + "\n"
             + "</html>\n";
     Test.ensureEqual(results, expected, "RESULTS=\n" + results);
@@ -5109,10 +5111,13 @@ class EDDGridFromDapTests {
     String results = File2.directReadFromUtf8File(EDStatic.config.fullTestCacheDirectory + tName);
     String expected =
         EDStatic.startHeadHtml(
-                language, EDStatic.erddapUrl((String) null, language), "EDDGridFromDap_soda224")
+                language,
+                EDStatic.erddapUrl(null, (String) null, language),
+                "EDDGridFromDap_soda224")
             + "\n"
             + "</head>\n"
-            + EDStatic.startBodyHtml(language, null, "griddap/hawaii_d90f_20ee_c4cb.html", query)
+            + EDStatic.startBodyHtml(
+                null, language, null, "griddap/hawaii_d90f_20ee_c4cb.html", query)
             + // 2022-11-22
             // .htmlTable
             // converted
@@ -6363,13 +6368,13 @@ class EDDGridFromDapTests {
     EDDGridFromDap gridDataset = (EDDGridFromDap) EDDTestDataset.geterdMHchla8day();
     String fileName = EDStatic.config.fullTestCacheDirectory + "gridTestSpeedDAF.txt";
     Writer writer = File2.getBufferedFileWriterUtf8(fileName);
-    gridDataset.writeDapHtmlForm(language, null, "", writer);
+    gridDataset.writeDapHtmlForm(null, language, null, "", writer);
 
     // time it DAF
     String2.log("start timing");
     long time = System.currentTimeMillis();
     for (int i = 0; i < 1000; i++) // 1000 so it dominates program run time
-    gridDataset.writeDapHtmlForm(language, null, "", writer);
+    gridDataset.writeDapHtmlForm(null, language, null, "", writer);
     String2.log(
         "EDDGridFromDap.testSpeedDAF time per .html = "
             + ((System.currentTimeMillis() - time) / 1000.0)

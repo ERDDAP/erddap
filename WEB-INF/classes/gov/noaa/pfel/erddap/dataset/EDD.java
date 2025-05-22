@@ -1905,7 +1905,7 @@ public abstract class EDD {
    *
    * @param language the index of the selected language
    */
-  public String rssHref(int language, String loggedInAs) {
+  public String rssHref(HttpServletRequest request, int language, String loggedInAs) {
     return "<a rel=\"alternate\" type=\"application/rss+xml\" "
         + "  href=\""
         + EDStatic.preferredErddapUrl
@@ -1918,7 +1918,7 @@ public abstract class EDD {
         + EDStatic.messages.subscriptionRSSAr[language]
         + "\" \n"
         + "    src=\""
-        + EDStatic.imageDirUrl(loggedInAs, language)
+        + EDStatic.imageDirUrl(request, loggedInAs, language)
         + "rss.gif\" ></a>"; // no img end tag
   }
 
@@ -1926,9 +1926,11 @@ public abstract class EDD {
    * This returns the a/href tag which advertises the email subscription url for this dataset (or ""
    * if !EDStatic.config.subscriptionSystemActive).
    *
+   * @param request the request
    * @param language the index of the selected language
+   * @param loggedInAs
    */
-  public String emailHref(int language, String loggedInAs) {
+  public String emailHref(HttpServletRequest request, int language, String loggedInAs) {
     if (EDStatic.config.subscriptionSystemActive)
       return "<a rel=\"alternate\" \n"
           + "  href=\""
@@ -1944,7 +1946,7 @@ public abstract class EDD {
           + XML.encodeAsHTMLAttribute(EDStatic.messages.subscriptionEmailAr[language])
           + "\" \n"
           + "    src=\""
-          + EDStatic.imageDirUrl(loggedInAs, language)
+          + EDStatic.imageDirUrl(request, loggedInAs, language)
           + "envelope.gif\" ></a>";
     return "&nbsp;";
   }
@@ -3758,6 +3760,7 @@ public abstract class EDD {
    * This writes the dataset info (id, title, institution, infoUrl, summary) to an html document
    * (e.g., the top of a Data Access Form).
    *
+   * @param request the request
    * @param language the index of the selected language
    * @param loggedInAs the name of the logged in user (or null if not logged in). Normally, this is
    *     not used to test if this edd is accessibleTo loggedInAs, but it unusual cases
@@ -3777,6 +3780,7 @@ public abstract class EDD {
    * @throws Throwable if trouble
    */
   public void writeHtmlDatasetInfo(
+      HttpServletRequest request,
       int language,
       String loggedInAs,
       Writer writer,
@@ -3792,7 +3796,7 @@ public abstract class EDD {
 
     boolean isAccessible = isAccessibleTo(EDStatic.getRoles(loggedInAs));
     boolean graphsAccessible = isAccessible || graphsAccessibleToPublic();
-    String tErddapUrl = EDStatic.erddapUrl(loggedInAs, language);
+    String tErddapUrl = EDStatic.erddapUrl(request, loggedInAs, language);
     String tQuery =
         userDapQuery == null || userDapQuery.length() == 0
             ? ""
@@ -3881,10 +3885,10 @@ public abstract class EDD {
             + "</strong>\n"
             + (graphsAccessible
                 ? "      "
-                    + emailHref(language, loggedInAs)
+                    + emailHref(request, language, loggedInAs)
                     + "\n"
                     + "      "
-                    + rssHref(language, loggedInAs)
+                    + rssHref(request, language, loggedInAs)
                     + "\n"
                 : "")
             + "      </span>\n"
@@ -3910,7 +3914,7 @@ public abstract class EDD {
             + EDStatic.messages.EDDInformationAr[language]
             + ":&nbsp;</td>\n"
             + "    <td>"
-            + getDisplayInfo(language, loggedInAs)
+            + getDisplayInfo(request, language, loggedInAs)
             + (accessibleViaFGDC.length() > 0
                 ? ""
                 : "     | <a rel=\"alternate\" \n"
@@ -3973,7 +3977,7 @@ public abstract class EDD {
    *
    * @return the String to append to Information row
    */
-  private String getDisplayInfo(int language, String loggedInAs) {
+  private String getDisplayInfo(HttpServletRequest request, int language, String loggedInAs) {
     if (EDStatic.displayAttributeAr.length != EDStatic.displayInfoAr.length) {
       String2.log("Incorrect input to the displayAttribute and displayInfo tags");
       return "";
@@ -4002,6 +4006,7 @@ public abstract class EDD {
       }
       value =
           EDStatic.htmlTooltipImage(
+              request,
               language,
               loggedInAs,
               "<div class=\"standard_max_width\">"

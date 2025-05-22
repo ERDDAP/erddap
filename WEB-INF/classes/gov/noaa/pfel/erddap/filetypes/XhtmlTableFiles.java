@@ -14,6 +14,7 @@ public class XhtmlTableFiles extends HtmlTableFiles {
   @Override
   public TableWriter generateTableWriter(DapRequestInfo requestInfo) {
     return new TableWriterHtmlTable(
+        requestInfo.request(),
         requestInfo.language(),
         requestInfo.edd(),
         requestInfo.newHistory(),
@@ -29,13 +30,15 @@ public class XhtmlTableFiles extends HtmlTableFiles {
         true,
         true,
         -1,
-        EDStatic.imageDirUrl(requestInfo.loggedInAs(), requestInfo.language())
+        EDStatic.imageDirUrl(
+                requestInfo.request(), requestInfo.loggedInAs(), requestInfo.language())
             + EDStatic.messages.questionMarkImageFile);
   }
 
   @Override
   public void writeGridToStream(DapRequestInfo requestInfo) throws Throwable {
     saveAsHtmlTable(
+        requestInfo.request(),
         requestInfo.language(),
         requestInfo.loggedInAs(),
         requestInfo.requestUrl(),

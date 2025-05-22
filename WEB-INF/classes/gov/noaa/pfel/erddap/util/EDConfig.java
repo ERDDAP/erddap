@@ -241,6 +241,7 @@ public class EDConfig {
   @FeatureFlag public boolean useSharedWatchService = true;
   @FeatureFlag public boolean redirectDocumentationToGitHubIo = true;
   @FeatureFlag public boolean useSisISO19115 = false;
+  @FeatureFlag public boolean useHeadersForUrl = false;
 
   public EDConfig(String webInfParentDirectory) throws Exception {
     fullPaletteDirectory = webInfParentDirectory + "WEB-INF/cptfiles/";
@@ -612,6 +613,7 @@ public class EDConfig {
         String2.split(
             String2.toLowerCase(getSetupEVString(setup, ev, "corsAllowOrigin", (String) null)),
             ',');
+    useHeadersForUrl = getSetupEVBoolean(setup, ev, "useHeadersForUrl", false);
     slideSorterActive = getSetupEVBoolean(setup, ev, "slideSorterActive", true);
     variablesMustHaveIoosCategory =
         getSetupEVBoolean(setup, ev, "variablesMustHaveIoosCategory", true);

@@ -19,6 +19,7 @@ import gov.noaa.pfel.coastwatch.pointdata.Table;
 import gov.noaa.pfel.coastwatch.util.HtmlWidgets;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.EDV;
+import jakarta.servlet.http.HttpServletRequest;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.util.List;
@@ -45,6 +46,7 @@ public class TableWriterHtmlTable extends TableWriter {
   public static int htmlTableMaxMB = 15;
 
   // set by constructor
+  protected final HttpServletRequest request;
   protected final String loggedInAs;
   protected final String endOfRequest;
   protected final String queryString;
@@ -98,6 +100,7 @@ public class TableWriterHtmlTable extends TableWriter {
    *     the remaining rows.
    */
   public TableWriterHtmlTable(
+      HttpServletRequest tRequest,
       int tLanguage,
       EDD tEdd,
       String tNewHistory,
@@ -116,6 +119,7 @@ public class TableWriterHtmlTable extends TableWriter {
       String tQuestionMarkImageUrl) {
 
     super(tLanguage, tEdd, tNewHistory, tOutputStreamSource);
+    request = tRequest;
     loggedInAs = tLoggedInAs;
     endOfRequest = tEndOfRequest;
     queryString = tQueryString;
@@ -127,7 +131,7 @@ public class TableWriterHtmlTable extends TableWriter {
     encode = tEncode;
     writeUnits = tWriteUnits;
     showFirstNRows = tShowFirstNRows >= 0 ? tShowFirstNRows : Integer.MAX_VALUE;
-    tErddapUrl = EDStatic.erddapUrl(loggedInAs, language);
+    tErddapUrl = EDStatic.erddapUrl(null, loggedInAs, language);
     externalLinkHtml = EDStatic.messages.externalLinkHtml(language, tErddapUrl);
     questionMarkImageUrl = tQuestionMarkImageUrl;
   }
@@ -251,7 +255,7 @@ public class TableWriterHtmlTable extends TableWriter {
                   + XML.encodeAsXML(fileNameNoExt)
                   + "</title>\n"
                   + "  <link rel=\"stylesheet\" type=\"text/css\" href=\""
-                  + EDStatic.imageDirUrl(loggedInAs, language)
+                  + EDStatic.imageDirUrl(request, loggedInAs, language)
                   + "erddap2.css\" />\n"
                   + // xhtml has closing /
                   "</head>\n"
@@ -261,6 +265,7 @@ public class TableWriterHtmlTable extends TableWriter {
           writer.write("\n</head>\n");
           writer.write(
               EDStatic.startBodyHtml(
+                  null,
                   language,
                   loggedInAs,
                   edd == null
@@ -517,7 +522,8 @@ public class TableWriterHtmlTable extends TableWriter {
               """);
       else
         writer.write(
-            EDStatic.endBodyHtml(language, EDStatic.erddapUrl(loggedInAs, language), loggedInAs)
+            EDStatic.endBodyHtml(
+                    request, language, EDStatic.erddapUrl(null, loggedInAs, language), loggedInAs)
                 + "\n</html>\n");
 
     writer.flush(); // essential
@@ -544,6 +550,7 @@ public class TableWriterHtmlTable extends TableWriter {
    * @throws Throwable if trouble (no columns is trouble; no rows is not trouble)
    */
   public static void writeAllAndFinish(
+      HttpServletRequest request,
       int language,
       EDD tEdd,
       String tNewHistory,
@@ -564,6 +571,7 @@ public class TableWriterHtmlTable extends TableWriter {
 
     TableWriterHtmlTable tw =
         new TableWriterHtmlTable(
+            request,
             language,
             tEdd,
             tNewHistory,
@@ -579,7 +587,8 @@ public class TableWriterHtmlTable extends TableWriter {
             encode,
             writeUnits,
             tShowFirstNRows,
-            EDStatic.imageDirUrl(loggedInAs, language) + EDStatic.messages.questionMarkImageFile);
+            EDStatic.imageDirUrl(null, loggedInAs, language)
+                + EDStatic.messages.questionMarkImageFile);
     tw.writeAllAndFinish(table);
     tw.close();
   }
