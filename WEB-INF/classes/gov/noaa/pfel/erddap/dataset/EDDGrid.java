@@ -171,32 +171,6 @@ public abstract class EDDGrid extends EDD {
       LocalizedAttributes tAddAtt,
       PrimitiveArray sourceAxisValues)
       throws Throwable {
-    return makeAxisVariable(
-        tParentDatasetID,
-        av,
-        tSourceName,
-        tDestName,
-        tSourceAtt,
-        tAddAtt.toAttributes(EDMessages.DEFAULT_LANGUAGE),
-        sourceAxisValues);
-  }
-
-  /**
-   * This is used by many constructors (and EDDGridFromFiles.lowUpdate) to make an EDVGridAxis
-   * axisVariable.
-   *
-   * @param av If av >= 0, this will used to set lonIndex, latIndex, ... if appropriate. If av < 0,
-   *     this does nothing.
-   */
-  public EDVGridAxis makeAxisVariable(
-      String tParentDatasetID,
-      int av,
-      String tSourceName,
-      String tDestName,
-      Attributes tSourceAtt,
-      Attributes tAddAtt,
-      PrimitiveArray sourceAxisValues)
-      throws Throwable {
 
     if (EDV.LON_NAME.equals(tDestName)) {
       if (av >= 0) lonIndex = av;
@@ -225,7 +199,7 @@ public abstract class EDDGrid extends EDD {
       EDVGridAxis edvga =
           new EDVGridAxis(
               tParentDatasetID, tSourceName, tDestName, tSourceAtt, tAddAtt, sourceAxisValues);
-      edvga.setActualRangeFromDestinationMinMax();
+      edvga.setActualRangeFromDestinationMinMax(EDMessages.DEFAULT_LANGUAGE);
       return edvga;
     }
   }
@@ -705,10 +679,10 @@ public abstract class EDDGrid extends EDD {
 
       // standard_name is the only case-sensitive CF attribute name (see Sec 3.3)
       // All are all lower case.
-      Attributes tAtts = axisVariables[v].combinedAttributes();
-      String tStandardName = tAtts.getString("standard_name");
+      LocalizedAttributes tAtts = axisVariables[v].combinedAttributes();
+      String tStandardName = tAtts.getString(language, "standard_name");
       if (String2.isSomething(tStandardName))
-        tAtts.set("standard_name", tStandardName.toLowerCase());
+        tAtts.set(language, "standard_name", tStandardName.toLowerCase());
     }
 
     for (EDV dataVariable : dataVariables) {
@@ -728,10 +702,10 @@ public abstract class EDDGrid extends EDD {
 
       // standard_name is the only case-sensitive CF attribute name (see Sec 3.3)
       // All are all lower case.
-      Attributes tAtts = dataVariable.combinedAttributes();
-      String tStandardName = tAtts.getString("standard_name");
+      LocalizedAttributes tAtts = dataVariable.combinedAttributes();
+      String tStandardName = tAtts.getString(language, "standard_name");
       if (String2.isSomething(tStandardName))
-        tAtts.set("standard_name", tStandardName.toLowerCase());
+        tAtts.set(language, "standard_name", tStandardName.toLowerCase());
     }
 
     Test.ensureTrue(
@@ -773,7 +747,7 @@ public abstract class EDDGrid extends EDD {
         combinedGlobalAttributes.set(
             language, "geospatial_lon_resolution", Math.abs(edvga.averageSpacing()));
 
-      PrimitiveArray pa = edvga.combinedAttributes().get("actual_range");
+      PrimitiveArray pa = edvga.combinedAttributes().get(language, "actual_range");
       if (pa != null) { // it should be; but it can be low,high or high,low, so
         double ttMin = Math.min(pa.getNiceDouble(0), pa.getNiceDouble(1));
         double ttMax = Math.max(pa.getNiceDouble(0), pa.getNiceDouble(1));
@@ -799,7 +773,7 @@ public abstract class EDDGrid extends EDD {
         combinedGlobalAttributes.set(
             language, "geospatial_lat_resolution", Math.abs(edvga.averageSpacing()));
 
-      PrimitiveArray pa = edvga.combinedAttributes().get("actual_range");
+      PrimitiveArray pa = edvga.combinedAttributes().get(language, "actual_range");
       if (pa != null) { // it should be; but it can be low,high or high,low, so
         double ttMin = Math.min(pa.getNiceDouble(0), pa.getNiceDouble(1));
         double ttMax = Math.max(pa.getNiceDouble(0), pa.getNiceDouble(1));
@@ -825,7 +799,7 @@ public abstract class EDDGrid extends EDD {
         combinedGlobalAttributes.set(
             language, "geospatial_vertical_resolution", Math.abs(edvga.averageSpacing()));
 
-      PrimitiveArray pa = edvga.combinedAttributes().get("actual_range");
+      PrimitiveArray pa = edvga.combinedAttributes().get(language, "actual_range");
       if (pa != null) { // it should be; but it can be low,high or high,low, so
         double ttMin = Math.min(pa.getNiceDouble(0), pa.getNiceDouble(1));
         double ttMax = Math.max(pa.getNiceDouble(0), pa.getNiceDouble(1));
@@ -839,11 +813,11 @@ public abstract class EDDGrid extends EDD {
     combinedGlobalAttributes.remove("time_coverage_end");
     av = String2.indexOf(avDestNames, EDV.TIME_NAME);
     if (av >= 0) {
-      PrimitiveArray pa = axisVariables[av].combinedAttributes().get("actual_range");
+      PrimitiveArray pa = axisVariables[av].combinedAttributes().get(language, "actual_range");
       if (pa != null) { // it should be; but it can be low,high or high,low, so
         double ttMin = Math.min(pa.getDouble(0), pa.getDouble(1));
         double ttMax = Math.max(pa.getDouble(0), pa.getDouble(1));
-        String tp = axisVariables[av].combinedAttributes().getString(EDV.TIME_PRECISION);
+        String tp = axisVariables[av].combinedAttributes().getString(language, EDV.TIME_PRECISION);
         // "" unsets the attribute if dMin or dMax isNaN
         combinedGlobalAttributes.set(
             language,
@@ -3302,7 +3276,7 @@ public abstract class EDDGrid extends EDD {
           timeStop = dStop;
           timeCenter = (dStart + dStop) / 2;
           timeRange = dStop - dStart;
-          time_precision = edvga.combinedAttributes().getString(EDV.TIME_PRECISION);
+          time_precision = edvga.combinedAttributes().getString(language, EDV.TIME_PRECISION);
         }
       }
 
@@ -5273,14 +5247,14 @@ public abstract class EDDGrid extends EDD {
       OpendapHelper.writeToDAS(
           axisVariables[av].destinationName(),
           axisVariables[av].destinationDataPAType(),
-          axisVariables[av].combinedAttributes(),
+          axisVariables[av].combinedAttributes().toAttributes(language),
           writer,
           encodeAsHtml);
     for (int dv = 0; dv < nDataVariables; dv++)
       OpendapHelper.writeToDAS(
           dataVariables[dv].destinationName(),
           dataVariables[dv].destinationDataPAType(),
-          dataVariables[dv].combinedAttributes(),
+          dataVariables[dv].combinedAttributes().toAttributes(language),
           writer,
           encodeAsHtml);
 
@@ -10285,11 +10259,11 @@ public abstract class EDDGrid extends EDD {
     StringArray standardNames = new StringArray();
     if (!testMinimalMetadata) {
       for (EDVGridAxis axisVariable : axisVariables) {
-        String sn = axisVariable.combinedAttributes().getString("standard_name");
+        String sn = axisVariable.combinedAttributes().getString(language, "standard_name");
         if (sn != null) standardNames.add(sn);
       }
       for (EDV dataVariable : dataVariables) {
-        String sn = dataVariable.combinedAttributes().getString("standard_name");
+        String sn = dataVariable.combinedAttributes().getString(language, "standard_name");
         if (sn != null) standardNames.add(sn);
       }
     }
@@ -11383,11 +11357,11 @@ public abstract class EDDGrid extends EDD {
     StringArray standardNames = new StringArray();
     if (!testMinimalMetadata) {
       for (EDVGridAxis axisVariable : axisVariables) {
-        String sn = axisVariable.combinedAttributes().getString("standard_name");
+        String sn = axisVariable.combinedAttributes().getString(language, "standard_name");
         if (sn != null) standardNames.add(sn);
       }
       for (EDV dataVariable : dataVariables) {
-        String sn = dataVariable.combinedAttributes().getString("standard_name");
+        String sn = dataVariable.combinedAttributes().getString(language, "standard_name");
         if (sn != null) standardNames.add(sn);
       }
     }

@@ -48,9 +48,9 @@ class EDDGridSideBySideTests {
     Test.ensureEqual(
         qsWind8.combinedGlobalAttributes().getString(language, "satellite"), "QuikSCAT", "");
     EDV edv = qsWind8.findDataVariableByDestinationName("x_wind");
-    Test.ensureEqual(edv.combinedAttributes().getString("standard_name"), "x_wind", "");
+    Test.ensureEqual(edv.combinedAttributes().getString(language, "standard_name"), "x_wind", "");
     edv = qsWind8.findDataVariableByDestinationName("y_wind");
-    Test.ensureEqual(edv.combinedAttributes().getString("standard_name"), "y_wind", "");
+    Test.ensureEqual(edv.combinedAttributes().getString(language, "standard_name"), "y_wind", "");
     Test.ensureEqual(
         qsWind8.combinedGlobalAttributes().getString(language, "defaultGraphQuery"),
         "&.draw=vectors",

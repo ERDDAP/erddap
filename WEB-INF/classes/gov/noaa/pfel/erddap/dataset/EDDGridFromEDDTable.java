@@ -338,7 +338,7 @@ public class EDDGridFromEDDTable extends EDDGrid {
       String tDestName = tAxisVariables.get(av).destinationName();
       if (tDestName == null || tDestName.length() == 0) tDestName = tSourceName;
       EDV sourceEdv = eddTable.findDataVariableByDestinationName(tSourceName);
-      Attributes tSourceAtts = sourceEdv.combinedAttributes();
+      Attributes tSourceAtts = sourceEdv.combinedAttributes().toAttributes(language);
       LocalizedAttributes tAddAtts = tAxisVariables.get(av).attributes();
       String msg =
           errorInMethod + "For axisVariable[" + av + "] destinationName=" + tDestName + ": ";
@@ -394,7 +394,7 @@ public class EDDGridFromEDDTable extends EDDGrid {
       throw new RuntimeException(msg + "The sourceValues must be ascending!");
 
       // precision  for matching axis values
-      int tPrecision = axisVariables[av].combinedAttributes().getInt("precision");
+      int tPrecision = axisVariables[av].combinedAttributes().getInt(language, "precision");
       if (axisVariables[av] instanceof EDVTimeStampGridAxis) {
         avPrecision[av] = fullPrecision; // always compare times at full precision
       } else if (tSourceValues instanceof FloatArray) {
@@ -414,7 +414,7 @@ public class EDDGridFromEDDTable extends EDDGrid {
       if (tDestName == null || tDestName.length() == 0) tDestName = tSourceName;
       EDV sourceEdv = eddTable.findDataVariableByDestinationName(tSourceName);
       String dvSourceDataType = sourceEdv.destinationDataType();
-      Attributes tSourceAtts = sourceEdv.combinedAttributes();
+      Attributes tSourceAtts = sourceEdv.combinedAttributes().toAttributes(language);
       LocalizedAttributes tAddAtts = tDataVariables.get(dv).attributes();
 
       // create the EDV dataVariable
@@ -436,7 +436,7 @@ public class EDDGridFromEDDTable extends EDDGrid {
                 dvSourceDataType,
                 PAOne.fromDouble(Double.NaN),
                 PAOne.fromDouble(Double.NaN)); // hard to get min and max
-      dataVariables[dv].extractAndSetActualRange();
+      dataVariables[dv].extractAndSetActualRange(language);
     }
 
     // ensure the setup is valid
@@ -881,7 +881,8 @@ public class EDDGridFromEDDTable extends EDDGrid {
       EDV sourceEdv = eddTable.dataVariables()[dv];
       String destName = sourceEdv.destinationName();
       PAType tPAType = sourceEdv.destinationDataPAType();
-      Attributes sourceAtts = sourceEdv.combinedAttributes();
+      Attributes sourceAtts =
+          sourceEdv.combinedAttributes().toAttributes(EDMessages.DEFAULT_LANGUAGE);
       Attributes destAtts = new Attributes();
       if (destName.equals(EDV.TIME_NAME)
           || destName.equals(EDV.ALT_NAME)

@@ -1491,7 +1491,7 @@ public abstract class EDDGridFromFiles extends EDDGrid implements WatchUpdateHan
                 tSourceType,
                 PAOne.fromDouble(Double.NaN),
                 PAOne.fromDouble(Double.NaN));
-      dataVariables[dv].setActualRangeFromDestinationMinMax();
+      dataVariables[dv].setActualRangeFromDestinationMinMax(language);
     }
 
     // ensure the setup is valid

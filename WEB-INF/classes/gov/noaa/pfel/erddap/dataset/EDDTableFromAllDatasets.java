@@ -106,7 +106,7 @@ public class EDDTableFromAllDatasets extends EDDTable {
                 new LocalizedAttributes(), // sourceAtts, addAtts
                 pa.elementTypeString());
         // actual_range of vars in this table always NaN,NaN
-        dataVariables[dv].setActualRangeFromDestinationMinMax();
+        dataVariables[dv].setActualRangeFromDestinationMinMax(language);
       }
     }
 

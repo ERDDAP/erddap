@@ -143,7 +143,8 @@ public class NcmlFiles extends FileTypeInterface {
                 + "\" shape=\""
                 + XML.encodeAsXML(ega.destinationName())
                 + "\" ");
-        atts = new Attributes(ega.combinedAttributes()); // make a copy since it may be changed
+        atts =
+            ega.combinedAttributes().toAttributes(language); // make a copy since it may be changed
         String type = ega.destinationDataType();
         if (type.equals("long")) {
           type = "String"; // but trouble since there will be no NcHelper.StringLengthSuffix _strlen
@@ -182,7 +183,7 @@ public class NcmlFiles extends FileTypeInterface {
         // not in nc3)
         if (!type.equals("String")) writer.write("type=\"" + type + "\"");
         writer.write(">\n");
-        Attributes tAtts = new Attributes(edv.combinedAttributes()); // use a copy
+        Attributes tAtts = edv.combinedAttributes().toAttributes(language); // use a copy
 
         PAType paType = edv.destinationDataPAType();
         if (paType == PAType.STRING) tAtts.add(File2.ENCODING, File2.ISO_8859_1);

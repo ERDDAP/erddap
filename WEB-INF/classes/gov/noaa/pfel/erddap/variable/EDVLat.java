@@ -34,35 +34,6 @@ public class EDVLat extends EDV {
       PAOne tSourceMin,
       PAOne tSourceMax)
       throws Throwable {
-
-    this(
-        tDatasetID,
-        tSourceName,
-        tSourceAttributes,
-        tAddAttributes.toAttributes(EDMessages.DEFAULT_LANGUAGE),
-        tSourceDataType,
-        tSourceMin,
-        tSourceMax);
-  }
-
-  /**
-   * The constructor -- like EDV, but the destinationName, and units are standardized.
-   *
-   * @param tSourceMin is pre-scale_factor and add_offset. This takes precedence over actual_range,
-   *     actual_min, or data_min metadata.
-   * @param tSourceMax is pre-scale_factor and add_offset. This takes precedence over actual_range,
-   *     actual_max, or data_max metadata.
-   */
-  public EDVLat(
-      String tDatasetID,
-      String tSourceName,
-      Attributes tSourceAttributes,
-      Attributes tAddAttributes,
-      String tSourceDataType,
-      PAOne tSourceMin,
-      PAOne tSourceMax)
-      throws Throwable {
-
     super(
         tDatasetID,
         tSourceName,
@@ -80,25 +51,28 @@ public class EDVLat extends EDV {
               + ": "
               + "The destination dataType for the latitude variable must be a numeric dataType.");
 
-    combinedAttributes.set("_CoordinateAxisType", "Lat"); // unidata-related
-    combinedAttributes.set("axis", "Y");
-    combinedAttributes.set("ioos_category", LOCATION_CATEGORY);
-    combinedAttributes.set("long_name", longName);
-    combinedAttributes.set("standard_name", LAT_STANDARD_NAME);
+    // The attributes this gets/sets should not need to be localized (max/min
+    // value for example). Just use the default language.
+    int language = EDMessages.DEFAULT_LANGUAGE;
+    combinedAttributes.set(language, "_CoordinateAxisType", "Lat"); // unidata-related
+    combinedAttributes.set(language, "axis", "Y");
+    combinedAttributes.set(language, "ioos_category", LOCATION_CATEGORY);
+    combinedAttributes.set(language, "long_name", longName);
+    combinedAttributes.set(language, "standard_name", LAT_STANDARD_NAME);
 
-    longName = combinedAttributes.getString("long_name");
+    longName = combinedAttributes.getString(language, "long_name");
     if (longName == null
         || // catch nothing
         longName.equalsIgnoreCase("lat")
         || longName.equalsIgnoreCase("latitude")) { // catch alternate case
       longName = LAT_LONGNAME;
-      combinedAttributes.set("long_name", longName);
+      combinedAttributes.set(language, "long_name", longName);
     }
 
     units = LAT_UNITS;
-    combinedAttributes.set("units", units);
+    combinedAttributes.set(language, "units", units);
 
-    extractAndSetActualRange();
+    extractAndSetActualRange(language);
   }
 
   /**

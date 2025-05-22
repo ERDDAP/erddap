@@ -9931,17 +9931,17 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
         // make the palette
         // I checked hasColorBarMinMax above.
         // Note that EDV checks validity of values.
-        double minData = tDataVariable.combinedAttributes().getDouble("colorBarMinimum");
-        double maxData = tDataVariable.combinedAttributes().getDouble("colorBarMaximum");
-        String palette = tDataVariable.combinedAttributes().getString("colorBarPalette");
+        double minData = tDataVariable.combinedAttributes().getDouble(language, "colorBarMinimum");
+        double maxData = tDataVariable.combinedAttributes().getDouble(language, "colorBarMaximum");
+        String palette = tDataVariable.combinedAttributes().getString(language, "colorBarPalette");
         if (String2.indexOf(EDStatic.messages.palettes, palette) < 0)
           palette = Math2.almostEqual(3, -minData, maxData) ? "BlueWhiteRed" : "Rainbow";
-        int nSections = tDataVariable.combinedAttributes().getInt("colorBarNSections");
+        int nSections = tDataVariable.combinedAttributes().getInt(language, "colorBarNSections");
         if (nSections > 100) nSections = -1;
         boolean paletteContinuous =
             String2.parseBoolean( // defaults to true
-                tDataVariable.combinedAttributes().getString("colorBarContinuous"));
-        String scale = tDataVariable.combinedAttributes().getString("colorBarScale");
+                tDataVariable.combinedAttributes().getString(language, "colorBarContinuous"));
+        String scale = tDataVariable.combinedAttributes().getString(language, "colorBarScale");
         if (EDV.VALID_SCALES.indexOf(scale) < 0) scale = "Linear";
         String cptFullName =
             CompoundColorMap.makeCPT(
@@ -12207,7 +12207,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
             + tDestName
             + " (ImageServer)</a>\n";
     String serviceDataType =
-        "altitude".equals(tEdv.combinedAttributes().getString("standard_name"))
+        "altitude".equals(tEdv.combinedAttributes().getString(language, "standard_name"))
             ? "esriImageServiceDataTypeElevation"
             : "esriImageServiceDataTypeProcessed";
     String pixelType = PAType.toEsriPixelType(tEdv.destinationDataPAType());
@@ -17520,7 +17520,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
         }
 
         // attribute rows
-        atts = edv.combinedAttributes();
+        atts = edv.combinedAttributes().toAttributes(language);
         names = atts.getNames();
         nAtts = names.length;
         for (int i = 0; i < nAtts; i++) {
@@ -17546,7 +17546,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       valueSA.add(axisNamesCsv);
 
       // attribute rows
-      atts = edv.combinedAttributes();
+      atts = edv.combinedAttributes().toAttributes(language);
       names = atts.getNames();
       nAtts = names.length;
       for (int i = 0; i < nAtts; i++) {
@@ -17917,7 +17917,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     edv.addAll(Arrays.asList(arr));
     writer.write("  \"variableMeasured\": [\n");
     for (int i = 0; i < edv.size(); i++) {
-      Attributes atts = edv.get(i).combinedAttributes();
+      Attributes atts = edv.get(i).combinedAttributes().toAttributes(language);
       writer.write(
           (i == 0 ? "" : ",\n")
               + "    {\n"

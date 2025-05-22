@@ -1,6 +1,5 @@
 package gov.noaa.pfel.erddap.filetypes;
 
-import com.cohort.array.Attributes;
 import com.cohort.array.DoubleArray;
 import com.cohort.array.IntArray;
 import com.cohort.array.PAOne;
@@ -28,6 +27,7 @@ import gov.noaa.pfel.erddap.dataset.OutputStreamSource;
 import gov.noaa.pfel.erddap.dataset.OutputStreamSourceSimple;
 import gov.noaa.pfel.erddap.dataset.TableWriterAllWithMetadata;
 import gov.noaa.pfel.erddap.dataset.WaitThenTryAgainException;
+import gov.noaa.pfel.erddap.dataset.metadata.LocalizedAttributes;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.EDV;
 import gov.noaa.pfel.erddap.variable.EDVGridAxis;
@@ -235,17 +235,23 @@ public abstract class ImageFiles extends ImageTypes {
 
       // set colorBar defaults via zVar attributes
       String ts;
-      ts = zVar == null ? null : zVar.combinedAttributes().getString("colorBarPalette");
+      ts = zVar == null ? null : zVar.combinedAttributes().getString(language, "colorBarPalette");
       String palette = ts == null ? "" : ts;
-      ts = zVar == null ? null : zVar.combinedAttributes().getString("colorBarScale");
+      ts = zVar == null ? null : zVar.combinedAttributes().getString(language, "colorBarScale");
       String scale = ts == null ? "Linear" : ts;
       double paletteMin =
-          zVar == null ? Double.NaN : zVar.combinedAttributes().getDouble("colorBarMinimum");
+          zVar == null
+              ? Double.NaN
+              : zVar.combinedAttributes().getDouble(language, "colorBarMinimum");
       double paletteMax =
-          zVar == null ? Double.NaN : zVar.combinedAttributes().getDouble("colorBarMaximum");
-      int nSections = zVar == null ? -1 : zVar.combinedAttributes().getInt("colorBarNSections");
+          zVar == null
+              ? Double.NaN
+              : zVar.combinedAttributes().getDouble(language, "colorBarMaximum");
+      int nSections =
+          zVar == null ? -1 : zVar.combinedAttributes().getInt(language, "colorBarNSections");
       if (nSections < 0 || nSections >= 100) nSections = -1;
-      ts = zVar == null ? null : zVar.combinedAttributes().getString("colorBarContinuous");
+      ts =
+          zVar == null ? null : zVar.combinedAttributes().getString(language, "colorBarContinuous");
       boolean continuous = String2.parseBoolean(ts); // defaults to true
 
       // x/yMin < x/yMax
@@ -471,14 +477,14 @@ public abstract class ImageFiles extends ImageTypes {
       }
       if (xScale.length() == 0) {
         // use the default from colorBarScale
-        xScale = xVar.combinedAttributes().getString("colorBarScale");
+        xScale = xVar.combinedAttributes().getString(language, "colorBarScale");
         xScale = xScale == null ? "" : String2.toTitleCase(xScale.trim());
         if (!xScale.equals("Log")) xScale = "Linear"; // apply "" default -> Linear
       }
       boolean xIsLogAxis = !(xVar instanceof EDVTimeStamp) && xScale.equals("Log");
       if (yScale.length() == 0) {
         // use the default from colorBarScale
-        yScale = yVar.combinedAttributes().getString("colorBarScale");
+        yScale = yVar.combinedAttributes().getString(language, "colorBarScale");
         yScale = yScale == null ? "" : String2.toTitleCase(yScale.trim());
         if (!yScale.equals("Log")) yScale = "Linear"; // apply "" default -> Linear
       }
@@ -1696,14 +1702,14 @@ public abstract class ImageFiles extends ImageTypes {
           vars[1] instanceof EDVTimeStampGridAxis || vars[1] instanceof EDVTimeStamp;
       if (xScale.length() == 0) {
         // use the default from colorBarScale
-        xScale = vars[0].combinedAttributes().getString("colorBarScale");
+        xScale = vars[0].combinedAttributes().getString(language, "colorBarScale");
         xScale = xScale == null ? "" : String2.toTitleCase(xScale.trim());
         if (!xScale.equals("Log")) xScale = "Linear"; // apply "" default -> Linear
       }
       boolean xIsLogAxis = !xIsTimeAxis && xScale.equals("Log");
       if (yScale.length() == 0) {
         // use the default from colorBarScale
-        yScale = vars[1].combinedAttributes().getString("colorBarScale");
+        yScale = vars[1].combinedAttributes().getString(language, "colorBarScale");
         yScale = yScale == null ? "" : String2.toTitleCase(yScale.trim());
         if (!yScale.equals("Log")) yScale = "Linear"; // apply "" default -> Linear
       }
@@ -1870,7 +1876,9 @@ public abstract class ImageFiles extends ImageTypes {
           else if (axisVar instanceof EDVTimeStampGridAxis)
             otherInfo.append(
                 Calendar2.epochSecondsToLimitedIsoStringT(
-                    axisVar.combinedAttributes().getString(EDV.TIME_PRECISION), td, "NaN"));
+                    axisVar.combinedAttributes().getString(language, EDV.TIME_PRECISION),
+                    td,
+                    "NaN"));
           else {
             String avDN = axisVar.destinationName();
             String avLN = axisVar.longName();
@@ -2079,14 +2087,17 @@ public abstract class ImageFiles extends ImageTypes {
                     + vars[0].destinationName()
                     + ") must be an axis variable.");
           if (vars[2] != null) { // it shouldn't be
-            Attributes colorVarAtts = vars[2].combinedAttributes();
-            if (palette.length() == 0) palette = colorVarAtts.getString("colorBarPalette");
-            if (scale.length() == 0) scale = colorVarAtts.getString("colorBarScale");
+            LocalizedAttributes colorVarAtts = vars[2].combinedAttributes();
+            if (palette.length() == 0)
+              palette = colorVarAtts.getString(language, "colorBarPalette");
+            if (scale.length() == 0) scale = colorVarAtts.getString(language, "colorBarScale");
             if (nSections == Integer.MAX_VALUE)
-              nSections = colorVarAtts.getInt("colorBarNSections");
-            if (Double.isNaN(paletteMin)) paletteMin = colorVarAtts.getDouble("colorBarMinimum");
-            if (Double.isNaN(paletteMax)) paletteMax = colorVarAtts.getDouble("colorBarMaximum");
-            String ts = colorVarAtts.getString("colorBarContinuous");
+              nSections = colorVarAtts.getInt(language, "colorBarNSections");
+            if (Double.isNaN(paletteMin))
+              paletteMin = colorVarAtts.getDouble(language, "colorBarMinimum");
+            if (Double.isNaN(paletteMax))
+              paletteMax = colorVarAtts.getDouble(language, "colorBarMaximum");
+            String ts = colorVarAtts.getString(language, "colorBarContinuous");
             if (continuousS.length() == 0 && ts != null)
               continuousS = String2.parseBoolean(ts) ? "c" : "d"; // defaults to true
           }
@@ -2244,14 +2255,17 @@ public abstract class ImageFiles extends ImageTypes {
 
             // if .colorBar info didn't provide info, try to get defaults from vars[2] colorBarXxx
             // attributes
-            Attributes colorVarAtts = vars[2].combinedAttributes();
-            if (palette.length() == 0) palette = colorVarAtts.getString("colorBarPalette");
-            if (scale.length() == 0) scale = colorVarAtts.getString("colorBarScale");
+            LocalizedAttributes colorVarAtts = vars[2].combinedAttributes();
+            if (palette.length() == 0)
+              palette = colorVarAtts.getString(language, "colorBarPalette");
+            if (scale.length() == 0) scale = colorVarAtts.getString(language, "colorBarScale");
             if (nSections == Integer.MAX_VALUE)
-              nSections = colorVarAtts.getInt("colorBarNSections");
-            if (Double.isNaN(paletteMin)) paletteMin = colorVarAtts.getDouble("colorBarMinimum");
-            if (Double.isNaN(paletteMax)) paletteMax = colorVarAtts.getDouble("colorBarMaximum");
-            String ts = colorVarAtts.getString("colorBarContinuous");
+              nSections = colorVarAtts.getInt(language, "colorBarNSections");
+            if (Double.isNaN(paletteMin))
+              paletteMin = colorVarAtts.getDouble(language, "colorBarMinimum");
+            if (Double.isNaN(paletteMax))
+              paletteMax = colorVarAtts.getDouble(language, "colorBarMaximum");
+            String ts = colorVarAtts.getString(language, "colorBarContinuous");
             if (continuousS.length() == 0 && ts != null)
               continuousS = String2.parseBoolean(ts) ? "c" : "d"; // defaults to true
 

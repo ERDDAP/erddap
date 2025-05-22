@@ -300,8 +300,8 @@ public class EDDTableFromEDDGrid extends EDDTable {
               ? tChildDataset.axisVariables[tChildDatasetNAV - 1 - dv]
               : tChildDataset.dataVariables[dv - tChildDatasetNAV];
       String tSourceName = gridVar.destinationName();
-      Attributes tSourceAtts = gridVar.combinedAttributes();
-      Attributes tAddAtts = new Attributes();
+      Attributes tSourceAtts = gridVar.combinedAttributes().toAttributes(language);
+      LocalizedAttributes tAddAtts = new LocalizedAttributes();
       String tDataType = gridVar.destinationDataType();
       PAOne tMin = new PAOne(gridVar.destinationMin()); // make/use a copy
       PAOne tMax = new PAOne(gridVar.destinationMax());
@@ -325,9 +325,9 @@ public class EDDTableFromEDDGrid extends EDDTable {
           depthIndex = dv;
         }
         case EDV.TIME_NAME -> {
-          tAddAtts.add("data_min", "" + tMin); // data_min/max have priority
+          tAddAtts.set(language, "data_min", "" + tMin); // data_min/max have priority
 
-          tAddAtts.add("data_max", "" + tMax); // tMin tMax are epochSeconds
+          tAddAtts.set(language, "data_max", "" + tMax); // tMin tMax are epochSeconds
 
           newVar =
               new EDVTime(

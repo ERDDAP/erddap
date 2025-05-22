@@ -1691,7 +1691,7 @@ class EDDTableFromNccsvFilesTests {
 
     // *** getting nc and ncHeader
     edv = eddTable.findDataVariableByDestinationName("status");
-    PrimitiveArray pa = edv.combinedAttributes().get("actual_range");
+    PrimitiveArray pa = edv.combinedAttributes().get(language, "actual_range");
     String2.log("  status actual_range " + pa.elementType() + " " + pa.toString());
 
     tName =

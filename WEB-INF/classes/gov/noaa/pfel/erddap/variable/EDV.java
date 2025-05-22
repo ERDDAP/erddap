@@ -229,10 +229,10 @@ public class EDV {
   protected Attributes sourceAttributes = new Attributes();
 
   /** Attributes which supercede sourceAttributes. Set by the constructor. */
-  protected Attributes addAttributes = new Attributes();
+  protected LocalizedAttributes addAttributes = new LocalizedAttributes();
 
   /** Attributes made from sourceAtt and addAtt, then revised (e.g., remove "null" values) */
-  protected Attributes combinedAttributes;
+  protected LocalizedAttributes combinedAttributes;
 
   /**
    * The constructor sets this to a non-null string if the variable isn't in the data source and so
@@ -332,82 +332,18 @@ public class EDV {
       PAOne tSourceMin,
       PAOne tSourceMax)
       throws Throwable {
-    this(
-        tDatasetID,
-        tSourceName,
-        tDestinationName,
-        tSourceAttributes,
-        tAddAttributes.toAttributes(EDMessages.DEFAULT_LANGUAGE),
-        tSourceDataType,
-        tSourceMin,
-        tSourceMax);
-  }
-
-  /**
-   * The constructor. In general, subclasses call this as the first step in construction.
-   * Non-Lon,Lat,Alt,Time variables use the other constructor. This constructor DOESN'T look for
-   * actual_range, actual_min, actual_max, data_min, or data_max attributes, assuming that the
-   * subclasses' constructor will do that!
-   *
-   * <p>This removes any scale_factor and add_offset attributes and stores the resulting information
-   * so that destination data has been converted to destinationDataType with scaleFactor and
-   * addOffset applied.
-   *
-   * <p>sourceAtt or addAtt can have missing_value and/or _FillValue. They will be adjusted by
-   * scale_factor and add_offset (if present).
-   *
-   * <p>Call setActualRangeFromDestinationMinMax() sometime after this returns.
-   *
-   * @param datasetID for diagnostic messages
-   * @param tSourceName the name of the variable in the dataset source (usually with no spaces) or a
-   *     derived variable (e.g., "=0").
-   * @param tDestinationName is the name to be used in the results. If null or "", tSourceName will
-   *     be used.
-   * @param tSourceAttributes are the attributes for the variable in the source. If this is null, an
-   *     empty Attributes will be created.
-   * @param tAddAttributes the attributes which will be added when data is extracted and which have
-   *     precedence over sourceAttributes. Special case: value="null" causes that item to be removed
-   *     from combinedAttributes. If this is null, an empty Attributes will be created.
-   * @param tSourceDataType the type of data (e.g., "boolean", "byte", "int", "float", "String",
-   *     ...). If tSourceName specifies a fixed value, you can set this to null and the
-   *     sourceDataType will automatically be set to int or double.
-   *     <p>(Special case) For the boolean database type, use "boolean". ERDDAP doesn't support a
-   *     boolean type (because booleans can't store nulls). Using "boolean" will cause boolean
-   *     values to be stored and represented as bytes: 0=false, 1=true. Clients can specify
-   *     constraints by using the numbers. But you need to use the "boolean" data type to tell
-   *     ERDDAP how to interact with the database.
-   * @param tSourceMin is the minimum value of the source variable (scale_factor and add_offset, if
-   *     any, haven't been applied). <br>
-   *     If unknown, or tSourceName is a fixed value, you can just use Double.NaN here. <br>
-   *     This constructor DOESN'T look for actual_range, actual_min, actual_max, <br>
-   *     data_min, or data_max attribute!
-   * @param tSourceMax is the maximum value of the source variable (scale_factor and add_offset, if
-   *     any, haven't been applied). <br>
-   *     If unknown, or tSourceName is a fixed value, you can just use Double.NaN here. <br>
-   *     This constructor DOESN'T look for actual_range, actual_min, actual_max, <br>
-   *     data_min, or data_max attribute!
-   * @throws Throwable if trouble
-   */
-  public EDV(
-      String tDatasetID,
-      String tSourceName,
-      String tDestinationName,
-      Attributes tSourceAttributes,
-      Attributes tAddAttributes,
-      String tSourceDataType,
-      PAOne tSourceMin,
-      PAOne tSourceMax)
-      throws Throwable {
-
     // String2.log("*EDV " + tDestinationName);
     setSourceName(String2.canonical(tSourceName)); // sets fixedValue
+    // The attributes this gets/sets should not need to be localized (max/min
+    // value for example). Just use the default language.
+    int language = EDMessages.DEFAULT_LANGUAGE;
     destinationName =
         String2.canonical(
             tDestinationName == null || tDestinationName.length() == 0
                 ? tSourceName
                 : tDestinationName);
     sourceAttributes = tSourceAttributes == null ? new Attributes() : tSourceAttributes;
-    addAttributes = tAddAttributes == null ? new Attributes() : tAddAttributes;
+    addAttributes = tAddAttributes == null ? new LocalizedAttributes() : tAddAttributes;
 
     sourceDataType = tSourceDataType;
     if (sourceDataType != null && sourceDataType.equals("boolean")) {
@@ -446,20 +382,22 @@ public class EDV {
     // min=" + destinationMin);
 
     // makeCombinedAttributes
-    makeCombinedAttributes();
+    makeCombinedAttributes(language);
 
     // after makeCombinedAttributes
     // get longName for erddap use; the approach below is more conservative than suggestLongName
-    longName = combinedAttributes().getString("long_name"); // all sources are already canonical
-    if (longName == null) longName = combinedAttributes().getString("standard_name");
+    longName =
+        combinedAttributes().getString(language, "long_name"); // all sources are already canonical
+    if (longName == null) longName = combinedAttributes().getString(language, "standard_name");
     if (longName == null) longName = destinationName;
-    units = combinedAttributes().getString("units"); // may be null; already canonical
-    decimal_digits = combinedAttributes().getInt(DECIMAL_DIGITS); // may be null -> MAX_VALUE
+    units = combinedAttributes().getString(language, "units"); // may be null; already canonical
+    decimal_digits =
+        combinedAttributes().getInt(language, DECIMAL_DIGITS); // may be null -> MAX_VALUE
     if (decimal_digits < 0 || decimal_digits >= Math2.Ten.size())
       decimal_digits = Integer.MAX_VALUE;
 
     // extractScaleAddOffset     It sets destinationDataType and destinationDataPAType
-    extractScaleAddOffset();
+    extractScaleAddOffset(language);
 
     if (isFixedValue()) {
       destinationMin =
@@ -477,7 +415,7 @@ public class EDV {
     // missing_value (CF deprecated) and _FillValue metadata.
     // ERDDAP doesn't care, doesn't change and just passes through whatever
     // the metadata specifies.
-    PrimitiveArray pa = combinedAttributes.get("missing_value");
+    PrimitiveArray pa = combinedAttributes.get(language, "missing_value");
     if (pa != null) {
       // attributes are supposed to be unsigned if _Unsigned=true, but sometimes aren't
       stringMissingValue = pa.getString(0);
@@ -492,11 +430,11 @@ public class EDV {
         stringMissingValue = "";
         PrimitiveArray pa2 = PrimitiveArray.factory(destinationDataPAType, 1, false);
         pa2.addDouble(destinationMissingValue);
-        combinedAttributes.set("missing_value", pa2);
+        combinedAttributes.set(language, "missing_value", pa2);
       }
     }
 
-    pa = combinedAttributes.get("_FillValue");
+    pa = combinedAttributes.get(language, "_FillValue");
     if (pa != null) {
       // attributes are supposed to be unsigned if _Unsigned=true, but sometimes aren't
       stringFillValue = pa.getString(0);
@@ -510,7 +448,7 @@ public class EDV {
         stringFillValue = "";
         PrimitiveArray pa2 = PrimitiveArray.factory(destinationDataPAType, 1, false);
         pa2.addDouble(destinationFillValue);
-        combinedAttributes.set("_FillValue", pa2);
+        combinedAttributes.set(language, "_FillValue", pa2);
         // String2.log(">>EDV " + tSourceName + " _FillValue pa2=" + pa2.toString());
       }
     }
@@ -525,12 +463,12 @@ public class EDV {
         String2.isSomething(stringFillValue) ? stringFillValue : stringMissingValue;
 
     // call after 'safe' values set
-    suggestAddFillValue(tDatasetID);
+    suggestAddFillValue(language, tDatasetID);
 
     // after extractScaleAddOffset, adjust valid_range
-    PrimitiveArray vr = combinedAttributes.remove("unpacked_valid_range");
+    PrimitiveArray vr = combinedAttributes.removeAndGetDefault("unpacked_valid_range");
     if (vr == null) {
-      vr = combinedAttributes.remove("valid_range");
+      vr = combinedAttributes.removeAndGetDefault("valid_range");
       if (vr != null && vr.size() == 2) {
         // adjust valid_range
         // attributes are supposed to be unsigned if _Unsigned=true, but sometimes aren't
@@ -538,28 +476,30 @@ public class EDV {
         // vr is coming from and going to combinedAttributes. So okay if scaleAddOffset returns same
         // PA (not a new one).
         vr = vr.scaleAddOffset(destinationDataPAType, scaleFactor, addOffset);
-        combinedAttributes.set("valid_range", vr);
+        combinedAttributes.set(language, "valid_range", vr);
       }
     } else {
       // save unpacked_valid_range as valid_range (overwriting any previous version)
-      combinedAttributes.set("valid_range", vr);
+      combinedAttributes.set(language, "valid_range", vr);
     }
     // adjust valid_min and valid_max?
-    PrimitiveArray vMin = combinedAttributes.get("valid_min"); // attributes are never unsigned
+    PrimitiveArray vMin =
+        combinedAttributes.get(language, "valid_min"); // attributes are never unsigned
     if (vMin != null) {
       if (sourceIsUnsigned) vMin = vMin.makeUnsignedPA();
       // vMin is coming from and going to combinedAttributes. So okay if scaleAddOffset returns same
       // PA (not a new one).
       vMin = vMin.scaleAddOffset(destinationDataPAType, scaleFactor, addOffset);
-      combinedAttributes.set("valid_min", vMin);
+      combinedAttributes.set(language, "valid_min", vMin);
     }
-    PrimitiveArray vMax = combinedAttributes.get("valid_max"); // attributes are never unsigned
+    PrimitiveArray vMax =
+        combinedAttributes.get(language, "valid_max"); // attributes are never unsigned
     if (vMax != null) {
       if (sourceIsUnsigned) vMax = vMax.makeUnsignedPA();
       // vMax is coming from and going to combinedAttributes. So okay if scaleAddOffset returns same
       // PA (not a new one).
       vMax = vMax.scaleAddOffset(destinationDataPAType, scaleFactor, addOffset);
-      combinedAttributes.set("valid_max", vMax);
+      combinedAttributes.set(language, "valid_max", vMax);
     }
   }
 
@@ -589,61 +529,31 @@ public class EDV {
         tSourceName,
         tDestinationName,
         tSourceAttributes,
-        tAddAttributes.toAttributes(EDMessages.DEFAULT_LANGUAGE),
-        tSourceDataType);
-  }
-
-  /**
-   * This variant constructor is only used for non-Lon,Lat,Alt,Time variables where the sourceMin
-   * and sourceMax are not explicitly defined. This constructor tries to set destinationMin and
-   * destinationMax by looking for actual_range, actual_min, actual_max, data_min, or data_max
-   * metadata.
-   *
-   * <p>For EDVGridAxis, actual_range should indicate order of storage (first, last). Sometimes
-   * latitude is max,min.
-   *
-   * <p>Call setActualRangeFromDestinationMinMax() sometime after this returns.
-   *
-   * <p>See the other constructor for more information.
-   */
-  public EDV(
-      String tDatasetID,
-      String tSourceName,
-      String tDestinationName,
-      Attributes tSourceAttributes,
-      Attributes tAddAttributes,
-      String tSourceDataType)
-      throws Throwable {
-
-    this(
-        tDatasetID,
-        tSourceName,
-        tDestinationName,
-        tSourceAttributes,
         tAddAttributes,
         tSourceDataType,
         PAOne.fromDouble(Double.NaN), // it's NaN, so type doesn't matter
         PAOne.fromDouble(Double.NaN));
-
+    int language = EDMessages.DEFAULT_LANGUAGE;
     // min max  from actual_range, actual_min, actual_max, data_min, or data_max
-    PAOne mm[] = extractActualRange(); // may be low,high or high,low,   or nulls
+    PAOne mm[] = extractActualRange(language); // may be low,high or high,low,   or nulls
     setDestinationMinMax(mm[0], mm[1]);
   }
 
   /** This generates combined attributes from addAttributes and sourceAttributes. */
-  protected void makeCombinedAttributes() throws Throwable {
-    combinedAttributes = new Attributes(addAttributes, sourceAttributes); // order is important
+  protected void makeCombinedAttributes(int language) throws Throwable {
+    combinedAttributes =
+        new LocalizedAttributes(addAttributes, sourceAttributes); // order is important
     combinedAttributes.removeValue("\"null\"");
 
     // test presence and validity of colorBar attributes
     // ERDDAP.doWmsGetMap relies on these tests.
-    String tMinS = combinedAttributes.getString("colorBarMinimum");
-    String tMaxS = combinedAttributes.getString("colorBarMaximum");
+    String tMinS = combinedAttributes.getString(language, "colorBarMinimum");
+    String tMaxS = combinedAttributes.getString(language, "colorBarMaximum");
     double tMin = String2.parseDouble(tMinS);
     double tMax = String2.parseDouble(tMaxS);
-    String tPalette = combinedAttributes.getString("colorBarPalette");
-    String tContinuous = combinedAttributes.getString("colorBarContinuous");
-    String tScale = combinedAttributes.getString("colorBarScale");
+    String tPalette = combinedAttributes.getString(language, "colorBarPalette");
+    String tContinuous = combinedAttributes.getString(language, "colorBarContinuous");
+    String tScale = combinedAttributes.getString(language, "colorBarScale");
     if (tMinS != null && !Double.isFinite(tMin))
       throw new IllegalArgumentException("colorBarMinimum=" + tMin + " must be a valid number.");
     if (tMaxS != null && !Double.isFinite(tMax))
@@ -679,10 +589,10 @@ public class EDV {
    * set scaleAddOffset accordingly. This removes the scale and addOffset attributes from source-
    * add- and combinedAttributes. This sets destinationDataType and destinationDataPAType.
    */
-  protected void extractScaleAddOffset() {
+  protected void extractScaleAddOffset(int language) {
 
-    PrimitiveArray sf = combinedAttributes.remove("scale_factor");
-    PrimitiveArray ao = combinedAttributes.remove("add_offset");
+    PrimitiveArray sf = combinedAttributes.removeAndGetDefault("scale_factor");
+    PrimitiveArray ao = combinedAttributes.removeAndGetDefault("add_offset");
     if (sf == null && ao == null) {
       destinationDataType = sourceDataType;
       destinationDataPAType = sourceDataPAType;
@@ -691,7 +601,7 @@ public class EDV {
 
     // scaleAddOffset will be used
     scaleAddOffset = true;
-    PrimitiveArray un = combinedAttributes.remove("_Unsigned");
+    PrimitiveArray un = combinedAttributes.removeAndGetDefault("_Unsigned");
     sourceIsUnsigned =
         un != null && "true".equals(un.toString()) && PAType.isIntegerType(sourceDataPAType);
 
@@ -715,7 +625,7 @@ public class EDV {
           &&
           // if floating type, '_Unsigned'=true is nonsense
           PAType.isIntegerType(sourceDataPAType))
-        combinedAttributes.set("_Unsigned", un); // re-set it
+        combinedAttributes.set(language, "_Unsigned", un); // re-set it
       // but destinationDataType(Class) is left as new data type
     }
     if (verbose && scaleAddOffset)
@@ -735,11 +645,12 @@ public class EDV {
    * values from combinedAttributes. This removes the actual_range, data_min, or data_max attribute
    * from source- add- and combinedAttributes.
    *
+   * @param language TODO
    * @return a PAOne[2] (always) with sourceMin and sourceMax values from actual_range, data_min, or
    *     data_max metadata (or null's). NOTE: for EDVGridAxis this indicates order or storage, so
    *     may be low,high or high,low.
    */
-  protected PAOne[] extractActualRange() {
+  protected PAOne[] extractActualRange(int language) {
 
     // if any are specified, they must be the same data type as destinationClass.
     PAType destPAType = destinationDataPAType();
@@ -758,30 +669,30 @@ public class EDV {
 
     // always remove
     PAOne amm[] = {
-      combinedAttributes.getPAOne("actual_min"), // null if not found
-      combinedAttributes.getPAOne("actual_max")
+      combinedAttributes.getPAOne(language, "actual_min"), // null if not found
+      combinedAttributes.getPAOne(language, "actual_max")
     };
-    pa = combinedAttributes.remove("actual_min");
+    pa = combinedAttributes.removeAndGetDefault("actual_min");
     if (pa != null && pa.elementType() != destPAType && willChange && !pa.isFloatingPointType())
       throw new RuntimeException(msg);
-    pa = combinedAttributes.remove("actual_max");
+    pa = combinedAttributes.removeAndGetDefault("actual_max");
     if (pa != null && pa.elementType() != destPAType && willChange && !pa.isFloatingPointType())
       throw new RuntimeException(msg);
 
     // always remove
     PAOne dmm[] = {
-      combinedAttributes.getPAOne("data_min"), // NaN if not found
-      combinedAttributes.getPAOne("data_max")
+      combinedAttributes.getPAOne(language, "data_min"), // NaN if not found
+      combinedAttributes.getPAOne(language, "data_max")
     };
-    pa = combinedAttributes.remove("data_min");
+    pa = combinedAttributes.removeAndGetDefault("data_min");
     if (pa != null && pa.elementType() != destPAType && willChange && !pa.isFloatingPointType())
       throw new RuntimeException(msg);
-    pa = combinedAttributes.remove("data_max");
+    pa = combinedAttributes.removeAndGetDefault("data_max");
     if (pa != null && pa.elementType() != destPAType && willChange && !pa.isFloatingPointType())
       throw new RuntimeException(msg);
 
     // priority to actual_range
-    pa = combinedAttributes.remove("actual_range"); // always remove
+    pa = combinedAttributes.removeAndGetDefault("actual_range"); // always remove
     if (pa != null && pa.elementType() != destPAType && willChange && !pa.isFloatingPointType())
       throw new RuntimeException(msg);
     if (pa != null && pa.size() == 2) {
@@ -802,8 +713,10 @@ public class EDV {
    * This is now defined in CF-1.7, with unpacked values, smallest and largest.
    *
    * <p>EDVGridAxis overwrites this to use firstDestinationValue and lastDestinationValue.
+   *
+   * @param language TODO
    */
-  public void setActualRangeFromDestinationMinMax() {
+  public void setActualRangeFromDestinationMinMax(int language) {
     /*
     actual_range and =NaN fixedValue variables:
     Technically, if a variable has a fixedValue, then the actual_range should be determined
@@ -827,7 +740,7 @@ public class EDV {
       PrimitiveArray pa = PrimitiveArray.factory(destinationDataPAType(), 2, false);
       pa.addPAOne(destinationMin);
       pa.addPAOne(destinationMax);
-      combinedAttributes.set("actual_range", pa);
+      combinedAttributes.set(language, "actual_range", pa);
       if (reallyVerbose)
         String2.log(
             "  setActualRange "
@@ -847,11 +760,13 @@ public class EDV {
    * This does the most common thing with extractActualRange and
    * setActualRangeFromDestinationMinMax(). This must be done after scaleFactor and addOffset have
    * be determined.
+   *
+   * @param language TODO
    */
-  public void extractAndSetActualRange() {
-    PAOne mm[] = extractActualRange();
+  public void extractAndSetActualRange(int language) {
+    PAOne mm[] = extractActualRange(language);
     setDestinationMinMax(mm[0], mm[1]);
-    setActualRangeFromDestinationMinMax();
+    setActualRangeFromDestinationMinMax(language);
   }
 
   /**
@@ -923,7 +838,8 @@ public class EDV {
     }
 
     if (EDStatic.config.variablesMustHaveIoosCategory) {
-      String ic = combinedAttributes().getString("ioos_category");
+      int language = EDMessages.DEFAULT_LANGUAGE;
+      String ic = combinedAttributes().getString(language, "ioos_category");
       Test.ensureSomethingUnicode(ic, errorInMethod + "ioos_category");
       Test.ensureTrue(
           IOOS_CATEGORIES.indexOf(ic) >= 0,
@@ -932,13 +848,12 @@ public class EDV {
 
     // Don't test Test.ensureSomethingUnicode(sourceAttributes, errorInMethod + "sourceAttributes");
     // Admin can't control source. addAttributes may overwrite offending characters.
-    Test.ensureSomethingUnicode(addAttributes, errorInMethod + "addAttributes");
-    EDStatic.updateUrls(null, combinedAttributes);
+    addAttributes.ensureSomethingUnicode(errorInMethod + "addAttributes");
+    combinedAttributes.updateUrls();
     combinedAttributes.ensureNamesAreVariableNameSafe(
         "In the combined attributes for the variable with destinationName="
             + String2.toJson(destinationName));
-    Test.ensureSomethingUnicode(
-        combinedAttributes,
+    combinedAttributes.ensureSomethingUnicode(
         errorInMethod + "combinedAttributes (but probably caused by the source attributes)");
     if (scaleAddOffset && destinationDataPAType == PAType.STRING)
       throw new IllegalArgumentException(
@@ -962,7 +877,7 @@ public class EDV {
         + "\n  units="
         + units
         + "\n  ioosCategory="
-        + combinedAttributes().getString("ioos_category")
+        + combinedAttributes().getString(EDMessages.DEFAULT_LANGUAGE, "ioos_category")
         + "\n  sourceDataType="
         + sourceDataType
         + "\n  fixedValue="
@@ -1484,7 +1399,8 @@ public class EDV {
    * (or eddDefaultDrawLandMask if drawLandMask not specified in combinedAttributes).
    */
   public String drawLandMask(String eddDefaultDrawLandMask) {
-    String dlm = combinedAttributes().getString("drawLandMask");
+    int language = EDMessages.DEFAULT_LANGUAGE;
+    String dlm = combinedAttributes().getString(language, "drawLandMask");
     int which = SgtMap.drawLandMask_OPTIONS.indexOf(dlm);
     return which < 1 ? eddDefaultDrawLandMask : dlm;
   }
@@ -1793,9 +1709,10 @@ public class EDV {
    * <p>Results PrimitiveArrays with integerType and char data from this var should use
    * setMaxIsMV(hasMv()).
    *
+   * @param language TODO
    * @param tDatasetID for diagnostic messages
    */
-  public void suggestAddFillValue(String tDatasetID) {
+  public void suggestAddFillValue(int language, String tDatasetID) {
 
     // AxisVariables can't have missing values
     if (this instanceof EDVGridAxis) {
@@ -1803,7 +1720,7 @@ public class EDV {
         String attName = i == 0 ? "_FillValue" : "missing_value";
         // just look at combinedAtts because addAtts may have e.g., _FillValue=null to cancel
         // erroneous sourceAtts attribute
-        if (String2.isSomething(combinedAttributes.getString(attName)))
+        if (String2.isSomething(combinedAttributes.getString(language, attName)))
           throw new IllegalArgumentException(
               String2.ERROR
                   + " in datasets.xml for datasetID=\""
@@ -1835,12 +1752,12 @@ public class EDV {
 
     // if it has mv or fv, source or add attributes (even if "null"), we're done
     if (String2.isSomething(sourceAttributes.getString("_FillValue"))
-        || String2.isSomething(addAttributes.getString("_FillValue"))
+        || String2.isSomething(addAttributes.getString(language, "_FillValue"))
         || // "null" is okay - it shows admin is aware of issue
         String2.isSomething(sourceAttributes.getString("missing_value"))
         || String2.isSomething(
             addAttributes.getString(
-                "missing_value"))) { // "null" is okay - it shows admin is aware of issue
+                language, "missing_value"))) { // "null" is okay - it shows admin is aware of issue
       return;
     }
 
@@ -1899,7 +1816,7 @@ public class EDV {
    *
    * @return the attributes which will be added when data is extracted.
    */
-  public Attributes addAttributes() {
+  public LocalizedAttributes addAttributes() {
     return addAttributes;
   }
 
@@ -1908,7 +1825,7 @@ public class EDV {
    *
    * @return the source+add attributes.
    */
-  public Attributes combinedAttributes() {
+  public LocalizedAttributes combinedAttributes() {
     return combinedAttributes;
   }
 

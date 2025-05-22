@@ -711,7 +711,7 @@ public class KmlFiles extends ImageTypes {
     if (nTimes >= 1)
       timeString +=
           Calendar2.epochSecondsToLimitedIsoStringT(
-              timeEdv.combinedAttributes().getString(EDV.TIME_PRECISION),
+              timeEdv.combinedAttributes().getString(language, EDV.TIME_PRECISION),
               Math.min(timeStartd, timeStopd),
               "");
     if (nTimes >= 2)

@@ -34,6 +34,7 @@ import gov.noaa.pfel.coastwatch.sgt.SgtUtil;
 import gov.noaa.pfel.coastwatch.util.HtmlWidgets;
 import gov.noaa.pfel.coastwatch.util.RegexFilenameFilter;
 import gov.noaa.pfel.coastwatch.util.SSR;
+import gov.noaa.pfel.erddap.dataset.metadata.LocalizedAttributes;
 import gov.noaa.pfel.erddap.dataset.metadata.MetadataBuilder;
 import gov.noaa.pfel.erddap.filetypes.DapRequestInfo;
 import gov.noaa.pfel.erddap.filetypes.FileTypeInterface;
@@ -441,7 +442,10 @@ public abstract class EDDTable extends EDD {
     String sosCdmCfRole = sosCdmCfRoles.get(type);
     sosOfferingIndex = -1;
     for (int dv = 0; dv < dataVariables.length; dv++) {
-      if (sosCdmCfRole.equals(dataVariables[dv].combinedAttributes().getString("cf_role"))) {
+      if (sosCdmCfRole.equals(
+          dataVariables[dv]
+              .combinedAttributes()
+              .getString(EDMessages.DEFAULT_LANGUAGE, "cf_role"))) {
         sosOfferingIndex = dv;
         break;
       }
@@ -518,7 +522,10 @@ public abstract class EDDTable extends EDD {
       for (String attName : attNames) {
         HashSet<String> validAttValues = new HashSet<>();
         for (int dv = 0; dv < ndv; dv++) {
-          String ts = dataVariables[dv].combinedAttributes().getString(attName);
+          String ts =
+              dataVariables[dv]
+                  .combinedAttributes()
+                  .getString(EDMessages.DEFAULT_LANGUAGE, attName);
           if (String2.isSomething(ts)) validAttValues.add(ts);
         }
         if (!validAttValues.isEmpty()) {
@@ -576,10 +583,10 @@ public abstract class EDDTable extends EDD {
 
       // standard_name is the only case-sensitive CF attribute name (see Sec 3.3)
       // All are all lower case.
-      Attributes tAtts = dataVariable.combinedAttributes();
-      String tStandardName = tAtts.getString("standard_name");
+      LocalizedAttributes tAtts = dataVariable.combinedAttributes();
+      String tStandardName = tAtts.getString(language, "standard_name");
       if (String2.isSomething(tStandardName))
-        tAtts.set("standard_name", tStandardName.toLowerCase());
+        tAtts.set(language, "standard_name", tStandardName.toLowerCase());
     }
 
     Test.ensureTrue(
@@ -663,7 +670,7 @@ public abstract class EDDTable extends EDD {
         int nMinMax[] = pa.getNMinMaxIndex();
         if (nMinMax[0] == 0) continue;
         edv.setDestinationMinMax(new PAOne(pa, nMinMax[1]), new PAOne(pa, nMinMax[2]));
-        edv.setActualRangeFromDestinationMinMax();
+        edv.setActualRangeFromDestinationMinMax(language);
       }
     }
 
@@ -673,7 +680,8 @@ public abstract class EDDTable extends EDD {
     // String2.log(">> lonIndex=" + lonIndex);
     if (lonIndex >= 0) {
       combinedGlobalAttributes.set(language, "geospatial_lon_units", EDV.LON_UNITS);
-      PrimitiveArray pa = dataVariables[lonIndex].combinedAttributes().get("actual_range");
+      PrimitiveArray pa =
+          dataVariables[lonIndex].combinedAttributes().get(language, "actual_range");
       if (pa != null) {
         combinedGlobalAttributes.set(language, "geospatial_lon_min", pa.getNiceDouble(0));
         combinedGlobalAttributes.set(language, "geospatial_lon_max", pa.getNiceDouble(1));
@@ -685,7 +693,8 @@ public abstract class EDDTable extends EDD {
     // lat
     if (latIndex >= 0) {
       combinedGlobalAttributes.set(language, "geospatial_lat_units", EDV.LAT_UNITS);
-      PrimitiveArray pa = dataVariables[latIndex].combinedAttributes().get("actual_range");
+      PrimitiveArray pa =
+          dataVariables[latIndex].combinedAttributes().get(language, "actual_range");
       if (pa != null) {
         combinedGlobalAttributes.set(language, "geospatial_lat_min", pa.getNiceDouble(0));
         combinedGlobalAttributes.set(language, "geospatial_lat_max", pa.getNiceDouble(1));
@@ -698,7 +707,8 @@ public abstract class EDDTable extends EDD {
     if (altIndex >= 0) {
       combinedGlobalAttributes.set(language, "geospatial_vertical_positive", "up");
       combinedGlobalAttributes.set(language, "geospatial_vertical_units", EDV.ALT_UNITS);
-      PrimitiveArray pa = dataVariables[altIndex].combinedAttributes().get("actual_range");
+      PrimitiveArray pa =
+          dataVariables[altIndex].combinedAttributes().get(language, "actual_range");
       if (pa != null) {
         combinedGlobalAttributes.set(language, "geospatial_vertical_min", pa.getNiceDouble(0));
         combinedGlobalAttributes.set(language, "geospatial_vertical_max", pa.getNiceDouble(1));
@@ -706,7 +716,8 @@ public abstract class EDDTable extends EDD {
     } else if (depthIndex >= 0) {
       combinedGlobalAttributes.set(language, "geospatial_vertical_positive", "down");
       combinedGlobalAttributes.set(language, "geospatial_vertical_units", EDV.DEPTH_UNITS);
-      PrimitiveArray pa = dataVariables[depthIndex].combinedAttributes().get("actual_range");
+      PrimitiveArray pa =
+          dataVariables[depthIndex].combinedAttributes().get(language, "actual_range");
       if (pa != null) {
         combinedGlobalAttributes.set(language, "geospatial_vertical_min", pa.getNiceDouble(0));
         combinedGlobalAttributes.set(language, "geospatial_vertical_max", pa.getNiceDouble(1));
@@ -715,10 +726,10 @@ public abstract class EDDTable extends EDD {
 
     // time
     if (timeIndex >= 0) {
-      Attributes catts = dataVariables[timeIndex].combinedAttributes();
-      PrimitiveArray pa = catts.get("actual_range");
+      LocalizedAttributes catts = dataVariables[timeIndex].combinedAttributes();
+      PrimitiveArray pa = catts.get(language, "actual_range");
       if (pa != null) {
-        String tp = catts.getString(EDV.TIME_PRECISION);
+        String tp = catts.getString(language, EDV.TIME_PRECISION);
         // "" unsets the attribute if min or max isNaN
         combinedGlobalAttributes.set(
             language,
@@ -1430,7 +1441,9 @@ public abstract class EDDTable extends EDD {
       EDV edv = dataVariables[dv];
       table.setColumnName(col, edv.destinationName());
       table.columnAttributes(col).clear(); // remove any existing atts
-      table.columnAttributes(col).set(edv.combinedAttributes()); // make a copy
+      table
+          .columnAttributes(col)
+          .set(edv.combinedAttributes().toAttributes(language)); // make a copy
 
       // convert source values to destination values
       // (source fill&missing values become destination fill&missing values)
@@ -1444,6 +1457,7 @@ public abstract class EDDTable extends EDD {
 
     // apply the constraints and finish up
     applyConstraints(
+        language,
         table,
         false, // apply CONSTRAIN_YES constraints?
         resultsVariables,
@@ -1490,6 +1504,7 @@ public abstract class EDDTable extends EDD {
    * @throws
    */
   public void applyConstraints(
+      int language,
       Table table,
       boolean applyAllConstraints,
       StringArray resultsVariables,
@@ -1517,7 +1532,7 @@ public abstract class EDDTable extends EDD {
               rv,
               resultsVariables.get(rv),
               PrimitiveArray.factory(edv.destinationDataPAType(), nRows, edv.fixedValue()),
-              new Attributes(edv.combinedAttributes())); // make a copy
+              edv.combinedAttributes().toAttributes(language)); // make a copy
         } else {
           // not found, so add new col with all missing values in correct place
           if (verbose)
@@ -1530,7 +1545,7 @@ public abstract class EDDTable extends EDD {
               edv.destinationName(),
               PrimitiveArray.factory(
                   edv.destinationDataPAType(), nRows, (Double.isNaN(dmv) ? "" : "" + dmv)),
-              new Attributes(edv.combinedAttributes()));
+              edv.combinedAttributes().toAttributes(language));
         }
       } else if (col < rv) {
         throw new SimpleException(
@@ -1547,7 +1562,9 @@ public abstract class EDDTable extends EDD {
       } else { // col >= rv
         // move the column into place
         table.moveColumn(col, rv);
-        table.columnAttributes(rv).set(edv.combinedAttributes()); // make a copy
+        table
+            .columnAttributes(rv)
+            .set(edv.combinedAttributes().toAttributes(language)); // make a copy
       }
     }
     // String2.log("table after rearrange cols=\n" + table.toString());
@@ -2215,7 +2232,7 @@ public abstract class EDDTable extends EDD {
 
         // go through vars looking for attName=attValue
         for (EDV edv : dataVariables) {
-          if (tAttValue.equals(edv.combinedAttributes().getString(tAttName))) {
+          if (tAttValue.equals(edv.combinedAttributes().getString(language, tAttName))) {
             // add var to resultsVariables if not already there
             if (resultsVariables.indexOf(edv.destinationName()) < 0)
               resultsVariables.add(edv.destinationName());
@@ -3461,7 +3478,7 @@ public abstract class EDDTable extends EDD {
       int dv = String2.indexOf(dataVariableDestinationNames(), resultsVariables.get(col));
       EDV edv = dataVariables[dv];
       Attributes atts = new Attributes();
-      if (withAttributes) atts.set(edv.combinedAttributes()); // make a copy
+      if (withAttributes) atts.set(edv.combinedAttributes().toAttributes(language)); // make a copy
       table.addColumn(
           col,
           edv.destinationName(),
@@ -4853,7 +4870,7 @@ public abstract class EDDTable extends EDD {
                   twawm.columnMinValue[col].getDouble() * edv.scaleFactor() + edv.addOffset()),
               PAOne.fromDouble(
                   twawm.columnMaxValue[col].getDouble() * edv.scaleFactor() + edv.addOffset()));
-          edv.setActualRangeFromDestinationMinMax();
+          edv.setActualRangeFromDestinationMinMax(language);
         }
       }
     }
@@ -4907,7 +4924,7 @@ public abstract class EDDTable extends EDD {
                   : Calendar2.epochSecondsToIsoStringTZ(tMax.getDouble())));
     dataVariables[timeIndex].setDestinationMinMax(
         tMin, tMax); // scaleFactor,addOffset not supported
-    dataVariables[timeIndex].setActualRangeFromDestinationMinMax();
+    dataVariables[timeIndex].setActualRangeFromDestinationMinMax(language);
   }
 
   /**
@@ -7828,7 +7845,7 @@ public abstract class EDDTable extends EDD {
         }
 
         if (edv instanceof EDVTimeStamp)
-          time_precision[dv] = edv.combinedAttributes().getString(EDV.TIME_PRECISION);
+          time_precision[dv] = edv.combinedAttributes().getString(language, EDV.TIME_PRECISION);
 
         if (dv != lonIndex && dv != latIndex) nonLLSA.add(dn);
 
@@ -8700,7 +8717,7 @@ public abstract class EDDTable extends EDD {
             if (con == 0) d = Calendar2.backNDays(7, d);
             conVal[cv][con] =
                 Calendar2.epochSecondsToLimitedIsoStringT(
-                    conEdv.combinedAttributes().getString(EDV.TIME_PRECISION), d, "");
+                    conEdv.combinedAttributes().getString(language, EDV.TIME_PRECISION), d, "");
             if (con == 0) timeMin = d;
             else timeMax = d;
           }
@@ -11490,7 +11507,8 @@ public abstract class EDDTable extends EDD {
           EDV edv = findDataVariableByDestinationName(subsetVariables[lastP]);
           PrimitiveArray varPA = (PrimitiveArray) lastPPA.clone();
           Table countTable = new Table();
-          countTable.addColumn(0, lastPName, varPA, edv.combinedAttributes());
+          countTable.addColumn(
+              0, lastPName, varPA, edv.combinedAttributes().toAttributes(language));
 
           // sort, count, remove duplicates
           varPA.sortIgnoreCase();
@@ -11703,7 +11721,8 @@ public abstract class EDDTable extends EDD {
           PrimitiveArray varPA = twa.column(0);
           Table countTable = new Table();
           EDV edv = findDataVariableByDestinationName(subsetVariables[lastP]);
-          countTable.addColumn(0, lastPName, varPA, edv.combinedAttributes());
+          countTable.addColumn(
+              0, lastPName, varPA, edv.combinedAttributes().toAttributes(language));
 
           // sort, count, remove duplicates
           varPA.sortIgnoreCase();
@@ -12153,7 +12172,7 @@ public abstract class EDDTable extends EDD {
               table.nColumns(),
               edv.destinationName(),
               PrimitiveArray.factory(edv.destinationDataPAType(), 1, edv.sourceName().substring(1)),
-              new Attributes(edv.combinedAttributes()));
+              edv.combinedAttributes().toAttributes(language));
         } else {
           justFixed = false;
           break;
@@ -12296,8 +12315,9 @@ public abstract class EDDTable extends EDD {
             v,
             varNames.get(v),
             pas[v],
-            new Attributes(
-                findDataVariableByDestinationName(varNames.get(v)).combinedAttributes()));
+            findDataVariableByDestinationName(varNames.get(v))
+                .combinedAttributes()
+                .toAttributes(language));
       distinctTable.globalAttributes().add(combinedGlobalAttributes().toAttributes(language));
       return distinctTable;
     }
@@ -12589,7 +12609,7 @@ public abstract class EDDTable extends EDD {
             table.nColumns(),
             edv.destinationName(),
             PrimitiveArray.factory(edv.destinationDataPAType(), 1, edv.fixedValue()),
-            new Attributes(edv.combinedAttributes()));
+            edv.combinedAttributes().toAttributes(language));
       } else {
         justFixed = false;
         break;
@@ -12677,6 +12697,7 @@ public abstract class EDDTable extends EDD {
 
     // apply constraints, rearrange columns, add metadata
     applyConstraints(
+        language,
         table,
         true, // applyAllConstraints
         resultsVariables,
@@ -13106,7 +13127,7 @@ public abstract class EDDTable extends EDD {
       for (int dv = 0; dv < ndv; dv++) {
         // if (debugMode && dataVariables[dv].destinationName().equals("time"))
         //    String2.log(">>time:\n" + dataVariables[dv].combinedAttributes());
-        String cfRole = dataVariables[dv].combinedAttributes().getString("cf_role");
+        String cfRole = dataVariables[dv].combinedAttributes().getString(language, "cf_role");
         if (cfRole != null) {
           for (int cdmi = 0; cdmi < 3; cdmi++) {
             if ((cdmLCNames[cdmi] + "_id").equals(cfRole)) {
@@ -13244,10 +13265,10 @@ public abstract class EDDTable extends EDD {
       } else if (proxyDV >= 0) {
         // okay
         EDV proxyEDV = dataVariables[proxyDV];
-        proxyEDV.addAttributes().add("_CoordinateAxisType", "Height");
-        proxyEDV.combinedAttributes().add("_CoordinateAxisType", "Height");
-        proxyEDV.addAttributes().add("axis", "Z");
-        proxyEDV.combinedAttributes().add("axis", "Z");
+        proxyEDV.addAttributes().set(language, "_CoordinateAxisType", "Height");
+        proxyEDV.combinedAttributes().set(language, "_CoordinateAxisType", "Height");
+        proxyEDV.addAttributes().set(language, "axis", "Z");
+        proxyEDV.combinedAttributes().set(language, "axis", "Z");
 
       } else if (cdmUses[0]) {
         throw new SimpleException(
@@ -13849,7 +13870,7 @@ public abstract class EDDTable extends EDD {
       for (int v = 0; v < dataVariables.length; v++) {
         if (v != latIndex && v != lonIndex && v != altIndex && v != depthIndex && v != timeIndex) {
           EDV edv = dataVariables[v];
-          String stdName = edv.combinedAttributes().getString("standard_name");
+          String stdName = edv.combinedAttributes().getString(language, "standard_name");
           if (stdName != null)
             writer.write(
                 "        <sos:observedProperty xlink:href=\"http://mmisw.org/ont/cf/parameter/"
@@ -14051,7 +14072,8 @@ public abstract class EDDTable extends EDD {
           || dv == timeIndex
           || dv == sosOfferingIndex) continue;
       count++;
-      String standardName = dataVariables[dv].combinedAttributes().getString("standard_name");
+      String standardName =
+          dataVariables[dv].combinedAttributes().getString(language, "standard_name");
       boolean hasSN = standardName != null && standardName.length() > 0;
       writer.write(
           "  <gml:definitionMember >\n"
@@ -14483,7 +14505,7 @@ public abstract class EDDTable extends EDD {
             || dv == timeIndex
             || dv == sosOfferingIndex) continue;
         EDV edv = dataVariables[dv];
-        String stdName = edv.combinedAttributes().getString("standard_name");
+        String stdName = edv.combinedAttributes().getString(language, "standard_name");
         boolean hasSN = stdName != null && stdName.length() > 0;
         writer.write(
             "                  <sml:output name=\""
@@ -15114,7 +15136,7 @@ public abstract class EDDTable extends EDD {
             dapQuery.append("&.draw=vectors&.color=0xFF9900");
             String colorBarMax =
                 edv1.combinedAttributes()
-                    .getString("colorBarMaximum"); // string avoids rounding problems
+                    .getString(language, "colorBarMaximum"); // string avoids rounding problems
             if (!Double.isNaN(String2.parseDouble(colorBarMax)))
               dapQuery.append("&.vec=" + colorBarMax);
           } else {
@@ -17779,7 +17801,7 @@ public abstract class EDDTable extends EDD {
     StringArray standardNames = new StringArray();
     if (!testMinimalMetadata) {
       for (EDV dataVariable : dataVariables) {
-        String sn = dataVariable.combinedAttributes().getString("standard_name");
+        String sn = dataVariable.combinedAttributes().getString(language, "standard_name");
         if (sn != null) standardNames.add(sn);
       }
     }
@@ -18753,7 +18775,7 @@ public abstract class EDDTable extends EDD {
     StringArray standardNames = new StringArray();
     if (!testMinimalMetadata) {
       for (EDV dataVariable : dataVariables) {
-        String sn = dataVariable.combinedAttributes().getString("standard_name");
+        String sn = dataVariable.combinedAttributes().getString(language, "standard_name");
         if (sn != null) standardNames.add(sn);
       }
     }

@@ -35,12 +35,12 @@ public class NccsvMetadataFiles extends FileTypeInterface {
         .add(edd.combinedGlobalAttributes().toAttributes(requestInfo.language()));
     for (int dvi = 0; dvi < edd.dataVariables().length; dvi++) {
       EDV dv = edd.dataVariables()[dvi];
-      Attributes catts = dv.combinedAttributes();
+      Attributes catts = dv.combinedAttributes().toAttributes(requestInfo.language());
       PAType tPAType = dv.destinationDataPAType();
       if (dv instanceof EDVTimeStamp) {
         // convert to String times
         tPAType = PAType.STRING;
-        catts = new Attributes(catts); // make changes to a copy
+        // make changes to a copy (generated in the toAttributes call above)
         String timePre = catts.getString(EDV.TIME_PRECISION);
         catts.set("units", Calendar2.timePrecisionToTimeFormat(timePre));
 
@@ -103,12 +103,12 @@ public class NccsvMetadataFiles extends FileTypeInterface {
       table.globalAttributes().add(grid.combinedGlobalAttributes().toAttributes(language));
       for (int avi = 0; avi < grid.axisVariables().length; avi++) {
         EDVGridAxis av = grid.axisVariables()[avi];
-        Attributes catts = av.combinedAttributes();
+        Attributes catts = av.combinedAttributes().toAttributes(language);
         PAType tPAType = av.destinationDataPAType();
         if (av instanceof EDVTimeStampGridAxis) {
           // convert to String times
           tPAType = PAType.STRING;
-          catts = new Attributes(catts); // make changes to a copy
+          // make changes to a copy (generated in the toAttributes call above)
           String timePre = catts.getString(EDV.TIME_PRECISION);
           catts.set("units", Calendar2.timePrecisionToTimeFormat(timePre));
 
@@ -124,10 +124,10 @@ public class NccsvMetadataFiles extends FileTypeInterface {
             avi, av.destinationName(), PrimitiveArray.factory(tPAType, 1, false), catts);
       }
       for (EDV dv : grid.dataVariables()) {
-        Attributes catts = dv.combinedAttributes();
+        Attributes catts = dv.combinedAttributes().toAttributes(language);
         PAType tPAType = dv.destinationDataPAType();
         if (dv instanceof EDVTimeStamp) {
-          catts = new Attributes(catts); // make changes to a copy
+          // make changes to a copy (generated in the toAttributes call above)
           catts.set(
               "units", Calendar2.timePrecisionToTimeFormat(catts.getString(EDV.TIME_PRECISION)));
           tPAType = PAType.STRING;

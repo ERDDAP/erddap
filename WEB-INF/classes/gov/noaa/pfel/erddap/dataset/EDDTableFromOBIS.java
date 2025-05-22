@@ -559,7 +559,7 @@ public class EDDTableFromOBIS extends EDDTable {
     for (String tSourceName : tVarNames) {
       String tDestName = tSourceName;
       if (tDestName == null || tDestName.trim().length() == 0) tDestName = tSourceName;
-      Attributes tAddAtt = new Attributes();
+      LocalizedAttributes tAddAtt = new LocalizedAttributes();
 
       // skip Lon and Lat since handled above
       if (tSourceName.equals("Longitude")
@@ -583,7 +583,7 @@ public class EDDTableFromOBIS extends EDDTable {
       boolean isTimeStamp = tSourceType.equals("dateTime");
       if (isTimeStamp) {
         tSourceType = "String";
-        tAddAtt.add("units", Calendar2.ISO8601TZ_FORMAT);
+        tAddAtt.set(language, "units", Calendar2.ISO8601TZ_FORMAT);
       }
 
       // get sourceAtt
@@ -618,7 +618,7 @@ public class EDDTableFromOBIS extends EDDTable {
                 tSourceAtt,
                 tAddAtt,
                 tSourceType); // the constructor that reads source actual_range
-        dataVariables[tv].setActualRangeFromDestinationMinMax();
+        dataVariables[tv].setActualRangeFromDestinationMinMax(language);
       }
       tv++;
     }

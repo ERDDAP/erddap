@@ -119,7 +119,7 @@ public class MetadataBuilder {
     List<RangeDimension> rangeDimensions = new ArrayList<>();
     for (EDV edv : variables) {
       dimensions.add(dimFromVariable(edv));
-      String sn = edv.combinedAttributes().getString("standard_name");
+      String sn = edv.combinedAttributes().getString(language, "standard_name");
       if (sn != null) standardNames.add(new EDDInternationalString(sn));
       DefaultRangeDimension attrDim = new DefaultRangeDimension();
       attrDim.setSequenceIdentifier(
@@ -237,7 +237,7 @@ public class MetadataBuilder {
     List<RangeDimension> rangeDimensions = new ArrayList<>();
     for (EDVGridAxis edv : axisVariables) {
       dimensions.add(dimFromAxis(edv));
-      String sn = edv.combinedAttributes().getString("standard_name");
+      String sn = edv.combinedAttributes().getString(language, "standard_name");
       if (sn != null) standardNames.add(new EDDInternationalString(sn));
 
       if (edv instanceof EDVTimeGridAxis || edv instanceof EDVTimeStampGridAxis) {
@@ -290,7 +290,7 @@ public class MetadataBuilder {
       }
     }
     for (EDV dataVariable : variables) {
-      String sn = dataVariable.combinedAttributes().getString("standard_name");
+      String sn = dataVariable.combinedAttributes().getString(language, "standard_name");
       if (sn != null) standardNames.add(new EDDInternationalString(sn));
       DefaultRangeDimension attrDim = new DefaultRangeDimension();
       attrDim.setSequenceIdentifier(

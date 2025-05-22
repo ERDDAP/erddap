@@ -531,7 +531,7 @@ public class EDDGridFromDap extends EDDGrid {
                 dvSourceDataType,
                 PAOne.fromDouble(Double.NaN),
                 PAOne.fromDouble(Double.NaN)); // hard to get min and max
-      dataVariables[dv].extractAndSetActualRange();
+      dataVariables[dv].extractAndSetActualRange(language);
       // String2.log(">> EDDGridFromDap construct " + tDataDestName + " type=" + dvSourceDataType);
     }
 
@@ -806,13 +806,15 @@ public class EDDGridFromDap extends EDDGrid {
     edvga.setDestinationMinMax(newMin, newMax);
     edvga.setIsEvenlySpaced(newIsEvenlySpaced);
     edvga.initializeAverageSpacingAndCoarseMinMax();
-    edvga.setActualRangeFromDestinationMinMax();
+    edvga.setActualRangeFromDestinationMinMax(language);
     if (edvga instanceof EDVTimeGridAxis)
       combinedGlobalAttributes.set(
           language,
           "time_coverage_end",
           Calendar2.epochSecondsToLimitedIsoStringT(
-              edvga.combinedAttributes().getString(EDV.TIME_PRECISION), newMax.getDouble(), ""));
+              edvga.combinedAttributes().getString(language, EDV.TIME_PRECISION),
+              newMax.getDouble(),
+              ""));
     edvga.clearSliderCsvValues(); // do last, to force recreation next time needed
 
     updateCount++;
@@ -861,7 +863,7 @@ public class EDDGridFromDap extends EDDGrid {
           new AxisVariableInfo(
               axisVariables[av].sourceName(),
               axisVariables[av].destinationName(),
-              new LocalizedAttributes(axisVariables[av].addAttributes()),
+              axisVariables[av].addAttributes(),
               null));
     }
     // String2.pressEnterToContinue("\nsibling axis0 addAtts=\n" +
@@ -874,7 +876,7 @@ public class EDDGridFromDap extends EDDGrid {
           new DataVariableInfo(
               dataVariables[dv].sourceName(),
               dataVariables[dv].destinationName(),
-              new LocalizedAttributes(dataVariables[dv].addAttributes()),
+              dataVariables[dv].addAttributes(),
               dataVariables[dv].sourceDataType()));
     }
 

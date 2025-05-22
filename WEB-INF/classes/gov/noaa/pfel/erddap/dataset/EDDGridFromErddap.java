@@ -290,8 +290,8 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
     // go through the rows of table from bottom to top
     int nRows = table.nRows();
     Attributes tSourceAttributes = new Attributes();
-    ArrayList tAxisVariables = new ArrayList();
-    ArrayList tDataVariables = new ArrayList();
+    ArrayList<EDVGridAxis> tAxisVariables = new ArrayList<>();
+    ArrayList<EDV> tDataVariables = new ArrayList<>();
     for (int row = nRows - 1; row >= 0; row--) {
 
       // "columnNames": ["Row Type", "Variable Name", "Attribute Name", "Data Type", "Value"],
@@ -328,7 +328,7 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
                       "sourceValues_" + String2.encodeVariableNameSafe(varName));
 
           // deal with remote not having ioos_category, but this ERDDAP requiring it
-          Attributes tAddAttributes = new Attributes();
+          LocalizedAttributes tAddAttributes = new LocalizedAttributes();
           if (EDStatic.config.variablesMustHaveIoosCategory
               && tSourceAttributes.getString("ioos_category") == null) {
 
@@ -342,7 +342,7 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
                     true, // tryToAddStandardName
                     false,
                     true); // tryToAddColorBarMinMax, tryToFindLLAT
-            tAddAttributes.add("ioos_category", tAtts.getString("ioos_category"));
+            tAddAttributes.set(language, "ioos_category", tAtts.getString("ioos_category"));
           }
 
           // make an axisVariable
@@ -403,7 +403,7 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
                     dataType,
                     PAOne.fromDouble(Double.NaN),
                     PAOne.fromDouble(Double.NaN)); // hard to get min and max
-          edv.extractAndSetActualRange();
+          edv.extractAndSetActualRange(language);
           tDataVariables.add(edv);
 
           // make new tSourceAttributes
@@ -744,13 +744,15 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
     edvga.setDestinationMinMax(newMin, newMax);
     edvga.setIsEvenlySpaced(newIsEvenlySpaced);
     edvga.initializeAverageSpacingAndCoarseMinMax();
-    edvga.setActualRangeFromDestinationMinMax();
+    edvga.setActualRangeFromDestinationMinMax(language);
     if (edvga instanceof EDVTimeGridAxis)
       combinedGlobalAttributes.set(
           language,
           "time_coverage_end",
           Calendar2.epochSecondsToLimitedIsoStringT(
-              edvga.combinedAttributes().getString(EDV.TIME_PRECISION), newMax.getDouble(), ""));
+              edvga.combinedAttributes().getString(language, EDV.TIME_PRECISION),
+              newMax.getDouble(),
+              ""));
     edvga.clearSliderCsvValues(); // do last, to force recreation next time needed
 
     updateCount++;

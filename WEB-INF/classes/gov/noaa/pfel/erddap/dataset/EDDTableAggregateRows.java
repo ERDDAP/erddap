@@ -304,7 +304,7 @@ public class EDDTableAggregateRows extends EDDTable {
       // variables in this class just see the destination name/type/... of the child0 variable
       EDV childVar = child0.dataVariables[dv];
       String tSourceName = childVar.destinationName();
-      Attributes tSourceAtts = childVar.combinedAttributes();
+      Attributes tSourceAtts = childVar.combinedAttributes().toAttributes(language);
       LocalizedAttributes tAddAtts = new LocalizedAttributes();
       String tDataType = childVar.destinationDataType();
       String tUnits = childVar.units();
@@ -416,7 +416,7 @@ public class EDDTableAggregateRows extends EDDTable {
       } else
         newVar = new EDV(datasetID, tSourceName, "", tSourceAtts, tAddAtts, tDataType, tMin, tMax);
 
-      newVar.setActualRangeFromDestinationMinMax();
+      newVar.setActualRangeFromDestinationMinMax(language);
       dataVariables[dv] = newVar;
     }
 
@@ -507,7 +507,7 @@ public class EDDTableAggregateRows extends EDDTable {
     }
     for (int dvi = 0; dvi < ndv; dvi++) {
       dataVariables[dvi].setDestinationMinMax(tMin[dvi], tMax[dvi]);
-      dataVariables[dvi].setActualRangeFromDestinationMinMax();
+      dataVariables[dvi].setActualRangeFromDestinationMinMax(language);
     }
 
     return anyChange;

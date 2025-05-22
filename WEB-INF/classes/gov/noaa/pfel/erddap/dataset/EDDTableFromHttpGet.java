@@ -25,6 +25,7 @@ import gov.noaa.pfel.coastwatch.pointdata.Table;
 import gov.noaa.pfel.coastwatch.util.FileVisitorDNLS;
 import gov.noaa.pfel.coastwatch.util.SSR;
 import gov.noaa.pfel.erddap.dataset.metadata.LocalizedAttributes;
+import gov.noaa.pfel.erddap.util.EDMessages;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.*;
 import java.io.BufferedOutputStream;
@@ -242,6 +243,9 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
         String2.ERROR + " in EDDTableFromHttpGet constructor for datasetID=" + datasetID + ": ";
     if (standardizeWhat != 0) throw new RuntimeException(msg + "'standardizeWhat' MUST be 0.");
 
+    // The attributes this gets/sets should not need to be localized (max/min
+    // value for example). Just use the default language.
+    int language = EDMessages.DEFAULT_LANGUAGE;
     // cacheFromUrl must be null
     msg = String2.ERROR + " in EDDTableFromHttpGet constructor for datasetID=" + datasetID + ": ";
     if (cacheFromUrl != null) throw new RuntimeException(msg + "'cacheFromUrl' MUST be null.");
@@ -300,7 +304,8 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
       String destName = edv.destinationName();
       columnNames[dvi] = sourceName;
       columnUnits[dvi] =
-          edv.addAttributes().getString("units"); // here, "source" units are in addAttributes!
+          edv.addAttributes()
+              .getString(language, "units"); // here, "source" units are in addAttributes!
       columnPATypes[dvi] = edv.sourceDataPAType();
 
       // No char variables
@@ -325,9 +330,9 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
         columnMvFv[dvi] = tsa.size() == 0 ? null : tsa;
       } else if (columnPATypes[dvi] == PAType.LONG || columnPATypes[dvi] == PAType.ULONG) {
         StringArray tsa = new StringArray(2, false);
-        String ts = edv.combinedAttributes().getString("missing_value");
+        String ts = edv.combinedAttributes().getString(language, "missing_value");
         if (ts != null) tsa.add(ts);
-        ts = edv.combinedAttributes().getString("_FillValue");
+        ts = edv.combinedAttributes().getString(language, "_FillValue");
         if (ts != null) tsa.add(ts);
         columnMvFv[dvi] = tsa.size() == 0 ? null : tsa;
       } else {

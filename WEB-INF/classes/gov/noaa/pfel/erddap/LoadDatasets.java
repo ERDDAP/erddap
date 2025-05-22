@@ -4,7 +4,6 @@
  */
 package gov.noaa.pfel.erddap;
 
-import com.cohort.array.Attributes;
 import com.cohort.array.StringArray;
 import com.cohort.util.Calendar2;
 import com.cohort.util.File2;
@@ -1776,7 +1775,7 @@ public class LoadDatasets extends Thread {
   protected static void categorizeVariableAtts(
       boolean add, ConcurrentHashMap catInfo, EDV edv, String id) {
 
-    Attributes atts = edv.combinedAttributes();
+    LocalizedAttributes atts = edv.combinedAttributes();
     int nCat = EDStatic.config.categoryAttributes.length;
     for (int cat = 0; cat < nCat; cat++) {
       if (!EDStatic.config.categoryIsGlobal[cat]) {
@@ -1785,7 +1784,7 @@ public class LoadDatasets extends Thread {
             cat == EDStatic.config.variableNameCategoryAttributeIndex
                 ? // special case
                 edv.destinationName()
-                : atts.getString(catName);
+                : atts.getString(EDMessages.DEFAULT_LANGUAGE, catName);
         addRemoveIdToCatInfo(
             add,
             catInfo,

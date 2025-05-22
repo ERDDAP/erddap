@@ -452,7 +452,7 @@ public class EDDTableFromErddap extends EDDTable implements FromErddap {
                 tSourceAtt,
                 tAddAtt,
                 tSourceType); // the constructor that reads actual_range
-        edv.setActualRangeFromDestinationMinMax();
+        edv.setActualRangeFromDestinationMinMax(language);
       }
       tDataVariables.add(edv);
       if (!edv.destinationMin().isMissingValue() || !edv.destinationMax().isMissingValue())

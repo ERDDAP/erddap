@@ -2,6 +2,7 @@ package gov.noaa.pfel.erddap.dataset.metadata;
 
 import com.cohort.array.Attributes;
 import com.cohort.array.DoubleArray;
+import com.cohort.array.PAOne;
 import com.cohort.array.PAType;
 import com.cohort.array.PrimitiveArray;
 import com.cohort.array.StringArray;
@@ -287,6 +288,23 @@ public class LocalizedAttributes {
     String defaultValue = value != null ? value.getRawString(0) : "";
 
     return new EDDInternationalString(defaultValue, international);
+  }
+
+  /**
+   * A convenience method which returns the first element of the attribute's value PrimitiveArray as
+   * a PAOne.
+   *
+   * @param name the name of an attribute
+   * @return the attribute as a PAOne (or null if trouble (e.g., not found))
+   */
+  public PAOne getPAOne(int language, String name) {
+    try {
+      PrimitiveArray pa = get(language, name);
+      if (pa == null || pa.size() == 0) return null;
+      return new PAOne(pa, 0);
+    } catch (Exception e) {
+      return null;
+    }
   }
 
   public void validateAttributes(String message) {

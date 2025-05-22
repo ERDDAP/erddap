@@ -452,8 +452,8 @@ public class EDDGridLon0360 extends EDDGrid {
         new EDVLonGridAxis(
             tDatasetID,
             EDV.LON_NAME,
-            new Attributes(childLon.combinedAttributes()),
-            new Attributes(),
+            childLon.combinedAttributes().toAttributes(language),
+            new LocalizedAttributes(),
             newLonValues);
     newEDVLon.combinedAttributes().remove("valid_min");
     newEDVLon.combinedAttributes().remove("valid_max");

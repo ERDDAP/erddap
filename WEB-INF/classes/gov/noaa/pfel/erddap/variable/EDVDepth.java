@@ -36,37 +36,6 @@ public class EDVDepth extends EDV {
       PAOne tSourceMin,
       PAOne tSourceMax)
       throws Throwable {
-    this(
-        tDatasetID,
-        tSourceName,
-        tSourceAttributes,
-        tAddAttributes.toAttributes(EDMessages.DEFAULT_LANGUAGE),
-        tSourceDataType,
-        tSourceMin,
-        tSourceMax);
-  }
-
-  /**
-   * The constructor -- like EDV, but the destinationName, long_name, and units are standardized,
-   * and you need to specify scale_factor to convert source altitude/depth values to meters below
-   * sea level in the results.
-   *
-   * @param tSourceMin is pre-scale_factor and add_offset. This takes precedence over actual_range,
-   *     actual_min, or data_min metadata.
-   * @param tSourceMax is pre-scale_factor and add_offset. This takes precedence over actual_range,
-   *     actual_max, or data_max metadata.
-   * @throws Throwable if trouble
-   */
-  public EDVDepth(
-      String tDatasetID,
-      String tSourceName,
-      Attributes tSourceAttributes,
-      Attributes tAddAttributes,
-      String tSourceDataType,
-      PAOne tSourceMin,
-      PAOne tSourceMax)
-      throws Throwable {
-
     super(
         tDatasetID,
         tSourceName,
@@ -83,32 +52,35 @@ public class EDVDepth extends EDV {
               + tDatasetID
               + ": "
               + "The destination dataType for the depth variable must be a numeric dataType.");
+    // The attributes this gets/sets should not need to be localized (max/min
+    // value for example). Just use the default language.
+    int language = EDMessages.DEFAULT_LANGUAGE;
 
     units = DEPTH_UNITS;
-    combinedAttributes.set("_CoordinateAxisType", "Height"); // unidata
-    combinedAttributes.set("_CoordinateZisPositive", "down"); // unidata
-    combinedAttributes.set("axis", "Z");
-    combinedAttributes.set("ioos_category", LOCATION_CATEGORY);
-    longName = combinedAttributes.getString("long_name");
+    combinedAttributes.set(language, "_CoordinateAxisType", "Height"); // unidata
+    combinedAttributes.set(language, "_CoordinateZisPositive", "down"); // unidata
+    combinedAttributes.set(language, "axis", "Z");
+    combinedAttributes.set(language, "ioos_category", LOCATION_CATEGORY);
+    longName = combinedAttributes.getString(language, "long_name");
     if (longName == null
         || // catch nothing
         longName.equalsIgnoreCase("depth")) { // catch alternate case
       longName = DEPTH_LONGNAME;
-      combinedAttributes.set("long_name", longName);
+      combinedAttributes.set(language, "long_name", longName);
     }
-    combinedAttributes.set("positive", "down"); // cf
-    combinedAttributes.set("standard_name", DEPTH_STANDARD_NAME);
-    EDVAlt.ensureUnitsAreM(combinedAttributes.getString("units"), "depth", "down");
-    combinedAttributes.set("units", units);
+    combinedAttributes.set(language, "positive", "down"); // cf
+    combinedAttributes.set(language, "standard_name", DEPTH_STANDARD_NAME);
+    EDVAlt.ensureUnitsAreM(combinedAttributes.getString(language, "units"), "depth", "down");
+    combinedAttributes.set(language, "units", units);
 
     // set destinationMin max  if not set by tSourceMin,Max
-    PAOne mm[] = extractActualRange(); // always extract
+    PAOne mm[] = extractActualRange(language); // always extract
     setDestinationMinMax(mm[0], mm[1]);
-    setActualRangeFromDestinationMinMax();
+    setActualRangeFromDestinationMinMax(language);
 
-    PrimitiveArray pa = combinedAttributes.get("missing_value");
+    PrimitiveArray pa = combinedAttributes.get(language, "missing_value");
     if (pa != null) pa.setDouble(0, destinationMissingValue);
-    pa = combinedAttributes.get("_FillValue");
+    pa = combinedAttributes.get(language, "_FillValue");
     if (pa != null) pa.setDouble(0, destinationFillValue);
   }
 

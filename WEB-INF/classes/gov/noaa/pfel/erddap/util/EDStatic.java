@@ -48,6 +48,7 @@ import gov.noaa.pfel.erddap.dataset.EDDTable;
 import gov.noaa.pfel.erddap.dataset.EDDTableFromCassandra;
 import gov.noaa.pfel.erddap.dataset.GridDataAccessor;
 import gov.noaa.pfel.erddap.dataset.OutputStreamFromHttpResponse;
+import gov.noaa.pfel.erddap.dataset.metadata.LocalizedAttributes;
 import gov.noaa.pfel.erddap.variable.EDV;
 import gov.noaa.pfel.erddap.variable.EDVGridAxis;
 import jakarta.servlet.ServletException;
@@ -1270,7 +1271,7 @@ public class EDStatic {
       String loggedInAs,
       PAType destinationDataPAType,
       String destinationName,
-      Attributes attributes)
+      LocalizedAttributes attributes)
       throws Throwable {
 
     StringBuilder sb =
@@ -1279,7 +1280,7 @@ public class EDStatic {
                 + " "
                 + destinationName, // strictDapMode
             destinationDataPAType,
-            attributes,
+            attributes.toAttributes(language),
             false,
             false); // htmlEncoding, strictDapMode
     // String2.log("htmlTooltipImage sb=" + sb.toString());

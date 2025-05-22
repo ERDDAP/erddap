@@ -1103,12 +1103,14 @@ public class EDDTableFromSOS extends EDDTable {
             stats[PrimitiveArray.STATS_MAX]);
 
     sosOfferingIndex = 2; // aka stationID
-    Attributes tAtts =
-        new Attributes().add("long_name", "Station ID").add("ioos_category", "Identifier");
+    LocalizedAttributes tAtts =
+        new LocalizedAttributes()
+            .set(language, "long_name", "Station ID")
+            .set(language, "ioos_category", "Identifier");
     if (CDM_TIMESERIES.equals(cdmType) || CDM_TIMESERIESPROFILE.equals(cdmType))
-      tAtts.add("cf_role", "timeseries_id");
+      tAtts.set(language, "cf_role", "timeseries_id");
     else if (CDM_TRAJECTORY.equals(cdmType) || CDM_TRAJECTORYPROFILE.equals(cdmType))
-      tAtts.add("cf_role", "trajectory_id");
+      tAtts.set(language, "cf_role", "trajectory_id");
     dataVariables[sosOfferingIndex] =
         new EDV(
             datasetID,
@@ -1122,9 +1124,10 @@ public class EDDTableFromSOS extends EDDTable {
     // alt axis isn't set up in datasets.xml.
     altIndex = 3;
     depthIndex = -1; // 2012-12-20 consider using depthIndex???
-    Attributes altAddAtts = new Attributes();
-    altAddAtts.set("units", "m");
-    if (tAltMetersPerSourceUnit != 1) altAddAtts.set("scale_factor", tAltMetersPerSourceUnit);
+    LocalizedAttributes altAddAtts = new LocalizedAttributes();
+    altAddAtts.set(language, "units", "m");
+    if (tAltMetersPerSourceUnit != 1)
+      altAddAtts.set(language, "scale_factor", tAltMetersPerSourceUnit);
     dataVariables[altIndex] =
         new EDVAlt(
             datasetID,
@@ -1150,9 +1153,9 @@ public class EDDTableFromSOS extends EDDTable {
             ? // some indeterminant
             PAOne.fromDouble(Double.NaN)
             : stats2[PrimitiveArray.STATS_MAX];
-    tAtts = new Attributes().add("units", tTimeSourceFormat);
+    tAtts = new LocalizedAttributes().set(language, "units", tTimeSourceFormat);
     if (CDM_TIMESERIESPROFILE.equals(cdmType) || CDM_TRAJECTORYPROFILE.equals(cdmType))
-      tAtts.add("cf_role", "profile_id");
+      tAtts.set(language, "cf_role", "profile_id");
     EDVTime edvTime =
         new EDVTime(
             datasetID,
@@ -1161,7 +1164,7 @@ public class EDDTableFromSOS extends EDDTable {
             tAtts,
             "String"); // this constructor gets source / sets destination actual_range
     edvTime.setDestinationMinMax(tTimeMin, tTimeMax);
-    edvTime.setActualRangeFromDestinationMinMax();
+    edvTime.setActualRangeFromDestinationMinMax(language);
     dataVariables[timeIndex] = edvTime;
 
     // create non-fixed dataVariables[]
@@ -1191,10 +1194,12 @@ public class EDDTableFromSOS extends EDDTable {
                 tSourceAtt,
                 tAddAtt,
                 tSourceType); // the constructor that reads actual_range
-        dataVariables[nFixedVariables + dv].setActualRangeFromDestinationMinMax();
+        dataVariables[nFixedVariables + dv].setActualRangeFromDestinationMinMax(language);
       }
       Test.ensureNotNothing(
-          dataVariables[nFixedVariables + dv].combinedAttributes().getString(EDV.observedProperty),
+          dataVariables[nFixedVariables + dv]
+              .combinedAttributes()
+              .getString(language, EDV.observedProperty),
           "\""
               + EDV.observedProperty
               + "\" attribute not assigned for variable sourceName="
@@ -1360,7 +1365,7 @@ public class EDDTableFromSOS extends EDDTable {
             //    top = dataVariables[dvi].combinedAttributes().getString("sourceObservedProperty");
             // //preferred
             // if (top == null)
-            top = dataVariables[dvi].combinedAttributes().getString(EDV.observedProperty);
+            top = dataVariables[dvi].combinedAttributes().getString(language, EDV.observedProperty);
         if (requestObservedProperties.indexOf(top) < 0) requestObservedProperties.add(top);
       }
     }
@@ -1402,7 +1407,7 @@ public class EDDTableFromSOS extends EDDTable {
           //    top = dataVariables[dvi].combinedAttributes().getString("sourceObservedProperty");
           // //preferred
           // if (top == null)
-          top = dataVariables[dvi].combinedAttributes().getString(EDV.observedProperty);
+          top = dataVariables[dvi].combinedAttributes().getString(language, EDV.observedProperty);
       if (requestObservedProperties.indexOf(top) < 0) requestObservedProperties.add(top);
     }
 
@@ -2429,7 +2434,8 @@ public class EDDTableFromSOS extends EDDTable {
       int dvi = String2.indexOf(tDataVariableSourceNames, table.getColumnName(col));
       tableDVI.add(dvi);
       EDV edv = dataVariables[dvi];
-      tableObservedProperties[col] = edv.combinedAttributes().getString("observedProperty");
+      tableObservedProperties[col] =
+          edv.combinedAttributes().getString(language, "observedProperty");
       isStringCol[col] = edv.sourceDataPAType().equals(PAType.STRING);
     }
 

@@ -676,7 +676,7 @@ public class EDDTableFromCassandra extends EDDTable {
       } else {
         dataVariables[dv] =
             new EDV(datasetID, tSourceName, tDestName, tSourceAtt, tAddAtt, tSourceType);
-        dataVariables[dv].setActualRangeFromDestinationMinMax();
+        dataVariables[dv].setActualRangeFromDestinationMinMax(language);
       }
     }
 

@@ -129,7 +129,8 @@ public class AxisDataAccessor {
       rAxisValues[av] = rAxisVariables[av].toDestination(rAxisValues[av]);
 
       // make axisAttributes
-      rAxisAttributes[av] = new Attributes(rAxisVariables[av].combinedAttributes()); // a copy
+      rAxisAttributes[av] =
+          rAxisVariables[av].combinedAttributes().toAttributes(language); // a copy
 
       // setActualRangeAndBoundingBox  (see comments in method javadocs above)
       // if no data, don't specify range
@@ -214,7 +215,7 @@ public class AxisDataAccessor {
           globalAttributes.set("geospatial_vertical_max", dMax);
         }
       } else if (rAxisVariables[av] instanceof EDVTimeGridAxis) {
-        String tp = rAxisVariables[av].combinedAttributes().getString(EDV.TIME_PRECISION);
+        String tp = rAxisVariables[av].combinedAttributes().getString(language, EDV.TIME_PRECISION);
         // "" unsets the attribute if dMin or dMax isNaN
         globalAttributes.set(
             "time_coverage_start", Calendar2.epochSecondsToLimitedIsoStringT(tp, dMin, ""));

@@ -102,7 +102,7 @@ public abstract class TableWriter implements AutoCloseable {
           try { // findVar throws exception if not found
             EDV edv =
                 edd.findVariableByDestinationName(columnNames[col]); // finds axis or dataVariable
-            colAttsClone = new Attributes(edv.combinedAttributes());
+            colAttsClone = edv.combinedAttributes().toAttributes(language);
           } catch (Throwable t) {
             // rare, e.g., happens with added "Count" and "Percent"
             // columns in countTable for "2 = viewDistinctDataCounts"

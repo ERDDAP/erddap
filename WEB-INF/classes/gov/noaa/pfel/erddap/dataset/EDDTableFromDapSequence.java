@@ -605,7 +605,7 @@ public class EDDTableFromDapSequence extends EDDTable {
                 tSourceAtt,
                 tAddAtt,
                 tSourceType); // the constructor that reads actual_range
-        dataVariables[dv].setActualRangeFromDestinationMinMax();
+        dataVariables[dv].setActualRangeFromDestinationMinMax(language);
       }
     }
 

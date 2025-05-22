@@ -286,7 +286,7 @@ public class TableWriterOrderByMean extends TableWriterAll {
         oColumnAtts[col] = table.columnAttributes(col);
       } else {
         EDV edv = edd.findDataVariableByDestinationName(colName[col]); // exception if not found
-        oColumnAtts[col] = new Attributes(edv.combinedAttributes());
+        oColumnAtts[col] = edv.combinedAttributes().toAttributes(language);
       }
 
       PrimitiveArray column = table.getColumn(col);

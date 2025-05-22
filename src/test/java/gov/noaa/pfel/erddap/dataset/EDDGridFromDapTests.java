@@ -20,6 +20,7 @@ import gov.noaa.pfel.coastwatch.griddata.NcHelper;
 import gov.noaa.pfel.coastwatch.util.SSR;
 import gov.noaa.pfel.erddap.GenerateDatasetsXml;
 import gov.noaa.pfel.erddap.dataset.EDD.EDDFileTypeInfo;
+import gov.noaa.pfel.erddap.dataset.metadata.LocalizedAttributes;
 import gov.noaa.pfel.erddap.util.EDMessages;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.EDVGridAxis;
@@ -188,7 +189,9 @@ class EDDGridFromDapTests {
     Test.ensureEqual(
         gridDataset.combinedGlobalAttributes().getString(language, "et_affine"), null, "");
     Test.ensureEqual(
-        gridDataset.dataVariables()[0].combinedAttributes().getString("percentCoverage"), null, "");
+        gridDataset.dataVariables()[0].combinedAttributes().getString(language, "percentCoverage"),
+        null,
+        "");
 
     // *** test parseQuery with invalid queries
     error = "";
@@ -5470,7 +5473,8 @@ class EDDGridFromDapTests {
     String2.log("  make IntArray time=" + (System.currentTimeMillis() - time) + "ms");
 
     EDVGridAxis edvga =
-        new EDVGridAxis("testDatasetID", "x", "x", new Attributes(), new Attributes(), vals);
+        new EDVGridAxis(
+            "testDatasetID", "x", "x", new Attributes(), new LocalizedAttributes(), vals);
     time = System.currentTimeMillis();
     results = edvga.sliderCsvValues();
     expected = "12, 13, 14, 15, 16, 17, 18, 19,";
@@ -5488,7 +5492,9 @@ class EDDGridFromDapTests {
     for (int i = 0; i < 10000000; i++) vals.add(123456 + i);
     String2.log("  make IntArray time=" + (System.currentTimeMillis() - time) + "ms");
 
-    edvga = new EDVGridAxis("testDatasetID", "x", "x", new Attributes(), new Attributes(), vals);
+    edvga =
+        new EDVGridAxis(
+            "testDatasetID", "x", "x", new Attributes(), new LocalizedAttributes(), vals);
     time = System.currentTimeMillis();
     results = edvga.sliderCsvValues();
     expected = "123456, 150000, 200000, 250000, 300000, 350000, 400000, 450000,";
@@ -5513,7 +5519,7 @@ class EDDGridFromDapTests {
             "mytime",
             null,
             new Attributes().add("units", Calendar2.SECONDS_SINCE_1970),
-            new Attributes(),
+            new LocalizedAttributes(),
             seconds);
     time = System.currentTimeMillis();
     results = edvtsga.sliderCsvValues();
@@ -5531,7 +5537,7 @@ class EDDGridFromDapTests {
             "testDatasetID",
             "time",
             new Attributes().add("units", Calendar2.SECONDS_SINCE_1970),
-            new Attributes(),
+            new LocalizedAttributes(),
             seconds);
     time = System.currentTimeMillis();
     results = edvtga.sliderCsvValues();

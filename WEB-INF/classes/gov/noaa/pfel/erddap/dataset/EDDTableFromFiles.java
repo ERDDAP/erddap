@@ -2405,7 +2405,7 @@ public abstract class EDDTableFromFiles extends EDDTable implements WatchUpdateH
         dataVariables[dv] =
             new EDV(
                 datasetID, tSourceName, tDestName, tSourceAtt, tAddAtt, tSourceType, tMin, tMax);
-        dataVariables[dv].setActualRangeFromDestinationMinMax();
+        dataVariables[dv].setActualRangeFromDestinationMinMax(language);
       }
 
       // String2.pressEnterToContinue("!!!sourceName=" +
@@ -3544,11 +3544,11 @@ public abstract class EDDTableFromFiles extends EDDTable implements WatchUpdateH
           edvts.setDestinationMinMax(
               PAOne.fromDouble(edvts.sourceTimeToEpochSeconds(minMaxPa.getString(0))),
               PAOne.fromDouble(edvts.sourceTimeToEpochSeconds(minMaxPa.getString(1))));
-          edvts.setActualRangeFromDestinationMinMax();
+          edvts.setActualRangeFromDestinationMinMax(language);
         }
       } else { // minMaxPa is numeric
         edv.setDestinationMinMaxFromSource(minMaxPa.getPAOne(0), minMaxPa.getPAOne(1));
-        edv.setActualRangeFromDestinationMinMax();
+        edv.setActualRangeFromDestinationMinMax(language);
       }
 
       if (dv == lonIndex) {

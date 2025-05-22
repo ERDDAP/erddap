@@ -15147,7 +15147,7 @@ class EDDGridFromNcFilesTests {
     Test.ensureEqual(
         eddGrid.axisVariables()[0].destinationMaxString(), oldMaxTime, "av[0].destinationMax");
     Test.ensureEqual(
-        eddGrid.axisVariables()[0].combinedAttributes().get("actual_range").toString(),
+        eddGrid.axisVariables()[0].combinedAttributes().get(language, "actual_range").toString(),
         oldMinMillis + ", " + oldMaxMillis,
         "actual_range");
     Test.ensureEqual(
@@ -15210,7 +15210,7 @@ class EDDGridFromNcFilesTests {
       Test.ensureEqual(
           eddGrid.axisVariables()[0].destinationMaxString(), oldMaxTime, "av[0].destinationMax");
       Test.ensureEqual(
-          eddGrid.axisVariables()[0].combinedAttributes().get("actual_range").toString(),
+          eddGrid.axisVariables()[0].combinedAttributes().get(language, "actual_range").toString(),
           newMinMillis + ", " + oldMaxMillis,
           "actual_range");
       Test.ensureEqual(
@@ -15245,8 +15245,8 @@ class EDDGridFromNcFilesTests {
                 + "  old=1.1991456E9,\n"
                 + "  new=1.1994048E9.\n"
                 + "The combinedAttribute for axisVariable #0=time changed:\n"
-                + "  old line #2=&quot;    actual_range=1.1991888E9d,1.1999664E9d&quot;,\n"
-                + "  new line #2=&quot;    actual_range=1.199448E9d,1.1999664E9d&quot;.\n"
+                + "  old line #8=&quot;    actual_range=1.1991888E9d,1.1999664E9d&quot;,\n"
+                + "  new line #8=&quot;    actual_range=1.199448E9d,1.1999664E9d&quot;.\n"
                 + "A combinedGlobalAttribute changed:\n"
                 + "  old line #30=&quot;    time_coverage_start=2008-01-01T12:00:00Z&quot;,\n"
                 + "  new line #30=&quot;    time_coverage_start=2008-01-04T12:00:00Z&quot;.\n"
@@ -15291,7 +15291,7 @@ class EDDGridFromNcFilesTests {
     Test.ensureEqual(
         eddGrid.axisVariables()[0].destinationMaxString(), oldMaxTime, "av[0].destinationMax");
     Test.ensureEqual(
-        eddGrid.axisVariables()[0].combinedAttributes().get("actual_range").toString(),
+        eddGrid.axisVariables()[0].combinedAttributes().get(language, "actual_range").toString(),
         oldMinMillis + ", " + oldMaxMillis,
         "actual_range");
     Test.ensureEqual(
@@ -15323,8 +15323,8 @@ class EDDGridFromNcFilesTests {
             + "  old=1.1994048E9,\n"
             + "  new=1.1991456E9.\n"
             + "The combinedAttribute for axisVariable #0=time changed:\n"
-            + "  old line #2=&quot;    actual_range=1.199448E9d,1.1999664E9d&quot;,\n"
-            + "  new line #2=&quot;    actual_range=1.1991888E9d,1.1999664E9d&quot;.\n"
+            + "  old line #8=&quot;    actual_range=1.199448E9d,1.1999664E9d&quot;,\n"
+            + "  new line #8=&quot;    actual_range=1.1991888E9d,1.1999664E9d&quot;.\n"
             + "A combinedGlobalAttribute changed:\n"
             + "  old line #30=&quot;    time_coverage_start=2008-01-04T12:00:00Z&quot;,\n"
             + "  new line #30=&quot;    time_coverage_start=2008-01-01T12:00:00Z&quot;.\n"
@@ -15375,7 +15375,7 @@ class EDDGridFromNcFilesTests {
       Test.ensureEqual(
           eddGrid.axisVariables()[0].destinationMaxString(), oldMaxTime, "av[0].destinationMax");
       Test.ensureEqual(
-          eddGrid.axisVariables()[0].combinedAttributes().get("actual_range").toString(),
+          eddGrid.axisVariables()[0].combinedAttributes().get(language, "actual_range").toString(),
           oldMinMillis + ", " + oldMaxMillis,
           "actual_range");
       Test.ensureEqual(
@@ -15432,7 +15432,7 @@ class EDDGridFromNcFilesTests {
     Test.ensureEqual(
         eddGrid.axisVariables()[0].destinationMaxString(), oldMaxTime, "av[0].destinationMax");
     Test.ensureEqual(
-        eddGrid.axisVariables()[0].combinedAttributes().get("actual_range").toString(),
+        eddGrid.axisVariables()[0].combinedAttributes().get(language, "actual_range").toString(),
         oldMinMillis + ", " + oldMaxMillis,
         "actual_range");
     Test.ensureEqual(
@@ -15508,8 +15508,8 @@ class EDDGridFromNcFilesTests {
               + "  old=1.1991456E9,\n"
               + "  new=1.1994048E9.\n"
               + "The combinedAttribute for axisVariable #0=time changed:\n"
-              + "  old line #2=\"    actual_range=1.1991888E9d,1.1999664E9d\",\n"
-              + "  new line #2=\"    actual_range=1.199448E9d,1.1999664E9d\".\n"
+              + "  old line #8=\"    actual_range=1.1991888E9d,1.1999664E9d\",\n"
+              + "  new line #8=\"    actual_range=1.199448E9d,1.1999664E9d\".\n"
               + "A combinedGlobalAttribute changed:\n"
               + "  old line #30=\"    time_coverage_start=2008-01-01T12:00:00Z\",\n"
               + "  new line #30=\"    time_coverage_start=2008-01-04T12:00:00Z\".\n";
@@ -15536,8 +15536,8 @@ class EDDGridFromNcFilesTests {
               + "  old=1.1991456E9,\n"
               + "  new=1.1994048E9.\n"
               + "The combinedAttribute for axisVariable #0=time changed:\n"
-              + "  old line #2=&quot;    actual_range=1.1991888E9d,1.1999664E9d&quot;,\n"
-              + "  new line #2=&quot;    actual_range=1.199448E9d,1.1999664E9d&quot;.\n"
+              + "  old line #8=&quot;    actual_range=1.1991888E9d,1.1999664E9d&quot;,\n"
+              + "  new line #8=&quot;    actual_range=1.199448E9d,1.1999664E9d&quot;.\n"
               + "A combinedGlobalAttribute changed:\n"
               + "  old line #30=&quot;    time_coverage_start=2008-01-01T12:00:00Z&quot;,\n"
               + "  new line #30=&quot;    time_coverage_start=2008-01-04T12:00:00Z&quot;.\n"
@@ -15571,8 +15571,8 @@ class EDDGridFromNcFilesTests {
             + "  old=1.1994048E9,\n"
             + "  new=1.1991456E9.\n"
             + "The combinedAttribute for axisVariable #0=time changed:\n"
-            + "  old line #2=\"    actual_range=1.199448E9d,1.1999664E9d\",\n"
-            + "  new line #2=\"    actual_range=1.1991888E9d,1.1999664E9d\".\n"
+            + "  old line #8=\"    actual_range=1.199448E9d,1.1999664E9d\",\n"
+            + "  new line #8=\"    actual_range=1.1991888E9d,1.1999664E9d\".\n"
             + "A combinedGlobalAttribute changed:\n"
             + "  old line #30=\"    time_coverage_start=2008-01-04T12:00:00Z\",\n"
             + "  new line #30=\"    time_coverage_start=2008-01-01T12:00:00Z\".\n";
@@ -15599,8 +15599,8 @@ class EDDGridFromNcFilesTests {
             + "  old=1.1994048E9,\n"
             + "  new=1.1991456E9.\n"
             + "The combinedAttribute for axisVariable #0=time changed:\n"
-            + "  old line #2=&quot;    actual_range=1.199448E9d,1.1999664E9d&quot;,\n"
-            + "  new line #2=&quot;    actual_range=1.1991888E9d,1.1999664E9d&quot;.\n"
+            + "  old line #8=&quot;    actual_range=1.199448E9d,1.1999664E9d&quot;,\n"
+            + "  new line #8=&quot;    actual_range=1.1991888E9d,1.1999664E9d&quot;.\n"
             + "A combinedGlobalAttribute changed:\n"
             + "  old line #30=&quot;    time_coverage_start=2008-01-04T12:00:00Z&quot;,\n"
             + "  new line #30=&quot;    time_coverage_start=2008-01-01T12:00:00Z&quot;.\n"
@@ -15846,7 +15846,7 @@ class EDDGridFromNcFilesTests {
     Test.ensureEqual(
         eddGrid.axisVariables()[0].destinationMaxString(), oldMaxTime, "av[0].destinationMax");
     Test.ensureEqual(
-        eddGrid.axisVariables()[0].combinedAttributes().get("actual_range").toString(),
+        eddGrid.axisVariables()[0].combinedAttributes().get(language, "actual_range").toString(),
         oldMinMillis + ", " + oldMaxMillis,
         "actual_range");
     Test.ensureEqual(
@@ -15897,7 +15897,7 @@ class EDDGridFromNcFilesTests {
       Test.ensureEqual(
           eddGrid.axisVariables()[0].destinationMaxString(), oldMaxTime, "av[0].destinationMax");
       Test.ensureEqual(
-          eddGrid.axisVariables()[0].combinedAttributes().get("actual_range").toString(),
+          eddGrid.axisVariables()[0].combinedAttributes().get(language, "actual_range").toString(),
           oldMinMillis + ", " + oldMaxMillis,
           "actual_range");
       Test.ensureEqual(
@@ -15982,7 +15982,7 @@ class EDDGridFromNcFilesTests {
     Test.ensureEqual(
         eddGrid.axisVariables()[0].destinationMaxString(), oldMaxTime, "av[0].destinationMax");
     Test.ensureEqual(
-        eddGrid.axisVariables()[0].combinedAttributes().get("actual_range").toString(),
+        eddGrid.axisVariables()[0].combinedAttributes().get(language, "actual_range").toString(),
         oldMinMillis + ", " + oldMaxMillis,
         "actual_range");
     Test.ensureEqual(
