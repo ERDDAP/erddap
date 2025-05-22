@@ -1144,7 +1144,7 @@ public class EDDTableFromFileNames extends EDDTable {
             fileNameRegex,
             recursive,
             pathRegex,
-            EDStatic.erddapUrl(loggedInAs, language) + "/files/" + datasetID + "/");
+            EDStatic.erddapUrl(null, loggedInAs, language) + "/files/" + datasetID + "/");
     int nRows = table.nRows();
     if (nRows == 0) throw new SimpleException(MustBe.THERE_IS_NO_DATA + " (0 matching files)");
     return table;
@@ -1280,7 +1280,7 @@ public class EDDTableFromFileNames extends EDDTable {
         BitSet keep = new BitSet(tnRows); // initially all false
         StringArray dirSA = (StringArray) table.getColumn(0);
         int ffrdLength = fileDir.length();
-        String tTo = EDStatic.erddapUrl(loggedInAs, language) + "/files/" + datasetID + "/";
+        String tTo = EDStatic.erddapUrl(null, loggedInAs, language) + "/files/" + datasetID + "/";
         for (int row = 0; row < tnRows; row++) {
           String dir = dirSA.get(row);
           if (dir.startsWith(fileDir)) {
@@ -1297,7 +1297,7 @@ public class EDDTableFromFileNames extends EDDTable {
             FileVisitorDNLS.oneStepDoubleWithUrlsNotDirs(
                 FileVisitorDNLS.oneStepDouble(getCachedDNLSTable()),
                 fileDir,
-                EDStatic.erddapUrl(loggedInAs, language) + "/files/" + datasetID + "/");
+                EDStatic.erddapUrl(null, loggedInAs, language) + "/files/" + datasetID + "/");
 
       } else { // from == fromLocalFiles
         table =

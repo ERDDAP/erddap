@@ -213,7 +213,7 @@ public class EDDTableFromAllDatasets extends EDDTable {
     StringArray datasetIDs = new StringArray(gridDatasetHashMap.keys());
     datasetIDs.append(new StringArray(tableDatasetHashMap.keys()));
 
-    String tErddapUrl = EDStatic.erddapUrl(loggedInAs, language);
+    String tErddapUrl = EDStatic.erddapUrl(null, loggedInAs, language);
     String roles[] = EDStatic.getRoles(loggedInAs);
     boolean isLoggedIn = loggedInAs != null && !loggedInAs.equals(EDStatic.loggedInAsHttps);
     double nowES = System.currentTimeMillis() / 1000.0;

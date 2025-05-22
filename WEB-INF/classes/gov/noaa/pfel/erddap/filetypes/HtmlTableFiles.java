@@ -8,6 +8,7 @@ import gov.noaa.pfel.erddap.dataset.OutputStreamSource;
 import gov.noaa.pfel.erddap.dataset.TableWriter;
 import gov.noaa.pfel.erddap.dataset.TableWriterHtmlTable;
 import gov.noaa.pfel.erddap.util.EDStatic;
+import jakarta.servlet.http.HttpServletRequest;
 
 @FileTypeClass(
     fileTypeExtension = ".html",
@@ -19,6 +20,7 @@ public class HtmlTableFiles extends TableWriterFileType {
   @Override
   public TableWriter generateTableWriter(DapRequestInfo requestInfo) {
     return new TableWriterHtmlTable(
+        requestInfo.request(),
         requestInfo.language(),
         requestInfo.edd(),
         requestInfo.newHistory(),
@@ -34,13 +36,14 @@ public class HtmlTableFiles extends TableWriterFileType {
         true,
         true,
         -1,
-        EDStatic.imageDirUrl(requestInfo.loggedInAs(), requestInfo.language())
+        EDStatic.imageDirUrl(null, requestInfo.loggedInAs(), requestInfo.language())
             + EDStatic.messages.questionMarkImageFile);
   }
 
   @Override
   public void writeGridToStream(DapRequestInfo requestInfo) throws Throwable {
     saveAsHtmlTable(
+        requestInfo.request(),
         requestInfo.language(),
         requestInfo.loggedInAs(),
         requestInfo.requestUrl(),
@@ -80,6 +83,7 @@ public class HtmlTableFiles extends TableWriterFileType {
    * @throws Throwable if trouble.
    */
   protected void saveAsHtmlTable(
+      HttpServletRequest request,
       int language,
       String loggedInAs,
       String requestUrl,
@@ -114,6 +118,7 @@ public class HtmlTableFiles extends TableWriterFileType {
     // write the data to the tableWriter
     TableWriter tw =
         new TableWriterHtmlTable(
+            request,
             language,
             eddGrid,
             eddGrid.getNewHistory(language, requestUrl, userDapQuery),
@@ -129,7 +134,8 @@ public class HtmlTableFiles extends TableWriterFileType {
             true,
             true,
             -1, // tencodeAsHTML, tWriteUnits
-            EDStatic.imageDirUrl(loggedInAs, language) + EDStatic.messages.questionMarkImageFile);
+            EDStatic.imageDirUrl(request, loggedInAs, language)
+                + EDStatic.messages.questionMarkImageFile);
     if (isAxisDapQuery) {
       eddGrid.saveAsTableWriter(ada, tw);
     } else {

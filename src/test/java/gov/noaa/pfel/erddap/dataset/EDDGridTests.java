@@ -869,7 +869,7 @@ class EDDGridTests {
     // try to validate with https://xmlvalidation.com/ (just an error in a schema)
     String2.log("\n+++ GetCapabilities 1.0.0");
     writer = new java.io.StringWriter();
-    eddGrid.wcsGetCapabilities(0, loggedInAs, "1.0.0", writer);
+    eddGrid.wcsGetCapabilities(null, 0, loggedInAs, "1.0.0", writer);
     results = writer.toString();
     String2.log(results);
 

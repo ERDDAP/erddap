@@ -6319,10 +6319,10 @@ class JettyTests {
         SSR.getUrlResponseStringUnchanged(
             EDStatic.erddapUrl + "/index.htmlTable?" + EDStatic.defaultPIppQuery);
     expected =
-        EDStatic.startHeadHtml(0, EDStatic.erddapUrl((String) null, language), "Resources")
+        EDStatic.startHeadHtml(0, EDStatic.erddapUrl(null, (String) null, language), "Resources")
             + "\n"
             + "</head>\n"
-            + EDStatic.startBodyHtml(0, null, "index.html", EDStatic.defaultPIppQuery)
+            + EDStatic.startBodyHtml(null, 0, null, "index.html", EDStatic.defaultPIppQuery)
             + // 2022-11-22 .htmlTable
             // converted to
             // .html to avoid user
@@ -6382,7 +6382,8 @@ class JettyTests {
             + "/erddap/wms/index.htmlTable?page=1&amp;itemsPerPage=1000</a>\n"
             + "</tr>\n"
             + "</table>\n"
-            + EDStatic.endBodyHtml(0, EDStatic.erddapUrl((String) null, language), (String) null)
+            + EDStatic.endBodyHtml(
+                null, 0, EDStatic.erddapUrl(null, (String) null, language), (String) null)
             + "\n"
             + "</html>\n";
     Test.ensureEqual(results, expected, "results=\n" + results);
@@ -8685,10 +8686,13 @@ class JettyTests {
     // String2.log(results);
     expected =
         EDStatic.startHeadHtml(
-                language, EDStatic.erddapUrl((String) null, language), "EDDTableFromNcFiles_Data")
+                language,
+                EDStatic.erddapUrl(null, (String) null, language),
+                "EDDTableFromNcFiles_Data")
             + "\n"
             + "</head>\n"
-            + EDStatic.startBodyHtml(language, null, "tabledap/testGlobecBottle.html", userDapQuery)
+            + EDStatic.startBodyHtml(
+                null, language, null, "tabledap/testGlobecBottle.html", userDapQuery)
             + // 2022-11-22
             // .htmlTable
             // converted
@@ -8741,7 +8745,7 @@ class JettyTests {
             + "</tr>\n"
             + "</table>\n"
             + EDStatic.endBodyHtml(
-                language, EDStatic.erddapUrl((String) null, language), (String) null)
+                null, language, EDStatic.erddapUrl(null, (String) null, language), (String) null)
             + "\n"
             + "</html>\n";
     tResults = results.substring(results.length() - expected.length());

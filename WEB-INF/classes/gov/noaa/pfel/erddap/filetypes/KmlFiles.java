@@ -24,6 +24,7 @@ import gov.noaa.pfel.erddap.variable.EDVLatGridAxis;
 import gov.noaa.pfel.erddap.variable.EDVLonGridAxis;
 import gov.noaa.pfel.erddap.variable.EDVTime;
 import gov.noaa.pfel.erddap.variable.EDVTimeGridAxis;
+import jakarta.servlet.http.HttpServletRequest;
 import java.io.BufferedWriter;
 import java.text.MessageFormat;
 
@@ -40,6 +41,7 @@ public class KmlFiles extends ImageTypes {
       throws Throwable {
 
     return saveAsKml(
+        requestInfo.request(),
         requestInfo.language(),
         requestInfo.loggedInAs(),
         requestInfo.requestUrl(),
@@ -55,6 +57,7 @@ public class KmlFiles extends ImageTypes {
       throws Throwable {
 
     return saveAsKml(
+        requestInfo.request(),
         requestInfo.language(),
         requestInfo.loggedInAs(),
         requestInfo.requestUrl(),
@@ -77,6 +80,7 @@ public class KmlFiles extends ImageTypes {
    * This makes a .kml file. The userDapQuery must include the EDV.LON_NAME and EDV.LAT_NAME columns
    * (and preferably also EDV.ALT_NAME and EDV.TIME_NAME column) in the results variables.
    *
+   * @param request the request
    * @param language the index of the selected language
    * @param loggedInAs the name of the logged in user (or null if not logged in). Normally, this is
    *     not used to test if this edd is accessibleTo loggedInAs, but it unusual cases
@@ -92,6 +96,7 @@ public class KmlFiles extends ImageTypes {
    * @throws Throwable if trouble
    */
   private boolean saveAsKml(
+      HttpServletRequest request,
       int language,
       String loggedInAs,
       String requestUrl,
@@ -104,7 +109,7 @@ public class KmlFiles extends ImageTypes {
 
     // before any work is done,
     //  ensure LON_NAME and LAT_NAME are among resultsVariables
-    String tErddapUrl = EDStatic.erddapUrl(loggedInAs, language);
+    String tErddapUrl = EDStatic.erddapUrl(request, loggedInAs, language);
     StringArray resultsVariables = new StringArray();
     StringArray constraintVariables = new StringArray();
     StringArray constraintOps = new StringArray();
@@ -559,6 +564,7 @@ public class KmlFiles extends ImageTypes {
    * data was successfully written. For .kml, dataVariable queries can specify multiple longitude,
    * latitude, and time values, but just one value for other dimensions.
    *
+   * @param request the request
    * @param language the index of the selected language
    * @param loggedInAs the name of the logged in user (or null if not logged in). Normally, this is
    *     not used to test if this edd is accessibleTo loggedInAs, but it unusual cases
@@ -573,6 +579,7 @@ public class KmlFiles extends ImageTypes {
    * @throws Throwable if trouble.
    */
   private boolean saveAsKml(
+      HttpServletRequest request,
       int language,
       String loggedInAs,
       String requestUrl,
@@ -583,7 +590,7 @@ public class KmlFiles extends ImageTypes {
 
     if (EDDGrid.reallyVerbose) String2.log("  EDDGrid.saveAsKml");
     long time = System.currentTimeMillis();
-    String tErddapUrl = EDStatic.erddapUrl(loggedInAs, language);
+    String tErddapUrl = EDStatic.erddapUrl(request, loggedInAs, language);
 
     // check that request meets .kml restrictions.
     // .transparentPng does some of these tests, but better to catch problems
