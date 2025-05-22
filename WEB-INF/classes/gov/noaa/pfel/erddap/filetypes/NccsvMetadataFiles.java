@@ -30,7 +30,9 @@ public class NccsvMetadataFiles extends FileTypeInterface {
   public void writeTableToStream(DapRequestInfo requestInfo) throws Throwable {
     Table table = new Table();
     EDD edd = requestInfo.edd();
-    table.globalAttributes().add(edd.combinedGlobalAttributes());
+    table
+        .globalAttributes()
+        .add(edd.combinedGlobalAttributes().toAttributes(requestInfo.language()));
     for (int dvi = 0; dvi < edd.dataVariables().length; dvi++) {
       EDV dv = edd.dataVariables()[dvi];
       Attributes catts = dv.combinedAttributes();
@@ -98,7 +100,7 @@ public class NccsvMetadataFiles extends FileTypeInterface {
     try (Writer writer =
         File2.getBufferedWriter88591(outputStreamSource.outputStream(File2.ISO_8859_1))) {
       Table table = new Table();
-      table.globalAttributes().add(grid.combinedGlobalAttributes());
+      table.globalAttributes().add(grid.combinedGlobalAttributes().toAttributes(language));
       for (int avi = 0; avi < grid.axisVariables().length; avi++) {
         EDVGridAxis av = grid.axisVariables()[avi];
         Attributes catts = av.combinedAttributes();

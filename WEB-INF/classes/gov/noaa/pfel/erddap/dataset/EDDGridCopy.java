@@ -4,7 +4,6 @@
  */
 package gov.noaa.pfel.erddap.dataset;
 
-import com.cohort.array.Attributes;
 import com.cohort.array.IntArray;
 import com.cohort.array.PAType;
 import com.cohort.array.PrimitiveArray;
@@ -20,12 +19,15 @@ import gov.noaa.pfel.coastwatch.util.RegexFilenameFilter;
 import gov.noaa.pfel.coastwatch.util.SSR;
 import gov.noaa.pfel.coastwatch.util.SimpleXMLReader;
 import gov.noaa.pfel.erddap.Erddap;
+import gov.noaa.pfel.erddap.dataset.metadata.LocalizedAttributes;
 import gov.noaa.pfel.erddap.handlers.EDDGridCopyHandler;
 import gov.noaa.pfel.erddap.handlers.SaxHandlerClass;
+import gov.noaa.pfel.erddap.util.EDMessages;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.util.TaskThread;
 import gov.noaa.pfel.erddap.variable.*;
 import java.text.MessageFormat;
+import java.util.ArrayList;
 import java.util.List;
 import ucar.nc2.*;
 
@@ -244,6 +246,7 @@ public class EDDGridCopy extends EDDGrid {
       throws Throwable {
 
     if (verbose) String2.log("\n*** constructing EDDGridCopy " + tDatasetID);
+    int language = EDMessages.DEFAULT_LANGUAGE;
     long constructionStartMillis = System.currentTimeMillis();
 
     // save the parameters
@@ -407,8 +410,8 @@ public class EDDGridCopy extends EDDGrid {
     }
 
     // gather info about dataVariables to create localEdd
-    Object[][] tAxisVariables = null;
-    Object[][] tDataVariables = null;
+    ArrayList<AxisVariableInfo> tAxisVariables = null;
+    ArrayList<DataVariableInfo> tDataVariables = null;
     if (sourceEdd == null) {
       // get info from existing copied datafiles, which is a standard EDDGrid)
       // get a list of copied files
@@ -433,18 +436,19 @@ public class EDDGridCopy extends EDDGrid {
       StringArray ncDataVarTypes = new StringArray();
       try (NetcdfFile ncFile = NcHelper.openFile(getFromName)) {
         // list all variables with dimensions
-        List allVariables = ncFile.getVariables();
+        List<Variable> allVariables = ncFile.getVariables();
         for (Object allVariable : allVariables) {
           Variable var = (Variable) allVariable;
           String varName = var.getShortName();
-          List dimensions = var.getDimensions();
+          List<Dimension> dimensions = var.getDimensions();
           if (dimensions != null && dimensions.size() > 1) {
             if (tAxisVariables == null) {
               // gather tAxisVariables
-              tAxisVariables = new Object[dimensions.size()][];
+              tAxisVariables = new ArrayList<>(dimensions.size());
               for (int avi = 0; avi < dimensions.size(); avi++) {
                 String axisName = ((Dimension) dimensions.get(avi)).getName();
-                tAxisVariables[avi] = new Object[] {axisName, axisName, new Attributes()};
+                tAxisVariables.add(
+                    new AxisVariableInfo(axisName, axisName, new LocalizedAttributes(), null));
               }
             }
             ncDataVarNames.add(varName);
@@ -459,33 +463,34 @@ public class EDDGridCopy extends EDDGrid {
         if (ncDataVarNames.size() == 0 || tAxisVariables == null)
           throw new RuntimeException(
               "Error: No multidimensional variables were found in " + getFromName);
-        tDataVariables = new Object[ncDataVarNames.size()][];
+        tDataVariables = new ArrayList<>(ncDataVarNames.size());
         for (int dv = 0; dv < ncDataVarNames.size(); dv++) {
-          tDataVariables[dv] =
-              new Object[] {
-                ncDataVarNames.get(dv),
-                ncDataVarNames.get(dv),
-                new Attributes(),
-                ncDataVarTypes.get(dv)
-              };
+          tDataVariables.add(
+              new DataVariableInfo(
+                  ncDataVarNames.get(dv),
+                  ncDataVarNames.get(dv),
+                  new LocalizedAttributes(),
+                  ncDataVarTypes.get(dv)));
         }
       }
     } else {
       // get info from sourceEdd, which is a standard EDDGrid
       int nAxisVariables = sourceEdd.axisVariableDestinationNames().length;
-      tAxisVariables = new Object[nAxisVariables][];
+      tAxisVariables = new ArrayList<>(nAxisVariables);
       for (int av = 0; av < nAxisVariables; av++) {
         String tName = sourceEdd.axisVariableDestinationNames[av];
-        tAxisVariables[av] = new Object[] {tName, tName, new Attributes()};
+        tAxisVariables.add(new AxisVariableInfo(tName, tName, new LocalizedAttributes(), null));
       }
       int nDataVariables = sourceEdd.dataVariables.length;
-      tDataVariables = new Object[nDataVariables][];
+      tDataVariables = new ArrayList<>(nDataVariables);
       for (int dv = 0; dv < nDataVariables; dv++) {
         EDV edv = sourceEdd.dataVariables[dv];
-        tDataVariables[dv] =
-            new Object[] {
-              edv.destinationName(), edv.destinationName(), new Attributes(), edv.sourceDataType()
-            };
+        tDataVariables.add(
+            new DataVariableInfo(
+                edv.destinationName(),
+                edv.destinationName(),
+                new LocalizedAttributes(),
+                edv.sourceDataType()));
       }
     }
 
@@ -505,7 +510,7 @@ public class EDDGridCopy extends EDDGrid {
             tIso19115File,
             tDefaultDataQuery,
             tDefaultGraphQuery,
-            new Attributes(), // addGlobalAttributes
+            new LocalizedAttributes(), // addGlobalAttributes
             tAxisVariables,
             tDataVariables,
             tReloadEveryNMinutes,
@@ -526,19 +531,19 @@ public class EDDGridCopy extends EDDGrid {
 
     // copy things from localEdd
     // remove last 2 lines from history (will be redundant)
-    String tHistory = localEdd.combinedGlobalAttributes.getString("history");
+    String tHistory = localEdd.combinedGlobalAttributes.getString(language, "history");
     if (tHistory != null) {
       StringArray tHistoryLines =
           (StringArray) PrimitiveArray.factory(String2.split(tHistory, '\n'));
       if (tHistoryLines.size() > 2) {
         tHistoryLines.removeRange(tHistoryLines.size() - 2, tHistoryLines.size());
         String ts = tHistoryLines.toNewlineString();
-        localEdd.combinedGlobalAttributes.add(
-            "history", ts.substring(0, ts.length() - 1)); // remove last \n
+        localEdd.combinedGlobalAttributes.set(
+            language, "history", ts.substring(0, ts.length() - 1)); // remove last \n
       }
     }
-    sourceGlobalAttributes = localEdd.combinedGlobalAttributes;
-    addGlobalAttributes = new Attributes();
+    sourceGlobalAttributes = localEdd.combinedGlobalAttributes.toAttributes(language);
+    addGlobalAttributes = new LocalizedAttributes();
     combinedGlobalAttributes =
         localEdd.combinedGlobalAttributes; // new Attributes(addGlobalAttributes,
     // sourceGlobalAttributes); //order is important

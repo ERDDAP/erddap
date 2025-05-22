@@ -22,6 +22,7 @@ import java.util.Map;
 import java.util.Set;
 
 public class EDMessages {
+  public static int DEFAULT_LANGUAGE = 0;
   // not translated
   public
   String // these are set by setup.xml (deprecated) and/or messages.xml and/or datasets.xml (v2.00+)

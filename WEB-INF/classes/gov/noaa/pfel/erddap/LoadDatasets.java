@@ -17,6 +17,7 @@ import gov.noaa.pfel.coastwatch.util.FileVisitorDNLS;
 import gov.noaa.pfel.coastwatch.util.SSR;
 import gov.noaa.pfel.coastwatch.util.SimpleXMLReader;
 import gov.noaa.pfel.erddap.dataset.*;
+import gov.noaa.pfel.erddap.dataset.metadata.LocalizedAttributes;
 import gov.noaa.pfel.erddap.handlers.SaxHandler;
 import gov.noaa.pfel.erddap.util.*;
 import gov.noaa.pfel.erddap.variable.EDV;
@@ -1737,12 +1738,12 @@ public class LoadDatasets extends Thread {
   protected static void categorizeGlobalAtts(
       boolean add, ConcurrentHashMap catInfo, EDD edd, String id) {
 
-    Attributes atts = edd.combinedGlobalAttributes();
+    LocalizedAttributes atts = edd.combinedGlobalAttributes();
     int nCat = EDStatic.config.categoryAttributes.length;
     for (int cat = 0; cat < nCat; cat++) {
       if (EDStatic.config.categoryIsGlobal[cat]) {
         String catName = EDStatic.config.categoryAttributes[cat]; // e.g., global:institution
-        String value = atts.getString(catName);
+        String value = atts.getString(EDMessages.DEFAULT_LANGUAGE, catName);
         // String2.log("catName=" + catName + " value=" + String2.toJson(value));
 
         if (value != null && catName.equals("keywords")) {

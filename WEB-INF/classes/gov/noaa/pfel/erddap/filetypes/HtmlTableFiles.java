@@ -116,7 +116,7 @@ public class HtmlTableFiles extends TableWriterFileType {
         new TableWriterHtmlTable(
             language,
             eddGrid,
-            eddGrid.getNewHistory(requestUrl, userDapQuery),
+            eddGrid.getNewHistory(language, requestUrl, userDapQuery),
             loggedInAs,
             endOfRequest,
             userDapQuery,

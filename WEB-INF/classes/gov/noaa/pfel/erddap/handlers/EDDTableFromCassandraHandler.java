@@ -59,7 +59,6 @@ public class EDDTableFromCassandraHandler extends BaseTableHandler {
 
   @Override
   protected EDD buildDataset() throws Throwable {
-    Object[][] ttDataVariables = convertDataVariablesToArray();
     return new EDDTableFromCassandra(
         datasetID,
         tAccessibleTo,
@@ -72,7 +71,7 @@ public class EDDTableFromCassandraHandler extends BaseTableHandler {
         tDefaultGraphQuery,
         tAddVariablesWhere,
         tGlobalAttributes,
-        ttDataVariables,
+        tDataVariables,
         tReloadEveryNMinutes,
         tLocalSourceUrl,
         tConnectionProperties.toArray(),

@@ -309,7 +309,7 @@ class EDDTableTests {
     // phenomenaDictionary
     String2.log("\n+++ phenomenaDictionary");
     writer = new java.io.StringWriter();
-    eddTable.sosPhenomenaDictionary(writer);
+    eddTable.sosPhenomenaDictionary(language, writer);
     results = writer.toString();
     // String2.log(results);
     expected =

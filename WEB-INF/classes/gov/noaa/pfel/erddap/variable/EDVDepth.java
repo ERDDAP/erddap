@@ -7,6 +7,8 @@ package gov.noaa.pfel.erddap.variable;
 import com.cohort.array.Attributes;
 import com.cohort.array.PAOne;
 import com.cohort.array.PrimitiveArray;
+import gov.noaa.pfel.erddap.dataset.metadata.LocalizedAttributes;
+import gov.noaa.pfel.erddap.util.EDMessages;
 
 /**
  * This class holds information about a depth variable, which is like EDV, but the destinationName,
@@ -16,6 +18,33 @@ import com.cohort.array.PrimitiveArray;
  * @author Bob Simons (was bob.simons@noaa.gov, now BobSimons2.00@gmail.com) 2007-06-04
  */
 public class EDVDepth extends EDV {
+
+  /**
+   * The constructor -- like EDV, but the destinationName, and units are standardized.
+   *
+   * @param tSourceMin is pre-scale_factor and add_offset. This takes precedence over actual_range,
+   *     actual_min, or data_min metadata.
+   * @param tSourceMax is pre-scale_factor and add_offset. This takes precedence over actual_range,
+   *     actual_max, or data_max metadata.
+   */
+  public EDVDepth(
+      String tDatasetID,
+      String tSourceName,
+      Attributes tSourceAttributes,
+      LocalizedAttributes tAddAttributes,
+      String tSourceDataType,
+      PAOne tSourceMin,
+      PAOne tSourceMax)
+      throws Throwable {
+    this(
+        tDatasetID,
+        tSourceName,
+        tSourceAttributes,
+        tAddAttributes.toAttributes(EDMessages.DEFAULT_LANGUAGE),
+        tSourceDataType,
+        tSourceMin,
+        tSourceMax);
+  }
 
   /**
    * The constructor -- like EDV, but the destinationName, long_name, and units are standardized,

@@ -145,10 +145,10 @@ public class GridDataAccessor implements AutoCloseable {
       String2.log("      dataVariables=" + destinationNames + "\n      constraints=" + constraints);
 
     // make globalAttributes
-    globalAttributes = new Attributes(eddGrid.combinedGlobalAttributes()); // make a copy
+    globalAttributes = eddGrid.combinedGlobalAttributes().toAttributes(language); // make a copy
 
     // fix up global attributes  (always to a local COPY of global attributes)
-    EDD.addToHistory(globalAttributes, eddGrid.publicSourceUrl());
+    EDD.addToHistory(globalAttributes, eddGrid.publicSourceUrl(language));
     EDD.addToHistory(
         globalAttributes,
         EDStatic.config.baseUrl

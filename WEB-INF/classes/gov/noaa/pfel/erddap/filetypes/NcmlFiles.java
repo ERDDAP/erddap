@@ -113,7 +113,8 @@ public class NcmlFiles extends FileTypeInterface {
 
       // global atts
       // TDS puts different types of atts in different groups. ERDDAP doesn't.
-      Attributes atts = new Attributes(grid.combinedGlobalAttributes()); // make a copy to be safe
+      Attributes atts =
+          grid.combinedGlobalAttributes().toAttributes(language); // make a copy to be safe
       // don't append .ncml request to history attribute
       writeNcmlAttributes(writer, atts, "  ");
 

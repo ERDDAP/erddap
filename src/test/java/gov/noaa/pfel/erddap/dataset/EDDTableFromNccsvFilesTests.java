@@ -9,6 +9,7 @@ import com.cohort.util.String2;
 import com.cohort.util.Test;
 import gov.noaa.pfel.coastwatch.griddata.NcHelper;
 import gov.noaa.pfel.erddap.GenerateDatasetsXml;
+import gov.noaa.pfel.erddap.util.EDMessages;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.EDV;
 import java.nio.file.Path;
@@ -28,7 +29,7 @@ class EDDTableFromNccsvFilesTests {
    */
   @org.junit.jupiter.api.Test
   void testGenerateDatasetsXml() throws Throwable {
-
+    int language = EDMessages.DEFAULT_LANGUAGE;
     String dataDir =
         File2.addSlash(
             Path.of(EDDTableFromNccsvFilesTests.class.getResource("/data/nccsv/").toURI())
@@ -297,7 +298,7 @@ class EDDTableFromNccsvFilesTests {
     EDD.deleteCachedDatasetInfo(tDatasetID);
     EDD edd = EDDTableFromNccsvFiles.oneFromXmlFragment(null, results);
     Test.ensureEqual(edd.datasetID(), tDatasetID, "");
-    Test.ensureEqual(edd.title(), "NCCSV Demonstration", "");
+    Test.ensureEqual(edd.title(language), "NCCSV Demonstration", "");
     Test.ensureEqual(
         String2.toCSSVString(edd.dataVariableDestinationNames()),
         "ship, time, latitude, longitude, status, testByte, testUByte, testLong, testULong, sst",
@@ -1899,7 +1900,9 @@ class EDDTableFromNccsvFilesTests {
         "results=\n" + results);
 
     // *** getting ncCF and ncCFHeader
-    String2.log(">> getting ncCF " + eddTable.combinedGlobalAttributes().getString("Conventions"));
+    String2.log(
+        ">> getting ncCF "
+            + eddTable.combinedGlobalAttributes().getString(language, "Conventions"));
     tName =
         eddTable.makeNewFileForDapQuery(
             language, null, null, "", dir, eddTable.className() + "_char", ".ncCF");

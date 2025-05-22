@@ -26,8 +26,10 @@ import gov.noaa.pfel.coastwatch.pointdata.Table;
 import gov.noaa.pfel.coastwatch.util.SSR;
 import gov.noaa.pfel.coastwatch.util.SimpleXMLReader;
 import gov.noaa.pfel.erddap.Erddap;
+import gov.noaa.pfel.erddap.dataset.metadata.LocalizedAttributes;
 import gov.noaa.pfel.erddap.handlers.EDDGridFromErddapHandler;
 import gov.noaa.pfel.erddap.handlers.SaxHandlerClass;
+import gov.noaa.pfel.erddap.util.EDMessages;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.*;
 import java.io.BufferedReader;
@@ -213,6 +215,7 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
       throws Throwable {
 
     if (verbose) String2.log("\n*** constructing EDDGridFromErddap " + tDatasetID);
+    int language = EDMessages.DEFAULT_LANGUAGE;
     long constructionStartMillis = System.currentTimeMillis();
     String errorInMethod = "Error in EDDGridFromErddap(" + tDatasetID + ") constructor:\n";
 
@@ -361,7 +364,7 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
         case "variable" -> {
 
           // deal with remote not having ioos_category, but this ERDDAP requiring it
-          Attributes tAddAttributes = new Attributes();
+          LocalizedAttributes tAddAttributes = new LocalizedAttributes();
           if (EDStatic.config.variablesMustHaveIoosCategory
               && tSourceAttributes.getString("ioos_category") == null) {
 
@@ -375,7 +378,7 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
                     false, // tryToAddStandardName  since just getting ioos_category
                     false,
                     false); // tryToAddColorBarMinMax, tryToFindLLAT
-            tAddAttributes.add("ioos_category", tAtts.getString("ioos_category"));
+            tAddAttributes.set(language, "ioos_category", tAtts.getString("ioos_category"));
           }
 
           // make a data variable
@@ -385,7 +388,7 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
                 errorInMethod
                     + "No EDDGrid dataVariable may have destinationName="
                     + EDV.TIME_NAME);
-          else if (EDVTime.hasTimeUnits(tSourceAttributes, tAddAttributes))
+          else if (EDVTime.hasTimeUnits(language, tSourceAttributes, tAddAttributes))
             edv =
                 new EDVTimeStamp(
                     datasetID, varName, varName, tSourceAttributes, tAddAttributes, dataType);
@@ -413,9 +416,9 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
     }
     if (tAxisVariables.size() == 0) throw new RuntimeException("No axisVariables found!");
     sourceGlobalAttributes = tSourceAttributes; // at the top of table, so collected last
-    addGlobalAttributes = new Attributes();
+    addGlobalAttributes = new LocalizedAttributes();
     combinedGlobalAttributes =
-        new Attributes(addGlobalAttributes, sourceGlobalAttributes); // order is important
+        new LocalizedAttributes(addGlobalAttributes, sourceGlobalAttributes); // order is important
     combinedGlobalAttributes.removeValue("\"null\"");
 
     int nav = tAxisVariables.size();
@@ -744,6 +747,7 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
     edvga.setActualRangeFromDestinationMinMax();
     if (edvga instanceof EDVTimeGridAxis)
       combinedGlobalAttributes.set(
+          language,
           "time_coverage_end",
           Calendar2.epochSecondsToLimitedIsoStringT(
               edvga.combinedAttributes().getString(EDV.TIME_PRECISION), newMax.getDouble(), ""));
@@ -866,12 +870,6 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
       // shareInfo  (the EDD variables)
       newEDDGrid.dataVariableSourceNames = dataVariableSourceNames();
       newEDDGrid.dataVariableDestinationNames = dataVariableDestinationNames();
-      newEDDGrid.title = title();
-      newEDDGrid.summary = summary();
-      newEDDGrid.institution = institution();
-      newEDDGrid.infoUrl = infoUrl();
-      newEDDGrid.cdmDataType = cdmDataType();
-      newEDDGrid.searchBytes = searchBytes();
       // not sourceUrl, which will be different
       newEDDGrid.sourceGlobalAttributes = sourceGlobalAttributes();
       newEDDGrid.addGlobalAttributes = addGlobalAttributes();

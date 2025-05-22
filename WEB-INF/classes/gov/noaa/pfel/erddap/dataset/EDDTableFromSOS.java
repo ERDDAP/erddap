@@ -25,8 +25,10 @@ import gov.noaa.pfel.coastwatch.pointdata.Table;
 import gov.noaa.pfel.coastwatch.util.SSR;
 import gov.noaa.pfel.coastwatch.util.SimpleXMLReader;
 import gov.noaa.pfel.erddap.Erddap;
+import gov.noaa.pfel.erddap.dataset.metadata.LocalizedAttributes;
 import gov.noaa.pfel.erddap.handlers.EDDTableFromSOSHandler;
 import gov.noaa.pfel.erddap.handlers.SaxHandlerClass;
+import gov.noaa.pfel.erddap.util.EDMessages;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.*;
 import java.io.BufferedReader;
@@ -195,7 +197,7 @@ public class EDDTableFromSOS extends EDDTable {
     // data to be obtained (or not)
     if (verbose) String2.log("\n*** constructing EDDTableFromSOS(xmlReader)...");
     String tDatasetID = xmlReader.attributeValue("datasetID");
-    Attributes tGlobalAttributes = null;
+    LocalizedAttributes tGlobalAttributes = null;
     String tSosServerType = "";
     String tStationIdSourceName = defaultStationIdSourceName;
     String tLongitudeSourceName = null;
@@ -206,7 +208,7 @@ public class EDDTableFromSOS extends EDDTable {
     double tAltitudeSourceMaximum = Double.NaN;
     String tTimeSourceName = null;
     String tTimeSourceFormat = null;
-    ArrayList tDataVariables = new ArrayList();
+    ArrayList<DataVariableInfo> tDataVariables = new ArrayList<>();
     int tReloadEveryNMinutes = Integer.MAX_VALUE;
     String tAccessibleTo = null;
     String tGraphsAccessibleTo = null;
@@ -303,10 +305,6 @@ public class EDDTableFromSOS extends EDDTable {
         default -> xmlReader.unexpectedTagException();
       }
     }
-    int ndv = tDataVariables.size();
-    Object ttDataVariables[][] = new Object[ndv][];
-    for (int i = 0; i < tDataVariables.size(); i++)
-      ttDataVariables[i] = (Object[]) tDataVariables.get(i);
 
     return new EDDTableFromSOS(
         tDatasetID,
@@ -330,7 +328,7 @@ public class EDDTableFromSOS extends EDDTable {
         tAltitudeMetersPerSourceUnit,
         tTimeSourceName,
         tTimeSourceFormat,
-        ttDataVariables,
+        tDataVariables,
         tReloadEveryNMinutes,
         tLocalSourceUrl,
         tSosVersion,
@@ -445,7 +443,7 @@ public class EDDTableFromSOS extends EDDTable {
       String tDefaultDataQuery,
       String tDefaultGraphQuery,
       String tAddVariablesWhere,
-      Attributes tAddGlobalAttributes,
+      LocalizedAttributes tAddGlobalAttributes,
       String tSosServerType,
       String tStationIdSourceName,
       String tLonSourceName,
@@ -456,7 +454,7 @@ public class EDDTableFromSOS extends EDDTable {
       double tAltMetersPerSourceUnit,
       String tTimeSourceName,
       String tTimeSourceFormat,
-      Object[][] tDataVariables,
+      ArrayList<DataVariableInfo> tDataVariables,
       int tReloadEveryNMinutes,
       String tLocalSourceUrl,
       String tSosVersion,
@@ -469,6 +467,7 @@ public class EDDTableFromSOS extends EDDTable {
       throws Throwable {
 
     if (verbose) String2.log("\n*** constructing EDDTableFromSOS " + tDatasetID);
+    int language = EDMessages.DEFAULT_LANGUAGE;
     long constructionStartMillis = System.currentTimeMillis();
 
     // save some of the parameters
@@ -482,9 +481,9 @@ public class EDDTableFromSOS extends EDDTable {
     sosOfferingPrefix = tSosOfferingPrefix;
     defaultDataQuery = tDefaultDataQuery;
     defaultGraphQuery = tDefaultGraphQuery;
-    if (tAddGlobalAttributes == null) tAddGlobalAttributes = new Attributes();
+    if (tAddGlobalAttributes == null) tAddGlobalAttributes = new LocalizedAttributes();
     addGlobalAttributes = tAddGlobalAttributes;
-    addGlobalAttributes.set("sourceUrl", convertToPublicSourceUrl(tLocalSourceUrl));
+    addGlobalAttributes.set(language, "sourceUrl", convertToPublicSourceUrl(tLocalSourceUrl));
 
     sosServerType = tSosServerType == null ? "" : tSosServerType.trim();
     tSosServerType = sosServerType.toLowerCase();
@@ -503,7 +502,7 @@ public class EDDTableFromSOS extends EDDTable {
     if (ioos52NServer) tSosVersion = "1.0.0"; // server supports 2.0.0, but this class doesn't yet.
 
     localSourceUrl = tLocalSourceUrl;
-    String tSummary = addGlobalAttributes.getString("summary");
+    String tSummary = addGlobalAttributes.getString(language, "summary");
     // from http://www.oostethys.org/ogc-oceans-interoperability-experiment
     // [GONE]
     // "To achieve these goals, the OCEANS IE engages the OGC membership\n" +
@@ -555,7 +554,7 @@ public class EDDTableFromSOS extends EDDTable {
             + "  resident data sources might be made available via SOS or WFS;";
     if (tSummary != null)
       addGlobalAttributes.set(
-          "summary", String2.replaceAll(tSummary, "[standard]", standardSummary));
+          language, "summary", String2.replaceAll(tSummary, "[standard]", standardSummary));
     stationIdSourceName =
         tStationIdSourceName == null ? defaultStationIdSourceName : tStationIdSourceName;
     lonSourceName = tLonSourceName;
@@ -594,28 +593,31 @@ public class EDDTableFromSOS extends EDDTable {
 
     // set source attributes (none available from source)
     sourceGlobalAttributes = new Attributes();
-    if (addGlobalAttributes.getString("subsetVariables") == null)
-      addGlobalAttributes.add("subsetVariables", "station_id, longitude, latitude");
+    if (addGlobalAttributes.getString(language, "subsetVariables") == null)
+      addGlobalAttributes.set(language, "subsetVariables", "station_id, longitude, latitude");
     combinedGlobalAttributes =
-        new Attributes(addGlobalAttributes, sourceGlobalAttributes); // order is important
-    String tLicense = combinedGlobalAttributes.getString("license");
+        new LocalizedAttributes(addGlobalAttributes, sourceGlobalAttributes); // order is important
+    String tLicense = combinedGlobalAttributes.getString(language, "license");
     if (tLicense != null)
       combinedGlobalAttributes.set(
-          "license", String2.replaceAll(tLicense, "[standard]", EDStatic.messages.standardLicense));
+          language,
+          "license",
+          String2.replaceAll(tLicense, "[standard]", EDStatic.messages.standardLicense));
     combinedGlobalAttributes.removeValue("\"null\"");
 
     // get all dv sourceObservedProperties
     uniqueSourceObservedProperties = new StringArray();
-    for (Object[] tDataVariable : tDataVariables) {
+    for (DataVariableInfo tDataVariable : tDataVariables) {
       // no sourceAtt
-      String tSourceName = (String) tDataVariable[0];
-      Attributes tAddAtt = (Attributes) tDataVariable[2];
+      String tSourceName = tDataVariable.sourceName();
+      LocalizedAttributes tAddAtt = tDataVariable.attributes();
       String
           //    op = tAddAtt.getString("sourceObservedProperty"); //preference for
           // sourceObservedProperty
           // if (op == null || op.length() == 0)
           op =
-          tAddAtt.getString(EDV.observedProperty); // otherwise, source = regular observedProperty
+          tAddAtt.getString(
+              language, EDV.observedProperty); // otherwise, source = regular observedProperty
       if (op == null || op.length() == 0)
         throw new IllegalArgumentException(
             // "Neither 'sourceObservedProperty' nor 'observervedProperty' attributes were " +
@@ -1055,7 +1057,7 @@ public class EDDTableFromSOS extends EDDTable {
       String2.log("Station Table=\n" + stationTable.saveAsJsonString(stationBeginTimeCol, true));
 
     // cdm_data_type
-    String cdmType = combinedGlobalAttributes.getString("cdm_data_type");
+    String cdmType = combinedGlobalAttributes.getString(language, "cdm_data_type");
     String allowedCdmTypes[] =
         new String[] {
           CDM_OTHER,
@@ -1074,7 +1076,7 @@ public class EDDTableFromSOS extends EDDTable {
               + "\".");
 
     // make the fixedVariables
-    dataVariables = new EDV[nFixedVariables + tDataVariables.length];
+    dataVariables = new EDV[nFixedVariables + tDataVariables.size()];
 
     lonIndex = 0;
     PAOne stats[] = stationTable.getColumn(stationLonCol).calculatePAOneStats();
@@ -1083,7 +1085,7 @@ public class EDDTableFromSOS extends EDDTable {
             datasetID,
             tLonSourceName,
             null,
-            null,
+            new LocalizedAttributes(),
             "double",
             stats[PrimitiveArray.STATS_MIN],
             stats[PrimitiveArray.STATS_MAX]);
@@ -1095,7 +1097,7 @@ public class EDDTableFromSOS extends EDDTable {
             datasetID,
             tLatSourceName,
             null,
-            null,
+            new LocalizedAttributes(),
             "double",
             stats[PrimitiveArray.STATS_MIN],
             stats[PrimitiveArray.STATS_MAX]);
@@ -1163,15 +1165,15 @@ public class EDDTableFromSOS extends EDDTable {
     dataVariables[timeIndex] = edvTime;
 
     // create non-fixed dataVariables[]
-    for (int dv = 0; dv < tDataVariables.length; dv++) {
-      String tSourceName = (String) tDataVariables[dv][0];
-      String tDestName = (String) tDataVariables[dv][1];
+    for (int dv = 0; dv < tDataVariables.size(); dv++) {
+      String tSourceName = tDataVariables.get(dv).sourceName();
+      String tDestName = tDataVariables.get(dv).destinationName();
       if (tDestName == null || tDestName.trim().length() == 0) tDestName = tSourceName;
       Attributes tSourceAtt = null; // (none available from source)
-      Attributes tAddAtt = (Attributes) tDataVariables[dv][2];
-      String tSourceType = (String) tDataVariables[dv][3];
+      LocalizedAttributes tAddAtt = tDataVariables.get(dv).attributes();
+      String tSourceType = tDataVariables.get(dv).dataType();
 
-      if (EDVTimeStamp.hasTimeUnits(tSourceAtt, tAddAtt)) {
+      if (EDVTimeStamp.hasTimeUnits(language, tSourceAtt, tAddAtt)) {
         dataVariables[nFixedVariables + dv] =
             new EDVTimeStamp(
                 datasetID,

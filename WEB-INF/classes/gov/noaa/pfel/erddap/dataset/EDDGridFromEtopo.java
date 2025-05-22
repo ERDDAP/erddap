@@ -24,6 +24,7 @@ import gov.noaa.pfel.coastwatch.sgt.SgtMap;
 import gov.noaa.pfel.coastwatch.util.BufferedReadRandomAccessFile;
 import gov.noaa.pfel.coastwatch.util.SimpleXMLReader;
 import gov.noaa.pfel.erddap.Erddap;
+import gov.noaa.pfel.erddap.dataset.metadata.LocalizedAttributes;
 import gov.noaa.pfel.erddap.handlers.EDDGridFromEtopoHandler;
 import gov.noaa.pfel.erddap.handlers.SaxHandlerClass;
 import gov.noaa.pfel.erddap.util.EDStatic;
@@ -188,9 +189,9 @@ public class EDDGridFromEtopo extends EDDGrid {
             + (is180 ? "-180 to 180)" : "0 to 360)")
             + ", (Ice Sheet Surface)");
 
-    addGlobalAttributes = new Attributes();
+    addGlobalAttributes = new LocalizedAttributes();
     combinedGlobalAttributes =
-        new Attributes(addGlobalAttributes, sourceGlobalAttributes); // order is important
+        new LocalizedAttributes(addGlobalAttributes, sourceGlobalAttributes); // order is important
     combinedGlobalAttributes.removeValue("\"null\"");
 
     // make the axisVariables

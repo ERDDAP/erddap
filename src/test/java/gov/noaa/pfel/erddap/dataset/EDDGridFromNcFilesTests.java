@@ -19,6 +19,7 @@ import gov.noaa.pfel.coastwatch.util.SSR;
 import gov.noaa.pfel.coastwatch.util.SharedWatchService;
 import gov.noaa.pfel.erddap.Erddap;
 import gov.noaa.pfel.erddap.GenerateDatasetsXml;
+import gov.noaa.pfel.erddap.util.EDMessages;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import java.nio.file.Path;
 import java.util.Arrays;
@@ -1945,6 +1946,7 @@ class EDDGridFromNcFilesTests {
    */
   @org.junit.jupiter.api.Test
   void testGenerateDatasetsXml() throws Throwable {
+    int language = EDMessages.DEFAULT_LANGUAGE;
     String erdQSwindDir =
         Path.of(EDDGridFromNcFilesTests.class.getResource("/largeFiles/erdQSwind1day/").toURI())
             .toString();
@@ -2229,7 +2231,8 @@ class EDDGridFromNcFilesTests {
     EDD.deleteCachedDatasetInfo(tDatasetID);
     EDD edd = EDDGridFromNcFiles.oneFromXmlFragment(null, results);
     Test.ensureEqual(edd.datasetID(), suggDatasetID, "");
-    Test.ensureEqual(edd.title(), "Wind, QuikSCAT, Global, Science Quality (1 Day Composite)", "");
+    Test.ensureEqual(
+        edd.title(language), "Wind, QuikSCAT, Global, Science Quality (1 Day Composite)", "");
     Test.ensureEqual(
         String2.toCSSVString(edd.dataVariableDestinationNames()), "x_wind, y_wind, mod", "");
 
@@ -4032,6 +4035,7 @@ class EDDGridFromNcFilesTests {
   @TagAWS
   @TagLargeFiles
   void testGenerateDatasetsXmlAwsS3() throws Throwable {
+    int language = EDMessages.DEFAULT_LANGUAGE;
     String cacheFromUrl =
         "https://nasanex.s3.us-west-2.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS"; // intentionally
     // left
@@ -4277,7 +4281,9 @@ class EDDGridFromNcFilesTests {
     EDD edd = EDDGridFromNcFiles.oneFromXmlFragment(null, results);
     Test.ensureEqual(edd.datasetID(), suggDatasetID, "");
     Test.ensureEqual(
-        edd.title(), "800m Downscaled NEX CMIP5 Climate Projections for the Continental US", "");
+        edd.title(language),
+        "800m Downscaled NEX CMIP5 Climate Projections for the Continental US",
+        "");
     Test.ensureEqual(String2.toCSSVString(edd.dataVariableDestinationNames()), "tasmin", "");
 
     // String2.log("\nEDDGridFromNcFiles.testGenerateDatasetsXmlAwsS3 passed the
@@ -4294,6 +4300,7 @@ class EDDGridFromNcFilesTests {
   @ValueSource(booleans = {true, false})
   @TagAWS
   void testGenerateDatasetsXmlPrivateAwsS3(boolean deleteCachedFiles) throws Throwable {
+    int language = EDMessages.DEFAULT_LANGUAGE;
     String cacheFromUrl =
         "https://bobsimonsdata.s3.us-east-1.amazonaws.com/erdQSwind1day"; // intentionally left
     // off trailing /
@@ -4604,7 +4611,8 @@ class EDDGridFromNcFilesTests {
       edd = EDDGridFromNcFiles.oneFromXmlFragment(null, results);
     }
     Test.ensureEqual(edd.datasetID(), suggDatasetID, "");
-    Test.ensureEqual(edd.title(), "Wind, QuikSCAT, Global, Science Quality (1 Day Composite)", "");
+    Test.ensureEqual(
+        edd.title(language), "Wind, QuikSCAT, Global, Science Quality (1 Day Composite)", "");
     Test.ensureEqual(
         String2.toCSSVString(edd.dataVariableDestinationNames()), "x_wind, y_wind, mod", "");
   }
@@ -6672,7 +6680,7 @@ class EDDGridFromNcFilesTests {
     EDD.deleteCachedDatasetInfo(suggDatasetID);
     EDD edd = EDDGridFromNcFiles.oneFromXmlFragment(null, results);
     Test.ensureEqual(edd.datasetID(), suggDatasetID, "");
-    Test.ensureEqual(edd.title(), "Data from a local source.", "");
+    Test.ensureEqual(edd.title(language), "Data from a local source.", "");
     Test.ensureEqual(String2.toCSSVString(edd.dataVariableDestinationNames()), "VHMAX", "");
     tName =
         edd.makeNewFileForDapQuery(
@@ -14057,7 +14065,7 @@ class EDDGridFromNcFilesTests {
    */
   @org.junit.jupiter.api.Test
   void testRTechHdf() throws Throwable {
-
+    int language = EDMessages.DEFAULT_LANGUAGE;
     // String2.log("\n*** EDDGridFromNcFiles.testRTechHdf");
     String dir =
         Path.of(EDDGridFromNcFilesTests.class.getResource("/data/rtech/").toURI()).toString() + "/";
@@ -15055,7 +15063,7 @@ class EDDGridFromNcFilesTests {
     EDD.deleteCachedDatasetInfo(tDatasetID);
     EDD edd = EDDGridFromNcFiles.oneFromXmlFragment(null, results);
     Test.ensureEqual(edd.datasetID(), tDatasetID, "");
-    Test.ensureEqual(edd.title(), "Data from a local source.", "");
+    Test.ensureEqual(edd.title(language), "Data from a local source.", "");
     Test.ensureEqual(
         String2.toCSSVString(edd.dataVariableDestinationNames()),
         "Geolocation_Fields_Colatitude_for_radiance_at_surface, Geolocation_Fields_Longitude_for_radiance_at_surface, Geolocation_Fields_Colatitude_for_radiance_at_TOA, Geolocation_Fields_Longitude_for_radiance_at_TOA, Data_Fields_Along_Track_diagonal_dimension, Data_Fields_Across_Track_diagonal_dimension, Data_Fields_Pixel_Orientation, Data_Fields_Viewing_Zenith_Angle, Data_Fields_Viewing_Azimuth_Angle, Data_Fields_Solar_Zenith_Angle, Data_Fields_Relative_Azimuth_Angle, Data_Fields_Filtered_Radiance_for_Visible_Channel, Data_Fields_Filtered_Radiance_for_Solar_Channel, Data_Fields_Filtered_Radiance_for_Total_Channel, Data_Fields_Filtered_Radiance_for_Infrared_Channel, Data_Fields_Filtered_Radiance_for_Synthetic_LW_Channel, Data_Fields_Unfiltered_SW_radiance, Data_Fields_Unfiltered_LW_radiance, Data_Fields_QF_RD_Vis, Data_Fields_QF_RD_SW, Data_Fields_QF_RD_Total, Data_Fields_QF_RD_IR, Data_Fields_QF_RD_LW_Synthetic, Data_Fields_Geotype, Data_Fields_SEL_TOA_SW_Flux, Data_Fields_SEL_TOA_LW_Flux, Data_Fields_SEL_Scene_Identification, Data_Fields_SEL_Albedo, Data_Fields_SANN_TOA_SW_Flux_1, Data_Fields_SANN_TOA_LW_Flux_1, Data_Fields_SANN_Albedo_1, Data_Fields_SANN_TOA_SW_Flux_2, Data_Fields_SANN_TOA_LW_Flux_2, Data_Fields_SANN_Albedo_2, Data_Fields_SANN_SW_Scene_Identification, Data_Fields_SANN_LW_Scene_Identification, Data_Fields_Quality_Index",
@@ -15143,11 +15151,11 @@ class EDDGridFromNcFilesTests {
         oldMinMillis + ", " + oldMaxMillis,
         "actual_range");
     Test.ensureEqual(
-        eddGrid.combinedGlobalAttributes().getString("time_coverage_start"),
+        eddGrid.combinedGlobalAttributes().getString(language, "time_coverage_start"),
         oldMinTime,
         "time_coverage_start");
     Test.ensureEqual(
-        eddGrid.combinedGlobalAttributes().getString("time_coverage_end"),
+        eddGrid.combinedGlobalAttributes().getString(language, "time_coverage_end"),
         oldMaxTime,
         "time_coverage_end");
 
@@ -15206,11 +15214,11 @@ class EDDGridFromNcFilesTests {
           newMinMillis + ", " + oldMaxMillis,
           "actual_range");
       Test.ensureEqual(
-          eddGrid.combinedGlobalAttributes().getString("time_coverage_start"),
+          eddGrid.combinedGlobalAttributes().getString(language, "time_coverage_start"),
           newMinTime,
           "time_coverage_start");
       Test.ensureEqual(
-          eddGrid.combinedGlobalAttributes().getString("time_coverage_end"),
+          eddGrid.combinedGlobalAttributes().getString(language, "time_coverage_end"),
           oldMaxTime,
           "time_coverage_end");
 
@@ -15240,8 +15248,8 @@ class EDDGridFromNcFilesTests {
                 + "  old line #2=&quot;    actual_range=1.1991888E9d,1.1999664E9d&quot;,\n"
                 + "  new line #2=&quot;    actual_range=1.199448E9d,1.1999664E9d&quot;.\n"
                 + "A combinedGlobalAttribute changed:\n"
-                + "  old line #47=&quot;    time_coverage_start=2008-01-01T12:00:00Z&quot;,\n"
-                + "  new line #47=&quot;    time_coverage_start=2008-01-04T12:00:00Z&quot;.\n"
+                + "  old line #30=&quot;    time_coverage_start=2008-01-01T12:00:00Z&quot;,\n"
+                + "  new line #30=&quot;    time_coverage_start=2008-01-04T12:00:00Z&quot;.\n"
                 + "</description>\n"
                 + "    </item>\n"
                 + "  </channel>\n"
@@ -15287,11 +15295,11 @@ class EDDGridFromNcFilesTests {
         oldMinMillis + ", " + oldMaxMillis,
         "actual_range");
     Test.ensureEqual(
-        eddGrid.combinedGlobalAttributes().getString("time_coverage_start"),
+        eddGrid.combinedGlobalAttributes().getString(language, "time_coverage_start"),
         oldMinTime,
         "time_coverage_start");
     Test.ensureEqual(
-        eddGrid.combinedGlobalAttributes().getString("time_coverage_end"),
+        eddGrid.combinedGlobalAttributes().getString(language, "time_coverage_end"),
         oldMaxTime,
         "time_coverage_end");
 
@@ -15318,8 +15326,8 @@ class EDDGridFromNcFilesTests {
             + "  old line #2=&quot;    actual_range=1.199448E9d,1.1999664E9d&quot;,\n"
             + "  new line #2=&quot;    actual_range=1.1991888E9d,1.1999664E9d&quot;.\n"
             + "A combinedGlobalAttribute changed:\n"
-            + "  old line #47=&quot;    time_coverage_start=2008-01-04T12:00:00Z&quot;,\n"
-            + "  new line #47=&quot;    time_coverage_start=2008-01-01T12:00:00Z&quot;.\n"
+            + "  old line #30=&quot;    time_coverage_start=2008-01-04T12:00:00Z&quot;,\n"
+            + "  new line #30=&quot;    time_coverage_start=2008-01-01T12:00:00Z&quot;.\n"
             + "</description>\n"
             + "    </item>\n"
             + "  </channel>\n"
@@ -15371,11 +15379,11 @@ class EDDGridFromNcFilesTests {
           oldMinMillis + ", " + oldMaxMillis,
           "actual_range");
       Test.ensureEqual(
-          eddGrid.combinedGlobalAttributes().getString("time_coverage_start"),
+          eddGrid.combinedGlobalAttributes().getString(language, "time_coverage_start"),
           oldMinTime,
           "time_coverage_start");
       Test.ensureEqual(
-          eddGrid.combinedGlobalAttributes().getString("time_coverage_end"),
+          eddGrid.combinedGlobalAttributes().getString(language, "time_coverage_end"),
           oldMaxTime,
           "time_coverage_end");
 
@@ -15428,11 +15436,11 @@ class EDDGridFromNcFilesTests {
         oldMinMillis + ", " + oldMaxMillis,
         "actual_range");
     Test.ensureEqual(
-        eddGrid.combinedGlobalAttributes().getString("time_coverage_start"),
+        eddGrid.combinedGlobalAttributes().getString(language, "time_coverage_start"),
         oldMinTime,
         "time_coverage_start");
     Test.ensureEqual(
-        eddGrid.combinedGlobalAttributes().getString("time_coverage_end"),
+        eddGrid.combinedGlobalAttributes().getString(language, "time_coverage_end"),
         oldMaxTime,
         "time_coverage_end");
 
@@ -15503,8 +15511,8 @@ class EDDGridFromNcFilesTests {
               + "  old line #2=\"    actual_range=1.1991888E9d,1.1999664E9d\",\n"
               + "  new line #2=\"    actual_range=1.199448E9d,1.1999664E9d\".\n"
               + "A combinedGlobalAttribute changed:\n"
-              + "  old line #47=\"    time_coverage_start=2008-01-01T12:00:00Z\",\n"
-              + "  new line #47=\"    time_coverage_start=2008-01-04T12:00:00Z\".\n";
+              + "  old line #30=\"    time_coverage_start=2008-01-01T12:00:00Z\",\n"
+              + "  new line #30=\"    time_coverage_start=2008-01-04T12:00:00Z\".\n";
       assertEquals(expected, eddGrid.changed(originalSnapshot));
       assertEquals(expected, eddGrid.changed(originalSnapshot));
 
@@ -15531,8 +15539,8 @@ class EDDGridFromNcFilesTests {
               + "  old line #2=&quot;    actual_range=1.1991888E9d,1.1999664E9d&quot;,\n"
               + "  new line #2=&quot;    actual_range=1.199448E9d,1.1999664E9d&quot;.\n"
               + "A combinedGlobalAttribute changed:\n"
-              + "  old line #47=&quot;    time_coverage_start=2008-01-01T12:00:00Z&quot;,\n"
-              + "  new line #47=&quot;    time_coverage_start=2008-01-04T12:00:00Z&quot;.\n"
+              + "  old line #30=&quot;    time_coverage_start=2008-01-01T12:00:00Z&quot;,\n"
+              + "  new line #30=&quot;    time_coverage_start=2008-01-04T12:00:00Z&quot;.\n"
               + "</description>\n"
               + "    </item>\n"
               + "  </channel>\n"
@@ -15566,8 +15574,8 @@ class EDDGridFromNcFilesTests {
             + "  old line #2=\"    actual_range=1.199448E9d,1.1999664E9d\",\n"
             + "  new line #2=\"    actual_range=1.1991888E9d,1.1999664E9d\".\n"
             + "A combinedGlobalAttribute changed:\n"
-            + "  old line #47=\"    time_coverage_start=2008-01-04T12:00:00Z\",\n"
-            + "  new line #47=\"    time_coverage_start=2008-01-01T12:00:00Z\".\n";
+            + "  old line #30=\"    time_coverage_start=2008-01-04T12:00:00Z\",\n"
+            + "  new line #30=\"    time_coverage_start=2008-01-01T12:00:00Z\".\n";
     assertEquals(expected, eddGrid.changed(snapshotDiff));
     // *** back to original
 
@@ -15594,8 +15602,8 @@ class EDDGridFromNcFilesTests {
             + "  old line #2=&quot;    actual_range=1.199448E9d,1.1999664E9d&quot;,\n"
             + "  new line #2=&quot;    actual_range=1.1991888E9d,1.1999664E9d&quot;.\n"
             + "A combinedGlobalAttribute changed:\n"
-            + "  old line #47=&quot;    time_coverage_start=2008-01-04T12:00:00Z&quot;,\n"
-            + "  new line #47=&quot;    time_coverage_start=2008-01-01T12:00:00Z&quot;.\n"
+            + "  old line #30=&quot;    time_coverage_start=2008-01-04T12:00:00Z&quot;,\n"
+            + "  new line #30=&quot;    time_coverage_start=2008-01-01T12:00:00Z&quot;.\n"
             + "</description>\n"
             + "    </item>\n"
             + "  </channel>\n"
@@ -15842,11 +15850,11 @@ class EDDGridFromNcFilesTests {
         oldMinMillis + ", " + oldMaxMillis,
         "actual_range");
     Test.ensureEqual(
-        eddGrid.combinedGlobalAttributes().getString("time_coverage_start"),
+        eddGrid.combinedGlobalAttributes().getString(language, "time_coverage_start"),
         oldMinTime,
         "time_coverage_start");
     Test.ensureEqual(
-        eddGrid.combinedGlobalAttributes().getString("time_coverage_end"),
+        eddGrid.combinedGlobalAttributes().getString(language, "time_coverage_end"),
         oldMaxTime,
         "time_coverage_end");
 
@@ -15893,11 +15901,11 @@ class EDDGridFromNcFilesTests {
           oldMinMillis + ", " + oldMaxMillis,
           "actual_range");
       Test.ensureEqual(
-          eddGrid.combinedGlobalAttributes().getString("time_coverage_start"),
+          eddGrid.combinedGlobalAttributes().getString(language, "time_coverage_start"),
           oldMinTime,
           "time_coverage_start");
       Test.ensureEqual(
-          eddGrid.combinedGlobalAttributes().getString("time_coverage_end"),
+          eddGrid.combinedGlobalAttributes().getString(language, "time_coverage_end"),
           oldMaxTime,
           "time_coverage_end");
 
@@ -15978,11 +15986,11 @@ class EDDGridFromNcFilesTests {
         oldMinMillis + ", " + oldMaxMillis,
         "actual_range");
     Test.ensureEqual(
-        eddGrid.combinedGlobalAttributes().getString("time_coverage_start"),
+        eddGrid.combinedGlobalAttributes().getString(language, "time_coverage_start"),
         oldMinTime,
         "time_coverage_start");
     Test.ensureEqual(
-        eddGrid.combinedGlobalAttributes().getString("time_coverage_end"),
+        eddGrid.combinedGlobalAttributes().getString(language, "time_coverage_end"),
         oldMaxTime,
         "time_coverage_end");
   }
@@ -16773,6 +16781,7 @@ class EDDGridFromNcFilesTests {
   @org.junit.jupiter.api.Test
   @TagLocalERDDAP
   void testGenerateDatasetsXmlCopy() throws Throwable {
+    int language = EDMessages.DEFAULT_LANGUAGE;
     String tSourceUrl =
         "http://localhost:8080/cwexperimental/files/erdMWchla1day/"; // contents.html
     String tFileNameRegex = "MW200219.*\\.nc(|\\.gz)"; // only 10 files match
@@ -17041,7 +17050,9 @@ class EDDGridFromNcFilesTests {
     edd = EDDGridFromNcFiles.oneFromXmlFragment(null, results);
     Test.ensureEqual(edd.datasetID(), tDatasetID, "");
     Test.ensureEqual(
-        edd.title(), "Chlorophyll-a, Aqua MODIS, NPP, 0.0125 degrees, West US, EXPERIMENTAL", "");
+        edd.title(language),
+        "Chlorophyll-a, Aqua MODIS, NPP, 0.0125 degrees, West US, EXPERIMENTAL",
+        "");
     Test.ensureEqual(String2.toCSSVString(edd.dataVariableDestinationNames()), "MWchla", "");
 
     String2.log("\nEDDGridFromNcFiles.testGenerateDatasetsXmlCopy passed the test.");

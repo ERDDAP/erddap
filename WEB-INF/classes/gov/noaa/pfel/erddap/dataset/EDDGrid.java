@@ -33,6 +33,7 @@ import gov.noaa.pfel.coastwatch.sgt.SgtMap;
 import gov.noaa.pfel.coastwatch.sgt.SgtUtil;
 import gov.noaa.pfel.coastwatch.util.HtmlWidgets;
 import gov.noaa.pfel.coastwatch.util.SSR;
+import gov.noaa.pfel.erddap.dataset.metadata.LocalizedAttributes;
 import gov.noaa.pfel.erddap.dataset.metadata.MetadataBuilder;
 import gov.noaa.pfel.erddap.filetypes.DapRequestInfo;
 import gov.noaa.pfel.erddap.filetypes.FileTypeInterface;
@@ -167,6 +168,32 @@ public abstract class EDDGrid extends EDD {
       String tSourceName,
       String tDestName,
       Attributes tSourceAtt,
+      LocalizedAttributes tAddAtt,
+      PrimitiveArray sourceAxisValues)
+      throws Throwable {
+    return makeAxisVariable(
+        tParentDatasetID,
+        av,
+        tSourceName,
+        tDestName,
+        tSourceAtt,
+        tAddAtt.toAttributes(EDMessages.DEFAULT_LANGUAGE),
+        sourceAxisValues);
+  }
+
+  /**
+   * This is used by many constructors (and EDDGridFromFiles.lowUpdate) to make an EDVGridAxis
+   * axisVariable.
+   *
+   * @param av If av >= 0, this will used to set lonIndex, latIndex, ... if appropriate. If av < 0,
+   *     this does nothing.
+   */
+  public EDVGridAxis makeAxisVariable(
+      String tParentDatasetID,
+      int av,
+      String tSourceName,
+      String tDestName,
+      Attributes tSourceAtt,
       Attributes tAddAtt,
       PrimitiveArray sourceAxisValues)
       throws Throwable {
@@ -261,10 +288,10 @@ public abstract class EDDGrid extends EDD {
    * @return the searchString (mixed case) used to create searchBytes or searchDocument.
    */
   @Override
-  public String searchString() {
+  public String searchString(int language) {
 
     // make a string to search through
-    StringBuilder sb = startOfSearchString();
+    StringBuilder sb = startOfSearchString(language);
 
     // add axisVariable info
     // doing all varNames, then all attributes, treats varNames as more important
@@ -636,6 +663,7 @@ public abstract class EDDGrid extends EDD {
   @Override
   public void ensureValid() throws Throwable {
     super.ensureValid();
+    int language = EDMessages.DEFAULT_LANGUAGE;
     String errorInMethod =
         "datasets.xml/EDDGrid.ensureValid error for datasetID=" + datasetID + ":\n ";
 
@@ -739,19 +767,20 @@ public abstract class EDDGrid extends EDD {
     combinedGlobalAttributes.remove("Easternmost_Easting");
     int av = String2.indexOf(avDestNames, EDV.LON_NAME);
     if (av >= 0) {
-      combinedGlobalAttributes.add("geospatial_lon_units", EDV.LON_UNITS);
+      combinedGlobalAttributes.set(language, "geospatial_lon_units", EDV.LON_UNITS);
       EDVGridAxis edvga = axisVariables[av];
       if (edvga.sourceValues().size() > 1 && edvga.isEvenlySpaced())
-        combinedGlobalAttributes.add("geospatial_lon_resolution", Math.abs(edvga.averageSpacing()));
+        combinedGlobalAttributes.set(
+            language, "geospatial_lon_resolution", Math.abs(edvga.averageSpacing()));
 
       PrimitiveArray pa = edvga.combinedAttributes().get("actual_range");
       if (pa != null) { // it should be; but it can be low,high or high,low, so
         double ttMin = Math.min(pa.getNiceDouble(0), pa.getNiceDouble(1));
         double ttMax = Math.max(pa.getNiceDouble(0), pa.getNiceDouble(1));
-        combinedGlobalAttributes.add("geospatial_lon_min", ttMin);
-        combinedGlobalAttributes.add("geospatial_lon_max", ttMax);
-        combinedGlobalAttributes.add("Westernmost_Easting", ttMin);
-        combinedGlobalAttributes.add("Easternmost_Easting", ttMax);
+        combinedGlobalAttributes.set(language, "geospatial_lon_min", ttMin);
+        combinedGlobalAttributes.set(language, "geospatial_lon_max", ttMax);
+        combinedGlobalAttributes.set(language, "Westernmost_Easting", ttMin);
+        combinedGlobalAttributes.set(language, "Easternmost_Easting", ttMax);
       }
     }
 
@@ -764,19 +793,20 @@ public abstract class EDDGrid extends EDD {
     combinedGlobalAttributes.remove("Northernmost_Northing");
     av = String2.indexOf(avDestNames, EDV.LAT_NAME);
     if (av >= 0) {
-      combinedGlobalAttributes.add("geospatial_lat_units", EDV.LAT_UNITS);
+      combinedGlobalAttributes.set(language, "geospatial_lat_units", EDV.LAT_UNITS);
       EDVGridAxis edvga = axisVariables[av];
       if (edvga.sourceValues().size() > 1 && edvga.isEvenlySpaced())
-        combinedGlobalAttributes.add("geospatial_lat_resolution", Math.abs(edvga.averageSpacing()));
+        combinedGlobalAttributes.set(
+            language, "geospatial_lat_resolution", Math.abs(edvga.averageSpacing()));
 
       PrimitiveArray pa = edvga.combinedAttributes().get("actual_range");
       if (pa != null) { // it should be; but it can be low,high or high,low, so
         double ttMin = Math.min(pa.getNiceDouble(0), pa.getNiceDouble(1));
         double ttMax = Math.max(pa.getNiceDouble(0), pa.getNiceDouble(1));
-        combinedGlobalAttributes.add("geospatial_lat_min", ttMin);
-        combinedGlobalAttributes.add("geospatial_lat_max", ttMax);
-        combinedGlobalAttributes.add("Southernmost_Northing", ttMin);
-        combinedGlobalAttributes.add("Northernmost_Northing", ttMax);
+        combinedGlobalAttributes.set(language, "geospatial_lat_min", ttMin);
+        combinedGlobalAttributes.set(language, "geospatial_lat_max", ttMax);
+        combinedGlobalAttributes.set(language, "Southernmost_Northing", ttMin);
+        combinedGlobalAttributes.set(language, "Northernmost_Northing", ttMax);
       }
     }
 
@@ -788,19 +818,19 @@ public abstract class EDDGrid extends EDD {
     combinedGlobalAttributes.remove("geospatial_vertical_units");
     av = String2.indexOf(avDestNames, EDV.ALT_NAME);
     if (av >= 0) {
-      combinedGlobalAttributes.add("geospatial_vertical_positive", "up");
-      combinedGlobalAttributes.add("geospatial_vertical_units", EDV.ALT_UNITS);
+      combinedGlobalAttributes.set(language, "geospatial_vertical_positive", "up");
+      combinedGlobalAttributes.set(language, "geospatial_vertical_units", EDV.ALT_UNITS);
       EDVGridAxis edvga = axisVariables[av];
       if (edvga.sourceValues().size() > 1 && edvga.isEvenlySpaced())
-        combinedGlobalAttributes.add(
-            "geospatial_vertical_resolution", Math.abs(edvga.averageSpacing()));
+        combinedGlobalAttributes.set(
+            language, "geospatial_vertical_resolution", Math.abs(edvga.averageSpacing()));
 
       PrimitiveArray pa = edvga.combinedAttributes().get("actual_range");
       if (pa != null) { // it should be; but it can be low,high or high,low, so
         double ttMin = Math.min(pa.getNiceDouble(0), pa.getNiceDouble(1));
         double ttMax = Math.max(pa.getNiceDouble(0), pa.getNiceDouble(1));
-        combinedGlobalAttributes.add("geospatial_vertical_min", ttMin);
-        combinedGlobalAttributes.add("geospatial_vertical_max", ttMax);
+        combinedGlobalAttributes.set(language, "geospatial_vertical_min", ttMin);
+        combinedGlobalAttributes.set(language, "geospatial_vertical_max", ttMax);
       }
     }
 
@@ -816,10 +846,14 @@ public abstract class EDDGrid extends EDD {
         String tp = axisVariables[av].combinedAttributes().getString(EDV.TIME_PRECISION);
         // "" unsets the attribute if dMin or dMax isNaN
         combinedGlobalAttributes.set(
-            "time_coverage_start", Calendar2.epochSecondsToLimitedIsoStringT(tp, ttMin, ""));
+            language,
+            "time_coverage_start",
+            Calendar2.epochSecondsToLimitedIsoStringT(tp, ttMin, ""));
         // for tables (not grids) will be NaN for 'present'.   Deal with this better???
         combinedGlobalAttributes.set(
-            "time_coverage_end", Calendar2.epochSecondsToLimitedIsoStringT(tp, ttMax, ""));
+            language,
+            "time_coverage_end",
+            Calendar2.epochSecondsToLimitedIsoStringT(tp, ttMax, ""));
       }
 
       // print time gaps greater than median
@@ -842,7 +876,7 @@ public abstract class EDDGrid extends EDD {
     // really last: it uses accessibleViaFGDC and accessibleViaISO19115
     // make searchString  (since should have all finished/correct metadata)
     // This makes creation of searchString thread-safe (always done in constructor's thread).
-    searchString();
+    searchString(language);
   }
 
   /**
@@ -2640,8 +2674,10 @@ public abstract class EDDGrid extends EDD {
           try {
             writer.write(
                 EDStatic.startHeadHtml(
-                    language, tErddapUrl, title() + " - " + EDStatic.messages.dafAr[language]));
-            writer.write("\n" + rssHeadLink());
+                    language,
+                    tErddapUrl,
+                    title(language) + " - " + EDStatic.messages.dafAr[language]));
+            writer.write("\n" + rssHeadLink(language));
             writer.write("\n</head>\n");
             writer.write(
                 EDStatic.startBodyHtml(
@@ -2689,6 +2725,7 @@ public abstract class EDDGrid extends EDD {
                     + "</a></h2>\n"
                     + "<pre style=\"white-space:pre-wrap;\">\n");
             writeDAS(
+                language,
                 File2.forceExtension(requestUrl, ".das"),
                 "",
                 writer,
@@ -2829,8 +2866,8 @@ public abstract class EDDGrid extends EDD {
       // write the header
       writer.write(
           EDStatic.startHeadHtml(
-              language, tErddapUrl, title() + " - " + EDStatic.messages.magAr[language]));
-      writer.write("\n" + rssHeadLink());
+              language, tErddapUrl, title(language) + " - " + EDStatic.messages.magAr[language]));
+      writer.write("\n" + rssHeadLink(language));
       writer.write("\n</head>\n");
       writer.write(
           EDStatic.startBodyHtml(
@@ -5148,6 +5185,7 @@ public abstract class EDDGrid extends EDD {
               + "</a></h2>\n"
               + "<pre style=\"white-space:pre-wrap;\">\n");
       writeDAS(
+          language,
           "/griddap/" + datasetID + ".das",
           "",
           writer,
@@ -5224,7 +5262,8 @@ public abstract class EDDGrid extends EDD {
    * @param encodeAsHtml if true, characters like &lt; are converted to their character entities.
    * @throws Throwable if trouble.
    */
-  public void writeDAS(String requestUrl, String userDapQuery, Writer writer, boolean encodeAsHtml)
+  public void writeDAS(
+      int language, String requestUrl, String userDapQuery, Writer writer, boolean encodeAsHtml)
       throws Throwable {
 
     int nAxisVariables = axisVariables.length;
@@ -5246,10 +5285,10 @@ public abstract class EDDGrid extends EDD {
           encodeAsHtml);
 
     // how do global attributes fit into opendap view of attributes?
-    Attributes gAtts = new Attributes(combinedGlobalAttributes); // a copy
+    Attributes gAtts = combinedGlobalAttributes.toAttributes(language); // a copy
 
     // fix up global attributes  (always to a local COPY of global attributes)
-    EDD.addToHistory(gAtts, publicSourceUrl());
+    EDD.addToHistory(gAtts, publicSourceUrl(language));
     EDD.addToHistory(
         gAtts,
         EDStatic.config.baseUrl
@@ -8476,8 +8515,8 @@ public abstract class EDDGrid extends EDD {
 
     String tErddapUrl = EDStatic.erddapUrl(loggedInAs, language);
     String wcsUrl = tErddapUrl + "/wcs/" + datasetID + "/" + wcsServer;
-    String titleXml = XML.encodeAsXML(title());
-    String keywordsSA[] = keywords();
+    String titleXml = XML.encodeAsXML(title(language));
+    String keywordsSA[] = keywords(language);
     EDVGridAxis lonEdv = axisVariables[lonIndex];
     EDVGridAxis latEdv = axisVariables[latIndex];
     EDVGridAxis timeEdv = timeIndex < 0 ? null : axisVariables[timeIndex];
@@ -8505,7 +8544,7 @@ public abstract class EDDGrid extends EDD {
               "  >\n"
               + "  <Service>\n"
               + "    <description>"
-              + XML.encodeAsXML(summary())
+              + XML.encodeAsXML(summary(language))
               + "</description>\n"
               + "    <name>"
               + datasetID
@@ -8560,10 +8599,10 @@ public abstract class EDDGrid extends EDD {
               + "      </contactInfo>\n"
               + "    </responsibleParty>\n"
               + "    <fees>"
-              + XML.encodeAsXML(fees())
+              + XML.encodeAsXML(fees(language))
               + "</fees>\n"
               + "    <accessConstraints>"
-              + XML.encodeAsXML(accessConstraints())
+              + XML.encodeAsXML(accessConstraints(language))
               + "</accessConstraints>\n"
               + "  </Service>\n"
               + "  <Capability>\n"
@@ -10130,21 +10169,22 @@ public abstract class EDDGrid extends EDD {
         String2.replaceAll(Calendar2.millisToIsoDateString(creationTimeMillis()), "-", "");
     String unknown = "Unknown"; // pg viii of FGDC document
 
-    String acknowledgement = combinedGlobalAttributes.getString("acknowledgement"); // acdd 1.3
+    String acknowledgement =
+        combinedGlobalAttributes.getString(language, "acknowledgement"); // acdd 1.3
     if (acknowledgement == null)
-      acknowledgement = combinedGlobalAttributes.getString("acknowledgment"); // acdd 1.0
-    String contributorName = combinedGlobalAttributes.getString("contributor_name");
-    String contributorEmail = combinedGlobalAttributes.getString("contributor_email");
-    String contributorRole = combinedGlobalAttributes.getString("contributor_role");
-    String creatorName = combinedGlobalAttributes.getString("creator_name");
-    String creatorEmail = combinedGlobalAttributes.getString("creator_email");
+      acknowledgement = combinedGlobalAttributes.getString(language, "acknowledgment"); // acdd 1.0
+    String contributorName = combinedGlobalAttributes.getString(language, "contributor_name");
+    String contributorEmail = combinedGlobalAttributes.getString(language, "contributor_email");
+    String contributorRole = combinedGlobalAttributes.getString(language, "contributor_role");
+    String creatorName = combinedGlobalAttributes.getString(language, "creator_name");
+    String creatorEmail = combinedGlobalAttributes.getString(language, "creator_email");
     // creatorUrl: use infoUrl
     String dateCreated =
         Calendar2.tryToIsoString(
-            combinedGlobalAttributes.getString("date_created")); // "" if trouble
+            combinedGlobalAttributes.getString(language, "date_created")); // "" if trouble
     String dateIssued =
         Calendar2.tryToIsoString(
-            combinedGlobalAttributes.getString("date_issued")); // "" if trouble
+            combinedGlobalAttributes.getString(language, "date_issued")); // "" if trouble
     if (dateCreated.length() > 10) dateCreated = dateCreated.substring(0, 10);
     if (dateIssued.length() > 10) dateIssued = dateIssued.substring(0, 10);
     if (dateCreated.startsWith("0000")) // year=0000 isn't valid
@@ -10153,23 +10193,24 @@ public abstract class EDDGrid extends EDD {
     // make compact form  YYYYMMDD
     dateCreated = String2.replaceAll(dateCreated, "-", "");
     dateIssued = String2.replaceAll(dateIssued, "-", "");
-    String history = combinedGlobalAttributes.getString("history");
-    String infoUrl = combinedGlobalAttributes.getString("infoUrl");
-    String institution = combinedGlobalAttributes.getString("institution");
-    String keywords = combinedGlobalAttributes.getString("keywords");
-    String keywordsVocabulary = combinedGlobalAttributes.getString("keywords_vocabulary");
+    String history = combinedGlobalAttributes.getString(language, "history");
+    String infoUrl = combinedGlobalAttributes.getString(language, "infoUrl");
+    String institution = combinedGlobalAttributes.getString(language, "institution");
+    String keywords = combinedGlobalAttributes.getString(language, "keywords");
+    String keywordsVocabulary = combinedGlobalAttributes.getString(language, "keywords_vocabulary");
     if (keywords == null) { // use the crude, ERDDAP keywords
       keywords = EDStatic.config.keywords;
       keywordsVocabulary = null;
     }
-    String license = combinedGlobalAttributes.getString("license");
-    String project = combinedGlobalAttributes.getString("project");
+    String license = combinedGlobalAttributes.getString(language, "license");
+    String project = combinedGlobalAttributes.getString(language, "project");
     if (project == null) project = institution;
-    String references = combinedGlobalAttributes.getString("references");
-    String satellite = combinedGlobalAttributes.getString("satellite");
-    String sensor = combinedGlobalAttributes.getString("sensor");
-    String sourceUrl = publicSourceUrl();
-    String standardNameVocabulary = combinedGlobalAttributes.getString("standard_name_vocabulary");
+    String references = combinedGlobalAttributes.getString(language, "references");
+    String satellite = combinedGlobalAttributes.getString(language, "satellite");
+    String sensor = combinedGlobalAttributes.getString(language, "sensor");
+    String sourceUrl = publicSourceUrl(language);
+    String standardNameVocabulary =
+        combinedGlobalAttributes.getString(language, "standard_name_vocabulary");
 
     String adminInstitution =
         EDStatic.config.adminInstitution == null ? unknown : EDStatic.config.adminInstitution;
@@ -10361,7 +10402,7 @@ public abstract class EDDGrid extends EDD {
             + XML.encodeAsXML(unknown.equals(dateIssued) ? eddCreationDate : dateIssued)
             + "</pubdate>\n"
             + "        <title>"
-            + XML.encodeAsXML(title)
+            + XML.encodeAsXML(title(language))
             + "</title>\n"
             + "        <edition>"
             + unknown
@@ -10411,7 +10452,7 @@ public abstract class EDDGrid extends EDD {
             + XML.encodeAsXML(datasetUrl + ".html")
             + "</linkage>\n"
             + "          <name>Download data: "
-            + XML.encodeAsXML(title)
+            + XML.encodeAsXML(title(language))
             + "</name>\n"
             + "          <description>A web page for specifying a subset of the dataset and downloading "
             + "data in any of several file formats.</description>\n"
@@ -10424,7 +10465,7 @@ public abstract class EDDGrid extends EDD {
                     + XML.encodeAsXML(datasetUrl + ".graph")
                     + "</linkage>\n"
                     + "          <name>Make a graph or map: "
-                    + XML.encodeAsXML(title)
+                    + XML.encodeAsXML(title(language))
                     + "</name>\n"
                     + "          <description>A web page for creating a graph or map of the data.</description>\n"
                     + "          <function>download graph or map</function>\n"
@@ -10434,7 +10475,7 @@ public abstract class EDDGrid extends EDD {
             + XML.encodeAsXML(datasetUrl)
             + "</linkage>\n"
             + "          <name>OPeNDAP service: "
-            + XML.encodeAsXML(title)
+            + XML.encodeAsXML(title(language))
             + "</name>\n"
             + "          <description>The base URL for the OPeNDAP service.  "
             + "Add .html to get a web page with a form to download data. "
@@ -10450,7 +10491,7 @@ public abstract class EDDGrid extends EDD {
                     + XML.encodeAsXML(infoUrl)
                     + "</linkage>\n"
                     + "          <name>Background information: "
-                    + XML.encodeAsXML(title)
+                    + XML.encodeAsXML(title(language))
                     + "</name>\n"
                     + "          <description>Background information for the dataset.</description>\n"
                     + "          <function>background information</function>\n"
@@ -10462,7 +10503,7 @@ public abstract class EDDGrid extends EDD {
                     + XML.encodeAsXML(wmsUrl)
                     + "</linkage>\n"
                     + "          <name>WMS service: "
-                    + XML.encodeAsXML(title)
+                    + XML.encodeAsXML(title(language))
                     + "</name>\n"
                     + "          <description>The base URL for the WMS service for this dataset.</description>\n"
                     + "          <function>WMS</function>\n"
@@ -10526,7 +10567,7 @@ public abstract class EDDGrid extends EDD {
     writer.write(
         "    <descript>\n"
             + "      <abstract>"
-            + XML.encodeAsXML(summary)
+            + XML.encodeAsXML(summary(language))
             + "</abstract>\n"
             + "      <purpose>"
             + unknown
@@ -11081,7 +11122,7 @@ public abstract class EDDGrid extends EDD {
               + XML.encodeAsXML(datasetUrl + ".html")
               + "</linkage>\n"
               + "                  <name>"
-              + XML.encodeAsXML(title)
+              + XML.encodeAsXML(title(language))
               + "</name>\n"
               + "                  <description>Web page for accessing metadata and downloading data.</description>\n"
               + "                  <function>download</function>\n"
@@ -11091,7 +11132,7 @@ public abstract class EDDGrid extends EDD {
               + XML.encodeAsXML(datasetUrl + ".html")
               + "</linkage>\n"
               + "                  <name>"
-              + XML.encodeAsXML(title)
+              + XML.encodeAsXML(title(language))
               + "</name>\n"
               + "                  <description>Web page for accessing metadata and downloading data.</description>\n"
               + "                  <function>information</function>\n"
@@ -11135,7 +11176,7 @@ public abstract class EDDGrid extends EDD {
               + XML.encodeAsXML(datasetUrl + ".graph")
               + "</linkage>\n"
               + "                  <name>"
-              + XML.encodeAsXML(title)
+              + XML.encodeAsXML(title(language))
               + "</name>\n"
               + "                  <description>Web page for making a graph or map.</description>\n"
               + "                  <function>graphing</function>\n"
@@ -11178,11 +11219,12 @@ public abstract class EDDGrid extends EDD {
             + "</metadata>\n");
   }
 
-  private void lower_writeISO19115(Writer writer)
+  private void lower_writeISO19115(int language, Writer writer)
       throws UnsupportedStorageException, DataStoreException, JAXBException, IOException {
 
     Metadata metadata =
         MetadataBuilder.buildMetadata(
+            language,
             datasetID,
             creationTimeMillis(),
             combinedGlobalAttributes(),
@@ -11227,7 +11269,7 @@ public abstract class EDDGrid extends EDD {
     // FUTURE: support datasets with x,y (and not longitude,latitude)
 
     if (EDStatic.config.useSisISO19115) {
-      lower_writeISO19115(writer);
+      lower_writeISO19115(language, writer);
       return;
     }
 
@@ -11248,15 +11290,16 @@ public abstract class EDDGrid extends EDD {
     else if (domain.startsWith("https://")) domain = domain.substring(8);
     String eddCreationDate = Calendar2.millisToIsoDateString(creationTimeMillis());
 
-    String acknowledgement = combinedGlobalAttributes.getString("acknowledgement"); // acdd 1.3
+    String acknowledgement =
+        combinedGlobalAttributes.getString(language, "acknowledgement"); // acdd 1.3
     if (acknowledgement == null)
-      acknowledgement = combinedGlobalAttributes.getString("acknowledgment"); // acdd 1.0
-    String contributorName = combinedGlobalAttributes.getString("contributor_name");
-    String contributorEmail = combinedGlobalAttributes.getString("contributor_email");
-    String contributorRole = combinedGlobalAttributes.getString("contributor_role");
-    String creatorName = combinedGlobalAttributes.getString("creator_name");
-    String creatorEmail = combinedGlobalAttributes.getString("creator_email");
-    String creatorType = combinedGlobalAttributes.getString("creator_type");
+      acknowledgement = combinedGlobalAttributes.getString(language, "acknowledgment"); // acdd 1.0
+    String contributorName = combinedGlobalAttributes.getString(language, "contributor_name");
+    String contributorEmail = combinedGlobalAttributes.getString(language, "contributor_email");
+    String contributorRole = combinedGlobalAttributes.getString(language, "contributor_role");
+    String creatorName = combinedGlobalAttributes.getString(language, "creator_name");
+    String creatorEmail = combinedGlobalAttributes.getString(language, "creator_email");
+    String creatorType = combinedGlobalAttributes.getString(language, "creator_type");
     creatorType = String2.validateAcddContactType(creatorType);
     if (!String2.isSomething2(creatorType) && String2.isSomething2(creatorName))
       creatorType = String2.guessAcddContactType(creatorName);
@@ -11264,26 +11307,27 @@ public abstract class EDDGrid extends EDD {
     creatorType = "person"; // assume
     String dateCreated =
         Calendar2.tryToIsoString(
-            combinedGlobalAttributes.getString("date_created")); // "" if trouble
+            combinedGlobalAttributes.getString(language, "date_created")); // "" if trouble
     String dateIssued =
         Calendar2.tryToIsoString(
-            combinedGlobalAttributes.getString("date_issued")); // "" if trouble
+            combinedGlobalAttributes.getString(language, "date_issued")); // "" if trouble
     if (dateCreated.length() > 10) dateCreated = dateCreated.substring(0, 10);
     if (dateIssued.length() > 10) dateIssued = dateIssued.substring(0, 10);
     if (dateCreated.startsWith("0000")) // year=0000 isn't valid
     dateCreated = "";
     if (dateIssued.startsWith("0000")) dateIssued = "";
-    String history = combinedGlobalAttributes.getString("history");
-    String infoUrl = combinedGlobalAttributes.getString("infoUrl");
-    String institution = combinedGlobalAttributes.getString("institution");
-    String keywords = combinedGlobalAttributes.getString("keywords");
+    String history = combinedGlobalAttributes.getString(language, "history");
+    String infoUrl = combinedGlobalAttributes.getString(language, "infoUrl");
+    String institution = combinedGlobalAttributes.getString(language, "institution");
+    String keywords = combinedGlobalAttributes.getString(language, "keywords");
     if (keywords == null) { // use the crude, ERDDAP keywords
       keywords = EDStatic.config.keywords;
     }
-    String license = combinedGlobalAttributes.getString("license");
-    String project = combinedGlobalAttributes.getString("project");
+    String license = combinedGlobalAttributes.getString(language, "license");
+    String project = combinedGlobalAttributes.getString(language, "project");
     if (project == null) project = institution;
-    String standardNameVocabulary = combinedGlobalAttributes.getString("standard_name_vocabulary");
+    String standardNameVocabulary =
+        combinedGlobalAttributes.getString(language, "standard_name_vocabulary");
 
     // testMinimalMetadata is useful for Bob doing tests of validity of FGDC results
     //  when a dataset has minimal metadata
@@ -11688,7 +11732,7 @@ public abstract class EDDGrid extends EDD {
               + "        <gmd:CI_Citation>\n"
               + "          <gmd:title>\n"
               + "            <gco:CharacterString>"
-              + XML.encodeAsXML(title())
+              + XML.encodeAsXML(title(language))
               + "</gco:CharacterString>\n"
               + "          </gmd:title>\n"
               + "          <gmd:date>\n"
@@ -11871,7 +11915,7 @@ public abstract class EDDGrid extends EDD {
               // abstract
               "      <gmd:abstract>\n"
               + "        <gco:CharacterString>"
-              + XML.encodeAsXML(summary())
+              + XML.encodeAsXML(summary(language))
               + "</gco:CharacterString>\n"
               + "      </gmd:abstract>\n");
 
@@ -12148,7 +12192,7 @@ public abstract class EDDGrid extends EDD {
                   + "      </gmd:aggregationInfo>\n");
 
         // aggregation, larger work       Unidata CDM  (? ncISO does this)
-        if (!CDM_OTHER.equals(cdmDataType())) {
+        if (!CDM_OTHER.equals(cdmDataType(language))) {
           writer.write(
               "      <gmd:aggregationInfo>\n"
                   + "        <gmd:MD_AggregateInformation>\n"
@@ -12164,7 +12208,7 @@ public abstract class EDDGrid extends EDD {
                   + "              </gmd:authority>\n"
                   + "              <gmd:code>\n"
                   + "                <gco:CharacterString>"
-                  + cdmDataType()
+                  + cdmDataType(language)
                   + "</gco:CharacterString>\n"
                   + "              </gmd:code>\n"
                   + "            </gmd:MD_Identifier>\n"
@@ -12465,7 +12509,7 @@ public abstract class EDDGrid extends EDD {
 
     // contentInfo  (dataVariables)    See Ted Habermann's emails 2012-05-10 and 11.
     String coverageType =
-        combinedGlobalAttributes.getString("coverage_content_type"); // used by GOES-R
+        combinedGlobalAttributes.getString(language, "coverage_content_type"); // used by GOES-R
     String validCoverageTypes[] = { // in 19115-1
       "image",
       "thematicClassification",

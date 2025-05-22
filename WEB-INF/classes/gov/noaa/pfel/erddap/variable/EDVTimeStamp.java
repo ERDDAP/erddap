@@ -15,6 +15,8 @@ import com.cohort.util.Math2;
 import com.cohort.util.MustBe;
 import com.cohort.util.String2;
 import com.cohort.util.Test;
+import gov.noaa.pfel.erddap.dataset.metadata.LocalizedAttributes;
+import gov.noaa.pfel.erddap.util.EDMessages;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import java.time.format.DateTimeFormatter;
 import java.util.GregorianCalendar;
@@ -49,6 +51,55 @@ public class EDVTimeStamp extends EDV {
   protected String time_precision; // see Calendar2.epochSecondsToLimitedIsoStringT
   protected String time_zone; // if not specified, will be Zulu
   protected TimeZone timeZone = null; // for Java   null=Zulu
+
+  /**
+   * This class holds information about the time variable, which is like EDV, but the
+   * destinationName is forced to be "time" and the destination units are standardized to seconds
+   * since 1970-01-01 in the results.
+   *
+   * <p>Either tAddAttributes (read first) or tSourceAttributes must have "units" which is either
+   *
+   * <ul>
+   *   <li>a UDUunits string (containing " since ") describing how to interpret source time values
+   *       (e.g., "seconds since 1970-01-01T00:00:00") where the base time is an ISO 8601 formatted
+   *       date time string (YYYY-MM-DDThh:mm:ss).
+   *   <li>a java.time.format.DateTimeFormatter string (which is compatible with
+   *       java.text.SimpleDateFormat) describing how to interpret string times. Any format that
+   *       starts with "yyyy-MM", e.g., Calendar2.ISO8601TZ_FORMAT "yyyy-MM-dd'T'HH:mm:ssZ", will be
+   *       parsed with Calendar2.parseISODateTimeZulu(). See
+   *       https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/time/format/DateTimeFormatter.html
+   *       or
+   *       https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/text/SimpleDateFormat.html)).
+   * </ul>
+   *
+   * This constructor gets/sets actual_range from actual_range, actual_min, actual_max, data_min, or
+   * data_max metadata. If present, they should have the source min and max times in 'units' format.
+   *
+   * <p>scale_factor an dadd_offset are allowed for numeric time variables. This constructor removes
+   * any scale_factor and add_offset attributes and stores the resulting information so that
+   * destination data has been converted to destinationDataType with scaleFactor and addOffset
+   * applied.
+   *
+   * @param tDestinationName should be "time" for *the* destination variable (type=EDVTime),
+   *     otherwise some other name.
+   * @throws Throwable if trouble
+   */
+  public EDVTimeStamp(
+      String tDatasetID,
+      String tSourceName,
+      String tDestinationName,
+      Attributes tSourceAttributes,
+      LocalizedAttributes tAddAttributes,
+      String tSourceDataType)
+      throws Throwable {
+    this(
+        tDatasetID,
+        tSourceName,
+        tDestinationName,
+        tSourceAttributes,
+        tAddAttributes.toAttributes(EDMessages.DEFAULT_LANGUAGE),
+        tSourceDataType);
+  }
 
   /**
    * This class holds information about the time variable, which is like EDV, but the
@@ -327,11 +378,14 @@ public class EDVTimeStamp extends EDV {
    * This determines if a variable is a TimeStamp variable by looking for " since " (used for
    * UDUNITS numeric times) or "yyyy" or "YYYY" (a formatting string which has the year designator)
    * in the units attribute.
+   *
+   * @param language TODO
    */
-  public static boolean hasTimeUnits(Attributes sourceAttributes, Attributes addAttributes) {
+  public static boolean hasTimeUnits(
+      int language, Attributes sourceAttributes, LocalizedAttributes addAttributes) {
     String tUnits = null;
     if (addAttributes != null) // priority
-    tUnits = addAttributes.getString("units");
+    tUnits = addAttributes.getString(language, "units");
     if (tUnits == null && sourceAttributes != null) tUnits = sourceAttributes.getString("units");
     return Calendar2.isTimeUnits(tUnits);
   }

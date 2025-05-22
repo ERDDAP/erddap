@@ -49,7 +49,9 @@ import gov.noaa.pfel.erddap.dataset.EDDTableFromNcFiles;
 import gov.noaa.pfel.erddap.handlers.SaxHandler;
 import gov.noaa.pfel.erddap.handlers.SaxParsingContext;
 import gov.noaa.pfel.erddap.handlers.TopLevelHandler;
+import gov.noaa.pfel.erddap.util.EDMessages;
 import gov.noaa.pfel.erddap.util.EDStatic;
+import gov.noaa.pfel.erddap.variable.DataVariableInfo;
 import gov.noaa.pfel.erddap.variable.EDV;
 import java.io.IOException;
 import java.io.InputStream;
@@ -60,6 +62,7 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.file.Path;
 import java.time.Year;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
@@ -9412,34 +9415,34 @@ class JettyTests {
               "",
               null,
               null,
-              new Object[][] { // dataVariables: sourceName, addAttributes
-                {"longitude", null, null},
-                {"latitude", null, null},
-                {"altitude", null, null},
-                {"time", null, null},
-                {"ship", null, null},
-                {"cruise_id", null, null},
-                {"cast", null, null},
-                {"bottle_posn", null, null},
-                {"chl_a_total", null, null},
-                {"chl_a_10um", null, null},
-                {"phaeo_total", null, null},
-                {"phaeo_10um", null, null},
-                {"sal00", null, null},
-                {"sal11", null, null},
-                {"temperature0", null, null},
-                {"temperature1", null, null},
-                {"fluor_v", null, null},
-                {"xmiss_v", null, null},
-                {"PO4", null, null},
-                {"N_N", null, null},
-                {"NO3", null, null},
-                {"Si", null, null},
-                {"NO2", null, null},
-                {"NH4", null, null},
-                {"oxygen", null, null},
-                {"par", null, null}
-              },
+              new ArrayList<>(
+                  List.of(
+                      new DataVariableInfo("longitude", null, null, null),
+                      new DataVariableInfo("latitude", null, null, null),
+                      new DataVariableInfo("altitude", null, null, null),
+                      new DataVariableInfo("time", null, null, null),
+                      new DataVariableInfo("ship", null, null, null),
+                      new DataVariableInfo("cruise_id", null, null, null),
+                      new DataVariableInfo("cast", null, null, null),
+                      new DataVariableInfo("bottle_posn", null, null, null),
+                      new DataVariableInfo("chl_a_total", null, null, null),
+                      new DataVariableInfo("chl_a_10um", null, null, null),
+                      new DataVariableInfo("phaeo_total", null, null, null),
+                      new DataVariableInfo("phaeo_10um", null, null, null),
+                      new DataVariableInfo("sal00", null, null, null),
+                      new DataVariableInfo("sal11", null, null, null),
+                      new DataVariableInfo("temperature0", null, null, null),
+                      new DataVariableInfo("temperature1", null, null, null),
+                      new DataVariableInfo("fluor_v", null, null, null),
+                      new DataVariableInfo("xmiss_v", null, null, null),
+                      new DataVariableInfo("PO4", null, null, null),
+                      new DataVariableInfo("N_N", null, null, null),
+                      new DataVariableInfo("NO3", null, null, null),
+                      new DataVariableInfo("Si", null, null, null),
+                      new DataVariableInfo("NO2", null, null, null),
+                      new DataVariableInfo("NH4", null, null, null),
+                      new DataVariableInfo("oxygen", null, null, null),
+                      new DataVariableInfo("par", null, null, null))),
               60, // int tReloadEveryNMinutes,
               EDStatic.erddapUrl
                   + // in tests, always use non-https url
@@ -9780,6 +9783,7 @@ class JettyTests {
   @org.junit.jupiter.api.Test
   @TagJetty
   void testCopyFilesGenerateDatasetsXml() throws Throwable {
+    int language = EDMessages.DEFAULT_LANGUAGE;
     String dataDir =
         File2.addSlash(
             Path.of(JettyTests.class.getResource("/data/points/testEDDTableCopyFiles3/").toURI())
@@ -10272,7 +10276,7 @@ class JettyTests {
       edd = EDDTableFromNcFiles.oneFromXmlFragment(null, results);
 
       Test.ensureEqual(edd.datasetID(), tDatasetID, "");
-      Test.ensureEqual(edd.title(), "Data from a local source.", "");
+      Test.ensureEqual(edd.title(language), "Data from a local source.", "");
       Test.ensureEqual(
           String2.toCSSVString(edd.dataVariableDestinationNames()),
           "row, region, year, market_category, month, block, pounds, area, imported, region_caught, time, description, nominal_species, species_group, comments",
@@ -12230,11 +12234,8 @@ class JettyTests {
             null,
             null,
             null,
-            new Object[][] {
-              { // dataVariables[dvIndex][0=sourceName, 1=destName, 2=addAttributes]
-                "salt", null, null
-              }
-            },
+            new ArrayList<DataVariableInfo>(
+                List.of(new DataVariableInfo("salt", null, null, null))),
             60, // int tReloadEveryNMinutes,
             -1, // updateEveryNMillis,
             erddapUrl,
@@ -12355,7 +12356,7 @@ class JettyTests {
   @TagJetty
   void testEDDGridFromErddapGenerateDatasetsXml() throws Throwable {
     // testVerboseOn();
-
+    int language = EDMessages.DEFAULT_LANGUAGE;
     // test local generateDatasetsXml
     String results =
         EDDGridFromErddap.generateDatasetsXml(EDStatic.erddapUrl, false) + "\n"; // in tests, always
@@ -12405,14 +12406,14 @@ class JettyTests {
     String2.log(
         "\n!!! The first dataset will vary, depending on which are currently active!!!\n"
             + "title="
-            + edd.title()
+            + edd.title(language)
             + "\n"
             + "datasetID="
             + edd.datasetID()
             + "\n"
             + "vars="
             + String2.toCSSVString(edd.dataVariableDestinationNames()));
-    Test.ensureEqual(edd.title(), "Audio data from a local source.", "");
+    Test.ensureEqual(edd.title(language), "Audio data from a local source.", "");
     Test.ensureEqual(edd.datasetID(), tDatasetID, "");
     Test.ensureEqual(String2.toCSSVString(edd.dataVariableDestinationNames()), "channel_1", "");
   }

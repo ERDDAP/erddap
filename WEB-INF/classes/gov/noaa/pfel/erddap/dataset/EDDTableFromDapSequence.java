@@ -23,8 +23,10 @@ import gov.noaa.pfel.coastwatch.pointdata.Table;
 import gov.noaa.pfel.coastwatch.util.SSR;
 import gov.noaa.pfel.coastwatch.util.SimpleXMLReader;
 import gov.noaa.pfel.erddap.Erddap;
+import gov.noaa.pfel.erddap.dataset.metadata.LocalizedAttributes;
 import gov.noaa.pfel.erddap.handlers.EDDTableFromDapSequenceHandler;
 import gov.noaa.pfel.erddap.handlers.SaxHandlerClass;
+import gov.noaa.pfel.erddap.util.EDMessages;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.*;
 import java.io.ByteArrayInputStream;
@@ -69,8 +71,8 @@ public class EDDTableFromDapSequence extends EDDTable {
     // data to be obtained (or not)
     if (verbose) String2.log("\n*** constructing EDDTableFromDapSequence(xmlReader)...");
     String tDatasetID = xmlReader.attributeValue("datasetID");
-    Attributes tGlobalAttributes = null;
-    ArrayList tDataVariables = new ArrayList();
+    LocalizedAttributes tGlobalAttributes = null;
+    ArrayList<DataVariableInfo> tDataVariables = new ArrayList<>();
     int tReloadEveryNMinutes = Integer.MAX_VALUE;
     String tAccessibleTo = null;
     String tGraphsAccessibleTo = null;
@@ -150,10 +152,6 @@ public class EDDTableFromDapSequence extends EDDTable {
         default -> xmlReader.unexpectedTagException();
       }
     }
-    int ndv = tDataVariables.size();
-    Object ttDataVariables[][] = new Object[ndv][];
-    for (int i = 0; i < tDataVariables.size(); i++)
-      ttDataVariables[i] = (Object[]) tDataVariables.get(i);
 
     return new EDDTableFromDapSequence(
         tDatasetID,
@@ -167,7 +165,7 @@ public class EDDTableFromDapSequence extends EDDTable {
         tDefaultGraphQuery,
         tAddVariablesWhere,
         tGlobalAttributes,
-        ttDataVariables,
+        tDataVariables,
         tReloadEveryNMinutes,
         tLocalSourceUrl,
         tOuterSequenceName,
@@ -272,8 +270,8 @@ public class EDDTableFromDapSequence extends EDDTable {
       String tDefaultDataQuery,
       String tDefaultGraphQuery,
       String tAddVariablesWhere,
-      Attributes tAddGlobalAttributes,
-      Object[][] tDataVariables,
+      LocalizedAttributes tAddGlobalAttributes,
+      ArrayList<DataVariableInfo> tDataVariables,
       int tReloadEveryNMinutes,
       String tLocalSourceUrl,
       String tOuterSequenceName,
@@ -286,6 +284,7 @@ public class EDDTableFromDapSequence extends EDDTable {
       throws Throwable {
 
     if (verbose) String2.log("\n*** constructing EDDTableFromDapSequence " + tDatasetID);
+    int language = EDMessages.DEFAULT_LANGUAGE;
     long constructionStartMillis = System.currentTimeMillis();
     String errorInMethod = "Error in EDDTableFromDapSequence(" + tDatasetID + ") constructor:\n";
 
@@ -300,9 +299,9 @@ public class EDDTableFromDapSequence extends EDDTable {
     sosOfferingPrefix = tSosOfferingPrefix;
     defaultDataQuery = tDefaultDataQuery;
     defaultGraphQuery = tDefaultGraphQuery;
-    if (tAddGlobalAttributes == null) tAddGlobalAttributes = new Attributes();
+    if (tAddGlobalAttributes == null) tAddGlobalAttributes = new LocalizedAttributes();
     addGlobalAttributes = tAddGlobalAttributes;
-    addGlobalAttributes.set("sourceUrl", convertToPublicSourceUrl(tLocalSourceUrl));
+    addGlobalAttributes.set(language, "sourceUrl", convertToPublicSourceUrl(tLocalSourceUrl));
     localSourceUrl = tLocalSourceUrl;
     setReloadEveryNMinutes(tReloadEveryNMinutes);
     outerSequenceName = tOuterSequenceName;
@@ -368,21 +367,23 @@ public class EDDTableFromDapSequence extends EDDTable {
     sourceGlobalAttributes = new Attributes();
     OpendapHelper.getAttributes(das, "GLOBAL", sourceGlobalAttributes);
     combinedGlobalAttributes =
-        new Attributes(addGlobalAttributes, sourceGlobalAttributes); // order is important
-    String tLicense = combinedGlobalAttributes.getString("license");
+        new LocalizedAttributes(addGlobalAttributes, sourceGlobalAttributes); // order is important
+    String tLicense = combinedGlobalAttributes.getString(language, "license");
     if (tLicense != null)
       combinedGlobalAttributes.set(
-          "license", String2.replaceAll(tLicense, "[standard]", EDStatic.messages.standardLicense));
+          language,
+          "license",
+          String2.replaceAll(tLicense, "[standard]", EDStatic.messages.standardLicense));
     combinedGlobalAttributes.removeValue("\"null\"");
 
     // create structures to hold the sourceAttributes temporarily
-    int ndv = tDataVariables.length;
+    int ndv = tDataVariables.size();
     Attributes tDataSourceAttributes[] = new Attributes[ndv];
     String tDataSourceTypes[] = new String[ndv];
     String tDataSourceNames[] = new String[ndv];
     isOuterVar = new boolean[ndv]; // default is all false
     for (int dv = 0; dv < ndv; dv++) {
-      tDataSourceNames[dv] = (String) tDataVariables[dv][0];
+      tDataSourceNames[dv] = tDataVariables.get(dv).sourceName();
     }
 
     // delve into the outerSequence
@@ -505,19 +506,19 @@ public class EDDTableFromDapSequence extends EDDTable {
     // create dataVariables[]
     dataVariables = new EDV[ndv];
     for (int dv = 0; dv < ndv; dv++) {
-      String tSourceName = (String) tDataVariables[dv][0];
-      String tDestName = (String) tDataVariables[dv][1];
+      String tSourceName = tDataVariables.get(dv).sourceName();
+      String tDestName = tDataVariables.get(dv).destinationName();
       if (tDestName == null || tDestName.trim().length() == 0) tDestName = tSourceName;
       Attributes tSourceAtt = tDataSourceAttributes[dv];
-      Attributes tAddAtt = (Attributes) tDataVariables[dv][2];
+      LocalizedAttributes tAddAtt = tDataVariables.get(dv).attributes();
       String tSourceType = tDataSourceTypes[dv];
       // if (reallyVerbose) String2.log("  dv=" + dv + " sourceName=" + tSourceName + " sourceType="
       // + tSourceType);
 
       // if _Unsigned=true or false, change tSourceType
       if (tSourceAtt == null) tSourceAtt = new Attributes();
-      if (tAddAtt == null) tAddAtt = new Attributes();
-      tSourceType = Attributes.adjustSourceType(tSourceType, tSourceAtt, tAddAtt);
+      if (tAddAtt == null) tAddAtt = new LocalizedAttributes();
+      tSourceType = tAddAtt.adjustSourceType(tSourceType, tSourceAtt);
 
       // ensure the variable was found
       if (tSourceName.startsWith("=")) {
@@ -586,7 +587,7 @@ public class EDDTableFromDapSequence extends EDDTable {
                 tAddAtt,
                 tSourceType); // this constructor gets source / sets destination actual_range
         timeIndex = dv;
-      } else if (EDVTimeStamp.hasTimeUnits(tSourceAtt, tAddAtt)) {
+      } else if (EDVTimeStamp.hasTimeUnits(language, tSourceAtt, tAddAtt)) {
         dataVariables[dv] =
             new EDVTimeStamp(
                 datasetID,

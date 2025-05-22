@@ -72,8 +72,8 @@ public class OdvFiles extends TableWriterFileType {
           requestInfo.outputStream(),
           (TableWriterAllWithMetadata) tableWriter,
           requestInfo.edd().datasetID(),
-          requestInfo.edd().publicSourceUrl(),
-          requestInfo.edd().infoUrl());
+          requestInfo.edd().publicSourceUrl(requestInfo.language()),
+          requestInfo.edd().infoUrl(requestInfo.language()));
     }
   }
 
@@ -487,7 +487,7 @@ public class OdvFiles extends TableWriterFileType {
           new TableWriterAllWithMetadata(
               language,
               grid,
-              grid.getNewHistory(requestUrl, userDapQuery),
+              grid.getNewHistory(language, requestUrl, userDapQuery),
               grid.cacheDirectory(),
               "ODV"); // A random number will be added to it for safety.
       grid.saveAsTableWriter(gda, twawm);
@@ -498,8 +498,8 @@ public class OdvFiles extends TableWriterFileType {
           outputStreamSource,
           twawm,
           grid.datasetID(),
-          grid.publicSourceUrl(),
-          grid.infoUrl());
+          grid.publicSourceUrl(language),
+          grid.infoUrl(language));
     }
 
     // diagnostic

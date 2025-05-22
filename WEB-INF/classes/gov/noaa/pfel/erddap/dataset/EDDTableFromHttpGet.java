@@ -24,6 +24,7 @@ import com.google.common.collect.ImmutableList;
 import gov.noaa.pfel.coastwatch.pointdata.Table;
 import gov.noaa.pfel.coastwatch.util.FileVisitorDNLS;
 import gov.noaa.pfel.coastwatch.util.SSR;
+import gov.noaa.pfel.erddap.dataset.metadata.LocalizedAttributes;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.*;
 import java.io.BufferedOutputStream;
@@ -32,6 +33,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.Writer;
 import java.math.BigInteger;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Calendar;
@@ -159,8 +161,8 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
       String tSosOfferingPrefix,
       String tDefaultDataQuery,
       String tDefaultGraphQuery,
-      Attributes tAddGlobalAttributes,
-      Object[][] tDataVariables,
+      LocalizedAttributes tAddGlobalAttributes,
+      ArrayList<DataVariableInfo> tDataVariables,
       int tReloadEveryNMinutes,
       int tUpdateEveryNMillis,
       String tFileDir,
@@ -890,7 +892,7 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
       IntArray tDirStructureNs,
       IntArray tDirStructureCalendars,
       Set<String> keys,
-      Attributes tGlobalAttributes,
+      LocalizedAttributes tGlobalAttributes,
       String columnNames[],
       String columnUnits[],
       PAType columnPATypes[],

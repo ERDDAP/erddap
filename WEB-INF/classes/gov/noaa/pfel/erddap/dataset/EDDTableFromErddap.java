@@ -21,8 +21,10 @@ import gov.noaa.pfel.coastwatch.pointdata.Table;
 import gov.noaa.pfel.coastwatch.util.SSR;
 import gov.noaa.pfel.coastwatch.util.SimpleXMLReader;
 import gov.noaa.pfel.erddap.Erddap;
+import gov.noaa.pfel.erddap.dataset.metadata.LocalizedAttributes;
 import gov.noaa.pfel.erddap.handlers.EDDTableFromErddapHandler;
 import gov.noaa.pfel.erddap.handlers.SaxHandlerClass;
+import gov.noaa.pfel.erddap.util.EDMessages;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.*;
 import java.io.BufferedReader;
@@ -197,6 +199,7 @@ public class EDDTableFromErddap extends EDDTable implements FromErddap {
       throws Throwable {
 
     if (verbose) String2.log("\n*** constructing EDDTableFromErddap " + tDatasetID);
+    int language = EDMessages.DEFAULT_LANGUAGE;
     long constructionStartMillis = System.currentTimeMillis();
     String errorInMethod = "Error in EDDTableFromErddap(" + tDatasetID + ") constructor:\n";
 
@@ -211,7 +214,7 @@ public class EDDTableFromErddap extends EDDTable implements FromErddap {
     sosOfferingPrefix = tSosOfferingPrefix;
     defaultDataQuery = tDefaultDataQuery;
     defaultGraphQuery = tDefaultGraphQuery;
-    addGlobalAttributes = new Attributes();
+    addGlobalAttributes = new LocalizedAttributes();
     setReloadEveryNMinutes(tReloadEveryNMinutes);
     localSourceUrl = tLocalSourceUrl;
     if (tLocalSourceUrl.indexOf("/griddap/") > 0)
@@ -344,7 +347,7 @@ public class EDDTableFromErddap extends EDDTable implements FromErddap {
     }
 
     combinedGlobalAttributes =
-        new Attributes(addGlobalAttributes, sourceGlobalAttributes); // order is important
+        new LocalizedAttributes(addGlobalAttributes, sourceGlobalAttributes); // order is important
     combinedGlobalAttributes.removeValue("\"null\"");
 
     // make the dataVariables
@@ -357,7 +360,7 @@ public class EDDTableFromErddap extends EDDTable implements FromErddap {
       String tSourceType = sourceTable.getColumn(col).elementTypeString();
 
       // deal with remote not having ioos_category, but this ERDDAP requiring it
-      Attributes tAddAtt = new Attributes();
+      LocalizedAttributes tAddAtt = new LocalizedAttributes();
       if (EDStatic.config.variablesMustHaveIoosCategory
           && tSourceAtt.getString("ioos_category") == null) {
 
@@ -431,7 +434,7 @@ public class EDDTableFromErddap extends EDDTable implements FromErddap {
                 tSourceAtt,
                 tAddAtt,
                 tSourceType); // this constructor gets source / sets destination actual_range
-      } else if (EDVTimeStamp.hasTimeUnits(tSourceAtt, tAddAtt)) {
+      } else if (EDVTimeStamp.hasTimeUnits(language, tSourceAtt, tAddAtt)) {
         edv =
             new EDVTimeStamp(
                 datasetID,

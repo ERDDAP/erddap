@@ -83,11 +83,11 @@ public class AxisDataAccessor {
               + constraints);
 
     // make globalAttributes
-    globalAttributes = new Attributes(eddGrid.combinedGlobalAttributes()); // a copy
+    globalAttributes = eddGrid.combinedGlobalAttributes().toAttributes(language); // a copy
 
     // fix up global attributes (always to a local COPY of global attributes)
     // remove acdd-style and google-style bounding box
-    EDD.addToHistory(globalAttributes, eddGrid.publicSourceUrl());
+    EDD.addToHistory(globalAttributes, eddGrid.publicSourceUrl(language));
     EDD.addToHistory(globalAttributes, EDStatic.config.baseUrl + tRequestUrl + "?" + tUserDapQuery);
     globalAttributes.remove("geospatial_lon_min");
     globalAttributes.remove("geospatial_lon_max");

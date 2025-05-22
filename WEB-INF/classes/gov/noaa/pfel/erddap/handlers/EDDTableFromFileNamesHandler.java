@@ -44,8 +44,6 @@ public class EDDTableFromFileNamesHandler extends BaseTableHandler {
 
   @Override
   protected EDD buildDataset() throws Throwable {
-    Object[][] ttDataVariables = convertDataVariablesToArray();
-
     return new EDDTableFromFileNames(
         datasetID,
         tAccessibleTo,
@@ -57,7 +55,7 @@ public class EDDTableFromFileNamesHandler extends BaseTableHandler {
         tDefaultGraphQuery,
         tAddVariablesWhere,
         tGlobalAttributes,
-        ttDataVariables,
+        tDataVariables,
         tReloadEveryNMinutes,
         tFileDir,
         tFileNameRegex,

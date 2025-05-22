@@ -18,6 +18,8 @@ import com.cohort.util.Units2;
 import com.google.common.collect.ImmutableList;
 import gov.noaa.pfel.coastwatch.griddata.DataHelper;
 import gov.noaa.pfel.coastwatch.sgt.SgtMap;
+import gov.noaa.pfel.erddap.dataset.metadata.LocalizedAttributes;
+import gov.noaa.pfel.erddap.util.EDMessages;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import java.util.GregorianCalendar;
 
@@ -325,6 +327,72 @@ public class EDV {
       String tSourceName,
       String tDestinationName,
       Attributes tSourceAttributes,
+      LocalizedAttributes tAddAttributes,
+      String tSourceDataType,
+      PAOne tSourceMin,
+      PAOne tSourceMax)
+      throws Throwable {
+    this(
+        tDatasetID,
+        tSourceName,
+        tDestinationName,
+        tSourceAttributes,
+        tAddAttributes.toAttributes(EDMessages.DEFAULT_LANGUAGE),
+        tSourceDataType,
+        tSourceMin,
+        tSourceMax);
+  }
+
+  /**
+   * The constructor. In general, subclasses call this as the first step in construction.
+   * Non-Lon,Lat,Alt,Time variables use the other constructor. This constructor DOESN'T look for
+   * actual_range, actual_min, actual_max, data_min, or data_max attributes, assuming that the
+   * subclasses' constructor will do that!
+   *
+   * <p>This removes any scale_factor and add_offset attributes and stores the resulting information
+   * so that destination data has been converted to destinationDataType with scaleFactor and
+   * addOffset applied.
+   *
+   * <p>sourceAtt or addAtt can have missing_value and/or _FillValue. They will be adjusted by
+   * scale_factor and add_offset (if present).
+   *
+   * <p>Call setActualRangeFromDestinationMinMax() sometime after this returns.
+   *
+   * @param datasetID for diagnostic messages
+   * @param tSourceName the name of the variable in the dataset source (usually with no spaces) or a
+   *     derived variable (e.g., "=0").
+   * @param tDestinationName is the name to be used in the results. If null or "", tSourceName will
+   *     be used.
+   * @param tSourceAttributes are the attributes for the variable in the source. If this is null, an
+   *     empty Attributes will be created.
+   * @param tAddAttributes the attributes which will be added when data is extracted and which have
+   *     precedence over sourceAttributes. Special case: value="null" causes that item to be removed
+   *     from combinedAttributes. If this is null, an empty Attributes will be created.
+   * @param tSourceDataType the type of data (e.g., "boolean", "byte", "int", "float", "String",
+   *     ...). If tSourceName specifies a fixed value, you can set this to null and the
+   *     sourceDataType will automatically be set to int or double.
+   *     <p>(Special case) For the boolean database type, use "boolean". ERDDAP doesn't support a
+   *     boolean type (because booleans can't store nulls). Using "boolean" will cause boolean
+   *     values to be stored and represented as bytes: 0=false, 1=true. Clients can specify
+   *     constraints by using the numbers. But you need to use the "boolean" data type to tell
+   *     ERDDAP how to interact with the database.
+   * @param tSourceMin is the minimum value of the source variable (scale_factor and add_offset, if
+   *     any, haven't been applied). <br>
+   *     If unknown, or tSourceName is a fixed value, you can just use Double.NaN here. <br>
+   *     This constructor DOESN'T look for actual_range, actual_min, actual_max, <br>
+   *     data_min, or data_max attribute!
+   * @param tSourceMax is the maximum value of the source variable (scale_factor and add_offset, if
+   *     any, haven't been applied). <br>
+   *     If unknown, or tSourceName is a fixed value, you can just use Double.NaN here. <br>
+   *     This constructor DOESN'T look for actual_range, actual_min, actual_max, <br>
+   *     data_min, or data_max attribute!
+   * @throws Throwable if trouble
+   */
+  public EDV(
+      String tDatasetID,
+      String tSourceName,
+      String tDestinationName,
+      Attributes tSourceAttributes,
       Attributes tAddAttributes,
       String tSourceDataType,
       PAOne tSourceMin,
@@ -493,6 +561,36 @@ public class EDV {
       vMax = vMax.scaleAddOffset(destinationDataPAType, scaleFactor, addOffset);
       combinedAttributes.set("valid_max", vMax);
     }
+  }
+
+  /**
+   * This variant constructor is only used for non-Lon,Lat,Alt,Time variables where the sourceMin
+   * and sourceMax are not explicitly defined. This constructor tries to set destinationMin and
+   * destinationMax by looking for actual_range, actual_min, actual_max, data_min, or data_max
+   * metadata.
+   *
+   * <p>For EDVGridAxis, actual_range should indicate order of storage (first, last). Sometimes
+   * latitude is max,min.
+   *
+   * <p>Call setActualRangeFromDestinationMinMax() sometime after this returns.
+   *
+   * <p>See the other constructor for more information.
+   */
+  public EDV(
+      String tDatasetID,
+      String tSourceName,
+      String tDestinationName,
+      Attributes tSourceAttributes,
+      LocalizedAttributes tAddAttributes,
+      String tSourceDataType)
+      throws Throwable {
+    this(
+        tDatasetID,
+        tSourceName,
+        tDestinationName,
+        tSourceAttributes,
+        tAddAttributes.toAttributes(EDMessages.DEFAULT_LANGUAGE),
+        tSourceDataType);
   }
 
   /**

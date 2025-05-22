@@ -45,13 +45,16 @@ class EDDGridSideBySideTests {
     EDDGrid qsWind8 = (EDDGrid) EDDTestDataset.geterdQSwind8day();
 
     // ensure that attributes are as expected
-    Test.ensureEqual(qsWind8.combinedGlobalAttributes().getString("satellite"), "QuikSCAT", "");
+    Test.ensureEqual(
+        qsWind8.combinedGlobalAttributes().getString(language, "satellite"), "QuikSCAT", "");
     EDV edv = qsWind8.findDataVariableByDestinationName("x_wind");
     Test.ensureEqual(edv.combinedAttributes().getString("standard_name"), "x_wind", "");
     edv = qsWind8.findDataVariableByDestinationName("y_wind");
     Test.ensureEqual(edv.combinedAttributes().getString("standard_name"), "y_wind", "");
     Test.ensureEqual(
-        qsWind8.combinedGlobalAttributes().getString("defaultGraphQuery"), "&.draw=vectors", "");
+        qsWind8.combinedGlobalAttributes().getString(language, "defaultGraphQuery"),
+        "&.draw=vectors",
+        "");
 
     // get data
     dapQuery = "x_wind[4:8][0][(-20)][(80)],y_wind[4:8][0][(-20)][(80)]";

@@ -687,11 +687,12 @@ public abstract class ImageFiles extends ImageTypes {
               false,
               xVar.longName() + xUnits, // x,yAxisTitle  for now, always std units
               yVar.longName() + yUnits,
-              varTitle.length() > 0 ? varTitle : eddTable.title(),
-              varTitle.length() > 0 ? eddTable.title() : "",
+              varTitle.length() > 0 ? varTitle : eddTable.title(language),
+              varTitle.length() > 0 ? eddTable.title(language) : "",
               constraintTitle.toString(), // title2.toString(),
               MessageFormat.format(
-                  EDStatic.messages.imageDataCourtesyOfAr[language], eddTable.institution()),
+                  EDStatic.messages.imageDataCourtesyOfAr[language],
+                  eddTable.institution(language)),
               table,
               null,
               null,
@@ -870,7 +871,7 @@ public abstract class ImageFiles extends ImageTypes {
 
         if (currentDrawLandMask == null) {
           EDV edv = zVar == null ? yVar : zVar;
-          currentDrawLandMask = edv.drawLandMask(eddTable.defaultDrawLandMask());
+          currentDrawLandMask = edv.drawLandMask(eddTable.defaultDrawLandMask(language));
         }
 
         if (transparentPng) {
@@ -1993,10 +1994,11 @@ public abstract class ImageFiles extends ImageTypes {
                   vars[0].longName() + xUnits,
                   vars[1].longName() + yUnits,
                   varInfo,
-                  eddGrid.title(),
+                  eddGrid.title(language),
                   otherInfo.toString(),
                   MessageFormat.format(
-                      EDStatic.messages.imageDataCourtesyOfAr[language], eddGrid.institution()),
+                      EDStatic.messages.imageDataCourtesyOfAr[language],
+                      eddGrid.institution(language)),
                   table,
                   null,
                   null,
@@ -2050,11 +2052,12 @@ public abstract class ImageFiles extends ImageTypes {
                   yIsTimeAxis,
                   vars[0].longName() + xUnits,
                   varInfo,
-                  eddGrid.title(),
+                  eddGrid.title(language),
                   otherInfo.toString(),
                   "",
                   MessageFormat.format(
-                      EDStatic.messages.imageDataCourtesyOfAr[language], eddGrid.institution()),
+                      EDStatic.messages.imageDataCourtesyOfAr[language],
+                      eddGrid.institution(language)),
                   table,
                   null,
                   null,
@@ -2206,10 +2209,11 @@ public abstract class ImageFiles extends ImageTypes {
                   (reallySmall ? vars[1].destinationName() : vars[1].longName()) + yUnits,
                   (reallySmall ? vars[2].destinationName() : vars[2].longName())
                       + zUnits, // boldTitle
-                  eddGrid.title(),
+                  eddGrid.title(language),
                   otherInfo.toString(),
                   MessageFormat.format(
-                      EDStatic.messages.imageDataCourtesyOfAr[language], eddGrid.institution()),
+                      EDStatic.messages.imageDataCourtesyOfAr[language],
+                      eddGrid.institution(language)),
                   null,
                   grid,
                   null,
@@ -2397,12 +2401,13 @@ public abstract class ImageFiles extends ImageTypes {
                       + xUnits, // x,yAxisTitle  for now, always std units
                   (reallySmall ? vars[1].destinationName() : vars[1].longName()) + yUnits,
                   vars[2] == null
-                      ? eddGrid.title()
+                      ? eddGrid.title(language)
                       : (reallySmall ? vars[2].destinationName() : vars[2].longName()) + zUnits,
-                  vars[2] == null ? "" : eddGrid.title(),
+                  vars[2] == null ? "" : eddGrid.title(language),
                   otherInfo.toString(),
                   MessageFormat.format(
-                      EDStatic.messages.imageDataCourtesyOfAr[language], eddGrid.institution()),
+                      EDStatic.messages.imageDataCourtesyOfAr[language],
+                      eddGrid.institution(language)),
                   table,
                   null,
                   null,
@@ -2548,7 +2553,7 @@ public abstract class ImageFiles extends ImageTypes {
               imageHeight);
         } else {
           if (currentDrawLandMask == null)
-            currentDrawLandMask = vars[2].drawLandMask(eddGrid.defaultDrawLandMask());
+            currentDrawLandMask = vars[2].drawLandMask(eddGrid.defaultDrawLandMask(language));
 
           List<PrimitiveArray> mmal =
               SgtMap.makeMap(
@@ -2570,10 +2575,11 @@ public abstract class ImageFiles extends ImageTypes {
                   0, // double gridScaleFactor, gridAltScaleFactor, gridAltOffset,
                   cptFullName,
                   vars[2].longName() + zUnits,
-                  eddGrid.title(),
+                  eddGrid.title(language),
                   otherInfo.toString(),
                   MessageFormat.format(
-                      EDStatic.messages.imageDataCourtesyOfAr[language], eddGrid.institution()),
+                      EDStatic.messages.imageDataCourtesyOfAr[language],
+                      eddGrid.institution(language)),
                   "off".equals(currentDrawLandMask)
                       ? SgtMap.NO_LAKES_AND_RIVERS
                       : palette.equals("Ocean") || palette.equals("Topography")
@@ -2611,7 +2617,7 @@ public abstract class ImageFiles extends ImageTypes {
           || (drawSurface && !isMap)) {
         if (currentDrawLandMask == null) {
           EDV edv = vars[2] == null ? vars[1] : vars[2];
-          currentDrawLandMask = edv.drawLandMask(eddGrid.defaultDrawLandMask());
+          currentDrawLandMask = edv.drawLandMask(eddGrid.defaultDrawLandMask(language));
         }
 
         List<PrimitiveArray> mmal =

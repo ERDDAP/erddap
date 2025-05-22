@@ -8,6 +8,8 @@ import com.cohort.array.Attributes;
 import com.cohort.array.PAOne;
 import com.cohort.array.PrimitiveArray;
 import com.cohort.util.SimpleException;
+import gov.noaa.pfel.erddap.dataset.metadata.LocalizedAttributes;
+import gov.noaa.pfel.erddap.util.EDMessages;
 
 /**
  * This class holds information about an altitude variable, which is like EDV, but the
@@ -22,6 +24,33 @@ public class EDVAlt extends EDV {
       "Please stop using <altitudeMetersPerSourceUnit>.  "
           + "When the value is 1, just delete it.  "
           + "For other values, set the altitude variable's <scale_factor> instead.";
+
+  /**
+   * The constructor -- like EDV, but the destinationName, and units are standardized.
+   *
+   * @param tSourceMin is pre-scale_factor and add_offset. This takes precedence over actual_range,
+   *     actual_min, or data_min metadata.
+   * @param tSourceMax is pre-scale_factor and add_offset. This takes precedence over actual_range,
+   *     actual_max, or data_max metadata.
+   */
+  public EDVAlt(
+      String tDatasetID,
+      String tSourceName,
+      Attributes tSourceAttributes,
+      LocalizedAttributes tAddAttributes,
+      String tSourceDataType,
+      PAOne tSourceMin,
+      PAOne tSourceMax)
+      throws Throwable {
+    this(
+        tDatasetID,
+        tSourceName,
+        tSourceAttributes,
+        tAddAttributes.toAttributes(EDMessages.DEFAULT_LANGUAGE),
+        tSourceDataType,
+        tSourceMin,
+        tSourceMax);
+  }
 
   /**
    * The constructor -- like EDV, but the destinationName, long_name, and units are standardized.

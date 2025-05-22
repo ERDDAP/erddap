@@ -21,8 +21,10 @@ import gov.noaa.pfel.coastwatch.pointdata.Table;
 import gov.noaa.pfel.coastwatch.util.SSR;
 import gov.noaa.pfel.coastwatch.util.SimpleXMLReader;
 import gov.noaa.pfel.erddap.Erddap;
+import gov.noaa.pfel.erddap.dataset.metadata.LocalizedAttributes;
 import gov.noaa.pfel.erddap.handlers.EDDGridLonPM180Handler;
 import gov.noaa.pfel.erddap.handlers.SaxHandlerClass;
+import gov.noaa.pfel.erddap.util.EDMessages;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.*;
 import java.io.BufferedReader;
@@ -227,7 +229,7 @@ public class EDDGridLonPM180 extends EDDGrid {
       int tnThreads,
       boolean tDimensionValuesInMemory)
       throws Throwable {
-
+    int language = EDMessages.DEFAULT_LANGUAGE;
     if (verbose) String2.log("\n*** constructing EDDGridLonPM180 " + tDatasetID);
     long constructionStartMillis = System.currentTimeMillis();
     String errorInMethod = "Error in EDDGridLonPM180(" + tDatasetID + ") constructor:\n";
@@ -303,10 +305,12 @@ public class EDDGridLonPM180 extends EDDGrid {
     // make/copy the local globalAttributes
     localSourceUrl = tChildDataset.localSourceUrl();
     sourceGlobalAttributes = (Attributes) tChildDataset.sourceGlobalAttributes().clone();
-    addGlobalAttributes = (Attributes) tChildDataset.addGlobalAttributes().clone();
-    combinedGlobalAttributes = (Attributes) tChildDataset.combinedGlobalAttributes().clone();
+    addGlobalAttributes = new LocalizedAttributes(tChildDataset.addGlobalAttributes());
+    combinedGlobalAttributes = new LocalizedAttributes(tChildDataset.combinedGlobalAttributes());
     combinedGlobalAttributes.set(
-        "title", combinedGlobalAttributes.getString("title").trim() + ", Lon+/-180");
+        language,
+        "title",
+        combinedGlobalAttributes.getString(language, "title").trim() + ", Lon+/-180");
 
     // make/copy the local axisVariables
     int nAv = tChildDataset.axisVariables.length;
@@ -600,9 +604,9 @@ public class EDDGridLonPM180 extends EDDGrid {
     if (changed && timeIndex >= 0) {
       axisVariables[timeIndex] = tChildDataset.axisVariables[timeIndex];
       combinedGlobalAttributes()
-          .set("time_coverage_start", axisVariables[timeIndex].destinationMinString());
+          .set(language, "time_coverage_start", axisVariables[timeIndex].destinationMinString());
       combinedGlobalAttributes()
-          .set("time_coverage_end", axisVariables[timeIndex].destinationMaxString());
+          .set(language, "time_coverage_end", axisVariables[timeIndex].destinationMaxString());
     }
 
     return changed;

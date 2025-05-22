@@ -1,6 +1,5 @@
 package gov.noaa.pfel.erddap.dataset.metadata;
 
-import com.cohort.array.Attributes;
 import com.cohort.array.StringArray;
 import com.cohort.util.Calendar2;
 import com.cohort.util.Math2;
@@ -97,9 +96,10 @@ import org.opengis.util.InternationalString;
 
 public class MetadataBuilder {
   public static Metadata buildMetadata(
+      int language,
       String datasetId,
       long creationDate,
-      Attributes attributes,
+      LocalizedAttributes attributes,
       EDV[] variables,
       boolean accessibleViaWms,
       boolean accessibleViaSubset) {
@@ -199,6 +199,7 @@ public class MetadataBuilder {
       extent.setVerticalElements(List.of(new DefaultVerticalExtent(minVert, maxVert, null)));
     }
     return buildMetadata(
+        language,
         datasetId,
         creationDate,
         attributes,
@@ -212,9 +213,10 @@ public class MetadataBuilder {
   }
 
   public static Metadata buildMetadata(
+      int language,
       String datasetId,
       long creationDate,
-      Attributes attributes,
+      LocalizedAttributes attributes,
       EDV[] variables,
       EDVGridAxis[] axisVariables,
       boolean accessibleViaWms,
@@ -326,6 +328,7 @@ public class MetadataBuilder {
     }
 
     return buildMetadata(
+        language,
         datasetId,
         creationDate,
         attributes,
@@ -340,9 +343,10 @@ public class MetadataBuilder {
 
   @SuppressWarnings("JavaUtilDate") // The api uses dates, so we need to build a date
   private static Metadata buildMetadata(
+      int language,
       String datasetId,
       long creationDate,
-      Attributes attributes,
+      LocalizedAttributes attributes,
       List<Dimension> dimensions,
       List<RangeDimension> rangeDimensions,
       List<InternationalString> standardNames,
@@ -368,7 +372,7 @@ public class MetadataBuilder {
     // identification info
     List<CitationDate> dates = new ArrayList<>();
     dates.add(new DefaultCitationDate(new Date(creationDate), DateType.CREATION));
-    String dateIssued = Calendar2.tryToIsoString(attributes.getString("date_issued"));
+    String dateIssued = Calendar2.tryToIsoString(attributes.getString(language, "date_issued"));
     if (String2.isSomething(dateIssued)) {
       try {
         dates.add(new DefaultCitationDate(parseDate(dateIssued), DateType.PUBLICATION));
@@ -380,20 +384,20 @@ public class MetadataBuilder {
     String domain = EDStatic.config.baseUrl;
     if (domain.startsWith("http://")) domain = domain.substring(7);
     else if (domain.startsWith("https://")) domain = domain.substring(8);
-    String contributorName = attributes.getString("contributor_name");
-    String contributorEmail = attributes.getString("contributor_email");
-    String contributorRole = attributes.getString("contributor_role");
-    String creatorName = attributes.getString("creator_name");
-    String creatorEmail = attributes.getString("creator_email");
-    String creatorType = attributes.getString("creator_type");
-    String institution = attributes.getString("institution");
-    String infoUrl = attributes.getString("infoUrl");
-    String acknowledgement = attributes.getString("acknowledgement"); // acdd 1.3
+    String contributorName = attributes.getString(language, "contributor_name");
+    String contributorEmail = attributes.getString(language, "contributor_email");
+    String contributorRole = attributes.getString(language, "contributor_role");
+    String creatorName = attributes.getString(language, "creator_name");
+    String creatorEmail = attributes.getString(language, "creator_email");
+    String creatorType = attributes.getString(language, "creator_type");
+    String institution = attributes.getString(language, "institution");
+    String infoUrl = attributes.getString(language, "infoUrl");
+    String acknowledgement = attributes.getString(language, "acknowledgement"); // acdd 1.3
     if (acknowledgement == null) {
-      acknowledgement = attributes.getString("acknowledgment"); // acdd 1.0
+      acknowledgement = attributes.getString(language, "acknowledgment"); // acdd 1.0
     }
-    String project = attributes.getString("project");
-    String license = attributes.getString("license");
+    String project = attributes.getString(language, "project");
+    String license = attributes.getString(language, "license");
     creatorType = String2.validateAcddContactType(creatorType);
     if (!String2.isSomething2(creatorType) && String2.isSomething2(creatorName))
       creatorType = String2.guessAcddContactType(creatorName);
@@ -420,7 +424,7 @@ public class MetadataBuilder {
               contributorName, null, contributorRole, contributorEmail, null, Role.USER));
     }
     DefaultCitation dataCitation = new DefaultCitation();
-    dataCitation.setTitle(new EDDInternationalString(attributes.getString("title")));
+    dataCitation.setTitle(new EDDInternationalString(attributes.getString(language, "title")));
     dataCitation.setDates(dates);
     dataCitation.setCitedResponsibleParties(citationContacts);
 
@@ -433,13 +437,13 @@ public class MetadataBuilder {
 
     DefaultDataIdentification dataId = new DefaultDataIdentification();
     dataId.setCitation(dataCitation);
-    dataId.setAbstract(new EDDInternationalString(attributes.getString("summary")));
+    dataId.setAbstract(new EDDInternationalString(attributes.getString(language, "summary")));
     if (String2.isSomething(acknowledgement)) {
       dataId.setCredits(List.of(acknowledgement));
     }
     dataId.setPointOfContacts(
         List.of(responsiblePartyWithRole(creatorParty, Role.POINT_OF_CONTACT)));
-    dataId.setDescriptiveKeywords(getKeywords(attributes, standardNames));
+    dataId.setDescriptiveKeywords(getKeywords(language, attributes, standardNames));
     if (String2.isSomething(license)) {
       dataId.setResourceConstraints(List.of(new DefaultConstraints(license)));
     }
@@ -453,7 +457,7 @@ public class MetadataBuilder {
       projectResource.setName(projectName);
       resources.add(projectResource);
     }
-    String cdmDataType = attributes.getString("cdm_data_type");
+    String cdmDataType = attributes.getString(language, "cdm_data_type");
     if (!EDD.CDM_OTHER.equals(cdmDataType)) {
       DefaultAssociatedResource cdmResource = new DefaultAssociatedResource();
       cdmResource.setAssociationType(AssociationType.LARGER_WORD_CITATION);
@@ -480,7 +484,7 @@ public class MetadataBuilder {
 
     DefaultCitation serviceCitation = new DefaultCitation();
     serviceCitation.setDates(dates);
-    serviceCitation.setTitle(new EDDInternationalString(attributes.getString("title")));
+    serviceCitation.setTitle(new EDDInternationalString(attributes.getString(language, "title")));
     serviceCitation.setCitedResponsibleParties(citationContacts);
     DefaultServiceIdentification erddapService = new DefaultServiceIdentification();
     erddapService.setCitation(serviceCitation);
@@ -640,10 +644,11 @@ public class MetadataBuilder {
     distribution.setDistributionFormats(List.of(distributionFormat));
     metadata.setDistributionInfo(distribution);
 
-    if (String2.isSomething(attributes.getString("history"))) {
+    if (String2.isSomething(attributes.getString(language, "history"))) {
       DefaultDataQuality dataQual = new DefaultDataQuality();
       DefaultLineage dataLineage = new DefaultLineage();
-      dataLineage.setStatement(new EDDInternationalString(attributes.getString("history")));
+      dataLineage.setStatement(
+          new EDDInternationalString(attributes.getString(language, "history")));
       dataQual.setLineage(dataLineage);
     }
     DefaultMaintenanceInformation maintenanceInfo = new DefaultMaintenanceInformation();
@@ -654,7 +659,7 @@ public class MetadataBuilder {
                     + EDStatic.erddapVersion)));
     metadata.setMetadataMaintenance(maintenanceInfo);
 
-    String coverageType = attributes.getString("coverage_content_type"); // used by GOES-R
+    String coverageType = attributes.getString(language, "coverage_content_type"); // used by GOES-R
     CoverageContentType contentType = CoverageContentType.PHYSICAL_MEASUREMENT;
     if ("image".equals(coverageType)) {
       contentType = CoverageContentType.IMAGE;
@@ -779,16 +784,16 @@ public class MetadataBuilder {
   }
 
   private static Collection<? extends Keywords> getKeywords(
-      Attributes attributes, List<InternationalString> standardNames) {
+      int language, LocalizedAttributes attributes, List<InternationalString> standardNames) {
     List<Keywords> keywordsList = new ArrayList<>();
-    String keywords = attributes.getString("keywords");
+    String keywords = attributes.getString(language, "keywords");
     if (keywords == null) { // use the crude, ERDDAP keywords
       keywords = EDStatic.config.keywords;
     }
-    String project = attributes.getString("project");
-    if (project == null) project = attributes.getString("institution");
+    String project = attributes.getString(language, "project");
+    if (project == null) project = attributes.getString(language, "institution");
     ;
-    String standardNameVocabulary = attributes.getString("standard_name_vocabulary");
+    String standardNameVocabulary = attributes.getString(language, "standard_name_vocabulary");
     if (keywords != null) {
       StringArray kar = StringArray.fromCSVNoBlanks(keywords);
 

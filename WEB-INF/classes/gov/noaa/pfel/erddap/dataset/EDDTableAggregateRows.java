@@ -15,8 +15,10 @@ import com.cohort.util.String2;
 import com.cohort.util.Test;
 import gov.noaa.pfel.coastwatch.util.SimpleXMLReader;
 import gov.noaa.pfel.erddap.Erddap;
+import gov.noaa.pfel.erddap.dataset.metadata.LocalizedAttributes;
 import gov.noaa.pfel.erddap.handlers.EDDTableAggregateRowsHandler;
 import gov.noaa.pfel.erddap.handlers.SaxHandlerClass;
+import gov.noaa.pfel.erddap.util.EDMessages;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.*;
 import java.util.ArrayList;
@@ -59,7 +61,7 @@ public class EDDTableAggregateRows extends EDDTable {
     if (verbose) String2.log("\n*** constructing EDDTableAggregateRows(xmlReader)...");
     String tDatasetID = xmlReader.attributeValue("datasetID");
     ArrayList<EDDTable> tChildren = new ArrayList<>();
-    Attributes tAddGlobalAttributes = null;
+    LocalizedAttributes tAddGlobalAttributes = null;
     String tAccessibleTo = null;
     String tGraphsAccessibleTo = null;
     StringArray tOnChange = new StringArray();
@@ -178,13 +180,14 @@ public class EDDTableAggregateRows extends EDDTable {
       String tDefaultDataQuery,
       String tDefaultGraphQuery,
       String tAddVariablesWhere,
-      Attributes tAddGlobalAttributes,
+      LocalizedAttributes tAddGlobalAttributes,
       int tReloadEveryNMinutes,
       int tUpdateEveryNMillis,
       EDDTable oChildren[])
       throws Throwable {
 
     if (verbose) String2.log("\n*** constructing EDDTableAggregateRows " + tDatasetID);
+    int language = EDMessages.DEFAULT_LANGUAGE;
     long constructionStartMillis = System.currentTimeMillis();
     String errorInMethod = "Error in EDDTableAggregateRows(" + tDatasetID + ") constructor:\n";
 
@@ -273,14 +276,17 @@ public class EDDTableAggregateRows extends EDDTable {
     EDDTable child0 = tChildren[0];
 
     // global attributes
-    sourceGlobalAttributes = child0.combinedGlobalAttributes;
-    addGlobalAttributes = tAddGlobalAttributes == null ? new Attributes() : tAddGlobalAttributes;
+    sourceGlobalAttributes = child0.combinedGlobalAttributes.toAttributes(language);
+    addGlobalAttributes =
+        tAddGlobalAttributes == null ? new LocalizedAttributes() : tAddGlobalAttributes;
     combinedGlobalAttributes =
-        new Attributes(addGlobalAttributes, sourceGlobalAttributes); // order is important
-    String tLicense = combinedGlobalAttributes.getString("license");
+        new LocalizedAttributes(addGlobalAttributes, sourceGlobalAttributes); // order is important
+    String tLicense = combinedGlobalAttributes.getString(language, "license");
     if (tLicense != null)
       combinedGlobalAttributes.set(
-          "license", String2.replaceAll(tLicense, "[standard]", EDStatic.messages.standardLicense));
+          language,
+          "license",
+          String2.replaceAll(tLicense, "[standard]", EDStatic.messages.standardLicense));
     combinedGlobalAttributes.removeValue("\"null\"");
 
     // specify what sourceCanConstrain
@@ -299,7 +305,7 @@ public class EDDTableAggregateRows extends EDDTable {
       EDV childVar = child0.dataVariables[dv];
       String tSourceName = childVar.destinationName();
       Attributes tSourceAtts = childVar.combinedAttributes();
-      Attributes tAddAtts = new Attributes();
+      LocalizedAttributes tAddAtts = new LocalizedAttributes();
       String tDataType = childVar.destinationDataType();
       String tUnits = childVar.units();
       double tMV = childVar.destinationMissingValue();
@@ -398,7 +404,7 @@ public class EDDTableAggregateRows extends EDDTable {
                 tAddAtts,
                 tDataType); // this constructor gets source / sets destination actual_range
         timeIndex = dv;
-      } else if (EDVTimeStamp.hasTimeUnits(tSourceAtts, tAddAtts)) {
+      } else if (EDVTimeStamp.hasTimeUnits(language, tSourceAtts, tAddAtts)) {
         newVar =
             new EDVTimeStamp(
                 datasetID,

@@ -1,6 +1,5 @@
 package gov.noaa.pfel.erddap.dataset;
 
-import com.cohort.array.Attributes;
 import com.cohort.array.IntArray;
 import com.cohort.array.PAType;
 import com.cohort.array.PrimitiveArray;
@@ -12,6 +11,8 @@ import com.cohort.util.String2;
 import com.cohort.util.Test;
 import gov.noaa.pfel.coastwatch.pointdata.Table;
 import gov.noaa.pfel.erddap.GenerateDatasetsXml;
+import gov.noaa.pfel.erddap.dataset.metadata.LocalizedAttributes;
+import gov.noaa.pfel.erddap.util.EDMessages;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.EDV;
 import java.nio.file.Path;
@@ -101,11 +102,10 @@ class EDDTableFromHttpGetTests {
         "stationID/2months", dsColumnName, dsN, dsCalendar);
     HashSet<String> keys = new HashSet<>();
     keys.add("bsimons_aSecret");
-    Attributes tGlobalAttributes =
-        new Attributes()
-            .add("Conventions", "CF-1.6, COARDS, ACDD-1.3")
-            .add("creator_name", "Bob Simons")
-            .add("title", "Test EDDTableFromHttpGet");
+    LocalizedAttributes tGlobalAttributes = new LocalizedAttributes();
+    tGlobalAttributes.set(EDMessages.DEFAULT_LANGUAGE, "Conventions", "CF-1.6, COARDS, ACDD-1.3");
+    tGlobalAttributes.set(EDMessages.DEFAULT_LANGUAGE, "creator_name", "Bob Simons");
+    tGlobalAttributes.set(EDMessages.DEFAULT_LANGUAGE, "title", "Test EDDTableFromHttpGet");
     String columnNames[] = {
       "stationID",
       "time",
@@ -1043,7 +1043,7 @@ class EDDTableFromHttpGetTests {
 
     EDD edd = EDDTableFromHttpGet.oneFromXmlFragment(null, results);
     Test.ensureEqual(edd.datasetID(), tDatasetID, "");
-    Test.ensureEqual(edd.title(), "My Great Title", "");
+    Test.ensureEqual(edd.title(language), "My Great Title", "");
     Test.ensureEqual(
         String2.toCSSVString(edd.dataVariableDestinationNames()),
         "stationID, time, airTemp, waterTemp, timestamp, author, command",
