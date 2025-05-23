@@ -1,0 +1,1008 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<metadata xmlns:xsi="https://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://fgdcxml.sourceforge.net/schema/fgdc-std-012-2002/fgdc-std-012-2002.xsd" >
+  <idinfo>
+    <citation>
+      <citeinfo>
+        <origin>
+Project: TAO/TRITON, RAMA, PIRATA
+Name: GTMBA Project Office/NOAA/PMEL
+Email: Dai.C.McClurg@noaa.gov
+Institution: NOAA PMEL, TAO/TRITON, RAMA, PIRATA
+InfoURL: https://www.pmel.noaa.gov/gtmba/mission
+Source URL: (local files)
+        </origin>
+        <pubdate></pubdate>
+        <title>TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1992-present, Sea Surface Salinity</title>
+        <edition>Unknown</edition>
+        <geoform>tabular digital data</geoform>
+        <pubinfo>
+          <pubplace>Nowhere, AK, USA</pubplace>
+          <publish>ERDDAP, version 2.26, at ERDDAP Jetty Install</publish>
+        </pubinfo>
+        <onlink>http://localhost:8080/erddap/tabledap/pmelTaoDySss.html</onlink>
+        <onlink>http://localhost:8080/erddap/tabledap/pmelTaoDySss.graph</onlink>
+        <onlink>http://localhost:8080/erddap/tabledap/pmelTaoDySss.subset</onlink>
+        <lworkcit>
+          <citeinfo>
+            <origin>TAO/TRITON, RAMA, PIRATA</origin>
+          </citeinfo>
+        </lworkcit>
+      </citeinfo>
+    </citation>
+    <descript>
+      <abstract>This dataset has daily Sea Surface Salinity data from the
+TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),
+RAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and
+PIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )
+arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation &#39;time&#39; of 12:00Z.  For more information, see
+https://www.pmel.noaa.gov/gtmba/mission .</abstract>
+      <purpose>Unknown</purpose>
+      <supplinf>https://www.pmel.noaa.gov/gtmba/mission</supplinf>
+    </descript>
+    <timeperd>
+      <timeinfo>
+        <rngdates>
+          <begdate>19920208</begdate>
+          <enddate>20250501</enddate>
+        </rngdates>
+      </timeinfo>
+      <current>ground condition</current>
+    </timeperd>
+    <status>
+      <progress>Complete</progress>
+      <update>As needed</update>
+    </status>
+    <spdom>
+      <bounding>
+        <westbc>-180.0</westbc>
+        <eastbc>180.0</eastbc>
+        <northbc>21.0</northbc>
+        <southbc>-25.0</southbc>
+      </bounding>
+    </spdom>
+    <keywords>
+      <theme>
+        <themekt>GCMD Science Keywords</themekt>
+        <themekey>buoys</themekey>
+        <themekey>centered</themekey>
+        <themekey>code</themekey>
+        <themekey>daily</themekey>
+        <themekey>density</themekey>
+        <themekey>depth</themekey>
+        <themekey>Earth Science &gt; Oceans &gt; Salinity/Density &gt; Salinity</themekey>
+        <themekey>identifier</themekey>
+        <themekey>instrument</themekey>
+        <themekey>noaa</themekey>
+        <themekey>oceans</themekey>
+        <themekey>pirata</themekey>
+        <themekey>pmel</themekey>
+        <themekey>quality</themekey>
+        <themekey>rama</themekey>
+        <themekey>salinity</themekey>
+        <themekey>sea</themekey>
+        <themekey>sea_water_practical_salinity</themekey>
+        <themekey>seawater</themekey>
+        <themekey>source</themekey>
+        <themekey>station</themekey>
+        <themekey>surface</themekey>
+        <themekey>tao</themekey>
+        <themekey>time</themekey>
+        <themekey>triton</themekey>
+        <themekey>water</themekey>
+      </theme>
+      <theme>
+        <themekt>CF Standard Name Table v70</themekt>
+        <themekey>longitude</themekey>
+        <themekey>latitude</themekey>
+        <themekey>time</themekey>
+        <themekey>depth</themekey>
+        <themekey>sea_water_practical_salinity</themekey>
+      </theme>
+    </keywords>
+    <accconst>None.</accconst>
+    <useconst>Request for Acknowledgement: If you use these data in publications or presentations, please acknowledge the GTMBA Project Office of NOAA/PMEL. Also, we would appreciate receiving a preprint and/or reprint of publications utilizing the data for inclusion in our bibliography. Relevant publications should be sent to: GTMBA Project Office, NOAA/Pacific Marine Environmental Laboratory, 7600 Sand Point Way NE, Seattle, WA 98115
+
+The data may be used and redistributed for free but is not intended
+for legal use, since it may contain inaccuracies. Neither the data
+Contributor, ERD, NOAA, nor the United States Government, nor any
+of their employees or contractors, makes any warranty, express or
+implied, including warranties of merchantability and fitness for a
+particular purpose, or assumes any legal liability for the accuracy,
+completeness, or usefulness, of this information.</useconst>
+    <ptcontac>
+      <cntinfo>
+        <cntorgp>
+          <cntorg>NOAA PMEL, TAO/TRITON, RAMA, PIRATA</cntorg>
+          <cntper>GTMBA Project Office/NOAA/PMEL</cntper>
+        </cntorgp>
+        <cntpos>Unknown</cntpos>
+        <cntaddr>
+          <addrtype>Mailing and Physical Address</addrtype>
+          <address>Unknown</address>
+          <city>Unknown</city>
+          <state>Unknown</state>
+          <postal>Unknown</postal>
+          <country>Unknown</country>
+        </cntaddr>
+        <cntvoice>Unknown</cntvoice>
+        <cntemail>Dai.C.McClurg@noaa.gov</cntemail>
+      </cntinfo>
+    </ptcontac>
+    <browse>
+      <browsen>http://localhost:8080/erddap/tabledap/pmelTaoDySss.graph</browsen>
+      <browsed>Web page to make a customized map or graph of the data</browsed>
+      <browset>HTML</browset>
+    </browse>
+  </idinfo>
+  <dataqual>
+    <logic>Unknown</logic>
+    <complete>Unknown</complete>
+    <posacc>
+      <horizpa>
+        <horizpar>Unknown</horizpar>
+      </horizpa>
+      <vertacc>
+        <vertaccr>Unknown</vertaccr>
+      </vertacc>
+    </posacc>
+    <lineage>
+      <procstep>
+        <procdesc>This dataset has data from the TAO/TRITON, RAMA, and PIRATA projects.</procdesc>
+        <procdate>Unknown</procdate>
+      </procstep>
+      <procstep>
+        <procdesc>This dataset is a product of the TAO Project Office at NOAA/PMEL.</procdesc>
+        <procdate>Unknown</procdate>
+      </procstep>
+      <procstep>
+        <procdesc>Bob Simons at NOAA/NMFS/SWFSC/ERD (bob.simons@noaa.gov) fully refreshed ERD&#39;s copy of this dataset by downloading all of the .cdf files from the PMEL TAO FTP site.  Since then, the dataset has been partially refreshed everyday by downloading and merging the latest version of the last 25 days worth of data.</procdesc>
+        <procdate>20250502</procdate>
+      </procstep>
+    </lineage>
+  </dataqual>
+  <spdoinfo>
+    <direct>Point</direct>
+    <ptvctinf>
+      <sdtstrm>
+        <sdtstyp>Point</sdtstyp>
+      </sdtstrm>
+    </ptvctinf>
+  </spdoinfo>
+  <distinfo>
+    <distrib>
+            <cntinfo>
+              <cntorgp>
+                <cntorg>ERDDAP Jetty Install</cntorg>
+                <cntper>ERDDAP Jetty Developer</cntper>
+              </cntorgp>
+              <cntpos>Software Engineer</cntpos>
+              <cntaddr>
+                <addrtype>Mailing and Physical Address</addrtype>
+                <address>123 Irrelevant St.</address>
+                <city>Nowhere</city>
+                <state>AK</state>
+                <postal>99504</postal>
+                <country>USA</country>
+              </cntaddr>
+              <cntvoice>555-555-5555</cntvoice>
+              <cntemail>nobody@example.com</cntemail>
+            </cntinfo>
+    </distrib>
+    <resdesc>ERDDAP, version 2.26: get metadata; download data; make graphs and maps.</resdesc>
+    <distliab>Request for Acknowledgement: If you use these data in publications or presentations, please acknowledge the GTMBA Project Office of NOAA/PMEL. Also, we would appreciate receiving a preprint and/or reprint of publications utilizing the data for inclusion in our bibliography. Relevant publications should be sent to: GTMBA Project Office, NOAA/Pacific Marine Environmental Laboratory, 7600 Sand Point Way NE, Seattle, WA 98115
+
+The data may be used and redistributed for free but is not intended
+for legal use, since it may contain inaccuracies. Neither the data
+Contributor, ERD, NOAA, nor the United States Government, nor any
+of their employees or contractors, makes any warranty, express or
+implied, including warranties of merchantability and fitness for a
+particular purpose, or assumes any legal liability for the accuracy,
+completeness, or usefulness, of this information.</distliab>
+    <stdorder>
+      <digform>
+        <digtinfo>
+          <formname>.asc</formname>
+          <formvern>1</formvern>
+          <formspec>View OPeNDAP-style ISO-8859-1 comma-separated text. https://docs.opendap.org/index.php/UserGuideOPeNDAPMessages#ASCII_Service</formspec>
+        </digtinfo>
+        <digtopt>
+          <onlinopt>
+            <computer>
+              <networka>
+                <networkr>http://localhost:8080/erddap/tabledap/pmelTaoDySss.html</networkr>
+              </networka>
+            </computer>
+          </onlinopt>
+        </digtopt>
+      </digform>
+      <digform>
+        <digtinfo>
+          <formname>.csv</formname>
+          <formvern>1</formvern>
+          <formspec>Download a ISO-8859-1 comma-separated text table (line 1: names; line 2: units; ISO 8601 times). https://en.wikipedia.org/wiki/Comma-separated_values</formspec>
+        </digtinfo>
+        <digtopt>
+          <onlinopt>
+            <computer>
+              <networka>
+                <networkr>http://localhost:8080/erddap/tabledap/pmelTaoDySss.html</networkr>
+              </networka>
+            </computer>
+          </onlinopt>
+        </digtopt>
+      </digform>
+      <digform>
+        <digtinfo>
+          <formname>.csvp</formname>
+          <formvern>1</formvern>
+          <formspec>Download a ISO-8859-1 .csv file with line 1: name (units). Times are ISO 8601 strings. https://en.wikipedia.org/wiki/Comma-separated_values</formspec>
+        </digtinfo>
+        <digtopt>
+          <onlinopt>
+            <computer>
+              <networka>
+                <networkr>http://localhost:8080/erddap/tabledap/pmelTaoDySss.html</networkr>
+              </networka>
+            </computer>
+          </onlinopt>
+        </digtopt>
+      </digform>
+      <digform>
+        <digtinfo>
+          <formname>.csv0</formname>
+          <formvern>1</formvern>
+          <formspec>Download a ISO-8859-1 .csv file without column names or units. Times are ISO 8601 strings. https://en.wikipedia.org/wiki/Comma-separated_values</formspec>
+        </digtinfo>
+        <digtopt>
+          <onlinopt>
+            <computer>
+              <networka>
+                <networkr>http://localhost:8080/erddap/tabledap/pmelTaoDySss.html</networkr>
+              </networka>
+            </computer>
+          </onlinopt>
+        </digtopt>
+      </digform>
+      <digform>
+        <digtinfo>
+          <formname>.dataTable</formname>
+          <formvern>1</formvern>
+          <formspec>A JSON file formatted for use with the Google Visualization client library (Google Charts). https://developers.google.com/chart/interactive/docs/reference#dataparam</formspec>
+        </digtinfo>
+        <digtopt>
+          <onlinopt>
+            <computer>
+              <networka>
+                <networkr>http://localhost:8080/erddap/tabledap/pmelTaoDySss.html</networkr>
+              </networka>
+            </computer>
+          </onlinopt>
+        </digtopt>
+      </digform>
+      <digform>
+        <digtinfo>
+          <formname>.das</formname>
+          <formvern>1</formvern>
+          <formspec>View the dataset&#39;s metadata via an ISO-8859-1 OPeNDAP Dataset Attribute Structure (DAS). https://docs.opendap.org/index.php/UserGuideOPeNDAPMessages#Dataset_Attribute_Structure</formspec>
+        </digtinfo>
+        <digtopt>
+          <onlinopt>
+            <computer>
+              <networka>
+                <networkr>http://localhost:8080/erddap/tabledap/pmelTaoDySss.html</networkr>
+              </networka>
+            </computer>
+          </onlinopt>
+        </digtopt>
+      </digform>
+      <digform>
+        <digtinfo>
+          <formname>.dds</formname>
+          <formvern>1</formvern>
+          <formspec>View the dataset&#39;s structure via an ISO-8859-1 OPeNDAP Dataset Descriptor Structure (DDS). https://docs.opendap.org/index.php/UserGuideOPeNDAPMessages#Dataset_Descriptor_Structure</formspec>
+        </digtinfo>
+        <digtopt>
+          <onlinopt>
+            <computer>
+              <networka>
+                <networkr>http://localhost:8080/erddap/tabledap/pmelTaoDySss.html</networkr>
+              </networka>
+            </computer>
+          </onlinopt>
+        </digtopt>
+      </digform>
+      <digform>
+        <digtinfo>
+          <formname>.dods</formname>
+          <formvern>1</formvern>
+          <formspec>OPeNDAP clients use this to download the data in the DODS binary format. https://docs.opendap.org/index.php/UserGuideOPeNDAPMessages#Data_Transmission</formspec>
+        </digtinfo>
+        <digtopt>
+          <onlinopt>
+            <computer>
+              <networka>
+                <networkr>http://localhost:8080/erddap/tabledap/pmelTaoDySss.html</networkr>
+              </networka>
+            </computer>
+          </onlinopt>
+        </digtopt>
+      </digform>
+      <digform>
+        <digtinfo>
+          <formname>.esriCsv</formname>
+          <formvern>1</formvern>
+          <formspec>Download a ISO_8859_1 .csv file for ESRI&#39;s ArcGIS 9.x and below (separate date and time columns). https://support.esri.com/technical-article/000012745</formspec>
+        </digtinfo>
+        <digtopt>
+          <onlinopt>
+            <computer>
+              <networka>
+                <networkr>http://localhost:8080/erddap/tabledap/pmelTaoDySss.html</networkr>
+              </networka>
+            </computer>
+          </onlinopt>
+        </digtopt>
+      </digform>
+      <digform>
+        <digtinfo>
+          <formname>.fgdc</formname>
+          <formvern>1</formvern>
+          <formspec>View the dataset&#39;s UTF-8 FGDC .xml metadata. https://www.fgdc.gov/standards/projects/FGDC-standards-projects/metadata/base-metadata/index_html</formspec>
+        </digtinfo>
+        <digtopt>
+          <onlinopt>
+            <computer>
+              <networka>
+                <networkr>http://localhost:8080/erddap/tabledap/pmelTaoDySss.html</networkr>
+              </networka>
+            </computer>
+          </onlinopt>
+        </digtopt>
+      </digform>
+      <digform>
+        <digtinfo>
+          <formname>.geoJson</formname>
+          <formvern>1</formvern>
+          <formspec>Download longitude,latitude,otherColumns data as a UTF-8 GeoJSON .json file. http://wiki.geojson.org/Main_Page</formspec>
+        </digtinfo>
+        <digtopt>
+          <onlinopt>
+            <computer>
+              <networka>
+                <networkr>http://localhost:8080/erddap/tabledap/pmelTaoDySss.html</networkr>
+              </networka>
+            </computer>
+          </onlinopt>
+        </digtopt>
+      </digform>
+      <digform>
+        <digtinfo>
+          <formname>.graph</formname>
+          <formvern>1</formvern>
+          <formspec>View a Make A Graph web page. https://coastwatch.pfeg.noaa.gov/erddap/tabledap/documentation.html#GraphicsCommands</formspec>
+        </digtinfo>
+        <digtopt>
+          <onlinopt>
+            <computer>
+              <networka>
+                <networkr>http://localhost:8080/erddap/tabledap/pmelTaoDySss.html</networkr>
+              </networka>
+            </computer>
+          </onlinopt>
+        </digtopt>
+      </digform>
+      <digform>
+        <digtinfo>
+          <formname>.help</formname>
+          <formvern>1</formvern>
+          <formspec>View a web page with a description of tabledap. https://www.opendap.org/pdf/ESE-RFC-004v1.2.pdf</formspec>
+        </digtinfo>
+        <digtopt>
+          <onlinopt>
+            <computer>
+              <networka>
+                <networkr>http://localhost:8080/erddap/tabledap/pmelTaoDySss.html</networkr>
+              </networka>
+            </computer>
+          </onlinopt>
+        </digtopt>
+      </digform>
+      <digform>
+        <digtinfo>
+          <formname>.html</formname>
+          <formvern>1</formvern>
+          <formspec>View an OPeNDAP-style HTML Data Access Form. https://docs.opendap.org/index.php/UserGuideOPeNDAPMessages#WWW_Interface_Service</formspec>
+        </digtinfo>
+        <digtopt>
+          <onlinopt>
+            <computer>
+              <networka>
+                <networkr>http://localhost:8080/erddap/tabledap/pmelTaoDySss.html</networkr>
+              </networka>
+            </computer>
+          </onlinopt>
+        </digtopt>
+      </digform>
+      <digform>
+        <digtinfo>
+          <formname>.htmlTable</formname>
+          <formvern>1</formvern>
+          <formspec>View a UTF-8 .html web page with the data in a table. Times are ISO 8601 strings. https://www.w3schools.com/html/html_tables.asp</formspec>
+        </digtinfo>
+        <digtopt>
+          <onlinopt>
+            <computer>
+              <networka>
+                <networkr>http://localhost:8080/erddap/tabledap/pmelTaoDySss.html</networkr>
+              </networka>
+            </computer>
+          </onlinopt>
+        </digtopt>
+      </digform>
+      <digform>
+        <digtinfo>
+          <formname>.iso19115</formname>
+          <formvern>1</formvern>
+          <formspec>View the dataset&#39;s ISO 19115-2/19139 UTF-8 .xml metadata. https://en.wikipedia.org/wiki/Geospatial_metadata</formspec>
+        </digtinfo>
+        <digtopt>
+          <onlinopt>
+            <computer>
+              <networka>
+                <networkr>http://localhost:8080/erddap/tabledap/pmelTaoDySss.html</networkr>
+              </networka>
+            </computer>
+          </onlinopt>
+        </digtopt>
+      </digform>
+      <digform>
+        <digtinfo>
+          <formname>.itx</formname>
+          <formvern>1</formvern>
+          <formspec>Download an ISO-8859-1 Igor Text File. Each response column becomes a wave. https://www.wavemetrics.net/doc/igorman/II-09&#37;20Data&#37;20Import&#37;20Export.pdf</formspec>
+        </digtinfo>
+        <digtopt>
+          <onlinopt>
+            <computer>
+              <networka>
+                <networkr>http://localhost:8080/erddap/tabledap/pmelTaoDySss.html</networkr>
+              </networka>
+            </computer>
+          </onlinopt>
+        </digtopt>
+      </digform>
+      <digform>
+        <digtinfo>
+          <formname>.json</formname>
+          <formvern>1</formvern>
+          <formspec>View a table-like UTF-8 JSON file (missing value = &#39;null&#39;; times are ISO 8601 strings). https://www.json.org/</formspec>
+        </digtinfo>
+        <digtopt>
+          <onlinopt>
+            <computer>
+              <networka>
+                <networkr>http://localhost:8080/erddap/tabledap/pmelTaoDySss.html</networkr>
+              </networka>
+            </computer>
+          </onlinopt>
+        </digtopt>
+      </digform>
+      <digform>
+        <digtinfo>
+          <formname>.jsonlCSV1</formname>
+          <formvern>1</formvern>
+          <formspec>View a UTF-8 JSON Lines CSV file with column names on line 1 (mv = &#39;null&#39;; times are ISO 8601 strings). https://jsonlines.org/</formspec>
+        </digtinfo>
+        <digtopt>
+          <onlinopt>
+            <computer>
+              <networka>
+                <networkr>http://localhost:8080/erddap/tabledap/pmelTaoDySss.html</networkr>
+              </networka>
+            </computer>
+          </onlinopt>
+        </digtopt>
+      </digform>
+      <digform>
+        <digtinfo>
+          <formname>.jsonlCSV</formname>
+          <formvern>1</formvern>
+          <formspec>View a UTF-8 JSON Lines CSV file without column names (mv = &#39;null&#39;; times are ISO 8601 strings). https://jsonlines.org/</formspec>
+        </digtinfo>
+        <digtopt>
+          <onlinopt>
+            <computer>
+              <networka>
+                <networkr>http://localhost:8080/erddap/tabledap/pmelTaoDySss.html</networkr>
+              </networka>
+            </computer>
+          </onlinopt>
+        </digtopt>
+      </digform>
+      <digform>
+        <digtinfo>
+          <formname>.jsonlKVP</formname>
+          <formvern>1</formvern>
+          <formspec>View a UTF-8 JSON Lines file with Key:Value pairs (missing value = &#39;null&#39;; times are ISO 8601 strings). https://jsonlines.org/</formspec>
+        </digtinfo>
+        <digtopt>
+          <onlinopt>
+            <computer>
+              <networka>
+                <networkr>http://localhost:8080/erddap/tabledap/pmelTaoDySss.html</networkr>
+              </networka>
+            </computer>
+          </onlinopt>
+        </digtopt>
+      </digform>
+      <digform>
+        <digtinfo>
+          <formname>.mat</formname>
+          <formvern>1</formvern>
+          <formspec>Download a MATLAB binary file. https://www.mathworks.com/</formspec>
+        </digtinfo>
+        <digtopt>
+          <onlinopt>
+            <computer>
+              <networka>
+                <networkr>http://localhost:8080/erddap/tabledap/pmelTaoDySss.html</networkr>
+              </networka>
+            </computer>
+          </onlinopt>
+        </digtopt>
+      </digform>
+      <digform>
+        <digtinfo>
+          <formname>.nc</formname>
+          <formvern>1</formvern>
+          <formspec>Download a flat, table-like, NetCDF-3 binary file with COARDS/CF/ACDD metadata. https://www.unidata.ucar.edu/software/netcdf/</formspec>
+        </digtinfo>
+        <digtopt>
+          <onlinopt>
+            <computer>
+              <networka>
+                <networkr>http://localhost:8080/erddap/tabledap/pmelTaoDySss.html</networkr>
+              </networka>
+            </computer>
+          </onlinopt>
+        </digtopt>
+      </digform>
+      <digform>
+        <digtinfo>
+          <formname>.ncHeader</formname>
+          <formvern>1</formvern>
+          <formspec>View the UTF-8 header (the metadata) for the NetCDF-3 .nc file. https://linux.die.net/man/1/ncdump</formspec>
+        </digtinfo>
+        <digtopt>
+          <onlinopt>
+            <computer>
+              <networka>
+                <networkr>http://localhost:8080/erddap/tabledap/pmelTaoDySss.html</networkr>
+              </networka>
+            </computer>
+          </onlinopt>
+        </digtopt>
+      </digform>
+      <digform>
+        <digtinfo>
+          <formname>.ncCF</formname>
+          <formvern>1</formvern>
+          <formspec>Download a NetCDF-3 CF Discrete Sampling Geometries file (Contiguous Ragged Array). https://cfconventions.org/Data/cf-conventions/cf-conventions-1.8/cf-conventions.html#discrete-sampling-geometries</formspec>
+        </digtinfo>
+        <digtopt>
+          <onlinopt>
+            <computer>
+              <networka>
+                <networkr>http://localhost:8080/erddap/tabledap/pmelTaoDySss.html</networkr>
+              </networka>
+            </computer>
+          </onlinopt>
+        </digtopt>
+      </digform>
+      <digform>
+        <digtinfo>
+          <formname>.ncCFHeader</formname>
+          <formvern>1</formvern>
+          <formspec>View the UTF-8 header (the metadata) for the .ncCF file. https://linux.die.net/man/1/ncdump</formspec>
+        </digtinfo>
+        <digtopt>
+          <onlinopt>
+            <computer>
+              <networka>
+                <networkr>http://localhost:8080/erddap/tabledap/pmelTaoDySss.html</networkr>
+              </networka>
+            </computer>
+          </onlinopt>
+        </digtopt>
+      </digform>
+      <digform>
+        <digtinfo>
+          <formname>.ncCFMA</formname>
+          <formvern>1</formvern>
+          <formspec>Download a NetCDF-3 CF Discrete Sampling Geometries file (Multidimensional Array). https://www.ncei.noaa.gov/netcdf-templates</formspec>
+        </digtinfo>
+        <digtopt>
+          <onlinopt>
+            <computer>
+              <networka>
+                <networkr>http://localhost:8080/erddap/tabledap/pmelTaoDySss.html</networkr>
+              </networka>
+            </computer>
+          </onlinopt>
+        </digtopt>
+      </digform>
+      <digform>
+        <digtinfo>
+          <formname>.ncCFMAHeader</formname>
+          <formvern>1</formvern>
+          <formspec>View the UTF-8 header (the metadata) for the .ncCFMA file. https://linux.die.net/man/1/ncdump</formspec>
+        </digtinfo>
+        <digtopt>
+          <onlinopt>
+            <computer>
+              <networka>
+                <networkr>http://localhost:8080/erddap/tabledap/pmelTaoDySss.html</networkr>
+              </networka>
+            </computer>
+          </onlinopt>
+        </digtopt>
+      </digform>
+      <digform>
+        <digtinfo>
+          <formname>.nccsv</formname>
+          <formvern>1</formvern>
+          <formspec>Download a NetCDF-3-like 7-bit ASCII NCCSV .csv file with COARDS/CF/ACDD metadata. https://erddap.github.io/docs/user/nccsv-1.20</formspec>
+        </digtinfo>
+        <digtopt>
+          <onlinopt>
+            <computer>
+              <networka>
+                <networkr>http://localhost:8080/erddap/tabledap/pmelTaoDySss.html</networkr>
+              </networka>
+            </computer>
+          </onlinopt>
+        </digtopt>
+      </digform>
+      <digform>
+        <digtinfo>
+          <formname>.nccsvMetadata</formname>
+          <formvern>1</formvern>
+          <formspec>View the dataset&#39;s metadata as the top half of a 7-bit ASCII NCCSV .csv file. https://erddap.github.io/docs/user/nccsv-1.20</formspec>
+        </digtinfo>
+        <digtopt>
+          <onlinopt>
+            <computer>
+              <networka>
+                <networkr>http://localhost:8080/erddap/tabledap/pmelTaoDySss.html</networkr>
+              </networka>
+            </computer>
+          </onlinopt>
+        </digtopt>
+      </digform>
+      <digform>
+        <digtinfo>
+          <formname>.ncoJson</formname>
+          <formvern>1</formvern>
+          <formspec>Download a UTF-8 NCO lvl=2 JSON file with COARDS/CF/ACDD metadata. https://nco.sourceforge.net/nco.html#json</formspec>
+        </digtinfo>
+        <digtopt>
+          <onlinopt>
+            <computer>
+              <networka>
+                <networkr>http://localhost:8080/erddap/tabledap/pmelTaoDySss.html</networkr>
+              </networka>
+            </computer>
+          </onlinopt>
+        </digtopt>
+      </digform>
+      <digform>
+        <digtinfo>
+          <formname>.odvTxt</formname>
+          <formvern>1</formvern>
+          <formspec>Download longitude,latitude,time,otherColumns as an ISO-8859-1 ODV Generic Spreadsheet File (.txt). https://odv.awi.de/en/documentation/</formspec>
+        </digtinfo>
+        <digtopt>
+          <onlinopt>
+            <computer>
+              <networka>
+                <networkr>http://localhost:8080/erddap/tabledap/pmelTaoDySss.html</networkr>
+              </networka>
+            </computer>
+          </onlinopt>
+        </digtopt>
+      </digform>
+      <digform>
+        <digtinfo>
+          <formname>.parquet</formname>
+          <formvern>1</formvern>
+          <formspec>Download as a parquet file. Metadata contains column names (&quot;column_names&quot;) and units (&quot;column_units&quot;). https://parquet.apache.org/</formspec>
+        </digtinfo>
+        <digtopt>
+          <onlinopt>
+            <computer>
+              <networka>
+                <networkr>http://localhost:8080/erddap/tabledap/pmelTaoDySss.html</networkr>
+              </networka>
+            </computer>
+          </onlinopt>
+        </digtopt>
+      </digform>
+      <digform>
+        <digtinfo>
+          <formname>.parquetWMeta</formname>
+          <formvern>1</formvern>
+          <formspec>Download as a parquet file with detailed metadata. https://parquet.apache.org/</formspec>
+        </digtinfo>
+        <digtopt>
+          <onlinopt>
+            <computer>
+              <networka>
+                <networkr>http://localhost:8080/erddap/tabledap/pmelTaoDySss.html</networkr>
+              </networka>
+            </computer>
+          </onlinopt>
+        </digtopt>
+      </digform>
+      <digform>
+        <digtinfo>
+          <formname>.subset</formname>
+          <formvern>1</formvern>
+          <formspec>View an HTML form which uses faceted search to simplify picking subsets of the data. https://en.wikipedia.org/wiki/Faceted_search</formspec>
+        </digtinfo>
+        <digtopt>
+          <onlinopt>
+            <computer>
+              <networka>
+                <networkr>http://localhost:8080/erddap/tabledap/pmelTaoDySss.html</networkr>
+              </networka>
+            </computer>
+          </onlinopt>
+        </digtopt>
+      </digform>
+      <digform>
+        <digtinfo>
+          <formname>.tsv</formname>
+          <formvern>1</formvern>
+          <formspec>Download a ISO-8859-1 tab-separated text table (line 1: names; line 2: units; ISO 8601 times). https://jkorpela.fi/TSV.html</formspec>
+        </digtinfo>
+        <digtopt>
+          <onlinopt>
+            <computer>
+              <networka>
+                <networkr>http://localhost:8080/erddap/tabledap/pmelTaoDySss.html</networkr>
+              </networka>
+            </computer>
+          </onlinopt>
+        </digtopt>
+      </digform>
+      <digform>
+        <digtinfo>
+          <formname>.tsvp</formname>
+          <formvern>1</formvern>
+          <formspec>Download a ISO-8859-1 .tsv file with line 1: name (units). Times are ISO 8601 strings. https://jkorpela.fi/TSV.html</formspec>
+        </digtinfo>
+        <digtopt>
+          <onlinopt>
+            <computer>
+              <networka>
+                <networkr>http://localhost:8080/erddap/tabledap/pmelTaoDySss.html</networkr>
+              </networka>
+            </computer>
+          </onlinopt>
+        </digtopt>
+      </digform>
+      <digform>
+        <digtinfo>
+          <formname>.tsv0</formname>
+          <formvern>1</formvern>
+          <formspec>Download a ISO-8859-1 .tsv file without column names or units. Times are ISO 8601 strings. https://jkorpela.fi/TSV.html</formspec>
+        </digtinfo>
+        <digtopt>
+          <onlinopt>
+            <computer>
+              <networka>
+                <networkr>http://localhost:8080/erddap/tabledap/pmelTaoDySss.html</networkr>
+              </networka>
+            </computer>
+          </onlinopt>
+        </digtopt>
+      </digform>
+      <digform>
+        <digtinfo>
+          <formname>.wav</formname>
+          <formvern>1</formvern>
+          <formspec>Download a .wav audio file. All columns must be numeric and of the same type. https://en.wikipedia.org/wiki/WAV</formspec>
+        </digtinfo>
+        <digtopt>
+          <onlinopt>
+            <computer>
+              <networka>
+                <networkr>http://localhost:8080/erddap/tabledap/pmelTaoDySss.html</networkr>
+              </networka>
+            </computer>
+          </onlinopt>
+        </digtopt>
+      </digform>
+      <digform>
+        <digtinfo>
+          <formname>.xhtml</formname>
+          <formvern>1</formvern>
+          <formspec>View a UTF-8 XHTML (XML) file with the data in a table. Times are ISO 8601 strings. https://www.w3schools.com/html/html_tables.asp</formspec>
+        </digtinfo>
+        <digtopt>
+          <onlinopt>
+            <computer>
+              <networka>
+                <networkr>http://localhost:8080/erddap/tabledap/pmelTaoDySss.html</networkr>
+              </networka>
+            </computer>
+          </onlinopt>
+        </digtopt>
+      </digform>
+      <digform>
+        <digtinfo>
+          <formname>.kml</formname>
+          <formvern>1</formvern>
+          <formspec>View a .kml file, suitable for Google Earth. https://developers.google.com/kml/</formspec>
+        </digtinfo>
+        <digtopt>
+          <onlinopt>
+            <computer>
+              <networka>
+                <networkr>http://localhost:8080/erddap/tabledap/pmelTaoDySss.graph</networkr>
+              </networka>
+            </computer>
+          </onlinopt>
+        </digtopt>
+      </digform>
+      <digform>
+        <digtinfo>
+          <formname>.smallPdf</formname>
+          <formvern>1</formvern>
+          <formspec>View a small .pdf image file with a graph or map. https://www.adobe.com/acrobat/about-adobe-pdf.html</formspec>
+        </digtinfo>
+        <digtopt>
+          <onlinopt>
+            <computer>
+              <networka>
+                <networkr>http://localhost:8080/erddap/tabledap/pmelTaoDySss.graph</networkr>
+              </networka>
+            </computer>
+          </onlinopt>
+        </digtopt>
+      </digform>
+      <digform>
+        <digtinfo>
+          <formname>.pdf</formname>
+          <formvern>1</formvern>
+          <formspec>View a standard, medium-sized .pdf image file with a graph or map. https://www.adobe.com/acrobat/about-adobe-pdf.html</formspec>
+        </digtinfo>
+        <digtopt>
+          <onlinopt>
+            <computer>
+              <networka>
+                <networkr>http://localhost:8080/erddap/tabledap/pmelTaoDySss.graph</networkr>
+              </networka>
+            </computer>
+          </onlinopt>
+        </digtopt>
+      </digform>
+      <digform>
+        <digtinfo>
+          <formname>.largePdf</formname>
+          <formvern>1</formvern>
+          <formspec>View a large .pdf image file with a graph or map. https://www.adobe.com/acrobat/about-adobe-pdf.html</formspec>
+        </digtinfo>
+        <digtopt>
+          <onlinopt>
+            <computer>
+              <networka>
+                <networkr>http://localhost:8080/erddap/tabledap/pmelTaoDySss.graph</networkr>
+              </networka>
+            </computer>
+          </onlinopt>
+        </digtopt>
+      </digform>
+      <digform>
+        <digtinfo>
+          <formname>.smallPng</formname>
+          <formvern>1</formvern>
+          <formspec>View a small .png image file with a graph or map. http://www.libpng.org/pub/png/</formspec>
+        </digtinfo>
+        <digtopt>
+          <onlinopt>
+            <computer>
+              <networka>
+                <networkr>http://localhost:8080/erddap/tabledap/pmelTaoDySss.graph</networkr>
+              </networka>
+            </computer>
+          </onlinopt>
+        </digtopt>
+      </digform>
+      <digform>
+        <digtinfo>
+          <formname>.png</formname>
+          <formvern>1</formvern>
+          <formspec>View a standard, medium-sized .png image file with a graph or map. http://www.libpng.org/pub/png/</formspec>
+        </digtinfo>
+        <digtopt>
+          <onlinopt>
+            <computer>
+              <networka>
+                <networkr>http://localhost:8080/erddap/tabledap/pmelTaoDySss.graph</networkr>
+              </networka>
+            </computer>
+          </onlinopt>
+        </digtopt>
+      </digform>
+      <digform>
+        <digtinfo>
+          <formname>.largePng</formname>
+          <formvern>1</formvern>
+          <formspec>View a large .png image file with a graph or map. http://www.libpng.org/pub/png/</formspec>
+        </digtinfo>
+        <digtopt>
+          <onlinopt>
+            <computer>
+              <networka>
+                <networkr>http://localhost:8080/erddap/tabledap/pmelTaoDySss.graph</networkr>
+              </networka>
+            </computer>
+          </onlinopt>
+        </digtopt>
+      </digform>
+      <digform>
+        <digtinfo>
+          <formname>.transparentPng</formname>
+          <formvern>1</formvern>
+          <formspec>View a .png image file (just the data, without axes, landmask, or legend). http://www.libpng.org/pub/png/</formspec>
+        </digtinfo>
+        <digtopt>
+          <onlinopt>
+            <computer>
+              <networka>
+                <networkr>http://localhost:8080/erddap/tabledap/pmelTaoDySss.graph</networkr>
+              </networka>
+            </computer>
+          </onlinopt>
+        </digtopt>
+      </digform>
+      <fees>None</fees>
+    </stdorder>
+  </distinfo>
+  <metainfo>
+    <metd>20250521</metd>
+    <metc>
+            <cntinfo>
+              <cntorgp>
+                <cntorg>ERDDAP Jetty Install</cntorg>
+                <cntper>ERDDAP Jetty Developer</cntper>
+              </cntorgp>
+              <cntpos>Software Engineer</cntpos>
+              <cntaddr>
+                <addrtype>Mailing and Physical Address</addrtype>
+                <address>123 Irrelevant St.</address>
+                <city>Nowhere</city>
+                <state>AK</state>
+                <postal>99504</postal>
+                <country>USA</country>
+              </cntaddr>
+              <cntvoice>555-555-5555</cntvoice>
+              <cntemail>nobody@example.com</cntemail>
+            </cntinfo>
+    </metc>
+    <metstdn>Content Standard for Digital Geospatial Metadata</metstdn>
+    <metstdv>FGDC-STD-012-2002</metstdv>
+    <mettc>universal time</mettc>
+    <metac>None.</metac>
+    <metuc>Request for Acknowledgement: If you use these data in publications or presentations, please acknowledge the GTMBA Project Office of NOAA/PMEL. Also, we would appreciate receiving a preprint and/or reprint of publications utilizing the data for inclusion in our bibliography. Relevant publications should be sent to: GTMBA Project Office, NOAA/Pacific Marine Environmental Laboratory, 7600 Sand Point Way NE, Seattle, WA 98115
+
+The data may be used and redistributed for free but is not intended
+for legal use, since it may contain inaccuracies. Neither the data
+Contributor, ERD, NOAA, nor the United States Government, nor any
+of their employees or contractors, makes any warranty, express or
+implied, including warranties of merchantability and fitness for a
+particular purpose, or assumes any legal liability for the accuracy,
+completeness, or usefulness, of this information.</metuc>
+  </metainfo>
+</metadata>

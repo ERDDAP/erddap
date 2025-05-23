@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="ISO-8859-1" ?>
+    <axisVariable>
+        <sourceName>lon</sourceName>
+        <destinationName>longitude</destinationName>
+        <!-- sourceAttributes>
+            <att name="axis">X</att>
+            <att name="long_name">longitude</att>
+            <att name="reference_datum">Geographical coordinates, WGS84 datum</att>
+            <att name="standard_name">longitude</att>
+            <att name="units">degrees_east</att>
+            <att name="valid_max" type="double">180.0</att>
+            <att name="valid_min" type="double">-180.0</att>
+        </sourceAttributes -->
+        <addAttributes>
+            <att name="ioos_category">Location</att>
+            <att name="long_name">Longitude</att>
+        </addAttributes>
+    </axisVariable>
+    <!-- dataVariable>
+        <sourceName>sst_dtime</sourceName>
+        <destinationName>sst_dtime</destinationName>
+        <dataType>int</dataType>
+        <! - - sourceAttributes>
+            <att name="_ChunkSizes" type="intList">1 540 540</att>
+            <att name="_FillValue" type="int">-2147483648</att>
+            <att name="add_offset" type="int">0</att>
+            <att name="comment">Time plus sst_dtime gives seconds after 1981-01-01 00:00:00. Note: in PFV5.3 this sst_dtime is empty. PFV6 will contain the correct sst_dtime values.</att>
+            <att name="coverage_content_type">auxiliaryInformation</att>
+            <att name="grid_mapping">crs</att>
+            <att name="long_name">time difference from reference time</att>
+            <att name="platform">NOAA-7</att>
+            <att name="scale_factor" type="int">1</att>
+            <att name="source">AVHRR_GAC-CLASS-L1B-NOAA_07-v1</att>
+            <att name="units">seconds</att>
+            <att name="valid_max" type="int">2147483647</att>
+            <att name="valid_min" type="int">-2147483647</att>
+        </sourceAttributes - - >
+        <addAttributes>
+            <att name="_ChunkSizes">null</att>
+            <att name="add_offset">null</att>
+            <att name="colorBarMaximum" type="double">10.0</att>
+            <att name="colorBarMinimum" type="double">-10.0</att>
+            <att name="ioos_category">Temperature</att>
+            <att name="scale_factor">null</att>
+        </addAttributes>
+    </dataVariable>
+    <dataVariable>
+        <sourceName>sses_bias</sourceName>
+        <destinationName>sses_bias</destinationName>
+        <dataType>double</dataType>
+        <! - - sourceAttributes>
+            <att name="_ChunkSizes" type="intList">1 540 540</att>
+            <att name="_FillValue" type="byte">-128</att>
+            <att name="add_offset" type="double">0.0</att>
+            <att name="comment">Bias estimate derived using the techniques described at https://www.ghrsst.org/ghrsst/tags-and-wgs/stval-wg/sses-description-of-schemes/. Note: in PFV5.3 this sses_bias is empty. PFV6 will contain the correct sses_bias values.</att>
+            <att name="coverage_content_type">auxiliaryInformation</att>
+            <att name="grid_mapping">crs</att>
+            <att name="long_name">SSES bias estimate</att>
+            <att name="platform">NOAA-7</att>
+            <att name="scale_factor" type="double">0.02</att>
+            <att name="source">AVHRR_GAC-CLASS-L1B-NOAA_07-v1</att>
+            <att name="units">kelvin</att>
+            <att name="valid_max" type="byte">127</att>
+            <att name="valid_min" type="byte">-127</att>
+        </sourceAttributes - - >
+        <addAttributes>
+            <att name="_ChunkSizes">null</att>
+            <att name="colorBarMaximum" type="double">5.0</att>
+            <att name="colorBarMinimum" type="double">0.0</att>
+            <att name="ioos_category">Statistics</att>
+            <att name="units">degree_C</att>
+        </addAttributes>
+    </dataVariable>
+    <dataVariable>
+        <sourceName>sses_standard_deviation</sourceName>
+        <destinationName>sses_standard_deviation</destinationName>
+        <dataType>double</dataType>
+        <! - - sourceAttributes>
+            <att name="_ChunkSizes" type="intList">1 540 540</att>
+            <att name="_FillValue" type="byte">-128</att>
+            <att name="add_offset" type="double">2.54</att>
+            <att name="comment">Standard deviation estimate derived using the techniques described at https://www.ghrsst.org/ghrsst/tags-and-wgs/stval-wg/sses-description-of-schemes/. Note: in PFV5.3 this sses_standard_deviation is empty. PFV6 will contain the correct sses_standard_deviation values.</att>
+            <att name="coverage_content_type">auxiliaryInformation</att>
+            <att name="grid_mapping">crs</att>
+            <att name="long_name">SSES standard deviation</att>
+            <att name="platform">NOAA-7</att>
+            <att name="scale_factor" type="double">0.02</att>
+            <att name="source">AVHRR_GAC-CLASS-L1B-NOAA_07-v1</att>
+            <att name="units">kelvin</att>
+            <att name="valid_max" type="byte">127</att>
+            <att name="valid_min" type="byte">-127</att>
+        </sourceAttributes - - >
+        <addAttributes>
+            <att name="_ChunkSizes">null</att>
+            <att name="colorBarMaximum" type="double">5.0</att>
+            <att name="colorBarMinimum" type="double">0.0</att>
+            <att name="ioos_category">Statistics</att>
+            <att name="units">degree_C</att>
+        </addAttributes>
+    </dataVariable -->

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="ISO-8859-1" ?>
+    <axisVariable>
+        <sourceName>lat</sourceName>
+        <destinationName>latitude</destinationName>
+        <!-- sourceAttributes>
+            <att name="axis">Y</att>
+            <att name="long_name">latitude</att>
+            <att name="reference_datum">Geographical coordinates, WGS84 datum</att>
+            <att name="standard_name">latitude</att>
+            <att name="units">degrees_north</att>
+            <att name="valid_max" type="double">90.0</att>
+            <att name="valid_min" type="double">-90.0</att>
+        </sourceAttributes -->
+        <addAttributes>
+            <att name="ioos_category">Location</att>
+            <att name="long_name">Latitude</att>
+        </addAttributes>
+    </axisVariable>

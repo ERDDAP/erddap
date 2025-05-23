@@ -1,0 +1,68 @@
+	    Scientific Graphics Toolkit (sgt) Version 2.1  
+			    Release Notes
+
+$Id: RELEASE-NOTES-2.1.txt,v 1.2 2001/12/14 01:08:02 dwd Exp $
+
+Introduction:
+-------------
+
+This document describes the changes in the Scientific Graphics Toolkit
+from version 2.0 to 2.1. 
+
+Bug reports, comments, and suggestions can be sent to
+dwd@pmel.noaa.gov or sgt@epic.noaa.gov.
+
+New Features:
+-------------
+
+Two major new features have been added to SGT since its last
+release. Both features require Java2D, which is available in JDK
+version 1.2 and newer.
+
+Vectors. The datatype SGTVector has been implemented and the
+    VectorAttribute, VectorKey, VectorCartesianRenderer, and
+    VectorAttributeDialog classes have been added to support vector
+    drawing.  The VectorAttribute class enables users to customize
+    vector head attributes (e.g. scale, min and max head size), color,
+    line attributes (width, cap and miter style), and optionally
+    placing a plot mark at the vector origin.  See the javadoc for
+    more information.
+
+    JPlotLayout has been expanded to include support for the
+    SGTVector datatype.
+
+Stroke lines.  Stroke lines, where the width, dash properties, cap and
+    miter styles, are all selectable have been added.  Line and
+    contour plotting now make use of the new stroke lines.
+
+Line key title.  To better support dynamic changes in data a SGLabel
+    can be specified to describe a data object in a LineKey,
+    PointCollectionKey, and VectorKey.  This feature was added so that
+    the key could be automatically updated when the data changed.
+
+GridAttributeDialog, LineAttributeDialog, PointAttributeDialog, and
+    VectorAttributeDialog now allow multiple JPanes to be registered.
+    This enables the dialog to notifiy both the main graphic JPane and
+    a JPane that contains a key that attribute changes have occured.
+
+Bug Fixes and Improvements:
+---------------------------
+
+A bug that required a Graphics object to be available before
+setBatch(false) could be called has been fixed. This feature uses the
+new init() method that is available in Pane and JPane.  The init()
+method is called with the Pane or JPane first becomes visible,
+initializing those features that require a Graphics object reference. 
+
+Several bugs have been fixed in JPlotLayout, relating to LineKey
+placement, and using the new init() method.
+
+Known Issues This Release:
+--------------------------
+
+GridAttributeDialog is still not complete.  It presently only works
+with an IndexedColorMap.
+
+Java2D is required for the new Stroke lines and Vector graphics to
+work.
+

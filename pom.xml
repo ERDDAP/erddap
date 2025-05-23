@@ -24,12 +24,14 @@
                               //      slf4j, guava, lz4, metrics, netty, snappy, aws-crt.
       mvn package             //Creates a war in \programs\mavenERDDAP\ERDDAP\target
 
-   or: mvn clean install -U   //clears out cached information (more thoroughly than 'clean') and does it all?
+   or: mvn clean install -U   //clears out cached information (more thoroughly than 'clean') and does it
+all?
 
 * Run TestAll.
 
 -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
@@ -57,13 +59,14 @@
 
     <repositories>
         <!-- Use this if you switch away from netcdfAll.jar to modules - or just to get Zarr module.
-             Published advice: https://docs.unidata.ucar.edu/netcdf-java/current/userguide/using_netcdf_java_artifacts.html
+             Published advice:
+        https://docs.unidata.ucar.edu/netcdf-java/current/userguide/using_netcdf_java_artifacts.html
              Repository https://artifacts.unidata.ucar.edu/repository/unidata-all/      (on web page)
                 or      https://artifacts.unidata.ucar.edu/repository/unidata-releases/ (privately)
               Browse either https://artifacts.unidata.ucar.edu/#browse/browse
              -->
         <repository>
-            <id>unidata-all</id>   
+            <id>unidata-all</id>
             <name>UNIDATA All</name>
             <url>https://artifacts.unidata.ucar.edu/repository/unidata-all/</url>
         </repository>
@@ -93,6 +96,26 @@
                 </executions>
             </plugin>
             <plugin>
+                <groupId>gg.jte</groupId>
+                <artifactId>jte-maven-plugin</artifactId>
+                <version>3.2.1</version>
+                <configuration>
+                    <!-- This is the directory where your .jte files are located. -->
+                    <sourceDirectory>${project.basedir}/src/main/resources/jte</sourceDirectory>
+                    <!-- This is the directory where compiled templates are located. -->
+                    <targetDirectory>${project.basedir}/src/main/resources/jte-classes</targetDirectory>
+                    <contentType>Html</contentType>
+                </configuration>
+                <executions>
+                    <execution>
+                        <phase>process-classes</phase>
+                        <goals>
+                            <goal>precompile</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>versions-maven-plugin</artifactId>
                 <version>2.18.0</version>
@@ -114,7 +137,8 @@
                 </configuration>
             </plugin>
             <plugin>
-                <!-- https://mvnrepository.com/artifact/org.apache.maven.plugins/maven-compiler-plugin -->
+                <!--
+                https://mvnrepository.com/artifact/org.apache.maven.plugins/maven-compiler-plugin -->
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.14.0</version>
@@ -125,7 +149,11 @@
                     <encoding>UTF-8</encoding>
                     <compilerArgs>
                         <arg>-XDcompilePolicy=simple</arg>
-                        <arg>-Xplugin:ErrorProne -Xep:StringCaseLocaleUsage:OFF -Xep:EmptyCatch:OFF -Xep:StringSplitter:OFF -Xep:JavaLangClash:OFF -Xep:CatchAndPrintStackTrace:OFF -Xep:NotJavadoc:OFF -Xep:InvalidBlockTag:OFF -Xep:MissingSummary:OFF -Xep:EmptyBlockTag:OFF -Xep:InvalidParam:OFF -Xep:InvalidThrows:OFF -Xep:ReturnFromVoid:OFF</arg>
+                        <arg>-Xplugin:ErrorProne -Xep:StringCaseLocaleUsage:OFF -Xep:EmptyCatch:OFF
+                            -Xep:StringSplitter:OFF -Xep:JavaLangClash:OFF
+                            -Xep:CatchAndPrintStackTrace:OFF -Xep:NotJavadoc:OFF
+                            -Xep:InvalidBlockTag:OFF -Xep:MissingSummary:OFF -Xep:EmptyBlockTag:OFF
+                            -Xep:InvalidParam:OFF -Xep:InvalidThrows:OFF -Xep:ReturnFromVoid:OFF</arg>
                     </compilerArgs>
                     <excludes>
                         <exclude>gov/noaa/pfel/coastwatch/sgt/LandMask.javaINACTIVE</exclude>
@@ -134,7 +162,8 @@
                         <exclude>gov/noaa/pfel/coastwatch/sgt/GSHHSNewOnHold.java_NOT_YET</exclude>
                         <exclude>gov/noaa/pfel/coastwatch/griddata/Grd.javaINACTIVE</exclude>
                         <exclude>gov/noaa/pfel/coastwatch/griddata/GridDataSetCWOpendap.javaINACTIVE</exclude>
-                        <exclude>gov/noaa/pfel/coastwatch/griddata/GridDataSetPathfinder.javaINACTIVE</exclude>
+                        <exclude>
+                            gov/noaa/pfel/coastwatch/griddata/GridDataSetPathfinder.javaINACTIVE</exclude>
                         <exclude>gov/noaa/pfel/coastwatch/griddata/WriteShapefile.javaINACTIVE</exclude>
                         <exclude>gov/noaa/pfel/coastwatch/pointdata/DigirIobisTDSP.javaINACTIVE</exclude>
                         <exclude>gov/noaa/pfel/coastwatch/pointdata/DigirObisTDSP.javaINACTIVE</exclude>
@@ -146,7 +175,8 @@
                         <exclude>gov/noaa/pfel/erddap/dataset/EDDTableFromBMDE.javaINACTIVE</exclude>
                         <exclude>gov/noaa/pfel/erddap/dataset/EDDTableFromMWFS.javaINACTIVE</exclude>
                         <exclude>gov/noaa/pfel/erddap/dataset/EDDTableFromNOS.javaINACTIVE</exclude>
-                        <exclude>gov/noaa/pfel/erddap/dataset/EDDTableFromNcSequenceFiles.javaNOT_FINISHED</exclude>
+                        <exclude>
+                            gov/noaa/pfel/erddap/dataset/EDDTableFromNcSequenceFiles.javaNOT_FINISHED</exclude>
                         <exclude>gov/noaa/pfel/erddap/dataset/EDDTableFromNWISDV.javaINACTIVE</exclude>
                         <exclude>gov/noaa/pfel/erddap/dataset/EDDTableFromPostDatabase.javaINACTIVE</exclude>
                         <exclude>gov/noaa/pfel/erddap/dataset/EDDTableFromPostNcFiles.javaINACTIVE</exclude>
@@ -192,7 +222,8 @@
                         <configuration>
                             <rules>
                                 <requireFilesDontExist>
-                                    <message>Test data directories should be removed from src/test/resources</message>
+                                    <message>Test data directories should be removed from
+                                        src/test/resources</message>
                                     <files>
                                         <file>${project.basedir}/src/test/resources/data</file>
                                         <file>${project.basedir}/src/test/resources/largeFiles</file>
@@ -214,7 +245,17 @@
                 <configuration>
                     <attachClasses>true</attachClasses>
                     <warSourceDirectory>${project.basedir}</warSourceDirectory>
-                    <warSourceExcludes>**/*.java, **/*.javaINACTIVE, **/*.javaInactive, **/*.java_NOT_YET, **/*.javaNOT_FINISHED, **/*.javaOLD, content/**, data/**, development/**, test-data/**, /src/test/**, target/**, src/**, WEB-INF/classes/gov/noaa/pfel/coastwatch/log.*, WEB-INF/lib/**, WEB-INF/NetCheck.*, WEB-INF/*.web.xml, WEB-INF/DoubleCenterGrids.sh, WEB-INF/FileVisitorDNLS.sh, WEB-INF/FindDuplicateTime.*, WEB-INF/GenerateO*, WEB-INF/GenerateT*, WEB-INF/GridSaveAs*, WEB-INF/incompleteMainCatalog.xml, WEB-INF/iobis.m, WEB-INF/obis.m, WEB-INF/MapViewer.*, WEB-INF/QN2005193*, WEB-INF/ValidateDataSetProperties*, WEB-INF/fonts/**, WEB-INF/temp/**, WEB-INF/ref/*.zip, *.*, translation/**, .mvn/**, .settings/**, .github/**, .vscode/**</warSourceExcludes>
+                    <warSourceExcludes>**/*.java, **/*.javaINACTIVE, **/*.javaInactive,
+                        **/*.java_NOT_YET, **/*.javaNOT_FINISHED, **/*.javaOLD, content/**, data/**,
+                        development/**, test-data/**, /src/test/**, target/**, src/**,
+                        WEB-INF/classes/gov/noaa/pfel/coastwatch/log.*, WEB-INF/lib/**,
+                        WEB-INF/NetCheck.*, WEB-INF/*.web.xml, WEB-INF/DoubleCenterGrids.sh,
+                        WEB-INF/FileVisitorDNLS.sh, WEB-INF/FindDuplicateTime.*, WEB-INF/GenerateO*,
+                        WEB-INF/GenerateT*, WEB-INF/GridSaveAs*, WEB-INF/incompleteMainCatalog.xml,
+                        WEB-INF/iobis.m, WEB-INF/obis.m, WEB-INF/MapViewer.*, WEB-INF/QN2005193*,
+                        WEB-INF/ValidateDataSetProperties*, WEB-INF/fonts/**, WEB-INF/temp/**,
+                        WEB-INF/ref/*.zip, *.*, translation/**, .mvn/**, .settings/**, .github/**,
+                        .vscode/**</warSourceExcludes>
                 </configuration>
             </plugin>
             <plugin>
@@ -242,9 +283,11 @@
                         <contextPath>/erddap</contextPath>
                         <descriptor>${project.basedir}/WEB-INF/web.xml</descriptor>
                     </webApp>
-                    <!-- necessary to override the default classesDirectory ${project.basedir}/target/classes due to:
+                    <!-- necessary to override the default classesDirectory
+                    ${project.basedir}/target/classes due to:
                     https://github.com/ERDDAP/erddap/blob/33e6e531484b0cc6ed461f0640b1f0ad3b83e45b/WEB-INF/classes/com/cohort/util/File2.java#L216-->
-                    <classesDirectory>${project.build.directory}/${project.build.finalName}/WEB-INF/classes</classesDirectory>
+                    <classesDirectory>
+                        ${project.build.directory}/${project.build.finalName}/WEB-INF/classes</classesDirectory>
                     <scan>0</scan>
                 </configuration>
             </plugin>
@@ -263,7 +306,7 @@
                         </goals>
                         <configuration>
                             <target>
-                                <mkdir dir="${project.basedir}/target/data"/>
+                                <mkdir dir="${project.basedir}/target/data" />
                             </target>
                         </configuration>
                     </execution>
@@ -281,7 +324,8 @@
                             <goal>wget</goal>
                         </goals>
                         <configuration>
-                            <url>https://github.com/ERDDAP/erddapContent/releases/download/${erddapcontent.download.version}/erddapContent.zip</url>
+                            <url>
+                                https://github.com/ERDDAP/erddapContent/releases/download/${erddapcontent.download.version}/erddapContent.zip</url>
                             <unpackWhenChanged>${download.unpackWhenChanged}</unpackWhenChanged>
                             <outputDirectory>${project.basedir}</outputDirectory>
                             <skip>${skipResourceDownload}</skip>
@@ -294,7 +338,8 @@
                             <goal>wget</goal>
                         </goals>
                         <configuration>
-                            <url>https://github.com/ERDDAP/ERDDAPRefFiles/releases/download/${erddapreffiles.download.version}/etopo1_ice_g_i2.zip</url>
+                            <url>
+                                https://github.com/ERDDAP/ERDDAPRefFiles/releases/download/${erddapreffiles.download.version}/etopo1_ice_g_i2.zip</url>
                             <unpackWhenChanged>${download.unpackWhenChanged}</unpackWhenChanged>
                             <outputDirectory>${project.basedir}/WEB-INF/ref/</outputDirectory>
                             <skip>${skipResourceDownload}</skip>
@@ -307,7 +352,8 @@
                             <goal>wget</goal>
                         </goals>
                         <configuration>
-                            <url>https://github.com/ERDDAP/ERDDAPRefFiles/releases/download/${erddapreffiles.download.version}/ref_files.zip</url>
+                            <url>
+                                https://github.com/ERDDAP/ERDDAPRefFiles/releases/download/${erddapreffiles.download.version}/ref_files.zip</url>
                             <unpackWhenChanged>${download.unpackWhenChanged}</unpackWhenChanged>
                             <outputDirectory>${project.basedir}/WEB-INF/ref/</outputDirectory>
                             <skip>${skipResourceDownload}</skip>
@@ -321,7 +367,8 @@
                             <goal>wget</goal>
                         </goals>
                         <configuration>
-                            <url>https://github.com/ERDDAP/erddapTest/releases/download/${test.resources.version}/data.zip</url>
+                            <url>
+                                https://github.com/ERDDAP/erddapTest/releases/download/${test.resources.version}/data.zip</url>
                             <unpackWhenChanged>${download.unpackWhenChanged}</unpackWhenChanged>
                             <outputDirectory>${project.basedir}/test-data</outputDirectory>
                             <skip>${skipTestResourceDownload}</skip>
@@ -334,7 +381,8 @@
                             <goal>wget</goal>
                         </goals>
                         <configuration>
-                            <url>https://github.com/ERDDAP/erddapTest/releases/download/${test.resources.version}/largeFiles.zip</url>
+                            <url>
+                                https://github.com/ERDDAP/erddapTest/releases/download/${test.resources.version}/largeFiles.zip</url>
                             <unpackWhenChanged>${download.unpackWhenChanged}</unpackWhenChanged>
                             <outputDirectory>${project.basedir}/test-data</outputDirectory>
                             <skip>${skipTestResourceDownload}</skip>
@@ -347,7 +395,8 @@
                             <goal>wget</goal>
                         </goals>
                         <configuration>
-                            <url>https://github.com/ERDDAP/erddapTest/releases/download/${test.resources.version}/largePoints.zip</url>
+                            <url>
+                                https://github.com/ERDDAP/erddapTest/releases/download/${test.resources.version}/largePoints.zip</url>
                             <unpackWhenChanged>${download.unpackWhenChanged}</unpackWhenChanged>
                             <outputDirectory>${project.basedir}/test-data</outputDirectory>
                             <skip>${skipTestResourceDownload}</skip>
@@ -360,7 +409,8 @@
                             <goal>wget</goal>
                         </goals>
                         <configuration>
-                            <url>https://github.com/ERDDAP/erddapTest/releases/download/${test.resources.version}/largeSatellite.zip</url>
+                            <url>
+                                https://github.com/ERDDAP/erddapTest/releases/download/${test.resources.version}/largeSatellite.zip</url>
                             <unpackWhenChanged>${download.unpackWhenChanged}</unpackWhenChanged>
                             <outputDirectory>${project.basedir}/test-data</outputDirectory>
                             <skip>${skipTestResourceDownload}</skip>
@@ -376,7 +426,9 @@
                     <additionalClasspathElements>
                         <additionalClasspathElement>${project.basedir}/test-data</additionalClasspathElement>
                     </additionalClasspathElements>
-                    <excludedGroups>Jetty, Slow, LargeFiles, Flaky, AWS, LocalERDDAP, Password, Thredds, ExternalERDDAP, MissingFile, ExternalOther, IncompleteTest, RequiresContent, MissingDataset</excludedGroups>
+                    <excludedGroups>Jetty, Slow, LargeFiles, Flaky, AWS, LocalERDDAP, Password,
+                        Thredds, ExternalERDDAP, MissingFile, ExternalOther, IncompleteTest,
+                        RequiresContent, MissingDataset</excludedGroups>
                 </configuration>
             </plugin>
             <plugin>
@@ -395,7 +447,9 @@
                                 <additionalClasspathElement>${project.basedir}/test-data</additionalClasspathElement>
                             </additionalClasspathElements>
                             <groups>Jetty, Slow</groups>
-                            <excludedGroups>LargeFiles, Flaky, AWS, LocalERDDAP, Password, Thredds, ExternalERDDAP, MissingFile, ExternalOther, IncompleteTest, RequiresContent, MissingDataset</excludedGroups>
+                            <excludedGroups>LargeFiles, Flaky, AWS, LocalERDDAP, Password, Thredds,
+                                ExternalERDDAP, MissingFile, ExternalOther, IncompleteTest,
+                                RequiresContent, MissingDataset</excludedGroups>
                             <includes>
                                 <include>**/IT*.java</include>
                                 <include>**/*IT.java</include>
@@ -422,19 +476,19 @@
                 <configuration>
                     <maxHeap>2048</maxHeap>
                      <includeFilterFile>spotbugs-security-include.xml</includeFilterFile> -->
-                    <!-- <excludeFilterFile>spotbugs-security-exclude.xml</excludeFilterFile> -->
-                    <!-- <plugins> -->
-                        <!-- <plugin>
+            <!-- <excludeFilterFile>spotbugs-security-exclude.xml</excludeFilterFile> -->
+            <!-- <plugins> -->
+            <!-- <plugin>
                             <groupId>com.h3xstream.findsecbugs</groupId>
                             <artifactId>findsecbugs-plugin</artifactId>
                             <version>1.13.0</version>
                         </plugin> -->
-                        <!-- <plugin>
+            <!-- <plugin>
                             <groupId>com.mebigfatguy.fb-contrib</groupId>
                             <artifactId>fb-contrib</artifactId>
                             <version>7.6.8</version>
                         </plugin> -->
-                    <!-- </plugins>
+            <!-- </plugins>
                 </configuration>
             </plugin> -->
             <plugin>
@@ -443,76 +497,83 @@
                 <version>0.8.12</version>
                 <executions>
                     <execution>
-                    <id>before-unit-test-execution</id>
-                    <goals>
-                    <goal>prepare-agent</goal>
-                    </goals>
-                    <configuration>
-                    <destFile>${project.build.directory}/jacoco-output/jacoco-unit-tests.exec</destFile>
-                    <propertyName>surefire.jacoco.args</propertyName>
-                    </configuration>
-                </execution>
-                <execution>
-                    <id>after-unit-test-execution</id>
-                    <phase>test</phase>
-                    <goals>
-                        <goal>report</goal>
-                    </goals>
-                    <configuration>
-                        <dataFile>${project.build.directory}/jacoco-output/jacoco-unit-tests.exec</dataFile>
-                        <outputDirectory>${project.reporting.outputDirectory}/jacoco-unit-test-coverage-report</outputDirectory>
-                    </configuration>
+                        <id>before-unit-test-execution</id>
+                        <goals>
+                            <goal>prepare-agent</goal>
+                        </goals>
+                        <configuration>
+                            <destFile>
+                                ${project.build.directory}/jacoco-output/jacoco-unit-tests.exec</destFile>
+                            <propertyName>surefire.jacoco.args</propertyName>
+                        </configuration>
                     </execution>
                     <execution>
-                    <id>before-integration-test-execution</id>
-                    <phase>pre-integration-test</phase>
-                    <goals>
-                        <goal>prepare-agent</goal>
-                    </goals>
-                    <configuration>
-                        <destFile>${project.build.directory}/jacoco-output/jacoco-integration-tests.exec</destFile>
-                        <propertyName>failsafe.jacoco.args</propertyName>
-                    </configuration>
+                        <id>after-unit-test-execution</id>
+                        <phase>test</phase>
+                        <goals>
+                            <goal>report</goal>
+                        </goals>
+                        <configuration>
+                            <dataFile>
+                                ${project.build.directory}/jacoco-output/jacoco-unit-tests.exec</dataFile>
+                            <outputDirectory>
+                                ${project.reporting.outputDirectory}/jacoco-unit-test-coverage-report</outputDirectory>
+                        </configuration>
                     </execution>
                     <execution>
-                    <id>after-integration-test-execution</id>
-                    <phase>post-integration-test</phase>
-                    <goals>
-                        <goal>report</goal>
-                    </goals>
-                    <configuration>
-                        <dataFile>${project.build.directory}/jacoco-output/jacoco-integration-tests.exec</dataFile>
-                        <outputDirectory>${project.reporting.outputDirectory}/jacoco-integration-test-coverage-report</outputDirectory>
-                    </configuration>
+                        <id>before-integration-test-execution</id>
+                        <phase>pre-integration-test</phase>
+                        <goals>
+                            <goal>prepare-agent</goal>
+                        </goals>
+                        <configuration>
+                            <destFile>
+                                ${project.build.directory}/jacoco-output/jacoco-integration-tests.exec</destFile>
+                            <propertyName>failsafe.jacoco.args</propertyName>
+                        </configuration>
                     </execution>
                     <execution>
-                    <id>merge-unit-and-integration</id>
-                    <phase>post-integration-test</phase>
-                    <goals>
-                        <goal>merge</goal>
-                    </goals>
-                    <configuration>
-                        <fileSets>
-                        <fileSet>
-                            <directory>${project.build.directory}/jacoco-output/</directory>
-                            <includes>
-                            <include>*.exec</include>
-                            </includes>
-                        </fileSet>
-                        </fileSets>
-                        <destFile>${project.build.directory}/jacoco-output/merged.exec</destFile>
-                    </configuration>
+                        <id>after-integration-test-execution</id>
+                        <phase>post-integration-test</phase>
+                        <goals>
+                            <goal>report</goal>
+                        </goals>
+                        <configuration>
+                            <dataFile>
+                                ${project.build.directory}/jacoco-output/jacoco-integration-tests.exec</dataFile>
+                            <outputDirectory>
+                                ${project.reporting.outputDirectory}/jacoco-integration-test-coverage-report</outputDirectory>
+                        </configuration>
                     </execution>
                     <execution>
-                    <id>create-merged-report</id>
-                    <phase>post-integration-test</phase>
-                    <goals>
-                        <goal>report</goal>
-                    </goals>
-                    <configuration>
-                        <dataFile>${project.build.directory}/jacoco-output/merged.exec</dataFile>
-                        <outputDirectory>${project.reporting.outputDirectory}/jacoco-merged-test-coverage-report</outputDirectory>
-                    </configuration>
+                        <id>merge-unit-and-integration</id>
+                        <phase>post-integration-test</phase>
+                        <goals>
+                            <goal>merge</goal>
+                        </goals>
+                        <configuration>
+                            <fileSets>
+                                <fileSet>
+                                    <directory>${project.build.directory}/jacoco-output/</directory>
+                                    <includes>
+                                        <include>*.exec</include>
+                                    </includes>
+                                </fileSet>
+                            </fileSets>
+                            <destFile>${project.build.directory}/jacoco-output/merged.exec</destFile>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>create-merged-report</id>
+                        <phase>post-integration-test</phase>
+                        <goals>
+                            <goal>report</goal>
+                        </goals>
+                        <configuration>
+                            <dataFile>${project.build.directory}/jacoco-output/merged.exec</dataFile>
+                            <outputDirectory>
+                                ${project.reporting.outputDirectory}/jacoco-merged-test-coverage-report</outputDirectory>
+                        </configuration>
                     </execution>
                 </executions>
             </plugin>
@@ -541,9 +602,9 @@
                 <dependencies>
                     <!-- Enable https://github.com/google/google-java-format -->
                     <dependency>
-                    <groupId>com.cosium.code</groupId>
-                    <artifactId>google-java-format</artifactId>
-                    <version>5.3</version>
+                        <groupId>com.cosium.code</groupId>
+                        <artifactId>google-java-format</artifactId>
+                        <version>5.3</version>
                     </dependency>
                 </dependencies>
                 <configuration>
@@ -552,7 +613,8 @@
                         <googleJavaFormat.aosp>false</googleJavaFormat.aosp>
                         <!-- Format the javadoc -->
                         <googleJavaFormat.formatJavadoc>true</googleJavaFormat.formatJavadoc>
-                        <!-- Fix import order and remove any unused imports, but do no other formatting. -->
+                        <!-- Fix import order and remove any unused imports, but do no other
+                        formatting. -->
                         <googleJavaFormat.fixImportsOnly>false</googleJavaFormat.fixImportsOnly>
                         <!-- Do not fix the import order. Unused imports will still be removed. -->
                         <googleJavaFormat.skipSortingImports>false</googleJavaFormat.skipSortingImports>
@@ -561,7 +623,7 @@
                     </formatterOptions>
                 </configuration>
             </plugin>
-             <plugin>
+            <plugin>
                 <groupId>org.jetbrains.dokka</groupId>
                 <artifactId>dokka-maven-plugin</artifactId>
                 <version>2.0.0</version>
@@ -589,16 +651,22 @@
                         <file>${project.basedir}/WEB-INF/classes/com/cohort/util/MaskingThread.java</file>
                         <file>${project.basedir}/WEB-INF/classes/com/cohort/util/Math2.java</file>
                         <file>${project.basedir}/WEB-INF/classes/com/cohort/util/MustBe.java</file>
-                        <file>${project.basedir}/WEB-INF/classes/com/cohort/util/ResourceBundle2.java</file>
+                        <file>
+                            ${project.basedir}/WEB-INF/classes/com/cohort/util/ResourceBundle2.java</file>
                         <file>${project.basedir}/WEB-INF/classes/com/cohort/util/Script2.java</file>
-                        <file>${project.basedir}/WEB-INF/classes/com/cohort/util/SimpleException.java</file>
+                        <file>
+                            ${project.basedir}/WEB-INF/classes/com/cohort/util/SimpleException.java</file>
                         <file>${project.basedir}/WEB-INF/classes/com/cohort/util/String2.java</file>
                         <file>${project.basedir}/WEB-INF/classes/com/cohort/util/String2Log.java</file>
-                        <file>${project.basedir}/WEB-INF/classes/com/cohort/util/String2LogFactory.java</file>
-                        <file>${project.basedir}/WEB-INF/classes/com/cohort/util/String2LogOutputStream.java</file>
+                        <file>
+                            ${project.basedir}/WEB-INF/classes/com/cohort/util/String2LogFactory.java</file>
+                        <file>
+                            ${project.basedir}/WEB-INF/classes/com/cohort/util/String2LogOutputStream.java</file>
                         <file>${project.basedir}/WEB-INF/classes/com/cohort/util/StringHolder.java</file>
-                        <file>${project.basedir}/WEB-INF/classes/com/cohort/util/StringHolderComparator.java</file>
-                        <file>${project.basedir}/WEB-INF/classes/com/cohort/util/StringHolderComparatorIgnoreCase.java</file>
+                        <file>
+                            ${project.basedir}/WEB-INF/classes/com/cohort/util/StringHolderComparator.java</file>
+                        <file>
+                            ${project.basedir}/WEB-INF/classes/com/cohort/util/StringHolderComparatorIgnoreCase.java</file>
                         <file>${project.basedir}/WEB-INF/classes/com/cohort/util/Test.java</file>
                         <file>${project.basedir}/WEB-INF/classes/com/cohort/util/Units2.java</file>
                         <file>${project.basedir}/WEB-INF/classes/com/cohort/util/XML.java</file>
@@ -608,7 +676,7 @@
                     <dokkaPlugins>
                         <plugin>
                             <groupId>org.jetbrains.dokka</groupId>
-                             <artifactId>gfm-plugin</artifactId>
+                            <artifactId>gfm-plugin</artifactId>
                             <version>2.0.0</version>
                         </plugin>
                     </dokkaPlugins>
@@ -616,14 +684,16 @@
             </plugin>
         </plugins>
         <pluginManagement>
-          <plugins>
-                <!-- https://mvnrepository.com/artifact/org.apache.maven.plugins/maven-resources-plugin -->
+            <plugins>
+                <!--
+                https://mvnrepository.com/artifact/org.apache.maven.plugins/maven-resources-plugin -->
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-resources-plugin</artifactId>
                     <version>3.3.1</version>
                 </plugin>
-                <!-- https://mvnrepository.com/artifact/org.apache.maven.plugins/maven-dependency-plugin -->
+                <!--
+                https://mvnrepository.com/artifact/org.apache.maven.plugins/maven-dependency-plugin -->
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-dependency-plugin</artifactId>
@@ -649,11 +719,11 @@
             <!-- https://mvnrepository.com/artifact/software.amazon.awssdk/bom 
                  Parent for reading/writing to AWS S3. -->
             <dependency>
-              <groupId>software.amazon.awssdk</groupId>
-              <artifactId>bom</artifactId>
-              <version>${awssdkVersion}</version> <!-- and same number several places below -->
-              <type>pom</type>
-              <scope>import</scope>
+                <groupId>software.amazon.awssdk</groupId>
+                <artifactId>bom</artifactId>
+                <version>${awssdkVersion}</version> <!-- and same number several places below -->
+                <type>pom</type>
+                <scope>import</scope>
             </dependency>
 
             <dependency>
@@ -723,7 +793,7 @@
                 <port>8081</port>
                 <path>/erddap</path>
             </configuration -->
-        </dependency> 
+        </dependency>
 
         <dependency>
             <groupId>org.junit.jupiter</groupId>
@@ -769,7 +839,7 @@
             <version>1.10.9</version>
         </dependency>   -->
 
-       <!-- https://mvnrepository.com/artifact/com.github.librepdf/openpdf -->
+        <!-- https://mvnrepository.com/artifact/com.github.librepdf/openpdf -->
         <dependency>
             <groupId>com.github.librepdf</groupId>
             <artifactId>openpdf</artifactId>
@@ -975,7 +1045,8 @@
             <scope>runtime</scope>
         </dependency>
 
-        <!-- Version options: https://artifacts.unidata.ucar.edu/#browse/browse:unidata-all:edu%2Fwisc%2Fssec%2Fvisad  
+        <!-- Version options:
+        https://artifacts.unidata.ucar.edu/#browse/browse:unidata-all:edu%2Fwisc%2Fssec%2Fvisad  
              Marked as needed by dependency:analyze - ->
         <dependency>
             <groupId>edu.wisc.ssec</groupId>
@@ -1013,11 +1084,11 @@
         </dependency>
 
 
-
         <!-- CASSANDRA 
              https://mvnrepository.com/artifact/com.datastax.cassandra/cassandra-driver-core 
              Cassandra uses this. 
-             Be careful. Newer versions may cause trouble with current, older version of Cassandra (which ONC uses). -->
+             Be careful. Newer versions may cause trouble with current, older version of Cassandra (which ONC
+        uses). -->
         <dependency>
             <groupId>com.datastax.cassandra</groupId>
             <artifactId>cassandra-driver-core</artifactId>
@@ -1083,9 +1154,9 @@
              This is the core AWS SDK code. 
              See awssdk/bom in <dependencyManagement> section above. -->
         <dependency>
-          <groupId>software.amazon.awssdk</groupId>
-          <artifactId>s3</artifactId>
-          <version>${awssdkVersion}</version>
+            <groupId>software.amazon.awssdk</groupId>
+            <artifactId>s3</artifactId>
+            <version>${awssdkVersion}</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/software.amazon.awssdk/regions 
@@ -1097,7 +1168,7 @@
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/software.amazon.awssdk/s3-transfer-manager
-            This is the AWS code for TransferManager. -->      
+            This is the AWS code for TransferManager. -->
         <dependency>
             <groupId>software.amazon.awssdk</groupId>
             <artifactId>s3-transfer-manager</artifactId>
@@ -1107,7 +1178,7 @@
         <!-- https://mvnrepository.com/artifact/software.amazon.awssdk.crt/aws-crt
             Maven compiling and dependency checking don't catch s3-transfer-manager's requirement for this.
             (Bob says: This modern fancy programming sucks. 
-            Back in my day, if it compiled, all needed classes were present.) -->      
+            Back in my day, if it compiled, all needed classes were present.) -->
         <dependency>
             <groupId>software.amazon.awssdk.crt</groupId>
             <artifactId>aws-crt</artifactId>
@@ -1146,7 +1217,7 @@
             <artifactId>classgraph</artifactId>
             <version>4.8.179</version>
         </dependency>
-         <dependency>
+        <dependency>
             <groupId>org.apache.hadoop</groupId>
             <artifactId>hadoop-client</artifactId>
             <version>3.4.1</version>
@@ -1155,14 +1226,14 @@
                     <groupId>org.bouncycastle</groupId>
                     <artifactId>bcprov-jdk15on</artifactId>
                 </exclusion>
-            </exclusions> 
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.apache.parquet</groupId>
             <artifactId>parquet-common</artifactId>
             <version>${parquetVersion}</version>
         </dependency>
-         <dependency>
+        <dependency>
             <groupId>org.apache.parquet</groupId>
             <artifactId>parquet-encoding</artifactId>
             <version>${parquetVersion}</version>
@@ -1171,6 +1242,11 @@
             <groupId>org.apache.parquet</groupId>
             <artifactId>parquet-hadoop</artifactId>
             <version>${parquetVersion}</version>
+        </dependency>
+        <dependency>
+            <groupId>gg.jte</groupId>
+            <artifactId>jte</artifactId>
+            <version>3.2.1</version>
         </dependency>
     </dependencies>
 
@@ -1189,7 +1265,7 @@
                     <reportSet>
                         <id>integration-tests</id>
                         <reports>
-                        <report>failsafe-report-only</report>
+                            <report>failsafe-report-only</report>
                         </reports>
                     </reportSet>
                 </reportSets>

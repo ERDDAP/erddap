@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="ISO-8859-1" ?>
+    <dataVariable>
+        <sourceName>sea_surface_temperature</sourceName>
+        <destinationName>sea_surface_temperature</destinationName>
+        <dataType>double</dataType>
+        <!-- sourceAttributes>
+            <att name="_ChunkSizes" type="intList">1 540 540</att>
+            <att name="_FillValue" type="short">-32768</att>
+            <att name="add_offset" type="double">273.15</att>
+            <att name="ancillary_variables">quality_level pathfinder_quality_level l2p_flags</att>
+            <att name="comment">Skin temperature of the ocean</att>
+            <att name="coverage_content_type">physicalMeasurement</att>
+            <att name="grid_mapping">crs</att>
+            <att name="long_name">NOAA Climate Data Record of sea surface skin temperature</att>
+            <att name="platform">NOAA-7</att>
+            <att name="scale_factor" type="double">0.01</att>
+            <att name="source">AVHRR_GAC-CLASS-L1B-NOAA_07-v1</att>
+            <att name="standard_name">sea_surface_skin_temperature</att>
+            <att name="units">kelvin</att>
+            <att name="valid_max" type="short">4500</att>
+            <att name="valid_min" type="short">-180</att>
+        </sourceAttributes -->
+        <addAttributes>
+            <att name="_ChunkSizes">null</att>
+            <att name="add_offset" type="double">-273.15</att>  <!-- source is wrong! -->
+            <att name="colorBarMaximum" type="double">32.0</att>
+            <att name="colorBarMinimum" type="double">0.0</att>
+            <att name="ioos_category">Temperature</att>
+            <att name="units">degree_C</att>
+            <att name="valid_max" type="double">318.15</att>
+            <att name="valid_min" type="double">271.35</att>
+        </addAttributes>
+    </dataVariable>

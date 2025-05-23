@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="ISO-8859-1" ?>
+    <dataVariable>
+        <sourceName>pathfinder_quality_level</sourceName>
+        <destinationName>pathfinder_quality_level</destinationName>
+        <dataType>byte</dataType>
+        <!-- sourceAttributes>
+            <att name="_ChunkSizes" type="intList">1 540 540</att>
+            <att name="_FillValue" type="byte">-1</att>
+            <att name="add_offset" type="double">0.0</att>
+            <att name="comment">This variable contains the native Pathfinder processing system quality levels, ranging from 0 to 7, where 0 is worst and 7 is best. And value -1 represents missing data.</att>
+            <att name="coverage_content_type">qualityInformation</att>
+            <att name="flag_meanings">bad_data worst_quality low_quality low_quality acceptable_quality acceptable_quality acceptable_quality best_quality</att>
+            <att name="flag_values" type="byteList">0 1 2 3 4 5 6 7</att>
+            <att name="grid_mapping">crs</att>
+            <att name="long_name">Pathfinder SST quality flag</att>
+            <att name="platform">NOAA-7</att>
+            <att name="scale_factor" type="double">1.0</att>
+            <att name="source">AVHRR_GAC-CLASS-L1B-NOAA_07-v1</att>
+            <att name="units">1</att>
+            <att name="valid_max" type="byte">7</att>
+            <att name="valid_min" type="byte">0</att>
+        </sourceAttributes -->
+        <addAttributes>
+            <att name="_ChunkSizes">null</att>
+            <att name="add_offset">null</att>
+            <att name="colorBarMaximum" type="double">8.0</att>
+            <att name="colorBarMinimum" type="double">0.0</att>
+            <att name="colorBarContinuous">false</att>
+            <att name="colorBarNSections" type="int">8</att>
+            <att name="ioos_category">Quality</att>
+            <att name="scale_factor">null</att>
+        </addAttributes>
+    </dataVariable>

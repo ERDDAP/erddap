@@ -1,0 +1,1496 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<metadata xmlns:xsi="https://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://www.ngdc.noaa.gov/metadata/published/xsd/ngdcSchema/schema.xsd" >
+  <idinfo>
+    <datsetid>localhost:8080:erdVH2018k4908day</datsetid>
+    <citation>
+      <citeinfo>
+        <origin>
+Project: Ocean Biology Processing Group (NASA/GSFC/OBPG)
+Name: NASA/GSFC/OBPG
+Email: data@oceancolor.gsfc.nasa.gov
+Institution: NASA/GSFC OBPG
+InfoURL: https://oceancolor.gsfc.nasa.gov/data/viirs-snpp/
+Source URL: https://oceandata.sci.gsfc.nasa.gov/VIIRS-SNPP/Mapped/8Day/4km/Kd_490/
+        </origin>
+        <origin_cntinfo>
+          <cntinfo>
+            <cntorgp>
+              <cntorg>NASA/GSFC OBPG</cntorg>
+              <cntper>NASA/GSFC/OBPG</cntper>
+            </cntorgp>
+            <cntemail>data@oceancolor.gsfc.nasa.gov</cntemail>
+          </cntinfo>
+        </origin_cntinfo>
+        <pubdate></pubdate>
+        <title>VIIRSN, Suomi-NPP, Level-3 SMI, NASA, Global, 4km, K490, R2018, 2012-present, 8-Day</title>
+        <edition>Unknown</edition>
+        <geoform>raster digital data</geoform>
+        <pubinfo>
+          <pubplace>Nowhere, AK, USA</pubplace>
+          <publish>ERDDAP, version 2.26, at ERDDAP Jetty Install</publish>
+          <publish_cntinfo>
+            <cntinfo>
+              <cntorgp>
+                <cntorg>ERDDAP Jetty Install</cntorg>
+                <cntper>ERDDAP Jetty Developer</cntper>
+              </cntorgp>
+              <cntpos>Software Engineer</cntpos>
+              <cntaddr>
+                <addrtype>Mailing and Physical Address</addrtype>
+                <address>123 Irrelevant St.</address>
+                <city>Nowhere</city>
+                <state>AK</state>
+                <postal>99504</postal>
+                <country>USA</country>
+              </cntaddr>
+              <cntvoice>555-555-5555</cntvoice>
+              <cntemail>nobody@example.com</cntemail>
+            </cntinfo>
+          </publish_cntinfo>
+        </pubinfo>
+        <onlink>http://localhost:8080/erddap/griddap/erdVH2018k4908day.html</onlink>
+        <onlink>http://localhost:8080/erddap/griddap/erdVH2018k4908day.graph</onlink>
+        <onlink>http://localhost:8080/erddap/wms/erdVH2018k4908day/request</onlink>
+        <CI_OnlineResource>
+          <linkage>http://localhost:8080/erddap/griddap/erdVH2018k4908day.html</linkage>
+          <name>Download data: VIIRSN, Suomi-NPP, Level-3 SMI, NASA, Global, 4km, K490, R2018, 2012-present, 8-Day</name>
+          <description>A web page for specifying a subset of the dataset and downloading data in any of several file formats.</description>
+          <function>download data</function>
+        </CI_OnlineResource>
+        <CI_OnlineResource>
+          <linkage>http://localhost:8080/erddap/griddap/erdVH2018k4908day.graph</linkage>
+          <name>Make a graph or map: VIIRSN, Suomi-NPP, Level-3 SMI, NASA, Global, 4km, K490, R2018, 2012-present, 8-Day</name>
+          <description>A web page for creating a graph or map of the data.</description>
+          <function>download graph or map</function>
+        </CI_OnlineResource>
+        <CI_OnlineResource>
+          <linkage>http://localhost:8080/erddap/griddap/erdVH2018k4908day</linkage>
+          <name>OPeNDAP service: VIIRSN, Suomi-NPP, Level-3 SMI, NASA, Global, 4km, K490, R2018, 2012-present, 8-Day</name>
+          <description>The base URL for the OPeNDAP service.  Add .html to get a web page with a form to download data. Add .dds to get the dataset's structure. Add .das to get the dataset's metadata. Add .dods to download data via the OPeNDAP protocol.</description>
+          <function>OPeNDAP</function>
+        </CI_OnlineResource>
+        <CI_OnlineResource>
+          <linkage>https://oceancolor.gsfc.nasa.gov/data/viirs-snpp/</linkage>
+          <name>Background information: VIIRSN, Suomi-NPP, Level-3 SMI, NASA, Global, 4km, K490, R2018, 2012-present, 8-Day</name>
+          <description>Background information for the dataset.</description>
+          <function>background information</function>
+        </CI_OnlineResource>
+        <CI_OnlineResource>
+          <linkage>http://localhost:8080/erddap/wms/erdVH2018k4908day/request</linkage>
+          <name>WMS service: VIIRSN, Suomi-NPP, Level-3 SMI, NASA, Global, 4km, K490, R2018, 2012-present, 8-Day</name>
+          <description>The base URL for the WMS service for this dataset.</description>
+          <function>WMS</function>
+        </CI_OnlineResource>
+        <lworkcit>
+          <citeinfo>
+            <origin>Ocean Biology Processing Group (NASA/GSFC/OBPG)</origin>
+          </citeinfo>
+        </lworkcit>
+      </citeinfo>
+    </citation>
+    <descript>
+      <abstract>R2018 version of Level-3 Standard Mapped Image (SMI), Global, 4km, Diffuse Attenuation Coefficient K490, 8-Day composite data from the Visible and Infrared Imager/Radiometer Suite (VIIRS), as processed by NASA GSFC Ocean Biology Processing Group (OBPG). VIIRS is a multi-disciplinary instrument that flies on the Suomi-NPP (National Polar-orbiting Partnership) satellite.  Suomi-NPP is the initial spacecraft in the JPSS (Joint Polar Satellite Systems) series of spacecraft. JPSS is our Nation&#39;s next generation polar-orbiting operational environmental satellite system. JPSS is a collaborative program between NOAA and its acquisition agent NASA. VIIRS is the successor to MODIS for Earth science data product generation. (This version of the VH data was first released on 2017-12-12.)</abstract>
+      <purpose>Unknown</purpose>
+      <supplinf>https://oceancolor.gsfc.nasa.gov/data/viirs-snpp/</supplinf>
+    </descript>
+    <timeperd>
+      <timeinfo>
+        <rngdates>
+          <begdate>20120105</begdate>
+          <enddate>20220724</enddate>
+        </rngdates>
+      </timeinfo>
+      <current>ground condition</current>
+    </timeperd>
+    <status>
+      <progress>Complete</progress>
+      <update>As needed</update>
+    </status>
+    <spdom>
+      <bounding>
+        <westbc>-179.9792</westbc>
+        <eastbc>179.9792</eastbc>
+        <northbc>89.97916</northbc>
+        <southbc>-89.97917</southbc>
+      </bounding>
+    </spdom>
+    <keywords>
+      <theme>
+        <themekt>GCMD Science Keywords</themekt>
+        <themekey>4km</themekey>
+        <themekey>8-day</themekey>
+        <themekey>attentuation</themekey>
+        <themekey>coefficient</themekey>
+        <themekey>composite</themekey>
+        <themekey>diffuse</themekey>
+        <themekey>diffuse attenuation coefficient</themekey>
+        <themekey>gsfc</themekey>
+        <themekey>image</themekey>
+        <themekey>joint</themekey>
+        <themekey>jpss</themekey>
+        <themekey>k490</themekey>
+        <themekey>level</themekey>
+        <themekey>level-3</themekey>
+        <themekey>mapped</themekey>
+        <themekey>mean</themekey>
+        <themekey>nasa</themekey>
+        <themekey>noaa</themekey>
+        <themekey>npoess</themekey>
+        <themekey>npp</themekey>
+        <themekey>obpg</themekey>
+        <themekey>ocean</themekey>
+        <themekey>ocean color</themekey>
+        <themekey>oceans</themekey>
+        <themekey>optical</themekey>
+        <themekey>orbiting</themekey>
+        <themekey>polar</themekey>
+        <themekey>properties</themekey>
+        <themekey>satellite</themekey>
+        <themekey>sea</themekey>
+        <themekey>seawater</themekey>
+        <themekey>smi</themekey>
+        <themekey>standard</themekey>
+        <themekey>suomi</themekey>
+        <themekey>viirs</themekey>
+        <themekey>viirsn</themekey>
+        <themekey>water</themekey>
+      </theme>
+      <theme>
+        <themekt>CF Standard Name Table v70</themekt>
+        <themekey>time</themekey>
+        <themekey>latitude</themekey>
+        <themekey>longitude</themekey>
+      </theme>
+    </keywords>
+    <accconst>None.</accconst>
+    <useconst>https://science.nasa.gov/earth-science/earth-science-data/data-information-policy/
+The data may be used and redistributed for free but is not intended
+for legal use, since it may contain inaccuracies. Neither the data
+Contributor, ERD, NOAA, nor the United States Government, nor any
+of their employees or contractors, makes any warranty, express or
+implied, including warranties of merchantability and fitness for a
+particular purpose, or assumes any legal liability for the accuracy,
+completeness, or usefulness, of this information.</useconst>
+    <ptcontac>
+      <cntinfo>
+        <cntorgp>
+          <cntorg>NASA/GSFC OBPG</cntorg>
+          <cntper>NASA/GSFC/OBPG</cntper>
+        </cntorgp>
+        <cntpos>Unknown</cntpos>
+        <cntaddr>
+          <addrtype>Mailing and Physical Address</addrtype>
+          <address>Unknown</address>
+          <address>Unknown</address>
+          <city>Unknown</city>
+          <state>Unknown</state>
+          <postal>Unknown</postal>
+          <country>Unknown</country>
+        </cntaddr>
+        <cntvoice>Unknown</cntvoice>
+        <cntemail>data@oceancolor.gsfc.nasa.gov</cntemail>
+      </cntinfo>
+    </ptcontac>
+    <browse>
+      <browsen>http://localhost:8080/erddap/griddap/erdVH2018k4908day.graph</browsen>
+      <browsed>Web page to make a customized map or graph of the data</browsed>
+      <browset>HTML</browset>
+    </browse>
+  </idinfo>
+  <dataqual>
+    <logic>Unknown</logic>
+    <complete>Unknown</complete>
+    <posacc>
+      <horizpa>
+        <horizpar>Unknown</horizpar>
+      </horizpa>
+      <vertacc>
+        <vertaccr>Unknown</vertaccr>
+      </vertacc>
+    </posacc>
+    <lineage>
+      <procstep>
+        <procdesc>SNPP data files are downloaded ASAP from https://oceandata.sci.gsfc.nasa.gov/VIIRS-SNPP/Mapped/8-Day/4km/Kd_490/ to NOAA NMFS SWFSC ERD (erd.data@noaa.gov).</procdesc>
+        <procdate>Unknown</procdate>
+      </procstep>
+      <procstep>
+        <procdesc>NOAA NMFS SWFSC ERD (erd.data@noaa.gov) uses ERDDAP to add the time variable and slightly modify the metadata.</procdesc>
+        <procdate>Unknown</procdate>
+      </procstep>
+      <procstep>
+        <procdesc>Direct read of HDF4 file through CDM library.</procdesc>
+        <procdate>Unknown</procdate>
+      </procstep>
+    </lineage>
+  </dataqual>
+  <spdoinfo>
+    <direct>Raster</direct>
+    <rastinfo>
+      <cvaltype>float</cvaltype>
+      <rasttype>Grid Cell</rasttype>
+      <rowcount>4320</rowcount>
+      <colcount>8640</colcount>
+      <vrtcount>1</vrtcount>
+    </rastinfo>
+  </spdoinfo>
+  <spref>
+    <horizsys>
+      <geograph>
+        <latres>0.04166667</latres>
+        <longres>0.04166667</longres>
+        <geogunit>Decimal degrees</geogunit>
+      </geograph>
+      <geodetic>
+        <horizdn>D_WGS_1984</horizdn>
+        <ellips>WGS_1984</ellips>
+        <semiaxis>6378137.000000</semiaxis>
+        <denflat>298.257224</denflat>
+      </geodetic>
+    </horizsys>
+  </spref>
+  <distinfo>
+    <distrib>
+            <cntinfo>
+              <cntorgp>
+                <cntorg>ERDDAP Jetty Install</cntorg>
+                <cntper>ERDDAP Jetty Developer</cntper>
+              </cntorgp>
+              <cntpos>Software Engineer</cntpos>
+              <cntaddr>
+                <addrtype>Mailing and Physical Address</addrtype>
+                <address>123 Irrelevant St.</address>
+                <city>Nowhere</city>
+                <state>AK</state>
+                <postal>99504</postal>
+                <country>USA</country>
+              </cntaddr>
+              <cntvoice>555-555-5555</cntvoice>
+              <cntemail>nobody@example.com</cntemail>
+            </cntinfo>
+    </distrib>
+    <resdesc>ERDDAP, version 2.26: get metadata; download data; make graphs and maps.</resdesc>
+    <distliab>https://science.nasa.gov/earth-science/earth-science-data/data-information-policy/
+The data may be used and redistributed for free but is not intended
+for legal use, since it may contain inaccuracies. Neither the data
+Contributor, ERD, NOAA, nor the United States Government, nor any
+of their employees or contractors, makes any warranty, express or
+implied, including warranties of merchantability and fitness for a
+particular purpose, or assumes any legal liability for the accuracy,
+completeness, or usefulness, of this information.</distliab>
+    <stdorder>
+      <digform>
+        <digtinfo>
+          <formname>.asc</formname>
+          <formvern>1</formvern>
+          <formspec>View OPeNDAP-style ISO-8859-1 comma-separated text. https://docs.opendap.org/index.php/UserGuideOPeNDAPMessages#ASCII_Service</formspec>
+        </digtinfo>
+        <digtopt>
+          <onlinopt>
+            <computer>
+              <networka>
+                <networkr>http://localhost:8080/erddap/griddap/erdVH2018k4908day.html</networkr>
+                <CI_OnlineResource>
+                  <linkage>http://localhost:8080/erddap/griddap/erdVH2018k4908day.html</linkage>
+                  <name>VIIRSN, Suomi-NPP, Level-3 SMI, NASA, Global, 4km, K490, R2018, 2012-present, 8-Day</name>
+                  <description>Web page for accessing metadata and downloading data.</description>
+                  <function>download</function>
+                </CI_OnlineResource>
+                <CI_OnlineResource>
+                  <linkage>http://localhost:8080/erddap/griddap/erdVH2018k4908day.html</linkage>
+                  <name>VIIRSN, Suomi-NPP, Level-3 SMI, NASA, Global, 4km, K490, R2018, 2012-present, 8-Day</name>
+                  <description>Web page for accessing metadata and downloading data.</description>
+                  <function>information</function>
+                </CI_OnlineResource>
+              </networka>
+            </computer>
+          </onlinopt>
+        </digtopt>
+      </digform>
+      <digform>
+        <digtinfo>
+          <formname>.csv</formname>
+          <formvern>1</formvern>
+          <formspec>Download a ISO-8859-1 comma-separated text table (line 1: names; line 2: units; ISO 8601 times). https://en.wikipedia.org/wiki/Comma-separated_values</formspec>
+        </digtinfo>
+        <digtopt>
+          <onlinopt>
+            <computer>
+              <networka>
+                <networkr>http://localhost:8080/erddap/griddap/erdVH2018k4908day.html</networkr>
+                <CI_OnlineResource>
+                  <linkage>http://localhost:8080/erddap/griddap/erdVH2018k4908day.html</linkage>
+                  <name>VIIRSN, Suomi-NPP, Level-3 SMI, NASA, Global, 4km, K490, R2018, 2012-present, 8-Day</name>
+                  <description>Web page for accessing metadata and downloading data.</description>
+                  <function>download</function>
+                </CI_OnlineResource>
+                <CI_OnlineResource>
+                  <linkage>http://localhost:8080/erddap/griddap/erdVH2018k4908day.html</linkage>
+                  <name>VIIRSN, Suomi-NPP, Level-3 SMI, NASA, Global, 4km, K490, R2018, 2012-present, 8-Day</name>
+                  <description>Web page for accessing metadata and downloading data.</description>
+                  <function>information</function>
+                </CI_OnlineResource>
+              </networka>
+            </computer>
+          </onlinopt>
+        </digtopt>
+      </digform>
+      <digform>
+        <digtinfo>
+          <formname>.csvp</formname>
+          <formvern>1</formvern>
+          <formspec>Download a ISO-8859-1 .csv file with line 1: name (units). Times are ISO 8601 strings. https://en.wikipedia.org/wiki/Comma-separated_values</formspec>
+        </digtinfo>
+        <digtopt>
+          <onlinopt>
+            <computer>
+              <networka>
+                <networkr>http://localhost:8080/erddap/griddap/erdVH2018k4908day.html</networkr>
+                <CI_OnlineResource>
+                  <linkage>http://localhost:8080/erddap/griddap/erdVH2018k4908day.html</linkage>
+                  <name>VIIRSN, Suomi-NPP, Level-3 SMI, NASA, Global, 4km, K490, R2018, 2012-present, 8-Day</name>
+                  <description>Web page for accessing metadata and downloading data.</description>
+                  <function>download</function>
+                </CI_OnlineResource>
+                <CI_OnlineResource>
+                  <linkage>http://localhost:8080/erddap/griddap/erdVH2018k4908day.html</linkage>
+                  <name>VIIRSN, Suomi-NPP, Level-3 SMI, NASA, Global, 4km, K490, R2018, 2012-present, 8-Day</name>
+                  <description>Web page for accessing metadata and downloading data.</description>
+                  <function>information</function>
+                </CI_OnlineResource>
+              </networka>
+            </computer>
+          </onlinopt>
+        </digtopt>
+      </digform>
+      <digform>
+        <digtinfo>
+          <formname>.csv0</formname>
+          <formvern>1</formvern>
+          <formspec>Download a ISO-8859-1 .csv file without column names or units. Times are ISO 8601 strings. https://en.wikipedia.org/wiki/Comma-separated_values</formspec>
+        </digtinfo>
+        <digtopt>
+          <onlinopt>
+            <computer>
+              <networka>
+                <networkr>http://localhost:8080/erddap/griddap/erdVH2018k4908day.html</networkr>
+                <CI_OnlineResource>
+                  <linkage>http://localhost:8080/erddap/griddap/erdVH2018k4908day.html</linkage>
+                  <name>VIIRSN, Suomi-NPP, Level-3 SMI, NASA, Global, 4km, K490, R2018, 2012-present, 8-Day</name>
+                  <description>Web page for accessing metadata and downloading data.</description>
+                  <function>download</function>
+                </CI_OnlineResource>
+                <CI_OnlineResource>
+                  <linkage>http://localhost:8080/erddap/griddap/erdVH2018k4908day.html</linkage>
+                  <name>VIIRSN, Suomi-NPP, Level-3 SMI, NASA, Global, 4km, K490, R2018, 2012-present, 8-Day</name>
+                  <description>Web page for accessing metadata and downloading data.</description>
+                  <function>information</function>
+                </CI_OnlineResource>
+              </networka>
+            </computer>
+          </onlinopt>
+        </digtopt>
+      </digform>
+      <digform>
+        <digtinfo>
+          <formname>.das</formname>
+          <formvern>1</formvern>
+          <formspec>View the dataset&#39;s metadata via an ISO-8859-1 OPeNDAP Dataset Attribute Structure (DAS). https://docs.opendap.org/index.php/UserGuideOPeNDAPMessages#Dataset_Attribute_Structure</formspec>
+        </digtinfo>
+        <digtopt>
+          <onlinopt>
+            <computer>
+              <networka>
+                <networkr>http://localhost:8080/erddap/griddap/erdVH2018k4908day.html</networkr>
+                <CI_OnlineResource>
+                  <linkage>http://localhost:8080/erddap/griddap/erdVH2018k4908day.html</linkage>
+                  <name>VIIRSN, Suomi-NPP, Level-3 SMI, NASA, Global, 4km, K490, R2018, 2012-present, 8-Day</name>
+                  <description>Web page for accessing metadata and downloading data.</description>
+                  <function>download</function>
+                </CI_OnlineResource>
+                <CI_OnlineResource>
+                  <linkage>http://localhost:8080/erddap/griddap/erdVH2018k4908day.html</linkage>
+                  <name>VIIRSN, Suomi-NPP, Level-3 SMI, NASA, Global, 4km, K490, R2018, 2012-present, 8-Day</name>
+                  <description>Web page for accessing metadata and downloading data.</description>
+                  <function>information</function>
+                </CI_OnlineResource>
+              </networka>
+            </computer>
+          </onlinopt>
+        </digtopt>
+      </digform>
+      <digform>
+        <digtinfo>
+          <formname>.dds</formname>
+          <formvern>1</formvern>
+          <formspec>View the dataset&#39;s structure via an ISO-8859-1 OPeNDAP Dataset Descriptor Structure (DDS). https://docs.opendap.org/index.php/UserGuideOPeNDAPMessages#Dataset_Descriptor_Structure</formspec>
+        </digtinfo>
+        <digtopt>
+          <onlinopt>
+            <computer>
+              <networka>
+                <networkr>http://localhost:8080/erddap/griddap/erdVH2018k4908day.html</networkr>
+                <CI_OnlineResource>
+                  <linkage>http://localhost:8080/erddap/griddap/erdVH2018k4908day.html</linkage>
+                  <name>VIIRSN, Suomi-NPP, Level-3 SMI, NASA, Global, 4km, K490, R2018, 2012-present, 8-Day</name>
+                  <description>Web page for accessing metadata and downloading data.</description>
+                  <function>download</function>
+                </CI_OnlineResource>
+                <CI_OnlineResource>
+                  <linkage>http://localhost:8080/erddap/griddap/erdVH2018k4908day.html</linkage>
+                  <name>VIIRSN, Suomi-NPP, Level-3 SMI, NASA, Global, 4km, K490, R2018, 2012-present, 8-Day</name>
+                  <description>Web page for accessing metadata and downloading data.</description>
+                  <function>information</function>
+                </CI_OnlineResource>
+              </networka>
+            </computer>
+          </onlinopt>
+        </digtopt>
+      </digform>
+      <digform>
+        <digtinfo>
+          <formname>.dods</formname>
+          <formvern>1</formvern>
+          <formspec>OPeNDAP clients use this to download the data in the DODS binary format. https://docs.opendap.org/index.php/UserGuideOPeNDAPMessages#Data_Transmission</formspec>
+        </digtinfo>
+        <digtopt>
+          <onlinopt>
+            <computer>
+              <networka>
+                <networkr>http://localhost:8080/erddap/griddap/erdVH2018k4908day.html</networkr>
+                <CI_OnlineResource>
+                  <linkage>http://localhost:8080/erddap/griddap/erdVH2018k4908day.html</linkage>
+                  <name>VIIRSN, Suomi-NPP, Level-3 SMI, NASA, Global, 4km, K490, R2018, 2012-present, 8-Day</name>
+                  <description>Web page for accessing metadata and downloading data.</description>
+                  <function>download</function>
+                </CI_OnlineResource>
+                <CI_OnlineResource>
+                  <linkage>http://localhost:8080/erddap/griddap/erdVH2018k4908day.html</linkage>
+                  <name>VIIRSN, Suomi-NPP, Level-3 SMI, NASA, Global, 4km, K490, R2018, 2012-present, 8-Day</name>
+                  <description>Web page for accessing metadata and downloading data.</description>
+                  <function>information</function>
+                </CI_OnlineResource>
+              </networka>
+            </computer>
+          </onlinopt>
+        </digtopt>
+      </digform>
+      <digform>
+        <digtinfo>
+          <formname>.esriAscii</formname>
+          <formvern>1</formvern>
+          <formspec>Download an ISO-8859-1 ESRI ASCII file (latitude longitude data only; longitude must be all below or all above 180). https://en.wikipedia.org/wiki/Esri_grid</formspec>
+        </digtinfo>
+        <digtopt>
+          <onlinopt>
+            <computer>
+              <networka>
+                <networkr>http://localhost:8080/erddap/griddap/erdVH2018k4908day.html</networkr>
+                <CI_OnlineResource>
+                  <linkage>http://localhost:8080/erddap/griddap/erdVH2018k4908day.html</linkage>
+                  <name>VIIRSN, Suomi-NPP, Level-3 SMI, NASA, Global, 4km, K490, R2018, 2012-present, 8-Day</name>
+                  <description>Web page for accessing metadata and downloading data.</description>
+                  <function>download</function>
+                </CI_OnlineResource>
+                <CI_OnlineResource>
+                  <linkage>http://localhost:8080/erddap/griddap/erdVH2018k4908day.html</linkage>
+                  <name>VIIRSN, Suomi-NPP, Level-3 SMI, NASA, Global, 4km, K490, R2018, 2012-present, 8-Day</name>
+                  <description>Web page for accessing metadata and downloading data.</description>
+                  <function>information</function>
+                </CI_OnlineResource>
+              </networka>
+            </computer>
+          </onlinopt>
+        </digtopt>
+      </digform>
+      <digform>
+        <digtinfo>
+          <formname>.fgdc</formname>
+          <formvern>1</formvern>
+          <formspec>View the dataset&#39;s UTF-8 FGDC .xml metadata. https://www.fgdc.gov/standards/projects/FGDC-standards-projects/metadata/base-metadata/index_html</formspec>
+        </digtinfo>
+        <digtopt>
+          <onlinopt>
+            <computer>
+              <networka>
+                <networkr>http://localhost:8080/erddap/griddap/erdVH2018k4908day.html</networkr>
+                <CI_OnlineResource>
+                  <linkage>http://localhost:8080/erddap/griddap/erdVH2018k4908day.html</linkage>
+                  <name>VIIRSN, Suomi-NPP, Level-3 SMI, NASA, Global, 4km, K490, R2018, 2012-present, 8-Day</name>
+                  <description>Web page for accessing metadata and downloading data.</description>
+                  <function>download</function>
+                </CI_OnlineResource>
+                <CI_OnlineResource>
+                  <linkage>http://localhost:8080/erddap/griddap/erdVH2018k4908day.html</linkage>
+                  <name>VIIRSN, Suomi-NPP, Level-3 SMI, NASA, Global, 4km, K490, R2018, 2012-present, 8-Day</name>
+                  <description>Web page for accessing metadata and downloading data.</description>
+                  <function>information</function>
+                </CI_OnlineResource>
+              </networka>
+            </computer>
+          </onlinopt>
+        </digtopt>
+      </digform>
+      <digform>
+        <digtinfo>
+          <formname>.graph</formname>
+          <formvern>1</formvern>
+          <formspec>View a Make A Graph web page. https://coastwatch.pfeg.noaa.gov/erddap/griddap/documentation.html#GraphicsCommands</formspec>
+        </digtinfo>
+        <digtopt>
+          <onlinopt>
+            <computer>
+              <networka>
+                <networkr>http://localhost:8080/erddap/griddap/erdVH2018k4908day.html</networkr>
+                <CI_OnlineResource>
+                  <linkage>http://localhost:8080/erddap/griddap/erdVH2018k4908day.html</linkage>
+                  <name>VIIRSN, Suomi-NPP, Level-3 SMI, NASA, Global, 4km, K490, R2018, 2012-present, 8-Day</name>
+                  <description>Web page for accessing metadata and downloading data.</description>
+                  <function>download</function>
+                </CI_OnlineResource>
+                <CI_OnlineResource>
+                  <linkage>http://localhost:8080/erddap/griddap/erdVH2018k4908day.html</linkage>
+                  <name>VIIRSN, Suomi-NPP, Level-3 SMI, NASA, Global, 4km, K490, R2018, 2012-present, 8-Day</name>
+                  <description>Web page for accessing metadata and downloading data.</description>
+                  <function>information</function>
+                </CI_OnlineResource>
+              </networka>
+            </computer>
+          </onlinopt>
+        </digtopt>
+      </digform>
+      <digform>
+        <digtinfo>
+          <formname>.help</formname>
+          <formvern>1</formvern>
+          <formspec>View a web page with a description of griddap. https://www.opendap.org/pdf/ESE-RFC-004v1.2.pdf</formspec>
+        </digtinfo>
+        <digtopt>
+          <onlinopt>
+            <computer>
+              <networka>
+                <networkr>http://localhost:8080/erddap/griddap/erdVH2018k4908day.html</networkr>
+                <CI_OnlineResource>
+                  <linkage>http://localhost:8080/erddap/griddap/erdVH2018k4908day.html</linkage>
+                  <name>VIIRSN, Suomi-NPP, Level-3 SMI, NASA, Global, 4km, K490, R2018, 2012-present, 8-Day</name>
+                  <description>Web page for accessing metadata and downloading data.</description>
+                  <function>download</function>
+                </CI_OnlineResource>
+                <CI_OnlineResource>
+                  <linkage>http://localhost:8080/erddap/griddap/erdVH2018k4908day.html</linkage>
+                  <name>VIIRSN, Suomi-NPP, Level-3 SMI, NASA, Global, 4km, K490, R2018, 2012-present, 8-Day</name>
+                  <description>Web page for accessing metadata and downloading data.</description>
+                  <function>information</function>
+                </CI_OnlineResource>
+              </networka>
+            </computer>
+          </onlinopt>
+        </digtopt>
+      </digform>
+      <digform>
+        <digtinfo>
+          <formname>.html</formname>
+          <formvern>1</formvern>
+          <formspec>View an OPeNDAP-style HTML Data Access Form. https://docs.opendap.org/index.php/UserGuideOPeNDAPMessages#WWW_Interface_Service</formspec>
+        </digtinfo>
+        <digtopt>
+          <onlinopt>
+            <computer>
+              <networka>
+                <networkr>http://localhost:8080/erddap/griddap/erdVH2018k4908day.html</networkr>
+                <CI_OnlineResource>
+                  <linkage>http://localhost:8080/erddap/griddap/erdVH2018k4908day.html</linkage>
+                  <name>VIIRSN, Suomi-NPP, Level-3 SMI, NASA, Global, 4km, K490, R2018, 2012-present, 8-Day</name>
+                  <description>Web page for accessing metadata and downloading data.</description>
+                  <function>download</function>
+                </CI_OnlineResource>
+                <CI_OnlineResource>
+                  <linkage>http://localhost:8080/erddap/griddap/erdVH2018k4908day.html</linkage>
+                  <name>VIIRSN, Suomi-NPP, Level-3 SMI, NASA, Global, 4km, K490, R2018, 2012-present, 8-Day</name>
+                  <description>Web page for accessing metadata and downloading data.</description>
+                  <function>information</function>
+                </CI_OnlineResource>
+              </networka>
+            </computer>
+          </onlinopt>
+        </digtopt>
+      </digform>
+      <digform>
+        <digtinfo>
+          <formname>.htmlTable</formname>
+          <formvern>1</formvern>
+          <formspec>View a UTF-8 .html web page with the data in a table. Times are ISO 8601 strings. https://www.w3schools.com/html/html_tables.asp</formspec>
+        </digtinfo>
+        <digtopt>
+          <onlinopt>
+            <computer>
+              <networka>
+                <networkr>http://localhost:8080/erddap/griddap/erdVH2018k4908day.html</networkr>
+                <CI_OnlineResource>
+                  <linkage>http://localhost:8080/erddap/griddap/erdVH2018k4908day.html</linkage>
+                  <name>VIIRSN, Suomi-NPP, Level-3 SMI, NASA, Global, 4km, K490, R2018, 2012-present, 8-Day</name>
+                  <description>Web page for accessing metadata and downloading data.</description>
+                  <function>download</function>
+                </CI_OnlineResource>
+                <CI_OnlineResource>
+                  <linkage>http://localhost:8080/erddap/griddap/erdVH2018k4908day.html</linkage>
+                  <name>VIIRSN, Suomi-NPP, Level-3 SMI, NASA, Global, 4km, K490, R2018, 2012-present, 8-Day</name>
+                  <description>Web page for accessing metadata and downloading data.</description>
+                  <function>information</function>
+                </CI_OnlineResource>
+              </networka>
+            </computer>
+          </onlinopt>
+        </digtopt>
+      </digform>
+      <digform>
+        <digtinfo>
+          <formname>.iso19115</formname>
+          <formvern>1</formvern>
+          <formspec>View the dataset&#39;s ISO 19115-2/19139 UTF-8 .xml metadata. https://en.wikipedia.org/wiki/Geospatial_metadata</formspec>
+        </digtinfo>
+        <digtopt>
+          <onlinopt>
+            <computer>
+              <networka>
+                <networkr>http://localhost:8080/erddap/griddap/erdVH2018k4908day.html</networkr>
+                <CI_OnlineResource>
+                  <linkage>http://localhost:8080/erddap/griddap/erdVH2018k4908day.html</linkage>
+                  <name>VIIRSN, Suomi-NPP, Level-3 SMI, NASA, Global, 4km, K490, R2018, 2012-present, 8-Day</name>
+                  <description>Web page for accessing metadata and downloading data.</description>
+                  <function>download</function>
+                </CI_OnlineResource>
+                <CI_OnlineResource>
+                  <linkage>http://localhost:8080/erddap/griddap/erdVH2018k4908day.html</linkage>
+                  <name>VIIRSN, Suomi-NPP, Level-3 SMI, NASA, Global, 4km, K490, R2018, 2012-present, 8-Day</name>
+                  <description>Web page for accessing metadata and downloading data.</description>
+                  <function>information</function>
+                </CI_OnlineResource>
+              </networka>
+            </computer>
+          </onlinopt>
+        </digtopt>
+      </digform>
+      <digform>
+        <digtinfo>
+          <formname>.itx</formname>
+          <formvern>1</formvern>
+          <formspec>Download an ISO-8859-1 Igor Text File. Each axis variable and each data variable becomes a wave. https://www.wavemetrics.net/doc/igorman/II-09&#37;20Data&#37;20Import&#37;20Export.pdf</formspec>
+        </digtinfo>
+        <digtopt>
+          <onlinopt>
+            <computer>
+              <networka>
+                <networkr>http://localhost:8080/erddap/griddap/erdVH2018k4908day.html</networkr>
+                <CI_OnlineResource>
+                  <linkage>http://localhost:8080/erddap/griddap/erdVH2018k4908day.html</linkage>
+                  <name>VIIRSN, Suomi-NPP, Level-3 SMI, NASA, Global, 4km, K490, R2018, 2012-present, 8-Day</name>
+                  <description>Web page for accessing metadata and downloading data.</description>
+                  <function>download</function>
+                </CI_OnlineResource>
+                <CI_OnlineResource>
+                  <linkage>http://localhost:8080/erddap/griddap/erdVH2018k4908day.html</linkage>
+                  <name>VIIRSN, Suomi-NPP, Level-3 SMI, NASA, Global, 4km, K490, R2018, 2012-present, 8-Day</name>
+                  <description>Web page for accessing metadata and downloading data.</description>
+                  <function>information</function>
+                </CI_OnlineResource>
+              </networka>
+            </computer>
+          </onlinopt>
+        </digtopt>
+      </digform>
+      <digform>
+        <digtinfo>
+          <formname>.json</formname>
+          <formvern>1</formvern>
+          <formspec>View a table-like UTF-8 JSON file (missing value = &#39;null&#39;; times are ISO 8601 strings). https://www.json.org/</formspec>
+        </digtinfo>
+        <digtopt>
+          <onlinopt>
+            <computer>
+              <networka>
+                <networkr>http://localhost:8080/erddap/griddap/erdVH2018k4908day.html</networkr>
+                <CI_OnlineResource>
+                  <linkage>http://localhost:8080/erddap/griddap/erdVH2018k4908day.html</linkage>
+                  <name>VIIRSN, Suomi-NPP, Level-3 SMI, NASA, Global, 4km, K490, R2018, 2012-present, 8-Day</name>
+                  <description>Web page for accessing metadata and downloading data.</description>
+                  <function>download</function>
+                </CI_OnlineResource>
+                <CI_OnlineResource>
+                  <linkage>http://localhost:8080/erddap/griddap/erdVH2018k4908day.html</linkage>
+                  <name>VIIRSN, Suomi-NPP, Level-3 SMI, NASA, Global, 4km, K490, R2018, 2012-present, 8-Day</name>
+                  <description>Web page for accessing metadata and downloading data.</description>
+                  <function>information</function>
+                </CI_OnlineResource>
+              </networka>
+            </computer>
+          </onlinopt>
+        </digtopt>
+      </digform>
+      <digform>
+        <digtinfo>
+          <formname>.jsonlCSV1</formname>
+          <formvern>1</formvern>
+          <formspec>View a UTF-8 JSON Lines CSV file with column names on line 1 (mv = &#39;null&#39;; times are ISO 8601 strings). https://jsonlines.org/</formspec>
+        </digtinfo>
+        <digtopt>
+          <onlinopt>
+            <computer>
+              <networka>
+                <networkr>http://localhost:8080/erddap/griddap/erdVH2018k4908day.html</networkr>
+                <CI_OnlineResource>
+                  <linkage>http://localhost:8080/erddap/griddap/erdVH2018k4908day.html</linkage>
+                  <name>VIIRSN, Suomi-NPP, Level-3 SMI, NASA, Global, 4km, K490, R2018, 2012-present, 8-Day</name>
+                  <description>Web page for accessing metadata and downloading data.</description>
+                  <function>download</function>
+                </CI_OnlineResource>
+                <CI_OnlineResource>
+                  <linkage>http://localhost:8080/erddap/griddap/erdVH2018k4908day.html</linkage>
+                  <name>VIIRSN, Suomi-NPP, Level-3 SMI, NASA, Global, 4km, K490, R2018, 2012-present, 8-Day</name>
+                  <description>Web page for accessing metadata and downloading data.</description>
+                  <function>information</function>
+                </CI_OnlineResource>
+              </networka>
+            </computer>
+          </onlinopt>
+        </digtopt>
+      </digform>
+      <digform>
+        <digtinfo>
+          <formname>.jsonlCSV</formname>
+          <formvern>1</formvern>
+          <formspec>View a UTF-8 JSON Lines CSV file without column names (mv = &#39;null&#39;; times are ISO 8601 strings). https://jsonlines.org/</formspec>
+        </digtinfo>
+        <digtopt>
+          <onlinopt>
+            <computer>
+              <networka>
+                <networkr>http://localhost:8080/erddap/griddap/erdVH2018k4908day.html</networkr>
+                <CI_OnlineResource>
+                  <linkage>http://localhost:8080/erddap/griddap/erdVH2018k4908day.html</linkage>
+                  <name>VIIRSN, Suomi-NPP, Level-3 SMI, NASA, Global, 4km, K490, R2018, 2012-present, 8-Day</name>
+                  <description>Web page for accessing metadata and downloading data.</description>
+                  <function>download</function>
+                </CI_OnlineResource>
+                <CI_OnlineResource>
+                  <linkage>http://localhost:8080/erddap/griddap/erdVH2018k4908day.html</linkage>
+                  <name>VIIRSN, Suomi-NPP, Level-3 SMI, NASA, Global, 4km, K490, R2018, 2012-present, 8-Day</name>
+                  <description>Web page for accessing metadata and downloading data.</description>
+                  <function>information</function>
+                </CI_OnlineResource>
+              </networka>
+            </computer>
+          </onlinopt>
+        </digtopt>
+      </digform>
+      <digform>
+        <digtinfo>
+          <formname>.jsonlKVP</formname>
+          <formvern>1</formvern>
+          <formspec>View a UTF-8 JSON Lines file with Key:Value pairs (missing value = &#39;null&#39;; times are ISO 8601 strings). https://jsonlines.org/</formspec>
+        </digtinfo>
+        <digtopt>
+          <onlinopt>
+            <computer>
+              <networka>
+                <networkr>http://localhost:8080/erddap/griddap/erdVH2018k4908day.html</networkr>
+                <CI_OnlineResource>
+                  <linkage>http://localhost:8080/erddap/griddap/erdVH2018k4908day.html</linkage>
+                  <name>VIIRSN, Suomi-NPP, Level-3 SMI, NASA, Global, 4km, K490, R2018, 2012-present, 8-Day</name>
+                  <description>Web page for accessing metadata and downloading data.</description>
+                  <function>download</function>
+                </CI_OnlineResource>
+                <CI_OnlineResource>
+                  <linkage>http://localhost:8080/erddap/griddap/erdVH2018k4908day.html</linkage>
+                  <name>VIIRSN, Suomi-NPP, Level-3 SMI, NASA, Global, 4km, K490, R2018, 2012-present, 8-Day</name>
+                  <description>Web page for accessing metadata and downloading data.</description>
+                  <function>information</function>
+                </CI_OnlineResource>
+              </networka>
+            </computer>
+          </onlinopt>
+        </digtopt>
+      </digform>
+      <digform>
+        <digtinfo>
+          <formname>.mat</formname>
+          <formvern>1</formvern>
+          <formspec>Download a MATLAB binary file. https://www.mathworks.com/</formspec>
+        </digtinfo>
+        <digtopt>
+          <onlinopt>
+            <computer>
+              <networka>
+                <networkr>http://localhost:8080/erddap/griddap/erdVH2018k4908day.html</networkr>
+                <CI_OnlineResource>
+                  <linkage>http://localhost:8080/erddap/griddap/erdVH2018k4908day.html</linkage>
+                  <name>VIIRSN, Suomi-NPP, Level-3 SMI, NASA, Global, 4km, K490, R2018, 2012-present, 8-Day</name>
+                  <description>Web page for accessing metadata and downloading data.</description>
+                  <function>download</function>
+                </CI_OnlineResource>
+                <CI_OnlineResource>
+                  <linkage>http://localhost:8080/erddap/griddap/erdVH2018k4908day.html</linkage>
+                  <name>VIIRSN, Suomi-NPP, Level-3 SMI, NASA, Global, 4km, K490, R2018, 2012-present, 8-Day</name>
+                  <description>Web page for accessing metadata and downloading data.</description>
+                  <function>information</function>
+                </CI_OnlineResource>
+              </networka>
+            </computer>
+          </onlinopt>
+        </digtopt>
+      </digform>
+      <digform>
+        <digtinfo>
+          <formname>.nc</formname>
+          <formvern>1</formvern>
+          <formspec>Download a NetCDF-3 binary file with COARDS/CF/ACDD metadata. https://www.unidata.ucar.edu/software/netcdf/</formspec>
+        </digtinfo>
+        <digtopt>
+          <onlinopt>
+            <computer>
+              <networka>
+                <networkr>http://localhost:8080/erddap/griddap/erdVH2018k4908day.html</networkr>
+                <CI_OnlineResource>
+                  <linkage>http://localhost:8080/erddap/griddap/erdVH2018k4908day.html</linkage>
+                  <name>VIIRSN, Suomi-NPP, Level-3 SMI, NASA, Global, 4km, K490, R2018, 2012-present, 8-Day</name>
+                  <description>Web page for accessing metadata and downloading data.</description>
+                  <function>download</function>
+                </CI_OnlineResource>
+                <CI_OnlineResource>
+                  <linkage>http://localhost:8080/erddap/griddap/erdVH2018k4908day.html</linkage>
+                  <name>VIIRSN, Suomi-NPP, Level-3 SMI, NASA, Global, 4km, K490, R2018, 2012-present, 8-Day</name>
+                  <description>Web page for accessing metadata and downloading data.</description>
+                  <function>information</function>
+                </CI_OnlineResource>
+              </networka>
+            </computer>
+          </onlinopt>
+        </digtopt>
+      </digform>
+      <digform>
+        <digtinfo>
+          <formname>.ncHeader</formname>
+          <formvern>1</formvern>
+          <formspec>View the UTF-8 header (the metadata) for the NetCDF-3 .nc file. https://linux.die.net/man/1/ncdump</formspec>
+        </digtinfo>
+        <digtopt>
+          <onlinopt>
+            <computer>
+              <networka>
+                <networkr>http://localhost:8080/erddap/griddap/erdVH2018k4908day.html</networkr>
+                <CI_OnlineResource>
+                  <linkage>http://localhost:8080/erddap/griddap/erdVH2018k4908day.html</linkage>
+                  <name>VIIRSN, Suomi-NPP, Level-3 SMI, NASA, Global, 4km, K490, R2018, 2012-present, 8-Day</name>
+                  <description>Web page for accessing metadata and downloading data.</description>
+                  <function>download</function>
+                </CI_OnlineResource>
+                <CI_OnlineResource>
+                  <linkage>http://localhost:8080/erddap/griddap/erdVH2018k4908day.html</linkage>
+                  <name>VIIRSN, Suomi-NPP, Level-3 SMI, NASA, Global, 4km, K490, R2018, 2012-present, 8-Day</name>
+                  <description>Web page for accessing metadata and downloading data.</description>
+                  <function>information</function>
+                </CI_OnlineResource>
+              </networka>
+            </computer>
+          </onlinopt>
+        </digtopt>
+      </digform>
+      <digform>
+        <digtinfo>
+          <formname>.ncml</formname>
+          <formvern>1</formvern>
+          <formspec>View the dataset&#39;s structure and metadata as a UTF-8 NCML .xml file. https://docs.unidata.ucar.edu/netcdf-java/current/userguide/ncml_overview.html</formspec>
+        </digtinfo>
+        <digtopt>
+          <onlinopt>
+            <computer>
+              <networka>
+                <networkr>http://localhost:8080/erddap/griddap/erdVH2018k4908day.html</networkr>
+                <CI_OnlineResource>
+                  <linkage>http://localhost:8080/erddap/griddap/erdVH2018k4908day.html</linkage>
+                  <name>VIIRSN, Suomi-NPP, Level-3 SMI, NASA, Global, 4km, K490, R2018, 2012-present, 8-Day</name>
+                  <description>Web page for accessing metadata and downloading data.</description>
+                  <function>download</function>
+                </CI_OnlineResource>
+                <CI_OnlineResource>
+                  <linkage>http://localhost:8080/erddap/griddap/erdVH2018k4908day.html</linkage>
+                  <name>VIIRSN, Suomi-NPP, Level-3 SMI, NASA, Global, 4km, K490, R2018, 2012-present, 8-Day</name>
+                  <description>Web page for accessing metadata and downloading data.</description>
+                  <function>information</function>
+                </CI_OnlineResource>
+              </networka>
+            </computer>
+          </onlinopt>
+        </digtopt>
+      </digform>
+      <digform>
+        <digtinfo>
+          <formname>.nccsv</formname>
+          <formvern>1</formvern>
+          <formspec>Download a NetCDF-3-like 7-bit ASCII NCCSV .csv file with COARDS/CF/ACDD metadata. https://erddap.github.io/docs/user/nccsv-1.20</formspec>
+        </digtinfo>
+        <digtopt>
+          <onlinopt>
+            <computer>
+              <networka>
+                <networkr>http://localhost:8080/erddap/griddap/erdVH2018k4908day.html</networkr>
+                <CI_OnlineResource>
+                  <linkage>http://localhost:8080/erddap/griddap/erdVH2018k4908day.html</linkage>
+                  <name>VIIRSN, Suomi-NPP, Level-3 SMI, NASA, Global, 4km, K490, R2018, 2012-present, 8-Day</name>
+                  <description>Web page for accessing metadata and downloading data.</description>
+                  <function>download</function>
+                </CI_OnlineResource>
+                <CI_OnlineResource>
+                  <linkage>http://localhost:8080/erddap/griddap/erdVH2018k4908day.html</linkage>
+                  <name>VIIRSN, Suomi-NPP, Level-3 SMI, NASA, Global, 4km, K490, R2018, 2012-present, 8-Day</name>
+                  <description>Web page for accessing metadata and downloading data.</description>
+                  <function>information</function>
+                </CI_OnlineResource>
+              </networka>
+            </computer>
+          </onlinopt>
+        </digtopt>
+      </digform>
+      <digform>
+        <digtinfo>
+          <formname>.nccsvMetadata</formname>
+          <formvern>1</formvern>
+          <formspec>View the dataset&#39;s metadata as the top half of a 7-bit ASCII NCCSV .csv file. https://erddap.github.io/docs/user/nccsv-1.20</formspec>
+        </digtinfo>
+        <digtopt>
+          <onlinopt>
+            <computer>
+              <networka>
+                <networkr>http://localhost:8080/erddap/griddap/erdVH2018k4908day.html</networkr>
+                <CI_OnlineResource>
+                  <linkage>http://localhost:8080/erddap/griddap/erdVH2018k4908day.html</linkage>
+                  <name>VIIRSN, Suomi-NPP, Level-3 SMI, NASA, Global, 4km, K490, R2018, 2012-present, 8-Day</name>
+                  <description>Web page for accessing metadata and downloading data.</description>
+                  <function>download</function>
+                </CI_OnlineResource>
+                <CI_OnlineResource>
+                  <linkage>http://localhost:8080/erddap/griddap/erdVH2018k4908day.html</linkage>
+                  <name>VIIRSN, Suomi-NPP, Level-3 SMI, NASA, Global, 4km, K490, R2018, 2012-present, 8-Day</name>
+                  <description>Web page for accessing metadata and downloading data.</description>
+                  <function>information</function>
+                </CI_OnlineResource>
+              </networka>
+            </computer>
+          </onlinopt>
+        </digtopt>
+      </digform>
+      <digform>
+        <digtinfo>
+          <formname>.ncoJson</formname>
+          <formvern>1</formvern>
+          <formspec>Download a UTF-8 NCO lvl=2 JSON file with COARDS/CF/ACDD metadata. https://nco.sourceforge.net/nco.html#json</formspec>
+        </digtinfo>
+        <digtopt>
+          <onlinopt>
+            <computer>
+              <networka>
+                <networkr>http://localhost:8080/erddap/griddap/erdVH2018k4908day.html</networkr>
+                <CI_OnlineResource>
+                  <linkage>http://localhost:8080/erddap/griddap/erdVH2018k4908day.html</linkage>
+                  <name>VIIRSN, Suomi-NPP, Level-3 SMI, NASA, Global, 4km, K490, R2018, 2012-present, 8-Day</name>
+                  <description>Web page for accessing metadata and downloading data.</description>
+                  <function>download</function>
+                </CI_OnlineResource>
+                <CI_OnlineResource>
+                  <linkage>http://localhost:8080/erddap/griddap/erdVH2018k4908day.html</linkage>
+                  <name>VIIRSN, Suomi-NPP, Level-3 SMI, NASA, Global, 4km, K490, R2018, 2012-present, 8-Day</name>
+                  <description>Web page for accessing metadata and downloading data.</description>
+                  <function>information</function>
+                </CI_OnlineResource>
+              </networka>
+            </computer>
+          </onlinopt>
+        </digtopt>
+      </digform>
+      <digform>
+        <digtinfo>
+          <formname>.odvTxt</formname>
+          <formvern>1</formvern>
+          <formspec>Download time,latitude,longitude,otherVariables as an ODV Generic Spreadsheet File (.txt). https://odv.awi.de/en/documentation/</formspec>
+        </digtinfo>
+        <digtopt>
+          <onlinopt>
+            <computer>
+              <networka>
+                <networkr>http://localhost:8080/erddap/griddap/erdVH2018k4908day.html</networkr>
+                <CI_OnlineResource>
+                  <linkage>http://localhost:8080/erddap/griddap/erdVH2018k4908day.html</linkage>
+                  <name>VIIRSN, Suomi-NPP, Level-3 SMI, NASA, Global, 4km, K490, R2018, 2012-present, 8-Day</name>
+                  <description>Web page for accessing metadata and downloading data.</description>
+                  <function>download</function>
+                </CI_OnlineResource>
+                <CI_OnlineResource>
+                  <linkage>http://localhost:8080/erddap/griddap/erdVH2018k4908day.html</linkage>
+                  <name>VIIRSN, Suomi-NPP, Level-3 SMI, NASA, Global, 4km, K490, R2018, 2012-present, 8-Day</name>
+                  <description>Web page for accessing metadata and downloading data.</description>
+                  <function>information</function>
+                </CI_OnlineResource>
+              </networka>
+            </computer>
+          </onlinopt>
+        </digtopt>
+      </digform>
+      <digform>
+        <digtinfo>
+          <formname>.parquet</formname>
+          <formvern>1</formvern>
+          <formspec>Download as a parquet file. Metadata contains column names (&quot;column_names&quot;) and units (&quot;column_units&quot;). https://parquet.apache.org/</formspec>
+        </digtinfo>
+        <digtopt>
+          <onlinopt>
+            <computer>
+              <networka>
+                <networkr>http://localhost:8080/erddap/griddap/erdVH2018k4908day.html</networkr>
+                <CI_OnlineResource>
+                  <linkage>http://localhost:8080/erddap/griddap/erdVH2018k4908day.html</linkage>
+                  <name>VIIRSN, Suomi-NPP, Level-3 SMI, NASA, Global, 4km, K490, R2018, 2012-present, 8-Day</name>
+                  <description>Web page for accessing metadata and downloading data.</description>
+                  <function>download</function>
+                </CI_OnlineResource>
+                <CI_OnlineResource>
+                  <linkage>http://localhost:8080/erddap/griddap/erdVH2018k4908day.html</linkage>
+                  <name>VIIRSN, Suomi-NPP, Level-3 SMI, NASA, Global, 4km, K490, R2018, 2012-present, 8-Day</name>
+                  <description>Web page for accessing metadata and downloading data.</description>
+                  <function>information</function>
+                </CI_OnlineResource>
+              </networka>
+            </computer>
+          </onlinopt>
+        </digtopt>
+      </digform>
+      <digform>
+        <digtinfo>
+          <formname>.parquetWMeta</formname>
+          <formvern>1</formvern>
+          <formspec>Download as a parquet file with detailed metadata. https://parquet.apache.org/</formspec>
+        </digtinfo>
+        <digtopt>
+          <onlinopt>
+            <computer>
+              <networka>
+                <networkr>http://localhost:8080/erddap/griddap/erdVH2018k4908day.html</networkr>
+                <CI_OnlineResource>
+                  <linkage>http://localhost:8080/erddap/griddap/erdVH2018k4908day.html</linkage>
+                  <name>VIIRSN, Suomi-NPP, Level-3 SMI, NASA, Global, 4km, K490, R2018, 2012-present, 8-Day</name>
+                  <description>Web page for accessing metadata and downloading data.</description>
+                  <function>download</function>
+                </CI_OnlineResource>
+                <CI_OnlineResource>
+                  <linkage>http://localhost:8080/erddap/griddap/erdVH2018k4908day.html</linkage>
+                  <name>VIIRSN, Suomi-NPP, Level-3 SMI, NASA, Global, 4km, K490, R2018, 2012-present, 8-Day</name>
+                  <description>Web page for accessing metadata and downloading data.</description>
+                  <function>information</function>
+                </CI_OnlineResource>
+              </networka>
+            </computer>
+          </onlinopt>
+        </digtopt>
+      </digform>
+      <digform>
+        <digtinfo>
+          <formname>.timeGaps</formname>
+          <formvern>1</formvern>
+          <formspec>View a UTF-8 list of gaps in the time values which are larger than the median gap. https://coastwatch.pfeg.noaa.gov/erddap/griddap/documentation.html#timeGaps</formspec>
+        </digtinfo>
+        <digtopt>
+          <onlinopt>
+            <computer>
+              <networka>
+                <networkr>http://localhost:8080/erddap/griddap/erdVH2018k4908day.html</networkr>
+                <CI_OnlineResource>
+                  <linkage>http://localhost:8080/erddap/griddap/erdVH2018k4908day.html</linkage>
+                  <name>VIIRSN, Suomi-NPP, Level-3 SMI, NASA, Global, 4km, K490, R2018, 2012-present, 8-Day</name>
+                  <description>Web page for accessing metadata and downloading data.</description>
+                  <function>download</function>
+                </CI_OnlineResource>
+                <CI_OnlineResource>
+                  <linkage>http://localhost:8080/erddap/griddap/erdVH2018k4908day.html</linkage>
+                  <name>VIIRSN, Suomi-NPP, Level-3 SMI, NASA, Global, 4km, K490, R2018, 2012-present, 8-Day</name>
+                  <description>Web page for accessing metadata and downloading data.</description>
+                  <function>information</function>
+                </CI_OnlineResource>
+              </networka>
+            </computer>
+          </onlinopt>
+        </digtopt>
+      </digform>
+      <digform>
+        <digtinfo>
+          <formname>.tsv</formname>
+          <formvern>1</formvern>
+          <formspec>Download a ISO-8859-1 tab-separated text table (line 1: names; line 2: units; ISO 8601 times). https://jkorpela.fi/TSV.html</formspec>
+        </digtinfo>
+        <digtopt>
+          <onlinopt>
+            <computer>
+              <networka>
+                <networkr>http://localhost:8080/erddap/griddap/erdVH2018k4908day.html</networkr>
+                <CI_OnlineResource>
+                  <linkage>http://localhost:8080/erddap/griddap/erdVH2018k4908day.html</linkage>
+                  <name>VIIRSN, Suomi-NPP, Level-3 SMI, NASA, Global, 4km, K490, R2018, 2012-present, 8-Day</name>
+                  <description>Web page for accessing metadata and downloading data.</description>
+                  <function>download</function>
+                </CI_OnlineResource>
+                <CI_OnlineResource>
+                  <linkage>http://localhost:8080/erddap/griddap/erdVH2018k4908day.html</linkage>
+                  <name>VIIRSN, Suomi-NPP, Level-3 SMI, NASA, Global, 4km, K490, R2018, 2012-present, 8-Day</name>
+                  <description>Web page for accessing metadata and downloading data.</description>
+                  <function>information</function>
+                </CI_OnlineResource>
+              </networka>
+            </computer>
+          </onlinopt>
+        </digtopt>
+      </digform>
+      <digform>
+        <digtinfo>
+          <formname>.tsvp</formname>
+          <formvern>1</formvern>
+          <formspec>Download a ISO-8859-1 .tsv file with line 1: name (units). Times are ISO 8601 strings. https://jkorpela.fi/TSV.html</formspec>
+        </digtinfo>
+        <digtopt>
+          <onlinopt>
+            <computer>
+              <networka>
+                <networkr>http://localhost:8080/erddap/griddap/erdVH2018k4908day.html</networkr>
+                <CI_OnlineResource>
+                  <linkage>http://localhost:8080/erddap/griddap/erdVH2018k4908day.html</linkage>
+                  <name>VIIRSN, Suomi-NPP, Level-3 SMI, NASA, Global, 4km, K490, R2018, 2012-present, 8-Day</name>
+                  <description>Web page for accessing metadata and downloading data.</description>
+                  <function>download</function>
+                </CI_OnlineResource>
+                <CI_OnlineResource>
+                  <linkage>http://localhost:8080/erddap/griddap/erdVH2018k4908day.html</linkage>
+                  <name>VIIRSN, Suomi-NPP, Level-3 SMI, NASA, Global, 4km, K490, R2018, 2012-present, 8-Day</name>
+                  <description>Web page for accessing metadata and downloading data.</description>
+                  <function>information</function>
+                </CI_OnlineResource>
+              </networka>
+            </computer>
+          </onlinopt>
+        </digtopt>
+      </digform>
+      <digform>
+        <digtinfo>
+          <formname>.tsv0</formname>
+          <formvern>1</formvern>
+          <formspec>Download a ISO-8859-1 .tsv file without column names or units. Times are ISO 8601 strings. https://jkorpela.fi/TSV.html</formspec>
+        </digtinfo>
+        <digtopt>
+          <onlinopt>
+            <computer>
+              <networka>
+                <networkr>http://localhost:8080/erddap/griddap/erdVH2018k4908day.html</networkr>
+                <CI_OnlineResource>
+                  <linkage>http://localhost:8080/erddap/griddap/erdVH2018k4908day.html</linkage>
+                  <name>VIIRSN, Suomi-NPP, Level-3 SMI, NASA, Global, 4km, K490, R2018, 2012-present, 8-Day</name>
+                  <description>Web page for accessing metadata and downloading data.</description>
+                  <function>download</function>
+                </CI_OnlineResource>
+                <CI_OnlineResource>
+                  <linkage>http://localhost:8080/erddap/griddap/erdVH2018k4908day.html</linkage>
+                  <name>VIIRSN, Suomi-NPP, Level-3 SMI, NASA, Global, 4km, K490, R2018, 2012-present, 8-Day</name>
+                  <description>Web page for accessing metadata and downloading data.</description>
+                  <function>information</function>
+                </CI_OnlineResource>
+              </networka>
+            </computer>
+          </onlinopt>
+        </digtopt>
+      </digform>
+      <digform>
+        <digtinfo>
+          <formname>.wav</formname>
+          <formvern>1</formvern>
+          <formspec>Download a .wav audio file. All columns must be numeric and of the same type. https://en.wikipedia.org/wiki/WAV</formspec>
+        </digtinfo>
+        <digtopt>
+          <onlinopt>
+            <computer>
+              <networka>
+                <networkr>http://localhost:8080/erddap/griddap/erdVH2018k4908day.html</networkr>
+                <CI_OnlineResource>
+                  <linkage>http://localhost:8080/erddap/griddap/erdVH2018k4908day.html</linkage>
+                  <name>VIIRSN, Suomi-NPP, Level-3 SMI, NASA, Global, 4km, K490, R2018, 2012-present, 8-Day</name>
+                  <description>Web page for accessing metadata and downloading data.</description>
+                  <function>download</function>
+                </CI_OnlineResource>
+                <CI_OnlineResource>
+                  <linkage>http://localhost:8080/erddap/griddap/erdVH2018k4908day.html</linkage>
+                  <name>VIIRSN, Suomi-NPP, Level-3 SMI, NASA, Global, 4km, K490, R2018, 2012-present, 8-Day</name>
+                  <description>Web page for accessing metadata and downloading data.</description>
+                  <function>information</function>
+                </CI_OnlineResource>
+              </networka>
+            </computer>
+          </onlinopt>
+        </digtopt>
+      </digform>
+      <digform>
+        <digtinfo>
+          <formname>.xhtml</formname>
+          <formvern>1</formvern>
+          <formspec>View a UTF-8 XHTML (XML) file with the data in a table. Times are ISO 8601 strings. https://www.w3schools.com/html/html_tables.asp</formspec>
+        </digtinfo>
+        <digtopt>
+          <onlinopt>
+            <computer>
+              <networka>
+                <networkr>http://localhost:8080/erddap/griddap/erdVH2018k4908day.html</networkr>
+                <CI_OnlineResource>
+                  <linkage>http://localhost:8080/erddap/griddap/erdVH2018k4908day.html</linkage>
+                  <name>VIIRSN, Suomi-NPP, Level-3 SMI, NASA, Global, 4km, K490, R2018, 2012-present, 8-Day</name>
+                  <description>Web page for accessing metadata and downloading data.</description>
+                  <function>download</function>
+                </CI_OnlineResource>
+                <CI_OnlineResource>
+                  <linkage>http://localhost:8080/erddap/griddap/erdVH2018k4908day.html</linkage>
+                  <name>VIIRSN, Suomi-NPP, Level-3 SMI, NASA, Global, 4km, K490, R2018, 2012-present, 8-Day</name>
+                  <description>Web page for accessing metadata and downloading data.</description>
+                  <function>information</function>
+                </CI_OnlineResource>
+              </networka>
+            </computer>
+          </onlinopt>
+        </digtopt>
+      </digform>
+      <digform>
+        <digtinfo>
+          <formname>.geotif</formname>
+          <formvern>1</formvern>
+          <formspec>View a grayscale GeoTIFF .tif file (for latitude longitude data; longitude must be all below or all above 180). https://trac.osgeo.org/geotiff/</formspec>
+        </digtinfo>
+        <digtopt>
+          <onlinopt>
+            <computer>
+              <networka>
+                <networkr>http://localhost:8080/erddap/griddap/erdVH2018k4908day.graph</networkr>
+                <CI_OnlineResource>
+                  <linkage>http://localhost:8080/erddap/griddap/erdVH2018k4908day.graph</linkage>
+                  <name>VIIRSN, Suomi-NPP, Level-3 SMI, NASA, Global, 4km, K490, R2018, 2012-present, 8-Day</name>
+                  <description>Web page for making a graph or map.</description>
+                  <function>graphing</function>
+                </CI_OnlineResource>
+              </networka>
+            </computer>
+          </onlinopt>
+        </digtopt>
+      </digform>
+      <digform>
+        <digtinfo>
+          <formname>.kml</formname>
+          <formvern>1</formvern>
+          <formspec>View a Google Earth .kml file (for latitude, longitude data only). https://developers.google.com/kml/</formspec>
+        </digtinfo>
+        <digtopt>
+          <onlinopt>
+            <computer>
+              <networka>
+                <networkr>http://localhost:8080/erddap/griddap/erdVH2018k4908day.graph</networkr>
+                <CI_OnlineResource>
+                  <linkage>http://localhost:8080/erddap/griddap/erdVH2018k4908day.graph</linkage>
+                  <name>VIIRSN, Suomi-NPP, Level-3 SMI, NASA, Global, 4km, K490, R2018, 2012-present, 8-Day</name>
+                  <description>Web page for making a graph or map.</description>
+                  <function>graphing</function>
+                </CI_OnlineResource>
+              </networka>
+            </computer>
+          </onlinopt>
+        </digtopt>
+      </digform>
+      <digform>
+        <digtinfo>
+          <formname>.smallPdf</formname>
+          <formvern>1</formvern>
+          <formspec>View a small .pdf image file with a graph or map. https://www.adobe.com/acrobat/about-adobe-pdf.html</formspec>
+        </digtinfo>
+        <digtopt>
+          <onlinopt>
+            <computer>
+              <networka>
+                <networkr>http://localhost:8080/erddap/griddap/erdVH2018k4908day.graph</networkr>
+                <CI_OnlineResource>
+                  <linkage>http://localhost:8080/erddap/griddap/erdVH2018k4908day.graph</linkage>
+                  <name>VIIRSN, Suomi-NPP, Level-3 SMI, NASA, Global, 4km, K490, R2018, 2012-present, 8-Day</name>
+                  <description>Web page for making a graph or map.</description>
+                  <function>graphing</function>
+                </CI_OnlineResource>
+              </networka>
+            </computer>
+          </onlinopt>
+        </digtopt>
+      </digform>
+      <digform>
+        <digtinfo>
+          <formname>.pdf</formname>
+          <formvern>1</formvern>
+          <formspec>View a standard, medium-sized .pdf image file with a graph or map. https://www.adobe.com/acrobat/about-adobe-pdf.html</formspec>
+        </digtinfo>
+        <digtopt>
+          <onlinopt>
+            <computer>
+              <networka>
+                <networkr>http://localhost:8080/erddap/griddap/erdVH2018k4908day.graph</networkr>
+                <CI_OnlineResource>
+                  <linkage>http://localhost:8080/erddap/griddap/erdVH2018k4908day.graph</linkage>
+                  <name>VIIRSN, Suomi-NPP, Level-3 SMI, NASA, Global, 4km, K490, R2018, 2012-present, 8-Day</name>
+                  <description>Web page for making a graph or map.</description>
+                  <function>graphing</function>
+                </CI_OnlineResource>
+              </networka>
+            </computer>
+          </onlinopt>
+        </digtopt>
+      </digform>
+      <digform>
+        <digtinfo>
+          <formname>.largePdf</formname>
+          <formvern>1</formvern>
+          <formspec>View a large .pdf image file with a graph or map. https://www.adobe.com/acrobat/about-adobe-pdf.html</formspec>
+        </digtinfo>
+        <digtopt>
+          <onlinopt>
+            <computer>
+              <networka>
+                <networkr>http://localhost:8080/erddap/griddap/erdVH2018k4908day.graph</networkr>
+                <CI_OnlineResource>
+                  <linkage>http://localhost:8080/erddap/griddap/erdVH2018k4908day.graph</linkage>
+                  <name>VIIRSN, Suomi-NPP, Level-3 SMI, NASA, Global, 4km, K490, R2018, 2012-present, 8-Day</name>
+                  <description>Web page for making a graph or map.</description>
+                  <function>graphing</function>
+                </CI_OnlineResource>
+              </networka>
+            </computer>
+          </onlinopt>
+        </digtopt>
+      </digform>
+      <digform>
+        <digtinfo>
+          <formname>.smallPng</formname>
+          <formvern>1</formvern>
+          <formspec>View a small .png image file with a graph or map. http://www.libpng.org/pub/png/</formspec>
+        </digtinfo>
+        <digtopt>
+          <onlinopt>
+            <computer>
+              <networka>
+                <networkr>http://localhost:8080/erddap/griddap/erdVH2018k4908day.graph</networkr>
+                <CI_OnlineResource>
+                  <linkage>http://localhost:8080/erddap/griddap/erdVH2018k4908day.graph</linkage>
+                  <name>VIIRSN, Suomi-NPP, Level-3 SMI, NASA, Global, 4km, K490, R2018, 2012-present, 8-Day</name>
+                  <description>Web page for making a graph or map.</description>
+                  <function>graphing</function>
+                </CI_OnlineResource>
+              </networka>
+            </computer>
+          </onlinopt>
+        </digtopt>
+      </digform>
+      <digform>
+        <digtinfo>
+          <formname>.png</formname>
+          <formvern>1</formvern>
+          <formspec>View a standard, medium-sized .png image file with a graph or map. http://www.libpng.org/pub/png/</formspec>
+        </digtinfo>
+        <digtopt>
+          <onlinopt>
+            <computer>
+              <networka>
+                <networkr>http://localhost:8080/erddap/griddap/erdVH2018k4908day.graph</networkr>
+                <CI_OnlineResource>
+                  <linkage>http://localhost:8080/erddap/griddap/erdVH2018k4908day.graph</linkage>
+                  <name>VIIRSN, Suomi-NPP, Level-3 SMI, NASA, Global, 4km, K490, R2018, 2012-present, 8-Day</name>
+                  <description>Web page for making a graph or map.</description>
+                  <function>graphing</function>
+                </CI_OnlineResource>
+              </networka>
+            </computer>
+          </onlinopt>
+        </digtopt>
+      </digform>
+      <digform>
+        <digtinfo>
+          <formname>.largePng</formname>
+          <formvern>1</formvern>
+          <formspec>View a large .png image file with a graph or map. http://www.libpng.org/pub/png/</formspec>
+        </digtinfo>
+        <digtopt>
+          <onlinopt>
+            <computer>
+              <networka>
+                <networkr>http://localhost:8080/erddap/griddap/erdVH2018k4908day.graph</networkr>
+                <CI_OnlineResource>
+                  <linkage>http://localhost:8080/erddap/griddap/erdVH2018k4908day.graph</linkage>
+                  <name>VIIRSN, Suomi-NPP, Level-3 SMI, NASA, Global, 4km, K490, R2018, 2012-present, 8-Day</name>
+                  <description>Web page for making a graph or map.</description>
+                  <function>graphing</function>
+                </CI_OnlineResource>
+              </networka>
+            </computer>
+          </onlinopt>
+        </digtopt>
+      </digform>
+      <digform>
+        <digtinfo>
+          <formname>.transparentPng</formname>
+          <formvern>1</formvern>
+          <formspec>View a .png image file (just the data, without axes, landmask, or legend). http://www.libpng.org/pub/png/</formspec>
+        </digtinfo>
+        <digtopt>
+          <onlinopt>
+            <computer>
+              <networka>
+                <networkr>http://localhost:8080/erddap/griddap/erdVH2018k4908day.graph</networkr>
+                <CI_OnlineResource>
+                  <linkage>http://localhost:8080/erddap/griddap/erdVH2018k4908day.graph</linkage>
+                  <name>VIIRSN, Suomi-NPP, Level-3 SMI, NASA, Global, 4km, K490, R2018, 2012-present, 8-Day</name>
+                  <description>Web page for making a graph or map.</description>
+                  <function>graphing</function>
+                </CI_OnlineResource>
+              </networka>
+            </computer>
+          </onlinopt>
+        </digtopt>
+      </digform>
+      <fees>None</fees>
+    </stdorder>
+  </distinfo>
+  <metainfo>
+    <metd>20250521</metd>
+    <metc>
+            <cntinfo>
+              <cntorgp>
+                <cntorg>ERDDAP Jetty Install</cntorg>
+                <cntper>ERDDAP Jetty Developer</cntper>
+              </cntorgp>
+              <cntpos>Software Engineer</cntpos>
+              <cntaddr>
+                <addrtype>Mailing and Physical Address</addrtype>
+                <address>123 Irrelevant St.</address>
+                <city>Nowhere</city>
+                <state>AK</state>
+                <postal>99504</postal>
+                <country>USA</country>
+              </cntaddr>
+              <cntvoice>555-555-5555</cntvoice>
+              <cntemail>nobody@example.com</cntemail>
+            </cntinfo>
+    </metc>
+    <metstdn>Content Standard for Digital Geospatial Metadata: Extensions for Remote Sensing Metadata</metstdn>
+    <metstdv>FGDC-STD-012-2002</metstdv>
+    <mettc>universal time</mettc>
+    <metac>None.</metac>
+    <metuc>https://science.nasa.gov/earth-science/earth-science-data/data-information-policy/
+The data may be used and redistributed for free but is not intended
+for legal use, since it may contain inaccuracies. Neither the data
+Contributor, ERD, NOAA, nor the United States Government, nor any
+of their employees or contractors, makes any warranty, express or
+implied, including warranties of merchantability and fitness for a
+particular purpose, or assumes any legal liability for the accuracy,
+completeness, or usefulness, of this information.</metuc>
+  </metainfo>
+</metadata>

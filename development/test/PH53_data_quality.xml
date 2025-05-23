@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="ISO-8859-1" ?>
+    <dataVariable>
+        <sourceName>quality_level</sourceName>
+        <destinationName>quality_level</destinationName>
+        <dataType>byte</dataType>
+        <!-- sourceAttributes>
+            <att name="_ChunkSizes" type="intList">1 540 540</att>
+            <att name="_FillValue" type="byte">0</att>
+            <att name="add_offset" type="double">0.0</att>
+            <att name="ancillary_variables">pathfinder_quality_level</att>
+            <att name="comment">These are the overall quality indicators and are used for all GHRSST SSTs. Note, the native Pathfinder processing system returns quality levels ranging from 0 to 7 (7 is best quality; -1 represents missing data) and has been converted to the extent possible into the six levels required by the GDS2 (ranging from 0 to 5, where 5 is best). Below is the conversion table: 
+ GDS2 required quality_level 5  =  native Pathfinder quality level 7 == best_quality 
+ GDS2 required quality_level 4  =  native Pathfinder quality level 4-6 == acceptable_quality 
+ GDS2 required quality_level 3  =  native Pathfinder quality level 2-3 == low_quality 
+ GDS2 required quality_level 2  =  native Pathfinder quality level 1 == worst_quality 
+ GDS2 required quality_level 1  =  native Pathfinder quality level 0 = bad_data 
+ GDS2 required quality_level 0  =  native Pathfinder quality level -1 = missing_data 
+ The original Pathfinder quality level is recorded in the optional variable pathfinder_quality_level.</att>
+            <att name="coverage_content_type">qualityInformation</att>
+            <att name="flag_meanings">no_data bad_data worst_quality low_quality acceptable_quality best_quality</att>
+            <att name="flag_values" type="byteList">0 1 2 3 4 5</att>
+            <att name="grid_mapping">crs</att>
+            <att name="long_name">quality level of SST pixel</att>
+            <att name="platform">NOAA-7</att>
+            <att name="scale_factor" type="double">1.0</att>
+            <att name="source">AVHRR_GAC-CLASS-L1B-NOAA_07-v1</att>
+            <att name="units">1</att>
+            <att name="valid_max" type="byte">5</att>
+            <att name="valid_min" type="byte">1</att>
+        </sourceAttributes -->
+        <addAttributes>
+            <att name="_ChunkSizes">null</att>
+            <att name="add_offset">null</att>
+            <att name="colorBarMaximum" type="double">6.0</att>
+            <att name="colorBarMinimum" type="double">0.0</att>
+            <att name="colorBarContinuous">false</att>
+            <att name="colorBarNSections" type="int">6</att>
+            <att name="ioos_category">Quality</att>
+            <att name="scale_factor">null</att>
+        </addAttributes>
+    </dataVariable>

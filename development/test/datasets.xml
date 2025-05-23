@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="ISO-8859-1" ?>
+<!DOCTYPE note [<!ENTITY deg '&#176;'>]>
+<erddapDatasets xmlns:xi="http://www.w3.org/2001/XInclude">
+<loadDatasetsMinMinutes>4</loadDatasetsMinMinutes>
+<loadDatasetsMaxMinutes>8</loadDatasetsMaxMinutes>
+<displayInfo>display1,display2</displayInfo>
+<displayAttribute>att1,att2</displayAttribute>
+<!-- NOTE! Since the source files don't have any metadata, you must add metadata
+  below, notably 'units' for each of the dataVariables. -->
+<dataset type="EDDTableFromAsciiFiles" datasetID="test_chars_e886_d14c_7d71" active="true">
+    <reloadEveryNMinutes>10080</reloadEveryNMinutes>
+    <updateEveryNMillis>10000</updateEveryNMillis>
+    <fileDir>C:\Users\harish\eraddaplang2\erddap\target\test-classes\datasets</fileDir>
+    <fileNameRegex>test_chars\.csv</fileNameRegex>
+    <recursive>true</recursive>
+    <pathRegex>.*</pathRegex>
+    <metadataFrom>last</metadataFrom>
+    <standardizeWhat>0</standardizeWhat>
+    <charset>UTF-8</charset>
+    <columnSeparator>;</columnSeparator>
+    <columnNamesRow>1</columnNamesRow>
+    <firstDataRow>2</firstDataRow>
+    <sortedColumnSourceName></sortedColumnSourceName>
+    <sortFilesBySourceNames></sortFilesBySourceNames>
+    <fileTableInMemory>false</fileTableInMemory>
+    <!-- sourceAttributes>
+    </sourceAttributes -->
+    <!-- Please specify the actual cdm_data_type (TimeSeries?) and related info below, for example...
+        <att name="cdm_timeseries_variables">station_id, longitude, latitude</att>
+        <att name="subsetVariables">station_id, longitude, latitude</att>
+    -->
+    <addAttributes>
+        <att name="cdm_data_type">Other</att>
+        <att name="Conventions">COARDS, CF-1.10, ACDD-1.3</att>
+        <att name="infoUrl">???</att>
+        <att name="institution">???</att>
+        <att name="keywords">characters, data, local, row, source</att>
+        <att name="license">[standard]</att>
+        <att name="sourceUrl">(local files)</att>
+        <att name="standard_name_vocabulary">CF Standard Name Table v70</att>
+        <att name="summary">Data from a local source.</att>
+        <att name="title">Data from a local source.</att>
+    </addAttributes>
+    <dataVariable>
+        <sourceName>row</sourceName>
+        <destinationName>row</destinationName>
+        <dataType>byte</dataType>
+        <!-- sourceAttributes>
+        </sourceAttributes -->
+        <addAttributes>
+            <att name="_FillValue" type="byte">127</att>
+            <att name="ioos_category">Unknown</att>
+            <att name="long_name">Row</att>
+        </addAttributes>
+    </dataVariable>
+    <dataVariable>
+        <sourceName>characters</sourceName>
+        <destinationName>characters</destinationName>
+        <dataType>String</dataType>
+        <!-- sourceAttributes>
+        </sourceAttributes -->
+        <addAttributes>
+            <att name="ioos_category">Unknown</att>
+            <att name="long_name">Characters</att>
+        </addAttributes>
+    </dataVariable>
+</dataset>

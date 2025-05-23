@@ -1,0 +1,1109 @@
+logFileMaxSize=20971520
+
+\\\\**** Start Erddap v2.26 constructor at 2025-05-21T22.57.22
+logFile=target/data/logs/log.txt logMaxSizeMB=20
+Java 21.0.6 (64 bit, Oracle Corporation) on Windows 10 (10.0).
+MemoryInUse=   255 MB (highWaterMark=   346 MB) (Xmx ~= 2026 MB)
+verbose=true reallyVerbose=false
+bigParentDirectory=target/data/
+contextDirectory=C:/Users/harish/eraddaplang2/erddap/target/ERDDAP-2.26/
+available fonts=Arial, Arial Black, Bahnschrift, Calibri, Calibri Light, Cambria, Cambria Math, Candara, Candara Light, Cascadia Code, Cascadia Mono, Comic Sans MS, Consolas, Constantia, Corbel, Corbel Light, Courier New, Dialog, DialogInput, Ebrima, Franklin Gothic Medium, Gabriola, Gadugi, Georgia, HoloLens MDL2 Assets, Impact, Ink Free, Javanese Text, Leelawadee UI, Leelawadee UI Semilight, Lucida Console, Lucida Sans Unicode, Malgun Gothic, Malgun Gothic Semilight, Marlett, Microsoft Himalaya, Microsoft JhengHei, Microsoft JhengHei Light, Microsoft JhengHei UI, Microsoft JhengHei UI Light, Microsoft New Tai Lue, Microsoft PhagsPa, Microsoft Sans Serif, Microsoft Tai Le, Microsoft YaHei, Microsoft YaHei Light, Microsoft YaHei UI, Microsoft YaHei UI Light, Microsoft Yi Baiti, MingLiU-ExtB, MingLiU_HKSCS-ExtB, Mongolian Baiti, Monospaced, MS Gothic, MS PGothic, MS UI Gothic, MV Boli, Myanmar Text, Nirmala UI, Nirmala UI Semilight, NSimSun, Palatino Linotype, PMingLiU-ExtB, SansSerif, Segoe MDL2 Assets, Segoe Print, Segoe Script, Segoe UI, Segoe UI Black, Segoe UI Emoji, Segoe UI Historic, Segoe UI Light, Segoe UI Semibold, Segoe UI Semilight, Segoe UI Symbol, Serif, SimSun, SimSun-ExtB, SimSun-ExtG, Sitka Banner, Sitka Display, Sitka Heading, Sitka Small, Sitka Subheading, Sitka Text, Sylfaen, Symbol, Tahoma, Times New Roman, Trebuchet MS, Verdana, Webdings, Wingdings, Yu Gothic, Yu Gothic Light, Yu Gothic Medium, Yu Gothic UI, Yu Gothic UI Light, Yu Gothic UI Semibold, Yu Gothic UI Semilight
+File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\cache\41) nDir=   1 nDeleted=   0 nRemain=   0
+File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\cache\60) nDir=   1 nDeleted=   0 nRemain=   0
+File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\cache\80) nDir=   5 nDeleted=   0 nRemain=   0
+File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\cache\ay) nDir=  33 nDeleted=   0 nRemain=   0
+File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\cache\Bf) nDir=   1 nDeleted=   0 nRemain=   0
+File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\cache\Bp) nDir=   1 nDeleted=   0 nRemain=   0
+File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\cache\cp) nDir=   1 nDeleted=   0 nRemain=   0
+File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\cache\et) nDir=   1 nDeleted=   0 nRemain=   0
+File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\cache\rt) nDir=   1 nDeleted=   0 nRemain=   0
+File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\cache\st) nDir=   1 nDeleted=   0 nRemain=   0
+File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\cache\ts) nDir=   2 nDeleted=   0 nRemain=   0
+File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\cache\ur) nDir=   1 nDeleted=   0 nRemain=   0
+File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\cache\yD) nDir=   1 nDeleted=   0 nRemain=   0
+File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\cache\yn) nDir=   1 nDeleted=   0 nRemain=   0
+File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\cache\_wms) nDir=   5 nDeleted=   0 nRemain=   0
+File2.deleteIfOld(target/data/cache/                                     ) nDir=  19 nDeleted=   0 nRemain=   0
+ERROR in File2.deleteIfOld: dir=target/data/private isn't a directory.
+
+\\\\**** Erddap constructor finished. TIME=2183ms
+
+*** RunLoadDatasets is starting a new MAJOR LoadDatasets thread at 2025-05-21T22:57:24+05:30
+File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\cache\_wms, 2025-05-21T16:27:24Z) nDir=   5 nDeleted=   0 nRemain=   0
+File2.deleteIfOld(target/data/cache/                                     , 2025-05-21T16:27:24Z) nDir=   5 nDeleted=   0 nRemain=   0
+0 files remain in C:/Users/harish/eraddaplang2/erddap/target/ERDDAP-2.26/public/
+0 files remain in target/data/cache/ and subdirectories.
+
+********************************************************************************
+LoadDatasets.run EDStatic.config.developmentMode=false 2025-05-21T22:57:24+05:30
+  datasetsRegex=.* inputStream=null majorLoad=true
+MemoryInUse=   101 MB (highWaterMark=   346 MB) (Xmx ~= 2026 MB)
+File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\decompressed\41, 2025-05-21T17:12:25Z) nDir=   1 nDeleted=   0 nRemain=   0
+File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\decompressed\60, 2025-05-21T17:12:25Z) nDir=   1 nDeleted=   0 nRemain=   0
+File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\decompressed\80, 2025-05-21T17:12:25Z) nDir=   6 nDeleted=   0 nRemain=   0
+File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\decompressed\ad, 2025-05-21T17:12:25Z) nDir=   1 nDeleted=   0 nRemain=   0
+File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\decompressed\ap, 2025-05-21T17:12:25Z) nDir=   1 nDeleted=   0 nRemain=   0
+File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\decompressed\at, 2025-05-21T17:12:25Z) nDir=   2 nDeleted=   0 nRemain=   0
+File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\decompressed\au, 2025-05-21T17:12:25Z) nDir=   1 nDeleted=   0 nRemain=   0
+File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\decompressed\ay, 2025-05-21T17:12:25Z) nDir=  34 nDeleted=   0 nRemain=   0
+File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\decompressed\Bf, 2025-05-21T17:12:25Z) nDir=   1 nDeleted=   0 nRemain=   0
+File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\decompressed\Bp, 2025-05-21T17:12:25Z) nDir=   1 nDeleted=   0 nRemain=   0
+File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\decompressed\cb, 2025-05-21T17:12:25Z) nDir=   1 nDeleted=   0 nRemain=   0
+File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\decompressed\cp, 2025-05-21T17:12:25Z) nDir=   1 nDeleted=   0 nRemain=   0
+File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\decompressed\en, 2025-05-21T17:12:25Z) nDir=   1 nDeleted=   0 nRemain=   0
+File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\decompressed\et, 2025-05-21T17:12:25Z) nDir=   4 nDeleted=   0 nRemain=   0
+File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\decompressed\in, 2025-05-21T17:12:25Z) nDir=   1 nDeleted=   0 nRemain=   0
+File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\decompressed\ld, 2025-05-21T17:12:25Z) nDir=   1 nDeleted=   0 nRemain=   0
+File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\decompressed\Lw, 2025-05-21T17:12:25Z) nDir=   1 nDeleted=   0 nRemain=   0
+File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\decompressed\mp, 2025-05-21T17:12:25Z) nDir=   2 nDeleted=   0 nRemain=   0
+File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\decompressed\os, 2025-05-21T17:12:25Z) nDir=   1 nDeleted=   0 nRemain=   0
+File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\decompressed\Rf, 2025-05-21T17:12:25Z) nDir=   1 nDeleted=   0 nRemain=   0
+File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\decompressed\Rh, 2025-05-21T17:12:25Z) nDir=   1 nDeleted=   0 nRemain=   0
+File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\decompressed\rt, 2025-05-21T17:12:25Z) nDir=   1 nDeleted=   0 nRemain=   0
+File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\decompressed\sd, 2025-05-21T17:12:25Z) nDir=   1 nDeleted=   0 nRemain=   0
+File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\decompressed\so, 2025-05-21T17:12:25Z) nDir=   1 nDeleted=   0 nRemain=   0
+File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\decompressed\ss, 2025-05-21T17:12:25Z) nDir=   1 nDeleted=   0 nRemain=   0
+File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\decompressed\st, 2025-05-21T17:12:25Z) nDir=   3 nDeleted=   0 nRemain=   0
+File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\decompressed\ts, 2025-05-21T17:12:25Z) nDir=   2 nDeleted=   0 nRemain=   0
+File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\decompressed\ur, 2025-05-21T17:12:25Z) nDir=   1 nDeleted=   0 nRemain=   0
+File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\decompressed\yD, 2025-05-21T17:12:25Z) nDir=   1 nDeleted=   0 nRemain=   0
+File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\decompressed\yn, 2025-05-21T17:12:25Z) nDir=   1 nDeleted=   0 nRemain=   0
+File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\decompressed\yS, 2025-05-21T17:12:25Z) nDir=   1 nDeleted=   0 nRemain=   0
+File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\decompressed\yT, 2025-05-21T17:12:25Z) nDir=   1 nDeleted=   0 nRemain=   0
+File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\decompressed\yW, 2025-05-21T17:12:25Z) nDir=   1 nDeleted=   0 nRemain=   0
+File2.deleteIfOld(target/data/decompressed/                              , 2025-05-21T17:12:25Z) nDir=  34 nDeleted=   0 nRemain=   0
+After deleting decompressed files not used in the last 15 minutes, nRemain=0
+
+*** constructing EDDTableFromAllDatasets
+  accessibleViaNcCF=.ncCF/.ncCFMA is never available for this dataset because cdm_data_type=Other is not a compatible type.
+FGDC is never available for this dataset because Query error: there is no longitude and/or latitude variable.
+ISO 19115-2/19139 is never available for this dataset because Query error: there is no longitude and/or latitude variable.
+
+*** EDDTableFromAllDatasets constructor finished. TIME=32ms
+
+logLevel=info: verbose=true reallyVerbose=false
+requestBlacklist is now null.
+Subscriptions.setEmailBlacklist removed 0 valid and pending subscriptions.
+
+*** constructing EDDGridFromEtopo etopo180
+
+*** EDDGridFromEtopo etopo180 constructor finished. TIME=47ms
+
+change=Previously, this dataset was (temporarily?) not available.  Perhaps ERDDAP was just restarted.
+nActions=0
+
+*** constructing EDDGridFromEtopo etopo360
+
+*** EDDGridFromEtopo etopo360 constructor finished. TIME=13ms
+
+change=Previously, this dataset was (temporarily?) not available.  Perhaps ERDDAP was just restarted.
+nActions=0
+
+*** constructing EDDGridFromDap erdTAsshl1day
+  using info from quickRestartFile
+  time: DoubleArray isn't evenly spaced: [0]=7.19064E8, [1]=7.196688E8, spacing=604800.0, average spacing=507574.14205905824.
+    smallest spacing=86400.0: [1018]=1.3347504E9, [1019]=1.3348368E9
+    biggest  spacing=604800.0: [0]=7.19064E8, [1]=7.196688E8
+
+*** EDDGridFromDap erdTAsshl1day constructor finished. TIME=141ms
+
+
+*** constructing EDDGridFromDap erdTAsshd1day
+  using info from quickRestartFile
+  time: DoubleArray isn't evenly spaced: [0]=7.19064E8, [1]=7.196688E8, spacing=604800.0, average spacing=512825.8064516129.
+    smallest spacing=86400.0: [1019]=1.3358736E9, [1020]=1.33596E9
+    biggest  spacing=1123200.0: [1018]=1.3347504E9, [1019]=1.3358736E9
+
+*** EDDGridFromDap erdTAsshd1day constructor finished. TIME=31ms
+
+
+*** constructing EDDGridSideBySide erdTAssh1day
+child[0].axisVariables[0].size()=1254
+child[1].axisVariables[0].size()=1241
+  time: DoubleArray isn't evenly spaced: [0]=7.19064E8, [1]=7.196688E8, spacing=604800.0, average spacing=507574.14205905824.
+    smallest spacing=86400.0: [1018]=1.3347504E9, [1019]=1.3348368E9
+    biggest  spacing=604800.0: [0]=7.19064E8, [1]=7.196688E8
+
+*** EDDGridSideBySide erdTAssh1day constructor finished. TIME=0ms
+
+change=Previously, this dataset was (temporarily?) not available.  Perhaps ERDDAP was just restarted.
+nActions=0
+
+*** constructing EDDGridFromErddap jplMURSST41
+  using info from quickRestartFile
+  time: DoubleArray isn't evenly spaced: [0]=1.022922E9, [1]=1.0230084E9, spacing=86400.0, average spacing=86420.60331465364.
+    smallest spacing=86400.0: [0]=1.022922E9, [1]=1.0230084E9
+    biggest  spacing=259200.0: [6838]=1.6137252E9, [6839]=1.6139844E9
+WARNING! This ERDDAP won't try to subscribe to the dataset on the remote
+ERDDAP because this ERDDAP isn't publicly accessible.
+If you want to keep this dataset up-to-date, use a small reloadEveryNMinutes.
+
+*** EDDGridFromErddap jplMURSST41 constructor finished. TIME=2248ms
+
+change=Previously, this dataset was (temporarily?) not available.  Perhaps ERDDAP was just restarted.
+nActions=0
+
+*** constructing EDDGridFromErddap erdNavgem05D10mWind_LonPM180
+  using info from quickRestartFile
+  time: DoubleArray isn't evenly spaced: [0]=1.3609296E9, [1]=1.3609512E9, spacing=21600.0, average spacing=23365.635572740455.
+    smallest spacing=21600.0: [0]=1.3609296E9, [1]=1.3609512E9
+    biggest  spacing=2527200.0: [4212]=1.4569416E9, [4213]=1.4594688E9
+{{{{#1 2025-05-21T22:57:29+05:30 (notLoggedIn) (unknownIPAddress) GET /erddap/
+redirected to http://localhost:8080/erddap/index.html
+}}}}#1 (unknownIPAddress) SUCCESS. TIME=11ms
+
+{{{{#2 2025-05-21T22:57:29+05:30 (notLoggedIn) (unknownIPAddress) GET /erddap/index.html
+OutputStreamFromHttpResponse charEncoding=UTF-8, encoding=gzip, index, .html
+}}}}#2 (unknownIPAddress) SUCCESS. TIME=27ms
+
+WARNING! This ERDDAP won't try to subscribe to the dataset on the remote
+ERDDAP because this ERDDAP isn't publicly accessible.
+If you want to keep this dataset up-to-date, use a small reloadEveryNMinutes.
+
+*** EDDGridFromErddap erdNavgem05D10mWind_LonPM180 constructor finished. TIME=1737ms
+
+change=Previously, this dataset was (temporarily?) not available.  Perhaps ERDDAP was just restarted.
+nActions=0
+
+*** constructing EDDGridFromErddap erdNavgem05D20mWind_LonPM180
+  using info from quickRestartFile
+  time: DoubleArray isn't evenly spaced: [0]=1.3609296E9, [1]=1.3609512E9, spacing=21600.0, average spacing=23371.28353879623.
+    smallest spacing=21600.0: [0]=1.3609296E9, [1]=1.3609512E9
+    biggest  spacing=2527200.0: [4212]=1.4569416E9, [4213]=1.4594688E9
+WARNING! This ERDDAP won't try to subscribe to the dataset on the remote
+ERDDAP because this ERDDAP isn't publicly accessible.
+If you want to keep this dataset up-to-date, use a small reloadEveryNMinutes.
+
+*** EDDGridFromErddap erdNavgem05D20mWind_LonPM180 constructor finished. TIME=1772ms
+
+change=Previously, this dataset was (temporarily?) not available.  Perhaps ERDDAP was just restarted.
+nActions=0
+
+*** constructing EDDGridFromErddap erdNavgem05D500mb_LonPM180
+  using info from quickRestartFile
+  time: DoubleArray isn't evenly spaced: [0]=1.3609296E9, [1]=1.3609512E9, spacing=21600.0, average spacing=23501.482381530983.
+    smallest spacing=21600.0: [0]=1.3609296E9, [1]=1.3609512E9
+    biggest  spacing=2527200.0: [4150]=1.4569416E9, [4151]=1.4594688E9
+WARNING! This ERDDAP won't try to subscribe to the dataset on the remote
+ERDDAP because this ERDDAP isn't publicly accessible.
+If you want to keep this dataset up-to-date, use a small reloadEveryNMinutes.
+
+*** EDDGridFromErddap erdNavgem05D500mb_LonPM180 constructor finished. TIME=1944ms
+
+change=Previously, this dataset was (temporarily?) not available.  Perhaps ERDDAP was just restarted.
+nActions=0
+
+*** constructing EDDGridFromErddap erdNavgem05DPres_LonPM180
+  using info from quickRestartFile
+  time: DoubleArray isn't evenly spaced: [0]=1.3609296E9, [1]=1.3609512E9, spacing=21600.0, average spacing=23534.36758532579.
+    smallest spacing=21600.0: [0]=1.3609296E9, [1]=1.3609512E9
+    biggest  spacing=2527200.0: [4130]=1.4569416E9, [4131]=1.4594688E9
+WARNING! This ERDDAP won't try to subscribe to the dataset on the remote
+ERDDAP because this ERDDAP isn't publicly accessible.
+If you want to keep this dataset up-to-date, use a small reloadEveryNMinutes.
+
+*** EDDGridFromErddap erdNavgem05DPres_LonPM180 constructor finished. TIME=1953ms
+
+change=Previously, this dataset was (temporarily?) not available.  Perhaps ERDDAP was just restarted.
+nActions=0
+
+*** constructing EDDGridFromErddap miamicurrents
+  using info from quickRestartFile
+getUrlConnInputStream http://cwcgom.aoml.noaa.gov/erddap/version requestCompression=true
+  Warning: HTTP status code=302
+  redirect to https://cwcgom.aoml.noaa.gov/erddap/version
+getUrlConnInputStream http://cwcgom.aoml.noaa.gov/erddap/files/miamicurrents/.csv requestCompression=true
+  Warning: HTTP status code=302
+  redirect to https://cwcgom.aoml.noaa.gov/erddap/files/miamicurrents/.csv
+  Warning: after redirect, HTTP status code=404
+accessibleViaFiles=false because remote ERDDAP dataset isn't accessible via /files/ :
+java.io.IOException: HTTP status code=404 java.io.FileNotFoundException: https://cwcgom.aoml.noaa.gov/erddap/files/miamicurrents/.csv
+(Error {
+    code=404;
+    message="Not Found: This dataset is not accessible via /files/ .";
+})
+ at gov.noaa.pfel.coastwatch.util.SSR.getBufferedInputStream(SSR.java:1484)
+ at gov.noaa.pfel.coastwatch.util.SSR.getUrlConnBufferedInputStream(SSR.java:1388)
+ at gov.noaa.pfel.coastwatch.util.SSR.getUrlConnBufferedInputStream(SSR.java:1244)
+ at gov.noaa.pfel.coastwatch.util.SSR.getUrlBufferedInputStream(SSR.java:1544)
+ at gov.noaa.pfel.erddap.dataset.EDDGridFromErddap.<init>(EDDGridFromErddap.java:458)
+ at gov.noaa.pfel.erddap.handlers.EDDGridFromErddapHandler.buildDataset(EDDGridFromErddapHandler.java:46)
+ at gov.noaa.pfel.erddap.handlers.BaseDatasetHandler.endElement(BaseDatasetHandler.java:69)
+ at gov.noaa.pfel.erddap.handlers.SaxHandler.endElement(SaxHandler.java:73)
+ at java.xml/com.sun.org.apache.xerces.internal.parsers.AbstractSAXParser.endElement(AbstractSAXParser.java:618)
+ at java.xml/com.sun.org.apache.xerces.internal.xinclude.XIncludeHandler.endElement(XIncludeHandler.java:1112)
+ at java.xml/com.sun.org.apache.xerces.internal.impl.XMLDocumentFragmentScannerImpl.scanEndElement(XMLDocumentFragmentScannerImpl.java:1728)
+ at java.xml/com.sun.org.apache.xerces.internal.impl.XMLDocumentFragmentScannerImpl$FragmentContentDriver.next(XMLDocumentFragmentScannerImpl.java:2899)
+ at java.xml/com.sun.org.apache.xerces.internal.impl.XMLDocumentScannerImpl.next(XMLDocumentScannerImpl.java:605)
+ at java.xml/com.sun.org.apache.xerces.internal.impl.XMLNSDocumentScannerImpl.next(XMLNSDocumentScannerImpl.java:114)
+ at java.xml/com.sun.org.apache.xerces.internal.impl.XMLDocumentFragmentScannerImpl.scanDocument(XMLDocumentFragmentScannerImpl.java:542)
+ at java.xml/com.sun.org.apache.xerces.internal.parsers.XML11Configuration.parse(XML11Configuration.java:889)
+ at java.xml/com.sun.org.apache.xerces.internal.parsers.XML11Configuration.parse(XML11Configuration.java:825)
+ at java.xml/com.sun.org.apache.xerces.internal.parsers.XMLParser.parse(XMLParser.java:141)
+ at java.xml/com.sun.org.apache.xerces.internal.parsers.AbstractSAXParser.parse(AbstractSAXParser.java:1224)
+ at java.xml/com.sun.org.apache.xerces.internal.jaxp.SAXParserImpl$JAXPSAXParser.parse(SAXParserImpl.java:637)
+ at java.xml/com.sun.org.apache.xerces.internal.jaxp.SAXParserImpl.parse(SAXParserImpl.java:326)
+ at java.xml/javax.xml.parsers.SAXParser.parse(SAXParser.java:197)
+ at gov.noaa.pfel.erddap.handlers.SaxHandler.parse(SaxHandler.java:167)
+ at gov.noaa.pfel.erddap.LoadDatasets.run(LoadDatasets.java:203)
+
+
+WARNING! This ERDDAP won't try to subscribe to the dataset on the remote
+ERDDAP because this ERDDAP isn't publicly accessible.
+If you want to keep this dataset up-to-date, use a small reloadEveryNMinutes.
+
+*** EDDGridFromErddap miamicurrents constructor finished. TIME=4291ms
+
+change=Previously, this dataset was (temporarily?) not available.  Perhaps ERDDAP was just restarted.
+nActions=0
+
+*** constructing EDDGridFromErddap erdMH1cflh1day
+  using info from quickRestartFile
+  latitude: FloatArray isn't sorted in ascending order: [0]=89.979164 > [1]=89.9375.
+  time: DoubleArray isn't evenly spaced: [0]=1.0414224E9, [1]=1.0415088E9, spacing=86400.0, average spacing=86764.1983982015.
+    smallest spacing=86400.0: [0]=1.0414224E9, [1]=1.0415088E9
+    biggest  spacing=1468800.0: [6437]=1.5975792E9, [6438]=1.599048E9
+WARNING! This ERDDAP won't try to subscribe to the dataset on the remote
+ERDDAP because this ERDDAP isn't publicly accessible.
+If you want to keep this dataset up-to-date, use a small reloadEveryNMinutes.
+
+*** EDDGridFromErddap erdMH1cflh1day constructor finished. TIME=1788ms
+
+change=Previously, this dataset was (temporarily?) not available.  Perhaps ERDDAP was just restarted.
+nActions=0
+
+*** constructing EDDGridFromErddap erdMH1cflh8day
+  using info from quickRestartFile
+  latitude: FloatArray isn't sorted in ascending order: [0]=89.979164 > [1]=89.9375.
+  time: DoubleArray isn't evenly spaced: [0]=1.0417248E9, [1]=1.042416E9, spacing=691200.0, average spacing=690810.8108108108.
+    smallest spacing=432000.0: [45]=1.0728288E9, [46]=1.0732608E9
+    biggest  spacing=3196800.0: [731]=1.5434496E9, [732]=1.5466464E9
+{{{{#3 2025-05-21T22:57:41+05:30 (notLoggedIn) (unknownIPAddress) GET /erddap/status.htl
+*** lowSendError for request #3: isCommitted=false fullMessage=
+Error {
+    code=404;
+    message="Not Found: The first subdirectory or file in the request URL doesn't exist.";
+}
+
+}}}}#3 (unknownIPAddress) SUCCESS. TIME=1013ms
+
+WARNING! This ERDDAP won't try to subscribe to the dataset on the remote
+ERDDAP because this ERDDAP isn't publicly accessible.
+If you want to keep this dataset up-to-date, use a small reloadEveryNMinutes.
+
+*** EDDGridFromErddap erdMH1cflh8day constructor finished. TIME=1753ms
+
+change=Previously, this dataset was (temporarily?) not available.  Perhaps ERDDAP was just restarted.
+nActions=0
+
+*** constructing EDDGridFromErddap erdMH1cflhmday
+  using info from quickRestartFile
+  latitude: FloatArray isn't sorted in ascending order: [0]=89.979164 > [1]=89.9375.
+  time: DoubleArray isn't evenly spaced: [0]=1.0426752E9, [1]=1.0453536E9, spacing=2678400.0, average spacing=2629241.379310345.
+    smallest spacing=2419200.0: [1]=1.0453536E9, [2]=1.0477728E9
+    biggest  spacing=2678400.0: [0]=1.0426752E9, [1]=1.0453536E9
+WARNING! This ERDDAP won't try to subscribe to the dataset on the remote
+ERDDAP because this ERDDAP isn't publicly accessible.
+If you want to keep this dataset up-to-date, use a small reloadEveryNMinutes.
+
+*** EDDGridFromErddap erdMH1cflhmday constructor finished. TIME=1760ms
+
+change=Previously, this dataset was (temporarily?) not available.  Perhaps ERDDAP was just restarted.
+nActions=0
+
+*** constructing EDDGridFromErddap erdMH1chla1day
+  using info from quickRestartFile
+  latitude: FloatArray isn't sorted in ascending order: [0]=89.979164 > [1]=89.9375.
+  time: DoubleArray isn't evenly spaced: [0]=1.0414224E9, [1]=1.0415088E9, spacing=86400.0, average spacing=86764.1983982015.
+    smallest spacing=86400.0: [0]=1.0414224E9, [1]=1.0415088E9
+    biggest  spacing=1468800.0: [6437]=1.5975792E9, [6438]=1.599048E9
+{{{{#4 2025-05-21T22:57:45+05:30 (notLoggedIn) (unknownIPAddress) GET /erddap/status.html
+OutputStreamFromHttpResponse charEncoding=UTF-8, encoding=gzip, index, .html
+WARNING! This ERDDAP won't try to subscribe to the dataset on the remote
+ERDDAP because this ERDDAP isn't publicly accessible.
+If you want to keep this dataset up-to-date, use a small reloadEveryNMinutes.
+
+*** EDDGridFromErddap erdMH1chla1day constructor finished. TIME=1779ms
+
+change=Previously, this dataset was (temporarily?) not available.  Perhaps ERDDAP was just restarted.
+nActions=0
+
+*** constructing EDDGridFromErddap erdMH1chla8day
+  using info from quickRestartFile
+  latitude: FloatArray isn't sorted in ascending order: [0]=89.979164 > [1]=89.9375.
+  time: DoubleArray isn't evenly spaced: [0]=1.0417248E9, [1]=1.042416E9, spacing=691200.0, average spacing=690033.7457817773.
+    smallest spacing=432000.0: [45]=1.0728288E9, [46]=1.0732608E9
+    biggest  spacing=3196800.0: [731]=1.5434496E9, [732]=1.5466464E9
+#4 FAILURE. TIME=30ms
+*** sendErrorCode 500 for request #4:
+/erddap/status.html
+gg.jte.TemplateNotFoundException: Failed to load status.jte
+ at gg.jte.runtime.TemplateLoader.load(TemplateLoader.java:28)
+ at java.base/java.util.concurrent.ConcurrentHashMap.computeIfAbsent(ConcurrentHashMap.java:1708)
+ at gg.jte.TemplateEngine.resolveTemplate(TemplateEngine.java:339)
+ at gg.jte.TemplateEngine.render(TemplateEngine.java:228)
+ at gov.noaa.pfel.erddap.Erddap.doStatus(Erddap.java:4976)
+ at gov.noaa.pfel.erddap.Erddap.doGet(Erddap.java:845)
+ at jakarta.servlet.http.HttpServlet.service(HttpServlet.java:527)
+ at jakarta.servlet.http.HttpServlet.service(HttpServlet.java:614)
+ at org.eclipse.jetty.ee10.servlet.ServletHolder$NotAsync.service(ServletHolder.java:1379)
+ at org.eclipse.jetty.ee10.servlet.ServletHolder.handle(ServletHolder.java:736)
+ at org.eclipse.jetty.ee10.servlet.ServletHandler$ChainEnd.doFilter(ServletHandler.java:1621)
+ at gov.noaa.pfel.erddap.http.CorsResponseFilter.doFilter(CorsResponseFilter.java:67)
+ at org.eclipse.jetty.ee10.servlet.FilterHolder.doFilter(FilterHolder.java:208)
+ at org.eclipse.jetty.ee10.servlet.ServletHandler$Chain.doFilter(ServletHandler.java:1593)
+ at org.eclipse.jetty.ee10.websocket.servlet.WebSocketUpgradeFilter.doFilter(WebSocketUpgradeFilter.java:195)
+ at org.eclipse.jetty.ee10.servlet.FilterHolder.doFilter(FilterHolder.java:205)
+ at org.eclipse.jetty.ee10.servlet.ServletHandler$Chain.doFilter(ServletHandler.java:1593)
+ at org.eclipse.jetty.ee10.servlet.ServletHandler$MappedServlet.handle(ServletHandler.java:1554)
+ at org.eclipse.jetty.ee10.servlet.ServletChannel.dispatch(ServletChannel.java:819)
+ at org.eclipse.jetty.ee10.servlet.ServletChannel.handle(ServletChannel.java:436)
+ at org.eclipse.jetty.ee10.servlet.ServletHandler.handle(ServletHandler.java:469)
+ at org.eclipse.jetty.security.SecurityHandler.handle(SecurityHandler.java:575)
+ at org.eclipse.jetty.ee10.servlet.SessionHandler.handle(SessionHandler.java:717)
+ at org.eclipse.jetty.server.handler.ContextHandler.handle(ContextHandler.java:1064)
+ at org.eclipse.jetty.server.handler.ContextHandlerCollection.handle(ContextHandlerCollection.java:151)
+ at org.eclipse.jetty.server.Server.handle(Server.java:182)
+ at org.eclipse.jetty.server.internal.HttpChannelState$HandlerInvoker.run(HttpChannelState.java:662)
+ at org.eclipse.jetty.server.internal.HttpConnection.onFillable(HttpConnection.java:416)
+ at org.eclipse.jetty.io.AbstractConnection$ReadCallback.succeeded(AbstractConnection.java:322)
+ at org.eclipse.jetty.io.FillInterest.fillable(FillInterest.java:99)
+ at org.eclipse.jetty.io.SelectableChannelEndPoint$1.run(SelectableChannelEndPoint.java:53)
+ at org.eclipse.jetty.util.thread.strategy.AdaptiveExecutionStrategy.runTask(AdaptiveExecutionStrategy.java:480)
+ at org.eclipse.jetty.util.thread.strategy.AdaptiveExecutionStrategy.consumeTask(AdaptiveExecutionStrategy.java:443)
+ at org.eclipse.jetty.util.thread.strategy.AdaptiveExecutionStrategy.tryProduce(AdaptiveExecutionStrategy.java:293)
+ at org.eclipse.jetty.util.thread.strategy.AdaptiveExecutionStrategy.run(AdaptiveExecutionStrategy.java:201)
+ at org.eclipse.jetty.util.thread.ReservedThreadExecutor$ReservedThread.run(ReservedThreadExecutor.java:311)
+ at org.eclipse.jetty.util.thread.QueuedThreadPool.runJob(QueuedThreadPool.java:979)
+ at org.eclipse.jetty.util.thread.QueuedThreadPool$Runner.doRunJob(QueuedThreadPool.java:1209)
+ at org.eclipse.jetty.util.thread.QueuedThreadPool$Runner.run(QueuedThreadPool.java:1164)
+ at java.base/java.lang.Thread.run(Thread.java:1583)
+Caused by: java.lang.ClassNotFoundException: gg.jte.generated.precompiled.JtestatusGenerated
+ at org.codehaus.plexus.classworlds.strategy.SelfFirstStrategy.loadClass(SelfFirstStrategy.java:42)
+ at org.codehaus.plexus.classworlds.realm.ClassRealm.unsynchronizedLoadClass(ClassRealm.java:225)
+ at org.codehaus.plexus.classworlds.realm.ClassRealm.loadClass(ClassRealm.java:210)
+ at org.codehaus.plexus.classworlds.realm.ClassRealm.loadClass(ClassRealm.java:205)
+ at org.eclipse.jetty.ee10.webapp.WebAppClassLoader.loadClass(WebAppClassLoader.java:494)
+ at java.base/java.lang.ClassLoader.loadClass(ClassLoader.java:526)
+ at gg.jte.runtime.TemplateLoader.load(TemplateLoader.java:25)
+ ... 39 more
+*** lowSendError for request #4: isCommitted=true fullMessage=
+Error {
+    code=500;
+    message="Internal Server Error: TemplateNotFoundException: Failed to load status.jte";
+}
+
+}}}}#4 (unknownIPAddress) sendErrorCode done. Total TIME=2066ms
+
+WARNING! This ERDDAP won't try to subscribe to the dataset on the remote
+ERDDAP because this ERDDAP isn't publicly accessible.
+If you want to keep this dataset up-to-date, use a small reloadEveryNMinutes.
+
+*** EDDGridFromErddap erdMH1chla8day constructor finished. TIME=4740ms
+
+change=Previously, this dataset was (temporarily?) not available.  Perhaps ERDDAP was just restarted.
+nActions=0
+
+*** constructing EDDGridFromErddap erdMH1chlamday
+  using info from quickRestartFile
+  latitude: FloatArray isn't sorted in ascending order: [0]=89.979164 > [1]=89.9375.
+  time: DoubleArray isn't evenly spaced: [0]=1.0426752E9, [1]=1.0453536E9, spacing=2678400.0, average spacing=2629241.379310345.
+    smallest spacing=2419200.0: [1]=1.0453536E9, [2]=1.0477728E9
+    biggest  spacing=2678400.0: [0]=1.0426752E9, [1]=1.0453536E9
+WARNING! This ERDDAP won't try to subscribe to the dataset on the remote
+ERDDAP because this ERDDAP isn't publicly accessible.
+If you want to keep this dataset up-to-date, use a small reloadEveryNMinutes.
+
+*** EDDGridFromErddap erdMH1chlamday constructor finished. TIME=2151ms
+
+change=Previously, this dataset was (temporarily?) not available.  Perhaps ERDDAP was just restarted.
+nActions=0
+
+*** constructing EDDGridFromErddap erdMH1kd4901day
+  using info from quickRestartFile
+  latitude: FloatArray isn't sorted in ascending order: [0]=89.979164 > [1]=89.9375.
+  time: DoubleArray isn't evenly spaced: [0]=1.0414224E9, [1]=1.0415088E9, spacing=86400.0, average spacing=86764.1983982015.
+    smallest spacing=86400.0: [0]=1.0414224E9, [1]=1.0415088E9
+    biggest  spacing=1468800.0: [6437]=1.5975792E9, [6438]=1.599048E9
+WARNING! This ERDDAP won't try to subscribe to the dataset on the remote
+ERDDAP because this ERDDAP isn't publicly accessible.
+If you want to keep this dataset up-to-date, use a small reloadEveryNMinutes.
+
+*** EDDGridFromErddap erdMH1kd4901day constructor finished. TIME=1906ms
+
+change=Previously, this dataset was (temporarily?) not available.  Perhaps ERDDAP was just restarted.
+nActions=0
+
+*** constructing EDDGridFromErddap erdMH1kd4908day
+  using info from quickRestartFile
+  latitude: FloatArray isn't sorted in ascending order: [0]=89.979164 > [1]=89.9375.
+  time: DoubleArray isn't evenly spaced: [0]=1.0417248E9, [1]=1.042416E9, spacing=691200.0, average spacing=690810.8108108108.
+    smallest spacing=432000.0: [45]=1.0728288E9, [46]=1.0732608E9
+    biggest  spacing=3196800.0: [731]=1.5434496E9, [732]=1.5466464E9
+WARNING! This ERDDAP won't try to subscribe to the dataset on the remote
+ERDDAP because this ERDDAP isn't publicly accessible.
+If you want to keep this dataset up-to-date, use a small reloadEveryNMinutes.
+
+*** EDDGridFromErddap erdMH1kd4908day constructor finished. TIME=1825ms
+
+change=Previously, this dataset was (temporarily?) not available.  Perhaps ERDDAP was just restarted.
+nActions=0
+
+*** constructing EDDGridFromErddap erdMH1kd490mday
+  using info from quickRestartFile
+  latitude: FloatArray isn't sorted in ascending order: [0]=89.979164 > [1]=89.9375.
+  time: DoubleArray isn't evenly spaced: [0]=1.0426752E9, [1]=1.0453536E9, spacing=2678400.0, average spacing=2629241.379310345.
+    smallest spacing=2419200.0: [1]=1.0453536E9, [2]=1.0477728E9
+    biggest  spacing=2678400.0: [0]=1.0426752E9, [1]=1.0453536E9
+WARNING! This ERDDAP won't try to subscribe to the dataset on the remote
+ERDDAP because this ERDDAP isn't publicly accessible.
+If you want to keep this dataset up-to-date, use a small reloadEveryNMinutes.
+
+*** EDDGridFromErddap erdMH1kd490mday constructor finished. TIME=1748ms
+
+change=Previously, this dataset was (temporarily?) not available.  Perhaps ERDDAP was just restarted.
+nActions=0
+
+*** constructing EDDGridFromErddap erdMH1par01day
+  using info from quickRestartFile
+  latitude: FloatArray isn't sorted in ascending order: [0]=89.979164 > [1]=89.9375.
+  time: DoubleArray isn't evenly spaced: [0]=1.0414224E9, [1]=1.0415088E9, spacing=86400.0, average spacing=86776.39123102867.
+    smallest spacing=86400.0: [0]=1.0414224E9, [1]=1.0415088E9
+    biggest  spacing=1468800.0: [6437]=1.5975792E9, [6438]=1.599048E9
+WARNING! This ERDDAP won't try to subscribe to the dataset on the remote
+ERDDAP because this ERDDAP isn't publicly accessible.
+If you want to keep this dataset up-to-date, use a small reloadEveryNMinutes.
+
+*** EDDGridFromErddap erdMH1par01day constructor finished. TIME=1876ms
+
+change=Previously, this dataset was (temporarily?) not available.  Perhaps ERDDAP was just restarted.
+nActions=0
+
+*** constructing EDDGridFromErddap erdMH1par08day
+  using info from quickRestartFile
+  latitude: FloatArray isn't sorted in ascending order: [0]=89.979164 > [1]=89.9375.
+  time: DoubleArray isn't evenly spaced: [0]=1.0417248E9, [1]=1.042416E9, spacing=691200.0, average spacing=690810.8108108108.
+    smallest spacing=432000.0: [45]=1.0728288E9, [46]=1.0732608E9
+    biggest  spacing=3196800.0: [731]=1.5434496E9, [732]=1.5466464E9
+WARNING! This ERDDAP won't try to subscribe to the dataset on the remote
+ERDDAP because this ERDDAP isn't publicly accessible.
+If you want to keep this dataset up-to-date, use a small reloadEveryNMinutes.
+
+*** EDDGridFromErddap erdMH1par08day constructor finished. TIME=1765ms
+
+change=Previously, this dataset was (temporarily?) not available.  Perhaps ERDDAP was just restarted.
+nActions=0
+
+*** constructing EDDGridFromErddap erdMH1par0mday
+  using info from quickRestartFile
+  latitude: FloatArray isn't sorted in ascending order: [0]=89.979164 > [1]=89.9375.
+  time: DoubleArray isn't evenly spaced: [0]=1.0426752E9, [1]=1.0453536E9, spacing=2678400.0, average spacing=2663685.5895196507.
+    smallest spacing=2419200.0: [1]=1.0453536E9, [2]=1.0477728E9
+    biggest  spacing=1.05408E7: [175]=1.5028416E9, [176]=1.5133824E9
+WARNING! This ERDDAP won't try to subscribe to the dataset on the remote
+ERDDAP because this ERDDAP isn't publicly accessible.
+If you want to keep this dataset up-to-date, use a small reloadEveryNMinutes.
+
+*** EDDGridFromErddap erdMH1par0mday constructor finished. TIME=1859ms
+
+change=Previously, this dataset was (temporarily?) not available.  Perhaps ERDDAP was just restarted.
+nActions=0
+
+*** constructing EDDGridFromErddap erdVH2018chla1day
+  using info from quickRestartFile
+  latitude: FloatArray isn't sorted in ascending order: [0]=89.979164 > [1]=89.9375.
+  time: DoubleArray isn't evenly spaced: [0]=1.3255056E9, [1]=1.325592E9, spacing=86400.0, average spacing=86422.40082966036.
+    smallest spacing=86400.0: [0]=1.3255056E9, [1]=1.325592E9
+    biggest  spacing=172800.0: [82]=1.3325904E9, [83]=1.3327632E9
+WARNING! This ERDDAP won't try to subscribe to the dataset on the remote
+ERDDAP because this ERDDAP isn't publicly accessible.
+If you want to keep this dataset up-to-date, use a small reloadEveryNMinutes.
+
+*** EDDGridFromErddap erdVH2018chla1day constructor finished. TIME=1773ms
+
+change=Previously, this dataset was (temporarily?) not available.  Perhaps ERDDAP was just restarted.
+nActions=0
+
+*** constructing EDDGridFromErddap erdVH2018chla8day
+  using info from quickRestartFile
+  latitude: FloatArray isn't sorted in ascending order: [0]=89.979164 > [1]=89.9375.
+  time: DoubleArray isn't evenly spaced: [0]=1.3257216E9, [1]=1.3264128E9, spacing=691200.0, average spacing=697901.8867924528.
+    smallest spacing=432000.0: [91]=1.388448E9, [92]=1.38888E9
+    biggest  spacing=3456000.0: [196]=1.4609376E9, [197]=1.4643936E9
+WARNING! This ERDDAP won't try to subscribe to the dataset on the remote
+ERDDAP because this ERDDAP isn't publicly accessible.
+If you want to keep this dataset up-to-date, use a small reloadEveryNMinutes.
+
+*** EDDGridFromErddap erdVH2018chla8day constructor finished. TIME=1728ms
+
+change=Previously, this dataset was (temporarily?) not available.  Perhaps ERDDAP was just restarted.
+nActions=0
+
+*** constructing EDDGridFromErddap erdVH2018chlamday
+  using info from quickRestartFile
+  latitude: FloatArray isn't sorted in ascending order: [0]=89.979164 > [1]=89.9375.
+  time: DoubleArray isn't evenly spaced: [0]=1.3265856E9, [1]=1.329264E9, spacing=2678400.0, average spacing=2629028.5714285714.
+    smallest spacing=2419200.0: [13]=1.3608864E9, [14]=1.3633056E9
+    biggest  spacing=2678400.0: [0]=1.3265856E9, [1]=1.329264E9
+WARNING! This ERDDAP won't try to subscribe to the dataset on the remote
+ERDDAP because this ERDDAP isn't publicly accessible.
+If you want to keep this dataset up-to-date, use a small reloadEveryNMinutes.
+
+*** EDDGridFromErddap erdVH2018chlamday constructor finished. TIME=1770ms
+
+change=Previously, this dataset was (temporarily?) not available.  Perhaps ERDDAP was just restarted.
+nActions=0
+
+*** constructing EDDGridFromErddap erdVH2018k4901day
+  using info from quickRestartFile
+  latitude: FloatArray isn't sorted in ascending order: [0]=89.979164 > [1]=89.9375.
+  time: DoubleArray isn't evenly spaced: [0]=1.3255056E9, [1]=1.325592E9, spacing=86400.0, average spacing=86422.40082966036.
+    smallest spacing=86400.0: [0]=1.3255056E9, [1]=1.325592E9
+    biggest  spacing=172800.0: [82]=1.3325904E9, [83]=1.3327632E9
+WARNING! This ERDDAP won't try to subscribe to the dataset on the remote
+ERDDAP because this ERDDAP isn't publicly accessible.
+If you want to keep this dataset up-to-date, use a small reloadEveryNMinutes.
+
+*** EDDGridFromErddap erdVH2018k4901day constructor finished. TIME=1847ms
+
+change=Previously, this dataset was (temporarily?) not available.  Perhaps ERDDAP was just restarted.
+nActions=0
+
+*** constructing EDDGridFromErddap erdVH2018k4908day
+  using info from quickRestartFile
+  latitude: FloatArray isn't sorted in ascending order: [0]=89.979164 > [1]=89.9375.
+  time: DoubleArray isn't evenly spaced: [0]=1.3257216E9, [1]=1.3264128E9, spacing=691200.0, average spacing=686390.1030927835.
+    smallest spacing=432000.0: [91]=1.388448E9, [92]=1.38888E9
+    biggest  spacing=691200.0: [0]=1.3257216E9, [1]=1.3264128E9
+WARNING! This ERDDAP won't try to subscribe to the dataset on the remote
+ERDDAP because this ERDDAP isn't publicly accessible.
+If you want to keep this dataset up-to-date, use a small reloadEveryNMinutes.
+
+*** EDDGridFromErddap erdVH2018k4908day constructor finished. TIME=1721ms
+
+change=Previously, this dataset was (temporarily?) not available.  Perhaps ERDDAP was just restarted.
+nActions=0
+
+*** constructing EDDGridFromErddap erdVH2018k490mday
+  using info from quickRestartFile
+  latitude: FloatArray isn't sorted in ascending order: [0]=89.979164 > [1]=89.9375.
+  time: DoubleArray isn't evenly spaced: [0]=1.3265856E9, [1]=1.329264E9, spacing=2678400.0, average spacing=2629028.5714285714.
+    smallest spacing=2419200.0: [13]=1.3608864E9, [14]=1.3633056E9
+    biggest  spacing=2678400.0: [0]=1.3265856E9, [1]=1.329264E9
+WARNING! This ERDDAP won't try to subscribe to the dataset on the remote
+ERDDAP because this ERDDAP isn't publicly accessible.
+If you want to keep this dataset up-to-date, use a small reloadEveryNMinutes.
+
+*** EDDGridFromErddap erdVH2018k490mday constructor finished. TIME=1784ms
+
+change=Previously, this dataset was (temporarily?) not available.  Perhaps ERDDAP was just restarted.
+nActions=0
+
+*** constructing EDDGridFromErddap erdVH2018par1day
+  using info from quickRestartFile
+  latitude: FloatArray isn't sorted in ascending order: [0]=89.979164 > [1]=89.9375.
+  time: DoubleArray isn't evenly spaced: [0]=1.3255056E9, [1]=1.325592E9, spacing=86400.0, average spacing=86422.40082966036.
+    smallest spacing=86400.0: [0]=1.3255056E9, [1]=1.325592E9
+    biggest  spacing=172800.0: [82]=1.3325904E9, [83]=1.3327632E9
+WARNING! This ERDDAP won't try to subscribe to the dataset on the remote
+ERDDAP because this ERDDAP isn't publicly accessible.
+If you want to keep this dataset up-to-date, use a small reloadEveryNMinutes.
+
+*** EDDGridFromErddap erdVH2018par1day constructor finished. TIME=1734ms
+
+change=Previously, this dataset was (temporarily?) not available.  Perhaps ERDDAP was just restarted.
+nActions=0
+
+*** constructing EDDGridFromErddap erdVH2018par8day
+  using info from quickRestartFile
+  latitude: FloatArray isn't sorted in ascending order: [0]=89.979164 > [1]=89.9375.
+  time: DoubleArray isn't evenly spaced: [0]=1.3257216E9, [1]=1.3264128E9, spacing=691200.0, average spacing=694987.8914405011.
+    smallest spacing=432000.0: [85]=1.388448E9, [86]=1.38888E9
+    biggest  spacing=4838400.0: [1]=1.3264128E9, [2]=1.3312512E9
+WARNING! This ERDDAP won't try to subscribe to the dataset on the remote
+ERDDAP because this ERDDAP isn't publicly accessible.
+If you want to keep this dataset up-to-date, use a small reloadEveryNMinutes.
+
+*** EDDGridFromErddap erdVH2018par8day constructor finished. TIME=1758ms
+
+change=Previously, this dataset was (temporarily?) not available.  Perhaps ERDDAP was just restarted.
+nActions=0
+
+*** constructing EDDGridFromErddap erdVH2018parmday
+  using info from quickRestartFile
+  latitude: FloatArray isn't sorted in ascending order: [0]=89.979164 > [1]=89.9375.
+  time: DoubleArray isn't evenly spaced: [0]=1.3265856E9, [1]=1.329264E9, spacing=2678400.0, average spacing=2629028.5714285714.
+    smallest spacing=2419200.0: [13]=1.3608864E9, [14]=1.3633056E9
+    biggest  spacing=2678400.0: [0]=1.3265856E9, [1]=1.329264E9
+WARNING! This ERDDAP won't try to subscribe to the dataset on the remote
+ERDDAP because this ERDDAP isn't publicly accessible.
+If you want to keep this dataset up-to-date, use a small reloadEveryNMinutes.
+
+*** EDDGridFromErddap erdVH2018parmday constructor finished. TIME=1730ms
+
+change=Previously, this dataset was (temporarily?) not available.  Perhaps ERDDAP was just restarted.
+nActions=0
+
+*** constructing EDDGridFromErddap erdVH2018pic1day
+  using info from quickRestartFile
+  latitude: FloatArray isn't sorted in ascending order: [0]=89.979164 > [1]=89.9375.
+  time: DoubleArray isn't evenly spaced: [0]=1.3255056E9, [1]=1.325592E9, spacing=86400.0, average spacing=86422.40082966036.
+    smallest spacing=86400.0: [0]=1.3255056E9, [1]=1.325592E9
+    biggest  spacing=172800.0: [82]=1.3325904E9, [83]=1.3327632E9
+WARNING! This ERDDAP won't try to subscribe to the dataset on the remote
+ERDDAP because this ERDDAP isn't publicly accessible.
+If you want to keep this dataset up-to-date, use a small reloadEveryNMinutes.
+
+*** EDDGridFromErddap erdVH2018pic1day constructor finished. TIME=1787ms
+
+change=Previously, this dataset was (temporarily?) not available.  Perhaps ERDDAP was just restarted.
+nActions=0
+
+*** constructing EDDGridFromErddap erdVH2018pic8day
+  using info from quickRestartFile
+  latitude: FloatArray isn't sorted in ascending order: [0]=89.979164 > [1]=89.9375.
+  time: DoubleArray isn't evenly spaced: [0]=1.3257216E9, [1]=1.3264128E9, spacing=691200.0, average spacing=686390.1030927835.
+    smallest spacing=432000.0: [91]=1.388448E9, [92]=1.38888E9
+    biggest  spacing=691200.0: [0]=1.3257216E9, [1]=1.3264128E9
+WARNING! This ERDDAP won't try to subscribe to the dataset on the remote
+ERDDAP because this ERDDAP isn't publicly accessible.
+If you want to keep this dataset up-to-date, use a small reloadEveryNMinutes.
+
+*** EDDGridFromErddap erdVH2018pic8day constructor finished. TIME=1815ms
+
+change=Previously, this dataset was (temporarily?) not available.  Perhaps ERDDAP was just restarted.
+nActions=0
+
+*** constructing EDDGridFromErddap erdVH2018picmday
+  using info from quickRestartFile
+  latitude: FloatArray isn't sorted in ascending order: [0]=89.979164 > [1]=89.9375.
+  time: DoubleArray isn't evenly spaced: [0]=1.3265856E9, [1]=1.329264E9, spacing=2678400.0, average spacing=2629028.5714285714.
+    smallest spacing=2419200.0: [13]=1.3608864E9, [14]=1.3633056E9
+    biggest  spacing=2678400.0: [0]=1.3265856E9, [1]=1.329264E9
+WARNING! This ERDDAP won't try to subscribe to the dataset on the remote
+ERDDAP because this ERDDAP isn't publicly accessible.
+If you want to keep this dataset up-to-date, use a small reloadEveryNMinutes.
+
+*** EDDGridFromErddap erdVH2018picmday constructor finished. TIME=1801ms
+
+change=Previously, this dataset was (temporarily?) not available.  Perhaps ERDDAP was just restarted.
+nActions=0
+
+*** constructing EDDGridFromErddap erdVH2018poc1day
+  using info from quickRestartFile
+  latitude: FloatArray isn't sorted in ascending order: [0]=89.979164 > [1]=89.9375.
+  time: DoubleArray isn't evenly spaced: [0]=1.3255056E9, [1]=1.325592E9, spacing=86400.0, average spacing=86422.40082966036.
+    smallest spacing=86400.0: [0]=1.3255056E9, [1]=1.325592E9
+    biggest  spacing=172800.0: [82]=1.3325904E9, [83]=1.3327632E9
+WARNING! This ERDDAP won't try to subscribe to the dataset on the remote
+ERDDAP because this ERDDAP isn't publicly accessible.
+If you want to keep this dataset up-to-date, use a small reloadEveryNMinutes.
+
+*** EDDGridFromErddap erdVH2018poc1day constructor finished. TIME=1731ms
+
+change=Previously, this dataset was (temporarily?) not available.  Perhaps ERDDAP was just restarted.
+nActions=0
+
+*** constructing EDDGridFromErddap erdVH2018poc8day
+  using info from quickRestartFile
+  latitude: FloatArray isn't sorted in ascending order: [0]=89.979164 > [1]=89.9375.
+  time: DoubleArray isn't evenly spaced: [0]=1.3257216E9, [1]=1.3264128E9, spacing=691200.0, average spacing=686390.1030927835.
+    smallest spacing=432000.0: [91]=1.388448E9, [92]=1.38888E9
+    biggest  spacing=691200.0: [0]=1.3257216E9, [1]=1.3264128E9
+WARNING! This ERDDAP won't try to subscribe to the dataset on the remote
+ERDDAP because this ERDDAP isn't publicly accessible.
+If you want to keep this dataset up-to-date, use a small reloadEveryNMinutes.
+
+*** EDDGridFromErddap erdVH2018poc8day constructor finished. TIME=1728ms
+
+change=Previously, this dataset was (temporarily?) not available.  Perhaps ERDDAP was just restarted.
+nActions=0
+
+*** constructing EDDGridFromErddap erdVH2018pocmday
+  using info from quickRestartFile
+  latitude: FloatArray isn't sorted in ascending order: [0]=89.979164 > [1]=89.9375.
+  time: DoubleArray isn't evenly spaced: [0]=1.3265856E9, [1]=1.329264E9, spacing=2678400.0, average spacing=2629028.5714285714.
+    smallest spacing=2419200.0: [13]=1.3608864E9, [14]=1.3633056E9
+    biggest  spacing=2678400.0: [0]=1.3265856E9, [1]=1.329264E9
+WARNING! This ERDDAP won't try to subscribe to the dataset on the remote
+ERDDAP because this ERDDAP isn't publicly accessible.
+If you want to keep this dataset up-to-date, use a small reloadEveryNMinutes.
+
+*** EDDGridFromErddap erdVH2018pocmday constructor finished. TIME=1710ms
+
+change=Previously, this dataset was (temporarily?) not available.  Perhaps ERDDAP was just restarted.
+nActions=0
+
+*** constructing EDDGridFromErddap erdVH2018r6711day
+  using info from quickRestartFile
+  latitude: FloatArray isn't sorted in ascending order: [0]=89.979164 > [1]=89.9375.
+  time: DoubleArray isn't evenly spaced: [0]=1.3255056E9, [1]=1.325592E9, spacing=86400.0, average spacing=86422.40082966036.
+    smallest spacing=86400.0: [0]=1.3255056E9, [1]=1.325592E9
+    biggest  spacing=172800.0: [82]=1.3325904E9, [83]=1.3327632E9
+WARNING! This ERDDAP won't try to subscribe to the dataset on the remote
+ERDDAP because this ERDDAP isn't publicly accessible.
+If you want to keep this dataset up-to-date, use a small reloadEveryNMinutes.
+
+*** EDDGridFromErddap erdVH2018r6711day constructor finished. TIME=1795ms
+
+change=Previously, this dataset was (temporarily?) not available.  Perhaps ERDDAP was just restarted.
+nActions=0
+
+*** constructing EDDGridFromErddap erdVH2018r6718day
+  using info from quickRestartFile
+  latitude: FloatArray isn't sorted in ascending order: [0]=89.979164 > [1]=89.9375.
+  time: DoubleArray isn't evenly spaced: [0]=1.3257216E9, [1]=1.3264128E9, spacing=691200.0, average spacing=686390.1030927835.
+    smallest spacing=432000.0: [91]=1.388448E9, [92]=1.38888E9
+    biggest  spacing=691200.0: [0]=1.3257216E9, [1]=1.3264128E9
+WARNING! This ERDDAP won't try to subscribe to the dataset on the remote
+ERDDAP because this ERDDAP isn't publicly accessible.
+If you want to keep this dataset up-to-date, use a small reloadEveryNMinutes.
+
+*** EDDGridFromErddap erdVH2018r6718day constructor finished. TIME=3463ms
+
+change=Previously, this dataset was (temporarily?) not available.  Perhaps ERDDAP was just restarted.
+nActions=0
+
+*** constructing EDDGridFromErddap erdVH2018r671mday
+  using info from quickRestartFile
+  latitude: FloatArray isn't sorted in ascending order: [0]=89.979164 > [1]=89.9375.
+  time: DoubleArray isn't evenly spaced: [0]=1.3265856E9, [1]=1.329264E9, spacing=2678400.0, average spacing=2629028.5714285714.
+    smallest spacing=2419200.0: [13]=1.3608864E9, [14]=1.3633056E9
+    biggest  spacing=2678400.0: [0]=1.3265856E9, [1]=1.329264E9
+WARNING! This ERDDAP won't try to subscribe to the dataset on the remote
+ERDDAP because this ERDDAP isn't publicly accessible.
+If you want to keep this dataset up-to-date, use a small reloadEveryNMinutes.
+
+*** EDDGridFromErddap erdVH2018r671mday constructor finished. TIME=1709ms
+
+change=Previously, this dataset was (temporarily?) not available.  Perhaps ERDDAP was just restarted.
+nActions=0
+
+*** constructing EDDTableFromErddap cwwcNDBCMet
+  using info from quickRestartFile
+  quickRestart: reusing subset and distinct files
+  accessibleViaNcCF=[true]
+WARNING! This ERDDAP won't try to subscribe to the dataset on the remote
+ERDDAP because this ERDDAP isn't publicly accessible.
+If you want to keep this dataset up-to-date, use a small reloadEveryNMinutes.
+
+*** EDDTableFromErddap cwwcNDBCMet constructor finished. TIME=890ms
+
+change=Previously, this dataset was (temporarily?) not available.  Perhaps ERDDAP was just restarted.
+nActions=0
+
+*** constructing EDDTableFromErddap erdGtsppBest
+  using info from quickRestartFile
+  quickRestart: reusing subset and distinct files
+  accessibleViaNcCF=[true]
+WARNING! This ERDDAP won't try to subscribe to the dataset on the remote
+ERDDAP because this ERDDAP isn't publicly accessible.
+If you want to keep this dataset up-to-date, use a small reloadEveryNMinutes.
+
+*** EDDTableFromErddap erdGtsppBest constructor finished. TIME=1035ms
+
+change=Previously, this dataset was (temporarily?) not available.  Perhaps ERDDAP was just restarted.
+nActions=0
+
+*** constructing EDDTableFromErddap pmelTaoDyAdcp
+  using info from quickRestartFile
+  quickRestart: reusing subset and distinct files
+  accessibleViaNcCF=[true]
+WARNING! This ERDDAP won't try to subscribe to the dataset on the remote
+ERDDAP because this ERDDAP isn't publicly accessible.
+If you want to keep this dataset up-to-date, use a small reloadEveryNMinutes.
+
+*** EDDTableFromErddap pmelTaoDyAdcp constructor finished. TIME=873ms
+
+change=Previously, this dataset was (temporarily?) not available.  Perhaps ERDDAP was just restarted.
+nActions=0
+
+*** constructing EDDTableFromErddap pmelTaoDyAirt
+  using info from quickRestartFile
+  quickRestart: reusing subset and distinct files
+  accessibleViaNcCF=[true]
+WARNING! This ERDDAP won't try to subscribe to the dataset on the remote
+ERDDAP because this ERDDAP isn't publicly accessible.
+If you want to keep this dataset up-to-date, use a small reloadEveryNMinutes.
+
+*** EDDTableFromErddap pmelTaoDyAirt constructor finished. TIME=861ms
+
+change=Previously, this dataset was (temporarily?) not available.  Perhaps ERDDAP was just restarted.
+nActions=0
+
+*** constructing EDDTableFromErddap pmelTaoDyBf
+  using info from quickRestartFile
+  quickRestart: reusing subset and distinct files
+  accessibleViaNcCF=[true]
+WARNING! This ERDDAP won't try to subscribe to the dataset on the remote
+ERDDAP because this ERDDAP isn't publicly accessible.
+If you want to keep this dataset up-to-date, use a small reloadEveryNMinutes.
+
+*** EDDTableFromErddap pmelTaoDyBf constructor finished. TIME=862ms
+
+change=Previously, this dataset was (temporarily?) not available.  Perhaps ERDDAP was just restarted.
+nActions=0
+
+*** constructing EDDTableFromErddap pmelTaoDyBp
+  using info from quickRestartFile
+  quickRestart: reusing subset and distinct files
+  accessibleViaNcCF=[true]
+WARNING! This ERDDAP won't try to subscribe to the dataset on the remote
+ERDDAP because this ERDDAP isn't publicly accessible.
+If you want to keep this dataset up-to-date, use a small reloadEveryNMinutes.
+
+*** EDDTableFromErddap pmelTaoDyBp constructor finished. TIME=876ms
+
+change=Previously, this dataset was (temporarily?) not available.  Perhaps ERDDAP was just restarted.
+nActions=0
+
+*** constructing EDDTableFromErddap pmelTaoDyCur
+  using info from quickRestartFile
+  quickRestart: reusing subset and distinct files
+  accessibleViaNcCF=[true]
+WARNING! This ERDDAP won't try to subscribe to the dataset on the remote
+ERDDAP because this ERDDAP isn't publicly accessible.
+If you want to keep this dataset up-to-date, use a small reloadEveryNMinutes.
+
+*** EDDTableFromErddap pmelTaoDyCur constructor finished. TIME=859ms
+
+change=Previously, this dataset was (temporarily?) not available.  Perhaps ERDDAP was just restarted.
+nActions=0
+
+*** constructing EDDTableFromErddap pmelTaoDyD
+  using info from quickRestartFile
+  quickRestart: reusing subset and distinct files
+  accessibleViaNcCF=[true]
+WARNING! This ERDDAP won't try to subscribe to the dataset on the remote
+ERDDAP because this ERDDAP isn't publicly accessible.
+If you want to keep this dataset up-to-date, use a small reloadEveryNMinutes.
+
+*** EDDTableFromErddap pmelTaoDyD constructor finished. TIME=870ms
+
+change=Previously, this dataset was (temporarily?) not available.  Perhaps ERDDAP was just restarted.
+nActions=0
+
+*** constructing EDDTableFromErddap pmelTaoDyDyn
+  using info from quickRestartFile
+  quickRestart: reusing subset and distinct files
+  accessibleViaNcCF=[true]
+WARNING! This ERDDAP won't try to subscribe to the dataset on the remote
+ERDDAP because this ERDDAP isn't publicly accessible.
+If you want to keep this dataset up-to-date, use a small reloadEveryNMinutes.
+
+*** EDDTableFromErddap pmelTaoDyDyn constructor finished. TIME=862ms
+
+change=Previously, this dataset was (temporarily?) not available.  Perhaps ERDDAP was just restarted.
+nActions=0
+
+*** constructing EDDTableFromErddap pmelTaoDyEmp
+  using info from quickRestartFile
+  quickRestart: reusing subset and distinct files
+  accessibleViaNcCF=[true]
+WARNING! This ERDDAP won't try to subscribe to the dataset on the remote
+ERDDAP because this ERDDAP isn't publicly accessible.
+If you want to keep this dataset up-to-date, use a small reloadEveryNMinutes.
+
+*** EDDTableFromErddap pmelTaoDyEmp constructor finished. TIME=865ms
+
+change=Previously, this dataset was (temporarily?) not available.  Perhaps ERDDAP was just restarted.
+nActions=0
+
+*** constructing EDDTableFromErddap pmelTaoDyEvap
+  using info from quickRestartFile
+  quickRestart: reusing subset and distinct files
+  accessibleViaNcCF=[true]
+WARNING! This ERDDAP won't try to subscribe to the dataset on the remote
+ERDDAP because this ERDDAP isn't publicly accessible.
+If you want to keep this dataset up-to-date, use a small reloadEveryNMinutes.
+
+*** EDDTableFromErddap pmelTaoDyEvap constructor finished. TIME=856ms
+
+change=Previously, this dataset was (temporarily?) not available.  Perhaps ERDDAP was just restarted.
+nActions=0
+
+*** constructing EDDTableFromErddap pmelTaoDyHeat
+  using info from quickRestartFile
+  quickRestart: reusing subset and distinct files
+  accessibleViaNcCF=[true]
+WARNING! This ERDDAP won't try to subscribe to the dataset on the remote
+ERDDAP because this ERDDAP isn't publicly accessible.
+If you want to keep this dataset up-to-date, use a small reloadEveryNMinutes.
+
+*** EDDTableFromErddap pmelTaoDyHeat constructor finished. TIME=865ms
+
+change=Previously, this dataset was (temporarily?) not available.  Perhaps ERDDAP was just restarted.
+nActions=0
+
+*** constructing EDDTableFromErddap pmelTaoDyIso
+  using info from quickRestartFile
+  quickRestart: reusing subset and distinct files
+  accessibleViaNcCF=[true]
+WARNING! This ERDDAP won't try to subscribe to the dataset on the remote
+ERDDAP because this ERDDAP isn't publicly accessible.
+If you want to keep this dataset up-to-date, use a small reloadEveryNMinutes.
+
+*** EDDTableFromErddap pmelTaoDyIso constructor finished. TIME=855ms
+
+change=Previously, this dataset was (temporarily?) not available.  Perhaps ERDDAP was just restarted.
+nActions=0
+
+*** constructing EDDTableFromErddap pmelTaoDyLw
+  using info from quickRestartFile
+  quickRestart: reusing subset and distinct files
+  accessibleViaNcCF=[true]
+WARNING! This ERDDAP won't try to subscribe to the dataset on the remote
+ERDDAP because this ERDDAP isn't publicly accessible.
+If you want to keep this dataset up-to-date, use a small reloadEveryNMinutes.
+
+*** EDDTableFromErddap pmelTaoDyLw constructor finished. TIME=849ms
+
+change=Previously, this dataset was (temporarily?) not available.  Perhaps ERDDAP was just restarted.
+nActions=0
+
+*** constructing EDDTableFromErddap pmelTaoDyLwnet
+  using info from quickRestartFile
+  quickRestart: reusing subset and distinct files
+  accessibleViaNcCF=[true]
+WARNING! This ERDDAP won't try to subscribe to the dataset on the remote
+ERDDAP because this ERDDAP isn't publicly accessible.
+If you want to keep this dataset up-to-date, use a small reloadEveryNMinutes.
+
+*** EDDTableFromErddap pmelTaoDyLwnet constructor finished. TIME=870ms
+
+change=Previously, this dataset was (temporarily?) not available.  Perhaps ERDDAP was just restarted.
+nActions=0
+
+*** constructing EDDTableFromErddap pmelTaoDyPos
+  using info from quickRestartFile
+  quickRestart: reusing subset and distinct files
+  accessibleViaNcCF=[true]
+WARNING! This ERDDAP won't try to subscribe to the dataset on the remote
+ERDDAP because this ERDDAP isn't publicly accessible.
+If you want to keep this dataset up-to-date, use a small reloadEveryNMinutes.
+
+*** EDDTableFromErddap pmelTaoDyPos constructor finished. TIME=952ms
+
+change=Previously, this dataset was (temporarily?) not available.  Perhaps ERDDAP was just restarted.
+nActions=0
+
+*** constructing EDDTableFromErddap pmelTaoDyQlat
+  using info from quickRestartFile
+  quickRestart: reusing subset and distinct files
+  accessibleViaNcCF=[true]
+WARNING! This ERDDAP won't try to subscribe to the dataset on the remote
+ERDDAP because this ERDDAP isn't publicly accessible.
+If you want to keep this dataset up-to-date, use a small reloadEveryNMinutes.
+
+*** EDDTableFromErddap pmelTaoDyQlat constructor finished. TIME=878ms
+
+change=Previously, this dataset was (temporarily?) not available.  Perhaps ERDDAP was just restarted.
+nActions=0
+
+*** constructing EDDTableFromErddap pmelTaoDyQnet
+  using info from quickRestartFile
+  quickRestart: reusing subset and distinct files
+  accessibleViaNcCF=[true]
+WARNING! This ERDDAP won't try to subscribe to the dataset on the remote
+ERDDAP because this ERDDAP isn't publicly accessible.
+If you want to keep this dataset up-to-date, use a small reloadEveryNMinutes.
+
+*** EDDTableFromErddap pmelTaoDyQnet constructor finished. TIME=893ms
+
+change=Previously, this dataset was (temporarily?) not available.  Perhaps ERDDAP was just restarted.
+nActions=0
+
+*** constructing EDDTableFromErddap pmelTaoDyQsen
+  using info from quickRestartFile
+  quickRestart: reusing subset and distinct files
+  accessibleViaNcCF=[true]
+WARNING! This ERDDAP won't try to subscribe to the dataset on the remote
+ERDDAP because this ERDDAP isn't publicly accessible.
+If you want to keep this dataset up-to-date, use a small reloadEveryNMinutes.
+
+*** EDDTableFromErddap pmelTaoDyQsen constructor finished. TIME=903ms
+
+change=Previously, this dataset was (temporarily?) not available.  Perhaps ERDDAP was just restarted.
+nActions=0
+
+*** constructing EDDTableFromErddap pmelTaoDyRad
+  using info from quickRestartFile
+  quickRestart: reusing subset and distinct files
+  accessibleViaNcCF=[true]
+WARNING! This ERDDAP won't try to subscribe to the dataset on the remote
+ERDDAP because this ERDDAP isn't publicly accessible.
+If you want to keep this dataset up-to-date, use a small reloadEveryNMinutes.
+
+*** EDDTableFromErddap pmelTaoDyRad constructor finished. TIME=924ms
+
+change=Previously, this dataset was (temporarily?) not available.  Perhaps ERDDAP was just restarted.
+nActions=0
+
+*** constructing EDDTableFromErddap pmelTaoDyRain
+  using info from quickRestartFile
+  quickRestart: reusing subset and distinct files
+  accessibleViaNcCF=[true]
+WARNING! This ERDDAP won't try to subscribe to the dataset on the remote
+ERDDAP because this ERDDAP isn't publicly accessible.
+If you want to keep this dataset up-to-date, use a small reloadEveryNMinutes.
+
+*** EDDTableFromErddap pmelTaoDyRain constructor finished. TIME=877ms
+
+change=Previously, this dataset was (temporarily?) not available.  Perhaps ERDDAP was just restarted.
+nActions=0
+
+*** constructing EDDTableFromErddap pmelTaoDyRf
+  using info from quickRestartFile
+  quickRestart: reusing subset and distinct files
+  accessibleViaNcCF=[true]
+WARNING! This ERDDAP won't try to subscribe to the dataset on the remote
+ERDDAP because this ERDDAP isn't publicly accessible.
+If you want to keep this dataset up-to-date, use a small reloadEveryNMinutes.
+
+*** EDDTableFromErddap pmelTaoDyRf constructor finished. TIME=867ms
+
+change=Previously, this dataset was (temporarily?) not available.  Perhaps ERDDAP was just restarted.
+nActions=0
+
+*** constructing EDDTableFromErddap pmelTaoDyRh
+  using info from quickRestartFile
+  quickRestart: reusing subset and distinct files
+  accessibleViaNcCF=[true]
+WARNING! This ERDDAP won't try to subscribe to the dataset on the remote
+ERDDAP because this ERDDAP isn't publicly accessible.
+If you want to keep this dataset up-to-date, use a small reloadEveryNMinutes.
+
+*** EDDTableFromErddap pmelTaoDyRh constructor finished. TIME=887ms
+
+change=Previously, this dataset was (temporarily?) not available.  Perhaps ERDDAP was just restarted.
+nActions=0
+
+*** constructing EDDTableFromErddap pmelTaoDyS
+  using info from quickRestartFile
+  quickRestart: reusing subset and distinct files
+  accessibleViaNcCF=[true]
+WARNING! This ERDDAP won't try to subscribe to the dataset on the remote
+ERDDAP because this ERDDAP isn't publicly accessible.
+If you want to keep this dataset up-to-date, use a small reloadEveryNMinutes.
+
+*** EDDTableFromErddap pmelTaoDyS constructor finished. TIME=902ms
+
+change=Previously, this dataset was (temporarily?) not available.  Perhaps ERDDAP was just restarted.
+nActions=0
+
+*** constructing EDDTableFromErddap pmelTaoDySsd
+  using info from quickRestartFile
+  quickRestart: reusing subset and distinct files
+  accessibleViaNcCF=[true]
+WARNING! This ERDDAP won't try to subscribe to the dataset on the remote
+ERDDAP because this ERDDAP isn't publicly accessible.
+If you want to keep this dataset up-to-date, use a small reloadEveryNMinutes.
+
+*** EDDTableFromErddap pmelTaoDySsd constructor finished. TIME=893ms
+
+change=Previously, this dataset was (temporarily?) not available.  Perhaps ERDDAP was just restarted.
+nActions=0
+
+*** constructing EDDTableFromErddap pmelTaoDySss
+  using info from quickRestartFile
+  

@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="ISO-8859-1" ?>
+    <dataVariable>
+        <sourceName>dt_analysis</sourceName>
+        <destinationName>dt_analysis</destinationName>
+        <dataType>double</dataType>
+        <!-- sourceAttributes>
+            <att name="_ChunkSizes" type="intList">1 540 540</att>
+            <att name="_FillValue" type="byte">-128</att>
+            <att name="add_offset" type="double">0.0</att>
+            <att name="comment">The difference between this SST and the previous day&#39;s SST.</att>
+            <att name="coverage_content_type">auxiliaryInformation</att>
+            <att name="grid_mapping">crs</att>
+            <att name="long_name">deviation from last SST analysis</att>
+            <att name="platform">NOAA-7</att>
+            <att name="reference">AVHRR_OI, with inland values populated from AVHRR_Pathfinder daily climatological SST. For more information on this reference field see http://accession.nodc.noaa.gov/0071180.</att>
+            <att name="scale_factor" type="double">0.1</att>
+            <att name="source">NOAA Daily 25km Global Optimally Interpolated Sea Surface Temperature (OISST)</att>
+            <att name="units">kelvin</att>
+            <att name="valid_max" type="byte">127</att>
+            <att name="valid_min" type="byte">-127</att>
+        </sourceAttributes -->
+        <addAttributes>
+            <att name="_ChunkSizes">null</att>
+            <att name="colorBarMaximum" type="double">5.0</att>
+            <att name="colorBarMinimum" type="double">0.0</att>
+            <att name="ioos_category">Statistics</att>
+            <att name="reference">null</att>
+            <att name="references">AVHRR_OI, with inland values populated from AVHRR_Pathfinder daily climatological SST. For more information on this reference field see https://data.nodc.noaa.gov/cgi-bin/iso?id=gov.noaa.nodc:0071180.</att>
+            <att name="units">degree_C</att>
+        </addAttributes>
+    </dataVariable>

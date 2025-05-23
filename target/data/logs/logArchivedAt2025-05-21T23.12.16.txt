@@ -1,0 +1,2991 @@
+logFileMaxSize=20971520
+
+\\\\**** Start Erddap v2.26 constructor at 2025-05-21T23.00.17
+logFile=target/data/logs/log.txt logMaxSizeMB=20
+Java 21.0.6 (64 bit, Oracle Corporation) on Windows 10 (10.0).
+MemoryInUse=   270 MB (highWaterMark=   370 MB) (Xmx ~= 2026 MB)
+verbose=true reallyVerbose=false
+bigParentDirectory=target/data/
+contextDirectory=C:/Users/harish/eraddaplang2/erddap/target/ERDDAP-2.26/
+available fonts=Arial, Arial Black, Bahnschrift, Calibri, Calibri Light, Cambria, Cambria Math, Candara, Candara Light, Cascadia Code, Cascadia Mono, Comic Sans MS, Consolas, Constantia, Corbel, Corbel Light, Courier New, Dialog, DialogInput, Ebrima, Franklin Gothic Medium, Gabriola, Gadugi, Georgia, HoloLens MDL2 Assets, Impact, Ink Free, Javanese Text, Leelawadee UI, Leelawadee UI Semilight, Lucida Console, Lucida Sans Unicode, Malgun Gothic, Malgun Gothic Semilight, Marlett, Microsoft Himalaya, Microsoft JhengHei, Microsoft JhengHei Light, Microsoft JhengHei UI, Microsoft JhengHei UI Light, Microsoft New Tai Lue, Microsoft PhagsPa, Microsoft Sans Serif, Microsoft Tai Le, Microsoft YaHei, Microsoft YaHei Light, Microsoft YaHei UI, Microsoft YaHei UI Light, Microsoft Yi Baiti, MingLiU-ExtB, MingLiU_HKSCS-ExtB, Mongolian Baiti, Monospaced, MS Gothic, MS PGothic, MS UI Gothic, MV Boli, Myanmar Text, Nirmala UI, Nirmala UI Semilight, NSimSun, Palatino Linotype, PMingLiU-ExtB, SansSerif, Segoe MDL2 Assets, Segoe Print, Segoe Script, Segoe UI, Segoe UI Black, Segoe UI Emoji, Segoe UI Historic, Segoe UI Light, Segoe UI Semibold, Segoe UI Semilight, Segoe UI Symbol, Serif, SimSun, SimSun-ExtB, SimSun-ExtG, Sitka Banner, Sitka Display, Sitka Heading, Sitka Small, Sitka Subheading, Sitka Text, Sylfaen, Symbol, Tahoma, Times New Roman, Trebuchet MS, Verdana, Webdings, Wingdings, Yu Gothic, Yu Gothic Light, Yu Gothic Medium, Yu Gothic UI, Yu Gothic UI Light, Yu Gothic UI Semibold, Yu Gothic UI Semilight
+File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\cache\41) nDir=   1 nDeleted=   0 nRemain=   0
+File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\cache\60) nDir=   1 nDeleted=   0 nRemain=   0
+File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\cache\80) nDir=   6 nDeleted=   0 nRemain=   0
+File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\cache\ad) nDir=   1 nDeleted=   0 nRemain=   0
+File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\cache\ap) nDir=   1 nDeleted=   0 nRemain=   0
+File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\cache\at) nDir=   2 nDeleted=   0 nRemain=   0
+File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\cache\au) nDir=   1 nDeleted=   0 nRemain=   0
+File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\cache\ay) nDir=  34 nDeleted=   0 nRemain=   0
+File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\cache\Bf) nDir=   1 nDeleted=   0 nRemain=   0
+File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\cache\Bp) nDir=   1 nDeleted=   0 nRemain=   0
+File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\cache\cb) nDir=   1 nDeleted=   0 nRemain=   0
+File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\cache\cp) nDir=   1 nDeleted=   0 nRemain=   0
+File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\cache\en) nDir=   1 nDeleted=   0 nRemain=   0
+File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\cache\et) nDir=   4 nDeleted=   0 nRemain=   0
+File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\cache\in) nDir=   1 nDeleted=   0 nRemain=   0
+File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\cache\ld) nDir=   1 nDeleted=   0 nRemain=   0
+File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\cache\Lw) nDir=   1 nDeleted=   0 nRemain=   0
+File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\cache\mp) nDir=   2 nDeleted=   0 nRemain=   0
+File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\cache\os) nDir=   1 nDeleted=   0 nRemain=   0
+File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\cache\Rf) nDir=   1 nDeleted=   0 nRemain=   0
+File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\cache\Rh) nDir=   1 nDeleted=   0 nRemain=   0
+File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\cache\rt) nDir=   1 nDeleted=   0 nRemain=   0
+File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\cache\sd) nDir=   1 nDeleted=   0 nRemain=   0
+File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\cache\so) nDir=   1 nDeleted=   0 nRemain=   0
+File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\cache\ss) nDir=   1 nDeleted=   0 nRemain=   0
+File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\cache\st) nDir=   3 nDeleted=   0 nRemain=   0
+File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\cache\ts) nDir=   2 nDeleted=   0 nRemain=   0
+File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\cache\ur) nDir=   1 nDeleted=   0 nRemain=   0
+File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\cache\yD) nDir=   1 nDeleted=   0 nRemain=   0
+File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\cache\yn) nDir=   1 nDeleted=   0 nRemain=   0
+File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\cache\yS) nDir=   1 nDeleted=   0 nRemain=   0
+File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\cache\yT) nDir=   1 nDeleted=   0 nRemain=   0
+File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\cache\yW) nDir=   1 nDeleted=   0 nRemain=   0
+File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\cache\_wms) nDir=   5 nDeleted=   0 nRemain=   0
+File2.deleteIfOld(target/data/cache/                                     ) nDir=  38 nDeleted=   0 nRemain=   0
+ERROR in File2.deleteIfOld: dir=target/data/private isn't a directory.
+
+\\\\**** Erddap constructor finished. TIME=1870ms
+
+*** RunLoadDatasets is starting a new MAJOR LoadDatasets thread at 2025-05-21T23:00:19+05:30
+File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\cache\_wms, 2025-05-21T16:30:19Z) nDir=   5 nDeleted=   0 nRemain=   0
+File2.deleteIfOld(target/data/cache/                                     , 2025-05-21T16:30:19Z) nDir=   5 nDeleted=   0 nRemain=   0
+0 files remain in C:/Users/harish/eraddaplang2/erddap/target/ERDDAP-2.26/public/
+0 files remain in target/data/cache/ and subdirectories.
+
+********************************************************************************
+LoadDatasets.run EDStatic.config.developmentMode=false 2025-05-21T23:00:19+05:30
+  datasetsRegex=.* inputStream=null majorLoad=true
+MemoryInUse=   102 MB (highWaterMark=   370 MB) (Xmx ~= 2026 MB)
+File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\decompressed\41, 2025-05-21T17:15:20Z) nDir=   1 nDeleted=   0 nRemain=   0
+File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\decompressed\60, 2025-05-21T17:15:20Z) nDir=   1 nDeleted=   0 nRemain=   0
+File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\decompressed\80, 2025-05-21T17:15:20Z) nDir=   6 nDeleted=   0 nRemain=   0
+File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\decompressed\ad, 2025-05-21T17:15:20Z) nDir=   1 nDeleted=   0 nRemain=   0
+File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\decompressed\ap, 2025-05-21T17:15:20Z) nDir=   1 nDeleted=   0 nRemain=   0
+File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\decompressed\at, 2025-05-21T17:15:20Z) nDir=   2 nDeleted=   0 nRemain=   0
+File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\decompressed\au, 2025-05-21T17:15:20Z) nDir=   1 nDeleted=   0 nRemain=   0
+File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\decompressed\ay, 2025-05-21T17:15:20Z) nDir=  34 nDeleted=   0 nRemain=   0
+File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\decompressed\Bf, 2025-05-21T17:15:20Z) nDir=   1 nDeleted=   0 nRemain=   0
+File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\decompressed\Bp, 2025-05-21T17:15:20Z) nDir=   1 nDeleted=   0 nRemain=   0
+File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\decompressed\cb, 2025-05-21T17:15:20Z) nDir=   1 nDeleted=   0 nRemain=   0
+File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\decompressed\cp, 2025-05-21T17:15:20Z) nDir=   1 nDeleted=   0 nRemain=   0
+File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\decompressed\en, 2025-05-21T17:15:20Z) nDir=   1 nDeleted=   0 nRemain=   0
+File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\decompressed\et, 2025-05-21T17:15:20Z) nDir=   4 nDeleted=   0 nRemain=   0
+File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\decompressed\in, 2025-05-21T17:15:20Z) nDir=   1 nDeleted=   0 nRemain=   0
+File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\decompressed\ld, 2025-05-21T17:15:20Z) nDir=   1 nDeleted=   0 nRemain=   0
+File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\decompressed\Lw, 2025-05-21T17:15:20Z) nDir=   1 nDeleted=   0 nRemain=   0
+File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\decompressed\mp, 2025-05-21T17:15:20Z) nDir=   2 nDeleted=   0 nRemain=   0
+File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\decompressed\os, 2025-05-21T17:15:20Z) nDir=   1 nDeleted=   0 nRemain=   0
+File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\decompressed\Rf, 2025-05-21T17:15:20Z) nDir=   1 nDeleted=   0 nRemain=   0
+File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\decompressed\Rh, 2025-05-21T17:15:20Z) nDir=   1 nDeleted=   0 nRemain=   0
+File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\decompressed\rt, 2025-05-21T17:15:20Z) nDir=   1 nDeleted=   0 nRemain=   0
+File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\decompressed\sd, 2025-05-21T17:15:20Z) nDir=   1 nDeleted=   0 nRemain=   0
+File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\decompressed\so, 2025-05-21T17:15:20Z) nDir=   1 nDeleted=   0 nRemain=   0
+File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\decompressed\ss, 2025-05-21T17:15:20Z) nDir=   1 nDeleted=   0 nRemain=   0
+File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\decompressed\st, 2025-05-21T17:15:20Z) nDir=   3 nDeleted=   0 nRemain=   0
+File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\decompressed\ts, 2025-05-21T17:15:20Z) nDir=   2 nDeleted=   0 nRemain=   0
+File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\decompressed\ur, 2025-05-21T17:15:20Z) nDir=   1 nDeleted=   0 nRemain=   0
+File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\decompressed\yD, 2025-05-21T17:15:20Z) nDir=   1 nDeleted=   0 nRemain=   0
+File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\decompressed\yn, 2025-05-21T17:15:20Z) nDir=   1 nDeleted=   0 nRemain=   0
+File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\decompressed\yS, 2025-05-21T17:15:20Z) nDir=   1 nDeleted=   0 nRemain=   0
+File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\decompressed\yT, 2025-05-21T17:15:20Z) nDir=   1 nDeleted=   0 nRemain=   0
+File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\decompressed\yW, 2025-05-21T17:15:20Z) nDir=   1 nDeleted=   0 nRemain=   0
+File2.deleteIfOld(target/data/decompressed/                              , 2025-05-21T17:15:20Z) nDir=  34 nDeleted=   0 nRemain=   0
+After deleting decompressed files not used in the last 15 minutes, nRemain=0
+
+*** constructing EDDTableFromAllDatasets
+  accessibleViaNcCF=.ncCF/.ncCFMA is never available for this dataset because cdm_data_type=Other is not a compatible type.
+FGDC is never available for this dataset because Query error: there is no longitude and/or latitude variable.
+ISO 19115-2/19139 is never available for this dataset because Query error: there is no longitude and/or latitude variable.
+
+*** EDDTableFromAllDatasets constructor finished. TIME=15ms
+
+logLevel=info: verbose=true reallyVerbose=false
+requestBlacklist is now null.
+Subscriptions.setEmailBlacklist removed 0 valid and pending subscriptions.
+
+*** constructing EDDGridFromEtopo etopo180
+
+*** EDDGridFromEtopo etopo180 constructor finished. TIME=43ms
+
+change=Previously, this dataset was (temporarily?) not available.  Perhaps ERDDAP was just restarted.
+nActions=0
+
+*** constructing EDDGridFromEtopo etopo360
+
+*** EDDGridFromEtopo etopo360 constructor finished. TIME=24ms
+
+change=Previously, this dataset was (temporarily?) not available.  Perhaps ERDDAP was just restarted.
+nActions=0
+
+*** constructing EDDGridFromDap erdTAsshl1day
+  using info from quickRestartFile
+  time: DoubleArray isn't evenly spaced: [0]=7.19064E8, [1]=7.196688E8, spacing=604800.0, average spacing=507574.14205905824.
+    smallest spacing=86400.0: [1018]=1.3347504E9, [1019]=1.3348368E9
+    biggest  spacing=604800.0: [0]=7.19064E8, [1]=7.196688E8
+
+*** EDDGridFromDap erdTAsshl1day constructor finished. TIME=128ms
+
+
+*** constructing EDDGridFromDap erdTAsshd1day
+  using info from quickRestartFile
+  time: DoubleArray isn't evenly spaced: [0]=7.19064E8, [1]=7.196688E8, spacing=604800.0, average spacing=512825.8064516129.
+    smallest spacing=86400.0: [1019]=1.3358736E9, [1020]=1.33596E9
+    biggest  spacing=1123200.0: [1018]=1.3347504E9, [1019]=1.3358736E9
+
+*** EDDGridFromDap erdTAsshd1day constructor finished. TIME=16ms
+
+
+*** constructing EDDGridSideBySide erdTAssh1day
+child[0].axisVariables[0].size()=1254
+child[1].axisVariables[0].size()=1241
+  time: DoubleArray isn't evenly spaced: [0]=7.19064E8, [1]=7.196688E8, spacing=604800.0, average spacing=507574.14205905824.
+    smallest spacing=86400.0: [1018]=1.3347504E9, [1019]=1.3348368E9
+    biggest  spacing=604800.0: [0]=7.19064E8, [1]=7.196688E8
+
+*** EDDGridSideBySide erdTAssh1day constructor finished. TIME=0ms
+
+change=Previously, this dataset was (temporarily?) not available.  Perhaps ERDDAP was just restarted.
+nActions=0
+
+*** constructing EDDGridFromErddap jplMURSST41
+  using info from quickRestartFile
+  time: DoubleArray isn't evenly spaced: [0]=1.022922E9, [1]=1.0230084E9, spacing=86400.0, average spacing=86420.60331465364.
+    smallest spacing=86400.0: [0]=1.022922E9, [1]=1.0230084E9
+    biggest  spacing=259200.0: [6838]=1.6137252E9, [6839]=1.6139844E9
+WARNING! This ERDDAP won't try to subscribe to the dataset on the remote
+ERDDAP because this ERDDAP isn't publicly accessible.
+If you want to keep this dataset up-to-date, use a small reloadEveryNMinutes.
+
+*** EDDGridFromErddap jplMURSST41 constructor finished. TIME=2120ms
+
+change=Previously, this dataset was (temporarily?) not available.  Perhaps ERDDAP was just restarted.
+nActions=0
+
+*** constructing EDDGridFromErddap erdNavgem05D10mWind_LonPM180
+  using info from quickRestartFile
+  time: DoubleArray isn't evenly spaced: [0]=1.3609296E9, [1]=1.3609512E9, spacing=21600.0, average spacing=23365.635572740455.
+    smallest spacing=21600.0: [0]=1.3609296E9, [1]=1.3609512E9
+    biggest  spacing=2527200.0: [4212]=1.4569416E9, [4213]=1.4594688E9
+{{{{#1 2025-05-21T23:00:23+05:30 (notLoggedIn) (unknownIPAddress) GET /erddap/status.html
+OutputStreamFromHttpResponse charEncoding=UTF-8, encoding=gzip, index, .html
+#1 FAILURE. TIME=38ms
+*** sendErrorCode 500 for request #1:
+/erddap/status.html
+gg.jte.TemplateNotFoundException: Failed to load status.jte
+ at gg.jte.runtime.TemplateLoader.load(TemplateLoader.java:28)
+ at java.base/java.util.concurrent.ConcurrentHashMap.computeIfAbsent(ConcurrentHashMap.java:1708)
+ at gg.jte.TemplateEngine.resolveTemplate(TemplateEngine.java:339)
+ at gg.jte.TemplateEngine.render(TemplateEngine.java:228)
+ at gov.noaa.pfel.erddap.Erddap.doStatus(Erddap.java:4976)
+ at gov.noaa.pfel.erddap.Erddap.doGet(Erddap.java:845)
+ at jakarta.servlet.http.HttpServlet.service(HttpServlet.java:527)
+ at jakarta.servlet.http.HttpServlet.service(HttpServlet.java:614)
+ at org.eclipse.jetty.ee10.servlet.ServletHolder$NotAsync.service(ServletHolder.java:1379)
+ at org.eclipse.jetty.ee10.servlet.ServletHolder.handle(ServletHolder.java:736)
+ at org.eclipse.jetty.ee10.servlet.ServletHandler$ChainEnd.doFilter(ServletHandler.java:1621)
+ at gov.noaa.pfel.erddap.http.CorsResponseFilter.doFilter(CorsResponseFilter.java:67)
+ at org.eclipse.jetty.ee10.servlet.FilterHolder.doFilter(FilterHolder.java:208)
+ at org.eclipse.jetty.ee10.servlet.ServletHandler$Chain.doFilter(ServletHandler.java:1593)
+ at org.eclipse.jetty.ee10.websocket.servlet.WebSocketUpgradeFilter.doFilter(WebSocketUpgradeFilter.java:195)
+ at org.eclipse.jetty.ee10.servlet.FilterHolder.doFilter(FilterHolder.java:205)
+ at org.eclipse.jetty.ee10.servlet.ServletHandler$Chain.doFilter(ServletHandler.java:1593)
+ at org.eclipse.jetty.ee10.servlet.ServletHandler$MappedServlet.handle(ServletHandler.java:1554)
+ at org.eclipse.jetty.ee10.servlet.ServletChannel.dispatch(ServletChannel.java:819)
+ at org.eclipse.jetty.ee10.servlet.ServletChannel.handle(ServletChannel.java:436)
+ at org.eclipse.jetty.ee10.servlet.ServletHandler.handle(ServletHandler.java:469)
+ at org.eclipse.jetty.security.SecurityHandler.handle(SecurityHandler.java:575)
+ at org.eclipse.jetty.ee10.servlet.SessionHandler.handle(SessionHandler.java:717)
+ at org.eclipse.jetty.server.handler.ContextHandler.handle(ContextHandler.java:1064)
+ at org.eclipse.jetty.server.handler.ContextHandlerCollection.handle(ContextHandlerCollection.java:151)
+ at org.eclipse.jetty.server.Server.handle(Server.java:182)
+ at org.eclipse.jetty.server.internal.HttpChannelState$HandlerInvoker.run(HttpChannelState.java:662)
+ at org.eclipse.jetty.server.internal.HttpConnection.onFillable(HttpConnection.java:416)
+ at org.eclipse.jetty.io.AbstractConnection$ReadCallback.succeeded(AbstractConnection.java:322)
+ at org.eclipse.jetty.io.FillInterest.fillable(FillInterest.java:99)
+ at org.eclipse.jetty.io.SelectableChannelEndPoint$1.run(SelectableChannelEndPoint.java:53)
+ at org.eclipse.jetty.util.thread.QueuedThreadPool.runJob(QueuedThreadPool.java:979)
+ at org.eclipse.jetty.util.thread.QueuedThreadPool$Runner.doRunJob(QueuedThreadPool.java:1209)
+ at org.eclipse.jetty.util.thread.QueuedThreadPool$Runner.run(QueuedThreadPool.java:1164)
+ at java.base/java.lang.Thread.run(Thread.java:1583)
+Caused by: java.lang.ClassNotFoundException: gg.jte.generated.precompiled.JtestatusGenerated
+ at org.codehaus.plexus.classworlds.strategy.SelfFirstStrategy.loadClass(SelfFirstStrategy.java:42)
+ at org.codehaus.plexus.classworlds.realm.ClassRealm.unsynchronizedLoadClass(ClassRealm.java:225)
+ at org.codehaus.plexus.classworlds.realm.ClassRealm.loadClass(ClassRealm.java:210)
+ at org.codehaus.plexus.classworlds.realm.ClassRealm.loadClass(ClassRealm.java:205)
+ at org.eclipse.jetty.ee10.webapp.WebAppClassLoader.loadClass(WebAppClassLoader.java:494)
+ at java.base/java.lang.ClassLoader.loadClass(ClassLoader.java:526)
+ at gg.jte.runtime.TemplateLoader.load(TemplateLoader.java:25)
+ ... 34 more
+WARNING! This ERDDAP won't try to subscribe to the dataset on the remote
+ERDDAP because this ERDDAP isn't publicly accessible.
+If you want to keep this dataset up-to-date, use a small reloadEveryNMinutes.
+
+*** EDDGridFromErddap erdNavgem05D10mWind_LonPM180 constructor finished. TIME=1743ms
+
+change=Previously, this dataset was (temporarily?) not available.  Perhaps ERDDAP was just restarted.
+nActions=0
+
+*** constructing EDDGridFromErddap erdNavgem05D20mWind_LonPM180
+  using info from quickRestartFile
+  time: DoubleArray isn't evenly spaced: [0]=1.3609296E9, [1]=1.3609512E9, spacing=21600.0, average spacing=23371.28353879623.
+    smallest spacing=21600.0: [0]=1.3609296E9, [1]=1.3609512E9
+    biggest  spacing=2527200.0: [4212]=1.4569416E9, [4213]=1.4594688E9
+*** lowSendError for request #1: isCommitted=true fullMessage=
+Error {
+    code=500;
+    message="Internal Server Error: TemplateNotFoundException: Failed to load status.jte";
+}
+
+}}}}#1 (unknownIPAddress) sendErrorCode done. Total TIME=2058ms
+
+{{{{#2 2025-05-21T23:00:25+05:30 (notLoggedIn) (unknownIPAddress) GET /erddap/status.html
+OutputStreamFromHttpResponse charEncoding=UTF-8, encoding=gzip, index, .html
+#2 FAILURE. TIME=9ms
+*** sendErrorCode 500 for request #2:
+/erddap/status.html
+gg.jte.TemplateNotFoundException: Failed to load status.jte
+ at gg.jte.runtime.TemplateLoader.load(TemplateLoader.java:28)
+ at java.base/java.util.concurrent.ConcurrentHashMap.computeIfAbsent(ConcurrentHashMap.java:1708)
+ at gg.jte.TemplateEngine.resolveTemplate(TemplateEngine.java:339)
+ at gg.jte.TemplateEngine.render(TemplateEngine.java:228)
+ at gov.noaa.pfel.erddap.Erddap.doStatus(Erddap.java:4976)
+ at gov.noaa.pfel.erddap.Erddap.doGet(Erddap.java:845)
+ at jakarta.servlet.http.HttpServlet.service(HttpServlet.java:527)
+ at jakarta.servlet.http.HttpServlet.service(HttpServlet.java:614)
+ at org.eclipse.jetty.ee10.servlet.ServletHolder$NotAsync.service(ServletHolder.java:1379)
+ at org.eclipse.jetty.ee10.servlet.ServletHolder.handle(ServletHolder.java:736)
+ at org.eclipse.jetty.ee10.servlet.ServletHandler$ChainEnd.doFilter(ServletHandler.java:1621)
+ at gov.noaa.pfel.erddap.http.CorsResponseFilter.doFilter(CorsResponseFilter.java:67)
+ at org.eclipse.jetty.ee10.servlet.FilterHolder.doFilter(FilterHolder.java:208)
+ at org.eclipse.jetty.ee10.servlet.ServletHandler$Chain.doFilter(ServletHandler.java:1593)
+ at org.eclipse.jetty.ee10.websocket.servlet.WebSocketUpgradeFilter.doFilter(WebSocketUpgradeFilter.java:195)
+ at org.eclipse.jetty.ee10.servlet.FilterHolder.doFilter(FilterHolder.java:205)
+ at org.eclipse.jetty.ee10.servlet.ServletHandler$Chain.doFilter(ServletHandler.java:1593)
+ at org.eclipse.jetty.ee10.servlet.ServletHandler$MappedServlet.handle(ServletHandler.java:1554)
+ at org.eclipse.jetty.ee10.servlet.ServletChannel.dispatch(ServletChannel.java:819)
+ at org.eclipse.jetty.ee10.servlet.ServletChannel.handle(ServletChannel.java:436)
+ at org.eclipse.jetty.ee10.servlet.ServletHandler.handle(ServletHandler.java:469)
+ at org.eclipse.jetty.security.SecurityHandler.handle(SecurityHandler.java:575)
+ at org.eclipse.jetty.ee10.servlet.SessionHandler.handle(SessionHandler.java:717)
+ at org.eclipse.jetty.server.handler.ContextHandler.handle(ContextHandler.java:1064)
+ at org.eclipse.jetty.server.handler.ContextHandlerCollection.handle(ContextHandlerCollection.java:151)
+ at org.eclipse.jetty.server.Server.handle(Server.java:182)
+ at org.eclipse.jetty.server.internal.HttpChannelState$HandlerInvoker.run(HttpChannelState.java:662)
+ at org.eclipse.jetty.server.internal.HttpConnection.onFillable(HttpConnection.java:416)
+ at org.eclipse.jetty.io.AbstractConnection$ReadCallback.succeeded(AbstractConnection.java:322)
+ at org.eclipse.jetty.io.FillInterest.fillable(FillInterest.java:99)
+ at org.eclipse.jetty.io.SelectableChannelEndPoint$1.run(SelectableChannelEndPoint.java:53)
+ at org.eclipse.jetty.util.thread.strategy.AdaptiveExecutionStrategy.runTask(AdaptiveExecutionStrategy.java:480)
+ at org.eclipse.jetty.util.thread.strategy.AdaptiveExecutionStrategy.consumeTask(AdaptiveExecutionStrategy.java:443)
+ at org.eclipse.jetty.util.thread.strategy.AdaptiveExecutionStrategy.tryProduce(AdaptiveExecutionStrategy.java:293)
+ at org.eclipse.jetty.util.thread.strategy.AdaptiveExecutionStrategy.produce(AdaptiveExecutionStrategy.java:195)
+ at org.eclipse.jetty.util.thread.QueuedThreadPool.runJob(QueuedThreadPool.java:979)
+ at org.eclipse.jetty.util.thread.QueuedThreadPool$Runner.doRunJob(QueuedThreadPool.java:1209)
+ at org.eclipse.jetty.util.thread.QueuedThreadPool$Runner.run(QueuedThreadPool.java:1164)
+ at java.base/java.lang.Thread.run(Thread.java:1583)
+Caused by: java.lang.ClassNotFoundException: gg.jte.generated.precompiled.JtestatusGenerated
+ at org.codehaus.plexus.classworlds.strategy.SelfFirstStrategy.loadClass(SelfFirstStrategy.java:42)
+ at org.codehaus.plexus.classworlds.realm.ClassRealm.unsynchronizedLoadClass(ClassRealm.java:225)
+ at org.codehaus.plexus.classworlds.realm.ClassRealm.loadClass(ClassRealm.java:210)
+ at org.codehaus.plexus.classworlds.realm.ClassRealm.loadClass(ClassRealm.java:205)
+ at org.eclipse.jetty.ee10.webapp.WebAppClassLoader.loadClass(WebAppClassLoader.java:494)
+ at java.base/java.lang.ClassLoader.loadClass(ClassLoader.java:526)
+ at gg.jte.runtime.TemplateLoader.load(TemplateLoader.java:25)
+ ... 38 more
+WARNING! This ERDDAP won't try to subscribe to the dataset on the remote
+ERDDAP because this ERDDAP isn't publicly accessible.
+If you want to keep this dataset up-to-date, use a small reloadEveryNMinutes.
+
+*** EDDGridFromErddap erdNavgem05D20mWind_LonPM180 constructor finished. TIME=1761ms
+
+change=Previously, this dataset was (temporarily?) not available.  Perhaps ERDDAP was just restarted.
+nActions=0
+
+*** constructing EDDGridFromErddap erdNavgem05D500mb_LonPM180
+  using info from quickRestartFile
+  time: DoubleArray isn't evenly spaced: [0]=1.3609296E9, [1]=1.3609512E9, spacing=21600.0, average spacing=23501.482381530983.
+    smallest spacing=21600.0: [0]=1.3609296E9, [1]=1.3609512E9
+    biggest  spacing=2527200.0: [4150]=1.4569416E9, [4151]=1.4594688E9
+*** lowSendError for request #2: isCommitted=true fullMessage=
+Error {
+    code=500;
+    message="Internal Server Error: TemplateNotFoundException: Failed to load status.jte";
+}
+
+}}}}#2 (unknownIPAddress) sendErrorCode done. Total TIME=2026ms
+
+{{{{#3 2025-05-21T23:00:27+05:30 (notLoggedIn) (unknownIPAddress) GET /erddap/status.html
+OutputStreamFromHttpResponse charEncoding=UTF-8, encoding=gzip, index, .html
+WARNING! This ERDDAP won't try to subscribe to the dataset on the remote
+ERDDAP because this ERDDAP isn't publicly accessible.
+If you want to keep this dataset up-to-date, use a small reloadEveryNMinutes.
+
+*** EDDGridFromErddap erdNavgem05D500mb_LonPM180 constructor finished. TIME=1884ms
+
+change=Previously, this dataset was (temporarily?) not available.  Perhaps ERDDAP was just restarted.
+nActions=0
+
+*** constructing EDDGridFromErddap erdNavgem05DPres_LonPM180
+  using info from quickRestartFile
+  time: DoubleArray isn't evenly spaced: [0]=1.3609296E9, [1]=1.3609512E9, spacing=21600.0, average spacing=23534.36758532579.
+    smallest spacing=21600.0: [0]=1.3609296E9, [1]=1.3609512E9
+    biggest  spacing=2527200.0: [4130]=1.4569416E9, [4131]=1.4594688E9
+#3 FAILURE. TIME=5ms
+*** sendErrorCode 500 for request #3:
+/erddap/status.html
+gg.jte.TemplateNotFoundException: Failed to load status.jte
+ at gg.jte.runtime.TemplateLoader.load(TemplateLoader.java:28)
+ at java.base/java.util.concurrent.ConcurrentHashMap.computeIfAbsent(ConcurrentHashMap.java:1708)
+ at gg.jte.TemplateEngine.resolveTemplate(TemplateEngine.java:339)
+ at gg.jte.TemplateEngine.render(TemplateEngine.java:228)
+ at gov.noaa.pfel.erddap.Erddap.doStatus(Erddap.java:4976)
+ at gov.noaa.pfel.erddap.Erddap.doGet(Erddap.java:845)
+ at jakarta.servlet.http.HttpServlet.service(HttpServlet.java:527)
+ at jakarta.servlet.http.HttpServlet.service(HttpServlet.java:614)
+ at org.eclipse.jetty.ee10.servlet.ServletHolder$NotAsync.service(ServletHolder.java:1379)
+ at org.eclipse.jetty.ee10.servlet.ServletHolder.handle(ServletHolder.java:736)
+ at org.eclipse.jetty.ee10.servlet.ServletHandler$ChainEnd.doFilter(ServletHandler.java:1621)
+ at gov.noaa.pfel.erddap.http.CorsResponseFilter.doFilter(CorsResponseFilter.java:67)
+ at org.eclipse.jetty.ee10.servlet.FilterHolder.doFilter(FilterHolder.java:208)
+ at org.eclipse.jetty.ee10.servlet.ServletHandler$Chain.doFilter(ServletHandler.java:1593)
+ at org.eclipse.jetty.ee10.websocket.servlet.WebSocketUpgradeFilter.doFilter(WebSocketUpgradeFilter.java:195)
+ at org.eclipse.jetty.ee10.servlet.FilterHolder.doFilter(FilterHolder.java:205)
+ at org.eclipse.jetty.ee10.servlet.ServletHandler$Chain.doFilter(ServletHandler.java:1593)
+ at org.eclipse.jetty.ee10.servlet.ServletHandler$MappedServlet.handle(ServletHandler.java:1554)
+ at org.eclipse.jetty.ee10.servlet.ServletChannel.dispatch(ServletChannel.java:819)
+ at org.eclipse.jetty.ee10.servlet.ServletChannel.handle(ServletChannel.java:436)
+ at org.eclipse.jetty.ee10.servlet.ServletHandler.handle(ServletHandler.java:469)
+ at org.eclipse.jetty.security.SecurityHandler.handle(SecurityHandler.java:575)
+ at org.eclipse.jetty.ee10.servlet.SessionHandler.handle(SessionHandler.java:717)
+ at org.eclipse.jetty.server.handler.ContextHandler.handle(ContextHandler.java:1064)
+ at org.eclipse.jetty.server.handler.ContextHandlerCollection.handle(ContextHandlerCollection.java:151)
+ at org.eclipse.jetty.server.Server.handle(Server.java:182)
+ at org.eclipse.jetty.server.internal.HttpChannelState$HandlerInvoker.run(HttpChannelState.java:662)
+ at org.eclipse.jetty.server.internal.HttpConnection.onFillable(HttpConnection.java:416)
+ at org.eclipse.jetty.io.AbstractConnection$ReadCallback.succeeded(AbstractConnection.java:322)
+ at org.eclipse.jetty.io.FillInterest.fillable(FillInterest.java:99)
+ at org.eclipse.jetty.io.SelectableChannelEndPoint$1.run(SelectableChannelEndPoint.java:53)
+ at org.eclipse.jetty.util.thread.QueuedThreadPool.runJob(QueuedThreadPool.java:979)
+ at org.eclipse.jetty.util.thread.QueuedThreadPool$Runner.doRunJob(QueuedThreadPool.java:1209)
+ at org.eclipse.jetty.util.thread.QueuedThreadPool$Runner.run(QueuedThreadPool.java:1164)
+ at java.base/java.lang.Thread.run(Thread.java:1583)
+Caused by: java.lang.ClassNotFoundException: gg.jte.generated.precompiled.JtestatusGenerated
+ at org.codehaus.plexus.classworlds.strategy.SelfFirstStrategy.loadClass(SelfFirstStrategy.java:42)
+ at org.codehaus.plexus.classworlds.realm.ClassRealm.unsynchronizedLoadClass(ClassRealm.java:225)
+ at org.codehaus.plexus.classworlds.realm.ClassRealm.loadClass(ClassRealm.java:210)
+ at org.codehaus.plexus.classworlds.realm.ClassRealm.loadClass(ClassRealm.java:205)
+ at org.eclipse.jetty.ee10.webapp.WebAppClassLoader.loadClass(WebAppClassLoader.java:494)
+ at java.base/java.lang.ClassLoader.loadClass(ClassLoader.java:526)
+ at gg.jte.runtime.TemplateLoader.load(TemplateLoader.java:25)
+ ... 34 more
+*** lowSendError for request #3: isCommitted=true fullMessage=
+Error {
+    code=500;
+    message="Internal Server Error: TemplateNotFoundException: Failed to load status.jte";
+}
+
+}}}}#3 (unknownIPAddress) sendErrorCode done. Total TIME=2034ms
+
+WARNING! This ERDDAP won't try to subscribe to the dataset on the remote
+ERDDAP because this ERDDAP isn't publicly accessible.
+If you want to keep this dataset up-to-date, use a small reloadEveryNMinutes.
+
+*** EDDGridFromErddap erdNavgem05DPres_LonPM180 constructor finished. TIME=1830ms
+
+change=Previously, this dataset was (temporarily?) not available.  Perhaps ERDDAP was just restarted.
+nActions=0
+
+*** constructing EDDGridFromErddap miamicurrents
+  using info from quickRestartFile
+getUrlConnInputStream http://cwcgom.aoml.noaa.gov/erddap/version requestCompression=true
+  Warning: HTTP status code=302
+  redirect to https://cwcgom.aoml.noaa.gov/erddap/version
+getUrlConnInputStream http://cwcgom.aoml.noaa.gov/erddap/files/miamicurrents/.csv requestCompression=true
+  Warning: HTTP status code=302
+  redirect to https://cwcgom.aoml.noaa.gov/erddap/files/miamicurrents/.csv
+  Warning: after redirect, HTTP status code=404
+accessibleViaFiles=false because remote ERDDAP dataset isn't accessible via /files/ :
+java.io.IOException: HTTP status code=404 java.io.FileNotFoundException: https://cwcgom.aoml.noaa.gov/erddap/files/miamicurrents/.csv
+(Error {
+    code=404;
+    message="Not Found: This dataset is not accessible via /files/ .";
+})
+ at gov.noaa.pfel.coastwatch.util.SSR.getBufferedInputStream(SSR.java:1484)
+ at gov.noaa.pfel.coastwatch.util.SSR.getUrlConnBufferedInputStream(SSR.java:1388)
+ at gov.noaa.pfel.coastwatch.util.SSR.getUrlConnBufferedInputStream(SSR.java:1244)
+ at gov.noaa.pfel.coastwatch.util.SSR.getUrlBufferedInputStream(SSR.java:1544)
+ at gov.noaa.pfel.erddap.dataset.EDDGridFromErddap.<init>(EDDGridFromErddap.java:458)
+ at gov.noaa.pfel.erddap.handlers.EDDGridFromErddapHandler.buildDataset(EDDGridFromErddapHandler.java:46)
+ at gov.noaa.pfel.erddap.handlers.BaseDatasetHandler.endElement(BaseDatasetHandler.java:69)
+ at gov.noaa.pfel.erddap.handlers.SaxHandler.endElement(SaxHandler.java:73)
+ at java.xml/com.sun.org.apache.xerces.internal.parsers.AbstractSAXParser.endElement(AbstractSAXParser.java:618)
+ at java.xml/com.sun.org.apache.xerces.internal.xinclude.XIncludeHandler.endElement(XIncludeHandler.java:1112)
+ at java.xml/com.sun.org.apache.xerces.internal.impl.XMLDocumentFragmentScannerImpl.scanEndElement(XMLDocumentFragmentScannerImpl.java:1728)
+ at java.xml/com.sun.org.apache.xerces.internal.impl.XMLDocumentFragmentScannerImpl$FragmentContentDriver.next(XMLDocumentFragmentScannerImpl.java:2899)
+ at java.xml/com.sun.org.apache.xerces.internal.impl.XMLDocumentScannerImpl.next(XMLDocumentScannerImpl.java:605)
+ at java.xml/com.sun.org.apache.xerces.internal.impl.XMLNSDocumentScannerImpl.next(XMLNSDocumentScannerImpl.java:114)
+ at java.xml/com.sun.org.apache.xerces.internal.impl.XMLDocumentFragmentScannerImpl.scanDocument(XMLDocumentFragmentScannerImpl.java:542)
+ at java.xml/com.sun.org.apache.xerces.internal.parsers.XML11Configuration.parse(XML11Configuration.java:889)
+ at java.xml/com.sun.org.apache.xerces.internal.parsers.XML11Configuration.parse(XML11Configuration.java:825)
+ at java.xml/com.sun.org.apache.xerces.internal.parsers.XMLParser.parse(XMLParser.java:141)
+ at java.xml/com.sun.org.apache.xerces.internal.parsers.AbstractSAXParser.parse(AbstractSAXParser.java:1224)
+ at java.xml/com.sun.org.apache.xerces.internal.jaxp.SAXParserImpl$JAXPSAXParser.parse(SAXParserImpl.java:637)
+ at java.xml/com.sun.org.apache.xerces.internal.jaxp.SAXParserImpl.parse(SAXParserImpl.java:326)
+ at java.xml/javax.xml.parsers.SAXParser.parse(SAXParser.java:197)
+ at gov.noaa.pfel.erddap.handlers.SaxHandler.parse(SaxHandler.java:167)
+ at gov.noaa.pfel.erddap.LoadDatasets.run(LoadDatasets.java:203)
+
+
+WARNING! This ERDDAP won't try to subscribe to the dataset on the remote
+ERDDAP because this ERDDAP isn't publicly accessible.
+If you want to keep this dataset up-to-date, use a small reloadEveryNMinutes.
+
+*** EDDGridFromErddap miamicurrents constructor finished. TIME=3591ms
+
+change=Previously, this dataset was (temporarily?) not available.  Perhaps ERDDAP was just restarted.
+nActions=0
+
+*** constructing EDDGridFromErddap erdMH1cflh1day
+  using info from quickRestartFile
+  latitude: FloatArray isn't sorted in ascending order: [0]=89.979164 > [1]=89.9375.
+  time: DoubleArray isn't evenly spaced: [0]=1.0414224E9, [1]=1.0415088E9, spacing=86400.0, average spacing=86764.1983982015.
+    smallest spacing=86400.0: [0]=1.0414224E9, [1]=1.0415088E9
+    biggest  spacing=1468800.0: [6437]=1.5975792E9, [6438]=1.599048E9
+WARNING! This ERDDAP won't try to subscribe to the dataset on the remote
+ERDDAP because this ERDDAP isn't publicly accessible.
+If you want to keep this dataset up-to-date, use a small reloadEveryNMinutes.
+
+*** EDDGridFromErddap erdMH1cflh1day constructor finished. TIME=1922ms
+
+change=Previously, this dataset was (temporarily?) not available.  Perhaps ERDDAP was just restarted.
+nActions=0
+
+*** constructing EDDGridFromErddap erdMH1cflh8day
+  using info from quickRestartFile
+  latitude: FloatArray isn't sorted in ascending order: [0]=89.979164 > [1]=89.9375.
+  time: DoubleArray isn't evenly spaced: [0]=1.0417248E9, [1]=1.042416E9, spacing=691200.0, average spacing=690810.8108108108.
+    smallest spacing=432000.0: [45]=1.0728288E9, [46]=1.0732608E9
+    biggest  spacing=3196800.0: [731]=1.5434496E9, [732]=1.5466464E9
+WARNING! This ERDDAP won't try to subscribe to the dataset on the remote
+ERDDAP because this ERDDAP isn't publicly accessible.
+If you want to keep this dataset up-to-date, use a small reloadEveryNMinutes.
+
+*** EDDGridFromErddap erdMH1cflh8day constructor finished. TIME=1718ms
+
+change=Previously, this dataset was (temporarily?) not available.  Perhaps ERDDAP was just restarted.
+nActions=0
+
+*** constructing EDDGridFromErddap erdMH1cflhmday
+  using info from quickRestartFile
+  latitude: FloatArray isn't sorted in ascending order: [0]=89.979164 > [1]=89.9375.
+  time: DoubleArray isn't evenly spaced: [0]=1.0426752E9, [1]=1.0453536E9, spacing=2678400.0, average spacing=2629241.379310345.
+    smallest spacing=2419200.0: [1]=1.0453536E9, [2]=1.0477728E9
+    biggest  spacing=2678400.0: [0]=1.0426752E9, [1]=1.0453536E9
+WARNING! This ERDDAP won't try to subscribe to the dataset on the remote
+ERDDAP because this ERDDAP isn't publicly accessible.
+If you want to keep this dataset up-to-date, use a small reloadEveryNMinutes.
+
+*** EDDGridFromErddap erdMH1cflhmday constructor finished. TIME=1735ms
+
+change=Previously, this dataset was (temporarily?) not available.  Perhaps ERDDAP was just restarted.
+nActions=0
+
+*** constructing EDDGridFromErddap erdMH1chla1day
+  using info from quickRestartFile
+  latitude: FloatArray isn't sorted in ascending order: [0]=89.979164 > [1]=89.9375.
+  time: DoubleArray isn't evenly spaced: [0]=1.0414224E9, [1]=1.0415088E9, spacing=86400.0, average spacing=86764.1983982015.
+    smallest spacing=86400.0: [0]=1.0414224E9, [1]=1.0415088E9
+    biggest  spacing=1468800.0: [6437]=1.5975792E9, [6438]=1.599048E9
+WARNING! This ERDDAP won't try to subscribe to the dataset on the remote
+ERDDAP because this ERDDAP isn't publicly accessible.
+If you want to keep this dataset up-to-date, use a small reloadEveryNMinutes.
+
+*** EDDGridFromErddap erdMH1chla1day constructor finished. TIME=1773ms
+
+change=Previously, this dataset was (temporarily?) not available.  Perhaps ERDDAP was just restarted.
+nActions=0
+
+*** constructing EDDGridFromErddap erdMH1chla8day
+  using info from quickRestartFile
+  latitude: FloatArray isn't sorted in ascending order: [0]=89.979164 > [1]=89.9375.
+  time: DoubleArray isn't evenly spaced: [0]=1.0417248E9, [1]=1.042416E9, spacing=691200.0, average spacing=690033.7457817773.
+    smallest spacing=432000.0: [45]=1.0728288E9, [46]=1.0732608E9
+    biggest  spacing=3196800.0: [731]=1.5434496E9, [732]=1.5466464E9
+WARNING! This ERDDAP won't try to subscribe to the dataset on the remote
+ERDDAP because this ERDDAP isn't publicly accessible.
+If you want to keep this dataset up-to-date, use a small reloadEveryNMinutes.
+
+*** EDDGridFromErddap erdMH1chla8day constructor finished. TIME=1733ms
+
+change=Previously, this dataset was (temporarily?) not available.  Perhaps ERDDAP was just restarted.
+nActions=0
+
+*** constructing EDDGridFromErddap erdMH1chlamday
+  using info from quickRestartFile
+  latitude: FloatArray isn't sorted in ascending order: [0]=89.979164 > [1]=89.9375.
+  time: DoubleArray isn't evenly spaced: [0]=1.0426752E9, [1]=1.0453536E9, spacing=2678400.0, average spacing=2629241.379310345.
+    smallest spacing=2419200.0: [1]=1.0453536E9, [2]=1.0477728E9
+    biggest  spacing=2678400.0: [0]=1.0426752E9, [1]=1.0453536E9
+WARNING! This ERDDAP won't try to subscribe to the dataset on the remote
+ERDDAP because this ERDDAP isn't publicly accessible.
+If you want to keep this dataset up-to-date, use a small reloadEveryNMinutes.
+
+*** EDDGridFromErddap erdMH1chlamday constructor finished. TIME=1719ms
+
+change=Previously, this dataset was (temporarily?) not available.  Perhaps ERDDAP was just restarted.
+nActions=0
+
+*** constructing EDDGridFromErddap erdMH1kd4901day
+  using info from quickRestartFile
+  latitude: FloatArray isn't sorted in ascending order: [0]=89.979164 > [1]=89.9375.
+  time: DoubleArray isn't evenly spaced: [0]=1.0414224E9, [1]=1.0415088E9, spacing=86400.0, average spacing=86764.1983982015.
+    smallest spacing=86400.0: [0]=1.0414224E9, [1]=1.0415088E9
+    biggest  spacing=1468800.0: [6437]=1.5975792E9, [6438]=1.599048E9
+WARNING! This ERDDAP won't try to subscribe to the dataset on the remote
+ERDDAP because this ERDDAP isn't publicly accessible.
+If you want to keep this dataset up-to-date, use a small reloadEveryNMinutes.
+
+*** EDDGridFromErddap erdMH1kd4901day constructor finished. TIME=1858ms
+
+change=Previously, this dataset was (temporarily?) not available.  Perhaps ERDDAP was just restarted.
+nActions=0
+
+*** constructing EDDGridFromErddap erdMH1kd4908day
+  using info from quickRestartFile
+  latitude: FloatArray isn't sorted in ascending order: [0]=89.979164 > [1]=89.9375.
+  time: DoubleArray isn't evenly spaced: [0]=1.0417248E9, [1]=1.042416E9, spacing=691200.0, average spacing=690810.8108108108.
+    smallest spacing=432000.0: [45]=1.0728288E9, [46]=1.0732608E9
+    biggest  spacing=3196800.0: [731]=1.5434496E9, [732]=1.5466464E9
+WARNING! This ERDDAP won't try to subscribe to the dataset on the remote
+ERDDAP because this ERDDAP isn't publicly accessible.
+If you want to keep this dataset up-to-date, use a small reloadEveryNMinutes.
+
+*** EDDGridFromErddap erdMH1kd4908day constructor finished. TIME=1834ms
+
+change=Previously, this dataset was (temporarily?) not available.  Perhaps ERDDAP was just restarted.
+nActions=0
+
+*** constructing EDDGridFromErddap erdMH1kd490mday
+  using info from quickRestartFile
+  latitude: FloatArray isn't sorted in ascending order: [0]=89.979164 > [1]=89.9375.
+  time: DoubleArray isn't evenly spaced: [0]=1.0426752E9, [1]=1.0453536E9, spacing=2678400.0, average spacing=2629241.379310345.
+    smallest spacing=2419200.0: [1]=1.0453536E9, [2]=1.0477728E9
+    biggest  spacing=2678400.0: [0]=1.0426752E9, [1]=1.0453536E9
+WARNING! This ERDDAP won't try to subscribe to the dataset on the remote
+ERDDAP because this ERDDAP isn't publicly accessible.
+If you want to keep this dataset up-to-date, use a small reloadEveryNMinutes.
+
+*** EDDGridFromErddap erdMH1kd490mday constructor finished. TIME=1724ms
+
+change=Previously, this dataset was (temporarily?) not available.  Perhaps ERDDAP was just restarted.
+nActions=0
+
+*** constructing EDDGridFromErddap erdMH1par01day
+  using info from quickRestartFile
+  latitude: FloatArray isn't sorted in ascending order: [0]=89.979164 > [1]=89.9375.
+  time: DoubleArray isn't evenly spaced: [0]=1.0414224E9, [1]=1.0415088E9, spacing=86400.0, average spacing=86776.39123102867.
+    smallest spacing=86400.0: [0]=1.0414224E9, [1]=1.0415088E9
+    biggest  spacing=1468800.0: [6437]=1.5975792E9, [6438]=1.599048E9
+WARNING! This ERDDAP won't try to subscribe to the dataset on the remote
+ERDDAP because this ERDDAP isn't publicly accessible.
+If you want to keep this dataset up-to-date, use a small reloadEveryNMinutes.
+
+*** EDDGridFromErddap erdMH1par01day constructor finished. TIME=1812ms
+
+change=Previously, this dataset was (temporarily?) not available.  Perhaps ERDDAP was just restarted.
+nActions=0
+
+*** constructing EDDGridFromErddap erdMH1par08day
+  using info from quickRestartFile
+  latitude: FloatArray isn't sorted in ascending order: [0]=89.979164 > [1]=89.9375.
+  time: DoubleArray isn't evenly spaced: [0]=1.0417248E9, [1]=1.042416E9, spacing=691200.0, average spacing=690810.8108108108.
+    smallest spacing=432000.0: [45]=1.0728288E9, [46]=1.0732608E9
+    biggest  spacing=3196800.0: [731]=1.5434496E9, [732]=1.5466464E9
+WARNING! This ERDDAP won't try to subscribe to the dataset on the remote
+ERDDAP because this ERDDAP isn't publicly accessible.
+If you want to keep this dataset up-to-date, use a small reloadEveryNMinutes.
+
+*** EDDGridFromErddap erdMH1par08day constructor finished. TIME=2271ms
+
+change=Previously, this dataset was (temporarily?) not available.  Perhaps ERDDAP was just restarted.
+nActions=0
+
+*** constructing EDDGridFromErddap erdMH1par0mday
+  using info from quickRestartFile
+  latitude: FloatArray isn't sorted in ascending order: [0]=89.979164 > [1]=89.9375.
+  time: DoubleArray isn't evenly spaced: [0]=1.0426752E9, [1]=1.0453536E9, spacing=2678400.0, average spacing=2663685.5895196507.
+    smallest spacing=2419200.0: [1]=1.0453536E9, [2]=1.0477728E9
+    biggest  spacing=1.05408E7: [175]=1.5028416E9, [176]=1.5133824E9
+WARNING! This ERDDAP won't try to subscribe to the dataset on the remote
+ERDDAP because this ERDDAP isn't publicly accessible.
+If you want to keep this dataset up-to-date, use a small reloadEveryNMinutes.
+
+*** EDDGridFromErddap erdMH1par0mday constructor finished. TIME=1700ms
+
+change=Previously, this dataset was (temporarily?) not available.  Perhaps ERDDAP was just restarted.
+nActions=0
+
+*** constructing EDDGridFromErddap erdVH2018chla1day
+  using info from quickRestartFile
+  latitude: FloatArray isn't sorted in ascending order: [0]=89.979164 > [1]=89.9375.
+  time: DoubleArray isn't evenly spaced: [0]=1.3255056E9, [1]=1.325592E9, spacing=86400.0, average spacing=86422.40082966036.
+    smallest spacing=86400.0: [0]=1.3255056E9, [1]=1.325592E9
+    biggest  spacing=172800.0: [82]=1.3325904E9, [83]=1.3327632E9
+WARNING! This ERDDAP won't try to subscribe to the dataset on the remote
+ERDDAP because this ERDDAP isn't publicly accessible.
+If you want to keep this dataset up-to-date, use a small reloadEveryNMinutes.
+
+*** EDDGridFromErddap erdVH2018chla1day constructor finished. TIME=1784ms
+
+change=Previously, this dataset was (temporarily?) not available.  Perhaps ERDDAP was just restarted.
+nActions=0
+
+*** constructing EDDGridFromErddap erdVH2018chla8day
+  using info from quickRestartFile
+  latitude: FloatArray isn't sorted in ascending order: [0]=89.979164 > [1]=89.9375.
+  time: DoubleArray isn't evenly spaced: [0]=1.3257216E9, [1]=1.3264128E9, spacing=691200.0, average spacing=697901.8867924528.
+    smallest spacing=432000.0: [91]=1.388448E9, [92]=1.38888E9
+    biggest  spacing=3456000.0: [196]=1.4609376E9, [197]=1.4643936E9
+WARNING! This ERDDAP won't try to subscribe to the dataset on the remote
+ERDDAP because this ERDDAP isn't publicly accessible.
+If you want to keep this dataset up-to-date, use a small reloadEveryNMinutes.
+
+*** EDDGridFromErddap erdVH2018chla8day constructor finished. TIME=1758ms
+
+change=Previously, this dataset was (temporarily?) not available.  Perhaps ERDDAP was just restarted.
+nActions=0
+
+*** constructing EDDGridFromErddap erdVH2018chlamday
+  using info from quickRestartFile
+  latitude: FloatArray isn't sorted in ascending order: [0]=89.979164 > [1]=89.9375.
+  time: DoubleArray isn't evenly spaced: [0]=1.3265856E9, [1]=1.329264E9, spacing=2678400.0, average spacing=2629028.5714285714.
+    smallest spacing=2419200.0: [13]=1.3608864E9, [14]=1.3633056E9
+    biggest  spacing=2678400.0: [0]=1.3265856E9, [1]=1.329264E9
+WARNING! This ERDDAP won't try to subscribe to the dataset on the remote
+ERDDAP because this ERDDAP isn't publicly accessible.
+If you want to keep this dataset up-to-date, use a small reloadEveryNMinutes.
+
+*** EDDGridFromErddap erdVH2018chlamday constructor finished. TIME=1711ms
+
+change=Previously, this dataset was (temporarily?) not available.  Perhaps ERDDAP was just restarted.
+nActions=0
+
+*** constructing EDDGridFromErddap erdVH2018k4901day
+  using info from quickRestartFile
+  latitude: FloatArray isn't sorted in ascending order: [0]=89.979164 > [1]=89.9375.
+  time: DoubleArray isn't evenly spaced: [0]=1.3255056E9, [1]=1.325592E9, spacing=86400.0, average spacing=86422.40082966036.
+    smallest spacing=86400.0: [0]=1.3255056E9, [1]=1.325592E9
+    biggest  spacing=172800.0: [82]=1.3325904E9, [83]=1.3327632E9
+WARNING! This ERDDAP won't try to subscribe to the dataset on the remote
+ERDDAP because this ERDDAP isn't publicly accessible.
+If you want to keep this dataset up-to-date, use a small reloadEveryNMinutes.
+
+*** EDDGridFromErddap erdVH2018k4901day constructor finished. TIME=1808ms
+
+change=Previously, this dataset was (temporarily?) not available.  Perhaps ERDDAP was just restarted.
+nActions=0
+
+*** constructing EDDGridFromErddap erdVH2018k4908day
+  using info from quickRestartFile
+  latitude: FloatArray isn't sorted in ascending order: [0]=89.979164 > [1]=89.9375.
+  time: DoubleArray isn't evenly spaced: [0]=1.3257216E9, [1]=1.3264128E9, spacing=691200.0, average spacing=686390.1030927835.
+    smallest spacing=432000.0: [91]=1.388448E9, [92]=1.38888E9
+    biggest  spacing=691200.0: [0]=1.3257216E9, [1]=1.3264128E9
+WARNING! This ERDDAP won't try to subscribe to the dataset on the remote
+ERDDAP because this ERDDAP isn't publicly accessible.
+If you want to keep this dataset up-to-date, use a small reloadEveryNMinutes.
+
+*** EDDGridFromErddap erdVH2018k4908day constructor finished. TIME=1720ms
+
+change=Previously, this dataset was (temporarily?) not available.  Perhaps ERDDAP was just restarted.
+nActions=0
+
+*** constructing EDDGridFromErddap erdVH2018k490mday
+  using info from quickRestartFile
+  latitude: FloatArray isn't sorted in ascending order: [0]=89.979164 > [1]=89.9375.
+  time: DoubleArray isn't evenly spaced: [0]=1.3265856E9, [1]=1.329264E9, spacing=2678400.0, average spacing=2629028.5714285714.
+    smallest spacing=2419200.0: [13]=1.3608864E9, [14]=1.3633056E9
+    biggest  spacing=2678400.0: [0]=1.3265856E9, [1]=1.329264E9
+WARNING! This ERDDAP won't try to subscribe to the dataset on the remote
+ERDDAP because this ERDDAP isn't publicly accessible.
+If you want to keep this dataset up-to-date, use a small reloadEveryNMinutes.
+
+*** EDDGridFromErddap erdVH2018k490mday constructor finished. TIME=1718ms
+
+change=Previously, this dataset was (temporarily?) not available.  Perhaps ERDDAP was just restarted.
+nActions=0
+
+*** constructing EDDGridFromErddap erdVH2018par1day
+  using info from quickRestartFile
+  latitude: FloatArray isn't sorted in ascending order: [0]=89.979164 > [1]=89.9375.
+  time: DoubleArray isn't evenly spaced: [0]=1.3255056E9, [1]=1.325592E9, spacing=86400.0, average spacing=86422.40082966036.
+    smallest spacing=86400.0: [0]=1.3255056E9, [1]=1.325592E9
+    biggest  spacing=172800.0: [82]=1.3325904E9, [83]=1.3327632E9
+WARNING! This ERDDAP won't try to subscribe to the dataset on the remote
+ERDDAP because this ERDDAP isn't publicly accessible.
+If you want to keep this dataset up-to-date, use a small reloadEveryNMinutes.
+
+*** EDDGridFromErddap erdVH2018par1day constructor finished. TIME=1900ms
+
+change=Previously, this dataset was (temporarily?) not available.  Perhaps ERDDAP was just restarted.
+nActions=0
+
+*** constructing EDDGridFromErddap erdVH2018par8day
+  using info from quickRestartFile
+  latitude: FloatArray isn't sorted in ascending order: [0]=89.979164 > [1]=89.9375.
+  time: DoubleArray isn't evenly spaced: [0]=1.3257216E9, [1]=1.3264128E9, spacing=691200.0, average spacing=694987.8914405011.
+    smallest spacing=432000.0: [85]=1.388448E9, [86]=1.38888E9
+    biggest  spacing=4838400.0: [1]=1.3264128E9, [2]=1.3312512E9
+WARNING! This ERDDAP won't try to subscribe to the dataset on the remote
+ERDDAP because this ERDDAP isn't publicly accessible.
+If you want to keep this dataset up-to-date, use a small reloadEveryNMinutes.
+
+*** EDDGridFromErddap erdVH2018par8day constructor finished. TIME=1752ms
+
+change=Previously, this dataset was (temporarily?) not available.  Perhaps ERDDAP was just restarted.
+nActions=0
+
+*** constructing EDDGridFromErddap erdVH2018parmday
+  using info from quickRestartFile
+  latitude: FloatArray isn't sorted in ascending order: [0]=89.979164 > [1]=89.9375.
+  time: DoubleArray isn't evenly spaced: [0]=1.3265856E9, [1]=1.329264E9, spacing=2678400.0, average spacing=2629028.5714285714.
+    smallest spacing=2419200.0: [13]=1.3608864E9, [14]=1.3633056E9
+    biggest  spacing=2678400.0: [0]=1.3265856E9, [1]=1.329264E9
+WARNING! This ERDDAP won't try to subscribe to the dataset on the remote
+ERDDAP because this ERDDAP isn't publicly accessible.
+If you want to keep this dataset up-to-date, use a small reloadEveryNMinutes.
+
+*** EDDGridFromErddap erdVH2018parmday constructor finished. TIME=1732ms
+
+change=Previously, this dataset was (temporarily?) not available.  Perhaps ERDDAP was just restarted.
+nActions=0
+
+*** constructing EDDGridFromErddap erdVH2018pic1day
+  using info from quickRestartFile
+  latitude: FloatArray isn't sorted in ascending order: [0]=89.979164 > [1]=89.9375.
+  time: DoubleArray isn't evenly spaced: [0]=1.3255056E9, [1]=1.325592E9, spacing=86400.0, average spacing=86422.40082966036.
+    smallest spacing=86400.0: [0]=1.3255056E9, [1]=1.325592E9
+    biggest  spacing=172800.0: [82]=1.3325904E9, [83]=1.3327632E9
+WARNING! This ERDDAP won't try to subscribe to the dataset on the remote
+ERDDAP because this ERDDAP isn't publicly accessible.
+If you want to keep this dataset up-to-date, use a small reloadEveryNMinutes.
+
+*** EDDGridFromErddap erdVH2018pic1day constructor finished. TIME=1802ms
+
+change=Previously, this dataset was (temporarily?) not available.  Perhaps ERDDAP was just restarted.
+nActions=0
+
+*** constructing EDDGridFromErddap erdVH2018pic8day
+  using info from quickRestartFile
+  latitude: FloatArray isn't sorted in ascending order: [0]=89.979164 > [1]=89.9375.
+  time: DoubleArray isn't evenly spaced: [0]=1.3257216E9, [1]=1.3264128E9, spacing=691200.0, average spacing=686390.1030927835.
+    smallest spacing=432000.0: [91]=1.388448E9, [92]=1.38888E9
+    biggest  spacing=691200.0: [0]=1.3257216E9, [1]=1.3264128E9
+WARNING! This ERDDAP won't try to subscribe to the dataset on the remote
+ERDDAP because this ERDDAP isn't publicly accessible.
+If you want to keep this dataset up-to-date, use a small reloadEveryNMinutes.
+
+*** EDDGridFromErddap erdVH2018pic8day constructor finished. TIME=1724ms
+
+change=Previously, this dataset was (temporarily?) not available.  Perhaps ERDDAP was just restarted.
+nActions=0
+
+*** constructing EDDGridFromErddap erdVH2018picmday
+  using info from quickRestartFile
+  latitude: FloatArray isn't sorted in ascending order: [0]=89.979164 > [1]=89.9375.
+  time: DoubleArray isn't evenly spaced: [0]=1.3265856E9, [1]=1.329264E9, spacing=2678400.0, average spacing=2629028.5714285714.
+    smallest spacing=2419200.0: [13]=1.3608864E9, [14]=1.3633056E9
+    biggest  spacing=2678400.0: [0]=1.3265856E9, [1]=1.329264E9
+WARNING! This ERDDAP won't try to subscribe to the dataset on the remote
+ERDDAP because this ERDDAP isn't publicly accessible.
+If you want to keep this dataset up-to-date, use a small reloadEveryNMinutes.
+
+*** EDDGridFromErddap erdVH2018picmday constructor finished. TIME=1716ms
+
+change=Previously, this dataset was (temporarily?) not available.  Perhaps ERDDAP was just restarted.
+nActions=0
+
+*** constructing EDDGridFromErddap erdVH2018poc1day
+  using info from quickRestartFile
+  latitude: FloatArray isn't sorted in ascending order: [0]=89.979164 > [1]=89.9375.
+  time: DoubleArray isn't evenly spaced: [0]=1.3255056E9, [1]=1.325592E9, spacing=86400.0, average spacing=86422.40082966036.
+    smallest spacing=86400.0: [0]=1.3255056E9, [1]=1.325592E9
+    biggest  spacing=172800.0: [82]=1.3325904E9, [83]=1.3327632E9
+WARNING! This ERDDAP won't try to subscribe to the dataset on the remote
+ERDDAP because this ERDDAP isn't publicly accessible.
+If you want to keep this dataset up-to-date, use a small reloadEveryNMinutes.
+
+*** EDDGridFromErddap erdVH2018poc1day constructor finished. TIME=1764ms
+
+change=Previously, this dataset was (temporarily?) not available.  Perhaps ERDDAP was just restarted.
+nActions=0
+
+*** constructing EDDGridFromErddap erdVH2018poc8day
+  using info from quickRestartFile
+  latitude: FloatArray isn't sorted in ascending order: [0]=89.979164 > [1]=89.9375.
+  time: DoubleArray isn't evenly spaced: [0]=1.3257216E9, [1]=1.3264128E9, spacing=691200.0, average spacing=686390.1030927835.
+    smallest spacing=432000.0: [91]=1.388448E9, [92]=1.38888E9
+    biggest  spacing=691200.0: [0]=1.3257216E9, [1]=1.3264128E9
+WARNING! This ERDDAP won't try to subscribe to the dataset on the remote
+ERDDAP because this ERDDAP isn't publicly accessible.
+If you want to keep this dataset up-to-date, use a small reloadEveryNMinutes.
+
+*** EDDGridFromErddap erdVH2018poc8day constructor finished. TIME=1696ms
+
+change=Previously, this dataset was (temporarily?) not available.  Perhaps ERDDAP was just restarted.
+nActions=0
+
+*** constructing EDDGridFromErddap erdVH2018pocmday
+  using info from quickRestartFile
+  latitude: FloatArray isn't sorted in ascending order: [0]=89.979164 > [1]=89.9375.
+  time: DoubleArray isn't evenly spaced: [0]=1.3265856E9, [1]=1.329264E9, spacing=2678400.0, average spacing=2629028.5714285714.
+    smallest spacing=2419200.0: [13]=1.3608864E9, [14]=1.3633056E9
+    biggest  spacing=2678400.0: [0]=1.3265856E9, [1]=1.329264E9
+WARNING! This ERDDAP won't try to subscribe to the dataset on the remote
+ERDDAP because this ERDDAP isn't publicly accessible.
+If you want to keep this dataset up-to-date, use a small reloadEveryNMinutes.
+
+*** EDDGridFromErddap erdVH2018pocmday constructor finished. TIME=1782ms
+
+change=Previously, this dataset was (temporarily?) not available.  Perhaps ERDDAP was just restarted.
+nActions=0
+
+*** constructing EDDGridFromErddap erdVH2018r6711day
+  using info from quickRestartFile
+  latitude: FloatArray isn't sorted in ascending order: [0]=89.979164 > [1]=89.9375.
+  time: DoubleArray isn't evenly spaced: [0]=1.3255056E9, [1]=1.325592E9, spacing=86400.0, average spacing=86422.40082966036.
+    smallest spacing=86400.0: [0]=1.3255056E9, [1]=1.325592E9
+    biggest  spacing=172800.0: [82]=1.3325904E9, [83]=1.3327632E9
+WARNING! This ERDDAP won't try to subscribe to the dataset on the remote
+ERDDAP because this ERDDAP isn't publicly accessible.
+If you want to keep this dataset up-to-date, use a small reloadEveryNMinutes.
+
+*** EDDGridFromErddap erdVH2018r6711day constructor finished. TIME=1799ms
+
+change=Previously, this dataset was (temporarily?) not available.  Perhaps ERDDAP was just restarted.
+nActions=0
+
+*** constructing EDDGridFromErddap erdVH2018r6718day
+  using info from quickRestartFile
+  latitude: FloatArray isn't sorted in ascending order: [0]=89.979164 > [1]=89.9375.
+  time: DoubleArray isn't evenly spaced: [0]=1.3257216E9, [1]=1.3264128E9, spacing=691200.0, average spacing=686390.1030927835.
+    smallest spacing=432000.0: [91]=1.388448E9, [92]=1.38888E9
+    biggest  spacing=691200.0: [0]=1.3257216E9, [1]=1.3264128E9
+WARNING! This ERDDAP won't try to subscribe to the dataset on the remote
+ERDDAP because this ERDDAP isn't publicly accessible.
+If you want to keep this dataset up-to-date, use a small reloadEveryNMinutes.
+
+*** EDDGridFromErddap erdVH2018r6718day constructor finished. TIME=2003ms
+
+change=Previously, this dataset was (temporarily?) not available.  Perhaps ERDDAP was just restarted.
+nActions=0
+
+*** constructing EDDGridFromErddap erdVH2018r671mday
+  using info from quickRestartFile
+  latitude: FloatArray isn't sorted in ascending order: [0]=89.979164 > [1]=89.9375.
+  time: DoubleArray isn't evenly spaced: [0]=1.3265856E9, [1]=1.329264E9, spacing=2678400.0, average spacing=2629028.5714285714.
+    smallest spacing=2419200.0: [13]=1.3608864E9, [14]=1.3633056E9
+    biggest  spacing=2678400.0: [0]=1.3265856E9, [1]=1.329264E9
+WARNING! This ERDDAP won't try to subscribe to the dataset on the remote
+ERDDAP because this ERDDAP isn't publicly accessible.
+If you want to keep this dataset up-to-date, use a small reloadEveryNMinutes.
+
+*** EDDGridFromErddap erdVH2018r671mday constructor finished. TIME=1712ms
+
+change=Previously, this dataset was (temporarily?) not available.  Perhaps ERDDAP was just restarted.
+nActions=0
+
+*** constructing EDDTableFromErddap cwwcNDBCMet
+  using info from quickRestartFile
+  quickRestart: reusing subset and distinct files
+  accessibleViaNcCF=[true]
+WARNING! This ERDDAP won't try to subscribe to the dataset on the remote
+ERDDAP because this ERDDAP isn't publicly accessible.
+If you want to keep this dataset up-to-date, use a small reloadEveryNMinutes.
+
+*** EDDTableFromErddap cwwcNDBCMet constructor finished. TIME=897ms
+
+change=Previously, this dataset was (temporarily?) not available.  Perhaps ERDDAP was just restarted.
+nActions=0
+
+*** constructing EDDTableFromErddap erdGtsppBest
+  using info from quickRestartFile
+  quickRestart: reusing subset and distinct files
+  accessibleViaNcCF=[true]
+WARNING! This ERDDAP won't try to subscribe to the dataset on the remote
+ERDDAP because this ERDDAP isn't publicly accessible.
+If you want to keep this dataset up-to-date, use a small reloadEveryNMinutes.
+
+*** EDDTableFromErddap erdGtsppBest constructor finished. TIME=1085ms
+
+change=Previously, this dataset was (temporarily?) not available.  Perhaps ERDDAP was just restarted.
+nActions=0
+
+*** constructing EDDTableFromErddap pmelTaoDyAdcp
+  using info from quickRestartFile
+  quickRestart: reusing subset and distinct files
+  accessibleViaNcCF=[true]
+WARNING! This ERDDAP won't try to subscribe to the dataset on the remote
+ERDDAP because this ERDDAP isn't publicly accessible.
+If you want to keep this dataset up-to-date, use a small reloadEveryNMinutes.
+
+*** EDDTableFromErddap pmelTaoDyAdcp constructor finished. TIME=849ms
+
+change=Previously, this dataset was (temporarily?) not available.  Perhaps ERDDAP was just restarted.
+nActions=0
+
+*** constructing EDDTableFromErddap pmelTaoDyAirt
+  using info from quickRestartFile
+  quickRestart: reusing subset and distinct files
+  accessibleViaNcCF=[true]
+WARNING! This ERDDAP won't try to subscribe to the dataset on the remote
+ERDDAP because this ERDDAP isn't publicly accessible.
+If you want to keep this dataset up-to-date, use a small reloadEveryNMinutes.
+
+*** EDDTableFromErddap pmelTaoDyAirt constructor finished. TIME=884ms
+
+change=Previously, this dataset was (temporarily?) not available.  Perhaps ERDDAP was just restarted.
+nActions=0
+
+*** constructing EDDTableFromErddap pmelTaoDyBf
+  using info from quickRestartFile
+  quickRestart: reusing subset and distinct files
+  accessibleViaNcCF=[true]
+WARNING! This ERDDAP won't try to subscribe to the dataset on the remote
+ERDDAP because this ERDDAP isn't publicly accessible.
+If you want to keep this dataset up-to-date, use a small reloadEveryNMinutes.
+
+*** EDDTableFromErddap pmelTaoDyBf constructor finished. TIME=890ms
+
+change=Previously, this dataset was (temporarily?) not available.  Perhaps ERDDAP was just restarted.
+nActions=0
+
+*** constructing EDDTableFromErddap pmelTaoDyBp
+  using info from quickRestartFile
+  quickRestart: reusing subset and distinct files
+  accessibleViaNcCF=[true]
+WARNING! This ERDDAP won't try to subscribe to the dataset on the remote
+ERDDAP because this ERDDAP isn't publicly accessible.
+If you want to keep this dataset up-to-date, use a small reloadEveryNMinutes.
+
+*** EDDTableFromErddap pmelTaoDyBp constructor finished. TIME=865ms
+
+change=Previously, this dataset was (temporarily?) not available.  Perhaps ERDDAP was just restarted.
+nActions=0
+
+*** constructing EDDTableFromErddap pmelTaoDyCur
+  using info from quickRestartFile
+  quickRestart: reusing subset and distinct files
+  accessibleViaNcCF=[true]
+WARNING! This ERDDAP won't try to subscribe to the dataset on the remote
+ERDDAP because this ERDDAP isn't publicly accessible.
+If you want to keep this dataset up-to-date, use a small reloadEveryNMinutes.
+
+*** EDDTableFromErddap pmelTaoDyCur constructor finished. TIME=855ms
+
+change=Previously, this dataset was (temporarily?) not available.  Perhaps ERDDAP was just restarted.
+nActions=0
+
+*** constructing EDDTableFromErddap pmelTaoDyD
+  using info from quickRestartFile
+  quickRestart: reusing subset and distinct files
+  accessibleViaNcCF=[true]
+WARNING! This ERDDAP won't try to subscribe to the dataset on the remote
+ERDDAP because this ERDDAP isn't publicly accessible.
+If you want to keep this dataset up-to-date, use a small reloadEveryNMinutes.
+
+*** EDDTableFromErddap pmelTaoDyD constructor finished. TIME=885ms
+
+change=Previously, this dataset was (temporarily?) not available.  Perhaps ERDDAP was just restarted.
+nActions=0
+
+*** constructing EDDTableFromErddap pmelTaoDyDyn
+  using info from quickRestartFile
+  quickRestart: reusing subset and distinct files
+  accessibleViaNcCF=[true]
+WARNING! This ERDDAP won't try to subscribe to the dataset on the remote
+ERDDAP because this ERDDAP isn't publicly accessible.
+If you want to keep this dataset up-to-date, use a small reloadEveryNMinutes.
+
+*** EDDTableFromErddap pmelTaoDyDyn constructor finished. TIME=887ms
+
+change=Previously, this dataset was (temporarily?) not available.  Perhaps ERDDAP was just restarted.
+nActions=0
+
+*** constructing EDDTableFromErddap pmelTaoDyEmp
+  using info from quickRestartFile
+  quickRestart: reusing subset and distinct files
+  accessibleViaNcCF=[true]
+WARNING! This ERDDAP won't try to subscribe to the dataset on the remote
+ERDDAP because this ERDDAP isn't publicly accessible.
+If you want to keep this dataset up-to-date, use a small reloadEveryNMinutes.
+
+*** EDDTableFromErddap pmelTaoDyEmp constructor finished. TIME=871ms
+
+change=Previously, this dataset was (temporarily?) not available.  Perhaps ERDDAP was just restarted.
+nActions=0
+
+*** constructing EDDTableFromErddap pmelTaoDyEvap
+  using info from quickRestartFile
+  quickRestart: reusing subset and distinct files
+  accessibleViaNcCF=[true]
+WARNING! This ERDDAP won't try to subscribe to the dataset on the remote
+ERDDAP because this ERDDAP isn't publicly accessible.
+If you want to keep this dataset up-to-date, use a small reloadEveryNMinutes.
+
+*** EDDTableFromErddap pmelTaoDyEvap constructor finished. TIME=856ms
+
+change=Previously, this dataset was (temporarily?) not available.  Perhaps ERDDAP was just restarted.
+nActions=0
+
+*** constructing EDDTableFromErddap pmelTaoDyHeat
+  using info from quickRestartFile
+  quickRestart: reusing subset and distinct files
+  accessibleViaNcCF=[true]
+WARNING! This ERDDAP won't try to subscribe to the dataset on the remote
+ERDDAP because this ERDDAP isn't publicly accessible.
+If you want to keep this dataset up-to-date, use a small reloadEveryNMinutes.
+
+*** EDDTableFromErddap pmelTaoDyHeat constructor finished. TIME=885ms
+
+change=Previously, this dataset was (temporarily?) not available.  Perhaps ERDDAP was just restarted.
+nActions=0
+
+*** constructing EDDTableFromErddap pmelTaoDyIso
+  using info from quickRestartFile
+  quickRestart: reusing subset and distinct files
+  accessibleViaNcCF=[true]
+WARNING! This ERDDAP won't try to subscribe to the dataset on the remote
+ERDDAP because this ERDDAP isn't publicly accessible.
+If you want to keep this dataset up-to-date, use a small reloadEveryNMinutes.
+
+*** EDDTableFromErddap pmelTaoDyIso constructor finished. TIME=888ms
+
+change=Previously, this dataset was (temporarily?) not available.  Perhaps ERDDAP was just restarted.
+nActions=0
+
+*** constructing EDDTableFromErddap pmelTaoDyLw
+  using info from quickRestartFile
+  quickRestart: reusing subset and distinct files
+  accessibleViaNcCF=[true]
+WARNING! This ERDDAP won't try to subscribe to the dataset on the remote
+ERDDAP because this ERDDAP isn't publicly accessible.
+If you want to keep this dataset up-to-date, use a small reloadEveryNMinutes.
+
+*** EDDTableFromErddap pmelTaoDyLw constructor finished. TIME=870ms
+
+change=Previously, this dataset was (temporarily?) not available.  Perhaps ERDDAP was just restarted.
+nActions=0
+
+*** constructing EDDTableFromErddap pmelTaoDyLwnet
+  using info from quickRestartFile
+  quickRestart: reusing subset and distinct files
+  accessibleViaNcCF=[true]
+WARNING! This ERDDAP won't try to subscribe to the dataset on the remote
+ERDDAP because this ERDDAP isn't publicly accessible.
+If you want to keep this dataset up-to-date, use a small reloadEveryNMinutes.
+
+*** EDDTableFromErddap pmelTaoDyLwnet constructor finished. TIME=874ms
+
+change=Previously, this dataset was (temporarily?) not available.  Perhaps ERDDAP was just restarted.
+nActions=0
+
+*** constructing EDDTableFromErddap pmelTaoDyPos
+  using info from quickRestartFile
+  quickRestart: reusing subset and distinct files
+  accessibleViaNcCF=[true]
+WARNING! This ERDDAP won't try to subscribe to the dataset on the remote
+ERDDAP because this ERDDAP isn't publicly accessible.
+If you want to keep this dataset up-to-date, use a small reloadEveryNMinutes.
+
+*** EDDTableFromErddap pmelTaoDyPos constructor finished. TIME=845ms
+
+change=Previously, this dataset was (temporarily?) not available.  Perhaps ERDDAP was just restarted.
+nActions=0
+
+*** constructing EDDTableFromErddap pmelTaoDyQlat
+  using info from quickRestartFile
+  quickRestart: reusing subset and distinct files
+  accessibleViaNcCF=[true]
+WARNING! This ERDDAP won't try to subscribe to the dataset on the remote
+ERDDAP because this ERDDAP isn't publicly accessible.
+If you want to keep this dataset up-to-date, use a small reloadEveryNMinutes.
+
+*** EDDTableFromErddap pmelTaoDyQlat constructor finished. TIME=887ms
+
+change=Previously, this dataset was (temporarily?) not available.  Perhaps ERDDAP was just restarted.
+nActions=0
+
+*** constructing EDDTableFromErddap pmelTaoDyQnet
+  using info from quickRestartFile
+  quickRestart: reusing subset and distinct files
+  accessibleViaNcCF=[true]
+WARNING! This ERDDAP won't try to subscribe to the dataset on the remote
+ERDDAP because this ERDDAP isn't publicly accessible.
+If you want to keep this dataset up-to-date, use a small reloadEveryNMinutes.
+
+*** EDDTableFromErddap pmelTaoDyQnet constructor finished. TIME=875ms
+
+change=Previously, this dataset was (temporarily?) not available.  Perhaps ERDDAP was just restarted.
+nActions=0
+
+*** constructing EDDTableFromErddap pmelTaoDyQsen
+  using info from quickRestartFile
+  quickRestart: reusing subset and distinct files
+  accessibleViaNcCF=[true]
+WARNING! This ERDDAP won't try to subscribe to the dataset on the remote
+ERDDAP because this ERDDAP isn't publicly accessible.
+If you want to keep this dataset up-to-date, use a small reloadEveryNMinutes.
+
+*** EDDTableFromErddap pmelTaoDyQsen constructor finished. TIME=863ms
+
+change=Previously, this dataset was (temporarily?) not available.  Perhaps ERDDAP was just restarted.
+nActions=0
+
+*** constructing EDDTableFromErddap pmelTaoDyRad
+  using info from quickRestartFile
+  quickRestart: reusing subset and distinct files
+  accessibleViaNcCF=[true]
+WARNING! This ERDDAP won't try to subscribe to the dataset on the remote
+ERDDAP because this ERDDAP isn't publicly accessible.
+If you want to keep this dataset up-to-date, use a small reloadEveryNMinutes.
+
+*** EDDTableFromErddap pmelTaoDyRad constructor finished. TIME=899ms
+
+change=Previously, this dataset was (temporarily?) not available.  Perhaps ERDDAP was just restarted.
+nActions=0
+
+*** constructing EDDTableFromErddap pmelTaoDyRain
+  using info from quickRestartFile
+  quickRestart: reusing subset and distinct files
+  accessibleViaNcCF=[true]
+WARNING! This ERDDAP won't try to subscribe to the dataset on the remote
+ERDDAP because this ERDDAP isn't publicly accessible.
+If you want to keep this dataset up-to-date, use a small reloadEveryNMinutes.
+
+*** EDDTableFromErddap pmelTaoDyRain constructor finished. TIME=870ms
+
+change=Previously, this dataset was (temporarily?) not available.  Perhaps ERDDAP was just restarted.
+nActions=0
+
+*** constructing EDDTableFromErddap pmelTaoDyRf
+  using info from quickRestartFile
+  quickRestart: reusing subset and distinct files
+  accessibleViaNcCF=[true]
+WARNING! This ERDDAP won't try to subscribe to the dataset on the remote
+ERDDAP because this ERDDAP isn't publicly accessible.
+If you want to keep this dataset up-to-date, use a small reloadEveryNMinutes.
+
+*** EDDTableFromErddap pmelTaoDyRf constructor finished. TIME=881ms
+
+change=Previously, this dataset was (temporarily?) not available.  Perhaps ERDDAP was just restarted.
+nActions=0
+
+*** constructing EDDTableFromErddap pmelTaoDyRh
+  using info from quickRestartFile
+  quickRestart: reusing subset and distinct files
+  accessibleViaNcCF=[true]
+WARNING! This ERDDAP won't try to subscribe to the dataset on the remote
+ERDDAP because this ERDDAP isn't publicly accessible.
+If you want to keep this dataset up-to-date, use a small reloadEveryNMinutes.
+
+*** EDDTableFromErddap pmelTaoDyRh constructor finished. TIME=954ms
+
+change=Previously, this dataset was (temporarily?) not available.  Perhaps ERDDAP was just restarted.
+nActions=0
+
+*** constructing EDDTableFromErddap pmelTaoDyS
+  using info from quickRestartFile
+  quickRestart: reusing subset and distinct files
+  accessibleViaNcCF=[true]
+WARNING! This ERDDAP won't try to subscribe to the dataset on the remote
+ERDDAP because this ERDDAP isn't publicly accessible.
+If you want to keep this dataset up-to-date, use a small reloadEveryNMinutes.
+
+*** EDDTableFromErddap pmelTaoDyS constructor finished. TIME=878ms
+
+change=Previously, this dataset was (temporarily?) not available.  Perhaps ERDDAP was just restarted.
+nActions=0
+
+*** constructing EDDTableFromErddap pmelTaoDySsd
+  using info from quickRestartFile
+  quickRestart: reusing subset and distinct files
+  accessibleViaNcCF=[true]
+WARNING! This ERDDAP won't try to subscribe to the dataset on the remote
+ERDDAP because this ERDDAP isn't publicly accessible.
+If you want to keep this dataset up-to-date, use a small reloadEveryNMinutes.
+
+*** EDDTableFromErddap pmelTaoDySsd constructor finished. TIME=878ms
+
+change=Previously, this dataset was (temporarily?) not available.  Perhaps ERDDAP was just restarted.
+nActions=0
+
+*** constructing EDDTableFromErddap pmelTaoDySss
+  using info from quickRestartFile
+  quickRestart: reusing subset and distinct files
+  accessibleViaNcCF=[true]
+WARNING! This ERDDAP won't try to subscribe to the dataset on the remote
+ERDDAP because this ERDDAP isn't publicly accessible.
+If you want to keep this dataset up-to-date, use a small reloadEveryNMinutes.
+
+*** EDDTableFromErddap pmelTaoDySss constructor finished. TIME=849ms
+
+change=Previously, this dataset was (temporarily?) not available.  Perhaps ERDDAP was just restarted.
+nActions=0
+
+*** constructing EDDTableFromErddap pmelTaoDySst
+  using info from quickRestartFile
+  quickRestart: reusing subset and distinct files
+  accessibleViaNcCF=[true]
+WARNING! This ERDDAP won't try to subscribe to the dataset on the remote
+ERDDAP because this ERDDAP isn't publicly accessible.
+If you want to keep this dataset up-to-date, use a small reloadEveryNMinutes.
+
+*** EDDTableFromErddap pmelTaoDySst constructor finished. TIME=871ms
+
+change=Previously, this dataset was (temporarily?) not available.  Perhaps ERDDAP was just restarted.
+nActions=0
+
+*** constructing EDDTableFromErddap pmelTaoDySwnet
+  using info from quickRestartFile
+  quickRestart: reusing subset and distinct files
+  accessibleViaNcCF=[true]
+WARNING! This ERDDAP won't try to subscribe to the dataset on the remote
+ERDDAP because this ERDDAP isn't publicly accessible.
+If you want to keep this dataset up-to-date, use a small reloadEveryNMinutes.
+
+*** EDDTableFromErddap pmelTaoDySwnet constructor finished. TIME=863ms
+
+change=Previously, this dataset was (temporarily?) not available.  Perhaps ERDDAP was just restarted.
+nActions=0
+
+*** constructing EDDTableFromErddap pmelTaoDyT
+  using info from quickRestartFile
+  quickRestart: reusing subset and distinct files
+  accessibleViaNcCF=[true]
+WARNING! This ERDDAP won't try to subscribe to the dataset on the remote
+ERDDAP because this ERDDAP isn't publicly accessible.
+If you want to keep this dataset up-to-date, use a small reloadEveryNMinutes.
+
+*** EDDTableFromErddap pmelTaoDyT constructor finished. TIME=862ms
+
+change=Previously, this dataset was (temporarily?) not available.  Perhaps ERDDAP was just restarted.
+nActions=0
+
+*** constructing EDDTableFromErddap pmelTaoDyTau
+  using info from quickRestartFile
+  quickRestart: reusing subset and distinct files
+  accessibleViaNcCF=[true]
+WARNING! This ERDDAP won't try to subscribe to the dataset on the remote
+ERDDAP because this ERDDAP isn't publicly accessible.
+If you want to keep this dataset up-to-date, use a small reloadEveryNMinutes.
+
+*** EDDTableFromErddap pmelTaoDyTau constructor finished. TIME=862ms
+
+change=Previously, this dataset was (temporarily?) not available.  Perhaps ERDDAP was just restarted.
+nActions=0
+
+*** constructing EDDTableFromErddap pmelTaoDyW
+  using info from quickRestartFile
+  quickRestart: reusing subset and distinct files
+  accessibleViaNcCF=[true]
+WARNING! This ERDDAP won't try to subscribe to the dataset on the remote
+ERDDAP because this ERDDAP isn't publicly accessible.
+If you want to keep this dataset up-to-date, use a small reloadEveryNMinutes.
+
+*** EDDTableFromErddap pmelTaoDyW constructor finished. TIME=880ms
+
+change=Previously, this dataset was (temporarily?) not available.  Perhaps ERDDAP was just restarted.
+nActions=0
+
+*** constructing EDDGridFromErddap erdMWchla1day
+  using info from quickRestartFile
+  time: DoubleArray isn't evenly spaced: [0]=1.025784E9, [1]=1.0258704E9, spacing=86400.0, average spacing=87637.73218404759.
+    smallest spacing=86400.0: [0]=1.025784E9, [1]=1.0258704E9
+    biggest  spacing=2505600.0: [4124]=1.3862448E9, [4125]=1.3887504E9
+WARNING! This ERDDAP won't try to subscribe to the dataset on the remote
+ERDDAP because this ERDDAP isn't publicly accessible.
+If you want to keep this dataset up-to-date, use a small reloadEveryNMinutes.
+
+*** EDDGridFromErddap erdMWchla1day constructor finished. TIME=1799ms
+
+change=Previously, this dataset was (temporarily?) not available.  Perhaps ERDDAP was just restarted.
+nActions=0
+
+*** constructing EDDTableFromErddap rlPmelTaoDySst
+  using info from quickRestartFile
+{{{{#4 2025-05-21T23:01:56+05:30 (notLoggedIn) (unknownIPAddress) GET /erddap/files/pmelTaoDySst/.csv
+OutputStreamFromHttpResponse charEncoding=ISO-8859-1, encoding=gzip, pmelTaoDySst Files, .csv
+  quickRestart: reusing subset and distinct files
+  accessibleViaNcCF=[true]
+WARNING! This ERDDAP won't try to subscribe to the dataset on the remote
+ERDDAP because this ERDDAP isn't publicly accessible.
+If you want to keep this dataset up-to-date, use a small reloadEveryNMinutes.
+
+*** EDDTableFromErddap rlPmelTaoDySst constructor finished. TIME=897ms
+
+change=Previously, this dataset was (temporarily?) not available.  Perhaps ERDDAP was just restarted.
+nActions=0
+
+*** constructing EDDGridFromDap hawaii_d90f_20ee_c4cb
+  using info from quickRestartFile
+  time: DoubleArray isn't evenly spaced: [0]=683019.0, [1]=683050.0, spacing=31.0, average spacing=30.436569386539606.
+    smallest spacing=28.0: [1]=683050.0, [2]=683078.0
+    biggest  spacing=31.0: [0]=683019.0, [1]=683050.0
+  depth: DoubleArray isn't evenly spaced: [0]=5.01, [1]=15.07, spacing=10.06, average spacing=137.69205128205127.
+    smallest spacing=10.06: [0]=5.01, [1]=15.07
+    biggest  spacing=250.0: [27]=2375.0, [28]=2625.0
+
+*** EDDGridFromDap hawaii_d90f_20ee_c4cb constructor finished. TIME=16ms
+
+change=Previously, this dataset was (temporarily?) not available.  Perhaps ERDDAP was just restarted.
+nActions=0
+
+*** constructing EDDGridFromErddap hawaii_d90f_20ee_c4cb_LonPM180Child
+  using info from quickRestartFile
+  depth: DoubleArray isn't evenly spaced: [0]=5.01, [1]=15.07, spacing=10.06, average spacing=137.69205128205127.
+    smallest spacing=10.06: [0]=5.01, [1]=15.07
+    biggest  spacing=250.0: [27]=2375.0, [28]=2625.0
+  time: DoubleArray isn't evenly spaced: [0]=-3.122928E9, [1]=-3.1202496E9, spacing=2678400.0, average spacing=2629719.594997022.
+    smallest spacing=2419200.0: [1]=-3.1202496E9, [2]=-3.1178304E9
+    biggest  spacing=2678400.0: [0]=-3.122928E9, [1]=-3.1202496E9
+{{{{#5 2025-05-21T23:01:57+05:30 (notLoggedIn) (unknownIPAddress) GET /erddap/version
+OutputStreamFromHttpResponse charEncoding=UTF-8, encoding=gzip, version, .txt
+}}}}#5 (unknownIPAddress) SUCCESS. TIME=2ms
+
+{{{{#6 2025-05-21T23:01:57+05:30 (notLoggedIn) (unknownIPAddress) GET /erddap/files/hawaii_d90f_20ee_c4cb/.csv
+Resource not found: accessibleViaFilesDir=""
+#4 FAILURE. TIME=878ms
+*** sendErrorCode 500 for request #4:
+/erddap/files/pmelTaoDySst/.csv
+org.eclipse.jetty.io.EofException
+ at org.eclipse.jetty.io.SocketChannelEndPoint.flush(SocketChannelEndPoint.java:118)
+ at org.eclipse.jetty.io.WriteFlusher.flush(WriteFlusher.java:422)
+ at org.eclipse.jetty.io.WriteFlusher.write(WriteFlusher.java:275)
+ at org.eclipse.jetty.io.WriteFlusher.write(WriteFlusher.java:254)
+ at org.eclipse.jetty.io.AbstractEndPoint.write(AbstractEndPoint.java:368)
+ at org.eclipse.jetty.server.internal.HttpConnection$SendCallback.process(HttpConnection.java:859)
+ at org.eclipse.jetty.util.IteratingCallback.processing(IteratingCallback.java:262)
+ at org.eclipse.jetty.util.IteratingCallback.iterate(IteratingCallback.java:243)
+ at org.eclipse.jetty.server.internal.HttpConnection$HttpStreamOverHTTP1.send(HttpConnection.java:1443)
+ at org.eclipse.jetty.server.HttpStream$Wrapper.send(HttpStream.java:185)
+ at org.eclipse.jetty.server.HttpStream$Wrapper.send(HttpStream.java:185)
+ at org.eclipse.jetty.session.AbstractSessionManager$SessionStreamWrapper.send(AbstractSessionManager.java:1491)
+ at org.eclipse.jetty.server.internal.HttpChannelState$ChannelResponse.write(HttpChannelState.java:1316)
+ at org.eclipse.jetty.server.Response$Wrapper.write(Response.java:768)
+ at org.eclipse.jetty.server.handler.ContextResponse.write(ContextResponse.java:56)
+ at org.eclipse.jetty.ee10.servlet.ServletContextResponse.write(ServletContextResponse.java:288)
+ at org.eclipse.jetty.ee10.servlet.HttpOutput.channelWrite(HttpOutput.java:215)
+ at org.eclipse.jetty.ee10.servlet.HttpOutput.close(HttpOutput.java:572)
+ at java.base/java.io.FilterOutputStream.close(FilterOutputStream.java:190)
+ at java.base/java.util.zip.DeflaterOutputStream.close(DeflaterOutputStream.java:249)
+ at java.base/sun.nio.cs.StreamEncoder.implClose(StreamEncoder.java:439)
+ at java.base/sun.nio.cs.StreamEncoder.lockedClose(StreamEncoder.java:237)
+ at java.base/sun.nio.cs.StreamEncoder.close(StreamEncoder.java:222)
+ at java.base/java.io.OutputStreamWriter.close(OutputStreamWriter.java:266)
+ at java.base/java.io.BufferedWriter.implClose(BufferedWriter.java:398)
+ at java.base/java.io.BufferedWriter.close(BufferedWriter.java:380)
+ at gov.noaa.pfel.erddap.dataset.TableWriterSeparatedValue.close(TableWriterSeparatedValue.java:254)
+ at gov.noaa.pfel.erddap.dataset.TableWriterSeparatedValue.writeAllAndFinish(TableWriterSeparatedValue.java:248)
+ at gov.noaa.pfel.erddap.Erddap.sendPlainTable(Erddap.java:24084)
+ at gov.noaa.pfel.erddap.Erddap.doFiles(Erddap.java:6877)
+ at gov.noaa.pfel.erddap.Erddap.doGet(Erddap.java:708)
+ at jakarta.servlet.http.HttpServlet.service(HttpServlet.java:527)
+ at jakarta.servlet.http.HttpServlet.service(HttpServlet.java:614)
+ at org.eclipse.jetty.ee10.servlet.ServletHolder$NotAsync.service(ServletHolder.java:1379)
+ at org.eclipse.jetty.ee10.servlet.ServletHolder.handle(ServletHolder.java:736)
+ at org.eclipse.jetty.ee10.servlet.ServletHandler$ChainEnd.doFilter(ServletHandler.java:1621)
+ at gov.noaa.pfel.erddap.http.CorsResponseFilter.doFilter(CorsResponseFilter.java:67)
+ at org.eclipse.jetty.ee10.servlet.FilterHolder.doFilter(FilterHolder.java:208)
+ at org.eclipse.jetty.ee10.servlet.ServletHandler$Chain.doFilter(ServletHandler.java:1593)
+ at org.eclipse.jetty.ee10.websocket.servlet.WebSocketUpgradeFilter.doFilter(WebSocketUpgradeFilter.java:195)
+ at org.eclipse.jetty.ee10.servlet.FilterHolder.doFilter(FilterHolder.java:205)
+ at org.eclipse.jetty.ee10.servlet.ServletHandler$Chain.doFilter(ServletHandler.java:1593)
+ at org.eclipse.jetty.ee10.servlet.ServletHandler$MappedServlet.handle(ServletHandler.java:1554)
+ at org.eclipse.jetty.ee10.servlet.ServletChannel.dispatch(ServletChannel.java:819)
+ at org.eclipse.jetty.ee10.servlet.ServletChannel.handle(ServletChannel.java:436)
+ at org.eclipse.jetty.ee10.servlet.ServletHandler.handle(ServletHandler.java:469)
+ at org.eclipse.jetty.security.SecurityHandler.handle(SecurityHandler.java:575)
+ at org.eclipse.jetty.ee10.servlet.SessionHandler.handle(SessionHandler.java:717)
+ at org.eclipse.jetty.server.handler.ContextHandler.handle(ContextHandler.java:1064)
+ at org.eclipse.jetty.server.handler.ContextHandlerCollection.handle(ContextHandlerCollection.java:151)
+ at org.eclipse.jetty.server.Server.handle(Server.java:182)
+ at org.eclipse.jetty.server.internal.HttpChannelState$HandlerInvoker.run(HttpChannelState.java:662)
+ at org.eclipse.jetty.server.internal.HttpConnection.onFillable(HttpConnection.java:416)
+ at org.eclipse.jetty.io.AbstractConnection$ReadCallback.succeeded(AbstractConnection.java:322)
+ at org.eclipse.jetty.io.FillInterest.fillable(FillInterest.java:99)
+ at org.eclipse.jetty.io.SelectableChannelEndPoint$1.run(SelectableChannelEndPoint.java:53)
+ at org.eclipse.jetty.util.thread.strategy.AdaptiveExecutionStrategy.runTask(AdaptiveExecutionStrategy.java:480)
+ at org.eclipse.jetty.util.thread.strategy.AdaptiveExecutionStrategy.consumeTask(AdaptiveExecutionStrategy.java:443)
+ at org.eclipse.jetty.util.thread.strategy.AdaptiveExecutionStrategy.tryProduce(AdaptiveExecutionStrategy.java:293)
+ at org.eclipse.jetty.util.thread.strategy.AdaptiveExecutionStrategy.produce(AdaptiveExecutionStrategy.java:195)
+ at org.eclipse.jetty.util.thread.QueuedThreadPool.runJob(QueuedThreadPool.java:979)
+ at org.eclipse.jetty.util.thread.QueuedThreadPool$Runner.doRunJob(QueuedThreadPool.java:1209)
+ at org.eclipse.jetty.util.thread.QueuedThreadPool$Runner.run(QueuedThreadPool.java:1164)
+ at java.base/java.lang.Thread.run(Thread.java:1583)
+Caused by: java.io.IOException: An established connection was aborted by the software in your host machine
+ at java.base/sun.nio.ch.SocketDispatcher.writev0(Native Method)
+ at java.base/sun.nio.ch.SocketDispatcher.writev(SocketDispatcher.java:58)
+ at java.base/sun.nio.ch.IOUtil.write(IOUtil.java:227)
+ at java.base/sun.nio.ch.IOUtil.write(IOUtil.java:158)
+ at java.base/sun.nio.ch.SocketChannelImpl.write(SocketChannelImpl.java:574)
+ at java.base/java.nio.channels.SocketChannel.write(SocketChannel.java:660)
+ at org.eclipse.jetty.io.SocketChannelEndPoint.flush(SocketChannelEndPoint.java:112)
+ ... 63 more
+*** lowSendError for request #6: isCommitted=false fullMessage=
+Error {
+    code=404;
+    message="Not Found: This dataset is not accessible via /files/ .";
+}
+
+getUrlConnInputStream http://localhost:8080/erddap/files/hawaii_d90f_20ee_c4cb/.csv requestCompression=true
+  Warning: HTTP status code=404
+}}}}#6 (unknownIPAddress) SUCCESS. TIME=1010ms
+
+accessibleViaFiles=false because remote ERDDAP dataset isn't accessible via /files/ :
+java.io.IOException: HTTP status code=404 java.io.FileNotFoundException: http://localhost:8080/erddap/files/hawaii_d90f_20ee_c4cb/.csv
+(Error {
+    code=404;
+    message="Not Found: This dataset is not accessible via /files/ .";
+})
+ at gov.noaa.pfel.coastwatch.util.SSR.getBufferedInputStream(SSR.java:1484)
+ at gov.noaa.pfel.coastwatch.util.SSR.getUrlConnBufferedInputStream(SSR.java:1388)
+ at gov.noaa.pfel.coastwatch.util.SSR.getUrlConnBufferedInputStream(SSR.java:1244)
+ at gov.noaa.pfel.coastwatch.util.SSR.getUrlBufferedInputStream(SSR.java:1544)
+ at gov.noaa.pfel.erddap.dataset.EDDGridFromErddap.<init>(EDDGridFromErddap.java:458)
+ at gov.noaa.pfel.erddap.handlers.EDDGridFromErddapHandler.buildDataset(EDDGridFromErddapHandler.java:46)
+ at gov.noaa.pfel.erddap.handlers.BaseDatasetHandler.endElement(BaseDatasetHandler.java:69)
+ at gov.noaa.pfel.erddap.handlers.SaxHandler.endElement(SaxHandler.java:73)
+ at java.xml/com.sun.org.apache.xerces.internal.parsers.AbstractSAXParser.endElement(AbstractSAXParser.java:618)
+ at java.xml/com.sun.org.apache.xerces.internal.xinclude.XIncludeHandler.endElement(XIncludeHandler.java:1112)
+ at java.xml/com.sun.org.apache.xerces.internal.impl.XMLDocumentFragmentScannerImpl.scanEndElement(XMLDocumentFragmentScannerImpl.java:1728)
+ at java.xml/com.sun.org.apache.xerces.internal.impl.XMLDocumentFragmentScannerImpl$FragmentContentDriver.next(XMLDocumentFragmentScannerImpl.java:2899)
+ at java.xml/com.sun.org.apache.xerces.internal.impl.XMLDocumentScannerImpl.next(XMLDocumentScannerImpl.java:605)
+ at java.xml/com.sun.org.apache.xerces.internal.impl.XMLNSDocumentScannerImpl.next(XMLNSDocumentScannerImpl.java:114)
+ at java.xml/com.sun.org.apache.xerces.internal.impl.XMLDocumentFragmentScannerImpl.scanDocument(XMLDocumentFragmentScannerImpl.java:542)
+ at java.xml/com.sun.org.apache.xerces.internal.parsers.XML11Configuration.parse(XML11Configuration.java:889)
+ at java.xml/com.sun.org.apache.xerces.internal.parsers.XML11Configuration.parse(XML11Configuration.java:825)
+ at java.xml/com.sun.org.apache.xerces.internal.parsers.XMLParser.parse(XMLParser.java:141)
+ at java.xml/com.sun.org.apache.xerces.internal.parsers.AbstractSAXParser.parse(AbstractSAXParser.java:1224)
+ at java.xml/com.sun.org.apache.xerces.internal.jaxp.SAXParserImpl$JAXPSAXParser.parse(SAXParserImpl.java:637)
+ at java.xml/com.sun.org.apache.xerces.internal.jaxp.SAXParserImpl.parse(SAXParserImpl.java:326)
+ at java.xml/javax.xml.parsers.SAXParser.parse(SAXParser.java:197)
+ at gov.noaa.pfel.erddap.handlers.SaxHandler.parse(SaxHandler.java:167)
+ at gov.noaa.pfel.erddap.LoadDatasets.run(LoadDatasets.java:203)
+
+
+WARNING! This ERDDAP won't try to subscribe to the dataset on the remote
+ERDDAP because this ERDDAP isn't publicly accessible.
+If you want to keep this dataset up-to-date, use a small reloadEveryNMinutes.
+
+*** EDDGridFromErddap hawaii_d90f_20ee_c4cb_LonPM180Child constructor finished. TIME=1063ms
+
+
+*** constructing EDDGridLonPM180 hawaii_d90f_20ee_c4cb_LonPM180
+
+WARNING: datasetID=hawaii_d90f_20ee_c4cb_LonPM180 failed to subscribe to its child, fromErddap, underlying dataset.
+If the subscription hasn't been set up already, keep this dataset up-to-date by
+using a small reloadEveryNMinutes, or have the remote ERDDAP admin add an <onChange>.
+Cause: SimpleException: ERROR: "nobody@example.com" is not a valid email address.
+ at gov.noaa.pfel.erddap.util.Subscriptions.ensureEmailValid(Subscriptions.java:444)
+ at gov.noaa.pfel.erddap.util.Subscriptions.add(Subscriptions.java:506)
+ at gov.noaa.pfel.erddap.util.Subscriptions.addAndValidate(Subscriptions.java:682)
+ at gov.noaa.pfel.erddap.dataset.EDD.tryToSubscribeToChildFromErddap(EDD.java:1627)
+ at gov.noaa.pfel.erddap.dataset.EDDGridLonPM180.<init>(EDDGridLonPM180.java:447)
+ at gov.noaa.pfel.erddap.handlers.EDDGridLonPM180Handler.buildDataset(EDDGridLonPM180Handler.java:75)
+ at gov.noaa.pfel.erddap.handlers.BaseDatasetHandler.endElement(BaseDatasetHandler.java:69)
+ at gov.noaa.pfel.erddap.handlers.SaxHandler.endElement(SaxHandler.java:73)
+ at java.xml/com.sun.org.apache.xerces.internal.parsers.AbstractSAXParser.endElement(AbstractSAXParser.java:618)
+ at java.xml/com.sun.org.apache.xerces.internal.xinclude.XIncludeHandler.endElement(XIncludeHandler.java:1112)
+ at java.xml/com.sun.org.apache.xerces.internal.impl.XMLDocumentFragmentScannerImpl.scanEndElement(XMLDocumentFragmentScannerImpl.java:1728)
+ at java.xml/com.sun.org.apache.xerces.internal.impl.XMLDocumentFragmentScannerImpl$FragmentContentDriver.next(XMLDocumentFragmentScannerImpl.java:2899)
+ at java.xml/com.sun.org.apache.xerces.internal.impl.XMLDocumentScannerImpl.next(XMLDocumentScannerImpl.java:605)
+ at java.xml/com.sun.org.apache.xerces.internal.impl.XMLNSDocumentScannerImpl.next(XMLNSDocumentScannerImpl.java:114)
+ at java.xml/com.sun.org.apache.xerces.internal.impl.XMLDocumentFragmentScannerImpl.scanDocument(XMLDocumentFragmentScannerImpl.java:542)
+ at java.xml/com.sun.org.apache.xerces.internal.parsers.XML11Configuration.parse(XML11Configuration.java:889)
+ at java.xml/com.sun.org.apache.xerces.internal.parsers.XML11Configuration.parse(XML11Configuration.java:825)
+ at java.xml/com.sun.org.apache.xerces.internal.parsers.XMLParser.parse(XMLParser.java:141)
+ at java.xml/com.sun.org.apache.xerces.internal.parsers.AbstractSAXParser.parse(AbstractSAXParser.java:1224)
+ at java.xml/com.sun.org.apache.xerces.internal.jaxp.SAXParserImpl$JAXPSAXParser.parse(SAXParserImpl.java:637)
+ at java.xml/com.sun.org.apache.xerces.internal.jaxp.SAXParserImpl.parse(SAXParserImpl.java:326)
+ at java.xml/javax.xml.parsers.SAXParser.parse(SAXParser.java:197)
+ at gov.noaa.pfel.erddap.handlers.SaxHandler.parse(SaxHandler.java:167)
+ at gov.noaa.pfel.erddap.LoadDatasets.run(LoadDatasets.java:203)
+
+
+
+localChildDatasetID=hawaii_d90f_20ee_c4cb
+
+*** EDDGridLonPM180 hawaii_d90f_20ee_c4cb_LonPM180 constructor finished. TIME=15ms
+
+change=Previously, this dataset was (temporarily?) not available.  Perhaps ERDDAP was just restarted.
+nActions=0
+
+*** constructing EDDTableFromSOS nosSosATemp
+  quickRestartFile exists=true
+  using getCapabilities from quickRestartFile 2025-05-21T13:49:36Z
+SimpleXmlReader encoding=UTF-8
+  sosPrefix=sos: sosVersion=1.0.0
+Warning while parsing gml: lowerCorner!=upperCorner tLat=-18.1333 ttLat=71.3601 tLon=-177.36 ttLon=178.425
+Warning while parsing gml: lowerCorner!=upperCorner tLat=21.3584 ttLat=48.8627 tLon=-157.9719 ttLon=-70.6249
+Warning while parsing gml: lowerCorner!=upperCorner tLat=19.6351 ttLat=61.2782 tLon=-167.9007 ttLon=-66.9956
+Warning while parsing gml: lowerCorner!=upperCorner tLat=-14.28 ttLat=70.4114 tLon=-177.36 ttLon=167.7361
+Warning while parsing gml: lowerCorner!=upperCorner tLat=-14.28 ttLat=70.4114 tLon=-177.36 ttLon=167.7361
+Warning while parsing gml: lowerCorner!=upperCorner tLat=-18.1333 ttLat=71.3601 tLon=-177.36 ttLon=178.425
+Warning while parsing gml: lowerCorner!=upperCorner tLat=-18.1333 ttLat=71.3601 tLon=-177.36 ttLon=178.425
+  accessibleViaNcCF=[true]
+* nosSosATemp made subsetVariablesDataTable(loggedInAs=null).  time=31ms
+* nosSosATemp made distinctSubsetVariablesDataTable(loggedInAs=null).  time=47ms (includes subsetVariablesDataTable() time)
+
+*** EDDTableFromSOS nosSosATemp constructor finished. TIME=301ms
+
+File2.deleteIfOld(target/data/cache/mp/nosSosATemp/                      ) nDir=   0 nDeleted=   3 nRemain=   0
+change=Previously, this dataset was (temporarily?) not available.  Perhaps ERDDAP was just restarted.
+nActions=0
+
+********************************************************************************
+LoadDatasets.run finished at 2025-05-21T23:01:59+05:30  TOTAL TIME=98432ms
+  nGridDatasets active=42 change=42
+  nTableDatasets active=34 change=34
+  nDatasets in datasets.xml=75 (nTry=78)
+  nUsers=0
+*** lowSendError for request #4: isCommitted=true fullMessage=
+Error {
+    code=500;
+    message="Internal Server Error: org.eclipse.jetty.io.EofException";
+}
+
+}}}}#4 (unknownIPAddress) sendErrorCode done. Total TIME=2895ms
+
+  MemoryInUse=   113 MB (highWaterMark=   370 MB) (Xmx ~= 2026 MB)
+  change for this run of major Load Datasets (MB) = 12
+
+ADD _FillValue ATTRIBUTES?  There are none to report.
+
+
+**********************************************************************
+Daily Report
+
+Current time is 2025-05-21T23:01:59+05:30
+Startup was at  2025-05-21T23:00:17+05:30
+Last major LoadDatasets started 1m 40s ago and is still running.
+Currently, no dataset is loading.
+nGridDatasets  = 42
+nTableDatasets = 34
+nTotalDatasets = 76
+n Datasets Failed To Load (in the last major LoadDatasets) = 0
+Reasons for failing to load datasets: 
+Unique users (since startup)                            n = 0
+Response Failed    Time (since last major LoadDatasets) n =        4,  median ~=       10 ms
+Response Failed    Time (since last Daily Report)       n =        4,  median ~=       10 ms
+Response Failed    Time (since startup)                 n =        4,  median ~=       10 ms
+Response Succeeded Time (since last major LoadDatasets) n =        2,  median ~=        2 ms
+Response Succeeded Time (since last Daily Report)       n =        2,  median ~=        2 ms
+Response Succeeded Time (since startup)                 n =        2,  median ~=        2 ms
+TaskThread has finished 0 out of 0 tasks.  Currently, no task is running.
+TaskThread Failed    Time (since last Daily Report)     n =        0
+TaskThread Failed    Time (since startup)               n =        0
+TaskThread Succeeded Time (since last Daily Report)     n =        0
+TaskThread Succeeded Time (since startup)               n =        0
+The email system is inactive.
+TouchThread has finished 0 out of 0 touches.  Currently, the thread is sleeping.
+TouchThread Failed    Time (since last Daily Report)    n =        0
+TouchThread Succeeded Time (since last Daily Report)    n =        0
+Number of active requests=0
+Number of threads: Tomcat-waiting=2, inotify=0, other=25
+0 gc calls, 0 requests shed, and 0 dangerousMemoryEmails since last major LoadDatasets
+MemoryInUse=   114 MB (highWaterMark=   370 MB) (Xmx ~= 2026 MB)
+
+**********************************************************************
+Tallied Usage Information
+
+files browse DatasetID (since last daily report)
+    hawaii_d90f_20ee_c4cb: 1  (50%)
+    pmelTaoDySst: 1  (50%)
+
+files browse DatasetID (since startup)
+    hawaii_d90f_20ee_c4cb: 1  (50%)
+    pmelTaoDySst: 1  (50%)
+
+Language (since last daily report)
+    : 6  (100%)
+
+Language (since startup)
+    : 6  (100%)
+
+Protocol (since last daily report)
+    files: 1  (50%)
+    version: 1  (50%)
+
+Protocol (since startup)
+    files: 1  (50%)
+    version: 1  (50%)
+
+Requester Is Logged In (since last daily report)
+    no/http: 6  (100%)
+
+Requester Is Logged In (since startup)
+    no/http: 6  (100%)
+
+Requester's IP Address (Allowed) (since last daily report)
+    (unknownIPAddress): 6  (100%)
+
+Requester's IP Address (Allowed) (since last Major LoadDatasets)
+    (unknownIPAddress): 6  (100%)
+
+Requester's IP Address (Allowed) (since startup)
+    (unknownIPAddress): 6  (100%)
+
+Requester's IP Address (Failed) (since last daily report)
+    (unknownIPAddress): 4  (100%)
+
+Requester's IP Address (Failed) (since last Major LoadDatasets)
+    (unknownIPAddress): 4  (100%)
+
+Requester's IP Address (Failed) (since startup)
+    (unknownIPAddress): 4  (100%)
+
+Major LoadDatasets Time Series: MLD    Datasets Loaded               Requests (median times in ms)                Number of Threads      MB    gc   Open
+  timestamp                    time   nTry nFail nTotal  nSuccess (median) nFail (median) shed memFail tooMany  tomWait inotify other  inUse Calls Files
+----------------------------  -----   -----------------  -----------------------------------------------------  ---------------------  ----- ----- -----
+  2025-05-21T23:01:59+05:30     99s     78     0   76.0         2 (     2)     4 (    10)    0       0       0        2       0    25    114     0     ?
+
+
+Major LoadDatasets Times Distribution (since last Daily Report):
+    n =        1,  median ~=    90000 ms
+    0 ms:               0
+    1 ms:               0
+    2 ms:               0
+    <= 5 ms:            0
+    <= 10 ms:           0
+    <= 20 ms:           0
+    <= 50 ms:           0
+    <= 100 ms:          0
+    <= 200 ms:          0
+    <= 500 ms:          0
+    <= 1 s:             0
+    <= 2 s:             0
+    <= 5 s:             0
+    <= 10 s:            0
+    <= 20 s:            0
+    <= 1 min:           0
+    <= 2 min:           1
+    <= 5 min:           0
+    <= 10 min:          0
+    <= 20 min:          0
+    <= 1 hr:            0
+    >  1 hr:            0
+
+Major LoadDatasets Times Distribution (since startup):
+    n =        1,  median ~=    90000 ms
+    0 ms:               0
+    1 ms:               0
+    2 ms:               0
+    <= 5 ms:            0
+    <= 10 ms:           0
+    <= 20 ms:           0
+    <= 50 ms:           0
+    <= 100 ms:          0
+    <= 200 ms:          0
+    <= 500 ms:          0
+    <= 1 s:             0
+    <= 2 s:             0
+    <= 5 s:             0
+    <= 10 s:            0
+    <= 20 s:            0
+    <= 1 min:           0
+    <= 2 min:           1
+    <= 5 min:           0
+    <= 10 min:          0
+    <= 20 min:          0
+    <= 1 hr:            0
+    >  1 hr:            0
+
+
+Minor LoadDatasets Times Distribution (since last Daily Report):
+    n =        0
+
+Minor LoadDatasets Times Distribution (since startup):
+    n =        0
+
+
+Response Failed Time Distribution (since last major LoadDatasets):
+    n =        4,  median ~=       10 ms
+    0 ms:               0
+    1 ms:               0
+    2 ms:               0
+    <= 5 ms:            1
+    <= 10 ms:           1
+    <= 20 ms:           0
+    <= 50 ms:           1
+    <= 100 ms:          0
+    <= 200 ms:          0
+    <= 500 ms:          0
+    <= 1 s:             1
+    <= 2 s:             0
+    <= 5 s:             0
+    <= 10 s:            0
+    <= 20 s:            0
+    <= 1 min:           0
+    <= 2 min:           0
+    <= 5 min:           0
+    <= 10 min:          0
+    <= 20 min:          0
+    <= 1 hr:            0
+    >  1 hr:            0
+
+Response Failed Time Distribution (since last Daily Report):
+    n =        4,  median ~=       10 ms
+    0 ms:               0
+    1 ms:               0
+    2 ms:               0
+    <= 5 ms:            1
+    <= 10 ms:           1
+    <= 20 ms:           0
+    <= 50 ms:           1
+    <= 100 ms:          0
+    <= 200 ms:          0
+    <= 500 ms:          0
+    <= 1 s:             1
+    <= 2 s:             0
+    <= 5 s:             0
+    <= 10 s:            0
+    <= 20 s:            0
+    <= 1 min:           0
+    <= 2 min:           0
+    <= 5 min:           0
+    <= 10 min:          0
+    <= 20 min:          0
+    <= 1 hr:            0
+    >  1 hr:            0
+
+Response Failed Time Distribution (since startup):
+    n =        4,  median ~=       10 ms
+    0 ms:               0
+    1 ms:               0
+    2 ms:               0
+    <= 5 ms:            1
+    <= 10 ms:           1
+    <= 20 ms:           0
+    <= 50 ms:           1
+    <= 100 ms:          0
+    <= 200 ms:          0
+    <= 500 ms:          0
+    <= 1 s:             1
+    <= 2 s:             0
+    <= 5 s:             0
+    <= 10 s:            0
+    <= 20 s:            0
+    <= 1 min:           0
+    <= 2 min:           0
+    <= 5 min:           0
+    <= 10 min:          0
+    <= 20 min:          0
+    <= 1 hr:            0
+    >  1 hr:            0
+
+
+Response Succeeded Time Distribution (since last major LoadDatasets):
+    n =        2,  median ~=        2 ms
+    0 ms:               0
+    1 ms:               0
+    2 ms:               1
+    <= 5 ms:            0
+    <= 10 ms:           0
+    <= 20 ms:           0
+    <= 50 ms:           0
+    <= 100 ms:          0
+    <= 200 ms:          0
+    <= 500 ms:          0
+    <= 1 s:             0
+    <= 2 s:             1
+    <= 5 s:             0
+    <= 10 s:            0
+    <= 20 s:            0
+    <= 1 min:           0
+    <= 2 min:           0
+    <= 5 min:           0
+    <= 10 min:          0
+    <= 20 min:          0
+    <= 1 hr:            0
+    >  1 hr:            0
+
+Response Succeeded Time Distribution (since last Daily Report):
+    n =        2,  median ~=        2 ms
+    0 ms:               0
+    1 ms:               0
+    2 ms:               1
+    <= 5 ms:            0
+    <= 10 ms:           0
+    <= 20 ms:           0
+    <= 50 ms:           0
+    <= 100 ms:          0
+    <= 200 ms:          0
+    <= 500 ms:          0
+    <= 1 s:             0
+    <= 2 s:             1
+    <= 5 s:             0
+    <= 10 s:            0
+    <= 20 s:            0
+    <= 1 min:           0
+    <= 2 min:           0
+    <= 5 min:           0
+    <= 10 min:          0
+    <= 20 min:          0
+    <= 1 hr:            0
+    >  1 hr:            0
+
+Response Succeeded Time Distribution (since startup):
+    n =        2,  median ~=        2 ms
+    0 ms:               0
+    1 ms:               0
+    2 ms:               1
+    <= 5 ms:            0
+    <= 10 ms:           0
+    <= 20 ms:           0
+    <= 50 ms:           0
+    <= 100 ms:          0
+    <= 200 ms:          0
+    <= 500 ms:          0
+    <= 1 s:             0
+    <= 2 s:             1
+    <= 5 s:             0
+    <= 10 s:            0
+    <= 20 s:            0
+    <= 1 min:           0
+    <= 2 min:           0
+    <= 5 min:           0
+    <= 10 min:          0
+    <= 20 min:          0
+    <= 1 hr:            0
+    >  1 hr:            0
+
+
+TaskThread Failed Time Distribution (since last Daily Report):
+    n =        0
+
+TaskThread Failed Time Distribution (since startup):
+    n =        0
+
+TaskThread Succeeded Time Distribution (since last Daily Report):
+    n =        0
+
+TaskThread Succeeded Time Distribution (since startup):
+    n =        0
+
+
+TouchThread Failed Time Distribution (since last Daily Report):
+    n =        0
+
+TouchThread Failed Time Distribution (since startup):
+    n =        0
+
+TouchThread Succeeded Time Distribution (since last Daily Report):
+    n =        0
+
+TouchThread Succeeded Time Distribution (since startup):
+    n =        0
+
+
+Language (since last daily report)
+    : 6  (100%)
+
+Language (since startup)
+    : 6  (100%)
+
+SgtMap topography nFromCache=0 nNotFromCache=0
+GSHHS: nCached=0 of 100, nCoarse=0, nSuccesses=0, nTossed=0
+NationalBoundaries: nCached=0 of 100,  nCoarse=0, nSuccesses=0, nTossed=0
+StateBoundaries: nCached=0 of 100,  nCoarse=0, nSuccesses=0, nTossed=0
+Rivers: nCached=0 of 100,  nCoarse=0, nSuccesses=0, nTossed=0
+bufferedImage isAccelerated=false
+canonical map sizes: 
+29 + 37 + 38 + 31 + 36 + 32 + 27 + 27 + 33 + 38 + 36 + 30 + 28 + 25 + 45 + 37 + 
+41 + 36 + 28 + 34 + 29 + 45 + 35 + 33 + 23 + 20 + 29 + 19 + 30 + 41 + 39 + 30 + 
+38 + 25 + 28 + 38 + 28 + 32 + 28 + 34 + 34 + 40 + 26 + 35 + 42 + 35 + 29 + 40 + 
+36 + 35 + 23 + 30 + 44 + 24 + 32 + 33 + 36 + 26 + 46 + 35 + 39 + 22 + 28 + 43 + 
+38 + 34 + 33 + 41 + 35 + 31 + 37 + 27 + 37 + 36 + 37 + 31 + 29 + 29 + 34 + 33 + 
+26 + 38 + 38 + 41 + 29 + 26 + 32 + 38 + 28 + 36 + 35 + 37 + 31 + 32 + 27 + 30 + 
+31 + 25 + 34 + 30 + 30 + 32 + 29 + 25 + 30 + 30 + 40 + 46 + 31 + 38 + 25 + 19 + 
+26 + 29 + 38 + 35 + 30 + 28 + 30 + 27 + 44 + 40 + 33 + 33 + 34 + 32 + 32 = 4157
+canonicalStringHolder map sizes: 
+17 + 11 + 7 + 18 + 11 + 9 + 15 + 10 + 20 + 10 + 8 + 13 + 15 + 8 + 14 + 9 + 
+9 + 7 + 12 + 15 + 11 + 16 + 17 + 13 + 9 + 15 + 15 + 12 + 5 + 12 + 24 + 12 + 
+8 + 16 + 9 + 10 + 14 + 6 + 11 + 16 + 11 + 17 + 9 + 16 + 6 + 12 + 14 + 13 + 
+13 + 12 + 11 + 5 + 13 + 13 + 10 + 14 + 10 + 12 + 19 + 11 + 14 + 13 + 13 + 13 + 
+15 + 11 + 14 + 10 + 19 + 8 + 14 + 12 + 9 + 11 + 9 + 18 + 14 + 12 + 20 + 18 + 
+16 + 15 + 7 + 16 + 9 + 12 + 9 + 11 + 9 + 14 + 13 + 8 + 12 + 15 + 9 + 7 + 
+15 + 4 + 13 + 7 + 5 + 14 + 11 + 15 + 11 + 13 + 14 + 9 + 13 + 12 + 16 + 10 + 
+9 + 9 + 11 + 11 + 12 + 17 + 15 + 9 + 9 + 15 + 6 + 19 + 9 + 12 + 10 = 1534
+
+
+**********************************************************************
+Warnings from LoadDatasets
+
+
+**********************************************************************
+Number of threads: Tomcat-waiting=2, inotify=0, other=25
+(format: #threadNumber Thread[threadName,threadPriority,threadGroup] threadStatus)
+
+#1 Thread[#1,main,5,main] WAITING
+java.base@21.0.6/jdk.internal.misc.Unsafe.park(Native Method)
+java.base@21.0.6/java.util.concurrent.locks.LockSupport.park(LockSupport.java:371)
+java.base@21.0.6/java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionNode.block(AbstractQueuedSynchronizer.java:519)
+java.base@21.0.6/java.util.concurrent.ForkJoinPool.unmanagedBlock(ForkJoinPool.java:3778)
+java.base@21.0.6/java.util.concurrent.ForkJoinPool.managedBlock(ForkJoinPool.java:3723)
+java.base@21.0.6/java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.await(AbstractQueuedSynchronizer.java:1712)
+org.eclipse.jetty.util.thread.AutoLock$WithCondition.await(AutoLock.java:151)
+org.eclipse.jetty.util.thread.QueuedThreadPool.join(QueuedThreadPool.java:832)
+org.eclipse.jetty.server.Server.join(Server.java:712)
+org.eclipse.jetty.maven.AbstractJettyEmbedder.join(AbstractJettyEmbedder.java:221)
+org.eclipse.jetty.ee10.maven.plugin.JettyRunMojo.startJettyEmbedded(JettyRunMojo.java:100)
+org.eclipse.jetty.ee10.maven.plugin.AbstractWebAppMojo.startJetty(AbstractWebAppMojo.java:451)
+org.eclipse.jetty.ee10.maven.plugin.AbstractWebAppMojo.execute(AbstractWebAppMojo.java:429)
+org.eclipse.jetty.ee10.maven.plugin.JettyRunMojo.execute(JettyRunMojo.java:86)
+org.apache.maven.plugin.DefaultBuildPluginManager.executeMojo(DefaultBuildPluginManager.java:126)
+org.apache.maven.lifecycle.internal.MojoExecutor.doExecute2(MojoExecutor.java:328)
+org.apache.maven.lifecycle.internal.MojoExecutor.doExecute(MojoExecutor.java:316)
+org.apache.maven.lifecycle.internal.MojoExecutor.execute(MojoExecutor.java:212)
+org.apache.maven.lifecycle.internal.MojoExecutor.execute(MojoExecutor.java:174)
+org.apache.maven.lifecycle.internal.MojoExecutor.access$000(MojoExecutor.java:75)
+org.apache.maven.lifecycle.internal.MojoExecutor$1.run(MojoExecutor.java:162)
+org.apache.maven.plugin.DefaultMojosExecutionStrategy.execute(DefaultMojosExecutionStrategy.java:39)
+org.apache.maven.lifecycle.internal.MojoExecutor.execute(MojoExecutor.java:159)
+org.apache.maven.lifecycle.internal.LifecycleModuleBuilder.buildProject(LifecycleModuleBuilder.java:105)
+org.apache.maven.lifecycle.internal.LifecycleModuleBuilder.buildProject(LifecycleModuleBuilder.java:73)
+org.apache.maven.lifecycle.internal.builder.singlethreaded.SingleThreadedBuilder.build(SingleThreadedBuilder.java:53)
+org.apache.maven.lifecycle.internal.LifecycleStarter.execute(LifecycleStarter.java:118)
+org.apache.maven.DefaultMaven.doExecute(DefaultMaven.java:261)
+org.apache.maven.DefaultMaven.doExecute(DefaultMaven.java:173)
+org.apache.maven.DefaultMaven.execute(DefaultMaven.java:101)
+org.apache.maven.cli.MavenCli.execute(MavenCli.java:906)
+org.apache.maven.cli.MavenCli.doMain(MavenCli.java:283)
+org.apache.maven.cli.MavenCli.main(MavenCli.java:206)
+java.base@21.0.6/java.lang.invoke.DirectMethodHandle$Holder.invokeStatic(DirectMethodHandle$Holder)
+java.base@21.0.6/java.lang.invoke.LambdaForm$MH/0x0000028b99008400.invoke(LambdaForm$MH)
+java.base@21.0.6/java.lang.invoke.LambdaForm$MH/0x0000028b99008800.invokeExact_MT(LambdaForm$MH)
+java.base@21.0.6/jdk.internal.reflect.DirectMethodHandleAccessor.invokeImpl(DirectMethodHandleAccessor.java:155)
+java.base@21.0.6/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103)
+java.base@21.0.6/java.lang.reflect.Method.invoke(Method.java:580)
+app//org.codehaus.plexus.classworlds.launcher.Launcher.launchEnhanced(Launcher.java:255)
+app//org.codehaus.plexus.classworlds.launcher.Launcher.launch(Launcher.java:201)
+app//org.codehaus.plexus.classworlds.launcher.Launcher.mainWithExitCode(Launcher.java:361)
+app//org.codehaus.plexus.classworlds.launcher.Launcher.main(Launcher.java:314)
+
+#2 Thread[#10,Finalizer,8,system] WAITING daemon
+java.base@21.0.6/java.lang.Object.wait0(Native Method)
+java.base@21.0.6/java.lang.Object.wait(Object.java:366)
+java.base@21.0.6/java.lang.Object.wait(Object.java:339)
+java.base@21.0.6/java.lang.ref.NativeReferenceQueue.await(NativeReferenceQueue.java:48)
+java.base@21.0.6/java.lang.ref.ReferenceQueue.remove0(ReferenceQueue.java:158)
+java.base@21.0.6/java.lang.ref.NativeReferenceQueue.remove(NativeReferenceQueue.java:89)
+java.base@21.0.6/java.lang.ref.Finalizer$FinalizerThread.run(Finalizer.java:173)
+
+#3 Thread[#11,Signal Dispatcher,9,system] RUNNABLE daemon
+
+#4 Thread[#12,Attach Listener,5,system] RUNNABLE daemon
+
+#5 Thread[#176,qtp734142173-176,5,main] TIMED_WAITING
+java.base@21.0.6/jdk.internal.misc.Unsafe.park(Native Method)
+java.base@21.0.6/java.util.concurrent.locks.LockSupport.parkNanos(LockSupport.java:269)
+java.base@21.0.6/java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.awaitNanos(AbstractQueuedSynchronizer.java:1763)
+org.eclipse.jetty.util.BlockingArrayQueue.poll(BlockingArrayQueue.java:219)
+org.eclipse.jetty.util.thread.QueuedThreadPool$Runner.idleJobPoll(QueuedThreadPool.java:1139)
+org.eclipse.jetty.util.thread.QueuedThreadPool$Runner.run(QueuedThreadPool.java:1156)
+java.base@21.0.6/java.lang.Thread.runWith(Thread.java:1596)
+java.base@21.0.6/java.lang.Thread.run(Thread.java:1583)
+
+#6 Thread[#177,Keep-Alive-Timer,8,InnocuousThreadGroup] TIMED_WAITING daemon
+java.base@21.0.6/java.lang.Thread.sleep0(Native Method)
+java.base@21.0.6/java.lang.Thread.sleep(Thread.java:509)
+java.base@21.0.6/sun.net.www.http.KeepAliveCache.run(KeepAliveCache.java:238)
+java.base@21.0.6/java.lang.Thread.runWith(Thread.java:1596)
+java.base@21.0.6/java.lang.Thread.run(Thread.java:1583)
+java.base@21.0.6/jdk.internal.misc.InnocuousThread.run(InnocuousThread.java:186)
+
+#7 Thread[#19,Common-Cleaner,8,InnocuousThreadGroup] TIMED_WAITING daemon
+java.base@21.0.6/jdk.internal.misc.Unsafe.park(Native Method)
+java.base@21.0.6/java.util.concurrent.locks.LockSupport.parkNanos(LockSupport.java:269)
+java.base@21.0.6/java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.await(AbstractQueuedSynchronizer.java:1852)
+java.base@21.0.6/java.lang.ref.ReferenceQueue.await(ReferenceQueue.java:71)
+java.base@21.0.6/java.lang.ref.ReferenceQueue.remove0(ReferenceQueue.java:143)
+java.base@21.0.6/java.lang.ref.ReferenceQueue.remove(ReferenceQueue.java:218)
+java.base@21.0.6/jdk.internal.ref.CleanerImpl.run(CleanerImpl.java:140)
+java.base@21.0.6/java.lang.Thread.runWith(Thread.java:1596)
+java.base@21.0.6/java.lang.Thread.run(Thread.java:1583)
+java.base@21.0.6/jdk.internal.misc.InnocuousThread.run(InnocuousThread.java:186)
+
+#8 Thread[#20,Notification Thread,9,system] RUNNABLE daemon
+
+#9 Thread[#31,Thread-1,5,main] WAITING daemon
+java.base@21.0.6/jdk.internal.misc.Unsafe.park(Native Method)
+java.base@21.0.6/java.util.concurrent.locks.LockSupport.park(LockSupport.java:371)
+java.base@21.0.6/java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionNode.block(AbstractQueuedSynchronizer.java:519)
+java.base@21.0.6/java.util.concurrent.ForkJoinPool.unmanagedBlock(ForkJoinPool.java:3778)
+java.base@21.0.6/java.util.concurrent.ForkJoinPool.managedBlock(ForkJoinPool.java:3723)
+java.base@21.0.6/java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.await(AbstractQueuedSynchronizer.java:1712)
+java.base@21.0.6/java.util.concurrent.ArrayBlockingQueue.take(ArrayBlockingQueue.java:420)
+org.apache.maven.cli.transfer.SimplexTransferListener.feedConsumer(SimplexTransferListener.java:94)
+org.apache.maven.cli.transfer.SimplexTransferListener$$Lambda/0x0000028b9919b480.run(Unknown Source)
+java.base@21.0.6/java.lang.Thread.runWith(Thread.java:1596)
+java.base@21.0.6/java.lang.Thread.run(Thread.java:1583)
+
+#10 Thread[#35,qtp734142173-35,5,main] TIMED_WAITING
+java.base@21.0.6/jdk.internal.misc.Unsafe.park(Native Method)
+java.base@21.0.6/java.util.concurrent.locks.LockSupport.parkNanos(LockSupport.java:269)
+java.base@21.0.6/java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.awaitNanos(AbstractQueuedSynchronizer.java:1763)
+org.eclipse.jetty.util.BlockingArrayQueue.poll(BlockingArrayQueue.java:219)
+org.eclipse.jetty.util.thread.QueuedThreadPool$Runner.idleJobPoll(QueuedThreadPool.java:1139)
+org.eclipse.jetty.util.thread.QueuedThreadPool$Runner.run(QueuedThreadPool.java:1156)
+java.base@21.0.6/java.lang.Thread.runWith(Thread.java:1596)
+java.base@21.0.6/java.lang.Thread.run(Thread.java:1583)
+
+#11 Thread[#36,qtp734142173-36,5,main] RUNNABLE
+java.base@21.0.6/sun.nio.ch.WEPoll.wait(Native Method)
+java.base@21.0.6/sun.nio.ch.WEPollSelectorImpl.doSelect(WEPollSelectorImpl.java:114)
+java.base@21.0.6/sun.nio.ch.SelectorImpl.lockAndDoSelect(SelectorImpl.java:130)
+java.base@21.0.6/sun.nio.ch.SelectorImpl.select(SelectorImpl.java:147)
+org.eclipse.jetty.io.ManagedSelector.nioSelect(ManagedSelector.java:182)
+org.eclipse.jetty.io.ManagedSelector.select(ManagedSelector.java:189)
+org.eclipse.jetty.io.ManagedSelector$SelectorProducer.select(ManagedSelector.java:614)
+org.eclipse.jetty.io.ManagedSelector$SelectorProducer.produce(ManagedSelector.java:548)
+org.eclipse.jetty.util.thread.strategy.AdaptiveExecutionStrategy.produceTask(AdaptiveExecutionStrategy.java:514)
+org.eclipse.jetty.util.thread.strategy.AdaptiveExecutionStrategy.tryProduce(AdaptiveExecutionStrategy.java:258)
+org.eclipse.jetty.util.thread.strategy.AdaptiveExecutionStrategy.run(AdaptiveExecutionStrategy.java:201)
+org.eclipse.jetty.util.thread.ReservedThreadExecutor$ReservedThread.run(ReservedThreadExecutor.java:311)
+org.eclipse.jetty.util.thread.QueuedThreadPool.runJob(QueuedThreadPool.java:979)
+org.eclipse.jetty.util.thread.QueuedThreadPool$Runner.doRunJob(QueuedThreadPool.java:1209)
+org.eclipse.jetty.util.thread.QueuedThreadPool$Runner.run(QueuedThreadPool.java:1164)
+java.base@21.0.6/java.lang.Thread.runWith(Thread.java:1596)
+java.base@21.0.6/java.lang.Thread.run(Thread.java:1583)
+
+#12 Thread[#37,qtp734142173-37,5,main] RUNNABLE
+java.base@21.0.6/sun.nio.ch.WEPoll.wait(Native Method)
+java.base@21.0.6/sun.nio.ch.WEPollSelectorImpl.doSelect(WEPollSelectorImpl.java:114)
+java.base@21.0.6/sun.nio.ch.SelectorImpl.lockAndDoSelect(SelectorImpl.java:130)
+java.base@21.0.6/sun.nio.ch.SelectorImpl.select(SelectorImpl.java:147)
+org.eclipse.jetty.io.ManagedSelector.nioSelect(ManagedSelector.java:182)
+org.eclipse.jetty.io.ManagedSelector.select(ManagedSelector.java:189)
+org.eclipse.jetty.io.ManagedSelector$SelectorProducer.select(ManagedSelector.java:614)
+org.eclipse.jetty.io.ManagedSelector$SelectorProducer.produce(ManagedSelector.java:548)
+org.eclipse.jetty.util.thread.strategy.AdaptiveExecutionStrategy.produceTask(AdaptiveExecutionStrategy.java:514)
+org.eclipse.jetty.util.thread.strategy.AdaptiveExecutionStrategy.tryProduce(AdaptiveExecutionStrategy.java:258)
+org.eclipse.jetty.util.thread.strategy.AdaptiveExecutionStrategy.run(AdaptiveExecutionStrategy.java:201)
+org.eclipse.jetty.util.thread.ReservedThreadExecutor$ReservedThread.run(ReservedThreadExecutor.java:311)
+org.eclipse.jetty.util.thread.QueuedThreadPool.runJob(QueuedThreadPool.java:979)
+org.eclipse.jetty.util.thread.QueuedThreadPool$Runner.doRunJob(QueuedThreadPool.java:1209)
+org.eclipse.jetty.util.thread.QueuedThreadPool$Runner.run(QueuedThreadPool.java:1164)
+java.base@21.0.6/java.lang.Thread.runWith(Thread.java:1596)
+java.base@21.0.6/java.lang.Thread.run(Thread.java:1583)
+
+#13 Thread[#38,qtp734142173-38,5,main] TIMED_WAITING
+java.base@21.0.6/jdk.internal.misc.Unsafe.park(Native Method)
+java.base@21.0.6/java.util.concurrent.locks.LockSupport.parkNanos(LockSupport.java:269)
+java.base@21.0.6/java.util.concurrent.locks.AbstractQueuedSynchronizer.acquire(AbstractQueuedSynchronizer.java:756)
+java.base@21.0.6/java.util.concurrent.locks.AbstractQueuedSynchronizer.tryAcquireSharedNanos(AbstractQueuedSynchronizer.java:1126)
+java.base@21.0.6/java.util.concurrent.Semaphore.tryAcquire(Semaphore.java:415)
+org.eclipse.jetty.util.thread.ReservedThreadExecutor$ReservedThread.waitForTask(ReservedThreadExecutor.java:351)
+org.eclipse.jetty.util.thread.ReservedThreadExecutor$ReservedThread.run(ReservedThreadExecutor.java:290)
+org.eclipse.jetty.util.thread.QueuedThreadPool.runJob(QueuedThreadPool.java:979)
+org.eclipse.jetty.util.thread.QueuedThreadPool$Runner.doRunJob(QueuedThreadPool.java:1209)
+org.eclipse.jetty.util.thread.QueuedThreadPool$Runner.run(QueuedThreadPool.java:1164)
+java.base@21.0.6/java.lang.Thread.runWith(Thread.java:1596)
+java.base@21.0.6/java.lang.Thread.run(Thread.java:1583)
+
+#14 Thread[#39,qtp734142173-39,5,main] RUNNABLE
+java.base@21.0.6/sun.nio.ch.WEPoll.wait(Native Method)
+java.base@21.0.6/sun.nio.ch.WEPollSelectorImpl.doSelect(WEPollSelectorImpl.java:114)
+java.base@21.0.6/sun.nio.ch.SelectorImpl.lockAndDoSelect(SelectorImpl.java:130)
+java.base@21.0.6/sun.nio.ch.SelectorImpl.select(SelectorImpl.java:147)
+org.eclipse.jetty.io.ManagedSelector.nioSelect(ManagedSelector.java:182)
+org.eclipse.jetty.io.ManagedSelector.select(ManagedSelector.java:189)
+org.eclipse.jetty.io.ManagedSelector$SelectorProducer.select(ManagedSelector.java:614)
+org.eclipse.jetty.io.ManagedSelector$SelectorProducer.produce(ManagedSelector.java:548)
+org.eclipse.jetty.util.thread.strategy.AdaptiveExecutionStrategy.produceTask(AdaptiveExecutionStrategy.java:514)
+org.eclipse.jetty.util.thread.strategy.AdaptiveExecutionStrategy.tryProduce(AdaptiveExecutionStrategy.java:258)
+org.eclipse.jetty.util.thread.strategy.AdaptiveExecutionStrategy.run(AdaptiveExecutionStrategy.java:201)
+org.eclipse.jetty.util.thread.ReservedThreadExecutor$ReservedThread.run(ReservedThreadExecutor.java:311)
+org.eclipse.jetty.util.thread.QueuedThreadPool.runJob(QueuedThreadPool.java:979)
+org.eclipse.jetty.util.thread.QueuedThreadPool$Runner.doRunJob(QueuedThreadPool.java:1209)
+org.eclipse.jetty.util.thread.QueuedThreadPool$Runner.run(QueuedThreadPool.java:1164)
+java.base@21.0.6/java.lang.Thread.runWith(Thread.java:1596)
+java.base@21.0.6/java.lang.Thread.run(Thread.java:1583)
+
+#15 Thread[#40,qtp734142173-40,5,main] TIMED_WAITING
+java.base@21.0.6/jdk.internal.misc.Unsafe.park(Native Method)
+java.base@21.0.6/java.util.concurrent.locks.LockSupport.parkNanos(LockSupport.java:269)
+java.base@21.0.6/java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.awaitNanos(AbstractQueuedSynchronizer.java:1763)
+org.eclipse.jetty.util.BlockingArrayQueue.poll(BlockingArrayQueue.java:219)
+org.eclipse.jetty.util.thread.QueuedThreadPool$Runner.idleJobPoll(QueuedThreadPool.java:1139)
+org.eclipse.jetty.util.thread.QueuedThreadPool$Runner.run(QueuedThreadPool.java:1156)
+java.base@21.0.6/java.lang.Thread.runWith(Thread.java:1596)
+java.base@21.0.6/java.lang.Thread.run(Thread.java:1583)
+
+#16 Thread[#41,qtp734142173-41,5,main] RUNNABLE
+java.base@21.0.6/sun.nio.ch.WEPoll.wait(Native Method)
+java.base@21.0.6/sun.nio.ch.WEPollSelectorImpl.doSelect(WEPollSelectorImpl.java:114)
+java.base@21.0.6/sun.nio.ch.SelectorImpl.lockAndDoSelect(SelectorImpl.java:130)
+java.base@21.0.6/sun.nio.ch.SelectorImpl.select(SelectorImpl.java:147)
+org.eclipse.jetty.io.ManagedSelector.nioSelect(ManagedSelector.java:182)
+org.eclipse.jetty.io.ManagedSelector.select(ManagedSelector.java:189)
+org.eclipse.jetty.io.ManagedSelector$SelectorProducer.select(ManagedSelector.java:614)
+org.eclipse.jetty.io.ManagedSelector$SelectorProducer.produce(ManagedSelector.java:548)
+org.eclipse.jetty.util.thread.strategy.AdaptiveExecutionStrategy.produceTask(AdaptiveExecutionStrategy.java:514)
+org.eclipse.jetty.util.thread.strategy.AdaptiveExecutionStrategy.tryProduce(AdaptiveExecutionStrategy.java:258)
+org.eclipse.jetty.util.thread.strategy.AdaptiveExecutionStrategy.produce(AdaptiveExecutionStrategy.java:195)
+org.eclipse.jetty.io.ManagedSelector$$Lambda/0x0000028b99727310.run(Unknown Source)
+org.eclipse.jetty.util.thread.QueuedThreadPool.runJob(QueuedThreadPool.java:979)
+org.eclipse.jetty.util.thread.QueuedThreadPool$Runner.doRunJob(QueuedThreadPool.java:1209)
+org.eclipse.jetty.util.thread.QueuedThreadPool$Runner.run(QueuedThreadPool.java:1164)
+java.base@21.0.6/java.lang.Thread.runWith(Thread.java:1596)
+java.base@21.0.6/java.lang.Thread.run(Thread.java:1583)
+
+#17 Thread[#42,qtp734142173-42,5,main] TIMED_WAITING
+java.base@21.0.6/jdk.internal.misc.Unsafe.park(Native Method)
+java.base@21.0.6/java.util.concurrent.locks.LockSupport.parkNanos(LockSupport.java:269)
+java.base@21.0.6/java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.awaitNanos(AbstractQueuedSynchronizer.java:1763)
+org.eclipse.jetty.util.BlockingArrayQueue.poll(BlockingArrayQueue.java:219)
+org.eclipse.jetty.util.thread.QueuedThreadPool$Runner.idleJobPoll(QueuedThreadPool.java:1139)
+org.eclipse.jetty.util.thread.QueuedThreadPool$Runner.run(QueuedThreadPool.java:1156)
+java.base@21.0.6/java.lang.Thread.runWith(Thread.java:1596)
+java.base@21.0.6/java.lang.Thread.run(Thread.java:1583)
+
+#18 Thread[#43,qtp734142173-43-acceptor-0@503bd3af-ServerConnector@20c4be8d{HTTP/1.1, (http/1.1)}{0.0.0.0:8080},3,main] RUNNABLE
+java.base@21.0.6/sun.nio.ch.Net.accept(Native Method)
+java.base@21.0.6/sun.nio.ch.ServerSocketChannelImpl.implAccept(ServerSocketChannelImpl.java:433)
+java.base@21.0.6/sun.nio.ch.ServerSocketChannelImpl.accept(ServerSocketChannelImpl.java:399)
+org.eclipse.jetty.server.ServerConnector.accept(ServerConnector.java:389)
+org.eclipse.jetty.server.AbstractConnector$Acceptor.run(AbstractConnector.java:698)
+org.eclipse.jetty.util.thread.QueuedThreadPool.runJob(QueuedThreadPool.java:979)
+org.eclipse.jetty.util.thread.QueuedThreadPool$Runner.doRunJob(QueuedThreadPool.java:1209)
+org.eclipse.jetty.util.thread.QueuedThreadPool$Runner.run(QueuedThreadPool.java:1164)
+java.base@21.0.6/java.lang.Thread.runWith(Thread.java:1596)
+java.base@21.0.6/java.lang.Thread.run(Thread.java:1583)
+
+#19 Thread[#45,Cleaner-0,8,InnocuousThreadGroup] TIMED_WAITING daemon
+java.base@21.0.6/jdk.internal.misc.Unsafe.park(Native Method)
+java.base@21.0.6/java.util.concurrent.locks.LockSupport.parkNanos(LockSupport.java:269)
+java.base@21.0.6/java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.await(AbstractQueuedSynchronizer.java:1852)
+java.base@21.0.6/java.lang.ref.ReferenceQueue.await(ReferenceQueue.java:71)
+java.base@21.0.6/java.lang.ref.ReferenceQueue.remove0(ReferenceQueue.java:143)
+java.base@21.0.6/java.lang.ref.ReferenceQueue.remove(ReferenceQueue.java:218)
+java.base@21.0.6/jdk.internal.ref.CleanerImpl.run(CleanerImpl.java:140)
+java.base@21.0.6/java.lang.Thread.runWith(Thread.java:1596)
+java.base@21.0.6/java.lang.Thread.run(Thread.java:1583)
+java.base@21.0.6/jdk.internal.misc.InnocuousThread.run(InnocuousThread.java:186)
+
+#20 Thread[#60,Java2D Disposer,10,system] WAITING daemon
+java.base@21.0.6/jdk.internal.misc.Unsafe.park(Native Method)
+java.base@21.0.6/java.util.concurrent.locks.LockSupport.park(LockSupport.java:371)
+java.base@21.0.6/java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionNode.block(AbstractQueuedSynchronizer.java:519)
+java.base@21.0.6/java.util.concurrent.ForkJoinPool.unmanagedBlock(ForkJoinPool.java:3778)
+java.base@21.0.6/java.util.concurrent.ForkJoinPool.managedBlock(ForkJoinPool.java:3723)
+java.base@21.0.6/java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.await(AbstractQueuedSynchronizer.java:1712)
+java.base@21.0.6/java.lang.ref.ReferenceQueue.await(ReferenceQueue.java:67)
+java.base@21.0.6/java.lang.ref.ReferenceQueue.remove0(ReferenceQueue.java:158)
+java.base@21.0.6/java.lang.ref.ReferenceQueue.remove(ReferenceQueue.java:234)
+java.desktop@21.0.6/sun.java2d.Disposer.run(Disposer.java:145)
+java.base@21.0.6/java.lang.Thread.runWith(Thread.java:1596)
+java.base@21.0.6/java.lang.Thread.run(Thread.java:1583)
+
+#21 Thread[#61,TouchThread,5,main] TIMED_WAITING
+java.base@21.0.6/java.lang.Thread.sleep0(Native Method)
+java.base@21.0.6/java.lang.Thread.sleep(Thread.java:509)
+com.cohort.util.Math2.sleep(Math2.java:368)
+gov.noaa.pfel.erddap.util.TouchThread.run(TouchThread.java:53)
+
+#22 Thread[#63,AWT-Windows,6,system] RUNNABLE daemon
+java.desktop@21.0.6/sun.awt.windows.WToolkit.eventLoop(Native Method)
+java.desktop@21.0.6/sun.awt.windows.WToolkit.run(WToolkit.java:360)
+java.base@21.0.6/java.lang.Thread.runWith(Thread.java:1596)
+java.base@21.0.6/java.lang.Thread.run(Thread.java:1583)
+
+#23 Thread[#66,RunLoadDatasets,5,main] TIMED_WAITING
+java.base@21.0.6/java.lang.Thread.sleep0(Native Method)
+java.base@21.0.6/java.lang.Thread.sleep(Thread.java:509)
+gov.noaa.pfel.erddap.RunLoadDatasets.run(RunLoadDatasets.java:298)
+
+#24 Thread[#68,ConsoleReader,5,main] RUNNABLE daemon
+java.base@21.0.6/java.io.FileInputStream.readBytes(Native Method)
+java.base@21.0.6/java.io.FileInputStream.read(FileInputStream.java:287)
+java.base@21.0.6/sun.nio.cs.StreamDecoder.readBytes(StreamDecoder.java:350)
+java.base@21.0.6/sun.nio.cs.StreamDecoder.implRead(StreamDecoder.java:393)
+java.base@21.0.6/sun.nio.cs.StreamDecoder.lockedRead(StreamDecoder.java:217)
+java.base@21.0.6/sun.nio.cs.StreamDecoder.read(StreamDecoder.java:177)
+java.base@21.0.6/jdk.internal.io.JdkConsoleImpl$LineReader.read(JdkConsoleImpl.java:261)
+java.base@21.0.6/jdk.internal.io.JdkConsoleImpl.readline(JdkConsoleImpl.java:183)
+java.base@21.0.6/jdk.internal.io.JdkConsoleImpl.readLine(JdkConsoleImpl.java:78)
+java.base@21.0.6/java.io.ProxyingConsole.readLine(ProxyingConsole.java:95)
+org.eclipse.jetty.maven.ConsoleReader.run(ConsoleReader.java:55)
+java.base@21.0.6/java.lang.Thread.runWith(Thread.java:1596)
+java.base@21.0.6/java.lang.Thread.run(Thread.java:1583)
+
+#25 Thread[#9,Reference Handler,10,system] RUNNABLE daemon
+java.base@21.0.6/java.lang.ref.Reference.waitForReferencePendingList(Native Method)
+java.base@21.0.6/java.lang.ref.Reference.processPendingReferences(Reference.java:246)
+java.base@21.0.6/java.lang.ref.Reference$ReferenceHandler.run(Reference.java:208)
+
+
+
+Java 21.0.6 (64 bit, Oracle Corporation) on Windows 10 (10.0).
+**********************************************************************
+End of Daily Report
+
+Daily Report:
+Daily Report
+
+Current time is 2025-05-21T23:01:59+05:30
+Startup was at  2025-05-21T23:00:17+05:30
+Last major LoadDatasets started 1m 40s ago and is still running.
+Currently, no dataset is loading.
+nGridDatasets  = 42
+nTableDatasets = 34
+nTotalDatasets = 76
+n Datasets Failed To Load (in the last major LoadDatasets) = 0
+Reasons for failing to load datasets: 
+Unique users (since startup)                            n = 0
+Response Failed    Time (since last major LoadDatasets) n =        4,  median ~=       10 ms
+Response Failed    Time (since last Daily Report)       n =        4,  median ~=       10 ms
+Response Failed    Time (since startup)                 n =        4,  median ~=       10 ms
+Response Succeeded Time (since last major LoadDatasets) n =        2,  median ~=        2 ms
+Response Succeeded Time (since last Daily Report)       n =        2,  median ~=        2 ms
+Response Succeeded Time (since startup)                 n =        2,  median ~=        2 ms
+TaskThread has finished 0 out of 0 tasks.  Currently, no task is running.
+TaskThread Failed    Time (since last Daily Report)     n =        0
+TaskThread Failed    Time (since startup)               n =        0
+TaskThread Succeeded Time (since last Daily Report)     n =        0
+TaskThread Succeeded Time (since startup)               n =        0
+The email system is inactive.
+TouchThread has finished 0 out of 0 touches.  Currently, the thread is sleeping.
+TouchThread Failed    Time (since last Daily Report)    n =        0
+TouchThread Succeeded Time (since last Daily Report)    n =        0
+Number of active requests=0
+Number of threads: Tomcat-waiting=2, inotify=0, other=25
+0 gc calls, 0 requests shed, and 0 dangerousMemoryEmails since last major LoadDatasets
+MemoryInUse=   114 MB (highWaterMark=   370 MB) (Xmx ~= 2026 MB)
+
+**********************************************************************
+Tallied Usage Information
+
+files browse DatasetID (since last daily report)
+    hawaii_d90f_20ee_c4cb: 1  (50%)
+    pmelTaoDySst: 1  (50%)
+
+files browse DatasetID (since startup)
+    hawaii_d90f_20ee_c4cb: 1  (50%)
+    pmelTaoDySst: 1  (50%)
+
+Language (since last daily report)
+    : 6  (100%)
+
+Language (since startup)
+    : 6  (100%)
+
+Protocol (since last daily report)
+    files: 1  (50%)
+    version: 1  (50%)
+
+Protocol (since startup)
+    files: 1  (50%)
+    version: 1  (50%)
+
+Requester Is Logged In (since last daily report)
+    no/http: 6  (100%)
+
+Requester Is Logged In (since startup)
+    no/http: 6  (100%)
+
+Requester's IP Address (Allowed) (since last daily report)
+    (unknownIPAddress): 6  (100%)
+
+Requester's IP Address (Allowed) (since last Major LoadDatasets)
+    (unknownIPAddress): 6  (100%)
+
+Requester's IP Address (Allowed) (since startup)
+    (unknownIPAddress): 6  (100%)
+
+Requester's IP Address (Failed) (since last daily report)
+    (unknownIPAddress): 4  (100%)
+
+Requester's IP Address (Failed) (since last Major LoadDatasets)
+    (unknownIPAddress): 4  (100%)
+
+Requester's IP Address (Failed) (since startup)
+    (unknownIPAddress): 4  (100%)
+
+Major LoadDatasets Time Series: MLD    Datasets Loaded               Requests (median times in ms)                Number of Threads      MB    gc   Open
+  timestamp                    time   nTry nFail nTotal  nSuccess (median) nFail (median) shed memFail tooMany  tomWait inotify other  inUse Calls Files
+----------------------------  -----   -----------------  -----------------------------------------------------  ---------------------  ----- ----- -----
+  2025-05-21T23:01:59+05:30     99s     78     0   76.0         2 (     2)     4 (    10)    0       0       0        2       0    25    114     0     ?
+
+
+Major LoadDatasets Times Distribution (since last Daily Report):
+    n =        1,  median ~=    90000 ms
+    0 ms:               0
+    1 ms:               0
+    2 ms:               0
+    <= 5 ms:            0
+    <= 10 ms:           0
+    <= 20 ms:           0
+    <= 50 ms:           0
+    <= 100 ms:          0
+    <= 200 ms:          0
+    <= 500 ms:          0
+    <= 1 s:             0
+    <= 2 s:             0
+    <= 5 s:             0
+    <= 10 s:            0
+    <= 20 s:            0
+    <= 1 min:           0
+    <= 2 min:           1
+    <= 5 min:           0
+    <= 10 min:          0
+    <= 20 min:          0
+    <= 1 hr:            0
+    >  1 hr:            0
+
+Major LoadDatasets Times Distribution (since startup):
+    n =        1,  median ~=    90000 ms
+    0 ms:               0
+    1 ms:               0
+    2 ms:               0
+    <= 5 ms:            0
+    <= 10 ms:           0
+    <= 20 ms:           0
+    <= 50 ms:           0
+    <= 100 ms:          0
+    <= 200 ms:          0
+    <= 500 ms:          0
+    <= 1 s:             0
+    <= 2 s:             0
+    <= 5 s:             0
+    <= 10 s:            0
+    <= 20 s:            0
+    <= 1 min:           0
+    <= 2 min:           1
+    <= 5 min:           0
+    <= 10 min:          0
+    <= 20 min:          0
+    <= 1 hr:            0
+    >  1 hr:            0
+
+
+Minor LoadDatasets Times Distribution (since last Daily Report):
+    n =        0
+
+Minor LoadDatasets Times Distribution (since startup):
+    n =        0
+
+
+Response Failed Time Distribution (since last major LoadDatasets):
+    n =        4,  median ~=       10 ms
+    0 ms:               0
+    1 ms:               0
+    2 ms:               0
+    <= 5 ms:            1
+    <= 10 ms:           1
+    <= 20 ms:           0
+    <= 50 ms:           1
+    <= 100 ms:          0
+    <= 200 ms:          0
+    <= 500 ms:          0
+    <= 1 s:             1
+    <= 2 s:             0
+    <= 5 s:             0
+    <= 10 s:            0
+    <= 20 s:            0
+    <= 1 min:           0
+    <= 2 min:           0
+    <= 5 min:           0
+    <= 10 min:          0
+    <= 20 min:          0
+    <= 1 hr:            0
+    >  1 hr:            0
+
+Response Failed Time Distribution (since last Daily Report):
+    n =        4,  median ~=       10 ms
+    0 ms:               0
+    1 ms:               0
+    2 ms:               0
+    <= 5 ms:            1
+    <= 10 ms:           1
+    <= 20 ms:           0
+    <= 50 ms:           1
+    <= 100 ms:          0
+    <= 200 ms:          0
+    <= 500 ms:          0
+    <= 1 s:             1
+    <= 2 s:             0
+    <= 5 s:             0
+    <= 10 s:            0
+    <= 20 s:            0
+    <= 1 min:           0
+    <= 2 min:           0
+    <= 5 min:           0
+    <= 10 min:          0
+    <= 20 min:          0
+    <= 1 hr:            0
+    >  1 hr:            0
+
+Response Failed Time Distribution (since startup):
+    n =        4,  median ~=       10 ms
+    0 ms:               0
+    1 ms:               0
+    2 ms:               0
+    <= 5 ms:            1
+    <= 10 ms:           1
+    <= 20 ms:           0
+    <= 50 ms:           1
+    <= 100 ms:          0
+    <= 200 ms:          0
+    <= 500 ms:          0
+    <= 1 s:             1
+    <= 2 s:             0
+    <= 5 s:             0
+    <= 10 s:            0
+    <= 20 s:            0
+    <= 1 min:           0
+    <= 2 min:           0
+    <= 5 min:           0
+    <= 10 min:          0
+    <= 20 min:          0
+    <= 1 hr:            0
+    >  1 hr:            0
+
+
+Response Succeeded Time Distribution (since last major LoadDatasets):
+    n =        2,  median ~=        2 ms
+    0 ms:               0
+    1 ms:               0
+    2 ms:               1
+    <= 5 ms:            0
+    <= 10 ms:           0
+    <= 20 ms:           0
+    <= 50 ms:           0
+    <= 100 ms:          0
+    <= 200 ms:          0
+    <= 500 ms:          0
+    <= 1 s:             0
+    <= 2 s:             1
+    <= 5 s:             0
+    <= 10 s:            0
+    <= 20 s:            0
+    <= 1 min:           0
+    <= 2 min:           0
+    <= 5 min:           0
+    <= 10 min:          0
+    <= 20 min:          0
+    <= 1 hr:            0
+    >  1 hr:            0
+
+Response Succeeded Time Distribution (since last Daily Report):
+    n =        2,  median ~=        2 ms
+    0 ms:               0
+    1 ms:               0
+    2 ms:               1
+    <= 5 ms:            0
+    <= 10 ms:           0
+    <= 20 ms:           0
+    <= 50 ms:           0
+    <= 100 ms:          0
+    <= 200 ms:          0
+    <= 500 ms:          0
+    <= 1 s:             0
+    <= 2 s:             1
+    <= 5 s:             0
+    <= 10 s:            0
+    <= 20 s:            0
+    <= 1 min:           0
+    <= 2 min:           0
+    <= 5 min:           0
+    <= 10 min:          0
+    <= 20 min:          0
+    <= 1 hr:            0
+    >  1 hr:            0
+
+Response Succeeded Time Distribution (since startup):
+    n =        2,  median ~=        2 ms
+    0 ms:               0
+    1 ms:               0
+    2 ms:               1
+    <= 5 ms:            0
+    <= 10 ms:           0
+    <= 20 ms:           0
+    <= 50 ms:           0
+    <= 100 ms:          0
+    <= 200 ms:          0
+    <= 500 ms:          0
+    <= 1 s:             0
+    <= 2 s:             1
+    <= 5 s:             0
+    <= 10 s:            0
+    <= 20 s:            0
+    <= 1 min:           0
+    <= 2 min:           0
+    <= 5 min:           0
+    <= 10 min:          0
+    <= 20 min:          0
+    <= 1 hr:            0
+    >  1 hr:            0
+
+
+TaskThread Failed Time Distribution (since last Daily Report):
+    n =        0
+
+TaskThread Failed Time Distribution (since startup):
+    n =        0
+
+TaskThread Succeeded Time Distribution (since last Daily Report):
+    n =        0
+
+TaskThread Succeeded Time Distribution (since startup):
+    n =        0
+
+
+TouchThread Failed Time Distribution (since last Daily Report):
+    n =        0
+
+TouchThread Failed Time Distribution (since startup):
+    n =        0
+
+TouchThread Succeeded Time Distribution (since last Daily Report):
+    n =        0
+
+TouchThread Succeeded Time Distribution (since startup):
+    n =        0
+
+
+Language (since last daily report)
+    : 6  (100%)
+
+Language (since startup)
+    : 6  (100%)
+
+SgtMap topography nFromCache=0 nNotFromCache=0
+GSHHS: nCached=0 of 100, nCoarse=0, nSuccesses=0, nTossed=0
+NationalBoundaries: nCached=0 of 100,  nCoarse=0, nSuccesses=0, nTossed=0
+StateBoundaries: nCached=0 of 100,  nCoarse=0, nSuccesses=0, nTossed=0
+Rivers: nCached=0 of 100,  nCoarse=0, nSuccesses=0, nTossed=0
+bufferedImage isAccelerated=false
+canonical map sizes: 
+29 + 37 + 38 + 31 + 36 + 32 + 27 + 27 + 33 + 38 + 36 + 30 + 28 + 25 + 45 + 37 + 
+41 + 36 + 28 + 34 + 29 + 45 + 35 + 33 + 23 + 20 + 29 + 19 + 30 + 41 + 39 + 30 + 
+38 + 25 + 28 + 38 + 28 + 32 + 28 + 34 + 34 + 40 + 26 + 35 + 42 + 35 + 29 + 40 + 
+36 + 35 + 23 + 30 + 44 + 24 + 32 + 33 + 36 + 26 + 46 + 35 + 39 + 22 + 28 + 43 + 
+38 + 34 + 33 + 41 + 35 + 31 + 37 + 27 + 37 + 36 + 37 + 31 + 29 + 29 + 34 + 33 + 
+26 + 38 + 38 + 41 + 29 + 26 + 32 + 38 + 28 + 36 + 35 + 37 + 31 + 32 + 27 + 30 + 
+31 + 25 + 34 + 30 + 30 + 32 + 29 + 25 + 30 + 30 + 40 + 46 + 31 + 38 + 25 + 19 + 
+26 + 29 + 38 + 35 + 30 + 28 + 30 + 27 + 44 + 40 + 33 + 33 + 34 + 32 + 32 = 4157
+canonicalStringHolder map sizes: 
+17 + 11 + 7 + 18 + 11 + 9 + 15 + 10 + 20 + 10 + 8 + 13 + 15 + 8 + 14 + 9 + 
+9 + 7 + 12 + 15 + 11 + 16 + 17 + 13 + 9 + 15 + 15 + 12 + 5 + 12 + 24 + 12 + 
+8 + 16 + 9 + 10 + 14 + 6 + 11 + 16 + 11 + 17 + 9 + 16 + 6 + 12 + 14 + 13 + 
+13 + 12 + 11 + 5 + 13 + 13 + 10 + 14 + 10 + 12 + 19 + 11 + 14 + 13 + 13 + 13 + 
+15 + 11 + 14 + 10 + 19 + 8 + 14 + 12 + 9 + 11 + 9 + 18 + 14 + 12 + 20 + 18 + 
+16 + 15 + 7 + 16 + 9 + 12 + 9 + 11 + 9 + 14 + 13 + 8 + 12 + 15 + 9 + 7 + 
+15 + 4 + 13 + 7 + 5 + 14 + 11 + 15 + 11 + 13 + 14 + 9 + 13 + 12 + 16 + 10 + 
+9 + 9 + 11 + 11 + 12 + 17 + 15 + 9 + 9 + 15 + 6 + 19 + 9 + 12 + 10 = 1534
+
+
+**********************************************************************
+Warnings from LoadDatasets
+
+
+**********************************************************************
+Number of threads: Tomcat-waiting=2, inotify=0, other=25
+(format: #threadNumber Thread[threadName,threadPriority,threadGroup] threadStatus)
+
+#1 Thread[#1,main,5,main] WAITING
+java.base@21.0.6/jdk.internal.misc.Unsafe.park(Native Method)
+java.base@21.0.6/java.util.concurrent.locks.LockSupport.park(LockSupport.java:371)
+java.base@21.0.6/java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionNode.block(AbstractQueuedSynchronizer.java:519)
+java.base@21.0.6/java.util.concurrent.ForkJoinPool.unmanagedBlock(ForkJoinPool.java:3778)
+java.base@21.0.6/java.util.concurrent.ForkJoinPool.managedBlock(ForkJoinPool.java:3723)
+java.base@21.0.6/java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.await(AbstractQueuedSynchronizer.java:1712)
+org.eclipse.jetty.util.thread.AutoLock$WithCondition.await(AutoLock.java:151)
+org.eclipse.jetty.util.thread.QueuedThreadPool.join(QueuedThreadPool.java:832)
+org.eclipse.jetty.server.Server.join(Server.java:712)
+org.eclipse.jetty.maven.AbstractJettyEmbedder.join(AbstractJettyEmbedder.java:221)
+org.eclipse.jetty.ee10.maven.plugin.JettyRunMojo.startJettyEmbedded(JettyRunMojo.java:100)
+org.eclipse.jetty.ee10.maven.plugin.AbstractWebAppMojo.startJetty(AbstractWebAppMojo.java:451)
+org.eclipse.jetty.ee10.maven.plugin.AbstractWebAppMojo.execute(AbstractWebAppMojo.java:429)
+org.eclipse.jetty.ee10.maven.plugin.JettyRunMojo.execute(JettyRunMojo.java:86)
+org.apache.maven.plugin.DefaultBuildPluginManager.executeMojo(DefaultBuildPluginManager.java:126)
+org.apache.maven.lifecycle.internal.MojoExecutor.doExecute2(MojoExecutor.java:328)
+org.apache.maven.lifecycle.internal.MojoExecutor.doExecute(MojoExecutor.java:316)
+org.apache.maven.lifecycle.internal.MojoExecutor.execute(MojoExecutor.java:212)
+org.apache.maven.lifecycle.internal.MojoExecutor.execute(MojoExecutor.java:174)
+org.apache.maven.lifecycle.internal.MojoExecutor.access$000(MojoExecutor.java:75)
+org.apache.maven.lifecycle.internal.MojoExecutor$1.run(MojoExecutor.java:162)
+org.apache.maven.plugin.DefaultMojosExecutionStrategy.execute(DefaultMojosExecutionStrategy.java:39)
+org.apache.maven.lifecycle.internal.MojoExecutor.execute(MojoExecutor.java:159)
+org.apache.maven.lifecycle.internal.LifecycleModuleBuilder.buildProject(LifecycleModuleBuilder.java:105)
+org.apache.maven.lifecycle.internal.LifecycleModuleBuilder.buildProject(LifecycleModuleBuilder.java:73)
+org.apache.maven.lifecycle.internal.builder.singlethreaded.SingleThreadedBuilder.build(SingleThreadedBuilder.java:53)
+org.apache.maven.lifecycle.internal.LifecycleStarter.execute(LifecycleStarter.java:118)
+org.apache.maven.DefaultMaven.doExecute(DefaultMaven.java:261)
+org.apache.maven.DefaultMaven.doExecute(DefaultMaven.java:173)
+org.apache.maven.DefaultMaven.execute(DefaultMaven.java:101)
+org.apache.maven.cli.MavenCli.execute(MavenCli.java:906)
+org.apache.maven.cli.MavenCli.doMain(MavenCli.java:283)
+org.apache.maven.cli.MavenCli.main(MavenCli.java:206)
+java.base@21.0.6/java.lang.invoke.DirectMethodHandle$Holder.invokeStatic(DirectMethodHandle$Holder)
+java.base@21.0.6/java.lang.invoke.LambdaForm$MH/0x0000028b99008400.invoke(LambdaForm$MH)
+java.base@21.0.6/java.lang.invoke.LambdaForm$MH/0x0000028b99008800.invokeExact_MT(LambdaForm$MH)
+java.base@21.0.6/jdk.internal.reflect.DirectMethodHandleAccessor.invokeImpl(DirectMethodHandleAccessor.java:155)
+java.base@21.0.6/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103)
+java.base@21.0.6/java.lang.reflect.Method.invoke(Method.java:580)
+app//org.codehaus.plexus.classworlds.launcher.Launcher.launchEnhanced(Launcher.java:255)
+app//org.codehaus.plexus.classworlds.launcher.Launcher.launch(Launcher.java:201)
+app//org.codehaus.plexus.classworlds.launcher.Launcher.mainWithExitCode(Launcher.java:361)
+app//org.codehaus.plexus.classworlds.launcher.Launcher.main(Launcher.java:314)
+
+#2 Thread[#10,Finalizer,8,system] WAITING daemon
+java.base@21.0.6/java.lang.Object.wait0(Native Method)
+java.base@21.0.6/java.lang.Object.wait(Object.java:366)
+java.base@21.0.6/java.lang.Object.wait(Object.java:339)
+java.base@21.0.6/java.lang.ref.NativeReferenceQueue.await(NativeReferenceQueue.java:48)
+java.base@21.0.6/java.lang.ref.ReferenceQueue.remove0(ReferenceQueue.java:158)
+java.base@21.0.6/java.lang.ref.NativeReferenceQueue.remove(NativeReferenceQueue.java:89)
+java.base@21.0.6/java.lang.ref.Finalizer$FinalizerThread.run(Finalizer.java:173)
+
+#3 Thread[#11,Signal Dispatcher,9,system] RUNNABLE daemon
+
+#4 Thread[#12,Attach Listener,5,system] RUNNABLE daemon
+
+#5 Thread[#176,qtp734142173-176,5,main] TIMED_WAITING
+java.base@21.0.6/jdk.internal.misc.Unsafe.park(Native Method)
+java.base@21.0.6/java.util.concurrent.locks.LockSupport.parkNanos(LockSupport.java:269)
+java.base@21.0.6/java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.awaitNanos(AbstractQueuedSynchronizer.java:1763)
+org.eclipse.jetty.util.BlockingArrayQueue.poll(BlockingArrayQueue.java:219)
+org.eclipse.jetty.util.thread.QueuedThreadPool$Runner.idleJobPoll(QueuedThreadPool.java:1139)
+org.eclipse.jetty.util.thread.QueuedThreadPool$Runner.run(QueuedThreadPool.java:1156)
+java.base@21.0.6/java.lang.Thread.runWith(Thread.java:1596)
+java.base@21.0.6/java.lang.Thread.run(Thread.java:1583)
+
+#6 Thread[#177,Keep-Alive-Timer,8,InnocuousThreadGroup] TIMED_WAITING daemon
+java.base@21.0.6/java.lang.Thread.sleep0(Native Method)
+java.base@21.0.6/java.lang.Thread.sleep(Thread.java:509)
+java.base@21.0.6/sun.net.www.http.KeepAliveCache.run(KeepAliveCache.java:238)
+java.base@21.0.6/java.lang.Thread.runWith(Thread.java:1596)
+java.base@21.0.6/java.lang.Thread.run(Thread.java:1583)
+java.base@21.0.6/jdk.internal.misc.InnocuousThread.run(InnocuousThread.java:186)
+
+#7 Thread[#19,Common-Cleaner,8,InnocuousThreadGroup] TIMED_WAITING daemon
+java.base@21.0.6/jdk.internal.misc.Unsafe.park(Native Method)
+java.base@21.0.6/java.util.concurrent.locks.LockSupport.parkNanos(LockSupport.java:269)
+java.base@21.0.6/java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.await(AbstractQueuedSynchronizer.java:1852)
+java.base@21.0.6/java.lang.ref.ReferenceQueue.await(ReferenceQueue.java:71)
+java.base@21.0.6/java.lang.ref.ReferenceQueue.remove0(ReferenceQueue.java:143)
+java.base@21.0.6/java.lang.ref.ReferenceQueue.remove(ReferenceQueue.java:218)
+java.base@21.0.6/jdk.internal.ref.CleanerImpl.run(CleanerImpl.java:140)
+java.base@21.0.6/java.lang.Thread.runWith(Thread.java:1596)
+java.base@21.0.6/java.lang.Thread.run(Thread.java:1583)
+java.base@21.0.6/jdk.internal.misc.InnocuousThread.run(InnocuousThread.java:186)
+
+#8 Thread[#20,Notification Thread,9,system] RUNNABLE daemon
+
+#9 Thread[#31,Thread-1,5,main] WAITING daemon
+java.base@21.0.6/jdk.internal.misc.Unsafe.park(Native Method)
+java.base@21.0.6/java.util.concurrent.locks.LockSupport.park(LockSupport.java:371)
+java.base@21.0.6/java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionNode.block(AbstractQueuedSynchronizer.java:519)
+java.base@21.0.6/java.util.concurrent.ForkJoinPool.unmanagedBlock(ForkJoinPool.java:3778)
+java.base@21.0.6/java.util.concurrent.ForkJoinPool.managedBlock(ForkJoinPool.java:3723)
+java.base@21.0.6/java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.await(AbstractQueuedSynchronizer.java:1712)
+java.base@21.0.6/java.util.concurrent.ArrayBlockingQueue.take(ArrayBlockingQueue.java:420)
+org.apache.maven.cli.transfer.SimplexTransferListener.feedConsumer(SimplexTransferListener.java:94)
+org.apache.maven.cli.transfer.SimplexTransferListener$$Lambda/0x0000028b9919b480.run(Unknown Source)
+java.base@21.0.6/java.lang.Thread.runWith(Thread.java:1596)
+java.base@21.0.6/java.lang.Thread.run(Thread.java:1583)
+
+#10 Thread[#35,qtp734142173-35,5,main] TIMED_WAITING
+java.base@21.0.6/jdk.internal.misc.Unsafe.park(Native Method)
+java.base@21.0.6/java.util.concurrent.locks.LockSupport.parkNanos(LockSupport.java:269)
+java.base@21.0.6/java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.awaitNanos(AbstractQueuedSynchronizer.java:1763)
+org.eclipse.jetty.util.BlockingArrayQueue.poll(BlockingArrayQueue.java:219)
+org.eclipse.jetty.util.thread.QueuedThreadPool$Runner.idleJobPoll(QueuedThreadPool.java:1139)
+org.eclipse.jetty.util.thread.QueuedThreadPool$Runner.run(QueuedThreadPool.java:1156)
+java.base@21.0.6/java.lang.Thread.runWith(Thread.java:1596)
+java.base@21.0.6/java.lang.Thread.run(Thread.java:1583)
+
+#11 Thread[#36,qtp734142173-36,5,main] RUNNABLE
+java.base@21.0.6/sun.nio.ch.WEPoll.wait(Native Method)
+java.base@21.0.6/sun.nio.ch.WEPollSelectorImpl.doSelect(WEPollSelectorImpl.java:114)
+java.base@21.0.6/sun.nio.ch.SelectorImpl.lockAndDoSelect(SelectorImpl.java:130)
+java.base@21.0.6/sun.nio.ch.SelectorImpl.select(SelectorImpl.java:147)
+org.eclipse.jetty.io.ManagedSelector.nioSelect(ManagedSelector.java:182)
+org.eclipse.jetty.io.ManagedSelector.select(ManagedSelector.java:189)
+org.eclipse.jetty.io.ManagedSelector$SelectorProducer.select(ManagedSelector.java:614)
+org.eclipse.jetty.io.ManagedSelector$SelectorProducer.produce(ManagedSelector.java:548)
+org.eclipse.jetty.util.thread.strategy.AdaptiveExecutionStrategy.produceTask(AdaptiveExecutionStrategy.java:514)
+org.eclipse.jetty.util.thread.strategy.AdaptiveExecutionStrategy.tryProduce(AdaptiveExecutionStrategy.java:258)
+org.eclipse.jetty.util.thread.strategy.AdaptiveExecutionStrategy.run(AdaptiveExecutionStrategy.java:201)
+org.eclipse.jetty.util.thread.ReservedThreadExecutor$ReservedThread.run(ReservedThreadExecutor.java:311)
+org.eclipse.jetty.util.thread.QueuedThreadPool.runJob(QueuedThreadPool.java:979)
+org.eclipse.jetty.util.thread.QueuedThreadPool$Runner.doRunJob(QueuedThreadPool.java:1209)
+org.eclipse.jetty.util.thread.QueuedThreadPool$Runner.run(QueuedThreadPool.java:1164)
+java.base@21.0.6/java.lang.Thread.runWith(Thread.java:1596)
+java.base@21.0.6/java.lang.Thread.run(Thread.java:1583)
+
+#12 Thread[#37,qtp734142173-37,5,main] RUNNABLE
+java.base@21.0.6/sun.nio.ch.WEPoll.wait(Native Method)
+java.base@21.0.6/sun.nio.ch.WEPollSelectorImpl.doSelect(WEPollSelectorImpl.java:114)
+java.base@21.0.6/sun.nio.ch.SelectorImpl.lockAndDoSelect(SelectorImpl.java:130)
+java.base@21.0.6/sun.nio.ch.SelectorImpl.select(SelectorImpl.java:147)
+org.eclipse.jetty.io.ManagedSelector.nioSelect(ManagedSelector.java:182)
+org.eclipse.jetty.io.ManagedSelector.select(ManagedSelector.java:189)
+org.eclipse.jetty.io.ManagedSelector$SelectorProducer.select(ManagedSelector.java:614)
+org.eclipse.jetty.io.ManagedSelector$SelectorProducer.produce(ManagedSelector.java:548)
+org.eclipse.jetty.util.thread.strategy.AdaptiveExecutionStrategy.produceTask(AdaptiveExecutionStrategy.java:514)
+org.eclipse.jetty.util.thread.strategy.AdaptiveExecutionStrategy.tryProduce(AdaptiveExecutionStrategy.java:258)
+org.eclipse.jetty.util.thread.strategy.AdaptiveExecutionStrategy.run(AdaptiveExecutionStrategy.java:201)
+org.eclipse.jetty.util.thread.ReservedThreadExecutor$ReservedThread.run(ReservedThreadExecutor.java:311)
+org.eclipse.jetty.util.thread.QueuedThreadPool.runJob(QueuedThreadPool.java:979)
+org.eclipse.jetty.util.thread.QueuedThreadPool$Runner.doRunJob(QueuedThreadPool.java:1209)
+org.eclipse.jetty.util.thread.QueuedThreadPool$Runner.run(QueuedThreadPool.java:1164)
+java.base@21.0.6/java.lang.Thread.runWith(Thread.java:1596)
+java.base@21.0.6/java.lang.Thread.run(Thread.java:1583)
+
+#13 Thread[#38,qtp734142173-38,5,main] TIMED_WAITING
+java.base@21.0.6/jdk.internal.misc.Unsafe.park(Native Method)
+java.base@21.0.6/java.util.concurrent.locks.LockSupport.parkNanos(LockSupport.java:269)
+java.base@21.0.6/java.util.concurrent.locks.AbstractQueuedSynchronizer.acquire(AbstractQueuedSynchronizer.java:756)
+java.base@21.0.6/java.util.concurrent.locks.AbstractQueuedSynchronizer.tryAcquireSharedNanos(AbstractQueuedSynchronizer.java:1126)
+java.base@21.0.6/java.util.concurrent.Semaphore.tryAcquire(Semaphore.java:415)
+org.eclipse.jetty.util.thread.ReservedThreadExecutor$ReservedThread.waitForTask(ReservedThreadExecutor.java:351)
+org.eclipse.jetty.util.thread.ReservedThreadExecutor$ReservedThread.run(ReservedThreadExecutor.java:290)
+org.eclipse.jetty.util.thread.QueuedThreadPool.runJob(QueuedThreadPool.java:979)
+org.eclipse.jetty.util.thread.QueuedThreadPool$Runner.doRunJob(QueuedThreadPool.java:1209)
+org.eclipse.jetty.util.thread.QueuedThreadPool$Runner.run(QueuedThreadPool.java:1164)
+java.base@21.0.6/java.lang.Thread.runWith(Thread.java:1596)
+java.base@21.0.6/java.lang.Thread.run(Thread.java:1583)
+
+#14 Thread[#39,qtp734142173-39,5,main] RUNNABLE
+java.base@21.0.6/sun.nio.ch.WEPoll.wait(Native Method)
+java.base@21.0.6/sun.nio.ch.WEPollSelectorImpl.doSelect(WEPollSelectorImpl.java:114)
+java.base@21.0.6/sun.nio.ch.SelectorImpl.lockAndDoSelect(SelectorImpl.java:130)
+java.base@21.0.6/sun.nio.ch.SelectorImpl.select(SelectorImpl.java:147)
+org.eclipse.jetty.io.ManagedSelector.nioSelect(ManagedSelector.java:182)
+org.eclipse.jetty.io.ManagedSelector.select(ManagedSelector.java:189)
+org.eclipse.jetty.io.ManagedSelector$SelectorProducer.select(ManagedSelector.java:614)
+org.eclipse.jetty.io.ManagedSelector$SelectorProducer.produce(ManagedSelector.java:548)
+org.eclipse.jetty.util.thread.strategy.AdaptiveExecutionStrategy.produceTask(AdaptiveExecutionStrategy.java:514)
+org.eclipse.jetty.util.thread.strategy.AdaptiveExecutionStrategy.tryProduce(AdaptiveExecutionStrategy.java:258)
+org.eclipse.jetty.util.thread.strategy.AdaptiveExecutionStrategy.run(AdaptiveExecutionStrategy.java:201)
+org.eclipse.jetty.util.thread.ReservedThreadExecutor$ReservedThread.run(ReservedThreadExecutor.java:311)
+org.eclipse.jetty.util.thread.QueuedThreadPool.runJob(QueuedThreadPool.java:979)
+org.eclipse.jetty.util.thread.QueuedThreadPool$Runner.doRunJob(QueuedThreadPool.java:1209)
+org.eclipse.jetty.util.thread.QueuedThreadPool$Runner.run(QueuedThreadPool.java:1164)
+java.base@21.0.6/java.lang.Thread.runWith(Thread.java:1596)
+java.base@21.0.6/java.lang.Thread.run(Thread.java:1583)
+
+#15 Thread[#40,qtp734142173-40,5,main] TIMED_WAITING
+java.base@21.0.6/jdk.internal.misc.Unsafe.park(Native Method)
+java.base@21.0.6/java.util.concurrent.locks.LockSupport.parkNanos(LockSupport.java:269)
+java.base@21.0.6/java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.awaitNanos(AbstractQueuedSynchronizer.java:1763)
+org.eclipse.jetty.util.BlockingArrayQueue.poll(BlockingArrayQueue.java:219)
+org.eclipse.jetty.util.thread.QueuedThreadPool$Runner.idleJobPoll(QueuedThreadPool.java:1139)
+org.eclipse.jetty.util.thread.QueuedThreadPool$Runner.run(QueuedThreadPool.java:1156)
+java.base@21.0.6/java.lang.Thread.runWith(Thread.java:1596)
+java.base@21.0.6/java.lang.Thread.run(Thread.java:1583)
+
+#16 Thread[#41,qtp734142173-41,5,main] RUNNABLE
+java.base@21.0.6/sun.nio.ch.WEPoll.wait(Native Method)
+java.base@21.0.6/sun.nio.ch.WEPollSelectorImpl.doSelect(WEPollSelectorImpl.java:114)
+java.base@21.0.6/sun.nio.ch.SelectorImpl.lockAndDoSelect(SelectorImpl.java:130)
+java.base@21.0.6/sun.nio.ch.SelectorImpl.select(SelectorImpl.java:147)
+org.eclipse.jetty.io.ManagedSelector.nioSelect(ManagedSelector.java:182)
+org.eclipse.jetty.io.ManagedSelector.select(ManagedSelector.java:189)
+org.eclipse.jetty.io.ManagedSelector$SelectorProducer.select(ManagedSelector.java:614)
+org.eclipse.jetty.io.ManagedSelector$SelectorProducer.produce(ManagedSelector.java:548)
+org.eclipse.jetty.util.thread.strategy.AdaptiveExecutionStrategy.produceTask(AdaptiveExecutionStrategy.java:514)
+org.eclipse.jetty.util.thread.strategy.AdaptiveExecutionStrategy.tryProduce(AdaptiveExecutionStrategy.java:258)
+org.eclipse.jetty.util.thread.strategy.AdaptiveExecutionStrategy.produce(AdaptiveExecutionStrategy.java:195)
+org.eclipse.jetty.io.ManagedSelector$$Lambda/0x0000028b99727310.run(Unknown Source)
+org.eclipse.jetty.util.thread.QueuedThreadPool.runJob(QueuedThreadPool.java:979)
+org.eclipse.jetty.util.thread.QueuedThreadPool$Runner.doRunJob(QueuedThreadPool.java:1209)
+org.eclipse.jetty.util.thread.QueuedThreadPool$Runner.run(QueuedThreadPool.java:1164)
+java.base@21.0.6/java.lang.Thread.runWith(Thread.java:1596)
+java.base@21.0.6/java.lang.Thread.run(Thread.java:1583)
+
+#17 Thread[#42,qtp734142173-42,5,main] TIMED_WAITING
+java.base@21.0.6/jdk.internal.misc.Unsafe.park(Native Method)
+java.base@21.0.6/java.util.concurrent.locks.LockSupport.parkNanos(LockSupport.java:269)
+java.base@21.0.6/java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.awaitNanos(AbstractQueuedSynchronizer.java:1763)
+org.eclipse.jetty.util.BlockingArrayQueue.poll(BlockingArrayQueue.java:219)
+org.eclipse.jetty.util.thread.QueuedThreadPool$Runner.idleJobPoll(QueuedThreadPool.java:1139)
+org.eclipse.jetty.util.thread.QueuedThreadPool$Runner.run(QueuedThreadPool.java:1156)
+java.base@21.0.6/java.lang.Thread.runWith(Thread.java:1596)
+java.base@21.0.6/java.lang.Thread.run(Thread.java:1583)
+
+#18 Thread[#43,qtp734142173-43-acceptor-0@503bd3af-ServerConnector@20c4be8d{HTTP/1.1, (http/1.1)}{0.0.0.0:8080},3,main] RUNNABLE
+java.base@21.0.6/sun.nio.ch.Net.accept(Native Method)
+java.base@21.0.6/sun.nio.ch.ServerSocketChannelImpl.implAccept(ServerSocketChannelImpl.java:433)
+java.base@21.0.6/sun.nio.ch.ServerSocketChannelImpl.accept(ServerSocketChannelImpl.java:399)
+org.eclipse.jetty.server.ServerConnector.accept(ServerConnector.java:389)
+org.eclipse.jetty.server.AbstractConnector$Acceptor.run(AbstractConnector.java:698)
+org.eclipse.jetty.util.thread.QueuedThreadPool.runJob(QueuedThreadPool.java:979)
+org.eclipse.jetty.util.thread.QueuedThreadPool$Runner.doRunJob(QueuedThreadPool.java:1209)
+org.eclipse.jetty.util.thread.QueuedThreadPool$Runner.run(QueuedThreadPool.java:1164)
+java.base@21.0.6/java.lang.Thread.runWith(Thread.java:1596)
+java.base@21.0.6/java.lang.Thread.run(Thread.java:1583)
+
+#19 Thread[#45,Cleaner-0,8,InnocuousThreadGroup] TIMED_WAITING daemon
+java.base@21.0.6/jdk.internal.misc.Unsafe.park(Native Method)
+java.base@21.0.6/java.util.concurrent.locks.LockSupport.parkNanos(LockSupport.java:269)
+java.base@21.0.6/java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.await(AbstractQueuedSynchronizer.java:1852)
+java.base@21.0.6/java.lang.ref.ReferenceQueue.await(ReferenceQueue.java:71)
+java.base@21.0.6/java.lang.ref.ReferenceQueue.remove0(ReferenceQueue.java:143)
+java.base@21.0.6/java.lang.ref.ReferenceQueue.remove(ReferenceQueue.java:218)
+java.base@21.0.6/jdk.internal.ref.CleanerImpl.run(CleanerImpl.java:140)
+java.base@21.0.6/java.lang.Thread.runWith(Thread.java:1596)
+java.base@21.0.6/java.lang.Thread.run(Thread.java:1583)
+java.base@21.0.6/jdk.internal.misc.InnocuousThread.run(InnocuousThread.java:186)
+
+#20 Thread[#60,Java2D Disposer,10,system] WAITING daemon
+java.base@21.0.6/jdk.internal.misc.Unsafe.park(Native Method)
+java.base@21.0.6/java.util.concurrent.locks.LockSupport.park(LockSupport.java:371)
+java.base@21.0.6/java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionNode.block(AbstractQueuedSynchronizer.java:519)
+java.base@21.0.6/java.util.concurrent.ForkJoinPool.unmanagedBlock(ForkJoinPool.java:3778)
+java.base@21.0.6/java.util.concurrent.ForkJoinPool.managedBlock(ForkJoinPool.java:3723)
+java.base@21.0.6/java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.await(AbstractQueuedSynchronizer.java:1712)
+java.base@21.0.6/java.lang.ref.ReferenceQueue.await(ReferenceQueue.java:67)
+java.base@21.0.6/java.lang.ref.ReferenceQueue.remove0(ReferenceQueue.java:158)
+java.base@21.0.6/java.lang.ref.ReferenceQueue.remove(ReferenceQueue.java:234)
+java.desktop@21.0.6/sun.java2d.Disposer.run(Disposer.java:145)
+java.base@21.0.6/java.lang.Thread.runWith(Thread.java:1596)
+java.base@21.0.6/java.lang.Thread.run(Thread.java:1583)
+
+#21 Thread[#61,TouchThread,5,main] TIMED_WAITING
+java.base@21.0.6/java.lang.Thread.sleep0(Native Method)
+java.base@21.0.6/java.lang.Thread.sleep(Thread.java:509)
+com.cohort.util.Math2.sleep(Math2.java:368)
+gov.noaa.pfel.erddap.util.TouchThread.run(TouchThread.java:53)
+
+#22 Thread[#63,AWT-Windows,6,system] RUNNABLE daemon
+java.desktop@21.0.6/sun.awt.windows.WToolkit.eventLoop(Native Method)
+java.desktop@21.0.6/sun.awt.windows.WToolkit.run(WToolkit.java:360)
+java.base@21.0.6/java.lang.Thread.runWith(Thread.java:1596)
+java.base@21.0.6/java.lang.Thread.run(Thread.java:1583)
+
+#23 Thread[#66,RunLoadDatasets,5,main] TIMED_WAITING
+java.base@21.0.6/java.lang.Thread.sleep0(Native Method)
+java.base@21.0.6/java.lang.Thread.sleep(Thread.java:509)
+gov.noaa.pfel.erddap.RunLoadDatasets.run(RunLoadDatasets.java:298)
+
+#24 Thread[#68,ConsoleReader,5,main] RUNNABLE daemon
+java.base@21.0.6/java.io.FileInputStream.readBytes(Native Method)
+java.base@21.0.6/java.io.FileInputStream.read(FileInputStream.java:287)
+java.base@21.0.6/sun.nio.cs.StreamDecoder.readBytes(StreamDecoder.java:350)
+java.base@21.0.6/sun.nio.cs.StreamDecoder.implRead(StreamDecoder.java:393)
+java.base@21.0.6/sun.nio.cs.StreamDecoder.lockedRead(StreamDecoder.java:217)
+java.base@21.0.6/sun.nio.cs.StreamDecoder.read(StreamDecoder.java:177)
+java.base@21.0.6/jdk.internal.io.JdkConsoleImpl$LineReader.read(JdkConsoleImpl.java:261)
+java.base@21.0.6/jdk.internal.io.JdkConsoleImpl.readline(JdkConsoleImpl.java:183)
+java.base@21.0.6/jdk.internal.io.JdkConsoleImpl.readLine(JdkConsoleImpl.java:78)
+java.base@21.0.6/java.io.ProxyingConsole.readLine(ProxyingConsole.java:95)
+org.eclipse.jetty.maven.ConsoleReader.run(ConsoleReader.java:55)
+java.base@21.0.6/java.lang.Thread.runWith(Thread.java:1596)
+java.base@21.0.6/java.lang.Thread.run(Thread.java:1583)
+
+#25 Thread[#9,Reference Handler,10,system] RUNNABLE daemon
+java.base@21.0.6/java.lang.ref.Reference.waitForReferencePendingList(Native Method)
+java.base@21.0.6/java.lang.ref.Reference.processPendingReferences(Reference.java:246)
+java.base@21.0.6/java.lang.ref.Reference$ReferenceHandler.run(Reference.java:208)
+
+
+**********************************************************************
+setDatasetFlag URLs can be used to force a dataset to be reloaded (treat as confidential information)
+
+http://localhost:8080/erddap/setDatasetFlag.txt?datasetID=allDatasets&flagKey=1635399175
+http://localhost:8080/erddap/setDatasetFlag.txt?datasetID=cwwcNDBCMet&flagKey=3290317342
+http://localhost:8080/erddap/setDatasetFlag.txt?datasetID=erdGtsppBest&flagKey=1761733800
+http://localhost:8080/erddap/setDatasetFlag.txt?datasetID=erdMH1cflh1day&flagKey=616709138
+http://localhost:8080/erddap/setDatasetFlag.txt?datasetID=erdMH1cflh8day&flagKey=617549305
+http://localhost:8080/erddap/setDatasetFlag.txt?datasetID=erdMH1cflhmday&flagKey=614949462
+http://localhost:8080/erddap/setDatasetFlag.txt?datasetID=erdMH1chla1day&flagKey=2389241375
+http://localhost:8080/erddap/setDatasetFlag.txt?datasetID=erdMH1chla8day&flagKey=2387951494
+http://localhost:8080/erddap/setDatasetFlag.txt?datasetID=erdMH1chlamday&flagKey=2387416147
+http://localhost:8080/erddap/setDatasetFlag.txt?datasetID=erdMH1kd4901day&flagKey=3251698949
+http://localhost:8080/erddap/setDatasetFlag.txt?datasetID=erdMH1kd4908day&flagKey=3252538092
+http://localhost:8080/erddap/setDatasetFlag.txt?datasetID=erdMH1kd490mday&flagKey=3249873593
+http://localhost:8080/erddap/setDatasetFlag.txt?datasetID=erdMH1par01day&flagKey=1639591298
+http://localhost:8080/erddap/setDatasetFlag.txt?datasetID=erdMH1par08day&flagKey=1638366057
+http://localhost:8080/erddap/setDatasetFlag.txt?datasetID=erdMH1par0mday&flagKey=1637831622
+http://localhost:8080/erddap/setDatasetFlag.txt?datasetID=erdMWchla1day&flagKey=3768973341
+http://localhost:8080/erddap/setDatasetFlag.txt?datasetID=erdNavgem05D10mWind_LonPM180&flagKey=3999842173
+http://localhost:8080/erddap/setDatasetFlag.txt?datasetID=erdNavgem05D20mWind_LonPM180&flagKey=3485949214
+http://localhost:8080/erddap/setDatasetFlag.txt?datasetID=erdNavgem05D500mb_LonPM180&flagKey=2483006441
+http://localhost:8080/erddap/setDatasetFlag.txt?datasetID=erdNavgem05DPres_LonPM180&flagKey=2119408687
+http://localhost:8080/erddap/setDatasetFlag.txt?datasetID=erdTAssh1day&flagKey=1137552628
+http://localhost:8080/erddap/setDatasetFlag.txt?datasetID=erdVH2018chla1day&flagKey=1284245416
+http://localhost:8080/erddap/setDatasetFlag.txt?datasetID=erdVH2018chla8day&flagKey=1284068631
+http://localhost:8080/erddap/setDatasetFlag.txt?datasetID=erdVH2018chlamday&flagKey=1298222572
+http://localhost:8080/erddap/setDatasetFlag.txt?datasetID=erdVH2018k4901day&flagKey=1810947522
+http://localhost:8080/erddap/setDatasetFlag.txt?datasetID=erdVH2018k4908day&flagKey=1811753641
+http://localhost:8080/erddap/setDatasetFlag.txt?datasetID=erdVH2018k490mday&flagKey=1809122054
+http://localhost:8080/erddap/setDatasetFlag.txt?datasetID=erdVH2018par1day&flagKey=1077874373
+http://localhost:8080/erddap/setDatasetFlag.txt?datasetID=erdVH2018par8day&flagKey=1077698476
+http://localhost:8080/erddap/setDatasetFlag.txt?datasetID=erdVH2018parmday&flagKey=1075033209
+http://localhost:8080/erddap/setDatasetFlag.txt?datasetID=erdVH2018pic1day&flagKey=1969984092
+http://localhost:8080/erddap/setDatasetFlag.txt?datasetID=erdVH2018pic8day&flagKey=1969808187
+http://localhost:8080/erddap/setDatasetFlag.txt?datasetID=erdVH2018picmday&flagKey=1967184784
+http://localhost:8080/erddap/setDatasetFlag.txt?datasetID=erdVH2018poc1day&flagKey=2133755418
+http://localhost:8080/erddap/setDatasetFlag.txt?datasetID=erdVH2018poc8day&flagKey=2133579649
+http://localhost:8080/erddap/setDatasetFlag.txt?datasetID=erdVH2018pocmday&flagKey=2130955358
+http://localhost:8080/erddap/setDatasetFlag.txt?datasetID=erdVH2018r6711day&flagKey=2841064172
+http://localhost:8080/erddap/setDatasetFlag.txt?datasetID=erdVH2018r6718day&flagKey=2840854603
+http://localhost:8080/erddap/setDatasetFlag.txt?datasetID=erdVH2018r671mday&flagKey=2840360992
+http://localhost:8080/erddap/setDatasetFlag.txt?datasetID=etopo180&flagKey=2743551825
+http://localhost:8080/erddap/setDatasetFlag.txt?datasetID=etopo360&flagKey=2743553941
+http://localhost:8080/erddap/setDatasetFlag.txt?datasetID=hawaii_d90f_20ee_c4cb&flagKey=3103770050
+http://localhost:8080/erddap/setDatasetFlag.txt?datasetID=hawaii_d90f_20ee_c4cb_LonPM180&flagKey=582309180
+http://localhost:8080/erddap/setDatasetFlag.txt?datasetID=jplMURSST41&flagKey=1744031318
+http://localhost:8080/erddap/setDatasetFlag.txt?datasetID=miamicurrents&flagKey=25642496
+http://localhost:8080/erddap/setDatasetFlag.txt?datasetID=nosSosATemp&flagKey=4074718411
+http://localhost:8080/erddap/setDatasetFlag.txt?datasetID=pmelTaoDyAdcp&flagKey=3471828216
+http://localhost:8080/erddap/setDatasetFlag.txt?datasetID=pmelTaoDyAirt&flagKey=3471824998
+http://localhost:8080/erddap/setDatasetFlag.txt?datasetID=pmelTaoDyBf&flagKey=2497132492
+http://localhost:8080/erddap/setDatasetFlag.txt?datasetID=pmelTaoDyBp&flagKey=2497132346
+http://localhost:8080/erddap/setDatasetFlag.txt?datasetID=pmelTaoDyCur&flagKey=2265448406
+http://localhost:8080/erddap/setDatasetFlag.txt?datasetID=pmelTaoDyD&flagKey=4150936170
+http://localhost:8080/erddap/setDatasetFlag.txt?datasetID=pmelTaoDyDyn&flagKey=2265441053
+http://localhost:8080/erddap/setDatasetFlag.txt?datasetID=pmelTaoDyEmp&flagKey=2265441614
+http://localhost:8080/erddap/setDatasetFlag.txt?datasetID=pmelTaoDyEvap&flagKey=3471694760
+http://localhost:8080/erddap/setDatasetFlag.txt?datasetID=pmelTaoDyHeat&flagKey=3471587032
+http://localhost:8080/erddap/setDatasetFlag.txt?datasetID=pmelTaoDyIso&flagKey=2265437449
+http://localhost:8080/erddap/setDatasetFlag.txt?datasetID=pmelTaoDyLw&flagKey=2497132037
+http://localhost:8080/erddap/setDatasetFlag.txt?datasetID=pmelTaoDyLwnet&flagKey=1835110564
+http://localhost:8080/erddap/setDatasetFlag.txt?datasetID=pmelTaoDyPos&flagKey=2265435962
+http://localhost:8080/erddap/setDatasetFlag.txt?datasetID=pmelTaoDyQlat&flagKey=3471313082
+http://localhost:8080/erddap/setDatasetFlag.txt?datasetID=pmelTaoDyQnet&flagKey=3471339844
+http://localhost:8080/erddap/setDatasetFlag.txt?datasetID=pmelTaoDyQsen&flagKey=3471335941
+http://localhost:8080/erddap/setDatasetFlag.txt?datasetID=pmelTaoDyRad&flagKey=2265396729
+http://localhost:8080/erddap/setDatasetFlag.txt?datasetID=pmelTaoDyRain&flagKey=3470243004
+http://localhost:8080/erddap/setDatasetFlag.txt?datasetID=pmelTaoDyRf&flagKey=2497133020
+http://localhost:8080/erddap/setDatasetFlag.txt?datasetID=pmelTaoDyRh&flagKey=2497133010
+http://localhost:8080/erddap/setDatasetFlag.txt?datasetID=pmelTaoDyS&flagKey=4150936155
+http://localhost:8080/erddap/setDatasetFlag.txt?datasetID=pmelTaoDySsd&flagKey=2265398154
+http://localhost:8080/erddap/setDatasetFlag.txt?datasetID=pmelTaoDySss&flagKey=2265398267
+http://localhost:8080/erddap/setDatasetFlag.txt?datasetID=pmelTaoDySst&flagKey=2265398266
+http://localhost:8080/erddap/setDatasetFlag.txt?datasetID=pmelTaoDySwnet&flagKey=1829729309
+http://localhost:8080/erddap/setDatasetFlag.txt?datasetID=pmelTaoDyT&flagKey=4150936154
+http://localhost:8080/erddap/setDatasetFlag.txt?datasetID=pmelTaoDyTau&flagKey=2265397870
+http://localhost:8080/erddap/setDatasetFlag.txt?datasetID=pmelTaoDyW&flagKey=4150936159
+http://localhost:8080/erddap/setDatasetFlag.txt?datasetID=rlPmelTaoDySst&flagKey=3308377120
+
+
+**********************************************************************
+Treat Subscription Information as Confidential:
+List of Valid and Pending Subscriptions:
+(nEmailAddress=0, nPendingSubscriptions=0, nValidSubscriptions=0)
+
+
+Java 21.0.6 (64 bit, Oracle Corporation) on Windows 10 (10.0).
+**********************************************************************
+End of Daily Report
+
+EDStatic.email caught an invalid email address: ERROR: "nobody@example.com" is not a valid email address.
+Emailing "DESKTOP-C6IPV01 ERDDAP: Daily Report" to 
+Email not sent because no To address.

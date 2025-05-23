@@ -1,0 +1,12 @@
+# See almost duplicate files in gov/noaa/pfel/coastwatch/sgt and
+#   WEB_INF/cptfiles
+#   and very similar sgt/OceanTrue.cpt and sgt/Topography.cpt
+-8000	15	30	60	-4000	40	72	108
+-4000	40	72	108	-2000	56	92	128
+-2000	56	92	128	-1000	72	112	148
+-1000	72	112	148	-300	89	131	169
+-300	89	131	169	-100	105	151	189
+-100	105	151	189	0	122	170	210
+B	15	30	60
+F	122	170	210
+N	128	128	128

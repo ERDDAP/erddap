@@ -1,0 +1,11 @@
+# See similar Ocean.cpt, OceanDepth.cpt, and Topography.cpt
+# files in gov/noaa/pfel/coastwatch/sgt and  WEB_INF/cptfiles.
+0	15	30	60	1	40	72	108
+1	40	72	108	2	56	92	128
+2	56	92	128	3	72	112	148
+3	72	112	148	4	89	131	169
+4	89	131	169	5	105	151	189
+5	105	151	189	6	122	170	210
+B	15	30	60
+F	122	170	210
+N	128	128	128

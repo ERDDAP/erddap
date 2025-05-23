@@ -1,0 +1,116 @@
+/* CSS Style Settings for ERDDAP 
+
+Styles with '.' (e.g., span.successColor) only apply to specific instances 
+  of the tag (<span class="successColor">).
+Styles without '.' (e.g., hr) apply to all instances of an HTML tag (<hr>).
+See a CSS tutorial (e.g., http://www.w3schools.com/css/) for other details.
+If you make changes other than colors, be sure to check the appearance 
+  in all common browsers on Linux, Mac, and Windows computers.
+
+To use this file:
+1) One time: rename this file to <tomcat>/content/erddap/images/erddap2.css
+2) Make whatever changes you want to the file.
+3) To apply the changes:
+ 3a) Restart ERDDAP. 
+     ERDDAP will copy erddap2.css to <tomcat>/webapps/erddap/images.
+ 3b) Or, you can copy erddap2.css to <tomcat>/webapps/erddap/images while
+     ERDDAP is running.  You don't need to restart ERDDAP. 
+     But clients need to fully reload an ERDDAP web page (in Chrome: ctrl-[refreshIcon])
+     to replace the old, cached erddap2.css with the new one.
+*/
+
+a:link    {text-decoration:none; color:#0000cc;} 
+a:visited {text-decoration:none; } 
+a:hover   {text-decoration:underline;}
+
+/* class=selfLink is used for what used to be <a name=""> but are now links 
+   to themselves. The cursor changes to a finger if you hover over them. */
+a.selfLink {color:black;} 
+a.selfLink:hover {text-decoration:none;} 
+
+body {background-color:white; color:black; min-height:100%;
+      font-family:'Linux Libertine',Arial,Helvetica,sans-serif; font-size:85%; line-height:130%;}
+
+/* 624=640(a safe width for almost all devices) - 8 - 8 (for padding left and right) */
+div.standard_width {width:624px;}
+
+div.narrow_max_width {max-width:320px;}   /* for some narrow tooltips */
+div.standard_max_width {max-width:624px;} 
+div.wide_max_width {max-width:1000px;}    
+
+h1, h2, h3 {line-height:130%; }
+
+hr {color:#bbbbbb; background-color:#bbbbbb; height:1px; border:none; }
+
+html {height:100%; }
+
+img {border:0px; }
+
+/* Small input items let more be shown on one screen (esp. Chrome and Safari).
+   Google Chrome and Safari have default margin 2px, while others are 0.  So set all to 0.
+   .skinny is used e.g., for the buttons above the image on a Make A Graph page. */
+input[type=button], input[type=submit], button {margin:0px; padding:0px 3px; }
+input[type=checkbox], input[type=password], input[type=text], select, textarea {
+  margin:0px; padding:0px; }
+input[type=radio] {margin:0px 2px; padding:0px; }
+input.skinny {padding:0px 1px; }
+
+pre, tt, kbd  {font-family: "Courier New",Courier,FreeMono,monospace; 
+  font-size:100%; line-height:130%; }
+
+span.cssTooltip {outline:none; }
+span.cssTooltip:hover {text-decoration:none;} 
+span.cssTooltip span.cssTooltipInner {z-index:10; display:none; padding:4px 6px; 
+  margin-top:0px; margin-left:0px; } /* relative to span upper left. Or t=15=11image+4pad l=-11image */
+span.cssTooltip:hover span.cssTooltipInner {display:inline; position:absolute; 
+  border:1px solid #777; color:#000; background:#f8f8f8; } /* when hovering, do this to inner */
+
+/* You probably don't need to change the font colors below because they work 
+with a wide range of background-colors and other style settings. */
+
+/* span.highlightColor (dark green?) needs to be subtly but noticeably different from black,
+(was medium blue #3333cc) Or, light gray background? */
+span.highlightColor {color:#0b5456; } 
+
+/* span.standoutColor  (orange?)    e.g., for the dataset's title on a Data Access Form. */
+span.standoutColor {color:#dd5500; }
+
+/* span.subduedColor   (gray?)      e.g., for aside messages on .subset forms. */
+span.subduedColor {color:#777777; }
+
+/* span.successColor   (green?)     e.g., for a success message to the current user.
+       For example, for successful login and subscription attempts. */
+span.successColor {color:#008800; }
+
+/* span.warningColor   (red?)       e.g., for a warning/error message to the current user. 
+       For example, for failed login and subscription attempts. */
+span.warningColor {color:red; }
+
+/* table.commonBGColor and table.erd are widely used for the HTML table style 
+with the yellow (currently) background color.  */
+table.commonBGColor {background-color:#ffffcc; }
+
+table.erd {border-collapse:collapse; border:1px solid #bbbbbb; empty-cells:show; }
+table.erd th, table.erd td {padding:2px 4px; border:1px solid #bbbbbb; empty-cells:show;}
+
+/* table.compact must be defined after table.erd since table.compact often used within table.erd. */
+table.compact {border-collapse:collapse; border:0px; }
+table.compact th, table.compact td {padding:0px; border:0px; }
+
+table.nowrap th, table.nowrap td, h1.nowrap, span.nowrap {white-space:nowrap;}
+
+table.T th, table.T td {vertical-align:top; }
+
+th.B, td.B, img.B, audio.B, video.B, span.B {vertical-align:bottom;}
+th.T, td.T, img.T, audio.T, video.T, span.T {vertical-align:top;}
+th.N, td.N, a.N, span.N {white-space:nowrap;}
+th.R, td.R, span.R {white-space:nowrap; text-align:right;}
+th.L, td.L, span.L {white-space:nowrap; text-align:left;}
+th.W, td.W, table.W, span.W {white-space:normal;}
+
+/* This is used in the middle of the screen on the ERDDAP home page. */
+td.verticalLine {border-left:1px solid #bbbbbb; height:100%; } 
+
+/* This is used on the /info/[datasetID]/index.html pages to highlight a cell or row. */
+td.highlightBGColor {background-color:#cceecc; }
+tr.highlightBGColor {background-color:#cceecc; }

@@ -1,0 +1,158 @@
+              Notes for Scientific Graphics Toolkit (sgt)
+                           version 2.0
+                        February 12, 2001
+
+$Id: RELEASE-NOTES-2.0.txt,v 1.1 2001/12/12 22:52:34 dwd Exp $
+
+The major incompatability is the package name changes.  The root package
+gov.noaa.noaaserver has been changed to gov.noaa.pmel.  This was done
+to reflect the organization of origin rather than the project
+responsible for the toolkits inception.  The
+gov.noaa.noaaserver.sgt.datamodel package was renamed to the shorted
+gov.noaa.pmel.sgt.dm, since all the packages were renamed anyway.
+
+Packages gov.noaa.pmel.sgt.contour, gov.noaa.pmel.sgt.swing, and
+gov.noaa.pmel.sgt.swing.prop added.  These packages were added to
+support contouring, swing, and attribute editing with swing dialogs.
+The swing components replace and extend the awt classes which have
+been deprecated.  The current development plan for sgt includes
+removing the deprecated classes from sgt.
+
+Package gov.noaa.pmel.sgt.demo older awt classes moved to
+gov.noaa.pmel.sgt.demo.awt.  These classes were moved out of demo to
+prelude the dropping of support for awt.
+
+Packages gov.noaa.pmel.sgt.awt and gov.noaa.pmel.sgt.util have been
+deprecated.  These packages contain classes based on awt whose
+functionality has been superceeded by classes in
+gov.noaa.pmel.sgt.swing and gov.noaa.pmel.sgt.swing.prop.
+
+NOTE: 
+
+Package gov.noaa.pmel.sgt  (formerly gov.noaa.noaaserver.sgt)
+
+New Interfaces:
+    AbstractPane
+    ContourLevelAccess
+    IndexedColor
+    LabelDrawer
+    Moveable
+    TransformAccess
+    TransformColor
+
+New Classes:
+    CLIndexedColorMap
+    CLTransformColorMap
+    ContourLineAttribute
+    DefaultContourLineAttribute
+    IndexedColorMap
+    JPane
+    LabelDrawer1
+    LabelDrawer2
+    LayerStack
+    PlotMark
+    PointCollectionKey
+    TransformColorMap
+
+New Exception:
+    DataNotFoundException
+
+Classes moved to gov.noaa.pmel.util:
+    GeoDate
+    Point2D
+    Range
+    Range2D
+    Rectangle2D
+    TimePoint
+    TimeRange
+    IllegalTimeValueException
+
+Package gov.noaa.pmel.sgt.dm  (formerly gov.noaa.noaaserver.sgt.datamodel)
+
+New Classes:
+    PointCollection
+
+
+Package gov.noaa.pmel.sgt.awt  (formerly gov.noaa.noaaserver.sgt.awt)
+    Entire package deprecated support of awt will be removed after
+    version 2.0. See gov.noaa.pmel.sgt.swing for replacement classes.
+
+Package gov.noaa.pmel.sgt.contour
+    Contour and ContourLine support contouring in sgt.  These classes
+    used by GridCartesianRenderer.  The classes were designed so that
+    the ContourLine would be accessible by the user application.
+    Labeling is handled such that labels can be added or removed after
+    the contour line has been generated.
+
+Package gov.noaa.pmel.sgt.demo  (formerly gov.noaa.noaaserver.sgt.demo)
+
+New Classes: (These classes all use swing)
+    JGridDemo
+    JLayoutDemo
+    JPointDemo
+    JProfileDemo
+    JRealTimeDemo
+    JTimeSeriesDemo
+    PseudoRealTimeData
+    TAOMap
+
+Classes moved to gov.noaa.pmel.sgt.demo.awt
+    GridDemo
+    LayoutDemo
+    PointDemo
+    ProfileDemo
+    TimeSeriesDemo
+
+
+Package gov.noaa.pmel.sgt.util  (formerly gov.noaa.noaaserver.sgt.util)
+    Package deprecated.  Support for awt will be removed after version
+    2.0.  See gov.noaa.pmel.sgt.swing.prop for replacement utility
+    classes.
+
+    JClassTree moved to gov.noaa.pmel.sgt.swing and Units moved to
+    gov.noaa.pmel.util 
+
+Utility classes in package gov.noaa.pmel.util
+
+New classes:
+    Domain
+    Point2D.Float
+    SoTDomain
+    SoTPoint
+    SoTRange
+    SoTRange.Double
+    SoTRange.GeoDate
+    SoTValue
+    SoTValue.Double
+    SoTValue.GeoDate
+
+The SoT classes were introduced to make creating Time/Space neutral
+applications easier.  The SoT classes are used by the Transform and
+Axis classes.
+
+JDK 1.1.8 compatability.  
+
+The following classes will not compile using a jdk 1.1.8 compiler.
+
+   JPane   (imports java.awt.print.*, java.awt.Graphics2D)
+   LabelDrawer2  (depends on Java2D)
+   JGraphicLayout (extends JPane)
+   JPlotLayout (extends JPane)
+   JLineProfileLayout (extends JPane, deprecated)
+
+   All the demonstration applications in gov.noaa.pmel.sgt.demo use
+   JPane.
+
+   The following ..swing.prop classes refrence JPane
+   GridAttributeDialog
+   LogoDialog
+   PointAttributeDialog
+   SGLabelDialog
+   SpaceAxisDialog
+   TimeAxisDialog
+
+While these classes won't compile using jdk1.1.8, if compiled with a
+Java 2 compiler they will run under jdk1.1.8 if you don't print.  The
+swing classes haven't been tested under the jdk1.1.8 swing
+implementation. 
+
