@@ -1,14 +1,21 @@
 package gov.noaa.pfel.erddap.dataset.metadata;
 
 import java.util.Locale;
+import java.util.Map;
 import org.opengis.util.InternationalString;
 
 public class EDDInternationalString implements InternationalString {
 
   private String string;
+  Map<Locale, String> localized;
 
   public EDDInternationalString(String string) {
     this.string = string;
+  }
+
+  public EDDInternationalString(String string, Map<Locale, String> localized) {
+    this.string = string;
+    this.localized = localized;
   }
 
   @Override
@@ -33,6 +40,9 @@ public class EDDInternationalString implements InternationalString {
 
   @Override
   public String toString(Locale locale) {
+    if (localized != null && localized.containsKey(locale)) {
+      return localized.get(locale);
+    }
     return string;
   }
 

@@ -4,7 +4,6 @@
  */
 package gov.noaa.pfel.erddap.dataset;
 
-import com.cohort.array.Attributes;
 import com.cohort.array.DoubleArray;
 import com.cohort.array.PAType;
 import com.cohort.array.PrimitiveArray;
@@ -19,10 +18,14 @@ import com.cohort.util.Test;
 import gov.noaa.pfel.coastwatch.pointdata.Table;
 import gov.noaa.pfel.coastwatch.util.SSR;
 import gov.noaa.pfel.coastwatch.util.SimpleXMLReader;
+import gov.noaa.pfel.erddap.dataset.metadata.LocalizedAttributes;
 import gov.noaa.pfel.erddap.handlers.EDDTableFromAsciiServiceHandler;
 import gov.noaa.pfel.erddap.handlers.SaxHandlerClass;
+import gov.noaa.pfel.erddap.util.EDMessages;
 import gov.noaa.pfel.erddap.util.EDStatic;
+import gov.noaa.pfel.erddap.variable.DataVariableInfo;
 import java.io.BufferedReader;
+import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.HashMap;
 
@@ -59,8 +62,8 @@ public class EDDTableFromAsciiServiceNOS extends EDDTableFromAsciiService {
       String tDefaultDataQuery,
       String tDefaultGraphQuery,
       String tAddVariablesWhere,
-      Attributes tAddGlobalAttributes,
-      Object[][] tDataVariables,
+      LocalizedAttributes tAddGlobalAttributes,
+      ArrayList<DataVariableInfo> tDataVariables,
       int tReloadEveryNMinutes,
       String tLocalSourceUrl,
       String tBeforeData[],
@@ -87,10 +90,10 @@ public class EDDTableFromAsciiServiceNOS extends EDDTableFromAsciiService {
         tBeforeData,
         tAfterData,
         tNoData);
-
+    int language = EDMessages.DEFAULT_LANGUAGE;
     // datumIsFixedValue
     datumIsFixedValue =
-        tAddGlobalAttributes.getString("sourceUrl").indexOf("datum=") > 0
+        tAddGlobalAttributes.getString(language, "sourceUrl").indexOf("datum=") > 0
             || // url specifies the datum
             String2.indexOf(dataVariableDestinationNames(), "datum")
                 < 0; // dataset doesn't use datum

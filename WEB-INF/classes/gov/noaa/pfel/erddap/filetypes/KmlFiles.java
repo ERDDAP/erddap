@@ -261,10 +261,10 @@ public class KmlFiles extends ImageTypes {
     // CDATA is necessary for url's with queries
     // kml/description docs recommend \n<br />
     String courtesy =
-        eddTable.institution().length() == 0
+        eddTable.institution(language).length() == 0
             ? ""
             : MessageFormat.format(
-                EDStatic.messages.imageDataCourtesyOfAr[language], eddTable.institution());
+                EDStatic.messages.imageDataCourtesyOfAr[language], eddTable.institution(language));
     double iconSize =
         maxRange > 90
             ? 1.2
@@ -279,14 +279,14 @@ public class KmlFiles extends ImageTypes {
             // human-friendly, but descriptive, <name>
             // name is used as link title -- leads to <description>
             "  <name>"
-            + XML.encodeAsXML(eddTable.title())
+            + XML.encodeAsXML(eddTable.title(language))
             + "</name>\n"
             +
             // <description> appears in balloon
             "  <description><![CDATA["
             + XML.encodeAsXML(courtesy)
             + "\n<br />"
-            + String2.replaceAll(XML.encodeAsXML(eddTable.summary()), "\n", "\n<br />")
+            + String2.replaceAll(XML.encodeAsXML(eddTable.summary(language)), "\n", "\n<br />")
             +
             // link to download this dataset
             "\n<br />"
@@ -362,7 +362,7 @@ public class KmlFiles extends ImageTypes {
                   + "    <description><![CDATA["
                   +
                   // kml/description docs recommend \n<br />
-                  XML.encodeAsXML(eddTable.title())
+                  XML.encodeAsXML(eddTable.title(language))
                   + "\n<br />"
                   + XML.encodeAsXML(courtesy));
 
@@ -718,7 +718,7 @@ public class KmlFiles extends ImageTypes {
     if (nTimes >= 1)
       timeString +=
           Calendar2.epochSecondsToLimitedIsoStringT(
-              timeEdv.combinedAttributes().getString(EDV.TIME_PRECISION),
+              timeEdv.combinedAttributes().getString(language, EDV.TIME_PRECISION),
               Math.min(timeStartd, timeStopd),
               "");
     if (nTimes >= 2)
@@ -818,7 +818,7 @@ public class KmlFiles extends ImageTypes {
               "  <name>");
       if (drawOrder == 1)
         writer.write(
-            XML.encodeAsXML(eddGrid.title())
+            XML.encodeAsXML(eddGrid.title(language))
                 + "</name>\n"
                 +
                 // <description appears in help balloon
@@ -827,7 +827,7 @@ public class KmlFiles extends ImageTypes {
                 + brTimeString
                 + MessageFormat.format(
                     EDStatic.messages.imageDataCourtesyOfAr[language],
-                    XML.encodeAsXML(eddGrid.institution()))
+                    XML.encodeAsXML(eddGrid.institution(language)))
                 + "<br />\n"
                 +
                 // link to download data

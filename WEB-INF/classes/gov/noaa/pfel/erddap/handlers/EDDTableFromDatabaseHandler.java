@@ -70,7 +70,6 @@ public class EDDTableFromDatabaseHandler extends BaseTableHandler {
 
   @Override
   protected EDD buildDataset() throws Throwable {
-    Object[][] ttDataVariables = convertDataVariablesToArray();
     return new EDDTableFromDatabase(
         datasetID,
         tAccessibleTo,
@@ -83,7 +82,7 @@ public class EDDTableFromDatabaseHandler extends BaseTableHandler {
         tDefaultGraphQuery,
         tAddVariablesWhere,
         tGlobalAttributes,
-        ttDataVariables,
+        tDataVariables,
         tReloadEveryNMinutes,
         tDataSourceName,
         tLocalSourceUrl,

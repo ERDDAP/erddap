@@ -21,8 +21,10 @@ import com.cohort.util.String2;
 import gov.noaa.pfel.coastwatch.pointdata.Table;
 import gov.noaa.pfel.coastwatch.util.SimpleXMLReader;
 import gov.noaa.pfel.erddap.Erddap;
+import gov.noaa.pfel.erddap.dataset.metadata.LocalizedAttributes;
 import gov.noaa.pfel.erddap.handlers.EDDGridFromEDDTableHandler;
 import gov.noaa.pfel.erddap.handlers.SaxHandlerClass;
+import gov.noaa.pfel.erddap.util.EDMessages;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.*;
 import java.io.DataInputStream;
@@ -65,7 +67,7 @@ public class EDDGridFromEDDTable extends EDDGrid {
     // data to be obtained (or not)
     if (verbose) String2.log("\n*** constructing EDDGridFromEDDTable(xmlReader)...");
     String tDatasetID = xmlReader.attributeValue("datasetID");
-    Attributes tGlobalAttributes = null;
+    LocalizedAttributes tGlobalAttributes = null;
     String tAccessibleTo = null;
     String tGraphsAccessibleTo = null;
     boolean tAccessibleViaWMS = true;
@@ -73,8 +75,8 @@ public class EDDGridFromEDDTable extends EDDGrid {
     StringArray tOnChange = new StringArray();
     String tFgdcFile = null;
     String tIso19115File = null;
-    ArrayList<Object[]> tAxisVariables = new ArrayList<>();
-    ArrayList<Object[]> tDataVariables = new ArrayList<>();
+    ArrayList<AxisVariableInfo> tAxisVariables = new ArrayList<>();
+    ArrayList<DataVariableInfo> tDataVariables = new ArrayList<>();
     int tReloadEveryNMinutes = DEFAULT_RELOAD_EVERY_N_MINUTES;
     int tUpdateEveryNMillis = 0;
     String tDefaultDataQuery = null;
@@ -167,13 +169,6 @@ public class EDDGridFromEDDTable extends EDDGrid {
         default -> xmlReader.unexpectedTagException();
       }
     }
-    int nav = tAxisVariables.size();
-    Object ttAxisVariables[][] = nav == 0 ? null : new Object[nav][];
-    for (int i = 0; i < tAxisVariables.size(); i++) ttAxisVariables[i] = tAxisVariables.get(i);
-
-    int ndv = tDataVariables.size();
-    Object ttDataVariables[][] = new Object[ndv][];
-    for (int i = 0; i < tDataVariables.size(); i++) ttDataVariables[i] = tDataVariables.get(i);
 
     return new EDDGridFromEDDTable(
         tDatasetID,
@@ -187,8 +182,8 @@ public class EDDGridFromEDDTable extends EDDGrid {
         tDefaultDataQuery,
         tDefaultGraphQuery,
         tGlobalAttributes,
-        ttAxisVariables,
-        ttDataVariables,
+        tAxisVariables,
+        tDataVariables,
         tReloadEveryNMinutes,
         tUpdateEveryNMillis,
         tGapThreshold,
@@ -275,9 +270,9 @@ public class EDDGridFromEDDTable extends EDDGrid {
       String tIso19115File,
       String tDefaultDataQuery,
       String tDefaultGraphQuery,
-      Attributes tAddGlobalAttributes,
-      Object tAxisVariables[][],
-      Object tDataVariables[][],
+      LocalizedAttributes tAddGlobalAttributes,
+      ArrayList<AxisVariableInfo> tAxisVariables,
+      ArrayList<DataVariableInfo> tDataVariables,
       int tReloadEveryNMinutes,
       int tUpdateEveryNMillis,
       int tGapThreshold,
@@ -287,6 +282,7 @@ public class EDDGridFromEDDTable extends EDDGrid {
       throws Throwable {
 
     if (verbose) String2.log("\n*** constructing EDDGridFromEDDTable " + tDatasetID);
+    int language = EDMessages.DEFAULT_LANGUAGE;
     long constructionStartMillis = System.currentTimeMillis();
     String errorInMethod = "Error in EDDGridFromEDDTable(" + tDatasetID + ") constructor:\n";
 
@@ -305,7 +301,8 @@ public class EDDGridFromEDDTable extends EDDGrid {
     iso19115File = tIso19115File;
     defaultDataQuery = tDefaultDataQuery;
     defaultGraphQuery = tDefaultGraphQuery;
-    addGlobalAttributes = tAddGlobalAttributes == null ? new Attributes() : tAddGlobalAttributes;
+    addGlobalAttributes =
+        tAddGlobalAttributes == null ? new LocalizedAttributes() : tAddGlobalAttributes;
     setReloadEveryNMinutes(tReloadEveryNMinutes);
     setUpdateEveryNMillis(tUpdateEveryNMillis);
     gapThreshold = tGapThreshold == Integer.MAX_VALUE ? defaultGapThreshold : tGapThreshold;
@@ -318,38 +315,40 @@ public class EDDGridFromEDDTable extends EDDGrid {
     // quickRestart is handled by contained eddGrid
 
     // get global attributes
-    sourceGlobalAttributes = eddTable.combinedGlobalAttributes();
+    sourceGlobalAttributes = eddTable.combinedGlobalAttributes().toAttributes(language);
     combinedGlobalAttributes =
-        new Attributes(addGlobalAttributes, sourceGlobalAttributes); // order is important
-    String tLicense = combinedGlobalAttributes.getString("license");
+        new LocalizedAttributes(addGlobalAttributes, sourceGlobalAttributes); // order is important
+    String tLicense = combinedGlobalAttributes.getString(language, "license");
     if (tLicense != null)
       combinedGlobalAttributes.set(
-          "license", String2.replaceAll(tLicense, "[standard]", EDStatic.messages.standardLicense));
+          language,
+          "license",
+          String2.replaceAll(tLicense, "[standard]", EDStatic.messages.standardLicense));
     combinedGlobalAttributes.removeValue("\"null\"");
-    if (combinedGlobalAttributes.getString("cdm_data_type") == null)
-      combinedGlobalAttributes.add("cdm_data_type", "Grid");
+    if (combinedGlobalAttributes.getString(language, "cdm_data_type") == null)
+      combinedGlobalAttributes.set(language, "cdm_data_type", "Grid");
 
     // create axisVariables[]
-    int nav = tAxisVariables.length;
+    int nav = tAxisVariables.size();
     axisVariables = new EDVGridAxis[nav];
     // for precision of axis value matching
     avPrecision = new int[nav]; // initially all 0, i.e., not set
     for (int av = 0; av < nav; av++) {
-      String tSourceName = (String) tAxisVariables[av][0];
-      String tDestName = (String) tAxisVariables[av][1];
+      String tSourceName = tAxisVariables.get(av).sourceName();
+      String tDestName = tAxisVariables.get(av).destinationName();
       if (tDestName == null || tDestName.length() == 0) tDestName = tSourceName;
       EDV sourceEdv = eddTable.findDataVariableByDestinationName(tSourceName);
-      Attributes tSourceAtts = sourceEdv.combinedAttributes();
-      Attributes tAddAtts = (Attributes) tAxisVariables[av][2];
+      Attributes tSourceAtts = sourceEdv.combinedAttributes().toAttributes(language);
+      LocalizedAttributes tAddAtts = tAxisVariables.get(av).attributes();
       String msg =
           errorInMethod + "For axisVariable[" + av + "] destinationName=" + tDestName + ": ";
 
       // get sourceValues from addAttributes!
       // but how update as time goes on???
-      PrimitiveArray tSourceValues = tAddAtts.remove("axisValues");
+      PrimitiveArray tSourceValues = tAddAtts.removeAndGetDefault("axisValues");
       if (tSourceValues == null) {
         String avsss = "axisValuesStartStrideStop";
-        PrimitiveArray sss = tAddAtts.remove(avsss);
+        PrimitiveArray sss = tAddAtts.removeAndGetDefault(avsss);
         if (sss == null)
           throw new RuntimeException(msg + ": attribute=\"axisValues\" wasn't specified.");
         if (sss instanceof StringArray || sss instanceof CharArray)
@@ -395,7 +394,7 @@ public class EDDGridFromEDDTable extends EDDGrid {
       throw new RuntimeException(msg + "The sourceValues must be ascending!");
 
       // precision  for matching axis values
-      int tPrecision = axisVariables[av].combinedAttributes().getInt("precision");
+      int tPrecision = axisVariables[av].combinedAttributes().getInt(language, "precision");
       if (axisVariables[av] instanceof EDVTimeStampGridAxis) {
         avPrecision[av] = fullPrecision; // always compare times at full precision
       } else if (tSourceValues instanceof FloatArray) {
@@ -408,21 +407,21 @@ public class EDDGridFromEDDTable extends EDDGrid {
     }
 
     // create dataVariables[]
-    dataVariables = new EDV[tDataVariables.length];
-    for (int dv = 0; dv < tDataVariables.length; dv++) {
-      String tSourceName = (String) tDataVariables[dv][0];
-      String tDestName = (String) tDataVariables[dv][1];
+    dataVariables = new EDV[tDataVariables.size()];
+    for (int dv = 0; dv < tDataVariables.size(); dv++) {
+      String tSourceName = tDataVariables.get(dv).sourceName();
+      String tDestName = tDataVariables.get(dv).destinationName();
       if (tDestName == null || tDestName.length() == 0) tDestName = tSourceName;
       EDV sourceEdv = eddTable.findDataVariableByDestinationName(tSourceName);
       String dvSourceDataType = sourceEdv.destinationDataType();
-      Attributes tSourceAtts = sourceEdv.combinedAttributes();
-      Attributes tAddAtts = (Attributes) tDataVariables[dv][2];
+      Attributes tSourceAtts = sourceEdv.combinedAttributes().toAttributes(language);
+      LocalizedAttributes tAddAtts = tDataVariables.get(dv).attributes();
 
       // create the EDV dataVariable
       if (tDestName.equals(EDV.TIME_NAME))
         throw new RuntimeException(
             errorInMethod + "No EDDGrid dataVariable may have destinationName=" + EDV.TIME_NAME);
-      else if (EDVTime.hasTimeUnits(tSourceAtts, tAddAtts))
+      else if (EDVTime.hasTimeUnits(language, tSourceAtts, tAddAtts))
         dataVariables[dv] =
             new EDVTimeStamp(
                 datasetID, tSourceName, tDestName, tSourceAtts, tAddAtts, dvSourceDataType);
@@ -437,7 +436,7 @@ public class EDDGridFromEDDTable extends EDDGrid {
                 dvSourceDataType,
                 PAOne.fromDouble(Double.NaN),
                 PAOne.fromDouble(Double.NaN)); // hard to get min and max
-      dataVariables[dv].extractAndSetActualRange();
+      dataVariables[dv].extractAndSetActualRange(language);
     }
 
     // ensure the setup is valid
@@ -873,7 +872,7 @@ public class EDDGridFromEDDTable extends EDDGrid {
     Attributes sourceGAtts = sourceDataTable.globalAttributes();
     Attributes destGAtts = addDataTable.globalAttributes();
     if (externalAddGlobalAttributes != null) destGAtts.set(externalAddGlobalAttributes);
-    sourceGAtts.set(eddTable.combinedGlobalAttributes());
+    sourceGAtts.set(eddTable.combinedGlobalAttributes().toAttributes(EDMessages.DEFAULT_LANGUAGE));
     destGAtts.add("cdm_data_type", "Grid");
     if (sourceGAtts.get("featureType") != null) destGAtts.set("featureType", "null");
 
@@ -882,7 +881,8 @@ public class EDDGridFromEDDTable extends EDDGrid {
       EDV sourceEdv = eddTable.dataVariables()[dv];
       String destName = sourceEdv.destinationName();
       PAType tPAType = sourceEdv.destinationDataPAType();
-      Attributes sourceAtts = sourceEdv.combinedAttributes();
+      Attributes sourceAtts =
+          sourceEdv.combinedAttributes().toAttributes(EDMessages.DEFAULT_LANGUAGE);
       Attributes destAtts = new Attributes();
       if (destName.equals(EDV.TIME_NAME)
           || destName.equals(EDV.ALT_NAME)

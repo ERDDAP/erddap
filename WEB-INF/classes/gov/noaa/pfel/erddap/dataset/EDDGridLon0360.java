@@ -21,8 +21,10 @@ import gov.noaa.pfel.coastwatch.pointdata.Table;
 import gov.noaa.pfel.coastwatch.util.SSR;
 import gov.noaa.pfel.coastwatch.util.SimpleXMLReader;
 import gov.noaa.pfel.erddap.Erddap;
+import gov.noaa.pfel.erddap.dataset.metadata.LocalizedAttributes;
 import gov.noaa.pfel.erddap.handlers.EDDGridLon0360Handler;
 import gov.noaa.pfel.erddap.handlers.SaxHandlerClass;
+import gov.noaa.pfel.erddap.util.EDMessages;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.*;
 import java.io.BufferedReader;
@@ -229,6 +231,7 @@ public class EDDGridLon0360 extends EDDGrid {
       throws Throwable {
 
     if (verbose) String2.log("\n*** constructing EDDGridLon0360 " + tDatasetID);
+    int language = EDMessages.DEFAULT_LANGUAGE;
     long constructionStartMillis = System.currentTimeMillis();
     String errorInMethod = "Error in EDDGridLon0360(" + tDatasetID + ") constructor:\n";
 
@@ -303,10 +306,12 @@ public class EDDGridLon0360 extends EDDGrid {
     // make/copy the local globalAttributes
     localSourceUrl = tChildDataset.localSourceUrl();
     sourceGlobalAttributes = (Attributes) tChildDataset.sourceGlobalAttributes().clone();
-    addGlobalAttributes = (Attributes) tChildDataset.addGlobalAttributes().clone();
-    combinedGlobalAttributes = (Attributes) tChildDataset.combinedGlobalAttributes().clone();
+    addGlobalAttributes = new LocalizedAttributes(tChildDataset.addGlobalAttributes());
+    combinedGlobalAttributes = new LocalizedAttributes(tChildDataset.combinedGlobalAttributes());
     combinedGlobalAttributes.set(
-        "title", combinedGlobalAttributes.getString("title").trim() + ", Lon0360");
+        language,
+        "title",
+        combinedGlobalAttributes.getString(language, "title").trim() + ", Lon0360");
 
     // make/copy the local axisVariables
     int nAv = tChildDataset.axisVariables.length;
@@ -447,8 +452,8 @@ public class EDDGridLon0360 extends EDDGrid {
         new EDVLonGridAxis(
             tDatasetID,
             EDV.LON_NAME,
-            new Attributes(childLon.combinedAttributes()),
-            new Attributes(),
+            childLon.combinedAttributes().toAttributes(language),
+            new LocalizedAttributes(),
             newLonValues);
     newEDVLon.combinedAttributes().remove("valid_min");
     newEDVLon.combinedAttributes().remove("valid_max");
@@ -624,9 +629,9 @@ public class EDDGridLon0360 extends EDDGrid {
     if (changed && timeIndex >= 0) {
       axisVariables[timeIndex] = tChildDataset.axisVariables[timeIndex];
       combinedGlobalAttributes()
-          .set("time_coverage_start", axisVariables[timeIndex].destinationMinString());
+          .set(language, "time_coverage_start", axisVariables[timeIndex].destinationMinString());
       combinedGlobalAttributes()
-          .set("time_coverage_end", axisVariables[timeIndex].destinationMaxString());
+          .set(language, "time_coverage_end", axisVariables[timeIndex].destinationMaxString());
     }
 
     return changed;

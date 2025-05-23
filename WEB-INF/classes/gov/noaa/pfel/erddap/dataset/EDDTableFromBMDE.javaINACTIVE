@@ -234,7 +234,7 @@ public class EDDTableFromBMDE extends EDDTable{
         StringArray tOnChange, String tFgdcFile, String tIso19115File, 
         String tSosOfferingPrefix;
         String tDefaultDataQuery, String tDefaultGraphQuery, String tAddVariablesWhere, 
-        Attributes tAddGlobalAttributes,
+        LocalizedAttributes tAddGlobalAttributes,
         Object tDataVariables[][],
         int tReloadEveryNMinutes,
         String tLocalSourceUrl, String tSourceCode) throws Throwable {
@@ -259,29 +259,29 @@ public class EDDTableFromBMDE extends EDDTable{
         setReloadEveryNMinutes(tReloadEveryNMinutes);
         if (tAddGlobalAttributes == null)
             tAddGlobalAttributes = new Attributes();
-        if (tAddGlobalAttributes.getString("infoUrl") == null) tAddGlobalAttributes.add("infoUrl", STANDARD_INFO_URL);
-        String tSummary = tAddGlobalAttributes.getString("summary");
+        if (tAddGlobalAttributes.getString(language, "infoUrl") == null) tAddGlobalAttributes.add("infoUrl", STANDARD_INFO_URL);
+        String tSummary = tAddGlobalAttributes.getString(language, "summary");
         tAddGlobalAttributes.add("summary", 
             tSummary == null? BMDE_SUMMARY :
             String2.replaceAll(tSummary, "[BMDE_SUMMARY]", BMDE_SUMMARY));
-        if (tAddGlobalAttributes.getString("keywords") == null)
+        if (tAddGlobalAttributes.getString(language, "keywords") == null)
             tAddGlobalAttributes.add("keywords", "Biological Classification > Animals/Vertebrates > Birds");
-        //String tCreator_email = tAddGlobalAttributes.getString("creator_email");
+        //String tCreator_email = tAddGlobalAttributes.getString(language, "creator_email");
         //Test.ensureNotNothing(tCreator_email, 
         //    "The global addAttributes must include 'creator_email' for users to contact regarding " +
         //    "publications that use the data in order to comply with license.");
         tAddGlobalAttributes.add("cdm_data_type", CDM_POINT);
         tAddGlobalAttributes.add("standard_name_vocabulary", FileNameUtility.getStandardNameVocabulary());
         addGlobalAttributes = tAddGlobalAttributes;
-        addGlobalAttributes.set("sourceUrl", makePublicSourceUrl(tLocalSourceUrl));
+        addGlobalAttributes.set(language, "sourceUrl", makePublicSourceUrl(tLocalSourceUrl));
         localSourceUrl = tLocalSourceUrl;
         sourceCode = tSourceCode;
 
         sourceGlobalAttributes = new Attributes();
         combinedGlobalAttributes = new Attributes(addGlobalAttributes, sourceGlobalAttributes); //order is important
-        String tLicense = combinedGlobalAttributes.getString("license");
+        String tLicense = combinedGlobalAttributes.getString(language, "license");
         if (tLicense != null)
-            combinedGlobalAttributes.set("license", 
+            combinedGlobalAttributes.set(language, "license", 
                 String2.replaceAll(tLicense, "[standard]", EDStatic.messages.standardLicense));
         combinedGlobalAttributes.removeValue("\"null\"");
 

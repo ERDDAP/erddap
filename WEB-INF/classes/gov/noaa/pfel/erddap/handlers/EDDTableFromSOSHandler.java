@@ -74,7 +74,6 @@ public class EDDTableFromSOSHandler extends BaseTableHandler {
 
   @Override
   protected EDD buildDataset() throws Throwable {
-    Object[][] ttDataVariables = convertDataVariablesToArray();
     return new EDDTableFromSOS(
         datasetID,
         tAccessibleTo,
@@ -97,7 +96,7 @@ public class EDDTableFromSOSHandler extends BaseTableHandler {
         tAltitudeMetersPerSourceUnit,
         tTimeSourceName,
         tTimeSourceFormat,
-        ttDataVariables,
+        tDataVariables,
         tReloadEveryNMinutes,
         tLocalSourceUrl,
         tSosVersion,

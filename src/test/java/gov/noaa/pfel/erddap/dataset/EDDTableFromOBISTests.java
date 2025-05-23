@@ -6,6 +6,7 @@ import com.cohort.util.MustBe;
 import com.cohort.util.String2;
 import com.cohort.util.Test;
 import gov.noaa.pfel.erddap.GenerateDatasetsXml;
+import gov.noaa.pfel.erddap.util.EDMessages;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import org.junit.jupiter.api.BeforeAll;
 import tags.TagMissingDataset;
@@ -24,6 +25,7 @@ class EDDTableFromOBISTests {
    */
   @org.junit.jupiter.api.Test
   void testGenerateDatasetsXml() throws Throwable {
+    int language = EDMessages.DEFAULT_LANGUAGE;
     String2.log("\n*** EDDTableFromOBIS.testGenerateDatasetsXml");
     // testVerboseOn();
     String results, expected;
@@ -95,7 +97,9 @@ class EDDTableFromOBISTests {
       EDD edd = EDDTableFromOBIS.oneFromXmlFragment(null, results);
       Test.ensureEqual(edd.datasetID(), tDatasetID, "");
       Test.ensureEqual(
-          edd.title(), "OBIS-SEAMAP Data from the OBIS Server at RUTGERS MARINE (DiGIR.php)", "");
+          edd.title(language),
+          "OBIS-SEAMAP Data from the OBIS Server at RUTGERS MARINE (DiGIR.php)",
+          "");
       Test.ensureEqual(
           String2.toCSSVString(edd.dataVariableDestinationNames()),
           "longitude, latitude, altitude, time, ID, BasisOfRecord, BoundingBox, "

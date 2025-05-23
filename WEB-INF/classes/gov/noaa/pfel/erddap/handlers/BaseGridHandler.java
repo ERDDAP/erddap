@@ -1,6 +1,7 @@
 package gov.noaa.pfel.erddap.handlers;
 
 import com.cohort.util.String2;
+import gov.noaa.pfel.erddap.variable.AxisVariableInfo;
 import java.util.ArrayList;
 
 public abstract class BaseGridHandler extends BaseDatasetHandler {
@@ -8,7 +9,7 @@ public abstract class BaseGridHandler extends BaseDatasetHandler {
   protected int tnThreads = -1;
   protected boolean tAccessibleViaWMS = true;
   protected boolean tDimensionValuesInMemory = true;
-  protected final ArrayList<Object[]> tAxisVariables = new ArrayList<>();
+  protected final ArrayList<AxisVariableInfo> tAxisVariables = new ArrayList<>();
 
   public BaseGridHandler(SaxHandler saxHandler, String datasetID, State completeState) {
     super(saxHandler, datasetID, completeState);
@@ -19,12 +20,6 @@ public abstract class BaseGridHandler extends BaseDatasetHandler {
       State state = new AxisVariableHandler(saxHandler, tAxisVariables, this);
       saxHandler.setState(state);
     }
-  }
-
-  protected Object[][] convertAxisVariablesToArray() {
-    Object[][] ttAxisVariables = new Object[tAxisVariables.size()][];
-    ttAxisVariables = tAxisVariables.toArray(ttAxisVariables);
-    return ttAxisVariables;
   }
 
   @Override

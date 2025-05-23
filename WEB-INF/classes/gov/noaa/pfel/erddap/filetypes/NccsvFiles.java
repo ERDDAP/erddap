@@ -77,7 +77,10 @@ public class NccsvFiles extends TableWriterFileType {
     // write the data to the tableWriter
     TableWriter tw =
         new TableWriterNccsv(
-            language, grid, grid.getNewHistory(requestUrl, userDapQuery), outputStreamSource);
+            language,
+            grid,
+            grid.getNewHistory(language, requestUrl, userDapQuery),
+            outputStreamSource);
     if (isAxisDapQuery) {
       grid.saveAsTableWriter(ada, tw);
     } else {

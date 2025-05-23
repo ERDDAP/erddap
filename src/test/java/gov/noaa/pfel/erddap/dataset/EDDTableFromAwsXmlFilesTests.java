@@ -6,6 +6,7 @@ import com.cohort.util.File2;
 import com.cohort.util.String2;
 import com.cohort.util.Test;
 import gov.noaa.pfel.erddap.GenerateDatasetsXml;
+import gov.noaa.pfel.erddap.util.EDMessages;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import java.nio.file.Path;
 import org.junit.jupiter.api.BeforeAll;
@@ -23,6 +24,7 @@ class EDDTableFromAwsXmlFilesTests {
   /** testGenerateDatasetsXml */
   @org.junit.jupiter.api.Test
   void testGenerateDatasetsXml() throws Throwable {
+    int language = EDMessages.DEFAULT_LANGUAGE;
     // testVerboseOn();
     Attributes externalAddAttributes = new Attributes();
     externalAddAttributes.add("title", "New Title!");
@@ -743,7 +745,7 @@ class EDDTableFromAwsXmlFilesTests {
     EDD.deleteCachedDatasetInfo(suggDatasetID);
     EDD edd = EDDTableFromAwsXmlFiles.oneFromXmlFragment(null, results);
     Test.ensureEqual(edd.datasetID(), suggDatasetID, "");
-    Test.ensureEqual(edd.title(), "The Newer Title!", "");
+    Test.ensureEqual(edd.title(language), "The Newer Title!", "");
     Test.ensureEqual(
         String2.toCSSVString(edd.dataVariableDestinationNames()),
         "fileName, time, station_id, station, city_state_zip, city_state, site_url, aux_temp, aux_temp_rate, dew_point, altitude, feels_like, gust_time, gust_direction, gust_speed, humidity, humidity_high, humidity_low, humidity_rate, indoor_temp, indoor_temp_rate, light, light_rate, moon_phase_moon_phase_img, moon_phase, pressure, pressure_high, pressure_low, pressure_rate, rain_month, rain_rate, rain_rate_max, rain_today, rain_year, temp, temp_high, temp_low, temp_rate, sunrise, sunset, wet_bulb, wind_speed, wind_speed_avg, wind_direction, wind_direction_avg",

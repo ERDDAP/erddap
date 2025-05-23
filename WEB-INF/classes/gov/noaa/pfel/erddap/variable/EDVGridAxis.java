@@ -18,6 +18,8 @@ import com.cohort.util.String2;
 import com.cohort.util.Test;
 import gov.noaa.pfel.coastwatch.griddata.NcHelper;
 import gov.noaa.pfel.erddap.dataset.EDD;
+import gov.noaa.pfel.erddap.dataset.metadata.LocalizedAttributes;
+import gov.noaa.pfel.erddap.util.EDMessages;
 import gov.noaa.pfel.erddap.util.EDStatic;
 
 /**
@@ -67,7 +69,7 @@ public class EDVGridAxis extends EDV {
       String tSourceName,
       String tDestinationName,
       Attributes tSourceAttributes,
-      Attributes tAddAttributes,
+      LocalizedAttributes tAddAttributes,
       PrimitiveArray tSourceValues)
       throws Throwable {
 
@@ -81,9 +83,12 @@ public class EDVGridAxis extends EDV {
         new PAOne(tSourceValues, 0).min(new PAOne(tSourceValues, tSourceValues.size() - 1)),
         new PAOne(tSourceValues, 0).max(new PAOne(tSourceValues, tSourceValues.size() - 1)));
 
+    // The attributes this gets/sets should not need to be localized (max/min
+    // value for example). Just use the default language.
+    int language = EDMessages.DEFAULT_LANGUAGE;
     parentDatasetID = tParentDatasetID;
     sourceValues = tSourceValues; // but continue to work with stable tSourceValues
-    setActualRangeFromDestinationMinMax();
+    setActualRangeFromDestinationMinMax(language);
 
     // test if ascending
     // Note that e.g., altitude might be flipped, so destination might be descending. That's ok.
@@ -144,7 +149,7 @@ public class EDVGridAxis extends EDV {
    * This is now defined in CF-1.7, with unpacked values, smallest and largest.
    */
   @Override
-  public void setActualRangeFromDestinationMinMax() {
+  public void setActualRangeFromDestinationMinMax(int language) {
 
     // actual_range is useful information for .das and will be replaced by actual_range of data
     // subset.
@@ -155,7 +160,7 @@ public class EDVGridAxis extends EDV {
     PrimitiveArray pa = PrimitiveArray.factory(destinationDataPAType(), 2, false);
     pa.addDouble(Math.min(firstDestinationValue(), lastDestinationValue()));
     pa.addDouble(Math.max(firstDestinationValue(), lastDestinationValue()));
-    combinedAttributes.set("actual_range", pa);
+    combinedAttributes.set(language, "actual_range", pa);
   }
 
   /**

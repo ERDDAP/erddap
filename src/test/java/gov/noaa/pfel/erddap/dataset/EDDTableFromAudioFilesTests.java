@@ -6,6 +6,7 @@ import com.cohort.util.String2;
 import com.cohort.util.Test;
 import gov.noaa.pfel.coastwatch.pointdata.Table;
 import gov.noaa.pfel.erddap.GenerateDatasetsXml;
+import gov.noaa.pfel.erddap.util.EDMessages;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import java.nio.file.Path;
 import org.junit.jupiter.api.BeforeAll;
@@ -25,6 +26,7 @@ class EDDTableFromAudioFilesTests {
   /** testGenerateDatasetsXml */
   @org.junit.jupiter.api.Test
   void testGenerateDatasetsXml() throws Throwable {
+    int language = EDMessages.DEFAULT_LANGUAGE;
     // testVerboseOn();
     boolean oEDDDebugMode = EDD.debugMode;
     // EDD.debugMode = true;
@@ -178,7 +180,7 @@ class EDDTableFromAudioFilesTests {
     EDD.deleteCachedDatasetInfo(suggDatasetID);
     EDD edd = EDDTableFromAudioFiles.oneFromXmlFragment(null, results);
     Test.ensureEqual(edd.datasetID(), suggDatasetID, "");
-    Test.ensureEqual(edd.title(), "Audio data from a local source.", "");
+    Test.ensureEqual(edd.title(language), "Audio data from a local source.", "");
     Test.ensureEqual(
         String2.toCSSVString(edd.dataVariableDestinationNames()),
         "time, elapsedTime, channel_1",

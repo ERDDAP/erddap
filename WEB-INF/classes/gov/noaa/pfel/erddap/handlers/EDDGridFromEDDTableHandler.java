@@ -83,8 +83,6 @@ public class EDDGridFromEDDTableHandler extends BaseGridHandler {
 
   @Override
   protected EDD buildDataset() throws Throwable {
-    Object[][] ttAxisVariables = convertAxisVariablesToArray();
-    Object[][] ttDataVariables = convertDataVariablesToArray();
     return new EDDGridFromEDDTable(
         datasetID,
         tAccessibleTo,
@@ -97,8 +95,8 @@ public class EDDGridFromEDDTableHandler extends BaseGridHandler {
         tDefaultDataQuery,
         tDefaultGraphQuery,
         tGlobalAttributes,
-        ttAxisVariables,
-        ttDataVariables,
+        tAxisVariables,
+        tDataVariables,
         tReloadEveryNMinutes,
         tUpdateEveryNMillis,
         tGapThreshold,

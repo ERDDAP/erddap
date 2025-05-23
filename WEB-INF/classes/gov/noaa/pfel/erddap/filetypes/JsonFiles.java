@@ -88,7 +88,7 @@ public class JsonFiles extends TableWriterFileType {
         new TableWriterJson(
             language,
             grid,
-            grid.getNewHistory(requestUrl, userDapQuery),
+            grid.getNewHistory(language, requestUrl, userDapQuery),
             outputStreamSource,
             jsonp,
             true); // writeUnits

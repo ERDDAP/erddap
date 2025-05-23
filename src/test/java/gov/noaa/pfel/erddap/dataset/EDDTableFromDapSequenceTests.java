@@ -22,6 +22,7 @@ import dods.dap.DUInt32;
 import dods.dap.DataDDS;
 import gov.noaa.pfel.coastwatch.griddata.OpendapHelper;
 import gov.noaa.pfel.erddap.GenerateDatasetsXml;
+import gov.noaa.pfel.erddap.util.EDMessages;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.EDV;
 import java.util.List;
@@ -285,6 +286,7 @@ class EDDTableFromDapSequenceTests {
   @org.junit.jupiter.api.Test
   @TagLocalERDDAP
   void testGenerateDatasetsXml2() throws Throwable {
+    int language = EDMessages.DEFAULT_LANGUAGE;
     // String2.log("\n*** EDDTableFromDapSequence.testGenerateDatasetsXml2\n" +
     // "This requires testNccsvScalar11 in localhost ERDDAP.\n");
     // testVerboseOn();
@@ -554,7 +556,7 @@ class EDDTableFromDapSequenceTests {
       EDD.deleteCachedDatasetInfo(tDatasetID);
       EDD edd = EDDTableFromDapSequence.oneFromXmlFragment(null, results);
       Test.ensureEqual(edd.datasetID(), tDatasetID, "");
-      Test.ensureEqual(edd.title(), "NCCSV Demonstration (testNccsvScalar11)", "");
+      Test.ensureEqual(edd.title(language), "NCCSV Demonstration (testNccsvScalar11)", "");
       Test.ensureEqual(
           String2.toCSSVString(edd.dataVariableDestinationNames()),
           "ship, time, latitude, longitude, status, testByte, testUByte, testLong, testULong, sst",
@@ -595,7 +597,8 @@ class EDDTableFromDapSequenceTests {
       // get summary string
       EDDTable tedd =
           (EDDTable) EDDTableFromDapSequence.oneFromDatasetsXml(null, "nwioosGroundfish");
-      String2.log(String2.annotatedString(tedd.combinedGlobalAttributes().getString("summary")));
+      String2.log(
+          String2.annotatedString(tedd.combinedGlobalAttributes().getString(language, "summary")));
     }
 
     if (false) {

@@ -4,6 +4,7 @@ import com.cohort.util.File2;
 import com.cohort.util.String2;
 import com.cohort.util.Test;
 import gov.noaa.pfel.erddap.GenerateDatasetsXml;
+import gov.noaa.pfel.erddap.util.EDMessages;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import java.nio.file.Path;
 import org.junit.jupiter.api.BeforeAll;
@@ -19,7 +20,7 @@ class EDDGridFromMergeIRFilesTests {
   /** This tests generateDatasetsXml. */
   @org.junit.jupiter.api.Test
   void testGenerateDatasetsXml() throws Throwable {
-
+    int language = EDMessages.DEFAULT_LANGUAGE;
     String2.log("\n*** EDDGridFromMergeIRFiles.testGenerateDatasetsXml");
 
     String dataDir =
@@ -159,7 +160,7 @@ class EDDGridFromMergeIRFilesTests {
     EDD edd = EDDGridFromMergeIRFiles.oneFromXmlFragment(null, results);
     Test.ensureEqual(edd.datasetID(), tDatasetID, "datasetID");
     Test.ensureEqual(edd.className(), "EDDGridFromMergeIRFiles", "className");
-    Test.ensureEqual(edd.title(), "NCEP/CPC 4km Global (60N - 60S) IR Dataset", "title");
+    Test.ensureEqual(edd.title(language), "NCEP/CPC 4km Global (60N - 60S) IR Dataset", "title");
     Test.ensureEqual(
         String2.toCSSVString(edd.dataVariableDestinationNames()),
         "ir, flux",

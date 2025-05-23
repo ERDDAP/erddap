@@ -4,7 +4,6 @@
  */
 package gov.noaa.pfel.erddap.dataset;
 
-import com.cohort.array.Attributes;
 import com.cohort.array.PAType;
 import com.cohort.array.StringArray;
 import com.cohort.util.File2;
@@ -15,11 +14,13 @@ import gov.noaa.pfel.coastwatch.util.RegexFilenameFilter;
 import gov.noaa.pfel.coastwatch.util.SSR;
 import gov.noaa.pfel.coastwatch.util.SimpleXMLReader;
 import gov.noaa.pfel.erddap.Erddap;
+import gov.noaa.pfel.erddap.dataset.metadata.LocalizedAttributes;
 import gov.noaa.pfel.erddap.handlers.EDDTableCopyHandler;
 import gov.noaa.pfel.erddap.handlers.SaxHandlerClass;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.util.TaskThread;
 import gov.noaa.pfel.erddap.variable.*;
+import java.util.ArrayList;
 
 /**
  * This class makes and maintains a local copy of the data from a remote source. This class serves
@@ -263,7 +264,9 @@ public class EDDTableCopy extends EDDTable {
       String2.log(
           "\n*** constructing EDDTableCopy " + tDatasetID + " reallyVerbose=" + reallyVerbose);
     long constructionStartMillis = System.currentTimeMillis();
-
+    // This will get overwritten later, but have something here because otherwise the tableWriter
+    // below will throw an exception.
+    combinedGlobalAttributes = new LocalizedAttributes();
     // save the parameters
     int language = 0;
     className = "EDDTableCopy";
@@ -476,7 +479,7 @@ public class EDDTableCopy extends EDDTable {
 
     // gather info about dataVariables to create localEdd
     int nDataVariables;
-    Object[][] tDataVariables;
+    ArrayList<DataVariableInfo> tDataVariables;
     if (sourceEdd == null) {
       // get info from existing copied datafiles, which is a standard EDDTable)
       // get a list of copied files
@@ -503,29 +506,28 @@ public class EDDTableCopy extends EDDTable {
           null,
           0); // null=allVars, standardizeWhat=0 because data is already unpacked.
       nDataVariables = table.nColumns();
-      tDataVariables = new Object[nDataVariables][];
+      tDataVariables = new ArrayList<>(nDataVariables);
       for (int dv = 0; dv < nDataVariables; dv++) {
-        tDataVariables[dv] =
-            new Object[] {
-              table.getColumnName(dv),
-              table.getColumnName(dv),
-              new Attributes(),
-              table.getColumn(dv).elementTypeString()
-            };
+        tDataVariables.add(
+            new DataVariableInfo(
+                table.getColumnName(dv),
+                table.getColumnName(dv),
+                new LocalizedAttributes(),
+                table.getColumn(dv).elementTypeString()));
       }
     } else {
       // get info from sourceEdd, which is a standard EDDTable
       nDataVariables = sourceEdd.dataVariables.length;
-      tDataVariables = new Object[nDataVariables][];
+      tDataVariables = new ArrayList<>(nDataVariables);
       for (int dv = 0; dv < nDataVariables; dv++) {
         EDV edv = sourceEdd.dataVariables[dv];
-        tDataVariables[dv] =
-            new Object[] {
-              edv.destinationName(),
-              edv.destinationName(),
-              new Attributes(),
-              edv.destinationDataType()
-            }; // 2012-07-26 e.g., var with scale_factor will be destType in the copied files
+        tDataVariables.add(
+            new DataVariableInfo(
+                edv.destinationName(),
+                edv.destinationName(),
+                new LocalizedAttributes(),
+                edv.destinationDataType())); // 2012-07-26 e.g., var with scale_factor will be
+        // destType in the copied files
       }
     }
     // if the first orderExtractBy column is numeric, it can be used as
@@ -534,9 +536,9 @@ public class EDDTableCopy extends EDDTable {
     String sortedColumn = orderExtractBy == null ? "" : orderExtractBy.get(0); // the first column
     if (sortedColumn.length() > 0) {
       for (int dv = 0; dv < nDataVariables; dv++) {
-        if (sortedColumn.equals(tDataVariables[dv][0])
+        if (sortedColumn.equals(tDataVariables.get(dv).sourceName())
             && // columnName
-            "String".equals(tDataVariables[dv][3])) { // columnType
+            "String".equals(tDataVariables.get(dv).dataType())) { // columnType
           if (verbose)
             String2.log(
                 "orderExtractBy #0="
@@ -561,7 +563,7 @@ public class EDDTableCopy extends EDDTable {
             tOnChange,
             tFgdcFile,
             tIso19115File,
-            new Attributes(), // addGlobalAttributes
+            new LocalizedAttributes(), // addGlobalAttributes
             tDataVariables,
             tReloadEveryNMinutes,
             copyDatasetDir,
@@ -593,9 +595,8 @@ public class EDDTableCopy extends EDDTable {
     sourceCanConstrainNumericData = localEdd.sourceCanConstrainNumericData;
     sourceCanConstrainStringData = localEdd.sourceCanConstrainStringData;
     sourceCanConstrainStringRegex = localEdd.sourceCanConstrainStringRegex;
-
-    sourceGlobalAttributes = localEdd.combinedGlobalAttributes;
-    addGlobalAttributes = new Attributes();
+    addGlobalAttributes = new LocalizedAttributes();
+    sourceGlobalAttributes = localEdd.combinedGlobalAttributes.toAttributes(language);
     combinedGlobalAttributes =
         localEdd.combinedGlobalAttributes; // new Attributes(addGlobalAttributes,
     // sourceGlobalAttributes); //order is important
@@ -668,8 +669,8 @@ public class EDDTableCopy extends EDDTable {
       StringArray tOnChange,
       String tFgdcFile,
       String tIso19115File,
-      Attributes tAddGlobalAttributes,
-      Object[][] tDataVariables,
+      LocalizedAttributes tAddGlobalAttributes,
+      ArrayList<DataVariableInfo> tDataVariables,
       int tReloadEveryNMinutes,
       String tFileDir,
       String tFileNameRegex,

@@ -9,6 +9,7 @@ import gov.noaa.pfel.coastwatch.util.SSR;
 import gov.noaa.pfel.erddap.dataset.EDD;
 import gov.noaa.pfel.erddap.util.EDConfig;
 import gov.noaa.pfel.erddap.util.EDStatic;
+import gov.noaa.pfel.erddap.util.TranslateMessages;
 import java.awt.*;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -22,6 +23,7 @@ public class TopLevelHandler extends State {
   private final boolean reallyVerbose;
   private final StringBuilder warningsFromLoadDatasets;
   private int nDatasets = 0;
+  private String lang = null;
 
   public TopLevelHandler(SaxHandler saxHandler, SaxParsingContext context) {
     super(saxHandler);
@@ -126,6 +128,9 @@ public class TopLevelHandler extends State {
                 datasetType, datasetID, active, this, saxHandler, context, true);
         saxHandler.setState(state);
       }
+      case "displayInfo" -> {
+        lang = attributes.getValue("xml:lang");
+      }
     }
   }
 
@@ -220,11 +225,11 @@ public class TopLevelHandler extends State {
       }
       case "displayInfo" -> {
         String tContent = data.toString();
-        String[] displayInfoAr =
-            String2.isSomething(tContent)
-                ? String2.split(tContent, ',')
-                : EDStatic.DEFAULT_displayInfoAr;
-        EDStatic.displayInfoAr = displayInfoAr;
+        if (String2.isSomething(tContent)) {
+          String[] displayInfoAr = String2.split(tContent, ',');
+          EDStatic.displayInfoAr.set(
+              TranslateMessages.getIndexForLanguageCode(lang), displayInfoAr);
+        }
       }
       case "drawLandMask" -> {
         String ts = data.toString();

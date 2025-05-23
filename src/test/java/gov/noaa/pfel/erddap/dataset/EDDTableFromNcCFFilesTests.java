@@ -8,6 +8,7 @@ import com.cohort.util.Test;
 import gov.noaa.pfel.coastwatch.griddata.NcHelper;
 import gov.noaa.pfel.coastwatch.pointdata.Table;
 import gov.noaa.pfel.erddap.GenerateDatasetsXml;
+import gov.noaa.pfel.erddap.util.EDMessages;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import java.nio.file.Path;
 import org.junit.jupiter.api.BeforeAll;
@@ -33,7 +34,7 @@ class EDDTableFromNcCFFilesTests {
   void testGenerateDatasetsXml() throws Throwable {
     // testVerboseOn();
     // debugMode = true;
-
+    int language = EDMessages.DEFAULT_LANGUAGE;
     // public static String generateDatasetsXml(
     // String tFileDir, String tFileNameRegex, String sampleFileName,
     // int tReloadEveryNMinutes,
@@ -313,7 +314,7 @@ class EDDTableFromNcCFFilesTests {
     EDD.deleteCachedDatasetInfo(tDatasetID);
     EDD edd = EDDTableFromNcCFFiles.oneFromXmlFragment(null, results);
     Test.ensureEqual(edd.datasetID(), tDatasetID, "");
-    Test.ensureEqual(edd.title(), "CalCOFI Fish Larvae Count, 1984-2004", "");
+    Test.ensureEqual(edd.title(language), "CalCOFI Fish Larvae Count, 1984-2004", "");
     Test.ensureEqual(
         String2.toCSSVString(edd.dataVariableDestinationNames()),
         "line_station, longitude, latitude, altitude, time, obsScientific, obsValue, obsUnits",

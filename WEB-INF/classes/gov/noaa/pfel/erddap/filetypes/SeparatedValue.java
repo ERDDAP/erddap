@@ -97,7 +97,7 @@ public abstract class SeparatedValue extends TableWriterFileType {
         new TableWriterSeparatedValue(
             language,
             eddGrid,
-            eddGrid.getNewHistory(requestUrl, userDapQuery),
+            eddGrid.getNewHistory(language, requestUrl, userDapQuery),
             outputStreamSource,
             separator,
             twoQuotes,

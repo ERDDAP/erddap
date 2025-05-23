@@ -281,8 +281,8 @@ public class EDDTableFromNOS extends EDDTable{
         StringArray tOnChange, String tFgdcFile, String tIso19115File, 
         String tSosOfferingPrefix,
         String tDefaultDataQuery, String tDefaultGraphQuery, String tAddVariablesWhere, 
-        Attributes tAddGlobalAttributes,
-        Object[][] tDataVariables,
+        LocalizedAttributes tAddGlobalAttributes,
+        ArrayList<DataVariableInfo> tDataVariables,
         int tReloadEveryNMinutes,
         String tLocalSourceUrl, String tXmlns, String tGetWhat, String tWsdlUrl,
         String tRequestTimeFormat,
@@ -308,7 +308,7 @@ public class EDDTableFromNOS extends EDDTable{
         if (tAddGlobalAttributes == null)
             tAddGlobalAttributes = new Attributes();
         addGlobalAttributes = tAddGlobalAttributes;
-        addGlobalAttributes.set("sourceUrl", convertToPublicSourceUrl(tLocalSourceUrl));
+        addGlobalAttributes.set(language, "sourceUrl", convertToPublicSourceUrl(tLocalSourceUrl));
         localSourceUrl = tLocalSourceUrl;
         setReloadEveryNMinutes(tReloadEveryNMinutes);
         xmlns = tXmlns;
@@ -334,9 +334,9 @@ public class EDDTableFromNOS extends EDDTable{
         //set source attributes (none available from source)
         sourceGlobalAttributes = new Attributes();
         combinedGlobalAttributes = new Attributes(addGlobalAttributes, sourceGlobalAttributes); //order is important
-        String tLicense = combinedGlobalAttributes.getString("license");
+        String tLicense = combinedGlobalAttributes.getString(language, "license");
         if (tLicense != null)
-            combinedGlobalAttributes.set("license", 
+            combinedGlobalAttributes.set(language, "license", 
                 String2.replaceAll(tLicense, "[standard]", EDStatic.messages.standardLicense));
         combinedGlobalAttributes.removeValue("\"null\"");
 

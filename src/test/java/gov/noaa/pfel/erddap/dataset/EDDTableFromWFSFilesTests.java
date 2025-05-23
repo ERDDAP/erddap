@@ -9,6 +9,7 @@ import com.cohort.util.String2;
 import com.cohort.util.Test;
 import gov.noaa.pfel.coastwatch.pointdata.Table;
 import gov.noaa.pfel.erddap.GenerateDatasetsXml;
+import gov.noaa.pfel.erddap.util.EDMessages;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import org.junit.jupiter.api.BeforeAll;
 import tags.TagExternalOther;
@@ -29,7 +30,7 @@ class EDDTableFromWFSFilesTests {
     // testVerboseOn();
     // boolean oDevelopmentMode = developmentMode;
     // developmentMode = tDevelopmentMode;
-
+    int language = EDMessages.DEFAULT_LANGUAGE;
     Attributes externalAddAttributes = new Attributes();
     externalAddAttributes.add("title", "Old Title!");
     String results =
@@ -825,7 +826,7 @@ class EDDTableFromWFSFilesTests {
     EDD edd = EDDTableFromWFSFiles.oneFromXmlFragment(null, results);
     // these won't actually be tested...
     Test.ensureEqual(edd.datasetID(), tDatasetID, "");
-    Test.ensureEqual(edd.title(), "The Title", "");
+    Test.ensureEqual(edd.title(language), "The Title", "");
     Test.ensureEqual(
         String2.toCSSVString(edd.dataVariableDestinationNames()),
         "ObservationURI, WellName, APINo, HeaderURI, OtherName, Label, Operator, time, "

@@ -229,6 +229,7 @@ import com.google.common.util.concurrent.ListenableFuture;
 import gov.noaa.pfel.coastwatch.pointdata.Table;
 import gov.noaa.pfel.coastwatch.util.SimpleXMLReader;
 import gov.noaa.pfel.erddap.Erddap;
+import gov.noaa.pfel.erddap.dataset.metadata.LocalizedAttributes;
 import gov.noaa.pfel.erddap.handlers.EDDTableFromCassandraHandler;
 import gov.noaa.pfel.erddap.handlers.SaxHandlerClass;
 import gov.noaa.pfel.erddap.util.EDStatic;
@@ -327,8 +328,8 @@ public class EDDTableFromCassandra extends EDDTable {
     // data to be obtained (or not)
     if (verbose) String2.log("\n*** constructing EDDTableFromCassandra(xmlReader)...");
     String tDatasetID = xmlReader.attributeValue("datasetID");
-    Attributes tGlobalAttributes = null;
-    ArrayList tDataVariables = new ArrayList();
+    LocalizedAttributes tGlobalAttributes = null;
+    ArrayList<DataVariableInfo> tDataVariables = new ArrayList<>();
     int tReloadEveryNMinutes = Integer.MAX_VALUE;
     String tAccessibleTo = null;
     String tGraphsAccessibleTo = null;
@@ -413,10 +414,6 @@ public class EDDTableFromCassandra extends EDDTable {
         default -> xmlReader.unexpectedTagException();
       }
     }
-    int ndv = tDataVariables.size();
-    Object ttDataVariables[][] = new Object[ndv][];
-    for (int i = 0; i < tDataVariables.size(); i++)
-      ttDataVariables[i] = (Object[]) tDataVariables.get(i);
 
     return new EDDTableFromCassandra(
         tDatasetID,
@@ -430,7 +427,7 @@ public class EDDTableFromCassandra extends EDDTable {
         tDefaultGraphQuery,
         tAddVariablesWhere,
         tGlobalAttributes,
-        ttDataVariables,
+        tDataVariables,
         tReloadEveryNMinutes,
         tLocalSourceUrl,
         tConnectionProperties.toArray(),
@@ -462,8 +459,8 @@ public class EDDTableFromCassandra extends EDDTable {
       String tDefaultDataQuery,
       String tDefaultGraphQuery,
       String tAddVariablesWhere,
-      Attributes tAddGlobalAttributes,
-      Object[][] tDataVariables,
+      LocalizedAttributes tAddGlobalAttributes,
+      ArrayList<DataVariableInfo> tDataVariables,
       int tReloadEveryNMinutes,
       String tLocalSourceUrl,
       String tConnectionProperties[],
@@ -493,13 +490,12 @@ public class EDDTableFromCassandra extends EDDTable {
     sosOfferingPrefix = tSosOfferingPrefix;
     defaultDataQuery = tDefaultDataQuery;
     defaultGraphQuery = tDefaultGraphQuery;
-    if (tAddGlobalAttributes == null) tAddGlobalAttributes = new Attributes();
+    if (tAddGlobalAttributes == null) tAddGlobalAttributes = new LocalizedAttributes();
     addGlobalAttributes = tAddGlobalAttributes;
     setReloadEveryNMinutes(tReloadEveryNMinutes);
     Test.ensureNotNothing(tLocalSourceUrl, "'sourceUrl' wasn't defined.");
     localSourceUrl = tLocalSourceUrl;
-    publicSourceUrl = "(Cassandra)"; // not tLocalSourceUrl; keep it private
-    addGlobalAttributes.set("sourceUrl", publicSourceUrl);
+    addGlobalAttributes.set(language, "sourceUrl", "(Cassandra)");
     partitionKeyCSV = String2.isSomething(tPartitionKeyCSV) ? tPartitionKeyCSV : null;
 
     // connectionProperties may have secret (username and password)!
@@ -582,23 +578,25 @@ public class EDDTableFromCassandra extends EDDTable {
     // set global attributes
     sourceGlobalAttributes = new Attributes();
     combinedGlobalAttributes =
-        new Attributes(addGlobalAttributes, sourceGlobalAttributes); // order is important
-    String tLicense = combinedGlobalAttributes.getString("license");
+        new LocalizedAttributes(addGlobalAttributes, sourceGlobalAttributes); // order is important
+    String tLicense = combinedGlobalAttributes.getString(language, "license");
     if (tLicense != null)
       combinedGlobalAttributes.set(
-          "license", String2.replaceAll(tLicense, "[standard]", EDStatic.messages.standardLicense));
+          language,
+          "license",
+          String2.replaceAll(tLicense, "[standard]", EDStatic.messages.standardLicense));
     combinedGlobalAttributes.removeValue("\"null\"");
 
     // create dataVariables[]
-    int ndv = tDataVariables.length;
+    int ndv = tDataVariables.size();
     dataVariables = new EDV[ndv];
     isListDV = new boolean[ndv];
     for (int dv = 0; dv < ndv; dv++) {
-      String tSourceName = (String) tDataVariables[dv][0];
-      String tDestName = (String) tDataVariables[dv][1];
+      String tSourceName = tDataVariables.get(dv).sourceName();
+      String tDestName = tDataVariables.get(dv).destinationName();
       if (tDestName == null || tDestName.trim().length() == 0) tDestName = tSourceName;
-      Attributes tAddAtt = (Attributes) tDataVariables[dv][2];
-      String tSourceType = (String) tDataVariables[dv][3];
+      LocalizedAttributes tAddAtt = tDataVariables.get(dv).attributes();
+      String tSourceType = tDataVariables.get(dv).dataType();
       // deal with <dataType>'s that are lists: byteList, doubleList, ...
       if (tSourceType.endsWith("List")) {
         isListDV[dv] = true;
@@ -666,7 +664,7 @@ public class EDDTableFromCassandra extends EDDTable {
                 tAddAtt,
                 tSourceType); // this constructor gets source / sets destination actual_range
         timeIndex = dv;
-      } else if (EDVTimeStamp.hasTimeUnits(tSourceAtt, tAddAtt)) {
+      } else if (EDVTimeStamp.hasTimeUnits(language, tSourceAtt, tAddAtt)) {
         dataVariables[dv] =
             new EDVTimeStamp(
                 datasetID,
@@ -678,7 +676,7 @@ public class EDDTableFromCassandra extends EDDTable {
       } else {
         dataVariables[dv] =
             new EDV(datasetID, tSourceName, tDestName, tSourceAtt, tAddAtt, tSourceType);
-        dataVariables[dv].setActualRangeFromDestinationMinMax();
+        dataVariables[dv].setActualRangeFromDestinationMinMax(language);
       }
     }
 

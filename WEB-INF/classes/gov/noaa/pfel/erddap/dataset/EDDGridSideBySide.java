@@ -17,6 +17,7 @@ import gov.noaa.pfel.coastwatch.util.SimpleXMLReader;
 import gov.noaa.pfel.erddap.Erddap;
 import gov.noaa.pfel.erddap.handlers.EDDGridSideBySideHandler;
 import gov.noaa.pfel.erddap.handlers.SaxHandlerClass;
+import gov.noaa.pfel.erddap.util.EDMessages;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.*;
 import java.text.MessageFormat;
@@ -237,6 +238,7 @@ public class EDDGridSideBySide extends EDDGrid {
       throws Throwable {
 
     if (verbose) String2.log("\n*** constructing EDDGridSideBySide " + tDatasetID);
+    int language = EDMessages.DEFAULT_LANGUAGE;
     long constructionStartMillis = System.currentTimeMillis();
 
     // save some of the parameters
@@ -290,12 +292,6 @@ public class EDDGridSideBySide extends EDDGrid {
             firstChild.axisVariableSourceNames(); // () makes the array
         childDatasets[c].axisVariableDestinationNames = firstChild.axisVariableDestinationNames();
         // not id
-        childDatasets[c].title = firstChild.title();
-        childDatasets[c].summary = firstChild.summary();
-        childDatasets[c].institution = firstChild.institution();
-        childDatasets[c].infoUrl = firstChild.infoUrl();
-        childDatasets[c].cdmDataType = firstChild.cdmDataType();
-        childDatasets[c].searchBytes = firstChild.searchBytes();
         // not sourceUrl, which will be different
         childDatasets[c].sourceGlobalAttributes = firstChild.sourceGlobalAttributes();
         childDatasets[c].addGlobalAttributes = firstChild.addGlobalAttributes();

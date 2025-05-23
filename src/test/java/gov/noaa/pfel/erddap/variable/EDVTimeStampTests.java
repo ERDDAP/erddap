@@ -1,10 +1,11 @@
 package gov.noaa.pfel.erddap.variable;
 
-import com.cohort.array.Attributes;
 import com.cohort.array.StringArray;
 import com.cohort.util.Calendar2;
 import com.cohort.util.String2;
 import com.cohort.util.Test;
+import gov.noaa.pfel.erddap.dataset.metadata.LocalizedAttributes;
+import gov.noaa.pfel.erddap.util.EDMessages;
 import org.junit.jupiter.api.BeforeAll;
 import testDataset.Initialization;
 
@@ -20,6 +21,7 @@ class EDVTimeStampTests {
   void basicTest() throws Throwable {
     // verbose = true;
 
+    int language = EDMessages.DEFAULT_LANGUAGE;
     // ***with Z
     String2.log("\n*** EDVTimeStamp.basicTest with Z");
     EDVTimeStamp eta =
@@ -28,9 +30,13 @@ class EDVTimeStampTests {
             "sourceName",
             "time",
             null,
-            new Attributes()
-                .add("units", "yyyy-MM-dd'T'HH:mm:ssXXX") // was Calendar2.ISO8601TZ_FORMAT with 'Z'
-                .add(
+            new LocalizedAttributes()
+                .set(
+                    language,
+                    "units",
+                    "yyyy-MM-dd'T'HH:mm:ssXXX") // was Calendar2.ISO8601TZ_FORMAT with 'Z'
+                .set(
+                    language,
                     "actual_range",
                     new StringArray(new String[] {"1970-01-01T00:00:00Z", "2007-01-01T00:00:00Z"})),
             "String"); // this constructor gets source / sets destination actual_range
@@ -55,10 +61,11 @@ class EDVTimeStampTests {
             "sourceName",
             "time",
             null,
-            new Attributes()
-                .add("units", "yyyy-MM-dd'T'HH:mm:ss.SSSXXX")
+            new LocalizedAttributes()
+                .set(language, "units", "yyyy-MM-dd'T'HH:mm:ss.SSSXXX")
                 . // was Calendar2.ISO8601T3Z_FORMAT).
-                add(
+                set(
+                    language,
                     "actual_range",
                     new StringArray(
                         new String[] {"1970-01-01T00:00:00.000Z", "2007-01-01T00:00:00.000Z"})),
@@ -84,10 +91,11 @@ class EDVTimeStampTests {
             "sourceName",
             "myTimeStamp",
             null,
-            new Attributes()
-                .add("units", Calendar2.ISO8601T_FORMAT)
+            new LocalizedAttributes()
+                .set(language, "units", Calendar2.ISO8601T_FORMAT)
                 . // without Z
-                add(
+                set(
+                    language,
                     "actual_range",
                     new StringArray(
                         new String[] {"1970-01-01T00:00:00", "2007-01-01T00:00:00"})), // without Z
@@ -107,10 +115,11 @@ class EDVTimeStampTests {
             "sourceName",
             "myTimeStamp",
             null,
-            new Attributes()
-                .add("units", Calendar2.ISO8601T3_FORMAT)
+            new LocalizedAttributes()
+                .set(language, "units", Calendar2.ISO8601T3_FORMAT)
                 . // without Z
-                add(
+                set(
+                    language,
                     "actual_range",
                     new StringArray(
                         new String[] {

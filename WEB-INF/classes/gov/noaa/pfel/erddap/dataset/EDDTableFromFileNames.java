@@ -25,14 +25,17 @@ import gov.noaa.pfel.coastwatch.util.FileVisitorDNLS;
 import gov.noaa.pfel.coastwatch.util.SSR;
 import gov.noaa.pfel.coastwatch.util.SimpleXMLReader;
 import gov.noaa.pfel.erddap.Erddap;
+import gov.noaa.pfel.erddap.dataset.metadata.LocalizedAttributes;
 import gov.noaa.pfel.erddap.handlers.EDDTableFromFileNamesHandler;
 import gov.noaa.pfel.erddap.handlers.SaxHandlerClass;
+import gov.noaa.pfel.erddap.util.EDMessages;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
@@ -108,8 +111,8 @@ public class EDDTableFromFileNames extends EDDTable {
     // data to be obtained (or not)
     if (verbose) String2.log("\n*** constructing EDDTableFromFileNames(xmlReader)...");
     String tDatasetID = xmlReader.attributeValue("datasetID");
-    Attributes tGlobalAttributes = null;
-    ArrayList tDataVariables = new ArrayList();
+    LocalizedAttributes tGlobalAttributes = null;
+    ArrayList<DataVariableInfo> tDataVariables = new ArrayList<>();
     int tReloadEveryNMinutes = Integer.MAX_VALUE;
     // this doesn't support updateEveryNMillis because (unless remote dir, which is cached)
     //  this always gets file info anew for every request.
@@ -173,10 +176,6 @@ public class EDDTableFromFileNames extends EDDTable {
         default -> xmlReader.unexpectedTagException();
       }
     }
-    int ndv = tDataVariables.size();
-    Object ttDataVariables[][] = new Object[ndv][];
-    for (int i = 0; i < tDataVariables.size(); i++)
-      ttDataVariables[i] = (Object[]) tDataVariables.get(i);
 
     return new EDDTableFromFileNames(
         tDatasetID,
@@ -189,7 +188,7 @@ public class EDDTableFromFileNames extends EDDTable {
         tDefaultGraphQuery,
         tAddVariablesWhere,
         tGlobalAttributes,
-        ttDataVariables,
+        tDataVariables,
         tReloadEveryNMinutes,
         tFileDir,
         tFileNameRegex,
@@ -277,8 +276,8 @@ public class EDDTableFromFileNames extends EDDTable {
       String tDefaultDataQuery,
       String tDefaultGraphQuery,
       String tAddVariablesWhere,
-      Attributes tAddGlobalAttributes,
-      Object[][] tDataVariables,
+      LocalizedAttributes tAddGlobalAttributes,
+      ArrayList<DataVariableInfo> tDataVariables,
       int tReloadEveryNMinutes,
       String tFileDir,
       String tFileNameRegex,
@@ -301,9 +300,12 @@ public class EDDTableFromFileNames extends EDDTable {
     iso19115File = tIso19115File;
     defaultDataQuery = tDefaultDataQuery;
     defaultGraphQuery = tDefaultGraphQuery;
-    if (tAddGlobalAttributes == null) tAddGlobalAttributes = new Attributes();
+    if (tAddGlobalAttributes == null) tAddGlobalAttributes = new LocalizedAttributes();
     addGlobalAttributes = tAddGlobalAttributes;
-    addGlobalAttributes.setIfNotAlreadySet("sourceUrl", "(local files)");
+    PrimitiveArray pa = addGlobalAttributes.get(language, "sourceUrl");
+    if (pa == null) {
+      addGlobalAttributes.set(language, "sourceUrl", "(local files)");
+    }
     setReloadEveryNMinutes(tReloadEveryNMinutes);
     fileDir = tFileDir;
     fileNameRegex = tFileNameRegex;
@@ -348,39 +350,48 @@ public class EDDTableFromFileNames extends EDDTable {
                 null, // tSosOfferingPrefix,
                 null,
                 null, // String tDefaultDataQuery, String tDefaultGraphQuery,
-                new Attributes() // Attributes tAddGlobalAttributes,
-                    .add("cdm_data_type", "other")
-                    .add(
+                new LocalizedAttributes() // LocalizedAttributes tAddGlobalAttributes,
+                    .set(EDMessages.DEFAULT_LANGUAGE, "cdm_data_type", "other")
+                    .set(
+                        EDMessages.DEFAULT_LANGUAGE,
                         "infoUrl",
                         "https://erddap.github.io/docs/server-admin/datasets#eddtablefromfilenames")
-                    .add("institution", "NOAA")
-                    .add("license", "[standard]")
-                    .add("sourceUrl", "(local files)")
-                    .add("summary", "A child dataset.")
-                    .add("title", datasetID + "_child"),
-                new Object[][] { // tDataVariables: Object[4] 0=sourceName, 1=destinationName,
-                  // 2=addAttributes, 3=dataType.
-                  new Object[] {
-                    "directory", null, new Attributes().add("ioos_category", "Other"), "String"
-                  },
-                  new Object[] {
-                    "name", null, new Attributes().add("ioos_category", "Other"), "String"
-                  },
-                  new Object[] {
-                    "lastModified",
-                    null,
-                    new Attributes()
-                        .add("ioos_category", "Time")
-                        .add("units", "milliseconds since 1970-01-01T00:00:00Z"),
-                    "long"
-                  },
-                  new Object[] {
-                    "size",
-                    null,
-                    new Attributes().add("ioos_category", "Other").add("units", "bytes"),
-                    "long"
-                  }
-                },
+                    .set(EDMessages.DEFAULT_LANGUAGE, "institution", "NOAA")
+                    .set(EDMessages.DEFAULT_LANGUAGE, "license", "[standard]")
+                    .set(EDMessages.DEFAULT_LANGUAGE, "sourceUrl", "(local files)")
+                    .set(EDMessages.DEFAULT_LANGUAGE, "summary", "A child dataset.")
+                    .set(EDMessages.DEFAULT_LANGUAGE, "title", datasetID + "_child"),
+                new ArrayList<>(
+                    List.of(
+                        new DataVariableInfo(
+                            "directory",
+                            null,
+                            new LocalizedAttributes()
+                                .set(EDMessages.DEFAULT_LANGUAGE, "ioos_category", "Other"),
+                            "String"),
+                        new DataVariableInfo(
+                            "name",
+                            null,
+                            new LocalizedAttributes()
+                                .set(EDMessages.DEFAULT_LANGUAGE, "ioos_category", "Other"),
+                            "String"),
+                        new DataVariableInfo(
+                            "lastModified",
+                            null,
+                            new LocalizedAttributes()
+                                .set(EDMessages.DEFAULT_LANGUAGE, "ioos_category", "Time")
+                                .set(
+                                    EDMessages.DEFAULT_LANGUAGE,
+                                    "units",
+                                    "milliseconds since 1970-01-01T00:00:00Z"),
+                            "long"),
+                        new DataVariableInfo(
+                            "size",
+                            null,
+                            new LocalizedAttributes()
+                                .set(EDMessages.DEFAULT_LANGUAGE, "ioos_category", "Other")
+                                .set(EDMessages.DEFAULT_LANGUAGE, "units", "bytes"),
+                            "long"))),
                 1000000000, // int tReloadEveryNMinutes, It will be reloaded when this dataset is
                 // reloaded (here!)
                 -1, // int tUpdateEveryNMillis,
@@ -438,11 +449,13 @@ public class EDDTableFromFileNames extends EDDTable {
     // get global attributes
     sourceGlobalAttributes = new Attributes();
     combinedGlobalAttributes =
-        new Attributes(addGlobalAttributes, sourceGlobalAttributes); // order is important
-    String tLicense = combinedGlobalAttributes.getString("license");
+        new LocalizedAttributes(addGlobalAttributes, sourceGlobalAttributes); // order is important
+    String tLicense = combinedGlobalAttributes.getString(language, "license");
     if (tLicense != null)
       combinedGlobalAttributes.set(
-          "license", String2.replaceAll(tLicense, "[standard]", EDStatic.messages.standardLicense));
+          language,
+          "license",
+          String2.replaceAll(tLicense, "[standard]", EDStatic.messages.standardLicense));
     combinedGlobalAttributes.removeValue("\"null\"");
 
     // useCachedInfo?
@@ -529,23 +542,23 @@ public class EDDTableFromFileNames extends EDDTable {
     Table sourceSampleTable = FileVisitorDNLS.makeEmptyTableWithUrlsAndDoubles();
 
     // create dataVariables[]
-    int ndv = tDataVariables.length;
+    int ndv = tDataVariables.size();
     dataVariables = new EDV[ndv];
     extractRegex = new String[ndv];
     extractGroup = new byte[ndv];
     for (int dv = 0; dv < ndv; dv++) {
-      String sourceName = (String) tDataVariables[dv][0];
-      String destName = (String) tDataVariables[dv][1];
+      String sourceName = tDataVariables.get(dv).sourceName();
+      String destName = tDataVariables.get(dv).destinationName();
       if (destName == null || destName.trim().length() == 0) destName = sourceName;
       int scol = sourceSampleTable.findColumnNumber(sourceName);
       Attributes sourceAtt =
           scol >= 0 ? sourceSampleTable.columnAttributes(scol) : new Attributes();
-      Attributes addAtt = (Attributes) tDataVariables[dv][2];
-      String sourceType = (String) tDataVariables[dv][3];
+      LocalizedAttributes addAtt = tDataVariables.get(dv).attributes();
+      String sourceType = tDataVariables.get(dv).dataType();
       // if (reallyVerbose) String2.log("  dv=" + dv + " sourceName=" + tSourceName + " sourceType="
       // + tSourceType);
-      extractRegex[dv] = addAtt.getString("extractRegex");
-      extractGroup[dv] = Math2.narrowToByte(addAtt.getInt("extractGroup"));
+      extractRegex[dv] = addAtt.getString(language, "extractRegex");
+      extractGroup[dv] = Math2.narrowToByte(addAtt.getInt(language, "extractGroup"));
       addAtt.remove("extractRegex");
       addAtt.remove("extractGroup");
       if (extractGroup[dv] == Byte.MAX_VALUE) extractGroup[dv] = 1; // default
@@ -639,7 +652,7 @@ public class EDDTableFromFileNames extends EDDTable {
                 addAtt,
                 sourceType); // this constructor gets source / sets destination actual_range
         timeIndex = dv;
-      } else if (EDVTimeStamp.hasTimeUnits(sourceAtt, addAtt)) {
+      } else if (EDVTimeStamp.hasTimeUnits(language, sourceAtt, addAtt)) {
         dataVariables[dv] =
             new EDVTimeStamp(
                 datasetID,

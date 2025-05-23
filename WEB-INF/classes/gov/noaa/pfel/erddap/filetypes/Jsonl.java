@@ -95,7 +95,7 @@ public abstract class Jsonl extends TableWriterFileType {
         new TableWriterJsonl(
             language,
             grid,
-            grid.getNewHistory(requestUrl, userDapQuery),
+            grid.getNewHistory(language, requestUrl, userDapQuery),
             outputStreamSource,
             tWriteColNames,
             tWriteKVP,

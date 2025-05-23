@@ -177,7 +177,7 @@ public class EDDGridFromBinaryFile extends EDDGrid {
         String tAccessibleTo, String tGraphsAccessibleTo, boolean tAccessibleViaWMS,
         StringArray tOnChange, String tFgdcFile, String tIso19115File, 
         String tDefaultDataQuery, String tDefaultGraphQuery,
-        Attributes tAddGlobalAttributes,
+        LocalizedAttributes tAddGlobalAttributes,
         Object tAxisVariables[][],
         Object tDataVariables[][],
         int tReloadEveryNMinutes,
@@ -209,13 +209,13 @@ public class EDDGridFromBinaryFile extends EDDGrid {
             tAddGlobalAttributes = new Attributes();
         addGlobalAttributes = tAddGlobalAttributes;
         combinedGlobalAttributes = new Attributes(addGlobalAttributes, sourceGlobalAttributes); //order is important
-        String tLicense = combinedGlobalAttributes.getString("license");
+        String tLicense = combinedGlobalAttributes.getString(language, "license");
         if (tLicense != null)
-            combinedGlobalAttributes.set("license", 
+            combinedGlobalAttributes.set(language, "license", 
                 String2.replaceAll(tLicense, "[standard]", EDStatic.messages.standardLicense));
         combinedGlobalAttributes.removeValue("\"null\"");
-        if (combinedGlobalAttributes.getString("cdm_data_type") == null)
-            combinedGlobalAttributes.add("cdm_data_type", "Grid");
+        if (combinedGlobalAttributes.getString(language, "cdm_data_type") == null)
+            combinedGlobalAttributes.set(language, "cdm_data_type", "Grid");
         reloadEveryNMinutes = tReloadEveryNMinutes;
         fileName = tFileName;
 
@@ -484,7 +484,7 @@ public class EDDGridFromBinaryFile extends EDDGrid {
         //String2.log(
         //    "\n\naddAtt=" + gridDataset.addGlobalAttributes() +
         //    "\n\ncombinedAtt=" + gridDataset.combinedGlobalAttributes());
-        Test.ensureEqual(gridDataset.combinedGlobalAttributes().getString("et_affine"), null, "");
+        Test.ensureEqual(gridDataset.combinedGlobalAttributes().getString(language, "et_affine"), null, "");
         Test.ensureEqual(gridDataset.dataVariables()[0].combinedAttributes().getString("percentCoverage"), null, "");
 
         StringArray destinationNames = new StringArray();

@@ -83,11 +83,11 @@ public class AxisDataAccessor {
               + constraints);
 
     // make globalAttributes
-    globalAttributes = new Attributes(eddGrid.combinedGlobalAttributes()); // a copy
+    globalAttributes = eddGrid.combinedGlobalAttributes().toAttributes(language); // a copy
 
     // fix up global attributes (always to a local COPY of global attributes)
     // remove acdd-style and google-style bounding box
-    EDD.addToHistory(globalAttributes, eddGrid.publicSourceUrl());
+    EDD.addToHistory(globalAttributes, eddGrid.publicSourceUrl(language));
     EDD.addToHistory(globalAttributes, EDStatic.config.baseUrl + tRequestUrl + "?" + tUserDapQuery);
     globalAttributes.remove("geospatial_lon_min");
     globalAttributes.remove("geospatial_lon_max");
@@ -129,7 +129,8 @@ public class AxisDataAccessor {
       rAxisValues[av] = rAxisVariables[av].toDestination(rAxisValues[av]);
 
       // make axisAttributes
-      rAxisAttributes[av] = new Attributes(rAxisVariables[av].combinedAttributes()); // a copy
+      rAxisAttributes[av] =
+          rAxisVariables[av].combinedAttributes().toAttributes(language); // a copy
 
       // setActualRangeAndBoundingBox  (see comments in method javadocs above)
       // if no data, don't specify range
@@ -214,7 +215,7 @@ public class AxisDataAccessor {
           globalAttributes.set("geospatial_vertical_max", dMax);
         }
       } else if (rAxisVariables[av] instanceof EDVTimeGridAxis) {
-        String tp = rAxisVariables[av].combinedAttributes().getString(EDV.TIME_PRECISION);
+        String tp = rAxisVariables[av].combinedAttributes().getString(language, EDV.TIME_PRECISION);
         // "" unsets the attribute if dMin or dMax isNaN
         globalAttributes.set(
             "time_coverage_start", Calendar2.epochSecondsToLimitedIsoStringT(tp, dMin, ""));

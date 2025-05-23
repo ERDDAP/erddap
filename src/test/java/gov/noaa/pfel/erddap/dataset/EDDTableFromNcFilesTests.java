@@ -27,6 +27,7 @@ import gov.noaa.pfel.coastwatch.util.SSR;
 import gov.noaa.pfel.coastwatch.util.SharedWatchService;
 import gov.noaa.pfel.coastwatch.util.TestSSR;
 import gov.noaa.pfel.erddap.GenerateDatasetsXml;
+import gov.noaa.pfel.erddap.util.EDMessages;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.EDV;
 import gov.noaa.pfel.erddap.variable.EDVTime;
@@ -80,7 +81,7 @@ class EDDTableFromNcFilesTests {
     //     "\nDownload NDBC_41004_met.nc from coastwatch\n"
     //         + "https://coastwatch.pfeg.noaa.gov/erddap/files/cwwcNDBCMet/nrt/ \n"
     //         + "to /u00/data/points/ndbcMet2/nrt/ .");
-
+    int language = EDMessages.DEFAULT_LANGUAGE;
     try {
       String results =
           EDDTableFromNcFiles.generateDatasetsXml(
@@ -781,7 +782,8 @@ class EDDTableFromNcFilesTests {
       // EDD.deleteCachedDatasetInfo(tDatasetID);
       EDD edd = EDDTableFromNcFiles.oneFromXmlFragment(null, results);
       Test.ensureEqual(edd.datasetID(), tDatasetID, "");
-      Test.ensureEqual(edd.title(), "NDBC Standard Meteorological Buoy Data, 1970-present", "");
+      Test.ensureEqual(
+          edd.title(language), "NDBC Standard Meteorological Buoy Data, 1970-present", "");
       Test.ensureEqual(
           String2.toCSSVString(edd.dataVariableDestinationNames()),
           "stationID, time, depth, latitude, longitude, WD, WSPD, GST, WVHT, "
@@ -797,6 +799,7 @@ class EDDTableFromNcFilesTests {
   @org.junit.jupiter.api.Test
   @TagMissingDataset
   void testGenerateDatasetsXml2() throws Throwable {
+    int language = EDMessages.DEFAULT_LANGUAGE;
     String results =
         EDDTableFromNcFiles.generateDatasetsXml(
             "c:/data/ngdcJasonSwath/",
@@ -822,7 +825,7 @@ class EDDTableFromNcFilesTests {
     EDD.deleteCachedDatasetInfo(tDatasetID);
     EDD edd = EDDTableFromNcFiles.oneFromXmlFragment(null, results);
     Test.ensureEqual(edd.datasetID(), tDatasetID, "");
-    Test.ensureEqual(edd.title(), "OGDR, Standard dataset", "");
+    Test.ensureEqual(edd.title(language), "OGDR, Standard dataset", "");
     Test.ensureEqual(
         String2.toCSSVString(edd.dataVariableDestinationNames()),
         "time, latitude, longitude, surface_type, alt_echo_type, rad_surf_type, "
@@ -9841,15 +9844,15 @@ class EDDTableFromNcFilesTests {
     Test.ensureEqual(timeEdv.destinationMinString(), oldMinTime, "edvTime.destinationMin");
     Test.ensureEqual(timeEdv.destinationMaxString(), oldMaxTime, "edvTime.destinationMax");
     Test.ensureEqual(
-        timeEdv.combinedAttributes().get("actual_range").toString(),
+        timeEdv.combinedAttributes().get(language, "actual_range").toString(),
         oldMinMillis + ", " + oldMaxMillis,
         "actual_range");
     Test.ensureEqual(
-        eddTable.combinedGlobalAttributes().getString("time_coverage_start"),
+        eddTable.combinedGlobalAttributes().getString(language, "time_coverage_start"),
         oldMinTime,
         "time_coverage_start");
     Test.ensureEqual(
-        eddTable.combinedGlobalAttributes().getString("time_coverage_end"),
+        eddTable.combinedGlobalAttributes().getString(language, "time_coverage_end"),
         oldMaxTime,
         "time_coverage_end");
 
@@ -9857,15 +9860,15 @@ class EDDTableFromNcFilesTests {
     Test.ensureEqual(lonEdv.destinationMinString(), oldMinLon, "edvLon.destinationMin");
     Test.ensureEqual(lonEdv.destinationMaxString(), oldMaxLon, "edvLon.destinationMax");
     Test.ensureEqual(
-        lonEdv.combinedAttributes().get("actual_range").toString(),
+        lonEdv.combinedAttributes().get(language, "actual_range").toString(),
         oldMinLon + ", " + oldMaxLon,
         "actual_range");
     Test.ensureEqual(
-        eddTable.combinedGlobalAttributes().getString("geospatial_lon_min"),
+        eddTable.combinedGlobalAttributes().getString(language, "geospatial_lon_min"),
         oldMinLon,
         "geospatial_lon_min");
     Test.ensureEqual(
-        eddTable.combinedGlobalAttributes().getString("geospatial_lon_max"),
+        eddTable.combinedGlobalAttributes().getString(language, "geospatial_lon_max"),
         oldMaxLon,
         "geospatial_lon_max");
 
@@ -9916,15 +9919,15 @@ class EDDTableFromNcFilesTests {
       Test.ensureEqual(timeEdv.destinationMinString(), newMinTime, "edvTime.destinationMin");
       Test.ensureEqual(timeEdv.destinationMaxString(), newMaxTime, "edvTime.destinationMax");
       Test.ensureEqual(
-          timeEdv.combinedAttributes().get("actual_range").toString(),
+          timeEdv.combinedAttributes().get(language, "actual_range").toString(),
           newMinMillis + ", " + newMaxMillis,
           "actual_range");
       Test.ensureEqual(
-          eddTable.combinedGlobalAttributes().getString("time_coverage_start"),
+          eddTable.combinedGlobalAttributes().getString(language, "time_coverage_start"),
           newMinTime,
           "time_coverage_start");
       Test.ensureEqual(
-          eddTable.combinedGlobalAttributes().getString("time_coverage_end"),
+          eddTable.combinedGlobalAttributes().getString(language, "time_coverage_end"),
           newMaxTime,
           "time_coverage_end");
 
@@ -9932,15 +9935,15 @@ class EDDTableFromNcFilesTests {
       Test.ensureEqual(lonEdv.destinationMinString(), oldMinLon, "edvLon.destinationMin");
       Test.ensureEqual(lonEdv.destinationMaxString(), newMaxLon, "edvLon.destinationMax");
       Test.ensureEqual(
-          lonEdv.combinedAttributes().get("actual_range").toString(),
+          lonEdv.combinedAttributes().get(language, "actual_range").toString(),
           oldMinLon + ", " + newMaxLon,
           "actual_range");
       Test.ensureEqual(
-          eddTable.combinedGlobalAttributes().getString("geospatial_lon_min"),
+          eddTable.combinedGlobalAttributes().getString(language, "geospatial_lon_min"),
           oldMinLon,
           "geospatial_lon_min");
       Test.ensureEqual(
-          eddTable.combinedGlobalAttributes().getString("geospatial_lon_max"),
+          eddTable.combinedGlobalAttributes().getString(language, "geospatial_lon_max"),
           newMaxLon,
           "geospatial_lon_max");
 
@@ -9984,15 +9987,15 @@ class EDDTableFromNcFilesTests {
     Test.ensureEqual(timeEdv.destinationMinString(), oldMinTime, "edvTime.destinationMin");
     Test.ensureEqual(timeEdv.destinationMaxString(), oldMaxTime, "edvTime.destinationMax");
     Test.ensureEqual(
-        timeEdv.combinedAttributes().get("actual_range").toString(),
+        timeEdv.combinedAttributes().get(language, "actual_range").toString(),
         oldMinMillis + ", " + oldMaxMillis,
         "actual_range");
     Test.ensureEqual(
-        eddTable.combinedGlobalAttributes().getString("time_coverage_start"),
+        eddTable.combinedGlobalAttributes().getString(language, "time_coverage_start"),
         oldMinTime,
         "time_coverage_start");
     Test.ensureEqual(
-        eddTable.combinedGlobalAttributes().getString("time_coverage_end"),
+        eddTable.combinedGlobalAttributes().getString(language, "time_coverage_end"),
         oldMaxTime,
         "time_coverage_end");
 
@@ -10000,15 +10003,15 @@ class EDDTableFromNcFilesTests {
     Test.ensureEqual(lonEdv.destinationMinString(), oldMinLon, "edvLon.destinationMin");
     Test.ensureEqual(lonEdv.destinationMaxString(), oldMaxLon, "edvLon.destinationMax");
     Test.ensureEqual(
-        lonEdv.combinedAttributes().get("actual_range").toString(),
+        lonEdv.combinedAttributes().get(language, "actual_range").toString(),
         oldMinLon + ", " + oldMaxLon,
         "actual_range");
     Test.ensureEqual(
-        eddTable.combinedGlobalAttributes().getString("geospatial_lon_min"),
+        eddTable.combinedGlobalAttributes().getString(language, "geospatial_lon_min"),
         oldMinLon,
         "geospatial_lon_min");
     Test.ensureEqual(
-        eddTable.combinedGlobalAttributes().getString("geospatial_lon_max"),
+        eddTable.combinedGlobalAttributes().getString(language, "geospatial_lon_max"),
         oldMaxLon,
         "geospatial_lon_max");
 
@@ -10042,15 +10045,15 @@ class EDDTableFromNcFilesTests {
       Test.ensureEqual(timeEdv.destinationMinString(), oldMinTime, "edvTime.destinationMin");
       Test.ensureEqual(timeEdv.destinationMaxString(), oldMaxTime, "edvTime.destinationMax");
       Test.ensureEqual(
-          timeEdv.combinedAttributes().get("actual_range").toString(),
+          timeEdv.combinedAttributes().get(language, "actual_range").toString(),
           oldMinMillis + ", " + oldMaxMillis,
           "actual_range");
       Test.ensureEqual(
-          eddTable.combinedGlobalAttributes().getString("time_coverage_start"),
+          eddTable.combinedGlobalAttributes().getString(language, "time_coverage_start"),
           oldMinTime,
           "time_coverage_start");
       Test.ensureEqual(
-          eddTable.combinedGlobalAttributes().getString("time_coverage_end"),
+          eddTable.combinedGlobalAttributes().getString(language, "time_coverage_end"),
           oldMaxTime,
           "time_coverage_end");
 
@@ -10058,15 +10061,15 @@ class EDDTableFromNcFilesTests {
       Test.ensureEqual(lonEdv.destinationMinString(), oldMinLon, "edvLon.destinationMin");
       Test.ensureEqual(lonEdv.destinationMaxString(), oldMaxLon, "edvLon.destinationMax");
       Test.ensureEqual(
-          lonEdv.combinedAttributes().get("actual_range").toString(),
+          lonEdv.combinedAttributes().get(language, "actual_range").toString(),
           oldMinLon + ", " + oldMaxLon,
           "actual_range");
       Test.ensureEqual(
-          eddTable.combinedGlobalAttributes().getString("geospatial_lon_min"),
+          eddTable.combinedGlobalAttributes().getString(language, "geospatial_lon_min"),
           oldMinLon,
           "geospatial_lon_min");
       Test.ensureEqual(
-          eddTable.combinedGlobalAttributes().getString("geospatial_lon_max"),
+          eddTable.combinedGlobalAttributes().getString(language, "geospatial_lon_max"),
           oldMaxLon,
           "geospatial_lon_max");
 
@@ -10098,15 +10101,15 @@ class EDDTableFromNcFilesTests {
     Test.ensureEqual(timeEdv.destinationMinString(), oldMinTime, "edvTime.destinationMin");
     Test.ensureEqual(timeEdv.destinationMaxString(), oldMaxTime, "edvTime.destinationMax");
     Test.ensureEqual(
-        timeEdv.combinedAttributes().get("actual_range").toString(),
+        timeEdv.combinedAttributes().get(language, "actual_range").toString(),
         oldMinMillis + ", " + oldMaxMillis,
         "actual_range");
     Test.ensureEqual(
-        eddTable.combinedGlobalAttributes().getString("time_coverage_start"),
+        eddTable.combinedGlobalAttributes().getString(language, "time_coverage_start"),
         oldMinTime,
         "time_coverage_start");
     Test.ensureEqual(
-        eddTable.combinedGlobalAttributes().getString("time_coverage_end"),
+        eddTable.combinedGlobalAttributes().getString(language, "time_coverage_end"),
         oldMaxTime,
         "time_coverage_end");
 
@@ -10114,15 +10117,15 @@ class EDDTableFromNcFilesTests {
     Test.ensureEqual(lonEdv.destinationMinString(), oldMinLon, "edvLon.destinationMin");
     Test.ensureEqual(lonEdv.destinationMaxString(), oldMaxLon, "edvLon.destinationMax");
     Test.ensureEqual(
-        lonEdv.combinedAttributes().get("actual_range").toString(),
+        lonEdv.combinedAttributes().get(language, "actual_range").toString(),
         oldMinLon + ", " + oldMaxLon,
         "actual_range");
     Test.ensureEqual(
-        eddTable.combinedGlobalAttributes().getString("geospatial_lon_min"),
+        eddTable.combinedGlobalAttributes().getString(language, "geospatial_lon_min"),
         oldMinLon,
         "geospatial_lon_min");
     Test.ensureEqual(
-        eddTable.combinedGlobalAttributes().getString("geospatial_lon_max"),
+        eddTable.combinedGlobalAttributes().getString(language, "geospatial_lon_max"),
         oldMaxLon,
         "geospatial_lon_max");
 
@@ -10165,41 +10168,41 @@ class EDDTableFromNcFilesTests {
       snapshotDiff = eddTable.snapshot();
       expected =
           "The combinedAttribute for dataVariable #1=longitude changed:\n"
-              + "  old line #2=\"    actual_range=-80.41f,-75.402f\",\n"
-              + "  new line #2=\"    actual_range=-80.41f,-78.489f\".\n"
+              + "  old line #8=\"    actual_range=-80.41f,-75.402f\",\n"
+              + "  new line #8=\"    actual_range=-80.41f,-78.489f\".\n"
               + "The combinedAttribute for dataVariable #2=latitude changed:\n"
-              + "  old line #2=\"    actual_range=32.28f,35.006f\",\n"
-              + "  new line #2=\"    actual_range=32.28f,33.848f\".\n"
+              + "  old line #8=\"    actual_range=32.28f,35.006f\",\n"
+              + "  new line #8=\"    actual_range=32.28f,33.848f\".\n"
               + "The combinedAttribute for dataVariable #3=time changed:\n"
-              + "  old line #2=\"    actual_range=1.048878E9d,1.4220504E9d\",\n"
-              + "  new line #2=\"    actual_range=1.1091708E9d,1.4220468E9d\".\n"
+              + "  old line #9=\"    actual_range=1.048878E9d,1.4220504E9d\",\n"
+              + "  new line #9=\"    actual_range=1.1091708E9d,1.4220468E9d\".\n"
               + "The combinedAttribute for dataVariable #5=geolon changed:\n"
-              + "  old line #1=\"    actual_range=-80.41f,-75.402f\",\n"
-              + "  new line #1=\"    actual_range=-80.41f,-78.489f\".\n"
+              + "  old line #3=\"    actual_range=-80.41f,-75.402f\",\n"
+              + "  new line #3=\"    actual_range=-80.41f,-78.489f\".\n"
               + "The combinedAttribute for dataVariable #6=geolat changed:\n"
-              + "  old line #1=\"    actual_range=32.28f,35.006f\",\n"
-              + "  new line #1=\"    actual_range=32.28f,33.848f\".\n"
+              + "  old line #3=\"    actual_range=32.28f,35.006f\",\n"
+              + "  new line #3=\"    actual_range=32.28f,33.848f\".\n"
               + "The combinedAttribute for dataVariable #7=wd changed:\n"
-              + "  old line #2=\"    actual_range=0s,359s\",\n"
-              + "  new line #2=\"    actual_range=0s,350s\".\n"
+              + "  old line #9=\"    actual_range=0s,359s\",\n"
+              + "  new line #9=\"    actual_range=0s,350s\".\n"
               + "The combinedAttribute for dataVariable #10=wvht changed:\n"
-              + "  old line #2=\"    actual_range=0.0f,13.63f\",\n"
-              + "  new line #2=\"    actual_range=0.0f,3.0f\".\n"
+              + "  old line #9=\"    actual_range=0.0f,13.63f\",\n"
+              + "  new line #9=\"    actual_range=0.0f,3.0f\".\n"
               + "The combinedAttribute for dataVariable #11=dpd changed:\n"
-              + "  old line #2=\"    actual_range=0.0f,30.77f\",\n"
-              + "  new line #2=\"    actual_range=2.0f,18.0f\".\n"
+              + "  old line #9=\"    actual_range=0.0f,30.77f\",\n"
+              + "  new line #9=\"    actual_range=2.0f,18.0f\".\n"
               + "The combinedAttribute for dataVariable #14=bar changed:\n"
-              + "  old line #2=\"    actual_range=984.5f,1043.2f\",\n"
-              + "  new line #2=\"    actual_range=992.1f,1043.2f\".\n"
+              + "  old line #9=\"    actual_range=984.5f,1043.2f\",\n"
+              + "  new line #9=\"    actual_range=992.1f,1043.2f\".\n"
               + "The combinedAttribute for dataVariable #21=wspu changed:\n"
-              + "  old line #2=\"    actual_range=-27.2f,19.1f\",\n"
-              + "  new line #2=\"    actual_range=-14.1f,17.9f\".\n"
+              + "  old line #9=\"    actual_range=-27.2f,19.1f\",\n"
+              + "  new line #9=\"    actual_range=-14.1f,17.9f\".\n"
               + "The combinedAttribute for dataVariable #22=wspv changed:\n"
-              + "  old line #2=\"    actual_range=-26.6f,24.2f\",\n"
-              + "  new line #2=\"    actual_range=-26.6f,14.1f\".\n"
+              + "  old line #9=\"    actual_range=-26.6f,24.2f\",\n"
+              + "  new line #9=\"    actual_range=-26.6f,14.1f\".\n"
               + "A combinedGlobalAttribute changed:\n"
-              + "  old line #12=\"    geospatial_lat_max=35.006d\",\n"
-              + "  new line #12=\"    geospatial_lat_max=33.848d\".\n";
+              + "  old line #12=\"    geospatial_lon_max=-75.402d\",\n"
+              + "  new line #12=\"    geospatial_lon_max=-78.489d\".\n";
       assertEquals(expected, eddTable.changed(originalSnapshot));
 
     } finally {
@@ -10214,41 +10217,41 @@ class EDDTableFromNcFilesTests {
     assertEquals(expected, eddTable.changed(snapshot2));
     expected =
         "The combinedAttribute for dataVariable #1=longitude changed:\n"
-            + "  old line #2=\"    actual_range=-80.41f,-78.489f\",\n"
-            + "  new line #2=\"    actual_range=-80.41f,-75.402f\".\n"
+            + "  old line #8=\"    actual_range=-80.41f,-78.489f\",\n"
+            + "  new line #8=\"    actual_range=-80.41f,-75.402f\".\n"
             + "The combinedAttribute for dataVariable #2=latitude changed:\n"
-            + "  old line #2=\"    actual_range=32.28f,33.848f\",\n"
-            + "  new line #2=\"    actual_range=32.28f,35.006f\".\n"
+            + "  old line #8=\"    actual_range=32.28f,33.848f\",\n"
+            + "  new line #8=\"    actual_range=32.28f,35.006f\".\n"
             + "The combinedAttribute for dataVariable #3=time changed:\n"
-            + "  old line #2=\"    actual_range=1.1091708E9d,1.4220468E9d\",\n"
-            + "  new line #2=\"    actual_range=1.048878E9d,1.4220504E9d\".\n"
+            + "  old line #9=\"    actual_range=1.1091708E9d,1.4220468E9d\",\n"
+            + "  new line #9=\"    actual_range=1.048878E9d,1.4220504E9d\".\n"
             + "The combinedAttribute for dataVariable #5=geolon changed:\n"
-            + "  old line #1=\"    actual_range=-80.41f,-78.489f\",\n"
-            + "  new line #1=\"    actual_range=-80.41f,-75.402f\".\n"
+            + "  old line #3=\"    actual_range=-80.41f,-78.489f\",\n"
+            + "  new line #3=\"    actual_range=-80.41f,-75.402f\".\n"
             + "The combinedAttribute for dataVariable #6=geolat changed:\n"
-            + "  old line #1=\"    actual_range=32.28f,33.848f\",\n"
-            + "  new line #1=\"    actual_range=32.28f,35.006f\".\n"
+            + "  old line #3=\"    actual_range=32.28f,33.848f\",\n"
+            + "  new line #3=\"    actual_range=32.28f,35.006f\".\n"
             + "The combinedAttribute for dataVariable #7=wd changed:\n"
-            + "  old line #2=\"    actual_range=0s,350s\",\n"
-            + "  new line #2=\"    actual_range=0s,359s\".\n"
+            + "  old line #9=\"    actual_range=0s,350s\",\n"
+            + "  new line #9=\"    actual_range=0s,359s\".\n"
             + "The combinedAttribute for dataVariable #10=wvht changed:\n"
-            + "  old line #2=\"    actual_range=0.0f,3.0f\",\n"
-            + "  new line #2=\"    actual_range=0.0f,13.63f\".\n"
+            + "  old line #9=\"    actual_range=0.0f,3.0f\",\n"
+            + "  new line #9=\"    actual_range=0.0f,13.63f\".\n"
             + "The combinedAttribute for dataVariable #11=dpd changed:\n"
-            + "  old line #2=\"    actual_range=2.0f,18.0f\",\n"
-            + "  new line #2=\"    actual_range=0.0f,30.77f\".\n"
+            + "  old line #9=\"    actual_range=2.0f,18.0f\",\n"
+            + "  new line #9=\"    actual_range=0.0f,30.77f\".\n"
             + "The combinedAttribute for dataVariable #14=bar changed:\n"
-            + "  old line #2=\"    actual_range=992.1f,1043.2f\",\n"
-            + "  new line #2=\"    actual_range=984.5f,1043.2f\".\n"
+            + "  old line #9=\"    actual_range=992.1f,1043.2f\",\n"
+            + "  new line #9=\"    actual_range=984.5f,1043.2f\".\n"
             + "The combinedAttribute for dataVariable #21=wspu changed:\n"
-            + "  old line #2=\"    actual_range=-14.1f,17.9f\",\n"
-            + "  new line #2=\"    actual_range=-27.2f,19.1f\".\n"
+            + "  old line #9=\"    actual_range=-14.1f,17.9f\",\n"
+            + "  new line #9=\"    actual_range=-27.2f,19.1f\".\n"
             + "The combinedAttribute for dataVariable #22=wspv changed:\n"
-            + "  old line #2=\"    actual_range=-26.6f,14.1f\",\n"
-            + "  new line #2=\"    actual_range=-26.6f,24.2f\".\n"
+            + "  old line #9=\"    actual_range=-26.6f,14.1f\",\n"
+            + "  new line #9=\"    actual_range=-26.6f,24.2f\".\n"
             + "A combinedGlobalAttribute changed:\n"
-            + "  old line #12=\"    geospatial_lat_max=33.848d\",\n"
-            + "  new line #12=\"    geospatial_lat_max=35.006d\".\n";
+            + "  old line #12=\"    geospatial_lon_max=-78.489d\",\n"
+            + "  new line #12=\"    geospatial_lon_max=-75.402d\".\n";
     assertEquals(expected, eddTable.changed(snapshotDiff));
   }
 
@@ -10650,15 +10653,15 @@ class EDDTableFromNcFilesTests {
     Test.ensureEqual(timeEdv.destinationMinString(), oldMinTime, "edvTime.destinationMin");
     Test.ensureEqual(timeEdv.destinationMaxString(), oldMaxTime, "edvTime.destinationMax");
     Test.ensureEqual(
-        timeEdv.combinedAttributes().get("actual_range").toString(),
+        timeEdv.combinedAttributes().get(language, "actual_range").toString(),
         oldMinMillis + ", " + oldMaxMillis,
         "actual_range");
     Test.ensureEqual(
-        eddTable.combinedGlobalAttributes().getString("time_coverage_start"),
+        eddTable.combinedGlobalAttributes().getString(language, "time_coverage_start"),
         oldMinTime,
         "time_coverage_start");
     Test.ensureEqual(
-        eddTable.combinedGlobalAttributes().getString("time_coverage_end"),
+        eddTable.combinedGlobalAttributes().getString(language, "time_coverage_end"),
         oldMaxTime,
         "time_coverage_end");
 
@@ -10666,15 +10669,15 @@ class EDDTableFromNcFilesTests {
     Test.ensureEqual(lonEdv.destinationMinString(), oldMinLon, "edvLon.destinationMin");
     Test.ensureEqual(lonEdv.destinationMaxString(), oldMaxLon, "edvLon.destinationMax");
     Test.ensureEqual(
-        lonEdv.combinedAttributes().get("actual_range").toString(),
+        lonEdv.combinedAttributes().get(language, "actual_range").toString(),
         oldMinLon + ", " + oldMaxLon,
         "actual_range");
     Test.ensureEqual(
-        eddTable.combinedGlobalAttributes().getString("geospatial_lon_min"),
+        eddTable.combinedGlobalAttributes().getString(language, "geospatial_lon_min"),
         oldMinLon,
         "geospatial_lon_min");
     Test.ensureEqual(
-        eddTable.combinedGlobalAttributes().getString("geospatial_lon_max"),
+        eddTable.combinedGlobalAttributes().getString(language, "geospatial_lon_max"),
         oldMaxLon,
         "geospatial_lon_max");
 
@@ -10719,15 +10722,15 @@ class EDDTableFromNcFilesTests {
       Test.ensureEqual(timeEdv.destinationMinString(), oldMinTime, "edvTime.destinationMin");
       Test.ensureEqual(timeEdv.destinationMaxString(), oldMaxTime, "edvTime.destinationMax");
       Test.ensureEqual(
-          timeEdv.combinedAttributes().get("actual_range").toString(),
+          timeEdv.combinedAttributes().get(language, "actual_range").toString(),
           oldMinMillis + ", " + oldMaxMillis,
           "actual_range");
       Test.ensureEqual(
-          eddTable.combinedGlobalAttributes().getString("time_coverage_start"),
+          eddTable.combinedGlobalAttributes().getString(language, "time_coverage_start"),
           oldMinTime,
           "time_coverage_start");
       Test.ensureEqual(
-          eddTable.combinedGlobalAttributes().getString("time_coverage_end"),
+          eddTable.combinedGlobalAttributes().getString(language, "time_coverage_end"),
           oldMaxTime,
           "time_coverage_end");
 
@@ -10735,15 +10738,15 @@ class EDDTableFromNcFilesTests {
       Test.ensureEqual(lonEdv.destinationMinString(), oldMinLon, "edvLon.destinationMin");
       Test.ensureEqual(lonEdv.destinationMaxString(), oldMaxLon, "edvLon.destinationMax");
       Test.ensureEqual(
-          lonEdv.combinedAttributes().get("actual_range").toString(),
+          lonEdv.combinedAttributes().get(language, "actual_range").toString(),
           oldMinLon + ", " + oldMaxLon,
           "actual_range");
       Test.ensureEqual(
-          eddTable.combinedGlobalAttributes().getString("geospatial_lon_min"),
+          eddTable.combinedGlobalAttributes().getString(language, "geospatial_lon_min"),
           oldMinLon,
           "geospatial_lon_min");
       Test.ensureEqual(
-          eddTable.combinedGlobalAttributes().getString("geospatial_lon_max"),
+          eddTable.combinedGlobalAttributes().getString(language, "geospatial_lon_max"),
           oldMaxLon,
           "geospatial_lon_max");
 
@@ -10813,15 +10816,15 @@ class EDDTableFromNcFilesTests {
     Test.ensureEqual(timeEdv.destinationMinString(), oldMinTime, "edvTime.destinationMin");
     Test.ensureEqual(timeEdv.destinationMaxString(), oldMaxTime, "edvTime.destinationMax");
     Test.ensureEqual(
-        timeEdv.combinedAttributes().get("actual_range").toString(),
+        timeEdv.combinedAttributes().get(language, "actual_range").toString(),
         oldMinMillis + ", " + oldMaxMillis,
         "actual_range");
     Test.ensureEqual(
-        eddTable.combinedGlobalAttributes().getString("time_coverage_start"),
+        eddTable.combinedGlobalAttributes().getString(language, "time_coverage_start"),
         oldMinTime,
         "time_coverage_start");
     Test.ensureEqual(
-        eddTable.combinedGlobalAttributes().getString("time_coverage_end"),
+        eddTable.combinedGlobalAttributes().getString(language, "time_coverage_end"),
         oldMaxTime,
         "time_coverage_end");
 
@@ -10829,15 +10832,15 @@ class EDDTableFromNcFilesTests {
     Test.ensureEqual(lonEdv.destinationMinString(), oldMinLon, "edvLon.destinationMin");
     Test.ensureEqual(lonEdv.destinationMaxString(), oldMaxLon, "edvLon.destinationMax");
     Test.ensureEqual(
-        lonEdv.combinedAttributes().get("actual_range").toString(),
+        lonEdv.combinedAttributes().get(language, "actual_range").toString(),
         oldMinLon + ", " + oldMaxLon,
         "actual_range");
     Test.ensureEqual(
-        eddTable.combinedGlobalAttributes().getString("geospatial_lon_min"),
+        eddTable.combinedGlobalAttributes().getString(language, "geospatial_lon_min"),
         oldMinLon,
         "geospatial_lon_min");
     Test.ensureEqual(
-        eddTable.combinedGlobalAttributes().getString("geospatial_lon_max"),
+        eddTable.combinedGlobalAttributes().getString(language, "geospatial_lon_max"),
         oldMaxLon,
         "geospatial_lon_max");
 
@@ -10882,15 +10885,15 @@ class EDDTableFromNcFilesTests {
       Test.ensureTrue(!Double.isNaN(destMinD), "edvTime.destinationMin");
       Test.ensureTrue(!Double.isNaN(destMaxD), "edvTime.destinationMax");
       Test.ensureEqual(
-          timeEdv.combinedAttributes().get("actual_range").toString(),
+          timeEdv.combinedAttributes().get(language, "actual_range").toString(),
           destMinD + ", " + destMaxD,
           "actual_range");
       Test.ensureEqual(
-          eddTable.combinedGlobalAttributes().getString("time_coverage_start"),
+          eddTable.combinedGlobalAttributes().getString(language, "time_coverage_start"),
           destMinS,
           "time_coverage_start");
       Test.ensureEqual(
-          eddTable.combinedGlobalAttributes().getString("time_coverage_end"),
+          eddTable.combinedGlobalAttributes().getString(language, "time_coverage_end"),
           destMaxS,
           "time_coverage_end");
 

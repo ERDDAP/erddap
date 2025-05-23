@@ -6,6 +6,7 @@ package gov.noaa.pfel.erddap.variable;
 
 import com.cohort.array.Attributes;
 import com.cohort.array.PrimitiveArray;
+import gov.noaa.pfel.erddap.dataset.metadata.LocalizedAttributes;
 
 /**
  * This class holds information about *the* time grid axis variable, which is like other
@@ -25,7 +26,7 @@ public class EDVTimeGridAxis extends EDVTimeStampGridAxis {
       String tParentDatasetID,
       String tSourceName,
       Attributes tSourceAttributes,
-      Attributes tAddAttributes,
+      LocalizedAttributes tAddAttributes,
       PrimitiveArray tSourceValues)
       throws Throwable {
 

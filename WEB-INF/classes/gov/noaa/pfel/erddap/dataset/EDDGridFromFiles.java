@@ -31,8 +31,10 @@ import gov.noaa.pfel.coastwatch.util.SimpleXMLReader;
 import gov.noaa.pfel.coastwatch.util.WatchDirectory;
 import gov.noaa.pfel.coastwatch.util.WatchUpdateHandler;
 import gov.noaa.pfel.erddap.Erddap;
+import gov.noaa.pfel.erddap.dataset.metadata.LocalizedAttributes;
 import gov.noaa.pfel.erddap.handlers.EDDGridFromFilesHandler;
 import gov.noaa.pfel.erddap.handlers.SaxHandlerClass;
+import gov.noaa.pfel.erddap.util.EDMessages;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.util.ThreadedWorkManager;
 import gov.noaa.pfel.erddap.variable.*;
@@ -183,9 +185,9 @@ public abstract class EDDGridFromFiles extends EDDGrid implements WatchUpdateHan
     boolean tFileTableInMemory = false;
     String tFgdcFile = null;
     String tIso19115File = null;
-    Attributes tGlobalAttributes = null;
-    ArrayList tAxisVariables = new ArrayList();
-    ArrayList tDataVariables = new ArrayList();
+    LocalizedAttributes tGlobalAttributes = null;
+    ArrayList<AxisVariableInfo> tAxisVariables = new ArrayList<>();
+    ArrayList<DataVariableInfo> tDataVariables = new ArrayList<>();
     int tReloadEveryNMinutes = Integer.MAX_VALUE;
     int tUpdateEveryNMillis = 0;
     String tFileDir = null;
@@ -276,15 +278,6 @@ public abstract class EDDGridFromFiles extends EDDGrid implements WatchUpdateHan
         default -> xmlReader.unexpectedTagException();
       }
     }
-    int nav = tAxisVariables.size();
-    Object ttAxisVariables[][] = new Object[nav][];
-    for (int i = 0; i < tAxisVariables.size(); i++)
-      ttAxisVariables[i] = (Object[]) tAxisVariables.get(i);
-
-    int ndv = tDataVariables.size();
-    Object ttDataVariables[][] = new Object[ndv][];
-    for (int i = 0; i < tDataVariables.size(); i++)
-      ttDataVariables[i] = (Object[]) tDataVariables.get(i);
 
     if (tType == null) tType = "";
     return switch (tType) {
@@ -300,8 +293,8 @@ public abstract class EDDGridFromFiles extends EDDGrid implements WatchUpdateHan
               tDefaultDataQuery,
               tDefaultGraphQuery,
               tGlobalAttributes,
-              ttAxisVariables,
-              ttDataVariables,
+              tAxisVariables,
+              tDataVariables,
               tReloadEveryNMinutes,
               tUpdateEveryNMillis,
               tFileDir,
@@ -329,8 +322,8 @@ public abstract class EDDGridFromFiles extends EDDGrid implements WatchUpdateHan
               tDefaultDataQuery,
               tDefaultGraphQuery,
               tGlobalAttributes,
-              ttAxisVariables,
-              ttDataVariables,
+              tAxisVariables,
+              tDataVariables,
               tReloadEveryNMinutes,
               tUpdateEveryNMillis,
               tFileDir,
@@ -358,8 +351,8 @@ public abstract class EDDGridFromFiles extends EDDGrid implements WatchUpdateHan
               tDefaultDataQuery,
               tDefaultGraphQuery,
               tGlobalAttributes,
-              ttAxisVariables,
-              ttDataVariables,
+              tAxisVariables,
+              tDataVariables,
               tReloadEveryNMinutes,
               tUpdateEveryNMillis,
               tFileDir,
@@ -387,8 +380,8 @@ public abstract class EDDGridFromFiles extends EDDGrid implements WatchUpdateHan
               tDefaultDataQuery,
               tDefaultGraphQuery,
               tGlobalAttributes,
-              ttAxisVariables,
-              ttDataVariables,
+              tAxisVariables,
+              tDataVariables,
               tReloadEveryNMinutes,
               tUpdateEveryNMillis,
               tFileDir,
@@ -496,9 +489,9 @@ public abstract class EDDGridFromFiles extends EDDGrid implements WatchUpdateHan
       String tIso19115File,
       String tDefaultDataQuery,
       String tDefaultGraphQuery,
-      Attributes tAddGlobalAttributes,
-      Object[][] tAxisVariables,
-      Object[][] tDataVariables,
+      LocalizedAttributes tAddGlobalAttributes,
+      ArrayList<AxisVariableInfo> tAxisVariables,
+      ArrayList<DataVariableInfo> tDataVariables,
       int tReloadEveryNMinutes,
       int tUpdateEveryNMillis,
       String tFileDir,
@@ -515,7 +508,7 @@ public abstract class EDDGridFromFiles extends EDDGrid implements WatchUpdateHan
       int tCacheSizeGB,
       String tCachePartialPathRegex)
       throws Throwable {
-
+    int language = EDMessages.DEFAULT_LANGUAGE;
     if (verbose) String2.log("\n*** constructing EDDGridFromFiles " + tDatasetID);
     long constructionStartMillis = System.currentTimeMillis();
     String errorInMethod = "Error in EDDGridFromFiles(" + tDatasetID + ") constructor:\n";
@@ -541,7 +534,7 @@ public abstract class EDDGridFromFiles extends EDDGrid implements WatchUpdateHan
     iso19115File = tIso19115File;
     defaultDataQuery = tDefaultDataQuery;
     defaultGraphQuery = tDefaultGraphQuery;
-    if (tAddGlobalAttributes == null) tAddGlobalAttributes = new Attributes();
+    if (tAddGlobalAttributes == null) tAddGlobalAttributes = new LocalizedAttributes();
     addGlobalAttributes = tAddGlobalAttributes;
     setReloadEveryNMinutes(tReloadEveryNMinutes);
     setUpdateEveryNMillis(tUpdateEveryNMillis);
@@ -552,8 +545,8 @@ public abstract class EDDGridFromFiles extends EDDGrid implements WatchUpdateHan
     pathRegex = tPathRegex == null || tPathRegex.length() == 0 ? ".*" : tPathRegex;
     metadataFrom = tMetadataFrom;
     matchAxisNDigits = tMatchAxisNDigits;
-    int nav = tAxisVariables.length;
-    int ndv = tDataVariables.length;
+    int nav = tAxisVariables.size();
+    int ndv = tDataVariables.size();
     accessibleViaFiles = EDStatic.config.filesActive && tAccessibleViaFiles;
     nThreads = tnThreads; // interpret invalid values (like -1) as EDStatic.nGridThreads
     dimensionValuesInMemory = tDimensionValuesInMemory;
@@ -582,11 +575,11 @@ public abstract class EDDGridFromFiles extends EDDGrid implements WatchUpdateHan
           "metadataFrom=" + metadataFrom + " must be " + MF_FIRST + " or " + MF_LAST + ".");
 
     // note sourceAxisNames and special axis0
-    if (tAxisVariables.length == 0)
+    if (tAxisVariables.size() == 0)
       throw new IllegalArgumentException("No axisVariables were specified.");
     sourceAxisNames = new StringArray();
     for (int av = 0; av < nav; av++) {
-      String sn = (String) tAxisVariables[av][0];
+      String sn = tAxisVariables.get(av).sourceName();
       if (!String2.isSomething(sn))
         throw new IllegalArgumentException("axisVariable[" + av + "].sourceName wasn't specified.");
       sn = sn.trim();
@@ -676,8 +669,8 @@ public abstract class EDDGridFromFiles extends EDDGrid implements WatchUpdateHan
     sourceDataTypes = new String[ndv];
     sourceDataAttributes = new Attributes[ndv];
     for (int dv = 0; dv < ndv; dv++) {
-      sourceDataNames.add((String) tDataVariables[dv][0]);
-      sourceDataTypes[dv] = (String) tDataVariables[dv][3];
+      sourceDataNames.add(tDataVariables.get(dv).sourceName());
+      sourceDataTypes[dv] = tDataVariables.get(dv).dataType();
       if (sourceDataTypes[dv] == null || sourceDataTypes[dv].length() == 0)
         throw new IllegalArgumentException("Unspecified data type for var#" + dv + ".");
       sourceDataAttributes[dv] = new Attributes();
@@ -1424,19 +1417,21 @@ public abstract class EDDGridFromFiles extends EDDGrid implements WatchUpdateHan
 
     // make combinedGlobalAttributes
     combinedGlobalAttributes =
-        new Attributes(addGlobalAttributes, sourceGlobalAttributes); // order is important
-    String tLicense = combinedGlobalAttributes.getString("license");
+        new LocalizedAttributes(addGlobalAttributes, sourceGlobalAttributes); // order is important
+    String tLicense = combinedGlobalAttributes.getString(language, "license");
     if (tLicense != null)
       combinedGlobalAttributes.set(
-          "license", String2.replaceAll(tLicense, "[standard]", EDStatic.messages.standardLicense));
+          language,
+          "license",
+          String2.replaceAll(tLicense, "[standard]", EDStatic.messages.standardLicense));
     combinedGlobalAttributes.removeValue("\"null\"");
-    if (combinedGlobalAttributes.getString("cdm_data_type") == null)
-      combinedGlobalAttributes.add("cdm_data_type", "Grid");
-    if (combinedGlobalAttributes.get("sourceUrl") == null) {
+    if (combinedGlobalAttributes.getString(language, "cdm_data_type") == null)
+      combinedGlobalAttributes.set(language, "cdm_data_type", "Grid");
+    if (combinedGlobalAttributes.get(language, "sourceUrl") == null) {
       localSourceUrl =
           "(" + (filesAreLocal ? "local" : "remote") + " files)"; // keep location private
-      addGlobalAttributes.set("sourceUrl", localSourceUrl);
-      combinedGlobalAttributes.set("sourceUrl", localSourceUrl);
+      addGlobalAttributes.set(language, "sourceUrl", localSourceUrl);
+      combinedGlobalAttributes.set(language, "sourceUrl", localSourceUrl);
     }
 
     // set combined sourceAxisValues[0]
@@ -1447,8 +1442,8 @@ public abstract class EDDGridFromFiles extends EDDGrid implements WatchUpdateHan
     axisVariables = new EDVGridAxis[nav];
     for (int av = 0; av < nav; av++) {
       String tSourceName = sourceAxisNames.get(av);
-      String tDestName = (String) tAxisVariables[av][1];
-      Attributes tAddAtt = (Attributes) tAxisVariables[av][2];
+      String tDestName = tAxisVariables.get(av).destinationName();
+      LocalizedAttributes tAddAtt = tAxisVariables.get(av).attributes();
       Attributes tSourceAtt = sourceAxisAttributes[av];
       if (tDestName == null || tDestName.trim().length() == 0) tDestName = tSourceName;
       axisVariables[av] =
@@ -1459,20 +1454,20 @@ public abstract class EDDGridFromFiles extends EDDGrid implements WatchUpdateHan
     // if aggregating time index, fix time_coverage_start/end global metadata
     if (timeIndex == 0) {
       EDVTimeGridAxis tga = (EDVTimeGridAxis) axisVariables[0];
-      combinedGlobalAttributes.add(
-          "time_coverage_start", tga.destinationToString(tga.destinationMinDouble()));
-      combinedGlobalAttributes.add(
-          "time_coverage_end", tga.destinationToString(tga.destinationMaxDouble()));
+      combinedGlobalAttributes.set(
+          language, "time_coverage_start", tga.destinationToString(tga.destinationMinDouble()));
+      combinedGlobalAttributes.set(
+          language, "time_coverage_end", tga.destinationToString(tga.destinationMaxDouble()));
     }
 
     // make the dataVariables[]
     dataVariables = new EDV[ndv];
     for (int dv = 0; dv < ndv; dv++) {
       String tSourceName = sourceDataNames.get(dv);
-      String tDestName = (String) tDataVariables[dv][1];
+      String tDestName = tDataVariables.get(dv).destinationName();
       if (tDestName == null || tDestName.length() == 0) tDestName = tSourceName;
       Attributes tSourceAtt = sourceDataAttributes[dv];
-      Attributes tAddAtt = (Attributes) tDataVariables[dv][2];
+      LocalizedAttributes tAddAtt = tDataVariables.get(dv).attributes();
       // PrimitiveArray taa = tAddAtt.get("_FillValue");
       // String2.log(">>taa " + tSourceName + " _FillValue=" + taa);
       String tSourceType = sourceDataTypes[dv];
@@ -1482,7 +1477,7 @@ public abstract class EDDGridFromFiles extends EDDGrid implements WatchUpdateHan
       if (tDestName.equals(EDV.TIME_NAME))
         throw new RuntimeException(
             errorInMethod + "No EDDGrid dataVariable may have destinationName=" + EDV.TIME_NAME);
-      else if (EDVTime.hasTimeUnits(tSourceAtt, tAddAtt))
+      else if (EDVTime.hasTimeUnits(language, tSourceAtt, tAddAtt))
         dataVariables[dv] =
             new EDVTimeStamp(datasetID, tSourceName, tDestName, tSourceAtt, tAddAtt, tSourceType);
       else
@@ -1496,7 +1491,7 @@ public abstract class EDDGridFromFiles extends EDDGrid implements WatchUpdateHan
                 tSourceType,
                 PAOne.fromDouble(Double.NaN),
                 PAOne.fromDouble(Double.NaN));
-      dataVariables[dv].setActualRangeFromDestinationMinMax();
+      dataVariables[dv].setActualRangeFromDestinationMinMax(language);
     }
 
     // ensure the setup is valid
@@ -1781,6 +1776,7 @@ public abstract class EDDGridFromFiles extends EDDGrid implements WatchUpdateHan
   private boolean handleEventContexts(StringArray contexts, String msg) throws Throwable {
     // Don't try to sort out multiple events or event order, just note which files
     // changed.
+    int language = EDMessages.DEFAULT_LANGUAGE;
     long startLowUpdate = System.currentTimeMillis();
     contexts.sort();
     contexts.removeDuplicates();
@@ -2049,8 +2045,8 @@ public abstract class EDDGridFromFiles extends EDDGrid implements WatchUpdateHan
       // EDDTable tests for LLAT, but here/EDDGrid only time is likely to be outer
       // dimension and change
       if (av0.destinationName().equals(EDV.TIME_NAME)) {
-        combinedGlobalAttributes().set("time_coverage_start", av0.destinationMinString());
-        combinedGlobalAttributes().set("time_coverage_end", av0.destinationMaxString());
+        combinedGlobalAttributes().set(language, "time_coverage_start", av0.destinationMinString());
+        combinedGlobalAttributes().set(language, "time_coverage_end", av0.destinationMaxString());
       }
 
       // finally: make the important instance changes that use the changes above

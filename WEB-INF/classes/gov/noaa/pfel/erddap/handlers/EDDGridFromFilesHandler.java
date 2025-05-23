@@ -72,7 +72,7 @@ public class EDDGridFromFilesHandler extends BaseGridHandler {
     return true;
   }
 
-  private EDD getDataset(Object[][] ttAxisVariables, Object[][] ttDataVariables) throws Throwable {
+  private EDD getDataset() throws Throwable {
 
     return switch (datasetType) {
       case "EDDGridFromAudioFiles" ->
@@ -87,8 +87,8 @@ public class EDDGridFromFilesHandler extends BaseGridHandler {
               tDefaultDataQuery,
               tDefaultGraphQuery,
               tGlobalAttributes,
-              ttAxisVariables,
-              ttDataVariables,
+              tAxisVariables,
+              tDataVariables,
               tReloadEveryNMinutes,
               tUpdateEveryNMillis,
               tFileDir,
@@ -116,8 +116,8 @@ public class EDDGridFromFilesHandler extends BaseGridHandler {
               tDefaultDataQuery,
               tDefaultGraphQuery,
               tGlobalAttributes,
-              ttAxisVariables,
-              ttDataVariables,
+              tAxisVariables,
+              tDataVariables,
               tReloadEveryNMinutes,
               tUpdateEveryNMillis,
               tFileDir,
@@ -145,8 +145,8 @@ public class EDDGridFromFilesHandler extends BaseGridHandler {
               tDefaultDataQuery,
               tDefaultGraphQuery,
               tGlobalAttributes,
-              ttAxisVariables,
-              ttDataVariables,
+              tAxisVariables,
+              tDataVariables,
               tReloadEveryNMinutes,
               tUpdateEveryNMillis,
               tFileDir,
@@ -174,8 +174,8 @@ public class EDDGridFromFilesHandler extends BaseGridHandler {
               tDefaultDataQuery,
               tDefaultGraphQuery,
               tGlobalAttributes,
-              ttAxisVariables,
-              ttDataVariables,
+              tAxisVariables,
+              tDataVariables,
               tReloadEveryNMinutes,
               tUpdateEveryNMillis,
               tFileDir,
@@ -199,8 +199,6 @@ public class EDDGridFromFilesHandler extends BaseGridHandler {
 
   @Override
   protected EDD buildDataset() throws Throwable {
-    Object[][] ttAxisVariables = convertAxisVariablesToArray();
-    Object[][] ttDataVariables = convertDataVariablesToArray();
-    return getDataset(ttAxisVariables, ttDataVariables);
+    return getDataset();
   }
 }

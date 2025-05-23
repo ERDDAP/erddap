@@ -6,6 +6,7 @@ import com.cohort.util.String2;
 import com.cohort.util.Test;
 import gov.noaa.pfel.coastwatch.pointdata.Table;
 import gov.noaa.pfel.erddap.GenerateDatasetsXml;
+import gov.noaa.pfel.erddap.util.EDMessages;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.EDV;
 import java.nio.file.Path;
@@ -33,7 +34,7 @@ class EDDGridFromAudioFilesTests {
   void testGenerateDatasetsXml() throws Throwable {
 
     // String2.log("\n*** EDDGridFromAudioFiles.testGenerateDatasetsXml");
-
+    int language = EDMessages.DEFAULT_LANGUAGE;
     String dir =
         Path.of(EDDGridFromAudioFilesTests.class.getResource("/largeFiles/audio/floatWav/").toURI())
             .toString();
@@ -169,7 +170,7 @@ class EDDGridFromAudioFilesTests {
     EDDGridFromAudioFiles.deleteCachedDatasetInfo("_0_9_8_0_9_6_7538_7112_995c");
     EDDGrid eddg = (EDDGrid) EDDGridFromAudioFiles.oneFromXmlFragment(null, results);
     Test.ensureEqual(eddg.className(), "EDDGridFromAudioFiles", "className");
-    Test.ensureEqual(eddg.title(), "Audio data from a local source.", "title");
+    Test.ensureEqual(eddg.title(language), "Audio data from a local source.", "title");
     Test.ensureEqual(
         String2.toCSSVString(eddg.axisVariableDestinationNames()),
         "time, elapsedTime",
@@ -190,7 +191,7 @@ class EDDGridFromAudioFilesTests {
    */
   @org.junit.jupiter.api.Test
   void testGenerateDatasetsXml2() throws Throwable {
-
+    int language = EDMessages.DEFAULT_LANGUAGE;
     // String2.log("\n*** EDDGridFromAudioFiles.testGenerateDatasetsXml2");
 
     // test files are from Jim Potemra
@@ -338,7 +339,7 @@ class EDDGridFromAudioFilesTests {
     EDDGridFromAudioFiles.deleteCachedDatasetInfo("_0_9_8_0_9_6_1225_8cb7_768d");
     EDDGrid eddg = (EDDGrid) EDDGridFromAudioFiles.oneFromXmlFragment(null, results);
     Test.ensureEqual(eddg.className(), "EDDGridFromAudioFiles", "className");
-    Test.ensureEqual(eddg.title(), "Audio data from a local source.", "title");
+    Test.ensureEqual(eddg.title(language), "Audio data from a local source.", "title");
     Test.ensureEqual(
         String2.toCSSVString(eddg.axisVariableDestinationNames()),
         "time, elapsedTime",
