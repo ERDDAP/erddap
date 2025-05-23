@@ -526,9 +526,11 @@ public class EDStatic {
   public static final int minimumPasswordLength = 8;
 
   public static String[] DEFAULT_displayAttributeAr = {"summary", "license"};
-  public static String[] DEFAULT_displayInfoAr = {"Summary", "License"};
+  public static String[] DEFAULT_displayInfoArray = {"Summary", "License"};
+  public static LocalizedHolder<String[]> DEFAULT_displayInfoAr =
+      new LocalizedHolder<String[]>(DEFAULT_displayInfoArray);
   public static String[] displayAttributeAr = DEFAULT_displayAttributeAr;
-  public static String[] displayInfoAr = DEFAULT_displayInfoAr;
+  public static LocalizedHolder<String[]> displayInfoAr = DEFAULT_displayInfoAr;
 
   private static String emailLogDate = "";
   private static BufferedWriter emailLogFile;

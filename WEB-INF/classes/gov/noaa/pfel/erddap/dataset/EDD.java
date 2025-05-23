@@ -3950,7 +3950,7 @@ public abstract class EDD {
    * @return the String to append to Information row
    */
   private String getDisplayInfo(HttpServletRequest request, int language, String loggedInAs) {
-    if (EDStatic.displayAttributeAr.length != EDStatic.displayInfoAr.length) {
+    if (EDStatic.displayAttributeAr.length != EDStatic.displayInfoAr.get(language).length) {
       String2.log("Incorrect input to the displayAttribute and displayInfo tags");
       return "";
     }
@@ -3959,7 +3959,7 @@ public abstract class EDD {
 
     for (int i = 0; i < EDStatic.displayAttributeAr.length; i++) {
       String attribute = EDStatic.displayAttributeAr[i];
-      String displayInfo = EDStatic.displayInfoAr[i];
+      String displayInfo = EDStatic.displayInfoAr.get(language)[i];
       String value;
 
       String attVal = combinedGlobalAttributes().getString(language, attribute);

@@ -64,8 +64,8 @@ public class EDDTestDataset {
 
       if (EDStatic.config.useSaxParser) {
         datasetsXml.append(
-            "<displayInfo>display1,display2</displayInfo>\n"
-                + "<displayAttribute>att1,att2</displayAttribute>\n");
+            "<displayInfo>summary,license,display1,display2</displayInfo>\n"
+                + "<displayAttribute>summary,license,att1,att2</displayAttribute>\n");
       }
 
       datasetsXml.append(xmlFragment_test_chars());
@@ -43465,7 +43465,11 @@ public class EDDTestDataset {
         + "        <att name=\"sourceUrl\">(local files)</att>\n"
         + "        <att name=\"standard_name_vocabulary\">CF Standard Name Table v70</att>\n"
         + "        <att name=\"summary\">Data from a local source.</att>\n"
+        + "        <att name=\"summary\" xml:lang=\"fr\">Donn&#xE9;es provenant d'une source locale.</att>\n"
+        + "        <att name=\"summary\" xml:lang=\"de\">Daten aus einer lokalen Quelle.</att>\n"
         + "        <att name=\"title\">Data from a local source.</att>\n"
+        + "        <att name=\"title\" xml:lang=\"fr\">Donn&#xE9;es provenant d'une source locale.</att>\n"
+        + "        <att name=\"title\" xml:lang=\"de\">Daten aus einer lokalen Quelle.</att>\n"
         + "    </addAttributes>\n"
         + "    <dataVariable>\n"
         + "        <sourceName>row</sourceName>\n"
@@ -43477,6 +43481,8 @@ public class EDDTestDataset {
         + "            <att name=\"_FillValue\" type=\"byte\">127</att>\n"
         + "            <att name=\"ioos_category\">Unknown</att>\n"
         + "            <att name=\"long_name\">Row</att>\n"
+        + "            <att name=\"long_name\" xml:lang=\"fr\">rang&#xE9;e</att>\n"
+        + "            <att name=\"long_name\" xml:lang=\"de\">Reihe</att>\n"
         + "        </addAttributes>\n"
         + "    </dataVariable>\n"
         + "    <dataVariable>\n"

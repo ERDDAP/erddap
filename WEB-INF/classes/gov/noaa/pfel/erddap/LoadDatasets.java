@@ -479,10 +479,13 @@ public class LoadDatasets extends Thread {
 
   /** Validation checks post the parsing of the datasets.xml file */
   private void validateDatasetsXmlResults() {
-    if (EDStatic.displayAttributeAr.length != EDStatic.displayInfoAr.length) {
-      String2.log("Incorrect input to the displayAttribute and displayInfo tags");
-      EDStatic.displayAttributeAr = EDStatic.DEFAULT_displayAttributeAr;
-      EDStatic.displayInfoAr = EDStatic.DEFAULT_displayInfoAr;
+    // Check for all languages
+    for (int i = 0; i < TranslateMessages.languageCodeList.size(); i++) {
+      if (EDStatic.displayAttributeAr.length != EDStatic.displayInfoAr.get(i).length) {
+        String2.log("Incorrect input to the displayAttribute and displayInfo tags");
+        EDStatic.displayAttributeAr = EDStatic.DEFAULT_displayAttributeAr;
+        EDStatic.displayInfoAr = EDStatic.DEFAULT_displayInfoAr;
+      }
     }
   }
 

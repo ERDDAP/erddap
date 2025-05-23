@@ -20,4 +20,5 @@
     </dataset>
     <displayAttribute>attribute1,attribute2</displayAttribute>
     <displayInfo>info1,info2</displayInfo>
+    <displayInfo xml:lang="fr">renseignements1,renseignements2</displayInfo>
 </erddapDatasets>

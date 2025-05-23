@@ -124,7 +124,15 @@ public class TopLevelHandlerTests {
 
   @Test
   void displayInfoTest() {
-    assertEquals(EDStatic.displayInfoAr[0], "info1");
-    assertEquals(EDStatic.displayInfoAr[1], "info2");
+    assertEquals(EDStatic.displayInfoAr.get(0)[0], "info1");
+    assertEquals(EDStatic.displayInfoAr.get(0)[1], "info2");
+
+    // Use default if language doesn't have localized text
+    assertEquals(EDStatic.displayInfoAr.get(1)[0], "info1");
+    assertEquals(EDStatic.displayInfoAr.get(1)[1], "info2");
+
+    // Use localized version if available
+    assertEquals(EDStatic.displayInfoAr.get(8)[0], "renseignements1");
+    assertEquals(EDStatic.displayInfoAr.get(8)[1], "renseignements2");
   }
 }
