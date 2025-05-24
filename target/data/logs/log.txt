@@ -1,96 +1,89 @@
 logFileMaxSize=20971520
 
-\\\\**** Start Erddap v2.26 constructor at 2025-05-23T23.02.24
+\\\\**** Start Erddap v2.26 constructor at 2025-05-23T23.24.16
 logFile=target/data/logs/log.txt logMaxSizeMB=20
 Java 21.0.6 (64 bit, Oracle Corporation) on Windows 10 (10.0).
-MemoryInUse=   355 MB (highWaterMark=   358 MB) (Xmx ~= 2026 MB)
+MemoryInUse=   311 MB (highWaterMark=   396 MB) (Xmx ~= 2026 MB)
 verbose=true reallyVerbose=false
 bigParentDirectory=target/data/
 contextDirectory=C:/Users/harish/eraddaplang2/erddap/target/ERDDAP-2.26/
 available fonts=Arial, Arial Black, Bahnschrift, Calibri, Calibri Light, Cambria, Cambria Math, Candara, Candara Light, Cascadia Code, Cascadia Mono, Comic Sans MS, Consolas, Constantia, Corbel, Corbel Light, Courier New, Dialog, DialogInput, Ebrima, Franklin Gothic Medium, Gabriola, Gadugi, Georgia, HoloLens MDL2 Assets, Impact, Ink Free, Javanese Text, Leelawadee UI, Leelawadee UI Semilight, Lucida Console, Lucida Sans Unicode, Malgun Gothic, Malgun Gothic Semilight, Marlett, Microsoft Himalaya, Microsoft JhengHei, Microsoft JhengHei Light, Microsoft JhengHei UI, Microsoft JhengHei UI Light, Microsoft New Tai Lue, Microsoft PhagsPa, Microsoft Sans Serif, Microsoft Tai Le, Microsoft YaHei, Microsoft YaHei Light, Microsoft YaHei UI, Microsoft YaHei UI Light, Microsoft Yi Baiti, MingLiU-ExtB, MingLiU_HKSCS-ExtB, Mongolian Baiti, Monospaced, MS Gothic, MS PGothic, MS UI Gothic, MV Boli, Myanmar Text, Nirmala UI, Nirmala UI Semilight, NSimSun, Palatino Linotype, PMingLiU-ExtB, SansSerif, Segoe MDL2 Assets, Segoe Print, Segoe Script, Segoe UI, Segoe UI Black, Segoe UI Emoji, Segoe UI Historic, Segoe UI Light, Segoe UI Semibold, Segoe UI Semilight, Segoe UI Symbol, Serif, SimSun, SimSun-ExtB, SimSun-ExtG, Sitka Banner, Sitka Display, Sitka Heading, Sitka Small, Sitka Subheading, Sitka Text, Sylfaen, Symbol, Tahoma, Times New Roman, Trebuchet MS, Verdana, Webdings, Wingdings, Yu Gothic, Yu Gothic Light, Yu Gothic Medium, Yu Gothic UI, Yu Gothic UI Light, Yu Gothic UI Semibold, Yu Gothic UI Semilight
 File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\cache\41) nDir=   1 nDeleted=   0 nRemain=   0
 File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\cache\60) nDir=   1 nDeleted=   0 nRemain=   0
-File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\cache\80) nDir=   6 nDeleted=   0 nRemain=   0
+File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\cache\80) nDir=   5 nDeleted=   0 nRemain=   0
 File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\cache\ad) nDir=   1 nDeleted=   0 nRemain=   0
 File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\cache\ap) nDir=   1 nDeleted=   0 nRemain=   0
 File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\cache\at) nDir=   2 nDeleted=   0 nRemain=   0
-File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\cache\au) nDir=   1 nDeleted=   0 nRemain=   0
-File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\cache\ay) nDir=  34 nDeleted=   0 nRemain=   0
+File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\cache\ay) nDir=  33 nDeleted=   0 nRemain=   0
 File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\cache\Bf) nDir=   1 nDeleted=   0 nRemain=   0
 File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\cache\Bp) nDir=   1 nDeleted=   0 nRemain=   0
-File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\cache\cb) nDir=   1 nDeleted=   0 nRemain=   0
 File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\cache\cp) nDir=   1 nDeleted=   0 nRemain=   0
 File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\cache\en) nDir=   1 nDeleted=   0 nRemain=   0
-File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\cache\et) nDir=   4 nDeleted=   0 nRemain=   0
+File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\cache\et) nDir=   3 nDeleted=   0 nRemain=   0
 File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\cache\in) nDir=   1 nDeleted=   0 nRemain=   0
-File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\cache\ld) nDir=   1 nDeleted=   0 nRemain=   0
 File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\cache\Lw) nDir=   1 nDeleted=   0 nRemain=   0
-File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\cache\mp) nDir=   2 nDeleted=   0 nRemain=   0
+File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\cache\mp) nDir=   1 nDeleted=   0 nRemain=   0
 File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\cache\os) nDir=   1 nDeleted=   0 nRemain=   0
 File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\cache\Rf) nDir=   1 nDeleted=   0 nRemain=   0
 File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\cache\Rh) nDir=   1 nDeleted=   0 nRemain=   0
 File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\cache\rt) nDir=   1 nDeleted=   0 nRemain=   0
-File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\cache\sd) nDir=   1 nDeleted=   0 nRemain=   0
 File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\cache\so) nDir=   1 nDeleted=   0 nRemain=   0
-File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\cache\ss) nDir=   1 nDeleted=   0 nRemain=   0
-File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\cache\st) nDir=   3 nDeleted=   0 nRemain=   0
+File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\cache\st) nDir=   1 nDeleted=   0 nRemain=   0
 File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\cache\ts) nDir=   2 nDeleted=   0 nRemain=   0
 File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\cache\ur) nDir=   1 nDeleted=   0 nRemain=   0
 File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\cache\yD) nDir=   1 nDeleted=   0 nRemain=   0
 File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\cache\yn) nDir=   1 nDeleted=   0 nRemain=   0
 File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\cache\yS) nDir=   1 nDeleted=   0 nRemain=   0
-File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\cache\yT) nDir=   1 nDeleted=   0 nRemain=   0
-File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\cache\yW) nDir=   1 nDeleted=   0 nRemain=   0
 File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\cache\_wms) nDir=   5 nDeleted=   0 nRemain=   0
-File2.deleteIfOld(target/data/cache/                                     ) nDir=  38 nDeleted=   0 nRemain=   0
+File2.deleteIfOld(target/data/cache/                                     ) nDir=  31 nDeleted=   0 nRemain=   0
 ERROR in File2.deleteIfOld: dir=target/data/private isn't a directory.
 
-\\\\**** Erddap constructor finished. TIME=3092ms
+\\\\**** Erddap constructor finished. TIME=2895ms
 
-*** RunLoadDatasets is starting a new MAJOR LoadDatasets thread at 2025-05-23T23:02:27+05:30
-File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\cache\_wms, 2025-05-23T16:32:27Z) nDir=   5 nDeleted=   0 nRemain=   0
-File2.deleteIfOld(target/data/cache/                                     , 2025-05-23T16:32:27Z) nDir=   5 nDeleted=   0 nRemain=   0
+*** RunLoadDatasets is starting a new MAJOR LoadDatasets thread at 2025-05-23T23:24:19+05:30
+File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\cache\_wms, 2025-05-23T16:54:19Z) nDir=   5 nDeleted=   0 nRemain=   0
+File2.deleteIfOld(target/data/cache/                                     , 2025-05-23T16:54:19Z) nDir=   5 nDeleted=   0 nRemain=   0
 0 files remain in C:/Users/harish/eraddaplang2/erddap/target/ERDDAP-2.26/public/
 0 files remain in target/data/cache/ and subdirectories.
 
 ********************************************************************************
-LoadDatasets.run EDStatic.config.developmentMode=false 2025-05-23T23:02:27+05:30
+LoadDatasets.run EDStatic.config.developmentMode=false 2025-05-23T23:24:19+05:30
   datasetsRegex=.* inputStream=null majorLoad=true
-MemoryInUse=   101 MB (highWaterMark=   358 MB) (Xmx ~= 2026 MB)
-File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\decompressed\41, 2025-05-23T17:17:28Z) nDir=   1 nDeleted=   0 nRemain=   0
-File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\decompressed\60, 2025-05-23T17:17:28Z) nDir=   1 nDeleted=   0 nRemain=   0
-File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\decompressed\80, 2025-05-23T17:17:28Z) nDir=   6 nDeleted=   0 nRemain=   0
-File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\decompressed\ad, 2025-05-23T17:17:28Z) nDir=   1 nDeleted=   0 nRemain=   0
-File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\decompressed\ap, 2025-05-23T17:17:28Z) nDir=   1 nDeleted=   0 nRemain=   0
-File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\decompressed\at, 2025-05-23T17:17:28Z) nDir=   2 nDeleted=   0 nRemain=   0
-File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\decompressed\au, 2025-05-23T17:17:28Z) nDir=   1 nDeleted=   0 nRemain=   0
-File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\decompressed\ay, 2025-05-23T17:17:28Z) nDir=  34 nDeleted=   0 nRemain=   0
-File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\decompressed\Bf, 2025-05-23T17:17:28Z) nDir=   1 nDeleted=   0 nRemain=   0
-File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\decompressed\Bp, 2025-05-23T17:17:28Z) nDir=   1 nDeleted=   0 nRemain=   0
-File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\decompressed\cb, 2025-05-23T17:17:28Z) nDir=   1 nDeleted=   0 nRemain=   0
-File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\decompressed\cp, 2025-05-23T17:17:28Z) nDir=   1 nDeleted=   0 nRemain=   0
-File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\decompressed\en, 2025-05-23T17:17:28Z) nDir=   1 nDeleted=   0 nRemain=   0
-File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\decompressed\et, 2025-05-23T17:17:28Z) nDir=   4 nDeleted=   0 nRemain=   0
-File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\decompressed\in, 2025-05-23T17:17:28Z) nDir=   1 nDeleted=   0 nRemain=   0
-File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\decompressed\ld, 2025-05-23T17:17:28Z) nDir=   1 nDeleted=   0 nRemain=   0
-File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\decompressed\Lw, 2025-05-23T17:17:28Z) nDir=   1 nDeleted=   0 nRemain=   0
-File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\decompressed\mp, 2025-05-23T17:17:28Z) nDir=   2 nDeleted=   0 nRemain=   0
-File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\decompressed\os, 2025-05-23T17:17:28Z) nDir=   1 nDeleted=   0 nRemain=   0
-File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\decompressed\Rf, 2025-05-23T17:17:28Z) nDir=   1 nDeleted=   0 nRemain=   0
-File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\decompressed\Rh, 2025-05-23T17:17:28Z) nDir=   1 nDeleted=   0 nRemain=   0
-File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\decompressed\rt, 2025-05-23T17:17:28Z) nDir=   1 nDeleted=   0 nRemain=   0
-File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\decompressed\sd, 2025-05-23T17:17:28Z) nDir=   1 nDeleted=   0 nRemain=   0
-File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\decompressed\so, 2025-05-23T17:17:28Z) nDir=   1 nDeleted=   0 nRemain=   0
-File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\decompressed\ss, 2025-05-23T17:17:28Z) nDir=   1 nDeleted=   0 nRemain=   0
-File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\decompressed\st, 2025-05-23T17:17:28Z) nDir=   3 nDeleted=   0 nRemain=   0
-File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\decompressed\ts, 2025-05-23T17:17:28Z) nDir=   2 nDeleted=   0 nRemain=   0
-File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\decompressed\ur, 2025-05-23T17:17:28Z) nDir=   1 nDeleted=   0 nRemain=   0
-File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\decompressed\yD, 2025-05-23T17:17:28Z) nDir=   1 nDeleted=   0 nRemain=   0
-File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\decompressed\yn, 2025-05-23T17:17:28Z) nDir=   1 nDeleted=   0 nRemain=   0
-File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\decompressed\yS, 2025-05-23T17:17:28Z) nDir=   1 nDeleted=   0 nRemain=   0
-File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\decompressed\yT, 2025-05-23T17:17:28Z) nDir=   1 nDeleted=   0 nRemain=   0
-File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\decompressed\yW, 2025-05-23T17:17:28Z) nDir=   1 nDeleted=   0 nRemain=   0
-File2.deleteIfOld(target/data/decompressed/                              , 2025-05-23T17:17:28Z) nDir=  34 nDeleted=   0 nRemain=   0
+MemoryInUse=   104 MB (highWaterMark=   396 MB) (Xmx ~= 2026 MB)
+File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\decompressed\41, 2025-05-23T17:39:20Z) nDir=   1 nDeleted=   0 nRemain=   0
+File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\decompressed\60, 2025-05-23T17:39:20Z) nDir=   1 nDeleted=   0 nRemain=   0
+File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\decompressed\80, 2025-05-23T17:39:20Z) nDir=   6 nDeleted=   0 nRemain=   0
+File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\decompressed\ad, 2025-05-23T17:39:20Z) nDir=   1 nDeleted=   0 nRemain=   0
+File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\decompressed\ap, 2025-05-23T17:39:20Z) nDir=   1 nDeleted=   0 nRemain=   0
+File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\decompressed\at, 2025-05-23T17:39:20Z) nDir=   2 nDeleted=   0 nRemain=   0
+File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\decompressed\au, 2025-05-23T17:39:20Z) nDir=   1 nDeleted=   0 nRemain=   0
+File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\decompressed\ay, 2025-05-23T17:39:20Z) nDir=  34 nDeleted=   0 nRemain=   0
+File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\decompressed\Bf, 2025-05-23T17:39:20Z) nDir=   1 nDeleted=   0 nRemain=   0
+File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\decompressed\Bp, 2025-05-23T17:39:20Z) nDir=   1 nDeleted=   0 nRemain=   0
+File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\decompressed\cb, 2025-05-23T17:39:20Z) nDir=   1 nDeleted=   0 nRemain=   0
+File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\decompressed\cp, 2025-05-23T17:39:20Z) nDir=   1 nDeleted=   0 nRemain=   0
+File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\decompressed\en, 2025-05-23T17:39:20Z) nDir=   1 nDeleted=   0 nRemain=   0
+File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\decompressed\et, 2025-05-23T17:39:20Z) nDir=   4 nDeleted=   0 nRemain=   0
+File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\decompressed\in, 2025-05-23T17:39:20Z) nDir=   1 nDeleted=   0 nRemain=   0
+File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\decompressed\ld, 2025-05-23T17:39:20Z) nDir=   1 nDeleted=   0 nRemain=   0
+File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\decompressed\Lw, 2025-05-23T17:39:20Z) nDir=   1 nDeleted=   0 nRemain=   0
+File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\decompressed\mp, 2025-05-23T17:39:20Z) nDir=   2 nDeleted=   0 nRemain=   0
+File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\decompressed\os, 2025-05-23T17:39:20Z) nDir=   1 nDeleted=   0 nRemain=   0
+File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\decompressed\Rf, 2025-05-23T17:39:20Z) nDir=   1 nDeleted=   0 nRemain=   0
+File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\decompressed\Rh, 2025-05-23T17:39:20Z) nDir=   1 nDeleted=   0 nRemain=   0
+File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\decompressed\rt, 2025-05-23T17:39:20Z) nDir=   1 nDeleted=   0 nRemain=   0
+File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\decompressed\sd, 2025-05-23T17:39:20Z) nDir=   1 nDeleted=   0 nRemain=   0
+File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\decompressed\so, 2025-05-23T17:39:20Z) nDir=   1 nDeleted=   0 nRemain=   0
+File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\decompressed\ss, 2025-05-23T17:39:20Z) nDir=   1 nDeleted=   0 nRemain=   0
+File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\decompressed\st, 2025-05-23T17:39:20Z) nDir=   3 nDeleted=   0 nRemain=   0
+File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\decompressed\ts, 2025-05-23T17:39:20Z) nDir=   2 nDeleted=   0 nRemain=   0
+File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\decompressed\ur, 2025-05-23T17:39:20Z) nDir=   1 nDeleted=   0 nRemain=   0
+File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\decompressed\yD, 2025-05-23T17:39:20Z) nDir=   1 nDeleted=   0 nRemain=   0
+File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\decompressed\yn, 2025-05-23T17:39:20Z) nDir=   1 nDeleted=   0 nRemain=   0
+File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\decompressed\yS, 2025-05-23T17:39:20Z) nDir=   1 nDeleted=   0 nRemain=   0
+File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\decompressed\yT, 2025-05-23T17:39:20Z) nDir=   1 nDeleted=   0 nRemain=   0
+File2.deleteIfOld(C:\Users\harish\eraddaplang2\erddap\target\data\decompressed\yW, 2025-05-23T17:39:20Z) nDir=   1 nDeleted=   0 nRemain=   0
+File2.deleteIfOld(target/data/decompressed/                              , 2025-05-23T17:39:20Z) nDir=  34 nDeleted=   0 nRemain=   0
 After deleting decompressed files not used in the last 15 minutes, nRemain=0
 
 *** constructing EDDTableFromAllDatasets
@@ -98,7 +91,7 @@ After deleting decompressed files not used in the last 15 minutes, nRemain=0
 FGDC is never available for this dataset because Query error: there is no longitude and/or latitude variable.
 ISO 19115-2/19139 is never available for this dataset because Query error: there is no longitude and/or latitude variable.
 
-*** EDDTableFromAllDatasets constructor finished. TIME=36ms
+*** EDDTableFromAllDatasets constructor finished. TIME=129ms
 
 logLevel=info: verbose=true reallyVerbose=false
 requestBlacklist is now null.
@@ -106,14 +99,14 @@ Subscriptions.setEmailBlacklist removed 0 valid and pending subscriptions.
 
 *** constructing EDDGridFromEtopo etopo180
 
-*** EDDGridFromEtopo etopo180 constructor finished. TIME=67ms
+*** EDDGridFromEtopo etopo180 constructor finished. TIME=49ms
 
 change=Previously, this dataset was (temporarily?) not available.  Perhaps ERDDAP was just restarted.
 nActions=0
 
 *** constructing EDDGridFromEtopo etopo360
 
-*** EDDGridFromEtopo etopo360 constructor finished. TIME=16ms
+*** EDDGridFromEtopo etopo360 constructor finished. TIME=15ms
 
 change=Previously, this dataset was (temporarily?) not available.  Perhaps ERDDAP was just restarted.
 nActions=0
@@ -124,7 +117,7 @@ nActions=0
     smallest spacing=86400.0: [1018]=1.3347504E9, [1019]=1.3348368E9
     biggest  spacing=604800.0: [0]=7.19064E8, [1]=7.196688E8
 
-*** EDDGridFromDap erdTAsshl1day constructor finished. TIME=251ms
+*** EDDGridFromDap erdTAsshl1day constructor finished. TIME=516ms
 
 
 *** constructing EDDGridFromDap erdTAsshd1day
@@ -133,7 +126,7 @@ nActions=0
     smallest spacing=86400.0: [1019]=1.3358736E9, [1020]=1.33596E9
     biggest  spacing=1123200.0: [1018]=1.3347504E9, [1019]=1.3358736E9
 
-*** EDDGridFromDap erdTAsshd1day constructor finished. TIME=34ms
+*** EDDGridFromDap erdTAsshd1day constructor finished. TIME=51ms
 
 
 *** constructing EDDGridSideBySide erdTAssh1day
@@ -143,7 +136,7 @@ child[1].axisVariables[0].size()=1241
     smallest spacing=86400.0: [1018]=1.3347504E9, [1019]=1.3348368E9
     biggest  spacing=604800.0: [0]=7.19064E8, [1]=7.196688E8
 
-*** EDDGridSideBySide erdTAssh1day constructor finished. TIME=19ms
+*** EDDGridSideBySide erdTAssh1day constructor finished. TIME=39ms
 
 change=Previously, this dataset was (temporarily?) not available.  Perhaps ERDDAP was just restarted.
 nActions=0
@@ -153,113 +146,6 @@ nActions=0
   time: DoubleArray isn't evenly spaced: [0]=1.022922E9, [1]=1.0230084E9, spacing=86400.0, average spacing=86420.60331465364.
     smallest spacing=86400.0: [0]=1.022922E9, [1]=1.0230084E9
     biggest  spacing=259200.0: [6838]=1.6137252E9, [6839]=1.6139844E9
-{{{{#1 2025-05-23T23:02:32+05:30 (notLoggedIn) (unknownIPAddress) GET /erddap/
-redirected to http://localhost:8080/erddap/index.html
-}}}}#1 (unknownIPAddress) SUCCESS. TIME=15ms
-
-{{{{#2 2025-05-23T23:02:32+05:30 (notLoggedIn) (unknownIPAddress) GET /erddap/index.html
-OutputStreamFromHttpResponse charEncoding=UTF-8, encoding=gzip, index, .html
-}}}}#2 (unknownIPAddress) SUCCESS. TIME=32ms
-
-{{{{#3 2025-05-23T23:02:32+05:30 (notLoggedIn) (unknownIPAddress) GET /erddap/images/erddap2.css
-OutputStreamFromHttpResponse charEncoding=, encoding=gzip, erddap2, .css
-{{{{#4 2025-05-23T23:02:32+05:30 (notLoggedIn) (unknownIPAddress) GET /erddap/images/noaab.png
-doTransfer C:/Users/harish/eraddaplang2/erddap/target/ERDDAP-2.26/images/erddap2.css
-  compression=gzip, fileSize=5468
-OutputStreamFromHttpResponse charEncoding=, encoding=identity, noaab, .png
-{{{{#5 2025-05-23T23:02:32+05:30 (notLoggedIn) (unknownIPAddress) GET /erddap/images/QuestionMark.png
-OutputStreamFromHttpResponse charEncoding=, encoding=identity, QuestionMark, .png
-doTransfer C:/Users/harish/eraddaplang2/erddap/target/ERDDAP-2.26/images/noaab.png
-  compression=identity, fileSize=2160, set Content-Length=2160
-doTransfer C:/Users/harish/eraddaplang2/erddap/target/ERDDAP-2.26/images/QuestionMark.png
-  compression=identity, fileSize=261, set Content-Length=261
-}}}}#4 (unknownIPAddress) SUCCESS. TIME=2ms
-
-}}}}#5 (unknownIPAddress) SUCCESS. TIME=2ms
-
-}}}}#3 (unknownIPAddress) SUCCESS. TIME=4ms
-
-{{{{#6 2025-05-23T23:02:32+05:30 (notLoggedIn) (unknownIPAddress) GET /erddap/images/wz_tooltip.js
-{{{{#7 2025-05-23T23:02:32+05:30 (notLoggedIn) (unknownIPAddress) GET /erddap/images/youtube.png
-{{{{#8 2025-05-23T23:02:32+05:30 (notLoggedIn) (unknownIPAddress) GET /erddap/images/external.png
-OutputStreamFromHttpResponse charEncoding=, encoding=identity, youtube, .png
-OutputStreamFromHttpResponse charEncoding=, encoding=identity, external, .png
-doTransfer C:/Users/harish/eraddaplang2/erddap/target/ERDDAP-2.26/images/youtube.png
-  compression=identity, fileSize=996, set Content-Length=996
-OutputStreamFromHttpResponse charEncoding=UTF-8, encoding=gzip, wz_tooltip, .js
-doTransfer C:/Users/harish/eraddaplang2/erddap/target/ERDDAP-2.26/images/external.png
-  compression=identity, fileSize=136, set Content-Length=136
-doTransfer C:/Users/harish/eraddaplang2/erddap/target/ERDDAP-2.26/images/wz_tooltip.js
-  compression=gzip, fileSize=37974
-}}}}#8 (unknownIPAddress) SUCCESS. TIME=1ms
-
-}}}}#7 (unknownIPAddress) SUCCESS. TIME=1ms
-
-}}}}#6 (unknownIPAddress) SUCCESS. TIME=4ms
-
-{{{{#9 2025-05-23T23:02:41+05:30 (notLoggedIn) (unknownIPAddress) GET /erddap/status.html
-OutputStreamFromHttpResponse charEncoding=UTF-8, encoding=gzip, index, .html
-#9 FAILURE. TIME=60ms
-*** sendErrorCode 500 for request #9:
-/erddap/status.html
-gg.jte.TemplateNotFoundException: Failed to load status.jte
- at gg.jte.runtime.TemplateLoader.load(TemplateLoader.java:28)
- at java.base/java.util.concurrent.ConcurrentHashMap.computeIfAbsent(ConcurrentHashMap.java:1708)
- at gg.jte.TemplateEngine.resolveTemplate(TemplateEngine.java:339)
- at gg.jte.TemplateEngine.render(TemplateEngine.java:228)
- at gov.noaa.pfel.erddap.Erddap.doStatus(Erddap.java:4909)
- at gov.noaa.pfel.erddap.Erddap.doGet(Erddap.java:845)
- at jakarta.servlet.http.HttpServlet.service(HttpServlet.java:527)
- at jakarta.servlet.http.HttpServlet.service(HttpServlet.java:614)
- at org.eclipse.jetty.ee10.servlet.ServletHolder$NotAsync.service(ServletHolder.java:1379)
- at org.eclipse.jetty.ee10.servlet.ServletHolder.handle(ServletHolder.java:736)
- at org.eclipse.jetty.ee10.servlet.ServletHandler$ChainEnd.doFilter(ServletHandler.java:1621)
- at gov.noaa.pfel.erddap.http.CorsResponseFilter.doFilter(CorsResponseFilter.java:67)
- at org.eclipse.jetty.ee10.servlet.FilterHolder.doFilter(FilterHolder.java:208)
- at org.eclipse.jetty.ee10.servlet.ServletHandler$Chain.doFilter(ServletHandler.java:1593)
- at org.eclipse.jetty.ee10.websocket.servlet.WebSocketUpgradeFilter.doFilter(WebSocketUpgradeFilter.java:195)
- at org.eclipse.jetty.ee10.servlet.FilterHolder.doFilter(FilterHolder.java:205)
- at org.eclipse.jetty.ee10.servlet.ServletHandler$Chain.doFilter(ServletHandler.java:1593)
- at org.eclipse.jetty.ee10.servlet.ServletHandler$MappedServlet.handle(ServletHandler.java:1554)
- at org.eclipse.jetty.ee10.servlet.ServletChannel.dispatch(ServletChannel.java:819)
- at org.eclipse.jetty.ee10.servlet.ServletChannel.handle(ServletChannel.java:436)
- at org.eclipse.jetty.ee10.servlet.ServletHandler.handle(ServletHandler.java:469)
- at org.eclipse.jetty.security.SecurityHandler.handle(SecurityHandler.java:575)
- at org.eclipse.jetty.ee10.servlet.SessionHandler.handle(SessionHandler.java:717)
- at org.eclipse.jetty.server.handler.ContextHandler.handle(ContextHandler.java:1064)
- at org.eclipse.jetty.server.handler.ContextHandlerCollection.handle(ContextHandlerCollection.java:151)
- at org.eclipse.jetty.server.Server.handle(Server.java:182)
- at org.eclipse.jetty.server.internal.HttpChannelState$HandlerInvoker.run(HttpChannelState.java:662)
- at org.eclipse.jetty.server.internal.HttpConnection.onFillable(HttpConnection.java:416)
- at org.eclipse.jetty.io.AbstractConnection$ReadCallback.succeeded(AbstractConnection.java:322)
- at org.eclipse.jetty.io.FillInterest.fillable(FillInterest.java:99)
- at org.eclipse.jetty.io.SelectableChannelEndPoint$1.run(SelectableChannelEndPoint.java:53)
- at org.eclipse.jetty.util.thread.strategy.AdaptiveExecutionStrategy.runTask(AdaptiveExecutionStrategy.java:480)
- at org.eclipse.jetty.util.thread.strategy.AdaptiveExecutionStrategy.consumeTask(AdaptiveExecutionStrategy.java:443)
- at org.eclipse.jetty.util.thread.strategy.AdaptiveExecutionStrategy.tryProduce(AdaptiveExecutionStrategy.java:293)
- at org.eclipse.jetty.util.thread.strategy.AdaptiveExecutionStrategy.run(AdaptiveExecutionStrategy.java:201)
- at org.eclipse.jetty.util.thread.ReservedThreadExecutor$ReservedThread.run(ReservedThreadExecutor.java:311)
- at org.eclipse.jetty.util.thread.QueuedThreadPool.runJob(QueuedThreadPool.java:979)
- at org.eclipse.jetty.util.thread.QueuedThreadPool$Runner.doRunJob(QueuedThreadPool.java:1209)
- at org.eclipse.jetty.util.thread.QueuedThreadPool$Runner.run(QueuedThreadPool.java:1164)
- at java.base/java.lang.Thread.run(Thread.java:1583)
-Caused by: java.lang.ClassNotFoundException: gg.jte.generated.precompiled.JtestatusGenerated
- at org.codehaus.plexus.classworlds.strategy.SelfFirstStrategy.loadClass(SelfFirstStrategy.java:42)
- at org.codehaus.plexus.classworlds.realm.ClassRealm.unsynchronizedLoadClass(ClassRealm.java:225)
- at org.codehaus.plexus.classworlds.realm.ClassRealm.loadClass(ClassRealm.java:210)
- at org.codehaus.plexus.classworlds.realm.ClassRealm.loadClass(ClassRealm.java:205)
- at org.eclipse.jetty.ee10.webapp.WebAppClassLoader.loadClass(WebAppClassLoader.java:494)
- at java.base/java.lang.ClassLoader.loadClass(ClassLoader.java:526)
- at gg.jte.runtime.TemplateLoader.load(TemplateLoader.java:25)
- ... 39 more
-*** lowSendError for request #9: isCommitted=true fullMessage=
-Error {
-    code=500;
-    message="Internal Server Error: TemplateNotFoundException: Failed to load status.jte";
-}
-
-}}}}#9 (unknownIPAddress) sendErrorCode done. Total TIME=2100ms
-
 ERROR in getRemoteErddapVersion(https://coastwatch.pfeg.noaa.gov/erddap/version)
 java.io.IOException: ERROR from url=https://coastwatch.pfeg.noaa.gov/erddap/version : java.net.ConnectException: Connection timed out: getsockopt
 accessibleViaFiles=false because remote ERDDAP version is <v2.10, so no support for /files/.csv .
@@ -267,7 +153,7 @@ WARNING! This ERDDAP won't try to subscribe to the dataset on the remote
 ERDDAP because this ERDDAP isn't publicly accessible.
 If you want to keep this dataset up-to-date, use a small reloadEveryNMinutes.
 
-*** EDDGridFromErddap jplMURSST41 constructor finished. TIME=22982ms  (>10s!)
+*** EDDGridFromErddap jplMURSST41 constructor finished. TIME=22088ms  (>10s!)
 
 change=Previously, this dataset was (temporarily?) not available.  Perhaps ERDDAP was just restarted.
 nActions=0
@@ -284,7 +170,7 @@ WARNING! This ERDDAP won't try to subscribe to the dataset on the remote
 ERDDAP because this ERDDAP isn't publicly accessible.
 If you want to keep this dataset up-to-date, use a small reloadEveryNMinutes.
 
-*** EDDGridFromErddap erdNavgem05D10mWind_LonPM180 constructor finished. TIME=21112ms  (>10s!)
+*** EDDGridFromErddap erdNavgem05D10mWind_LonPM180 constructor finished. TIME=21075ms  (>10s!)
 
 change=Previously, this dataset was (temporarily?) not available.  Perhaps ERDDAP was just restarted.
 nActions=0
@@ -301,7 +187,7 @@ WARNING! This ERDDAP won't try to subscribe to the dataset on the remote
 ERDDAP because this ERDDAP isn't publicly accessible.
 If you want to keep this dataset up-to-date, use a small reloadEveryNMinutes.
 
-*** EDDGridFromErddap erdNavgem05D20mWind_LonPM180 constructor finished. TIME=21147ms  (>10s!)
+*** EDDGridFromErddap erdNavgem05D20mWind_LonPM180 constructor finished. TIME=21269ms  (>10s!)
 
 change=Previously, this dataset was (temporarily?) not available.  Perhaps ERDDAP was just restarted.
 nActions=0
@@ -318,7 +204,7 @@ WARNING! This ERDDAP won't try to subscribe to the dataset on the remote
 ERDDAP because this ERDDAP isn't publicly accessible.
 If you want to keep this dataset up-to-date, use a small reloadEveryNMinutes.
 
-*** EDDGridFromErddap erdNavgem05D500mb_LonPM180 constructor finished. TIME=21088ms  (>10s!)
+*** EDDGridFromErddap erdNavgem05D500mb_LonPM180 constructor finished. TIME=21253ms  (>10s!)
 
 change=Previously, this dataset was (temporarily?) not available.  Perhaps ERDDAP was just restarted.
 nActions=0
@@ -335,7 +221,7 @@ WARNING! This ERDDAP won't try to subscribe to the dataset on the remote
 ERDDAP because this ERDDAP isn't publicly accessible.
 If you want to keep this dataset up-to-date, use a small reloadEveryNMinutes.
 
-*** EDDGridFromErddap erdNavgem05DPres_LonPM180 constructor finished. TIME=21211ms  (>10s!)
+*** EDDGridFromErddap erdNavgem05DPres_LonPM180 constructor finished. TIME=21236ms  (>10s!)
 
 change=Previously, this dataset was (temporarily?) not available.  Perhaps ERDDAP was just restarted.
 nActions=0
@@ -385,7 +271,7 @@ WARNING! This ERDDAP won't try to subscribe to the dataset on the remote
 ERDDAP because this ERDDAP isn't publicly accessible.
 If you want to keep this dataset up-to-date, use a small reloadEveryNMinutes.
 
-*** EDDGridFromErddap miamicurrents constructor finished. TIME=6481ms
+*** EDDGridFromErddap miamicurrents constructor finished. TIME=5481ms
 
 change=Previously, this dataset was (temporarily?) not available.  Perhaps ERDDAP was just restarted.
 nActions=0
@@ -403,7 +289,7 @@ WARNING! This ERDDAP won't try to subscribe to the dataset on the remote
 ERDDAP because this ERDDAP isn't publicly accessible.
 If you want to keep this dataset up-to-date, use a small reloadEveryNMinutes.
 
-*** EDDGridFromErddap erdMH1cflh1day constructor finished. TIME=21054ms  (>10s!)
+*** EDDGridFromErddap erdMH1cflh1day constructor finished. TIME=21100ms  (>10s!)
 
 change=Previously, this dataset was (temporarily?) not available.  Perhaps ERDDAP was just restarted.
 nActions=0
@@ -416,272 +302,4 @@ nActions=0
     biggest  spacing=3196800.0: [731]=1.5434496E9, [732]=1.5466464E9
 ERROR in getRemoteErddapVersion(https://coastwatch.pfeg.noaa.gov/erddap/version)
 java.io.IOException: ERROR from url=https://coastwatch.pfeg.noaa.gov/erddap/version : java.net.ConnectException: Connection timed out: getsockopt
-accessibleViaFiles=false because remote ERDDAP version is <v2.10, so no support for /files/.csv .
-WARNING! This ERDDAP won't try to subscribe to the dataset on the remote
-ERDDAP because this ERDDAP isn't publicly accessible.
-If you want to keep this dataset up-to-date, use a small reloadEveryNMinutes.
-
-*** EDDGridFromErddap erdMH1cflh8day constructor finished. TIME=21228ms  (>10s!)
-
-change=Previously, this dataset was (temporarily?) not available.  Perhaps ERDDAP was just restarted.
-nActions=0
-
-*** constructing EDDGridFromErddap erdMH1cflhmday
-  using info from quickRestartFile
-  latitude: FloatArray isn't sorted in ascending order: [0]=89.979164 > [1]=89.9375.
-  time: DoubleArray isn't evenly spaced: [0]=1.0426752E9, [1]=1.0453536E9, spacing=2678400.0, average spacing=2629241.379310345.
-    smallest spacing=2419200.0: [1]=1.0453536E9, [2]=1.0477728E9
-    biggest  spacing=2678400.0: [0]=1.0426752E9, [1]=1.0453536E9
-ERROR in getRemoteErddapVersion(https://coastwatch.pfeg.noaa.gov/erddap/version)
-java.io.IOException: ERROR from url=https://coastwatch.pfeg.noaa.gov/erddap/version : java.net.ConnectException: Connection timed out: getsockopt
-accessibleViaFiles=false because remote ERDDAP version is <v2.10, so no support for /files/.csv .
-WARNING! This ERDDAP won't try to subscribe to the dataset on the remote
-ERDDAP because this ERDDAP isn't publicly accessible.
-If you want to keep this dataset up-to-date, use a small reloadEveryNMinutes.
-
-*** EDDGridFromErddap erdMH1cflhmday constructor finished. TIME=21220ms  (>10s!)
-
-change=Previously, this dataset was (temporarily?) not available.  Perhaps ERDDAP was just restarted.
-nActions=0
-
-*** constructing EDDGridFromErddap erdMH1chla1day
-  using info from quickRestartFile
-  latitude: FloatArray isn't sorted in ascending order: [0]=89.979164 > [1]=89.9375.
-  time: DoubleArray isn't evenly spaced: [0]=1.0414224E9, [1]=1.0415088E9, spacing=86400.0, average spacing=86764.1983982015.
-    smallest spacing=86400.0: [0]=1.0414224E9, [1]=1.0415088E9
-    biggest  spacing=1468800.0: [6437]=1.5975792E9, [6438]=1.599048E9
-ERROR in getRemoteErddapVersion(https://coastwatch.pfeg.noaa.gov/erddap/version)
-java.io.IOException: ERROR from url=https://coastwatch.pfeg.noaa.gov/erddap/version : java.net.ConnectException: Connection timed out: getsockopt
-accessibleViaFiles=false because remote ERDDAP version is <v2.10, so no support for /files/.csv .
-WARNING! This ERDDAP won't try to subscribe to the dataset on the remote
-ERDDAP because this ERDDAP isn't publicly accessible.
-If you want to keep this dataset up-to-date, use a small reloadEveryNMinutes.
-
-*** EDDGridFromErddap erdMH1chla1day constructor finished. TIME=21073ms  (>10s!)
-
-change=Previously, this dataset was (temporarily?) not available.  Perhaps ERDDAP was just restarted.
-nActions=0
-
-*** constructing EDDGridFromErddap erdMH1chla8day
-  using info from quickRestartFile
-  latitude: FloatArray isn't sorted in ascending order: [0]=89.979164 > [1]=89.9375.
-  time: DoubleArray isn't evenly spaced: [0]=1.0417248E9, [1]=1.042416E9, spacing=691200.0, average spacing=690033.7457817773.
-    smallest spacing=432000.0: [45]=1.0728288E9, [46]=1.0732608E9
-    biggest  spacing=3196800.0: [731]=1.5434496E9, [732]=1.5466464E9
-ERROR in getRemoteErddapVersion(https://coastwatch.pfeg.noaa.gov/erddap/version)
-java.io.IOException: ERROR from url=https://coastwatch.pfeg.noaa.gov/erddap/version : java.net.ConnectException: Connection timed out: getsockopt
-accessibleViaFiles=false because remote ERDDAP version is <v2.10, so no support for /files/.csv .
-WARNING! This ERDDAP won't try to subscribe to the dataset on the remote
-ERDDAP because this ERDDAP isn't publicly accessible.
-If you want to keep this dataset up-to-date, use a small reloadEveryNMinutes.
-
-*** EDDGridFromErddap erdMH1chla8day constructor finished. TIME=21088ms  (>10s!)
-
-change=Previously, this dataset was (temporarily?) not available.  Perhaps ERDDAP was just restarted.
-nActions=0
-
-*** constructing EDDGridFromErddap erdMH1chlamday
-  using info from quickRestartFile
-  latitude: FloatArray isn't sorted in ascending order: [0]=89.979164 > [1]=89.9375.
-  time: DoubleArray isn't evenly spaced: [0]=1.0426752E9, [1]=1.0453536E9, spacing=2678400.0, average spacing=2629241.379310345.
-    smallest spacing=2419200.0: [1]=1.0453536E9, [2]=1.0477728E9
-    biggest  spacing=2678400.0: [0]=1.0426752E9, [1]=1.0453536E9
-ERROR in getRemoteErddapVersion(https://coastwatch.pfeg.noaa.gov/erddap/version)
-java.io.IOException: ERROR from url=https://coastwatch.pfeg.noaa.gov/erddap/version : java.net.ConnectException: Connection timed out: getsockopt
-accessibleViaFiles=false because remote ERDDAP version is <v2.10, so no support for /files/.csv .
-WARNING! This ERDDAP won't try to subscribe to the dataset on the remote
-ERDDAP because this ERDDAP isn't publicly accessible.
-If you want to keep this dataset up-to-date, use a small reloadEveryNMinutes.
-
-*** EDDGridFromErddap erdMH1chlamday constructor finished. TIME=21094ms  (>10s!)
-
-change=Previously, this dataset was (temporarily?) not available.  Perhaps ERDDAP was just restarted.
-nActions=0
-
-*** constructing EDDGridFromErddap erdMH1kd4901day
-  using info from quickRestartFile
-  latitude: FloatArray isn't sorted in ascending order: [0]=89.979164 > [1]=89.9375.
-  time: DoubleArray isn't evenly spaced: [0]=1.0414224E9, [1]=1.0415088E9, spacing=86400.0, average spacing=86764.1983982015.
-    smallest spacing=86400.0: [0]=1.0414224E9, [1]=1.0415088E9
-    biggest  spacing=1468800.0: [6437]=1.5975792E9, [6438]=1.599048E9
-ERROR in getRemoteErddapVersion(https://coastwatch.pfeg.noaa.gov/erddap/version)
-java.io.IOException: ERROR from url=https://coastwatch.pfeg.noaa.gov/erddap/version : java.net.ConnectException: Connection timed out: getsockopt
-accessibleViaFiles=false because remote ERDDAP version is <v2.10, so no support for /files/.csv .
-WARNING! This ERDDAP won't try to subscribe to the dataset on the remote
-ERDDAP because this ERDDAP isn't publicly accessible.
-If you want to keep this dataset up-to-date, use a small reloadEveryNMinutes.
-
-*** EDDGridFromErddap erdMH1kd4901day constructor finished. TIME=21166ms  (>10s!)
-
-change=Previously, this dataset was (temporarily?) not available.  Perhaps ERDDAP was just restarted.
-nActions=0
-
-*** constructing EDDGridFromErddap erdMH1kd4908day
-  using info from quickRestartFile
-  latitude: FloatArray isn't sorted in ascending order: [0]=89.979164 > [1]=89.9375.
-  time: DoubleArray isn't evenly spaced: [0]=1.0417248E9, [1]=1.042416E9, spacing=691200.0, average spacing=690810.8108108108.
-    smallest spacing=432000.0: [45]=1.0728288E9, [46]=1.0732608E9
-    biggest  spacing=3196800.0: [731]=1.5434496E9, [732]=1.5466464E9
-ERROR in getRemoteErddapVersion(https://coastwatch.pfeg.noaa.gov/erddap/version)
-java.io.IOException: ERROR from url=https://coastwatch.pfeg.noaa.gov/erddap/version : java.net.ConnectException: Connection timed out: getsockopt
-accessibleViaFiles=false because remote ERDDAP version is <v2.10, so no support for /files/.csv .
-WARNING! This ERDDAP won't try to subscribe to the dataset on the remote
-ERDDAP because this ERDDAP isn't publicly accessible.
-If you want to keep this dataset up-to-date, use a small reloadEveryNMinutes.
-
-*** EDDGridFromErddap erdMH1kd4908day constructor finished. TIME=21111ms  (>10s!)
-
-change=Previously, this dataset was (temporarily?) not available.  Perhaps ERDDAP was just restarted.
-nActions=0
-
-*** constructing EDDGridFromErddap erdMH1kd490mday
-  using info from quickRestartFile
-  latitude: FloatArray isn't sorted in ascending order: [0]=89.979164 > [1]=89.9375.
-  time: DoubleArray isn't evenly spaced: [0]=1.0426752E9, [1]=1.0453536E9, spacing=2678400.0, average spacing=2629241.379310345.
-    smallest spacing=2419200.0: [1]=1.0453536E9, [2]=1.0477728E9
-    biggest  spacing=2678400.0: [0]=1.0426752E9, [1]=1.0453536E9
-ERROR in getRemoteErddapVersion(https://coastwatch.pfeg.noaa.gov/erddap/version)
-java.io.IOException: ERROR from url=https://coastwatch.pfeg.noaa.gov/erddap/version : java.net.ConnectException: Connection timed out: getsockopt
-accessibleViaFiles=false because remote ERDDAP version is <v2.10, so no support for /files/.csv .
-WARNING! This ERDDAP won't try to subscribe to the dataset on the remote
-ERDDAP because this ERDDAP isn't publicly accessible.
-If you want to keep this dataset up-to-date, use a small reloadEveryNMinutes.
-
-*** EDDGridFromErddap erdMH1kd490mday constructor finished. TIME=21089ms  (>10s!)
-
-change=Previously, this dataset was (temporarily?) not available.  Perhaps ERDDAP was just restarted.
-nActions=0
-
-*** constructing EDDGridFromErddap erdMH1par01day
-  using info from quickRestartFile
-  latitude: FloatArray isn't sorted in ascending order: [0]=89.979164 > [1]=89.9375.
-  time: DoubleArray isn't evenly spaced: [0]=1.0414224E9, [1]=1.0415088E9, spacing=86400.0, average spacing=86776.39123102867.
-    smallest spacing=86400.0: [0]=1.0414224E9, [1]=1.0415088E9
-    biggest  spacing=1468800.0: [6437]=1.5975792E9, [6438]=1.599048E9
-ERROR in getRemoteErddapVersion(https://coastwatch.pfeg.noaa.gov/erddap/version)
-java.io.IOException: ERROR from url=https://coastwatch.pfeg.noaa.gov/erddap/version : java.net.ConnectException: Connection timed out: getsockopt
-accessibleViaFiles=false because remote ERDDAP version is <v2.10, so no support for /files/.csv .
-WARNING! This ERDDAP won't try to subscribe to the dataset on the remote
-ERDDAP because this ERDDAP isn't publicly accessible.
-If you want to keep this dataset up-to-date, use a small reloadEveryNMinutes.
-
-*** EDDGridFromErddap erdMH1par01day constructor finished. TIME=21810ms  (>10s!)
-
-change=Previously, this dataset was (temporarily?) not available.  Perhaps ERDDAP was just restarted.
-nActions=0
-
-*** constructing EDDGridFromErddap erdMH1par08day
-  using info from quickRestartFile
-  latitude: FloatArray isn't sorted in ascending order: [0]=89.979164 > [1]=89.9375.
-  time: DoubleArray isn't evenly spaced: [0]=1.0417248E9, [1]=1.042416E9, spacing=691200.0, average spacing=690810.8108108108.
-    smallest spacing=432000.0: [45]=1.0728288E9, [46]=1.0732608E9
-    biggest  spacing=3196800.0: [731]=1.5434496E9, [732]=1.5466464E9
-ERROR in getRemoteErddapVersion(https://coastwatch.pfeg.noaa.gov/erddap/version)
-java.io.IOException: ERROR from url=https://coastwatch.pfeg.noaa.gov/erddap/version : java.net.ConnectException: Connection timed out: getsockopt
-accessibleViaFiles=false because remote ERDDAP version is <v2.10, so no support for /files/.csv .
-WARNING! This ERDDAP won't try to subscribe to the dataset on the remote
-ERDDAP because this ERDDAP isn't publicly accessible.
-If you want to keep this dataset up-to-date, use a small reloadEveryNMinutes.
-
-*** EDDGridFromErddap erdMH1par08day constructor finished. TIME=21086ms  (>10s!)
-
-change=Previously, this dataset was (temporarily?) not available.  Perhaps ERDDAP was just restarted.
-nActions=0
-
-*** constructing EDDGridFromErddap erdMH1par0mday
-  using info from quickRestartFile
-  latitude: FloatArray isn't sorted in ascending order: [0]=89.979164 > [1]=89.9375.
-  time: DoubleArray isn't evenly spaced: [0]=1.0426752E9, [1]=1.0453536E9, spacing=2678400.0, average spacing=2663685.5895196507.
-    smallest spacing=2419200.0: [1]=1.0453536E9, [2]=1.0477728E9
-    biggest  spacing=1.05408E7: [175]=1.5028416E9, [176]=1.5133824E9
-ERROR in getRemoteErddapVersion(https://coastwatch.pfeg.noaa.gov/erddap/version)
-java.io.IOException: ERROR from url=https://coastwatch.pfeg.noaa.gov/erddap/version : java.net.ConnectException: Connection timed out: getsockopt
-accessibleViaFiles=false because remote ERDDAP version is <v2.10, so no support for /files/.csv .
-WARNING! This ERDDAP won't try to subscribe to the dataset on the remote
-ERDDAP because this ERDDAP isn't publicly accessible.
-If you want to keep this dataset up-to-date, use a small reloadEveryNMinutes.
-
-*** EDDGridFromErddap erdMH1par0mday constructor finished. TIME=21109ms  (>10s!)
-
-change=Previously, this dataset was (temporarily?) not available.  Perhaps ERDDAP was just restarted.
-nActions=0
-
-*** constructing EDDGridFromErddap erdVH2018chla1day
-  using info from quickRestartFile
-  latitude: FloatArray isn't sorted in ascending order: [0]=89.979164 > [1]=89.9375.
-  time: DoubleArray isn't evenly spaced: [0]=1.3255056E9, [1]=1.325592E9, spacing=86400.0, average spacing=86422.40082966036.
-    smallest spacing=86400.0: [0]=1.3255056E9, [1]=1.325592E9
-    biggest  spacing=172800.0: [82]=1.3325904E9, [83]=1.3327632E9
-ERROR in getRemoteErddapVersion(https://coastwatch.pfeg.noaa.gov/erddap/version)
-java.io.IOException: ERROR from url=https://coastwatch.pfeg.noaa.gov/erddap/version : java.net.ConnectException: Connection timed out: getsockopt
-accessibleViaFiles=false because remote ERDDAP version is <v2.10, so no support for /files/.csv .
-WARNING! This ERDDAP won't try to subscribe to the dataset on the remote
-ERDDAP because this ERDDAP isn't publicly accessible.
-If you want to keep this dataset up-to-date, use a small reloadEveryNMinutes.
-
-*** EDDGridFromErddap erdVH2018chla1day constructor finished. TIME=21082ms  (>10s!)
-
-change=Previously, this dataset was (temporarily?) not available.  Perhaps ERDDAP was just restarted.
-nActions=0
-
-*** constructing EDDGridFromErddap erdVH2018chla8day
-  using info from quickRestartFile
-  latitude: FloatArray isn't sorted in ascending order: [0]=89.979164 > [1]=89.9375.
-  time: DoubleArray isn't evenly spaced: [0]=1.3257216E9, [1]=1.3264128E9, spacing=691200.0, average spacing=697901.8867924528.
-    smallest spacing=432000.0: [91]=1.388448E9, [92]=1.38888E9
-    biggest  spacing=3456000.0: [196]=1.4609376E9, [197]=1.4643936E9
-ERROR in getRemoteErddapVersion(https://coastwatch.pfeg.noaa.gov/erddap/version)
-java.io.IOException: ERROR from url=https://coastwatch.pfeg.noaa.gov/erddap/version : java.net.ConnectException: Connection timed out: getsockopt
-accessibleViaFiles=false because remote ERDDAP version is <v2.10, so no support for /files/.csv .
-WARNING! This ERDDAP won't try to subscribe to the dataset on the remote
-ERDDAP because this ERDDAP isn't publicly accessible.
-If you want to keep this dataset up-to-date, use a small reloadEveryNMinutes.
-
-*** EDDGridFromErddap erdVH2018chla8day constructor finished. TIME=21056ms  (>10s!)
-
-change=Previously, this dataset was (temporarily?) not available.  Perhaps ERDDAP was just restarted.
-nActions=0
-
-*** constructing EDDGridFromErddap erdVH2018chlamday
-  using info from quickRestartFile
-  latitude: FloatArray isn't sorted in ascending order: [0]=89.979164 > [1]=89.9375.
-  time: DoubleArray isn't evenly spaced: [0]=1.3265856E9, [1]=1.329264E9, spacing=2678400.0, average spacing=2629028.5714285714.
-    smallest spacing=2419200.0: [13]=1.3608864E9, [14]=1.3633056E9
-    biggest  spacing=2678400.0: [0]=1.3265856E9, [1]=1.329264E9
-ERROR in getRemoteErddapVersion(https://coastwatch.pfeg.noaa.gov/erddap/version)
-java.io.IOException: ERROR from url=https://coastwatch.pfeg.noaa.gov/erddap/version : java.net.ConnectException: Connection timed out: getsockopt
-accessibleViaFiles=false because remote ERDDAP version is <v2.10, so no support for /files/.csv .
-WARNING! This ERDDAP won't try to subscribe to the dataset on the remote
-ERDDAP because this ERDDAP isn't publicly accessible.
-If you want to keep this dataset up-to-date, use a small reloadEveryNMinutes.
-
-*** EDDGridFromErddap erdVH2018chlamday constructor finished. TIME=21216ms  (>10s!)
-
-change=Previously, this dataset was (temporarily?) not available.  Perhaps ERDDAP was just restarted.
-nActions=0
-
-*** constructing EDDGridFromErddap erdVH2018k4901day
-  using info from quickRestartFile
-  latitude: FloatArray isn't sorted in ascending order: [0]=89.979164 > [1]=89.9375.
-  time: DoubleArray isn't evenly spaced: [0]=1.3255056E9, [1]=1.325592E9, spacing=86400.0, average spacing=86422.40082966036.
-    smallest spacing=86400.0: [0]=1.3255056E9, [1]=1.325592E9
-    biggest  spacing=172800.0: [82]=1.3325904E9, [83]=1.3327632E9
-ERROR in getRemoteErddapVersion(https://coastwatch.pfeg.noaa.gov/erddap/version)
-java.io.IOException: ERROR from url=https://coastwatch.pfeg.noaa.gov/erddap/version : java.net.ConnectException: Connection timed out: getsockopt
-accessibleViaFiles=false because remote ERDDAP version is <v2.10, so no support for /files/.csv .
-WARNING! This ERDDAP won't try to subscribe to the dataset on the remote
-ERDDAP because this ERDDAP isn't publicly accessible.
-If you want to keep this dataset up-to-date, use a small reloadEveryNMinutes.
-
-*** EDDGridFromErddap erdVH2018k4901day constructor finished. TIME=21212ms  (>10s!)
-
-change=Previously, this dataset was (temporarily?) not available.  Perhaps ERDDAP was just restarted.
-nActions=0
-
-*** constructing EDDGridFromErddap erdVH2018k4908day
-  using info from quickRestartFile
-  latitude: FloatArray isn't sorted in ascending order: [0]=89.979164 > [1]=89.9375.
-  time: DoubleArray isn't evenly spaced: [0]=1.3257216E9, [1]=1.3264128E9, spacing=691200.0, average spacing=686390.1030927835.
-    smallest spacing=432000.0: [91]=1.388448E9, [92]=1.38888E9
-    biggest  spacing=691200.0: [0]=1.3257216E9, [1]=1.3264128E9
-ERROR in getRemoteErddapVersion(https://coastwatch.pfeg.noa
+accessibleViaFiles=false because r
