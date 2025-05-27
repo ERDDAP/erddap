@@ -3943,6 +3943,7 @@ class EDDTableTests {
             + "  </mdb:metadataScope>\n"
             + "</mdb:MD_Metadata>\n";
     results = results.replaceAll("....-..-..T..:..:......-..:..", "YYYY-MM-DDThh:mm:ss.uuu-TZ:00");
+    results = results.replaceAll("....-..-..T..:..:......Z", "YYYY-MM-DDThh:mm:ss.uuu-TZ:00");
     results = results.replaceAll("....-..-..T..:..:..Z", "YYYY-MM-DDThh:mm:ss.uuu-TZ:00");
     Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
@@ -3953,6 +3954,7 @@ class EDDTableTests {
             language, null, null, "", dir, eddTable.className() + "_1Station", ".iso19115");
     results = File2.directReadFrom88591File(dir + tName);
     results = results.replaceAll("....-..-..T..:..:......-..:..", "YYYY-MM-DDThh:mm:ss.uuu-TZ:00");
+    results = results.replaceAll("....-..-..T..:..:......Z", "YYYY-MM-DDThh:mm:ss.uuu-TZ:00");
     results = results.replaceAll("....-..-..T..:..:..Z", "YYYY-MM-DDThh:mm:ss.uuu-TZ:00");
     Test.ensureEqual(results, expected, "\nresults=\n" + results);
     language = 8; // fr
@@ -3961,6 +3963,7 @@ class EDDTableTests {
             language, null, null, "", dir, eddTable.className() + "_1Station", ".iso19115");
     results = File2.directReadFrom88591File(dir + tName);
     results = results.replaceAll("....-..-..T..:..:......-..:..", "YYYY-MM-DDThh:mm:ss.uuu-TZ:00");
+    results = results.replaceAll("....-..-..T..:..:......Z", "YYYY-MM-DDThh:mm:ss.uuu-TZ:00");
     results = results.replaceAll("....-..-..T..:..:..Z", "YYYY-MM-DDThh:mm:ss.uuu-TZ:00");
     Test.ensureEqual(results, expected, "\nresults=\n" + results);
     language = 9; // de
@@ -3969,6 +3972,7 @@ class EDDTableTests {
             language, null, null, "", dir, eddTable.className() + "_1Station", ".iso19115");
     results = File2.directReadFrom88591File(dir + tName);
     results = results.replaceAll("....-..-..T..:..:......-..:..", "YYYY-MM-DDThh:mm:ss.uuu-TZ:00");
+    results = results.replaceAll("....-..-..T..:..:......Z", "YYYY-MM-DDThh:mm:ss.uuu-TZ:00");
     results = results.replaceAll("....-..-..T..:..:..Z", "YYYY-MM-DDThh:mm:ss.uuu-TZ:00");
     Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
