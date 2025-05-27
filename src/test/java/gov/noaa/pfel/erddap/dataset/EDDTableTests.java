@@ -3943,7 +3943,7 @@ class EDDTableTests {
             + "  </mdb:metadataScope>\n"
             + "</mdb:MD_Metadata>\n";
     results = results.replaceAll("....-..-..T..:..:......-..:..", "YYYY-MM-DDThh:mm:ss.uuu-TZ:00");
-    Test.ensureEqual(results.substring(0, expected.length()), expected, "\nresults=\n" + results);
+    Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
     // ISO19115 metadata always uses language 0
     language = 1; // bn
@@ -3952,21 +3952,21 @@ class EDDTableTests {
             language, null, null, "", dir, eddTable.className() + "_1Station", ".iso19115");
     results = File2.directReadFrom88591File(dir + tName);
     results = results.replaceAll("....-..-..T..:..:......-..:..", "YYYY-MM-DDThh:mm:ss.uuu-TZ:00");
-    Test.ensureEqual(results.substring(0, expected.length()), expected, "\nresults=\n" + results);
+    Test.ensureEqual(results, expected, "\nresults=\n" + results);
     language = 8; // fr
     tName =
         eddTable.makeNewFileForDapQuery(
             language, null, null, "", dir, eddTable.className() + "_1Station", ".iso19115");
     results = File2.directReadFrom88591File(dir + tName);
     results = results.replaceAll("....-..-..T..:..:......-..:..", "YYYY-MM-DDThh:mm:ss.uuu-TZ:00");
-    Test.ensureEqual(results.substring(0, expected.length()), expected, "\nresults=\n" + results);
+    Test.ensureEqual(results, expected, "\nresults=\n" + results);
     language = 9; // de
     tName =
         eddTable.makeNewFileForDapQuery(
             language, null, null, "", dir, eddTable.className() + "_1Station", ".iso19115");
     results = File2.directReadFrom88591File(dir + tName);
     results = results.replaceAll("....-..-..T..:..:......-..:..", "YYYY-MM-DDThh:mm:ss.uuu-TZ:00");
-    Test.ensureEqual(results.substring(0, expected.length()), expected, "\nresults=\n" + results);
+    Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
     // das does localize
     expected =
