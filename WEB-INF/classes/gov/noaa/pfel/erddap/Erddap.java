@@ -16764,7 +16764,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
   /**
    * This sorts the datasetIDs by the datasets' titles.
    *
-   * @param language TODO
+   * @param language the index of the selected language
    * @param loggedInAs the name of the logged in user (or null if not logged in). This is used to
    *     determine if the user has the right to know if a given dataset exists. (But dataset will be
    *     matched if EDStatic.config.listPrivateDatasets.)
@@ -17874,7 +17874,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
    * See Google intro: https://developers.google.com/search/docs/guides/intro-structured-data See
    * Google test: https://search.google.com/structured-data/testing-tool/u/0/
    *
-   * @param language TODO
+   * @param language the index of the selected language
    * @throws IOException if trouble
    */
   public static void theSchemaDotOrgDataCatalog(int language, Writer writer, EDD datasets[])

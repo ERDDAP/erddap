@@ -1473,7 +1473,7 @@ public abstract class EDDTable extends EDD {
    * This is used by standardizeResultsTable (and places that bypass standardizeResultsTable) to
    * update the globalAttributes of a response table.
    *
-   * @param language TODO
+   * @param language the index of the selected language
    */
   public void setResponseGlobalAttributes(
       int language, String requestUrl, String userDapQuery, Table table) {
@@ -13436,7 +13436,7 @@ public abstract class EDDTable extends EDD {
    * urn:ioos:station:noaa.nws.ndbc:41004: urn:ioos:network:noaa.nws.ndbc:all (IOOS NDBC)
    * urn:ioos:network:noaa.nws.ndbc:[datasetID] (ERDDAP) (after : is (datasetID|stationID)[:varname]
    *
-   * @param language TODO
+   * @param language the index of the selected language
    * @param tSosOfferingType usually this EDDTable's sosOfferingType (e.g., Station), but sometimes
    *     sosNetworkOfferingType ("network") or "sensor".
    * @return sosGmlNameStart
@@ -14059,7 +14059,7 @@ public abstract class EDDTable extends EDD {
    * https://sdf.ndbc.noaa.gov/sos/ in particular https://ioos.github.io/sos-dif/dif/welcome.html
    * https://ioos.github.io/sos-dif/gml/IOOS/0.6.1/schemas/ioosObservationSpecializations.xsd
    *
-   * @param language TODO
+   * @param language the index of the selected language
    * @param writer In the end, the writer is flushed, not closed.
    */
   public void sosPhenomenaDictionary(int language, Writer writer) throws Throwable {

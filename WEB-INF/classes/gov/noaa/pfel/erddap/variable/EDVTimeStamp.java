@@ -334,7 +334,7 @@ public class EDVTimeStamp extends EDV {
    * UDUNITS numeric times) or "yyyy" or "YYYY" (a formatting string which has the year designator)
    * in the units attribute.
    *
-   * @param language TODO
+   * @param language the index of the selected language
    */
   public static boolean hasTimeUnits(
       int language, Attributes sourceAttributes, LocalizedAttributes addAttributes) {

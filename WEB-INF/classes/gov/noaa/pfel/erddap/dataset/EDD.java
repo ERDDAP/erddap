@@ -2572,7 +2572,7 @@ public abstract class EDD {
    * and Night, 0.05 degrees, Global, Science Quality". It is usually &lt; 80 characters long. The
    * information is often originally from the CF global metadata for "title".
    *
-   * @param language TODO
+   * @param language the index of the selected language
    * @return the title
    */
   public String title(int language) {
@@ -2584,7 +2584,7 @@ public abstract class EDD {
    * It may have newline characters (usually at &lt;= 72 chars per line). The information is often
    * originally from the CF global metadata for "summary".
    *
-   * @param language TODO
+   * @param language the index of the selected language
    * @return the summary
    */
   public String summary(int language) {
@@ -2594,7 +2594,7 @@ public abstract class EDD {
   /**
    * The extendedSummary is summary() plus a list of variable names, long names, and units.
    *
-   * @param language TODO
+   * @param language the index of the selected language
    * @return the extendedSummary
    */
   public String extendedSummary(int language) {
@@ -2660,7 +2660,7 @@ public abstract class EDD {
    * usually &lt; 20 characters long. The information is often originally from the CF global
    * metadata for "institution".
    *
-   * @param language TODO
+   * @param language the index of the selected language
    * @return the institution
    */
   public String institution(int language) {
@@ -2671,7 +2671,7 @@ public abstract class EDD {
    * The infoUrl identifies a url with information about the dataset. The information was supplied
    * by the constructor and is stored as global metadata for "infoUrl" (non-standard).
    *
-   * @param language TODO
+   * @param language the index of the selected language
    * @return the infoUrl
    */
   public String infoUrl(int language) {
@@ -2693,7 +2693,7 @@ public abstract class EDD {
    * The publicSourceUrl identifies the source (usually) url from the combinedGlobalAttributes. For
    * a FromErddap, this is the (e.g.,) opendap server that the remote ERDDAP gets data from.
    *
-   * @param language TODO
+   * @param language the index of the selected language
    * @return the publicSourceUrl
    */
   public String publicSourceUrl(int language) {
@@ -2816,7 +2816,7 @@ public abstract class EDD {
    * This returns the sosStandardNamePrefix from combinedGlobalAttributes (checked first) or
    * EDStatic (from setup.xml).
    *
-   * @param language TODO
+   * @param language the index of the selected language
    */
   public String sosStandardNamePrefix(int language) {
     String snp = combinedGlobalAttributes().getString(language, "sosStandardNamePrefix");
@@ -2827,7 +2827,7 @@ public abstract class EDD {
    * This returns the sosUrnBase from combinedGlobalAttributes (checked first) or EDStatic (from
    * setup.xml).
    *
-   * @param language TODO
+   * @param language the index of the selected language
    */
   public String sosUrnBase(int language) {
     String sub = combinedGlobalAttributes().getString(language, "sosUrnBase");
@@ -2839,7 +2839,7 @@ public abstract class EDD {
    * variables in this dataset. The combinedAttributes setting (if any) has priority over the
    * setup.xml setting.
    *
-   * @param language TODO
+   * @param language the index of the selected language
    */
   public String defaultDrawLandMask(int language) {
     String dlm = combinedGlobalAttributes().getString(language, "drawLandMask");
@@ -3145,7 +3145,7 @@ public abstract class EDD {
    * case-insensitve search. This uses a Boyer-Moore-like search (see String2.indexOf(byte[],
    * byte[], int[])).
    *
-   * @param language TODO
+   * @param language the index of the selected language
    * @param words the words or phrases to be searched for (already lowercase) stored as byte[] via
    *     word.getBytes(File2.UTF_8).
    * @param jump the jumpTables from String2.makeJumpTable(word).
@@ -3227,7 +3227,7 @@ public abstract class EDD {
   /**
    * This makes/returns the searchBytes that originalSearchEngine searchRank searches.
    *
-   * @param language TODO
+   * @param language the index of the selected language
    * @return the searchBytes that searchRank searches.
    */
   public byte[] searchBytes(int language) {
@@ -3237,7 +3237,7 @@ public abstract class EDD {
   /**
    * This makes the searchString (mixed case) used to create searchBytes or searchDocument.
    *
-   * @param language TODO
+   * @param language the index of the selected language
    * @return the searchString (mixed case) used to create searchBytes or searchDocument.
    */
   public abstract String searchString(int language);
@@ -11861,7 +11861,7 @@ public abstract class EDD {
    * This is used by standardizeResultsTable (and places that bypass standardizeResultsTable) to
    * update the globalAttributes of a response table.
    *
-   * @param language TODO
+   * @param language the index of the selected language
    * @return null if trouble. The new history is used for tableWriters, which allow null.
    */
   public String getNewHistory(int language, String requestUrl, String userDapQuery) {

@@ -645,7 +645,7 @@ public class EDV {
    * values from combinedAttributes. This removes the actual_range, data_min, or data_max attribute
    * from source- add- and combinedAttributes.
    *
-   * @param language TODO
+   * @param language the index of the selected language
    * @return a PAOne[2] (always) with sourceMin and sourceMax values from actual_range, data_min, or
    *     data_max metadata (or null's). NOTE: for EDVGridAxis this indicates order or storage, so
    *     may be low,high or high,low.
@@ -714,7 +714,7 @@ public class EDV {
    *
    * <p>EDVGridAxis overwrites this to use firstDestinationValue and lastDestinationValue.
    *
-   * @param language TODO
+   * @param language the index of the selected language
    */
   public void setActualRangeFromDestinationMinMax(int language) {
     /*
@@ -761,7 +761,7 @@ public class EDV {
    * setActualRangeFromDestinationMinMax(). This must be done after scaleFactor and addOffset have
    * be determined.
    *
-   * @param language TODO
+   * @param language the index of the selected language
    */
   public void extractAndSetActualRange(int language) {
     PAOne mm[] = extractActualRange(language);
@@ -1709,7 +1709,7 @@ public class EDV {
    * <p>Results PrimitiveArrays with integerType and char data from this var should use
    * setMaxIsMV(hasMv()).
    *
-   * @param language TODO
+   * @param language the index of the selected language
    * @param tDatasetID for diagnostic messages
    */
   public void suggestAddFillValue(int language, String tDatasetID) {
