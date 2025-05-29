@@ -7,7 +7,8 @@ import gov.noaa.pfel.erddap.util.EDStatic;
     fileTypeName = ".transparentPng",
     infoUrl = "http://www.libpng.org/pub/png/",
     versionAdded = "2.17.0",
-    isImage = true)
+    isImage = true,
+    contentType = "image/png")
 public class TransparentPngFiles extends ImageFiles {
 
   @Override

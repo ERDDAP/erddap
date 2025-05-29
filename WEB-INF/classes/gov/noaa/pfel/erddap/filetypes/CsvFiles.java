@@ -6,7 +6,8 @@ import gov.noaa.pfel.erddap.util.EDStatic;
     fileTypeExtension = ".csv",
     fileTypeName = ".csv",
     infoUrl = "https://en.wikipedia.org/wiki/Comma-separated_values",
-    versionAdded = "1.0.0")
+    versionAdded = "1.0.0",
+    contentType = "text/csv")
 public class CsvFiles extends SeparatedValue {
 
   public CsvFiles() {

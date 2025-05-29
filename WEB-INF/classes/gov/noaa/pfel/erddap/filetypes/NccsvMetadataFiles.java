@@ -23,7 +23,8 @@ import java.io.Writer;
     fileTypeExtension = ".csv",
     fileTypeName = ".nccsvMetadata",
     infoUrl = "https://erddap.github.io/docs/user/nccsv-1.20",
-    versionAdded = "1.76.0")
+    versionAdded = "1.76.0",
+    contentType = "text/csv")
 public class NccsvMetadataFiles extends FileTypeInterface {
 
   @Override
@@ -59,12 +60,7 @@ public class NccsvMetadataFiles extends FileTypeInterface {
 
   @Override
   public void writeGridToStream(DapRequestInfo requestInfo) throws Throwable {
-    saveAsNccsv(
-        requestInfo.language(),
-        requestInfo.requestUrl(),
-        requestInfo.userDapQuery(),
-        requestInfo.outputStream(),
-        requestInfo.getEDDGrid());
+    saveAsNccsv(requestInfo.outputStream(), requestInfo.getEDDGrid());
   }
 
   @Override
@@ -77,21 +73,11 @@ public class NccsvMetadataFiles extends FileTypeInterface {
    * (https://erddap.github.io/docs/user/nccsv-1.20) format. If no exception is thrown, the data was
    * successfully written.
    *
-   * @param language the index of the selected language
-   * @param requestUrl the part of the user's request, after EDStatic.config.baseUrl, before '?'.
-   * @param userDapQuery an OPeNDAP DAP-style query string, still percentEncoded (shouldn't be
-   *     null). e.g., ATssta[45:1:45][0:1:0][120:10:140][130:10:160].
    * @param outputStreamSource the source of an outputStream (usually already buffered) to receive
    *     the results. At the end of this method the outputStream is flushed, not closed.
    * @throws Throwable if trouble.
    */
-  private void saveAsNccsv(
-      int language,
-      String requestUrl,
-      String userDapQuery,
-      OutputStreamSource outputStreamSource,
-      EDDGrid grid)
-      throws Throwable {
+  private void saveAsNccsv(OutputStreamSource outputStreamSource, EDDGrid grid) throws Throwable {
 
     if (EDDGrid.reallyVerbose) String2.log("  EDDGrid.saveAsNccsv");
 

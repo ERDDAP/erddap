@@ -6,7 +6,8 @@ import gov.noaa.pfel.erddap.util.EDStatic;
     fileTypeExtension = ".jsonl",
     fileTypeName = ".jsonlCSV",
     infoUrl = "https://jsonlines.org/",
-    versionAdded = "1.82.0")
+    versionAdded = "1.82.0",
+    contentType = "application/x-jsonlines")
 public class JsonlCSVFiles extends Jsonl {
 
   public JsonlCSVFiles() {

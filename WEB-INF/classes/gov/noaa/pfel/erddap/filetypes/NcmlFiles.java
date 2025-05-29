@@ -22,7 +22,8 @@ import java.io.Writer;
     fileTypeName = ".ncml",
     infoUrl = "https://docs.unidata.ucar.edu/netcdf-java/current/userguide/ncml_overview.html",
     versionAdded = "1.48.0",
-    availableTable = false)
+    availableTable = false,
+    contentType = "application/xml")
 public class NcmlFiles extends FileTypeInterface {
 
   @Override
@@ -32,12 +33,7 @@ public class NcmlFiles extends FileTypeInterface {
 
   @Override
   public void writeGridToStream(DapRequestInfo requestInfo) throws Throwable {
-    saveAsNCML(
-        requestInfo.language(),
-        requestInfo.loggedInAs(),
-        requestInfo.requestUrl(),
-        requestInfo.outputStream(),
-        requestInfo.getEDDGrid());
+    saveAsNCML(requestInfo.loggedInAs(), requestInfo.outputStream(), requestInfo.getEDDGrid());
   }
 
   @Override
@@ -83,19 +79,12 @@ public class NcmlFiles extends FileTypeInterface {
    * Annotated Schema for NcML
    * "https://www.unidata.ucar.edu/software/thredds/current/netcdf-java/ncml/AnnotatedSchema4.html"
    *
-   * @param language the index of the selected language
    * @param loggedInAs
-   * @param requestUrl the part of the user's request, after EDStatic.config.baseUrl, before '?'.
    * @param outputStreamSource the source of an outputStream (usually already buffered) to receive
    *     the results. At the end of this method the outputStream is flushed, not closed.
    * @throws Throwable if trouble.
    */
-  private void saveAsNCML(
-      int language,
-      String loggedInAs,
-      String requestUrl,
-      OutputStreamSource outputStreamSource,
-      EDDGrid grid)
+  private void saveAsNCML(String loggedInAs, OutputStreamSource outputStreamSource, EDDGrid grid)
       throws Throwable {
     if (EDDGrid.reallyVerbose) String2.log("  EDDGrid.saveAsNCML " + grid.datasetID());
     long time = System.currentTimeMillis();

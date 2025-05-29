@@ -12,7 +12,8 @@ import java.io.OutputStream;
     fileTypeName = ".fgdc",
     infoUrl =
         "https://www.fgdc.gov/standards/projects/FGDC-standards-projects/metadata/base-metadata/index_html",
-    versionAdded = "1.0.0")
+    versionAdded = "1.0.0",
+    contentType = "application/xml")
 public class FgdcFiles extends FileTypeInterface {
 
   @Override

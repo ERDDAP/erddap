@@ -25,7 +25,8 @@ import java.text.MessageFormat;
     fileTypeExtension = ".mat",
     fileTypeName = ".mat",
     infoUrl = "https://www.mathworks.com/",
-    versionAdded = "1.0.0")
+    versionAdded = "1.0.0",
+    contentType = "application/x-download")
 public class MatFiles extends TableWriterFileType {
 
   @Override
@@ -43,7 +44,6 @@ public class MatFiles extends TableWriterFileType {
       throws Throwable {
     if (tableWriter instanceof TableWriterAllWithMetadata) {
       saveAsMatlab(
-          requestInfo.language(),
           requestInfo.outputStream(),
           (TableWriterAllWithMetadata) tableWriter,
           requestInfo.edd().datasetID());
@@ -70,7 +70,6 @@ public class MatFiles extends TableWriterFileType {
    * because .mat files don't store attributes. This maintains the data types (Strings become
    * char[][]).
    *
-   * @param language the index of the selected language
    * @param outputStreamSource
    * @param twawm all the results data, with missingValues stored as destinationMissingValues or
    *     destinationFillValues (they are converted to NaNs)
@@ -80,10 +79,7 @@ public class MatFiles extends TableWriterFileType {
    * @throws Throwable
    */
   private void saveAsMatlab(
-      int language,
-      OutputStreamSource outputStreamSource,
-      TableWriterAllWithMetadata twawm,
-      String structureName)
+      OutputStreamSource outputStreamSource, TableWriterAllWithMetadata twawm, String structureName)
       throws Throwable {
     if (EDDTable.reallyVerbose) String2.log("EDDTable.saveAsMatlab");
     long time = System.currentTimeMillis();

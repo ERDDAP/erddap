@@ -24,7 +24,9 @@ import java.io.OutputStream;
     fileTypeExtension = ".wav",
     fileTypeName = ".wav",
     infoUrl = "https://en.wikipedia.org/wiki/WAV",
-    versionAdded = "1.82.0")
+    versionAdded = "1.82.0",
+    contentType = "audio/wav",
+    addContentDispositionHeader = false)
 public class WavFiles extends CacheLockFiles {
 
   public WavFiles() {

@@ -7,7 +7,9 @@ import gov.noaa.pfel.erddap.util.EDStatic;
     fileTypeName = ".ncCFHeader",
     infoUrl = "https://linux.die.net/man/1/ncdump",
     versionAdded = "1.44.0",
-    availableGrid = false)
+    availableGrid = false,
+    contentType = "text/plain",
+    addContentDispositionHeader = false)
 public class NcCFHeaderFiles extends NcCFFiles {
   public NcCFHeaderFiles() {
     super(true);

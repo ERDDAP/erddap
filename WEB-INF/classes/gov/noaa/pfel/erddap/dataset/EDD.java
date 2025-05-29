@@ -473,6 +473,19 @@ public abstract class EDD {
       return (Boolean) annotationInfo.getParameterValues().get("isImage").getValue();
     }
 
+    public boolean getAddContentDispositionHeader() {
+      return (Boolean)
+          annotationInfo.getParameterValues().get("addContentDispositionHeader").getValue();
+    }
+
+    public String getContentType() {
+      return (String) annotationInfo.getParameterValues().get("contentType").getValue();
+    }
+
+    public String getContentDescription() {
+      return (String) annotationInfo.getParameterValues().get("contentDescription").getValue();
+    }
+
     public FileTypeInterface getInstance() {
       try {
         return fileType.getConstructor().newInstance();

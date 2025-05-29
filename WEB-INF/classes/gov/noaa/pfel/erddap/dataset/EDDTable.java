@@ -2888,7 +2888,6 @@ public abstract class EDDTable extends EDD {
               + fileName
               + "\n  fileTypeName="
               + fileTypeName);
-    long makeTime = System.currentTimeMillis();
     String tErddapUrl = EDStatic.erddapUrl(request, loggedInAs, language);
 
     // special EDDTableFromHttpGet file types

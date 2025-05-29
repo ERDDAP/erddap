@@ -28,7 +28,8 @@ import java.util.HashSet;
     fileTypeExtension = ".itx",
     fileTypeName = ".itx",
     infoUrl = "https://www.wavemetrics.net/doc/igorman/II-09%20Data%20Import%20Export.pdf",
-    versionAdded = "1.74.0")
+    versionAdded = "1.74.0",
+    contentType = "application/x-download")
 public class ItxFiles extends TableWriterFileType {
 
   @Override
@@ -45,11 +46,7 @@ public class ItxFiles extends TableWriterFileType {
   public void writeTableToFileFormat(DapRequestInfo requestInfo, TableWriter tableWriter)
       throws Throwable {
     if (tableWriter instanceof TableWriterAllWithMetadata) {
-      saveAsIgor(
-          requestInfo.language(),
-          requestInfo.outputStream(),
-          (TableWriterAllWithMetadata) tableWriter,
-          requestInfo.edd().datasetID());
+      saveAsIgor(requestInfo.outputStream(), (TableWriterAllWithMetadata) tableWriter);
     }
   }
 
@@ -85,14 +82,9 @@ public class ItxFiles extends TableWriterFileType {
    * @param outputStreamSource If all goes well, the outputstream is closed at the end.
    * @param twawm all the results data, with missingValues stored as destinationMissingValues or
    *     destinationFillValues (they will be converted to NaNs)
-   * @param tDatasetID
    * @throws Throwable
    */
-  private void saveAsIgor(
-      int language,
-      OutputStreamSource outputStreamSource,
-      TableWriterAllWithMetadata twawm,
-      String tDatasetID)
+  private void saveAsIgor(OutputStreamSource outputStreamSource, TableWriterAllWithMetadata twawm)
       throws Throwable {
 
     if (EDDTable.reallyVerbose) String2.log("EDDTable.saveAsIgor");
