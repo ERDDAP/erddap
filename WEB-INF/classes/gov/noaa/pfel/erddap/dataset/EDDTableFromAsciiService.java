@@ -23,6 +23,7 @@ import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.*;
 import java.io.BufferedReader;
 import java.util.ArrayList;
+import java.util.List;
 
 // import java.util.GregorianCalendar;
 
@@ -63,7 +64,7 @@ public abstract class EDDTableFromAsciiService extends EDDTable {
     String tDatasetType = xmlReader.attributeValue("type");
 
     LocalizedAttributes tGlobalAttributes = null;
-    ArrayList<DataVariableInfo> tDataVariables = new ArrayList<>();
+    List<DataVariableInfo> tDataVariables = new ArrayList<>();
     int tReloadEveryNMinutes = Integer.MAX_VALUE;
     String tAccessibleTo = null;
     String tGraphsAccessibleTo = null;
@@ -254,7 +255,7 @@ public abstract class EDDTableFromAsciiService extends EDDTable {
       String tDefaultGraphQuery,
       String tAddVariablesWhere,
       LocalizedAttributes tAddGlobalAttributes,
-      ArrayList<DataVariableInfo> tDataVariables,
+      List<DataVariableInfo> tDataVariables,
       int tReloadEveryNMinutes,
       String tLocalSourceUrl,
       String tBeforeData[],

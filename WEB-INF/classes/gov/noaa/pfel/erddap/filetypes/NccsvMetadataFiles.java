@@ -62,7 +62,7 @@ public class NccsvMetadataFiles extends FileTypeInterface {
 
   @Override
   public void writeGridToStream(DapRequestInfo requestInfo) throws Throwable {
-    saveAsNccsv(requestInfo.outputStream(), requestInfo.getEDDGrid());
+    saveAsNccsv(requestInfo.language(), requestInfo.outputStream(), requestInfo.getEDDGrid());
   }
 
   @Override
@@ -79,7 +79,8 @@ public class NccsvMetadataFiles extends FileTypeInterface {
    *     the results. At the end of this method the outputStream is flushed, not closed.
    * @throws Throwable if trouble.
    */
-  private void saveAsNccsv(OutputStreamSource outputStreamSource, EDDGrid grid) throws Throwable {
+  private void saveAsNccsv(int language, OutputStreamSource outputStreamSource, EDDGrid grid)
+      throws Throwable {
 
     if (EDDGrid.reallyVerbose) String2.log("  EDDGrid.saveAsNccsv");
 

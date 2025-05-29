@@ -33,7 +33,11 @@ public class NcmlFiles extends FileTypeInterface {
 
   @Override
   public void writeGridToStream(DapRequestInfo requestInfo) throws Throwable {
-    saveAsNCML(requestInfo.loggedInAs(), requestInfo.outputStream(), requestInfo.getEDDGrid());
+    saveAsNCML(
+        requestInfo.language(),
+        requestInfo.loggedInAs(),
+        requestInfo.outputStream(),
+        requestInfo.getEDDGrid());
   }
 
   @Override
@@ -84,7 +88,8 @@ public class NcmlFiles extends FileTypeInterface {
    *     the results. At the end of this method the outputStream is flushed, not closed.
    * @throws Throwable if trouble.
    */
-  private void saveAsNCML(String loggedInAs, OutputStreamSource outputStreamSource, EDDGrid grid)
+  private void saveAsNCML(
+      int language, String loggedInAs, OutputStreamSource outputStreamSource, EDDGrid grid)
       throws Throwable {
     if (EDDGrid.reallyVerbose) String2.log("  EDDGrid.saveAsNCML " + grid.datasetID());
     long time = System.currentTimeMillis();

@@ -676,7 +676,7 @@ public class OutputStreamFromHttpResponse implements OutputStreamSource {
   public static boolean showFileSaveAs(
       boolean genericCompressed, String fileType, String extension) {
     if (genericCompressed) {
-      return genericCompressed;
+      return true;
     }
     EDDFileTypeInfo fileInfo = EDD.EDD_FILE_TYPE_INFO.get(fileType);
     if (fileInfo != null) {

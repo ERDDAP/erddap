@@ -31,6 +31,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.HashSet;
+import java.util.List;
 
 /**
  * This class downloads data from a THREDDS data server with lots of files into .nc files in the
@@ -93,7 +94,7 @@ public class EDDTableFromThreddsFiles extends EDDTableFromFiles {
       String tDefaultDataQuery,
       String tDefaultGraphQuery,
       LocalizedAttributes tAddGlobalAttributes,
-      ArrayList<DataVariableInfo> tDataVariables,
+      List<DataVariableInfo> tDataVariables,
       int tReloadEveryNMinutes,
       int tUpdateEveryNMillis,
       String tFileDir,

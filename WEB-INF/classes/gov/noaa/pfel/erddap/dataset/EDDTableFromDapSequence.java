@@ -32,6 +32,7 @@ import gov.noaa.pfel.erddap.variable.*;
 import java.io.ByteArrayInputStream;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 
 /**
  * This class represents a table of data from an opendap sequence source.
@@ -271,7 +272,7 @@ public class EDDTableFromDapSequence extends EDDTable {
       String tDefaultGraphQuery,
       String tAddVariablesWhere,
       LocalizedAttributes tAddGlobalAttributes,
-      ArrayList<DataVariableInfo> tDataVariables,
+      List<DataVariableInfo> tDataVariables,
       int tReloadEveryNMinutes,
       String tLocalSourceUrl,
       String tOuterSequenceName,
