@@ -10,6 +10,7 @@ import com.cohort.util.Test;
 import com.cohort.util.Units2;
 import gov.noaa.pfel.coastwatch.griddata.NcHelper;
 import gov.noaa.pfel.erddap.GenerateDatasetsXml;
+import gov.noaa.pfel.erddap.util.EDMessages;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import java.nio.file.Path;
 import org.junit.jupiter.api.BeforeAll;
@@ -35,7 +36,7 @@ class EDDGridFromNcFilesUnpackedTests {
    */
   @org.junit.jupiter.api.Test
   void testGenerateDatasetsXml() throws Throwable {
-
+    int language = EDMessages.DEFAULT_LANGUAGE;
     // String2.log("\n*** EDDGridFromNcFilesUnpacked.testGenerateDatasetsXml");
 
     String sampleDir =
@@ -349,7 +350,8 @@ class EDDGridFromNcFilesUnpackedTests {
     EDD.deleteCachedDatasetInfo(tDatasetID);
     EDD edd = EDDGridFromNcFilesUnpacked.oneFromXmlFragment(null, results);
     Test.ensureEqual(edd.datasetID(), tDatasetID, "");
-    Test.ensureEqual(edd.title(), "Daily MUR SST, Interim near-real-time (nrt) product", "");
+    Test.ensureEqual(
+        edd.title(language), "Daily MUR SST, Interim near-real-time (nrt) product", "");
     Test.ensureEqual(String2.toCSSVString(edd.dataVariableDestinationNames()), "analysed_sst", "");
 
     String2.log("\nEDDGridFromNcFilesUnpacked.testGenerateDatasetsXml passed the test.");

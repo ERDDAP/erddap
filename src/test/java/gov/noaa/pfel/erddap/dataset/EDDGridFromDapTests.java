@@ -20,6 +20,8 @@ import gov.noaa.pfel.coastwatch.griddata.NcHelper;
 import gov.noaa.pfel.coastwatch.util.SSR;
 import gov.noaa.pfel.erddap.GenerateDatasetsXml;
 import gov.noaa.pfel.erddap.dataset.EDD.EDDFileTypeInfo;
+import gov.noaa.pfel.erddap.dataset.metadata.LocalizedAttributes;
+import gov.noaa.pfel.erddap.util.EDMessages;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.EDVGridAxis;
 import gov.noaa.pfel.erddap.variable.EDVTimeGridAxis;
@@ -184,9 +186,12 @@ class EDDGridFromDapTests {
     // String2.log(
     // "\n\naddAtt=" + gridDataset.addGlobalAttributes() +
     // "\n\ncombinedAtt=" + gridDataset.combinedGlobalAttributes());
-    Test.ensureEqual(gridDataset.combinedGlobalAttributes().getString("et_affine"), null, "");
     Test.ensureEqual(
-        gridDataset.dataVariables()[0].combinedAttributes().getString("percentCoverage"), null, "");
+        gridDataset.combinedGlobalAttributes().getString(language, "et_affine"), null, "");
+    Test.ensureEqual(
+        gridDataset.dataVariables()[0].combinedAttributes().getString(language, "percentCoverage"),
+        null,
+        "");
 
     // *** test parseQuery with invalid queries
     error = "";
@@ -2755,7 +2760,8 @@ class EDDGridFromDapTests {
 
     // test " in attributes
     EDDGrid tedg = (EDDGridFromDap) EDDGridFromDap.oneFromDatasetsXml(null, "erdSGchla8day");
-    String2.log("\n***raw references=" + tedg.addGlobalAttributes.getString("references"));
+    String2.log(
+        "\n***raw references=" + tedg.addGlobalAttributes.getString(language, "references"));
     tName =
         tedg.makeNewFileForDapQuery(
             language,
@@ -2783,6 +2789,7 @@ class EDDGridFromDapTests {
 
   @org.junit.jupiter.api.Test
   void testGenerateDatasetsXml() throws Throwable {
+    int language = EDMessages.DEFAULT_LANGUAGE;
     // testVerboseOn();
     // don't test local dataset because of dns/numericIP problems
     // this dataset is good test because it has 2 dimension combos
@@ -3036,7 +3043,7 @@ class EDDGridFromDapTests {
     // results
     Test.ensureEqual(edd.datasetID(), tDatasetID, "");
     Test.ensureEqual(
-        edd.title(),
+        edd.title(language),
         "SODA v2.2.4 monthly means (soda pop2.2.4) [time][lev][lat][lon], 0.5°, 1871-2010",
         "");
     Test.ensureEqual(
@@ -5471,7 +5478,8 @@ class EDDGridFromDapTests {
     String2.log("  make IntArray time=" + (System.currentTimeMillis() - time) + "ms");
 
     EDVGridAxis edvga =
-        new EDVGridAxis("testDatasetID", "x", "x", new Attributes(), new Attributes(), vals);
+        new EDVGridAxis(
+            "testDatasetID", "x", "x", new Attributes(), new LocalizedAttributes(), vals);
     time = System.currentTimeMillis();
     results = edvga.sliderCsvValues();
     expected = "12, 13, 14, 15, 16, 17, 18, 19,";
@@ -5489,7 +5497,9 @@ class EDDGridFromDapTests {
     for (int i = 0; i < 10000000; i++) vals.add(123456 + i);
     String2.log("  make IntArray time=" + (System.currentTimeMillis() - time) + "ms");
 
-    edvga = new EDVGridAxis("testDatasetID", "x", "x", new Attributes(), new Attributes(), vals);
+    edvga =
+        new EDVGridAxis(
+            "testDatasetID", "x", "x", new Attributes(), new LocalizedAttributes(), vals);
     time = System.currentTimeMillis();
     results = edvga.sliderCsvValues();
     expected = "123456, 150000, 200000, 250000, 300000, 350000, 400000, 450000,";
@@ -5514,7 +5524,7 @@ class EDDGridFromDapTests {
             "mytime",
             null,
             new Attributes().add("units", Calendar2.SECONDS_SINCE_1970),
-            new Attributes(),
+            new LocalizedAttributes(),
             seconds);
     time = System.currentTimeMillis();
     results = edvtsga.sliderCsvValues();
@@ -5532,7 +5542,7 @@ class EDDGridFromDapTests {
             "testDatasetID",
             "time",
             new Attributes().add("units", Calendar2.SECONDS_SINCE_1970),
-            new Attributes(),
+            new LocalizedAttributes(),
             seconds);
     time = System.currentTimeMillis();
     results = edvtga.sliderCsvValues();
@@ -6435,12 +6445,13 @@ class EDDGridFromDapTests {
   void testQuickRestart() throws Throwable {
     // String2.log("\nEDDGridFromDap.testQuickRestart");
     String tDatasetID = "erdBAssta5day";
+    int language = EDMessages.DEFAULT_LANGUAGE;
 
     // regular load dataset
     File2.delete(EDDGridFromDap.quickRestartFullFileName(tDatasetID)); // force regular load
     long time1 = System.currentTimeMillis();
     EDD edd1 = EDDTestDataset.geterdBAssta5day();
-    String searchString1 = String2.utf8BytesToString(edd1.searchBytes());
+    String searchString1 = String2.utf8BytesToString(edd1.searchBytes(language));
     time1 = System.currentTimeMillis() - time1;
 
     // try to load from quickRestartFile
@@ -6451,7 +6462,7 @@ class EDDGridFromDapTests {
     Test.ensureTrue(EDStatic.initialLoadDatasets(), "");
     long time2 = System.currentTimeMillis();
     EDD edd2 = EDDTestDataset.geterdBAssta5day();
-    String searchString2 = String2.utf8BytesToString(edd2.searchBytes());
+    String searchString2 = String2.utf8BytesToString(edd2.searchBytes(language));
     time2 = System.currentTimeMillis() - time2;
 
     String2.log(

@@ -20,6 +20,7 @@ import gov.noaa.pfel.coastwatch.util.FileVisitorDNLS;
 import gov.noaa.pfel.coastwatch.util.SSR;
 import gov.noaa.pfel.coastwatch.util.SimpleXMLReader;
 import gov.noaa.pfel.erddap.Erddap;
+import gov.noaa.pfel.erddap.dataset.metadata.LocalizedAttributes;
 import gov.noaa.pfel.erddap.handlers.EDDGridAggregateExistingDimensionHandler;
 import gov.noaa.pfel.erddap.handlers.SaxHandlerClass;
 import gov.noaa.pfel.erddap.util.EDStatic;
@@ -361,7 +362,7 @@ public class EDDGridAggregateExistingDimension extends EDDGrid {
     String sn = av0.sourceName();
     String dn = av0.destinationName();
     Attributes sa = av0.sourceAttributes();
-    Attributes aa = av0.addAttributes();
+    LocalizedAttributes aa = av0.addAttributes();
     axisVariables[0] = makeAxisVariable(tDatasetID, 0, sn, dn, sa, aa, cumSV);
 
     // make the local dataVariables

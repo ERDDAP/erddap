@@ -15,8 +15,10 @@ import gov.noaa.pfel.coastwatch.pointdata.Table;
 import gov.noaa.pfel.coastwatch.util.SSR;
 import gov.noaa.pfel.coastwatch.util.SimpleXMLReader;
 import gov.noaa.pfel.erddap.Erddap;
+import gov.noaa.pfel.erddap.dataset.metadata.LocalizedAttributes;
 import gov.noaa.pfel.erddap.handlers.EDDTableFromAsciiServiceHandler;
 import gov.noaa.pfel.erddap.handlers.SaxHandlerClass;
+import gov.noaa.pfel.erddap.util.EDMessages;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.*;
 import java.io.BufferedReader;
@@ -60,8 +62,8 @@ public abstract class EDDTableFromAsciiService extends EDDTable {
     String tDatasetID = xmlReader.attributeValue("datasetID");
     String tDatasetType = xmlReader.attributeValue("type");
 
-    Attributes tGlobalAttributes = null;
-    ArrayList tDataVariables = new ArrayList();
+    LocalizedAttributes tGlobalAttributes = null;
+    ArrayList<DataVariableInfo> tDataVariables = new ArrayList<>();
     int tReloadEveryNMinutes = Integer.MAX_VALUE;
     String tAccessibleTo = null;
     String tGraphsAccessibleTo = null;
@@ -147,10 +149,6 @@ public abstract class EDDTableFromAsciiService extends EDDTable {
         default -> xmlReader.unexpectedTagException();
       }
     }
-    int ndv = tDataVariables.size();
-    Object ttDataVariables[][] = new Object[ndv][];
-    for (int i = 0; i < tDataVariables.size(); i++)
-      ttDataVariables[i] = (Object[]) tDataVariables.get(i);
 
     if (tDatasetType.equals("EDDTableFromAsciiServiceNOS")) {
 
@@ -166,7 +164,7 @@ public abstract class EDDTableFromAsciiService extends EDDTable {
           tDefaultGraphQuery,
           tAddVariablesWhere,
           tGlobalAttributes,
-          ttDataVariables,
+          tDataVariables,
           tReloadEveryNMinutes,
           tLocalSourceUrl,
           tBeforeData,
@@ -255,8 +253,8 @@ public abstract class EDDTableFromAsciiService extends EDDTable {
       String tDefaultDataQuery,
       String tDefaultGraphQuery,
       String tAddVariablesWhere,
-      Attributes tAddGlobalAttributes,
-      Object[][] tDataVariables,
+      LocalizedAttributes tAddGlobalAttributes,
+      ArrayList<DataVariableInfo> tDataVariables,
       int tReloadEveryNMinutes,
       String tLocalSourceUrl,
       String tBeforeData[],
@@ -265,6 +263,7 @@ public abstract class EDDTableFromAsciiService extends EDDTable {
       throws Throwable {
 
     if (verbose) String2.log("\n*** constructing " + tDatasetType + ": " + tDatasetID);
+    int language = EDMessages.DEFAULT_LANGUAGE;
     long constructionStartMillis = System.currentTimeMillis();
     String errorInMethod = "Error in " + tDatasetType + "(" + tDatasetID + ") constructor:\n";
 
@@ -279,9 +278,9 @@ public abstract class EDDTableFromAsciiService extends EDDTable {
     sosOfferingPrefix = tSosOfferingPrefix;
     defaultDataQuery = tDefaultDataQuery;
     defaultGraphQuery = tDefaultGraphQuery;
-    if (tAddGlobalAttributes == null) tAddGlobalAttributes = new Attributes();
+    if (tAddGlobalAttributes == null) tAddGlobalAttributes = new LocalizedAttributes();
     addGlobalAttributes = tAddGlobalAttributes;
-    addGlobalAttributes.set("sourceUrl", convertToPublicSourceUrl(tLocalSourceUrl));
+    addGlobalAttributes.set(language, "sourceUrl", convertToPublicSourceUrl(tLocalSourceUrl));
     localSourceUrl = tLocalSourceUrl;
     setReloadEveryNMinutes(tReloadEveryNMinutes);
     beforeData = tBeforeData == null ? new String[0] : tBeforeData;
@@ -295,27 +294,29 @@ public abstract class EDDTableFromAsciiService extends EDDTable {
         PrimitiveArray.REGEX_OP; // standardizeResultsTable always (re)tests regex constraints
 
     // get global attributes
-    combinedGlobalAttributes = new Attributes(addGlobalAttributes);
-    String tLicense = combinedGlobalAttributes.getString("license");
+    combinedGlobalAttributes = new LocalizedAttributes(addGlobalAttributes);
+    String tLicense = combinedGlobalAttributes.getString(language, "license");
     if (tLicense != null)
       combinedGlobalAttributes.set(
-          "license", String2.replaceAll(tLicense, "[standard]", EDStatic.messages.standardLicense));
+          language,
+          "license",
+          String2.replaceAll(tLicense, "[standard]", EDStatic.messages.standardLicense));
     combinedGlobalAttributes.removeValue("\"null\"");
 
     // create structures to hold the sourceAttributes temporarily
-    int ndv = tDataVariables.length;
+    int ndv = tDataVariables.size();
 
     // create dataVariables[]
     dataVariables = new EDV[ndv];
     responseSubstringStart = new int[ndv];
     responseSubstringEnd = new int[ndv];
     for (int dv = 0; dv < ndv; dv++) {
-      String tSourceName = (String) tDataVariables[dv][0];
-      String tDestName = (String) tDataVariables[dv][1];
+      String tSourceName = tDataVariables.get(dv).sourceName();
+      String tDestName = tDataVariables.get(dv).destinationName();
       if (tDestName == null || tDestName.trim().length() == 0) tDestName = tSourceName;
       Attributes tSourceAtt = new Attributes();
-      Attributes tAddAtt = (Attributes) tDataVariables[dv][2];
-      String tSourceType = (String) tDataVariables[dv][3];
+      LocalizedAttributes tAddAtt = tDataVariables.get(dv).attributes();
+      String tSourceType = tDataVariables.get(dv).dataType();
       // if (reallyVerbose) String2.log("  dv=" + dv + " sourceName=" + tSourceName + " sourceType="
       // + tSourceType);
 
@@ -334,7 +335,7 @@ public abstract class EDDTableFromAsciiService extends EDDTable {
 
       // get responseSubstring start and end
       // <att name="responseSubstring">0, 7</att>
-      String resSubS = tAddAtt.getString("responseSubstring");
+      String resSubS = tAddAtt.getString(language, "responseSubstring");
       tAddAtt.remove("responseSubstring");
       String resSub[] = StringArray.arrayFromCSV(resSubS);
       if (resSub.length == 2) {
@@ -418,7 +419,7 @@ public abstract class EDDTableFromAsciiService extends EDDTable {
                 tAddAtt,
                 tSourceType); // this constructor gets source / sets destination actual_range
         timeIndex = dv;
-      } else if (EDVTimeStamp.hasTimeUnits(tSourceAtt, tAddAtt)) {
+      } else if (EDVTimeStamp.hasTimeUnits(language, tSourceAtt, tAddAtt)) {
         dataVariables[dv] =
             new EDVTimeStamp(
                 datasetID,
@@ -436,7 +437,7 @@ public abstract class EDDTableFromAsciiService extends EDDTable {
                 tSourceAtt,
                 tAddAtt,
                 tSourceType); // the constructor that reads actual_range
-        dataVariables[dv].setActualRangeFromDestinationMinMax();
+        dataVariables[dv].setActualRangeFromDestinationMinMax(language);
       }
     }
     if (verbose)

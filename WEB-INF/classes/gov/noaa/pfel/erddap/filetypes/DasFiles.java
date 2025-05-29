@@ -53,7 +53,12 @@ public class DasFiles extends FileTypeInterface {
       // write the DAS
       requestInfo
           .getEDDGrid()
-          .writeDAS(File2.forceExtension(requestInfo.requestUrl(), ".das"), "", writer, false);
+          .writeDAS(
+              requestInfo.language(),
+              File2.forceExtension(requestInfo.requestUrl(), ".das"),
+              "",
+              writer,
+              false);
     }
 
     // diagnostic

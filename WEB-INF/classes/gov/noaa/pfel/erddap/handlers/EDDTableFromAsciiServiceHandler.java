@@ -27,7 +27,7 @@ public class EDDTableFromAsciiServiceHandler extends BaseTableHandler {
     handleDataVariables(localName);
   }
 
-  private EDD getDataset(Object[][] ttDataVariables) throws Throwable {
+  private EDD getDataset() throws Throwable {
     EDD dataset;
 
     if (datasetType.equals("EDDTableFromAsciiServiceNOS")) {
@@ -44,7 +44,7 @@ public class EDDTableFromAsciiServiceHandler extends BaseTableHandler {
               tDefaultGraphQuery,
               tAddVariablesWhere,
               tGlobalAttributes,
-              ttDataVariables,
+              tDataVariables,
               tReloadEveryNMinutes,
               tLocalSourceUrl,
               tBeforeData,
@@ -88,7 +88,6 @@ public class EDDTableFromAsciiServiceHandler extends BaseTableHandler {
 
   @Override
   protected EDD buildDataset() throws Throwable {
-    Object[][] ttDataVariables = convertDataVariablesToArray();
-    return getDataset(ttDataVariables);
+    return getDataset();
   }
 }

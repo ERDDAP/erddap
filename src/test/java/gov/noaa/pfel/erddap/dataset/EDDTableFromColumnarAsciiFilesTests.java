@@ -1121,7 +1121,7 @@ class EDDTableFromColumnarAsciiFilesTests {
     EDD.deleteCachedDatasetInfo(suggDatasetID);
     EDD edd = EDDTableFromColumnarAsciiFiles.oneFromXmlFragment(null, results);
     Test.ensureEqual(edd.datasetID(), suggDatasetID, "");
-    Test.ensureEqual(edd.title(), "The Newer Title!", "");
+    Test.ensureEqual(edd.title(language), "The Newer Title!", "");
     Test.ensureEqual(
         String2.toCSSVString(edd.dataVariableDestinationNames()),
         "aString, aChar, aBoolean, aByte, aShort, anInt, aLong, aFloat, aDouble",

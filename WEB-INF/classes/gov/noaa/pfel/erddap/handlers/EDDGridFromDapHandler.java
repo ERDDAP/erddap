@@ -42,8 +42,6 @@ public class EDDGridFromDapHandler extends BaseGridHandler {
 
   @Override
   protected EDD buildDataset() throws Throwable {
-    Object[][] ttAxisVariables = convertAxisVariablesToArray();
-    Object[][] ttDataVariables = convertDataVariablesToArray();
     return new EDDGridFromDap(
         datasetID,
         tAccessibleTo,
@@ -55,8 +53,8 @@ public class EDDGridFromDapHandler extends BaseGridHandler {
         tDefaultDataQuery,
         tDefaultGraphQuery,
         tGlobalAttributes,
-        ttAxisVariables,
-        ttDataVariables,
+        tAxisVariables,
+        tDataVariables,
         tReloadEveryNMinutes,
         tUpdateEveryNMillis,
         tLocalSourceUrl,

@@ -17,8 +17,10 @@ import gov.noaa.pfel.coastwatch.pointdata.DigirHelper;
 import gov.noaa.pfel.coastwatch.pointdata.Table;
 import gov.noaa.pfel.coastwatch.util.SimpleXMLReader;
 import gov.noaa.pfel.erddap.Erddap;
+import gov.noaa.pfel.erddap.dataset.metadata.LocalizedAttributes;
 import gov.noaa.pfel.erddap.handlers.EDDTableFromOBISHandler;
 import gov.noaa.pfel.erddap.handlers.SaxHandlerClass;
+import gov.noaa.pfel.erddap.util.EDMessages;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.*;
 import java.util.Arrays;
@@ -209,7 +211,7 @@ public class EDDTableFromOBIS extends EDDTable {
     // data to be obtained (or not)
     if (verbose) String2.log("\n*** constructing EDDTableFromOBIS(xmlReader)...");
     String tDatasetID = xmlReader.attributeValue("datasetID");
-    Attributes tGlobalAttributes = null;
+    LocalizedAttributes tGlobalAttributes = null;
     String tLocalSourceUrl = null, tSourceCode = null;
     int tReloadEveryNMinutes = Integer.MAX_VALUE;
     String tAccessibleTo = null;
@@ -391,7 +393,7 @@ public class EDDTableFromOBIS extends EDDTable {
       String tDefaultDataQuery,
       String tDefaultGraphQuery,
       String tAddVariablesWhere,
-      Attributes tAddGlobalAttributes,
+      LocalizedAttributes tAddGlobalAttributes,
       String tLocalSourceUrl,
       String tSourceCode,
       int tReloadEveryNMinutes,
@@ -409,7 +411,7 @@ public class EDDTableFromOBIS extends EDDTable {
     if (verbose) String2.log("\n*** constructing EDDTableFromOBIS " + tDatasetID);
     long constructionStartMillis = System.currentTimeMillis();
     String errorInMethod = "Error in EDDTableFromOBIS(" + tDatasetID + ") constructor:\n";
-
+    int language = EDMessages.DEFAULT_LANGUAGE;
     // save some of the parameters
     className = "EDDTableFromOBIS";
     datasetID = tDatasetID;
@@ -422,34 +424,35 @@ public class EDDTableFromOBIS extends EDDTable {
     defaultDataQuery = tDefaultDataQuery;
     defaultGraphQuery = tDefaultGraphQuery;
     setReloadEveryNMinutes(tReloadEveryNMinutes);
-    if (tAddGlobalAttributes == null) tAddGlobalAttributes = new Attributes();
-    if (tAddGlobalAttributes.getString("Conventions") == null)
-      tAddGlobalAttributes.add("Conventions", "COARDS, CF-1.6, ACDD-1.3");
-    if (tAddGlobalAttributes.getString("infoUrl") == null)
-      tAddGlobalAttributes.add("infoUrl", STANDARD_INFO_URL);
-    String tSummary = tAddGlobalAttributes.getString("summary");
-    tAddGlobalAttributes.add(
+    if (tAddGlobalAttributes == null) tAddGlobalAttributes = new LocalizedAttributes();
+    if (tAddGlobalAttributes.getString(language, "Conventions") == null)
+      tAddGlobalAttributes.set(language, "Conventions", "COARDS, CF-1.6, ACDD-1.3");
+    if (tAddGlobalAttributes.getString(language, "infoUrl") == null)
+      tAddGlobalAttributes.set(language, "infoUrl", STANDARD_INFO_URL);
+    String tSummary = tAddGlobalAttributes.getString(language, "summary");
+    tAddGlobalAttributes.set(
+        language,
         "summary",
         tSummary == null
             ? OBIS_SUMMARY
             : String2.replaceAll(tSummary, "[OBIS_SUMMARY]", OBIS_SUMMARY));
-    String tCreator_email = tAddGlobalAttributes.getString("creator_email");
+    String tCreator_email = tAddGlobalAttributes.getString(language, "creator_email");
     Test.ensureNotNothing(
         tCreator_email,
         "The global addAttributes must include 'creator_email' for users to contact regarding "
             + "publications that use the data in order to comply with license. "
             + "A suitable email address can be found by reading the XML response from the sourceURL.");
-    tAddGlobalAttributes.add("cdm_data_type", CDM_POINT);
-    tAddGlobalAttributes.add("standard_name_vocabulary", "CF Standard Name Table v55");
+    tAddGlobalAttributes.set(language, "cdm_data_type", CDM_POINT);
+    tAddGlobalAttributes.set(language, "standard_name_vocabulary", "CF Standard Name Table v55");
     addGlobalAttributes = tAddGlobalAttributes;
-    addGlobalAttributes.set("sourceUrl", convertToPublicSourceUrl(tLocalSourceUrl));
+    addGlobalAttributes.set(language, "sourceUrl", convertToPublicSourceUrl(tLocalSourceUrl));
     localSourceUrl = tLocalSourceUrl;
     sourceCode = tSourceCode;
 
     sourceGlobalAttributes = new Attributes();
     combinedGlobalAttributes =
-        new Attributes(addGlobalAttributes, sourceGlobalAttributes); // order is important
-    String tLicense = combinedGlobalAttributes.getString("license");
+        new LocalizedAttributes(addGlobalAttributes, sourceGlobalAttributes); // order is important
+    String tLicense = combinedGlobalAttributes.getString(language, "license");
     if (tLicense != null) {
       tLicense =
           String2.replaceAll(
@@ -459,7 +462,7 @@ public class EDDTableFromOBIS extends EDDTable {
                   + "\n\n"
                   + String2.replaceAll(OBIS_LICENSE, "&sourceUrl;", tLocalSourceUrl));
       tLicense = String2.replaceAll(tLicense, "&creator_email;", tCreator_email);
-      combinedGlobalAttributes.set("license", tLicense);
+      combinedGlobalAttributes.set(language, "license", tLicense);
     }
     combinedGlobalAttributes.removeValue("\"null\"");
 
@@ -494,7 +497,7 @@ public class EDDTableFromOBIS extends EDDTable {
             datasetID,
             "darwin:Longitude",
             null,
-            null,
+            new LocalizedAttributes(),
             "double",
             PAOne.fromDouble(Double.isNaN(tLonMin) ? -180 : tLonMin),
             PAOne.fromDouble(Double.isNaN(tLonMax) ? 180 : tLonMax));
@@ -504,7 +507,7 @@ public class EDDTableFromOBIS extends EDDTable {
             datasetID,
             "darwin:Latitude",
             null,
-            null,
+            new LocalizedAttributes(),
             "double",
             PAOne.fromDouble(Double.isNaN(tLatMin) ? -90 : tLatMin),
             PAOne.fromDouble(Double.isNaN(tLatMax) ? 90 : tLatMax));
@@ -519,7 +522,7 @@ public class EDDTableFromOBIS extends EDDTable {
             datasetID,
             "darwin:MinimumDepth",
             altAtts,
-            null,
+            new LocalizedAttributes(),
             "double",
             PAOne.fromDouble(-tAltMin),
             PAOne.fromDouble(-tAltMax));
@@ -535,7 +538,7 @@ public class EDDTableFromOBIS extends EDDTable {
                     "Created from the darwin:YearCollected-darwin:MonthCollected-darwin:DayCollected and darwin:TimeOfDay variables.")
                 .add("units", EDV.TIME_UNITS),
             // estimate actual_range?
-            null,
+            new LocalizedAttributes(),
             "double"); // this constructor gets source / sets destination actual_range
     dataVariables[4] =
         new EDV(
@@ -547,7 +550,7 @@ public class EDDTableFromOBIS extends EDDTable {
                     "comment",
                     "Created from the [darwin:InstitutionCode]:[darwin:CollectionCode]:[darwin:CatalogNumber] variables.")
                 .add("ioos_category", "Identifier"),
-            null,
+            new LocalizedAttributes(),
             "String");
     // no need to call setActualRangeFromDestinationMinMax() since they are NaNs
 
@@ -556,7 +559,7 @@ public class EDDTableFromOBIS extends EDDTable {
     for (String tSourceName : tVarNames) {
       String tDestName = tSourceName;
       if (tDestName == null || tDestName.trim().length() == 0) tDestName = tSourceName;
-      Attributes tAddAtt = new Attributes();
+      LocalizedAttributes tAddAtt = new LocalizedAttributes();
 
       // skip Lon and Lat since handled above
       if (tSourceName.equals("Longitude")
@@ -580,7 +583,7 @@ public class EDDTableFromOBIS extends EDDTable {
       boolean isTimeStamp = tSourceType.equals("dateTime");
       if (isTimeStamp) {
         tSourceType = "String";
-        tAddAtt.add("units", Calendar2.ISO8601TZ_FORMAT);
+        tAddAtt.set(language, "units", Calendar2.ISO8601TZ_FORMAT);
       }
 
       // get sourceAtt
@@ -615,7 +618,7 @@ public class EDDTableFromOBIS extends EDDTable {
                 tSourceAtt,
                 tAddAtt,
                 tSourceType); // the constructor that reads source actual_range
-        dataVariables[tv].setActualRangeFromDestinationMinMax();
+        dataVariables[tv].setActualRangeFromDestinationMinMax(language);
       }
       tv++;
     }

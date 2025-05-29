@@ -102,7 +102,7 @@ public abstract class TableWriter implements AutoCloseable {
           try { // findVar throws exception if not found
             EDV edv =
                 edd.findVariableByDestinationName(columnNames[col]); // finds axis or dataVariable
-            colAttsClone = new Attributes(edv.combinedAttributes());
+            colAttsClone = edv.combinedAttributes().toAttributes(language);
           } catch (Throwable t) {
             // rare, e.g., happens with added "Count" and "Percent"
             // columns in countTable for "2 = viewDistinctDataCounts"
@@ -126,7 +126,8 @@ public abstract class TableWriter implements AutoCloseable {
         // columnAttributes[col]);
       }
       if (edd == null) globalAttributes = table.globalAttributes(); // table already has deep clone
-      else globalAttributes = new Attributes(edd.combinedGlobalAttributes()); // make deep clone
+      else
+        globalAttributes = edd.combinedGlobalAttributes().toAttributes(language); // make deep clone
       globalAttributes.set("history", newHistory); // if null, it won't be set.
       return;
     }

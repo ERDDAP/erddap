@@ -55,7 +55,6 @@ public class EDDTableFromDapSequenceHandler extends BaseTableHandler {
 
   @Override
   protected EDD buildDataset() throws Throwable {
-    Object[][] ttDataVariables = convertDataVariablesToArray();
     return new EDDTableFromDapSequence(
         datasetID,
         tAccessibleTo,
@@ -68,7 +67,7 @@ public class EDDTableFromDapSequenceHandler extends BaseTableHandler {
         tDefaultGraphQuery,
         tAddVariablesWhere,
         tGlobalAttributes,
-        ttDataVariables,
+        tDataVariables,
         tReloadEveryNMinutes,
         tLocalSourceUrl,
         tOuterSequenceName,

@@ -18,12 +18,14 @@ import com.cohort.util.String2;
 import com.cohort.util.XML;
 import gov.noaa.pfel.coastwatch.griddata.DataHelper;
 import gov.noaa.pfel.coastwatch.util.FileVisitorDNLS;
+import gov.noaa.pfel.erddap.dataset.metadata.LocalizedAttributes;
 import gov.noaa.pfel.erddap.variable.*;
 import java.io.InputStream;
 import java.nio.file.FileSystemException;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 
 /**
  * This class represents gridded data aggregated from a collection of NCEP/CPC 4km Global (60N -
@@ -58,9 +60,9 @@ public class EDDGridFromMergeIRFiles extends EDDGridFromFiles {
       String tIso19115File,
       String tDefaultDataQuery,
       String tDefaultGraphQuery,
-      Attributes tAddGlobalAttributes,
-      Object[][] tAxisVariables,
-      Object[][] tDataVariables,
+      LocalizedAttributes tAddGlobalAttributes,
+      ArrayList<AxisVariableInfo> tAxisVariables,
+      ArrayList<DataVariableInfo> tDataVariables,
       int tReloadEveryNMinutes,
       int tUpdateEveryNMillis,
       String tFileDir,

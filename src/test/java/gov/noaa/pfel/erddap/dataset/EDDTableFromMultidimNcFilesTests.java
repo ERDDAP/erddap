@@ -8,6 +8,7 @@ import com.cohort.util.String2;
 import com.cohort.util.Test;
 import gov.noaa.pfel.coastwatch.griddata.NcHelper;
 import gov.noaa.pfel.erddap.GenerateDatasetsXml;
+import gov.noaa.pfel.erddap.util.EDMessages;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import java.io.BufferedOutputStream;
 import java.io.FileOutputStream;
@@ -33,6 +34,7 @@ class EDDTableFromMultidimNcFilesTests {
    */
   @org.junit.jupiter.api.Test
   void testGenerateDatasetsXml() throws Throwable {
+    int language = EDMessages.DEFAULT_LANGUAGE;
     // testVerboseOn();
     String dataDir =
         File2.addSlash(
@@ -876,7 +878,7 @@ class EDDTableFromMultidimNcFilesTests {
     EDD.deleteCachedDatasetInfo(tDatasetID);
     EDD edd = EDDTableFromMultidimNcFiles.oneFromXmlFragment(null, results);
     Test.ensureEqual(edd.datasetID(), tDatasetID, "");
-    Test.ensureEqual(edd.title(), "Argo float vertical profile", "");
+    Test.ensureEqual(edd.title(language), "Argo float vertical profile", "");
     Test.ensureEqual(
         String2.toCSSVString(edd.dataVariableDestinationNames()),
         "fileNumber, DATA_TYPE, FORMAT_VERSION, HANDBOOK_VERSION, REFERENCE_DATE_TIME, DATE_CREATION, DATE_UPDATE, PLATFORM_NUMBER, PROJECT_NAME, PI_NAME, CYCLE_NUMBER, DIRECTION, DATA_CENTRE, DC_REFERENCE, DATA_STATE_INDICATOR, DATA_MODE, PLATFORM_TYPE, FLOAT_SERIAL_NO, FIRMWARE_VERSION, WMO_INST_TYPE, time, JULD_QC, JULD_LOCATION, latitude, longitude, POSITION_QC, POSITIONING_SYSTEM, PROFILE_PRES_QC, PROFILE_TEMP_QC, PROFILE_PSAL_QC, VERTICAL_SAMPLING_SCHEME, CONFIG_MISSION_NUMBER, PRES, PRES_QC, PRES_ADJUSTED, PRES_ADJUSTED_QC, PRES_ADJUSTED_ERROR, TEMP, TEMP_QC, TEMP_ADJUSTED, TEMP_ADJUSTED_QC, TEMP_ADJUSTED_ERROR, PSAL, PSAL_QC, PSAL_ADJUSTED, PSAL_ADJUSTED_QC, PSAL_ADJUSTED_ERROR",
@@ -2076,6 +2078,7 @@ class EDDTableFromMultidimNcFilesTests {
    */
   @org.junit.jupiter.api.Test
   void testGenerateDatasetsXmlDimensions() throws Throwable {
+    int language = EDMessages.DEFAULT_LANGUAGE;
     // testVerboseOn();
     String dataDir =
         File2.addSlash(
@@ -2523,7 +2526,7 @@ class EDDTableFromMultidimNcFilesTests {
     EDDTableFromMultidimNcFiles edd =
         (EDDTableFromMultidimNcFiles) EDDTableFromMultidimNcFiles.oneFromXmlFragment(null, results);
     Test.ensureEqual(edd.datasetID(), tDatasetID, "");
-    Test.ensureEqual(edd.title(), "Unknown institution data from a local source.", "");
+    Test.ensureEqual(edd.title(language), "Unknown institution data from a local source.", "");
     Test.ensureEqual(
         String2.toCSSVString(edd.dataVariableDestinationNames()),
         "time, TIME_QC, depth, DEPTH_QC, latitude, longitude, TEMP, TEMP_QC, TEMP_DM, ATPT, ATPT_QC, ATPT_DM, ATMS, ATMS_QC, ATMS_DM",

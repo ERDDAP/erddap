@@ -8,6 +8,7 @@ import com.cohort.util.SimpleException;
 import com.cohort.util.String2;
 import gov.noaa.pfel.coastwatch.griddata.NcHelper;
 import gov.noaa.pfel.erddap.dataset.*;
+import gov.noaa.pfel.erddap.util.EDMessages;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.EDVAlt;
 import org.xml.sax.Attributes;
@@ -58,9 +59,9 @@ public class EDDTableFromFilesHandler extends BaseTableHandler {
     }
   }
 
-  private EDD getDataset(Object[][] ttDataVariables) throws Throwable {
+  private EDD getDataset() throws Throwable {
     EDD dataset;
-
+    int language = EDMessages.DEFAULT_LANGUAGE;
     switch (datasetType) {
       case "EDDTableFromAsciiFiles" ->
           dataset =
@@ -75,7 +76,7 @@ public class EDDTableFromFilesHandler extends BaseTableHandler {
                   tDefaultDataQuery,
                   tDefaultGraphQuery,
                   tGlobalAttributes,
-                  ttDataVariables,
+                  tDataVariables,
                   tReloadEveryNMinutes,
                   tUpdateEveryNMillis,
                   tFileDir,
@@ -118,7 +119,7 @@ public class EDDTableFromFilesHandler extends BaseTableHandler {
                   tDefaultDataQuery,
                   tDefaultGraphQuery,
                   tGlobalAttributes,
-                  ttDataVariables,
+                  tDataVariables,
                   tReloadEveryNMinutes,
                   tUpdateEveryNMillis,
                   tFileDir,
@@ -161,7 +162,7 @@ public class EDDTableFromFilesHandler extends BaseTableHandler {
                   tDefaultDataQuery,
                   tDefaultGraphQuery,
                   tGlobalAttributes,
-                  ttDataVariables,
+                  tDataVariables,
                   tReloadEveryNMinutes,
                   tUpdateEveryNMillis,
                   tFileDir,
@@ -204,7 +205,7 @@ public class EDDTableFromFilesHandler extends BaseTableHandler {
                   tDefaultDataQuery,
                   tDefaultGraphQuery,
                   tGlobalAttributes,
-                  ttDataVariables,
+                  tDataVariables,
                   tReloadEveryNMinutes,
                   tUpdateEveryNMillis,
                   tFileDir,
@@ -247,7 +248,7 @@ public class EDDTableFromFilesHandler extends BaseTableHandler {
                   tDefaultDataQuery,
                   tDefaultGraphQuery,
                   tGlobalAttributes,
-                  ttDataVariables,
+                  tDataVariables,
                   tReloadEveryNMinutes,
                   tUpdateEveryNMillis,
                   tFileDir,
@@ -290,7 +291,7 @@ public class EDDTableFromFilesHandler extends BaseTableHandler {
                   tDefaultDataQuery,
                   tDefaultGraphQuery,
                   tGlobalAttributes,
-                  ttDataVariables,
+                  tDataVariables,
                   tReloadEveryNMinutes,
                   tUpdateEveryNMillis,
                   tFileDir,
@@ -333,7 +334,7 @@ public class EDDTableFromFilesHandler extends BaseTableHandler {
                   tDefaultDataQuery,
                   tDefaultGraphQuery,
                   tGlobalAttributes,
-                  ttDataVariables,
+                  tDataVariables,
                   tReloadEveryNMinutes,
                   tUpdateEveryNMillis,
                   tFileDir,
@@ -376,7 +377,7 @@ public class EDDTableFromFilesHandler extends BaseTableHandler {
                   tDefaultDataQuery,
                   tDefaultGraphQuery,
                   tGlobalAttributes,
-                  ttDataVariables,
+                  tDataVariables,
                   tReloadEveryNMinutes,
                   tUpdateEveryNMillis,
                   tFileDir,
@@ -419,7 +420,7 @@ public class EDDTableFromFilesHandler extends BaseTableHandler {
                   tDefaultDataQuery,
                   tDefaultGraphQuery,
                   tGlobalAttributes,
-                  ttDataVariables,
+                  tDataVariables,
                   tReloadEveryNMinutes,
                   tUpdateEveryNMillis,
                   tFileDir,
@@ -462,7 +463,7 @@ public class EDDTableFromFilesHandler extends BaseTableHandler {
                   tDefaultDataQuery,
                   tDefaultGraphQuery,
                   tGlobalAttributes,
-                  ttDataVariables,
+                  tDataVariables,
                   tReloadEveryNMinutes,
                   tUpdateEveryNMillis,
                   tFileDir,
@@ -505,7 +506,7 @@ public class EDDTableFromFilesHandler extends BaseTableHandler {
                   tDefaultDataQuery,
                   tDefaultGraphQuery,
                   tGlobalAttributes,
-                  ttDataVariables,
+                  tDataVariables,
                   tReloadEveryNMinutes,
                   tUpdateEveryNMillis,
                   tFileDir,
@@ -546,7 +547,7 @@ public class EDDTableFromFilesHandler extends BaseTableHandler {
         } else {
           EDDTableFromHyraxFiles.makeDownloadFileTasks(
               datasetID,
-              tGlobalAttributes.getString("sourceUrl"),
+              tGlobalAttributes.getString(language, "sourceUrl"),
               tFileNameRegex,
               tRecursive,
               tPathRegex);
@@ -569,7 +570,7 @@ public class EDDTableFromFilesHandler extends BaseTableHandler {
                 tDefaultDataQuery,
                 tDefaultGraphQuery,
                 tGlobalAttributes,
-                ttDataVariables,
+                tDataVariables,
                 tReloadEveryNMinutes,
                 tUpdateEveryNMillis,
                 tFileDir,
@@ -613,7 +614,7 @@ public class EDDTableFromFilesHandler extends BaseTableHandler {
         } else {
           EDDTableFromThreddsFiles.makeDownloadFileTasks(
               datasetID,
-              tGlobalAttributes.getString("sourceUrl"),
+              tGlobalAttributes.getString(language, "sourceUrl"),
               tFileNameRegex,
               tRecursive,
               tPathRegex,
@@ -637,7 +638,7 @@ public class EDDTableFromFilesHandler extends BaseTableHandler {
                 tDefaultDataQuery,
                 tDefaultGraphQuery,
                 tGlobalAttributes,
-                ttDataVariables,
+                tDataVariables,
                 tReloadEveryNMinutes,
                 tUpdateEveryNMillis,
                 tFileDir,
@@ -683,8 +684,8 @@ public class EDDTableFromFilesHandler extends BaseTableHandler {
           File2.makeDirectory(fileDir);
           String error =
               EDDTableFromWFSFiles.downloadData(
-                  tGlobalAttributes.getString("sourceUrl"),
-                  tGlobalAttributes.getString("rowElementXPath"),
+                  tGlobalAttributes.getString(language, "sourceUrl"),
+                  tGlobalAttributes.getString(language, "rowElementXPath"),
                   fileDir + fileName);
           if (!error.isEmpty()) String2.log(error);
         }
@@ -701,7 +702,7 @@ public class EDDTableFromFilesHandler extends BaseTableHandler {
                 tDefaultDataQuery,
                 tDefaultGraphQuery,
                 tGlobalAttributes,
-                ttDataVariables,
+                tDataVariables,
                 tReloadEveryNMinutes,
                 tUpdateEveryNMillis,
                 fileDir,
@@ -748,7 +749,7 @@ public class EDDTableFromFilesHandler extends BaseTableHandler {
                 tDefaultDataQuery,
                 tDefaultGraphQuery,
                 tGlobalAttributes,
-                ttDataVariables,
+                tDataVariables,
                 tReloadEveryNMinutes,
                 tUpdateEveryNMillis,
                 tFileDir,
@@ -833,7 +834,6 @@ public class EDDTableFromFilesHandler extends BaseTableHandler {
 
   @Override
   protected EDD buildDataset() throws Throwable {
-    Object[][] ttDataVariables = convertDataVariablesToArray();
-    return getDataset(ttDataVariables);
+    return getDataset();
   }
 }

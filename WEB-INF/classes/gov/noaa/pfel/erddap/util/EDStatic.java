@@ -48,6 +48,7 @@ import gov.noaa.pfel.erddap.dataset.EDDTable;
 import gov.noaa.pfel.erddap.dataset.EDDTableFromCassandra;
 import gov.noaa.pfel.erddap.dataset.GridDataAccessor;
 import gov.noaa.pfel.erddap.dataset.OutputStreamFromHttpResponse;
+import gov.noaa.pfel.erddap.dataset.metadata.LocalizedAttributes;
 import gov.noaa.pfel.erddap.variable.EDV;
 import gov.noaa.pfel.erddap.variable.EDVGridAxis;
 import jakarta.servlet.ServletException;
@@ -525,9 +526,11 @@ public class EDStatic {
   public static final int minimumPasswordLength = 8;
 
   public static String[] DEFAULT_displayAttributeAr = {"summary", "license"};
-  public static String[] DEFAULT_displayInfoAr = {"Summary", "License"};
+  public static String[] DEFAULT_displayInfoArray = {"Summary", "License"};
+  public static LocalizedHolder<String[]> DEFAULT_displayInfoAr =
+      new LocalizedHolder<String[]>(DEFAULT_displayInfoArray);
   public static String[] displayAttributeAr = DEFAULT_displayAttributeAr;
-  public static String[] displayInfoAr = DEFAULT_displayInfoAr;
+  public static LocalizedHolder<String[]> displayInfoAr = DEFAULT_displayInfoAr;
 
   private static String emailLogDate = "";
   private static BufferedWriter emailLogFile;
@@ -1321,7 +1324,7 @@ public class EDStatic {
       String loggedInAs,
       PAType destinationDataPAType,
       String destinationName,
-      Attributes attributes)
+      LocalizedAttributes attributes)
       throws Throwable {
 
     StringBuilder sb =
@@ -1330,7 +1333,7 @@ public class EDStatic {
                 + " "
                 + destinationName, // strictDapMode
             destinationDataPAType,
-            attributes,
+            attributes.toAttributes(language),
             false,
             false); // htmlEncoding, strictDapMode
     // String2.log("htmlTooltipImage sb=" + sb.toString());

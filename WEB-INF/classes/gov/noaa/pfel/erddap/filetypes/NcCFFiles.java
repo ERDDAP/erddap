@@ -91,7 +91,8 @@ public class NcCFFiles extends CacheLockFiles {
     boolean nodcMode =
         requestInfo.fileTypeName().equals(".ncCFMA")
             || requestInfo.fileTypeName().equals(".ncCFMAHeader");
-    String cdmType = edd.combinedGlobalAttributes().getString("cdm_data_type");
+    String cdmType =
+        edd.combinedGlobalAttributes().getString(requestInfo.language(), "cdm_data_type");
     if (EDDTable.CDM_POINT.equals(cdmType)) {
       edd.saveAsNcCF0(requestInfo.language(), cacheFullName, twawm);
     } else if (EDDTable.CDM_TIMESERIES.equals(cdmType)

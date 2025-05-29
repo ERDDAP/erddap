@@ -238,12 +238,12 @@ public class EDDTableFromMWFS extends EDDTable{
         StringArray tOnChange, String tFgdcFile, String tIso19115File, 
         String tSosOfferingPrefix,
         String tDefaultDataQuery, String tDefaultGraphQuery, String tAddVariablesWhere,
-        Attributes tAddGlobalAttributes,
+        LocalizedAttributes tAddGlobalAttributes,
         double tLonMin, double tLonMax,
         double tLatMin, double tLatMax,
         double tAltMin, double tAltMax,
         String tTimeMin, String tTimeMax,
-        Object[][] tDataVariables,
+        ArrayList<DataVariableInfo> tDataVariables,
         int tReloadEveryNMinutes,
         String tLocalSourceUrl) throws Throwable {
 
@@ -267,7 +267,7 @@ public class EDDTableFromMWFS extends EDDTable{
         if (tAddGlobalAttributes == null)
             tAddGlobalAttributes = new Attributes();
         addGlobalAttributes = tAddGlobalAttributes;
-        addGlobalAttributes.set("sourceUrl", makePublicSourceUrl(tLocalSourceUrl));
+        addGlobalAttributes.set(language, "sourceUrl", makePublicSourceUrl(tLocalSourceUrl));
         localSourceUrl = tLocalSourceUrl;
         setReloadEveryNMinutes(tReloadEveryNMinutes);
         Test.ensureNotNothing(sourceUrl, "sourceUrl wasn't specified.");
@@ -279,9 +279,9 @@ public class EDDTableFromMWFS extends EDDTable{
         //set source attributes (none available from source)
         sourceGlobalAttributes = new Attributes();
         combinedGlobalAttributes = new Attributes(addGlobalAttributes, sourceGlobalAttributes); //order is important
-        String tLicense = combinedGlobalAttributes.getString("license");
+        String tLicense = combinedGlobalAttributes.getString(language, "license");
         if (tLicense != null)
-            combinedGlobalAttributes.set("license", 
+            combinedGlobalAttributes.set(language, "license", 
                 String2.replaceAll(tLicense, "[standard]", EDStatic.messages.standardLicense));
         combinedGlobalAttributes.removeValue("\"null\"");
 

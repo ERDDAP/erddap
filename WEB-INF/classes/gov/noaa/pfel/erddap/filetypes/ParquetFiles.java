@@ -120,7 +120,7 @@ public class ParquetFiles extends TableWriterFileType {
         new TableWriterAllWithMetadata(
             language,
             grid,
-            grid.getNewHistory(requestUrl, userDapQuery),
+            grid.getNewHistory(language, requestUrl, userDapQuery),
             grid.cacheDirectory(),
             "parquet"); // A random number will be added to it for safety.
     if (isAxisDapQuery) {

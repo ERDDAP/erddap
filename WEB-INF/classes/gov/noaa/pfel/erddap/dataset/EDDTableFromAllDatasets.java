@@ -13,6 +13,7 @@ import com.cohort.util.Calendar2;
 import com.cohort.util.Math2;
 import com.cohort.util.String2;
 import gov.noaa.pfel.coastwatch.pointdata.Table;
+import gov.noaa.pfel.erddap.dataset.metadata.LocalizedAttributes;
 import gov.noaa.pfel.erddap.util.EDConfig;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.util.Subscriptions;
@@ -63,7 +64,6 @@ public class EDDTableFromAllDatasets extends EDDTable {
     sosOfferingPrefix = null;
     defaultDataQuery = null;
     defaultGraphQuery = "maxLongitude,maxLatitude";
-    publicSourceUrl = EDStatic.preferredErddapUrl;
     setReloadEveryNMinutes(1000000000); // i.e. never
     localSourceUrl = null;
 
@@ -76,9 +76,10 @@ public class EDDTableFromAllDatasets extends EDDTable {
     // create dataVariables[]
     Table table = makeDatasetTable(language, null);
     sourceGlobalAttributes = table.globalAttributes();
-    addGlobalAttributes = new Attributes();
+    addGlobalAttributes = new LocalizedAttributes();
     combinedGlobalAttributes =
-        new Attributes(addGlobalAttributes, sourceGlobalAttributes); // order is important
+        new LocalizedAttributes(addGlobalAttributes, sourceGlobalAttributes); // order is important
+    combinedGlobalAttributes.set(language, "sourceUrl", EDStatic.preferredErddapUrl);
     int ndv = table.nColumns();
     dataVariables = new EDV[ndv];
     for (int dv = 0; dv < ndv; dv++) {
@@ -92,7 +93,7 @@ public class EDDTableFromAllDatasets extends EDDTable {
                 colName,
                 colName,
                 atts,
-                null, // sourceAtts, addAtts
+                new LocalizedAttributes(), // sourceAtts, addAtts
                 pa.elementTypeString()); // this constructor gets source / sets destination
         // actual_range
       } else {
@@ -102,10 +103,10 @@ public class EDDTableFromAllDatasets extends EDDTable {
                 colName,
                 colName,
                 atts,
-                null, // sourceAtts, addAtts
+                new LocalizedAttributes(), // sourceAtts, addAtts
                 pa.elementTypeString());
         // actual_range of vars in this table always NaN,NaN
-        dataVariables[dv].setActualRangeFromDestinationMinMax();
+        dataVariables[dv].setActualRangeFromDestinationMinMax(language);
       }
     }
 
@@ -230,7 +231,7 @@ public class EDDTableFromAllDatasets extends EDDTable {
         .add("institution", EDStatic.config.adminInstitution)
         .add("keywords", EDStatic.messages.admKeywords)
         .add("license", EDStatic.messages.standardLicense)
-        .add("sourceUrl", publicSourceUrl)
+        .add("sourceUrl", EDStatic.preferredErddapUrl)
         .add("subsetVariables", EDStatic.messages.admSubsetVariables)
         .add("summary", EDStatic.messages.admSummaryAr[language])
         // "* " is distinctive and almost ensures it will be sorted first (or close)
@@ -524,11 +525,11 @@ public class EDDTableFromAllDatasets extends EDDTable {
           edd.getAccessibleTo() == null
               ? "public"
               : isAccessible ? "yes" : graphsAccessible ? "graphs" : isLoggedIn ? "no" : "log in");
-      institutionCol.add(edd.institution());
+      institutionCol.add(edd.institution(language));
       dataStructureCol.add(isGrid ? "grid" : "table");
-      cdmCol.add(edd.cdmDataType());
+      cdmCol.add(edd.cdmDataType(language));
       classCol.add(edd.className());
-      titleCol.add(edd.title());
+      titleCol.add(edd.title(language));
 
       // lon
       EDV tedv;
@@ -606,7 +607,7 @@ public class EDDTableFromAllDatasets extends EDDTable {
 
       // outOfDate
       double ood = Double.NaN;
-      String oods = edd.combinedGlobalAttributes().getString("testOutOfDate");
+      String oods = edd.combinedGlobalAttributes().getString(language, "testOutOfDate");
       testOutOfDateCol.add(String2.isSomething(oods) ? oods : "");
       if (!Double.isNaN(tMaxTime) && String2.isSomething(oods)) {
         double nmes = Calendar2.safeNowStringToEpochSeconds(oods, Double.NaN);
@@ -668,8 +669,8 @@ public class EDDTableFromAllDatasets extends EDDTable {
                   + ".xml"
               : "");
       metadataCol.add(graphsAccessible ? tErddapUrl + "/info/" + edd.datasetID() + "/index" : "");
-      sourceCol.add(graphsAccessible ? edd.publicSourceUrl() : "");
-      infoUrlCol.add(graphsAccessible ? edd.infoUrl() : "");
+      sourceCol.add(graphsAccessible ? edd.publicSourceUrl(language) : "");
+      infoUrlCol.add(graphsAccessible ? edd.infoUrl(language) : "");
       rssCol.add(
           graphsAccessible
               ? EDStatic.erddapUrl + "/rss/" + edd.datasetID() + ".rss"
@@ -683,7 +684,7 @@ public class EDDTableFromAllDatasets extends EDDTable {
                   + edd.datasetID()
                   + "&showErrors=false&email="
               : "");
-      summaryCol.add(edd.summary());
+      summaryCol.add(edd.summary(language));
     }
 
     // for testing: table.ensureValid();
