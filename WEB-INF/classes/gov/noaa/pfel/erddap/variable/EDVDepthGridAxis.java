@@ -7,6 +7,8 @@ package gov.noaa.pfel.erddap.variable;
 import com.cohort.array.Attributes;
 import com.cohort.array.PAOne;
 import com.cohort.array.PrimitiveArray;
+import gov.noaa.pfel.erddap.dataset.metadata.LocalizedAttributes;
+import gov.noaa.pfel.erddap.util.EDMessages;
 
 /**
  * This class holds information about a depth grid axis variable.
@@ -34,7 +36,7 @@ public class EDVDepthGridAxis extends EDVGridAxis {
       String tParentDatasetID,
       String tSourceName,
       Attributes tSourceAttributes,
-      Attributes tAddAttributes,
+      LocalizedAttributes tAddAttributes,
       PrimitiveArray tSourceValues)
       throws Throwable {
 
@@ -51,17 +53,20 @@ public class EDVDepthGridAxis extends EDVGridAxis {
           "datasets.xml error: "
               + "The destination dataType for the depth variable must be a numeric dataType.");
 
+    // The attributes this gets/sets should not need to be localized (max/min
+    // value for example). Just use the default language.
+    int language = EDMessages.DEFAULT_LANGUAGE;
     longName = DEPTH_LONGNAME;
     units = DEPTH_UNITS;
-    combinedAttributes.set("_CoordinateAxisType", "Height"); // unidata
-    combinedAttributes.set("_CoordinateZisPositive", "down"); // unidata
-    combinedAttributes.set("axis", "Z");
-    combinedAttributes.set("ioos_category", LOCATION_CATEGORY);
-    combinedAttributes.set("long_name", longName);
-    combinedAttributes.set("positive", "down"); // cf
-    combinedAttributes.set("standard_name", DEPTH_STANDARD_NAME);
-    EDVAlt.ensureUnitsAreM(combinedAttributes.getString("units"), "depth", "down");
-    combinedAttributes.set("units", units);
+    combinedAttributes.set(language, "_CoordinateAxisType", "Height"); // unidata
+    combinedAttributes.set(language, "_CoordinateZisPositive", "down"); // unidata
+    combinedAttributes.set(language, "axis", "Z");
+    combinedAttributes.set(language, "ioos_category", LOCATION_CATEGORY);
+    combinedAttributes.set(language, "long_name", longName);
+    combinedAttributes.set(language, "positive", "down"); // cf
+    combinedAttributes.set(language, "standard_name", DEPTH_STANDARD_NAME);
+    EDVAlt.ensureUnitsAreM(combinedAttributes.getString(language, "units"), "depth", "down");
+    combinedAttributes.set(language, "units", units);
 
     // remember that gridAxes get min max from actual axis tSourceValues
     if (destinationMin.compareTo(destinationMax) > 0) {
@@ -69,7 +74,7 @@ public class EDVDepthGridAxis extends EDVGridAxis {
       destinationMin = destinationMax;
       destinationMax = d1;
     }
-    setActualRangeFromDestinationMinMax();
+    setActualRangeFromDestinationMinMax(language);
     initializeAverageSpacingAndCoarseMinMax();
     // no need to deal with missingValue stuff, since gridAxis can't have mv's
   }

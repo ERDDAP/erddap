@@ -7,6 +7,8 @@ package gov.noaa.pfel.erddap.variable;
 import com.cohort.array.Attributes;
 import com.cohort.array.PAOne;
 import com.cohort.array.PrimitiveArray;
+import gov.noaa.pfel.erddap.dataset.metadata.LocalizedAttributes;
+import gov.noaa.pfel.erddap.util.EDMessages;
 
 /**
  * This class holds information about an altitude grid axis variable.
@@ -34,13 +36,16 @@ public class EDVAltGridAxis extends EDVGridAxis {
       String tParentDatasetID,
       String tSourceName,
       Attributes tSourceAttributes,
-      Attributes tAddAttributes,
+      LocalizedAttributes tAddAttributes,
       PrimitiveArray tSourceValues)
       throws Throwable {
 
     super(
         tParentDatasetID, tSourceName, ALT_NAME, tSourceAttributes, tAddAttributes, tSourceValues);
 
+    // The attributes this gets/sets should not need to be localized (max/min
+    // value for example). Just use the default language.
+    int language = EDMessages.DEFAULT_LANGUAGE;
     if (destinationDataType().equals("String"))
       throw new RuntimeException(
           "datasets.xml error: "
@@ -48,22 +53,22 @@ public class EDVAltGridAxis extends EDVGridAxis {
 
     longName = ALT_LONGNAME;
     units = ALT_UNITS;
-    combinedAttributes.set("_CoordinateAxisType", "Height"); // unidata
-    combinedAttributes.set("_CoordinateZisPositive", "up"); // unidata
-    combinedAttributes.set("axis", "Z");
-    combinedAttributes.set("ioos_category", LOCATION_CATEGORY);
-    combinedAttributes.set("long_name", longName);
-    combinedAttributes.set("positive", "up"); // cf
-    combinedAttributes.set("standard_name", ALT_STANDARD_NAME);
-    EDVAlt.ensureUnitsAreM(combinedAttributes.getString("units"), "altitude", "up");
-    combinedAttributes.set("units", units);
+    combinedAttributes.set(language, "_CoordinateAxisType", "Height"); // unidata
+    combinedAttributes.set(language, "_CoordinateZisPositive", "up"); // unidata
+    combinedAttributes.set(language, "axis", "Z");
+    combinedAttributes.set(language, "ioos_category", LOCATION_CATEGORY);
+    combinedAttributes.set(language, "long_name", longName);
+    combinedAttributes.set(language, "positive", "up"); // cf
+    combinedAttributes.set(language, "standard_name", ALT_STANDARD_NAME);
+    EDVAlt.ensureUnitsAreM(combinedAttributes.getString(language, "units"), "altitude", "up");
+    combinedAttributes.set(language, "units", units);
 
     if (destinationMin.compareTo(destinationMax) > 0) {
       PAOne d1 = destinationMin;
       destinationMin = destinationMax;
       destinationMax = d1;
     }
-    setActualRangeFromDestinationMinMax();
+    setActualRangeFromDestinationMinMax(language);
     initializeAverageSpacingAndCoarseMinMax();
     // no need to deal with missingValue stuff, since gridAxis can't have mv's
   }

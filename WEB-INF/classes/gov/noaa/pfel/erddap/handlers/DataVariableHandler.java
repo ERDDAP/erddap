@@ -1,6 +1,8 @@
 package gov.noaa.pfel.erddap.handlers;
 
 import com.cohort.util.String2;
+import gov.noaa.pfel.erddap.dataset.metadata.LocalizedAttributes;
+import gov.noaa.pfel.erddap.variable.DataVariableInfo;
 import java.util.List;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
@@ -8,11 +10,11 @@ import org.xml.sax.SAXException;
 public class DataVariableHandler extends StateWithParent {
   final StringBuilder content = new StringBuilder();
   String tSourceName = null, tDestinationName = null, tDataType = null;
-  final com.cohort.array.Attributes tAttributes = new com.cohort.array.Attributes();
-  final List<Object[]> tDataVariables;
+  final LocalizedAttributes tAttributes = new LocalizedAttributes();
+  final List<DataVariableInfo> tDataVariables;
 
   public DataVariableHandler(
-      SaxHandler saxHandler, List<Object[]> tDataVariables, State completeState) {
+      SaxHandler saxHandler, List<DataVariableInfo> tDataVariables, State completeState) {
     super(saxHandler, completeState);
     this.tDataVariables = tDataVariables;
   }
@@ -40,7 +42,8 @@ public class DataVariableHandler extends StateWithParent {
       case "destinationName" -> tDestinationName = contentStr;
       case "dataType" -> tDataType = contentStr;
       case "dataVariable" -> {
-        tDataVariables.add(new Object[] {tSourceName, tDestinationName, tAttributes, tDataType});
+        tDataVariables.add(
+            new DataVariableInfo(tSourceName, tDestinationName, tAttributes, tDataType));
         saxHandler.setState(this.completeState);
       }
       default -> String2.log("Unexpected end tag: " + localName);

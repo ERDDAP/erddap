@@ -37,17 +37,21 @@ import gov.noaa.pfel.coastwatch.util.SSR;
 import gov.noaa.pfel.coastwatch.util.SimpleXMLReader;
 import gov.noaa.pfel.coastwatch.util.Tally;
 import gov.noaa.pfel.erddap.Erddap;
+import gov.noaa.pfel.erddap.dataset.metadata.LocalizedAttributes;
 import gov.noaa.pfel.erddap.filetypes.FileTypeClass;
 import gov.noaa.pfel.erddap.filetypes.FileTypeInterface;
 import gov.noaa.pfel.erddap.handlers.SaxHandler;
 import gov.noaa.pfel.erddap.handlers.SaxHandlerClass;
 import gov.noaa.pfel.erddap.handlers.State;
 import gov.noaa.pfel.erddap.util.CfToFromGcmd;
+import gov.noaa.pfel.erddap.util.EDMessages;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.util.EmailThread;
 import gov.noaa.pfel.erddap.util.Subscriptions;
 import gov.noaa.pfel.erddap.util.TaskThread;
 import gov.noaa.pfel.erddap.util.TouchThread;
+import gov.noaa.pfel.erddap.variable.AxisVariableInfo;
+import gov.noaa.pfel.erddap.variable.DataVariableInfo;
 import gov.noaa.pfel.erddap.variable.EDV;
 import io.github.classgraph.AnnotationClassRef;
 import io.github.classgraph.AnnotationInfo;
@@ -354,7 +358,9 @@ public abstract class EDD {
    * sourceAttributes. combinedAtt are made from sourceAtt and addAtt, then revised (e.g., remove
    * "null" values)
    */
-  protected Attributes sourceGlobalAttributes, addGlobalAttributes, combinedGlobalAttributes;
+  protected Attributes sourceGlobalAttributes;
+
+  protected LocalizedAttributes addGlobalAttributes, combinedGlobalAttributes;
 
   // dataVariables isn't a hashMap because it is nice to allow a specified order for the variables
   protected EDV[] dataVariables;
@@ -380,19 +386,10 @@ public abstract class EDD {
   protected String localSourceUrl;
 
   /**
-   * The publicSourceUrl which is what appears in combinedGlobalAttributes (e.g., the url which
-   * users can use outside of the DMZ).
-   */
-  protected String publicSourceUrl;
-
-  /**
    * defaultDataQuery is used for .html if the user doesn't provide a query. defaultGraphQuery is
    * used for .graph if the user doesn't provide a query.
    */
   protected String defaultDataQuery, defaultGraphQuery;
-
-  /** These are created as needed (in the constructor) from combinedGlobalAttributes. */
-  protected String id, title, summary, extendedSummaryPartB, institution, infoUrl, cdmDataType;
 
   /**
    * These are created as needed (in the constructor) by accessibleVia...(). See also
@@ -410,7 +407,6 @@ public abstract class EDD {
 
   protected boolean accessibleViaFiles = false; // it's up to the constructor to set this to true
   protected String fgdcFile, iso19115File; // the names of pre-made, external files; or null
-  protected byte[] searchBytes;
 
   /** These are created as needed (in the constructor) from dataVariables[]. */
   protected String[] dataVariableSourceNames, dataVariableDestinationNames;
@@ -1040,53 +1036,6 @@ public abstract class EDD {
   }
 
   /**
-   * This is commonly used by subclass constructors to set all the items common to all EDDs. Or,
-   * subclasses can just set these things directly.
-   *
-   * <p>sourceGlobalAttributes and/or addGlobalAttributes must include:
-   *
-   * <ul>
-   *   <li>"title" - the short (&lt; 80 characters) description of the dataset
-   *   <li>"summary" - the longer description of the dataset
-   *   <li>"institution" - the source of the data (best if &lt; 50 characters so it fits in a
-   *       graph's legend).
-   *   <li>"infoUrl" - the url with information about this data set
-   *   <li>"sourceUrl" - the url (for descriptive purposes only) of the public source of the data,
-   *       e.g., the basic opendap url.
-   *   <li>"cdm_data_type" - one of the EDD.CDM_xxx options
-   * </ul>
-   *
-   * Special case: value="null" causes that item to be removed from combinedGlobalAttributes.
-   * Special case: for combinedGlobalAttributes name="license", any instance of "[standard]" will be
-   * converted to the EDStatic.messages.standardLicense.
-   */
-  public void setup(
-      String tDatasetID,
-      Attributes tSourceGlobalAttributes,
-      Attributes tAddGlobalAttributes,
-      EDV[] tDataVariables,
-      int tReloadEveryNMinutes) {
-
-    // save the parameters
-    datasetID = tDatasetID;
-    sourceGlobalAttributes = tSourceGlobalAttributes;
-    addGlobalAttributes = tAddGlobalAttributes;
-    combinedGlobalAttributes =
-        new Attributes(addGlobalAttributes, sourceGlobalAttributes); // order is important
-    String tLicense = combinedGlobalAttributes.getString("license");
-    if (tLicense != null)
-      combinedGlobalAttributes.set(
-          "license", String2.replaceAll(tLicense, "[standard]", EDStatic.messages.standardLicense));
-    combinedGlobalAttributes.removeValue("\"null\"");
-
-    dataVariables = tDataVariables;
-    reloadEveryNMinutes =
-        tReloadEveryNMinutes <= 0 || tReloadEveryNMinutes == Integer.MAX_VALUE
-            ? DEFAULT_RELOAD_EVERY_N_MINUTES
-            : tReloadEveryNMinutes;
-  }
-
-  /**
    * This should be used by all subclass constructors to ensure that all of the items common to all
    * EDDs are properly set. This also does a few standard things.
    *
@@ -1094,6 +1043,7 @@ public abstract class EDD {
    */
   public void ensureValid() throws Throwable {
     // ensure valid
+    int language = EDMessages.DEFAULT_LANGUAGE;
     String errorInMethod = "datasets.xml/EDD.ensureValid error for datasetID=" + datasetID + ":\n ";
 
     // test that required things are set
@@ -1108,62 +1058,65 @@ public abstract class EDD {
     // Don't test Test.ensureSomethingUnicode(sourceGlobalAttributes, errorInMethod +
     // "sourceGlobalAttributes");
     // Admin can't control source and addAttributes may overwrite offending characters.
-    Test.ensureSomethingUnicode(addGlobalAttributes, errorInMethod + "addGlobalAttributes");
-    EDStatic.updateUrls(null, combinedGlobalAttributes);
-    Test.ensureSomethingUnicode(
-        combinedGlobalAttributes,
+    addGlobalAttributes.ensureSomethingUnicode(errorInMethod + "addGlobalAttributes");
+    combinedGlobalAttributes.updateUrls();
+    combinedGlobalAttributes.ensureSomethingUnicode(
         errorInMethod + "combinedGlobalAttributes (but probably caused by the source attributes)");
-    Test.ensureSomethingUnicode(title(), errorInMethod + "title");
-    Test.ensureSomethingUnicode(summary(), errorInMethod + "summary");
-    if (!String2.isSomething(institution()))
-      institution = combinedGlobalAttributes.getString("creator_institution"); // may be null
-    Test.ensureSomethingUnicode(institution(), errorInMethod + "institution");
-    Test.ensureSomethingUnicode(infoUrl(), errorInMethod + "infoUrl");
-    Test.ensureSomethingUnicode(publicSourceUrl(), errorInMethod + "sourceUrl");
-    if (!String2.isSomething(cdmDataType())) {
-      String ft = combinedGlobalAttributes.getString("featureType");
-      if (String2.isSomething(ft)) combinedGlobalAttributes.set("cdm_data_type", ft);
+    Test.ensureSomethingUnicode(title(language), errorInMethod + "title");
+    Test.ensureSomethingUnicode(summary(language), errorInMethod + "summary");
+    if (!String2.isSomething(institution(language)))
+      combinedGlobalAttributes.set(
+          language,
+          "institution",
+          combinedGlobalAttributes.getString(language, "creator_institution")); // may be null
+    Test.ensureSomethingUnicode(institution(language), errorInMethod + "institution");
+    Test.ensureSomethingUnicode(infoUrl(language), errorInMethod + "infoUrl");
+    Test.ensureSomethingUnicode(publicSourceUrl(language), errorInMethod + "sourceUrl");
+    if (!String2.isSomething(cdmDataType(language))) {
+      String ft = combinedGlobalAttributes.getString(language, "featureType");
+      if (String2.isSomething(ft)) combinedGlobalAttributes.set(language, "cdm_data_type", ft);
     }
-    String tLicense = combinedGlobalAttributes.getString("license");
+    String tLicense = combinedGlobalAttributes.getString(language, "license");
     if (tLicense == null)
-      combinedGlobalAttributes.set("license", EDStatic.messages.standardLicense);
-    Test.ensureSomethingUnicode(cdmDataType(), errorInMethod + "cdm_data_type");
+      combinedGlobalAttributes.set(language, "license", EDStatic.messages.standardLicense);
+    Test.ensureSomethingUnicode(cdmDataType(language), errorInMethod + "cdm_data_type");
     Test.ensureSomethingUnicode(className(), errorInMethod + "className");
     if (defaultDataQuery == null || defaultDataQuery.length() == 0) {
       // if not from <defaultDataQuery>tag, try to get from attributes
-      defaultDataQuery = combinedGlobalAttributes.getString("defaultDataQuery");
+      defaultDataQuery = combinedGlobalAttributes.getString(language, "defaultDataQuery");
     } else {
       // make atts same as separate <defaultDataQuery> tag
-      addGlobalAttributes.set("defaultDataQuery", defaultDataQuery);
-      combinedGlobalAttributes.set("defaultDataQuery", defaultDataQuery);
+      addGlobalAttributes.set(language, "defaultDataQuery", defaultDataQuery);
+      combinedGlobalAttributes.set(language, "defaultDataQuery", defaultDataQuery);
     }
     if (defaultGraphQuery == null || defaultGraphQuery.length() == 0) {
-      defaultGraphQuery = combinedGlobalAttributes.getString("defaultGraphQuery");
+      defaultGraphQuery = combinedGlobalAttributes.getString(language, "defaultGraphQuery");
     } else {
-      addGlobalAttributes.set("defaultGraphQuery", defaultGraphQuery);
-      combinedGlobalAttributes.set("defaultGraphQuery", defaultGraphQuery);
+      addGlobalAttributes.set(language, "defaultGraphQuery", defaultGraphQuery);
+      combinedGlobalAttributes.set(language, "defaultGraphQuery", defaultGraphQuery);
     }
-    int cdmPo = CDM_TYPES.indexOf(cdmDataType());
+    int cdmPo = CDM_TYPES.indexOf(cdmDataType(language));
     if (cdmPo < 0) {
       // if cdm_data_type is just a different case, fix it
-      cdmPo = String2.caseInsensitiveIndexOf(CDM_TYPES, cdmDataType());
+      cdmPo = String2.caseInsensitiveIndexOf(CDM_TYPES, cdmDataType(language));
       if (cdmPo >= 0) {
-        cdmDataType = CDM_TYPES.get(cdmPo);
-        combinedGlobalAttributes.set("cdm_data_type", cdmDataType);
+        combinedGlobalAttributes.set(language, "cdm_data_type", CDM_TYPES.get(cdmPo));
       }
     }
     Test.ensureTrue(
         cdmPo >= 0,
         errorInMethod
             + "cdm_data_type="
-            + cdmDataType
+            + cdmDataType(language)
             + " isn't one of the standard CDM types ("
             + String2.toCSSVString(CDM_TYPES)
             + ").");
-    if (CF_FEATURE_TYPES.indexOf(cdmDataType) >= 0)
+    if (CF_FEATURE_TYPES.indexOf(cdmDataType(language)) >= 0)
       combinedGlobalAttributes.set(
+          language,
           "featureType",
-          cdmDataType); // case-insensitive (see CF 1.6, section 9.4), so match ERDDAP's name
+          cdmDataType(
+              language)); // case-insensitive (see CF 1.6, section 9.4), so match ERDDAP's name
     else
       combinedGlobalAttributes.remove(
           "featureType"); // featureType is for point types only (table 9.1)
@@ -1191,7 +1144,7 @@ public abstract class EDD {
     {
       String kw =
           combinedGlobalAttributes.getString(
-              "keywords"); // not keywords(), because that may return default keywords
+              language, "keywords"); // not keywords(), because that may return default keywords
       if (String2.isSomething(kw)) {
         StringArray kar = StringArray.fromCSV(kw, ",;"); // split at , or ;
         for (int i = kar.size() - 1; i >= 0; i--) { // backwards since may remove some
@@ -1201,28 +1154,30 @@ public abstract class EDD {
         }
         kar.sortIgnoreCase();
         kar.removeDuplicates();
-        combinedGlobalAttributes.set("keywords", kar.toString());
+        combinedGlobalAttributes.set(language, "keywords", kar.toString());
       }
     }
     String dateAtts[] = {"date_created", "date_issued", "date_modified", "date_metadata_modified"};
     for (String name : dateAtts) {
-      String value = combinedGlobalAttributes.getString(name);
+      String value = combinedGlobalAttributes.getString(language, name);
       if (String2.isSomething(value)) {
         String tValue = Calendar2.tryToIsoString(value);
         if (tValue.length() > 0 && !tValue.equals(value))
-          combinedGlobalAttributes.set(name, tValue);
+          combinedGlobalAttributes.set(language, name, tValue);
       }
     }
 
     realTime =
         "true"
-            .equals(combinedGlobalAttributes.getString("real_time")); // very strict, default=false
+            .equals(
+                combinedGlobalAttributes.getString(
+                    language, "real_time")); // very strict, default=false
 
     // last with combinedGlobalAttributes
     combinedGlobalAttributes.ensureNamesAreVariableNameSafe("In the combined global attributes");
 
     // ensure these are set in the constructor (they may be "")
-    extendedSummary(); // ensures that extendedSummaryPartB is constructed
+    extendedSummary(language); // ensures that extendedSummaryPartB is constructed
     accessibleViaMAG();
     accessibleViaSubset();
     accessibleViaGeoServicesRest();
@@ -1253,23 +1208,24 @@ public abstract class EDD {
     // make this JSON format?
     // if (true) throw new RuntimeException("toString"); //test to determine who's calling this
     StringBuilder sb = new StringBuilder();
+    int language = EDMessages.DEFAULT_LANGUAGE;
     sb.append(
         datasetID
             + ": "
             + "\ntitle="
-            + title()
+            + title(language)
             + "\nsummary="
-            + summary()
+            + summary(language)
             + "\ninstitution="
-            + institution()
+            + institution(language)
             + "\ninfoUrl="
-            + infoUrl()
+            + infoUrl(language)
             + "\nlocalSourceUrl="
             + localSourceUrl
             + "\npublicSourceUrl="
-            + publicSourceUrl()
+            + publicSourceUrl(language)
             + "\ncdm_data_type="
-            + cdmDataType()
+            + cdmDataType(language)
             + "\nreloadEveryNMinutes="
             + reloadEveryNMinutes
             + " updateEveryNMillis="
@@ -1570,6 +1526,7 @@ public abstract class EDD {
   public String updateRSS(String change) {
     if (change == null || change.length() == 0) return "";
     try {
+      int language = EDMessages.DEFAULT_LANGUAGE;
       // generate the rss xml
       // See general info: https://en.wikipedia.org/wiki/RSS_(file_format)
       //  background: http://www.mnot.net/rss/tutorial/
@@ -1588,7 +1545,7 @@ public abstract class EDD {
               + "<rss version=\"2.0\" xmlns=\"http://backend.userland.com/rss2\">\n"
               + "  <channel>\n"
               + "    <title>ERDDAP: "
-              + XML.encodeAsXML(title())
+              + XML.encodeAsXML(title(language))
               + "</title>\n"
               + "    <description>This RSS feed changes when the dataset changes.</description>\n"
               + link
@@ -1886,8 +1843,10 @@ public abstract class EDD {
   /**
    * This returns the link tag for an HTML head section which advertises the RSS feed for this
    * dataset.
+   *
+   * @param language language to use for the attributes
    */
-  public String rssHeadLink() {
+  public String rssHeadLink(int language) {
     return "<link rel=\"alternate\" type=\"application/rss+xml\" \n"
         + "  href=\""
         + EDStatic.preferredErddapUrl
@@ -1896,7 +1855,7 @@ public abstract class EDD {
         + datasetID
         + ".rss\" \n"
         + "  title=\"ERDDAP: "
-        + title()
+        + title(language)
         + "\">\n";
   }
 
@@ -1973,11 +1932,12 @@ public abstract class EDD {
    *     read (e.g.,) ...</globalAttributes>
    * @throws Throwable if trouble
    */
-  public static Attributes getAttributesFromXml(SimpleXMLReader xmlReader) throws Throwable {
+  public static LocalizedAttributes getAttributesFromXml(SimpleXMLReader xmlReader)
+      throws Throwable {
 
     // process the tags
     if (debugMode) String2.log("    getAttributesFromXml...");
-    Attributes tAttributes = new Attributes();
+    LocalizedAttributes tAttributes = new LocalizedAttributes();
     int startOfTagsN = xmlReader.stackSize();
     String tName = null, tType = null;
     while (true) {
@@ -2032,7 +1992,7 @@ public abstract class EDD {
         // if (tName.equals("_FillValue"))
         //    String2.log(">>EDD attribute name=\"" + tName + "\" content=" + content +
         //    "\n  type=" + pa.elementTypeString() + " pa=" + pa.toString());
-        tAttributes.add(tName, pa);
+        tAttributes.set(EDMessages.DEFAULT_LANGUAGE, tName, pa);
         // String2.log(">>????EDD _FillValue=" + tAttributes.get("_FillValue"));
 
       } else {
@@ -2053,13 +2013,14 @@ public abstract class EDD {
    *     The xmlReader will have just read ...&lt;/axisVariable&gt; or ...&lt;/dataVariable&gt;.
    * @throws Throwable if trouble
    */
-  public static Object[] getSDAVVariableFromXml(SimpleXMLReader xmlReader) throws Throwable {
+  public static AxisVariableInfo getSDAVVariableFromXml(SimpleXMLReader xmlReader)
+      throws Throwable {
 
     // process the tags
     if (debugMode) String2.log("  getSDAVVariableFromXml...");
     int startOfTagsN = xmlReader.stackSize();
     String tSourceName = null, tDestinationName = null;
-    Attributes tAttributes = null;
+    LocalizedAttributes tAttributes = null;
     PrimitiveArray tValuesPA = null;
     while (true) {
       xmlReader.nextTag();
@@ -2074,7 +2035,7 @@ public abstract class EDD {
                   + tSourceName
                   + " destName="
                   + tDestinationName);
-        return new Object[] {tSourceName, tDestinationName, tAttributes, tValuesPA};
+        return new AxisVariableInfo(tSourceName, tDestinationName, tAttributes, tValuesPA);
       }
       if (xmlReader.stackSize() > startOfTagsN + 1) xmlReader.unexpectedTagException();
 
@@ -2135,13 +2096,14 @@ public abstract class EDD {
    *     read ...&lt;/axisVariable&gt; or ...&lt;/dataVariable&gt;
    * @throws Throwable if trouble
    */
-  public static Object[] getSDADVariableFromXml(SimpleXMLReader xmlReader) throws Throwable {
+  public static DataVariableInfo getSDADVariableFromXml(SimpleXMLReader xmlReader)
+      throws Throwable {
 
     // process the tags
     if (debugMode) String2.log("  getSDADVVariableFromXml...");
     int startOfTagsN = xmlReader.stackSize();
     String tSourceName = null, tDestinationName = null, tDataType = null;
-    Attributes tAttributes = null;
+    LocalizedAttributes tAttributes = null;
     while (true) {
       xmlReader.nextTag();
       String topTag = xmlReader.topTag();
@@ -2157,7 +2119,7 @@ public abstract class EDD {
                   + tDestinationName
                   + " dataType="
                   + tDataType);
-        return new Object[] {tSourceName, tDestinationName, tAttributes, tDataType};
+        return new DataVariableInfo(tSourceName, tDestinationName, tAttributes, tDataType);
       }
       if (xmlReader.stackSize() > startOfTagsN + 1) xmlReader.unexpectedTagException();
 
@@ -2610,11 +2572,11 @@ public abstract class EDD {
    * and Night, 0.05 degrees, Global, Science Quality". It is usually &lt; 80 characters long. The
    * information is often originally from the CF global metadata for "title".
    *
+   * @param language the index of the selected language
    * @return the title
    */
-  public String title() {
-    if (title == null) title = combinedGlobalAttributes.getString("title");
-    return title;
+  public String title(int language) {
+    return combinedGlobalAttributes.getString(language, "title");
   }
 
   /**
@@ -2622,72 +2584,73 @@ public abstract class EDD {
    * It may have newline characters (usually at &lt;= 72 chars per line). The information is often
    * originally from the CF global metadata for "summary".
    *
+   * @param language the index of the selected language
    * @return the summary
    */
-  public String summary() {
-    if (summary == null) summary = combinedGlobalAttributes.getString("summary");
-    return summary;
+  public String summary(int language) {
+    return combinedGlobalAttributes.getString(language, "summary");
   }
 
   /**
    * The extendedSummary is summary() plus a list of variable names, long names, and units.
    *
+   * @param language the index of the selected language
    * @return the extendedSummary
    */
-  public String extendedSummary() {
-    String tSummary = summary();
-    if (extendedSummaryPartB == null) {
-      String nllSummary = String2.noLongLinesAtSpace(tSummary, 100, ""); // as it will be shown
-      int nllSummaryLength = nllSummary.length();
-      int nLines = 0;
-      for (int i = 0; i < nllSummaryLength; i++) {
-        if (nllSummary.charAt(i) == '\n') nLines++;
-      }
+  public String extendedSummary(int language) {
+    String tSummary = summary(language);
 
-      // standardize the blank lines
-      StringBuilder sb = new StringBuilder();
-      if (tSummary.endsWith("\n\n")) {
-        // do nothing
-      } else if (tSummary.endsWith("\n")) {
-        sb.append('\n');
-        nLines++;
-      } else {
-        sb.append("\n\n");
-        nLines += 2;
-      }
-
-      // add the CDM info
-      sb.append("cdm_data_type = " + cdmDataType() + "\n");
-      nLines++;
-      // list the stationVariables, trajectoryVariables, profileVariables?
-
-      // add the list of variables
-      sb.append("VARIABLES");
-      if (this instanceof EDDGrid eddGrid)
-        sb.append(" (all of which use the dimensions " + eddGrid.allDimString() + ")");
-      sb.append(":\n");
-      nLines++;
-      for (int dv = 0; dv < dataVariables.length; dv++) {
-        EDV edv = dataVariables[dv];
-        String lName =
-            edv.destinationName().length() == edv.longName().length() ? "" : edv.longName();
-        String tUnits = edv.units() == null ? "" : edv.units();
-        String glue = lName.length() > 0 && tUnits.length() > 0 ? ", " : "";
-        sb.append(
-            edv.destinationName()
-                + (lName.length() > 0 || tUnits.length() > 0
-                    ? " (" + lName + glue + tUnits + ")"
-                    : "")
-                + "\n");
-
-        nLines++;
-        if (nLines > 30 && dv < dataVariables.length - 4) { // don't do this if just a few more dv
-          sb.append("... (" + (dataVariables.length - dv - 1) + " more variables)\n");
-          break;
-        }
-      }
-      extendedSummaryPartB = sb.toString(); // it is important that assignment be atomic
+    String nllSummary = String2.noLongLinesAtSpace(tSummary, 100, ""); // as it will be shown
+    int nllSummaryLength = nllSummary.length();
+    int nLines = 0;
+    for (int i = 0; i < nllSummaryLength; i++) {
+      if (nllSummary.charAt(i) == '\n') nLines++;
     }
+
+    // standardize the blank lines
+    StringBuilder sb = new StringBuilder();
+    if (tSummary.endsWith("\n\n")) {
+      // do nothing
+    } else if (tSummary.endsWith("\n")) {
+      sb.append('\n');
+      nLines++;
+    } else {
+      sb.append("\n\n");
+      nLines += 2;
+    }
+
+    // add the CDM info
+    sb.append("cdm_data_type = " + cdmDataType(language) + "\n");
+    nLines++;
+    // list the stationVariables, trajectoryVariables, profileVariables?
+
+    // add the list of variables
+    sb.append("VARIABLES");
+    if (this instanceof EDDGrid eddGrid)
+      sb.append(" (all of which use the dimensions " + eddGrid.allDimString() + ")");
+    sb.append(":\n");
+    nLines++;
+    for (int dv = 0; dv < dataVariables.length; dv++) {
+      EDV edv = dataVariables[dv];
+      String lName =
+          edv.destinationName().length() == edv.longName().length() ? "" : edv.longName();
+      String tUnits = edv.units() == null ? "" : edv.units();
+      String glue = lName.length() > 0 && tUnits.length() > 0 ? ", " : "";
+      sb.append(
+          edv.destinationName()
+              + (lName.length() > 0 || tUnits.length() > 0
+                  ? " (" + lName + glue + tUnits + ")"
+                  : "")
+              + "\n");
+
+      nLines++;
+      if (nLines > 30 && dv < dataVariables.length - 4) { // don't do this if just a few more dv
+        sb.append("... (" + (dataVariables.length - dv - 1) + " more variables)\n");
+        break;
+      }
+    }
+    String extendedSummaryPartB = sb.toString(); // it is important that assignment be atomic
+
     return extendedSummaryPartB.length() == 0 ? tSummary : tSummary + extendedSummaryPartB;
   }
 
@@ -2697,22 +2660,22 @@ public abstract class EDD {
    * usually &lt; 20 characters long. The information is often originally from the CF global
    * metadata for "institution".
    *
+   * @param language the index of the selected language
    * @return the institution
    */
-  public String institution() {
-    if (institution == null) institution = combinedGlobalAttributes.getString(EDStatic.INSTITUTION);
-    return institution;
+  public String institution(int language) {
+    return combinedGlobalAttributes.getString(language, EDStatic.INSTITUTION);
   }
 
   /**
    * The infoUrl identifies a url with information about the dataset. The information was supplied
    * by the constructor and is stored as global metadata for "infoUrl" (non-standard).
    *
+   * @param language the index of the selected language
    * @return the infoUrl
    */
-  public String infoUrl() {
-    if (infoUrl == null) infoUrl = combinedGlobalAttributes.getString("infoUrl");
-    return infoUrl;
+  public String infoUrl(int language) {
+    return combinedGlobalAttributes.getString(language, "infoUrl");
   }
 
   /**
@@ -2730,11 +2693,11 @@ public abstract class EDD {
    * The publicSourceUrl identifies the source (usually) url from the combinedGlobalAttributes. For
    * a FromErddap, this is the (e.g.,) opendap server that the remote ERDDAP gets data from.
    *
+   * @param language the index of the selected language
    * @return the publicSourceUrl
    */
-  public String publicSourceUrl() {
-    if (publicSourceUrl == null) publicSourceUrl = combinedGlobalAttributes.getString("sourceUrl");
-    return publicSourceUrl;
+  public String publicSourceUrl(int language) {
+    return combinedGlobalAttributes.getString(language, "sourceUrl");
   }
 
   /**
@@ -2782,19 +2745,21 @@ public abstract class EDD {
    * The cdm_data_type global attribute identifies the type of data. Valid values include the CF
    * featureType's + Grid.
    *
+   * @param language language to use from attributes
    * @return the cdmDataType
    */
-  public String cdmDataType() {
-    if (cdmDataType == null) cdmDataType = combinedGlobalAttributes.getString("cdm_data_type");
-    return cdmDataType;
+  public String cdmDataType(int language) {
+    return combinedGlobalAttributes.getString(language, "cdm_data_type");
   }
 
   /**
    * This returns the accessConstraints (e.g., for ERDDAP's SOS, WCS, WMS) from
    * combinedGlobalAttributes (checked first) or EDStatic (from setup.xml).
+   *
+   * @param language language to use from attributes
    */
-  public String accessConstraints() {
-    String ac = combinedGlobalAttributes().getString("accessConstraints");
+  public String accessConstraints(int language) {
+    String ac = combinedGlobalAttributes().getString(language, "accessConstraints");
     if (ac != null) return ac;
 
     return getAccessibleTo() == null
@@ -2805,18 +2770,22 @@ public abstract class EDD {
   /**
    * This returns the fees (e.g., for ERDDAP's SOS, WCS, WMS) from combinedGlobalAttributes (checked
    * first) or EDStatic (from setup.xml).
+   *
+   * @param language language to use from attributes
    */
-  public String fees() {
-    String fees = combinedGlobalAttributes().getString("fees");
+  public String fees(int language) {
+    String fees = combinedGlobalAttributes().getString(language, "fees");
     return fees == null ? EDStatic.config.fees : fees;
   }
 
   /**
    * This returns the keywords (e.g., for ERDDAP's SOS, WCS, WMS) from combinedGlobalAttributes
    * (checked first) or EDStatic (from setup.xml).
+   *
+   * @param language language to use from attributes
    */
-  public String[] keywords() {
-    String kw = combinedGlobalAttributes().getString("keywords");
+  public String[] keywords(int language) {
+    String kw = combinedGlobalAttributes().getString(language, "keywords");
     if (kw == null) kw = EDStatic.config.keywords;
     if (kw == null || kw.length() == 0) return new String[0];
 
@@ -2835,27 +2804,33 @@ public abstract class EDD {
   /**
    * This returns the featureOfInterest from combinedGlobalAttributes (checked first) or EDStatic
    * (from setup.xml).
+   *
+   * @param language language to use from attributes
    */
-  public String sosFeatureOfInterest() {
-    String foi = combinedGlobalAttributes().getString("sosFeatureOfInterest");
+  public String sosFeatureOfInterest(int language) {
+    String foi = combinedGlobalAttributes().getString(language, "sosFeatureOfInterest");
     return foi == null ? EDStatic.config.sosFeatureOfInterest : foi;
   }
 
   /**
    * This returns the sosStandardNamePrefix from combinedGlobalAttributes (checked first) or
    * EDStatic (from setup.xml).
+   *
+   * @param language the index of the selected language
    */
-  public String sosStandardNamePrefix() {
-    String snp = combinedGlobalAttributes().getString("sosStandardNamePrefix");
+  public String sosStandardNamePrefix(int language) {
+    String snp = combinedGlobalAttributes().getString(language, "sosStandardNamePrefix");
     return snp == null ? EDStatic.config.sosStandardNamePrefix : snp;
   }
 
   /**
    * This returns the sosUrnBase from combinedGlobalAttributes (checked first) or EDStatic (from
    * setup.xml).
+   *
+   * @param language the index of the selected language
    */
-  public String sosUrnBase() {
-    String sub = combinedGlobalAttributes().getString("sosUrnBase");
+  public String sosUrnBase(int language) {
+    String sub = combinedGlobalAttributes().getString(language, "sosUrnBase");
     return sub == null ? EDStatic.config.sosUrnBase : sub;
   }
 
@@ -2863,9 +2838,11 @@ public abstract class EDD {
    * This returns the default value of drawLandMask ("under", "over", "outline", or "off") for
    * variables in this dataset. The combinedAttributes setting (if any) has priority over the
    * setup.xml setting.
+   *
+   * @param language the index of the selected language
    */
-  public String defaultDrawLandMask() {
-    String dlm = combinedGlobalAttributes().getString("drawLandMask");
+  public String defaultDrawLandMask(int language) {
+    String dlm = combinedGlobalAttributes().getString(language, "drawLandMask");
     int which = SgtMap.drawLandMask_OPTIONS.indexOf(dlm);
     return which < 1 ? EDStatic.config.drawLandMask : dlm;
   }
@@ -2886,7 +2863,7 @@ public abstract class EDD {
    * @return the global attributes which will be added to (and take precedence over) the
    *     sourceGlobal attributes when results files are created.
    */
-  public Attributes addGlobalAttributes() {
+  public LocalizedAttributes addGlobalAttributes() {
     return addGlobalAttributes;
   }
 
@@ -2895,7 +2872,7 @@ public abstract class EDD {
    *
    * @return the source+add global attributes.
    */
-  public Attributes combinedGlobalAttributes() {
+  public LocalizedAttributes combinedGlobalAttributes() {
     return combinedGlobalAttributes;
   }
 
@@ -3168,16 +3145,17 @@ public abstract class EDD {
    * case-insensitve search. This uses a Boyer-Moore-like search (see String2.indexOf(byte[],
    * byte[], int[])).
    *
+   * @param language the index of the selected language
    * @param words the words or phrases to be searched for (already lowercase) stored as byte[] via
    *     word.getBytes(File2.UTF_8).
    * @param jump the jumpTables from String2.makeJumpTable(word).
    * @return a rating value for this dataset (lower numbers are better), or Integer.MAX_VALUE if
    *     words.length == 0 or one of the words wasn't found or a negative search word was found.
    */
-  public int searchRank(boolean isNegative[], byte words[][], int jump[][]) {
+  public int searchRank(int language, boolean isNegative[], byte words[][], int jump[][]) {
     if (words.length == 0) return Integer.MAX_VALUE;
     int rank = 0;
-    byte tSearchBytes[] = searchBytes(); // hold on, since it may be recreated each time
+    byte tSearchBytes[] = searchBytes(language); // hold on, since it may be recreated each time
     for (int w = 0; w < words.length; w++) {
       if (words[w].length == 0) // search word was removed
       continue;
@@ -3197,7 +3175,7 @@ public abstract class EDD {
       // rank += po < 0? penalty : po;
     }
     // special case of deprecated datasets
-    if (title().indexOf("DEPRECATED") >= 0) rank += 10000;
+    if (title(language).indexOf("DEPRECATED") >= 0) rank += 10000;
     return rank;
 
     // standardize to 0..1000
@@ -3249,34 +3227,27 @@ public abstract class EDD {
   /**
    * This makes/returns the searchBytes that originalSearchEngine searchRank searches.
    *
+   * @param language the index of the selected language
    * @return the searchBytes that searchRank searches.
    */
-  public byte[] searchBytes() {
-
-    if (searchBytes == null) {
-      byte tSearchBytes[] = String2.stringToUtf8Bytes(searchString().toLowerCase());
-      if (EDStatic.config.useLuceneSearchEngine) {
-        return tSearchBytes; // don't cache it (10^6 datasets?!) (uses should be rare)
-      } else {
-        searchBytes = tSearchBytes; // cache it
-      }
-    }
-    return searchBytes;
+  public byte[] searchBytes(int language) {
+    return String2.stringToUtf8Bytes(searchString(language).toLowerCase());
   }
 
   /**
    * This makes the searchString (mixed case) used to create searchBytes or searchDocument.
    *
+   * @param language the index of the selected language
    * @return the searchString (mixed case) used to create searchBytes or searchDocument.
    */
-  public abstract String searchString();
+  public abstract String searchString(int language);
 
-  protected StringBuilder startOfSearchString() {
+  protected StringBuilder startOfSearchString(int language) {
 
     // make a string to search through
     StringBuilder sb = new StringBuilder();
     sb.append("all\n");
-    sb.append("title=" + title() + "\n");
+    sb.append("title=" + title(language) + "\n");
     sb.append("datasetID=" + datasetID + "\n");
     // protocol=...  is suggested in Advanced Search for text searches from protocols
     // protocol=griddap and protocol=tabledap *were* mentioned in searchHintsTooltip, now commented
@@ -3311,7 +3282,7 @@ public abstract class EDD {
    * @return the Document that Lucene searches.
    */
   public Document searchDocument() {
-
+    int language = EDMessages.DEFAULT_LANGUAGE;
     Document doc = new Document();
     // Store specifies if the original string also needs to be stored as is
     //  (e.g., so I can retrieve datasetID field from a matched document).
@@ -3327,14 +3298,15 @@ public abstract class EDD {
     doc.add(
         new TextField(
             EDStatic.luceneDefaultField,
-            searchString(),
+            searchString(language),
             Field.Store.NO)); // NO=  TextField is tokenized
 
     // Do duplicate searches of title to boost the score,
     //  so score from lucene and original are closer.
     // !!! FUTURE: support separate searches within the datasets' titles
     //   If so, add support in searchEngine=original, too.
-    Field field = new TextField("title", title(), Field.Store.NO); // NO=  TextField is tokenized
+    Field field =
+        new TextField("title", title(language), Field.Store.NO); // NO=  TextField is tokenized
     // field.setBoost(10);  //in 3.5.0 the title field was boosted. Then query was boosted. Now?
     doc.add(field);
     return doc;
@@ -3871,7 +3843,7 @@ public abstract class EDD {
               + "\">"
               + EDStatic.messages.EDDMakeAGraphAr[language]
               + "</a>\n";
-    String encTitle = XML.encodeAsHTML(String2.noLongLines(title(), 80, ""));
+    String encTitle = XML.encodeAsHTML(String2.noLongLines(title(language), 80, ""));
     encTitle = String2.replaceAll(encTitle, "\n", "<br>");
     writer.write(
         // "<p><strong>" + type + " Dataset:</strong>\n" +
@@ -3899,7 +3871,7 @@ public abstract class EDD {
             + EDStatic.messages.EDDInstitutionAr[language]
             + ":&nbsp;</td>\n"
             + "    <td>"
-            + XML.encodeAsHTML(institution())
+            + XML.encodeAsHTML(institution(language))
             + "&nbsp;&nbsp;\n"
             + "    ("
             + EDStatic.messages.EDDDatasetIDAr[language]
@@ -3953,10 +3925,10 @@ public abstract class EDD {
             + EDStatic.messages.clickBackgroundInfoAr[language]
             + "\" \n"
             + "          href=\""
-            + XML.encodeAsHTMLAttribute(infoUrl())
+            + XML.encodeAsHTMLAttribute(infoUrl(language))
             + "\">"
             + EDStatic.messages.EDDBackgroundAr[language]
-            + (infoUrl().startsWith(EDStatic.config.baseUrl)
+            + (infoUrl(language).startsWith(EDStatic.config.baseUrl)
                 ? ""
                 : EDStatic.messages.externalLinkHtml(language, tErddapUrl))
             + "</a>\n"
@@ -3978,7 +3950,7 @@ public abstract class EDD {
    * @return the String to append to Information row
    */
   private String getDisplayInfo(HttpServletRequest request, int language, String loggedInAs) {
-    if (EDStatic.displayAttributeAr.length != EDStatic.displayInfoAr.length) {
+    if (EDStatic.displayAttributeAr.length != EDStatic.displayInfoAr.get(language).length) {
       String2.log("Incorrect input to the displayAttribute and displayInfo tags");
       return "";
     }
@@ -3987,14 +3959,14 @@ public abstract class EDD {
 
     for (int i = 0; i < EDStatic.displayAttributeAr.length; i++) {
       String attribute = EDStatic.displayAttributeAr[i];
-      String displayInfo = EDStatic.displayInfoAr[i];
+      String displayInfo = EDStatic.displayInfoAr.get(language)[i];
       String value;
 
-      String attVal = combinedGlobalAttributes().getString(attribute);
+      String attVal = combinedGlobalAttributes().getString(language, attribute);
       boolean warningColor = false;
       // Handle "summary"
       if ("summary".equals(attribute)) {
-        attVal = extendedSummary();
+        attVal = extendedSummary(language);
         displayInfo = EDStatic.messages.EDDSummaryAr[language];
       }
       if ("license".equals(attribute)) {
@@ -11889,12 +11861,14 @@ public abstract class EDD {
    * This is used by standardizeResultsTable (and places that bypass standardizeResultsTable) to
    * update the globalAttributes of a response table.
    *
+   * @param language the index of the selected language
    * @return null if trouble. The new history is used for tableWriters, which allow null.
    */
-  public String getNewHistory(String requestUrl, String userDapQuery) {
+  public String getNewHistory(int language, String requestUrl, String userDapQuery) {
     try {
       String tHistory =
-          addToHistory(combinedGlobalAttributes.getString("history"), publicSourceUrl());
+          addToHistory(
+              combinedGlobalAttributes.getString(language, "history"), publicSourceUrl(language));
       return addToHistory(
           tHistory,
           EDStatic.config.baseUrl
@@ -13046,7 +13020,8 @@ public abstract class EDD {
     boolean isGrid = this instanceof EDDGrid;
     EDDGrid eddGrid = isGrid ? (EDDGrid) this : null;
     EDDTable eddTable = isGrid ? null : (EDDTable) this;
-    Attributes gatts = combinedGlobalAttributes();
+    int language = EDMessages.DEFAULT_LANGUAGE;
+    Attributes gatts = combinedGlobalAttributes().toAttributes(language);
     String now = Calendar2.getCompactCurrentISODateTimeStringLocal();
 
     /// help/xml-loader documentation says:
@@ -13081,7 +13056,7 @@ public abstract class EDD {
             +
             // Enter the catalog item type of the item being created or updated (e.g. Data Set)
             "    <title>"
-            + XML.encodeAsXML(title())
+            + XML.encodeAsXML(title(language))
             + "</title>\n"
             +
             // Enter the catalog item title. If this upload is updating an existing catalog item,
@@ -13095,7 +13070,7 @@ public abstract class EDD {
             + // ??? while still working on these records, then Complete
             // Enter the status. Must be one of the following values: In Work, Planned, Complete.
             "    <abstract>"
-            + XML.encodeAsXML(summary())
+            + XML.encodeAsXML(summary(language))
             + "</abstract>\n"
             +
             // Enter the abstract/description of the catalog item.
@@ -13106,7 +13081,7 @@ public abstract class EDD {
             "    <other-citation-details></other-citation-details>\n"
             + // Enter other citation details.
             "    <supplemental-information>"
-            + XML.encodeAsXML(infoUrl())
+            + XML.encodeAsXML(infoUrl(language))
             + "</supplemental-information>\n"
             +
             // Enter supplemental information if applicable.
@@ -13965,7 +13940,7 @@ public abstract class EDD {
                     + tDatasetID
                     + "</sourceUrl>\n"
                     + "</dataset>\n");
-        Attributes gatts = edd.combinedGlobalAttributes();
+        Attributes gatts = edd.combinedGlobalAttributes().toAttributes(EDMessages.DEFAULT_LANGUAGE);
         String tCreatorEmail = gatts.getString("creator_email");
         String tInstitution = gatts.getString("institution");
         String tTitle = gatts.getString("title");

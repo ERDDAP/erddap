@@ -4,7 +4,6 @@
  */
 package gov.noaa.pfel.erddap;
 
-import com.cohort.array.Attributes;
 import com.cohort.array.StringArray;
 import com.cohort.util.Calendar2;
 import com.cohort.util.File2;
@@ -17,6 +16,7 @@ import gov.noaa.pfel.coastwatch.util.FileVisitorDNLS;
 import gov.noaa.pfel.coastwatch.util.SSR;
 import gov.noaa.pfel.coastwatch.util.SimpleXMLReader;
 import gov.noaa.pfel.erddap.dataset.*;
+import gov.noaa.pfel.erddap.dataset.metadata.LocalizedAttributes;
 import gov.noaa.pfel.erddap.handlers.SaxHandler;
 import gov.noaa.pfel.erddap.util.*;
 import gov.noaa.pfel.erddap.variable.EDV;
@@ -479,10 +479,13 @@ public class LoadDatasets extends Thread {
 
   /** Validation checks post the parsing of the datasets.xml file */
   private void validateDatasetsXmlResults() {
-    if (EDStatic.displayAttributeAr.length != EDStatic.displayInfoAr.length) {
-      String2.log("Incorrect input to the displayAttribute and displayInfo tags");
-      EDStatic.displayAttributeAr = EDStatic.DEFAULT_displayAttributeAr;
-      EDStatic.displayInfoAr = EDStatic.DEFAULT_displayInfoAr;
+    // Check for all languages
+    for (int i = 0; i < TranslateMessages.languageCodeList.size(); i++) {
+      if (EDStatic.displayAttributeAr.length != EDStatic.displayInfoAr.get(i).length) {
+        String2.log("Incorrect input to the displayAttribute and displayInfo tags");
+        EDStatic.displayAttributeAr = EDStatic.DEFAULT_displayAttributeAr;
+        EDStatic.displayInfoAr = EDStatic.DEFAULT_displayInfoAr;
+      }
     }
   }
 
@@ -1737,12 +1740,12 @@ public class LoadDatasets extends Thread {
   protected static void categorizeGlobalAtts(
       boolean add, ConcurrentHashMap catInfo, EDD edd, String id) {
 
-    Attributes atts = edd.combinedGlobalAttributes();
+    LocalizedAttributes atts = edd.combinedGlobalAttributes();
     int nCat = EDStatic.config.categoryAttributes.length;
     for (int cat = 0; cat < nCat; cat++) {
       if (EDStatic.config.categoryIsGlobal[cat]) {
         String catName = EDStatic.config.categoryAttributes[cat]; // e.g., global:institution
-        String value = atts.getString(catName);
+        String value = atts.getString(EDMessages.DEFAULT_LANGUAGE, catName);
         // String2.log("catName=" + catName + " value=" + String2.toJson(value));
 
         if (value != null && catName.equals("keywords")) {
@@ -1775,7 +1778,7 @@ public class LoadDatasets extends Thread {
   protected static void categorizeVariableAtts(
       boolean add, ConcurrentHashMap catInfo, EDV edv, String id) {
 
-    Attributes atts = edv.combinedAttributes();
+    LocalizedAttributes atts = edv.combinedAttributes();
     int nCat = EDStatic.config.categoryAttributes.length;
     for (int cat = 0; cat < nCat; cat++) {
       if (!EDStatic.config.categoryIsGlobal[cat]) {
@@ -1784,7 +1787,7 @@ public class LoadDatasets extends Thread {
             cat == EDStatic.config.variableNameCategoryAttributeIndex
                 ? // special case
                 edv.destinationName()
-                : atts.getString(catName);
+                : atts.getString(EDMessages.DEFAULT_LANGUAGE, catName);
         addRemoveIdToCatInfo(
             add,
             catInfo,

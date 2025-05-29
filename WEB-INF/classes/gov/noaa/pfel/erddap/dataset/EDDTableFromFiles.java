@@ -33,8 +33,10 @@ import gov.noaa.pfel.coastwatch.util.SimpleXMLReader;
 import gov.noaa.pfel.coastwatch.util.WatchDirectory;
 import gov.noaa.pfel.coastwatch.util.WatchUpdateHandler;
 import gov.noaa.pfel.erddap.Erddap;
+import gov.noaa.pfel.erddap.dataset.metadata.LocalizedAttributes;
 import gov.noaa.pfel.erddap.handlers.EDDTableFromFilesHandler;
 import gov.noaa.pfel.erddap.handlers.SaxHandlerClass;
+import gov.noaa.pfel.erddap.util.EDMessages;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.util.ThreadedWorkManager;
 import gov.noaa.pfel.erddap.variable.*;
@@ -206,13 +208,13 @@ public abstract class EDDTableFromFiles extends EDDTable implements WatchUpdateH
   @EDDFromXmlMethod
   public static EDDTableFromFiles fromXml(Erddap erddap, SimpleXMLReader xmlReader)
       throws Throwable {
-
+    int language = EDMessages.DEFAULT_LANGUAGE;
     // data to be obtained (or not)
     if (verbose) String2.log("\n*** constructing EDDTableFromFiles(xmlReader)...");
     String tDatasetID = xmlReader.attributeValue("datasetID");
     String tType = xmlReader.attributeValue("type");
-    Attributes tGlobalAttributes = null;
-    ArrayList<Object[]> tDataVariables = new ArrayList<>();
+    LocalizedAttributes tGlobalAttributes = null;
+    ArrayList<DataVariableInfo> tDataVariables = new ArrayList<>();
     int tReloadEveryNMinutes = Integer.MAX_VALUE;
     int tUpdateEveryNMillis = 0;
     String tAccessibleTo = null;
@@ -351,9 +353,6 @@ public abstract class EDDTableFromFiles extends EDDTable implements WatchUpdateH
         default -> xmlReader.unexpectedTagException();
       }
     }
-    int ndv = tDataVariables.size();
-    Object ttDataVariables[][] = new Object[ndv][];
-    for (int i = 0; i < tDataVariables.size(); i++) ttDataVariables[i] = tDataVariables.get(i);
 
     if (tType == null) tType = "";
     switch (tType) {
@@ -369,7 +368,7 @@ public abstract class EDDTableFromFiles extends EDDTable implements WatchUpdateH
             tDefaultDataQuery,
             tDefaultGraphQuery,
             tGlobalAttributes,
-            ttDataVariables,
+            tDataVariables,
             tReloadEveryNMinutes,
             tUpdateEveryNMillis,
             tFileDir,
@@ -412,7 +411,7 @@ public abstract class EDDTableFromFiles extends EDDTable implements WatchUpdateH
             tDefaultDataQuery,
             tDefaultGraphQuery,
             tGlobalAttributes,
-            ttDataVariables,
+            tDataVariables,
             tReloadEveryNMinutes,
             tUpdateEveryNMillis,
             tFileDir,
@@ -455,7 +454,7 @@ public abstract class EDDTableFromFiles extends EDDTable implements WatchUpdateH
             tDefaultDataQuery,
             tDefaultGraphQuery,
             tGlobalAttributes,
-            ttDataVariables,
+            tDataVariables,
             tReloadEveryNMinutes,
             tUpdateEveryNMillis,
             tFileDir,
@@ -498,7 +497,7 @@ public abstract class EDDTableFromFiles extends EDDTable implements WatchUpdateH
             tDefaultDataQuery,
             tDefaultGraphQuery,
             tGlobalAttributes,
-            ttDataVariables,
+            tDataVariables,
             tReloadEveryNMinutes,
             tUpdateEveryNMillis,
             tFileDir,
@@ -541,7 +540,7 @@ public abstract class EDDTableFromFiles extends EDDTable implements WatchUpdateH
             tDefaultDataQuery,
             tDefaultGraphQuery,
             tGlobalAttributes,
-            ttDataVariables,
+            tDataVariables,
             tReloadEveryNMinutes,
             tUpdateEveryNMillis,
             tFileDir,
@@ -584,7 +583,7 @@ public abstract class EDDTableFromFiles extends EDDTable implements WatchUpdateH
             tDefaultDataQuery,
             tDefaultGraphQuery,
             tGlobalAttributes,
-            ttDataVariables,
+            tDataVariables,
             tReloadEveryNMinutes,
             tUpdateEveryNMillis,
             tFileDir,
@@ -627,7 +626,7 @@ public abstract class EDDTableFromFiles extends EDDTable implements WatchUpdateH
             tDefaultDataQuery,
             tDefaultGraphQuery,
             tGlobalAttributes,
-            ttDataVariables,
+            tDataVariables,
             tReloadEveryNMinutes,
             tUpdateEveryNMillis,
             tFileDir,
@@ -670,7 +669,7 @@ public abstract class EDDTableFromFiles extends EDDTable implements WatchUpdateH
             tDefaultDataQuery,
             tDefaultGraphQuery,
             tGlobalAttributes,
-            ttDataVariables,
+            tDataVariables,
             tReloadEveryNMinutes,
             tUpdateEveryNMillis,
             tFileDir,
@@ -713,7 +712,7 @@ public abstract class EDDTableFromFiles extends EDDTable implements WatchUpdateH
             tDefaultDataQuery,
             tDefaultGraphQuery,
             tGlobalAttributes,
-            ttDataVariables,
+            tDataVariables,
             tReloadEveryNMinutes,
             tUpdateEveryNMillis,
             tFileDir,
@@ -756,7 +755,7 @@ public abstract class EDDTableFromFiles extends EDDTable implements WatchUpdateH
             tDefaultDataQuery,
             tDefaultGraphQuery,
             tGlobalAttributes,
-            ttDataVariables,
+            tDataVariables,
             tReloadEveryNMinutes,
             tUpdateEveryNMillis,
             tFileDir,
@@ -820,7 +819,7 @@ public abstract class EDDTableFromFiles extends EDDTable implements WatchUpdateH
             tDefaultDataQuery,
             tDefaultGraphQuery,
             tGlobalAttributes,
-            ttDataVariables,
+            tDataVariables,
             tReloadEveryNMinutes,
             tUpdateEveryNMillis,
             tFileDir,
@@ -874,7 +873,7 @@ public abstract class EDDTableFromFiles extends EDDTable implements WatchUpdateH
           // make downloadFileTasks
           EDDTableFromHyraxFiles.makeDownloadFileTasks(
               tDatasetID,
-              tGlobalAttributes.getString("sourceUrl"),
+              tGlobalAttributes.getString(language, "sourceUrl"),
               tFileNameRegex,
               tRecursive,
               tPathRegex);
@@ -898,7 +897,7 @@ public abstract class EDDTableFromFiles extends EDDTable implements WatchUpdateH
                 tDefaultDataQuery,
                 tDefaultGraphQuery,
                 tGlobalAttributes,
-                ttDataVariables,
+                tDataVariables,
                 tReloadEveryNMinutes,
                 tUpdateEveryNMillis,
                 tFileDir,
@@ -955,7 +954,7 @@ public abstract class EDDTableFromFiles extends EDDTable implements WatchUpdateH
           // make downloadFileTasks
           EDDTableFromThreddsFiles.makeDownloadFileTasks(
               tDatasetID,
-              tGlobalAttributes.getString("sourceUrl"),
+              tGlobalAttributes.getString(language, "sourceUrl"),
               tFileNameRegex,
               tRecursive,
               tPathRegex,
@@ -980,7 +979,7 @@ public abstract class EDDTableFromFiles extends EDDTable implements WatchUpdateH
                 tDefaultDataQuery,
                 tDefaultGraphQuery,
                 tGlobalAttributes,
-                ttDataVariables,
+                tDataVariables,
                 tReloadEveryNMinutes,
                 tUpdateEveryNMillis,
                 tFileDir,
@@ -1039,8 +1038,8 @@ public abstract class EDDTableFromFiles extends EDDTable implements WatchUpdateH
           File2.makeDirectory(fileDir);
           String error =
               EDDTableFromWFSFiles.downloadData(
-                  tGlobalAttributes.getString("sourceUrl"),
-                  tGlobalAttributes.getString("rowElementXPath"),
+                  tGlobalAttributes.getString(language, "sourceUrl"),
+                  tGlobalAttributes.getString(language, "rowElementXPath"),
                   fileDir + fileName);
           if (error.length() > 0) String2.log(error);
         }
@@ -1056,7 +1055,7 @@ public abstract class EDDTableFromFiles extends EDDTable implements WatchUpdateH
             tDefaultDataQuery,
             tDefaultGraphQuery,
             tGlobalAttributes,
-            ttDataVariables,
+            tDataVariables,
             tReloadEveryNMinutes,
             tUpdateEveryNMillis,
             fileDir, // force fileDir
@@ -1118,7 +1117,7 @@ public abstract class EDDTableFromFiles extends EDDTable implements WatchUpdateH
             tDefaultDataQuery,
             tDefaultGraphQuery,
             tGlobalAttributes,
-            ttDataVariables,
+            tDataVariables,
             tReloadEveryNMinutes,
             tUpdateEveryNMillis,
             tFileDir,
@@ -1274,8 +1273,8 @@ public abstract class EDDTableFromFiles extends EDDTable implements WatchUpdateH
       String tSosOfferingPrefix,
       String tDefaultDataQuery,
       String tDefaultGraphQuery,
-      Attributes tAddGlobalAttributes,
-      Object[][] tDataVariables,
+      LocalizedAttributes tAddGlobalAttributes,
+      ArrayList<DataVariableInfo> tDataVariables,
       int tReloadEveryNMinutes,
       int tUpdateEveryNMillis,
       String tFileDir,
@@ -1306,7 +1305,7 @@ public abstract class EDDTableFromFiles extends EDDTable implements WatchUpdateH
       String tCachePartialPathRegex,
       String tAddVariablesWhere)
       throws Throwable {
-
+    int language = EDMessages.DEFAULT_LANGUAGE;
     if (verbose) String2.log("\n*** constructing EDDTableFromFiles " + tDatasetID);
     long constructionStartMillis = System.currentTimeMillis();
     String errorInMethod = "Error in EDDTableFromFiles(" + tDatasetID + ") constructor:\n";
@@ -1331,7 +1330,7 @@ public abstract class EDDTableFromFiles extends EDDTable implements WatchUpdateH
     sosOfferingPrefix = tSosOfferingPrefix;
     defaultDataQuery = tDefaultDataQuery;
     defaultGraphQuery = tDefaultGraphQuery;
-    if (tAddGlobalAttributes == null) tAddGlobalAttributes = new Attributes();
+    if (tAddGlobalAttributes == null) tAddGlobalAttributes = new LocalizedAttributes();
     addGlobalAttributes = tAddGlobalAttributes;
     setReloadEveryNMinutes(tReloadEveryNMinutes);
     setUpdateEveryNMillis(tUpdateEveryNMillis);
@@ -1360,7 +1359,7 @@ public abstract class EDDTableFromFiles extends EDDTable implements WatchUpdateH
     columnNameForExtract = tColumnNameForExtract;
 
     sortedColumnSourceName = tSortedColumnSourceName;
-    int ndv = tDataVariables.length;
+    int ndv = tDataVariables.size();
 
     removeMVRows = tRemoveMVRows;
 
@@ -1378,13 +1377,15 @@ public abstract class EDDTableFromFiles extends EDDTable implements WatchUpdateH
 
     // class-specific things
     if (className.equals("EDDTableFromHttpGet")) {
-      setHttpGetRequiredVariableNames(tAddGlobalAttributes.getString(HTTP_GET_REQUIRED_VARIABLES));
-      setHttpGetDirectoryStructure(tAddGlobalAttributes.getString(HTTP_GET_DIRECTORY_STRUCTURE));
-      setHttpGetKeys(tAddGlobalAttributes.getString(HTTP_GET_KEYS));
+      setHttpGetRequiredVariableNames(
+          tAddGlobalAttributes.getString(language, HTTP_GET_REQUIRED_VARIABLES));
+      setHttpGetDirectoryStructure(
+          tAddGlobalAttributes.getString(language, HTTP_GET_DIRECTORY_STRUCTURE));
+      setHttpGetKeys(tAddGlobalAttributes.getString(language, HTTP_GET_KEYS));
       tAddGlobalAttributes.remove(HTTP_GET_KEYS);
 
     } else if (className.equals("EDDTableFromMultidimNcFiles")) {
-      String ts = tAddGlobalAttributes.getString(TREAT_DIMENSIONS_AS);
+      String ts = tAddGlobalAttributes.getString(language, TREAT_DIMENSIONS_AS);
       if (String2.isSomething(ts)) {
         String parts[] = String2.split(ts, ';');
         int nParts = parts.length;
@@ -1467,20 +1468,20 @@ public abstract class EDDTableFromFiles extends EDDTable implements WatchUpdateH
       stopColumn = new int[ndv]; // all 0's
     }
     for (int dv = 0; dv < ndv; dv++) {
-      String tSourceName = (String) tDataVariables[dv][0];
+      String tSourceName = tDataVariables.get(dv).sourceName();
       sourceDataNames.add(tSourceName);
       safeSourceDataNames.add(String2.encodeVariableNameSafe(tSourceName));
-      sourceDataTypes[dv] = (String) tDataVariables[dv][3];
+      sourceDataTypes[dv] = tDataVariables.get(dv).dataType();
       if (sourceDataTypes[dv] == null || sourceDataTypes[dv].length() == 0)
         throw new IllegalArgumentException("Unspecified data type for var#" + dv + ".");
 
       // note timeIndex
-      String tDestName = (String) tDataVariables[dv][1];
+      String tDestName = tDataVariables.get(dv).destinationName();
       if (EDV.TIME_NAME.equals(tDestName)
           || ((tDestName == null || tDestName.trim().length() == 0)
               && EDV.TIME_NAME.equals(tSourceName))) timeIndex = dv;
 
-      Attributes atts = (Attributes) tDataVariables[dv][2];
+      LocalizedAttributes atts = tDataVariables.get(dv).attributes();
 
       // do things for special variable types
       if (tSourceName.startsWith("=")) {
@@ -1506,8 +1507,8 @@ public abstract class EDDTableFromFiles extends EDDTable implements WatchUpdateH
       } else {
         if (isColumnarAscii) {
           // required
-          startColumn[dv] = atts.getInt("startColumn");
-          stopColumn[dv] = atts.getInt("stopColumn");
+          startColumn[dv] = atts.getInt(language, "startColumn");
+          stopColumn[dv] = atts.getInt(language, "stopColumn");
           Test.ensureBetween(
               startColumn[dv],
               0,
@@ -1541,10 +1542,11 @@ public abstract class EDDTableFromFiles extends EDDTable implements WatchUpdateH
             "sortedColumnSourceName="
                 + sortedColumnSourceName
                 + " isn't among the source data variable names.");
-      String tName = (String) tDataVariables[sortedDVI][1]; // destName
-      if (!String2.isSomething(tName)) tName = (String) tDataVariables[sortedDVI][0]; // sourceName
-      Attributes tAtts = (Attributes) tDataVariables[sortedDVI][2];
-      String tUnits = tAtts == null ? null : tAtts.getString("units");
+      String tName = tDataVariables.get(sortedDVI).destinationName(); // destName
+      if (!String2.isSomething(tName))
+        tName = tDataVariables.get(sortedDVI).sourceName(); // sourceName
+      LocalizedAttributes tAtts = tDataVariables.get(sortedDVI).attributes();
+      String tUnits = tAtts == null ? null : tAtts.getString(language, "units");
       if (tName.equals("time")
           || Calendar2.isTimeUnits(tUnits)
           || !"String".equals(sourceDataTypes[sortedDVI])) {
@@ -2279,11 +2281,13 @@ public abstract class EDDTableFromFiles extends EDDTable implements WatchUpdateH
 
     // make combinedGlobalAttributes
     combinedGlobalAttributes =
-        new Attributes(addGlobalAttributes, sourceGlobalAttributes); // order is important
-    String tLicense = combinedGlobalAttributes.getString("license");
+        new LocalizedAttributes(addGlobalAttributes, sourceGlobalAttributes); // order is important
+    String tLicense = combinedGlobalAttributes.getString(language, "license");
     if (tLicense != null)
       combinedGlobalAttributes.set(
-          "license", String2.replaceAll(tLicense, "[standard]", EDStatic.messages.standardLicense));
+          language,
+          "license",
+          String2.replaceAll(tLicense, "[standard]", EDStatic.messages.standardLicense));
     combinedGlobalAttributes.removeValue("\"null\"");
     // if (debugMode) String2.log(">> EDDTableFromFiles " +
     // Calendar2.getCurrentISODateTimeStringLocalTZ() + " finished making
@@ -2293,7 +2297,7 @@ public abstract class EDDTableFromFiles extends EDDTable implements WatchUpdateH
     dataVariables = new EDV[ndv];
     for (int dv = 0; dv < ndv; dv++) {
       String tSourceName = sourceDataNames.get(dv);
-      String tDestName = (String) tDataVariables[dv][1];
+      String tDestName = tDataVariables.get(dv).destinationName();
       if (tDestName == null || tDestName.trim().length() == 0) tDestName = tSourceName;
       int tableDv = tTable.findColumnNumber(tSourceName);
       if (reallyVerbose && dv != extractedColNameIndex && tableDv < 0)
@@ -2305,7 +2309,7 @@ public abstract class EDDTableFromFiles extends EDDTable implements WatchUpdateH
                 + " colNames="
                 + tTable.getColumnNamesCSVString());
       Attributes tSourceAtt = tableDv < 0 ? new Attributes() : tTable.columnAttributes(tableDv);
-      Attributes tAddAtt = (Attributes) tDataVariables[dv][2];
+      LocalizedAttributes tAddAtt = tDataVariables.get(dv).attributes();
       // PrimitiveArray taa = tAddAtt.get("_FillValue");
       // String2.log(">>taa " + tSourceName + " _FillValue=" + taa);
       // dMin and dMax are raw source values -- scale_factor and add_offset haven't
@@ -2349,10 +2353,10 @@ public abstract class EDDTableFromFiles extends EDDTable implements WatchUpdateH
             new EDVDepth(datasetID, tSourceName, tSourceAtt, tAddAtt, tSourceType, tMin, tMax);
         depthIndex = dv;
 
-      } else if (EDVTimeStamp.hasTimeUnits(tSourceAtt, tAddAtt)) {
+      } else if (EDVTimeStamp.hasTimeUnits(language, tSourceAtt, tAddAtt)) {
         // for ISO strings and numeric source values:
-        if (tAddAtt == null) tAddAtt = new Attributes();
-        String tUnits = tAddAtt.getString("units");
+        if (tAddAtt == null) tAddAtt = new LocalizedAttributes();
+        String tUnits = tAddAtt.getString(language, "units");
         if (tUnits == null) tUnits = tSourceAtt.getString("units");
         if (tUnits == null) tUnits = "";
         // String2.log(">> timestamp minMaxTable min=" + minMaxTable.getStringData(dv,
@@ -2364,14 +2368,14 @@ public abstract class EDDTableFromFiles extends EDDTable implements WatchUpdateH
           StringArray actualRange = new StringArray();
           actualRange.add(minMaxTable.getStringData(dv, 0));
           actualRange.add(minMaxTable.getStringData(dv, 1));
-          tAddAtt.set("actual_range", actualRange);
+          tAddAtt.set(language, "actual_range", actualRange);
           // String2.log(">> timestamp actual_range=" + actualRange);
         } else if (!tSourceType.equals("String")) { // numeric times sort correctly
           PrimitiveArray actualRange =
               PrimitiveArray.factory(PAType.fromCohortString(sourceDataTypes[dv]), 2, false);
           actualRange.addPAOne(minMaxTable.getPAOneData(dv, 0));
           actualRange.addPAOne(minMaxTable.getPAOneData(dv, 1));
-          tAddAtt.set("actual_range", actualRange);
+          tAddAtt.set(language, "actual_range", actualRange);
           // String2.log(">> timestamp actual_range=" + actualRange);
         }
 
@@ -2401,7 +2405,7 @@ public abstract class EDDTableFromFiles extends EDDTable implements WatchUpdateH
         dataVariables[dv] =
             new EDV(
                 datasetID, tSourceName, tDestName, tSourceAtt, tAddAtt, tSourceType, tMin, tMax);
-        dataVariables[dv].setActualRangeFromDestinationMinMax();
+        dataVariables[dv].setActualRangeFromDestinationMinMax(language);
       }
 
       // String2.pressEnterToContinue("!!!sourceName=" +
@@ -2660,13 +2664,13 @@ public abstract class EDDTableFromFiles extends EDDTable implements WatchUpdateH
    * @throws Throwable if serious trouble ("Too many open files")
    */
   private boolean makeExpected(
-      Object[][] tDataVariables,
+      ArrayList<DataVariableInfo> tDataVariables,
       StringArray dirList,
       ShortArray ftDirIndex,
       StringArray ftFileList,
       LongArray ftLastMod,
       LongArray ftSize) {
-
+    int language = EDMessages.DEFAULT_LANGUAGE;
     // make arrays to hold addAttributes fillValue, missingValue
     // (so fake mv can be converted to NaN, so source min and max can be
     // determined exclusive of missingValue)
@@ -2676,12 +2680,12 @@ public abstract class EDDTableFromFiles extends EDDTable implements WatchUpdateH
     Arrays.fill(addAttFillValue, Double.NaN); // 2014-07-21 now filled with NaN's
     Arrays.fill(addAttMissingValue, Double.NaN);
     for (int dv = 0; dv < sourceDataNames.size(); dv++) {
-      Attributes tAddAtt = (Attributes) tDataVariables[dv][2];
+      LocalizedAttributes tAddAtt = tDataVariables.get(dv).attributes();
       // if ("depth".equals(sourceDataNames.get(dv)))
       // String2.log("depth addAtt=" + tAddAtt);
       if (tAddAtt != null) {
-        addAttFillValue[dv] = tAddAtt.getDouble("_FillValue"); // may be NaN
-        addAttMissingValue[dv] = tAddAtt.getDouble("missing_value"); // may be NaN
+        addAttFillValue[dv] = tAddAtt.getDouble(language, "_FillValue"); // may be NaN
+        addAttMissingValue[dv] = tAddAtt.getDouble(language, "missing_value"); // may be NaN
       }
     }
 
@@ -3527,6 +3531,7 @@ public abstract class EDDTableFromFiles extends EDDTable implements WatchUpdateH
    */
   protected void updateDestinationMinMax(Table tMinMaxTable) {
     int ndv = sourceDataTypes.length;
+    int language = EDMessages.DEFAULT_LANGUAGE;
     for (int dv = 0; dv < ndv; dv++) {
       PrimitiveArray minMaxPa = tMinMaxTable.getColumn(dv);
       EDV edv = dataVariables[dv];
@@ -3539,26 +3544,28 @@ public abstract class EDDTableFromFiles extends EDDTable implements WatchUpdateH
           edvts.setDestinationMinMax(
               PAOne.fromDouble(edvts.sourceTimeToEpochSeconds(minMaxPa.getString(0))),
               PAOne.fromDouble(edvts.sourceTimeToEpochSeconds(minMaxPa.getString(1))));
-          edvts.setActualRangeFromDestinationMinMax();
+          edvts.setActualRangeFromDestinationMinMax(language);
         }
       } else { // minMaxPa is numeric
         edv.setDestinationMinMaxFromSource(minMaxPa.getPAOne(0), minMaxPa.getPAOne(1));
-        edv.setActualRangeFromDestinationMinMax();
+        edv.setActualRangeFromDestinationMinMax(language);
       }
 
       if (dv == lonIndex) {
-        combinedGlobalAttributes().set("geospatial_lon_min", edv.destinationMinDouble());
-        combinedGlobalAttributes().set("geospatial_lon_max", edv.destinationMaxDouble());
+        combinedGlobalAttributes().set(language, "geospatial_lon_min", edv.destinationMinDouble());
+        combinedGlobalAttributes().set(language, "geospatial_lon_max", edv.destinationMaxDouble());
       } else if (dv == latIndex) {
-        combinedGlobalAttributes().set("geospatial_lat_min", edv.destinationMinDouble());
-        combinedGlobalAttributes().set("geospatial_lat_max", edv.destinationMaxDouble());
+        combinedGlobalAttributes().set(language, "geospatial_lat_min", edv.destinationMinDouble());
+        combinedGlobalAttributes().set(language, "geospatial_lat_max", edv.destinationMaxDouble());
       } else if (dv == altIndex || dv == depthIndex) {
         // this works with alt and depth because positive=up|down deals with meaning
-        combinedGlobalAttributes().set("geospatial_vertical_min", edv.destinationMinDouble());
-        combinedGlobalAttributes().set("geospatial_vertical_max", edv.destinationMaxDouble());
+        combinedGlobalAttributes()
+            .set(language, "geospatial_vertical_min", edv.destinationMinDouble());
+        combinedGlobalAttributes()
+            .set(language, "geospatial_vertical_max", edv.destinationMaxDouble());
       } else if (dv == timeIndex) {
-        combinedGlobalAttributes().set("time_coverage_start", edv.destinationMinString());
-        combinedGlobalAttributes().set("time_coverage_end", edv.destinationMaxString());
+        combinedGlobalAttributes().set(language, "time_coverage_start", edv.destinationMinString());
+        combinedGlobalAttributes().set(language, "time_coverage_end", edv.destinationMaxString());
       }
     }
   }

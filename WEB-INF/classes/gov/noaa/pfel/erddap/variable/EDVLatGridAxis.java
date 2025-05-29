@@ -6,6 +6,8 @@ package gov.noaa.pfel.erddap.variable;
 
 import com.cohort.array.Attributes;
 import com.cohort.array.PrimitiveArray;
+import gov.noaa.pfel.erddap.dataset.metadata.LocalizedAttributes;
+import gov.noaa.pfel.erddap.util.EDMessages;
 
 /**
  * This class holds information about the latitude grid axis variable.
@@ -33,7 +35,7 @@ public class EDVLatGridAxis extends EDVGridAxis {
       String tParentDatasetID,
       String tSourceName,
       Attributes tSourceAttributes,
-      Attributes tAddAttributes,
+      LocalizedAttributes tAddAttributes,
       PrimitiveArray tSourceValues)
       throws Throwable {
 
@@ -45,17 +47,20 @@ public class EDVLatGridAxis extends EDVGridAxis {
           "datasets.xml error: "
               + "The destination dataType for the latitude variable must be a numeric dataType.");
 
+    // The attributes this gets/sets should not need to be localized (max/min
+    // value for example). Just use the default language.
+    int language = EDMessages.DEFAULT_LANGUAGE;
     longName = LAT_LONGNAME;
     units = LAT_UNITS;
-    combinedAttributes.set("_CoordinateAxisType", "Lat"); // unidata-related
-    combinedAttributes.set("axis", "Y");
-    combinedAttributes.set("ioos_category", LOCATION_CATEGORY);
-    combinedAttributes.set("long_name", longName);
-    combinedAttributes.set("standard_name", LAT_STANDARD_NAME);
-    combinedAttributes.set("units", units);
+    combinedAttributes.set(language, "_CoordinateAxisType", "Lat"); // unidata-related
+    combinedAttributes.set(language, "axis", "Y");
+    combinedAttributes.set(language, "ioos_category", LOCATION_CATEGORY);
+    combinedAttributes.set(language, "long_name", longName);
+    combinedAttributes.set(language, "standard_name", LAT_STANDARD_NAME);
+    combinedAttributes.set(language, "units", units);
 
     // remember that gridAxes get min max from actual axis tSourceValues
-    setActualRangeFromDestinationMinMax();
+    setActualRangeFromDestinationMinMax(language);
   }
 
   /**

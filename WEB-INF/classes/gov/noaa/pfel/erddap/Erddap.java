@@ -6680,7 +6680,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
             edd.accessibleViaFiles()
             && edd.isAccessibleTo(roles)) { // /files/, so graphsAccessibleToPublic is irrelevant
           subDirNames.add(edd.datasetID());
-          subDirDes.add(edd.title());
+          subDirDes.add(edd.title(language));
         }
       }
       ids = tableDatasetIDs();
@@ -6692,7 +6692,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
             edd.accessibleViaFiles()
             && edd.isAccessibleTo(roles)) { // /files/, so graphsAccessibleToPublic is irrelevant
           subDirNames.add(edd.datasetID());
-          subDirDes.add(edd.title());
+          subDirDes.add(edd.title(language));
         }
       }
 
@@ -7139,7 +7139,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                 && // if just deleted
                 (EDStatic.config.listPrivateDatasets || edd.isAccessibleTo(roles)))
             || edd.graphsAccessibleToPublic()) { // griddap requests may be graphics requests {
-          titles.add(edd.title());
+          titles.add(edd.title(language));
           ids.add(edd.datasetID());
         }
       }
@@ -7155,7 +7155,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                 && // if just deleted
                 (EDStatic.config.listPrivateDatasets || edd.isAccessibleTo(roles)))
             || edd.graphsAccessibleToPublic()) { // tabledap requests may be graphics requests
-          titles.add(edd.title());
+          titles.add(edd.title(language));
           ids.add(edd.datasetID());
         }
       }
@@ -7172,7 +7172,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
             edd.accessibleViaSOS().length() == 0
             && (EDStatic.config.listPrivateDatasets || edd.isAccessibleTo(roles))) {
           // no edd.graphsAccessibleToPublic() since sos requests are all data requests
-          titles.add(edd.title());
+          titles.add(edd.title(language));
           ids.add(edd.datasetID());
         }
       }
@@ -7191,7 +7191,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
             edd.accessibleViaWCS().length() == 0
             && (EDStatic.config.listPrivateDatasets || edd.isAccessibleTo(roles))) {
           // no edd.graphsAccessibleToPublic() since wcs requests are all data requests
-          titles.add(edd.title());
+          titles.add(edd.title(language));
           ids.add(edd.datasetID());
         }
       }
@@ -7209,7 +7209,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
             && (EDStatic.config.listPrivateDatasets
                 || edd.isAccessibleTo(roles)
                 || edd.graphsAccessibleToPublic())) { // all wms requests are graphics requests
-          titles.add(edd.title());
+          titles.add(edd.title(language));
           ids.add(edd.datasetID());
         }
       }
@@ -7556,7 +7556,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
               loggedInAs,
               "sos/" + tDatasetID + "/index.html", // was endOfRequest,
               queryString,
-              XML.encodeAsHTML(eddTable.title()) + " - SOS",
+              XML.encodeAsHTML(eddTable.title(language)) + " - SOS",
               out);
       try {
         writer.write("<div class=\"standard_width\">\n");
@@ -7584,7 +7584,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
               ".xml");
       OutputStream out = outSource.outputStream(File2.UTF_8);
       try (Writer writer = File2.getBufferedWriterUtf8(out)) {
-        eddTable.sosPhenomenaDictionary(writer);
+        eddTable.sosPhenomenaDictionary(language, writer);
         if (out instanceof ZipOutputStream zos) zos.closeEntry();
       }
       return;
@@ -7702,7 +7702,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
             throw new SimpleException(
                 EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
                     + "procedure=''.  Please specify a procedure.");
-          String sensorGmlNameStart = eddTable.getSosGmlNameStart("sensor");
+          String sensorGmlNameStart = eddTable.getSosGmlNameStart(language, "sensor");
           String shortName =
               procedure.startsWith(sensorGmlNameStart)
                   ? procedure.substring(sensorGmlNameStart.length())
@@ -8120,7 +8120,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
               loggedInAs,
               "wcs/" + tDatasetID + "/index.html", // was endOfRequest,
               queryString,
-              XML.encodeAsHTML(eddGrid.title()) + " - WCS",
+              XML.encodeAsHTML(eddGrid.title(language)) + " - WCS",
               out);
       try {
         writer.write("<div class=\"standard_width\">\n");
@@ -10038,17 +10038,17 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
         // make the palette
         // I checked hasColorBarMinMax above.
         // Note that EDV checks validity of values.
-        double minData = tDataVariable.combinedAttributes().getDouble("colorBarMinimum");
-        double maxData = tDataVariable.combinedAttributes().getDouble("colorBarMaximum");
-        String palette = tDataVariable.combinedAttributes().getString("colorBarPalette");
+        double minData = tDataVariable.combinedAttributes().getDouble(language, "colorBarMinimum");
+        double maxData = tDataVariable.combinedAttributes().getDouble(language, "colorBarMaximum");
+        String palette = tDataVariable.combinedAttributes().getString(language, "colorBarPalette");
         if (String2.indexOf(EDStatic.messages.palettes, palette) < 0)
           palette = Math2.almostEqual(3, -minData, maxData) ? "BlueWhiteRed" : "Rainbow";
-        int nSections = tDataVariable.combinedAttributes().getInt("colorBarNSections");
+        int nSections = tDataVariable.combinedAttributes().getInt(language, "colorBarNSections");
         if (nSections > 100) nSections = -1;
         boolean paletteContinuous =
             String2.parseBoolean( // defaults to true
-                tDataVariable.combinedAttributes().getString("colorBarContinuous"));
-        String scale = tDataVariable.combinedAttributes().getString("colorBarScale");
+                tDataVariable.combinedAttributes().getString(language, "colorBarContinuous"));
+        String scale = tDataVariable.combinedAttributes().getString(language, "colorBarScale");
         if (EDV.VALID_SCALES.indexOf(scale) < 0) scale = "Linear";
         String cptFullName =
             CompoundColorMap.makeCPT(
@@ -10312,13 +10312,13 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
 
       writer.write(
           "    <Title>"
-              + XML.encodeAsXML("WMS for " + eddGrid.title())
+              + XML.encodeAsXML("WMS for " + eddGrid.title(language))
               + "</Title>\n"
               + "    <Abstract>"
-              + XML.encodeAsXML(eddGrid.summary())
+              + XML.encodeAsXML(eddGrid.summary(language))
               + "</Abstract>\n"
               + "    <KeywordList>\n");
-      String keywords[] = eddGrid.keywords();
+      String keywords[] = eddGrid.keywords(language);
       for (String keyword : keywords)
         writer.write("      <Keyword>" + XML.encodeAsXML(keyword) + "</Keyword>\n");
       writer.write(
@@ -10368,10 +10368,10 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
               + "</ContactElectronicMailAddress>\n"
               + "    </ContactInformation>\n"
               + "    <Fees>"
-              + XML.encodeAsXML(eddGrid.fees())
+              + XML.encodeAsXML(eddGrid.fees(language))
               + "</Fees>\n"
               + "    <AccessConstraints>"
-              + XML.encodeAsXML(eddGrid.accessConstraints())
+              + XML.encodeAsXML(eddGrid.accessConstraints(language))
               + "</AccessConstraints>\n"
               + (tVersion.equals("1.1.0") || tVersion.equals("1.1.1")
                   ? ""
@@ -10467,7 +10467,10 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
 
       // *** start the outer layer
       writer.write(
-          "    <Layer>\n" + "      <Title>" + XML.encodeAsXML(eddGrid.title()) + "</Title>\n");
+          "    <Layer>\n"
+              + "      <Title>"
+              + XML.encodeAsXML(eddGrid.title(language))
+              + "</Title>\n");
       // ?Authority
       // ?huge bounding box?
       // CRS   both CRS:84 and EPSG:4326 are +-180, +-90;     ???other CRSs?
@@ -10494,7 +10497,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       writer.write(
           "      <Layer>\n"
               + "        <Title>"
-              + XML.encodeAsXML(eddGrid.title())
+              + XML.encodeAsXML(eddGrid.title(language))
               + "</Title>\n"
               +
 
@@ -10733,12 +10736,12 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       writer.write(
           "        <Attribution>\n"
               + "          <Title>"
-              + XML.encodeAsXML(eddGrid.institution())
+              + XML.encodeAsXML(eddGrid.institution(language))
               + "</Title>\n"
               + "          <OnlineResource xmlns:xlink=\"https://www.w3.org/1999/xlink\"\n"
               + "            xlink:type=\"simple\"\n"
               + "            xlink:href=\""
-              + XML.encodeAsXML(eddGrid.infoUrl())
+              + XML.encodeAsXML(eddGrid.infoUrl(language))
               + "\" />\n"
               +
               // LogoURL
@@ -10772,7 +10775,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                 + XML.encodeAsXML(tDatasetID + EDD.WMS_SEPARATOR + dvNames[dvi])
                 + "</Name>\n"
                 + "          <Title>"
-                + XML.encodeAsXML(eddGrid.title() + " - " + dvNames[dvi])
+                + XML.encodeAsXML(eddGrid.title(language) + " - " + dvNames[dvi])
                 + "</Title>\n");
         /*
 
@@ -11098,7 +11101,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                 + requestUrl
                 + "?', {\n"
                 + "      attribution: '"
-                + eddGrid.institution()
+                + eddGrid.institution(language)
                 + "',\n"
                 + "      bgcolor: '0x808080',\n"
                 + "      crs: L.CRS.EPSG4326,\n"
@@ -11176,8 +11179,9 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     OutputStream out = getHtmlOutputStreamUtf8(request, response);
     Writer writer = File2.getBufferedWriterUtf8(out);
     try {
-      writer.write(EDStatic.startHeadHtml(language, tErddapUrl, eddGrid.title() + " - WMS"));
-      writer.write("\n" + eddGrid.rssHeadLink());
+      writer.write(
+          EDStatic.startHeadHtml(language, tErddapUrl, eddGrid.title(language) + " - WMS"));
+      writer.write("\n" + eddGrid.rssHeadLink(language));
       if (thisWmsClientActive) writer.write(HtmlWidgets.leafletHead(tErddapUrl));
       writer.flush(); // Steve Souder says: the sooner you can send some html to user, the better
       writer.write("</head>\n");
@@ -11698,7 +11702,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
         namePA.add(tFileName);
         modifiedPA.add(File2.getLastModified(EDD.datasetDir(tDatasetID) + tFileName));
         sizePA.add(File2.length(EDD.datasetDir(tDatasetID) + tFileName));
-        descriptionPA.add(edd.title());
+        descriptionPA.add(edd.title(language));
       }
 
       OutputStream out = getHtmlOutputStreamUtf8(request, response);
@@ -12319,7 +12323,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
             + tDestName
             + " (ImageServer)</a>\n";
     String serviceDataType =
-        "altitude".equals(tEdv.combinedAttributes().getString("standard_name"))
+        "altitude".equals(tEdv.combinedAttributes().getString(language, "standard_name"))
             ? "esriImageServiceDataTypeElevation"
             : "esriImageServiceDataTypeProcessed";
     String pixelType = PAType.toEsriPixelType(tEdv.destinationDataPAType());
@@ -12328,7 +12332,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
             + // found on sample server
             "SPHEROID[\"WGS 84\",6378137.0,298.257223563]],PRIMEM[\"Greenwich\",0.0],"
             + "UNIT[\"degree\",0.0174532925199433]]";
-    String tLicense = tEddGrid.combinedGlobalAttributes().getString("license");
+    String tLicense = tEddGrid.combinedGlobalAttributes().getString(language, "license");
     if (tLicense == null) tLicense = ""; // suitable for json and html
 
     // just "/rest/services/[tDatasetID]/[tDestName]/ImageServer"
@@ -12341,7 +12345,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
           writer.write(
               "{\n"
                   + "  \"serviceDescription\" : "
-                  + String2.toJson(tEddGrid.title() + "\n" + tEddGrid.summary())
+                  + String2.toJson(tEddGrid.title(language) + "\n" + tEddGrid.summary(language))
                   + ", \n"
                   + "  \"name\" : \""
                   + tDatasetID
@@ -12350,7 +12354,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                   + "\", \n"
                   + // ???sample server name is a new 1-piece name, no slashes
                   "  \"description\" : "
-                  + String2.toJson(tEddGrid.title() + "\n" + tEddGrid.summary())
+                  + String2.toJson(tEddGrid.title(language) + "\n" + tEddGrid.summary(language))
                   + ", \n"
                   + "  \"extent\" : {\n"
                   +
@@ -12549,9 +12553,9 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                   //                    EDStatic.externalLinkHtml(language, tErddapUrl) + "</a>\n" +
                   // "<br/><br/>\n" +
                   "<strong>Service Description:</strong> "
-                  + XML.encodeAsHTML(tEddGrid.title())
+                  + XML.encodeAsHTML(tEddGrid.title(language))
                   + "<br/>"
-                  + XML.encodeAsHTML(tEddGrid.summary())
+                  + XML.encodeAsHTML(tEddGrid.summary(language))
                   + "<br/>\n"
                   + "<br/>\n"
                   + "<strong>Name:</strong> "
@@ -12562,9 +12566,9 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                   + // ???sample server name is a new 1-piece name, no slashes
                   "<br/>\n"
                   + "<strong>Description:</strong> "
-                  + XML.encodeAsHTML(tEddGrid.title())
+                  + XML.encodeAsHTML(tEddGrid.title(language))
                   + "<br/>"
-                  + XML.encodeAsHTML(tEddGrid.summary())
+                  + XML.encodeAsHTML(tEddGrid.summary(language))
                   + "<br/>\n"
                   + "<br/>\n"
                   + "<strong>Extent:</strong> <br/>\n"
@@ -15328,7 +15332,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
           writer.write(
               "  <entry>\n"
                   + "    <title>"
-                  + XML.encodeAsXML(edd.title())
+                  + XML.encodeAsXML(edd.title(language))
                   + "</title>\n"
                   + "    <link href=\""
                   + tErddapUrl
@@ -15353,7 +15357,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                   + Calendar2.millisToIsoStringTZ(edd.creationTimeMillis())
                   + "</updated>\n"
                   + "    <content type=\"text\">\n"
-                  + XML.encodeAsXML(edd.extendedSummary())
+                  + XML.encodeAsXML(edd.extendedSummary(language))
                   + "    </content>\n"
                   + "  </entry>\n");
         }
@@ -15440,7 +15444,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
         writer.write(
             "    <item>\n"
                 + "      <title>"
-                + XML.encodeAsXML(edd.title())
+                + XML.encodeAsXML(edd.title(language))
                 + "</title>\n"
                 + "      <link>"
                 + tErddapUrl
@@ -15450,7 +15454,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                 + tDatasetID
                 + ".html</link>\n"
                 + "      <description>\n"
-                + XML.encodeAsXML(edd.extendedSummary())
+                + XML.encodeAsXML(edd.extendedSummary(language))
                 + "</description>\n"
                 + "    </item>\n");
       }
@@ -16231,7 +16235,11 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       // sortByTitle
       if (matchingDatasetIDs != null)
         matchingDatasetIDs =
-            sortByTitle(loggedInAs, matchingDatasetIDs, true); // search: this is a metadata request
+            sortByTitle(
+                language,
+                loggedInAs,
+                matchingDatasetIDs,
+                true); // search: this is a metadata request
     }
 
     Table resultsTable = null;
@@ -16492,7 +16500,8 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
 
     // special cases: "" and "all"
     if (nSearchWords == 0 || (nSearchWords == 1 && searchWords.get(0).equals("all")))
-      return sortByTitle(loggedInAs, tDatasetIDs, true); // search: this is a metadata request
+      return sortByTitle(
+          language, loggedInAs, tDatasetIDs, true); // search: this is a metadata request
 
     // gather the matching datasets
     Table table = new Table();
@@ -16605,7 +16614,8 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                 BooleanClause.Occur.MUST);
           } else {
             // no terms. So return all datasetsIDs, sorted by title
-            return sortByTitle(loggedInAs, tDatasetIDs, true); // search: this is a metadata request
+            return sortByTitle(
+                language, loggedInAs, tDatasetIDs, true); // search: this is a metadata request
           }
         }
         // now, booleanQuery must have terms
@@ -16714,13 +16724,13 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
           && !edd.isAccessibleTo(roles)
           && !edd.graphsAccessibleToPublic()) // search for datasets is always a metadata request
       continue;
-      int rank = edd.searchRank(isNegative, searchWordsB, jumpB);
+      int rank = edd.searchRank(language, isNegative, searchWordsB, jumpB);
       if (rank < Integer.MAX_VALUE) {
         // /10 makes rank less sensitive to exact char positions
         // so more likely to be tied,
         // so similar datasets are more likely to sort by title
         rankPa.add(rank / 10);
-        titlePa.add(edd.title());
+        titlePa.add(edd.title(language));
         idPa.add(tId);
       }
     }
@@ -16754,6 +16764,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
   /**
    * This sorts the datasetIDs by the datasets' titles.
    *
+   * @param language the index of the selected language
    * @param loggedInAs the name of the logged in user (or null if not logged in). This is used to
    *     determine if the user has the right to know if a given dataset exists. (But dataset will be
    *     matched if EDStatic.config.listPrivateDatasets.)
@@ -16764,7 +16775,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
    * @return a StringArray with the matching datasetIDs, sorted by title.
    */
   public StringArray sortByTitle(
-      String loggedInAs, StringArray tDatasetIDs, boolean graphOrMetadataRequest) {
+      int language, String loggedInAs, StringArray tDatasetIDs, boolean graphOrMetadataRequest) {
 
     String roles[] = EDStatic.getRoles(loggedInAs);
     Table table = new Table();
@@ -16782,7 +16793,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       if (EDStatic.config.listPrivateDatasets
           || edd.isAccessibleTo(roles)
           || (graphOrMetadataRequest && edd.graphsAccessibleToPublic())) {
-        titlePa.add(edd.title());
+        titlePa.add(edd.title(language));
         idPa.add(tID);
       }
     }
@@ -17129,7 +17140,9 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     }
 
     // sort catDats by title
-    catDats = sortByTitle(loggedInAs, catDats, true); // category search: this is a metadata request
+    catDats =
+        sortByTitle(
+            language, loggedInAs, catDats, true); // category search: this is a metadata request
 
     // calculate Page ItemsPerPage  (part of: categorize)
     int nMatches = catDats.size();
@@ -17374,7 +17387,8 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       // get the datasetIDs
       // (sortByTitle ensures user has right to know dataset exists)
       StringArray tIDs =
-          sortByTitle(loggedInAs, allDatasetIDs(), true); // info: this is a metadata request
+          sortByTitle(
+              language, loggedInAs, allDatasetIDs(), true); // info: this is a metadata request
       int nDatasets = tIDs.size();
       EDStatic.tally.add("Info (since startup)", "View All Datasets");
       EDStatic.tally.add("Info (since last daily report)", "View All Datasets");
@@ -17522,7 +17536,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
               // writer.write(EDStatic.theSchemaDotOrgDataCatalog(datasets.toArray(new
               // EDD[datasets.size()])));
               // java version:
-              theSchemaDotOrgDataCatalog(writer, datasets.toArray(new EDD[0]));
+              theSchemaDotOrgDataCatalog(language, writer, datasets.toArray(new EDD[0]));
             } catch (Exception e) {
               EDStatic.rethrowClientAbortException(e); // first thing in catch{}
               String2.log(
@@ -17611,7 +17625,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     table.addColumn("Value", valueSA);
 
     // global attribute rows
-    Attributes atts = edd.combinedGlobalAttributes();
+    Attributes atts = edd.combinedGlobalAttributes().toAttributes(language);
     String names[] = atts.getNames();
     int nAtts = names.length;
     for (int i = 0; i < nAtts; i++) {
@@ -17657,7 +17671,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
         }
 
         // attribute rows
-        atts = edv.combinedAttributes();
+        atts = edv.combinedAttributes().toAttributes(language);
         names = atts.getNames();
         nAtts = names.length;
         for (int i = 0; i < nAtts; i++) {
@@ -17683,7 +17697,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       valueSA.add(axisNamesCsv);
 
       // attribute rows
-      atts = edv.combinedAttributes();
+      atts = edv.combinedAttributes().toAttributes(language);
       names = atts.getNames();
       nAtts = names.length;
       for (int i = 0; i < nAtts; i++) {
@@ -17724,7 +17738,9 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
               "info/" + tID + "/index.html", // was endOfRequest,
               queryString,
               MessageFormat.format(
-                  EDStatic.messages.infoAboutFromAr[language], edd.title(), edd.institution()),
+                  EDStatic.messages.infoAboutFromAr[language],
+                  edd.title(language),
+                  edd.institution(language)),
               out);
       try {
         writer.write("<div class=\"wide_max_width\">\n"); // not standard_width
@@ -17824,7 +17840,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
             if (!isAllDatasets) {
               // javascript version: writer.write(EDStatic.theSchemaDotOrgDataset(edd));
               // java version:
-              theSchemaDotOrgDataset(writer, edd);
+              theSchemaDotOrgDataset(language, writer, edd);
             }
           } catch (Exception e) {
             EDStatic.rethrowClientAbortException(e); // first thing in catch{}
@@ -17858,9 +17874,11 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
    * See Google intro: https://developers.google.com/search/docs/guides/intro-structured-data See
    * Google test: https://search.google.com/structured-data/testing-tool/u/0/
    *
+   * @param language the index of the selected language
    * @throws IOException if trouble
    */
-  public static void theSchemaDotOrgDataCatalog(Writer writer, EDD datasets[]) throws IOException {
+  public static void theSchemaDotOrgDataCatalog(int language, Writer writer, EDD datasets[])
+      throws IOException {
     String baseUrl = EDStatic.preferredErddapUrl;
     writer.write(
         "<script type=\"application/ld+json\">\n"
@@ -17916,7 +17934,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
           "    {\n"
               + "      \"@type\": \"Dataset\",\n"
               + "      \"name\": "
-              + String2.toJson65536(datasets[i].title())
+              + String2.toJson65536(datasets[i].title(language))
               + ",\n"
               + "      \"sameAs\": "
               + String2.toJson65536(baseUrl + "/info/" + datasets[i].datasetID() + "/index.html")
@@ -17969,9 +17987,10 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
    *
    * @throws IOException if trouble
    */
-  public static void theSchemaDotOrgDataset(Writer writer, EDD edd) throws IOException {
+  public static void theSchemaDotOrgDataset(int language, Writer writer, EDD edd)
+      throws IOException {
     String baseUrl = EDStatic.preferredErddapUrl;
-    Attributes gatts = edd.combinedGlobalAttributes();
+    Attributes gatts = edd.combinedGlobalAttributes().toAttributes(language);
     String ts;
 
     writer.write(
@@ -17981,7 +18000,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
             + // for now, leave as http://
             "  \"@type\": \"Dataset\",\n"
             + "  \"name\": "
-            + String2.toJson65536(edd.title())
+            + String2.toJson65536(edd.title(language))
             + ",\n"
             + "  \"headline\": "
             + String2.toJson65536(edd.datasetID())
@@ -17989,7 +18008,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
 
     // add everything not used elsewhere into description
     String names[] = gatts.getNames();
-    StringBuilder sb = new StringBuilder(edd.summary());
+    StringBuilder sb = new StringBuilder(edd.summary(language));
     for (String tName : names) {
       if (tName.startsWith("creator_")
           || tName.startsWith("publisher_")
@@ -18027,7 +18046,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
             + "  },\n");
 
     writer.write("  \"keywords\": [\n");
-    String keywords[] = edd.keywords();
+    String keywords[] = edd.keywords(language);
     for (int i = 0; i < keywords.length; i++)
       writer.write(
           "    " + String2.toJson65536(keywords[i]) + (i < keywords.length - 1 ? "," : "") + "\n");
@@ -18050,7 +18069,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     edv.addAll(Arrays.asList(arr));
     writer.write("  \"variableMeasured\": [\n");
     for (int i = 0; i < edv.size(); i++) {
-      Attributes atts = edv.get(i).combinedAttributes();
+      Attributes atts = edv.get(i).combinedAttributes().toAttributes(language);
       writer.write(
           (i == 0 ? "" : ",\n")
               + "    {\n"
@@ -23747,8 +23766,8 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
               ? "public"
               : isAccessible ? "yes" : graphsAccessible ? "graphs" : isLoggedIn ? "no" : "log in");
       // only title, summary, institution, id are always accessible if !listPrivateDatasets
-      titleCol.add(edd.title());
-      summaryCol.add(edd.extendedSummary());
+      titleCol.add(edd.title(language));
+      summaryCol.add(edd.extendedSummary(language));
       fgdcCol.add(
           graphsAccessible && edd.accessibleViaFGDC().length() == 0
               ? tErddapUrl
@@ -23771,7 +23790,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
           graphsAccessible
               ? tErddapUrl + "/info/" + edd.datasetID() + "/index" + fileTypeName
               : "");
-      backgroundCol.add(graphsAccessible ? edd.infoUrl() : "");
+      backgroundCol.add(graphsAccessible ? edd.infoUrl(language) : "");
       rssCol.add(
           graphsAccessible && !isAllDatasets
               ? EDStatic.erddapUrl + "/rss/" + edd.datasetID() + ".rss"
@@ -23785,7 +23804,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                   + edd.datasetID()
                   + "&showErrors=false&email="
               : "");
-      institutionCol.add(edd.institution());
+      institutionCol.add(edd.institution(language));
       idCol.add(tId);
     }
     if (sortByTitle) table.sortIgnoreCase(new int[] {sortOn}, new boolean[] {true});
@@ -24005,7 +24024,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
               ? "public"
               : isAccessible ? "yes" : graphsAccessible ? "graphs" : isLoggedIn ? "no" : loginHref);
       // only title, summary, institution, id are always accessible if !listPrivateDatasets
-      String tTitle = edd.title();
+      String tTitle = edd.title(language);
       plainTitleCol.add(tTitle);
       String ttTitle =
           String2.noLongLines(tTitle, EDStatic.TITLE_DOT_LENGTH, ""); // insert newlines
@@ -24020,7 +24039,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                   language,
                   loggedInAs,
                   "<div class=\"standard_max_width\">"
-                      + XML.encodeAsPreHTML(edd.extendedSummary())
+                      + XML.encodeAsPreHTML(edd.extendedSummary(language))
                       + "</div>"));
       infoCol.add(
           !graphsAccessible
@@ -24081,12 +24100,14 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
               ? ""
               : "<a rel=\"bookmark\" "
                   + "href=\""
-                  + XML.encodeAsHTML(edd.infoUrl())
+                  + XML.encodeAsHTML(edd.infoUrl(language))
                   + "\" "
                   + "title=\""
                   + EDStatic.messages.clickBackgroundInfoAr[language]
                   + "\" >background"
-                  + (edd.infoUrl().startsWith(EDStatic.config.baseUrl) ? "" : externalLinkHtml)
+                  + (edd.infoUrl(language).startsWith(EDStatic.config.baseUrl)
+                      ? ""
+                      : externalLinkHtml)
                   + "</a>");
       rssCol.add(
           graphsAccessible && !isAllDatasets
@@ -24096,7 +24117,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
           graphsAccessible && EDStatic.config.subscriptionSystemActive && !isAllDatasets
               ? edd.emailHref(request, language, loggedInAs)
               : "&nbsp;");
-      String tInstitution = edd.institution();
+      String tInstitution = edd.institution(language);
       if (tInstitution.length() > 20)
         institutionCol.add(
             "<table class=\"compact nowrap\" style=\"width:100%;\">\n"

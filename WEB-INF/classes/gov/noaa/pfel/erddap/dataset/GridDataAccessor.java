@@ -145,10 +145,10 @@ public class GridDataAccessor implements AutoCloseable {
       String2.log("      dataVariables=" + destinationNames + "\n      constraints=" + constraints);
 
     // make globalAttributes
-    globalAttributes = new Attributes(eddGrid.combinedGlobalAttributes()); // make a copy
+    globalAttributes = eddGrid.combinedGlobalAttributes().toAttributes(language); // make a copy
 
     // fix up global attributes  (always to a local COPY of global attributes)
-    EDD.addToHistory(globalAttributes, eddGrid.publicSourceUrl());
+    EDD.addToHistory(globalAttributes, eddGrid.publicSourceUrl(language));
     EDD.addToHistory(
         globalAttributes,
         EDStatic.config.baseUrl
@@ -177,7 +177,8 @@ public class GridDataAccessor implements AutoCloseable {
       totalShape[av] = axisValues[av].size();
 
       // make axisAttributes
-      axisAttributes[av] = new Attributes(axisVariables[av].combinedAttributes()); // make a copy
+      axisAttributes[av] =
+          axisVariables[av].combinedAttributes().toAttributes(language); // make a copy
 
       // convert source values to destination values
       // (e.g., convert datatype and apply scale_factor/scaleFactor and add_offset/addOffset)
@@ -283,7 +284,8 @@ public class GridDataAccessor implements AutoCloseable {
     for (int dv = 0; dv < dataVariables.length; dv++) { // dv in the query
 
       // add dataAttributes
-      dataAttributes[dv] = new Attributes(dataVariables[dv].combinedAttributes()); // make a copy
+      dataAttributes[dv] =
+          dataVariables[dv].combinedAttributes().toAttributes(language); // make a copy
       // dataAttributes NEEDS actual_range, and ... , but not available, so remove...
       dataAttributes[dv].remove("actual_range");
 

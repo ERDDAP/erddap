@@ -34,6 +34,7 @@ import gov.noaa.pfel.coastwatch.sgt.SgtUtil;
 import gov.noaa.pfel.coastwatch.util.HtmlWidgets;
 import gov.noaa.pfel.coastwatch.util.RegexFilenameFilter;
 import gov.noaa.pfel.coastwatch.util.SSR;
+import gov.noaa.pfel.erddap.dataset.metadata.LocalizedAttributes;
 import gov.noaa.pfel.erddap.dataset.metadata.MetadataBuilder;
 import gov.noaa.pfel.erddap.filetypes.DapRequestInfo;
 import gov.noaa.pfel.erddap.filetypes.FileTypeInterface;
@@ -426,7 +427,8 @@ public abstract class EDDTable extends EDD {
    */
   public boolean setSosOfferingTypeAndIndex() {
     // Is the cdm_data_type one of the compatible types?
-    String cdmType = combinedGlobalAttributes().getString("cdm_data_type");
+    String cdmType =
+        combinedGlobalAttributes().getString(EDMessages.DEFAULT_LANGUAGE, "cdm_data_type");
     int type = sosCdmDataTypes.indexOf(cdmType);
     if (type < 0) {
       if (debugMode)
@@ -440,7 +442,10 @@ public abstract class EDDTable extends EDD {
     String sosCdmCfRole = sosCdmCfRoles.get(type);
     sosOfferingIndex = -1;
     for (int dv = 0; dv < dataVariables.length; dv++) {
-      if (sosCdmCfRole.equals(dataVariables[dv].combinedAttributes().getString("cf_role"))) {
+      if (sosCdmCfRole.equals(
+          dataVariables[dv]
+              .combinedAttributes()
+              .getString(EDMessages.DEFAULT_LANGUAGE, "cf_role"))) {
         sosOfferingIndex = dv;
         break;
       }
@@ -517,7 +522,10 @@ public abstract class EDDTable extends EDD {
       for (String attName : attNames) {
         HashSet<String> validAttValues = new HashSet<>();
         for (int dv = 0; dv < ndv; dv++) {
-          String ts = dataVariables[dv].combinedAttributes().getString(attName);
+          String ts =
+              dataVariables[dv]
+                  .combinedAttributes()
+                  .getString(EDMessages.DEFAULT_LANGUAGE, attName);
           if (String2.isSomething(ts)) validAttValues.add(ts);
         }
         if (!validAttValues.isEmpty()) {
@@ -552,6 +560,7 @@ public abstract class EDDTable extends EDD {
   public void ensureValid() throws Throwable {
     super.ensureValid();
 
+    int language = EDMessages.DEFAULT_LANGUAGE;
     String errorInMethod =
         "datasets.xml/EDDTable.ensureValid error for datasetID=" + datasetID + ":\n ";
 
@@ -574,10 +583,10 @@ public abstract class EDDTable extends EDD {
 
       // standard_name is the only case-sensitive CF attribute name (see Sec 3.3)
       // All are all lower case.
-      Attributes tAtts = dataVariable.combinedAttributes();
-      String tStandardName = tAtts.getString("standard_name");
+      LocalizedAttributes tAtts = dataVariable.combinedAttributes();
+      String tStandardName = tAtts.getString(language, "standard_name");
       if (String2.isSomething(tStandardName))
-        tAtts.set("standard_name", tStandardName.toLowerCase());
+        tAtts.set(language, "standard_name", tStandardName.toLowerCase());
     }
 
     Test.ensureTrue(
@@ -661,7 +670,7 @@ public abstract class EDDTable extends EDD {
         int nMinMax[] = pa.getNMinMaxIndex();
         if (nMinMax[0] == 0) continue;
         edv.setDestinationMinMax(new PAOne(pa, nMinMax[1]), new PAOne(pa, nMinMax[2]));
-        edv.setActualRangeFromDestinationMinMax();
+        edv.setActualRangeFromDestinationMinMax(language);
       }
     }
 
@@ -670,66 +679,72 @@ public abstract class EDDTable extends EDD {
     // lon
     // String2.log(">> lonIndex=" + lonIndex);
     if (lonIndex >= 0) {
-      combinedGlobalAttributes.add("geospatial_lon_units", EDV.LON_UNITS);
-      PrimitiveArray pa = dataVariables[lonIndex].combinedAttributes().get("actual_range");
+      combinedGlobalAttributes.set(language, "geospatial_lon_units", EDV.LON_UNITS);
+      PrimitiveArray pa =
+          dataVariables[lonIndex].combinedAttributes().get(language, "actual_range");
       if (pa != null) {
-        combinedGlobalAttributes.add("geospatial_lon_min", pa.getNiceDouble(0));
-        combinedGlobalAttributes.add("geospatial_lon_max", pa.getNiceDouble(1));
-        combinedGlobalAttributes.add("Westernmost_Easting", pa.getNiceDouble(0));
-        combinedGlobalAttributes.add("Easternmost_Easting", pa.getNiceDouble(1));
+        combinedGlobalAttributes.set(language, "geospatial_lon_min", pa.getNiceDouble(0));
+        combinedGlobalAttributes.set(language, "geospatial_lon_max", pa.getNiceDouble(1));
+        combinedGlobalAttributes.set(language, "Westernmost_Easting", pa.getNiceDouble(0));
+        combinedGlobalAttributes.set(language, "Easternmost_Easting", pa.getNiceDouble(1));
       }
     }
 
     // lat
     if (latIndex >= 0) {
-      combinedGlobalAttributes.add("geospatial_lat_units", EDV.LAT_UNITS);
-      PrimitiveArray pa = dataVariables[latIndex].combinedAttributes().get("actual_range");
+      combinedGlobalAttributes.set(language, "geospatial_lat_units", EDV.LAT_UNITS);
+      PrimitiveArray pa =
+          dataVariables[latIndex].combinedAttributes().get(language, "actual_range");
       if (pa != null) {
-        combinedGlobalAttributes.add("geospatial_lat_min", pa.getNiceDouble(0));
-        combinedGlobalAttributes.add("geospatial_lat_max", pa.getNiceDouble(1));
-        combinedGlobalAttributes.add("Southernmost_Northing", pa.getNiceDouble(0));
-        combinedGlobalAttributes.add("Northernmost_Northing", pa.getNiceDouble(1));
+        combinedGlobalAttributes.set(language, "geospatial_lat_min", pa.getNiceDouble(0));
+        combinedGlobalAttributes.set(language, "geospatial_lat_max", pa.getNiceDouble(1));
+        combinedGlobalAttributes.set(language, "Southernmost_Northing", pa.getNiceDouble(0));
+        combinedGlobalAttributes.set(language, "Northernmost_Northing", pa.getNiceDouble(1));
       }
     }
 
     // alt
     if (altIndex >= 0) {
-      combinedGlobalAttributes.add("geospatial_vertical_positive", "up");
-      combinedGlobalAttributes.add("geospatial_vertical_units", EDV.ALT_UNITS);
-      PrimitiveArray pa = dataVariables[altIndex].combinedAttributes().get("actual_range");
+      combinedGlobalAttributes.set(language, "geospatial_vertical_positive", "up");
+      combinedGlobalAttributes.set(language, "geospatial_vertical_units", EDV.ALT_UNITS);
+      PrimitiveArray pa =
+          dataVariables[altIndex].combinedAttributes().get(language, "actual_range");
       if (pa != null) {
-        combinedGlobalAttributes.add("geospatial_vertical_min", pa.getNiceDouble(0));
-        combinedGlobalAttributes.add("geospatial_vertical_max", pa.getNiceDouble(1));
+        combinedGlobalAttributes.set(language, "geospatial_vertical_min", pa.getNiceDouble(0));
+        combinedGlobalAttributes.set(language, "geospatial_vertical_max", pa.getNiceDouble(1));
       }
     } else if (depthIndex >= 0) {
-      combinedGlobalAttributes.add("geospatial_vertical_positive", "down");
-      combinedGlobalAttributes.add("geospatial_vertical_units", EDV.DEPTH_UNITS);
-      PrimitiveArray pa = dataVariables[depthIndex].combinedAttributes().get("actual_range");
+      combinedGlobalAttributes.set(language, "geospatial_vertical_positive", "down");
+      combinedGlobalAttributes.set(language, "geospatial_vertical_units", EDV.DEPTH_UNITS);
+      PrimitiveArray pa =
+          dataVariables[depthIndex].combinedAttributes().get(language, "actual_range");
       if (pa != null) {
-        combinedGlobalAttributes.add("geospatial_vertical_min", pa.getNiceDouble(0));
-        combinedGlobalAttributes.add("geospatial_vertical_max", pa.getNiceDouble(1));
+        combinedGlobalAttributes.set(language, "geospatial_vertical_min", pa.getNiceDouble(0));
+        combinedGlobalAttributes.set(language, "geospatial_vertical_max", pa.getNiceDouble(1));
       }
     }
 
     // time
     if (timeIndex >= 0) {
-      Attributes catts = dataVariables[timeIndex].combinedAttributes();
-      PrimitiveArray pa = catts.get("actual_range");
+      LocalizedAttributes catts = dataVariables[timeIndex].combinedAttributes();
+      PrimitiveArray pa = catts.get(language, "actual_range");
       if (pa != null) {
-        String tp = catts.getString(EDV.TIME_PRECISION);
+        String tp = catts.getString(language, EDV.TIME_PRECISION);
         // "" unsets the attribute if min or max isNaN
         combinedGlobalAttributes.set(
+            language,
             "time_coverage_start",
             Calendar2.epochSecondsToLimitedIsoStringT(tp, pa.getDouble(0), ""));
         // for tables (not grids) will be NaN for 'present'.   Deal with this better???
         combinedGlobalAttributes.set(
+            language,
             "time_coverage_end",
             Calendar2.epochSecondsToLimitedIsoStringT(tp, pa.getDouble(1), ""));
       }
     }
 
     // set featureType from cdm_data_type (if it is a type ERDDAP supports)
-    String cdmType = combinedGlobalAttributes.getString("cdm_data_type");
+    String cdmType = combinedGlobalAttributes.getString(language, "cdm_data_type");
     if (cdmType != null) {
     } else if (CDM_POINT.equals(cdmType)
         || CDM_PROFILE.equals(cdmType)
@@ -738,7 +753,7 @@ public abstract class EDDTable extends EDD {
         || CDM_TIMESERIES.equals(cdmType)
         || CDM_TIMESERIESPROFILE.equals(cdmType))
       combinedGlobalAttributes.set(
-          "featureType", cdmType.substring(0, 1).toLowerCase() + cdmType.substring(1));
+          language, "featureType", cdmType.substring(0, 1).toLowerCase() + cdmType.substring(1));
 
     // This either completes the subclasses' SOS setup, or does a genericSosSetup,
     // or fails to do the setup.
@@ -756,7 +771,7 @@ public abstract class EDDTable extends EDD {
     // really last: it uses accessibleViaFGDC and accessibleViaISO19115
     // make searchString  (since should have all finished/correct metadata)
     // This makes creation of searchString thread-safe (always done in constructor's thread).
-    searchString();
+    searchString(language);
   }
 
   /**
@@ -830,9 +845,9 @@ public abstract class EDDTable extends EDD {
    * @return the searchString (mixed case) used to create searchBytes or searchDocument.
    */
   @Override
-  public String searchString() {
+  public String searchString(int language) {
 
-    StringBuilder sb = startOfSearchString();
+    StringBuilder sb = startOfSearchString(language);
 
     String2.replaceAll(sb, "\"", ""); // no double quotes (esp around attribute values)
     String2.replaceAll(sb, "\n    ", "\n"); // occurs for all attributes
@@ -1398,7 +1413,7 @@ public abstract class EDDTable extends EDD {
     // String2.log("> srt 1");
 
     // set the globalAttributes (this takes care of title, summary, ...)
-    setResponseGlobalAttributes(requestUrl, userDapQuery, table);
+    setResponseGlobalAttributes(language, requestUrl, userDapQuery, table);
     // String2.log("> srt 2");
 
     // Change all table columnNames from sourceName to destinationName.
@@ -1426,7 +1441,9 @@ public abstract class EDDTable extends EDD {
       EDV edv = dataVariables[dv];
       table.setColumnName(col, edv.destinationName());
       table.columnAttributes(col).clear(); // remove any existing atts
-      table.columnAttributes(col).set(edv.combinedAttributes()); // make a copy
+      table
+          .columnAttributes(col)
+          .set(edv.combinedAttributes().toAttributes(language)); // make a copy
 
       // convert source values to destination values
       // (source fill&missing values become destination fill&missing values)
@@ -1440,6 +1457,7 @@ public abstract class EDDTable extends EDD {
 
     // apply the constraints and finish up
     applyConstraints(
+        language,
         table,
         false, // apply CONSTRAIN_YES constraints?
         resultsVariables,
@@ -1454,15 +1472,18 @@ public abstract class EDDTable extends EDD {
   /**
    * This is used by standardizeResultsTable (and places that bypass standardizeResultsTable) to
    * update the globalAttributes of a response table.
+   *
+   * @param language the index of the selected language
    */
-  public void setResponseGlobalAttributes(String requestUrl, String userDapQuery, Table table) {
+  public void setResponseGlobalAttributes(
+      int language, String requestUrl, String userDapQuery, Table table) {
 
     // set the globalAttributes (this takes care of title, summary, ...)
     table.globalAttributes().clear(); // remove any existing atts
-    table.globalAttributes().set(combinedGlobalAttributes); // make a copy
+    table.globalAttributes().set(combinedGlobalAttributes.toAttributes(language)); // make a copy
 
     // fix up global attributes  (always to a local COPY of global attributes)
-    table.globalAttributes().set("history", getNewHistory(requestUrl, userDapQuery));
+    table.globalAttributes().set("history", getNewHistory(language, requestUrl, userDapQuery));
   }
 
   /**
@@ -1483,6 +1504,7 @@ public abstract class EDDTable extends EDD {
    * @throws
    */
   public void applyConstraints(
+      int language,
       Table table,
       boolean applyAllConstraints,
       StringArray resultsVariables,
@@ -1510,7 +1532,7 @@ public abstract class EDDTable extends EDD {
               rv,
               resultsVariables.get(rv),
               PrimitiveArray.factory(edv.destinationDataPAType(), nRows, edv.fixedValue()),
-              new Attributes(edv.combinedAttributes())); // make a copy
+              edv.combinedAttributes().toAttributes(language)); // make a copy
         } else {
           // not found, so add new col with all missing values in correct place
           if (verbose)
@@ -1523,7 +1545,7 @@ public abstract class EDDTable extends EDD {
               edv.destinationName(),
               PrimitiveArray.factory(
                   edv.destinationDataPAType(), nRows, (Double.isNaN(dmv) ? "" : "" + dmv)),
-              new Attributes(edv.combinedAttributes()));
+              edv.combinedAttributes().toAttributes(language));
         }
       } else if (col < rv) {
         throw new SimpleException(
@@ -1540,7 +1562,9 @@ public abstract class EDDTable extends EDD {
       } else { // col >= rv
         // move the column into place
         table.moveColumn(col, rv);
-        table.columnAttributes(rv).set(edv.combinedAttributes()); // make a copy
+        table
+            .columnAttributes(rv)
+            .set(edv.combinedAttributes().toAttributes(language)); // make a copy
       }
     }
     // String2.log("table after rearrange cols=\n" + table.toString());
@@ -1721,7 +1745,7 @@ public abstract class EDDTable extends EDD {
                     || userDapQuery.indexOf("&units") >= 0
                 ? null
                 : this,
-            getNewHistory(requestUrl, userDapQuery),
+            getNewHistory(language, requestUrl, userDapQuery),
             dir,
             fileName);
     TableWriter tableWriter =
@@ -2208,7 +2232,7 @@ public abstract class EDDTable extends EDD {
 
         // go through vars looking for attName=attValue
         for (EDV edv : dataVariables) {
-          if (tAttValue.equals(edv.combinedAttributes().getString(tAttName))) {
+          if (tAttValue.equals(edv.combinedAttributes().getString(language, tAttName))) {
             // add var to resultsVariables if not already there
             if (resultsVariables.indexOf(edv.destinationName()) < 0)
               resultsVariables.add(edv.destinationName());
@@ -2942,8 +2966,10 @@ public abstract class EDDTable extends EDD {
         try {
           writer.write(
               EDStatic.startHeadHtml(
-                  language, tErddapUrl, title() + " - " + EDStatic.messages.dafAr[language]));
-          writer.write("\n" + rssHeadLink());
+                  language,
+                  tErddapUrl,
+                  title(language) + " - " + EDStatic.messages.dafAr[language]));
+          writer.write("\n" + rssHeadLink(language));
           writer.write("\n</head>\n");
           writer.write(
               EDStatic.startBodyHtml(
@@ -3075,7 +3101,7 @@ public abstract class EDDTable extends EDD {
         new DapRequestInfo(
             language,
             this,
-            getNewHistory(requestUrl, userDapQuery),
+            getNewHistory(language, requestUrl, userDapQuery),
             outputStreamSource,
             requestUrl,
             userDapQuery,
@@ -3118,7 +3144,7 @@ public abstract class EDDTable extends EDD {
       String userDapQuery)
       throws Throwable {
 
-    String tNewHistory = getNewHistory(requestUrl, userDapQuery);
+    String tNewHistory = getNewHistory(language, requestUrl, userDapQuery);
     String[] parts = Table.getDapQueryParts(userDapQuery); // decoded
 
     // identify skipPart (if any) and firstActiveDistinctOrOrderBy (if any)
@@ -3441,7 +3467,7 @@ public abstract class EDDTable extends EDD {
     // attributes are added in standardizeResultsTable
     Table table = new Table();
     if (withAttributes) {
-      setResponseGlobalAttributes(requestUrl, userDapQuery, table);
+      setResponseGlobalAttributes(language, requestUrl, userDapQuery, table);
 
       // pre 2013-05-28 was
       // table.globalAttributes().set(combinedGlobalAttributes); //make a copy
@@ -3456,7 +3482,7 @@ public abstract class EDDTable extends EDD {
       int dv = String2.indexOf(dataVariableDestinationNames(), resultsVariables.get(col));
       EDV edv = dataVariables[dv];
       Attributes atts = new Attributes();
-      if (withAttributes) atts.set(edv.combinedAttributes()); // make a copy
+      if (withAttributes) atts.set(edv.combinedAttributes().toAttributes(language)); // make a copy
       table.addColumn(
           col,
           edv.destinationName(),
@@ -3818,7 +3844,7 @@ public abstract class EDDTable extends EDD {
     if (accessibleViaNcCF.length() > 0)
       throw new SimpleException(
           EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr) + accessibleViaNcCF);
-    String cdmType = combinedGlobalAttributes.getString("cdm_data_type");
+    String cdmType = combinedGlobalAttributes.getString(language, "cdm_data_type");
     if (!CDM_POINT.equals(cdmType)) // but already checked before calling this method
     throw new SimpleException(
           EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
@@ -3844,7 +3870,7 @@ public abstract class EDDTable extends EDD {
     isCoordinateVar[String2.indexOf(ncColNames, "latitude")] = true;
     isCoordinateVar[String2.indexOf(ncColNames, "time")] = true;
     String coordinates = "time latitude longitude"; // spec doesn't specify a specific order
-    String proxy = combinedGlobalAttributes.getString("cdm_altitude_proxy");
+    String proxy = combinedGlobalAttributes.getString(language, "cdm_altitude_proxy");
     if (altIndex >= 0) {
       coordinates += " altitude";
       isCoordinateVar[String2.indexOf(ncColNames, "altitude")] = true;
@@ -3896,7 +3922,7 @@ public abstract class EDDTable extends EDD {
     if (accessibleViaNcCF.length() > 0)
       throw new SimpleException(
           EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr) + accessibleViaNcCF);
-    String cdmType = combinedGlobalAttributes.getString("cdm_data_type");
+    String cdmType = combinedGlobalAttributes.getString(language, "cdm_data_type");
     String lcCdmType = cdmType == null ? null : cdmType.toLowerCase();
 
     // ensure profile_id|timeseries_id|trajectory_id variable is defined
@@ -3936,7 +3962,7 @@ public abstract class EDDTable extends EDD {
       int ncNCols = twawm.nColumns();
       boolean isFeatureVar[] = new boolean[ncNCols];
       String featureVars[] =
-          combinedGlobalAttributes.getStringsFromCSV("cdm_" + lcCdmType + "_variables");
+          combinedGlobalAttributes.getStringsFromCSV(language, "cdm_" + lcCdmType + "_variables");
       EDV colEdv[] = new EDV[ncNCols];
       for (int col = 0; col < ncNCols; col++) {
         isFeatureVar[col] = String2.indexOf(featureVars, ncColNames[col]) >= 0;
@@ -4103,7 +4129,7 @@ public abstract class EDDTable extends EDD {
       isCoordinateVar[String2.indexOf(ncColNames, "latitude")] = true;
       isCoordinateVar[String2.indexOf(ncColNames, "time")] = true;
       String coordinates = "time latitude longitude"; // spec doesn't specify a specific order
-      String proxy = combinedGlobalAttributes.getString("cdm_altitude_proxy");
+      String proxy = combinedGlobalAttributes.getString(language, "cdm_altitude_proxy");
       if (altIndex >= 0) {
         coordinates += " altitude";
         isCoordinateVar[String2.indexOf(ncColNames, "altitude")] = true;
@@ -4269,7 +4295,7 @@ public abstract class EDDTable extends EDD {
     if (accessibleViaNcCF.length() > 0)
       throw new SimpleException(
           EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr) + accessibleViaNcCF);
-    String cdmType = combinedGlobalAttributes.getString("cdm_data_type");
+    String cdmType = combinedGlobalAttributes.getString(language, "cdm_data_type");
 
     // ensure profile_id and timeseries_id|trajectory_id variable is defined
     // and that cdmType is valid
@@ -4318,8 +4344,9 @@ public abstract class EDDTable extends EDD {
       boolean isFeatureVar[] = new boolean[ncNCols];
       boolean isProfileVar[] = new boolean[ncNCols];
       String featureVars[] =
-          combinedGlobalAttributes.getStringsFromCSV("cdm_" + olcCdmName + "_variables");
-      String profileVars[] = combinedGlobalAttributes.getStringsFromCSV("cdm_profile_variables");
+          combinedGlobalAttributes.getStringsFromCSV(language, "cdm_" + olcCdmName + "_variables");
+      String profileVars[] =
+          combinedGlobalAttributes.getStringsFromCSV(language, "cdm_profile_variables");
       EDV colEdv[] = new EDV[ncNCols];
       for (int col = 0; col < ncNCols; col++) {
         isFeatureVar[col] = String2.indexOf(featureVars, ncColNames[col]) >= 0;
@@ -4560,7 +4587,7 @@ public abstract class EDDTable extends EDD {
       isCoordinateVar[String2.indexOf(ncColNames, "latitude")] = true;
       isCoordinateVar[String2.indexOf(ncColNames, "time")] = true;
       String coordinates = "time latitude longitude"; // spec doesn't specify a specific order
-      String proxy = combinedGlobalAttributes.getString("cdm_altitude_proxy");
+      String proxy = combinedGlobalAttributes.getString(language, "cdm_altitude_proxy");
       if (altIndex >= 0) {
         coordinates += " altitude";
         isCoordinateVar[String2.indexOf(ncColNames, "altitude")] = true;
@@ -4847,7 +4874,7 @@ public abstract class EDDTable extends EDD {
                   twawm.columnMinValue[col].getDouble() * edv.scaleFactor() + edv.addOffset()),
               PAOne.fromDouble(
                   twawm.columnMaxValue[col].getDouble() * edv.scaleFactor() + edv.addOffset()));
-          edv.setActualRangeFromDestinationMinMax();
+          edv.setActualRangeFromDestinationMinMax(language);
         }
       }
     }
@@ -4901,7 +4928,7 @@ public abstract class EDDTable extends EDD {
                   : Calendar2.epochSecondsToIsoStringTZ(tMax.getDouble())));
     dataVariables[timeIndex].setDestinationMinMax(
         tMin, tMax); // scaleFactor,addOffset not supported
-    dataVariables[timeIndex].setActualRangeFromDestinationMinMax();
+    dataVariables[timeIndex].setActualRangeFromDestinationMinMax(language);
   }
 
   /**
@@ -7837,7 +7864,7 @@ public abstract class EDDTable extends EDD {
         }
 
         if (edv instanceof EDVTimeStamp)
-          time_precision[dv] = edv.combinedAttributes().getString(EDV.TIME_PRECISION);
+          time_precision[dv] = edv.combinedAttributes().getString(language, EDV.TIME_PRECISION);
 
         if (dv != lonIndex && dv != latIndex) nonLLSA.add(dn);
 
@@ -7912,8 +7939,8 @@ public abstract class EDDTable extends EDD {
           new HtmlWidgets(true, EDStatic.imageDirUrl(request, loggedInAs, language));
       writer.write(
           EDStatic.startHeadHtml(
-              language, tErddapUrl, title() + " - " + EDStatic.messages.magAr[language]));
-      writer.write("\n" + rssHeadLink());
+              language, tErddapUrl, title(language) + " - " + EDStatic.messages.magAr[language]));
+      writer.write("\n" + rssHeadLink(language));
       writer.write("\n</head>\n");
       writer.write(
           EDStatic.startBodyHtml(
@@ -8715,7 +8742,7 @@ public abstract class EDDTable extends EDD {
             if (con == 0) d = Calendar2.backNDays(7, d);
             conVal[cv][con] =
                 Calendar2.epochSecondsToLimitedIsoStringT(
-                    conEdv.combinedAttributes().getString(EDV.TIME_PRECISION), d, "");
+                    conEdv.combinedAttributes().getString(language, EDV.TIME_PRECISION), d, "");
             if (con == 0) timeMin = d;
             else timeMax = d;
           }
@@ -10487,7 +10514,7 @@ public abstract class EDDTable extends EDD {
         userQuery == null
             ? ""
             : String2.replaceAll(userQuery, "|", "%7C"); // crude extra percentEncode insurance
-    String tNewHistory = getNewHistory(requestUrl, userQuery);
+    String tNewHistory = getNewHistory(language, requestUrl, userQuery);
 
     // !!!Important: this use of subsetVariables with () and accessibleViaSubset()
     // insures that subsetVariables has been created.
@@ -10835,8 +10862,10 @@ public abstract class EDDTable extends EDD {
     try {
       writer.write(
           EDStatic.startHeadHtml(
-              language, tErddapUrl, title() + " - " + EDStatic.messages.subsetAr[language]));
-      writer.write("\n" + rssHeadLink());
+              language,
+              tErddapUrl,
+              title(language) + " - " + EDStatic.messages.subsetAr[language]));
+      writer.write("\n" + rssHeadLink(language));
       writer.write("\n</head>\n");
       writer.write(
           EDStatic.startBodyHtml(
@@ -11509,7 +11538,8 @@ public abstract class EDDTable extends EDD {
           EDV edv = findDataVariableByDestinationName(subsetVariables[lastP]);
           PrimitiveArray varPA = (PrimitiveArray) lastPPA.clone();
           Table countTable = new Table();
-          countTable.addColumn(0, lastPName, varPA, edv.combinedAttributes());
+          countTable.addColumn(
+              0, lastPName, varPA, edv.combinedAttributes().toAttributes(language));
 
           // sort, count, remove duplicates
           varPA.sortIgnoreCase();
@@ -11724,7 +11754,8 @@ public abstract class EDDTable extends EDD {
           PrimitiveArray varPA = twa.column(0);
           Table countTable = new Table();
           EDV edv = findDataVariableByDestinationName(subsetVariables[lastP]);
-          countTable.addColumn(0, lastPName, varPA, edv.combinedAttributes());
+          countTable.addColumn(
+              0, lastPName, varPA, edv.combinedAttributes().toAttributes(language));
 
           // sort, count, remove duplicates
           varPA.sortIgnoreCase();
@@ -12176,7 +12207,7 @@ public abstract class EDDTable extends EDD {
               table.nColumns(),
               edv.destinationName(),
               PrimitiveArray.factory(edv.destinationDataPAType(), 1, edv.sourceName().substring(1)),
-              new Attributes(edv.combinedAttributes()));
+              edv.combinedAttributes().toAttributes(language));
         } else {
           justFixed = false;
           break;
@@ -12208,7 +12239,7 @@ public abstract class EDDTable extends EDD {
       Arrays.fill(order, true);
       table.sortIgnoreCase(cols, order);
       table.removeDuplicates();
-      table.globalAttributes().add(combinedGlobalAttributes());
+      table.globalAttributes().add(combinedGlobalAttributes().toAttributes(language));
 
       // set maxIsMV (assume true)
       for (int col = 0; col < table.nColumns(); col++) table.getColumn(col).setMaxIsMV(true);
@@ -12255,7 +12286,7 @@ public abstract class EDDTable extends EDD {
     String svDapQuery = subsetVariablesCSV + "&distinct()";
     // don't use getTwawmForDapQuery() since it tries to handleViaFixedOrSubsetVariables
     //  since this method is how subsetVariables gets its data!
-    String tNewHistory = combinedGlobalAttributes.getString("history");
+    String tNewHistory = combinedGlobalAttributes.getString(language, "history");
     TableWriterAllWithMetadata twawm =
         new TableWriterAllWithMetadata(
             language, this, tNewHistory, cacheDirectory(), subsetFileName);
@@ -12319,9 +12350,10 @@ public abstract class EDDTable extends EDD {
             v,
             varNames.get(v),
             pas[v],
-            new Attributes(
-                findDataVariableByDestinationName(varNames.get(v)).combinedAttributes()));
-      distinctTable.globalAttributes().add(combinedGlobalAttributes());
+            findDataVariableByDestinationName(varNames.get(v))
+                .combinedAttributes()
+                .toAttributes(language));
+      distinctTable.globalAttributes().add(combinedGlobalAttributes().toAttributes(language));
       return distinctTable;
     }
 
@@ -12401,7 +12433,7 @@ public abstract class EDDTable extends EDD {
                     + datasetID
                     + "\n"
                     + "(sourceUrl="
-                    + publicSourceUrl()
+                    + publicSourceUrl(language)
                     + "),\n"
                     + "EDDTable.distinctSubsetVariablesDataTable found carriageReturns ('\\r' below)\n"
                     + "or newlines ('\\n' below) in some of the data values.\n"
@@ -12612,7 +12644,7 @@ public abstract class EDDTable extends EDD {
             table.nColumns(),
             edv.destinationName(),
             PrimitiveArray.factory(edv.destinationDataPAType(), 1, edv.fixedValue()),
-            new Attributes(edv.combinedAttributes()));
+            edv.combinedAttributes().toAttributes(language));
       } else {
         justFixed = false;
         break;
@@ -12648,7 +12680,7 @@ public abstract class EDDTable extends EDD {
 
       // succeeded?
       if (justFixed) {
-        setResponseGlobalAttributes(requestUrl, userDapQuery, table);
+        setResponseGlobalAttributes(language, requestUrl, userDapQuery, table);
         tableWriter.writeAllAndFinish(table);
         if (verbose)
           String2.log(
@@ -12700,13 +12732,14 @@ public abstract class EDDTable extends EDD {
 
     // apply constraints, rearrange columns, add metadata
     applyConstraints(
+        language,
         table,
         true, // applyAllConstraints
         resultsVariables,
         constraintVariables,
         constraintOps,
         constraintValues);
-    setResponseGlobalAttributes(requestUrl, userDapQuery, table);
+    setResponseGlobalAttributes(language, requestUrl, userDapQuery, table);
 
     // write to tableWriter
     tableWriter.writeAllAndFinish(table);
@@ -12734,7 +12767,8 @@ public abstract class EDDTable extends EDD {
 
       String tAccessibleViaSubset = "";
       String tSubsetVariables[];
-      String subsetVariablesCSV = combinedGlobalAttributes().getString("subsetVariables");
+      String subsetVariablesCSV =
+          combinedGlobalAttributes().getString(EDMessages.DEFAULT_LANGUAGE, "subsetVariables");
       if (subsetVariablesCSV == null || subsetVariablesCSV.length() == 0) {
         tSubsetVariables = new String[0];
       } else {
@@ -12909,7 +12943,7 @@ public abstract class EDDTable extends EDD {
           MessageFormat.format(
               EDStatic.messages.noXxxBecauseAr[0], "SOS", EDStatic.messages.noXxxNoLLTAr[0]));
 
-    String cdt = combinedGlobalAttributes().getString("cdm_data_type");
+    String cdt = combinedGlobalAttributes().getString(EDMessages.DEFAULT_LANGUAGE, "cdm_data_type");
     int type = sosCdmDataTypes.indexOf(cdt);
     if (type < 0)
       return String2.canonical(
@@ -13095,10 +13129,10 @@ public abstract class EDDTable extends EDD {
   public String accessibleViaNcCF() {
 
     if (accessibleViaNcCF == null) {
-
+      int language = EDMessages.DEFAULT_LANGUAGE;
       // !!! For thread safety, don't use temporary value of accessibleViaNcCF.
       // Just set it with the final value; don't change it.
-      String cdmType = combinedGlobalAttributes.getString("cdm_data_type");
+      String cdmType = combinedGlobalAttributes.getString(language, "cdm_data_type");
       if (cdmType == null || cdmType.length() == 0)
         throw new SimpleException("cdm_data_type must be specified in globalAttributes.");
       // if (!cdmType.equals(CDM_POINT) &&
@@ -13128,7 +13162,7 @@ public abstract class EDDTable extends EDD {
       for (int dv = 0; dv < ndv; dv++) {
         // if (debugMode && dataVariables[dv].destinationName().equals("time"))
         //    String2.log(">>time:\n" + dataVariables[dv].combinedAttributes());
-        String cfRole = dataVariables[dv].combinedAttributes().getString("cf_role");
+        String cfRole = dataVariables[dv].combinedAttributes().getString(language, "cf_role");
         if (cfRole != null) {
           for (int cdmi = 0; cdmi < 3; cdmi++) {
             if ((cdmLCNames[cdmi] + "_id").equals(cfRole)) {
@@ -13180,7 +13214,8 @@ public abstract class EDDTable extends EDD {
       String cdmVars[][] = new String[3][]; // subarray may be size=0, won't be null
       for (int cdmi = 0; cdmi < 3; cdmi++) {
         cdmVars[cdmi] =
-            combinedGlobalAttributes.getStringsFromCSV("cdm_" + cdmLCNames[cdmi] + "_variables");
+            combinedGlobalAttributes.getStringsFromCSV(
+                language, "cdm_" + cdmLCNames[cdmi] + "_variables");
         if (cdmVars[cdmi] == null) cdmVars[cdmi] = new String[0];
         if (cdmUses[cdmi]) {
           if (cdmVars[cdmi].length == 0)
@@ -13250,7 +13285,7 @@ public abstract class EDDTable extends EDD {
       }
 
       // ensure profile datasets have altitude, depth or cdm_altitude_proxy
-      String proxy = combinedGlobalAttributes.getString("cdm_altitude_proxy");
+      String proxy = combinedGlobalAttributes.getString(language, "cdm_altitude_proxy");
       int proxyDV = String2.indexOf(dataVariableDestinationNames(), proxy);
       if (altIndex >= 0) {
         if (proxy != null && !proxy.equals("altitude"))
@@ -13265,10 +13300,10 @@ public abstract class EDDTable extends EDD {
       } else if (proxyDV >= 0) {
         // okay
         EDV proxyEDV = dataVariables[proxyDV];
-        proxyEDV.addAttributes().add("_CoordinateAxisType", "Height");
-        proxyEDV.combinedAttributes().add("_CoordinateAxisType", "Height");
-        proxyEDV.addAttributes().add("axis", "Z");
-        proxyEDV.combinedAttributes().add("axis", "Z");
+        proxyEDV.addAttributes().set(language, "_CoordinateAxisType", "Height");
+        proxyEDV.combinedAttributes().set(language, "_CoordinateAxisType", "Height");
+        proxyEDV.addAttributes().set(language, "axis", "Z");
+        proxyEDV.combinedAttributes().set(language, "axis", "Z");
 
       } else if (cdmUses[0]) {
         throw new SimpleException(
@@ -13401,12 +13436,13 @@ public abstract class EDDTable extends EDD {
    * urn:ioos:station:noaa.nws.ndbc:41004: urn:ioos:network:noaa.nws.ndbc:all (IOOS NDBC)
    * urn:ioos:network:noaa.nws.ndbc:[datasetID] (ERDDAP) (after : is (datasetID|stationID)[:varname]
    *
+   * @param language the index of the selected language
    * @param tSosOfferingType usually this EDDTable's sosOfferingType (e.g., Station), but sometimes
    *     sosNetworkOfferingType ("network") or "sensor".
    * @return sosGmlNameStart
    */
-  public String getSosGmlNameStart(String tSosOfferingType) {
-    return sosUrnBase()
+  public String getSosGmlNameStart(int language, String tSosOfferingType) {
+    return sosUrnBase(language)
         + ":"
         + tSosOfferingType
         + ":"
@@ -13484,7 +13520,7 @@ public abstract class EDDTable extends EDD {
 
     // gather other information
     String tErddapUrl = EDStatic.erddapUrl(request, loggedInAs, language);
-    String sensorGmlNameStart = getSosGmlNameStart("sensor");
+    String sensorGmlNameStart = getSosGmlNameStart(language, "sensor");
     String sosUrl = tErddapUrl + "/sos/" + datasetID + "/" + sosServer;
     String datasetObservedProperty = datasetID;
     String minAllTimeString = " indeterminatePosition=\"unknown\">";
@@ -13540,13 +13576,13 @@ public abstract class EDDTable extends EDD {
       writer.write(
           "  <ows:ServiceIdentification>\n"
               + "    <ows:Title>"
-              + XML.encodeAsXML(title())
+              + XML.encodeAsXML(title(language))
               + "</ows:Title>\n"
               + "    <ows:Abstract>"
-              + XML.encodeAsXML(summary())
+              + XML.encodeAsXML(summary(language))
               + "</ows:Abstract>\n"
               + "    <ows:Keywords>\n");
-      String keywordsSA[] = keywords();
+      String keywordsSA[] = keywords(language);
       for (String s : keywordsSA)
         writer.write("      <ows:Keyword>" + XML.encodeAsXML(s) + "</ows:Keyword>\n");
       writer.write(
@@ -13556,10 +13592,10 @@ public abstract class EDDTable extends EDD {
               + sosVersion
               + "</ows:ServiceTypeVersion>\n"
               + "    <ows:Fees>"
-              + XML.encodeAsXML(fees())
+              + XML.encodeAsXML(fees(language))
               + "</ows:Fees>\n"
               + "    <ows:AccessConstraints>"
-              + XML.encodeAsXML(accessConstraints())
+              + XML.encodeAsXML(accessConstraints(language))
               + "</ows:AccessConstraints>\n"
               + "  </ows:ServiceIdentification>\n");
     } // end of section_ServiceIdentification
@@ -13873,7 +13909,7 @@ public abstract class EDDTable extends EDD {
       for (int v = 0; v < dataVariables.length; v++) {
         if (v != latIndex && v != lonIndex && v != altIndex && v != depthIndex && v != timeIndex) {
           EDV edv = dataVariables[v];
-          String stdName = edv.combinedAttributes().getString("standard_name");
+          String stdName = edv.combinedAttributes().getString(language, "standard_name");
           if (stdName != null)
             writer.write(
                 "        <sos:observedProperty xlink:href=\"http://mmisw.org/ont/cf/parameter/"
@@ -14023,9 +14059,10 @@ public abstract class EDDTable extends EDD {
    * https://sdf.ndbc.noaa.gov/sos/ in particular https://ioos.github.io/sos-dif/dif/welcome.html
    * https://ioos.github.io/sos-dif/gml/IOOS/0.6.1/schemas/ioosObservationSpecializations.xsd
    *
+   * @param language the index of the selected language
    * @param writer In the end, the writer is flushed, not closed.
    */
-  public void sosPhenomenaDictionary(Writer writer) throws Throwable {
+  public void sosPhenomenaDictionary(int language, Writer writer) throws Throwable {
 
     // if (accessibleViaSOS().length() > 0)
     //    throw new SimpleException(EDStatic.simpleBilingual(language,
@@ -14035,7 +14072,7 @@ public abstract class EDDTable extends EDD {
     // String tErddapUrl = EDStatic.erddapUrl(request, loggedInAs, language);
     // String dictUrl = tErddapUrl + "/sos/" + datasetID + "/" + sosPhenomenaDictionaryUrl;
 
-    String codeSpace = getSosGmlNameStart("phenomena");
+    String codeSpace = getSosGmlNameStart(language, "phenomena");
     codeSpace = codeSpace.substring(0, codeSpace.length() - 2); // remove ::
     String destNames[] = dataVariableDestinationNames();
     int ndv = destNames.length;
@@ -14074,7 +14111,8 @@ public abstract class EDDTable extends EDD {
           || dv == timeIndex
           || dv == sosOfferingIndex) continue;
       count++;
-      String standardName = dataVariables[dv].combinedAttributes().getString("standard_name");
+      String standardName =
+          dataVariables[dv].combinedAttributes().getString(language, "standard_name");
       boolean hasSN = standardName != null && standardName.length() > 0;
       writer.write(
           "  <gml:definitionMember >\n"
@@ -14086,7 +14124,8 @@ public abstract class EDDTable extends EDD {
               + "</gml:description>\n"
               + "      <gml:identifier codeSpace=\""
               + (hasSN
-                  ? sosStandardNamePrefix().substring(0, sosStandardNamePrefix().length() - 1)
+                  ? sosStandardNamePrefix(language)
+                      .substring(0, sosStandardNamePrefix(language).length() - 1)
                   : codeSpace)
               + "\">"
               + (hasSN ? standardName : destNames[dv])
@@ -14104,7 +14143,7 @@ public abstract class EDDTable extends EDD {
             + count
             + "\">\n"
             + "      <gml:description>"
-            + XML.encodeAsXML(title())
+            + XML.encodeAsXML(title(language))
             + "</gml:description>\n"
             + "      <gml:identifier codeSpace=\""
             + codeSpace
@@ -14200,7 +14239,7 @@ public abstract class EDDTable extends EDD {
 
     String tType = isNetwork ? sosNetworkOfferingType : offeringType;
     String name2 = tType + "-" + shortName;
-    String gmlName = getSosGmlNameStart(tType) + shortName;
+    String gmlName = getSosGmlNameStart(language, tType) + shortName;
 
     // based on
     // https://opendap.co-ops.nos.noaa.gov/ioos-dif-sos-test/get/describesensor/getstation.jsp
@@ -14222,11 +14261,11 @@ public abstract class EDDTable extends EDD {
             + name2
             + "\">\n"
             + "      <gml:description>"
-            + XML.encodeAsXML(title() + ", " + name2)
+            + XML.encodeAsXML(title(language) + ", " + name2)
             + "</gml:description>\n"
             + "      <sml:keywords>\n"
             + "        <sml:KeywordList>\n"); // codeSpace=\"https://wiki.earthdata.nasa.gov/display/CMR/GCMD+Keyword+Access\">\n" +
-    String keywordsSA[] = keywords();
+    String keywordsSA[] = keywords(language);
     for (String s : keywordsSA)
       writer.write("          <sml:keyword>" + XML.encodeAsXML(s) + "</sml:keyword>\n");
     writer.write(
@@ -14285,7 +14324,7 @@ public abstract class EDDTable extends EDD {
               + tErddapUrl
               + "\" />\n"
               + "              <sml:value>"
-              + getSosGmlNameStart(sosNetworkOfferingType)
+              + getSosGmlNameStart(language, sosNetworkOfferingType)
               + datasetID
               + "</sml:value>\n"
               + "            </sml:Term>\n"
@@ -14379,7 +14418,7 @@ public abstract class EDDTable extends EDD {
             + "          <gml:description>Web page with background information from the source of this dataset</gml:description>\n"
             + "          <sml:format>text/html</sml:format>\n"
             + "          <sml:onlineResource xlink:href=\""
-            + XML.encodeAsXML(infoUrl)
+            + XML.encodeAsXML(infoUrl(language))
             + "\" />\n"
             +
             // "          <sml:onlineResource xlink:href=\"" + tErddapUrl + "/info/" + datasetID +
@@ -14497,7 +14536,7 @@ public abstract class EDDTable extends EDD {
               + ".html\" />\n"
               + "              <sml:outputs>\n"
               + "                <sml:OutputList>\n");
-      String codeSpace = getSosGmlNameStart("phenomena");
+      String codeSpace = getSosGmlNameStart(language, "phenomena");
       for (int dv = 0; dv < dataVariables.length; dv++) {
         if (dv == lonIndex
             || dv == latIndex
@@ -14506,7 +14545,7 @@ public abstract class EDDTable extends EDD {
             || dv == timeIndex
             || dv == sosOfferingIndex) continue;
         EDV edv = dataVariables[dv];
-        String stdName = edv.combinedAttributes().getString("standard_name");
+        String stdName = edv.combinedAttributes().getString(language, "standard_name");
         boolean hasSN = stdName != null && stdName.length() > 0;
         writer.write(
             "                  <sml:output name=\""
@@ -14514,7 +14553,9 @@ public abstract class EDDTable extends EDD {
                 + "\">\n"
                 + // but NOS has longName
                 "                    <swe:Quantity definition=\""
-                + (hasSN ? sosStandardNamePrefix() + stdName : codeSpace + edv.destinationName())
+                + (hasSN
+                    ? sosStandardNamePrefix(language) + stdName
+                    : codeSpace + edv.destinationName())
                 + "\">\n");
         if (edv.ucumUnits() != null && edv.ucumUnits().length() > 0)
           writer.write("                      <swe:uom code=\"" + edv.ucumUnits() + "\" />\n");
@@ -14915,8 +14956,8 @@ public abstract class EDDTable extends EDD {
     // offering    1, required
     String requestOffering = sosQueryMap.get("offering"); // test name.toLowerCase()
     if (requestOffering == null) requestOffering = "";
-    String stationGmlNameStart = getSosGmlNameStart(sosOfferingType);
-    String networkGmlName = getSosGmlNameStart(sosNetworkOfferingType) + datasetID;
+    String stationGmlNameStart = getSosGmlNameStart(language, sosOfferingType);
+    String networkGmlName = getSosGmlNameStart(language, sosNetworkOfferingType) + datasetID;
     if (reallyVerbose)
       String2.log(
           "stationGmlNameStart=" + stationGmlNameStart + "\nnetworkGmlName=" + networkGmlName);
@@ -15139,7 +15180,7 @@ public abstract class EDDTable extends EDD {
             dapQuery.append("&.draw=vectors&.color=0xFF9900");
             String colorBarMax =
                 edv1.combinedAttributes()
-                    .getString("colorBarMaximum"); // string avoids rounding problems
+                    .getString(language, "colorBarMaximum"); // string avoids rounding problems
             if (!Double.isNaN(String2.parseDouble(colorBarMax)))
               dapQuery.append("&.vec=" + colorBarMax);
           } else {
@@ -15227,8 +15268,8 @@ public abstract class EDDTable extends EDD {
     //        accessibleViaSOS());
 
     String tErddapUrl = EDStatic.erddapUrl(request, loggedInAs, language);
-    String stationGmlNameStart = getSosGmlNameStart(sosOfferingType);
-    String sensorGmlNameStart = getSosGmlNameStart("sensor");
+    String stationGmlNameStart = getSosGmlNameStart(language, sosOfferingType);
+    String sensorGmlNameStart = getSosGmlNameStart(language, "sensor");
     String requestedVarAr[] =
         requestedVars.length() == 0 ? new String[0] : String2.split(requestedVars, ',');
 
@@ -15336,7 +15377,7 @@ public abstract class EDDTable extends EDD {
             + // was Winds
             " observations at a series of times</gml:description>\n"
             + "  <gml:name>"
-            + XML.encodeAsXML(title)
+            + XML.encodeAsXML(title(language))
             + // was NOAA.NWS.NDBC
             ", "
             + requestOfferingType
@@ -15420,7 +15461,7 @@ public abstract class EDDTable extends EDD {
               + sosOfferings.getString(offering)
               + "</ioos:StationName>\n"
               + "                  <ioos:Organization>"
-              + institution()
+              + institution(language)
               + "</ioos:Organization>\n"
               + "                  <ioos:StationId>"
               + stationGmlNameStart
@@ -15560,7 +15601,7 @@ public abstract class EDDTable extends EDD {
             + datasetID
             + "\"/>\n"
             + "  <om:featureOfInterest xlink:href=\""
-            + XML.encodeAsXML(sosFeatureOfInterest())
+            + XML.encodeAsXML(sosFeatureOfInterest(language))
             + "\"/>\n"
             + "  <om:result xlink:href=\""
             + XML.encodeAsXML(tErddapUrl + "/tabledap/" + datasetID + fileTypeName + "?" + dapQuery)
@@ -15607,8 +15648,8 @@ public abstract class EDDTable extends EDD {
     //        accessibleViaSOS());
 
     String tErddapUrl = EDStatic.erddapUrl(request, loggedInAs, language);
-    String stationGmlNameStart = getSosGmlNameStart(sosOfferingType);
-    String sensorGmlNameStart = getSosGmlNameStart("sensor");
+    String stationGmlNameStart = getSosGmlNameStart(language, sosOfferingType);
+    String sensorGmlNameStart = getSosGmlNameStart(language, "sensor");
     String datasetObservedProperty = datasetID;
 
     // It's quick and easy to write out the info if cumulativeTable is available.
@@ -15711,7 +15752,7 @@ public abstract class EDDTable extends EDD {
             + // was Winds
             " observations at a series of times</gml:description>\n"
             + "  <gml:name>"
-            + XML.encodeAsXML(title)
+            + XML.encodeAsXML(title(language))
             + ", "
             + requestOfferingType
             + " "
@@ -15792,7 +15833,7 @@ public abstract class EDDTable extends EDD {
               + prevID
               + "</ioos:StationName>\n"
               + "                  <ioos:Organization>"
-              + institution()
+              + institution(language)
               + "</ioos:Organization>\n"
               + "                  <ioos:StationId>"
               + stationGmlNameStart
@@ -15935,7 +15976,7 @@ public abstract class EDDTable extends EDD {
             + datasetID
             + "\"/>\n"
             + "  <om:featureOfInterest xlink:href=\""
-            + XML.encodeAsXML(sosFeatureOfInterest())
+            + XML.encodeAsXML(sosFeatureOfInterest(language))
             + "\"/>\n");
 
     writer.write(
@@ -16306,7 +16347,7 @@ public abstract class EDDTable extends EDD {
     //        accessibleViaSOS());
 
     String tErddapUrl = EDStatic.erddapUrl(request, loggedInAs, language);
-    String sensorGmlNameStart = getSosGmlNameStart("sensor");
+    String sensorGmlNameStart = getSosGmlNameStart(language, "sensor");
     String fullPhenomenaDictionaryUrl =
         tErddapUrl + "/sos/" + datasetID + "/" + sosPhenomenaDictionaryUrl;
 
@@ -16414,7 +16455,7 @@ public abstract class EDDTable extends EDD {
             + datasetID
             + " observations at a series of times</gml:description>\n"
             + "  <gml:name>"
-            + XML.encodeAsXML(title)
+            + XML.encodeAsXML(title(language))
             + ", "
             + requestOfferingType
             + " "
@@ -16512,7 +16553,7 @@ public abstract class EDDTable extends EDD {
     writer.write(
         // "    <!-- Feature Of Interest -->\n" +
         "    <om:featureOfInterest xlink:href=\""
-            + XML.encodeAsXML(sosFeatureOfInterest())
+            + XML.encodeAsXML(sosFeatureOfInterest(language))
             + "\"/>\n"
             +
             // "    <!-- Result Structure and Encoding -->\n" +
@@ -16683,9 +16724,9 @@ public abstract class EDDTable extends EDD {
     int whichOffering =
         Math.max(0, sosOfferings.indexOf("41004")); // cheap trick for cwwcNDBCMet demo
     String shortOfferingi = sosOfferings.getString(whichOffering);
-    String sensori = getSosGmlNameStart("sensor") + shortOfferingi; // + ":" + datasetID;
-    String offeringi = getSosGmlNameStart(sosOfferingType) + shortOfferingi;
-    String networkOffering = getSosGmlNameStart(sosNetworkOfferingType) + datasetID;
+    String sensori = getSosGmlNameStart(language, "sensor") + shortOfferingi; // + ":" + datasetID;
+    String offeringi = getSosGmlNameStart(language, sosOfferingType) + shortOfferingi;
+    String networkOffering = getSosGmlNameStart(language, sosNetworkOfferingType) + datasetID;
     EDV lonEdv = dataVariables[lonIndex];
     EDV latEdv = dataVariables[latIndex];
 
@@ -17706,22 +17747,23 @@ public abstract class EDDTable extends EDD {
         String2.replaceAll(Calendar2.millisToIsoDateString(creationTimeMillis()), "-", "");
     String unknown = "Unknown"; // pg viii of FGDC document
 
-    String acknowledgement = combinedGlobalAttributes.getString("acknowledgement"); // acdd 1.3
+    String acknowledgement =
+        combinedGlobalAttributes.getString(language, "acknowledgement"); // acdd 1.3
     if (acknowledgement == null)
-      acknowledgement = combinedGlobalAttributes.getString("acknowledgment"); // acdd 1.0
-    String cdmDataType = combinedGlobalAttributes.getString("cdm_data_type");
-    String contributorName = combinedGlobalAttributes.getString("contributor_name");
-    String contributorEmail = combinedGlobalAttributes.getString("contributor_email");
-    String contributorRole = combinedGlobalAttributes.getString("contributor_role");
-    String creatorName = combinedGlobalAttributes.getString("creator_name");
-    String creatorEmail = combinedGlobalAttributes.getString("creator_email");
+      acknowledgement = combinedGlobalAttributes.getString(language, "acknowledgment"); // acdd 1.0
+    String cdmDataType = combinedGlobalAttributes.getString(language, "cdm_data_type");
+    String contributorName = combinedGlobalAttributes.getString(language, "contributor_name");
+    String contributorEmail = combinedGlobalAttributes.getString(language, "contributor_email");
+    String contributorRole = combinedGlobalAttributes.getString(language, "contributor_role");
+    String creatorName = combinedGlobalAttributes.getString(language, "creator_name");
+    String creatorEmail = combinedGlobalAttributes.getString(language, "creator_email");
     // creatorUrl: use infoUrl
     String dateCreated =
         Calendar2.tryToIsoString(
-            combinedGlobalAttributes.getString("date_created")); // "" if trouble
+            combinedGlobalAttributes.getString(language, "date_created")); // "" if trouble
     String dateIssued =
         Calendar2.tryToIsoString(
-            combinedGlobalAttributes.getString("date_issued")); // "" if trouble
+            combinedGlobalAttributes.getString(language, "date_issued")); // "" if trouble
     if (dateCreated.length() > 10) dateCreated = dateCreated.substring(0, 10);
     if (dateIssued.length() > 10) dateIssued = dateIssued.substring(0, 10);
     if (dateCreated.startsWith("0000")) // year=0000 isn't valid
@@ -17730,23 +17772,24 @@ public abstract class EDDTable extends EDD {
     // make compact form  YYYYMMDD
     dateCreated = String2.replaceAll(dateCreated, "-", "");
     dateIssued = String2.replaceAll(dateIssued, "-", "");
-    String history = combinedGlobalAttributes.getString("history");
-    String infoUrl = combinedGlobalAttributes.getString("infoUrl");
-    String institution = combinedGlobalAttributes.getString("institution");
-    String keywords = combinedGlobalAttributes.getString("keywords");
-    String keywordsVocabulary = combinedGlobalAttributes.getString("keywords_vocabulary");
+    String history = combinedGlobalAttributes.getString(language, "history");
+    String infoUrl = combinedGlobalAttributes.getString(language, "infoUrl");
+    String institution = combinedGlobalAttributes.getString(language, "institution");
+    String keywords = combinedGlobalAttributes.getString(language, "keywords");
+    String keywordsVocabulary = combinedGlobalAttributes.getString(language, "keywords_vocabulary");
     if (keywords == null) { // use the crude, ERDDAP keywords
       keywords = EDStatic.config.keywords;
       keywordsVocabulary = null;
     }
-    String license = combinedGlobalAttributes.getString("license");
-    String project = combinedGlobalAttributes.getString("project");
+    String license = combinedGlobalAttributes.getString(language, "license");
+    String project = combinedGlobalAttributes.getString(language, "project");
     if (project == null) project = institution;
-    String references = combinedGlobalAttributes.getString("references");
-    String satellite = combinedGlobalAttributes.getString("satellite");
-    String sensor = combinedGlobalAttributes.getString("sensor");
-    String sourceUrl = publicSourceUrl();
-    String standardNameVocabulary = combinedGlobalAttributes.getString("standard_name_vocabulary");
+    String references = combinedGlobalAttributes.getString(language, "references");
+    String satellite = combinedGlobalAttributes.getString(language, "satellite");
+    String sensor = combinedGlobalAttributes.getString(language, "sensor");
+    String sourceUrl = publicSourceUrl(language);
+    String standardNameVocabulary =
+        combinedGlobalAttributes.getString(language, "standard_name_vocabulary");
 
     String adminInstitution =
         EDStatic.config.adminInstitution == null ? unknown : EDStatic.config.adminInstitution;
@@ -17815,7 +17858,7 @@ public abstract class EDDTable extends EDD {
     StringArray standardNames = new StringArray();
     if (!testMinimalMetadata) {
       for (EDV dataVariable : dataVariables) {
-        String sn = dataVariable.combinedAttributes().getString("standard_name");
+        String sn = dataVariable.combinedAttributes().getString(language, "standard_name");
         if (sn != null) standardNames.add(sn);
       }
     }
@@ -17900,7 +17943,7 @@ public abstract class EDDTable extends EDD {
             + XML.encodeAsXML(unknown.equals(dateIssued) ? eddCreationDate : dateIssued)
             + "</pubdate>\n"
             + "        <title>"
-            + XML.encodeAsXML(title)
+            + XML.encodeAsXML(title(language))
             + "</title>\n"
             + "        <edition>"
             + unknown
@@ -18005,7 +18048,7 @@ public abstract class EDDTable extends EDD {
     writer.write(
         "    <descript>\n"
             + "      <abstract>"
-            + XML.encodeAsXML(summary)
+            + XML.encodeAsXML(summary(language))
             + "</abstract>\n"
             + "      <purpose>"
             + unknown
@@ -18619,11 +18662,12 @@ public abstract class EDDTable extends EDD {
             + "</metadata>\n");
   }
 
-  private void lower_writeISO19115(Writer writer)
+  private void lower_writeISO19115(int language, Writer writer)
       throws UnsupportedStorageException, DataStoreException, JAXBException, IOException {
 
     Metadata metadata =
         MetadataBuilder.buildMetadata(
+            language,
             datasetID,
             creationTimeMillis(),
             combinedGlobalAttributes(),
@@ -18674,7 +18718,7 @@ public abstract class EDDTable extends EDD {
     // FUTURE: support datasets with x,y (and not longitude,latitude)?
 
     if (EDStatic.config.useSisISO19115) {
-      lower_writeISO19115(writer);
+      lower_writeISO19115(language, writer);
       return;
     }
 
@@ -18694,15 +18738,16 @@ public abstract class EDDTable extends EDD {
     else if (domain.startsWith("https://")) domain = domain.substring(8);
     String eddCreationDate = Calendar2.millisToIsoDateString(creationTimeMillis());
 
-    String acknowledgement = combinedGlobalAttributes.getString("acknowledgement"); // acdd 1.3
+    String acknowledgement =
+        combinedGlobalAttributes.getString(language, "acknowledgement"); // acdd 1.3
     if (acknowledgement == null)
-      acknowledgement = combinedGlobalAttributes.getString("acknowledgment"); // acdd 1.0
-    String contributorName = combinedGlobalAttributes.getString("contributor_name");
-    String contributorEmail = combinedGlobalAttributes.getString("contributor_email");
-    String contributorRole = combinedGlobalAttributes.getString("contributor_role");
-    String creatorName = combinedGlobalAttributes.getString("creator_name");
-    String creatorEmail = combinedGlobalAttributes.getString("creator_email");
-    String creatorType = combinedGlobalAttributes.getString("creator_type");
+      acknowledgement = combinedGlobalAttributes.getString(language, "acknowledgment"); // acdd 1.0
+    String contributorName = combinedGlobalAttributes.getString(language, "contributor_name");
+    String contributorEmail = combinedGlobalAttributes.getString(language, "contributor_email");
+    String contributorRole = combinedGlobalAttributes.getString(language, "contributor_role");
+    String creatorName = combinedGlobalAttributes.getString(language, "creator_name");
+    String creatorEmail = combinedGlobalAttributes.getString(language, "creator_email");
+    String creatorType = combinedGlobalAttributes.getString(language, "creator_type");
     creatorType = String2.validateAcddContactType(creatorType);
     if (!String2.isSomething2(creatorType) && String2.isSomething2(creatorName))
       creatorType = String2.guessAcddContactType(creatorName);
@@ -18710,26 +18755,27 @@ public abstract class EDDTable extends EDD {
     creatorType = "person"; // assume
     String dateCreated =
         Calendar2.tryToIsoString(
-            combinedGlobalAttributes.getString("date_created")); // "" if trouble
+            combinedGlobalAttributes.getString(language, "date_created")); // "" if trouble
     String dateIssued =
         Calendar2.tryToIsoString(
-            combinedGlobalAttributes.getString("date_issued")); // "" if trouble
+            combinedGlobalAttributes.getString(language, "date_issued")); // "" if trouble
     if (dateCreated.length() > 10) dateCreated = dateCreated.substring(0, 10);
     if (dateIssued.length() > 10) dateIssued = dateIssued.substring(0, 10);
     if (dateCreated.startsWith("0000")) // year=0000 isn't valid
     dateCreated = "";
     if (dateIssued.startsWith("0000")) dateIssued = "";
-    String history = combinedGlobalAttributes.getString("history");
-    String infoUrl = combinedGlobalAttributes.getString("infoUrl");
-    String institution = combinedGlobalAttributes.getString("institution");
-    String keywords = combinedGlobalAttributes.getString("keywords");
+    String history = combinedGlobalAttributes.getString(language, "history");
+    String infoUrl = combinedGlobalAttributes.getString(language, "infoUrl");
+    String institution = combinedGlobalAttributes.getString(language, "institution");
+    String keywords = combinedGlobalAttributes.getString(language, "keywords");
     if (keywords == null) { // use the crude, ERDDAP keywords
       keywords = EDStatic.config.keywords;
     }
-    String license = combinedGlobalAttributes.getString("license");
-    String project = combinedGlobalAttributes.getString("project");
+    String license = combinedGlobalAttributes.getString(language, "license");
+    String project = combinedGlobalAttributes.getString(language, "project");
     if (project == null) project = institution;
-    String standardNameVocabulary = combinedGlobalAttributes.getString("standard_name_vocabulary");
+    String standardNameVocabulary =
+        combinedGlobalAttributes.getString(language, "standard_name_vocabulary");
 
     // testMinimalMetadata is useful for Bob doing tests of validity of FGDC results
     //  when a dataset has minimal metadata
@@ -18786,7 +18832,7 @@ public abstract class EDDTable extends EDD {
     StringArray standardNames = new StringArray();
     if (!testMinimalMetadata) {
       for (EDV dataVariable : dataVariables) {
-        String sn = dataVariable.combinedAttributes().getString("standard_name");
+        String sn = dataVariable.combinedAttributes().getString(language, "standard_name");
         if (sn != null) standardNames.add(sn);
       }
     }
@@ -19063,7 +19109,7 @@ public abstract class EDDTable extends EDD {
               + "        <gmd:CI_Citation>\n"
               + "          <gmd:title>\n"
               + "            <gco:CharacterString>"
-              + XML.encodeAsXML(title())
+              + XML.encodeAsXML(title(language))
               + "</gco:CharacterString>\n"
               + "          </gmd:title>\n"
               + "          <gmd:date>\n"
@@ -19246,7 +19292,7 @@ public abstract class EDDTable extends EDD {
               // abstract
               "      <gmd:abstract>\n"
               + "        <gco:CharacterString>"
-              + XML.encodeAsXML(summary())
+              + XML.encodeAsXML(summary(language))
               + "</gco:CharacterString>\n"
               + "      </gmd:abstract>\n");
 
@@ -19523,7 +19569,7 @@ public abstract class EDDTable extends EDD {
                   + "      </gmd:aggregationInfo>\n");
 
         // aggregation, larger work       Unidata CDM  (? ncISO does this)
-        if (!CDM_OTHER.equals(cdmDataType())) {
+        if (!CDM_OTHER.equals(cdmDataType(language))) {
           writer.write(
               "      <gmd:aggregationInfo>\n"
                   + "        <gmd:MD_AggregateInformation>\n"
@@ -19539,7 +19585,7 @@ public abstract class EDDTable extends EDD {
                   + "              </gmd:authority>\n"
                   + "              <gmd:code>\n"
                   + "                <gco:CharacterString>"
-                  + cdmDataType()
+                  + cdmDataType(language)
                   + "</gco:CharacterString>\n"
                   + "              </gmd:code>\n"
                   + "            </gmd:MD_Identifier>\n"

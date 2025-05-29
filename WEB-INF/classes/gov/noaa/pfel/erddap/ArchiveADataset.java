@@ -17,6 +17,7 @@ import gov.noaa.pfel.coastwatch.pointdata.Table;
 import gov.noaa.pfel.coastwatch.util.FileVisitorDNLS;
 import gov.noaa.pfel.coastwatch.util.SSR;
 import gov.noaa.pfel.erddap.dataset.*;
+import gov.noaa.pfel.erddap.util.EDMessages;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.*;
 import java.io.Writer;
@@ -552,7 +553,8 @@ public class ArchiveADataset {
         // default is cf_role variables
         StringArray cfRoleVars = new StringArray();
         for (EDV dataVar : dataVars) {
-          String tRole = dataVar.combinedAttributes().getString("cf_role");
+          String tRole =
+              dataVar.combinedAttributes().getString(EDMessages.DEFAULT_LANGUAGE, "cf_role");
           if (tRole == null
               || tRole.equals("profile_id")) // put all profiles for a (trajectory) in one file
           continue;

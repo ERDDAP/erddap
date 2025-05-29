@@ -103,6 +103,14 @@ public class TranslateMessages {
           // "vi"
           );
 
+  public static int getIndexForLanguageCode(String languageCode) {
+    if (languageCode == null || languageCode.isEmpty()) {
+      return EDMessages.DEFAULT_LANGUAGE;
+    }
+    int langIndex = languageCodeList.indexOf(languageCode);
+    return langIndex >= 0 ? langIndex : EDMessages.DEFAULT_LANGUAGE;
+  }
+
   public static final String utilDir = "/gov/noaa/pfel/erddap/util/";
   public static final URL translatedMessagesDir =
       TranslateMessages.class.getResource(utilDir + "translatedMessages/");

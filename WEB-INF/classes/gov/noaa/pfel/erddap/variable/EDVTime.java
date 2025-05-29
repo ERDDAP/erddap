@@ -5,6 +5,7 @@
 package gov.noaa.pfel.erddap.variable;
 
 import com.cohort.array.Attributes;
+import gov.noaa.pfel.erddap.dataset.metadata.LocalizedAttributes;
 
 /**
  * This class holds information about *the* main time variable, which is like EDVTimeStamp, but has
@@ -14,15 +15,21 @@ import com.cohort.array.Attributes;
  */
 public class EDVTime extends EDVTimeStamp {
 
-  /** The constructor. This constructor gets source / sets destination actual_range. */
+  /**
+   * The constructor -- like EDV, but the destinationName, and units are standardized.
+   *
+   * @param tSourceMin is pre-scale_factor and add_offset. This takes precedence over actual_range,
+   *     actual_min, or data_min metadata.
+   * @param tSourceMax is pre-scale_factor and add_offset. This takes precedence over actual_range,
+   *     actual_max, or data_max metadata.
+   */
   public EDVTime(
       String tDatasetID,
       String tSourceName,
       Attributes tSourceAttributes,
-      Attributes tAddAttributes,
+      LocalizedAttributes tAddAttributes,
       String tSourceDataType)
       throws Throwable {
-
     super(
         tDatasetID, tSourceName, EDV.TIME_NAME, tSourceAttributes, tAddAttributes, tSourceDataType);
   }

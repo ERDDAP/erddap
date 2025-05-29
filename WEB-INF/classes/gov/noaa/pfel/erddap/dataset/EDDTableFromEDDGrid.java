@@ -21,8 +21,10 @@ import gov.noaa.pfel.coastwatch.pointdata.Table;
 import gov.noaa.pfel.coastwatch.util.SSR;
 import gov.noaa.pfel.coastwatch.util.SimpleXMLReader;
 import gov.noaa.pfel.erddap.Erddap;
+import gov.noaa.pfel.erddap.dataset.metadata.LocalizedAttributes;
 import gov.noaa.pfel.erddap.handlers.EDDTableFromEDDGridHandler;
 import gov.noaa.pfel.erddap.handlers.SaxHandlerClass;
+import gov.noaa.pfel.erddap.util.EDMessages;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.*;
 import java.io.BufferedReader;
@@ -64,7 +66,7 @@ public class EDDTableFromEDDGrid extends EDDTable {
     if (verbose) String2.log("\n*** constructing EDDTableFromEDDGrid(xmlReader)...");
     String tDatasetID = xmlReader.attributeValue("datasetID");
     EDDGrid tChildDataset = null;
-    Attributes tAddGlobalAttributes = null;
+    LocalizedAttributes tAddGlobalAttributes = null;
     String tAccessibleTo = null;
     String tGraphsAccessibleTo = null;
     boolean tAccessibleViaFiles = EDStatic.config.defaultAccessibleViaFiles;
@@ -191,11 +193,11 @@ public class EDDTableFromEDDGrid extends EDDTable {
       String tDefaultDataQuery,
       String tDefaultGraphQuery,
       String tAddVariablesWhere,
-      Attributes tAddGlobalAttributes,
+      LocalizedAttributes tAddGlobalAttributes,
       int tReloadEveryNMinutes, // int tUpdateEveryNMillis,
       EDDGrid oChildDataset)
       throws Throwable {
-
+    int language = EDMessages.DEFAULT_LANGUAGE;
     if (verbose) String2.log("\n*** constructing EDDTableFromEDDGrid " + tDatasetID);
     long constructionStartMillis = System.currentTimeMillis();
     String errorInMethod = "Error in EDDTableFromEDDGrid(" + tDatasetID + ") constructor:\n";
@@ -257,21 +259,25 @@ public class EDDTableFromEDDGrid extends EDDTable {
 
     // global attributes
     localSourceUrl = tChildDataset.localSourceUrl;
-    sourceGlobalAttributes = tChildDataset.combinedGlobalAttributes;
-    addGlobalAttributes = tAddGlobalAttributes == null ? new Attributes() : tAddGlobalAttributes;
+    sourceGlobalAttributes = tChildDataset.combinedGlobalAttributes.toAttributes(language);
+    addGlobalAttributes =
+        tAddGlobalAttributes == null ? new LocalizedAttributes() : tAddGlobalAttributes;
     // cdm_data_type=TimeSeries would be nice, but there is no timeseries_id variable
-    addGlobalAttributes.add(
+    addGlobalAttributes.set(
+        language,
         "cdm_data_type",
         (tChildDataset.lonIndex() >= 0 && tChildDataset.latIndex() >= 0) ? "Point" : "Other");
     combinedGlobalAttributes =
-        new Attributes(addGlobalAttributes, sourceGlobalAttributes); // order is important
-    String tLicense = combinedGlobalAttributes.getString("license");
+        new LocalizedAttributes(addGlobalAttributes, sourceGlobalAttributes); // order is important
+    String tLicense = combinedGlobalAttributes.getString(language, "license");
     if (tLicense != null)
       combinedGlobalAttributes.set(
-          "license", String2.replaceAll(tLicense, "[standard]", EDStatic.messages.standardLicense));
+          language,
+          "license",
+          String2.replaceAll(tLicense, "[standard]", EDStatic.messages.standardLicense));
     combinedGlobalAttributes.removeValue("\"null\"");
 
-    maxAxis0 = combinedGlobalAttributes.getInt("maxAxis0");
+    maxAxis0 = combinedGlobalAttributes.getInt(language, "maxAxis0");
     if (maxAxis0 == Integer.MAX_VALUE) maxAxis0 = DEFAULT_MAX_AXIS0;
 
     // specify what sourceCanConstrain
@@ -294,8 +300,8 @@ public class EDDTableFromEDDGrid extends EDDTable {
               ? tChildDataset.axisVariables[tChildDatasetNAV - 1 - dv]
               : tChildDataset.dataVariables[dv - tChildDatasetNAV];
       String tSourceName = gridVar.destinationName();
-      Attributes tSourceAtts = gridVar.combinedAttributes();
-      Attributes tAddAtts = new Attributes();
+      Attributes tSourceAtts = gridVar.combinedAttributes().toAttributes(language);
+      LocalizedAttributes tAddAtts = new LocalizedAttributes();
       String tDataType = gridVar.destinationDataType();
       PAOne tMin = new PAOne(gridVar.destinationMin()); // make/use a copy
       PAOne tMax = new PAOne(gridVar.destinationMax());
@@ -319,9 +325,9 @@ public class EDDTableFromEDDGrid extends EDDTable {
           depthIndex = dv;
         }
         case EDV.TIME_NAME -> {
-          tAddAtts.add("data_min", "" + tMin); // data_min/max have priority
+          tAddAtts.set(language, "data_min", "" + tMin); // data_min/max have priority
 
-          tAddAtts.add("data_max", "" + tMax); // tMin tMax are epochSeconds
+          tAddAtts.set(language, "data_max", "" + tMax); // tMin tMax are epochSeconds
 
           newVar =
               new EDVTime(

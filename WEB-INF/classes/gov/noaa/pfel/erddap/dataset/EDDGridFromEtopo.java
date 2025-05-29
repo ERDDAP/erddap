@@ -24,8 +24,10 @@ import gov.noaa.pfel.coastwatch.sgt.SgtMap;
 import gov.noaa.pfel.coastwatch.util.BufferedReadRandomAccessFile;
 import gov.noaa.pfel.coastwatch.util.SimpleXMLReader;
 import gov.noaa.pfel.erddap.Erddap;
+import gov.noaa.pfel.erddap.dataset.metadata.LocalizedAttributes;
 import gov.noaa.pfel.erddap.handlers.EDDGridFromEtopoHandler;
 import gov.noaa.pfel.erddap.handlers.SaxHandlerClass;
+import gov.noaa.pfel.erddap.util.EDMessages;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.*;
 import java.io.BufferedOutputStream;
@@ -134,6 +136,7 @@ public class EDDGridFromEtopo extends EDDGrid {
       throws Throwable {
 
     if (verbose) String2.log("\n*** constructing EDDGridFromEtopo " + tDatasetID);
+    int language = EDMessages.DEFAULT_LANGUAGE;
     long constructionStartMillis = System.currentTimeMillis();
     String errorInMethod = "Error in EDDGridFromEtopo(" + tDatasetID + ") constructor:\n";
 
@@ -188,9 +191,9 @@ public class EDDGridFromEtopo extends EDDGrid {
             + (is180 ? "-180 to 180)" : "0 to 360)")
             + ", (Ice Sheet Surface)");
 
-    addGlobalAttributes = new Attributes();
+    addGlobalAttributes = new LocalizedAttributes();
     combinedGlobalAttributes =
-        new Attributes(addGlobalAttributes, sourceGlobalAttributes); // order is important
+        new LocalizedAttributes(addGlobalAttributes, sourceGlobalAttributes); // order is important
     combinedGlobalAttributes.removeValue("\"null\"");
 
     // make the axisVariables
@@ -201,7 +204,7 @@ public class EDDGridFromEtopo extends EDDGrid {
             tDatasetID,
             EDV.LAT_NAME,
             new Attributes(),
-            new Attributes(),
+            new LocalizedAttributes(),
             new DoubleArray(DataHelper.getRegularArray(fileNLats, -90, 1 / 60.0)));
     lonIndex = 1;
     axisVariables[lonIndex] =
@@ -209,7 +212,7 @@ public class EDDGridFromEtopo extends EDDGrid {
             tDatasetID,
             EDV.LON_NAME,
             new Attributes(),
-            new Attributes(),
+            new LocalizedAttributes(),
             new DoubleArray(DataHelper.getRegularArray(fileNLons, is180 ? -180 : 0, 1 / 60.0)));
 
     // make the dataVariable
@@ -231,8 +234,8 @@ public class EDDGridFromEtopo extends EDDGrid {
     dAtt.set("colorBarPalette", "Topography");
     dAtt.set("units", "m");
     dataVariables = new EDV[1];
-    dataVariables[0] = new EDV(datasetID, "altitude", "", dAtt, new Attributes(), "short");
-    dataVariables[0].setActualRangeFromDestinationMinMax();
+    dataVariables[0] = new EDV(datasetID, "altitude", "", dAtt, new LocalizedAttributes(), "short");
+    dataVariables[0].setActualRangeFromDestinationMinMax(language);
 
     // ensure the setup is valid
     ensureValid();
