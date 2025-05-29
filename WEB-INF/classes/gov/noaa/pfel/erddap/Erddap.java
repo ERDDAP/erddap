@@ -4098,7 +4098,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
         "(unknown)", "String", "boolean", "byte", "short", "int", "long", "float", "double"
       };
       String dataTypeHelp = EDStatic.messages.dpf_dataTypeHelpAr[language];
-      int ioosUnknown = EDV.IOOS_CATEGORIES.indexOf("Unknown");
+      int ioosUnknown = String2.caseInsensitiveIndexOf(EDV.IOOS_CATEGORIES, "Unknown");
       String ioosCategoryHelp = EDStatic.messages.dpf_ioosCategoryHelpAr[language];
 
       String tYourName = request.getParameter("yourName"),
@@ -4136,7 +4136,8 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
         tDataType[var] =
             Math.max(0, String2.indexOf(dataTypeOptions, request.getParameter("dataType" + var)));
         tIoosCategory[var] =
-            EDV.IOOS_CATEGORIES.indexOf(request.getParameter("ioos_category" + var));
+            String2.caseInsensitiveIndexOf(
+                EDV.IOOS_CATEGORIES, request.getParameter("ioos_category" + var));
         if (tIoosCategory[var] < 0) tIoosCategory[var] = ioosUnknown;
       }
 
