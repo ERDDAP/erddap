@@ -103,7 +103,7 @@ class EDDTableFromAsciiFilesTests {
             + "    String _CoordinateAxisType \"Time\";\n"
             + "    Float64 actual_range 1.1045376e+9, 1.167606e+9;\n"
             + "    String axis \"T\";\n"
-            + "    String ioos_category \"time\";\n" // Make sure lowercase categories pass
+            + "    String ioos_category \"Time\";\n" // Input lowercase, here uppercase.
             + "    String long_name \"Time\";\n"
             + "    String standard_name \"time\";\n"
             + "    String time_origin \"01-JAN-1970 00:00:00\";\n"
