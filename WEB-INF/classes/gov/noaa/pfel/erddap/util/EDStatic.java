@@ -263,6 +263,7 @@ public class EDStatic {
   public static final String startupLocalDateTime = Calendar2.getCurrentISODateTimeStringLocalTZ();
   public static long lastMajorLoadDatasetsStartTimeMillis = System.currentTimeMillis();
   public static long lastMajorLoadDatasetsStopTimeMillis = System.currentTimeMillis() - 1;
+  public static long lastCacheClear = System.currentTimeMillis();
   // Currently Loading Dataset
   public static volatile boolean cldMajor = false;
   public static volatile int cldNTry = 0; //   0=none actively loading
@@ -4264,5 +4265,62 @@ public class EDStatic {
       throw new SimpleException("**SEMVER_ERROR** Could not get semver from version: " + version);
     }
     return semver;
+  }
+
+  public static void clearCache(String source, boolean systemLowMemory) {
+    String2.log(source + " start");
+    // If the system is low on disk space try a reduced time to clear additional files.
+    long cacheTime = System.currentTimeMillis() - EDStatic.config.cacheMillis;
+    // delete old files in cache
+    int nCacheFiles =
+        File2.deleteIfOld(
+            EDStatic.config.fullCacheDirectory, // won't throw exception
+            cacheTime,
+            true,
+            false); // false: important not to delete empty dirs
+    int nPublicFiles =
+        File2.deleteIfOld(
+            EDStatic.config.fullPublicDirectory,
+            cacheTime,
+            true,
+            false); // false: important not to delete empty dirs
+    String2.log(
+        source
+            + " "
+            + nPublicFiles
+            + " files remain in "
+            + EDStatic.config.fullPublicDirectory
+            + "\n"
+            + nCacheFiles
+            + " files remain in "
+            + EDStatic.config.fullCacheDirectory
+            + " and subdirectories.");
+
+    String2.log(
+        "After deleting decompressed files not used in the last "
+            + EDStatic.decompressedCacheMaxMinutesOld
+            + " minutes, nRemain="
+            + File2.deleteIfOld(
+                EDStatic.config.fullDecompressedDirectory,
+                System.currentTimeMillis()
+                    - EDStatic.decompressedCacheMaxMinutesOld * Calendar2.MILLIS_PER_MINUTE,
+                true,
+                false)); // recursive, deleteEmptySubdirectories
+
+    if (systemLowMemory) {
+      FileVisitorDNLS.pruneCache(
+          EDStatic.config.fullCacheDirectory,
+          EDStatic.config.lowMemCacheGbLimit * Math2.BytesPerGB,
+          1.0);
+      FileVisitorDNLS.pruneCache(
+          EDStatic.config.fullPublicDirectory,
+          EDStatic.config.lowMemCacheGbLimit * Math2.BytesPerGB,
+          1.0);
+      FileVisitorDNLS.pruneCache(
+          EDStatic.config.fullDecompressedDirectory,
+          decompressedCacheMaxGB * Math2.BytesPerGB,
+          FileVisitorDNLS.PRUNE_CACHE_DEFAULT_FRACTION);
+    }
+    EDStatic.lastCacheClear = System.currentTimeMillis();
   }
 }

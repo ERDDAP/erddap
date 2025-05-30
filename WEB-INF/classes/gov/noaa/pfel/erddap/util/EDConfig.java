@@ -173,7 +173,10 @@ public class EDConfig {
   public static final int DEFAULT_updateMaxEvents = 10;
   public static final int DEFAULT_unusualActivityFailPercent = 25;
   public static final boolean DEFAULT_showLoadErrorsOnStatusPage = true;
+  public static final int DEFAULT_lowMemCacheGbLimit = 4;
   public long cacheMillis = DEFAULT_cacheMinutes * Calendar2.MILLIS_PER_MINUTE;
+  public long cacheClearMillis = cacheMillis / 4;
+  public int lowMemCacheGbLimit = DEFAULT_lowMemCacheGbLimit;
   public String drawLandMask = DEFAULT_drawLandMask;
   public boolean emailDiagnosticsToErdData = true;
   public Color graphBackgroundColor = new Color(DEFAULT_graphBackgroundColorInt, true); // hasAlpha
@@ -242,6 +245,7 @@ public class EDConfig {
   @FeatureFlag public boolean redirectDocumentationToGitHubIo = true;
   @FeatureFlag public boolean useSisISO19115 = false;
   @FeatureFlag public boolean useHeadersForUrl = false;
+  @FeatureFlag public boolean taskCacheClear = true;
 
   public EDConfig(String webInfParentDirectory) throws Exception {
     fullPaletteDirectory = webInfParentDirectory + "WEB-INF/cptfiles/";
@@ -576,6 +580,10 @@ public class EDConfig {
 
     // v2.00: these are now also in datasets.xml
     cacheMillis = getSetupEVInt(setup, ev, "cacheMinutes", DEFAULT_cacheMinutes) * 60000L;
+    cacheClearMillis =
+        getSetupEVInt(setup, ev, "cacheClearMinutes", DEFAULT_cacheMinutes / 4) * 60000L;
+    taskCacheClear = getSetupEVBoolean(setup, ev, "taskCacheClear", true);
+    lowMemCacheGbLimit = getSetupEVInt(setup, ev, "lowMemCacheGbLimit", DEFAULT_lowMemCacheGbLimit);
     loadDatasetsMinMillis =
         Math.max(
                 1,

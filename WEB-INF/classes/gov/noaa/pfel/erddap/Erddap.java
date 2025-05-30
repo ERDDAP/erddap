@@ -902,12 +902,21 @@ public class Erddap extends HttpServlet {
       EDStatic.tally.add("Protocol (since startup)", protocol);
       EDStatic.tally.add("Protocol (since last daily report)", protocol);
 
-      long responseTime = System.currentTimeMillis() - doGetTime;
+      long endTime = System.currentTimeMillis();
+      long responseTime = endTime - doGetTime;
       String2.distributeTime(responseTime, EDStatic.responseTimesDistributionLoadDatasets);
       String2.distributeTime(responseTime, EDStatic.responseTimesDistribution24);
       String2.distributeTime(responseTime, EDStatic.responseTimesDistributionTotal);
 
       recordRequestResponseTime(response.getStatus(), requestUrl, responseTime);
+
+      if (EDStatic.config.taskCacheClear
+          && endTime - EDStatic.lastCacheClear > EDStatic.config.cacheClearMillis) {
+        EDStatic.addTask(new Object[] {TaskThread.TASK_CLEAR_CACHE});
+        // The cache isn't cleared now, but it will be soon. Set cache clear here to avoid queueing
+        // multiple tasks.
+        EDStatic.lastCacheClear = endTime;
+      }
 
       if (verbose)
         String2.log(
@@ -953,6 +962,15 @@ public class Erddap extends HttpServlet {
                       : responseTime >= 10000 ? "  (>10s!)" : ""));
 
         // if sendErrorCode fails because response.isCommitted(), it throws ServletException
+
+        if (t instanceof IOException) {
+          String errorMessage = t.getMessage().toLowerCase();
+          if (errorMessage.contains("no space left on device")
+              || errorMessage.contains("not enough space on the disk")
+              || errorMessage.contains("disk full")) {
+            EDStatic.clearCache("ERROR_OUT_OF_DISK", true /* system low memory */);
+          }
+        }
         try {
           EDStatic.sendError(requestNumber, request, response, t);
         } catch (Throwable t3) {

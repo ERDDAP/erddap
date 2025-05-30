@@ -5,6 +5,8 @@
 package com.cohort.util;
 
 import com.google.common.collect.ImmutableList;
+import gov.noaa.pfel.erddap.util.EDStatic;
+import java.io.File;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.MathContext;
@@ -76,6 +78,8 @@ public class Math2 {
   public static final AtomicInteger gcCallCount =
       new AtomicInteger(0); // since last Major LoadDatasets
   public static volatile long timeGCLastCalled = 0;
+
+  public static final long alwaysOkayDiskRequest = 10000000; // 10 mb
 
   /**
    * These are *not* final so EDStatic can replace them with translated Strings. These are
@@ -512,6 +516,59 @@ public class Math2 {
     // always wait at least shortSleep so we can see the effects of the gc
     sleep(Math.max(shortSleep, millis) - (System.currentTimeMillis() - time));
     return lastUsingMemory = getMemoryInUse();
+  }
+
+  /**
+   * This throws an exception if the requested nBytes leads to out of disk space. This isn't
+   * perfect, but is better than nothing. Future: locks? synchronization? ...?
+   *
+   * @param nBytes size of data structure that caller plans to create
+   * @param path file path where files will be stored
+   * @param attributeTo for a WARNING or ERROR message, this is the string to which this
+   *     not-enough-memory issue should be attributed.
+   * @throws RuntimeException if the requested nBytes are unlikely to be available.
+   */
+  public static void ensureDiskAvailable(
+      final long nBytes, final String path, final String attributeTo) {
+    // Danger: this method can reject any request for lots of memory,
+    //  even if it was for ERDDAP management (i.e., shooting myself in the foot).
+
+    // this is a little risky, but avoids frequent calls to calculate memoryInUse
+    if (nBytes < alwaysOkayDiskRequest) return;
+
+    File file = new File(path);
+    long usableSpace = file.getUsableSpace();
+
+    // Check if the file will fit in 1/2 the remaining space to try to account for
+    // other possible file writing.
+    // request is fine
+    if (nBytes < usableSpace / 2) { // it'll work
+      return;
+    }
+
+    // Request a task thread to clear cache.
+    EDStatic.clearCache("DISK_CHECK_LOW", true);
+
+    file = new File(path);
+    usableSpace = file.getUsableSpace();
+
+    // request is fine
+    if (nBytes < usableSpace / 2) { // it'll work
+      return;
+    }
+
+    // not currently enough memory
+    String msg =
+        memoryTooMuchData
+            + "  "
+            + MessageFormat.format(
+                memoryThanCurrentlySafe,
+                "" + (nBytes / BytesPerMB),
+                "" + (usableSpace / BytesPerMB))
+            + (attributeTo == null || attributeTo.length() == 0 ? "" : " (" + attributeTo + ")");
+    String2.log("ERROR: " + msg + "\n" + MustBe.stackTrace());
+    String2.flushLog();
+    throw new RuntimeException(msg);
   }
 
   /**

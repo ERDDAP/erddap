@@ -52,6 +52,9 @@ public class TaskThread extends Thread {
    */
   public static final Integer TASK_DOWNLOAD = 4;
 
+  /** If taskOA[0].equals(TASK_CLEAR_CACHE) */
+  public static final Integer TASK_CLEAR_CACHE = 5;
+
   /**
    * Set this to true (by calling verbose=true in your program, not by changing the code here) if
    * you want lots of diagnostic messages sent to String2.log.
@@ -217,6 +220,9 @@ public class TaskThread extends Thread {
               fullFileName,
               true); // tryToUseCompression, throws Exception
           if (lastMod < Long.MAX_VALUE) File2.setLastModified(fullFileName, lastMod);
+
+        } else if (taskType.equals(TASK_CLEAR_CACHE)) {
+          EDStatic.clearCache("TASK_CLEAR_CACHE", false);
 
           // UNKNOWN taskType
         } else {

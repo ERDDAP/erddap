@@ -172,6 +172,7 @@ public class TableWriterAll extends TableWriter {
     long newTotalNRows = totalNRows + table.nRows();
     Math2.ensureArraySizeOkay(newTotalNRows, attributeTo);
     Math2.ensureMemoryAvailable(newTotalNRows * 8, attributeTo);
+    Math2.ensureDiskAvailable(newTotalNRows * 8, EDStatic.config.fullCacheDirectory, attributeTo);
 
     // do everyTime stuff
     // write the data

@@ -477,6 +477,7 @@ public class ArchiveADataset {
                   "ArchiveADataset", // pseudo ipAddress
                   baseRequestUrl + ".nc",
                   query.toString(),
+                  archiveDataDir,
                   fullName,
                   true,
                   0); // keepUnusedAxes, lonAdjust

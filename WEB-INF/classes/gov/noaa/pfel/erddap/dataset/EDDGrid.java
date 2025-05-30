@@ -5858,6 +5858,7 @@ public abstract class EDDGrid extends EDD {
       String ipAddress,
       String requestUrl,
       String userDapQuery,
+      String dir,
       String fullFileName,
       boolean keepUnusedAxes,
       double lonAdjust)
@@ -5993,6 +5994,7 @@ public abstract class EDDGrid extends EDD {
         EDStatic.tally.add("Large Request, IP address (since last daily report)", ipAddress);
         EDStatic.tally.add("Large Request, IP address (since startup)", ipAddress);
       }
+      Math2.ensureDiskAvailable(gda.totalNBytes(), dir, "EDDGrid.saveAsNc");
 
       NetcdfFormatWriter ncWriter = null;
       // ** Then get gridDataAllAccessor
@@ -6100,6 +6102,7 @@ public abstract class EDDGrid extends EDD {
           NcHelper.setAttributes(nc3Mode, newVars[dv], atts, paType.isUnsigned());
         }
 
+        Math2.ensureDiskAvailable(gda.totalNBytes(), dir, "EDDGrid.saveAsNc");
         // leave "define" mode
         ncWriter = nc.build();
 
