@@ -73,27 +73,7 @@ public class RunLoadDatasets extends Thread {
                 + Calendar2.getCurrentISODateTimeStringLocalTZ());
 
         // delete old files in cache
-        int nCacheFiles =
-            File2.deleteIfOld(
-                EDStatic.config.fullCacheDirectory, // won't throw exception
-                System.currentTimeMillis() - EDStatic.config.cacheMillis,
-                true,
-                false); // false: important not to delete empty dirs
-        int nPublicFiles =
-            File2.deleteIfOld(
-                EDStatic.config.fullPublicDirectory,
-                System.currentTimeMillis() - EDStatic.config.cacheMillis,
-                true,
-                false); // false: important not to delete empty dirs
-        String2.log(
-            nPublicFiles
-                + " files remain in "
-                + EDStatic.config.fullPublicDirectory
-                + "\n"
-                + nCacheFiles
-                + " files remain in "
-                + EDStatic.config.fullCacheDirectory
-                + " and subdirectories.");
+        EDStatic.clearCache("RUN_LOAD_DATASETS_CACHE_CLEAR", false);
 
         // start a new loadDatasets thread
         lastMajorLoadDatasetsStartTimeMillis = System.currentTimeMillis();
