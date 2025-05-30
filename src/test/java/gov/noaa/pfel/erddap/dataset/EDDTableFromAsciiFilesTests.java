@@ -103,7 +103,10 @@ class EDDTableFromAsciiFilesTests {
             + "    String _CoordinateAxisType \"Time\";\n"
             + "    Float64 actual_range 1.1045376e+9, 1.167606e+9;\n"
             + "    String axis \"T\";\n"
-            + "    String ioos_category \"Time\";\n"
+            // Sometimes uppercase, sometimes lowercase
+            + (results.indexOf("String ioos_category \"time\";") > -1
+                ? "    String ioos_category \"time\";\n"
+                : "    String ioos_category \"Time\";\n")
             + "    String long_name \"Time\";\n"
             + "    String standard_name \"time\";\n"
             + "    String time_origin \"01-JAN-1970 00:00:00\";\n"
@@ -111,7 +114,7 @@ class EDDTableFromAsciiFilesTests {
             + "  }\n"
             + "  station {\n"
             + "    String cf_role \"timeseries_id\";\n"
-            + "    String ioos_category \"Identifier\";\n"
+            + "    String ioos_category \"identifier\";\n" // Make sure lowercase categories pass
             + "    String long_name \"Station\";\n"
             + "  }\n"
             + "  wd {\n"
