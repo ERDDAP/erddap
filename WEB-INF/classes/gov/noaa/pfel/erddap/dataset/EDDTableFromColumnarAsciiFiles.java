@@ -23,7 +23,6 @@ import gov.noaa.pfel.coastwatch.util.SimpleXMLReader;
 import gov.noaa.pfel.erddap.dataset.metadata.LocalizedAttributes;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.*;
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 
@@ -70,7 +69,7 @@ public class EDDTableFromColumnarAsciiFiles extends EDDTableFromFiles {
       String tDefaultDataQuery,
       String tDefaultGraphQuery,
       LocalizedAttributes tAddGlobalAttributes,
-      ArrayList<DataVariableInfo> tDataVariables,
+      List<DataVariableInfo> tDataVariables,
       int tReloadEveryNMinutes,
       int tUpdateEveryNMillis,
       String tFileDir,

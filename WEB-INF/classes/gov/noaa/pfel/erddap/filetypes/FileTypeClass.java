@@ -24,4 +24,10 @@ public @interface FileTypeClass {
   boolean availableGrid() default true;
 
   boolean isImage() default false;
+
+  boolean addContentDispositionHeader() default true;
+
+  String contentType();
+
+  String contentDescription() default "";
 }

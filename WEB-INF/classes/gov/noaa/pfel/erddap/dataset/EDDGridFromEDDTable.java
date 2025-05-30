@@ -31,6 +31,7 @@ import java.io.DataInputStream;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 /**
  * This class represents a grid dataset from an EDDTable source.
@@ -271,8 +272,8 @@ public class EDDGridFromEDDTable extends EDDGrid {
       String tDefaultDataQuery,
       String tDefaultGraphQuery,
       LocalizedAttributes tAddGlobalAttributes,
-      ArrayList<AxisVariableInfo> tAxisVariables,
-      ArrayList<DataVariableInfo> tDataVariables,
+      List<AxisVariableInfo> tAxisVariables,
+      List<DataVariableInfo> tDataVariables,
       int tReloadEveryNMinutes,
       int tUpdateEveryNMillis,
       int tGapThreshold,

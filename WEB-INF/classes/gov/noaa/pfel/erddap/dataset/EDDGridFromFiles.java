@@ -46,6 +46,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.TimeZone;
 import java.util.concurrent.Callable;
@@ -186,8 +187,8 @@ public abstract class EDDGridFromFiles extends EDDGrid implements WatchUpdateHan
     String tFgdcFile = null;
     String tIso19115File = null;
     LocalizedAttributes tGlobalAttributes = null;
-    ArrayList<AxisVariableInfo> tAxisVariables = new ArrayList<>();
-    ArrayList<DataVariableInfo> tDataVariables = new ArrayList<>();
+    List<AxisVariableInfo> tAxisVariables = new ArrayList<>();
+    List<DataVariableInfo> tDataVariables = new ArrayList<>();
     int tReloadEveryNMinutes = Integer.MAX_VALUE;
     int tUpdateEveryNMillis = 0;
     String tFileDir = null;
@@ -490,8 +491,8 @@ public abstract class EDDGridFromFiles extends EDDGrid implements WatchUpdateHan
       String tDefaultDataQuery,
       String tDefaultGraphQuery,
       LocalizedAttributes tAddGlobalAttributes,
-      ArrayList<AxisVariableInfo> tAxisVariables,
-      ArrayList<DataVariableInfo> tDataVariables,
+      List<AxisVariableInfo> tAxisVariables,
+      List<DataVariableInfo> tDataVariables,
       int tReloadEveryNMinutes,
       int tUpdateEveryNMillis,
       String tFileDir,

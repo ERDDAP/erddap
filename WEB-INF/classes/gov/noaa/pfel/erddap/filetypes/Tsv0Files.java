@@ -6,7 +6,8 @@ import gov.noaa.pfel.erddap.util.EDStatic;
     fileTypeExtension = ".tsv",
     fileTypeName = ".tsv0",
     infoUrl = "https://jkorpela.fi/TSV.html",
-    versionAdded = "1.48.0")
+    versionAdded = "1.48.0",
+    contentType = "text/tab-separated-values")
 public class Tsv0Files extends SeparatedValue {
 
   public Tsv0Files() {

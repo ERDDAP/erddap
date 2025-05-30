@@ -21,7 +21,7 @@ import gov.noaa.pfel.coastwatch.util.FileVisitorDNLS;
 import gov.noaa.pfel.erddap.dataset.metadata.LocalizedAttributes;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.*;
-import java.util.ArrayList;
+import java.util.List;
 
 /**
  * This class represents gridded data from an audio file where all files have the same number of
@@ -45,8 +45,8 @@ public class EDDGridFromAudioFiles extends EDDGridFromFiles {
       String tDefaultDataQuery,
       String tDefaultGraphQuery,
       LocalizedAttributes tAddGlobalAttributes,
-      ArrayList<AxisVariableInfo> tAxisVariables,
-      ArrayList<DataVariableInfo> tDataVariables,
+      List<AxisVariableInfo> tAxisVariables,
+      List<DataVariableInfo> tDataVariables,
       int tReloadEveryNMinutes,
       int tUpdateEveryNMillis,
       String tFileDir,

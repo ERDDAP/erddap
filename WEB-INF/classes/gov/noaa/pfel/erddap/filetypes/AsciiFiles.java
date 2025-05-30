@@ -19,7 +19,10 @@ import java.io.Writer;
     fileTypeExtension = ".asc",
     fileTypeName = ".asc",
     infoUrl = "https://docs.opendap.org/index.php/UserGuideOPeNDAPMessages#ASCII_Service",
-    versionAdded = "1.0.0")
+    versionAdded = "1.0.0",
+    contentType = "text/plain",
+    contentDescription = "dods-data",
+    addContentDispositionHeader = false)
 public class AsciiFiles extends TableWriterFileType {
 
   @Override

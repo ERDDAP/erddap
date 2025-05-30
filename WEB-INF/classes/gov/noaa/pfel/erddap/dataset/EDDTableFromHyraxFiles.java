@@ -27,9 +27,9 @@ import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.util.TaskThread;
 import gov.noaa.pfel.erddap.variable.*;
 import java.io.File;
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 
 /**
  * This class downloads data from a Hyrax data server with lots of files into .nc files in the
@@ -84,7 +84,7 @@ public class EDDTableFromHyraxFiles extends EDDTableFromFiles {
       String tDefaultDataQuery,
       String tDefaultGraphQuery,
       LocalizedAttributes tAddGlobalAttributes,
-      ArrayList<DataVariableInfo> tDataVariables,
+      List<DataVariableInfo> tDataVariables,
       int tReloadEveryNMinutes,
       int tUpdateEveryNMillis,
       String tFileDir,

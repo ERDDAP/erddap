@@ -25,7 +25,8 @@ import ucar.nc2.write.NetcdfFileFormat;
     infoUrl = "https://trac.osgeo.org/geotiff/",
     versionAdded = "1.0.0",
     availableTable = false,
-    isImage = true)
+    isImage = true,
+    contentType = "image/tiff")
 public class GeotifFiles extends ImageTypes {
 
   @Override

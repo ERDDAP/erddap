@@ -9,7 +9,9 @@ import gov.noaa.pfel.erddap.util.EDStatic;
     fileTypeName = ".dataTable",
     infoUrl = "https://developers.google.com/chart/interactive/docs/reference#dataparam",
     versionAdded = "1.84.0",
-    availableGrid = false)
+    availableGrid = false,
+    contentType = "application/json",
+    addContentDispositionHeader = false)
 public class DataTableFiles extends TableWriterFileType {
 
   @Override

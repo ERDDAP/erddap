@@ -11,7 +11,8 @@ import java.io.OutputStream;
     fileTypeExtension = ".xml",
     fileTypeName = ".iso19115",
     infoUrl = "https://en.wikipedia.org/wiki/Geospatial_metadata",
-    versionAdded = "1.0.0")
+    versionAdded = "1.0.0",
+    contentType = "application/xml")
 public class Iso19115Files extends FileTypeInterface {
 
   @Override

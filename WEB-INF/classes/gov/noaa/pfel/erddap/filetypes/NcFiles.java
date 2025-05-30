@@ -11,7 +11,8 @@ import ucar.nc2.write.NetcdfFileFormat;
     fileTypeExtension = ".nc",
     fileTypeName = ".nc",
     infoUrl = "https://www.unidata.ucar.edu/software/netcdf/",
-    versionAdded = "1.0.0")
+    versionAdded = "1.0.0",
+    contentType = "application/x-netcdf")
 public class NcFiles extends CacheLockFiles {
 
   public NcFiles() {

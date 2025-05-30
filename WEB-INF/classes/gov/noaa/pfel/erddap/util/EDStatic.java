@@ -995,7 +995,7 @@ public class EDStatic {
     if (EDStatic.config.useHeadersForUrl
         && request != null
         && request.getHeader("Host") != null
-        && (request.getScheme() == "https" || !request.getHeader("Host").contains(":"))) {
+        && ("https".equals(request.getScheme()) || !request.getHeader("Host").contains(":"))) {
       httpsUrl = "https://" + request.getHeader("Host") + "/" + config.warName;
     }
     return httpsUrl + (language == 0 ? "" : "/" + TranslateMessages.languageCodeList.get(language));

@@ -9,7 +9,7 @@ import com.cohort.array.StringArray;
 import gov.noaa.pfel.erddap.dataset.metadata.LocalizedAttributes;
 import gov.noaa.pfel.erddap.variable.AxisVariableInfo;
 import gov.noaa.pfel.erddap.variable.DataVariableInfo;
-import java.util.ArrayList;
+import java.util.List;
 
 /**
  * This class represents gridded data aggregated from a collection of NetCDF .nc
@@ -71,8 +71,8 @@ public class EDDGridFromNcFilesUnpacked extends EDDGridFromNcLow {
       String tDefaultDataQuery,
       String tDefaultGraphQuery,
       LocalizedAttributes tAddGlobalAttributes,
-      ArrayList<AxisVariableInfo> tAxisVariables,
-      ArrayList<DataVariableInfo> tDataVariables,
+      List<AxisVariableInfo> tAxisVariables,
+      List<DataVariableInfo> tDataVariables,
       int tReloadEveryNMinutes,
       int tUpdateEveryNMillis,
       String tFileDir,

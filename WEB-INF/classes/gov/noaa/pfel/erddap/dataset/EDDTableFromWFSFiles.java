@@ -21,7 +21,7 @@ import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
+import java.util.List;
 
 /**
  * This class represents a table of data from a file downloaded from a WFS server.
@@ -73,7 +73,7 @@ public class EDDTableFromWFSFiles extends EDDTableFromAsciiFiles {
       String tDefaultDataQuery,
       String tDefaultGraphQuery,
       LocalizedAttributes tAddGlobalAttributes,
-      ArrayList<DataVariableInfo> tDataVariables,
+      List<DataVariableInfo> tDataVariables,
       int tReloadEveryNMinutes,
       int tUpdateEveryNMillis,
       String tFileDir,

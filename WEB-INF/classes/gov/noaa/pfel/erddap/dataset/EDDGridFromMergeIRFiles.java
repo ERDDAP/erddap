@@ -25,7 +25,7 @@ import java.nio.file.FileSystemException;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
+import java.util.List;
 
 /**
  * This class represents gridded data aggregated from a collection of NCEP/CPC 4km Global (60N -
@@ -61,8 +61,8 @@ public class EDDGridFromMergeIRFiles extends EDDGridFromFiles {
       String tDefaultDataQuery,
       String tDefaultGraphQuery,
       LocalizedAttributes tAddGlobalAttributes,
-      ArrayList<AxisVariableInfo> tAxisVariables,
-      ArrayList<DataVariableInfo> tDataVariables,
+      List<AxisVariableInfo> tAxisVariables,
+      List<DataVariableInfo> tDataVariables,
       int tReloadEveryNMinutes,
       int tUpdateEveryNMillis,
       String tFileDir,

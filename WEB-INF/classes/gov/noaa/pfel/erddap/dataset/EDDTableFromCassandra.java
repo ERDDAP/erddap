@@ -460,7 +460,7 @@ public class EDDTableFromCassandra extends EDDTable {
       String tDefaultGraphQuery,
       String tAddVariablesWhere,
       LocalizedAttributes tAddGlobalAttributes,
-      ArrayList<DataVariableInfo> tDataVariables,
+      List<DataVariableInfo> tDataVariables,
       int tReloadEveryNMinutes,
       String tLocalSourceUrl,
       String tConnectionProperties[],

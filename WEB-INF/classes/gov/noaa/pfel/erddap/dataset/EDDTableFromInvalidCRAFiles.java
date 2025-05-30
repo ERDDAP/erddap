@@ -19,7 +19,7 @@ import gov.noaa.pfel.coastwatch.util.FileVisitorDNLS;
 import gov.noaa.pfel.erddap.dataset.metadata.LocalizedAttributes;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.*;
-import java.util.ArrayList;
+import java.util.List;
 
 /**
  * This class represents a table of data from a collection of invalid NCEI Contiguous Ragged Array
@@ -88,7 +88,7 @@ public class EDDTableFromInvalidCRAFiles extends EDDTableFromFiles {
       String tDefaultDataQuery,
       String tDefaultGraphQuery,
       LocalizedAttributes tAddGlobalAttributes,
-      ArrayList<DataVariableInfo> tDataVariables,
+      List<DataVariableInfo> tDataVariables,
       int tReloadEveryNMinutes,
       int tUpdateEveryNMillis,
       String tFileDir,

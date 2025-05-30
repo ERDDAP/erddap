@@ -13,7 +13,10 @@ import java.io.Writer;
     fileTypeName = ".das",
     infoUrl =
         "https://docs.opendap.org/index.php/UserGuideOPeNDAPMessages#Dataset_Attribute_Structure",
-    versionAdded = "1.0.0")
+    versionAdded = "1.0.0",
+    contentType = "text/csv",
+    contentDescription = "dods-das",
+    addContentDispositionHeader = false)
 public class DasFiles extends FileTypeInterface {
 
   @Override

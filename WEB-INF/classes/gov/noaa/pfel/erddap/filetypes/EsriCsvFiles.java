@@ -9,7 +9,8 @@ import gov.noaa.pfel.erddap.util.EDStatic;
     fileTypeName = ".esriCsv",
     infoUrl = "https://support.esri.com/technical-article/000012745",
     versionAdded = "1.24.0",
-    availableGrid = false)
+    availableGrid = false,
+    contentType = "text/csv")
 public class EsriCsvFiles extends TableWriterFileType {
 
   @Override

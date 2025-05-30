@@ -38,6 +38,7 @@ import java.util.ArrayList;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -454,7 +455,7 @@ public class EDDTableFromSOS extends EDDTable {
       double tAltMetersPerSourceUnit,
       String tTimeSourceName,
       String tTimeSourceFormat,
-      ArrayList<DataVariableInfo> tDataVariables,
+      List<DataVariableInfo> tDataVariables,
       int tReloadEveryNMinutes,
       String tLocalSourceUrl,
       String tSosVersion,

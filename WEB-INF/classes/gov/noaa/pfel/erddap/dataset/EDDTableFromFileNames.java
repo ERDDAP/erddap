@@ -277,7 +277,7 @@ public class EDDTableFromFileNames extends EDDTable {
       String tDefaultGraphQuery,
       String tAddVariablesWhere,
       LocalizedAttributes tAddGlobalAttributes,
-      ArrayList<DataVariableInfo> tDataVariables,
+      List<DataVariableInfo> tDataVariables,
       int tReloadEveryNMinutes,
       String tFileDir,
       String tFileNameRegex,
