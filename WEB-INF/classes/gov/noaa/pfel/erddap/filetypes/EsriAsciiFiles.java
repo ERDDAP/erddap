@@ -22,7 +22,8 @@ import java.util.Arrays;
     fileTypeName = ".esriAscii",
     infoUrl = "https://en.wikipedia.org/wiki/Esri_grid",
     versionAdded = "1.0.0",
-    availableTable = false)
+    availableTable = false,
+    contentType = "text/plain")
 public class EsriAsciiFiles extends FileTypeInterface {
 
   @Override

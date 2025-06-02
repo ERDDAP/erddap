@@ -7,7 +7,8 @@ import gov.noaa.pfel.erddap.util.EDStatic;
     fileTypeName = ".largePdf",
     infoUrl = "https://www.adobe.com/acrobat/about-adobe-pdf.html",
     versionAdded = "1.0.0",
-    isImage = true)
+    isImage = true,
+    contentType = "application/pdf")
 public class LargePdfFiles extends ImageFiles {
 
   @Override

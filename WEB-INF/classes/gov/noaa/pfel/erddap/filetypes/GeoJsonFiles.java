@@ -9,7 +9,9 @@ import gov.noaa.pfel.erddap.util.EDStatic;
     fileTypeName = ".geoJson",
     infoUrl = "http://wiki.geojson.org/Main_Page",
     versionAdded = "1.82.0",
-    availableGrid = false)
+    availableGrid = false,
+    contentType = "application/json",
+    addContentDispositionHeader = false)
 public class GeoJsonFiles extends TableWriterFileType {
 
   @Override

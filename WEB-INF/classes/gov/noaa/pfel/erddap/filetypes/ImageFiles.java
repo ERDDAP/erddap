@@ -56,8 +56,6 @@ public abstract class ImageFiles extends ImageTypes {
         requestInfo.loggedInAs(),
         requestInfo.requestUrl(),
         requestInfo.userDapQuery(),
-        requestInfo.dir(),
-        requestInfo.fileName(),
         osss,
         requestInfo.fileTypeName(),
         requestInfo.getEDDTable());
@@ -87,10 +85,6 @@ public abstract class ImageFiles extends ImageTypes {
    * @param loggedInAs the user's login name if logged in (or null if not logged in).
    * @param requestUrl I think it's currently just used to add to "history" metadata.
    * @param userDapQuery the part after the '?', still percentEncoded (shouldn't be null).
-   * @param dir the directory (on this computer's hard drive) to use for temporary/cache files
-   * @param fileName the name for the 'file' (no dir, no extension), which is used to write the
-   *     suggested name for the file to the response header and is also used to write the
-   *     [fileTypeName]Info (e.g., .pngInfo) file.
    * @param outputStreamSource
    * @param fileTypeName
    * @return true of written ok; false if exception occurred (and written on image)
@@ -101,8 +95,6 @@ public abstract class ImageFiles extends ImageTypes {
       String loggedInAs,
       String requestUrl,
       String userDapQuery,
-      String dir,
-      String fileName,
       OutputStreamSource outputStreamSource,
       String fileTypeName,
       EDDTable eddTable)

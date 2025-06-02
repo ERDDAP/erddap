@@ -11,7 +11,10 @@ import java.io.Writer;
     fileTypeName = ".dds",
     infoUrl =
         "https://docs.opendap.org/index.php/UserGuideOPeNDAPMessages#Dataset_Descriptor_Structure",
-    versionAdded = "1.0.0")
+    versionAdded = "1.0.0",
+    contentType = "text/plain",
+    contentDescription = "dods-dds",
+    addContentDispositionHeader = false)
 public class DdsFiles extends FileTypeInterface {
 
   @Override

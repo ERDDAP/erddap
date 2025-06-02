@@ -17,7 +17,6 @@ import gov.noaa.pfel.coastwatch.util.SimpleXMLReader;
 import gov.noaa.pfel.erddap.Erddap;
 import gov.noaa.pfel.erddap.handlers.EDDGridSideBySideHandler;
 import gov.noaa.pfel.erddap.handlers.SaxHandlerClass;
-import gov.noaa.pfel.erddap.util.EDMessages;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.*;
 import java.text.MessageFormat;
@@ -238,7 +237,6 @@ public class EDDGridSideBySide extends EDDGrid {
       throws Throwable {
 
     if (verbose) String2.log("\n*** constructing EDDGridSideBySide " + tDatasetID);
-    int language = EDMessages.DEFAULT_LANGUAGE;
     long constructionStartMillis = System.currentTimeMillis();
 
     // save some of the parameters

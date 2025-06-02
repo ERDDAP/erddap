@@ -25,9 +25,9 @@ import gov.noaa.pfel.erddap.util.EDMessages;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.DataVariableInfo;
 import java.io.BufferedReader;
-import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.HashMap;
+import java.util.List;
 
 /**
  * This is a subclass of EDDTableFromAsciiService for the NOS Ascii services.
@@ -63,7 +63,7 @@ public class EDDTableFromAsciiServiceNOS extends EDDTableFromAsciiService {
       String tDefaultGraphQuery,
       String tAddVariablesWhere,
       LocalizedAttributes tAddGlobalAttributes,
-      ArrayList<DataVariableInfo> tDataVariables,
+      List<DataVariableInfo> tDataVariables,
       int tReloadEveryNMinutes,
       String tLocalSourceUrl,
       String tBeforeData[],

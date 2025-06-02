@@ -11,6 +11,7 @@ public abstract class TableWriterFileType extends FileTypeInterface {
   protected void writeTableToFileFormat(DapRequestInfo requestInfo, TableWriter tableWriter)
       throws Throwable {}
 
+  @Override
   public void writeTableToStream(DapRequestInfo requestInfo) throws Throwable {
     EDDTable eddTable = requestInfo.getEDDTable();
     if (eddTable == null) {

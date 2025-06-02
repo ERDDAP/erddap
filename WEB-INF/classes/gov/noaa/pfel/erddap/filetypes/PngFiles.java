@@ -7,7 +7,8 @@ import gov.noaa.pfel.erddap.util.EDStatic;
     fileTypeName = ".png",
     infoUrl = "http://www.libpng.org/pub/png/",
     versionAdded = "1.24.0",
-    isImage = true)
+    isImage = true,
+    contentType = "image/png")
 public class PngFiles extends ImageFiles {
 
   @Override

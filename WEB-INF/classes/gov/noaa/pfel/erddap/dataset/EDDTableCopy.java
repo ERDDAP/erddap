@@ -21,6 +21,7 @@ import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.util.TaskThread;
 import gov.noaa.pfel.erddap.variable.*;
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * This class makes and maintains a local copy of the data from a remote source. This class serves
@@ -670,7 +671,7 @@ public class EDDTableCopy extends EDDTable {
       String tFgdcFile,
       String tIso19115File,
       LocalizedAttributes tAddGlobalAttributes,
-      ArrayList<DataVariableInfo> tDataVariables,
+      List<DataVariableInfo> tDataVariables,
       int tReloadEveryNMinutes,
       String tFileDir,
       String tFileNameRegex,

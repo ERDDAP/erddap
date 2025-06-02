@@ -14,7 +14,9 @@ import jakarta.servlet.http.HttpServletRequest;
     fileTypeExtension = ".html",
     fileTypeName = ".htmlTable",
     infoUrl = "https://www.w3schools.com/html/html_tables.asp",
-    versionAdded = "1.0.0")
+    versionAdded = "1.0.0",
+    contentType = "text/html",
+    addContentDispositionHeader = false)
 public class HtmlTableFiles extends TableWriterFileType {
 
   @Override

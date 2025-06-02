@@ -10,7 +10,10 @@ import java.io.Writer;
     fileTypeName = ".timeGaps",
     infoUrl = "https://coastwatch.pfeg.noaa.gov/erddap/griddap/documentation.html#timeGaps",
     versionAdded = "1.82.0",
-    availableTable = false)
+    availableTable = false,
+    contentType = "text/plain",
+    contentDescription = "time_gap_information",
+    addContentDispositionHeader = false)
 public class TimeGapsFiles extends FileTypeInterface {
 
   @Override

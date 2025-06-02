@@ -19,7 +19,8 @@ import java.nio.file.Path;
     fileTypeExtension = ".parquet",
     fileTypeName = ".parquet",
     infoUrl = "https://parquet.apache.org/",
-    versionAdded = "2.25.0")
+    versionAdded = "2.25.0",
+    contentType = "application/parquet")
 public class ParquetFiles extends TableWriterFileType {
 
   @Override

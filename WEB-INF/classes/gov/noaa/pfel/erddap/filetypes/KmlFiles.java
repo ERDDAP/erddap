@@ -33,7 +33,14 @@ import java.text.MessageFormat;
     fileTypeName = ".kml",
     infoUrl = "https://developers.google.com/kml/",
     versionAdded = "1.0.0",
-    isImage = true)
+    isImage = true,
+    contentType = "application/vnd.google-earth.kml+xml")
+// see https://developers.google.com/kml/documentation/kml_tut
+// which lists both of these content types (in different places)
+// application/keyhole is used by the pydap example that works
+// http://161.55.17.243/cgi-bin/pydap.cgi/AG/ssta/3day/AG2006001_2006003_ssta.nc.kml?LAYERS=AGssta
+// contentType = "application/vnd.google-earth.kml+xml";
+// Opera says handling program is "Opera"!  So I manually added this mime type to Opera.
 public class KmlFiles extends ImageTypes {
 
   @Override
@@ -46,8 +53,6 @@ public class KmlFiles extends ImageTypes {
         requestInfo.loggedInAs(),
         requestInfo.requestUrl(),
         requestInfo.userDapQuery(),
-        requestInfo.dir(),
-        requestInfo.fileName(),
         osss,
         requestInfo.getEDDTable());
   }
@@ -60,7 +65,6 @@ public class KmlFiles extends ImageTypes {
         requestInfo.request(),
         requestInfo.language(),
         requestInfo.loggedInAs(),
-        requestInfo.requestUrl(),
         requestInfo.userDapQuery(),
         osss,
         requestInfo.getEDDGrid());
@@ -88,9 +92,6 @@ public class KmlFiles extends ImageTypes {
    *     to use (http vs https).
    * @param requestUrl I think it's currently just used to add to "history" metadata.
    * @param userDapQuery the part after the '?', still percentEncoded (shouldn't be null).
-   * @param dir the directory (on this computer's hard drive) to use for temporary/cache files
-   * @param fileName the name for the 'file' (no dir, no extension), which is used to write the
-   *     suggested name for the file to the response header.
    * @param outputStreamSource
    * @return true of written ok; false if exception occurred (and written on image)
    * @throws Throwable if trouble
@@ -101,8 +102,6 @@ public class KmlFiles extends ImageTypes {
       String loggedInAs,
       String requestUrl,
       String userDapQuery,
-      String dir,
-      String fileName,
       OutputStreamSource outputStreamSource,
       EDDTable eddTable)
       throws Throwable {
@@ -570,7 +569,6 @@ public class KmlFiles extends ImageTypes {
    *     not used to test if this edd is accessibleTo loggedInAs, but it unusual cases
    *     (EDDTableFromPost?) it could be. Normally, this is just used to determine which erddapUrl
    *     to use (http vs https).
-   * @param requestUrl the part of the user's request, after EDStatic.config.baseUrl, before '?'.
    * @param userDapQuery an OPeNDAP DAP-style query string, still percentEncoded (shouldn't be
    *     null). e.g., ATssta[45:1:45][0:1:0][120:10:140][130:10:160].
    * @param outputStreamSource the source of an outputStream (usually already buffered) to receive
@@ -582,7 +580,6 @@ public class KmlFiles extends ImageTypes {
       HttpServletRequest request,
       int language,
       String loggedInAs,
-      String requestUrl,
       String userDapQuery,
       OutputStreamSource outputStreamSource,
       EDDGrid eddGrid)

@@ -29,7 +29,9 @@ import java.io.DataInputStream;
     fileTypeExtension = ".json",
     fileTypeName = ".ncoJson",
     infoUrl = "https://nco.sourceforge.net/nco.html#json",
-    versionAdded = "1.82.0")
+    versionAdded = "1.82.0",
+    contentType = "application/json",
+    addContentDispositionHeader = false)
 public class NcoJsonFiles extends TableWriterFileType {
 
   @Override
@@ -47,11 +49,7 @@ public class NcoJsonFiles extends TableWriterFileType {
       throws Throwable {
     if (tableWriter instanceof TableWriterAllWithMetadata) {
       String jsonp = EDStatic.getJsonpFromQuery(requestInfo.language(), requestInfo.userDapQuery());
-      saveAsNcoJson(
-          requestInfo.language(),
-          requestInfo.outputStream(),
-          (TableWriterAllWithMetadata) tableWriter,
-          jsonp);
+      saveAsNcoJson(requestInfo.outputStream(), (TableWriterAllWithMetadata) tableWriter, jsonp);
     }
   }
 
@@ -118,10 +116,7 @@ public class NcoJsonFiles extends TableWriterFileType {
    * @throws Throwable
    */
   private void saveAsNcoJson(
-      int language,
-      OutputStreamSource outputStreamSource,
-      TableWriterAllWithMetadata twawm,
-      String jsonp)
+      OutputStreamSource outputStreamSource, TableWriterAllWithMetadata twawm, String jsonp)
       throws Throwable {
     if (EDDTable.reallyVerbose) String2.log("EDDTable.saveAsNcoJson");
     long time = System.currentTimeMillis();

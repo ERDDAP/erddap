@@ -26,7 +26,10 @@ import java.io.Writer;
     fileTypeExtension = ".dods",
     fileTypeName = ".dods",
     infoUrl = "https://docs.opendap.org/index.php/UserGuideOPeNDAPMessages#Data_Transmission",
-    versionAdded = "1.0.0")
+    versionAdded = "1.0.0",
+    contentType = "application/octet-stream",
+    contentDescription = "dods-data",
+    addContentDispositionHeader = false)
 public class DodsFiles extends TableWriterFileType {
 
   @Override

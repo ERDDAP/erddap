@@ -8,7 +8,12 @@ import gov.noaa.pfel.erddap.util.EDStatic;
     fileTypeExtension = ".xhtml",
     fileTypeName = ".xhtml",
     infoUrl = "https://www.w3schools.com/html/html_tables.asp",
-    versionAdded = "1.0.0")
+    versionAdded = "1.0.0",
+    contentType = "application/xhtml+xml",
+    addContentDispositionHeader = false)
+// Old code had a workaround for IE that required setting contentType to "text/html".
+// IE is now << 1% of worldwide browser usage, and I don't think the workaround is worth
+// maintaining at this point.
 public class XhtmlTableFiles extends HtmlTableFiles {
 
   @Override

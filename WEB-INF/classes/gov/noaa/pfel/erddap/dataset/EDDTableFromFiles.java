@@ -48,6 +48,7 @@ import java.util.Arrays;
 import java.util.BitSet;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -214,7 +215,7 @@ public abstract class EDDTableFromFiles extends EDDTable implements WatchUpdateH
     String tDatasetID = xmlReader.attributeValue("datasetID");
     String tType = xmlReader.attributeValue("type");
     LocalizedAttributes tGlobalAttributes = null;
-    ArrayList<DataVariableInfo> tDataVariables = new ArrayList<>();
+    List<DataVariableInfo> tDataVariables = new ArrayList<>();
     int tReloadEveryNMinutes = Integer.MAX_VALUE;
     int tUpdateEveryNMillis = 0;
     String tAccessibleTo = null;
@@ -1274,7 +1275,7 @@ public abstract class EDDTableFromFiles extends EDDTable implements WatchUpdateH
       String tDefaultDataQuery,
       String tDefaultGraphQuery,
       LocalizedAttributes tAddGlobalAttributes,
-      ArrayList<DataVariableInfo> tDataVariables,
+      List<DataVariableInfo> tDataVariables,
       int tReloadEveryNMinutes,
       int tUpdateEveryNMillis,
       String tFileDir,
@@ -2664,7 +2665,7 @@ public abstract class EDDTableFromFiles extends EDDTable implements WatchUpdateH
    * @throws Throwable if serious trouble ("Too many open files")
    */
   private boolean makeExpected(
-      ArrayList<DataVariableInfo> tDataVariables,
+      List<DataVariableInfo> tDataVariables,
       StringArray dirList,
       ShortArray ftDirIndex,
       StringArray ftFileList,
