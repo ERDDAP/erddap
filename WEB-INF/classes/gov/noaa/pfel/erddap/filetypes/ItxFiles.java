@@ -57,6 +57,7 @@ public class ItxFiles extends TableWriterFileType {
         requestInfo.requestUrl(),
         requestInfo.userDapQuery(),
         requestInfo.outputStream(),
+        requestInfo.dir(),
         requestInfo.getEDDGrid());
   }
 
@@ -158,7 +159,12 @@ public class ItxFiles extends TableWriterFileType {
    * @throws Throwable
    */
   private void saveAsIgor(
-      int language, String requestUrl, String userDapQuery, OutputStreamSource oss, EDDGrid grid)
+      int language,
+      String requestUrl,
+      String userDapQuery,
+      OutputStreamSource oss,
+      String dir,
+      EDDGrid grid)
       throws Throwable {
     if (EDDGrid.reallyVerbose) String2.log("  EDDGrid.saveAsIgor");
     long time = System.currentTimeMillis();
@@ -218,6 +224,7 @@ public class ItxFiles extends TableWriterFileType {
 
       // ** Then get gridDataAllAccessor
       // AllAccessor so I can just request PA with a var's values.
+      Math2.ensureDiskAvailable(gda.totalNBytes(), dir, "ItxFiles");
       try (GridDataAllAccessor gdaa = new GridDataAllAccessor(gda);
           BufferedWriter writer =
               File2.getBufferedWriter(oss.outputStream(Table.IgorCharset), Table.IgorCharset)) {
