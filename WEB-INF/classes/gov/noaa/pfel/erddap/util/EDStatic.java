@@ -189,7 +189,8 @@ public class EDStatic {
    * 2.25_1 RC 2024-11-07 <br>
    * 2.26 RC on 2025-03-11 <br>
    * The below is kept for historical reference. As of 2.27.0 ERDDAP has transitioned to using
-   * Semantic Versioning.
+   * Semantic Versioning. Also as of 2.27.0 I'm ceasing putting a date for new versions here.
+   * Version release history is readily available in GitHub.
    *
    * <p>For main branch releases, this will be a floating point number with 2 decimal digits, with
    * no additional text. !!! In general, people other than the main ERDDAP developer (Bob) should
@@ -199,7 +200,7 @@ public class EDStatic {
    * anything following it. A request to http.../erddap/version will return just the number (as
    * text). A request to http.../erddap/version_string will return the full string.
    */
-  public static final Semver erddapVersion = new Semver("2.26.0");
+  public static final Semver erddapVersion = new Semver("2.27.0");
 
   /** This identifies the dods server/version that this mimics. */
   public static final String dapVersion = "DAP/2.0";
