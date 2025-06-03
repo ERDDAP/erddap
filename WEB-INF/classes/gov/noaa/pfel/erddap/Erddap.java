@@ -22916,7 +22916,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       writer.write(widgets.beginForm("getColor", "GET", tErddapUrl + "/convert/color.html", ""));
 
       writer.write(
-          "Value to convert (e.g., 12.5): "
+          "<b>Value to convert</b> (e.g., 12.5): "
               + widgets.textField("value", "Enter a number", 10, 15, queryValue, "")
               + "<br><br>");
       writer.write("<div><b>Define the Colorbar:</b></div>\n");
@@ -22974,7 +22974,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
 
       if (!queryValue.isEmpty()) {
         if (tError == null) {
-          writer.write("<br><br><div>Value color:</div>\n");
+          writer.write("<br><br><div><b>Value color:</b></div>\n");
           writer.write("<span>Hex: " + hexColor + "</span>\n");
           writer.write("<br><span>RGB: " + rgbColor + "</span>\n");
           writer.write(

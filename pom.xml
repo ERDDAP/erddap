@@ -51,7 +51,7 @@
         <error-prone.version>2.27.0</error-prone.version>
         <prometheusVersion>1.3.8</prometheusVersion>
         <parquetVersion>1.15.2</parquetVersion>
-        <awssdkVersion>2.31.54</awssdkVersion>
+        <awssdkVersion>2.31.55</awssdkVersion>
         <luceneVersion>10.2.1</luceneVersion>
         <mavenTestPluginVersion>3.5.3</mavenTestPluginVersion>
         <jacocoMavenVersion>0.8.13</jacocoMavenVersion>
