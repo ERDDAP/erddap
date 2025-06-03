@@ -345,7 +345,7 @@ Oder
 <a rel="help" href="#computerProgram">umgehen Sie diese Webseite</a> und führen Sie Konvertierungen innerhalb eines Computerprogramms, Skripts oder einer Webseite durch.
 ]]></convertBypass>
 <convertCOLORs>Farben</convertCOLORs>
-<convertCOLORsMessage>Werte in Farbleiste umrechnen</convertCOLORsMessage>
+<convertCOLORsMessage>Umrechnen von Wert zu Farbe von Colorbar</convertCOLORsMessage>
 <convertToAFullName><![CDATA[
 <strong>Wandeln Sie von {0} in einen vollständigen Namen um.</strong>
 ]]></convertToAFullName>

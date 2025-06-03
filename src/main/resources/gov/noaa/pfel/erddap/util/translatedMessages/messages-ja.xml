@@ -346,7 +346,7 @@ CTD のあるステーション。
 
 ]]></convertBypass>
 <convertCOLORs>カラー</convertCOLORs>
-<convertCOLORsMessage>値をカラーバーに変換する</convertCOLORsMessage>
+<convertCOLORsMessage>値をカラーバーから色に変換する</convertCOLORsMessage>
 <convertToAFullName><![CDATA[
 <strong>{0} をフルネームに変換します。</strong>
 ]]></convertToAFullName>

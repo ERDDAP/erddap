@@ -362,7 +362,7 @@ Nó,
 
 ]]></convertBypass>
 <convertCOLORs>Dathanna</convertCOLORs>
-<convertCOLORsMessage>Luachanna a Tiontaigh go barra dath</convertCOLORsMessage>
+<convertCOLORsMessage>Luach a thiontú go dath ó colorbar</convertCOLORsMessage>
 <convertToAFullName><![CDATA[
 <strong>Tiontaigh ó {0} go ainm iomlán.</strong>
 ]]></convertToAFullName>
