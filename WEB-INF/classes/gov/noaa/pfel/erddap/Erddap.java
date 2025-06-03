@@ -30,6 +30,7 @@ import gov.noaa.pfel.coastwatch.griddata.Grid;
 import gov.noaa.pfel.coastwatch.griddata.OpendapHelper;
 import gov.noaa.pfel.coastwatch.pointdata.Table;
 import gov.noaa.pfel.coastwatch.sgt.CompoundColorMap;
+import gov.noaa.pfel.coastwatch.sgt.HtmlColorMapRenderer;
 import gov.noaa.pfel.coastwatch.sgt.SgtMap;
 import gov.noaa.pfel.coastwatch.sgt.SgtUtil;
 import gov.noaa.pfel.coastwatch.util.HtmlWidgets;
@@ -22827,12 +22828,13 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     String scale = queryMap.getOrDefault("ps", "linear");
     String minStr = queryMap.getOrDefault("pMin", "0");
     String maxStr = queryMap.getOrDefault("pMax", "20");
-    String nSectionsStr = queryMap.getOrDefault("pSec", "5");
+    String nSectionsStr = queryMap.getOrDefault("pSec", "10");
 
     String hexColor = "";
     String rgbColor = "";
     String tError = null;
     Color color = Color.GRAY;
+    String colorMapRender = "";
 
     double inputValue;
     double min = 0, max = 20;
@@ -22844,7 +22846,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       min = Double.parseDouble(minStr);
       max = Double.parseDouble(maxStr);
       nSections = Integer.parseInt(nSectionsStr);
-      isContinuous = !"D".equalsIgnoreCase(continuity);
+      isContinuous = !"Discrete".equalsIgnoreCase(continuity);
 
       CompoundColorMap cColorMap =
           new CompoundColorMap(
@@ -22861,6 +22863,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       hexColor = String.format("#%02X%02X%02X", color.getRed(), color.getGreen(), color.getBlue());
       rgbColor =
           String.format("rgb(%d, %d, %d)", color.getRed(), color.getGreen(), color.getBlue());
+      colorMapRender = HtmlColorMapRenderer.renderToHtml(cColorMap, "convertColorsBar");
     } catch (Exception e) {
       inputValue = Double.NaN;
       tError = "Invalid Input or Parameters";
@@ -22907,22 +22910,21 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                   + "</a>"
                   + "\n &gt; Colors</h1>\n")
               + "<h2>"
-              + "Convert Data into Colorbar" // need to change this thing for support of multiple
-              // languages
+              + EDStatic.messages.convertCOLORsMessageAr[language]
               + "</h2>\n");
 
       writer.write(widgets.beginForm("getColor", "GET", tErddapUrl + "/convert/color.html", ""));
 
       writer.write(
-          "Enter a value (e.g., 12.5): "
+          "Value to convert (e.g., 12.5): "
               + widgets.textField("value", "Enter a number", 10, 15, queryValue, "")
-              + "<br>");
-
+              + "<br><br>");
+      writer.write("<div><b>Define the Colorbar:</b></div>\n");
       writer.write(
-          "Palette: "
+          "Color Palette: "
               + widgets.select(
                   "p",
-                  "Color palette",
+                  "Select the base color palette to use",
                   1,
                   EDStatic.messages.palettes0,
                   Math.max(0, String2.indexOf(EDStatic.messages.palettes0, palette)),
@@ -22936,7 +22938,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                   "Continuous or Discrete",
                   1,
                   new String[] {"", "Continuous", "Discrete"},
-                  "D".equalsIgnoreCase(continuity) ? 2 : 1,
+                  "Discrete".equalsIgnoreCase(continuity) ? 2 : 1,
                   "")
               + "<br>");
 
@@ -22952,32 +22954,36 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
               + "<br>");
 
       writer.write(
-          "Min: " + widgets.textField("pMin", "Minimum value", 10, 60, minStr, "") + "<br>");
+          "Colorbar Minimum Value: "
+              + widgets.textField(
+                  "pMin", "Minimum value represented by the colorbar", 10, 60, minStr, "")
+              + "<br>");
       writer.write(
-          "Max: " + widgets.textField("pMax", "Maximum value", 10, 60, maxStr, "") + "<br>");
+          "Colorbar Maximum Value: "
+              + widgets.textField(
+                  "pMax", "Maximum value represented by the colorbar", 10, 60, maxStr, "")
+              + "<br>");
 
       writer.write(
-          "Sections: "
-              + widgets.select(
-                  "pSec",
-                  "Number of sections",
-                  1,
-                  EDStatic.paletteSections,
-                  Math.max(0, EDStatic.paletteSections.indexOf(nSectionsStr)),
-                  "")
+          "Colorbar Sections: "
+              + widgets.textField(
+                  "pSec", "Number of sections in the color bar", 10, 60, nSectionsStr, "")
               + "<br>");
 
       writer.write(widgets.htmlButton("submit", null, "Get Color", "", "Get Color", ""));
 
       if (!queryValue.isEmpty()) {
         if (tError == null) {
-          writer.write("<br><span>Hex: " + hexColor + "</span>\n");
+          writer.write("<br><br><div>Value color:</div>\n");
+          writer.write("<span>Hex: " + hexColor + "</span>\n");
           writer.write("<br><span>RGB: " + rgbColor + "</span>\n");
           writer.write(
               "<br><div style='height:15px; width:40px; background-color:"
                   + hexColor
-                  + "; border:1px solid black;'></div>");
-
+                  + "; border:1px solid black;'></div><br>\n");
+          if (colorMapRender != null && !colorMapRender.equals("")) {
+            writer.write(colorMapRender);
+          }
         } else {
           writer.write(
               "<br><span class=\"warningColor\">" + XML.encodeAsHTML(tError) + "</span>\n");
