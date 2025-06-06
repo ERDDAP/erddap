@@ -350,7 +350,7 @@ CTD, если они не связаны с <kbd>TimeSeries</kbd> или <kbd>Tr
 <a rel="help" href="#computerProgram">обойдите эту веб-страницу</a> и выполните преобразование из компьютерной программы, сценария или веб-страницы.
 ]]></convertBypass>
 <convertCOLORs>Цвета</convertCOLORs>
-<convertCOLORsMessage>Преобразовать значения в цветовую планку</convertCOLORsMessage>
+<convertCOLORsMessage>Преобразовать значение в цвет из цветовой панели</convertCOLORsMessage>
 <convertToAFullName><![CDATA[
 <strong>Преобразование из {0} в полное имя.</strong>
 ]]></convertToAFullName>

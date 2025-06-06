@@ -352,7 +352,7 @@ CTD หากไม่เกี่ยวข้องกับ <kbd>TimeSeries</k
 
 ]]></convertBypass>
 <convertCOLORs>สี</convertCOLORs>
-<convertCOLORsMessage>แปลงค่าเป็นแถบสี</convertCOLORsMessage>
+<convertCOLORsMessage>แปลงค่าเป็นสีจากแถบสี</convertCOLORsMessage>
 <convertToAFullName><![CDATA[
 <strong>แปลงจาก {0} เป็นชื่อเต็ม</strong>
 ]]></convertToAFullName>

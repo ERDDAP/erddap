@@ -340,7 +340,7 @@ moored buoys، یا اسٹیشن۔
 
 ]]></convertBypass>
 <convertCOLORs>رنگ</convertCOLORs>
-<convertCOLORsMessage>بار رنگ کرنے کی صلاحیت</convertCOLORsMessage>
+<convertCOLORsMessage>رنگابار سے رنگ حاصل کرنے کی اہمیت</convertCOLORsMessage>
 <convertToAFullName><![CDATA[
 <strong>{0} سے پورے نام میں تبدیل کریں۔</strong>
 ]]></convertToAFullName>

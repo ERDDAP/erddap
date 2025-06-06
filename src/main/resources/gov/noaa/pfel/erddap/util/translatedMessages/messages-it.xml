@@ -362,7 +362,7 @@ In alternativa,
 
 ]]></convertBypass>
 <convertCOLORs>Colori</convertCOLORs>
-<convertCOLORsMessage>Convertire Valori nella barra dei colori</convertCOLORsMessage>
+<convertCOLORsMessage>Converti valore in colore da colorbar</convertCOLORsMessage>
 <convertToAFullName><![CDATA[
 <strong>Converti da {0} a un nome completo.</strong>
 ]]></convertToAFullName>

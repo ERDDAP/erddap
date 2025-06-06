@@ -362,7 +362,7 @@ O,
 
 ]]></convertBypass>
 <convertCOLORs>Kulay</convertCOLORs>
-<convertCOLORsMessage>Mga Pamantayang Moral sa kulay ng bar</convertCOLORsMessage>
+<convertCOLORsMessage>Binagong halaga at kulay mula sa colorbar</convertCOLORsMessage>
 <convertToAFullName><![CDATA[
 <strong>I-convert mula sa {0} sa isang buong pangalan.</strong>
 ]]></convertToAFullName>

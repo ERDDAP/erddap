@@ -364,7 +364,7 @@ Tai
 
 ]]></convertBypass>
 <convertCOLORs>Värit</convertCOLORs>
-<convertCOLORsMessage>Muunna arvot väripalkiksi</convertCOLORsMessage>
+<convertCOLORsMessage>Muunna väriarvoa väribarista</convertCOLORsMessage>
 <convertToAFullName><![CDATA[
 <strong>Muunna {0} koko nimeksi.</strong>
 ]]></convertToAFullName>

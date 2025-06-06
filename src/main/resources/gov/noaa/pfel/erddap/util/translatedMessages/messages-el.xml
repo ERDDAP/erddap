@@ -365,7 +365,7 @@ CTD εάν δεν συσχετίζονται με μια <kbd>TimeSeries</kbd> �
 
 ]]></convertBypass>
 <convertCOLORs>Χρώματα</convertCOLORs>
-<convertCOLORsMessage>Μετατροπή τιμών σε γραμμή χρώματος</convertCOLORsMessage>
+<convertCOLORsMessage>Μετατροπή τιμής σε χρώμα από γραμμή χρωμάτων</convertCOLORsMessage>
 <convertToAFullName><![CDATA[
 <strong>Μετατροπή από {0} σε πλήρες όνομα.</strong>
 ]]></convertToAFullName>

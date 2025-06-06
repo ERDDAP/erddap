@@ -345,7 +345,7 @@ Eller
 <a rel="help" href="#computerProgram">kringgå den här webbsidan</a> och gör omvandlingar från ett datorprogram, skript eller webbsida.
 ]]></convertBypass>
 <convertCOLORs>Färger</convertCOLORs>
-<convertCOLORsMessage>Konvertera värden till färg bar</convertCOLORsMessage>
+<convertCOLORsMessage>Konvertera värde till färg från colorbar</convertCOLORsMessage>
 <convertToAFullName><![CDATA[
 <strong>Konvertera från {0} till ett fullständigt namn.</strong>
 ]]></convertToAFullName>

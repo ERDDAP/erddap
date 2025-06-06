@@ -362,7 +362,7 @@ CTD, якщо вони не пов’язані з <kbd>TimeSeries</kbd> або 
 
 ]]></convertBypass>
 <convertCOLORs>Колір</convertCOLORs>
-<convertCOLORsMessage>Перетворення значень в колір бар</convertCOLORsMessage>
+<convertCOLORsMessage>Перетворення значення в колір з кольоромбарвлення</convertCOLORsMessage>
 <convertToAFullName><![CDATA[
 <strong>Перетворити з {0} на повне ім’я.</strong>
 ]]></convertToAFullName>

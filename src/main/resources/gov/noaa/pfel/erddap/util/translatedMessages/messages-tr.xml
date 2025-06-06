@@ -363,7 +363,7 @@ Veya
 
 ]]></convertBypass>
 <convertCOLORs>Renkler</convertCOLORs>
-<convertCOLORsMessage>Renk çubuğuna dönüştürülür</convertCOLORsMessage>
+<convertCOLORsMessage>Colorbar&#39;dan renk için değer dönüştürmek</convertCOLORsMessage>
 <convertToAFullName><![CDATA[
 <strong>{0}&#39;ı tam isme dönüştürün.</strong>
 ]]></convertToAFullName>

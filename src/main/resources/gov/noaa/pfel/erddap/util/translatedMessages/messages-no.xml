@@ -363,7 +363,7 @@ Eller
 
 ]]></convertBypass>
 <convertCOLORs>Farger</convertCOLORs>
-<convertCOLORsMessage>Konverter verdier til fargelinje</convertCOLORsMessage>
+<convertCOLORsMessage>Konverter verdi til farge fra fargelinjen</convertCOLORsMessage>
 <convertToAFullName><![CDATA[
 <strong>Konverter fra {0} til et fullt navn.</strong>
 ]]></convertToAFullName>

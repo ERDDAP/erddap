@@ -3917,7 +3917,9 @@ class EDDTableTests {
             + "  <mdb:metadataMaintenance>\n"
             + "    <mmi:MD_MaintenanceInformation>\n"
             + "      <mmi:maintenanceNote>\n"
-            + "        <gco:CharacterString>This record was created from dataset metadata by ERDDAP Version 2.26.0</gco:CharacterString>\n"
+            + "        <gco:CharacterString>This record was created from dataset metadata by ERDDAP Version "
+            + EDStatic.erddapVersion.toString()
+            + "</gco:CharacterString>\n"
             + "      </mmi:maintenanceNote>\n"
             + "    </mmi:MD_MaintenanceInformation>\n"
             + "  </mdb:metadataMaintenance>\n"

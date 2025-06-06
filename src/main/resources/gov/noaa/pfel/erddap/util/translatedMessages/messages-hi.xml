@@ -318,7 +318,7 @@ CTD यदि <kbd>TimeSeries</kbd> या <kbd>Trajectory</kbd> से सं�
 
 ]]></convertBypass>
 <convertCOLORs>रंग</convertCOLORs>
-<convertCOLORsMessage>मानों को रंग बार में कनवर्ट करें</convertCOLORsMessage>
+<convertCOLORsMessage>रंगबार से रंग में कनवर्ट करें</convertCOLORsMessage>
 <convertToAFullName><![CDATA[
 <strong>{0} को पूर्ण नाम में बदलें.</strong>
 ]]></convertToAFullName>

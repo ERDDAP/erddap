@@ -363,8 +363,8 @@ Vagy
 <a rel="help" href="#computerProgram">hagyja ki ezt a weboldalt</a>, és végezzen konverziót egy számítógépes programon, szkripten vagy weboldalon belül.
 
 ]]></convertBypass>
-<convertCOLORs>Színek</convertCOLORs>
-<convertCOLORsMessage>Átalakít értékek színes sáv</convertCOLORsMessage>
+<convertCOLORs>színek</convertCOLORs>
+<convertCOLORsMessage>Konvert értéke a színesbárból</convertCOLORsMessage>
 <convertToAFullName><![CDATA[
 <strong>Átalakítás {0} névről teljes névre.</strong>
 ]]></convertToAFullName>

@@ -333,7 +333,7 @@ CTD&#39;স যদি কোনো <kbd>TimeSeries</kbd> বা <kbd>Trajectory<
 <a rel="help" href="#computerProgram">এই ওয়েব পৃষ্ঠাটি বাইপাস করুন</a> এবং একটি কম্পিউটার প্রোগ্রাম, স্ক্রিপ্ট বা ওয়েব পৃষ্ঠার মধ্যে থেকে রূপান্তর করুন৷
 ]]></convertBypass>
 <convertCOLORs>রং</convertCOLORs>
-<convertCOLORsMessage>রঙের মান রূপান্তর করুন</convertCOLORsMessage>
+<convertCOLORsMessage>রং এর রঙের মান রূপান্তর করুন</convertCOLORsMessage>
 <convertToAFullName><![CDATA[
 <strong>{0} থেকে একটি সম্পূর্ণ নামে রূপান্তর করুন।</strong>
 ]]></convertToAFullName>
