@@ -25,12 +25,9 @@ import com.cohort.util.String2;
 import com.cohort.util.Units2;
 import com.cohort.util.XML;
 import com.google.common.collect.ImmutableList;
-import gg.jte.CodeResolver;
 import gg.jte.ContentType;
 import gg.jte.TemplateEngine;
-import gg.jte.TemplateOutput;
-import gg.jte.output.StringOutput;
-import gg.jte.resolve.DirectoryCodeResolver;
+import gg.jte.output.WriterOutput;
 import gov.noaa.pfel.coastwatch.griddata.DataHelper;
 import gov.noaa.pfel.coastwatch.griddata.Grid;
 import gov.noaa.pfel.coastwatch.griddata.OpendapHelper;
@@ -66,7 +63,6 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.StringReader;
 import java.io.Writer;
-import java.nio.file.Path;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -5003,14 +4999,9 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       writer.write("<div class=\"standard_width\">\n");
 
       if (EDStatic.config.useHtmlTemplates) {
-        // Use JTE template engine to render the status page
-        CodeResolver codeResolver =
-            new DirectoryCodeResolver(Path.of("${project.basedir}/src/main/resources/jte/"));
         TemplateEngine engine = TemplateEngine.createPrecompiled(ContentType.Html);
-        TemplateOutput jteOutput = new StringOutput();
         TemplateModel model = new TemplateModel(youAreHereHtml, statisticsHtml);
-        engine.render("status.jte", Map.of("model", model), jteOutput);
-        writer.write(jteOutput.toString());
+        engine.render("status.jte", Map.of("model", model), new WriterOutput(writer));
       } else {
         writer.write(youAreHereHtml + "<pre>" + statisticsHtml + "</pre>\n");
       }
