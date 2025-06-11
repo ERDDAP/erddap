@@ -844,6 +844,7 @@ public class LoadDatasets extends Thread {
               "<erddapDatasets></convertToPublicSourceUrl>",
               "<erddapDatasets><commonStandardNames>",
               "<erddapDatasets><cacheMinutes>",
+              "<erddapDatasets><cacheClearMinutes>",
               "<erddapDatasets><awsS3OutputBucketUrl>",
               "<erddapDatasets><angularDegreeTrueUnits>":
             break;
@@ -894,6 +895,20 @@ public class LoadDatasets extends Thread {
               String2.log(
                   "cacheMinutes=" + EDStatic.config.cacheMillis / Calendar2.MILLIS_PER_MINUTE);
 
+              break;
+            }
+          case "<erddapDatasets></cacheClearMinutes>":
+            {
+              int tnt = String2.parseInt(xmlReader.content());
+              EDStatic.config.cacheClearMillis =
+                  (tnt < 1 || tnt == Integer.MAX_VALUE ? EDConfig.DEFAULT_cacheMinutes / 4 : tnt)
+                      * Calendar2.MILLIS_PER_MINUTE;
+
+              if (reallyVerbose) {
+                String2.log(
+                    "cacheClearMinutes="
+                        + EDStatic.config.cacheClearMillis / Calendar2.MILLIS_PER_MINUTE);
+              }
               break;
             }
           case "<erddapDatasets></commonStandardNames>":

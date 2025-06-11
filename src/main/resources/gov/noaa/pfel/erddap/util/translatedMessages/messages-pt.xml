@@ -349,7 +349,7 @@ Ou
 <a rel="help" href="#computerProgram">ignore esta página da web</a> e faça conversões a partir de um programa de computador, script ou página da web.
 ]]></convertBypass>
 <convertCOLORs>Cores</convertCOLORs>
-<convertCOLORsMessage>Converter valores para barra de cores</convertCOLORsMessage>
+<convertCOLORsMessage>Converter valor para cor da barra de cores</convertCOLORsMessage>
 <convertToAFullName><![CDATA[
 <strong>Converter de {0} em um nome completo.</strong>
 ]]></convertToAFullName>
