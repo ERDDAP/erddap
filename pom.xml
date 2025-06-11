@@ -8,7 +8,6 @@
   Website to search for maven plugins and dependencies: https://mvnrepository.com/ 
 
 * Compile in Maven and gather dependency .jar files
-  (pom.xml based on Kyle's pom from https://github.com/axiom-data-science/erddap )
 
   From DOS command line (or Bash) (after synchToMaven.sh has copied source files to Maven dir):
       //mvn -help 
@@ -25,8 +24,6 @@
       mvn package             //Creates a war in \programs\mavenERDDAP\ERDDAP\target
 
    or: mvn clean install -U   //clears out cached information (more thoroughly than 'clean') and does it all?
-
-* Run TestAll.
 
 -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -47,12 +44,13 @@
         <erddapreffiles.download.version>1.0.0</erddapreffiles.download.version>
         <netcdfJavaVersion>5.8.0</netcdfJavaVersion>
         <test.resources.version>test1.04</test.resources.version>
-        <jettyVersion>12.0.21</jettyVersion>
+        <jettyVersion>12.0.22</jettyVersion>
         <error-prone.version>2.27.0</error-prone.version>
         <prometheusVersion>1.3.8</prometheusVersion>
         <parquetVersion>1.15.2</parquetVersion>
-        <awssdkVersion>2.31.55</awssdkVersion>
+        <awssdkVersion>2.31.61</awssdkVersion>
         <luceneVersion>10.2.1</luceneVersion>
+        <nettyVersion>4.2.2.Final</nettyVersion>
         <mavenTestPluginVersion>3.5.3</mavenTestPluginVersion>
         <jacocoMavenVersion>0.8.13</jacocoMavenVersion>
         <download.unpackWhenChanged>true</download.unpackWhenChanged>
@@ -663,7 +661,7 @@
             <dependency>
                 <groupId>org.junit</groupId>
                 <artifactId>junit-bom</artifactId>
-                <version>5.13.0</version>
+                <version>5.13.1</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -770,28 +768,12 @@
             <scope>test</scope>
         </dependency>
 
-
-        <!-- Kyle had this: 
-             https://mvnrepository.com/artifact/org.apache.ant/ant 
-        <dependency>
-            <groupId>org.apache.ant</groupId>
-            <artifactId>ant</artifactId>
-            <version>1.10.9</version>
-        </dependency>   -->
-
        <!-- https://mvnrepository.com/artifact/com.github.librepdf/openpdf -->
         <dependency>
             <groupId>com.github.librepdf</groupId>
             <artifactId>openpdf</artifactId>
             <version>2.0.5</version>
         </dependency>
-
-        <!-- Kyle had this: 
-        <dependency>
-            <groupId>wsdl4j</groupId>
-            <artifactId>wsdl4j</artifactId>
-            <version>1.6.3</version>
-        </dependency-->
 
         <!-- https://mvnrepository.com/artifact/org.apache.lucene/lucene-core 
              The Lucene search option uses this. -->
@@ -824,20 +806,6 @@
             <groupId>org.jdom</groupId>
             <artifactId>jdom</artifactId>
             <version>2.0.2</version>
-        </dependency-->
-
-        <!-- Kyle had this: 
-        <dependency>
-            <groupId>org.apache.axis</groupId>
-            <artifactId>axis</artifactId>
-            <version>1.4</version>
-        </dependency-->
-
-        <!-- Kyle had this: 
-        <dependency>
-            <groupId>atg.taglib.json</groupId>
-            <artifactId>json-taglib</artifactId>
-            <version>0.4.1</version>
         </dependency-->
 
         <!-- https://mvnrepository.com/artifact/com.sun.mail/jakarta.mail 
@@ -1019,10 +987,8 @@
         <dependency>
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
-            <version>42.7.6</version>
+            <version>42.7.7</version>
         </dependency>
-
-
 
         <!-- CASSANDRA 
              https://mvnrepository.com/artifact/com.datastax.cassandra/cassandra-driver-core 
@@ -1063,13 +1029,13 @@
         <dependency>
             <groupId>io.netty</groupId>
             <artifactId>netty-all</artifactId>
-            <version>4.2.1.Final</version>
+            <version>${nettyVersion}</version>
         </dependency>
         <!-- https://mvnrepository.com/artifact/io.netty/netty-handler -->
         <dependency>
             <groupId>io.netty</groupId>
             <artifactId>netty-handler</artifactId>
-            <version>4.2.1.Final</version>
+            <version>${nettyVersion}</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/org.xerial.snappy/snappy-java 
@@ -1079,20 +1045,6 @@
             <artifactId>snappy-java</artifactId>
             <version>1.1.10.7</version>
         </dependency>
-
-        <!-- https://mvnrepository.com/artifact/io.dropwizard.metrics/metrics-jmx 
-            2021-01-25 Tried: To deal with java.lang.NoClassDefFoundError: com/codahale/metrics/JmxReporter
-            But now "metrics" option is always set to false.
-            See EDDTableFromCassandra references to JmxReporter.
-            See https://docs.datastax.com/en/developer/java-driver/3.5/manual/metrics/#metrics-4-compatibility            
-            and need for Cluster.builder().withoutJMXReporting()
-            which is probably a workable solution.           
-        <dependency>
-            <groupId>io.dropwizard.metrics</groupId>
-            <artifactId>metrics-jmx</artifactId>
-            <version>4.2.12</version>
-        </dependency -->
-
 
         <!-- AWS
              https://mvnrepository.com/artifact/software.amazon.awssdk/s3 
@@ -1121,20 +1073,18 @@
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/software.amazon.awssdk.crt/aws-crt
-            Maven compiling and dependency checking don't catch s3-transfer-manager's requirement for this.
-            (Bob says: This modern fancy programming sucks. 
-            Back in my day, if it compiled, all needed classes were present.) -->      
+            Maven compiling and dependency checking don't catch s3-transfer-manager's requirement for this. -->      
         <dependency>
             <groupId>software.amazon.awssdk.crt</groupId>
             <artifactId>aws-crt</artifactId>
-            <version>0.38.4</version>
+            <version>0.38.5</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/com.google.auth/google-auth-library-oauth2-http -->
         <dependency>
             <groupId>com.google.auth</groupId>
             <artifactId>google-auth-library-oauth2-http</artifactId>
-            <version>1.36.0</version>
+            <version>1.37.0</version>
         </dependency>
 
         <dependency>
@@ -1193,7 +1143,7 @@
         <dependency>
             <groupId>org.semver4j</groupId>
             <artifactId>semver4j</artifactId>
-            <version>5.7.0</version>
+            <version>5.7.1</version>
         </dependency>
     </dependencies>
 

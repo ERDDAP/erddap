@@ -273,7 +273,7 @@ public class LoadDatasets extends Thread {
           .datasetsCount
           .labelValues(Metrics.DatasetCategory.table.name())
           .set(newTableCount);
-      EDStatic.metrics.datasetsFailedCount.set(nTry - nDatasets);
+      EDStatic.metrics.datasetsFailedCount.set(ndf);
 
       // *** print lots of useful information
       long loadDatasetsTime = System.currentTimeMillis() - startTime;
