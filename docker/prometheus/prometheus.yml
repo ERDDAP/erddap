@@ -19,17 +19,7 @@ scrape_configs:
     scheme: 'http'
     honor_labels: true
     static_configs:
-      - targets: ['erddap-erddap-1:8080']
+      - targets: ['host.docker.internal:8080']
         labels:
           instance: 'erddap-primary'
           region: 'primary'
-
-    # Example of monitoring multiple ERDDAP instances
-    # - job_name: 'erddap-secondary'
-    #   scrape_interval: 30s
-    #   metrics_path: '/erddap/metrics'
-    #   static_configs:
-    #     - targets: ['erddap-secondary:8080']
-    #       labels:
-    #         instance: 'erddap-secondary'
-    #         region: 'secondary'
