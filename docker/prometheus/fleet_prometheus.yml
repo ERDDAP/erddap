@@ -1,0 +1,289 @@
+# prometheus.yml
+global:
+  scrape_interval: 60s
+  evaluation_interval: 60s
+
+scrape_configs:
+  - job_name: 'erddap-https-servers'
+    metrics_path: /erddap/metrics
+    scheme: https
+    static_configs:
+      - targets: ['coastwatch.pfeg.noaa.gov']
+        labels:
+          name: 'ERD/CoastWatch West Coast Node'
+          short_name: 'CSWC'
+      - targets: ['upwell.pfeg.noaa.gov']
+        labels:
+          name: 'NOAA UAF (Unified Access Framework)'
+          short_name: 'UAF'
+      - targets: ['polarwatch.noaa.gov']
+        labels:
+          name: 'NOAA Polar Watch'
+          short_name: 'POLARWATCH'
+      - targets: ['coastwatch.noaa.gov']
+        labels:
+          name: 'NOAA CoastWatch Central Operations'
+          short_name: 'NCCO'
+      - targets: ['oceanwatch.pifsc.noaa.gov']
+        labels:
+          name: 'Coastwatch/Oceanwatch Hawaii-Pacific'
+          short_name: 'PIFSC'
+      - targets: ['erddap.sensors.ioos.us']
+        labels:
+          name: 'NOAA IOOS Sensors ERDDAP'
+          short_name: 'IOOS-Sensors'
+      - targets: ['gliders.ioos.us']
+        labels:
+          name: 'NOAA IOOS NGDAC (National Glider Data Assembly Center)'
+          short_name: 'NGDAC'
+      - targets: ['erddap.aoos.org']
+        labels:
+          name: 'NOAA IOOS AOOS (Alaska Ocean Observing System)'
+          short_name: 'AOOS'
+      - targets: ['erddap.maracoos.org']
+        labels:
+          name: 'NOAA IOOS MARACOOS (Mid-Atlantic Regional Association Coastal Ocean Observing Systems)'
+          short_name: 'NERACOOS'
+      - targets: ['erddap.nanoos.org']
+        labels:
+          name: 'NANOOS (Northwest Association of Networked Ocean Observing Systems)'
+          short_name: 'NANOOS'
+      - targets: ['data.neracoos.org']
+        labels:
+          name: 'NOAA IOOS NERACOOS (Northeastern Regional Association of Coastal and Ocean Observing Systems)'
+          short_name: 'NERACOOS'
+      - targets: ['pae-paha.pacioos.hawaii.edu']
+        labels:
+          name: 'NOAA IOOS PacIOOS (Pacific Islands Ocean Observing System) at the University of Hawaii (UH)'
+          short_name: 'PacIOOS'
+      - targets: ['sccoos.org']
+        labels:
+          name: 'Southern California Coastal Ocean Observing System (SCCOOS)'
+          short_name: 'SCCOOS'
+      - targets: ['erddap.secoora.org']
+        labels:
+          name: 'NOAA IOOS SECOORA (Southeast Coastal Ocean Observing Regional Association)'
+          short_name: 'SECOORA'
+      - targets: ['seagull-erddap.glos.org']
+        labels:
+          name: 'NOAA IOOS GLOS (Great Lakes Observing System)'
+          short_name: 'GLOS'
+      - targets: ['erddap.gcoos.org']
+        labels:
+          name: 'NOAA IOOS GCOOS (Gulf of America Coastal Ocean Observing System)'
+          short_name: 'GCOOS-TAMU'
+      - targets: ['gcoos5.geos.tamu.edu']
+        labels:
+          name: 'GCOOS Atmospheric and Oceanographic: Historical Data'
+          short_name: 'GCOO5-TAMU'
+      - targets: ['gcoos4.tamu.edu']
+        labels:
+          name: 'GCOOS Biological and Socioeconomics'
+          short_name: 'GCOO4-TAMU'
+      - targets: ['atn.ioos.us']
+        labels:
+          name: 'NOAA ATN IOOS (Animal Telemetry Network)'
+          short_name: 'ATN-IOOS'
+      - targets: ['apps.glerl.noaa.gov']
+        labels:
+          name: 'NOAA CoastWatch Great Lakes Node'
+          short_name: 'GLERL'
+      - targets: ['www.ncei.noaa.gov']
+        labels:
+          name: 'NOAA''s National Centers for Environmental Information (NCEI)'
+          short_name: 'NCEI'
+      - targets: ['cwcgom.aoml.noaa.gov']
+        labels:
+          name: 'CoastWatch Caribbean/Gulf of Mexico Node'
+          short_name: 'CSCGOM'
+      - targets: ['pub-data.diver.orr.noaa.gov']
+        labels:
+          name: 'NOAA Resource Damage Assessment & Restoration DIVER'
+          short_name: 'ORR/DIVER'
+      - targets: ['opendap.co-ops.nos.noaa.gov']
+        labels:
+          name: 'NOAA''s Center for Operational Oceanographic Products and Services'
+          short_name: 'COOPS-NOS'
+      - targets: ['erddap.griidc.org']
+        labels:
+          name: 'GRIIDC (Gulf of Mexico Research Initiative'
+          short_name: 'GRIIDC'
+      - targets: ['apdrc.soest.hawaii.edu']
+        labels:
+          name: 'ERDDAP at the Asia-Pacific Data-Research Center'
+          short_name: 'APDRC'
+      - targets: ['geoport.usgs.esipfed.org']
+        labels:
+          name: 'USGS Coastal and Marine Geology Program'
+          short_name: 'USGS'
+      - targets: ['erddap.bco-dmo.org']
+        labels:
+          name: 'Biological and Chemical Oceanography Data Management Office (BCO-DMO) ERDDAP'
+          short_name: 'BCODMO'
+      - targets: ['erddap.emodnet.eu']
+        labels:
+          name: 'European Marine Observation and Data Network (EMODnet) ERDDAP'
+          short_name: 'EMODnet'
+      - targets: ['erddap.emodnet-physics.eu']
+        labels:
+          name: 'European Marine Observation and Data Network (EMODnet) Physics ERDDAP'
+          short_name: 'EMODnet Physics'
+      - targets: ['erddap.marine.ie']
+        labels:
+          name: 'Marine Institute - Ireland'
+          short_name: 'MII'
+      - targets: ['erddap.dataexplorer.oceanobservatories.org']
+        labels:
+          name: 'Ocean Observatories Initiative (OOI)'
+          short_name: 'OOI'
+      - targets: ['erddap-goldcopy.dataexplorer.oceanobservatories.org']
+        labels:
+          name: 'Ocean Observatories Initiative (OOI) Goldcopy'
+          short_name: 'OOI Goldcopy'
+      - targets: ['members.oceantrack.org']
+        labels:
+          name: 'Ocean Tracking Network'
+          short_name: 'OTN'
+      - targets: ['spraydata.ucsd.edu']
+        labels:
+          name: 'Spray Underwater Glider data from Instrument Development Group, Scripps Institute of Oceanography, University of California, San Diego'
+          short_name: 'UCSD'
+      - targets: ['basin.ceoe.udel.edu']
+        labels:
+          name: 'University of Delaware, College of Earth, Ocean and Environment'
+          short_name: 'CEOE'
+      - targets: ['www.smartatlantic.ca']
+        labels:
+          name: 'Smart Atlantic'
+          short_name: 'SmartAtlantic'
+      - targets: ['salishsea.eos.ubc.ca']
+        labels:
+          name: 'UBC Earth, Ocean & Atmospheric Sciences SalishSeaCast Project'
+          short_name: 'UBC'
+      - targets: ['canwinerddap.ad.umanitoba.ca']
+        labels:
+          name: 'The Canadian Watershed Information Network at the University of Manitoba'
+          short_name: 'CanWIN'
+      - targets: ['cioosatlantic.ca']
+        labels:
+          name: 'Canadian Integrated Ocean Observatory System Atlantic'
+          short_name: 'CIOOS Atlantic'
+      - targets: ['data.cioospacific.ca']
+        labels:
+          name: 'Canadian Integrated Ocean Observatory System Pacific'
+          short_name: 'CIOOS Pacific'
+      - targets: ['data.permafrostnet.ca']
+        labels:
+          name: 'NSERC PermafrostNet'
+          short_name: 'PermaFrost'
+      - targets: ['erddap.ogsl.ca']
+        labels:
+          name: 'St. Lawrence Global Observatory - CIOOS | Observatoire global du Saint-Laurent - SIOOC'
+          short_name: 'SLGO-OGSL'
+      - targets: ['catalogue.hakai.org']
+        labels:
+          name: 'Hakai Institute'
+          short_name: 'Hakai'
+      - targets: ['erddap.bio-oracle.org']
+        labels:
+          name: 'Bio-Oracle:  Marine data layers for modelling'
+          short_name: 'Bio-Oracle'
+      - targets: ['erddap.emso-fr.org']
+        labels:
+          name: 'EMSO - European Multidisciplinary Seafloor and water column Observatory'
+          short_name: 'EMSO'
+      - targets: ['erddap.ifremer.fr']
+        labels:
+          name: 'French Research Institute for the Exploitation of the Sea'
+          short_name: 'IFREMER'
+      - targets: ['erddap.emso.eu']
+        labels:
+          name: 'EMSO ERIC - European Multidisciplinary Seafloor and water column Observatory'
+          short_name: 'EMSO ERIC'
+      - targets: ['data.iadc.cnr.it']
+        labels:
+          name: 'Italian Arctic Data Center'
+          short_name: 'IADC'
+      - targets: ['nodc.ogs.it']
+        labels:
+          name: 'National Ocean Data Centre - OGS'
+          short_name: 'NODC-OGS'
+      - targets: ['erddap.observations.voiceoftheocean.org']
+        labels:
+          name: 'Voice of the Ocean'
+          short_name: 'VOTO'
+      - targets: ['linkedsystems.uk']
+        labels:
+          name: 'Linked Systems @ the British Oceanographic Data Centre, National Oceanography Centre, UK'
+          short_name: 'NOC-BODC Linked Systems'
+      - targets: ['erddap.incois.gov.in']
+        labels:
+          name: 'ESSO INCOIS (Indian National Centre for Ocean Information Services)'
+          short_name: 'INCOIS'
+
+  - job_name: 'erddap-http-servers'
+    metrics_path: /erddap/metrics
+    scheme: http
+    static_configs:
+      - targets: ['erddap.cencoos.org']
+        labels:
+          name: 'CeNCOOS (Central and Northern California Ocean Observing System) ERDDAP'
+          short_name: 'CeNCOOS ERDDAP'
+      - targets: ['www.neracoos.org']
+        labels:
+          name: 'NOAA IOOS NERACOOS (Northeastern Regional Association of Coastal and Ocean Observing Systems)'
+          short_name: 'NERACOOS'
+      - targets: ['osmc.noaa.gov']
+        labels:
+          name: 'NOAA OSMC (Observing System Monitoring Center)'
+          short_name: 'OSMC'
+      - targets: ['dap.onc.uvic.ca']
+        labels:
+          name: 'ONC (Ocean Networks Canada)'
+          short_name: 'ONC'
+      - targets: ['tds.marine.rutgers.edu']
+        labels:
+          name: 'Department of Marine and Coastal Sciences, School of Environmental and Biological Sciences, Rutgers, The State University of New Jersey'
+          short_name: 'RUTGERS'
+      - targets: ['bmlsc.ucdavis.edu:8080']
+        labels:
+          name: 'UC Davis BML (University of California at Davis, Bodega Marine Laboratory)'
+          short_name: 'BMLSC'
+
+  # --- Jobs for Servers with Custom Paths ---
+
+  - job_name: 'erddap-aoml-gdp'
+    metrics_path: /gdp/erddap/metrics
+    scheme: https
+    static_configs:
+      - targets: ['erddap.aoml.noaa.gov']
+        labels:
+          name: 'NOAA Global Drifter Program'
+          short_name: 'AOML/GDP'
+
+  - job_name: 'erddap-pmel'
+    metrics_path: /pmel/erddap/metrics
+    scheme: https
+    static_configs:
+      - targets: ['data.pmel.noaa.gov']
+        labels:
+          name: 'NOAA PMEL (Pacific Marine Environmental Laboratory)'
+          short_name: 'PMEL'
+
+  - job_name: 'erddap-pmel-alamo'
+    metrics_path: /alamo/erddap/metrics
+    scheme: https
+    static_configs:
+      - targets: ['ferret.pmel.noaa.gov']
+        labels:
+          name: 'ALAMO (Air Launched Autonomous Micro-Observer)'
+          short_name: 'ALAMO'
+
+  - job_name: 'erddap-pmel-socat'
+    metrics_path: /socat/erddap/metrics
+    scheme: https
+    static_configs:
+      - targets: ['ferret.pmel.noaa.gov']
+        labels:
+          name: 'SOCAT (Surface Ocean CO2 ATlas)'
+          short_name: 'SOCAT'
