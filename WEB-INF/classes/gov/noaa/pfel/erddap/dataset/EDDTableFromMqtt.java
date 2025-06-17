@@ -3,6 +3,7 @@ package gov.noaa.pfel.erddap.dataset;
 import com.cohort.array.StringArray;
 import com.hivemq.client.mqtt.MqttClient;
 import com.hivemq.client.mqtt.MqttGlobalPublishFilter;
+import com.hivemq.client.mqtt.datatypes.MqttQos;
 import com.hivemq.client.mqtt.mqtt5.Mqtt5AsyncClient;
 import com.hivemq.client.mqtt.mqtt5.Mqtt5ClientBuilder;
 import com.hivemq.client.mqtt.mqtt5.message.publish.Mqtt5Publish;
@@ -64,6 +65,7 @@ public class EDDTableFromMqtt extends EDDTableFromFiles {
       String tCachePartialPathRegex,
       String tAddVariablesWhere,
       String serverHost,
+      Integer serverPort,
       String clientId,
       String username,
       String password,
@@ -121,6 +123,7 @@ public class EDDTableFromMqtt extends EDDTableFromFiles {
     CompletableFuture<Mqtt5AsyncClient> response =
         initialiseMqttAsyncClient(
             serverHost,
+            serverPort,
             clientId,
             username,
             password,
@@ -132,10 +135,12 @@ public class EDDTableFromMqtt extends EDDTableFromFiles {
             automaticReconnect,
             messageHandler);
     Mqtt5AsyncClient asyncClient = response.join();
+    subscribeToDatasetTopics(asyncClient, accessibleTo, null);
   }
 
   public static CompletableFuture<Mqtt5AsyncClient> initialiseMqttAsyncClient(
       String serverHost,
+      Integer serverPort,
       String clientId,
       String username,
       String password,
@@ -154,7 +159,7 @@ public class EDDTableFromMqtt extends EDDTableFromFiles {
             : "erddap-mqtt-" + UUID.randomUUID().toString();
 
     // Determine default port based on SSL usage
-    int effectivePort = useSsl ? MQTT_SECURE_PORT : MQTT_PORT;
+    int effectivePort = (serverPort != null) ? serverPort : (useSsl ? MQTT_SECURE_PORT : MQTT_PORT);
 
     // Build the MQTT client base configuration
     Mqtt5ClientBuilder clientBuilder =
@@ -209,6 +214,40 @@ public class EDDTableFromMqtt extends EDDTableFromFiles {
               System.err.println("Failed to connect ERDDAP MQTT client: " + throwable.getMessage());
               throw new RuntimeException("MQTT connection failed", throwable);
             });
+  }
+
+  public static void subscribeToDatasetTopics(
+      Mqtt5AsyncClient client, String[] topics, MqttQos qosLevel) {
+
+    for (String topic : topics) {
+      client
+          .subscribeWith()
+          .topicFilter(topic)
+          .qos(qosLevel)
+          .callback(
+              publish -> {
+                // Extract message and topic
+                String message = new String(publish.getPayloadAsBytes());
+                String topicName = publish.getTopic().toString();
+
+                // Call your writeToJSONL method
+                // writeToJSONL(message, topicName);
+
+                // Optional: print confirmation
+                System.out.println("Received message from topic: " + topicName);
+              })
+          .send()
+          .whenComplete(
+              (suback, throwable) -> {
+                if (throwable != null) {
+                  System.err.println(
+                      "Failed to subscribe to topic " + topic + ": " + throwable.getMessage());
+                } else {
+                  System.out.println("Successfully subscribed to topic: " + topic);
+                  System.out.println("Subscription result: " + suback.getReasonCodes().get(0));
+                }
+              });
+    }
   }
 
   @Override
