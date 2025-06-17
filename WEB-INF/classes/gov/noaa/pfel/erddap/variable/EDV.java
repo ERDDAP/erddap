@@ -842,7 +842,7 @@ public class EDV {
       String ic = combinedAttributes().getString(language, "ioos_category");
       Test.ensureSomethingUnicode(ic, errorInMethod + "ioos_category");
       Test.ensureTrue(
-          IOOS_CATEGORIES.indexOf(ic) >= 0,
+          String2.caseInsensitiveIndexOf(EDV.IOOS_CATEGORIES, ic) >= 0,
           errorInMethod + "ioos_category=\"" + ic + "\" isn't a valid category.");
     }
 

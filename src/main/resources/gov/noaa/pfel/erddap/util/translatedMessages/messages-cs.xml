@@ -345,7 +345,7 @@ Nebo
 <a rel="help" href="#computerProgram">tuto webovou stránku přeskočte</a> a proveďte konverze z počítačového programu, skriptu nebo webové stránky.
 ]]></convertBypass>
 <convertCOLORs>Barvy</convertCOLORs>
-<convertCOLORsMessage>Převést Hodnoty do barevné lišty</convertCOLORsMessage>
+<convertCOLORsMessage>Převést hodnotu do barvy z barevné lišty</convertCOLORsMessage>
 <convertToAFullName><![CDATA[
 <strong>Převést z {0} na celé jméno.</strong>
 ]]></convertToAFullName>

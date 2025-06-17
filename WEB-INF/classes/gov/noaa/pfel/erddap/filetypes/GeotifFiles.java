@@ -321,6 +321,7 @@ public class GeotifFiles extends ImageTypes {
           ipAddress,
           requestUrl,
           userDapQuery,
+          directory,
           ncFullName,
           false, // keepUnusedAxes=false  this is necessary
           lonAdjust);

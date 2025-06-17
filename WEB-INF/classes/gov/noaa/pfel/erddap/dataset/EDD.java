@@ -50,6 +50,7 @@ import gov.noaa.pfel.erddap.util.EmailThread;
 import gov.noaa.pfel.erddap.util.Subscriptions;
 import gov.noaa.pfel.erddap.util.TaskThread;
 import gov.noaa.pfel.erddap.util.TouchThread;
+import gov.noaa.pfel.erddap.util.TranslateMessages;
 import gov.noaa.pfel.erddap.variable.AxisVariableInfo;
 import gov.noaa.pfel.erddap.variable.DataVariableInfo;
 import gov.noaa.pfel.erddap.variable.EDV;
@@ -1952,7 +1953,7 @@ public abstract class EDD {
     if (debugMode) String2.log("    getAttributesFromXml...");
     LocalizedAttributes tAttributes = new LocalizedAttributes();
     int startOfTagsN = xmlReader.stackSize();
-    String tName = null, tType = null;
+    String tName = null, tType = null, tLang = null;
     while (true) {
       xmlReader.nextTag();
       String topTag = xmlReader.topTag();
@@ -1965,7 +1966,7 @@ public abstract class EDD {
       if (topTag.equals("att")) {
         tName = xmlReader.attributeValue("name");
         tType = xmlReader.attributeValue("type");
-
+        tLang = xmlReader.attributeValue("xml:lang");
       } else if (topTag.equals("/att")) {
         String content = xmlReader.content();
         // if (reallyVerbose)
@@ -2005,7 +2006,7 @@ public abstract class EDD {
         // if (tName.equals("_FillValue"))
         //    String2.log(">>EDD attribute name=\"" + tName + "\" content=" + content +
         //    "\n  type=" + pa.elementTypeString() + " pa=" + pa.toString());
-        tAttributes.set(EDMessages.DEFAULT_LANGUAGE, tName, pa);
+        tAttributes.set(TranslateMessages.getIndexForLanguageCode(tLang), tName, pa);
         // String2.log(">>????EDD _FillValue=" + tAttributes.get("_FillValue"));
 
       } else {

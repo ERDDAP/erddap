@@ -189,7 +189,8 @@ public class EDStatic {
    * 2.25_1 RC 2024-11-07 <br>
    * 2.26 RC on 2025-03-11 <br>
    * The below is kept for historical reference. As of 2.27.0 ERDDAP has transitioned to using
-   * Semantic Versioning.
+   * Semantic Versioning. Also as of 2.27.0 I'm ceasing putting a date for new versions here.
+   * Version release history is readily available in GitHub.
    *
    * <p>For main branch releases, this will be a floating point number with 2 decimal digits, with
    * no additional text. !!! In general, people other than the main ERDDAP developer (Bob) should
@@ -199,7 +200,7 @@ public class EDStatic {
    * anything following it. A request to http.../erddap/version will return just the number (as
    * text). A request to http.../erddap/version_string will return the full string.
    */
-  public static final Semver erddapVersion = new Semver("2.26.0");
+  public static final Semver erddapVersion = new Semver("2.27.0");
 
   /** This identifies the dods server/version that this mimics. */
   public static final String dapVersion = "DAP/2.0";
@@ -263,6 +264,7 @@ public class EDStatic {
   public static final String startupLocalDateTime = Calendar2.getCurrentISODateTimeStringLocalTZ();
   public static long lastMajorLoadDatasetsStartTimeMillis = System.currentTimeMillis();
   public static long lastMajorLoadDatasetsStopTimeMillis = System.currentTimeMillis() - 1;
+  public static long lastCacheClear = System.currentTimeMillis();
   // Currently Loading Dataset
   public static volatile boolean cldMajor = false;
   public static volatile int cldNTry = 0; //   0=none actively loading
@@ -4264,5 +4266,62 @@ public class EDStatic {
       throw new SimpleException("**SEMVER_ERROR** Could not get semver from version: " + version);
     }
     return semver;
+  }
+
+  public static void clearCache(String source, boolean systemLowMemory) {
+    String2.log(source + " start");
+    // If the system is low on disk space try a reduced time to clear additional files.
+    long cacheTime = System.currentTimeMillis() - EDStatic.config.cacheMillis;
+    // delete old files in cache
+    int nCacheFiles =
+        File2.deleteIfOld(
+            EDStatic.config.fullCacheDirectory, // won't throw exception
+            cacheTime,
+            true,
+            false); // false: important not to delete empty dirs
+    int nPublicFiles =
+        File2.deleteIfOld(
+            EDStatic.config.fullPublicDirectory,
+            cacheTime,
+            true,
+            false); // false: important not to delete empty dirs
+    String2.log(
+        source
+            + " "
+            + nPublicFiles
+            + " files remain in "
+            + EDStatic.config.fullPublicDirectory
+            + "\n"
+            + nCacheFiles
+            + " files remain in "
+            + EDStatic.config.fullCacheDirectory
+            + " and subdirectories.");
+
+    String2.log(
+        "After deleting decompressed files not used in the last "
+            + EDStatic.decompressedCacheMaxMinutesOld
+            + " minutes, nRemain="
+            + File2.deleteIfOld(
+                EDStatic.config.fullDecompressedDirectory,
+                System.currentTimeMillis()
+                    - EDStatic.decompressedCacheMaxMinutesOld * Calendar2.MILLIS_PER_MINUTE,
+                true,
+                false)); // recursive, deleteEmptySubdirectories
+
+    if (systemLowMemory) {
+      FileVisitorDNLS.pruneCache(
+          EDStatic.config.fullCacheDirectory,
+          EDStatic.config.lowMemCacheGbLimit * Math2.BytesPerGB,
+          1.0);
+      FileVisitorDNLS.pruneCache(
+          EDStatic.config.fullPublicDirectory,
+          EDStatic.config.lowMemCacheGbLimit * Math2.BytesPerGB,
+          1.0);
+      FileVisitorDNLS.pruneCache(
+          EDStatic.config.fullDecompressedDirectory,
+          decompressedCacheMaxGB * Math2.BytesPerGB,
+          FileVisitorDNLS.PRUNE_CACHE_DEFAULT_FRACTION);
+    }
+    EDStatic.lastCacheClear = System.currentTimeMillis();
   }
 }

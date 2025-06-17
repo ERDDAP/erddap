@@ -59,6 +59,7 @@ public class NcFiles extends CacheLockFiles {
         requestInfo.ipAddress(),
         requestInfo.requestUrl(),
         requestInfo.userDapQuery(),
+        requestInfo.dir(),
         cacheFullName,
         true,
         0); // it saves to temp random file first

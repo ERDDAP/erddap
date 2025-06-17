@@ -183,6 +183,18 @@ public class TopLevelHandler extends State {
           String2.log("cacheMinutes=" + EDStatic.config.cacheMillis / Calendar2.MILLIS_PER_MINUTE);
         }
       }
+      case "cacheClearMinutes" -> {
+        int tnt = String2.parseInt(data.toString());
+        EDStatic.config.cacheClearMillis =
+            (tnt < 1 || tnt == Integer.MAX_VALUE ? EDConfig.DEFAULT_cacheMinutes / 4 : tnt)
+                * Calendar2.MILLIS_PER_MINUTE;
+
+        if (reallyVerbose) {
+          String2.log(
+              "cacheClearMinutes="
+                  + EDStatic.config.cacheClearMillis / Calendar2.MILLIS_PER_MINUTE);
+        }
+      }
       case "commonStandardNames" -> {
         String ts = data.toString();
         EDStatic.messages.commonStandardNames =
