@@ -360,6 +360,107 @@ class EDDGridFromNcFilesUnpackedTests {
   /**
    * @throws Throwable if trouble
    */
+  @org.junit.jupiter.api.Test
+  void testSchema() throws Throwable {
+    // String2.log("\n*** EDDGridFromNcFilesUnpacked.testBasic()\n");
+    // testVerboseOn();
+    int language = 0;
+    String tName, results, tResults, expected;
+    String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 10);
+
+    EDDGrid eddGrid = (EDDGrid) EDDTestDataset.gettestEDDGridFromNcFilesUnpacked();
+
+    // *** test getting das for entire dataset
+    String2.log("\n*** test das dds for entire dataset\n");
+    tName =
+        eddGrid.makeNewFileForDapQuery(
+            language,
+            null,
+            null,
+            "",
+            EDStatic.config.fullTestCacheDirectory,
+            eddGrid.className(),
+            ".croissant");
+    results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
+    // String2.log(results);
+    expected =
+        EDStatic.config.fullTestCacheDirectory
+            + tName
+            + "\n"
+            + "Attributes {\n"
+            + "  time {\n"
+            + "    String _CoordinateAxisType \"Time\";\n"
+            + "    Float64 actual_range 1.4440356e+9, 1.444122e+9;\n"
+            + "    String axis \"T\";\n"
+            + "    String ioos_category \"Time\";\n"
+            + "    String long_name \"reference time of sst field\";\n"
+            + "    String standard_name \"time\";\n"
+            + "    String time_origin \"01-JAN-1970 00:00:00\";\n"
+            + "    String units \"seconds since 1970-01-01T00:00:00Z\";\n"
+            + "  }\n"
+            + "  latitude {\n"
+            + "    String _CoordinateAxisType \"Lat\";\n"
+            + "    Float32 actual_range 20.0006, 20.0995;\n"
+            + "    String axis \"Y\";\n"
+            + "    String ioos_category \"Location\";\n"
+            + "    String long_name \"Latitude\";\n"
+            + "    String standard_name \"latitude\";\n"
+            + "    String units \"degrees_north\";\n"
+            + "    Float32 valid_max 90.0;\n"
+            + "    Float32 valid_min -90.0;\n"
+            + "  }\n"
+            + "  longitude {\n"
+            + "    String _CoordinateAxisType \"Lon\";\n"
+            + "    Float32 actual_range -134.995, -134.896;\n"
+            + "    String axis \"X\";\n"
+            + "    String ioos_category \"Location\";\n"
+            + "    String long_name \"Longitude\";\n"
+            + "    String standard_name \"longitude\";\n"
+            + "    String units \"degrees_east\";\n"
+            + "    Float32 valid_max 180.0;\n"
+            + "    Float32 valid_min -180.0;\n"
+            + "  }\n"
+            + "  analysed_sst {\n"
+            + "    Float64 _FillValue NaN;\n"
+            + "    Float64 colorBarMaximum 305.0;\n"
+            + "    Float64 colorBarMinimum 273.0;\n"
+            + "    String comment \"Interim near-real-time (nrt) version; to be replaced by Final version\";\n"
+            + "    String ioos_category \"Temperature\";\n"
+            + "    String long_name \"analysed sea surface temperature\";\n"
+            + "    String standard_name \"sea_surface_foundation_temperature\";\n"
+            + "    String units \"degree_K\";\n"
+            + "    Float64 valid_max 330.917;\n"
+            + "    Float64 valid_min 265.383;\n"
+            + "  }\n"
+            + "  NC_GLOBAL {\n"
+            + "    String cdm_data_type \"Grid\";\n"
+            + "    String comment \"Interim-MUR(nrt) will be replaced by MUR-Final in about 3 days; MUR = \\\"Multi-scale Ultra-high Resolution\\\"; produced under NASA MEaSUREs program.\";\n"
+            + "    String contact \"ghrsst@podaac.jpl.nasa.gov\";\n"
+            + "    String Conventions \"CF-1.6, COARDS, ACDD-1.3\";\n"
+            + "    String creation_date \"2015-10-06\";\n"
+            + "    String creator_email \"ghrsst@podaac.jpl.nasa.gov\";\n"
+            + "    String creator_name \"GHRSST\";\n"
+            + "    String creator_url \"https://podaac.jpl.nasa.gov/\";\n"
+            + "    String DSD_entry_id \"JPL-L4UHfnd-GLOB-MUR\";\n"
+            + "    Float64 Easternmost_Easting -134.896;\n"
+            + "    String file_quality_index \"0\";\n"
+            + "    String GDS_version_id \"GDS-v1.0-rev1.6\";\n"
+            + "    Float64 geospatial_lat_max 20.0995;\n"
+            + "    Float64 geospatial_lat_min 20.0006;\n"
+            + "    String geospatial_lat_units \"degrees_north\";\n"
+            + "    Float64 geospatial_lon_max -134.896;\n"
+            + "    Float64 geospatial_lon_min -134.995;\n"
+            + "    Float64 geospatial_lon_resolution 0.011000000000001996;\n"
+            + "    String geospatial_lon_units \"degrees_east\";\n"
+            + "    String history \"Interim near-real-time (nrt) version created at nominal 1-day latency.\n"
+            + today;
+    tResults = results.substring(0, Math.min(results.length(), expected.length()));
+    Test.ensureEqual(tResults, expected, "results=\n" + results);
+  }
+
+  /**
+   * @throws Throwable if trouble
+   */
   @ParameterizedTest
   @ValueSource(booleans = {false, true})
   void testBasic(boolean deleteCachedDatasetInfo) throws Throwable {

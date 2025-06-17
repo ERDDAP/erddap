@@ -17989,22 +17989,42 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
    */
   public static void theSchemaDotOrgDataset(int language, Writer writer, EDD edd)
       throws IOException {
+    writer.write("<script type=\"application/ld+json\">\n");
+    theSchemaDotOrgDatasetJson(language, writer, edd);
+    writer.write("</script>\n");
+  }
+
+  public static void theSchemaDotOrgDatasetJson(int language, Writer writer, EDD edd)
+      throws IOException {
     String baseUrl = EDStatic.preferredErddapUrl;
     Attributes gatts = edd.combinedGlobalAttributes().toAttributes(language);
     String ts;
-
     writer.write(
-        "<script type=\"application/ld+json\">\n"
-            + "{\n"
-            + "  \"@context\": \"http://schema.org\",\n"
+        "{\n"
+            + (EDStatic.config.generateCroissantSchema
+                ? "  \"@context\":  {\n"
+                    + "    \"@language\": \""
+                    + TranslateMessages.languageCodeList.get(language)
+                    + "\",\n"
+                    + "    \"@vocab\": \"https://schema.org/\"\n"
+                    + "  },\n"
+                : "  \"@context\": \"http://schema.org\",\n")
             + // for now, leave as http://
-            "  \"@type\": \"Dataset\",\n"
+            "  \"@type\": \""
+            + (EDStatic.config.generateCroissantSchema ? "sc:" : "")
+            + "Dataset\",\n"
+            + (EDStatic.config.generateCroissantSchema
+                ? "  \"conformsTo\": \"http://mlcommons.org/croissant/1.0\",\n"
+                : "")
             + "  \"name\": "
             + String2.toJson65536(edd.title(language))
             + ",\n"
             + "  \"headline\": "
             + String2.toJson65536(edd.datasetID())
             + ",\n");
+
+    // TODO croissant- add distribution
+    // TODO croissant- add recordSet
 
     // add everything not used elsewhere into description
     String names[] = gatts.getNames();
@@ -18233,12 +18253,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                 + "  }");
       }
     }
-
-    writer.write("""
-
-            }
-            </script>
-            """);
+    writer.write("\n}\n");
   }
 
   /**

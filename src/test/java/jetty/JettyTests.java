@@ -6835,8 +6835,18 @@ class JettyTests {
     expected =
         "<script type=\"application/ld+json\">\n"
             + "{\n"
-            + "  \"@context\": \"http://schema.org\",\n"
-            + "  \"@type\": \"Dataset\",\n"
+            + (EDStatic.config.generateCroissantSchema
+                ? "  \"@context\":  {\n"
+                    + "    \"@language\": \"en\",\n"
+                    + "    \"@vocab\": \"https://schema.org/\"\n"
+                    + "  },\n"
+                : "  \"@context\": \"http://schema.org\",\n")
+            + "  \"@type\": \""
+            + (EDStatic.config.generateCroissantSchema ? "sc:" : "")
+            + "Dataset\",\n"
+            + (EDStatic.config.generateCroissantSchema
+                ? "  \"conformsTo\": \"http://mlcommons.org/croissant/1.0\",\n"
+                : "")
             + "  \"name\": \"Chlorophyll-a, Aqua MODIS, NPP, L3SMI, Global, 4km, Science Quality, 2003-present (1 Day Composite)\",\n"
             + "  \"headline\": \"erdMH1chla1day\",\n"
             + "  \"description\": \"This dataset has Level 3, Standard Mapped Image, 4km, chlorophyll-a concentration data from NASA's Aqua Spacecraft.  Measurements are gathered by the Moderate Resolution Imaging Spectroradiometer (MODIS) carried aboard the spacecraft.  This is Science Quality data.  This is the August 2015 version of this dataset.\\n"
