@@ -4979,7 +4979,6 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
 
       StringBuilder sb = new StringBuilder();
       EDStatic.addIntroStatistics(sb, EDStatic.config.showLoadErrorsOnStatusPage, this);
-
       String traces = MustBe.allStackTraces(true, true);
       int po = traces.indexOf('\n');
       if (po > 0) sb.append(traces, 0, po + 1);
@@ -5000,8 +4999,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
 
       if (EDStatic.config.useHtmlTemplates) {
         TemplateEngine engine = TemplateEngine.createPrecompiled(ContentType.Html);
-        TemplateModel model = new TemplateModel(youAreHereHtml, statisticsHtml);
-        engine.render("status.jte", Map.of("model", model), new WriterOutput(writer));
+        engine.render("status.jte", Map.of(), new WriterOutput(writer));
       } else {
         writer.write(youAreHereHtml + "<pre>" + statisticsHtml + "</pre>\n");
       }

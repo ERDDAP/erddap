@@ -1,6 +1,46 @@
-@import gov.noaa.pfel.erddap.util.TemplateModel
-@param TemplateModel model
-@template.youarehere(model.youAreHere)
+@import gov.noaa.pfel.erddap.jte.Status
 <pre>
-    ${model.statistics}
+Current time is ${Status.getCurrentTimeLocal()}
+Startup was at ${Status.getStartupTimeLocal()}
+Last major LoadDatasets started ${Status.getTimeSinceLastMajorLoadDatasetsStarted()} ago and@if(Status.isLoadDatasetsRunning()) is still running.@else finshed after ${Status.getLoadDatasetsElapsedTimeSeconds()} seconds.@endif
+@if(!Status.isDatasetLoading())Currently, no dataset is loading.@elseCurrently @if(Status.isDatasetLoadingMajor())major@else minor @endif LoadDatasets is loading dataset ${Status.getDatasetLoadingNumber()} = ${Status.getDatasetLoadingID()} (${Status.getDatasetLoadingTime()})@endif
+nGridDatasets = ${Status.getGridDatasetCount()}
+nTableDatasets = ${Status.getTableDatasetCount()}
+nTotalDatasets = ${Status.getGridDatasetCount()+Status.getTableDatasetCount()}
+${Status.getdatasetsfailedtoload()}
+@if(Status.getShowLoadErrorsOnStatusPage())${Status.getdatasetsfailedtoload()}@endif
+${Status.getErrorsDuringMajorReload()}
+Unique users (since startup)                            n = ${Status.getIpAddressQueue()}
+Response Failed    Time (since last major LoadDatasets) ${Status.getFailureTimesDistributionLoadDatasets()}
+Response Failed    Time (since last Daily Report)       ${Status.getFailureTimesDistribution24()}
+Response Failed    Time (since startup)                 ${Status.getFailureTimesDistributionTotal()}
+Response Succeeded Time (since last major LoadDatasets) ${Status.getResponseTimesDistributionLoadDatasets()}
+Response Succeeded Time (since last Daily Report)       ${Status.getResponseTimesDistribution24()}
+Response Succeeded Time (since startup)                 ${Status.getResponseTimesDistributionTotal()}
+
+TaskThread has finished ${Status.getLastFinishedTaskPlusOne()} out of ${Status.getTaskListSize()} tasks.
+${Status.getTaskThreadStatusMessage()}
+TaskThread Failed    Time (since last Daily Report)     ${Status.getTaskThreadFailedDistribution24()}
+TaskThread Failed    Time (since startup)               ${Status.getTaskThreadFailedDistributionTotal()}
+TaskThread Succeeded Time (since last Daily Report)     ${Status.getTaskThreadSucceededDistribution24()}
+TaskThread Succeeded Time (since startup)               ${Status.getTaskThreadSucceededDistributionTotal()}
+
+@if(Status.isEmailSystemActive())
+EmailThread has sent ${Status.getLastFinishedEmailPlusOne()} out of ${Status.getEmailListSize()} emails.
+${Status.getEmailThreadStatusMessage()}
+EmailThread Failed    Time (since last Daily Report)    ${Status.getEmailThreadFailedDistribution24()}
+EmailThread Succeeded Time (since last Daily Report)    ${Status.getEmailThreadSucceededDistribution24()}
+@else
+The email system is inactive.
+@endif
+TouchThread has finished ${Status.getLastFinishedTouchPlusOne()} out of ${Status.getTouchListSize()} touches.
+${Status.getTouchThreadStatusMessage()}
+TouchThread Failed    Time (since last Daily Report)    ${Status.getTouchThreadFailedDistribution24()}
+TouchThread Succeeded Time (since last Daily Report)    ${Status.getTouchThreadSucceededDistribution24()}
+OS info: totalCPULoad=${Status.getTotalCpuLoad()} processCPULoad=${Status.getProcessCpuLoad()}
+totalMemory=${Status.getTotalMemoryMB()}MB freeMemory=${Status.getFreeMemoryMB()}MB
+totalSwapSpace=${Status.getTotalSwapMB()}MB freeSwapSpace=${Status.getFreeSwapMB()}MB
+
+Number of active requests = ${Status.getActiveRequestsCount()}
+
 </pre>
