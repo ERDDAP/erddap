@@ -385,6 +385,10 @@ public class EDStatic {
       new ArrayList<>(); // keep here in case EmailThread needs to be restarted
   private static EmailThread emailThread;
 
+  public static EmailThread getEmailThread() {
+    return emailThread;
+  }
+
   // no lastAssignedEmail since not needed
   /**
    * This returns the index number of the email in emailList (-1,0..) of the last completed email
@@ -407,6 +411,10 @@ public class EDStatic {
   public static final ArrayList<Object[]> taskList =
       new ArrayList<>(); // keep here in case TaskThread needs to be restarted
   private static TaskThread taskThread;
+
+  public static TaskThread getTaskThread() {
+    return taskThread;
+  }
 
   /**
    * lastAssignedTask is used by EDDxxxCopy instances to keep track of the number of the last task
@@ -433,6 +441,10 @@ public class EDStatic {
   public static final RequestQueue<String> touchList =
       new RequestQueue<>(); // keep here in case TouchThread needs to be restarted
   private static TouchThread touchThread;
+
+  public static TouchThread getTouchThread() {
+    return touchThread;
+  }
 
   // no lastAssignedTouch since not needed
   /**
