@@ -2,6 +2,7 @@ package gov.noaa.pfel.erddap.jte;
 
 import com.cohort.util.Calendar2;
 import com.cohort.util.Math2;
+import com.cohort.util.MustBe;
 import com.cohort.util.String2;
 import com.sun.management.UnixOperatingSystemMXBean;
 import gov.noaa.pfel.erddap.Erddap;
@@ -268,5 +269,24 @@ public class Status {
 
   public static int getActiveRequestsCount() {
     return EDStatic.activeRequests.size();
+  }
+
+  public static String getStackTraceHeader() {
+    String traces = MustBe.allStackTraces(true, true);
+    int po = traces.indexOf('\n');
+    return (po > 0) ? traces.substring(0, po + 1) : "";
+  }
+
+  public static String getGcAndRequestShedStatus() {
+    return Math2.gcCallCount
+        + " gc calls, "
+        + EDStatic.requestsShed
+        + " requests shed, and "
+        + EDStatic.dangerousMemoryEmails
+        + " dangerousMemoryEmails since last major LoadDatasets";
+  }
+
+  public static String getMemoryStatus() {
+    return Math2.memoryString() + " " + Math2.xmxMemoryString();
   }
 }

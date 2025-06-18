@@ -43,4 +43,7 @@ totalSwapSpace=${Status.getTotalSwapMB()}MB freeSwapSpace=${Status.getFreeSwapMB
 
 Number of active requests = ${Status.getActiveRequestsCount()}
 
+${Status.getStackTraceHeader()}
+${Status.getGcAndRequestShedStatus()}
+${Status.getMemoryStatus()}
 </pre>
