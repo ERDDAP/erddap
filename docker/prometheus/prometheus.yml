@@ -19,7 +19,7 @@ scrape_configs:
     scheme: 'http'
     honor_labels: true
     static_configs:
-      - targets: ['host.docker.internal:8080']
+      - targets: ['erddap:8080']
         labels:
           instance: 'erddap-primary'
           region: 'primary'
