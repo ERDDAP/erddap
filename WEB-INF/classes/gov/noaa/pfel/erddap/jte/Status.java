@@ -5,6 +5,9 @@ import com.cohort.util.Math2;
 import com.cohort.util.MustBe;
 import com.cohort.util.String2;
 import com.sun.management.UnixOperatingSystemMXBean;
+import gov.noaa.pfel.coastwatch.sgt.GSHHS;
+import gov.noaa.pfel.coastwatch.sgt.SgtMap;
+import gov.noaa.pfel.coastwatch.sgt.SgtUtil;
 import gov.noaa.pfel.erddap.Erddap;
 import gov.noaa.pfel.erddap.util.*;
 import gov.noaa.pfel.erddap.util.EDStatic;
@@ -41,7 +44,7 @@ public class Status {
   }
 
   public static boolean isLoadDatasetsRunning() {
-    // load datasets stop time > start time means the current load hasn't finished
+    // load datasets stop time < start time means the current load hasn't finished
     return getLoadDatasetsElapsedTimeSeconds() < 0;
   }
 
@@ -176,8 +179,7 @@ public class Status {
   }
 
   public static String getEmailThreadStatusMessage() {
-    EmailThread emailThread = EDStatic.getEmailThread();
-    long tElapsedTime = emailThread == null ? -1 : emailThread.elapsedTime();
+    long tElapsedTime = EDStatic.getEmailThread();
     return tElapsedTime < 0
         ? "Currently, the thread is sleeping.\n"
         : "The current email session has been running for "
@@ -288,5 +290,146 @@ public class Status {
 
   public static String getMemoryStatus() {
     return Math2.memoryString() + " " + Math2.xmxMemoryString();
+  }
+
+  public static String getLoadDatasetsTimeSeriesSB() {
+    return EDStatic.majorLoadDatasetsTimeSeriesSB.toString();
+  }
+
+  public static boolean getLoadDatasetsTimeSeriesSBIsEmpty() {
+    return EDStatic.majorLoadDatasetsTimeSeriesSB.length() > 0;
+  }
+
+  public static String getTimeDistributionStatistics() {
+    return String2.getBriefTimeDistributionStatistics(EDStatic.majorLoadDatasetsDistribution24);
+  }
+
+  public static String getMajorLoadDatasetsTimeDistributionTotal() {
+    return String2.getTimeDistributionStatistics(EDStatic.majorLoadDatasetsDistributionTotal);
+  }
+
+  public static String getMinorLoadDatasetsTimeDistribution24() {
+    return String2.getTimeDistributionStatistics(EDStatic.minorLoadDatasetsDistribution24);
+  }
+
+  public static String getMinorLoadDatasetsTimeDistributionTotal() {
+    return String2.getTimeDistributionStatistics(EDStatic.minorLoadDatasetsDistributionTotal);
+  }
+
+  public static String getFailureTimeDistributionLoadDatasets() {
+    return String2.getTimeDistributionStatistics(EDStatic.failureTimesDistributionLoadDatasets);
+  }
+
+  public static String getFailureTimeDistribution24() {
+    return String2.getTimeDistributionStatistics(EDStatic.failureTimesDistribution24);
+  }
+
+  public static String getFailureTimeDistributionTotal() {
+    return String2.getTimeDistributionStatistics(EDStatic.failureTimesDistributionTotal);
+  }
+
+  public static String getResponseTimeDistribution24() {
+    return String2.getTimeDistributionStatistics(EDStatic.responseTimesDistribution24);
+  }
+
+  public static String getEmailThreadFailedDistributions24() {
+    return String2.getTimeDistributionStatistics(EDStatic.emailThreadFailedDistribution24);
+  }
+
+  public static String getEmailThreadFailedDistributions() {
+    return String2.getTimeDistributionStatistics(EDStatic.emailThreadFailedDistributionTotal);
+  }
+
+  public static String getEmailThreadSucceededDistributions24() {
+    return String2.getTimeDistributionStatistics(EDStatic.emailThreadSucceededDistribution24);
+  }
+
+  public static String getEmailThreadSucceededDistributions() {
+    return String2.getTimeDistributionStatistics(EDStatic.emailThreadSucceededDistributionTotal);
+  }
+
+  public static String getEmailThreadNEmailsDistributions24() {
+    return String2.getCountDistributionStatistics(EDStatic.emailThreadNEmailsDistribution24);
+  }
+
+  public static String getEmailThreadNEmailsDistributions() {
+    return String2.getCountDistributionStatistics(EDStatic.emailThreadNEmailsDistributionTotal);
+  }
+
+  // TaskThread
+  public static String getTaskThreadFailedDistributions24() {
+    return String2.getTimeDistributionStatistics(EDStatic.taskThreadFailedDistribution24);
+  }
+
+  public static String getTaskThreadFailedDistributions() {
+    return String2.getTimeDistributionStatistics(EDStatic.taskThreadFailedDistributionTotal);
+  }
+
+  public static String getTaskThreadSucceededDistributions24() {
+    return String2.getTimeDistributionStatistics(EDStatic.taskThreadSucceededDistribution24);
+  }
+
+  public static String getTaskThreadSucceededDistributions() {
+    return String2.getTimeDistributionStatistics(EDStatic.taskThreadSucceededDistributionTotal);
+  }
+
+  // TouchThread
+  public static String getTouchThreadFailedDistributions24() {
+    return String2.getTimeDistributionStatistics(EDStatic.touchThreadFailedDistribution24);
+  }
+
+  public static String getTouchThreadFailedDistributions() {
+    return String2.getTimeDistributionStatistics(EDStatic.touchThreadFailedDistributionTotal);
+  }
+
+  public static String getTouchThreadSucceededDistributions24() {
+    return String2.getTimeDistributionStatistics(EDStatic.touchThreadSucceededDistribution24);
+  }
+
+  public static String getTouchThreadSucceededDistributions() {
+    return String2.getTimeDistributionStatistics(EDStatic.touchThreadSucceededDistributionTotal);
+  }
+
+  // Language and System Stats
+  public static String getLanguageTallyDistributions24() {
+    return EDStatic.tally.toString("Language (since last daily report)", 50);
+  }
+
+  public static String getLanguageTallyDistributions() {
+    return EDStatic.tally.toString("Language (since startup)", 50);
+  }
+
+  public static String getTopographyStats() {
+    return SgtMap.topographyStats();
+  }
+
+  public static String getGshhsStats() {
+    return GSHHS.statsString();
+  }
+
+  public static String getNationalBoundariesStats() {
+    return SgtMap.nationalBoundaries.statsString();
+  }
+
+  public static String getStateBoundariesStats() {
+    return SgtMap.stateBoundaries.statsString();
+  }
+
+  public static String getRiverStats() {
+    return SgtMap.rivers.statsString();
+  }
+
+  public static String getImageAccelerationStatus() {
+    return SgtUtil.isBufferedImageAccelerated();
+  }
+
+  public static String getCanonicalStats() {
+    return String2.canonicalStatistics();
+  }
+
+  public static String getTraces() {
+    String traces = MustBe.allStackTraces(true, true);
+    int po = traces.indexOf('\n');
+    return traces;
   }
 }

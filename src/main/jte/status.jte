@@ -46,4 +46,90 @@ Number of active requests = ${Status.getActiveRequestsCount()}
 ${Status.getStackTraceHeader()}
 ${Status.getGcAndRequestShedStatus()}
 ${Status.getMemoryStatus()}
+@if(Status.getLoadDatasetsTimeSeriesSBIsEmpty())
+Major LoadDatasets Time Series: MLD    Datasets Loaded               Requests (median times in ms)                Number of Threads      MB    gc   Open
+  timestamp                    time   nTry nFail nTotal  nSuccess (median) nFail (median) shed memFail tooMany  tomWait inotify other  inUse Calls Files
+----------------------------  -----   -----------------  -----------------------------------------------------  ---------------------  ----- ----- -----
+${Status.getLoadDatasetsTimeSeriesSB()}   
+@endif 
+Major LoadDatasets Times Distribution (since last Daily Report):
+${Status.getTimeDistributionStatistics()}
+Major LoadDatasets Times Distribution (since startup):
+${Status.getMajorLoadDatasetsTimeDistributionTotal()}
+
+Minor LoadDatasets Times Distribution (since last Daily Report):
+${Status.getMinorLoadDatasetsTimeDistribution24()}
+
+Minor LoadDatasets Times Distribution (since startup):
+${Status.getMinorLoadDatasetsTimeDistributionTotal()}
+
+Response Failed Time Distribution (since last major LoadDatasets):
+${Status.getFailureTimeDistributionLoadDatasets()}
+
+Response Failed Time Distribution (since last Daily Report):
+${Status.getFailureTimeDistribution24()}
+
+Response Failed Time Distribution (since startup):
+${Status.getFailureTimeDistributionTotal()}
+
+Response Succeeded Time Distribution (since last Daily Report):
+${Status.getResponseTimeDistribution24()}
+
+EmailThread Failed Time Distribution (since last Daily Report):
+${Status.getEmailThreadFailedDistributions24()}
+
+EmailThread Failed Time Distribution (since startup):
+${Status.getEmailThreadFailedDistributions()}
+
+EmailThread Succeeded Time Distribution (since last Daily Report):
+${Status.getEmailThreadSucceededDistributions24()}
+
+EmailThread Succeeded Time Distribution (since startup):
+${Status.getEmailThreadSucceededDistributions()}
+
+EmailThread nEmails/Session Distribution (since last Daily Report):
+${Status.getEmailThreadNEmailsDistributions24()}
+
+EmailThread nEmails/Session Distribution (since startup):
+${Status.getEmailThreadNEmailsDistributions()}
+
+
+TaskThread Failed Time Distribution (since last Daily Report):
+${Status.getTaskThreadFailedDistributions24()}
+
+TaskThread Failed Time Distribution (since startup):
+${Status.getTaskThreadFailedDistributions()}
+
+TaskThread Succeeded Time Distribution (since last Daily Report):
+${Status.getTaskThreadSucceededDistributions24()}
+
+TaskThread Succeeded Time Distribution (since startup):
+${Status.getTaskThreadSucceededDistributions()}
+
+
+TouchThread Failed Time Distribution (since last Daily Report):
+${Status.getTouchThreadFailedDistributions24()}
+
+TouchThread Failed Time Distribution (since startup):
+${Status.getTouchThreadFailedDistributions()}
+
+TouchThread Succeeded Time Distribution (since last Daily Report):
+${Status.getTouchThreadSucceededDistributions24()}
+
+TouchThread Succeeded Time Distribution (since startup):
+${Status.getTouchThreadSucceededDistributions()}
+
+
+${Status.getLanguageTallyDistributions24()}
+${Status.getLanguageTallyDistributions()}
+
+${Status.getTopographyStats()}
+${Status.getGshhsStats()}
+${Status.getNationalBoundariesStats()}
+${Status.getStateBoundariesStats()}
+${Status.getRiverStats()}
+${Status.getImageAccelerationStatus()}
+${Status.getCanonicalStats()}
+${Status.getTraces()}
+
 </pre>

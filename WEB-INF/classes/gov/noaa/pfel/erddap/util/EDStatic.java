@@ -385,8 +385,8 @@ public class EDStatic {
       new ArrayList<>(); // keep here in case EmailThread needs to be restarted
   private static EmailThread emailThread;
 
-  public static EmailThread getEmailThread() {
-    return emailThread;
+  public static long getEmailThread() {
+    return emailThread == null ? -1 : emailThread.elapsedTime();
   }
 
   // no lastAssignedEmail since not needed
