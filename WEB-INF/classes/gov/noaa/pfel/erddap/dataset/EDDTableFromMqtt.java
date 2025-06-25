@@ -10,7 +10,6 @@ import com.cohort.util.Math2;
 import com.cohort.util.MustBe;
 import com.cohort.util.String2;
 import com.hivemq.client.mqtt.MqttClient;
-import com.hivemq.client.mqtt.MqttGlobalPublishFilter;
 import com.hivemq.client.mqtt.datatypes.MqttQos;
 import com.hivemq.client.mqtt.mqtt5.Mqtt5AsyncClient;
 import com.hivemq.client.mqtt.mqtt5.Mqtt5ClientBuilder;
@@ -35,7 +34,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.locks.ReentrantLock;
-import java.util.function.Consumer;
 import org.json.JSONObject;
 
 public class EDDTableFromMqtt extends EDDTableFromFiles {
@@ -102,8 +100,7 @@ public class EDDTableFromMqtt extends EDDTableFromFiles {
       boolean cleanStart,
       long sessionExpiryInterval,
       int connectionTimeout,
-      boolean automaticReconnect,
-      Consumer<Mqtt5Publish> messageHandler)
+      boolean automaticReconnect)
       throws Throwable {
     super(
         "EDDTableFromMqtt",
@@ -195,8 +192,7 @@ public class EDDTableFromMqtt extends EDDTableFromFiles {
             cleanStart,
             sessionExpiryInterval,
             connectionTimeout,
-            automaticReconnect,
-            messageHandler);
+            automaticReconnect);
     Mqtt5AsyncClient asyncClient = response.join();
 
     subscribeToDatasetTopics(asyncClient, topics, MqttQos.AT_LEAST_ONCE);
@@ -213,8 +209,7 @@ public class EDDTableFromMqtt extends EDDTableFromFiles {
       boolean cleanStart,
       long sessionExpiryInterval,
       int connectionTimeout,
-      boolean automaticReconnect,
-      Consumer<Mqtt5Publish> messageHandler) {
+      boolean automaticReconnect) {
 
     // Generate client ID if not provided
     String effectiveClientId =
@@ -262,11 +257,6 @@ public class EDDTableFromMqtt extends EDDTableFromFiles {
             connAck -> {
               System.out.println("ERDDAP MQTT Client connected successfully!");
               System.out.println("Connection ACK Reason Code: " + connAck.getReasonCode());
-
-              if (messageHandler != null) {
-                client.publishes(MqttGlobalPublishFilter.ALL, messageHandler);
-              }
-
               return client;
             })
         .exceptionally(
@@ -663,22 +653,18 @@ public class EDDTableFromMqtt extends EDDTableFromFiles {
       boolean getMetadata,
       boolean mustGetData)
       throws Throwable {
-    // This method needs to be implemented based on how data retrieval will work.
-    // For now, it delegates to the superclass's implementation which is suitable
-    // for reading from the generated .jsonl files.
-    // return super.lowGetSourceDataFromFile(
-    //     tFileDir,
-    //     tFileName,
-    //     sourceDataNames,
-    //     sourceDataTypes,
-    //     sortedSpacing,
-    //     minSorted,
-    //     maxSorted,
-    //     sourceConVars,
-    //     sourceConOps,
-    //     sourceConValues,
-    //     getMetadata,
-    //     mustGetData);
-    return null;
+
+    if (!mustGetData)
+      // Just return a table with columns but no rows. There is never any metadata.
+      return Table.makeEmptyTable(sourceDataNames.toArray(), sourceDataTypes);
+
+    // read the file
+    Table table = new Table();
+    table.readJsonlCSV(tFileDir + tFileName, sourceDataNames, sourceDataTypes, false);
+
+    // unpack
+    table.standardize(standardizeWhat);
+
+    return table;
   }
 }
