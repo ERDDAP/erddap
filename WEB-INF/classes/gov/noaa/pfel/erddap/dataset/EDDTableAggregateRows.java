@@ -13,6 +13,8 @@ import com.cohort.util.MustBe;
 import com.cohort.util.SimpleException;
 import com.cohort.util.String2;
 import com.cohort.util.Test;
+import gov.noaa.pfel.coastwatch.pointdata.Table;
+import gov.noaa.pfel.coastwatch.util.FileVisitorDNLS;
 import gov.noaa.pfel.coastwatch.util.SimpleXMLReader;
 import gov.noaa.pfel.erddap.Erddap;
 import gov.noaa.pfel.erddap.dataset.metadata.LocalizedAttributes;
@@ -605,5 +607,19 @@ public class EDDTableAggregateRows extends EDDTable {
     // finish
     tableWriter.ignoreFinish = false;
     tableWriter.finish();
+  }
+
+  @Override
+  public Table getFilesUrlList() throws Throwable {
+    Table table = FileVisitorDNLS.makeEmptyTable();
+    for (int child = 0; child < children.length; child++) {
+      if (children[child].accessibleViaFiles) {
+        Table childTable = children[child].getFilesUrlList();
+        if (childTable != null) {
+          table.append(childTable);
+        }
+      }
+    }
+    return table;
   }
 }

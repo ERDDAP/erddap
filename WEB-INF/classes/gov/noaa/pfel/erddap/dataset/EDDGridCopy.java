@@ -638,6 +638,12 @@ public class EDDGridCopy extends EDDGrid {
     throw new SimpleException("Error: " + "EDDGridCopy doesn't support method=\"sibling\".");
   }
 
+  @Override
+  public Table getFilesUrlList() throws Throwable {
+    if (!accessibleViaFiles) return null;
+    return localEdd.getFilesUrlList();
+  }
+
   /**
    * This returns a fileTable with valid files (or null if unavailable or any trouble). This is a
    * copy of any internal data, so client can modify the contents.

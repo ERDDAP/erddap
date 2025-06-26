@@ -770,6 +770,12 @@ public class EDDTableCopy extends EDDTable {
     localEdd.getDataForDapQuery(language, loggedInAs, requestUrl, userDapQuery, tableWriter);
   }
 
+  @Override
+  public Table getFilesUrlList() throws Throwable {
+    if (!accessibleViaFiles) return null;
+    return localEdd.getFilesUrlList();
+  }
+
   /**
    * This returns a fileTable with valid files (or null if unavailable or any trouble). This is a
    * copy of any internal data, so client can modify the contents.

@@ -2299,6 +2299,17 @@ public abstract class EDD {
   }
 
   /**
+   * Gets the list of files that make up the dataset.
+   *
+   * @return a table, which contains the list of files for the dataset.
+   * @throws Throwable
+   */
+  public Table getFilesUrlList() throws Throwable {
+    // Default is null, for dataset types that have a file list, override this.
+    return null;
+  }
+
+  /**
    * This converts a dnlsTable into a table ready for /files/ response.
    *
    * @param fileTable Input columns: directory (String), name (String), lastModified (long), size

@@ -537,6 +537,12 @@ public class EDDGridLonPM180 extends EDDGrid {
     throw new SimpleException("Error: EDDGridLonPM180 doesn't support method=\"sibling\".");
   }
 
+  @Override
+  public Table getFilesUrlList() throws Throwable {
+    EDDGrid tChildDataset = getChildDataset(EDMessages.DEFAULT_LANGUAGE);
+    return tChildDataset.getFilesUrlList();
+  }
+
   /**
    * This returns a fileTable with valid files (or null if unavailable or any trouble). This is a
    * copy of any internal data, so client can modify the contents.

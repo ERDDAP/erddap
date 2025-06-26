@@ -819,6 +819,13 @@ public class EDDTableFromEDDGrid extends EDDTable {
     }
   }
 
+  @Override
+  public Table getFilesUrlList() throws Throwable {
+    if (!accessibleViaFiles) return null;
+    EDDGrid tChildDataset = getChildDataset(EDMessages.DEFAULT_LANGUAGE);
+    return tChildDataset.getFilesUrlList();
+  }
+
   /**
    * This returns a fileTable with valid files (or null if unavailable or any trouble). This is a
    * copy of any internal data, so client can modify the contents.

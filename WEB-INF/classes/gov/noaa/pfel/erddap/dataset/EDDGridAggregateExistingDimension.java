@@ -614,6 +614,20 @@ public class EDDGridAggregateExistingDimension extends EDDGrid {
     return cumResults;
   }
 
+  @Override
+  public Table getFilesUrlList() throws Throwable {
+    Table table = FileVisitorDNLS.makeEmptyTable();
+    for (int child = 0; child < childDatasets.length; child++) {
+      if (childDatasets[child].accessibleViaFiles) {
+        Table childTable = childDatasets[child].getFilesUrlList();
+        if (childTable != null) {
+          table.append(childTable);
+        }
+      }
+    }
+    return table;
+  }
+
   /**
    * This returns a fileTable with valid files (or null if unavailable or any trouble). This is a
    * copy of any internal data, so client can modify the contents.

@@ -2135,6 +2135,25 @@ public abstract class EDDGridFromFiles extends EDDGrid implements WatchUpdateHan
     return handleEventContexts(contexts, msg);
   }
 
+  @Override
+  public Table getFilesUrlList() throws Throwable {
+    Table table = getFileInfo(fileDir, fileNameRegex, recursive, pathRegex);
+    for (int i = 0; i < table.nRows(); i++) {
+      String dir = table.getStringData(0, i).replace(fileDir, "").replace("\\", "/");
+      String id = dir + table.getStringData(1, i);
+      String url =
+          EDStatic.preferredErddapUrl
+              + "/files/"
+              + datasetID()
+              + "/"
+              + dir
+              + table.getStringData(1, i);
+      table.setStringData(0, i, id);
+      table.setStringData(1, i, url);
+    }
+    return table;
+  }
+
   /**
    * This is the default implementation of getFileInfo, which gets file info from a locally
    * accessible directory. This is called in the middle of the constructor. Some subclasses

@@ -18026,7 +18026,48 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                     + "    \"@language\": \""
                     + TranslateMessages.languageCodeList.get(language)
                     + "\",\n"
-                    + "    \"@vocab\": \"https://schema.org/\"\n"
+                    + "    \"@vocab\": \"https://schema.org/\",\n"
+                    + "    \"sc\": \"https://schema.org/\",\n"
+                    + "    \"cr\": \"http://mlcommons.org/croissant/\",\n"
+                    + "    \"rai\": \"http://mlcommons.org/croissant/RAI/\",\n"
+                    + "    \"dct\": \"http://purl.org/dc/terms/\",\n"
+                    + "    \"citeAs\": \"cr:citeAs\",\n"
+                    + "    \"column\": \"cr:column\",\n"
+                    + "    \"conformsTo\": \"dct:conformsTo\",\n"
+                    + "    \"data\": {\n"
+                    + "      \"@id\": \"cr:data\",\n"
+                    + "      \"@type\": \"@json\"\n"
+                    + "    },\n"
+                    + "    \"dataType\": {\n"
+                    + "      \"@id\": \"cr:dataType\",\n"
+                    + "      \"@type\": \"@vocab\"\n"
+                    + "    },\n"
+                    + "    \"examples\": {\n"
+                    + "      \"@id\": \"cr:examples\",\n"
+                    + "      \"@type\": \"@json\"\n"
+                    + "    },\n"
+                    + "    \"extract\": \"cr:extract\",\n"
+                    + "    \"field\": \"cr:field\",\n"
+                    + "    \"fileProperty\": \"cr:fileProperty\",\n"
+                    + "    \"fileObject\": \"cr:fileObject\",\n"
+                    + "    \"fileSet\": \"cr:fileSet\",\n"
+                    + "    \"format\": \"cr:format\",\n"
+                    + "    \"includes\": \"cr:includes\",\n"
+                    + "    \"isLiveDataset\": \"cr:isLiveDataset\",\n"
+                    + "    \"jsonPath\": \"cr:jsonPath\",\n"
+                    + "    \"key\": \"cr:key\",\n"
+                    + "    \"md5\": \"cr:md5\",\n"
+                    + "    \"parentField\": \"cr:parentField\",\n"
+                    + "    \"path\": \"cr:path\",\n"
+                    + "    \"recordSet\": \"cr:recordSet\",\n"
+                    + "    \"references\": \"cr:references\",\n"
+                    + "    \"regex\": \"cr:regex\",\n"
+                    + "    \"repeated\": \"cr:repeated\",\n"
+                    + "    \"replace\": \"cr:replace\",\n"
+                    + "    \"separator\": \"cr:separator\",\n"
+                    + "    \"source\": \"cr:source\",\n"
+                    + "    \"subField\": \"cr:subField\",\n"
+                    + "    \"transform\": \"cr:transform\""
                     + "  },\n"
                 : "  \"@context\": \"http://schema.org\",\n")
             + // for now, leave as http://
@@ -18043,7 +18084,38 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
             + String2.toJson65536(edd.datasetID())
             + ",\n");
 
-    // TODO croissant- add distribution
+    if (EDStatic.config.generateCroissantSchema && edd.accessibleViaFiles()) {
+      try {
+        Table fileTable = edd.getFilesUrlList();
+        if (fileTable != null) {
+          writer.write("\"distribution\": [\n");
+          for (int i = 0; i < fileTable.nRows(); i++) {
+            writer.write(
+                "  {\n"
+                    + "    \"@type\": \"cr:FileObject\",\n"
+                    + "    \"@id\": \""
+                    + fileTable.getStringData(0, i)
+                    + "\",\n"
+                    + "    \"contentSize\": \""
+                    + fileTable.getLongData(3, language)
+                    + " B\",\n"
+                    + "    \"contentUrl\": \""
+                    + fileTable.getStringData(1, i)
+                    + "\"\n"
+                    + "  }"
+                    + (i < fileTable.nRows() - 1 ? "," : "")
+                    + "\n");
+          }
+          writer.write("  ],\n");
+        }
+      } catch (Throwable e) {
+        String2.log(
+            "Error generation list of FileObject for dataset: "
+                + edd.datasetID()
+                + "\n"
+                + e.getMessage());
+      }
+    }
     // TODO croissant- add recordSet
 
     // add everything not used elsewhere into description

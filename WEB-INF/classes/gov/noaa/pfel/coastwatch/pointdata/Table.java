@@ -1696,6 +1696,18 @@ public class Table {
   }
 
   /**
+   * This add the value of one datum as an int to one of the columns, thereby increasing the number
+   * of rows in that column.
+   *
+   * @param col the column number (0 ... nColumns-1 )
+   * @param d the value of one datum as an int.
+   * @throws Exception if trouble (e.g., row or col out of range)
+   */
+  public void addLongData(int col, long d) {
+    getColumn(col).addLong(d);
+  }
+
+  /**
    * This tests that the value in a column is as expected.
    *
    * @throws Exception if trouble

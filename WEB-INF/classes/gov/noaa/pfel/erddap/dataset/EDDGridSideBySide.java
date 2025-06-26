@@ -13,6 +13,7 @@ import com.cohort.util.SimpleException;
 import com.cohort.util.String2;
 import com.cohort.util.Test;
 import gov.noaa.pfel.coastwatch.pointdata.Table;
+import gov.noaa.pfel.coastwatch.util.FileVisitorDNLS;
 import gov.noaa.pfel.coastwatch.util.SimpleXMLReader;
 import gov.noaa.pfel.erddap.Erddap;
 import gov.noaa.pfel.erddap.handlers.EDDGridSideBySideHandler;
@@ -628,6 +629,20 @@ public class EDDGridSideBySide extends EDDGrid {
     }
 
     return cumResults;
+  }
+
+  @Override
+  public Table getFilesUrlList() throws Throwable {
+    Table table = FileVisitorDNLS.makeEmptyTable();
+    for (int child = 0; child < childDatasets.length; child++) {
+      if (childDatasets[child].accessibleViaFiles) {
+        Table childTable = childDatasets[child].getFilesUrlList();
+        if (childTable != null) {
+          table.append(childTable);
+        }
+      }
+    }
+    return table;
   }
 
   /**
