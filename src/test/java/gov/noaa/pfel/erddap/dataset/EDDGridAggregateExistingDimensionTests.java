@@ -1,10 +1,10 @@
 package gov.noaa.pfel.erddap.dataset;
 
 import com.cohort.array.StringArray;
-import com.cohort.util.Calendar2;
 import com.cohort.util.File2;
 import com.cohort.util.String2;
 import com.cohort.util.Test;
+import com.cohort.util.TestUtil;
 import gov.noaa.pfel.coastwatch.griddata.NcHelper;
 import gov.noaa.pfel.coastwatch.util.SSR;
 import gov.noaa.pfel.erddap.util.EDStatic;
@@ -30,11 +30,7 @@ class EDDGridAggregateExistingDimensionTests {
   @org.junit.jupiter.api.Test
   @TagThredds
   void testBasic() throws Throwable {
-
-    String2.log(
-        "\n****************** EDDGridAggregateExistingDimension.testBasic() *****************\n");
-    // testVerboseOn();
-    String name, tName, userDapQuery, results, expected, error;
+    String tName, results, expected;
     int language = 0;
 
     // *** NDBC is also IMPORTANT UNIQUE TEST of >1 variable in a file
@@ -52,10 +48,10 @@ class EDDGridAggregateExistingDimensionTests {
             null,
             null,
             ndbcDapQuery,
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             gridDataset.className(),
             ".csv");
-    results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+    results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
     // String2.log(results);
     expected =
         "time,latitude,longitude,wind_speed\n"
@@ -74,12 +70,11 @@ class EDDGridAggregateExistingDimensionTests {
             null,
             null,
             ndbcDapQuery,
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             gridDataset.className(),
             ".nc");
-    results = NcHelper.ncdump(EDStatic.fullTestCacheDirectory + tName, "");
+    results = NcHelper.ncdump(EDStatic.config.fullTestCacheDirectory + tName, "");
     int dataPo = results.indexOf("data:");
-    String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 10);
     expected =
         "netcdf EDDGridAggregateExistingDimension.nc {\n"
             + "  dimensions:\n"
@@ -219,10 +214,10 @@ class EDDGridAggregateExistingDimensionTests {
             null,
             null,
             ndbcDapQuery,
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             gridDataset.className() + "2",
             ".csv");
-    results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+    results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
     // String2.log(results);
     expected =
         "time,latitude,longitude,wind_direction\n"
@@ -241,10 +236,10 @@ class EDDGridAggregateExistingDimensionTests {
             null,
             null,
             ndbcDapQuery,
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             gridDataset.className() + "3",
             ".csv");
-    results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+    results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
     // String2.log(results);
     expected =
         "time,latitude,longitude,wind_speed,wind_direction\n"
@@ -263,10 +258,10 @@ class EDDGridAggregateExistingDimensionTests {
             null,
             null,
             ndbcDapQuery,
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             gridDataset.className() + "4",
             ".csv");
-    results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+    results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
     // String2.log(results);
     expected =
         "time,latitude,longitude,wind_direction,wind_speed\n"
@@ -284,10 +279,10 @@ class EDDGridAggregateExistingDimensionTests {
             null,
             null,
             ndbcDapQuery,
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             gridDataset.className() + "4",
             ".nc");
-    results = NcHelper.ncdump(EDStatic.fullTestCacheDirectory + tName, "");
+    results = NcHelper.ncdump(EDStatic.config.fullTestCacheDirectory + tName, "");
     dataPo = results.indexOf("data:");
     results = results.substring(dataPo);
     expected =
@@ -345,10 +340,10 @@ class EDDGridAggregateExistingDimensionTests {
             null,
             null,
             ndbcDapQuery,
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             gridDataset.className() + "5",
             ".csv");
-    results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+    results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
     // String2.log(results);
     expected =
         "time,latitude,longitude,wind_direction,wind_speed\n"
@@ -371,10 +366,10 @@ class EDDGridAggregateExistingDimensionTests {
             null,
             null,
             ndbcDapQuery,
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             gridDataset.className() + "6",
             ".csv");
-    results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+    results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
     // String2.log(results);
     expected =
         "time,latitude,longitude,wind_direction,wind_speed\n"
@@ -397,10 +392,10 @@ class EDDGridAggregateExistingDimensionTests {
             null,
             null,
             ndbcDapQuery,
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             gridDataset.className() + "7",
             ".csv");
-    results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+    results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
     // String2.log(results);
     expected =
         "time,latitude,longitude,wind_direction,wind_speed\n"
@@ -433,10 +428,10 @@ class EDDGridAggregateExistingDimensionTests {
             null,
             null,
             "time",
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             eddGrid.className() + "_rtofs",
             ".csv");
-    results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+    results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
     expected = "time\n" + "UTC\n" + "2009-07-01T00:00:00Z\n" + "2009-07-02T00:00:00Z\n";
     Test.ensureEqual(results, expected, "\nresults=\n" + results);
   }
@@ -445,11 +440,7 @@ class EDDGridAggregateExistingDimensionTests {
   @org.junit.jupiter.api.Test
   @TagLocalERDDAP
   void testFiles() throws Throwable {
-
-    String2.log("\n*** EDDGridSideBySide.testFiles()\n");
-    String tDir = EDStatic.fullTestCacheDirectory;
-    String dapQuery, tName, start, query, results, expected;
-    int po;
+    String results, expected;
 
     try {
       // get /files/datasetID/.csv
@@ -1020,7 +1011,7 @@ class EDDGridAggregateExistingDimensionTests {
       Test.ensureEqual(sourceUrls.get(740), dir + "20061227.bodas_ts.nc", "");
       String2.log("EDDGridAggregateExistingDimension.testGetDodsIndexUrls finished successfully.");
     } catch (Throwable t) {
-      Test.knownProblem("CSIRO bodas now requires authorization.", "No known examples now.", t);
+      TestUtil.knownProblem("CSIRO bodas now requires authorization.", "No known examples now.", t);
     }
   }
 }

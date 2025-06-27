@@ -6,7 +6,6 @@ import com.cohort.util.String2;
 import com.cohort.util.Test;
 import gov.noaa.pfel.erddap.GenerateDatasetsXml;
 import gov.noaa.pfel.erddap.util.EDStatic;
-import gov.noaa.pfel.erddap.variable.EDV;
 import java.nio.file.Path;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -249,10 +248,8 @@ class EDDTableFromJsonlCSVFilesTests {
     // String2.log("\n****************** EDDTableFromJsonlCSVFiles.testBasic()
     // *****************\n");
     // testVerboseOn();
-    String name, tName, results, tResults, expected, userDapQuery, tQuery;
-    String error = "";
-    EDV edv;
-    String dir = EDStatic.fullTestCacheDirectory;
+    String tName, results, tResults, expected, userDapQuery;
+    String dir = EDStatic.config.fullTestCacheDirectory;
     String today =
         Calendar2.getCurrentISODateTimeStringZulu()
             .substring(0, 14); // 14 is enough to check hour. Hard to
@@ -495,10 +492,8 @@ class EDDTableFromJsonlCSVFilesTests {
     // String2.log("\n****************** EDDTableFromJsonlCSVFiles.testBase64Image()
     // *****************\n");
     // testVerboseOn();
-    String name, tName, results, tResults, expected, userDapQuery, tQuery;
-    String error = "";
-    EDV edv;
-    String dir = EDStatic.fullTestCacheDirectory;
+    String tName, results, expected;
+    String dir = EDStatic.config.fullTestCacheDirectory;
     int language = 0;
 
     String id = "testBase64Image";
@@ -656,7 +651,7 @@ class EDDTableFromJsonlCSVFilesTests {
     Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
     // and display it so it can be tested interactively
-    // Test.displayInBrowser("file://" + dir + tName);
+    // TestUtil.displayInBrowser("file://" + dir + tName);
 
   }
 }

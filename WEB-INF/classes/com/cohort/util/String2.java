@@ -4,7 +4,9 @@
  */
 package com.cohort.util;
 
+import com.cohort.array.PrimitiveArray;
 import com.cohort.array.StringComparatorIgnoreCase;
+import com.google.common.collect.ImmutableList;
 import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.DataFlavor;
@@ -18,7 +20,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PushbackInputStream;
 import java.lang.ref.WeakReference;
-import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.MathContext;
@@ -27,12 +28,12 @@ import java.security.MessageDigest;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.BitSet;
-import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.Vector;
 import java.util.WeakHashMap;
@@ -52,9 +53,9 @@ public class String2 {
    * files. This is NOT final, so EDStatic can change it. This is the original definition,
    * referenced by many other classes.
    */
-  public static String ERROR = "ERROR";
+  public static final String ERROR = "ERROR";
 
-  public static String WARNING = "WARNING";
+  public static final String WARNING = "WARNING";
 
   // public static Logger log = Logger.getLogger("com.cohort.util");
   private static boolean logToSystemOut = true;
@@ -71,7 +72,7 @@ public class String2 {
   public static int logFileMaxSize = logFileDefaultMaxSize;
 
   /** This returns the line separator from <code>System.getProperty("line.separator");</code> */
-  public static String lineSeparator = System.getProperty("line.separator");
+  public static final String lineSeparator = System.getProperty("line.separator");
 
   public static final String JSON = "JSON";
   public static final StringComparatorIgnoreCase STRING_COMPARATOR_IGNORE_CASE =
@@ -83,12 +84,12 @@ public class String2 {
   public static final StringHolder STRING_HOLDER_ZERO = new StringHolder("");
 
   /** Returns true if the current Operating System is Windows. */
-  public static String OSName = System.getProperty("os.name");
+  public static final String OSName = System.getProperty("os.name");
 
-  public static boolean OSIsWindows = OSName.toLowerCase().indexOf("windows") >= 0;
+  public static final boolean OSIsWindows = OSName.toLowerCase().indexOf("windows") >= 0;
 
   /** Returns true if the current Operating System is Linux. */
-  public static boolean OSIsLinux = OSName.toLowerCase().indexOf("linux") >= 0;
+  public static final boolean OSIsLinux = OSName.toLowerCase().indexOf("linux") >= 0;
 
   /**
    * Returns true if the current Operating System is Mac OS X. 2014-01-09 was
@@ -125,9 +126,8 @@ public class String2 {
 
   public static final Pattern EMAIL_PATTERN = Pattern.compile(EMAIL_REGEX);
 
-  public static final String ACDD_CONTACT_TYPES[] = {
-    "person", "group", "institution", "position"
-  }; // ACDD 1.3
+  public static final ImmutableList<String> ACDD_CONTACT_TYPES =
+      ImmutableList.of("person", "group", "institution", "position"); // ACDD 1.3
 
   // in the order they are used...
   public static final String ACDD_PERSON_REGEX1 = "(DHYRENBACH|JFPIOLLE|JLH|ZHIJIN)";
@@ -187,31 +187,30 @@ public class String2 {
   /**
    * These are NOT thread-safe. Always use them in synchronized blocks ("synchronized(gen....) {}").
    */
-  private static DecimalFormat genStdFormat6 = new DecimalFormat("0.######");
+  private static final DecimalFormat genStdFormat6 = new DecimalFormat("0.######");
 
-  private static DecimalFormat genEngFormat6 = new DecimalFormat("##0.#####E0");
-  private static DecimalFormat genExpFormat6 = new DecimalFormat("0.######E0");
-  private static DecimalFormat genStdFormat10 = new DecimalFormat("0.##########");
-  private static DecimalFormat genEngFormat10 = new DecimalFormat("##0.#########E0");
-  private static DecimalFormat genExpFormat10 = new DecimalFormat("0.##########E0");
+  private static final DecimalFormat genExpFormat6 = new DecimalFormat("0.######E0");
+  private static final DecimalFormat genStdFormat10 = new DecimalFormat("0.##########");
+  private static final DecimalFormat genExpFormat10 = new DecimalFormat("0.##########E0");
 
   // splitting canonicalMap and canonicalStringHolderMap into 127 maps allows each
   // to be bigger and makes synchronized contention less common.
   // 127 seems better than 128. See stats at end of Table.testBigAscii();
   private static final int nCanonicalMaps = 127;
-  private static Map<String, WeakReference<String>> canonicalMap[] = new Map[nCanonicalMaps];
-  private static Map<StringHolder, WeakReference<StringHolder>> canonicalStringHolderMap[] =
+  static final Map<String, WeakReference<String>>[] canonicalMap = new Map[nCanonicalMaps];
+  static final Map<StringHolder, WeakReference<StringHolder>>[] canonicalStringHolderMap =
       new Map[nCanonicalMaps];
 
   static {
     for (int i = 0; i < nCanonicalMaps; i++) {
-      canonicalMap[i] = new WeakHashMap<String, WeakReference<String>>();
-      canonicalStringHolderMap[i] = new WeakHashMap<StringHolder, WeakReference<StringHolder>>();
+      canonicalMap[i] = new WeakHashMap<>();
+      canonicalStringHolderMap[i] = new WeakHashMap<>();
     }
   }
 
-  private static Map canonicalLockMap = new WeakHashMap();
-  public static int longTimeoutSeconds =
+  private static final Map<Object, WeakReference<ReentrantLock>> canonicalLockMap =
+      new WeakHashMap<>();
+  public static final int longTimeoutSeconds =
       300; // 5 minutes. This is >= other timeouts in the system. This is used in places that
 
   // previously waited forever.
@@ -468,37 +467,7 @@ public class String2 {
     }
     if (s2sb.length() == 0) return false;
 
-    return s1sb.toString().equals(s2sb.toString());
-  }
-
-  /**
-   * Finds the first instance of s at or after fromIndex (0.. ) in sb.
-   *
-   * @param sb a StringBuilder
-   * @param s the String you want to find
-   * @param fromIndex the index number of the position to start the search
-   * @return The starting position of s. If s is null or not found, it returns -1.
-   */
-  public static int indexOf(final StringBuilder sb, final String s, final int fromIndex) {
-    if (s == null) return -1;
-    final int sLength = s.length();
-    if (sLength == 0) return -1;
-
-    final char ch = s.charAt(0);
-    int index = Math.max(fromIndex, 0);
-    final int tSize = sb.length() - sLength + 1; // no point in searching last few char
-    while (index < tSize) {
-      if (sb.charAt(index) == ch) {
-        int nCharsMatched = 1;
-        while ((nCharsMatched < sLength)
-            && (sb.charAt(index + nCharsMatched) == s.charAt(nCharsMatched))) nCharsMatched++;
-        if (nCharsMatched == sLength) return index;
-      }
-
-      index++;
-    }
-
-    return -1;
+    return s1sb.toString().contentEquals(s2sb);
   }
 
   /**
@@ -517,30 +486,6 @@ public class String2 {
     final Pattern pattern = Pattern.compile("\\b(" + word + ")\\b");
     final Matcher matcher = pattern.matcher(s);
     return matcher.find() ? matcher.start(1) : -1;
-  }
-
-  /**
-   * This creates a hashset of the unique acronyms in a string. An acronym here is defined by the
-   * regular expression: [^a-zA-Z0-9][A-Z]{2,}[^a-zA-Z0-9]
-   *
-   * @param text
-   * @return hashset of the unique acronyms in text.
-   */
-  public static HashSet<String> findAcronyms(final String text) {
-    final HashSet<String> hs = new HashSet();
-    if (text == null || text.length() < 2) return hs;
-    final Pattern pattern = Pattern.compile("[^a-zA-Z0-9]([A-Z]{2,})[^a-zA-Z0-9]");
-    final Matcher matcher = pattern.matcher(text);
-    int po = 0;
-    while (po < text.length()) {
-      if (matcher.find(po)) {
-        hs.add(matcher.group(1));
-        po = matcher.end();
-      } else {
-        return hs;
-      }
-    }
-    return hs;
   }
 
   /**
@@ -576,7 +521,7 @@ public class String2 {
   }
 
   public static String[] extractAllRegexes(final String s, final Pattern pattern) {
-    final ArrayList<String> al = new ArrayList();
+    final ArrayList<String> al = new ArrayList<>();
     final Matcher m = pattern.matcher(s);
     int fromIndex = 0;
     while (m.find(fromIndex)) {
@@ -596,14 +541,14 @@ public class String2 {
    *     the "greedy" qualifiers which match as many chars as possible (e.g., ?, *, +).
    * @return a HashSet with the found strings.
    */
-  public static HashSet<String> extractAllCaptureGroupsAsHashSet(
+  public static Set<String> extractAllCaptureGroupsAsHashSet(
       final String s, final String regex, final int captureGroupNumber) {
     return extractAllCaptureGroupsAsHashSet(s, Pattern.compile(regex), captureGroupNumber);
   }
 
-  public static HashSet<String> extractAllCaptureGroupsAsHashSet(
+  public static Set<String> extractAllCaptureGroupsAsHashSet(
       final String s, final Pattern pattern, final int captureGroupNumber) {
-    final HashSet<String> hs = new HashSet();
+    final HashSet<String> hs = new HashSet<>();
     final Matcher m = pattern.matcher(s);
     int fromIndex = 0;
     while (m.find(fromIndex)) {
@@ -625,60 +570,19 @@ public class String2 {
    */
   public static String[] extractAllCaptureGroupsAsStringArray(
       final String s, final String regex, final int captureGroupNumber) {
-    final ArrayList<String> al = new ArrayList();
+    final ArrayList<String> al = new ArrayList<>();
     final Matcher m = Pattern.compile(regex).matcher(s);
     int fromIndex = 0;
     while (m.find(fromIndex)) {
       al.add(m.group(captureGroupNumber));
       fromIndex = m.end();
     }
-    return (String[]) al.toArray(new String[0]);
-  }
-
-  /**
-   * This returns the index of the first value that matches the regex.
-   *
-   * @param ar an array of objects which will be tested via ar[i].toString()
-   * @param regex
-   * @return the index of the first value that matches the regex, or -1 if none matches.
-   * @throws RuntimeException if regex won't compile.
-   */
-  public int firstMatch(final Object ar[], final String regex) {
-    return firstMatch(ar, Pattern.compile(regex));
-  }
-
-  /**
-   * This returns the index of the first value that matches the regex pattern p.
-   *
-   * @param ar an array of objects which will be tested via ar[i].toString()
-   * @param p
-   * @return the index of the first value that matches the regex pattern p, or -1 if none matches.
-   */
-  public int firstMatch(final Object ar[], final Pattern p) {
-    if (ar == null) return -1;
-    for (int i = 0; i < ar.length; i++) {
-      final Object s = ar[i];
-      if (s != null && p.matcher(s.toString()).matches()) return i;
-    }
-    return -1;
-  }
-
-  /** This converts a hashset to a String[] via o.toString(). */
-  public static String[] setToStringArray(final Set set) {
-    final int n = set.size();
-    final String sar[] = new String[n];
-    int i = 0;
-    for (Object o : set) sar[i++] = o.toString();
-    Arrays.sort(sar, STRING_COMPARATOR_IGNORE_CASE);
-    return sar;
+    return al.toArray(new String[0]);
   }
 
   /** This converts a String[] to a HashSet&lt;String&gt;. */
-  public static HashSet<String> stringArrayToSet(final String sar[]) {
-    final HashSet<String> hs = new HashSet();
-    final int n = sar.length;
-    for (int i = 0; i < n; i++) hs.add(sar[i]);
-    return hs;
+  public static Set<String> stringArrayToSet(final String sar[]) {
+    return new HashSet<>(Arrays.asList(sar));
   }
 
   /**
@@ -871,8 +775,7 @@ public class String2 {
     if (c < 'A') return false;
     if (c <= 'Z') return true;
     if (c < 'a') return false;
-    if (c <= 'z') return true;
-    return false;
+    return c <= 'z';
   }
 
   /**
@@ -893,8 +796,7 @@ public class String2 {
     if (c <= 'z') return true;
     if (c < '\u00c0') return false;
     if (c == '\u00d7') return false;
-    if (c <= '\u00FF') return true;
-    return false;
+    return c <= '\u00FF';
   }
 
   /**
@@ -924,8 +826,7 @@ public class String2 {
     if (c < 'A') return false;
     if (c <= 'F') return true;
     if (c < 'a') return false;
-    if (c <= 'f') return true;
-    return false;
+    return c <= 'f';
   }
 
   /** Returns true if all of the characters in s are hex digits. A 0-length string returns false. */
@@ -1016,7 +917,7 @@ public class String2 {
     }
 
     // NaN?
-    if (ch0 == 'n' || ch0 == 'N') return s.toUpperCase().equals("NAN");
+    if (ch0 == 'n' || ch0 == 'N') return s.equalsIgnoreCase("NAN");
 
     // *** rest of method: test if floating point
     // is 1st char .+-?
@@ -1103,8 +1004,7 @@ public class String2 {
     if (ch < 32) return false;
     if (ch <= 126) return true; // was 127
     if (ch < 161) return false; // was 160
-    if (ch <= 255) return true;
-    return false;
+    return ch <= 255;
   }
 
   /** Returns true if all of the characters in s are printable */
@@ -1118,8 +1018,7 @@ public class String2 {
   /** returns true if ch is 32..126. */
   public static final boolean isAsciiPrintable(final int ch) {
     if (ch < 32) return false;
-    if (ch <= 126) return true;
-    return false;
+    return ch <= 126;
   }
 
   /** Returns true if all of the characters in s are 32..126 */
@@ -1143,7 +1042,7 @@ public class String2 {
     int start = 0;
     for (int i = 0; i < n; i++) {
       if (!isPrintable(s.charAt(i))) {
-        sb.append(s.substring(start, i));
+        sb.append(s, start, i);
         start = i + 1;
       }
     }
@@ -1205,8 +1104,7 @@ public class String2 {
     if (ch <= 'Z') return true;
     if (ch == '_') return true;
     if (ch < 'a') return false;
-    if (ch <= 'z') return true;
-    return false;
+    return ch <= 'z';
   }
 
   /**
@@ -1239,6 +1137,200 @@ public class String2 {
   public static void ensureEmailAddress(final String email) {
     final String s = testEmailAddress(email);
     if (s.length() > 0) throw new RuntimeException(s);
+  }
+
+  private static final ImmutableList<String> acceptedProtocols =
+      ImmutableList.of(
+          "https://", // host, path, query, fragment
+          "http://",
+          "https:\\\\", // host, path, query, fragment
+          "http:\\\\",
+          "www.", // host, path, query, fragment
+          "gopher://", // host, path
+          "gopher:\\\\",
+          "file://", // path
+          "file:\\\\",
+          "telnet://", // user:password@host:port /optional
+          "telnet:\\\\",
+          "smtp://", // user:password@host:port
+          "smtp:\\\\",
+          "ftp://", // username:password@host:port /path/to/file
+          "ftp:\\\\",
+          "smb://", // optional- username:password@host:port path/to/file
+          "smb:\\\\");
+  private static Pattern userPassPattern = Pattern.compile("^.{1,50}(:.{1,30})?@");
+  // domain is (chars without a slash or colon).(chars without a slash or colon)
+  private static Pattern domainPattern =
+      Pattern.compile("^[^/\\\\:\\s,?!#)]+\\.[^/\\\\:\\s,?!#)]+(?<![.,?!#)])");
+  private static Pattern portPattern = Pattern.compile("^:\\d+");
+  // Starts with a slash (that wasn't matched in previous sections), then
+  // 0 or more directories, ending in either a directory or .extension, optional / or \.
+  private static Pattern pathPattern =
+      Pattern.compile(
+          "^[/\\\\]?([a-zA-Z0-9-_.~!$&'()*+,;=:@%\\-]+[/\\\\])*[^/\\\\:?#,\\s]*[/\\\\]?(?<![.,?!#])");
+  private static Pattern queryPattern =
+      Pattern.compile("^\\?(\".*\"|%22.*%22|[^\\s#])*(?<![.,?!#])");
+  private static Pattern fragmentPattern = Pattern.compile("^#[^.,!#)\\s]*(?<![.,?!#])");
+
+  public static int[] findUrl(String input) {
+    return findUrl(input, 0);
+  }
+
+  public static int[] findUrl(String input, int startIndex) {
+    int[] startStop = {-1, -1};
+    input = input.toLowerCase();
+
+    int curStart = startIndex;
+
+    while (curStart < input.length()) {
+      // should have one of protocol or www (could be both)
+      // (optional) protocol://|\\
+      int urlStart = Integer.MAX_VALUE;
+      int curIndex = curStart;
+      int protocolIndex = -1;
+      for (int i = 0; i < acceptedProtocols.size(); i++) {
+        int found = input.indexOf(acceptedProtocols.get(i), curStart);
+        if (found > -1 && found < urlStart) {
+          urlStart = found;
+          protocolIndex = i;
+          curIndex = urlStart + acceptedProtocols.get(i).length();
+        }
+      }
+      // No protocol, no url
+      if (protocolIndex == -1) {
+        return startStop;
+      }
+
+      // USER NAME:PASSWORD@ (some protocols)
+      // The list is structured so everything ftp and later
+      // will or might have username:password
+      if (protocolIndex >= 9) {
+        Matcher userPassMatcher = userPassPattern.matcher(input.substring(curIndex));
+        if (userPassMatcher.find()) {
+          int userPassStart = userPassMatcher.start(0);
+          int userPassEnd = userPassMatcher.end(0);
+          if (userPassStart == 0) {
+            curIndex += userPassEnd;
+          }
+        }
+      }
+
+      // This shouldn't be relevant in production but is for local testing.
+      if (input.substring(curIndex).startsWith("localhost")) {
+        curIndex += "localhost".length();
+      } else {
+        // HOST
+        // (optional) www. or (optional) subdomain.
+        // domain name.tld (top level domain)
+        Matcher domainMatcher = domainPattern.matcher(input.substring(curIndex));
+        if (domainMatcher.find()) {
+          int domainStart = domainMatcher.start(0);
+          int domainEnd = domainMatcher.end(0);
+          if (domainStart == 0) {
+            curIndex += domainEnd;
+          }
+        } else {
+          // file:\\|// do not need domain
+          if (protocolIndex != 7 && protocolIndex != 8) {
+            curStart = urlStart + acceptedProtocols.get(protocolIndex).length();
+            continue;
+          }
+        }
+      }
+
+      // (optional) :port
+      Matcher portMatcher = portPattern.matcher(input.substring(curIndex));
+      if (portMatcher.find()) {
+        int portStart = portMatcher.start(0);
+        int portEnd = portMatcher.end(0);
+        if (portStart == 0) {
+          curIndex += portEnd;
+        }
+      }
+
+      // (optional) /path/
+      Matcher pathMatcher = pathPattern.matcher(input.substring(curIndex));
+      if (pathMatcher.find()) {
+        int pathStart = pathMatcher.start(0);
+        int pathEnd = pathMatcher.end(0);
+        if (pathStart == 0) {
+          curIndex += pathEnd;
+        }
+      }
+
+      // WEB LIKE EXTENSIONS
+      // (optional) ?query
+      Matcher queryMatcher = queryPattern.matcher(input.substring(curIndex));
+      if (queryMatcher.find()) {
+        int queryStart = queryMatcher.start(0);
+        int queryEnd = queryMatcher.end(0);
+        if (queryStart == 0) {
+          curIndex += queryEnd;
+        }
+      }
+
+      // (optional) #fragment
+      Matcher fragmentMatcher = fragmentPattern.matcher(input.substring(curIndex));
+      if (fragmentMatcher.find()) {
+        int fragmentStart = fragmentMatcher.start(0);
+        int fragmentEnd = fragmentMatcher.end(0);
+        if (fragmentStart == 0) {
+          curIndex += fragmentEnd;
+        }
+      }
+      startStop[0] = urlStart;
+      startStop[1] = curIndex;
+      return startStop;
+    }
+
+    return startStop;
+  }
+
+  /**
+   * Detects a url within a string. The url does not have to be the entire string like with isUrl.
+   *
+   * @param input the text to check for urls
+   * @return if the string contains a url
+   */
+  public static boolean containsUrl(final String input) {
+    int[] results = findUrl(input);
+    return results[0] != -1 && results[1] != -1;
+  }
+
+  /**
+   * This is used when setting href attributs in anchor tags. Specifically this is to make sure
+   * browsers know this is an absolute url and not a relative url.
+   */
+  public static String addHttpsForWWW(final String input) {
+    if (input.startsWith("www.")) {
+      return "https://" + input;
+    }
+    return input;
+  }
+
+  /**
+   * Returns a list of strings, separating urls from text. This is intended to assist wrapping urls
+   * in anchor tags in several locations.
+   *
+   * @param input the text to separate
+   */
+  public static List<String> extractUrls(final String input) {
+    List<String> separatedString = new ArrayList<String>();
+    int curIndex = 0;
+    int[] results = findUrl(input);
+    while (results[1] != -1) {
+      if (results[0] > curIndex) {
+        separatedString.add(input.substring(curIndex, results[0]));
+      }
+      separatedString.add(input.substring(results[0], results[1]));
+      curIndex = results[1];
+      results = findUrl(input, curIndex);
+    }
+
+    if (curIndex < input.length()) {
+      separatedString.add(input.substring(curIndex, input.length()));
+    }
+    return separatedString;
   }
 
   /**
@@ -1280,7 +1372,7 @@ public class String2 {
    *     dir is null or "", this returns false.
    */
   public static boolean isRemote(final String dir) {
-    if (isUrl(dir)) return dir.startsWith("file://") ? false : true;
+    if (isUrl(dir)) return !dir.startsWith("file://");
     return false;
   }
 
@@ -1293,7 +1385,7 @@ public class String2 {
    *     returns false.
    */
   public static boolean isTrulyRemote(final String dir) {
-    if (isUrl(dir)) return dir.startsWith("file://") ? false : isAwsS3Url(dir) ? false : true;
+    if (isUrl(dir)) return !dir.startsWith("file://") && !isAwsS3Url(dir);
     return false;
   }
 
@@ -1443,12 +1535,10 @@ public class String2 {
     // last (or only) character can't be .
     if (s.charAt(n - 1) == '.') return false;
 
-    final ArrayList<String> al = splitToArrayList(s, '.', false); // trim=false
-    final int nal = al.size();
+    final List<String> al = splitToArrayList(s, '.', false); // trim=false
 
     // test each word
-    for (int part = 0; part < nal; part++) {
-      final String ts = al.get(part);
+    for (final String ts : al) {
       final int tn = ts.length();
       if (tn == 0) return false;
 
@@ -1471,25 +1561,6 @@ public class String2 {
   }
 
   /**
-   * This counts all occurrences of <tt>findS</tt> in sb. if (sb == null || findS == null ||
-   * findS.length() == 0) return 0;
-   *
-   * @param sb the source StringBuilder
-   * @param findS the string to be searched for
-   */
-  public static int countAll(final StringBuilder sb, final String findS) {
-    if (sb == null || findS == null || findS.length() == 0) return 0;
-    int n = 0;
-    int sLength = findS.length();
-    int po = sb.indexOf(findS, 0);
-    while (po >= 0) {
-      n++;
-      po = sb.indexOf(findS, po + sLength);
-    }
-    return n;
-  }
-
-  /**
    * This counts all occurrences of <tt>findS</tt> in s. if (s == null || findS == null ||
    * findS.length() == 0) return 0;
    *
@@ -1500,7 +1571,7 @@ public class String2 {
     if (s == null || findS == null || findS.length() == 0) return 0;
     int n = 0;
     final int sLength = findS.length();
-    int po = s.indexOf(findS, 0);
+    int po = s.indexOf(findS);
     while (po >= 0) {
       n++;
       po = s.indexOf(findS, po + sLength);
@@ -1588,7 +1659,6 @@ public class String2 {
     final int sbL = sb.length();
     final int oldSL = oldS.length();
     if (oldSL == 0) return 0;
-    final int newSL = newS.length();
     StringBuilder testSB = sb;
     String testOldS = oldS;
     if (ignoreCase) {
@@ -1605,7 +1675,7 @@ public class String2 {
     int n = 0;
     while (po >= 0) {
       n++;
-      sb2.append(sb.substring(base, po));
+      sb2.append(sb, base, po);
       sb2.append(newS);
       base = po + oldSL;
       po = testSB.indexOf(testOldS, base);
@@ -1983,7 +2053,7 @@ public class String2 {
       final char ch = s.charAt(i);
       // using 127 (not 255) means the output is 7bit ASCII and file encoding is irrelevant
       if (ch < 32 || ch >= firstUEncodedChar) {
-        sb.append(s.substring(start, i));
+        sb.append(s, start, i);
         start = i + 1;
         if (ch == '\f') sb.append("\\f");
         else if (ch == '\n') sb.append(encodeNewline ? "\\n" : "\n");
@@ -1994,11 +2064,11 @@ public class String2 {
         //  / can be encoded as \/ but there is no need and it looks odd
         else sb.append("\\u" + zeroPad(Integer.toHexString(ch), 4));
       } else if (ch == '\\') {
-        sb.append(s.substring(start, i));
+        sb.append(s, start, i);
         start = i + 1;
         sb.append("\\\\");
       } else if (ch == '\"') {
-        sb.append(s.substring(start, i));
+        sb.append(s, start, i);
         start = i + 1;
         sb.append("\\\"");
       } // else normal character will be appended later via s.substring
@@ -2061,7 +2131,7 @@ public class String2 {
     while (po < sLength) {
       char ch = s.charAt(po);
       if (ch == '\\') {
-        sb.append(s.substring(start, po));
+        sb.append(s, start, po);
         if (po == sLength - 1) po--; // so reread \ and treat as \\
         po++;
         start = po + 1;
@@ -2242,7 +2312,7 @@ public class String2 {
 
     // surround in "'s?
     if (hasSpecialChar || s.startsWith(" ") || s.endsWith(" ") || s.equals("null"))
-      return "\"" + sb.toString() + "\"";
+      return "\"" + sb + "\"";
     return sb.toString();
   }
 
@@ -2265,7 +2335,7 @@ public class String2 {
 
     // surround in "'s?
     if (hasSpecialChar || s.startsWith(" ") || s.endsWith(" ") || s.equals("null"))
-      return "\"" + sb.toString() + "\"";
+      return "\"" + sb + "\"";
     return sb.toString();
   }
 
@@ -2295,7 +2365,7 @@ public class String2 {
             .matcher(s)
             .matches()) // Looks Like A Number (It looks like a number so it needs "'s to force it
       // to be seen as a String.)
-      return "\"" + sb.toString() + "\"";
+      return "\"" + sb + "\"";
     return sb.toString();
   }
 
@@ -2326,7 +2396,7 @@ public class String2 {
             .matcher(s)
             .matches()) // Looks Like A number (It looks like a number so it needs "'s to force it
       // to be seen as a String.)
-      return "\"" + sb.toString() + "\"";
+      return "\"" + sb + "\"";
     return sb.toString();
   }
 
@@ -2353,10 +2423,11 @@ public class String2 {
    * @param s the string with internal line separators
    * @return an arrayList&lt;Strings&gt; (separate lines of text)
    */
-  public static ArrayList<String> multiLineStringToArrayList(final String s) {
+  public static List<String> multiLineStringToArrayList(final String s) {
     final char endOfLineChar = s.indexOf('\n') >= 0 ? '\n' : '\r';
     final int sLength = s.length();
-    final ArrayList<String> arrayList = new ArrayList(); // this is local, so okay if not threadsafe
+    final ArrayList<String> arrayList =
+        new ArrayList<>(); // this is local, so okay if not threadsafe
     final StringBuilder oneLine = new StringBuilder(512);
     char ch;
     int start = 0;
@@ -2365,7 +2436,7 @@ public class String2 {
       if (!(isPrintable(ch) || ch == '\t')) {
         // unprintable
         // copy the accumulated printable chars
-        oneLine.append(s.substring(start, po));
+        oneLine.append(s, start, po);
         start = po + 1;
         if (ch == endOfLineChar) {
           // so it catches *the* designated eol char (e.g., \r),
@@ -2387,8 +2458,8 @@ public class String2 {
    * @param e an enumeration
    * @return arrayList with the objects from the enumeration
    */
-  public static ArrayList toArrayList(final Enumeration e) {
-    final ArrayList al = new ArrayList();
+  public static List<String> toArrayList(final Enumeration<String> e) {
+    final ArrayList<String> al = new ArrayList<>();
     while (e.hasMoreElements()) al.add(e.nextElement());
     return al;
   }
@@ -2399,10 +2470,36 @@ public class String2 {
    * @param objectArray an Object[]
    * @return arrayList with the objects
    */
-  public static ArrayList toArrayList(final Object objectArray[]) {
+  public static List<String> toArrayList(final String objectArray[]) {
     final int n = objectArray.length;
-    final ArrayList al = new ArrayList(n);
-    for (int i = 0; i < n; i++) al.add(objectArray[i]);
+    final ArrayList<String> al = new ArrayList<>(n);
+    al.addAll(Arrays.asList(objectArray));
+    return al;
+  }
+
+  /**
+   * This creates an ArrayList from an Object[].
+   *
+   * @param objectArray an Object[]
+   * @return arrayList with the objects
+   */
+  public static List<Object> toArrayList(final Object objectArray[]) {
+    final int n = objectArray.length;
+    final ArrayList<Object> al = new ArrayList<>(n);
+    al.addAll(Arrays.asList(objectArray));
+    return al;
+  }
+
+  /**
+   * This creates an ArrayList from an Object[].
+   *
+   * @param objectArray an PrimitiveArray[]
+   * @return arrayList with the objects
+   */
+  public static List<PrimitiveArray> toArrayList(final PrimitiveArray objectArray[]) {
+    final int n = objectArray.length;
+    final ArrayList<PrimitiveArray> al = new ArrayList<>(n);
+    al.addAll(Arrays.asList(objectArray));
     return al;
   }
 
@@ -2441,15 +2538,15 @@ public class String2 {
   }
 
   /** This returns a CSV (not CSSV) String. */
-  public static String toCSVString(final Enumeration en) {
+  public static String toCSVString(final Enumeration<String> en) {
     return toSVString(toArrayList(en).toArray(), ",", false);
   }
 
-  public static String toCSVString(final ArrayList al) {
+  public static String toCSVString(final List<Object> al) {
     return toSVString(al.toArray(), ",", false);
   }
 
-  public static String toCSVString(final Vector v) {
+  public static String toCSVString(final Vector<Object> v) {
     return toSVString(v.toArray(), ",", false);
   }
 
@@ -2457,7 +2554,7 @@ public class String2 {
     return toSVString(ar, ",", false);
   }
 
-  public static String toCSVString(final Set set) {
+  public static String toCSVString(final Set<?> set) {
     final Object ar[] = set.toArray();
     Arrays.sort(ar, STRING_COMPARATOR_IGNORE_CASE);
     return toCSVString(ar);
@@ -2466,20 +2563,17 @@ public class String2 {
   /**
    * Generates a Comma-Space-Separated-Value (CSSV) string.
    *
-   * <p>WARNING: This does not have a sychronized block: if your enumeration needs thread-safety,
-   * wrap this call in something like <tt>synchronized(enum) {String2.toArrayList(enum); }</tt>.
-   *
    * <p>CHANGED: before 2011-03-06, this didn't do anything special for strings with internal commas
    * or quotes. Now it uses toJson for that string.
    *
    * <p>CHANGED: before 2011-09-04, this was called toCSVString.
    *
-   * @param en an enumeration of objects
-   * @return a CSSV String with the values with ", " after all but the last value. Returns null if
-   *     ar is null. null elements are represented as "[null]".
+   * @param al an immutable list of objects
+   * @return a CSV String with the values with ", " after all but the last value. Returns null if ar
+   *     is null. null elements are represented as "[null]".
    */
-  public static String toCSSVString(final Enumeration en) {
-    return toSVString(toArrayList(en).toArray(), ", ", false);
+  public static String toCSSVString(final ImmutableList<String> al) {
+    return toSVString(al.toArray(), ", ", false);
   }
 
   /**
@@ -2494,22 +2588,8 @@ public class String2 {
    * @return a CSV String with the values with ", " after all but the last value. Returns null if ar
    *     is null. null elements are represented as "[null]".
    */
-  public static String toCSSVString(final ArrayList al) {
+  public static String toCSSVString(final List<Object> al) {
     return toSVString(al.toArray(), ", ", false);
-  }
-
-  /**
-   * Generates a Comma-Space-Separated-Value (CSSV) string.
-   *
-   * <p>CHANGED: before 2011-03-06, this didn't do anything special for strings with internal commas
-   * or quotes. Now it uses toJson for that string.
-   *
-   * @param v a vector of objects
-   * @return a CSSV String with the values with ", " after all but the last value. Returns null if
-   *     ar is null. null elements are represented as "[null]".
-   */
-  public static String toCSSVString(final Vector v) {
-    return toSVString(v.toArray(), ", ", false);
   }
 
   /**
@@ -2537,7 +2617,7 @@ public class String2 {
    * @return a CSSV String with the values with ", " after all but the last value. Returns null if
    *     ar is null. null elements are represented as "[null]".
    */
-  public static String toCSSVString(final Set set) {
+  public static String toCSSVString(final Set<String> set) {
     final Object ar[] = set.toArray();
     Arrays.sort(ar, STRING_COMPARATOR_IGNORE_CASE);
     return toCSSVString(ar);
@@ -2598,7 +2678,6 @@ public class String2 {
         sb.append("[null]");
       } else {
         String s = o.toString();
-        int slen = s.length();
         if (csv)
           s = s.indexOf(',') >= 0 ? toJson(s) : toJsonIfNeeded(s, 128); // 2023-02-14 128 was 65536
         else if (tsv && s.indexOf('\t') >= 0) s = toJson(s);
@@ -2856,8 +2935,8 @@ public class String2 {
     final int n = ar.length;
     // estimate 12 bytes/element
     final StringBuilder sb = new StringBuilder(12 * Math.min(n, (Integer.MAX_VALUE - 8192) / 12));
-    for (int i = 0; i < n; i++) {
-      sb.append(ar[i]);
+    for (int j : ar) {
+      sb.append(j);
       sb.append('\n');
     }
     return sb.toString();
@@ -2874,8 +2953,8 @@ public class String2 {
     final int n = ar.length;
     // estimate 12 bytes/element
     final StringBuilder sb = new StringBuilder(12 * Math.min(n, (Integer.MAX_VALUE - 8192) / 12));
-    for (int i = 0; i < n; i++) {
-      sb.append(ar[i]);
+    for (double v : ar) {
+      sb.append(v);
       sb.append('\n');
     }
     return sb.toString();
@@ -2899,155 +2978,6 @@ public class String2 {
       sa[i] = o == null ? (String) o : o.toString();
     }
     return sa;
-  }
-
-  /**
-   * Add the items in the array (if any) to the arrayList.
-   *
-   * @param arrayList
-   * @param ar the items to be added
-   */
-  public static void add(final ArrayList arrayList, final Object ar[]) {
-    if (arrayList == null || ar == null) return;
-    final int n = ar.length;
-    for (int i = 0; i < n; i++) arrayList.add(ar[i]);
-  }
-
-  /**
-   * This displays the contents of a bitSet as a String.
-   *
-   * @param bitSet
-   * @return the corresponding String (the 'true' bits, comma separated)
-   */
-  public static String toString(final BitSet bitSet) {
-    if (bitSet == null) return null;
-    final StringBuilder sb = new StringBuilder(1024);
-
-    String separator = "";
-    int i = bitSet.nextSetBit(0);
-    while (i >= 0) {
-      sb.append(separator + i);
-      separator = ", ";
-      i = bitSet.nextSetBit(i + 1);
-    }
-    return sb.toString();
-  }
-
-  /**
-   * This displays the contents of a map as a String. See also StringArray(Map)
-   *
-   * @param map if it needs to be thread-safe, use ConcurrentHashMap
-   * @return the corresponding String, with one entry on each line (key = value) sorted (case
-   *     insensitive) by key
-   */
-  public static String toString(final Map map) {
-    if (map == null) return null;
-    final StringBuilder sb = new StringBuilder(1024);
-
-    final Set entrySet = map.entrySet();
-    final Iterator it = entrySet.iterator();
-    while (it.hasNext()) {
-      final Map.Entry me = (Map.Entry) it.next();
-      sb.append(me.getKey().toString() + " = " + me.getValue().toString() + "\n");
-    }
-    return sb.toString();
-  }
-
-  /**
-   * From an arrayList which alternates attributeName (a String) and attributeValue (an object),
-   * this generates a String with " name=value" on each line. If arrayList == null, this returns "
-   * [null]\n".
-   *
-   * @param arrayList
-   * @return the desired string representation
-   */
-  public static String alternateToString(final ArrayList arrayList) {
-    if (arrayList == null) return "    [null]\n";
-    final int n = arrayList.size();
-    // estimate 32 bytes/element
-    final StringBuilder sb = new StringBuilder(32 * Math.min(n, (Integer.MAX_VALUE - 8192) / 32));
-    for (int i = 0; i < n; i += 2) {
-      sb.append("    ");
-      sb.append(arrayList.get(i).toString());
-      sb.append('=');
-      sb.append(arrayToCSSVString(arrayList.get(i + 1)));
-      sb.append('\n');
-    }
-    return sb.toString();
-  }
-
-  /**
-   * From an arrayList which alternates attributeName (a String) and attributeValue (an object),
-   * this an array of attributeNames. If arrayList == null, this returns " [null]\n".
-   *
-   * @param arrayList
-   * @return the attributeNames in the arrayList
-   */
-  public static String[] alternateGetNames(final ArrayList arrayList) {
-    if (arrayList == null) return null;
-    final int n = arrayList.size();
-    final String[] sar = new String[n / 2];
-    int i2 = 0;
-    for (int i = 0; i < n / 2; i++) {
-      sar[i] = arrayList.get(i2).toString();
-      i2 += 2;
-    }
-    return sar;
-  }
-
-  /**
-   * From an arrayList which alternates attributeName (a String) and attributeValue (an object),
-   * this returns the attributeValue associated with the supplied attributeName. If array == null or
-   * there is no matching value, this returns null.
-   *
-   * @param arrayList
-   * @param attributeName
-   * @return the associated value
-   */
-  public static Object alternateGetValue(final ArrayList arrayList, final String attributeName) {
-    if (arrayList == null) return null;
-    final int n = arrayList.size();
-    for (int i = 0; i < n; i += 2) {
-      if (arrayList.get(i).toString().equals(attributeName)) return arrayList.get(i + 1);
-    }
-    return null;
-  }
-
-  /**
-   * Given an arrayList which alternates attributeName (a String) and attributeValue (an object),
-   * this either removes the attribute (if value == null), adds the attribute and value (if it isn't
-   * in the list), or changes the value (if the attriubte is in the list).
-   *
-   * @param arrayList
-   * @param attributeName
-   * @param value the value associated with the attributeName
-   * @return the previous value for the attribute (or null)
-   * @throws RuntimeException of trouble (e.g., if arrayList is null)
-   */
-  public static Object alternateSetValue(
-      final ArrayList arrayList, final String attributeName, final Object value) {
-    if (arrayList == null)
-      throw new SimpleException(ERROR + " in String2.alternateSetValue: arrayList is null.");
-    final int n = arrayList.size();
-    for (int i = 0; i < n; i += 2) {
-      if (arrayList.get(i).toString().equals(attributeName)) {
-        final Object oldValue = arrayList.get(i + 1);
-        if (value == null) {
-          arrayList.remove(i + 1); // order of removal is important
-          arrayList.remove(i);
-        } else arrayList.set(i + 1, value);
-        return oldValue;
-      }
-    }
-
-    // attributeName not found?
-    if (value == null) return null;
-    else {
-      // add it
-      arrayList.add(attributeName);
-      arrayList.add(value);
-      return null;
-    }
   }
 
   /**
@@ -3206,6 +3136,23 @@ public class String2 {
     s = s.toLowerCase();
     for (int i = 0; i < n; i++)
       if (ar[i] != null && s.equals(ar[i].toString().toLowerCase())) return i;
+    return -1;
+  }
+
+  /**
+   * This finds the first element in Object[] where ar[i].toString().toLowerCase() equals to
+   * s.toLowerCase(). This could have been called indexOfIgnoreCase().
+   *
+   * @param ar the array of Objects
+   * @param s the String to be found
+   * @return the element number of ar which is equal to s (or -1 if s is null or not found)
+   */
+  public static int caseInsensitiveIndexOf(final ImmutableList<?> ar, String s) {
+    if (ar == null || s == null) return -1;
+    final int n = ar.size();
+    s = s.toLowerCase();
+    for (int i = 0; i < n; i++)
+      if (ar.get(i) != null && s.equals(ar.get(i).toString().toLowerCase())) return i;
     return -1;
   }
 
@@ -3404,9 +3351,6 @@ public class String2 {
       if (System.getProperty("com.cohort.util.String2Log.level") == null)
         System.setProperty("com.cohort.util.String2Log.level", "" + String2Log.WARN_LEVEL);
     }
-
-    // this dummy variable ensures String2LogFactory gets compiled
-    String2LogFactory string2LogFactory;
   }
 
   /**
@@ -3557,7 +3501,6 @@ public class String2 {
       }
 
       if (logFile != null) {
-        long ctm = System.currentTimeMillis();
         // always synchronize on logFileLock
         synchronized (logFileLock) {
           // write the message to the logFile (common, fast)
@@ -3636,7 +3579,7 @@ public class String2 {
    * @return an ArrayList of strings. s=null returns null. s="" returns ArrayList with one value:
    *     "".
    */
-  public static ArrayList<String> splitToArrayList(String s, char separator) {
+  public static List<String> splitToArrayList(String s, char separator) {
     return splitToArrayList(s, separator, true);
   }
 
@@ -3650,9 +3593,9 @@ public class String2 {
    * @return an ArrayList of strings (not canonical). s=null returns null. s="" returns ArrayList
    *     with one value: "".
    */
-  public static ArrayList<String> splitToArrayList(String s, char separator, boolean trim) {
+  public static List<String> splitToArrayList(String s, char separator, boolean trim) {
     if (s == null) return null;
-    ArrayList<String> al = new ArrayList(16);
+    ArrayList<String> al = new ArrayList<>(16);
     return splitToArrayList(s, separator, trim, al);
   }
 
@@ -3667,8 +3610,8 @@ public class String2 {
    * @return al for convenience. The strings are not canonical. s=null returns al with 0 values.
    *     s="" returns ArrayList with one value: "".
    */
-  public static ArrayList<String> splitToArrayList(
-      String s, char separator, boolean trim, ArrayList<String> al) {
+  public static List<String> splitToArrayList(
+      String s, char separator, boolean trim, List<String> al) {
 
     // go through the string looking for separators
     al.clear();
@@ -3703,7 +3646,7 @@ public class String2 {
    *     String[1]{""}.
    */
   public static String[] split(String s, char separator) {
-    ArrayList<String> al = splitToArrayList(s, separator, true);
+    List<String> al = splitToArrayList(s, separator, true);
     if (al == null) return null;
     return al.toArray(new String[0]);
   }
@@ -3718,7 +3661,7 @@ public class String2 {
    *     String[1]{""}.
    */
   public static String[] splitNoTrim(String s, char separator) {
-    ArrayList<String> al = splitToArrayList(s, separator, false);
+    List<String> al = splitToArrayList(s, separator, false);
     if (al == null) return null;
     return al.toArray(new String[0]);
   }
@@ -3778,12 +3721,12 @@ public class String2 {
    * @return the corresponding int[] (invalid values are converted to Integer.MAX_VALUE). al=null
    *     returns null.
    */
-  public static int[] toIntArray(ArrayList al) {
+  public static int[] toIntArray(List<Integer> al) {
     if (al == null) return null;
     int n = al.size();
     Math2.ensureMemoryAvailable(4L * n, "String2.toIntArray");
     int ia[] = new int[n];
-    for (int i = 0; i < n; i++) ia[i] = ((Integer) al.get(i)).intValue();
+    for (int i = 0; i < n; i++) ia[i] = al.get(i);
     return ia;
   }
 
@@ -3794,12 +3737,12 @@ public class String2 {
    * @return the corresponding float[] (invalid values are converted to Float.NaN). al=null returns
    *     null.
    */
-  public static float[] toFloatArray(ArrayList al) {
+  public static float[] toFloatArray(List<Float> al) {
     if (al == null) return null;
     int n = al.size();
     Math2.ensureMemoryAvailable(4L * n, "String2.toFloatArray");
     float fa[] = new float[n];
-    for (int i = 0; i < n; i++) fa[i] = ((Float) al.get(i)).floatValue();
+    for (int i = 0; i < n; i++) fa[i] = al.get(i);
     return fa;
   }
 
@@ -3810,12 +3753,12 @@ public class String2 {
    * @return the corresponding double[] (invalid values are converted to Double.NaN). al=null
    *     returns null.
    */
-  public static double[] toDoubleArray(ArrayList al) {
+  public static double[] toDoubleArray(List<Double> al) {
     if (al == null) return null;
     int n = al.size();
     Math2.ensureMemoryAvailable(4L * n, "String2.toDoubleArray");
     double da[] = new double[n];
-    for (int i = 0; i < n; i++) da[i] = ((Double) al.get(i)).doubleValue();
+    for (int i = 0; i < n; i++) da[i] = al.get(i);
     return da;
   }
 
@@ -3830,7 +3773,7 @@ public class String2 {
     int n = iar.length;
     int nFinite = 0;
     int ia[] = new int[n];
-    for (int i = 0; i < n; i++) if (iar[i] < Integer.MAX_VALUE) ia[nFinite++] = iar[i];
+    for (int j : iar) if (j < Integer.MAX_VALUE) ia[nFinite++] = j;
 
     // copy to a new array
     int iaf[] = new int[nFinite];
@@ -3849,7 +3792,7 @@ public class String2 {
     int n = dar.length;
     int nFinite = 0;
     double da[] = new double[n];
-    for (int i = 0; i < n; i++) if (Double.isFinite(dar[i])) da[nFinite++] = dar[i];
+    for (double v : dar) if (Double.isFinite(v)) da[nFinite++] = v;
 
     // copy to a new array
     double daf[] = new double[nFinite];
@@ -3868,7 +3811,7 @@ public class String2 {
     int n = sar.length;
     int nValid = 0;
     String sa[] = new String[n];
-    for (int i = 0; i < n; i++) if (sar[i] != null) sa[nValid++] = sar[i];
+    for (String s : sar) if (s != null) sa[nValid++] = s;
 
     // copy to a new array
     String sa2[] = new String[nValid];
@@ -3887,7 +3830,7 @@ public class String2 {
     int n = sar.length;
     int nValid = 0;
     String sa[] = new String[n];
-    for (int i = 0; i < n; i++) if (sar[i] != null && sar[i].length() > 0) sa[nValid++] = sar[i];
+    for (String s : sar) if (s != null && s.length() > 0) sa[nValid++] = s;
 
     // copy to a new array
     String sa2[] = new String[nValid];
@@ -4062,7 +4005,7 @@ public class String2 {
               || d > Integer.MAX_VALUE + 0.4999999999
               || d <= Integer.MIN_VALUE - 0.4999999999
           ? null
-          : Integer.valueOf((int) Math.round(d)); // safe since checked for larger values above
+          : (int) Math.round(d); // safe since checked for larger values above
     } catch (Exception e) {
       return null;
     }
@@ -4121,29 +4064,6 @@ public class String2 {
   }
 
   /**
-   * This converts the string into a BigInteger in the ULong range (or ULONG_MISSING_VALUE if
-   * trouble).
-   *
-   * <p>return a BigInteger (Math2.ULONG_MAX_VALUE AKA ULONG_MISSING_VALUE if trouble).
-   */
-  public static BigInteger parseULong(String s) {
-    if (s == null) return Math2.ULONG_MAX_VALUE;
-    s = s.trim();
-    if (s.length() == 0) return Math2.ULONG_MAX_VALUE;
-
-    try {
-      BigInteger bi = new BigDecimal(s).round(MathContext.DECIMAL128).toBigInteger();
-      if (bi.compareTo(Math2.ULONG_MIN_VALUE) < 0
-          || bi.compareTo(Math2.ULONG_MAX_VALUE) >= 0) // not >
-      return Math2.ULONG_MAX_VALUE;
-      return bi;
-
-    } catch (Exception e) {
-      return Math2.ULONG_MAX_VALUE;
-    }
-  }
-
-  /**
    * This converts the string into a BigInteger in the ULong range (or null if trouble).
    *
    * <p>return a BigInteger (or null if trouble).
@@ -4186,27 +4106,6 @@ public class String2 {
     } catch (Exception e) {
       return null;
     }
-  }
-
-  /**
-   * DON'T USE THIS; RELY ON THE FIXES AVAILABLE FOR JAVA: EITHER THE LATEST VERSION OF JAVA OR THE
-   * JAVA UPDATER TO FIX THE BUG ON EXISTING OLDER JAVA INSTALLATIONS
-   * https://www.oracle.com/technetwork/java/javase/fpupdater-tool-readme-305936.html
-   *
-   * <p>This returns true if s is a value that causes Java to hang. Avoid java hang. 2011-02-09
-   * http://www.exploringbinary.com/java-hangs-when-converting-2-2250738585072012e-308 This was
-   * Bob's work-around to avoid the Java bug.
-   *
-   * @param s a string representing a double value
-   * @return true if the value is the troublesome value. If true, the value can be interpreted as
-   *     either +/-Double.MIN_VALUE (not sure which) or (crudely) 0.
-   */
-  public static boolean isDoubleTrouble(String s) {
-    if (s == null || s.length() < 22) // this is a good quick reject
-    return false;
-
-    // all variants are relevant, so look for the mantissa
-    return replaceAll(s, ".", "").indexOf("2225073858507201") >= 0;
   }
 
   /**
@@ -4270,7 +4169,7 @@ public class String2 {
       BigInteger bi = new BigDecimal(s).round(MathContext.DECIMAL128).toBigInteger();
       return bi.compareTo(Math2.LONG_MIN_VALUE) < 0 || bi.compareTo(Math2.LONG_MAX_VALUE) >= 0
           ? null
-          : Long.valueOf(bi.longValueExact()); // should succeed, but throws exception if failure
+          : bi.longValueExact(); // should succeed, but throws exception if failure
     } catch (Exception e) {
       return null;
     }
@@ -4315,7 +4214,7 @@ public class String2 {
   public static String[] tokenize(String s) {
     if (s == null) return null;
 
-    ArrayList<String> arrayList = new ArrayList();
+    ArrayList<String> arrayList = new ArrayList<>();
     int sLength = s.length();
     int index = 0; // next char to be read
     // eat spaces
@@ -4718,7 +4617,7 @@ public class String2 {
             // newline not inserted above; insert it at oi
             i = oi;
           }
-          sb.append(s.substring(start, i));
+          sb.append(s, start, i);
           sb.append("\n" + spaces);
           start = i;
           count = spacesLength;
@@ -4802,16 +4701,14 @@ public class String2 {
    * @return a string with the sorted (ignoreCase) keys and their values ("key1: value1\nkey2:
    *     value2\n")
    */
-  public static String getKeysAndValuesString(Map map) {
-    ArrayList<String> al = new ArrayList();
+  public static String getKeysAndValuesString(Map<String, String> map) {
+    ArrayList<String> al = new ArrayList<>();
 
     // synchronize so protected from changes in other threads
-    Iterator it = map.keySet().iterator();
-    while (it.hasNext()) {
-      Object key = it.next();
-      al.add(key.toString() + ": " + map.get(key).toString());
+    for (Entry<String, String> entry : map.entrySet()) {
+      al.add(entry.getKey() + ": " + entry.getValue());
     }
-    Collections.sort(al, STRING_COMPARATOR_IGNORE_CASE);
+    al.sort(STRING_COMPARATOR_IGNORE_CASE);
     return toNewlineString(al.toArray(new String[0]));
   }
 
@@ -4895,7 +4792,7 @@ public class String2 {
     return "" + Math2.roundToLong(d);
 
     // >10e6
-    if (Math.abs(d) >= 999999.99999999995) {
+    if (Math.abs(d) >= 1000000.0) {
       synchronized (genExpFormat10) {
         return genExpFormat10.format(d);
       }
@@ -5010,7 +4907,8 @@ public class String2 {
     try {
       flushLog();
       System.out.print(prompt);
-      BufferedReader inReader = new BufferedReader(new InputStreamReader(System.in));
+      BufferedReader inReader =
+          new BufferedReader(new InputStreamReader(System.in, StandardCharsets.UTF_8));
       return inReader.readLine();
     } catch (Exception e) {
       throw new RuntimeException(e);
@@ -5043,25 +4941,6 @@ public class String2 {
     return pressEnterToContinue("");
   }
 
-  /*  OLD VERSION
-      public static String getPasswordFromSystemIn(String prompt) throws Exception {
-          System.out.print(prompt);
-          StringBuilder sb = new StringBuilder();
-          while (true) {
-              while (System.in.available() == 0) {
-                  Math2.sleep(1);
-                  System.out.print("\b*");
-              }
-              int ch = System.in.read();
-              if (ch <= 0)
-                  continue;
-              if (ch == '\n')
-                  return sb.toString();
-              sb.append((char)ch);
-          }
-      }
-  */
-
   /**
    * On the command line, this prompts the user a String (which is not echoed to the screen, so is
    * suitable for passwords). This is slighly modified from
@@ -5080,7 +4959,6 @@ public class String2 {
 
     char[] lineBuffer;
     char[] buf;
-    int i;
 
     buf = lineBuffer = new char[128];
 
@@ -5194,9 +5072,8 @@ public class String2 {
     // do they differ at a different position?
     // make all the same length
     int preIndex = insertionPoint - 1;
-    int postIndex = insertionPoint;
     String pre = sar[preIndex];
-    String post = sar[postIndex];
+    String post = sar[insertionPoint];
     int longest = Math.max(s.length(), Math.max(pre.length(), post.length()));
     String ts = s + makeString(' ', longest - s.length());
     pre += makeString(' ', longest - pre.length());
@@ -5206,10 +5083,10 @@ public class String2 {
       char preCh = pre.charAt(i);
       char postCh = post.charAt(i);
       if (preCh == ch && postCh != ch) return preIndex;
-      if (preCh != ch && postCh == ch) return postIndex;
+      if (preCh != ch && postCh == ch) return insertionPoint;
       if (preCh != ch && postCh != ch) {
         // which one is closer
-        return Math.abs(preCh - ch) < Math.abs(postCh - ch) ? preIndex : postIndex;
+        return Math.abs(preCh - ch) < Math.abs(postCh - ch) ? preIndex : insertionPoint;
       }
     }
     // shouldn't all be equal
@@ -5516,10 +5393,10 @@ public class String2 {
       byte bytes[] = md.digest();
       int nBytes = bytes.length;
       StringBuilder sb = new StringBuilder(nBytes * 2);
-      for (int i = 0; i < nBytes; i++)
+      for (byte aByte : bytes)
         sb.append(
             zeroPad(
-                Integer.toHexString((int) bytes[i] & 0xFF),
+                Integer.toHexString((int) aByte & 0xFF),
                 2)); // safe, (int) and 0xFF make it unsigned byte
       return sb.toString();
     } catch (Throwable t) {
@@ -5529,13 +5406,12 @@ public class String2 {
   }
 
   /** Java only guarantees that the first 3 of these will be supported. */
-  public static final String FILE_DIGEST_OPTIONS[] = {
-    "MD5", "SHA-1", "SHA-256", "SHA-384", "SHA-512"
-  };
+  public static final ImmutableList<String> FILE_DIGEST_OPTIONS =
+      ImmutableList.of("MD5", "SHA-1", "SHA-256", "SHA-384", "SHA-512");
 
-  public static final String FILE_DIGEST_EXTENSIONS[] = {
-    ".md5", ".sha1", ".sha256", ".sha384", ".sha512"
-  }; // Bagit likes these (after the '.')
+  public static final ImmutableList<String> FILE_DIGEST_EXTENSIONS =
+      ImmutableList.of(
+          ".md5", ".sha1", ".sha256", ".sha384", ".sha512"); // Bagit likes these (after the '.')
 
   /**
    * This returns a hash digest of fullFileName (read as bytes) as a String of lowercase hex digits.
@@ -5552,27 +5428,23 @@ public class String2 {
   public static String fileDigest(boolean useBase64, String algorithm, String fullFileName)
       throws Exception {
     MessageDigest md = MessageDigest.getInstance(algorithm);
-    InputStream fis =
-        File2.getBufferedInputStream(
-            fullFileName); // not File2.getDecompressedBufferedInputStream() because we want file
+    // not File2.getDecompressedBufferedInputStream() because we want file
     // digest of archive
-    try {
+    try (InputStream fis = File2.getBufferedInputStream(fullFileName)) {
       byte buffer[] = new byte[8192];
       int nBytes;
       while ((nBytes = fis.read(buffer)) >= 0) md.update(buffer, 0, nBytes);
-    } finally {
-      fis.close();
     }
     byte bytes[] = md.digest();
     if (useBase64) {
-      return new String(Base64.encodeBase64(bytes));
+      return new String(Base64.encodeBase64(bytes), StandardCharsets.UTF_8);
     } else {
       int nBytes = bytes.length;
       StringBuilder sb = new StringBuilder(nBytes * 2);
-      for (int i = 0; i < nBytes; i++)
+      for (byte aByte : bytes)
         sb.append(
             zeroPad(
-                Integer.toHexString((int) bytes[i] & 0xFF),
+                Integer.toHexString((int) aByte & 0xFF),
                 2)); // safe, (int) and 0xFF make it unsigned byte
       return sb.toString();
     }
@@ -5651,6 +5523,7 @@ public class String2 {
    * @param d
    * @return int[2]: [0]=m, [1]=t. (or {0, 0} if d=0, or {1, Integer.MAX_VALUE} if !finite(d))
    */
+  @SuppressWarnings("NarrowCalculation") // specifically tl / 10
   public static int[] toRational(double d) {
     if (d == 0) return new int[] {0, 0};
 
@@ -5982,8 +5855,8 @@ public class String2 {
       if (canonical == null) {
         // For proof that new String(s.substring(,)) is just storing relevant chars,
         // not a reference to the parent string, see TestUtil.testString2canonical2()
-        canonical = new String(s); // in case s is from s2.substring, copy to be just the characters
-        tCanonicalMap.put(canonical, new WeakReference(canonical));
+        canonical = s; // in case s is from s2.substring, copy to be just the characters
+        tCanonicalMap.put(canonical, new WeakReference<>(canonical));
         // log("new canonical string: " + canonical);
       }
       return canonical;
@@ -6026,7 +5899,7 @@ public class String2 {
       StringHolder canonical = wr == null ? null : wr.get();
       if (canonical == null) {
         canonical = sh; // use this object
-        tCanonicalStringHolderMap.put(canonical, new WeakReference(canonical));
+        tCanonicalStringHolderMap.put(canonical, new WeakReference<>(canonical));
         // log("new canonical string: " + canonical);
       }
       return canonical;
@@ -6051,12 +5924,12 @@ public class String2 {
     //  (and use a few times in consistent state)
     // than to synchronize canonicalMap and lock/unlock twice
     synchronized (canonicalLockMap) {
-      WeakReference wr = (WeakReference) canonicalLockMap.get(o);
+      WeakReference<ReentrantLock> wr = canonicalLockMap.get(o);
       // wr won't be garbage collected, but reference might (making wr.get() return null)
-      ReentrantLock canonical = wr == null ? null : (ReentrantLock) wr.get();
+      ReentrantLock canonical = wr == null ? null : wr.get();
       if (canonical == null) {
         canonical = new ReentrantLock();
-        canonicalLockMap.put(o, new WeakReference(canonical));
+        canonicalLockMap.put(o, new WeakReference<>(canonical));
       }
       return canonical;
     }
@@ -6082,21 +5955,6 @@ public class String2 {
     return sb.toString();
   }
 
-  /** This is only used to test canonical. */
-  public static int canonicalSize() {
-    int sum = 0;
-    for (int i = 0; i < canonicalMap.length; i++) sum += canonicalMap[i].size();
-    return sum;
-  }
-
-  /** This is only used to test canonicalStringHolder. */
-  public static int canonicalStringHolderSize() {
-    int sum = 0;
-    for (int i = 0; i < canonicalStringHolderMap.length; i++)
-      sum += canonicalStringHolderMap[i].size();
-    return sum;
-  }
-
   /**
    * For command line parameters, this returns toJson(s) if the string is empty or contains special
    * characters or single or double quotes or backslash; otherwise it return s.
@@ -6110,32 +5968,6 @@ public class String2 {
         ? s
         : toJson(s);
   }
-
-  /* *
-   * This makes a medium-deep clone of an ArrayList by calling clone() of
-   * each element of the ArrayList.
-   *
-   * @param oldArrayList
-   * @param newArrayList  If oldArrayList is null, this returns null.
-   *    Elements of oldArrayList can be null.
-   */
-  /* I couldn't make this compile. clone throws an odd exception.
-  public ArrayList clone(ArrayList oldArrayList) {
-      if (oldArrayList == null)
-          return (ArrayList)null;
-
-      ArrayList newArrayList = new ArrayList();
-      int n = oldArrayList.size();
-      for (int i = 0; i < n; i++) {
-          Object o = oldArrayList.get(i);
-          try {
-              if (o != null) o = o.clone();
-          } catch (Exception e) {
-          }
-          newArrayList.add(o);
-      }
-      return newArrayList;
-  } */
 
   /**
    * This changes the characters case to title case (only letters after non-letters are
@@ -6178,6 +6010,11 @@ public class String2 {
       }
     }
     return sb.toString();
+  }
+
+  /** Simple null-safe lower case string transformation. */
+  public static String toLowerCase(String s) {
+    return s == null ? null : s.toLowerCase();
   }
 
   /**
@@ -6296,11 +6133,6 @@ public class String2 {
       return !s.equals("???");
     }
     return true;
-  }
-
-  /** This returns the text to make n system beeps if printed to the console. */
-  public static String beep(int n) {
-    return makeString('\u0007', n);
   }
 
   /** This cleverly concatenates the 2 strings (with "", ". ", or " ", as appropriate. */
@@ -6429,7 +6261,7 @@ public class String2 {
    */
   public static String validateAcddContactType(String value) {
     int which = caseInsensitiveIndexOf(ACDD_CONTACT_TYPES, value);
-    return which < 0 ? null : ACDD_CONTACT_TYPES[which];
+    return which < 0 ? null : ACDD_CONTACT_TYPES.get(which);
   }
 
   /** Guess the ACDD contact type, or return null if new pretty sure. */
@@ -6459,15 +6291,6 @@ public class String2 {
     return sb.toString();
   }
 
-  /** This lists the methods for a given object's class. */
-  public static void listMethods(Object v) {
-    Class tClass = v.getClass();
-    Method[] methods = tClass.getMethods();
-    for (int i = 0; i < methods.length; i++) {
-      String2.log("public method #" + i + ": " + methods[i]);
-    }
-  }
-
   /**
    * Given a map, this reasonably efficiently removes all entries where a value is in the set.
    *
@@ -6475,14 +6298,13 @@ public class String2 {
    * @param set The set of values. Presumably, each value in set is just a value in the map one
    *     time. Afterward, the set will contain just the values which weren't removed.
    */
-  public static void removeValues(Map map, Set set) {
+  public static void removeValues(Map<Integer, String> map, Set<String> set) {
     if (map == null || set == null || map.isEmpty() || set.isEmpty()) return;
 
-    Iterator<Map.Entry> it = map.entrySet().iterator();
+    Iterator<Map.Entry<Integer, String>> it = map.entrySet().iterator();
     while (it.hasNext()) {
-      Map.Entry entry = it.next();
-      Object key = entry.getKey();
-      Object val = entry.getValue();
+      Map.Entry<Integer, String> entry = it.next();
+      String val = entry.getValue();
       if (set.contains(val)) {
         it.remove(); // remove entry through iterator, or exception
         set.remove(val);
@@ -6490,18 +6312,9 @@ public class String2 {
     }
   }
 
-  /**
-   * This encodes special regex characters to turn a string into a regex for that string. I'm not at
-   * all sure this is perfect!
-   */
-  public static String encodeAsRegex(String s) {
-    int length = s.length();
-    StringBuilder sb = new StringBuilder(length * 3 / 2);
-    for (int po = 0; po < length; po++) {
-      char ch = s.charAt(po);
-      if (".^$[](){}?*+\\".indexOf(ch) >= 0) sb.append('\\');
-      sb.append(ch);
-    }
-    return sb.toString();
+  public static String[] immutableListToArray(ImmutableList<String> list) {
+    String[] array = new String[list.size()];
+    array = list.toArray(array);
+    return array;
   }
 } // End of String2 class.

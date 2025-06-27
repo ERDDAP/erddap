@@ -56,6 +56,9 @@ class EDDTableFromAsciiServiceNOSTests {
         "nosCoopsCA"
       })
   @TagIncompleteTest // "this.stationTable" is null
+  // EDDTableFromAsciiServiceNOS requires loading the stationTable from a file
+  // if there is no file, it attempts to make a request of the dataset (during
+  // the constructor), which fails because the stationTable is null.
   void testNosCoops(String idRegex) throws Throwable {
     // String2.log("\n******************
     // EDDTableFromAsciiServiceNOS.testNosCoopsWL\n");
@@ -108,10 +111,10 @@ class EDDTableFromAsciiServiceNOSTests {
               null,
               null,
               query,
-              EDStatic.fullTestCacheDirectory,
+              EDStatic.config.fullTestCacheDirectory,
               edd.className() + "_" + edd.datasetID(),
               ".csv");
-      results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+      results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
       expected = // this changes every day
           // 9414290,San
           // Francisco,CA,1854-06-30T00:00:00Z,FTPC1,"NWLON,PORTS",-122.4659,37.8063," +
@@ -169,10 +172,10 @@ class EDDTableFromAsciiServiceNOSTests {
               null,
               null,
               query,
-              EDStatic.fullTestCacheDirectory,
+              EDStatic.config.fullTestCacheDirectory,
               edd.className() + "_" + edd.datasetID(),
               ".csv");
-      results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+      results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
       expected =
           // 9414290,San
           // Francisco,CA,1854-06-30T00:00:00Z,FTPC1,"NWLON,PORTS",-122.4659,37.8063,2015-02-02T21:00:00Z,MLLW,1,WL,1.097
@@ -237,10 +240,10 @@ class EDDTableFromAsciiServiceNOSTests {
               null,
               null,
               query,
-              EDStatic.fullTestCacheDirectory,
+              EDStatic.config.fullTestCacheDirectory,
               edd.className() + "_" + edd.datasetID(),
               ".csv");
-      results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+      results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
       expected = // changes every day
           // 9414290,San
           // Francisco,CA,1854-06-30T00:00:00Z,FTPC1,"NWLON,PORTS",-122.4659,37.8063,2014-12-25T21:00:00Z,MLLW,1.841,0.048,0,0,0,0
@@ -303,10 +306,10 @@ class EDDTableFromAsciiServiceNOSTests {
               null,
               null,
               query,
-              EDStatic.fullTestCacheDirectory,
+              EDStatic.config.fullTestCacheDirectory,
               edd.className() + "_" + edd.datasetID(),
               ".csv");
-      results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+      results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
       expected =
           // eg
           // 8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,"NWLON,PORTS",-71.4011,41.8067,2014-12-25T14:00:00Z,MLLW,1.641,0.002,0,0
@@ -368,10 +371,10 @@ class EDDTableFromAsciiServiceNOSTests {
               null,
               null,
               query,
-              EDStatic.fullTestCacheDirectory,
+              EDStatic.config.fullTestCacheDirectory,
               edd.className() + "_" + edd.datasetID(),
               ".csv");
-      results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+      results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
       // number of lines in results varies
       String sar[] = String2.split(results, '\n');
       expected =
@@ -407,10 +410,10 @@ class EDDTableFromAsciiServiceNOSTests {
               null,
               null,
               query,
-              EDStatic.fullTestCacheDirectory,
+              EDStatic.config.fullTestCacheDirectory,
               edd.className() + "_" + edd.datasetID(),
               ".csv");
-      results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+      results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
       // number of lines in results varies
       String sar[] = String2.split(results, '\n');
       expected =
@@ -450,10 +453,10 @@ class EDDTableFromAsciiServiceNOSTests {
               null,
               null,
               query,
-              EDStatic.fullTestCacheDirectory,
+              EDStatic.config.fullTestCacheDirectory,
               edd.className() + "_" + edd.datasetID(),
               ".csv");
-      results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+      results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
       expected =
           // eg
           // 8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,"NWLON,PORTS",-71.4006,41.8067,2015-02-08T00:00:00Z,MLLW,0.597
@@ -514,10 +517,10 @@ class EDDTableFromAsciiServiceNOSTests {
               null,
               null,
               query,
-              EDStatic.fullTestCacheDirectory,
+              EDStatic.config.fullTestCacheDirectory,
               edd.className() + "_" + edd.datasetID(),
               ".csv");
-      results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+      results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
       expected =
           // eg
           // 8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,"NWLON,PORTS",-71.4006,41.8067,2015-02-08T00:00:00Z,MLLW,0.597
@@ -576,10 +579,10 @@ class EDDTableFromAsciiServiceNOSTests {
               null,
               null,
               query,
-              EDStatic.fullTestCacheDirectory,
+              EDStatic.config.fullTestCacheDirectory,
               edd.className() + "_" + edd.datasetID(),
               ".csv");
-      results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+      results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
       expected =
           // eg
           // 8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4006,41.8067,2015-02-02T00:00:00Z,1,AT,-1.0,0,0,0
@@ -638,10 +641,10 @@ class EDDTableFromAsciiServiceNOSTests {
               null,
               null,
               query,
-              EDStatic.fullTestCacheDirectory,
+              EDStatic.config.fullTestCacheDirectory,
               edd.className() + "_" + edd.datasetID(),
               ".csv");
-      results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+      results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
       expected =
           // eg
           // 8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4006,41.8067,2015-02-02T00:00:00Z,1,BP,1019.5,0,0,0
@@ -707,10 +710,10 @@ class EDDTableFromAsciiServiceNOSTests {
               null,
               null,
               query,
-              EDStatic.fullTestCacheDirectory,
+              EDStatic.config.fullTestCacheDirectory,
               edd.className() + "_" + edd.datasetID(),
               ".csv");
-      results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+      results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
       expected =
           // 8452660,Newport,RI,1930-09-11T00:00:00Z,NWPR1,"NWLON,PORTS",-71.3267,41.505,2014-12-25T00:00:00Z,1,CN,31.16,0,0,0
           // 8452660,Newport,RI,1930-09-11T00:00:00Z,NWPR1,"NWLON,PORTS",-71.3261,41.5044,2014-12-25T00:00:00Z,1,CN,31.16,0,0,0
@@ -777,10 +780,10 @@ class EDDTableFromAsciiServiceNOSTests {
               null,
               null,
               query,
-              EDStatic.fullTestCacheDirectory,
+              EDStatic.config.fullTestCacheDirectory,
               edd.className() + "_" + edd.datasetID(),
               ".csv");
-      results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+      results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
       expected =
           // 9752619,"Isabel Segunda, Vieques
           // Island",PR,2007-09-13T00:00:00Z,VQSP4,COASTAL,-65.444,18.153,2015-02-02T00:00:00Z,1,J1,0.0,0,0
@@ -836,10 +839,10 @@ class EDDTableFromAsciiServiceNOSTests {
               null,
               null,
               query,
-              EDStatic.fullTestCacheDirectory,
+              EDStatic.config.fullTestCacheDirectory,
               edd.className() + "_" + edd.datasetID(),
               ".csv");
-      results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+      results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
       expected =
           // 9063063,Cleveland,OH,1860-01-01T00:00:00Z,CNDO1,NWLON,-81.6355,41.5409,2015-02-02T00:00:00Z,1,RH,91.4,0,0,0
           "stationID,stationName,state,dateEstablished,shefID,deployment,longitude,latitude,time,dcp,sensor,RH,X,N,R\n"
@@ -897,10 +900,10 @@ class EDDTableFromAsciiServiceNOSTests {
               null,
               null,
               query,
-              EDStatic.fullTestCacheDirectory,
+              EDStatic.config.fullTestCacheDirectory,
               edd.className() + "_" + edd.datasetID(),
               ".csv");
-      results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+      results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
       expected =
           // eg
           // 8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4006,41.8067,2010-10-24T00:00:00Z,1,WT,14.8,0,0,0
@@ -959,10 +962,10 @@ class EDDTableFromAsciiServiceNOSTests {
               null,
               null,
               query,
-              EDStatic.fullTestCacheDirectory,
+              EDStatic.config.fullTestCacheDirectory,
               edd.className() + "_" + edd.datasetID(),
               ".csv");
-      results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+      results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
       expected =
           // eg
           // 8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4006,41.8067,2015-02-02T00:00:00Z,1,WS,1.86,22.72,3.2,0,0
@@ -1022,10 +1025,10 @@ class EDDTableFromAsciiServiceNOSTests {
               null,
               null,
               query,
-              EDStatic.fullTestCacheDirectory,
+              EDStatic.config.fullTestCacheDirectory,
               edd.className() + "_" + edd.datasetID(),
               ".csv");
-      results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+      results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
       expected =
           "stationID,stationName,state,dateEstablished,shefID,deployment,longitude,latitude,time,Vis\n"
               + ",,,UTC,,,degrees_east,degrees_north,UTC,nautical_miles\n";
@@ -1060,10 +1063,10 @@ class EDDTableFromAsciiServiceNOSTests {
               null,
               null,
               query,
-              EDStatic.fullTestCacheDirectory,
+              EDStatic.config.fullTestCacheDirectory,
               edd.className() + "_" + edd.datasetID(),
               ".csv");
-      results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+      results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
       expected =
           // db0301,Philadelphia,2003-03-25T00:00:00Z,-75.1396,39.9462,2010-11-21T00:03:00Z,1.526,199.0
           "stationID,stationName,dateEstablished,longitude,latitude,time,CS,CD\n"
@@ -1118,9 +1121,9 @@ class EDDTableFromAsciiServiceNOSTests {
      * query = "&stationID=\"1612340\"&datum=\"MLLW\"&time>=" + daysAgo72 +
      * "00:00&time<=" + daysAgo70 + "00:00";
      * tName = edd.makeNewFileForDapQuery(language, null, null, query,
-     * EDStatic.fullTestCacheDirectory,
+     * EDStatic.config.fullTestCacheDirectory,
      * edd.className() + "_" + edd.datasetID(), ".csv");
-     * results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory +
+     * results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory +
      * tName);
      * expected =
      * "zztop\n";

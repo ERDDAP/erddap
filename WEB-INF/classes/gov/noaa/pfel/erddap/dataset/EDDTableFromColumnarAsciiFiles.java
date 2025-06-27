@@ -20,10 +20,11 @@ import gov.noaa.pfel.coastwatch.pointdata.Table;
 import gov.noaa.pfel.coastwatch.util.FileVisitorDNLS;
 import gov.noaa.pfel.coastwatch.util.SSR;
 import gov.noaa.pfel.coastwatch.util.SimpleXMLReader;
+import gov.noaa.pfel.erddap.dataset.metadata.LocalizedAttributes;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.*;
-import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 
 /**
  * This class represents a table of data from a collection of Columnar / Fixed Length / Fixed Format
@@ -46,7 +47,7 @@ public class EDDTableFromColumnarAsciiFiles extends EDDTableFromFiles {
     return DEFAULT_STANDARDIZEWHAT;
   }
 
-  public static int DEFAULT_STANDARDIZEWHAT = 0;
+  public static final int DEFAULT_STANDARDIZEWHAT = 0;
 
   /**
    * The constructor.
@@ -67,8 +68,8 @@ public class EDDTableFromColumnarAsciiFiles extends EDDTableFromFiles {
       String tSosOfferingPrefix,
       String tDefaultDataQuery,
       String tDefaultGraphQuery,
-      Attributes tAddGlobalAttributes,
-      Object[][] tDataVariables,
+      LocalizedAttributes tAddGlobalAttributes,
+      List<DataVariableInfo> tDataVariables,
       int tReloadEveryNMinutes,
       int tUpdateEveryNMillis,
       String tFileDir,
@@ -234,7 +235,7 @@ public class EDDTableFromColumnarAsciiFiles extends EDDTableFromFiles {
       throws Exception {
 
     // read the lines of the sample file
-    ArrayList<String> lines = File2.readLinesFromFile(sampleFileName, charset, 2);
+    List<String> lines = File2.readLinesFromFile(sampleFileName, charset, 2);
 
     // hueristic: col with low usage then col with high usage (or vice versa)
     //  indicates new column
@@ -456,7 +457,6 @@ public class EDDTableFromColumnarAsciiFiles extends EDDTableFromFiles {
         "sourceUrl", "(" + (String2.isTrulyRemote(tFileDir) ? "remote" : "local") + " files)");
     // externalAddGlobalAttributes.setIfNotAlreadySet("subsetVariables", "???");
 
-    boolean dateTimeAlreadyFound = false;
     double maxTimeES = Double.NaN;
     for (int col = 0; col < dataSourceTable.nColumns(); col++) {
       String colName = dataSourceTable.getColumnName(col);
@@ -468,11 +468,9 @@ public class EDDTableFromColumnarAsciiFiles extends EDDTableFromFiles {
       Attributes addAtts = new Attributes();
 
       // dateTime?
-      boolean isDateTime = false;
       if (sourcePA instanceof StringArray sa) {
         String dtFormat = Calendar2.suggestDateTimeFormat(sa, false); // evenIfPurelyNumeric
         if (dtFormat.length() > 0) {
-          isDateTime = true;
           addAtts.set("units", dtFormat);
         }
 
@@ -623,7 +621,10 @@ public class EDDTableFromColumnarAsciiFiles extends EDDTableFromFiles {
     // last 2 params: includeDataType, questionDestinationName
     sb.append(
         writeVariablesForDatasetsXml(dataSourceTable, dataAddTable, "dataVariable", true, false));
-    sb.append("</dataset>\n" + "\n");
+    sb.append("""
+            </dataset>
+
+            """);
 
     String2.log("\n\n*** generateDatasetsXml finished successfully.\n\n");
     return sb.toString();
@@ -654,7 +655,7 @@ public class EDDTableFromColumnarAsciiFiles extends EDDTableFromFiles {
 
     boolean pauseForErrors = false;
     String resultsFileName =
-        EDStatic.fullLogsDirectory
+        EDStatic.config.fullLogsDirectory
             + "fromEML_"
             + Calendar2.getCompactCurrentISODateTimeStringLocal()
             + ".log";
@@ -683,28 +684,19 @@ public class EDDTableFromColumnarAsciiFiles extends EDDTableFromFiles {
       // if (names.get(i).compareTo("knb-lter-sbc.59") < 0)
       //    continue;
 
-      if (false) {
-        // just download the files
-        SSR.downloadFile(
-            startUrl + names.get(i),
-            emlDir + names.get(i),
-            true); // tryToUseCompression; throws Exception
-
-      } else {
-        String result =
-            generateDatasetsXmlFromEML(
-                    pauseForErrors,
-                    emlDir,
-                    startUrl + names.get(i),
-                    useLocalFilesIfPresent,
-                    tAccessibleTo,
-                    localTimeZone,
-                    tStandardizeWhat)
-                + "\n"; // standardizeWhat
-        results.append(result);
-        File2.appendFileUtf8(resultsFileName, result);
-        String2.log(result);
-      }
+      String result =
+          generateDatasetsXmlFromEML(
+                  pauseForErrors,
+                  emlDir,
+                  startUrl + names.get(i),
+                  useLocalFilesIfPresent,
+                  tAccessibleTo,
+                  localTimeZone,
+                  tStandardizeWhat)
+              + "\n"; // standardizeWhat
+      results.append(result);
+      File2.appendFileUtf8(resultsFileName, result);
+      String2.log(result);
     }
 
     String2.log(
@@ -836,7 +828,6 @@ public class EDDTableFromColumnarAsciiFiles extends EDDTableFromFiles {
     if (!String2.isSomething(localTimeZone)) localTimeZone = "";
     String charset = null; // for the sample data file
     String defaultDatafileCharset = File2.ISO_8859_1; // for the sample data file
-    int tReloadEveryNMinutes = DEFAULT_RELOAD_EVERY_N_MINUTES;
     Table addTable = new Table();
     Attributes addGlobalAtts = addTable.globalAttributes();
     tStandardizeWhat =
@@ -866,7 +857,7 @@ public class EDDTableFromColumnarAsciiFiles extends EDDTableFromFiles {
     // gather/generate
     StringBuilder address = new StringBuilder();
     String altitudeUnits = "";
-    StringBuilder boundingCoordinates = new StringBuilder("");
+    StringBuilder boundingCoordinates = new StringBuilder();
     StringBuilder coverage = new StringBuilder();
     String dataFileName = "";
     String dataFileDelimiter = "";
@@ -883,9 +874,9 @@ public class EDDTableFromColumnarAsciiFiles extends EDDTableFromFiles {
     datasetID += (datasetID.endsWith("_") ? "" : "_") + "t" + whichDataTable;
     int dataTablei = 0;
     StringBuilder individualName = new StringBuilder();
-    HashSet<String> keywords = new HashSet();
+    HashSet<String> keywords = new HashSet<>();
     StringBuilder license = new StringBuilder();
-    StringBuilder licenseOther = new StringBuilder("");
+    StringBuilder licenseOther = new StringBuilder();
     StringBuilder methods = new StringBuilder();
     int methodNumber = 0;
     String methodsDescription = "";
@@ -1495,7 +1486,7 @@ public class EDDTableFromColumnarAsciiFiles extends EDDTableFromFiles {
 
           String tc = xmlReader.content();
           if (emlIsSomething(tc)
-              && !tc.toLowerCase().equals("string")) // too many are erroneously marked 'string'
+              && !tc.equalsIgnoreCase("string")) // too many are erroneously marked 'string'
           varType = tc;
 
         } else if (
@@ -1765,9 +1756,6 @@ public class EDDTableFromColumnarAsciiFiles extends EDDTableFromFiles {
           colStart.toArray(),
           colStop.toArray(),
           null); // null = dest classes
-      sourceTable.convertIsSomething2();
-      sourceTable.simplify();
-      sourceTable.standardize(tStandardizeWhat);
 
     } else {
       // read comma, space, or tab separated
@@ -1784,10 +1772,10 @@ public class EDDTableFromColumnarAsciiFiles extends EDDTableFromFiles {
           null,
           null,
           false); // simplify
-      sourceTable.convertIsSomething2();
-      sourceTable.simplify();
-      sourceTable.standardize(tStandardizeWhat);
     }
+    sourceTable.convertIsSomething2();
+    sourceTable.simplify();
+    sourceTable.standardize(tStandardizeWhat);
     if (verbose)
       String2.log(
           "\nlocal data file="
@@ -1805,7 +1793,6 @@ public class EDDTableFromColumnarAsciiFiles extends EDDTableFromFiles {
 
     // clean up attributes
     // make a new sourceTable (with columns in addTable order)
-    boolean dateTimeAlreadyFound = false;
     String lcSourceColNames[] = sourceTable.getColumnNames().clone();
     for (int col = 0; col < sourceTable.nColumns(); col++)
       lcSourceColNames[col] = lcSourceColNames[col].toLowerCase();
@@ -1814,7 +1801,7 @@ public class EDDTableFromColumnarAsciiFiles extends EDDTableFromFiles {
     StringBuilder differ = new StringBuilder();
     int minNC = Math.min(sourceTable.nColumns(), addTable.nColumns());
     boolean differentNC = sourceTable.nColumns() != addTable.nColumns();
-    if (differentNC)
+    if (differentNC) {
       throw new SimpleException(
           "DIFFERENT NUMBER OF COLUMNS for datasetID="
               + datasetID
@@ -1835,6 +1822,7 @@ public class EDDTableFromColumnarAsciiFiles extends EDDTableFromFiles {
               + ":\n"
               + addTable.getColumnNamesCSSVString()
               + ".");
+    }
     for (int col = 0; col < minNC; col++) {
       String oSourceName = sourceTable.getColumnName(col);
       String oAddName = addTable.getColumnName(col);
@@ -1873,14 +1861,9 @@ public class EDDTableFromColumnarAsciiFiles extends EDDTableFromFiles {
           || tSourceName.equals("taxon" + tAddName)) continue;
       differ.append("  " + String2.left(oSourceName, 20) + " = " + oAddName + "\n");
     }
-    boolean equate = false;
-    if (differentNC) {
-      equate = false;
-    } else if (differ.length() == 0) {
-      equate = true;
-    } else {
+    if (differ.length() != 0) {
       String te = "zz";
-      while (!te.equals("") && !te.equals("y")) {
+      while (!te.isEmpty() && !te.equals("y")) {
         String msg =
             "datasetID="
                 + datasetID
@@ -1891,7 +1874,7 @@ public class EDDTableFromColumnarAsciiFiles extends EDDTableFromFiles {
                 + "The data file and EML file have different column names.\n"
                 + "ERDDAP would like to equate these pairs of names:\n"
                 + differ;
-        if (!EDStatic.developmentMode) {
+        if (!EDStatic.config.developmentMode) {
           te =
               String2.getStringFromSystemIn(
                   "WARNING for"
@@ -1904,7 +1887,6 @@ public class EDDTableFromColumnarAsciiFiles extends EDDTableFromFiles {
                 + "-->\n";
         }
       }
-      equate = te.length() == 0 || te.equals("y");
     }
 
     // !!!USER CHOSE TO EQUATE COLS in SOURCE FILE with COLUMNS in EML, 1 to 1, SAME ORDER!!!
@@ -2155,7 +2137,6 @@ public class EDDTableFromColumnarAsciiFiles extends EDDTableFromFiles {
       String goodStringDateName = null; // next best: just date
       String goodStringMonthName = null; // next best: just yyyy-MM
       String goodStringYearName = null; // next best: just yyyy
-      int yyCol = -1; // will be >=0 if found
       int MMCol = -1;
       int ddCol = -1;
       int HHCol = -1;
@@ -2167,10 +2148,10 @@ public class EDDTableFromColumnarAsciiFiles extends EDDTableFromFiles {
         String tUnits = tAtts.getString("units");
         if (tUnits == null) tUnits = "";
         // some vars don't qualify as isTimeUnits, but do have time info
-        if (tUnits.indexOf("yyyy") >= 0
-            || tUnits.indexOf("uuuu") >= 0
-            || // was "yy"
-            tColNameLC.indexOf("year") >= 0) yyCol = col;
+        // if (tUnits.indexOf("yyyy") >= 0
+        //     || tUnits.indexOf("uuuu") >= 0
+        //     || // was "yy"
+        //     tColNameLC.indexOf("year") >= 0) yyCol = col;
         if (tUnits.indexOf("MM") >= 0 || tColNameLC.indexOf("month") >= 0) MMCol = col;
         if (tUnits.indexOf("dd") >= 0
             || (tColNameLC.indexOf("day") >= 0
@@ -2235,7 +2216,7 @@ public class EDDTableFromColumnarAsciiFiles extends EDDTableFromFiles {
               "time_zone=\"(.*)\"",
               1);
         if (tTimeZone == null) tTimeZone = "";
-        else if (tTimeZone.toLowerCase().equals("gmt") || tTimeZone.toLowerCase().equals("utc"))
+        else if (tTimeZone.equalsIgnoreCase("gmt") || tTimeZone.equalsIgnoreCase("utc"))
           tTimeZone = "Zulu";
         // test for local first, since some say "local time, -8:00 from UTC"
         if (sourceNameLC.indexOf("local") >= 0
@@ -2446,21 +2427,20 @@ public class EDDTableFromColumnarAsciiFiles extends EDDTableFromFiles {
     defaultGraphQuery.append("&amp;.marker=1|5");
 
     // write the information
-    StringBuilder sb = new StringBuilder();
     String tSortFilesBySourceNames = "";
 
-    sb.append(
+    String sb =
         "<dataset type=\"EDDTableFrom"
             + (columnar ? "Columnar" : "")
             + "AsciiFiles\" "
             + "datasetID=\""
             + datasetID
             + "\" active=\"true\">\n"
-            + (tAccessibleTo == null || tAccessibleTo == "null"
+            + (tAccessibleTo == null || "null".equals(tAccessibleTo)
                 ? ""
                 : "    <accessibleTo>" + tAccessibleTo + "</accessibleTo>\n")
             + "    <reloadEveryNMinutes>"
-            + tReloadEveryNMinutes
+            + DEFAULT_RELOAD_EVERY_N_MINUTES
             + "</reloadEveryNMinutes>\n"
             + "    <updateEveryNMillis>-1</updateEveryNMillis>\n"
             + (defaultDataQuery.length() > 0
@@ -2497,17 +2477,21 @@ public class EDDTableFromColumnarAsciiFiles extends EDDTableFromFiles {
             + XML.encodeAsXML(tSortFilesBySourceNames)
             + "</sortFilesBySourceNames>\n"
             + "    <fileTableInMemory>false</fileTableInMemory>\n"
-            + "    <accessibleViaFiles>true</accessibleViaFiles>\n");
-    sb.append(writeAttsForDatasetsXml(false, sourceTable.globalAttributes(), "    "));
-    sb.append(cdmSuggestion());
-    sb.append(writeAttsForDatasetsXml(true, addTable.globalAttributes(), "    "));
+            + "    <accessibleViaFiles>true</accessibleViaFiles>\n"
+            + writeAttsForDatasetsXml(false, sourceTable.globalAttributes(), "    ")
+            + cdmSuggestion()
+            + writeAttsForDatasetsXml(true, addTable.globalAttributes(), "    ")
+            +
 
-    // last 2 params: includeDataType, questionDestinationName
-    sb.append(writeVariablesForDatasetsXml(sourceTable, addTable, "dataVariable", true, false));
-    sb.append("</dataset>\n" + "\n");
+            // last 2 params: includeDataType, questionDestinationName
+            writeVariablesForDatasetsXml(sourceTable, addTable, "dataVariable", true, false)
+            + """
+                      </dataset>
+
+                      """;
 
     String2.log("\n\n*** generateDatasetsXml finished successfully.\n\n");
-    return sb.toString();
+    return sb;
   }
 
   /**
@@ -2528,7 +2512,7 @@ public class EDDTableFromColumnarAsciiFiles extends EDDTableFromFiles {
         localTimeZone; // from TZ at https://en.wikipedia.org/wiki/List_of_tz_database_time_zones
     StringArray names;
     String resultsFileName =
-        EDStatic.fullLogsDirectory
+        EDStatic.config.fullLogsDirectory
             + "fromEML_"
             + Calendar2.getCompactCurrentISODateTimeStringLocal()
             + ".log";
@@ -2573,26 +2557,17 @@ public class EDDTableFromColumnarAsciiFiles extends EDDTableFromFiles {
       // if (names.get(i).compareTo("knb-lter-sbc.59") < 0)
       //    continue;
 
-      if (false) {
-        // just download the files
-        SSR.downloadFile(
-            startUrl + names.get(i),
-            emlDir + names.get(i),
-            true); // tryToUseCompression; throws Exception
-
-      } else {
-        String result =
-            generateDatasetsXmlFromEML(
-                pauseForErrors,
-                emlDir,
-                startUrl + names.get(i),
-                useLocalFilesIfPresent,
-                tAccessibleTo,
-                localTimeZone,
-                tStandardizeWhat);
-        File2.appendFileUtf8(resultsFileName, result);
-        String2.log(result);
-      }
+      String result =
+          generateDatasetsXmlFromEML(
+              pauseForErrors,
+              emlDir,
+              startUrl + names.get(i),
+              useLocalFilesIfPresent,
+              tAccessibleTo,
+              localTimeZone,
+              tStandardizeWhat);
+      File2.appendFileUtf8(resultsFileName, result);
+      String2.log(result);
     }
 
     String2.log(
@@ -2616,9 +2591,7 @@ public class EDDTableFromColumnarAsciiFiles extends EDDTableFromFiles {
     String2.log(
         "\n*** EDDTableFromColumnarAsciiFiles.generateDatasetsXmlFromOneInEMLCollection()\n");
     testVerboseOn();
-    String name, tName, results, expected, userDapQuery, tQuery;
-    String error = "";
-    EDV edv;
+    String results;
     String emlDir, startUrl, localTimeZone;
 
     if (tAccessibleTo.equals("lterSbc")) {

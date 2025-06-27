@@ -22,12 +22,14 @@ import gov.noaa.pfel.coastwatch.griddata.OpendapHelper;
 import gov.noaa.pfel.coastwatch.pointdata.Table;
 import gov.noaa.pfel.coastwatch.util.FileVisitorDNLS;
 import gov.noaa.pfel.coastwatch.util.RegexFilenameFilter;
+import gov.noaa.pfel.erddap.dataset.metadata.LocalizedAttributes;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.util.TaskThread;
 import gov.noaa.pfel.erddap.variable.*;
 import java.io.File;
-import java.util.Enumeration;
 import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
 
 /**
  * This class downloads data from a Hyrax data server with lots of files into .nc files in the
@@ -47,7 +49,7 @@ public class EDDTableFromHyraxFiles extends EDDTableFromFiles {
    * Indicates if data can be transmitted in a compressed form. It is unlikely anyone would want to
    * change this.
    */
-  public static boolean acceptDeflate = true;
+  public static final boolean acceptDeflate = true;
 
   /**
    * This returns the default value for standardizeWhat for this subclass. See
@@ -59,7 +61,7 @@ public class EDDTableFromHyraxFiles extends EDDTableFromFiles {
     return DEFAULT_STANDARDIZEWHAT;
   }
 
-  public static int DEFAULT_STANDARDIZEWHAT = 0;
+  public static final int DEFAULT_STANDARDIZEWHAT = 0;
 
   /**
    * The constructor just calls the super constructor.
@@ -81,8 +83,8 @@ public class EDDTableFromHyraxFiles extends EDDTableFromFiles {
       String tSosOfferingPrefix,
       String tDefaultDataQuery,
       String tDefaultGraphQuery,
-      Attributes tAddGlobalAttributes,
-      Object[][] tDataVariables,
+      LocalizedAttributes tAddGlobalAttributes,
+      List<DataVariableInfo> tDataVariables,
       int tReloadEveryNMinutes,
       int tUpdateEveryNMillis,
       String tFileDir,
@@ -129,7 +131,7 @@ public class EDDTableFromHyraxFiles extends EDDTableFromFiles {
         tDataVariables,
         tReloadEveryNMinutes,
         tUpdateEveryNMillis,
-        EDStatic.fullCopyDirectory + tDatasetID + "/", // force fileDir to be the copyDir
+        EDStatic.config.fullCopyDirectory + tDatasetID + "/", // force fileDir to be the copyDir
         tFileNameRegex,
         tRecursive,
         tPathRegex,
@@ -187,13 +189,13 @@ public class EDDTableFromHyraxFiles extends EDDTableFromFiles {
     try {
       // if previous tasks are still running, return
       EDStatic.ensureTaskThreadIsRunningIfNeeded(); // ensure info is up-to-date
-      Integer lastAssignedTask = (Integer) EDStatic.lastAssignedTask.get(tDatasetID);
+      Integer lastAssignedTask = EDStatic.lastAssignedTask.get(tDatasetID);
       boolean pendingTasks =
-          lastAssignedTask != null && EDStatic.lastFinishedTask < lastAssignedTask.intValue();
+          lastAssignedTask != null && EDStatic.lastFinishedTask.get() < lastAssignedTask;
       if (verbose)
         String2.log(
             "  lastFinishedTask="
-                + EDStatic.lastFinishedTask
+                + EDStatic.lastFinishedTask.get()
                 + " < lastAssignedTask("
                 + tDatasetID
                 + ")="
@@ -215,8 +217,8 @@ public class EDDTableFromHyraxFiles extends EDDTableFromFiles {
       int lookForLength = lookFor.length();
 
       // mimic the remote dir structure in baseDir
-      String baseDir = EDStatic.fullCopyDirectory + tDatasetID + "/";
-      // e.g. localFile EDStatic.fullCopyDirectory + tDatasetID +  /
+      String baseDir = EDStatic.config.fullCopyDirectory + tDatasetID + "/";
+      // e.g. localFile EDStatic.config.fullCopyDirectory + tDatasetID +  /
       // 1987/M07/pentad_19870710_v11l35flk.nc.gz
       File2.makeDirectory(baseDir);
 
@@ -246,7 +248,7 @@ public class EDDTableFromHyraxFiles extends EDDTableFromFiles {
       if (errorMessages.length() == 0 && sourceFileName.size() > 0) {
         // make a hashset of theoretical local fileNames that will exist
         //  after copying based on getHyraxFileInfo
-        HashSet<String> hashset = new HashSet();
+        HashSet<String> hashset = new HashSet<>();
         int nFiles = sourceFileName.size();
         for (int f = 0; f < nFiles; f++) {
           String sourceName = sourceFileName.get(f);
@@ -345,7 +347,7 @@ public class EDDTableFromHyraxFiles extends EDDTableFromFiles {
         taskOA[0] = TaskThread.TASK_ALL_DAP_TO_NC;
         taskOA[1] = sourceName;
         taskOA[2] = localFile;
-        taskOA[3] = Long.valueOf(Math2.roundToLong(sourceFileLastMod.get(f) * 1000));
+        taskOA[3] = Math2.roundToLong(sourceFileLastMod.get(f) * 1000);
         int tTaskNumber = EDStatic.addTask(taskOA);
         if (tTaskNumber >= 0) {
           nTasksCreated++;
@@ -394,8 +396,19 @@ public class EDDTableFromHyraxFiles extends EDDTableFromFiles {
     }
 
     if (taskNumber > -1) {
-      EDStatic.lastAssignedTask.put(tDatasetID, Integer.valueOf(taskNumber));
+      EDStatic.lastAssignedTask.put(tDatasetID, taskNumber);
       EDStatic.ensureTaskThreadIsRunningIfNeeded(); // ensure info is up-to-date
+
+      if (EDStatic.config.forceSynchronousLoading) {
+        boolean interrupted = false;
+        while (!interrupted && EDStatic.lastFinishedTask.get() < taskNumber) {
+          try {
+            Thread.sleep(2000);
+          } catch (InterruptedException e) {
+            interrupted = true;
+          }
+        }
+      }
     }
   }
 
@@ -544,18 +557,17 @@ public class EDDTableFromHyraxFiles extends EDDTableFromFiles {
     Table dataAddTable = new Table();
     DConnect dConnect = new DConnect(oneFileDapUrl, acceptDeflate, 1, 1);
     DAS das = dConnect.getDAS(OpendapHelper.DEFAULT_TIMEOUT);
-    ;
     DDS dds = dConnect.getDDS(OpendapHelper.DEFAULT_TIMEOUT);
 
     // get source global attributes
     OpendapHelper.getAttributes(das, "GLOBAL", dataSourceTable.globalAttributes());
 
     // variables
-    Enumeration en = dds.getVariables();
+    Iterator<BaseType> en = dds.getVariables();
     double maxTimeES = Double.NaN;
     Attributes gridMappingAtts = null;
-    while (en.hasMoreElements()) {
-      BaseType baseType = (BaseType) en.nextElement();
+    while (en.hasNext()) {
+      BaseType baseType = en.next();
       String varName = baseType.getName();
       Attributes sourceAtts = new Attributes();
       OpendapHelper.getAttributes(das, varName, sourceAtts);
@@ -570,7 +582,7 @@ public class EDDTableFromHyraxFiles extends EDDTableFromFiles {
       } else if (baseType instanceof DArray dArray) { // for the dimension vars
         pv = dArray.getPrimitiveVector();
       } else {
-        if (verbose) String2.log("  baseType=" + baseType.toString() + " isn't supported yet.\n");
+        if (verbose) String2.log("  baseType=" + baseType + " isn't supported yet.\n");
       }
       if (pv != null) {
         PrimitiveArray sourcePA =
@@ -727,7 +739,10 @@ public class EDDTableFromHyraxFiles extends EDDTableFromFiles {
     // last 2 params: includeDataType, questionDestinationName
     sb.append(
         writeVariablesForDatasetsXml(dataSourceTable, dataAddTable, "dataVariable", true, false));
-    sb.append("</dataset>\n" + "\n");
+    sb.append("""
+            </dataset>
+
+            """);
 
     String2.log("\n\n*** generateDatasetsXml finished successfully.\n\n");
     return sb.toString();

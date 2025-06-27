@@ -1,12 +1,25 @@
 package gov.noaa.pfel.erddap.dataset;
 
+import static org.mockito.Mockito.atLeastOnce;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.when;
+
 import com.cohort.util.File2;
 import com.cohort.util.String2;
 import com.cohort.util.Test;
+import com.cohort.util.TestUtil;
+import gov.noaa.pfel.coastwatch.griddata.NcHelper;
 import gov.noaa.pfel.coastwatch.util.SSR;
+import gov.noaa.pfel.erddap.util.EDConfig;
 import gov.noaa.pfel.erddap.util.EDStatic;
+import jakarta.servlet.ServletOutputStream;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import java.io.ByteArrayOutputStream;
-import java.util.HashMap;
+import java.util.Map;
 import org.junit.jupiter.api.BeforeAll;
 import tags.TagExternalOther;
 import testDataset.EDDTestDataset;
@@ -22,13 +35,54 @@ class EDDTableTests {
     Initialization.edStatic();
   }
 
+  @org.junit.jupiter.api.Test
+  void testSubsetQuery() throws Throwable {
+    int language = 0;
+    String testDir = EDStatic.config.fullTestCacheDirectory;
+    String fileName = "TEMP";
+    String fileType = "csv";
+
+    EDDTable eddTable = (EDDTable) EDDTestDataset.gettestTableColumnarAscii();
+    String userDapQuery = "altitude%5B(-90.0):(-88.0)%5D%5B(-180.0):(-178.0)%5D";
+    String endOfRequest = "tabledap/testTableColumnarAscii.csv";
+    String requestUrl = "/erddap/" + endOfRequest;
+    HttpServletRequest request = mock(HttpServletRequest.class);
+    HttpServletResponse response = mock(HttpServletResponse.class);
+    ServletOutputStream outStream = mock(ServletOutputStream.class);
+    when(request.getHeader("Range")).thenReturn(null);
+    when(response.getOutputStream()).thenReturn(outStream);
+    when(request.getHeader("accept-encoding")).thenReturn("");
+
+    OutputStreamFromHttpResponse outputStreamSource =
+        new OutputStreamFromHttpResponse(request, response, "temp", ".csv", ".csv");
+    eddTable.respondToSubsetQuery(
+        language,
+        request,
+        response,
+        null,
+        requestUrl,
+        endOfRequest,
+        userDapQuery,
+        outputStreamSource,
+        testDir,
+        fileName,
+        fileType);
+    verify(request).getHeader("Range");
+    verify(request).getHeader("accept-encoding");
+    if (EDStatic.config.useHeadersForUrl) {
+      verify(request, atLeastOnce()).getHeader("Host");
+    }
+    verify(outStream, times(1)).close();
+    verifyNoMoreInteractions(request);
+  }
+
   /** Test SOS server using cwwcNDBCMet. */
   @org.junit.jupiter.api.Test
   @TagExternalOther
   void testSosNdbcMet() throws Throwable {
     String2.log("\n*** EDDTable.testSosNdbcMet()");
     EDDTable eddTable = (EDDTable) EDDTable.oneFromDatasetsXml(null, "cwwcNDBCMet");
-    String dir = EDStatic.fullTestCacheDirectory;
+    String dir = EDStatic.config.fullTestCacheDirectory;
     String sosQuery, fileName, results, expected;
     int language = 0;
     java.io.StringWriter writer;
@@ -44,11 +98,11 @@ class EDDTableTests {
     // GetCapabilities
     String2.log("\n+++ GetCapabilities");
     writer = new java.io.StringWriter();
-    HashMap<String, String> queryMap =
+    Map<String, String> queryMap =
         EDD.userQueryHashMap(
             "seRvIcE=SOS&ReQueSt=GetCapabilities&sEctIons=gibberish,All",
             true); // true=names toLowerCase
-    eddTable.sosGetCapabilities(language, queryMap, writer, null);
+    eddTable.sosGetCapabilities(null, language, queryMap, writer, null);
     results = writer.toString();
     expected =
         "<?xml version=\"1.0\"?>\n"
@@ -259,7 +313,7 @@ class EDDTableTests {
     // phenomenaDictionary
     String2.log("\n+++ phenomenaDictionary");
     writer = new java.io.StringWriter();
-    eddTable.sosPhenomenaDictionary(writer);
+    eddTable.sosPhenomenaDictionary(language, writer);
     results = writer.toString();
     // String2.log(results);
     expected =
@@ -405,7 +459,7 @@ class EDDTableTests {
     // stored as /programs/sos/ndbcSosCurrentsDescribeSensor90810.xml
     String2.log("\n+++ DescribeSensor all");
     writer = new java.io.StringWriter();
-    eddTable.sosDescribeSensor(language, null, eddTable.datasetID, writer);
+    eddTable.sosDescribeSensor(null, language, null, eddTable.datasetID, writer);
     results = writer.toString();
     // String2.log(results);
     expected =
@@ -852,7 +906,7 @@ class EDDTableTests {
     // DescribeSensor 41004
     String2.log("\n+++ DescribeSensor 41004");
     writer = new java.io.StringWriter();
-    eddTable.sosDescribeSensor(language, null, "41004", writer);
+    eddTable.sosDescribeSensor(null, language, null, "41004", writer);
     results = writer.toString();
     // String2.log(results);
     expected =
@@ -1315,7 +1369,7 @@ class EDDTableTests {
     // stored as /programs/sos/ndbcSosCurrentsDescribeSensor90810.xml
     String2.log("\n+++ DescribeSensor 41004:wtmp");
     writer = new java.io.StringWriter();
-    eddTable.sosDescribeSensor(language, null, "41004", writer);
+    eddTable.sosDescribeSensor(null, language, null, "41004", writer);
     results = writer.toString();
     String2.log(results);
     expected =
@@ -1468,7 +1522,7 @@ class EDDTableTests {
             "&responseFormat=text/csv"
             + "&eventTime=2008-08-01T00:00:00Z/2008-08-01T01:00:00Z";
     String2.log("\n+++ GetObservations for 1 station  CSV\n" + sosQuery1);
-    String dapQuery1[] = eddTable.sosQueryToDapQuery(language, null, sosQuery1);
+    String dapQuery1[] = eddTable.sosQueryToDapQuery(null, language, null, sosQuery1);
     String2.log("\nsosQuery1=" + sosQuery1 + "\n\ndapQuery1=" + dapQuery1[0]);
     Test.ensureEqual(
         dapQuery1[0],
@@ -1477,7 +1531,15 @@ class EDDTableTests {
     baos = new ByteArrayOutputStream();
     osss = new OutputStreamSourceSimple(baos);
     eddTable.sosGetObservation(
-        language, endOfRequest, sosQuery1Csv, "someIPAddress", null, osss, dir, "testSos1Sta");
+        null,
+        language,
+        endOfRequest,
+        sosQuery1Csv,
+        "someIPAddress",
+        null,
+        osss,
+        dir,
+        "testSos1Sta");
     results = baos.toString(File2.UTF_8);
     String2.log(results);
     expected =
@@ -1506,7 +1568,7 @@ class EDDTableTests {
     baos = new ByteArrayOutputStream();
     osss = new OutputStreamSourceSimple(baos);
     eddTable.sosGetObservation(
-        language, endOfRequest, sosQuery1, "someIPAddress", null, osss, dir, "testSos1");
+        null, language, endOfRequest, sosQuery1, "someIPAddress", null, osss, dir, "testSos1");
     results = baos.toString(File2.UTF_8);
     String2.log(results);
     expected =
@@ -1666,7 +1728,7 @@ class EDDTableTests {
     baos = new ByteArrayOutputStream();
     osss = new OutputStreamSourceSimple(baos);
     eddTable.sosGetObservation(
-        language, endOfRequest, sosQuery1b, "someIPAddress", null, osss, dir, "testSos1b");
+        null, language, endOfRequest, sosQuery1b, "someIPAddress", null, osss, dir, "testSos1b");
     results = baos.toString(File2.UTF_8);
     String2.log(results);
     expected = // changes when I update ndbc
@@ -1687,7 +1749,7 @@ class EDDTableTests {
             "&responseFormat=text/csv"
             + "&eventTime=2008-08-01T00:00:00Z/2008-08-01T01:00:00Z"
             + "&featureOfInterest=BBOX:-79.10,32.4,-79.08,32.6";
-    String dapQuery2[] = eddTable.sosQueryToDapQuery(language, null, sosQuery2);
+    String dapQuery2[] = eddTable.sosQueryToDapQuery(null, language, null, sosQuery2);
     String2.log("\nsosQuery2=" + sosQuery2 + "\n\ndapQuery2=" + dapQuery2[0]);
     Test.ensureEqual(
         dapQuery2[0],
@@ -1699,7 +1761,7 @@ class EDDTableTests {
     baos = new ByteArrayOutputStream();
     osss = new OutputStreamSourceSimple(baos);
     eddTable.sosGetObservation(
-        language, endOfRequest, sosQuery2, "someIPAddress", null, osss, dir, "testSos2");
+        null, language, endOfRequest, sosQuery2, "someIPAddress", null, osss, dir, "testSos2");
     results = baos.toString(File2.UTF_8);
     String2.log(results);
     expected =
@@ -1723,7 +1785,7 @@ class EDDTableTests {
             "&responseFormat=text/csv"
             + "&eventTime=2008-08-01T00:00:00Z/2008-08-01T01:00:00Z"
             + "&featureOfInterest=BBOX:-79.10,32.4,-79.08,32.6";
-    String dapQuery2b[] = eddTable.sosQueryToDapQuery(language, null, sosQuery2b);
+    String dapQuery2b[] = eddTable.sosQueryToDapQuery(null, language, null, sosQuery2b);
     String2.log("\nsosQuery2b=" + sosQuery2b + "\n\ndapQuery2b=" + dapQuery2b[0]);
     Test.ensureEqual(
         dapQuery2b[0],
@@ -1734,7 +1796,7 @@ class EDDTableTests {
     baos = new ByteArrayOutputStream();
     osss = new OutputStreamSourceSimple(baos);
     eddTable.sosGetObservation(
-        language, endOfRequest, sosQuery2b, "someIPAddress", null, osss, dir, "testSos2b");
+        null, language, endOfRequest, sosQuery2b, "someIPAddress", null, osss, dir, "testSos2b");
     results = baos.toString(File2.UTF_8);
     String2.log(results);
     expected =
@@ -1758,7 +1820,7 @@ class EDDTableTests {
             "&responseFormat=text/xml;schema=%22ioos/0.6.1%22"
             + "&eventTime=2008-08-01T00:00:00Z/2008-08-01T01:00:00Z"
             + "&featureOfInterest=BBOX:-79.10,32.4,-79.08,32.6";
-    String dapQuery2c[] = eddTable.sosQueryToDapQuery(language, null, sosQuery2c);
+    String dapQuery2c[] = eddTable.sosQueryToDapQuery(null, language, null, sosQuery2c);
     String2.log("\nsosQuery2c=" + sosQuery2c + "\n\ndapQuery2c=" + dapQuery2c[0]);
     Test.ensureEqual(
         dapQuery2c[0],
@@ -1770,7 +1832,7 @@ class EDDTableTests {
     baos = new ByteArrayOutputStream();
     osss = new OutputStreamSourceSimple(baos);
     eddTable.sosGetObservation(
-        language, endOfRequest, sosQuery2c, "someIPAddress", null, osss, dir, "testSos2c");
+        null, language, endOfRequest, sosQuery2c, "someIPAddress", null, osss, dir, "testSos2c");
     results = baos.toString(File2.UTF_8);
     String2.log(results);
     expected =
@@ -2012,7 +2074,7 @@ class EDDTableTests {
             + "&responseFormat=text/csv"
             + "&eventTime=2008-08-01T00:00:00Z/2008-08-01T01:00:00Z"
             + "&featureOfInterest=BBOX:-79.9,32.4,-79.0,33.0";
-    String dapQuery3[] = eddTable.sosQueryToDapQuery(language, null, sosQuery3);
+    String dapQuery3[] = eddTable.sosQueryToDapQuery(null, language, null, sosQuery3);
     String2.log("\nsosQuery3=" + sosQuery3 + "\n\ndapQuery3=" + dapQuery3[0]);
     Test.ensureEqual(
         dapQuery3[0],
@@ -2025,7 +2087,7 @@ class EDDTableTests {
     baos = new ByteArrayOutputStream();
     osss = new OutputStreamSourceSimple(baos);
     eddTable.sosGetObservation(
-        language, endOfRequest, sosQuery3, "someIPAddress", null, osss, dir, "testSos3");
+        null, language, endOfRequest, sosQuery3, "someIPAddress", null, osss, dir, "testSos3");
     results = baos.toString(File2.UTF_8);
     String2.log(results);
     expected =
@@ -2047,7 +2109,7 @@ class EDDTableTests {
             "&responseFormat=text/csv"
             + "&eventTime=2008-08-01T00:00:00Z/2008-08-01T01:00:00Z"
             + "&featureOfInterest=BBOX:-79.9,32.4,-79.0,33.0";
-    String dapQuery4[] = eddTable.sosQueryToDapQuery(language, null, sosQuery4);
+    String dapQuery4[] = eddTable.sosQueryToDapQuery(null, language, null, sosQuery4);
     String2.log("\nsosQuery4=" + sosQuery4 + "\n\ndapQuery4=" + dapQuery4[0]);
     Test.ensureEqual(
         dapQuery4[0],
@@ -2058,7 +2120,7 @@ class EDDTableTests {
     baos = new ByteArrayOutputStream();
     osss = new OutputStreamSourceSimple(baos);
     eddTable.sosGetObservation(
-        language, endOfRequest, sosQuery4, "someIPAddress", null, osss, dir, "testSos4");
+        null, language, endOfRequest, sosQuery4, "someIPAddress", null, osss, dir, "testSos4");
     results = baos.toString(File2.UTF_8);
     expected =
         "longitude, latitude, time, station, wd, wspd, gst, wvht, dpd, apd, mwd, bar, atmp, wtmp, dewp, vis, ptdy, tide, wspu, wspv\n"
@@ -2091,7 +2153,7 @@ class EDDTableTests {
             "&responseFormat=image/png"
             + "&eventTime=2008-07-25T00:00:00Z/2008-08-01T00:00:00Z";
 
-    String dapQuery5[] = eddTable.sosQueryToDapQuery(language, null, sosQuery5csv);
+    String dapQuery5[] = eddTable.sosQueryToDapQuery(null, language, null, sosQuery5csv);
     String2.log("\nsosQuery5csv=" + sosQuery5csv + "\n\ndapQuery5=" + dapQuery5[0]);
     Test.ensureEqual(
         dapQuery5[0],
@@ -2102,7 +2164,15 @@ class EDDTableTests {
     baos = new ByteArrayOutputStream();
     osss = new OutputStreamSourceSimple(baos);
     eddTable.sosGetObservation(
-        language, endOfRequest, sosQuery5csv, "someIPAddress", null, osss, dir, "testSos5csv");
+        null,
+        language,
+        endOfRequest,
+        sosQuery5csv,
+        "someIPAddress",
+        null,
+        osss,
+        dir,
+        "testSos5csv");
     results = baos.toString(File2.UTF_8);
     String2.log(results);
     expected =
@@ -2125,7 +2195,7 @@ class EDDTableTests {
 
     // #5png get png -> time series
     String2.log("\n+++ 5png: GetObservations for 1 station, 1 obsProp\n" + sosQuery5png);
-    dapQuery5 = eddTable.sosQueryToDapQuery(language, null, sosQuery5png);
+    dapQuery5 = eddTable.sosQueryToDapQuery(null, language, null, sosQuery5png);
     String2.log("\nsosQuery5png=" + sosQuery5png + "\n\ndapQuery5=" + dapQuery5[0]);
     Test.ensureEqual(
         dapQuery5[0],
@@ -2133,17 +2203,17 @@ class EDDTableTests {
             + "&time>=2008-07-25T00:00:00Z&time<=2008-08-01T00:00:00Z"
             + "&.draw=linesAndMarkers&.marker=5|4&.color=0xFF9900",
         "");
-    String dapQuery = eddTable.sosQueryToDapQuery(language, null, sosQuery5png)[0];
+    String dapQuery = eddTable.sosQueryToDapQuery(null, language, null, sosQuery5png)[0];
     fileName =
         eddTable.makeNewFileForDapQuery(
             language,
             null,
             null,
             dapQuery,
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             eddTable.className() + "_testSos5png",
             ".png");
-    Test.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + fileName);
+    TestUtil.displayInBrowser("file://" + EDStatic.config.fullTestCacheDirectory + fileName);
 
     // *** #6 all stations, 1 obsProp,
     String sosQuery6csv = // no obsProp
@@ -2153,7 +2223,7 @@ class EDDTableTests {
             "&observedProperty=wtmp"
             + "&responseFormat=text/csv"
             + "&eventTime=2008-08-01T00:00:00Z/2008-08-01T01:00:00Z";
-    String dapQuery6[] = eddTable.sosQueryToDapQuery(language, null, sosQuery6csv);
+    String dapQuery6[] = eddTable.sosQueryToDapQuery(null, language, null, sosQuery6csv);
     String2.log("\nsosQuery6csv=" + sosQuery6csv + "\n\ndapQuery6csv=" + dapQuery6[0]);
     Test.ensureEqual(
         dapQuery6[0],
@@ -2162,7 +2232,15 @@ class EDDTableTests {
     baos = new ByteArrayOutputStream();
     osss = new OutputStreamSourceSimple(baos);
     eddTable.sosGetObservation(
-        language, endOfRequest, sosQuery6csv, "someIPAddress", null, osss, dir, "testSos6csv");
+        null,
+        language,
+        endOfRequest,
+        sosQuery6csv,
+        "someIPAddress",
+        null,
+        osss,
+        dir,
+        "testSos6csv");
     results = baos.toString(File2.UTF_8);
     String2.log(results);
     expected =
@@ -2196,7 +2274,7 @@ class EDDTableTests {
             "&observedProperty=wtmp"
             + "&responseFormat=image/png"
             + "&eventTime=2008-08-01T00:00:00Z/2008-08-01T01:00:00Z";
-    dapQuery6 = eddTable.sosQueryToDapQuery(language, null, sosQuery6png);
+    dapQuery6 = eddTable.sosQueryToDapQuery(null, language, null, sosQuery6png);
     String2.log("\nsosQuery6png=" + sosQuery6png + "\n\ndapQuery6png=" + dapQuery6[0]);
     Test.ensureEqual(
         dapQuery6[0],
@@ -2208,10 +2286,10 @@ class EDDTableTests {
             null,
             null,
             dapQuery6[0],
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             eddTable.className() + "_testSos6png",
             ".png");
-    Test.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + fileName);
+    TestUtil.displayInBrowser("file://" + EDStatic.config.fullTestCacheDirectory + fileName);
     /*  */
 
   }
@@ -2222,7 +2300,7 @@ class EDDTableTests {
   void testSosCurrents() throws Throwable {
     String2.log("\n*** EDDTable.testSosCurrents()");
     EDDTable eddTable = (EDDTable) EDDTable.oneFromDatasetsXml(null, "ndbcSosCurrents");
-    String dir = EDStatic.fullTestCacheDirectory;
+    String dir = EDStatic.config.fullTestCacheDirectory;
     String sosQuery, fileName, results, expected;
     int language = 0;
     java.io.StringWriter writer;
@@ -2232,11 +2310,11 @@ class EDDTableTests {
     // GetCapabilities
     String2.log("\n+++ GetCapabilities");
     writer = new java.io.StringWriter();
-    HashMap<String, String> queryMap =
+    Map<String, String> queryMap =
         EDD.userQueryHashMap(
             "seRvIcE=SOS&ReQueSt=GetCapabilities&sEctIons=gibberish,All",
             true); // true=names toLowerCase
-    eddTable.sosGetCapabilities(language, queryMap, writer, null);
+    eddTable.sosGetCapabilities(null, language, queryMap, writer, null);
     results = writer.toString();
     String2.log(results.substring(0, 7000));
     String2.log("\n...\n");
@@ -2258,7 +2336,7 @@ class EDDTableTests {
     baos = new ByteArrayOutputStream();
     osss = new OutputStreamSourceSimple(baos);
     eddTable.sosGetObservation(
-        language, endOfRequest, sosQuery1, "someIPAddress", null, osss, dir, "testSosCurBB");
+        null, language, endOfRequest, sosQuery1, "someIPAddress", null, osss, dir, "testSosCurBB");
     /*
      * from eddTableSos.testNdbcSosCurrents
      * "&longitude=-87.94&latitude>=29.1&latitude<29.2&time>=2008-06-01T14:00&time<=2008-06-01T14:30",
@@ -2301,7 +2379,7 @@ class EDDTableTests {
     baos = new ByteArrayOutputStream();
     osss = new OutputStreamSourceSimple(baos);
     eddTable.sosGetObservation(
-        language, endOfRequest, sosQuery2, "someIPAddress", null, osss, dir, "testSosCurSta");
+        null, language, endOfRequest, sosQuery2, "someIPAddress", null, osss, dir, "testSosCurSta");
     results = baos.toString(File2.UTF_8);
     String2.log(results);
     // expected = same data
@@ -2322,7 +2400,15 @@ class EDDTableTests {
     baos = new ByteArrayOutputStream();
     osss = new OutputStreamSourceSimple(baos);
     eddTable.sosGetObservation(
-        language, endOfRequest, sosQuery3, "someIPAddress", null, osss, dir, "testSosCurSta2");
+        null,
+        language,
+        endOfRequest,
+        sosQuery3,
+        "someIPAddress",
+        null,
+        osss,
+        dir,
+        "testSosCurSta2");
     results = baos.toString(File2.UTF_8);
     // String2.log(results);
     expected =
@@ -2449,7 +2535,7 @@ class EDDTableTests {
   void testSosGomoos() throws Throwable {
     String2.log("\n*** EDDTable.testSosGomoos()");
     EDDTable eddTable = (EDDTable) EDDTable.oneFromDatasetsXml(null, "gomoosBuoy");
-    String dir = EDStatic.fullTestCacheDirectory;
+    String dir = EDStatic.config.fullTestCacheDirectory;
     String sosQuery, fileName, results, expected;
     int language = 0;
     java.io.StringWriter writer;
@@ -2474,7 +2560,7 @@ class EDDTableTests {
     baos = new ByteArrayOutputStream();
     osss = new OutputStreamSourceSimple(baos);
     eddTable.sosGetObservation(
-        language, endOfRequest, sosQuery1, "someIPAddress", null, osss, dir, "testGomoos");
+        null, language, endOfRequest, sosQuery1, "someIPAddress", null, osss, dir, "testGomoos");
     results = baos.toString(File2.UTF_8);
     // String2.log(results);
     expected =
@@ -2495,7 +2581,7 @@ class EDDTableTests {
   void testSosOostethys() throws Throwable {
     String2.log("\n*** EDDTable.testSosOostethys()");
     EDDTable eddTable = (EDDTable) EDDTable.oneFromDatasetsXml(null, "cwwcNDBCMet");
-    String dir = EDStatic.fullTestCacheDirectory;
+    String dir = EDStatic.config.fullTestCacheDirectory;
     String sosQuery, fileName, results, expected;
     int language = 0;
     java.io.StringWriter writer;
@@ -2514,7 +2600,7 @@ class EDDTableTests {
     baos = new ByteArrayOutputStream();
     osss = new OutputStreamSourceSimple(baos);
     eddTable.sosGetObservation(
-        language, endOfRequest, sosQuery1, "someIPAddress", null, osss, dir, "testSos1Sta");
+        null, language, endOfRequest, sosQuery1, "someIPAddress", null, osss, dir, "testSos1Sta");
     results = baos.toString(File2.UTF_8);
     String2.log(results);
     expected =
@@ -2667,7 +2753,7 @@ class EDDTableTests {
   @org.junit.jupiter.api.Test
   void testCharacters() throws Throwable {
     EDDTable eddTable = (EDDTable) EDDTestDataset.gettest_chars();
-    String dir = EDStatic.fullTestCacheDirectory;
+    String dir = EDStatic.config.fullTestCacheDirectory;
     String results, expected;
     int language = 0;
 
@@ -2685,5 +2771,1413 @@ class EDDTableTests {
             + //
             "1,\"0x20:  , 0x21: !, 0x22: \"\", 0x23: #, 0x24: $, 0x25: %, 0x26: &, 0x27: ', 0x28: (, 0x29: ), 0x2a: *, 0x2b: +, 0x2c: ,, 0x2d: -, 0x2e: ., 0x2f: /, 0x30: 0, 0x31: 1, 0x32: 2, 0x33: 3, 0x34: 4, 0x35: 5, 0x36: 6, 0x37: 7, 0x38: 8, 0x39: 9, 0x3a: :, 0x3c: <, 0x3d: =, 0x3e: >, 0x3f: ?, 0x40: @, 0x41: A, 0x42: B, 0x43: C, 0x44: D, 0x45: E, 0x46: F, 0x47: G, 0x48: H, 0x49: I, 0x4a: J, 0x4b: K, 0x4c: L, 0x4d: M, 0x4e: N, 0x4f: O, 0x50: P, 0x51: Q, 0x52: R, 0x53: S, 0x54: T, 0x55: U, 0x56: V, 0x57: W, 0x58: X, 0x59: Y, 0x5a: Z, 0x5b: [, 0x5c: \\\\, 0x5d: ], 0x5e: ^, 0x5f: _, 0x60: `, 0x61: a, 0x62: b, 0x63: c, 0x64: d, 0x65: e, 0x66: f, 0x67: g, 0x68: h, 0x69: i, 0x6a: j, 0x6b: k, 0x6c: l, 0x6d: m, 0x6e: n, 0x6f: o, 0x70: p, 0x71: q, 0x72: r, 0x73: s, 0x74: t, 0x75: u, 0x76: v, 0x77: w, 0x78: x, 0x79: y, 0x7a: z, 0x7b: {, 0x7c: |, 0x7d: }, 0x7e: ~, 0x7f: \\u007f, 0xa0: \\u00a0, 0xa1: \\u00a1, 0xa2: \\u00a2, 0xa3: \\u00a3, 0xa4: \\u00a4, 0xa5: \\u00a5, 0xa6: \\u00a6, 0xa7: \\u00a7, 0xa8: \\u00a8, 0xa9: \\u00a9, 0xaa: \\u00aa, 0xab: \\u00ab, 0xac: \\u00ac, 0xad: \\u00ad, 0xae: \\u00ae, 0xaf: \\u00af, 0xb0: \\u00b0, 0xb1: \\u00b1, 0xb2: \\u00b2, 0xb3: \\u00b3, 0xb4: \\u00b4, 0xb5: \\u00b5, 0xb6: \\u00b6, 0xb7: \\u00b7, 0xb8: \\u00b8, 0xb9: \\u00b9, 0xba: \\u00ba, 0xbb: \\u00bb, 0xbc: \\u00bc, 0xbd: \\u00bd, 0xbe: \\u00be, 0xbf: \\u00bf, 0xc0: \\u00c0, 0xc1: \\u00c1, 0xc2: \\u00c2, 0xc3: \\u00c3, 0xc4: \\u00c4, 0xc5: \\u00c5, 0xc6: \\u00c6, 0xc7: \\u00c7, 0xc8: \\u00c8, 0xc9: \\u00c9, 0xca: \\u00ca, 0xcb: \\u00cb, 0xcc: \\u00cc, 0xcd: \\u00cd, 0xce: \\u00ce, 0xcf: \\u00cf, 0xd0: \\u00d0, 0xd1: \\u00d1, 0xd2: \\u00d2, 0xd3: \\u00d3, 0xd4: \\u00d4, 0xd5: \\u00d5, 0xd6: \\u00d6, 0xd7: \\u00d7, 0xd8: \\u00d8, 0xd9: \\u00d9, 0xda: \\u00da, 0xdb: \\u00db, 0xdc: \\u00dc, 0xdd: \\u00dd, 0xde: \\u00de, 0xdf: \\u00df, 0xe0: \\u00e0, 0xe1: \\u00e1, 0xe2: \\u00e2, 0xe3: \\u00e3, 0xe4: \\u00e4, 0xe5: \\u00e5, 0xe6: \\u00e6, 0xe7: \\u00e7, 0xe8: \\u00e8, 0xe9: \\u00e9, 0xea: \\u00ea, 0xeb: \\u00eb, 0xec: \\u00ec, 0xed: \\u00ed, 0xee: \\u00ee, 0xef: \\u00ef, 0xf0: \\u00f0, 0xf1: \\u00f1, 0xf2: \\u00f2, 0xf3: \\u00f3, 0xf4: \\u00f4, 0xf5: \\u00f5, 0xf6: \\u00f6, 0xf7: \\u00f7, 0xf8: \\u00f8, 0xf9: \\u00f9, 0xfa: \\u00fa, 0xfb: \\u00fb, 0xfc: \\u00fc, 0xfd: \\u00fd, 0xfe: \\u00fe, 0xff: \\u00ff\"\n";
     Test.ensureEqual(results.substring(0, expected.length()), expected, "\nresults=\n" + results);
+  }
+
+  /** Test characters. */
+  @org.junit.jupiter.api.Test
+  void testMetadataTranslation() throws Throwable {
+    EDDTable eddTable = (EDDTable) EDDTestDataset.gettest_chars();
+    String dir = EDStatic.config.fullTestCacheDirectory;
+    String results, expected;
+    int language = 0;
+
+    // .csv for one lat,lon,time
+    String tName =
+        eddTable.makeNewFileForDapQuery(
+            language, null, null, "", dir, eddTable.className() + "_1Station", ".iso19115");
+    results = File2.directReadFrom88591File(dir + tName);
+    expected =
+        "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n"
+            + "<mdb:MD_Metadata xmlns:dqm=\"http://standards.iso.org/iso/19157/-2/dqm/1.0\" xmlns:gmi=\"http://standards.iso.org/iso/19115/-2/gmi/1.0\" xmlns:gml=\"http://www.opengis.net/gml/3.2\" xmlns:mmi=\"http://standards.iso.org/iso/19115/-3/mmi/1.0\" xmlns:mcc=\"http://standards.iso.org/iso/19115/-3/mcc/1.0\" xmlns:msr=\"http://standards.iso.org/iso/19115/-3/msr/1.0\" xmlns:mac=\"http://standards.iso.org/iso/19115/-3/mac/1.0\" xmlns:cit=\"http://standards.iso.org/iso/19115/-3/cit/1.0\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:gco=\"http://standards.iso.org/iso/19115/-3/gco/1.0\" xmlns:gmx=\"http://www.isotc211.org/2005/gmx\" xmlns:mco=\"http://standards.iso.org/iso/19115/-3/mco/1.0\" xmlns:lan=\"http://standards.iso.org/iso/19115/-3/lan/1.0\" xmlns:gex=\"http://standards.iso.org/iso/19115/-3/gex/1.0\" xmlns:gcx=\"http://standards.iso.org/iso/19115/-3/gcx/1.0\" xmlns:mas=\"http://standards.iso.org/iso/19115/-3/mas/1.0\" xmlns:mrd=\"http://standards.iso.org/iso/19115/-3/mrd/1.0\" xmlns:mrc=\"http://standards.iso.org/iso/19115/-3/mrc/1.0\" xmlns:mex=\"http://standards.iso.org/iso/19115/-3/mex/1.0\" xmlns:mpc=\"http://standards.iso.org/iso/19115/-3/mpc/1.0\" xmlns:mri=\"http://standards.iso.org/iso/19115/-3/mri/1.0\" xmlns:mrl=\"http://standards.iso.org/iso/19115/-3/mrl/1.0\" xmlns:gts=\"http://www.isotc211.org/2005/gts\" xmlns:mdb=\"http://standards.iso.org/iso/19115/-3/mdb/1.0\" xmlns:srv1=\"http://www.isotc211.org/2005/srv\" xmlns:mrs=\"http://standards.iso.org/iso/19115/-3/mrs/1.0\" xmlns:srv=\"http://standards.iso.org/iso/19115/-3/srv/2.0\" xmlns:mdq=\"http://standards.iso.org/iso/19157/-2/mdq/1.0\" xmlns:mdt=\"http://standards.iso.org/iso/19115/-3/mdt/1.0\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" xmlns:gmd=\"http://www.isotc211.org/2005/gmd\">\n"
+            + "  <mdb:defaultLocale>\n"
+            + "    <lan:PT_Locale>\n"
+            + "      <lan:language>\n"
+            + "        <lan:LanguageCode codeList=\"http://standards.iso.org/iso/19115/resources/Codelist/cat/codelists.xml#LanguageCode\" codeListValue=\"eng\" codeSpace=\"eng\">English</lan:LanguageCode>\n"
+            + "      </lan:language>\n"
+            + "      <lan:characterEncoding>\n"
+            + "        <lan:MD_CharacterSetCode codeList=\"http://standards.iso.org/iso/19115/resources/Codelist/cat/codelists.xml#MD_CharacterSetCode\" codeListValue=\"utf8\" codeSpace=\"eng\">UTF-8</lan:MD_CharacterSetCode>\n"
+            + "      </lan:characterEncoding>\n"
+            + "    </lan:PT_Locale>\n"
+            + "  </mdb:defaultLocale>\n"
+            + "  <mdb:contact>\n"
+            + "    <cit:CI_Responsibility>\n"
+            + "      <cit:role>\n"
+            + "        <cit:CI_RoleCode codeList=\"http://standards.iso.org/iso/19115/resources/Codelist/cat/codelists.xml#CI_RoleCode\" codeListValue=\"pointOfContact\">Point of contact</cit:CI_RoleCode>\n"
+            + "      </cit:role>\n"
+            + "      <cit:party>\n"
+            + "        <cit:CI_Organisation>\n"
+            + "          <cit:name>\n"
+            + "            <gco:CharacterString>ERDDAP Jetty Install</gco:CharacterString>\n"
+            + "          </cit:name>\n"
+            + "          <cit:individual>\n"
+            + "            <cit:CI_Individual>\n"
+            + "              <cit:name>\n"
+            + "                <gco:CharacterString>ERDDAP Jetty Developer</gco:CharacterString>\n"
+            + "              </cit:name>\n"
+            + "              <cit:contactInfo>\n"
+            + "                <cit:CI_Contact>\n"
+            + "                  <cit:phone>\n"
+            + "                    <cit:CI_Telephone>\n"
+            + "                      <cit:number>\n"
+            + "                        <gco:CharacterString>555-555-5555</gco:CharacterString>\n"
+            + "                      </cit:number>\n"
+            + "                      <cit:numberType>\n"
+            + "                        <cit:CI_TelephoneTypeCode codeList=\"http://standards.iso.org/iso/19115/resources/Codelist/cat/codelists.xml#CI_TelephoneTypeCode\" codeListValue=\"voice\">Voice</cit:CI_TelephoneTypeCode>\n"
+            + "                      </cit:numberType>\n"
+            + "                    </cit:CI_Telephone>\n"
+            + "                  </cit:phone>\n"
+            + "                  <cit:address>\n"
+            + "                    <cit:CI_Address>\n"
+            + "                      <cit:deliveryPoint>\n"
+            + "                        <gco:CharacterString>123 Irrelevant St.</gco:CharacterString>\n"
+            + "                      </cit:deliveryPoint>\n"
+            + "                      <cit:city>\n"
+            + "                        <gco:CharacterString>Nowhere</gco:CharacterString>\n"
+            + "                      </cit:city>\n"
+            + "                      <cit:administrativeArea>\n"
+            + "                        <gco:CharacterString>AK</gco:CharacterString>\n"
+            + "                      </cit:administrativeArea>\n"
+            + "                      <cit:postalCode>\n"
+            + "                        <gco:CharacterString>99504</gco:CharacterString>\n"
+            + "                      </cit:postalCode>\n"
+            + "                      <cit:country>\n"
+            + "                        <gco:CharacterString>USA</gco:CharacterString>\n"
+            + "                      </cit:country>\n"
+            + "                      <cit:electronicMailAddress>\n"
+            + "                        <gco:CharacterString>nobody@example.com</gco:CharacterString>\n"
+            + "                      </cit:electronicMailAddress>\n"
+            + "                    </cit:CI_Address>\n"
+            + "                  </cit:address>\n"
+            + "                </cit:CI_Contact>\n"
+            + "              </cit:contactInfo>\n"
+            + "              <cit:positionName>\n"
+            + "                <gco:CharacterString>Software Engineer</gco:CharacterString>\n"
+            + "              </cit:positionName>\n"
+            + "            </cit:CI_Individual>\n"
+            + "          </cit:individual>\n"
+            + "        </cit:CI_Organisation>\n"
+            + "      </cit:party>\n"
+            + "    </cit:CI_Responsibility>\n"
+            + "  </mdb:contact>\n"
+            + "  <mdb:spatialRepresentationInfo>\n"
+            + "    <msr:MD_GridSpatialRepresentation>\n"
+            + "      <msr:numberOfDimensions>\n"
+            + "        <gco:Integer>2</gco:Integer>\n"
+            + "      </msr:numberOfDimensions>\n"
+            + "      <msr:axisDimensionProperties>\n"
+            + "        <msr:MD_Dimension>\n"
+            + "          <msr:dimensionName>\n"
+            + "            <msr:MD_DimensionNameTypeCode codeList=\"http://standards.iso.org/iso/19115/resources/Codelist/cat/codelists.xml#MD_DimensionNameTypeCode\" codeListValue=\"sample\">Sample</msr:MD_DimensionNameTypeCode>\n"
+            + "          </msr:dimensionName>\n"
+            + "        </msr:MD_Dimension>\n"
+            + "      </msr:axisDimensionProperties>\n"
+            + "      <msr:axisDimensionProperties>\n"
+            + "        <msr:MD_Dimension>\n"
+            + "          <msr:dimensionName>\n"
+            + "            <msr:MD_DimensionNameTypeCode codeList=\"http://standards.iso.org/iso/19115/resources/Codelist/cat/codelists.xml#MD_DimensionNameTypeCode\" codeListValue=\"sample\">Sample</msr:MD_DimensionNameTypeCode>\n"
+            + "          </msr:dimensionName>\n"
+            + "        </msr:MD_Dimension>\n"
+            + "      </msr:axisDimensionProperties>\n"
+            + "      <msr:transformationParameterAvailability>\n"
+            + "        <gco:Boolean>false</gco:Boolean>\n"
+            + "      </msr:transformationParameterAvailability>\n"
+            + "    </msr:MD_GridSpatialRepresentation>\n"
+            + "  </mdb:spatialRepresentationInfo>\n"
+            + "  <mdb:identificationInfo>\n"
+            + "    <mri:MD_DataIdentification>\n"
+            + "      <mri:citation>\n"
+            + "        <cit:CI_Citation>\n"
+            + "          <cit:title>\n"
+            + "            <gco:CharacterString>Data from a local source.</gco:CharacterString>\n"
+            + "          </cit:title>\n"
+            + "          <cit:date>\n"
+            + "            <cit:CI_Date>\n"
+            + "              <cit:date>\n"
+            + "                <gco:DateTime>YYYY-MM-DDThh:mm:ss.uuu-TZ:00</gco:DateTime>\n"
+            + "              </cit:date>\n"
+            + "              <cit:dateType>\n"
+            + "                <cit:CI_DateTypeCode codeList=\"http://standards.iso.org/iso/19115/resources/Codelist/cat/codelists.xml#CI_DateTypeCode\" codeListValue=\"creation\" codeSpace=\"eng\">Creation</cit:CI_DateTypeCode>\n"
+            + "              </cit:dateType>\n"
+            + "            </cit:CI_Date>\n"
+            + "          </cit:date>\n"
+            + "          <cit:identifier>\n"
+            + "            <mcc:MD_Identifier>\n"
+            + "              <mcc:authority>\n"
+            + "                <cit:CI_Citation>\n"
+            + "                  <cit:title>\n"
+            + "                    <gco:CharacterString>localhost:8080</gco:CharacterString>\n"
+            + "                  </cit:title>\n"
+            + "                </cit:CI_Citation>\n"
+            + "              </mcc:authority>\n"
+            + "              <mcc:code>\n"
+            + "                <gco:CharacterString>test_chars_e886_d14c_7d71</gco:CharacterString>\n"
+            + "              </mcc:code>\n"
+            + "            </mcc:MD_Identifier>\n"
+            + "          </cit:identifier>\n"
+            + "          <cit:citedResponsibleParty>\n"
+            + "            <cit:CI_Responsibility>\n"
+            + "              <cit:role>\n"
+            + "                <cit:CI_RoleCode codeList=\"http://standards.iso.org/iso/19115/resources/Codelist/cat/codelists.xml#CI_RoleCode\" codeListValue=\"originator\">Originator</cit:CI_RoleCode>\n"
+            + "              </cit:role>\n"
+            + "              <cit:party>\n"
+            + "                <cit:CI_Organisation>\n"
+            + "                  <cit:name>\n"
+            + "                    <gco:CharacterString>???</gco:CharacterString>\n"
+            + "                  </cit:name>\n"
+            + "                  <cit:contactInfo>\n"
+            + "                    <cit:CI_Contact>\n"
+            + "                      <cit:address>\n"
+            + "                        <cit:CI_Address/>\n"
+            + "                      </cit:address>\n"
+            + "                      <cit:onlineResource>\n"
+            + "                        <cit:CI_OnlineResource>\n"
+            + "                          <cit:linkage>\n"
+            + "                            <gcx:FileName src=\"???\">???</gcx:FileName>\n"
+            + "                          </cit:linkage>\n"
+            + "                          <cit:protocol>\n"
+            + "                            <gco:CharacterString>information</gco:CharacterString>\n"
+            + "                          </cit:protocol>\n"
+            + "                          <cit:applicationProfile>\n"
+            + "                            <gco:CharacterString>web browser</gco:CharacterString>\n"
+            + "                          </cit:applicationProfile>\n"
+            + "                          <cit:name>\n"
+            + "                            <gco:CharacterString>Background Information</gco:CharacterString>\n"
+            + "                          </cit:name>\n"
+            + "                          <cit:description>\n"
+            + "                            <gco:CharacterString>Background information from the source</gco:CharacterString>\n"
+            + "                          </cit:description>\n"
+            + "                          <cit:function>\n"
+            + "                            <cit:CI_OnLineFunctionCode codeList=\"http://standards.iso.org/iso/19115/resources/Codelist/cat/codelists.xml#CI_OnLineFunctionCode\" codeListValue=\"information\" codeSpace=\"eng\">Information</cit:CI_OnLineFunctionCode>\n"
+            + "                          </cit:function>\n"
+            + "                        </cit:CI_OnlineResource>\n"
+            + "                      </cit:onlineResource>\n"
+            + "                    </cit:CI_Contact>\n"
+            + "                  </cit:contactInfo>\n"
+            + "                </cit:CI_Organisation>\n"
+            + "              </cit:party>\n"
+            + "            </cit:CI_Responsibility>\n"
+            + "          </cit:citedResponsibleParty>\n"
+            + "        </cit:CI_Citation>\n"
+            + "      </mri:citation>\n"
+            + "      <mri:abstract>\n"
+            + "        <gco:CharacterString>Data from a local source.</gco:CharacterString>\n"
+            + "      </mri:abstract>\n"
+            + "      <mri:pointOfContact>\n"
+            + "        <cit:CI_Responsibility>\n"
+            + "          <cit:role>\n"
+            + "            <cit:CI_RoleCode codeList=\"http://standards.iso.org/iso/19115/resources/Codelist/cat/codelists.xml#CI_RoleCode\" codeListValue=\"pointOfContact\">Point of contact</cit:CI_RoleCode>\n"
+            + "          </cit:role>\n"
+            + "          <cit:party>\n"
+            + "            <cit:CI_Organisation>\n"
+            + "              <cit:name>\n"
+            + "                <gco:CharacterString>???</gco:CharacterString>\n"
+            + "              </cit:name>\n"
+            + "              <cit:contactInfo>\n"
+            + "                <cit:CI_Contact>\n"
+            + "                  <cit:address>\n"
+            + "                    <cit:CI_Address/>\n"
+            + "                  </cit:address>\n"
+            + "                  <cit:onlineResource>\n"
+            + "                    <cit:CI_OnlineResource>\n"
+            + "                      <cit:linkage>\n"
+            + "                        <gcx:FileName src=\"???\">???</gcx:FileName>\n"
+            + "                      </cit:linkage>\n"
+            + "                      <cit:protocol>\n"
+            + "                        <gco:CharacterString>information</gco:CharacterString>\n"
+            + "                      </cit:protocol>\n"
+            + "                      <cit:applicationProfile>\n"
+            + "                        <gco:CharacterString>web browser</gco:CharacterString>\n"
+            + "                      </cit:applicationProfile>\n"
+            + "                      <cit:name>\n"
+            + "                        <gco:CharacterString>Background Information</gco:CharacterString>\n"
+            + "                      </cit:name>\n"
+            + "                      <cit:description>\n"
+            + "                        <gco:CharacterString>Background information from the source</gco:CharacterString>\n"
+            + "                      </cit:description>\n"
+            + "                      <cit:function>\n"
+            + "                        <cit:CI_OnLineFunctionCode codeList=\"http://standards.iso.org/iso/19115/resources/Codelist/cat/codelists.xml#CI_OnLineFunctionCode\" codeListValue=\"information\" codeSpace=\"eng\">Information</cit:CI_OnLineFunctionCode>\n"
+            + "                      </cit:function>\n"
+            + "                    </cit:CI_OnlineResource>\n"
+            + "                  </cit:onlineResource>\n"
+            + "                </cit:CI_Contact>\n"
+            + "              </cit:contactInfo>\n"
+            + "            </cit:CI_Organisation>\n"
+            + "          </cit:party>\n"
+            + "        </cit:CI_Responsibility>\n"
+            + "      </mri:pointOfContact>\n"
+            + "      <mri:topicCategory>\n"
+            + "        <mri:MD_TopicCategoryCode>geoscientificInformation</mri:MD_TopicCategoryCode>\n"
+            + "      </mri:topicCategory>\n"
+            + "      <mri:extent>\n"
+            + "        <gex:EX_Extent>\n"
+            + "          <gex:description>\n"
+            + "            <gco:CharacterString>boundingExtent</gco:CharacterString>\n"
+            + "          </gex:description>\n"
+            + "          <gex:geographicElement>\n"
+            + "            <gex:EX_GeographicBoundingBox>\n"
+            + "              <gex:extentTypeCode>\n"
+            + "                <gco:Boolean>true</gco:Boolean>\n"
+            + "              </gex:extentTypeCode>\n"
+            + "              <gex:westBoundLongitude>\n"
+            + "                <gco:Decimal>NaN</gco:Decimal>\n"
+            + "              </gex:westBoundLongitude>\n"
+            + "              <gex:eastBoundLongitude>\n"
+            + "                <gco:Decimal>NaN</gco:Decimal>\n"
+            + "              </gex:eastBoundLongitude>\n"
+            + "              <gex:southBoundLatitude>\n"
+            + "                <gco:Decimal>NaN</gco:Decimal>\n"
+            + "              </gex:southBoundLatitude>\n"
+            + "              <gex:northBoundLatitude>\n"
+            + "                <gco:Decimal>NaN</gco:Decimal>\n"
+            + "              </gex:northBoundLatitude>\n"
+            + "            </gex:EX_GeographicBoundingBox>\n"
+            + "          </gex:geographicElement>\n"
+            + "        </gex:EX_Extent>\n"
+            + "      </mri:extent>\n"
+            + "      <mri:descriptiveKeywords>\n"
+            + "        <mri:MD_Keywords>\n"
+            + "          <mri:keyword>\n"
+            + "            <gco:CharacterString>characters</gco:CharacterString>\n"
+            + "          </mri:keyword>\n"
+            + "          <mri:keyword>\n"
+            + "            <gco:CharacterString>data</gco:CharacterString>\n"
+            + "          </mri:keyword>\n"
+            + "          <mri:keyword>\n"
+            + "            <gco:CharacterString>local</gco:CharacterString>\n"
+            + "          </mri:keyword>\n"
+            + "          <mri:keyword>\n"
+            + "            <gco:CharacterString>row</gco:CharacterString>\n"
+            + "          </mri:keyword>\n"
+            + "          <mri:keyword>\n"
+            + "            <gco:CharacterString>source</gco:CharacterString>\n"
+            + "          </mri:keyword>\n"
+            + "          <mri:type>\n"
+            + "            <mri:MD_KeywordTypeCode codeList=\"http://standards.iso.org/iso/19115/resources/Codelist/cat/codelists.xml#MD_KeywordTypeCode\" codeListValue=\"theme\">Theme</mri:MD_KeywordTypeCode>\n"
+            + "          </mri:type>\n"
+            + "        </mri:MD_Keywords>\n"
+            + "      </mri:descriptiveKeywords>\n"
+            + "      <mri:descriptiveKeywords>\n"
+            + "        <mri:MD_Keywords>\n"
+            + "          <mri:keyword>\n"
+            + "            <gco:CharacterString>???</gco:CharacterString>\n"
+            + "          </mri:keyword>\n"
+            + "          <mri:type>\n"
+            + "            <mri:MD_KeywordTypeCode codeList=\"http://standards.iso.org/iso/19115/resources/Codelist/cat/codelists.xml#MD_KeywordTypeCode\" codeListValue=\"theme\">Theme</mri:MD_KeywordTypeCode>\n"
+            + "          </mri:type>\n"
+            + "        </mri:MD_Keywords>\n"
+            + "      </mri:descriptiveKeywords>\n"
+            + "      <mri:resourceConstraints>\n"
+            + "        <mco:MD_Constraints>\n"
+            + "          <mco:useLimitation>\n"
+            + "            <gco:CharacterString>The data may be used and redistributed for free but is not intended\n"
+            + "for legal use, since it may contain inaccuracies. Neither the data\n"
+            + "Contributor, ERD, NOAA, nor the United States Government, nor any\n"
+            + "of their employees or contractors, makes any warranty, express or\n"
+            + "implied, including warranties of merchantability and fitness for a\n"
+            + "particular purpose, or assumes any legal liability for the accuracy,\n"
+            + "completeness, or usefulness, of this information.</gco:CharacterString>\n"
+            + "          </mco:useLimitation>\n"
+            + "        </mco:MD_Constraints>\n"
+            + "      </mri:resourceConstraints>\n"
+            + "    </mri:MD_DataIdentification>\n"
+            + "  </mdb:identificationInfo>\n"
+            + "  <mdb:identificationInfo>\n"
+            + "    <srv:SV_ServiceIdentification>\n"
+            + "      <mri:citation>\n"
+            + "        <cit:CI_Citation>\n"
+            + "          <cit:title>\n"
+            + "            <gco:CharacterString>Data from a local source.</gco:CharacterString>\n"
+            + "          </cit:title>\n"
+            + "          <cit:date>\n"
+            + "            <cit:CI_Date>\n"
+            + "              <cit:date>\n"
+            + "                <gco:DateTime>YYYY-MM-DDThh:mm:ss.uuu-TZ:00</gco:DateTime>\n"
+            + "              </cit:date>\n"
+            + "              <cit:dateType>\n"
+            + "                <cit:CI_DateTypeCode codeList=\"http://standards.iso.org/iso/19115/resources/Codelist/cat/codelists.xml#CI_DateTypeCode\" codeListValue=\"creation\" codeSpace=\"eng\">Creation</cit:CI_DateTypeCode>\n"
+            + "              </cit:dateType>\n"
+            + "            </cit:CI_Date>\n"
+            + "          </cit:date>\n"
+            + "          <cit:citedResponsibleParty>\n"
+            + "            <cit:CI_Responsibility>\n"
+            + "              <cit:role>\n"
+            + "                <cit:CI_RoleCode codeList=\"http://standards.iso.org/iso/19115/resources/Codelist/cat/codelists.xml#CI_RoleCode\" codeListValue=\"originator\">Originator</cit:CI_RoleCode>\n"
+            + "              </cit:role>\n"
+            + "              <cit:party>\n"
+            + "                <cit:CI_Organisation>\n"
+            + "                  <cit:name>\n"
+            + "                    <gco:CharacterString>???</gco:CharacterString>\n"
+            + "                  </cit:name>\n"
+            + "                  <cit:contactInfo>\n"
+            + "                    <cit:CI_Contact>\n"
+            + "                      <cit:address>\n"
+            + "                        <cit:CI_Address/>\n"
+            + "                      </cit:address>\n"
+            + "                      <cit:onlineResource>\n"
+            + "                        <cit:CI_OnlineResource>\n"
+            + "                          <cit:linkage>\n"
+            + "                            <gcx:FileName src=\"???\">???</gcx:FileName>\n"
+            + "                          </cit:linkage>\n"
+            + "                          <cit:protocol>\n"
+            + "                            <gco:CharacterString>information</gco:CharacterString>\n"
+            + "                          </cit:protocol>\n"
+            + "                          <cit:applicationProfile>\n"
+            + "                            <gco:CharacterString>web browser</gco:CharacterString>\n"
+            + "                          </cit:applicationProfile>\n"
+            + "                          <cit:name>\n"
+            + "                            <gco:CharacterString>Background Information</gco:CharacterString>\n"
+            + "                          </cit:name>\n"
+            + "                          <cit:description>\n"
+            + "                            <gco:CharacterString>Background information from the source</gco:CharacterString>\n"
+            + "                          </cit:description>\n"
+            + "                          <cit:function>\n"
+            + "                            <cit:CI_OnLineFunctionCode codeList=\"http://standards.iso.org/iso/19115/resources/Codelist/cat/codelists.xml#CI_OnLineFunctionCode\" codeListValue=\"information\" codeSpace=\"eng\">Information</cit:CI_OnLineFunctionCode>\n"
+            + "                          </cit:function>\n"
+            + "                        </cit:CI_OnlineResource>\n"
+            + "                      </cit:onlineResource>\n"
+            + "                    </cit:CI_Contact>\n"
+            + "                  </cit:contactInfo>\n"
+            + "                </cit:CI_Organisation>\n"
+            + "              </cit:party>\n"
+            + "            </cit:CI_Responsibility>\n"
+            + "          </cit:citedResponsibleParty>\n"
+            + "        </cit:CI_Citation>\n"
+            + "      </mri:citation>\n"
+            + "      <mri:extent>\n"
+            + "        <gex:EX_Extent>\n"
+            + "          <gex:description>\n"
+            + "            <gco:CharacterString>boundingExtent</gco:CharacterString>\n"
+            + "          </gex:description>\n"
+            + "          <gex:geographicElement>\n"
+            + "            <gex:EX_GeographicBoundingBox>\n"
+            + "              <gex:extentTypeCode>\n"
+            + "                <gco:Boolean>true</gco:Boolean>\n"
+            + "              </gex:extentTypeCode>\n"
+            + "              <gex:westBoundLongitude>\n"
+            + "                <gco:Decimal>NaN</gco:Decimal>\n"
+            + "              </gex:westBoundLongitude>\n"
+            + "              <gex:eastBoundLongitude>\n"
+            + "                <gco:Decimal>NaN</gco:Decimal>\n"
+            + "              </gex:eastBoundLongitude>\n"
+            + "              <gex:southBoundLatitude>\n"
+            + "                <gco:Decimal>NaN</gco:Decimal>\n"
+            + "              </gex:southBoundLatitude>\n"
+            + "              <gex:northBoundLatitude>\n"
+            + "                <gco:Decimal>NaN</gco:Decimal>\n"
+            + "              </gex:northBoundLatitude>\n"
+            + "            </gex:EX_GeographicBoundingBox>\n"
+            + "          </gex:geographicElement>\n"
+            + "        </gex:EX_Extent>\n"
+            + "      </mri:extent>\n"
+            + "      <srv:serviceType>\n"
+            + "        <gco:ScopedName>ERDDAP tabledap</gco:ScopedName>\n"
+            + "      </srv:serviceType>\n"
+            + "      <srv:coupledResource>\n"
+            + "        <srv:SV_CoupledResource>\n"
+            + "          <srv:resource>\n"
+            + "            <mri:MD_DataIdentification>\n"
+            + "              <mri:citation>\n"
+            + "                <cit:CI_Citation>\n"
+            + "                  <cit:title>\n"
+            + "                    <gco:CharacterString>Data from a local source.</gco:CharacterString>\n"
+            + "                  </cit:title>\n"
+            + "                  <cit:date>\n"
+            + "                    <cit:CI_Date>\n"
+            + "                      <cit:date>\n"
+            + "                        <gco:DateTime>YYYY-MM-DDThh:mm:ss.uuu-TZ:00</gco:DateTime>\n"
+            + "                      </cit:date>\n"
+            + "                      <cit:dateType>\n"
+            + "                        <cit:CI_DateTypeCode codeList=\"http://standards.iso.org/iso/19115/resources/Codelist/cat/codelists.xml#CI_DateTypeCode\" codeListValue=\"creation\" codeSpace=\"eng\">Creation</cit:CI_DateTypeCode>\n"
+            + "                      </cit:dateType>\n"
+            + "                    </cit:CI_Date>\n"
+            + "                  </cit:date>\n"
+            + "                  <cit:identifier>\n"
+            + "                    <mcc:MD_Identifier>\n"
+            + "                      <mcc:authority>\n"
+            + "                        <cit:CI_Citation>\n"
+            + "                          <cit:title>\n"
+            + "                            <gco:CharacterString>localhost:8080</gco:CharacterString>\n"
+            + "                          </cit:title>\n"
+            + "                        </cit:CI_Citation>\n"
+            + "                      </mcc:authority>\n"
+            + "                      <mcc:code>\n"
+            + "                        <gco:CharacterString>test_chars_e886_d14c_7d71</gco:CharacterString>\n"
+            + "                      </mcc:code>\n"
+            + "                    </mcc:MD_Identifier>\n"
+            + "                  </cit:identifier>\n"
+            + "                  <cit:citedResponsibleParty>\n"
+            + "                    <cit:CI_Responsibility>\n"
+            + "                      <cit:role>\n"
+            + "                        <cit:CI_RoleCode codeList=\"http://standards.iso.org/iso/19115/resources/Codelist/cat/codelists.xml#CI_RoleCode\" codeListValue=\"originator\">Originator</cit:CI_RoleCode>\n"
+            + "                      </cit:role>\n"
+            + "                      <cit:party>\n"
+            + "                        <cit:CI_Organisation>\n"
+            + "                          <cit:name>\n"
+            + "                            <gco:CharacterString>???</gco:CharacterString>\n"
+            + "                          </cit:name>\n"
+            + "                          <cit:contactInfo>\n"
+            + "                            <cit:CI_Contact>\n"
+            + "                              <cit:address>\n"
+            + "                                <cit:CI_Address/>\n"
+            + "                              </cit:address>\n"
+            + "                              <cit:onlineResource>\n"
+            + "                                <cit:CI_OnlineResource>\n"
+            + "                                  <cit:linkage>\n"
+            + "                                    <gcx:FileName src=\"???\">???</gcx:FileName>\n"
+            + "                                  </cit:linkage>\n"
+            + "                                  <cit:protocol>\n"
+            + "                                    <gco:CharacterString>information</gco:CharacterString>\n"
+            + "                                  </cit:protocol>\n"
+            + "                                  <cit:applicationProfile>\n"
+            + "                                    <gco:CharacterString>web browser</gco:CharacterString>\n"
+            + "                                  </cit:applicationProfile>\n"
+            + "                                  <cit:name>\n"
+            + "                                    <gco:CharacterString>Background Information</gco:CharacterString>\n"
+            + "                                  </cit:name>\n"
+            + "                                  <cit:description>\n"
+            + "                                    <gco:CharacterString>Background information from the source</gco:CharacterString>\n"
+            + "                                  </cit:description>\n"
+            + "                                  <cit:function>\n"
+            + "                                    <cit:CI_OnLineFunctionCode codeList=\"http://standards.iso.org/iso/19115/resources/Codelist/cat/codelists.xml#CI_OnLineFunctionCode\" codeListValue=\"information\" codeSpace=\"eng\">Information</cit:CI_OnLineFunctionCode>\n"
+            + "                                  </cit:function>\n"
+            + "                                </cit:CI_OnlineResource>\n"
+            + "                              </cit:onlineResource>\n"
+            + "                            </cit:CI_Contact>\n"
+            + "                          </cit:contactInfo>\n"
+            + "                        </cit:CI_Organisation>\n"
+            + "                      </cit:party>\n"
+            + "                    </cit:CI_Responsibility>\n"
+            + "                  </cit:citedResponsibleParty>\n"
+            + "                </cit:CI_Citation>\n"
+            + "              </mri:citation>\n"
+            + "              <mri:abstract>\n"
+            + "                <gco:CharacterString>Data from a local source.</gco:CharacterString>\n"
+            + "              </mri:abstract>\n"
+            + "              <mri:pointOfContact>\n"
+            + "                <cit:CI_Responsibility>\n"
+            + "                  <cit:role>\n"
+            + "                    <cit:CI_RoleCode codeList=\"http://standards.iso.org/iso/19115/resources/Codelist/cat/codelists.xml#CI_RoleCode\" codeListValue=\"pointOfContact\">Point of contact</cit:CI_RoleCode>\n"
+            + "                  </cit:role>\n"
+            + "                  <cit:party>\n"
+            + "                    <cit:CI_Organisation>\n"
+            + "                      <cit:name>\n"
+            + "                        <gco:CharacterString>???</gco:CharacterString>\n"
+            + "                      </cit:name>\n"
+            + "                      <cit:contactInfo>\n"
+            + "                        <cit:CI_Contact>\n"
+            + "                          <cit:address>\n"
+            + "                            <cit:CI_Address/>\n"
+            + "                          </cit:address>\n"
+            + "                          <cit:onlineResource>\n"
+            + "                            <cit:CI_OnlineResource>\n"
+            + "                              <cit:linkage>\n"
+            + "                                <gcx:FileName src=\"???\">???</gcx:FileName>\n"
+            + "                              </cit:linkage>\n"
+            + "                              <cit:protocol>\n"
+            + "                                <gco:CharacterString>information</gco:CharacterString>\n"
+            + "                              </cit:protocol>\n"
+            + "                              <cit:applicationProfile>\n"
+            + "                                <gco:CharacterString>web browser</gco:CharacterString>\n"
+            + "                              </cit:applicationProfile>\n"
+            + "                              <cit:name>\n"
+            + "                                <gco:CharacterString>Background Information</gco:CharacterString>\n"
+            + "                              </cit:name>\n"
+            + "                              <cit:description>\n"
+            + "                                <gco:CharacterString>Background information from the source</gco:CharacterString>\n"
+            + "                              </cit:description>\n"
+            + "                              <cit:function>\n"
+            + "                                <cit:CI_OnLineFunctionCode codeList=\"http://standards.iso.org/iso/19115/resources/Codelist/cat/codelists.xml#CI_OnLineFunctionCode\" codeListValue=\"information\" codeSpace=\"eng\">Information</cit:CI_OnLineFunctionCode>\n"
+            + "                              </cit:function>\n"
+            + "                            </cit:CI_OnlineResource>\n"
+            + "                          </cit:onlineResource>\n"
+            + "                        </cit:CI_Contact>\n"
+            + "                      </cit:contactInfo>\n"
+            + "                    </cit:CI_Organisation>\n"
+            + "                  </cit:party>\n"
+            + "                </cit:CI_Responsibility>\n"
+            + "              </mri:pointOfContact>\n"
+            + "              <mri:topicCategory>\n"
+            + "                <mri:MD_TopicCategoryCode>geoscientificInformation</mri:MD_TopicCategoryCode>\n"
+            + "              </mri:topicCategory>\n"
+            + "              <mri:extent>\n"
+            + "                <gex:EX_Extent>\n"
+            + "                  <gex:description>\n"
+            + "                    <gco:CharacterString>boundingExtent</gco:CharacterString>\n"
+            + "                  </gex:description>\n"
+            + "                  <gex:geographicElement>\n"
+            + "                    <gex:EX_GeographicBoundingBox>\n"
+            + "                      <gex:extentTypeCode>\n"
+            + "                        <gco:Boolean>true</gco:Boolean>\n"
+            + "                      </gex:extentTypeCode>\n"
+            + "                      <gex:westBoundLongitude>\n"
+            + "                        <gco:Decimal>NaN</gco:Decimal>\n"
+            + "                      </gex:westBoundLongitude>\n"
+            + "                      <gex:eastBoundLongitude>\n"
+            + "                        <gco:Decimal>NaN</gco:Decimal>\n"
+            + "                      </gex:eastBoundLongitude>\n"
+            + "                      <gex:southBoundLatitude>\n"
+            + "                        <gco:Decimal>NaN</gco:Decimal>\n"
+            + "                      </gex:southBoundLatitude>\n"
+            + "                      <gex:northBoundLatitude>\n"
+            + "                        <gco:Decimal>NaN</gco:Decimal>\n"
+            + "                      </gex:northBoundLatitude>\n"
+            + "                    </gex:EX_GeographicBoundingBox>\n"
+            + "                  </gex:geographicElement>\n"
+            + "                </gex:EX_Extent>\n"
+            + "              </mri:extent>\n"
+            + "              <mri:descriptiveKeywords>\n"
+            + "                <mri:MD_Keywords>\n"
+            + "                  <mri:keyword>\n"
+            + "                    <gco:CharacterString>characters</gco:CharacterString>\n"
+            + "                  </mri:keyword>\n"
+            + "                  <mri:keyword>\n"
+            + "                    <gco:CharacterString>data</gco:CharacterString>\n"
+            + "                  </mri:keyword>\n"
+            + "                  <mri:keyword>\n"
+            + "                    <gco:CharacterString>local</gco:CharacterString>\n"
+            + "                  </mri:keyword>\n"
+            + "                  <mri:keyword>\n"
+            + "                    <gco:CharacterString>row</gco:CharacterString>\n"
+            + "                  </mri:keyword>\n"
+            + "                  <mri:keyword>\n"
+            + "                    <gco:CharacterString>source</gco:CharacterString>\n"
+            + "                  </mri:keyword>\n"
+            + "                  <mri:type>\n"
+            + "                    <mri:MD_KeywordTypeCode codeList=\"http://standards.iso.org/iso/19115/resources/Codelist/cat/codelists.xml#MD_KeywordTypeCode\" codeListValue=\"theme\">Theme</mri:MD_KeywordTypeCode>\n"
+            + "                  </mri:type>\n"
+            + "                </mri:MD_Keywords>\n"
+            + "              </mri:descriptiveKeywords>\n"
+            + "              <mri:descriptiveKeywords>\n"
+            + "                <mri:MD_Keywords>\n"
+            + "                  <mri:keyword>\n"
+            + "                    <gco:CharacterString>???</gco:CharacterString>\n"
+            + "                  </mri:keyword>\n"
+            + "                  <mri:type>\n"
+            + "                    <mri:MD_KeywordTypeCode codeList=\"http://standards.iso.org/iso/19115/resources/Codelist/cat/codelists.xml#MD_KeywordTypeCode\" codeListValue=\"theme\">Theme</mri:MD_KeywordTypeCode>\n"
+            + "                  </mri:type>\n"
+            + "                </mri:MD_Keywords>\n"
+            + "              </mri:descriptiveKeywords>\n"
+            + "              <mri:resourceConstraints>\n"
+            + "                <mco:MD_Constraints>\n"
+            + "                  <mco:useLimitation>\n"
+            + "                    <gco:CharacterString>The data may be used and redistributed for free but is not intended\n"
+            + "for legal use, since it may contain inaccuracies. Neither the data\n"
+            + "Contributor, ERD, NOAA, nor the United States Government, nor any\n"
+            + "of their employees or contractors, makes any warranty, express or\n"
+            + "implied, including warranties of merchantability and fitness for a\n"
+            + "particular purpose, or assumes any legal liability for the accuracy,\n"
+            + "completeness, or usefulness, of this information.</gco:CharacterString>\n"
+            + "                  </mco:useLimitation>\n"
+            + "                </mco:MD_Constraints>\n"
+            + "              </mri:resourceConstraints>\n"
+            + "            </mri:MD_DataIdentification>\n"
+            + "          </srv:resource>\n"
+            + "          <srv:operation>\n"
+            + "            <srv:SV_OperationMetadata>\n"
+            + "              <srv:operationName>\n"
+            + "                <gco:CharacterString>ERDDAPtabledapDatasetQueryAndAccess</gco:CharacterString>\n"
+            + "              </srv:operationName>\n"
+            + "              <srv:connectPoint>\n"
+            + "                <cit:CI_OnlineResource>\n"
+            + "                  <cit:linkage>\n"
+            + "                    <gcx:FileName src=\"http://localhost:8080/erddap/tabledap/test_chars_e886_d14c_7d71\">test_chars_e886_d14c_7d71</gcx:FileName>\n"
+            + "                  </cit:linkage>\n"
+            + "                  <cit:protocol>\n"
+            + "                    <gco:CharacterString>ERDDAP:tabledap</gco:CharacterString>\n"
+            + "                  </cit:protocol>\n"
+            + "                  <cit:name>\n"
+            + "                    <gco:CharacterString>ERDDAP-tabledap</gco:CharacterString>\n"
+            + "                  </cit:name>\n"
+            + "                  <cit:description>\n"
+            + "                    <gco:CharacterString>ERDDAP's tabledap service (a flavor of OPeNDAP) for tabular (sequence) data. Add different extensions (e.g., .html, .graph, .das, .dds) to the base URL for different purposes.</gco:CharacterString>\n"
+            + "                  </cit:description>\n"
+            + "                  <cit:function>\n"
+            + "                    <cit:CI_OnLineFunctionCode codeList=\"http://standards.iso.org/iso/19115/resources/Codelist/cat/codelists.xml#CI_OnLineFunctionCode\" codeListValue=\"download\" codeSpace=\"eng\">Download</cit:CI_OnLineFunctionCode>\n"
+            + "                  </cit:function>\n"
+            + "                </cit:CI_OnlineResource>\n"
+            + "              </srv:connectPoint>\n"
+            + "            </srv:SV_OperationMetadata>\n"
+            + "          </srv:operation>\n"
+            + "        </srv:SV_CoupledResource>\n"
+            + "      </srv:coupledResource>\n"
+            + "    </srv:SV_ServiceIdentification>\n"
+            + "  </mdb:identificationInfo>\n"
+            + "  <mdb:identificationInfo>\n"
+            + "    <srv:SV_ServiceIdentification>\n"
+            + "      <mri:citation>\n"
+            + "        <cit:CI_Citation>\n"
+            + "          <cit:title>\n"
+            + "            <gco:CharacterString>Data from a local source.</gco:CharacterString>\n"
+            + "          </cit:title>\n"
+            + "          <cit:date>\n"
+            + "            <cit:CI_Date>\n"
+            + "              <cit:date>\n"
+            + "                <gco:DateTime>YYYY-MM-DDThh:mm:ss.uuu-TZ:00</gco:DateTime>\n"
+            + "              </cit:date>\n"
+            + "              <cit:dateType>\n"
+            + "                <cit:CI_DateTypeCode codeList=\"http://standards.iso.org/iso/19115/resources/Codelist/cat/codelists.xml#CI_DateTypeCode\" codeListValue=\"creation\" codeSpace=\"eng\">Creation</cit:CI_DateTypeCode>\n"
+            + "              </cit:dateType>\n"
+            + "            </cit:CI_Date>\n"
+            + "          </cit:date>\n"
+            + "          <cit:citedResponsibleParty>\n"
+            + "            <cit:CI_Responsibility>\n"
+            + "              <cit:role>\n"
+            + "                <cit:CI_RoleCode codeList=\"http://standards.iso.org/iso/19115/resources/Codelist/cat/codelists.xml#CI_RoleCode\" codeListValue=\"originator\">Originator</cit:CI_RoleCode>\n"
+            + "              </cit:role>\n"
+            + "              <cit:party>\n"
+            + "                <cit:CI_Organisation>\n"
+            + "                  <cit:name>\n"
+            + "                    <gco:CharacterString>???</gco:CharacterString>\n"
+            + "                  </cit:name>\n"
+            + "                  <cit:contactInfo>\n"
+            + "                    <cit:CI_Contact>\n"
+            + "                      <cit:address>\n"
+            + "                        <cit:CI_Address/>\n"
+            + "                      </cit:address>\n"
+            + "                      <cit:onlineResource>\n"
+            + "                        <cit:CI_OnlineResource>\n"
+            + "                          <cit:linkage>\n"
+            + "                            <gcx:FileName src=\"???\">???</gcx:FileName>\n"
+            + "                          </cit:linkage>\n"
+            + "                          <cit:protocol>\n"
+            + "                            <gco:CharacterString>information</gco:CharacterString>\n"
+            + "                          </cit:protocol>\n"
+            + "                          <cit:applicationProfile>\n"
+            + "                            <gco:CharacterString>web browser</gco:CharacterString>\n"
+            + "                          </cit:applicationProfile>\n"
+            + "                          <cit:name>\n"
+            + "                            <gco:CharacterString>Background Information</gco:CharacterString>\n"
+            + "                          </cit:name>\n"
+            + "                          <cit:description>\n"
+            + "                            <gco:CharacterString>Background information from the source</gco:CharacterString>\n"
+            + "                          </cit:description>\n"
+            + "                          <cit:function>\n"
+            + "                            <cit:CI_OnLineFunctionCode codeList=\"http://standards.iso.org/iso/19115/resources/Codelist/cat/codelists.xml#CI_OnLineFunctionCode\" codeListValue=\"information\" codeSpace=\"eng\">Information</cit:CI_OnLineFunctionCode>\n"
+            + "                          </cit:function>\n"
+            + "                        </cit:CI_OnlineResource>\n"
+            + "                      </cit:onlineResource>\n"
+            + "                    </cit:CI_Contact>\n"
+            + "                  </cit:contactInfo>\n"
+            + "                </cit:CI_Organisation>\n"
+            + "              </cit:party>\n"
+            + "            </cit:CI_Responsibility>\n"
+            + "          </cit:citedResponsibleParty>\n"
+            + "        </cit:CI_Citation>\n"
+            + "      </mri:citation>\n"
+            + "      <mri:extent>\n"
+            + "        <gex:EX_Extent>\n"
+            + "          <gex:description>\n"
+            + "            <gco:CharacterString>boundingExtent</gco:CharacterString>\n"
+            + "          </gex:description>\n"
+            + "          <gex:geographicElement>\n"
+            + "            <gex:EX_GeographicBoundingBox>\n"
+            + "              <gex:extentTypeCode>\n"
+            + "                <gco:Boolean>true</gco:Boolean>\n"
+            + "              </gex:extentTypeCode>\n"
+            + "              <gex:westBoundLongitude>\n"
+            + "                <gco:Decimal>NaN</gco:Decimal>\n"
+            + "              </gex:westBoundLongitude>\n"
+            + "              <gex:eastBoundLongitude>\n"
+            + "                <gco:Decimal>NaN</gco:Decimal>\n"
+            + "              </gex:eastBoundLongitude>\n"
+            + "              <gex:southBoundLatitude>\n"
+            + "                <gco:Decimal>NaN</gco:Decimal>\n"
+            + "              </gex:southBoundLatitude>\n"
+            + "              <gex:northBoundLatitude>\n"
+            + "                <gco:Decimal>NaN</gco:Decimal>\n"
+            + "              </gex:northBoundLatitude>\n"
+            + "            </gex:EX_GeographicBoundingBox>\n"
+            + "          </gex:geographicElement>\n"
+            + "        </gex:EX_Extent>\n"
+            + "      </mri:extent>\n"
+            + "      <srv:serviceType>\n"
+            + "        <gco:ScopedName>OPeNDAP</gco:ScopedName>\n"
+            + "      </srv:serviceType>\n"
+            + "      <srv:coupledResource>\n"
+            + "        <srv:SV_CoupledResource>\n"
+            + "          <srv:resource>\n"
+            + "            <mri:MD_DataIdentification>\n"
+            + "              <mri:citation>\n"
+            + "                <cit:CI_Citation>\n"
+            + "                  <cit:title>\n"
+            + "                    <gco:CharacterString>Data from a local source.</gco:CharacterString>\n"
+            + "                  </cit:title>\n"
+            + "                  <cit:date>\n"
+            + "                    <cit:CI_Date>\n"
+            + "                      <cit:date>\n"
+            + "                        <gco:DateTime>YYYY-MM-DDThh:mm:ss.uuu-TZ:00</gco:DateTime>\n"
+            + "                      </cit:date>\n"
+            + "                      <cit:dateType>\n"
+            + "                        <cit:CI_DateTypeCode codeList=\"http://standards.iso.org/iso/19115/resources/Codelist/cat/codelists.xml#CI_DateTypeCode\" codeListValue=\"creation\" codeSpace=\"eng\">Creation</cit:CI_DateTypeCode>\n"
+            + "                      </cit:dateType>\n"
+            + "                    </cit:CI_Date>\n"
+            + "                  </cit:date>\n"
+            + "                  <cit:identifier>\n"
+            + "                    <mcc:MD_Identifier>\n"
+            + "                      <mcc:authority>\n"
+            + "                        <cit:CI_Citation>\n"
+            + "                          <cit:title>\n"
+            + "                            <gco:CharacterString>localhost:8080</gco:CharacterString>\n"
+            + "                          </cit:title>\n"
+            + "                        </cit:CI_Citation>\n"
+            + "                      </mcc:authority>\n"
+            + "                      <mcc:code>\n"
+            + "                        <gco:CharacterString>test_chars_e886_d14c_7d71</gco:CharacterString>\n"
+            + "                      </mcc:code>\n"
+            + "                    </mcc:MD_Identifier>\n"
+            + "                  </cit:identifier>\n"
+            + "                  <cit:citedResponsibleParty>\n"
+            + "                    <cit:CI_Responsibility>\n"
+            + "                      <cit:role>\n"
+            + "                        <cit:CI_RoleCode codeList=\"http://standards.iso.org/iso/19115/resources/Codelist/cat/codelists.xml#CI_RoleCode\" codeListValue=\"originator\">Originator</cit:CI_RoleCode>\n"
+            + "                      </cit:role>\n"
+            + "                      <cit:party>\n"
+            + "                        <cit:CI_Organisation>\n"
+            + "                          <cit:name>\n"
+            + "                            <gco:CharacterString>???</gco:CharacterString>\n"
+            + "                          </cit:name>\n"
+            + "                          <cit:contactInfo>\n"
+            + "                            <cit:CI_Contact>\n"
+            + "                              <cit:address>\n"
+            + "                                <cit:CI_Address/>\n"
+            + "                              </cit:address>\n"
+            + "                              <cit:onlineResource>\n"
+            + "                                <cit:CI_OnlineResource>\n"
+            + "                                  <cit:linkage>\n"
+            + "                                    <gcx:FileName src=\"???\">???</gcx:FileName>\n"
+            + "                                  </cit:linkage>\n"
+            + "                                  <cit:protocol>\n"
+            + "                                    <gco:CharacterString>information</gco:CharacterString>\n"
+            + "                                  </cit:protocol>\n"
+            + "                                  <cit:applicationProfile>\n"
+            + "                                    <gco:CharacterString>web browser</gco:CharacterString>\n"
+            + "                                  </cit:applicationProfile>\n"
+            + "                                  <cit:name>\n"
+            + "                                    <gco:CharacterString>Background Information</gco:CharacterString>\n"
+            + "                                  </cit:name>\n"
+            + "                                  <cit:description>\n"
+            + "                                    <gco:CharacterString>Background information from the source</gco:CharacterString>\n"
+            + "                                  </cit:description>\n"
+            + "                                  <cit:function>\n"
+            + "                                    <cit:CI_OnLineFunctionCode codeList=\"http://standards.iso.org/iso/19115/resources/Codelist/cat/codelists.xml#CI_OnLineFunctionCode\" codeListValue=\"information\" codeSpace=\"eng\">Information</cit:CI_OnLineFunctionCode>\n"
+            + "                                  </cit:function>\n"
+            + "                                </cit:CI_OnlineResource>\n"
+            + "                              </cit:onlineResource>\n"
+            + "                            </cit:CI_Contact>\n"
+            + "                          </cit:contactInfo>\n"
+            + "                        </cit:CI_Organisation>\n"
+            + "                      </cit:party>\n"
+            + "                    </cit:CI_Responsibility>\n"
+            + "                  </cit:citedResponsibleParty>\n"
+            + "                </cit:CI_Citation>\n"
+            + "              </mri:citation>\n"
+            + "              <mri:abstract>\n"
+            + "                <gco:CharacterString>Data from a local source.</gco:CharacterString>\n"
+            + "              </mri:abstract>\n"
+            + "              <mri:pointOfContact>\n"
+            + "                <cit:CI_Responsibility>\n"
+            + "                  <cit:role>\n"
+            + "                    <cit:CI_RoleCode codeList=\"http://standards.iso.org/iso/19115/resources/Codelist/cat/codelists.xml#CI_RoleCode\" codeListValue=\"pointOfContact\">Point of contact</cit:CI_RoleCode>\n"
+            + "                  </cit:role>\n"
+            + "                  <cit:party>\n"
+            + "                    <cit:CI_Organisation>\n"
+            + "                      <cit:name>\n"
+            + "                        <gco:CharacterString>???</gco:CharacterString>\n"
+            + "                      </cit:name>\n"
+            + "                      <cit:contactInfo>\n"
+            + "                        <cit:CI_Contact>\n"
+            + "                          <cit:address>\n"
+            + "                            <cit:CI_Address/>\n"
+            + "                          </cit:address>\n"
+            + "                          <cit:onlineResource>\n"
+            + "                            <cit:CI_OnlineResource>\n"
+            + "                              <cit:linkage>\n"
+            + "                                <gcx:FileName src=\"???\">???</gcx:FileName>\n"
+            + "                              </cit:linkage>\n"
+            + "                              <cit:protocol>\n"
+            + "                                <gco:CharacterString>information</gco:CharacterString>\n"
+            + "                              </cit:protocol>\n"
+            + "                              <cit:applicationProfile>\n"
+            + "                                <gco:CharacterString>web browser</gco:CharacterString>\n"
+            + "                              </cit:applicationProfile>\n"
+            + "                              <cit:name>\n"
+            + "                                <gco:CharacterString>Background Information</gco:CharacterString>\n"
+            + "                              </cit:name>\n"
+            + "                              <cit:description>\n"
+            + "                                <gco:CharacterString>Background information from the source</gco:CharacterString>\n"
+            + "                              </cit:description>\n"
+            + "                              <cit:function>\n"
+            + "                                <cit:CI_OnLineFunctionCode codeList=\"http://standards.iso.org/iso/19115/resources/Codelist/cat/codelists.xml#CI_OnLineFunctionCode\" codeListValue=\"information\" codeSpace=\"eng\">Information</cit:CI_OnLineFunctionCode>\n"
+            + "                              </cit:function>\n"
+            + "                            </cit:CI_OnlineResource>\n"
+            + "                          </cit:onlineResource>\n"
+            + "                        </cit:CI_Contact>\n"
+            + "                      </cit:contactInfo>\n"
+            + "                    </cit:CI_Organisation>\n"
+            + "                  </cit:party>\n"
+            + "                </cit:CI_Responsibility>\n"
+            + "              </mri:pointOfContact>\n"
+            + "              <mri:topicCategory>\n"
+            + "                <mri:MD_TopicCategoryCode>geoscientificInformation</mri:MD_TopicCategoryCode>\n"
+            + "              </mri:topicCategory>\n"
+            + "              <mri:extent>\n"
+            + "                <gex:EX_Extent>\n"
+            + "                  <gex:description>\n"
+            + "                    <gco:CharacterString>boundingExtent</gco:CharacterString>\n"
+            + "                  </gex:description>\n"
+            + "                  <gex:geographicElement>\n"
+            + "                    <gex:EX_GeographicBoundingBox>\n"
+            + "                      <gex:extentTypeCode>\n"
+            + "                        <gco:Boolean>true</gco:Boolean>\n"
+            + "                      </gex:extentTypeCode>\n"
+            + "                      <gex:westBoundLongitude>\n"
+            + "                        <gco:Decimal>NaN</gco:Decimal>\n"
+            + "                      </gex:westBoundLongitude>\n"
+            + "                      <gex:eastBoundLongitude>\n"
+            + "                        <gco:Decimal>NaN</gco:Decimal>\n"
+            + "                      </gex:eastBoundLongitude>\n"
+            + "                      <gex:southBoundLatitude>\n"
+            + "                        <gco:Decimal>NaN</gco:Decimal>\n"
+            + "                      </gex:southBoundLatitude>\n"
+            + "                      <gex:northBoundLatitude>\n"
+            + "                        <gco:Decimal>NaN</gco:Decimal>\n"
+            + "                      </gex:northBoundLatitude>\n"
+            + "                    </gex:EX_GeographicBoundingBox>\n"
+            + "                  </gex:geographicElement>\n"
+            + "                </gex:EX_Extent>\n"
+            + "              </mri:extent>\n"
+            + "              <mri:descriptiveKeywords>\n"
+            + "                <mri:MD_Keywords>\n"
+            + "                  <mri:keyword>\n"
+            + "                    <gco:CharacterString>characters</gco:CharacterString>\n"
+            + "                  </mri:keyword>\n"
+            + "                  <mri:keyword>\n"
+            + "                    <gco:CharacterString>data</gco:CharacterString>\n"
+            + "                  </mri:keyword>\n"
+            + "                  <mri:keyword>\n"
+            + "                    <gco:CharacterString>local</gco:CharacterString>\n"
+            + "                  </mri:keyword>\n"
+            + "                  <mri:keyword>\n"
+            + "                    <gco:CharacterString>row</gco:CharacterString>\n"
+            + "                  </mri:keyword>\n"
+            + "                  <mri:keyword>\n"
+            + "                    <gco:CharacterString>source</gco:CharacterString>\n"
+            + "                  </mri:keyword>\n"
+            + "                  <mri:type>\n"
+            + "                    <mri:MD_KeywordTypeCode codeList=\"http://standards.iso.org/iso/19115/resources/Codelist/cat/codelists.xml#MD_KeywordTypeCode\" codeListValue=\"theme\">Theme</mri:MD_KeywordTypeCode>\n"
+            + "                  </mri:type>\n"
+            + "                </mri:MD_Keywords>\n"
+            + "              </mri:descriptiveKeywords>\n"
+            + "              <mri:descriptiveKeywords>\n"
+            + "                <mri:MD_Keywords>\n"
+            + "                  <mri:keyword>\n"
+            + "                    <gco:CharacterString>???</gco:CharacterString>\n"
+            + "                  </mri:keyword>\n"
+            + "                  <mri:type>\n"
+            + "                    <mri:MD_KeywordTypeCode codeList=\"http://standards.iso.org/iso/19115/resources/Codelist/cat/codelists.xml#MD_KeywordTypeCode\" codeListValue=\"theme\">Theme</mri:MD_KeywordTypeCode>\n"
+            + "                  </mri:type>\n"
+            + "                </mri:MD_Keywords>\n"
+            + "              </mri:descriptiveKeywords>\n"
+            + "              <mri:resourceConstraints>\n"
+            + "                <mco:MD_Constraints>\n"
+            + "                  <mco:useLimitation>\n"
+            + "                    <gco:CharacterString>The data may be used and redistributed for free but is not intended\n"
+            + "for legal use, since it may contain inaccuracies. Neither the data\n"
+            + "Contributor, ERD, NOAA, nor the United States Government, nor any\n"
+            + "of their employees or contractors, makes any warranty, express or\n"
+            + "implied, including warranties of merchantability and fitness for a\n"
+            + "particular purpose, or assumes any legal liability for the accuracy,\n"
+            + "completeness, or usefulness, of this information.</gco:CharacterString>\n"
+            + "                  </mco:useLimitation>\n"
+            + "                </mco:MD_Constraints>\n"
+            + "              </mri:resourceConstraints>\n"
+            + "            </mri:MD_DataIdentification>\n"
+            + "          </srv:resource>\n"
+            + "          <srv:operation>\n"
+            + "            <srv:SV_OperationMetadata>\n"
+            + "              <srv:operationName>\n"
+            + "                <gco:CharacterString>OPeNDAPDatasetQueryAndAccess</gco:CharacterString>\n"
+            + "              </srv:operationName>\n"
+            + "              <srv:connectPoint>\n"
+            + "                <cit:CI_OnlineResource>\n"
+            + "                  <cit:linkage>\n"
+            + "                    <gcx:FileName src=\"http://localhost:8080/erddap/tabledap/test_chars_e886_d14c_7d71\">test_chars_e886_d14c_7d71</gcx:FileName>\n"
+            + "                  </cit:linkage>\n"
+            + "                  <cit:protocol>\n"
+            + "                    <gco:CharacterString>OPeNDAP:OPeNDAP</gco:CharacterString>\n"
+            + "                  </cit:protocol>\n"
+            + "                  <cit:name>\n"
+            + "                    <gco:CharacterString>OPeNDAP</gco:CharacterString>\n"
+            + "                  </cit:name>\n"
+            + "                  <cit:description>\n"
+            + "                    <gco:CharacterString>An OPeNDAP service for tabular (sequence) data. Add different extensions (e.g., .html, .das, .dds) to the base URL for different purposes</gco:CharacterString>\n"
+            + "                  </cit:description>\n"
+            + "                  <cit:function>\n"
+            + "                    <cit:CI_OnLineFunctionCode codeList=\"http://standards.iso.org/iso/19115/resources/Codelist/cat/codelists.xml#CI_OnLineFunctionCode\" codeListValue=\"download\" codeSpace=\"eng\">Download</cit:CI_OnLineFunctionCode>\n"
+            + "                  </cit:function>\n"
+            + "                </cit:CI_OnlineResource>\n"
+            + "              </srv:connectPoint>\n"
+            + "            </srv:SV_OperationMetadata>\n"
+            + "          </srv:operation>\n"
+            + "        </srv:SV_CoupledResource>\n"
+            + "      </srv:coupledResource>\n"
+            + "    </srv:SV_ServiceIdentification>\n"
+            + "  </mdb:identificationInfo>\n"
+            + "  <mdb:contentInfo>\n"
+            + "    <mrc:MD_CoverageDescription>\n"
+            + "      <mrc:attributeGroup>\n"
+            + "        <mrc:MD_AttributeGroup>\n"
+            + "          <mrc:contentType>\n"
+            + "            <mrc:MD_CoverageContentTypeCode codeList=\"http://standards.iso.org/iso/19115/resources/Codelist/cat/codelists.xml#MD_CoverageContentTypeCode\" codeListValue=\"physicalMeasurement\">Physical measurement</mrc:MD_CoverageContentTypeCode>\n"
+            + "          </mrc:contentType>\n"
+            + "          <mrc:attribute>\n"
+            + "            <mrc:MD_RangeDimension>\n"
+            + "              <mrc:sequenceIdentifier>\n"
+            + "                <gco:MemberName>\n"
+            + "                  <gco:aName>\n"
+            + "                    <gco:CharacterString>row</gco:CharacterString>\n"
+            + "                  </gco:aName>\n"
+            + "                  <gco:attributeType>\n"
+            + "                    <gco:TypeName>\n"
+            + "                      <gco:aName>\n"
+            + "                        <gco:CharacterString>byte</gco:CharacterString>\n"
+            + "                      </gco:aName>\n"
+            + "                    </gco:TypeName>\n"
+            + "                  </gco:attributeType>\n"
+            + "                </gco:MemberName>\n"
+            + "              </mrc:sequenceIdentifier>\n"
+            + "              <mrc:description>\n"
+            + "                <gco:CharacterString>Row</gco:CharacterString>\n"
+            + "              </mrc:description>\n"
+            + "            </mrc:MD_RangeDimension>\n"
+            + "          </mrc:attribute>\n"
+            + "          <mrc:attribute>\n"
+            + "            <mrc:MD_RangeDimension>\n"
+            + "              <mrc:sequenceIdentifier>\n"
+            + "                <gco:MemberName>\n"
+            + "                  <gco:aName>\n"
+            + "                    <gco:CharacterString>characters</gco:CharacterString>\n"
+            + "                  </gco:aName>\n"
+            + "                  <gco:attributeType>\n"
+            + "                    <gco:TypeName>\n"
+            + "                      <gco:aName>\n"
+            + "                        <gco:CharacterString>String</gco:CharacterString>\n"
+            + "                      </gco:aName>\n"
+            + "                    </gco:TypeName>\n"
+            + "                  </gco:attributeType>\n"
+            + "                </gco:MemberName>\n"
+            + "              </mrc:sequenceIdentifier>\n"
+            + "              <mrc:description>\n"
+            + "                <gco:CharacterString>Characters</gco:CharacterString>\n"
+            + "              </mrc:description>\n"
+            + "            </mrc:MD_RangeDimension>\n"
+            + "          </mrc:attribute>\n"
+            + "        </mrc:MD_AttributeGroup>\n"
+            + "      </mrc:attributeGroup>\n"
+            + "    </mrc:MD_CoverageDescription>\n"
+            + "  </mdb:contentInfo>\n"
+            + "  <mdb:distributionInfo>\n"
+            + "    <mrd:MD_Distribution>\n"
+            + "      <mrd:distributionFormat>\n"
+            + "        <mrd:MD_Format>\n"
+            + "          <mrd:formatSpecificationCitation>\n"
+            + "            <cit:CI_Citation>\n"
+            + "              <cit:title>\n"
+            + "                <gco:CharacterString>OPeNDAP</gco:CharacterString>\n"
+            + "              </cit:title>\n"
+            + "              <cit:edition>\n"
+            + "                <gco:CharacterString>DAP/2.0</gco:CharacterString>\n"
+            + "              </cit:edition>\n"
+            + "            </cit:CI_Citation>\n"
+            + "          </mrd:formatSpecificationCitation>\n"
+            + "        </mrd:MD_Format>\n"
+            + "      </mrd:distributionFormat>\n"
+            + "      <mrd:distributor>\n"
+            + "        <mrd:MD_Distributor>\n"
+            + "          <mrd:distributorContact>\n"
+            + "            <cit:CI_Responsibility>\n"
+            + "              <cit:role>\n"
+            + "                <cit:CI_RoleCode codeList=\"http://standards.iso.org/iso/19115/resources/Codelist/cat/codelists.xml#CI_RoleCode\" codeListValue=\"distributor\">Distributor</cit:CI_RoleCode>\n"
+            + "              </cit:role>\n"
+            + "              <cit:party>\n"
+            + "                <cit:CI_Organisation>\n"
+            + "                  <cit:name>\n"
+            + "                    <gco:CharacterString>ERDDAP Jetty Install</gco:CharacterString>\n"
+            + "                  </cit:name>\n"
+            + "                  <cit:individual>\n"
+            + "                    <cit:CI_Individual>\n"
+            + "                      <cit:name>\n"
+            + "                        <gco:CharacterString>ERDDAP Jetty Developer</gco:CharacterString>\n"
+            + "                      </cit:name>\n"
+            + "                      <cit:contactInfo>\n"
+            + "                        <cit:CI_Contact>\n"
+            + "                          <cit:phone>\n"
+            + "                            <cit:CI_Telephone>\n"
+            + "                              <cit:number>\n"
+            + "                                <gco:CharacterString>555-555-5555</gco:CharacterString>\n"
+            + "                              </cit:number>\n"
+            + "                              <cit:numberType>\n"
+            + "                                <cit:CI_TelephoneTypeCode codeList=\"http://standards.iso.org/iso/19115/resources/Codelist/cat/codelists.xml#CI_TelephoneTypeCode\" codeListValue=\"voice\">Voice</cit:CI_TelephoneTypeCode>\n"
+            + "                              </cit:numberType>\n"
+            + "                            </cit:CI_Telephone>\n"
+            + "                          </cit:phone>\n"
+            + "                          <cit:address>\n"
+            + "                            <cit:CI_Address>\n"
+            + "                              <cit:deliveryPoint>\n"
+            + "                                <gco:CharacterString>123 Irrelevant St.</gco:CharacterString>\n"
+            + "                              </cit:deliveryPoint>\n"
+            + "                              <cit:city>\n"
+            + "                                <gco:CharacterString>Nowhere</gco:CharacterString>\n"
+            + "                              </cit:city>\n"
+            + "                              <cit:administrativeArea>\n"
+            + "                                <gco:CharacterString>AK</gco:CharacterString>\n"
+            + "                              </cit:administrativeArea>\n"
+            + "                              <cit:postalCode>\n"
+            + "                                <gco:CharacterString>99504</gco:CharacterString>\n"
+            + "                              </cit:postalCode>\n"
+            + "                              <cit:country>\n"
+            + "                                <gco:CharacterString>USA</gco:CharacterString>\n"
+            + "                              </cit:country>\n"
+            + "                              <cit:electronicMailAddress>\n"
+            + "                                <gco:CharacterString>nobody@example.com</gco:CharacterString>\n"
+            + "                              </cit:electronicMailAddress>\n"
+            + "                            </cit:CI_Address>\n"
+            + "                          </cit:address>\n"
+            + "                        </cit:CI_Contact>\n"
+            + "                      </cit:contactInfo>\n"
+            + "                      <cit:positionName>\n"
+            + "                        <gco:CharacterString>Software Engineer</gco:CharacterString>\n"
+            + "                      </cit:positionName>\n"
+            + "                    </cit:CI_Individual>\n"
+            + "                  </cit:individual>\n"
+            + "                </cit:CI_Organisation>\n"
+            + "              </cit:party>\n"
+            + "            </cit:CI_Responsibility>\n"
+            + "          </mrd:distributorContact>\n"
+            + "          <mrd:distributorFormat>\n"
+            + "            <mrd:MD_Format>\n"
+            + "              <mrd:formatSpecificationCitation>\n"
+            + "                <cit:CI_Citation>\n"
+            + "                  <cit:title>\n"
+            + "                    <gco:CharacterString>OPeNDAP</gco:CharacterString>\n"
+            + "                  </cit:title>\n"
+            + "                  <cit:edition>\n"
+            + "                    <gco:CharacterString>DAP/2.0</gco:CharacterString>\n"
+            + "                  </cit:edition>\n"
+            + "                </cit:CI_Citation>\n"
+            + "              </mrd:formatSpecificationCitation>\n"
+            + "            </mrd:MD_Format>\n"
+            + "          </mrd:distributorFormat>\n"
+            + "          <mrd:distributorTransferOptions>\n"
+            + "            <mrd:MD_DigitalTransferOptions>\n"
+            + "              <mrd:onLine>\n"
+            + "                <cit:CI_OnlineResource>\n"
+            + "                  <cit:linkage>\n"
+            + "                    <gcx:FileName src=\"http://localhost:8080/erddap/tabledap/test_chars_e886_d14c_7d71.html\">test_chars_e886_d14c_7d71.html</gcx:FileName>\n"
+            + "                  </cit:linkage>\n"
+            + "                  <cit:protocol>\n"
+            + "                    <gco:CharacterString>order</gco:CharacterString>\n"
+            + "                  </cit:protocol>\n"
+            + "                  <cit:name>\n"
+            + "                    <gco:CharacterString>Data Subset Form</gco:CharacterString>\n"
+            + "                  </cit:name>\n"
+            + "                  <cit:description>\n"
+            + "                    <gco:CharacterString>ERDDAP's version of the OPeNDAP .html web page for this dataset. Specify a subset of the dataset and download the data via OPeNDAP or in many different file types.</gco:CharacterString>\n"
+            + "                  </cit:description>\n"
+            + "                  <cit:function>\n"
+            + "                    <cit:CI_OnLineFunctionCode codeList=\"http://standards.iso.org/iso/19115/resources/Codelist/cat/codelists.xml#CI_OnLineFunctionCode\" codeListValue=\"download\" codeSpace=\"eng\">Download</cit:CI_OnLineFunctionCode>\n"
+            + "                  </cit:function>\n"
+            + "                </cit:CI_OnlineResource>\n"
+            + "              </mrd:onLine>\n"
+            + "              <mrd:onLine>\n"
+            + "                <cit:CI_OnlineResource>\n"
+            + "                  <cit:linkage>\n"
+            + "                    <gcx:FileName src=\"http://localhost:8080/erddap/tabledap/test_chars_e886_d14c_7d71.graph\">test_chars_e886_d14c_7d71.graph</gcx:FileName>\n"
+            + "                  </cit:linkage>\n"
+            + "                  <cit:protocol>\n"
+            + "                    <gco:CharacterString>order</gco:CharacterString>\n"
+            + "                  </cit:protocol>\n"
+            + "                  <cit:name>\n"
+            + "                    <gco:CharacterString>Make-A-Graph Form</gco:CharacterString>\n"
+            + "                  </cit:name>\n"
+            + "                  <cit:description>\n"
+            + "                    <gco:CharacterString>ERDDAP's Make-A-Graph .html web page for this dataset. Create an image with a map or graph of a subset of the data.</gco:CharacterString>\n"
+            + "                  </cit:description>\n"
+            + "                  <cit:function>\n"
+            + "                    <cit:CI_OnLineFunctionCode codeList=\"http://standards.iso.org/iso/19115/resources/Codelist/cat/codelists.xml#CI_OnLineFunctionCode\" codeListValue=\"download\" codeSpace=\"eng\">Download</cit:CI_OnLineFunctionCode>\n"
+            + "                  </cit:function>\n"
+            + "                </cit:CI_OnlineResource>\n"
+            + "              </mrd:onLine>\n"
+            + "            </mrd:MD_DigitalTransferOptions>\n"
+            + "          </mrd:distributorTransferOptions>\n"
+            + "        </mrd:MD_Distributor>\n"
+            + "      </mrd:distributor>\n"
+            + "    </mrd:MD_Distribution>\n"
+            + "  </mdb:distributionInfo>\n"
+            + "  <mdb:metadataMaintenance>\n"
+            + "    <mmi:MD_MaintenanceInformation>\n"
+            + "      <mmi:maintenanceNote>\n"
+            + "        <gco:CharacterString>This record was created from dataset metadata by ERDDAP Version "
+            + EDStatic.erddapVersion.toString()
+            + "</gco:CharacterString>\n"
+            + "      </mmi:maintenanceNote>\n"
+            + "    </mmi:MD_MaintenanceInformation>\n"
+            + "  </mdb:metadataMaintenance>\n"
+            + "  <mdb:metadataScope>\n"
+            + "    <mdb:MD_MetadataScope>\n"
+            + "      <mdb:resourceScope>\n"
+            + "        <mcc:MD_ScopeCode codeList=\"http://standards.iso.org/iso/19115/resources/Codelist/cat/codelists.xml#MD_ScopeCode\" codeListValue=\"dataset\" codeSpace=\"eng\">Dataset</mcc:MD_ScopeCode>\n"
+            + "      </mdb:resourceScope>\n"
+            + "      <mdb:name>\n"
+            + "        <gco:CharacterString>dataset</gco:CharacterString>\n"
+            + "      </mdb:name>\n"
+            + "    </mdb:MD_MetadataScope>\n"
+            + "  </mdb:metadataScope>\n"
+            + "  <mdb:metadataScope>\n"
+            + "    <mdb:MD_MetadataScope>\n"
+            + "      <mdb:resourceScope>\n"
+            + "        <mcc:MD_ScopeCode codeList=\"http://standards.iso.org/iso/19115/resources/Codelist/cat/codelists.xml#MD_ScopeCode\" codeListValue=\"service\">Service</mcc:MD_ScopeCode>\n"
+            + "      </mdb:resourceScope>\n"
+            + "      <mdb:name>\n"
+            + "        <gco:CharacterString>service</gco:CharacterString>\n"
+            + "      </mdb:name>\n"
+            + "    </mdb:MD_MetadataScope>\n"
+            + "  </mdb:metadataScope>\n"
+            + "</mdb:MD_Metadata>\n";
+    results = results.replaceAll("....-..-..T..:..:......-..:..", "YYYY-MM-DDThh:mm:ss.uuu-TZ:00");
+    results = results.replaceAll("....-..-..T..:..:......Z", "YYYY-MM-DDThh:mm:ss.uuu-TZ:00");
+    results = results.replaceAll("....-..-..T..:..:..Z", "YYYY-MM-DDThh:mm:ss.uuu-TZ:00");
+    Test.ensureEqual(results, expected, "\nresults=\n" + results);
+
+    // ISO19115 metadata always uses language 0
+    language = 1; // bn
+    tName =
+        eddTable.makeNewFileForDapQuery(
+            language, null, null, "", dir, eddTable.className() + "_1Station", ".iso19115");
+    results = File2.directReadFrom88591File(dir + tName);
+    results = results.replaceAll("....-..-..T..:..:......-..:..", "YYYY-MM-DDThh:mm:ss.uuu-TZ:00");
+    results = results.replaceAll("....-..-..T..:..:......Z", "YYYY-MM-DDThh:mm:ss.uuu-TZ:00");
+    results = results.replaceAll("....-..-..T..:..:..Z", "YYYY-MM-DDThh:mm:ss.uuu-TZ:00");
+    Test.ensureEqual(results, expected, "\nresults=\n" + results);
+    language = 8; // fr
+    tName =
+        eddTable.makeNewFileForDapQuery(
+            language, null, null, "", dir, eddTable.className() + "_1Station", ".iso19115");
+    results = File2.directReadFrom88591File(dir + tName);
+    results = results.replaceAll("....-..-..T..:..:......-..:..", "YYYY-MM-DDThh:mm:ss.uuu-TZ:00");
+    results = results.replaceAll("....-..-..T..:..:......Z", "YYYY-MM-DDThh:mm:ss.uuu-TZ:00");
+    results = results.replaceAll("....-..-..T..:..:..Z", "YYYY-MM-DDThh:mm:ss.uuu-TZ:00");
+    Test.ensureEqual(results, expected, "\nresults=\n" + results);
+    language = 9; // de
+    tName =
+        eddTable.makeNewFileForDapQuery(
+            language, null, null, "", dir, eddTable.className() + "_1Station", ".iso19115");
+    results = File2.directReadFrom88591File(dir + tName);
+    results = results.replaceAll("....-..-..T..:..:......-..:..", "YYYY-MM-DDThh:mm:ss.uuu-TZ:00");
+    results = results.replaceAll("....-..-..T..:..:......Z", "YYYY-MM-DDThh:mm:ss.uuu-TZ:00");
+    results = results.replaceAll("....-..-..T..:..:..Z", "YYYY-MM-DDThh:mm:ss.uuu-TZ:00");
+    Test.ensureEqual(results, expected, "\nresults=\n" + results);
+
+    // das does localize
+    expected =
+        "Attributes {\n"
+            + " s {\n"
+            + "  row {\n"
+            + "    Byte _FillValue 127;\n"
+            + "    String _Unsigned \"false\";\n"
+            + "    Byte actual_range 1, 1;\n"
+            + "    String ioos_category \"Unknown\";\n"
+            + "    String long_name \"Row\";\n"
+            + "  }\n"
+            + "  characters {\n"
+            + "    String ioos_category \"Unknown\";\n"
+            + "    String long_name \"Characters\";\n"
+            + "  }\n"
+            + " }\n"
+            + "  NC_GLOBAL {\n"
+            + "    String cdm_data_type \"Other\";\n"
+            + "    String Conventions \"COARDS, CF-1.10, ACDD-1.3\";\n"
+            + "    String history \"YYYY-MM-DDThh:mm:ssZ (local files)\n"
+            + "YYYY-MM-DDThh:mm:ssZ http://localhost:8080/erddap/tabledap/test_chars_e886_d14c_7d71.das\";\n"
+            + "    String infoUrl \"???\";\n"
+            + "    String institution \"???\";\n"
+            + "    String keywords \"characters, data, local, row, source\";\n"
+            + "    String license \"The data may be used and redistributed for free but is not intended\n"
+            + "for legal use, since it may contain inaccuracies. Neither the data\n"
+            + "Contributor, ERD, NOAA, nor the United States Government, nor any\n"
+            + "of their employees or contractors, makes any warranty, express or\n"
+            + "implied, including warranties of merchantability and fitness for a\n"
+            + "particular purpose, or assumes any legal liability for the accuracy,\n"
+            + "completeness, or usefulness, of this information.\";\n"
+            + "    String sourceUrl \"(local files)\";\n"
+            + "    String standard_name_vocabulary \"CF Standard Name Table v70\";\n"
+            + "    String summary \"Data from a local source.\";\n"
+            + "    String title \"Data from a local source.\";\n"
+            + "  }\n"
+            + "}\n";
+    language = 0; // en
+    tName =
+        eddTable.makeNewFileForDapQuery(
+            language, null, null, "", dir, eddTable.className() + "_1Station", ".das");
+    results = File2.directReadFrom88591File(dir + tName);
+    results = results.replaceAll("....-..-..T..:..:..Z", "YYYY-MM-DDThh:mm:ssZ");
+    Test.ensureEqual(results, expected, "\nresults=\n" + results);
+    language = 1; // bn - there's not localized attributes so the output is the same
+    tName =
+        eddTable.makeNewFileForDapQuery(
+            language, null, null, "", dir, eddTable.className() + "_1Station", ".das");
+    results = File2.directReadFrom88591File(dir + tName);
+    results = results.replaceAll("....-..-..T..:..:..Z", "YYYY-MM-DDThh:mm:ssZ");
+    Test.ensureEqual(results, expected, "\nresults=\n" + results);
+
+    expected =
+        "Attributes {\n"
+            + " s {\n"
+            + "  row {\n"
+            + "    Byte _FillValue 127;\n"
+            + "    String _Unsigned \"false\";\n"
+            + "    Byte actual_range 1, 1;\n"
+            + "    String ioos_category \"Unknown\";\n"
+            + "    String long_name \"rangée\";\n"
+            + "  }\n"
+            + "  characters {\n"
+            + "    String ioos_category \"Unknown\";\n"
+            + "    String long_name \"Characters\";\n"
+            + "  }\n"
+            + " }\n"
+            + "  NC_GLOBAL {\n"
+            + "    String cdm_data_type \"Other\";\n"
+            + "    String Conventions \"COARDS, CF-1.10, ACDD-1.3\";\n"
+            + "    String history \"YYYY-MM-DDThh:mm:ssZ (local files)\n"
+            + "YYYY-MM-DDThh:mm:ssZ http://localhost:8080/erddap/tabledap/test_chars_e886_d14c_7d71.das\";\n"
+            + "    String infoUrl \"???\";\n"
+            + "    String institution \"???\";\n"
+            + "    String keywords \"characters, data, local, row, source\";\n"
+            + "    String license \"The data may be used and redistributed for free but is not intended\n"
+            + "for legal use, since it may contain inaccuracies. Neither the data\n"
+            + "Contributor, ERD, NOAA, nor the United States Government, nor any\n"
+            + "of their employees or contractors, makes any warranty, express or\n"
+            + "implied, including warranties of merchantability and fitness for a\n"
+            + "particular purpose, or assumes any legal liability for the accuracy,\n"
+            + "completeness, or usefulness, of this information.\";\n"
+            + "    String sourceUrl \"(local files)\";\n"
+            + "    String standard_name_vocabulary \"CF Standard Name Table v70\";\n"
+            + "    String summary \"Données provenant d'une source locale.\";\n"
+            + "    String title \"Données provenant d'une source locale.\";\n"
+            + "  }\n"
+            + "}\n";
+    language = 8; // fr
+    tName =
+        eddTable.makeNewFileForDapQuery(
+            language, null, null, "", dir, eddTable.className() + "_1Station", ".das");
+    results = File2.directReadFrom88591File(dir + tName);
+    results = results.replaceAll("....-..-..T..:..:..Z", "YYYY-MM-DDThh:mm:ssZ");
+    Test.ensureEqual(results, expected, "\nresults=\n" + results);
+
+    expected =
+        "Attributes {\n"
+            + " s {\n"
+            + "  row {\n"
+            + "    Byte _FillValue 127;\n"
+            + "    String _Unsigned \"false\";\n"
+            + "    Byte actual_range 1, 1;\n"
+            + "    String ioos_category \"Unknown\";\n"
+            + "    String long_name \"Reihe\";\n"
+            + "  }\n"
+            + "  characters {\n"
+            + "    String ioos_category \"Unknown\";\n"
+            + "    String long_name \"Characters\";\n"
+            + "  }\n"
+            + " }\n"
+            + "  NC_GLOBAL {\n"
+            + "    String cdm_data_type \"Other\";\n"
+            + "    String Conventions \"COARDS, CF-1.10, ACDD-1.3\";\n"
+            + "    String history \"YYYY-MM-DDThh:mm:ssZ (local files)\n"
+            + "YYYY-MM-DDThh:mm:ssZ http://localhost:8080/erddap/tabledap/test_chars_e886_d14c_7d71.das\";\n"
+            + "    String infoUrl \"???\";\n"
+            + "    String institution \"???\";\n"
+            + "    String keywords \"characters, data, local, row, source\";\n"
+            + "    String license \"The data may be used and redistributed for free but is not intended\n"
+            + "for legal use, since it may contain inaccuracies. Neither the data\n"
+            + "Contributor, ERD, NOAA, nor the United States Government, nor any\n"
+            + "of their employees or contractors, makes any warranty, express or\n"
+            + "implied, including warranties of merchantability and fitness for a\n"
+            + "particular purpose, or assumes any legal liability for the accuracy,\n"
+            + "completeness, or usefulness, of this information.\";\n"
+            + "    String sourceUrl \"(local files)\";\n"
+            + "    String standard_name_vocabulary \"CF Standard Name Table v70\";\n"
+            + "    String summary \"Daten aus einer lokalen Quelle.\";\n"
+            + "    String title \"Daten aus einer lokalen Quelle.\";\n"
+            + "  }\n"
+            + "}\n";
+    language = 9; // de
+    tName =
+        eddTable.makeNewFileForDapQuery(
+            language, null, null, "", dir, eddTable.className() + "_1Station", ".das");
+    results = File2.directReadFrom88591File(dir + tName);
+    results = results.replaceAll("....-..-..T..:..:..Z", "YYYY-MM-DDThh:mm:ssZ");
+    Test.ensureEqual(results, expected, "\nresults=\n" + results);
+  }
+
+  /** */
+  @org.junit.jupiter.api.Test
+  void testLargeResults() throws Throwable {
+    int language = 0;
+    String tName, results, expected, userDapQuery;
+    String testDir = EDStatic.config.fullTestCacheDirectory;
+
+    EDDTable eddTable = (EDDTable) EDDTestDataset.gettestTableColumnarAscii();
+
+    // This is to force there to be multiple passes for each column when writing the nc file.
+    EDStatic.config.partialRequestMaxCells = 5;
+    userDapQuery = "";
+    tName =
+        eddTable.makeNewFileForDapQuery(
+            language, null, null, userDapQuery, testDir, eddTable.className() + "_all", ".nc");
+    results = NcHelper.ncdump(testDir + tName, "");
+    expected =
+        "  :id = \"testTableColumnarAscii\";\n"
+            + "  :infoUrl = \"https://www.ndbc.noaa.gov/\";\n"
+            + "  :institution = \"NOAA NDBC\";\n"
+            + "  :keywords = \"boolean, byte, char, double, float, int, long, ndbc, newer, noaa, short, string, title\";\n"
+            + "  :license = \"The data may be used and redistributed for free but is not intended\n"
+            + "for legal use, since it may contain inaccuracies. Neither the data\n"
+            + "Contributor, ERD, NOAA, nor the United States Government, nor any\n"
+            + "of their employees or contractors, makes any warranty, express or\n"
+            + "implied, including warranties of merchantability and fitness for a\n"
+            + "particular purpose, or assumes any legal liability for the accuracy,\n"
+            + "completeness, or usefulness, of this information.\";\n"
+            + "  :sourceUrl = \"(local files)\";\n"
+            + "  :standard_name_vocabulary = \"CF Standard Name Table v70\";\n"
+            + "  :subsetVariables = \"aString, aChar, aBoolean, aByte, aShort, anInt, aLong, aFloat, aDouble, five, fileName\";\n"
+            + "  :summary = \"The new summary!\";\n"
+            + "  :title = \"The Newer Title!\";\n"
+            + "\n"
+            + "  data:\n"
+            + "    fileName =   \"columnarAsciiWithComments\",   \"columnarAsciiWithComments\",   \"columnarAsciiWithComments\",   \"columnarAsciiWithComments\",   \"columnarAsciiWithComments\",   \"columnarAsciiWithComments\",   \"columnarAsciiWithComments\",   \"columnarAsciiWithComments\",   \"columnarAsciiWithComments\",   \"columnarAsciiWithComments\"\n"
+            + "    five = \n"
+            + "      {5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0}\n"
+            + "    aString =   \"abcdef\",   \"fg\",   \"h\",   \"i\",   \"j\",   \"k\",   \"l\",   \"m\",   \"n\",   \"short:\"\n"
+            + "    aChar =   \"AFHIJKLMN?\"\n"
+            + "    aBoolean = \n"
+            + "      {1, 1, 1, 1, 0, 0, 0, 0, 1, 127}\n"
+            + "    aByte = \n"
+            + "      {24, 11, 12, 13, 14, 15, 16, 17, 18, 127}\n"
+            + "    aShort = \n"
+            + "      {24000, 12001, 12002, 12003, 12004, 12005, 12006, 12007, 12008, 32767}\n"
+            + "    anInt = \n"
+            + "      {24000000, 1200000, 120000, 12000, 1200, 120, 12, 121, 122, 2147483647}\n"
+            + "    aLong = \n"
+            + "      {2.4E11, 1.2E10, 1.2E9, 1.2E8, 1.2E7, 1200000.0, 120000.0, 12000.0, 1200.0, NaN}\n"
+            + "    aFloat = \n"
+            + "      {2.4, 1.21, 1.22, 1.23, 1.24, 1.25, 1.26, 1.27, 1.28, NaN}\n"
+            + "    aDouble = \n"
+            + "      {2.412345678987654, 1.0E200, 2.0E200, 3.0E200, 4.0E200, 5.0E200, 6.0E200, 7.0E200, 8.0E200, NaN}\n"
+            + "}\n";
+    int resultsStart = results.indexOf("  :id = \"testTableColumnarAscii\";");
+    results = results.substring(resultsStart);
+    Test.ensureEqual(results, expected, "\nresults=\n" + results);
+
+    EDStatic.config.partialRequestMaxCells = EDConfig.DEFAULT_partialRequestMaxCells;
   }
 }

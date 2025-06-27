@@ -214,8 +214,8 @@ class EDDGridFromEDDTableTests {
   void testBasic() throws Throwable {
     // String2.log("\n*** EDDGridFromEDDTable.testBasic\n");
     // testVerboseOn();
-    String name, tName, query, results, expected, error;
-    String testDir = EDStatic.fullTestCacheDirectory;
+    String tName, results, expected;
+    String testDir = EDStatic.config.fullTestCacheDirectory;
     int po;
     int language = 0;
     EDDGrid edd = (EDDGrid) EDDTestDataset.gettestGridFromTable();
@@ -729,11 +729,7 @@ class EDDGridFromEDDTableTests {
   @org.junit.jupiter.api.Test
   @TagLocalERDDAP
   void testFiles() throws Throwable {
-
-    // String2.log("\n*** EDDGridFromEDDTable.testFiles()\n");
-    String tDir = EDStatic.fullTestCacheDirectory;
-    String dapQuery, tName, start, query, results, expected;
-    int po;
+    String results, expected;
 
     try {
       // get /files/datasetID/.csv

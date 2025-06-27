@@ -1,24 +1,32 @@
 package gov.noaa.pfel.coastwatch.griddata;
 
 import com.cohort.array.Attributes;
-import com.cohort.util.Calendar2;
 import com.cohort.util.File2;
 import com.cohort.util.MustBe;
 import com.cohort.util.String2;
 import com.cohort.util.Test;
+import com.cohort.util.TestUtil;
 import dods.dap.DAS;
 import dods.dap.DConnect;
 import java.nio.file.Path;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.io.TempDir;
 import tags.TagIncompleteTest;
 import tags.TagThredds;
+import testDataset.Initialization;
 
 class OpendapHelperTests {
 
   @TempDir private static Path TEMP_DIR;
 
-  @org.junit.jupiter.api.Test
+  @BeforeAll
+  static void init() {
+    Initialization.edStatic();
+  }
+
   /** This tests getting attibutes, notably the DODS_strlen attribute. */
+  @org.junit.jupiter.api.Test
+  @TagThredds
   void testGetAttributes() throws Throwable {
     String url =
         "https://tds.coaps.fsu.edu/thredds/dodsC/samos/data/research/WTEP/2012/WTEP_20120128v30001.nc";
@@ -67,9 +75,7 @@ class OpendapHelperTests {
   //   Maybe get a new version.
   @TagIncompleteTest
   void testDapToNcDArray() throws Throwable {
-    String2.log("\n\n*** OpendapHelper.testDapToNcDArray()");
     String fileName, expected, results;
-    String today = Calendar2.getCurrentISODateTimeStringLocalTZ().substring(0, 10);
 
     fileName = TEMP_DIR.toAbsolutePath() + "/testDapToNcDArray.nc";
     String dArrayUrl =
@@ -321,7 +327,7 @@ class OpendapHelperTests {
       File2.delete(fileName);
       if (true) throw new RuntimeException("shouldn't get here");
     } catch (OutOfMemoryError oome) {
-      Test.knownProblem(
+      TestUtil.knownProblem(
           "THREDDS OutOfMemoryError. I reported it to John Caron.",
           "2012-03-02 A TDS problem. I reported it to John Caron:\n"
               + MustBe.throwableToString(oome));
@@ -342,7 +348,7 @@ class OpendapHelperTests {
       // gov.noaa.pfel.coastwatch.griddata.OpendapHelper.testDapToNcDArray(OpendapHelper.java:1628)
       // at gov.noaa.pfel.coastwatch.TestAll.main(TestAll.java:723)
     } catch (Throwable t) {
-      Test.knownProblem(
+      TestUtil.knownProblem(
           "\nOutOfMememoryError from TDS bug was expected (but 404 Not Found/ 'Connection cannont be read' is also common)."
               + "\n(server timed out 2013-10-24)",
           t);

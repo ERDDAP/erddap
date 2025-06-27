@@ -15,7 +15,6 @@ package gov.noaa.pmel.sgt;
 import com.cohort.util.MustBe;
 import com.cohort.util.String2;
 import gov.noaa.pmel.util.Debug;
-import java.awt.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
@@ -171,9 +170,9 @@ public class GridAttribute implements Attribute, Cloneable, PropertyChangeListen
    */
   public void setStyle(int st) {
     if (style_ != st) {
-      Integer tempOld = Integer.valueOf(style_);
+      Integer tempOld = style_;
       style_ = st;
-      firePropertyChange("style", tempOld, Integer.valueOf(style_));
+      firePropertyChange("style", tempOld, style_);
     }
   }
 

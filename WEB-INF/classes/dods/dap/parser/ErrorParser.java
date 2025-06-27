@@ -2,6 +2,7 @@
 package dods.dap.parser;
 
 import dods.dap.*;
+import java.util.ArrayList;
 
 public class ErrorParser implements ErrorParserConstants {
   private DODSException exception;
@@ -23,7 +24,6 @@ public class ErrorParser implements ErrorParserConstants {
         break;
       default:
         jj_la1[0] = jj_gen;
-        ;
     }
   }
 
@@ -35,7 +35,6 @@ public class ErrorParser implements ErrorParserConstants {
         break;
       default:
         jj_la1[1] = jj_gen;
-        ;
     }
   }
 
@@ -187,12 +186,10 @@ public class ErrorParser implements ErrorParserConstants {
     else return (jj_ntk = jj_nt.kind);
   }
 
-  private java.util.Vector jj_expentries = new java.util.Vector();
-  private int[] jj_expentry;
   private int jj_kind = -1;
 
   public final ParseException generateParseException() {
-    jj_expentries.removeAllElements();
+    ArrayList<int[]> jj_expentries = new ArrayList<>();
     boolean[] la1tokens = new boolean[20];
     for (int i = 0; i < 20; i++) {
       la1tokens[i] = false;
@@ -212,14 +209,14 @@ public class ErrorParser implements ErrorParserConstants {
     }
     for (int i = 0; i < 20; i++) {
       if (la1tokens[i]) {
-        jj_expentry = new int[1];
+        int[] jj_expentry = new int[1];
         jj_expentry[0] = i;
-        jj_expentries.addElement(jj_expentry);
+        jj_expentries.add(jj_expentry);
       }
     }
     int[][] exptokseq = new int[jj_expentries.size()][];
     for (int i = 0; i < jj_expentries.size(); i++) {
-      exptokseq[i] = (int[]) jj_expentries.elementAt(i);
+      exptokseq[i] = jj_expentries.get(i);
     }
     return new ParseException(token, exptokseq, tokenImage);
   }

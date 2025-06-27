@@ -9,10 +9,12 @@ import com.cohort.util.Math2;
 import com.cohort.util.MustBe;
 import com.cohort.util.String2;
 import com.cohort.util.XML;
+import com.google.common.collect.ImmutableList;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import java.io.File;
 import java.text.MessageFormat;
 import java.util.Iterator;
+import java.util.List;
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
 import javax.imageio.stream.ImageInputStream;
@@ -28,14 +30,19 @@ import javax.imageio.stream.ImageInputStream;
 public class HtmlWidgets {
 
   /** Leave this set to false here, but change within a program if desired. */
-  public static boolean debugMode = false;
+  public static final boolean debugMode = false;
 
   /**
    * This is the standard start of an HTML 5 document up to and including the 'head' and 'meta
    * charset' tags.
    */
   public static final String DOCTYPE_HTML =
-      "<!DOCTYPE html>\n" + "<html lang=\"en-US\">\n" + "<head>\n" + "  <meta charset=\"UTF-8\">\n";
+      """
+                  <!DOCTYPE html>
+                  <html lang="en-US">
+                  <head>
+                    <meta charset="UTF-8">
+                  """;
 
   /**
    * This is the standard start of an XHTML 1.0 document up to and including the 'head' tag. This is
@@ -67,22 +74,24 @@ public class HtmlWidgets {
    * to go back to.
    */
   public static final String BACK_BUTTON =
-      "&nbsp;\n"
-          + "<br><button type=\"button\" onClick=\"history.go(-1);return true;\">Back</button>\n";
+      """
+                  &nbsp;
+                  <br><button type="button" onClick="history.go(-1);return true;">Back</button>
+                  """;
 
   public static final int BUTTONS_0n = -1, BUTTONS_1 = -2, BUTTONS_100 = -8, BUTTONS_1000 = -16;
 
   /** One line: white,grays,black, then one rainbow. */
-  public static final String PALETTE17[] = {
-    "FFFFFF", "CCCCCC", "999999", "666666", "000000", "FF0000", "FF9900", "FFFF00", "99FF00",
-    "00FF00", "00FF99", "00FFFF", "0099FF", "0000FF", "9900FF", "FF00FF", "FF99FF"
-  };
+  public static final ImmutableList<String> PALETTE17 =
+      ImmutableList.of(
+          "FFFFFF", "CCCCCC", "999999", "666666", "000000", "FF0000", "FF9900", "FFFF00", "99FF00",
+          "00FF00", "00FF99", "00FFFF", "0099FF", "0000FF", "9900FF", "FF00FF", "FF99FF");
 
   /**
    * This will display a message to the user if JavaScript is not supported or disabled. Last
    * updated 2019-12-19. FUTURE: refer to https://enable-javascript.com/ ???
    */
-  public static String ifJavaScriptDisabled =
+  public static final String ifJavaScriptDisabled =
       "<noscript><div style=\"color:red\"><strong>To work correctly, this web page requires that JavaScript be enabled in your browser.</strong> Please:\n"
           + "<br>1) Enable JavaScript in your browser:\n"
           + "<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &bull; Chrome: \"Settings : Advanced : Privacy and security : Site Settings : JavaScript\"\n"
@@ -120,7 +129,7 @@ public class HtmlWidgets {
    * FontSize from 8pt to 10pt config. FontSize = '10pt' // E.g. '9pt' or '12px' - unit is mandatory
    *
    * @param dir a public directory from the web page's point of view (e.g.,
-   *     EDStatic.imageDirUrl(loggedInAs, language)) where wz_tooltip.js can be found.
+   *     EDStatic.imageDirUrl(request, loggedInAs, language)) where wz_tooltip.js can be found.
    */
   public static String htmlTooltipScript(String dir) {
     return "<!-- Big HTML tooltips are generated with wz_tooltip from \n"
@@ -140,8 +149,8 @@ public class HtmlWidgets {
   /**
    * HTML head stuff for leaflet.
    *
-   * @param tErddapUrl e.g, from EDStatic.erddapUrl(loggedInAs, language): ending in "erddap",
-   *     without the trailing slash
+   * @param tErddapUrl e.g, from EDStatic.erddapUrl(request, loggedInAs, language): ending in
+   *     "erddap", without the trailing slash
    */
   public static String leafletHead(String tErddapUrl) {
     return
@@ -167,9 +176,9 @@ public class HtmlWidgets {
    * images in imageDirUrl. sliderBg.gif must have sliderThumbHeight. (These were created in Paint,
    * not CoPlot.)
    */
-  public static int sliderThumbWidth = 15;
+  public static final int sliderThumbWidth = 15;
 
-  public static int sliderThumbHeight = 17;
+  public static final int sliderThumbHeight = 17;
 
   /**
    * This style removes the extra padding on the left and right of a button. But for ERDDAP, see CSS
@@ -217,7 +226,7 @@ public class HtmlWidgets {
    * This is a standalone javascript which does percent encoding of a string, similar to
    * SSR.minimalPercentEncode.
    */
-  public static String PERCENT_ENCODE_JS =
+  public static final String PERCENT_ENCODE_JS =
       "<script> \n"
           + "function percentEncode(s) { \n"
           + "  var s2=\"\";\n"
@@ -237,7 +246,7 @@ public class HtmlWidgets {
   public boolean htmlTooltips;
 
   /** From EDStatic.imagedirUrl(loggedInAs, language). */
-  public String imageDirUrl;
+  public final String imageDirUrl;
 
   // this is set by beginForm
   public String formName;
@@ -258,7 +267,7 @@ public class HtmlWidgets {
    *     (less than 60 char on some browsers).
    * @param tImageDirUrl the public URL for the image dir which has the arrow, p... and m... .gif
    *     files for the 'select' buttons (or null or "" if not needed). Usually from
-   *     EDStatic.imageDirUrl(loggedInAs, language)
+   *     EDStatic.imageDirUrl(request, loggedInAs, language)
    */
   public HtmlWidgets(boolean tHtmlTooltips, String tImageDirUrl) {
     htmlTooltips = tHtmlTooltips;
@@ -553,17 +562,17 @@ public class HtmlWidgets {
         // "copy text/image to clipboard" buttons
         "\ndata:image/png;base64\n"
         + "<button type=\"button\" onclick=\"javascript:if(navigator.clipboard==undefined){alert('"
-        + EDStatic.copyToClipboardNotAvailableAr[language]
+        + EDStatic.messages.copyToClipboardNotAvailableAr[language]
         + "');return false};navigator.clipboard.writeText("
         + "document.getElementById('"
         + img2ID
         + "').getAttribute('data-src')"
         + // reuse img2Url data from img2ID.data-src
         ");\" style=\"cursor: pointer; cursor: hand;\" >"
-        + EDStatic.copyTextToClipboardAr[language]
+        + EDStatic.messages.copyTextToClipboardAr[language]
         + "</button>\n"
         + "<button type=\"button\" onclick=\"javascript:if(navigator.clipboard==undefined){alert('"
-        + EDStatic.copyToClipboardNotAvailableAr[language]
+        + EDStatic.messages.copyToClipboardNotAvailableAr[language]
         + "');return false};"
         + " var img = new Image();"
         + " img.onload = () => {"
@@ -579,7 +588,7 @@ public class HtmlWidgets {
         + // reuse img2Url data from img2ID.data-src
         " return false;\""
         + " style=\"cursor: pointer; cursor: hand;\" >"
-        + EDStatic.copyImageToClipboardAr[language]
+        + EDStatic.messages.copyImageToClipboardAr[language]
         + "</button>";
   }
 
@@ -983,7 +992,7 @@ public class HtmlWidgets {
    * @return the HTML code to display radio buttons with colored backgrounds.
    */
   public String color(
-      String[] colors,
+      List<String> colors,
       int perRow,
       String htmlLabel,
       String name,
@@ -992,21 +1001,24 @@ public class HtmlWidgets {
       String other) {
 
     StringBuilder sb = new StringBuilder();
-    sb.append("<table class=\"compact\">\n" + "  <tr>\n");
+    sb.append("""
+            <table class="compact">
+              <tr>
+            """);
     boolean hasLabel = htmlLabel != null && htmlLabel.length() > 0;
     if (hasLabel) sb.append("<td class=\"N\">" + htmlLabel + "</td>\n");
     int inRow = 0;
-    for (int i = 0; i < colors.length; i++) {
+    for (int i = 0; i < colors.size(); i++) {
       // a radio button with the appropriate background color
       String checked = i == selected ? " checked" : "";
       sb.append(
           "<td style=\"padding-top:3px; background-color:#"
-              + colors[i]
+              + colors.get(i)
               + "\">"
               + "<input type=\"radio\" name=\""
               + XML.encodeAsHTMLAttribute(name)
               + "\" value=\""
-              + colors[i]
+              + colors.get(i)
               + "\""
               + checked
               + " "
@@ -1016,11 +1028,38 @@ public class HtmlWidgets {
               + "></td>\n");
 
       // new row?
-      if (++inRow % perRow == 0 && i != colors.length - 1)
+      if (++inRow % perRow == 0 && i != colors.size() - 1)
         sb.append("  </tr>\n" + "  <tr>\n" + (hasLabel ? "    <td>&nbsp;</td>\n" : ""));
     }
-    sb.append("  </tr>\n" + "</table>\n");
+    sb.append("""
+              </tr>
+            </table>
+            """);
     return sb.toString();
+  }
+
+  /**
+   * This creates the HTML code for a list in a box or a dropdown list. If nRows &lt; 0, this uses a
+   * table to bring the elements close together, and so may need to be in an enclosing table if you
+   * want other items on same line.
+   *
+   * @param name the name of the widget (name=value is returned when the form is submitted)
+   * @param tooltip If htmlTooltips is true, this is already html. If it is false, this is plain
+   *     text. Or "" if no tooltip.
+   * @param nRows &gt; 1 (e.g. 8) to display many options, <br>
+   *     1=1 row with no buttons, <br>
+   *     nRows is negative implies some combination of BUTTONS_0n, BUTTONS_1, BUTTONS_100,
+   *     BUTTONS_1000
+   * @param options which provides the plain text to be displayed for each of the options.
+   * @param selected the index of the selected item or -1 if none
+   * @param other e.g., "onchange=\"pleaseWait();\"" For select(), use onchange, not onclick.
+   * @return the HTML code for a list in a box or a dropdown list.
+   */
+  public String select(
+      String name, String tooltip, int nRows, List<String> options, int selected, String other) {
+    String[] arrOptions = new String[options.size()];
+    arrOptions = options.toArray(arrOptions);
+    return select(name, tooltip, nRows, arrOptions, null, selected, other, false, "");
   }
 
   /**
@@ -1098,6 +1137,31 @@ public class HtmlWidgets {
       String name,
       String tooltip,
       int nRows,
+      ImmutableList<String> options,
+      ImmutableList<String> values,
+      int selected,
+      String other,
+      boolean encodeSpaces,
+      String buttonJS) {
+    String[] arrOptions = new String[options.size()];
+    arrOptions = options.toArray(arrOptions);
+    String[] arrValues = new String[values.size()];
+    arrValues = values.toArray(arrValues);
+    return select(
+        name, tooltip, nRows, arrOptions, arrValues, selected, other, encodeSpaces, buttonJS);
+  }
+
+  /**
+   * This variant of select adds a values parameter.
+   *
+   * @param values this should parallel options, or be null (usually).
+   * @param buttonJS is addtional javascript to be done when a button is pushed, most commonly "
+   *     sel.onchange();" which triggers the select widget's onchange javascript.
+   */
+  public String select(
+      String name,
+      String tooltip,
+      int nRows,
       String options[],
       String values[],
       int selected,
@@ -1128,8 +1192,7 @@ public class HtmlWidgets {
             + other
             + " >\n");
 
-    String spacer =
-        nOptions < 20 ? "" : ""; // save space if lots of options //was 6 spaces if few options
+    String spacer = ""; // save space if lots of options //was 6 spaces if few options
     for (int i = 0; i < nOptions; i++) {
       // Security issue: the options are not user-specified.  And they are not HTML attributes.
       // I don't think encodeAsHTMLAttributes is warranted and I know it will cause problems with
@@ -1160,7 +1223,7 @@ public class HtmlWidgets {
               //  converts internal >1 space ("ab   c") into 1 space ("ab c").
               ">"
               + opt
-              + ("".equals(opt) ? "</option>" : "")
+              + (opt.isEmpty() ? "</option>" : "")
               +
               // </option> is often not used and is not required.
               "\n");
@@ -1262,7 +1325,11 @@ public class HtmlWidgets {
               "Select the last item.",
               buttonJS));
 
-      sb.append("\n  </tr>" + "\n</table>\n");
+      sb.append("""
+
+                </tr>
+              </table>
+              """);
     }
     return sb.toString();
   }
@@ -1298,45 +1365,9 @@ public class HtmlWidgets {
       String other,
       String onChange) {
 
-    StringBuilder sb = new StringBuilder();
     int nOptions = options.length;
 
     // the cssTooltip approach
-    sb.append("<span class=\"nowrap\">");
-    sb.append(textField(name, tooltip, fieldLength, maxLength, initialTextValue, other));
-    sb.append(
-        cssTooltip(
-            "<img "
-                + // imgOther + //there could be additional attributes for the image
-                " style=\"vertical-align:top;\" "
-                + completeTooltip(comboBoxAltAr[language])
-                + "\n  src=\""
-                + XML.encodeAsHTMLAttribute(imageDirUrl + "arrowD.gif")
-                + "\"\n"
-                + "  alt=\""
-                + XML.encodeAsHTMLAttribute(comboBoxAltAr[language])
-                + "\"\n"
-                + ">",
-            "style=\"padding:0px; max-width:90%; margin-left:-19px;\"",
-            select(
-                name + "TooltipSelect",
-                "",
-                Math.min(nOptions, 10),
-                options,
-                -1,
-                // !!! This javascript is identical to other places (except within popup).
-                // It works in all browsers except MS Edge (item is selected, but value not copied
-                // to 'name' textfield).
-                "\n  "
-                    + (onChange == null
-                        ? "onChange=\"document."
-                            + formName
-                            + "."
-                            + name
-                            + ".value=this.options[this.selectedIndex].text; this.selectedIndex=-1;\"\n"
-                        : onChange))));
-    sb.append("</span>");
-
     /*
             //the <input> widget and the <datalist> approach
             //The problem is that the list only shows options that match the start of the textfield text,
@@ -1366,7 +1397,40 @@ public class HtmlWidgets {
             sb.append("</datalist>");
     */
 
-    return sb.toString();
+    return "<span class=\"nowrap\">"
+        + textField(name, tooltip, fieldLength, maxLength, initialTextValue, other)
+        + cssTooltip(
+            "<img "
+                + // imgOther + //there could be additional attributes for the image
+                " style=\"vertical-align:top;\" "
+                + completeTooltip(comboBoxAltAr[language])
+                + "\n  src=\""
+                + XML.encodeAsHTMLAttribute(imageDirUrl + "arrowD.gif")
+                + "\"\n"
+                + "  alt=\""
+                + XML.encodeAsHTMLAttribute(comboBoxAltAr[language])
+                + "\"\n"
+                + ">",
+            "style=\"padding:0px; max-width:90%; margin-left:-19px;\"",
+            select(
+                name + "TooltipSelect",
+                "",
+                Math.min(nOptions, 10),
+                options,
+                -1,
+                // !!! This javascript is identical to other places (except within popup).
+                // It works in all browsers except MS Edge (item is selected, but value not
+                // copied
+                // to 'name' textfield).
+                "\n  "
+                    + (onChange == null
+                        ? "onChange=\"document."
+                            + formName
+                            + "."
+                            + name
+                            + ".value=this.options[this.selectedIndex].text; this.selectedIndex=-1;\"\n"
+                        : onChange)))
+        + "</span>";
   }
 
   /**
@@ -1523,8 +1587,8 @@ public class HtmlWidgets {
    * This creates the html to draw an image (e.g., question mark) that has a big html tooltip.
    * htmlTooltipScript (see above) must be already in the document. See tip().
    *
-   * @param imageRef the reference for the question mark image (e.g.,
-   *     EDStatic.imageDirUrl(loggedInAs, language) + EDStatic.questionMarkImageFile)
+   * @param imageRef the reference for the question mark image (e.g., EDStatic.imageDirUrl(request,
+   *     loggedInAs, language) + EDStatic.messages.questionMarkImageFile)
    * @param alt the alt text to be displayed, e.g., "?" (not yet encoded)
    * @param html the html tooltip text, e.g., "Hi,<br>
    *     there!". It needs explicit br tags to set window width correctly. For plain text, use
@@ -1573,7 +1637,7 @@ public class HtmlWidgets {
     String2.replaceAll(sb, "&#39;", "\\&#39;");
     String2.replaceAll(sb, "  ", "&nbsp;&nbsp;");
     return " onmouseover=\"Tip('"
-        + sb.toString()
+        + sb
         + "')\" onmouseout=\"UnTip()\" "; // with space at beginning and end
   }
 
@@ -1598,7 +1662,7 @@ public class HtmlWidgets {
                 + other
                 + " alt=\"");
     int n = Math.max(1, width / 8);
-    for (int i = 0; i < n; i++) sb.append("&nbsp;");
+    sb.append("&nbsp;".repeat(n));
     sb.append("\">\n");
     return sb.toString();
   }
@@ -1767,11 +1831,12 @@ public class HtmlWidgets {
           "nThumbs.length=" + nSliders + " != initToPositions.length=" + initToPositions.length);
     StringBuilder sb = new StringBuilder();
     sb.append(
-        "\n"
-            + "<!-- start of sliderScript -->\n"
-            + "<script> \n"
-            + "<!--\n"
-            + "var fromTextFields = [");
+        """
+
+                    <!-- start of sliderScript -->
+                    <script>\s
+                    <!--
+                    var fromTextFields = [""");
     for (int s = 0; s < nSliders; s++)
       sb.append(String2.toJson(fromTextFields[s]) + (s < nSliders - 1 ? ", " : "];\n"));
     sb.append("var toTextFields = [");
@@ -1803,14 +1868,22 @@ public class HtmlWidgets {
         sb.append("  \"sliderRight" + s + "\"+HORIZONTAL+MAXOFFRIGHT+" + bgWidth + ",\n");
     }
     sb.setLength(sb.length() - 2); // remove ,\n
-    sb.append(");\n" + "\n" + "var el = dd.elements;\n" + "\n");
+    sb.append("""
+            );
+
+            var el = dd.elements;
+
+            """);
 
     // log
     sb.append("function log(msg) {\n");
     if (debugMode)
       sb.append(
           "  if (typeof(console) != \"undefined\") console.log(msg);\n"); // for debugging only
-    sb.append("}\n" + "\n");
+    sb.append("""
+            }
+
+            """);
 
     // toUserValue
     sb.append(
@@ -1851,7 +1924,10 @@ public class HtmlWidgets {
             + "\n");
 
     // my_DragFunc
-    sb.append("function my_DragFunc() {\n" + "  try {\n");
+    sb.append("""
+            function my_DragFunc() {
+              try {
+            """);
     for (int s = 0; s < nSliders; s++) {
       if (nThumbs[s] > 0)
         sb.append("    if (dd.obj.name == 'sliderLeft" + s + "') updateUI(true, " + s + ");\n");
@@ -2130,8 +2206,7 @@ public class HtmlWidgets {
 
     if (tooltip == null) tooltip = twoClickMapDefaultTooltipAr[language];
 
-    StringBuilder sb0 = new StringBuilder();
-    sb0.append(
+    String sb0 =
         "\n"
             + "<!-- start of twoClickMap[0] -->\n"
             + "<img \n"
@@ -2143,10 +2218,9 @@ public class HtmlWidgets {
             + tooltip
             + "\" \n"
             + "  style=\"cursor:crosshair; vertical-align:middle; border:0;\">\n"
-            + "<!-- end of twoClickMap[0] -->\n");
+            + "<!-- end of twoClickMap[0] -->\n";
 
-    StringBuilder sb1 = new StringBuilder();
-    sb1.append(
+    String sb1 =
         "<!-- start of twoClickMap[1] -->\n"
             + "<map name=\"worldImageMap\">\n"
             + "  <area href=\""
@@ -2165,31 +2239,34 @@ public class HtmlWidgets {
             + "        onClick=\"return rubber(true, event)\" \n"
             + "    onMouseMove=\"return rubber(false, event)\" > \n"
             + "</map>\n"
-            + "<!-- end of twoClickMap[1] -->\n");
+            + "<!-- end of twoClickMap[1] -->\n";
 
-    StringBuilder sb2 = new StringBuilder();
-    sb2.append(
-        "\n"
-            + "<!-- start of twoClickMap[2] -->\n"
-            + "<div id=\"rubberBand\" style=\"position:absolute; visibility:hidden; width:0px; height:0px; "
-            + "font-size:1px; line-height:0; border:1px solid red; cursor:crosshair;\" \n"
-            + "      onClick=\"return rubber(true, event)\" \n"
-            + "  onMouseMove=\"return rubber(false, event)\" ></div>\n"
-            + "\n"
-            + "<script>\n"
-            + "<!--\n"
-            + "var tcNextI = 0;\n"
-            + "var tcCx = new Array(0,0);\n"
-            + "var tcCy = new Array(0,0);\n"
-            + "\n");
+    String sb2 =
+        """
 
-    sb2.append(
-        // basically, this finds the offsetXY of an element by adding up the offsets of all parent
-        // elements
-        // was "//findPos from http://blog.firetree.net/2005/07/04/javascript-find-position/\n" +
-        // but that's gone
-        // https://www.chestysoft.com/imagefile/javascript/get-coordinates.asp
-        "function findPosXY(obj) {\n"
+              <!-- start of twoClickMap[2] -->
+              <div id="rubberBand" style="position:absolute; visibility:hidden; width:0px; height:0px; \
+              font-size:1px; line-height:0; border:1px solid red; cursor:crosshair;"\s
+                    onClick="return rubber(true, event)"\s
+                onMouseMove="return rubber(false, event)" ></div>
+
+              <script>
+              <!--
+              var tcNextI = 0;
+              var tcCx = new Array(0,0);
+              var tcCy = new Array(0,0);
+
+              """
+            +
+
+            // basically, this finds the offsetXY of an element by adding up the offsets of all
+            // parent
+            // elements
+            // was "//findPos from http://blog.firetree.net/2005/07/04/javascript-find-position/\n"
+            // +
+            // but that's gone
+            // https://www.chestysoft.com/imagefile/javascript/get-coordinates.asp
+            "function findPosXY(obj) {\n"
             + "  var curleft = 0;\n"
             + "  var curtop = 0;\n"
             + "  if(obj.offsetParent) {\n"
@@ -2410,9 +2487,9 @@ public class HtmlWidgets {
             + "--> \n"
             + "</script>\n"
             + "<!-- end of twoClickMap[2] -->\n"
-            + "\n");
+            + "\n";
 
-    return new String[] {sb0.toString(), sb1.toString(), sb2.toString()};
+    return new String[] {sb0, sb1, sb2};
   }
 
   /* *  NOT FINISHED

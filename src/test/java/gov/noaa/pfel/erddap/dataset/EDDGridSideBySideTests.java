@@ -37,21 +37,24 @@ class EDDGridSideBySideTests {
     // String2.log("\n*** EDDGridSideBySide.testQSWind");
     // testVerboseOn();
     int language = 0;
-    String name, tName, baseName, userDapQuery, results, expected, error;
+    String tName, baseName, results, expected;
     String dapQuery;
-    String tDir = EDStatic.fullTestCacheDirectory;
+    String tDir = EDStatic.config.fullTestCacheDirectory;
 
     // *** NDBC is also IMPORTANT UNIQUE TEST of >1 variable in a file
     EDDGrid qsWind8 = (EDDGrid) EDDTestDataset.geterdQSwind8day();
 
     // ensure that attributes are as expected
-    Test.ensureEqual(qsWind8.combinedGlobalAttributes().getString("satellite"), "QuikSCAT", "");
-    EDV edv = qsWind8.findDataVariableByDestinationName("x_wind");
-    Test.ensureEqual(edv.combinedAttributes().getString("standard_name"), "x_wind", "");
-    edv = qsWind8.findDataVariableByDestinationName("y_wind");
-    Test.ensureEqual(edv.combinedAttributes().getString("standard_name"), "y_wind", "");
     Test.ensureEqual(
-        qsWind8.combinedGlobalAttributes().getString("defaultGraphQuery"), "&.draw=vectors", "");
+        qsWind8.combinedGlobalAttributes().getString(language, "satellite"), "QuikSCAT", "");
+    EDV edv = qsWind8.findDataVariableByDestinationName("x_wind");
+    Test.ensureEqual(edv.combinedAttributes().getString(language, "standard_name"), "x_wind", "");
+    edv = qsWind8.findDataVariableByDestinationName("y_wind");
+    Test.ensureEqual(edv.combinedAttributes().getString(language, "standard_name"), "y_wind", "");
+    Test.ensureEqual(
+        qsWind8.combinedGlobalAttributes().getString(language, "defaultGraphQuery"),
+        "&.draw=vectors",
+        "");
 
     // get data
     dapQuery = "x_wind[4:8][0][(-20)][(80)],y_wind[4:8][0][(-20)][(80)]";
@@ -279,9 +282,9 @@ class EDDGridSideBySideTests {
     // String2.log("\n*** EDDGridSideBySide.testQSWind");
     // testVerboseOn();
     int language = 0;
-    String name, tName, userDapQuery, results, expected, error;
+    String tName, results, expected;
     String dapQuery;
-    String tDir = EDStatic.fullTestCacheDirectory;
+    String tDir = EDStatic.config.fullTestCacheDirectory;
     Test.ensureEqual(Calendar2.epochSecondsToIsoStringTZ(1.1306736E9), "2005-10-30T12:00:00Z", "");
 
     EDDGrid qs1 = (EDDGrid) EDDTestDataset.geterdQSstress1day();
@@ -394,9 +397,9 @@ class EDDGridSideBySideTests {
      * EDDGrid qsx1 = (EDDGrid)oneFromDatasetsXml(null, "erdQStaux1day");
      * dapQuery = "taux[(1.130328E9):(1.1309328E9)][0][(-20)][(40)]";
      * tName = qsx1.makeNewFileForDapQuery(language, null, null, dapQuery,
-     * EDStatic.fullTestCacheDirectory,
+     * EDStatic.config.fullTestCacheDirectory,
      * qsz1.className() + "sbsx", ".csv");
-     * results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory +
+     * results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory +
      * tName);
      * //String2.log(results);
      * expected =
@@ -415,9 +418,9 @@ class EDDGridSideBySideTests {
      * EDDGrid qsy1 = (EDDGrid)oneFromDatasetsXml(null, "erdQStauy1day");
      * dapQuery = "tauy[(1.130328E9):(1.1309328E9)][0][(-20)][(40)]";
      * tName = qsy1.makeNewFileForDapQuery(language, null, null, dapQuery,
-     * EDStatic.fullTestCacheDirectory,
+     * EDStatic.config.fullTestCacheDirectory,
      * qsy1.className() + "sbsy", ".csv");
-     * results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory +
+     * results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory +
      * tName);
      * //String2.log(results);
      * expected =
@@ -482,8 +485,7 @@ class EDDGridSideBySideTests {
     // String2.log("\n*** EDDGridSideBySide.testDuplicateSourceNames");
     // testVerboseOn();
     int language = 0;
-    String dir = EDStatic.fullTestCacheDirectory;
-    String name, tName, userDapQuery, results, expected, error;
+    String tName, results, expected;
     String dapQuery;
 
     // if there is trouble, this will throw an exception
@@ -494,8 +496,14 @@ class EDDGridSideBySideTests {
         "analysed_sst_a[1][(10):100:(12)][(-20):100:(-18)],analysed_sst_b[1][(10):100:(12)][(-20):100:(-18)]";
     tName =
         eddGrid.makeNewFileForDapQuery(
-            language, null, null, dapQuery, EDStatic.fullTestCacheDirectory, "sbsDupNames", ".csv");
-    results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+            language,
+            null,
+            null,
+            dapQuery,
+            EDStatic.config.fullTestCacheDirectory,
+            "sbsDupNames",
+            ".csv");
+    results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
     // String2.log(results);
     expected = // note that all _a and _b values are the same
         "time,latitude,longitude,analysed_sst_a,analysed_sst_b\n"
@@ -521,7 +529,7 @@ class EDDGridSideBySideTests {
     // testVerboseOn();
     int language = 0;
     String dir = Image2Tests.urlToAbsolutePath(Image2Tests.OBS_DIR);
-    String name, tName, userDapQuery, results, expected, error;
+    String tName;
     String dapQuery, baseName;
 
     EDDGrid qsWind8 = (EDDGrid) EDDTestDataset.geterdQSwind8day();
@@ -533,14 +541,14 @@ class EDDGridSideBySideTests {
     tName =
         qsWind8.makeNewFileForDapQuery(
             language, null, null, dapQuery, dir, baseName, ".transparentPng");
-    // Test.displayInBrowser("file://" + dir + tName);
+    // TestUtil.displayInBrowser("file://" + dir + tName);
     Image2Tests.testImagesIdentical(tName, baseName + ".png", baseName + "_diff.png");
 
     baseName = "EDDGridSideBySide_testTransparentPng_surface360150";
     tName =
         qsWind8.makeNewFileForDapQuery(
             language, null, null, dapQuery + "&.size=360|150", dir, baseName, ".transparentPng");
-    // Test.displayInBrowser("file://" + dir + tName);
+    // TestUtil.displayInBrowser("file://" + dir + tName);
     Image2Tests.testImagesIdentical(tName, baseName + ".png", baseName + "_diff.png");
 
     // vector map
@@ -552,14 +560,14 @@ class EDDGridSideBySideTests {
     tName =
         qsWind8.makeNewFileForDapQuery(
             language, null, null, dapQuery, dir, baseName, ".transparentPng");
-    // Test.displayInBrowser("file://" + dir + tName);
+    // TestUtil.displayInBrowser("file://" + dir + tName);
     Image2Tests.testImagesIdentical(tName, baseName + ".png", baseName + "_diff.png");
 
     baseName = "EDDGridSideBySide_testTransparentPng_vectors360150";
     tName =
         qsWind8.makeNewFileForDapQuery(
             language, null, null, dapQuery + "&.size=360|150", dir, baseName, ".transparentPng");
-    // Test.displayInBrowser("file://" + dir + tName);
+    // TestUtil.displayInBrowser("file://" + dir + tName);
     Image2Tests.testImagesIdentical(tName, baseName + ".png", baseName + "_diff.png");
 
     // lines on a graph
@@ -573,21 +581,21 @@ class EDDGridSideBySideTests {
     tName =
         qsWind8.makeNewFileForDapQuery(
             language, null, null, dapQuery, dir, baseName, ".transparentPng");
-    // Test.displayInBrowser("file://" + dir + tName);
+    // TestUtil.displayInBrowser("file://" + dir + tName);
     Image2Tests.testImagesIdentical(tName, baseName + ".png", baseName + "_diff.png");
 
     baseName = "EDDGridSideBySide_testPng_lines500400";
     tName =
         qsWind8.makeNewFileForDapQuery(
             language, null, null, dapQuery + "&.size=500|400", dir, baseName, ".png");
-    // Test.displayInBrowser("file://" + dir + tName);
+    // TestUtil.displayInBrowser("file://" + dir + tName);
     Image2Tests.testImagesIdentical(tName, baseName + ".png", baseName + "_diff.png");
 
     baseName = "EDDGridSideBySide_testTransparentPng_lines500400";
     tName =
         qsWind8.makeNewFileForDapQuery(
             language, null, null, dapQuery + "&.size=500|400", dir, baseName, ".transparentPng");
-    // Test.displayInBrowser("file://" + dir + tName);
+    // TestUtil.displayInBrowser("file://" + dir + tName);
     Image2Tests.testImagesIdentical(tName, baseName + ".png", baseName + "_diff.png");
 
     // markers on a graph
@@ -596,14 +604,14 @@ class EDDGridSideBySideTests {
     tName =
         qsWind8.makeNewFileForDapQuery(
             language, null, null, dapQuery, dir, baseName, ".transparentPng");
-    // Test.displayInBrowser("file://" + dir + tName);
+    // TestUtil.displayInBrowser("file://" + dir + tName);
     Image2Tests.testImagesIdentical(tName, baseName + ".png", baseName + "_diff.png");
 
     baseName = "EDDGridSideBySide_testTransparentPng_markers500400";
     tName =
         qsWind8.makeNewFileForDapQuery(
             language, null, null, dapQuery + "&.size=500|400", dir, baseName, ".transparentPng");
-    // Test.displayInBrowser("file://" + dir + tName);
+    // TestUtil.displayInBrowser("file://" + dir + tName);
     Image2Tests.testImagesIdentical(tName, baseName + ".png", baseName + "_diff.png");
 
     // sticks on a graph
@@ -615,14 +623,14 @@ class EDDGridSideBySideTests {
     tName =
         qsWind8.makeNewFileForDapQuery(
             language, null, null, dapQuery, dir, baseName, ".transparentPng");
-    // Test.displayInBrowser("file://" + dir + tName);
+    // TestUtil.displayInBrowser("file://" + dir + tName);
     Image2Tests.testImagesIdentical(tName, baseName + ".png", baseName + "_diff.png");
 
     baseName = "EDDGridSideBySide_testTransparentPng_sticks500500";
     tName =
         qsWind8.makeNewFileForDapQuery(
             language, null, null, dapQuery + "&.size=500|500", dir, baseName, ".transparentPng");
-    // Test.displayInBrowser("file://" + dir + tName);
+    // TestUtil.displayInBrowser("file://" + dir + tName);
     Image2Tests.testImagesIdentical(tName, baseName + ".png", baseName + "_diff.png");
     /* */
   }
@@ -631,11 +639,7 @@ class EDDGridSideBySideTests {
   @org.junit.jupiter.api.Test
   @TagLocalERDDAP
   void testFiles() throws Throwable {
-
-    String2.log("\n*** EDDGridSideBySide.testFiles()\n");
-    String tDir = EDStatic.fullTestCacheDirectory;
-    String dapQuery, tName, start, query, results, expected;
-    int po;
+    String results, expected;
 
     // get /files/datasetID/.csv
     results =

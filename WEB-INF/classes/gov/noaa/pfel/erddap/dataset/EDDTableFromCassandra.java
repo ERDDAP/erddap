@@ -225,9 +225,13 @@ import com.cohort.util.String2;
 import com.cohort.util.Test;
 import com.cohort.util.XML;
 import com.datastax.driver.core.*;
+import com.google.common.util.concurrent.ListenableFuture;
 import gov.noaa.pfel.coastwatch.pointdata.Table;
 import gov.noaa.pfel.coastwatch.util.SimpleXMLReader;
 import gov.noaa.pfel.erddap.Erddap;
+import gov.noaa.pfel.erddap.dataset.metadata.LocalizedAttributes;
+import gov.noaa.pfel.erddap.handlers.EDDTableFromCassandraHandler;
+import gov.noaa.pfel.erddap.handlers.SaxHandlerClass;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.*;
 import java.io.BufferedReader;
@@ -236,7 +240,6 @@ import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.Date;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -260,27 +263,28 @@ import java.util.concurrent.ConcurrentHashMap;
  *
  * @author Bob Simons (was bob.simons@noaa.gov, now BobSimons2.00@gmail.com) 2014-11-03
  */
+@SaxHandlerClass(EDDTableFromCassandraHandler.class)
 public class EDDTableFromCassandra extends EDDTable {
 
   // see getSession
-  private static ConcurrentHashMap<String, Session> sessionsMap = new ConcurrentHashMap();
-  private static ConcurrentHashMap<String, PreparedStatement> statementMap =
-      new ConcurrentHashMap();
-  public static String LIST = "!!!LIST!!!";
+  private static ConcurrentHashMap<String, Session> sessionsMap = new ConcurrentHashMap<>();
+  private static final ConcurrentHashMap<String, PreparedStatement> statementMap =
+      new ConcurrentHashMap<>();
+  public static final String LIST = "!!!LIST!!!";
 
   /** set by the constructor */
   private Session session;
 
   private ProtocolVersion protocolVersion =
       ProtocolVersion.NEWEST_SUPPORTED; // but may be changed below
-  protected String keyspace;
-  protected String tableName;
-  protected int nPartitionKeys;
-  protected String partitionKeyNames[]; // source names
-  protected String partitionKeyFrom[]; // null or name of timestamp var it is derived from
-  protected String partitionKeyPrecision[]; // null or precision of timestamp var
-  protected String
-      partitionKeyFixedValue[]; // null, or the fixed value (plain number or string in quotes)
+  protected final String keyspace;
+  protected final String tableName;
+  protected final int nPartitionKeys;
+  protected final String[] partitionKeyNames; // source names
+  protected final String[] partitionKeyFrom; // null or name of timestamp var it is derived from
+  protected final String[] partitionKeyPrecision; // null or precision of timestamp var
+  protected final String[]
+      partitionKeyFixedValue; // null, or the fixed value (plain number or string in quotes)
   protected EDV partitionKeyEDV[]; // edv of each partitionKey
   protected static final String PartitionKeysDistinctTableName = "PartitionKeysDistinctTable.nc";
   protected HashSet<String> clusterColumnSourceNames;
@@ -288,7 +292,7 @@ public class EDDTableFromCassandra extends EDDTable {
   protected double maxRequestFraction = 1; // >0..1; 1 until subsetVarTable has been made
   protected String partitionKeyRelatedVariables; // CSSV for error message
   protected EDV rvToResultsEDV[]; // needed in expandPartitionKeyCSV
-  protected String partitionKeyCSV; // null or csv before expansion
+  protected final String partitionKeyCSV; // null or csv before expansion
 
   // Double quotes, see
   // http://www.datastax.com/documentation/cql/3.1/cql/cql_reference/escape_char_r.html
@@ -317,14 +321,15 @@ public class EDDTableFromCassandra extends EDDTable {
    *     &lt;erddapDatasets&gt;&lt;/dataset&gt; .
    * @throws Throwable if trouble
    */
+  @EDDFromXmlMethod
   public static EDDTableFromCassandra fromXml(Erddap erddap, SimpleXMLReader xmlReader)
       throws Throwable {
 
     // data to be obtained (or not)
     if (verbose) String2.log("\n*** constructing EDDTableFromCassandra(xmlReader)...");
     String tDatasetID = xmlReader.attributeValue("datasetID");
-    Attributes tGlobalAttributes = null;
-    ArrayList tDataVariables = new ArrayList();
+    LocalizedAttributes tGlobalAttributes = null;
+    ArrayList<DataVariableInfo> tDataVariables = new ArrayList<>();
     int tReloadEveryNMinutes = Integer.MAX_VALUE;
     String tAccessibleTo = null;
     String tGraphsAccessibleTo = null;
@@ -360,62 +365,55 @@ public class EDDTableFromCassandra extends EDDTable {
       String localTags = tags.substring(startOfTagsLength);
 
       // try to make the tag names as consistent, descriptive and readable as possible
-      if (localTags.equals("<addAttributes>")) tGlobalAttributes = getAttributesFromXml(xmlReader);
-      else if (localTags.equals("<dataVariable>"))
-        tDataVariables.add(getSDADVariableFromXml(xmlReader));
-      else if (localTags.equals("<accessibleTo>")) {
-      } else if (localTags.equals("</accessibleTo>")) tAccessibleTo = content;
-      else if (localTags.equals("<graphsAccessibleTo>")) {
-      } else if (localTags.equals("</graphsAccessibleTo>")) tGraphsAccessibleTo = content;
-      else if (localTags.equals("<reloadEveryNMinutes>")) {
-      } else if (localTags.equals("</reloadEveryNMinutes>"))
-        tReloadEveryNMinutes = String2.parseInt(content);
-      else if (localTags.equals("<sourceUrl>")) {
-      } else if (localTags.equals("</sourceUrl>")) tLocalSourceUrl = content;
-      else if (localTags.equals("<connectionProperty>"))
-        tConnectionProperties.add(xmlReader.attributeValue("name"));
-      else if (localTags.equals("</connectionProperty>")) tConnectionProperties.add(content);
-      else if (localTags.equals("<keyspace>")) {
-      } else if (localTags.equals("</keyspace>")) tKeyspace = content;
-      else if (localTags.equals("<tableName>")) {
-      } else if (localTags.equals("</tableName>")) tTableName = content;
-      else if (localTags.equals("<partitionKeySourceNames>")) {
-      } else if (localTags.equals("</partitionKeySourceNames>")) tPartitionKeySourceNames = content;
-      else if (localTags.equals("<clusterColumnSourceNames>")) {
-      } else if (localTags.equals("</clusterColumnSourceNames>"))
-        tClusterColumnSourceNames = content;
-      else if (localTags.equals("<indexColumnSourceNames>")) {
-      } else if (localTags.equals("</indexColumnSourceNames>")) tIndexColumnSourceNames = content;
-      else if (localTags.equals("<maxRequestFraction>")) {
-      } else if (localTags.equals("</maxRequestFraction>"))
-        tMaxRequestFraction = String2.parseDouble(content);
-      else if (localTags.equals("<columnNameQuotes>")) {
-      } else if (localTags.equals("</columnNameQuotes>")) tColumnNameQuotes = content;
-      else if (localTags.equals("<partitionKeyCSV>")) {
-      } else if (localTags.equals("</partitionKeyCSV>")) tPartitionKeyCSV = content;
-      else if (localTags.equals("<sourceNeedsExpandedFP_EQ>")) {
-      } else if (localTags.equals("</sourceNeedsExpandedFP_EQ>"))
-        tSourceNeedsExpandedFP_EQ = String2.parseBoolean(content);
-      else if (localTags.equals("<onChange>")) {
-      } else if (localTags.equals("</onChange>")) tOnChange.add(content);
-      else if (localTags.equals("<fgdcFile>")) {
-      } else if (localTags.equals("</fgdcFile>")) tFgdcFile = content;
-      else if (localTags.equals("<iso19115File>")) {
-      } else if (localTags.equals("</iso19115File>")) tIso19115File = content;
-      else if (localTags.equals("<sosOfferingPrefix>")) {
-      } else if (localTags.equals("</sosOfferingPrefix>")) tSosOfferingPrefix = content;
-      else if (localTags.equals("<defaultDataQuery>")) {
-      } else if (localTags.equals("</defaultDataQuery>")) tDefaultDataQuery = content;
-      else if (localTags.equals("<defaultGraphQuery>")) {
-      } else if (localTags.equals("</defaultGraphQuery>")) tDefaultGraphQuery = content;
-      else if (localTags.equals("<addVariablesWhere>")) {
-      } else if (localTags.equals("</addVariablesWhere>")) tAddVariablesWhere = content;
-      else xmlReader.unexpectedTagException();
+      switch (localTags) {
+        case "<addAttributes>" -> tGlobalAttributes = getAttributesFromXml(xmlReader);
+        case "<dataVariable>" -> tDataVariables.add(getSDADVariableFromXml(xmlReader));
+        case "<accessibleTo>",
+            "<addVariablesWhere>",
+            "<defaultGraphQuery>",
+            "<defaultDataQuery>",
+            "<sosOfferingPrefix>",
+            "<iso19115File>",
+            "<fgdcFile>",
+            "<onChange>",
+            "<sourceNeedsExpandedFP_EQ>",
+            "<partitionKeyCSV>",
+            "<columnNameQuotes>",
+            "<maxRequestFraction>",
+            "<indexColumnSourceNames>",
+            "<clusterColumnSourceNames>",
+            "<partitionKeySourceNames>",
+            "<tableName>",
+            "<keyspace>",
+            "<sourceUrl>",
+            "<reloadEveryNMinutes>",
+            "<graphsAccessibleTo>" -> {}
+        case "</accessibleTo>" -> tAccessibleTo = content;
+        case "</graphsAccessibleTo>" -> tGraphsAccessibleTo = content;
+        case "</reloadEveryNMinutes>" -> tReloadEveryNMinutes = String2.parseInt(content);
+        case "</sourceUrl>" -> tLocalSourceUrl = content;
+        case "<connectionProperty>" -> tConnectionProperties.add(xmlReader.attributeValue("name"));
+        case "</connectionProperty>" -> tConnectionProperties.add(content);
+        case "</keyspace>" -> tKeyspace = content;
+        case "</tableName>" -> tTableName = content;
+        case "</partitionKeySourceNames>" -> tPartitionKeySourceNames = content;
+        case "</clusterColumnSourceNames>" -> tClusterColumnSourceNames = content;
+        case "</indexColumnSourceNames>" -> tIndexColumnSourceNames = content;
+        case "</maxRequestFraction>" -> tMaxRequestFraction = String2.parseDouble(content);
+        case "</columnNameQuotes>" -> tColumnNameQuotes = content;
+        case "</partitionKeyCSV>" -> tPartitionKeyCSV = content;
+        case "</sourceNeedsExpandedFP_EQ>" ->
+            tSourceNeedsExpandedFP_EQ = String2.parseBoolean(content);
+        case "</onChange>" -> tOnChange.add(content);
+        case "</fgdcFile>" -> tFgdcFile = content;
+        case "</iso19115File>" -> tIso19115File = content;
+        case "</sosOfferingPrefix>" -> tSosOfferingPrefix = content;
+        case "</defaultDataQuery>" -> tDefaultDataQuery = content;
+        case "</defaultGraphQuery>" -> tDefaultGraphQuery = content;
+        case "</addVariablesWhere>" -> tAddVariablesWhere = content;
+        default -> xmlReader.unexpectedTagException();
+      }
     }
-    int ndv = tDataVariables.size();
-    Object ttDataVariables[][] = new Object[ndv][];
-    for (int i = 0; i < tDataVariables.size(); i++)
-      ttDataVariables[i] = (Object[]) tDataVariables.get(i);
 
     return new EDDTableFromCassandra(
         tDatasetID,
@@ -429,7 +427,7 @@ public class EDDTableFromCassandra extends EDDTable {
         tDefaultGraphQuery,
         tAddVariablesWhere,
         tGlobalAttributes,
-        ttDataVariables,
+        tDataVariables,
         tReloadEveryNMinutes,
         tLocalSourceUrl,
         tConnectionProperties.toArray(),
@@ -461,8 +459,8 @@ public class EDDTableFromCassandra extends EDDTable {
       String tDefaultDataQuery,
       String tDefaultGraphQuery,
       String tAddVariablesWhere,
-      Attributes tAddGlobalAttributes,
-      Object[][] tDataVariables,
+      LocalizedAttributes tAddGlobalAttributes,
+      List<DataVariableInfo> tDataVariables,
       int tReloadEveryNMinutes,
       String tLocalSourceUrl,
       String tConnectionProperties[],
@@ -479,7 +477,6 @@ public class EDDTableFromCassandra extends EDDTable {
 
     if (verbose) String2.log("\n*** constructing EDDTableFromCassandra " + tDatasetID);
     long constructionStartMillis = System.currentTimeMillis();
-    String errorInMethod = "Error in EDDTableFromCassandra(" + tDatasetID + ") constructor:\n";
     int language = 0; // for constructor
 
     // save some of the parameters
@@ -493,13 +490,12 @@ public class EDDTableFromCassandra extends EDDTable {
     sosOfferingPrefix = tSosOfferingPrefix;
     defaultDataQuery = tDefaultDataQuery;
     defaultGraphQuery = tDefaultGraphQuery;
-    if (tAddGlobalAttributes == null) tAddGlobalAttributes = new Attributes();
+    if (tAddGlobalAttributes == null) tAddGlobalAttributes = new LocalizedAttributes();
     addGlobalAttributes = tAddGlobalAttributes;
     setReloadEveryNMinutes(tReloadEveryNMinutes);
     Test.ensureNotNothing(tLocalSourceUrl, "'sourceUrl' wasn't defined.");
     localSourceUrl = tLocalSourceUrl;
-    publicSourceUrl = "(Cassandra)"; // not tLocalSourceUrl; keep it private
-    addGlobalAttributes.set("sourceUrl", publicSourceUrl);
+    addGlobalAttributes.set(language, "sourceUrl", "(Cassandra)");
     partitionKeyCSV = String2.isSomething(tPartitionKeyCSV) ? tPartitionKeyCSV : null;
 
     // connectionProperties may have secret (username and password)!
@@ -508,7 +504,7 @@ public class EDDTableFromCassandra extends EDDTable {
     Test.ensureTrue(
         !Math2.odd(tConnectionProperties.length),
         "connectionProperties.length must be an even number.");
-    ConcurrentHashMap<String, String> connectionProperties = new ConcurrentHashMap();
+    ConcurrentHashMap<String, String> connectionProperties = new ConcurrentHashMap<>();
     for (int i = 0; i < tConnectionProperties.length; i += 2) {
       String tKey = tConnectionProperties[i];
       String tValue = tConnectionProperties[i + 1];
@@ -551,13 +547,13 @@ public class EDDTableFromCassandra extends EDDTable {
       }
     }
 
-    clusterColumnSourceNames = new HashSet();
+    clusterColumnSourceNames = new HashSet<>();
     if (String2.isSomething(tClusterColumnSourceNames)) {
       String sar[] = String2.split(tClusterColumnSourceNames, ','); // they are trimmed
       for (String s : sar) clusterColumnSourceNames.add(String2.canonical(s));
     }
 
-    indexColumnSourceNames = new HashSet();
+    indexColumnSourceNames = new HashSet<>();
     if (String2.isSomething(tIndexColumnSourceNames)) {
       String sar[] = String2.split(tIndexColumnSourceNames, ','); // they are trimmed
       for (String s : sar) indexColumnSourceNames.add(String2.canonical(s));
@@ -582,23 +578,25 @@ public class EDDTableFromCassandra extends EDDTable {
     // set global attributes
     sourceGlobalAttributes = new Attributes();
     combinedGlobalAttributes =
-        new Attributes(addGlobalAttributes, sourceGlobalAttributes); // order is important
-    String tLicense = combinedGlobalAttributes.getString("license");
+        new LocalizedAttributes(addGlobalAttributes, sourceGlobalAttributes); // order is important
+    String tLicense = combinedGlobalAttributes.getString(language, "license");
     if (tLicense != null)
       combinedGlobalAttributes.set(
-          "license", String2.replaceAll(tLicense, "[standard]", EDStatic.standardLicense));
+          language,
+          "license",
+          String2.replaceAll(tLicense, "[standard]", EDStatic.messages.standardLicense));
     combinedGlobalAttributes.removeValue("\"null\"");
 
     // create dataVariables[]
-    int ndv = tDataVariables.length;
+    int ndv = tDataVariables.size();
     dataVariables = new EDV[ndv];
     isListDV = new boolean[ndv];
     for (int dv = 0; dv < ndv; dv++) {
-      String tSourceName = (String) tDataVariables[dv][0];
-      String tDestName = (String) tDataVariables[dv][1];
+      String tSourceName = tDataVariables.get(dv).sourceName();
+      String tDestName = tDataVariables.get(dv).destinationName();
       if (tDestName == null || tDestName.trim().length() == 0) tDestName = tSourceName;
-      Attributes tAddAtt = (Attributes) tDataVariables[dv][2];
-      String tSourceType = (String) tDataVariables[dv][3];
+      LocalizedAttributes tAddAtt = tDataVariables.get(dv).attributes();
+      String tSourceType = tDataVariables.get(dv).dataType();
       // deal with <dataType>'s that are lists: byteList, doubleList, ...
       if (tSourceType.endsWith("List")) {
         isListDV[dv] = true;
@@ -666,7 +664,7 @@ public class EDDTableFromCassandra extends EDDTable {
                 tAddAtt,
                 tSourceType); // this constructor gets source / sets destination actual_range
         timeIndex = dv;
-      } else if (EDVTimeStamp.hasTimeUnits(tSourceAtt, tAddAtt)) {
+      } else if (EDVTimeStamp.hasTimeUnits(language, tSourceAtt, tAddAtt)) {
         dataVariables[dv] =
             new EDVTimeStamp(
                 datasetID,
@@ -678,7 +676,7 @@ public class EDDTableFromCassandra extends EDDTable {
       } else {
         dataVariables[dv] =
             new EDV(datasetID, tSourceName, tDestName, tSourceAtt, tAddAtt, tSourceType);
-        dataVariables[dv].setActualRangeFromDestinationMinMax();
+        dataVariables[dv].setActualRangeFromDestinationMinMax(language);
       }
     }
 
@@ -691,7 +689,7 @@ public class EDDTableFromCassandra extends EDDTable {
     StringBuilder dapVars = new StringBuilder();
     StringBuilder cassVars = new StringBuilder();
     StringBuilder dapConstraints = new StringBuilder();
-    StringBuilder cassConstraints = new StringBuilder();
+    String cassConstraints = "";
     int resultsDVI[] = new int[nPartitionKeys];
     rvToResultsEDV = new EDV[nPartitionKeys]; // make and keep this
     File2.makeDirectory(datasetDir());
@@ -728,9 +726,8 @@ public class EDDTableFromCassandra extends EDDTable {
       if (dvi >= 0) pkRelated.add(dataVariables[dvi].destinationName());
     }
     partitionKeyRelatedVariables = pkRelated.toString();
-    String dapQuery = dapVars.toString() + dapConstraints.toString() + "&distinct()";
-    String cassQuery =
-        cassVars.toString() + " FROM " + keyspace + "." + tableName + cassConstraints.toString();
+    String dapQuery = dapVars.toString() + dapConstraints + "&distinct()";
+    String cassQuery = cassVars + " FROM " + keyspace + "." + tableName + cassConstraints;
     if (verbose)
       String2.log(
           "* PrimaryKeys DAP  query=" + dapQuery + "\n" + "* PrimaryKeys Cass query=" + cassQuery);
@@ -804,7 +801,7 @@ public class EDDTableFromCassandra extends EDDTable {
     long cTime = System.currentTimeMillis() - constructionStartMillis;
     if (verbose)
       String2.log(
-          (debugMode ? "\n" + toString() : "")
+          (debugMode ? "\n" + this : "")
               + "\n*** EDDTableFromCassandra "
               + datasetID
               + " constructor finished. TIME="
@@ -1150,13 +1147,14 @@ public class EDDTableFromCassandra extends EDDTable {
    *
    * @param language the index of the selected language
    * @param loggedInAs the user's login name if logged in (or null if not logged in).
-   * @param requestUrl the part of the user's request, after EDStatic.baseUrl, before '?'.
+   * @param requestUrl the part of the user's request, after EDStatic.config.baseUrl, before '?'.
    * @param userDapQuery the part of the user's request after the '?', still percentEncoded, may be
    *     null.
    * @param tableWriter
    * @throws Throwable if trouble (notably, WaitThenTryAgainException)
    */
   @Override
+  @SuppressWarnings("JavaUtilDate") // Date is needed for Cassandra
   public void getDataForDapQuery(
       int language,
       String loggedInAs,
@@ -1377,7 +1375,7 @@ public class EDDTableFromCassandra extends EDDTable {
     //  normally allow because of "performance unpredictability".
     // http://www.datastax.com/documentation/cql/3.1/cql/cql_reference/select_r.html
     query.append(" ALLOW FILTERING;");
-    if (verbose) String2.log("statement as text: " + query.toString());
+    if (verbose) String2.log("statement as text: " + query);
 
     // Cassandra doesn't like preparing the same query more than once.
     // "WARNING: Re-preparing already prepared query SELECT deviceid, sampletime, ctext
@@ -1412,7 +1410,7 @@ public class EDDTableFromCassandra extends EDDTable {
       rvToResultsEDV[rv] = dataVariables[resultsDVI[rv]];
     }
     // triggerNRows + 1000 since lists expand, so hard to catch exactly
-    int triggerNRows = EDStatic.partialRequestMaxCells / nRv;
+    int triggerNRows = EDStatic.config.partialRequestMaxCells / nRv;
     Table table = makeEmptySourceTable(rvToResultsEDV, triggerNRows + 1000);
 
     // make a call to Cassandra for each row in pkdTable
@@ -1422,7 +1420,7 @@ public class EDDTableFromCassandra extends EDDTable {
 
       if (Thread.currentThread().isInterrupted())
         throw new SimpleException(
-            "EDDTableFromCassandra.getDataForDapQuery" + EDStatic.caughtInterruptedAr[0]);
+            "EDDTableFromCassandra.getDataForDapQuery" + EDStatic.messages.caughtInterruptedAr[0]);
 
       // Make the BoundStatement
       // ***!!! This method avoids CQL/SQL Injection Vulnerability !!!***
@@ -1552,6 +1550,7 @@ public class EDDTableFromCassandra extends EDDTable {
    *     stats[3]+=nRowsAfterStandardize
    * @return the same or a different table (usually with some results rows)
    */
+  @SuppressWarnings("JavaUtilDate") // Date is needed for Cassandra
   public Table getDataForCassandraQuery(
       int language,
       String loggedInAs,
@@ -1592,7 +1591,7 @@ public class EDDTableFromCassandra extends EDDTable {
                 + ": sourceName="
                 + sn
                 + " not in Cassandra resultsSet columns=\""
-                + tsa.toString()
+                + tsa
                 + "\".");
       }
       rvToCassDataType[rv] = columnDef.getType(rvToRsCol[rv]);
@@ -1600,7 +1599,7 @@ public class EDDTableFromCassandra extends EDDTable {
       if (rvToResultsEDV[rv].sourceDataPAType() == PAType.STRING)
         rvToTypeCodec[rv] = CodecRegistry.DEFAULT_INSTANCE.codecFor(rvToCassDataType[rv]);
     }
-    int triggerNRows = EDStatic.partialRequestMaxCells / nRv;
+    int triggerNRows = EDStatic.config.partialRequestMaxCells / nRv;
     PrimitiveArray paArray[] = new PrimitiveArray[nRv];
     for (int rv = 0; rv < nRv; rv++) paArray[rv] = table.getColumn(rv);
 
@@ -1612,10 +1611,11 @@ public class EDDTableFromCassandra extends EDDTable {
     //  and improve performance by prefetching results.
     // see
     // https://docs.datastax.com/en/drivers/java/3.0/com/datastax/driver/core/ResultSet.html#one--
-    Iterator<Row> iter = rs.iterator();
-    while (iter.hasNext()) {
-      if (rs.getAvailableWithoutFetching() == 100 && !rs.isFullyFetched()) rs.fetchMoreResults();
-      Row row = iter.next();
+    for (Row r : rs) {
+      if (rs.getAvailableWithoutFetching() == 100 && !rs.isFullyFetched()) {
+        @SuppressWarnings("unused")
+        ListenableFuture<ResultSet> unused = rs.fetchMoreResults();
+      }
 
       stats[1]++;
       int listSizeDVI = -1;
@@ -1624,7 +1624,7 @@ public class EDDTableFromCassandra extends EDDTable {
         int rsCol = rvToRsCol[rv];
         EDV edv = rvToResultsEDV[rv];
         PrimitiveArray pa = paArray[rv];
-        if (rsCol == -1 || row.isNull(rsCol)) { // not in resultSet or isNull
+        if (rsCol == -1 || r.isNull(rsCol)) { // not in resultSet or isNull
           pa.addString("");
           maxNRows = Math.max(maxNRows, pa.size());
           continue;
@@ -1633,32 +1633,32 @@ public class EDDTableFromCassandra extends EDDTable {
         if (isListDV[resultsDVI[rv]]) {
           int tListSize = -1;
           if (edv.isBoolean()) { // special case
-            List<Boolean> list = row.getList(rsCol, Boolean.class);
+            List<Boolean> list = r.getList(rsCol, Boolean.class);
             tListSize = list.size();
             for (int i = 0; i < tListSize; i++) pa.addInt(list.get(i) ? 1 : 0);
           } else if (edv instanceof EDVTimeStamp) { // zulu millis -> epoch seconds
-            List<Date> list = row.getList(rsCol, Date.class);
+            List<Date> list = r.getList(rsCol, Date.class);
             tListSize = list.size();
             for (int i = 0; i < tListSize; i++) pa.addDouble(list.get(i).getTime() / 1000.0);
           } else if (tPAType == PAType.STRING) {
             // This doesn't support lists of maps/sets/lists.
-            List<String> list = row.getList(rsCol, String.class);
+            List<String> list = r.getList(rsCol, String.class);
             tListSize = list.size();
             for (int i = 0; i < tListSize; i++) pa.addString(list.get(i));
           } else if (tPAType == PAType.DOUBLE) {
-            List<Double> list = row.getList(rsCol, Double.class);
+            List<Double> list = r.getList(rsCol, Double.class);
             tListSize = list.size();
             for (int i = 0; i < tListSize; i++) pa.addDouble(list.get(i));
           } else if (tPAType == PAType.FLOAT) {
-            List<Float> list = row.getList(rsCol, Float.class);
+            List<Float> list = r.getList(rsCol, Float.class);
             tListSize = list.size();
             for (int i = 0; i < tListSize; i++) pa.addFloat(list.get(i));
           } else if (tPAType == PAType.LONG) {
-            List<Long> list = row.getList(rsCol, Long.class);
+            List<Long> list = r.getList(rsCol, Long.class);
             tListSize = list.size();
             for (int i = 0; i < tListSize; i++) pa.addLong(list.get(i));
           } else if (tPAType == PAType.INT || tPAType == PAType.SHORT || tPAType == PAType.BYTE) {
-            List<Integer> list = row.getList(rsCol, Integer.class);
+            List<Integer> list = r.getList(rsCol, Integer.class);
             tListSize = list.size();
             for (int i = 0; i < tListSize; i++) pa.addInt(list.get(i));
           } else { // PAType.UINT, PAType.USHORT, PAType.UBYTE
@@ -1672,7 +1672,7 @@ public class EDDTableFromCassandra extends EDDTable {
             listSizeDVI = resultsDVI[rv];
             listSize = tListSize;
           } else if (listSize != tListSize) {
-            String2.log("This resultSet row has different list sizes=\n" + row.toString());
+            String2.log("This resultSet row has different list sizes=\n" + r);
             throw new RuntimeException(
                 "Source data error: on one row, "
                     + "two list variables have lists of different sizes ("
@@ -1687,9 +1687,9 @@ public class EDDTableFromCassandra extends EDDTable {
           }
         } else {
           if (edv.isBoolean()) { // special case
-            pa.addInt(row.getBool(rsCol) ? 1 : 0);
+            pa.addInt(r.getBool(rsCol) ? 1 : 0);
           } else if (edv instanceof EDVTimeStamp) { // zulu millis -> epoch seconds
-            pa.addDouble(row.getTimestamp(rsCol).getTime() / 1000.0);
+            pa.addDouble(r.getTimestamp(rsCol).getTime() / 1000.0);
           } else if (tPAType == PAType.STRING) {
             // v2: getString doesn't return the String form of any type
             // https://datastax-oss.atlassian.net/browse/JAVA-135
@@ -1703,7 +1703,7 @@ public class EDDTableFromCassandra extends EDDTable {
             try {
               TypeCodec codec = rvToTypeCodec[rv];
               if (codec != null) {
-                java.nio.ByteBuffer bytes = row.getBytesUnsafe(rsCol);
+                java.nio.ByteBuffer bytes = r.getBytesUnsafe(rsCol);
                 s = bytes == null ? "" : codec.deserialize(bytes, protocolVersion).toString();
               }
 
@@ -1715,13 +1715,13 @@ public class EDDTableFromCassandra extends EDDTable {
             }
             pa.addString(s);
           } else if (tPAType == PAType.DOUBLE) {
-            pa.addDouble(row.getDouble(rsCol));
+            pa.addDouble(r.getDouble(rsCol));
           } else if (tPAType == PAType.FLOAT) {
-            pa.addFloat(row.getFloat(rsCol));
+            pa.addFloat(r.getFloat(rsCol));
           } else if (tPAType == PAType.LONG) {
-            pa.addLong(row.getLong(rsCol));
+            pa.addLong(r.getLong(rsCol));
           } else if (tPAType == PAType.INT || tPAType == PAType.SHORT || tPAType == PAType.BYTE) {
-            pa.addInt(row.getInt(rsCol));
+            pa.addInt(r.getInt(rsCol));
           } else { // PAType.UINT, PAType.USHORT, PAType.UBYTE
             // I think C* doesn't support unsigned data types,
             // so no variable in ERDDAP should be an unsigned type
@@ -1847,7 +1847,7 @@ public class EDDTableFromCassandra extends EDDTable {
     Test.ensureTrue(
         !Math2.odd(tConnectionProperties.length),
         "connectionProperties.length must be an even number.");
-    ConcurrentHashMap<String, String> conProp = new ConcurrentHashMap();
+    ConcurrentHashMap<String, String> conProp = new ConcurrentHashMap<>();
     for (int i = 0; i < tConnectionProperties.length; i += 2) {
       String tKey = tConnectionProperties[i];
       String tValue = tConnectionProperties[i + 1];
@@ -1883,15 +1883,15 @@ public class EDDTableFromCassandra extends EDDTable {
     StringArray partitionKeySA = new StringArray(); // sourceNames
     StringArray subsetVariablesSourceNameSA = new StringArray();
     List<ColumnMetadata> pk = tm.getPartitionKey();
-    for (int i = 0; i < pk.size(); i++) {
-      partitionKeySA.add(pk.get(i).getName());
-      subsetVariablesSourceNameSA.add(pk.get(i).getName());
+    for (ColumnMetadata metadata : pk) {
+      partitionKeySA.add(metadata.getName());
+      subsetVariablesSourceNameSA.add(metadata.getName());
     }
 
     // clusterColumn and indexColumn (could be accumulated as a Set)
     StringArray clusterColumnSA = new StringArray(); // sourceNames
     List<ColumnMetadata> cc = tm.getClusteringColumns();
-    for (int i = 0; i < cc.size(); i++) clusterColumnSA.add(cc.get(i).getName());
+    for (ColumnMetadata columnMetadata : cc) clusterColumnSA.add(columnMetadata.getName());
 
     Table dataSourceTable = new Table();
     Table dataAddTable = new Table();
@@ -1931,11 +1931,10 @@ public class EDDTableFromCassandra extends EDDTable {
       isList[col] = cassType.getName() == DataType.Name.LIST;
       // String2.log(sourceName + " isList=" + isList[col] + " javaClass=" +
       // cassType.asJavaClass());
-      if (isList[col]) cassType = cassType.getTypeArguments().get(0); // the element type
+      if (isList[col]) cassType = cassType.getTypeArguments().getFirst(); // the element type
 
       Attributes sourceAtts = new Attributes();
       Attributes addAtts = new Attributes();
-      boolean isTimestamp = false;
       if (cassType == DataType.cboolean()) sourcePA = new ByteArray();
       else if (cassType == DataType.cint()) sourcePA = new IntArray();
       else if (cassType == DataType.bigint()
@@ -1946,7 +1945,6 @@ public class EDDTableFromCassandra extends EDDTable {
         sourcePA = new DoubleArray();
       else if (cassType == DataType.timestamp()) {
         sourcePA = new DoubleArray();
-        isTimestamp = true;
         addAtts.add("ioos_category", "Time");
         addAtts.add("units", "seconds since 1970-01-01T00:00:00Z");
       } else sourcePA = new StringArray(); // everything else
@@ -1954,10 +1952,12 @@ public class EDDTableFromCassandra extends EDDTable {
       PrimitiveArray destPA = makeDestPAForGDX(sourcePA, sourceAtts);
 
       // lie, to trigger catching LLAT
-      if (destName.equals(EDV.LON_NAME)) sourceAtts.add("units", EDV.LON_UNITS);
-      else if (destName.equals(EDV.LAT_NAME)) sourceAtts.add("units", EDV.LAT_UNITS);
-      else if (destName.equals(EDV.ALT_NAME)) sourceAtts.add("units", EDV.ALT_UNITS);
-      else if (destName.equals(EDV.DEPTH_NAME)) sourceAtts.add("units", EDV.DEPTH_UNITS);
+      switch (destName) {
+        case EDV.LON_NAME -> sourceAtts.add("units", EDV.LON_UNITS);
+        case EDV.LAT_NAME -> sourceAtts.add("units", EDV.LAT_UNITS);
+        case EDV.ALT_NAME -> sourceAtts.add("units", EDV.ALT_UNITS);
+        case EDV.DEPTH_NAME -> sourceAtts.add("units", EDV.DEPTH_UNITS);
+      }
       addAtts =
           makeReadyToUseAddVariableAttributesForDatasetsXml(
               null, // no source global attributes
@@ -1969,18 +1969,23 @@ public class EDDTableFromCassandra extends EDDTable {
               true); // tryToFindLLAT
 
       // but make it real here, and undo the lie
-      if (destName.equals(EDV.LON_NAME)) {
-        addAtts.add("units", EDV.LON_UNITS);
-        sourceAtts.remove("units");
-      } else if (destName.equals(EDV.LAT_NAME)) {
-        addAtts.add("units", EDV.LAT_UNITS);
-        sourceAtts.remove("units");
-      } else if (destName.equals(EDV.ALT_NAME)) {
-        addAtts.add("units", EDV.ALT_UNITS);
-        sourceAtts.remove("units");
-      } else if (destName.equals(EDV.DEPTH_NAME)) {
-        addAtts.add("units", EDV.DEPTH_UNITS);
-        sourceAtts.remove("units");
+      switch (destName) {
+        case EDV.LON_NAME -> {
+          addAtts.add("units", EDV.LON_UNITS);
+          sourceAtts.remove("units");
+        }
+        case EDV.LAT_NAME -> {
+          addAtts.add("units", EDV.LAT_UNITS);
+          sourceAtts.remove("units");
+        }
+        case EDV.ALT_NAME -> {
+          addAtts.add("units", EDV.ALT_UNITS);
+          sourceAtts.remove("units");
+        }
+        case EDV.DEPTH_NAME -> {
+          addAtts.add("units", EDV.DEPTH_UNITS);
+          sourceAtts.remove("units");
+        }
       }
       // time units already done above for all timestamp vars
 
@@ -2091,7 +2096,10 @@ public class EDDTableFromCassandra extends EDDTable {
     // last 2 params: includeDataType, questionDestinationName
     sb.append(
         writeVariablesForDatasetsXml(dataSourceTable, dataAddTable, "dataVariable", true, false));
-    sb.append("</dataset>\n" + "\n");
+    sb.append("""
+            </dataset>
+
+            """);
 
     // convert boolean var dataType from byte to boolean
     String2.replaceAll(sb, "<dataType>byte", "<dataType>boolean");
@@ -2102,12 +2110,11 @@ public class EDDTableFromCassandra extends EDDTable {
         String find = "<sourceName>" + dataSourceTable.getColumnName(col) + "</sourceName>";
         int po = sb.indexOf(find);
         if (po < 0)
-          throw new RuntimeException(
-              "Internal ERROR: \"" + find + "\" not found in sb=\n" + sb.toString());
+          throw new RuntimeException("Internal ERROR: \"" + find + "\" not found in sb=\n" + sb);
         po = sb.indexOf("</dataType>", po + find.length());
         if (po < 0)
           throw new RuntimeException(
-              "Internal ERROR: \"" + find + "\" + </dataType> not found in sb=\n" + sb.toString());
+              "Internal ERROR: \"" + find + "\" + </dataType> not found in sb=\n" + sb);
         sb.insert(po, "List");
       }
     }

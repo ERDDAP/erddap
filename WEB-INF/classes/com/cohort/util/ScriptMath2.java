@@ -81,7 +81,7 @@ public class ScriptMath2 {
    * For security, this is a different object than Math2's random. It is private so only accessible
    * via methods in this class.
    */
-  private static java.util.Random random = new java.util.Random();
+  private static final java.util.Random random = new java.util.Random();
 
   /**
    * 1200.0 / 3927.0. udunits says: US_survey_footS (1200/3937) meter# exact US_survey_feetS
@@ -97,22 +97,24 @@ public class ScriptMath2 {
   public static final double kmPerMile = Math2.kmPerMile;
 
   /** <tt>two</tt> defines powers of two, e.g., Two[0]=1, Two[1]=2, Two[2]=4, ... Two[31]. */
-  public static final int[] Two = Math2.Two;
+  public static final int[] Two = Math2.Two.stream().mapToInt(Integer::intValue).toArray();
 
   /** This defines powers of ten. e.g., Ten[0]=1, Ten[1]=10, Ten[2]=100... Ten[18] */
-  public static final double[] Ten = Math2.Ten;
+  public static final double[] Ten = Math2.Ten.stream().mapToDouble(Double::doubleValue).toArray();
 
   /**
    * This defines inverse powers of ten. e.g., InverseTen[0]=1, InverseTen[1]=.01,
    * InverseTen[2]=.001... InverseTen[18]
    */
-  public static final double[] InverseTen = Math2.InverseTen;
+  public static final double[] InverseTen =
+      Math2.InverseTen.stream().mapToDouble(Double::doubleValue).toArray();
 
   /**
    * -99, -99.9, -99.99, -999, -999.9, -9999, -99999, -999999, -9999999, 99, 99.9, 99.99, 999,
    * 999.9, 9999, 99999, 999999, 9999999
    */
-  public static final double[] COMMON_MV9 = Math2.COMMON_MV9;
+  public static final double[] COMMON_MV9 =
+      Math2.COMMON_MV9.stream().mapToDouble(Double::doubleValue).toArray();
 
   /**
    * This returns the truncated part of a double.

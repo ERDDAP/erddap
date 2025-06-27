@@ -20,8 +20,8 @@ import java.math.BigInteger;
  */
 public class PAOne implements Comparable<PAOne> {
 
-  private PrimitiveArray pa;
-  private int elementSize;
+  private final PrimitiveArray pa;
+  private final int elementSize;
 
   /** This constructs a paOne (with a value of 0) of the specified type. */
   public PAOne(PAType paType) {
@@ -39,6 +39,7 @@ public class PAOne implements Comparable<PAOne> {
   /** This constructs a paOne (with a value of 0) of the same type as the PrimitiveArray. */
   public PAOne(PrimitiveArray otherPA) {
     pa = PrimitiveArray.factory(otherPA.elementType(), 1, true);
+    pa.setMaxIsMV(otherPA.getMaxIsMV());
     elementSize = pa.elementSize();
   }
 
@@ -46,6 +47,7 @@ public class PAOne implements Comparable<PAOne> {
   public PAOne(PrimitiveArray otherPA, int index) {
     pa = PrimitiveArray.factory(otherPA.elementType(), 1, true);
     pa.setFromPA(0, otherPA, index);
+    pa.setMaxIsMV(otherPA.getMaxIsMV());
     elementSize = pa.elementSize();
   }
 
@@ -53,6 +55,7 @@ public class PAOne implements Comparable<PAOne> {
   public PAOne(PAOne tPAOne) {
     pa = PrimitiveArray.factory(tPAOne.pa.elementType(), 1, true);
     pa.setFromPA(0, tPAOne.pa, 0);
+    pa.setMaxIsMV(tPAOne.pa.getMaxIsMV());
     elementSize = pa.elementSize();
   }
 
@@ -388,7 +391,7 @@ public class PAOne implements Comparable<PAOne> {
    */
   @Override
   public final boolean equals(Object otherPAOne) {
-    if (otherPAOne == null || !(otherPAOne instanceof PAOne)) {
+    if (!(otherPAOne instanceof PAOne)) {
       return false;
     }
     return compareTo((PAOne) otherPAOne) == 0;

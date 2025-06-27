@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
+<erddapMessages>
 <!--  Το messages.xml περιέχει μηνύματα κειμένου για το ERDDAP (τα οποία διαβάζονται στο EDStatic).
 Όταν εγκαθιστάτε το ERDDAP στον διακομιστή σας, όλα αυτά τα μηνύματα μπορούν να παραμείνουν ως έχουν,
 καθώς αυτά τα μηνύματα είναι συνήθως τα ίδια σε διαφορετικές εγκαταστάσεις ERDDAP.
@@ -30,7 +30,7 @@ stand-in για κάτι που θα αντικατασταθεί στη θέσ�
   Τα μηνύματα-de.xml και -ga έχουν πολλούς συνδέσμους διπλότυπους. Υποψιάζομαι ότι πολλοί άλλοι είναι έτσι.
 
  -->
-<erddapMessages>
+
 <!--  Αυτό επιστρέφει περιεχόμενο HTML που περιγράφει Αίτημα Συμπιεσμένων Αρχείων.
 Δείτε https://httpd.apache.org/docs/1.3/mod/mod_mime.html
 που λέει ότι x-gzip=gzip και x-compress=συμπίεση
@@ -82,11 +82,13 @@ stand-in για κάτι που θα αντικατασταθεί στη θέσ�
   Εάν έχετε προτάσεις για επιπλέον συνδέσμους, επικοινωνήστε με <kbd>erd dot data at noaa dot gov</kbd> .
   
 ]]></additionalLinks>
+
 <!-- (a)ll(D)atasets (m)etadata and (v)ariable text -->
 <admKeywords>19115, accessible, altitude, average, background, base, dataset, depth, email, erddap, fgdc, graph, grid, information, institution, iso, latitude, location, longitude, make-a-graph, maximum, metadata, minimum, opendap, rss, sequence, service, sos, source, spacing, structure, subscription, subset, summary, table, time, title, url, wcs, wms</admKeywords>
 <admSubsetVariables>accessible, dataStructure, cdm_data_type, class, institution, testOutOfDate</admSubsetVariables>
 <admSummary>Αυτό το σύνολο δεδομένων είναι ένας πίνακας που έχει μια σειρά πληροφοριών για κάθε σύνολο δεδομένων που είναι ενεργό αυτήν τη στιγμή σε αυτό το ERDDAP.</admSummary>
 <admTitle>Η λίστα όλων των ενεργών συνόλων δεδομένων σε αυτό το ERDDAP</admTitle>
+
 <!-- (a)ll (d)atasets (v)ariable (c)omment, (l)ong_name, or (r)eference text -->
 <advl_datasetID>Dataset ID</advl_datasetID>
 <advc_accessible>Ορισμένα σύνολα δεδομένων είναι δημόσια. Ορισμένα μπορεί να είναι ιδιωτικά και ίσως να μην είναι προσβάσιμα σε εσάς.</advc_accessible>
@@ -94,11 +96,11 @@ stand-in για κάτι που θα αντικατασταθεί στη θέσ�
 <advl_institution>Ιδρυμα</advl_institution>
 <advc_dataStructure>Το ERDDAP αντιμετωπίζει κάθε σύνολο δεδομένων είτε ως σύνολο δεδομένων &quot;πλέγμα&quot; ή &quot;πίνακας&quot;.</advc_dataStructure>
 <advl_dataStructure>Δομή δεδομένων</advl_dataStructure>
-<advr_dataStructure>https://erddap.github.io/setupDatasetsXml.html#dataStructures</advr_dataStructure>
+<advr_dataStructure>https://erddap.github.io/docs/server-admin/datasets#why-just-two-basic-data-structures</advr_dataStructure>
 <advl_cdm_data_type>Τύπος κοινού μοντέλου δεδομένων</advl_cdm_data_type>
-<advr_cdm_data_type>https://erddap.github.io/setupDatasetsXml.html#cdm_data_type</advr_cdm_data_type>
+<advr_cdm_data_type>https://erddap.github.io/docs/server-admin/datasets#cdm_data_type</advr_cdm_data_type>
 <advl_class>Τάξη ΕΡΔΔΑΠ</advl_class>
-<advr_class>https://erddap.github.io/setupDatasetsXml.html#datasetTypes</advr_class>
+<advr_class>https://erddap.github.io/docs/server-admin/datasets#list-of-types-datasets</advr_class>
 <advl_title>Τίτλος</advl_title>
 <advl_minLongitude>Ελάχιστο γεωγραφικό μήκος</advl_minLongitude>
 <advl_maxLongitude>Μέγιστο γεωγραφικό μήκος</advl_maxLongitude>
@@ -143,7 +145,7 @@ stand-in για κάτι που θα αντικατασταθεί στη θέσ�
 <advn_outOfDate><![CDATA[
 
 Προφανώς, κανένα σύνολο δεδομένων δεν έχει το χαρακτηριστικό
-<a rel="help" href="https://erddap.github.io/setupDatasetsXml.html#testOutOfDate"
+<a rel="help" href="https://erddap.github.io/docs/server-admin/datasets#testoutofdate"
 ><kbd>testOutOfDate</kbd></a> .
 Ίσως δεν υπάρχουν σύνολα δεδομένων σχεδόν σε πραγματικό χρόνο σε αυτό ERDDAP .
 
@@ -362,6 +364,8 @@ CTD εάν δεν συσχετίζονται με μια <kbd>TimeSeries</kbd> �
 <a rel="help" href="#computerProgram">παρακάμψτε αυτήν την ιστοσελίδα</a> και πραγματοποιήστε μετατροπές μέσα από ένα πρόγραμμα υπολογιστή, ένα σενάριο ή μια ιστοσελίδα.
 
 ]]></convertBypass>
+<convertCOLORs>Χρώματα</convertCOLORs>
+<convertCOLORsMessage>Μετατροπή τιμής σε χρώμα από γραμμή χρωμάτων</convertCOLORsMessage>
 <convertToAFullName><![CDATA[
 <strong>Μετατροπή από {0} σε πλήρες όνομα.</strong>
 ]]></convertToAFullName>
@@ -554,6 +558,7 @@ href="{0}/convert/oceanicAtmosphericVariableNames.txt?fullName=Sea%20Surface%20T
 <convertFipsCounty>Μετατρέψτε έναν κωδικό κομητείας FIPS σε/από όνομα κομητείας</convertFipsCounty>
 
 <!--  Μην αλλάζετε τα παραδείγματα (από defaultN...).  -->
+
 <!--  Ο &quot;κωδικός κομητείας FIPS&quot; ήταν ένας σύνδεσμος προς http://www.itl.nist.gov/fipspubs/fip6-4.htm 
      στη συνέχεια https://www.census.gov/geo/reference/codes/cou.html 
      Τώρα το πιο κοντινό(?) είναι http://www.datypic.com/sc/niem31/t-fips_6-4_USCountyCodeSimpleType.html
@@ -1898,7 +1903,7 @@ ERDDAP ασχολείται με ένα σύνολο δεδομένων με έ�
 <ul>
 <li><a class="selfLink" id="databases" href="#databases" rel="bookmark">Δεδομένα</a> που είναι αποθηκευμένα αυτήν τη στιγμή σε μια σχεσιακή βάση δεδομένων.
 <br>Διαβάστε τις πληροφορίες σχετικά με τον τύπο δεδομένων
-<a rel="help" href="https://erddap.github.io/setupDatasetsXml.html#EDDTableFromDatabase">EDDTableFromDatabase</a> στο ERDDAP, ειδικά τις αρχικές ~2 οθόνες πληροφοριών που μιλούν για την ανάγκη δημιουργίας ενός αποκανονικοποιημένου πίνακα.
+<a rel="help" href="https://erddap.github.io/docs/server-admin/datasets#eddtablefromdatabase">EDDTableFromDatabase</a> στο ERDDAP, ειδικά τις αρχικές ~2 οθόνες πληροφοριών που μιλούν για την ανάγκη δημιουργίας ενός αποκανονικοποιημένου πίνακα.
 Αυτό μπορεί να ακούγεται τρελό.
 Εμπιστευτείτε αρκετά για να διαβάσετε το σκεπτικό για αυτό.
 <br>&nbsp;
@@ -2711,7 +2716,7 @@ ERDDAP θα τα μετατρέψει σε byte, 1 ή 0.
      Ας ελπίσουμε ότι μπορείτε απλώς να αντικαταστήσετε το αναγνωριστικό δεδομένων σας για το &quot;jplMURSST41&quot;
      και τροποποιήστε το &quot;[0 32]&quot; (το εύρος δεδομένων για τη γραμμή χρώματος).   -->
 <EDDGridMatlabPlotExample>imagesc(jplMURSST41.longitude, jplMURSST41.latitude, squeeze(jplMURSST41.analysed_sst), [0 32])
-set(gca, 'YDir', 'normal')</EDDGridMatlabPlotExample>
+set(gca, &#39;YDir&#39;, &#39;normal&#39;)</EDDGridMatlabPlotExample>
 
 <!--  Τα μηνύματα EDDTable εμφανίζονται στην επιτραπέζια φόρμα πρόσβασης δεδομένων και Δημιουργία γραφήματος.  -->
 <EDDTableConstraints>Περιορισμοί</EDDTableConstraints>
@@ -2871,7 +2876,7 @@ what was axisVariable[0] (συνήθως &quot;time&quot;) έτσι ώστε τ�
 
 <!--  Αυτό είναι ένα παράδειγμα ερωτήματος που δημιουργεί ένα γράφημα. 
      Θα μπορούσατε να δημιουργήσετε το παράδειγμά σας μέσω της φόρμας Make A Graph του συνόλου δεδομένων σας στο ERDDAP.   -->
-<EDDTableGraphExample>time,T_25&amp;station="0n0e"&amp;time&gt;=2015-05-23T12:00:00Z&amp;time&lt;=2015-05-31T12:00:00Z&amp;.draw=lines</EDDTableGraphExample>
+<EDDTableGraphExample>time,T_25&amp;station=&quot;0n0e&quot;&amp;time&gt;=2015-05-23T12:00:00Z&amp;time&lt;=2015-05-31T12:00:00Z&amp;.draw=lines</EDDTableGraphExample>
 
 <!--  Αυτό είναι ένα παράδειγμα ερωτήματος που δημιουργεί έναν χάρτη.  -->
 <EDDTableMapExample>longitude,latitude,T_25&amp;time=2015-05-31T12:00:00Z&amp;.draw=markers&amp;.marker=5|5</EDDTableMapExample>
@@ -2975,6 +2980,8 @@ ERDDAP είναι ένας διακομιστής δεδομένων που σα
 <fileHelp_ncml>Προβάλετε τη δομή και τα μεταδεδομένα του συνόλου δεδομένων ως αρχείο UTF-8 NCML .xml.</fileHelp_ncml>
 <fileHelpGrid_odvTxt>Λήψη χρόνου, γεωγραφικού πλάτους, γεωγραφικού μήκους, άλλων μεταβλητών ως αρχείο γενικού υπολογιστικού φύλλου ODV (.txt).</fileHelpGrid_odvTxt>
 <fileHelpTable_odvTxt>Λήψη γεωγραφικού μήκους, γεωγραφικού πλάτους, χρόνου, άλλων στηλών ως αρχείου γενικού υπολογιστικού φύλλου ISO-8859-1 ODV (.txt).</fileHelpTable_odvTxt>
+<fileHelp_parquet>Λήψη ως parquet αρχείο. Μεταδεδομένα περιέχει ονόματα στήλης (&quot;στήλη_όνομα&quot;) και μονάδες (&quot;στήλη_μονάδες&quot;).</fileHelp_parquet>
+<fileHelp_parquet_with_meta>Λήψη ως parquet αρχείο με λεπτομερή μεταδεδομένα.</fileHelp_parquet_with_meta>
 <fileHelp_subset>Προβάλετε μια φόρμα HTML που χρησιμοποιεί πολύπλευρη αναζήτηση για να απλοποιήσει την επιλογή υποσυνόλων των δεδομένων.</fileHelp_subset>
 <fileHelp_timeGaps>Προβάλετε μια λίστα UTF-8 με κενά στις τιμές χρόνου που είναι μεγαλύτερες από το διάμεσο χάσμα.</fileHelp_timeGaps>
 <fileHelp_tsv>Κάντε λήψη ενός πίνακα κειμένου διαχωρισμένου με καρτέλες ISO-8859-1 (γραμμή 1: ονόματα, γραμμή 2: μονάδες, ISO 8601 φορές).</fileHelp_tsv>
@@ -3265,7 +3272,7 @@ ERDDAP + curl είναι εκπληκτικά ισχυρό και σας επι�
 <a rel="help" href="https://anaconda.org/eumetsat/ncview">μέσω Conda <img
        src="https://coastwatch.pfeg.noaa.gov/erddap/images/external.png" alt=" (external link)"
        title="Αυτός ο σύνδεσμος προς έναν εξωτερικό ιστότοπο δεν αποτελεί έγκριση."></a>).
-<li><a rel="help" href="https://erddap.github.io/setupDatasetsXml.html#NCO">NCO</a>, ένα ισχυρό εργαλείο γραμμής εντολών για μόνιμη τροποποίηση αρχείων .nc .
+<li><a rel="help" href="https://erddap.github.io/docs/server-admin/datasets#netcdf-operators-nco">NCO</a>, ένα ισχυρό εργαλείο γραμμής εντολών για μόνιμη τροποποίηση αρχείων .nc .
 <li><a rel="help" href="https://www.unidata.ucar.edu/downloads/netcdf/">NetCDF -C και NetCDF - Java <img
        src="https://coastwatch.pfeg.noaa.gov/erddap/images/external.png" alt=" (external link)"
        title="Αυτός ο σύνδεσμος προς έναν εξωτερικό ιστότοπο δεν αποτελεί έγκριση."></a>, τις κύριες βιβλιοθήκες λογισμικού για C, C++, Fortran ή Java για ανάγνωση και εγγραφή αρχείων .nc .
@@ -3661,9 +3668,11 @@ href="https://groups.google.com/forum/#!forum/erddap">https://groups.google.com/
 Η προεπιλογή για τα ρολόγια είναι 8192. Η προεπιλογή για παράδειγμα είναι 128.</inotifyFix>
 
 <!--  μη μεταφράσεις  -->
-<inotifyFixCommands>sudo sysctl fs.inotify.max_user_watches=65536
+<inotifyFixCommands>
+  sudo sysctl fs.inotify.max_user_watches=65536
   sudo sysctl fs.inotify.max_user_instances=1024
-  sudo sysctl -p</inotifyFixCommands>
+  sudo sysctl -p
+</inotifyFixCommands>
 <interpolate>Παρεμβάλλω</interpolate>
 <javaProgramsHTML><![CDATA[
 
@@ -3673,7 +3682,7 @@ href="https://groups.google.com/forum/#!forum/erddap">https://groups.google.com/
 <p>Ή, δεδομένου ότι ERDDAP είναι ένα πρόγραμμα ανοιχτού κώδικα, μπορείτε επίσης να δημιουργήσετε το δικό σας αντίγραφο του ERDDAP στον δικό σας διακομιστή (δημόσιο προσβάσιμο ή μη) για την εξυπηρέτηση των δικών σας δεδομένων.
 Τα προγράμματα Java σας μπορούν να λάβουν δεδομένα από αυτό το αντίγραφο του ERDDAP .
 Δείτε
-<a rel="help" href="https://erddap.github.io/setup.html">Ρύθμιση του δικού σας ERDDAP</a> .
+<a rel="help" href="https://erddap.github.io/docs/server-admin/deploy-install">Ρύθμιση του δικού σας ERDDAP</a> .
   
 ]]></javaProgramsHTML>
 
@@ -3760,7 +3769,7 @@ href="https://groups.google.com/forum/#!forum/erddap">https://groups.google.com/
 Προς το παρόν, ERDDAP υποστηρίζει έλεγχο ταυτότητας μόνο μέσω λογαριασμών email που διαχειρίζεται η Google, που περιλαμβάνει λογαριασμούς email στο NOAA και σε πολλά πανεπιστήμια.
 Εάν ένα ERDDAP έχει ενεργοποιημένο τον έλεγχο ταυτότητας, οποιοσδήποτε έχει λογαριασμό ηλεκτρονικού ταχυδρομείου που διαχειρίζεται η Google μπορεί να συνδεθεί, αλλά θα έχει πρόσβαση μόνο στα ιδιωτικά σύνολα δεδομένων στα οποία ο διαχειριστής του ERDDAP του έχει εξουσιοδοτήσει ρητά να έχει πρόσβαση.
 Για οδηγίες σχετικά με τη σύνδεση στο ERDDAP από πρόγραμμα περιήγησης ή μέσω σεναρίου, ανατρέξτε στην
-<a rel="help" href="https://erddap.github.io/AccessToPrivateDatasets.html">ενότητα Πρόσβαση σε ιδιωτικά σύνολα δεδομένων στο ERDDAP</a> .
+<a rel="help" href="https://erddap.github.io/docs/user/AccessToPrivateDatasets">ενότητα Πρόσβαση σε ιδιωτικά σύνολα δεδομένων στο ERDDAP</a> .
   
 ]]></loginHTML>
 <loginAttemptBlocked>ΣΦΑΛΜΑ: Οι προσπάθειες σύνδεσης για το {0} αποκλείονται προσωρινά μετά από 3 αποτυχημένες προσπάθειες.
@@ -4231,6 +4240,7 @@ href="https://groups.google.com/forum/#!forum/erddap">https://groups.google.com/
 <moreInformation>περισσότερες πληροφορίες</moreInformation>
 
 <!--  Αυτά τα μηνύματα τύπου MessageFormat προωθούνται στο MustBe.xxx.  -->
+
 <!--  Αυτό είναι ένα σημαντικό μήνυμα σφάλματος. Υποδεικνύει ότι το αίτημα ήταν έγκυρο,
 αλλά το αποτέλεσμα δεν ήταν δεδομένα. Οι πελάτες μπορεί να αναζητούν αυτό ακριβώς το μήνυμα.
 Προς το παρόν, είναι καλύτερο να μην το αλλάξετε αυτό.
@@ -4328,6 +4338,12 @@ href="https://groups.google.com/forum/#!forum/erddap">https://groups.google.com/
 <br>&nbsp;
   
 ]]></outOfDateKeepTrack>
+
+<!--pageFirst> first</pageFirst>
+Προηγούμενο </pageΠροηγούμενο>
+< pageCurrent>τρέχον </ pageCurrent>
+<pageNext>next</pageNext>
+<pagelast>last</pageΤελευταία-->
 
 <!--  Αυτές είναι οι επιλογές παλέτας.
      Πρέπει να υπάρχει ένα αρχείο .cpt για καθένα στον κατάλογο erddap/WEB-INF/cptfiles.
@@ -4448,7 +4464,7 @@ ERDDAP είναι και τα δύο:
 Υπάρχουν πολλές δυνατότητες στο ERDDAP που μπορούν να χρησιμοποιηθούν από προγράμματα υπολογιστή ή σενάρια που γράφετε.
 Μπορείτε να τα χρησιμοποιήσετε για να δημιουργήσετε άλλες διαδικτυακές εφαρμογές ή υπηρεσίες web πάνω από ERDDAP, κάνοντας ERDDAP να κάνει το μεγαλύτερο μέρος της δουλειάς! Επομένως, εάν έχετε μια ιδέα για μια καλύτερη διεπαφή με τα δεδομένα που εξυπηρετεί ERDDAP ή μια ιστοσελίδα που χρειάζεται έναν εύκολο τρόπο πρόσβασης στα δεδομένα, σας ενθαρρύνουμε να δημιουργήσετε τη δική σας εφαρμογή ιστού, υπηρεσία ιστού ή ιστοσελίδα και να χρησιμοποιήσετε το ERDDAP ως θεμέλιο.
 Το σύστημά σας μπορεί να λάβει δεδομένα, γραφήματα και άλλες πληροφορίες από ERDDAP του ERD ή από άλλες εγκαταστάσεις ERDDAP, ή μπορείτε<!-- setup always from coastwatch's erddap -->
-<a rel="help" href="https://erddap.github.io/setup.html">ρυθμίστε τον δικό σας διακομιστή ERDDAP</a>, ο οποίος μπορεί να είναι προσβάσιμος από το κοινό ή μόνο ιδιωτικά.
+<a rel="help" href="https://erddap.github.io/docs/server-admin/deploy-install">ρυθμίστε τον δικό σας διακομιστή ERDDAP</a>, ο οποίος μπορεί να είναι προσβάσιμος από το κοινό ή μόνο ιδιωτικά.
 <h3><a class="selfLink" id="requests" href="#requests" rel="bookmark">RESTful αιτήματα URL</a></h3>
 Τα αιτήματα για πληροφορίες διεπαφής χρήστη από ERDDAP (για παράδειγμα, αποτελέσματα αναζήτησης) χρησιμοποιούν το καθολικό πρότυπο του ιστού για αιτήματα:
 <a rel="help" href="https://en.wikipedia.org/wiki/Uniform_Resource_Locator">URL &externalLinkHtml;</a> αποστέλλεται μέσω
@@ -4507,7 +4523,7 @@ ERDDAP μπορεί να επιστρέψει αποτελέσματα διεπ�
 <li>.nc - ένα επίπεδο, σαν πίνακα, δυαδικό αρχείο NetCDF -3.
 (<a rel="help" href="https://www.unidata.ucar.edu/software/netcdf/">περισσότερο&nbsp;πληροφορίες &externalLinkHtml;</a>)
 <li>.nccsv - ένα επίπεδο αρχείο ASCII CSV, σαν πίνακα, NetCDF .
-(<a rel="help" href="https://erddap.github.io/NCCSV.html">περισσότερο&nbsp;πληροφορίες &externalLinkHtml;</a>)
+(<a rel="help" href="https://erddap.github.io/docs/user/nccsv-1.20">περισσότερο&nbsp;πληροφορίες &externalLinkHtml;</a>)
 <li>.tsv - ένας πίνακας κειμένου ASCII διαχωρισμένος με καρτέλες.
 (<a rel="help" href="https://jkorpela.fi/TSV.html">περισσότερο&nbsp;πληροφορίες &externalLinkHtml;</a>)
 <li>.xhtml - ένα αρχείο XHTML (XML) με τα δεδομένα σε έναν πίνακα.
@@ -5220,7 +5236,7 @@ ERDDAP χρησιμοποιεί πάντα τη ζώνη ώρας Zulu (UTC, GMT
 <p><a rel="help" href="&erddapUrl;/information.html"><strong>Μάθετε περισσότερα για ERDDAP .</strong></a>
 <p><strong>Πάροχοι δεδομένων:
 Μπορείτε
-<a rel="help" href="https://erddap.github.io/setup.html">να δημιουργήσετε τον δικό σας διακομιστή ERDDAP</a> και να εξυπηρετήσετε τα δικά σας δεδομένα.</strong> ERDDAP είναι δωρεάν και ανοιχτού κώδικα.
+<a rel="help" href="https://erddap.github.io/docs/server-admin/deploy-install">να δημιουργήσετε τον δικό σας διακομιστή ERDDAP</a> και να εξυπηρετήσετε τα δικά σας δεδομένα.</strong> ERDDAP είναι δωρεάν και ανοιχτού κώδικα.
 Χρησιμοποιεί άδειες τύπου Apache, ώστε να μπορείτε να κάνετε ό,τι θέλετε με αυτό.
 Η εμφάνιση του ERDDAP είναι προσαρμόσιμη, επομένως ERDDAP σας θα αντικατοπτρίζει το ίδρυμά σας και όχι NOAA .
 Η μικρή προσπάθεια για τη σύσταση ERDDAP φέρνει πολλά οφέλη.
@@ -5235,6 +5251,7 @@ href="https://www.ngdc.noaa.gov/wiki/index.php/Data_Access_Technical_Recommendat
 ]]></standardShortDescriptionHtml>
 
 <!--  Bob: δείτε τον ίδιο πίνακα css στον Table.ERD_TABLE_CSS  -->
+
 <!--  Το startHeadHtml έχει την αρχή του εγγράφου HTML και τις ετικέτες &quot;head&quot;. 
 (ξεκινώντας από το &quot;&lt;!DOCTYPE&quot;, αλλά δεν περιλαμβάνει το &quot;&lt;/head&gt;&quot;) 
 για όλες τις ιστοσελίδες HTML. 
@@ -5271,6 +5288,7 @@ href="https://www.ngdc.noaa.gov/wiki/index.php/Data_Access_Technical_Recommendat
 <link href="&erddapUrl;/images/erddap2.css" rel="stylesheet" type="text/css">
 <meta name="viewport" content="width=device-width, initial-scale=1">  
 ]]></startHeadHtml5>
+
 <!-- The standard startBodyHtml -->
 <startBodyHtml5><![CDATA[
 <body>
@@ -5572,7 +5590,7 @@ Push and Pull Technology</a>
 <br>&nbsp;
 <li><strong><a class="selfLink" id="localAndRemote" href="#localAndRemote" rel="bookmark">ERDDAP μπορεί να λαμβάνει δεδομένα από τοπικές (στον σκληρό δίσκο του διακομιστή) και απομακρυσμένες (πρόσβαση μέσω web) πηγές δεδομένων.</a></strong>
 <br>Δείτε τη
-<a rel="help" href="https://erddap.github.io/setupDatasetsXml.html#datasetTypes">λίστα με τους τύπους πηγών δεδομένων</a> στις οποίες μπορεί να έχει πρόσβαση ERDDAP .
+<a rel="help" href="https://erddap.github.io/docs/server-admin/datasets#list-of-types-datasets">λίστα με τους τύπους πηγών δεδομένων</a> στις οποίες μπορεί να έχει πρόσβαση ERDDAP .
 <br>&nbsp;
 <li><strong><a class="selfLink" id="scientificData" href="#scientificData" rel="bookmark">ERDDAP μπορεί να εξυπηρετήσει πολλούς τύπους επιστημονικών δεδομένων, όχι μόνο ωκεανογραφικά δεδομένα.</a></strong>
 <br>ERDDAP είναι ένας διακομιστής δεδομένων που γράφτηκε στο
@@ -5726,8 +5744,8 @@ ERDDAP είναι δομημένο για αυτές τις προσθήκες �
       title="Αυτός ο σύνδεσμος προς έναν εξωτερικό ιστότοπο δεν αποτελεί έγκριση."></a>) περιγράφοντας τα δεδομένα.
 ERDDAP επιτρέπει (και ενθαρρύνει) τον διαχειριστή να περιγράψει μεταδεδομένα που θα προστεθούν στα σύνολα δεδομένων και τις μεταβλητές τους on-the-fly.
 Δείτε την
-<a rel="help" href="https://erddap.github.io/setupDatasetsXml.html#addAttributes">ενότητα addAttributes</a> των
-<a rel="help" href="https://erddap.github.io/setupDatasetsXml.html">οδηγιών για διαχειριστές</a> .
+<a rel="help" href="https://erddap.github.io/docs/server-admin/datasets#addattributes">ενότητα addAttributes</a> των
+<a rel="help" href="https://erddap.github.io/docs/server-admin/datasets">οδηγιών για διαχειριστές</a> .
 <br>&nbsp;
 <li><strong><a class="selfLink" id="images" href="#images" rel="bookmark"
  >ERDDAP σάς επιτρέπει να ζητάτε αρχεία εικόνας .png και .pdf με γραφήματα και χάρτες</a></strong>
@@ -5883,7 +5901,7 @@ ERDDAP έχει ενσωματωμένες μεθόδους για έλεγχο 
 Οι χρήστες πρέπει να χρησιμοποιούν https:
 (Secure Sockets Layer) για να συνδεθούν και να αποκτήσουν πρόσβαση σε ιδιωτικά σύνολα δεδομένων.
 Τα σύνολα δεδομένων μπορούν να διαμορφωθούν ώστε να έχουν γραφήματα και χάρτες δημόσια προσβάσιμα, αλλά να έχουν πρόσβαση μόνο σε εξουσιοδοτημένους χρήστες.
-(<a rel="help" href="https://erddap.github.io/setup.html#security">περισσότερες πληροφορίες</a>)
+(<a rel="help" href="https://erddap.github.io/docs/server-admin/additional-information#security">περισσότερες πληροφορίες</a>)
 <br>&nbsp;
 <li><strong><a class="selfLink" id="chunks" href="#chunks" rel="bookmark">ERDDAP επεξεργάζεται δεδομένα σε κομμάτια.</a></strong>
 <br>Για εξοικονόμηση μνήμης (ένα μεγάλο πρόβλημα) και για να ξεκινήσουν νωρίτερα οι απαντήσεις, ERDDAP επεξεργάζεται αιτήματα δεδομένων σε κομμάτια — λαμβάνει επανειλημμένα ένα κομμάτι δεδομένων από την πηγή, καθαρίζει (για παράδειγμα, προσθέτοντας
@@ -5908,15 +5926,15 @@ Push and Pull Technology</a></strong>
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
       title="Αυτός ο σύνδεσμος προς έναν εξωτερικό ιστότοπο δεν αποτελεί έγκριση."></a> :
 Αλλά ERDDAP έχει επίσης τη δυνατότητα να λαμβάνει ενεργά όλα τα διαθέσιμα δεδομένα από μια απομακρυσμένη πηγή δεδομένων και
-<a rel="help" href="https://erddap.github.io/setupDatasetsXml.html#EDDGridCopy">να αποθηκεύει ένα τοπικό αντίγραφο των δεδομένων</a> .
+<a rel="help" href="https://erddap.github.io/docs/server-admin/datasets#eddgridcopy">να αποθηκεύει ένα τοπικό αντίγραφο των δεδομένων</a> .
 <a rel="help" href="https://en.wikipedia.org/wiki/Push_technology">Τεχνολογία Push <img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
       title="Αυτός ο σύνδεσμος προς έναν εξωτερικό ιστότοπο δεν αποτελεί έγκριση."></a> :
 Χρησιμοποιώντας
 <a href="#subscriptions">τις συνδρομητικές υπηρεσίες</a> του ERDDAP, οι άλλοι διακομιστές δεδομένων μπορούν να ειδοποιηθούν μόλις είναι διαθέσιμα νέα δεδομένα ώστε να μπορούν να ζητήσουν τα δεδομένα (τραβώντας τα δεδομένα).
-<a rel="help"  href="https://erddap.github.io/setupDatasetsXml.html#EDDGridFromErddap">EDDGrid FromErddap</a> και
-<a rel="help"  href="https://erddap.github.io/setupDatasetsXml.html#EDDTableFromErddap">το EDDTableFromErddap</a> του ERDDAP χρησιμοποιούν τις συνδρομητικές υπηρεσίες και
-<a rel="help" href="https://erddap.github.io/setup.html#flag">το σύστημα σημαίας</a> του ERDDAP, έτσι ώστε να ειδοποιούνται αμέσως όταν είναι διαθέσιμα νέα δεδομένα.
+<a rel="help"  href="https://erddap.github.io/docs/server-admin/datasets#eddfromerddap">EDDGrid FromErddap</a> και
+<a rel="help"  href="https://erddap.github.io/docs/server-admin/datasets#eddfromerddap">το EDDTableFromErddap</a> του ERDDAP χρησιμοποιούν τις συνδρομητικές υπηρεσίες και
+<a rel="help" href="https://erddap.github.io/docs/server-admin/additional-information#flag">το σύστημα σημαίας</a> του ERDDAP, έτσι ώστε να ειδοποιούνται αμέσως όταν είναι διαθέσιμα νέα δεδομένα.
 Μπορείτε να τα συνδυάσετε με εξαιρετικό αποτέλεσμα:
 εάν τυλίξετε ένα αντίγραφο EDDGrid γύρω από ένα σύνολο δεδομένων EDDGrid FromErddap (ή τυλίξετε ένα EDDTableCopy γύρω από ένα σύνολο δεδομένων EDDTableFromErddap), ERDDAP θα δημιουργήσει και θα διατηρήσει αυτόματα ένα τοπικό αντίγραφο του συνόλου δεδομένων άλλου ERDDAP .
 Επειδή οι συνδρομητικές υπηρεσίες λειτουργούν μόλις είναι διαθέσιμα νέα δεδομένα, η τεχνολογία push διαδίδει τα δεδομένα πολύ γρήγορα (μέσα σε δευτερόλεπτα).
@@ -6003,9 +6021,9 @@ ERDDAP, ως διακομιστής δεδομένων γενικής χρήση
 (Πιστεύω ότι θα μπορούσε να αποδειχθεί ότι ERDDAP έχει εξοικονομήσει περισσότερο χρόνο από τον επιστήμονα NOAA από ό,τι έχω ξοδέψει για την ανάπτυξη ERDDAP .
 Time=Money.) Αλλά το δευτερεύον πλεονέκτημα είναι ότι οποιοσδήποτε άλλος οργανισμός μπορεί να
 <a rel="bookmark" 
-href="https://erddap.github.io/setup.html">πραγματοποιήσει λήψη, εγκατάσταση και χρήση ERDDAP</a> <strong>δωρεάν</strong> για τη διανομή του επιστημονικά δεδομένα.
+href="https://erddap.github.io/docs/server-admin/deploy-install">πραγματοποιήσει λήψη, εγκατάσταση και χρήση ERDDAP</a> <strong>δωρεάν</strong> για τη διανομή του επιστημονικά δεδομένα.
 <p><a rel="bookmark" 
-href="https://erddap.github.io/setup.html#organizations"
+href="https://erddap.github.io/#who-uses-erddap"
 >Πάνω από 90 οργανισμοί σε τουλάχιστον 14 χώρες χρησιμοποιούν ERDDAP</a> .
 Ίσως υπάρχει ένα τέτοιο πράγμα όπως ένα δωρεάν γεύμα.
 <p>ERDDAP είναι ένα πρόγραμμα Java .
@@ -6120,14 +6138,14 @@ NOAA / NMFS / SWFSC / ERD .</kbd>
 <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/images/erddapTalk/erdData.html">εδώ</a> .
 <br>&nbsp;
 <p><strong><a class="selfLink" id="setup" href="#setup" rel="bookmark">Μπορείτε</a></strong>
-<a rel="help" href="https://erddap.github.io/setup.html"><strong>να ρυθμίσετε τον δικό σας διακομιστή ERDDAP</strong></a> και να εξυπηρετήσετε τα δικά σας δεδομένα.
+<a rel="help" href="https://erddap.github.io/docs/server-admin/deploy-install"><strong>να ρυθμίσετε τον δικό σας διακομιστή ERDDAP</strong></a> και να εξυπηρετήσετε τα δικά σας δεδομένα.
 <ul>
 <li>Η μικρή προσπάθεια για τη σύσταση ERDDAP φέρνει πολλά οφέλη.
 <li>Εάν διαθέτετε ήδη μια υπηρεσία web για τη διανομή των δεδομένων σας, μπορείτε να ρυθμίσετε ERDDAP για πρόσβαση στα δεδομένα σας μέσω της υπάρχουσας υπηρεσίας ή μέσω των αρχείων προέλευσης ή της βάσης δεδομένων.
 Στη συνέχεια, οι χρήστες θα έχουν έναν άλλο τρόπο πρόσβασης στα δεδομένα σας και θα μπορούν να κάνουν λήψη των δεδομένων σε πρόσθετες μορφές αρχείων ή ως γραφήματα ή χάρτες.
 <li>Εάν διαθέτετε σύνολα δεδομένων που έχουν μεγάλη ζήτηση, μπορείτε να εγκαταστήσετε
 <a rel="help" 
-  href="https://erddap.github.io/grids.html"
+  href="https://erddap.github.io/docs/server-admin/scaling"
   >πολλά ERDDAP που συνεργάζονται</a> για να επεκταθούν και να καλύψουν τις ανάγκες ενός μεγάλου κέντρου διανομής δεδομένων.
 </ul>
 <h2><a class="selfLink" id="contact" href="#contact" rel="bookmark">Επικοινωνήστε μαζί μας</a></h2>
@@ -6152,11 +6170,14 @@ href="https://groups.google.com/forum/#!forum/erddap">https://groups.google.com/
 θα μετατραπεί στην τιμή &quot;μετά&quot; UDUNITS.
 Οι κενές γραμμές διασφαλίζουν ότι οι υπόλοιπες γραμμές είναι γραμμές «πριν» και «μετά».
  -->
-<standardizeUdunits>degrees +E
+<standardizeUdunits>
+degrees +E
 degrees_east
 
 degrees +N
-degrees_north</standardizeUdunits>
+degrees_north
+
+</standardizeUdunits>
 <time>χρόνος</time>
 <timeoutOtherRequests>Χρονικό όριο αναμονής για επεξεργασία των άλλων αιτημάτων σας.</timeoutOtherRequests>
 
@@ -6167,7 +6188,8 @@ degrees_north</standardizeUdunits>
 θα μετατραπεί στην τιμή &quot;μετά&quot; UDUNITS.
 Οι κενές γραμμές διασφαλίζουν ότι οι υπόλοιπες γραμμές είναι γραμμές «πριν» και «μετά».
  -->
-<ucumToUdunits>%.{cover}
+<ucumToUdunits>
+%.{cover}
 % cover
 
 deg{azimuth}
@@ -6177,7 +6199,9 @@ deg east
 degrees_east
 
 deg north 
-degrees_north</ucumToUdunits>
+degrees_north 
+
+</ucumToUdunits>
 
 <!--  Αυτός είναι ένας τρόπος παράκαμψης του μετατροπέα UDUNITS σε UCUM του ERDDAP
 παρέχοντας συγκεκριμένες μετατροπές. 
@@ -6186,7 +6210,8 @@ degrees_north</ucumToUdunits>
 θα μετατραπεί στην τιμή UCUM &#39;μετά&#39;.
 Οι κενές γραμμές διασφαλίζουν ότι οι υπόλοιπες γραμμές είναι γραμμές «πριν» και «μετά».
  -->
-<udunitsToUcum>degrees +E
+<udunitsToUcum>
+degrees +E
 deg{east}
 
 degrees (+E)
@@ -6208,7 +6233,9 @@ degrees-north
 deg{north}
 
 degrees north
-deg{north}</udunitsToUcum>
+deg{north}
+
+</udunitsToUcum>
 
 <!--  Αυτή είναι μια προσπάθεια αντιμετώπισης μεταδεδομένων πηγών URL μη ενημερωμένων.
 Το updateUrls εφαρμόζεται σε καθένα από τα χαρακτηριστικά μεταδεδομένων String ενός συνόλου δεδομένων 
@@ -6232,7 +6259,8 @@ deg{north}</udunitsToUcum>
 * Η μετατροπή http://www.csc.noaa.gov σε ακτή είναι ατελής: 
   έγγραφα σε διάφορα μέρη.  Αυτό είναι σύνηθες για μεγάλες αλλαγές στο όνομα τομέα.
  -->
-<updateUrls>http://accession.nodc.noaa.gov/
+<updateUrls>
+http://accession.nodc.noaa.gov/
 https://data.nodc.noaa.gov/cgi-bin/iso?id=gov.noaa.nodc:
 
 www.unidata.ucar.edu/software/thredds/current/netcdf-java/ncml/AnnotatedSchema4.html
@@ -7325,7 +7353,9 @@ http://xerial.org
 https://xerial.org
 
 http://xkcd.com
-https://xkcd.com</updateUrls>
+https://xkcd.com
+
+</updateUrls>
 
 <!--  Αυτές είναι διευθύνσεις URL http που πιθανότατα κάποια στιγμή θα είναι προσβάσιμες από το https.
 Παρατίθενται ως σχόλιο εδώ για γρήγορη δοκιμή.
@@ -7408,6 +7438,7 @@ https://www.slf4j.org
 https://www.usgin.org
 
  -->
+
 <!--  Αυτή είναι μια λίστα ονομάτων χαρακτηριστικών διαχωρισμένη με κόμματα τα οποία θα παραλείψουν τα updateUrls. 
 Αυτό δεν μπορεί να είναι τίποτα. Έτσι, αν δεν θέλετε τίποτα, πληκτρολογήστε μια ανόητη λέξη που θα το κάνει
 να μην είναι ποτέ όνομα χαρακτηριστικού.  -->
@@ -7745,7 +7776,7 @@ yyyy-MM-ddTHH:mm:ssZ .
 (Άλλες μεταβλητές άξονα είναι ΠΡΟΑΙΡΕΤΙΚΑ.)
 <li>ΠΡΕΠΕΙ να υπάρχουν κάποιες τιμές γεωγραφικού μήκους μεταξύ -180 και 180.
 <li>ΠΡΕΠΕΙ να καθοριστούν
-<a rel="help" href="https://erddap.github.io/setupDatasetsXml.html#colorBar">τα χαρακτηριστικά colorBarMinimum και colorBarMaximum</a> .
+<a rel="help" href="https://erddap.github.io/docs/server-admin/datasets#color-bar-attributes">τα χαρακτηριστικά colorBarMinimum και colorBarMaximum</a> .
 (Άλλα χαρακτηριστικά γραμμής χρώματος είναι ΠΡΟΑΙΡΕΤΙΚΑ.)
 </ul>
 <li><strong>Επίπεδα δεδομένων πλέγματος:</strong> Στο WMS του ERDDAP, όλες οι μεταβλητές δεδομένων σε σύνολα δεδομένων πλέγματος που χρησιμοποιούν διαστάσεις γεωγραφικού μήκους και γεωγραφικού πλάτους είναι διαθέσιμες μέσω WMS .

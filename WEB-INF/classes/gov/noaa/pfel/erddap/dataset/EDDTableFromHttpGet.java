@@ -20,9 +20,12 @@ import com.cohort.util.MustBe;
 import com.cohort.util.SimpleException;
 import com.cohort.util.String2;
 import com.cohort.util.XML;
+import com.google.common.collect.ImmutableList;
 import gov.noaa.pfel.coastwatch.pointdata.Table;
 import gov.noaa.pfel.coastwatch.util.FileVisitorDNLS;
 import gov.noaa.pfel.coastwatch.util.SSR;
+import gov.noaa.pfel.erddap.dataset.metadata.LocalizedAttributes;
+import gov.noaa.pfel.erddap.util.EDMessages;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.*;
 import java.io.BufferedOutputStream;
@@ -35,7 +38,8 @@ import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
-import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.locks.ReentrantLock;
@@ -54,13 +58,16 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
   public static final String TIMESTAMP = "timestamp"; // epic seconds as double
   public static final String AUTHOR = "author"; // String
   public static final String COMMAND = "command"; // byte
-  public static final String SPECIAL_VAR_NAMES[] = {TIMESTAMP, AUTHOR, COMMAND};
-  public static final String SPECIAL_VAR_TYPES[] = {"double", "String", "byte"};
-  public static final String SPECIAL_VAR_UNITS[] = {Calendar2.SECONDS_SINCE_1970, null, null};
+  public static final ImmutableList<String> SPECIAL_VAR_NAMES =
+      ImmutableList.of(TIMESTAMP, AUTHOR, COMMAND);
+  public static final ImmutableList<String> SPECIAL_VAR_TYPES =
+      ImmutableList.of("double", "String", "byte");
+  public static final ImmutableList<String> SPECIAL_VAR_UNITS =
+      ImmutableList.of(Calendar2.SECONDS_SINCE_1970, "", "");
   // COMMAND needs CF FLAG attributes 0=insert, 1=delete
   public static final byte INSERT_COMMAND = 0;
   public static final byte DELETE_COMMAND = 1;
-  public static final String NO_PROCESS_COMMANDS[] = {">", ">=", "="};
+  public static final ImmutableList<String> NO_PROCESS_COMMANDS = ImmutableList.of(">", ">=", "=");
 
   public static final String NUMERIC_TIMESTAMP_REGEX =
       "numericTimestamp\":(\\d\\.\\d{2,12}E9),?\\n";
@@ -92,7 +99,7 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
   //  passed directly to the new EDDTableFromHttpGet when the dataset is reloaded
   //  or to force the old version of the dataset to save fileTable info to disk
   //  right before reading it for new dataset.
-  public static long saveDirTableFileTableBadFilesEveryMS = 5000;
+  public static final long saveDirTableFileTableBadFilesEveryMS = 5000;
 
   /**
    * EDDTableFromHttpGet DOESN'T SUPPORT UNPACKWHAT OPTIONS (other than 0). This returns the default
@@ -105,7 +112,7 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
     return DEFAULT_STANDARDIZEWHAT;
   }
 
-  public static int DEFAULT_STANDARDIZEWHAT = 0;
+  public static final int DEFAULT_STANDARDIZEWHAT = 0;
 
   /**
    * This extracts the numericTimestamp from the results.
@@ -155,8 +162,8 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
       String tSosOfferingPrefix,
       String tDefaultDataQuery,
       String tDefaultGraphQuery,
-      Attributes tAddGlobalAttributes,
-      Object[][] tDataVariables,
+      LocalizedAttributes tAddGlobalAttributes,
+      List<DataVariableInfo> tDataVariables,
       int tReloadEveryNMinutes,
       int tUpdateEveryNMillis,
       String tFileDir,
@@ -236,6 +243,9 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
         String2.ERROR + " in EDDTableFromHttpGet constructor for datasetID=" + datasetID + ": ";
     if (standardizeWhat != 0) throw new RuntimeException(msg + "'standardizeWhat' MUST be 0.");
 
+    // The attributes this gets/sets should not need to be localized (max/min
+    // value for example). Just use the default language.
+    int language = EDMessages.DEFAULT_LANGUAGE;
     // cacheFromUrl must be null
     msg = String2.ERROR + " in EDDTableFromHttpGet constructor for datasetID=" + datasetID + ": ";
     if (cacheFromUrl != null) throw new RuntimeException(msg + "'cacheFromUrl' MUST be null.");
@@ -251,30 +261,33 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
 
     // Check last 3 var SPECIAL_VAR_NAMES: TIMESTAMP, AUTHOR, COMMAND
     for (int i = 0; i < 3; i++) {
-      int which = String2.indexOf(dataVariableSourceNames, SPECIAL_VAR_NAMES[i]);
+      int which = String2.indexOf(dataVariableSourceNames, SPECIAL_VAR_NAMES.get(i));
       if (which < 0)
         throw new SimpleException(
-            msg + "One of the variables must have the name \"" + SPECIAL_VAR_NAMES[which] + "\".");
+            msg
+                + "One of the variables must have the name \""
+                + SPECIAL_VAR_NAMES.get(which)
+                + "\".");
 
-      if (!SPECIAL_VAR_TYPES[i].equals(dataVariables[which].sourceDataType()))
+      if (!SPECIAL_VAR_TYPES.get(i).equals(dataVariables[which].sourceDataType()))
         throw new SimpleException(
             msg
                 + "Variable="
-                + SPECIAL_VAR_NAMES[i]
+                + SPECIAL_VAR_NAMES.get(i)
                 + " must have dataType="
-                + SPECIAL_VAR_TYPES[i]
+                + SPECIAL_VAR_TYPES.get(i)
                 + ", not \""
                 + dataVariables[which].sourceDataType()
                 + "\".");
 
-      if (SPECIAL_VAR_UNITS[i] != null
-          && !SPECIAL_VAR_UNITS[i].equals(dataVariables[which].units()))
+      if (!SPECIAL_VAR_UNITS.get(i).isEmpty()
+          && !SPECIAL_VAR_UNITS.get(i).equals(dataVariables[which].units()))
         throw new SimpleException(
             msg
                 + "Variable="
-                + SPECIAL_VAR_NAMES[i]
+                + SPECIAL_VAR_NAMES.get(i)
                 + " must have units="
-                + SPECIAL_VAR_UNITS[i]
+                + SPECIAL_VAR_UNITS.get(i)
                 + ", not \""
                 + dataVariables[which].units()
                 + "\".");
@@ -291,7 +304,8 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
       String destName = edv.destinationName();
       columnNames[dvi] = sourceName;
       columnUnits[dvi] =
-          edv.addAttributes().getString("units"); // here, "source" units are in addAttributes!
+          edv.addAttributes()
+              .getString(language, "units"); // here, "source" units are in addAttributes!
       columnPATypes[dvi] = edv.sourceDataPAType();
 
       // No char variables
@@ -316,9 +330,9 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
         columnMvFv[dvi] = tsa.size() == 0 ? null : tsa;
       } else if (columnPATypes[dvi] == PAType.LONG || columnPATypes[dvi] == PAType.ULONG) {
         StringArray tsa = new StringArray(2, false);
-        String ts = edv.combinedAttributes().getString("missing_value");
+        String ts = edv.combinedAttributes().getString(language, "missing_value");
         if (ts != null) tsa.add(ts);
-        ts = edv.combinedAttributes().getString("_FillValue");
+        ts = edv.combinedAttributes().getString(language, "_FillValue");
         if (ts != null) tsa.add(ts);
         columnMvFv[dvi] = tsa.size() == 0 ? null : tsa;
       } else {
@@ -372,8 +386,7 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
         String scVar = sourceConVars.get(i);
         if (TIMESTAMP.equals(scVar)) {
           String tOp = sourceConOps.get(i);
-          if (String2.indexOf(NO_PROCESS_COMMANDS, tOp)
-              >= 0) { // timestamp> >= or = leads to no processing
+          if (NO_PROCESS_COMMANDS.indexOf(tOp) >= 0) { // timestamp> >= or = leads to no processing
             process = false;
             break;
           } else if (tOp.equals(PrimitiveArray.REGEX_OP)) {
@@ -624,7 +637,7 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
                   + "="
                   + parts[p]
                   + " as a columnName ("
-                  + e.toString()
+                  + e
                   + ").");
         }
       }
@@ -734,7 +747,7 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
       }
     }
 
-    return dirSB.toString() + nameSB.toString() + ".jsonl";
+    return dirSB.toString() + nameSB + ".jsonl";
   }
 
   /**
@@ -883,8 +896,8 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
       StringArray tDirStructureColumnNames,
       IntArray tDirStructureNs,
       IntArray tDirStructureCalendars,
-      HashSet<String> keys,
-      Attributes tGlobalAttributes,
+      Set<String> keys,
+      LocalizedAttributes tGlobalAttributes,
       String columnNames[],
       String columnUnits[],
       PAType columnPATypes[],
@@ -924,33 +937,32 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
 
       if (!String2.isSomething(columnUnits[col])) columnUnits[col] = "";
 
-      if (columnNames[col].equals(EDV.TIME_NAME)) {
-        timeColumn = col;
-        if (columnIsString[col]) {
-          // string times
-          if (!Calendar2.isStringTimeUnits(columnUnits[col])) {
-            String2.log("columnUnits[" + col + "]=" + columnUnits[col]);
-            throw new SimpleException(
-                EDStatic.bilingual(
-                    language,
-                    EDStatic.queryErrorAr[0]
-                        + "Invalid units for the string time variable. Units MUST specify the format of the time values.",
-                    EDStatic.queryErrorAr[language]
-                        + "Invalid units for the string time variable. Units MUST specify the format of the time values."));
+      switch (columnNames[col]) {
+        case EDV.TIME_NAME -> {
+          timeColumn = col;
+          if (columnIsString[col]) {
+            // string times
+            if (!Calendar2.isStringTimeUnits(columnUnits[col])) {
+              String2.log("columnUnits[" + col + "]=" + columnUnits[col]);
+              throw new SimpleException(
+                  EDStatic.bilingual(
+                      language,
+                      EDStatic.messages.queryErrorAr[0]
+                          + "Invalid units for the string time variable. Units MUST specify the format of the time values.",
+                      EDStatic.messages.queryErrorAr[language]
+                          + "Invalid units for the string time variable. Units MUST specify the format of the time values."));
+            }
+            timeFormat = columnUnits[col];
+          } else {
+            // numeric times
+            timeBaseAndFactor =
+                Calendar2.getTimeBaseAndFactor(
+                    columnUnits[col]); // throws RuntimeException if trouble
           }
-          timeFormat = columnUnits[col];
-        } else {
-          // numeric times
-          timeBaseAndFactor =
-              Calendar2.getTimeBaseAndFactor(
-                  columnUnits[col]); // throws RuntimeException if trouble
         }
-      } else if (columnNames[col].equals(TIMESTAMP)) {
-        timestampColumn = col;
-      } else if (columnNames[col].equals(AUTHOR)) {
-        authorColumn = col;
-      } else if (columnNames[col].equals(COMMAND)) {
-        commandColumn = col;
+        case TIMESTAMP -> timestampColumn = col;
+        case AUTHOR -> authorColumn = col;
+        case COMMAND -> commandColumn = col;
       }
     }
     columnValues[timestampColumn] = new DoubleArray(new double[] {timestampSeconds});
@@ -970,11 +982,11 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
       throw new SimpleException(
             EDStatic.bilingual(
                 language,
-                EDStatic.queryErrorAr[0]
+                EDStatic.messages.queryErrorAr[0]
                     + "The \""
                     + parts[p]
                     + "\" parameter isn't in the form name=value.",
-                EDStatic.queryErrorAr[language]
+                EDStatic.messages.queryErrorAr[language]
                     + "The \""
                     + parts[p]
                     + "\" parameter isn't in the form name=value."));
@@ -990,15 +1002,16 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
           throw new SimpleException(
               EDStatic.bilingual(
                   language,
-                  EDStatic.queryErrorAr[0] + "author= must be the last parameter.",
-                  EDStatic.queryErrorAr[language] + "author= must be the last parameter."));
+                  EDStatic.messages.queryErrorAr[0] + "author= must be the last parameter.",
+                  EDStatic.messages.queryErrorAr[language]
+                      + "author= must be the last parameter."));
         if (!keys.contains(
             tValue)) // this tests validity of author_key (since checked when created)
         throw new SimpleException(
               EDStatic.bilingual(
                   language,
-                  EDStatic.queryErrorAr[0] + "Invalid author_key.",
-                  EDStatic.queryErrorAr[language] + "Invalid author_key."));
+                  EDStatic.messages.queryErrorAr[0] + "Invalid author_key.",
+                  EDStatic.messages.queryErrorAr[language] + "Invalid author_key."));
         int po = Math.max(0, tValue.indexOf('_'));
         author = tValue.substring(0, po);
         columnValues[authorColumn] = new StringArray(new String[] {author});
@@ -1015,17 +1028,17 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
           throw new SimpleException(
               EDStatic.bilingual(
                   language,
-                  EDStatic.queryErrorAr[0] + "Unknown variable name=" + tName,
-                  EDStatic.queryErrorAr[language] + "Unknown variable name=" + tName));
+                  EDStatic.messages.queryErrorAr[0] + "Unknown variable name=" + tName,
+                  EDStatic.messages.queryErrorAr[language] + "Unknown variable name=" + tName));
         } else if (whichCol == timestampColumn) {
           throw new SimpleException(
               EDStatic.bilingual(
                   language,
-                  EDStatic.queryErrorAr[0]
+                  EDStatic.messages.queryErrorAr[0]
                       + "An .insert or .delete request must not include "
                       + TIMESTAMP
                       + " as a parameter.",
-                  EDStatic.queryErrorAr[language]
+                  EDStatic.messages.queryErrorAr[language]
                       + "An .insert or .delete request must not include "
                       + TIMESTAMP
                       + " as a parameter."));
@@ -1033,11 +1046,11 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
           throw new SimpleException(
               EDStatic.bilingual(
                   language,
-                  EDStatic.queryErrorAr[0]
+                  EDStatic.messages.queryErrorAr[0]
                       + "An .insert or .delete request must not include "
                       + COMMAND
                       + " as a parameter.",
-                  EDStatic.queryErrorAr[language]
+                  EDStatic.messages.queryErrorAr[language]
                       + "An .insert or .delete request must not include "
                       + COMMAND
                       + " as a parameter."));
@@ -1047,11 +1060,11 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
           throw new SimpleException(
               EDStatic.bilingual(
                   language,
-                  EDStatic.queryErrorAr[0]
+                  EDStatic.messages.queryErrorAr[0]
                       + "There are two parameters with variable name="
                       + tName
                       + ".",
-                  EDStatic.queryErrorAr[language]
+                  EDStatic.messages.queryErrorAr[language]
                       + "There are two parameters with variable name="
                       + tName
                       + "."));
@@ -1074,13 +1087,13 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
             throw new SimpleException(
                 EDStatic.bilingual(
                     language,
-                    EDStatic.queryErrorAr[0]
+                    EDStatic.messages.queryErrorAr[0]
                         + "Different parameters with arrays have different sizes: "
                         + arraySize
                         + "!="
                         + columnValues[whichCol].size()
                         + ".",
-                    EDStatic.queryErrorAr[language]
+                    EDStatic.messages.queryErrorAr[language]
                         + "Different parameters with arrays have different sizes: "
                         + arraySize
                         + "!="
@@ -1098,13 +1111,13 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
             throw new SimpleException(
                 EDStatic.bilingual(
                     language,
-                    EDStatic.queryErrorAr[0]
+                    EDStatic.messages.queryErrorAr[0]
                         + "One value (not "
                         + sa.size()
                         + ") expected for columnName="
                         + tName
                         + ". (missing [ ] ?)",
-                    EDStatic.queryErrorAr[language]
+                    EDStatic.messages.queryErrorAr[language]
                         + "One value (not "
                         + sa.size()
                         + ") expected for columnName="
@@ -1119,7 +1132,8 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
           //    (tValue.length() < 2 ||
           //     tValue.charAt(0) != '"' ||
           //     tValue.charAt(tValue.length() - 1) != '"'))
-          //    throw new SimpleException(EDStatic.simpleBilingual(language, EDStatic.queryErrorAr)
+          //    throw new SimpleException(EDStatic.simpleBilingual(language,
+          // EDStatic.messages.queryErrorAr)
           // +
           //        "The String value for columnName=" + tName + " must start and end with \"'s.");
         }
@@ -1129,7 +1143,7 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
           PrimitiveArray pa = columnValues[whichCol];
           if (pa.size() == 0 || pa.getString(0).length() == 0) // string="" number=NaN
           throw new SimpleException(
-                EDStatic.simpleBilingual(language, EDStatic.queryErrorAr)
+                EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
                     + "requiredVariable="
                     + tName
                     + " must have a valid value.");
@@ -1142,18 +1156,18 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
       throw new SimpleException(
           EDStatic.bilingual(
               language,
-              EDStatic.queryErrorAr[0] + "author= was not specified.",
-              EDStatic.queryErrorAr[language] + "author= was not specified."));
+              EDStatic.messages.queryErrorAr[0] + "author= was not specified.",
+              EDStatic.messages.queryErrorAr[language] + "author= was not specified."));
     int notFound = requiredVariablesFound.nextClearBit(0);
     if (notFound < requiredVariableNames.length)
       throw new SimpleException(
           EDStatic.bilingual(
               language,
-              EDStatic.queryErrorAr[0]
+              EDStatic.messages.queryErrorAr[0]
                   + "requiredVariableName="
                   + requiredVariableNames[notFound]
                   + " wasn't specified.",
-              EDStatic.queryErrorAr[language]
+              EDStatic.messages.queryErrorAr[language]
                   + "requiredVariableName="
                   + requiredVariableNames[notFound]
                   + " wasn't specified."));
@@ -1376,7 +1390,7 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
             String fileName = File2.getNameAndExtension(fullFileName);
 
             // which row in dirTable?
-            int dirTableRow = ((StringArray) dirTable.getColumn(0)).indexOf(fileDir);
+            int dirTableRow = dirTable.getColumn(0).indexOf(fileDir);
             if (dirTableRow < 0) {
               dirTableRow = dirTable.getColumn(0).size();
               dirTable.getColumn(0).addString(fileDir);
@@ -1576,14 +1590,13 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
 
     // 3 required columns: TIMESTAMP, AUTHOR, COMMAND
     for (int i = 0; i < 3; i++) {
-      int which = dataSourceTable.findColumnNumber(SPECIAL_VAR_NAMES[i]);
+      int which = dataSourceTable.findColumnNumber(SPECIAL_VAR_NAMES.get(i));
       if (which < 0)
         throw new SimpleException(
-            "One of the variables must have the name \"" + SPECIAL_VAR_NAMES[which] + "\".");
+            "One of the variables must have the name \"" + SPECIAL_VAR_NAMES.get(which) + "\".");
     }
 
     Table dataAddTable = new Table();
-    double maxTimeES = Double.NaN;
     for (int c = 0; c < tnCol; c++) {
       String colName = dataSourceTable.getColumnName(c);
       PrimitiveArray sourcePA = dataSourceTable.getColumn(c);
@@ -1595,7 +1608,7 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
         if (sourcePA.elementType() == PAType.STRING) {
           String tFormat =
               Calendar2.suggestDateTimeFormat(
-                  (StringArray) sourcePA, true); // evenIfPurelyNumeric?   true since String data
+                  sourcePA, true); // evenIfPurelyNumeric?   true since String data
           destAtts.add(
               "units",
               tFormat.length() > 0
@@ -1621,20 +1634,20 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
       } else if (colName.equals("timestamp")) {
         destAtts.add(
             "comment",
-            EDStatic.EDDTableFromHttpGetTimestampDescription
+            EDStatic.messages.EDDTableFromHttpGetTimestampDescription
                 + " "
-                + EDStatic.noteAr[0]
+                + EDStatic.messages.noteAr[0]
                 + " "
-                + EDStatic.EDDTableFromHttpGetDatasetDescription);
+                + EDStatic.messages.EDDTableFromHttpGetDatasetDescription);
         destAtts.add("units", Calendar2.SECONDS_SINCE_1970);
         destAtts.add("time_precision", "1970-01-01T00:00:00.000Z");
         destPA = new DoubleArray(sourcePA);
       } else if (colName.equals("author")) {
-        destAtts.add("comment", EDStatic.EDDTableFromHttpGetAuthorDescription);
+        destAtts.add("comment", EDStatic.messages.EDDTableFromHttpGetAuthorDescription);
         destAtts.add("ioos_category", "Identifier");
         destPA = new StringArray(sourcePA);
       } else if (colName.equals("command")) {
-        destAtts.add("comment", EDStatic.EDDTableFromHttpGetDatasetDescription);
+        destAtts.add("comment", EDStatic.messages.EDDTableFromHttpGetDatasetDescription);
         destAtts.add("flag_values", new byte[] {0, 1});
         destAtts.add("flag_meanings", "insert delete");
         destAtts.add("ioos_category", "Other");
@@ -1706,7 +1719,9 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
         String2.ifSomethingConcat(
             ttSummary,
             "\n\n",
-            EDStatic.noteAr[0] + " " + EDStatic.EDDTableFromHttpGetDatasetDescription));
+            EDStatic.messages.noteAr[0]
+                + " "
+                + EDStatic.messages.EDDTableFromHttpGetDatasetDescription));
     if (String2.isSomething(tHttpGetRequiredVariables)) {
       StringArray sa = StringArray.fromCSV(tHttpGetRequiredVariables);
       if (sa.size() > 0) addGlobalAtts.add("subsetVariables", sa.get(0));
@@ -1721,8 +1736,8 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
     addGlobalAtts.add("testOutOfDate", "now-1day");
 
     // write the information
-    StringBuilder sb = new StringBuilder();
-    sb.append(
+
+    String sb =
         "<!-- NOTE! Since JSON Lines CSV files have no metadata, you MUST edit the chunk\n"
             + "  of datasets.xml below to add all of the metadata (especially \"units\"). -->\n"
             + "<dataset type=\"EDDTableFromHttpGet\" datasetID=\""
@@ -1764,21 +1779,19 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
             + "</sortFilesBySourceNames>\n"
             + "    <fileTableInMemory>false</fileTableInMemory>\n"
             + // safer. good for all except super frequent updates
-            "    <accessibleViaFiles>true</accessibleViaFiles>\n");
-    sb.append(writeAttsForDatasetsXml(false, dataSourceTable.globalAttributes(), "    "));
-    sb.append(cdmSuggestion());
-    sb.append(writeAttsForDatasetsXml(true, dataAddTable.globalAttributes(), "    "));
+            "    <accessibleViaFiles>true</accessibleViaFiles>\n"
+            + writeAttsForDatasetsXml(false, dataSourceTable.globalAttributes(), "    ")
+            + cdmSuggestion()
+            + writeAttsForDatasetsXml(true, dataAddTable.globalAttributes(), "    ")
+            + writeVariablesForDatasetsXml(
+                dataSourceTable, dataAddTable, "dataVariable", true, false)
+            + // includeDataType, questionDestinationName
+            """
+                      </dataset>
 
-    sb.append(
-        writeVariablesForDatasetsXml(
-            dataSourceTable,
-            dataAddTable,
-            "dataVariable",
-            true,
-            false)); // includeDataType, questionDestinationName
-    sb.append("</dataset>\n" + "\n");
+                      """;
 
     String2.log("\n\n*** generateDatasetsXml finished successfully.\n\n");
-    return sb.toString();
+    return sb;
   }
 }

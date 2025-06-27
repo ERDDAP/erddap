@@ -9,7 +9,6 @@ import dods.dap.DAS;
 import dods.dap.DConnect;
 import gov.noaa.pfel.coastwatch.griddata.OpendapHelper;
 import gov.noaa.pfel.coastwatch.util.SSR;
-import gov.noaa.pfel.erddap.GenerateDatasetsXml;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -27,69 +26,6 @@ class EDDTableFromErddapTests {
     Initialization.edStatic();
   }
 
-  /** testGenerateDatasetsXml */
-  @org.junit.jupiter.api.Test
-  @TagLocalERDDAP
-  void testGenerateDatasetsXml() throws Throwable {
-    // testVerboseOn();
-    int po;
-
-    // test local generateDatasetsXml. In tests, always use non-https url.
-    String results = EDDTableFromErddap.generateDatasetsXml(EDStatic.erddapUrl, true) + "\n";
-    String2.log("results=\n" + results);
-
-    // GenerateDatasetsXml
-    String gdxResults =
-        new GenerateDatasetsXml()
-            .doIt(
-                new String[] {
-                  "-verbose", "EDDTableFromErddap", EDStatic.erddapUrl, "true", "-1"
-                }, // keep original names?, defaultStandardizeWhat
-                false); // doIt loop?
-    Test.ensureEqual(gdxResults, results, "Unexpected results from GenerateDatasetsXml.doIt.");
-
-    String expected =
-        "<dataset type=\"EDDTableFromErddap\" datasetID=\"erdGlobecBottle\" active=\"true\">\n"
-            + "    <!-- GLOBEC NEP Rosette Bottle Data (2002) -->\n"
-            + "    <sourceUrl>http://127.0.0.1:8080/cwexperimental/tabledap/erdGlobecBottle</sourceUrl>\n"
-            + "</dataset>\n";
-    String fragment = expected;
-    String2.log("\nresults=\n" + results);
-    po = results.indexOf(expected.substring(0, 70));
-    try {
-      Test.ensureEqual(results.substring(po, po + expected.length()), expected, "");
-    } catch (Throwable t) {
-      throw new RuntimeException(
-          "Unexpected error. This test requires erdGlobecBottle in localhost ERDDAP.", t);
-    }
-
-    expected =
-        "<!-- Of the datasets above, the following datasets are EDDTableFromErddap's at the remote ERDDAP.\n";
-    po = results.indexOf(expected.substring(0, 20));
-    Test.ensureEqual(
-        results.substring(po, po + expected.length()), expected, "results=\n" + results);
-    try {
-      Test.ensureTrue(results.indexOf("rGlobecBottle", po) > 0, "results=\n" + results);
-    } catch (Throwable t) {
-      throw new RuntimeException(
-          "Unexpected error. This test requires rGlobecBottle in localhost ERDDAP.", t);
-    }
-
-    /*
-     * //ensure it is ready-to-use by making a dataset from it
-     * //NO - don't mess with existing erdGlobecBottle
-     * String tDatasetID = "erdGlobecBottle";
-     * EDD.deleteCachedDatasetInfo(tDatasetID);
-     * EDD edd = oneFromXmlFragment(null, fragment);
-     * Test.ensureEqual(edd.title(), "GLOBEC NEP Rosette Bottle Data (2002)", "");
-     * Test.ensureEqual(edd.datasetID(), tDatasetID, "");
-     * Test.ensureEqual(String2.toCSSVString(edd.dataVariableDestinationNames()),
-     * "cruise_id, ship, cast, longitude, latitude, time, bottle_posn, chl_a_total, chl_a_10um, phaeo_total, phaeo_10um, sal00, sal11, temperature0, temperature1, fluor_v, xmiss_v, PO4, N_N, NO3, Si, NO2, NH4, oxygen, par"
-     * ,
-     * "");
-     */
-  }
-
   /** The basic tests of this class (erdGlobecBottle). */
   @ParameterizedTest
   @ValueSource(booleans = {true, false})
@@ -99,14 +35,12 @@ class EDDTableFromErddapTests {
     // String2.log("\n****************** EDDTableFromErddap.testBasic(" +
     // tRedirect + ")\n");
     // testVerboseOn();
-    String name, tName, results, tResults, expected, userDapQuery, tQuery;
-    String error = "";
+    String tName, results, tResults, expected;
     int tPo;
     String today =
         Calendar2.getCurrentISODateTimeStringZulu()
             .substring(0, 10); // just 10 till 1.40 released, then 14
     String mapDapQuery = "status,testLong,sst&.draw=markers";
-    String dir = EDStatic.fullTestCacheDirectory;
     String tID = tRedirect ? "rTestNccsvScalar11" : "rTestNccsvScalarNoRedirect11";
     String url = "http://localhost:8080/cwexperimental/tabledap/" + tID;
     String2.log("* This test requires datasetID=" + tID + " in the localhost ERDDAP.");
@@ -129,7 +63,7 @@ class EDDTableFromErddapTests {
             + "*GLOBAL*,geospatial_lon_max,-130.2576d\n"
             + "*GLOBAL*,geospatial_lon_min,-132.1591d\n"
             + "*GLOBAL*,geospatial_lon_units,degrees_east\n"
-            + "*GLOBAL*,infoUrl,https://erddap.github.io/NCCSV.html\n"
+            + "*GLOBAL*,infoUrl,https://erddap.github.io/docs/user/nccsv-1.20\n"
             + "*GLOBAL*,institution,\"NOAA NMFS SWFSC ERD, NOAA PMEL\"\n"
             + "*GLOBAL*,keywords,\"center, data, demonstration, Earth Science > Oceans > Ocean Temperature > Sea Surface Temperature, environmental, erd, fisheries, identifier, laboratory, latitude, long, longitude, marine, national, nccsv, nmfs, noaa, ocean, oceans, pacific, pmel, science, sea, sea_surface_temperature, service, ship, southwest, sst, status, surface, swfsc, temperature, test, testLong, time, trajectory\"\n"
             + "*GLOBAL*,keywords_vocabulary,GCMD Science Keywords\n"
@@ -230,7 +164,6 @@ class EDDTableFromErddapTests {
     Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
     // .nccsv all
-    userDapQuery = "";
     results = SSR.getUrlResponseStringUnchanged(url + ".nccsv");
     // String2.log(results);
     expected =
@@ -259,7 +192,7 @@ class EDDTableFromErddapTests {
         "http://127.0.0.1:8080/cwexperimental/tabledap/"
             + (tRedirect ? "testNccsvScalar11" : tID)
             + ".nccsv\n"
-            + "*GLOBAL*,infoUrl,https://erddap.github.io/NCCSV.html\n"
+            + "*GLOBAL*,infoUrl,https://erddap.github.io/docs/user/nccsv-1.20\n"
             + "*GLOBAL*,institution,\"NOAA NMFS SWFSC ERD, NOAA PMEL\"\n"
             + "*GLOBAL*,keywords,\"center, data, demonstration, Earth Science > Oceans > Ocean Temperature > Sea Surface Temperature, environmental, erd, fisheries, identifier, laboratory, latitude, long, longitude, marine, national, nccsv, nmfs, noaa, ocean, oceans, pacific, pmel, science, sea, sea_surface_temperature, service, ship, southwest, sst, status, surface, swfsc, temperature, test, testLong, time, trajectory\"\n"
             + "*GLOBAL*,keywords_vocabulary,GCMD Science Keywords\n"
@@ -370,7 +303,7 @@ class EDDTableFromErddapTests {
         url + ".png?" + mapDapQuery,
         Image2Tests.urlToAbsolutePath(Image2Tests.OBS_DIR) + tName,
         true);
-    // Test.displayInBrowser("file://" + dir + tName);
+    // TestUtil.displayInBrowser("file://" + dir + tName);
     Image2Tests.testImagesIdentical(tName, baseName + ".png", baseName + "_diff.png");
   } // end of testBasic
 
@@ -476,14 +409,11 @@ class EDDTableFromErddapTests {
    * 2016-10-03 to deal with this problem.
    */
   @org.junit.jupiter.api.Test
+  @TagExternalERDDAP
   void testChukchiSea() throws Throwable {
     // testVerboseOn();
     int language = 0;
-    String name, tName, results, tResults, expected, expected2, expected3, userDapQuery, tQuery;
-    String error = "";
-    int epo, tPo;
-    String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 10);
-
+    String tName, results, expected;
     EDDTable eddTable = (EDDTableFromErddap) EDDTestDataset.getChukchiSea_454a_037a_fcf4();
 
     // *** test getting das for entire dataset
@@ -494,10 +424,10 @@ class EDDTableFromErddapTests {
             null,
             null,
             "",
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             eddTable.className() + "_Entire",
             ".das");
-    results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+    results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
     // String2.log(results);
     expected = // see OpendapHelper.EOL for comments
         "Attributes {\n"
@@ -535,10 +465,10 @@ class EDDTableFromErddapTests {
             null,
             null,
             "",
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             eddTable.className() + "_Entire",
             ".dds");
-    results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+    results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
     // String2.log(results);
     expected =
         "Dataset {\n"
@@ -585,10 +515,10 @@ class EDDTableFromErddapTests {
             null,
             null,
             "&id=%22ae1001c011%22", // "&id=\"ae1001c011\"",
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             eddTable.className() + "_Data",
             ".csv");
-    results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+    results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
     // String2.log(results);
     expected =
         "prof,id,cast,cruise,time,longitude,lon360,latitude,depth,ocean_temperature_1,ocean_temperature_2,ocean_dissolved_oxygen_concentration_1_mLperL,ocean_dissolved_oxygen_concentration_2_mLperL,photosynthetically_active_radiation,ocean_chlorophyll_a_concentration_factoryCal,ocean_chlorophyll_fluorescence_raw,ocean_practical_salinity_1,ocean_practical_salinity_2,ocean_sigma_t,sea_water_nutrient_bottle_number,sea_water_phosphate_concentration,sea_water_silicate_concentration,sea_water_nitrate_concentration,sea_water_nitrite_concentration,sea_water_ammonium_concentration,ocean_dissolved_oxygen_concentration_1_mMperkg,ocean_dissolved_oxygen_concentration_2_mMperkg,ocean_oxygen_saturation_1\n"
@@ -629,11 +559,7 @@ class EDDTableFromErddapTests {
   @org.junit.jupiter.api.Test
   @TagLocalERDDAP
   void testFiles() throws Throwable {
-
-    String2.log("\n*** EDDTableFromErddap.testFiles()\n");
-    String tDir = EDStatic.fullTestCacheDirectory;
-    String dapQuery, tName, start, query, results, expected;
-    int po;
+    String results, expected;
 
     try {
       // get /files/datasetID/.csv

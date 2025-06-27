@@ -16,6 +16,7 @@ import com.cohort.util.String2;
 import gov.noaa.pfel.coastwatch.pointdata.Table;
 import gov.noaa.pfel.erddap.variable.EDV;
 import java.io.BufferedWriter;
+import java.io.IOException;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
@@ -28,10 +29,11 @@ import java.util.concurrent.atomic.AtomicLong;
 public class TableWriterSeparatedValue extends TableWriter {
 
   // set by constructor
-  protected String separator;
-  protected boolean twoQuotes, writeColumnNames;
-  protected char writeUnits;
-  protected String nanString;
+  protected final String separator;
+  protected final boolean twoQuotes;
+  protected final boolean writeColumnNames;
+  protected final char writeUnits;
+  protected final String nanString;
 
   // set by firstTime
   protected volatile boolean isStringOrChar[];
@@ -39,7 +41,7 @@ public class TableWriterSeparatedValue extends TableWriter {
   protected volatile String time_precision[];
   protected volatile BufferedWriter writer;
 
-  public volatile AtomicLong totalNRows = new AtomicLong(0);
+  public final AtomicLong totalNRows = new AtomicLong(0);
 
   /**
    * The constructor.
@@ -243,5 +245,13 @@ public class TableWriterSeparatedValue extends TableWriter {
             tWriteUnits,
             tNanString);
     twsv.writeAllAndFinish(table);
+    twsv.close();
+  }
+
+  @Override
+  public void close() throws IOException {
+    if (writer != null) {
+      writer.close();
+    }
   }
 }

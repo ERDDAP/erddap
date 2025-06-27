@@ -18,7 +18,6 @@ import com.lowagie.text.pdf.PdfContentByte;
 import com.lowagie.text.pdf.PdfTemplate;
 import com.lowagie.text.pdf.PdfWriter;
 import gov.noaa.pfel.coastwatch.util.AttributedString2;
-import gov.noaa.pfel.coastwatch.util.SSR;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics;
@@ -55,8 +54,10 @@ public class SgtUtil {
 
   public static final int LEGEND_BELOW = 1;
 
-  public static final com.lowagie.text.Rectangle PDF_LANDSCAPE = PageSize.LETTER.rotate();
-  public static final com.lowagie.text.Rectangle PDF_PORTRAIT = PageSize.LETTER;
+  public enum PDFPageSize {
+    LETTER_PORTRAIT,
+    LETTER_LANDSCAPE,
+  }
 
   public static final double DEFAULT_AXIS_LABEL_HEIGHT = 0.12;
   public static final double DEFAULT_LABEL_HEIGHT =
@@ -65,7 +66,7 @@ public class SgtUtil {
   public static final Color TRANSPARENT =
       new Color(0, 0, 0, 0); // 4th 0 is alpha value   //Hmmm, it may not be this simple
 
-  public static double AVG_CHAR_WIDTH = 4.5;
+  public static final double AVG_CHAR_WIDTH = 4.5;
 
   public static String isBufferedImageAccelerated;
 
@@ -78,10 +79,9 @@ public class SgtUtil {
   public static int maxCharsPerLine(int legendTextWidth, double fontScale) {
     // lessen the effect of small fonts (they stay wide to stay legible)
     if (fontScale < 1) fontScale = (1 + fontScale) / 2;
-    int m = Math2.roundToInt(legendTextWidth / (SgtUtil.AVG_CHAR_WIDTH * fontScale));
     // String2.log("\n***maxCharsPerLine=" + m + " legendWidth=" + legendTextWidth + " fontScale=" +
     // fontScale);
-    return m;
+    return Math2.roundToInt(legendTextWidth / (SgtUtil.AVG_CHAR_WIDTH * fontScale));
   }
 
   /** This returns the maxBoldCharsPerLine based on charsPerLine. */
@@ -377,8 +377,7 @@ public class SgtUtil {
         isBufferedImageAccelerated =
             "bufferedImage isAccelerated=" + (imCap == null ? "[unknown]" : imCap.isAccelerated());
       } catch (Throwable t) {
-        String2.log(MustBe.throwableToString(t));
-        isBufferedImageAccelerated = "bufferedImage isAccelerated=[unknown]";
+        isBufferedImageAccelerated = "bufferedImage isAccelerated=[" + t.toString() + "]";
       }
     }
     return isBufferedImageAccelerated;
@@ -438,14 +437,15 @@ public class SgtUtil {
     // save as .bmp     (note: doesn't support transparent pixels)
     long time = System.currentTimeMillis();
     if (verbose) String2.log("SgtUtil.saveAsGif");
-    ImageIO.write(bi, "bmp", new File(fullGifName + randomInt + ".bmp"));
-    if (verbose)
-      String2.log("  make .bmp done. time=" + (System.currentTimeMillis() - time) + "ms");
+    ImageIO.write(bi, "gif", new File(fullGifName + randomInt + ".gif"));
+    // if (verbose)
+    //   String2.log("  make .bmp done. time=" + (System.currentTimeMillis() - time) + "ms");
 
-    // "convert" to .gif
-    SSR.dosOrCShell(
-        "convert " + fullGifName + randomInt + ".bmp" + " " + fullGifName + randomInt + ".gif", 30);
-    File2.delete(fullGifName + randomInt + ".bmp");
+    // // "convert" to .gif
+    // SSR.dosOrCShell(
+    //     "convert " + fullGifName + randomInt + ".bmp" + " " + fullGifName + randomInt + ".gif",
+    // 30);
+    // File2.delete(fullGifName + randomInt + ".bmp");
 
     // try fancy color reduction algorithms
     // Image2.saveAsGif(Image2.reduceTo216Colors(bi), fullGifName + randomInt + ".gif");
@@ -490,13 +490,13 @@ public class SgtUtil {
     image = null; // encourage garbage collection
 
     // save as png
-    int random = Math2.random(Integer.MAX_VALUE);
-    ImageIO.write(bi, "png", new File(fullGifName + randomInt + ".png"));
+    ImageIO.write(bi, "gif", new File(fullGifName + randomInt + ".gif"));
 
     // "convert" to .gif
-    SSR.dosOrCShell(
-        "convert " + fullGifName + randomInt + ".png" + " " + fullGifName + randomInt + ".gif", 30);
-    File2.delete(fullGifName + randomInt + ".png");
+    // SSR.dosOrCShell(
+    //     "convert " + fullGifName + randomInt + ".png" + " " + fullGifName + randomInt + ".gif",
+    // 30);
+    // File2.delete(fullGifName + randomInt + ".png");
 
     // try fancy color reduction algorithms
     // Image2.saveAsGif(Image2.reduceTo216Colors(bi), fullGifName + randomInt + ".gif");
@@ -540,13 +540,10 @@ public class SgtUtil {
     int randomInt = Math2.random(Integer.MAX_VALUE);
 
     // create fileOutputStream
-    BufferedOutputStream bos =
-        new BufferedOutputStream(new FileOutputStream(fullPngName + randomInt + ".png"));
-    try {
+    try (BufferedOutputStream bos =
+        new BufferedOutputStream(new FileOutputStream(fullPngName + randomInt + ".png"))) {
       // save the image
       saveAsTransparentPng(bi, transparent, bos);
-    } finally {
-      bos.close();
     }
 
     // last step: rename to final Png name
@@ -605,11 +602,10 @@ public class SgtUtil {
    * @return an object[] with 0=g2D, 1=document, 2=pdfContentByte, 3=pdfTemplate
    * @throws Exception if trouble
    */
-  public static Object[] createPdf(
-      com.lowagie.text.Rectangle pageSize, int bbWidth, int bbHeight, String fullFileName)
+  public static Object[] createPdf(PDFPageSize size, int bbWidth, int bbHeight, String fullFileName)
       throws Exception {
     return createPdf(
-        pageSize, bbWidth, bbHeight, new BufferedOutputStream(new FileOutputStream(fullFileName)));
+        size, bbWidth, bbHeight, new BufferedOutputStream(new FileOutputStream(fullFileName)));
   }
 
   /**
@@ -624,8 +620,9 @@ public class SgtUtil {
    * @throws Exception if trouble
    */
   public static Object[] createPdf(
-      com.lowagie.text.Rectangle pageSize, int bbWidth, int bbHeight, OutputStream outputStream)
-      throws Exception {
+      PDFPageSize size, int bbWidth, int bbHeight, OutputStream outputStream) throws Exception {
+    com.lowagie.text.Rectangle pageSize =
+        size == PDFPageSize.LETTER_PORTRAIT ? PageSize.LETTER : PageSize.LETTER.rotate();
     // currently, this uses itext
     // see the sample program:
     //
@@ -655,8 +652,7 @@ public class SgtUtil {
    */
   public static void closePdf(Object oar[]) throws Exception {
     Graphics2D g2D = (Graphics2D) oar[0];
-    Document document = (Document) oar[1];
-    try {
+    try (Document document = (Document) oar[1]) {
       PdfContentByte pdfContentByte = (PdfContentByte) oar[2];
       PdfTemplate pdfTemplate = (PdfTemplate) oar[3];
 
@@ -706,8 +702,6 @@ public class SgtUtil {
           document.left()   + (document.right() - document.left()   - xSize) / 2,
           document.bottom() + (document.top()   - document.bottom() - ySize) / 2);
       */
-    } finally {
-      document.close();
     }
   }
 
@@ -951,7 +945,6 @@ public class SgtUtil {
     try {
 
       int width = bufferedImage.getWidth();
-      int height = bufferedImage.getHeight();
       int centerX = width / 2;
 
       // starting at top center, go down to first back pixel

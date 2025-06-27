@@ -3,11 +3,13 @@ package gov.noaa.pfel.coastwatch.griddata;
 import com.cohort.util.File2;
 import com.cohort.util.String2;
 import com.cohort.util.Test;
+import tags.TagThredds;
 
 class SaveOpendapTests {
 
   /** This tests the methods in this class. */
   @org.junit.jupiter.api.Test
+  @TagThredds
   void basicTest() throws Exception {
     String2.log("\n*** SaveOpendap.basicTest...");
     SaveOpendap.verbose = true;

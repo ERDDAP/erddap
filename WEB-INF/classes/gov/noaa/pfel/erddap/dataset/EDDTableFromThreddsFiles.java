@@ -22,6 +22,7 @@ import gov.noaa.pfel.coastwatch.util.FileVisitorDNLS;
 import gov.noaa.pfel.coastwatch.util.RegexFilenameFilter;
 import gov.noaa.pfel.coastwatch.util.SSR;
 import gov.noaa.pfel.coastwatch.util.SimpleXMLReader;
+import gov.noaa.pfel.erddap.dataset.metadata.LocalizedAttributes;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.util.TaskThread;
 import gov.noaa.pfel.erddap.variable.*;
@@ -30,6 +31,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.HashSet;
+import java.util.List;
 
 /**
  * This class downloads data from a THREDDS data server with lots of files into .nc files in the
@@ -64,7 +66,7 @@ public class EDDTableFromThreddsFiles extends EDDTableFromFiles {
     return DEFAULT_STANDARDIZEWHAT;
   }
 
-  public static int DEFAULT_STANDARDIZEWHAT = 0;
+  public static final int DEFAULT_STANDARDIZEWHAT = 0;
 
   /**
    * The constructor just calls the super constructor.
@@ -91,8 +93,8 @@ public class EDDTableFromThreddsFiles extends EDDTableFromFiles {
       String tSosOfferingPrefix,
       String tDefaultDataQuery,
       String tDefaultGraphQuery,
-      Attributes tAddGlobalAttributes,
-      Object[][] tDataVariables,
+      LocalizedAttributes tAddGlobalAttributes,
+      List<DataVariableInfo> tDataVariables,
       int tReloadEveryNMinutes,
       int tUpdateEveryNMillis,
       String tFileDir,
@@ -139,7 +141,7 @@ public class EDDTableFromThreddsFiles extends EDDTableFromFiles {
         tDataVariables,
         tReloadEveryNMinutes,
         tUpdateEveryNMillis,
-        EDStatic.fullCopyDirectory + tDatasetID + "/", // force fileDir to be the copyDir
+        EDStatic.config.fullCopyDirectory + tDatasetID + "/", // force fileDir to be the copyDir
         tFileNameRegex,
         tRecursive,
         tPathRegex,
@@ -199,13 +201,13 @@ public class EDDTableFromThreddsFiles extends EDDTableFromFiles {
     try {
       // if previous tasks are still running, return
       EDStatic.ensureTaskThreadIsRunningIfNeeded(); // ensure info is up-to-date
-      Integer lastAssignedTask = (Integer) EDStatic.lastAssignedTask.get(tDatasetID);
+      Integer lastAssignedTask = EDStatic.lastAssignedTask.get(tDatasetID);
       boolean pendingTasks =
-          lastAssignedTask != null && EDStatic.lastFinishedTask < lastAssignedTask.intValue();
+          lastAssignedTask != null && EDStatic.lastFinishedTask.get() < lastAssignedTask;
       if (verbose)
         String2.log(
             "  lastFinishedTask="
-                + EDStatic.lastFinishedTask
+                + EDStatic.lastFinishedTask.get()
                 + " < lastAssignedTask("
                 + tDatasetID
                 + ")="
@@ -246,8 +248,8 @@ public class EDDTableFromThreddsFiles extends EDDTableFromFiles {
       int lookForLength = lookFor.length();
 
       // mimic the remote dir structure in baseDir
-      String baseDir = EDStatic.fullCopyDirectory + tDatasetID + "/";
-      // e.g. localFile EDStatic.fullCopyDirectory + tDatasetID +  /
+      String baseDir = EDStatic.config.fullCopyDirectory + tDatasetID + "/";
+      // e.g. localFile EDStatic.config.fullCopyDirectory + tDatasetID +  /
       // WES001/2008/WES001_030MTBD029R00_20080429.nc
       File2.makeDirectory(baseDir);
 
@@ -273,7 +275,7 @@ public class EDDTableFromThreddsFiles extends EDDTableFromFiles {
         int n = sourceFileName.size();
         if (n > 1) {
           // 1) sort by sourceFileName
-          ArrayList<PrimitiveArray> tfTable = new ArrayList();
+          ArrayList<PrimitiveArray> tfTable = new ArrayList<>();
           tfTable.add(sourceFileDir);
           tfTable.add(sourceFileName);
           tfTable.add(sourceFileLastMod);
@@ -314,7 +316,7 @@ public class EDDTableFromThreddsFiles extends EDDTableFromFiles {
       if (completelySuccessful && sourceFileName.size() > 0) {
         // make a hashset of theoretical local fileNames that will exist
         //  after copying based on getThreddsFileInfo
-        HashSet<String> hashset = new HashSet();
+        HashSet<String> hashset = new HashSet<>();
         int nFiles = sourceFileName.size();
         for (int f = 0; f < nFiles; f++) {
           String sourceDir = sourceFileDir.get(f);
@@ -417,7 +419,7 @@ public class EDDTableFromThreddsFiles extends EDDTableFromFiles {
         taskOA[0] = TaskThread.TASK_ALL_DAP_TO_NC;
         taskOA[1] = sourceDir + sourceName;
         taskOA[2] = localFile;
-        taskOA[3] = Long.valueOf(sourceFileLastMod.get(f));
+        taskOA[3] = sourceFileLastMod.get(f);
         int tTaskNumber = EDStatic.addTask(taskOA);
         if (tTaskNumber >= 0) {
           nTasksCreated++;
@@ -466,8 +468,19 @@ public class EDDTableFromThreddsFiles extends EDDTableFromFiles {
                 + MustBe.throwableToString(t));
     }
     if (taskNumber > -1) {
-      EDStatic.lastAssignedTask.put(tDatasetID, Integer.valueOf(taskNumber));
+      EDStatic.lastAssignedTask.put(tDatasetID, taskNumber);
       EDStatic.ensureTaskThreadIsRunningIfNeeded(); // ensure info is up-to-date
+
+      if (EDStatic.config.forceSynchronousLoading) {
+        boolean interrupted = false;
+        while (!interrupted && EDStatic.lastFinishedTask.get() < taskNumber) {
+          try {
+            Thread.sleep(2000);
+          } catch (InterruptedException e) {
+            interrupted = true;
+          }
+        }
+      }
     }
   }
 
@@ -545,7 +558,6 @@ public class EDDTableFromThreddsFiles extends EDDTableFromFiles {
       String threddsBase = catalogUrl.substring(0, sPo);
       if (reallyVerbose) String2.log("  threddsBase=" + threddsBase);
 
-      String serviceBase = "/" + threddsName + "/dodsC/"; // default
       if (reallyVerbose)
         String2.log(
             "threddsName="
@@ -825,10 +837,8 @@ public class EDDTableFromThreddsFiles extends EDDTableFromFiles {
                       tLocalDirUrl, tFileNameRegex, true, ".*"))); // recursive, pathRegex
 
     String tPublicDirUrl = convertToPublicSourceUrl(tLocalDirUrl);
-    String tPublicDirUrlHtml = tPublicDirUrl;
     String tDatasetID = suggestDatasetID(tPublicDirUrl + tFileNameRegex);
-    String dir = EDStatic.fullTestCacheDirectory;
-    int po1, po2;
+    String dir = EDStatic.config.fullTestCacheDirectory;
 
     // download the 1 file
     // URL may not have .nc at end.  I think that's okay.  Keep exact file name from URL.
@@ -1005,7 +1015,10 @@ public class EDDTableFromThreddsFiles extends EDDTableFromFiles {
     // last 2 params: includeDataType, questionDestinationName
     sb.append(
         writeVariablesForDatasetsXml(dataSourceTable, dataAddTable, "dataVariable", true, false));
-    sb.append("</dataset>\n" + "\n");
+    sb.append("""
+            </dataset>
+
+            """);
 
     String2.log("\n\n*** generateDatasetsXml finished successfully.\n\n");
     return sb.toString();

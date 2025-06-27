@@ -7,6 +7,7 @@ import com.cohort.util.File2;
 import com.cohort.util.Math2;
 import com.cohort.util.String2;
 import com.cohort.util.Test;
+import com.cohort.util.TestUtil;
 import gov.noaa.pfel.coastwatch.pointdata.Table;
 import java.io.BufferedReader;
 import java.io.StringReader;
@@ -14,6 +15,7 @@ import java.nio.file.Path;
 import tags.TagAWS;
 import tags.TagExternalOther;
 import tags.TagLargeFiles;
+import tags.TagMissingDataset;
 import tags.TagMissingFile;
 import tags.TagSlowTests;
 import tags.TagThredds;
@@ -28,7 +30,7 @@ class FileVisitorDNLSTests {
     // reallyVerbose = true;
 
     if (true)
-      Test.knownProblem(
+      TestUtil.knownProblem(
           "2020-10-22 FileVisitorDNLS.testThredds is not run now because the sourceUrl often stalls: https://data.nodc.noaa.gov/thredds");
 
     // String url =
@@ -284,8 +286,6 @@ class FileVisitorDNLSTests {
     Test.ensureEqual(results, expected, "results=\n" + results);
 
     // *** huge dir
-    String unexpected =
-        "\nUnexpected FileVisitorDNLS error (but /data/gtspp/temp dir has variable nFiles):\n";
 
     if (doBigTest) {
       for (int attempt = 0; attempt < 2; attempt++) {
@@ -979,6 +979,7 @@ class FileVisitorDNLSTests {
   /** This tests GPCP. */
   @org.junit.jupiter.api.Test
   @TagSlowTests
+  @TagMissingDataset // Data temporarily unavailable at NCEI due to Hurricane Helene impacts
   void testGpcp() throws Throwable {
     String2.log("\n*** FileVisitorDNLS.testGpcp()\n");
 
@@ -1453,7 +1454,7 @@ class FileVisitorDNLSTests {
             + "/testMakeTgz.tar.gz";
     // try {
     FileVisitorDNLS.makeTgz(dataDir, ".*", true, ".*", tgzName);
-    // Test.displayInBrowser("file://" + tgzName); //works with .tar.gz, not .tgz
+    // TestUtil.displayInBrowser("file://" + tgzName); //works with .tar.gz, not .tgz
     // String2.pressEnterToContinue("Are the contents of the .tar.gz file okay?");
     // } catch (Throwable t) {
     // String2.pressEnterToContinue(MustBe.throwableToString(t));

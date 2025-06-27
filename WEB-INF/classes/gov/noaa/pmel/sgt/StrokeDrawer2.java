@@ -13,7 +13,6 @@
 package gov.noaa.pmel.sgt;
 
 import java.awt.*;
-import java.awt.geom.*;
 
 /**
  * Implements stroke drawing using Java2D functionality.

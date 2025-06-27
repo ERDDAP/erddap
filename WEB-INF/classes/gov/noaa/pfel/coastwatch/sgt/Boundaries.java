@@ -10,7 +10,9 @@ import com.cohort.util.File2;
 import com.cohort.util.LRUCache;
 import com.cohort.util.Math2;
 import com.cohort.util.String2;
-import gov.noaa.pfel.erddap.util.EDStatic;
+import com.google.common.collect.ImmutableList;
+import gov.noaa.pfel.erddap.util.BoundaryCounter;
+import gov.noaa.pfel.erddap.util.Metrics;
 import gov.noaa.pmel.sgt.dm.*;
 import java.io.*;
 import java.util.Collections;
@@ -38,12 +40,7 @@ public class Boundaries {
    * Set this to true (by calling debug=true in your program, not by changing the code here) if you
    * want lots and lots and lots of diagnostic messages sent to String2.log.
    */
-  public static boolean debug = false;
-
-  public static final String REF_DIRECTORY =
-      EDStatic.getWebInfParentDirectory()
-          + // with / separator and / at the end
-          "WEB-INF/ref/";
+  public static final boolean debug = false;
 
   /**
    * The nationalBoundary and stateBoundary files must be in the refDirectory. "gshhs_?.b"
@@ -51,10 +48,7 @@ public class Boundaries {
    * (https://www.ngdc.noaa.gov/mgg/shorelines/gshhs.html 2009-10-28 v2.0). GPL license:
    * http://www.soest.hawaii.edu/pwessel/gshhs/README.TXT landMaskDir should have slash at end.
    */
-  public String directory =
-      EDStatic.getWebInfParentDirectory()
-          + // with / separator and / at the end
-          "WEB-INF/ref/";
+  public static final String REF_DIRECTORY = File2.getRefDirectory();
 
   /**
    * Since boundary SGTLines are time-consuming to contruct, this caches the last cacheSize used
@@ -66,10 +60,9 @@ public class Boundaries {
    */
   public static final int CACHE_SIZE = 100;
 
-  private Map cache = Collections.synchronizedMap(new LRUCache(CACHE_SIZE));
-  private int nCoarse = 0;
-  private int nSuccesses = 0;
-  private int nTossed = 0;
+  private final Map<String, SGTLine> cache =
+      Collections.synchronizedMap(new LRUCache<>(CACHE_SIZE));
+  public BoundaryCounter counter;
 
   /** This identifies the subclass as National or State. */
   private String id = "";
@@ -100,31 +93,30 @@ public class Boundaries {
   // !!!EEK!!! no Sacramento River! gshhs is based on 2 datasets:
   //  World Vector Shorelines (WVS) and CIA World Data Bank II (WDBII).
   //  Perhaps each thinks the other is responsible for it.
-  private String[] fileNames;
+  private final ImmutableList<String> fileNames;
 
-  public static final String NATIONAL_FILE_NAMES[] = {
-    "nationalBoundariesf.double",
-    "nationalBoundariesh.double",
-    "nationalBoundariesi.double",
-    "nationalBoundariesl.double",
-    "nationalBoundariesc.double"
-  };
+  public static final ImmutableList<String> NATIONAL_FILE_NAMES =
+      ImmutableList.of(
+          "nationalBoundariesf.double",
+          "nationalBoundariesh.double",
+          "nationalBoundariesi.double",
+          "nationalBoundariesl.double",
+          "nationalBoundariesc.double");
   // ??? Why are there state boundaries for all of Americas, but not Australia? Mistake on my
   // part???
-  public static final String STATE_FILE_NAMES[] = {
-    "stateBoundariesf.double",
-    "stateBoundariesh.double",
-    "stateBoundariesi.double",
-    "stateBoundariesl.double",
-    "stateBoundariesc.double"
-  };
-  public static final String RIVER_FILE_NAMES[] = {
-    "riversf.double", "riversh.double", "riversi.double", "riversl.double", "riversc.double"
-  };
+  public static final ImmutableList<String> STATE_FILE_NAMES =
+      ImmutableList.of(
+          "stateBoundariesf.double",
+          "stateBoundariesh.double",
+          "stateBoundariesi.double",
+          "stateBoundariesl.double",
+          "stateBoundariesc.double");
+  public static final ImmutableList<String> RIVER_FILE_NAMES =
+      ImmutableList.of(
+          "riversf.double", "riversh.double", "riversi.double", "riversl.double", "riversc.double");
 
   public static final int MATLAB_FORMAT = 0;
   public static final int GMT_FORMAT = 1;
-  private int fileFormat = GMT_FORMAT;
 
   /**
    * The constructor.
@@ -134,11 +126,10 @@ public class Boundaries {
    * @param fileNames the 5 file names
    * @param fileFormat MATLAB_FORMAT or GMT_FORMAT
    */
-  public Boundaries(String id, String directory, String fileNames[], int fileFormat) {
+  public Boundaries(String id, ImmutableList<String> fileNames, BoundaryCounter counter) {
     this.id = id;
-    this.directory = directory;
     this.fileNames = fileNames;
-    this.fileFormat = fileFormat;
+    this.counter = counter;
   }
 
   /**
@@ -178,9 +169,10 @@ public class Boundaries {
 
       // Don't cache it. Coarse resolutions are always fast because source file is small.
       // And the request is usually a large part of whole world. Most paths will be used.
-      nCoarse++;
+      counter.increment(Metrics.BoundaryRequest.coarse);
       tCoarse = "*";
-      sgtLine = readSgtLineDouble(directory + fileNames[resolution], west, east, south, north);
+      sgtLine =
+          readSgtLineDouble(REF_DIRECTORY + fileNames.get(resolution), west, east, south, north);
 
     } else {
 
@@ -196,19 +188,21 @@ public class Boundaries {
       try {
 
         // *** is SGTLine in cache?
-        sgtLine = (SGTLine) cache.get(cachedName);
+        sgtLine = cache.get(cachedName);
         if (sgtLine == null) {
 
           // not in cache, make SgtLine
-          sgtLine = readSgtLineDouble(directory + fileNames[resolution], west, east, south, north);
+          sgtLine =
+              readSgtLineDouble(
+                  REF_DIRECTORY + fileNames.get(resolution), west, east, south, north);
 
           // cache full?
           if (cache.size() == CACHE_SIZE) {
-            nTossed++;
+            counter.increment(Metrics.BoundaryRequest.tossed);
             tTossed = "*";
           } else {
             // if cache wasn't full, treat as success
-            nSuccesses++;
+            counter.increment(Metrics.BoundaryRequest.success);
             tSuccess = "*";
           }
 
@@ -218,7 +212,7 @@ public class Boundaries {
         } else {
 
           // yes, it is in cache;
-          nSuccesses++;
+          counter.increment(Metrics.BoundaryRequest.success);
           tSuccess = "*(alreadyInCache)";
         }
       } finally {
@@ -238,13 +232,13 @@ public class Boundaries {
               + (System.currentTimeMillis() - time)
               + "ms\n"
               + "      nCoarse="
-              + nCoarse
+              + counter.get(Metrics.BoundaryRequest.coarse)
               + tCoarse
               + " nSuccesses="
-              + nSuccesses
+              + counter.get(Metrics.BoundaryRequest.success)
               + tSuccess
               + " nTossed="
-              + nTossed
+              + counter.get(Metrics.BoundaryRequest.tossed)
               + tTossed);
     return sgtLine;
   }
@@ -283,9 +277,8 @@ public class Boundaries {
     }
     int nObjects = 0, nLatSkip = 0, nLonSkip = 0, nKeep = 0;
 
-    DataInputStream dis =
-        new DataInputStream(File2.getDecompressedBufferedInputStream(fullFileName));
-    try {
+    try (DataInputStream dis =
+        new DataInputStream(File2.getDecompressedBufferedInputStream(fullFileName))) {
       // double minMinLon = 1e10, maxMaxLon = -1e10;   //file has minMinLon=6.10360875868E-4
       // maxMaxLon=359.99969482
       while (true) {
@@ -363,14 +356,12 @@ public class Boundaries {
 
         // read the points
         double oLon = 0; // irrelevant
-        double oLat = 0;
         double tLon = 0;
         double tLat = 0;
         double polyMinLon = 1e10,
             polyMaxLon = -1e10; // see if actualy poly lon range is as promised
         for (int point = 0; point < nPoints; point++) {
           oLon = tLon;
-          oLat = tLat;
           tLon = dis.readDouble();
           tLat = dis.readDouble();
           if (debug) {
@@ -453,8 +444,6 @@ public class Boundaries {
           }
         }
       }
-    } finally {
-      dis.close();
     }
     if (reallyVerbose)
       String2.log(
@@ -471,9 +460,7 @@ public class Boundaries {
     lon.trimToSize();
     lat.trimToSize();
 
-    SimpleLine line = new SimpleLine(lon.array, lat.array, "Boundary");
-    line.setXMetaData(new SGTMetaData("Longitude", "degrees_E", false, true));
-    line.setYMetaData(new SGTMetaData("Latitude", "degrees_N", false, false));
+    SimpleLine line = new SimpleLine(lon.array, lat.array);
 
     // for (int i = 0; i < lon.size(); i++)
     //    String2.log(String2.left("" + i, 5) +
@@ -506,8 +493,8 @@ public class Boundaries {
     String startGapLine2 = format == MATLAB_FORMAT ? "nan nan" : "#";
     int nObjects = 0;
 
-    BufferedReader bufferedReader = File2.getDecompressedBufferedFileReader88591(fullFileName);
-    try {
+    try (BufferedReader bufferedReader =
+        File2.getDecompressedBufferedFileReader88591(fullFileName)) {
       String s = bufferedReader.readLine();
       while (s != null) { // null = end-of-file
         if (s.startsWith(startGapLine1) || s.startsWith(startGapLine2)) {
@@ -575,18 +562,13 @@ public class Boundaries {
         }
         s = bufferedReader.readLine();
       }
-    } finally {
-      bufferedReader.close();
     }
     if (reallyVerbose) String2.log("    Boundaries.readSgtLine nObjects=" + nObjects);
 
     lon.trimToSize();
     lat.trimToSize();
 
-    SimpleLine line = new SimpleLine(lon.array, lat.array, "Boundary");
-    line.setXMetaData(new SGTMetaData("Longitude", "degrees_E", false, true));
-    line.setYMetaData(new SGTMetaData("Latitude", "degrees_N", false, false));
-
+    SimpleLine line = new SimpleLine(lon.array, lat.array);
     return line;
   }
 
@@ -606,19 +588,15 @@ public class Boundaries {
     int format = GMT_FORMAT;
 
     String2.log("convertSgtLine\n in:" + sourceName + "\nout:" + destName);
-    DoubleArray lat = new DoubleArray();
-    DoubleArray lon = new DoubleArray();
     DoubleArray tempLat = new DoubleArray();
     DoubleArray tempLon = new DoubleArray();
     String startGapLine1 = format == MATLAB_FORMAT ? "nan nan" : ">";
     String startGapLine2 = format == MATLAB_FORMAT ? "nan nan" : "#";
     int nObjects = 0;
 
-    BufferedReader bufferedReader = File2.getDecompressedBufferedFileReader88591(sourceName);
-    try {
-      DataOutputStream dos =
-          new DataOutputStream(new BufferedOutputStream(new FileOutputStream(destName)));
-      try {
+    try (BufferedReader bufferedReader = File2.getDecompressedBufferedFileReader88591(sourceName)) {
+      try (DataOutputStream dos =
+          new DataOutputStream(new BufferedOutputStream(new FileOutputStream(destName)))) {
         String s = bufferedReader.readLine();
         while (true) {
           if (s == null
@@ -664,11 +642,7 @@ public class Boundaries {
         // mark of file
         dos.writeDouble(Double.NaN);
         dos.writeDouble(Double.NaN);
-      } finally {
-        dos.close();
       }
-    } finally {
-      bufferedReader.close();
     }
     String2.log("    Boundaries.convertSgtLine nObjects=" + nObjects);
   }
@@ -678,10 +652,9 @@ public class Boundaries {
     String dir = "c:/programs/boundaries/";
     String types[] = {"nationalBoundaries", "stateBoundaries", "rivers"};
     String ress[] = {"c", "f", "h", "i", "l"};
-    for (int type = 0; type < types.length; type++) {
-      for (int res = 0; res < ress.length; res++) {
-        convertSgtLine(
-            dir + types[type] + ress[res] + ".asc", dir + types[type] + ress[res] + ".double");
+    for (String string : types) {
+      for (String s : ress) {
+        convertSgtLine(dir + string + s + ".asc", dir + string + s + ".double");
       }
     }
   }
@@ -694,25 +667,35 @@ public class Boundaries {
         + " of "
         + CACHE_SIZE
         + ",  nCoarse="
-        + nCoarse
+        + counter.get(Metrics.BoundaryRequest.coarse)
         + ", nSuccesses="
-        + nSuccesses
+        + counter.get(Metrics.BoundaryRequest.success)
         + ", nTossed="
-        + nTossed;
+        + counter.get(Metrics.BoundaryRequest.tossed);
   }
 
   /** This is a convenience method to construct a national boundaries object. */
   public static Boundaries getNationalBoundaries() {
-    return new Boundaries("NationalBoundaries", REF_DIRECTORY, NATIONAL_FILE_NAMES, GMT_FORMAT);
+    return new Boundaries(
+        "NationalBoundaries",
+        NATIONAL_FILE_NAMES,
+        new BoundaryCounter(
+            "national_boundaries_request_total", "Requests for national boundaries"));
   }
 
   /** This is a convenience method to construct a national boundaries object. */
   public static Boundaries getStateBoundaries() {
-    return new Boundaries("StateBoundaries", REF_DIRECTORY, STATE_FILE_NAMES, GMT_FORMAT);
+    return new Boundaries(
+        "StateBoundaries",
+        STATE_FILE_NAMES,
+        new BoundaryCounter("state_boundaries_request_total", "Requests for state boundaries"));
   }
 
   /** This is a convenience method to construct a rivers object. */
   public static Boundaries getRivers() {
-    return new Boundaries("Rivers", REF_DIRECTORY, RIVER_FILE_NAMES, GMT_FORMAT);
+    return new Boundaries(
+        "Rivers",
+        RIVER_FILE_NAMES,
+        new BoundaryCounter("river_boundaries_request_total", "Requests for river boundaries"));
   }
 }

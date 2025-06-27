@@ -241,12 +241,11 @@ public class Touch {
 
     // for each of those
     StringArray sa = new StringArray();
-    for (int i = 0; i < second.length; i++) {
-      String s = second[i];
+    for (String s : second) {
       // String2.log("s=" + s);
 
       // print all ...urls
-      cat = SSR.getUrlResponseStringUnchanged(second[i]);
+      cat = SSR.getUrlResponseStringUnchanged(s);
       // String2.log(cat);
 
       String third[] = String2.extractAllRegexes(cat, "ID=\".+?\"");

@@ -8,7 +8,8 @@ import com.cohort.array.Attributes;
 import com.cohort.array.PAOne;
 import com.cohort.array.PrimitiveArray;
 import com.cohort.util.SimpleException;
-import com.cohort.util.String2;
+import gov.noaa.pfel.erddap.dataset.metadata.LocalizedAttributes;
+import gov.noaa.pfel.erddap.util.EDMessages;
 
 /**
  * This class holds information about an altitude variable, which is like EDV, but the
@@ -19,30 +20,28 @@ import com.cohort.util.String2;
  */
 public class EDVAlt extends EDV {
 
-  public static String stopUsingAltitudeMetersPerSourceUnit =
+  public static final String stopUsingAltitudeMetersPerSourceUnit =
       "Please stop using <altitudeMetersPerSourceUnit>.  "
           + "When the value is 1, just delete it.  "
           + "For other values, set the altitude variable's <scale_factor> instead.";
 
   /**
-   * The constructor -- like EDV, but the destinationName, long_name, and units are standardized.
+   * The constructor -- like EDV, but the destinationName, and units are standardized.
    *
    * @param tSourceMin is pre-scale_factor and add_offset. This takes precedence over actual_range,
    *     actual_min, or data_min metadata.
    * @param tSourceMax is pre-scale_factor and add_offset. This takes precedence over actual_range,
    *     actual_max, or data_max metadata.
-   * @throws Throwable if trouble
    */
   public EDVAlt(
       String tDatasetID,
       String tSourceName,
       Attributes tSourceAttributes,
-      Attributes tAddAttributes,
+      LocalizedAttributes tAddAttributes,
       String tSourceDataType,
       PAOne tSourceMin,
       PAOne tSourceMax)
       throws Throwable {
-
     super(
         tDatasetID,
         tSourceName,
@@ -53,39 +52,42 @@ public class EDVAlt extends EDV {
         tSourceMin,
         tSourceMax);
 
+    // The attributes this gets/sets should not need to be localized (max/min
+    // value for example). Just use the default language.
+    int language = EDMessages.DEFAULT_LANGUAGE;
     if (destinationDataType().equals("String"))
       throw new RuntimeException(
           "datasets.xml error: "
               + "The destination dataType for the altitude variable must be a numeric dataType.");
 
     units = ALT_UNITS;
-    combinedAttributes.set("_CoordinateAxisType", "Height"); // unidata
-    combinedAttributes.set("_CoordinateZisPositive", "up"); // unidata
-    combinedAttributes.set("axis", "Z");
-    combinedAttributes.set("ioos_category", LOCATION_CATEGORY);
-    longName = combinedAttributes.getString("long_name");
+    combinedAttributes.set(language, "_CoordinateAxisType", "Height"); // unidata
+    combinedAttributes.set(language, "_CoordinateZisPositive", "up"); // unidata
+    combinedAttributes.set(language, "axis", "Z");
+    combinedAttributes.set(language, "ioos_category", LOCATION_CATEGORY);
+    longName = combinedAttributes.getString(language, "long_name");
     if (longName == null
         || // catch nothing
-        longName.toLowerCase().equals("alt")
-        || longName.toLowerCase().equals("altitude")) { // catch alternate case
+        longName.equalsIgnoreCase("alt")
+        || longName.equalsIgnoreCase("altitude")) { // catch alternate case
       longName = ALT_LONGNAME;
-      combinedAttributes.set("long_name", longName);
+      combinedAttributes.set(language, "long_name", longName);
     }
-    combinedAttributes.set("positive", "up"); // cf
-    combinedAttributes.set("standard_name", ALT_STANDARD_NAME);
-    ensureUnitsAreM(combinedAttributes.getString("units"), "altitude", "up");
-    combinedAttributes.set("units", units);
+    combinedAttributes.set(language, "positive", "up"); // cf
+    combinedAttributes.set(language, "standard_name", ALT_STANDARD_NAME);
+    ensureUnitsAreM(combinedAttributes.getString(language, "units"), "altitude", "up");
+    combinedAttributes.set(language, "units", units);
 
     // set destinationMin max  if not set by tSourceMin,Max
-    PAOne mm[] = extractActualRange(); // always extract
+    PAOne mm[] = extractActualRange(language); // always extract
     setDestinationMinMax(mm[0], mm[1]);
-    setActualRangeFromDestinationMinMax();
+    setActualRangeFromDestinationMinMax(language);
 
     // destinationMissingValue and destinationFillValue have already been
     // adjusted for scaleAddOffset (including destinationDataType)
-    PrimitiveArray pa = combinedAttributes.get("missing_value");
+    PrimitiveArray pa = combinedAttributes.get(language, "missing_value");
     if (pa != null) pa.setDouble(0, destinationMissingValue);
-    pa = combinedAttributes.get("_FillValue");
+    pa = combinedAttributes.get(language, "_FillValue");
     if (pa != null) pa.setDouble(0, destinationFillValue);
   }
 
@@ -98,7 +100,7 @@ public class EDVAlt extends EDV {
    * @throws a SimpleException if cUnits isn't "m" or an alias.
    */
   public static void ensureUnitsAreM(String cUnits, String altitudeDepth, String upDown) {
-    if (cUnits != null && String2.indexOf(EDV.METERS_VARIANTS, cUnits) >= 0) return;
+    if (cUnits != null && EDV.METERS_VARIANTS.indexOf(cUnits) >= 0) return;
 
     throw new SimpleException(
         "When a variable's destinationName is \""

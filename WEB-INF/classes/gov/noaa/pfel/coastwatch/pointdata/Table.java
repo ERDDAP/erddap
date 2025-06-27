@@ -6,12 +6,14 @@ package gov.noaa.pfel.coastwatch.pointdata;
 
 import com.cohort.array.*;
 import com.cohort.util.*;
+import com.google.common.collect.ImmutableList;
 import dods.dap.*;
 import gov.noaa.pfel.coastwatch.griddata.DataHelper;
 import gov.noaa.pfel.coastwatch.griddata.FileNameUtility;
 import gov.noaa.pfel.coastwatch.griddata.Matlab;
 import gov.noaa.pfel.coastwatch.griddata.NcHelper;
 import gov.noaa.pfel.coastwatch.griddata.OpendapHelper;
+import gov.noaa.pfel.coastwatch.pointdata.parquet.ParquetWriterBuilder;
 import gov.noaa.pfel.coastwatch.util.HtmlWidgets;
 import gov.noaa.pfel.coastwatch.util.SSR;
 import gov.noaa.pfel.coastwatch.util.SimpleXMLReader;
@@ -33,11 +35,11 @@ import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.math.BigInteger;
+import java.nio.charset.StandardCharsets;
 import java.sql.BatchUpdateException;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.Date;
-import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
@@ -49,21 +51,39 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TimeZone;
-import java.util.Vector;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.sound.sampled.AudioFileFormat;
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.parquet.ParquetReadOptions;
+import org.apache.parquet.column.page.PageReadStore;
+import org.apache.parquet.example.data.simple.convert.GroupRecordConverter;
+import org.apache.parquet.hadoop.ParquetFileReader;
+import org.apache.parquet.hadoop.ParquetWriter;
+import org.apache.parquet.hadoop.metadata.CompressionCodecName;
+import org.apache.parquet.io.ColumnIOFactory;
+import org.apache.parquet.io.InputFile;
+import org.apache.parquet.io.LocalInputFile;
+import org.apache.parquet.io.LocalOutputFile;
+import org.apache.parquet.io.MessageColumnIO;
+import org.apache.parquet.io.RecordReader;
+import org.apache.parquet.schema.LogicalTypeAnnotation;
+import org.apache.parquet.schema.LogicalTypeAnnotation.TimeUnit;
+import org.apache.parquet.schema.MessageType;
+import org.apache.parquet.schema.PrimitiveType.PrimitiveTypeName;
+import org.apache.parquet.schema.Type;
+import org.apache.parquet.schema.Types.MessageTypeBuilder;
 import org.xml.sax.InputSource;
 import org.xml.sax.XMLReader;
 import ucar.ma2.*;
@@ -123,7 +143,7 @@ public class Table {
   public boolean allowRaggedRightInReadASCII = false;
 
   /** If true, readOpendap requestes compressed data. I think this should always be true. */
-  public boolean opendapAcceptDeflate = true;
+  public static final boolean opendapAcceptDeflate = true;
 
   /**
    * Since users use these numbers (not names) from the command line, the value for a given option
@@ -140,7 +160,8 @@ public class Table {
   public static final int SAVE_AS_4D_NC = 2;
   public static final int SAVE_AS_MATLAB = 3;
   // public static final int SAVE_AS_HDF = 4;
-  public static final String SAVE_AS_EXTENSIONS[] = {".asc", ".nc", ".nc", ".mat"};
+  public static final ImmutableList<String> SAVE_AS_EXTENSIONS =
+      ImmutableList.of(".asc", ".nc", ".nc", ".mat");
 
   public static String BGCOLOR = "#ffffcc";
 
@@ -156,17 +177,19 @@ public class Table {
    * string &lt; &lt;= &gt; &gt;= testing), ERDDAP will just get all the relevant data and do the
    * test itself.
    */
-  public static final String OPERATORS[] =
-  // EDDTableFromFiles.isOK relies on this order
-  {"!=", PrimitiveArray.REGEX_OP, "<=", ">=", "=", "<", ">"};
+  public static final ImmutableList<String> OPERATORS =
+      ImmutableList.of(
+          // EDDTableFromFiles.isOK relies on this order
+          "!=", PrimitiveArray.REGEX_OP, "<=", ">=", "=", "<", ">");
 
   public static final String SEQUENCE_NAME = "s";
 
-  public static String QUERY_ERROR = "Query error: ";
+  public static final String QUERY_ERROR = "Query error: ";
 
-  public static String NOT_FOUND_EOF = " not found before end-of-file.";
-  public static String ELAPSED_TIME = "elapsedTime";
-  public static String WARNING_BAD_LINE_OF_DATA_IN = String2.WARNING + ": Bad line(s) of data in ";
+  public static final String NOT_FOUND_EOF = " not found before end-of-file.";
+  public static final String ELAPSED_TIME = "elapsedTime";
+  public static final String WARNING_BAD_LINE_OF_DATA_IN =
+      String2.WARNING + ": Bad line(s) of data in ";
 
   /**
    * Igor Text File File reference: in Bob's /programs/igor/ or
@@ -188,372 +211,372 @@ public class Table {
    * Igor reserved names are selected names from "Built-In Operations by Category" from
    * https://www.wavemetrics.net/doc/igorman/IgorMan.pdf
    */
-  public static final String[] IgorReservedNamesSA = { // sorted for simplicity (not required)
-    "abs",
-    "acos",
-    "AddLitItem",
-    "airyA",
-    "airyAD",
-    "airyB",
-    "alog",
-    "AnnotationInfo",
-    "AnnotationList",
-    "area",
-    "asin",
-    "Append",
-    "areaXY",
-    "atan",
-    "AxisInfo",
-    "AxisList",
-    "BackgroundInfo",
-    "Besseli",
-    "Besselj",
-    "Besselk",
-    "Bessely",
-    "bessI",
-    "bessJ",
-    "bessK",
-    "bessY",
-    "beta",
-    "betai",
-    "binomial",
-    "BoundingBall",
-    "break",
-    "BrowseURL",
-    "cabs",
-    "CaptureHistory",
-    "catch",
-    "cd",
-    "ceil",
-    "cequal",
-    "Chart",
-    "char2num",
-    "CheckBox",
-    "CheckName",
-    "CleanupName",
-    "cmplx",
-    "cmpstr",
-    "ColorScale",
-    "Concatenate",
-    "conj",
-    "Constant",
-    "continue",
-    "ContourInfo",
-    "ContourZ",
-    "ControlBar",
-    "ConvexHull",
-    "Convolve",
-    "Correlate",
-    "CountObjects",
-    "cos",
-    "cot",
-    "coth",
-    "cpowi",
-    "CreationDate",
-    "Cross",
-    "csc",
-    "CsrInfo",
-    "CsrWave",
-    "CsrWaveRef",
-    "CTabList",
-    "Cursor",
-    "CurveFit",
-    "CWT",
-    "DataFolderDir",
-    "DataFolderExists",
-    "date",
-    "date2secs",
-    "date2Julian",
-    "DateTime",
-    "dawson",
-    "default",
-    "DefaultFont",
-    "deltax",
-    "DFREF",
-    "Differentiate",
-    "digamma",
-    "dimDelta",
-    "DimOffset",
-    "DimSize",
-    "Dir",
-    "Display",
-    "Duplicate",
-    "DWT",
-    "e",
-    "EdgeStats",
-    "Edit",
-    "ei",
-    "End",
-    "EndMacro",
-    "enoise",
-    "erf",
-    "erfc",
-    "erfcw",
-    "exists",
-    "exp",
-    "ExperimentModified",
-    "expInt",
-    "expnoise",
-    "Extract",
-    "factorial",
-    "FakeData",
-    "FastGaussTransform",
-    "faverage",
-    "FFT",
-    "FilterIIR",
-    "FindLevel",
-    "FindListItem",
-    "FindValue",
-    "FitFunc",
-    "floor",
-    "FontList",
-    "FStatus",
-    "FTPDownload",
-    "FTPUpload",
-    "FUNCREF",
-    "FuncRefInfo",
-    "Function",
-    "FunctionInfo",
-    "FunctionList",
-    "FunctionPath",
-    "gamma",
-    "gammaInc",
-    "gammaln",
-    "gammaNoise",
-    "gammp",
-    "gammq",
-    "Gauss",
-    "Gauss2D",
-    "gcd",
-    "gnoise",
-    "Graph",
-    "GraphMarquee",
-    "GraphStyle",
-    "GridStyle",
-    "GuideInfo",
-    "Hanning",
-    "Hash",
-    "hcsr",
-    "hermite",
-    "hide",
-    "HilbertTransform",
-    "Histogram",
-    "i",
-    "IFFT",
-    "ilim",
-    "imag",
-    "ImageFilter",
-    "ImageHistogram",
-    "ImageInfo",
-    "ImageNameList",
-    "ImageRotate",
-    "ImageSave",
-    "ImageStats",
-    "ImageThreshold",
-    "ImageTransform",
-    "ImageWindow",
-    "IndexedDir",
-    "IndexedFile",
-    "IndexSort",
-    "Inf",
-    "InsertPoints",
-    "Integrate",
-    "IntegrateID",
-    "interp",
-    "Interp2D",
-    "Interp3D",
-    "inverseErf",
-    "inverseErfc",
-    "ItemsInList",
-    "j",
-    "jlim",
-    "JulianToDate",
-    "Label",
-    "laguerre",
-    "Layout",
-    "LayoutInfo",
-    "Legend",
-    "limit",
-    "ListMatch",
-    "ln",
-    "LoadData",
-    "Loess",
-    "log",
-    "LowerStr",
-    "Macro",
-    "magsqr",
-    "Make",
-    "MakeIndex",
-    "MatrixDet",
-    "MatrixDot",
-    "MatrixFilter",
-    "MatrixRank",
-    "MatrixTrace",
-    "max",
-    "mean",
-    "Menu",
-    "min",
-    "mod",
-    "modDate",
-    "Modify",
-    "ModuleName",
-    "norm",
-    "note",
-    "Note",
-    "Notebook",
-    "num2char",
-    "num2str",
-    "numpnts",
-    "numtype",
-    "NVAR",
-    "Open",
-    "OperationList",
-    "Optimize",
-    "Override",
-    "p",
-    "p2rect",
-    "PadString",
-    "Panel",
-    "ParamIsDefault",
-    "PathInfo",
-    "PathList",
-    "PCA",
-    "pcsr",
-    "Pi",
-    "PICTList",
-    "Picture",
-    "PlaySound",
-    "pnt2x",
-    "Point",
-    "poly",
-    "poly2D",
-    "PolygonArea",
-    "popup",
-    "Preferences",
-    "Print",
-    "Proc",
-    "ProcGlobal",
-    "ProcedureText",
-    "Project",
-    "Prompt",
-    "PulseStats",
-    "pwd",
-    "q",
-    "qcsr",
-    "Quit",
-    "r",
-    "r2polar",
-    "real",
-    "Rect",
-    "Redimension",
-    "Remove",
-    "Rename",
-    "Resample",
-    "return",
-    "Reverse",
-    "RGBColor",
-    "rightx",
-    "root",
-    "Rotate",
-    "round",
-    "rtGlobals",
-    "s",
-    "Save",
-    "SaveData",
-    "ScreenResolution",
-    "sec",
-    "Secs2Date",
-    "Secs2Time",
-    "SelectNumber",
-    "SelectString",
-    "SetAxis",
-    "SetBackground",
-    "SetDimLabel",
-    "SetDrawLayer",
-    "SetRandomSeed",
-    "SetScale",
-    "sign",
-    "sin",
-    "sinc",
-    "sinh",
-    "Sleep",
-    "Slow",
-    "Smooth",
-    "Sort",
-    "SortList",
-    "SpecialDirPath",
-    "SplitString",
-    "sqrt",
-    "Stack",
-    "startMSTimer",
-    "Static",
-    "stopMSTimer",
-    "str2num",
-    "Strconstant",
-    "String",
-    "StringByKey",
-    "StringCRC",
-    "StringFromList",
-    "StringList",
-    "StringMatch",
-    "strlen",
-    "strsearch",
-    "STRUCT",
-    "Structure",
-    "Submenu",
-    "sum",
-    "SVAR",
-    "t",
-    "Table",
-    "TableInfo",
-    "TableStyle",
-    "Tag",
-    "TagVal",
-    "tan",
-    "tanh",
-    "TextBox",
-    "TextFile",
-    "ticks",
-    "Tile",
-    "TileWindows",
-    "time",
-    "TraceInfo",
-    "trunc",
-    "UniqueName",
-    "Unwrap",
-    "UpperStr",
-    "URLDecode",
-    "URLEncode",
-    "Variable",
-    "VariableList",
-    "Variance",
-    "vcsr",
-    "version",
-    "WAVE",
-    "WaveCRC",
-    "WaveDims",
-    "WaveExists",
-    "WaveMeanStdv",
-    "WaveMax",
-    "WaveMin",
-    "WaveName",
-    "WaveStats",
-    "WaveTransform",
-    "WaveType",
-    "WaveUnits",
-    "WhichListItem",
-    "Window",
-    "WinName",
-    "wnoise",
-    "x",
-    "x2pnt",
-    "xcsr",
-    "y",
-    "z",
-    "zcsr"
-  };
+  public static final ImmutableList<String> IgorReservedNamesSA =
+      ImmutableList.of( // sorted for simplicity (not required)
+          "abs",
+          "acos",
+          "AddLitItem",
+          "airyA",
+          "airyAD",
+          "airyB",
+          "alog",
+          "AnnotationInfo",
+          "AnnotationList",
+          "area",
+          "asin",
+          "Append",
+          "areaXY",
+          "atan",
+          "AxisInfo",
+          "AxisList",
+          "BackgroundInfo",
+          "Besseli",
+          "Besselj",
+          "Besselk",
+          "Bessely",
+          "bessI",
+          "bessJ",
+          "bessK",
+          "bessY",
+          "beta",
+          "betai",
+          "binomial",
+          "BoundingBall",
+          "break",
+          "BrowseURL",
+          "cabs",
+          "CaptureHistory",
+          "catch",
+          "cd",
+          "ceil",
+          "cequal",
+          "Chart",
+          "char2num",
+          "CheckBox",
+          "CheckName",
+          "CleanupName",
+          "cmplx",
+          "cmpstr",
+          "ColorScale",
+          "Concatenate",
+          "conj",
+          "Constant",
+          "continue",
+          "ContourInfo",
+          "ContourZ",
+          "ControlBar",
+          "ConvexHull",
+          "Convolve",
+          "Correlate",
+          "CountObjects",
+          "cos",
+          "cot",
+          "coth",
+          "cpowi",
+          "CreationDate",
+          "Cross",
+          "csc",
+          "CsrInfo",
+          "CsrWave",
+          "CsrWaveRef",
+          "CTabList",
+          "Cursor",
+          "CurveFit",
+          "CWT",
+          "DataFolderDir",
+          "DataFolderExists",
+          "date",
+          "date2secs",
+          "date2Julian",
+          "DateTime",
+          "dawson",
+          "default",
+          "DefaultFont",
+          "deltax",
+          "DFREF",
+          "Differentiate",
+          "digamma",
+          "dimDelta",
+          "DimOffset",
+          "DimSize",
+          "Dir",
+          "Display",
+          "Duplicate",
+          "DWT",
+          "e",
+          "EdgeStats",
+          "Edit",
+          "ei",
+          "End",
+          "EndMacro",
+          "enoise",
+          "erf",
+          "erfc",
+          "erfcw",
+          "exists",
+          "exp",
+          "ExperimentModified",
+          "expInt",
+          "expnoise",
+          "Extract",
+          "factorial",
+          "FakeData",
+          "FastGaussTransform",
+          "faverage",
+          "FFT",
+          "FilterIIR",
+          "FindLevel",
+          "FindListItem",
+          "FindValue",
+          "FitFunc",
+          "floor",
+          "FontList",
+          "FStatus",
+          "FTPDownload",
+          "FTPUpload",
+          "FUNCREF",
+          "FuncRefInfo",
+          "Function",
+          "FunctionInfo",
+          "FunctionList",
+          "FunctionPath",
+          "gamma",
+          "gammaInc",
+          "gammaln",
+          "gammaNoise",
+          "gammp",
+          "gammq",
+          "Gauss",
+          "Gauss2D",
+          "gcd",
+          "gnoise",
+          "Graph",
+          "GraphMarquee",
+          "GraphStyle",
+          "GridStyle",
+          "GuideInfo",
+          "Hanning",
+          "Hash",
+          "hcsr",
+          "hermite",
+          "hide",
+          "HilbertTransform",
+          "Histogram",
+          "i",
+          "IFFT",
+          "ilim",
+          "imag",
+          "ImageFilter",
+          "ImageHistogram",
+          "ImageInfo",
+          "ImageNameList",
+          "ImageRotate",
+          "ImageSave",
+          "ImageStats",
+          "ImageThreshold",
+          "ImageTransform",
+          "ImageWindow",
+          "IndexedDir",
+          "IndexedFile",
+          "IndexSort",
+          "Inf",
+          "InsertPoints",
+          "Integrate",
+          "IntegrateID",
+          "interp",
+          "Interp2D",
+          "Interp3D",
+          "inverseErf",
+          "inverseErfc",
+          "ItemsInList",
+          "j",
+          "jlim",
+          "JulianToDate",
+          "Label",
+          "laguerre",
+          "Layout",
+          "LayoutInfo",
+          "Legend",
+          "limit",
+          "ListMatch",
+          "ln",
+          "LoadData",
+          "Loess",
+          "log",
+          "LowerStr",
+          "Macro",
+          "magsqr",
+          "Make",
+          "MakeIndex",
+          "MatrixDet",
+          "MatrixDot",
+          "MatrixFilter",
+          "MatrixRank",
+          "MatrixTrace",
+          "max",
+          "mean",
+          "Menu",
+          "min",
+          "mod",
+          "modDate",
+          "Modify",
+          "ModuleName",
+          "norm",
+          "note",
+          "Note",
+          "Notebook",
+          "num2char",
+          "num2str",
+          "numpnts",
+          "numtype",
+          "NVAR",
+          "Open",
+          "OperationList",
+          "Optimize",
+          "Override",
+          "p",
+          "p2rect",
+          "PadString",
+          "Panel",
+          "ParamIsDefault",
+          "PathInfo",
+          "PathList",
+          "PCA",
+          "pcsr",
+          "Pi",
+          "PICTList",
+          "Picture",
+          "PlaySound",
+          "pnt2x",
+          "Point",
+          "poly",
+          "poly2D",
+          "PolygonArea",
+          "popup",
+          "Preferences",
+          "Print",
+          "Proc",
+          "ProcGlobal",
+          "ProcedureText",
+          "Project",
+          "Prompt",
+          "PulseStats",
+          "pwd",
+          "q",
+          "qcsr",
+          "Quit",
+          "r",
+          "r2polar",
+          "real",
+          "Rect",
+          "Redimension",
+          "Remove",
+          "Rename",
+          "Resample",
+          "return",
+          "Reverse",
+          "RGBColor",
+          "rightx",
+          "root",
+          "Rotate",
+          "round",
+          "rtGlobals",
+          "s",
+          "Save",
+          "SaveData",
+          "ScreenResolution",
+          "sec",
+          "Secs2Date",
+          "Secs2Time",
+          "SelectNumber",
+          "SelectString",
+          "SetAxis",
+          "SetBackground",
+          "SetDimLabel",
+          "SetDrawLayer",
+          "SetRandomSeed",
+          "SetScale",
+          "sign",
+          "sin",
+          "sinc",
+          "sinh",
+          "Sleep",
+          "Slow",
+          "Smooth",
+          "Sort",
+          "SortList",
+          "SpecialDirPath",
+          "SplitString",
+          "sqrt",
+          "Stack",
+          "startMSTimer",
+          "Static",
+          "stopMSTimer",
+          "str2num",
+          "Strconstant",
+          "String",
+          "StringByKey",
+          "StringCRC",
+          "StringFromList",
+          "StringList",
+          "StringMatch",
+          "strlen",
+          "strsearch",
+          "STRUCT",
+          "Structure",
+          "Submenu",
+          "sum",
+          "SVAR",
+          "t",
+          "Table",
+          "TableInfo",
+          "TableStyle",
+          "Tag",
+          "TagVal",
+          "tan",
+          "tanh",
+          "TextBox",
+          "TextFile",
+          "ticks",
+          "Tile",
+          "TileWindows",
+          "time",
+          "TraceInfo",
+          "trunc",
+          "UniqueName",
+          "Unwrap",
+          "UpperStr",
+          "URLDecode",
+          "URLEncode",
+          "Variable",
+          "VariableList",
+          "Variance",
+          "vcsr",
+          "version",
+          "WAVE",
+          "WaveCRC",
+          "WaveDims",
+          "WaveExists",
+          "WaveMeanStdv",
+          "WaveMax",
+          "WaveMin",
+          "WaveName",
+          "WaveStats",
+          "WaveTransform",
+          "WaveType",
+          "WaveUnits",
+          "WhichListItem",
+          "Window",
+          "WinName",
+          "wnoise",
+          "x",
+          "x2pnt",
+          "xcsr",
+          "y",
+          "z",
+          "zcsr");
 
-  public static final HashSet<String> IgorReservedNames = new HashSet();
+  public static final HashSet<String> IgorReservedNames = new HashSet<>();
 
   static {
     for (String s : IgorReservedNamesSA) IgorReservedNames.add(String2.canonical(s));
@@ -563,15 +586,11 @@ public class Table {
    * A link to erddap2.css. HTML allows link or inline. XHTML only allows link (and no close link
    * tag!). See https://en.wikibooks.org/wiki/Cascading_Style_Sheets/Applying_CSS_to_HTML_and_XHTML
    */
-  public static String ERD_TABLE_CSS =
+  public static final String ERD_TABLE_CSS =
       "<link href=\"https://coastwatch.pfeg.noaa.gov/erddap/images/erddap2.css\" rel=\"stylesheet\" type=\"text/css\">";
 
-  // this is used to find out if all readNcCF code is tested: cc=code coverage
-  // Bits are set to true when chunk of code is tested.
-  public static BitSet ncCFcc = null; // null=inactive, new BitSet() = active
-
   /** An arrayList to hold 0 or more PrimitiveArray's with data. */
-  protected ArrayList<PrimitiveArray> columns = new ArrayList();
+  protected final ArrayList<PrimitiveArray> columns = new ArrayList<>();
 
   /** An arrayList to hold the column names. */
   protected StringArray columnNames = new StringArray();
@@ -588,7 +607,7 @@ public class Table {
    * Although a HashTable is more appropriate for name=value pairs, this uses ArrayList to preserve
    * the order of the attributes. This may be null if not in use.
    */
-  protected ArrayList<Attributes> columnAttributes = new ArrayList();
+  protected final ArrayList<Attributes> columnAttributes = new ArrayList<>();
 
   /** The one known valid url for readIobis. */
   public static final String IOBIS_URL = "http://www.iobis.org/OBISWEB/ObisControllerServlet";
@@ -641,7 +660,7 @@ public class Table {
   public static int skipHeaderToRegex(
       String skipHeaderToRegex, String sourceName, BufferedReader linesReader) throws IOException {
     int linesRead = 0;
-    if (skipHeaderToRegex != null && !skipHeaderToRegex.equals("")) {
+    if (skipHeaderToRegex != null && !skipHeaderToRegex.isEmpty()) {
       Pattern shtp = Pattern.compile(skipHeaderToRegex);
       while (true) {
         String s = linesReader.readLine(); // null if end. exception if trouble
@@ -901,8 +920,7 @@ public class Table {
    * @param dos
    */
   public void writeRowToDOS(int row, DataOutputStream dos) throws Exception {
-    int nColumns = columns.size();
-    for (int col = 0; col < nColumns; col++) columns.get(col).writeDos(dos, row);
+    for (PrimitiveArray column : columns) column.writeDos(dos, row);
   }
 
   /**
@@ -911,8 +929,7 @@ public class Table {
    * @param dis
    */
   public void readRowFromDIS(DataInputStream dis) throws Exception {
-    int nColumns = columns.size();
-    for (int col = 0; col < nColumns; col++) columns.get(col).readDis(dis, 1); // read 1 value
+    for (PrimitiveArray column : columns) column.readDis(dis, 1); // read 1 value
   }
 
   /**
@@ -1048,7 +1065,6 @@ public class Table {
    */
   public int reorderColumns(StringArray desiredOrder, boolean discardOthers) {
     int nFound = 0;
-    int doSize = desiredOrder.size();
     for (int i = 0; i < desiredOrder.size(); i++) {
       int from = findColumnNumber(desiredOrder.get(i));
       if (from >= 0) moveColumn(from, nFound++);
@@ -1450,7 +1466,6 @@ public class Table {
       } else if (paType == PAType.ULONG) {
         BigInteger mv = atts.getULong("missing_value"); // may be null
         BigInteger fv = atts.getULong("_FillValue");
-        boolean paMaxIsMV = pa.getMaxIsMV();
         for (int row = tnRows - 1; row > lastRowWithData; row--) {
           BigInteger t = pa.getULong(row);
           if (t == null || t.equals(mv) || t.equals(fv)) {
@@ -1849,7 +1864,7 @@ public class Table {
     for (int col = 0; col < nColumns; col++) {
       PrimitiveArray pa = columns.get(col);
       String columnName = getColumnName(col);
-      if (pa instanceof StringArray sa) {
+      if (pa instanceof StringArray) {
         sb.append(
             "\tchar "
                 + columnName
@@ -2081,7 +2096,7 @@ public class Table {
     trySet(globalAttributes, "title", boldTitle); // Time series from ... ?
 
     // remove some commonly set, but no longer relevant, attributes
-    globalAttributes.remove(CacheOpendapStation.OPENDAP_TIME_DIMENSION_SIZE);
+    globalAttributes.remove("CWOpendapTimeDimensionSize");
     globalAttributes.remove("Unlimited_Dimension"); // e.g., MBARI has this
 
     // setActualRangeAndBoundingBox
@@ -2517,7 +2532,7 @@ public class Table {
    * @param keysName
    * @param valuesName
    */
-  public void readMap(Map map, String keysName, String valuesName) {
+  public void readMap(Map<String, String> map, String keysName, String valuesName) {
     // create the empty table
     clear();
     StringArray keys = new StringArray();
@@ -2526,12 +2541,10 @@ public class Table {
     addColumn(valuesName, values);
 
     // get the keys and values
-    Set entrySet = map.entrySet();
-    Iterator it = entrySet.iterator();
-    while (it.hasNext()) {
-      Map.Entry me = (Map.Entry) it.next();
-      keys.add(me.getKey().toString());
-      values.add(me.getValue().toString());
+    Set<Map.Entry<String, String>> entrySet = map.entrySet();
+    for (Map.Entry<String, String> me : entrySet) {
+      keys.add(me.getKey());
+      values.add(me.getValue());
     }
     leftToRightSort(1);
   }
@@ -2700,7 +2713,7 @@ public class Table {
             dataStartLine >= 0, errorInMethod + "dataStartLine=" + dataStartLine + " must be >=0.");
       }
       Pattern skipLinesPattern =
-          skipLinesRegex != null && !skipLinesRegex.equals("")
+          skipLinesRegex != null && !skipLinesRegex.isEmpty()
               ? Pattern.compile(skipLinesRegex)
               : null;
 
@@ -2711,7 +2724,7 @@ public class Table {
 
       // try to read up to 3rd row of data (ignoring skipLines)
       // this method caches initial lines read to enable re-reading some lines near the start
-      ArrayList<String> linesCache = new ArrayList();
+      ArrayList<String> linesCache = new ArrayList<>();
       int nonSkipLines = 0;
       while (true) {
         String s = linesReader.readLine(); // null if end. exception if trouble
@@ -2734,8 +2747,8 @@ public class Table {
         int nSemi = 1;
         int nSpace = 1;
         int tRow = 0;
-        for (int cacheRow = 0; cacheRow < linesCacheSize; cacheRow++) {
-          oneLine = linesCache.get(cacheRow);
+        for (String s : linesCache) {
+          oneLine = s;
           if (skipLinesPattern != null && skipLinesPattern.matcher(oneLine).matches()) continue;
           if (tRow++ < dataStartLine) // both are 0..
           continue;
@@ -2809,7 +2822,7 @@ public class Table {
       StringArray loadColumnSA[] = null;
       boolean missingItemNoted = false;
       StringBuilder warnings = new StringBuilder();
-      ArrayList<String> items = new ArrayList(16);
+      ArrayList<String> items = new ArrayList<>(16);
       while (true) {
         oneLine = null;
         if (nextLinesCache < linesCacheSize) {
@@ -2961,8 +2974,7 @@ public class Table {
       // if (debugMode) String2.log(">> partial table:\n" + dataToString(4));
 
       if (warnings.length() > 0)
-        String2.log(
-            WARNING_BAD_LINE_OF_DATA_IN + "readASCII(" + fileName + "):\n" + warnings.toString());
+        String2.log(WARNING_BAD_LINE_OF_DATA_IN + "readASCII(" + fileName + "):\n" + warnings);
 
       // no data?
       if (loadColumnNumbers == null)
@@ -3036,7 +3048,7 @@ public class Table {
   public void readStandardTabbedASCII(
       String fileName, BufferedReader linesReader, String loadColumns[], boolean simplify)
       throws Exception {
-    try {
+    try (linesReader) {
       if (reallyVerbose) String2.log("Table.readStandardTabbedASCII " + fileName);
       long time = System.currentTimeMillis();
       String errorInMethod =
@@ -3193,8 +3205,6 @@ public class Table {
                 + " TIME="
                 + (System.currentTimeMillis() - time)
                 + "ms");
-    } finally {
-      linesReader.close();
     }
   }
 
@@ -3317,7 +3327,7 @@ public class Table {
                   + ". startPo must be less than endPo.");
       }
       Pattern skipLinesPattern =
-          skipLinesRegex != null && !skipLinesRegex.equals("")
+          skipLinesRegex != null && !skipLinesRegex.isEmpty()
               ? Pattern.compile(skipLinesRegex)
               : null;
 
@@ -3398,9 +3408,9 @@ public class Table {
   }
 
   /**
-   * This reads an NCCSV .csv file from a URL or a file. See https://erddap.github.io/NCCSV.html .
-   * *SCALAR* and dataType attributes are processed and removed. This just calls readNccsv(fullName,
-   * true).
+   * This reads an NCCSV .csv file from a URL or a file. See
+   * https://erddap.github.io/docs/user/nccsv-1.20 . *SCALAR* and dataType attributes are processed
+   * and removed. This just calls readNccsv(fullName, true).
    *
    * @param fullName a URL or the name of a file
    * @throws Exception if trouble
@@ -3419,20 +3429,19 @@ public class Table {
    * @throws Exception if trouble
    */
   public void readNccsv(String fullName, boolean readData) throws Exception {
-    BufferedReader bufferedReader =
+    // handles AWS S3.  It assumes UTF-8.
+    try (BufferedReader bufferedReader =
         String2.isRemote(fullName)
             ? SSR.getBufferedUrlReader(fullName)
             : // handles AWS S3.  It assumes UTF-8.
-            new BufferedReader(new InputStreamReader(new FileInputStream(fullName), File2.UTF_8));
-    try {
+            new BufferedReader(
+                new InputStreamReader(new FileInputStream(fullName), StandardCharsets.UTF_8))) {
       lowReadNccsv(fullName, readData, bufferedReader);
-    } finally {
-      bufferedReader.close();
     }
   }
 
   /**
-   * This reads an NCCSV .csv file. See https://erddap.github.io/NCCSV.html . *SCALAR* and
+   * This reads an NCCSV .csv file. See https://erddap.github.io/docs/user/nccsv-1.20 . *SCALAR* and
    * *DATA_TYPE* attributes are processed and removed.
    *
    * @param fullName for error messages only
@@ -3450,8 +3459,8 @@ public class Table {
 
       // read the header
       String s;
-      HashMap<String, Attributes> varNameAtts = new HashMap();
-      HashSet<String> expectedDCols = new HashSet();
+      HashMap<String, Attributes> varNameAtts = new HashMap<>();
+      HashSet<String> expectedDCols = new HashSet<>();
 
       while ((s = reader.readLine()) != null) {
         lineNumber++;
@@ -3624,8 +3633,7 @@ public class Table {
       //    throw new SimpleException(String2.NCCSV_END_DATA + NOT_FOUND_EOF);
 
       if (warnings.length() > 0)
-        String2.log(
-            WARNING_BAD_LINE_OF_DATA_IN + "readNccsv(" + fullName + "):\n" + warnings.toString());
+        String2.log(WARNING_BAD_LINE_OF_DATA_IN + "readNccsv(" + fullName + "):\n" + warnings);
 
       // expand scalars
       ensureColumnsAreSameSize_LastValue();
@@ -3660,9 +3668,9 @@ public class Table {
   }
 
   /**
-   * This saves this table in an NCCSV .csv file. See https://erddap.github.io/NCCSV.html . This can
-   * be a metadata table -- where scalar vars have 1 value and others have 0 values. This doesn't
-   * close the writer at the end.
+   * This saves this table in an NCCSV .csv file. See https://erddap.github.io/docs/user/nccsv-1.20
+   * . This can be a metadata table -- where scalar vars have 1 value and others have 0 values. This
+   * doesn't close the writer at the end.
    *
    * @param firstDataRow 0..
    * @param lastDataRow exclusive (use Integer.MAX_VALUE for all rows). If first = last,
@@ -4002,10 +4010,8 @@ public class Table {
             + "&species="
             + species
             + "&date1="
-            + ""
             + // startDate +
             "&date2="
-            + ""
             + // endDate +
             "&depth1="
             + minDepth
@@ -4118,14 +4124,16 @@ public class Table {
     }
 
     // create and add x,y,z,t,id columns    (numeric cols forced to be doubles)
-    addColumn(DataHelper.TABLE_VARIABLE_NAMES[0], new DoubleArray(tTable.findColumn("Longitude")));
-    addColumn(DataHelper.TABLE_VARIABLE_NAMES[1], new DoubleArray(tTable.findColumn("Latitude")));
     addColumn(
-        DataHelper.TABLE_VARIABLE_NAMES[2], new DoubleArray(tTable.findColumn("Minimumdepth")));
+        DataHelper.TABLE_VARIABLE_NAMES.get(0), new DoubleArray(tTable.findColumn("Longitude")));
+    addColumn(
+        DataHelper.TABLE_VARIABLE_NAMES.get(1), new DoubleArray(tTable.findColumn("Latitude")));
+    addColumn(
+        DataHelper.TABLE_VARIABLE_NAMES.get(2), new DoubleArray(tTable.findColumn("Minimumdepth")));
     DoubleArray tPA = new DoubleArray(nRows, false);
-    addColumn(DataHelper.TABLE_VARIABLE_NAMES[3], tPA);
+    addColumn(DataHelper.TABLE_VARIABLE_NAMES.get(3), tPA);
     StringArray idPA = new StringArray(nRows, false);
-    addColumn(DataHelper.TABLE_VARIABLE_NAMES[4], idPA);
+    addColumn(DataHelper.TABLE_VARIABLE_NAMES.get(4), idPA);
     PrimitiveArray yearPA = tTable.findColumn("Yearcollected");
     PrimitiveArray monthPA = tTable.findColumn("Monthcollected");
     PrimitiveArray dayPA = tTable.findColumn("Daycollected");
@@ -4170,8 +4178,7 @@ public class Table {
     if (loadColumns == null) loadColumns = tTable.getColumnNames();
 
     // add the loadColumns
-    for (int col = 0; col < loadColumns.length; col++)
-      addColumn(loadColumns[col], tTable.findColumn(loadColumns[col]));
+    for (String loadColumn : loadColumns) addColumn(loadColumn, tTable.findColumn(loadColumn));
 
     // no more need for tTable
     tTable = null;
@@ -4366,6 +4373,8 @@ public class Table {
               + " TIME="
               + (System.currentTimeMillis() - time)
               + "ms");
+
+    xml.close();
   }
 
   /**
@@ -4430,11 +4439,8 @@ public class Table {
         xmlReader.nextTag();
         int nTags = xmlReader.stackSize();
         String tags = xmlReader.allTags();
-        String content = xmlReader.content();
 
         if (tags.startsWith("<aws:weather><aws:ob>")) {
-          String endTags = tags.substring(21);
-
           //  nTags == 2
           if (nTags == 2) {
             // This is the start of a new row of data.
@@ -4454,8 +4460,8 @@ public class Table {
               // attributes other than "units" become their own columns
               // e.g., <aws:city-state zip="94123">  becomes city-state-zip
               String[] attNames = xmlReader.attributeNames();
-              for (int ani = 0; ani < attNames.length; ani++) {
-                if (attNames[ani].equals("units")) {
+              for (String attName : attNames) {
+                if (attName.equals("units")) {
                   // fix common units problems in AWS xml files
                   String tUnits = atts.getString("units");
                   tUnits = String2.replaceAll(tUnits, "&deg;", "degree_");
@@ -4473,12 +4479,12 @@ public class Table {
                   atts.set("units", tUnits);
                   continue;
                 }
-                String s = atts.getString(attNames[ani]);
-                atts.remove(attNames[ani]);
-                if (attNames[ani].equals("xmlns:aws")) {
+                String s = atts.getString(attName);
+                atts.remove(attName);
+                if (attName.equals("xmlns:aws")) {
                   // date start tags have this.  Just remove it.
                 } else {
-                  addAwsColumnValue(tag2 + "-" + attNames[ani], currentRow, s, new Attributes());
+                  addAwsColumnValue(tag2 + "-" + attName, currentRow, s, new Attributes());
                 }
               }
 
@@ -4504,34 +4510,42 @@ public class Table {
             //  <aws:year number="2012" />
             String tag3 = xmlReader.tag(3);
             if (tag3.startsWith("/")) continue;
-            if (tag3.equals("aws:year")) {
-              if (gc == null) gc = Calendar2.newGCalendarZulu(0);
-              int ti = String2.parseInt(xmlReader.attributeValue("number"));
-              if (ti != Integer.MAX_VALUE) gc.set(Calendar2.YEAR, ti);
-            } else if (tag3.equals("aws:month")) {
-              if (gc == null) gc = Calendar2.newGCalendarZulu(0);
-              int ti = String2.parseInt(xmlReader.attributeValue("number"));
-              if (ti != Integer.MAX_VALUE) gc.set(Calendar2.MONTH, ti - 1); // 0..
-            } else if (tag3.equals("aws:day")) {
-              if (gc == null) gc = Calendar2.newGCalendarZulu(0);
-              int ti = String2.parseInt(xmlReader.attributeValue("number"));
-              if (ti != Integer.MAX_VALUE) gc.set(Calendar2.DATE, ti); // of month
-            } else if (tag3.equals("aws:hour")) {
-              if (gc == null) gc = Calendar2.newGCalendarZulu(0);
-              int ti = String2.parseInt(xmlReader.attributeValue("hour-24"));
-              if (ti != Integer.MAX_VALUE) gc.set(Calendar2.HOUR, ti);
-            } else if (tag3.equals("aws:minute")) {
-              if (gc == null) gc = Calendar2.newGCalendarZulu(0);
-              int ti = String2.parseInt(xmlReader.attributeValue("number"));
-              if (ti != Integer.MAX_VALUE) gc.set(Calendar2.MINUTE, ti);
-            } else if (tag3.equals("aws:second")) {
-              if (gc == null) gc = Calendar2.newGCalendarZulu(0);
-              int ti = String2.parseInt(xmlReader.attributeValue("number"));
-              if (ti != Integer.MAX_VALUE) gc.set(Calendar2.SECOND, ti);
-            } else if (tag3.equals("aws:time-zone")) {
-              if (gc == null) gc = Calendar2.newGCalendarZulu(0);
-              int ti = String2.parseInt(xmlReader.attributeValue("offset"));
-              if (ti != Integer.MAX_VALUE) gc.add(Calendar2.HOUR, -ti);
+            switch (tag3) {
+              case "aws:year" -> {
+                if (gc == null) gc = Calendar2.newGCalendarZulu(0);
+                int ti = String2.parseInt(xmlReader.attributeValue("number"));
+                if (ti != Integer.MAX_VALUE) gc.set(Calendar2.YEAR, ti);
+              }
+              case "aws:month" -> {
+                if (gc == null) gc = Calendar2.newGCalendarZulu(0);
+                int ti = String2.parseInt(xmlReader.attributeValue("number"));
+                if (ti != Integer.MAX_VALUE) gc.set(Calendar2.MONTH, ti - 1); // 0..
+              }
+              case "aws:day" -> {
+                if (gc == null) gc = Calendar2.newGCalendarZulu(0);
+                int ti = String2.parseInt(xmlReader.attributeValue("number"));
+                if (ti != Integer.MAX_VALUE) gc.set(Calendar2.DATE, ti); // of month
+              }
+              case "aws:hour" -> {
+                if (gc == null) gc = Calendar2.newGCalendarZulu(0);
+                int ti = String2.parseInt(xmlReader.attributeValue("hour-24"));
+                if (ti != Integer.MAX_VALUE) gc.set(Calendar2.HOUR, ti);
+              }
+              case "aws:minute" -> {
+                if (gc == null) gc = Calendar2.newGCalendarZulu(0);
+                int ti = String2.parseInt(xmlReader.attributeValue("number"));
+                if (ti != Integer.MAX_VALUE) gc.set(Calendar2.MINUTE, ti);
+              }
+              case "aws:second" -> {
+                if (gc == null) gc = Calendar2.newGCalendarZulu(0);
+                int ti = String2.parseInt(xmlReader.attributeValue("number"));
+                if (ti != Integer.MAX_VALUE) gc.set(Calendar2.SECOND, ti);
+              }
+              case "aws:time-zone" -> {
+                if (gc == null) gc = Calendar2.newGCalendarZulu(0);
+                int ti = String2.parseInt(xmlReader.attributeValue("offset"));
+                if (ti != Integer.MAX_VALUE) gc.add(Calendar2.HOUR, -ti);
+              }
             }
             continue;
           }
@@ -4787,7 +4801,8 @@ public class Table {
 
     // write the connector  //DAP 2.0, 7.2.3
     // see EOL definition for comments
-    outputStream.write((OpendapHelper.EOL + "Data:" + OpendapHelper.EOL).getBytes());
+    outputStream.write(
+        (OpendapHelper.EOL + "Data:" + OpendapHelper.EOL).getBytes(StandardCharsets.UTF_8));
 
     // write the data  //DAP 2.0, 7.3.2.3
     // write elements of the sequence, in dds order
@@ -4948,7 +4963,10 @@ public class Table {
 
     // close the document
     writer.write(postTableHtml);
-    writer.write("</body>\n" + "</html>\n");
+    writer.write("""
+            </body>
+            </html>
+            """);
 
     writer.flush(); // essential
 
@@ -5105,13 +5123,45 @@ public class Table {
                       + (needEncodingAsHtml ? XML.encodeAsHTML(s) : s)
                       + // just the fileName
                       "</a>";
-            } else if (needEncodingAsHtml && String2.isUrl(s)) {
-              s =
-                  "<a href=\""
-                      + XML.encodeAsHTMLAttribute(s)
-                      + "\">"
-                      + XML.encodeAsHTML(s)
-                      + "</a>";
+            } else if (needEncodingAsHtml && String2.containsUrl(s)) {
+              List<String> separatedText = String2.extractUrls(s);
+              StringBuilder output = new StringBuilder();
+              for (String text : separatedText) {
+                if (String2.containsUrl(text)) {
+                  output.append(
+                      "<a href=\""
+                          + XML.encodeAsHTMLAttribute(String2.addHttpsForWWW(text))
+                          + "\">"
+                          + XML.encodeAsHTML(text)
+                          + "</a>");
+                } else {
+                  output.append(XML.encodeAsHTML(text));
+                }
+              }
+              s = output.toString();
+
+              // Check for href and mouseover to see if there's something like an anchor tag which
+              // the url extraction will mangle.
+            } else if (!needEncodingAsHtml
+                && !s.contains("href=")
+                && !s.contains("onmouseover")
+                && String2.containsUrl(XML.decodeEntities(s))) {
+              s = XML.decodeEntities(s);
+              List<String> separatedText = String2.extractUrls(s);
+              StringBuilder output = new StringBuilder();
+              for (String text : separatedText) {
+                if (String2.containsUrl(text)) {
+                  output.append(
+                      "<a href=\""
+                          + XML.encodeAsHTMLAttribute(String2.addHttpsForWWW(text))
+                          + "\">"
+                          + XML.encodeAsHTML(text)
+                          + "</a>");
+                } else {
+                  output.append(XML.encodeAsHTML(text));
+                }
+              }
+              s = output.toString();
             } else if (!needEncodingAsHtml && String2.isUrl(XML.decodeEntities(s))) {
               s = XML.decodeEntities(s);
               s =
@@ -5317,32 +5367,31 @@ public class Table {
   /** This encodes the values of Attributes before saveAsEnhancedFlatNc. */
   void encodeEnhancedAttributes(Attributes atts) {
     String names[] = atts.getNames();
-    int n = names.length;
-    for (int i = 0; i < n; i++) {
-      PrimitiveArray pa = atts.get(names[i]);
+    for (String name : names) {
+      PrimitiveArray pa = atts.get(name);
       if (pa instanceof CharArray ca) {
-        atts.remove(names[i]);
-        atts.set("_encodedCharArray_" + names[i], ShortArray.fromCharArrayBytes(ca));
+        atts.remove(name);
+        atts.set("_encodedCharArray_" + name, ShortArray.fromCharArrayBytes(ca));
 
       } else if (pa instanceof UByteArray ua) {
-        atts.remove(names[i]);
-        atts.set("_encodedUByteArray_" + names[i], new ByteArray(ua.toArray()));
+        atts.remove(name);
+        atts.set("_encodedUByteArray_" + name, new ByteArray(ua.toArray()));
 
       } else if (pa instanceof UShortArray ua) {
-        atts.remove(names[i]);
-        atts.set("_encodedUShortArray_" + names[i], new ShortArray(ua.toArray()));
+        atts.remove(name);
+        atts.set("_encodedUShortArray_" + name, new ShortArray(ua.toArray()));
 
       } else if (pa instanceof UIntArray ua) {
-        atts.remove(names[i]);
-        atts.set("_encodedUIntArray_" + names[i], new IntArray(ua.toArray()));
+        atts.remove(name);
+        atts.set("_encodedUIntArray_" + name, new IntArray(ua.toArray()));
 
       } else if (pa instanceof LongArray) {
-        atts.remove(names[i]);
-        atts.set("_encodedLongArray_" + names[i], new StringArray(new String[] {pa.toString()}));
+        atts.remove(name);
+        atts.set("_encodedLongArray_" + name, new StringArray(new String[] {pa.toString()}));
 
       } else if (pa instanceof ULongArray) {
-        atts.remove(names[i]);
-        atts.set("_encodedULongArray_" + names[i], new StringArray(new String[] {pa.toString()}));
+        atts.remove(name);
+        atts.set("_encodedULongArray_" + name, new StringArray(new String[] {pa.toString()}));
 
         // Even nc3 saves attributes via utf-8
         // } else if (pa instanceof StringArray) {
@@ -5356,35 +5405,33 @@ public class Table {
   /** This decodes the values of an Attributes after readEnhancedFlatNc. */
   void decodeEnhancedAttributes(int sourceVersion, Attributes atts) {
     String names[] = atts.getNames();
-    int n = names.length;
-    for (int i = 0; i < n; i++) {
-      if (names[i].startsWith("_encoded")) {
-        PrimitiveArray pa = atts.get(names[i]);
+    for (String name : names) {
+      if (name.startsWith("_encoded")) {
+        PrimitiveArray pa = atts.get(name);
         PAType paType = pa.elementType();
-        if (paType == PAType.SHORT && names[i].startsWith("_encodedCharArray_")) {
-          atts.remove(names[i]);
-          atts.set(names[i].substring(18), CharArray.fromShortArrayBytes((ShortArray) pa));
+        if (paType == PAType.SHORT && name.startsWith("_encodedCharArray_")) {
+          atts.remove(name);
+          atts.set(name.substring(18), CharArray.fromShortArrayBytes((ShortArray) pa));
 
-        } else if (paType == PAType.BYTE && names[i].startsWith("_encodedUByteArray_")) {
-          atts.remove(names[i]);
-          atts.set(names[i].substring(19), new UByteArray(((ByteArray) pa).toArray()));
+        } else if (paType == PAType.BYTE && name.startsWith("_encodedUByteArray_")) {
+          atts.remove(name);
+          atts.set(name.substring(19), new UByteArray(((ByteArray) pa).toArray()));
 
-        } else if (paType == PAType.SHORT && names[i].startsWith("_encodedUShortArray_")) {
-          atts.remove(names[i]);
-          atts.set(names[i].substring(20), new UShortArray(((ShortArray) pa).toArray()));
+        } else if (paType == PAType.SHORT && name.startsWith("_encodedUShortArray_")) {
+          atts.remove(name);
+          atts.set(name.substring(20), new UShortArray(((ShortArray) pa).toArray()));
 
-        } else if (paType == PAType.INT && names[i].startsWith("_encodedUIntArray_")) {
-          atts.remove(names[i]);
-          atts.set(names[i].substring(18), new UIntArray(((IntArray) pa).toArray()));
+        } else if (paType == PAType.INT && name.startsWith("_encodedUIntArray_")) {
+          atts.remove(name);
+          atts.set(name.substring(18), new UIntArray(((IntArray) pa).toArray()));
 
-        } else if (paType == PAType.STRING && names[i].startsWith("_encodedLongArray_")) {
-          atts.remove(names[i]);
-          atts.set(names[i].substring(18), PrimitiveArray.csvFactory(PAType.LONG, pa.getString(0)));
+        } else if (paType == PAType.STRING && name.startsWith("_encodedLongArray_")) {
+          atts.remove(name);
+          atts.set(name.substring(18), PrimitiveArray.csvFactory(PAType.LONG, pa.getString(0)));
 
-        } else if (paType == PAType.STRING && names[i].startsWith("_encodedULongArray_")) {
-          atts.remove(names[i]);
-          atts.set(
-              names[i].substring(19), PrimitiveArray.csvFactory(PAType.ULONG, pa.getString(0)));
+        } else if (paType == PAType.STRING && name.startsWith("_encodedULongArray_")) {
+          atts.remove(name);
+          atts.set(name.substring(19), PrimitiveArray.csvFactory(PAType.ULONG, pa.getString(0)));
 
           // Even nc3 saves attributes via utf-8
           // } else if (paType == PAType.STRING &&
@@ -5416,7 +5463,6 @@ public class Table {
     encodeEnhancedAttributes(newTable.globalAttributes());
 
     int nCols = nColumns();
-    int nRows = nRows();
     for (int col = 0; col < nCols; col++) {
       PrimitiveArray pa = getColumn(col);
       PAType paType = pa.elementType();
@@ -5488,7 +5534,6 @@ public class Table {
     decodeEnhancedAttributes(sourceVersion, globalAttributes);
 
     int nCols = nColumns();
-    int nRows = nRows();
     for (int col = 0; col < nCols; col++) {
       PrimitiveArray pa = getColumn(col);
       Attributes atts = columnAttributes(col);
@@ -5519,7 +5564,7 @@ public class Table {
         atts.remove("_Unsigned");
         setColumn(col, CharArray.fromShortArrayBytes(sa));
 
-      } else if (sourceVersion >= 4
+      } else if (sourceVersion == 4
           && pa instanceof ShortArray sa
           && "fromChar".equals(atts.getString("_encoded_"))) {
         atts.remove("_encoded_");
@@ -5609,8 +5654,7 @@ public class Table {
     String msg = "  Table.readFlatNc " + fullName;
     long time = System.currentTimeMillis();
     Attributes gridMappingAtts = null;
-    NetcdfFile netcdfFile = NcHelper.openFile(fullName);
-    try {
+    try (NetcdfFile netcdfFile = NcHelper.openFile(fullName)) {
       Variable loadVariables[] = NcHelper.findVariables(netcdfFile, loadColumns);
 
       // fill the table
@@ -5649,11 +5693,6 @@ public class Table {
                 + " TIME="
                 + (System.currentTimeMillis() - time)
                 + "ms");
-    } finally {
-      try {
-        if (netcdfFile != null) netcdfFile.close();
-      } catch (Exception e9) {
-      }
     }
   }
 
@@ -5672,11 +5711,8 @@ public class Table {
       throws Exception {
 
     // get information
-    String msg = "  Table.readNcMetadata " + fullName;
-    long time = System.currentTimeMillis();
     Attributes gridMappingAtts = null;
-    NetcdfFile netcdfFile = NcHelper.openFile(fullName);
-    try {
+    try (NetcdfFile netcdfFile = NcHelper.openFile(fullName)) {
       // fill the table
       clear();
       NcHelper.getGroupAttributes(netcdfFile.getRootGroup(), globalAttributes());
@@ -5713,18 +5749,6 @@ public class Table {
       if (standardizeWhat > 0) {
         convertToUnsignedPAs();
         standardize(standardizeWhat);
-      }
-      if (reallyVerbose)
-        msg +=
-            " finished. nColumns="
-                + nColumns()
-                + " TIME="
-                + (System.currentTimeMillis() - time)
-                + "ms";
-    } finally {
-      try {
-        if (netcdfFile != null) netcdfFile.close();
-      } catch (Exception e9) {
       }
     }
   }
@@ -5807,16 +5831,13 @@ public class Table {
     // read the scalar variables
     // getGridMappingAtts() handled by lowReadFlatNc above
     int insertAt = 0;
-    NetcdfFile netcdfFile = NcHelper.openFile(fullName);
-    try {
+    try (NetcdfFile netcdfFile = NcHelper.openFile(fullName)) {
       Group rootGroup = netcdfFile.getRootGroup();
-      List rootGroupVariables = rootGroup.getVariables();
-      int nv = rootGroupVariables.size();
-      for (int v = 0; v < nv; v++) {
-        Variable var = (Variable) rootGroupVariables.get(v);
-        boolean isChar = var.getDataType() == DataType.CHAR;
-        if (var.getRank() + (isChar ? -1 : 0) == 0) {
-          PrimitiveArray pa = NcHelper.getPrimitiveArray(var);
+      List<Variable> rootGroupVariables = rootGroup.getVariables();
+      for (Variable rootGroupVariable : rootGroupVariables) {
+        boolean isChar = rootGroupVariable.getDataType() == DataType.CHAR;
+        if (rootGroupVariable.getRank() + (isChar ? -1 : 0) == 0) {
+          PrimitiveArray pa = NcHelper.getPrimitiveArray(rootGroupVariable);
           // unpack is done at end of method
           // nc allows strings to be 0-terminated or padded with spaces, so always trimEnd
           if (pa instanceof StringArray) pa.setString(0, String2.trimEnd(pa.getString(0)));
@@ -5826,8 +5847,8 @@ public class Table {
           }
 
           Attributes atts = new Attributes();
-          NcHelper.getVariableAttributes(var, atts);
-          addColumn(insertAt++, var.getShortName(), pa, atts);
+          NcHelper.getVariableAttributes(rootGroupVariable, atts);
+          addColumn(insertAt++, rootGroupVariable.getShortName(), pa, atts);
         }
       }
 
@@ -5853,11 +5874,6 @@ public class Table {
                 + " TIME="
                 + (System.currentTimeMillis() - time)
                 + "ms");
-    } finally {
-      try {
-        if (netcdfFile != null) netcdfFile.close();
-      } catch (Exception e9) {
-      }
     }
   }
 
@@ -5899,15 +5915,13 @@ public class Table {
     String errorInMethod = String2.ERROR + " in" + msg;
     // get information
     Attributes gridMappingAtts = null;
-    NetcdfFile ncFile = NcHelper.openFile(fullName);
-    try {
+    try (NetcdfFile ncFile = NcHelper.openFile(fullName)) {
       Variable loadVariables[] = NcHelper.find4DVariables(ncFile, loadColumns);
 
       // clear the table
       clear();
 
       // load the variables
-      Group group = ncFile.getRootGroup();
       Dimension dimensions[] = new Dimension[4]; // all the 4D arrays are 0=t,1=z,2=y,3=x
       String dimensionNames[] = new String[4];
       Variable axisVariables[] = new Variable[4];
@@ -5915,15 +5929,14 @@ public class Table {
       Attributes axisAtts[] = new Attributes[4];
       int xLength, yLength, zLength, tLength;
       boolean needToSetUpAxes = true;
-      for (int v = 0; v < loadVariables.length; v++) {
-        Variable variable = loadVariables[v];
+      for (Variable variable : loadVariables) {
         if (variable.getRank() < 2) continue;
 
         // if first variable, set up axis columns
         if (needToSetUpAxes) {
           // get axes
           needToSetUpAxes = false;
-          List dimList = variable.getDimensions();
+          List<Dimension> dimList = variable.getDimensions();
           if (variable.getDataType() != DataType.CHAR && dimList.size() != 4)
             throw new SimpleException(
                 errorInMethod
@@ -5935,7 +5948,7 @@ public class Table {
                 errorInMethod + "nDimensions not 5 for char variable: " + variable.getFullName());
 
           for (int i = 0; i < 4; i++) {
-            dimensions[i] = (Dimension) dimList.get(i);
+            dimensions[i] = dimList.get(i);
             dimensionNames[i] = dimensions[i].getName();
             axisVariables[i] = ncFile.findVariable(dimensionNames[i]);
             if (axisVariables[i] == null)
@@ -6048,11 +6061,6 @@ public class Table {
                 + " TIME="
                 + (System.currentTimeMillis() - time)
                 + "ms");
-    } finally {
-      try {
-        if (ncFile != null) ncFile.close();
-      } catch (Exception e9) {
-      }
     }
   }
 
@@ -6114,8 +6122,7 @@ public class Table {
     // get information
     Attributes gridMappingAtts = null;
     StringArray varsNotFound = new StringArray();
-    NetcdfFile ncFile = NcHelper.openFile(fullName);
-    try {
+    try (NetcdfFile ncFile = NcHelper.openFile(fullName)) {
       // load the global metadata
       NcHelper.getGroupAttributes(ncFile.getRootGroup(), globalAttributes());
 
@@ -6126,14 +6133,14 @@ public class Table {
         loadVariables =
             NcHelper.findMaxDVariables(ncFile, ""); // throws exception if no vars with dimensions
       } else {
-        ArrayList<Variable> varList = new ArrayList();
-        ArrayList<Dimension> dimList = new ArrayList(); // just dims that aren't also variables
-        for (int i = 0; i < loadVariableNames.length; i++) {
-          Variable variable = ncFile.findVariable(loadVariableNames[i]);
+        ArrayList<Variable> varList = new ArrayList<>();
+        ArrayList<Dimension> dimList = new ArrayList<>(); // just dims that aren't also variables
+        for (String loadVariableName : loadVariableNames) {
+          Variable variable = ncFile.findVariable(loadVariableName);
           if (variable == null) {
-            Dimension dim = ncFile.findDimension(loadVariableNames[i]);
+            Dimension dim = ncFile.findDimension(loadVariableName);
             if (dim == null) {
-              if (verbose) varsNotFound.add(loadVariableNames[i]);
+              if (verbose) varsNotFound.add(loadVariableName);
             } else {
               dimList.add(dim);
             }
@@ -6147,7 +6154,7 @@ public class Table {
           int nDims = loadDims.length;
           if (nDims == 0) {
             if (verbose && varsNotFound.size() > 0)
-              String2.log("  vars not found: " + varsNotFound.toString());
+              String2.log("  vars not found: " + varsNotFound);
             return; // empty table
           }
           // just load dimensions that aren't variables
@@ -6166,8 +6173,7 @@ public class Table {
           decodeCharsAndStrings();
           convertToUnsignedPAs();
           // no metadata so no unpack
-          if (verbose && varsNotFound.size() > 0)
-            String2.log("  vars not found: " + varsNotFound.toString());
+          if (verbose && varsNotFound.size() > 0) String2.log("  vars not found: " + varsNotFound);
           return;
         }
       }
@@ -6207,9 +6213,9 @@ public class Table {
           PrimitiveArray columnPAs[] = new PrimitiveArray[nAxes];
           axisLengths = new int[nAxes];
 
-          List axisList = variable.getDimensions();
+          List<Dimension> axisList = variable.getDimensions();
           for (int a = 0; a < nAxes; a++) {
-            Dimension dimension = (Dimension) axisList.get(a);
+            Dimension dimension = axisList.get(a);
             String axisName = dimension.getName();
             axisLengths[a] = dimension.getLength();
             if (debugMode) String2.log("  found axisName=" + axisName + " size=" + axisLengths[a]);
@@ -6351,9 +6357,8 @@ public class Table {
 
         // ensure names are available dimensions
         //  !!they could be nDimensional vars that aren't in this file
-        ArrayList<Dimension> dimensions = new ArrayList();
-        for (int v = 0; v < loadVariableNames.length; v++) {
-          String axisName = loadVariableNames[v];
+        ArrayList<Dimension> dimensions = new ArrayList<>();
+        for (String axisName : loadVariableNames) {
           Dimension dimension = ncFile.findDimension(axisName);
           if (dimension != null) dimensions.add(dimension);
         }
@@ -6367,7 +6372,7 @@ public class Table {
           axisLengths = new int[nAxes];
 
           for (int a = 0; a < nAxes; a++) {
-            Dimension dimension = (Dimension) dimensions.get(a);
+            Dimension dimension = dimensions.get(a);
             String axisName = dimension.getName();
             Attributes atts = new Attributes();
             axisLengths[a] = dimension.getLength();
@@ -6389,7 +6394,7 @@ public class Table {
             addColumn(a, axisName, columnPAs[a], atts);
             standardizeColumn(standardizeWhat, a);
           }
-          readOrigin = new int[nAxes]; // all 0's
+          // readOrigin = new int[nAxes]; // all 0's
           // readShape = axisLengths
 
           // deal with constraintAxisVarName
@@ -6418,7 +6423,7 @@ public class Table {
                         + constraintLast);
               if (constraintFirst >= 0 && constraintLast >= constraintFirst) {
                 // ok, use it
-                readOrigin[constraintCol] = constraintFirst;
+                // readOrigin[constraintCol] = constraintFirst;
                 axisLengths[constraintCol] = constraintLast - constraintFirst + 1;
                 cpa.removeRange(constraintLast + 1, cpa.size());
                 cpa.removeRange(0, constraintFirst);
@@ -6448,10 +6453,9 @@ public class Table {
 
       // load the 0D variables
       Group rootGroup = ncFile.getRootGroup();
-      List rootGroupVariables = rootGroup.getVariables();
+      List<Variable> rootGroupVariables = rootGroup.getVariables();
       int tnRows = nRows();
-      for (int v = 0; v < rootGroupVariables.size(); v++) {
-        Variable var = (Variable) rootGroupVariables.get(v);
+      for (Variable var : rootGroupVariables) {
         boolean isChar = var.getDataType() == DataType.CHAR;
         if (var.getRank() + (isChar ? -1 : 0) == 0) {
           // if loadVariableNames specified, skip var because not explicitly requested?
@@ -6475,8 +6479,7 @@ public class Table {
       }
       decodeCharsAndStrings();
       convertToUnsignedPAs();
-      if (verbose && varsNotFound.size() > 0)
-        String2.log("  vars not found: " + varsNotFound.toString());
+      if (verbose && varsNotFound.size() > 0) String2.log("  vars not found: " + varsNotFound);
       if (reallyVerbose)
         String2.log(
             msg
@@ -6487,11 +6490,6 @@ public class Table {
                 + " time="
                 + (System.currentTimeMillis() - time)
                 + "ms");
-    } finally {
-      try {
-        if (ncFile != null) ncFile.close();
-      } catch (Exception e9) {
-      }
     }
   }
 
@@ -6805,6 +6803,7 @@ public class Table {
    * @param conOps The corresponding operators. Remember that regex constraints will be tested on
    *     the source values!
    * @param conValues The corresponding values.
+   * @param includeSubsetVariables whether or not to add subset variables to the attributes.
    * @throws Exception if trouble. No matching data is not an error and returns an empty table (0
    *     rows and 0 columns).
    */
@@ -6814,7 +6813,8 @@ public class Table {
       int standardizeWhat,
       StringArray conNames,
       StringArray conOps,
-      StringArray conValues)
+      StringArray conValues,
+      boolean includeSubsetVariables)
       throws Exception {
     // FUTURE optimization: instead of reading all of 1D obs variables,
     // find first and last set bit in obsKeep, just read a range of values,
@@ -6822,8 +6822,8 @@ public class Table {
 
     if (loadVariableNames == null) loadVariableNames = new StringArray();
     if (conNames == null) conNames = new StringArray();
-    String msg = "  Table.readNcCF " + fullName;
-    if (debugMode) msg += "  loadVars: " + loadVariableNames.toString();
+    StringBuilder msg = new StringBuilder("  Table.readNcCF " + fullName);
+    if (debugMode) msg.append("  loadVars: ").append(loadVariableNames.toString());
     // String2.log("DEBUG:\n" + NcHelper.ncdump(fullName, "-h"));
     long time = System.currentTimeMillis();
     String errorInMethod = String2.ERROR + " in Table.readNcCF " + fullName + ":\n";
@@ -6843,20 +6843,18 @@ public class Table {
                 + conValues
                 + ").");
       if (debugMode)
-        msg +=
-            "  Debug: "
-                + nCon
-                + " constraints: "
-                + conNames
-                + " "
-                + conOps
-                + " "
-                + conValues
-                + "\n";
+        msg.append("  Debug: ")
+            .append(nCon)
+            .append(" constraints: ")
+            .append(conNames)
+            .append(" ")
+            .append(conOps)
+            .append(" ")
+            .append(conValues)
+            .append("\n");
     } else {
-      if (debugMode) msg += "  Debug: 0 constraints\n";
+      if (debugMode) msg.append("  Debug: 0 constraints\n");
     }
-    if (ncCFcc != null) ncCFcc.set(0);
 
     // clear the table
     clear();
@@ -6864,7 +6862,7 @@ public class Table {
     // if loadVariableNames was specified,
     if (loadVariableNames.size() > 0) {
       // ENSURE all conNames are in loadVariableNames
-      HashSet<String> loadVarHS = loadVariableNames.toHashSet();
+      Set<String> loadVarHS = loadVariableNames.toHashSet();
       for (int c = 0; c < conNames.size(); c++) {
         if (!loadVarHS.contains(conNames.get(c)))
           throw new RuntimeException(
@@ -6879,8 +6877,7 @@ public class Table {
 
     Attributes gridMappingAtts = null;
     String readAs = null;
-    NetcdfFile ncFile = NcHelper.openFile(fullName);
-    try {
+    try (NetcdfFile ncFile = NcHelper.openFile(fullName)) {
       /*
       //2012-07 CURRENTLY THE NETCDF-JAVA featureDataset APPROACH ISN'T WORKING.
       //I EMAILED JOHN CARON.
@@ -6948,9 +6945,8 @@ public class Table {
 
       // deal with pointType
       if (pointType) {
-        if (ncCFcc != null) ncCFcc.set(1);
         ncFile.close();
-        if (debugMode) msg += "PointType.  loadVars=" + loadVariableNames + "\n";
+        if (debugMode) msg.append("PointType.  loadVars=").append(loadVariableNames).append("\n");
         StringArray loadCon = new StringArray(loadVariableNames);
         if (loadCon.size() > 0) // if loadVars specified, then add conNames
         loadCon.append(conNames);
@@ -6969,15 +6965,13 @@ public class Table {
         else if (loadVariableNames.size() > 0)
           reorderColumns(loadVariableNames, true); // discard others
         if (reallyVerbose)
-          msg +=
-              " finished (nLevels=0, pointType)."
-                  + " nRows="
-                  + nRows()
-                  + " nCols="
-                  + nColumns()
-                  + " time="
-                  + (System.currentTimeMillis() - time)
-                  + "ms";
+          msg.append(" finished (nLevels=0, pointType)." + " nRows=")
+              .append(nRows())
+              .append(" nCols=")
+              .append(nColumns())
+              .append(" time=")
+              .append(System.currentTimeMillis() - time)
+              .append("ms");
         if (debugMode) ensureValid();
         decodeCharsAndStrings();
         convertToUnsignedPAs();
@@ -6991,28 +6985,27 @@ public class Table {
         for (int v = 0; v < loadVariableNames.size(); v++)
           keepV.set(v, ncFile.findVariable(loadVariableNames.get(v)) != null);
         if (keepV.cardinality() == 0) {
-          msg +=
-              "\nNone of the loadVariableNames are in this file: "
-                  + loadVariableNames.toString()
-                  + ".";
+          msg.append("\nNone of the loadVariableNames are in this file: ")
+              .append(loadVariableNames.toString())
+              .append(".");
           return; // return an empty table
         }
         loadVariableNames.justKeep(keepV);
       }
 
       // find all dimensions
-      List dimsList = rootGroup.getDimensions();
+      List<Dimension> dimsList = rootGroup.getDimensions();
       int nDims = dimsList.size();
       String dimNames[] = new String[nDims];
       for (int d = 0; d < nDims; d++) {
-        dimNames[d] = ((Dimension) dimsList.get(d)).getName(); // may be null
+        dimNames[d] = dimsList.get(d).getName(); // may be null
         if (dimNames[d] == null) dimNames[d] = "";
       }
       // outerDim and obsDim are always used.  innerDim only used for nLevels=2
       int outerDim = -1, innerDim = -1, obsDim = -1;
 
       // find out about all vars
-      List varsList = ncFile.getVariables(); // all vars in all groups
+      List<Variable> varsList = ncFile.getVariables(); // all vars in all groups
       int nVars = varsList.size();
       Variable vars[] = new Variable[nVars];
       String varNames[] = new String[nVars];
@@ -7021,7 +7014,6 @@ public class Table {
       int varNDims[] = new int[nVars]; // not counting nchars dimension
       boolean varUsesDim[][] = new boolean[nVars][nDims + 1]; // all are false  (+1 for scalarDim)
       // pseudo dimension for scalar variables (used in level 2 ragged files if indexVar is missing)
-      int scalarDim = nDims;
       boolean hasScalarVars = false;
       Attributes varAtts[] = new Attributes[nVars];
       int rowSizeVar = -1; // e.g., in level 1 contiguous and level 2 ragged files
@@ -7029,11 +7021,9 @@ public class Table {
       int indexVar = -1; // e.g., in level 1 indexed and most level 2 ragged files
       boolean loadVariableNamesWasEmpty = loadVariableNames.size() == 0;
       int nLoadOrConVariablesInFile = 0;
-      String firstSampleDimName = null;
       // if (debugMode) String2.log("Debug: nVars=" + nVars);
       for (int v = 0; v < nVars; v++) {
-        if (ncCFcc != null) ncCFcc.set(2);
-        vars[v] = (Variable) varsList.get(v);
+        vars[v] = varsList.get(v);
         varNames[v] = vars[v].getFullName();
         varIsChar[v] = vars[v].getDataType() == DataType.CHAR;
         int rank = vars[v].getRank();
@@ -7068,45 +7058,35 @@ public class Table {
 
         // scalars
         if (varNDims[v] <= 0) {
-          if (ncCFcc != null) ncCFcc.set(3);
           hasScalarVars = true;
           varNDims[v] = 1;
-          varUsesDim[v][scalarDim] = true;
+          varUsesDim[v][nDims] = true;
           continue;
         }
 
         // go through the dimensions
         for (int d = 0; d < varNDims[v]; d++) {
-          if (ncCFcc != null) ncCFcc.set(4);
           int whichDim = dimsList.indexOf(vars[v].getDimension(d));
           if (whichDim >= 0) { // a shared dim
-            if (ncCFcc != null) ncCFcc.set(12);
             varUsesDim[v][whichDim] = true;
           }
 
           // detect multiDim dimensions
           if (nLevels == 1 && varNDims[v] == 2) {
-            if (ncCFcc != null) ncCFcc.set(10);
             if (d == 0) {
-              if (ncCFcc != null) ncCFcc.set(5);
               outerDim = checkConsistent(errorInMethod, varNames[v], outerDim, whichDim);
             }
             if (d == 1) {
-              if (ncCFcc != null) ncCFcc.set(6);
               obsDim = checkConsistent(errorInMethod, varNames[v], obsDim, whichDim);
             }
           } else if (nLevels == 2 && varNDims[v] == 3) {
-            if (ncCFcc != null) ncCFcc.set(11);
             if (d == 0) {
-              if (ncCFcc != null) ncCFcc.set(7);
               outerDim = checkConsistent(errorInMethod, varNames[v], outerDim, whichDim);
             }
             if (d == 1) {
-              if (ncCFcc != null) ncCFcc.set(8);
               innerDim = checkConsistent(errorInMethod, varNames[v], innerDim, whichDim);
             }
             if (d == 2) {
-              if (ncCFcc != null) ncCFcc.set(9);
               obsDim = checkConsistent(errorInMethod, varNames[v], obsDim, whichDim);
             }
           }
@@ -7125,17 +7105,16 @@ public class Table {
         boolean isRequired = false;
         if (sd != null && !loadVariableNamesWasEmpty) { // loadVars was specified
           // if already have one, don't keepGoing/ skip this one
-          if (debugMode) msg += "\nDebug:          sample_dimension=" + sd;
+          if (debugMode) msg.append("\nDebug:          sample_dimension=").append(sd);
           // is this sample_dimension used (and thus, required) by any of the loadVars?
           for (int lvi = 0; lvi < loadVariableNames.size(); lvi++) {
             Variable var = ncFile.findVariable(loadVariableNames.get(lvi)); // won't be null
             if (var.getRank() > 0 && sd.equals(var.getDimension(0).getName())) {
               if (debugMode)
-                msg +=
-                    "\nDebug: sample_dimension="
-                        + sd
-                        + " isRequired by loadVar="
-                        + loadVariableNames.get(lvi);
+                msg.append("\nDebug: sample_dimension=")
+                    .append(sd)
+                    .append(" isRequired by loadVar=")
+                    .append(loadVariableNames.get(lvi));
               isRequired = true;
               break; // lvi
             }
@@ -7155,14 +7134,13 @@ public class Table {
                   + ").");
         } else if (sd != null && !isRequired && rowSizeVar >= 0) {
           // skip this sample_dimension
-          if (debugMode) msg += "\nDebug: skipping sample_dimension=" + sd;
+          if (debugMode) msg.append("\nDebug: skipping sample_dimension=").append(sd);
           sd = null;
 
         } else if (sd != null && (isRequired || rowSizeVar < 0)) {
           // keep this sample_dimension info  (If !isRequired, then may be temporary.)
-          if (debugMode) msg += "\nDebug:  keeping sample_dimension=" + sd;
+          if (debugMode) msg.append("\nDebug:  keeping sample_dimension=").append(sd);
 
-          if (ncCFcc != null) ncCFcc.set(13);
           rowSizeVar = v;
           rowSizeVarIsRequired = isRequired;
           // this is an internal variable. Request can't include it or constrain it.
@@ -7212,10 +7190,8 @@ public class Table {
                     + varNames[v]
                     + ") have an instance_dimension attribute.");
           // this is an internal variable in the file. Request can't request it or constrain it.
-          if (ncCFcc != null) ncCFcc.set(14);
           indexVar = v;
           if (varInLoadOrConVariables[v]) {
-            if (ncCFcc != null) ncCFcc.set(15);
             varInLoadOrConVariables[v] = false;
             nLoadOrConVariablesInFile--;
             int i = loadVariableNames.indexOf(varNames[v]);
@@ -7251,7 +7227,7 @@ public class Table {
       }
 
       if (debugMode && loadVariableNamesWasEmpty)
-        msg += "\n  Debug: #1 loadVars (was empty): " + loadVariableNames.toString();
+        msg.append("\n  Debug: #1 loadVars (was empty): ").append(loadVariableNames.toString());
 
       Dimension outerDimDim = outerDim < 0 ? null : (Dimension) dimsList.get(outerDim);
       Dimension innerDimDim = innerDim < 0 ? null : (Dimension) dimsList.get(innerDim);
@@ -7267,25 +7243,18 @@ public class Table {
 
       // if outerDim not found, try using scalarDim (scalar vars)
       if (outerDim == -1 && hasScalarVars) {
-        if (ncCFcc != null) { // some things removed, so 3 flags are set
-          ncCFcc.set(16);
-          ncCFcc.set(17);
-          ncCFcc.set(18);
-        }
-        outerDim = scalarDim;
+        outerDim = nDims;
         outerDimName = scalarDimName;
         outerDimSize = scalarDimSize;
       }
 
       // Deal with nLevels=1 or 2, outerDim=scalarDim:
       //  find obsDim (and innerDim for nLevels=2)
-      if (rowSizeVar < 0 && indexVar < 0 && outerDim == scalarDim && innerDim < 0 && obsDim < 0) {
+      if (rowSizeVar < 0 && indexVar < 0 && outerDim == nDims && innerDim < 0 && obsDim < 0) {
 
         // if nLevels=1, read via readNDNc
-        if (ncCFcc != null) ncCFcc.set(19);
         if (nLevels == 1) {
           if (debugMode) String2.log("  Debug: nLevels=1, outerDim=scalarDim, read via readNDNc");
-          if (ncCFcc != null) ncCFcc.set(20);
           ncFile.close();
           StringArray loadCon = new StringArray(loadVariableNames);
           if (loadCon.size() > 0) // if loadVars specified, then add conNames
@@ -7325,19 +7294,14 @@ public class Table {
         if (debugMode) String2.log("  Debug: nLevels=2, outerDim=scalarDim");
         for (int v = 0; v < nVars; v++) {
           // first: go through the dimensions
-          if (ncCFcc != null) ncCFcc.set(21);
           for (int d = 0; d < varNDims[v]; d++) {
-            if (ncCFcc != null) ncCFcc.set(22);
             int whichDim = dimsList.indexOf(vars[v].getDimension(d));
             if (whichDim >= 0) { // not scalarDim
               if (varNDims[v] == 2) { // var[innerDim][obsDim]
-                if (ncCFcc != null) ncCFcc.set(23);
                 if (d == 0) {
-                  if (ncCFcc != null) ncCFcc.set(24);
                   innerDim = checkConsistent(errorInMethod, varNames[v], innerDim, whichDim);
                 }
                 if (d == 1) {
-                  if (ncCFcc != null) ncCFcc.set(25);
                   obsDim = checkConsistent(errorInMethod, varNames[v], obsDim, whichDim);
                 }
               }
@@ -7346,9 +7310,8 @@ public class Table {
 
           // second: trick code below into adding outerDim=scalarDim to all vars
           //  (scalar vars already have it)(vars using other dims don't)
-          if (!varUsesDim[v][scalarDim]) {
-            if (ncCFcc != null) ncCFcc.set(26);
-            varUsesDim[v][scalarDim] = true;
+          if (!varUsesDim[v][nDims]) {
+            varUsesDim[v][nDims] = true;
             varNDims[v]++;
           }
         }
@@ -7386,8 +7349,8 @@ public class Table {
 
               // second: trick code below into adding outerDim=scalarDim to all vars
               //  (scalar vars already have it)(vars using other dims don't)
-              if (!varUsesDim[v][scalarDim]) {
-                varUsesDim[v][scalarDim] = true;
+              if (!varUsesDim[v][nDims]) {
+                varUsesDim[v][nDims] = true;
                 varNDims[v]++;
               }
             }
@@ -7424,7 +7387,6 @@ public class Table {
                 + obsDimSize
                 + "]");
       }
-      if (ncCFcc != null) ncCFcc.set(27);
       if (nLoadOrConVariablesInFile == 0) {
         if (verbose)
           String2.log(
@@ -7462,11 +7424,9 @@ public class Table {
       //  so a missing var might get converted to all -999.
       for (int con = 0; con < nCon; con++) {
         // if conName is in the file, can't quick reject, so continue;
-        if (ncCFcc != null) ncCFcc.set(28);
         String tConName = conNames.get(con);
         int v = String2.indexOf(varNames, tConName);
         if (v >= 0) {
-          if (ncCFcc != null) ncCFcc.set(29);
           continue;
         }
 
@@ -7485,7 +7445,6 @@ public class Table {
         }
 
         if (rejectFile) {
-          if (ncCFcc != null) ncCFcc.set(30);
           if (verbose)
             String2.log(
                 "  readNcCF "
@@ -7518,13 +7477,10 @@ public class Table {
         //    " inLoadOrConVars=" + varInLoadOrConVariables[v] +
         //    " varNDims[v]=" + varNDims[v] +
         //    " varUsesDim[v][outerDim]=" + varUsesDim[v][outerDim]);
-        if (ncCFcc != null) ncCFcc.set(31);
         if ((varInLoadOrConVariables[v] || multidimensional)
             && varNDims[v] == 1
             && varUsesDim[v][outerDim]) { // ensure correct dim
-          if (ncCFcc != null) ncCFcc.set(32);
           if (varInLoadOrConVariables[v]) {
-            if (ncCFcc != null) ncCFcc.set(33);
             nLoadOrConVariablesInOuterTable++;
             if (varAtts[v].get("instance_dimension") == null)
               // don't include if dimension, since var isn't in results table
@@ -7540,7 +7496,7 @@ public class Table {
       int ttNRows = Math.max(1, outerTable.nRows());
       for (int v = 0; v < nVars; v++) {
         if (varNDims[v] == 1
-            && varUsesDim[v][scalarDim]
+            && varUsesDim[v][nDims]
             && // scalars are stored with odd info
             (loadVariableNamesWasEmpty || varInLoadOrConVariables[v])
             && outerTable.findColumnNumber(varNames[v]) < 0) { // not already in table
@@ -7572,20 +7528,20 @@ public class Table {
       globalAttributes.set(cdmOuterName, subsetVars.toString()); // may be "", that's okay
       if (cdmInnerName != null)
         globalAttributes.set(cdmInnerName, ""); // nLevel=2 will set it properly below
-      globalAttributes.set(
-          "subsetVariables", subsetVars.toString()); // nLevel=2 will set it properly below
+
+      if (includeSubsetVariables) {
+        globalAttributes.set(
+            "subsetVariables", subsetVars.toString()); // nLevel=2 will set it properly below
+      }
 
       // apply constraints  (if there is data)
       BitSet outerKeep = null; // implies outerTable.nColumns = 0, so assume all are good
       int outerNGood = -1; // implies not tested, so assume all are good
       if (outerTable.nColumns() > 0) { // it will be for multidimensional
 
-        if (ncCFcc != null) ncCFcc.set(34);
         if (multidimensional) {
-          if (ncCFcc != null) ncCFcc.set(35);
           outerKeep = outerTable.rowsWithData();
         } else {
-          if (ncCFcc != null) ncCFcc.set(36);
           outerKeep = new BitSet();
           outerKeep.set(0, outerTable.nRows());
         }
@@ -7593,7 +7549,6 @@ public class Table {
         // apply user constraints
         outerNGood = outerTable.tryToApplyConstraints(-1, conNames, conOps, conValues, outerKeep);
         if (outerNGood == 0) {
-          if (ncCFcc != null) ncCFcc.set(37);
           if (verbose)
             String2.log(
                 "  readNcCF "
@@ -7620,7 +7575,6 @@ public class Table {
           outerTable.justKeep(outerKeep);
           // globalAttributes already set
           // copy outerTable to this table
-          if (ncCFcc != null) ncCFcc.set(38);
           int noc = outerTable.nColumns();
           for (int c = 0; c < noc; c++)
             addColumn(
@@ -7669,15 +7623,12 @@ public class Table {
         if (debugMode) String2.log("  Debug: read nLevels=1 obs data");
 
         // request is for obs vars only (not feature data), so read all of the data
-        if (ncCFcc != null) ncCFcc.set(39);
         if (outerTableNColumns == 0 && !multidimensional) { // and so outerKeep=null
           if (debugMode)
             String2.log("  Debug: obs vars only (not feature data), so read all of the data");
           readAs = "obs vars only";
-          if (ncCFcc != null) ncCFcc.set(40);
           for (int v = 0; v < nVars; v++) {
             if (varInLoadOrConVariables[v]) {
-              if (ncCFcc != null) ncCFcc.set(41);
               int dim0 = dimsList.indexOf(vars[v].getDimension(0));
               if (dim0 == obsDim) { // ensure correct dim.  obsDim can't be scalardim
                 PrimitiveArray pa = NcHelper.getPrimitiveArray(vars[v]);
@@ -7698,11 +7649,9 @@ public class Table {
         } else {
 
           // nLevels=1 indexed ragged array
-          if (ncCFcc != null) ncCFcc.set(42);
           if (indexVar >= 0) {
             if (debugMode) String2.log("  Debug: read nLevels=1 indexed ragged");
             readAs = "indexed ragged";
-            if (ncCFcc != null) ncCFcc.set(43);
 
             // insert the indexVar (which is the keyColumn) at col=0
             PrimitiveArray indexVarPA = NcHelper.getPrimitiveArray(vars[indexVar]);
@@ -7765,7 +7714,6 @@ public class Table {
           } else if (rowSizeVar >= 0) {
             if (debugMode) String2.log("  Debug: nLevels=1 contiguous ragged array");
             readAs = "contiguous ragged";
-            if (ncCFcc != null) ncCFcc.set(44);
 
             // read the rowSizesPA
             PrimitiveArray rowSizesPA = NcHelper.getPrimitiveArray(vars[rowSizeVar]);
@@ -7887,7 +7835,6 @@ public class Table {
           } else {
             if (debugMode) String2.log("  Debug: nLevels=1 multidimensional");
             readAs = "multidim";
-            if (ncCFcc != null) ncCFcc.set(45);
 
             // see unitTestDataDir/CFPointConventions/timeSeries/
             //    timeSeries-Orthogonal-Multidimenstional-MultipleStations-H.2.1
@@ -7927,7 +7874,6 @@ public class Table {
                       + ") nRows="
                       + innerTableNRows);
             if (innerTableNColumns > 0) {
-              if (ncCFcc != null) ncCFcc.set(46);
 
               // apply constraints to innerTable  (but keep all innerTable rows)
               innerKeep = innerTable.rowsWithData();
@@ -7969,7 +7915,6 @@ public class Table {
                   == nLoadOrConVariablesInOuterTable + nLoadOrConVariablesInInnerTable) {
                 // user requested e.g., outer=station[10] and inner=time[810740],
                 //  but user didn't request observations[station][time]
-                if (ncCFcc != null) ncCFcc.set(47);
 
                 // justKeep good rows of innerTable
                 innerTable.justKeep(innerKeep);
@@ -7993,7 +7938,6 @@ public class Table {
                 // just want vars in innerTable?
                 if (justInnerTable) {
                   // finish up
-                  if (ncCFcc != null) ncCFcc.set(48);
                   tryToApplyConstraintsAndKeep(
                       -1, conNames, conOps, conValues); // may be 0 rows left
                   if (nRows() == 0) removeAllColumns();
@@ -8019,9 +7963,7 @@ public class Table {
 
                 if (nLoadOrConVariablesInOuterTable > 0) {
                   // join justKeep rows of outerTable (e.g., stations)
-                  if (ncCFcc != null) ncCFcc.set(49);
                   if (outerKeep != null) {
-                    if (ncCFcc != null) ncCFcc.set(50);
                     outerTable.justKeep(outerKeep);
                   }
                   outerTableNRows = outerTable.nRows();
@@ -8049,7 +7991,6 @@ public class Table {
                   // and the index to outerTable
                   IntArray outerIndexPA = new IntArray();
                   for (int oRow = 0; oRow < outerTableNRows; oRow++) {
-                    if (ncCFcc != null) ncCFcc.set(51);
                     for (int iCol = 0; iCol < innerTableNColumns; iCol++)
                       getColumn(iCol).append(innerTable.getColumn(iCol));
                     outerIndexPA.addN(innerTableNRows, oRow); // 2015-05-26 add->addN !
@@ -8092,7 +8033,6 @@ public class Table {
             // make obsKeep (with outerKeep and innerKeep info) and
             // make outerKeyColumn (with row#'s in outerTable) and
             // make innerKeyColumn (with row#'s in innerTable)
-            if (ncCFcc != null) ncCFcc.set(52);
             BitSet obsKeep = new BitSet(outerDimSize * obsDimSize); // all are false
             IntArray outerKeyColumnPA = new IntArray(outerDimSize * obsDimSize, false);
             IntArray innerKeyColumnPA = new IntArray(outerDimSize * obsDimSize, false);
@@ -8147,12 +8087,10 @@ public class Table {
                       + innerKeyColumnPA.size());
             // read the keep rows of requested variable[outer][obs]
             for (int v = 0; v < nVars; v++) {
-              if (ncCFcc != null) ncCFcc.set(53);
               if (varInLoadOrConVariables[v]
                   && varNDims[v] == 2
                   && varUsesDim[v][outerDim]
                   && varUsesDim[v][obsDim]) { // dim order checked above
-                if (ncCFcc != null) ncCFcc.set(54);
                 PrimitiveArray pa = NcHelper.getPrimitiveArray(vars[v]);
                 if (debugMode)
                   String2.log("  Debug: read var=" + varNames[v] + " pa.size=" + pa.size());
@@ -8201,7 +8139,6 @@ public class Table {
             // if innerTable.nColumns > 0, join it  (it has its original rows)
             if (innerTable.nColumns() > 0) {
               // insert row number in innerTable (to be the key column)
-              if (ncCFcc != null) ncCFcc.set(55);
               PrimitiveArray keyPA = new IntArray(0, innerTable.nRows() - 1);
               innerTable.addColumn(0, "innerKeyColumn", keyPA, new Attributes());
               join(1, 1, "", innerTable); // innerTable is lookUpTable
@@ -8213,13 +8150,11 @@ public class Table {
 
           // join to add the outerTable columns
           // rearrange the outerTable columns to the loadVariables order
-          if (ncCFcc != null) ncCFcc.set(57);
           outerTable.reorderColumns(loadVariableNames, true); // true, remove unrequested columns
           outerTableNColumns = outerTable.nColumns();
           outerTableNRows = outerTable.nRows();
           if (outerTableNColumns > 0) {
             // insert row number in outerTable (to be the key column)
-            if (ncCFcc != null) ncCFcc.set(56);
             PrimitiveArray keyPA = new IntArray(0, outerTable.nRows() - 1);
             outerTable.addColumn(0, "keyColumn", keyPA, new Attributes());
             join(1, 0, "", outerTable); // outerTable is lookUpTable
@@ -8245,7 +8180,6 @@ public class Table {
         }
 
         // finish up
-        if (ncCFcc != null) ncCFcc.set(58);
         tryToApplyConstraintsAndKeep(-1, conNames, conOps, conValues); // may be 0 rows left
         if (nRows() == 0) removeAllColumns();
         else reorderColumns(loadVariableNames, true); // discard others
@@ -8273,15 +8207,13 @@ public class Table {
       int innerTableNColumns, innerTableNRows; // may be 0
 
       // * read nLevels=2 ragged array files
-      if ((indexVar >= 0 || outerDim == scalarDim) && rowSizeVar >= 0) {
+      if ((indexVar >= 0 || outerDim == nDims) && rowSizeVar >= 0) {
         if (debugMode) String2.log("  Debug: nLevels=2 files, ragged");
         readAs = "ragged";
-        if (ncCFcc != null) ncCFcc.set(59);
 
         // read variable[innerDim] into innerTable
         StringArray cdmInnerVars = new StringArray();
         for (int v = 0; v < nVars; v++) {
-          if (ncCFcc != null) ncCFcc.set(60);
           if (varInLoadOrConVariables[v]
               && varNDims[v] == 1
               && varUsesDim[v][innerDim]) { // ensure correct dim
@@ -8298,7 +8230,9 @@ public class Table {
         innerTableNRows = innerTable.nRows();
         globalAttributes.set(cdmInnerName, cdmInnerVars.toString()); // may be "", that's okay
         subsetVars.append(cdmInnerVars);
-        globalAttributes.set("subsetVariables", subsetVars.toString()); // may be "", that's okay
+        if (includeSubsetVariables) {
+          globalAttributes.set("subsetVariables", subsetVars.toString()); // may be "", that's okay
+        }
 
         // read the outerIndexPA from vars[indexVar] and ensure valid
         // next 3 lines: as if no indexVar (outerDim == scalarDim)
@@ -8307,7 +8241,6 @@ public class Table {
         int indexFV = Integer.MAX_VALUE;
         if (indexVar >= 0) {
           // then replace if indexVar exists
-          if (ncCFcc != null) ncCFcc.set(61);
           outerIndexPA = NcHelper.getPrimitiveArray(vars[indexVar]);
           // no need to unpack the index var
           indexMV = varAtts[indexVar].getInt("missing_value"); // MAX_VALUE if not defined
@@ -8315,7 +8248,6 @@ public class Table {
         }
         int outerIndexSize = outerIndexPA.size();
         if (outerTableNRows > 0) {
-          if (ncCFcc != null) ncCFcc.set(62);
           for (int row = 0; row < outerIndexSize; row++) {
             int index = outerIndexPA.getInt(row);
             if (index >= 0 && index < outerTableNRows) {
@@ -8341,10 +8273,8 @@ public class Table {
         // set up innerKeep with outerIndex info.
         BitSet innerKeep = new BitSet(innerDimSize); // includes outerKeep info
         if (outerKeep == null) {
-          if (ncCFcc != null) ncCFcc.set(63);
           innerKeep.set(0, innerDimSize);
         } else {
-          if (ncCFcc != null) ncCFcc.set(64);
           for (int i = 0; i < innerDimSize; i++)
             if (outerKeep.get(outerIndexPA.getInt(i))) innerKeep.set(i);
         }
@@ -8352,10 +8282,8 @@ public class Table {
         // apply innerTable constraints
         int keepNInner = -1;
         if (innerTableNColumns > 0) {
-          if (ncCFcc != null) ncCFcc.set(65);
           keepNInner = innerTable.tryToApplyConstraints(-1, conNames, conOps, conValues, innerKeep);
           if (keepNInner == 0) {
-            if (ncCFcc != null) ncCFcc.set(66);
             if (verbose)
               String2.log(
                   "  readNcCF "
@@ -8387,9 +8315,7 @@ public class Table {
         // Are we done? Are those all the variables we need that are in the file?
         if (nLoadOrConVariablesInFile == nLoadOrConVariablesInOuterTable + innerTableNColumns) {
           // join with outerTable
-          if (ncCFcc != null) ncCFcc.set(67);
           if (outerTableNColumns > 0) {
-            if (ncCFcc != null) ncCFcc.set(68);
             innerTable.addColumn(0, "outerIndex", outerIndexPA, new Attributes());
             // insert row number in outerTable (to be the key column)
             PrimitiveArray keyPA = new IntArray(0, outerTableNRows - 1);
@@ -8412,7 +8338,6 @@ public class Table {
                 innerTable.columnAttributes(c));
 
           // finish up
-          if (ncCFcc != null) ncCFcc.set(69);
           tryToApplyConstraintsAndKeep(-1, conNames, conOps, conValues); // may be 0 rows left
           if (nRows() == 0) removeAllColumns();
           else reorderColumns(loadVariableNames, true); // discard others
@@ -8441,7 +8366,6 @@ public class Table {
         // and make obsKeep.
         // obsKeep Approach: optimize for situation that takes longest
         //  (outerKeep and innerKeep all true).  This is also a very simple approach.
-        if (ncCFcc != null) ncCFcc.set(70);
         PrimitiveArray rowSizesPA = NcHelper.getPrimitiveArray(vars[rowSizeVar]);
         // no need to unpack rowSizes
         IntArray outerIndexColumnPA = new IntArray();
@@ -8474,7 +8398,6 @@ public class Table {
 
         // read the obsKeep rows of requested variable[obs]
         for (int v = 0; v < nVars; v++) {
-          if (ncCFcc != null) ncCFcc.set(71);
           if (varInLoadOrConVariables[v]
               && varNDims[v] == 1
               && varUsesDim[v][obsDim]) { // ensure correct dim
@@ -8490,7 +8413,6 @@ public class Table {
       } else if (multidimensional) {
         if (debugMode) String2.log("  Debug: nLevels=2 files, multidimensional");
         readAs = "multidim";
-        if (ncCFcc != null) ncCFcc.set(72);
 
         // create outerIndexPA and innerIndexPA, both [outerDim][innerDim]
         int outerXInnerDimSize = outerDimSize * innerDimSize;
@@ -8509,18 +8431,13 @@ public class Table {
         for (int v = 0; v < nVars; v++) {
           // read ALL innerTable variables, not just varInLoadOrConVariables
           // because their all-mv rows determine which chunks of obs table to ignore
-          if (ncCFcc != null) ncCFcc.set(73);
           if (varNDims[v] == 2 && varUsesDim[v][outerDim] && varUsesDim[v][innerDim]) {
             // dim order not checked above, so check it here
             // It's complicated if outerDim is scalarDim.
-            if (ncCFcc != null) ncCFcc.set(74);
-            int dim0 =
-                outerDim == scalarDim ? scalarDim : dimsList.indexOf(vars[v].getDimension(0));
-            int dim1 = dimsList.indexOf(vars[v].getDimension(outerDim == scalarDim ? 0 : 1));
+            int dim0 = outerDim == nDims ? nDims : dimsList.indexOf(vars[v].getDimension(0));
+            int dim1 = dimsList.indexOf(vars[v].getDimension(outerDim == nDims ? 0 : 1));
             if (dim0 == outerDim && dim1 == innerDim) {
-              if (ncCFcc != null) ncCFcc.set(75);
               if (varInLoadOrConVariables[v]) {
-                if (ncCFcc != null) ncCFcc.set(76);
                 nLoadOrConVariablesInInnerTable++;
                 cdmInnerVars.add(varNames[v]); // so in file's order; that's consistent; that's good
               }
@@ -8538,7 +8455,6 @@ public class Table {
                         + ": Unexpected dimension order for "
                         + varNames[v]);
             }
-            if (ncCFcc != null) ncCFcc.set(77); // duplicate of 74
           }
         }
         innerTableNColumns = innerTable.nColumns(); // It has no index columns
@@ -8550,16 +8466,13 @@ public class Table {
         // trouble?  look for truly orthogonal: just variable[innerDim]
         if (innerTableNColumns == 0) {
           if (debugMode) String2.log("  Debug: innerTableNColumns=0");
-          if (ncCFcc != null) ncCFcc.set(78);
 
           // read ALL variable[innerDim] into innerTable
           nLoadOrConVariablesInInnerTable = 0; // should be already
           for (int v = 0; v < nVars; v++) {
             // read ALL innerTable variables, not just varInLoadVariables and varInConstraints
             // because their all-mv rows determine which chunks of obs table to ignore
-            if (ncCFcc != null) ncCFcc.set(79);
             if (varNDims[v] == 1 && varUsesDim[v][innerDim]) { // ensure correct dim
-              if (ncCFcc != null) ncCFcc.set(80);
               if (varInLoadOrConVariables[v]) nLoadOrConVariablesInInnerTable++;
               innerTable.addColumn(
                   innerTable.nColumns(),
@@ -8600,7 +8513,6 @@ public class Table {
           // make outerDimSize-1 duplicates of the rows of the innerTable
           // so it becomes innerTable with variable[outerDim][innerDim]
           for (int col = 0; col < innerTableNColumns; col++) {
-            if (ncCFcc != null) ncCFcc.set(81);
             PrimitiveArray pa = innerTable.getColumn(col);
             PrimitiveArray clone = (PrimitiveArray) pa.clone();
             for (int copy = 1; copy < outerDimSize; copy++) pa.append(clone); // efficient
@@ -8619,7 +8531,6 @@ public class Table {
         int nInnerGood =
             innerTable.tryToApplyConstraints(-1, conNames, conOps, conValues, innerKeep);
         if (nInnerGood == 0) {
-          if (ncCFcc != null) ncCFcc.set(82);
           if (verbose)
             String2.log(
                 "  readNcCF "
@@ -8653,13 +8564,11 @@ public class Table {
 
           // join to add the outerTable columns
           // rearrange the outerTable columns to the loadVariables order
-          if (ncCFcc != null) ncCFcc.set(83);
           outerTable.reorderColumns(loadVariableNames, true); // true, remove unrequested columns
           outerTableNColumns = outerTable.nColumns();
           outerTableNRows = outerTable.nRows();
           if (outerTableNColumns > 0) {
             // join with outerTable
-            if (ncCFcc != null) ncCFcc.set(84);
             innerTable.addColumn(0, "outerIndex", outerIndexPA, new Attributes());
             // insert row number in outerTable (to be the key column)
             PrimitiveArray keyPA = new IntArray(0, outerTableNRows - 1);
@@ -8682,7 +8591,6 @@ public class Table {
                 innerTable.columnAttributes(c));
 
           // finish up
-          if (ncCFcc != null) ncCFcc.set(85);
           tryToApplyConstraintsAndKeep(-1, conNames, conOps, conValues); // may be 0 rows left
           if (nRows() == 0) removeAllColumns();
           else reorderColumns(loadVariableNames, true); // discard others
@@ -8708,15 +8616,12 @@ public class Table {
 
         // * Make interiorTable with var[obs] and var[scalar][obs]?  some files have them
         if (debugMode) String2.log("  Debug: make interiorTable with variable[obs]?");
-        if (ncCFcc != null) ncCFcc.set(86);
         Table interiorTable = new Table();
         int nLoadOrConVariablesInInteriorTable = 0;
         for (int v = 0; v < nVars; v++) {
           if (!varInLoadOrConVariables[v]) continue;
           if ((varNDims[v] == 1 && varUsesDim[v][obsDim])
-              || (varNDims[v] == 2
-                  && varUsesDim[v][obsDim]
-                  && varUsesDim[v][scalarDim])) { // always?
+              || (varNDims[v] == 2 && varUsesDim[v][obsDim] && varUsesDim[v][nDims])) { // always?
             nLoadOrConVariablesInInteriorTable++;
             interiorTable.addColumn(
                 interiorTable.nColumns(),
@@ -8733,14 +8638,12 @@ public class Table {
         BitSet interiorKeep = null; // will be null if no interiorTable columns
         if (interiorTableNColumns > 0) {
           // apply constraints (but keep all the rows)
-          if (ncCFcc != null) ncCFcc.set(87);
           if (debugMode) String2.log("  Debug: interiorTable exists");
           interiorKeep = new BitSet();
           interiorKeep.set(0, interiorTableNRows, true);
           int interiorNKeep =
               interiorTable.tryToApplyConstraints(-1, conNames, conOps, conValues, interiorKeep);
           if (interiorNKeep == 0) {
-            if (ncCFcc != null) ncCFcc.set(88);
             if (verbose)
               String2.log(
                   "  readNcCF "
@@ -8762,7 +8665,6 @@ public class Table {
           if (nLoadOrConVariablesInFile == nLoadOrConVariablesInInteriorTable) {
 
             // justKeep
-            if (ncCFcc != null) ncCFcc.set(89);
             interiorTable.justKeep(interiorKeep); // includes outer info, inner info, mv info
 
             // globalAttributes already set
@@ -8811,7 +8713,6 @@ public class Table {
         // obsKeep Approach: optimize for situation that takes longest
         //  (outerKeep and innerKeep all true).  This is also a very simple approach.
         if (debugMode) String2.log("  Debug: read rowSizesPA and make many IndexColumnPAs");
-        if (ncCFcc != null) ncCFcc.set(90);
         IntArray outerIndexColumnPA = new IntArray();
         IntArray innerIndexColumnPA = new IntArray();
         IntArray interiorIndexColumnPA = new IntArray();
@@ -8840,14 +8741,12 @@ public class Table {
 
         // read the obsKeep rows of requested variable[outerDim][innerDim][obs]
         for (int v = 0; v < nVars; v++) {
-          if (ncCFcc != null) ncCFcc.set(91);
           if (varInLoadOrConVariables[v]
               && varNDims[v] == 3
               && varUsesDim[v][outerDim]
               && // dim order checked above when dims detected
               varUsesDim[v][innerDim]
               && varUsesDim[v][obsDim]) {
-            if (ncCFcc != null) ncCFcc.set(92);
             PrimitiveArray pa = NcHelper.getPrimitiveArray(vars[v]);
             pa.justKeep(obsKeep); // as each var read in, to save memory
             pa.trimToSize();
@@ -8892,7 +8791,6 @@ public class Table {
         // join interiorTable
         if (nLoadOrConVariablesInInteriorTable > 0) {
           // insert row number in interiorTable (to be the key column)
-          if (ncCFcc != null) ncCFcc.set(93);
           PrimitiveArray keyPA = new IntArray(0, interiorTableNRows - 1);
           interiorTable.addColumn(0, "keyColumn", keyPA, new Attributes());
           join(1, 2, "", interiorTable);
@@ -8925,7 +8823,6 @@ public class Table {
       // *** finish up nLevels=2 files
       // first 2 cols of this table are outerTableIndex and innerTableIndex
       if (debugMode) String2.log("  Debug: finish up nLevels=2 files");
-      if (ncCFcc != null) ncCFcc.set(94);
 
       // apply constraints to obs variables
       // (not outer and inner variables, since they were constrained earlier)
@@ -8933,7 +8830,6 @@ public class Table {
       keep.set(0, nRows());
       int cardinality = nRows();
       for (int con = 0; con < nCon; con++) {
-        if (ncCFcc != null) ncCFcc.set(95);
         int v = findColumnNumber(conNames.get(con));
         if (v >= 2) { // an obs variable
           cardinality =
@@ -8958,14 +8854,12 @@ public class Table {
         }
       }
       if (cardinality < nRows()) {
-        if (ncCFcc != null) ncCFcc.set(96);
         justKeep(keep);
       }
 
       // join to add the innerTable columns
       if (innerTableNColumns > 0) {
         // insert row number in innerTable (to be the key column)
-        if (ncCFcc != null) ncCFcc.set(97);
         PrimitiveArray keyPA = new IntArray(0, innerTable.nRows() - 1);
         innerTable.addColumn(0, "keyColumn", keyPA, new Attributes());
         join(1, 1, "", innerTable); // innerTable is lookUpTable
@@ -8975,7 +8869,6 @@ public class Table {
       // join to add the outerTable columns
       if (outerTableNColumns > 0) {
         // insert row number in outerTable (to be the key column)
-        if (ncCFcc != null) ncCFcc.set(98);
         PrimitiveArray keyPA = new IntArray(0, outerTableNRows - 1);
         outerTable.addColumn(0, "keyColumn", keyPA, new Attributes());
         join(1, 0, "", outerTable); // outerTable is lookUpTable
@@ -8988,7 +8881,6 @@ public class Table {
       decodeCharsAndStrings();
       convertToUnsignedPAs();
 
-      if (ncCFcc != null) ncCFcc.set(99);
       if (reallyVerbose)
         String2.log(
             msg
@@ -9001,11 +8893,6 @@ public class Table {
                 + " time="
                 + (System.currentTimeMillis() - time)
                 + "ms");
-    } finally {
-      try {
-        if (ncFile != null) ncFile.close();
-      } catch (Exception e9) {
-      }
     }
   }
 
@@ -9030,14 +8917,13 @@ public class Table {
       StringArray conVals)
       throws Exception {
 
-    String msg = "  Table.readInvalidCRA " + fullName;
+    StringBuilder msg = new StringBuilder("  Table.readInvalidCRA " + fullName);
     long time = System.currentTimeMillis();
     clear();
     if (colNames == null) colNames = new StringArray(1, false);
     // String2.log(NcHelper.ncdump(fullName, "-h"));
     Attributes gridMappingAtts = null;
-    NetcdfFile ncFile = NcHelper.openFile(fullName);
-    try {
+    try (NetcdfFile ncFile = NcHelper.openFile(fullName)) {
 
       NcHelper.getGroupAttributes(ncFile.getRootGroup(), globalAttributes());
       Attributes gatts = globalAttributes();
@@ -9065,7 +8951,7 @@ public class Table {
       String varMissingValues[] = new String[nVars];
       boolean varHasSampleDimensionAtt[] = new boolean[nVars];
       HashMap<String, PrimitiveArray> rowSizesHM =
-          new HashMap(); // e.g., sample_dimension="z_obs" -> z_row_size PA
+          new HashMap<>(); // e.g., sample_dimension="z_obs" -> z_row_size PA
       for (int v = 0; v < nVars; v++) {
         Variable var = varList.get(v);
         vNames[v] = var.getFullName();
@@ -9092,7 +8978,7 @@ public class Table {
         String cfRole = vatts[v].getString("cf_role");
         if (cfRole != null) cfRole = cfRole.toLowerCase();
         if ("profile_id".equals(cfRole)) {
-          if (debugMode) msg += "\n>> found cf_role=profile_id for var=" + vNames[v];
+          if (debugMode) msg.append("\n>> found cf_role=profile_id for var=").append(vNames[v]);
           if (profileIDVarName != null)
             throw new RuntimeException(
                 "Two variables have the attribute cf_role=profile_id: "
@@ -9125,7 +9011,10 @@ public class Table {
                 : vatts[v].getString("sample_dimension");
         if (sampleDimension != null) {
           if (debugMode)
-            msg += "\n>> found sample_dimension=" + sampleDimension + " for var=" + vNames[v];
+            msg.append("\n>> found sample_dimension=")
+                .append(sampleDimension)
+                .append(" for var=")
+                .append(vNames[v]);
           varHasSampleDimensionAtt[v] = true;
 
           // get/verify outerDimName, e.g., casts
@@ -9163,9 +9052,8 @@ public class Table {
       int outerDimSize = outerDim.getLength();
 
       // read the outerDim vars (including scalars and primary_investigator)
-      if (debugMode) msg += "\n>> read the outerDim";
+      if (debugMode) msg.append("\n>> read the outerDim");
       Table outerTable = new Table();
-      StringArray cdm_profile_variables = new StringArray();
       for (int v = 0; v < nVars; v++) {
         Variable var = varList.get(v);
         Attributes vatt = vatts[v];
@@ -9175,14 +9063,13 @@ public class Table {
 
         // scalar?   e.g., crs
         if (realNDims[v] == 0) {
-          if (debugMode) msg += "\n>> found scalar var=" + vNames[v];
+          if (debugMode) msg.append("\n>> found scalar var=").append(vNames[v]);
 
           if ("crs".equals(vNames[v])) {
             // if crs, ignore value and promote to vatts to gatt
             String[] vattNames = vatt.getNames();
-            int vattSize = vattNames.length;
-            for (int va = 0; va < vattSize; va++)
-              gatts.add(vNames[v] + "_" + vattNames[va], vatt.get(vattNames[va]));
+            for (String vattName : vattNames)
+              gatts.add(vNames[v] + "_" + vattName, vatt.get(vattName));
           } else {
             // add to outerTable
             outerTable.addColumn(
@@ -9256,18 +9143,17 @@ public class Table {
               == 0) {
         // No matching data is not an error and returns an empty table (0 rows and 0 columns).
         if (reallyVerbose)
-          msg +=
-              " finished. "
-                  + MustBe.THERE_IS_NO_DATA
-                  + " Just outer table. time"
-                  + (System.currentTimeMillis() - time)
-                  + "ms";
+          msg.append(" finished. ")
+              .append(MustBe.THERE_IS_NO_DATA)
+              .append(" Just outer table. time")
+              .append(System.currentTimeMillis() - time)
+              .append("ms");
         return;
       }
       boolean keepAllOuter = keepOuter.nextClearBit(0) == -1;
 
       // are we done?
-      if (debugMode) msg += "\n>> are we done because just outer columns?";
+      if (debugMode) msg.append("\n>> are we done because just outer columns?");
       if (colNames.size() > 0) {
         // are all colNames in outerTable?
         boolean done = true;
@@ -9294,14 +9180,13 @@ public class Table {
                 outerTable.columnAttributes(col));
 
           if (reallyVerbose)
-            msg +=
-                " finished. Just outer table. nRows="
-                    + nRows()
-                    + " nCols="
-                    + nColumns()
-                    + " time="
-                    + (System.currentTimeMillis() - time)
-                    + "ms";
+            msg.append(" finished. Just outer table. nRows=")
+                .append(nRows())
+                .append(" nCols=")
+                .append(nColumns())
+                .append(" time=")
+                .append(System.currentTimeMillis() - time)
+                .append("ms");
           return;
         }
       }
@@ -9337,7 +9222,7 @@ public class Table {
 
         // if varName isn't in colNames, skip it
         if (colNames.size() > 0 && colNames.indexOf(tName) < 0) continue;
-        if (debugMode) msg += "\n>> expand outerTable into this table, var=" + tName;
+        if (debugMode) msg.append("\n>> expand outerTable into this table, var=").append(tName);
 
         PrimitiveArray otpa = outerTable.getColumn(col);
         PrimitiveArray newPA = PrimitiveArray.factory(otpa.elementType(), nActiveInnerRows, false);
@@ -9359,7 +9244,6 @@ public class Table {
       // make the innerTable in this table
       for (int v = 0; v < nVars; v++) {
         Variable var = varList.get(v);
-        Attributes vatt = vatts[v];
 
         // if varName isn't in colNames, skip it
         if (colNames.size() > 0 && colNames.indexOf(vNames[v]) < 0) continue;
@@ -9373,7 +9257,11 @@ public class Table {
             dimName.equals("numberofpis")) continue;
 
         // Let's do this!
-        if (debugMode) msg += "\n>> make the innerTable in this table, v[" + v + "]=" + vNames[v];
+        if (debugMode)
+          msg.append("\n>> make the innerTable in this table, v[")
+              .append(v)
+              .append("]=")
+              .append(vNames[v]);
 
         // get the row_size info
         PrimitiveArray rowSizesPA = rowSizesHM.get(dimName);
@@ -9474,11 +9362,6 @@ public class Table {
                 + " time="
                 + (System.currentTimeMillis() - time)
                 + "ms");
-    } finally {
-      try {
-        if (ncFile != null) ncFile.close();
-      } catch (Exception e9) {
-      }
     }
   }
 
@@ -9498,12 +9381,10 @@ public class Table {
     // FUTURE: read audio waveform data by using Java methods to convert other formats to PCM
     // See also https://howlerjs.com/
 
-    int totalFramesRead = 0;
-
     clear();
     AudioInputStream audioInputStream = null;
     DataInputStream dis = null;
-    String msg = "  Table.readAudioFile " + fullName;
+    StringBuilder msg = new StringBuilder("  Table.readAudioFile " + fullName);
     String errorWhile = String2.ERROR + " in" + msg + ": ";
     try {
       long startTime = System.currentTimeMillis();
@@ -9511,7 +9392,7 @@ public class Table {
       java.io.File audioFile = new java.io.File(fullName);
       if (debugMode) {
         AudioFileFormat aff = AudioSystem.getAudioFileFormat(audioFile);
-        msg += "\naff.properties()=" + aff.properties().toString();
+        msg.append("\naff.properties()=").append(aff.properties().toString());
       }
 
       audioInputStream = AudioSystem.getAudioInputStream(audioFile);
@@ -9520,7 +9401,7 @@ public class Table {
       AudioFormat af = audioInputStream.getFormat();
 
       int bytesPerFrame = af.getFrameSize();
-      if (bytesPerFrame == AudioSystem.NOT_SPECIFIED || bytesPerFrame <= 0) {
+      if (bytesPerFrame <= 0) {
         // some audio formats may have unspecified frame size
         // in that case we may read any amount of bytes
         bytesPerFrame = 1;
@@ -9548,21 +9429,22 @@ public class Table {
       globalAttributes.set("audioFrameSize", frameSize); // bytes
       globalAttributes.set("audioSampleRate", af.getSampleRate());
       globalAttributes.set("audioSampleSizeInBits", nBits);
-      Map props = af.properties();
-      Iterator it = props.entrySet().iterator();
-      while (it.hasNext()) {
-        Map.Entry pair = (Map.Entry) it.next();
+      Map<String, Object> props = af.properties();
+      for (Map.Entry<String, Object> pair : props.entrySet()) {
         // use prefix=audio_ to distinguish these props from method values above
         // and to avoid clash if same name
         // but map common properties to CF terms if possible
         // (see list in Javadocs for AudioFileFormat)
-        String key = pair.getKey().toString();
-        if (key.equals("author")) key = "creator_name";
-        else if (key.equals("comment")) key = "summary";
-        else if (key.equals("copyright")) key = "license";
-        else if (key.equals("date")) key = "date_created";
-        else if (key.equals("title")) key = "title";
-        else key = "audio_" + key;
+        String key = pair.getKey();
+        key =
+            switch (key) {
+              case "author" -> "creator_name";
+              case "comment" -> "summary";
+              case "copyright" -> "license";
+              case "date" -> "date_created";
+              case "title" -> "title";
+              default -> "audio_" + key;
+            };
         globalAttributes.set(key, PrimitiveArray.factory(pair.getValue()));
       }
 
@@ -9703,17 +9585,16 @@ public class Table {
             max = Math.max(max, sar[f]);
           }
           if (reallyVerbose)
-            msg +=
-                "\n col="
-                    + c
-                    + " inMin="
-                    + lmin
-                    + " inMax="
-                    + lmax
-                    + " outMin="
-                    + min
-                    + " outMax="
-                    + max;
+            msg.append("\n col=")
+                .append(c)
+                .append(" inMin=")
+                .append(lmin)
+                .append(" inMax=")
+                .append(lmax)
+                .append(" outMin=")
+                .append(min)
+                .append(" outMax=")
+                .append(max);
         }
 
       } else if (isULAW) {
@@ -9745,17 +9626,16 @@ public class Table {
             max = Math.max(max, sar[f]);
           }
           if (reallyVerbose)
-            msg +=
-                "\n  col="
-                    + c
-                    + " inMin="
-                    + lmin
-                    + " inMax="
-                    + lmax
-                    + " outMin="
-                    + min
-                    + " outMax="
-                    + max;
+            msg.append("\n  col=")
+                .append(c)
+                .append(" inMin=")
+                .append(lmin)
+                .append(" inMax=")
+                .append(lmax)
+                .append(" outMin=")
+                .append(min)
+                .append(" outMax=")
+                .append(max);
         }
 
       } else if (!af.isBigEndian() && !is24Bit) { // 24 bit was done when read
@@ -9798,22 +9678,21 @@ public class Table {
       dis = null;
       audioInputStream = null;
       if (reallyVerbose)
-        msg +=
-            " finished. nRows="
-                + nFrames
-                + " nChannels="
-                + nChannels
-                + " encoding="
-                + encoding
-                + " isBigEndian="
-                + isBigEndian
-                + " nBits="
-                + nBits
-                + " isPcmFloat="
-                + isPcmFloat
-                + " time="
-                + (System.currentTimeMillis() - startTime)
-                + "ms";
+        msg.append(" finished. nRows=")
+            .append(nFrames)
+            .append(" nChannels=")
+            .append(nChannels)
+            .append(" encoding=")
+            .append(encoding)
+            .append(" isBigEndian=")
+            .append(isBigEndian)
+            .append(" nBits=")
+            .append(nBits)
+            .append(" isPcmFloat=")
+            .append(isPcmFloat)
+            .append(" time=")
+            .append(System.currentTimeMillis() - startTime)
+            .append("ms");
 
     } catch (Exception e) {
       try {
@@ -9830,11 +9709,11 @@ public class Table {
       }
 
       // clear()?
-      if (!reallyVerbose) String2.log(msg);
+      if (!reallyVerbose) String2.log(msg.toString());
       throw e;
 
     } finally {
-      if (reallyVerbose) String2.log(msg);
+      if (reallyVerbose) String2.log(msg.toString());
     }
   }
 
@@ -9983,34 +9862,30 @@ public class Table {
     float frameRate = Float.NaN;
     float sampleRate = Float.NaN;
     String keys[] = globalAtts.getNames();
-    HashMap<String, Object> props = new HashMap();
-    for (int ki = 0; ki < keys.length; ki++) {
-      String k = keys[ki];
-      if (k.equals("audioBigEndian")) {
-      } // don't pass through
-      else if (k.equals("audioChannels")) {
-      } // don't pass through
-      else if (k.equals("audioEncoding")) {
-      } // don't pass through
-      else if (k.equals("audioFrameRate")) frameRate = globalAtts.getFloat(k);
-      else if (k.equals("audioFrameSize")) {
-      } // don't pass through
-      else if (k.equals("audioSampleRate")) sampleRate = globalAtts.getFloat(k);
-      else if (k.equals("audioSampleSizeInBits")) {
-      } // don't pass through
-      else {
-        String k2 = k;
-        if (k.startsWith("audio_")) k2 = k.substring(6);
-        PrimitiveArray pa = globalAtts.get(k);
-        PAType paPAType = pa.elementType();
-        if (paPAType.equals(PAType.BYTE)) props.put(k2, Math2.narrowToByte(globalAtts.getInt(k)));
-        else if (paPAType.equals(PAType.SHORT))
-          props.put(k2, Math2.narrowToShort(globalAtts.getInt(k)));
-        else if (paPAType.equals(PAType.INT)) props.put(k2, globalAtts.getInt(k));
-        else if (paPAType.equals(PAType.LONG)) props.put(k2, globalAtts.getLong(k));
-        else if (paPAType.equals(PAType.FLOAT)) props.put(k2, globalAtts.getFloat(k));
-        else if (paPAType.equals(PAType.DOUBLE)) props.put(k2, globalAtts.getDouble(k));
-        else props.put(k2, globalAtts.getString(k));
+    HashMap<String, Object> props = new HashMap<>();
+    for (String k : keys) {
+      switch (k) {
+        case "audioBigEndian",
+            "audioSampleSizeInBits",
+            "audioFrameSize",
+            "audioEncoding",
+            "audioChannels" -> {}
+        case "audioFrameRate" -> frameRate = globalAtts.getFloat(k);
+        case "audioSampleRate" -> sampleRate = globalAtts.getFloat(k);
+        default -> {
+          String k2 = k;
+          if (k.startsWith("audio_")) k2 = k.substring(6);
+          PrimitiveArray pa = globalAtts.get(k);
+          PAType paPAType = pa.elementType();
+          if (paPAType.equals(PAType.BYTE)) props.put(k2, Math2.narrowToByte(globalAtts.getInt(k)));
+          else if (paPAType.equals(PAType.SHORT))
+            props.put(k2, Math2.narrowToShort(globalAtts.getInt(k)));
+          else if (paPAType.equals(PAType.INT)) props.put(k2, globalAtts.getInt(k));
+          else if (paPAType.equals(PAType.LONG)) props.put(k2, globalAtts.getLong(k));
+          else if (paPAType.equals(PAType.FLOAT)) props.put(k2, globalAtts.getFloat(k));
+          else if (paPAType.equals(PAType.DOUBLE)) props.put(k2, globalAtts.getDouble(k));
+          else props.put(k2, globalAtts.getString(k));
+        }
       }
     }
 
@@ -10037,8 +9912,8 @@ public class Table {
             // littleEndian
             props);
 
-    DataInputStream dis = new DataInputStream(File2.getDecompressedBufferedInputStream(fullInName));
-    try {
+    try (DataInputStream dis =
+        new DataInputStream(File2.getDecompressedBufferedInputStream(fullInName))) {
 
       // create the .wav
       AudioInputStream ais = new AudioInputStream(dis, af, nRow); // nFrames
@@ -10051,7 +9926,6 @@ public class Table {
       }
 
       dis.close();
-      dis = null;
       File2.rename(fullOutName + randomInt, fullOutName); // throws Exception if trouble
 
       if (reallyVerbose)
@@ -10062,7 +9936,7 @@ public class Table {
                 + " nChannels="
                 + nCol
                 + " encoding="
-                + encoding.toString()
+                + encoding
                 + " isBigEndian=true"
                 + " nBits="
                 + nBits
@@ -10074,12 +9948,6 @@ public class Table {
 
     } catch (Exception e) {
       String2.log(msg);
-      if (dis != null)
-        try {
-          dis.close();
-        } catch (Throwable t) {
-        }
-      ;
       File2.delete(fullOutName + randomInt);
       throw e;
     }
@@ -10144,8 +10012,6 @@ public class Table {
    */
   public void appendNcRows(Variable loadVariables[], BitSet okRows) throws Exception {
     // this is tested in PointSubset
-
-    String errorInMethod = String2.ERROR + " in appendNcRows: ";
     long time = System.currentTimeMillis();
 
     // get the desired rows   (first call adds pa's to data and adds columnNames)
@@ -10190,8 +10056,6 @@ public class Table {
    */
   public void blockAppendNcRows(Variable loadVariables[], BitSet okRows) throws Exception {
     // this is tested in PointSubset
-
-    String errorInMethod = String2.ERROR + " in blockAppendNcRows: ";
     long time = System.currentTimeMillis();
 
     // !!****THIS HASN'T BEEN MODIFIED TO DO BLOCK READ YET
@@ -10247,10 +10111,9 @@ public class Table {
     Attributes colAtt = columnAttributes(column);
     // double mv = colAtt.getDouble("missing_value");
     // String2.log(">> Table.convert " + getColumnName(column) + "\n" + colAtt.toString());
-    int nSwitched =
-        getColumn(column)
-            .convertToStandardMissingValues(
-                colAtt.getString("_FillValue"), colAtt.getString("missing_value"));
+    getColumn(column)
+        .convertToStandardMissingValues(
+            colAtt.getString("_FillValue"), colAtt.getString("missing_value"));
     // if (!Double.isNaN(mv)) String2.log("  convertToStandardMissingValues mv=" + mv + " n=" +
     // nSwitched);
 
@@ -10293,11 +10156,7 @@ public class Table {
     if (paType == PAType.STRING || paType == PAType.CHAR) return;
     // boolean removeMVF = false;  //commented out 2010-10-26 so NDBC files have consistent
     // _FillValue
-    if (paType == PAType.CHAR) {
-      columnAttributes(column).set("missing_value", Character.MAX_VALUE);
-      columnAttributes(column).set("_FillValue", Character.MAX_VALUE);
-      // removeMVF = ((CharArray)pa).indexOf(Character.MAX_VALUE, 0) < 0;
-    } else if (paType == PAType.BYTE) {
+    if (paType == PAType.BYTE) {
       columnAttributes(column).set("missing_value", Byte.MAX_VALUE);
       columnAttributes(column).set("_FillValue", Byte.MAX_VALUE);
       // removeMVF = ((ByteArray)pa).indexOf(Byte.MAX_VALUE, 0) < 0;
@@ -10463,11 +10322,11 @@ public class Table {
     // make hashtable of keys->Integer.valueOf(row#) in lookUpTable
     // so join is fast with any number of rows in lookUpTable
     int lutNRows = lutKeyPA[0].size();
-    HashMap<String, Integer> hashMap = new HashMap(Math2.roundToInt(1.4 * lutNRows));
+    HashMap<String, Integer> hashMap = new HashMap<>(Math2.roundToInt(1.4 * lutNRows));
     for (int row = 0; row < lutNRows; row++) {
       StringBuilder sb = new StringBuilder(lutKeyPA[0].getString(row));
       for (int key = 1; key < nKeys; key++) sb.append("\t" + lutKeyPA[key].getString(row));
-      hashMap.put(sb.toString(), Integer.valueOf(row));
+      hashMap.put(sb.toString(), row);
     }
 
     // insert columns to be filled
@@ -10511,7 +10370,7 @@ public class Table {
       } else {
         // copy values from lutPA's to newPA's
         nMatched++;
-        int fRow = obj.intValue();
+        int fRow = obj;
         for (int lutCol = nKeys; lutCol < lutNCols; lutCol++)
           newPA[lutCol].setFromPA(row, lutPA[lutCol], fRow);
       }
@@ -10525,7 +10384,7 @@ public class Table {
               + "="
               + getColumnName(keyCol)
               + " insertedColumns="
-              + insertedColumnNames.toString()
+              + insertedColumnNames
               + ") nMatched="
               + nMatched
               + " nNotMatched="
@@ -10593,11 +10452,11 @@ public class Table {
     }
 
     // make hashmap of this table's key values to row#
-    HashMap rowHash = new HashMap(Math2.roundToInt(1.4 * nRows));
+    HashMap<String, Integer> rowHash = new HashMap<>(Math2.roundToInt(1.4 * nRows));
     for (int row = 0; row < nRows; row++) {
       StringBuilder sb = new StringBuilder();
       for (int key = 0; key < nKeyCols; key++) sb.append(keyPAs[key].getString(row) + "\n");
-      rowHash.put(sb.toString(), Integer.valueOf(row));
+      rowHash.put(sb.toString(), row);
     }
 
     // find columns in otherTable which correspond to the columns in this table
@@ -10632,11 +10491,11 @@ public class Table {
       for (int key = 0; key < nKeyCols; key++)
         sb.append(otherKeyPAs[key].getString(otherRow) + "\n");
       String sbString = sb.toString();
-      Object thisRowI = rowHash.get(sbString);
+      Integer thisRowI = rowHash.get(sbString);
       if (thisRowI == null) {
         // add blank row at end
         nNewRows++;
-        rowHash.put(sbString, Integer.valueOf(nRows++));
+        rowHash.put(sbString, nRows++);
         for (int col = 0; col < nCols; col++) {
           if (otherPAs[col] == null) getColumn(col).addString(missingValues[col]);
           else getColumn(col).addFromPA(otherPAs[col], otherRow);
@@ -10646,8 +10505,7 @@ public class Table {
         nRowsMatched++;
         for (int col = 0; col < nCols; col++) {
           // if otherTable doesn't have matching column, current value isn't changed
-          if (otherPAs[col] != null)
-            getColumn(col).setFromPA(((Integer) thisRowI).intValue(), otherPAs[col], otherRow);
+          if (otherPAs[col] != null) getColumn(col).setFromPA(thisRowI, otherPAs[col], otherRow);
         }
       }
     }
@@ -10658,7 +10516,7 @@ public class Table {
               + nColsMatched
               + " of "
               + nCols
-              + (nColsMatched == nCols ? "" : " (missing: " + colsNotMatched.toString() + ")")
+              + (nColsMatched == nCols ? "" : " (missing: " + colsNotMatched + ")")
               + ", nRowsMatched="
               + nRowsMatched
               + ", nNewRows="
@@ -10843,8 +10701,7 @@ public class Table {
     String msg = "  Table.readOpendap " + fullName;
     long time = System.currentTimeMillis();
     Attributes gridMappingAtts = null;
-    NetcdfFile netcdfFile = NcHelper.openFile(fullName);
-    try {
+    try (NetcdfFile netcdfFile = NcHelper.openFile(fullName)) {
       Variable loadVariables[] = NcHelper.findVariables(netcdfFile, loadColumns);
 
       // fill the table
@@ -10873,11 +10730,6 @@ public class Table {
                 + " TIME="
                 + (System.currentTimeMillis() - time)
                 + "ms");
-    } finally {
-      try {
-        if (netcdfFile != null) netcdfFile.close();
-      } catch (Exception e9) {
-      }
     }
   }
 
@@ -10963,7 +10815,7 @@ public class Table {
     DataDDS dataDds = dConnect.getData(null); // null = no statusUI
     if (reallyVerbose)
       String2.log("  dConnect.getData time=" + (System.currentTimeMillis() - time) + "ms");
-    BaseType firstVariable = (BaseType) dataDds.getVariables().nextElement();
+    BaseType firstVariable = dataDds.getVariables().next();
     if (!(firstVariable instanceof DSequence))
       throw new Exception(
           errorInMethod
@@ -11000,7 +10852,7 @@ public class Table {
         // *** Start Dealing With InnerSequence
         // Ensure this is the first innerSequence.
         // If there are two, the response can't be represented as a simple table.
-        if (innerSequenceColumn != -1)
+        if (innerSequenceColumn != -1) {
           throw new Exception(
               errorInMethod
                   + "The response has more than one inner sequence: "
@@ -11008,6 +10860,7 @@ public class Table {
                   + " and "
                   + obt.getName()
                   + ".");
+        }
         innerSequenceColumn = outerCol;
         if (reallyVerbose) String2.log("  innerSequenceColumn=" + innerSequenceColumn);
 
@@ -11024,21 +10877,22 @@ public class Table {
           if (ibt instanceof DByte) addColumn(ibt.getName(), new ByteArray());
           else if (ibt instanceof DFloat32) addColumn(ibt.getName(), new FloatArray());
           else if (ibt instanceof DFloat64) addColumn(ibt.getName(), new DoubleArray());
-          else if (ibt instanceof DInt16) addColumn(ibt.getName(), new ShortArray());
           else if (ibt instanceof DUInt16) addColumn(ibt.getName(), new ShortArray());
-          else if (ibt instanceof DInt32) addColumn(ibt.getName(), new IntArray());
+          else if (ibt instanceof DInt16) addColumn(ibt.getName(), new ShortArray());
           else if (ibt instanceof DUInt32) addColumn(ibt.getName(), new IntArray());
+          else if (ibt instanceof DInt32) addColumn(ibt.getName(), new IntArray());
           else if (ibt instanceof DBoolean)
             addColumn(
                 ibt.getName(), new ByteArray()); // .nc doesn't support booleans, so store byte=0|1
           else if (ibt instanceof DString) addColumn(ibt.getName(), new StringArray());
-          else
+          else {
             throw new Exception(
                 errorInMethod
                     + "Unexpected inner variable type="
                     + ibt.getTypeName()
                     + " for name="
                     + ibt.getName());
+          }
 
           // get the ibt attributes
           // (some servers return innerAttributeTable, some don't -- see test cases)
@@ -11073,14 +10927,14 @@ public class Table {
         }
         // *** End Dealing With InnerSequence
 
-      } else
+      } else {
         throw new Exception(
             errorInMethod
                 + "Unexpected outer variable type="
                 + obt.getTypeName()
                 + " for name="
                 + obt.getName());
-
+      }
       // get the obt attributes
       // (some servers return outerAttributeTable, some don't -- see test cases)
       if (obt instanceof DSequence) {
@@ -11124,7 +10978,7 @@ public class Table {
 
     // *** read the data (row-by-row, as it wants)
     for (int outerRow = 0; outerRow < nOuterRows; outerRow++) {
-      Vector outerVector = outerSequence.getRow(outerRow);
+      List<BaseType> outerVector = outerSequence.getRow(outerRow);
       int col;
 
       // get data from innerSequence first (so nInnerRows is known)
@@ -11141,23 +10995,23 @@ public class Table {
             errorInMethod + "Unexpected nInnerColumns for outer row #" + outerRow);
         col = innerSequenceColumn;
         for (int innerRow = 0; innerRow < nInnerRows; innerRow++) {
-          Vector innerVector = innerSequence.getRow(innerRow);
+          List<BaseType> innerVector = innerSequence.getRow(innerRow);
           for (int innerCol = 0; innerCol < nInnerColumns; innerCol++) {
             // if (reallyVerbose) String2.log("  OR=" + outerRow + " OC=" + col + " IR=" + innerRow
             // + " IC=" + innerCol);
-            BaseType ibt = (BaseType) innerVector.get(innerCol);
+            BaseType ibt = innerVector.get(innerCol);
             if (ibt instanceof DByte t) ((ByteArray) columns.get(col + innerCol)).add(t.getValue());
             else if (ibt instanceof DFloat32 t)
               ((FloatArray) columns.get(col + innerCol)).add(t.getValue());
             else if (ibt instanceof DFloat64 t)
               ((DoubleArray) columns.get(col + innerCol)).add(t.getValue());
-            else if (ibt instanceof DInt16 t)
-              ((ShortArray) columns.get(col + innerCol)).add(t.getValue());
             else if (ibt instanceof DUInt16 t)
               ((ShortArray) columns.get(col + innerCol)).add(t.getValue());
-            else if (ibt instanceof DInt32 t)
-              ((IntArray) columns.get(col + innerCol)).add(t.getValue());
+            else if (ibt instanceof DInt16 t)
+              ((ShortArray) columns.get(col + innerCol)).add(t.getValue());
             else if (ibt instanceof DUInt32 t)
+              ((IntArray) columns.get(col + innerCol)).add(t.getValue());
+            else if (ibt instanceof DInt32 t)
               ((IntArray) columns.get(col + innerCol)).add(t.getValue());
             else if (ibt instanceof DBoolean t)
               ((ByteArray) columns.get(col + innerCol))
@@ -11168,13 +11022,14 @@ public class Table {
                               : 0)); // .nc doesn't support booleans, so store byte=0|1
             else if (ibt instanceof DString t)
               ((StringArray) columns.get(col + innerCol)).add(t.getValue());
-            else
+            else {
               throw new Exception(
                   errorInMethod
                       + "Unexpected inner variable type="
                       + ibt.getTypeName()
                       + " for name="
                       + ibt.getName());
+            }
           }
         }
       }
@@ -11191,19 +11046,19 @@ public class Table {
 
         // note addN (not add)
         // I tried storing type of column to avoid instanceof, but no faster.
-        BaseType obt = (BaseType) outerVector.get(outerCol);
+        BaseType obt = outerVector.get(outerCol);
         if (obt instanceof DByte t) ((ByteArray) columns.get(col++)).addN(nInnerRows, t.getValue());
         else if (obt instanceof DFloat32 t)
           ((FloatArray) columns.get(col++)).addN(nInnerRows, t.getValue());
         else if (obt instanceof DFloat64 t)
           ((DoubleArray) columns.get(col++)).addN(nInnerRows, t.getValue());
-        else if (obt instanceof DInt16 t)
-          ((ShortArray) columns.get(col++)).addN(nInnerRows, t.getValue());
         else if (obt instanceof DUInt16 t)
           ((ShortArray) columns.get(col++)).addN(nInnerRows, t.getValue());
-        else if (obt instanceof DInt32 t)
-          ((IntArray) columns.get(col++)).addN(nInnerRows, t.getValue());
+        else if (obt instanceof DInt16 t)
+          ((ShortArray) columns.get(col++)).addN(nInnerRows, t.getValue());
         else if (obt instanceof DUInt32 t)
+          ((IntArray) columns.get(col++)).addN(nInnerRows, t.getValue());
+        else if (obt instanceof DInt32 t)
           ((IntArray) columns.get(col++)).addN(nInnerRows, t.getValue());
         else if (obt instanceof DBoolean t)
           ((ByteArray) columns.get(col++))
@@ -11212,13 +11067,14 @@ public class Table {
                   (byte) (t.getValue() ? 1 : 0)); // .nc doesn't support booleans, so store byte=0|1
         else if (obt instanceof DString t)
           ((StringArray) columns.get(col++)).addN(nInnerRows, t.getValue());
-        else
+        else {
           throw new Exception(
               errorInMethod
                   + "Unexpected outer variable type="
                   + obt.getTypeName()
                   + " for name="
                   + obt.getName());
+        }
       }
     }
 
@@ -11280,7 +11136,7 @@ public class Table {
         qSB.append("&" + testColumns[col] + "%3C=" + testMax[col]);
       }
     }
-    readOpendapSequence(url + "?" + qSB.toString(), skipDapperSpacerRows);
+    readOpendapSequence(url + "?" + qSB, skipDapperSpacerRows);
   }
 
   /**
@@ -11682,10 +11538,10 @@ public class Table {
       }
     } else {
       String cParts[] = String2.split(parts[0], ',');
-      for (int cp = 0; cp < cParts.length; cp++) {
+      for (String cPart : cParts) {
 
         // request uses sequence.dataVarName notation?
-        String tVar = cParts[cp].trim();
+        String tVar = cPart.trim();
         int period = tVar.indexOf('.');
         if (period > 0 && tVar.substring(0, period).equals(SEQUENCE_NAME))
           tVar = tVar.substring(period + 1);
@@ -11700,13 +11556,13 @@ public class Table {
                       + "If "
                       + SEQUENCE_NAME
                       + " is requested, it must be the only requested variable.");
-            for (int op = 0; op < OPERATORS.length; op++) {
-              int opPo = tVar.indexOf(OPERATORS[op]);
+            for (int op = 0; op < OPERATORS.size(); op++) {
+              int opPo = tVar.indexOf(OPERATORS.get(op));
               if (opPo >= 0)
                 throw new SimpleException(
                     QUERY_ERROR
                         + "All constraints (including \""
-                        + tVar.substring(0, opPo + OPERATORS[op].length())
+                        + tVar.substring(0, opPo + OPERATORS.get(op).length())
                         + "...\") must be preceded by '&'.");
             }
             throw new SimpleException(QUERY_ERROR + "Unrecognized variable=\"" + tVar + "\".");
@@ -11732,7 +11588,6 @@ public class Table {
     for (int p = 1; p < parts.length; p++) {
       // deal with one constraint at a time
       String constraint = parts[p];
-      int constraintLength = constraint.length();
       // String2.log("constraint=" + constraint);
       int quotePo = constraint.indexOf('"');
       String constraintBeforeQuotes = quotePo >= 0 ? constraint.substring(0, quotePo) : constraint;
@@ -11781,8 +11636,8 @@ public class Table {
       // find the valid op within constraintBeforeQuotes
       int op = 0;
       int opPo = -1;
-      while (op < OPERATORS.length && (opPo = constraintBeforeQuotes.indexOf(OPERATORS[op])) < 0)
-        op++;
+      while (op < OPERATORS.size()
+          && (opPo = constraintBeforeQuotes.indexOf(OPERATORS.get(op))) < 0) op++;
       if (opPo < 0) {
         if (repair) continue; // was IllegalArgumentException
         else
@@ -11808,12 +11663,12 @@ public class Table {
       }
 
       constraintVariables.add(tName);
-      constraintOps.add(OPERATORS[op]);
-      String tValue = constraint.substring(opPo + OPERATORS[op].length());
+      constraintOps.add(OPERATORS.get(op));
+      String tValue = constraint.substring(opPo + OPERATORS.get(op).length());
       constraintValues.add(tValue);
       double conValueD = Double.NaN;
 
-      if (debugMode) String2.log(">> constraint: " + tName + OPERATORS[op] + tValue);
+      if (debugMode) String2.log(">> constraint: " + tName + OPERATORS.get(op) + tValue);
 
       // convert <time><op><isoString> to <time><op><epochSeconds>
       boolean constrainTimeStamp = Calendar2.isTimeUnits(columnAttributes(dvi).getString("units"));
@@ -11826,7 +11681,7 @@ public class Table {
         }
 
         // if not for regex, convert isoString to epochSeconds
-        if (OPERATORS[op] != PrimitiveArray.REGEX_OP) {
+        if (!PrimitiveArray.REGEX_OP.equals(OPERATORS.get(op))) {
           if (Calendar2.isIsoDate(tValue)) {
             conValueD =
                 repair
@@ -11849,7 +11704,7 @@ public class Table {
             // it must be a number (epochSeconds)
             // test that value=NaN must use NaN or "", not just an invalidly formatted number
             conValueD = String2.parseDouble(tValue);
-            if (!Double.isFinite(conValueD) && !tValue.equals("NaN") && !tValue.equals("")) {
+            if (!Double.isFinite(conValueD) && !tValue.equals("NaN") && !tValue.isEmpty()) {
               if (repair) {
                 tValue = "NaN";
                 conValueD = Double.NaN;
@@ -11890,7 +11745,7 @@ public class Table {
         // numeric variables
 
         // if op=regex, value must have "'s around it
-        if (OPERATORS[op] == PrimitiveArray.REGEX_OP) {
+        if (PrimitiveArray.REGEX_OP.equals(OPERATORS.get(op))) {
           if ((tValue.startsWith("\"") && tValue.endsWith("\"")) || repair) {
             // repair if needed
             if (!tValue.startsWith("\"")) tValue = "\"" + tValue;
@@ -11968,9 +11823,8 @@ public class Table {
    */
   public boolean temporarilyConvertToStandardMissingValues(int keys[]) {
     boolean someConverted = false;
-    int nKeys = keys.length;
-    for (int key = 0; key < nKeys; key++) {
-      if (temporarilyConvertToStandardMissingValues(keys[key])) someConverted = true;
+    for (int i : keys) {
+      if (temporarilyConvertToStandardMissingValues(i)) someConverted = true;
     }
     return someConverted;
   }
@@ -12011,9 +11865,8 @@ public class Table {
    */
   public boolean temporarilySwitchNaNToFakeMissingValues(int keys[]) {
     boolean someConverted = false;
-    int nKeys = keys.length;
-    for (int key = 0; key < nKeys; key++) {
-      if (temporarilySwitchNaNToFakeMissingValues(keys[key])) someConverted = true;
+    for (int i : keys) {
+      if (temporarilySwitchNaNToFakeMissingValues(i)) someConverted = true;
     }
     return someConverted;
   }
@@ -12196,7 +12049,7 @@ public class Table {
       if (reallyVerbose) {
         StringArray sa = new StringArray();
         for (int col = colNames.length; col < tnCols; col++) sa.add(getColumnName(col));
-        String2.log("Table.justKeepColumns removing excess columns: " + sa.toString());
+        String2.log("Table.justKeepColumns removing excess columns: " + sa);
       }
       removeColumns(colNames.length, tnCols);
     }
@@ -12874,12 +12727,12 @@ public class Table {
       final WithColumnNames action)
       throws Exception {
 
-    final List<Integer> tempOrderByCols = new ArrayList<Integer>();
+    final List<Integer> tempOrderByCols = new ArrayList<>();
     final String[] sortKeyColumnNames = deriveActualColumnNames(keyColumnNames);
     final int nRows = nRows();
     final int nKeyColumnNames = keyColumnNames.length;
     for (int i = 0; i < nKeyColumnNames; i++) {
-      if (sortKeyColumnNames[i] == keyColumnNames[i].trim()) {
+      if (sortKeyColumnNames[i].equals(keyColumnNames[i].trim())) {
         continue;
       }
 
@@ -12917,7 +12770,7 @@ public class Table {
         DoubleArray roundedArray = new DoubleArray(srcColumn);
         if (targetColNumber < 0) {
           targetColNumber = this.addColumn(keyColumnName, roundedArray);
-          tempOrderByCols.add(0, targetColNumber);
+          tempOrderByCols.addFirst(targetColNumber);
         } else {
           this.setColumn(targetColNumber, roundedArray);
         }
@@ -12960,7 +12813,7 @@ public class Table {
       action.apply(sortKeyColumnNames);
     } finally {
       while (tempOrderByCols.size() > 0) {
-        this.removeColumn(tempOrderByCols.remove(0));
+        this.removeColumn(tempOrderByCols.removeFirst());
       }
     }
   }
@@ -13204,7 +13057,7 @@ public class Table {
 
     // note which are keyCol
     boolean isKeyCol[] = new boolean[nCols]; // all false
-    for (int kc = 0; kc < nKeyCols; kc++) isKeyCol[keyCols[kc]] = true;
+    for (int keyCol : keyCols) isKeyCol[keyCol] = true;
 
     // important: convert all vars to standard mv, so missingValues and _FillValues will be caught
     // do keyCols in reversible way
@@ -13716,7 +13569,7 @@ public class Table {
       // String2.log("unlimitied dimension exists: " + (nc.getUnlimitedDimension() != null));
 
       // add the variables
-      Variable.Builder colVars[] = new Variable.Builder[nColumns];
+      Variable.Builder<?> colVars[] = new Variable.Builder[nColumns];
       for (int col = 0; col < nColumns; col++) {
         String tColName = getColumnNameWithoutSpaces(col);
         PrimitiveArray pa = getColumn(col);
@@ -13736,7 +13589,7 @@ public class Table {
         } else {
           colVars[col] =
               NcHelper.addVariable(
-                  rootGroup, tColName, NcHelper.getNc3DataType(type), Arrays.asList(dimension));
+                  rootGroup, tColName, NcHelper.getNc3DataType(type), List.of(dimension));
         }
         // nc.addMemberVariable(recordStructure, nc.findVariable(tColName));
       }
@@ -14165,7 +14018,7 @@ public class Table {
       // String2.log("unlimitied dimension exists: " + (nc.getUnlimitedDimension() != null));
 
       // add the variables
-      Variable.Builder colVars[] = new Variable.Builder[nColumns];
+      Variable.Builder<?> colVars[] = new Variable.Builder[nColumns];
       for (int col = 0; col < nColumns; col++) {
 
         // for x/y/z/t make a 1D variable
@@ -14202,7 +14055,10 @@ public class Table {
           } else {
             colVars[col] =
                 NcHelper.addVariable(
-                    rootGroup, tColName, NcHelper.getNc3DataType(type), Arrays.asList(aDimension));
+                    rootGroup,
+                    tColName,
+                    NcHelper.getNc3DataType(type),
+                    Collections.singletonList(aDimension));
           }
         } else {
 
@@ -14263,7 +14119,7 @@ public class Table {
       }
 
       // create the stringVariable
-      Variable.Builder stringVar = null;
+      Variable.Builder<?> stringVar = null;
       if (stringVariableName != null) {
         stringVariableName = String2.replaceAll(stringVariableName, " ", "_");
 
@@ -14274,7 +14130,7 @@ public class Table {
                 Math.max(1, stringVariableValue.length())); // nclib wants at least 1
         stringVar =
             NcHelper.addVariable(
-                rootGroup, stringVariableName, DataType.CHAR, Arrays.asList(lengthDimension));
+                rootGroup, stringVariableName, DataType.CHAR, List.of(lengthDimension));
 
         // save the attributes
         Attributes tAtts = new Attributes(stringVariableAttributes); // use a copy
@@ -14595,24 +14451,21 @@ public class Table {
 
     // swap in the dateCols
     boolean isDateCol[] = new boolean[nCols];
-    for (int col = 0; col < dateCols.length; col++) {
-      int tCol = dateCols[col];
+    for (int tCol : dateCols) {
       isDateCol[tCol] = true;
       sqlType[tCol] = "date";
     }
 
     // swap in the timestampCols
     boolean isTimestampCol[] = new boolean[nCols];
-    for (int col = 0; col < timestampCols.length; col++) {
-      int tCol = timestampCols[col];
+    for (int tCol : timestampCols) {
       isTimestampCol[tCol] = true;
       sqlType[tCol] = "timestamp";
     }
 
     // identify timeCols
     boolean isTimeCol[] = new boolean[nCols];
-    for (int col = 0; col < timeCols.length; col++) {
-      int tCol = timeCols[col];
+    for (int tCol : timeCols) {
       isTimeCol[tCol] = true;
       sqlType[tCol] = "time";
     }
@@ -14622,8 +14475,7 @@ public class Table {
       // delete the table (if it exists)
       dropSqlTable(con, tableName, true);
 
-      Statement statement = con.createStatement();
-      try {
+      try (Statement statement = con.createStatement()) {
         StringBuilder create =
             new StringBuilder(
                 "CREATE TABLE "
@@ -14643,8 +14495,6 @@ public class Table {
         create.append(" )");
         if (reallyVerbose) msg += "\n  create=" + create;
         statement.executeUpdate(create.toString());
-      } finally {
-        statement.close();
       }
     }
 
@@ -14672,7 +14522,7 @@ public class Table {
     prep.append("INSERT INTO " + tableName + " ( \"" + getColumnName(0) + "\"");
     for (int col = 1; col < nCols; col++) prep.append(", \"" + getColumnName(col) + "\"");
     prep.append(") VALUES (?");
-    for (int col = 1; col < nCols; col++) prep.append(", ?");
+    prep.append(", ?".repeat(Math.max(0, nCols - 1)));
     prep.append(")");
     if (reallyVerbose) msg += "\n  preparedStatement=" + prep;
     PreparedStatement pStatement = con.prepareStatement(prep.toString());
@@ -14814,7 +14664,7 @@ public class Table {
                     + "[C ERROR] "
                     + MustBe.throwableToString(caughtException)
                     + "[RB ERROR] "
-                    + rbe.toString());
+                    + rbe);
         msg += "\nsmall ERROR during rollback:\n" + MustBe.throwableToString(caughtException);
       }
     }
@@ -14840,7 +14690,7 @@ public class Table {
           failedRows.add(i);
         }
       }
-      if (failedRows.size() > 0) msg += "\n  failedRows(0..)=" + failedRows.toString();
+      if (failedRows.size() > 0) msg += "\n  failedRows(0..)=" + failedRows;
       String2.log(
           msg
               + "\n  done. nColumns="
@@ -14853,27 +14703,6 @@ public class Table {
               + (System.currentTimeMillis() - elapsedTime)
               + "ms");
     }
-  }
-
-  /**
-   * Get a connection to an Access .mdb file. MS Access not needed.
-   *
-   * @param fileName (forward slash in example)
-   * @param user use "" if none specified
-   * @param password use "" if none specified
-   */
-  public static Connection getConnectionToMdb(String fileName, String user, String password)
-      throws Exception {
-
-    // from Sareth's answer at
-    // https://stackoverflow.com/questions/9543722/java-create-msaccess-database-file-mdb-0r-accdb-using-java
-    Class.forName("sun.jdbc.odbc.JdbcOdbcDriver"); // included in Java distribution
-    return DriverManager.getConnection(
-        "jdbc:odbc:Driver={Microsoft Access Driver (*.mdb, *.accdb)};"
-            + "DBQ="
-            + fileName, // ";DriverID=22;READONLY=true}",
-        "",
-        ""); // user, password
   }
 
   /**
@@ -14964,15 +14793,12 @@ public class Table {
 
     // create the statement and execute the query
     // DROP TABLE [ IF EXISTS ] name [, ...] [ CASCADE | RESTRICT ]
-    Statement statement = con.createStatement();
-    try {
+    try (Statement statement = con.createStatement()) {
       statement.executeUpdate(
           "DROP TABLE IF EXISTS "
               + tableName
               + // case doesn't matter here
               (cascade ? " CASCADE" : ""));
-    } finally {
-      statement.close();
     }
   }
 
@@ -15061,7 +14887,6 @@ public class Table {
    */
   public void saveAsTabbedASCII(String fullFileName, String charset) throws Exception {
     if (reallyVerbose) String2.log("Table.saveAsTabbedASCII " + fullFileName);
-    long time = System.currentTimeMillis();
 
     // POLICY: because this procedure may be used in more than one thread,
     // do work on unique temp files names using randomInt, then rename to proper file name.
@@ -15121,7 +14946,6 @@ public class Table {
    */
   public void saveAsCsvASCII(String fullFileName) throws Exception {
     if (reallyVerbose) String2.log("Table.saveAsCsvASCII " + fullFileName);
-    long time = System.currentTimeMillis();
 
     // POLICY: because this procedure may be used in more than one thread,
     // do work on unique temp files names using randomInt, then rename to proper file name.
@@ -15160,7 +14984,7 @@ public class Table {
   public String saveAsCsvASCIIString() throws Exception {
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
     saveAsCsvASCII(baos);
-    return baos.toString();
+    return baos.toString(StandardCharsets.UTF_8);
   }
 
   /**
@@ -15227,12 +15051,6 @@ public class Table {
       writer.write(s + (col == nColumns - 1 ? "\n" : separator));
     }
 
-    // get columnTypes
-    boolean isCharArray[] = new boolean[nColumns];
-    for (int col = 0; col < nColumns; col++) {
-      isCharArray[col] = getColumn(col).elementType() == PAType.STRING;
-    }
-
     // write the data
     int nRows = nRows();
     for (int row = 0; row < nRows; row++) {
@@ -15264,11 +15082,8 @@ public class Table {
    * @throws Exception (no error if there is no data)
    */
   public void saveAsJson(String fileName, int timeColumn, boolean writeUnits) throws Exception {
-    OutputStream fos = new BufferedOutputStream(new FileOutputStream(fileName));
-    try {
+    try (OutputStream fos = new BufferedOutputStream(new FileOutputStream(fileName))) {
       saveAsJson(fos, timeColumn, writeUnits);
-    } finally {
-      fos.close();
     }
   }
 
@@ -15452,7 +15267,7 @@ public class Table {
     //    ]
     //  }
     // }
-    try {
+    try (bufferedReader) {
       String line = bufferedReader.readLine();
       if (line == null || !line.trim().equals("{"))
         throw new IOException(
@@ -15469,7 +15284,7 @@ public class Table {
           if (!line.endsWith("],"))
             throw new IOException(
                 errorInMethod + "columnNames line should have ended with '],'.\nline=" + line);
-          cNames = new ArrayList();
+          cNames = new ArrayList<>();
           StringArray.arrayListFromCSV(
               line.substring(16, line.length() - 2), ",", true, true, cNames); // trim, keepNothing
 
@@ -15477,7 +15292,7 @@ public class Table {
           if (!line.endsWith("],"))
             throw new IOException(
                 errorInMethod + "columnTypes line should have ended with '],'.\nline=" + line);
-          cTypes = new ArrayList();
+          cTypes = new ArrayList<>();
           StringArray.arrayListFromCSV(
               line.substring(16, line.length() - 2), ",", true, true, cTypes); // trim, keepNothing
 
@@ -15485,7 +15300,7 @@ public class Table {
           if (!line.endsWith("],"))
             throw new IOException(
                 errorInMethod + "columnUnits line should have ended with '],'.\nline=" + line);
-          cUnits = new ArrayList();
+          cUnits = new ArrayList<>();
           StringArray.arrayListFromCSV(
               line.substring(16, line.length() - 2), ",", true, true, cUnits); // trim, keepNothing
           for (int i = 0; i < cUnits.size(); i++)
@@ -15510,7 +15325,7 @@ public class Table {
           boolean isString[] =
               new boolean[nCol]; // all false  (includes UTC times -- initially Strings)
           boolean isUTC[] = new boolean[nCol]; // all false
-          ArrayList<String> sal = new ArrayList(nCol);
+          ArrayList<String> sal = new ArrayList<>(nCol);
           for (int col = 0; col < nCol; col++) {
             PAType elementPAType =
                 cTypes == null ? PAType.STRING : PAType.fromCohortString(cTypes.get(col));
@@ -15595,7 +15410,7 @@ public class Table {
           endFound = true;
           break;
 
-        } else if (line.equals("")) {
+        } else if (line.isEmpty()) {
           // allowed and ignored blank line
 
         } else {
@@ -15650,8 +15465,6 @@ public class Table {
                 + " TIME="
                 + (System.currentTimeMillis() - time)
                 + "ms");
-    } finally {
-      bufferedReader.close();
     }
   }
 
@@ -15664,11 +15477,9 @@ public class Table {
       String fullFileName, StringArray colNames, String[] colTypes, boolean simplify)
       throws Exception {
     clear();
-    BufferedReader reader = File2.getDecompressedBufferedFileReader(fullFileName, File2.UTF_8);
-    try {
+    try (BufferedReader reader =
+        File2.getDecompressedBufferedFileReader(fullFileName, File2.UTF_8)) {
       readJsonlCSV(reader, fullFileName, colNames, colTypes, simplify);
-    } finally {
-      reader.close();
     }
   }
 
@@ -15785,12 +15596,7 @@ public class Table {
     }
 
     if (warnings.length() > 0)
-      String2.log(
-          WARNING_BAD_LINE_OF_DATA_IN
-              + "readJsonlCSV("
-              + fullFileName
-              + "):\n"
-              + warnings.toString());
+      String2.log(WARNING_BAD_LINE_OF_DATA_IN + "readJsonlCSV(" + fullFileName + "):\n" + warnings);
 
     if (colNames != null) reorderColumns(colNames, false);
 
@@ -15930,6 +15736,295 @@ public class Table {
   }
 
   /**
+   * This reads a table from a parquet file. Currently this does not support compressed files.
+   *
+   * @throws Exception if serious trouble
+   */
+  public void readParquet(
+      String fullFileName, StringArray colNames, String[] colTypes, boolean simplify)
+      throws Exception {
+    clear();
+    InputFile parquetFile = new LocalInputFile(java.nio.file.Path.of(fullFileName));
+    try (ParquetFileReader fileReader =
+        new ParquetFileReader(parquetFile, ParquetReadOptions.builder().build())) {
+      MessageType schema = fileReader.getFileMetaData().getSchema();
+
+      List<Type> fields = schema.getFields();
+      int numFields = fields.size();
+      PrimitiveArray pas[] = new PrimitiveArray[numFields];
+      boolean isBoolean[] = new boolean[numFields]; // all false
+      for (int c = 0; c < numFields; c++) {
+        Type field = fields.get(c);
+        String tFieldName = field.getName();
+        tFieldName = tFieldName.equals("null") ? "" : tFieldName;
+        PrimitiveArray pa = null;
+        // POTENTIAL IMPROVEMENT Could this be more efficient if we used field type to make a
+        // properly typed PrimitiveArray?
+        if (colNames == null) {
+          pa = new StringArray();
+        } else {
+          int which = colNames.indexOf(tFieldName);
+          if (which >= 0) {
+            if (colTypes == null) {
+              pa = new StringArray();
+            } else {
+              PAType tPAType = PAType.fromCohortString(colTypes[which]); // it handles boolean
+              pa = PrimitiveArray.factory(tPAType, 8, false);
+              isBoolean[c] = "boolean".equals(colTypes[which]);
+            }
+          }
+        }
+        if (pa != null) {
+          pas[c] = pa;
+          addColumn(tFieldName, pa);
+        }
+      }
+
+      PageReadStore pages = null;
+
+      StringBuilder warnings = new StringBuilder();
+      while (null != (pages = fileReader.readNextRowGroup())) {
+        try {
+          final long rows = pages.getRowCount();
+          // POTENTIAL IMPROVEMENT can we use filters to prevent reading clumns we don't care about?
+          final MessageColumnIO columnIO = new ColumnIOFactory().getColumnIO(schema);
+          final RecordReader<org.apache.parquet.example.data.Group> recordReader =
+              columnIO.getRecordReader(pages, new GroupRecordConverter(schema));
+          for (int i = 0; i < rows; i++) {
+            final org.apache.parquet.example.data.Group g = recordReader.read();
+            int fieldCount = g.getType().getFieldCount();
+            int countInRow = -1;
+            for (int field = 0; field < fieldCount; field++) {
+              countInRow = Math.max(g.getFieldRepetitionCount(field), countInRow);
+            }
+            for (int field = 0; field < fieldCount; field++) {
+              int valueCount = g.getFieldRepetitionCount(field);
+              for (int index = 0; index < valueCount; index++) {
+                if (pas[field] != null) {
+                  // POTENTIAL IMPROVEMENT use field types to avoid going to string and back?
+                  String tValue = g.getValueToString(field, index);
+                  if (tValue.equals("null")) tValue = "";
+                  else if (isBoolean[field]) tValue = "true".equals(tValue) ? "1" : "0";
+                  // else leave as is
+                  pas[field].addString(tValue);
+                }
+              }
+              // This is adding missing values to a column to ensure all columns have the
+              // proper number of rows at the end.
+              for (int index = valueCount; index < countInRow; index++) {
+                if (pas[field] != null) {
+                  pas[field].addString("");
+                }
+              }
+            }
+          }
+        } catch (Exception e) {
+          warnings.append("  rowIndex #" + pages.getRowIndexes() + ": " + e.getMessage() + "\n");
+        }
+      }
+      if (warnings.length() > 0)
+        String2.log(
+            WARNING_BAD_LINE_OF_DATA_IN + "readParquet(" + fullFileName + "):\n" + warnings);
+    }
+
+    if (colNames != null) reorderColumns(colNames, false);
+
+    if (colTypes == null && simplify) {
+      int nc = nColumns(); // may be different from previous use of nc / fewer columns
+      int nr = nRows();
+      String s;
+      for (int c = 0; c < nc; c++) {
+        PrimitiveArray pa = getColumn(c);
+
+        // are they all quoted strings?
+        boolean isString = true;
+        for (int r = 0; r < nr; r++) {
+          s = pa.getString(r);
+          if (s != null && s.length() > 0 && s.charAt(0) != '\"') {
+            isString = false;
+            break;
+          }
+        }
+        if (isString) {
+          ((StringArray) pa).fromJson();
+
+        } else {
+          // are they all true|false?
+          boolean tIsBoolean = true;
+          for (int r = 0; r < nr; r++) {
+            s = pa.getString(r);
+            if (s != null && s.length() > 0 && !"true".equals(s) && !"false".equals(s)) {
+              tIsBoolean = false;
+              break;
+            }
+          }
+
+          if (tIsBoolean) {
+            setColumn(c, ByteArray.toBooleanToByte(pa));
+
+          } else {
+            // It has numbers. It shouldn't have any quoted strings.
+            simplify(c);
+          }
+        }
+      }
+    }
+  }
+
+  private boolean isTimeColumn(int col) {
+    return "time".equalsIgnoreCase(getColumnName(col))
+        && Calendar2.SECONDS_SINCE_1970.equals(columnAttributes.get(col).getString("units"));
+  }
+
+  private MessageType getParquetSchemaForTable() {
+    MessageTypeBuilder schemaBuilder = org.apache.parquet.schema.Types.buildMessage();
+    for (int j = 0; j < nColumns(); j++) {
+      String columnName = getColumnName(j);
+      if (isTimeColumn(j)) {
+        schemaBuilder
+            .optional(PrimitiveTypeName.INT64)
+            .as(LogicalTypeAnnotation.timestampType(true, TimeUnit.MILLIS))
+            .named(columnName);
+        continue;
+      }
+      switch (getColumn(j).elementType()) {
+        case BYTE, USHORT, UBYTE, INT, SHORT:
+          schemaBuilder.optional(PrimitiveTypeName.INT32).named(columnName);
+          break;
+        case CHAR, STRING:
+          schemaBuilder
+              .optional(PrimitiveTypeName.BINARY)
+              .as(LogicalTypeAnnotation.stringType())
+              .named(columnName);
+          break;
+        case LONG, UINT:
+          schemaBuilder.optional(PrimitiveTypeName.INT64).named(columnName);
+          break;
+        case FLOAT:
+          schemaBuilder.optional(PrimitiveTypeName.FLOAT).named(columnName);
+          break;
+        case DOUBLE, ULONG:
+          schemaBuilder.optional(PrimitiveTypeName.DOUBLE).named(columnName);
+          break;
+        case BOOLEAN:
+          schemaBuilder.optional(PrimitiveTypeName.BOOLEAN).named(columnName);
+          break;
+      }
+    }
+    return schemaBuilder.named("m");
+  }
+
+  private void addMetadata(Map<String, String> metadata, Attributes attributes, String prefix) {
+    String names[] = attributes.getNames();
+    for (String tName : names) {
+      if (!String2.isSomething(tName)) {
+        continue;
+      }
+      PrimitiveArray tValue = attributes.get(tName);
+      if ("time_".equalsIgnoreCase(prefix)
+          && Calendar2.SECONDS_SINCE_1970.equals(attributes.getString(tName))) {
+        metadata.put(prefix + tName, Calendar2.MILLISECONDS_SINCE_1970);
+      } else {
+        metadata.put(prefix + tName, tValue == null ? null : tValue.toString());
+      }
+    }
+  }
+
+  /**
+   * This writes a table to a Parquet UTF-8 file.
+   *
+   * @param fullFileName This is just used for error messages.
+   * @throws Exception if trouble, including observed nItems != expected nItems.
+   */
+  public void writeParquet(String fullFileName, boolean fullMetadata) throws Exception {
+    String msg = "  Table.writeParquet " + fullFileName;
+    long time = System.currentTimeMillis();
+    convertToStandardMissingValues();
+
+    int randomInt = Math2.random(Integer.MAX_VALUE);
+    MessageType schema = getParquetSchemaForTable();
+
+    Map<String, String> metadata = new HashMap<>();
+    if (fullMetadata) {
+      addMetadata(metadata, globalAttributes, "");
+      for (int col = 0; col < nColumns(); col++) {
+        Attributes colAttributes = columnAttributes.get(col);
+        if (colAttributes == null) {
+          continue;
+        }
+        addMetadata(metadata, colAttributes, getColumnName(col) + "_");
+      }
+    }
+    StringBuilder columnNames = new StringBuilder();
+    StringBuilder columnUnits = new StringBuilder();
+    for (int col = 0; col < nColumns(); col++) {
+      Attributes colAttributes = columnAttributes.get(col);
+      if (colAttributes == null) {
+        continue;
+      }
+      if (columnNames.length() > 0) {
+        columnNames.append(",");
+        columnUnits.append(",");
+      }
+      columnNames.append(getColumnName(col));
+      if (isTimeColumn(col)) {
+        columnUnits.append(Calendar2.MILLISECONDS_SINCE_1970);
+      } else {
+        columnUnits.append(colAttributes.getString("units"));
+      }
+    }
+    metadata.put("column_names", columnNames.toString());
+    metadata.put("column_units", columnUnits.toString());
+    try (ParquetWriter<List<PAOne>> writer =
+        new ParquetWriterBuilder(
+                schema,
+                new LocalOutputFile(java.nio.file.Path.of(fullFileName + randomInt)),
+                metadata)
+            .withCompressionCodec(CompressionCodecName.SNAPPY)
+            .withRowGroupSize((long) ParquetWriter.DEFAULT_BLOCK_SIZE)
+            .withPageSize(ParquetWriter.DEFAULT_PAGE_SIZE)
+            .withConf(new Configuration())
+            .withValidation(false)
+            .withDictionaryEncoding(false)
+            .build()) {
+
+      for (int row = 0; row < nRows(); row++) {
+        ArrayList<PAOne> record = new ArrayList<>();
+        for (int j = 0; j < nColumns(); j++) {
+          if (isTimeColumn(j)) {
+            // Convert from seconds since epoch to millis since epoch.
+            record.add(getPAOneData(j, row).multiply(PAOne.fromInt(1000)));
+          } else {
+            record.add(getPAOneData(j, row));
+          }
+        }
+        writer.write(record);
+      }
+      writer.close();
+
+      File2.rename(fullFileName + randomInt, fullFileName); // throws Exception if trouble
+
+      if (reallyVerbose)
+        String2.log(
+            msg
+                + " finished. nColumns="
+                + nColumns()
+                + " nRows="
+                + nRows()
+                + " TIME="
+                + (System.currentTimeMillis() - time)
+                + "ms");
+
+    } catch (Exception e) {
+      File2.delete(fullFileName + randomInt);
+      File2.delete(fullFileName);
+
+      String2.log(msg);
+      throw e;
+    }
+  }
+
+  /**
    * This returns an Igor-safe column name which doesn't match a name already in IgorReservedNames
    * or the cNamesHashset. The new name will be added to colNamesHashset.
    *
@@ -15937,7 +16032,7 @@ public class Table {
    * @param colNamesHashset
    * @return the safe name.
    */
-  public static String makeUniqueIgorColumnName(String colName, HashSet<String> colNamesHashset) {
+  public static String makeUniqueIgorColumnName(String colName, Set<String> colNamesHashset) {
     colName = String2.encodeMatlabNameSafe(colName);
     for (int i = 1; i < 1000000; i++) {
       String tColName = colName + (i == 1 ? "" : "" + i);
@@ -16004,9 +16099,7 @@ public class Table {
                                             : paType == PAType.ULONG
                                                 ? "T"
                                                 : // -> text. Not good, but no loss of precision.
-                                                paType == PAType.CHAR
-                                                    ? "T"
-                                                    : "T"; // String and unexpected
+                                                "T"; // String and unexpected
     boolean asString = it.equals("T");
 
     writer.write(
@@ -16112,7 +16205,7 @@ public class Table {
       writer.write("IGOR" + IgorEndOfLine);
 
       // write each col as a wave separately, so data type is preserved
-      HashSet<String> colNamesHashset = new HashSet();
+      HashSet<String> colNamesHashset = new HashSet<>();
       int nCols = nColumns();
       for (int col = 0; col < nCols; col++) {
         Attributes atts = columnAttributes(col);
@@ -16150,7 +16243,6 @@ public class Table {
           writer.close();
         } catch (Throwable t9) {
         }
-      ;
 
       throw t;
     }
@@ -16493,36 +16585,35 @@ public class Table {
     for (int row = 0; row < tnRows; row++) {
       try {
         String fileName = namePA.getString(row);
-        String fileNameLC = fileName.toLowerCase();
         String encodedFileName = XML.encodeAsHTMLAttribute(fileName);
 
         // very similar code in Table.directoryListing and TableWriterHtmlTable.
         int whichIcon = File2.whichIcon(fileName);
         String iconFile = File2.ICON_FILENAME.get(whichIcon);
         String iconAlt = File2.ICON_ALT.get(whichIcon); // always 3 characters
-        String extLC = File2.getExtension(fileNameLC);
 
         // make HTML for a viewer?
         String viewer = "";
         String imgStyle = "";
-        if (iconAlt.equals("SND")) {
-          // viewer = HtmlWidgets.htmlAudioControl(encodedFileName);
-          viewer = HtmlWidgets.cssTooltipAudio(questionMarkImageUrl, "?", imgStyle, fileName);
+        viewer =
+            switch (iconAlt) {
+              case "SND" ->
+                  // viewer = HtmlWidgets.htmlAudioControl(encodedFileName);
+                  HtmlWidgets.cssTooltipAudio(questionMarkImageUrl, "?", imgStyle, fileName);
 
-          // } else if (iconAlt.equals("IMG") && localDir != null) {
-          //    //this system has to open the local file to get the image's size
-          //    viewer = HtmlWidgets.imageInTooltip(localDir + fileName,
-          //        encodedFileName, questionMarkImageUrl);
+                // } else if (iconAlt.equals("IMG") && localDir != null) {
+                //    //this system has to open the local file to get the image's size
+                //    viewer = HtmlWidgets.imageInTooltip(localDir + fileName,
+                //        encodedFileName, questionMarkImageUrl);
 
-        } else if (iconAlt.equals("IMG")) {
-          // this system doesn't need to know the size ahead of time
-          viewer =
-              HtmlWidgets.cssTooltipImage(
-                  questionMarkImageUrl, "?", imgStyle, fileName, "img" + row);
-
-        } else if (iconAlt.equals("MOV")) {
-          viewer = HtmlWidgets.cssTooltipVideo(questionMarkImageUrl, "?", imgStyle, fileName);
-        }
+              case "IMG" ->
+                  // this system doesn't need to know the size ahead of time
+                  HtmlWidgets.cssTooltipImage(
+                      questionMarkImageUrl, "?", imgStyle, fileName, "img" + row);
+              case "MOV" ->
+                  HtmlWidgets.cssTooltipVideo(questionMarkImageUrl, "?", imgStyle, fileName);
+              default -> viewer;
+            };
 
         // make DDMonYYYY HH:MM formatted lastModified time
         String newMod = "";
@@ -16614,8 +16705,6 @@ public class Table {
       throw new RuntimeException(
           String2.ERROR + " in Table.saveAs: invalid saveAsType=" + saveAsType);
 
-    String ext = SAVE_AS_EXTENSIONS[saveAsType];
-
     // does the file already exist?
     String finalName = fullFileName + (zipIt ? ".zip" : "");
     if (File2.touch(finalName)) {
@@ -16624,7 +16713,6 @@ public class Table {
     }
 
     // save as ...
-    long time = System.currentTimeMillis();
     if (saveAsType == SAVE_AS_TABBED_ASCII) saveAsTabbedASCII(fullFileName);
     else if (saveAsType == SAVE_AS_FLAT_NC) saveAsFlatNc(fullFileName, dimensionName);
     else if (saveAsType == SAVE_AS_4D_NC) saveAs4DNc(fullFileName, 0, 1, 2, 3);
@@ -16751,8 +16839,7 @@ public class Table {
     String msg = "  Table.readArgoProfile " + fileName;
     long tTime = System.currentTimeMillis();
     // Attributes gridMappingAtts = null; //method is unfinished
-    NetcdfFile nc = NcHelper.openFile(fileName);
-    try {
+    try (NetcdfFile nc = NcHelper.openFile(fileName)) {
       //   DATE_TIME = 14;
       //   N_PROF = 632;
       //   N_PARAM = 3;
@@ -17020,11 +17107,6 @@ public class Table {
                 + " TIME="
                 + (System.currentTimeMillis() - tTime)
                 + "ms");
-    } finally {
-      try {
-        if (nc != null) nc.close();
-      } catch (Exception e9) {
-      }
     }
   }
 
@@ -17042,10 +17124,7 @@ public class Table {
       throw new SimpleException(errorMessage + "no csv.");
     String[] cols = String2.split(tOrderByCsv, ',');
     // filter out the blanks.
-    cols =
-        Arrays.stream(cols)
-            .filter(value -> value.trim().length() > 0)
-            .toArray(size -> new String[size]);
+    cols = Arrays.stream(cols).filter(value -> value.trim().length() > 0).toArray(String[]::new);
     if (cols.length == 0) throw new SimpleException(errorMessage + "csv.length=0.");
 
     // support the old format where interval was the last field.
@@ -17059,9 +17138,9 @@ public class Table {
   private static String[] splitColNameForRounders(String colName) {
     String split[] = colName.split("/", 2); // split on '/'
     return Arrays.stream(split)
-        .map(s -> s.trim()) // remove outer whitespace
+        .map(String::trim) // remove outer whitespace
         .filter(s -> s.length() > 0)
-        .toArray(size -> new String[size]); // discard blanks.
+        .toArray(String[]::new); // discard blanks.
   }
 
   /**

@@ -23,7 +23,7 @@ import java.io.FileOutputStream;
  *
  * @author Bob Simons (was bob.simons@noaa.gov, now BobSimons2.00@gmail.com) 2010-09-03
  */
-public class GridDataAllAccessor {
+public class GridDataAllAccessor implements AutoCloseable {
 
   /**
    * Set this to true (by calling verbose=true in your program, not by changing the code here) if
@@ -32,7 +32,7 @@ public class GridDataAllAccessor {
   public static boolean verbose = false;
 
   // things passed into the constructor
-  protected GridDataAccessor gridDataAccessor;
+  protected final GridDataAccessor gridDataAccessor;
 
   // things the constructor sets
   protected String baseFileName; // to which the dv number is added
@@ -90,7 +90,7 @@ public class GridDataAllAccessor {
           } catch (Exception e) {
           }
       }
-      gridDataAccessor.releaseGetResources();
+      gridDataAccessor.close();
     }
   }
 
@@ -123,18 +123,15 @@ public class GridDataAllAccessor {
     long n = gridDataAccessor.totalIndex.size();
     Math2.ensureArraySizeOkay(n, "GridDataAllAccessor");
     PrimitiveArray pa = PrimitiveArray.factory(dataPAType[dv], (int) n, false);
-    DataInputStream dis = getDataInputStream(dv);
-    try {
+    try (DataInputStream dis = getDataInputStream(dv)) {
       pa.readDis(dis, (int) n);
-    } finally {
-      dis.close();
     }
     return pa;
   }
 
   public void releaseGetResources() {
     try {
-      if (gridDataAccessor != null) gridDataAccessor.releaseGetResources();
+      if (gridDataAccessor != null) gridDataAccessor.close();
     } catch (Throwable t) {
     }
   }
@@ -144,7 +141,8 @@ public class GridDataAllAccessor {
    * that users of this class call this when they are done using this instance. This won't throw an
    * Exception.
    */
-  public void releaseResources() {
+  @Override
+  public void close() {
     releaseGetResources();
     try {
       if (dataPAType != null) {
@@ -161,14 +159,5 @@ public class GridDataAllAccessor {
       }
     } catch (Throwable t) {
     }
-  }
-
-  /**
-   * Users of this class shouldn't call this -- use releaseResources() instead. Java calls this when
-   * an object is no longer used, just before garbage collection.
-   */
-  protected void finalize() throws Throwable {
-    releaseResources();
-    super.finalize();
   }
 }

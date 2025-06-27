@@ -13,7 +13,6 @@ import com.cohort.util.Test;
 import com.google.common.io.Resources;
 import gov.noaa.pfel.coastwatch.TimePeriods;
 import gov.noaa.pfel.coastwatch.util.SSR;
-
 import java.net.URL;
 import java.util.GregorianCalendar;
 
@@ -48,16 +47,19 @@ public class FileNameUtility {
    * Set this to true (by calling verbose=true in your program, not by changing the code here) if
    * you want lots of diagnostic messages sent to String2.log.
    */
-  public static boolean verbose = false;
+  public static final boolean verbose = false;
 
-  public String fullClassName;
-  private ResourceBundle2 classRB2;
-  private ResourceBundle2 dataSetRB2;
+  public final String fullClassName;
+  private final ResourceBundle2 classRB2;
+  private final ResourceBundle2 dataSetRB2;
 
-  public double regionMinX, regionMaxX, regionMinY, regionMaxY;
+  public final double regionMinX;
+  public final double regionMaxX;
+  public final double regionMinY;
+  public final double regionMaxY;
 
-  public static URL STANDARD_REGIONS_FILE_NAME =
-          Resources.getResource("gov/noaa/pfel/coastwatch/griddata/regions");
+  public static final URL STANDARD_REGIONS_FILE_NAME =
+      Resources.getResource("gov/noaa/pfel/coastwatch/griddata/regions");
 
   public static String getAcknowledgement() {
     return "NOAA NESDIS COASTWATCH, NOAA SWFSC ERD";
@@ -130,8 +132,8 @@ public class FileNameUtility {
 
   // was 55
 
-  private String categoryLetters;
-  private String[] categoryNames;
+  private final String categoryLetters;
+  private final String[] categoryNames;
 
   /**
    * This uses the class name to find the <classname>.properties and DataSet.properties file (in
@@ -295,7 +297,7 @@ public class FileNameUtility {
   public void ensureInfoUrlExists(String internal7Name) throws Exception {
     String infoUrl = dataSetRB2.getString(internal7Name + "InfoUrl", null);
     Test.ensureNotNull(infoUrl, internal7Name + "InfoUrl not in DataSet.properties file.");
-    if (infoUrl.equals("")) {
+    if (infoUrl.isEmpty()) {
       return;
     } else if (String2.isUrl(infoUrl)) {
       try {
@@ -362,12 +364,12 @@ public class FileNameUtility {
       // center 25 and 33hour files  GA2005069_120000h_t24h
       String fourName = daveName.substring(18, 22);
       if (fourNameIs25Hour(fourName)) {
-        timePeriodInFileName = TimePeriods.IN_FILE_NAMES[TimePeriods._25HOUR_INDEX];
+        timePeriodInFileName = TimePeriods.IN_FILE_NAMES.get(TimePeriods._25HOUR_INDEX);
         centeredIsoDateTime =
             Calendar2.formatAsISODateTimeT(
                 Calendar2.isoDateTimeAdd(fileIsoDateTime, -25 * 60 / 2, Calendar2.MINUTE));
       } else if (fourNameIs33Hour(fourName)) {
-        timePeriodInFileName = TimePeriods.IN_FILE_NAMES[TimePeriods._33HOUR_INDEX];
+        timePeriodInFileName = TimePeriods.IN_FILE_NAMES.get(TimePeriods._33HOUR_INDEX);
         centeredIsoDateTime =
             Calendar2.formatAsISODateTimeT(
                 Calendar2.isoDateTimeAdd(fileIsoDateTime, -33 * 60 / 2, Calendar2.MINUTE));
@@ -386,8 +388,9 @@ public class FileNameUtility {
       endGC.add(Calendar2.DATE, 1);
       centeredIsoDateTime =
           Calendar2.epochSecondsToIsoStringT(
-              Math2.roundToLong(
-                  ((startGC.getTimeInMillis() + endGC.getTimeInMillis()) / 2) / 1000.0));
+              (double)
+                  Math2.roundToLong(
+                      ((startGC.getTimeInMillis() + endGC.getTimeInMillis()) / 2.0) / 1000.0));
       int nDays =
           Math2.roundToInt(
               (endGC.getTimeInMillis() - startGC.getTimeInMillis() + 0.0)
@@ -420,10 +423,10 @@ public class FileNameUtility {
         timePeriodIndex = TimePeriods.closestTimePeriod(nDays * 24, TimePeriods.OPTIONS);
         Test.ensureEqual(
             nDays,
-            TimePeriods.N_HOURS[timePeriodIndex] / 24,
+            TimePeriods.N_HOURS.get(timePeriodIndex) / 24,
             errorIn + nDays + "-day time period not yet supported.");
       }
-      timePeriodInFileName = TimePeriods.IN_FILE_NAMES[timePeriodIndex];
+      timePeriodInFileName = TimePeriods.IN_FILE_NAMES.get(timePeriodIndex);
     }
     String centeredDateTime = Calendar2.removeSpacesDashesColons(centeredIsoDateTime);
 
@@ -455,21 +458,23 @@ public class FileNameUtility {
     }
 
     // return the desired file name
-    String cwName =
-        "L"
-            + // always the 'L'ocal variant
-            daveName.substring(0, 2)
-            + // e.g., AT
-            daveName.substring(18, 22)
-            + // e.g., ssta
-            "S"
-            + // always the standard units   (all files now stored that way)
-            timePeriodInFileName
-            + "_"
-            + centeredDateTime
-            + wesnSB.toString();
+    // always the 'L'ocal variant
+    // e.g., AT
+    // e.g., ssta
+    // always the standard units   (all files now stored that way)
     // String2.log("convertDaveNameToCWBrowserName " + daveName + " -> " + cwName);
-    return cwName;
+    return "L"
+        + // always the 'L'ocal variant
+        daveName.substring(0, 2)
+        + // e.g., AT
+        daveName.substring(18, 22)
+        + // e.g., ssta
+        "S"
+        + // always the standard units   (all files now stored that way)
+        timePeriodInFileName
+        + "_"
+        + centeredDateTime
+        + wesnSB;
   }
 
   /**
@@ -565,11 +570,10 @@ public class FileNameUtility {
    *     special cases: GAt24h, GAt25h, and GAt33h returned GAssta. But now: no special cases.]
    */
   public static String get6CharName(String fileName) {
-    String name6 = fileName.substring(1, 7);
     // deal with special cases  where dave uses >1 variable names
     // if (name6.equals("GAt24h") || name6.equals("GAt25h") || name6.equals("GAt33h")) return
     // "GAssta";
-    return name6;
+    return fileName.substring(1, 7);
   }
 
   /**
@@ -664,7 +668,7 @@ public class FileNameUtility {
    */
   public static int getTimePeriodIndex(String fileName) throws Exception {
     String s = getTimePeriodString(fileName);
-    int i = String2.indexOf(TimePeriods.IN_FILE_NAMES, s);
+    int i = TimePeriods.IN_FILE_NAMES.indexOf(s);
     if (i == -1)
       throw new RuntimeException(
           String2.ERROR
@@ -685,7 +689,7 @@ public class FileNameUtility {
    * @throws Exception if trouble
    */
   public static int getTimePeriodNHours(String fileName) throws Exception {
-    return TimePeriods.N_HOURS[getTimePeriodIndex(fileName)];
+    return TimePeriods.N_HOURS.get(getTimePeriodIndex(fileName));
   }
 
   /**
@@ -700,9 +704,8 @@ public class FileNameUtility {
     int po2 = fileName.indexOf('_', po1 + 1);
     if (po2 < 0) po2 = fileName.indexOf('.', po1 + 1);
     if (po2 < 0) po2 = fileName.length();
-    String d = fileName.substring(po1 + 1, po2);
     // String2.log("getRawDateString fileName=" + fileName + " -> " + d);
-    return d;
+    return fileName.substring(po1 + 1, po2);
   }
 
   /**
@@ -726,7 +729,7 @@ public class FileNameUtility {
    */
   public static GregorianCalendar getEndCalendar(String fileName) throws Exception {
     return TimePeriods.getEndCalendar(
-        TimePeriods.OPTIONS[getTimePeriodIndex(fileName)],
+        TimePeriods.OPTIONS.get(getTimePeriodIndex(fileName)),
         Calendar2.formatAsISODateTimeT(getCenteredCalendar(fileName)),
         null);
   }
@@ -741,7 +744,7 @@ public class FileNameUtility {
    */
   public static GregorianCalendar getStartCalendar(String fileName) throws Exception {
     return TimePeriods.getStartCalendar(
-        TimePeriods.OPTIONS[getTimePeriodIndex(fileName)],
+        TimePeriods.OPTIONS.get(getTimePeriodIndex(fileName)),
         Calendar2.formatAsISODateTimeT(getCenteredCalendar(fileName)),
         null);
   }
@@ -892,8 +895,7 @@ public class FileNameUtility {
     String fgdcInfo = dataSetRB2.getString(attName, null);
     if (fgdcInfo == null) return null;
     String sar[] = String2.splitNoTrim(fgdcInfo, '\n');
-    for (int i = 0; i < sar.length; i++)
-      if (sar[i].startsWith(infoName)) return sar[i].substring(infoName.length());
+    for (String s : sar) if (s.startsWith(infoName)) return s.substring(infoName.length());
     return null;
   }
 
@@ -1174,14 +1176,13 @@ public class FileNameUtility {
   public static String makeBaseName(
       String internalName, char unitsChar, String timePeriodValue, String isoCenteredTimeValue) {
 
-    String baseName = // e.g., LATsstaS1day_20060207120000
-        internalName
-            + unitsChar
-            + TimePeriods.getInFileName(timePeriodValue)
-            + "_"
-            + Calendar2.removeSpacesDashesColons(isoCenteredTimeValue);
+    // e.g., LATsstaS1day_20060207120000
 
-    return baseName;
+    return internalName
+        + unitsChar
+        + TimePeriods.getInFileName(timePeriodValue)
+        + "_"
+        + Calendar2.removeSpacesDashesColons(isoCenteredTimeValue);
   }
 
   /**

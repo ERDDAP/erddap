@@ -14,8 +14,10 @@ import com.cohort.util.String2;
 import com.cohort.util.XML;
 import gov.noaa.pfel.coastwatch.pointdata.Table;
 import gov.noaa.pfel.coastwatch.util.FileVisitorDNLS;
+import gov.noaa.pfel.erddap.dataset.metadata.LocalizedAttributes;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.*;
+import java.util.List;
 
 /**
  * This class represents a table of sampled sound data from a collection of audio files (e.g., WAV
@@ -36,7 +38,7 @@ public class EDDTableFromAudioFiles extends EDDTableFromFiles {
     return DEFAULT_STANDARDIZEWHAT;
   }
 
-  public static int DEFAULT_STANDARDIZEWHAT = 0;
+  public static final int DEFAULT_STANDARDIZEWHAT = 0;
 
   /**
    * The constructor just calls the super constructor.
@@ -63,8 +65,8 @@ public class EDDTableFromAudioFiles extends EDDTableFromFiles {
       String tSosOfferingPrefix,
       String tDefaultDataQuery,
       String tDefaultGraphQuery,
-      Attributes tAddGlobalAttributes,
-      Object[][] tDataVariables,
+      LocalizedAttributes tAddGlobalAttributes,
+      List<DataVariableInfo> tDataVariables,
       int tReloadEveryNMinutes,
       int tUpdateEveryNMillis,
       String tFileDir,
@@ -284,7 +286,6 @@ public class EDDTableFromAudioFiles extends EDDTableFromFiles {
           tCacheFromUrl, tFileDir, tFileNameRegex, true, ".*", false); // not fullSync
     tColumnNameForExtract =
         String2.isSomething(tColumnNameForExtract) ? tColumnNameForExtract.trim() : "";
-    String tSortedColumnSourceName = Table.ELAPSED_TIME;
     if (tReloadEveryNMinutes <= 0 || tReloadEveryNMinutes == Integer.MAX_VALUE)
       tReloadEveryNMinutes = 1440;
     if (!String2.isSomething(sampleFileName))
@@ -324,7 +325,7 @@ public class EDDTableFromAudioFiles extends EDDTableFromFiles {
               destPA.elementType() != PAType.STRING, // addColorBarMinMax
               true)); // tryToFindLLAT
       if (c > 0) {
-        if (EDStatic.variablesMustHaveIoosCategory)
+        if (EDStatic.config.variablesMustHaveIoosCategory)
           dataAddTable.columnAttributes(c).set("ioos_category", "Other");
         if (sourcePA.isIntegerType()) {
           dataAddTable
@@ -469,7 +470,10 @@ public class EDDTableFromAudioFiles extends EDDTableFromFiles {
     // last 2 params: includeDataType, questionDestinationName
     sb.append(
         writeVariablesForDatasetsXml(dataSourceTable, dataAddTable, "dataVariable", true, false));
-    sb.append("</dataset>\n" + "\n");
+    sb.append("""
+            </dataset>
+
+            """);
 
     String2.log("\n\n*** generateDatasetsXml finished successfully.\n\n");
     return sb.toString();

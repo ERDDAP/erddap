@@ -1,6 +1,5 @@
 package gov.noaa.pfel.erddap.dataset;
 
-import com.cohort.util.Calendar2;
 import com.cohort.util.File2;
 import com.cohort.util.MustBe;
 import com.cohort.util.SimpleException;
@@ -38,13 +37,13 @@ class EDDTableFromDatabaseTests {
 
     // String2.log("\n*** EDDTableFromDatabase.testGenerateDatasetsXml");
     // testVerboseOn();
-    String name, tName, gdiResults, results, tResults, expected, userDapQuery, tQuery;
+    String tName, results, expected;
     String password;
     // password = String2.getStringFromSystemIn("local Postgres password? ");
     password = "MyPassword";
     String connectionProps[] =
         new String[] {"user", EDDTableFromDatabase.testUser, "password", password};
-    String dir = EDStatic.fullTestCacheDirectory;
+    String dir = EDStatic.config.fullTestCacheDirectory;
     int language = 0;
 
     // list catalogs
@@ -314,10 +313,8 @@ class EDDTableFromDatabaseTests {
     // testVerboseOn();
     int language = 0;
     long eTime;
-    String tQuery;
-    String dir = EDStatic.fullTestCacheDirectory;
+    String dir = EDStatic.config.fullTestCacheDirectory;
     String results, expected;
-    String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 10);
 
     EDDTableFromDatabase tedd =
         (EDDTableFromDatabase) EDDTableFromDatabase.oneFromDatasetsXml(null, tDatasetID);
@@ -857,7 +854,7 @@ class EDDTableFromDatabaseTests {
   @TagMissingDataset
   void testNonExistentVariable() throws Throwable {
     String2.log("\n*** EDDTableFromDatabase.testNonExistentVariable()");
-    String dir = EDStatic.fullTestCacheDirectory;
+    String dir = EDStatic.config.fullTestCacheDirectory;
     String results = "not set";
     int language = 0;
     try {
@@ -889,7 +886,7 @@ class EDDTableFromDatabaseTests {
   @TagMissingDataset
   void testNonExistentTable() throws Throwable {
     String2.log("\n*** EDDTableFromDatabase.testNonExistentTable()");
-    String dir = EDStatic.fullTestCacheDirectory;
+    String dir = EDStatic.config.fullTestCacheDirectory;
     String results = "not set";
     int language = 0;
     try {

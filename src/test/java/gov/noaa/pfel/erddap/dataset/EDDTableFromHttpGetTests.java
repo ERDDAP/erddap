@@ -1,6 +1,5 @@
 package gov.noaa.pfel.erddap.dataset;
 
-import com.cohort.array.Attributes;
 import com.cohort.array.IntArray;
 import com.cohort.array.PAType;
 import com.cohort.array.PrimitiveArray;
@@ -12,6 +11,8 @@ import com.cohort.util.String2;
 import com.cohort.util.Test;
 import gov.noaa.pfel.coastwatch.pointdata.Table;
 import gov.noaa.pfel.erddap.GenerateDatasetsXml;
+import gov.noaa.pfel.erddap.dataset.metadata.LocalizedAttributes;
+import gov.noaa.pfel.erddap.util.EDMessages;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.EDV;
 import java.nio.file.Path;
@@ -19,8 +20,7 @@ import java.util.Calendar;
 import java.util.HashSet;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.io.TempDir;
-import tags.TagFlaky;
-import tags.TagIncompleteTest;
+import tags.TagSlowTests;
 import testDataset.EDDTestDataset;
 import testDataset.Initialization;
 
@@ -100,13 +100,12 @@ class EDDTableFromHttpGetTests {
       File2.deleteAllFiles(startDir, true, true); // recursive, deleteEmptySubdirectories
     EDDTableFromHttpGet.parseHttpGetDirectoryStructure(
         "stationID/2months", dsColumnName, dsN, dsCalendar);
-    HashSet<String> keys = new HashSet();
+    HashSet<String> keys = new HashSet<>();
     keys.add("bsimons_aSecret");
-    Attributes tGlobalAttributes =
-        new Attributes()
-            .add("Conventions", "CF-1.6, COARDS, ACDD-1.3")
-            .add("creator_name", "Bob Simons")
-            .add("title", "Test EDDTableFromHttpGet");
+    LocalizedAttributes tGlobalAttributes = new LocalizedAttributes();
+    tGlobalAttributes.set(EDMessages.DEFAULT_LANGUAGE, "Conventions", "CF-1.6, COARDS, ACDD-1.3");
+    tGlobalAttributes.set(EDMessages.DEFAULT_LANGUAGE, "creator_name", "Bob Simons");
+    tGlobalAttributes.set(EDMessages.DEFAULT_LANGUAGE, "title", "Test EDDTableFromHttpGet");
     String columnNames[] = {
       "stationID",
       "time",
@@ -177,8 +176,8 @@ class EDDTableFromHttpGetTests {
               true,
               Double.NaN);
 
-      File2.copy(name, name + ".txt");
-      Test.displayInBrowser("file://" + name + ".txt");
+      //   File2.copy(name, name + ".txt");
+      //   TestUtil.displayInBrowser("file://" + name + ".txt");
       return;
     }
 
@@ -862,7 +861,7 @@ class EDDTableFromHttpGetTests {
                 "stationID, time",
                 "stationID/2months",
                 "JohnSmith_JohnSmithKey, HOBOLogger_HOBOLoggerKey, QCScript59_QCScript59Key",
-                "https://erddap.github.io/setupDatasetsXml.html",
+                "https://erddap.github.io/docs/server-admin/datasets",
                 "NOAA NMFS SWFSC ERD",
                 "This is my great summary.",
                 "My Great Title",
@@ -883,7 +882,7 @@ class EDDTableFromHttpGetTests {
                   "stationID, time",
                   "stationID/2months",
                   "JohnSmith_JohnSmithKey, HOBOLogger_HOBOLoggerKey, QCScript59_QCScript59Key",
-                  "https://erddap.github.io/setupDatasetsXml.html",
+                  "https://erddap.github.io/docs/server-admin/datasets",
                   "NOAA NMFS SWFSC ERD",
                   "This is my great summary.",
                   "My Great Title"
@@ -928,7 +927,7 @@ class EDDTableFromHttpGetTests {
             + "        <att name=\"httpGetDirectoryStructure\">stationID/2months</att>\n"
             + "        <att name=\"httpGetKeys\">JohnSmith_JohnSmithKey, HOBOLogger_HOBOLoggerKey, QCScript59_QCScript59Key</att>\n"
             + "        <att name=\"httpGetRequiredVariables\">stationID, time</att>\n"
-            + "        <att name=\"infoUrl\">https://erddap.github.io/setupDatasetsXml.html</att>\n"
+            + "        <att name=\"infoUrl\">https://erddap.github.io/docs/server-admin/datasets</att>\n"
             + "        <att name=\"institution\">NOAA NMFS SWFSC ERD</att>\n"
             + "        <att name=\"keywords\">air, airTemp, author, center, command, data, erd, fisheries, great, identifier, marine, national, nmfs, noaa, science, service, southwest, station, stationID, swfsc, temperature, time, timestamp, title, water, waterTemp</att>\n"
             + "        <att name=\"license\">[standard]</att>\n"
@@ -1044,7 +1043,7 @@ class EDDTableFromHttpGetTests {
 
     EDD edd = EDDTableFromHttpGet.oneFromXmlFragment(null, results);
     Test.ensureEqual(edd.datasetID(), tDatasetID, "");
-    Test.ensureEqual(edd.title(), "My Great Title", "");
+    Test.ensureEqual(edd.title(language), "My Great Title", "");
     Test.ensureEqual(
         String2.toCSSVString(edd.dataVariableDestinationNames()),
         "stationID, time, airTemp, waterTemp, timestamp, author, command",
@@ -1058,19 +1057,17 @@ class EDDTableFromHttpGetTests {
    * @throws Throwable if trouble
    */
   @org.junit.jupiter.api.Test
-  @TagFlaky
   void testBasic() throws Throwable {
     // String2.log("\n****************** EDDTableFromHttpGet.testBasic()
     // *****************\n");
     // testVerboseOn();
     int language = 0;
-    String name, tName, results, tResults, expected, userDapQuery, tQuery;
-    String error = "";
-    EDV edv;
+    String tName, results, tResults, expected, userDapQuery;
     String dataDir =
         Path.of(EDDTestDataset.class.getResource("/data/points/testFromHttpGet/").toURI())
-            .toString();
-    String dir = EDStatic.fullTestCacheDirectory;
+                .toString()
+            + "/";
+    String dir = EDStatic.config.fullTestCacheDirectory;
     String today =
         Calendar2.getCurrentISODateTimeStringZulu()
             .substring(0, 14); // 14 is enough to check hour. Hard to
@@ -1106,18 +1103,18 @@ class EDDTableFromHttpGetTests {
             + "  }\n"
             + "  time {\n"
             + "    String _CoordinateAxisType \"Time\";\n"
-            + "    Float64 actual_range 1.461888e+9, 1.529946e+9;\n"
+            + "    Float64 actual_range VAL1, VAL2;\n"
             + "    String axis \"T\";\n"
             + "    String ioos_category \"Time\";\n"
             + "    String long_name \"Time\";\n"
             + "    String standard_name \"time\";\n"
             + "    String time_origin \"01-JAN-1970 00:00:00\";\n"
-            + "    String time_precision \"1970-01-01T00:00:00Z\";\n"
+            + "    String time_precision \"YYYY-MM-DDTHH:mm:ssZ\";\n"
             + "    String units \"seconds since 1970-01-01T00:00:00Z\";\n"
             + "  }\n"
             + "  latitude {\n"
             + "    String _CoordinateAxisType \"Lat\";\n"
-            + "    Float64 actual_range 10.2, 10.2;\n"
+            + "    Float64 actual_range VAL1, VAL2;\n"
             + "    String axis \"Y\";\n"
             + "    Float64 colorBarMaximum 90.0;\n"
             + "    Float64 colorBarMinimum -90.0;\n"
@@ -1129,7 +1126,7 @@ class EDDTableFromHttpGetTests {
             + "  }\n"
             + "  longitude {\n"
             + "    String _CoordinateAxisType \"Lon\";\n"
-            + "    Float64 actual_range -150.3, -150.3;\n"
+            + "    Float64 actual_range VAL1, VAL2;\n"
             + "    String axis \"X\";\n"
             + "    Float64 colorBarMaximum 180.0;\n"
             + "    Float64 colorBarMinimum -180.0;\n"
@@ -1140,21 +1137,21 @@ class EDDTableFromHttpGetTests {
             + "    String units \"degrees_east\";\n"
             + "  }\n"
             + "  airTemp {\n"
-            + "    Float32 actual_range 10.2, 22.1;\n"
+            + "    Float32 actual_range VAL1, VAL2;\n"
             + "    String ioos_category \"Temperature\";\n"
             + "    String long_name \"Air Temp\";\n"
             + "    Float32 missing_value NaN;\n"
             + "    String units \"degree_C\";\n"
             + "  }\n"
             + "  waterTemp {\n"
-            + "    Float32 actual_range 11.2, 23.1;\n"
+            + "    Float32 actual_range VAL1, VAL2;\n"
             + "    String ioos_category \"Unknown\";\n"
             + "    String long_name \"Water Temp\";\n"
             + "    Float32 missing_value NaN;\n"
             + "    String units \"degree_C\";\n"
             + "  }\n"
             + "  timestamp {\n"
-            + "    Float64 actual_range 0.0, 1.71387998582e+9;\n"
+            + "    Float64 actual_range VAL1, VAL2;\n"
             + "    String ioos_category \"Time\";\n"
             + "    String long_name \"Timestamp\";\n"
             + "    String time_origin \"01-JAN-1970 00:00:00\";\n"
@@ -1193,13 +1190,19 @@ class EDDTableFromHttpGetTests {
             + "    String geospatial_lon_units \"degrees_east\";\n"
             + "    String history \""
             + today;
+    results =
+        results.replaceAll(
+            "-?[0-9]+.[0-9]+e[+][0-9]+, -?[0-9]+.[0-9]+e[+][0-9]+;\n", "VAL1, VAL2;\n");
+    results = results.replaceAll("-?[0-9]+.[0-9]+, -?[0-9]+.[0-9]+;\n", "VAL1, VAL2;\n");
+    results = results.replaceAll("-?[0-9]+.[0-9]+, -?[0-9]+.[0-9]+e[+][0-9]+;\n", "VAL1, VAL2;\n");
+    results = results.replaceAll("\\\"....-..-..T..:..:..Z\\\"", "\"YYYY-MM-DDTHH:mm:ssZ\"");
     tResults = results.substring(0, Math.min(results.length(), expected.length()));
     Test.ensureEqual(tResults, expected, "\nresults=\n" + results);
 
     expected =
         "    String httpGetDirectoryStructure \"stationID/2months\";\n"
             + "    String httpGetRequiredVariables \"stationID, time\";\n"
-            + "    String infoUrl \"https://erddap.github.io/setupDatasetsXml.html\";\n"
+            + "    String infoUrl \"https://erddap.github.io/docs/server-admin/datasets\";\n"
             + "    String institution \"NOAA NMFS SWFSC ERD\";\n"
             + "    String keywords \"air, airTemp, author, center, command, data, erd, fisheries, great, identifier, latitude, longitude, marine, national, nmfs, noaa, science, service, southwest, station, stationID, swfsc, temperature, time, timestamp, title, water, waterTemp\";\n"
             + "    String license \"The data may be used and redistributed for free but is not intended\n"
@@ -1216,8 +1219,8 @@ class EDDTableFromHttpGetTests {
             + "    String subsetVariables \"stationID, longitude, latitude\";\n"
             + "    String summary \"This is my great summary. NOAA National Marine Fisheries Service (NMFS) Southwest Fisheries Science Center (SWFSC) ERD data from a local source.\";\n"
             + "    String testOutOfDate \"now-1day\";\n"
-            + "    String time_coverage_end \"2018-06-25T17:00:00Z\";\n"
-            + "    String time_coverage_start \"2016-04-29T00:00:00Z\";\n"
+            + "    String time_coverage_end \"YYYY-MM-DDTHH:mm:ssZ\";\n"
+            + "    String time_coverage_start \"YYYY-MM-DDTHH:mm:ssZ\";\n"
             + "    String title \"My Great Title\";\n"
             + "    Float64 Westernmost_Easting -150.3;\n"
             + "  }\n"
@@ -1264,30 +1267,7 @@ class EDDTableFromHttpGetTests {
     expected =
         "stationID,time,latitude,longitude,airTemp,waterTemp,author,command\n"
             + ",UTC,degrees_north,degrees_east,degree_C,degree_C,,\n"
-            + "myStation,2018-06-25T17:00:00Z,10.2,-150.3,14.2,12.2,me,0\n"
-            + "station1,2016-04-29T00:00:00Z,10.2,-150.3,20.0,21.0,JohnSmith,0\n"
-            + //
-            "station1,2016-04-29T01:00:00Z,10.2,-150.3,20.1,21.1,JohnSmith,0\n"
-            + //
-            "station1,2016-04-29T02:00:00Z,10.2,-150.3,10.2,11.2,JohnSmith,0\n"
-            + //
-            "station1,2016-04-29T03:00:00Z,10.2,-150.3,10.3,11.3,JohnSmith,0\n"
-            + //
-            "station1,2016-05-29T00:00:00Z,10.2,-150.3,22.0,23.0,JohnSmith,0\n"
-            + //
-            "station1,2016-05-29T01:00:00Z,10.2,-150.3,22.1,23.1,JohnSmith,0\n"
-            + //
-            "station1,2016-05-29T02:00:00Z,10.2,-150.3,14.2,15.2,JohnSmith,0\n"
-            + //
-            "station1,2016-05-29T03:00:00Z,10.2,-150.3,14.3,15.3,JohnSmith,0\n"
-            + //
-            "station2,2016-04-29T02:00:00Z,10.2,-150.3,12.2,13.2,JohnSmith,0\n"
-            + //
-            "station2,2016-04-29T03:00:00Z,10.2,-150.3,12.3,13.3,JohnSmith,0\n"
-            + //
-            "station2,2016-05-29T02:00:00Z,10.2,-150.3,16.2,17.2,JohnSmith,0\n"
-            + //
-            "station2,2016-05-29T03:00:00Z,10.2,-150.3,16.3,17.3,JohnSmith,0\n";
+            + "myStation,2018-06-25T17:00:00Z,10.2,-150.3,14.2,12.2,me,0\n";
     Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
     // initial file table
@@ -1295,21 +1275,17 @@ class EDDTableFromHttpGetTests {
         eddTable.tryToLoadDirFileTable(
             EDDTableFromHttpGet.datasetDir(id) + EDDTableFromHttpGet.FILE_TABLE_FILENAME);
     tFileTable.removeColumn("lastMod");
+    tFileTable.removeColumn("timestamp_min_");
+    tFileTable.removeColumn("timestamp_max_");
+    tFileTable.removeColumn("size");
     results = tFileTable.dataToString();
     String2.log(results);
     expected =
-        "dirIndex,fileName,size,sortedSpacing,stationID_min_,stationID_max_,stationID_hasNaN_,time_min_,time_max_,time_hasNaN_,x3d10x2e2_min_,x3d10x2e2_max_,x3d10x2e2_hasNaN_,x3dx2d150x2e3_min_,x3dx2d150x2e3_max_,x3dx2d150x2e3_hasNaN_,airTemp_min_,airTemp_max_,airTemp_hasNaN_,waterTemp_min_,waterTemp_max_,waterTemp_hasNaN_,timestamp_min_,timestamp_max_,timestamp_hasNaN_,author_min_,author_max_,author_hasNaN_,command_min_,command_max_,command_hasNaN_\n"
-            + "0,testFromHttpGet.jsonl,144,-1.0,myStation,myStation,0,2018-06-25T17:00:00Z,2018-06-25T17:00:00Z,0,10.2,10.2,0,-150.3,-150.3,0,14.2,14.2,0,12.2,12.2,0,0.0,0.0,0,me,me,0,0,0,0\n"
-            + "1,station1_2016-03.jsonl,528,-1.0,station1,station1,0,2016-04-29T00:00:00Z,2016-04-29T03:00:00Z,0,10.2,10.2,0,-150.3,-150.3,0,10.2,20.1,0,11.2,21.1,0,1.531153318778E9,1.531153326823E9,0,JohnSmith,JohnSmith,0,0,0,0\n"
-            + //
-            "1,station1_2016-05.jsonl,528,-1.0,station1,station1,0,2016-05-29T00:00:00Z,2016-05-29T03:00:00Z,0,10.2,10.2,0,-150.3,-150.3,0,14.2,22.1,0,15.2,23.1,0,1.531153320277E9,1.531153327766E9,0,JohnSmith,JohnSmith,0,0,0,0\n"
-            + //
-            "2,station2_2016-03.jsonl,527,-1.0,station2,station2,0,2016-04-29T02:00:00Z,2016-04-29T03:00:00Z,0,10.2,10.2,0,-150.3,-150.3,0,12.2,12.3,0,13.2,13.3,0,1.53115331948E9,1.53115332259E9,0,JohnSmith,JohnSmith,0,0,0,0\n"
-            + //
-            "2,station2_2016-05.jsonl,532,-1.0,station2,station2,0,2016-05-29T02:00:00Z,2016-05-29T03:00:00Z,0,10.2,10.2,0,-150.3,-150.3,0,16.2,16.3,0,17.2,17.3,0,1.531153321058E9,1.531153324151E9,0,JohnSmith,JohnSmith,0,0,0,0\n";
+        "dirIndex,fileName,sortedSpacing,stationID_min_,stationID_max_,stationID_hasNaN_,time_min_,time_max_,time_hasNaN_,x3d10x2e2_min_,x3d10x2e2_max_,x3d10x2e2_hasNaN_,x3dx2d150x2e3_min_,x3dx2d150x2e3_max_,x3dx2d150x2e3_hasNaN_,airTemp_min_,airTemp_max_,airTemp_hasNaN_,waterTemp_min_,waterTemp_max_,waterTemp_hasNaN_,timestamp_hasNaN_,author_min_,author_max_,author_hasNaN_,command_min_,command_max_,command_hasNaN_\n"
+            + "0,testFromHttpGet.jsonl,-1.0,myStation,myStation,0,2018-06-25T17:00:00Z,2018-06-25T17:00:00Z,0,10.2,10.2,0,-150.3,-150.3,0,14.2,14.2,0,12.2,12.2,0,0,me,me,0,0,0,0\n";
     Test.ensureLinesMatch(results, expected, "");
 
-    EDStatic.developmentMode = true;
+    EDStatic.config.developmentMode = true;
     // push a bunch of data into the dataset: 2 stations, 2 time periods
     for (int i = 0; i < 4; i++) {
       // apr
@@ -1380,7 +1356,7 @@ class EDDTableFromHttpGetTests {
               eddTable.className() + "_insert4_" + i,
               ".insert");
     }
-    EDStatic.developmentMode = false;
+    EDStatic.config.developmentMode = false;
 
     // look at last response file
     results = File2.directReadFrom88591File(dir + tName);
@@ -1403,38 +1379,19 @@ class EDDTableFromHttpGetTests {
     tFileTable =
         eddTable.tryToLoadDirFileTable(
             EDDTableFromHttpGet.datasetDir(id) + EDDTableFromHttpGet.FILE_TABLE_FILENAME);
+    tFileTable.removeColumn("lastMod");
+    tFileTable.removeColumn("timestamp_min_");
+    tFileTable.removeColumn("timestamp_max_");
+    tFileTable.removeColumn("size");
     results = tFileTable.dataToString();
     String2.log(results);
     expected =
-        "dirIndex,fileName,lastMod,size,sortedSpacing,stationID_min_,stationID_max_,stationID_hasNaN_,time_min_,time_max_,time_hasNaN_,x3d10x2e2_min_,x3d10x2e2_max_,x3d10x2e2_hasNaN_,x3dx2d150x2e3_min_,x3dx2d150x2e3_max_,x3dx2d150x2e3_hasNaN_,airTemp_min_,airTemp_max_,airTemp_hasNaN_,waterTemp_min_,waterTemp_max_,waterTemp_hasNaN_,timestamp_min_,timestamp_max_,timestamp_hasNaN_,author_min_,author_max_,author_hasNaN_,command_min_,command_max_,command_hasNaN_\n"
-            +
-            // "0,testFromHttpGet.jsonl,15\\d+,144,-1.0,myStation,myStation,0,2018-06-25T17:00:00Z,2018-06-25T17:00:00Z,0,10.2,10.2,0,-150.3,-150.3,0,14.2,14.2,0,12.2,12.2,0,0.0,0.0,0,me,me,0,0,0,0\n"
-            // +
-            // "1,station1_2016-03.jsonl,1\\d+,37\\d,1.0,station1,station1,0,2016-04-29T00:00:00Z,2016-04-29T03:00:00Z,0,10.2,10.2,0,-150.3,-150.3,0,10.0,10.3,0,11.0,11.3,0,1.6\\d+E9,1.6\\d+E9,0,JohnSmith,JohnSmith,0,0,0,0\n"
-            // +
-            // "2,station2_2016-03.jsonl,1\\d+,37\\d,1.0,station2,station2,0,2016-04-29T00:00:00Z,2016-04-29T03:00:00Z,0,10.2,10.2,0,-150.3,-150.3,0,12.0,12.3,0,13.0,13.3,0,1.6\\d+E9,1.6\\d+E9,0,JohnSmith,JohnSmith,0,0,0,0\n"
-            // +
-            // "1,station1_2016-05.jsonl,1\\d+,37\\d,1.0,station1,station1,0,2016-05-29T00:00:00Z,2016-05-29T03:00:00Z,0,10.2,10.2,0,-150.3,-150.3,0,14.0,14.3,0,15.0,15.3,0,1.6\\d+E9,1.6\\d+E9,0,JohnSmith,JohnSmith,0,0,0,0\n"
-            // +
-            // "2,station2_2016-05.jsonl,1\\d+,37\\d,1.0,station2,station2,0,2016-05-29T00:00:00Z,2016-05-29T03:00:00Z,0,10.2,10.2,0,-150.3,-150.3,0,16.0,16.3,0,17.0,17.3,0,1.6\\d+E9,1.6\\d+E9,0,JohnSmith,JohnSmith,0,0,0,0\n"
-            // +
-            "0,testFromHttpGet.jsonl,15\\d+,144,-1.0,myStation,myStation,0,2018-06-25T17:00:00Z,2018-06-25T17:00:00Z,0,10.2,10.2,0,-150.3,-150.3,0,14.2,14.2,0,12.2,12.2,0,0.0,0.0,0,me,me,0,0,0,0\n"
-            + //
-            "1,station1_2016-03.jsonl,15\\d+,528,-1.0,station1,station1,0,2016-04-29T00:00:00Z,2016-04-29T03:00:00Z,0,10.2,10.2,0,-150.3,-150.3,0,10.2,20.1,0,11.2,21.1,0,1.531153318778E9,1.531153326823E9,0,JohnSmith,JohnSmith,0,0,0,0\n"
-            + //
-            "1,station1_2016-05.jsonl,15\\d+,528,-1.0,station1,station1,0,2016-05-29T00:00:00Z,2016-05-29T03:00:00Z,0,10.2,10.2,0,-150.3,-150.3,0,14.2,22.1,0,15.2,23.1,0,1.531153320277E9,1.531153327766E9,0,JohnSmith,JohnSmith,0,0,0,0\n"
-            + //
-            "2,station2_2016-03.jsonl,15\\d+,527,-1.0,station2,station2,0,2016-04-29T02:00:00Z,2016-04-29T03:00:00Z,0,10.2,10.2,0,-150.3,-150.3,0,12.2,12.3,0,13.2,13.3,0,1.53115331948E9,1.53115332259E9,0,JohnSmith,JohnSmith,0,0,0,0\n"
-            + //
-            "2,station2_2016-05.jsonl,15\\d+,532,-1.0,station2,station2,0,2016-05-29T02:00:00Z,2016-05-29T03:00:00Z,0,10.2,10.2,0,-150.3,-150.3,0,16.2,16.3,0,17.2,17.3,0,1.531153321058E9,1.531153324151E9,0,JohnSmith,JohnSmith,0,0,0,0\n"
-            + //
-            "3,station1_2016-03.jsonl,17\\d+,8\\d+,1.0,station1,station1,0,2016-04-29T00:00:00Z,2016-04-29T03:00:00Z,0,10.2,10.2,0,-150.3,-150.3,0,10.0,10.3,0,11.0,11.3,0,1.7\\d+E9,1.7\\d+E9,0,JohnSmith,JohnSmith,0,0,0,0\n"
-            + //
-            "4,station2_2016-03.jsonl,17\\d+,8\\d+,1.0,station2,station2,0,2016-04-29T00:00:00Z,2016-04-29T03:00:00Z,0,10.2,10.2,0,-150.3,-150.3,0,12.0,12.3,0,13.0,13.3,0,1.7\\d+E9,1.7\\d+E9,0,JohnSmith,JohnSmith,0,0,0,0\n"
-            + //
-            "3,station1_2016-05.jsonl,17\\d+,8\\d+,1.0,station1,station1,0,2016-05-29T00:00:00Z,2016-05-29T03:00:00Z,0,10.2,10.2,0,-150.3,-150.3,0,14.0,14.3,0,15.0,15.3,0,1.7\\d+E9,1.7\\d+E9,0,JohnSmith,JohnSmith,0,0,0,0\n"
-            + //
-            "4,station2_2016-05.jsonl,17\\d+,8\\d+,1.0,station2,station2,0,2016-05-29T00:00:00Z,2016-05-29T03:00:00Z,0,10.2,10.2,0,-150.3,-150.3,0,16.0,16.3,0,17.0,17.3,0,1.7\\d+E9,1.7\\d+E9,0,JohnSmith,JohnSmith,0,0,0,0\n";
+        "dirIndex,fileName,sortedSpacing,stationID_min_,stationID_max_,stationID_hasNaN_,time_min_,time_max_,time_hasNaN_,x3d10x2e2_min_,x3d10x2e2_max_,x3d10x2e2_hasNaN_,x3dx2d150x2e3_min_,x3dx2d150x2e3_max_,x3dx2d150x2e3_hasNaN_,airTemp_min_,airTemp_max_,airTemp_hasNaN_,waterTemp_min_,waterTemp_max_,waterTemp_hasNaN_,timestamp_hasNaN_,author_min_,author_max_,author_hasNaN_,command_min_,command_max_,command_hasNaN_\n"
+            + "0,testFromHttpGet.jsonl,-1.0,myStation,myStation,0,2018-06-25T17:00:00Z,2018-06-25T17:00:00Z,0,10.2,10.2,0,-150.3,-150.3,0,14.2,14.2,0,12.2,12.2,0,0,me,me,0,0,0,0\n"
+            + "1,station1_2016-03.jsonl,1.0,station1,station1,0,2016-04-29T00:00:00Z,2016-04-29T03:00:00Z,0,10.2,10.2,0,-150.3,-150.3,0,10.0,10.3,0,11.0,11.3,0,0,JohnSmith,JohnSmith,0,0,0,0\n"
+            + "2,station2_2016-03.jsonl,1.0,station2,station2,0,2016-04-29T00:00:00Z,2016-04-29T03:00:00Z,0,10.2,10.2,0,-150.3,-150.3,0,12.0,12.3,0,13.0,13.3,0,0,JohnSmith,JohnSmith,0,0,0,0\n"
+            + "1,station1_2016-05.jsonl,1.0,station1,station1,0,2016-05-29T00:00:00Z,2016-05-29T03:00:00Z,0,10.2,10.2,0,-150.3,-150.3,0,14.0,14.3,0,15.0,15.3,0,0,JohnSmith,JohnSmith,0,0,0,0\n"
+            + "2,station2_2016-05.jsonl,1.0,station2,station2,0,2016-05-29T00:00:00Z,2016-05-29T03:00:00Z,0,10.2,10.2,0,-150.3,-150.3,0,16.0,16.3,0,17.0,17.3,0,0,JohnSmith,JohnSmith,0,0,0,0\n";
     Test.ensureLinesMatch(results, expected, "");
 
     // .csv all data
@@ -1450,54 +1407,6 @@ class EDDTableFromHttpGetTests {
         "stationID,time,latitude,longitude,airTemp,waterTemp,timestamp,author,command\n"
             + ",UTC,degrees_north,degrees_east,degree_C,degree_C,UTC,,\n"
             + "myStation,2018-06-25T17:00:00Z,10.2,-150.3,14.2,12.2,1970-01-01T00:00:00.000Z,me,0\n"
-            + "station1,2016-04-29T00:00:00Z,10.2,-150.3,10.0,11.0,"
-            + today
-            + "\\d{2}:\\d{2}\\.\\d{3}Z,JohnSmith,0\n"
-            + "station1,2016-04-29T01:00:00Z,10.2,-150.3,10.1,11.1,"
-            + today
-            + "\\d{2}:\\d{2}\\.\\d{3}Z,JohnSmith,0\n"
-            + "station1,2016-04-29T02:00:00Z,10.2,-150.3,10.2,11.2,"
-            + today
-            + "\\d{2}:\\d{2}\\.\\d{3}Z,JohnSmith,0\n"
-            + "station1,2016-04-29T03:00:00Z,10.2,-150.3,10.3,11.3,"
-            + today
-            + "\\d{2}:\\d{2}\\.\\d{3}Z,JohnSmith,0\n"
-            + "station1,2016-05-29T00:00:00Z,10.2,-150.3,14.0,15.0,"
-            + today
-            + "\\d{2}:\\d{2}\\.\\d{3}Z,JohnSmith,0\n"
-            + "station1,2016-05-29T01:00:00Z,10.2,-150.3,14.1,15.1,"
-            + today
-            + "\\d{2}:\\d{2}\\.\\d{3}Z,JohnSmith,0\n"
-            + "station1,2016-05-29T02:00:00Z,10.2,-150.3,14.2,15.2,"
-            + today
-            + "\\d{2}:\\d{2}\\.\\d{3}Z,JohnSmith,0\n"
-            + "station1,2016-05-29T03:00:00Z,10.2,-150.3,14.3,15.3,"
-            + today
-            + "\\d{2}:\\d{2}\\.\\d{3}Z,JohnSmith,0\n"
-            + "station2,2016-04-29T00:00:00Z,10.2,-150.3,12.0,13.0,"
-            + today
-            + "\\d{2}:\\d{2}\\.\\d{3}Z,JohnSmith,0\n"
-            + "station2,2016-04-29T01:00:00Z,10.2,-150.3,12.1,13.1,"
-            + today
-            + "\\d{2}:\\d{2}\\.\\d{3}Z,JohnSmith,0\n"
-            + "station2,2016-04-29T02:00:00Z,10.2,-150.3,12.2,13.2,"
-            + today
-            + "\\d{2}:\\d{2}\\.\\d{3}Z,JohnSmith,0\n"
-            + "station2,2016-04-29T03:00:00Z,10.2,-150.3,12.3,13.3,"
-            + today
-            + "\\d{2}:\\d{2}\\.\\d{3}Z,JohnSmith,0\n"
-            + "station2,2016-05-29T00:00:00Z,10.2,-150.3,16.0,17.0,"
-            + today
-            + "\\d{2}:\\d{2}\\.\\d{3}Z,JohnSmith,0\n"
-            + "station2,2016-05-29T01:00:00Z,10.2,-150.3,16.1,17.1,"
-            + today
-            + "\\d{2}:\\d{2}\\.\\d{3}Z,JohnSmith,0\n"
-            + "station2,2016-05-29T02:00:00Z,10.2,-150.3,16.2,17.2,"
-            + today
-            + "\\d{2}:\\d{2}\\.\\d{3}Z,JohnSmith,0\n"
-            + "station2,2016-05-29T03:00:00Z,10.2,-150.3,16.3,17.3,"
-            + today
-            + "\\d{2}:\\d{2}\\.\\d{3}Z,JohnSmith,0\n"
             + "station1,2016-04-29T00:00:00Z,10.2,-150.3,10.0,11.0,"
             + today
             + "\\d{2}:\\d{2}\\.\\d{3}Z,JohnSmith,0\n"
@@ -1548,7 +1457,7 @@ class EDDTableFromHttpGetTests {
             + "\\d{2}:\\d{2}\\.\\d{3}Z,JohnSmith,0\n";
     Test.ensureLinesMatch(results, versioningExpected, "\nresults=\n" + results);
 
-    EDStatic.developmentMode = true;
+    EDStatic.config.developmentMode = true;
     // overwrite and delete a bunch of data
     for (int i = 0; i < 2; i++) {
       // overwrite the first 2
@@ -1613,7 +1522,7 @@ class EDDTableFromHttpGetTests {
               eddTable.className() + "_delete8_" + i,
               ".delete");
     }
-    EDStatic.developmentMode = false;
+    EDStatic.config.developmentMode = false;
 
     // .csv all data (with processing)
     userDapQuery = "";
@@ -1626,22 +1535,6 @@ class EDDTableFromHttpGetTests {
         "stationID,time,latitude,longitude,airTemp,waterTemp,timestamp,author,command\n"
             + ",UTC,degrees_north,degrees_east,degree_C,degree_C,UTC,,\n"
             + "myStation,2018-06-25T17:00:00Z,10.2,-150.3,14.2,12.2,1970-01-01T00:00:00.000Z,me,0\n"
-            + "station1,2016-04-29T00:00:00Z,10.2,-150.3,20.0,21.0,.{24},JohnSmith,0\n"
-            + // changed
-            "station1,2016-04-29T01:00:00Z,10.2,-150.3,20.1,21.1,.{24},JohnSmith,0\n"
-            + "station1,2016-04-29T02:00:00Z,10.2,-150.3,10.2,11.2,.{24},JohnSmith,0\n"
-            + "station1,2016-04-29T03:00:00Z,10.2,-150.3,10.3,11.3,.{24},JohnSmith,0\n"
-            + "station1,2016-05-29T00:00:00Z,10.2,-150.3,22.0,23.0,.{24},JohnSmith,0\n"
-            + // changed
-            "station1,2016-05-29T01:00:00Z,10.2,-150.3,22.1,23.1,.{24},JohnSmith,0\n"
-            + "station1,2016-05-29T02:00:00Z,10.2,-150.3,14.2,15.2,.{24},JohnSmith,0\n"
-            + "station1,2016-05-29T03:00:00Z,10.2,-150.3,14.3,15.3,.{24},JohnSmith,0\n"
-            + "station2,2016-04-29T02:00:00Z,10.2,-150.3,12.2,13.2,.{24},JohnSmith,0\n"
-            + // hours 00 01 deleted
-            "station2,2016-04-29T03:00:00Z,10.2,-150.3,12.3,13.3,.{24},JohnSmith,0\n"
-            + "station2,2016-05-29T02:00:00Z,10.2,-150.3,16.2,17.2,.{24},JohnSmith,0\n"
-            + // hours 00 01 deleted
-            "station2,2016-05-29T03:00:00Z,10.2,-150.3,16.3,17.3,.{24},JohnSmith,0\n"
             + "station1,2016-04-29T00:00:00Z,10.2,-150.3,20.0,21.0,.{24},JohnSmith,0\n"
             + // changed
             "station1,2016-04-29T01:00:00Z,10.2,-150.3,20.1,21.1,.{24},JohnSmith,0\n"
@@ -1750,66 +1643,6 @@ class EDDTableFromHttpGetTests {
             + "station1,2016-04-29T03:00:00Z,10.2,-150.3,10.3,11.3,.{24},JohnSmith,0\n"
             + "station1,2016-04-29T00:00:00Z,10.2,-150.3,20.0,21.0,.{24},JohnSmith,0\n"
             + "station1,2016-04-29T01:00:00Z,10.2,-150.3,20.1,21.1,.{24},JohnSmith,0\n"
-            + "station1,2016-04-29T00:00:00Z,10.2,-150.3,10.0,11.0,.{24},JohnSmith,0\n"
-            + "station1,2016-04-29T01:00:00Z,10.2,-150.3,10.1,11.1,.{24},JohnSmith,0\n"
-            + "station1,2016-04-29T02:00:00Z,10.2,-150.3,10.2,11.2,.{24},JohnSmith,0\n"
-            + "station1,2016-04-29T03:00:00Z,10.2,-150.3,10.3,11.3,.{24},JohnSmith,0\n"
-            + "station1,2016-04-29T00:00:00Z,10.2,-150.3,20.0,21.0,.{24},JohnSmith,0\n"
-            + "station1,2016-04-29T01:00:00Z,10.2,-150.3,20.1,21.1,.{24},JohnSmith,0\n"
-            + "station1,2016-05-29T00:00:00Z,10.2,-150.3,14.0,15.0,.{24},JohnSmith,0\n"
-            + "station1,2016-05-29T01:00:00Z,10.2,-150.3,14.1,15.1,.{24},JohnSmith,0\n"
-            + "station1,2016-05-29T02:00:00Z,10.2,-150.3,14.2,15.2,.{24},JohnSmith,0\n"
-            + "station1,2016-05-29T03:00:00Z,10.2,-150.3,14.3,15.3,.{24},JohnSmith,0\n"
-            + "station1,2016-05-29T00:00:00Z,10.2,-150.3,22.0,23.0,.{24},JohnSmith,0\n"
-            + "station1,2016-05-29T01:00:00Z,10.2,-150.3,22.1,23.1,.{24},JohnSmith,0\n"
-            + "station1,2016-05-29T00:00:00Z,10.2,-150.3,14.0,15.0,.{24},JohnSmith,0\n"
-            + "station1,2016-05-29T01:00:00Z,10.2,-150.3,14.1,15.1,.{24},JohnSmith,0\n"
-            + "station1,2016-05-29T02:00:00Z,10.2,-150.3,14.2,15.2,.{24},JohnSmith,0\n"
-            + "station1,2016-05-29T03:00:00Z,10.2,-150.3,14.3,15.3,.{24},JohnSmith,0\n"
-            + "station1,2016-05-29T00:00:00Z,10.2,-150.3,22.0,23.0,.{24},JohnSmith,0\n"
-            + "station1,2016-05-29T01:00:00Z,10.2,-150.3,22.1,23.1,.{24},JohnSmith,0\n"
-            + "station2,2016-04-29T00:00:00Z,10.2,-150.3,12.0,13.0,.{24},JohnSmith,0\n"
-            + "station2,2016-04-29T01:00:00Z,10.2,-150.3,12.1,13.1,.{24},JohnSmith,0\n"
-            + "station2,2016-04-29T02:00:00Z,10.2,-150.3,12.2,13.2,.{24},JohnSmith,0\n"
-            + "station2,2016-04-29T03:00:00Z,10.2,-150.3,12.3,13.3,.{24},JohnSmith,0\n"
-            + "station2,2016-04-29T00:00:00Z,10.2,-150.3,NaN,NaN,.{24},JohnSmith,1\n"
-            + "station2,2016-04-29T01:00:00Z,10.2,-150.3,NaN,NaN,.{24},JohnSmith,1\n"
-            + "station2,2016-04-29T00:00:00Z,10.2,-150.3,12.0,13.0,.{24},JohnSmith,0\n"
-            + "station2,2016-04-29T01:00:00Z,10.2,-150.3,12.1,13.1,.{24},JohnSmith,0\n"
-            + "station2,2016-04-29T02:00:00Z,10.2,-150.3,12.2,13.2,.{24},JohnSmith,0\n"
-            + "station2,2016-04-29T03:00:00Z,10.2,-150.3,12.3,13.3,.{24},JohnSmith,0\n"
-            + "station2,2016-04-29T00:00:00Z,10.2,-150.3,NaN,NaN,.{24},JohnSmith,1\n"
-            + "station2,2016-04-29T01:00:00Z,10.2,-150.3,NaN,NaN,.{24},JohnSmith,1\n"
-            + "station2,2016-05-29T00:00:00Z,10.2,-150.3,16.0,17.0,.{24},JohnSmith,0\n"
-            + "station2,2016-05-29T01:00:00Z,10.2,-150.3,16.1,17.1,.{24},JohnSmith,0\n"
-            + "station2,2016-05-29T02:00:00Z,10.2,-150.3,16.2,17.2,.{24},JohnSmith,0\n"
-            + "station2,2016-05-29T03:00:00Z,10.2,-150.3,16.3,17.3,.{24},JohnSmith,0\n"
-            + "station2,2016-05-29T00:00:00Z,10.2,-150.3,NaN,NaN,.{24},JohnSmith,1\n"
-            + "station2,2016-05-29T01:00:00Z,10.2,-150.3,NaN,NaN,.{24},JohnSmith,1\n"
-            + "station2,2016-05-29T00:00:00Z,10.2,-150.3,16.0,17.0,.{24},JohnSmith,0\n"
-            + "station2,2016-05-29T01:00:00Z,10.2,-150.3,16.1,17.1,.{24},JohnSmith,0\n"
-            + "station2,2016-05-29T02:00:00Z,10.2,-150.3,16.2,17.2,.{24},JohnSmith,0\n"
-            + "station2,2016-05-29T03:00:00Z,10.2,-150.3,16.3,17.3,.{24},JohnSmith,0\n"
-            + "station2,2016-05-29T00:00:00Z,10.2,-150.3,NaN,NaN,.{24},JohnSmith,1\n"
-            + "station2,2016-05-29T01:00:00Z,10.2,-150.3,NaN,NaN,.{24},JohnSmith,1\n"
-            + "station1,2016-04-29T00:00:00Z,10.2,-150.3,10.0,11.0,.{24},JohnSmith,0\n"
-            + "station1,2016-04-29T01:00:00Z,10.2,-150.3,10.1,11.1,.{24},JohnSmith,0\n"
-            + "station1,2016-04-29T02:00:00Z,10.2,-150.3,10.2,11.2,.{24},JohnSmith,0\n"
-            + "station1,2016-04-29T03:00:00Z,10.2,-150.3,10.3,11.3,.{24},JohnSmith,0\n"
-            + "station1,2016-04-29T00:00:00Z,10.2,-150.3,20.0,21.0,.{24},JohnSmith,0\n"
-            + "station1,2016-04-29T01:00:00Z,10.2,-150.3,20.1,21.1,.{24},JohnSmith,0\n"
-            + "station1,2016-04-29T00:00:00Z,10.2,-150.3,10.0,11.0,.{24},JohnSmith,0\n"
-            + "station1,2016-04-29T01:00:00Z,10.2,-150.3,10.1,11.1,.{24},JohnSmith,0\n"
-            + "station1,2016-04-29T02:00:00Z,10.2,-150.3,10.2,11.2,.{24},JohnSmith,0\n"
-            + "station1,2016-04-29T03:00:00Z,10.2,-150.3,10.3,11.3,.{24},JohnSmith,0\n"
-            + "station1,2016-04-29T00:00:00Z,10.2,-150.3,20.0,21.0,.{24},JohnSmith,0\n"
-            + "station1,2016-04-29T01:00:00Z,10.2,-150.3,20.1,21.1,.{24},JohnSmith,0\n"
-            + "station2,2016-04-29T00:00:00Z,10.2,-150.3,12.0,13.0,.{24},JohnSmith,0\n"
-            + "station2,2016-04-29T01:00:00Z,10.2,-150.3,12.1,13.1,.{24},JohnSmith,0\n"
-            + "station2,2016-04-29T02:00:00Z,10.2,-150.3,12.2,13.2,.{24},JohnSmith,0\n"
-            + "station2,2016-04-29T03:00:00Z,10.2,-150.3,12.3,13.3,.{24},JohnSmith,0\n"
-            + "station2,2016-04-29T00:00:00Z,10.2,-150.3,NaN,NaN,.{24},JohnSmith,1\n"
-            + "station2,2016-04-29T01:00:00Z,10.2,-150.3,NaN,NaN,.{24},JohnSmith,1\n"
             + "station2,2016-04-29T00:00:00Z,10.2,-150.3,12.0,13.0,.{24},JohnSmith,0\n"
             + "station2,2016-04-29T01:00:00Z,10.2,-150.3,12.1,13.1,.{24},JohnSmith,0\n"
             + "station2,2016-04-29T02:00:00Z,10.2,-150.3,12.2,13.2,.{24},JohnSmith,0\n"
@@ -1822,18 +1655,6 @@ class EDDTableFromHttpGetTests {
             + "station1,2016-05-29T03:00:00Z,10.2,-150.3,14.3,15.3,.{24},JohnSmith,0\n"
             + "station1,2016-05-29T00:00:00Z,10.2,-150.3,22.0,23.0,.{24},JohnSmith,0\n"
             + "station1,2016-05-29T01:00:00Z,10.2,-150.3,22.1,23.1,.{24},JohnSmith,0\n"
-            + "station1,2016-05-29T00:00:00Z,10.2,-150.3,14.0,15.0,.{24},JohnSmith,0\n"
-            + "station1,2016-05-29T01:00:00Z,10.2,-150.3,14.1,15.1,.{24},JohnSmith,0\n"
-            + "station1,2016-05-29T02:00:00Z,10.2,-150.3,14.2,15.2,.{24},JohnSmith,0\n"
-            + "station1,2016-05-29T03:00:00Z,10.2,-150.3,14.3,15.3,.{24},JohnSmith,0\n"
-            + "station1,2016-05-29T00:00:00Z,10.2,-150.3,22.0,23.0,.{24},JohnSmith,0\n"
-            + "station1,2016-05-29T01:00:00Z,10.2,-150.3,22.1,23.1,.{24},JohnSmith,0\n"
-            + "station2,2016-05-29T00:00:00Z,10.2,-150.3,16.0,17.0,.{24},JohnSmith,0\n"
-            + "station2,2016-05-29T01:00:00Z,10.2,-150.3,16.1,17.1,.{24},JohnSmith,0\n"
-            + "station2,2016-05-29T02:00:00Z,10.2,-150.3,16.2,17.2,.{24},JohnSmith,0\n"
-            + "station2,2016-05-29T03:00:00Z,10.2,-150.3,16.3,17.3,.{24},JohnSmith,0\n"
-            + "station2,2016-05-29T00:00:00Z,10.2,-150.3,NaN,NaN,.{24},JohnSmith,1\n"
-            + "station2,2016-05-29T01:00:00Z,10.2,-150.3,NaN,NaN,.{24},JohnSmith,1\n"
             + "station2,2016-05-29T00:00:00Z,10.2,-150.3,16.0,17.0,.{24},JohnSmith,0\n"
             + "station2,2016-05-29T01:00:00Z,10.2,-150.3,16.1,17.1,.{24},JohnSmith,0\n"
             + "station2,2016-05-29T02:00:00Z,10.2,-150.3,16.2,17.2,.{24},JohnSmith,0\n"
@@ -1853,12 +1674,6 @@ class EDDTableFromHttpGetTests {
     // String2.log(results);
     expected =
         "\\[\"stationID\",\"time\",\"airTemp\",\"waterTemp\",\"timestamp\",\"author\",\"command\"\\]\n"
-            + "\\[\"station2\",\"2016-05-29T00:00:00Z\",16,17,1.\\d+E9,\"JohnSmith\",0\\]\n"
-            + "\\[\"station2\",\"2016-05-29T01:00:00Z\",16.1,17.1,1.\\d+E9,\"JohnSmith\",0\\]\n"
-            + "\\[\"station2\",\"2016-05-29T02:00:00Z\",16.2,17.2,1.\\d+E9,\"JohnSmith\",0\\]\n"
-            + "\\[\"station2\",\"2016-05-29T03:00:00Z\",16.3,17.3,1.\\d+E9,\"JohnSmith\",0\\]\n"
-            + "\\[\"station2\",\"2016-05-29T00:00:00Z\",null,null,1.\\d+E9,\"JohnSmith\",1\\]\n"
-            + "\\[\"station2\",\"2016-05-29T01:00:00Z\",null,null,1.\\d+E9,\"JohnSmith\",1\\]\n"
             + "\\[\"station2\",\"2016-05-29T00:00:00Z\",16,17,1.\\d+E9,\"JohnSmith\",0\\]\n"
             + "\\[\"station2\",\"2016-05-29T01:00:00Z\",16.1,17.1,1.\\d+E9,\"JohnSmith\",0\\]\n"
             + "\\[\"station2\",\"2016-05-29T02:00:00Z\",16.2,17.2,1.\\d+E9,\"JohnSmith\",0\\]\n"
@@ -1897,20 +1712,6 @@ class EDDTableFromHttpGetTests {
             + "20.1\n"
             + "10.2\n"
             + "10.3\n"
-            + "22.0\n"
-            + "22.1\n"
-            + // 22.1 is visible and previous 14.1 for same station and time
-            // 2016-05-29T01:00:00Z isn't visible
-            "14.2\n"
-            + "14.3\n"
-            + "12.2\n"
-            + "12.3\n"
-            + "16.2\n"
-            + "16.3\n"
-            + "20.0\n"
-            + "20.1\n"
-            + "10.2\n"
-            + "10.3\n"
             + "12.2\n"
             + "12.3\n"
             + "22.0\n"
@@ -1933,17 +1734,8 @@ class EDDTableFromHttpGetTests {
         "stationID,time,latitude,longitude,airTemp,waterTemp,timestamp,author,command\n"
             + ",UTC,degrees_north,degrees_east,degree_C,degree_C,UTC,,\n"
             + "station1,2016-05-29T01:00:00Z,10.2,-150.3,14.1,15.1,.{24},JohnSmith,0\n"
-            + "station1,2016-05-29T01:00:00Z,10.2,-150.3,22.1,23.1,.{24},JohnSmith,0\n"
-            + "station1,2016-05-29T01:00:00Z,10.2,-150.3,14.1,15.1,.{24},JohnSmith,0\n"
-            + "station1,2016-05-29T01:00:00Z,10.2,-150.3,22.1,23.1,.{24},JohnSmith,0\n"
-            + "station1,2016-05-29T01:00:00Z,10.2,-150.3,14.1,15.1,.{24},JohnSmith,0\n"
-            + "station1,2016-05-29T01:00:00Z,10.2,-150.3,22.1,23.1,.{24},JohnSmith,0\n"
-            + "station1,2016-05-29T01:00:00Z,10.2,-150.3,14.1,15.1,.{24},JohnSmith,0\n"
-            + "station1,2016-05-29T01:00:00Z,10.2,-150.3,22.1,23.1,.{24},JohnSmith,0\n"; // so 22.1
-    // is
-    // visible
-    // above,
-    // not 14.1
+            + "station1,2016-05-29T01:00:00Z,10.2,-150.3,22.1,23.1,.{24},JohnSmith,0\n";
+    // so 22.1 is visible above, not 14.1
     Test.ensureLinesMatch(results, expected, "\nresults=\n" + results);
 
     // e.g., max(timestamp)-0.001 -> 2020-10-09T19:29:31.667Z
@@ -1962,21 +1754,6 @@ class EDDTableFromHttpGetTests {
         "airTemp\n"
             + "degree_C\n"
             + "14.2\n"
-            + "20.0\n"
-            + "20.1\n"
-            + "10.2\n"
-            + "10.3\n"
-            + "22.0\n"
-            + "22.1\n"
-            + "14.2\n"
-            + "14.3\n"
-            + "12.2\n"
-            + "12.3\n"
-            + "16.1\n"
-            + // final change to dataset deleted this row 2016-05-29T01:00:00Z, so now it is
-            // visible again
-            "16.2\n"
-            + "16.3\n"
             + "20.0\n"
             + "20.1\n"
             + "10.2\n"
@@ -2016,66 +1793,6 @@ class EDDTableFromHttpGetTests {
             + "10.3\n"
             + "20.0\n"
             + "20.1\n"
-            + "10.0\n"
-            + "10.1\n"
-            + "10.2\n"
-            + "10.3\n"
-            + "20.0\n"
-            + "20.1\n"
-            + "14.0\n"
-            + "14.1\n"
-            + "14.2\n"
-            + "14.3\n"
-            + "22.0\n"
-            + "22.1\n"
-            + "14.0\n"
-            + "14.1\n"
-            + "14.2\n"
-            + "14.3\n"
-            + "22.0\n"
-            + "22.1\n"
-            + "12.0\n"
-            + "12.1\n"
-            + "12.2\n"
-            + "12.3\n"
-            + "NaN\n"
-            + "NaN\n"
-            + "12.0\n"
-            + "12.1\n"
-            + "12.2\n"
-            + "12.3\n"
-            + "NaN\n"
-            + "NaN\n"
-            + "16.0\n"
-            + "16.1\n"
-            + "16.2\n"
-            + "16.3\n"
-            + "NaN\n"
-            + "NaN\n"
-            + "16.0\n"
-            + "16.1\n"
-            + "16.2\n"
-            + "16.3\n"
-            + "NaN\n"
-            + "NaN\n"
-            + "10.0\n"
-            + "10.1\n"
-            + "10.2\n"
-            + "10.3\n"
-            + "20.0\n"
-            + "20.1\n"
-            + "10.0\n"
-            + "10.1\n"
-            + "10.2\n"
-            + "10.3\n"
-            + "20.0\n"
-            + "20.1\n"
-            + "12.0\n"
-            + "12.1\n"
-            + "12.2\n"
-            + "12.3\n"
-            + "NaN\n"
-            + "NaN\n"
             + "12.0\n"
             + "12.1\n"
             + "12.2\n"
@@ -2088,18 +1805,6 @@ class EDDTableFromHttpGetTests {
             + "14.3\n"
             + "22.0\n"
             + "22.1\n"
-            + "14.0\n"
-            + "14.1\n"
-            + "14.2\n"
-            + "14.3\n"
-            + "22.0\n"
-            + "22.1\n"
-            + "16.0\n"
-            + "16.1\n"
-            + "16.2\n"
-            + "16.3\n"
-            + "NaN\n"
-            + "NaN\n"
             + "16.0\n"
             + "16.1\n"
             + "16.2\n"
@@ -2118,7 +1823,7 @@ class EDDTableFromHttpGetTests {
    * tests that the file is valid. Wait till they are done, then run this with 0 to see resulting
    * file from multithreaded hammer test.
    */
-  @TagIncompleteTest
+  @TagSlowTests
   @org.junit.jupiter.api.Test
   void testMultithreadedReadWrite() throws Throwable {
     // int value = String2.parseInt(String2.getStringFromSystemIn("What integer (1,

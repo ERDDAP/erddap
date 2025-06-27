@@ -15,6 +15,8 @@ import com.cohort.util.Math2;
 import com.cohort.util.MustBe;
 import com.cohort.util.String2;
 import com.cohort.util.Test;
+import gov.noaa.pfel.erddap.dataset.metadata.LocalizedAttributes;
+import gov.noaa.pfel.erddap.util.EDMessages;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import java.time.format.DateTimeFormatter;
 import java.util.GregorianCalendar;
@@ -87,10 +89,9 @@ public class EDVTimeStamp extends EDV {
       String tSourceName,
       String tDestinationName,
       Attributes tSourceAttributes,
-      Attributes tAddAttributes,
+      LocalizedAttributes tAddAttributes,
       String tSourceDataType)
       throws Throwable {
-
     super(
         tDatasetID,
         tSourceName,
@@ -101,8 +102,11 @@ public class EDVTimeStamp extends EDV {
         PAOne.fromDouble(Double.NaN),
         PAOne.fromDouble(Double.NaN)); // destinationMin and max are set below (via actual_range)
 
+    // The attributes this gets/sets should not need to be localized (max/min
+    // value for example). Just use the default language.
+    int language = EDMessages.DEFAULT_LANGUAGE;
     // time_precision e.g., 1970-01-01T00:00:00Z
-    time_precision = combinedAttributes.getString(EDV.TIME_PRECISION);
+    time_precision = combinedAttributes.getString(language, EDV.TIME_PRECISION);
     if (time_precision != null) {
       // ensure not just year (can't distinguish user input a year vs. epochSeconds)
       if (time_precision.equals("1970")) time_precision = null;
@@ -120,29 +124,30 @@ public class EDVTimeStamp extends EDV {
           errorInMethod + "units=" + sourceTimeFormat + " isn't a valid time format.");
 
     if (destinationName.equals(TIME_NAME)) { // *the* time variable
-      combinedAttributes.set("_CoordinateAxisType", "Time"); // unidata-related
-      combinedAttributes.set("axis", "T");
-      String sn = combinedAttributes.getString("standard_name");
+      combinedAttributes.set(language, "_CoordinateAxisType", "Time"); // unidata-related
+      combinedAttributes.set(language, "axis", "T");
+      String sn = combinedAttributes.getString(language, "standard_name");
       if (sn == null || sn.length() == 0)
-        combinedAttributes.set("standard_name", TIME_STANDARD_NAME);
+        combinedAttributes.set(language, "standard_name", TIME_STANDARD_NAME);
     }
-    combinedAttributes.set("ioos_category", TIME_CATEGORY);
-    combinedAttributes.set("time_origin", "01-JAN-1970 00:00:00");
+    combinedAttributes.set(language, "ioos_category", TIME_CATEGORY);
+    combinedAttributes.set(language, "time_origin", "01-JAN-1970 00:00:00");
 
     units = TIME_UNITS;
-    combinedAttributes.set("units", units);
+    combinedAttributes.set(language, "units", units);
 
-    longName = combinedAttributes.getString("long_name");
+    longName = combinedAttributes.getString(language, "long_name");
     if (longName == null) { // catch nothing
       longName =
-          suggestLongName(longName, destinationName, combinedAttributes.getString("standard_name"));
-      combinedAttributes.set("long_name", longName);
-    } else if (longName.toLowerCase().equals("time")) { // catch alternate case
+          suggestLongName(
+              longName, destinationName, combinedAttributes.getString(language, "standard_name"));
+      combinedAttributes.set(language, "long_name", longName);
+    } else if (longName.equalsIgnoreCase("time")) { // catch alternate case
       longName = TIME_LONGNAME;
-      combinedAttributes.set("long_name", longName);
+      combinedAttributes.set(language, "long_name", longName);
     }
 
-    time_zone = combinedAttributes.getString("time_zone");
+    time_zone = combinedAttributes.getString(language, "time_zone");
     combinedAttributes.remove("time_zone");
     if (!String2.isSomething(time_zone) || time_zone.equals("UTC")) time_zone = "Zulu";
 
@@ -194,13 +199,13 @@ public class EDVTimeStamp extends EDV {
             errorInMethod
                 + "For String source times, scale_factor and add_offset MUST NOT be used.");
 
-      stringMissingValue = addAttributes.getString("missing_value");
+      stringMissingValue = addAttributes.getString(language, "missing_value");
       if (stringMissingValue == null)
         stringMissingValue = sourceAttributes.getString("missing_value");
       stringMissingValue = String2.canonical(stringMissingValue == null ? "" : stringMissingValue);
       combinedAttributes.remove("missing_value");
 
-      stringFillValue = addAttributes.getString("_FillValue");
+      stringFillValue = addAttributes.getString(language, "_FillValue");
       if (stringFillValue == null) stringFillValue = sourceAttributes.getString("_FillValue");
       stringFillValue = String2.canonical(stringFillValue == null ? "" : stringFillValue);
       combinedAttributes.remove("_FillValue");
@@ -219,12 +224,10 @@ public class EDVTimeStamp extends EDV {
         dateTimeFormat = String2.replaceAll(dateTimeFormat, "Z", "'Z'");
 
       if (time_zone.equals("Zulu")) { // UTC -> Zulu above
-        dateTimeFormatter = Calendar2.makeDateTimeFormatter(dateTimeFormat, time_zone);
       } else {
         timeZone =
             TimeZone.getTimeZone(
                 time_zone); // VERY BAD: if failure, no exception and it returns GMT timeZone!!!
-        dateTimeFormatter = Calendar2.makeDateTimeFormatter(dateTimeFormat, time_zone);
 
         // NO EASY TEST IN JAVA VERSION OF java.time (was Joda)
         // verify that timeZone matches zoneId  (to deal with VERY BAD above)
@@ -234,6 +237,7 @@ public class EDVTimeStamp extends EDV {
         //    "The Java and Joda time_zone objects have different standard offsets, " +
         //    "probably because the time_zone is supported by Joda but not Java.");
       }
+      dateTimeFormatter = Calendar2.makeDateTimeFormatter(dateTimeFormat, time_zone);
     }
 
     // then set missing_value  (as PAType.DOUBLE)
@@ -242,19 +246,20 @@ public class EDVTimeStamp extends EDV {
     destinationMissingValue = sourceTimeToEpochSeconds(destinationMissingValue);
     destinationFillValue = sourceTimeToEpochSeconds(destinationFillValue);
     safeDestinationMissingValue = sourceTimeToEpochSeconds(safeDestinationMissingValue);
-    PrimitiveArray pa = combinedAttributes.get("missing_value");
+    PrimitiveArray pa = combinedAttributes.get(language, "missing_value");
     if (pa != null)
       combinedAttributes.set(
-          "missing_value", new DoubleArray(new double[] {destinationMissingValue}));
-    pa = combinedAttributes.get("_FillValue");
+          language, "missing_value", new DoubleArray(new double[] {destinationMissingValue}));
+    pa = combinedAttributes.get(language, "_FillValue");
     if (pa != null)
-      combinedAttributes.set("_FillValue", new DoubleArray(new double[] {destinationFillValue}));
+      combinedAttributes.set(
+          language, "_FillValue", new DoubleArray(new double[] {destinationFillValue}));
 
     {
       // String2.log(">> combinedAtts=\n" + combinedAttributes.toString());
 
       // 1st priority: actual_range
-      PrimitiveArray actualRange = combinedAttributes.get("actual_range");
+      PrimitiveArray actualRange = combinedAttributes.get(language, "actual_range");
       if (actualRange != null) {
         // String2.log(">>destMin=" + destinationMin + " max=" + destinationMax + "
         // sourceTimeIsNumeric=" + sourceTimeIsNumeric);
@@ -271,16 +276,16 @@ public class EDVTimeStamp extends EDV {
       }
 
       // 2nd priority: actual_min actual_max
-      String tMin = combinedAttributes.getString("actual_min");
-      String tMax = combinedAttributes.getString("actual_max");
+      String tMin = combinedAttributes.getString(language, "actual_min");
+      String tMax = combinedAttributes.getString(language, "actual_max");
       if (destinationMin.isMissingValue() && tMin != null && tMin.length() > 0)
         destinationMin = PAOne.fromDouble(sourceTimeToEpochSeconds(tMin));
       if (destinationMax.isMissingValue() && tMax != null && tMax.length() > 0)
         destinationMax = PAOne.fromDouble(sourceTimeToEpochSeconds(tMax));
 
       // 3rd priority: data_min data_max
-      tMin = combinedAttributes.getString("data_min");
-      tMax = combinedAttributes.getString("data_max");
+      tMin = combinedAttributes.getString(language, "data_min");
+      tMax = combinedAttributes.getString(language, "data_max");
       if (destinationMin.isMissingValue() && tMin != null && tMin.length() > 0)
         destinationMin = PAOne.fromDouble(sourceTimeToEpochSeconds(tMin));
       if (destinationMax.isMissingValue() && tMax != null && tMax.length() > 0)
@@ -296,7 +301,7 @@ public class EDVTimeStamp extends EDV {
       }
     }
 
-    setActualRangeFromDestinationMinMax();
+    setActualRangeFromDestinationMinMax(language);
     if (reallyVerbose)
       String2.log(
           "\nEDVTimeStamp created, sourceTimeFormat="
@@ -328,11 +333,14 @@ public class EDVTimeStamp extends EDV {
    * This determines if a variable is a TimeStamp variable by looking for " since " (used for
    * UDUNITS numeric times) or "yyyy" or "YYYY" (a formatting string which has the year designator)
    * in the units attribute.
+   *
+   * @param language the index of the selected language
    */
-  public static boolean hasTimeUnits(Attributes sourceAttributes, Attributes addAttributes) {
+  public static boolean hasTimeUnits(
+      int language, Attributes sourceAttributes, LocalizedAttributes addAttributes) {
     String tUnits = null;
     if (addAttributes != null) // priority
-    tUnits = addAttributes.getString("units");
+    tUnits = addAttributes.getString(language, "units");
     if (tUnits == null && sourceAttributes != null) tUnits = sourceAttributes.getString("units");
     return Calendar2.isTimeUnits(tUnits);
   }
@@ -473,10 +481,9 @@ public class EDVTimeStamp extends EDV {
         || Math2.almostEqual(9, sourceTime, sourceMissingValue)
         || Math2.almostEqual(9, sourceTime, sourceFillValue)) return Double.NaN;
     if (scaleAddOffset) sourceTime = sourceTime * scaleFactor + addOffset;
-    double d = Calendar2.unitsSinceToEpochSeconds(sourceTimeBase, sourceTimeFactor, sourceTime);
     // String2.log(">> sourceTimeToEp " + destinationName + " src=" + sourceTime + " ep=" + d +
     // " = " + Calendar2.safeEpochSecondsToIsoStringTZ(d, ""));
-    return d;
+    return Calendar2.unitsSinceToEpochSeconds(sourceTimeBase, sourceTimeFactor, sourceTime);
   }
 
   /**
@@ -510,21 +517,17 @@ public class EDVTimeStamp extends EDV {
 
     // time is a string
     try {
-      double d = // parseISOWithCalendar2?
-          // parse with Calendar2.parseISODateTime
-          // Calendar2.isoStringToEpochSeconds(sourceTime, timeZone) :
-          // parse sourceTime
-          Calendar2.parseToEpochSeconds(sourceTime, dateTimeFormat, timeZone);
+      // parseISOWithCalendar2?
+      // parse with Calendar2.parseISODateTime
+      // Calendar2.isoStringToEpochSeconds(sourceTime, timeZone) :
+      // parse sourceTime
       // String2.log("  EDVTimeStamp sourceTime=" + sourceTime + " epSec=" + d + " Calendar2=" +
       // Calendar2.epochSecondsToIsoStringTZ(d));
-      return d;
+      return Calendar2.parseToEpochSeconds(sourceTime, dateTimeFormat, timeZone);
     } catch (Throwable t) {
       if (verbose && sourceTime != null && sourceTime.length() > 0)
         String2.log(
-            "  EDVTimeStamp.sourceTimeToEpochSeconds: Invalid sourceTime="
-                + sourceTime
-                + "\n"
-                + t.toString());
+            "  EDVTimeStamp.sourceTimeToEpochSeconds: Invalid sourceTime=" + sourceTime + "\n" + t);
       return Double.NaN;
     }
   }

@@ -4,7 +4,6 @@
  */
 package gov.noaa.pfel.erddap.dataset;
 
-import com.cohort.array.Attributes;
 import com.cohort.array.PAType;
 import com.cohort.array.StringArray;
 import com.cohort.util.File2;
@@ -15,9 +14,14 @@ import gov.noaa.pfel.coastwatch.util.RegexFilenameFilter;
 import gov.noaa.pfel.coastwatch.util.SSR;
 import gov.noaa.pfel.coastwatch.util.SimpleXMLReader;
 import gov.noaa.pfel.erddap.Erddap;
+import gov.noaa.pfel.erddap.dataset.metadata.LocalizedAttributes;
+import gov.noaa.pfel.erddap.handlers.EDDTableCopyHandler;
+import gov.noaa.pfel.erddap.handlers.SaxHandlerClass;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.util.TaskThread;
 import gov.noaa.pfel.erddap.variable.*;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * This class makes and maintains a local copy of the data from a remote source. This class serves
@@ -25,15 +29,16 @@ import gov.noaa.pfel.erddap.variable.*;
  *
  * @author Bob Simons (was bob.simons@noaa.gov, now BobSimons2.00@gmail.com) 2009-05-19
  */
+@SaxHandlerClass(EDDTableCopyHandler.class)
 public class EDDTableCopy extends EDDTable {
 
-  protected EDDTable sourceEdd;
+  protected final EDDTable sourceEdd;
   protected EDDTableFromFiles localEdd;
 
   /** Some tests set EDDTableCopy.defaultCheckSourceData = false; Don't set it here. */
-  public static boolean defaultCheckSourceData = true;
+  public static final boolean defaultCheckSourceData = true;
 
-  protected static int maxChunks = Integer.MAX_VALUE; // some test methods reduce this
+  protected static final int maxChunks = Integer.MAX_VALUE; // some test methods reduce this
 
   /**
    * This returns the default value for standardizeWhat for this subclass. See
@@ -44,7 +49,7 @@ public class EDDTableCopy extends EDDTable {
     return DEFAULT_STANDARDIZEWHAT;
   }
 
-  public static int DEFAULT_STANDARDIZEWHAT = 0;
+  public static final int DEFAULT_STANDARDIZEWHAT = 0;
   protected int standardizeWhat = Integer.MAX_VALUE; // =not specified by user
   protected int nThreads = -1; // interpret invalid values (like -1) as EDStatic.nTableThreads
 
@@ -58,6 +63,7 @@ public class EDDTableCopy extends EDDTable {
    *     &lt;erddapDatasets&gt;&lt;/dataset&gt; .
    * @throws Throwable if trouble
    */
+  @EDDFromXmlMethod
   public static EDDTableCopy fromXml(Erddap erddap, SimpleXMLReader xmlReader) throws Throwable {
 
     // data to be obtained (or not)
@@ -79,7 +85,7 @@ public class EDDTableCopy extends EDDTable {
     String tDefaultDataQuery = null;
     String tDefaultGraphQuery = null;
     String tAddVariablesWhere = null;
-    boolean tAccessibleViaFiles = EDStatic.defaultAccessibleViaFiles;
+    boolean tAccessibleViaFiles = EDStatic.config.defaultAccessibleViaFiles;
     int tStandardizeWhat = Integer.MAX_VALUE; // not specified by user
     int tnThreads = -1; // interpret invalid values (like -1) as EDStatic.nTableThreads
 
@@ -96,84 +102,82 @@ public class EDDTableCopy extends EDDTable {
       String localTags = tags.substring(startOfTagsLength);
 
       // try to make the tag names as consistent, descriptive and readable as possible
-      if (localTags.equals("<accessibleTo>")) {
-      } else if (localTags.equals("</accessibleTo>")) tAccessibleTo = content;
-      else if (localTags.equals("<graphsAccessibleTo>")) {
-      } else if (localTags.equals("</graphsAccessibleTo>")) tGraphsAccessibleTo = content;
-      else if (localTags.equals("<onChange>")) {
-      } else if (localTags.equals("</onChange>")) tOnChange.add(content);
-      else if (localTags.equals("<fgdcFile>")) {
-      } else if (localTags.equals("</fgdcFile>")) tFgdcFile = content;
-      else if (localTags.equals("<iso19115File>")) {
-      } else if (localTags.equals("</iso19115File>")) tIso19115File = content;
-      else if (localTags.equals("<sosOfferingPrefix>")) {
-      } else if (localTags.equals("</sosOfferingPrefix>")) tSosOfferingPrefix = content;
-      else if (localTags.equals("<reloadEveryNMinutes>")) {
-      } else if (localTags.equals("</reloadEveryNMinutes>"))
-        tReloadEveryNMinutes = String2.parseInt(content);
-      else if (localTags.equals("<extractDestinationNames>")) {
-      } else if (localTags.equals("</extractDestinationNames>")) tExtractDestinationNames = content;
-      else if (localTags.equals("<orderExtractBy>")) {
-      } else if (localTags.equals("</orderExtractBy>")) tOrderExtractBy = content;
-      else if (localTags.equals("<checkSourceData>")) {
-      } else if (localTags.equals("</checkSourceData>"))
-        checkSourceData = String2.parseBoolean(content);
-      else if (localTags.equals("<sourceNeedsExpandedFP_EQ>")) {
-      } else if (localTags.equals("</sourceNeedsExpandedFP_EQ>"))
-        tSourceNeedsExpandedFP_EQ = String2.parseBoolean(content);
-      else if (localTags.equals("<fileTableInMemory>")) {
-      } else if (localTags.equals("</fileTableInMemory>"))
-        tFileTableInMemory = String2.parseBoolean(content);
-      else if (localTags.equals("<defaultDataQuery>")) {
-      } else if (localTags.equals("</defaultDataQuery>")) tDefaultDataQuery = content;
-      else if (localTags.equals("<defaultGraphQuery>")) {
-      } else if (localTags.equals("</defaultGraphQuery>")) tDefaultGraphQuery = content;
-      else if (localTags.equals("<addVariablesWhere>")) {
-      } else if (localTags.equals("</addVariablesWhere>")) tAddVariablesWhere = content;
-      else if (localTags.equals("<accessibleViaFiles>")) {
-      } else if (localTags.equals("</accessibleViaFiles>"))
-        tAccessibleViaFiles = String2.parseBoolean(content);
-      else if (localTags.equals("<standardizeWhat>")) {
-      } else if (localTags.equals("</standardizeWhat>"))
-        tStandardizeWhat = String2.parseInt(content);
-      else if (localTags.equals("<nThreads>")) {
-      } else if (localTags.equals("</nThreads>")) tnThreads = String2.parseInt(content);
-      else if (localTags.equals("<dataset>")) {
-        if ("false".equals(xmlReader.attributeValue("active"))) {
-          // skip it - read to </dataset>
-          if (verbose)
-            String2.log(
-                "  skipping datasetID="
-                    + xmlReader.attributeValue("datasetID")
-                    + " because active=\"false\".");
-          while (xmlReader.stackSize() != startOfTagsN + 1
-              || !xmlReader.allTags().substring(startOfTagsLength).equals("</dataset>")) {
-            xmlReader.nextTag();
-            // String2.log("  skippping tags: " + xmlReader.allTags());
-          }
-        } else {
-          try {
-
-            if (checkSourceData) {
-              // after first time, it's ok if source dataset isn't available
-              tSourceEdd =
-                  (EDDTable) EDD.fromXml(erddap, xmlReader.attributeValue("type"), xmlReader);
-            } else {
+      switch (localTags) {
+        case "<accessibleTo>",
+            "<nThreads>",
+            "<standardizeWhat>",
+            "<accessibleViaFiles>",
+            "<addVariablesWhere>",
+            "<defaultGraphQuery>",
+            "<defaultDataQuery>",
+            "<fileTableInMemory>",
+            "<sourceNeedsExpandedFP_EQ>",
+            "<checkSourceData>",
+            "<orderExtractBy>",
+            "<extractDestinationNames>",
+            "<reloadEveryNMinutes>",
+            "<sosOfferingPrefix>",
+            "<iso19115File>",
+            "<fgdcFile>",
+            "<onChange>",
+            "<graphsAccessibleTo>" -> {}
+        case "</accessibleTo>" -> tAccessibleTo = content;
+        case "</graphsAccessibleTo>" -> tGraphsAccessibleTo = content;
+        case "</onChange>" -> tOnChange.add(content);
+        case "</fgdcFile>" -> tFgdcFile = content;
+        case "</iso19115File>" -> tIso19115File = content;
+        case "</sosOfferingPrefix>" -> tSosOfferingPrefix = content;
+        case "</reloadEveryNMinutes>" -> tReloadEveryNMinutes = String2.parseInt(content);
+        case "</extractDestinationNames>" -> tExtractDestinationNames = content;
+        case "</orderExtractBy>" -> tOrderExtractBy = content;
+        case "</checkSourceData>" -> checkSourceData = String2.parseBoolean(content);
+        case "</sourceNeedsExpandedFP_EQ>" ->
+            tSourceNeedsExpandedFP_EQ = String2.parseBoolean(content);
+        case "</fileTableInMemory>" -> tFileTableInMemory = String2.parseBoolean(content);
+        case "</defaultDataQuery>" -> tDefaultDataQuery = content;
+        case "</defaultGraphQuery>" -> tDefaultGraphQuery = content;
+        case "</addVariablesWhere>" -> tAddVariablesWhere = content;
+        case "</accessibleViaFiles>" -> tAccessibleViaFiles = String2.parseBoolean(content);
+        case "</standardizeWhat>" -> tStandardizeWhat = String2.parseInt(content);
+        case "</nThreads>" -> tnThreads = String2.parseInt(content);
+        case "<dataset>" -> {
+          if ("false".equals(xmlReader.attributeValue("active"))) {
+            // skip it - read to </dataset>
+            if (verbose)
               String2.log(
-                  "WARNING!!! checkSourceData is false, so EDDTableCopy datasetID="
-                      + tDatasetID
-                      + " is not checking the source dataset!");
-              int stackSize = xmlReader.stackSize();
-              do { // will throw Exception if trouble (e.g., unexpected end-of-file
-                xmlReader.nextTag();
-              } while (xmlReader.stackSize() != stackSize);
-              tSourceEdd = null;
+                  "  skipping datasetID="
+                      + xmlReader.attributeValue("datasetID")
+                      + " because active=\"false\".");
+            while (xmlReader.stackSize() != startOfTagsN + 1
+                || !xmlReader.allTags().substring(startOfTagsLength).equals("</dataset>")) {
+              xmlReader.nextTag();
+              // String2.log("  skippping tags: " + xmlReader.allTags());
             }
-          } catch (Throwable t) {
-            String2.log(MustBe.throwableToString(t));
+          } else {
+            try {
+
+              if (checkSourceData) {
+                // after first time, it's ok if source dataset isn't available
+                tSourceEdd =
+                    (EDDTable) EDD.fromXml(erddap, xmlReader.attributeValue("type"), xmlReader);
+              } else {
+                String2.log(
+                    "WARNING!!! checkSourceData is false, so EDDTableCopy datasetID="
+                        + tDatasetID
+                        + " is not checking the source dataset!");
+                int stackSize = xmlReader.stackSize();
+                do { // will throw Exception if trouble (e.g., unexpected end-of-file
+                  xmlReader.nextTag();
+                } while (xmlReader.stackSize() != stackSize);
+                tSourceEdd = null;
+              }
+            } catch (Throwable t) {
+              String2.log(MustBe.throwableToString(t));
+            }
           }
         }
-      } else xmlReader.unexpectedTagException();
+        default -> xmlReader.unexpectedTagException();
+      }
     }
 
     return new EDDTableCopy(
@@ -261,8 +265,9 @@ public class EDDTableCopy extends EDDTable {
       String2.log(
           "\n*** constructing EDDTableCopy " + tDatasetID + " reallyVerbose=" + reallyVerbose);
     long constructionStartMillis = System.currentTimeMillis();
-    String errorInMethod = "Error in EDDTableCopy(" + tDatasetID + ") constructor:\n";
-
+    // This will get overwritten later, but have something here because otherwise the tableWriter
+    // below will throw an exception.
+    combinedGlobalAttributes = new LocalizedAttributes();
     // save the parameters
     int language = 0;
     className = "EDDTableCopy";
@@ -281,7 +286,7 @@ public class EDDTableCopy extends EDDTable {
         tStandardizeWhat < 0 || tStandardizeWhat == Integer.MAX_VALUE
             ? defaultStandardizeWhat()
             : tStandardizeWhat;
-    accessibleViaFiles = EDStatic.filesActive && tAccessibleViaFiles;
+    accessibleViaFiles = EDStatic.config.filesActive && tAccessibleViaFiles;
     nThreads = tnThreads; // interpret invalid values (like -1) as EDStatic.nTableThreads
 
     // check some things
@@ -313,7 +318,7 @@ public class EDDTableCopy extends EDDTable {
     if (reallyVerbose) String2.log("orderExtractBy=" + orderExtractBy);
 
     // ensure copyDatasetDir exists
-    String copyDatasetDir = EDStatic.fullCopyDirectory + datasetID + "/";
+    String copyDatasetDir = EDStatic.config.fullCopyDirectory + datasetID + "/";
     File2.makeDirectory(copyDatasetDir);
 
     // assign copy tasks to taskThread
@@ -322,13 +327,13 @@ public class EDDTableCopy extends EDDTable {
       try {
         // check if taskThread has finished previously assigned tasks for this dataset
         EDStatic.ensureTaskThreadIsRunningIfNeeded(); // ensure info is up-to-date
-        Integer lastAssignedTask = (Integer) EDStatic.lastAssignedTask.get(datasetID);
+        Integer lastAssignedTask = EDStatic.lastAssignedTask.get(datasetID);
         boolean pendingTasks =
-            lastAssignedTask != null && EDStatic.lastFinishedTask < lastAssignedTask.intValue();
+            lastAssignedTask != null && EDStatic.lastFinishedTask.get() < lastAssignedTask;
         if (verbose)
           String2.log(
               "  lastFinishedTask="
-                  + EDStatic.lastFinishedTask
+                  + EDStatic.lastFinishedTask.get()
                   + " < lastAssignedTask("
                   + tDatasetID
                   + ")="
@@ -368,6 +373,7 @@ public class EDDTableCopy extends EDDTable {
               query,
               tw); // "" is requestUrl, not relevant here
           Table table = twa.cumulativeTable(); // has the distinct results
+          tw.close();
           tw = null;
           twa.releaseResources();
           int nRows = table.nRows(); // nRows = 0 will throw an exception above
@@ -404,7 +410,7 @@ public class EDDTableCopy extends EDDTable {
 
             // does the file already exist
             String fileName = String2.encodeFileNameSafe(table.getStringData(nCols - 1, row));
-            if (File2.isFile(fileDir.toString() + fileName + ".nc")) {
+            if (File2.isFile(fileDir + fileName + ".nc")) {
               if (reallyVerbose)
                 String2.log("  file already exists: " + fileDir + fileName + ".nc");
               continue;
@@ -434,9 +440,9 @@ public class EDDTableCopy extends EDDTable {
                     "  task#"
                         + taskNumber
                         + " TASK_MAKE_A_DATAFILE "
-                        + tQuery.toString()
+                        + tQuery
                         + "\n    "
-                        + fileDir.toString()
+                        + fileDir
                         + fileName
                         + ".nc");
             }
@@ -459,16 +465,22 @@ public class EDDTableCopy extends EDDTable {
                 + MustBe.throwableToString(t));
       }
       if (taskNumber >= 0) {
-        EDStatic.lastAssignedTask.put(datasetID, Integer.valueOf(taskNumber));
+        EDStatic.lastAssignedTask.put(datasetID, taskNumber);
         EDStatic
             .ensureTaskThreadIsRunningIfNeeded(); // clients (like this class) are responsible for
         // checking on it
+
+        if (EDStatic.config.forceSynchronousLoading) {
+          while (EDStatic.lastFinishedTask.get() < taskNumber) {
+            Thread.sleep(2000);
+          }
+        }
       }
     }
 
     // gather info about dataVariables to create localEdd
     int nDataVariables;
-    Object[][] tDataVariables;
+    ArrayList<DataVariableInfo> tDataVariables;
     if (sourceEdd == null) {
       // get info from existing copied datafiles, which is a standard EDDTable)
       // get a list of copied files
@@ -495,29 +507,28 @@ public class EDDTableCopy extends EDDTable {
           null,
           0); // null=allVars, standardizeWhat=0 because data is already unpacked.
       nDataVariables = table.nColumns();
-      tDataVariables = new Object[nDataVariables][];
+      tDataVariables = new ArrayList<>(nDataVariables);
       for (int dv = 0; dv < nDataVariables; dv++) {
-        tDataVariables[dv] =
-            new Object[] {
-              table.getColumnName(dv),
-              table.getColumnName(dv),
-              new Attributes(),
-              table.getColumn(dv).elementTypeString()
-            };
+        tDataVariables.add(
+            new DataVariableInfo(
+                table.getColumnName(dv),
+                table.getColumnName(dv),
+                new LocalizedAttributes(),
+                table.getColumn(dv).elementTypeString()));
       }
     } else {
       // get info from sourceEdd, which is a standard EDDTable
       nDataVariables = sourceEdd.dataVariables.length;
-      tDataVariables = new Object[nDataVariables][];
+      tDataVariables = new ArrayList<>(nDataVariables);
       for (int dv = 0; dv < nDataVariables; dv++) {
         EDV edv = sourceEdd.dataVariables[dv];
-        tDataVariables[dv] =
-            new Object[] {
-              edv.destinationName(),
-              edv.destinationName(),
-              new Attributes(),
-              edv.destinationDataType()
-            }; // 2012-07-26 e.g., var with scale_factor will be destType in the copied files
+        tDataVariables.add(
+            new DataVariableInfo(
+                edv.destinationName(),
+                edv.destinationName(),
+                new LocalizedAttributes(),
+                edv.destinationDataType())); // 2012-07-26 e.g., var with scale_factor will be
+        // destType in the copied files
       }
     }
     // if the first orderExtractBy column is numeric, it can be used as
@@ -526,9 +537,9 @@ public class EDDTableCopy extends EDDTable {
     String sortedColumn = orderExtractBy == null ? "" : orderExtractBy.get(0); // the first column
     if (sortedColumn.length() > 0) {
       for (int dv = 0; dv < nDataVariables; dv++) {
-        if (sortedColumn.equals((String) tDataVariables[dv][0])
+        if (sortedColumn.equals(tDataVariables.get(dv).sourceName())
             && // columnName
-            "String".equals((String) tDataVariables[dv][3])) { // columnType
+            "String".equals(tDataVariables.get(dv).dataType())) { // columnType
           if (verbose)
             String2.log(
                 "orderExtractBy #0="
@@ -553,7 +564,7 @@ public class EDDTableCopy extends EDDTable {
             tOnChange,
             tFgdcFile,
             tIso19115File,
-            new Attributes(), // addGlobalAttributes
+            new LocalizedAttributes(), // addGlobalAttributes
             tDataVariables,
             tReloadEveryNMinutes,
             copyDatasetDir,
@@ -585,9 +596,8 @@ public class EDDTableCopy extends EDDTable {
     sourceCanConstrainNumericData = localEdd.sourceCanConstrainNumericData;
     sourceCanConstrainStringData = localEdd.sourceCanConstrainStringData;
     sourceCanConstrainStringRegex = localEdd.sourceCanConstrainStringRegex;
-
-    sourceGlobalAttributes = localEdd.combinedGlobalAttributes;
-    addGlobalAttributes = new Attributes();
+    addGlobalAttributes = new LocalizedAttributes();
+    sourceGlobalAttributes = localEdd.combinedGlobalAttributes.toAttributes(language);
     combinedGlobalAttributes =
         localEdd.combinedGlobalAttributes; // new Attributes(addGlobalAttributes,
     // sourceGlobalAttributes); //order is important
@@ -624,7 +634,7 @@ public class EDDTableCopy extends EDDTable {
     long cTime = System.currentTimeMillis() - constructionStartMillis;
     if (verbose)
       String2.log(
-          (debugMode ? "\n" + toString() : "")
+          (debugMode ? "\n" + this : "")
               + "\n*** EDDTableCopy "
               + datasetID
               + " constructor finished. TIME="
@@ -660,8 +670,8 @@ public class EDDTableCopy extends EDDTable {
       StringArray tOnChange,
       String tFgdcFile,
       String tIso19115File,
-      Attributes tAddGlobalAttributes,
-      Object[][] tDataVariables,
+      LocalizedAttributes tAddGlobalAttributes,
+      List<DataVariableInfo> tDataVariables,
       int tReloadEveryNMinutes,
       String tFileDir,
       String tFileNameRegex,
@@ -742,7 +752,7 @@ public class EDDTableCopy extends EDDTable {
    *
    * @param language the index of the selected language
    * @param loggedInAs the user's login name if logged in (or null if not logged in).
-   * @param requestUrl the part of the user's request, after EDStatic.baseUrl, before '?'.
+   * @param requestUrl the part of the user's request, after EDStatic.config.baseUrl, before '?'.
    * @param userDapQuery the part of the user's request after the '?', still percentEncoded, may be
    *     null.
    * @param tableWriter

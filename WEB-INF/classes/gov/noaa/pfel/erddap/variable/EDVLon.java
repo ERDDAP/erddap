@@ -6,6 +6,8 @@ package gov.noaa.pfel.erddap.variable;
 
 import com.cohort.array.Attributes;
 import com.cohort.array.PAOne;
+import gov.noaa.pfel.erddap.dataset.metadata.LocalizedAttributes;
+import gov.noaa.pfel.erddap.util.EDMessages;
 
 /**
  * This class holds information about the longitude variable, which is like EDV, but the
@@ -27,12 +29,11 @@ public class EDVLon extends EDV {
       String tDatasetID,
       String tSourceName,
       Attributes tSourceAttributes,
-      Attributes tAddAttributes,
+      LocalizedAttributes tAddAttributes,
       String tSourceDataType,
       PAOne tSourceMin,
       PAOne tSourceMax)
       throws Throwable {
-
     super(
         tDatasetID,
         tSourceName,
@@ -43,6 +44,9 @@ public class EDVLon extends EDV {
         tSourceMin,
         tSourceMax);
 
+    // The attributes this gets/sets should not need to be localized (max/min
+    // value for example). Just use the default language.
+    int language = EDMessages.DEFAULT_LANGUAGE;
     if (destinationDataType().equals("String"))
       throw new RuntimeException(
           "datasets.xml error for datasetID="
@@ -50,24 +54,24 @@ public class EDVLon extends EDV {
               + ": "
               + "The destination dataType for the longitude variable must be a numeric dataType.");
 
-    combinedAttributes.set("_CoordinateAxisType", "Lon"); // unidata-related
-    combinedAttributes.set("axis", "X");
-    combinedAttributes.set("ioos_category", LOCATION_CATEGORY);
-    combinedAttributes.set("standard_name", LON_STANDARD_NAME);
+    combinedAttributes.set(language, "_CoordinateAxisType", "Lon"); // unidata-related
+    combinedAttributes.set(language, "axis", "X");
+    combinedAttributes.set(language, "ioos_category", LOCATION_CATEGORY);
+    combinedAttributes.set(language, "standard_name", LON_STANDARD_NAME);
 
-    longName = combinedAttributes.getString("long_name");
+    longName = combinedAttributes.getString(language, "long_name");
     if (longName == null
         || // catch nothing
-        longName.toLowerCase().equals("lon")
-        || longName.toLowerCase().equals("longitude")) { // catch alternate case
+        longName.equalsIgnoreCase("lon")
+        || longName.equalsIgnoreCase("longitude")) { // catch alternate case
       longName = LON_LONGNAME;
-      combinedAttributes.set("long_name", longName);
+      combinedAttributes.set(language, "long_name", longName);
     }
 
     units = LON_UNITS;
-    combinedAttributes.set("units", units);
+    combinedAttributes.set(language, "units", units);
 
-    extractAndSetActualRange();
+    extractAndSetActualRange(language);
   }
 
   /**

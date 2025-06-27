@@ -31,9 +31,9 @@ class EDDGridLon0360Tests {
     // *****************\n");
     // testVerboseOn();
     int language = 0;
-    String name, tName, userDapQuery, results, expected, error;
+    String tName, userDapQuery, results, expected;
     int po;
-    String dir = EDStatic.fullTestCacheDirectory;
+    String dir = EDStatic.config.fullTestCacheDirectory;
 
     EDDGrid eddGrid = (EDDGrid) EDDTestDataset.gettest_nesdisVHNchlaWeekly_Lon0360();
     /* */
@@ -319,7 +319,7 @@ class EDDGridLon0360Tests {
     tName =
         eddGrid.makeNewFileForDapQuery(
             language, null, null, userDapQuery, obsDir, baseName, ".png");
-    // Test.displayInBrowser("file://" + dir + tName);
+    // TestUtil.displayInBrowser("file://" + dir + tName);
     Image2Tests.testImagesIdentical(tName, baseName + ".png", baseName + "_diff.png");
 
     // test image subset near 180
@@ -336,7 +336,7 @@ class EDDGridLon0360Tests {
     tName =
         eddGrid.makeNewFileForDapQuery(
             language, null, null, userDapQuery, obsDir, baseName, ".png");
-    // Test.displayInBrowser("file://" + dir + tName);
+    // TestUtil.displayInBrowser("file://" + dir + tName);
     Image2Tests.testImagesIdentical(tName, baseName + ".png", baseName + "_diff.png");
 
     // test image just new left
@@ -352,7 +352,7 @@ class EDDGridLon0360Tests {
     tName =
         eddGrid.makeNewFileForDapQuery(
             language, null, null, userDapQuery, obsDir, baseName, ".png");
-    // Test.displayInBrowser("file://" + dir + tName);
+    // TestUtil.displayInBrowser("file://" + dir + tName);
     Image2Tests.testImagesIdentical(tName, baseName + ".png", baseName + "_diff.png");
 
     // test image just new right
@@ -369,7 +369,7 @@ class EDDGridLon0360Tests {
     tName =
         eddGrid.makeNewFileForDapQuery(
             language, null, null, userDapQuery, obsDir, baseName, ".png");
-    // Test.displayInBrowser("file://" + dir + tName);
+    // TestUtil.displayInBrowser("file://" + dir + tName);
     Image2Tests.testImagesIdentical(tName, baseName + ".png", baseName + "_diff.png");
 
     // SOURCE is ultimately a remote THREDDS so no source files
@@ -396,9 +396,9 @@ class EDDGridLon0360Tests {
     // *****************\n");
     // testVerboseOn();
     int language = 0;
-    String name, tName, userDapQuery, results, expected, error;
+    String tName, results, expected;
     int po;
-    String dir = EDStatic.fullTestCacheDirectory;
+    String dir = EDStatic.config.fullTestCacheDirectory;
 
     EDDGrid eddGrid = (EDDGrid) EDDTestDataset.getecocast_Lon0360();
     tName =
@@ -446,9 +446,9 @@ class EDDGridLon0360Tests {
     // *****************\n");
     // testVerboseOn();
     int language = 0;
-    String name, tName, userDapQuery, results, expected, error;
+    String tName, userDapQuery, results, expected;
     int po;
-    String dir = EDStatic.fullTestCacheDirectory;
+    String dir = EDStatic.config.fullTestCacheDirectory;
 
     EDDGrid eddGrid = (EDDGrid) EDDTestDataset.gettest_etopo180_Lon0360();
 
@@ -657,7 +657,7 @@ class EDDGridLon0360Tests {
     tName =
         eddGrid.makeNewFileForDapQuery(
             language, null, null, userDapQuery, obsDir, baseName, ".png");
-    // Test.displayInBrowser("file://" + dir + tName);
+    // TestUtil.displayInBrowser("file://" + dir + tName);
     Image2Tests.testImagesIdentical(tName, baseName + ".png", baseName + "_diff.png");
 
     // test new left image
@@ -666,7 +666,7 @@ class EDDGridLon0360Tests {
     tName =
         eddGrid.makeNewFileForDapQuery(
             language, null, null, userDapQuery, obsDir, baseName, ".png");
-    // Test.displayInBrowser("file://" + dir + tName);
+    // TestUtil.displayInBrowser("file://" + dir + tName);
     Image2Tests.testImagesIdentical(tName, baseName + ".png", baseName + "_diff.png");
 
     // test new image
@@ -675,7 +675,7 @@ class EDDGridLon0360Tests {
     tName =
         eddGrid.makeNewFileForDapQuery(
             language, null, null, userDapQuery, obsDir, baseName, ".png");
-    // Test.displayInBrowser("file://" + dir + tName);
+    // TestUtil.displayInBrowser("file://" + dir + tName);
     Image2Tests.testImagesIdentical(tName, baseName + ".png", baseName + "_diff.png");
 
     String2.log("\n*** EDDGridLon0360.testPM180 finished.");
@@ -695,9 +695,9 @@ class EDDGridLon0360Tests {
     int language = 0;
     // boolean oDebugMode = debugMode;
     // debugMode = true;
-    String name, tName, userDapQuery, results, expected, error;
+    String tName, userDapQuery, results, expected;
     int po;
-    String dir = EDStatic.fullTestCacheDirectory;
+    String dir = EDStatic.config.fullTestCacheDirectory;
     EDDGrid eddGrid;
 
     // test notApplicable (dataset maxLon already <180)
@@ -980,7 +980,7 @@ class EDDGridLon0360Tests {
             Image2Tests.urlToAbsolutePath(Image2Tests.OBS_DIR),
             baseName,
             ".png");
-    // Test.displayInBrowser("file://" + dir + tName);
+    // TestUtil.displayInBrowser("file://" + dir + tName);
     Image2Tests.testImagesIdentical(tName, baseName + ".png", baseName + "_diff.png");
 
     // String2.log("\n*** EDDGridLon0360.testInsert finished.");

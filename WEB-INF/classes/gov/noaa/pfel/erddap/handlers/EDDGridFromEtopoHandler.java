@@ -8,8 +8,8 @@ import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 
 public class EDDGridFromEtopoHandler extends StateWithParent {
-  private StringBuilder content = new StringBuilder();
-  private String datasetID;
+  private final StringBuilder content = new StringBuilder();
+  private final String datasetID;
 
   public EDDGridFromEtopoHandler(SaxHandler saxHandler, String datasetID, State completeState) {
     super(saxHandler, completeState);
@@ -17,7 +17,7 @@ public class EDDGridFromEtopoHandler extends StateWithParent {
   }
 
   private boolean tAccessibleViaWMS = true;
-  private boolean tAccessibleViaFiles = EDStatic.defaultAccessibleViaFiles;
+  private boolean tAccessibleViaFiles = EDStatic.config.defaultAccessibleViaFiles;
   private int tnThreads = -1;
   private boolean tDimensionValuesInMemory = true;
 

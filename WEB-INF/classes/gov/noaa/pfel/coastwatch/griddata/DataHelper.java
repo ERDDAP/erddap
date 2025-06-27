@@ -4,15 +4,11 @@
  */
 package gov.noaa.pfel.coastwatch.griddata;
 
-import com.cohort.array.*;
 import com.cohort.util.Calendar2;
 import com.cohort.util.Math2;
 import com.cohort.util.String2;
 import com.cohort.util.Test;
-import dods.dap.*;
-import ucar.ma2.*;
-import ucar.nc2.*;
-import ucar.nc2.util.*;
+import com.google.common.collect.ImmutableList;
 
 /**
  * This class has some static convenience methods related to the other Data classes.
@@ -32,56 +28,39 @@ public class DataHelper {
   /**
    * The string for no units. There doesn't seem to be a udUnits standard. But LAS uses "unitless".
    */
-  public static String UNITLESS = "unitless";
+  public static final String UNITLESS = "unitless";
 
   /** The creatorEmail for CoastWatch */
-  public static String CW_CREATOR_EMAIL = "erd.data@noaa.gov";
+  public static final String CW_CREATOR_EMAIL = "erd.data@noaa.gov";
 
   /** The creatorName for CoastWatch */
-  public static String CW_CREATOR_NAME = "NOAA CoastWatch, West Coast Node";
+  public static final String CW_CREATOR_NAME = "NOAA CoastWatch, West Coast Node";
 
   /** The creatorUrl for CoastWatch */
-  public static String CW_CREATOR_URL = "https://coastwatch.pfeg.noaa.gov";
+  public static final String CW_CREATOR_URL = "https://coastwatch.pfeg.noaa.gov";
 
   /** The project for CoastWatch */
-  public static String CW_PROJECT = "CoastWatch (https://coastwatch.noaa.gov/)";
+  public static final String CW_PROJECT = "CoastWatch (https://coastwatch.noaa.gov/)";
 
   /** The creatorEmail for ERD */
-  public static String ERD_CREATOR_EMAIL = "erd.data@noaa.gov";
+  public static final String ERD_CREATOR_EMAIL = "erd.data@noaa.gov";
 
   /** The creatorName for ERD */
-  public static String ERD_CREATOR_NAME = "NOAA NMFS SWFSC ERD";
+  public static final String ERD_CREATOR_NAME = "NOAA NMFS SWFSC ERD";
 
   /** The creatorUrl for ERD */
-  public static String ERD_CREATOR_URL = "https://www.pfeg.noaa.gov";
+  public static final String ERD_CREATOR_URL = "https://www.pfeg.noaa.gov";
 
   /** The project for ERD */
-  public static String ERD_PROJECT = "NOAA NMFS SWFSC ERD (https://www.pfeg.noaa.gov/)";
+  public static final String ERD_PROJECT = "NOAA NMFS SWFSC ERD (https://www.pfeg.noaa.gov/)";
 
   /**
    * The standard variable names of the first 5 columns in the TableDataSet.makeSubset and
    * PointDataSet.makeSubset results table: {"LON", "LAT", "DEPTH", "TIME", "ID"}. Dapper and DChart
    * like these exact names.
    */
-  public static final String[] TABLE_VARIABLE_NAMES = {"LON", "LAT", "DEPTH", "TIME", "ID"};
-
-  /**
-   * The standard long names of the first 5 columns in the TableDataSet.makeSubset and
-   * PointDataSet.makeSubset results table: {"Longitude", "Latitude", "Depth", "Time",
-   * "Identifier"}. Dapper and DChart like these exact names.
-   */
-  public static final String[] TABLE_LONG_NAMES = {
-    "Longitude", "Latitude", "Depth", "Time", "Identifier"
-  };
-
-  /**
-   * The standard UD units for the first 5 columns in the TableDataSet.makeSubset and
-   * PointDataSet.makeSubset results table, e.g., "degrees_east". Dapper and DChart like these exact
-   * names.
-   */
-  public static final String[] TABLE_UNITS = {
-    "degrees_east", "degrees_north", "m", Calendar2.SECONDS_SINCE_1970, UNITLESS
-  };
+  public static final ImmutableList<String> TABLE_VARIABLE_NAMES =
+      ImmutableList.of("LON", "LAT", "DEPTH", "TIME", "ID");
 
   /**
    * The returns a new, revised, history attribute. This avoids adding a second entries for today

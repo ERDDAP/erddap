@@ -55,7 +55,7 @@ public abstract class SoTValue implements Serializable {
 
     @Override
     public Object getObjectValue() {
-      return java.lang.Long.valueOf(value_);
+      return value_;
     }
 
     /** Test if <code>SoTValue</code> is time */
@@ -145,7 +145,7 @@ public abstract class SoTValue implements Serializable {
 
     @Override
     public Object getObjectValue() {
-      return java.lang.Double.valueOf(value_);
+      return value_;
     }
 
     /** Test if <code>SoTValue</code> is time */

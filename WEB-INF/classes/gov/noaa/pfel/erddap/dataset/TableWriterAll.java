@@ -12,6 +12,7 @@ import com.cohort.util.SimpleException;
 import com.cohort.util.String2;
 import com.cohort.util.Test;
 import gov.noaa.pfel.coastwatch.pointdata.Table;
+import gov.noaa.pfel.erddap.util.EDStatic;
 import java.io.BufferedOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -28,14 +29,13 @@ import java.io.FileOutputStream;
  * @author Bob Simons (was bob.simons@noaa.gov, now BobSimons2.00@gmail.com) 2007-08-23
  */
 public class TableWriterAll extends TableWriter {
+  public static final String attributeTo = "gathering data in TableWriterAll";
 
-  public static String attributeTo = "gathering data in TableWriterAll";
-
-  protected int randomInt = Math2.random(Integer.MAX_VALUE);
+  protected final int randomInt = Math2.random(Integer.MAX_VALUE);
 
   // set by constructor
-  protected String dir;
-  protected String fileNameNoExt;
+  protected final String dir;
+  protected final String fileNameNoExt;
 
   // set firstTime
   // POLICY: because this class may be used in more than one thread,
@@ -44,6 +44,7 @@ public class TableWriterAll extends TableWriter {
   protected volatile long totalNRows = 0;
 
   protected Table cumulativeTable; // set by writeAllAndFinish, if used
+  private final CleanupTableWriterAction cleanupAction;
 
   /**
    * The constructor. TableWriterAll will create several temporary files using the dir+name as the
@@ -64,7 +65,67 @@ public class TableWriterAll extends TableWriter {
     fileNameNoExt = tFileNameNoExt;
     // String2.pressEnterToContinue(">> TableWriterAll random=" + randomInt + "\n" +
     // MustBe.stackTrace());
+    cleanupAction = new CleanupTableWriterAction(dir, fileNameNoExt, randomInt);
+    EDStatic.cleaner.register(this, cleanupAction);
+  }
 
+  private static class CleanupTableWriterAction implements Runnable {
+
+    private DataOutputStream[] columnStreams;
+    private String[] columnNames;
+    private final String dir;
+    private final String fileNameNoExt;
+    private final int randomInt;
+
+    private CleanupTableWriterAction(String dir, String fileNameNoExt, int randomInt) {
+      this.dir = dir;
+      this.fileNameNoExt = fileNameNoExt;
+      this.randomInt = randomInt;
+    }
+
+    public void setColumnStreams(DataOutputStream[] columnStreams) {
+      this.columnStreams = columnStreams;
+    }
+
+    @Override
+    public void run() {
+      try {
+        // delete columnStreams (if it was still saving data)
+        if (columnStreams != null) {
+          for (int col = 0; col < columnStreams.length; col++) {
+            // close the stream
+            try {
+              if (columnStreams[col] != null) columnStreams[col].close();
+            } catch (Exception e) {
+            }
+            // an attempt to solve File2.delete problem on these files: it couldn't hurt
+            columnStreams[col] = null;
+          }
+          columnStreams = null;
+        }
+
+        // delete the files
+        if (columnNames == null) return;
+        for (String columnName : columnNames) {
+          // deletion isn't essential or urgent.
+          // We don't want to tie up the garbage collector thread.
+          File2.simpleDelete(
+              dir
+                  + fileNameNoExt
+                  + "."
+                  + randomInt
+                  + "."
+                  + String2.encodeFileNameSafe(columnName)
+                  + ".temp");
+        }
+      } catch (Throwable t) {
+        String2.log("TableWriterAll.releaseResources caught:\n" + MustBe.throwableToString(t));
+      }
+    }
+
+    public void setColumnNames(String[] columnNames) {
+      this.columnNames = columnNames;
+    }
   }
 
   /**
@@ -89,6 +150,8 @@ public class TableWriterAll extends TableWriter {
     int nColumns = table.nColumns();
     if (firstTime) {
       columnStreams = new DataOutputStream[nColumns];
+      cleanupAction.setColumnStreams(columnStreams);
+      cleanupAction.setColumnNames(columnNames);
       for (int col = 0; col < nColumns; col++) {
         String tFileName = columnFileName(col);
         columnStreams[col] =
@@ -109,6 +172,7 @@ public class TableWriterAll extends TableWriter {
     long newTotalNRows = totalNRows + table.nRows();
     Math2.ensureArraySizeOkay(newTotalNRows, attributeTo);
     Math2.ensureMemoryAvailable(newTotalNRows * 8, attributeTo);
+    Math2.ensureDiskAvailable(newTotalNRows * 8, EDStatic.config.fullCacheDirectory, attributeTo);
 
     // do everyTime stuff
     // write the data
@@ -172,11 +236,8 @@ public class TableWriterAll extends TableWriter {
         PrimitiveArray.factory(
             columnType(col), (int) totalNRows, false); // safe since checked above
     pa.setMaxIsMV(columnMaxIsMV[col]);
-    DataInputStream dis = dataInputStream(col);
-    try {
+    try (DataInputStream dis = dataInputStream(col)) {
       pa.readDis(dis, (int) totalNRows); // safe since checked above
-    } finally {
-      dis.close();
     }
     return pa;
   }
@@ -209,11 +270,8 @@ public class TableWriterAll extends TableWriter {
         PrimitiveArray.factory(
             columnType(col), (int) totalNRows, false); // safe since checked above
     pa.setMaxIsMV(columnMaxIsMV[col]);
-    DataInputStream dis = dataInputStream(col);
-    try {
+    try (DataInputStream dis = dataInputStream(col)) {
       pa.readDis(dis, Math.min(firstNRows, Math2.narrowToInt(totalNRows)));
-    } finally {
-      dis.close();
     }
     return pa;
   }
@@ -230,9 +288,7 @@ public class TableWriterAll extends TableWriter {
    * @throws Throwable if trouble (e.g., totalNRows > Integer.MAX_VALUE)
    */
   public DataInputStream dataInputStream(int col) throws Throwable {
-    DataInputStream dis =
-        new DataInputStream(File2.getDecompressedBufferedInputStream(columnFileName(col)));
-    return dis;
+    return new DataInputStream(File2.getDecompressedBufferedInputStream(columnFileName(col)));
   }
 
   public String columnFileName(int col) {
@@ -255,6 +311,13 @@ public class TableWriterAll extends TableWriter {
     return totalNRows;
   }
 
+  public void ensureMemoryForCumulativeTable() {
+    Table table = makeEmptyTable();
+    Math2.ensureMemoryAvailable(
+        nColumns() * nRows() * table.estimatedBytesPerRow(), // nRows() is a long
+        "TableWriterAll.cumulativeTable");
+  }
+
   /**
    * Call this after finish() to assemble the cumulative table. SINCE ENTIRE TABLE IS IN MEMORY,
    * THIS MAY TAKE TONS OF MEMORY. This checks ensureMemoryAvailable. THE CUMULATIVETABLE IS HELD IN
@@ -271,13 +334,13 @@ public class TableWriterAll extends TableWriter {
 
     // ensure memory available    too bad this is after all data is gathered
     int nColumns = nColumns();
-    Math2.ensureMemoryAvailable(
-        nColumns * nRows() * table.estimatedBytesPerRow(), // nRows() is a long
-        "TableWriterAll.cumulativeTable");
+    ensureMemoryForCumulativeTable();
 
     // actually get the data
     for (int col = 0; col < nColumns; col++) table.setColumn(col, column(col));
-    return table;
+
+    cumulativeTable = table;
+    return cumulativeTable;
   }
 
   /**
@@ -319,12 +382,8 @@ public class TableWriterAll extends TableWriter {
     }
   }
 
-  /**
-   * Users of this class shouldn't call this -- use releaseResources() instead. Java calls this when
-   * an object is no longer used, just before garbage collection.
-   */
-  protected void finalize() throws Throwable {
+  @Override
+  public void close() throws Exception {
     releaseResources();
-    super.finalize();
   }
 }

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
+<erddapMessages>
 <!--  messages.xml obsahuje textové zprávy pro ERDDAP (které se čtou v EDStatic).
 Když na svůj server nainstalujete ERDDAP, všechny tyto zprávy mohou být ponechány tak, jak jsou,
 protože tyto zprávy jsou obvykle stejné v různých instalacích ERDDAP.
@@ -30,7 +30,8 @@ Překladový systém VYŽADUJE, aby &quot;pseudoEntity&quot; používal pouze [a
   messages-de.xml a -ga mají mnoho odkazů duplikovaných. Mám podezření, že takových je mnohem víc.
 
  -->
-<erddapMessages><!--  Tím se vrátí obsah HTML popisující požadavek na komprimované soubory.
+
+<!--  Tím se vrátí obsah HTML popisující požadavek na komprimované soubory.
 Viz https://httpd.apache.org/docs/1.3/mod/mod_mime.html
 což říká, že x-gzip=gzip a x-compress=compress
 To se také opakuje v messages2.xml in
@@ -76,11 +77,13 @@ Poté ERDDAP přidá všechny
 <additionalLinks><![CDATA[
 Pokud máte návrhy na další odkazy, kontaktujte <kbd>erd dot data at noaa dot gov</kbd> .
 ]]></additionalLinks>
+
 <!-- (a)ll(D)atasets (m)etadata and (v)ariable text -->
 <admKeywords>19115, accessible, altitude, average, background, base, dataset, depth, email, erddap, fgdc, graph, grid, information, institution, iso, latitude, location, longitude, make-a-graph, maximum, metadata, minimum, opendap, rss, sequence, service, sos, source, spacing, structure, subscription, subset, summary, table, time, title, url, wcs, wms</admKeywords>
 <admSubsetVariables>accessible, dataStructure, cdm_data_type, class, institution, testOutOfDate</admSubsetVariables>
 <admSummary>Tato datová sada je tabulka, která obsahuje řadu informací pro každou datovou sadu aktuálně aktivní v tomto ERDDAP.</admSummary>
 <admTitle>Seznam všech aktivních datových sad v tomto ERDDAP</admTitle>
+
 <!-- (a)ll (d)atasets (v)ariable (c)omment, (l)ong_name, or (r)eference text -->
 <advl_datasetID>Dataset ID</advl_datasetID>
 <advc_accessible>Některé datové sady jsou veřejné. Některé mohou být soukromé a možná pro vás nejsou dostupné.</advc_accessible>
@@ -88,11 +91,11 @@ Pokud máte návrhy na další odkazy, kontaktujte <kbd>erd dot data at noaa dot
 <advl_institution>Instituce</advl_institution>
 <advc_dataStructure>ERDDAP zachází s každým souborem dat buď jako s datovým souborem „mřížka“ nebo „tabulka“.</advc_dataStructure>
 <advl_dataStructure>Datová struktura</advl_dataStructure>
-<advr_dataStructure>https://erddap.github.io/setupDatasetsXml.html#dataStructures</advr_dataStructure>
+<advr_dataStructure>https://erddap.github.io/docs/server-admin/datasets#why-just-two-basic-data-structures</advr_dataStructure>
 <advl_cdm_data_type>Typ společného datového modelu</advl_cdm_data_type>
-<advr_cdm_data_type>https://erddap.github.io/setupDatasetsXml.html#cdm_data_type</advr_cdm_data_type>
+<advr_cdm_data_type>https://erddap.github.io/docs/server-admin/datasets#cdm_data_type</advr_cdm_data_type>
 <advl_class>Třída ERDDAP</advl_class>
-<advr_class>https://erddap.github.io/setupDatasetsXml.html#datasetTypes</advr_class>
+<advr_class>https://erddap.github.io/docs/server-admin/datasets#list-of-types-datasets</advr_class>
 <advl_title>Titul</advl_title>
 <advl_minLongitude>Minimální zeměpisná délka</advl_minLongitude>
 <advl_maxLongitude>Maximální zeměpisná délka</advl_maxLongitude>
@@ -142,7 +145,7 @@ U neaktuálních datových sad je pravděpodobně problém se zdrojem dat, takž
 <advl_outOfDate>Neaktuální index</advl_outOfDate>
 <advn_outOfDate><![CDATA[
 Zjevně žádné datové sady nemají atribut
-<a rel="help" href="https://erddap.github.io/setupDatasetsXml.html#testOutOfDate"
+<a rel="help" href="https://erddap.github.io/docs/server-admin/datasets#testoutofdate"
 ><kbd>testOutOfDate</kbd></a> .
 Možná v tomto ERDDAP nejsou žádné datové sady téměř v reálném čase.
 ]]></advn_outOfDate>
@@ -152,6 +155,7 @@ Možná v tomto ERDDAP nejsou žádné datové sady téměř v reálném čase.
 <strong>Pokyny:</strong> Zadejte libovolný počet kritérií vyhledávání a poté klikněte na <kbd>&searchButton;</kbd> .
 <br>Ve výsledcích se zobrazí pouze datové sady, které splňují <strong>všechna</strong> kritéria vyhledávání.
 ]]></advancedSearchDirections>
+
 <!--  Toto je popis pokročilého vyhledávání. -->
 <advancedSearchTooltip><![CDATA[
 Rozšířené vyhledávání kombinuje všechny vyhledávací techniky a přidává vyhledávání datových sad, které obsahují data v rámci zeměpisné délky, zeměpisné šířky a časového rozsahu, takže můžete vyhledávat datové sady na základě mnoha různých kritérií současně.
@@ -221,6 +225,7 @@ Toto je nepovinné.
 </ul>
 
 ]]></advancedSearchTimeTooltip>
+
 <!--  {0}=plainFileType (např. .json) dotazu rozšířeného vyhledávání. -->
 <advancedSearchWithCriteria>Požadavek na pokročilé vyhledávání {0} musí obsahovat jedno nebo více kritérií, například „?page=1&amp;itemsPerPage=1000&amp;searchFor=wind+temperature“.</advancedSearchWithCriteria>
 <advancedSearchFewerCriteria>Zkuste použít méně a/nebo širší vyhledávací kritéria.</advancedSearchFewerCriteria>
@@ -235,6 +240,7 @@ Vypořádání se s chybou:
 <br>U ostatních typů souborů vyvolá rozšířené vyhledávání výjimku, pokud je některá část požadavku neplatná.
 <br>Kontrolují se však pouze očekávané parametry; neočekávané parametry jsou jednoduše ignorovány.
 ]]></advancedSearchErrorHandling>
+
 <!--  Ty se vkládají do PrimitiveArray.
      Tyto používají MessageFormat. -->
 <ArrayAddN>CHYBA v {0}.addN:
@@ -263,6 +269,7 @@ Odesílali jste často stejné žádosti v krátkém časovém období?
 Odeslali jste velké množství neplatných žádostí?
 Pokud jste připraveni se těmto problémům vyhnout, zašlete e-mail na adresu {0} a požádejte o vyřazení z černé listiny.</blacklistMsg>
 <BroughtToYouBy>Vám přináší</BroughtToYouBy>
+
 <!--  Tyto zprávy se týkají Vyhledávání podle kategorie. -->
 <categoryTitleHtml>Vyhledávejte datové sady podle kategorie</categoryTitleHtml>
 <categoryHtml><![CDATA[
@@ -314,15 +321,18 @@ lodě + CTD nebo profilovací kluzáky.
 <br>&nbsp;&nbsp;Příklady:
 laboratorní analýzy nebo vykládky ryb podle názvu přístavu (pokud není lat,lon).
 ]]></cdmDataTypeHelp>
+
 <!--  Tato zpráva se používá jako nápověda pro &quot;přístupové&quot; odkazy na HTML stránkách
 kdykoli je zobrazena tabulka datových sad (např. když provádíte fulltextové vyhledávání datových sad).
  -->
 <clickAccess>Kliknutím zobrazíte formulář OPeNDAP Data Access Form pro tuto datovou sadu, abyste si mohli vyžádat data.</clickAccess>
+
 <!--  Tato zpráva se používá jako nápověda pro odkaz „pozadí“ na stránkách HTML
 kdykoli je zobrazena tabulka datových sad (např. když provádíte fulltextové vyhledávání datových sad).
  -->
 <clickBackgroundInfo>Kliknutím zobrazíte informace o pozadí ze zdroje této datové sady.</clickBackgroundInfo>
 <clickERDDAP>Kliknutím sem se vrátíte na domovskou stránku ERDDAP.</clickERDDAP>
+
 <!--  Tato zpráva se kdykoli používá jako nápověda pro odkaz „informace“ na stránkách HTML
 zobrazí se tabulka datových sad (např. když provádíte fulltextové vyhledávání datových sad).
  -->
@@ -334,6 +344,8 @@ zobrazí se tabulka datových sad (např. když provádíte fulltextové vyhled�
 Nebo
 <a rel="help" href="#computerProgram">tuto webovou stránku přeskočte</a> a proveďte konverze z počítačového programu, skriptu nebo webové stránky.
 ]]></convertBypass>
+<convertCOLORs>Barvy</convertCOLORs>
+<convertCOLORsMessage>Převést hodnotu do barvy z barevné lišty</convertCOLORsMessage>
 <convertToAFullName><![CDATA[
 <strong>Převést z {0} na celé jméno.</strong>
 ]]></convertToAFullName>
@@ -386,9 +398,11 @@ Nebo
 <strong>Převést z {0} na název proměnné.</strong>
 ]]></convertToVariableName>
 <converterWebService>ERDDAP nabízí několik převodníků jako webové stránky a jako webové služby:</converterWebService>
+
 <!--  Tyto zprávy HTML se používají k popisu možností &quot;převést&quot; obecně a jednotlivě. -->
 <convertOAAcronyms>Oceánské/atmosférické zkratky</convertOAAcronyms>
 <convertOAAcronymsToFrom>Převeďte běžný oceánský/atmosférický akronym na/z celého jména</convertOAAcronymsToFrom>
+
 <!--  Neměňte příklady (z výchozíN...). -->
 <convertOAAcronymsIntro><![CDATA[
 Tato webová stránka vám umožňuje převést běžný oceánský/atmosférický akronym na/z celého jména.
@@ -420,6 +434,7 @@ Pokud chcete přidat běžnou zkratku nebo provést opravu, pošlete ji e-mailem
 </ul>
 
 ]]></convertOAAcronymsNotes>
+
 <!--  Neměňte příklady (z výchozíN, ...). -->
 <convertOAAcronymsService><![CDATA[
 
@@ -456,6 +471,7 @@ Existují
 ]]></convertOAAcronymsService>
 <convertOAVariableNames>Názvy oceánských/atmosférických proměnných</convertOAVariableNames>
 <convertOAVariableNamesToFrom>Převeďte společný název oceánské/atmosférické proměnné na/z celého jména</convertOAVariableNamesToFrom>
+
 <!--  Neměňte příklady (z výchozíN...). -->
 <convertOAVariableNamesIntro><![CDATA[
 Tato webová stránka vám umožňuje převést běžný název oceánské/atmosférické proměnné na/z celého názvu.
@@ -485,6 +501,7 @@ Pokud chcete přidat běžně používaný název proměnné nebo provést oprav
 </ul>
 
 ]]></convertOAVariableNamesNotes>
+
 <!--  Neměňte příklady (z výchozíN, ...). -->
 <convertOAVariableNamesService><![CDATA[
 
@@ -516,7 +533,9 @@ Existují
     title="Tento odkaz na externí webovou stránku nepředstavuje podporu."></a> .
 ]]></convertOAVariableNamesService>
 <convertFipsCounty>Převeďte kód okresu FIPS do/z názvu okresu</convertFipsCounty>
+
 <!--  Neměňte příklady (z výchozíN...). -->
+
 <!--  &quot;FIPS krajský kód&quot; byl odkaz na http://www.itl.nist.gov/fipspubs/fip6-4.htm
      poté https://www.census.gov/geo/reference/codes/cou.html
      Nyní nejbližší(?) je http://www.datypic.com/sc/niem31/t-fips_6-4_USCountyCodeSimpleType.html
@@ -579,6 +598,7 @@ Subjekty na úrovni státu jsou:
 </ul>
 
 ]]></convertFipsCountyNotes>
+
 <!--  Neměňte příklady (z výchozíN, ...). -->
 <convertFipsCountyService><![CDATA[
 
@@ -800,8 +820,10 @@ Existují
     src="../images/external.png" alt=" (external link)" 
     title="Tento odkaz na externí webovou stránku nepředstavuje podporu."></a> .
 ]]></convertInterpolateService>
+
 <!--  Tyto zprávy HTML se používají k popisu možností &quot;převést&quot; obecně a jednotlivě. -->
 <convertKeywords>Převeďte standardní název CF na/z vědeckého klíčového slova GCMD</convertKeywords>
+
 <!--  Neměňte příklady (z výchozíN...). -->
 <convertKeywordsIntro><![CDATA[
 Tato webová stránka vám umožňuje převést
@@ -846,6 +868,7 @@ webová stránka.
 </ul>
 
 ]]></convertKeywordsNotes>
+
 <!--  Neměňte příklady (z výchozíN, ...). -->
 <convertKeywordsService><![CDATA[
 
@@ -885,6 +908,7 @@ Pokus o překlad částečného nebo neplatného standardního názvu CF nebo v�
 ERDDAP má
 <a rel="bookmark" href="&erddapUrl;/convert/time.html">službu pro převod času řetězce na/z číselného času</a> .
 ]]></convertTimeReference>
+
 <!--  Neměňte vzorové hodnoty (z výchozíN...). -->
 <convertTimeIntro><![CDATA[
 Na různých místech v ERDDAP může být bod v čase reprezentován buď:
@@ -1141,6 +1165,7 @@ Ale to je způsob, jakým ERDDAP v současnosti funguje.
 </ul>
 
 ]]></convertTimeNotes>
+
 <!--  Neměňte příklady (z výchozíN, ...). -->
 <convertTimeService><![CDATA[
 
@@ -1227,6 +1252,7 @@ Pro základní čas můžete použít i jiné běžné formáty.
 Hodnota roku musí být 4 číslice – v případě potřeby použijte odsazení 0.
 Všimněte si, že #/#/# je interpretováno jako měsíc/datum/rok, nikoli datum/měsíc/rok.
 ]]></convertTimeUnitsTooltip>
+
 <!--  Příklad na prvním řádku je EDV.TIME_UNITS. -->
 <convertTimeUnitsHelp><![CDATA[
 Například &quot;seconds since 1970-01-01T00:00:00Z&quot; .
@@ -1668,6 +1694,7 @@ Existují
     src="../images/external.png" alt=" (external link)" 
     title="Tento odkaz na externí webovou stránku nepředstavuje podporu."></a> .
 ]]></convertURLsService>
+
 <!--  cookiesHelp poslední aktualizace 2019-12-19 -->
 <cookiesHelp><![CDATA[
 Ujistěte se, že je váš prohlížeč nastaven tak, aby povoloval
@@ -1728,6 +1755,7 @@ Každý řádek představuje jiný vzorek dat (např.
 z jiného času nebo místa).
 ]]></dafTableTooltip>
 <dasTitle>Struktura atributů datové sady (.das) pro tuto datovou sadu</dasTitle>
+
 <!--  Zpráva, která se zobrazí, pokud data nelze stáhnout (např. SeaWiFS &lt;=14 dní staré). -->
 <dataAccessNotAllowed>[Promiňte. Tato data nelze stáhnout.]</dataAccessNotAllowed>
 <databaseUnableToConnect>Nelze se připojit k databázi.</databaseUnableToConnect>
@@ -1834,7 +1862,7 @@ To zahrnuje:
 <ul>
 <li><a class="selfLink" id="databases" href="#databases" rel="bookmark">Data</a>, která jsou aktuálně uložena v relační databázi.
 <br>Přečtěte si prosím informace o typu datové sady
-<a rel="help" href="https://erddap.github.io/setupDatasetsXml.html#EDDTableFromDatabase">EDDTableFromDatabase</a> v ERDDAP, zejména úvodní ~2 obrazovky s informacemi, které hovoří o potřebě vytvořit denormalizovanou tabulku.
+<a rel="help" href="https://erddap.github.io/docs/server-admin/datasets#eddtablefromdatabase">EDDTableFromDatabase</a> v ERDDAP, zejména úvodní ~2 obrazovky s informacemi, které hovoří o potřebě vytvořit denormalizovanou tabulku.
 To může znít šíleně.
 Důvěřujte prosím natolik, abyste si přečetli zdůvodnění.
 <br>&nbsp;
@@ -1997,6 +2025,7 @@ wind_to_direction,
 x_wind,
 y_wind</DEFAULT_commonStandardNames>
 <disabled>Systém „{0}“ byl na tomto ERDDAP deaktivován.</disabled>
+
 <!--  Toto je nápověda k EDDTable Data Access Form a Make A Graph
      pro widget select, který vloží odlišnou hodnotu do omezení #1.
      [konec 3. řádku byl: jiný než první (&quot;&quot;), ]
@@ -2008,6 +2037,7 @@ Pokud níže vyberete hodnotu, bude tato hodnota použita pro omezení #1.
 <p>Nebo zvažte použití webové stránky Podmnožina pro tuto datovou sadu (viz odkaz výše), která usnadňuje výběr podmnožin této datové sady výběrem kombinací různých hodnot.
 ]]></distinctValuesTooltip>
 <documentation>Dokumentace</documentation>
+
 <!--  Toto používá &ssUse; a &erddapUrl; -->
 <doWithGraphs><![CDATA[
 
@@ -2025,6 +2055,7 @@ Ale některé věci, které jste možná nezvažovali, jsou:
 </ul>
 
 ]]></doWithGraphs>
+
 <!--  DPF = formulář poskytovatele dat -->
 <dpf_submit><![CDATA[
 
@@ -2345,6 +2376,7 @@ Administrátor ERDDAP vám brzy zašle e-mail, abyste zjistili nejlepší způso
 <a rel="bookmark" href="&tErddapUrl;/dataProviderForm1.html?yourName=&tYourName;&amp;emailAddress=&tEmailAddress;">odeslat další datovou</a> sadu nebo se vrátit na
 <a rel="bookmark" href="&tErddapUrl;/index.html">domovskou stránku ERDDAP</a> .
 ]]></dpf_congratulation>
+
 <!--  Tabulka datových sad (např. seznam datových sad) -->
 <dtAccessible><![CDATA[
 <strong>Je vám tato datová sada přístupná?</strong>
@@ -2363,6 +2395,7 @@ Administrátor ERDDAP vám brzy zašle e-mail, abyste zjistili nejlepší způso
 <dtWCS>Kliknutím získáte informace o získávání dat a/nebo map prostřednictvím služby webového pokrytí této datové sady.</dtWCS>
 <dtWMS>Kliknutím získáte informace o vytváření map těchto dat prostřednictvím webové mapové služby této datové sady.</dtWMS>
 <EasierAccessToScientificData>Snazší přístup k vědeckým údajům</EasierAccessToScientificData>
+
 <!--  Zprávy EDD se zobrazují na formulářích pro přístup k datům tabledap a griddap. -->
 <EDDClickOnSubmitHtml><![CDATA[
 Klikněte na <kbd>Submit</kbd> .
@@ -2411,6 +2444,7 @@ Klikněte na <kbd>Submit</kbd> .
 <EDDChangedTableToGrid>Nová verze je EDDGrid. Stará verze není!</EDDChangedTableToGrid>
 <EDDSimilarDifferentNVar>EDD.similar: Druhá datová sada má jiný počet proměnných</EDDSimilarDifferentNVar>
 <EDDSimilarDifferent>EDD.similar: Druhá datová sada má jinou {0} pro datovou proměnnou {1} {2}</EDDSimilarDifferent>
+
 <!--  Zprávy EDDGrid se zobrazují na formuláři pro přístup k datům griddap. -->
 <EDDGridDapDescription>Griddap vám umožňuje používat protokol OPeNDAP hyperslab k vyžádání datových podmnožin, grafů a map z mřížkových datových sad (například družicová data a data klimatických modelů).</EDDGridDapDescription>
 <EDDGridDapLongDescription><![CDATA[
@@ -2509,6 +2543,7 @@ Vyberte jednu nebo více proměnných mřížky.
 <EDDGridCheckAllTooltip>Kliknutím sem vyberete všechny datové proměnné.</EDDGridCheckAllTooltip>
 <EDDGridUncheckAll>Zrušte zaškrtnutí políčka Vše</EDDGridUncheckAll>
 <EDDGridUncheckAllTooltip>Kliknutím sem zrušíte výběr všech datových proměnných.</EDDGridUncheckAllTooltip>
+
 <!-- Příklady Griddap Tato skupina nastavení se používá k vytvoření příkladů pro dokumentaci griddap, která se objevuje na [baseUrl]/erddap/griddap/documentation.html a jinde.
 Speciální znaky (např.
 &amp; &lt; &gt;) musí být kódovány HTML.
@@ -2517,6 +2552,7 @@ Pokud chcete, aby příklady ukazovaly na váš ERDDAP, nejjednodušší metoda 
 <dataset type=" EDDGrid FromErddap&quot;<span translate="no">datasetID =&quot;jplMU RSS T41&quot;active=&quot;true&quot;&gt;<sourceUrl> https://coastwatch.pfeg.noaa.gov/erddap/griddap/jplMU RSS T41</sourceUrl></dataset> 2) Přidejte tuto značku do souboru setup.xml, ale změňte adresu URL na (https?) URL vašeho ERDDAP :
 &lt; EDDGrid ErddapUrlExample&gt;https://coastwatch.pfeg.noaa.gov/erddap/ </ EDDGrid ErddapUrlPříklad&gt; -->
 <EDDGridErddapUrlExample>https://coastwatch.pfeg.noaa.gov/erddap/</EDDGridErddapUrlExample>
+
 <!--  Toto je datasetID pro datovou sadu EDDGrid, která je obsluhována vaším ERDDAP.
      Tato datová sada se používá jako základ pro všechny níže uvedené příklady EDDGrid.
      V ideálním případě se jedná o datovou sadu, která (alespoň) má rozměry času, zeměpisné šířky a délky.
@@ -2524,37 +2560,47 @@ Pokud chcete, aby příklady ukazovaly na váš ERDDAP, nejjednodušší metoda 
      Hodnoty zeměpisné délky použité v níže uvedených příkladech nesmí mít rozsah 180 (pro práci s .esriAscii).
      (Je v pořádku, pokud je datová sada 0 až 360 – stačí použít část 0 až 180 (nebo 180 až 360).) -->
 <EDDGridIdExample>jplMURSST41</EDDGridIdExample>
+
 <!--  Toto je úplný řetězec dotazu pro získání některých dat os z ukázkové datové sady mřížky. -->
 <EDDGridDimensionExample>latitude[0:100:1000]</EDDGridDimensionExample>
+
 <!--  Toto je název datové proměnné v ukázkové datové sadě mřížky. -->
 <EDDGridNoHyperExample>analysed_sst</EDDGridNoHyperExample>
+
 <!--  To se používá k pojmenování/vysvětlení/popisu všech dimenzí v ukázkové datové sadě mřížky. -->
 <EDDGridDimNamesExample>[time][latitude][longitude]</EDDGridDimNamesExample>
+
 <!--  Toto je příklad datového dotazu pomocí notace ERDDAP () a času ve formátu ISO.
      Je hezké (není povinné), že tato podmnožina je vhodná pro vytvoření mapy (viz příklad EDDGridMapExample níže).
      Použité hodnoty zeměpisné délky nesmí přesáhnout 180 (pro práci s .esriAscii).
      Použití &quot;:1000:&quot; zabrání odeslání tuny dat uživateli.
      Svůj příklad můžete vygenerovat prostřednictvím formuláře pro přístup k datům vaší datové sady v ERDDAP. -->
 <EDDGridDataTimeExample>analysed_sst[(2002-06-01T09:00:00Z)][(-89.99):1000:(89.99)][(-179.99):1000:(180.0)]</EDDGridDataTimeExample>
+
 <!--  Toto je ekvivalentní příklad datového dotazu, který však specifikuje čas jako sekundy-od-1970-01-01.
      Pokud potřebujete převést datum/čas na sekundy-od-1970-01-01, použijte
      https://coastwatch.pfeg.noaa.gov/erddap/convert/time.html. -->
 <EDDGridDataValueExample>analysed_sst[(1022922000)][(-89.99):1000:(89.99)][(-179.99):1000:(180.0)]</EDDGridDataValueExample>
+
 <!--  Toto je ekvivalentní příklad datového dotazu, který však používá pouze tradiční notaci ve stylu indexů opendap. -->
 <EDDGridDataIndexExample>analysed_sst[0][0:1000:16383][0:1000:32767]</EDDGridDataIndexExample>
+
 <!--  Toto je příklad dotazu, který generuje graf.
      Svůj příklad můžete vygenerovat prostřednictvím formuláře Make A Graph vaší datové sady v ERDDAP. -->
 <EDDGridGraphExample>analysed_sst[(2002-06-01T09:00:00Z):(2002-07-01T09:00:00Z)][(29)][(-135)]&amp;.draw=linesAndMarkers&amp;.vars=time|analysed_sst|&amp;.marker=1|3&amp;.color=0xFF9900&amp;.colorBar=|C|Linear|||</EDDGridGraphExample>
+
 <!--  Toto je příklad dotazu, který generuje mapu.
      Příklad &quot;mapy&quot; musí mít zeměpisnou délku, která nepřesahuje 180 pro .esriAscii.
      Použití &quot;:1000:&quot; zabrání odeslání tuny dat uživateli.
      „:1000:“ je při žádosti o .png irelevantní, ale relevantní, pokud uživatel získá skutečná data (např. .csv). -->
 <EDDGridMapExample>analysed_sst[(2002-06-01T09:00:00Z)][(-89.99):1000:(89.99)][(-179.99):1000:(180.0)]&amp;.draw=surface&amp;.vars=longitude|latitude|analysed_sst&amp;.colorBar=Rainbow|C|Linear|0|32|</EDDGridMapExample>
+
 <!--  Toto je 2řádkový příklad Matlabu, který používá data z EDDGridMapExample.
      Doufejme, že stačí nahradit vaše datasetID za &quot;jplMURSST41&quot;
      a upravte &quot;[0 32]&quot; (rozsah dat pro barevný pruh). -->
 <EDDGridMatlabPlotExample>imagesc(jplMURSST41.longitude, jplMURSST41.latitude, squeeze(jplMURSST41.analysed_sst), [0 32])
-set(gca, 'YDir', 'normal')</EDDGridMatlabPlotExample>
+set(gca, &#39;YDir&#39;, &#39;normal&#39;)</EDDGridMatlabPlotExample>
+
 <!--  Zprávy EDDTable jsou zobrazeny na formuláři pro přístup k datům tabledap a Make A Graph. -->
 <EDDTableConstraints>Omezení</EDDTableConstraints>
 <EDDTableDapDescription>Tabledap vám umožňuje používat protokol omezení/výběru OPeNDAP k vyžádání datových podmnožin, grafů a map z tabulkových datových sad (například data bóje).</EDDTableDapDescription>
@@ -2661,6 +2707,7 @@ Pokud vyberete hodnotu, bude použita pro omezení #1.
 Pokud vyberete konkrétní hodnotu pro více než jednu proměnnou, je možné, že nebudou nalezena žádná odpovídající data.
 Zvažte použití <kbd>Subset</kbd>, která usnadňuje nalezení platných kombinací.
 ]]></EDDTableSelectConstraintTooltip>
+
 <!--  Příklady Tabledap
 Tato skupina nastavení se používá k vytvoření příkladů pro dokumentaci tabledap
 který se objeví na [baseUrl]/erddap/tabledap/documentation.html a jinde.
@@ -2675,31 +2722,39 @@ Pokud chcete, aby příklady ukazovaly na váš ERDDAP, nejjednodušší metoda 
 &lt;EDDTableErddapUrlExample&gt;https://coastwatch.pfeg.noaa.gov/erddap/&lt;/EDDTableErddapUrlExample&gt;
  -->
 <EDDTableErddapUrlExample>https://coastwatch.pfeg.noaa.gov/erddap/</EDDTableErddapUrlExample>
+
 <!--  Toto je datasetID pro datovou sadu EDDTable, která je obsluhována vaším ERDDAP.
      Tato datová sada se používá jako základ pro všechny níže uvedené příklady EDDGrid.
      V ideálním případě je to soubor dat, který má proměnné zeměpisné délky, zeměpisné šířky a času (mimo jiné).
      („Čas“ umožňuje vytvořit graf časové řady. „zeměpisná šířka“ a „zeměpisná délka“ umožňují vytvoření mapy.)
      Datový soubor může mít hodnoty zeměpisné délky -180 až 180 nebo 0 až 360. -->
 <EDDTableIdExample>pmelTaoDySst</EDDTableIdExample>
+
 <!--  Toto je čárkami oddělený seznam proměnných z datové sady.
      Je užitečné, pokud je to &quot;zeměpisná délka, zeměpisná šířka, čas&quot; plus název datové proměnné. -->
 <EDDTableVariablesExample>longitude,latitude,time,station,wmo_platform_code,T_25</EDDTableVariablesExample>
+
 <!--  Toto je příklad omezení, který je připojen k EDDTableVariablesExample.
   TOTO V SSR.testForBrokenLinks SELHÁ, ALE ÚSPĚŠNĚ jej používá na webové stránce dokumentace tabledap. Tak toho nech. -->
 <EDDTableConstraintsExample>&amp;time&gt;=2015-05-23T12:00:00Z&amp;time&lt;=2015-05-31T12:00:00Z</EDDTableConstraintsExample>
+
 <!--  Toto je příklad datového dotazu využívajícího čas ve formátu ISO.
      Svůj příklad můžete vygenerovat prostřednictvím formuláře pro přístup k datům vaší datové sady v ERDDAP.
   TOTO V SSR.testForBrokenLinks SELHÁ, ALE ÚSPĚŠNĚ jej používá na webové stránce dokumentace tabledap. Tak toho nech. -->
 <EDDTableDataTimeExample>longitude,latitude,time,station,wmo_platform_code,T_25&amp;time&gt;=2015-05-23T12:00:00Z&amp;time&lt;=2015-05-31T12:00:00Z</EDDTableDataTimeExample>
+
 <!--  Toto je ekvivalentní příklad datového dotazu, který však specifikuje čas jako sekundy-od-1970-01-01.
      Pokud potřebujete převést datum/čas na „sekundy od 1970-01-01“, použijte
      https://coastwatch.pfeg.noaa.gov/erddap/convert/time.html -->
 <EDDTableDataValueExample>longitude,latitude,time,station,wmo_platform_code,T_25&amp;time&gt;=1432382400&amp;time&lt;=1433073600</EDDTableDataValueExample>
+
 <!--  Toto je příklad dotazu, který generuje graf.
      Svůj příklad můžete vygenerovat prostřednictvím formuláře Make A Graph vaší datové sady v ERDDAP. -->
-<EDDTableGraphExample>time,T_25&amp;station="0n0e"&amp;time&gt;=2015-05-23T12:00:00Z&amp;time&lt;=2015-05-31T12:00:00Z&amp;.draw=lines</EDDTableGraphExample>
+<EDDTableGraphExample>time,T_25&amp;station=&quot;0n0e&quot;&amp;time&gt;=2015-05-23T12:00:00Z&amp;time&lt;=2015-05-31T12:00:00Z&amp;.draw=lines</EDDTableGraphExample>
+
 <!--  Toto je příklad dotazu, který generuje mapu. -->
 <EDDTableMapExample>longitude,latitude,T_25&amp;time=2015-05-31T12:00:00Z&amp;.draw=markers&amp;.marker=5|5</EDDTableMapExample>
+
 <!--  Toto je příklad Matlabu, který používá data z EDDTableGraphExample.
      Všimněte si zápisu v Matlabu datasetName.variableName. -->
 <EDDTableMatlabPlotExample>plot(pmelTaoDySst.time, pmelTaoDySst.T_25)</EDDTableMatlabPlotExample>
@@ -2727,6 +2782,7 @@ Například:
 <br>&versionStringResponse;
 <br>Pokud se zobrazí chybová zpráva <kbd>HTTP 404 Not-Found</kbd>, považujte ERDDAP za verzi 1.80 nebo nižší.
 ]]></erddapVersionHTML>
+
 <!--  Tyto zprávy se zobrazí, když se zobrazí chybová zpráva. -->
 <errorTitle>Chyba</errorTitle>
 <errorRequestUrl>Adresa URL vašeho požadavku:</errorRequestUrl>
@@ -2736,6 +2792,7 @@ Například:
 <errorFileNotFound>Soubor nenalezen: {0} .</errorFileNotFound>
 <errorFileNotFoundImage>Soubor nebyl nalezen v mezipaměti. Znovu vytvořte obrázek a zkuste to znovu.</errorFileNotFoundImage>
 <errorInternal>Interní chyba:</errorInternal>
+
 <!--  Do chybové zprávy neuvádějte neplatný (škodlivý?) functionName. -->
 <errorJsonpFunctionName>Tento název funkce jsonp není povolen. První znak musí být písmeno ISO 8859-1 nebo „_“. Každý volitelný následující znak musí být písmeno ISO 8859-1, &quot;_&quot;, číslice nebo &quot;.&quot;.</errorJsonpFunctionName>
 <errorJsonpNotAllowed>Požadavek jsonp není pro tento typ souboru povolen.</errorJsonpNotAllowed>
@@ -2745,6 +2802,7 @@ Například:
 <errorOdvLLTGrid>U souboru ODV .txt MUSÍ datová sada obsahovat zeměpisnou délku, šířku a časové osy.</errorOdvLLTGrid>
 <errorOdvLLTTable>Požadavky na data pro soubory ODV .txt musí obsahovat údaje o zeměpisné délce, zeměpisné šířce a čase.</errorOdvLLTTable>
 <errorOnWebPage>Při psaní této webové stránky došlo k chybě:</errorOnWebPage>
+
 <!--  Ty jsou také v/zkopírovány do HtmlWidgets -->
 <errorXWasntSpecified>Chyba: „{0}“ nebylo zadáno.</errorXWasntSpecified>
 <errorXWasTooLong>Chyba: „{0}“ mělo více než {1} znaků.</errorXWasTooLong>
@@ -2792,6 +2850,8 @@ Například:
 <fileHelp_ncml>Zobrazte strukturu a metadata datové sady jako soubor .xml NCML UTF-8.</fileHelp_ncml>
 <fileHelpGrid_odvTxt>Čas stahování, zeměpisná šířka, délka, další proměnné jako generický tabulkový soubor ODV (.txt).</fileHelpGrid_odvTxt>
 <fileHelpTable_odvTxt>Stáhněte si zeměpisnou délku, šířku, čas, ostatní sloupce jako obecný soubor tabulky ISO-8859-1 ODV (.txt).</fileHelpTable_odvTxt>
+<fileHelp_parquet>Stáhnout jako parketový soubor. Metadata obsahuje názvy sloupců (&quot;sloupce_názvy&quot;) a jednotky (&quot;sloupce_jednotky&quot;).</fileHelp_parquet>
+<fileHelp_parquet_with_meta>Stáhnout jako parketový soubor s podrobnými metadaty.</fileHelp_parquet_with_meta>
 <fileHelp_subset>Zobrazte formulář HTML, který používá fasetované vyhledávání ke zjednodušení výběru podmnožin dat.</fileHelp_subset>
 <fileHelp_timeGaps>Prohlédněte si UTF-8 seznam mezer v hodnotách času, které jsou větší než střední mezera.</fileHelp_timeGaps>
 <fileHelp_tsv>Stáhněte si textovou tabulku ISO-8859-1 oddělenou tabulátory (řádek 1: názvy; řádek 2: jednotky; ISO 8601 krát).</fileHelp_tsv>
@@ -2809,6 +2869,7 @@ Například:
 <fileHelp_png>Zobrazte standardní, středně velký soubor obrázku .png s grafem nebo mapou.</fileHelp_png>
 <fileHelp_largePng>Prohlédněte si velký soubor obrázku .png s grafem nebo mapou.</fileHelp_largePng>
 <fileHelp_transparentPng>Zobrazte soubor obrázku .png (pouze data, bez os, orientační masky nebo legendy).</fileHelp_transparentPng>
+
 <!--  Znění popisu a varování je vágní, aby umožňovalo jednu nebo více datových sad. -->
 <filesDescription>Systém „souborů“ ERDDAP vám umožňuje procházet virtuální souborový systém a stahovat zdrojové datové soubory.</filesDescription>
 <filesSort>Kliknutím na nadpis (např. Název, Poslední úprava, Velikost) změníte pořadí řazení. &quot;Naposledy upraveno&quot; používá časové pásmo Zulu.</filesSort>
@@ -3081,7 +3142,7 @@ Soubory obou verzí mají příponu .nc a lze je číst programy, které čtou s
 <a rel="help" href="https://anaconda.org/eumetsat/ncview">přes Conda <img
        src="https://coastwatch.pfeg.noaa.gov/erddap/images/external.png" alt=" (external link)"
        title="Tento odkaz na externí webovou stránku nepředstavuje podporu."></a>).
-<li><a rel="help" href="https://erddap.github.io/setupDatasetsXml.html#NCO">NCO</a>, výkonný nástroj příkazového řádku pro trvalou úpravu souborů .nc .
+<li><a rel="help" href="https://erddap.github.io/docs/server-admin/datasets#netcdf-operators-nco">NCO</a>, výkonný nástroj příkazového řádku pro trvalou úpravu souborů .nc .
 <li><a rel="help" href="https://www.unidata.ucar.edu/downloads/netcdf/">NetCDF -C a NetCDF - Java <img
        src="https://coastwatch.pfeg.noaa.gov/erddap/images/external.png" alt=" (external link)"
        title="Tento odkaz na externí webovou stránku nepředstavuje podporu."></a>, hlavní softwarové knihovny pro C, C++, Fortran nebo Java pro čtení a zápis souborů .nc .
@@ -3193,6 +3254,7 @@ K tomu slouží DAP .
 ]]></filesDocumentation>
 <FIPSCountyCodes>FIPS krajské kódy</FIPSCountyCodes>
 <functions>Funkce na straně serveru</functions>
+
 <!--  {0}=distinct(), takže nebude přeloženo -->
 <functionTooltip><![CDATA[
 Tabulka DAP podporuje některé funkce na straně serveru, které upravují tabulku výsledků dat.
@@ -3202,6 +3264,7 @@ Kromě &quot;{0}&quot; jsou <strong>potřeba jen zřídka</strong> .
 Pokud použijete více než jednu funkci, budou použity v pořadí, v jakém jsou uvedeny v požadavku.
 ]]></functionTooltip>
 <functionDistinctCheck>Toto zaškrtněte, pokud chcete použít funkci different() .</functionDistinctCheck>
+
 <!--  {0}=distinct(), takže nebude přeloženo -->
 <functionDistinctTooltip><![CDATA[
 Zaškrtnutím &quot;{0}&quot; sdělíte ERDDAP, aby seřadil tabulku výsledků podle všech výše vybraných proměnných (s tím, že horní/první proměnná vybraná výše je nejdůležitější a ostatní vybrané proměnné se používají pouze k přerušení vazeb) a odstranily všechny duplicitní řádky z tabulky odpovědí.
@@ -3294,6 +3357,7 @@ ArcGIS Server</strong>
 </ol>
 
 ]]></geoServicesDescription>
+
 <!--  Začínáme se zobrazí na pravé straně domovské stránky.
 „Začněte s ERDDAP“ .
  -->
@@ -3302,6 +3366,7 @@ ArcGIS Server</strong>
 <br>&nbsp;&nbsp;&nbsp;&nbsp;Hledejte zajímavé datové sady</span>
 ]]></getStartedHtml>
 <help>Pomoc</help>
+
 <!--  To zabraňuje naivním požadavkům na velké množství dat v HtmlTable
 před pádem prohlížeče uživatele.
 Používá se k přepsání TableWriterHtmlTable.htmlTableMaxMB.
@@ -3317,6 +3382,7 @@ Aby nedošlo k selhání prohlížeče, některá další data se nezobrazovala.
 <br>Nebo si stáhněte soubor, který lze zobrazit v programu, který si poradí s velkými soubory (např.
 soubor .csv v textovém editoru).
 ]]></htmlTableMaxMessage>
+
 <!--  ETOPO2v2g_MSB.raw, gshhs*, nationalBoundaries* a stateBoundaries*
 soubory musí být v SSR.getContextDirectory() + &quot;WEB-INF/ref/&quot;.
 Státní a národní hranice mám z GMT:
@@ -3327,6 +3393,7 @@ kde „N1“ (národní) lze změnit na „N2“ (státní)
 Výsledné soubory používají formát GMT_FORMAT.
  -->
 <imageDataCourtesyOf>Data s laskavým svolením {0}</imageDataCourtesyOf>
+
 <!--  Pro každou imageSize existuje imageWidth a imageHeight (v pixelech).
 Šířky jsou v poměru 2:3:6, což umožňuje zobrazení 3, 2 nebo 1 na řádek v grafickém programu.
  -->
@@ -3415,6 +3482,7 @@ href="https://groups.google.com/forum/#!forum/erddap">adrese https://groups.goog
   title="Tento odkaz na externí webovou stránku nepředstavuje podporu."/></a> a kliknutím na „Zažádat o členství“.
 Jakmile se stanete členem, můžete tam umístit svou otázku nebo vyhledat, zda již byla otázka položena a zodpovězena.</div>
 ]]></imagesEmbed>
+
 <!--  text pro pravou stranu index.html -->
 <indexViewAll>Zobrazit seznam všech datových sad {0}</indexViewAll>
 <indexSearchWith>Hledat datové sady pomocí {0}</indexSearchWith>
@@ -3433,8 +3501,10 @@ může vyhledávat datové sady prostřednictvím</indexDevelopersSearch>
 <indexAllDatasetsSearch>Tabulková datová sada allDatasets ERDDAP, která obsahuje řadu informací pro každou datovou sadu</indexAllDatasetsSearch>
 <indexOpenSearch>Služba ERDDAP OpenSearch 1.1</indexOpenSearch>
 <indexMetadata>Metadata</indexMetadata>
+
 <!--  {0} {1} je odkaz pouze na jeden z FGDC nebo ISO 19115 WAF -->
 <indexWAF1>ERDDAP má soubor metadat {0} s {1} pro všechny soubory geoprostorových dat v tomto ERDDAP.</indexWAF1>
+
 <!--  odkazy na FGDC a ISO 19115 WAF -->
 <indexWAF2>ERDDAP má {0} s {1} soubory metadat a {2} s {3} soubory metadat pro všechny soubory geoprostorových dat v tomto ERDDAP.</indexWAF2>
 <indexConverters>Převodníky</indexConverters>
@@ -3452,10 +3522,13 @@ Můžete obejít webové stránky ERDDAP a používat webové služby RESTful ER
 {0}
 Nebo použijte vyšší čísla, pokud problém přetrvává.
 Výchozí hodnota pro hodinky je 8192. Výchozí hodnota pro instance je 128.</inotifyFix>
+
 <!--  nepřekládat -->
-<inotifyFixCommands>sudo sysctl fs.inotify.max_user_watches=65536
+<inotifyFixCommands>
+  sudo sysctl fs.inotify.max_user_watches=65536
   sudo sysctl fs.inotify.max_user_instances=1024
-  sudo sysctl -p</inotifyFixCommands>
+  sudo sysctl -p
+</inotifyFixCommands>
 <interpolate>Interpolovat</interpolate>
 <javaProgramsHTML><![CDATA[
 
@@ -3464,8 +3537,9 @@ Jak je popsáno výše, protože programy Java mohou přistupovat k datům dostu
 <p>Nebo, protože ERDDAP je plnohodnotný program s otevřeným zdrojovým kódem, můžete si také nastavit vlastní kopii ERDDAP na svém vlastním serveru (veřejně přístupném nebo ne), aby obsluhoval vaše vlastní data.
 Vaše Java programy mohou získat data z této kopie ERDDAP .
 Viz
-<a rel="help" href="https://erddap.github.io/setup.html">Nastavení vlastního ERDDAP</a> .
+<a rel="help" href="https://erddap.github.io/docs/server-admin/deploy-install">Nastavení vlastního ERDDAP</a> .
 ]]></javaProgramsHTML>
+
 <!--  Zprávy justGenerateAndView se používají pro tlačítko justGenerateAndView
 na formulářích pro přístup k datům.
 Zpráva justGenerateAndViewHtml může obsahovat &protocolName; .
@@ -3497,6 +3571,7 @@ Další informace o vytváření adres URL získáte kliknutím na odkaz <kbd>By
 ]]></justGenerateAndViewGraphUrlTooltip>
 <keywords>Klíčová slova</keywords>
 <langCode>cs</langCode>
+
 <!--  Toto se objeví na webové stránce erddap/legal.html po obecném vyloučení odpovědnosti.
 Kterýkoli z [standardParts] můžete nahradit svým vlastním HTML.
 [standardContact] odkazuje na adminEmail. -->
@@ -3515,6 +3590,7 @@ Kterýkoli z [standardParts] můžete nahradit svým vlastním HTML.
 <h2><a class="selfLink" id="disclaimers" href="#disclaimers" rel="bookmark">Vyloučení odpovědnosti</a></h2>
 ]]></legalNotices>
 <legalNoticesTitle>Právní upozornění</legalNoticesTitle>
+
 <!--  Název legendy mapy (nebo nic, pokud nechcete legenduTitle).
 V ERD toto nepoužíváme. Můžete použít legendTitle1 a/nebo legendTitle2 (druhý řádek).
 Pro horizontální legendu ERDDAP jsou legendaTitle1 a 2 umístěny na stejný řádek.
@@ -3526,6 +3602,7 @@ Výchozí hodnota je nic (nepoužito).
 <legendTitle2></legendTitle2>
 <license>Licence</license>
 <likeThis>takhle</likeThis>
+
 <!--  např. {0}=WMS nebo listAll -->
 <listOfDatasets>Seznam datových sad {0}</listOfDatasets>
 <listAll>Všechno</listAll>
@@ -3539,7 +3616,7 @@ Mnoho instalací ERDDAP nemá povolenou autentizaci, a proto uživatelům neposk
 V současné době ERDDAP podporuje pouze ověřování prostřednictvím e-mailových účtů spravovaných společností Google, které zahrnují e-mailové účty na NOAA a mnoha univerzitách.
 Pokud má ERDDAP povoleno ověřování, může se přihlásit kdokoli s e-mailovým účtem spravovaným společností Google, ale bude mít přístup pouze k soukromým datovým sadám, ke kterým mu administrátor ERDDAP výslovně povolil přístup.
 Pokyny k přihlášení do ERDDAP z prohlížeče nebo pomocí skriptu najdete v tématu
-<a rel="help" href="https://erddap.github.io/AccessToPrivateDatasets.html">Přístup k soukromým datovým sadám v ERDDAP</a> .
+<a rel="help" href="https://erddap.github.io/docs/user/AccessToPrivateDatasets">Přístup k soukromým datovým sadám v ERDDAP</a> .
 ]]></loginHTML>
 <loginAttemptBlocked>CHYBA: Pokusy o přihlášení pro {0} jsou dočasně zablokovány po 3 neúspěšných pokusech.
 Počkejte {1} minut a zkuste to znovu.</loginAttemptBlocked>
@@ -3700,6 +3777,7 @@ Je možné, že některé datové sady nejsou aktuálně dostupné nebo že k ni
 <LogOut>Odhlásit se</LogOut>
 <logout>odhlásit se</logout>
 <logoutOpenID>Odhlaste se od svého poskytovatele OpenID.</logoutOpenID>
+
 <!--  logoutSuccess naposledy aktualizováno 19.12.2019 -->
 <logoutSuccess>Úspěšně jste se odhlásili.
 
@@ -3760,6 +3838,7 @@ Před kliknutím sem klikněte <kbd>Redraw the Graph</kbd>, takže se použije n
 ]]></magDownloadTooltip>
 <magFileType>Poté nastavte Typ souboru</magFileType>
 <magGraphType>Typ grafu</magGraphType>
+
 <!--  Nepřekládejte názvy graphType -->
 <magGraphTypeTooltipGrid><![CDATA[
 <strong>Typ grafu</strong>
@@ -3871,6 +3950,7 @@ uveďte pouze 1 hodnotu →
 ]]></magJust1Value>
 <magRange>Rozsah</magRange>
 <magRangeTo>na</magRangeTo>
+
 <!--  např. od 0 do 100 -->
 <magRedraw>Překreslete graf</magRedraw>
 <magRedrawTooltip>Překreslete graf na základě výše uvedeného nastavení.</magRedrawTooltip>
@@ -3937,6 +4017,7 @@ Tato webová stránka Make A Graph pouze zjednodušuje vytváření tabledap URL
 <br>Pak pro získávání dat nemusíte používat tento formulář.
 Viz níže uvedený odkaz „Přeskočit tento formulář“.
 ]]></magTableTooltip>
+
 <!--  chyby související s pamětí musí obsahovat toto slovo. To vše by mělo být malými písmeny (pro testování bez rozlišení velkých a malých písmen). -->
 <memory>Paměť</memory>
 <memoryTooMuchData>Váš dotaz vytvořil příliš mnoho dat. Zkuste požadovat méně dat. [Paměť]</memoryTooMuchData>
@@ -3945,7 +4026,9 @@ Viz níže uvedený odkaz „Přeskočit tento formulář“.
 <memoryThanSafe>Požadavek vyžaduje více paměti ({0} MB), než je kdykoli bezpečně k dispozici v tomto nastavení Java ({1} MB).</memoryThanSafe>
 <metadataDownload>Kliknutím stáhnete metadata {0}.</metadataDownload>
 <moreInformation>více informací</moreInformation>
+
 <!--  Tyto zprávy ve stylu MessageFormat jsou vloženy do souboru MustBe.xxx. -->
+
 <!--  Toto je důležitá chybová zpráva. Znamená to, že požadavek byl platný,
 ale výsledkem nebyla žádná data. Klienti mohou hledat přesně tuto zprávu.
 Prozatím je nejlepší to neměnit.
@@ -3954,11 +4037,13 @@ Ale dods.dap.DODSException nemá žádnou relevantní výjimku.
 Je lepší vrátit prázdný soubor? Ale .nc a další neumožňují data o délce 0.
  -->
 <MustBeThereIsNoData>Váš dotaz nepřinesl žádné odpovídající výsledky.</MustBeThereIsNoData>
+
 <!--  Mnoho typů souborů omezuje množství dat, které soubor pojme (např. 2 GB). -->
 <MustBeNotNull>{0} nesmí mít hodnotu null.</MustBeNotNull>
 <MustBeNotEmpty>{0} nesmí být prázdný řetězec.</MustBeNotEmpty>
 <MustBeInternalError>Interní chyba</MustBeInternalError>
 <MustBeOutOfMemoryError>Nedostatek paměti Chyba</MustBeOutOfMemoryError>
+
 <!--  Ty mohou mít obsah HTML -->
 <nMatching1>1 odpovídající datová sada.</nMatching1>
 <nMatching>{0} odpovídajících datových sad.</nMatching>
@@ -3968,8 +4053,10 @@ Je lepší vrátit prázdný soubor? Ale .nc a další neumožňují data o dél
 <nMatchingCurrent>proud</nMatchingCurrent>
 <noDataFixedValue>Proměnná s pevnou hodnotou={0} se nezdařila v testu {1}.</noDataFixedValue>
 <noDataNoLL>Neexistují žádné platné hodnoty zeměpisné délky nebo šířky.</noDataNoLL>
+
 <!--  např. {0}=&quot;protocol=griddap&quot; -->
 <noDatasetWith>V současné době nejsou k dispozici žádné datové sady s {0}.</noDatasetWith>
+
 <!--  {0}=stránka {1}=posledníStránka -->
 <noPage1>Požadovali jste stránku výsledků={0}, ale poslední stránka je {1}.</noPage1>
 <noPage2>Požádejte o stránku od 1 do {1}.</noPage2>
@@ -3978,6 +4065,7 @@ Je lepší vrátit prázdný soubor? Ale .nc a další neumožňují data o dél
 <notAuthorizedForData>logInAs={0} nemá oprávnění k přístupu k datům z datasetID={1}, ale má oprávnění k přístupu ke grafům a metadatům.</notAuthorizedForData>
 <notAvailable>V současné době není datasetID={0} k dispozici.</notAvailable>
 <note>POZNÁMKA!</note>
+
 <!--  Xxx je Make A Graph, FGDC, ISO 19115, SOS, WCS, WMS, ... -->
 <noXxx>Tato datová sada není nikdy dostupná prostřednictvím {0}.</noXxx>
 <noXxxBecause>Tato datová sada není nikdy dostupná prostřednictvím {0}, protože {1}.</noXxxBecause>
@@ -4035,6 +4123,13 @@ Vývojáři počítačových programů a webových stránek skriptovaných v Jav
 Viz Možnosti ve spodní části této webové stránky.
 <br>&nbsp;
 ]]></outOfDateKeepTrack>
+
+<!--StranaPrvní >první </stranaPrvní >
+<pagePředchozí >předchozí </pagePředchozí >
+<pageAktuální >Aktuální </pageAktuální >
+<pageDalší >další </pageDalší >
+<pageLast >last </pageLast-->
+
 <!--  Toto jsou možnosti palety.
      Pro každý z nich musí být v adresáři erddap/WEB-INF/cptfiles soubor .cpt.
   Standardní palety jsou uvedeny v &#39;palettes&#39; v Bob&#39;s messages.xml,
@@ -4050,6 +4145,7 @@ KT_gray, KT_haline, KT_ice, KT_matter, KT_oxy, KT_phase, KT_solar,
 KT_speed, KT_tempo, KT_thermal, KT_turbid, EK80</palettes>
 <patientData>(Buďte prosím trpěliví. Získání dat může chvíli trvat.)</patientData>
 <patientYourGraph>[Ten graf, který jste zadali. Prosím, buďte trpěliví.]</patientYourGraph>
+
 <!--  Pro každou velikost obrázku je pdfWidth a pdfHeight (v 1/144 palce).
 Velká velikost je maximální, aby se vešla na stránku (okraje 0,5&quot; LR, okraje 1&quot; TB poskytují nejlepší velikost legendy).
 Šířky jsou v poměru 1:2:3.
@@ -4071,6 +4167,7 @@ Existují
     title="Tento odkaz na externí webovou stránku nepředstavuje podporu."></a> .
 ]]></percentEncode>
 <pickADataset>Vyberte datovou sadu</pickADataset>
+
 <!--  Zprávy související s prohledáváním datových sad na základě protokolu. -->
 <protocolSearchHtml>Vyhledávání datových sad podle protokolu</protocolSearchHtml>
 <protocolSearch2Html><![CDATA[
@@ -4147,7 +4244,7 @@ Lidé mohou například tuto adresu URL použít k fulltextovému vyhledávání
 V ERDDAP je mnoho funkcí, které mohou používat počítačové programy nebo skripty, které píšete.
 Můžete je použít k vytváření dalších webových aplikací nebo webových služeb nad ERDDAP, takže většinu práce udělá ERDDAP ! Pokud tedy máte nápad na lepší rozhraní pro data, která ERDDAP poskytuje, nebo webovou stránku, která potřebuje snadný způsob přístupu k datům, doporučujeme vám vytvořit si vlastní webovou aplikaci, webovou službu nebo webovou stránku a používat ERDDAP jako nadace.
 Váš systém může získávat data, grafy a další informace z ERDDAP ERD nebo z jiných instalací ERDDAP, nebo můžete<!-- setup always from coastwatch's erddap -->
-<a rel="help" href="https://erddap.github.io/setup.html">nastavit si vlastní ERDDAP server</a>, který může být veřejně přístupný nebo jen soukromě přístupný.
+<a rel="help" href="https://erddap.github.io/docs/server-admin/deploy-install">nastavit si vlastní ERDDAP server</a>, který může být veřejně přístupný nebo jen soukromě přístupný.
 <h3><a class="selfLink" id="requests" href="#requests" rel="bookmark">RESTful URL požadavky</a></h3>
 Požadavky na informace o uživatelském rozhraní z ERDDAP (například výsledky vyhledávání) používají univerzální standard webu pro požadavky:
 <a rel="help" href="https://en.wikipedia.org/wiki/Uniform_Resource_Locator">URL &externalLinkHtml;</a> odesláno přes
@@ -4208,7 +4305,7 @@ ERDDAP může vrátit výsledky uživatelského rozhraní jako tabulku dat v tě
 <li>.nc - plochý binární soubor NetCDF -3 podobný tabulce.
 (<a rel="help" href="https://www.unidata.ucar.edu/software/netcdf/">více&nbsp;informace &externalLinkHtml;</a>)
 <li>.nccsv – plochý soubor ASCII CSV podobný tabulce podobný NetCDF .
-(<a rel="help" href="https://erddap.github.io/NCCSV.html">více&nbsp;informace &externalLinkHtml;</a>)
+(<a rel="help" href="https://erddap.github.io/docs/user/nccsv-1.20">více&nbsp;informace &externalLinkHtml;</a>)
 <li>.tsv - textová tabulka ASCII oddělená tabulátory.
 (<a rel="help" href="https://jkorpela.fi/TSV.html">více&nbsp;informace &externalLinkHtml;</a>)
 <li>.xhtml – soubor XHTML (XML) s daty v tabulce.
@@ -4418,8 +4515,10 @@ Vidět
 <searchDoFullTextHtml>Proveďte fulltextové vyhledávání datových sad</searchDoFullTextHtml>
 <searchFullTextHtml>Fulltextové vyhledávání datových sad</searchFullTextHtml>
 <searchButton>Vyhledávání</searchButton>
+
 <!--  Text popisku pro tlačítko Odeslat pro fulltextové vyhledávání. -->
 <searchClickTip>Kliknutím sem odešlete požadavek na vyhledávání.</searchClickTip>
+
 <!--  Toto je html pro popis podrobností fulltextového vyhledávání.
   EDStatic to upraví a přidá &lt;div class=&quot;standard_max_width&quot;&gt;. -->
 <searchHintsTooltip><![CDATA[
@@ -4469,12 +4568,15 @@ Existují dva neoficiální způsoby, jak vyhledávat datové sady ve více ERDD
     title="Tento odkaz na externí webovou stránku nepředstavuje podporu."></a> .
 ]]></searchMultipleERDDAPsDescription>
 <searchNotAvailable>Promiňte. Vyhledávací systém není momentálně dostupný.</searchNotAvailable>
+
 <!--  Text popisku pro textové pole fulltextového vyhledávání. -->
 <searchTip>Stejně jako vyhledávání Google zadejte slova oddělená mezerami, například „{0}“.</searchTip>
 <searchSpelling>Zkontrolujte pravopis slova (slov), která jste hledali.</searchSpelling>
 <searchFewerWords>Zkuste použít méně vyhledávacích slov.</searchFewerWords>
+
 <!--  {0}=plainFileType vyhledávacího dotazu, {1}=ukázkový dotaz. -->
 <searchWithQuery>Požadavek na vyhledávání {0} musí obsahovat dotaz, například „{1}“.</searchWithQuery>
+
 <!--  Ano, &#39;&#39; je správně. {0}=url {1}=uppercaseProtocol -->
 <seeProtocolDocumentation><![CDATA[
 Podrobnosti viz
@@ -4535,6 +4637,7 @@ Některé části musí být specifikovány samostatně.
 ]]></sosLongDescriptionHtml>
 <sparqlP01toP02pre>https://vocab.nerc.ac.uk/sparql/sparql?query=prefix+skos%3A%3Chttp%3A%2F%2Fwww.w3.org%2F2004%2F02%2Fskos%2Fcore%23%3E+prefix+rdf%3A%3Chttp%3A%2F%2Fwww.w3.org%2F1999%2F02%2F22-rdf-syntax-ns%23%3E+prefix+owl%3A%3Chttp%3A%2F%2Fwww.w3.org%2F2002%2F07%2Fowl%23%3E+prefix+dc%3A%3Chttp%3A%2F%2Fpurl.org%2Fdc%2Fterms%2F%3E+%0D%0A+%0D%0Aselect+distinct+%28%3Fdci+as+%3FIdentifier%29+%28%3Fpl+as+%3FPrefLabel%29+%28%3Fdefx+as+%3FDefinition%29+%28%3Fver+as+%3FVersion%29+%28%3Fsr+as+%3Frelated%29+%3FDate+%28%3Fdt+as+%3FUrl%29+where+%7B%3Chttp%3A%2F%2Fvocab.nerc.ac.uk%2Fcollection%2FP01%2Fcurrent%2F%3E++skos%3Amember+%3Fdt+.%0D%0AFILTER%28regex%28str%28%3Fdt%29%2C%22</sparqlP01toP02pre>
 <sparqlP01toP02post>%22%29%29%0D%0A%3Fdt+dc%3Aidentifier+%3Fdci+.+optional%7B%3Fdt+skos%3Adefinition+%3Fdef+.FILTER%28langMatches%28lang%28%3Fdef%29%2C+%22en%22%29%29%7D+.+%3Fdt+skos%3AprefLabel+%3Fpl+.+FILTER%28langMatches%28lang%28%3Fpl%29%2C+%22en%22%29%29++%3Fdt+owl%3AversionInfo+%3Fver+%3B+dc%3Adate+%3FDate+%3B+owl%3Adeprecated+%3Fdeprecated+.+optional+%7B%3Fdt+skos%3AaltLabel+%3Falt+%7D.%0D%0A%3Fdt+skos%3Abroader+%3Fsr+.%0D%0AFILTER+%28regex%28str%28%3Fsr%29%2C+%22P02%22%2C%22i%22%29%29%0D%0A+%0D%0AFILTER%28%28str%28%3Fdeprecated%29%3D%22false%22%29%29%0D%0A+%0D%0ABIND%28if%28EXISTS%7B%3Fdt+skos%3Adefinition+%3Fdef%7D%2C%3Fdef%2C%22%22%29+as+%3Fdefx%29+%7D+order+by+%3Fpl+&amp;output=csv&amp;stylesheet=</sparqlP01toP02post>
+
 <!--  Zprávy SlideSorter -->
 <ssUse><![CDATA[
 
@@ -4565,6 +4668,7 @@ Open</kbd> k otevření kopie na pevném disku a uložení do záložek.
 </ol>
 
 ]]></ssInstructionsHtml>
+
 <!--  Standardní licence je přidána k mnoha globálním metadatům datové sady (viz datasets.xml) -->
 <standardLicense>Data mohou být používána a dále distribuována zdarma, ale není to zamýšleno
 pro legální použití, protože může obsahovat nepřesnosti. Ani data
@@ -4573,6 +4677,7 @@ jejich zaměstnanců nebo dodavatelů, poskytuje jakoukoli záruku, výslovnou n
 předpokládané, včetně záruk obchodovatelnosti a vhodnosti pro a
 konkrétní účel nebo přebírá jakoukoli právní odpovědnost za přesnost,
 úplnost nebo užitečnost těchto informací.</standardLicense>
+
 <!--  Toto používá &lt;legal&gt; v setup.xml. -->
 <standardContact><![CDATA[
 
@@ -4582,6 +4687,7 @@ konkrétní účel nebo přebírá jakoukoli právní odpovědnost za přesnost,
 Otázky, připomínky, návrhy?
 Pošlete prosím e-mail na <kbd>&adminEmail;</kbd>&nbsp;.
 ]]></standardContact>
+
 <!--  Toto používá &lt;legal&gt; v setup.xml. -->
 <standardDataLicenses><![CDATA[
 
@@ -4591,6 +4697,7 @@ Pošlete prosím e-mail na <kbd>&adminEmail;</kbd>&nbsp;.
 Data z některých datových sad mohou podléhat omezením nebo omezením používání.
 Viz &license; metadata, která lze nalézt na webových stránkách datové sady Data Access Form (.html), Make A Graph (.graph) a Dataset Attribute Structure (.das).
 ]]></standardDataLicenses>
+
 <!--  Toto používá &lt;legal&gt; v setup.xml. -->
 <standardDisclaimerOfEndorsement><![CDATA[
 
@@ -4598,6 +4705,7 @@ Viz &license; metadata, která lze nalézt na webových stránkách datové sady
 Jakýkoli odkaz získaný z tohoto serveru na konkrétní produkt, proces nebo službu nepředstavuje ani nenaznačuje, že jednotlivci nebo organizace spojené s touto webovou stránkou podporují produkt, proces nebo službu nebo jejich výrobce nebo poskytovatele.
 Názory a názory vyjádřené v jakémkoli odkazovaném dokumentu nemusí nutně uvádět nebo odrážet názory jednotlivců nebo organizací spojených s touto webovou stránkou.
 ]]></standardDisclaimerOfEndorsement>
+
 <!--  Toto používá &lt;legal&gt; v setup.xml.
   Toto je založeno na https://swfsc.nmfs.noaa.gov/disclaimer.htm. -->
 <standardDisclaimerOfExternalLinks><![CDATA[
@@ -4607,6 +4715,7 @@ Objevení se externích odkazů na této World Wide Webové stránce neznamená,
 Jednotlivci a organizace spojené s touto webovou stránkou nevykonávají žádnou redakční kontrolu nad informacemi, které můžete najít na těchto místech.
 Tyto odkazy jsou poskytovány v souladu s uvedeným účelem této webové stránky.
 ]]></standardDisclaimerOfExternalLinks>
+
 <!-- Toto používá<legal> v setup.xml.
 Toto je z BSD plus dvě instance &quot;, WEB SERVICE A/OR DATA&quot;.
 Před 08.08.2010 bylo
@@ -4620,6 +4729,7 @@ Před 08.08.2010 bylo
 <kbd>TENTO SOFTWARE, WEBOVÁ SLUŽBA A DATA JSOU POSKYTOVÁNY DRŽITELMI AUTORSKÝCH PRÁV A PŘISPĚVATELI &quot;TAK, JAK JSOU&quot; A JAKÉKOLI VÝSLOVNÉ NEBO PŘEDPOKLÁDANÉ ZÁRUKY, VČETNĚ, ALE NE OMEZENÍ, PŘEDPOKLÁDANÝCH ZÁRUK OBCHODOVATELNOSTI A POSKYTNUTÍ PARTNERSTVÍ.
 V ŽÁDNÉM PŘÍPADĚ NEBUDE VLASTNÍK AUTORSKÝCH PRÁV NEBO PŘISPĚVATELÉ ODPOVĚDNÍ ZA JAKÉKOLI PŘÍMÉ, NEPŘÍMÉ, NÁHODNÉ, ZVLÁŠTNÍ, EXEMPLÁRNÍ NEBO NÁSLEDNÉ ŠKODY (VČETNĚ, ALE NEOMEZENO NA, ZAJIŠTĚNÍ NÁHRADNÍHO ZBOŽÍ, ZBOŽÍ FILO;TSLO NEBO PŘERUŠENÍ OBCHODNÍ ČINNOSTI), JAKKOLI ZPŮSOBENÉ A NA ZÁKLADĚ JAKÉKOLI TEORIE ODPOVĚDNOSTI, AŤ VE SMLOUVĚ, PŘÍMÉ ODPOVĚDNOSTI NEBO PŘEČINKU (VČETNĚ NEDBALOSTI ČI JINAK) VZNIKLÉHO JAKÝKOLIV ZPŮSOBEM Z POUŽÍVÁNÍ TOHOTO WEBOVÉHO SOFTWARU, EVROPSKÉHO ADATAVARE MOŽNOST TAKOVÉHO POŠKOZENÍ.</kbd>
 ]]></standardGeneralDisclaimer>
+
 <!--  Toto používá &lt;legal&gt; v setup.xml. -->
 <standardPrivacyPolicy><![CDATA[
 
@@ -4633,6 +4743,7 @@ ERDDAP řídí
 <status>Postavení</status>
 <statusHtml>Webová stránka Stav je rychlý způsob, jak zkontrolovat aktuální stav/zdraví
 tohoto ERDDAP, včetně seznamu datových sad, které se nepodařilo načíst.</statusHtml>
+
 <!--  Text pro tlačítko Odeslat na různých formulářích. -->
 <submit>Předložit</submit>
 <submitTooltip>Odešlete informace v tomto formuláři a začněte stahovat data.</submitTooltip>
@@ -4708,6 +4819,7 @@ Poté se za vás vyplní datasetID .
 <subscriptionEmailInvalid>E-mailová adresa, kterou jste odeslali, není platná.</subscriptionEmailInvalid>
 <subscriptionEmailTooLong>E-mailová adresa, kterou jste odeslali, je příliš dlouhá.</subscriptionEmailTooLong>
 <subscriptionEmailUnspecified>Neuvedli jste svou e-mailovou adresu.</subscriptionEmailUnspecified>
+
 <!--  ID se používá pro datasetID a subscribeID. -->
 <subscriptionIDInvalid>ID, které jste odeslali, není platné.</subscriptionIDInvalid>
 <subscriptionIDTooLong>Odeslané ID je příliš dlouhé.</subscriptionIDTooLong>
@@ -4779,6 +4891,7 @@ Kliknete na odkaz v e-mailu, který vám ERDDAP zašle poté, co požádáte o
 <p><span class="successColor"><strong>Váš požadavek na ověření předplatného byl přijat.</strong>
 <br>Pokud je klíč správný a předplatné ještě není platné, předplatné bude ověřeno.</span>
 ]]></subscriptionValidateSuccess>
+
 <!--  Toto je krátký popis ERDDAP, který se používá uprostřed
 levá strana domovské stránky ERDDAP.
 To může odkazovat na &erddapUrl;
@@ -4852,7 +4965,7 @@ Je to implicitní.)
 <p><a rel="help" href="&erddapUrl;/information.html"><strong>Zjistěte více o ERDDAP .</strong></a>
 <p><strong>Poskytovatelé dat:
 Můžete si
-<a rel="help" href="https://erddap.github.io/setup.html">nastavit svůj vlastní server ERDDAP</a> a obsluhovat svá vlastní data.</strong> ERDDAP je bezplatný a open source.
+<a rel="help" href="https://erddap.github.io/docs/server-admin/deploy-install">nastavit svůj vlastní server ERDDAP</a> a obsluhovat svá vlastní data.</strong> ERDDAP je bezplatný a open source.
 Používá licence podobné Apache, takže s ním můžete dělat, co chcete.
 ERDDAP je přizpůsobitelný, takže váš ERDDAP bude odrážet vaši instituci, nikoli NOAA .
 Malé úsilí o nastavení ERDDAP přináší mnoho výhod.
@@ -4864,7 +4977,9 @@ href="https://www.ngdc.noaa.gov/wiki/index.php/Data_Access_Technical_Recommendat
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
     title="Tento odkaz na externí webovou stránku nepředstavuje podporu."></a> zahrnuje ERDDAP ve svém seznamu doporučených datových serverů pro použití skupinami v rámci NOAA .
 ]]></standardShortDescriptionHtml>
+
 <!--  Bob: viz identickou tabulku css v Table.ERD_TABLE_CSS -->
+
 <!--  startHeadHtml má začátek dokumentu HTML a značky &#39;head&#39;
 (počínaje &quot;&lt;!DOCTYPE&quot;, ale nezahrnuje &quot;&lt;/head&gt;&quot;)
 pro všechny webové stránky HTML.
@@ -4901,6 +5016,7 @@ informace.
 <link href="&erddapUrl;/images/erddap2.css" rel="stylesheet" type="text/css">
 <meta name="viewport" content="width=device-width, initial-scale=1">  
 ]]></startHeadHtml5>
+
 <!-- The standard startBodyHtml -->
 <startBodyHtml5><![CDATA[
 <body>
@@ -4931,6 +5047,7 @@ informace.
   </tr> 
 </table>
 ]]></startBodyHtml5>
+
 <!-- Toto je krátký popis ERDDAP, který se používá uprostřed levé strany domovské stránky ERDDAP .
 To může odkazovat na &erddapUrl;, [theShort1], [theShort2] a [standardShortDescriptionHtml] (z [tomcat]/webapps/erddap/WEB-INF/classes/gov/noaa/pfel/erddap/util/messages.xml).
 Pokud váš ERDDAP může používat https, všechny odkazované soubory obrázků atd.
@@ -4947,6 +5064,7 @@ Pokud nepoužíváte [standardShortDescriptionHtml], uveďte alespoň odkaz jako
 <thisParticularErddap><![CDATA[
 Tato konkrétní instalace ERDDAP má oceánografická data (například data ze satelitů a bójí).
 ]]></thisParticularErddap>
+
 <!--  Můžete změnit další věci, ale ponechte prosím &quot;ERDDAP, Verze &erddapVersion;&quot; a
      tyto odkazy na Vyloučení odpovědnosti a Zásady ochrany osobních údajů. -->
 <endBodyHtml5><![CDATA[
@@ -4990,6 +5108,7 @@ Chcete-li zobrazit {0},
 <subsetViewSelectRelatedCounts>se počítají související údaje</subsetViewSelectRelatedCounts>
 <subsetWhen>Když {0},</subsetWhen>
 <subsetWhenNoConstraints>Když neexistují žádná omezení,</subsetWhenNoConstraints>
+
 <!--  Následujícímu tagu předchází 1 ze 2 předchozích tagů.
   {0} je subsetViewSelectDistintCombos nebo subsetViewSelectRelatedCounts. -->
 <subsetWhenCounts>{0} pro {1} hodnoty &quot;{2}&quot; jsou:</subsetWhenCounts>
@@ -5069,6 +5188,7 @@ title="Tento odkaz na externí webovou stránku nepředstavuje podporu." /></a> 
 <theKey>Klíč</theKey>
 <theSubscriptionID>ID předplatného</theSubscriptionID>
 <theUrlAction>Adresa URL/Akce</theUrlAction>
+
 <!--  Toto je dlouhý popis ERDDAP, který se používá na webové stránce Základní informace.
 To může odkazovat na &erddapUrl;, &ssUse; .
  -->
@@ -5177,7 +5297,7 @@ Je to implicitní.)
 <br>&nbsp;
 <li><strong><a class="selfLink" id="localAndRemote" href="#localAndRemote" rel="bookmark">ERDDAP může získávat data z lokálních (na pevném disku serveru) a vzdálených (přístupných přes web) datových zdrojů.</a></strong>
 <br>Podívejte se
-<a rel="help" href="https://erddap.github.io/setupDatasetsXml.html#datasetTypes">na seznam typů zdrojů dat</a>, ke kterým má ERDDAP přístup.
+<a rel="help" href="https://erddap.github.io/docs/server-admin/datasets#list-of-types-datasets">na seznam typů zdrojů dat</a>, ke kterým má ERDDAP přístup.
 <br>&nbsp;
 <li><strong><a class="selfLink" id="scientificData" href="#scientificData" rel="bookmark">ERDDAP může sloužit mnoha typům vědeckých dat, nejen oceánografických dat.</a></strong>
 <br>ERDDAP je datový server, který byl napsán na
@@ -5332,8 +5452,8 @@ Když požadujete data nebo graf z
       title="Tento odkaz na externí webovou stránku nepředstavuje podporu."></a>) popisující údaje.
 ERDDAP umožňuje (a doporučuje) administrátorovi popsat metadata, která budou přidávána do datových sad a jejich proměnných za běhu.
 Viz
-<a rel="help" href="https://erddap.github.io/setupDatasetsXml.html#addAttributes">část addAttributes</a> v
-<a rel="help" href="https://erddap.github.io/setupDatasetsXml.html">pokynech pro administrátory</a> .
+<a rel="help" href="https://erddap.github.io/docs/server-admin/datasets#addattributes">část addAttributes</a> v
+<a rel="help" href="https://erddap.github.io/docs/server-admin/datasets">pokynech pro administrátory</a> .
 <br>&nbsp;
 <li><strong><a class="selfLink" id="images" href="#images" rel="bookmark"
  >ERDDAP vám umožňuje požádat o obrázkové soubory .png a .pdf s grafy a mapami</a></strong>
@@ -5487,7 +5607,7 @@ Uživatelé, kteří se přihlásili, mají přístup k veřejným datovým sad�
 Uživatelé musí používat https:
 (Secure Sockets Layer) pro přihlášení a pro přístup k soukromým datovým sadám.
 Datové sady lze nakonfigurovat tak, aby byly grafy a mapy veřejně přístupné, ale data měla přístupná pouze oprávněným uživatelům.
-(<a rel="help" href="https://erddap.github.io/setup.html#security">více informací</a>)
+(<a rel="help" href="https://erddap.github.io/docs/server-admin/additional-information#security">více informací</a>)
 <br>&nbsp;
 <li><strong><a class="selfLink" id="chunks" href="#chunks" rel="bookmark">ERDDAP zpracovává data v blocích.</a></strong>
 <br>Aby se ušetřila paměť (velký problém) a aby se odpovědi spustily dříve, zpracovává ERDDAP požadavky na data po částech – opakovaně získává část dat ze zdroje, čistí je (například přidáváním
@@ -5509,15 +5629,15 @@ přijímá požadavek od uživatele; získává data ze vzdáleného zdroje dat;
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
       title="Tento odkaz na externí webovou stránku nepředstavuje podporu."></a> :
 Ale ERDDAP má také schopnost aktivně získávat všechna dostupná data ze vzdáleného zdroje dat a
-<a rel="help" href="https://erddap.github.io/setupDatasetsXml.html#EDDGridCopy">ukládat místní kopii dat</a> .
+<a rel="help" href="https://erddap.github.io/docs/server-admin/datasets#eddgridcopy">ukládat místní kopii dat</a> .
 <a rel="help" href="https://en.wikipedia.org/wiki/Push_technology">Technologie Push <img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
       title="Tento odkaz na externí webovou stránku nepředstavuje podporu."></a> :
 Pomocí
 <a href="#subscriptions">předplatitelských služeb</a> ERDDAP mohou být ostatní datové servery upozorněny, jakmile jsou k dispozici nová data, aby si mohly data vyžádat (vytažením dat).
-<a rel="help"  href="https://erddap.github.io/setupDatasetsXml.html#EDDGridFromErddap">EDDGrid FromErddap</a> a
-<a rel="help"  href="https://erddap.github.io/setupDatasetsXml.html#EDDTableFromErddap">EDDTableFromErddap</a> společnosti ERDDAP používají předplacené služby a
-<a rel="help" href="https://erddap.github.io/setup.html#flag">systém příznaků</a> ERDDAP, takže budou okamžitě informovány, když budou k dispozici nová data.
+<a rel="help"  href="https://erddap.github.io/docs/server-admin/datasets#eddfromerddap">EDDGrid FromErddap</a> a
+<a rel="help"  href="https://erddap.github.io/docs/server-admin/datasets#eddfromerddap">EDDTableFromErddap</a> společnosti ERDDAP používají předplacené služby a
+<a rel="help" href="https://erddap.github.io/docs/server-admin/additional-information#flag">systém příznaků</a> ERDDAP, takže budou okamžitě informovány, když budou k dispozici nová data.
 Můžete je kombinovat s velkým efektem:
 pokud obalíte kopii EDDGrid kolem datové sady EDDGrid FromErddap (nebo obalíte EDDTableCopy kolem datové sady EDDTableFromErddap), ERDDAP automaticky vytvoří a udržuje místní kopii datové sady jiného ERDDAP .
 Protože předplacené služby fungují, jakmile jsou k dispozici nová data, technologie push šíří data velmi rychle (během několika sekund).
@@ -5611,9 +5731,9 @@ Tento důvod sám o sobě ospravedlňuje náklady na vývoj ERDDAP .
 (Myslím, že by se dalo prokázat, že ERDDAP ušetřil více času vědců NOAA, než který jsem strávil vývojem ERDDAP .
 Čas = peníze.) Ale vedlejší výhodou je, že jakákoli jiná organizace si může
 <a rel="bookmark" 
-href="https://erddap.github.io/setup.html">stáhnout, nainstalovat a používat ERDDAP</a> <strong>zdarma</strong> k distribuci svých vědeckých údajů.
+href="https://erddap.github.io/docs/server-admin/deploy-install">stáhnout, nainstalovat a používat ERDDAP</a> <strong>zdarma</strong> k distribuci svých vědeckých údajů.
 <p><a rel="bookmark" 
-href="https://erddap.github.io/setup.html#organizations"
+href="https://erddap.github.io/#who-uses-erddap"
 >ERDDAP využívá více než 90 organizací v nejméně 14 zemích</a> .
 Možná existuje něco jako oběd zdarma.
 <p>ERDDAP je Java program.
@@ -5728,14 +5848,14 @@ Teď to prosím berte jako jméno, ne jako zkratku.
 <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/images/erddapTalk/erdData.html">zde</a> .
 <br>&nbsp;
 <p><strong><a class="selfLink" id="setup" href="#setup" rel="bookmark">Můžete</a></strong>
-<a rel="help" href="https://erddap.github.io/setup.html"><strong>si nastavit svůj vlastní ERDDAP server</strong></a> a obsluhovat svá vlastní data.
+<a rel="help" href="https://erddap.github.io/docs/server-admin/deploy-install"><strong>si nastavit svůj vlastní ERDDAP server</strong></a> a obsluhovat svá vlastní data.
 <ul>
 <li>Malé úsilí o nastavení ERDDAP přináší mnoho výhod.
 <li>Pokud již máte webovou službu pro distribuci vašich dat, můžete nastavit ERDDAP pro přístup k vašim datům prostřednictvím stávající služby nebo prostřednictvím zdrojových souborů či databáze.
 Lidé pak budou mít jiný způsob přístupu k vašim datům a budou si moci data stáhnout v dalších formátech souborů nebo jako grafy či mapy.
 <li>Pokud máte datové sady, po kterých je vysoká poptávka, můžete nainstalovat
 <a rel="help" 
-  href="https://erddap.github.io/grids.html"
+  href="https://erddap.github.io/docs/server-admin/scaling"
   >více ERDDAP, které spolupracují</a> při škálování a splňují potřeby velkého datového distribučního centra.
 </ul>
 <h2><a class="selfLink" id="contact" href="#contact" rel="bookmark">Kontaktujte nás</a></h2>
@@ -5752,6 +5872,7 @@ Názory na této webové stránce jsou osobními názory Boba Simonse a nemusí 
 ]]></theLongDescriptionHtml>
 <Then>Pak</Then>
 <twoClickMapDefaultTooltip>Určete obdélník kliknutím na dva diagonální rohy. V případě potřeby to udělejte znovu.</twoClickMapDefaultTooltip>
+
 <!--  Toto je způsob, jak přepsat převodník Standardize UDUnits ERDDAP
 poskytnutím konkrétních konverzí.
 standardizeUdunits má trojici řádků: před, po a prázdné.
@@ -5759,13 +5880,17 @@ Pokud se celý řetězec UDUNITS shoduje s řetězcem „před“,
 bude převedena na hodnotu &#39;po&#39; UDUNITS.
 Prázdné řádky zajišťují, že ostatní řádky jsou řádky „před“ a „za“.
  -->
-<standardizeUdunits>degrees +E
+<standardizeUdunits>
+degrees +E
 degrees_east
 
 degrees +N
-degrees_north</standardizeUdunits>
+degrees_north
+
+</standardizeUdunits>
 <time>Čas</time>
 <timeoutOtherRequests>Časový limit čekání na zpracování vašich dalších požadavků.</timeoutOtherRequests>
+
 <!--  Toto je způsob, jak přepsat převodník UCUM na UDUNITS ERDDAP
 poskytnutím konkrétních konverzí.
 ucumToUdunits má trojici řádků: před, po a prázdné.
@@ -5773,7 +5898,8 @@ Pokud se celý řetězec UCUM shoduje s řetězcem „před“,
 bude převedena na hodnotu &#39;po&#39; UDUNITS.
 Prázdné řádky zajišťují, že ostatní řádky jsou řádky „před“ a „za“.
  -->
-<ucumToUdunits>%.{cover}
+<ucumToUdunits>
+%.{cover}
 % cover
 
 deg{azimuth}
@@ -5783,7 +5909,10 @@ deg east
 degrees_east
 
 deg north 
-degrees_north</ucumToUdunits>
+degrees_north 
+
+</ucumToUdunits>
+
 <!--  Toto je způsob, jak přepsat převodník UDUNITS na UCUM ERDDAP
 poskytnutím konkrétních konverzí.
 udunitsToUcum má trojici řádků: před, po a prázdné.
@@ -5791,7 +5920,8 @@ Pokud se celý řetězec UDUNITS shoduje s řetězcem „před“,
 bude převedena na hodnotu UCUM „po“.
 Prázdné řádky zajišťují, že ostatní řádky jsou řádky „před“ a „za“.
  -->
-<udunitsToUcum>degrees +E
+<udunitsToUcum>
+degrees +E
 deg{east}
 
 degrees (+E)
@@ -5813,7 +5943,10 @@ degrees-north
 deg{north}
 
 degrees north
-deg{north}</udunitsToUcum>
+deg{north}
+
+</udunitsToUcum>
+
 <!-- Toto je pokus vypořádat se s neaktuálními zdrojovými metadaty URL.
 updateUrls se aplikuje na každý z atributů metadat String datové sady (globální a variabilní) pokaždé, když je datová sada načtena.
 updateUrls má trojici řádků:
@@ -5833,7 +5966,8 @@ Velmi důležité! * marinemetadata.org/cf# je pro vyhledávání standardních 
 //www.csc.noaa.gov převod na pobřeží je nedokonalý:
 dokumenty na různých místech.
 To je běžné u velkých změn názvu domény. -->
-<updateUrls>http://accession.nodc.noaa.gov/
+<updateUrls>
+http://accession.nodc.noaa.gov/
 https://data.nodc.noaa.gov/cgi-bin/iso?id=gov.noaa.nodc:
 
 www.unidata.ucar.edu/software/thredds/current/netcdf-java/ncml/AnnotatedSchema4.html
@@ -6926,7 +7060,10 @@ http://xerial.org
 https://xerial.org
 
 http://xkcd.com
-https://xkcd.com</updateUrls>
+https://xkcd.com
+
+</updateUrls>
+
 <!-- Toto jsou http URL, které budou pravděpodobně někdy přístupné pomocí https.
 Zde jsou uvedeny jako komentář pro rychlé testování.
 !!! KDYŽ SE NĚKTERÁ STANE PLATNÁ, Bob ji přesune do výše uvedených updateUrls a provede změnu v příslušném zdrojovém kódu, stránkách .html, messages.xml a my datasets.xml .
@@ -6945,6 +7082,7 @@ noaa.gov https://www.godac.jamstec.go.jp https://www.globec.org http://www.isotc
 Jsou pro URI v 19115 dokumentech.
 https://www.j2eeprogrammer.com https://www.jdom.org https://www.libpng.org https://www.marine-geo.org https://www.myocean.eu https:/ /www.myroms.org/erddap/index.html https://myroms.org je v pořádku https://www.nanoos.org https://www.neracoos.org https://www.ogcnetwork.net https:
 //www.opengis.net https://www.openwebfoundation.org https://www.remss.com https://www.schemacentral.com https://www.slf4j.org https://www.usgin .org -->
+
 <!-- Toto je čárkami oddělený seznam názvů atributů, které updateUrls přeskočí.
 Tohle nemůže být nic.
 Pokud tedy nechcete nic, zadejte nesmyslné slovo, které nikdy nebude názvem atributu. -->
@@ -7269,7 +7407,7 @@ datová sada.
 (Další proměnné osy jsou VOLITELNÉ.)
 <li>MUSÍ existovat nějaké hodnoty zeměpisné délky mezi -180 a 180.
 <li>MUSÍ být specifikovány
-<a rel="help" href="https://erddap.github.io/setupDatasetsXml.html#colorBar">atributy colorBarMinimum a colorBarMaximum</a> .
+<a rel="help" href="https://erddap.github.io/docs/server-admin/datasets#color-bar-attributes">atributy colorBarMinimum a colorBarMaximum</a> .
 (Další atributy barevných pruhů jsou VOLITELNÉ.)
 </ul>
 <li><strong>Vrstvy dat mřížky:</strong> Ve WMS ERDDAP jsou všechny datové proměnné v sadách dat mřížky, které používají rozměry zeměpisné délky a šířky, dostupné prostřednictvím WMS .

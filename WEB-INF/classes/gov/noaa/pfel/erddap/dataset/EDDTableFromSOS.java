@@ -20,10 +20,15 @@ import com.cohort.util.String2;
 import com.cohort.util.Test;
 import com.cohort.util.Units2;
 import com.cohort.util.XML;
+import com.google.common.collect.ImmutableList;
 import gov.noaa.pfel.coastwatch.pointdata.Table;
 import gov.noaa.pfel.coastwatch.util.SSR;
 import gov.noaa.pfel.coastwatch.util.SimpleXMLReader;
 import gov.noaa.pfel.erddap.Erddap;
+import gov.noaa.pfel.erddap.dataset.metadata.LocalizedAttributes;
+import gov.noaa.pfel.erddap.handlers.EDDTableFromSOSHandler;
+import gov.noaa.pfel.erddap.handlers.SaxHandlerClass;
+import gov.noaa.pfel.erddap.util.EDMessages;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.*;
 import java.io.BufferedReader;
@@ -33,6 +38,8 @@ import java.util.ArrayList;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 
 /**
  * This class aggregates data from a group of stations, all served by one SOS server. The stations
@@ -103,6 +110,7 @@ import java.util.HashSet;
  *
  * @author Bob Simons (was bob.simons@noaa.gov, now BobSimons2.00@gmail.com) 2007-09-21
  */
+@SaxHandlerClass(EDDTableFromSOSHandler.class)
 public class EDDTableFromSOS extends EDDTable {
 
   /** stationTable */
@@ -115,7 +123,7 @@ public class EDDTableFromSOS extends EDDTable {
   protected static final int stationProcedureCol = 5;
   protected static final String defaultStationIdSourceName = "station_id";
   protected static final String stationIdDestinationName = "station_id";
-  static String sosCopyDir = EDStatic.fullCopyDirectory + "_SOS_cache/";
+  static final String sosCopyDir = EDStatic.config.fullCopyDirectory + "_SOS_cache/";
 
   /**
    * The first nFixedVariables dataVariables are always created automatically (don't include in
@@ -123,8 +131,6 @@ public class EDDTableFromSOS extends EDDTable {
    */
   protected static final int nFixedVariables = 5;
 
-  private static boolean testQuickRestart =
-      false; // to test, set this to true in test method, not here.
   protected static boolean timeParts =
       false; // some test methods set this to true for timing test purposes only
 
@@ -146,13 +152,20 @@ public class EDDTableFromSOS extends EDDTable {
   public static final String SosServerTypeIoosNos = "IOOS_NOS";
   public static final String SosServerTypeOostethys = "OOSTethys";
   public static final String SosServerTypeWhoi = "WHOI";
-  public static final String[] SosServerTypes = { // order not important
-    SosServerTypeIoos52N, SosServerTypeIoosNdbc, SosServerTypeIoosNcSOS,
-    SosServerTypeIoosNos, SosServerTypeOostethys, SosServerTypeWhoi
-  };
+  public static final ImmutableList<String> SosServerTypes =
+      ImmutableList.of( // order not important
+          SosServerTypeIoos52N,
+          SosServerTypeIoosNdbc,
+          SosServerTypeIoosNcSOS,
+          SosServerTypeIoosNos,
+          SosServerTypeOostethys,
+          SosServerTypeWhoi);
   public static final String slowSummaryWarning =
-      "\n\nThe source SOS server for this dataset is very slow, so requests will "
-          + "take minutes to be fulfilled or will fail because of a timeout.";
+      """
+
+
+                  The source SOS server for this dataset is very slow, so requests will \
+                  take minutes to be fulfilled or will fail because of a timeout.""";
   protected boolean ioos52NServer = false;
   protected boolean ioosNdbcServer = false;
   protected boolean ioosNcSOSServer = false;
@@ -179,12 +192,13 @@ public class EDDTableFromSOS extends EDDTable {
    *     &lt;erddapDatasets&gt;&lt;/dataset&gt; .
    * @throws Throwable if trouble
    */
+  @EDDFromXmlMethod
   public static EDDTableFromSOS fromXml(Erddap erddap, SimpleXMLReader xmlReader) throws Throwable {
 
     // data to be obtained (or not)
     if (verbose) String2.log("\n*** constructing EDDTableFromSOS(xmlReader)...");
     String tDatasetID = xmlReader.attributeValue("datasetID");
-    Attributes tGlobalAttributes = null;
+    LocalizedAttributes tGlobalAttributes = null;
     String tSosServerType = "";
     String tStationIdSourceName = defaultStationIdSourceName;
     String tLongitudeSourceName = null;
@@ -195,7 +209,7 @@ public class EDDTableFromSOS extends EDDTable {
     double tAltitudeSourceMaximum = Double.NaN;
     String tTimeSourceName = null;
     String tTimeSourceFormat = null;
-    ArrayList tDataVariables = new ArrayList();
+    ArrayList<DataVariableInfo> tDataVariables = new ArrayList<>();
     int tReloadEveryNMinutes = Integer.MAX_VALUE;
     String tAccessibleTo = null;
     String tGraphsAccessibleTo = null;
@@ -227,78 +241,71 @@ public class EDDTableFromSOS extends EDDTable {
       String localTags = tags.substring(startOfTagsLength);
 
       // try to make the tag names as consistent, descriptive and readable as possible
-      if (localTags.equals("<addAttributes>")) tGlobalAttributes = getAttributesFromXml(xmlReader);
-      else if (localTags.equals("<sosVersion>")) {
-      } else if (localTags.equals("</sosVersion>")) tSosVersion = content;
-      else if (localTags.equals("<sosServerType>")) {
-      } else if (localTags.equals("</sosServerType>")) tSosServerType = content;
-      else if (localTags.equals("<stationIdSourceName>")) {
-      } else if (localTags.equals("</stationIdSourceName>")) tStationIdSourceName = content;
-      else if (localTags.equals("<longitudeSourceName>")) {
-      } else if (localTags.equals("</longitudeSourceName>")) tLongitudeSourceName = content;
-      else if (localTags.equals("<latitudeSourceName>")) {
-      } else if (localTags.equals("</latitudeSourceName>")) tLatitudeSourceName = content;
-      else if (localTags.equals("<altitudeSourceName>")) {
-      } else if (localTags.equals("</altitudeSourceName>")) tAltitudeSourceName = content;
-      else if (localTags.equals("<altitudeSourceMinimum>")) {
-      } else if (localTags.equals("</altitudeSourceMinimum>"))
-        tAltitudeSourceMinimum = String2.parseDouble(content);
-      else if (localTags.equals("<altitudeSourceMaximum>")) {
-      } else if (localTags.equals("</altitudeSourceMaximum>"))
-        tAltitudeSourceMaximum = String2.parseDouble(content);
-      else if (localTags.equals("<altitudeMetersPerSourceUnit>")) {
-      } else if (localTags.equals("</altitudeMetersPerSourceUnit>"))
-        tAltitudeMetersPerSourceUnit = String2.parseDouble(content);
-      else if (localTags.equals("<timeSourceName>")) {
-      } else if (localTags.equals("</timeSourceName>")) tTimeSourceName = content;
-      else if (localTags.equals("<timeSourceFormat>")) {
-      } else if (localTags.equals("</timeSourceFormat>")) tTimeSourceFormat = content;
-      else if (localTags.equals("<dataVariable>"))
-        tDataVariables.add(getSDADVariableFromXml(xmlReader));
-      else if (localTags.equals("<accessibleTo>")) {
-      } else if (localTags.equals("</accessibleTo>")) tAccessibleTo = content;
-      else if (localTags.equals("<graphsAccessibleTo>")) {
-      } else if (localTags.equals("</graphsAccessibleTo>")) tGraphsAccessibleTo = content;
-      else if (localTags.equals("<reloadEveryNMinutes>")) {
-      } else if (localTags.equals("</reloadEveryNMinutes>"))
-        tReloadEveryNMinutes = String2.parseInt(content);
-      else if (localTags.equals("<sourceUrl>")) {
-      } else if (localTags.equals("</sourceUrl>")) tLocalSourceUrl = content;
-      else if (localTags.equals("<observationOfferingIdRegex>")) {
-      } else if (localTags.equals("</observationOfferingIdRegex>"))
-        tObservationOfferingIdRegex = content;
-      else if (localTags.equals("<requestObservedPropertiesSeparately>")) {
-      } else if (localTags.equals("</requestObservedPropertiesSeparately>"))
-        tRequestObservedPropertiesSeparately = content.equals("true");
-      else if (localTags.equals("<responseFormat>")) {
-      } else if (localTags.equals("</responseFormat>")) tResponseFormat = content;
-      else if (localTags.equals("<bboxOffering>")) {
-      } else if (localTags.equals("</bboxOffering>")) tBBoxOffering = content;
-      else if (localTags.equals("<bboxParameter>")) {
-      } else if (localTags.equals("</bboxParameter>")) tBBoxParameter = content;
-      else if (localTags.equals("<sourceNeedsExpandedFP_EQ>")) {
-      } else if (localTags.equals("</sourceNeedsExpandedFP_EQ>"))
-        tSourceNeedsExpandedFP_EQ = String2.parseBoolean(content);
-      else if (localTags.equals("<onChange>")) {
-      } else if (localTags.equals("</onChange>")) tOnChange.add(content);
-      else if (localTags.equals("<fgdcFile>")) {
-      } else if (localTags.equals("</fgdcFile>")) tFgdcFile = content;
-      else if (localTags.equals("<iso19115File>")) {
-      } else if (localTags.equals("</iso19115File>")) tIso19115File = content;
-      else if (localTags.equals("<sosOfferingPrefix>")) {
-      } else if (localTags.equals("</sosOfferingPrefix>")) tSosOfferingPrefix = content;
-      else if (localTags.equals("<defaultDataQuery>")) {
-      } else if (localTags.equals("</defaultDataQuery>")) tDefaultDataQuery = content;
-      else if (localTags.equals("<defaultGraphQuery>")) {
-      } else if (localTags.equals("</defaultGraphQuery>")) tDefaultGraphQuery = content;
-      else if (localTags.equals("<addVariablesWhere>")) {
-      } else if (localTags.equals("</addVariablesWhere>")) tAddVariablesWhere = content;
-      else xmlReader.unexpectedTagException();
+      switch (localTags) {
+        case "<addAttributes>" -> tGlobalAttributes = getAttributesFromXml(xmlReader);
+        case "<sosVersion>",
+            "<addVariablesWhere>",
+            "<defaultGraphQuery>",
+            "<defaultDataQuery>",
+            "<sosOfferingPrefix>",
+            "<iso19115File>",
+            "<fgdcFile>",
+            "<onChange>",
+            "<sourceNeedsExpandedFP_EQ>",
+            "<bboxParameter>",
+            "<bboxOffering>",
+            "<responseFormat>",
+            "<requestObservedPropertiesSeparately>",
+            "<observationOfferingIdRegex>",
+            "<sourceUrl>",
+            "<reloadEveryNMinutes>",
+            "<graphsAccessibleTo>",
+            "<accessibleTo>",
+            "<timeSourceFormat>",
+            "<timeSourceName>",
+            "<altitudeMetersPerSourceUnit>",
+            "<altitudeSourceMaximum>",
+            "<altitudeSourceMinimum>",
+            "<altitudeSourceName>",
+            "<latitudeSourceName>",
+            "<longitudeSourceName>",
+            "<stationIdSourceName>",
+            "<sosServerType>" -> {}
+        case "</sosVersion>" -> tSosVersion = content;
+        case "</sosServerType>" -> tSosServerType = content;
+        case "</stationIdSourceName>" -> tStationIdSourceName = content;
+        case "</longitudeSourceName>" -> tLongitudeSourceName = content;
+        case "</latitudeSourceName>" -> tLatitudeSourceName = content;
+        case "</altitudeSourceName>" -> tAltitudeSourceName = content;
+        case "</altitudeSourceMinimum>" -> tAltitudeSourceMinimum = String2.parseDouble(content);
+        case "</altitudeSourceMaximum>" -> tAltitudeSourceMaximum = String2.parseDouble(content);
+        case "</altitudeMetersPerSourceUnit>" ->
+            tAltitudeMetersPerSourceUnit = String2.parseDouble(content);
+        case "</timeSourceName>" -> tTimeSourceName = content;
+        case "</timeSourceFormat>" -> tTimeSourceFormat = content;
+        case "<dataVariable>" -> tDataVariables.add(getSDADVariableFromXml(xmlReader));
+        case "</accessibleTo>" -> tAccessibleTo = content;
+        case "</graphsAccessibleTo>" -> tGraphsAccessibleTo = content;
+        case "</reloadEveryNMinutes>" -> tReloadEveryNMinutes = String2.parseInt(content);
+        case "</sourceUrl>" -> tLocalSourceUrl = content;
+        case "</observationOfferingIdRegex>" -> tObservationOfferingIdRegex = content;
+        case "</requestObservedPropertiesSeparately>" ->
+            tRequestObservedPropertiesSeparately = content.equals("true");
+        case "</responseFormat>" -> tResponseFormat = content;
+        case "</bboxOffering>" -> tBBoxOffering = content;
+        case "</bboxParameter>" -> tBBoxParameter = content;
+        case "</sourceNeedsExpandedFP_EQ>" ->
+            tSourceNeedsExpandedFP_EQ = String2.parseBoolean(content);
+        case "</onChange>" -> tOnChange.add(content);
+        case "</fgdcFile>" -> tFgdcFile = content;
+        case "</iso19115File>" -> tIso19115File = content;
+        case "</sosOfferingPrefix>" -> tSosOfferingPrefix = content;
+        case "</defaultDataQuery>" -> tDefaultDataQuery = content;
+        case "</defaultGraphQuery>" -> tDefaultGraphQuery = content;
+        case "</addVariablesWhere>" -> tAddVariablesWhere = content;
+        default -> xmlReader.unexpectedTagException();
+      }
     }
-    int ndv = tDataVariables.size();
-    Object ttDataVariables[][] = new Object[ndv][];
-    for (int i = 0; i < tDataVariables.size(); i++)
-      ttDataVariables[i] = (Object[]) tDataVariables.get(i);
 
     return new EDDTableFromSOS(
         tDatasetID,
@@ -322,7 +329,7 @@ public class EDDTableFromSOS extends EDDTable {
         tAltitudeMetersPerSourceUnit,
         tTimeSourceName,
         tTimeSourceFormat,
-        ttDataVariables,
+        tDataVariables,
         tReloadEveryNMinutes,
         tLocalSourceUrl,
         tSosVersion,
@@ -363,7 +370,7 @@ public class EDDTableFromSOS extends EDDTable {
    *     </ul>
    *     Special case: value="null" causes that item to be removed from combinedGlobalAttributes.
    *     Special case: if combinedGlobalAttributes name="license", any instance of "[standard]" will
-   *     be converted to the EDStatic.standardLicense. Special case: if addGlobalAttributes
+   *     be converted to the EDStatic.messages.standardLicense. Special case: if addGlobalAttributes
    *     name="summary", then "[standard]" within the value will be replaced by the standardSummary
    *     (from this class).
    * @param tLonSourceName the results field name for the longitude variable (e.g., longitude). The
@@ -437,7 +444,7 @@ public class EDDTableFromSOS extends EDDTable {
       String tDefaultDataQuery,
       String tDefaultGraphQuery,
       String tAddVariablesWhere,
-      Attributes tAddGlobalAttributes,
+      LocalizedAttributes tAddGlobalAttributes,
       String tSosServerType,
       String tStationIdSourceName,
       String tLonSourceName,
@@ -448,7 +455,7 @@ public class EDDTableFromSOS extends EDDTable {
       double tAltMetersPerSourceUnit,
       String tTimeSourceName,
       String tTimeSourceFormat,
-      Object[][] tDataVariables,
+      List<DataVariableInfo> tDataVariables,
       int tReloadEveryNMinutes,
       String tLocalSourceUrl,
       String tSosVersion,
@@ -461,8 +468,8 @@ public class EDDTableFromSOS extends EDDTable {
       throws Throwable {
 
     if (verbose) String2.log("\n*** constructing EDDTableFromSOS " + tDatasetID);
+    int language = EDMessages.DEFAULT_LANGUAGE;
     long constructionStartMillis = System.currentTimeMillis();
-    String errorInMethod = "Error in EDDTableFromSOS(" + tDatasetID + ") constructor:\n";
 
     // save some of the parameters
     className = "EDDTableFromSOS";
@@ -475,9 +482,9 @@ public class EDDTableFromSOS extends EDDTable {
     sosOfferingPrefix = tSosOfferingPrefix;
     defaultDataQuery = tDefaultDataQuery;
     defaultGraphQuery = tDefaultGraphQuery;
-    if (tAddGlobalAttributes == null) tAddGlobalAttributes = new Attributes();
+    if (tAddGlobalAttributes == null) tAddGlobalAttributes = new LocalizedAttributes();
     addGlobalAttributes = tAddGlobalAttributes;
-    addGlobalAttributes.set("sourceUrl", convertToPublicSourceUrl(tLocalSourceUrl));
+    addGlobalAttributes.set(language, "sourceUrl", convertToPublicSourceUrl(tLocalSourceUrl));
 
     sosServerType = tSosServerType == null ? "" : tSosServerType.trim();
     tSosServerType = sosServerType.toLowerCase();
@@ -496,10 +503,59 @@ public class EDDTableFromSOS extends EDDTable {
     if (ioos52NServer) tSosVersion = "1.0.0"; // server supports 2.0.0, but this class doesn't yet.
 
     localSourceUrl = tLocalSourceUrl;
-    String tSummary = addGlobalAttributes.getString("summary");
+    String tSummary = addGlobalAttributes.getString(language, "summary");
+    // from http://www.oostethys.org/ogc-oceans-interoperability-experiment
+    // [GONE]
+    // "To achieve these goals, the OCEANS IE engages the OGC membership\n" +
+    // "to assure that any recommendations from the OCEANS IE will\n" +
+    // "properly leverage the OGC specifications. The OCEANS IE could\n" +
+    // "prompt Change Requests on OGC Specifications, which would be\n" +
+    // "provided to the OGC Technical Committee to influence the\n" +
+    // "underlying specifications. However, this IE will not develop\n" +
+    // "any new specifications, rather, participants will implement,\n" +
+    // "test and document experiences with existing specifications.\n" +
+    // better
+    String standardSummary =
+        "The OCEANS IE -- formally approved as an OGC Interoperability\n"
+            + "Experiment in December 2006 -- engages data managers and scientists\n"
+            + "in the Ocean-Observing community to advance their understanding and\n"
+            + "application of various OGC specifications, solidify demonstrations\n"
+            + "for Ocean Science application areas, harden software\n"
+            + "implementations, and produce candidate OGC Best Practices documents\n"
+            + "that can be used to inform the broader ocean-observing community.\n"
+            +
+            // "To achieve these goals, the OCEANS IE engages the OGC membership\n" +
+            // "to assure that any recommendations from the OCEANS IE will\n" +
+            // "properly leverage the OGC specifications. The OCEANS IE could\n" +
+            // "prompt Change Requests on OGC Specifications, which would be\n" +
+            // "provided to the OGC Technical Committee to influence the\n" +
+            // "underlying specifications. However, this IE will not develop\n" +
+            // "any new specifications, rather, participants will implement,\n" +
+            // "test and document experiences with existing specifications.\n" +
+            "\n"
+            + "Because of the nature of SOS requests, requests for data MUST\n"
+            + "include constraints for the longitude, latitude, time, and/or\n"
+            + "station_id variables.\n"
+            + "\n"
+            + "Initiators: SURA (lead), Texas A&M University, MBARI, GoMOOS and\n"
+            + "Unidata.\n"
+            + "\n"
+            + "Specific goals:\n"
+            + "* Compare Sensor Observation Service (SOS) from the OGC's Sensor\n"
+            + "  Web Enablement (SWE) initiative to the Web Feature Service (WFS)\n"
+            + "  as applied to ocean data in a variety of data formats including\n"
+            + "  text files, netCDF files, relational databases, and possibly\n"
+            + "  native sensor output; (see Experiment #1 for details)\n"
+            + "* Make use of semantic mediation via Semantic Web technologies to\n"
+            + "  allow plurality of identification for source types (platforms\n"
+            + "  and sensors) and phenomena types;\n"
+            + "* Test aggregation services and caching strategies to provide\n"
+            + "  efficient queries;\n"
+            + "* Explore possible enhancements of THREDDS server, so that THREDDS\n"
+            + "  resident data sources might be made available via SOS or WFS;";
     if (tSummary != null)
       addGlobalAttributes.set(
-          "summary", String2.replaceAll(tSummary, "[standard]", standardSummary));
+          language, "summary", String2.replaceAll(tSummary, "[standard]", standardSummary));
     stationIdSourceName =
         tStationIdSourceName == null ? defaultStationIdSourceName : tStationIdSourceName;
     lonSourceName = tLonSourceName;
@@ -538,28 +594,31 @@ public class EDDTableFromSOS extends EDDTable {
 
     // set source attributes (none available from source)
     sourceGlobalAttributes = new Attributes();
-    if (addGlobalAttributes.getString("subsetVariables") == null)
-      addGlobalAttributes.add("subsetVariables", "station_id, longitude, latitude");
+    if (addGlobalAttributes.getString(language, "subsetVariables") == null)
+      addGlobalAttributes.set(language, "subsetVariables", "station_id, longitude, latitude");
     combinedGlobalAttributes =
-        new Attributes(addGlobalAttributes, sourceGlobalAttributes); // order is important
-    String tLicense = combinedGlobalAttributes.getString("license");
+        new LocalizedAttributes(addGlobalAttributes, sourceGlobalAttributes); // order is important
+    String tLicense = combinedGlobalAttributes.getString(language, "license");
     if (tLicense != null)
       combinedGlobalAttributes.set(
-          "license", String2.replaceAll(tLicense, "[standard]", EDStatic.standardLicense));
+          language,
+          "license",
+          String2.replaceAll(tLicense, "[standard]", EDStatic.messages.standardLicense));
     combinedGlobalAttributes.removeValue("\"null\"");
 
     // get all dv sourceObservedProperties
     uniqueSourceObservedProperties = new StringArray();
-    for (int dv = 0; dv < tDataVariables.length; dv++) {
+    for (DataVariableInfo tDataVariable : tDataVariables) {
       // no sourceAtt
-      String tSourceName = (String) tDataVariables[dv][0];
-      Attributes tAddAtt = (Attributes) tDataVariables[dv][2];
+      String tSourceName = tDataVariable.sourceName();
+      LocalizedAttributes tAddAtt = tDataVariable.attributes();
       String
           //    op = tAddAtt.getString("sourceObservedProperty"); //preference for
           // sourceObservedProperty
           // if (op == null || op.length() == 0)
           op =
-          tAddAtt.getString(EDV.observedProperty); // otherwise, source = regular observedProperty
+          tAddAtt.getString(
+              language, EDV.observedProperty); // otherwise, source = regular observedProperty
       if (op == null || op.length() == 0)
         throw new IllegalArgumentException(
             // "Neither 'sourceObservedProperty' nor 'observervedProperty' attributes were " +
@@ -578,15 +637,13 @@ public class EDDTableFromSOS extends EDDTable {
     stationTable.addColumn("EndTime", new DoubleArray());
     stationTable.addColumn("ID", new StringArray());
     stationTable.addColumn("Procedure", new StringArray());
-    ArrayList tStationHasObsPropAL = new ArrayList(); // for each valid station, the boolean[]
+    ArrayList<boolean[]> tStationHasObsPropAL =
+        new ArrayList<>(); // for each valid station, the boolean[]
     // values that persist for a while
     double tLon = Double.NaN, tLat = Double.NaN, tBeginTime = Double.NaN, tEndTime = Double.NaN;
     String tIndeterminateEnd = null, tStationID = "", tStationProcedure = "";
     double currentEpochSeconds = Calendar2.gcToEpochSeconds(Calendar2.newGCalendarZulu());
     boolean tStationHasObsProp[] = new boolean[uniqueSourceObservedProperties.size()];
-    String tDVNames[] = new String[tDataVariables.length];
-    for (int dv = 0; dv < tDataVariables.length; dv++)
-      tDVNames[dv] = (String) tDataVariables[dv][0];
     // use KVP (KeyValuePair) HTTP GET request to getCapabilities
     // see section 7.2.3 of OGC 06-121r3 (OGC Web Services Common Specification) ver 1.1.0
     String tUrl = localSourceUrl + "?service=SOS&request=GetCapabilities";
@@ -607,8 +664,10 @@ public class EDDTableFromSOS extends EDDTable {
     String quickRestartFileName = File2.forceExtension(quickRestartFullFileName(), ".xml");
     boolean quickRestartFileExists = File2.isFile(quickRestartFileName);
     if (verbose) String2.log("  quickRestartFile exists=" + quickRestartFileExists);
+    // to test, set this to true in test method, not here.
+    boolean testQuickRestart = false;
     if (quickRestartFileExists
-        && (testQuickRestart || (EDStatic.quickRestart && EDStatic.initialLoadDatasets()))) {
+        && (testQuickRestart || (EDStatic.config.quickRestart && EDStatic.initialLoadDatasets()))) {
       // use the quickRestartFile
       // Note that if this fails (any reason, e.g., damaged quickRestartFile)
       //  the dataset will reload at next majorLoadDatasets,
@@ -826,7 +885,7 @@ public class EDDTableFromSOS extends EDDTable {
                 String2.log(
                     "    beginTime(from <gml:TimePeriod></gml:beginPosition>)=" + tBeginTime);
             } catch (Throwable t) {
-              String2.log("Warning while parsing gml:beginPosition ISO time: " + t.toString());
+              String2.log("Warning while parsing gml:beginPosition ISO time: " + t);
               tBeginTime = defaultBeginTime;
             }
 
@@ -847,7 +906,7 @@ public class EDDTableFromSOS extends EDDTable {
               try {
                 tEndTime = Calendar2.isoStringToEpochSeconds(content);
               } catch (Throwable t) {
-                String2.log("Warning while parsing gml:endPosition ISO time: " + t.toString());
+                String2.log("Warning while parsing gml:endPosition ISO time: " + t);
                 tEndTime = Double.NaN;
               }
               // are they being precise about recent end time?  change to NaN
@@ -999,7 +1058,7 @@ public class EDDTableFromSOS extends EDDTable {
       String2.log("Station Table=\n" + stationTable.saveAsJsonString(stationBeginTimeCol, true));
 
     // cdm_data_type
-    String cdmType = combinedGlobalAttributes.getString("cdm_data_type");
+    String cdmType = combinedGlobalAttributes.getString(language, "cdm_data_type");
     String allowedCdmTypes[] =
         new String[] {
           CDM_OTHER,
@@ -1018,7 +1077,7 @@ public class EDDTableFromSOS extends EDDTable {
               + "\".");
 
     // make the fixedVariables
-    dataVariables = new EDV[nFixedVariables + tDataVariables.length];
+    dataVariables = new EDV[nFixedVariables + tDataVariables.size()];
 
     lonIndex = 0;
     PAOne stats[] = stationTable.getColumn(stationLonCol).calculatePAOneStats();
@@ -1027,7 +1086,7 @@ public class EDDTableFromSOS extends EDDTable {
             datasetID,
             tLonSourceName,
             null,
-            null,
+            new LocalizedAttributes(),
             "double",
             stats[PrimitiveArray.STATS_MIN],
             stats[PrimitiveArray.STATS_MAX]);
@@ -1039,18 +1098,20 @@ public class EDDTableFromSOS extends EDDTable {
             datasetID,
             tLatSourceName,
             null,
-            null,
+            new LocalizedAttributes(),
             "double",
             stats[PrimitiveArray.STATS_MIN],
             stats[PrimitiveArray.STATS_MAX]);
 
     sosOfferingIndex = 2; // aka stationID
-    Attributes tAtts =
-        new Attributes().add("long_name", "Station ID").add("ioos_category", "Identifier");
+    LocalizedAttributes tAtts =
+        new LocalizedAttributes()
+            .set(language, "long_name", "Station ID")
+            .set(language, "ioos_category", "Identifier");
     if (CDM_TIMESERIES.equals(cdmType) || CDM_TIMESERIESPROFILE.equals(cdmType))
-      tAtts.add("cf_role", "timeseries_id");
+      tAtts.set(language, "cf_role", "timeseries_id");
     else if (CDM_TRAJECTORY.equals(cdmType) || CDM_TRAJECTORYPROFILE.equals(cdmType))
-      tAtts.add("cf_role", "trajectory_id");
+      tAtts.set(language, "cf_role", "trajectory_id");
     dataVariables[sosOfferingIndex] =
         new EDV(
             datasetID,
@@ -1064,9 +1125,10 @@ public class EDDTableFromSOS extends EDDTable {
     // alt axis isn't set up in datasets.xml.
     altIndex = 3;
     depthIndex = -1; // 2012-12-20 consider using depthIndex???
-    Attributes altAddAtts = new Attributes();
-    altAddAtts.set("units", "m");
-    if (tAltMetersPerSourceUnit != 1) altAddAtts.set("scale_factor", tAltMetersPerSourceUnit);
+    LocalizedAttributes altAddAtts = new LocalizedAttributes();
+    altAddAtts.set(language, "units", "m");
+    if (tAltMetersPerSourceUnit != 1)
+      altAddAtts.set(language, "scale_factor", tAltMetersPerSourceUnit);
     dataVariables[altIndex] =
         new EDVAlt(
             datasetID,
@@ -1092,9 +1154,9 @@ public class EDDTableFromSOS extends EDDTable {
             ? // some indeterminant
             PAOne.fromDouble(Double.NaN)
             : stats2[PrimitiveArray.STATS_MAX];
-    tAtts = new Attributes().add("units", tTimeSourceFormat);
+    tAtts = new LocalizedAttributes().set(language, "units", tTimeSourceFormat);
     if (CDM_TIMESERIESPROFILE.equals(cdmType) || CDM_TRAJECTORYPROFILE.equals(cdmType))
-      tAtts.add("cf_role", "profile_id");
+      tAtts.set(language, "cf_role", "profile_id");
     EDVTime edvTime =
         new EDVTime(
             datasetID,
@@ -1103,19 +1165,19 @@ public class EDDTableFromSOS extends EDDTable {
             tAtts,
             "String"); // this constructor gets source / sets destination actual_range
     edvTime.setDestinationMinMax(tTimeMin, tTimeMax);
-    edvTime.setActualRangeFromDestinationMinMax();
+    edvTime.setActualRangeFromDestinationMinMax(language);
     dataVariables[timeIndex] = edvTime;
 
     // create non-fixed dataVariables[]
-    for (int dv = 0; dv < tDataVariables.length; dv++) {
-      String tSourceName = (String) tDataVariables[dv][0];
-      String tDestName = (String) tDataVariables[dv][1];
+    for (int dv = 0; dv < tDataVariables.size(); dv++) {
+      String tSourceName = tDataVariables.get(dv).sourceName();
+      String tDestName = tDataVariables.get(dv).destinationName();
       if (tDestName == null || tDestName.trim().length() == 0) tDestName = tSourceName;
       Attributes tSourceAtt = null; // (none available from source)
-      Attributes tAddAtt = (Attributes) tDataVariables[dv][2];
-      String tSourceType = (String) tDataVariables[dv][3];
+      LocalizedAttributes tAddAtt = tDataVariables.get(dv).attributes();
+      String tSourceType = tDataVariables.get(dv).dataType();
 
-      if (EDVTimeStamp.hasTimeUnits(tSourceAtt, tAddAtt)) {
+      if (EDVTimeStamp.hasTimeUnits(language, tSourceAtt, tAddAtt)) {
         dataVariables[nFixedVariables + dv] =
             new EDVTimeStamp(
                 datasetID,
@@ -1133,10 +1195,12 @@ public class EDDTableFromSOS extends EDDTable {
                 tSourceAtt,
                 tAddAtt,
                 tSourceType); // the constructor that reads actual_range
-        dataVariables[nFixedVariables + dv].setActualRangeFromDestinationMinMax();
+        dataVariables[nFixedVariables + dv].setActualRangeFromDestinationMinMax(language);
       }
       Test.ensureNotNothing(
-          dataVariables[nFixedVariables + dv].combinedAttributes().getString(EDV.observedProperty),
+          dataVariables[nFixedVariables + dv]
+              .combinedAttributes()
+              .getString(language, EDV.observedProperty),
           "\""
               + EDV.observedProperty
               + "\" attribute not assigned for variable sourceName="
@@ -1181,7 +1245,7 @@ public class EDDTableFromSOS extends EDDTable {
     long cTime = System.currentTimeMillis() - constructionStartMillis;
     if (verbose)
       String2.log(
-          (debugMode ? "\n" + toString() : "")
+          (debugMode ? "\n" + this : "")
               + "\n*** EDDTableFromSOS "
               + datasetID
               + " constructor finished. TIME="
@@ -1248,7 +1312,6 @@ public class EDDTableFromSOS extends EDDTable {
     for (int c = constraintVariables.size() - 1; c >= 0; c--) {
       String constraintVariable = constraintVariables.get(c);
       String constraintOp = constraintOps.get(c);
-      double dConstraintValue = String2.parseDouble(constraintValues.get(c));
       int dv = String2.indexOf(dataVariableSourceNames(), constraintVariable);
       conDVI[c] = dv;
       EDV edv = dataVariables[dv];
@@ -1283,7 +1346,6 @@ public class EDDTableFromSOS extends EDDTable {
     // Always include lon,lat,alt,time,id to facilitate merging observedProperties correctly.
     IntArray tableDVI = new IntArray(); // .get(tableColumnIndex) -> dataVariableIndex
     // add the nFixedVariables
-    int tableLonCol = 0, tableLatCol = 1, tableAltCol = 2, tableTimeCol = 3, tableStationIdCol = 4;
     tableDVI.add(lonIndex);
     tableDVI.add(latIndex);
     tableDVI.add(altIndex);
@@ -1304,7 +1366,7 @@ public class EDDTableFromSOS extends EDDTable {
             //    top = dataVariables[dvi].combinedAttributes().getString("sourceObservedProperty");
             // //preferred
             // if (top == null)
-            top = dataVariables[dvi].combinedAttributes().getString(EDV.observedProperty);
+            top = dataVariables[dvi].combinedAttributes().getString(language, EDV.observedProperty);
         if (requestObservedProperties.indexOf(top) < 0) requestObservedProperties.add(top);
       }
     }
@@ -1346,7 +1408,7 @@ public class EDDTableFromSOS extends EDDTable {
           //    top = dataVariables[dvi].combinedAttributes().getString("sourceObservedProperty");
           // //preferred
           // if (top == null)
-          top = dataVariables[dvi].combinedAttributes().getString(EDV.observedProperty);
+          top = dataVariables[dvi].combinedAttributes().getString(language, EDV.observedProperty);
       if (requestObservedProperties.indexOf(top) < 0) requestObservedProperties.add(top);
     }
 
@@ -1397,7 +1459,8 @@ public class EDDTableFromSOS extends EDDTable {
 
     // makeTable
     Table table = makeEmptySourceTable(tableDVI.toArray(), 128);
-    HashMap llatHash = new HashMap(); // llat info -> table row number (as a String)
+    HashMap<String, String> llatHash =
+        new HashMap<>(); // llat info -> table row number (as a String)
     // IntArray fixedColumnsInTable = new IntArray();
     // for (int col = 0; col < tableDVI.size(); col++)
     //    if (tableDVI.get(col) < nFixedVariables)
@@ -1414,7 +1477,7 @@ public class EDDTableFromSOS extends EDDTable {
     for (int station = 0; station < nStations; station++) {
       if (Thread.currentThread().isInterrupted())
         throw new SimpleException(
-            "EDDTableFromSOS.getDataForDapQuery" + EDStatic.caughtInterruptedAr[0]);
+            "EDDTableFromSOS.getDataForDapQuery" + EDStatic.messages.caughtInterruptedAr[0]);
 
       String tStationLonString = "",
           tStationLatString = "",
@@ -1643,7 +1706,7 @@ public class EDDTableFromSOS extends EDDTable {
           // getSB.append("&text%2Fxml%3B%20subtype%3D%22om%2F1.0.0%22");
 
           if (reallyVerbose && !aConstraintShown) {
-            String2.log("  requestURL=" + localSourceUrl + getSB.toString());
+            String2.log("  requestURL=" + localSourceUrl + getSB);
             // aConstraintShown = true;
           }
           if (false) { // debugMode) {
@@ -1708,8 +1771,8 @@ public class EDDTableFromSOS extends EDDTable {
    * @param table the table to which rows will be added
    * @param llatHash lon+lat+alt+time+stationID goes to row#
    */
-  protected void readFromIoosNdbcNos(int language, String kvp, Table table, HashMap llatHash)
-      throws Throwable {
+  protected void readFromIoosNdbcNos(
+      int language, String kvp, Table table, Map<String, String> llatHash) throws Throwable {
 
     // downloading data may take time
     // so write to file, then quickly read and process
@@ -1717,7 +1780,7 @@ public class EDDTableFromSOS extends EDDTable {
     String grabFileName = cacheDirectory() + "grabFile" + String2.md5Hex12(kvp);
     long downloadTime = System.currentTimeMillis();
     try {
-      if (EDStatic.developmentMode && File2.isFile(grabFileName)) {
+      if (EDStatic.config.developmentMode && File2.isFile(grabFileName)) {
       } else SSR.downloadFile(localSourceUrl + kvp, grabFileName, true);
       downloadTime = System.currentTimeMillis() - downloadTime;
     } catch (Throwable t) {
@@ -1732,9 +1795,9 @@ public class EDDTableFromSOS extends EDDTable {
       throw t instanceof WaitThenTryAgainException
           ? t
           : new WaitThenTryAgainException(
-              EDStatic.simpleBilingual(language, EDStatic.waitThenTryAgainAr)
+              EDStatic.simpleBilingual(language, EDStatic.messages.waitThenTryAgainAr)
                   + "\n("
-                  + t.toString()
+                  + t
                   + ")");
     }
 
@@ -1756,9 +1819,6 @@ public class EDDTableFromSOS extends EDDTable {
         try {
           xmlReader.nextTag();
           String tags = xmlReader.allTags();
-          String ofInterest1 = null;
-          String ofInterest2 = null;
-          String ofInterest3 = null;
 
           // response is error message
           if (tags.equals("<ServiceExceptionReport>")
@@ -1784,7 +1844,7 @@ public class EDDTableFromSOS extends EDDTable {
             // <ExceptionText>Unknown observedProperty parameter:
             // sea_water_temperature,sea_water_salinity</ExceptionText></Exception>
             // </ExceptionReport>
-            String errorText = "";
+            StringBuilder errorText = new StringBuilder();
             String2.log("\n  Error from " + localSourceUrl + kvp);
             do {
               // log full exception report
@@ -1799,15 +1859,15 @@ public class EDDTableFromSOS extends EDDTable {
               if (tags.equals("<ExceptionReport><Exception>")
                   || tags.equals("<ows:ExceptionReport><ows:Exception>")) {
                 if (xmlReader.attributeValue("exceptionCode") != null)
-                  errorText += xmlReader.attributeValue("exceptionCode") + ": ";
+                  errorText.append(xmlReader.attributeValue("exceptionCode")).append(": ");
                 if (xmlReader.attributeValue("locator") != null)
-                  errorText += xmlReader.attributeValue("locator") + ": ";
+                  errorText.append(xmlReader.attributeValue("locator")).append(": ");
               }
 
               if (tags.equals("<ServiceExceptionReport></ServiceException>")
                   || tags.equals("<ExceptionReport><Exception></ExceptionText>")
                   || tags.equals("<ows:ExceptionReport><ows:Exception></ows:ExceptionText>")) {
-                errorText = "Source Exception=\"" + errorText + content + "\".";
+                errorText = new StringBuilder("Source Exception=\"" + errorText + content + "\".");
                 if (content.indexOf("No ") == 0
                     && (content.indexOf("No data for ") == 0
                         || content.indexOf(" data found for this station") > 0)) {
@@ -1821,7 +1881,7 @@ public class EDDTableFromSOS extends EDDTable {
                   // urn:x-noaa:def:station:NOAA.NOS.CO-OPS:1619910 or dissemination has been
                   // stopped by CORMS.".
                 } else {
-                  throw new RuntimeException(errorText);
+                  throw new RuntimeException(errorText.toString());
                 }
               }
 
@@ -1876,10 +1936,7 @@ public class EDDTableFromSOS extends EDDTable {
       if (unexpectedColumns.size() > 0) {
         String2.log("dataVariableSourceNames=" + String2.toCSSVString(dataVariableSourceNames));
         throw new SimpleException(
-            String2.ERROR
-                + ": unexpected column(s) in SOS response: "
-                + unexpectedColumns.toString()
-                + ".");
+            String2.ERROR + ": unexpected column(s) in SOS response: " + unexpectedColumns + ".");
       }
 
       // find the corresponding column number in sosTable  (may be -1)
@@ -1897,7 +1954,7 @@ public class EDDTableFromSOS extends EDDTable {
       if (notFound.size() > 0)
         String2.log(
             "WARNING: desired sourceNames not in SOS response: "
-                + notFound.toString()
+                + notFound
                 + "\n  sosTable has "
                 + String2.toCSSVString(sosTable.getColumnNames()));
       else if (reallyVerbose)
@@ -1941,7 +1998,7 @@ public class EDDTableFromSOS extends EDDTable {
                 + sosTable.getStringData(sosTableStationIdCol, sosRow);
 
         // does a row with identical LonLatAltTimeID exist in table?
-        int tRow = String2.parseInt((String) llatHash.get(tHash));
+        int tRow = String2.parseInt(llatHash.get(tHash));
         if (tRow < Integer.MAX_VALUE) {
           // merge this data into that row
           for (int col = 0; col < nTableColumns; col++) {
@@ -1991,7 +2048,7 @@ public class EDDTableFromSOS extends EDDTable {
                 + processTime
                 + "ms");
 
-      if (!EDStatic.developmentMode)
+      if (!EDStatic.config.developmentMode)
         File2.simpleDelete(grabFileName); // don't keep in cache. SOS datasets change frequently.
 
     } catch (Throwable t) {
@@ -2001,7 +2058,7 @@ public class EDDTableFromSOS extends EDDTable {
               + " while processing response from requestUrl="
               + localSourceUrl
               + kvp);
-      if (!EDStatic.developmentMode)
+      if (!EDStatic.config.developmentMode)
         File2.simpleDelete(grabFileName); // don't keep in cache. SOS datasets change frequently.
       throw t;
     }
@@ -2018,7 +2075,7 @@ public class EDDTableFromSOS extends EDDTable {
       int language,
       String kvp,
       Table table,
-      HashMap llatHash,
+      Map<String, String> llatHash,
       String tStationLonString,
       String tStationLatString,
       String tStationAltString,
@@ -2037,13 +2094,11 @@ public class EDDTableFromSOS extends EDDTable {
     String tDataVariableSourceNames[] = dataVariableSourceNames();
     int nCol = table.nColumns();
     IntArray tableDVI = new IntArray();
-    String tableObservedProperties[] = new String[nCol];
     boolean isStringCol[] = new boolean[nCol];
     for (int col = 0; col < nCol; col++) {
       int dvi = String2.indexOf(tDataVariableSourceNames, table.getColumnName(col));
       tableDVI.add(dvi);
       EDV edv = dataVariables[dvi];
-      tableObservedProperties[col] = edv.combinedAttributes().getString("observedProperty");
       isStringCol[col] = edv.sourceDataPAType().equals(PAType.STRING);
     }
 
@@ -2070,9 +2125,9 @@ public class EDDTableFromSOS extends EDDTable {
       throw t instanceof WaitThenTryAgainException
           ? t
           : new WaitThenTryAgainException(
-              EDStatic.simpleBilingual(language, EDStatic.waitThenTryAgainAr)
+              EDStatic.simpleBilingual(language, EDStatic.messages.waitThenTryAgainAr)
                   + "\n("
-                  + t.toString()
+                  + t
                   + ")");
     }
     try {
@@ -2154,174 +2209,176 @@ public class EDDTableFromSOS extends EDDTable {
             String content = xmlReader.content();
             String error = null;
 
-            if (endOfTag.equals("<om:observedProperty><swe:CompositePhenomenon><swe:component>")) {
-              // e.g., xlink:href="urn:ogc:phenomenon:time:iso8601" />
-              String fieldName = xmlReader.attributeValue("xlink:href");
-              int col = table.findColumnNumber(fieldName);
-              fieldToCol.add(col);
-              if (debugMode) String2.log("  field=" + fieldName + " col=" + col);
-
-            } else if (endOfTag.equals("<swe:encoding><swe:TextBlock>")) {
-              // encoding indicates how the data is stored
-              // tokenSeparator="," blockSeparator=" " decimalSeparator="."
-              tokenSeparator = xmlReader.attributeValue("tokenSeparator");
-              blockSeparator = xmlReader.attributeValue("blockSeparator");
-              decimalSeparator = xmlReader.attributeValue("decimalSeparator");
-              if (debugMode)
-                String2.log(
-                    "  token="
-                        + tokenSeparator
-                        + " block="
-                        + blockSeparator
-                        + " decimal="
-                        + decimalSeparator);
-
-            } else if (endOfTag.equals("<om:result><swe:DataArray></swe:values>")) {
-              // the results in one big csv block
-              // first, ensure fieldToCol doesn't have 2 references to same column
-              int nFields = fieldToCol.size();
-              if (reallyVerbose) String2.log("fieldToCol=" + fieldToCol);
-              for (int field = 0; field < nFields; field++) {
-                int col = fieldToCol.get(field);
-                if (col >= 0) { // several may be -1
-                  if (fieldToCol.indexOf(col, 0) != field) // ensure none before it are the same
-                  throw new RuntimeException(
-                        "Two fieldToCol="
-                            + fieldToCol
-                            + " have the same table column reference (col#"
-                            + col
-                            + "="
-                            + table.getColumnName(col)
-                            + ").");
-                }
+            switch (endOfTag) {
+              case "<om:observedProperty><swe:CompositePhenomenon><swe:component>" -> {
+                // e.g., xlink:href="urn:ogc:phenomenon:time:iso8601" />
+                String fieldName = xmlReader.attributeValue("xlink:href");
+                int col = table.findColumnNumber(fieldName);
+                fieldToCol.add(col);
+                if (debugMode) String2.log("  field=" + fieldName + " col=" + col);
               }
-
-              // ensure separators are set (to defaults)
-              if (tokenSeparator == null) tokenSeparator = ",";
-              if (blockSeparator == null) blockSeparator = " "; // rowSeparator
-              if (decimalSeparator == null) decimalSeparator = ".";
-              boolean changeDecimalSeparator = !decimalSeparator.equals(".");
-
-              // process the content (the results in one big csv block)
-              // 2008-04-09T00:00:00,41.3366,-70.5564,0.0,1128.3,73.2,9,0.06,0.16,97.8,71.1,38.4,6,10,5,156.0,159.4,155.3,9.6,3.1,0,0,0,0,0
-              // ???how are Strings quoted?
-              int po = 0; // next po to look at
-              int contentLength = content.length();
-              int nCols = table.nColumns();
-              while (po < contentLength) {
-
-                // process a row of data
-                int nRows1 = table.nRows() + 1;
-                String rowValues[] = new String[nCols];
+              case "<swe:encoding><swe:TextBlock>" -> {
+                // encoding indicates how the data is stored
+                // tokenSeparator="," blockSeparator=" " decimalSeparator="."
+                tokenSeparator = xmlReader.attributeValue("tokenSeparator");
+                blockSeparator = xmlReader.attributeValue("blockSeparator");
+                decimalSeparator = xmlReader.attributeValue("decimalSeparator");
+                if (debugMode)
+                  String2.log(
+                      "  token="
+                          + tokenSeparator
+                          + " block="
+                          + blockSeparator
+                          + " decimal="
+                          + decimalSeparator);
+              }
+              case "<om:result><swe:DataArray></swe:values>" -> {
+                // the results in one big csv block
+                // first, ensure fieldToCol doesn't have 2 references to same column
+                int nFields = fieldToCol.size();
+                if (reallyVerbose) String2.log("fieldToCol=" + fieldToCol);
                 for (int field = 0; field < nFields; field++) {
-                  String sep = field < nFields - 1 ? tokenSeparator : blockSeparator;
-                  int po2 = content.indexOf(sep, po);
-                  if (po2 < 0) po2 = contentLength;
-                  String value = content.substring(po, po2);
                   int col = fieldToCol.get(field);
-                  if (col >= 0) {
-                    // deal with decimalSeparator for numeric Columns
-                    if (changeDecimalSeparator && !isStringCol[col])
-                      value = String2.replaceAll(value, decimalSeparator, ".");
-                    rowValues[col] = value;
-                    if (debugMode)
-                      String2.log(
-                          "field="
-                              + field
-                              + " col="
+                  if (col >= 0) { // several may be -1
+                    if (fieldToCol.indexOf(col, 0) != field) // ensure none before it are the same
+                    throw new RuntimeException(
+                          "Two fieldToCol="
+                              + fieldToCol
+                              + " have the same table column reference (col#"
                               + col
-                              + " "
+                              + "="
                               + table.getColumnName(col)
-                              + " value="
-                              + value);
+                              + ").");
                   }
-                  po = Math.min(contentLength, po2 + sep.length());
                 }
 
-                // add lat lon alt data
-                // it's usually in the result fields, but not always
-                if (tableLonCol >= 0 && rowValues[tableLonCol] == null)
-                  rowValues[tableLonCol] = tStationLonString;
-                if (tableLatCol >= 0 && rowValues[tableLatCol] == null)
-                  rowValues[tableLatCol] = tStationLatString;
-                if (tableAltCol >= 0 && rowValues[tableAltCol] == null)
-                  rowValues[tableAltCol] = tStationAltString;
-                if (tableStationIdCol >= 0 && rowValues[tableStationIdCol] == null)
-                  rowValues[tableStationIdCol] = tStationID;
+                // ensure separators are set (to defaults)
+                if (tokenSeparator == null) tokenSeparator = ",";
+                if (blockSeparator == null) blockSeparator = " "; // rowSeparator
+                if (decimalSeparator == null) decimalSeparator = ".";
+                boolean changeDecimalSeparator = !decimalSeparator.equals(".");
 
-                // make the hash key
-                String tHash =
-                    rowValues[tableLonCol]
-                        + ","
-                        + rowValues[tableLatCol]
-                        + ","
-                        + rowValues[tableAltCol]
-                        + ","
-                        + rowValues[tableTimeCol]
-                        + ","
-                        + rowValues[tableStationIdCol];
+                // process the content (the results in one big csv block)
+                // 2008-04-09T00:00:00,41.3366,-70.5564,0.0,1128.3,73.2,9,0.06,0.16,97.8,71.1,38.4,6,10,5,156.0,159.4,155.3,9.6,3.1,0,0,0,0,0
+                // ???how are Strings quoted?
+                int po = 0; // next po to look at
 
-                // ensure lon, lat, time, id where found
-                String tError1 = "Unexpected SOS response format: ";
-                String tError2 =
-                    " wasn't found.\n"
-                        + "(L,L,A,T,ID="
-                        + tHash
-                        + ")\n"
-                        + "URL="
-                        + localSourceUrl
-                        + kvp;
-                if (rowValues[tableLonCol] == null || rowValues[tableLonCol].length() == 0)
-                  throw new SimpleException(tError1 + "longitude" + tError2);
-                if (rowValues[tableLatCol] == null || rowValues[tableLatCol].length() == 0)
-                  throw new SimpleException(tError1 + "latitude" + tError2);
-                if (rowValues[tableTimeCol] == null || rowValues[tableTimeCol].length() == 0)
-                  throw new SimpleException(tError1 + "time" + tError2);
-                if (rowValues[tableStationIdCol] == null
-                    || rowValues[tableStationIdCol].length() == 0)
-                  throw new SimpleException(tError1 + stationIdSourceName + tError2);
+                int contentLength = content.length();
+                int nCols = table.nColumns();
+                while (po < contentLength) {
 
-                // does a row with identical LonLatAltTimeID exist in table?
-                int tRow = String2.parseInt((String) llatHash.get(tHash));
-                if (tRow < Integer.MAX_VALUE) {
-                  // merge this data into that row
-                  for (int col = 0; col < nCols; col++) {
-                    String ts = rowValues[col];
-                    if (ts != null) {
-                      PrimitiveArray pa = table.getColumn(col);
-                      // if (true || verbose) {
-                      // if there was an old value, ensure that old value = new value
-                      // leave this test in as insurance!
-                      String tso = pa.getString(tRow);
-                      pa.setString(tRow, ts);
-                      ts = pa.getString(tRow); // setting a number changes it, e.g., 1 -> 1.0
-                      if (tso.length() > 0 && !tso.equals(ts)) {
-                        String2.log("URL=" + localSourceUrl + kvp);
-                        throw new SimpleException(
-                            "Error: there are two rows for lon,lat,alt,time,id="
-                                + tHash
-                                + " and they have different data values (column="
+                  // process a row of data
+                  String rowValues[] = new String[nCols];
+                  for (int field = 0; field < nFields; field++) {
+                    String sep = field < nFields - 1 ? tokenSeparator : blockSeparator;
+                    int po2 = content.indexOf(sep, po);
+                    if (po2 < 0) po2 = contentLength;
+                    String value = content.substring(po, po2);
+                    int col = fieldToCol.get(field);
+                    if (col >= 0) {
+                      // deal with decimalSeparator for numeric Columns
+                      if (changeDecimalSeparator && !isStringCol[col])
+                        value = String2.replaceAll(value, decimalSeparator, ".");
+                      rowValues[col] = value;
+                      if (debugMode)
+                        String2.log(
+                            "field="
+                                + field
+                                + " col="
+                                + col
+                                + " "
                                 + table.getColumnName(col)
-                                + "="
-                                + tso
-                                + " and "
-                                + ts
-                                + ").");
-                      }
-                      // } else {
-                      //   pa.setString(tRow, ts);
-                      // }
+                                + " value="
+                                + value);
                     }
-                  }
-                } else {
-                  // add this row
-                  for (int col = 0; col < nCols; col++) {
-                    String ts = rowValues[col];
-                    table.getColumn(col).addString(ts == null ? "" : ts);
-                    // String2.log(col + " " + table.getColumnName(col) + " " + ts);
+                    po = Math.min(contentLength, po2 + sep.length());
                   }
 
-                  llatHash.put(tHash, "" + (table.nRows() - 1));
+                  // add lat lon alt data
+                  // it's usually in the result fields, but not always
+                  if (tableLonCol >= 0 && rowValues[tableLonCol] == null)
+                    rowValues[tableLonCol] = tStationLonString;
+                  if (tableLatCol >= 0 && rowValues[tableLatCol] == null)
+                    rowValues[tableLatCol] = tStationLatString;
+                  if (tableAltCol >= 0 && rowValues[tableAltCol] == null)
+                    rowValues[tableAltCol] = tStationAltString;
+                  if (tableStationIdCol >= 0 && rowValues[tableStationIdCol] == null)
+                    rowValues[tableStationIdCol] = tStationID;
+
+                  // make the hash key
+                  String tHash =
+                      rowValues[tableLonCol]
+                          + ","
+                          + rowValues[tableLatCol]
+                          + ","
+                          + rowValues[tableAltCol]
+                          + ","
+                          + rowValues[tableTimeCol]
+                          + ","
+                          + rowValues[tableStationIdCol];
+
+                  // ensure lon, lat, time, id where found
+                  String tError1 = "Unexpected SOS response format: ";
+                  String tError2 =
+                      " wasn't found.\n"
+                          + "(L,L,A,T,ID="
+                          + tHash
+                          + ")\n"
+                          + "URL="
+                          + localSourceUrl
+                          + kvp;
+                  if (rowValues[tableLonCol] == null || rowValues[tableLonCol].length() == 0)
+                    throw new SimpleException(tError1 + "longitude" + tError2);
+                  if (rowValues[tableLatCol] == null || rowValues[tableLatCol].length() == 0)
+                    throw new SimpleException(tError1 + "latitude" + tError2);
+                  if (rowValues[tableTimeCol] == null || rowValues[tableTimeCol].length() == 0)
+                    throw new SimpleException(tError1 + "time" + tError2);
+                  if (rowValues[tableStationIdCol] == null
+                      || rowValues[tableStationIdCol].length() == 0)
+                    throw new SimpleException(tError1 + stationIdSourceName + tError2);
+
+                  // does a row with identical LonLatAltTimeID exist in table?
+                  int tRow = String2.parseInt(llatHash.get(tHash));
+                  if (tRow < Integer.MAX_VALUE) {
+                    // merge this data into that row
+                    for (int col = 0; col < nCols; col++) {
+                      String ts = rowValues[col];
+                      if (ts != null) {
+                        PrimitiveArray pa = table.getColumn(col);
+                        // if (true || verbose) {
+                        // if there was an old value, ensure that old value = new value
+                        // leave this test in as insurance!
+                        String tso = pa.getString(tRow);
+                        pa.setString(tRow, ts);
+                        ts = pa.getString(tRow); // setting a number changes it, e.g., 1 -> 1.0
+                        if (tso.length() > 0 && !tso.equals(ts)) {
+                          String2.log("URL=" + localSourceUrl + kvp);
+                          throw new SimpleException(
+                              "Error: there are two rows for lon,lat,alt,time,id="
+                                  + tHash
+                                  + " and they have different data values (column="
+                                  + table.getColumnName(col)
+                                  + "="
+                                  + tso
+                                  + " and "
+                                  + ts
+                                  + ").");
+                        }
+                        // } else {
+                        //   pa.setString(tRow, ts);
+                        // }
+                      }
+                    }
+                  } else {
+                    // add this row
+                    for (int col = 0; col < nCols; col++) {
+                      String ts = rowValues[col];
+                      table.getColumn(col).addString(ts == null ? "" : ts);
+                      // String2.log(col + " " + table.getColumnName(col) + " " + ts);
+                    }
+
+                    llatHash.put(tHash, "" + (table.nRows() - 1));
+                  }
                 }
               }
             }
@@ -2355,7 +2412,7 @@ public class EDDTableFromSOS extends EDDTable {
       int language,
       String kvp,
       Table table,
-      HashMap llatHash,
+      Map<String, String> llatHash,
       String tStationLonString,
       String tStationLatString,
       String tStationAltString,
@@ -2378,7 +2435,8 @@ public class EDDTableFromSOS extends EDDTable {
       int dvi = String2.indexOf(tDataVariableSourceNames, table.getColumnName(col));
       tableDVI.add(dvi);
       EDV edv = dataVariables[dvi];
-      tableObservedProperties[col] = edv.combinedAttributes().getString("observedProperty");
+      tableObservedProperties[col] =
+          edv.combinedAttributes().getString(language, "observedProperty");
       isStringCol[col] = edv.sourceDataPAType().equals(PAType.STRING);
     }
 
@@ -2407,9 +2465,9 @@ public class EDDTableFromSOS extends EDDTable {
       throw t instanceof WaitThenTryAgainException
           ? t
           : new WaitThenTryAgainException(
-              EDStatic.simpleBilingual(language, EDStatic.waitThenTryAgainAr)
+              EDStatic.simpleBilingual(language, EDStatic.messages.waitThenTryAgainAr)
                   + "\n("
-                  + t.toString()
+                  + t
                   + ")");
     }
 
@@ -2474,209 +2532,213 @@ public class EDDTableFromSOS extends EDDTable {
             String content = xmlReader.content();
             String error = null;
 
-            if (endOfTag.equals(
-                "<om:featureOfInterest><swe:GeoReferenceableFeature>"
-                    + "<gml:location><gml:Point></gml:coordinates>")) {
-              // lat lon alt    if present, has precedence over station table
-              // VAST has this; others don't
-              String lla[] = String2.split(content, ' ');
-              if (lla.length >= 2) {
-                tStationLatString = lla[0];
-                tStationLonString = lla[1];
-                if (lla.length >= 3) tStationAltString = lla[2];
+            switch (endOfTag) {
+              case "<om:featureOfInterest><swe:GeoReferenceableFeature>"
+                  + "<gml:location><gml:Point></gml:coordinates>" -> {
+                // lat lon alt    if present, has precedence over station table
+                // VAST has this; others don't
+                String lla[] = String2.split(content, ' ');
+                if (lla.length >= 2) {
+                  tStationLatString = lla[0];
+                  tStationLonString = lla[1];
+                  if (lla.length >= 3) tStationAltString = lla[2];
+                }
               }
-            } else if ( // endOfTag.equals("<om:resultDefinition><swe:DataBlockDefinition>" +
-            //         "<swe:components><swe:DataRecord><swe:field>") ||  //old?
-            endOfTag.equals(
-                "<om:result><swe:DataArray>" + "<swe:elementType><swe:DataRecord><swe:field>")) {
-              // field    PlatformName, latitude, longitude, time, depth have this
-              // other fields have "observedProperty6"; see "definition" below
-              String fieldName = xmlReader.attributeValue("name");
-              int col = table.findColumnNumber(fieldName);
-              fieldToCol.add(col);
-              if (debugMode)
-                String2.log("*** field name found: col=" + col + " fieldName=" + fieldName);
+              case "<om:result><swe:DataArray>"
+                  + "<swe:elementType><swe:DataRecord><swe:field>" -> {
+                // endOfTag.equals("<om:resultDefinition><swe:DataBlockDefinition>" +
+                //         "<swe:components><swe:DataRecord><swe:field>") ||  //old?
 
-            } else if (endOfTag.equals(
-                "<om:result><swe:DataArray>"
-                    + "<swe:elementType><swe:DataRecord><swe:field><swe:Quantity>")) {
-              // definition   use this if field name was "observedProperty"i
-              int nFields = fieldToCol.size();
-              if (nFields > 0 && fieldToCol.get(nFields - 1) < 0) {
-                String definition = xmlReader.attributeValue("definition");
-                int col = String2.indexOf(tableObservedProperties, definition);
-                fieldToCol.set(nFields - 1, col); // change from -1 to col
+                // field    PlatformName, latitude, longitude, time, depth have this
+                // other fields have "observedProperty6"; see "definition" below
+                String fieldName = xmlReader.attributeValue("name");
+                int col = table.findColumnNumber(fieldName);
+                fieldToCol.add(col);
+                if (debugMode)
+                  String2.log("*** field name found: col=" + col + " fieldName=" + fieldName);
+              }
+              case "<om:result><swe:DataArray>"
+                  + "<swe:elementType><swe:DataRecord><swe:field><swe:Quantity>" -> {
+                // definition   use this if field name was "observedProperty"i
+                int nFields = fieldToCol.size();
+                if (nFields > 0 && fieldToCol.get(nFields - 1) < 0) {
+                  String definition = xmlReader.attributeValue("definition");
+                  int col = String2.indexOf(tableObservedProperties, definition);
+                  fieldToCol.set(nFields - 1, col); // change from -1 to col
+                  if (debugMode)
+                    String2.log(
+                        "*** field definition found: col=" + col + " definition=" + definition);
+                }
+              }
+              case "<om:result><swe:DataArray><swe:encoding>" -> {
+                // endOfTag.equals("<om:resultDefinition><swe:DataBlockDefinition>" +
+                //         "<swe:encoding><swe:AsciiBlock>") ||  //old oostethys has this
+                // endOfTag.equals("<om:resultDefinition><swe:DataBlockDefinition>" +
+                //         "<swe:encoding><swe:TextBlock>")) {   //old VAST has this
+
+                // encoding indicates how the data is stored
+                // tokenSeparator="," blockSeparator=" " decimalSeparator="."
+                tokenSeparator = xmlReader.attributeValue("tokenSeparator");
+                blockSeparator = xmlReader.attributeValue("blockSeparator");
+                decimalSeparator = xmlReader.attributeValue("decimalSeparator");
                 if (debugMode)
                   String2.log(
-                      "*** field definition found: col=" + col + " definition=" + definition);
+                      "  token="
+                          + tokenSeparator
+                          + " block="
+                          + blockSeparator
+                          + " decimal="
+                          + decimalSeparator);
               }
-
-            } else if ( // endOfTag.equals("<om:resultDefinition><swe:DataBlockDefinition>" +
-            //         "<swe:encoding><swe:AsciiBlock>") ||  //old oostethys has this
-            // endOfTag.equals("<om:resultDefinition><swe:DataBlockDefinition>" +
-            //         "<swe:encoding><swe:TextBlock>")) {   //old VAST has this
-            endOfTag.equals("<om:result><swe:DataArray><swe:encoding>")) {
-              // encoding indicates how the data is stored
-              // tokenSeparator="," blockSeparator=" " decimalSeparator="."
-              tokenSeparator = xmlReader.attributeValue("tokenSeparator");
-              blockSeparator = xmlReader.attributeValue("blockSeparator");
-              decimalSeparator = xmlReader.attributeValue("decimalSeparator");
-              if (debugMode)
-                String2.log(
-                    "  token="
-                        + tokenSeparator
-                        + " block="
-                        + blockSeparator
-                        + " decimal="
-                        + decimalSeparator);
-
-            } else if ( // endOfTag.equals("</om:result>")) { //old
-            endOfTag.equals("<om:result><swe:DataArray></swe:values>")) {
-              // the results in one big block
-              // first, ensure fieldToCol doesn't have 2 references to same column
-              int nFields = fieldToCol.size();
-              if (reallyVerbose) String2.log("fieldToCol=" + fieldToCol);
-              for (int field = 0; field < nFields; field++) {
-                int col = fieldToCol.get(field);
-                if (col >= 0) { // several may be -1
-                  if (fieldToCol.indexOf(col, 0) != field) // ensure none before it are the same
-                  throw new RuntimeException(
-                        "Two fieldToCol="
-                            + fieldToCol
-                            + " have the same table column reference (col#"
-                            + col
-                            + "="
-                            + table.getColumnName(col)
-                            + ").");
-                }
-              }
-
-              // ensure separators are set (to defaults)
-              if (tokenSeparator == null) tokenSeparator = ",";
-              if (blockSeparator == null) blockSeparator = " "; // rowSeparator
-              if (decimalSeparator == null) decimalSeparator = ".";
-              boolean changeDecimalSeparator = !decimalSeparator.equals(".");
-
-              // process the content (the results in one big block)
-              //  <om:result>2007-06-18T00:50:00Z,34.68,-72.66,0,24.3 ...
-              // ???how are Strings quoted?
-              int po = 0; // next po to look at
-              int contentLength = content.length();
-              int nCols = table.nColumns();
-              while (po < contentLength) {
-
-                // process a row of data
-                int nRows1 = table.nRows() + 1;
-                String rowValues[] = new String[nCols];
+              case "<om:result><swe:DataArray></swe:values>" ->
+              // endOfTag.equals("</om:result>")) { //old
+              {
+                // the results in one big block
+                // first, ensure fieldToCol doesn't have 2 references to same column
+                int nFields = fieldToCol.size();
+                if (reallyVerbose) String2.log("fieldToCol=" + fieldToCol);
                 for (int field = 0; field < nFields; field++) {
-                  String sep = field < nFields - 1 ? tokenSeparator : blockSeparator;
-                  int po2 = content.indexOf(sep, po);
-                  if (po2 < 0) po2 = contentLength;
-                  String value = content.substring(po, po2);
                   int col = fieldToCol.get(field);
-                  if (col >= 0) {
-                    // deal with decimalSeparator for numeric Columns
-                    if (changeDecimalSeparator && !isStringCol[col])
-                      value = String2.replaceAll(value, decimalSeparator, ".");
-                    rowValues[col] = value;
-                    if (debugMode)
-                      String2.log(
-                          "field="
-                              + field
-                              + " col="
+                  if (col >= 0) { // several may be -1
+                    if (fieldToCol.indexOf(col, 0) != field) // ensure none before it are the same
+                    throw new RuntimeException(
+                          "Two fieldToCol="
+                              + fieldToCol
+                              + " have the same table column reference (col#"
                               + col
-                              + " "
+                              + "="
                               + table.getColumnName(col)
-                              + " value="
-                              + value);
+                              + ").");
                   }
-                  po = Math.min(contentLength, po2 + sep.length());
                 }
 
-                // add lat lon alt data
-                // it's usually in the result fields, but not always
-                if (tableLonCol >= 0 && rowValues[tableLonCol] == null)
-                  rowValues[tableLonCol] = tStationLonString;
-                if (tableLatCol >= 0 && rowValues[tableLatCol] == null)
-                  rowValues[tableLatCol] = tStationLatString;
-                if (tableAltCol >= 0 && rowValues[tableAltCol] == null)
-                  rowValues[tableAltCol] = tStationAltString;
-                if (tableStationIdCol >= 0 && rowValues[tableStationIdCol] == null)
-                  rowValues[tableStationIdCol] = tStationID;
+                // ensure separators are set (to defaults)
+                if (tokenSeparator == null) tokenSeparator = ",";
+                if (blockSeparator == null) blockSeparator = " "; // rowSeparator
+                if (decimalSeparator == null) decimalSeparator = ".";
+                boolean changeDecimalSeparator = !decimalSeparator.equals(".");
 
-                // make the hash key
-                String tHash =
-                    rowValues[tableLonCol]
-                        + ","
-                        + rowValues[tableLatCol]
-                        + ","
-                        + rowValues[tableAltCol]
-                        + ","
-                        + rowValues[tableTimeCol]
-                        + ","
-                        + rowValues[tableStationIdCol];
+                // process the content (the results in one big block)
+                //  <om:result>2007-06-18T00:50:00Z,34.68,-72.66,0,24.3 ...
+                // ???how are Strings quoted?
+                int po = 0; // next po to look at
 
-                // ensure lon, lat, time, id where found
-                String tError1 = "Unexpected SOS response format: ";
-                String tError2 =
-                    " wasn't found.\n"
-                        + "(L,L,A,T,ID="
-                        + tHash
-                        + ")\n"
-                        + "URL="
-                        + localSourceUrl
-                        + kvp;
-                if (rowValues[tableLonCol] == null || rowValues[tableLonCol].length() == 0)
-                  throw new SimpleException(tError1 + "longitude" + tError2);
-                if (rowValues[tableLatCol] == null || rowValues[tableLatCol].length() == 0)
-                  throw new SimpleException(tError1 + "latitude" + tError2);
-                if (rowValues[tableTimeCol] == null || rowValues[tableTimeCol].length() == 0)
-                  throw new SimpleException(tError1 + "time" + tError2);
-                if (rowValues[tableStationIdCol] == null
-                    || rowValues[tableStationIdCol].length() == 0)
-                  throw new SimpleException(tError1 + stationIdSourceName + tError2);
+                int contentLength = content.length();
+                int nCols = table.nColumns();
+                while (po < contentLength) {
 
-                // does a row with identical LonLatAltTimeID exist in table?
-                int tRow = String2.parseInt((String) llatHash.get(tHash));
-                if (tRow < Integer.MAX_VALUE) {
-                  // merge this data into that row
-                  for (int col = 0; col < nCols; col++) {
-                    String ts = rowValues[col];
-                    if (ts != null) {
-                      PrimitiveArray pa = table.getColumn(col);
-                      // if (true || verbose) {
-                      // if there was an old value, ensure that old value = new value
-                      // leave this test in as insurance!
-                      String tso = pa.getString(tRow);
-                      pa.setString(tRow, ts);
-                      ts = pa.getString(tRow); // setting a number changes it, e.g., 1 -> 1.0
-                      if (tso.length() > 0 && !tso.equals(ts)) {
-                        String2.log("URL=" + localSourceUrl + kvp);
-                        throw new SimpleException(
-                            "Error: there are two rows for lon,lat,alt,time,id="
-                                + tHash
-                                + " and they have different data values (column="
+                  // process a row of data
+                  String rowValues[] = new String[nCols];
+                  for (int field = 0; field < nFields; field++) {
+                    String sep = field < nFields - 1 ? tokenSeparator : blockSeparator;
+                    int po2 = content.indexOf(sep, po);
+                    if (po2 < 0) po2 = contentLength;
+                    String value = content.substring(po, po2);
+                    int col = fieldToCol.get(field);
+                    if (col >= 0) {
+                      // deal with decimalSeparator for numeric Columns
+                      if (changeDecimalSeparator && !isStringCol[col])
+                        value = String2.replaceAll(value, decimalSeparator, ".");
+                      rowValues[col] = value;
+                      if (debugMode)
+                        String2.log(
+                            "field="
+                                + field
+                                + " col="
+                                + col
+                                + " "
                                 + table.getColumnName(col)
-                                + "="
-                                + tso
-                                + " and "
-                                + ts
-                                + ").");
-                      }
-                      // } else {
-                      //   pa.setString(tRow, ts);
-                      // }
+                                + " value="
+                                + value);
                     }
-                  }
-                } else {
-                  // add this row
-                  for (int col = 0; col < nCols; col++) {
-                    String ts = rowValues[col];
-                    table.getColumn(col).addString(ts == null ? "" : ts);
-                    // String2.log(col + " " + table.getColumnName(col) + " " + ts);
+                    po = Math.min(contentLength, po2 + sep.length());
                   }
 
-                  llatHash.put(tHash, "" + (table.nRows() - 1));
+                  // add lat lon alt data
+                  // it's usually in the result fields, but not always
+                  if (tableLonCol >= 0 && rowValues[tableLonCol] == null)
+                    rowValues[tableLonCol] = tStationLonString;
+                  if (tableLatCol >= 0 && rowValues[tableLatCol] == null)
+                    rowValues[tableLatCol] = tStationLatString;
+                  if (tableAltCol >= 0 && rowValues[tableAltCol] == null)
+                    rowValues[tableAltCol] = tStationAltString;
+                  if (tableStationIdCol >= 0 && rowValues[tableStationIdCol] == null)
+                    rowValues[tableStationIdCol] = tStationID;
+
+                  // make the hash key
+                  String tHash =
+                      rowValues[tableLonCol]
+                          + ","
+                          + rowValues[tableLatCol]
+                          + ","
+                          + rowValues[tableAltCol]
+                          + ","
+                          + rowValues[tableTimeCol]
+                          + ","
+                          + rowValues[tableStationIdCol];
+
+                  // ensure lon, lat, time, id where found
+                  String tError1 = "Unexpected SOS response format: ";
+                  String tError2 =
+                      " wasn't found.\n"
+                          + "(L,L,A,T,ID="
+                          + tHash
+                          + ")\n"
+                          + "URL="
+                          + localSourceUrl
+                          + kvp;
+                  if (rowValues[tableLonCol] == null || rowValues[tableLonCol].length() == 0)
+                    throw new SimpleException(tError1 + "longitude" + tError2);
+                  if (rowValues[tableLatCol] == null || rowValues[tableLatCol].length() == 0)
+                    throw new SimpleException(tError1 + "latitude" + tError2);
+                  if (rowValues[tableTimeCol] == null || rowValues[tableTimeCol].length() == 0)
+                    throw new SimpleException(tError1 + "time" + tError2);
+                  if (rowValues[tableStationIdCol] == null
+                      || rowValues[tableStationIdCol].length() == 0)
+                    throw new SimpleException(tError1 + stationIdSourceName + tError2);
+
+                  // does a row with identical LonLatAltTimeID exist in table?
+                  int tRow = String2.parseInt(llatHash.get(tHash));
+                  if (tRow < Integer.MAX_VALUE) {
+                    // merge this data into that row
+                    for (int col = 0; col < nCols; col++) {
+                      String ts = rowValues[col];
+                      if (ts != null) {
+                        PrimitiveArray pa = table.getColumn(col);
+                        // if (true || verbose) {
+                        // if there was an old value, ensure that old value = new value
+                        // leave this test in as insurance!
+                        String tso = pa.getString(tRow);
+                        pa.setString(tRow, ts);
+                        ts = pa.getString(tRow); // setting a number changes it, e.g., 1 -> 1.0
+                        if (tso.length() > 0 && !tso.equals(ts)) {
+                          String2.log("URL=" + localSourceUrl + kvp);
+                          throw new SimpleException(
+                              "Error: there are two rows for lon,lat,alt,time,id="
+                                  + tHash
+                                  + " and they have different data values (column="
+                                  + table.getColumnName(col)
+                                  + "="
+                                  + tso
+                                  + " and "
+                                  + ts
+                                  + ").");
+                        }
+                        // } else {
+                        //   pa.setString(tRow, ts);
+                        // }
+                      }
+                    }
+                  } else {
+                    // add this row
+                    for (int col = 0; col < nCols; col++) {
+                      String ts = rowValues[col];
+                      table.getColumn(col).addString(ts == null ? "" : ts);
+                      // String2.log(col + " " + table.getColumnName(col) + " " + ts);
+                    }
+
+                    llatHash.put(tHash, "" + (table.nRows() - 1));
+                  }
                 }
               }
             }
@@ -2823,7 +2885,7 @@ public class EDDTableFromSOS extends EDDTable {
           String ts = xmlReader.attributeValue("tokenSeparator");
           if (String2.isSomething(ts)) {
             tokenSeparator = ts.charAt(0);
-            if (reallyVerbose) String2.log("  tokenSeparator=" + String2.annotatedString("" + ts));
+            if (reallyVerbose) String2.log("  tokenSeparator=" + String2.annotatedString(ts));
           }
           ts = xmlReader.attributeValue("blockSeparator");
           if (String2.isSomething(ts)) {
@@ -2879,47 +2941,6 @@ public class EDDTableFromSOS extends EDDTable {
     }
   }
 
-  private static String
-      standardSummary = // from http://www.oostethys.org/ogc-oceans-interoperability-experiment
-          // [GONE]
-          "The OCEANS IE -- formally approved as an OGC Interoperability\n"
-              + "Experiment in December 2006 -- engages data managers and scientists\n"
-              + "in the Ocean-Observing community to advance their understanding and\n"
-              + "application of various OGC specifications, solidify demonstrations\n"
-              + "for Ocean Science application areas, harden software\n"
-              + "implementations, and produce candidate OGC Best Practices documents\n"
-              + "that can be used to inform the broader ocean-observing community.\n"
-              +
-              // "To achieve these goals, the OCEANS IE engages the OGC membership\n" +
-              // "to assure that any recommendations from the OCEANS IE will\n" +
-              // "properly leverage the OGC specifications. The OCEANS IE could\n" +
-              // "prompt Change Requests on OGC Specifications, which would be\n" +
-              // "provided to the OGC Technical Committee to influence the\n" +
-              // "underlying specifications. However, this IE will not develop\n" +
-              // "any new specifications, rather, participants will implement,\n" +
-              // "test and document experiences with existing specifications.\n" +
-              "\n"
-              + "Because of the nature of SOS requests, requests for data MUST\n"
-              + "include constraints for the longitude, latitude, time, and/or\n"
-              + "station_id variables.\n"
-              + "\n"
-              + "Initiators: SURA (lead), Texas A&M University, MBARI, GoMOOS and\n"
-              + "Unidata.\n"
-              + "\n"
-              + "Specific goals:\n"
-              + "* Compare Sensor Observation Service (SOS) from the OGC's Sensor\n"
-              + "  Web Enablement (SWE) initiative to the Web Feature Service (WFS)\n"
-              + "  as applied to ocean data in a variety of data formats including\n"
-              + "  text files, netCDF files, relational databases, and possibly\n"
-              + "  native sensor output; (see Experiment #1 for details)\n"
-              + "* Make use of semantic mediation via Semantic Web technologies to\n"
-              + "  allow plurality of identification for source types (platforms\n"
-              + "  and sensors) and phenomena types;\n"
-              + "* Test aggregation services and caching strategies to provide\n"
-              + "  efficient queries;\n"
-              + "* Explore possible enhancements of THREDDS server, so that THREDDS\n"
-              + "  resident data sources might be made available via SOS or WFS;"; // better
-
   // summary?
 
   // IRIS - This SOS listed at
@@ -2965,10 +2986,7 @@ public class EDDTableFromSOS extends EDDTable {
     String sstlc = sosServerType.toLowerCase();
     boolean ioos52NServer = sstlc.equals(SosServerTypeIoos52N.toLowerCase());
     boolean ioosNdbcServer = sstlc.equals(SosServerTypeIoosNdbc.toLowerCase());
-    boolean ioosNcSOSServer = sstlc.equals(SosServerTypeIoosNcSOS.toLowerCase());
     boolean ioosNosServer = sstlc.equals(SosServerTypeIoosNos.toLowerCase());
-    boolean oostethysServer = sstlc.equals(SosServerTypeOostethys.toLowerCase());
-    boolean whoiServer = sstlc.equals(SosServerTypeWhoi.toLowerCase());
 
     String tUrl = tLocalSourceUrl + "?service=SOS&request=GetCapabilities";
     if (sosVersion != null && sosVersion.length() > 0) {
@@ -3014,11 +3032,8 @@ public class EDDTableFromSOS extends EDDTable {
     try {
       xmlReader.nextTag();
       String tags = xmlReader.allTags();
-      boolean ioosServer = false;
       if (xmlReader.tag(0).equals("Capabilities")) {
         sosPrefix = ""; // ioosServer
-        if (sosServerType.length() == 0) // not explicitly declared
-        ioosServer = true;
       } else if (xmlReader.tag(0).equals("sos:Capabilities")) {
         sosPrefix = "sos:"; // oostethys, ioos52N
       } else {
@@ -3072,7 +3087,7 @@ public class EDDTableFromSOS extends EDDTable {
 
         } else if (tags.endsWith("<ows:ServiceIdentification></ows:AccessConstraints>")) {
           String s = xmlReader.content();
-          if (!s.isEmpty() && !s.toLowerCase().equals("none")) {
+          if (!s.isEmpty() && !s.equalsIgnoreCase("none")) {
             license = s;
             if (verbose) String2.log("  license(from AccessConstraints)=" + license);
           }
@@ -3128,7 +3143,7 @@ public class EDDTableFromSOS extends EDDTable {
                           </sos:observedProperty>
           */
 
-          if (endOfTag.equals("")) {
+          if (endOfTag.isEmpty()) {
             tStationID = "";
             tStationObsPropList.setLength(0);
 
@@ -3150,7 +3165,7 @@ public class EDDTableFromSOS extends EDDTable {
             // xlink:href="http://mmisw.org/ont/cf/parameter/sea_water_temperature"
 
             String tXlink = xmlReader.attributeValue("xlink:href"); // without quotes
-            if (tXlink != null && !tXlink.toLowerCase().equals("none")) {
+            if (tXlink != null && !tXlink.equalsIgnoreCase("none")) {
               if (reallyVerbose) String2.log("  observedProperty=" + tXlink);
               int opPo = uniqueObsProp.indexOf(tXlink);
               if (opPo < 0) {
@@ -3166,7 +3181,7 @@ public class EDDTableFromSOS extends EDDTable {
             // handle composite observedProperty
             // <swe:CompositePhenomenon gml:id="WEATHER_OBSERVABLES">
             String tXlink = xmlReader.attributeValue("gml:id"); // without quotes
-            if (tXlink != null && !tXlink.toLowerCase().equals("none")) {
+            if (tXlink != null && !tXlink.equalsIgnoreCase("none")) {
               if (reallyVerbose) String2.log("  composite observedProperty=" + tXlink);
               int opPo = uniqueObsProp.indexOf(tXlink);
               if (opPo < 0) {
@@ -3237,7 +3252,6 @@ public class EDDTableFromSOS extends EDDTable {
     sb.append(
         "<!-- You have to choose which observedProperties will be used for this dataset.\n\n");
     int longestStationID = Math.max(19, stationIDs.maxStringLength());
-    int longestHasProp = stationHasObsProp.maxStringLength();
     sb.append(
         "\n"
             + String2.left("   n  Station (shortened)", 6 + longestStationID)
@@ -3269,7 +3283,11 @@ public class EDDTableFromSOS extends EDDTable {
               + sosPrefix
               + "observedProperty>");
     sb.append(
-        "\n id  ObservedProperty\n" + "---  --------------------------------------------------\n");
+        """
+
+                     id  ObservedProperty
+                    ---  --------------------------------------------------
+                    """);
     for (int op = 0; op < uniqueObsProp.size(); op++)
       sb.append(String2.right("" + (char) (65 + op), 3) + "  " + uniqueObsProp.get(op) + "\n");
 
@@ -3291,7 +3309,7 @@ public class EDDTableFromSOS extends EDDTable {
             "TimeSeries",
             tLocalSourceUrl,
             new Attributes(), // externalAtts
-            new HashSet()); // suggestedKeywords
+            new HashSet<>()); // suggestedKeywords
     Attributes gAtts = table.globalAttributes();
     gAtts.add(sgAtts); // since only addAtts will be printed
     gAtts.add(gAddAtts);
@@ -3328,12 +3346,14 @@ public class EDDTableFromSOS extends EDDTable {
 
     // *** generate the datasets.xml
     sb.append(
-        "\n"
-            + "NOTE! For SOS datasets, you must look at the observedProperty's\n"
-            + "phenomenaDictionary URL (or an actual GetObservations response)\n"
-            + "to see which dataVariables will be returned for a given phenomenon.\n"
-            + "(longitude, latitude, altitude, and time are handled separately.)\n"
-            + "-->\n");
+        """
+
+                    NOTE! For SOS datasets, you must look at the observedProperty's
+                    phenomenaDictionary URL (or an actual GetObservations response)
+                    to see which dataVariables will be returned for a given phenomenon.
+                    (longitude, latitude, altitude, and time are handled separately.)
+                    -->
+                    """);
 
     sb.append(
         "<dataset type=\"EDDTableFromSOS\" datasetID=\""
@@ -3390,9 +3410,8 @@ public class EDDTableFromSOS extends EDDTable {
 
     String2.log(
         "EDDTableFromSos.generateDatasetsXmlFromIOOS" + "\n  tLocalSourceUrl=" + tLocalSourceUrl);
-    String tPbublicSourceUrl = convertToPublicSourceUrl(tLocalSourceUrl);
     sosServerType = sosServerType == null ? "" : sosServerType.trim();
-    boolean isIoos52N = sosServerType.toLowerCase().equals(SosServerTypeIoos52N.toLowerCase());
+    boolean isIoos52N = sosServerType.equalsIgnoreCase(SosServerTypeIoos52N);
 
     String tUrl = tLocalSourceUrl + "?service=SOS&request=GetCapabilities";
     if (sosVersion != null && sosVersion.length() > 0) {
@@ -3424,12 +3443,10 @@ public class EDDTableFromSOS extends EDDTable {
     String tInfoUrl = null;
     String tInstitution = null;
     String tLicense = "[standard]";
-    String tSummary = null;
     String tTitle = null;
     String tOfferingAll = null;
     String tStationID = "";
     StringBuilder tStationObsPropList = new StringBuilder();
-    int offeringTagCount = 0;
     String tSosVersion = null; // e.g., "1.0.0"
     String offeringTag;
     String offeringEndTag;
@@ -3492,12 +3509,11 @@ public class EDDTableFromSOS extends EDDTable {
           if (verbose) String2.log("  title(from Title)=" + tTitle);
 
         } else if (tags.endsWith("<ows:ServiceIdentification></ows:Abstract>")) {
-          tSummary = xmlReader.content();
           if (verbose) String2.log("  summary(from Abstract)=" + tTitle);
 
         } else if (tags.endsWith("<ows:ServiceIdentification></ows:AccessConstraints>")) {
           String s = xmlReader.content();
-          if (!s.isEmpty() && !s.toLowerCase().equals("none")) {
+          if (!s.isEmpty() && !s.equalsIgnoreCase("none")) {
             tLicense = s;
             if (verbose) String2.log("  license(from AccessConstraints)=" + tLicense);
           }
@@ -3516,7 +3532,6 @@ public class EDDTableFromSOS extends EDDTable {
           String endOfTag = tags.substring(offeringTag.length());
           String content = xmlReader.content();
           String error = null;
-          if (tags.equals(offeringTag)) offeringTagCount++;
           // String2.log("endOfTag=" + endOfTag + xmlReader.content());
 
           /* separate phenomena
@@ -3544,7 +3559,7 @@ public class EDDTableFromSOS extends EDDTable {
                       </sos:ObservationOffering>
           */
 
-          if (endOfTag.equals("")) {
+          if (endOfTag.isEmpty()) {
             // String2.log("startTag");
             tStationID = "";
             tStationObsPropList.setLength(0);
@@ -3571,7 +3586,7 @@ public class EDDTableFromSOS extends EDDTable {
             // NOW http://mmisw.org/ont/cf/parameter/sea_water_salinity
             //    http://marinemetadata.org is GONE!
             String tXlink = xmlReader.attributeValue("xlink:href"); // without quotes
-            if (tXlink != null && !tXlink.toLowerCase().equals("none")) {
+            if (tXlink != null && !tXlink.equalsIgnoreCase("none")) {
               if (!isIoos52N) {
                 // shorten it
                 int po = tXlink.lastIndexOf("#");
@@ -3595,7 +3610,7 @@ public class EDDTableFromSOS extends EDDTable {
             // handle composite observedProperty
             // <swe:CompositePhenomenon gml:id="WEATHER_OBSERVABLES">
             String tXlink = xmlReader.attributeValue("gml:id"); // without quotes
-            if (tXlink != null && !tXlink.toLowerCase().equals("none")) {
+            if (tXlink != null && !tXlink.equalsIgnoreCase("none")) {
               int opPo = uniqueObsProp.indexOf(tXlink);
               if (opPo < 0) {
                 opPo = uniqueObsProp.size();
@@ -3653,15 +3668,16 @@ public class EDDTableFromSOS extends EDDTable {
     // write the station/obsProp info
     StringBuilder sb = new StringBuilder();
     sb.append(
-        "<!-- NOTE! Some of the standard_names below probably aren't CF standard names!\n"
-            + "   Check them and delete the ones that aren't CF standard names.\n"
-            + "\n"
-            + "NOTE! Be wary of suggested dataType=byte. It may just mean there was no\n"
-            + "   data for that variable in the data that was sampled.\n"
-            + "   Change it to short/int/float/double as needed.\n"
-            + "\n");
+        """
+                    <!-- NOTE! Some of the standard_names below probably aren't CF standard names!
+                       Check them and delete the ones that aren't CF standard names.
+
+                    NOTE! Be wary of suggested dataType=byte. It may just mean there was no
+                       data for that variable in the data that was sampled.
+                       Change it to short/int/float/double as needed.
+
+                    """);
     int longestStationID = Math.max(7, stationIDs.maxStringLength());
-    int longestHasProp = stationHasObsProp.maxStringLength();
     sb.append(
         String2.left("  n  Station", 5 + longestStationID)
             + "  Has observed_property\n"
@@ -3692,7 +3708,11 @@ public class EDDTableFromSOS extends EDDTable {
               + sosPrefix
               + "observedProperty>");
     sb.append(
-        "\n id  observed_property\n" + "___  __________________________________________________\n");
+        """
+
+                     id  observed_property
+                    ___  __________________________________________________
+                    """);
     for (int op = 0; op < uniqueObsProp.size(); op++)
       sb.append(String2.right("" + (char) (65 + op), 3) + "  " + uniqueObsProp.get(op) + "\n");
     sb.append("-->\n");
@@ -3777,7 +3797,7 @@ public class EDDTableFromSOS extends EDDTable {
 
     sosVersion = sosVersion == null ? "" : sosVersion.trim();
     sosServerType = sosServerType == null ? "" : sosServerType.trim();
-    boolean isIoos52N = sosServerType.toLowerCase().equals(SosServerTypeIoos52N.toLowerCase());
+    boolean isIoos52N = sosServerType.equalsIgnoreCase(SosServerTypeIoos52N);
     String2.log(
         "\nEDDTableFromSos.generateDatasetsXmlFromOneIOOS isIoos52N="
             + isIoos52N
@@ -3818,39 +3838,40 @@ public class EDDTableFromSOS extends EDDTable {
     } else {
 
       // read the file
-      BufferedReader br = File2.getDecompressedBufferedFileReader(safeFileName, null);
-      /* needs fix to work with BufferedReader
-      if (reallyVerbose) {
-          String2.log("ASCII response=");
-          int stop = Math.min(100, sa.size());
-          for (int i = 0; i < stop; i++)
-              String2.log(sa.get(i));
-          String2.log("...\n");
-      }*/
+      try (BufferedReader br = File2.getDecompressedBufferedFileReader(safeFileName, null)) {
+        /* needs fix to work with BufferedReader
+        if (reallyVerbose) {
+            String2.log("ASCII response=");
+            int stop = Math.min(100, sa.size());
+            for (int i = 0; i < stop; i++)
+                String2.log(sa.get(i));
+            String2.log("...\n");
+        }*/
 
-      // is it an xml file (presumably an error report)?
-      br.mark(10000); // max read-ahead bytes
-      String s = br.readLine();
-      if (s.startsWith("<?xml")) {
-        StringBuilder sb = new StringBuilder();
-        while (s != null) { // initially, s has first line
-          sb.append(s);
-          sb.append('\n');
-          s = br.readLine();
+        // is it an xml file (presumably an error report)?
+        br.mark(10000); // max read-ahead bytes
+        String s = br.readLine();
+        if (s.startsWith("<?xml")) {
+          StringBuilder sb = new StringBuilder();
+          while (s != null) { // initially, s has first line
+            sb.append(s);
+            sb.append('\n');
+            s = br.readLine();
+          }
+          throw new SimpleException(sb.toString());
         }
-        throw new SimpleException(sb.toString());
-      }
-      br.reset();
+        br.reset();
 
-      // read into sosTable
-      boolean simplify = true;
-      sosTable = new Table();
-      sosTable.readASCII(safeFileName, br, "", "", 0, 1, "", null, null, null, null, simplify);
-      timeSourceName = "date_time";
-      longitudeSourceName = "longitude (degree)";
-      latitudeSourceName = "latitude (degree)";
-      altitudeSourceName = "depth (m)";
-      altitudeMPSU = -1;
+        // read into sosTable
+        boolean simplify = true;
+        sosTable = new Table();
+        sosTable.readASCII(safeFileName, br, "", "", 0, 1, "", null, null, null, null, simplify);
+        timeSourceName = "date_time";
+        longitudeSourceName = "longitude (degree)";
+        latitudeSourceName = "latitude (degree)";
+        altitudeSourceName = "depth (m)";
+        altitudeMPSU = -1;
+      }
     }
     if (reallyVerbose) String2.log("response table=\n" + sosTable.toString(4));
 
@@ -4043,7 +4064,7 @@ public class EDDTableFromSOS extends EDDTable {
    * @param hashMap the hashMap to which with phenomena will be added
    * @throws Throwable if trouble
    */
-  public static void getPhenomena(String url, HashMap hashMap) throws Throwable {
+  public static void getPhenomena(String url, Map<String, StringArray> hashMap) throws Throwable {
 
     String2.log("EDDTableFromSOS.getPhenomena" + "\nurl=" + url);
 
@@ -4051,10 +4072,7 @@ public class EDDTableFromSOS extends EDDTable {
     try {
       xmlReader.nextTag();
       String tags = xmlReader.allTags();
-      String sosPrefix = "";
-      boolean ioosServer = false;
       String startTag = "<gml:Dictionary>";
-      String endTag = "</gml:Dictionary>";
 
       if (!tags.equals(startTag))
         throw new RuntimeException(
@@ -4069,8 +4087,6 @@ public class EDDTableFromSOS extends EDDTable {
         // String2.log("tags=" + tags + xmlReader.content());
 
         String endOfTag = tags.substring(startTag.length());
-        String content = xmlReader.content();
-        String error = null;
         // String2.log("endOfTag=" + endOfTag + xmlReader.content());
 
         /* separate phenomena
@@ -4080,63 +4096,66 @@ public class EDDTableFromSOS extends EDDTable {
             <gml:identifier codeSpace="urn:x-noaa:ioos:def:phenomenonNames">PhenomenaDictionary</gml:identifier>
             ...
             */
-        if (endOfTag.equals("<gml:identifier>")) {
-          codeSpace = xmlReader.attributeValue("codeSpace");
-          if (reallyVerbose) String2.log("  codeSpace=" + codeSpace);
+        switch (endOfTag) {
+          case "<gml:identifier>" -> {
+            codeSpace = xmlReader.attributeValue("codeSpace");
+            if (reallyVerbose) String2.log("  codeSpace=" + codeSpace);
 
-          // phenomenon
-          /*  <gml:definitionMember >
-                  <swe:Phenomenon gml:id="WaterTemperature">
-                      <gml:description>Temperature of the water.</gml:description>
-                      <gml:identifier codeSpace="urn:x-noaa:ioos:def:phenomenonNames">WaterTemperature</gml:identifier>
-                  </swe:Phenomenon>
-              </gml:definitionMember>
-          */
-        } else if (endOfTag.equals("<gml:definitionMember><swe:Phenomenon>")) {
-          tID = xmlReader.attributeValue("gml:id");
-          if (tID == null) xmlReader.throwException("<swe:Phenomenon> tag has no gml:id.");
-          tComponents = new StringArray();
-          tComponents.add(codeSpace + "#" + tID);
-          hashMap.put(codeSpace + "#" + tID, tComponents);
-
-          // compositePhenomenon
-          /*  <gml:definitionMember >
-                  <swe:CompositePhenomenon gml:id="Winds" dimension="4">
-                      <gml:description>Wind origin direction and speed.</gml:description>
-                      <gml:identifier codeSpace="urn:x-noaa:ioos:def:phenomenonNames">Winds</gml:identifier>
-                      <swe:base xlink:href="#MinimumWinds"/>
-                      <swe:component xlink:href="#WindGust"/>
-                  </swe:CompositePhenomenon>
-              </gml:definitionMember>
-          */
-        } else if (endOfTag.equals("<gml:definitionMember><swe:CompositePhenomenon>")) {
-          tID = xmlReader.attributeValue("gml:id");
-          tComponents = new StringArray();
-
-        } else if (endOfTag.equals("<gml:definitionMember><swe:CompositePhenomenon><swe:base>")
-            || endOfTag.equals("<gml:definitionMember><swe:CompositePhenomenon><swe:component>")) {
-          String href = xmlReader.attributeValue("xlink:href");
-          if (href == null)
-            String2.log(
-                "WARNING: on XML line #"
-                    + xmlReader.lineNumber()
-                    + ": "
-                    + endOfTag
-                    + " doesn't have an xlink:href.");
-          else {
-            // get referenced item's components
-            href = (href.startsWith("#") ? codeSpace : "") + href;
-            StringArray tsa = (StringArray) hashMap.get(href);
-            if (tsa == null)
-              xmlReader.throwException(
-                  href
-                      + " isn't already defined in this document "
-                      + "(Bob's assumption is that components of composite will be already defined).");
-            tComponents.append(tsa);
+            // phenomenon
+            /*  <gml:definitionMember >
+                    <swe:Phenomenon gml:id="WaterTemperature">
+                        <gml:description>Temperature of the water.</gml:description>
+                        <gml:identifier codeSpace="urn:x-noaa:ioos:def:phenomenonNames">WaterTemperature</gml:identifier>
+                    </swe:Phenomenon>
+                </gml:definitionMember>
+            */
           }
+          case "<gml:definitionMember><swe:Phenomenon>" -> {
+            tID = xmlReader.attributeValue("gml:id");
+            if (tID == null) xmlReader.throwException("<swe:Phenomenon> tag has no gml:id.");
+            tComponents = new StringArray();
+            tComponents.add(codeSpace + "#" + tID);
+            hashMap.put(codeSpace + "#" + tID, tComponents);
 
-        } else if (endOfTag.equals("<gml:definitionMember></swe:CompositePhenomenon>")) {
-          hashMap.put(codeSpace + "#" + tID, tComponents);
+            // compositePhenomenon
+            /*  <gml:definitionMember >
+                    <swe:CompositePhenomenon gml:id="Winds" dimension="4">
+                        <gml:description>Wind origin direction and speed.</gml:description>
+                        <gml:identifier codeSpace="urn:x-noaa:ioos:def:phenomenonNames">Winds</gml:identifier>
+                        <swe:base xlink:href="#MinimumWinds"/>
+                        <swe:component xlink:href="#WindGust"/>
+                    </swe:CompositePhenomenon>
+                </gml:definitionMember>
+            */
+          }
+          case "<gml:definitionMember><swe:CompositePhenomenon>" -> {
+            tID = xmlReader.attributeValue("gml:id");
+            tComponents = new StringArray();
+          }
+          case "<gml:definitionMember><swe:CompositePhenomenon><swe:base>",
+              "<gml:definitionMember><swe:CompositePhenomenon><swe:component>" -> {
+            String href = xmlReader.attributeValue("xlink:href");
+            if (href == null)
+              String2.log(
+                  "WARNING: on XML line #"
+                      + xmlReader.lineNumber()
+                      + ": "
+                      + endOfTag
+                      + " doesn't have an xlink:href.");
+            else {
+              // get referenced item's components
+              href = (href.startsWith("#") ? codeSpace : "") + href;
+              StringArray tsa = hashMap.get(href);
+              if (tsa == null)
+                xmlReader.throwException(
+                    href
+                        + " isn't already defined in this document "
+                        + "(Bob's assumption is that components of composite will be already defined).");
+              tComponents.append(tsa);
+            }
+          }
+          case "<gml:definitionMember></swe:CompositePhenomenon>" ->
+              hashMap.put(codeSpace + "#" + tID, tComponents);
         }
 
         // get the next tag

@@ -1,12 +1,17 @@
 package gov.noaa.pfel.erddap;
 
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import com.cohort.util.String2;
 import com.cohort.util.Test;
 import gov.noaa.pfel.coastwatch.pointdata.Table;
-import gov.noaa.pfel.coastwatch.util.SSR;
-import gov.noaa.pfel.erddap.dataset.EDD;
 import gov.noaa.pfel.erddap.dataset.EDDGrid;
-import gov.noaa.pfel.erddap.util.EDStatic;
+import jakarta.servlet.ServletOutputStream;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import java.util.concurrent.ConcurrentHashMap;
 import org.junit.jupiter.api.BeforeAll;
 import tags.TagIncompleteTest;
@@ -19,6 +24,17 @@ class ErddapTests {
     Initialization.edStatic();
   }
 
+  @org.junit.jupiter.api.Test
+  void testSitemap() throws Throwable {
+    Erddap erddap = new Erddap();
+    HttpServletRequest request = mock(HttpServletRequest.class);
+    HttpServletResponse response = mock(HttpServletResponse.class);
+    ServletOutputStream outStream = mock(ServletOutputStream.class);
+    when(response.getOutputStream()).thenReturn(outStream);
+    erddap.doSitemap(request, response);
+    verify(response, times(1)).getOutputStream();
+  }
+
   /** Test Convert Nearest Data. */
   @org.junit.jupiter.api.Test
   void testConvertInterpolate() throws Throwable {
@@ -27,7 +43,7 @@ class ErddapTests {
     String results, expected;
     int language = 0;
     long time;
-    ConcurrentHashMap<String, EDDGrid> tGridDatasetHashMap = new ConcurrentHashMap();
+    ConcurrentHashMap<String, EDDGrid> tGridDatasetHashMap = new ConcurrentHashMap<>();
     tGridDatasetHashMap.put("testGriddedNcFiles", (EDDGrid) EDDTestDataset.gettestGriddedNcFiles());
     // boolean oDebugMode = debugMode;
     // debugMode = true;
@@ -389,46 +405,6 @@ class ErddapTests {
 
     // debugMode = oDebugMode;
 
-  }
-
-  /**
-   * This repeatedly gets the info/index.html web page and ensures it is without error. It is best
-   * to run this when many datasets are loaded. For a harder test: run this in 4 threads
-   * simultaneously.
-   */
-  @org.junit.jupiter.api.Test
-  @TagIncompleteTest // wasn't run as a test, this is for load testing
-  void testHammerGetDatasets() throws Throwable {
-    Erddap.verbose = true;
-    Erddap.reallyVerbose = true;
-    EDD.testVerboseOn();
-    String results, expected;
-    String2.log("\n*** Erddap.testHammerGetDatasets");
-    int count = -5; // let it warm up
-    long sumTime = 0;
-
-    while (true) {
-      if (count == 0) sumTime = 0;
-      sumTime -= System.currentTimeMillis();
-      // if uncompressed, it is 1Thread=280 4Threads=900ms
-      results =
-          SSR.getUrlResponseStringUnchanged(
-              EDStatic.erddapUrl + "/info/index.html?" + EDStatic.defaultPIppQuery);
-      // if compressed, it is 1Thread=1575 4=Threads=5000ms
-      // results = SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl +
-      // "/info/index.html?" + EDStatic.defaultPIppQuery);
-      sumTime += System.currentTimeMillis();
-      count++;
-      if (count > 0) String2.log("count=" + count + " AvgTime=" + (sumTime / count));
-      expected = "List of All Datasets";
-      Test.ensureTrue(
-          results.indexOf(expected) >= 0,
-          "results=\n" + results.substring(0, Math.min(results.length(), 5000)));
-      expected = "dataset(s)";
-      Test.ensureTrue(
-          results.indexOf(expected) >= 0,
-          "results=\n" + results.substring(0, Math.min(results.length(), 5000)));
-    }
   }
 
   /**

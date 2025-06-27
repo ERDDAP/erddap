@@ -38,6 +38,9 @@
 
 <div class="standard_width"> 
 
+<h1 style="color:red;">This copy of the documentation is no longer kept up to date.</h1>
+<div>Please visit <a href="https://erddap.github.io/docs/server-admin/datasets">the new documentation site.</a></div>
+
 &nbsp;
 <!-- <br><button type="button" onClick="history.go(-1);return true;">Back</button> -->
 
@@ -45,7 +48,7 @@
 
 [This web page will only be of interest to ERDDAP™ administrators.]
 <p>After you have followed the ERDDAP™ 
-<a rel="help" href="https://erddap.github.io/setup.html">installation instructions</a>, 
+<a rel="help" href="https://erddap.github.io/docs/server-admin/deploy-install">installation instructions</a>, 
 you must edit the datasets.xml file 
 in <i>tomcat</i>/content/erddap/ to describe the datasets that your ERDDAP™ installation will serve. 
 
@@ -57,6 +60,7 @@ in <i>tomcat</i>/content/erddap/ to describe the datasets that your ERDDAP™ in
   <li><a rel="help" href="#DataProviderForm">Data Provider Form</a> 
   <li><a rel="help" href="#Tools">Tools</a>
   <li><a rel="help" href="#basicStructure">The basic structure of the datasets.xml file</a>
+  <li><a rel="help" href="#xinclude">XInclude</a>
     <br>&nbsp;
   </ul>
 
@@ -80,7 +84,6 @@ in <i>tomcat</i>/content/erddap/ to describe the datasets that your ERDDAP™ in
   <li><a rel="help" href="#AwsS3Files">AWS S3 Files</a>
   <li><a rel="help" href="#NcML">NcML</a>
   <li><a rel="help" href="#NCO">NCO</a>
-  <li><a rel="help" href="#include">No &lt;include&gt; Option</a> 
   <li><a rel="help" href="#limits">Limits to the Size of a Dataset</a>
   <li><a rel="help" href="#switchToACDD13">Switch to ACDD-1.3</a> 
   <li><a rel="help" href="#Zarr">Zarr</a>
@@ -736,7 +739,7 @@ please fill out the form at https://<i>yourUrl</i>/erddap/dataProviderForm.html 
         The "Batch" variant works on all of the EML files in a local or remote directory.  
         Please see the separate
             <a rel="help"
-            href="https://erddap.github.io/EDDTableFromEML.html"
+            href="https://erddap.github.io/docs/server-admin/EDDTableFromEML"
             >documentation&nbsp;for&nbsp;EDDTableFromEML</a>.
           <br>&nbsp;
 
@@ -843,7 +846,7 @@ please fill out the form at https://<i>yourUrl</i>/erddap/dataProviderForm.html 
           of image, video, or audio files.
         <li>ERDDAP™ has been installed and used at 
         <a rel="bookmark" 
-        href="https://erddap.github.io/setup.html#organizations"
+        href="https://erddap.github.io/#who-uses-erddap"
         >more than 60 institutions around the world</a>.
         <li>ERDDAP™ is listed as one of the data servers recommended for use within NOAA
            in the
@@ -921,7 +924,7 @@ href="https://www.ngdc.noaa.gov/wiki/index.php/Data_Access_Technical_Recommendat
           for the dataset before trying
           to create the dataset.  
           This is the equivalent of setting a 
-          <a rel="help" href="https://erddap.github.io/setup.html#hardFlag">hard flag</a>
+          <a rel="help" href="https://erddap.github.io/docs/server-admin/deploy-install#hardFlag">hard flag</a>
           So for aggregated datasets, you might want to adjust the 
           fileNameRegex temporarily to limit the number of files the data constructor finds.
         <li>If the dataset fails to load (for whatever reason), 
@@ -1039,7 +1042,12 @@ href="https://www.ngdc.noaa.gov/wiki/index.php/Data_Access_Technical_Recommendat
 </pre>
 It is possible that other encodings will be allowed in the future, but for now, only ISO-8859-1 is recommended.
 
-
+<br>&nbsp;
+<p><strong><a class="selfLink" id="xinclude" href="#xinclude" rel="bookmark">XInclude</a></strong>
+  <br>New in version 2.25 is support for XInclude. This requires you are using the SAX parser <kbd>&lt;useSaxParser&gt;true&lt;/useSaxParser&gt;</kbd> in your setup.xml.
+  This can allow you to write each dataset in its own file, then include them all in the main datasets.xml, reuse parts of dataset definitions, or both.
+  If you want to see an example, <a href="https://github.com/ERDDAP/erddap/blob/main/src/test/java/testDataset/EDDTestDataset.java">EDDTestDataset.java</a> sets up XInclude to reuse variable definitions.
+  
 <br>&nbsp;
 <hr>
 <h2><a class="selfLink" id="notes" href="#notes" rel="bookmark">Notes</a></h2>
@@ -1125,7 +1133,7 @@ Usually this works fine. Some exceptions are:
     <li>You can add support for that data source by writing the code to handle
       it yourself. See 
       <a rel="help" 
-      href="https://erddap.github.io/setup.html#programmersGuide"
+      href="https://erddap.github.io/docs/server-admin/deploy-install#programmersGuide"
       >the ERDDAP™ Programmer's Guide</a>
     </ul>
 
@@ -1173,12 +1181,12 @@ by pasting the XML text into an XML checker like
   <a class="selfLink" id="errorMessages" href="#errorMessages" rel="bookmark">Problems With Datasets</a></strong>
 <br>In addition to the two main <a rel="help" href="#Tools">Tools</a>, 
 <ul>
-<li><a rel="help" href="https://erddap.github.io/setup.html#log">log.txt</a> 
+<li><a rel="help" href="https://erddap.github.io/docs/server-admin/deploy-install#log">log.txt</a> 
   is a log file with all of ERDDAP's diagnostic messages.
-<li>The <a rel="help" href="https://erddap.github.io/setup.html#dailyReport">Daily Report</a> 
+<li>The <a rel="help" href="https://erddap.github.io/docs/server-admin/deploy-install#dailyReport">Daily Report</a> 
     has more information than the status page, including a list of datasets that 
   didn't load and the exceptions (errors) they generated.
-<li>The <a rel="help" href="https://erddap.github.io/setup.html#statusPage">Status Page</a> 
+<li>The <a rel="help" href="https://erddap.github.io/docs/server-admin/deploy-install#statusPage">Status Page</a> 
   is a quick way to check ERDDAP's status from any web browser.
   It includes a list of datasets that didn't load (although not the related exceptions) and 
   taskThread statistics (showing the progress of 
@@ -1575,7 +1583,7 @@ Such complications are an inherent part of ERDDAP's goal of making disparate sys
     <br>&nbsp;
   <li><a class="selfLink" id="NccsvDataTypes" href="#NccsvDataTypes" rel="bookmark">NCCSV files</a> -
     <br>NCCSV 1.0 files don't support any unsigned integer data types.
-    <br><a rel="help" href="https://erddap.github.io/NCCSV.html">NCCSV 1.1+ files</a>
+    <br><a rel="help" href="https://erddap.github.io/docs/user/nccsv-1.20">NCCSV 1.1+ files</a>
     support all unsigned integer data types.
     <br>&nbsp;
   <li><a class="selfLink" id="OpendapDataTypes" href="#OpendapDataTypes" rel="bookmark"
@@ -2307,58 +2315,6 @@ to change the units in all of the files to be identical with
 <a rel="help" href="#EDDTableFromFiles_standardizeWhat">standardizeWhat</a> to tell ERDDAP
 to standardize the source files as they are read into ERDDAP.]
 
-<li><strong><a class="selfLink" id="include" href="#include" rel="bookmark">No &lt;include&gt; Option</a></strong>
-<br>All of the setup information for all of the datasets must be in one file: datasets.xml .
-
-  <p>The biggest advantage of this approach for ERDDAP™ is: 
-  ERDDAP™ frequently needs to work through this entire file, for example,
-  to reload a set of flagged datasets. Since all of the information is in one file, 
-  ERDDAP™ can do this very quickly.
-  When parsing the datasets.xml file, ERDDAP™ has a system to jump very quickly 
-  to a corresponding 
-  &lt;/dataset&gt; tag, allowing it to rapidly parse even very large 
-  datasets.xml files.
-
-  <p>The biggest advantage of this approach for administrators is: 
-  if you want to make the same or similar changes to multiple datasets,
-  you can do it quickly and easily, without opening and editing numerous files.
-
-  <p>Think of datasets.xml as an interface between your system and ERDDAP.
-  ERDDAP™ doesn't care how you make datasets.xml, so you may create it any way you like:
-  <ul>
-  <li>by hand in a text editor,
-  <li>by a script which concatenates numerous files, each with the datasets.xml 
-    chunk for one dataset, 
-  <li>or by a script which generates datasets.xml based on metadata 
-    for all datasets stored in a relational database. 
-  </ul>  
-
-  <p>Some people have asked for datasets.xml to support references to external 
-  files which have 
-  chunks of XML which define one or more datasets, for example, 
-  <br><kbd>&lt;include dataset1.xml/&gt;</kbd>
-  <br>ERDDAP™ doesn't support that, mostly because each reference to an external
-  file would be a separate file that ERDDAP™ has to open. 
-  If there were a large number of references, that would greatly slow down
-  ERDDAP's processing of datasets.xml.
-
-  <p>Fortunately, there is a good compromise: 
-  <ol>
-  <li>Make several sub-files, for example, start.xml, datasets1.xml, 
-      datasets2.xml, ... end.xml
-    <br>Use whatever names you want for the files.
-  <li>Write a Linux script or DOS batch (.bat) file to concatenate the files into one file.
-    <br>Linux example:&nbsp; <kbd>cat start.xml datasets1.xml datasets2.xml end.xml &gt; datasets.xml</kbd>
-    <br>DOS example: <kbd>type start.xml datasets1.xml datasets2.xml end.xml &gt; datasets.xml</kbd>
-  <li>Then, whenever you make a change to one of the sub-files,
-    rerun the script to regenerate the complete datasets.xml file.
-    You know when one of the sub-files has changed, so it makes sense 
-    that you use that information to trigger the recreation of the 
-    complete datasets.xml file.
-    <br>&nbsp;
-  </ol>
-
-
 <li><strong><a class="selfLink" id="limits" href="#limits" rel="bookmark">Limits to the Size of a Dataset</a></strong>
 <br>You'll see many references to "2 billion" below. 
 More accurately, that is a reference to 2,147,483,647 (2^31-1),
@@ -2728,12 +2684,19 @@ currently recommend
         instead.
       <li><a rel="help" href="#EDDTableFromNccsvFiles">EDDTableFromNccsvFiles</a> 
         aggregates data from 
-        <a rel="help" href="https://erddap.github.io/NCCSV.html">NCCSV</a>
+        <a rel="help" href="https://erddap.github.io/docs/user/nccsv-1.20">NCCSV</a>
         ASCII .csv files.
       <li><a rel="help" href="#EDDTableFromNOS">EDDTableFromNOS</a> (DEPRECATED)
         handles tabular data from NOS XML servers.
       <li><a rel="help" href="#EDDTableFromOBIS">EDDTableFromOBIS</a> 
         handles tabular data from OBIS servers.
+      <li><a rel="help" href="#EDDTableFromParquetFiles">EDDTableFromParquetFiles</a> 
+          handles data from 
+          <a rel="help"
+            href="https://parquet.apache.org/"
+            >Parquet<img 
+            src="../images/external.png" alt=" (external link)" 
+            title="This link to an external website does not constitute an endorsement."></a>.
       <li><a rel="help" href="#EDDTableFromSOS">EDDTableFromSOS</a> 
         handles tabular data from SOS servers.
       <li><a rel="help" href="#EDDTableFromThreddsFiles">EDDTableFromThreddsFiles</a> (DEPRECATED)
@@ -2929,7 +2892,7 @@ currently recommend
     <br>so you know the end position of the axis values.
   <li>Replace the old start, stride, stop values with the new values.
   <li>Contact the <a rel="help" 
-    href="https://erddap.github.io/setup.html#setDatasetFlag">flag URL</a> for the dataset to tell ERDDAP™ to reload the dataset.
+    href="https://erddap.github.io/docs/server-admin/deploy-install#setDatasetFlag">flag URL</a> for the dataset to tell ERDDAP™ to reload the dataset.
   </ol>
   This isn't ideal, but it works.
   <br>&nbsp;
@@ -3048,7 +3011,7 @@ currently recommend
 
   <p>For each user request, EDDGridFromEDDTable prints diagnostic messages 
   related to this in the
-  <a rel="help" href="https://erddap.github.io/setup.html#log">log.txt</a>
+  <a rel="help" href="https://erddap.github.io/docs/server-admin/deploy-install#log">log.txt</a>
   file.
   <ul>
   <li>If <a rel="help" href="#logLevel"><kbd>&lt;logLevel&gt;</kbd></a> in datasets.xml
@@ -3140,7 +3103,7 @@ a remote ERDDAP™ server.
   </ul>
 
 <li>EDDGridFromErddap and EDDTableFromErddap are the basis for
-  <a rel="help" href="https://erddap.github.io/setup.html#grids"
+  <a rel="help" href="https://erddap.github.io/docs/server-admin/deploy-install#grids"
   >grids/clusters/federations</a> 
   of ERDDAPs, which efficiently distribute the CPU usage (mostly for making maps), memory usage, 
   dataset storage, and bandwidth usage of a large data center.
@@ -3152,7 +3115,7 @@ a remote ERDDAP™ server.
   they try to add a subscription to the remote dataset via the remote ERDDAP's
   email/URL subscription system.
   That way, whenever the remote dataset changes, the remote ERDDAP™ contacts the 
-     <a rel="help" href="https://erddap.github.io/setup.html#setDatasetFlag"
+     <a rel="help" href="https://erddap.github.io/docs/server-admin/deploy-install#setDatasetFlag"
      >setDatasetFlag URL</a>
   on your ERDDAP™ so that the local dataset is reloaded ASAP and so that the 
   local dataset is always perfectly up-to-date and mimics the remote dataset.
@@ -3163,7 +3126,7 @@ a remote ERDDAP™ server.
   request that s/he manually add 
     <kbd><a rel="help" href="#onChange">&lt;onChange&gt;</a>...&lt;/onChange&gt;</kbd>
     tags to all of the relevant datasets to call your dataset's 
-    <a rel="help" href="https://erddap.github.io/setup.html#setDatasetFlag"
+    <a rel="help" href="https://erddap.github.io/docs/server-admin/deploy-install#setDatasetFlag"
     >setDatasetFlag URLs</a>. 
   See your ERDDAP™ daily report for a list of setDatasetFlag URLs, but just send the ones for
   EDDGridFromErddap and EDDTableFromErddap datasets to the remote ERDDAP™ administrator.
@@ -3177,7 +3140,7 @@ a remote ERDDAP™ server.
   <li>In general (but not always), your ERDDAP's &lt;baseUrl&gt; and 
     &lt;baseHttpsUrl&gt;must not have a port number (e.g., :8080, :8443).
     If they do, use a 
-    <a rel="help" href="https://erddap.github.io/setup.html#ProxyPass">proxypass</a> 
+    <a rel="help" href="https://erddap.github.io/docs/server-admin/deploy-install#ProxyPass">proxypass</a> 
     to remove the port from the Url.
   <li>In your setup.xml, &lt;subscribeToRemoteErddapDataset&gt; must be set to
     <kbd>true</kbd>.
@@ -3230,7 +3193,7 @@ a remote ERDDAP™ server.
       <li>Set the source dataset's &lt;reloadEveryNMinutes&gt; to a larger number (1440?).
       <li>Have the script contact the source dataset's 
         <a rel="help"
-        href="https://erddap.github.io/setup.html#setDatasetFlag">flag URL</a>
+        href="https://erddap.github.io/docs/server-admin/deploy-install#setDatasetFlag">flag URL</a>
         right after it copies a new data file into place.
         <br>&nbsp;
       </ol>
@@ -3269,7 +3232,7 @@ allowing those would lead to inconsistencies:
     One other difference: you will need to manually subscribe to the remote dataset, 
     so that the dataset on your ERDDAP™ will be notified (via the 
     <a rel="help"
-    href="https://erddap.github.io/setup.html#setDatasetFlag">flag URL</a>) 
+    href="https://erddap.github.io/docs/server-admin/deploy-install#setDatasetFlag">flag URL</a>) 
     when there are changes to the remote dataset.
     Thus, you are creating a new dataset, instead of linking to a remote dataset. 
       <br>&nbsp;
@@ -3282,7 +3245,7 @@ allowing those would lead to inconsistencies:
   require logging in
   (because they use <a rel="help" href="#accessibleTo"><kbd>&lt;accessibleTo&gt;</kbd></a>)..
   See ERDDAP's 
-    <a rel="help" href="https://erddap.github.io/setup.html"
+    <a rel="help" href="https://erddap.github.io/docs/server-admin/deploy-install"
     >security system</a>
     for restricting access to some datasets to some users.
   <br>&nbsp;
@@ -3683,7 +3646,7 @@ The following information applies to all of the subclasses of EDDGridFromFiles.
     <br>If the dataset doesn't use 
     <a rel="help" href="#updateEveryNMillis"><kbd>&lt;updateEveryNMillis&gt;</kbd></a>,
     set the dataset's 
-    <a rel="help" href="https://erddap.github.io/setup.html#flag">flag</a>
+    <a rel="help" href="https://erddap.github.io/docs/server-admin/additional-information#flag">flag</a>
     to tell ERDDAP™ to reload the dataset and thus notice the changes.
     Interestingly, you could use different compression algorithms and settings for different files
     in the same dataset (e.g., .bz2 for rarely used files, .gz for not often used files, and
@@ -3914,14 +3877,14 @@ The following information applies to all of the subclasses of EDDGridFromFiles.
     If you ever do need to delete these files, you can do it when ERDDAP™ is running. 
     (Then set a 
     <a rel="help"
-    href="https://erddap.github.io/setup.html#setDatasetFlag">flag</a>
+    href="https://erddap.github.io/docs/server-admin/deploy-install#setDatasetFlag">flag</a>
     to reload the dataset ASAP.)
     However, ERDDAP™ usually notices that the datasets.xml information doesn't match
     the fileTable information and deletes the file tables automatically.
   <li>If you want to encourage ERDDAP™ to update the stored dataset information 
     (for example, if you just added, removed, or changed some files to the dataset's data directory), 
     use the 
-      <a rel="help" href="https://erddap.github.io/setup.html#flag">flag system</a>
+      <a rel="help" href="https://erddap.github.io/docs/server-admin/additional-information#flag">flag system</a>
       to force ERDDAP™ to update the cached file information.
     <br>&nbsp;
   </ul>
@@ -3947,7 +3910,7 @@ The following information applies to all of the subclasses of EDDGridFromFiles.
         title="This link to an external website does not constitute an endorsement."></a> 
         (to change the file's lastModified time), or changed a datafile.
     <li>The dataset is reloaded as soon as possible if you use the 
-        <a rel="help" href="https://erddap.github.io/setup.html#flag">flag system</a>.
+        <a rel="help" href="https://erddap.github.io/docs/server-admin/additional-information#flag">flag system</a>.
     </ul>
   When the dataset is reloaded, ERDDAP™ compares the currently available files 
   to the cached file information tables.
@@ -4152,7 +4115,7 @@ for general information on how this class works and how to use it.
 <li>Because ERDDAP™ reads entire audio files, 
   ERDDAP™ must have access to a large amount of memory to work with large audio files.
   See 
-  <a rel="help" href="https://erddap.github.io/setup.html#memory"
+  <a rel="help" href="https://erddap.github.io/docs/server-admin/deploy-install#memory"
   >ERDDAP's memory settings</a>.
   Again, if this is a problem, a workaround that you can use right now is to   
   break up the files into smaller chunks so that ERDDAP™ can read them with less memory.
@@ -4642,14 +4605,14 @@ aggregates two or more EDDGrid datasets (the children) side by side.
 <li>Children created by this method are held privately.
   They are not separately accessible datasets (for example, by client data
   requests or by 
-    <a rel="help" href="https://erddap.github.io/setup.html#flag">flag files</a>).
+    <a rel="help" href="https://erddap.github.io/docs/server-admin/additional-information#flag">flag files</a>).
 <li>The global metadata and settings for the parent comes from the global
   metadata and settings for the first child.
 <li>If there is an exception while creating the first child, 
   the parent will not be created.
 <li>If there is an exception while creating other children, this sends an email to
   <kbd>emailEverythingTo</kbd> (as specified in 
-  <a rel="help" href="https://erddap.github.io/setup.html#setup.xml">setup.xml</a>) 
+  <a rel="help" href="https://erddap.github.io/docs/server-admin/deploy-install#setup.xml">setup.xml</a>) 
   and continues with the other children.
 <li><a class="selfLink" id="EDDGridSideBySideSkeletonXML" href="#EDDGridSideBySideSkeletonXML" rel="bookmark"
 >The skeleton XML for an EDDGridSideBySide dataset is:</a>
@@ -4845,7 +4808,7 @@ of another EDDGrid's data and serves data from the local copy.
 <li>Local Files -- Each chunk of data is stored in a separate NetCDF file in a 
   subdirectory of
   <i>bigParentDirectory</i>/copy/<i>datasetID</i>/ (as specified in 
-    <a rel="help" href="https://erddap.github.io/setup.html#setup.xml">setup.xml</a>).
+    <a rel="help" href="https://erddap.github.io/docs/server-admin/deploy-install#setup.xml">setup.xml</a>).
   Filenames created from axis values are modified to make them file-name-safe 
   (for example, hyphens are replaced by "x2D") -- this doesn't affect the actual data.
   <br>&nbsp;
@@ -4857,8 +4820,8 @@ of another EDDGrid's data and serves data from the local copy.
   ERDDAP's <a class="selfLink" id="taskThread" href="#taskThread" rel="bookmark">taskThread</a> processes all the queued 
   requests for chunks of data, one-by-one.
   You can see statistics for the taskThread's activity on the
-     <a rel="help" href="https://erddap.github.io/setup.html#statusPage">Status Page</a> and in the 
-     <a rel="help" href="https://erddap.github.io/setup.html#dailyReport">Daily Report</a>.
+     <a rel="help" href="https://erddap.github.io/docs/server-admin/deploy-install#statusPage">Status Page</a> and in the 
+     <a rel="help" href="https://erddap.github.io/docs/server-admin/deploy-install#dailyReport">Daily Report</a>.
   (Yes, ERDDAP™ could assign multiple tasks to this process, but that would use 
   up lots of the remote data source's bandwidth, memory, and CPU time,
   and lots of the local ERDDAP's bandwidth,
@@ -4931,7 +4894,7 @@ check the source dataset to see if there is additional data available.
     You can delete those files any time if you choose to. 
     If you do, we strongly recommend that you set a 
     <a rel="help"
-    href="https://erddap.github.io/setup.html#flag">flag</a>
+    href="https://erddap.github.io/docs/server-admin/additional-information#flag">flag</a>
     after you delete the files to tell EDDGridCopy
     to update the list of cached files.
 
@@ -4979,7 +4942,7 @@ check the source dataset to see if there is additional data available.
   If/when they do, you need to manually delete the chunk files in 
      <i>bigParentDirectory</i>/copy/<i>datasetID</i>/
   which changed and 
-  <a rel="help" href="https://erddap.github.io/setup.html#flag">flag</a> 
+  <a rel="help" href="https://erddap.github.io/docs/server-admin/additional-information#flag">flag</a> 
      the dataset to be reloaded so that the deleted chunks will be replaced.
   If you have an email subscription to the dataset, you will get two emails:
   one when the dataset first reloads and starts to copy the data, 
@@ -5002,7 +4965,7 @@ check the source dataset to see if there is additional data available.
   <ol>
   <li>Change the addAttributes for the source dataset in datasets.xml, as needed. 
   <li>Delete one of the copied files.
-  <li>Set a <a rel="help" href="https://erddap.github.io/setup.html#flag">flag</a> 
+  <li>Set a <a rel="help" href="https://erddap.github.io/docs/server-admin/additional-information#flag">flag</a> 
     to reload the dataset immediately.
     If you do use a flag and you have an email subscription to the dataset, you will get two emails:
     one when the dataset first reloads and starts to copy the data, 
@@ -5246,7 +5209,7 @@ Cassandra is a NoSQL database.
     CQL Bound/PreparedStatements. 
     ERDDAP™ logs the statement in 
     <a rel="help" 
-    href="https://erddap.github.io/setup.html#log">log.txt</a>
+    href="https://erddap.github.io/docs/server-admin/deploy-install#log">log.txt</a>
     as<kbd> 
     <br>statement as text: <i>theStatementAsText</i></kbd> 
     <br>The version of the statement you see
@@ -6283,7 +6246,7 @@ handles data from one relational database table or
     <br>ERDDAP™ requests with <kbd>&amp;distinct()</kbd> and/or <kbd>&amp;orderBy(<i>variables</i>)</kbd> will add
       <kbd>DISTINCT</kbd> and/or <kbd>ORDER BY <i>variables</i></kbd> to the SQL prepared statement. In general, this will greatly slow down the response from the database.
     <br>ERDDAP™ logs the PreparedStatement in 
-    <a rel="help" href="https://erddap.github.io/setup.html#log">log.txt</a>
+    <a rel="help" href="https://erddap.github.io/docs/server-admin/deploy-install#log">log.txt</a>
     as<kbd> 
     <br>statement=<i>thePreparedStatement</i></kbd>
     <br>This will be a text representation of the PreparedStatement, which 
@@ -6986,8 +6949,16 @@ Instead, use a subclass of EDDTableFromFiles to handle the specific file type:
 
   <li><a rel="help" href="#EDDTableFromNccsvFiles">EDDTableFromNccsvFiles</a> 
     aggregates data from 
-    <a rel="help" href="https://erddap.github.io/NCCSV.html">NCCSV</a>
+    <a rel="help" href="https://erddap.github.io/docs/user/nccsv-1.20">NCCSV</a>
     ASCII .csv files.
+
+  <li><a rel="help" href="#EDDTableFromParquetFiles">EDDTableFromParquetFiles</a> 
+    handles data from 
+    <a rel="help"
+      href="https://parquet.apache.org/"
+      >Parquet<img 
+      src="../images/external.png" alt=" (external link)" 
+      title="This link to an external website does not constitute an endorsement."></a>.
 
   <li><a rel="help" href="#EDDTableFromThreddsFiles">EDDTableFromThreddsFiles</a> (DEPRECATED)
     aggregates data from files with several variables with shared dimensions served by a 
@@ -7079,14 +7050,14 @@ The following information applies to all of the subclasses of EDDTableFromFiles.
     If you ever do need to delete these files, you can do it when ERDDAP™ is running. 
     (Then set a 
     <a rel="help"
-    href="https://erddap.github.io/setup.html#setDatasetFlag">flag</a>
+    href="https://erddap.github.io/docs/server-admin/deploy-install#setDatasetFlag">flag</a>
     to reload the dataset ASAP.)
     However, ERDDAP™ usually notices that the datasets.xml information doesn't match
     the fileTable information and deletes the file tables automatically.
   <li>If you want to encourage ERDDAP™ to update the stored dataset information 
     (for example, if you just added, removed, or changed some files to the dataset's data directory), 
     use the 
-      <a rel="help" href="https://erddap.github.io/setup.html#flag">flag system</a>
+      <a rel="help" href="https://erddap.github.io/docs/server-admin/additional-information#flag">flag system</a>
       to force ERDDAP™ to update the cached file information.
     <br>&nbsp;
   </ul>
@@ -7121,7 +7092,7 @@ The following information applies to all of the subclasses of EDDTableFromFiles.
         title="This link to an external website does not constitute an endorsement."></a> 
         (to change the file's lastModified time), or changed a datafile.
     <li>The dataset is reloaded as soon as possible if you use the 
-        <a rel="help" href="https://erddap.github.io/setup.html#flag">flag system</a>.
+        <a rel="help" href="https://erddap.github.io/docs/server-admin/additional-information#flag">flag system</a>.
     </ul>
   When the dataset is reloaded, ERDDAP™ compares the currently available files to the cached file
   information table.
@@ -7149,7 +7120,7 @@ The following information applies to all of the subclasses of EDDTableFromFiles.
   dataset won't be updated every time a file is changed. So EDDTableFromFiles won't be aware of
   the changed files.
   (You could use the 
-    <a rel="help" href="https://erddap.github.io/setup.html#flag">flag system</a>,
+    <a rel="help" href="https://erddap.github.io/docs/server-admin/additional-information#flag">flag system</a>,
       but this might lead to ERDDAP™ reloading the dataset almost continually.
   So in most cases, we don't recommend it.)
   Instead, EDDTableFromFiles deals with this by the following system:
@@ -7300,7 +7271,7 @@ The following information applies to all of the subclasses of EDDTableFromFiles.
           causing it to reload and download the new and/or changed data files.
         <li>If the subscription fails (for whatever reason) or if you simply want
           to ensure that the local dataset is up-to-date, you can set a 
-          <a rel="help" href="https://erddap.github.io/setup.html#flag">flag</a>
+          <a rel="help" href="https://erddap.github.io/docs/server-admin/additional-information#flag">flag</a>
           for the local dataset, so it will reload, so it will check for new and/or changed
           remote data files. 
         </ul>
@@ -7309,7 +7280,7 @@ The following information applies to all of the subclasses of EDDTableFromFiles.
           Normally, this is controlled by 
           <a rel="help" href="#reloadEveryNMinutes"><kbd>&lt;reloadEveryNMinutes&gt;</kbd></a>.
           But if you know when there are new remote files, you can set a 
-          <a rel="help" href="https://erddap.github.io/setup.html#flag">flag</a>
+          <a rel="help" href="https://erddap.github.io/docs/server-admin/additional-information#flag">flag</a>
           for the local dataset, so it will reload and check for new and/or changed
           remote data files. 
           If this happens routinely at a certain time of day (e.g., at 7am),
@@ -7504,7 +7475,7 @@ The following information applies to all of the subclasses of EDDTableFromFiles.
   N.B. Solid State Drives are great!
   The fastest, easiest, cheapest way to help ERDDAP™ deal with a huge number of (small) 
   files is to use a solid state drive. See
-  <a rel="help" href="https://erddap.github.io/setup.html#SSD">Solid State Drives are great!</a>
+  <a rel="help" href="https://erddap.github.io/docs/server-admin/deploy-install#SSD">Solid State Drives are great!</a>
   <br>&nbsp;
 
 
@@ -7564,7 +7535,7 @@ The following information applies to all of the subclasses of EDDTableFromFiles.
   <p>N.B. Solid State Drives are great!
   The fastest, easiest, cheapest way to help ERDDAP™ deal with a huge number of (small) 
   files is to use a solid state drive. See
-  <a rel="help" href="https://erddap.github.io/setup.html#SSD">Solid State Drives are great!</a>
+  <a rel="help" href="https://erddap.github.io/docs/server-admin/deploy-install#SSD">Solid State Drives are great!</a>
   <br>&nbsp;
 
 <li><a class="selfLink" id="EDDTableFromFiles_HugeFiles" href="#EDDTableFromFiles_HugeFiles" rel="bookmark"><strong>Huge Files</strong></a> -- 
@@ -8382,7 +8353,7 @@ for the response. This lets users search for datasets of interest in very powerf
   on a given line (e.g., incorrect number of items), it logs a warning message 
   ("WARNING: Bad line(s) of data" ... with a list of the bad lines on subsequent lines) 
   to the 
-  <a rel="help" href="https://erddap.github.io/setup.html#log">log.txt file</a> 
+  <a rel="help" href="https://erddap.github.io/docs/server-admin/deploy-install#log">log.txt file</a> 
   and then continues to read the rest of the data file.
   Thus, it is your responsibility to look periodically (or write a script to do so)
   for that message in the log.txt so that you can fix the problems in the data
@@ -9570,7 +9541,7 @@ on how this class works and how to use it.
   on a given line (e.g., incorrect number of items), it logs a warning message 
   ("WARNING: Bad line(s) of data" ... with a list of the bad lines on subsequent lines) 
   to the 
-  <a rel="help" href="https://erddap.github.io/setup.html#log">log.txt file</a> 
+  <a rel="help" href="https://erddap.github.io/docs/server-admin/deploy-install#log">log.txt file</a> 
   and then continues to read the rest of the data file.
   Thus, it is your responsibility to look periodically (or write a script to do so)
   for that message in the log.txt so that you can fix the problems in the data
@@ -9857,7 +9828,7 @@ variables:
 
 <p><a class="selfLink" id="EDDTableFromNccsvFiles" href="#EDDTableFromNccsvFiles" rel="bookmark"><strong>EDDTableFromNccsvFiles</strong></a> 
   aggregates data from 
-  <a rel="help" href="https://erddap.github.io/NCCSV.html">NCCSV</a>
+  <a rel="help" href="https://erddap.github.io/docs/user/nccsv-1.20">NCCSV</a>
   ASCII .csv files.
   See this class' superclass, <a rel="help" href="#EDDTableFromFiles">EDDTableFromFiles</a>, 
   for information on how this class works and how to use it.
@@ -9879,7 +9850,7 @@ variables:
   on a given line (e.g., incorrect number of items), it logs a warning message 
   ("WARNING: Bad line(s) of data" ... with a list of the bad lines on subsequent lines) 
   to the 
-  <a rel="help" href="https://erddap.github.io/setup.html#log">log.txt file</a> 
+  <a rel="help" href="https://erddap.github.io/docs/server-admin/deploy-install#log">log.txt file</a> 
   and then continues to read the rest of the data file.
   Thus, it is your responsibility to look periodically (or write a script to do so)
   for that message in the log.txt so that you can fix the problems in the data
@@ -9951,6 +9922,40 @@ It is possible that there are no more active servers which use this now out-of-d
 </pre>
 &nbsp;
 </ul>
+
+
+<p><a class="selfLink" id="EDDTableFromParquetFiles" href="#EDDTableFromParquetFiles" rel="bookmark"><strong>EDDTableFromParquetFiles</strong></a> 
+  handles data from 
+  <a rel="help"
+      href="https://parquet.apache.org/"
+      >Parquet<img 
+      src="../images/external.png" alt=" (external link)" 
+      title="This link to an external website does not constitute an endorsement."></a>.
+  See this class' superclass, <a rel="help" href="#EDDTableFromFiles">EDDTableFromFiles</a>, 
+  for information on how this class works and how to use it.
+
+  <ul>
+  <li>Parquet is designed to compress very efficiently, so it may give you smaller 
+    file sizes than other formats.
+
+  <li>We strongly recommend using the
+  <a rel="help" href="#GenerateDatasetsXml">GenerateDatasetsXml program</a> 
+  to make a rough draft of the datasets.xml chunk for this dataset.
+  You can then edit that to fine tune it.
+
+  <li>WARNING: When ERDDAP™ reads Parquet data files, if it finds an error 
+  on a given line (e.g., incorrect number of items), it logs a warning message 
+  ("WARNING: Bad line(s) of data" ... with a list of the bad lines on subsequent lines) 
+  to the 
+  <a rel="help" href="https://erddap.github.io/docs/server-admin/deploy-install#log">log.txt file</a> 
+  and then continues to read the rest of the data file.
+  Thus, it is your responsibility to look periodically (or write a script to do so)
+  for that message in the log.txt so that you can fix the problems in the data
+  files. ERDDAP™ is set up this way so that users can continue to read all of
+  the available valid data even though some lines of the file have flaws. 
+  <br>&nbsp;
+
+  </ul>
 
 
 <p><a class="selfLink" id="EDDTableFromSOS" href="#EDDTableFromSOS" rel="bookmark"><strong>EDDTableFromSOS</strong></a> handles data from a
@@ -10351,7 +10356,7 @@ can make an EDDTable dataset from a group of "child" EDDTable datasets.
 
 <li>Local Files -- Each chunk of data is stored in a separate NetCDF file in a subdirectory of
   <i>bigParentDirectory</i>/copy/<i>datasetID</i>/ (as specified in 
-    <a rel="help" href="https://erddap.github.io/setup.html#setup.xml">setup.xml</a>).
+    <a rel="help" href="https://erddap.github.io/docs/server-admin/deploy-install#setup.xml">setup.xml</a>).
   There is one subdirectory level for all but the last extractDestinationName. 
   For example, data for tig17+1017, would be stored in 
     <br><i>bigParentDirectory</i>/copy/sampleDataset/tig17/1017.nc .
@@ -10367,8 +10372,8 @@ can make an EDDTable dataset from a group of "child" EDDTable datasets.
   added to a queue.
   ERDDAP's taskThread processes all the queued requests for chunks of data, one-by-one.
   You can see statistics for the taskThread's activity on the
-     <a rel="help" href="https://erddap.github.io/setup.html#statusPage">Status Page</a> and in the 
-     <a rel="help" href="https://erddap.github.io/setup.html#dailyReport">Daily Report</a>.
+     <a rel="help" href="https://erddap.github.io/docs/server-admin/deploy-install#statusPage">Status Page</a> and in the 
+     <a rel="help" href="https://erddap.github.io/docs/server-admin/deploy-install#dailyReport">Daily Report</a>.
   (Yes, ERDDAP™ could assign multiple tasks to this process, but that would use up 
   lots of the remote data source's bandwidth, memory, and CPU time, and
   lots of the local ERDDAP's bandwidth, memory, and CPU time, neither of which is a good idea.)
@@ -10436,7 +10441,7 @@ check the source dataset to see if there is additional data available.
 <li>WARNING: EDDTableCopy assumes that the data values for each chunk don't ever change. 
   If/when they do, you need to manually delete the chunk files in 
      <i>bigParentDirectory</i>/copy/<i>datasetID</i>/
-  which changed and <a rel="help" href="https://erddap.github.io/setup.html#flag">flag</a> 
+  which changed and <a rel="help" href="https://erddap.github.io/docs/server-admin/additional-information#flag">flag</a> 
      the dataset to be reloaded so that the deleted
   chunks will be replaced.
   If you have an email subscription to the dataset, you will get two emails:
@@ -10449,7 +10454,7 @@ check the source dataset to see if there is additional data available.
   <ol>
   <li>Change the addAttributes for the source dataset in datasets.xml, as needed. 
   <li>Delete one of the copied files.
-  <li>Set a <a rel="help" href="https://erddap.github.io/setup.html#flag">flag</a> 
+  <li>Set a <a rel="help" href="https://erddap.github.io/docs/server-admin/additional-information#flag">flag</a> 
     to reload the dataset immediately.
     If you do use a flag and you have an email subscription to the dataset, you will get two emails:
     one when the dataset first reloads and starts to copy the data, 
@@ -10508,7 +10513,7 @@ Here are detailed descriptions of common tags and attributes.
   Any changes to this tag's value will take effect the next time ERDDAP™ reads datasets.xml,
   including in response to a dataset
   <a rel="help" 
-    href="https://erddap.github.io/setup.html#flag">flag</a>. 
+    href="https://erddap.github.io/docs/server-admin/additional-information#flag">flag</a>. 
   <br>&nbsp;
 
 <li><a class="selfLink" id="angularDegreeTrueUnits" href="#angularDegreeTrueUnits" rel="bookmark"
@@ -10521,7 +10526,7 @@ Here are detailed descriptions of common tags and attributes.
   Any changes to this tag's value will take effect the next time ERDDAP™ reads datasets.xml,
   including in response to a dataset
   <a rel="help" 
-    href="https://erddap.github.io/setup.html#flag">flag</a>. 
+    href="https://erddap.github.io/docs/server-admin/additional-information#flag">flag</a>. 
   <br>&nbsp;
 
 <li><a class="selfLink" id="commonStandardNames" href="#commonStandardNames" rel="bookmark"
@@ -10556,7 +10561,7 @@ Here are detailed descriptions of common tags and attributes.
   Any changes to this tag's value will take effect the next time ERDDAP™ reads datasets.xml,
   including in response to a dataset
   <a rel="help" 
-    href="https://erddap.github.io/setup.html#flag">flag</a>. 
+    href="https://erddap.github.io/docs/server-admin/additional-information#flag">flag</a>. 
   Before ERDDAP™ v2.00, this was specified in setup.xml, which is still allowed
   but discouraged.
   <br>&nbsp;
@@ -10594,7 +10599,7 @@ rel="bookmark"><kbd><strong>&lt;convertToPublicSourceUrl&gt;</strong></kbd></a>
   <br>Any changes to this tag's value will take effect the next time ERDDAP™ reads datasets.xml,
   including in response to a dataset
   <a rel="help" 
-    href="https://erddap.github.io/setup.html#flag">flag</a>. 
+    href="https://erddap.github.io/docs/server-admin/additional-information#flag">flag</a>. 
 
   <p>But, for security reasons and reasons related to the subscription system, 
     <strong>DON'T USE THIS TAG!</strong>
@@ -10695,7 +10700,7 @@ rel="bookmark"><kbd><strong>&lt;convertToPublicSourceUrl&gt;</strong></kbd></a>
   <br>Any changes to this tag's value will take effect the next time ERDDAP™ reads datasets.xml,
   including in response to a dataset
   <a rel="help" 
-    href="https://erddap.github.io/setup.html#flag">flag</a>. 
+    href="https://erddap.github.io/docs/server-admin/additional-information#flag">flag</a>. 
   <br>&nbsp;
 
 <li><a class="selfLink" id="ipAddressMaxRequests" href="#ipAddressMaxRequests" rel="bookmark"
@@ -10720,7 +10725,7 @@ rel="bookmark"><kbd><strong>&lt;convertToPublicSourceUrl&gt;</strong></kbd></a>
   <br>Any changes to this tag's value will take effect the next time ERDDAP™ reads datasets.xml,
   including in response to a dataset
   <a rel="help" 
-    href="https://erddap.github.io/setup.html#flag">flag</a>. 
+    href="https://erddap.github.io/docs/server-admin/additional-information#flag">flag</a>. 
 
         <p>The "Major LoadDatasets Time Series" section of status.html includes
         a "tooMany" column which lists the number of requests which exceeded
@@ -10759,7 +10764,7 @@ rel="bookmark"><kbd><strong>&lt;convertToPublicSourceUrl&gt;</strong></kbd></a>
   <br>Any changes to this tag's value will take effect the next time ERDDAP™ reads datasets.xml,
   including in response to a dataset
   <a rel="help" 
-    href="https://erddap.github.io/setup.html#flag">flag</a>. 
+    href="https://erddap.github.io/docs/server-admin/additional-information#flag">flag</a>. 
   <br>&nbsp;
 
 <li><a class="selfLink" id="ipAddressUnlimited" href="#ipAddressUnlimited" rel="bookmark"
@@ -10783,7 +10788,7 @@ rel="bookmark"><kbd><strong>&lt;convertToPublicSourceUrl&gt;</strong></kbd></a>
   <br>Any changes to this tag's value will take effect the next time ERDDAP™ reads datasets.xml,
   including in response to a dataset
   <a rel="help" 
-    href="https://erddap.github.io/setup.html#flag">flag</a>. 
+    href="https://erddap.github.io/docs/server-admin/additional-information#flag">flag</a>. 
 
   <p>If for some reason all of a user's requests get the error message
   "Timeout waiting for your other requests to process.", then 
@@ -10809,7 +10814,7 @@ rel="bookmark"><kbd><strong>&lt;convertToPublicSourceUrl&gt;</strong></kbd></a>
   Any changes to this tag's value will take effect the next time ERDDAP™ reads datasets.xml,
   including in response to a dataset
   <a rel="help" 
-    href="https://erddap.github.io/setup.html#flag">flag</a>. 
+    href="https://erddap.github.io/docs/server-admin/additional-information#flag">flag</a>. 
   Before ERDDAP™ v2.00, this was specified in setup.xml, which is still allowed
   but discouraged.
   <br>&nbsp;
@@ -10828,7 +10833,7 @@ rel="bookmark"><kbd><strong>&lt;convertToPublicSourceUrl&gt;</strong></kbd></a>
   Any changes to this tag's value will take effect the next time ERDDAP™ reads datasets.xml,
   including in response to a dataset
   <a rel="help" 
-    href="https://erddap.github.io/setup.html#flag">flag</a>. 
+    href="https://erddap.github.io/docs/server-admin/additional-information#flag">flag</a>. 
    Before ERDDAP™ v2.00, this was specified in setup.xml, which is still allowed
    but discouraged.
   <br>&nbsp;
@@ -10843,7 +10848,7 @@ rel="bookmark"><kbd><strong>&lt;convertToPublicSourceUrl&gt;</strong></kbd></a>
   <br>Any changes to this tag's value will take effect the next time ERDDAP™ reads datasets.xml,
   including in response to a dataset
   <a rel="help" 
-    href="https://erddap.github.io/setup.html#flag">flag</a>.
+    href="https://erddap.github.io/docs/server-admin/additional-information#flag">flag</a>.
   Before ERDDAP™ v2.00, this was specified in setup.xml, which is still allowed
   but discouraged.
   <br>&nbsp;
@@ -10890,7 +10895,7 @@ rel="bookmark"><kbd><strong>&lt;convertToPublicSourceUrl&gt;</strong></kbd></a>
   <p>Any changes to this tag's value will take effect the next time ERDDAP™ reads datasets.xml,
   including in response to a dataset
   <a rel="help" 
-    href="https://erddap.github.io/setup.html#flag">flag</a>. 
+    href="https://erddap.github.io/docs/server-admin/additional-information#flag">flag</a>. 
   Before ERDDAP™ v2.00, these were specified in setup.xml, which is still allowed
   but discouraged.
   <br>&nbsp;
@@ -10903,7 +10908,7 @@ rel="bookmark"><kbd><strong>&lt;convertToPublicSourceUrl&gt;</strong></kbd></a>
     Any changes to this tag's value will take effect the next time ERDDAP™ reads datasets.xml,
   including in response to a dataset
   <a rel="help" 
-    href="https://erddap.github.io/setup.html#flag">flag</a>. 
+    href="https://erddap.github.io/docs/server-admin/additional-information#flag">flag</a>. 
   <ul>
   <li>This can be used to fend off a 
     <a rel="help" href="https://en.wikipedia.org/wiki/Denial_of_service">Denial of Service attack<img 
@@ -10918,7 +10923,7 @@ rel="bookmark"><kbd><strong>&lt;convertToPublicSourceUrl&gt;</strong></kbd></a>
     If ERDDAP™ slows to a crawl or freezes/stops, the cause is often a troublesome user
     who is running more than one script at once and/or making a large number of 
     very large, extremely inefficient, or invalid requests, or simultaneous requests. Look in 
-    <a rel="help" href="https://erddap.github.io/setup.html#log">log.txt</a> 
+    <a rel="help" href="https://erddap.github.io/docs/server-admin/deploy-install#log">log.txt</a> 
     to see if this is the case and to find the numeric IP address of the troublesome user.
     If this is the problem, you should probably blacklist that user. 
 
@@ -10954,7 +10959,7 @@ rel="bookmark"><kbd><strong>&lt;convertToPublicSourceUrl&gt;</strong></kbd></a>
       so it isn't fair of them to hog all of ERDDAP's resources.
     <li>Point out that the tech giants have induced users to expect infinite resources from web services.
       While there are ways to set up
-      <a rel="help" href="https://erddap.github.io/setup.html#grids"
+      <a rel="help" href="https://erddap.github.io/docs/server-admin/deploy-install#grids"
       >grids/clusters/federations of ERDDAPs</a>
       to make an ERDDAP™ system with more resources,
       most ERDDAP™ administrators don't have the money or the manpower to set up
@@ -10986,7 +10991,7 @@ rel="bookmark"><kbd><strong>&lt;convertToPublicSourceUrl&gt;</strong></kbd></a>
       <kbd>&lt;requestBlacklist&gt;</kbd> in your datasets.xml file.
       To find the troublesome user's IP address, look in the ERDDAP™ 
       <i>bigParentDirectory</i>/logs/log.txt file (<i>bigParentDirectory</i> is specified in 
-        <a rel="help" href="https://erddap.github.io/setup.html#setup.xml">setup.xml</a>)
+        <a rel="help" href="https://erddap.github.io/docs/server-admin/deploy-install#setup.xml">setup.xml</a>)
       to see if this is the case and to find that user's IP address.
       The IP address for every request is listed on the lines starting with 
       "{{{{#" and is 4 numbers separated by periods, for example, 123.45.67.8 .
@@ -10998,7 +11003,7 @@ rel="bookmark"><kbd><strong>&lt;convertToPublicSourceUrl&gt;</strong></kbd></a>
   <li>You don't need to restart ERDDAP™ for the changes to <kbd>&lt;requestBlacklist&gt;</kbd> to take effect.
     The changes will be detected the next time ERDDAP™ checks if any datasets need to be reloaded.
     Or, you can speed up the process by visiting a 
-    <a rel="help" href="https://erddap.github.io/setup.html#setDatasetFlag">setDatasetFlag URL</a> 
+    <a rel="help" href="https://erddap.github.io/docs/server-admin/deploy-install#setDatasetFlag">setDatasetFlag URL</a> 
     for any dataset.
   <li>Your ERDDAP™ daily report includes a list/tally of the most active allowed and blocked requesters. 
   <li>If you want to figure out what domain/institution is related to a numeric IP address, 
@@ -11045,7 +11050,7 @@ rel="bookmark"><kbd><strong>&lt;convertToPublicSourceUrl&gt;</strong></kbd></a>
     Any changes to this tag's value will take effect the next time ERDDAP™ reads datasets.xml,
   including in response to a dataset
   <a rel="help" 
-    href="https://erddap.github.io/setup.html#flag">flag</a>. 
+    href="https://erddap.github.io/docs/server-admin/additional-information#flag">flag</a>. 
   <br>&nbsp;
 
 <li><a class="selfLink" id="subscriptionEmailBlacklist" href="#subscriptionEmailBlacklist" rel="bookmark"><kbd><strong>&lt;subscriptionEmailBlacklist&gt;</strong></kbd></a>
@@ -11060,7 +11065,7 @@ rel="bookmark"><kbd><strong>&lt;convertToPublicSourceUrl&gt;</strong></kbd></a>
   Any changes to this tag's value will take effect the next time ERDDAP™ reads datasets.xml,
   including in response to a dataset
   <a rel="help" 
-    href="https://erddap.github.io/setup.html#flag">flag</a>. 
+    href="https://erddap.github.io/docs/server-admin/additional-information#flag">flag</a>. 
   <br>&nbsp;
 
 
@@ -11078,7 +11083,7 @@ rel="bookmark"><kbd><strong>&lt;convertToPublicSourceUrl&gt;</strong></kbd></a>
   Any changes to these tags' values will take effect the next time ERDDAP™ reads datasets.xml,
   including in response to a dataset
   <a rel="help" 
-    href="https://erddap.github.io/setup.html#flag">flag</a>. 
+    href="https://erddap.github.io/docs/server-admin/additional-information#flag">flag</a>. 
   The tag names describe their purpose, but see the default
   content in messages.xml for a deeper understanding.
     <ul>
@@ -11123,7 +11128,7 @@ rel="bookmark"><kbd><strong>&lt;convertToPublicSourceUrl&gt;</strong></kbd></a>
   <br>Any changes to this tag's value will take effect the next time ERDDAP™ reads datasets.xml,
   including in response to a dataset
   <a rel="help" 
-    href="https://erddap.github.io/setup.html#flag">flag</a>. 
+    href="https://erddap.github.io/docs/server-admin/additional-information#flag">flag</a>. 
   Before ERDDAP™ v2.00, this was specified in setup.xml, which is still allowed
   but discouraged.
   <br>&nbsp;
@@ -11146,11 +11151,11 @@ rel="bookmark"><kbd><strong>&lt;convertToPublicSourceUrl&gt;</strong></kbd></a>
   is an OPTIONAL tag within an <kbd>&lt;erddapDatasets&gt;</kbd> tag in datasets.xml that identifies a user's
   username, password (if authentication=custom), and roles (a comma-separated list).
   The use of username and password varies slightly based on the value of 
-  <a rel="help" href="https://erddap.github.io/setup.html#authentication"
+  <a rel="help" href="https://erddap.github.io/docs/server-admin/deploy-install#authentication"
   ><kbd>&lt;authentication&gt;</kbd></a> in your ERDDAP's setup.xml file.
   <ul>
   <li>This is part of ERDDAP's 
-    <a rel="help" href="https://erddap.github.io/setup.html#security">security system</a>
+    <a rel="help" href="https://erddap.github.io/docs/server-admin/additional-information#security">security system</a>
     for restricting access to some datasets to some users.
   <li>Make a separate <kbd>&lt;user&gt;</kbd> tag for each user.
     Optionally, if authentication=oauth2, you can set up two <kbd>&lt;user&gt;</kbd> tags for each user:
@@ -11245,7 +11250,7 @@ rel="bookmark"><kbd><strong>&lt;convertToPublicSourceUrl&gt;</strong></kbd></a>
   <li>Any changes to this tag's value will take effect the next time ERDDAP™ reads datasets.xml,
   including in response to a dataset
   <a rel="help" 
-    href="https://erddap.github.io/setup.html#flag">flag</a>. 
+    href="https://erddap.github.io/docs/server-admin/additional-information#flag">flag</a>. 
     <br>&nbsp;
   </ul> 
 
@@ -11376,7 +11381,7 @@ is a REQUIRED attribute within a
     When you do this, ERDDAP™ doesn't throw out any information it may have
     stored about the dataset and certainly doesn't do anything to the actual data.
   <li>In order to remove a dataset from ERDDAP™, see
-      <a rel="help" href="https://erddap.github.io/setup.html#removingDatasets"
+      <a rel="help" href="https://erddap.github.io/docs/server-admin/deploy-install#removingDatasets"
       >Force Dataset Removal</a>.
     <br>&nbsp;
   </ul>
@@ -11400,7 +11405,7 @@ for details.
       <br>
   <ul>
   <li>This is part of ERDDAP's 
-    <a rel="help" href="https://erddap.github.io/setup.html#security">security system</a>
+    <a rel="help" href="https://erddap.github.io/docs/server-admin/additional-information#security">security system</a>
     for restricting access to some datasets to some users.
   <li>If this tag is not present, all users (even if they haven't logged in) will have access to
     this dataset.
@@ -11461,7 +11466,7 @@ for more information.
 
     <p>The default value of <kbd>&lt;accessibleViaFiles&gt;</kbd> 
     comes from <kbd>&lt;defaultAccessibleViaFiles&gt;</kbd>
-    in <a rel="help" href="https://erddap.github.io/setup.html#setup.xml">setup.xml</a>.
+    in <a rel="help" href="https://erddap.github.io/docs/server-admin/deploy-install#setup.xml">setup.xml</a>.
     It has a default value of <kbd>false</kbd>, but we recommend that you 
     add that tag to your setup.xml with a value of <kbd>true</kbd>. 
 
@@ -11777,7 +11782,7 @@ while processing each request.
             </ul>
       </ul>
       Warning: When using nThreads&gt;1, keep an eye on ERDDAP's memory use, thread use, and overall responsiveness
-      (see <a rel="help" href="https://erddap.github.io/setup.html#statusPage"
+      (see <a rel="help" href="https://erddap.github.io/docs/server-admin/deploy-install#statusPage"
       >ERDDAP's status page</a>). See comments about these issues below.
       <br>&nbsp;      
 
@@ -11837,7 +11842,7 @@ while processing each request.
       <br>Memory use while processing requests is directly proportional to the nThreads setting.
       A reasonably safe rule of thumb is: 
       you need to set 
-      <a rel="help" href="https://erddap.github.io/setup.html#memory"
+      <a rel="help" href="https://erddap.github.io/docs/server-admin/deploy-install#memory"
       >ERDDAP's memory settings</a> to at least 2GB + (2GB * nThreads).
       Some requests to some datasets will need more memory than that.
       For example, setting nThreads=3 for any EDDGrid dataset
@@ -11851,7 +11856,7 @@ while processing each request.
       then the comments above will apply to those datasets as well.
 
       <p>Whatever the nThreads setting, keep a close eye on the memory usage statistics on your 
-      <a rel="help" href="https://erddap.github.io/setup.html#statusPage"
+      <a rel="help" href="https://erddap.github.io/docs/server-admin/deploy-install#statusPage"
       >ERDDAP's status page</a>. You shouldn't ever come close to maxing out the memory usage
       in ERDDAP; otherwise there will be serious errors and failures.
 
@@ -11965,7 +11970,7 @@ while processing each request.
     But ERDDAP's nThreads is useful in many cases.
     <p>However, there are ways to make ERDDAP™ scale to handle a huge number of requests
     quickly by setting up a 
-    <a href="https://erddap.github.io/grids.html"
+    <a href="https://erddap.github.io/docs/server-admin/scaling"
       >grid/cluster/federation of ERDDAPs</a>.
     <br>&nbsp;
 
@@ -12090,7 +12095,7 @@ while processing each request.
     directory are deleted.
   <li>No matter what this is set to, a dataset won't be loaded more frequently than
     <kbd>&lt;loadDatasetsMinMinutes&gt;</kbd> (default = 15), as specified in 
-     <a rel="help" href="https://erddap.github.io/setup.html#setup.xml">setup.xml</a>.
+     <a rel="help" href="https://erddap.github.io/docs/server-admin/deploy-install#setup.xml">setup.xml</a>.
    So if you want datasets to be reloaded very frequently, you need to set both
      reloadEveryNMinutes and loadDatasetsMinMinutes to small values.
   <li>Don't set reloadEveryNMinutes to the same value as loadDatasetsMinMinutes,
@@ -12099,7 +12104,7 @@ while processing each request.
     Instead, use a smaller (for example, 10) or larger (for example, 20) reloadEveryNMinutes value.
   <li>Regardless of reloadEveryNMinutes, you can manually tell ERDDAP™ to reload a specific dataset
     as soon as possible via a
-     <a rel="help" href="https://erddap.github.io/setup.html#flag">flag file</a>.
+     <a rel="help" href="https://erddap.github.io/docs/server-admin/additional-information#flag">flag file</a>.
   <li><a class="selfLink" id="ProactiveVsReactive" href="#ProactiveVsReactive" rel="bookmark">Proactive versus Reactive</a> -- 
     ERDDAP's reload system is proactive --
     datasets are reloaded soon after their reloadEveryNMinutes time is up 
@@ -12226,7 +12231,7 @@ while processing each request.
       For these datasets, it is better to not use <kbd>&lt;updateEveryNMillis&gt;</kbd> 
       and to set a 
       <a rel="help" 
-      href="https://erddap.github.io/setup.html#setDatasetFlag">flag</a> to tell ERDDAP™ to reload the dataset.
+      href="https://erddap.github.io/docs/server-admin/deploy-install#setDatasetFlag">flag</a> to tell ERDDAP™ to reload the dataset.
     <li><kbd>&lt;updateEveryNMillis&gt;</kbd> does not update the information associated with the 
       <a rel="help" href="#subsetVariables">&lt;subsetVariables&gt;</a>.
       Normally, this is not a problem, because the subsetVariables have information
@@ -12235,7 +12240,7 @@ while processing each request.
       If the subsetVariables data changes (for example, when a new station is added
       to the dataset), then contact the
       <a rel="help" 
-        href="https://erddap.github.io/setup.html#setDatasetFlag">flag URL</a> 
+        href="https://erddap.github.io/docs/server-admin/deploy-install#setDatasetFlag">flag URL</a> 
       for the dataset to tell ERDDAP™ to reload the dataset.
       Otherwise, ERDDAP™ won't notice the new subsetVariable information until
       the next time the dataset is reloaded (&lt;reloadEveryNMinutes&gt;).
@@ -13287,7 +13292,7 @@ while processing each request.
            can be seen by putting the mouse cursor over the adjacent "?" icon).
         <li>If you add <kbd>institution</kbd> to the list of <kbd>&lt;categoryAttributes&gt;</kbd> 
           in ERDDAP's 
-           <a rel="help" href="https://erddap.github.io/setup.html#setup.xml"
+           <a rel="help" href="https://erddap.github.io/docs/server-admin/deploy-install#setup.xml"
            >setup.xml<img 
         src="../images/external.png" alt=" (external link)" 
         title="This link to an external website does not constitute an endorsement."></a> 
@@ -14206,7 +14211,7 @@ while processing each request.
         <p>Hard Flag
         <br>If you change the expression or script defined in a sourceName, 
         you must set a 
-        <a rel="help" href="https://erddap.github.io/setup.html#hardFlag">hard flag</a>
+        <a rel="help" href="https://erddap.github.io/docs/server-admin/deploy-install#hardFlag">hard flag</a>
         for the dataset so the ERDDAP™ deletes all of the cached information for the dataset
         and re-reads every data file (using the new expression or script) the next time it loads the dataset.
         Alternatively, you can use <a rel="help" href="#DasDds">DasDds</a>
@@ -14231,7 +14236,7 @@ while processing each request.
         <ul>
         <li>Look at the expression to see what the problem might be. 
         <li>Look in 
-          <a rel="help" href="https://erddap.github.io/setup.html#log">log.txt</a>, 
+          <a rel="help" href="https://erddap.github.io/docs/server-admin/deploy-install#log">log.txt</a>, 
           which will show the first error message generated 
           during the creation of each new column.
         </ul>
@@ -14608,7 +14613,7 @@ while processing each request.
               and <kbd>WhiteRedBlack</kbd>.
             <li>If you have installed
               <a rel="help" 
-              href="https://erddap.github.io/setup.html#palettes"
+              href="https://erddap.github.io/docs/server-admin/deploy-install#palettes"
               >additional palettes</a>, you can refer to one of them.
             <li>If this attribute isn't present, the default is <kbd>BlueWhiteRed</kbd> if
               <kbd>-1*colorBarMinimum = colorBarMaximum</kbd>; otherwise the default is 
@@ -14772,7 +14777,7 @@ while processing each request.
       <li><a class="selfLink" id="ioos_category" href="#ioos_category" rel="bookmark"><strong>ioos_category</strong></a> -- 
         This is a REQUIRED variable attribute if <kbd>&lt;variablesMustHaveIoosCategory&gt;</kbd>
         is set to true (the default) in
-          <a rel="help" href="https://erddap.github.io/setup.html#setup.xml"
+          <a rel="help" href="https://erddap.github.io/docs/server-admin/deploy-install#setup.xml"
           >setup.xml</a>;
           otherwise, it is OPTIONAL.  
         <br>For example, <kbd>&lt;att name="ioos_category"&gt;Salinity&lt;/att&gt;</kbd>
@@ -14809,7 +14814,7 @@ while processing each request.
         <li>There is some overlap and ambiguity between different terms -- do your best.
         <li>If you add ioos_category to the list of <kbd>&lt;categoryAttributes&gt;</kbd> 
           in ERDDAP's 
-          <a rel="help" href="https://erddap.github.io/setup.html#setup.xml">setup.xml</a> 
+          <a rel="help" href="https://erddap.github.io/docs/server-admin/deploy-install#setup.xml">setup.xml</a> 
             file, users can easily find datasets with similar data via ERDDAP's
           "Search for Datasets by Category" on the home page.
           <br><a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/categorize/ioos_category/index.html?page=1&amp;itemsPerPage=1000"
@@ -15100,7 +15105,7 @@ href="https://groups.google.com/forum/#!topic/erddap/TnwbgzpSS0w"
         <li>If you add <kbd>standard_name</kbd> to variables' attributes and add 
           <kbd>standard_name</kbd> to the list of
           <kbd>&lt;categoryAttributes&gt;</kbd> in ERDDAP's 
-            <a rel="help" href="https://erddap.github.io/setup.html#setup.xml"
+            <a rel="help" href="https://erddap.github.io/docs/server-admin/deploy-install#setup.xml"
             >setup.xml</a> 
             file, users can easily find datasets with
           similar data via ERDDAP's "Search for Datasets by Category" on the home page.
@@ -15288,7 +15293,7 @@ href="https://groups.google.com/forum/#!topic/erddap/TnwbgzpSS0w"
           <kbd>&lt;units_standard&gt;</kbd>,
           in your
             <a rel="help" 
-            href="https://erddap.github.io/setup.html#setup.xml"
+            href="https://erddap.github.io/docs/server-admin/deploy-install#setup.xml"
             >setup.xml</a>
             file.
         <li><a class="selfLink" id="consistentTimeUnits" href="#consistentTimeUnits" rel="bookmark"
@@ -15803,7 +15808,7 @@ or search to see if the question has already been asked and answered.
 
 <br>&nbsp;
 <hr>
-<p>ERDDAP, Version 2.24
+<p>ERDDAP, Version 2.25_1
 <br><a rel="bookmark" href="https://coastwatch.pfeg.noaa.gov/erddap/legal.html">Disclaimers</a> | 
     <a rel="bookmark" href="https://coastwatch.pfeg.noaa.gov/erddap/legal.html#privacyPolicy"
     >Privacy Policy</a>

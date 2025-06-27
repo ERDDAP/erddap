@@ -2,9 +2,9 @@ package com.cohort.util;
 
 import com.cohort.array.Attributes;
 import com.cohort.array.StringArray;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 import java.util.regex.Pattern;
 import org.junit.jupiter.api.BeforeAll;
 import tags.TagIncompleteTest;
@@ -31,10 +31,9 @@ class Units2Tests {
    */
   private static void gatherUniqueCFUnits(String fullCFXMLFileName) throws Exception {
 
-    ArrayList<String> lines =
-        File2.readLinesFromFile(fullCFXMLFileName, File2.UTF_8, 1); // nAttempts
-    HashSet<String> reject = new HashSet();
-    HashSet<String> set = new HashSet();
+    List<String> lines = File2.readLinesFromFile(fullCFXMLFileName, File2.UTF_8, 1); // nAttempts
+    HashSet<String> reject = new HashSet<>();
+    HashSet<String> set = new HashSet<>();
     set.add("degree_C"); // test it, too
     Pattern pattern = Pattern.compile("<canonical_units>(.*)</canonical_units>");
     int nLines = lines.size();
@@ -74,7 +73,7 @@ class Units2Tests {
    */
   private static StringArray getTestUdunits() throws Exception {
 
-    HashSet<String> set = new HashSet();
+    HashSet<String> set = new HashSet<>();
     // add some additional tests
     set.add("degree_true");
     set.add("degrees_true");
@@ -90,7 +89,7 @@ class Units2Tests {
                   ? "datasetsFED31UAF.xml"
                   : f == 1 ? "datasetsFEDCW.xml" : "uniqueCFUnits.txt");
 
-      ArrayList<String> lines = File2.readLinesFromFile(fileName, File2.UTF_8, 1); // nAttempts
+      List<String> lines = File2.readLinesFromFile(fileName, File2.UTF_8, 1); // nAttempts
       int nLines = lines.size();
       for (int i = 0; i < nLines; i++) {
         String s = String2.extractCaptureGroup(lines.get(i), pattern, 1); // captureGroupNumber
@@ -926,7 +925,7 @@ class Units2Tests {
     Attributes atts = new Attributes(); // use it as a hashmap: canon -> source
     for (int i = 0; i < sa.size(); i++) {
       String s = sa.get(i);
-      Unit units = Units2.unitFormat.parse(s);
+      Unit units = ucar.units.StandardUnitFormat.instance().parse(s);
       String canon = units.getCanonicalString();
       String already = atts.getString(canon);
       if (already != null)

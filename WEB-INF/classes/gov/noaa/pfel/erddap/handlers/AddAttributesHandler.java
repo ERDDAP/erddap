@@ -5,16 +5,18 @@ import com.cohort.array.PAType;
 import com.cohort.array.PrimitiveArray;
 import com.cohort.array.StringArray;
 import com.cohort.util.String2;
+import gov.noaa.pfel.erddap.dataset.metadata.LocalizedAttributes;
+import gov.noaa.pfel.erddap.util.TranslateMessages;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 
 public class AddAttributesHandler extends StateWithParent {
-  private StringBuilder content = new StringBuilder();
-  private com.cohort.array.Attributes tAttributes;
-  private String tName = null, tType = null;
+  private final StringBuilder content = new StringBuilder();
+  private final LocalizedAttributes tAttributes;
+  private String tName = null, tType = null, lang = null;
 
   public AddAttributesHandler(
-      SaxHandler saxHandler, com.cohort.array.Attributes tAttributes, State completeState) {
+      SaxHandler saxHandler, LocalizedAttributes tAttributes, State completeState) {
     super(saxHandler, completeState);
     this.tAttributes = tAttributes;
   }
@@ -23,6 +25,7 @@ public class AddAttributesHandler extends StateWithParent {
   public void startElement(String uri, String localName, String qName, Attributes attributes) {
     if (localName.equals("att")) {
       tName = attributes.getValue("name");
+      lang = attributes.getValue("xml:lang");
       tType = attributes.getValue("type");
     }
   }
@@ -64,7 +67,7 @@ public class AddAttributesHandler extends StateWithParent {
             pa = PrimitiveArray.ssvFactory(PAType.fromCohortString(tType), contentStr);
           }
         }
-        tAttributes.add(tName, pa);
+        tAttributes.set(TranslateMessages.getIndexForLanguageCode(lang), tName, pa);
       }
       case "addAttributes" -> saxHandler.setState(this.completeState); // return to parentHandler
       default -> String2.log("Unexpected end tag: " + localName);

@@ -7,6 +7,7 @@ package gov.noaa.pfel.erddap.dataset;
 import gov.noaa.pfel.coastwatch.pointdata.Table;
 import gov.noaa.pfel.coastwatch.util.FileVisitorDNLS;
 import java.util.HashSet;
+import java.util.Set;
 
 /**
  * TableWriterAllReduceDnlsTable is a subclass of TableWriterAll that just keeps the files in one
@@ -20,8 +21,8 @@ import java.util.HashSet;
  */
 public class TableWriterAllReduceDnlsTable extends TableWriterAll {
 
-  String oneDir;
-  HashSet<String> subdirHash = new HashSet();
+  final String oneDir;
+  final HashSet<String> subdirHash = new HashSet<>();
 
   /**
    * The constructor.
@@ -81,7 +82,7 @@ public class TableWriterAllReduceDnlsTable extends TableWriterAll {
    *
    * @return the subdirHashmap of immediate subdirectory short names.
    */
-  public HashSet<String> subdirHash() {
+  public Set<String> subdirHash() {
     return subdirHash;
   }
 }

@@ -13,8 +13,6 @@ import com.cohort.util.String2;
 import gov.noaa.pfel.erddap.dataset.EDD;
 import gov.noaa.pfel.erddap.util.*;
 import java.io.File;
-import java.nio.file.FileSystems;
-import org.apache.lucene.store.NIOFSDirectory;
 
 /**
  * This class is in charge of creating and monitoring LoadDatasets threads.
@@ -46,28 +44,8 @@ public class RunLoadDatasets extends Thread {
     this.erddap = erddap;
     setName("RunLoadDatasets");
 
-    if (EDStatic.useLuceneSearchEngine) {
-      try {
-        // delete old index files
-        // Index will be recreated, and Lucense throws exception if it tries to read from old
-        // indices.
-        File2.deleteAllFiles(EDStatic.fullLuceneDirectory);
-
-        // Since I recreate index when erddap restarted, I can change anything
-        //  (e.g., Directory type, Version) any time
-        //  (no worries about compatibility with existing index).
-        // ??? For now, use NIOFSDirectory,
-        //  See NIOFSDirectory javadocs (I need to stop using thread.interrupt).
-        EDStatic.luceneDirectory =
-            new NIOFSDirectory(FileSystems.getDefault().getPath(EDStatic.fullLuceneDirectory));
-
-        // At start of ERDDAP, always create a new index.  Never re-use existing index.
-        // Do it here to use true and also to ensure it can be done.
-        EDStatic.createLuceneIndexWriter(true); // throws exception if trouble
-      } catch (Throwable t) {
-        EDStatic.useLuceneSearchEngine = false;
-        throw new RuntimeException(t);
-      }
+    if (EDStatic.config.useLuceneSearchEngine) {
+      EDStatic.resetLuceneIndex();
     }
   }
 
@@ -95,32 +73,12 @@ public class RunLoadDatasets extends Thread {
                 + Calendar2.getCurrentISODateTimeStringLocalTZ());
 
         // delete old files in cache
-        int nCacheFiles =
-            File2.deleteIfOld(
-                EDStatic.fullCacheDirectory, // won't throw exception
-                System.currentTimeMillis() - EDStatic.cacheMillis,
-                true,
-                false); // false: important not to delete empty dirs
-        int nPublicFiles =
-            File2.deleteIfOld(
-                EDStatic.fullPublicDirectory,
-                System.currentTimeMillis() - EDStatic.cacheMillis,
-                true,
-                false); // false: important not to delete empty dirs
-        String2.log(
-            nPublicFiles
-                + " files remain in "
-                + EDStatic.fullPublicDirectory
-                + "\n"
-                + nCacheFiles
-                + " files remain in "
-                + EDStatic.fullCacheDirectory
-                + " and subdirectories.");
+        EDStatic.clearCache("RUN_LOAD_DATASETS_CACHE_CLEAR", false);
 
         // start a new loadDatasets thread
         lastMajorLoadDatasetsStartTimeMillis = System.currentTimeMillis();
         EDStatic.lastMajorLoadDatasetsStartTimeMillis = lastMajorLoadDatasetsStartTimeMillis;
-        loadDatasets = new LoadDatasets(erddap, EDStatic.datasetsRegex, null, true);
+        loadDatasets = new LoadDatasets(erddap, EDStatic.config.datasetsRegex, null, true);
         // make a lower priority
         // [commented out: why lower priority?  It may be causing infrequent problems with a dataset
         // not available in a CWBrowser
@@ -140,7 +98,7 @@ public class RunLoadDatasets extends Thread {
                   + Calendar2.getCurrentISODateTimeStringLocalTZ();
           String content = MustBe.throwableToString(t);
           String2.log(subject + ": " + content);
-          EDStatic.email(EDStatic.emailEverythingToCsv, subject, content);
+          EDStatic.email(EDStatic.config.emailEverythingToCsv, subject, content);
         } catch (Throwable t2) {
           if (Thread.currentThread().isInterrupted() || t2 instanceof InterruptedException)
             break whileNotInterrupted;
@@ -151,7 +109,7 @@ public class RunLoadDatasets extends Thread {
       try {
         whileWait:
         while (System.currentTimeMillis() - lastMajorLoadDatasetsStartTimeMillis
-            < EDStatic.loadDatasetsMaxMillis * 3 / 4) {
+            < EDStatic.config.loadDatasetsMaxMillis * 3 / 4) {
 
           // isInterrupted?
           if (isInterrupted()) break whileNotInterrupted;
@@ -174,7 +132,7 @@ public class RunLoadDatasets extends Thread {
 
           if (loadDatasets == null) {
             if (System.currentTimeMillis() - lastMajorLoadDatasetsStartTimeMillis
-                > EDStatic.loadDatasetsMinMillis) {
+                > EDStatic.config.loadDatasetsMinMillis) {
               // this is a good time to jump out of whileWait loop
               break whileWait;
 
@@ -183,11 +141,11 @@ public class RunLoadDatasets extends Thread {
               // main load datasets finished early; we have free time;
               // so check hardFlag, flag, and badFilesFlag directories
               String fDir[] = {
-                EDStatic.fullHardFlagDirectory, // order is used below. see "hs =="
-                EDStatic
+                EDStatic.config.fullHardFlagDirectory, // order is used below. see "hs =="
+                EDStatic.config
                     .fullResetFlagDirectory, // so safer to add rather than insert new option before
                 // end of list
-                EDStatic.fullBadFilesFlagDirectory
+                EDStatic.config.fullBadFilesFlagDirectory
               };
               String fDirName[] = {"hardFlag", "flag", "badFilesFlag"};
 
@@ -219,8 +177,8 @@ public class RunLoadDatasets extends Thread {
                     File2.delete(fDir[hs] + ttName);
 
                     if (String2.isFileNameSafe(ttName)) {
-                      EDD edd = (EDD) erddap.gridDatasetHashMap.get(ttName);
-                      if (edd == null) edd = (EDD) erddap.tableDatasetHashMap.get(ttName);
+                      EDD edd = erddap.gridDatasetHashMap.get(ttName);
+                      if (edd == null) edd = erddap.tableDatasetHashMap.get(ttName);
 
                       // if hardFlag, delete cached dataset info
                       //  (whether the dataset is live or not)
@@ -250,7 +208,7 @@ public class RunLoadDatasets extends Thread {
                         EDD.deleteBadFilesFile(ttName); // the important difference
                       }
 
-                      if (ttName.matches(EDStatic.datasetsRegex)) {
+                      if (ttName.matches(EDStatic.config.datasetsRegex)) {
                         // name is okay
 
                         // if edd exists, setCreationTimeTo0 so loadDatasets will reload it
@@ -265,13 +223,13 @@ public class RunLoadDatasets extends Thread {
                         tFlagNames.set(i, ttName);
 
                       } else {
-                        // file name doesn't match EDStatic.datasetsRegex, so ignore it
+                        // file name doesn't match EDStatic.config.datasetsRegex, so ignore it
                         String2.log(
                             "RunloadDatasets is deleting "
                                 + ttName
                                 + " from "
                                 + fDirName[hs]
-                                + " directory because it doesn't match EDStatic.datasetsRegex.");
+                                + " directory because it doesn't match EDStatic.config.datasetsRegex.");
                         tFlagNames.remove(i);
                       }
 
@@ -333,7 +291,7 @@ public class RunLoadDatasets extends Thread {
                   + Calendar2.getCurrentISODateTimeStringLocalTZ();
           String content = MustBe.throwableToString(t);
           String2.log(subject + ": " + content);
-          EDStatic.email(EDStatic.emailEverythingToCsv, subject, content);
+          EDStatic.email(EDStatic.config.emailEverythingToCsv, subject, content);
         } catch (Throwable t2) {
           if (Thread.currentThread().isInterrupted() || t2 instanceof InterruptedException)
             break whileNotInterrupted;
@@ -350,7 +308,7 @@ public class RunLoadDatasets extends Thread {
         while (loadDatasets != null
             && loadDatasets.isAlive()
             && (System.currentTimeMillis() - lastMajorLoadDatasetsStartTimeMillis
-                < EDStatic.loadDatasetsMaxMillis * 3 / 4)) {
+                < EDStatic.config.loadDatasetsMaxMillis * 3 / 4)) {
 
           // isInterrupted?
           if (isInterrupted()) break whileNotInterrupted;
@@ -382,7 +340,7 @@ public class RunLoadDatasets extends Thread {
                   + Calendar2.elapsedTimeString(
                       System.currentTimeMillis() - lastMajorLoadDatasetsStartTimeMillis)
                   + " > 3/4 "
-                  + Calendar2.elapsedTimeString(EDStatic.loadDatasetsMaxMillis)
+                  + Calendar2.elapsedTimeString(EDStatic.config.loadDatasetsMaxMillis)
                   + ") at "
                   + Calendar2.getCurrentISODateTimeStringLocalTZ();
           String2.log("\n*** " + tError);
@@ -390,17 +348,17 @@ public class RunLoadDatasets extends Thread {
           // wait the final 1/4 loadDatasetsMax for !loadDatasets.isAlive
           if (EDStatic.stopThread(
               loadDatasets,
-              Math2.narrowToInt(EDStatic.loadDatasetsMaxMillis / 1000 / 4))) { // seconds
+              Math2.narrowToInt(EDStatic.config.loadDatasetsMaxMillis / 1000 / 4))) { // seconds
             tError =
                 "RunLoadDatasets stopped a stalled LoadDatasets thread ("
                     + Calendar2.elapsedTimeString(
                         System.currentTimeMillis() - lastMajorLoadDatasetsStartTimeMillis)
                     + " > "
-                    + Calendar2.elapsedTimeString(EDStatic.loadDatasetsMaxMillis)
+                    + Calendar2.elapsedTimeString(EDStatic.config.loadDatasetsMaxMillis)
                     + ") at "
                     + Calendar2.getCurrentISODateTimeStringLocalTZ();
             String2.log("\n*** " + tError);
-            EDStatic.email(EDStatic.emailEverythingToCsv, "RunLoadDatasets Stalled", tError);
+            EDStatic.email(EDStatic.config.emailEverythingToCsv, "RunLoadDatasets Stalled", tError);
           }
 
           loadDatasets = null;
@@ -421,7 +379,7 @@ public class RunLoadDatasets extends Thread {
                   + Calendar2.getCurrentISODateTimeStringLocalTZ();
           String content = MustBe.throwableToString(t);
           String2.log(subject + ": " + content);
-          EDStatic.email(EDStatic.emailEverythingToCsv, subject, content);
+          EDStatic.email(EDStatic.config.emailEverythingToCsv, subject, content);
         } catch (Throwable t2) {
           if (Thread.currentThread().isInterrupted() || t2 instanceof InterruptedException)
             break whileNotInterrupted;

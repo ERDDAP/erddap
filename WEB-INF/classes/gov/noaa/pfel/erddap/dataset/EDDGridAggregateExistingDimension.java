@@ -20,10 +20,13 @@ import gov.noaa.pfel.coastwatch.util.FileVisitorDNLS;
 import gov.noaa.pfel.coastwatch.util.SSR;
 import gov.noaa.pfel.coastwatch.util.SimpleXMLReader;
 import gov.noaa.pfel.erddap.Erddap;
+import gov.noaa.pfel.erddap.dataset.metadata.LocalizedAttributes;
+import gov.noaa.pfel.erddap.handlers.EDDGridAggregateExistingDimensionHandler;
+import gov.noaa.pfel.erddap.handlers.SaxHandlerClass;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.*;
 import java.text.MessageFormat;
-import java.util.ArrayList;
+import java.util.List;
 
 /**
  * This class represents a grid dataset created by aggregating for first existing dimension of other
@@ -31,6 +34,7 @@ import java.util.ArrayList;
  *
  * @author Bob Simons (was bob.simons@noaa.gov, now BobSimons2.00@gmail.com) 2008-02-04
  */
+@SaxHandlerClass(EDDGridAggregateExistingDimensionHandler.class)
 public class EDDGridAggregateExistingDimension extends EDDGrid {
 
   protected EDDGrid childDatasets[];
@@ -53,6 +57,7 @@ public class EDDGridAggregateExistingDimension extends EDDGrid {
    *     &lt;erddapDatasets&gt;&lt;/dataset&gt; .
    * @throws Throwable if trouble
    */
+  @EDDFromXmlMethod
   public static EDDGridAggregateExistingDimension fromXml(Erddap erddap, SimpleXMLReader xmlReader)
       throws Throwable {
 
@@ -65,7 +70,7 @@ public class EDDGridAggregateExistingDimension extends EDDGrid {
     String tAccessibleTo = null;
     String tGraphsAccessibleTo = null;
     boolean tAccessibleViaWMS = true;
-    boolean tAccessibleViaFiles = EDStatic.defaultAccessibleViaFiles;
+    boolean tAccessibleViaFiles = EDStatic.config.defaultAccessibleViaFiles;
     StringArray tOnChange = new StringArray();
     String tFgdcFile = null;
     String tIso19115File = null;
@@ -94,84 +99,84 @@ public class EDDGridAggregateExistingDimension extends EDDGrid {
       String localTags = tags.substring(startOfTagsLength);
 
       // try to make the tag names as consistent, descriptive and readable as possible
-      if (localTags.equals("<dataset>")) {
-        if ("false".equals(xmlReader.attributeValue("active"))) {
-          // skip it - read to </dataset>
-          if (verbose)
-            String2.log(
-                "  skipping datasetID="
-                    + xmlReader.attributeValue("datasetID")
-                    + " because active=\"false\".");
-          while (xmlReader.stackSize() != startOfTagsN + 1
-              || !xmlReader.allTags().substring(startOfTagsLength).equals("</dataset>")) {
-            xmlReader.nextTag();
-            // String2.log("  skippping tags: " + xmlReader.allTags());
-          }
+      switch (localTags) {
+        case "<dataset>" -> {
+          if ("false".equals(xmlReader.attributeValue("active"))) {
+            // skip it - read to </dataset>
+            if (verbose)
+              String2.log(
+                  "  skipping datasetID="
+                      + xmlReader.attributeValue("datasetID")
+                      + " because active=\"false\".");
+            while (xmlReader.stackSize() != startOfTagsN + 1
+                || !xmlReader.allTags().substring(startOfTagsLength).equals("</dataset>")) {
+              xmlReader.nextTag();
+              // String2.log("  skippping tags: " + xmlReader.allTags());
+            }
 
-        } else {
-          if (firstChild == null) {
-            EDD edd = EDD.fromXml(erddap, xmlReader.attributeValue("type"), xmlReader);
-            if (edd instanceof EDDGrid eddGrid) {
-              firstChild = eddGrid;
+          } else {
+            if (firstChild == null) {
+              EDD edd = EDD.fromXml(erddap, xmlReader.attributeValue("type"), xmlReader);
+              if (edd instanceof EDDGrid eddGrid) {
+                firstChild = eddGrid;
+              } else {
+                throw new RuntimeException(
+                    "Datasets.xml error: "
+                        + "The dataset defined in an "
+                        + "EDDGridAggregateExistingDimension must be a subclass of EDDGrid.");
+              }
             } else {
               throw new RuntimeException(
                   "Datasets.xml error: "
-                      + "The dataset defined in an "
-                      + "EDDGridAggregateExistingDimension must be a subclass of EDDGrid.");
+                      + "There can be only one <dataset> defined within an "
+                      + "EDDGridAggregateExistingDimension <dataset>.");
             }
-          } else {
-            throw new RuntimeException(
-                "Datasets.xml error: "
-                    + "There can be only one <dataset> defined within an "
-                    + "EDDGridAggregateExistingDimension <dataset>.");
           }
         }
+        case "<sourceUrl>",
+            "<dimensionValuesInMemory>",
+            "<nThreads>",
+            "<defaultGraphQuery>",
+            "<defaultDataQuery>",
+            "<iso19115File>",
+            "<fgdcFile>",
+            "<onChange>",
+            "<accessibleViaFiles>",
+            "<accessibleViaWMS>",
+            "<graphsAccessibleTo>",
+            "<accessibleTo>",
+            "<ensureAxisValuesAreEqual>",
+            "<matchAxisNDigits>" -> {}
+        case "</sourceUrl>" -> tLocalSourceUrls.add(content);
 
-      } else if (localTags.equals("<sourceUrl>")) {
-      } else if (localTags.equals("</sourceUrl>")) tLocalSourceUrls.add(content);
-
-      // <sourceUrls serverType="thredds" regex=".*\\.nc" recursive="true"
-      //  >http://ourocean.jpl.nasa.gov:8080/thredds/dodsC/g1sst/catalog.xml</sourceUrl>
-      else if (localTags.equals("<sourceUrls>")) {
-        tSUServerType = xmlReader.attributeValue("serverType");
-        tSURegex = xmlReader.attributeValue("regex");
-        String tr = xmlReader.attributeValue("recursive");
-        tSUPathRegex = xmlReader.attributeValue("pathRegex");
-        tSURecursive = tr == null ? true : String2.parseBoolean(tr);
-      } else if (localTags.equals("</sourceUrls>")) tSU = content;
-      else if (localTags.equals("<matchAxisNDigits>")) {
-      } else if (localTags.equals("</matchAxisNDigits>"))
-        tMatchAxisNDigits = String2.parseInt(content, DEFAULT_MATCH_AXIS_N_DIGITS);
-      else if (localTags.equals("<ensureAxisValuesAreEqual>")) {
-      } // deprecated
-      else if (localTags.equals("</ensureAxisValuesAreEqual>"))
-        tMatchAxisNDigits = String2.parseBoolean(content) ? 20 : 0;
-      else if (localTags.equals("<accessibleTo>")) {
-      } else if (localTags.equals("</accessibleTo>")) tAccessibleTo = content;
-      else if (localTags.equals("<graphsAccessibleTo>")) {
-      } else if (localTags.equals("</graphsAccessibleTo>")) tGraphsAccessibleTo = content;
-      else if (localTags.equals("<accessibleViaWMS>")) {
-      } else if (localTags.equals("</accessibleViaWMS>"))
-        tAccessibleViaWMS = String2.parseBoolean(content);
-      else if (localTags.equals("<accessibleViaFiles>")) {
-      } else if (localTags.equals("</accessibleViaFiles>"))
-        tAccessibleViaFiles = String2.parseBoolean(content);
-      else if (localTags.equals("<onChange>")) {
-      } else if (localTags.equals("</onChange>")) tOnChange.add(content);
-      else if (localTags.equals("<fgdcFile>")) {
-      } else if (localTags.equals("</fgdcFile>")) tFgdcFile = content;
-      else if (localTags.equals("<iso19115File>")) {
-      } else if (localTags.equals("</iso19115File>")) tIso19115File = content;
-      else if (localTags.equals("<defaultDataQuery>")) {
-      } else if (localTags.equals("</defaultDataQuery>")) tDefaultDataQuery = content;
-      else if (localTags.equals("<defaultGraphQuery>")) {
-      } else if (localTags.equals("</defaultGraphQuery>")) tDefaultGraphQuery = content;
-      else if (localTags.equals("<nThreads>")) {
-      } else if (localTags.equals("</nThreads>")) tnThreads = String2.parseInt(content);
-      else if (localTags.equals("<dimensionValuesInMemory>")) {
-      } else if (localTags.equals("</dimensionValuesInMemory>"))
-        tDimensionValuesInMemory = String2.parseBoolean(content);
-      else xmlReader.unexpectedTagException();
+          // <sourceUrls serverType="thredds" regex=".*\\.nc" recursive="true"
+          //  >http://ourocean.jpl.nasa.gov:8080/thredds/dodsC/g1sst/catalog.xml</sourceUrl>
+        case "<sourceUrls>" -> {
+          tSUServerType = xmlReader.attributeValue("serverType");
+          tSURegex = xmlReader.attributeValue("regex");
+          String tr = xmlReader.attributeValue("recursive");
+          tSUPathRegex = xmlReader.attributeValue("pathRegex");
+          tSURecursive = tr == null || String2.parseBoolean(tr);
+        }
+        case "</sourceUrls>" -> tSU = content;
+        case "</matchAxisNDigits>" ->
+            tMatchAxisNDigits = String2.parseInt(content, DEFAULT_MATCH_AXIS_N_DIGITS);
+        case "</ensureAxisValuesAreEqual>" ->
+            tMatchAxisNDigits = String2.parseBoolean(content) ? 20 : 0;
+        case "</accessibleTo>" -> tAccessibleTo = content;
+        case "</graphsAccessibleTo>" -> tGraphsAccessibleTo = content;
+        case "</accessibleViaWMS>" -> tAccessibleViaWMS = String2.parseBoolean(content);
+        case "</accessibleViaFiles>" -> tAccessibleViaFiles = String2.parseBoolean(content);
+        case "</onChange>" -> tOnChange.add(content);
+        case "</fgdcFile>" -> tFgdcFile = content;
+        case "</iso19115File>" -> tIso19115File = content;
+        case "</defaultDataQuery>" -> tDefaultDataQuery = content;
+        case "</defaultGraphQuery>" -> tDefaultGraphQuery = content;
+        case "</nThreads>" -> tnThreads = String2.parseInt(content);
+        case "</dimensionValuesInMemory>" ->
+            tDimensionValuesInMemory = String2.parseBoolean(content);
+        default -> xmlReader.unexpectedTagException();
+      }
     }
 
     // make the main dataset based on the information gathered
@@ -253,7 +258,8 @@ public class EDDGridAggregateExistingDimension extends EDDGrid {
     setAccessibleTo(tAccessibleTo);
     setGraphsAccessibleTo(tGraphsAccessibleTo);
     if (!tAccessibleViaWMS)
-      accessibleViaWMS = String2.canonical(MessageFormat.format(EDStatic.noXxxAr[0], "WMS"));
+      accessibleViaWMS =
+          String2.canonical(MessageFormat.format(EDStatic.messages.noXxxAr[0], "WMS"));
     onChange = tOnChange;
     fgdcFile = tFgdcFile;
     iso19115File = tIso19115File;
@@ -270,15 +276,15 @@ public class EDDGridAggregateExistingDimension extends EDDGrid {
       StringArray tsa = new StringArray();
       if (tSUServerType == null)
         throw new RuntimeException(errorInMethod + "<sourceUrls> serverType is null.");
-      else if (tSUServerType.toLowerCase().equals("hyrax"))
+      else if (tSUServerType.equalsIgnoreCase("hyrax"))
         tsa.add(FileVisitorDNLS.getUrlsFromHyraxCatalog(tSU, tSURegex, tSURecursive, tSUPathRegex));
-      else if (tSUServerType.toLowerCase().equals("waf"))
+      else if (tSUServerType.equalsIgnoreCase("waf"))
         tsa.add(FileVisitorDNLS.getUrlsFromWAF(tSU, tSURegex, tSURecursive, tSUPathRegex));
-      else if (tSUServerType.toLowerCase().equals("thredds"))
+      else if (tSUServerType.equalsIgnoreCase("thredds"))
         tsa.add(
             EDDGridFromDap.getUrlsFromThreddsCatalog(tSU, tSURegex, tSUPathRegex, null)
                 .toStringArray());
-      else if (tSUServerType.toLowerCase().equals("dodsindex"))
+      else if (tSUServerType.equalsIgnoreCase("dodsindex"))
         getDodsIndexUrls(tSU, tSURegex, tSURecursive, tSUPathRegex, tsa);
       else
         throw new RuntimeException(
@@ -329,7 +335,8 @@ public class EDDGridAggregateExistingDimension extends EDDGrid {
       // sourceValues0=" + sourceValues0 + "\n");
       if (childDatasets[sib + 1].accessibleViaFiles) childAccessibleViaFiles = true;
     }
-    accessibleViaFiles = EDStatic.filesActive && tAccessibleViaFiles && childAccessibleViaFiles;
+    accessibleViaFiles =
+        EDStatic.config.filesActive && tAccessibleViaFiles && childAccessibleViaFiles;
 
     // create the aggregate dataset
     if (reallyVerbose) String2.log("\n+++ Creating the aggregate dataset\n");
@@ -355,7 +362,7 @@ public class EDDGridAggregateExistingDimension extends EDDGrid {
     String sn = av0.sourceName();
     String dn = av0.destinationName();
     Attributes sa = av0.sourceAttributes();
-    Attributes aa = av0.addAttributes();
+    LocalizedAttributes aa = av0.addAttributes();
     axisVariables[0] = makeAxisVariable(tDatasetID, 0, sn, dn, sa, aa, cumSV);
 
     // make the local dataVariables
@@ -367,14 +374,14 @@ public class EDDGridAggregateExistingDimension extends EDDGrid {
     ensureValid();
 
     // If any child is a FromErddap, try to subscribe to the remote dataset.
-    for (int c = 0; c < childDatasets.length; c++)
-      if (childDatasets[c] instanceof FromErddap) tryToSubscribeToChildFromErddap(childDatasets[c]);
+    for (EDDGrid childDataset : childDatasets)
+      if (childDataset instanceof FromErddap) tryToSubscribeToChildFromErddap(childDataset);
 
     // finally
     long cTime = System.currentTimeMillis() - constructionStartMillis;
     if (verbose)
       String2.log(
-          (debugMode ? "\n" + toString() : "")
+          (debugMode ? "\n" + this : "")
               + "\n*** EDDGridAggregateExistingDimension "
               + datasetID
               + " constructor finished. TIME="
@@ -397,7 +404,7 @@ public class EDDGridAggregateExistingDimension extends EDDGrid {
   public StringArray childDatasetIDs() {
     StringArray sa = new StringArray();
     try {
-      for (int i = 0; i < childDatasets.length; i++) sa.add(childDatasets[i].datasetID());
+      for (EDDGrid childDataset : childDatasets) sa.add(childDataset.datasetID());
     } catch (Exception e) {
       String2.log("Error caught in edd.childDatasetIDs(): " + MustBe.throwableToString(e));
     }
@@ -439,7 +446,7 @@ public class EDDGridAggregateExistingDimension extends EDDGrid {
     if (pathRegex == null || pathRegex.length() == 0) pathRegex = ".*";
     int onSourceUrls = sourceUrls.size();
     String regexHtml = regex + "\\.html"; // link href will have .html at end
-    ArrayList<String> lines = null;
+    List<String> lines = null;
     try {
       lines = SSR.getUrlResponseArrayList(startUrl);
     } catch (Throwable t) {
@@ -517,7 +524,7 @@ public class EDDGridAggregateExistingDimension extends EDDGrid {
   /**
    * This gets data (not yet standardized) from the data source for this EDDGrid. Because this is
    * called by GridDataAccessor, the request won't be the full user's request, but will be a partial
-   * request (for less than EDStatic.partialRequestMaxBytes).
+   * request (for less than EDStatic.config.partialRequestMaxBytes).
    *
    * @param language the index of the selected language
    * @param tDirTable If EDDGridFromFiles, this MAY be the dirTable, else null.
@@ -690,11 +697,10 @@ public class EDDGridAggregateExistingDimension extends EDDGrid {
       String relativeFileName2 = relativeFileName.substring(po + 1);
 
       // which child?
-      int nChild = childDatasets.length;
-      for (int c = 0; c < nChild; c++) {
-        if (childID.equals(childDatasets[c].datasetID())) {
+      for (EDDGrid childDataset : childDatasets) {
+        if (childID.equals(childDataset.datasetID())) {
           // then redirect request to that child
-          return childDatasets[c].accessibleViaFilesGetLocal(language, relativeFileName2);
+          return childDataset.accessibleViaFilesGetLocal(language, relativeFileName2);
         }
       }
       String2.log(msg + "childID=" + childID + " not found.");
@@ -745,21 +751,26 @@ public class EDDGridAggregateExistingDimension extends EDDGrid {
     serverType = serverType.toLowerCase();
     boolean recursive = true;
     String pathRegex = ".*";
-    if ("hyrax".equals(serverType)) {
-      Test.ensureTrue(
-          startUrl.endsWith("/contents.html"), "startUrl must end with '/contents.html'.");
-      sa =
-          FileVisitorDNLS.getUrlsFromHyraxCatalog(
-              File2.getDirectory(startUrl), fileNameRegex, recursive, pathRegex);
-    } else if ("thredds".equals(serverType)) {
-      Test.ensureTrue(startUrl.endsWith("/catalog.xml"), "startUrl must end with '/catalog.xml'.");
-      sa =
-          EDDGridFromDap.getUrlsFromThreddsCatalog(startUrl, fileNameRegex, pathRegex, null)
-              .toStringArray();
-    } else if ("waf".equals(serverType)) {
-      sa = FileVisitorDNLS.getUrlsFromWAF(startUrl, fileNameRegex, recursive, pathRegex);
-    } else {
-      throw new RuntimeException("ERROR: serverType must be \"hyrax\", \"thredds\", or \"waf\".");
+    switch (serverType) {
+      case "hyrax" -> {
+        Test.ensureTrue(
+            startUrl.endsWith("/contents.html"), "startUrl must end with '/contents.html'.");
+        sa =
+            FileVisitorDNLS.getUrlsFromHyraxCatalog(
+                File2.getDirectory(startUrl), fileNameRegex, recursive, pathRegex);
+      }
+      case "thredds" -> {
+        Test.ensureTrue(
+            startUrl.endsWith("/catalog.xml"), "startUrl must end with '/catalog.xml'.");
+        sa =
+            EDDGridFromDap.getUrlsFromThreddsCatalog(startUrl, fileNameRegex, pathRegex, null)
+                .toStringArray();
+      }
+      case "waf" ->
+          sa = FileVisitorDNLS.getUrlsFromWAF(startUrl, fileNameRegex, recursive, pathRegex);
+      default ->
+          throw new RuntimeException(
+              "ERROR: serverType must be \"hyrax\", \"thredds\", or \"waf\".");
     }
 
     if (sa.length == 0) throw new RuntimeException("ERROR: No matching URLs were found.");
@@ -798,7 +809,11 @@ public class EDDGridAggregateExistingDimension extends EDDGrid {
             + "</sourceUrls>\n");
 
     // end
-    sb.append("\n" + "</dataset>\n" + "\n");
+    sb.append("""
+
+            </dataset>
+
+            """);
 
     String2.log(
         "\n\n*** generateDatasetsXml finished successfully; time="

@@ -5,18 +5,15 @@ import com.cohort.util.File2;
 import com.cohort.util.String2;
 import com.cohort.util.Test;
 import gov.noaa.pfel.coastwatch.pointdata.Table;
-import gov.noaa.pfel.coastwatch.util.SSR;
 import gov.noaa.pfel.erddap.GenerateDatasetsXml;
+import gov.noaa.pfel.erddap.util.EDMessages;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.EDV;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.List;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import tags.TagIncompleteTest;
-import tags.TagLocalERDDAP;
 import testDataset.EDDTestDataset;
 import testDataset.Initialization;
 
@@ -37,7 +34,7 @@ class EDDGridFromAudioFilesTests {
   void testGenerateDatasetsXml() throws Throwable {
 
     // String2.log("\n*** EDDGridFromAudioFiles.testGenerateDatasetsXml");
-
+    int language = EDMessages.DEFAULT_LANGUAGE;
     String dir =
         Path.of(EDDGridFromAudioFilesTests.class.getResource("/largeFiles/audio/floatWav/").toURI())
             .toString();
@@ -173,7 +170,7 @@ class EDDGridFromAudioFilesTests {
     EDDGridFromAudioFiles.deleteCachedDatasetInfo("_0_9_8_0_9_6_7538_7112_995c");
     EDDGrid eddg = (EDDGrid) EDDGridFromAudioFiles.oneFromXmlFragment(null, results);
     Test.ensureEqual(eddg.className(), "EDDGridFromAudioFiles", "className");
-    Test.ensureEqual(eddg.title(), "Audio data from a local source.", "title");
+    Test.ensureEqual(eddg.title(language), "Audio data from a local source.", "title");
     Test.ensureEqual(
         String2.toCSSVString(eddg.axisVariableDestinationNames()),
         "time, elapsedTime",
@@ -194,7 +191,7 @@ class EDDGridFromAudioFilesTests {
    */
   @org.junit.jupiter.api.Test
   void testGenerateDatasetsXml2() throws Throwable {
-
+    int language = EDMessages.DEFAULT_LANGUAGE;
     // String2.log("\n*** EDDGridFromAudioFiles.testGenerateDatasetsXml2");
 
     // test files are from Jim Potemra
@@ -342,7 +339,7 @@ class EDDGridFromAudioFilesTests {
     EDDGridFromAudioFiles.deleteCachedDatasetInfo("_0_9_8_0_9_6_1225_8cb7_768d");
     EDDGrid eddg = (EDDGrid) EDDGridFromAudioFiles.oneFromXmlFragment(null, results);
     Test.ensureEqual(eddg.className(), "EDDGridFromAudioFiles", "className");
-    Test.ensureEqual(eddg.title(), "Audio data from a local source.", "title");
+    Test.ensureEqual(eddg.title(language), "Audio data from a local source.", "title");
     Test.ensureEqual(
         String2.toCSSVString(eddg.axisVariableDestinationNames()),
         "time, elapsedTime",
@@ -368,7 +365,7 @@ class EDDGridFromAudioFilesTests {
     // delete cached info
     if (deleteCachedDatasetInfo) EDDGridFromAudioFiles.deleteCachedDatasetInfo("testGridWav");
     EDDGrid edd = (EDDGrid) EDDTestDataset.gettestGridWav();
-    String dir = EDStatic.fullTestCacheDirectory;
+    String dir = EDStatic.config.fullTestCacheDirectory;
     String tName, results, expected, dapQuery;
     int po;
     String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 10);
@@ -543,7 +540,7 @@ class EDDGridFromAudioFilesTests {
             + "9.375E-5,-7458\n"
             + "...\n";
     Test.ensureEqual(results, expected, "\nresults=\n" + results);
-    // Test.displayInBrowser("file://" + dir + tName);
+    // TestUtil.displayInBrowser("file://" + dir + tName);
     // String2.pressEnterToContinue("Close audio player when done.");
     File2.delete(dir + tName);
 
@@ -568,111 +565,5 @@ class EDDGridFromAudioFilesTests {
       table.readAudioFile(dir + name, true, false); // getData, addElapsedTimeColumn
       String2.log(name + " nRows=" + table.nRows() + " time=" + (table.nRows() / 24000.0));
     }
-  }
-
-  /** This tests byte range requests to /files/ */
-  @org.junit.jupiter.api.Test
-  @TagLocalERDDAP
-  void testByteRangeRequest() throws Throwable {
-
-    // String2.log("\n*** EDDGridFromAudioFiles.testByteRangeRequest\n");
-    // testVerboseOn();
-
-    String results, results2, expected;
-    ArrayList al;
-    List list;
-    int po;
-    int timeOutSeconds = 120;
-    String reqBase = "curl http://localhost:8080/cwexperimental/";
-    String req =
-        reqBase + "files/testGridWav/aco_acoustic.20141119_001500.wav -i "; // -i includes header in
-    // response
-
-    // * request no byte range
-    al = SSR.dosShell(req, timeOutSeconds);
-    list = al.subList(0, 8);
-    results = String2.annotatedString(String2.toNewlineString(list.toArray()));
-    expected =
-        // "[10]\n" +
-        // "c:\\programs\\_tomcat\\webapps\\cwexperimental\\WEB-INF>call
-        // C:\\programs\\curl7600\\I386\\curl.exe
-        // http://localhost:8080/cwexperimental/files/testGridWav/aco_acoustic.20141119_001500.wav
-        // -i [10]\n" +
-        "HTTP/1.1 200 [10]\n"
-            + // 200=SC_OK
-            "Content-Encoding: identity[10]\n"
-            + "Accept-ranges: bytes[10]\n"
-            + "Content-Type: audio/wav[10]\n"
-            + "Content-Length: 57600044[10]\n"
-            + "Date: "; // Wed, 27 Sep 2017 18:08:20 GMT[10]\n" +
-    results2 = results.substring(0, Math.min(results.length(), expected.length()));
-    Test.ensureEqual(results2, expected, "results2=\n" + results2);
-
-    // * request short byte range
-    al = SSR.dosShell(req + "-H \"Range: bytes=0-30\"", timeOutSeconds);
-    list = al.subList(0, 8);
-    results = String2.annotatedString(String2.toNewlineString(list.toArray()));
-    expected =
-        "HTTP/1.1 206 [10]\n"
-            + // 206=SC_PARTIAL_CONTENT
-            "Content-Encoding: identity[10]\n"
-            + "Content-Range: bytes 0-30/57600044[10]\n"
-            + "Content-Type: audio/wav[10]\n"
-            + "Content-Length: 31[10]\n"
-            + "Date: "; // Wed, 27 Sep 2017 18:08:20 GMT[10]\n" +
-    results2 = results.substring(0, Math.min(results.length(), expected.length()));
-    Test.ensureEqual(results2, expected, "results2=\n" + results2);
-
-    // * request bytes=0- which is what <audio> seems to do
-    al = SSR.dosShell(req + "-H \"Range: bytes=0-\"", timeOutSeconds);
-    list = al.subList(0, 8);
-    results = String2.annotatedString(String2.toNewlineString(list.toArray()));
-    expected =
-        "HTTP/1.1 206 [10]\n"
-            + // 206=SC_PARTIAL_CONTENT
-            "Content-Encoding: identity[10]\n"
-            + "Content-Range: bytes 0-57600043/57600044[10]\n"
-            + "Content-Type: audio/wav[10]\n"
-            + "Content-Length: 57600044[10]\n"
-            + "Date: "; // Wed, 27 Sep 2017 18:08:20 GMT[10]\n" +
-    results2 = results.substring(0, Math.min(results.length(), expected.length()));
-    Test.ensureEqual(results2, expected, "results2=\n" + results2);
-
-    // * request bytes=[start]- which is what <audio> seems to do
-    al = SSR.dosShell(req + "-H \"Range: bytes=50000000-\"", timeOutSeconds);
-    list = al.subList(0, 8);
-    results = String2.annotatedString(String2.toNewlineString(list.toArray()));
-    expected =
-        "HTTP/1.1 206 [10]\n"
-            + // 206=SC_PARTIAL_CONTENT
-            "Content-Encoding: identity[10]\n"
-            + "Content-Range: bytes 50000000-57600043/57600044[10]\n"
-            + "Content-Type: audio/wav[10]\n"
-            + "Content-Length: 7600044[10]\n"
-            + "Date: "; // Wed, 27 Sep 2017 18:08:20 GMT[10]\n" +
-    results2 = results.substring(0, Math.min(results.length(), expected.length()));
-    Test.ensureEqual(results2, expected, "results2=\n" + results2);
-
-    // * request images/wz_tooltip.js
-    al = SSR.dosShell(reqBase + "images/wz_tooltip.js -i", timeOutSeconds);
-    list = al.subList(0, 5);
-    results = String2.annotatedString(String2.toNewlineString(list.toArray()));
-    expected =
-        "HTTP/1.1 200 [10]\n"
-            + "Cache-Control: PUBLIC, max-age=604800, must-revalidate[10]\n"
-            + "Expires: ";
-    results2 = results.substring(0, Math.min(results.length(), expected.length()));
-    Test.ensureEqual(results2, expected, "results2=\n" + results2);
-
-    list = al.subList(4, 10);
-    results = String2.annotatedString(String2.toNewlineString(list.toArray()));
-    expected =
-        "Content-Encoding: identity[10]\n"
-            + "Accept-ranges: bytes[10]\n"
-            + "Content-Type: application/x-javascript;charset=UTF-8[10]\n"
-            + "Content-Length: 36673[10]\n"
-            + "Date: ";
-    results2 = results.substring(0, Math.min(results.length(), expected.length()));
-    Test.ensureEqual(results2, expected, "results2=\n" + results2);
   }
 }

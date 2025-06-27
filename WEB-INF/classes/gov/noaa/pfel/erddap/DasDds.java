@@ -22,13 +22,13 @@ import java.nio.file.Path;
  */
 public class DasDds {
 
-  static String logFileName = null;
-  static String outFileName = null;
+  String logFileName = null;
+  String outFileName = null;
   Writer outFile = null;
 
   public DasDds() {
-    logFileName = EDStatic.fullLogsDirectory + "DasDds.log";
-    outFileName = EDStatic.fullLogsDirectory + "DasDds.out";
+    logFileName = EDStatic.config.fullLogsDirectory + "DasDds.log";
+    outFileName = EDStatic.config.fullLogsDirectory + "DasDds.out";
   }
 
   private void printToBoth(String s) throws IOException {
@@ -93,13 +93,15 @@ public class DasDds {
             + "\n"
             + String2.standardHelpAboutMessage());
     // trick EDStatic.initialLoadDatasets by making majorLoadDatasetsTimeSeriesSB not empty
-    EDStatic.majorLoadDatasetsTimeSeriesSB.append("\n");
+    synchronized (EDStatic.majorLoadDatasetsTimeSeriesSB) {
+      EDStatic.majorLoadDatasetsTimeSeriesSB.append("\n");
+    }
     outFile = File2.getBufferedFileWriterUtf8(outFileName);
     try {
 
       // delete the old log files (pre 1.48 names)
-      File2.delete(EDStatic.fullLogsDirectory + "DasDdsLog.txt");
-      File2.delete(EDStatic.fullLogsDirectory + "DasDdsLog.txt.previous");
+      File2.delete(EDStatic.config.fullLogsDirectory + "DasDdsLog.txt");
+      File2.delete(EDStatic.config.fullLogsDirectory + "DasDdsLog.txt.previous");
 
       String datasetID = "";
       if (args == null) args = new String[0];

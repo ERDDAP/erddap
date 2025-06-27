@@ -3,7 +3,6 @@ package com.cohort.array;
 import com.cohort.util.String2;
 import com.cohort.util.Test;
 import java.util.BitSet;
-import tags.TagFlaky;
 
 class IntArrayTests {
   /**
@@ -12,7 +11,6 @@ class IntArrayTests {
    * @throws Throwable if trouble.
    */
   @org.junit.jupiter.api.Test
-  @TagFlaky // Requires around 2G of free ram, often fails
   void basicTest() throws Throwable {
     String2.log("*** IntArray.basicTest");
 
@@ -36,7 +34,9 @@ class IntArrayTests {
     for (int j = 0; j < 2; j++) { // 20 is >1 minute so good for Java Flight Recorder
       String2.log("j=" + j);
       anArray = new IntArray();
-      for (int i = 0; i < 500000000; i++) { // 500*10^6 is close to max size of 2GB
+      // 500*10^6 is close to max size of 2GB, but do 10^5 so the test doesn't always run out of
+      // memory
+      for (int i = 0; i < 50000000; i++) {
         anArray.add(i);
       }
     }
@@ -553,8 +553,8 @@ class IntArrayTests {
     int n = 100000000;
     long time = System.currentTimeMillis();
     IntArray ia = IntArray.fromCSV("0, 11, 22, 33, 44, 55, 66, 77");
-    int count = 0;
     long tTime = 0;
+    int count = 0;
     for (int i = 0; i < n; i++) {
       tTime = System.currentTimeMillis(); // so this is in the loop too
       synchronized (ia) {

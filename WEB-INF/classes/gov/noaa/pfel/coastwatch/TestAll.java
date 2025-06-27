@@ -7,7 +7,6 @@ package gov.noaa.pfel.coastwatch;
 import com.cohort.array.*;
 import com.cohort.util.*;
 import gov.noaa.pfel.coastwatch.griddata.*;
-import gov.noaa.pfel.coastwatch.hdf.*;
 import gov.noaa.pfel.coastwatch.netcheck.*;
 import gov.noaa.pfel.coastwatch.pointdata.*;
 import gov.noaa.pfel.coastwatch.sgt.*;
@@ -41,6 +40,7 @@ public class TestAll {
    * @param args is ignored
    * @throws Throwable if trouble
    */
+  @SuppressWarnings("unused")
   public static void main(String args[]) throws Throwable {
 
     String s;
@@ -49,11 +49,12 @@ public class TestAll {
     String2.setupCommonsLogging(-1);
 
     // set log file to <bigParentDir>/logs/TestAll.out
-    EDStatic.quickRestart = false; // also, this forces EDStatic instantiation when running TestAll
+    EDStatic.config.quickRestart =
+        false; // also, this forces EDStatic instantiation when running TestAll
     String2.setupLog(
         true,
         false, // output to system.out and a file:
-        EDStatic.fullLogsDirectory + "TestAll.log",
+        EDStatic.config.fullLogsDirectory + "TestAll.log",
         false,
         1000000000); // append?
     EDD.testVerboseOn();
@@ -71,8 +72,8 @@ public class TestAll {
     // this might cause small problems for a public running erddap
     // but Bob only uses this on laptop, with private erddap.
     File2.deleteAllFiles(
-        EDStatic.fullPublicDirectory, true, false); // recursive, deleteEmptySubdirectories
-    File2.deleteAllFiles(EDStatic.fullCacheDirectory, true, false);
+        EDStatic.config.fullPublicDirectory, true, false); // recursive, deleteEmptySubdirectories
+    File2.deleteAllFiles(EDStatic.config.fullCacheDirectory, true, false);
 
     // make it appear that initialLoadDatasets() is not true
     EDStatic.majorLoadDatasetsTimeSeriesSB.append("\n");
@@ -328,7 +329,7 @@ public class TestAll {
 
     //    s = Projects.makeAwsS3FilesDatasets(".*"); //all: .*   tests: nrel-pds-wtk\\.yaml,
     // silo\\.yaml (has ?Name: but ? doesn't show in EditPlus)
-    //    File2.writeToFileUtf8(EDStatic.bigParentDirectory + "logs/awsS3Files.txt", s);
+    //    File2.writeToFileUtf8(EDStatic.config.bigParentDirectory + "logs/awsS3Files.txt", s);
     //    String2.log(EDD.testDasDds("radar_vola"));
 
     /*
@@ -453,7 +454,7 @@ public class TestAll {
     //        String2.setClipboardString(s); String2.log(s);
 
     /*   //tallyXml
-       String tfn = EDStatic.fullLogsDirectory + "tallyLterSbsStorageUnitsMV.log";
+       String tfn = EDStatic.config.fullLogsDirectory + "tallyLterSbsStorageUnitsMV.log";
        File2.writeToFileUtf8(tfn,
            FileVisitorDNLS.tallyXml(
            "/u00/data/points/lterSbc/", "knb-lter-sbc\\.\\d+", false,
@@ -905,12 +906,10 @@ public class TestAll {
     RowComparator rc;
     RowComparatorIgnoreCase rcic;
     SaveOpendap so;
-    SdsReader sr;
     SgtGraph sgtGraph;
     SgtMap sgtMap;
     SgtUtil sgtUtil;
     gov.noaa.pfel.coastwatch.sgt.PathCartesianRenderer sgtptcr;
-    gov.noaa.pmel.sgt.AnnotationCartesianRenderer sgtacr;
     gov.noaa.pmel.sgt.AxisTransform sgtat;
     gov.noaa.pmel.sgt.CartesianGraph sgtcg;
     gov.noaa.pmel.sgt.CartesianRenderer sgtcr;
@@ -920,10 +919,7 @@ public class TestAll {
     gov.noaa.pmel.sgt.DayMonthAxis sgtdma;
     gov.noaa.pmel.sgt.DecadeAxis sgtda;
     gov.noaa.pmel.sgt.dm.SGTGrid sgtsgdtg;
-    gov.noaa.pmel.sgt.dm.SGTImage sgti;
     gov.noaa.pmel.sgt.dm.SGTLine sgtl;
-    gov.noaa.pmel.sgt.dm.SGTPoint sgtp;
-    gov.noaa.pmel.sgt.dm.SGTVector sgtsgdtv;
     gov.noaa.pmel.sgt.GridAttribute sgtga;
     gov.noaa.pmel.sgt.GridCartesianRenderer sgtgcr;
     gov.noaa.pmel.sgt.Graph sgtg;
@@ -940,10 +936,8 @@ public class TestAll {
     gov.noaa.pmel.sgt.MonthYearAxis sgtmya;
     gov.noaa.pmel.sgt.PaneProxy sgtpp;
     gov.noaa.pmel.sgt.PlainAxis sgtpa;
-    gov.noaa.pmel.sgt.PointCartesianRenderer sgtpcr;
     gov.noaa.pmel.sgt.SecondMinuteAxis sgtsma;
     gov.noaa.pmel.sgt.TimeAxis sgtta;
-    gov.noaa.pmel.sgt.VectorCartesianRenderer sgtvcr;
     gov.noaa.pmel.sgt.YearDecadeAxis sgtyda;
     gov.noaa.pmel.util.GeoDate geodate;
     Script2 script2;
@@ -972,7 +966,6 @@ public class TestAll {
     ULongArray ula;
     Units2 u2;
     UShortArray usa;
-    gov.noaa.pmel.sgt.VectorCartesianRenderer vcr;
     VectorPointsRenderer vpr;
     WatchDirectory wdir;
     XML xml;
@@ -1039,7 +1032,6 @@ public class TestAll {
     EDVTimeStampGridAxis edvtsga;
     EmailThread et;
     Erddap erddap;
-    ErddapRedirect erddapRedirect;
     FindDuplicateTime findDuplicateTime;
     GenerateDatasetsXml gdx;
     GridDataAccessor gda;
@@ -1210,9 +1202,11 @@ public class TestAll {
     // MakeEmaWar.main(null);
 
     String2.log(
-        "\n"
-            + "*** Before a release, spell check (copy to EditPlus, then spellcheck)\n"
-            + "and validate HTML the main web pages!\n");
+        """
+
+                    *** Before a release, spell check (copy to EditPlus, then spellcheck)
+                    and validate HTML the main web pages!
+                    """);
 
     // */
     // AFTER deploying browsers: test the experimental browser
@@ -1222,15 +1216,15 @@ public class TestAll {
     // of testAll
 
     if (errorSB != null && errorSB.length() > 0) {
-      String fileName = EDStatic.fullLogsDirectory + "/TestAllErrorSB.txt";
+      String fileName = EDStatic.config.fullLogsDirectory + "/TestAllErrorSB.txt";
       String2.log(
           File2.writeToFileUtf8(
               fileName,
               "errorSB from TestAll which finished at "
                   + Calendar2.getCurrentISODateTimeStringLocalTZ()
                   + "\n"
-                  + errorSB.toString()));
-      Test.displayInBrowser("file://" + fileName); // .txt
+                  + errorSB));
+      //   Test.displayInBrowser("file://" + fileName); // .txt
     }
 
     String2.returnLoggingToSystemOut();

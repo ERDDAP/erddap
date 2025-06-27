@@ -35,7 +35,7 @@ public class StringHolderComparatorIgnoreCase implements Comparator<StringHolder
    */
   @Override
   public boolean equals(Object obj) {
-    return obj != null && obj instanceof StringHolderComparatorIgnoreCase;
+    return obj instanceof StringHolderComparatorIgnoreCase;
   }
 
   @Override

@@ -231,9 +231,6 @@ public class TableTests {
 
   @org.junit.jupiter.api.Test
   void testLastRowWithData() throws Exception {
-    // String2.log("\n*** Table.testLastRowWithData");
-    boolean oDebug = Table.debugMode;
-    // Table.debugMode = true;
     Table table = new Table();
     String results, expected;
     Attributes iAtts = new Attributes();
@@ -347,12 +344,8 @@ public class TableTests {
   @ValueSource(booleans = {true, false})
   @TagSlowTests
   void testReadNcCFMATimeSeriesReversed(boolean readAsNcCF) throws Exception {
-    // String2.log("\n*** Table.testReadNcCFMATimeSeriesReversed readAsNcCF=" +
-    // readAsNcCF);
     // time is days since 2006-01-01 00:00:00. file has 2007-10-01T04 through
     // 2013-11-14T17:06
-    boolean oDebug = Table.debugMode;
-    // Table.debugMode = true;
     Table table = new Table();
     String results, expected;
     long time;
@@ -372,7 +365,8 @@ public class TableTests {
           0, // standardizeWhat=0
           StringArray.fromCSV("time"),
           StringArray.fromCSV(">"),
-          StringArray.fromCSV("3426.69"));
+          StringArray.fromCSV("3426.69"),
+          false);
     else {
       TableFromMultidimNcFile reader = new TableFromMultidimNcFile(table);
       reader.readMultidimNc(
@@ -416,7 +410,8 @@ public class TableTests {
           0, // standardizeWhat=0
           null,
           null,
-          null);
+          null,
+          false);
     else {
       TableFromMultidimNcFile reader = new TableFromMultidimNcFile(table);
       reader.readMultidimNc(
@@ -466,7 +461,8 @@ public class TableTests {
           0, // standardizeWhat=0
           StringArray.fromCSV("latitude"),
           StringArray.fromCSV("<"),
-          StringArray.fromCSV("39.1"));
+          StringArray.fromCSV("39.1"),
+          false);
     else {
       TableFromMultidimNcFile reader = new TableFromMultidimNcFile(table);
       reader.readMultidimNc(
@@ -499,7 +495,8 @@ public class TableTests {
           0, // standardizeWhat=0
           StringArray.fromCSV("discharge"),
           StringArray.fromCSV(">"),
-          StringArray.fromCSV("5400"));
+          StringArray.fromCSV("5400"),
+          false);
     else {
       TableFromMultidimNcFile reader = new TableFromMultidimNcFile(table);
       reader.readMultidimNc(
@@ -542,7 +539,8 @@ public class TableTests {
           0, // standardizeWhat=0
           StringArray.fromCSV("station"),
           StringArray.fromCSV("="),
-          StringArray.fromCSV("1463500.0"));
+          StringArray.fromCSV("1463500.0"),
+          false);
     else {
       TableFromMultidimNcFile reader = new TableFromMultidimNcFile(table);
       reader.readMultidimNc(
@@ -595,7 +593,7 @@ public class TableTests {
     if (readAsNcCF)
       table.readNcCF(
           fileName, null, 0, // standardizeWhat=0
-          null, null, null);
+          null, null, null, false);
     else {
       TableFromMultidimNcFile reader = new TableFromMultidimNcFile(table);
       reader.readMultidimNc(
@@ -644,7 +642,8 @@ public class TableTests {
           0, // standardizeWhat=0
           StringArray.fromCSV("discharge"),
           StringArray.fromCSV(">"),
-          StringArray.fromCSV("5400"));
+          StringArray.fromCSV("5400"),
+          false);
     else {
       TableFromMultidimNcFile reader = new TableFromMultidimNcFile(table);
       reader.readMultidimNc(
@@ -687,7 +686,8 @@ public class TableTests {
           0, // standardizeWhat=0
           StringArray.fromCSV("station,discharge"),
           StringArray.fromCSV("=,>"),
-          StringArray.fromCSV("1463500.0,5400"));
+          StringArray.fromCSV("1463500.0,5400"),
+          false);
     else {
       TableFromMultidimNcFile reader = new TableFromMultidimNcFile(table);
       reader.readMultidimNc(
@@ -1337,7 +1337,7 @@ public class TableTests {
         true, // needEncodingAsHtml
         false);
     // String2.log(fileName + "=\n" + File2.directReadFromUtf8File(fileName));
-    // Test.displayInBrowser("file://" + fileName); // .html
+    // TestUtil.displayInBrowser("file://" + fileName); // .html
 
     // read it from the file
     String results = File2.directReadFromUtf8File(fileName);
@@ -1681,6 +1681,7 @@ public class TableTests {
 
   /** Test the speed of readASCII */
   @org.junit.jupiter.api.Test
+  @TagSlowTests
   void testReadASCIISpeed() throws Exception {
 
     String fileName =
@@ -1715,7 +1716,7 @@ public class TableTests {
               + attempt
               + " Done.\n"
               + "cells/ms="
-              + (table.nColumns() * table.nRows() / time)
+              + (table.nColumns() * ((long) table.nRows()) / time)
               + " (usual=2560 with StringHolder. With String, was 2711 Java 1.7M4700, was 648)"
               + "\ntime="
               + time
@@ -1765,7 +1766,7 @@ public class TableTests {
       time = System.currentTimeMillis() - time;
       msg =
           "*** Done. cells/ms="
-              + (table.nColumns() * table.nRows() / time)
+              + (table.nColumns() * ((long) table.nRows()) / time)
               + " (usual=2881 Java 1.7M4700, was 747)"
               + "\ntime="
               + time
@@ -1815,7 +1816,7 @@ public class TableTests {
       time = System.currentTimeMillis() - time;
       String2.log(
           "********** Done. cells/ms="
-              + (table.nColumns() * table.nRows() / time)
+              + (table.nColumns() * ((long) table.nRows()) / time)
               + " (usual=31414 Java 1.7M4700, was 9679)"
               + "\ntime="
               + time
@@ -1884,7 +1885,7 @@ public class TableTests {
       time = System.currentTimeMillis() - time;
       String2.log(
           "********** Done. cells/ms="
-              + (table.nColumns() * table.nRows() / time)
+              + (table.nColumns() * ((long) table.nRows()) / time)
               + " (usual(https)=33, was(http) 337 Java 1.7M4700, was 106)"
               + "\ntime="
               + time
@@ -1926,7 +1927,7 @@ public class TableTests {
           "saveAsCsvASCII attempt#"
               + attempt
               + " done. cells/ms="
-              + (table.nColumns() * table.nRows() / time)
+              + (table.nColumns() * ((long) table.nRows()) / time)
               + // 796
               "\ntime="
               + time
@@ -1934,9 +1935,10 @@ public class TableTests {
       File2.delete(destName + ".csv");
       if (time <= 550) break;
     }
-    if (time > 550)
-      throw new SimpleException(
-          "saveAsCsvASCII  (time=" + time + "ms). Expected=~344 for 17117 rows.");
+    // TODO get a better performance check than time which varies on machines
+    // if (time > 550)
+    //   throw new SimpleException(
+    //       "saveAsCsvASCII  (time=" + time + "ms). Expected=~344 for 17117 rows.");
 
     for (int attempt = 0; attempt < 3; attempt++) {
       // saveAsJson
@@ -1947,7 +1949,7 @@ public class TableTests {
           "saveAsJson attempt#"
               + attempt
               + " done. cells/ms="
-              + (table.nColumns() * table.nRows() / time)
+              + (table.nColumns() * ((long) table.nRows()) / time)
               + // 974
               "\ntime="
               + time
@@ -1955,9 +1957,10 @@ public class TableTests {
       File2.delete(destName + ".json");
       if (time <= 450) break;
     }
-    if (time >= 450)
-      throw new SimpleException(
-          "saveAsJson took too long (time=" + time + "ms). Expected=~281 for 17117 rows.");
+    // TODO get a better performance check than time which varies on machines
+    // if (time >= 450)
+    //   throw new SimpleException(
+    //       "saveAsJson took too long (time=" + time + "ms). Expected=~281 for 17117 rows.");
 
     // saveAsFlatNc
     for (int attempt = 0; attempt < 3; attempt++) {
@@ -1968,7 +1971,7 @@ public class TableTests {
           "saveAsFlatNc attempt#"
               + attempt
               + " done. cells/ms="
-              + (table.nColumns() * table.nRows() / time)
+              + (table.nColumns() * ((long) table.nRows()) / time)
               + // 2190
               "\ntime="
               + time
@@ -1976,9 +1979,10 @@ public class TableTests {
       File2.delete(destName + ".nc");
       if (time <= 200) break;
     }
-    if (time > 200)
-      throw new SimpleException(
-          "saveAsFlatNc took too long (time=" + time + "ms). Expected=~125 for 17117 rows.");
+    // TODO get a better performance check than time which varies on machines
+    // if (time > 200)
+    //   throw new SimpleException(
+    //       "saveAsFlatNc took too long (time=" + time + "ms). Expected=~125 for 17117 rows.");
   }
 
   /**
@@ -3062,11 +3066,6 @@ public class TableTests {
   /** This tests readMultidimNc by reading an Argo Profile file. */
   @org.junit.jupiter.api.Test
   void testReadMultidimNc() throws Exception {
-    // Table.verbose = true;
-    // Table.reallyVerbose = true;
-    boolean oDebugMode = Table.debugMode;
-    // Table.debugMode = true;
-    // String2.log("\n*** Table.testReadMultidimNc");
     Table table = new Table();
     // ftp://ftp.ifremer.fr/ifremer/argo/dac/csio/2901175/2901175_prof.nc
     String fiName = TableTests.class.getResource("/data/nc/2901175_prof.nc").getPath();
@@ -4054,7 +4053,7 @@ public class TableTests {
             + "*GLOBAL*,creator_type,person\n"
             + "*GLOBAL*,creator_url,https://www.pfeg.noaa.gov\n"
             + "*GLOBAL*,featureType,trajectory\n"
-            + "*GLOBAL*,infoUrl,https://coastwatch.pfeg.noaa.gov/erddap/download/NCCSV.html\n"
+            + "*GLOBAL*,infoUrl,https://erddap.github.io/docs/user/nccsv-1.20\n"
             + "*GLOBAL*,institution,\"NOAA NMFS SWFSC ERD, NOAA PMEL\"\n"
             + "*GLOBAL*,keywords,\"NOAA, sea, ship, sst, surface, temperature, trajectory\"\n"
             + "*GLOBAL*,license,\"\"\"NCCSV Demonstration\"\" by Bob Simons and Steve Hankin is licensed under CC BY 4.0, https://creativecommons.org/licenses/by/4.0/ .\"\n"
@@ -4119,7 +4118,7 @@ public class TableTests {
             + "*GLOBAL*,creator_type,person\n"
             + "*GLOBAL*,creator_url,https://www.pfeg.noaa.gov\n"
             + "*GLOBAL*,featureType,trajectory\n"
-            + "*GLOBAL*,infoUrl,https://coastwatch.pfeg.noaa.gov/erddap/download/NCCSV.html\n"
+            + "*GLOBAL*,infoUrl,https://erddap.github.io/docs/user/nccsv-1.20\n"
             + "*GLOBAL*,institution,\"NOAA NMFS SWFSC ERD, NOAA PMEL\"\n"
             + "*GLOBAL*,keywords,\"NOAA, sea, ship, sst, surface, temperature, trajectory\"\n"
             + "*GLOBAL*,license,\"\"\"NCCSV Demonstration\"\" by Bob Simons and Steve Hankin is licensed under CC BY 4.0, https://creativecommons.org/licenses/by/4.0/ .\"\n"
@@ -4197,7 +4196,7 @@ public class TableTests {
             + "*GLOBAL*,creator_type,person\n"
             + "*GLOBAL*,creator_url,https://www.pfeg.noaa.gov\n"
             + "*GLOBAL*,featureType,trajectory\n"
-            + "*GLOBAL*,infoUrl,https://coastwatch.pfeg.noaa.gov/erddap/download/NCCSV.html\n"
+            + "*GLOBAL*,infoUrl,https://erddap.github.io/docs/user/nccsv-1.20\n"
             + "*GLOBAL*,institution,\"NOAA NMFS SWFSC ERD, NOAA PMEL\"\n"
             + "*GLOBAL*,keywords,\"NOAA, sea, ship, sst, surface, temperature, trajectory\"\n"
             + "*GLOBAL*,license,\"\"\"NCCSV Demonstration\"\" by Bob Simons and Steve Hankin is licensed under CC BY 4.0, https://creativecommons.org/licenses/by/4.0/ .\"\n"
@@ -4289,7 +4288,7 @@ public class TableTests {
             + "*GLOBAL*,creator_type,person\n"
             + "*GLOBAL*,creator_url,https://www.pfeg.noaa.gov\n"
             + "*GLOBAL*,featureType,trajectory\n"
-            + "*GLOBAL*,infoUrl,https://coastwatch.pfeg.noaa.gov/erddap/download/NCCSV.html\n"
+            + "*GLOBAL*,infoUrl,https://erddap.github.io/docs/user/nccsv-1.20\n"
             + "*GLOBAL*,institution,\"NOAA NMFS SWFSC ERD, NOAA PMEL\"\n"
             + "*GLOBAL*,keywords,\"NOAA, sea, ship, sst, surface, temperature, trajectory\"\n"
             + "*GLOBAL*,license,\"\"\"NCCSV Demonstration\"\" by Bob Simons and Steve Hankin is licensed under CC BY 4.0, https://creativecommons.org/licenses/by/4.0/ .\"\n"
@@ -5079,11 +5078,6 @@ public class TableTests {
   /** This tests unpack by reading an Argo Profile file. */
   @org.junit.jupiter.api.Test
   void testUnpack() throws Exception {
-    // Table.verbose = true;
-    // Table.reallyVerbose = true;
-    boolean oDebugMode = Table.debugMode;
-    // Table.debugMode = true;
-    // String2.log("\n*** Table.testUnpack");
     Table table = new Table();
     // ftp://ftp.ifremer.fr/ifremer/argo/dac/csio/2901175/2901175_prof.nc
     String fiName = TableTests.class.getResource("/data/nc/2901175_prof.nc").getPath();
@@ -5479,7 +5473,7 @@ public class TableTests {
     String fiName =
         TableTests.class.getResource("/largeFiles/nccf/vlen/rr2_vlen_test.nc").getPath();
     // String2.log(NcHelper.ncdump(fiName, "-h"));
-    String results, expectedStart, expectedEnd;
+    String results, expectedStart;
     /* */
 
     // ** don't specify varNames or dimNames -- it find vars with most dims
@@ -5734,10 +5728,8 @@ public class TableTests {
   @org.junit.jupiter.api.Test
   @TagLargeFiles
   void testReadInvalidCRA() throws Exception {
-    // String2.log("\n*** Table.testReadInvalidCRA()");
-    StringArray colNames, conNames, conOps, conVals;
     Table table = new Table();
-    table.debugMode = true;
+    Table.debugMode = true;
     String dir = TableTests.class.getResource("/veryLarge/nccf/wod/").getPath();
     String drbDir = TableTests.class.getResource("/largeFiles/nccf/wod/").getPath();
     String fullName, results, expected;
@@ -8373,23 +8365,17 @@ public class TableTests {
 
     /* */
 
-    table.debugMode = false;
+    Table.debugMode = false;
   }
 
   /** This tests reading an ncCF Contiguous Ragged Array file with 7(!) sample_dimension's. */
   @org.junit.jupiter.api.Test
   void testReadNcCF7SampleDims() throws Exception {
-    // Table.verbose = true;
-    // Table.reallyVerbose = true;
-    boolean oDebug = Table.debugMode;
-    // Table.debugMode = true;
-    // String2.log("\n*** Table.testReadNcCF7SampleDims");
     Table table = new Table();
     String results, expected;
     // From Ajay Krishnan, NCEI/NODC, from
     // https://data.nodc.noaa.gov/thredds/catalog/testdata/wod_ragged/05052016/catalog.html?dataset=testdata/wod_ragged/05052016/ind199105_ctd.nc
     String fileName = TableTests.class.getResource("/data/nccf/ncei/ind199105_ctd.nc").getPath();
-    Attributes gatts;
     String scalarVars = ",crs,WODf,WODfd";
 
     // String2.log("\n\n** Testing " + fileName);
@@ -8406,7 +8392,8 @@ public class TableTests {
         0, // standardizeWhat=0
         null,
         null,
-        null);
+        null,
+        false);
     results = table.dataToString(5);
     expected =
         // with netcdf-java 4.6.5 and before, the last 3 vars had 0's.
@@ -8440,7 +8427,8 @@ public class TableTests {
         0, // standardizeWhat=0
         null,
         null,
-        null);
+        null,
+        false);
     results = table.dataToString(5);
     expected =
         // was
@@ -8468,7 +8456,8 @@ public class TableTests {
         0, // standardizeWhat=0
         null,
         null,
-        null);
+        null,
+        false);
     results = table.dataToString(5);
     expected =
         // was
@@ -8495,7 +8484,8 @@ public class TableTests {
         0, // standardizeWhat=0
         null,
         null,
-        null);
+        null,
+        false);
     results = table.dataToString(5);
     expected =
         // was
@@ -8522,7 +8512,8 @@ public class TableTests {
         0, // standardizeWhat=0
         null,
         null,
-        null);
+        null,
+        false);
     results = table.dataToString(5);
     expected =
         // was
@@ -8534,7 +8525,7 @@ public class TableTests {
     // test reading WHOLE file (should just catch z_obs dimension)
     table.readNcCF(
         fileName, null, 0, // standardizeWhat=0
-        null, null, null);
+        null, null, null, false);
     results = table.dataToString(3);
     expected =
         // note it catches z_obs dimension (z, z_WODflag, z_sigfig), not others.
@@ -8584,6 +8575,10 @@ public class TableTests {
     Test.ensureEqual(results, expected, "results=\n" + results);
 
     results = table.globalAttributes().getString("subsetVariables");
+    expected = null;
+    Test.ensureEqual(results, expected, "results=\n" + results);
+
+    results = table.globalAttributes().getString("cdm_profile_variables");
     expected =
         "country, WOD_cruise_identifier, originators_cruise_identifier, wod_unique_cast, "
             + "lat, lon, time, date, GMT_time, Access_no, Project, Platform, Institute, "
@@ -8597,10 +8592,6 @@ public class TableTests {
             + "Chlorophyll_uncalibrated, Conductivit_row_size, crs, WODf, WODfp, WODfd";
     Test.ensureEqual(results, expected, "results=\n" + results);
 
-    results = table.globalAttributes().getString("cdm_profile_variables");
-    // same expected
-    Test.ensureEqual(results, expected, "results=\n" + results);
-
     // test reading row_size vars -- are they actually read?
     table.readNcCF(
         fileName,
@@ -8610,7 +8601,8 @@ public class TableTests {
         0, // standardizeWhat=0
         null,
         null,
-        null);
+        null,
+        false);
     results = table.dataToString(7);
     expected = // verified with dumpString above
         "Temperature_row_size,Salinity_row_size,Oxygen_row_size,Pressure_row_size,Chlorophyll_row_size\n"
@@ -8622,6 +8614,23 @@ public class TableTests {
             + "34,34,0,34,34\n"
             + "34,34,0,34,34\n"
             + "...\n";
+    Test.ensureEqual(results, expected, "results=\n" + results);
+
+    table.readNcCF(
+        fileName, null, 0, // standardizeWhat=0
+        null, null, null, true);
+    results = table.globalAttributes().getString("subsetVariables");
+    expected =
+        "country, WOD_cruise_identifier, originators_cruise_identifier, wod_unique_cast, "
+            + "lat, lon, time, date, GMT_time, Access_no, Project, Platform, Institute, "
+            + "Cast_Tow_number, Orig_Stat_Num, Bottom_Depth, Cast_Duration, Cast_Direction, "
+            + "High_res_pair, dataset, dbase_orig, origflagset, Temperature_row_size, "
+            + "Temperature_WODprofileflag, Temperature_Scale, Temperature_Instrument, "
+            + "Salinity_row_size, Salinity_WODprofileflag, Salinity_Scale, Salinity_Instrument, "
+            + "Oxygen_row_size, Oxygen_WODprofileflag, Oxygen_Instrument, Oxygen_Original_units, "
+            + "Pressure_row_size, "
+            + "Chlorophyll_row_size, Chlorophyll_WODprofileflag, Chlorophyll_Instrument, "
+            + "Chlorophyll_uncalibrated, Conductivit_row_size, crs, WODf, WODfp, WODfd";
     Test.ensureEqual(results, expected, "results=\n" + results);
 
     // test request for vars with 2 different sample_dimensions
@@ -8636,7 +8645,8 @@ public class TableTests {
           0, // standardizeWhat=0
           null,
           null,
-          null);
+          null,
+          false);
       results = table.dataToString(5);
 
     } catch (Throwable t2) {
@@ -8652,18 +8662,12 @@ public class TableTests {
   /** This tests readNcCF reading point files. */
   @org.junit.jupiter.api.Test
   void testReadNcCFPoint() throws Exception {
-    // Table.verbose = true;
-    // Table.reallyVerbose = true;
-    boolean oDebug = Table.debugMode;
-    // Table.debugMode = true;
-    // String2.log("\n*** Table.testReadNcCFPoint");
     Table table = new Table();
     String results, expected;
     String fileName =
         TableTests.class
             .getResource("/data/CFPointConventions/point/point-H.1/point-H.1.nc")
             .getPath();
-    Attributes gatts;
 
     /* */
     // *************** point
@@ -8672,7 +8676,7 @@ public class TableTests {
 
     table.readNcCF(
         fileName, null, 0, // standardizeWhat=0
-        null, null, null);
+        null, null, null, false);
     // String2.log(table.toCSVString());
     results = table.dataToString(5);
     expected =
@@ -8691,7 +8695,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV(""),
         StringArray.fromCSV(""),
-        StringArray.fromCSV(""));
+        StringArray.fromCSV(""),
+        false);
     results = table.dataToString(5);
     // expected is same
     Test.ensureEqual(results, expected, "results=\n" + results);
@@ -8715,7 +8720,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("obs"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("2"));
+        StringArray.fromCSV("2"),
+        false);
     results = table.dataToString();
     expected = "obs,lat,time,temperature\n" + "2,10.0,71,21.193731\n";
     Test.ensureEqual(results, expected, "results=\n" + results);
@@ -8726,7 +8732,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("time"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("71"));
+        StringArray.fromCSV("71"),
+        false);
     results = table.dataToString();
     expected = "obs,lat,time,temperature\n" + "2,10.0,71,21.193731\n";
     Test.ensureEqual(results, expected, "results=\n" + results);
@@ -8737,7 +8744,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("21.193731"));
+        StringArray.fromCSV("21.193731"),
+        false);
     results = table.dataToString();
     expected = "obs,lat,time,temperature\n" + "2,10.0,71,21.193731\n";
     Test.ensureEqual(results, expected, "results=\n" + results);
@@ -8750,7 +8758,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("obs"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("2"));
+        StringArray.fromCSV("2"),
+        false);
     results = table.dataToString();
     expected = "obs\n" + "2\n";
     Test.ensureEqual(results, expected, "results=\n" + results);
@@ -8765,7 +8774,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("21.193731"));
+        StringArray.fromCSV("21.193731"),
+        false);
     results = table.dataToString();
     expected = "temperature\n" + "21.193731\n";
     Test.ensureEqual(results, expected, "results=\n" + results);
@@ -8777,7 +8787,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("obs"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
 
     table.readNcCF(
@@ -8786,7 +8797,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("time"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
 
     table.readNcCF(
@@ -8795,7 +8807,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
 
     table.readNcCF(
@@ -8804,7 +8817,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("obs"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
 
     table.readNcCF(
@@ -8813,7 +8827,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
 
     // String2.log("\n*** Table.testReadNcCFPoint finished successfully");
@@ -8823,11 +8838,6 @@ public class TableTests {
   /** This tests readNcCF nLevels=1. */
   @org.junit.jupiter.api.Test
   void testReadNcCF1() throws Exception {
-    // Table.verbose = true;
-    // Table.reallyVerbose = true;
-    boolean oDebug = Table.debugMode;
-    // Table.debugMode = true;
-    // String2.log("\n*** Table.testReadNcCF1");
     Table table = new Table();
     String results, expected;
     String profileFileName = TableTests.class.getResource("/data/nccf/Profile.nc").getPath();
@@ -8847,7 +8857,8 @@ public class TableTests {
         0, // standardizeWhat=0
         null,
         null,
-        null);
+        null,
+        true);
     // String2.log(table.toCSVString());
     results = table.dataToString(5);
     expected =
@@ -8879,6 +8890,44 @@ public class TableTests {
     Test.ensureEqual(
         gatts.getString("subsetVariables"), "id, longitude, latitude, time", gatts.toString());
 
+    table.readNcCF(
+        profileFileName,
+        null,
+        0, // standardizeWhat=0
+        null,
+        null,
+        null,
+        false);
+    // String2.log(table.toCSVString());
+    results = table.dataToString(5);
+    expected =
+        "id,longitude,latitude,time,altitude,chlorophyll,chlorophyll_qc,oxygen,oxygen_qc,pressure,pressure_qc,salinity,salinity_qc,temperature,temperature_qc\n"
+            + "465958,163.08,39.0,1.107754559E9,-2.0,,,,,,,,,10.1,0.0\n"
+            + "465958,163.08,39.0,1.107754559E9,-58.0,,,,,,,,,9.9,0.0\n"
+            + "465958,163.08,39.0,1.107754559E9,-96.0,,,,,,,,,9.2,0.0\n"
+            + "465958,163.08,39.0,1.107754559E9,-138.0,,,,,,,,,8.8,0.0\n"
+            + "465958,163.08,39.0,1.107754559E9,-158.0,,,,,,,,,8.1,0.0\n"
+            + "...\n";
+    Test.ensureEqual(results, expected, "");
+    Test.ensureEqual(table.nRows(), 118, table.toString());
+    results = table.columnAttributes(0).toString();
+    expected =
+        "    actual_range=465958i,848984i\n"
+            + "    cf_role=profile_id\n"
+            + "    colorBarMaximum=1000000.0d\n"
+            + "    colorBarMinimum=0.0d\n"
+            + "    ioos_category=Identifier\n"
+            + "    long_name=Sequence ID\n"
+            + "    missing_value=2147483647i\n";
+    Test.ensureEqual(results, expected, "results=\n" + results);
+    gatts = table.globalAttributes();
+    Test.ensureEqual(gatts.getString("cdm_data_type"), "Profile", gatts.toString());
+    Test.ensureEqual(
+        gatts.getString("cdm_profile_variables"),
+        "id, longitude, latitude, time",
+        gatts.toString());
+    Test.ensureEqual(gatts.getString("subsetVariables"), null, gatts.toString());
+
     //
     // String2.log("\n\n** Test 1 non-existent loadVar test:ncCFcc.set(27)");
     table.readNcCF(
@@ -8887,7 +8936,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV(""),
         StringArray.fromCSV(""),
-        StringArray.fromCSV(""));
+        StringArray.fromCSV(""),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -8900,7 +8950,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("id"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("zztop"));
+        StringArray.fromCSV("zztop"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -8910,7 +8961,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("id"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("zztop"));
+        StringArray.fromCSV("zztop"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -8920,7 +8972,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("longitude"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -8930,7 +8983,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("time"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -8940,7 +8994,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -8953,7 +9008,8 @@ public class TableTests {
         0, // standardizeWhat=0
         null,
         null,
-        null);
+        null,
+        true);
     results = table.dataToString();
     expected =
         "longitude,latitude,time,id\n"
@@ -8979,7 +9035,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("id"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -8989,7 +9046,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("latitude"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -8999,7 +9057,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("time"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -9012,7 +9071,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("id"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("848984"));
+        StringArray.fromCSV("848984"),
+        true);
     results = table.dataToString();
     expected = "longitude,latitude,time,id\n" + "214.66,54.8,1.107759959E9,848984\n";
     Test.ensureEqual(results, expected, "results=\n" + results);
@@ -9033,7 +9093,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("id"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("zztop"));
+        StringArray.fromCSV("zztop"),
+        false);
     Test.ensureEqual(table.nColumns(), 0, "");
     Test.ensureEqual(table.nRows(), 0, "");
 
@@ -9045,7 +9106,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("id,temperature"),
         StringArray.fromCSV("=,>="),
-        StringArray.fromCSV("848984,5"));
+        StringArray.fromCSV("848984,5"),
+        true);
     results = table.dataToString();
     expected =
         "longitude,latitude,time,altitude,temperature,temperature_qc,id\n"
@@ -9071,7 +9133,8 @@ public class TableTests {
         0, // standardizeWhat=0
         null,
         null,
-        null);
+        null,
+        true);
     results = table.dataToString();
     expected =
         "salinity,temperature\n"
@@ -9097,7 +9160,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("salinity"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        true);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -9110,7 +9174,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV(">"),
-        StringArray.fromCSV("24.5"));
+        StringArray.fromCSV("24.5"),
+        false);
     results = table.dataToString();
     expected = "temperature\n" + "24.8\n" + "24.7\n" + "25.0\n" + "24.9\n";
     Test.ensureEqual(results, expected, "results=\n" + results);
@@ -9127,7 +9192,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-195"));
+        StringArray.fromCSV("-195"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -9141,7 +9207,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("zzStation"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("WXURP"));
+        StringArray.fromCSV("WXURP"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -9153,7 +9220,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("zzStation"),
         StringArray.fromCSV("!="),
-        new StringArray(new String[] {""}));
+        new StringArray(new String[] {""}),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -9167,7 +9235,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("zzStation"),
         StringArray.fromCSV("="),
-        new StringArray(new String[] {"99"}));
+        new StringArray(new String[] {"99"}),
+        false);
     Test.ensureEqual(table.nRows(), 118, "");
     Test.ensureEqual(table.nColumns(), 1, "");
 
@@ -9175,7 +9244,6 @@ public class TableTests {
     // *************** nLevels=1 TimeSeries
     for (int type = 0; type < 2; type++) {
       // ncCF1b and ncCFMA1b have same data, so tests are the same!
-      String fileType = type == 0 ? "contiguous" : "multidimensional";
       // from EDDTableFromNcFiles.testNcCF1b() and testNcCFMA1b();
       String fileName =
           TableTests.class
@@ -9190,7 +9258,7 @@ public class TableTests {
       // constraints");
       table.readNcCF(
           fileName, null, 0, // standardizeWhat=0
-          null, null, null);
+          null, null, null, true);
       // String2.log(table.toString());
       results = table.dataToString(5);
       expected =
@@ -9221,7 +9289,8 @@ public class TableTests {
           0, // standardizeWhat=0
           StringArray.fromCSV("line_station"),
           StringArray.fromCSV("="),
-          StringArray.fromCSV("-12345"));
+          StringArray.fromCSV("-12345"),
+          false);
       Test.ensureEqual(table.nRows(), 0, "");
       Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -9231,7 +9300,8 @@ public class TableTests {
           0, // standardizeWhat=0
           StringArray.fromCSV("longitude"),
           StringArray.fromCSV("="),
-          StringArray.fromCSV("-12345"));
+          StringArray.fromCSV("-12345"),
+          false);
       Test.ensureEqual(table.nRows(), 0, "");
       Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -9241,7 +9311,8 @@ public class TableTests {
           0, // standardizeWhat=0
           StringArray.fromCSV("time"),
           StringArray.fromCSV("="),
-          StringArray.fromCSV("-12345"));
+          StringArray.fromCSV("-12345"),
+          false);
       Test.ensureEqual(table.nRows(), 0, "");
       Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -9251,7 +9322,8 @@ public class TableTests {
           0, // standardizeWhat=0
           StringArray.fromCSV("obsValue"),
           StringArray.fromCSV("="),
-          StringArray.fromCSV("-12345"));
+          StringArray.fromCSV("-12345"),
+          false);
       Test.ensureEqual(table.nRows(), 0, "");
       Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -9264,7 +9336,8 @@ public class TableTests {
           0, // standardizeWhat=0
           null,
           null,
-          null);
+          null,
+          true);
       results = table.dataToString();
       expected =
           "line_station\n"
@@ -9284,7 +9357,8 @@ public class TableTests {
           0, // standardizeWhat=0
           StringArray.fromCSV("line_station"),
           StringArray.fromCSV("="),
-          StringArray.fromCSV("-12345"));
+          StringArray.fromCSV("-12345"),
+          false);
       Test.ensureEqual(table.nRows(), 0, "");
       Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -9297,7 +9371,8 @@ public class TableTests {
           0, // standardizeWhat=0
           StringArray.fromCSV("line_station"),
           StringArray.fromCSV("="),
-          StringArray.fromCSV("083.3_100"));
+          StringArray.fromCSV("083.3_100"),
+          true);
       results = table.dataToString();
       expected = "line_station\n" + "083.3_100\n";
       Test.ensureEqual(results, expected, "results=\n" + results);
@@ -9315,7 +9390,8 @@ public class TableTests {
           0, // standardizeWhat=0
           StringArray.fromCSV("line_station"),
           StringArray.fromCSV("="),
-          StringArray.fromCSV("zztop"));
+          StringArray.fromCSV("zztop"),
+          false);
       Test.ensureEqual(table.nRows(), 0, "");
       Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -9328,7 +9404,8 @@ public class TableTests {
           0, // standardizeWhat=0
           StringArray.fromCSV("line_station,obsValue"),
           StringArray.fromCSV("=,="),
-          StringArray.fromCSV("083.3_100,1"));
+          StringArray.fromCSV("083.3_100,1"),
+          true);
       results = table.dataToString();
       expected =
           "longitude,latitude,altitude,time,line_station,obsScientific,obsValue,obsUnits\n"
@@ -9352,7 +9429,8 @@ public class TableTests {
           0, // standardizeWhat=0
           StringArray.fromCSV("line_station,obsValue"),
           StringArray.fromCSV("=,="),
-          StringArray.fromCSV("083.3_100,-9"));
+          StringArray.fromCSV("083.3_100,-9"),
+          true);
       Test.ensureEqual(table.nRows(), 0, "");
       Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -9364,7 +9442,8 @@ public class TableTests {
           0, // standardizeWhat=0
           null,
           null,
-          null);
+          null,
+          true);
       results = table.dataToString();
       expected =
           "obsScientific,obsValue,obsUnits\n"
@@ -9403,7 +9482,8 @@ public class TableTests {
           0, // standardizeWhat=0
           StringArray.fromCSV("obsScientific"),
           StringArray.fromCSV("="),
-          StringArray.fromCSV("-12345"));
+          StringArray.fromCSV("-12345"),
+          true);
       Test.ensureEqual(table.nRows(), 0, "");
       Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -9416,7 +9496,8 @@ public class TableTests {
           0, // standardizeWhat=0
           StringArray.fromCSV("obsValue"),
           StringArray.fromCSV("="),
-          StringArray.fromCSV("4"));
+          StringArray.fromCSV("4"),
+          true);
       results = table.dataToString();
       expected =
           "obsScientific,obsValue,obsUnits\n"
@@ -9429,6 +9510,30 @@ public class TableTests {
       Test.ensureEqual(gatts.getString("cdm_timeseries_variables"), null, gatts.toString());
       Test.ensureEqual(gatts.getString("subsetVariables"), null, gatts.toString());
 
+      table.clear();
+      table.readNcCF(
+          fileName,
+          StringArray.fromCSV("obsScientific,obsValue,obsUnits,zztop"),
+          0, // standardizeWhat=0
+          StringArray.fromCSV("obsValue"),
+          StringArray.fromCSV("="),
+          StringArray.fromCSV("4"),
+          false);
+      results = table.dataToString();
+      expected =
+          "obsScientific,obsValue,obsUnits\n"
+              + "Danaphos oculatus,4,number of larvae\n"
+              + "Protomyctophum crockeri,4,number of larvae\n"
+              + "Total Fish Larvae,4,number of larvae\n";
+      Test.ensureEqual(results, expected, "results=\n" + results);
+      gatts = table.globalAttributes();
+      Test.ensureEqual(gatts.getString("cdm_data_type"), "TimeSeries", gatts.toString());
+      Test.ensureEqual(gatts.getString("cdm_timeseries_variables"), null, gatts.toString());
+      Test.ensureEqual(
+          gatts.getString("subsetVariables"),
+          "line_station, line, station, longitude, latitude, altitude, time, cruise, shipName, shipCode, occupy, obsCommon, obsScientific, obsValue, obsUnits",
+          gatts.toString());
+
       // String2.log("\n\n** Test nLevels=1/" + fileType +
       // " just obs loadVars, constraints, NO_DATA");
       table.readNcCF(
@@ -9437,7 +9542,8 @@ public class TableTests {
           0, // standardizeWhat=0
           StringArray.fromCSV("obsValue"),
           StringArray.fromCSV("="),
-          StringArray.fromCSV("-99"));
+          StringArray.fromCSV("-99"),
+          false);
       Test.ensureEqual(table.nRows(), 0, "");
       Test.ensureEqual(table.nColumns(), 0, "");
     } // end nLevels=1 type loop
@@ -9452,7 +9558,8 @@ public class TableTests {
           0, // standardizeWhat=0
           null,
           null,
-          null);
+          null,
+          false);
       throw new SimpleException("Shouldn't get here.");
 
     } catch (Exception e) {
@@ -9471,7 +9578,8 @@ public class TableTests {
           0, // standardizeWhat=0
           null,
           null,
-          null);
+          null,
+          false);
       throw new SimpleException("Shouldn't get here.");
 
     } catch (Exception e) {
@@ -9497,17 +9605,15 @@ public class TableTests {
     // Table.debugMode = true;
     // String2.log("\n*** Table.testReadNcCF1Kevin");
     Table table = new Table();
-    String results, expected;
     String fileName =
         TableTests.class
             .getResource("/largeFiles/kevin/interpolated_gld.20120620_045152_meta_2.nc")
             .getPath(); // from Kevin O'Brien
-    Attributes gatts;
 
     // String2.log(NcHelper.ncdump(fileName, "-h"));
     table.readNcCF(
         fileName, null, 0, // standardizeWhat=0
-        null, null, null);
+        null, null, null, false);
     // String2.log(table.toString());
     // Table.debugMode = oDebug;
   }
@@ -9515,11 +9621,6 @@ public class TableTests {
   /** This tests reading the gocd nccf files. */
   @org.junit.jupiter.api.Test
   void testReadGocdNcCF() throws Exception {
-    // Table.verbose = true;
-    // Table.reallyVerbose = true;
-    boolean oDebug = Table.debugMode;
-    // Table.debugMode = true;
-    // String2.log("\n*** Table.testReadGocdNcCF");
     Table table = new Table();
     String results, expected;
     String fileName;
@@ -9615,7 +9716,7 @@ public class TableTests {
 
     table.readNcCF(
         fileName, null, 0, // standardizeWhat=0
-        null, null, null);
+        null, null, null, false);
     os.reset();
     table.saveAsDAS(os, Table.SEQUENCE_NAME);
     results = os.toString();
@@ -9972,7 +10073,7 @@ public class TableTests {
 
     table.readNcCF(
         fileName, null, 0, // standardizeWhat=0
-        null, null, null);
+        null, null, null, false);
     os.reset();
     table.saveAsDDS(os, Table.SEQUENCE_NAME);
     results = os.toString();
@@ -10042,7 +10143,7 @@ public class TableTests {
     // String2.log(results);
     table.readNcCF(
         fileName, null, 0, // standardizeWhat=0
-        null, null, null);
+        null, null, null, false);
     // String2.log(table.dataToString());
     results = table.dataToString(5);
     expected =
@@ -10088,11 +10189,6 @@ public class TableTests {
   /** This tests readNcCF nLevels=2. */
   @org.junit.jupiter.api.Test
   void testReadNcCF2() throws Exception {
-    // Table.verbose = true;
-    // Table.reallyVerbose = true;
-    boolean oDebug = Table.debugMode;
-    // Table.debugMode = true;
-    // String2.log("\n*** Table.testReadNcCF2");
     Table table = new Table();
     String results, expected;
     Attributes gatts;
@@ -10114,9 +10210,10 @@ public class TableTests {
       /* */
       // String2.log("\n\n** Test nLevels=2/" + fileType + " no loadVars, no
       // constraints");
+      table.clear();
       table.readNcCF(
           fileName, null, 0, // standardizeWhat=0
-          null, null, null);
+          null, null, null, true);
       // String2.log(table.toString());
       results = table.dataToString(5);
       expected =
@@ -10157,7 +10254,8 @@ public class TableTests {
           0, // standardizeWhat=0
           StringArray.fromCSV("cruise"),
           StringArray.fromCSV("="),
-          StringArray.fromCSV("-12345"));
+          StringArray.fromCSV("-12345"),
+          false);
       Test.ensureEqual(table.nRows(), 0, msg);
       Test.ensureEqual(table.nColumns(), 0, msg);
 
@@ -10167,7 +10265,8 @@ public class TableTests {
           0, // standardizeWhat=0
           StringArray.fromCSV("latitude"),
           StringArray.fromCSV("="),
-          StringArray.fromCSV("-12345"));
+          StringArray.fromCSV("-12345"),
+          false);
       Test.ensureEqual(table.nRows(), 0, msg);
       Test.ensureEqual(table.nColumns(), 0, msg);
 
@@ -10177,7 +10276,8 @@ public class TableTests {
           0, // standardizeWhat=0
           StringArray.fromCSV("depth"),
           StringArray.fromCSV("="),
-          StringArray.fromCSV("-12345"));
+          StringArray.fromCSV("-12345"),
+          false);
       Test.ensureEqual(table.nRows(), 0, msg);
       Test.ensureEqual(table.nColumns(), 0, msg);
 
@@ -10187,7 +10287,8 @@ public class TableTests {
           0, // standardizeWhat=0
           StringArray.fromCSV("temperature"),
           StringArray.fromCSV("="),
-          StringArray.fromCSV("-12345"));
+          StringArray.fromCSV("-12345"),
+          false);
       Test.ensureEqual(table.nRows(), 0, msg);
       Test.ensureEqual(table.nColumns(), 0, msg);
 
@@ -10198,7 +10299,8 @@ public class TableTests {
           0, // standardizeWhat=0
           StringArray.fromCSV("latitude"),
           StringArray.fromCSV("="),
-          StringArray.fromCSV("-12345"));
+          StringArray.fromCSV("-12345"),
+          false);
       Test.ensureEqual(table.nRows(), 0, msg);
       Test.ensureEqual(table.nColumns(), 0, msg);
 
@@ -10208,7 +10310,8 @@ public class TableTests {
           0, // standardizeWhat=0
           StringArray.fromCSV("depth"),
           StringArray.fromCSV("="),
-          StringArray.fromCSV("-12345"));
+          StringArray.fromCSV("-12345"),
+          false);
       Test.ensureEqual(table.nRows(), 0, msg);
       Test.ensureEqual(table.nColumns(), 0, msg);
 
@@ -10218,7 +10321,8 @@ public class TableTests {
           0, // standardizeWhat=0
           StringArray.fromCSV("temperature"),
           StringArray.fromCSV("="),
-          StringArray.fromCSV("-12345"));
+          StringArray.fromCSV("-12345"),
+          false);
       Test.ensureEqual(table.nRows(), 0, msg);
       Test.ensureEqual(table.nColumns(), 0, msg);
 
@@ -10229,7 +10333,8 @@ public class TableTests {
           0, // standardizeWhat=0
           StringArray.fromCSV("depth"),
           StringArray.fromCSV("="),
-          StringArray.fromCSV("-12345"));
+          StringArray.fromCSV("-12345"),
+          false);
       Test.ensureEqual(table.nRows(), 0, msg);
       Test.ensureEqual(table.nColumns(), 0, msg);
 
@@ -10239,7 +10344,8 @@ public class TableTests {
           0, // standardizeWhat=0
           StringArray.fromCSV("temperature"),
           StringArray.fromCSV("="),
-          StringArray.fromCSV("-12345"));
+          StringArray.fromCSV("-12345"),
+          false);
       Test.ensureEqual(table.nRows(), 0, "");
       Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -10250,7 +10356,8 @@ public class TableTests {
           0, // standardizeWhat=0
           StringArray.fromCSV("latitude"),
           StringArray.fromCSV("="),
-          StringArray.fromCSV("-12345"));
+          StringArray.fromCSV("-12345"),
+          false);
       Test.ensureEqual(table.nRows(), 0, "");
       Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -10260,7 +10367,8 @@ public class TableTests {
           0, // standardizeWhat=0
           StringArray.fromCSV("temperature"),
           StringArray.fromCSV("="),
-          StringArray.fromCSV("-12345"));
+          StringArray.fromCSV("-12345"),
+          false);
       Test.ensureEqual(table.nRows(), 0, "");
       Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -10271,7 +10379,8 @@ public class TableTests {
           0, // standardizeWhat=0
           StringArray.fromCSV("latitude"),
           StringArray.fromCSV("="),
-          StringArray.fromCSV("-12345"));
+          StringArray.fromCSV("-12345"),
+          false);
       Test.ensureEqual(table.nRows(), 0, "");
       Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -10281,7 +10390,8 @@ public class TableTests {
           0, // standardizeWhat=0
           StringArray.fromCSV("cruise"),
           StringArray.fromCSV("="),
-          StringArray.fromCSV("-12345"));
+          StringArray.fromCSV("-12345"),
+          false);
       Test.ensureEqual(table.nRows(), 0, "");
       Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -10292,7 +10402,8 @@ public class TableTests {
           0, // standardizeWhat=0
           StringArray.fromCSV("depth"),
           StringArray.fromCSV("="),
-          StringArray.fromCSV("-12345"));
+          StringArray.fromCSV("-12345"),
+          false);
       Test.ensureEqual(table.nRows(), 0, "");
       Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -10302,7 +10413,8 @@ public class TableTests {
           0, // standardizeWhat=0
           StringArray.fromCSV("cruise"),
           StringArray.fromCSV("="),
-          StringArray.fromCSV("-12345"));
+          StringArray.fromCSV("-12345"),
+          false);
       Test.ensureEqual(table.nRows(), 0, "");
       Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -10313,7 +10425,8 @@ public class TableTests {
           0, // standardizeWhat=0
           StringArray.fromCSV("temperature"),
           StringArray.fromCSV("="),
-          StringArray.fromCSV("-12345"));
+          StringArray.fromCSV("-12345"),
+          false);
       Test.ensureEqual(table.nRows(), 0, "");
       Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -10323,7 +10436,8 @@ public class TableTests {
           0, // standardizeWhat=0
           StringArray.fromCSV("cruise"),
           StringArray.fromCSV("="),
-          StringArray.fromCSV("-12345"));
+          StringArray.fromCSV("-12345"),
+          false);
       Test.ensureEqual(table.nRows(), 0, "");
       Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -10334,7 +10448,8 @@ public class TableTests {
           0, // standardizeWhat=0
           StringArray.fromCSV("cruise"),
           StringArray.fromCSV("="),
-          StringArray.fromCSV("-12345"));
+          StringArray.fromCSV("-12345"),
+          false);
       Test.ensureEqual(table.nRows(), 0, "");
       Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -10344,7 +10459,8 @@ public class TableTests {
           0, // standardizeWhat=0
           StringArray.fromCSV("latitude"),
           StringArray.fromCSV("="),
-          StringArray.fromCSV("-12345"));
+          StringArray.fromCSV("-12345"),
+          false);
       Test.ensureEqual(table.nRows(), 0, "");
       Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -10354,7 +10470,8 @@ public class TableTests {
           0, // standardizeWhat=0
           StringArray.fromCSV("temperature"),
           StringArray.fromCSV("="),
-          StringArray.fromCSV("-12345"));
+          StringArray.fromCSV("-12345"),
+          false);
       Test.ensureEqual(table.nRows(), 0, "");
       Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -10364,7 +10481,8 @@ public class TableTests {
           0, // standardizeWhat=0
           StringArray.fromCSV("depth"),
           StringArray.fromCSV("="),
-          StringArray.fromCSV("-12345"));
+          StringArray.fromCSV("-12345"),
+          false);
       Test.ensureEqual(table.nRows(), 0, "");
       Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -10377,7 +10495,8 @@ public class TableTests {
           0, // standardizeWhat=0
           StringArray.fromCSV("platform"),
           StringArray.fromCSV("="),
-          StringArray.fromCSV("33P2"));
+          StringArray.fromCSV("33P2"),
+          true);
       results = table.dataToString();
       expected = "platform,cruise\n" + "33P2,Q990046312\n";
       Test.ensureEqual(results, expected, msg + "results=\n" + results);
@@ -10399,7 +10518,8 @@ public class TableTests {
           0, // standardizeWhat=0
           StringArray.fromCSV("platform"),
           StringArray.fromCSV("="),
-          StringArray.fromCSV("zztop"));
+          StringArray.fromCSV("zztop"),
+          false);
       Test.ensureEqual(table.nRows(), 0, "");
       Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -10413,7 +10533,8 @@ public class TableTests {
           0, // standardizeWhat=0
           null,
           null,
-          null);
+          null,
+          true);
       results = table.dataToString();
       expected =
           // before: 4th row with mv's is removed
@@ -10445,7 +10566,8 @@ public class TableTests {
           0, // standardizeWhat=0
           StringArray.fromCSV("station_id"),
           StringArray.fromCSV("="),
-          StringArray.fromCSV("13933177"));
+          StringArray.fromCSV("13933177"),
+          true);
       results = table.dataToString();
       expected = "station_id,type\n" + "13933177,BA\n";
       Test.ensureEqual(results, expected, msg + "results=\n" + results);
@@ -10466,7 +10588,8 @@ public class TableTests {
           0, // standardizeWhat=0
           StringArray.fromCSV("station_id"),
           StringArray.fromCSV("="),
-          StringArray.fromCSV("zztop"));
+          StringArray.fromCSV("zztop"),
+          false);
       Test.ensureEqual(table.nRows(), 0, "");
       Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -10478,7 +10601,8 @@ public class TableTests {
           0, // standardizeWhat=0
           null,
           null,
-          null);
+          null,
+          true);
       results = table.dataToString();
       expected =
           "cruise,org,type,station_id,longitude,latitude,time,platform\n"
@@ -10514,7 +10638,8 @@ public class TableTests {
           0, // standardizeWhat=0
           StringArray.fromCSV("platform,station_id"),
           StringArray.fromCSV("=,="),
-          StringArray.fromCSV("33P2,13968850"));
+          StringArray.fromCSV("33P2,13968850"),
+          true);
       results = table.dataToString();
       expected =
           "cruise,org,type,station_id,longitude,latitude,time,platform\n"
@@ -10544,7 +10669,8 @@ public class TableTests {
           0, // standardizeWhat=0
           StringArray.fromCSV("platform,station_id"),
           StringArray.fromCSV("=,="),
-          StringArray.fromCSV("33P2,zztop"));
+          StringArray.fromCSV("33P2,zztop"),
+          false);
       Test.ensureEqual(table.nRows(), 0, "");
       Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -10556,7 +10682,8 @@ public class TableTests {
           0, // standardizeWhat=0
           StringArray.fromCSV("platform,salinity"),
           StringArray.fromCSV("=,>="),
-          StringArray.fromCSV("33P2,35.98"));
+          StringArray.fromCSV("33P2,35.98"),
+          true);
       results = table.dataToString();
       expected =
           "salinity,platform,cruise\n"
@@ -10581,7 +10708,8 @@ public class TableTests {
           0, // standardizeWhat=0
           StringArray.fromCSV("platform,salinity"),
           StringArray.fromCSV("=,="),
-          StringArray.fromCSV("33P2,-100"));
+          StringArray.fromCSV("33P2,-100"),
+          true);
       Test.ensureEqual(table.nRows(), 0, "");
       Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -10593,7 +10721,8 @@ public class TableTests {
           0, // standardizeWhat=0
           null,
           null,
-          null);
+          null,
+          true);
       results = table.dataToString();
       expected =
           "latitude,longitude,time,salinity\n"
@@ -10676,7 +10805,8 @@ public class TableTests {
           0, // standardizeWhat=0
           StringArray.fromCSV("time,salinity"),
           StringArray.fromCSV("=,="),
-          StringArray.fromCSV("1.335216E9,35.77"));
+          StringArray.fromCSV("1.335216E9,35.77"),
+          true);
       results = table.dataToString();
       expected = "latitude,longitude,time,salinity\n" + "-75.43,176.64,1.335216E9,35.77\n";
       Test.ensureEqual(results, expected, msg + "results=\n" + results);
@@ -10700,7 +10830,8 @@ public class TableTests {
           0, // standardizeWhat=0
           StringArray.fromCSV("time,salinity"),
           StringArray.fromCSV("=,="),
-          StringArray.fromCSV("1.335216E9,-1000"));
+          StringArray.fromCSV("1.335216E9,-1000"),
+          false);
       Test.ensureEqual(table.nRows(), 0, "");
       Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -10712,7 +10843,8 @@ public class TableTests {
           0, // standardizeWhat=0
           StringArray.fromCSV("salinity"),
           StringArray.fromCSV("="),
-          StringArray.fromCSV("35.77"));
+          StringArray.fromCSV("35.77"),
+          true);
       results = table.dataToString();
       expected = "temperature,salinity\n" + "-1.1,35.77\n" + "-1.12,35.77\n";
       Test.ensureEqual(results, expected, msg + "results=\n" + results);
@@ -10732,7 +10864,8 @@ public class TableTests {
           0, // standardizeWhat=0
           StringArray.fromCSV("salinity"),
           StringArray.fromCSV("="),
-          StringArray.fromCSV("-1000"));
+          StringArray.fromCSV("-1000"),
+          false);
       Test.ensureEqual(table.nRows(), 0, "");
       Test.ensureEqual(table.nColumns(), 0, "");
     } // end nLevels=2 type loop
@@ -10747,11 +10880,6 @@ public class TableTests {
    */
   @org.junit.jupiter.api.Test
   void testReadNcCFASAProfile() throws Exception {
-    // Table.verbose = true;
-    // Table.reallyVerbose = true;
-    boolean oDebug = Table.debugMode;
-    // Table.debugMode = true;
-    // String2.log("\n*** Table.testReadNcCFASAProfile");
     Table table = new Table();
     String results, expected, fileName;
 
@@ -10769,7 +10897,7 @@ public class TableTests {
     // String2.log(NcHelper.ncdump(fileName, ""));
     table.readNcCF(
         fileName, null, 0, // standardizeWhat=0
-        null, null, null);
+        null, null, null, false);
     results = table.dataToString(18);
     expected =
         /*
@@ -10819,7 +10947,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("profile"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -10829,7 +10958,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -10839,7 +10969,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("z"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -10849,7 +10980,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -10860,7 +10992,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -10870,7 +11003,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("z"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -10880,7 +11014,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -10891,7 +11026,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("z"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -10901,7 +11037,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -10912,7 +11049,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -10922,7 +11060,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -10933,7 +11072,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -10943,7 +11083,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("profile"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -10954,7 +11095,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("z"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -10964,7 +11106,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("profile"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -10975,7 +11118,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -10985,7 +11129,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("profile"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -10996,7 +11141,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("profile"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -11006,7 +11152,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -11016,7 +11163,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -11026,7 +11174,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("z"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -11037,7 +11186,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("11"));
+        StringArray.fromCSV("11"),
+        false);
     results = table.dataToString();
     expected =
         "profile,lat,lon,temperature\n"
@@ -11056,7 +11206,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("11.956788"));
+        StringArray.fromCSV("11.956788"),
+        false);
     results = table.dataToString();
     expected = "profile,lat,lon,temperature\n" + "1,11.0,95.0,11.956788\n";
     Test.ensureEqual(results, expected, "results=\n" + results);
@@ -11068,7 +11219,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("11"));
+        StringArray.fromCSV("11"),
+        false);
     results = table.dataToString();
     expected =
         "lat,temperature\n"
@@ -11093,7 +11245,7 @@ public class TableTests {
     // String2.log(NcHelper.ncdump(fileName, "-h"));
     table.readNcCF(
         fileName, null, 0, // standardizeWhat=0
-        null, null, null);
+        null, null, null, false);
     results = table.dataToString(45);
     expected =
         "lat,lon,profile,time,alt,temperature,humidity,wind_speed\n"
@@ -11160,7 +11312,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("profile"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -11170,7 +11323,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -11180,7 +11334,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("alt"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -11190,7 +11345,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -11201,7 +11357,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -11211,7 +11368,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("alt"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -11221,7 +11379,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -11232,7 +11391,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("alt"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -11242,7 +11402,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -11253,7 +11414,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -11263,7 +11425,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -11274,7 +11437,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -11284,7 +11448,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("profile"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -11295,7 +11460,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("alt"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -11305,7 +11471,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("profile"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -11316,7 +11483,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -11326,7 +11494,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("profile"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -11337,7 +11506,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("profile"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -11347,7 +11517,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -11357,7 +11528,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -11367,7 +11539,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("alt"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -11385,7 +11558,7 @@ public class TableTests {
     // String2.log(NcHelper.ncdump(fileName, ""));
     table.readNcCF(
         fileName, null, 0, // standardizeWhat=0
-        null, null, null);
+        null, null, null, false);
     // String2.log(table.dataToString());
     results = table.dataToString(20);
     expected =
@@ -11427,7 +11600,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("profile,temperature"),
         StringArray.fromCSV("=,="),
-        StringArray.fromCSV("3,13.634793"));
+        StringArray.fromCSV("3,13.634793"),
+        false);
     results = table.dataToString();
     expected = "profile,temperature\n" + "3,13.634793\n";
     Test.ensureEqual(results, expected, "results=\n" + results);
@@ -11439,7 +11613,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("profile"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -11449,7 +11624,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -11459,7 +11635,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("z"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -11469,7 +11646,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -11480,7 +11658,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -11490,7 +11669,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("z"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -11500,7 +11680,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -11511,7 +11692,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("z"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -11521,7 +11703,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -11532,7 +11715,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -11542,7 +11726,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -11553,7 +11738,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -11563,7 +11749,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("profile"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -11574,7 +11761,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("z"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -11584,7 +11772,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("profile"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -11595,7 +11784,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -11605,7 +11795,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("profile"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -11616,7 +11807,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("profile"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -11626,7 +11818,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -11636,7 +11829,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -11646,7 +11840,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("z"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -11657,7 +11852,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("profile,z"),
         StringArray.fromCSV("=,="),
-        StringArray.fromCSV("3,0.013856917"));
+        StringArray.fromCSV("3,0.013856917"),
+        false);
     results = table.dataToString();
     expected = "profile,z\n" + "3,0.013856917\n";
     Test.ensureEqual(results, expected, "results=\n" + results);
@@ -11669,7 +11865,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("z"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-10000"));
+        StringArray.fromCSV("-10000"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -11680,7 +11877,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat,z"),
         StringArray.fromCSV("=,="),
-        StringArray.fromCSV("93,0.594338")); // actual values, but never in this combination
+        StringArray.fromCSV("93,0.594338"),
+        false); // actual values, but never in this combination
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -11691,7 +11889,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("humidity"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-10000"));
+        StringArray.fromCSV("-10000"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
     // } catch (Exception e) {
@@ -11711,7 +11910,7 @@ public class TableTests {
     // String2.log(NcHelper.ncdump(fileName, ""));
     table.readNcCF(
         fileName, null, 0, // standardizeWhat=0
-        null, null, null);
+        null, null, null, false);
     results = table.dataToString(55);
     expected = // z[obs] is in the innerTable
         "lat,lon,profile,time,z,temperature,humidity\n"
@@ -11787,7 +11986,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("profile"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -11797,7 +11997,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("z"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -11807,7 +12008,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -11818,7 +12020,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("z"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -11828,7 +12031,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -11839,7 +12043,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("profile"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -11849,7 +12054,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -11860,7 +12066,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("z"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -11871,7 +12078,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -11886,11 +12094,6 @@ public class TableTests {
    */
   @org.junit.jupiter.api.Test
   void testReadNcCFASATimeSeries() throws Exception {
-    // Table.verbose = true;
-    // Table.reallyVerbose = true;
-    boolean oDebug = Table.debugMode;
-    // Table.debugMode = true;
-    // String2.log("\n*** Table.testReadNcCFASATimeseries");
     Table table = new Table();
     String results, expected, fileName;
 
@@ -11909,7 +12112,7 @@ public class TableTests {
     // so outer=time and inner is station!
     table.readNcCF(
         fileName, null, 0, // standardizeWhat=0
-        null, null, null);
+        null, null, null, false);
     results = table.dataToString(12);
     expected =
         "lat,lon,station_name,alt,time,temperature,humidity\n"
@@ -11945,7 +12148,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -11955,7 +12159,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("alt"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -11965,7 +12170,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("time"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -11975,7 +12181,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -11986,7 +12193,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -11996,7 +12204,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("alt"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -12006,7 +12215,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("time"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -12017,7 +12227,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -12027,7 +12238,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("alt"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -12037,7 +12249,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -12048,7 +12261,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -12058,7 +12272,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("time"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -12068,7 +12283,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -12079,7 +12295,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -12089,7 +12306,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("alt"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -12100,7 +12318,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -12110,7 +12329,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("time"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -12121,7 +12341,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -12131,7 +12352,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -12142,7 +12364,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("time"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -12152,7 +12375,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -12163,7 +12387,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("alt"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -12173,7 +12398,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("time"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -12184,7 +12410,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("alt"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -12194,7 +12421,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -12205,7 +12433,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -12215,7 +12444,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -12226,7 +12456,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("station_name"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -12237,7 +12468,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -12248,7 +12480,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("alt"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -12259,7 +12492,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("time"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -12270,7 +12504,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -12281,7 +12516,8 @@ public class TableTests {
         0, // standardizeWhat=0
         null,
         null,
-        null);
+        null,
+        false);
     results = table.dataToString();
     expected =
         "station_name,lat,lon\n"
@@ -12304,7 +12540,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat"),
         StringArray.fromCSV(">"),
-        StringArray.fromCSV("150"));
+        StringArray.fromCSV("150"),
+        false);
     results = table.dataToString();
     expected =
         "station_name,lat,lon\n"
@@ -12320,7 +12557,8 @@ public class TableTests {
         0, // standardizeWhat=0
         null,
         null,
-        null);
+        null,
+        false);
     results = table.dataToString(5);
     expected = "time\n" + "0\n" + "3600\n" + "7200\n" + "10800\n" + "14400\n" + "...\n";
     Test.ensureEqual(results, expected, "results=\n" + results);
@@ -12333,7 +12571,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("time,time"),
         StringArray.fromCSV(">,<"),
-        StringArray.fromCSV("7000,11000"));
+        StringArray.fromCSV("7000,11000"),
+        false);
     results = table.dataToString();
     expected = "time\n" + "7200\n" + "10800\n";
     Test.ensureEqual(results, expected, "results=\n" + results);
@@ -12345,7 +12584,8 @@ public class TableTests {
         0, // standardizeWhat=0
         null,
         null,
-        null);
+        null,
+        false);
     results = table.dataToString();
     expected =
         "station_name,lat,lon,time\n"
@@ -12386,7 +12626,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("time"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("345600"));
+        StringArray.fromCSV("345600"),
+        false);
     results = table.dataToString();
     expected =
         "station_name,lat,lon,time\n"
@@ -12409,7 +12650,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("165"));
+        StringArray.fromCSV("165"),
+        false);
     results = table.dataToString();
     expected =
         "station_name,lat,lon,time\n"
@@ -12430,7 +12672,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("time,lat"),
         StringArray.fromCSV("=,="),
-        StringArray.fromCSV("345600,165"));
+        StringArray.fromCSV("345600,165"),
+        false);
     results = table.dataToString();
     expected = "station_name,lat,lon,time\n" + "Station-5,165.0,125.0,345600\n";
     Test.ensureEqual(results, expected, "results=\n" + results);
@@ -12442,7 +12685,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("time,lat"),
         StringArray.fromCSV("=,="),
-        StringArray.fromCSV("345600,165"));
+        StringArray.fromCSV("345600,165"),
+        false);
     results = table.dataToString();
     expected =
         "lat,lon,station_name,alt,time,temperature,humidity\n"
@@ -12457,7 +12701,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("time,lat"),
         StringArray.fromCSV("=,="),
-        StringArray.fromCSV("345600,165"));
+        StringArray.fromCSV("345600,165"),
+        false);
     results = table.dataToString();
     expected = "lat,time,temperature,humidity\n" + "165.0,345600,38.457962,28.075706\n";
     Test.ensureEqual(results, expected, "results=\n" + results);
@@ -12469,7 +12714,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("time,lat"),
         StringArray.fromCSV("=,="),
-        StringArray.fromCSV("345600,165"));
+        StringArray.fromCSV("345600,165"),
+        false);
     results = table.dataToString();
     expected =
         "lat,lon,station_name,time,temperature\n" + "165.0,125.0,Station-5,345600,38.457962\n";
@@ -12482,7 +12728,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("time,lat"),
         StringArray.fromCSV("=,="),
-        StringArray.fromCSV("345600,165"));
+        StringArray.fromCSV("345600,165"),
+        false);
     results = table.dataToString();
     expected = "time,lat,temperature\n" + "345600,165.0,38.457962\n";
     Test.ensureEqual(results, expected, "results=\n" + results);
@@ -12500,7 +12747,7 @@ public class TableTests {
     // String2.log(NcHelper.ncdump(fileName, "-h"));
     table.readNcCF(
         fileName, null, 0, // standardizeWhat=0
-        null, null, null);
+        null, null, null, false);
     results = table.dataToString(24);
     expected =
         "lat,lon,station_elevation,station_info,station_name,alt,time,temperature,humidity\n"
@@ -12547,7 +12794,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -12557,7 +12805,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("alt"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -12567,7 +12816,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -12578,7 +12828,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("alt"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -12588,7 +12839,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -12599,7 +12851,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -12609,7 +12862,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -12620,7 +12874,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -12630,7 +12885,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("alt"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -12641,7 +12897,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -12651,7 +12908,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("alt"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -12661,7 +12919,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -12672,7 +12931,8 @@ public class TableTests {
         0, // standardizeWhat=0
         null,
         null,
-        null);
+        null,
+        false);
     results = table.dataToString();
     expected =
         "station_name,lat,lon\n"
@@ -12695,7 +12955,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat"),
         StringArray.fromCSV(">"),
-        StringArray.fromCSV("155"));
+        StringArray.fromCSV("155"),
+        false);
     results = table.dataToString();
     expected = "station_name,lat,lon\n" + "Station-5,161.0,100.0\n" + "Station-7,176.0,85.0\n";
     Test.ensureEqual(results, expected, "results=\n" + results);
@@ -12709,7 +12970,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("150"));
+        StringArray.fromCSV("150"),
+        false);
     results = table.dataToString();
     expected =
         // metadata mv=-999.9 for temp and humidity, so 9e36 below are "valid" values
@@ -12763,7 +13025,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat,humidity"),
         StringArray.fromCSV("=,="),
-        StringArray.fromCSV("150,43"));
+        StringArray.fromCSV("150,43"),
+        false);
     results = table.dataToString();
     expected =
         "lat,time,temperature,humidity\n" + "150.0,28800,1.0,43.0\n" + "150.0,10800,33.0,43.0\n";
@@ -12776,7 +13039,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("time,temperature"),
         StringArray.fromCSV("=,="),
-        StringArray.fromCSV("7200,33"));
+        StringArray.fromCSV("7200,33"),
+        false);
     results = table.dataToString();
     expected =
         // "22,150.0,73.0,2.6002314,1,Station-1,4.052759,7200,33.0,88.0\n" + from above
@@ -12790,7 +13054,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("time,lon"),
         StringArray.fromCSV("=,="),
-        StringArray.fromCSV("7200,73"));
+        StringArray.fromCSV("7200,73"),
+        false);
     results = table.dataToString();
     expected = "time,lon,alt,temperature\n" + "7200,73.0,4.052759,33.0\n";
     Test.ensureEqual(results, expected, "results=\n" + results);
@@ -12803,7 +13068,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lon,temperature"),
         StringArray.fromCSV("=,="),
-        StringArray.fromCSV("73,33"));
+        StringArray.fromCSV("73,33"),
+        false);
     results = table.dataToString();
     expected =
         "time,lon,alt,temperature\n" + "7200,73.0,4.052759,33.0\n" + "25200,73.0,4.052759,33.0\n";
@@ -12816,7 +13082,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("time,temperature"),
         StringArray.fromCSV("=,="),
-        StringArray.fromCSV("7200,33"));
+        StringArray.fromCSV("7200,33"),
+        false);
     results = table.dataToString();
     expected = "time,lon,alt,temperature\n" + "7200,73.0,4.052759,33.0\n";
     Test.ensureEqual(results, expected, "results=\n" + results);
@@ -12831,11 +13098,6 @@ public class TableTests {
    */
   @org.junit.jupiter.api.Test
   void testReadNcCFASATrajectory() throws Exception {
-    // Table.verbose = true;
-    // Table.reallyVerbose = true;
-    boolean oDebug = Table.debugMode;
-    // Table.debugMode = true;
-    // String2.log("\n*** Table.testReadNcCFASATrajectory");
     Table table = new Table();
     String results, expected, fileName;
 
@@ -12853,7 +13115,7 @@ public class TableTests {
     // String2.log(NcHelper.ncdump(fileName, "-h"));
     table.readNcCF(
         fileName, null, 0, // standardizeWhat=0
-        null, null, null);
+        null, null, null, false);
     results = table.dataToString(20);
     expected =
         "lat,lon,trajectory_info,trajectory_name,time,z,temperature,humidity\n"
@@ -12897,7 +13159,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("trajectory_name"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -12907,7 +13170,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -12917,7 +13181,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("z"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -12927,7 +13192,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -12938,7 +13204,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -12948,7 +13215,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("z"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -12958,7 +13226,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -12969,7 +13238,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("z"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -12979,7 +13249,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -12990,7 +13261,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -13000,7 +13272,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -13011,7 +13284,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -13021,7 +13295,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("trajectory_name"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -13032,7 +13307,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("z"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -13042,7 +13318,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("trajectory_name"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -13053,7 +13330,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -13063,7 +13341,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("trajectory_name"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -13074,7 +13353,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("trajectory_name"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -13084,7 +13364,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -13094,7 +13375,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -13104,7 +13386,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("z"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -13121,7 +13404,7 @@ public class TableTests {
     // String2.log(NcHelper.ncdump(fileName, ""));
     table.readNcCF(
         fileName, null, 0, // standardizeWhat=0
-        null, null, null);
+        null, null, null, false);
     results = table.dataToString(5);
     expected =
         "lat,lon,trajectory_info,trajectory_name,time,z,temperature,humidity\n"
@@ -13149,7 +13432,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("trajectory_name"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -13159,7 +13443,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -13169,7 +13454,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("z"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -13179,7 +13465,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -13190,7 +13477,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -13200,7 +13488,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("z"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -13210,7 +13499,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -13221,7 +13511,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("z"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -13231,7 +13522,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -13242,7 +13534,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -13252,7 +13545,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -13263,7 +13557,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -13273,7 +13568,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("trajectory_name"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -13284,7 +13580,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("z"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -13294,7 +13591,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("trajectory_name"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -13305,7 +13603,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -13315,7 +13614,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("trajectory_name"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -13326,7 +13626,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("trajectory_name"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -13336,7 +13637,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -13346,7 +13648,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -13356,7 +13659,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("z"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -13373,7 +13677,7 @@ public class TableTests {
     // String2.log(NcHelper.ncdump(fileName, ""));
     table.readNcCF(
         fileName, null, 0, // standardizeWhat=0
-        null, null, null);
+        null, null, null, false);
     results = table.dataToString(5);
     expected =
         "lat,lon,trajectory_info,trajectory_name,time,z,temperature,humidity\n"
@@ -13401,7 +13705,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("trajectory_name"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -13411,7 +13716,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -13421,7 +13727,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("z"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -13431,7 +13738,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -13442,7 +13750,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -13452,7 +13761,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("z"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -13462,7 +13772,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -13473,7 +13784,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("z"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -13483,7 +13795,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -13494,7 +13807,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -13504,7 +13818,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -13515,7 +13830,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -13525,7 +13841,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("trajectory_name"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -13536,7 +13853,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("z"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -13546,7 +13864,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("trajectory_name"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -13557,7 +13876,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -13567,7 +13887,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("trajectory_name"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -13578,7 +13899,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("trajectory_name"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -13588,7 +13910,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -13598,7 +13921,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -13608,7 +13932,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("z"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -13623,11 +13948,6 @@ public class TableTests {
    */
   @org.junit.jupiter.api.Test
   void testReadNcCFASATimeSeriesProfile() throws Exception {
-    // Table.verbose = true;
-    // Table.reallyVerbose = true;
-    boolean oDebug = Table.debugMode;
-    // Table.debugMode = true;
-    // String2.log("\n*** Table.testReadNcCFASATimeSeriesProfile");
     Table table = new Table();
     String results, expected, fileName;
     String orthoMultiDimH51FileName =
@@ -13658,7 +13978,7 @@ public class TableTests {
     // String2.log(NcHelper.ncdump(fileName, "-h"));
     table.readNcCF(
         fileName, null, 0, // standardizeWhat=0
-        null, null, null);
+        null, null, null, false);
     results = table.dataToString(5);
     expected =
         "lat,lon,station_info,station_name,alt,time,temperature\n"
@@ -13684,7 +14004,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("station_name"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -13694,7 +14015,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -13704,7 +14026,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("alt"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -13714,7 +14037,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -13725,7 +14049,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -13735,7 +14060,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("alt"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -13745,7 +14071,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -13756,7 +14083,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("alt"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -13766,7 +14094,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -13777,7 +14106,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -13787,7 +14117,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -13798,7 +14129,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -13808,7 +14140,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("station_name"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -13819,7 +14152,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("alt"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -13829,7 +14163,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("station_name"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -13840,7 +14175,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("alt"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -13850,7 +14186,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("station_name"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -13861,7 +14198,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -13871,7 +14209,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("station_name"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -13882,7 +14221,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("station_name"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -13892,7 +14232,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -13902,7 +14243,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -13912,7 +14254,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("alt"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -13929,7 +14272,7 @@ public class TableTests {
     // String2.log(NcHelper.ncdump(fileName, "-h"));
     table.readNcCF(
         fileName, null, 0, // standardizeWhat=0
-        null, null, null);
+        null, null, null, false);
     results = table.dataToString();
     expected =
         "lat,lon,station_info,station_name,alt,time,temperature\n"
@@ -13966,7 +14309,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("station_name"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -13976,7 +14320,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -13986,7 +14331,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("alt"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -13996,7 +14342,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -14007,7 +14354,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -14017,7 +14365,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("alt"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -14027,7 +14376,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -14038,7 +14388,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("alt"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -14048,7 +14399,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -14059,7 +14411,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -14069,7 +14422,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -14080,7 +14434,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -14090,7 +14445,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("station_name"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -14101,7 +14457,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("alt"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -14111,7 +14468,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("station_name"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -14122,7 +14480,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("alt"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -14132,7 +14491,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("station_name"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -14143,7 +14503,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -14153,7 +14514,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("station_name"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -14164,7 +14526,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("station_name"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -14174,7 +14537,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -14184,7 +14548,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -14194,7 +14559,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("alt"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -14206,7 +14572,7 @@ public class TableTests {
     // String2.log(NcHelper.ncdump(fileName, "-h"));
     table.readNcCF(
         fileName, null, 0, // standardizeWhat=0
-        null, null, null);
+        null, null, null, false);
     results = table.dataToString(12);
     expected =
         "lat,lon,alt,station_info,station_name,time,temperature,humidity\n"
@@ -14239,7 +14605,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("station_name"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -14249,7 +14616,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -14259,7 +14627,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("alt"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -14269,7 +14638,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -14280,7 +14650,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -14290,7 +14661,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("alt"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -14300,7 +14672,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -14311,7 +14684,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("alt"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -14321,7 +14695,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -14332,7 +14707,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -14342,7 +14718,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -14353,7 +14730,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -14363,7 +14741,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("station_name"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -14374,7 +14753,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("alt"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -14384,7 +14764,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("station_name"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -14395,7 +14776,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("alt"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -14405,7 +14787,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("station_name"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -14416,7 +14799,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -14426,7 +14810,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("station_name"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -14437,7 +14822,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("station_name"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -14447,7 +14833,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -14457,7 +14844,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -14467,7 +14855,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("alt"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -14481,7 +14870,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("station_name"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("Station1"));
+        StringArray.fromCSV("Station1"),
+        false);
     results = table.dataToString(12);
     expected =
         "lat,lon,alt,station_info,station_name,time,temperature,humidity\n"
@@ -14514,7 +14904,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("station_name"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -14524,7 +14915,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -14534,7 +14926,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("alt"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -14544,7 +14937,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -14555,7 +14949,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -14565,7 +14960,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("alt"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -14575,7 +14971,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -14586,7 +14983,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("alt"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -14596,7 +14994,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -14607,7 +15006,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -14617,7 +15017,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -14628,7 +15029,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -14638,7 +15040,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("station_name"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -14649,7 +15052,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("alt"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -14659,7 +15063,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("station_name"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -14670,7 +15075,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("alt"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -14680,7 +15086,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("station_name"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -14691,7 +15098,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -14701,7 +15109,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("station_name"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -14712,7 +15121,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("station_name"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -14722,7 +15132,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -14732,7 +15143,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -14742,7 +15154,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("alt"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -14755,7 +15168,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("station_name"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("Station1"));
+        StringArray.fromCSV("Station1"),
+        false);
     results = table.dataToString();
     expected = "lat,lon,station_name\n" + "37.5,-76.5,Station1\n";
     Test.ensureEqual(results, expected, "results=\n" + results);
@@ -14779,7 +15193,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-5"));
+        StringArray.fromCSV("-5"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -14794,7 +15209,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-5"));
+        StringArray.fromCSV("-5"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -14809,7 +15225,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("alt"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("10000"));
+        StringArray.fromCSV("10000"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -14823,7 +15240,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-5"));
+        StringArray.fromCSV("-5"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -14838,7 +15256,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("time"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-5"));
+        StringArray.fromCSV("-5"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -14853,7 +15272,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("alt"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("10000"));
+        StringArray.fromCSV("10000"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -14868,7 +15288,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("time"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-5"));
+        StringArray.fromCSV("-5"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -14883,7 +15304,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-5"));
+        StringArray.fromCSV("-5"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -14898,7 +15320,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("alt"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("10000"));
+        StringArray.fromCSV("10000"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -14913,7 +15336,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-5"));
+        StringArray.fromCSV("-5"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -14931,7 +15355,7 @@ public class TableTests {
     // String2.log(NcHelper.ncdump(fileName, "-h"));
     table.readNcCF(
         fileName, null, 0, // standardizeWhat=0
-        null, null, null);
+        null, null, null, false);
     results = table.dataToString();
     expected =
         // file has:
@@ -14966,7 +15390,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("station_name"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -14976,7 +15401,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -14986,7 +15412,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("height"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -14996,7 +15423,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -15007,7 +15435,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -15017,7 +15446,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("height"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -15027,7 +15457,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -15038,7 +15469,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("height"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -15048,7 +15480,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -15059,7 +15492,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -15069,7 +15503,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -15080,7 +15515,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -15090,7 +15526,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("station_name"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -15101,7 +15538,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("height"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -15111,7 +15549,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("station_name"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -15122,7 +15561,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("height"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -15132,7 +15572,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("station_name"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -15143,7 +15584,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -15153,7 +15595,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("station_name"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -15164,7 +15607,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("station_name"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -15174,7 +15618,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -15184,7 +15629,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -15194,7 +15640,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("height"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -15210,7 +15657,7 @@ public class TableTests {
     // String2.log(NcHelper.ncdump(fileName, ""));
     table.readNcCF(
         fileName, null, 0, // standardizeWhat=0
-        null, null, null);
+        null, null, null, false);
     results = table.dataToString();
     expected =
         "lat,lon,station_info,station_name,profile,time,height,temperature\n"
@@ -15237,7 +15684,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("station_name"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -15247,7 +15695,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -15257,7 +15706,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("height"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -15267,7 +15717,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -15278,7 +15729,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -15288,7 +15740,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("height"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -15298,7 +15751,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -15309,7 +15763,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("height"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -15319,7 +15774,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -15330,7 +15786,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -15340,7 +15797,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -15351,7 +15809,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -15361,7 +15820,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("station_name"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -15372,7 +15832,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("height"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -15382,7 +15843,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("station_name"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -15393,7 +15855,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("height"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -15403,7 +15866,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("station_name"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -15414,7 +15878,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -15424,7 +15889,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("station_name"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -15435,7 +15901,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("station_name"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -15445,7 +15912,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -15455,7 +15923,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -15465,7 +15934,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("height"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -15478,7 +15948,8 @@ public class TableTests {
         0, // standardizeWhat=0
         null,
         null,
-        null);
+        null,
+        false);
     results = table.dataToString();
     expected = "lat,lon,station_info,station_name\n" + "37.5,-76.5,0,Station1\n";
     Test.ensureEqual(results, expected, "results=\n" + results);
@@ -15499,7 +15970,8 @@ public class TableTests {
         0, // standardizeWhat=0
         null,
         null,
-        null);
+        null,
+        false);
     results = table.dataToString();
     expected = "time,profile\n" + "0,0\n" + "3600,1\n" + "7200,2\n" + "10800,3\n";
     Test.ensureEqual(results, expected, "results=\n" + results);
@@ -15523,7 +15995,8 @@ public class TableTests {
         0, // standardizeWhat=0
         null,
         null,
-        null);
+        null,
+        false);
     results = table.dataToString();
     expected =
         "station_info,station_name,lon,lat,time,profile\n"
@@ -15548,7 +16021,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV(">="),
-        StringArray.fromCSV("8"));
+        StringArray.fromCSV("8"),
+        false);
     results = table.dataToString();
     expected =
         "station_info,temperature,station_name\n"
@@ -15572,7 +16046,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV(">="),
-        StringArray.fromCSV("8"));
+        StringArray.fromCSV("8"),
+        false);
     results = table.dataToString();
     expected = "temperature,time\n" + "8.4,7200\n" + "9.2,10800\n" + "8.3,10800\n";
     Test.ensureEqual(results, expected, "results=\n" + results);
@@ -15598,7 +16073,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV(">="),
-        StringArray.fromCSV("100"));
+        StringArray.fromCSV("100"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -15612,7 +16088,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("station_info"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("10"));
+        StringArray.fromCSV("10"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -15626,7 +16103,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("profile"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-5"));
+        StringArray.fromCSV("-5"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -15639,7 +16117,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV(">="),
-        StringArray.fromCSV("100"));
+        StringArray.fromCSV("100"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -15654,7 +16133,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("station_info"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("10"));
+        StringArray.fromCSV("10"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -15669,7 +16149,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("profile"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-5"));
+        StringArray.fromCSV("-5"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -15684,7 +16165,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("station_info"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("10"));
+        StringArray.fromCSV("10"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -15699,7 +16181,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV(">="),
-        StringArray.fromCSV("100"));
+        StringArray.fromCSV("100"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -15714,7 +16197,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("profile"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-1"));
+        StringArray.fromCSV("-1"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -15729,7 +16213,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV(">="),
-        StringArray.fromCSV("100"));
+        StringArray.fromCSV("100"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -15744,11 +16229,6 @@ public class TableTests {
    */
   @org.junit.jupiter.api.Test
   void testReadNcCFASATrajectoryProfile() throws Exception {
-    // Table.verbose = true;
-    // Table.reallyVerbose = true;
-    boolean oDebug = Table.debugMode;
-    // Table.debugMode = true;
-    // String2.log("\n*** Table.testReadNcCFASATrajectoryProfile");
     Table table = new Table();
     String results, expected, fileName;
     String orthoMultiDimH61FileName =
@@ -15781,7 +16261,7 @@ public class TableTests {
     // String2.log(NcHelper.ncdump(fileName, "-h"));
     table.readNcCF(
         fileName, null, 0, // standardizeWhat=0
-        null, null, null);
+        null, null, null, false);
     results = table.dataToString();
     expected =
         "lat,lon,trajectory,alt,time,temperature,salinity\n"
@@ -15820,7 +16300,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("trajectory"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -15830,7 +16311,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -15840,7 +16322,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("alt"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -15850,7 +16333,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -15861,7 +16345,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -15871,7 +16356,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("alt"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -15881,7 +16367,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -15892,7 +16379,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("alt"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -15902,7 +16390,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -15913,7 +16402,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -15923,7 +16413,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -15934,7 +16425,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -15944,7 +16436,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("trajectory"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -15955,7 +16448,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("alt"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -15965,7 +16459,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("trajectory"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -15976,7 +16471,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("alt"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -15986,7 +16482,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("trajectory"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -15997,7 +16494,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -16007,7 +16505,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("trajectory"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -16018,7 +16517,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("trajectory"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -16028,7 +16528,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -16038,7 +16539,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -16048,7 +16550,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("alt"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -16064,7 +16567,7 @@ public class TableTests {
     // String2.log(NcHelper.ncdump(fileName, ""));
     table.readNcCF(
         fileName, null, 0, // standardizeWhat=0
-        null, null, null);
+        null, null, null, false);
     results = table.dataToString(14);
     expected =
         "lat,lon,trajectory,alt,time,temperature,salinity\n"
@@ -16100,7 +16603,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("trajectory"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -16110,7 +16614,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -16120,7 +16625,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("alt"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -16130,7 +16636,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -16141,7 +16648,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -16151,7 +16659,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("alt"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -16161,7 +16670,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -16172,7 +16682,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("alt"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -16182,7 +16693,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -16193,7 +16705,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -16203,7 +16716,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -16214,7 +16728,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -16224,7 +16739,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("trajectory"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -16235,7 +16751,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("alt"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -16245,7 +16762,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("trajectory"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -16256,7 +16774,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("alt"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -16266,7 +16785,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("trajectory"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -16277,7 +16797,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -16287,7 +16808,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("trajectory"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -16298,7 +16820,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("trajectory"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -16308,7 +16831,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -16318,7 +16842,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -16328,7 +16853,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("alt"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -16341,7 +16867,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("trajectory"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("1"));
+        StringArray.fromCSV("1"),
+        false);
     results = table.dataToString();
     expected =
         "lat,lon,trajectory,alt,time,temperature,salinity\n"
@@ -16392,7 +16919,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("trajectory"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("2"));
+        StringArray.fromCSV("2"),
+        false);
     results = table.dataToString();
     expected =
         "lat,lon,trajectory,time\n" + "22.20038,-74.5625,2,0\n" + "39.905518,-15.35749,2,3600\n";
@@ -16420,7 +16948,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-5"));
+        StringArray.fromCSV("-5"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -16435,7 +16964,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("trajectory"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-5"));
+        StringArray.fromCSV("-5"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -16450,7 +16980,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("100"));
+        StringArray.fromCSV("100"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -16464,7 +16995,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-5"));
+        StringArray.fromCSV("-5"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -16479,7 +17011,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("trajectory"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-5"));
+        StringArray.fromCSV("-5"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -16494,7 +17027,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("100"));
+        StringArray.fromCSV("100"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -16509,7 +17043,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("trajectory"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-5"));
+        StringArray.fromCSV("-5"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -16524,7 +17059,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-5"));
+        StringArray.fromCSV("-5"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -16539,7 +17075,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("100"));
+        StringArray.fromCSV("100"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -16554,7 +17091,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-5"));
+        StringArray.fromCSV("-5"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -16567,7 +17105,7 @@ public class TableTests {
     // String2.log(NcHelper.ncdump(fileName, ""));
     table.readNcCF(
         fileName, null, 0, // standardizeWhat=0
-        null, null, null);
+        null, null, null, false);
     results = table.dataToString();
     expected =
         "trajectory,lat,lon,time,z,temperature,humidity\n"
@@ -16609,7 +17147,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("trajectory"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -16619,7 +17158,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -16629,7 +17169,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("z"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -16639,7 +17180,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -16650,7 +17192,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -16660,7 +17203,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("z"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -16670,7 +17214,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -16681,7 +17226,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("z"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -16691,7 +17237,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -16702,7 +17249,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -16712,7 +17260,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -16723,7 +17272,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -16733,7 +17283,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("trajectory"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -16744,7 +17295,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("z"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -16754,7 +17306,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("trajectory"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -16765,7 +17318,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("z"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -16775,7 +17329,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("trajectory"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -16786,7 +17341,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -16796,7 +17352,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("trajectory"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -16807,7 +17364,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("trajectory"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -16817,7 +17375,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -16827,7 +17386,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -16837,7 +17397,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("z"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -16850,7 +17411,8 @@ public class TableTests {
         0, // standardizeWhat=0
         null,
         null,
-        null);
+        null,
+        false);
     results = table.dataToString(20);
     expected = "trajectory\n" + "0\n" + "1\n" + "2\n" + "3\n" + "4\n";
     Test.ensureEqual(results, expected, "results=\n" + results);
@@ -16868,7 +17430,8 @@ public class TableTests {
         0, // standardizeWhat=0
         null,
         null,
-        null);
+        null,
+        false);
     results = table.dataToString();
     expected =
         "time,trajectory\n"
@@ -16913,7 +17476,8 @@ public class TableTests {
         0, // standardizeWhat=0
         null,
         null,
-        null);
+        null,
+        false);
     results = table.dataToString();
     expected =
         "lon,lat,time,trajectory\n"
@@ -16957,7 +17521,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV(">="),
-        StringArray.fromCSV("39"));
+        StringArray.fromCSV("39"),
+        false);
     results = table.dataToString();
     expected =
         "trajectory,temperature\n"
@@ -16999,7 +17564,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV(">="),
-        StringArray.fromCSV("39"));
+        StringArray.fromCSV("39"),
+        false);
     results = table.dataToString();
     expected =
         "temperature,time\n"
@@ -17047,7 +17613,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV(">="),
-        StringArray.fromCSV("100"));
+        StringArray.fromCSV("100"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -17062,7 +17629,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("trajectory"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("10"));
+        StringArray.fromCSV("10"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -17077,7 +17645,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("time"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-5"));
+        StringArray.fromCSV("-5"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -17091,7 +17660,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV(">="),
-        StringArray.fromCSV("100"));
+        StringArray.fromCSV("100"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -17106,7 +17676,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("z"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-5"));
+        StringArray.fromCSV("-5"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -17121,7 +17692,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("trajectory"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-5"));
+        StringArray.fromCSV("-5"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -17136,7 +17708,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("trajectory"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-10"));
+        StringArray.fromCSV("-10"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -17151,7 +17724,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV(">="),
-        StringArray.fromCSV("100"));
+        StringArray.fromCSV("100"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -17166,7 +17740,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("z"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-1"));
+        StringArray.fromCSV("-1"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -17181,7 +17756,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV(">="),
-        StringArray.fromCSV("100"));
+        StringArray.fromCSV("100"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
     // } catch (Exception e) {
@@ -17603,7 +18179,6 @@ public class TableTests {
       String2.log("No password, so skipping the test.");
       return;
     }
-    long tTime = System.currentTimeMillis();
     Connection con = DriverManager.getConnection(url, user, password);
     // String2.log("getConnection time=" + (System.currentTimeMillis() - tTime) +
     // "ms"); // often 9s !
@@ -17833,18 +18408,6 @@ public class TableTests {
     }
     // String2.log(table.toString());
     TableTests.testObis5354Table(table);
-  }
-
-  @org.junit.jupiter.api.Test
-  @TagIncompleteTest
-  // This test relies on setting bits on a static member during all of the
-  // existing tests.
-  // We can probably use normal coverage tooling instead of properly implemnting
-  // this test.
-  void testReadNcCFCodeCoverage() {
-    Table.ncCFcc.flip(0, 100); // there are currently 99 code coverage tests
-    Test.ensureEqual(Table.ncCFcc.toString(), "{}", "Table.readNcCF code coverage");
-    Table.ncCFcc = null; // turn off test of readNcCF code coverage
   }
 
   /**
@@ -18171,7 +18734,7 @@ public class TableTests {
     File2.writeToFile88591(fileName, File2.directReadFrom88591File(dir + "testScalar_1.1.csv"));
 
     // if (haveExcel) {
-    // Test.displayInBrowser("file://" + fileName); //.csv
+    // TestUtil.displayInBrowser("file://" + fileName); //.csv
     // String2.pressEnterToContinue("\nIn Excel, use File : Save As : CSV : as
     // sampleExcel_1.1.csv : yes : yes.");
     // }
@@ -18251,7 +18814,7 @@ public class TableTests {
     // try {
     Test.ensureEqual(results, expected, "results=\n" + results);
     // } catch (Exception e) {
-    // Test.knownProblem(
+    // TestUtil.knownProblem(
     // "1.1: How to keep integer in string att as a string?!",
     // "If I don't actually do Excel 'Save As', the BAD ROW disappears.", e);
     // }
@@ -18262,7 +18825,7 @@ public class TableTests {
     fileName = dir + "sampleExcel_1.2.csv";
     File2.writeToFileUtf8(fileName, File2.directReadFromUtf8File(dir + "testScalar_1.1.csv"));
     // if (haveExcel) {
-    // Test.displayInBrowser("file://" + fileName); //.csv
+    // TestUtil.displayInBrowser("file://" + fileName); //.csv
     // String2.pressEnterToContinue("\nIn Excel, use File : Save As : CSV : as
     // sampleExcel_1.2.csv : yes : yes.");
     // }
@@ -18277,7 +18840,7 @@ public class TableTests {
     // try {
     Test.ensureEqual(results, expected, "results=\n" + results);
     // } catch (Exception e) {
-    // Test.knownProblem(
+    // TestUtil.knownProblem(
     // "1.2: How to keep integer in string att as a string?!",
     // "If I don't actually do Excel 'Save As', the BAD ROW disappears.", e);
     // }
@@ -18371,7 +18934,7 @@ public class TableTests {
             + "...\n";
     Test.ensureEqual(results, expected, "results=\n" + results);
 
-    // Test.displayInBrowser("file://" + fullName); //.wav
+    // TestUtil.displayInBrowser("file://" + fullName); //.wav
     // String2.pressEnterToContinue("Close the audio player if file is okay.");
   }
 
@@ -18420,7 +18983,7 @@ public class TableTests {
             + "-3.0517578E-5,-1.2207031E-4\n"
             + "...\n";
     Test.ensureEqual(results, expected, "results=\n" + results);
-    // Test.displayInBrowser("file://" + fullName); //audio
+    // TestUtil.displayInBrowser("file://" + fullName); //audio
     // String2.pressEnterToContinue("Close the audio player if file is okay.");
   }
 
@@ -18485,7 +19048,7 @@ public class TableTests {
       table.writeWaveFile(outName);
       table.readAudioFile(outName, true, false); // readData, addElapsedTime
       String2.log(table.dataToString(16));
-      // Test.displayInBrowser("file://" + outName); //audio
+      // TestUtil.displayInBrowser("file://" + outName); //audio
 
       // } catch (Exception e) {
       // String2.log(MustBe.throwableToString(e));
@@ -18512,7 +19075,7 @@ public class TableTests {
     // DEAL WITH JAVA 8 BUG
     // boolean java8 = System.getProperty("java.version").startsWith("1.8.");
     // if (java8)
-    // Test.displayInBrowser("file://" + fullName); //.wav
+    // TestUtil.displayInBrowser("file://" + fullName); //.wav
     // else
     this.testReadFloatAudioFile(fullName);
     // String2.pressEnterToContinue("Close the audio player if file is okay.");
@@ -18546,7 +19109,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("trajectory_name"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -18556,7 +19120,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -18566,7 +19131,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("z"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -18576,7 +19142,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -18587,7 +19154,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -18597,7 +19165,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("z"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -18607,7 +19176,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -18618,7 +19188,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("z"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -18628,7 +19199,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -18639,7 +19211,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -18649,7 +19222,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -18660,7 +19234,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -18670,7 +19245,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("trajectory_name"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -18681,7 +19257,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("z"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -18691,7 +19268,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("trajectory_name"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -18702,7 +19280,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -18712,7 +19291,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("trajectory_name"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -18723,7 +19303,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("trajectory_name"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -18733,7 +19314,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("lat"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -18743,7 +19325,8 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
@@ -18753,13 +19336,14 @@ public class TableTests {
         0, // standardizeWhat=0
         StringArray.fromCSV("z"),
         StringArray.fromCSV("="),
-        StringArray.fromCSV("-12345"));
+        StringArray.fromCSV("-12345"),
+        false);
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
     table.readNcCF(
         fileName, null, 0, // standardizeWhat=0
-        null, null, null);
+        null, null, null, false);
     results = table.dataToString(55);
     expected =
         // rows that a human thinks should be rejected are kept
@@ -18853,13 +19437,34 @@ public class TableTests {
 
     // } catch (Exception e) {
     // //String2.pressEnterToContinue(
-    // Test.knownProblem(
+    // TestUtil.knownProblem(
     // "KYLE WILCOX'S DSG TEST FILE.",
     // MustBe.throwableToString(e) +
     // "\nI reported this problem to Kyle 2012-10-03" +
     // "\n2013-10-30 Since Kyle changed jobs, it is unlikely he will ever fix
     // this.");
     // }
+  }
+
+  /**
+   * Get a connection to an Access .mdb file. MS Access not needed.
+   *
+   * @param fileName (forward slash in example)
+   * @param user use "" if none specified
+   * @param password use "" if none specified
+   */
+  private static Connection getConnectionToMdb(String fileName, String user, String password)
+      throws Exception {
+
+    // from Sareth's answer at
+    // https://stackoverflow.com/questions/9543722/java-create-msaccess-database-file-mdb-0r-accdb-using-java
+    Class.forName("sun.jdbc.odbc.JdbcOdbcDriver"); // included in Java distribution
+    return DriverManager.getConnection(
+        "jdbc:odbc:Driver={Microsoft Access Driver (*.mdb, *.accdb)};"
+            + "DBQ="
+            + fileName, // ";DriverID=22;READONLY=true}",
+        "",
+        ""); // user, password
   }
 
   /**
@@ -18875,7 +19480,7 @@ public class TableTests {
             .getResource("/notIncludedFiles/calcofi2012/calcofi8102012.accdb")
             .getPath();
     // "c:/fishbase/COUNTRY.mdb";
-    Connection con = Table.getConnectionToMdb(fileName, "", ""); // user, password
+    Connection con = getConnectionToMdb(fileName, "", ""); // user, password
     // String2.log(getSqlSchemas(con).toString());
     // String schema = "";
     // String2.log(getSqlTableNames(con, schema, null).toString()); //null for all
@@ -18886,5 +19491,2084 @@ public class TableTests {
     Table table = new Table();
     table.readSql(con, query);
     String2.log(table.dataToString(5));
+  }
+
+  /** The tests readParquet. */
+  @org.junit.jupiter.api.Test
+  void testReadParquet() throws Exception {
+
+    String fileName =
+        new java.io.File(
+                TableTests.class
+                    .getResource("/data/parquet/GHG_national_2012_m1_v2.0.0_a8c5929.parquet")
+                    .getFile())
+            .getPath();
+    // don't simplify
+    Table table = new Table();
+    table.readParquet(fileName, null, null, false);
+    String results = table.dataToString();
+    String expected =
+        "Flowable,Class,SectorProducedBy,SectorConsumedBy,SectorSourceName,Context,Location,LocationSystem,FlowAmount,Unit,FlowType,Year,MeasureofSpread,Spread,DistributionType,Min,Max,DataReliability,TemporalCorrelation,GeographicalCorrelation,TechnologicalCorrelation,DataCollection,MetaSources,FlowUUID,ProducedBySectorType,ConsumedBySectorType,AttributionSources\n"
+            + "Carbon dioxide,Chemicals,311,,NAICS_2012_Code,emission/air,00000,FIPS,8.117607800971414E7,kg,ELEMENTARY_FLOW,2012,,,,,,,,,,,EPA_GHGI_T_2_1.carbonate_use,b6f010fb-a764-3063-af2d-bcb8309a97b7,,,BEA_Detail_Use_PRO_BeforeRedef\n"
+            + "Carbon dioxide,Chemicals,313,,NAICS_2012_Code,emission/air,00000,FIPS,3.497831003670609E7,kg,ELEMENTARY_FLOW,2012,,,,,,,,,,,EPA_GHGI_T_2_1.carbonate_use,b6f010fb-a764-3063-af2d-bcb8309a97b7,,,BEA_Detail_Use_PRO_BeforeRedef\n"
+            + "Carbon dioxide,Chemicals,316,,NAICS_2012_Code,emission/air,00000,FIPS,329984.05695005745,kg,ELEMENTARY_FLOW,2012,,,,,,,,,,,EPA_GHGI_T_2_1.carbonate_use,b6f010fb-a764-3063-af2d-bcb8309a97b7,,,BEA_Detail_Use_PRO_BeforeRedef\n"
+            + "Carbon dioxide,Chemicals,321,,NAICS_2012_Code,emission/air,00000,FIPS,1.102146750213192E8,kg,ELEMENTARY_FLOW,2012,,,,,,,,,,,EPA_GHGI_T_2_1.carbonate_use,b6f010fb-a764-3063-af2d-bcb8309a97b7,,,BEA_Detail_Use_PRO_BeforeRedef\n"
+            + "Carbon dioxide,Chemicals,322,,NAICS_2012_Code,emission/air,00000,FIPS,1.315316451002929E9,kg,ELEMENTARY_FLOW,2012,,,,,,,,,,,EPA_GHGI_T_2_1.carbonate_use,b6f010fb-a764-3063-af2d-bcb8309a97b7,,,BEA_Detail_Use_PRO_BeforeRedef\n"
+            + "Carbon dioxide,Chemicals,324,,NAICS_2012_Code,emission/air,00000,FIPS,3.5737273367691225E8,kg,ELEMENTARY_FLOW,2012,,,,,,,,,,,EPA_GHGI_T_2_1.carbonate_use,b6f010fb-a764-3063-af2d-bcb8309a97b7,,,BEA_Detail_Use_PRO_BeforeRedef\n"
+            + "Carbon dioxide,Chemicals,325,,NAICS_2012_Code,emission/air,00000,FIPS,4.450164992028475E9,kg,ELEMENTARY_FLOW,2012,,,,,,,,,,,EPA_GHGI_T_2_1.carbonate_use,b6f010fb-a764-3063-af2d-bcb8309a97b7,,,BEA_Detail_Use_PRO_BeforeRedef\n"
+            + "Carbon dioxide,Chemicals,326,,NAICS_2012_Code,emission/air,00000,FIPS,1.602072596492529E9,kg,ELEMENTARY_FLOW,2012,,,,,,,,,,,EPA_GHGI_T_2_1.carbonate_use,b6f010fb-a764-3063-af2d-bcb8309a97b7,,,BEA_Detail_Use_PRO_BeforeRedef\n"
+            + "Carbon dioxide,Chemicals,327,,NAICS_2012_Code,emission/air,00000,FIPS,4.451484928256275E8,kg,ELEMENTARY_FLOW,2012,,,,,,,,,,,EPA_GHGI_T_2_1.carbonate_use,b6f010fb-a764-3063-af2d-bcb8309a97b7,,,BEA_Detail_Use_PRO_BeforeRedef\n"
+            + "Carbon dioxide,Chemicals,331,,NAICS_2012_Code,emission/air,00000,FIPS,1.3166363872307293E8,kg,ELEMENTARY_FLOW,2012,,,,,,,,,,,EPA_GHGI_T_2_1.carbonate_use,b6f010fb-a764-3063-af2d-bcb8309a97b7,,,BEA_Detail_Use_PRO_BeforeRedef\n"
+            + "Carbon dioxide,Chemicals,332,,NAICS_2012_Code,emission/air,00000,FIPS,2.573875644210448E7,kg,ELEMENTARY_FLOW,2012,,,,,,,,,,,EPA_GHGI_T_2_1.carbonate_use,b6f010fb-a764-3063-af2d-bcb8309a97b7,,,BEA_Detail_Use_PRO_BeforeRedef\n"
+            + "Carbon dioxide,Chemicals,333,,NAICS_2012_Code,emission/air,00000,FIPS,6929665.195951207,kg,ELEMENTARY_FLOW,2012,,,,,,,,,,,EPA_GHGI_T_2_1.carbonate_use,b6f010fb-a764-3063-af2d-bcb8309a97b7,,,BEA_Detail_Use_PRO_BeforeRedef\n"
+            + "Carbon dioxide,Chemicals,334,,NAICS_2012_Code,emission/air,00000,FIPS,2.435282340291424E8,kg,ELEMENTARY_FLOW,2012,,,,,,,,,,,EPA_GHGI_T_2_1.carbonate_use,b6f010fb-a764-3063-af2d-bcb8309a97b7,,,BEA_Detail_Use_PRO_BeforeRedef\n"
+            + "Carbon dioxide,Chemicals,335,,NAICS_2012_Code,emission/air,00000,FIPS,3.0358533239405286E7,kg,ELEMENTARY_FLOW,2012,,,,,,,,,,,EPA_GHGI_T_2_1.carbonate_use,b6f010fb-a764-3063-af2d-bcb8309a97b7,,,BEA_Detail_Use_PRO_BeforeRedef\n"
+            + "Carbon dioxide,Chemicals,3361,,NAICS_2012_Code,emission/air,00000,FIPS,329984.05695005745,kg,ELEMENTARY_FLOW,2012,,,,,,,,,,,EPA_GHGI_T_2_1.carbonate_use,b6f010fb-a764-3063-af2d-bcb8309a97b7,,,BEA_Detail_Use_PRO_BeforeRedef\n"
+            + "Carbon dioxide,Chemicals,3363,,NAICS_2012_Code,emission/air,00000,FIPS,3.431834192280598E7,kg,ELEMENTARY_FLOW,2012,,,,,,,,,,,EPA_GHGI_T_2_1.carbonate_use,b6f010fb-a764-3063-af2d-bcb8309a97b7,,,BEA_Detail_Use_PRO_BeforeRedef\n"
+            + "Carbon dioxide,Chemicals,3364,,NAICS_2012_Code,emission/air,00000,FIPS,4619776.797300804,kg,ELEMENTARY_FLOW,2012,,,,,,,,,,,EPA_GHGI_T_2_1.carbonate_use,b6f010fb-a764-3063-af2d-bcb8309a97b7,,,BEA_Detail_Use_PRO_BeforeRedef\n"
+            + "Carbon dioxide,Chemicals,3369,,NAICS_2012_Code,emission/air,00000,FIPS,7259649.2529012645,kg,ELEMENTARY_FLOW,2012,,,,,,,,,,,EPA_GHGI_T_2_1.carbonate_use,b6f010fb-a764-3063-af2d-bcb8309a97b7,,,BEA_Detail_Use_PRO_BeforeRedef\n"
+            + "Carbon dioxide,Chemicals,339,,NAICS_2012_Code,emission/air,00000,FIPS,1.8479107189203218E7,kg,ELEMENTARY_FLOW,2012,,,,,,,,,,,EPA_GHGI_T_2_1.carbonate_use,b6f010fb-a764-3063-af2d-bcb8309a97b7,,,BEA_Detail_Use_PRO_BeforeRedef\n"
+            + "Carbon dioxide,Chemicals,212,,NAICS_2012_Code,emission/air,00000,FIPS,3.9E9,kg,ELEMENTARY_FLOW,2012,,,,,,,,,,,EPA_GHGI_T_2_1.direct,b6f010fb-a764-3063-af2d-bcb8309a97b7,,,Direct\n"
+            + "Carbon dioxide,Chemicals,325,,NAICS_2012_Code,emission/air,00000,FIPS,1.34E10,kg,ELEMENTARY_FLOW,2012,,,,,,,,,,,EPA_GHGI_T_2_1.direct,b6f010fb-a764-3063-af2d-bcb8309a97b7,,,Direct\n"
+            + "Carbon dioxide,Chemicals,327,,NAICS_2012_Code,emission/air,00000,FIPS,5.11E10,kg,ELEMENTARY_FLOW,2012,,,,,,,,,,,EPA_GHGI_T_2_1.direct,b6f010fb-a764-3063-af2d-bcb8309a97b7,,,Direct\n"
+            + "Carbon dioxide,Chemicals,331,,NAICS_2012_Code,emission/air,00000,FIPS,6.41E10,kg,ELEMENTARY_FLOW,2012,,,,,,,,,,,EPA_GHGI_T_2_1.direct,b6f010fb-a764-3063-af2d-bcb8309a97b7,,,Direct\n"
+            + "Carbon dioxide,Chemicals,562,,NAICS_2012_Code,emission/air,00000,FIPS,1.34E10,kg,ELEMENTARY_FLOW,2012,,,,,,,,,,,EPA_GHGI_T_2_1.direct,b6f010fb-a764-3063-af2d-bcb8309a97b7,,,Direct\n"
+            + "Carbon dioxide,Chemicals,2211,,NAICS_2012_Code,emission/air,00000,FIPS,1.6784386943905576E12,kg,ELEMENTARY_FLOW,2012,,,,,,,,,,,EPA_GHGI_T_2_1.electric_power,b6f010fb-a764-3063-af2d-bcb8309a97b7,,,BEA_Detail_Make_BeforeRedef\n"
+            + "Carbon dioxide,Chemicals,S00101,,NAICS_2012_Code,emission/air,00000,FIPS,6.3046426078572815E10,kg,ELEMENTARY_FLOW,2012,,,,,,,,,,,EPA_GHGI_T_2_1.electric_power,b6f010fb-a764-3063-af2d-bcb8309a97b7,,,BEA_Detail_Make_BeforeRedef\n"
+            + "Carbon dioxide,Chemicals,S00202,,NAICS_2012_Code,emission/air,00000,FIPS,2.8181487953086957E11,kg,ELEMENTARY_FLOW,2012,,,,,,,,,,,EPA_GHGI_T_2_1.electric_power,b6f010fb-a764-3063-af2d-bcb8309a97b7,,,BEA_Detail_Make_BeforeRedef\n"
+            + "Carbon dioxide,Chemicals,331,,NAICS_2012_Code,emission/air,00000,FIPS,5.0E8,kg,ELEMENTARY_FLOW,2012,,,,,,,,,,,EPA_GHGI_T_2_1.lead,b6f010fb-a764-3063-af2d-bcb8309a97b7,,,Direct\n"
+            + "Carbon dioxide,Chemicals,111,,NAICS_2012_Code,emission/air,00000,FIPS,6.0E9,kg,ELEMENTARY_FLOW,2012,,,,,,,,,,,EPA_GHGI_T_2_1.liming,b6f010fb-a764-3063-af2d-bcb8309a97b7,,,BEA_Detail_Use_PRO_BeforeRedef\n"
+            + "Carbon dioxide,Chemicals,313,,NAICS_2012_Code,emission/air,00000,FIPS,1207243.4607645876,kg,ELEMENTARY_FLOW,2012,,,,,,,,,,,EPA_GHGI_T_2_1.urea,b6f010fb-a764-3063-af2d-bcb8309a97b7,,,BEA_Detail_Use_PRO_BeforeRedef\n"
+            + "Carbon dioxide,Chemicals,322,,NAICS_2012_Code,emission/air,00000,FIPS,2414486.9215291752,kg,ELEMENTARY_FLOW,2012,,,,,,,,,,,EPA_GHGI_T_2_1.urea,b6f010fb-a764-3063-af2d-bcb8309a97b7,,,BEA_Detail_Use_PRO_BeforeRedef\n"
+            + "Carbon dioxide,Chemicals,324,,NAICS_2012_Code,emission/air,00000,FIPS,9657947.686116701,kg,ELEMENTARY_FLOW,2012,,,,,,,,,,,EPA_GHGI_T_2_1.urea,b6f010fb-a764-3063-af2d-bcb8309a97b7,,,BEA_Detail_Use_PRO_BeforeRedef\n"
+            + "Carbon dioxide,Chemicals,325,,NAICS_2012_Code,emission/air,00000,FIPS,4.729979879275654E9,kg,ELEMENTARY_FLOW,2012,,,,,,,,,,,EPA_GHGI_T_2_1.urea,b6f010fb-a764-3063-af2d-bcb8309a97b7,,,BEA_Detail_Use_PRO_BeforeRedef\n"
+            + "Carbon dioxide,Chemicals,326,,NAICS_2012_Code,emission/air,00000,FIPS,2.595573440643863E7,kg,ELEMENTARY_FLOW,2012,,,,,,,,,,,EPA_GHGI_T_2_1.urea,b6f010fb-a764-3063-af2d-bcb8309a97b7,,,BEA_Detail_Use_PRO_BeforeRedef\n"
+            + "Carbon dioxide,Chemicals,327,,NAICS_2012_Code,emission/air,00000,FIPS,7847082.494969819,kg,ELEMENTARY_FLOW,2012,,,,,,,,,,,EPA_GHGI_T_2_1.urea,b6f010fb-a764-3063-af2d-bcb8309a97b7,,,BEA_Detail_Use_PRO_BeforeRedef\n"
+            + "Carbon dioxide,Chemicals,331,,NAICS_2012_Code,emission/air,00000,FIPS,8450704.225352112,kg,ELEMENTARY_FLOW,2012,,,,,,,,,,,EPA_GHGI_T_2_1.urea,b6f010fb-a764-3063-af2d-bcb8309a97b7,,,BEA_Detail_Use_PRO_BeforeRedef\n"
+            + "Carbon dioxide,Chemicals,332,,NAICS_2012_Code,emission/air,00000,FIPS,3621730.3822937626,kg,ELEMENTARY_FLOW,2012,,,,,,,,,,,EPA_GHGI_T_2_1.urea,b6f010fb-a764-3063-af2d-bcb8309a97b7,,,BEA_Detail_Use_PRO_BeforeRedef\n"
+            + "Carbon dioxide,Chemicals,333,,NAICS_2012_Code,emission/air,00000,FIPS,603621.7303822939,kg,ELEMENTARY_FLOW,2012,,,,,,,,,,,EPA_GHGI_T_2_1.urea,b6f010fb-a764-3063-af2d-bcb8309a97b7,,,BEA_Detail_Use_PRO_BeforeRedef\n"
+            + "Carbon dioxide,Chemicals,335,,NAICS_2012_Code,emission/air,00000,FIPS,603621.7303822938,kg,ELEMENTARY_FLOW,2012,,,,,,,,,,,EPA_GHGI_T_2_1.urea,b6f010fb-a764-3063-af2d-bcb8309a97b7,,,BEA_Detail_Use_PRO_BeforeRedef\n"
+            + "Carbon dioxide,Chemicals,3363,,NAICS_2012_Code,emission/air,00000,FIPS,6036217.303822937,kg,ELEMENTARY_FLOW,2012,,,,,,,,,,,EPA_GHGI_T_2_1.urea,b6f010fb-a764-3063-af2d-bcb8309a97b7,,,BEA_Detail_Use_PRO_BeforeRedef\n"
+            + "Carbon dioxide,Chemicals,3369,,NAICS_2012_Code,emission/air,00000,FIPS,2414486.9215291752,kg,ELEMENTARY_FLOW,2012,,,,,,,,,,,EPA_GHGI_T_2_1.urea,b6f010fb-a764-3063-af2d-bcb8309a97b7,,,BEA_Detail_Use_PRO_BeforeRedef\n"
+            + "Carbon dioxide,Chemicals,339,,NAICS_2012_Code,emission/air,00000,FIPS,1207243.4607645876,kg,ELEMENTARY_FLOW,2012,,,,,,,,,,,EPA_GHGI_T_2_1.urea,b6f010fb-a764-3063-af2d-bcb8309a97b7,,,BEA_Detail_Use_PRO_BeforeRedef\n"
+            + "Carbon dioxide,Chemicals,111,,NAICS_2012_Code,emission/air,00000,FIPS,4.222422680412371E9,kg,ELEMENTARY_FLOW,2012,,,,,,,,,,,EPA_GHGI_T_2_1.urea_fertilizer,b6f010fb-a764-3063-af2d-bcb8309a97b7,,,BEA_Detail_Use_PRO_BeforeRedef\n"
+            + "Carbon dioxide,Chemicals,112,,NAICS_2012_Code,emission/air,00000,FIPS,7.757731958762886E7,kg,ELEMENTARY_FLOW,2012,,,,,,,,,,,EPA_GHGI_T_2_1.urea_fertilizer,b6f010fb-a764-3063-af2d-bcb8309a97b7,,,BEA_Detail_Use_PRO_BeforeRedef\n"
+            + "Carbon dioxide,Chemicals,485,,NAICS_2012_Code,emission/air,00000,FIPS,8.0E8,kg,ELEMENTARY_FLOW,2012,,,,,,,,,,,EPA_GHGI_T_3_13.direct_ng,b6f010fb-a764-3063-af2d-bcb8309a97b7,,,Direct\n"
+            + "Carbon dioxide,Chemicals,486,,NAICS_2012_Code,emission/air,00000,FIPS,4.06E10,kg,ELEMENTARY_FLOW,2012,,,,,,,,,,,EPA_GHGI_T_3_13.direct_ng,b6f010fb-a764-3063-af2d-bcb8309a97b7,,,Direct\n"
+            + "Carbon dioxide,Chemicals,481,,NAICS_2012_Code,emission/air,00000,FIPS,1.327E11,kg,ELEMENTARY_FLOW,2012,,,,,,,,,,,EPA_GHGI_T_3_13.direct_petroleum,b6f010fb-a764-3063-af2d-bcb8309a97b7,,,Direct\n"
+            + "Carbon dioxide,Chemicals,482,,NAICS_2012_Code,emission/air,00000,FIPS,3.94E10,kg,ELEMENTARY_FLOW,2012,,,,,,,,,,,EPA_GHGI_T_3_13.direct_petroleum,b6f010fb-a764-3063-af2d-bcb8309a97b7,,,Direct\n"
+            + "Carbon dioxide,Chemicals,483,,NAICS_2012_Code,emission/air,00000,FIPS,2.43E10,kg,ELEMENTARY_FLOW,2012,,,,,,,,,,,EPA_GHGI_T_3_13.direct_petroleum,b6f010fb-a764-3063-af2d-bcb8309a97b7,,,Direct\n"
+            + "Carbon dioxide,Chemicals,484,,NAICS_2012_Code,emission/air,00000,FIPS,3.77E10,kg,ELEMENTARY_FLOW,2012,,,,,,,,,,,EPA_GHGI_T_3_13.direct_petroleum,b6f010fb-a764-3063-af2d-bcb8309a97b7,,,Direct\n"
+            + "Carbon dioxide,Chemicals,485,,NAICS_2012_Code,emission/air,00000,FIPS,9.0E8,kg,ELEMENTARY_FLOW,2012,,,,,,,,,,,EPA_GHGI_T_3_13.direct_petroleum,b6f010fb-a764-3063-af2d-bcb8309a97b7,,,Direct\n"
+            + "Carbon dioxide,Chemicals,928,,NAICS_2012_Code,emission/air,00000,FIPS,1.23E10,kg,ELEMENTARY_FLOW,2012,,,,,,,,,,,EPA_GHGI_T_3_13.direct_petroleum,b6f010fb-a764-3063-af2d-bcb8309a97b7,,,Direct\n"
+            + "Carbon dioxide,Chemicals,F010,,NAICS_2012_Code,emission/air,00000,FIPS,1.75E10,kg,ELEMENTARY_FLOW,2012,,,,,,,,,,,EPA_GHGI_T_3_13.direct_petroleum,b6f010fb-a764-3063-af2d-bcb8309a97b7,,,Direct\n"
+            + "Carbon dioxide,Chemicals,484,,NAICS_2012_Code,emission/air,00000,FIPS,2.887591461683486E11,kg,ELEMENTARY_FLOW,2012,,,,,,,,,,,EPA_GHGI_T_3_13.petroleum_fuels,b6f010fb-a764-3063-af2d-bcb8309a97b7,,,BEA_Detail_Use_PRO_BeforeRedef\n"
+            + "Carbon dioxide,Chemicals,485,,NAICS_2012_Code,emission/air,00000,FIPS,1.5622793434499846E9,kg,ELEMENTARY_FLOW,2012,,,,,,,,,,,EPA_GHGI_T_3_13.petroleum_fuels,b6f010fb-a764-3063-af2d-bcb8309a97b7,,,BEA_Detail_Use_PRO_BeforeRedef\n"
+            + "Carbon dioxide,Chemicals,487,,NAICS_2012_Code,emission/air,00000,FIPS,1.6157633942397027E9,kg,ELEMENTARY_FLOW,2012,,,,,,,,,,,EPA_GHGI_T_3_13.petroleum_fuels,b6f010fb-a764-3063-af2d-bcb8309a97b7,,,BEA_Detail_Use_PRO_BeforeRedef\n"
+            + "Carbon dioxide,Chemicals,488,,NAICS_2012_Code,emission/air,00000,FIPS,1.6157633942397027E9,kg,ELEMENTARY_FLOW,2012,,,,,,,,,,,EPA_GHGI_T_3_13.petroleum_fuels,b6f010fb-a764-3063-af2d-bcb8309a97b7,,,BEA_Detail_Use_PRO_BeforeRedef\n"
+            + "Carbon dioxide,Chemicals,491,,NAICS_2012_Code,emission/air,00000,FIPS,4.381361071886088E9,kg,ELEMENTARY_FLOW,2012,,,,,,,,,,,EPA_GHGI_T_3_13.petroleum_fuels,b6f010fb-a764-3063-af2d-bcb8309a97b7,,,BEA_Detail_Use_PRO_BeforeRedef\n"
+            + "Carbon dioxide,Chemicals,492,,NAICS_2012_Code,emission/air,00000,FIPS,7.637128206555392E9,kg,ELEMENTARY_FLOW,2012,,,,,,,,,,,EPA_GHGI_T_3_13.petroleum_fuels,b6f010fb-a764-3063-af2d-bcb8309a97b7,,,BEA_Detail_Use_PRO_BeforeRedef\n"
+            + "Carbon dioxide,Chemicals,922,,NAICS_2012_Code,emission/air,00000,FIPS,7.748506629876521E10,kg,ELEMENTARY_FLOW,2012,,,,,,,,,,,EPA_GHGI_T_3_13.petroleum_fuels,b6f010fb-a764-3063-af2d-bcb8309a97b7,,,BEA_Detail_Use_PRO_BeforeRedef\n"
+            + "Carbon dioxide,Chemicals,F010,,NAICS_2012_Code,emission/air,00000,FIPS,9.596372982544447E11,kg,ELEMENTARY_FLOW,2012,,,,,,,,,,,EPA_GHGI_T_3_13.petroleum_fuels,b6f010fb-a764-3063-af2d-bcb8309a97b7,,,BEA_Detail_Use_PRO_BeforeRedef\n"
+            + "Carbon dioxide,Chemicals,S00201,,NAICS_2012_Code,emission/air,00000,FIPS,1.060619386807061E10,kg,ELEMENTARY_FLOW,2012,,,,,,,,,,,EPA_GHGI_T_3_13.petroleum_fuels,b6f010fb-a764-3063-af2d-bcb8309a97b7,,,BEA_Detail_Use_PRO_BeforeRedef\n"
+            + "Carbon dioxide,Chemicals,212,,NAICS_2012_Code,emission/air,00000,FIPS,1.28E10,kg,ELEMENTARY_FLOW,2012,,,,,,,,,,,EPA_GHGI_T_3_22b.coal,b6f010fb-a764-3063-af2d-bcb8309a97b7,,,Direct\n"
+            + "Carbon dioxide,Chemicals,311,,NAICS_2012_Code,emission/air,00000,FIPS,2.3372513562386975E7,kg,ELEMENTARY_FLOW,2012,,,,,,,,,,,EPA_GHGI_T_3_22b.natural_gas_neu,b6f010fb-a764-3063-af2d-bcb8309a97b7,,,EIA_MECS_Energy\n"
+            + "Carbon dioxide,Chemicals,312,,NAICS_2012_Code,emission/air,00000,FIPS,2124773.960216998,kg,ELEMENTARY_FLOW,2012,,,,,,,,,,,EPA_GHGI_T_3_22b.natural_gas_neu,b6f010fb-a764-3063-af2d-bcb8309a97b7,,,EIA_MECS_Energy\n"
+            + "Carbon dioxide,Chemicals,313,,NAICS_2012_Code,emission/air,00000,FIPS,2124773.960216998,kg,ELEMENTARY_FLOW,2012,,,,,,,,,,,EPA_GHGI_T_3_22b.natural_gas_neu,b6f010fb-a764-3063-af2d-bcb8309a97b7,,,EIA_MECS_Energy\n"
+            + "Carbon dioxide,Chemicals,314,,NAICS_2012_Code,emission/air,00000,FIPS,2124773.960216998,kg,ELEMENTARY_FLOW,2012,,,,,,,,,,,EPA_GHGI_T_3_22b.natural_gas_neu,b6f010fb-a764-3063-af2d-bcb8309a97b7,,,EIA_MECS_Energy\n"
+            + "Carbon dioxide,Chemicals,321,,NAICS_2012_Code,emission/air,00000,FIPS,6374321.880650995,kg,ELEMENTARY_FLOW,2012,,,,,,,,,,,EPA_GHGI_T_3_22b.natural_gas_neu,b6f010fb-a764-3063-af2d-bcb8309a97b7,,,EIA_MECS_Energy\n"
+            + "Carbon dioxide,Chemicals,322,,NAICS_2012_Code,emission/air,00000,FIPS,2124773.960216998,kg,ELEMENTARY_FLOW,2012,,,,,,,,,,,EPA_GHGI_T_3_22b.natural_gas_neu,b6f010fb-a764-3063-af2d-bcb8309a97b7,,,EIA_MECS_Energy\n"
+            + "Carbon dioxide,Chemicals,323,,NAICS_2012_Code,emission/air,00000,FIPS,2124773.960216998,kg,ELEMENTARY_FLOW,2012,,,,,,,,,,,EPA_GHGI_T_3_22b.natural_gas_neu,b6f010fb-a764-3063-af2d-bcb8309a97b7,,,EIA_MECS_Energy\n"
+            + "Carbon dioxide,Chemicals,324,,NAICS_2012_Code,emission/air,00000,FIPS,8499095.840867992,kg,ELEMENTARY_FLOW,2012,,,,,,,,,,,EPA_GHGI_T_3_22b.natural_gas_neu,b6f010fb-a764-3063-af2d-bcb8309a97b7,,,EIA_MECS_Energy\n"
+            + "Carbon dioxide,Chemicals,325,,NAICS_2012_Code,emission/air,00000,FIPS,4.1985533453887887E9,kg,ELEMENTARY_FLOW,2012,,,,,,,,,,,EPA_GHGI_T_3_22b.natural_gas_neu,b6f010fb-a764-3063-af2d-bcb8309a97b7,,,EIA_MECS_Energy\n"
+            + "Carbon dioxide,Chemicals,327,,NAICS_2012_Code,emission/air,00000,FIPS,1.274864376130199E7,kg,ELEMENTARY_FLOW,2012,,,,,,,,,,,EPA_GHGI_T_3_22b.natural_gas_neu,b6f010fb-a764-3063-af2d-bcb8309a97b7,,,EIA_MECS_Energy\n"
+            + "Carbon dioxide,Chemicals,331,,NAICS_2012_Code,emission/air,00000,FIPS,3.9945750452079564E8,kg,ELEMENTARY_FLOW,2012,,,,,,,,,,,EPA_GHGI_T_3_22b.natural_gas_neu,b6f010fb-a764-3063-af2d-bcb8309a97b7,,,EIA_MECS_Energy\n"
+            + "Carbon dioxide,Chemicals,334,,NAICS_2012_Code,emission/air,00000,FIPS,2124773.960216998,kg,ELEMENTARY_FLOW,2012,,,,,,,,,,,EPA_GHGI_T_3_22b.natural_gas_neu,b6f010fb-a764-3063-af2d-bcb8309a97b7,,,EIA_MECS_Energy\n"
+            + "Carbon dioxide,Chemicals,335,,NAICS_2012_Code,emission/air,00000,FIPS,2124773.960216998,kg,ELEMENTARY_FLOW,2012,,,,,,,,,,,EPA_GHGI_T_3_22b.natural_gas_neu,b6f010fb-a764-3063-af2d-bcb8309a97b7,,,EIA_MECS_Energy\n"
+            + "Carbon dioxide,Chemicals,3361,,NAICS_2012_Code,emission/air,00000,FIPS,7790837.854128993,kg,ELEMENTARY_FLOW,2012,,,,,,,,,,,EPA_GHGI_T_3_22b.natural_gas_neu,b6f010fb-a764-3063-af2d-bcb8309a97b7,,,EIA_MECS_Energy\n"
+            + "Carbon dioxide,Chemicals,3362,,NAICS_2012_Code,emission/air,00000,FIPS,3541289.933694997,kg,ELEMENTARY_FLOW,2012,,,,,,,,,,,EPA_GHGI_T_3_22b.natural_gas_neu,b6f010fb-a764-3063-af2d-bcb8309a97b7,,,EIA_MECS_Energy\n"
+            + "Carbon dioxide,Chemicals,3363,,NAICS_2012_Code,emission/air,00000,FIPS,3541289.933694997,kg,ELEMENTARY_FLOW,2012,,,,,,,,,,,EPA_GHGI_T_3_22b.natural_gas_neu,b6f010fb-a764-3063-af2d-bcb8309a97b7,,,EIA_MECS_Energy\n"
+            + "Carbon dioxide,Chemicals,3364,,NAICS_2012_Code,emission/air,00000,FIPS,8499095.840867992,kg,ELEMENTARY_FLOW,2012,,,,,,,,,,,EPA_GHGI_T_3_22b.natural_gas_neu,b6f010fb-a764-3063-af2d-bcb8309a97b7,,,EIA_MECS_Energy\n"
+            + "Carbon dioxide,Chemicals,3365,,NAICS_2012_Code,emission/air,00000,FIPS,3541289.933694997,kg,ELEMENTARY_FLOW,2012,,,,,,,,,,,EPA_GHGI_T_3_22b.natural_gas_neu,b6f010fb-a764-3063-af2d-bcb8309a97b7,,,EIA_MECS_Energy\n"
+            + "Carbon dioxide,Chemicals,3366,,NAICS_2012_Code,emission/air,00000,FIPS,3541289.933694997,kg,ELEMENTARY_FLOW,2012,,,,,,,,,,,EPA_GHGI_T_3_22b.natural_gas_neu,b6f010fb-a764-3063-af2d-bcb8309a97b7,,,EIA_MECS_Energy\n"
+            + "Carbon dioxide,Chemicals,3369,,NAICS_2012_Code,emission/air,00000,FIPS,3541289.933694997,kg,ELEMENTARY_FLOW,2012,,,,,,,,,,,EPA_GHGI_T_3_22b.natural_gas_neu,b6f010fb-a764-3063-af2d-bcb8309a97b7,,,EIA_MECS_Energy\n"
+            + "Carbon dioxide,Chemicals,339,,NAICS_2012_Code,emission/air,00000,FIPS,2124773.960216998,kg,ELEMENTARY_FLOW,2012,,,,,,,,,,,EPA_GHGI_T_3_22b.natural_gas_neu,b6f010fb-a764-3063-af2d-bcb8309a97b7,,,EIA_MECS_Energy\n"
+            + "Carbon dioxide,Chemicals,311,,NAICS_2012_Code,emission/air,00000,FIPS,5.476263713729109E7,kg,ELEMENTARY_FLOW,2012,,,,,,,,,,,EPA_GHGI_T_3_22b.petroleum_neu,b6f010fb-a764-3063-af2d-bcb8309a97b7,,,EIA_MECS_Energy\n"
+            + "Carbon dioxide,Chemicals,312,,NAICS_2012_Code,emission/air,00000,FIPS,1.564646775351174E7,kg,ELEMENTARY_FLOW,2012,,,,,,,,,,,EPA_GHGI_T_3_22b.petroleum_neu,b6f010fb-a764-3063-af2d-bcb8309a97b7,,,EIA_MECS_Energy\n"
+            + "Carbon dioxide,Chemicals,313,,NAICS_2012_Code,emission/air,00000,FIPS,7823233.87675587,kg,ELEMENTARY_FLOW,2012,,,,,,,,,,,EPA_GHGI_T_3_22b.petroleum_neu,b6f010fb-a764-3063-af2d-bcb8309a97b7,,,EIA_MECS_Energy\n"
+            + "Carbon dioxide,Chemicals,316,,NAICS_2012_Code,emission/air,00000,FIPS,1.564646775351174E7,kg,ELEMENTARY_FLOW,2012,,,,,,,,,,,EPA_GHGI_T_3_22b.petroleum_neu,b6f010fb-a764-3063-af2d-bcb8309a97b7,,,EIA_MECS_Energy\n"
+            + "Carbon dioxide,Chemicals,324,,NAICS_2012_Code,emission/air,00000,FIPS,4.6939403260535225E7,kg,ELEMENTARY_FLOW,2012,,,,,,,,,,,EPA_GHGI_T_3_22b.petroleum_neu,b6f010fb-a764-3063-af2d-bcb8309a97b7,,,EIA_MECS_Energy\n"
+            + "Carbon dioxide,Chemicals,325,,NAICS_2012_Code,emission/air,00000,FIPS,7.589319183840869E10,kg,ELEMENTARY_FLOW,2012,,,,,,,,,,,EPA_GHGI_T_3_22b.petroleum_neu,b6f010fb-a764-3063-af2d-bcb8309a97b7,,,EIA_MECS_Energy\n"
+            + "Carbon dioxide,Chemicals,326,,NAICS_2012_Code,emission/air,00000,FIPS,7823233.87675587,kg,ELEMENTARY_FLOW,2012,,,,,,,,,,,EPA_GHGI_T_3_22b.petroleum_neu,b6f010fb-a764-3063-af2d-bcb8309a97b7,,,EIA_MECS_Energy\n"
+            + "Carbon dioxide,Chemicals,327,,NAICS_2012_Code,emission/air,00000,FIPS,1.0170204039782631E8,kg,ELEMENTARY_FLOW,2012,,,,,,,,,,,EPA_GHGI_T_3_22b.petroleum_neu,b6f010fb-a764-3063-af2d-bcb8309a97b7,,,EIA_MECS_Energy\n"
+            + "Carbon dioxide,Chemicals,331,,NAICS_2012_Code,emission/air,00000,FIPS,8.605557264431457E7,kg,ELEMENTARY_FLOW,2012,,,,,,,,,,,EPA_GHGI_T_3_22b.petroleum_neu,b6f010fb-a764-3063-af2d-bcb8309a97b7,,,EIA_MECS_Energy\n"
+            + "Carbon dioxide,Chemicals,332,,NAICS_2012_Code,emission/air,00000,FIPS,7823233.876755869,kg,ELEMENTARY_FLOW,2012,,,,,,,,,,,EPA_GHGI_T_3_22b.petroleum_neu,b6f010fb-a764-3063-af2d-bcb8309a97b7,,,EIA_MECS_Energy\n"
+            + "Carbon dioxide,Chemicals,333,,NAICS_2012_Code,emission/air,00000,FIPS,2.3469701630267613E7,kg,ELEMENTARY_FLOW,2012,,,,,,,,,,,EPA_GHGI_T_3_22b.petroleum_neu,b6f010fb-a764-3063-af2d-bcb8309a97b7,,,EIA_MECS_Energy\n"
+            + "Carbon dioxide,Chemicals,334,,NAICS_2012_Code,emission/air,00000,FIPS,7823233.87675587,kg,ELEMENTARY_FLOW,2012,,,,,,,,,,,EPA_GHGI_T_3_22b.petroleum_neu,b6f010fb-a764-3063-af2d-bcb8309a97b7,,,EIA_MECS_Energy\n"
+            + "Carbon dioxide,Chemicals,3361,,NAICS_2012_Code,emission/air,00000,FIPS,1.564646775351174E7,kg,ELEMENTARY_FLOW,2012,,,,,,,,,,,EPA_GHGI_T_3_22b.petroleum_neu,b6f010fb-a764-3063-af2d-bcb8309a97b7,,,EIA_MECS_Energy\n"
+            + "Carbon dioxide,Chemicals,3364,,NAICS_2012_Code,emission/air,00000,FIPS,7823233.87675587,kg,ELEMENTARY_FLOW,2012,,,,,,,,,,,EPA_GHGI_T_3_22b.petroleum_neu,b6f010fb-a764-3063-af2d-bcb8309a97b7,,,EIA_MECS_Energy\n"
+            + "Carbon dioxide,Chemicals,337,,NAICS_2012_Code,emission/air,00000,FIPS,7823233.87675587,kg,ELEMENTARY_FLOW,2012,,,,,,,,,,,EPA_GHGI_T_3_22b.petroleum_neu,b6f010fb-a764-3063-af2d-bcb8309a97b7,,,EIA_MECS_Energy\n"
+            + "Carbon dioxide,Chemicals,481,,NAICS_2012_Code,emission/air,00000,FIPS,6.078944462425987E8,kg,ELEMENTARY_FLOW,2012,,,,,,,,,,,EPA_GHGI_T_3_22b.transportation_lubricants,b6f010fb-a764-3063-af2d-bcb8309a97b7,,,BEA_Detail_Use_PRO_BeforeRedef\n"
+            + "Carbon dioxide,Chemicals,482,,NAICS_2012_Code,emission/air,00000,FIPS,1.3171467737943378E8,kg,ELEMENTARY_FLOW,2012,,,,,,,,,,,EPA_GHGI_T_3_22b.transportation_lubricants,b6f010fb-a764-3063-af2d-bcb8309a97b7,,,BEA_Detail_Use_PRO_BeforeRedef\n"
+            + "Carbon dioxide,Chemicals,483,,NAICS_2012_Code,emission/air,00000,FIPS,1.1373131770843251E8,kg,ELEMENTARY_FLOW,2012,,,,,,,,,,,EPA_GHGI_T_3_22b.transportation_lubricants,b6f010fb-a764-3063-af2d-bcb8309a97b7,,,BEA_Detail_Use_PRO_BeforeRedef\n"
+            + "Carbon dioxide,Chemicals,484,,NAICS_2012_Code,emission/air,00000,FIPS,7.684804752203797E8,kg,ELEMENTARY_FLOW,2012,,,,,,,,,,,EPA_GHGI_T_3_22b.transportation_lubricants,b6f010fb-a764-3063-af2d-bcb8309a97b7,,,BEA_Detail_Use_PRO_BeforeRedef\n"
+            + "Carbon dioxide,Chemicals,485,,NAICS_2012_Code,emission/air,00000,FIPS,3.6235363555014E7,kg,ELEMENTARY_FLOW,2012,,,,,,,,,,,EPA_GHGI_T_3_22b.transportation_lubricants,b6f010fb-a764-3063-af2d-bcb8309a97b7,,,BEA_Detail_Use_PRO_BeforeRedef\n"
+            + "Carbon dioxide,Chemicals,486,,NAICS_2012_Code,emission/air,00000,FIPS,1343221.0650572132,kg,ELEMENTARY_FLOW,2012,,,,,,,,,,,EPA_GHGI_T_3_22b.transportation_lubricants,b6f010fb-a764-3063-af2d-bcb8309a97b7,,,BEA_Detail_Use_PRO_BeforeRedef\n"
+            + "Carbon dioxide,Chemicals,487,,NAICS_2012_Code,emission/air,00000,FIPS,3.747586771509625E7,kg,ELEMENTARY_FLOW,2012,,,,,,,,,,,EPA_GHGI_T_3_22b.transportation_lubricants,b6f010fb-a764-3063-af2d-bcb8309a97b7,,,BEA_Detail_Use_PRO_BeforeRedef\n"
+            + "Carbon dioxide,Chemicals,488,,NAICS_2012_Code,emission/air,00000,FIPS,3.747586771509625E7,kg,ELEMENTARY_FLOW,2012,,,,,,,,,,,EPA_GHGI_T_3_22b.transportation_lubricants,b6f010fb-a764-3063-af2d-bcb8309a97b7,,,BEA_Detail_Use_PRO_BeforeRedef\n"
+            + "Carbon dioxide,Chemicals,491,,NAICS_2012_Code,emission/air,00000,FIPS,2.8239247567732237E7,kg,ELEMENTARY_FLOW,2012,,,,,,,,,,,EPA_GHGI_T_3_22b.transportation_lubricants,b6f010fb-a764-3063-af2d-bcb8309a97b7,,,BEA_Detail_Use_PRO_BeforeRedef\n"
+            + "Carbon dioxide,Chemicals,492,,NAICS_2012_Code,emission/air,00000,FIPS,1.2319707556689452E8,kg,ELEMENTARY_FLOW,2012,,,,,,,,,,,EPA_GHGI_T_3_22b.transportation_lubricants,b6f010fb-a764-3063-af2d-bcb8309a97b7,,,BEA_Detail_Use_PRO_BeforeRedef\n"
+            + "Carbon dioxide,Chemicals,921,,NAICS_2012_Code,emission/air,00000,FIPS,1.459490581450485E8,kg,ELEMENTARY_FLOW,2012,,,,,,,,,,,EPA_GHGI_T_3_22b.transportation_lubricants,b6f010fb-a764-3063-af2d-bcb8309a97b7,,,BEA_Detail_Use_PRO_BeforeRedef\n"
+            + "Carbon dioxide,Chemicals,922,,NAICS_2012_Code,emission/air,00000,FIPS,1.459490581450485E8,kg,ELEMENTARY_FLOW,2012,,,,,,,,,,,EPA_GHGI_T_3_22b.transportation_lubricants,b6f010fb-a764-3063-af2d-bcb8309a97b7,,,BEA_Detail_Use_PRO_BeforeRedef\n"
+            + "Carbon dioxide,Chemicals,923,,NAICS_2012_Code,emission/air,00000,FIPS,8.464783500742985E8,kg,ELEMENTARY_FLOW,2012,,,,,,,,,,,EPA_GHGI_T_3_22b.transportation_lubricants,b6f010fb-a764-3063-af2d-bcb8309a97b7,,,BEA_Detail_Use_PRO_BeforeRedef\n"
+            + "Carbon dioxide,Chemicals,924,,NAICS_2012_Code,emission/air,00000,FIPS,1.459490581450485E8,kg,ELEMENTARY_FLOW,2012,,,,,,,,,,,EPA_GHGI_T_3_22b.transportation_lubricants,b6f010fb-a764-3063-af2d-bcb8309a97b7,,,BEA_Detail_Use_PRO_BeforeRedef\n"
+            + "Carbon dioxide,Chemicals,925,,NAICS_2012_Code,emission/air,00000,FIPS,1.459490581450485E8,kg,ELEMENTARY_FLOW,2012,,,,,,,,,,,EPA_GHGI_T_3_22b.transportation_lubricants,b6f010fb-a764-3063-af2d-bcb8309a97b7,,,BEA_Detail_Use_PRO_BeforeRedef\n"
+            + "Carbon dioxide,Chemicals,926,,NAICS_2012_Code,emission/air,00000,FIPS,1.459490581450485E8,kg,ELEMENTARY_FLOW,2012,,,,,,,,,,,EPA_GHGI_T_3_22b.transportation_lubricants,b6f010fb-a764-3063-af2d-bcb8309a97b7,,,BEA_Detail_Use_PRO_BeforeRedef\n"
+            + "Carbon dioxide,Chemicals,927,,NAICS_2012_Code,emission/air,00000,FIPS,2670639.5293490477,kg,ELEMENTARY_FLOW,2012,,,,,,,,,,,EPA_GHGI_T_3_22b.transportation_lubricants,b6f010fb-a764-3063-af2d-bcb8309a97b7,,,BEA_Detail_Use_PRO_BeforeRedef\n"
+            + "Carbon dioxide,Chemicals,928,,NAICS_2012_Code,emission/air,00000,FIPS,4.1593122468795985E8,kg,ELEMENTARY_FLOW,2012,,,,,,,,,,,EPA_GHGI_T_3_22b.transportation_lubricants,b6f010fb-a764-3063-af2d-bcb8309a97b7,,,BEA_Detail_Use_PRO_BeforeRedef\n"
+            + "Carbon dioxide,Chemicals,F010,,NAICS_2012_Code,emission/air,00000,FIPS,4.4193869352474165E9,kg,ELEMENTARY_FLOW,2012,,,,,,,,,,,EPA_GHGI_T_3_22b.transportation_lubricants,b6f010fb-a764-3063-af2d-bcb8309a97b7,,,BEA_Detail_Use_PRO_BeforeRedef\n"
+            + "Carbon dioxide,Chemicals,211,,NAICS_2012_Code,emission/air,00000,FIPS,1.88E10,kg,ELEMENTARY_FLOW,2012,,,,,,,,,,,EPA_GHGI_T_3_44,b6f010fb-a764-3063-af2d-bcb8309a97b7,,,Direct\n"
+            + "Carbon dioxide,Chemicals,324,,NAICS_2012_Code,emission/air,00000,FIPS,3.4E9,kg,ELEMENTARY_FLOW,2012,,,,,,,,,,,EPA_GHGI_T_3_44,b6f010fb-a764-3063-af2d-bcb8309a97b7,,,Direct\n"
+            + "Carbon dioxide,Chemicals,211,,NAICS_2012_Code,emission/air,00000,FIPS,2.68E10,kg,ELEMENTARY_FLOW,2012,,,,,,,,,,,EPA_GHGI_T_3_70,b6f010fb-a764-3063-af2d-bcb8309a97b7,,,Direct\n"
+            + "Carbon dioxide,Chemicals,486,,NAICS_2012_Code,emission/air,00000,FIPS,2.0E8,kg,ELEMENTARY_FLOW,2012,,,,,,,,,,,EPA_GHGI_T_3_70,b6f010fb-a764-3063-af2d-bcb8309a97b7,,,Direct\n"
+            + "Carbon dioxide,Chemicals,324,,NAICS_2012_Code,emission/air,00000,FIPS,1.94E10,kg,ELEMENTARY_FLOW,2012,,,,,,,,,,,EPA_GHGI_T_4_46,b6f010fb-a764-3063-af2d-bcb8309a97b7,,,Direct\n"
+            + "Carbon dioxide,Chemicals,325,,NAICS_2012_Code,emission/air,00000,FIPS,7.1E9,kg,ELEMENTARY_FLOW,2012,,,,,,,,,,,EPA_GHGI_T_4_46,b6f010fb-a764-3063-af2d-bcb8309a97b7,,,Direct\n"
+            + "Carbon dioxide,Chemicals,311,,NAICS_2012_Code,emission/air,00000,FIPS,7.971584948688711E9,kg,ELEMENTARY_FLOW,2012,,,,,,,,,,,EPA_GHGI_T_A_13.coal_manufacturing_co2,b6f010fb-a764-3063-af2d-bcb8309a97b7,,,EIA_MECS_Energy\n"
+            + "Carbon dioxide,Chemicals,312,,NAICS_2012_Code,emission/air,00000,FIPS,4.993386545039909E8,kg,ELEMENTARY_FLOW,2012,,,,,,,,,,,EPA_GHGI_T_A_13.coal_manufacturing_co2,b6f010fb-a764-3063-af2d-bcb8309a97b7,,,EIA_MECS_Energy\n"
+            + "Carbon dioxide,Chemicals,313,,NAICS_2012_Code,emission/air,00000,FIPS,4.2800456100342077E8,kg,ELEMENTARY_FLOW,2012,,,,,,,,,,,EPA_GHGI_T_A_13.coal_manufacturing_co2,b6f010fb-a764-3063-af2d-bcb8309a97b7,,,EIA_MECS_Energy\n"
+            + "Carbon dioxide,Chemicals,314,,NAICS_2012_Code,emission/air,00000,FIPS,7.133409350057012E7,kg,ELEMENTARY_FLOW,2012,,,,,,,,,,,EPA_GHGI_T_A_13.coal_manufacturing_co2,b6f010fb-a764-3063-af2d-bcb8309a97b7,,,EIA_MECS_Energy\n"
+            + "Carbon dioxide,Chemicals,321,,NAICS_2012_Code,emission/air,00000,FIPS,8.916761687571266E7,kg,ELEMENTARY_FLOW,2012,,,,,,,,,,,EPA_GHGI_T_A_13.coal_manufacturing_co2,b6f010fb-a764-3063-af2d-bcb8309a97b7,,,EIA_MECS_Energy\n"
+            + "Carbon dioxide,Chemicals,322,,NAICS_2012_Code,emission/air,00000,FIPS,1.0414777651083239E10,kg,ELEMENTARY_FLOW,2012,,,,,,,,,,,EPA_GHGI_T_A_13.coal_manufacturing_co2,b6f010fb-a764-3063-af2d-bcb8309a97b7,,,EIA_MECS_Energy\n"
+            + "Carbon dioxide,Chemicals,324,,NAICS_2012_Code,emission/air,00000,FIPS,5.885062713797035E8,kg,ELEMENTARY_FLOW,2012,,,,,,,,,,,EPA_GHGI_T_A_13.coal_manufacturing_co2,b6f010fb-a764-3063-af2d-bcb8309a97b7,,,EIA_MECS_Energy\n"
+            + "Carbon dioxide,Chemicals,325,,NAICS_2012_Code,emission/air,00000,FIPS,1.690618015963512E10,kg,ELEMENTARY_FLOW,2012,,,,,,,,,,,EPA_GHGI_T_A_13.coal_manufacturing_co2,b6f010fb-a764-3063-af2d-bcb8309a97b7,,,EIA_MECS_Energy\n"
+            + "Carbon dioxide,Chemicals,327,,NAICS_2012_Code,emission/air,00000,FIPS,1.7833523375142532E10,kg,ELEMENTARY_FLOW,2012,,,,,,,,,,,EPA_GHGI_T_A_13.coal_manufacturing_co2,b6f010fb-a764-3063-af2d-bcb8309a97b7,,,EIA_MECS_Energy\n"
+            + "Carbon dioxide,Chemicals,331,,NAICS_2012_Code,emission/air,00000,FIPS,2.3272748004561005E10,kg,ELEMENTARY_FLOW,2012,,,,,,,,,,,EPA_GHGI_T_A_13.coal_manufacturing_co2,b6f010fb-a764-3063-af2d-bcb8309a97b7,,,EIA_MECS_Energy\n"
+            + "Carbon dioxide,Chemicals,335,,NAICS_2012_Code,emission/air,00000,FIPS,1.783352337514253E7,kg,ELEMENTARY_FLOW,2012,,,,,,,,,,,EPA_GHGI_T_A_13.coal_manufacturing_co2,b6f010fb-a764-3063-af2d-bcb8309a97b7,,,EIA_MECS_Energy\n"
+            + "Carbon dioxide,Chemicals,3361,,NAICS_2012_Code,emission/air,00000,FIPS,4.330998533963186E7,kg,ELEMENTARY_FLOW,2012,,,,,,,,,,,EPA_GHGI_T_A_13.coal_manufacturing_co2,b6f010fb-a764-3063-af2d-bcb8309a97b7,,,EIA_MECS_Energy\n"
+            + "Carbon dioxide,Chemicals,3362,,NAICS_2012_Code,emission/air,00000,FIPS,7642938.589346799,kg,ELEMENTARY_FLOW,2012,,,,,,,,,,,EPA_GHGI_T_A_13.coal_manufacturing_co2,b6f010fb-a764-3063-af2d-bcb8309a97b7,,,EIA_MECS_Energy\n"
+            + "Carbon dioxide,Chemicals,3363,,NAICS_2012_Code,emission/air,00000,FIPS,7642938.589346799,kg,ELEMENTARY_FLOW,2012,,,,,,,,,,,EPA_GHGI_T_A_13.coal_manufacturing_co2,b6f010fb-a764-3063-af2d-bcb8309a97b7,,,EIA_MECS_Energy\n"
+            + "Carbon dioxide,Chemicals,3364,,NAICS_2012_Code,emission/air,00000,FIPS,7642938.589346799,kg,ELEMENTARY_FLOW,2012,,,,,,,,,,,EPA_GHGI_T_A_13.coal_manufacturing_co2,b6f010fb-a764-3063-af2d-bcb8309a97b7,,,EIA_MECS_Energy\n"
+            + "Carbon dioxide,Chemicals,3365,,NAICS_2012_Code,emission/air,00000,FIPS,7642938.589346799,kg,ELEMENTARY_FLOW,2012,,,,,,,,,,,EPA_GHGI_T_A_13.coal_manufacturing_co2,b6f010fb-a764-3063-af2d-bcb8309a97b7,,,EIA_MECS_Energy\n"
+            + "Carbon dioxide,Chemicals,3366,,NAICS_2012_Code,emission/air,00000,FIPS,7642938.589346799,kg,ELEMENTARY_FLOW,2012,,,,,,,,,,,EPA_GHGI_T_A_13.coal_manufacturing_co2,b6f010fb-a764-3063-af2d-bcb8309a97b7,,,EIA_MECS_Energy\n"
+            + "Carbon dioxide,Chemicals,3369,,NAICS_2012_Code,emission/air,00000,FIPS,7642938.589346799,kg,ELEMENTARY_FLOW,2012,,,,,,,,,,,EPA_GHGI_T_A_13.coal_manufacturing_co2,b6f010fb-a764-3063-af2d-bcb8309a97b7,,,EIA_MECS_Energy\n"
+            + "Carbon dioxide,Chemicals,337,,NAICS_2012_Code,emission/air,00000,FIPS,1.783352337514253E7,kg,ELEMENTARY_FLOW,2012,,,,,,,,,,,EPA_GHGI_T_A_13.coal_manufacturing_co2,b6f010fb-a764-3063-af2d-bcb8309a97b7,,,EIA_MECS_Energy\n"
+            + "Carbon dioxide,Chemicals,F010,,NAICS_2012_Code,emission/air,00000,FIPS,2.824E11,kg,ELEMENTARY_FLOW,2012,,,,,,,,,,,EPA_GHGI_T_A_13.direct_attribution,b6f010fb-a764-3063-af2d-bcb8309a97b7,,,Direct\n"
+            + "Carbon dioxide,Chemicals,311,,NAICS_2012_Code,emission/air,00000,FIPS,4.230977982590886E10,kg,ELEMENTARY_FLOW,2012,,,,,,,,,,,EPA_GHGI_T_A_13.natural_gas_manufacturing,b6f010fb-a764-3063-af2d-bcb8309a97b7,,,EIA_MECS_Energy\n"
+            + "Carbon dioxide,Chemicals,312,,NAICS_2012_Code,emission/air,00000,FIPS,3.562928827444957E9,kg,ELEMENTARY_FLOW,2012,,,,,,,,,,,EPA_GHGI_T_A_13.natural_gas_manufacturing,b6f010fb-a764-3063-af2d-bcb8309a97b7,,,EIA_MECS_Energy\n"
+            + "Carbon dioxide,Chemicals,313,,NAICS_2012_Code,emission/air,00000,FIPS,2.6721966205837173E9,kg,ELEMENTARY_FLOW,2012,,,,,,,,,,,EPA_GHGI_T_A_13.natural_gas_manufacturing,b6f010fb-a764-3063-af2d-bcb8309a97b7,,,EIA_MECS_Energy\n"
+            + "Carbon dioxide,Chemicals,314,,NAICS_2012_Code,emission/air,00000,FIPS,1.187642942481652E9,kg,ELEMENTARY_FLOW,2012,,,,,,,,,,,EPA_GHGI_T_A_13.natural_gas_manufacturing,b6f010fb-a764-3063-af2d-bcb8309a97b7,,,EIA_MECS_Energy\n"
+            + "Carbon dioxide,Chemicals,315,,NAICS_2012_Code,emission/air,00000,FIPS,1.484553678102065E8,kg,ELEMENTARY_FLOW,2012,,,,,,,,,,,EPA_GHGI_T_A_13.natural_gas_manufacturing,b6f010fb-a764-3063-af2d-bcb8309a97b7,,,EIA_MECS_Energy\n"
+            + "Carbon dioxide,Chemicals,316,,NAICS_2012_Code,emission/air,00000,FIPS,7.422768390510325E7,kg,ELEMENTARY_FLOW,2012,,,,,,,,,,,EPA_GHGI_T_A_13.natural_gas_manufacturing,b6f010fb-a764-3063-af2d-bcb8309a97b7,,,EIA_MECS_Energy\n"
+            + "Carbon dioxide,Chemicals,321,,NAICS_2012_Code,emission/air,00000,FIPS,3.63715651135006E9,kg,ELEMENTARY_FLOW,2012,,,,,,,,,,,EPA_GHGI_T_A_13.natural_gas_manufacturing,b6f010fb-a764-3063-af2d-bcb8309a97b7,,,EIA_MECS_Energy\n"
+            + "Carbon dioxide,Chemicals,322,,NAICS_2012_Code,emission/air,00000,FIPS,3.236327018262502E10,kg,ELEMENTARY_FLOW,2012,,,,,,,,,,,EPA_GHGI_T_A_13.natural_gas_manufacturing,b6f010fb-a764-3063-af2d-bcb8309a97b7,,,EIA_MECS_Energy\n"
+            + "Carbon dioxide,Chemicals,323,,NAICS_2012_Code,emission/air,00000,FIPS,2.894879672299027E9,kg,ELEMENTARY_FLOW,2012,,,,,,,,,,,EPA_GHGI_T_A_13.natural_gas_manufacturing,b6f010fb-a764-3063-af2d-bcb8309a97b7,,,EIA_MECS_Energy\n"
+            + "Carbon dioxide,Chemicals,324,,NAICS_2012_Code,emission/air,00000,FIPS,7.94978494623656E10,kg,ELEMENTARY_FLOW,2012,,,,,,,,,,,EPA_GHGI_T_A_13.natural_gas_manufacturing,b6f010fb-a764-3063-af2d-bcb8309a97b7,,,EIA_MECS_Energy\n"
+            + "Carbon dioxide,Chemicals,325,,NAICS_2012_Code,emission/air,00000,FIPS,1.4860382317801672E11,kg,ELEMENTARY_FLOW,2012,,,,,,,,,,,EPA_GHGI_T_A_13.natural_gas_manufacturing,b6f010fb-a764-3063-af2d-bcb8309a97b7,,,EIA_MECS_Energy\n"
+            + "Carbon dioxide,Chemicals,326,,NAICS_2012_Code,emission/air,00000,FIPS,6.680491551459293E9,kg,ELEMENTARY_FLOW,2012,,,,,,,,,,,EPA_GHGI_T_A_13.natural_gas_manufacturing,b6f010fb-a764-3063-af2d-bcb8309a97b7,,,EIA_MECS_Energy\n"
+            + "Carbon dioxide,Chemicals,327,,NAICS_2012_Code,emission/air,00000,FIPS,2.4717818740399387E10,kg,ELEMENTARY_FLOW,2012,,,,,,,,,,,EPA_GHGI_T_A_13.natural_gas_manufacturing,b6f010fb-a764-3063-af2d-bcb8309a97b7,,,EIA_MECS_Energy\n"
+            + "Carbon dioxide,Chemicals,331,,NAICS_2012_Code,emission/air,00000,FIPS,4.772840075098139E10,kg,ELEMENTARY_FLOW,2012,,,,,,,,,,,EPA_GHGI_T_A_13.natural_gas_manufacturing,b6f010fb-a764-3063-af2d-bcb8309a97b7,,,EIA_MECS_Energy\n"
+            + "Carbon dioxide,Chemicals,332,,NAICS_2012_Code,emission/air,00000,FIPS,1.4177487625874723E10,kg,ELEMENTARY_FLOW,2012,,,,,,,,,,,EPA_GHGI_T_A_13.natural_gas_manufacturing,b6f010fb-a764-3063-af2d-bcb8309a97b7,,,EIA_MECS_Energy\n"
+            + "Carbon dioxide,Chemicals,333,,NAICS_2012_Code,emission/air,00000,FIPS,5.344393241167435E9,kg,ELEMENTARY_FLOW,2012,,,,,,,,,,,EPA_GHGI_T_A_13.natural_gas_manufacturing,b6f010fb-a764-3063-af2d-bcb8309a97b7,,,EIA_MECS_Energy\n"
+            + "Carbon dioxide,Chemicals,334,,NAICS_2012_Code,emission/air,00000,FIPS,3.488701143539853E9,kg,ELEMENTARY_FLOW,2012,,,,,,,,,,,EPA_GHGI_T_A_13.natural_gas_manufacturing,b6f010fb-a764-3063-af2d-bcb8309a97b7,,,EIA_MECS_Energy\n"
+            + "Carbon dioxide,Chemicals,335,,NAICS_2012_Code,emission/air,00000,FIPS,2.004147465437788E9,kg,ELEMENTARY_FLOW,2012,,,,,,,,,,,EPA_GHGI_T_A_13.natural_gas_manufacturing,b6f010fb-a764-3063-af2d-bcb8309a97b7,,,EIA_MECS_Energy\n"
+            + "Carbon dioxide,Chemicals,3361,,NAICS_2012_Code,emission/air,00000,FIPS,4.1567502986857824E9,kg,ELEMENTARY_FLOW,2012,,,,,,,,,,,EPA_GHGI_T_A_13.natural_gas_manufacturing,b6f010fb-a764-3063-af2d-bcb8309a97b7,,,EIA_MECS_Energy\n"
+            + "Carbon dioxide,Chemicals,3362,,NAICS_2012_Code,emission/air,00000,FIPS,8.907322068612392E8,kg,ELEMENTARY_FLOW,2012,,,,,,,,,,,EPA_GHGI_T_A_13.natural_gas_manufacturing,b6f010fb-a764-3063-af2d-bcb8309a97b7,,,EIA_MECS_Energy\n"
+            + "Carbon dioxide,Chemicals,3363,,NAICS_2012_Code,emission/air,00000,FIPS,8.907322068612392E8,kg,ELEMENTARY_FLOW,2012,,,,,,,,,,,EPA_GHGI_T_A_13.natural_gas_manufacturing,b6f010fb-a764-3063-af2d-bcb8309a97b7,,,EIA_MECS_Energy\n"
+            + "Carbon dioxide,Chemicals,3364,,NAICS_2012_Code,emission/air,00000,FIPS,2.1526028332479944E9,kg,ELEMENTARY_FLOW,2012,,,,,,,,,,,EPA_GHGI_T_A_13.natural_gas_manufacturing,b6f010fb-a764-3063-af2d-bcb8309a97b7,,,EIA_MECS_Energy\n"
+            + "Carbon dioxide,Chemicals,3365,,NAICS_2012_Code,emission/air,00000,FIPS,8.907322068612392E8,kg,ELEMENTARY_FLOW,2012,,,,,,,,,,,EPA_GHGI_T_A_13.natural_gas_manufacturing,b6f010fb-a764-3063-af2d-bcb8309a97b7,,,EIA_MECS_Energy\n"
+            + "Carbon dioxide,Chemicals,3366,,NAICS_2012_Code,emission/air,00000,FIPS,8.907322068612392E8,kg,ELEMENTARY_FLOW,2012,,,,,,,,,,,EPA_GHGI_T_A_13.natural_gas_manufacturing,b6f010fb-a764-3063-af2d-bcb8309a97b7,,,EIA_MECS_Energy\n"
+            + "Carbon dioxide,Chemicals,3369,,NAICS_2012_Code,emission/air,00000,FIPS,8.907322068612392E8,kg,ELEMENTARY_FLOW,2012,,,,,,,,,,,EPA_GHGI_T_A_13.natural_gas_manufacturing,b6f010fb-a764-3063-af2d-bcb8309a97b7,,,EIA_MECS_Energy\n"
+            + "Carbon dioxide,Chemicals,337,,NAICS_2012_Code,emission/air,00000,FIPS,1.1134152585765488E9,kg,ELEMENTARY_FLOW,2012,,,,,,,,,,,EPA_GHGI_T_A_13.natural_gas_manufacturing,b6f010fb-a764-3063-af2d-bcb8309a97b7,,,EIA_MECS_Energy\n"
+            + "Carbon dioxide,Chemicals,339,,NAICS_2012_Code,emission/air,00000,FIPS,1.929919781532685E9,kg,ELEMENTARY_FLOW,2012,,,,,,,,,,,EPA_GHGI_T_A_13.natural_gas_manufacturing,b6f010fb-a764-3063-af2d-bcb8309a97b7,,,EIA_MECS_Energy\n"
+            + "Carbon dioxide,Chemicals,423,,NAICS_2012_Code,emission/air,00000,FIPS,1.8612191958495457E7,kg,ELEMENTARY_FLOW,2012,,,,,,,,,,,EPA_GHGI_T_A_13.non_manufacturing_coal,b6f010fb-a764-3063-af2d-bcb8309a97b7,,,BEA_Detail_Use_PRO_BeforeRedef\n"
+            + "Carbon dioxide,Chemicals,424,,NAICS_2012_Code,emission/air,00000,FIPS,2.4816255944660604E7,kg,ELEMENTARY_FLOW,2012,,,,,,,,,,,EPA_GHGI_T_A_13.non_manufacturing_coal,b6f010fb-a764-3063-af2d-bcb8309a97b7,,,BEA_Detail_Use_PRO_BeforeRedef\n"
+            + "Carbon dioxide,Chemicals,493,,NAICS_2012_Code,emission/air,00000,FIPS,9306095.979247728,kg,ELEMENTARY_FLOW,2012,,,,,,,,,,,EPA_GHGI_T_A_13.non_manufacturing_coal,b6f010fb-a764-3063-af2d-bcb8309a97b7,,,BEA_Detail_Use_PRO_BeforeRedef\n"
+            + "Carbon dioxide,Chemicals,5413,,NAICS_2012_Code,emission/air,00000,FIPS,3.412235192390834E7,kg,ELEMENTARY_FLOW,2012,,,,,,,,,,,EPA_GHGI_T_A_13.non_manufacturing_coal,b6f010fb-a764-3063-af2d-bcb8309a97b7,,,BEA_Detail_Use_PRO_BeforeRedef\n"
+            + "Carbon dioxide,Chemicals,5417,,NAICS_2012_Code,emission/air,00000,FIPS,2.1093817552961516E8,kg,ELEMENTARY_FLOW,2012,,,,,,,,,,,EPA_GHGI_T_A_13.non_manufacturing_coal,b6f010fb-a764-3063-af2d-bcb8309a97b7,,,BEA_Detail_Use_PRO_BeforeRedef\n"
+            + "Carbon dioxide,Chemicals,551,,NAICS_2012_Code,emission/air,00000,FIPS,1.2408127972330303E8,kg,ELEMENTARY_FLOW,2012,,,,,,,,,,,EPA_GHGI_T_A_13.non_manufacturing_coal,b6f010fb-a764-3063-af2d-bcb8309a97b7,,,BEA_Detail_Use_PRO_BeforeRedef\n"
+            + "Carbon dioxide,Chemicals,561,,NAICS_2012_Code,emission/air,00000,FIPS,3102031.993082576,kg,ELEMENTARY_FLOW,2012,,,,,,,,,,,EPA_GHGI_T_A_13.non_manufacturing_coal,b6f010fb-a764-3063-af2d-bcb8309a97b7,,,BEA_Detail_Use_PRO_BeforeRedef\n"
+            + "Carbon dioxide,Chemicals,562,,NAICS_2012_Code,emission/air,00000,FIPS,6204063.986165152,kg,ELEMENTARY_FLOW,2012,,,,,,,,,,,EPA_GHGI_T_A_13.non_manufacturing_coal,b6f010fb-a764-3063-af2d-bcb8309a97b7,,,BEA_Detail_Use_PRO_BeforeRedef\n"
+            + "Carbon dioxide,Chemicals,611,,NAICS_2012_Code,emission/air,00000,FIPS,4.032641591007349E7,kg,ELEMENTARY_FLOW,2012,,,,,,,,,,,EPA_GHGI_T_A_13.non_manufacturing_coal,b6f010fb-a764-3063-af2d-bcb8309a97b7,,,BEA_Detail_Use_PRO_BeforeRedef\n"
+            + "Carbon dioxide,Chemicals,622,,NAICS_2012_Code,emission/air,00000,FIPS,1.7681582360570684E8,kg,ELEMENTARY_FLOW,2012,,,,,,,,,,,EPA_GHGI_T_A_13.non_manufacturing_coal,b6f010fb-a764-3063-af2d-bcb8309a97b7,,,BEA_Detail_Use_PRO_BeforeRedef\n"
+            + "Carbon dioxide,Chemicals,623,,NAICS_2012_Code,emission/air,00000,FIPS,1.8612191958495457E7,kg,ELEMENTARY_FLOW,2012,,,,,,,,,,,EPA_GHGI_T_A_13.non_manufacturing_coal,b6f010fb-a764-3063-af2d-bcb8309a97b7,,,BEA_Detail_Use_PRO_BeforeRedef\n"
+            + "Carbon dioxide,Chemicals,624,,NAICS_2012_Code,emission/air,00000,FIPS,1.2408127972330304E7,kg,ELEMENTARY_FLOW,2012,,,,,,,,,,,EPA_GHGI_T_A_13.non_manufacturing_coal,b6f010fb-a764-3063-af2d-bcb8309a97b7,,,BEA_Detail_Use_PRO_BeforeRedef\n"
+            + "Carbon dioxide,Chemicals,712,,NAICS_2012_Code,emission/air,00000,FIPS,3102031.993082576,kg,ELEMENTARY_FLOW,2012,,,,,,,,,,,EPA_GHGI_T_A_13.non_manufacturing_coal,b6f010fb-a764-3063-af2d-bcb8309a97b7,,,BEA_Detail_Use_PRO_BeforeRedef\n"
+            + "Carbon dioxide,Chemicals,713,,NAICS_2012_Code,emission/air,00000,FIPS,2.4816255944660608E7,kg,ELEMENTARY_FLOW,2012,,,,,,,,,,,EPA_GHGI_T_A_13.non_manufacturing_coal,b6f010fb-a764-3063-af2d-bcb8309a97b7,,,BEA_Detail_Use_PRO_BeforeRedef\n"
+            + "Carbon dioxide,Chemicals,721,,NAICS_2012_Code,emission/air,00000,FIPS,3.722438391699091E7,kg,ELEMENTARY_FLOW,2012,,,,,,,,,,,EPA_GHGI_T_A_13.non_manufacturing_coal,b6f010fb-a764-3063-af2d-bcb8309a97b7,,,BEA_Detail_Use_PRO_BeforeRedef\n"
+            + "Carbon dioxide,Chemicals,722,,NAICS_2012_Code,emission/air,00000,FIPS,1.1477518374405532E9,kg,ELEMENTARY_FLOW,2012,,,,,,,,,,,EPA_GHGI_T_A_13.non_manufacturing_coal,b6f010fb-a764-3063-af2d-bcb8309a97b7,,,BEA_Detail_Use_PRO_BeforeRedef\n"
+            + "Carbon dioxide,Chemicals,811,,NAICS_2012_Code,emission/air,00000,FIPS,1.2408127972330304E7,kg,ELEMENTARY_FLOW,2012,,,,,,,,,,,EPA_GHGI_T_A_13.non_manufacturing_coal,b6f010fb-a764-3063-af2d-bcb8309a97b7,,,BEA_Detail_Use_PRO_BeforeRedef\n"
+            + "Carbon dioxide,Chemicals,812,,NAICS_2012_Code,emission/air,00000,FIPS,1.2408127972330304E7,kg,ELEMENTARY_FLOW,2012,,,,,,,,,,,EPA_GHGI_T_A_13.non_manufacturing_coal,b6f010fb-a764-3063-af2d-bcb8309a97b7,,,BEA_Detail_Use_PRO_BeforeRedef\n"
+            + "Carbon dioxide,Chemicals,813,,NAICS_2012_Code,emission/air,00000,FIPS,1.8612191958495457E7,kg,ELEMENTARY_FLOW,2012,,,,,,,,,,,EPA_GHGI_T_A_13.non_manufacturing_coal,b6f010fb-a764-3063-af2d-bcb8309a97b7,,,BEA_Detail_Use_PRO_BeforeRedef\n"
+            + "Carbon dioxide,Chemicals,923,,NAICS_2012_Code,emission/air,00000,FIPS,2.1643320363164716E9,kg,ELEMENTARY_FLOW,2012,,,,,,,,,,,EPA_GHGI_T_A_13.non_manufacturing_coal,b6f010fb-a764-3063-af2d-bcb8309a97b7,,,BEA_Detail_Use_PRO_BeforeRedef\n"
+            + "Carbon dioxide,Chemicals,2213,,NAICS_2012_Code,emission/air,00000,FIPS,1.762860877477579E8,kg,ELEMENTARY_FLOW,2012,,,,,,,,,,,EPA_GHGI_T_A_13.non_manufacturing_natural_gas,b6f010fb-a764-3063-af2d-bcb8309a97b7,,,BEA_Detail_Use_PRO_BeforeRedef\n"
+            + "Carbon dioxide,Chemicals,423,,NAICS_2012_Code,emission/air,00000,FIPS,8.058792582754647E8,kg,ELEMENTARY_FLOW,2012,,,,,,,,,,,EPA_GHGI_T_A_13.non_manufacturing_natural_gas,b6f010fb-a764-3063-af2d-bcb8309a97b7,,,BEA_Detail_Use_PRO_BeforeRedef\n"
+            + "Carbon dioxide,Chemicals,424,,NAICS_2012_Code,emission/air,00000,FIPS,1.1332677069498723E9,kg,ELEMENTARY_FLOW,2012,,,,,,,,,,,EPA_GHGI_T_A_13.non_manufacturing_natural_gas,b6f010fb-a764-3063-af2d-bcb8309a97b7,,,BEA_Detail_Use_PRO_BeforeRedef\n"
+            + "Carbon dioxide,Chemicals,425,,NAICS_2012_Code,emission/air,00000,FIPS,2.518372682110827E7,kg,ELEMENTARY_FLOW,2012,,,,,,,,,,,EPA_GHGI_T_A_13.non_manufacturing_natural_gas,b6f010fb-a764-3063-af2d-bcb8309a97b7,,,BEA_Detail_Use_PRO_BeforeRedef\n"
+            + "Carbon dioxide,Chemicals,441,,NAICS_2012_Code,emission/air,00000,FIPS,7.492158729279711E8,kg,ELEMENTARY_FLOW,2012,,,,,,,,,,,EPA_GHGI_T_A_13.non_manufacturing_natural_gas,b6f010fb-a764-3063-af2d-bcb8309a97b7,,,BEA_Detail_Use_PRO_BeforeRedef\n"
+            + "Carbon dioxide,Chemicals,442,,NAICS_2012_Code,emission/air,00000,FIPS,9.916092435811383E7,kg,ELEMENTARY_FLOW,2012,,,,,,,,,,,EPA_GHGI_T_A_13.non_manufacturing_natural_gas,b6f010fb-a764-3063-af2d-bcb8309a97b7,,,BEA_Detail_Use_PRO_BeforeRedef\n"
+            + "Carbon dioxide,Chemicals,443,,NAICS_2012_Code,emission/air,00000,FIPS,9.916092435811383E7,kg,ELEMENTARY_FLOW,2012,,,,,,,,,,,EPA_GHGI_T_A_13.non_manufacturing_natural_gas,b6f010fb-a764-3063-af2d-bcb8309a97b7,,,BEA_Detail_Use_PRO_BeforeRedef";
+    Test.ensureEqual(
+        results.substring(0, expected.length()),
+        expected,
+        "results=\n" + results.substring(0, expected.length()));
+
+    // simplify
+    table = new Table();
+    table.readParquet(fileName, null, null, true);
+    results = table.dataToString();
+    Test.ensureEqual(
+        results.substring(0, expected.length()),
+        expected,
+        "results=\n" + results.substring(0, expected.length()));
+
+    // specify colNames and simplify
+    table = new Table();
+    table.readParquet(
+        fileName, StringArray.fromCSV("Flowable,SectorProducedBy,FlowAmount"), null, true);
+    results = table.dataToString();
+    expected =
+        "Flowable,SectorProducedBy,FlowAmount\n"
+            + "Carbon dioxide,311,8.117607800971414E7\n"
+            + "Carbon dioxide,313,3.497831003670609E7\n"
+            + "Carbon dioxide,316,329984.05695005745\n"
+            + "Carbon dioxide,321,1.102146750213192E8\n"
+            + "Carbon dioxide,322,1.315316451002929E9\n"
+            + "Carbon dioxide,324,3.5737273367691225E8\n"
+            + "Carbon dioxide,325,4.450164992028475E9\n"
+            + "Carbon dioxide,326,1.602072596492529E9\n"
+            + "Carbon dioxide,327,4.451484928256275E8\n"
+            + "Carbon dioxide,331,1.3166363872307293E8\n"
+            + "Carbon dioxide,332,2.573875644210448E7\n"
+            + "Carbon dioxide,333,6929665.195951207\n"
+            + "Carbon dioxide,334,2.435282340291424E8\n"
+            + "Carbon dioxide,335,3.0358533239405286E7\n"
+            + "Carbon dioxide,3361,329984.05695005745\n"
+            + "Carbon dioxide,3363,3.431834192280598E7\n"
+            + "Carbon dioxide,3364,4619776.797300804\n"
+            + "Carbon dioxide,3369,7259649.2529012645\n"
+            + "Carbon dioxide,339,1.8479107189203218E7\n"
+            + "Carbon dioxide,212,3.9E9\n"
+            + "Carbon dioxide,325,1.34E10\n"
+            + "Carbon dioxide,327,5.11E10\n"
+            + "Carbon dioxide,331,6.41E10\n"
+            + "Carbon dioxide,562,1.34E10\n"
+            + "Carbon dioxide,2211,1.6784386943905576E12\n"
+            + "Carbon dioxide,S00101,6.3046426078572815E10\n"
+            + "Carbon dioxide,S00202,2.8181487953086957E11\n"
+            + "Carbon dioxide,331,5.0E8\n"
+            + "Carbon dioxide,111,6.0E9\n"
+            + "Carbon dioxide,313,1207243.4607645876\n"
+            + "Carbon dioxide,322,2414486.9215291752\n"
+            + "Carbon dioxide,324,9657947.686116701\n"
+            + "Carbon dioxide,325,4.729979879275654E9\n"
+            + "Carbon dioxide,326,2.595573440643863E7\n"
+            + "Carbon dioxide,327,7847082.494969819\n"
+            + "Carbon dioxide,331,8450704.225352112\n"
+            + "Carbon dioxide,332,3621730.3822937626\n"
+            + "Carbon dioxide,333,603621.7303822939\n"
+            + "Carbon dioxide,335,603621.7303822938\n"
+            + "Carbon dioxide,3363,6036217.303822937\n"
+            + "Carbon dioxide,3369,2414486.9215291752\n"
+            + "Carbon dioxide,339,1207243.4607645876\n"
+            + "Carbon dioxide,111,4.222422680412371E9\n"
+            + "Carbon dioxide,112,7.757731958762886E7\n"
+            + "Carbon dioxide,485,8.0E8\n"
+            + "Carbon dioxide,486,4.06E10\n"
+            + "Carbon dioxide,481,1.327E11\n"
+            + "Carbon dioxide,482,3.94E10\n"
+            + "Carbon dioxide,483,2.43E10\n"
+            + "Carbon dioxide,484,3.77E10\n"
+            + "Carbon dioxide,485,9.0E8\n"
+            + "Carbon dioxide,928,1.23E10\n"
+            + "Carbon dioxide,F010,1.75E10\n"
+            + "Carbon dioxide,484,2.887591461683486E11\n"
+            + "Carbon dioxide,485,1.5622793434499846E9\n"
+            + "Carbon dioxide,487,1.6157633942397027E9\n"
+            + "Carbon dioxide,488,1.6157633942397027E9\n"
+            + "Carbon dioxide,491,4.381361071886088E9\n"
+            + "Carbon dioxide,492,7.637128206555392E9\n"
+            + "Carbon dioxide,922,7.748506629876521E10\n"
+            + "Carbon dioxide,F010,9.596372982544447E11\n"
+            + "Carbon dioxide,S00201,1.060619386807061E10\n"
+            + "Carbon dioxide,212,1.28E10\n"
+            + "Carbon dioxide,311,2.3372513562386975E7\n"
+            + "Carbon dioxide,312,2124773.960216998\n"
+            + "Carbon dioxide,313,2124773.960216998\n"
+            + "Carbon dioxide,314,2124773.960216998\n"
+            + "Carbon dioxide,321,6374321.880650995\n"
+            + "Carbon dioxide,322,2124773.960216998\n"
+            + "Carbon dioxide,323,2124773.960216998\n"
+            + "Carbon dioxide,324,8499095.840867992\n"
+            + "Carbon dioxide,325,4.1985533453887887E9\n"
+            + "Carbon dioxide,327,1.274864376130199E7\n"
+            + "Carbon dioxide,331,3.9945750452079564E8\n"
+            + "Carbon dioxide,334,2124773.960216998\n"
+            + "Carbon dioxide,335,2124773.960216998\n"
+            + "Carbon dioxide,3361,7790837.854128993\n"
+            + "Carbon dioxide,3362,3541289.933694997\n"
+            + "Carbon dioxide,3363,3541289.933694997\n"
+            + "Carbon dioxide,3364,8499095.840867992\n"
+            + "Carbon dioxide,3365,3541289.933694997\n"
+            + "Carbon dioxide,3366,3541289.933694997\n"
+            + "Carbon dioxide,3369,3541289.933694997\n"
+            + "Carbon dioxide,339,2124773.960216998\n"
+            + "Carbon dioxide,311,5.476263713729109E7\n"
+            + "Carbon dioxide,312,1.564646775351174E7\n"
+            + "Carbon dioxide,313,7823233.87675587\n"
+            + "Carbon dioxide,316,1.564646775351174E7\n"
+            + "Carbon dioxide,324,4.6939403260535225E7\n"
+            + "Carbon dioxide,325,7.589319183840869E10\n"
+            + "Carbon dioxide,326,7823233.87675587\n"
+            + "Carbon dioxide,327,1.0170204039782631E8\n"
+            + "Carbon dioxide,331,8.605557264431457E7\n"
+            + "Carbon dioxide,332,7823233.876755869\n"
+            + "Carbon dioxide,333,2.3469701630267613E7\n"
+            + "Carbon dioxide,334,7823233.87675587\n"
+            + "Carbon dioxide,3361,1.564646775351174E7\n"
+            + "Carbon dioxide,3364,7823233.87675587\n"
+            + "Carbon dioxide,337,7823233.87675587\n"
+            + "Carbon dioxide,481,6.078944462425987E8\n"
+            + "Carbon dioxide,482,1.3171467737943378E8\n"
+            + "Carbon dioxide,483,1.1373131770843251E8\n"
+            + "Carbon dioxide,484,7.684804752203797E8\n"
+            + "Carbon dioxide,485,3.6235363555014E7\n"
+            + "Carbon dioxide,486,1343221.0650572132\n"
+            + "Carbon dioxide,487,3.747586771509625E7\n"
+            + "Carbon dioxide,488,3.747586771509625E7\n"
+            + "Carbon dioxide,491,2.8239247567732237E7\n"
+            + "Carbon dioxide,492,1.2319707556689452E8\n"
+            + "Carbon dioxide,921,1.459490581450485E8\n"
+            + "Carbon dioxide,922,1.459490581450485E8\n"
+            + "Carbon dioxide,923,8.464783500742985E8\n"
+            + "Carbon dioxide,924,1.459490581450485E8\n"
+            + "Carbon dioxide,925,1.459490581450485E8\n"
+            + "Carbon dioxide,926,1.459490581450485E8\n"
+            + "Carbon dioxide,927,2670639.5293490477\n"
+            + "Carbon dioxide,928,4.1593122468795985E8\n"
+            + "Carbon dioxide,F010,4.4193869352474165E9\n"
+            + "Carbon dioxide,211,1.88E10\n"
+            + "Carbon dioxide,324,3.4E9\n"
+            + "Carbon dioxide,211,2.68E10\n"
+            + "Carbon dioxide,486,2.0E8\n"
+            + "Carbon dioxide,324,1.94E10\n"
+            + "Carbon dioxide,325,7.1E9\n"
+            + "Carbon dioxide,311,7.971584948688711E9\n"
+            + "Carbon dioxide,312,4.993386545039909E8\n"
+            + "Carbon dioxide,313,4.2800456100342077E8\n"
+            + "Carbon dioxide,314,7.133409350057012E7\n"
+            + "Carbon dioxide,321,8.916761687571266E7\n"
+            + "Carbon dioxide,322,1.0414777651083239E10\n"
+            + "Carbon dioxide,324,5.885062713797035E8\n"
+            + "Carbon dioxide,325,1.690618015963512E10\n"
+            + "Carbon dioxide,327,1.7833523375142532E10\n"
+            + "Carbon dioxide,331,2.3272748004561005E10\n"
+            + "Carbon dioxide,335,1.783352337514253E7\n"
+            + "Carbon dioxide,3361,4.330998533963186E7\n"
+            + "Carbon dioxide,3362,7642938.589346799\n"
+            + "Carbon dioxide,3363,7642938.589346799\n"
+            + "Carbon dioxide,3364,7642938.589346799\n"
+            + "Carbon dioxide,3365,7642938.589346799\n"
+            + "Carbon dioxide,3366,7642938.589346799\n"
+            + "Carbon dioxide,3369,7642938.589346799\n"
+            + "Carbon dioxide,337,1.783352337514253E7\n"
+            + "Carbon dioxide,F010,2.824E11\n"
+            + "Carbon dioxide,311,4.230977982590886E10\n"
+            + "Carbon dioxide,312,3.562928827444957E9\n"
+            + "Carbon dioxide,313,2.6721966205837173E9\n"
+            + "Carbon dioxide,314,1.187642942481652E9\n"
+            + "Carbon dioxide,315,1.484553678102065E8\n"
+            + "Carbon dioxide,316,7.422768390510325E7\n"
+            + "Carbon dioxide,321,3.63715651135006E9\n"
+            + "Carbon dioxide,322,3.236327018262502E10\n"
+            + "Carbon dioxide,323,2.894879672299027E9\n"
+            + "Carbon dioxide,324,7.94978494623656E10\n"
+            + "Carbon dioxide,325,1.4860382317801672E11\n"
+            + "Carbon dioxide,326,6.680491551459293E9\n"
+            + "Carbon dioxide,327,2.4717818740399387E10\n"
+            + "Carbon dioxide,331,4.772840075098139E10\n"
+            + "Carbon dioxide,332,1.4177487625874723E10\n"
+            + "Carbon dioxide,333,5.344393241167435E9\n"
+            + "Carbon dioxide,334,3.488701143539853E9\n"
+            + "Carbon dioxide,335,2.004147465437788E9\n"
+            + "Carbon dioxide,3361,4.1567502986857824E9\n"
+            + "Carbon dioxide,3362,8.907322068612392E8\n"
+            + "Carbon dioxide,3363,8.907322068612392E8\n"
+            + "Carbon dioxide,3364,2.1526028332479944E9\n"
+            + "Carbon dioxide,3365,8.907322068612392E8\n"
+            + "Carbon dioxide,3366,8.907322068612392E8\n"
+            + "Carbon dioxide,3369,8.907322068612392E8\n"
+            + "Carbon dioxide,337,1.1134152585765488E9\n"
+            + "Carbon dioxide,339,1.929919781532685E9\n"
+            + "Carbon dioxide,423,1.8612191958495457E7\n"
+            + "Carbon dioxide,424,2.4816255944660604E7\n"
+            + "Carbon dioxide,493,9306095.979247728\n"
+            + "Carbon dioxide,5413,3.412235192390834E7\n"
+            + "Carbon dioxide,5417,2.1093817552961516E8\n"
+            + "Carbon dioxide,551,1.2408127972330303E8\n"
+            + "Carbon dioxide,561,3102031.993082576\n"
+            + "Carbon dioxide,562,6204063.986165152\n"
+            + "Carbon dioxide,611,4.032641591007349E7\n"
+            + "Carbon dioxide,622,1.7681582360570684E8\n"
+            + "Carbon dioxide,623,1.8612191958495457E7\n"
+            + "Carbon dioxide,624,1.2408127972330304E7\n"
+            + "Carbon dioxide,712,3102031.993082576\n"
+            + "Carbon dioxide,713,2.4816255944660608E7\n"
+            + "Carbon dioxide,721,3.722438391699091E7\n"
+            + "Carbon dioxide,722,1.1477518374405532E9\n"
+            + "Carbon dioxide,811,1.2408127972330304E7\n"
+            + "Carbon dioxide,812,1.2408127972330304E7\n"
+            + "Carbon dioxide,813,1.8612191958495457E7\n"
+            + "Carbon dioxide,923,2.1643320363164716E9\n"
+            + "Carbon dioxide,2213,1.762860877477579E8\n"
+            + "Carbon dioxide,423,8.058792582754647E8\n"
+            + "Carbon dioxide,424,1.1332677069498723E9\n"
+            + "Carbon dioxide,425,2.518372682110827E7\n"
+            + "Carbon dioxide,441,7.492158729279711E8\n"
+            + "Carbon dioxide,442,9.916092435811383E7\n"
+            + "Carbon dioxide,443,9.916092435811383E7\n"
+            + "Carbon dioxide,444,3.0850065355857635E8\n"
+            + "Carbon dioxide,445,3.2109251696913046E8\n"
+            + "Carbon dioxide,446,3.147965852638534E7\n"
+            + "Carbon dioxide,447,1.2591863410554135E7\n"
+            + "Carbon dioxide,448,1.0073490728443308E8\n"
+            + "Carbon dioxide,451,9.916092435811383E7\n"
+            + "Carbon dioxide,452,1.4480642922137257E8\n"
+            + "Carbon dioxide,453,9.916092435811383E7\n"
+            + "Carbon dioxide,454,6.925524875804774E7\n"
+            + "Carbon dioxide,493,2.77020995032191E8\n"
+            + "Carbon dioxide,511,1.8887795115831205E8\n"
+            + "Carbon dioxide,512,5.036745364221654E7\n"
+            + "Carbon dioxide,515,1.2591863410554135E7\n"
+            + "Carbon dioxide,517,1.2591863410554136E8\n"
+            + "Carbon dioxide,518,6295931.705277068\n"
+            + "Carbon dioxide,519,1.2591863410554135E7\n"
+            + "Carbon dioxide,521,7.743995997490793E8\n"
+            + "Carbon dioxide,522,9.506856874968373E8\n"
+            + "Carbon dioxide,523,1.385104975160955E8\n"
+            + "Carbon dioxide,524,1.573982926319267E8\n"
+            + "Carbon dioxide,525,7.303280778121399E9\n"
+            + "Carbon dioxide,531,7.10244055672306E10\n"
+            + "Carbon dioxide,532,5.313766359253845E9\n"
+            + "Carbon dioxide,533,5.036745364221654E7\n"
+            + "Carbon dioxide,5411,2.518372682110827E7\n"
+            + "Carbon dioxide,5412,5.036745364221654E7\n"
+            + "Carbon dioxide,5413,1.2591863410554136E8\n"
+            + "Carbon dioxide,5414,1.2591863410554135E7\n"
+            + "Carbon dioxide,5415,2.518372682110827E7\n"
+            + "Carbon dioxide,5416,4.407152193693948E7\n"
+            + "Carbon dioxide,5417,9.443897557915603E7\n"
+            + "Carbon dioxide,5418,3.777559023166241E7\n"
+            + "Carbon dioxide,5419,1.0073490728443308E8\n"
+            + "Carbon dioxide,551,1.1521555020657034E9\n"
+            + "Carbon dioxide,561,7.36624009517417E8\n"
+            + "Carbon dioxide,562,3.5886810720079285E8\n"
+            + "Carbon dioxide,611,1.082270660137128E10\n"
+            + "Carbon dioxide,621,5.792257168854903E8\n"
+            + "Carbon dioxide,622,3.9349573157981677E9\n"
+            + "Carbon dioxide,623,5.666338534749361E8\n"
+            + "Carbon dioxide,624,3.903477657271782E8\n"
+            + "Carbon dioxide,711,6.925524875804774E7\n"
+            + "Carbon dioxide,712,4.407152193693948E7\n"
+            + "Carbon dioxide,713,5.2885826324327374E8\n"
+            + "Carbon dioxide,721,1.2843700678765218E9\n"
+            + "Carbon dioxide,722,3.1227821258174257E9\n"
+            + "Carbon dioxide,811,3.5886810720079285E8\n"
+            + "Carbon dioxide,812,4.910826730116113E8\n"
+            + "Carbon dioxide,813,2.285423209015576E9\n"
+            + "Carbon dioxide,923,3.849797344327503E10\n"
+            + "Carbon dioxide,927,5.981135120013214E8\n"
+            + "Carbon dioxide,111,1.8007818620066284E10\n"
+            + "Carbon dioxide,112,9.587393605001507E9\n"
+            + "Carbon dioxide,113,9.236196896655619E8\n"
+            + "Carbon dioxide,114,9.927528999698704E8\n"
+            + "Carbon dioxide,115,1.6591970473034045E8\n"
+            + "Carbon dioxide,211,1.1655859257306417E10\n"
+            + "Carbon dioxide,212,1.7687040524254295E10\n"
+            + "Carbon dioxide,213,8.688661871045496E9\n"
+            + "Carbon dioxide,2212,6.913321030430853E7\n"
+            + "Carbon dioxide,2213,7.467113633349939E7\n"
+            + "Carbon dioxide,236,2.001682971150949E10\n"
+            + "Carbon dioxide,237,2.890182989981922E10\n"
+            + "Carbon dioxide,238,2.768923339108165E10\n"
+            + "Carbon dioxide,311,2.8870028623079243E9\n"
+            + "Carbon dioxide,312,5.420043687857789E8\n"
+            + "Carbon dioxide,313,2.7100218439288944E8\n"
+            + "Carbon dioxide,314,1.2997043537210003E8\n"
+            + "Carbon dioxide,315,1.1061313648689365E7\n"
+            + "Carbon dioxide,316,3.871459777041277E7\n"
+            + "Carbon dioxide,321,1.6674930325399218E9\n"
+            + "Carbon dioxide,322,5.13798018981621E9\n"
+            + "Carbon dioxide,323,5.024601724917144E9\n"
+            + "Carbon dioxide,324,8.182606771617957E10\n"
+            + "Carbon dioxide,325,3.799284705483579E10\n"
+            + "Carbon dioxide,326,1.930199231696294E9\n"
+            + "Carbon dioxide,327,2.275865283217837E9\n"
+            + "Carbon dioxide,331,1.7421568996685748E9\n"
+            + "Carbon dioxide,332,1.7393915712564025E9\n"
+            + "Carbon dioxide,333,3.735958684844833E9\n"
+            + "Carbon dioxide,334,2.2675692979813197E8\n"
+            + "Carbon dioxide,335,3.041861253389575E8\n"
+            + "Carbon dioxide,3361,1.880423320277192E8\n"
+            + "Carbon dioxide,3362,6.083722506779151E7\n"
+            + "Carbon dioxide,3363,3.373700662850256E8\n"
+            + "Carbon dioxide,3364,4.0650327658933413E8\n"
+            + "Carbon dioxide,3365,3.594926935824043E7\n"
+            + "Carbon dioxide,3366,1.1337846489906599E8\n"
+            + "Carbon dioxide,3369,1.1061313648689365E7\n"
+            + "Carbon dioxide,337,2.9865546851461285E8\n"
+            + "Carbon dioxide,339,3.788499924676107E8\n"
+            + "Carbon dioxide,423,1.14949409380387E9\n"
+            + "Carbon dioxide,424,1.0262683269480951E9\n"
+            + "Carbon dioxide,425,3.972651588186175E7\n"
+            + "Carbon dioxide,441,2.1812799924022233E8\n"
+            + "Carbon dioxide,442,3.347326801156869E7\n"
+            + "Carbon dioxide,443,3.347326801156869E7\n"
+            + "Carbon dioxide,444,1.467674058968781E8\n"
+            + "Carbon dioxide,445,2.1628880869013616E8\n"
+            + "Carbon dioxide,446,1.581703873074125E7\n"
+            + "Carbon dioxide,447,1.938506839790846E8\n"
+            + "Carbon dioxide,448,3.494462045163765E7\n"
+            + "Carbon dioxide,451,3.347326801156869E7\n"
+            + "Carbon dioxide,452,5.84862594927409E7\n"
+            + "Carbon dioxide,453,3.347326801156869E7\n"
+            + "Carbon dioxide,454,8.166006042382692E7\n"
+            + "Carbon dioxide,493,1.1881170953556798E8\n"
+            + "Carbon dioxide,511,1.3168604338617133E8\n"
+            + "Carbon dioxide,512,2.905921069136183E7\n"
+            + "Carbon dioxide,515,9195952.750430958\n"
+            + "Carbon dioxide,517,1.611130921875504E8\n"
+            + "Carbon dioxide,518,1.611130921875504E8\n"
+            + "Carbon dioxide,519,3.972651588186175E7\n"
+            + "Carbon dioxide,521,8.741672684559671E8\n"
+            + "Carbon dioxide,522,1.7551395419472528E9\n"
+            + "Carbon dioxide,523,1.1517011224639733E9\n"
+            + "Carbon dioxide,524,9563790.860448197\n"
+            + "Carbon dioxide,525,3.939546158284623E8\n"
+            + "Carbon dioxide,531,1.1764688885384674E9\n"
+            + "Carbon dioxide,532,8.921300294951422E8\n"
+            + "Carbon dioxide,533,3.1756690164821576E7\n"
+            + "Carbon dioxide,5411,1.7288391170810204E7\n"
+            + "Carbon dioxide,5412,4.561192564213756E7\n"
+            + "Carbon dioxide,5413,2.4902640048167038E8\n"
+            + "Carbon dioxide,5414,5517571.650258576\n"
+            + "Carbon dioxide,5415,2.405661239512739E8\n"
+            + "Carbon dioxide,5416,4.89224686322927E7\n"
+            + "Carbon dioxide,5417,1.0593737568496464E8\n"
+            + "Carbon dioxide,5418,1.802406739084468E7\n"
+            + "Carbon dioxide,5419,4.4140573202068605E7\n"
+            + "Carbon dioxide,551,6.00311795548133E8\n"
+            + "Carbon dioxide,561,9.457117808543198E8\n"
+            + "Carbon dioxide,562,5.1386983969408196E8\n"
+            + "Carbon dioxide,611,3.089840124144802E8\n"
+            + "Carbon dioxide,621,2.2879530443072227E8\n"
+            + "Carbon dioxide,622,1.831833787885847E9\n"
+            + "Carbon dioxide,623,2.357842285210498E8\n"
+            + "Carbon dioxide,624,1.9789690318927425E8\n"
+            + "Carbon dioxide,711,4.524408753212032E7\n"
+            + "Carbon dioxide,712,1.6552714950775726E7\n"
+            + "Carbon dioxide,713,3.788732533177555E8\n"
+            + "Carbon dioxide,721,4.1124300699927247E8\n"
+            + "Carbon dioxide,722,1.202094943536335E9\n"
+            + "Carbon dioxide,811,1.6736634005784345E8\n"
+            + "Carbon dioxide,812,1.688376924979124E8\n"
+            + "Carbon dioxide,813,9.802885631959403E8\n"
+            + "Carbon dioxide,923,1.9703528620681004E10\n"
+            + "Carbon dioxide,927,6.2164640592913285E7\n"
+            + "Carbon tetrafluoride,331,327469.56\n"
+            + "Carbon tetrafluoride,334,189445.19999999998\n"
+            + "HFC-125,423,11618.351946425753\n"
+            + "HFC-125,424,6126.040117206307\n"
+            + "HFC-125,425,281.6570168830486\n"
+            + "HFC-125,441,1443.4922115256238\n"
+            + "HFC-125,442,413.6837435469776\n"
+            + "HFC-125,443,413.6837435469776\n"
+            + "HFC-125,444,1021.0066862010511\n"
+            + "HFC-125,445,2922.191550161629\n"
+            + "HFC-125,446,668.9354150972404\n"
+            + "HFC-125,447,1901.184863960578\n"
+            + "HFC-125,448,1549.1135928567674\n"
+            + "HFC-125,451,413.6837435469776\n"
+            + "HFC-125,452,2288.4632621747696\n"
+            + "HFC-125,453,413.6837435469776\n"
+            + "HFC-125,454,1513.9064657463862\n"
+            + "HFC-125,511,316.86414399342965\n"
+            + "HFC-125,512,422.4855253245729\n"
+            + "HFC-125,515,33446.77075486202\n"
+            + "HFC-125,517,4154.440999024967\n"
+            + "HFC-125,518,9259.474430030223\n"
+            + "HFC-125,521,52.81069066557161\n"
+            + "HFC-125,522,52.81069066557161\n"
+            + "HFC-125,523,1302.6637030840998\n"
+            + "HFC-125,531,997.5352681274637\n"
+            + "HFC-125,532,4729.490741827858\n"
+            + "HFC-125,533,46.94283614717476\n"
+            + "HFC-125,5411,1091.4209404218132\n"
+            + "HFC-125,5412,704.1425422076214\n"
+            + "HFC-125,5413,1302.6637030840998\n"
+            + "HFC-125,5414,140.8285084415243\n"
+            + "HFC-125,5415,14223.679352593954\n"
+            + "HFC-125,5416,3309.469948375821\n"
+            + "HFC-125,5417,1267.4565759737186\n"
+            + "HFC-125,5418,1161.8351946425753\n"
+            + "HFC-125,5419,211.24276266228645\n"
+            + "HFC-125,551,457.6926524349539\n"
+            + "HFC-125,561,24715.40323148751\n"
+            + "HFC-125,562,11583.144819315374\n"
+            + "HFC-125,611,5210.654812336399\n"
+            + "HFC-125,621,6971.011167855452\n"
+            + "HFC-125,622,13871.608081490142\n"
+            + "HFC-125,623,6478.111388310117\n"
+            + "HFC-125,624,4224.855253245729\n"
+            + "HFC-125,711,352.0712711038107\n"
+            + "HFC-125,712,105.62138133114323\n"
+            + "HFC-125,713,2323.6703892851506\n"
+            + "HFC-125,721,1830.7706097398154\n"
+            + "HFC-125,722,13343.501174834426\n"
+            + "HFC-125,811,13237.879793503284\n"
+            + "HFC-125,812,739.3496693180025\n"
+            + "HFC-125,813,5738.761718992114\n"
+            + "HFC-125,923,23762.29600471363\n"
+            + "HFC-125,236,24428.85979273934\n"
+            + "HFC-125,237,22537.469970413065\n"
+            + "HFC-125,238,32319.203192948942\n"
+            + "HFC-125,311,2521.8530964350307\n"
+            + "HFC-125,314,802.4078034111461\n"
+            + "HFC-125,316,305.6791632042461\n"
+            + "HFC-125,321,1795.865083824946\n"
+            + "HFC-125,322,2139.754142429723\n"
+            + "HFC-125,324,878.8275942122076\n"
+            + "HFC-125,325,24607.172637941814\n"
+            + "HFC-125,326,4394.137971061038\n"
+            + "HFC-125,327,76.41979080106152\n"
+            + "HFC-125,332,343.8890586047769\n"
+            + "HFC-125,333,993.4572804137998\n"
+            + "HFC-125,334,611.3583264084922\n"
+            + "HFC-125,3361,8559.016569718891\n"
+            + "HFC-125,3362,114.62968620159229\n"
+            + "HFC-125,3363,16812.353976233535\n"
+            + "HFC-125,337,73554.04864602172\n"
+            + "HFC-125,339,1184.5067574164536\n"
+            + "HFC-125,423,30797.175692827797\n"
+            + "HFC-125,424,45966.50416683851\n"
+            + "HFC-125,425,1337.3463390185768\n"
+            + "HFC-125,441,764.1979080106153\n"
+            + "HFC-125,442,878.8275942122076\n"
+            + "HFC-125,443,878.8275942122076\n"
+            + "HFC-125,444,802.4078034111461\n"
+            + "HFC-125,445,10660.560816748084\n"
+            + "HFC-125,446,2903.952050440338\n"
+            + "HFC-125,447,1260.9265482175153\n"
+            + "HFC-125,448,2674.6926780371537\n"
+            + "HFC-125,451,878.8275942122076\n"
+            + "HFC-125,452,2025.1244562281306\n"
+            + "HFC-125,453,878.8275942122076\n"
+            + "HFC-125,454,3477.1004814483\n"
+            + "HFC-125,482,38.20989540053076\n"
+            + "HFC-125,487,1547.5007637214962\n"
+            + "HFC-125,488,1547.5007637214962\n"
+            + "HFC-125,492,802.4078034111461\n"
+            + "HFC-125,493,114.62968620159229\n"
+            + "HFC-125,511,764.1979080106153\n"
+            + "HFC-125,512,152.83958160212305\n"
+            + "HFC-125,515,1108.0869666153924\n"
+            + "HFC-125,517,6457.4723226896995\n"
+            + "HFC-125,518,343.8890586047769\n"
+            + "HFC-125,524,305.6791632042461\n"
+            + "HFC-125,531,12.736631800176921\n"
+            + "HFC-125,532,3833.726171853254\n"
+            + "HFC-125,533,12.736631800176921\n"
+            + "HFC-125,5411,38.20989540053076\n"
+            + "HFC-125,5412,38.20989540053076\n"
+            + "HFC-125,5413,9743.523327135345\n"
+            + "HFC-125,5414,305.6791632042461\n"
+            + "HFC-125,5415,4203.088494058384\n"
+            + "HFC-125,5416,611.3583264084922\n"
+            + "HFC-125,5417,3706.3598538514843\n"
+            + "HFC-125,5418,3095.0015274429925\n"
+            + "HFC-125,5419,152.83958160212305\n"
+            + "HFC-125,551,152.83958160212305\n"
+            + "HFC-125,561,12685.685272976214\n"
+            + "HFC-125,562,458.51874480636917\n"
+            + "HFC-125,611,229.25937240318459\n"
+            + "HFC-125,621,62014.660235061434\n"
+            + "HFC-125,622,7871.238452509338\n"
+            + "HFC-125,623,10889.820189151267\n"
+            + "HFC-125,624,2674.6926780371537\n"
+            + "HFC-125,711,267.46926780371535\n"
+            + "HFC-125,712,38.20989540053076\n"
+            + "HFC-125,713,1222.7166528169844\n"
+            + "HFC-125,721,1108.0869666153924\n"
+            + "HFC-125,722,123379.75224831385\n"
+            + "HFC-125,811,1146.2968620159231\n"
+            + "HFC-125,812,458.51874480636917\n"
+            + "HFC-125,813,955.2473850132692\n"
+            + "HFC-125,921,161.93717574510657\n"
+            + "HFC-125,922,161.93717574510657\n"
+            + "HFC-125,923,7612.8667788486055\n"
+            + "HFC-125,924,161.93717574510657\n"
+            + "HFC-125,925,161.93717574510657\n"
+            + "HFC-125,926,161.93717574510657\n"
+            + "HFC-125,928,98.25401674422197\n"
+            + "HFC-125,F010,41763.41567278013\n"
+            + "HFC-125,F010,750698.0580433354\n"
+            + "HFC-125,211,1151.49201312826\n"
+            + "HFC-125,236,73824.82308805999\n"
+            + "HFC-125,237,57165.737550302234\n"
+            + "HFC-125,238,82536.11049172597\n"
+            + "HFC-125,311,18298.71003471213\n"
+            + "HFC-125,312,4280.546396628967\n"
+            + "HFC-125,314,25.03243506800565\n"
+            + "HFC-125,321,4355.643701832983\n"
+            + "HFC-125,322,200.2594805440452\n"
+            + "HFC-125,323,125.16217534002826\n"
+            + "HFC-125,324,425.5513961560961\n"
+            + "HFC-125,325,10663.817338970408\n"
+            + "HFC-125,326,9437.228020638131\n"
+            + "HFC-125,327,325.4216558840735\n"
+            + "HFC-125,331,575.74600656413\n"
+            + "HFC-125,332,2302.98402625652\n"
+            + "HFC-125,333,107814.69783790034\n"
+            + "HFC-125,334,150.1946104080339\n"
+            + "HFC-125,335,4706.097792785063\n"
+            + "HFC-125,3361,32867.58724429142\n"
+            + "HFC-125,3362,4931.389708397113\n"
+            + "HFC-125,3363,5982.75198125335\n"
+            + "HFC-125,3364,150.1946104080339\n"
+            + "HFC-125,3365,50.0648701360113\n"
+            + "HFC-125,3366,50.0648701360113\n"
+            + "HFC-125,3369,25.03243506800565\n"
+            + "HFC-125,337,425.5513961560961\n"
+            + "HFC-125,339,1727.2380196923898\n"
+            + "HFC-125,423,114731.22547095432\n"
+            + "HFC-125,424,60494.64615741227\n"
+            + "HFC-125,425,2781.363041720105\n"
+            + "HFC-125,441,14254.485588815536\n"
+            + "HFC-125,442,4085.126967526404\n"
+            + "HFC-125,443,4085.126967526404\n"
+            + "HFC-125,444,10082.441026235378\n"
+            + "HFC-125,445,28856.641557846084\n"
+            + "HFC-125,446,6605.737224085247\n"
+            + "HFC-125,447,18774.200531610706\n"
+            + "HFC-125,448,15297.496729460574\n"
+            + "HFC-125,451,4085.126967526404\n"
+            + "HFC-125,452,22598.57471397585\n"
+            + "HFC-125,453,4085.126967526404\n"
+            + "HFC-125,454,14949.826349245563\n"
+            + "HFC-125,511,3129.033421935118\n"
+            + "HFC-125,512,4172.044562580157\n"
+            + "HFC-125,515,330286.8612042624\n"
+            + "HFC-125,517,41025.10486537155\n"
+            + "HFC-125,518,91437.30999654844\n"
+            + "HFC-125,521,521.5055703225196\n"
+            + "HFC-125,522,521.5055703225196\n"
+            + "HFC-125,523,12863.804067955483\n"
+            + "HFC-125,531,9850.660772758703\n"
+            + "HFC-125,532,46703.72107555009\n"
+            + "HFC-125,533,463.56050695335074\n"
+            + "HFC-125,5411,10777.781786665404\n"
+            + "HFC-125,5412,6953.407604300261\n"
+            + "HFC-125,5413,12863.804067955483\n"
+            + "HFC-125,5414,1390.6815208600524\n"
+            + "HFC-125,5415,140458.8336068653\n"
+            + "HFC-125,5416,32681.01574021123\n"
+            + "HFC-125,5417,12516.133687740472\n"
+            + "HFC-125,5418,11473.12254709543\n"
+            + "HFC-125,5419,2086.0222812900784\n"
+            + "HFC-125,551,4519.71494279517\n"
+            + "HFC-125,561,244064.60691093918\n"
+            + "HFC-125,562,114383.55509073929\n"
+            + "HFC-125,611,51455.21627182193\n"
+            + "HFC-125,621,68838.73528257258\n"
+            + "HFC-125,622,136982.12980471516\n"
+            + "HFC-125,623,63971.3499595624\n"
+            + "HFC-125,624,41720.44562580157\n"
+            + "HFC-125,711,3476.7038021501303\n"
+            + "HFC-125,712,1043.0111406450392\n"
+            + "HFC-125,713,22946.24509419086\n"
+            + "HFC-125,721,18078.859771180676\n"
+            + "HFC-125,722,131767.07410148994\n"
+            + "HFC-125,811,130724.06296084492\n"
+            + "HFC-125,812,7301.077984515274\n"
+            + "HFC-125,813,56670.27197504713\n"
+            + "HFC-125,923,234652.67304654702\n"
+            + "HFC-125,482,6153.262770847012\n"
+            + "HFC-125,483,104605.46710439921\n"
+            + "HFC-125,484,307663.13854235056\n"
+            + "HFC-125,485,24613.051083388047\n"
+            + "HFC-125,F010,3064324.859881812\n"
+            + "HFC-134a,423,69877.66013494416\n"
+            + "HFC-134a,424,36844.58443478875\n"
+            + "HFC-134a,425,1694.0038820592526\n"
+            + "HFC-134a,441,8681.769895553669\n"
+            + "HFC-134a,442,2488.068201774527\n"
+            + "HFC-134a,443,2488.068201774527";
+    Test.ensureEqual(
+        results.substring(0, expected.length()),
+        expected,
+        "results=\n" + results.substring(0, expected.length()));
+    Test.ensureEqual(table.getColumn(0).elementTypeString(), "String", "");
+    Test.ensureEqual(table.getColumn(1).elementTypeString(), "String", "");
+    Test.ensureEqual(table.getColumn(2).elementTypeString(), "double", "");
+
+    // specify colNames and types
+    table = new Table();
+    table.readParquet(
+        fileName,
+        StringArray.fromCSV("Flowable,SectorProducedBy,FlowAmount"),
+        new String[] {"String", "int", "float"},
+        true);
+    results = table.dataToString();
+    expected =
+        "Flowable,SectorProducedBy,FlowAmount\n"
+            + "Carbon dioxide,311,8.117608E7\n"
+            + "Carbon dioxide,313,3.497831E7\n"
+            + "Carbon dioxide,316,329984.06\n"
+            + "Carbon dioxide,321,1.1021467E8\n"
+            + "Carbon dioxide,322,1.3153165E9\n"
+            + "Carbon dioxide,324,3.5737274E8\n"
+            + "Carbon dioxide,325,4.450165E9\n"
+            + "Carbon dioxide,326,1.6020726E9\n"
+            + "Carbon dioxide,327,4.4514848E8\n"
+            + "Carbon dioxide,331,1.3166364E8\n"
+            + "Carbon dioxide,332,2.5738756E7\n"
+            + "Carbon dioxide,333,6929665.0\n"
+            + "Carbon dioxide,334,2.4352824E8\n"
+            + "Carbon dioxide,335,3.0358534E7\n"
+            + "Carbon dioxide,3361,329984.06\n"
+            + "Carbon dioxide,3363,3.431834E7\n"
+            + "Carbon dioxide,3364,4619777.0\n"
+            + "Carbon dioxide,3369,7259649.5\n"
+            + "Carbon dioxide,339,1.8479108E7\n"
+            + "Carbon dioxide,212,3.9E9\n"
+            + "Carbon dioxide,325,1.34E10\n"
+            + "Carbon dioxide,327,5.11E10\n"
+            + "Carbon dioxide,331,6.41E10\n"
+            + "Carbon dioxide,562,1.34E10\n"
+            + "Carbon dioxide,2211,1.6784387E12\n"
+            + "Carbon dioxide,,6.3046427E10\n"
+            + "Carbon dioxide,,2.818149E11\n"
+            + "Carbon dioxide,331,5.0E8\n"
+            + "Carbon dioxide,111,6.0E9\n"
+            + "Carbon dioxide,313,1207243.5\n"
+            + "Carbon dioxide,322,2414487.0\n"
+            + "Carbon dioxide,324,9657948.0\n"
+            + "Carbon dioxide,325,4.72998E9\n"
+            + "Carbon dioxide,326,2.5955734E7\n"
+            + "Carbon dioxide,327,7847082.5\n"
+            + "Carbon dioxide,331,8450704.0\n"
+            + "Carbon dioxide,332,3621730.5\n"
+            + "Carbon dioxide,333,603621.75\n"
+            + "Carbon dioxide,335,603621.75\n"
+            + "Carbon dioxide,3363,6036217.5\n"
+            + "Carbon dioxide,3369,2414487.0\n"
+            + "Carbon dioxide,339,1207243.5\n"
+            + "Carbon dioxide,111,4.2224228E9\n"
+            + "Carbon dioxide,112,7.757732E7\n"
+            + "Carbon dioxide,485,8.0E8\n"
+            + "Carbon dioxide,486,4.06E10\n"
+            + "Carbon dioxide,481,1.327E11\n"
+            + "Carbon dioxide,482,3.94E10\n"
+            + "Carbon dioxide,483,2.43E10\n"
+            + "Carbon dioxide,484,3.77E10\n"
+            + "Carbon dioxide,485,9.0E8\n"
+            + "Carbon dioxide,928,1.23E10\n"
+            + "Carbon dioxide,,1.75E10\n"
+            + "Carbon dioxide,484,2.8875915E11\n"
+            + "Carbon dioxide,485,1.5622793E9\n"
+            + "Carbon dioxide,487,1.6157635E9\n"
+            + "Carbon dioxide,488,1.6157635E9\n"
+            + "Carbon dioxide,491,4.381361E9\n"
+            + "Carbon dioxide,492,7.637128E9\n"
+            + "Carbon dioxide,922,7.7485064E10\n"
+            + "Carbon dioxide,,9.596373E11\n"
+            + "Carbon dioxide,,1.0606194E10\n"
+            + "Carbon dioxide,212,1.28E10\n"
+            + "Carbon dioxide,311,2.3372514E7\n"
+            + "Carbon dioxide,312,2124774.0\n"
+            + "Carbon dioxide,313,2124774.0\n"
+            + "Carbon dioxide,314,2124774.0\n"
+            + "Carbon dioxide,321,6374322.0\n"
+            + "Carbon dioxide,322,2124774.0\n"
+            + "Carbon dioxide,323,2124774.0\n"
+            + "Carbon dioxide,324,8499096.0\n"
+            + "Carbon dioxide,325,4.1985533E9\n"
+            + "Carbon dioxide,327,1.2748644E7\n"
+            + "Carbon dioxide,331,3.994575E8\n"
+            + "Carbon dioxide,334,2124774.0\n"
+            + "Carbon dioxide,335,2124774.0\n"
+            + "Carbon dioxide,3361,7790838.0\n"
+            + "Carbon dioxide,3362,3541290.0\n"
+            + "Carbon dioxide,3363,3541290.0\n"
+            + "Carbon dioxide,3364,8499096.0\n"
+            + "Carbon dioxide,3365,3541290.0\n"
+            + "Carbon dioxide,3366,3541290.0\n"
+            + "Carbon dioxide,3369,3541290.0\n"
+            + "Carbon dioxide,339,2124774.0\n"
+            + "Carbon dioxide,311,5.4762636E7\n"
+            + "Carbon dioxide,312,1.5646468E7\n"
+            + "Carbon dioxide,313,7823234.0\n"
+            + "Carbon dioxide,316,1.5646468E7\n"
+            + "Carbon dioxide,324,4.6939404E7\n"
+            + "Carbon dioxide,325,7.5893195E10\n"
+            + "Carbon dioxide,326,7823234.0\n"
+            + "Carbon dioxide,327,1.0170204E8\n"
+            + "Carbon dioxide,331,8.6055576E7\n"
+            + "Carbon dioxide,332,7823234.0\n"
+            + "Carbon dioxide,333,2.3469702E7\n"
+            + "Carbon dioxide,334,7823234.0\n"
+            + "Carbon dioxide,3361,1.5646468E7\n"
+            + "Carbon dioxide,3364,7823234.0\n"
+            + "Carbon dioxide,337,7823234.0\n"
+            + "Carbon dioxide,481,6.0789446E8\n"
+            + "Carbon dioxide,482,1.3171468E8\n"
+            + "Carbon dioxide,483,1.1373132E8\n"
+            + "Carbon dioxide,484,7.6848045E8\n"
+            + "Carbon dioxide,485,3.6235364E7\n"
+            + "Carbon dioxide,486,1343221.1\n"
+            + "Carbon dioxide,487,3.7475868E7\n"
+            + "Carbon dioxide,488,3.7475868E7\n"
+            + "Carbon dioxide,491,2.8239248E7\n"
+            + "Carbon dioxide,492,1.2319707E8\n"
+            + "Carbon dioxide,921,1.4594906E8\n"
+            + "Carbon dioxide,922,1.4594906E8\n"
+            + "Carbon dioxide,923,8.4647834E8\n"
+            + "Carbon dioxide,924,1.4594906E8\n"
+            + "Carbon dioxide,925,1.4594906E8\n"
+            + "Carbon dioxide,926,1.4594906E8\n"
+            + "Carbon dioxide,927,2670639.5\n"
+            + "Carbon dioxide,928,4.1593123E8\n"
+            + "Carbon dioxide,,4.419387E9\n"
+            + "Carbon dioxide,211,1.88E10\n"
+            + "Carbon dioxide,324,3.4E9\n"
+            + "Carbon dioxide,211,2.68E10\n"
+            + "Carbon dioxide,486,2.0E8\n"
+            + "Carbon dioxide,324,1.94E10\n"
+            + "Carbon dioxide,325,7.1E9\n"
+            + "Carbon dioxide,311,7.971585E9\n"
+            + "Carbon dioxide,312,4.9933866E8\n"
+            + "Carbon dioxide,313,4.2800458E8\n"
+            + "Carbon dioxide,314,7.13341E7\n"
+            + "Carbon dioxide,321,8.916762E7\n"
+            + "Carbon dioxide,322,1.0414777E10\n"
+            + "Carbon dioxide,324,5.8850624E8\n"
+            + "Carbon dioxide,325,1.6906181E10\n"
+            + "Carbon dioxide,327,1.7833523E10\n"
+            + "Carbon dioxide,331,2.3272747E10\n"
+            + "Carbon dioxide,335,1.7833524E7\n"
+            + "Carbon dioxide,3361,4.3309984E7\n"
+            + "Carbon dioxide,3362,7642938.5\n"
+            + "Carbon dioxide,3363,7642938.5\n"
+            + "Carbon dioxide,3364,7642938.5\n"
+            + "Carbon dioxide,3365,7642938.5\n"
+            + "Carbon dioxide,3366,7642938.5\n"
+            + "Carbon dioxide,3369,7642938.5\n"
+            + "Carbon dioxide,337,1.7833524E7\n"
+            + "Carbon dioxide,,2.824E11\n"
+            + "Carbon dioxide,311,4.230978E10\n"
+            + "Carbon dioxide,312,3.562929E9\n"
+            + "Carbon dioxide,313,2.6721966E9\n"
+            + "Carbon dioxide,314,1.1876429E9\n"
+            + "Carbon dioxide,315,1.4845536E8\n"
+            + "Carbon dioxide,316,7.422768E7\n"
+            + "Carbon dioxide,321,3.6371566E9\n"
+            + "Carbon dioxide,322,3.236327E10\n"
+            + "Carbon dioxide,323,2.8948797E9\n"
+            + "Carbon dioxide,324,7.949785E10\n"
+            + "Carbon dioxide,325,1.4860383E11\n"
+            + "Carbon dioxide,326,6.6804915E9\n"
+            + "Carbon dioxide,327,2.4717818E10\n"
+            + "Carbon dioxide,331,4.7728402E10\n"
+            + "Carbon dioxide,332,1.4177488E10\n"
+            + "Carbon dioxide,333,5.344393E9\n"
+            + "Carbon dioxide,334,3.4887012E9\n"
+            + "Carbon dioxide,335,2.0041475E9\n"
+            + "Carbon dioxide,3361,4.1567503E9\n"
+            + "Carbon dioxide,3362,8.907322E8\n"
+            + "Carbon dioxide,3363,8.907322E8\n"
+            + "Carbon dioxide,3364,2.152603E9\n"
+            + "Carbon dioxide,3365,8.907322E8\n"
+            + "Carbon dioxide,3366,8.907322E8\n"
+            + "Carbon dioxide,3369,8.907322E8\n"
+            + "Carbon dioxide,337,1.1134153E9\n"
+            + "Carbon dioxide,339,1.9299197E9\n"
+            + "Carbon dioxide,423,1.8612192E7\n"
+            + "Carbon dioxide,424,2.4816256E7\n"
+            + "Carbon dioxide,493,9306096.0\n"
+            + "Carbon dioxide,5413,3.412235E7\n"
+            + "Carbon dioxide,5417,2.1093818E8\n"
+            + "Carbon dioxide,551,1.2408128E8\n"
+            + "Carbon dioxide,561,3102032.0\n"
+            + "Carbon dioxide,562,6204064.0\n"
+            + "Carbon dioxide,611,4.0326416E7\n"
+            + "Carbon dioxide,622,1.7681582E8\n"
+            + "Carbon dioxide,623,1.8612192E7\n"
+            + "Carbon dioxide,624,1.2408128E7\n"
+            + "Carbon dioxide,712,3102032.0\n"
+            + "Carbon dioxide,713,2.4816256E7\n"
+            + "Carbon dioxide,721,3.7224384E7\n"
+            + "Carbon dioxide,722,1.1477518E9\n"
+            + "Carbon dioxide,811,1.2408128E7\n"
+            + "Carbon dioxide,812,1.2408128E7\n"
+            + "Carbon dioxide,813,1.8612192E7\n"
+            + "Carbon dioxide,923,2.164332E9\n"
+            + "Carbon dioxide,2213,1.7628608E8\n"
+            + "Carbon dioxide,423,8.0587923E8\n"
+            + "Carbon dioxide,424,1.1332677E9\n"
+            + "Carbon dioxide,425,2.5183726E7\n"
+            + "Carbon dioxide,441,7.492159E8\n"
+            + "Carbon dioxide,442,9.916093E7\n"
+            + "Carbon dioxide,443,9.916093E7\n"
+            + "Carbon dioxide,444,3.0850064E8\n"
+            + "Carbon dioxide,445,3.210925E8\n"
+            + "Carbon dioxide,446,3.1479658E7\n"
+            + "Carbon dioxide,447,1.2591863E7\n"
+            + "Carbon dioxide,448,1.00734904E8\n"
+            + "Carbon dioxide,451,9.916093E7\n"
+            + "Carbon dioxide,452,1.4480643E8\n"
+            + "Carbon dioxide,453,9.916093E7\n"
+            + "Carbon dioxide,454,6.925525E7\n"
+            + "Carbon dioxide,493,2.77021E8\n"
+            + "Carbon dioxide,511,1.8887795E8\n"
+            + "Carbon dioxide,512,5.0367452E7\n"
+            + "Carbon dioxide,515,1.2591863E7\n"
+            + "Carbon dioxide,517,1.2591863E8\n"
+            + "Carbon dioxide,518,6295931.5\n"
+            + "Carbon dioxide,519,1.2591863E7\n"
+            + "Carbon dioxide,521,7.743996E8\n"
+            + "Carbon dioxide,522,9.506857E8\n"
+            + "Carbon dioxide,523,1.385105E8\n"
+            + "Carbon dioxide,524,1.5739829E8\n"
+            + "Carbon dioxide,525,7.3032806E9\n"
+            + "Carbon dioxide,531,7.10244E10\n"
+            + "Carbon dioxide,532,5.3137664E9\n"
+            + "Carbon dioxide,533,5.0367452E7\n"
+            + "Carbon dioxide,5411,2.5183726E7\n"
+            + "Carbon dioxide,5412,5.0367452E7\n"
+            + "Carbon dioxide,5413,1.2591863E8\n"
+            + "Carbon dioxide,5414,1.2591863E7\n"
+            + "Carbon dioxide,5415,2.5183726E7\n"
+            + "Carbon dioxide,5416,4.407152E7\n"
+            + "Carbon dioxide,5417,9.443898E7\n"
+            + "Carbon dioxide,5418,3.777559E7\n"
+            + "Carbon dioxide,5419,1.00734904E8\n"
+            + "Carbon dioxide,551,1.1521555E9\n"
+            + "Carbon dioxide,561,7.36624E8\n"
+            + "Carbon dioxide,562,3.588681E8\n"
+            + "Carbon dioxide,611,1.0822706E10\n"
+            + "Carbon dioxide,621,5.792257E8\n"
+            + "Carbon dioxide,622,3.9349573E9\n"
+            + "Carbon dioxide,623,5.6663386E8\n"
+            + "Carbon dioxide,624,3.9034778E8\n"
+            + "Carbon dioxide,711,6.925525E7\n"
+            + "Carbon dioxide,712,4.407152E7\n"
+            + "Carbon dioxide,713,5.2885827E8\n"
+            + "Carbon dioxide,721,1.28437E9\n"
+            + "Carbon dioxide,722,3.1227822E9\n"
+            + "Carbon dioxide,811,3.588681E8\n"
+            + "Carbon dioxide,812,4.910827E8\n"
+            + "Carbon dioxide,813,2.285423E9\n"
+            + "Carbon dioxide,923,3.8497972E10\n"
+            + "Carbon dioxide,927,5.9811354E8\n"
+            + "Carbon dioxide,111,1.8007818E10\n"
+            + "Carbon dioxide,112,9.587394E9\n"
+            + "Carbon dioxide,113,9.236197E8\n"
+            + "Carbon dioxide,114,9.927529E8\n"
+            + "Carbon dioxide,115,1.6591971E8\n"
+            + "Carbon dioxide,211,1.1655859E10\n"
+            + "Carbon dioxide,212,1.768704E10\n"
+            + "Carbon dioxide,213,8.688662E9\n"
+            + "Carbon dioxide,2212,6.913321E7\n"
+            + "Carbon dioxide,2213,7.467114E7\n"
+            + "Carbon dioxide,236,2.001683E10\n"
+            + "Carbon dioxide,237,2.890183E10\n"
+            + "Carbon dioxide,238,2.7689232E10\n"
+            + "Carbon dioxide,311,2.887003E9\n"
+            + "Carbon dioxide,312,5.4200435E8\n"
+            + "Carbon dioxide,313,2.7100218E8\n"
+            + "Carbon dioxide,314,1.2997043E8\n"
+            + "Carbon dioxide,315,1.1061314E7\n"
+            + "Carbon dioxide,316,3.8714596E7\n"
+            + "Carbon dioxide,321,1.667493E9\n"
+            + "Carbon dioxide,322,5.1379804E9\n"
+            + "Carbon dioxide,323,5.0246016E9\n"
+            + "Carbon dioxide,324,8.182607E10\n"
+            + "Carbon dioxide,325,3.7992845E10\n"
+            + "Carbon dioxide,326,1.9301992E9\n"
+            + "Carbon dioxide,327,2.2758653E9\n"
+            + "Carbon dioxide,331,1.7421569E9\n"
+            + "Carbon dioxide,332,1.7393916E9\n"
+            + "Carbon dioxide,333,3.7359588E9\n"
+            + "Carbon dioxide,334,2.2675693E8\n"
+            + "Carbon dioxide,335,3.041861E8\n"
+            + "Carbon dioxide,3361,1.8804234E8\n"
+            + "Carbon dioxide,3362,6.0837224E7\n"
+            + "Carbon dioxide,3363,3.3737008E8\n"
+            + "Carbon dioxide,3364,4.0650326E8\n"
+            + "Carbon dioxide,3365,3.5949268E7\n"
+            + "Carbon dioxide,3366,1.1337846E8\n"
+            + "Carbon dioxide,3369,1.1061314E7\n"
+            + "Carbon dioxide,337,2.9865546E8\n"
+            + "Carbon dioxide,339,3.7885E8\n"
+            + "Carbon dioxide,423,1.1494941E9\n"
+            + "Carbon dioxide,424,1.02626835E9\n"
+            + "Carbon dioxide,425,3.9726516E7\n"
+            + "Carbon dioxide,441,2.18128E8\n"
+            + "Carbon dioxide,442,3.3473268E7\n"
+            + "Carbon dioxide,443,3.3473268E7\n"
+            + "Carbon dioxide,444,1.4676741E8\n"
+            + "Carbon dioxide,445,2.1628882E8\n"
+            + "Carbon dioxide,446,1.5817039E7\n"
+            + "Carbon dioxide,447,1.9385069E8\n"
+            + "Carbon dioxide,448,3.494462E7\n"
+            + "Carbon dioxide,451,3.3473268E7\n"
+            + "Carbon dioxide,452,5.848626E7\n"
+            + "Carbon dioxide,453,3.3473268E7\n"
+            + "Carbon dioxide,454,8.166006E7\n"
+            + "Carbon dioxide,493,1.1881171E8\n"
+            + "Carbon dioxide,511,1.3168604E8\n"
+            + "Carbon dioxide,512,2.905921E7\n"
+            + "Carbon dioxide,515,9195953.0\n"
+            + "Carbon dioxide,517,1.6111309E8\n"
+            + "Carbon dioxide,518,1.6111309E8\n"
+            + "Carbon dioxide,519,3.9726516E7\n"
+            + "Carbon dioxide,521,8.741673E8\n"
+            + "Carbon dioxide,522,1.7551396E9\n"
+            + "Carbon dioxide,523,1.1517011E9\n"
+            + "Carbon dioxide,524,9563791.0\n"
+            + "Carbon dioxide,525,3.9395462E8\n"
+            + "Carbon dioxide,531,1.1764689E9\n"
+            + "Carbon dioxide,532,8.9213005E8\n"
+            + "Carbon dioxide,533,3.175669E7\n"
+            + "Carbon dioxide,5411,1.7288392E7\n"
+            + "Carbon dioxide,5412,4.5611924E7\n"
+            + "Carbon dioxide,5413,2.490264E8\n"
+            + "Carbon dioxide,5414,5517571.5\n"
+            + "Carbon dioxide,5415,2.4056613E8\n"
+            + "Carbon dioxide,5416,4.8922468E7\n"
+            + "Carbon dioxide,5417,1.0593738E8\n"
+            + "Carbon dioxide,5418,1.8024068E7\n"
+            + "Carbon dioxide,5419,4.4140572E7\n"
+            + "Carbon dioxide,551,6.003118E8\n"
+            + "Carbon dioxide,561,9.457118E8\n"
+            + "Carbon dioxide,562,5.1386982E8\n"
+            + "Carbon dioxide,611,3.08984E8\n"
+            + "Carbon dioxide,621,2.2879531E8\n"
+            + "Carbon dioxide,622,1.8318337E9\n"
+            + "Carbon dioxide,623,2.3578422E8\n"
+            + "Carbon dioxide,624,1.978969E8\n"
+            + "Carbon dioxide,711,4.524409E7\n"
+            + "Carbon dioxide,712,1.6552715E7\n"
+            + "Carbon dioxide,713,3.7887325E8\n"
+            + "Carbon dioxide,721,4.11243E8\n"
+            + "Carbon dioxide,722,1.202095E9\n"
+            + "Carbon dioxide,811,1.6736634E8\n"
+            + "Carbon dioxide,812,1.688377E8\n"
+            + "Carbon dioxide,813,9.802886E8\n"
+            + "Carbon dioxide,923,1.970353E10\n"
+            + "Carbon dioxide,927,6.216464E7\n"
+            + "Carbon tetrafluoride,331,327469.56\n"
+            + "Carbon tetrafluoride,334,189445.2\n"
+            + "HFC-125,423,11618.352\n"
+            + "HFC-125,424,6126.04\n"
+            + "HFC-125,425,281.657\n"
+            + "HFC-125,441,1443.4922\n"
+            + "HFC-125,442,413.68375\n"
+            + "HFC-125,443,413.68375\n"
+            + "HFC-125,444,1021.0067\n"
+            + "HFC-125,445,2922.1917\n"
+            + "HFC-125,446,668.9354\n"
+            + "HFC-125,447,1901.1848\n"
+            + "HFC-125,448,1549.1136\n"
+            + "HFC-125,451,413.68375\n"
+            + "HFC-125,452,2288.4634\n"
+            + "HFC-125,453,413.68375\n"
+            + "HFC-125,454,1513.9065\n"
+            + "HFC-125,511,316.86414\n"
+            + "HFC-125,512,422.48553\n"
+            + "HFC-125,515,33446.77\n"
+            + "HFC-125,517,4154.441\n"
+            + "HFC-125,518,9259.475\n"
+            + "HFC-125,521,52.81069\n"
+            + "HFC-125,522,52.81069\n"
+            + "HFC-125,523,1302.6637\n"
+            + "HFC-125,531,997.5353\n"
+            + "HFC-125,532,4729.4907\n"
+            + "HFC-125,533,46.942837\n"
+            + "HFC-125,5411,1091.4209\n"
+            + "HFC-125,5412,704.1425\n"
+            + "HFC-125,5413,1302.6637\n"
+            + "HFC-125,5414,140.8285\n"
+            + "HFC-125,5415,14223.68\n"
+            + "HFC-125,5416,3309.47\n"
+            + "HFC-125,5417,1267.4565\n"
+            + "HFC-125,5418,1161.8352\n"
+            + "HFC-125,5419,211.24277\n"
+            + "HFC-125,551,457.69266\n"
+            + "HFC-125,561,24715.402\n"
+            + "HFC-125,562,11583.145\n"
+            + "HFC-125,611,5210.655\n"
+            + "HFC-125,621,6971.011\n"
+            + "HFC-125,622,13871.608\n"
+            + "HFC-125,623,6478.1113\n"
+            + "HFC-125,624,4224.8555\n"
+            + "HFC-125,711,352.07126\n"
+            + "HFC-125,712,105.62138\n"
+            + "HFC-125,713,2323.6704\n"
+            + "HFC-125,721,1830.7706\n"
+            + "HFC-125,722,13343.501\n"
+            + "HFC-125,811,13237.88\n"
+            + "HFC-125,812,739.3497\n"
+            + "HFC-125,813,5738.7617\n"
+            + "HFC-125,923,23762.297\n"
+            + "HFC-125,236,24428.86\n"
+            + "HFC-125,237,22537.47\n"
+            + "HFC-125,238,32319.203\n"
+            + "HFC-125,311,2521.853\n"
+            + "HFC-125,314,802.4078\n"
+            + "HFC-125,316,305.67917\n"
+            + "HFC-125,321,1795.8651\n"
+            + "HFC-125,322,2139.7542\n"
+            + "HFC-125,324,878.8276\n"
+            + "HFC-125,325,24607.172\n"
+            + "HFC-125,326,4394.138\n"
+            + "HFC-125,327,76.41979\n"
+            + "HFC-125,332,343.88907\n"
+            + "HFC-125,333,993.4573\n"
+            + "HFC-125,334,611.35834\n"
+            + "HFC-125,3361,8559.017\n"
+            + "HFC-125,3362,114.629684\n"
+            + "HFC-125,3363,16812.354\n"
+            + "HFC-125,337,73554.05\n"
+            + "HFC-125,339,1184.5067\n"
+            + "HFC-125,423,30797.176\n"
+            + "HFC-125,424,45966.504\n"
+            + "HFC-125,425,1337.3463\n"
+            + "HFC-125,441,764.19794\n"
+            + "HFC-125,442,878.8276\n"
+            + "HFC-125,443,878.8276\n"
+            + "HFC-125,444,802.4078\n"
+            + "HFC-125,445,10660.561\n"
+            + "HFC-125,446,2903.9521\n"
+            + "HFC-125,447,1260.9265\n"
+            + "HFC-125,448,2674.6926\n"
+            + "HFC-125,451,878.8276\n"
+            + "HFC-125,452,2025.1245\n"
+            + "HFC-125,453,878.8276\n"
+            + "HFC-125,454,3477.1006\n"
+            + "HFC-125,482,38.209896\n"
+            + "HFC-125,487,1547.5007\n"
+            + "HFC-125,488,1547.5007\n"
+            + "HFC-125,492,802.4078\n"
+            + "HFC-125,493,114.629684\n"
+            + "HFC-125,511,764.19794\n"
+            + "HFC-125,512,152.83958\n"
+            + "HFC-125,515,1108.0869\n"
+            + "HFC-125,517,6457.472\n"
+            + "HFC-125,518,343.88907\n"
+            + "HFC-125,524,305.67917\n"
+            + "HFC-125,531,12.736631\n"
+            + "HFC-125,532,3833.726\n"
+            + "HFC-125,533,12.736631\n"
+            + "HFC-125,5411,38.209896\n"
+            + "HFC-125,5412,38.209896\n"
+            + "HFC-125,5413,9743.523\n"
+            + "HFC-125,5414,305.67917\n"
+            + "HFC-125,5415,4203.0884\n"
+            + "HFC-125,5416,611.35834\n"
+            + "HFC-125,5417,3706.3599\n"
+            + "HFC-125,5418,3095.0015\n"
+            + "HFC-125,5419,152.83958\n"
+            + "HFC-125,551,152.83958\n"
+            + "HFC-125,561,12685.686\n"
+            + "HFC-125,562,458.51874\n"
+            + "HFC-125,611,229.25937\n"
+            + "HFC-125,621,62014.66\n"
+            + "HFC-125,622,7871.2383\n"
+            + "HFC-125,623,10889.82\n"
+            + "HFC-125,624,2674.6926\n"
+            + "HFC-125,711,267.46927\n"
+            + "HFC-125,712,38.209896\n"
+            + "HFC-125,713,1222.7167\n"
+            + "HFC-125,721,1108.0869\n"
+            + "HFC-125,722,123379.75\n"
+            + "HFC-125,811,1146.2969\n"
+            + "HFC-125,812,458.51874\n"
+            + "HFC-125,813,955.2474\n"
+            + "HFC-125,921,161.93718\n"
+            + "HFC-125,922,161.93718\n"
+            + "HFC-125,923,7612.8667\n"
+            + "HFC-125,924,161.93718\n"
+            + "HFC-125,925,161.93718\n"
+            + "HFC-125,926,161.93718\n"
+            + "HFC-125,928,98.25401\n"
+            + "HFC-125,,41763.414\n"
+            + "HFC-125,,750698.06\n"
+            + "HFC-125,211,1151.4921\n"
+            + "HFC-125,236,73824.82\n"
+            + "HFC-125,237,57165.74\n"
+            + "HFC-125,238,82536.11\n"
+            + "HFC-125,311,18298.71\n"
+            + "HFC-125,312,4280.5464\n"
+            + "HFC-125,314,25.032434\n"
+            + "HFC-125,321,4355.6436\n"
+            + "HFC-125,322,200.25948\n"
+            + "HFC-125,323,125.16218\n"
+            + "HFC-125,324,425.5514\n"
+            + "HFC-125,325,10663.817\n"
+            + "HFC-125,326,9437.228\n"
+            + "HFC-125,327,325.42166\n"
+            + "HFC-125,331,575.74603\n"
+            + "HFC-125,332,2302.9841\n"
+            + "HFC-125,333,107814.695\n"
+            + "HFC-125,334,150.19461\n"
+            + "HFC-125,335,4706.0977\n"
+            + "HFC-125,3361,32867.586\n"
+            + "HFC-125,3362,4931.3896\n"
+            + "HFC-125,3363,5982.752\n"
+            + "HFC-125,3364,150.19461\n"
+            + "HFC-125,3365,50.06487\n"
+            + "HFC-125,3366,50.06487\n"
+            + "HFC-125,3369,25.032434\n"
+            + "HFC-125,337,425.5514\n"
+            + "HFC-125,339,1727.238\n"
+            + "HFC-125,423,114731.23\n"
+            + "HFC-125,424,60494.645\n"
+            + "HFC-125,425,2781.363\n"
+            + "HFC-125,441,14254.485\n"
+            + "HFC-125,442,4085.127\n"
+            + "HFC-125,443,4085.127\n"
+            + "HFC-125,444,10082.441\n"
+            + "HFC-125,445,28856.64\n"
+            + "HFC-125,446,6605.7373\n"
+            + "HFC-125,447,18774.201\n"
+            + "HFC-125,448,15297.497\n"
+            + "HFC-125,451,4085.127\n"
+            + "HFC-125,452,22598.574\n"
+            + "HFC-125,453,4085.127\n"
+            + "HFC-125,454,14949.826\n"
+            + "HFC-125,511,3129.0334\n"
+            + "HFC-125,512,4172.0444\n"
+            + "HFC-125,515,330286.88\n"
+            + "HFC-125,517,41025.105\n"
+            + "HFC-125,518,91437.31\n"
+            + "HFC-125,521,521.50555\n"
+            + "HFC-125,522,521.50555\n"
+            + "HFC-125,523,12863.804\n"
+            + "HFC-125,531,9850.661\n"
+            + "HFC-125,532,46703.723\n"
+            + "HFC-125,533,463.56052\n"
+            + "HFC-125,5411,10777.782\n"
+            + "HFC-125,5412,6953.4077\n"
+            + "HFC-125,5413,12863.804\n"
+            + "HFC-125,5414,1390.6815\n"
+            + "HFC-125,5415,140458.83\n"
+            + "HFC-125,5416,32681.016\n"
+            + "HFC-125,5417,12516.134\n"
+            + "HFC-125,5418,11473.122\n"
+            + "HFC-125,5419,2086.0222\n"
+            + "HFC-125,551,4519.715\n"
+            + "HFC-125,561,244064.61\n"
+            + "HFC-125,562,114383.555\n"
+            + "HFC-125,611,51455.215\n"
+            + "HFC-125,621,68838.734\n"
+            + "HFC-125,622,136982.12\n"
+            + "HFC-125,623,63971.35\n"
+            + "HFC-125,624,41720.445\n"
+            + "HFC-125,711,3476.7039\n"
+            + "HFC-125,712,1043.0111\n"
+            + "HFC-125,713,22946.244\n"
+            + "HFC-125,721,18078.86\n"
+            + "HFC-125,722,131767.08\n"
+            + "HFC-125,811,130724.06\n"
+            + "HFC-125,812,7301.078\n"
+            + "HFC-125,813,56670.273\n"
+            + "HFC-125,923,234652.67\n"
+            + "HFC-125,482,6153.2627\n"
+            + "HFC-125,483,104605.47\n"
+            + "HFC-125,484,307663.12\n"
+            + "HFC-125,485,24613.05\n"
+            + "HFC-125,,3064324.8\n"
+            + "HFC-134a,423,69877.66\n"
+            + "HFC-134a,424,36844.586\n"
+            + "HFC-134a,425,1694.0039\n"
+            + "HFC-134a,441,8681.77\n"
+            + "HFC-134a,442,2488.068\n"
+            + "HFC-134a,443,2488.068\n"
+            + "HFC-134a,444,6140.764\n"
+            + "HFC-134a,445,17575.291\n"
+            + "HFC-134a,446,4023.2593\n"
+            + "HFC-134a,447,11434.526\n"
+            + "HFC-134a,448,9317.021\n"
+            + "HFC-134a,451,2488.068\n"
+            + "HFC-134a,452,13763.781\n"
+            + "HFC-134a,453,2488.068\n"
+            + "HFC-134a,454,9105.2705\n"
+            + "HFC-134a,511,1905.7544\n"
+            + "HFC-134a,512,2541.0059\n"
+            + "HFC-134a,515,201162.97\n"
+            + "HFC-134a,517,24986.557\n"
+            + "HFC-134a,518,55690.38\n"
+            + "HFC-134a,521,317.62573\n"
+            + "HFC-134a,522,317.62573\n"
+            + "HFC-134a,523,7834.768\n"
+            + "HFC-134a,531,5999.597\n"
+            + "HFC-134a,532,28445.148\n"
+            + "HFC-134a,533,282.33398\n"
+            + "HFC-134a,5411,6564.265\n"
+            + "HFC-134a,5412,4235.01\n"
+            + "HFC-134a,5413,7834.768\n"
+            + "HFC-134a,5414,847.00195\n"
+            + "HFC-134a,5415,85547.195\n"
+            + "HFC-134a,5416,19904.545\n"
+            + "HFC-134a,5417,7623.0176\n"
+            + "HFC-134a,5418,6987.766\n"
+            + "HFC-134a,5419,1270.5029\n"
+            + "HFC-134a,551,2752.7563\n"
+            + "HFC-134a,561,148648.84\n"
+            + "HFC-134a,562,69665.91\n"
+            + "HFC-134a,611,31339.072\n"
+            + "HFC-134a,621,41926.598\n"
+            + "HFC-134a,622,83429.69\n"
+            + "HFC-134a,623,38962.09\n"
+            + "HFC-134a,624,25410.059\n"
+            + "HFC-134a,711,2117.505\n"
+            + "HFC-134a,712,635.25146\n"
+            + "HFC-134a,713,13975.532\n"
+            + "HFC-134a,721,11011.025\n"
+            + "HFC-134a,722,80253.44\n"
+            + "HFC-134a,811,79618.18\n"
+            + "HFC-134a,812,4446.7603\n"
+            + "HFC-134a,813,34515.33\n"
+            + "HFC-134a,923,142916.45\n"
+            + "HFC-134a,236,146925.45\n"
+            + "HFC-134a,237,135549.83\n"
+            + "HFC-134a,238,194381.3\n"
+            + "HFC-134a,311,15167.486\n"
+            + "HFC-134a,314,4826.0186\n"
+            + "HFC-134a,316,1838.4832\n"
+            + "HFC-134a,321,10801.089\n"
+            + "HFC-134a,322,12869.382\n"
+            + "HFC-134a,324,5285.639\n"
+            + "HFC-134a,325,147997.89\n"
+            + "HFC-134a,326,26428.195\n"
+            + "HFC-134a,327,459.6208\n"
+            + "HFC-134a,332,2068.2937\n"
+            + "HFC-134a,333,5975.0703\n"
+            + "HFC-134a,334,3676.9663\n"
+            + "HFC-134a,3361,51477.527\n"
+            + "HFC-134a,3362,689.4312\n"
+            + "HFC-134a,3363,101116.58\n"
+            + "HFC-134a,337,442385.03\n"
+            + "HFC-134a,339,7124.1226\n"
+            + "HFC-134a,423,185227.19\n"
+            + "HFC-134a,424,276461.9\n"
+            + "HFC-134a,425,8043.364\n"
+            + "HFC-134a,441,4596.208\n"
+            + "HFC-134a,442,5285.639\n"
+            + "HFC-134a,443,5285.639\n"
+            + "HFC-134a,444,4826.0186\n"
+            + "HFC-134a,445,64117.1\n"
+            + "HFC-134a,446,17465.59\n"
+            + "HFC-134a,447,7583.743\n"
+            + "HFC-134a,448,16086.728\n"
+            + "HFC-134a,451,5285.639\n"
+            + "HFC-134a,452,12179.951\n"
+            + "HFC-134a,453,5285.639\n"
+            + "HFC-134a,454,20912.746\n"
+            + "HFC-134a,482,229.8104\n"
+            + "HFC-134a,487,9307.321\n"
+            + "HFC-134a,488,9307.321\n"
+            + "HFC-134a,492,4826.0186\n"
+            + "HFC-134a,493,689.4312\n"
+            + "HFC-134a,511,4596.208\n"
+            + "HFC-134a,512,919.2416\n"
+            + "HFC-134a,515,6664.5015\n"
+            + "HFC-134a,517,38837.957\n"
+            + "HFC-134a,518,2068.2937\n"
+            + "HFC-134a,524,1838.4832\n"
+            + "HFC-134a,531,76.60346\n"
+            + "HFC-134a,532,23057.643\n"
+            + "HFC-134a,533,76.60346\n"
+            + "HFC-134a,5411,229.8104\n"
+            + "HFC-134a,5412,229.8104\n"
+            + "HFC-134a,5413,58601.652\n"
+            + "HFC-134a,5414,1838.4832\n"
+            + "HFC-134a,5415,25279.145\n"
+            + "HFC-134a,5416,3676.9663\n"
+            + "HFC-134a,5417,22291.61\n"
+            + "HFC-134a,5418,18614.643\n"
+            + "HFC-134a,5419,919.2416\n"
+            + "HFC-134a,551,919.2416\n"
+            + "HFC-134a,561,76297.055\n"
+            + "HFC-134a,562,2757.7249\n"
+            + "HFC-134a,611,1378.8624\n"
+            + "HFC-134a,621,372982.28\n"
+            + "HFC-134a,622,47340.94\n"
+            + "HFC-134a,623,65495.965\n"
+            + "HFC-134a,624,16086.728\n"
+            + "HFC-134a,711,1608.6727\n"
+            + "HFC-134a,712,229.8104\n"
+            + "HFC-134a,713,7353.9326\n"
+            + "HFC-134a,721,6664.5015\n"
+            + "HFC-134a,722,742057.75\n"
+            + "HFC-134a,811,6894.312\n"
+            + "HFC-134a,812,2757.7249\n"
+            + "HFC-134a,813,5745.26\n"
+            + "HFC-134a,921,973.9584\n"
+            + "HFC-134a,922,973.9584\n"
+            + "HFC-134a,923,45786.984\n"
+            + "HFC-134a,924,973.9584\n"
+            + "HFC-134a,925,973.9584\n"
+            + "HFC-134a,926,973.9584\n"
+            + "HFC-134a,928,590.94104\n"
+            + "HFC-134a,,251182.77\n"
+            + "HFC-134a,,4515014.0\n"
+            + "HFC-134a,211,6925.5576\n"
+            + "HFC-134a,236,444013.56\n"
+            + "HFC-134a,237,343818.8\n"
+            + "HFC-134a,238,496406.9\n"
+            + "HFC-134a,311,110056.15\n"
+            + "HFC-134a,312,25745.008\n"
+            + "HFC-134a,314,150.5556\n"
+            + "HFC-134a,321,26196.676\n"
+            + "HFC-134a,322,1204.4448\n"
+            + "HFC-134a,323,752.778\n"
+            + "HFC-134a,324,2559.4453\n"
+            + "HFC-134a,325,64136.688\n"
+            + "HFC-134a,326,56759.46\n"
+            + "HFC-134a,327,1957.2229\n"
+            + "HFC-134a,331,3462.7788\n"
+            + "HFC-134a,332,13851.115\n"
+            + "HFC-134a,333,648443.0\n"
+            + "HFC-134a,334,903.3336\n"
+            + "HFC-134a,335,28304.453\n"
+            + "HFC-134a,3361,197679.5\n"
+            + "HFC-134a,3362,29659.453\n"
+            + "HFC-134a,3363,35982.79\n"
+            + "HFC-134a,3364,903.3336\n"
+            + "HFC-134a,3365,301.1112\n"
+            + "HFC-134a,3366,301.1112\n"
+            + "HFC-134a,3369,150.5556\n"
+            + "HFC-134a,337,2559.4453\n"
+            + "HFC-134a,339,10388.337\n"
+            + "HFC-134a,423,690041.9\n"
+            + "HFC-134a,424,363840.28\n"
+            + "HFC-134a,425,16728.29\n"
+            + "HFC-134a,441,85732.48\n"
+            + "HFC-134a,442,24569.674\n"
+            + "HFC-134a,443,24569.674\n"
+            + "HFC-134a,444,60640.047\n"
+            + "HFC-134a,445,173555.98\n"
+            + "HFC-134a,446,39729.684\n"
+            + "HFC-134a,447,112915.945\n"
+            + "HFC-134a,448,92005.586\n"
+            + "HFC-134a,451,24569.674\n"
+            + "HFC-134a,452,135917.34\n"
+            + "HFC-134a,453,24569.674\n"
+            + "HFC-134a,454,89914.55\n"
+            + "HFC-134a,511,18819.324\n"
+            + "HFC-134a,512,25092.432\n"
+            + "HFC-134a,515,1986484.2\n"
+            + "HFC-134a,517,246742.25\n"
+            + "HFC-134a,518,549942.5\n"
+            + "HFC-134a,521,3136.554\n"
+            + "HFC-134a,522,3136.554\n"
+            + "HFC-134a,523,77368.336\n"
+            + "HFC-134a,531,59246.02\n"
+            + "HFC-134a,532,280895.84\n"
+            + "HFC-134a,533,2788.048\n"
+            + "HFC-134a,5411,64822.117\n"
+            + "HFC-134a,5412,41820.723\n"
+            + "HFC-134a,5413,77368.336\n"
+            + "HFC-134a,5414,8364.145\n"
+            + "HFC-134a,5415,844778.56\n"
+            + "HFC-134a,5416,196557.39\n"
+            + "HFC-134a,5417,75277.3\n"
+            + "HFC-134a,5418,69004.19\n"
+            + "HFC-134a,5419,12546.216\n"
+            + "HFC-134a,551,27183.469\n"
+            + "HFC-134a,561,1467907.2\n"
+            + "HFC-134a,562,687950.9\n"
+            + "HFC-134a,611,309473.34\n"
+            + "HFC-134a,621,414025.12\n"
+            + "HFC-134a,622,823868.2\n"
+            + "HFC-134a,623,384750.62\n"
+            + "HFC-134a,624,250924.33\n"
+            + "HFC-134a,711,20910.361\n"
+            + "HFC-134a,712,6273.108\n"
+            + "HFC-134a,713,138008.38\n"
+            + "HFC-134a,721,108733.875\n"
+            + "HFC-134a,722,792502.7\n"
+            + "HFC-134a,811,786229.56\n"
+            + "HFC-134a,812,43911.758\n"
+            + "HFC-134a,813,340838.88\n"
+            + "HFC-134a,923,1411300.0\n"
+            + "HFC-134a,482,37008.312\n"
+            + "HFC-134a,483,629141.3\n"
+            + "HFC-134a,484,1850415.6\n"
+            + "HFC-134a,485,148033.25\n"
+            + "HFC-134a,,1.843014E7\n"
+            + "HFC-143a,423,6684.1987\n"
+            + "HFC-143a,424,3524.3958\n"
+            + "HFC-143a,425,162.04118\n"
+            + "HFC-143a,441,830.46106\n"
+            + "HFC-143a,442,237.99799\n"
+            + "HFC-143a,443,237.99799\n"
+            + "HFC-143a,444,587.3993\n"
+            + "HFC-143a,445,1681.1774\n"
+            + "HFC-143a,446,384.8478\n"
+            + "HFC-143a,447,1093.778\n"
+            + "HFC-143a,448,891.2265\n"
+            + "HFC-143a,451,237.99799\n"
+            + "HFC-143a,452,1316.5846\n"
+            + "HFC-143a,453,237.99799\n"
+            + "HFC-143a,454,870.9714\n"
+            + "HFC-143a,511,182.29634\n"
+            + "HFC-143a,512,243.06178\n"
+            + "HFC-143a,515,19242.39\n"
+            + "HFC-143a,517,2390.1074\n"
+            + "HFC-143a,518,5327.104\n"
+            + "HFC-143a,521,30.382723\n"
+            + "HFC-143a,522,30.382723\n"
+            + "HFC-143a,523,749.4405\n"
+            + "HFC-143a,531,573.8959\n"
+            + "HFC-143a,532,2720.9417\n"
+            + "HFC-143a,533,27.006865\n"
+            + "HFC-143a,5411,627.9096\n"
+            + "HFC-143a,5412,405.10297\n"
+            + "HFC-143a,5413,749.4405\n"
+            + "HFC-143a,5414,81.02059\n"
+            + "HFC-143a,5415,8183.08\n"
+            + "HFC-143a,5416,1903.9839\n"
+            + "HFC-143a,5417,729.18536\n"
+            + "HFC-143a,5418,668.4199\n"
+            + "HFC-143a,5419,121.53089\n"
+            + "HFC-143a,551,263.31693\n"
+            + "HFC-143a,561,14219.114\n"
+            + "HFC-143a,562,6663.944\n"
+            + "HFC-143a,611,2997.762\n"
+            + "HFC-143a,621,4010.5193\n"
+            + "HFC-143a,622,7980.5283\n"
+            + "HFC-143a,623,3726.9473\n"
+            + "HFC-143a,624,2430.618\n"
+            + "HFC-143a,711,202.55148\n"
+            + "HFC-143a,712,60.765446\n"
+            + "HFC-143a,713,1336.8398\n"
+            + "HFC-143a,721,1053.2677\n"
+            + "HFC-143a,722,7676.701\n"
+            + "HFC-143a,811,7615.9355\n"
+            + "HFC-143a,812,425.35812\n"
+            + "HFC-143a,813,3301.589\n"
+            + "HFC-143a,923,13670.778\n"
+            + "HFC-143a,236,14054.262\n"
+            + "HFC-143a,237,12966.119\n"
+            + "HFC-143a,238,18593.686\n"
+            + "HFC-143a,311,1450.857\n"
+            + "HFC-143a,314,461.63632\n"
+            + "HFC-143a,316,175.86147\n"
+            + "HFC-143a,321,1033.186\n"
+            + "HFC-143a,322,1231.0303\n"
+            + "HFC-143a,324,505.6017\n"
+            + "HFC-143a,325,14156.848\n"
+            + "HFC-143a,326,2528.0085\n"
+            + "HFC-143a,327,43.965366\n"
+            + "HFC-143a,332,197.84415\n"
+            + "HFC-143a,333,571.54974\n"
+            + "HFC-143a,334,351.72293\n"
+            + "HFC-143a,3361,4924.121\n"
+            + "HFC-143a,3362,65.94805\n"
+            + "HFC-143a,3363,9672.38\n"
+            + "HFC-143a,337,42316.664\n"
+            + "HFC-143a,339,681.46313\n"
+            + "HFC-143a,423,17718.043\n"
+            + "HFC-143a,424,26445.168\n"
+            + "HFC-143a,425,769.3939\n"
+            + "HFC-143a,441,439.65366\n"
+            + "HFC-143a,442,505.6017\n"
+            + "HFC-143a,443,505.6017\n"
+            + "HFC-143a,444,461.63632\n"
+            + "HFC-143a,445,6133.1685\n"
+            + "HFC-143a,446,1670.6838\n"
+            + "HFC-143a,447,725.4285\n"
+            + "HFC-143a,448,1538.7878\n"
+            + "HFC-143a,451,505.6017\n"
+            + "HFC-143a,452,1165.0822\n"
+            + "HFC-143a,453,505.6017\n"
+            + "HFC-143a,454,2000.4241\n"
+            + "HFC-143a,482,21.982683\n"
+            + "HFC-143a,487,890.29865\n"
+            + "HFC-143a,488,890.29865\n"
+            + "HFC-143a,492,461.63632\n"
+            + "HFC-143a,493,65.94805\n"
+            + "HFC-143a,511,439.65366\n"
+            + "HFC-143a,512,87.93073\n"
+            + "HFC-143a,515,637.4978\n"
+            + "HFC-143a,517,3715.0732\n"
+            + "HFC-143a,518,197.84415\n"
+            + "HFC-143a,524,175.86147\n"
+            + "HFC-143a,531,7.327561\n"
+            + "HFC-143a,532,2205.5957\n"
+            + "HFC-143a,533,7.327561\n"
+            + "HFC-143a,5411,21.982683\n"
+            + "HFC-143a,5412,21.982683\n"
+            + "HFC-143a,5413,5605.584\n"
+            + "HFC-143a,5414,175.86147\n"
+            + "HFC-143a,5415,2418.095\n"
+            + "HFC-143a,5416,351.72293\n"
+            + "HFC-143a,5417,2132.3203\n"
+            + "HFC-143a,5418,1780.5973\n"
+            + "HFC-143a,5419,87.93073\n"
+            + "HFC-143a,551,87.93073\n"
+            + "HFC-143a,561,7298.2505\n"
+            + "HFC-143a,562,263.7922\n"
+            + "HFC-143a,611,131.8961\n"
+            + "HFC-143a,621,35677.895\n"
+            + "HFC-143a,622,4528.4326\n"
+            + "HFC-143a,623,6265.0645\n"
+            + "HFC-143a,624,1538.7878\n"
+            + "HFC-143a,711,153.87878\n"
+            + "HFC-143a,712,21.982683\n"
+            + "HFC-143a,713,703.44586\n"
+            + "HFC-143a,721,637.4978\n"
+            + "HFC-143a,722,70982.086\n"
+            + "HFC-143a,811,659.48047\n"
+            + "HFC-143a,812,263.7922\n"
+            + "HFC-143a,813,549.5671\n"
+            + "HFC-143a,921,93.1647\n"
+            + "HFC-143a,922,93.1647\n"
+            + "HFC-143a,923,4379.7876\n"
+            + "HFC-143a,924,93.1647\n"
+            + "HFC-143a,925,93.1647\n"
+            + "HFC-143a,926,93.1647\n"
+            + "HFC-143a,928,56.526897\n"
+            + "HFC-143a,,24027.072\n"
+            + "HFC-143a,,431887.0\n"
+            + "HFC-143a,211,662.4693\n"
+            + "HFC-143a,236,42472.445\n"
+            + "HFC-143a,237,32888.242\n"
+            + "HFC-143a,238,47484.168\n"
+            + "HFC-143a,311,10527.502\n"
+            + "HFC-143a,312,2462.6577\n"
+            + "HFC-143a,314,14.401507\n"
+            + "HFC-143a,321,2505.8623\n"
+            + "HFC-143a,322,115.21206\n"
+            + "HFC-143a,323,72.00754\n"
+            + "HFC-143a,324,244.82562\n"
+            + "HFC-143a,325,6135.042\n"
+            + "HFC-143a,326,5429.368\n"
+            + "HFC-143a,327,187.21959\n"
+            + "HFC-143a,331,331.23465\n"
+            + "HFC-143a,332,1324.9386\n"
+            + "HFC-143a,333,62027.29\n"
+            + "HFC-143a,334,86.40904\n"
+            + "HFC-143a,335,2707.4834\n"
+            + "HFC-143a,3361,18909.178\n"
+            + "HFC-143a,3362,2837.097\n"
+            + "HFC-143a,3363,3441.9602\n"
+            + "HFC-143a,3364,86.40904\n"
+            + "HFC-143a,3365,28.803015\n"
+            + "HFC-143a,3366,28.803015\n"
+            + "HFC-143a,3369,14.401507\n"
+            + "HFC-143a,337,244.82562\n"
+            + "HFC-143a,339,993.704\n"
+            + "HFC-143a,423,66006.46\n"
+            + "HFC-143a,424,34803.41\n"
+            + "HFC-143a,425,1600.1567\n"
+            + "HFC-143a,441,8200.803\n"
+            + "HFC-143a,442,2350.2302\n"
+            + "HFC-143a,443,2350.2302\n"
+            + "HFC-143a,444,5800.568\n"
+            + "HFC-143a,445,16601.627\n"
+            + "HFC-143a,446,3800.3723\n"
+            + "HFC-143a,447,10801.058\n"
+            + "HFC-143a,448,8800.862\n"
+            + "HFC-143a,451,2350.2302\n"
+            + "HFC-143a,452,13001.273\n"
+            + "HFC-143a,453,2350.2302\n"
+            + "HFC-143a,454,8600.843\n"
+            + "HFC-143a,511,1800.1763\n"
+            + "HFC-143a,512,2400.235\n"
+            + "HFC-143a,515,190018.61\n"
+            + "HFC-143a,517,23602.312\n"
+            + "HFC-143a,518,52605.152\n"
+            + "HFC-143a,521,300.0294\n"
+            + "HFC-143a,522,300.0294\n"
+            + "HFC-143a,523,7400.7246\n"
+            + "HFC-143a,531,5667.2217\n"
+            + "HFC-143a,532,26869.299\n"
+            + "HFC-143a,533,266.69278\n"
+            + "HFC-143a,5411,6200.6074\n"
+            + "HFC-143a,5412,4000.3918\n"
+            + "HFC-143a,5413,7400.7246\n"
+            + "HFC-143a,5414,800.07837\n"
+            + "HFC-143a,5415,80807.914\n"
+            + "HFC-143a,5416,18801.842\n"
+            + "HFC-143a,5417,7200.705\n"
+            + "HFC-143a,5418,6600.6465\n"
+            + "HFC-143a,5419,1200.1176\n"
+            + "HFC-143a,551,2600.2546\n"
+            + "HFC-143a,561,140413.75\n"
+            + "HFC-143a,562,65806.445\n"
+            + "HFC-143a,611,29602.898\n"
+            + "HFC-143a,621,39603.88\n"
+            + "HFC-143a,622,78807.72\n"
+            + "HFC-143a,623,36803.605\n"
+            + "HFC-143a,624,24002.352\n"
+            + "HFC-143a,711,2000.1959\n"
+            + "HFC-143a,712,600.0588\n"
+            + "HFC-143a,713,13201.293\n"
+            + "HFC-143a,721,10401.019\n"
+            + "HFC-143a,722,75807.42\n"
+            + "HFC-143a,811,75207.37\n"
+            + "HFC-143a,812,4200.4116\n"
+            + "HFC-143a,813,32603.193\n"
+            + "HFC-143a,923,134998.94\n"
+            + "HFC-143a,482,3540.0574\n"
+            + "HFC-143a,483,60180.977\n"
+            + "HFC-143a,484,177002.88\n"
+            + "HFC-143a,485,14160.2295\n"
+            + "HFC-143a,,1762948.6\n"
+            + "HFC-23,325,371624.0\n"
+            + "HFC-23,334,20270.4\n"
+            + "HFC-236fa,423,176.92902\n"
+            + "HFC-236fa,424,93.28984\n"
+            + "HFC-236fa,425,4.289188\n"
+            + "HFC-236fa,441,21.98209\n"
+            + "HFC-236fa,442,6.299745\n"
+            + "HFC-236fa,443,6.299745\n"
+            + "HFC-236fa,444,15.548306\n"
+            + "HFC-236fa,445,44.500328\n"
+            + "HFC-236fa,446,10.186822\n"
+            + "HFC-236fa,447,28.95202\n"
+            + "HFC-236fa,448,23.590534\n"
+            + "HFC-236fa,451,6.299745\n"
+            + "HFC-236fa,452,34.849655\n"
+            + "HFC-236fa,453,6.299745\n"
+            + "HFC-236fa,454,23.054386\n"
+            + "HFC-236fa,511,4.8253365\n"
+            + "HFC-236fa,512,6.433782\n"
+            + "HFC-236fa,515,509.3411\n"
+            + "HFC-236fa,517,63.265526\n"
+            + "HFC-236fa,518,141.00706\n"
+            + "HFC-236fa,521,0.80422276\n"
+            + "HFC-236fa,522,0.80422276\n"
+            + "HFC-236fa,523,19.837496\n"
+            + "HFC-236fa,531,15.190875\n"
+            + "HFC-236fa,532,72.02261\n"
+            + "HFC-236fa,533,0.7148647\n"
+            + "HFC-236fa,5411,16.620604\n"
+            + "HFC-236fa,5412,10.72297\n"
+            + "HFC-236fa,5413,19.837496\n"
+            + "HFC-236fa,5414,2.144594\n"
+            + "HFC-236fa,5415,216.604\n"
+            + "HFC-236fa,5416,50.39796\n"
+            + "HFC-236fa,5417,19.301346\n"
+            + "HFC-236fa,5418,17.692902\n"
+            + "HFC-236fa,5419,3.216891\n"
+            + "HFC-236fa,551,6.9699306\n"
+            + "HFC-236fa,561,376.37625\n"
+            + "HFC-236fa,562,176.39287\n"
+            + "HFC-236fa,611,79.34998\n"
+            + "HFC-236fa,621,106.15741\n"
+            + "HFC-236fa,622,211.24251\n"
+            + "HFC-236fa,623,98.65133\n"
+            + "HFC-236fa,624,64.33782\n"
+            + "HFC-236fa,711,5.361485\n"
+            + "HFC-236fa,712,1.6084455\n"
+            + "HFC-236fa,713,35.385803\n"
+            + "HFC-236fa,721,27.879723\n"
+            + "HFC-236fa,722,203.20029\n"
+            + "HFC-236fa,811,201.59184\n"
+            + "HFC-236fa,812,11.259119\n"
+            + "HFC-236fa,813,87.392204\n"
+            + "HFC-236fa,923,361.86194\n"
+            + "HFC-236fa,236,372.01266\n"
+            + "HFC-236fa,237,343.2098\n"
+            + "HFC-236fa,238,492.17004\n"
+            + "HFC-236fa,311,38.40381\n"
+            + "HFC-236fa,314,12.219394\n"
+            + "HFC-236fa,316,4.6550074\n"
+            + "HFC-236fa,321,27.348167\n"
+            + "HFC-236fa,322,32.58505\n"
+            + "HFC-236fa,324,13.383145\n"
+            + "HFC-236fa,325,374.7281\n"
+            + "HFC-236fa,326,66.915726\n"
+            + "HFC-236fa,327,1.1637518\n"
+            + "HFC-236fa,332,5.236883\n"
+            + "HFC-236fa,333,15.128774\n"
+            + "HFC-236fa,334,9.310015\n"
+            + "HFC-236fa,3361,130.3402\n"
+            + "HFC-236fa,3362,1.7456276\n"
+            + "HFC-236fa,3363,256.0254\n"
+            + "HFC-236fa,337,1120.1111\n"
+            + "HFC-236fa,339,18.038153\n"
+            + "HFC-236fa,423,468.99197\n"
+            + "HFC-236fa,424,699.9967\n"
+            + "HFC-236fa,425,20.365656\n"
+            + "HFC-236fa,441,11.637518\n"
+            + "HFC-236fa,442,13.383145\n"
+            + "HFC-236fa,443,13.383145\n"
+            + "HFC-236fa,444,12.219394\n"
+            + "HFC-236fa,445,162.34337\n"
+            + "HFC-236fa,446,44.22257\n"
+            + "HFC-236fa,447,19.201904\n"
+            + "HFC-236fa,448,40.73131\n"
+            + "HFC-236fa,451,13.383145\n"
+            + "HFC-236fa,452,30.839422\n"
+            + "HFC-236fa,453,13.383145\n"
+            + "HFC-236fa,454,52.950706\n"
+            + "HFC-236fa,482,0.5818759\n"
+            + "HFC-236fa,487,23.565973\n"
+            + "HFC-236fa,488,23.565973\n"
+            + "HFC-236fa,492,12.219394\n"
+            + "HFC-236fa,493,1.7456276\n"
+            + "HFC-236fa,511,11.637518\n"
+            + "HFC-236fa,512,2.3275037\n"
+            + "HFC-236fa,515,16.874401\n"
+            + "HFC-236fa,517,98.33703\n"
+            + "HFC-236fa,518,5.236883\n"
+            + "HFC-236fa,524,4.6550074\n"
+            + "HFC-236fa,531,0.19395863\n"
+            + "HFC-236fa,532,58.38155\n"
+            + "HFC-236fa,533,0.19395863\n"
+            + "HFC-236fa,5411,0.5818759\n"
+            + "HFC-236fa,5412,0.5818759\n"
+            + "HFC-236fa,5413,148.37836\n"
+            + "HFC-236fa,5414,4.6550074\n"
+            + "HFC-236fa,5415,64.00635\n"
+            + "HFC-236fa,5416,9.310015\n"
+            + "HFC-236fa,5417,56.441963\n"
+            + "HFC-236fa,5418,47.131947\n"
+            + "HFC-236fa,5419,2.3275037\n"
+            + "HFC-236fa,551,2.3275037\n"
+            + "HFC-236fa,561,193.1828\n"
+            + "HFC-236fa,562,6.9825106\n"
+            + "HFC-236fa,611,3.4912553\n"
+            + "HFC-236fa,621,944.3846\n"
+            + "HFC-236fa,622,119.86643\n"
+            + "HFC-236fa,623,165.83463\n"
+            + "HFC-236fa,624,40.73131\n"
+            + "HFC-236fa,711,4.073131\n"
+            + "HFC-236fa,712,0.5818759\n"
+            + "HFC-236fa,713,18.62003\n"
+            + "HFC-236fa,721,16.874401\n"
+            + "HFC-236fa,722,1878.8773\n"
+            + "HFC-236fa,811,17.456278\n"
+            + "HFC-236fa,812,6.9825106\n"
+            + "HFC-236fa,813,14.546898\n"
+            + "HFC-236fa,921,2.4660454\n"
+            + "HFC-236fa,922,2.4660454\n"
+            + "HFC-236fa,923,115.93185\n"
+            + "HFC-236fa,924,2.4660454\n"
+            + "HFC-236fa,925,2.4660454\n"
+            + "HFC-236fa,926,2.4660454\n"
+            + "HFC-236fa,928,1.4962523\n"
+            + "HFC-236fa,,635.99036\n"
+            + "HFC-236fa,,11431.937\n"
+            + "HFC-236fa,211,17.53539\n"
+            + "HFC-236fa,236,1124.2346\n"
+            + "HFC-236fa,237,870.5432\n"
+            + "HFC-236fa,238,1256.8936\n"
+            + "HFC-236fa,311,278.66022\n"
+            + "HFC-236fa,312,65.185905\n"
+            + "HFC-236fa,314,0.38120416\n"
+            + "HFC-236fa,321,66.32952\n"
+            + "HFC-236fa,322,3.0496333\n"
+            + "HFC-236fa,323,1.9060208\n"
+            + "HFC-236fa,324,6.4804707\n"
+            + "HFC-236fa,325,162.39296\n"
+            + "HFC-236fa,326,143.71396\n"
+            + "HFC-236fa,327,4.955654\n"
+            + "HFC-236fa,331,8.767695\n"
+            + "HFC-236fa,332,35.07078";
+    Test.ensureEqual(
+        results.substring(0, expected.length()),
+        expected,
+        "results=\n" + results.substring(0, expected.length()));
+    Test.ensureEqual(table.getColumn(0).elementTypeString(), "String", "");
+    Test.ensureEqual(table.getColumn(1).elementTypeString(), "int", "");
+    Test.ensureEqual(table.getColumn(2).elementTypeString(), "float", "");
+  }
+
+  @org.junit.jupiter.api.Test
+  void testWriteParquet() throws Exception {
+    // tough test table
+    String fullName = TEMP_DIR.toAbsolutePath().toString() + "/testParquet.parquet";
+    File2.delete(fullName);
+    Table table = makeToughTestTable();
+    String results = table.dataToString();
+    String expected =
+        "aString,aChar,aByte,aUByte,aShort,aUShort,anInt,aUInt,aLong,aULong,aFloat,aDouble\n"
+            + "a\\u00fcb\\nc\\td\\u20ace,\\u00fc,-128,0,-32768,0,-2147483648,0,-9223372036854775808,0,-3.4028235E38,-1.7976931348623157E308\n"
+            + "ab,\\u0000,0,127,0,32767,0,7,0,1,2.2,3.3\n"
+            + ",A,99,99,9999,9999,999999999,2147483647,8,9223372036854775807,1.4E-45,4.9E-324\n"
+            + "cd,\\t,126,254,32766,65534,2147483646,4294967294,9223372036854775806,18446744073709551614,3.4028235E38,1.7976931348623157E308\n"
+            + ",\\u20ac,,,,,,,,,,\n";
+    Test.ensureEqual(results, expected, "results=\n" + results);
+    table.writeParquet(fullName, false);
+    table.clear(); // doubly sure
+    table.readParquet(fullName, null, null, true); // simplify
+    results = table.dataToString();
+    expected = // differs in that aULong is now a double column (because simplify doesn't catch
+        // unsigned types)
+        "aString,aChar,aByte,aUByte,aShort,aUShort,anInt,aUInt,aLong,aULong,aFloat,aDouble\n"
+            + "a\\u00fcb\\nc\\td\\u20ace,\\u00fc,-128,0,-32768,0,-2147483648,0,-9223372036854775808,0.0,-3.4028235E38,-1.7976931348623157E308\n"
+            + "ab,\\u0000,0,127,0,32767,0,7,0,1.0,2.2,3.3\n"
+            + ",A,,,,,,2147483647,8,9.223372036854776E18,1.4E-45,4.9E-324\n"
+            + "cd,\\t,126,254,32766,65534,2147483646,4294967294,9223372036854775806,1.8446744073709552E19,3.4028235E38,1.7976931348623157E308\n"
+            + ",\\u20ac,,,,,,,,,,\n";
+    Test.ensureEqual(results, expected, "results=\n" + results);
+    PAType tTypes[] = {
+      PAType.STRING, PAType.STRING, PAType.BYTE, PAType.SHORT,
+          PAType.SHORT, // char->String, unsigned ->
+      // larger
+      // signed
+      PAType.INT, PAType.INT, PAType.LONG, PAType.LONG, PAType.DOUBLE, // ULong -> Double
+      PAType.DOUBLE, PAType.DOUBLE
+    }; // float->double because lots of decimal digits
+    for (int col = 0; col < 12; col++) {
+      Test.ensureEqual(table.getColumn(col).elementType(), tTypes[col], "col=" + col);
+    }
+  }
+
+  @org.junit.jupiter.api.Test
+  void testWriteParquetWithMetadata() throws Exception {
+    // tough test table
+    String fullName = TEMP_DIR.toAbsolutePath().toString() + "/testParquet.parquet";
+    File2.delete(fullName);
+    Table table = makeToughTestTable();
+    String results = table.dataToString();
+    String expected =
+        "aString,aChar,aByte,aUByte,aShort,aUShort,anInt,aUInt,aLong,aULong,aFloat,aDouble\n"
+            + "a\\u00fcb\\nc\\td\\u20ace,\\u00fc,-128,0,-32768,0,-2147483648,0,-9223372036854775808,0,-3.4028235E38,-1.7976931348623157E308\n"
+            + "ab,\\u0000,0,127,0,32767,0,7,0,1,2.2,3.3\n"
+            + ",A,99,99,9999,9999,999999999,2147483647,8,9223372036854775807,1.4E-45,4.9E-324\n"
+            + "cd,\\t,126,254,32766,65534,2147483646,4294967294,9223372036854775806,18446744073709551614,3.4028235E38,1.7976931348623157E308\n"
+            + ",\\u20ac,,,,,,,,,,\n";
+    Test.ensureEqual(results, expected, "results=\n" + results);
+    table.writeParquet(fullName, true);
+    table.clear(); // doubly sure
+    table.readParquet(fullName, null, null, true); // simplify
+    results = table.dataToString();
+    expected = // differs in that aULong is now a double column (because simplify doesn't catch
+        // unsigned types)
+        "aString,aChar,aByte,aUByte,aShort,aUShort,anInt,aUInt,aLong,aULong,aFloat,aDouble\n"
+            + "a\\u00fcb\\nc\\td\\u20ace,\\u00fc,-128,0,-32768,0,-2147483648,0,-9223372036854775808,0.0,-3.4028235E38,-1.7976931348623157E308\n"
+            + "ab,\\u0000,0,127,0,32767,0,7,0,1.0,2.2,3.3\n"
+            + ",A,,,,,,2147483647,8,9.223372036854776E18,1.4E-45,4.9E-324\n"
+            + "cd,\\t,126,254,32766,65534,2147483646,4294967294,9223372036854775806,1.8446744073709552E19,3.4028235E38,1.7976931348623157E308\n"
+            + ",\\u20ac,,,,,,,,,,\n";
+    Test.ensureEqual(results, expected, "results=\n" + results);
+    PAType tTypes[] = {
+      PAType.STRING, PAType.STRING, PAType.BYTE, PAType.SHORT,
+          PAType.SHORT, // char->String, unsigned ->
+      // larger
+      // signed
+      PAType.INT, PAType.INT, PAType.LONG, PAType.LONG, PAType.DOUBLE, // ULong -> Double
+      PAType.DOUBLE, PAType.DOUBLE
+    }; // float->double because lots of decimal digits
+    for (int col = 0; col < 12; col++) {
+      Test.ensureEqual(table.getColumn(col).elementType(), tTypes[col], "col=" + col);
+    }
   }
 }

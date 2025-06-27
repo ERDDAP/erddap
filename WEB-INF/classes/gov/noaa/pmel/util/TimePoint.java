@@ -69,6 +69,6 @@ public class TimePoint {
    */
   @Override
   public String toString() {
-    return new String("(" + x + ", " + t.toString() + ")");
+    return "(" + x + ", " + t.toString() + ")";
   }
 }

@@ -157,6 +157,7 @@ public class BytePrimitiveVector extends PrimitiveVector implements Cloneable {
       }
     }
     // pad out to a multiple of four bytes
+    @SuppressWarnings("unused")
     byte unused;
     for (int i = 0; i < pad; i++) unused = source.readByte();
     if (statusUI != null) statusUI.incrementByteCount(pad);
@@ -175,8 +176,8 @@ public class BytePrimitiveVector extends PrimitiveVector implements Cloneable {
     // number of bytes to pad
     int pad = (modFour != 0) ? (4 - modFour) : 0;
 
-    for (int i = 0; i < vals.length; i++) {
-      sink.writeByte(vals[i]);
+    for (byte val : vals) {
+      sink.writeByte(val);
     }
     // pad out to a multiple of four bytes
     for (int i = 0; i < pad; i++) sink.writeByte(0);

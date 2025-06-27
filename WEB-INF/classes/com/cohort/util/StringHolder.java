@@ -13,7 +13,7 @@ import java.util.Arrays;
  */
 public class StringHolder implements Comparable<StringHolder> {
 
-  private char[] car; // may be null
+  private final char[] car; // may be null
   private int hashCode = -1; // this uses extra memory but saves considerable time
 
   /**
@@ -83,7 +83,7 @@ public class StringHolder implements Comparable<StringHolder> {
    */
   @Override
   public boolean equals(final Object o) {
-    if (o == null || !(o instanceof StringHolder)) return false;
+    if (!(o instanceof StringHolder)) return false;
     return Arrays.equals(car, ((StringHolder) o).car); // either or both cars may be null
   }
 
@@ -97,9 +97,9 @@ public class StringHolder implements Comparable<StringHolder> {
   public int compareTo(final StringHolder o) {
     if (o == null) return 1; // see StringComparatorIgnoreCase
     // see String compareTo documentation
-    final char other[] = ((StringHolder) o).charArray();
+    final char other[] = o.charArray();
     final int thisSize = car == null ? 0 : car.length;
-    final int otherSize = other.length;
+    final int otherSize = other == null ? 0 : other.length;
     final int min = Math.min(thisSize, otherSize);
     for (int po = 0; po < min; po++) {
       final int result = car[po] - other[po];

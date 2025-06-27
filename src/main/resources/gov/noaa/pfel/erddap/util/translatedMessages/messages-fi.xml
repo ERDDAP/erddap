@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
+<erddapMessages>
 <!--  messages.xml sisältää tekstiviestejä ERDDAP:lle (jotka luetaan EDStaticissa).
 Kun asennat ERDDAP:n palvelimellesi, kaikki nämä viestit voidaan jättää ennalleen,
 koska nämä viestit ovat yleensä samat eri ERDDAP-asennuksissa.
@@ -30,7 +30,7 @@ Käännösjärjestelmä VAATII, että &quot;pseudoEntity&quot; käyttää vain [
   messages-de.xml ja -ga sisältävät monia linkkejä päällekkäin. Epäilen, että tällaisia ​​on monia muitakin.
 
  -->
-<erddapMessages>
+
 <!--  Tämä palauttaa HTML-sisällön, joka kuvaa pakattujen tiedostojen pyytämistä.
 Katso https://httpd.apache.org/docs/1.3/mod/mod_mime.html
 joka sanoo, että x-gzip=gzip ja x-compress=pakkaus
@@ -82,11 +82,13 @@ Sitten ERDDAP lisää kaikki
   Jos sinulla on ehdotuksia lisälinkkeistä, ota yhteyttä <kbd>erd dot data at noaa dot gov</kbd> .
   
 ]]></additionalLinks>
+
 <!-- (a)ll(D)atasets (m)etadata and (v)ariable text -->
 <admKeywords>19115, accessible, altitude, average, background, base, dataset, depth, email, erddap, fgdc, graph, grid, information, institution, iso, latitude, location, longitude, make-a-graph, maximum, metadata, minimum, opendap, rss, sequence, service, sos, source, spacing, structure, subscription, subset, summary, table, time, title, url, wcs, wms</admKeywords>
 <admSubsetVariables>accessible, dataStructure, cdm_data_type, class, institution, testOutOfDate</admSubsetVariables>
 <admSummary>Tämä tietojoukko on taulukko, jossa on tietorivi jokaisesta tässä ERDDAP:ssa tällä hetkellä aktiivisesta tietojoukosta.</admSummary>
 <admTitle>Luettelo kaikista tämän ERDDAP:n aktiivisista tietojoukoista</admTitle>
+
 <!-- (a)ll (d)atasets (v)ariable (c)omment, (l)ong_name, or (r)eference text -->
 <advl_datasetID>Dataset ID</advl_datasetID>
 <advc_accessible>Jotkut tietojoukot ovat julkisia. Jotkut saattavat olla yksityisiä eivätkä ehkä ole käytettävissäsi.</advc_accessible>
@@ -94,11 +96,11 @@ Sitten ERDDAP lisää kaikki
 <advl_institution>Instituutio</advl_institution>
 <advc_dataStructure>ERDDAP käsittelee jokaista tietojoukkoa joko &quot;ruudukkona&quot; tai &quot;taulukkona&quot;.</advc_dataStructure>
 <advl_dataStructure>Tietorakenne</advl_dataStructure>
-<advr_dataStructure>https://erddap.github.io/setupDatasetsXml.html#dataStructures</advr_dataStructure>
+<advr_dataStructure>https://erddap.github.io/docs/server-admin/datasets#why-just-two-basic-data-structures</advr_dataStructure>
 <advl_cdm_data_type>Yhteinen tietomallityyppi</advl_cdm_data_type>
-<advr_cdm_data_type>https://erddap.github.io/setupDatasetsXml.html#cdm_data_type</advr_cdm_data_type>
+<advr_cdm_data_type>https://erddap.github.io/docs/server-admin/datasets#cdm_data_type</advr_cdm_data_type>
 <advl_class>ERDDAP-luokka</advl_class>
-<advr_class>https://erddap.github.io/setupDatasetsXml.html#datasetTypes</advr_class>
+<advr_class>https://erddap.github.io/docs/server-admin/datasets#list-of-types-datasets</advr_class>
 <advl_title>Otsikko</advl_title>
 <advl_minLongitude>Pienin pituusaste</advl_minLongitude>
 <advl_maxLongitude>Suurin pituusaste</advl_maxLongitude>
@@ -143,7 +145,7 @@ Sitten ERDDAP lisää kaikki
 <advn_outOfDate><![CDATA[
 
 Ilmeisesti millään tietojoukolla ei ole
-<a rel="help" href="https://erddap.github.io/setupDatasetsXml.html#testOutOfDate"
+<a rel="help" href="https://erddap.github.io/docs/server-admin/datasets#testoutofdate"
 ><kbd>testOutOfDate</kbd></a> attribuuttia.
 Ehkä tässä ERDDAP ssa ei ole lähes reaaliaikaisia ​​tietojoukkoja.
 
@@ -361,6 +363,8 @@ Tai
 <a rel="help" href="#computerProgram">ohita tämä verkkosivu</a> ja tee muunnoksia tietokoneohjelmasta, komentosarjasta tai verkkosivusta.
 
 ]]></convertBypass>
+<convertCOLORs>Värit</convertCOLORs>
+<convertCOLORsMessage>Muunna väriarvoa väribarista</convertCOLORsMessage>
 <convertToAFullName><![CDATA[
 <strong>Muunna {0} koko nimeksi.</strong>
 ]]></convertToAFullName>
@@ -556,6 +560,7 @@ On
 <convertFipsCounty>Muunna FIPS piirikoodi maakunnan nimeksi tai maakunnan nimestä</convertFipsCounty>
 
 <!--  Älä muuta esimerkkejä (oletusarvostaN...).  -->
+
 <!--  &quot;FIPS County Code&quot; oli linkki osoitteeseen http://www.itl.nist.gov/fipspubs/fip6-4.htm 
      sitten https://www.census.gov/geo/reference/codes/cou.html 
      Nyt lähin(?) on http://www.datypic.com/sc/niem31/t-fips_6-4_USCountyCodeSimpleType.html
@@ -1926,7 +1931,7 @@ Tämä sisältää:
 <ul>
 <li><a class="selfLink" id="databases" href="#databases" rel="bookmark">Tiedot</a>, jotka on tällä hetkellä tallennettu relaatiotietokantaan.
 <br>Lue tiedot
-<a rel="help" href="https://erddap.github.io/setupDatasetsXml.html#EDDTableFromDatabase">EDDTableFromDatabase-</a> tietojoukon tyypistä ERDDAP ssa, erityisesti ensimmäiset ~2 tietoruutua, jotka kertovat tarpeesta luoda denormalisoitu taulukko.
+<a rel="help" href="https://erddap.github.io/docs/server-admin/datasets#eddtablefromdatabase">EDDTableFromDatabase-</a> tietojoukon tyypistä ERDDAP ssa, erityisesti ensimmäiset ~2 tietoruutua, jotka kertovat tarpeesta luoda denormalisoitu taulukko.
 Se voi kuulostaa hullulta.
 Ole hyvä ja luota tarpeeksi lukeaksesi perustelut tälle.
 <br>&nbsp;
@@ -2741,7 +2746,7 @@ Jos haluat esimerkkien viittaavan ERDDAP:hen, helpoin tapa on:
      Toivottavasti voit vain korvata datasetID:lläsi &quot;jplMURSST41&quot;
      ja muuta &quot;[0 32]&quot; (väripalkin tietoalue).   -->
 <EDDGridMatlabPlotExample>imagesc(jplMURSST41.longitude, jplMURSST41.latitude, squeeze(jplMURSST41.analysed_sst), [0 32])
-set(gca, 'YDir', 'normal')</EDDGridMatlabPlotExample>
+set(gca, &#39;YDir&#39;, &#39;normal&#39;)</EDDGridMatlabPlotExample>
 
 <!--  EDDTable-viestit näkyvät tabledap Data Access Form ja Make A Graph -lomakkeessa.  -->
 <EDDTableConstraints>Rajoitukset</EDDTableConstraints>
@@ -2900,7 +2905,7 @@ Jos haluat esimerkkien viittaavan ERDDAP:hen, helpoin tapa on:
 
 <!--  Tämä on esimerkkikysely, joka luo kaavion. 
      Voit luoda esimerkkisi tietojoukosi Make A Graph -lomakkeella ERDDAP:ssa.   -->
-<EDDTableGraphExample>time,T_25&amp;station="0n0e"&amp;time&gt;=2015-05-23T12:00:00Z&amp;time&lt;=2015-05-31T12:00:00Z&amp;.draw=lines</EDDTableGraphExample>
+<EDDTableGraphExample>time,T_25&amp;station=&quot;0n0e&quot;&amp;time&gt;=2015-05-23T12:00:00Z&amp;time&lt;=2015-05-31T12:00:00Z&amp;.draw=lines</EDDTableGraphExample>
 
 <!--  Tämä on esimerkkikysely, joka luo kartan.  -->
 <EDDTableMapExample>longitude,latitude,T_25&amp;time=2015-05-31T12:00:00Z&amp;.draw=markers&amp;.marker=5|5</EDDTableMapExample>
@@ -3004,6 +3009,8 @@ Esimerkiksi:
 <fileHelp_ncml>Tarkastele tietojoukon rakennetta ja metatietoja UTF-8 NCML .xml -tiedostona.</fileHelp_ncml>
 <fileHelpGrid_odvTxt>Latausaika, leveysaste, pituusaste, muut muuttujat ODV:n yleisenä laskentataulukkotiedostona (.txt).</fileHelpGrid_odvTxt>
 <fileHelpTable_odvTxt>Lataa pituusaste, leveysaste, aika ja muut sarakkeet ISO-8859-1 ODV Generic Spreadsheet -tiedostona (.txt).</fileHelpTable_odvTxt>
+<fileHelp_parquet>Lataa parquet-tiedostona. Metadata sisältää sarakkeiden nimiä (&quot;kolumn_nimet&quot;) ja yksiköitä (&quot;column_units&quot;).</fileHelp_parquet>
+<fileHelp_parquet_with_meta>Download &quot;Parquet-tiedosto, jossa on yksityiskohtaiset metatiedot.</fileHelp_parquet_with_meta>
 <fileHelp_subset>Tarkastele HTML-lomaketta, joka käyttää fasetoitua hakua tietojen osajoukkojen poimimisen yksinkertaistamiseksi.</fileHelp_subset>
 <fileHelp_timeGaps>Tarkastele UTF-8-luetteloa aika-arvojen aukoista, jotka ovat suurempia kuin mediaaniväli.</fileHelp_timeGaps>
 <fileHelp_tsv>Lataa ISO-8859-1 sarkaimilla eroteltu tekstitaulukko (rivi 1: nimet; rivi 2: yksiköt; ISO 8601 kertaa).</fileHelp_tsv>
@@ -3295,7 +3302,7 @@ Molempien versioiden tiedostojen tunniste on .nc, ja .nc tiedostoja lukevat ohje
 <a rel="help" href="https://anaconda.org/eumetsat/ncview">Conda kautta <img
        src="https://coastwatch.pfeg.noaa.gov/erddap/images/external.png" alt=" (external link)"
        title="Tämä linkki ulkoiselle verkkosivustolle ei ole suositus."></a>).
-<li><a rel="help" href="https://erddap.github.io/setupDatasetsXml.html#NCO">NCO</a>, tehokas komentorivityökalu .nc tiedostojen pysyvään muokkaamiseen.
+<li><a rel="help" href="https://erddap.github.io/docs/server-admin/datasets#netcdf-operators-nco">NCO</a>, tehokas komentorivityökalu .nc tiedostojen pysyvään muokkaamiseen.
 <li><a rel="help" href="https://www.unidata.ucar.edu/downloads/netcdf/">NetCDF -C ja NetCDF - Java <img
        src="https://coastwatch.pfeg.noaa.gov/erddap/images/external.png" alt=" (external link)"
        title="Tämä linkki ulkoiselle verkkosivustolle ei ole suositus."></a>, tärkeimmät C-, C++-, Fortran- tai Java -ohjelmistokirjastot .nc tiedostojen lukemiseen ja kirjoittamiseen.
@@ -3703,9 +3710,11 @@ Tai käytä suurempia numeroita, jos ongelma jatkuu.
 Kellojen oletusarvo on 8192. Esineiden oletusarvo on 128.</inotifyFix>
 
 <!--  älä käännä  -->
-<inotifyFixCommands>sudo sysctl fs.inotify.max_user_watches=65536
+<inotifyFixCommands>
+  sudo sysctl fs.inotify.max_user_watches=65536
   sudo sysctl fs.inotify.max_user_instances=1024
-  sudo sysctl -p</inotifyFixCommands>
+  sudo sysctl -p
+</inotifyFixCommands>
 <interpolate>Interpoloida</interpolate>
 <javaProgramsHTML><![CDATA[
 
@@ -3715,7 +3724,7 @@ Kuten edellä on kuvattu, koska Java ohjelmat voivat käyttää verkossa saatavi
 <p>Tai koska ERDDAP on täysin avoimen lähdekoodin ohjelma, voit myös asettaa oman ERDDAP -kopion omalle palvelimellesi (julkisesti saatavilla tai ei) palvelemaan omia tietojasi.
 Java ohjelmasi voivat saada tietoja kyseisestä ERDDAP - kopiosta .
 Katso
-<a rel="help" href="https://erddap.github.io/setup.html">Oman ERDDAP määrittäminen</a> .
+<a rel="help" href="https://erddap.github.io/docs/server-admin/deploy-install">Oman ERDDAP määrittäminen</a> .
   
 ]]></javaProgramsHTML>
 
@@ -3802,7 +3811,7 @@ Monissa ERDDAP -asennuksissa ei ole käytössä todennusta, joten käyttäjät e
 Tällä hetkellä ERDDAP tukee vain todennusta Googlen hallinnoimien sähköpostitilien kautta, joihin kuuluvat NOAA ja monien yliopistojen sähköpostitilit.
 Jos ERDDAP on todennus käytössä, kuka tahansa Googlen hallinnoiman sähköpostitilin omaava voi kirjautua sisään, mutta heillä on pääsy vain niihin yksityisiin tietojoukkoon, joihin ERDDAP järjestelmänvalvoja on nimenomaisesti antanut luvan.
 Katso ohjeet ERDDAP hen kirjautumisesta selaimesta tai komentosarjan kautta
-<a rel="help" href="https://erddap.github.io/AccessToPrivateDatasets.html">kohdasta Pääsy yksityisiin tietojoukkoon ERDDAP :ssa</a> .
+<a rel="help" href="https://erddap.github.io/docs/user/AccessToPrivateDatasets">kohdasta Pääsy yksityisiin tietojoukkoon ERDDAP :ssa</a> .
   
 ]]></loginHTML>
 <loginAttemptBlocked>VIRHE: Käyttäjän {0} kirjautumisyritykset estetään tilapäisesti kolmen epäonnistuneen yrityksen jälkeen.
@@ -4273,6 +4282,7 @@ Katso &quot;Ohita tämä lomake&quot; -linkki alla.
 <moreInformation>lisää tietoa</moreInformation>
 
 <!--  Nämä MessageFormat-tyyliset viestit työnnetään MustBe.xxx-tiedostoon.  -->
+
 <!--  Tämä on tärkeä virheilmoitus. Se osoittaa, että pyyntö oli pätevä,
 mutta tulos ei ollut dataa. Asiakkaat saattavat etsiä juuri tätä viestiä.
 Toistaiseksi on parasta olla muuttamatta tätä.
@@ -4371,6 +4381,12 @@ Katso Asetukset kyseisen verkkosivun alalaidasta.
 <br>&nbsp;
   
 ]]></outOfDateKeepTrack>
+
+<!--Etusivu > Ensimmäistä </pageFirst>
+<PagePrevious> Previous</pagePrevious
+<pageCurrent> Nykyinen </pageCurrent>
+<pageNext>next</pageNext>
+<pageLast> Last</pageLast-->
 
 <!--  Nämä ovat palettivaihtoehdot.
      Jokaiselle tiedostolle on oltava .cpt-tiedosto erddap/WEB-INF/cptfiles-hakemistossa.
@@ -4491,7 +4507,7 @@ Esimerkiksi ihmiset voivat käyttää tätä URL-osoitetta tehdäkseen kokotekst
 ERDDAP ssa on monia ominaisuuksia, joita kirjoittamasi tietokoneohjelmat tai komentosarjat voivat käyttää.
 Voit käyttää niitä muiden verkkosovellusten tai verkkopalvelujen rakentamiseen ERDDAP päälle, jolloin ERDDAP tekee suurimman osan työstä! Joten jos sinulla on idea paremmasta käyttöliittymästä ERDDAP palvelemiin tietoihin tai verkkosivulle, joka tarvitsee helpon tavan päästä tietoihin, suosittelemme luomaan oman verkkosovelluksesi, verkkopalvelusi tai verkkosivusi ja käyttämään ERDDAP perusta.
 Järjestelmäsi voi saada tietoja, kaavioita ja muuta tietoa ERD :n ERDDAP sta tai muista ERDDAP asennuksista, tai voit<!-- setup always from coastwatch's erddap -->
-<a rel="help" href="https://erddap.github.io/setup.html">perustaa oma ERDDAP -palvelin</a>, joka voi olla julkisesti tai vain yksityisesti käytettävissä.
+<a rel="help" href="https://erddap.github.io/docs/server-admin/deploy-install">perustaa oma ERDDAP -palvelin</a>, joka voi olla julkisesti tai vain yksityisesti käytettävissä.
 <h3><a class="selfLink" id="requests" href="#requests" rel="bookmark">RESTful URL-pyynnöt</a></h3>
 ERDDAP :n käyttöliittymätietojen pyynnöt (esimerkiksi hakutulokset) käyttävät verkon yleistä standardia pyynnöille:
 <a rel="help" href="https://en.wikipedia.org/wiki/Uniform_Resource_Locator">URL-osoitteet &externalLinkHtml;</a> lähetetty
@@ -4551,7 +4567,7 @@ ERDDAP voi palauttaa käyttöliittymätuloksia tietotaulukona näissä yleisiss�
 <li>.nc - litteä, taulukkomainen NetCDF -3 binaaritiedosto.
 (<a rel="help" href="https://www.unidata.ucar.edu/software/netcdf/">lisää&nbsp;tiedot &externalLinkHtml;</a>)
 <li>.nccsv - litteä, taulukkomainen, NetCDF :n kaltainen ASCII CSV-tiedosto.
-(<a rel="help" href="https://erddap.github.io/NCCSV.html">lisää&nbsp;tiedot &externalLinkHtml;</a>)
+(<a rel="help" href="https://erddap.github.io/docs/user/nccsv-1.20">lisää&nbsp;tiedot &externalLinkHtml;</a>)
 <li>.tsv - sarkaimilla eroteltu ASCII-tekstitaulukko.
 (<a rel="help" href="https://jkorpela.fi/TSV.html">lisää&nbsp;tiedot &externalLinkHtml;</a>)
 <li>.xhtml - XHTML (XML) -tiedosto, joka sisältää tiedot taulukossa.
@@ -5269,7 +5285,7 @@ Se on implisiittinen.)
 <p><a rel="help" href="&erddapUrl;/information.html"><strong>Lue lisää ERDDAP :sta.</strong></a>
 <p><strong>Tiedontarjoajat:
 Voit
-<a rel="help" href="https://erddap.github.io/setup.html">perustaa oman ERDDAP palvelimen</a> ja palvella omia tietojasi.</strong> ERDDAP on ilmainen ja avoin lähdekoodi.
+<a rel="help" href="https://erddap.github.io/docs/server-admin/deploy-install">perustaa oman ERDDAP palvelimen</a> ja palvella omia tietojasi.</strong> ERDDAP on ilmainen ja avoin lähdekoodi.
 Se käyttää Apachen kaltaisia ​​lisenssejä, joten voit tehdä sillä mitä haluat.
 ERDDAP :n ulkoasu on muokattavissa, joten ERDDAP kuvastaa oppilaitostasi, ei NOAA :ta.
 Pieni vaiva ERDDAP perustamiseksi tuo monia etuja.
@@ -5284,6 +5300,7 @@ href="https://www.ngdc.noaa.gov/wiki/index.php/Data_Access_Technical_Recommendat
 ]]></standardShortDescriptionHtml>
 
 <!--  Bob: katso identtinen css-taulukko taulukossa Table.ERD_TABLE_CSS  -->
+
 <!--  startHeadHtml sisältää HTML-dokumentin alun ja head-tunnisteet 
 (alkaen merkinnästä &quot;&lt;!DOCTYPE&quot;, mutta ei sisällä &quot;&lt;/head&gt;&quot;) 
 kaikille HTML-verkkosivuille. 
@@ -5320,6 +5337,7 @@ tiedot.
 <link href="&erddapUrl;/images/erddap2.css" rel="stylesheet" type="text/css">
 <meta name="viewport" content="width=device-width, initial-scale=1">  
 ]]></startHeadHtml5>
+
 <!-- The standard startBodyHtml -->
 <startBodyHtml5><![CDATA[
 <body>
@@ -5631,7 +5649,7 @@ Se on implisiittinen.)
 <br>&nbsp;
 <li><strong><a class="selfLink" id="localAndRemote" href="#localAndRemote" rel="bookmark">ERDDAP voi saada tietoja paikallisista (palvelimen kiintolevyltä) ja etätietolähteistä (käytettävissä verkon kautta).</a></strong>
 <br>Katso
-<a rel="help" href="https://erddap.github.io/setupDatasetsXml.html#datasetTypes">luettelo tietolähteistä</a>, joita ERDDAP voi käyttää.
+<a rel="help" href="https://erddap.github.io/docs/server-admin/datasets#list-of-types-datasets">luettelo tietolähteistä</a>, joita ERDDAP voi käyttää.
 <br>&nbsp;
 <li><strong><a class="selfLink" id="scientificData" href="#scientificData" rel="bookmark">ERDDAP voi palvella monenlaista tieteellistä dataa, ei vain merentutkimusta.</a></strong>
 <br>ERDDAP on tietopalvelin, joka on kirjoitettu
@@ -5786,8 +5804,8 @@ Kun pyydät dataa tai kaaviota
       title="Tämä linkki ulkoiselle verkkosivustolle ei ole suositus."></a>) kuvaavat tiedot.
 ERDDAP antaa (ja rohkaisee) järjestelmänvalvojan kuvailemaan metatietoja, jotka lisätään tietokokonaisuuksiin ja niiden muuttujiin lennossa.
 Katso
-<a rel="help" href="https://erddap.github.io/setupDatasetsXml.html">järjestelmänvalvojille tarkoitettujen ohjeiden</a>
-<a rel="help" href="https://erddap.github.io/setupDatasetsXml.html#addAttributes">AddAttributes -osio</a> .
+<a rel="help" href="https://erddap.github.io/docs/server-admin/datasets">järjestelmänvalvojille tarkoitettujen ohjeiden</a>
+<a rel="help" href="https://erddap.github.io/docs/server-admin/datasets#addattributes">AddAttributes -osio</a> .
 <br>&nbsp;
 <li><strong><a class="selfLink" id="images" href="#images" rel="bookmark"
  >ERDDAP avulla voit pyytää .png- ja .pdf-kuvatiedostoja, joissa on kaavioita ja karttoja</a></strong>
@@ -5940,7 +5958,7 @@ Käyttäjien ei koskaan tarvitse kirjautua sisään päästäkseen julkisesti sa
 Käyttäjät, jotka ovat kirjautuneet sisään, voivat käyttää julkisia tietojoukkoja ja yksityisiä tietojoukkoja, joihin heillä on pääsy.
 Käyttäjien on käytettävä https::tä (Secure Sockets Layer) kirjautuakseen sisään ja käyttääkseen yksityisiä tietojoukkoja.
 Tietojoukot voidaan määrittää siten, että kaaviot ja kartat ovat julkisesti saatavilla, mutta tiedot ovat vain valtuutettujen käyttäjien käytettävissä.
-(<a rel="help" href="https://erddap.github.io/setup.html#security">lisää tietoa</a>)
+(<a rel="help" href="https://erddap.github.io/docs/server-admin/additional-information#security">lisää tietoa</a>)
 <br>&nbsp;
 <li><strong><a class="selfLink" id="chunks" href="#chunks" rel="bookmark">ERDDAP käsittelee tiedot paloina.</a></strong>
 <br>Säästääkseen muistia (iso ongelma) ja saadakseen vastaukset alkamaan nopeammin ERDDAP käsittelee tietopyynnöt paloina – saa toistuvasti osan dataa lähteestä ja puhdistaa sen (esimerkiksi lisäämällä
@@ -5962,16 +5980,16 @@ se ottaa pyynnön käyttäjältä; saa tietoja etätietolähteestä; alustaa tie
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
       title="Tämä linkki ulkoiselle verkkosivustolle ei ole suositus."></a> :
 Mutta ERDDAP on myös mahdollisuus saada aktiivisesti kaikki saatavilla oleva data etätietolähteestä ja
-<a rel="help" href="https://erddap.github.io/setupDatasetsXml.html#EDDGridCopy">tallentaa tiedoista paikallinen kopio</a> .
+<a rel="help" href="https://erddap.github.io/docs/server-admin/datasets#eddgridcopy">tallentaa tiedoista paikallinen kopio</a> .
 <a rel="help" href="https://en.wikipedia.org/wiki/Push_technology">Push -tekniikka <img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
       title="Tämä linkki ulkoiselle verkkosivustolle ei ole suositus."></a> :
 ERDDAP :n
 <a href="#subscriptions">tilauspalveluita</a> käyttämällä voidaan ilmoittaa muille tietopalvelimille heti, kun uutta tietoa on saatavilla, jotta ne voivat pyytää tietoja (vetämällä tiedot).
 ERDDAP :n
-<a rel="help"  href="https://erddap.github.io/setupDatasetsXml.html#EDDGridFromErddap">EDDGrid FromErddap</a> ja
-<a rel="help"  href="https://erddap.github.io/setupDatasetsXml.html#EDDTableFromErddap">EDDTableFromErddap</a> käyttävät ERDDAP :n tilauspalveluita ja
-<a rel="help" href="https://erddap.github.io/setup.html#flag">lippujärjestelmää</a> niin, että niille ilmoitetaan välittömästi, kun uutta tietoa on saatavilla.
+<a rel="help"  href="https://erddap.github.io/docs/server-admin/datasets#eddfromerddap">EDDGrid FromErddap</a> ja
+<a rel="help"  href="https://erddap.github.io/docs/server-admin/datasets#eddfromerddap">EDDTableFromErddap</a> käyttävät ERDDAP :n tilauspalveluita ja
+<a rel="help" href="https://erddap.github.io/docs/server-admin/additional-information#flag">lippujärjestelmää</a> niin, että niille ilmoitetaan välittömästi, kun uutta tietoa on saatavilla.
 Voit yhdistää nämä suureen tehoon:
 jos käärit EDDGrid kopion EDDGrid FromErddap -tietojoukon ympärille (tai käärit EDDTableCopyn EDDTableFromErddap-tietojoukon ympärille), ERDDAP luo automaattisesti paikallisen kopion toisen ERDDAP :n tietojoukosta ja ylläpitää sitä.
 Koska tilauspalvelut toimivat heti, kun uutta tietoa on saatavilla, push-tekniikka levittää tiedot erittäin nopeasti (sekunneissa).
@@ -6062,10 +6080,10 @@ Pelkästään tämä syy oikeuttaa ERDDAP kehittämiskustannukset.
 (Luulen, että voitaisiin osoittaa, että ERDDAP on säästänyt enemmän NOAA -tutkijan aikaa kuin mitä olen käyttänyt ERDDAP kehittämiseen .
 Aika=rahaa.) Mutta sivuetu on, että mikä tahansa muu organisaatio voi
 <a rel="bookmark" 
-href="https://erddap.github.io/setup.html">ladata, asentaa ja käyttää ERDDAP</a> <strong>ilmaiseksi</strong> jakaakseen omia tietojaan.
+href="https://erddap.github.io/docs/server-admin/deploy-install">ladata, asentaa ja käyttää ERDDAP</a> <strong>ilmaiseksi</strong> jakaakseen omia tietojaan.
 tieteellistä tietoa.
 <p><a rel="bookmark" 
-href="https://erddap.github.io/setup.html#organizations"
+href="https://erddap.github.io/#who-uses-erddap"
 >Yli 90 organisaatiota vähintään 14 maassa käyttää ERDDAP</a> :ta.
 Ehkä on olemassa sellainen asia kuin ilmainen lounas.
 <p>ERDDAP on Java ohjelma.
@@ -6181,14 +6199,14 @@ Ajattele sitä nyt vain nimenä, ei lyhenteenä.
 <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/images/erddapTalk/erdData.html">täältä</a> .
 <br>&nbsp;
 <p><strong><a class="selfLink" id="setup" href="#setup" rel="bookmark">Voit</a></strong>
-<a rel="help" href="https://erddap.github.io/setup.html"><strong>perustaa oman ERDDAP palvelimen</strong></a> ja palvella omia tietojasi.
+<a rel="help" href="https://erddap.github.io/docs/server-admin/deploy-install"><strong>perustaa oman ERDDAP palvelimen</strong></a> ja palvella omia tietojasi.
 <ul>
 <li>Pieni vaiva ERDDAP perustamiseksi tuo monia etuja.
 <li>Jos sinulla on jo verkkopalvelu tietojesi jakeluun, voit määrittää ERDDAP käyttämään tietojasi olemassa olevan palvelun tai lähdetiedostojen tai tietokannan kautta.
 Tämän jälkeen ihmisillä on toinen tapa päästä käsiksi tietoihisi ja he voivat ladata tiedot muissa tiedostomuodoissa tai kaavioina tai karttoina.
 <li>Jos sinulla on paljon kysyttyjä tietojoukkoja, voit asentaa
 <a rel="help" 
-  href="https://erddap.github.io/grids.html"
+  href="https://erddap.github.io/docs/server-admin/scaling"
   >useita ERDDAP -tiedostoja, jotka toimivat yhdessä</a> skaalautuakseen ja vastatakseen suuren tiedonjakelukeskuksen tarpeisiin.
 </ul>
 <h2><a class="selfLink" id="contact" href="#contact" rel="bookmark">Ota meihin yhteyttä</a></h2>
@@ -6213,11 +6231,14 @@ Jos koko UDUNITS-merkkijono vastaa &quot;ennen&quot;-merkkijonoa,
 se muunnetaan UDUNITS-arvon jälkeen.
 Tyhjät rivit varmistavat, että muut rivit ovat &quot;ennen&quot; ja &quot;jälkeen&quot; rivejä.
  -->
-<standardizeUdunits>degrees +E
+<standardizeUdunits>
+degrees +E
 degrees_east
 
 degrees +N
-degrees_north</standardizeUdunits>
+degrees_north
+
+</standardizeUdunits>
 <time>Aika</time>
 <timeoutOtherRequests>Aikakatkaisu odottaa muiden pyyntöjesi käsittelyä.</timeoutOtherRequests>
 
@@ -6228,7 +6249,8 @@ Jos koko UCUM-merkkijono vastaa &quot;ennen&quot;-merkkijonoa,
 se muunnetaan UDUNITS-arvon jälkeen.
 Tyhjät rivit varmistavat, että muut rivit ovat &quot;ennen&quot; ja &quot;jälkeen&quot; rivejä.
  -->
-<ucumToUdunits>%.{cover}
+<ucumToUdunits>
+%.{cover}
 % cover
 
 deg{azimuth}
@@ -6238,7 +6260,9 @@ deg east
 degrees_east
 
 deg north 
-degrees_north</ucumToUdunits>
+degrees_north 
+
+</ucumToUdunits>
 
 <!--  Tämä on tapa ohittaa ERDDAP:n UDUNITS to UCUM -muunnin
 tarjoamalla tiettyjä konversioita. 
@@ -6247,7 +6271,8 @@ Jos koko UDUNITS-merkkijono vastaa &quot;ennen&quot;-merkkijonoa,
 se muunnetaan UCUM-arvon jälkeen.
 Tyhjät rivit varmistavat, että muut rivit ovat &quot;ennen&quot; ja &quot;jälkeen&quot; rivejä.
  -->
-<udunitsToUcum>degrees +E
+<udunitsToUcum>
+degrees +E
 deg{east}
 
 degrees (+E)
@@ -6269,7 +6294,9 @@ degrees-north
 deg{north}
 
 degrees north
-deg{north}</udunitsToUcum>
+deg{north}
+
+</udunitsToUcum>
 
 <!--  Tämä on yritys käsitellä vanhentuneita URL-osoitteiden lähteiden metatietoja.
 updateUrls on käytössä jokaisessa tietojoukon String-metatietoattribuutissa 
@@ -6293,7 +6320,8 @@ Huomautuksia:
 * http://www.csc.noaa.gov muunnos rannikolle on epätäydellinen: 
   asiakirjoja eri paikoissa.  Tämä on yleistä suurille verkkotunnuksen nimen muutoksille.
  -->
-<updateUrls>http://accession.nodc.noaa.gov/
+<updateUrls>
+http://accession.nodc.noaa.gov/
 https://data.nodc.noaa.gov/cgi-bin/iso?id=gov.noaa.nodc:
 
 www.unidata.ucar.edu/software/thredds/current/netcdf-java/ncml/AnnotatedSchema4.html
@@ -7386,7 +7414,9 @@ http://xerial.org
 https://xerial.org
 
 http://xkcd.com
-https://xkcd.com</updateUrls>
+https://xkcd.com
+
+</updateUrls>
 
 <!--  Nämä ovat http-URL-osoitteita, joihin https on luultavasti jonain päivänä käytettävissä.
 Ne on listattu tänne kommentteina nopeaa testausta varten.
@@ -7469,6 +7499,7 @@ https://www.slf4j.org
 https://www.usgin.org
 
  -->
+
 <!--  Tämä on pilkuilla eroteltu luettelo määritteiden nimistä, jotka updateUrls ohittavat. 
 Tämä ei voi olla mitään. Joten jos et halua mitään, kirjoita hölmö sana, joka haluaa
 ei koskaan ole attribuutin nimi.  -->
@@ -7803,7 +7834,7 @@ On
 <li>Datamuuttujalla PITÄÄ olla pituus- ja leveysaste-akselimuuttujat.
 (Muut akselimuuttujat ovat VALINNAisia.)
 <li>Pituusaste-arvoja TÄYTYY olla välillä -180 ja 180.
-<li><a rel="help" href="https://erddap.github.io/setupDatasetsXml.html#colorBar">Attribuutit colorBarMinimum ja colorBarMaximum TÄYTYY</a> määrittää.
+<li><a rel="help" href="https://erddap.github.io/docs/server-admin/datasets#color-bar-attributes">Attribuutit colorBarMinimum ja colorBarMaximum TÄYTYY</a> määrittää.
 (Muut väripalkin määritteet ovat VALINNAisia.)
 </ul>
 <li><strong>Ruudukkotietokerrokset:</strong> ERDDAP :n WMS ssä kaikki pituus- ja leveysastemittoja käyttävien ruudukkotietojoukkojen datamuuttujat ovat saatavilla WMS kautta.

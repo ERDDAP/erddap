@@ -16,13 +16,14 @@ import com.cohort.util.String2;
 import gov.noaa.pfel.coastwatch.pointdata.Table;
 import gov.noaa.pfel.erddap.variable.EDV;
 import java.io.BufferedWriter;
+import java.io.IOException;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * TableWriterNccsv provides a way to write a table to an NCCSV file (see
- * https://erddap.github.io/NCCSV.html ) outputStream in chunks so that the whole table doesn't have
- * to be in memory at one time. This is used by EDDTable. The outputStream isn't obtained until the
- * first call to writeSome().
+ * https://erddap.github.io/docs/user/nccsv-1.20 ) outputStream in chunks so that the whole table
+ * doesn't have to be in memory at one time. This is used by EDDTable. The outputStream isn't
+ * obtained until the first call to writeSome().
  *
  * @author Bob Simons (was bob.simons@noaa.gov, now BobSimons2.00@gmail.com) 2017-04-06
  */
@@ -37,7 +38,7 @@ public class TableWriterNccsv extends TableWriter {
   protected volatile String time_precision[];
   protected volatile BufferedWriter writer;
 
-  public volatile AtomicLong totalNRows = new AtomicLong(0);
+  public final AtomicLong totalNRows = new AtomicLong(0);
 
   /**
    * The constructor.
@@ -99,7 +100,7 @@ public class TableWriterNccsv extends TableWriter {
           time_precision[col] = catts.getString(EDV.TIME_PRECISION);
           catts.set("units", Calendar2.timePrecisionToTimeFormat(time_precision[col]));
           PrimitiveArray pa = catts.get("actual_range");
-          if (pa != null && pa instanceof DoubleArray && pa.size() == 2) {
+          if (pa instanceof DoubleArray && pa.size() == 2) {
             StringArray sa = new StringArray();
             for (int i = 0; i < 2; i++)
               sa.add(
@@ -212,5 +213,13 @@ public class TableWriterNccsv extends TableWriter {
 
     TableWriterNccsv twn = new TableWriterNccsv(language, tEdd, tNewHistory, tOutputStreamSource);
     twn.writeAllAndFinish(table);
+    twn.close();
+  }
+
+  @Override
+  public void close() throws IOException {
+    if (writer != null) {
+      writer.close();
+    }
   }
 }

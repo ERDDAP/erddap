@@ -17,6 +17,7 @@ import gov.noaa.pfel.erddap.util.EDStatic;
 import java.io.BufferedOutputStream;
 import java.io.DataOutputStream;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.OutputStream;
 
 /**
@@ -30,10 +31,10 @@ public class TableWriterWav extends TableWriter {
   // set by constructor
 
   // set by firstTime
-  protected volatile int randomInt;
-  protected volatile String fullDosName;
+  protected final int randomInt;
+  protected final String fullDosName;
   protected volatile DataOutputStream dos;
-  protected volatile String fullOutName;
+  protected final String fullOutName;
   protected volatile String tClass;
   protected volatile boolean isLong; // if true, save as int (from high 4 bytes)
   public volatile long totalNRows = 0;
@@ -93,7 +94,7 @@ public class TableWriterWav extends TableWriter {
       boolean java8 = System.getProperty("java.version").startsWith("1.8.");
       if (java8 && (tClass.equals("float") || tClass.equals("double")))
         throw new SimpleException(
-            EDStatic.simpleBilingual(language, EDStatic.queryErrorAr)
+            EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
                 + "Until Java 9, float and double values can't be written to .wav files.");
       for (int col = 0; col < nColumns; col++) {
         Test.ensureEqual(
@@ -155,16 +156,12 @@ public class TableWriterWav extends TableWriter {
     File2.delete(fullDosName);
 
     // then send to outputStream
-    OutputStream out = outputStreamSource.outputStream(""); // no character_encoding
-    try {
+    // no character_encoding
+    try (OutputStream out = outputStreamSource.outputStream("")) {
       if (!File2.copy(fullOutName, out))
         throw new SimpleException(String2.ERROR + " while transmitting file.");
-    } finally {
-      try {
-        out.close();
-      } catch (Exception e) {
-      } // downloads of e.g., erddap2.css don't work right if not closed. (just if gzip'd?)
     }
+    // downloads of e.g., erddap2.css don't work right if not closed. (just if gzip'd?)
 
     // diagnostic
     if (verbose)
@@ -186,5 +183,13 @@ public class TableWriterWav extends TableWriter {
 
     TableWriterNccsv twn = new TableWriterNccsv(language, tEdd, tNewHistory, tOutputStreamSource);
     twn.writeAllAndFinish(table);
+    twn.close();
+  }
+
+  @Override
+  public void close() throws IOException {
+    if (dos != null) {
+      dos.close();
+    }
   }
 }

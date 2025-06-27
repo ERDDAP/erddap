@@ -19,7 +19,7 @@ Subdirectories that will be created by ERDDAP are:
 The ERDDAP log file (log.txt) will be put in this directory.
 At ERD, we use '/u00/cwatch/erddap/' for releases.
 -->
-<bigParentDirectory>data</bigParentDirectory>
+<bigParentDirectory>target/data</bigParentDirectory>
 
 <!-- baseUrl is the start of the public url, to which "/erddap" 
 is appended. For example:
@@ -41,7 +41,7 @@ If you make a proxy so that ":8443" isn't needed,
 then don't use ":8443" here.
 This is relevant even if <authentication> is "".
 See the instructions at 
-https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#security
+https://erddap.github.io/docs/server-admin/additional-information#security
 For example:
 For running/testing on your personal computer:
   <baseHttpsUrl>https://localhost:8443</baseHttpsUrl>                  
@@ -191,7 +191,7 @@ the cached information. -->
 <!-- If you want to restrict access to some datasets, 
 you need to specify the method used for logging on (authentication).
 See the info at 
-https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#security
+https://erddap.github.io/docs/server-admin/additional-information#security
 Currently, the options are: "" (logins not supported, the default), 
 "custom" (discouraged), "email" (discouraged), "google" (recommended),
 "orcid" (recommended), and "oauth2" (recommended).  
@@ -236,7 +236,7 @@ the default).
 You should only use "MD5" or "SHA256" if you need to match 
 values stored that way in an external password database.
 See the info at 
-https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#security
+https://erddap.github.io/docs/server-admin/additional-information#security
 -->
 <passwordEncoding>UEPSHA256</passwordEncoding>
 
@@ -391,5 +391,8 @@ If an attribute is a global attribute, identify it by prefixing it with "global:
 
 <useSaxParser>true</useSaxParser>
 <usePrometheusMetrics>true</usePrometheusMetrics>
+<showLoadErrorsOnStatusPage>true</showLoadErrorsOnStatusPage>
+<useSisISO19115>true</useSisISO19115>
+<useHeadersForUrl>true</useHeadersForUrl>
 </erddapSetup>
 

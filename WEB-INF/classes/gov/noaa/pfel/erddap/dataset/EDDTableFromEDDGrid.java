@@ -21,6 +21,10 @@ import gov.noaa.pfel.coastwatch.pointdata.Table;
 import gov.noaa.pfel.coastwatch.util.SSR;
 import gov.noaa.pfel.coastwatch.util.SimpleXMLReader;
 import gov.noaa.pfel.erddap.Erddap;
+import gov.noaa.pfel.erddap.dataset.metadata.LocalizedAttributes;
+import gov.noaa.pfel.erddap.handlers.EDDTableFromEDDGridHandler;
+import gov.noaa.pfel.erddap.handlers.SaxHandlerClass;
+import gov.noaa.pfel.erddap.util.EDMessages;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.*;
 import java.io.BufferedReader;
@@ -31,6 +35,7 @@ import java.text.MessageFormat;
  *
  * @author Bob Simons (was bob.simons@noaa.gov, now BobSimons2.00@gmail.com) 2013-03-08
  */
+@SaxHandlerClass(EDDTableFromEDDGridHandler.class)
 public class EDDTableFromEDDGrid extends EDDTable {
 
   public static final int DEFAULT_MAX_AXIS0 = 10;
@@ -53,6 +58,7 @@ public class EDDTableFromEDDGrid extends EDDTable {
    *     &lt;erddapDatasets&gt;&lt;/dataset&gt; .
    * @throws Throwable if trouble
    */
+  @EDDFromXmlMethod
   public static EDDTableFromEDDGrid fromXml(Erddap tErddap, SimpleXMLReader xmlReader)
       throws Throwable {
 
@@ -60,16 +66,15 @@ public class EDDTableFromEDDGrid extends EDDTable {
     if (verbose) String2.log("\n*** constructing EDDTableFromEDDGrid(xmlReader)...");
     String tDatasetID = xmlReader.attributeValue("datasetID");
     EDDGrid tChildDataset = null;
-    Attributes tAddGlobalAttributes = null;
+    LocalizedAttributes tAddGlobalAttributes = null;
     String tAccessibleTo = null;
     String tGraphsAccessibleTo = null;
-    boolean tAccessibleViaFiles = EDStatic.defaultAccessibleViaFiles;
+    boolean tAccessibleViaFiles = EDStatic.config.defaultAccessibleViaFiles;
     StringArray tOnChange = new StringArray();
     String tFgdcFile = null;
     String tIso19115File = null;
     String tSosOfferingPrefix = null;
     int tReloadEveryNMinutes = DEFAULT_RELOAD_EVERY_N_MINUTES;
-    int tUpdateEveryNMillis = 0;
     String tDefaultDataQuery = null;
     String tDefaultGraphQuery = null;
     String tAddVariablesWhere = null;
@@ -87,70 +92,68 @@ public class EDDTableFromEDDGrid extends EDDTable {
       String localTags = tags.substring(startOfTagsLength);
 
       // try to make the tag names as consistent, descriptive and readable as possible
-      if (localTags.equals("<dataset>")) {
-        if ("false".equals(xmlReader.attributeValue("active"))) {
-          // skip it - read to </dataset>
-          if (verbose)
-            String2.log(
-                "  skipping datasetID="
-                    + xmlReader.attributeValue("datasetID")
-                    + " because active=\"false\".");
-          while (xmlReader.stackSize() != startOfTagsN + 1
-              || !xmlReader.allTags().substring(startOfTagsLength).equals("</dataset>")) {
-            xmlReader.nextTag();
-            // String2.log("  skippping tags: " + xmlReader.allTags());
-          }
+      switch (localTags) {
+        case "<dataset>" -> {
+          if ("false".equals(xmlReader.attributeValue("active"))) {
+            // skip it - read to </dataset>
+            if (verbose)
+              String2.log(
+                  "  skipping datasetID="
+                      + xmlReader.attributeValue("datasetID")
+                      + " because active=\"false\".");
+            while (xmlReader.stackSize() != startOfTagsN + 1
+                || !xmlReader.allTags().substring(startOfTagsLength).equals("</dataset>")) {
+              xmlReader.nextTag();
+              // String2.log("  skippping tags: " + xmlReader.allTags());
+            }
 
-        } else {
-          if (tChildDataset == null) {
-            String tType = xmlReader.attributeValue("type");
-            if (tType == null || !tType.startsWith("EDDGrid"))
-              throw new SimpleException(
-                  "type=\""
-                      + tType
-                      + "\" is not allowed for the dataset within the EDDTableFromEDDGrid. "
-                      + "The type MUST start with \"EDDGrid\".");
-            tChildDataset = (EDDGrid) EDD.fromXml(tErddap, tType, xmlReader);
           } else {
-            throw new RuntimeException(
-                "Datasets.xml error: "
-                    + "There can be only one <dataset> defined within an "
-                    + "EDDGridFromEDDTableo <dataset>.");
+            if (tChildDataset == null) {
+              String tType = xmlReader.attributeValue("type");
+              if (tType == null || !tType.startsWith("EDDGrid"))
+                throw new SimpleException(
+                    "type=\""
+                        + tType
+                        + "\" is not allowed for the dataset within the EDDTableFromEDDGrid. "
+                        + "The type MUST start with \"EDDGrid\".");
+              tChildDataset = (EDDGrid) EDD.fromXml(tErddap, tType, xmlReader);
+            } else {
+              throw new RuntimeException(
+                  "Datasets.xml error: "
+                      + "There can be only one <dataset> defined within an "
+                      + "EDDGridFromEDDTableo <dataset>.");
+            }
           }
         }
+        case "<accessibleTo>",
+            "<addVariablesWhere>",
+            "<defaultGraphQuery>",
+            "<defaultDataQuery>",
+            "<sosOfferingPrefix>",
+            "<iso19115File>",
+            "<fgdcFile>",
+            "<reloadEveryNMinutes>",
+            "<accessibleViaFiles>",
+            "<graphsAccessibleTo>" -> {}
+        case "</accessibleTo>" -> tAccessibleTo = content;
+        case "</graphsAccessibleTo>" -> tGraphsAccessibleTo = content;
+        case "</accessibleViaFiles>" -> tAccessibleViaFiles = String2.parseBoolean(content);
+        case "</reloadEveryNMinutes>" -> tReloadEveryNMinutes = String2.parseInt(content);
 
-      } else if (localTags.equals("<accessibleTo>")) {
-      } else if (localTags.equals("</accessibleTo>")) tAccessibleTo = content;
-      else if (localTags.equals("<graphsAccessibleTo>")) {
-      } else if (localTags.equals("</graphsAccessibleTo>")) tGraphsAccessibleTo = content;
-      else if (localTags.equals("<accessibleViaFiles>")) {
-      } else if (localTags.equals("</accessibleViaFiles>"))
-        tAccessibleViaFiles = String2.parseBoolean(content);
-      else if (localTags.equals("<reloadEveryNMinutes>")) {
-      } else if (localTags.equals("</reloadEveryNMinutes>"))
-        tReloadEveryNMinutes = String2.parseInt(content);
-      // updateEveryNMillis isn't supported (ever?). Rely on EDDGrid's update system.
-      //            else if (localTags.equals( "<updateEveryNMillis>")) {}
-      //            else if (localTags.equals("</updateEveryNMillis>")) tUpdateEveryNMillis =
-      // String2.parseInt(content);
-      else if (localTags.equals("<onChange>")) {
-      } else if (localTags.equals("</onChange>")) tOnChange.add(content);
-      else if (localTags.equals("<fgdcFile>")) {
-      } else if (localTags.equals("</fgdcFile>")) tFgdcFile = content;
-      else if (localTags.equals("<iso19115File>")) {
-      } else if (localTags.equals("</iso19115File>")) tIso19115File = content;
-      else if (localTags.equals("<sosOfferingPrefix>")) {
-      } else if (localTags.equals("</sosOfferingPrefix>")) tSosOfferingPrefix = content;
-      else if (localTags.equals("<defaultDataQuery>")) {
-      } else if (localTags.equals("</defaultDataQuery>")) tDefaultDataQuery = content;
-      else if (localTags.equals("<defaultGraphQuery>")) {
-      } else if (localTags.equals("</defaultGraphQuery>")) tDefaultGraphQuery = content;
-      else if (localTags.equals("<addVariablesWhere>")) {
-      } else if (localTags.equals("</addVariablesWhere>")) tAddVariablesWhere = content;
-      else if (localTags.equals("<addAttributes>")) {
-        tAddGlobalAttributes = getAttributesFromXml(xmlReader);
-      } else {
-        xmlReader.unexpectedTagException();
+          // updateEveryNMillis isn't supported (ever?). Rely on EDDGrid's update system.
+          //            else if (localTags.equals( "<updateEveryNMillis>")) {}
+          //            else if (localTags.equals("</updateEveryNMillis>")) tUpdateEveryNMillis =
+          // String2.parseInt(content);
+        case "<onChange>" -> {}
+        case "</onChange>" -> tOnChange.add(content);
+        case "</fgdcFile>" -> tFgdcFile = content;
+        case "</iso19115File>" -> tIso19115File = content;
+        case "</sosOfferingPrefix>" -> tSosOfferingPrefix = content;
+        case "</defaultDataQuery>" -> tDefaultDataQuery = content;
+        case "</defaultGraphQuery>" -> tDefaultGraphQuery = content;
+        case "</addVariablesWhere>" -> tAddVariablesWhere = content;
+        case "<addAttributes>" -> tAddGlobalAttributes = getAttributesFromXml(xmlReader);
+        default -> xmlReader.unexpectedTagException();
       }
     }
 
@@ -190,11 +193,11 @@ public class EDDTableFromEDDGrid extends EDDTable {
       String tDefaultDataQuery,
       String tDefaultGraphQuery,
       String tAddVariablesWhere,
-      Attributes tAddGlobalAttributes,
+      LocalizedAttributes tAddGlobalAttributes,
       int tReloadEveryNMinutes, // int tUpdateEveryNMillis,
       EDDGrid oChildDataset)
       throws Throwable {
-
+    int language = EDMessages.DEFAULT_LANGUAGE;
     if (verbose) String2.log("\n*** constructing EDDTableFromEDDGrid " + tDatasetID);
     long constructionStartMillis = System.currentTimeMillis();
     String errorInMethod = "Error in EDDTableFromEDDGrid(" + tDatasetID + ") constructor:\n";
@@ -252,25 +255,29 @@ public class EDDTableFromEDDGrid extends EDDTable {
     }
     // for rest of constructor, use temporary, stable tChildDataset reference.
     accessibleViaFiles =
-        EDStatic.filesActive && tAccessibleViaFiles && tChildDataset.accessibleViaFiles;
+        EDStatic.config.filesActive && tAccessibleViaFiles && tChildDataset.accessibleViaFiles;
 
     // global attributes
     localSourceUrl = tChildDataset.localSourceUrl;
-    sourceGlobalAttributes = tChildDataset.combinedGlobalAttributes;
-    addGlobalAttributes = tAddGlobalAttributes == null ? new Attributes() : tAddGlobalAttributes;
+    sourceGlobalAttributes = tChildDataset.combinedGlobalAttributes.toAttributes(language);
+    addGlobalAttributes =
+        tAddGlobalAttributes == null ? new LocalizedAttributes() : tAddGlobalAttributes;
     // cdm_data_type=TimeSeries would be nice, but there is no timeseries_id variable
-    addGlobalAttributes.add(
+    addGlobalAttributes.set(
+        language,
         "cdm_data_type",
         (tChildDataset.lonIndex() >= 0 && tChildDataset.latIndex() >= 0) ? "Point" : "Other");
     combinedGlobalAttributes =
-        new Attributes(addGlobalAttributes, sourceGlobalAttributes); // order is important
-    String tLicense = combinedGlobalAttributes.getString("license");
+        new LocalizedAttributes(addGlobalAttributes, sourceGlobalAttributes); // order is important
+    String tLicense = combinedGlobalAttributes.getString(language, "license");
     if (tLicense != null)
       combinedGlobalAttributes.set(
-          "license", String2.replaceAll(tLicense, "[standard]", EDStatic.standardLicense));
+          language,
+          "license",
+          String2.replaceAll(tLicense, "[standard]", EDStatic.messages.standardLicense));
     combinedGlobalAttributes.removeValue("\"null\"");
 
-    maxAxis0 = combinedGlobalAttributes.getInt("maxAxis0");
+    maxAxis0 = combinedGlobalAttributes.getInt(language, "maxAxis0");
     if (maxAxis0 == Integer.MAX_VALUE) maxAxis0 = DEFAULT_MAX_AXIS0;
 
     // specify what sourceCanConstrain
@@ -293,38 +300,50 @@ public class EDDTableFromEDDGrid extends EDDTable {
               ? tChildDataset.axisVariables[tChildDatasetNAV - 1 - dv]
               : tChildDataset.dataVariables[dv - tChildDatasetNAV];
       String tSourceName = gridVar.destinationName();
-      Attributes tSourceAtts = gridVar.combinedAttributes();
-      Attributes tAddAtts = new Attributes();
+      Attributes tSourceAtts = gridVar.combinedAttributes().toAttributes(language);
+      LocalizedAttributes tAddAtts = new LocalizedAttributes();
       String tDataType = gridVar.destinationDataType();
       PAOne tMin = new PAOne(gridVar.destinationMin()); // make/use a copy
       PAOne tMax = new PAOne(gridVar.destinationMax());
       EDV newVar = null;
-      if (tSourceName.equals(EDV.LON_NAME)) {
-        newVar = new EDVLon(datasetID, tSourceName, tSourceAtts, tAddAtts, tDataType, tMin, tMax);
-        lonIndex = dv;
-      } else if (tSourceName.equals(EDV.LAT_NAME)) {
-        newVar = new EDVLat(datasetID, tSourceName, tSourceAtts, tAddAtts, tDataType, tMin, tMax);
-        latIndex = dv;
-      } else if (tSourceName.equals(EDV.ALT_NAME)) {
-        newVar = new EDVAlt(datasetID, tSourceName, tSourceAtts, tAddAtts, tDataType, tMin, tMax);
-        altIndex = dv;
-      } else if (tSourceName.equals(EDV.DEPTH_NAME)) {
-        newVar = new EDVDepth(datasetID, tSourceName, tSourceAtts, tAddAtts, tDataType, tMin, tMax);
-        depthIndex = dv;
-      } else if (tSourceName.equals(EDV.TIME_NAME)) {
-        tAddAtts.add("data_min", "" + tMin); // data_min/max have priority
-        tAddAtts.add("data_max", "" + tMax); // tMin tMax are epochSeconds
-        newVar =
-            new EDVTime(
-                datasetID,
-                tSourceName,
-                tSourceAtts,
-                tAddAtts,
-                tDataType); // this constructor gets source / sets destination actual_range
-        timeIndex = dv;
-        // currently, there is no EDVTimeStampGridAxis
-      } else
-        newVar = new EDV(datasetID, tSourceName, "", tSourceAtts, tAddAtts, tDataType, tMin, tMax);
+      switch (tSourceName) {
+        case EDV.LON_NAME -> {
+          newVar = new EDVLon(datasetID, tSourceName, tSourceAtts, tAddAtts, tDataType, tMin, tMax);
+          lonIndex = dv;
+        }
+        case EDV.LAT_NAME -> {
+          newVar = new EDVLat(datasetID, tSourceName, tSourceAtts, tAddAtts, tDataType, tMin, tMax);
+          latIndex = dv;
+        }
+        case EDV.ALT_NAME -> {
+          newVar = new EDVAlt(datasetID, tSourceName, tSourceAtts, tAddAtts, tDataType, tMin, tMax);
+          altIndex = dv;
+        }
+        case EDV.DEPTH_NAME -> {
+          newVar =
+              new EDVDepth(datasetID, tSourceName, tSourceAtts, tAddAtts, tDataType, tMin, tMax);
+          depthIndex = dv;
+        }
+        case EDV.TIME_NAME -> {
+          tAddAtts.set(language, "data_min", "" + tMin); // data_min/max have priority
+
+          tAddAtts.set(language, "data_max", "" + tMax); // tMin tMax are epochSeconds
+
+          newVar =
+              new EDVTime(
+                  datasetID,
+                  tSourceName,
+                  tSourceAtts,
+                  tAddAtts,
+                  tDataType); // this constructor gets source / sets destination actual_range
+
+          timeIndex = dv;
+          // currently, there is no EDVTimeStampGridAxis
+        }
+        default ->
+            newVar =
+                new EDV(datasetID, tSourceName, "", tSourceAtts, tAddAtts, tDataType, tMin, tMax);
+      }
 
       dataVariables[dv] = newVar;
     }
@@ -342,7 +361,7 @@ public class EDDTableFromEDDGrid extends EDDTable {
     long cTime = System.currentTimeMillis() - constructionStartMillis;
     if (verbose)
       String2.log(
-          (debugMode ? "\n" + toString() : "")
+          (debugMode ? "\n" + this : "")
               + "\n*** EDDTableFromEDDGrid "
               + datasetID
               + " constructor finished. TIME="
@@ -377,7 +396,7 @@ public class EDDTableFromEDDGrid extends EDDTable {
       if (tChildDataset == null) {
         EDD.requestReloadASAP(localChildDatasetID);
         throw new WaitThenTryAgainException(
-            EDStatic.simpleBilingual(language, EDStatic.waitThenTryAgainAr)
+            EDStatic.simpleBilingual(language, EDStatic.messages.waitThenTryAgainAr)
                 + "\n(underlying local datasetID="
                 + localChildDatasetID
                 + " not found)");
@@ -421,7 +440,7 @@ public class EDDTableFromEDDGrid extends EDDTable {
    *
    * @param language the index of the selected language
    * @param loggedInAs the user's login name if logged in (or null if not logged in).
-   * @param requestUrl the part of the user's request, after EDStatic.baseUrl, before '?'.
+   * @param requestUrl the part of the user's request, after EDStatic.config.baseUrl, before '?'.
    * @param userDapQuery the part of the user's request after the '?', still percentEncoded, may be
    *     null.
    * @param tableWriter
@@ -462,9 +481,7 @@ public class EDDTableFromEDDGrid extends EDDTable {
     // find (non-regex) min and max of constraints on axis variables
     // work backwards since deleting some
     EDVGridAxis childDatasetAV[] = tChildDataset.axisVariables();
-    EDV childDatasetDV[] = tChildDataset.dataVariables();
     int childDatasetNAV = childDatasetAV.length;
-    int childDatasetNDV = childDatasetDV.length;
     // min and max desired axis destination values
     double avMin[] = new double[childDatasetNAV];
     double avMax[] = new double[childDatasetNAV];
@@ -472,7 +489,6 @@ public class EDDTableFromEDDGrid extends EDDTable {
       avMin[av] = childDatasetAV[av].destinationMinDouble(); // time is epochSeconds
       avMax[av] = childDatasetAV[av].destinationMaxDouble();
     }
-    boolean hasAvConstraints = false; // only true if constraints are more than av min max
     StringArray constraintsDvNames = new StringArray(); // unique
     for (int c = 0; c < constraintVariables.size(); c++) {
       String conVar = constraintVariables.get(c);
@@ -489,8 +505,6 @@ public class EDDTableFromEDDGrid extends EDDTable {
         // FUTURE: this could be improved to find the range of matching axis values
       } else {
         boolean avIsTimeStamp = edvga instanceof EDVTimeStampGridAxis;
-        double oldAvMin = avMin[av];
-        double oldAvMax = avMax[av];
         double conValD = String2.parseDouble(conVal);
         boolean passed = true; // look for some aspect that doesn't pass
         if (!conOp.equals("!=") && Double.isNaN(conValD)) {
@@ -521,15 +535,14 @@ public class EDDTableFromEDDGrid extends EDDTable {
                   MustBe.THERE_IS_NO_DATA
                       + " ("
                       + MessageFormat.format(
-                          EDStatic.queryErrorNeverTrueAr[0], conVar + conOp + conValD)
+                          EDStatic.messages.queryErrorNeverTrueAr[0], conVar + conOp + conValD)
                       + ")",
                   MustBe.THERE_IS_NO_DATA
                       + " ("
                       + MessageFormat.format(
-                          EDStatic.queryErrorNeverTrueAr[language], conVar + conOp + conValD)
+                          EDStatic.messages.queryErrorNeverTrueAr[language],
+                          conVar + conOp + conValD)
                       + ")"));
-
-        if (oldAvMin != avMin[av] || oldAvMax != avMax[av]) hasAvConstraints = true;
       }
     }
 
@@ -546,7 +559,7 @@ public class EDDTableFromEDDGrid extends EDDTable {
                 MustBe.THERE_IS_NO_DATA
                     + " "
                     + MessageFormat.format(
-                        EDStatic.queryErrorNeverTrueAr[0],
+                        EDStatic.messages.queryErrorNeverTrueAr[0],
                         edvga.destinationName()
                             + ">="
                             + avMin[av]
@@ -557,7 +570,7 @@ public class EDDTableFromEDDGrid extends EDDTable {
                 MustBe.THERE_IS_NO_DATA
                     + " "
                     + MessageFormat.format(
-                        EDStatic.queryErrorNeverTrueAr[language],
+                        EDStatic.messages.queryErrorNeverTrueAr[language],
                         edvga.destinationName()
                             + ">="
                             + avMin[av]
@@ -584,7 +597,9 @@ public class EDDTableFromEDDGrid extends EDDTable {
 
     StringBuilder gridDapQuery = new StringBuilder();
     String gridRequestUrl =
-        "/griddap/" + tChildDataset.datasetID() + ".dods"; // after EDStatic.baseUrl, before '?'
+        "/griddap/"
+            + tChildDataset.datasetID()
+            + ".dods"; // after EDStatic.config.baseUrl, before '?'
 
     if (resultsDvNames.size() > 0 || constraintsDvNames.size() > 0) {
       // handle a request for 1+ data variables (in results or constraint variables)
@@ -600,97 +615,99 @@ public class EDDTableFromEDDGrid extends EDDTable {
         }
       }
       if (debugMode) String2.log(">>nDvNames > 0, gridDapQuery=" + gridDapQuery);
-      GridDataAccessor gda =
+
+      try (GridDataAccessor gda =
           new GridDataAccessor(
               language,
               tChildDataset,
               gridRequestUrl,
               gridDapQuery.toString(),
               true, // rowMajor
-              false); // convertToNaN (would be true, but TableWriterSeparatedValue will do it)
+              false)) { // convertToNaN (would be true, but TableWriterSeparatedValue will do it)
 
-      // test maxAxis0
-      if (maxAxis0 >= 1) {
-        int nAxis0 = gda.totalIndex().shape()[0];
-        if (maxAxis0 < nAxis0) {
-          String ax0Name = tChildDataset.axisVariableDestinationNames()[0];
-          throw new SimpleException(
-              Math2.memoryTooMuchData
-                  + ": Your request for data from "
-                  + nAxis0
-                  + " axis[0] ("
-                  + ax0Name
-                  + ") values exceeds the maximum allowed for this dataset ("
-                  + maxAxis0
-                  + "). Please add tighter constraints on the "
-                  + ax0Name
-                  + " variable.");
-        }
-      }
-
-      EDV queryDV[] = gda.dataVariables();
-      int nQueryDV = queryDV.length;
-      EDV sourceTableVars[] = new EDV[childDatasetNAV + nQueryDV];
-      for (int av = 0; av < childDatasetNAV; av++)
-        sourceTableVars[av] = dataVariables[childDatasetNAV - av - 1];
-      for (int dv = 0; dv < nQueryDV; dv++)
-        sourceTableVars[childDatasetNAV + dv] =
-            findDataVariableByDestinationName(queryDV[dv].destinationName());
-
-      // make a table to hold a chunk of the results
-      int chunkNRows = EDStatic.partialRequestMaxCells / (childDatasetNAV + nQueryDV);
-      Table tTable =
-          makeEmptySourceTable(
-              sourceTableVars,
-              chunkNRows); // source table, but source here is tChildDataset's destination
-      PrimitiveArray paAr[] = new PrimitiveArray[tTable.nColumns()];
-      PAOne paOne[] = new PAOne[tTable.nColumns()];
-      for (int col = 0; col < tTable.nColumns(); col++) {
-        paAr[col] = tTable.getColumn(col);
-        paOne[col] = new PAOne(paAr[col]);
-      }
-
-      // walk through it, periodically saving to tableWriter
-      int cumNRows = 0;
-      while (gda.increment()) {
-        for (int av = 0; av < childDatasetNAV; av++)
-          gda.getAxisValueAsPAOne(av, paOne[av]).addTo(paAr[av]);
-        for (int dv = 0; dv < nQueryDV; dv++)
-          gda.getDataValueAsPAOne(dv, paOne[childDatasetNAV + dv])
-              .addTo(paAr[childDatasetNAV + dv]);
-        if (++cumNRows >= chunkNRows) {
-          if (debugMode) String2.log(tTable.dataToString(5));
-          if (Thread.currentThread().isInterrupted())
+        // test maxAxis0
+        if (maxAxis0 >= 1) {
+          int nAxis0 = gda.totalIndex().shape()[0];
+          if (maxAxis0 < nAxis0) {
+            String ax0Name = tChildDataset.axisVariableDestinationNames()[0];
             throw new SimpleException(
-                "EDDTableFromEDDGrid.getDataForDapQuery" + EDStatic.caughtInterruptedAr[0]);
+                Math2.memoryTooMuchData
+                    + ": Your request for data from "
+                    + nAxis0
+                    + " axis[0] ("
+                    + ax0Name
+                    + ") values exceeds the maximum allowed for this dataset ("
+                    + maxAxis0
+                    + "). Please add tighter constraints on the "
+                    + ax0Name
+                    + " variable.");
+          }
+        }
 
+        EDV queryDV[] = gda.dataVariables();
+        int nQueryDV = queryDV.length;
+        EDV sourceTableVars[] = new EDV[childDatasetNAV + nQueryDV];
+        for (int av = 0; av < childDatasetNAV; av++)
+          sourceTableVars[av] = dataVariables[childDatasetNAV - av - 1];
+        for (int dv = 0; dv < nQueryDV; dv++)
+          sourceTableVars[childDatasetNAV + dv] =
+              findDataVariableByDestinationName(queryDV[dv].destinationName());
+
+        // make a table to hold a chunk of the results
+        int chunkNRows = EDStatic.config.partialRequestMaxCells / (childDatasetNAV + nQueryDV);
+        Table tTable =
+            makeEmptySourceTable(
+                sourceTableVars,
+                chunkNRows); // source table, but source here is tChildDataset's destination
+        PrimitiveArray paAr[] = new PrimitiveArray[tTable.nColumns()];
+        PAOne paOne[] = new PAOne[tTable.nColumns()];
+        for (int col = 0; col < tTable.nColumns(); col++) {
+          paAr[col] = tTable.getColumn(col);
+          paOne[col] = new PAOne(paAr[col]);
+        }
+
+        // walk through it, periodically saving to tableWriter
+        int cumNRows = 0;
+        while (gda.increment()) {
+          for (int av = 0; av < childDatasetNAV; av++)
+            gda.getAxisValueAsPAOne(av, paOne[av]).addTo(paAr[av]);
+          for (int dv = 0; dv < nQueryDV; dv++)
+            gda.getDataValueAsPAOne(dv, paOne[childDatasetNAV + dv])
+                .addTo(paAr[childDatasetNAV + dv]);
+          if (++cumNRows >= chunkNRows) {
+            if (debugMode) String2.log(tTable.dataToString(5));
+            if (Thread.currentThread().isInterrupted())
+              throw new SimpleException(
+                  "EDDTableFromEDDGrid.getDataForDapQuery"
+                      + EDStatic.messages.caughtInterruptedAr[0]);
+
+            standardizeResultsTable(
+                language,
+                requestUrl, // applies all constraints
+                userDapQuery,
+                tTable);
+            tableWriter.writeSome(tTable);
+            tTable = makeEmptySourceTable(sourceTableVars, chunkNRows);
+            for (int col = 0; col < tTable.nColumns(); col++) paAr[col] = tTable.getColumn(col);
+            cumNRows = 0;
+            if (tableWriter.noMoreDataPlease) {
+              tableWriter.logCaughtNoMoreDataPlease(datasetID);
+              break;
+            }
+          }
+        }
+
+        // finish
+        if (tTable.nRows() > 0) {
           standardizeResultsTable(
               language,
               requestUrl, // applies all constraints
               userDapQuery,
               tTable);
           tableWriter.writeSome(tTable);
-          tTable = makeEmptySourceTable(sourceTableVars, chunkNRows);
-          for (int col = 0; col < tTable.nColumns(); col++) paAr[col] = tTable.getColumn(col);
-          cumNRows = 0;
-          if (tableWriter.noMoreDataPlease) {
-            tableWriter.logCaughtNoMoreDataPlease(datasetID);
-            break;
-          }
         }
+        tableWriter.finish();
       }
-      gda.releaseResources();
-
-      // finish
-      if (tTable.nRows() > 0) {
-        standardizeResultsTable(
-            language,
-            requestUrl, // applies all constraints
-            userDapQuery,
-            tTable);
-        tableWriter.writeSome(tTable);
-      }
-      tableWriter.finish();
 
     } else if (resultsAvNames.size() >= 1) {
       // handle a request for multiple axis variables (no data variables anywhere)
@@ -741,7 +758,7 @@ public class EDDTableFromEDDGrid extends EDDTable {
       NDimensionalIndex ndIndex = new NDimensionalIndex(ndShape);
 
       // make a table to hold a chunk of the results
-      int chunkNRows = EDStatic.partialRequestMaxCells / nActiveEdvga;
+      int chunkNRows = EDStatic.config.partialRequestMaxCells / nActiveEdvga;
       Table tTable = new Table(); // source table, but source here is tChildDataset's destination
       PrimitiveArray paAr[] = new PrimitiveArray[nActiveEdvga];
       for (int aav = 0; aav < nActiveEdvga; aav++) {
@@ -762,7 +779,8 @@ public class EDDTableFromEDDGrid extends EDDTable {
         if (++cumNRows >= chunkNRows) {
           if (Thread.currentThread().isInterrupted())
             throw new SimpleException(
-                "EDDTableFromDatabase.getDataForDapQuery" + EDStatic.caughtInterruptedAr[0]);
+                "EDDTableFromDatabase.getDataForDapQuery"
+                    + EDStatic.messages.caughtInterruptedAr[0]);
 
           standardizeResultsTable(
               language,
@@ -796,8 +814,8 @@ public class EDDTableFromEDDGrid extends EDDTable {
       throw new SimpleException(
           EDStatic.bilingual(
               language,
-              EDStatic.queryErrorAr[0] + " No results variables?!",
-              EDStatic.queryErrorAr[language] + " No results variables?!"));
+              EDStatic.messages.queryErrorAr[0] + " No results variables?!",
+              EDStatic.messages.queryErrorAr[language] + " No results variables?!"));
     }
   }
 
@@ -892,7 +910,9 @@ public class EDDTableFromEDDGrid extends EDDTable {
       String tSummary =
           (tMaxAxis0 > 0
                   ? MessageFormat.format(
-                          EDStatic.EDDTableFromEDDGridSummaryAr[language], tDatasetID, tMaxAxis0)
+                          EDStatic.messages.EDDTableFromEDDGridSummaryAr[language],
+                          tDatasetID,
+                          tMaxAxis0)
                       + "\n"
                   : "")
               + summaryPA.getString(row);

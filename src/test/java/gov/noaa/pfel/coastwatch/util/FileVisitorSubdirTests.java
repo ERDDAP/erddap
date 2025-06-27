@@ -1,9 +1,9 @@
 package gov.noaa.pfel.coastwatch.util;
 
 import com.cohort.array.StringArray;
+import com.cohort.util.File2;
 import com.cohort.util.String2;
 import com.cohort.util.Test;
-import gov.noaa.pfel.erddap.util.EDStatic;
 import org.junit.jupiter.api.BeforeAll;
 import tags.TagAWS;
 import tags.TagExternalOther;
@@ -22,9 +22,8 @@ class FileVisitorSubdirTests {
     // String2.log("\n*** FileVisitorSubdir.testLocal");
     // verbose = true;
     String contextDir =
-        EDStatic.getWebInfParentDirectory().replace('\\', '/'); // with / separator and / at the end
+        File2.getWebInfParentDirectory().replace('\\', '/'); // with / separator and / at the end
     StringArray alps;
-    long time;
 
     // test forward slashes
     alps =
@@ -66,7 +65,6 @@ class FileVisitorSubdirTests {
 
     // verbose = true;
     StringArray alps;
-    long time;
 
     alps =
         FileVisitorSubdir.oneStep(
@@ -89,7 +87,6 @@ class FileVisitorSubdirTests {
 
     // verbose = true;
     StringArray alps;
-    long time;
     try {
 
       alps =
@@ -109,7 +106,7 @@ class FileVisitorSubdirTests {
 
       String2.log("\n*** FileVisitorSubdir.testWAF finished.");
     } catch (Exception e) {
-      // Test.knownProblem(
+      // TestUtil.knownProblem(
       // "2020-08-03 New 'directory' in new InPort system isn't a directory but a web
       // page with other info.", e);
     }

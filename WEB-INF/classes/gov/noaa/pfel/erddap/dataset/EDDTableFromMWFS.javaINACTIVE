@@ -205,7 +205,7 @@ public class EDDTableFromMWFS extends EDDTable{
      *   </ul>
      *   Special case: value="null" causes that item to be removed from combinedGlobalAttributes.
      *   Special case: if combinedGlobalAttributes name="license", any instance of "[standard]"
-     *     will be converted to the EDStatic.standardLicense.
+     *     will be converted to the EDStatic.messages.standardLicense.
      * @param tLonMin in source units (use Double.NaN if not known).
      *    [I use eddTable.getEmpiricalMinMax(language, "2007-02-01", "2007-02-01", false, true); below to get it.]
      * @param tLonMax see tLonMin description.
@@ -238,12 +238,12 @@ public class EDDTableFromMWFS extends EDDTable{
         StringArray tOnChange, String tFgdcFile, String tIso19115File, 
         String tSosOfferingPrefix,
         String tDefaultDataQuery, String tDefaultGraphQuery, String tAddVariablesWhere,
-        Attributes tAddGlobalAttributes,
+        LocalizedAttributes tAddGlobalAttributes,
         double tLonMin, double tLonMax,
         double tLatMin, double tLatMax,
         double tAltMin, double tAltMax,
         String tTimeMin, String tTimeMax,
-        Object[][] tDataVariables,
+        ArrayList<DataVariableInfo> tDataVariables,
         int tReloadEveryNMinutes,
         String tLocalSourceUrl) throws Throwable {
 
@@ -267,7 +267,7 @@ public class EDDTableFromMWFS extends EDDTable{
         if (tAddGlobalAttributes == null)
             tAddGlobalAttributes = new Attributes();
         addGlobalAttributes = tAddGlobalAttributes;
-        addGlobalAttributes.set("sourceUrl", makePublicSourceUrl(tLocalSourceUrl));
+        addGlobalAttributes.set(language, "sourceUrl", makePublicSourceUrl(tLocalSourceUrl));
         localSourceUrl = tLocalSourceUrl;
         setReloadEveryNMinutes(tReloadEveryNMinutes);
         Test.ensureNotNothing(sourceUrl, "sourceUrl wasn't specified.");
@@ -279,10 +279,10 @@ public class EDDTableFromMWFS extends EDDTable{
         //set source attributes (none available from source)
         sourceGlobalAttributes = new Attributes();
         combinedGlobalAttributes = new Attributes(addGlobalAttributes, sourceGlobalAttributes); //order is important
-        String tLicense = combinedGlobalAttributes.getString("license");
+        String tLicense = combinedGlobalAttributes.getString(language, "license");
         if (tLicense != null)
-            combinedGlobalAttributes.set("license", 
-                String2.replaceAll(tLicense, "[standard]", EDStatic.standardLicense));
+            combinedGlobalAttributes.set(language, "license", 
+                String2.replaceAll(tLicense, "[standard]", EDStatic.messages.standardLicense));
         combinedGlobalAttributes.removeValue("\"null\"");
 
         //make the fixedVariables
@@ -359,7 +359,7 @@ public class EDDTableFromMWFS extends EDDTable{
      *
      * @param language the index of the selected language
      * @param loggedInAs the user's login name if logged in (or null if not logged in).
-     * @param requestUrl the part of the user's request, after EDStatic.baseUrl, before '?'.
+     * @param requestUrl the part of the user's request, after EDStatic.config.baseUrl, before '?'.
      * @param userDapQuery the part of the user's request after the '?', still percentEncoded, may be null.
      * @param tableWriter
      * @throws Throwable if trouble (notably, WaitThenTryAgainException)
@@ -672,8 +672,8 @@ time series data.</att>
 
         //*** test getting das for entire dataset
         String2.log("\n****************** EDDTableFromMWFS.test das dds for entire dataset\n");
-        tName = mwfs.makeNewFileForDapQuery(language, null, "", EDStatic.fullTestCacheDirectory, className + "_Entire", ".das"); 
-        results = String2.annotatedString(File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName)).toArray()));
+        tName = mwfs.makeNewFileForDapQuery(language, null, "", EDStatic.config.fullTestCacheDirectory, className + "_Entire", ".das"); 
+        results = String2.annotatedString(File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName)).toArray()));
         //String2.log(results);
         expected = //see OpendapHelper.EOL for comments
 "Attributes {[10]\n" +
@@ -780,8 +780,8 @@ today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
     Test.ensureEqual(results, expected, "\nresults=\n" + results);
         
         //*** test getting dds for entire dataset
-        tName = mwfs.makeNewFileForDapQuery(language, null, "", EDStatic.fullTestCacheDirectory, className + "_Entire", ".dds"); 
-        results = String2.annotatedString(File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName)).toArray()));
+        tName = mwfs.makeNewFileForDapQuery(language, null, "", EDStatic.config.fullTestCacheDirectory, className + "_Entire", ".dds"); 
+        results = String2.annotatedString(File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName)).toArray()));
         //String2.log(results);
         expected = 
 "Dataset {[10]\n" +
@@ -809,8 +809,8 @@ today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
             "&time>=2007-05-01&time<=2007-05-08"; 
         //2007-05-01 -> 1.1779776E9
         //2007-05-08 -> 1.1785824E9
-        tName = mwfs.makeNewFileForDapQuery(language, null, userDapQuery, EDStatic.fullTestCacheDirectory, className + "_station1", ".asc"); 
-        results = String2.annotatedString(File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName)).toArray()));
+        tName = mwfs.makeNewFileForDapQuery(language, null, userDapQuery, EDStatic.config.fullTestCacheDirectory, className + "_station1", ".asc"); 
+        results = String2.annotatedString(File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName)).toArray()));
         //String2.log(results);
         expected = 
 "Dataset {[10]\n" +
@@ -834,8 +834,8 @@ today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
         if (doLongTest) {
             userDapQuery = "longitude,latitude,station_id,time,sea_water_temperature" +
                 "&longitude=" + tLon + "&latitude=" + tLat; 
-            tName = mwfs.makeNewFileForDapQuery(language, null, userDapQuery, EDStatic.fullTestCacheDirectory, className + "_station1", ".asc"); 
-            results = String2.annotatedString(File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName)).toArray()));
+            tName = mwfs.makeNewFileForDapQuery(language, null, userDapQuery, EDStatic.config.fullTestCacheDirectory, className + "_station1", ".asc"); 
+            results = String2.annotatedString(File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName)).toArray()));
             //String2.log(results);
             expected = 
 "Dataset {[10]\n" +
@@ -861,9 +861,9 @@ today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
             "&time>=2007-05-01&time<=2007-05-01T00:59:00";
         //2007-05-01 -> 1.1779776E9
         //2007-05-01T00:59:00 -> 1.17798114E9
-        tName = mwfs.makeNewFileForDapQuery(language, null, userDapQuery, EDStatic.fullTestCacheDirectory, className + "_stations", ".asc"); 
-        results = String2.annotatedString(File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName)).toArray()));
-        //Test.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
+        tName = mwfs.makeNewFileForDapQuery(language, null, userDapQuery, EDStatic.config.fullTestCacheDirectory, className + "_stations", ".asc"); 
+        results = String2.annotatedString(File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName)).toArray()));
+        //Test.displayInBrowser("file://" + EDStatic.config.fullTestCacheDirectory + tName);
         //String2.log(results);
         expected = 
 "Dataset {[10]\n" +
@@ -887,8 +887,8 @@ today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
         Test.ensureTrue(results.indexOf(expected) > 0, "\nresults=\n" + results.substring(results.length() - 300));
 
         //data for mapExample
-        tName = mwfs.makeNewFileForDapQuery(language, null, "longitude,latitude&time>=2007-12-01&time<=2007-12-01T00:01:00", EDStatic.fullTestCacheDirectory, className + "Map", ".csv");
-        results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        tName = mwfs.makeNewFileForDapQuery(language, null, "longitude,latitude&time>=2007-12-01&time<=2007-12-01T00:01:00", EDStatic.config.fullTestCacheDirectory, className + "Map", ".csv");
+        results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName)).toArray());
         //String2.log(results);
         expected = 
 "longitude, latitude\n" +

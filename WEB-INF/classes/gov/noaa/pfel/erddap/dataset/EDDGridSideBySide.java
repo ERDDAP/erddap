@@ -15,6 +15,8 @@ import com.cohort.util.Test;
 import gov.noaa.pfel.coastwatch.pointdata.Table;
 import gov.noaa.pfel.coastwatch.util.SimpleXMLReader;
 import gov.noaa.pfel.erddap.Erddap;
+import gov.noaa.pfel.erddap.handlers.EDDGridSideBySideHandler;
+import gov.noaa.pfel.erddap.handlers.SaxHandlerClass;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.*;
 import java.text.MessageFormat;
@@ -28,18 +30,19 @@ import java.util.Arrays;
  * for axis[1+].
  *
  * <p>If there is an exception while creating the first child, this throws the exception. If there
- * is an exception while creating other children, this emails EDStatic.emailEverythingToCsv and
- * continues.
+ * is an exception while creating other children, this emails EDStatic.config.emailEverythingToCsv
+ * and continues.
  *
  * <p>Children created by this method are held privately. They are not separately accessible
  * datasets (e.g., by queries or by flag files).
  *
  * @author Bob Simons (was bob.simons@noaa.gov, now BobSimons2.00@gmail.com) 2008-02-04
  */
+@SaxHandlerClass(EDDGridSideBySideHandler.class)
 public class EDDGridSideBySide extends EDDGrid {
 
-  protected EDDGrid childDatasets[];
-  protected int childStopsAt[]; // the last valid dataVariables index for each childDataset
+  protected final EDDGrid[] childDatasets;
+  protected final int[] childStopsAt; // the last valid dataVariables index for each childDataset
   protected IntArray indexOfAxis0Value[]; // an IntArray for each child; a row for each axis0 value
 
   /**
@@ -59,6 +62,7 @@ public class EDDGridSideBySide extends EDDGrid {
    *     &lt;erddapDatasets&gt;&lt;/dataset&gt; .
    * @throws Throwable if trouble
    */
+  @EDDFromXmlMethod
   public static EDDGridSideBySide fromXml(Erddap erddap, SimpleXMLReader xmlReader)
       throws Throwable {
 
@@ -71,7 +75,7 @@ public class EDDGridSideBySide extends EDDGrid {
     String tAccessibleTo = null;
     String tGraphsAccessibleTo = null;
     boolean tAccessibleViaWMS = true;
-    boolean tAccessibleViaFiles = EDStatic.defaultAccessibleViaFiles;
+    boolean tAccessibleViaFiles = EDStatic.config.defaultAccessibleViaFiles;
     int tMatchAxisNDigits = DEFAULT_MATCH_AXIS_N_DIGITS;
     StringArray tOnChange = new StringArray();
     String tFgdcFile = null;
@@ -95,84 +99,83 @@ public class EDDGridSideBySide extends EDDGrid {
       String localTags = tags.substring(startOfTagsLength);
 
       // try to make the tag names as consistent, descriptive and readable as possible
-      if (localTags.equals("<dataset>")) {
-        if ("false".equals(xmlReader.attributeValue("active"))) {
-          // skip it - read to </dataset>
-          if (verbose)
-            String2.log(
-                "  skipping datasetID="
-                    + xmlReader.attributeValue("datasetID")
-                    + " because active=\"false\".");
-          while (xmlReader.stackSize() != startOfTagsN + 1
-              || !xmlReader.allTags().substring(startOfTagsLength).equals("</dataset>")) {
-            xmlReader.nextTag();
-            // String2.log("  skippping tags: " + xmlReader.allTags());
-          }
-
-        } else {
-          try {
-            EDD edd = EDD.fromXml(erddap, xmlReader.attributeValue("type"), xmlReader);
-            if (edd instanceof EDDGrid) {
-              tChildDatasets.add(edd);
-            } else {
-              throw new RuntimeException(
-                  "The datasets defined in an "
-                      + "EDDGridSideBySide must be a subclass of EDDGrid.");
-            }
-          } catch (Throwable t) {
-            // exceptions for first child are serious (it has parent's metadata)
-            if (tChildDatasets.size() == 0) throw t;
-
-            // exceptions for others are noted, but construction continues
-            String2.log(MustBe.throwableToString(t));
-            messages.append(MustBe.throwableToString(t) + "\n");
-
-            // read to </dataset>
+      switch (localTags) {
+        case "<dataset>" -> {
+          if ("false".equals(xmlReader.attributeValue("active"))) {
+            // skip it - read to </dataset>
+            if (verbose)
+              String2.log(
+                  "  skipping datasetID="
+                      + xmlReader.attributeValue("datasetID")
+                      + " because active=\"false\".");
             while (xmlReader.stackSize() != startOfTagsN + 1
                 || !xmlReader.allTags().substring(startOfTagsLength).equals("</dataset>")) {
               xmlReader.nextTag();
               // String2.log("  skippping tags: " + xmlReader.allTags());
             }
+
+          } else {
+            try {
+              EDD edd = EDD.fromXml(erddap, xmlReader.attributeValue("type"), xmlReader);
+              if (edd instanceof EDDGrid) {
+                tChildDatasets.add(edd);
+              } else {
+                throw new RuntimeException(
+                    "The datasets defined in an "
+                        + "EDDGridSideBySide must be a subclass of EDDGrid.");
+              }
+            } catch (Throwable t) {
+              // exceptions for first child are serious (it has parent's metadata)
+              if (tChildDatasets.size() == 0) throw t;
+
+              // exceptions for others are noted, but construction continues
+              String2.log(MustBe.throwableToString(t));
+              messages.append(MustBe.throwableToString(t) + "\n");
+
+              // read to </dataset>
+              while (xmlReader.stackSize() != startOfTagsN + 1
+                  || !xmlReader.allTags().substring(startOfTagsLength).equals("</dataset>")) {
+                xmlReader.nextTag();
+                // String2.log("  skippping tags: " + xmlReader.allTags());
+              }
+            }
           }
         }
-
-      } else if (localTags.equals("<onChange>")) {
-      } else if (localTags.equals("</onChange>")) tOnChange.add(content);
-      else if (localTags.equals("<matchAxisNDigits>")) {
-      } else if (localTags.equals("</matchAxisNDigits>"))
-        tMatchAxisNDigits = String2.parseInt(content, DEFAULT_MATCH_AXIS_N_DIGITS);
-      else if (localTags.equals("<ensureAxisValuesAreEqual>")) {
-      } // deprecated
-      else if (localTags.equals("</ensureAxisValuesAreEqual>"))
-        tMatchAxisNDigits = String2.parseBoolean(content) ? 20 : 0;
-      else if (localTags.equals("<accessibleTo>")) {
-      } else if (localTags.equals("</accessibleTo>")) tAccessibleTo = content;
-      else if (localTags.equals("<graphsAccessibleTo>")) {
-      } else if (localTags.equals("</graphsAccessibleTo>")) tGraphsAccessibleTo = content;
-      else if (localTags.equals("<accessibleViaWMS>")) {
-      } else if (localTags.equals("</accessibleViaWMS>"))
-        tAccessibleViaWMS = String2.parseBoolean(content);
-      else if (localTags.equals("<accessibleViaFiles>")) {
-      } else if (localTags.equals("</accessibleViaFiles>"))
-        tAccessibleViaFiles = String2.parseBoolean(content);
-      else if (localTags.equals("<fgdcFile>")) {
-      } else if (localTags.equals("</fgdcFile>")) tFgdcFile = content;
-      else if (localTags.equals("<iso19115File>")) {
-      } else if (localTags.equals("</iso19115File>")) tIso19115File = content;
-      else if (localTags.equals("<defaultDataQuery>")) {
-      } else if (localTags.equals("</defaultDataQuery>")) tDefaultDataQuery = content;
-      else if (localTags.equals("<defaultGraphQuery>")) {
-      } else if (localTags.equals("</defaultGraphQuery>")) tDefaultGraphQuery = content;
-      else if (localTags.equals("<nThreads>")) {
-      } else if (localTags.equals("</nThreads>")) tnThreads = String2.parseInt(content);
-      else if (localTags.equals("<dimensionValuesInMemory>")) {
-      } else if (localTags.equals("</dimensionValuesInMemory>"))
-        tDimensionValuesInMemory = String2.parseBoolean(content);
-      else xmlReader.unexpectedTagException();
+        case "<onChange>",
+            "<dimensionValuesInMemory>",
+            "<nThreads>",
+            "<defaultGraphQuery>",
+            "<defaultDataQuery>",
+            "<iso19115File>",
+            "<fgdcFile>",
+            "<accessibleViaFiles>",
+            "<accessibleViaWMS>",
+            "<graphsAccessibleTo>",
+            "<accessibleTo>",
+            "<ensureAxisValuesAreEqual>",
+            "<matchAxisNDigits>" -> {}
+        case "</onChange>" -> tOnChange.add(content);
+        case "</matchAxisNDigits>" ->
+            tMatchAxisNDigits = String2.parseInt(content, DEFAULT_MATCH_AXIS_N_DIGITS);
+        case "</ensureAxisValuesAreEqual>" ->
+            tMatchAxisNDigits = String2.parseBoolean(content) ? 20 : 0;
+        case "</accessibleTo>" -> tAccessibleTo = content;
+        case "</graphsAccessibleTo>" -> tGraphsAccessibleTo = content;
+        case "</accessibleViaWMS>" -> tAccessibleViaWMS = String2.parseBoolean(content);
+        case "</accessibleViaFiles>" -> tAccessibleViaFiles = String2.parseBoolean(content);
+        case "</fgdcFile>" -> tFgdcFile = content;
+        case "</iso19115File>" -> tIso19115File = content;
+        case "</defaultDataQuery>" -> tDefaultDataQuery = content;
+        case "</defaultGraphQuery>" -> tDefaultGraphQuery = content;
+        case "</nThreads>" -> tnThreads = String2.parseInt(content);
+        case "</dimensionValuesInMemory>" ->
+            tDimensionValuesInMemory = String2.parseBoolean(content);
+        default -> xmlReader.unexpectedTagException();
+      }
     }
     if (messages.length() > 0) {
       EDStatic.email(
-          EDStatic.emailEverythingToCsv,
+          EDStatic.config.emailEverythingToCsv,
           "Error in EDDGridSideBySide constructor for " + tDatasetID,
           messages.toString());
     }
@@ -235,7 +238,6 @@ public class EDDGridSideBySide extends EDDGrid {
 
     if (verbose) String2.log("\n*** constructing EDDGridSideBySide " + tDatasetID);
     long constructionStartMillis = System.currentTimeMillis();
-    String errorInMethod = "Error in EDDGridGridSideBySide(" + tDatasetID + ") constructor:\n";
 
     // save some of the parameters
     className = "EDDGridSideBySide";
@@ -243,7 +245,8 @@ public class EDDGridSideBySide extends EDDGrid {
     setAccessibleTo(tAccessibleTo);
     setGraphsAccessibleTo(tGraphsAccessibleTo);
     if (!tAccessibleViaWMS)
-      accessibleViaWMS = String2.canonical(MessageFormat.format(EDStatic.noXxxAr[0], "WMS"));
+      accessibleViaWMS =
+          String2.canonical(MessageFormat.format(EDStatic.messages.noXxxAr[0], "WMS"));
     onChange = tOnChange;
     fgdcFile = tFgdcFile;
     iso19115File = tIso19115File;
@@ -263,7 +266,7 @@ public class EDDGridSideBySide extends EDDGrid {
         break;
       }
     }
-    accessibleViaFiles = EDStatic.filesActive && tAccessibleViaFiles && cAccessibleViaFiles;
+    accessibleViaFiles = EDStatic.config.filesActive && tAccessibleViaFiles && cAccessibleViaFiles;
 
     // check the siblings and create childStopsAt
     EDDGrid firstChild = childDatasets[0];
@@ -287,12 +290,6 @@ public class EDDGridSideBySide extends EDDGrid {
             firstChild.axisVariableSourceNames(); // () makes the array
         childDatasets[c].axisVariableDestinationNames = firstChild.axisVariableDestinationNames();
         // not id
-        childDatasets[c].title = firstChild.title();
-        childDatasets[c].summary = firstChild.summary();
-        childDatasets[c].institution = firstChild.institution();
-        childDatasets[c].infoUrl = firstChild.infoUrl();
-        childDatasets[c].cdmDataType = firstChild.cdmDataType();
-        childDatasets[c].searchBytes = firstChild.searchBytes();
         // not sourceUrl, which will be different
         childDatasets[c].sourceGlobalAttributes = firstChild.sourceGlobalAttributes();
         childDatasets[c].addGlobalAttributes = firstChild.addGlobalAttributes();
@@ -412,14 +409,14 @@ public class EDDGridSideBySide extends EDDGrid {
     }
 
     // If any child is a FromErddap, try to subscribe to the remote dataset.
-    for (int c = 0; c < childDatasets.length; c++)
-      if (childDatasets[c] instanceof FromErddap) tryToSubscribeToChildFromErddap(childDatasets[c]);
+    for (EDDGrid childDataset : childDatasets)
+      if (childDataset instanceof FromErddap) tryToSubscribeToChildFromErddap(childDataset);
 
     // finally
     long cTime = System.currentTimeMillis() - constructionStartMillis;
     if (verbose)
       String2.log(
-          (debugMode ? "\n" + toString() : "")
+          (debugMode ? "\n" + this : "")
               + "\n*** EDDGridSideBySide "
               + datasetID
               + " constructor finished. TIME="
@@ -455,7 +452,6 @@ public class EDDGridSideBySide extends EDDGrid {
   public boolean lowUpdate(int language, String msg, long startUpdateMillis) throws Throwable {
 
     // NOT FINISHED. NOT SIMPLE.
-    boolean anyChanged = false;
     // for (int i = 0; i < childDatasets.length; i++) {
     //    if (childDatasets[i].update(language))
     //        anyChanged = true;
@@ -463,7 +459,7 @@ public class EDDGridSideBySide extends EDDGrid {
     // rebuild indexOfAxis0Value
     // protected IntArray indexOfAxis0Value[]; //an IntArray for each child; a row for each axis0
     // value
-    return anyChanged;
+    return false;
   }
 
   /**
@@ -476,8 +472,8 @@ public class EDDGridSideBySide extends EDDGrid {
   public long creationTimeMillis() {
     // return the oldest creation time of this or of a child
     long tCTM = creationTimeMillis;
-    for (int c = 0; c < childDatasets.length; c++)
-      tCTM = Math.min(tCTM, childDatasets[c].creationTimeMillis());
+    for (EDDGrid childDataset : childDatasets)
+      tCTM = Math.min(tCTM, childDataset.creationTimeMillis());
     return tCTM;
   }
 
@@ -491,7 +487,7 @@ public class EDDGridSideBySide extends EDDGrid {
   public StringArray childDatasetIDs() {
     StringArray sa = new StringArray();
     try {
-      for (int i = 0; i < childDatasets.length; i++) sa.add(childDatasets[i].datasetID());
+      for (EDDGrid childDataset : childDatasets) sa.add(childDataset.datasetID());
     } catch (Exception e) {
       String2.log("Error caught in edd.childDatasetIDs(): " + MustBe.throwableToString(e));
     }
@@ -513,7 +509,7 @@ public class EDDGridSideBySide extends EDDGrid {
   /**
    * This gets data (not yet standardized) from the data source for this EDDGrid. Because this is
    * called by GridDataAccessor, the request won't be the full user's request, but will be a partial
-   * request (for less than EDStatic.partialRequestMaxBytes).
+   * request (for less than EDStatic.config.partialRequestMaxBytes).
    *
    * @param language the index of the selected language
    * @param tDirTable If EDDGridFromFiles, this MAY be the dirTable, else null.
@@ -535,7 +531,6 @@ public class EDDGridSideBySide extends EDDGrid {
     //  get results for each tDataVariable, one-by-one
     // FUTURE: more efficient to gang together all dataVariables from a given child
     int nAv = axisVariables.length;
-    int nDv = dataVariables.length;
     int tnDv = tDataVariables.length;
     PrimitiveArray[] cumResults = new PrimitiveArray[nAv + tnDv];
 
@@ -718,11 +713,10 @@ public class EDDGridSideBySide extends EDDGrid {
       String relativeFileName2 = relativeFileName.substring(po + 1);
 
       // which child?
-      int nChild = childDatasets.length;
-      for (int c = 0; c < nChild; c++) {
-        if (childID.equals(childDatasets[c].datasetID())) {
+      for (EDDGrid childDataset : childDatasets) {
+        if (childID.equals(childDataset.datasetID())) {
           // then redirect request to that child
-          return childDatasets[c].accessibleViaFilesGetLocal(language, relativeFileName2);
+          return childDataset.accessibleViaFilesGetLocal(language, relativeFileName2);
         }
       }
       String2.log(msg + "childID=" + childID + " not found.");

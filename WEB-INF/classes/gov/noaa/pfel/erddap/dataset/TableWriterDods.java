@@ -12,7 +12,9 @@ import com.cohort.util.String2;
 import gov.noaa.pfel.coastwatch.griddata.OpendapHelper;
 import gov.noaa.pfel.coastwatch.pointdata.Table;
 import java.io.DataOutputStream;
+import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 
 /**
  * TableWriterDods provides a way to write a table to a DAP .dods format (1-level sequence) (see
@@ -25,7 +27,7 @@ import java.io.OutputStream;
 public class TableWriterDods extends TableWriter {
 
   // set by constructor
-  protected String sequenceName;
+  protected final String sequenceName;
 
   // set by firstTime
   protected DataOutputStream dos;
@@ -79,7 +81,8 @@ public class TableWriterDods extends TableWriter {
 
       // write the connector  //DAP 2.0, 7.2.3
       // see OpendapHelper.EOL for comments
-      outputStream.write((OpendapHelper.EOL + "Data:" + OpendapHelper.EOL).getBytes());
+      outputStream.write(
+          (OpendapHelper.EOL + "Data:" + OpendapHelper.EOL).getBytes(StandardCharsets.UTF_8));
 
       dos = new DataOutputStream(outputStream);
     }
@@ -126,5 +129,12 @@ public class TableWriterDods extends TableWriter {
     // diagnostic
     if (verbose)
       String2.log("TableWriterDods done. TIME=" + (System.currentTimeMillis() - time) + "ms\n");
+  }
+
+  @Override
+  public void close() throws IOException {
+    if (dos != null) {
+      dos.close();
+    }
   }
 }

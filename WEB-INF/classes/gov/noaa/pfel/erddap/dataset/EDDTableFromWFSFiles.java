@@ -14,10 +14,14 @@ import com.cohort.util.MustBe;
 import com.cohort.util.String2;
 import gov.noaa.pfel.coastwatch.pointdata.Table;
 import gov.noaa.pfel.coastwatch.util.SSR;
+import gov.noaa.pfel.erddap.dataset.metadata.LocalizedAttributes;
 import gov.noaa.pfel.erddap.util.EDStatic;
+import gov.noaa.pfel.erddap.variable.DataVariableInfo;
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
+import java.util.List;
 
 /**
  * This class represents a table of data from a file downloaded from a WFS server.
@@ -29,7 +33,7 @@ public class EDDTableFromWFSFiles extends EDDTableFromAsciiFiles {
   public static final String DefaultRowElementXPath = "/wfs:FeatureCollection/gml:featureMember";
 
   /** For testing, you may set this to true programmatically where needed, not here. */
-  public static boolean developmentMode = false;
+  public static final boolean developmentMode = false;
 
   /**
    * This returns the default value for standardizeWhat for this subclass. See
@@ -41,7 +45,7 @@ public class EDDTableFromWFSFiles extends EDDTableFromAsciiFiles {
     return DEFAULT_STANDARDIZEWHAT;
   }
 
-  public static int DEFAULT_STANDARDIZEWHAT = 0;
+  public static final int DEFAULT_STANDARDIZEWHAT = 0;
 
   /**
    * The constructor just calls the super constructor.
@@ -68,8 +72,8 @@ public class EDDTableFromWFSFiles extends EDDTableFromAsciiFiles {
       String tSosOfferingPrefix,
       String tDefaultDataQuery,
       String tDefaultGraphQuery,
-      Attributes tAddGlobalAttributes,
-      Object[][] tDataVariables,
+      LocalizedAttributes tAddGlobalAttributes,
+      List<DataVariableInfo> tDataVariables,
       int tReloadEveryNMinutes,
       int tUpdateEveryNMillis,
       String tFileDir,
@@ -157,7 +161,7 @@ public class EDDTableFromWFSFiles extends EDDTableFromAsciiFiles {
    *     examples in JavaDocs for generateDatasetsXml.
    * @param tRowElementXPath the element (XPath style) identifying a row, If null or "", the default
    *     will be used: /wfs:FeatureCollection/gml:featureMember .
-   * @param fullFileName recommended: EDStatic.fullCopyDirectory + datasetID + "/data.tsv"
+   * @param fullFileName recommended: EDStatic.config.fullCopyDirectory + datasetID + "/data.tsv"
    * @return error string ("" if no error)
    */
   public static String downloadData(
@@ -171,7 +175,7 @@ public class EDDTableFromWFSFiles extends EDDTableFromAsciiFiles {
       // read the table
       Table table = new Table();
       InputStream is = SSR.getUrlBufferedInputStream(tSourceUrl);
-      BufferedReader in = new BufferedReader(new InputStreamReader(is, File2.UTF_8));
+      BufferedReader in = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8));
       table.readXml(
           in,
           false, // no validate since no .dtd
@@ -366,7 +370,7 @@ public class EDDTableFromWFSFiles extends EDDTableFromAsciiFiles {
                 dataSourceTable.globalAttributes(),
                 // another cdm_data_type could be better; this is good for now
                 hasLonLatTime(dataAddTable) ? "Point" : "Other",
-                EDStatic.fullCopyDirectory + tDatasetID + "/",
+                EDStatic.config.fullCopyDirectory + tDatasetID + "/",
                 externalAddGlobalAttributes,
                 suggestKeywords(dataSourceTable, dataAddTable)));
     dataAddTable.globalAttributes().set("rowElementXPath", tRowElementXPath);
@@ -379,8 +383,8 @@ public class EDDTableFromWFSFiles extends EDDTableFromAsciiFiles {
           .add("subsetVariables", suggestSubsetVariables(dataSourceTable, dataAddTable, false));
 
     // write the information
-    StringBuilder sb = new StringBuilder();
-    sb.append(
+
+    String sb =
         "<!-- NOTE! Since the source files don't have any metadata, you must add metadata\n"
             + "  below, notably 'units' for each of the dataVariables. -->\n"
             + "<dataset type=\"EDDTableFromWFSFiles\" datasetID=\""
@@ -394,37 +398,41 @@ public class EDDTableFromWFSFiles extends EDDTableFromAsciiFiles {
             // "    <fileNameRegex>.*\\.tsv</fileNameRegex>\n" + //irrelevant/overridden
             // "    <recursive>false</recursive>\n" +            //irrelevant/overridden
             // "    <pathRegex>.*</pathRegex>\n" +               //irrelevant/overridden
-            // "    <fileDir>" + EDStatic.fullCopyDirectory + tDatasetID + "/</fileDir>\n" +
+            // "    <fileDir>" + EDStatic.config.fullCopyDirectory + tDatasetID + "/</fileDir>\n" +
             "    <metadataFrom>last</metadataFrom>\n"
             + "    <standardizeWhat>"
             + tStandardizeWhat
             + "</standardizeWhat>\n"
-            + "    <fileTableInMemory>false</fileTableInMemory>\n");
-    // "    <charset>UTF-8</charset>\n" +
-    // "    <columnNamesRow>1</columnNamesRow>\n" +
-    // "    <firstDataRow>3</firstDataRow>\n" +
-    // (String2.isSomething(tColumnNameForExtract)? //Discourage Extract. Encourage
-    // sourceName=***fileName,...
-    //  "    <preExtractRegex>" + XML.encodeAsXML(tPreExtractRegex) + "</preExtractRegex>\n" +
-    //  "    <postExtractRegex>" + XML.encodeAsXML(tPostExtractRegex) + "</postExtractRegex>\n" +
-    //  "    <extractRegex>" + XML.encodeAsXML(tExtractRegex) + "</extractRegex>\n" +
-    //  "    <columnNameForExtract>" + tColumnNameForExtract + "</columnNameForExtract>\n" : "") +
-    // "    <sortedColumnSourceName>" + tSortedColumnSourceName + "</sortedColumnSourceName>\n" +
-    // "    <sortFilesBySourceNames>" + tSortFilesBySourceNames + "</sortFilesBySourceNames>\n");
-    sb.append(writeAttsForDatasetsXml(false, dataSourceTable.globalAttributes(), "    "));
-    sb.append(cdmSuggestion());
-    sb.append(writeAttsForDatasetsXml(true, dataAddTable.globalAttributes(), "    "));
+            + "    <fileTableInMemory>false</fileTableInMemory>\n"
+            +
+            // "    <charset>UTF-8</charset>\n" +
+            // "    <columnNamesRow>1</columnNamesRow>\n" +
+            // "    <firstDataRow>3</firstDataRow>\n" +
+            // (String2.isSomething(tColumnNameForExtract)? //Discourage Extract. Encourage
+            // sourceName=***fileName,...
+            //  "    <preExtractRegex>" + XML.encodeAsXML(tPreExtractRegex) + "</preExtractRegex>\n"
+            // +
+            //  "    <postExtractRegex>" + XML.encodeAsXML(tPostExtractRegex) +
+            // "</postExtractRegex>\n" +
+            //  "    <extractRegex>" + XML.encodeAsXML(tExtractRegex) + "</extractRegex>\n" +
+            //  "    <columnNameForExtract>" + tColumnNameForExtract + "</columnNameForExtract>\n" :
+            // "") +
+            // "    <sortedColumnSourceName>" + tSortedColumnSourceName +
+            // "</sortedColumnSourceName>\n" +
+            // "    <sortFilesBySourceNames>" + tSortFilesBySourceNames +
+            // "</sortFilesBySourceNames>\n");
+            writeAttsForDatasetsXml(false, dataSourceTable.globalAttributes(), "    ")
+            + cdmSuggestion()
+            + writeAttsForDatasetsXml(true, dataAddTable.globalAttributes(), "    ")
+            + writeVariablesForDatasetsXml(
+                dataSourceTable, dataAddTable, "dataVariable", true, false)
+            + // includeDataType, questionDestinationName
+            """
+                      </dataset>
 
-    sb.append(
-        writeVariablesForDatasetsXml(
-            dataSourceTable,
-            dataAddTable,
-            "dataVariable",
-            true,
-            false)); // includeDataType, questionDestinationName
-    sb.append("</dataset>\n" + "\n");
+                      """;
 
     String2.log("\n\n*** generateDatasetsXml finished successfully.\n\n");
-    return sb.toString();
+    return sb;
   }
 }

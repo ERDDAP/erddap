@@ -40,7 +40,7 @@ import java.awt.Rectangle;
  */
 public class LogAxis extends SpaceAxis implements Cloneable {
 
-  gov.noaa.pfel.coastwatch.sgt.GenEFormatter genEFormatter =
+  final gov.noaa.pfel.coastwatch.sgt.GenEFormatter genEFormatter =
       new gov.noaa.pfel.coastwatch.sgt.GenEFormatter();
 
   public LogAxis(String id) {
@@ -57,19 +57,17 @@ public class LogAxis extends SpaceAxis implements Cloneable {
     } catch (CloneNotSupportedException e) {
       newAxis = new LogAxis(getId());
     }
-    return (Axis) newAxis;
+    return newAxis;
   }
 
   @Override
   public void draw(Graphics g) {
     // throw new MethodNotImplementedError();
     int xloc, yloc, xend, yend;
-    int istop, i;
     double j;
     double xt, yt, dir, x, y, xp, yp;
     double xtitle, ytitle;
     double delta = uRange_.delta;
-    Format format;
     String labelText;
     SGLabel title = getTitle();
     if (!visible_) return;
@@ -90,11 +88,6 @@ public class LogAxis extends SpaceAxis implements Cloneable {
     g.setColor(graph_.getLayer().getPane().getComponent().getForeground());
     //
 
-    if (labelFormat_.length() <= 0) {
-      format = new Format(Format.computeFormat(uRangeStart, uRangeEnd, sigDigits_));
-    } else {
-      format = new Format(labelFormat_);
-    }
     if (orientation_ == Axis.HORIZONTAL) {
       if (Debug.DEBUG) System.out.println("LogAxis: start drawing XAxis");
       if (uLocation_ == null) {
@@ -113,7 +106,6 @@ public class LogAxis extends SpaceAxis implements Cloneable {
       xt = (int) ((uRangeStart / delta + (dir * uRangeStart > 0 ? 1.0 : -1.0) * 0.00001) * delta);
 
       if (dir * xt < dir * uRangeStart) xt += delta;
-      istop = (int) ((uRangeEnd - xt) / delta + 0.00001);
 
       if (uRangeStart <= 0) return;
 
@@ -122,13 +114,12 @@ public class LogAxis extends SpaceAxis implements Cloneable {
               Math.ceil(
                   Math.log10(uRangeStart) - 0.000000000001); // first large tic //Bob added fudge
       int imax = (int) Math.floor(Math.log10(uRangeEnd) + 0.000000000001); // last large tic
-      int nblabel = imax - imin + 1;
 
       /*      System.out.println("uRange.start/end: "+uRangeStart+"/"+uRangeEnd);
             System.out.println("uRangeP: "+graph_.getYUtoP(uRangeStart)+"/"+graph_.getYUtoP(uRangeEnd));
       */
-      double min = (double) Math.pow(10, imin);
-      double max = (double) Math.pow(10, imax);
+      double min = Math.pow(10, imin);
+      double max = Math.pow(10, imax);
 
       xt = min;
       x = xt;
@@ -154,7 +145,6 @@ public class LogAxis extends SpaceAxis implements Cloneable {
       } else {
         x = xt;
       }
-      istop = (int) ((uRangeEnd - x) / (delta * labelInterval_) + 0.00001);
       long jump = 10; // label display on each tic
       // if(istop<nblabel) jump = 100; // one on two
 
@@ -245,7 +235,6 @@ public class LogAxis extends SpaceAxis implements Cloneable {
       dir = delta > 0 ? 1.0 : -1.0;
       yt = (int) (((uRangeStart / delta) + (dir * uRangeStart > 0 ? 1.0 : -1.0) * 0.00001) * delta);
       if (dir * yt < dir * uRangeStart) yt += delta;
-      istop = (int) ((uRangeEnd - yt) / delta + 0.00001);
 
       if (uRangeStart <= 0) return;
 
@@ -254,14 +243,13 @@ public class LogAxis extends SpaceAxis implements Cloneable {
               Math.ceil(
                   Math.log10(uRangeStart) - 0.000000000001); // premier large tic  //Bob added fudge
       int imax = (int) Math.floor(Math.log10(uRangeEnd) + 0.000000000001); // dernier large tic
-      int nblabel = imax - imin + 1;
 
       // System.out.println("uRange.start/end: "+uRangeStart+"/"+uRangeEnd);
       // System.out.println("uRangeP:
       // "+graph_.getYUtoP(uRangeStart)+"/"+graph_.getYUtoP(uRangeEnd));
 
-      double min = (double) Math.pow(10, imin);
-      double max = (double) Math.pow(10, imax);
+      double min = Math.pow(10, imin);
+      double max = Math.pow(10, imax);
       // System.out.println(">> LogAxis vertical imax=" + imax + " max=" + max);
 
       yt = min;
@@ -281,7 +269,6 @@ public class LogAxis extends SpaceAxis implements Cloneable {
       //
       SGLabel label;
       int vertalign;
-      int horzalign;
 
       if (dir * uRangeStart <= 0 && dir * uRangeEnd >= 0) {
         y = ((int) (uRangeStart / (delta * labelInterval_) - 0.00001)) * delta * labelInterval_;
@@ -289,13 +276,9 @@ public class LogAxis extends SpaceAxis implements Cloneable {
         y = yt;
       }
 
-      istop = (int) ((uRangeEnd - y) / (delta * labelInterval_) + 0.00001);
       long jump = 10; // label display on each tic
       // if(istop<nblabel) jump = 100; // one on two
 
-      Layer l = graph_.getLayer();
-      double widthP = 0;
-      double maxWidthP = 0;
       /* Bob set labels to VERTICAL so fixed maxWidthP
       if (l!=null) {
         for(j=min; j<=max; j*=jump) {
@@ -313,11 +296,10 @@ public class LogAxis extends SpaceAxis implements Cloneable {
           if (widthP>maxWidthP) maxWidthP = widthP;
         }
       } */
-      maxWidthP = 1.2 * labelHeight_;
+      double maxWidthP = 1.2 * labelHeight_;
 
       if (labelPosition_ == NEGATIVE_SIDE) {
         vertalign = SGLabel.BOTTOM;
-        horzalign = SGLabel.RIGHT;
         if (ticPosition_ == BOTH_SIDES || ticPosition_ == NEGATIVE_SIDE) {
           xt = xp - TIC_RATIO * largeTicHeight_;
         } else {
@@ -327,7 +309,6 @@ public class LogAxis extends SpaceAxis implements Cloneable {
         xtitle = xt - maxWidthP;
       } else {
         vertalign = SGLabel.TOP;
-        horzalign = SGLabel.LEFT;
         if (ticPosition_ == BOTH_SIDES || ticPosition_ == POSITIVE_SIDE) {
           xt = xp + TIC_RATIO * largeTicHeight_;
         } else {

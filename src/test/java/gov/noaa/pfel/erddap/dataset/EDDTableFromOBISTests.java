@@ -6,9 +6,10 @@ import com.cohort.util.MustBe;
 import com.cohort.util.String2;
 import com.cohort.util.Test;
 import gov.noaa.pfel.erddap.GenerateDatasetsXml;
+import gov.noaa.pfel.erddap.util.EDMessages;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import org.junit.jupiter.api.BeforeAll;
-import tags.TagIncompleteTest;
+import tags.TagMissingDataset;
 import testDataset.Initialization;
 
 class EDDTableFromOBISTests {
@@ -24,6 +25,7 @@ class EDDTableFromOBISTests {
    */
   @org.junit.jupiter.api.Test
   void testGenerateDatasetsXml() throws Throwable {
+    int language = EDMessages.DEFAULT_LANGUAGE;
     String2.log("\n*** EDDTableFromOBIS.testGenerateDatasetsXml");
     // testVerboseOn();
     String results, expected;
@@ -95,7 +97,9 @@ class EDDTableFromOBISTests {
       EDD edd = EDDTableFromOBIS.oneFromXmlFragment(null, results);
       Test.ensureEqual(edd.datasetID(), tDatasetID, "");
       Test.ensureEqual(
-          edd.title(), "OBIS-SEAMAP Data from the OBIS Server at RUTGERS MARINE (DiGIR.php)", "");
+          edd.title(language),
+          "OBIS-SEAMAP Data from the OBIS Server at RUTGERS MARINE (DiGIR.php)",
+          "");
       Test.ensureEqual(
           String2.toCSSVString(edd.dataVariableDestinationNames()),
           "longitude, latitude, altitude, time, ID, BasisOfRecord, BoundingBox, "
@@ -123,7 +127,7 @@ class EDDTableFromOBISTests {
 
   /** rutgers obis, failing since 2011-01 */
   @org.junit.jupiter.api.Test
-  @TagIncompleteTest
+  @TagMissingDataset
   void testRutgers() throws Throwable {
     // testVerboseOn();
     int language = 0;
@@ -131,8 +135,7 @@ class EDDTableFromOBISTests {
     // DigirHelper.reallyVerbose = true;
     // TableXmlHandler.verbose = true;
 
-    String name, tName, results, tResults, expected, userDapQuery;
-    String error = "";
+    String tName, results, tResults, expected, userDapQuery;
     String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 10);
 
     // Is Rutgers obis down/not responding?
@@ -158,12 +161,12 @@ class EDDTableFromOBISTests {
               null,
               null,
               userDapQuery,
-              EDStatic.fullTestCacheDirectory,
+              EDStatic.config.fullTestCacheDirectory,
               obis.className(),
               ".das");
       results =
           String2.annotatedString(
-              File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName));
+              File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName));
       // String2.log(results);
       expected =
           "Attributes {[10]\n"
@@ -430,10 +433,10 @@ class EDDTableFromOBISTests {
               null,
               null,
               userDapQuery,
-              EDStatic.fullTestCacheDirectory,
+              EDStatic.config.fullTestCacheDirectory,
               obis.className(),
               ".csv");
-      results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+      results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
       // String2.log(results);
       expected =
           // 2010-07-20 -132.4223 changed to -132.422 in 3 places
@@ -471,10 +474,10 @@ class EDDTableFromOBISTests {
               null,
               null,
               userDapQuery,
-              EDStatic.fullTestCacheDirectory,
+              EDStatic.config.fullTestCacheDirectory,
               obis.className() + "latlon",
               ".csv");
-      results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+      results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
       // String2.log(results);
       expected =
           "longitude, latitude, time, ID, Genus, Species\n"
@@ -512,9 +515,9 @@ class EDDTableFromOBISTests {
        * "&longitude>-134&longitude<-131&latitude>53&latitude<55&time<1973-01-01";
        * //Carcharodon";
        * tName = obis.makeNewFileForDapQuery(null, null, userDapQuery,
-       * EDStatic.fullTestCacheDirectory,
+       * EDStatic.config.fullTestCacheDirectory,
        * obis.className() + "latlon", ".csv");
-       * results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory +
+       * results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory +
        * tName);
        * //String2.log(results);
        * Test.ensureEqual(results, expected, "\nresults=\n" + results);
@@ -530,10 +533,10 @@ class EDDTableFromOBISTests {
               null,
               null,
               userDapQuery,
-              EDStatic.fullTestCacheDirectory,
+              EDStatic.config.fullTestCacheDirectory,
               obis.className() + "latlon",
               ".csv");
-      results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+      results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
       // String2.log(results);
       Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
@@ -547,10 +550,10 @@ class EDDTableFromOBISTests {
               null,
               null,
               userDapQuery,
-              EDStatic.fullTestCacheDirectory,
+              EDStatic.config.fullTestCacheDirectory,
               obis.className() + "latlon",
               ".csv");
-      results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+      results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
       // String2.log(results);
       Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
@@ -565,7 +568,7 @@ class EDDTableFromOBISTests {
 
   /** fishbase stopped working in 2009-01 */
   @org.junit.jupiter.api.Test
-  @TagIncompleteTest
+  @TagMissingDataset
   void testFishbase() throws Throwable {
     // testVerboseOn();
     int language = 0;
@@ -573,10 +576,7 @@ class EDDTableFromOBISTests {
     // DigirHelper.reallyVerbose = true;
     // TableXmlHandler.verbose = true;
 
-    String name, tName, results, tResults, expected, userDapQuery;
-    String error = "";
-    String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 10);
-
+    String tName, results, expected, userDapQuery;
     try {
       EDDTable fishbase =
           (EDDTable) EDDTableFromOBIS.oneFromDatasetsXml(null, "fishbaseObis"); // should work
@@ -588,10 +588,10 @@ class EDDTableFromOBISTests {
               null,
               null,
               userDapQuery,
-              EDStatic.fullTestCacheDirectory,
+              EDStatic.config.fullTestCacheDirectory,
               fishbase.className() + "FishBaseGraph",
               ".csv");
-      results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+      results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
       // String2.log(results);
       expected =
           "longitude, latitude, time, ID, Genus, Species, Citation\n"
@@ -610,10 +610,10 @@ class EDDTableFromOBISTests {
               null,
               null,
               "longitude,latitude&Genus=Carcharodon&longitude!=NaN",
-              EDStatic.fullTestCacheDirectory,
+              EDStatic.config.fullTestCacheDirectory,
               fishbase.className() + "Map",
               ".csv");
-      results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+      results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
       // String2.log(results);
       expected =
           "longitude, latitude\n"
@@ -642,18 +642,16 @@ class EDDTableFromOBISTests {
       Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
       // expected error didn't occur!
-      String2.pressEnterToContinue(
-          "\n" + MustBe.getStackTrace() + "An expected error didn't occur at the above location.");
-
+      Test.error(MustBe.getStackTrace() + "An expected error didn't occur at the above location.");
     } catch (Throwable t) {
-      String2.pressEnterToContinue(
+      String2.log(
           MustBe.throwableToString(t) + "\nExpected obis fishbase error (since ~2009-01-20).");
     }
   }
 
   /** This works but not useful. seamap is split into ~150 chunks. */
   @org.junit.jupiter.api.Test
-  @TagIncompleteTest
+  @TagMissingDataset
   void testSeamap() throws Throwable {
     // testVerboseOn();
     int language = 0;
@@ -661,9 +659,7 @@ class EDDTableFromOBISTests {
     // DigirHelper.reallyVerbose = true;
     // TableXmlHandler.verbose = true;
 
-    String name, tName, results, tResults, expected, userDapQuery;
-    String error = "";
-    String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 10);
+    String tName, results, expected, userDapQuery;
 
     /*
      * <dataset type="EDDTableFromOBIS" datasetID="dukeSeamap">
@@ -752,10 +748,10 @@ class EDDTableFromOBISTests {
               null,
               null,
               userDapQuery,
-              EDStatic.fullTestCacheDirectory,
+              EDStatic.config.fullTestCacheDirectory,
               dukeSeamap.className() + "duke",
               ".csv");
-      results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+      results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
       // String2.log(results);
       expected =
           "longitude, latitude, time, ID, Genus, Species, Citation\n"
@@ -774,7 +770,7 @@ class EDDTableFromOBISTests {
 
   /** I have never gotten argos or other aadc datasets to work. */
   @org.junit.jupiter.api.Test
-  @TagIncompleteTest
+  @TagMissingDataset
   void testArgos() throws Throwable {
 
     // testVerboseOn();
@@ -783,10 +779,7 @@ class EDDTableFromOBISTests {
     // DigirHelper.reallyVerbose = true;
     // TableXmlHandler.verbose = true;
 
-    String name, tName, results, tResults, expected, userDapQuery;
-    String error = "";
-    String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 10);
-
+    String tName, results, expected, userDapQuery;
     EDDTable argos = (EDDTable) EDDTableFromOBIS.oneFromDatasetsXml(null, "aadcArgos");
     userDapQuery =
         "longitude,latitude,time,ID,Genus,Species&Genus=\"Aptenodytes\"&time<=2008-01-01";
@@ -796,10 +789,10 @@ class EDDTableFromOBISTests {
             null,
             null,
             userDapQuery,
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             argos.className() + "Argos",
             ".csv");
-    results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+    results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
     // String2.log(results);
     expected = "";
     Test.ensureEqual(results, expected, "\nresults=\n" + results);

@@ -1,9 +1,10 @@
 package jetty;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.cohort.array.Attributes;
-import com.cohort.array.IntArray;
 import com.cohort.array.LongArray;
 import com.cohort.array.PAType;
 import com.cohort.array.PrimitiveArray;
@@ -27,6 +28,7 @@ import gov.noaa.pfel.coastwatch.pointdata.Table;
 import gov.noaa.pfel.coastwatch.pointdata.TableTests;
 import gov.noaa.pfel.coastwatch.util.FileVisitorDNLS;
 import gov.noaa.pfel.coastwatch.util.SSR;
+import gov.noaa.pfel.coastwatch.util.TestSSR;
 import gov.noaa.pfel.erddap.Erddap;
 import gov.noaa.pfel.erddap.GenerateDatasetsXml;
 import gov.noaa.pfel.erddap.dataset.EDD;
@@ -39,23 +41,33 @@ import gov.noaa.pfel.erddap.dataset.EDDGridLonPM180;
 import gov.noaa.pfel.erddap.dataset.EDDGridSideBySide;
 import gov.noaa.pfel.erddap.dataset.EDDTable;
 import gov.noaa.pfel.erddap.dataset.EDDTableCopy;
+import gov.noaa.pfel.erddap.dataset.EDDTableFromAsciiFiles;
 import gov.noaa.pfel.erddap.dataset.EDDTableFromDapSequence;
+import gov.noaa.pfel.erddap.dataset.EDDTableFromEDDGrid;
 import gov.noaa.pfel.erddap.dataset.EDDTableFromErddap;
 import gov.noaa.pfel.erddap.dataset.EDDTableFromNcFiles;
 import gov.noaa.pfel.erddap.handlers.SaxHandler;
 import gov.noaa.pfel.erddap.handlers.SaxParsingContext;
 import gov.noaa.pfel.erddap.handlers.TopLevelHandler;
+import gov.noaa.pfel.erddap.util.EDMessages;
 import gov.noaa.pfel.erddap.util.EDStatic;
+import gov.noaa.pfel.erddap.variable.DataVariableInfo;
 import gov.noaa.pfel.erddap.variable.EDV;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.nio.file.Path;
+import java.time.Year;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.regex.Pattern;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
@@ -63,14 +75,18 @@ import org.eclipse.jetty.ee10.webapp.WebAppContext;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.util.resource.Resource;
 import org.eclipse.jetty.util.resource.ResourceFactory;
+import org.json.JSONObject;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
+import org.semver4j.Semver;
 import tags.TagFlaky;
 import tags.TagImageComparison;
+import tags.TagIncompleteTest;
 import tags.TagJetty;
+import tags.TagThredds;
 import testDataset.EDDTestDataset;
 import testDataset.Initialization;
 import ucar.nc2.NetcdfFile;
@@ -105,12 +121,131 @@ class JettyTests {
 
     server.start();
 
+    // Delay the tests to give the server a chance to load all of the data.
+    // If the cache/data folder is cold some machines might need longer. If
+    // all of the data is already loaded on the machine, this can probably be
+    // shortened.
     Thread.sleep(10 * 60 * 1000);
   }
 
   @AfterAll
   public static void tearDown() throws Exception {
     server.stop();
+  }
+
+  /** Check if the Institution row attributes are being displayed correctly */
+  @org.junit.jupiter.api.Test
+  @TagJetty
+  void displayInformation() throws Exception {
+    String results =
+        SSR.getUrlResponseStringUnchanged(
+            "http://localhost:" + PORT + "/erddap/griddap/erdMH1chla1day.html");
+
+    Test.ensureTrue(results.indexOf("value for att1") > 0, "");
+    Test.ensureTrue(results.indexOf("value for att2") > 0, "");
+  }
+
+  /** Test Cors Filter */
+  @ParameterizedTest
+  @ValueSource(booleans = {false, true})
+  @TagJetty
+  void testCorsFilter(boolean enableCors) throws Exception {
+    boolean initialCors = EDStatic.config.enableCors;
+    EDStatic.config.enableCors = enableCors;
+
+    HttpClient client = HttpClient.newHttpClient();
+    URI uri = server.getURI().resolve("/erddap/index.html");
+
+    HttpRequest optionsRequest =
+        HttpRequest.newBuilder(uri).method("OPTIONS", HttpRequest.BodyPublishers.noBody()).build();
+    validateCorsHeaders(client.send(optionsRequest, HttpResponse.BodyHandlers.discarding()));
+
+    HttpRequest getRequest = HttpRequest.newBuilder(uri).GET().build();
+    validateCorsHeaders(client.send(getRequest, HttpResponse.BodyHandlers.discarding()));
+
+    HttpRequest postRequest =
+        HttpRequest.newBuilder(uri).POST(HttpRequest.BodyPublishers.noBody()).build();
+    validateCorsHeaders(client.send(postRequest, HttpResponse.BodyHandlers.discarding()));
+    EDStatic.config.enableCors = initialCors;
+  }
+
+  private void validateCorsHeaders(HttpResponse<?> response) {
+    if (EDStatic.config.enableCors && response.request().method().equalsIgnoreCase("OPTIONS")) {
+      assertEquals(204, response.statusCode());
+    } else {
+      assertEquals(200, response.statusCode());
+    }
+    if (EDStatic.config.enableCors) {
+      assertTrue(response.headers().firstValue("Access-Control-Allow-Origin").isPresent());
+      assertEquals("*", response.headers().firstValue("Access-Control-Allow-Origin").get());
+      assertTrue(response.headers().firstValue("Access-Control-Allow-Methods").isPresent());
+      assertEquals(
+          "GET, POST, OPTIONS",
+          response.headers().firstValue("Access-Control-Allow-Methods").get());
+      assertTrue(response.headers().firstValue("Access-Control-Allow-Headers").isPresent());
+      assertEquals(
+          EDStatic.config.corsAllowHeaders,
+          response.headers().firstValue("Access-Control-Allow-Headers").get());
+    } else {
+      assertFalse(response.headers().firstValue("Access-Control-Allow-Origin").isPresent());
+      assertFalse(response.headers().firstValue("Access-Control-Allow-Methods").isPresent());
+      assertFalse(response.headers().firstValue("Access-Control-Allow-Headers").isPresent());
+    }
+  }
+
+  /** Check string and json ERDDAP version responses */
+  @org.junit.jupiter.api.Test
+  @TagJetty
+  void testErddapVersionResponse() throws Exception {
+    HttpClient client = HttpClient.newHttpClient();
+
+    String erddapShortVersion =
+        EDStatic.erddapVersion.getMajor() + "." + EDStatic.erddapVersion.getMinor();
+
+    // test short version string response
+    HttpResponse<String> response =
+        client.send(
+            HttpRequest.newBuilder(server.getURI().resolve("/erddap/version")).GET().build(),
+            HttpResponse.BodyHandlers.ofString());
+    assertEquals(200, response.statusCode());
+    assertEquals("ERDDAP_version=" + erddapShortVersion + "\n", response.body());
+
+    // test full version string response
+    response =
+        client.send(
+            HttpRequest.newBuilder(server.getURI().resolve("/erddap/version_string")).GET().build(),
+            HttpResponse.BodyHandlers.ofString());
+    assertEquals(200, response.statusCode());
+    assertEquals("ERDDAP_version_string=" + EDStatic.erddapVersion + "\n", response.body());
+
+    // test json response using Accept header including deployment info
+    EDStatic.config.deploymentInfo = "integration testing with jetty";
+    response =
+        client.send(
+            HttpRequest.newBuilder(server.getURI().resolve("/erddap/version"))
+                .GET()
+                .header("Accept", "application/json")
+                .build(),
+            HttpResponse.BodyHandlers.ofString());
+    assertEquals(200, response.statusCode());
+    JSONObject jsonResponse = new JSONObject(response.body());
+    assertTrue(jsonResponse.has("version"));
+    assertEquals(erddapShortVersion, jsonResponse.getString("version"));
+    assertTrue(jsonResponse.has("version_full"));
+    assertEquals(EDStatic.erddapVersion.getVersion(), jsonResponse.getString("version_full"));
+    assertTrue(jsonResponse.has("deployment_info"));
+    assertEquals(EDStatic.config.deploymentInfo, jsonResponse.getString("deployment_info"));
+
+    // test json response using query parameter including deployment info
+    response =
+        client.send(
+            HttpRequest.newBuilder(server.getURI().resolve("/erddap/version?format=json"))
+                .GET()
+                .build(),
+            HttpResponse.BodyHandlers.ofString());
+    assertEquals(200, response.statusCode());
+    // should be equal to the previous json response
+    assertTrue(jsonResponse.similar(new JSONObject(response.body())));
   }
 
   /** Test the metadata */
@@ -122,2285 +257,2293 @@ class JettyTests {
             "http://localhost:"
                 + PORT
                 + "/erddap/metadata/iso19115/xml/erdMH1chla1day_iso19115.xml");
-    String expected =
-        "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
-            + //
-            "<gmi:MI_Metadata  xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n"
-            + //
-            "  xsi:schemaLocation=\"https://www.isotc211.org/2005/gmi https://data.noaa.gov/resources/iso19139/schema.xsd\"\n"
-            + //
-            "  xmlns:xlink=\"http://www.w3.org/1999/xlink\"\n"
-            + //
-            "  xmlns:gco=\"http://www.isotc211.org/2005/gco\"\n"
-            + //
-            "  xmlns:gmd=\"http://www.isotc211.org/2005/gmd\"\n"
-            + //
-            "  xmlns:gmx=\"http://www.isotc211.org/2005/gmx\"\n"
-            + //
-            "  xmlns:gml=\"http://www.opengis.net/gml/3.2\"\n"
-            + //
-            "  xmlns:gss=\"http://www.isotc211.org/2005/gss\"\n"
-            + //
-            "  xmlns:gts=\"http://www.isotc211.org/2005/gts\"\n"
-            + //
-            "  xmlns:gsr=\"http://www.isotc211.org/2005/gsr\"\n"
-            + //
-            "  xmlns:gmi=\"http://www.isotc211.org/2005/gmi\"\n"
-            + //
-            "  xmlns:srv=\"http://www.isotc211.org/2005/srv\">\n"
-            + //
-            "  <gmd:fileIdentifier>\n"
-            + //
-            "    <gco:CharacterString>erdMH1chla1day</gco:CharacterString>\n"
-            + //
-            "  </gmd:fileIdentifier>\n"
-            + //
-            "  <gmd:language>\n"
-            + //
-            "    <gmd:LanguageCode codeList=\"https://data.noaa.gov/resources/iso19139/schema/resources/Codelist/gmxCodelists.xml#gmd:LanguageCode\" codeListValue=\"eng\">eng</gmd:LanguageCode>\n"
-            + //
-            "  </gmd:language>\n"
-            + //
-            "  <gmd:characterSet>\n"
-            + //
-            "    <gmd:MD_CharacterSetCode codeList=\"https://data.noaa.gov/resources/iso19139/schema/resources/Codelist/gmxCodelists.xml#gmd:MD_CharacterSetCode\" codeListValue=\"UTF8\">UTF8</gmd:MD_CharacterSetCode>\n"
-            + //
-            "  </gmd:characterSet>\n"
-            + //
-            "  <gmd:hierarchyLevel>\n"
-            + //
-            "    <gmd:MD_ScopeCode codeList=\"https://data.noaa.gov/resources/iso19139/schema/resources/Codelist/gmxCodelists.xml#gmd:MD_ScopeCode\" codeListValue=\"dataset\">dataset</gmd:MD_ScopeCode>\n"
-            + //
-            "  </gmd:hierarchyLevel>\n"
-            + //
-            "  <gmd:hierarchyLevel>\n"
-            + //
-            "    <gmd:MD_ScopeCode codeList=\"https://data.noaa.gov/resources/iso19139/schema/resources/Codelist/gmxCodelists.xml#gmd:MD_ScopeCode\" codeListValue=\"service\">service</gmd:MD_ScopeCode>\n"
-            + //
-            "  </gmd:hierarchyLevel>\n"
-            + //
-            "  <gmd:contact>\n"
-            + //
-            "    <gmd:CI_ResponsibleParty>\n"
-            + //
-            "      <gmd:individualName>\n"
-            + //
-            "        <gco:CharacterString>ERDDAP Jetty Developer</gco:CharacterString>\n"
-            + //
-            "      </gmd:individualName>\n"
-            + //
-            "      <gmd:organisationName>\n"
-            + //
-            "        <gco:CharacterString>ERDDAP Jetty Install</gco:CharacterString>\n"
-            + //
-            "      </gmd:organisationName>\n"
-            + //
-            "      <gmd:contactInfo>\n"
-            + //
-            "        <gmd:CI_Contact>\n"
-            + //
-            "          <gmd:phone>\n"
-            + //
-            "            <gmd:CI_Telephone>\n"
-            + //
-            "              <gmd:voice>\n"
-            + //
-            "                <gco:CharacterString>555-555-5555</gco:CharacterString>\n"
-            + //
-            "              </gmd:voice>\n"
-            + //
-            "            </gmd:CI_Telephone>\n"
-            + //
-            "          </gmd:phone>\n"
-            + //
-            "          <gmd:address>\n"
-            + //
-            "            <gmd:CI_Address>\n"
-            + //
-            "              <gmd:deliveryPoint>\n"
-            + //
-            "                <gco:CharacterString>123 Irrelevant St.</gco:CharacterString>\n"
-            + //
-            "              </gmd:deliveryPoint>\n"
-            + //
-            "              <gmd:city>\n"
-            + //
-            "                <gco:CharacterString>Nowhere</gco:CharacterString>\n"
-            + //
-            "              </gmd:city>\n"
-            + //
-            "              <gmd:administrativeArea>\n"
-            + //
-            "                <gco:CharacterString>AK</gco:CharacterString>\n"
-            + //
-            "              </gmd:administrativeArea>\n"
-            + //
-            "              <gmd:postalCode>\n"
-            + //
-            "                <gco:CharacterString>99504</gco:CharacterString>\n"
-            + //
-            "              </gmd:postalCode>\n"
-            + //
-            "              <gmd:country>\n"
-            + //
-            "                <gco:CharacterString>USA</gco:CharacterString>\n"
-            + //
-            "              </gmd:country>\n"
-            + //
-            "              <gmd:electronicMailAddress>\n"
-            + //
-            "                <gco:CharacterString>nobody@example.com</gco:CharacterString>\n"
-            + //
-            "              </gmd:electronicMailAddress>\n"
-            + //
-            "            </gmd:CI_Address>\n"
-            + //
-            "          </gmd:address>\n"
-            + //
-            "        </gmd:CI_Contact>\n"
-            + //
-            "      </gmd:contactInfo>\n"
-            + //
-            "      <gmd:role>\n"
-            + //
-            "        <gmd:CI_RoleCode codeList=\"https://data.noaa.gov/resources/iso19139/schema/resources/Codelist/gmxCodelists.xml#gmd:CI_RoleCode\" codeListValue=\"pointOfContact\">pointOfContact</gmd:CI_RoleCode>\n"
-            + //
-            "      </gmd:role>\n"
-            + //
-            "    </gmd:CI_ResponsibleParty>\n"
-            + //
-            "  </gmd:contact>\n"
-            + //
-            "  <gmd:dateStamp>\n"
-            + //
-            "    <gco:Date>YYYY-MM-DD</gco:Date>\n"
-            + //
-            "  </gmd:dateStamp>\n"
-            + //
-            "  <gmd:metadataStandardName>\n"
-            + //
-            "    <gco:CharacterString>ISO 19115-2 Geographic Information - Metadata Part 2 Extensions for Imagery and Gridded Data</gco:CharacterString>\n"
-            + //
-            "  </gmd:metadataStandardName>\n"
-            + //
-            "  <gmd:metadataStandardVersion>\n"
-            + //
-            "    <gco:CharacterString>ISO 19115-2:2009(E)</gco:CharacterString>\n"
-            + //
-            "  </gmd:metadataStandardVersion>\n"
-            + //
-            "  <gmd:spatialRepresentationInfo>\n"
-            + //
-            "    <gmd:MD_GridSpatialRepresentation>\n"
-            + //
-            "      <gmd:numberOfDimensions>\n"
-            + //
-            "        <gco:Integer>NUMBER</gco:Integer>\n"
-            + //
-            "      </gmd:numberOfDimensions>\n"
-            + //
-            "      <gmd:axisDimensionProperties>\n"
-            + //
-            "        <gmd:MD_Dimension>\n"
-            + //
-            "          <gmd:dimensionName>\n"
-            + //
-            "            <gmd:MD_DimensionNameTypeCode codeList=\"https://data.noaa.gov/resources/iso19139/schema/resources/Codelist/gmxCodelists.xml#gmd:MD_DimensionNameTypeCode\" codeListValue=\"column\">column</gmd:MD_DimensionNameTypeCode>\n"
-            + //
-            "          </gmd:dimensionName>\n"
-            + //
-            "          <gmd:dimensionSize>\n"
-            + //
-            "            <gco:Integer>NUMBER</gco:Integer>\n"
-            + //
-            "          </gmd:dimensionSize>\n"
-            + //
-            "          <gmd:resolution>\n"
-            + //
-            "            <gco:Measure uom=\"deg&#x7b;east&#x7d;\">measureValue</gco:Measure>\n"
-            + //
-            "          </gmd:resolution>\n"
-            + //
-            "        </gmd:MD_Dimension>\n"
-            + //
-            "      </gmd:axisDimensionProperties>\n"
-            + //
-            "      <gmd:axisDimensionProperties>\n"
-            + //
-            "        <gmd:MD_Dimension>\n"
-            + //
-            "          <gmd:dimensionName>\n"
-            + //
-            "            <gmd:MD_DimensionNameTypeCode codeList=\"https://data.noaa.gov/resources/iso19139/schema/resources/Codelist/gmxCodelists.xml#gmd:MD_DimensionNameTypeCode\" codeListValue=\"row\">row</gmd:MD_DimensionNameTypeCode>\n"
-            + //
-            "          </gmd:dimensionName>\n"
-            + //
-            "          <gmd:dimensionSize>\n"
-            + //
-            "            <gco:Integer>NUMBER</gco:Integer>\n"
-            + //
-            "          </gmd:dimensionSize>\n"
-            + //
-            "          <gmd:resolution>\n"
-            + //
-            "            <gco:Measure uom=\"deg&#x7b;north&#x7d;\">measureValue</gco:Measure>\n"
-            + //
-            "          </gmd:resolution>\n"
-            + //
-            "        </gmd:MD_Dimension>\n"
-            + //
-            "      </gmd:axisDimensionProperties>\n"
-            + //
-            "      <gmd:axisDimensionProperties>\n"
-            + //
-            "        <gmd:MD_Dimension>\n"
-            + //
-            "          <gmd:dimensionName>\n"
-            + //
-            "            <gmd:MD_DimensionNameTypeCode codeList=\"https://data.noaa.gov/resources/iso19139/schema/resources/Codelist/gmxCodelists.xml#gmd:MD_DimensionNameTypeCode\" codeListValue=\"temporal\">temporal</gmd:MD_DimensionNameTypeCode>\n"
-            + //
-            "          </gmd:dimensionName>\n"
-            + //
-            "          <gmd:dimensionSize>\n"
-            + //
-            "            <gco:Integer>NUMBER</gco:Integer>\n"
-            + //
-            "          </gmd:dimensionSize>\n"
-            + //
-            "          <gmd:resolution>\n"
-            + //
-            "            <gco:Measure uom=\"s\">VALUE</gco:Measure>\n"
-            + //
-            "          </gmd:resolution>\n"
-            + //
-            "        </gmd:MD_Dimension>\n"
-            + //
-            "      </gmd:axisDimensionProperties>\n"
-            + //
-            "      <gmd:cellGeometry>\n"
-            + //
-            "        <gmd:MD_CellGeometryCode codeList=\"https://data.noaa.gov/resources/iso19139/schema/resources/Codelist/gmxCodelists.xml#gmd:MD_CellGeometryCode\" codeListValue=\"area\">area</gmd:MD_CellGeometryCode>\n"
-            + //
-            "      </gmd:cellGeometry>\n"
-            + //
-            "      <gmd:transformationParameterAvailability gco:nilReason=\"unknown\"/>\n"
-            + //
-            "    </gmd:MD_GridSpatialRepresentation>\n"
-            + //
-            "  </gmd:spatialRepresentationInfo>\n"
-            + //
-            "  <gmd:identificationInfo>\n"
-            + //
-            "    <gmd:MD_DataIdentification id=\"DataIdentification\">\n"
-            + //
-            "      <gmd:citation>\n"
-            + //
-            "        <gmd:CI_Citation>\n"
-            + //
-            "          <gmd:title>\n"
-            + //
-            "            <gco:CharacterString>Chlorophyll-a, Aqua MODIS, NPP, L3SMI, Global, 4km, Science Quality, 2003-present (1 Day Composite)</gco:CharacterString>\n"
-            + //
-            "          </gmd:title>\n"
-            + //
-            "          <gmd:date>\n"
-            + //
-            "            <gmd:CI_Date>\n"
-            + //
-            "              <gmd:date>\n"
-            + //
-            "                <gco:Date>YYYY-MM-DD</gco:Date>\n"
-            + //
-            "              </gmd:date>\n"
-            + //
-            "              <gmd:dateType>\n"
-            + //
-            "                <gmd:CI_DateTypeCode codeList=\"https://data.noaa.gov/resources/iso19139/schema/resources/Codelist/gmxCodelists.xml#gmd:CI_DateTypeCode\" codeListValue=\"creation\">creation</gmd:CI_DateTypeCode>\n"
-            + //
-            "              </gmd:dateType>\n"
-            + //
-            "            </gmd:CI_Date>\n"
-            + //
-            "          </gmd:date>\n"
-            + //
-            "          <gmd:identifier>\n"
-            + //
-            "            <gmd:MD_Identifier>\n"
-            + //
-            "              <gmd:authority>\n"
-            + //
-            "                <gmd:CI_Citation>\n"
-            + //
-            "                  <gmd:title>\n"
-            + //
-            "                    <gco:CharacterString>localhost:8080</gco:CharacterString>\n"
-            + //
-            "                  </gmd:title>\n"
-            + //
-            "                  <gmd:date gco:nilReason=\"inapplicable\"/>\n"
-            + //
-            "                </gmd:CI_Citation>\n"
-            + //
-            "              </gmd:authority>\n"
-            + //
-            "              <gmd:code>\n"
-            + //
-            "                <gco:CharacterString>erdMH1chla1day</gco:CharacterString>\n"
-            + //
-            "              </gmd:code>\n"
-            + //
-            "            </gmd:MD_Identifier>\n"
-            + //
-            "          </gmd:identifier>\n"
-            + //
-            "          <gmd:citedResponsibleParty>\n"
-            + //
-            "            <gmd:CI_ResponsibleParty>\n"
-            + //
-            "              <gmd:individualName gco:nilReason=\"missing\"/>\n"
-            + //
-            "              <gmd:organisationName>\n"
-            + //
-            "                <gco:CharacterString>NASA/GSFC/OBPG</gco:CharacterString>\n"
-            + //
-            "              </gmd:organisationName>\n"
-            + //
-            "              <gmd:contactInfo>\n"
-            + //
-            "                <gmd:CI_Contact>\n"
-            + //
-            "                  <gmd:address>\n"
-            + //
-            "                    <gmd:CI_Address>\n"
-            + //
-            "                      <gmd:electronicMailAddress>\n"
-            + //
-            "                        <gco:CharacterString>data@oceancolor.gsfc.nasa.gov</gco:CharacterString>\n"
-            + //
-            "                      </gmd:electronicMailAddress>\n"
-            + //
-            "                    </gmd:CI_Address>\n"
-            + //
-            "                  </gmd:address>\n"
-            + //
-            "                  <gmd:onlineResource>\n"
-            + //
-            "                    <gmd:CI_OnlineResource>\n"
-            + //
-            "                      <gmd:linkage>\n"
-            + //
-            "                        <gmd:URL>https://coastwatch.pfeg.noaa.gov/infog/MH1_chla_las.html</gmd:URL>\n"
-            + //
-            "                      </gmd:linkage>\n"
-            + //
-            "                      <gmd:protocol>\n"
-            + //
-            "                        <gco:CharacterString>information</gco:CharacterString>\n"
-            + //
-            "                      </gmd:protocol>\n"
-            + //
-            "                      <gmd:applicationProfile>\n"
-            + //
-            "                        <gco:CharacterString>web browser</gco:CharacterString>\n"
-            + //
-            "                      </gmd:applicationProfile>\n"
-            + //
-            "                      <gmd:name>\n"
-            + //
-            "                        <gco:CharacterString>Background Information</gco:CharacterString>\n"
-            + //
-            "                      </gmd:name>\n"
-            + //
-            "                      <gmd:description>\n"
-            + //
-            "                        <gco:CharacterString>Background information from the source</gco:CharacterString>\n"
-            + //
-            "                      </gmd:description>\n"
-            + //
-            "                      <gmd:function>\n"
-            + //
-            "                        <gmd:CI_OnLineFunctionCode codeList=\"https://data.noaa.gov/resources/iso19139/schema/resources/Codelist/gmxCodelists.xml#gmd:CI_OnLineFunctionCode\" codeListValue=\"information\">information</gmd:CI_OnLineFunctionCode>\n"
-            + //
-            "                      </gmd:function>\n"
-            + //
-            "                    </gmd:CI_OnlineResource>\n"
-            + //
-            "                  </gmd:onlineResource>\n"
-            + //
-            "                </gmd:CI_Contact>\n"
-            + //
-            "              </gmd:contactInfo>\n"
-            + //
-            "              <gmd:role>\n"
-            + //
-            "                <gmd:CI_RoleCode codeList=\"https://data.noaa.gov/resources/iso19139/schema/resources/Codelist/gmxCodelists.xml#gmd:CI_RoleCode\" codeListValue=\"originator\">originator</gmd:CI_RoleCode>\n"
-            + //
-            "              </gmd:role>\n"
-            + //
-            "            </gmd:CI_ResponsibleParty>\n"
-            + //
-            "          </gmd:citedResponsibleParty>\n"
-            + //
-            "        </gmd:CI_Citation>\n"
-            + //
-            "      </gmd:citation>\n"
-            + //
-            "      <gmd:abstract>\n"
-            + //
-            "        <gco:CharacterString>This dataset has Level 3, Standard Mapped Image, 4km, chlorophyll-a concentration data from NASA&#39;s Aqua Spacecraft.  Measurements are gathered by the Moderate Resolution Imaging Spectroradiometer (MODIS) carried aboard the spacecraft.  This is Science Quality data.  This is the August 2015 version of this dataset.</gco:CharacterString>\n"
-            + //
-            "      </gmd:abstract>\n"
-            + //
-            "      <gmd:credit gco:nilReason=\"missing\"/>\n"
-            + //
-            "      <gmd:pointOfContact>\n"
-            + //
-            "        <gmd:CI_ResponsibleParty>\n"
-            + //
-            "          <gmd:individualName gco:nilReason=\"missing\"/>\n"
-            + //
-            "          <gmd:organisationName>\n"
-            + //
-            "            <gco:CharacterString>NASA/GSFC/OBPG</gco:CharacterString>\n"
-            + //
-            "          </gmd:organisationName>\n"
-            + //
-            "          <gmd:contactInfo>\n"
-            + //
-            "            <gmd:CI_Contact>\n"
-            + //
-            "              <gmd:address>\n"
-            + //
-            "                <gmd:CI_Address>\n"
-            + //
-            "                  <gmd:electronicMailAddress>\n"
-            + //
-            "                    <gco:CharacterString>data@oceancolor.gsfc.nasa.gov</gco:CharacterString>\n"
-            + //
-            "                  </gmd:electronicMailAddress>\n"
-            + //
-            "                </gmd:CI_Address>\n"
-            + //
-            "              </gmd:address>\n"
-            + //
-            "              <gmd:onlineResource>\n"
-            + //
-            "                <gmd:CI_OnlineResource>\n"
-            + //
-            "                  <gmd:linkage>\n"
-            + //
-            "                    <gmd:URL>https://coastwatch.pfeg.noaa.gov/infog/MH1_chla_las.html</gmd:URL>\n"
-            + //
-            "                  </gmd:linkage>\n"
-            + //
-            "                  <gmd:protocol>\n"
-            + //
-            "                    <gco:CharacterString>information</gco:CharacterString>\n"
-            + //
-            "                  </gmd:protocol>\n"
-            + //
-            "                  <gmd:applicationProfile>\n"
-            + //
-            "                    <gco:CharacterString>web browser</gco:CharacterString>\n"
-            + //
-            "                  </gmd:applicationProfile>\n"
-            + //
-            "                  <gmd:name>\n"
-            + //
-            "                    <gco:CharacterString>Background Information</gco:CharacterString>\n"
-            + //
-            "                  </gmd:name>\n"
-            + //
-            "                  <gmd:description>\n"
-            + //
-            "                    <gco:CharacterString>Background information from the source</gco:CharacterString>\n"
-            + //
-            "                  </gmd:description>\n"
-            + //
-            "                  <gmd:function>\n"
-            + //
-            "                    <gmd:CI_OnLineFunctionCode codeList=\"https://data.noaa.gov/resources/iso19139/schema/resources/Codelist/gmxCodelists.xml#gmd:CI_OnLineFunctionCode\" codeListValue=\"information\">information</gmd:CI_OnLineFunctionCode>\n"
-            + //
-            "                  </gmd:function>\n"
-            + //
-            "                </gmd:CI_OnlineResource>\n"
-            + //
-            "              </gmd:onlineResource>\n"
-            + //
-            "            </gmd:CI_Contact>\n"
-            + //
-            "          </gmd:contactInfo>\n"
-            + //
-            "          <gmd:role>\n"
-            + //
-            "            <gmd:CI_RoleCode codeList=\"https://data.noaa.gov/resources/iso19139/schema/resources/Codelist/gmxCodelists.xml#gmd:CI_RoleCode\" codeListValue=\"pointOfContact\">pointOfContact</gmd:CI_RoleCode>\n"
-            + //
-            "          </gmd:role>\n"
-            + //
-            "        </gmd:CI_ResponsibleParty>\n"
-            + //
-            "      </gmd:pointOfContact>\n"
-            + //
-            "      <gmd:descriptiveKeywords>\n"
-            + //
-            "        <gmd:MD_Keywords>\n"
-            + //
-            "          <gmd:keyword>\n"
-            + //
-            "            <gco:CharacterString>algorithm</gco:CharacterString>\n"
-            + //
-            "          </gmd:keyword>\n"
-            + //
-            "          <gmd:keyword>\n"
-            + //
-            "            <gco:CharacterString>biology</gco:CharacterString>\n"
-            + //
-            "          </gmd:keyword>\n"
-            + //
-            "          <gmd:keyword>\n"
-            + //
-            "            <gco:CharacterString>center</gco:CharacterString>\n"
-            + //
-            "          </gmd:keyword>\n"
-            + //
-            "          <gmd:keyword>\n"
-            + //
-            "            <gco:CharacterString>chemistry</gco:CharacterString>\n"
-            + //
-            "          </gmd:keyword>\n"
-            + //
-            "          <gmd:keyword>\n"
-            + //
-            "            <gco:CharacterString>chlorophyll</gco:CharacterString>\n"
-            + //
-            "          </gmd:keyword>\n"
-            + //
-            "          <gmd:keyword>\n"
-            + //
-            "            <gco:CharacterString>color</gco:CharacterString>\n"
-            + //
-            "          </gmd:keyword>\n"
-            + //
-            "          <gmd:keyword>\n"
-            + //
-            "            <gco:CharacterString>concentration</gco:CharacterString>\n"
-            + //
-            "          </gmd:keyword>\n"
-            + //
-            "          <gmd:keyword>\n"
-            + //
-            "            <gco:CharacterString>data</gco:CharacterString>\n"
-            + //
-            "          </gmd:keyword>\n"
-            + //
-            "          <gmd:keyword>\n"
-            + //
-            "            <gco:CharacterString>ecology</gco:CharacterString>\n"
-            + //
-            "          </gmd:keyword>\n"
-            + //
-            "          <gmd:keyword>\n"
-            + //
-            "            <gco:CharacterString>flight</gco:CharacterString>\n"
-            + //
-            "          </gmd:keyword>\n"
-            + //
-            "          <gmd:keyword>\n"
-            + //
-            "            <gco:CharacterString>goddard</gco:CharacterString>\n"
-            + //
-            "          </gmd:keyword>\n"
-            + //
-            "          <gmd:keyword>\n"
-            + //
-            "            <gco:CharacterString>group</gco:CharacterString>\n"
-            + //
-            "          </gmd:keyword>\n"
-            + //
-            "          <gmd:keyword>\n"
-            + //
-            "            <gco:CharacterString>gsfc</gco:CharacterString>\n"
-            + //
-            "          </gmd:keyword>\n"
-            + //
-            "          <gmd:keyword>\n"
-            + //
-            "            <gco:CharacterString>image</gco:CharacterString>\n"
-            + //
-            "          </gmd:keyword>\n"
-            + //
-            "          <gmd:keyword>\n"
-            + //
-            "            <gco:CharacterString>imaging</gco:CharacterString>\n"
-            + //
-            "          </gmd:keyword>\n"
-            + //
-            "          <gmd:keyword>\n"
-            + //
-            "            <gco:CharacterString>L3</gco:CharacterString>\n"
-            + //
-            "          </gmd:keyword>\n"
-            + //
-            "          <gmd:keyword>\n"
-            + //
-            "            <gco:CharacterString>laboratory</gco:CharacterString>\n"
-            + //
-            "          </gmd:keyword>\n"
-            + //
-            "          <gmd:keyword>\n"
-            + //
-            "            <gco:CharacterString>level</gco:CharacterString>\n"
-            + //
-            "          </gmd:keyword>\n"
-            + //
-            "          <gmd:keyword>\n"
-            + //
-            "            <gco:CharacterString>level-3</gco:CharacterString>\n"
-            + //
-            "          </gmd:keyword>\n"
-            + //
-            "          <gmd:keyword>\n"
-            + //
-            "            <gco:CharacterString>mapped</gco:CharacterString>\n"
-            + //
-            "          </gmd:keyword>\n"
-            + //
-            "          <gmd:keyword>\n"
-            + //
-            "            <gco:CharacterString>mass</gco:CharacterString>\n"
-            + //
-            "          </gmd:keyword>\n"
-            + //
-            "          <gmd:keyword>\n"
-            + //
-            "            <gco:CharacterString>moderate</gco:CharacterString>\n"
-            + //
-            "          </gmd:keyword>\n"
-            + //
-            "          <gmd:keyword>\n"
-            + //
-            "            <gco:CharacterString>modis</gco:CharacterString>\n"
-            + //
-            "          </gmd:keyword>\n"
-            + //
-            "          <gmd:keyword>\n"
-            + //
-            "            <gco:CharacterString>nasa</gco:CharacterString>\n"
-            + //
-            "          </gmd:keyword>\n"
-            + //
-            "          <gmd:keyword>\n"
-            + //
-            "            <gco:CharacterString>ocean</gco:CharacterString>\n"
-            + //
-            "          </gmd:keyword>\n"
-            + //
-            "          <gmd:keyword>\n"
-            + //
-            "            <gco:CharacterString>ocean color</gco:CharacterString>\n"
-            + //
-            "          </gmd:keyword>\n"
-            + //
-            "          <gmd:keyword>\n"
-            + //
-            "            <gco:CharacterString>oceans</gco:CharacterString>\n"
-            + //
-            "          </gmd:keyword>\n"
-            + //
-            "          <gmd:keyword>\n"
-            + //
-            "            <gco:CharacterString>oci</gco:CharacterString>\n"
-            + //
-            "          </gmd:keyword>\n"
-            + //
-            "          <gmd:keyword>\n"
-            + //
-            "            <gco:CharacterString>optics</gco:CharacterString>\n"
-            + //
-            "          </gmd:keyword>\n"
-            + //
-            "          <gmd:keyword>\n"
-            + //
-            "            <gco:CharacterString>processing</gco:CharacterString>\n"
-            + //
-            "          </gmd:keyword>\n"
-            + //
-            "          <gmd:keyword>\n"
-            + //
-            "            <gco:CharacterString>resolution</gco:CharacterString>\n"
-            + //
-            "          </gmd:keyword>\n"
-            + //
-            "          <gmd:keyword>\n"
-            + //
-            "            <gco:CharacterString>sea</gco:CharacterString>\n"
-            + //
-            "          </gmd:keyword>\n"
-            + //
-            "          <gmd:keyword>\n"
-            + //
-            "            <gco:CharacterString>seawater</gco:CharacterString>\n"
-            + //
-            "          </gmd:keyword>\n"
-            + //
-            "          <gmd:keyword>\n"
-            + //
-            "            <gco:CharacterString>smi</gco:CharacterString>\n"
-            + //
-            "          </gmd:keyword>\n"
-            + //
-            "          <gmd:keyword>\n"
-            + //
-            "            <gco:CharacterString>space</gco:CharacterString>\n"
-            + //
-            "          </gmd:keyword>\n"
-            + //
-            "          <gmd:keyword>\n"
-            + //
-            "            <gco:CharacterString>spectroradiometer</gco:CharacterString>\n"
-            + //
-            "          </gmd:keyword>\n"
-            + //
-            "          <gmd:keyword>\n"
-            + //
-            "            <gco:CharacterString>standard</gco:CharacterString>\n"
-            + //
-            "          </gmd:keyword>\n"
-            + //
-            "          <gmd:keyword>\n"
-            + //
-            "            <gco:CharacterString>water</gco:CharacterString>\n"
-            + //
-            "          </gmd:keyword>\n"
-            + //
-            "          <gmd:type>\n"
-            + //
-            "            <gmd:MD_KeywordTypeCode codeList=\"https://data.noaa.gov/resources/iso19139/schema/resources/Codelist/gmxCodelists.xml#gmd:MD_KeywordTypeCode\" codeListValue=\"theme\">theme</gmd:MD_KeywordTypeCode>\n"
-            + //
-            "          </gmd:type>\n"
-            + //
-            "          <gmd:thesaurusName gco:nilReason=\"unknown\"/>\n"
-            + //
-            "        </gmd:MD_Keywords>\n"
-            + //
-            "      </gmd:descriptiveKeywords>\n"
-            + //
-            "      <gmd:descriptiveKeywords>\n"
-            + //
-            "        <gmd:MD_Keywords>\n"
-            + //
-            "          <gmd:keyword>\n"
-            + //
-            "            <gco:CharacterString>Earth Science &gt; Oceans &gt; Ocean Optics &gt; Ocean Color</gco:CharacterString>\n"
-            + //
-            "          </gmd:keyword>\n"
-            + //
-            "          <gmd:keyword>\n"
-            + //
-            "            <gco:CharacterString>Earth Science &gt; Oceans &gt; Ocean Chemistry &gt; Chlorophyll</gco:CharacterString>\n"
-            + //
-            "          </gmd:keyword>\n"
-            + //
-            "          <gmd:type>\n"
-            + //
-            "            <gmd:MD_KeywordTypeCode codeList=\"https://data.noaa.gov/resources/iso19139/schema/resources/Codelist/gmxCodelists.xml#gmd:MD_KeywordTypeCode\" codeListValue=\"theme\">theme</gmd:MD_KeywordTypeCode>\n"
-            + //
-            "          </gmd:type>\n"
-            + //
-            "          <gmd:thesaurusName>\n"
-            + //
-            "            <gmd:CI_Citation>\n"
-            + //
-            "              <gmd:title>\n"
-            + //
-            "                <gco:CharacterString>GCMD Science Keywords</gco:CharacterString>\n"
-            + //
-            "              </gmd:title>\n"
-            + //
-            "              <gmd:date gco:nilReason=\"unknown\"/>\n"
-            + //
-            "            </gmd:CI_Citation>\n"
-            + //
-            "          </gmd:thesaurusName>\n"
-            + //
-            "        </gmd:MD_Keywords>\n"
-            + //
-            "      </gmd:descriptiveKeywords>\n"
-            + //
-            "      <gmd:descriptiveKeywords>\n"
-            + //
-            "        <gmd:MD_Keywords>\n"
-            + //
-            "          <gmd:keyword>\n"
-            + //
-            "            <gco:CharacterString>Ocean Biology Processing Group (NASA/GSFC/OBPG)</gco:CharacterString>\n"
-            + //
-            "          </gmd:keyword>\n"
-            + //
-            "          <gmd:type>\n"
-            + //
-            "            <gmd:MD_KeywordTypeCode codeList=\"https://data.noaa.gov/resources/iso19139/schema/resources/Codelist/gmxCodelists.xml#gmd:MD_KeywordTypeCode\" codeListValue=\"project\">project</gmd:MD_KeywordTypeCode>\n"
-            + //
-            "          </gmd:type>\n"
-            + //
-            "          <gmd:thesaurusName gco:nilReason=\"unknown\"/>\n"
-            + //
-            "        </gmd:MD_Keywords>\n"
-            + //
-            "      </gmd:descriptiveKeywords>\n"
-            + //
-            "      <gmd:descriptiveKeywords>\n"
-            + //
-            "        <gmd:MD_Keywords>\n"
-            + //
-            "          <gmd:keyword>\n"
-            + //
-            "            <gco:CharacterString>time</gco:CharacterString>\n"
-            + //
-            "          </gmd:keyword>\n"
-            + //
-            "          <gmd:keyword>\n"
-            + //
-            "            <gco:CharacterString>latitude</gco:CharacterString>\n"
-            + //
-            "          </gmd:keyword>\n"
-            + //
-            "          <gmd:keyword>\n"
-            + //
-            "            <gco:CharacterString>longitude</gco:CharacterString>\n"
-            + //
-            "          </gmd:keyword>\n"
-            + //
-            "          <gmd:keyword>\n"
-            + //
-            "            <gco:CharacterString>concentration_of_chlorophyll_in_sea_water</gco:CharacterString>\n"
-            + //
-            "          </gmd:keyword>\n"
-            + //
-            "          <gmd:type>\n"
-            + //
-            "            <gmd:MD_KeywordTypeCode codeList=\"https://data.noaa.gov/resources/iso19139/schema/resources/Codelist/gmxCodelists.xml#gmd:MD_KeywordTypeCode\" codeListValue=\"theme\">theme</gmd:MD_KeywordTypeCode>\n"
-            + //
-            "          </gmd:type>\n"
-            + //
-            "          <gmd:thesaurusName>\n"
-            + //
-            "            <gmd:CI_Citation>\n"
-            + //
-            "              <gmd:title>\n"
-            + //
-            "                <gco:CharacterString>CF Standard Name Table v70</gco:CharacterString>\n"
-            + //
-            "              </gmd:title>\n"
-            + //
-            "              <gmd:date gco:nilReason=\"unknown\"/>\n"
-            + //
-            "            </gmd:CI_Citation>\n"
-            + //
-            "          </gmd:thesaurusName>\n"
-            + //
-            "        </gmd:MD_Keywords>\n"
-            + //
-            "      </gmd:descriptiveKeywords>\n"
-            + //
-            "      <gmd:resourceConstraints>\n"
-            + //
-            "        <gmd:MD_LegalConstraints>\n"
-            + //
-            "          <gmd:useLimitation>\n"
-            + //
-            "            <gco:CharacterString>https://science.nasa.gov/earth-science/earth-science-data/data-information-policy/\n"
-            + //
-            "The data may be used and redistributed for free but is not intended\n"
-            + //
-            "for legal use, since it may contain inaccuracies. Neither the data\n"
-            + //
-            "Contributor, ERD, NOAA, nor the United States Government, nor any\n"
-            + //
-            "of their employees or contractors, makes any warranty, express or\n"
-            + //
-            "implied, including warranties of merchantability and fitness for a\n"
-            + //
-            "particular purpose, or assumes any legal liability for the accuracy,\n"
-            + //
-            "completeness, or usefulness, of this information.</gco:CharacterString>\n"
-            + //
-            "          </gmd:useLimitation>\n"
-            + //
-            "        </gmd:MD_LegalConstraints>\n"
-            + //
-            "      </gmd:resourceConstraints>\n"
-            + //
-            "      <gmd:aggregationInfo>\n"
-            + //
-            "        <gmd:MD_AggregateInformation>\n"
-            + //
-            "          <gmd:aggregateDataSetName>\n"
-            + //
-            "            <gmd:CI_Citation>\n"
-            + //
-            "              <gmd:title>\n"
-            + //
-            "                <gco:CharacterString>Ocean Biology Processing Group (NASA/GSFC/OBPG)</gco:CharacterString>\n"
-            + //
-            "              </gmd:title>\n"
-            + //
-            "              <gmd:date gco:nilReason=\"inapplicable\"/>\n"
-            + //
-            "            </gmd:CI_Citation>\n"
-            + //
-            "          </gmd:aggregateDataSetName>\n"
-            + //
-            "          <gmd:associationType>\n"
-            + //
-            "            <gmd:DS_AssociationTypeCode codeList=\"https://data.noaa.gov/resources/iso19139/schema/resources/Codelist/gmxCodelists.xml#gmd:DS_AssociationTypeCode\" codeListValue=\"largerWorkCitation\">largerWorkCitation</gmd:DS_AssociationTypeCode>\n"
-            + //
-            "          </gmd:associationType>\n"
-            + //
-            "          <gmd:initiativeType>\n"
-            + //
-            "            <gmd:DS_InitiativeTypeCode codeList=\"https://data.noaa.gov/resources/iso19139/schema/resources/Codelist/gmxCodelists.xml#gmd:DS_InitiativeTypeCode\" codeListValue=\"project\">project</gmd:DS_InitiativeTypeCode>\n"
-            + //
-            "          </gmd:initiativeType>\n"
-            + //
-            "        </gmd:MD_AggregateInformation>\n"
-            + //
-            "      </gmd:aggregationInfo>\n"
-            + //
-            "      <gmd:aggregationInfo>\n"
-            + //
-            "        <gmd:MD_AggregateInformation>\n"
-            + //
-            "          <gmd:aggregateDataSetIdentifier>\n"
-            + //
-            "            <gmd:MD_Identifier>\n"
-            + //
-            "              <gmd:authority>\n"
-            + //
-            "                <gmd:CI_Citation>\n"
-            + //
-            "                  <gmd:title>\n"
-            + //
-            "                    <gco:CharacterString>Unidata Common Data Model</gco:CharacterString>\n"
-            + //
-            "                  </gmd:title>\n"
-            + //
-            "                  <gmd:date gco:nilReason=\"inapplicable\"/>\n"
-            + //
-            "                </gmd:CI_Citation>\n"
-            + //
-            "              </gmd:authority>\n"
-            + //
-            "              <gmd:code>\n"
-            + //
-            "                <gco:CharacterString>Grid</gco:CharacterString>\n"
-            + //
-            "              </gmd:code>\n"
-            + //
-            "            </gmd:MD_Identifier>\n"
-            + //
-            "          </gmd:aggregateDataSetIdentifier>\n"
-            + //
-            "          <gmd:associationType>\n"
-            + //
-            "            <gmd:DS_AssociationTypeCode codeList=\"https://data.noaa.gov/resources/iso19139/schema/resources/Codelist/gmxCodelists.xml#gmd:DS_AssociationTypeCode\" codeListValue=\"largerWorkCitation\">largerWorkCitation</gmd:DS_AssociationTypeCode>\n"
-            + //
-            "          </gmd:associationType>\n"
-            + //
-            "          <gmd:initiativeType>\n"
-            + //
-            "            <gmd:DS_InitiativeTypeCode codeList=\"https://data.noaa.gov/resources/iso19139/schema/resources/Codelist/gmxCodelists.xml#gmd:DS_InitiativeTypeCode\" codeListValue=\"project\">project</gmd:DS_InitiativeTypeCode>\n"
-            + //
-            "          </gmd:initiativeType>\n"
-            + //
-            "        </gmd:MD_AggregateInformation>\n"
-            + //
-            "      </gmd:aggregationInfo>\n"
-            + //
-            "      <gmd:language>\n"
-            + //
-            "        <gco:CharacterString>eng</gco:CharacterString>\n"
-            + //
-            "      </gmd:language>\n"
-            + //
-            "      <gmd:topicCategory>\n"
-            + //
-            "        <gmd:MD_TopicCategoryCode>geoscientificInformation</gmd:MD_TopicCategoryCode>\n"
-            + //
-            "      </gmd:topicCategory>\n"
-            + //
-            "      <gmd:extent>\n"
-            + //
-            "        <gmd:EX_Extent id=\"boundingExtent\">\n"
-            + //
-            "          <gmd:geographicElement>\n"
-            + //
-            "            <gmd:EX_GeographicBoundingBox id=\"boundingGeographicBoundingBox\">\n"
-            + //
-            "              <gmd:extentTypeCode>\n"
-            + //
-            "                <gco:Boolean>1</gco:Boolean>\n"
-            + //
-            "              </gmd:extentTypeCode>\n"
-            + //
-            "              <gmd:westBoundLongitude>\n"
-            + //
-            "                <gco:Decimal>-179.9792</gco:Decimal>\n"
-            + //
-            "              </gmd:westBoundLongitude>\n"
-            + //
-            "              <gmd:eastBoundLongitude>\n"
-            + //
-            "                <gco:Decimal>179.9792</gco:Decimal>\n"
-            + //
-            "              </gmd:eastBoundLongitude>\n"
-            + //
-            "              <gmd:southBoundLatitude>\n"
-            + //
-            "                <gco:Decimal>-89.97918</gco:Decimal>\n"
-            + //
-            "              </gmd:southBoundLatitude>\n"
-            + //
-            "              <gmd:northBoundLatitude>\n"
-            + //
-            "                <gco:Decimal>89.97916</gco:Decimal>\n"
-            + //
-            "              </gmd:northBoundLatitude>\n"
-            + //
-            "            </gmd:EX_GeographicBoundingBox>\n"
-            + //
-            "          </gmd:geographicElement>\n"
-            + //
-            "          <gmd:temporalElement>\n"
-            + //
-            "            <gmd:EX_TemporalExtent id=\"boundingTemporalExtent\">\n"
-            + //
-            "              <gmd:extent>\n"
-            + //
-            "                <gml:TimePeriod gml:id=\"DI_gmdExtent_timePeriod_id\">\n"
-            + //
-            "                  <gml:description>seconds</gml:description>\n"
-            + //
-            "                  <gml:beginPosition>2003-01-01T12:00:00Z</gml:beginPosition>\n"
-            + //
-            "                  <gml:endPosition>YYYY-MM-DDThh:00:00Z</gml:endPosition>\n"
-            + //
-            "                </gml:TimePeriod>\n"
-            + //
-            "              </gmd:extent>\n"
-            + //
-            "            </gmd:EX_TemporalExtent>\n"
-            + //
-            "          </gmd:temporalElement>\n"
-            + //
-            "        </gmd:EX_Extent>\n"
-            + //
-            "      </gmd:extent>\n"
-            + //
-            "    </gmd:MD_DataIdentification>\n"
-            + //
-            "  </gmd:identificationInfo>\n"
-            + //
-            "  <gmd:identificationInfo>\n"
-            + //
-            "    <srv:SV_ServiceIdentification id=\"ERDDAP-griddap\">\n"
-            + //
-            "      <gmd:citation>\n"
-            + //
-            "        <gmd:CI_Citation>\n"
-            + //
-            "          <gmd:title>\n"
-            + //
-            "            <gco:CharacterString>Chlorophyll-a, Aqua MODIS, NPP, L3SMI, Global, 4km, Science Quality, 2003-present (1 Day Composite)</gco:CharacterString>\n"
-            + //
-            "          </gmd:title>\n"
-            + //
-            "          <gmd:date>\n"
-            + //
-            "            <gmd:CI_Date>\n"
-            + //
-            "              <gmd:date>\n"
-            + //
-            "                <gco:Date>YYYY-MM-DD</gco:Date>\n"
-            + //
-            "              </gmd:date>\n"
-            + //
-            "              <gmd:dateType>\n"
-            + //
-            "                <gmd:CI_DateTypeCode codeList=\"https://data.noaa.gov/resources/iso19139/schema/resources/Codelist/gmxCodelists.xml#gmd:CI_DateTypeCode\" codeListValue=\"creation\">creation</gmd:CI_DateTypeCode>\n"
-            + //
-            "              </gmd:dateType>\n"
-            + //
-            "            </gmd:CI_Date>\n"
-            + //
-            "          </gmd:date>\n"
-            + //
-            "          <gmd:citedResponsibleParty>\n"
-            + //
-            "            <gmd:CI_ResponsibleParty>\n"
-            + //
-            "              <gmd:individualName gco:nilReason=\"missing\"/>\n"
-            + //
-            "              <gmd:organisationName>\n"
-            + //
-            "                <gco:CharacterString>NASA/GSFC/OBPG</gco:CharacterString>\n"
-            + //
-            "              </gmd:organisationName>\n"
-            + //
-            "              <gmd:contactInfo>\n"
-            + //
-            "                <gmd:CI_Contact>\n"
-            + //
-            "                  <gmd:address>\n"
-            + //
-            "                    <gmd:CI_Address>\n"
-            + //
-            "                      <gmd:electronicMailAddress>\n"
-            + //
-            "                        <gco:CharacterString>data@oceancolor.gsfc.nasa.gov</gco:CharacterString>\n"
-            + //
-            "                      </gmd:electronicMailAddress>\n"
-            + //
-            "                    </gmd:CI_Address>\n"
-            + //
-            "                  </gmd:address>\n"
-            + //
-            "                  <gmd:onlineResource>\n"
-            + //
-            "                    <gmd:CI_OnlineResource>\n"
-            + //
-            "                      <gmd:linkage>\n"
-            + //
-            "                        <gmd:URL>https://coastwatch.pfeg.noaa.gov/infog/MH1_chla_las.html</gmd:URL>\n"
-            + //
-            "                      </gmd:linkage>\n"
-            + //
-            "                      <gmd:protocol>\n"
-            + //
-            "                        <gco:CharacterString>information</gco:CharacterString>\n"
-            + //
-            "                      </gmd:protocol>\n"
-            + //
-            "                      <gmd:applicationProfile>\n"
-            + //
-            "                        <gco:CharacterString>web browser</gco:CharacterString>\n"
-            + //
-            "                      </gmd:applicationProfile>\n"
-            + //
-            "                      <gmd:name>\n"
-            + //
-            "                        <gco:CharacterString>Background Information</gco:CharacterString>\n"
-            + //
-            "                      </gmd:name>\n"
-            + //
-            "                      <gmd:description>\n"
-            + //
-            "                        <gco:CharacterString>Background information from the source</gco:CharacterString>\n"
-            + //
-            "                      </gmd:description>\n"
-            + //
-            "                      <gmd:function>\n"
-            + //
-            "                        <gmd:CI_OnLineFunctionCode codeList=\"https://data.noaa.gov/resources/iso19139/schema/resources/Codelist/gmxCodelists.xml#gmd:CI_OnLineFunctionCode\" codeListValue=\"information\">information</gmd:CI_OnLineFunctionCode>\n"
-            + //
-            "                      </gmd:function>\n"
-            + //
-            "                    </gmd:CI_OnlineResource>\n"
-            + //
-            "                  </gmd:onlineResource>\n"
-            + //
-            "                </gmd:CI_Contact>\n"
-            + //
-            "              </gmd:contactInfo>\n"
-            + //
-            "              <gmd:role>\n"
-            + //
-            "                <gmd:CI_RoleCode codeList=\"https://data.noaa.gov/resources/iso19139/schema/resources/Codelist/gmxCodelists.xml#gmd:CI_RoleCode\" codeListValue=\"originator\">originator</gmd:CI_RoleCode>\n"
-            + //
-            "              </gmd:role>\n"
-            + //
-            "            </gmd:CI_ResponsibleParty>\n"
-            + //
-            "          </gmd:citedResponsibleParty>\n"
-            + //
-            "        </gmd:CI_Citation>\n"
-            + //
-            "      </gmd:citation>\n"
-            + //
-            "      <gmd:abstract>\n"
-            + //
-            "        <gco:CharacterString>This dataset has Level 3, Standard Mapped Image, 4km, chlorophyll-a concentration data from NASA&#39;s Aqua Spacecraft.  Measurements are gathered by the Moderate Resolution Imaging Spectroradiometer (MODIS) carried aboard the spacecraft.  This is Science Quality data.  This is the August 2015 version of this dataset.</gco:CharacterString>\n"
-            + //
-            "      </gmd:abstract>\n"
-            + //
-            "      <srv:serviceType>\n"
-            + //
-            "        <gco:LocalName>ERDDAP griddap</gco:LocalName>\n"
-            + //
-            "      </srv:serviceType>\n"
-            + //
-            "      <srv:extent>\n"
-            + //
-            "        <gmd:EX_Extent>\n"
-            + //
-            "          <gmd:geographicElement>\n"
-            + //
-            "            <gmd:EX_GeographicBoundingBox>\n"
-            + //
-            "              <gmd:extentTypeCode>\n"
-            + //
-            "                <gco:Boolean>1</gco:Boolean>\n"
-            + //
-            "              </gmd:extentTypeCode>\n"
-            + //
-            "              <gmd:westBoundLongitude>\n"
-            + //
-            "                <gco:Decimal>-179.9792</gco:Decimal>\n"
-            + //
-            "              </gmd:westBoundLongitude>\n"
-            + //
-            "              <gmd:eastBoundLongitude>\n"
-            + //
-            "                <gco:Decimal>179.9792</gco:Decimal>\n"
-            + //
-            "              </gmd:eastBoundLongitude>\n"
-            + //
-            "              <gmd:southBoundLatitude>\n"
-            + //
-            "                <gco:Decimal>-89.97918</gco:Decimal>\n"
-            + //
-            "              </gmd:southBoundLatitude>\n"
-            + //
-            "              <gmd:northBoundLatitude>\n"
-            + //
-            "                <gco:Decimal>89.97916</gco:Decimal>\n"
-            + //
-            "              </gmd:northBoundLatitude>\n"
-            + //
-            "            </gmd:EX_GeographicBoundingBox>\n"
-            + //
-            "          </gmd:geographicElement>\n"
-            + //
-            "          <gmd:temporalElement>\n"
-            + //
-            "            <gmd:EX_TemporalExtent>\n"
-            + //
-            "              <gmd:extent>\n"
-            + //
-            "                <gml:TimePeriod gml:id=\"ED_gmdExtent_timePeriod_id\">\n"
-            + //
-            "                  <gml:description>seconds</gml:description>\n"
-            + //
-            "                  <gml:beginPosition>2003-01-01T12:00:00Z</gml:beginPosition>\n"
-            + //
-            "                  <gml:endPosition>YYYY-MM-DDThh:00:00Z</gml:endPosition>\n"
-            + //
-            "                </gml:TimePeriod>\n"
-            + //
-            "              </gmd:extent>\n"
-            + //
-            "            </gmd:EX_TemporalExtent>\n"
-            + //
-            "          </gmd:temporalElement>\n"
-            + //
-            "        </gmd:EX_Extent>\n"
-            + //
-            "      </srv:extent>\n"
-            + //
-            "      <srv:couplingType>\n"
-            + //
-            "        <srv:SV_CouplingType codeList=\"https://data.noaa.gov/ISO19139/resources/codeList.xml#SV_CouplingType\" codeListValue=\"tight\">tight</srv:SV_CouplingType>\n"
-            + //
-            "      </srv:couplingType>\n"
-            + //
-            "      <srv:containsOperations>\n"
-            + //
-            "        <srv:SV_OperationMetadata>\n"
-            + //
-            "          <srv:operationName>\n"
-            + //
-            "            <gco:CharacterString>ERDDAPgriddapDatasetQueryAndAccess</gco:CharacterString>\n"
-            + //
-            "          </srv:operationName>\n"
-            + //
-            "          <srv:DCP gco:nilReason=\"unknown\"/>\n"
-            + //
-            "          <srv:connectPoint>\n"
-            + //
-            "            <gmd:CI_OnlineResource>\n"
-            + //
-            "              <gmd:linkage>\n"
-            + //
-            "                <gmd:URL>http://localhost:8080/erddap/griddap/erdMH1chla1day</gmd:URL>\n"
-            + //
-            "              </gmd:linkage>\n"
-            + //
-            "              <gmd:protocol>\n"
-            + //
-            "                <gco:CharacterString>ERDDAP:griddap</gco:CharacterString>\n"
-            + //
-            "              </gmd:protocol>\n"
-            + //
-            "              <gmd:name>\n"
-            + //
-            "                <gco:CharacterString>ERDDAP-griddap</gco:CharacterString>\n"
-            + //
-            "              </gmd:name>\n"
-            + //
-            "              <gmd:description>\n"
-            + //
-            "                <gco:CharacterString>ERDDAP's griddap service (a flavor of OPeNDAP) for gridded data. Add different extensions (e.g., .html, .graph, .das, .dds) to the base URL for different purposes.</gco:CharacterString>\n"
-            + //
-            "              </gmd:description>\n"
-            + //
-            "              <gmd:function>\n"
-            + //
-            "                <gmd:CI_OnLineFunctionCode codeList=\"http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_OnLineFunctionCode\" codeListValue=\"download\">download</gmd:CI_OnLineFunctionCode>\n"
-            + //
-            "              </gmd:function>\n"
-            + //
-            "            </gmd:CI_OnlineResource>\n"
-            + //
-            "          </srv:connectPoint>\n"
-            + //
-            "        </srv:SV_OperationMetadata>\n"
-            + //
-            "      </srv:containsOperations>\n"
-            + //
-            "      <srv:operatesOn xlink:href=\"#DataIdentification\"/>\n"
-            + //
-            "    </srv:SV_ServiceIdentification>\n"
-            + //
-            "  </gmd:identificationInfo>\n"
-            + //
-            "  <gmd:identificationInfo>\n"
-            + //
-            "    <srv:SV_ServiceIdentification id=\"OPeNDAP\">\n"
-            + //
-            "      <gmd:citation>\n"
-            + //
-            "        <gmd:CI_Citation>\n"
-            + //
-            "          <gmd:title>\n"
-            + //
-            "            <gco:CharacterString>Chlorophyll-a, Aqua MODIS, NPP, L3SMI, Global, 4km, Science Quality, 2003-present (1 Day Composite)</gco:CharacterString>\n"
-            + //
-            "          </gmd:title>\n"
-            + //
-            "          <gmd:date>\n"
-            + //
-            "            <gmd:CI_Date>\n"
-            + //
-            "              <gmd:date>\n"
-            + //
-            "                <gco:Date>YYYY-MM-DD</gco:Date>\n"
-            + //
-            "              </gmd:date>\n"
-            + //
-            "              <gmd:dateType>\n"
-            + //
-            "                <gmd:CI_DateTypeCode codeList=\"https://data.noaa.gov/resources/iso19139/schema/resources/Codelist/gmxCodelists.xml#gmd:CI_DateTypeCode\" codeListValue=\"creation\">creation</gmd:CI_DateTypeCode>\n"
-            + //
-            "              </gmd:dateType>\n"
-            + //
-            "            </gmd:CI_Date>\n"
-            + //
-            "          </gmd:date>\n"
-            + //
-            "          <gmd:citedResponsibleParty>\n"
-            + //
-            "            <gmd:CI_ResponsibleParty>\n"
-            + //
-            "              <gmd:individualName gco:nilReason=\"missing\"/>\n"
-            + //
-            "              <gmd:organisationName>\n"
-            + //
-            "                <gco:CharacterString>NASA/GSFC/OBPG</gco:CharacterString>\n"
-            + //
-            "              </gmd:organisationName>\n"
-            + //
-            "              <gmd:contactInfo>\n"
-            + //
-            "                <gmd:CI_Contact>\n"
-            + //
-            "                  <gmd:address>\n"
-            + //
-            "                    <gmd:CI_Address>\n"
-            + //
-            "                      <gmd:electronicMailAddress>\n"
-            + //
-            "                        <gco:CharacterString>data@oceancolor.gsfc.nasa.gov</gco:CharacterString>\n"
-            + //
-            "                      </gmd:electronicMailAddress>\n"
-            + //
-            "                    </gmd:CI_Address>\n"
-            + //
-            "                  </gmd:address>\n"
-            + //
-            "                  <gmd:onlineResource>\n"
-            + //
-            "                    <gmd:CI_OnlineResource>\n"
-            + //
-            "                      <gmd:linkage>\n"
-            + //
-            "                        <gmd:URL>https://coastwatch.pfeg.noaa.gov/infog/MH1_chla_las.html</gmd:URL>\n"
-            + //
-            "                      </gmd:linkage>\n"
-            + //
-            "                      <gmd:protocol>\n"
-            + //
-            "                        <gco:CharacterString>information</gco:CharacterString>\n"
-            + //
-            "                      </gmd:protocol>\n"
-            + //
-            "                      <gmd:applicationProfile>\n"
-            + //
-            "                        <gco:CharacterString>web browser</gco:CharacterString>\n"
-            + //
-            "                      </gmd:applicationProfile>\n"
-            + //
-            "                      <gmd:name>\n"
-            + //
-            "                        <gco:CharacterString>Background Information</gco:CharacterString>\n"
-            + //
-            "                      </gmd:name>\n"
-            + //
-            "                      <gmd:description>\n"
-            + //
-            "                        <gco:CharacterString>Background information from the source</gco:CharacterString>\n"
-            + //
-            "                      </gmd:description>\n"
-            + //
-            "                      <gmd:function>\n"
-            + //
-            "                        <gmd:CI_OnLineFunctionCode codeList=\"https://data.noaa.gov/resources/iso19139/schema/resources/Codelist/gmxCodelists.xml#gmd:CI_OnLineFunctionCode\" codeListValue=\"information\">information</gmd:CI_OnLineFunctionCode>\n"
-            + //
-            "                      </gmd:function>\n"
-            + //
-            "                    </gmd:CI_OnlineResource>\n"
-            + //
-            "                  </gmd:onlineResource>\n"
-            + //
-            "                </gmd:CI_Contact>\n"
-            + //
-            "              </gmd:contactInfo>\n"
-            + //
-            "              <gmd:role>\n"
-            + //
-            "                <gmd:CI_RoleCode codeList=\"https://data.noaa.gov/resources/iso19139/schema/resources/Codelist/gmxCodelists.xml#gmd:CI_RoleCode\" codeListValue=\"originator\">originator</gmd:CI_RoleCode>\n"
-            + //
-            "              </gmd:role>\n"
-            + //
-            "            </gmd:CI_ResponsibleParty>\n"
-            + //
-            "          </gmd:citedResponsibleParty>\n"
-            + //
-            "        </gmd:CI_Citation>\n"
-            + //
-            "      </gmd:citation>\n"
-            + //
-            "      <gmd:abstract>\n"
-            + //
-            "        <gco:CharacterString>This dataset has Level 3, Standard Mapped Image, 4km, chlorophyll-a concentration data from NASA&#39;s Aqua Spacecraft.  Measurements are gathered by the Moderate Resolution Imaging Spectroradiometer (MODIS) carried aboard the spacecraft.  This is Science Quality data.  This is the August 2015 version of this dataset.</gco:CharacterString>\n"
-            + //
-            "      </gmd:abstract>\n"
-            + //
-            "      <srv:serviceType>\n"
-            + //
-            "        <gco:LocalName>OPeNDAP</gco:LocalName>\n"
-            + //
-            "      </srv:serviceType>\n"
-            + //
-            "      <srv:extent>\n"
-            + //
-            "        <gmd:EX_Extent>\n"
-            + //
-            "          <gmd:geographicElement>\n"
-            + //
-            "            <gmd:EX_GeographicBoundingBox>\n"
-            + //
-            "              <gmd:extentTypeCode>\n"
-            + //
-            "                <gco:Boolean>1</gco:Boolean>\n"
-            + //
-            "              </gmd:extentTypeCode>\n"
-            + //
-            "              <gmd:westBoundLongitude>\n"
-            + //
-            "                <gco:Decimal>-179.9792</gco:Decimal>\n"
-            + //
-            "              </gmd:westBoundLongitude>\n"
-            + //
-            "              <gmd:eastBoundLongitude>\n"
-            + //
-            "                <gco:Decimal>179.9792</gco:Decimal>\n"
-            + //
-            "              </gmd:eastBoundLongitude>\n"
-            + //
-            "              <gmd:southBoundLatitude>\n"
-            + //
-            "                <gco:Decimal>-89.97918</gco:Decimal>\n"
-            + //
-            "              </gmd:southBoundLatitude>\n"
-            + //
-            "              <gmd:northBoundLatitude>\n"
-            + //
-            "                <gco:Decimal>89.97916</gco:Decimal>\n"
-            + //
-            "              </gmd:northBoundLatitude>\n"
-            + //
-            "            </gmd:EX_GeographicBoundingBox>\n"
-            + //
-            "          </gmd:geographicElement>\n"
-            + //
-            "          <gmd:temporalElement>\n"
-            + //
-            "            <gmd:EX_TemporalExtent>\n"
-            + //
-            "              <gmd:extent>\n"
-            + //
-            "                <gml:TimePeriod gml:id=\"OD_gmdExtent_timePeriod_id\">\n"
-            + //
-            "                  <gml:description>seconds</gml:description>\n"
-            + //
-            "                  <gml:beginPosition>2003-01-01T12:00:00Z</gml:beginPosition>\n"
-            + //
-            "                  <gml:endPosition>YYYY-MM-DDThh:00:00Z</gml:endPosition>\n"
-            + //
-            "                </gml:TimePeriod>\n"
-            + //
-            "              </gmd:extent>\n"
-            + //
-            "            </gmd:EX_TemporalExtent>\n"
-            + //
-            "          </gmd:temporalElement>\n"
-            + //
-            "        </gmd:EX_Extent>\n"
-            + //
-            "      </srv:extent>\n"
-            + //
-            "      <srv:couplingType>\n"
-            + //
-            "        <srv:SV_CouplingType codeList=\"https://data.noaa.gov/ISO19139/resources/codeList.xml#SV_CouplingType\" codeListValue=\"tight\">tight</srv:SV_CouplingType>\n"
-            + //
-            "      </srv:couplingType>\n"
-            + //
-            "      <srv:containsOperations>\n"
-            + //
-            "        <srv:SV_OperationMetadata>\n"
-            + //
-            "          <srv:operationName>\n"
-            + //
-            "            <gco:CharacterString>OPeNDAPDatasetQueryAndAccess</gco:CharacterString>\n"
-            + //
-            "          </srv:operationName>\n"
-            + //
-            "          <srv:DCP gco:nilReason=\"unknown\"/>\n"
-            + //
-            "          <srv:connectPoint>\n"
-            + //
-            "            <gmd:CI_OnlineResource>\n"
-            + //
-            "              <gmd:linkage>\n"
-            + //
-            "                <gmd:URL>http://localhost:8080/erddap/griddap/erdMH1chla1day</gmd:URL>\n"
-            + //
-            "              </gmd:linkage>\n"
-            + //
-            "              <gmd:protocol>\n"
-            + //
-            "                <gco:CharacterString>OPeNDAP:OPeNDAP</gco:CharacterString>\n"
-            + //
-            "              </gmd:protocol>\n"
-            + //
-            "              <gmd:name>\n"
-            + //
-            "                <gco:CharacterString>OPeNDAP</gco:CharacterString>\n"
-            + //
-            "              </gmd:name>\n"
-            + //
-            "              <gmd:description>\n"
-            + //
-            "                <gco:CharacterString>An OPeNDAP service for gridded data. Add different extensions (e.g., .html, .das, .dds) to the base URL for different purposes.</gco:CharacterString>\n"
-            + //
-            "              </gmd:description>\n"
-            + //
-            "              <gmd:function>\n"
-            + //
-            "                <gmd:CI_OnLineFunctionCode codeList=\"http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_OnLineFunctionCode\" codeListValue=\"download\">download</gmd:CI_OnLineFunctionCode>\n"
-            + //
-            "              </gmd:function>\n"
-            + //
-            "            </gmd:CI_OnlineResource>\n"
-            + //
-            "          </srv:connectPoint>\n"
-            + //
-            "        </srv:SV_OperationMetadata>\n"
-            + //
-            "      </srv:containsOperations>\n"
-            + //
-            "      <srv:operatesOn xlink:href=\"#DataIdentification\"/>\n"
-            + //
-            "    </srv:SV_ServiceIdentification>\n"
-            + //
-            "  </gmd:identificationInfo>\n"
-            + //
-            "  <gmd:identificationInfo>\n"
-            + //
-            "    <srv:SV_ServiceIdentification id=\"OGC-WMS\">\n"
-            + //
-            "      <gmd:citation>\n"
-            + //
-            "        <gmd:CI_Citation>\n"
-            + //
-            "          <gmd:title>\n"
-            + //
-            "            <gco:CharacterString>Chlorophyll-a, Aqua MODIS, NPP, L3SMI, Global, 4km, Science Quality, 2003-present (1 Day Composite)</gco:CharacterString>\n"
-            + //
-            "          </gmd:title>\n"
-            + //
-            "          <gmd:date>\n"
-            + //
-            "            <gmd:CI_Date>\n"
-            + //
-            "              <gmd:date>\n"
-            + //
-            "                <gco:Date>YYYY-MM-DD</gco:Date>\n"
-            + //
-            "              </gmd:date>\n"
-            + //
-            "              <gmd:dateType>\n"
-            + //
-            "                <gmd:CI_DateTypeCode codeList=\"https://data.noaa.gov/resources/iso19139/schema/resources/Codelist/gmxCodelists.xml#gmd:CI_DateTypeCode\" codeListValue=\"creation\">creation</gmd:CI_DateTypeCode>\n"
-            + //
-            "              </gmd:dateType>\n"
-            + //
-            "            </gmd:CI_Date>\n"
-            + //
-            "          </gmd:date>\n"
-            + //
-            "          <gmd:citedResponsibleParty>\n"
-            + //
-            "            <gmd:CI_ResponsibleParty>\n"
-            + //
-            "              <gmd:individualName gco:nilReason=\"missing\"/>\n"
-            + //
-            "              <gmd:organisationName>\n"
-            + //
-            "                <gco:CharacterString>NASA/GSFC/OBPG</gco:CharacterString>\n"
-            + //
-            "              </gmd:organisationName>\n"
-            + //
-            "              <gmd:contactInfo>\n"
-            + //
-            "                <gmd:CI_Contact>\n"
-            + //
-            "                  <gmd:address>\n"
-            + //
-            "                    <gmd:CI_Address>\n"
-            + //
-            "                      <gmd:electronicMailAddress>\n"
-            + //
-            "                        <gco:CharacterString>data@oceancolor.gsfc.nasa.gov</gco:CharacterString>\n"
-            + //
-            "                      </gmd:electronicMailAddress>\n"
-            + //
-            "                    </gmd:CI_Address>\n"
-            + //
-            "                  </gmd:address>\n"
-            + //
-            "                  <gmd:onlineResource>\n"
-            + //
-            "                    <gmd:CI_OnlineResource>\n"
-            + //
-            "                      <gmd:linkage>\n"
-            + //
-            "                        <gmd:URL>https://coastwatch.pfeg.noaa.gov/infog/MH1_chla_las.html</gmd:URL>\n"
-            + //
-            "                      </gmd:linkage>\n"
-            + //
-            "                      <gmd:protocol>\n"
-            + //
-            "                        <gco:CharacterString>information</gco:CharacterString>\n"
-            + //
-            "                      </gmd:protocol>\n"
-            + //
-            "                      <gmd:applicationProfile>\n"
-            + //
-            "                        <gco:CharacterString>web browser</gco:CharacterString>\n"
-            + //
-            "                      </gmd:applicationProfile>\n"
-            + //
-            "                      <gmd:name>\n"
-            + //
-            "                        <gco:CharacterString>Background Information</gco:CharacterString>\n"
-            + //
-            "                      </gmd:name>\n"
-            + //
-            "                      <gmd:description>\n"
-            + //
-            "                        <gco:CharacterString>Background information from the source</gco:CharacterString>\n"
-            + //
-            "                      </gmd:description>\n"
-            + //
-            "                      <gmd:function>\n"
-            + //
-            "                        <gmd:CI_OnLineFunctionCode codeList=\"https://data.noaa.gov/resources/iso19139/schema/resources/Codelist/gmxCodelists.xml#gmd:CI_OnLineFunctionCode\" codeListValue=\"information\">information</gmd:CI_OnLineFunctionCode>\n"
-            + //
-            "                      </gmd:function>\n"
-            + //
-            "                    </gmd:CI_OnlineResource>\n"
-            + //
-            "                  </gmd:onlineResource>\n"
-            + //
-            "                </gmd:CI_Contact>\n"
-            + //
-            "              </gmd:contactInfo>\n"
-            + //
-            "              <gmd:role>\n"
-            + //
-            "                <gmd:CI_RoleCode codeList=\"https://data.noaa.gov/resources/iso19139/schema/resources/Codelist/gmxCodelists.xml#gmd:CI_RoleCode\" codeListValue=\"originator\">originator</gmd:CI_RoleCode>\n"
-            + //
-            "              </gmd:role>\n"
-            + //
-            "            </gmd:CI_ResponsibleParty>\n"
-            + //
-            "          </gmd:citedResponsibleParty>\n"
-            + //
-            "        </gmd:CI_Citation>\n"
-            + //
-            "      </gmd:citation>\n"
-            + //
-            "      <gmd:abstract>\n"
-            + //
-            "        <gco:CharacterString>This dataset has Level 3, Standard Mapped Image, 4km, chlorophyll-a concentration data from NASA&#39;s Aqua Spacecraft.  Measurements are gathered by the Moderate Resolution Imaging Spectroradiometer (MODIS) carried aboard the spacecraft.  This is Science Quality data.  This is the August 2015 version of this dataset.</gco:CharacterString>\n"
-            + //
-            "      </gmd:abstract>\n"
-            + //
-            "      <srv:serviceType>\n"
-            + //
-            "        <gco:LocalName>Open Geospatial Consortium Web Map Service (WMS)</gco:LocalName>\n"
-            + //
-            "      </srv:serviceType>\n"
-            + //
-            "      <srv:extent>\n"
-            + //
-            "        <gmd:EX_Extent>\n"
-            + //
-            "          <gmd:geographicElement>\n"
-            + //
-            "            <gmd:EX_GeographicBoundingBox>\n"
-            + //
-            "              <gmd:extentTypeCode>\n"
-            + //
-            "                <gco:Boolean>1</gco:Boolean>\n"
-            + //
-            "              </gmd:extentTypeCode>\n"
-            + //
-            "              <gmd:westBoundLongitude>\n"
-            + //
-            "                <gco:Decimal>-179.9792</gco:Decimal>\n"
-            + //
-            "              </gmd:westBoundLongitude>\n"
-            + //
-            "              <gmd:eastBoundLongitude>\n"
-            + //
-            "                <gco:Decimal>179.9792</gco:Decimal>\n"
-            + //
-            "              </gmd:eastBoundLongitude>\n"
-            + //
-            "              <gmd:southBoundLatitude>\n"
-            + //
-            "                <gco:Decimal>-89.97918</gco:Decimal>\n"
-            + //
-            "              </gmd:southBoundLatitude>\n"
-            + //
-            "              <gmd:northBoundLatitude>\n"
-            + //
-            "                <gco:Decimal>89.97916</gco:Decimal>\n"
-            + //
-            "              </gmd:northBoundLatitude>\n"
-            + //
-            "            </gmd:EX_GeographicBoundingBox>\n"
-            + //
-            "          </gmd:geographicElement>\n"
-            + //
-            "          <gmd:temporalElement>\n"
-            + //
-            "            <gmd:EX_TemporalExtent>\n"
-            + //
-            "              <gmd:extent>\n"
-            + //
-            "                <gml:TimePeriod gml:id=\"WMS_gmdExtent_timePeriod_id\">\n"
-            + //
-            "                  <gml:description>seconds</gml:description>\n"
-            + //
-            "                  <gml:beginPosition>2003-01-01T12:00:00Z</gml:beginPosition>\n"
-            + //
-            "                  <gml:endPosition>YYYY-MM-DDThh:00:00Z</gml:endPosition>\n"
-            + //
-            "                </gml:TimePeriod>\n"
-            + //
-            "              </gmd:extent>\n"
-            + //
-            "            </gmd:EX_TemporalExtent>\n"
-            + //
-            "          </gmd:temporalElement>\n"
-            + //
-            "        </gmd:EX_Extent>\n"
-            + //
-            "      </srv:extent>\n"
-            + //
-            "      <srv:couplingType>\n"
-            + //
-            "        <srv:SV_CouplingType codeList=\"https://data.noaa.gov/ISO19139/resources/codeList.xml#SV_CouplingType\" codeListValue=\"tight\">tight</srv:SV_CouplingType>\n"
-            + //
-            "      </srv:couplingType>\n"
-            + //
-            "      <srv:containsOperations>\n"
-            + //
-            "        <srv:SV_OperationMetadata>\n"
-            + //
-            "          <srv:operationName>\n"
-            + //
-            "            <gco:CharacterString>GetCapabilities</gco:CharacterString>\n"
-            + //
-            "          </srv:operationName>\n"
-            + //
-            "          <srv:DCP gco:nilReason=\"unknown\"/>\n"
-            + //
-            "          <srv:connectPoint>\n"
-            + //
-            "            <gmd:CI_OnlineResource>\n"
-            + //
-            "              <gmd:linkage>\n"
-            + //
-            "                <gmd:URL>http://localhost:8080/erddap/wms/erdMH1chla1day/request?service=WMS&amp;version=1.3.0&amp;request=GetCapabilities</gmd:URL>\n"
-            + //
-            "              </gmd:linkage>\n"
-            + //
-            "              <gmd:protocol>\n"
-            + //
-            "                <gco:CharacterString>OGC:WMS</gco:CharacterString>\n"
-            + //
-            "              </gmd:protocol>\n"
-            + //
-            "              <gmd:name>\n"
-            + //
-            "                <gco:CharacterString>OGC-WMS</gco:CharacterString>\n"
-            + //
-            "              </gmd:name>\n"
-            + //
-            "              <gmd:description>\n"
-            + //
-            "                <gco:CharacterString>Open Geospatial Consortium Web Map Service (WMS)</gco:CharacterString>\n"
-            + //
-            "              </gmd:description>\n"
-            + //
-            "              <gmd:function>\n"
-            + //
-            "                <gmd:CI_OnLineFunctionCode codeList=\"http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_OnLineFunctionCode\" codeListValue=\"download\">download</gmd:CI_OnLineFunctionCode>\n"
-            + //
-            "              </gmd:function>\n"
-            + //
-            "            </gmd:CI_OnlineResource>\n"
-            + //
-            "          </srv:connectPoint>\n"
-            + //
-            "        </srv:SV_OperationMetadata>\n"
-            + //
-            "      </srv:containsOperations>\n"
-            + //
-            "      <srv:operatesOn xlink:href=\"#DataIdentification\"/>\n"
-            + //
-            "    </srv:SV_ServiceIdentification>\n"
-            + //
-            "  </gmd:identificationInfo>\n"
-            + //
-            "  <gmd:contentInfo>\n"
-            + //
-            "    <gmi:MI_CoverageDescription>\n"
-            + //
-            "      <gmd:attributeDescription gco:nilReason=\"unknown\"/>\n"
-            + //
-            "      <gmd:contentType>\n"
-            + //
-            "        <gmd:MD_CoverageContentTypeCode codeList=\"https://data.noaa.gov/resources/iso19139/schema/resources/Codelist/gmxCodelists.xml#gmd:MD_CoverageContentTypeCode\" codeListValue=\"physicalMeasurement\">physicalMeasurement</gmd:MD_CoverageContentTypeCode>\n"
-            + //
-            "      </gmd:contentType>\n"
-            + //
-            "      <gmd:dimension>\n"
-            + //
-            "        <gmd:MD_Band>\n"
-            + //
-            "          <gmd:sequenceIdentifier>\n"
-            + //
-            "            <gco:MemberName>\n"
-            + //
-            "              <gco:aName>\n"
-            + //
-            "                <gco:CharacterString>chlorophyll</gco:CharacterString>\n"
-            + //
-            "              </gco:aName>\n"
-            + //
-            "              <gco:attributeType>\n"
-            + //
-            "                <gco:TypeName>\n"
-            + //
-            "                  <gco:aName>\n"
-            + //
-            "                    <gco:CharacterString>float</gco:CharacterString>\n"
-            + //
-            "                  </gco:aName>\n"
-            + //
-            "                </gco:TypeName>\n"
-            + //
-            "              </gco:attributeType>\n"
-            + //
-            "            </gco:MemberName>\n"
-            + //
-            "          </gmd:sequenceIdentifier>\n"
-            + //
-            "          <gmd:descriptor>\n"
-            + //
-            "            <gco:CharacterString>Mean Chlorophyll a Concentration</gco:CharacterString>\n"
-            + //
-            "          </gmd:descriptor>\n"
-            + //
-            "          <gmd:units xlink:href=\"https://unitsofmeasure.org/ucum.html#mg&#x2e;m&#x2d;3\"/>\n"
-            + //
-            "        </gmd:MD_Band>\n"
-            + //
-            "      </gmd:dimension>\n"
-            + //
-            "    </gmi:MI_CoverageDescription>\n"
-            + //
-            "  </gmd:contentInfo>\n"
-            + //
-            "  <gmd:distributionInfo>\n"
-            + //
-            "    <gmd:MD_Distribution>\n"
-            + //
-            "      <gmd:distributor>\n"
-            + //
-            "        <gmd:MD_Distributor>\n"
-            + //
-            "          <gmd:distributorContact>\n"
-            + //
-            "            <gmd:CI_ResponsibleParty>\n"
-            + //
-            "              <gmd:individualName>\n"
-            + //
-            "                <gco:CharacterString>ERDDAP Jetty Developer</gco:CharacterString>\n"
-            + //
-            "              </gmd:individualName>\n"
-            + //
-            "              <gmd:organisationName>\n"
-            + //
-            "                <gco:CharacterString>ERDDAP Jetty Install</gco:CharacterString>\n"
-            + //
-            "              </gmd:organisationName>\n"
-            + //
-            "              <gmd:contactInfo>\n"
-            + //
-            "                <gmd:CI_Contact>\n"
-            + //
-            "                  <gmd:phone>\n"
-            + //
-            "                    <gmd:CI_Telephone>\n"
-            + //
-            "                      <gmd:voice>\n"
-            + //
-            "                        <gco:CharacterString>555-555-5555</gco:CharacterString>\n"
-            + //
-            "                      </gmd:voice>\n"
-            + //
-            "                    </gmd:CI_Telephone>\n"
-            + //
-            "                  </gmd:phone>\n"
-            + //
-            "                  <gmd:address>\n"
-            + //
-            "                    <gmd:CI_Address>\n"
-            + //
-            "                      <gmd:deliveryPoint>\n"
-            + //
-            "                        <gco:CharacterString>123 Irrelevant St.</gco:CharacterString>\n"
-            + //
-            "                      </gmd:deliveryPoint>\n"
-            + //
-            "                      <gmd:city>\n"
-            + //
-            "                        <gco:CharacterString>Nowhere</gco:CharacterString>\n"
-            + //
-            "                      </gmd:city>\n"
-            + //
-            "                      <gmd:administrativeArea>\n"
-            + //
-            "                        <gco:CharacterString>AK</gco:CharacterString>\n"
-            + //
-            "                      </gmd:administrativeArea>\n"
-            + //
-            "                      <gmd:postalCode>\n"
-            + //
-            "                        <gco:CharacterString>99504</gco:CharacterString>\n"
-            + //
-            "                      </gmd:postalCode>\n"
-            + //
-            "                      <gmd:country>\n"
-            + //
-            "                        <gco:CharacterString>USA</gco:CharacterString>\n"
-            + //
-            "                      </gmd:country>\n"
-            + //
-            "                      <gmd:electronicMailAddress>\n"
-            + //
-            "                        <gco:CharacterString>nobody@example.com</gco:CharacterString>\n"
-            + //
-            "                      </gmd:electronicMailAddress>\n"
-            + //
-            "                    </gmd:CI_Address>\n"
-            + //
-            "                  </gmd:address>\n"
-            + //
-            "                </gmd:CI_Contact>\n"
-            + //
-            "              </gmd:contactInfo>\n"
-            + //
-            "              <gmd:role>\n"
-            + //
-            "                <gmd:CI_RoleCode codeList=\"https://data.noaa.gov/resources/iso19139/schema/resources/Codelist/gmxCodelists.xml#gmd:CI_RoleCode\" codeListValue=\"distributor\">distributor</gmd:CI_RoleCode>\n"
-            + //
-            "              </gmd:role>\n"
-            + //
-            "            </gmd:CI_ResponsibleParty>\n"
-            + //
-            "          </gmd:distributorContact>\n"
-            + //
-            "          <gmd:distributorFormat>\n"
-            + //
-            "            <gmd:MD_Format>\n"
-            + //
-            "              <gmd:name>\n"
-            + //
-            "                <gco:CharacterString>OPeNDAP</gco:CharacterString>\n"
-            + //
-            "              </gmd:name>\n"
-            + //
-            "              <gmd:version>\n"
-            + //
-            "                <gco:CharacterString>DAP/2.0</gco:CharacterString>\n"
-            + //
-            "              </gmd:version>\n"
-            + //
-            "            </gmd:MD_Format>\n"
-            + //
-            "          </gmd:distributorFormat>\n"
-            + //
-            "          <gmd:distributorTransferOptions>\n"
-            + //
-            "            <gmd:MD_DigitalTransferOptions>\n"
-            + //
-            "              <gmd:onLine>\n"
-            + //
-            "                <gmd:CI_OnlineResource>\n"
-            + //
-            "                  <gmd:linkage>\n"
-            + //
-            "                    <gmd:URL>http://localhost:8080/erddap/griddap/erdMH1chla1day.html</gmd:URL>\n"
-            + //
-            "                  </gmd:linkage>\n"
-            + //
-            "                  <gmd:protocol>\n"
-            + //
-            "                    <gco:CharacterString>order</gco:CharacterString>\n"
-            + //
-            "                  </gmd:protocol>\n"
-            + //
-            "                  <gmd:name>\n"
-            + //
-            "                    <gco:CharacterString>Data Subset Form</gco:CharacterString>\n"
-            + //
-            "                  </gmd:name>\n"
-            + //
-            "                  <gmd:description>\n"
-            + //
-            "                    <gco:CharacterString>ERDDAP's version of the OPeNDAP .html web page for this dataset. Specify a subset of the dataset and download the data via OPeNDAP or in many different file types.</gco:CharacterString>\n"
-            + //
-            "                  </gmd:description>\n"
-            + //
-            "                  <gmd:function>\n"
-            + //
-            "                    <gmd:CI_OnLineFunctionCode codeList=\"http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_OnLineFunctionCode\" codeListValue=\"download\">download</gmd:CI_OnLineFunctionCode>\n"
-            + //
-            "                  </gmd:function>\n"
-            + //
-            "                </gmd:CI_OnlineResource>\n"
-            + //
-            "              </gmd:onLine>\n"
-            + //
-            "            </gmd:MD_DigitalTransferOptions>\n"
-            + //
-            "          </gmd:distributorTransferOptions>\n"
-            + //
-            "          <gmd:distributorTransferOptions>\n"
-            + //
-            "            <gmd:MD_DigitalTransferOptions>\n"
-            + //
-            "              <gmd:onLine>\n"
-            + //
-            "                <gmd:CI_OnlineResource>\n"
-            + //
-            "                  <gmd:linkage>\n"
-            + //
-            "                    <gmd:URL>http://localhost:8080/erddap/griddap/erdMH1chla1day.graph</gmd:URL>\n"
-            + //
-            "                  </gmd:linkage>\n"
-            + //
-            "                  <gmd:protocol>\n"
-            + //
-            "                    <gco:CharacterString>order</gco:CharacterString>\n"
-            + //
-            "                  </gmd:protocol>\n"
-            + //
-            "                  <gmd:name>\n"
-            + //
-            "                    <gco:CharacterString>Make-A-Graph Form</gco:CharacterString>\n"
-            + //
-            "                  </gmd:name>\n"
-            + //
-            "                  <gmd:description>\n"
-            + //
-            "                    <gco:CharacterString>ERDDAP's Make-A-Graph .html web page for this dataset. Create an image with a map or graph of a subset of the data.</gco:CharacterString>\n"
-            + //
-            "                  </gmd:description>\n"
-            + //
-            "                  <gmd:function>\n"
-            + //
-            "                    <gmd:CI_OnLineFunctionCode codeList=\"http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_OnLineFunctionCode\" codeListValue=\"mapDigital\">mapDigital</gmd:CI_OnLineFunctionCode>\n"
-            + //
-            "                  </gmd:function>\n"
-            + //
-            "                </gmd:CI_OnlineResource>\n"
-            + //
-            "              </gmd:onLine>\n"
-            + //
-            "            </gmd:MD_DigitalTransferOptions>\n"
-            + //
-            "          </gmd:distributorTransferOptions>\n"
-            + //
-            "        </gmd:MD_Distributor>\n"
-            + //
-            "      </gmd:distributor>\n"
-            + //
-            "    </gmd:MD_Distribution>\n"
-            + //
-            "  </gmd:distributionInfo>\n"
-            + //
-            "  <gmd:dataQualityInfo>\n"
-            + //
-            "    <gmd:DQ_DataQuality>\n"
-            + //
-            "      <gmd:scope>\n"
-            + //
-            "        <gmd:DQ_Scope>\n"
-            + //
-            "          <gmd:level>\n"
-            + //
-            "            <gmd:MD_ScopeCode codeList=\"https://data.noaa.gov/resources/iso19139/schema/resources/Codelist/gmxCodelists.xml#gmd:MD_ScopeCode\" codeListValue=\"dataset\">dataset</gmd:MD_ScopeCode>\n"
-            + //
-            "          </gmd:level>\n"
-            + //
-            "        </gmd:DQ_Scope>\n"
-            + //
-            "      </gmd:scope>\n"
-            + //
-            "      <gmd:lineage>\n"
-            + //
-            "        <gmd:LI_Lineage>\n"
-            + //
-            "          <gmd:statement>\n"
-            + //
-            "            <gco:CharacterString>Files downloaded daily from https://oceandata.sci.gsfc.nasa.gov/MODIS-Aqua/L3SMI to NOAA SWFSC ERD (erd.data@noaa.gov)\n"
-            + //
-            "ERDDAP adds the time dimension.\n"
-            + //
-            "Direct read of HDF4 file through CDM library</gco:CharacterString>\n"
-            + //
-            "          </gmd:statement>\n"
-            + //
-            "        </gmd:LI_Lineage>\n"
-            + //
-            "      </gmd:lineage>\n"
-            + //
-            "    </gmd:DQ_DataQuality>\n"
-            + //
-            "  </gmd:dataQualityInfo>\n"
-            + //
-            "  <gmd:metadataMaintenance>\n"
-            + //
-            "    <gmd:MD_MaintenanceInformation>\n"
-            + //
-            "      <gmd:maintenanceAndUpdateFrequency gco:nilReason=\"unknown\"/>\n"
-            + //
-            "      <gmd:maintenanceNote>\n"
-            + //
-            "        <gco:CharacterString>This record was created from dataset metadata by ERDDAP Version 2.24</gco:CharacterString>\n"
-            + //
-            "      </gmd:maintenanceNote>\n"
-            + //
-            "    </gmd:MD_MaintenanceInformation>\n"
-            + //
-            "  </gmd:metadataMaintenance>\n"
-            + //
-            "</gmi:MI_Metadata>\n";
-    results =
-        results.replaceAll("<gco:Date>....-..-..</gco:Date>", "<gco:Date>YYYY-MM-DD</gco:Date>");
-    results =
-        results.replaceAll(
-            "<gco:Measure uom=\\\"s\\\">[0-9]+.[0-9]+</gco:Measure>",
-            "<gco:Measure uom=\"s\">VALUE</gco:Measure>");
-    results =
-        results.replaceAll(
-            "<gco:Measure uom=\\\"s\\\">.*</gco:Measure>",
-            "<gco:Measure uom=\"s\">VALUE</gco:Measure>");
-    results =
-        results.replaceAll(
-            "<gml:endPosition>....-..-..T..:00:00Z</gml:endPosition>",
-            "<gml:endPosition>YYYY-MM-DDThh:00:00Z</gml:endPosition>");
-    results =
-        results.replaceAll(
-            "<gco:Integer>[0-9]+</gco:Integer>", "<gco:Integer>NUMBER</gco:Integer>");
-    results = results.replaceAll(">-?[0-9]+.[0-9]+</gco:Measure>", ">measureValue</gco:Measure>");
-    Test.ensureEqual(results, expected, "results=" + results);
+    String expected;
+    if (EDStatic.config.useSisISO19115) {
+      expected =
+          "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n"
+              + "<mdb:MD_Metadata xmlns:dqm=\"http://standards.iso.org/iso/19157/-2/dqm/1.0\" xmlns:gmi=\"http://standards.iso.org/iso/19115/-2/gmi/1.0\" xmlns:gml=\"http://www.opengis.net/gml/3.2\" xmlns:mmi=\"http://standards.iso.org/iso/19115/-3/mmi/1.0\" xmlns:mcc=\"http://standards.iso.org/iso/19115/-3/mcc/1.0\" xmlns:msr=\"http://standards.iso.org/iso/19115/-3/msr/1.0\" xmlns:mac=\"http://standards.iso.org/iso/19115/-3/mac/1.0\" xmlns:cit=\"http://standards.iso.org/iso/19115/-3/cit/1.0\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:gco=\"http://standards.iso.org/iso/19115/-3/gco/1.0\" xmlns:gmx=\"http://www.isotc211.org/2005/gmx\" xmlns:mco=\"http://standards.iso.org/iso/19115/-3/mco/1.0\" xmlns:lan=\"http://standards.iso.org/iso/19115/-3/lan/1.0\" xmlns:gex=\"http://standards.iso.org/iso/19115/-3/gex/1.0\" xmlns:gcx=\"http://standards.iso.org/iso/19115/-3/gcx/1.0\" xmlns:mas=\"http://standards.iso.org/iso/19115/-3/mas/1.0\" xmlns:mrd=\"http://standards.iso.org/iso/19115/-3/mrd/1.0\" xmlns:mrc=\"http://standards.iso.org/iso/19115/-3/mrc/1.0\" xmlns:mex=\"http://standards.iso.org/iso/19115/-3/mex/1.0\" xmlns:mpc=\"http://standards.iso.org/iso/19115/-3/mpc/1.0\" xmlns:mri=\"http://standards.iso.org/iso/19115/-3/mri/1.0\" xmlns:mrl=\"http://standards.iso.org/iso/19115/-3/mrl/1.0\" xmlns:gts=\"http://www.isotc211.org/2005/gts\" xmlns:mdb=\"http://standards.iso.org/iso/19115/-3/mdb/1.0\" xmlns:srv1=\"http://www.isotc211.org/2005/srv\" xmlns:mrs=\"http://standards.iso.org/iso/19115/-3/mrs/1.0\" xmlns:srv=\"http://standards.iso.org/iso/19115/-3/srv/2.0\" xmlns:mdq=\"http://standards.iso.org/iso/19157/-2/mdq/1.0\" xmlns:mdt=\"http://standards.iso.org/iso/19115/-3/mdt/1.0\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" xmlns:gmd=\"http://www.isotc211.org/2005/gmd\">\n"
+              + "  <mdb:defaultLocale>\n"
+              + "    <lan:PT_Locale>\n"
+              + "      <lan:language>\n"
+              + "        <lan:LanguageCode codeList=\"http://standards.iso.org/iso/19115/resources/Codelist/cat/codelists.xml#LanguageCode\" codeListValue=\"eng\" codeSpace=\"eng\">English</lan:LanguageCode>\n"
+              + "      </lan:language>\n"
+              + "      <lan:characterEncoding>\n"
+              + "        <lan:MD_CharacterSetCode codeList=\"http://standards.iso.org/iso/19115/resources/Codelist/cat/codelists.xml#MD_CharacterSetCode\" codeListValue=\"utf8\" codeSpace=\"eng\">UTF-8</lan:MD_CharacterSetCode>\n"
+              + "      </lan:characterEncoding>\n"
+              + "    </lan:PT_Locale>\n"
+              + "  </mdb:defaultLocale>\n"
+              + "  <mdb:contact>\n"
+              + "    <cit:CI_Responsibility>\n"
+              + "      <cit:role>\n"
+              + "        <cit:CI_RoleCode codeList=\"http://standards.iso.org/iso/19115/resources/Codelist/cat/codelists.xml#CI_RoleCode\" codeListValue=\"pointOfContact\">Point of contact</cit:CI_RoleCode>\n"
+              + "      </cit:role>\n"
+              + "      <cit:party>\n"
+              + "        <cit:CI_Organisation>\n"
+              + "          <cit:name>\n"
+              + "            <gco:CharacterString>ERDDAP Jetty Install</gco:CharacterString>\n"
+              + "          </cit:name>\n"
+              + "          <cit:individual>\n"
+              + "            <cit:CI_Individual>\n"
+              + "              <cit:name>\n"
+              + "                <gco:CharacterString>ERDDAP Jetty Developer</gco:CharacterString>\n"
+              + "              </cit:name>\n"
+              + "              <cit:contactInfo>\n"
+              + "                <cit:CI_Contact>\n"
+              + "                  <cit:phone>\n"
+              + "                    <cit:CI_Telephone>\n"
+              + "                      <cit:number>\n"
+              + "                        <gco:CharacterString>555-555-5555</gco:CharacterString>\n"
+              + "                      </cit:number>\n"
+              + "                      <cit:numberType>\n"
+              + "                        <cit:CI_TelephoneTypeCode codeList=\"http://standards.iso.org/iso/19115/resources/Codelist/cat/codelists.xml#CI_TelephoneTypeCode\" codeListValue=\"voice\">Voice</cit:CI_TelephoneTypeCode>\n"
+              + "                      </cit:numberType>\n"
+              + "                    </cit:CI_Telephone>\n"
+              + "                  </cit:phone>\n"
+              + "                  <cit:address>\n"
+              + "                    <cit:CI_Address>\n"
+              + "                      <cit:deliveryPoint>\n"
+              + "                        <gco:CharacterString>123 Irrelevant St.</gco:CharacterString>\n"
+              + "                      </cit:deliveryPoint>\n"
+              + "                      <cit:city>\n"
+              + "                        <gco:CharacterString>Nowhere</gco:CharacterString>\n"
+              + "                      </cit:city>\n"
+              + "                      <cit:administrativeArea>\n"
+              + "                        <gco:CharacterString>AK</gco:CharacterString>\n"
+              + "                      </cit:administrativeArea>\n"
+              + "                      <cit:postalCode>\n"
+              + "                        <gco:CharacterString>99504</gco:CharacterString>\n"
+              + "                      </cit:postalCode>\n"
+              + "                      <cit:country>\n"
+              + "                        <gco:CharacterString>USA</gco:CharacterString>\n"
+              + "                      </cit:country>\n"
+              + "                      <cit:electronicMailAddress>\n"
+              + "                        <gco:CharacterString>nobody@example.com</gco:CharacterString>\n"
+              + "                      </cit:electronicMailAddress>\n"
+              + "                    </cit:CI_Address>\n"
+              + "                  </cit:address>\n"
+              + "                </cit:CI_Contact>\n"
+              + "              </cit:contactInfo>\n"
+              + "              <cit:positionName>\n"
+              + "                <gco:CharacterString>Software Engineer</gco:CharacterString>\n"
+              + "              </cit:positionName>\n"
+              + "            </cit:CI_Individual>\n"
+              + "          </cit:individual>\n"
+              + "        </cit:CI_Organisation>\n"
+              + "      </cit:party>\n"
+              + "    </cit:CI_Responsibility>\n"
+              + "  </mdb:contact>\n"
+              + "  <mdb:spatialRepresentationInfo>\n"
+              + "    <msr:MD_GridSpatialRepresentation>\n"
+              + "      <msr:numberOfDimensions>\n"
+              + "        <gco:Integer>NUMBER</gco:Integer>\n"
+              + "      </msr:numberOfDimensions>\n"
+              + "      <msr:axisDimensionProperties>\n"
+              + "        <msr:MD_Dimension>\n"
+              + "          <msr:dimensionName>\n"
+              + "            <msr:MD_DimensionNameTypeCode codeList=\"http://standards.iso.org/iso/19115/resources/Codelist/cat/codelists.xml#MD_DimensionNameTypeCode\" codeListValue=\"time\">Time</msr:MD_DimensionNameTypeCode>\n"
+              + "          </msr:dimensionName>\n"
+              + "          <msr:dimensionSize>\n"
+              + "            <gco:Integer>NUMBER</gco:Integer>\n"
+              + "          </msr:dimensionSize>\n"
+              + "          <msr:resolution>\n"
+              + "            <gco:Measure uom=\"http://www.isotc211.org/2005/resources/uom/gmxUom.xml#xpointer(//*[@gml:id='m'])\">2.176416E8</gco:Measure>\n"
+              + "          </msr:resolution>\n"
+              + "        </msr:MD_Dimension>\n"
+              + "      </msr:axisDimensionProperties>\n"
+              + "      <msr:axisDimensionProperties>\n"
+              + "        <msr:MD_Dimension>\n"
+              + "          <msr:dimensionName>\n"
+              + "            <msr:MD_DimensionNameTypeCode codeList=\"http://standards.iso.org/iso/19115/resources/Codelist/cat/codelists.xml#MD_DimensionNameTypeCode\" codeListValue=\"row\">Row</msr:MD_DimensionNameTypeCode>\n"
+              + "          </msr:dimensionName>\n"
+              + "          <msr:dimensionSize>\n"
+              + "            <gco:Integer>NUMBER</gco:Integer>\n"
+              + "          </msr:dimensionSize>\n"
+              + "          <msr:resolution>\n"
+              + "            <gco:Measure uom=\"http://www.isotc211.org/2005/resources/uom/gmxUom.xml#xpointer(//*[@gml:id='m'])\">measureValue</gco:Measure>\n"
+              + "          </msr:resolution>\n"
+              + "        </msr:MD_Dimension>\n"
+              + "      </msr:axisDimensionProperties>\n"
+              + "      <msr:axisDimensionProperties>\n"
+              + "        <msr:MD_Dimension>\n"
+              + "          <msr:dimensionName>\n"
+              + "            <msr:MD_DimensionNameTypeCode codeList=\"http://standards.iso.org/iso/19115/resources/Codelist/cat/codelists.xml#MD_DimensionNameTypeCode\" codeListValue=\"column\">Column</msr:MD_DimensionNameTypeCode>\n"
+              + "          </msr:dimensionName>\n"
+              + "          <msr:dimensionSize>\n"
+              + "            <gco:Integer>NUMBER</gco:Integer>\n"
+              + "          </msr:dimensionSize>\n"
+              + "          <msr:resolution>\n"
+              + "            <gco:Measure uom=\"http://www.isotc211.org/2005/resources/uom/gmxUom.xml#xpointer(//*[@gml:id='m'])\">measureValue</gco:Measure>\n"
+              + "          </msr:resolution>\n"
+              + "        </msr:MD_Dimension>\n"
+              + "      </msr:axisDimensionProperties>\n"
+              + "      <msr:transformationParameterAvailability>\n"
+              + "        <gco:Boolean>false</gco:Boolean>\n"
+              + "      </msr:transformationParameterAvailability>\n"
+              + "    </msr:MD_GridSpatialRepresentation>\n"
+              + "  </mdb:spatialRepresentationInfo>\n"
+              + "  <mdb:identificationInfo>\n"
+              + "    <mri:MD_DataIdentification>\n"
+              + "      <mri:citation>\n"
+              + "        <cit:CI_Citation>\n"
+              + "          <cit:title>\n"
+              + "            <gco:CharacterString>Chlorophyll-a, Aqua MODIS, NPP, L3SMI, Global, 4km, Science Quality, 2003-present (1 Day Composite)</gco:CharacterString>\n"
+              + "          </cit:title>\n"
+              + "          <cit:date>\n"
+              + "            <cit:CI_Date>\n"
+              + "              <cit:date>\n"
+              + "                <gco:DateTime>YYYY-MM-DDThh:mm:ss.mmm-tz:tz</gco:DateTime>\n"
+              + "              </cit:date>\n"
+              + "              <cit:dateType>\n"
+              + "                <cit:CI_DateTypeCode codeList=\"http://standards.iso.org/iso/19115/resources/Codelist/cat/codelists.xml#CI_DateTypeCode\" codeListValue=\"creation\" codeSpace=\"eng\">Creation</cit:CI_DateTypeCode>\n"
+              + "              </cit:dateType>\n"
+              + "            </cit:CI_Date>\n"
+              + "          </cit:date>\n"
+              + "          <cit:identifier>\n"
+              + "            <mcc:MD_Identifier>\n"
+              + "              <mcc:authority>\n"
+              + "                <cit:CI_Citation>\n"
+              + "                  <cit:title>\n"
+              + "                    <gco:CharacterString>localhost:8080</gco:CharacterString>\n"
+              + "                  </cit:title>\n"
+              + "                </cit:CI_Citation>\n"
+              + "              </mcc:authority>\n"
+              + "              <mcc:code>\n"
+              + "                <gco:CharacterString>erdMH1chla1day</gco:CharacterString>\n"
+              + "              </mcc:code>\n"
+              + "            </mcc:MD_Identifier>\n"
+              + "          </cit:identifier>\n"
+              + "          <cit:citedResponsibleParty>\n"
+              + "            <cit:CI_Responsibility>\n"
+              + "              <cit:role>\n"
+              + "                <cit:CI_RoleCode codeList=\"http://standards.iso.org/iso/19115/resources/Codelist/cat/codelists.xml#CI_RoleCode\" codeListValue=\"originator\">Originator</cit:CI_RoleCode>\n"
+              + "              </cit:role>\n"
+              + "              <cit:party>\n"
+              + "                <cit:CI_Organisation>\n"
+              + "                  <cit:name>\n"
+              + "                    <gco:CharacterString>NASA/GSFC/OBPG</gco:CharacterString>\n"
+              + "                  </cit:name>\n"
+              + "                  <cit:contactInfo>\n"
+              + "                    <cit:CI_Contact>\n"
+              + "                      <cit:address>\n"
+              + "                        <cit:CI_Address>\n"
+              + "                          <cit:electronicMailAddress>\n"
+              + "                            <gco:CharacterString>data@oceancolor.gsfc.nasa.gov</gco:CharacterString>\n"
+              + "                          </cit:electronicMailAddress>\n"
+              + "                        </cit:CI_Address>\n"
+              + "                      </cit:address>\n"
+              + "                      <cit:onlineResource>\n"
+              + "                        <cit:CI_OnlineResource>\n"
+              + "                          <cit:linkage>\n"
+              + "                            <gcx:FileName src=\"https://coastwatch.pfeg.noaa.gov/infog/MH1_chla_las.html\">MH1_chla_las.html</gcx:FileName>\n"
+              + "                          </cit:linkage>\n"
+              + "                          <cit:protocol>\n"
+              + "                            <gco:CharacterString>information</gco:CharacterString>\n"
+              + "                          </cit:protocol>\n"
+              + "                          <cit:applicationProfile>\n"
+              + "                            <gco:CharacterString>web browser</gco:CharacterString>\n"
+              + "                          </cit:applicationProfile>\n"
+              + "                          <cit:name>\n"
+              + "                            <gco:CharacterString>Background Information</gco:CharacterString>\n"
+              + "                          </cit:name>\n"
+              + "                          <cit:description>\n"
+              + "                            <gco:CharacterString>Background information from the source</gco:CharacterString>\n"
+              + "                          </cit:description>\n"
+              + "                          <cit:function>\n"
+              + "                            <cit:CI_OnLineFunctionCode codeList=\"http://standards.iso.org/iso/19115/resources/Codelist/cat/codelists.xml#CI_OnLineFunctionCode\" codeListValue=\"information\" codeSpace=\"eng\">Information</cit:CI_OnLineFunctionCode>\n"
+              + "                          </cit:function>\n"
+              + "                        </cit:CI_OnlineResource>\n"
+              + "                      </cit:onlineResource>\n"
+              + "                    </cit:CI_Contact>\n"
+              + "                  </cit:contactInfo>\n"
+              + "                </cit:CI_Organisation>\n"
+              + "              </cit:party>\n"
+              + "            </cit:CI_Responsibility>\n"
+              + "          </cit:citedResponsibleParty>\n"
+              + "        </cit:CI_Citation>\n"
+              + "      </mri:citation>\n"
+              + "      <mri:abstract>\n"
+              + "        <gco:CharacterString>This dataset has Level 3, Standard Mapped Image, 4km, chlorophyll-a concentration data from NASA's Aqua Spacecraft.  Measurements are gathered by the Moderate Resolution Imaging Spectroradiometer (MODIS) carried aboard the spacecraft.  This is Science Quality data.  This is the August 2015 version of this dataset.</gco:CharacterString>\n"
+              + "      </mri:abstract>\n"
+              + "      <mri:pointOfContact>\n"
+              + "        <cit:CI_Responsibility>\n"
+              + "          <cit:role>\n"
+              + "            <cit:CI_RoleCode codeList=\"http://standards.iso.org/iso/19115/resources/Codelist/cat/codelists.xml#CI_RoleCode\" codeListValue=\"pointOfContact\">Point of contact</cit:CI_RoleCode>\n"
+              + "          </cit:role>\n"
+              + "          <cit:party>\n"
+              + "            <cit:CI_Organisation>\n"
+              + "              <cit:name>\n"
+              + "                <gco:CharacterString>NASA/GSFC/OBPG</gco:CharacterString>\n"
+              + "              </cit:name>\n"
+              + "              <cit:contactInfo>\n"
+              + "                <cit:CI_Contact>\n"
+              + "                  <cit:address>\n"
+              + "                    <cit:CI_Address>\n"
+              + "                      <cit:electronicMailAddress>\n"
+              + "                        <gco:CharacterString>data@oceancolor.gsfc.nasa.gov</gco:CharacterString>\n"
+              + "                      </cit:electronicMailAddress>\n"
+              + "                    </cit:CI_Address>\n"
+              + "                  </cit:address>\n"
+              + "                  <cit:onlineResource>\n"
+              + "                    <cit:CI_OnlineResource>\n"
+              + "                      <cit:linkage>\n"
+              + "                        <gcx:FileName src=\"https://coastwatch.pfeg.noaa.gov/infog/MH1_chla_las.html\">MH1_chla_las.html</gcx:FileName>\n"
+              + "                      </cit:linkage>\n"
+              + "                      <cit:protocol>\n"
+              + "                        <gco:CharacterString>information</gco:CharacterString>\n"
+              + "                      </cit:protocol>\n"
+              + "                      <cit:applicationProfile>\n"
+              + "                        <gco:CharacterString>web browser</gco:CharacterString>\n"
+              + "                      </cit:applicationProfile>\n"
+              + "                      <cit:name>\n"
+              + "                        <gco:CharacterString>Background Information</gco:CharacterString>\n"
+              + "                      </cit:name>\n"
+              + "                      <cit:description>\n"
+              + "                        <gco:CharacterString>Background information from the source</gco:CharacterString>\n"
+              + "                      </cit:description>\n"
+              + "                      <cit:function>\n"
+              + "                        <cit:CI_OnLineFunctionCode codeList=\"http://standards.iso.org/iso/19115/resources/Codelist/cat/codelists.xml#CI_OnLineFunctionCode\" codeListValue=\"information\" codeSpace=\"eng\">Information</cit:CI_OnLineFunctionCode>\n"
+              + "                      </cit:function>\n"
+              + "                    </cit:CI_OnlineResource>\n"
+              + "                  </cit:onlineResource>\n"
+              + "                </cit:CI_Contact>\n"
+              + "              </cit:contactInfo>\n"
+              + "            </cit:CI_Organisation>\n"
+              + "          </cit:party>\n"
+              + "        </cit:CI_Responsibility>\n"
+              + "      </mri:pointOfContact>\n"
+              + "      <mri:topicCategory>\n"
+              + "        <mri:MD_TopicCategoryCode>geoscientificInformation</mri:MD_TopicCategoryCode>\n"
+              + "      </mri:topicCategory>\n"
+              + "      <mri:extent>\n"
+              + "        <gex:EX_Extent>\n"
+              + "          <gex:description>\n"
+              + "            <gco:CharacterString>boundingExtent</gco:CharacterString>\n"
+              + "          </gex:description>\n"
+              + "          <gex:geographicElement>\n"
+              + "            <gex:EX_GeographicBoundingBox>\n"
+              + "              <gex:extentTypeCode>\n"
+              + "                <gco:Boolean>true</gco:Boolean>\n"
+              + "              </gex:extentTypeCode>\n"
+              + "              <gex:westBoundLongitude>\n"
+              + "                <gco:Decimal>-179.9792022705078</gco:Decimal>\n"
+              + "              </gex:westBoundLongitude>\n"
+              + "              <gex:eastBoundLongitude>\n"
+              + "                <gco:Decimal>179.9792022705078</gco:Decimal>\n"
+              + "              </gex:eastBoundLongitude>\n"
+              + "              <gex:southBoundLatitude>\n"
+              + "                <gco:Decimal>-89.97917938232422</gco:Decimal>\n"
+              + "              </gex:southBoundLatitude>\n"
+              + "              <gex:northBoundLatitude>\n"
+              + "                <gco:Decimal>89.97915649414062</gco:Decimal>\n"
+              + "              </gex:northBoundLatitude>\n"
+              + "            </gex:EX_GeographicBoundingBox>\n"
+              + "          </gex:geographicElement>\n"
+              + "          <gex:temporalElement>\n"
+              + "            <gex:EX_TemporalExtent>\n"
+              + "              <gex:extent>\n"
+              + "                <gml:TimePeriod>\n"
+              + "                  <gml:beginPosition>YYYY-MM-DDThh:00:00Z</gml:beginPosition>\n"
+              + "                  <gml:endPosition>YYYY-MM-DDThh:00:00Z</gml:endPosition>\n"
+              + "                </gml:TimePeriod>\n"
+              + "              </gex:extent>\n"
+              + "            </gex:EX_TemporalExtent>\n"
+              + "          </gex:temporalElement>\n"
+              + "        </gex:EX_Extent>\n"
+              + "      </mri:extent>\n"
+              + "      <mri:descriptiveKeywords>\n"
+              + "        <mri:MD_Keywords>\n"
+              + "          <mri:keyword>\n"
+              + "            <gco:CharacterString>algorithm</gco:CharacterString>\n"
+              + "          </mri:keyword>\n"
+              + "          <mri:keyword>\n"
+              + "            <gco:CharacterString>biology</gco:CharacterString>\n"
+              + "          </mri:keyword>\n"
+              + "          <mri:keyword>\n"
+              + "            <gco:CharacterString>center</gco:CharacterString>\n"
+              + "          </mri:keyword>\n"
+              + "          <mri:keyword>\n"
+              + "            <gco:CharacterString>chemistry</gco:CharacterString>\n"
+              + "          </mri:keyword>\n"
+              + "          <mri:keyword>\n"
+              + "            <gco:CharacterString>chlorophyll</gco:CharacterString>\n"
+              + "          </mri:keyword>\n"
+              + "          <mri:keyword>\n"
+              + "            <gco:CharacterString>color</gco:CharacterString>\n"
+              + "          </mri:keyword>\n"
+              + "          <mri:keyword>\n"
+              + "            <gco:CharacterString>concentration</gco:CharacterString>\n"
+              + "          </mri:keyword>\n"
+              + "          <mri:keyword>\n"
+              + "            <gco:CharacterString>data</gco:CharacterString>\n"
+              + "          </mri:keyword>\n"
+              + "          <mri:keyword>\n"
+              + "            <gco:CharacterString>ecology</gco:CharacterString>\n"
+              + "          </mri:keyword>\n"
+              + "          <mri:keyword>\n"
+              + "            <gco:CharacterString>flight</gco:CharacterString>\n"
+              + "          </mri:keyword>\n"
+              + "          <mri:keyword>\n"
+              + "            <gco:CharacterString>goddard</gco:CharacterString>\n"
+              + "          </mri:keyword>\n"
+              + "          <mri:keyword>\n"
+              + "            <gco:CharacterString>group</gco:CharacterString>\n"
+              + "          </mri:keyword>\n"
+              + "          <mri:keyword>\n"
+              + "            <gco:CharacterString>gsfc</gco:CharacterString>\n"
+              + "          </mri:keyword>\n"
+              + "          <mri:keyword>\n"
+              + "            <gco:CharacterString>image</gco:CharacterString>\n"
+              + "          </mri:keyword>\n"
+              + "          <mri:keyword>\n"
+              + "            <gco:CharacterString>imaging</gco:CharacterString>\n"
+              + "          </mri:keyword>\n"
+              + "          <mri:keyword>\n"
+              + "            <gco:CharacterString>L3</gco:CharacterString>\n"
+              + "          </mri:keyword>\n"
+              + "          <mri:keyword>\n"
+              + "            <gco:CharacterString>laboratory</gco:CharacterString>\n"
+              + "          </mri:keyword>\n"
+              + "          <mri:keyword>\n"
+              + "            <gco:CharacterString>level</gco:CharacterString>\n"
+              + "          </mri:keyword>\n"
+              + "          <mri:keyword>\n"
+              + "            <gco:CharacterString>level-3</gco:CharacterString>\n"
+              + "          </mri:keyword>\n"
+              + "          <mri:keyword>\n"
+              + "            <gco:CharacterString>mapped</gco:CharacterString>\n"
+              + "          </mri:keyword>\n"
+              + "          <mri:keyword>\n"
+              + "            <gco:CharacterString>mass</gco:CharacterString>\n"
+              + "          </mri:keyword>\n"
+              + "          <mri:keyword>\n"
+              + "            <gco:CharacterString>moderate</gco:CharacterString>\n"
+              + "          </mri:keyword>\n"
+              + "          <mri:keyword>\n"
+              + "            <gco:CharacterString>modis</gco:CharacterString>\n"
+              + "          </mri:keyword>\n"
+              + "          <mri:keyword>\n"
+              + "            <gco:CharacterString>nasa</gco:CharacterString>\n"
+              + "          </mri:keyword>\n"
+              + "          <mri:keyword>\n"
+              + "            <gco:CharacterString>ocean</gco:CharacterString>\n"
+              + "          </mri:keyword>\n"
+              + "          <mri:keyword>\n"
+              + "            <gco:CharacterString>ocean color</gco:CharacterString>\n"
+              + "          </mri:keyword>\n"
+              + "          <mri:keyword>\n"
+              + "            <gco:CharacterString>oceans</gco:CharacterString>\n"
+              + "          </mri:keyword>\n"
+              + "          <mri:keyword>\n"
+              + "            <gco:CharacterString>oci</gco:CharacterString>\n"
+              + "          </mri:keyword>\n"
+              + "          <mri:keyword>\n"
+              + "            <gco:CharacterString>optics</gco:CharacterString>\n"
+              + "          </mri:keyword>\n"
+              + "          <mri:keyword>\n"
+              + "            <gco:CharacterString>processing</gco:CharacterString>\n"
+              + "          </mri:keyword>\n"
+              + "          <mri:keyword>\n"
+              + "            <gco:CharacterString>resolution</gco:CharacterString>\n"
+              + "          </mri:keyword>\n"
+              + "          <mri:keyword>\n"
+              + "            <gco:CharacterString>sea</gco:CharacterString>\n"
+              + "          </mri:keyword>\n"
+              + "          <mri:keyword>\n"
+              + "            <gco:CharacterString>seawater</gco:CharacterString>\n"
+              + "          </mri:keyword>\n"
+              + "          <mri:keyword>\n"
+              + "            <gco:CharacterString>smi</gco:CharacterString>\n"
+              + "          </mri:keyword>\n"
+              + "          <mri:keyword>\n"
+              + "            <gco:CharacterString>space</gco:CharacterString>\n"
+              + "          </mri:keyword>\n"
+              + "          <mri:keyword>\n"
+              + "            <gco:CharacterString>spectroradiometer</gco:CharacterString>\n"
+              + "          </mri:keyword>\n"
+              + "          <mri:keyword>\n"
+              + "            <gco:CharacterString>standard</gco:CharacterString>\n"
+              + "          </mri:keyword>\n"
+              + "          <mri:keyword>\n"
+              + "            <gco:CharacterString>water</gco:CharacterString>\n"
+              + "          </mri:keyword>\n"
+              + "          <mri:type>\n"
+              + "            <mri:MD_KeywordTypeCode codeList=\"http://standards.iso.org/iso/19115/resources/Codelist/cat/codelists.xml#MD_KeywordTypeCode\" codeListValue=\"theme\">Theme</mri:MD_KeywordTypeCode>\n"
+              + "          </mri:type>\n"
+              + "        </mri:MD_Keywords>\n"
+              + "      </mri:descriptiveKeywords>\n"
+              + "      <mri:descriptiveKeywords>\n"
+              + "        <mri:MD_Keywords>\n"
+              + "          <mri:keyword>\n"
+              + "            <gco:CharacterString>Earth Science &gt; Oceans &gt; Ocean Optics &gt; Ocean Color</gco:CharacterString>\n"
+              + "          </mri:keyword>\n"
+              + "          <mri:keyword>\n"
+              + "            <gco:CharacterString>Earth Science &gt; Oceans &gt; Ocean Chemistry &gt; Chlorophyll</gco:CharacterString>\n"
+              + "          </mri:keyword>\n"
+              + "          <mri:type>\n"
+              + "            <mri:MD_KeywordTypeCode codeList=\"http://standards.iso.org/iso/19115/resources/Codelist/cat/codelists.xml#MD_KeywordTypeCode\" codeListValue=\"theme\">Theme</mri:MD_KeywordTypeCode>\n"
+              + "          </mri:type>\n"
+              + "          <mri:thesaurusName>\n"
+              + "            <cit:CI_Citation>\n"
+              + "              <cit:title>\n"
+              + "                <gco:CharacterString>GCMD Science Keywords</gco:CharacterString>\n"
+              + "              </cit:title>\n"
+              + "            </cit:CI_Citation>\n"
+              + "          </mri:thesaurusName>\n"
+              + "        </mri:MD_Keywords>\n"
+              + "      </mri:descriptiveKeywords>\n"
+              + "      <mri:descriptiveKeywords>\n"
+              + "        <mri:MD_Keywords>\n"
+              + "          <mri:keyword>\n"
+              + "            <gco:CharacterString>Ocean Biology Processing Group (NASA/GSFC/OBPG)</gco:CharacterString>\n"
+              + "          </mri:keyword>\n"
+              + "          <mri:type>\n"
+              + "            <mri:MD_KeywordTypeCode codeList=\"http://standards.iso.org/iso/19115/resources/Codelist/cat/codelists.xml#MD_KeywordTypeCode\" codeListValue=\"theme\">Theme</mri:MD_KeywordTypeCode>\n"
+              + "          </mri:type>\n"
+              + "        </mri:MD_Keywords>\n"
+              + "      </mri:descriptiveKeywords>\n"
+              + "      <mri:descriptiveKeywords>\n"
+              + "        <mri:MD_Keywords>\n"
+              + "          <mri:keyword>\n"
+              + "            <gco:CharacterString>time</gco:CharacterString>\n"
+              + "          </mri:keyword>\n"
+              + "          <mri:keyword>\n"
+              + "            <gco:CharacterString>latitude</gco:CharacterString>\n"
+              + "          </mri:keyword>\n"
+              + "          <mri:keyword>\n"
+              + "            <gco:CharacterString>longitude</gco:CharacterString>\n"
+              + "          </mri:keyword>\n"
+              + "          <mri:keyword>\n"
+              + "            <gco:CharacterString>concentration_of_chlorophyll_in_sea_water</gco:CharacterString>\n"
+              + "          </mri:keyword>\n"
+              + "          <mri:type>\n"
+              + "            <mri:MD_KeywordTypeCode codeList=\"http://standards.iso.org/iso/19115/resources/Codelist/cat/codelists.xml#MD_KeywordTypeCode\" codeListValue=\"theme\">Theme</mri:MD_KeywordTypeCode>\n"
+              + "          </mri:type>\n"
+              + "          <mri:thesaurusName>\n"
+              + "            <cit:CI_Citation>\n"
+              + "              <cit:title>\n"
+              + "                <gco:CharacterString>CF Standard Name Table v70</gco:CharacterString>\n"
+              + "              </cit:title>\n"
+              + "            </cit:CI_Citation>\n"
+              + "          </mri:thesaurusName>\n"
+              + "        </mri:MD_Keywords>\n"
+              + "      </mri:descriptiveKeywords>\n"
+              + "      <mri:resourceConstraints>\n"
+              + "        <mco:MD_Constraints>\n"
+              + "          <mco:useLimitation>\n"
+              + "            <gco:CharacterString>https://science.nasa.gov/earth-science/earth-science-data/data-information-policy/\n"
+              + "The data may be used and redistributed for free but is not intended\n"
+              + "for legal use, since it may contain inaccuracies. Neither the data\n"
+              + "Contributor, ERD, NOAA, nor the United States Government, nor any\n"
+              + "of their employees or contractors, makes any warranty, express or\n"
+              + "implied, including warranties of merchantability and fitness for a\n"
+              + "particular purpose, or assumes any legal liability for the accuracy,\n"
+              + "completeness, or usefulness, of this information.</gco:CharacterString>\n"
+              + "          </mco:useLimitation>\n"
+              + "        </mco:MD_Constraints>\n"
+              + "      </mri:resourceConstraints>\n"
+              + "      <mri:associatedResource>\n"
+              + "        <mri:name>\n"
+              + "          <cit:CI_Citation>\n"
+              + "            <cit:title>\n"
+              + "              <gco:CharacterString>Ocean Biology Processing Group (NASA/GSFC/OBPG)</gco:CharacterString>\n"
+              + "            </cit:title>\n"
+              + "          </cit:CI_Citation>\n"
+              + "        </mri:name>\n"
+              + "        <mri:associationType>\n"
+              + "          <mri:DS_AssociationTypeCode codeList=\"http://standards.iso.org/iso/19115/resources/Codelist/cat/codelists.xml#DS_AssociationTypeCode\" codeListValue=\"largerWorkCitation\">Larger work citation</mri:DS_AssociationTypeCode>\n"
+              + "        </mri:associationType>\n"
+              + "        <mri:initiativeType>\n"
+              + "          <mri:DS_InitiativeTypeCode codeList=\"http://standards.iso.org/iso/19115/resources/Codelist/cat/codelists.xml#DS_InitiativeTypeCode\" codeListValue=\"project\">Project</mri:DS_InitiativeTypeCode>\n"
+              + "        </mri:initiativeType>\n"
+              + "      </mri:associatedResource>\n"
+              + "      <mri:associatedResource>\n"
+              + "        <mri:name>\n"
+              + "          <cit:CI_Citation>\n"
+              + "            <cit:title>\n"
+              + "              <gco:CharacterString>Grid</gco:CharacterString>\n"
+              + "            </cit:title>\n"
+              + "            <cit:identifier>\n"
+              + "              <mcc:MD_Identifier>\n"
+              + "                <mcc:authority>\n"
+              + "                  <cit:CI_Citation>\n"
+              + "                    <cit:title>\n"
+              + "                      <gco:CharacterString>Unidata Common Data Model</gco:CharacterString>\n"
+              + "                    </cit:title>\n"
+              + "                  </cit:CI_Citation>\n"
+              + "                </mcc:authority>\n"
+              + "                <mcc:code>\n"
+              + "                  <gco:CharacterString>Grid</gco:CharacterString>\n"
+              + "                </mcc:code>\n"
+              + "              </mcc:MD_Identifier>\n"
+              + "            </cit:identifier>\n"
+              + "          </cit:CI_Citation>\n"
+              + "        </mri:name>\n"
+              + "        <mri:associationType>\n"
+              + "          <mri:DS_AssociationTypeCode codeList=\"http://standards.iso.org/iso/19115/resources/Codelist/cat/codelists.xml#DS_AssociationTypeCode\" codeListValue=\"largerWorkCitation\">Larger work citation</mri:DS_AssociationTypeCode>\n"
+              + "        </mri:associationType>\n"
+              + "        <mri:initiativeType>\n"
+              + "          <mri:DS_InitiativeTypeCode codeList=\"http://standards.iso.org/iso/19115/resources/Codelist/cat/codelists.xml#DS_InitiativeTypeCode\" codeListValue=\"project\">Project</mri:DS_InitiativeTypeCode>\n"
+              + "        </mri:initiativeType>\n"
+              + "      </mri:associatedResource>\n"
+              + "    </mri:MD_DataIdentification>\n"
+              + "  </mdb:identificationInfo>\n"
+              + "  <mdb:identificationInfo>\n"
+              + "    <srv:SV_ServiceIdentification>\n"
+              + "      <mri:citation>\n"
+              + "        <cit:CI_Citation>\n"
+              + "          <cit:title>\n"
+              + "            <gco:CharacterString>Chlorophyll-a, Aqua MODIS, NPP, L3SMI, Global, 4km, Science Quality, 2003-present (1 Day Composite)</gco:CharacterString>\n"
+              + "          </cit:title>\n"
+              + "          <cit:date>\n"
+              + "            <cit:CI_Date>\n"
+              + "              <cit:date>\n"
+              + "                <gco:DateTime>YYYY-MM-DDThh:mm:ss.mmm-tz:tz</gco:DateTime>\n"
+              + "              </cit:date>\n"
+              + "              <cit:dateType>\n"
+              + "                <cit:CI_DateTypeCode codeList=\"http://standards.iso.org/iso/19115/resources/Codelist/cat/codelists.xml#CI_DateTypeCode\" codeListValue=\"creation\" codeSpace=\"eng\">Creation</cit:CI_DateTypeCode>\n"
+              + "              </cit:dateType>\n"
+              + "            </cit:CI_Date>\n"
+              + "          </cit:date>\n"
+              + "          <cit:citedResponsibleParty>\n"
+              + "            <cit:CI_Responsibility>\n"
+              + "              <cit:role>\n"
+              + "                <cit:CI_RoleCode codeList=\"http://standards.iso.org/iso/19115/resources/Codelist/cat/codelists.xml#CI_RoleCode\" codeListValue=\"originator\">Originator</cit:CI_RoleCode>\n"
+              + "              </cit:role>\n"
+              + "              <cit:party>\n"
+              + "                <cit:CI_Organisation>\n"
+              + "                  <cit:name>\n"
+              + "                    <gco:CharacterString>NASA/GSFC/OBPG</gco:CharacterString>\n"
+              + "                  </cit:name>\n"
+              + "                  <cit:contactInfo>\n"
+              + "                    <cit:CI_Contact>\n"
+              + "                      <cit:address>\n"
+              + "                        <cit:CI_Address>\n"
+              + "                          <cit:electronicMailAddress>\n"
+              + "                            <gco:CharacterString>data@oceancolor.gsfc.nasa.gov</gco:CharacterString>\n"
+              + "                          </cit:electronicMailAddress>\n"
+              + "                        </cit:CI_Address>\n"
+              + "                      </cit:address>\n"
+              + "                      <cit:onlineResource>\n"
+              + "                        <cit:CI_OnlineResource>\n"
+              + "                          <cit:linkage>\n"
+              + "                            <gcx:FileName src=\"https://coastwatch.pfeg.noaa.gov/infog/MH1_chla_las.html\">MH1_chla_las.html</gcx:FileName>\n"
+              + "                          </cit:linkage>\n"
+              + "                          <cit:protocol>\n"
+              + "                            <gco:CharacterString>information</gco:CharacterString>\n"
+              + "                          </cit:protocol>\n"
+              + "                          <cit:applicationProfile>\n"
+              + "                            <gco:CharacterString>web browser</gco:CharacterString>\n"
+              + "                          </cit:applicationProfile>\n"
+              + "                          <cit:name>\n"
+              + "                            <gco:CharacterString>Background Information</gco:CharacterString>\n"
+              + "                          </cit:name>\n"
+              + "                          <cit:description>\n"
+              + "                            <gco:CharacterString>Background information from the source</gco:CharacterString>\n"
+              + "                          </cit:description>\n"
+              + "                          <cit:function>\n"
+              + "                            <cit:CI_OnLineFunctionCode codeList=\"http://standards.iso.org/iso/19115/resources/Codelist/cat/codelists.xml#CI_OnLineFunctionCode\" codeListValue=\"information\" codeSpace=\"eng\">Information</cit:CI_OnLineFunctionCode>\n"
+              + "                          </cit:function>\n"
+              + "                        </cit:CI_OnlineResource>\n"
+              + "                      </cit:onlineResource>\n"
+              + "                    </cit:CI_Contact>\n"
+              + "                  </cit:contactInfo>\n"
+              + "                </cit:CI_Organisation>\n"
+              + "              </cit:party>\n"
+              + "            </cit:CI_Responsibility>\n"
+              + "          </cit:citedResponsibleParty>\n"
+              + "        </cit:CI_Citation>\n"
+              + "      </mri:citation>\n"
+              + "      <mri:extent>\n"
+              + "        <gex:EX_Extent>\n"
+              + "          <gex:description>\n"
+              + "            <gco:CharacterString>boundingExtent</gco:CharacterString>\n"
+              + "          </gex:description>\n"
+              + "          <gex:geographicElement>\n"
+              + "            <gex:EX_GeographicBoundingBox>\n"
+              + "              <gex:extentTypeCode>\n"
+              + "                <gco:Boolean>true</gco:Boolean>\n"
+              + "              </gex:extentTypeCode>\n"
+              + "              <gex:westBoundLongitude>\n"
+              + "                <gco:Decimal>-179.9792022705078</gco:Decimal>\n"
+              + "              </gex:westBoundLongitude>\n"
+              + "              <gex:eastBoundLongitude>\n"
+              + "                <gco:Decimal>179.9792022705078</gco:Decimal>\n"
+              + "              </gex:eastBoundLongitude>\n"
+              + "              <gex:southBoundLatitude>\n"
+              + "                <gco:Decimal>-89.97917938232422</gco:Decimal>\n"
+              + "              </gex:southBoundLatitude>\n"
+              + "              <gex:northBoundLatitude>\n"
+              + "                <gco:Decimal>89.97915649414062</gco:Decimal>\n"
+              + "              </gex:northBoundLatitude>\n"
+              + "            </gex:EX_GeographicBoundingBox>\n"
+              + "          </gex:geographicElement>\n"
+              + "          <gex:temporalElement>\n"
+              + "            <gex:EX_TemporalExtent>\n"
+              + "              <gex:extent>\n"
+              + "                <gml:TimePeriod>\n"
+              + "                  <gml:beginPosition>YYYY-MM-DDThh:00:00Z</gml:beginPosition>\n"
+              + "                  <gml:endPosition>YYYY-MM-DDThh:00:00Z</gml:endPosition>\n"
+              + "                </gml:TimePeriod>\n"
+              + "              </gex:extent>\n"
+              + "            </gex:EX_TemporalExtent>\n"
+              + "          </gex:temporalElement>\n"
+              + "        </gex:EX_Extent>\n"
+              + "      </mri:extent>\n"
+              + "      <srv:serviceType>\n"
+              + "        <gco:ScopedName>ERDDAP griddap</gco:ScopedName>\n"
+              + "      </srv:serviceType>\n"
+              + "      <srv:coupledResource>\n"
+              + "        <srv:SV_CoupledResource>\n"
+              + "          <srv:resource>\n"
+              + "            <mri:MD_DataIdentification>\n"
+              + "              <mri:citation>\n"
+              + "                <cit:CI_Citation>\n"
+              + "                  <cit:title>\n"
+              + "                    <gco:CharacterString>Chlorophyll-a, Aqua MODIS, NPP, L3SMI, Global, 4km, Science Quality, 2003-present (1 Day Composite)</gco:CharacterString>\n"
+              + "                  </cit:title>\n"
+              + "                  <cit:date>\n"
+              + "                    <cit:CI_Date>\n"
+              + "                      <cit:date>\n"
+              + "                        <gco:DateTime>YYYY-MM-DDThh:mm:ss.mmm-tz:tz</gco:DateTime>\n"
+              + "                      </cit:date>\n"
+              + "                      <cit:dateType>\n"
+              + "                        <cit:CI_DateTypeCode codeList=\"http://standards.iso.org/iso/19115/resources/Codelist/cat/codelists.xml#CI_DateTypeCode\" codeListValue=\"creation\" codeSpace=\"eng\">Creation</cit:CI_DateTypeCode>\n"
+              + "                      </cit:dateType>\n"
+              + "                    </cit:CI_Date>\n"
+              + "                  </cit:date>\n"
+              + "                  <cit:identifier>\n"
+              + "                    <mcc:MD_Identifier>\n"
+              + "                      <mcc:authority>\n"
+              + "                        <cit:CI_Citation>\n"
+              + "                          <cit:title>\n"
+              + "                            <gco:CharacterString>localhost:8080</gco:CharacterString>\n"
+              + "                          </cit:title>\n"
+              + "                        </cit:CI_Citation>\n"
+              + "                      </mcc:authority>\n"
+              + "                      <mcc:code>\n"
+              + "                        <gco:CharacterString>erdMH1chla1day</gco:CharacterString>\n"
+              + "                      </mcc:code>\n"
+              + "                    </mcc:MD_Identifier>\n"
+              + "                  </cit:identifier>\n"
+              + "                  <cit:citedResponsibleParty>\n"
+              + "                    <cit:CI_Responsibility>\n"
+              + "                      <cit:role>\n"
+              + "                        <cit:CI_RoleCode codeList=\"http://standards.iso.org/iso/19115/resources/Codelist/cat/codelists.xml#CI_RoleCode\" codeListValue=\"originator\">Originator</cit:CI_RoleCode>\n"
+              + "                      </cit:role>\n"
+              + "                      <cit:party>\n"
+              + "                        <cit:CI_Organisation>\n"
+              + "                          <cit:name>\n"
+              + "                            <gco:CharacterString>NASA/GSFC/OBPG</gco:CharacterString>\n"
+              + "                          </cit:name>\n"
+              + "                          <cit:contactInfo>\n"
+              + "                            <cit:CI_Contact>\n"
+              + "                              <cit:address>\n"
+              + "                                <cit:CI_Address>\n"
+              + "                                  <cit:electronicMailAddress>\n"
+              + "                                    <gco:CharacterString>data@oceancolor.gsfc.nasa.gov</gco:CharacterString>\n"
+              + "                                  </cit:electronicMailAddress>\n"
+              + "                                </cit:CI_Address>\n"
+              + "                              </cit:address>\n"
+              + "                              <cit:onlineResource>\n"
+              + "                                <cit:CI_OnlineResource>\n"
+              + "                                  <cit:linkage>\n"
+              + "                                    <gcx:FileName src=\"https://coastwatch.pfeg.noaa.gov/infog/MH1_chla_las.html\">MH1_chla_las.html</gcx:FileName>\n"
+              + "                                  </cit:linkage>\n"
+              + "                                  <cit:protocol>\n"
+              + "                                    <gco:CharacterString>information</gco:CharacterString>\n"
+              + "                                  </cit:protocol>\n"
+              + "                                  <cit:applicationProfile>\n"
+              + "                                    <gco:CharacterString>web browser</gco:CharacterString>\n"
+              + "                                  </cit:applicationProfile>\n"
+              + "                                  <cit:name>\n"
+              + "                                    <gco:CharacterString>Background Information</gco:CharacterString>\n"
+              + "                                  </cit:name>\n"
+              + "                                  <cit:description>\n"
+              + "                                    <gco:CharacterString>Background information from the source</gco:CharacterString>\n"
+              + "                                  </cit:description>\n"
+              + "                                  <cit:function>\n"
+              + "                                    <cit:CI_OnLineFunctionCode codeList=\"http://standards.iso.org/iso/19115/resources/Codelist/cat/codelists.xml#CI_OnLineFunctionCode\" codeListValue=\"information\" codeSpace=\"eng\">Information</cit:CI_OnLineFunctionCode>\n"
+              + "                                  </cit:function>\n"
+              + "                                </cit:CI_OnlineResource>\n"
+              + "                              </cit:onlineResource>\n"
+              + "                            </cit:CI_Contact>\n"
+              + "                          </cit:contactInfo>\n"
+              + "                        </cit:CI_Organisation>\n"
+              + "                      </cit:party>\n"
+              + "                    </cit:CI_Responsibility>\n"
+              + "                  </cit:citedResponsibleParty>\n"
+              + "                </cit:CI_Citation>\n"
+              + "              </mri:citation>\n"
+              + "              <mri:abstract>\n"
+              + "                <gco:CharacterString>This dataset has Level 3, Standard Mapped Image, 4km, chlorophyll-a concentration data from NASA's Aqua Spacecraft.  Measurements are gathered by the Moderate Resolution Imaging Spectroradiometer (MODIS) carried aboard the spacecraft.  This is Science Quality data.  This is the August 2015 version of this dataset.</gco:CharacterString>\n"
+              + "              </mri:abstract>\n"
+              + "              <mri:pointOfContact>\n"
+              + "                <cit:CI_Responsibility>\n"
+              + "                  <cit:role>\n"
+              + "                    <cit:CI_RoleCode codeList=\"http://standards.iso.org/iso/19115/resources/Codelist/cat/codelists.xml#CI_RoleCode\" codeListValue=\"pointOfContact\">Point of contact</cit:CI_RoleCode>\n"
+              + "                  </cit:role>\n"
+              + "                  <cit:party>\n"
+              + "                    <cit:CI_Organisation>\n"
+              + "                      <cit:name>\n"
+              + "                        <gco:CharacterString>NASA/GSFC/OBPG</gco:CharacterString>\n"
+              + "                      </cit:name>\n"
+              + "                      <cit:contactInfo>\n"
+              + "                        <cit:CI_Contact>\n"
+              + "                          <cit:address>\n"
+              + "                            <cit:CI_Address>\n"
+              + "                              <cit:electronicMailAddress>\n"
+              + "                                <gco:CharacterString>data@oceancolor.gsfc.nasa.gov</gco:CharacterString>\n"
+              + "                              </cit:electronicMailAddress>\n"
+              + "                            </cit:CI_Address>\n"
+              + "                          </cit:address>\n"
+              + "                          <cit:onlineResource>\n"
+              + "                            <cit:CI_OnlineResource>\n"
+              + "                              <cit:linkage>\n"
+              + "                                <gcx:FileName src=\"https://coastwatch.pfeg.noaa.gov/infog/MH1_chla_las.html\">MH1_chla_las.html</gcx:FileName>\n"
+              + "                              </cit:linkage>\n"
+              + "                              <cit:protocol>\n"
+              + "                                <gco:CharacterString>information</gco:CharacterString>\n"
+              + "                              </cit:protocol>\n"
+              + "                              <cit:applicationProfile>\n"
+              + "                                <gco:CharacterString>web browser</gco:CharacterString>\n"
+              + "                              </cit:applicationProfile>\n"
+              + "                              <cit:name>\n"
+              + "                                <gco:CharacterString>Background Information</gco:CharacterString>\n"
+              + "                              </cit:name>\n"
+              + "                              <cit:description>\n"
+              + "                                <gco:CharacterString>Background information from the source</gco:CharacterString>\n"
+              + "                              </cit:description>\n"
+              + "                              <cit:function>\n"
+              + "                                <cit:CI_OnLineFunctionCode codeList=\"http://standards.iso.org/iso/19115/resources/Codelist/cat/codelists.xml#CI_OnLineFunctionCode\" codeListValue=\"information\" codeSpace=\"eng\">Information</cit:CI_OnLineFunctionCode>\n"
+              + "                              </cit:function>\n"
+              + "                            </cit:CI_OnlineResource>\n"
+              + "                          </cit:onlineResource>\n"
+              + "                        </cit:CI_Contact>\n"
+              + "                      </cit:contactInfo>\n"
+              + "                    </cit:CI_Organisation>\n"
+              + "                  </cit:party>\n"
+              + "                </cit:CI_Responsibility>\n"
+              + "              </mri:pointOfContact>\n"
+              + "              <mri:topicCategory>\n"
+              + "                <mri:MD_TopicCategoryCode>geoscientificInformation</mri:MD_TopicCategoryCode>\n"
+              + "              </mri:topicCategory>\n"
+              + "              <mri:extent>\n"
+              + "                <gex:EX_Extent>\n"
+              + "                  <gex:description>\n"
+              + "                    <gco:CharacterString>boundingExtent</gco:CharacterString>\n"
+              + "                  </gex:description>\n"
+              + "                  <gex:geographicElement>\n"
+              + "                    <gex:EX_GeographicBoundingBox>\n"
+              + "                      <gex:extentTypeCode>\n"
+              + "                        <gco:Boolean>true</gco:Boolean>\n"
+              + "                      </gex:extentTypeCode>\n"
+              + "                      <gex:westBoundLongitude>\n"
+              + "                        <gco:Decimal>-179.9792022705078</gco:Decimal>\n"
+              + "                      </gex:westBoundLongitude>\n"
+              + "                      <gex:eastBoundLongitude>\n"
+              + "                        <gco:Decimal>179.9792022705078</gco:Decimal>\n"
+              + "                      </gex:eastBoundLongitude>\n"
+              + "                      <gex:southBoundLatitude>\n"
+              + "                        <gco:Decimal>-89.97917938232422</gco:Decimal>\n"
+              + "                      </gex:southBoundLatitude>\n"
+              + "                      <gex:northBoundLatitude>\n"
+              + "                        <gco:Decimal>89.97915649414062</gco:Decimal>\n"
+              + "                      </gex:northBoundLatitude>\n"
+              + "                    </gex:EX_GeographicBoundingBox>\n"
+              + "                  </gex:geographicElement>\n"
+              + "                  <gex:temporalElement>\n"
+              + "                    <gex:EX_TemporalExtent>\n"
+              + "                      <gex:extent>\n"
+              + "                        <gml:TimePeriod>\n"
+              + "                          <gml:beginPosition>YYYY-MM-DDThh:00:00Z</gml:beginPosition>\n"
+              + "                          <gml:endPosition>YYYY-MM-DDThh:00:00Z</gml:endPosition>\n"
+              + "                        </gml:TimePeriod>\n"
+              + "                      </gex:extent>\n"
+              + "                    </gex:EX_TemporalExtent>\n"
+              + "                  </gex:temporalElement>\n"
+              + "                </gex:EX_Extent>\n"
+              + "              </mri:extent>\n"
+              + "              <mri:descriptiveKeywords>\n"
+              + "                <mri:MD_Keywords>\n"
+              + "                  <mri:keyword>\n"
+              + "                    <gco:CharacterString>algorithm</gco:CharacterString>\n"
+              + "                  </mri:keyword>\n"
+              + "                  <mri:keyword>\n"
+              + "                    <gco:CharacterString>biology</gco:CharacterString>\n"
+              + "                  </mri:keyword>\n"
+              + "                  <mri:keyword>\n"
+              + "                    <gco:CharacterString>center</gco:CharacterString>\n"
+              + "                  </mri:keyword>\n"
+              + "                  <mri:keyword>\n"
+              + "                    <gco:CharacterString>chemistry</gco:CharacterString>\n"
+              + "                  </mri:keyword>\n"
+              + "                  <mri:keyword>\n"
+              + "                    <gco:CharacterString>chlorophyll</gco:CharacterString>\n"
+              + "                  </mri:keyword>\n"
+              + "                  <mri:keyword>\n"
+              + "                    <gco:CharacterString>color</gco:CharacterString>\n"
+              + "                  </mri:keyword>\n"
+              + "                  <mri:keyword>\n"
+              + "                    <gco:CharacterString>concentration</gco:CharacterString>\n"
+              + "                  </mri:keyword>\n"
+              + "                  <mri:keyword>\n"
+              + "                    <gco:CharacterString>data</gco:CharacterString>\n"
+              + "                  </mri:keyword>\n"
+              + "                  <mri:keyword>\n"
+              + "                    <gco:CharacterString>ecology</gco:CharacterString>\n"
+              + "                  </mri:keyword>\n"
+              + "                  <mri:keyword>\n"
+              + "                    <gco:CharacterString>flight</gco:CharacterString>\n"
+              + "                  </mri:keyword>\n"
+              + "                  <mri:keyword>\n"
+              + "                    <gco:CharacterString>goddard</gco:CharacterString>\n"
+              + "                  </mri:keyword>\n"
+              + "                  <mri:keyword>\n"
+              + "                    <gco:CharacterString>group</gco:CharacterString>\n"
+              + "                  </mri:keyword>\n"
+              + "                  <mri:keyword>\n"
+              + "                    <gco:CharacterString>gsfc</gco:CharacterString>\n"
+              + "                  </mri:keyword>\n"
+              + "                  <mri:keyword>\n"
+              + "                    <gco:CharacterString>image</gco:CharacterString>\n"
+              + "                  </mri:keyword>\n"
+              + "                  <mri:keyword>\n"
+              + "                    <gco:CharacterString>imaging</gco:CharacterString>\n"
+              + "                  </mri:keyword>\n"
+              + "                  <mri:keyword>\n"
+              + "                    <gco:CharacterString>L3</gco:CharacterString>\n"
+              + "                  </mri:keyword>\n"
+              + "                  <mri:keyword>\n"
+              + "                    <gco:CharacterString>laboratory</gco:CharacterString>\n"
+              + "                  </mri:keyword>\n"
+              + "                  <mri:keyword>\n"
+              + "                    <gco:CharacterString>level</gco:CharacterString>\n"
+              + "                  </mri:keyword>\n"
+              + "                  <mri:keyword>\n"
+              + "                    <gco:CharacterString>level-3</gco:CharacterString>\n"
+              + "                  </mri:keyword>\n"
+              + "                  <mri:keyword>\n"
+              + "                    <gco:CharacterString>mapped</gco:CharacterString>\n"
+              + "                  </mri:keyword>\n"
+              + "                  <mri:keyword>\n"
+              + "                    <gco:CharacterString>mass</gco:CharacterString>\n"
+              + "                  </mri:keyword>\n"
+              + "                  <mri:keyword>\n"
+              + "                    <gco:CharacterString>moderate</gco:CharacterString>\n"
+              + "                  </mri:keyword>\n"
+              + "                  <mri:keyword>\n"
+              + "                    <gco:CharacterString>modis</gco:CharacterString>\n"
+              + "                  </mri:keyword>\n"
+              + "                  <mri:keyword>\n"
+              + "                    <gco:CharacterString>nasa</gco:CharacterString>\n"
+              + "                  </mri:keyword>\n"
+              + "                  <mri:keyword>\n"
+              + "                    <gco:CharacterString>ocean</gco:CharacterString>\n"
+              + "                  </mri:keyword>\n"
+              + "                  <mri:keyword>\n"
+              + "                    <gco:CharacterString>ocean color</gco:CharacterString>\n"
+              + "                  </mri:keyword>\n"
+              + "                  <mri:keyword>\n"
+              + "                    <gco:CharacterString>oceans</gco:CharacterString>\n"
+              + "                  </mri:keyword>\n"
+              + "                  <mri:keyword>\n"
+              + "                    <gco:CharacterString>oci</gco:CharacterString>\n"
+              + "                  </mri:keyword>\n"
+              + "                  <mri:keyword>\n"
+              + "                    <gco:CharacterString>optics</gco:CharacterString>\n"
+              + "                  </mri:keyword>\n"
+              + "                  <mri:keyword>\n"
+              + "                    <gco:CharacterString>processing</gco:CharacterString>\n"
+              + "                  </mri:keyword>\n"
+              + "                  <mri:keyword>\n"
+              + "                    <gco:CharacterString>resolution</gco:CharacterString>\n"
+              + "                  </mri:keyword>\n"
+              + "                  <mri:keyword>\n"
+              + "                    <gco:CharacterString>sea</gco:CharacterString>\n"
+              + "                  </mri:keyword>\n"
+              + "                  <mri:keyword>\n"
+              + "                    <gco:CharacterString>seawater</gco:CharacterString>\n"
+              + "                  </mri:keyword>\n"
+              + "                  <mri:keyword>\n"
+              + "                    <gco:CharacterString>smi</gco:CharacterString>\n"
+              + "                  </mri:keyword>\n"
+              + "                  <mri:keyword>\n"
+              + "                    <gco:CharacterString>space</gco:CharacterString>\n"
+              + "                  </mri:keyword>\n"
+              + "                  <mri:keyword>\n"
+              + "                    <gco:CharacterString>spectroradiometer</gco:CharacterString>\n"
+              + "                  </mri:keyword>\n"
+              + "                  <mri:keyword>\n"
+              + "                    <gco:CharacterString>standard</gco:CharacterString>\n"
+              + "                  </mri:keyword>\n"
+              + "                  <mri:keyword>\n"
+              + "                    <gco:CharacterString>water</gco:CharacterString>\n"
+              + "                  </mri:keyword>\n"
+              + "                  <mri:type>\n"
+              + "                    <mri:MD_KeywordTypeCode codeList=\"http://standards.iso.org/iso/19115/resources/Codelist/cat/codelists.xml#MD_KeywordTypeCode\" codeListValue=\"theme\">Theme</mri:MD_KeywordTypeCode>\n"
+              + "                  </mri:type>\n"
+              + "                </mri:MD_Keywords>\n"
+              + "              </mri:descriptiveKeywords>\n"
+              + "              <mri:descriptiveKeywords>\n"
+              + "                <mri:MD_Keywords>\n"
+              + "                  <mri:keyword>\n"
+              + "                    <gco:CharacterString>Earth Science &gt; Oceans &gt; Ocean Optics &gt; Ocean Color</gco:CharacterString>\n"
+              + "                  </mri:keyword>\n"
+              + "                  <mri:keyword>\n"
+              + "                    <gco:CharacterString>Earth Science &gt; Oceans &gt; Ocean Chemistry &gt; Chlorophyll</gco:CharacterString>\n"
+              + "                  </mri:keyword>\n"
+              + "                  <mri:type>\n"
+              + "                    <mri:MD_KeywordTypeCode codeList=\"http://standards.iso.org/iso/19115/resources/Codelist/cat/codelists.xml#MD_KeywordTypeCode\" codeListValue=\"theme\">Theme</mri:MD_KeywordTypeCode>\n"
+              + "                  </mri:type>\n"
+              + "                  <mri:thesaurusName>\n"
+              + "                    <cit:CI_Citation>\n"
+              + "                      <cit:title>\n"
+              + "                        <gco:CharacterString>GCMD Science Keywords</gco:CharacterString>\n"
+              + "                      </cit:title>\n"
+              + "                    </cit:CI_Citation>\n"
+              + "                  </mri:thesaurusName>\n"
+              + "                </mri:MD_Keywords>\n"
+              + "              </mri:descriptiveKeywords>\n"
+              + "              <mri:descriptiveKeywords>\n"
+              + "                <mri:MD_Keywords>\n"
+              + "                  <mri:keyword>\n"
+              + "                    <gco:CharacterString>Ocean Biology Processing Group (NASA/GSFC/OBPG)</gco:CharacterString>\n"
+              + "                  </mri:keyword>\n"
+              + "                  <mri:type>\n"
+              + "                    <mri:MD_KeywordTypeCode codeList=\"http://standards.iso.org/iso/19115/resources/Codelist/cat/codelists.xml#MD_KeywordTypeCode\" codeListValue=\"theme\">Theme</mri:MD_KeywordTypeCode>\n"
+              + "                  </mri:type>\n"
+              + "                </mri:MD_Keywords>\n"
+              + "              </mri:descriptiveKeywords>\n"
+              + "              <mri:descriptiveKeywords>\n"
+              + "                <mri:MD_Keywords>\n"
+              + "                  <mri:keyword>\n"
+              + "                    <gco:CharacterString>time</gco:CharacterString>\n"
+              + "                  </mri:keyword>\n"
+              + "                  <mri:keyword>\n"
+              + "                    <gco:CharacterString>latitude</gco:CharacterString>\n"
+              + "                  </mri:keyword>\n"
+              + "                  <mri:keyword>\n"
+              + "                    <gco:CharacterString>longitude</gco:CharacterString>\n"
+              + "                  </mri:keyword>\n"
+              + "                  <mri:keyword>\n"
+              + "                    <gco:CharacterString>concentration_of_chlorophyll_in_sea_water</gco:CharacterString>\n"
+              + "                  </mri:keyword>\n"
+              + "                  <mri:type>\n"
+              + "                    <mri:MD_KeywordTypeCode codeList=\"http://standards.iso.org/iso/19115/resources/Codelist/cat/codelists.xml#MD_KeywordTypeCode\" codeListValue=\"theme\">Theme</mri:MD_KeywordTypeCode>\n"
+              + "                  </mri:type>\n"
+              + "                  <mri:thesaurusName>\n"
+              + "                    <cit:CI_Citation>\n"
+              + "                      <cit:title>\n"
+              + "                        <gco:CharacterString>CF Standard Name Table v70</gco:CharacterString>\n"
+              + "                      </cit:title>\n"
+              + "                    </cit:CI_Citation>\n"
+              + "                  </mri:thesaurusName>\n"
+              + "                </mri:MD_Keywords>\n"
+              + "              </mri:descriptiveKeywords>\n"
+              + "              <mri:resourceConstraints>\n"
+              + "                <mco:MD_Constraints>\n"
+              + "                  <mco:useLimitation>\n"
+              + "                    <gco:CharacterString>https://science.nasa.gov/earth-science/earth-science-data/data-information-policy/\n"
+              + "The data may be used and redistributed for free but is not intended\n"
+              + "for legal use, since it may contain inaccuracies. Neither the data\n"
+              + "Contributor, ERD, NOAA, nor the United States Government, nor any\n"
+              + "of their employees or contractors, makes any warranty, express or\n"
+              + "implied, including warranties of merchantability and fitness for a\n"
+              + "particular purpose, or assumes any legal liability for the accuracy,\n"
+              + "completeness, or usefulness, of this information.</gco:CharacterString>\n"
+              + "                  </mco:useLimitation>\n"
+              + "                </mco:MD_Constraints>\n"
+              + "              </mri:resourceConstraints>\n"
+              + "              <mri:associatedResource>\n"
+              + "                <mri:name>\n"
+              + "                  <cit:CI_Citation>\n"
+              + "                    <cit:title>\n"
+              + "                      <gco:CharacterString>Ocean Biology Processing Group (NASA/GSFC/OBPG)</gco:CharacterString>\n"
+              + "                    </cit:title>\n"
+              + "                  </cit:CI_Citation>\n"
+              + "                </mri:name>\n"
+              + "                <mri:associationType>\n"
+              + "                  <mri:DS_AssociationTypeCode codeList=\"http://standards.iso.org/iso/19115/resources/Codelist/cat/codelists.xml#DS_AssociationTypeCode\" codeListValue=\"largerWorkCitation\">Larger work citation</mri:DS_AssociationTypeCode>\n"
+              + "                </mri:associationType>\n"
+              + "                <mri:initiativeType>\n"
+              + "                  <mri:DS_InitiativeTypeCode codeList=\"http://standards.iso.org/iso/19115/resources/Codelist/cat/codelists.xml#DS_InitiativeTypeCode\" codeListValue=\"project\">Project</mri:DS_InitiativeTypeCode>\n"
+              + "                </mri:initiativeType>\n"
+              + "              </mri:associatedResource>\n"
+              + "              <mri:associatedResource>\n"
+              + "                <mri:name>\n"
+              + "                  <cit:CI_Citation>\n"
+              + "                    <cit:title>\n"
+              + "                      <gco:CharacterString>Grid</gco:CharacterString>\n"
+              + "                    </cit:title>\n"
+              + "                    <cit:identifier>\n"
+              + "                      <mcc:MD_Identifier>\n"
+              + "                        <mcc:authority>\n"
+              + "                          <cit:CI_Citation>\n"
+              + "                            <cit:title>\n"
+              + "                              <gco:CharacterString>Unidata Common Data Model</gco:CharacterString>\n"
+              + "                            </cit:title>\n"
+              + "                          </cit:CI_Citation>\n"
+              + "                        </mcc:authority>\n"
+              + "                        <mcc:code>\n"
+              + "                          <gco:CharacterString>Grid</gco:CharacterString>\n"
+              + "                        </mcc:code>\n"
+              + "                      </mcc:MD_Identifier>\n"
+              + "                    </cit:identifier>\n"
+              + "                  </cit:CI_Citation>\n"
+              + "                </mri:name>\n"
+              + "                <mri:associationType>\n"
+              + "                  <mri:DS_AssociationTypeCode codeList=\"http://standards.iso.org/iso/19115/resources/Codelist/cat/codelists.xml#DS_AssociationTypeCode\" codeListValue=\"largerWorkCitation\">Larger work citation</mri:DS_AssociationTypeCode>\n"
+              + "                </mri:associationType>\n"
+              + "                <mri:initiativeType>\n"
+              + "                  <mri:DS_InitiativeTypeCode codeList=\"http://standards.iso.org/iso/19115/resources/Codelist/cat/codelists.xml#DS_InitiativeTypeCode\" codeListValue=\"project\">Project</mri:DS_InitiativeTypeCode>\n"
+              + "                </mri:initiativeType>\n"
+              + "              </mri:associatedResource>\n"
+              + "            </mri:MD_DataIdentification>\n"
+              + "          </srv:resource>\n"
+              + "          <srv:operation>\n"
+              + "            <srv:SV_OperationMetadata>\n"
+              + "              <srv:operationName>\n"
+              + "                <gco:CharacterString>ERDDAPgriddapDatasetQueryAndAccess</gco:CharacterString>\n"
+              + "              </srv:operationName>\n"
+              + "              <srv:connectPoint>\n"
+              + "                <cit:CI_OnlineResource>\n"
+              + "                  <cit:linkage>\n"
+              + "                    <gcx:FileName src=\"http://localhost:8080/erddap/griddap/erdMH1chla1day\">erdMH1chla1day</gcx:FileName>\n"
+              + "                  </cit:linkage>\n"
+              + "                  <cit:protocol>\n"
+              + "                    <gco:CharacterString>ERDDAP:griddap</gco:CharacterString>\n"
+              + "                  </cit:protocol>\n"
+              + "                  <cit:name>\n"
+              + "                    <gco:CharacterString>ERDDAP-griddap</gco:CharacterString>\n"
+              + "                  </cit:name>\n"
+              + "                  <cit:description>\n"
+              + "                    <gco:CharacterString>ERDDAP's griddap service (a flavor of OPeNDAP) for gridded data. Add different extensions (e.g., .html, .graph, .das, .dds) to the base URL for different purposes.</gco:CharacterString>\n"
+              + "                  </cit:description>\n"
+              + "                  <cit:function>\n"
+              + "                    <cit:CI_OnLineFunctionCode codeList=\"http://standards.iso.org/iso/19115/resources/Codelist/cat/codelists.xml#CI_OnLineFunctionCode\" codeListValue=\"download\" codeSpace=\"eng\">Download</cit:CI_OnLineFunctionCode>\n"
+              + "                  </cit:function>\n"
+              + "                </cit:CI_OnlineResource>\n"
+              + "              </srv:connectPoint>\n"
+              + "            </srv:SV_OperationMetadata>\n"
+              + "          </srv:operation>\n"
+              + "        </srv:SV_CoupledResource>\n"
+              + "      </srv:coupledResource>\n"
+              + "    </srv:SV_ServiceIdentification>\n"
+              + "  </mdb:identificationInfo>\n";
+      results =
+          results.replaceAll(
+              "<gco:DateTime>....-..-..T..:..:......-..:..</gco:DateTime>",
+              "<gco:DateTime>YYYY-MM-DDThh:mm:ss.mmm-tz:tz</gco:DateTime>");
+      results =
+          results.replaceAll(
+              "<gco:DateTime>....-..-..T..:..:......Z</gco:DateTime>",
+              "<gco:DateTime>YYYY-MM-DDThh:mm:ss.mmm-tz:tz</gco:DateTime>");
+      results =
+          results.replaceAll(
+              "<gco:Measure uom=\\\"s\\\">[0-9]+.[0-9]+</gco:Measure>",
+              "<gco:Measure uom=\"s\">VALUE</gco:Measure>");
+      results =
+          results.replaceAll(
+              "<gco:Measure uom=\\\"s\\\">.*</gco:Measure>",
+              "<gco:Measure uom=\"s\">VALUE</gco:Measure>");
+      results =
+          results.replaceAll(
+              "<gml:endPosition>....-..-..T..:..:..-..:..</gml:endPosition>",
+              "<gml:endPosition>YYYY-MM-DDThh:00:00Z</gml:endPosition>");
+      results =
+          results.replaceAll(
+              "<gml:endPosition>....-..-..T..:..:......-..:..</gml:endPosition>",
+              "<gml:endPosition>YYYY-MM-DDThh:00:00Z</gml:endPosition>");
+      results =
+          results.replaceAll(
+              "<gml:endPosition>....-..-..T..:..:..Z</gml:endPosition>",
+              "<gml:endPosition>YYYY-MM-DDThh:00:00Z</gml:endPosition>");
+      results =
+          results.replaceAll(
+              "<gml:endPosition>....-..-..T..:..:..-..:..</gml:endPosition>",
+              "<gml:endPosition>YYYY-MM-DDThh:00:00Z</gml:endPosition>");
+      results =
+          results.replaceAll(
+              "<gml:beginPosition>....-..-..T..:..:......-..:..</gml:beginPosition>",
+              "<gml:beginPosition>YYYY-MM-DDThh:00:00Z</gml:beginPosition>");
+      results =
+          results.replaceAll(
+              "<gml:beginPosition>....-..-..T..:..:..-..:..</gml:beginPosition>",
+              "<gml:beginPosition>YYYY-MM-DDThh:00:00Z</gml:beginPosition>");
+      results =
+          results.replaceAll(
+              "<gml:beginPosition>....-..-..T..:..:..Z</gml:beginPosition>",
+              "<gml:beginPosition>YYYY-MM-DDThh:00:00Z</gml:beginPosition>");
+      results =
+          results.replaceAll(
+              "<gco:Integer>[0-9]+</gco:Integer>", "<gco:Integer>NUMBER</gco:Integer>");
+      results = results.replaceAll(">-?[0-9]+.[0-9]+</gco:Measure>", ">measureValue</gco:Measure>");
+      Test.ensureEqual(results.substring(0, expected.length()), expected, "results=" + results);
+    } else {
+      expected =
+          "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+              + "<gmi:MI_Metadata  xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n"
+              + "  xsi:schemaLocation=\"https://www.isotc211.org/2005/gmi https://data.noaa.gov/resources/iso19139/schema.xsd\"\n"
+              + "  xmlns:xlink=\"http://www.w3.org/1999/xlink\"\n"
+              + "  xmlns:gco=\"http://www.isotc211.org/2005/gco\"\n"
+              + "  xmlns:gmd=\"http://www.isotc211.org/2005/gmd\"\n"
+              + "  xmlns:gmx=\"http://www.isotc211.org/2005/gmx\"\n"
+              + "  xmlns:gml=\"http://www.opengis.net/gml/3.2\"\n"
+              + "  xmlns:gss=\"http://www.isotc211.org/2005/gss\"\n"
+              + "  xmlns:gts=\"http://www.isotc211.org/2005/gts\"\n"
+              + "  xmlns:gsr=\"http://www.isotc211.org/2005/gsr\"\n"
+              + "  xmlns:gmi=\"http://www.isotc211.org/2005/gmi\"\n"
+              + "  xmlns:srv=\"http://www.isotc211.org/2005/srv\">\n"
+              + "  <gmd:fileIdentifier>\n"
+              + "    <gco:CharacterString>erdMH1chla1day</gco:CharacterString>\n"
+              + "  </gmd:fileIdentifier>\n"
+              + "  <gmd:language>\n"
+              + "    <gmd:LanguageCode codeList=\"https://data.noaa.gov/resources/iso19139/schema/resources/Codelist/gmxCodelists.xml#gmd:LanguageCode\" codeListValue=\"eng\">eng</gmd:LanguageCode>\n"
+              + "  </gmd:language>\n"
+              + "  <gmd:characterSet>\n"
+              + "    <gmd:MD_CharacterSetCode codeList=\"https://data.noaa.gov/resources/iso19139/schema/resources/Codelist/gmxCodelists.xml#gmd:MD_CharacterSetCode\" codeListValue=\"UTF8\">UTF8</gmd:MD_CharacterSetCode>\n"
+              + "  </gmd:characterSet>\n"
+              + "  <gmd:hierarchyLevel>\n"
+              + "    <gmd:MD_ScopeCode codeList=\"https://data.noaa.gov/resources/iso19139/schema/resources/Codelist/gmxCodelists.xml#gmd:MD_ScopeCode\" codeListValue=\"dataset\">dataset</gmd:MD_ScopeCode>\n"
+              + "  </gmd:hierarchyLevel>\n"
+              + "  <gmd:hierarchyLevel>\n"
+              + "    <gmd:MD_ScopeCode codeList=\"https://data.noaa.gov/resources/iso19139/schema/resources/Codelist/gmxCodelists.xml#gmd:MD_ScopeCode\" codeListValue=\"service\">service</gmd:MD_ScopeCode>\n"
+              + "  </gmd:hierarchyLevel>\n"
+              + "  <gmd:contact>\n"
+              + "    <gmd:CI_ResponsibleParty>\n"
+              + "      <gmd:individualName>\n"
+              + "        <gco:CharacterString>ERDDAP Jetty Developer</gco:CharacterString>\n"
+              + "      </gmd:individualName>\n"
+              + "      <gmd:organisationName>\n"
+              + "        <gco:CharacterString>ERDDAP Jetty Install</gco:CharacterString>\n"
+              + "      </gmd:organisationName>\n"
+              + "      <gmd:contactInfo>\n"
+              + "        <gmd:CI_Contact>\n"
+              + "          <gmd:phone>\n"
+              + "            <gmd:CI_Telephone>\n"
+              + "              <gmd:voice>\n"
+              + "                <gco:CharacterString>555-555-5555</gco:CharacterString>\n"
+              + "              </gmd:voice>\n"
+              + "            </gmd:CI_Telephone>\n"
+              + "          </gmd:phone>\n"
+              + "          <gmd:address>\n"
+              + "            <gmd:CI_Address>\n"
+              + "              <gmd:deliveryPoint>\n"
+              + "                <gco:CharacterString>123 Irrelevant St.</gco:CharacterString>\n"
+              + "              </gmd:deliveryPoint>\n"
+              + "              <gmd:city>\n"
+              + "                <gco:CharacterString>Nowhere</gco:CharacterString>\n"
+              + "              </gmd:city>\n"
+              + "              <gmd:administrativeArea>\n"
+              + "                <gco:CharacterString>AK</gco:CharacterString>\n"
+              + "              </gmd:administrativeArea>\n"
+              + "              <gmd:postalCode>\n"
+              + "                <gco:CharacterString>99504</gco:CharacterString>\n"
+              + "              </gmd:postalCode>\n"
+              + "              <gmd:country>\n"
+              + "                <gco:CharacterString>USA</gco:CharacterString>\n"
+              + "              </gmd:country>\n"
+              + "              <gmd:electronicMailAddress>\n"
+              + "                <gco:CharacterString>nobody@example.com</gco:CharacterString>\n"
+              + "              </gmd:electronicMailAddress>\n"
+              + "            </gmd:CI_Address>\n"
+              + "          </gmd:address>\n"
+              + "        </gmd:CI_Contact>\n"
+              + "      </gmd:contactInfo>\n"
+              + "      <gmd:role>\n"
+              + "        <gmd:CI_RoleCode codeList=\"https://data.noaa.gov/resources/iso19139/schema/resources/Codelist/gmxCodelists.xml#gmd:CI_RoleCode\" codeListValue=\"pointOfContact\">pointOfContact</gmd:CI_RoleCode>\n"
+              + "      </gmd:role>\n"
+              + "    </gmd:CI_ResponsibleParty>\n"
+              + "  </gmd:contact>\n"
+              + "  <gmd:dateStamp>\n"
+              + "    <gco:Date>YYYY-MM-DD</gco:Date>\n"
+              + "  </gmd:dateStamp>\n"
+              + "  <gmd:metadataStandardName>\n"
+              + "    <gco:CharacterString>ISO 19115-2 Geographic Information - Metadata Part 2 Extensions for Imagery and Gridded Data</gco:CharacterString>\n"
+              + "  </gmd:metadataStandardName>\n"
+              + "  <gmd:metadataStandardVersion>\n"
+              + "    <gco:CharacterString>ISO 19115-2:2009(E)</gco:CharacterString>\n"
+              + "  </gmd:metadataStandardVersion>\n"
+              + "  <gmd:spatialRepresentationInfo>\n"
+              + "    <gmd:MD_GridSpatialRepresentation>\n"
+              + "      <gmd:numberOfDimensions>\n"
+              + "        <gco:Integer>NUMBER</gco:Integer>\n"
+              + "      </gmd:numberOfDimensions>\n"
+              + "      <gmd:axisDimensionProperties>\n"
+              + "        <gmd:MD_Dimension>\n"
+              + "          <gmd:dimensionName>\n"
+              + "            <gmd:MD_DimensionNameTypeCode codeList=\"https://data.noaa.gov/resources/iso19139/schema/resources/Codelist/gmxCodelists.xml#gmd:MD_DimensionNameTypeCode\" codeListValue=\"column\">column</gmd:MD_DimensionNameTypeCode>\n"
+              + "          </gmd:dimensionName>\n"
+              + "          <gmd:dimensionSize>\n"
+              + "            <gco:Integer>NUMBER</gco:Integer>\n"
+              + "          </gmd:dimensionSize>\n"
+              + "          <gmd:resolution>\n"
+              + "            <gco:Measure uom=\"deg&#x7b;east&#x7d;\">measureValue</gco:Measure>\n"
+              + "          </gmd:resolution>\n"
+              + "        </gmd:MD_Dimension>\n"
+              + "      </gmd:axisDimensionProperties>\n"
+              + "      <gmd:axisDimensionProperties>\n"
+              + "        <gmd:MD_Dimension>\n"
+              + "          <gmd:dimensionName>\n"
+              + "            <gmd:MD_DimensionNameTypeCode codeList=\"https://data.noaa.gov/resources/iso19139/schema/resources/Codelist/gmxCodelists.xml#gmd:MD_DimensionNameTypeCode\" codeListValue=\"row\">row</gmd:MD_DimensionNameTypeCode>\n"
+              + "          </gmd:dimensionName>\n"
+              + "          <gmd:dimensionSize>\n"
+              + "            <gco:Integer>NUMBER</gco:Integer>\n"
+              + "          </gmd:dimensionSize>\n"
+              + "          <gmd:resolution>\n"
+              + "            <gco:Measure uom=\"deg&#x7b;north&#x7d;\">measureValue</gco:Measure>\n"
+              + "          </gmd:resolution>\n"
+              + "        </gmd:MD_Dimension>\n"
+              + "      </gmd:axisDimensionProperties>\n"
+              + "      <gmd:axisDimensionProperties>\n"
+              + "        <gmd:MD_Dimension>\n"
+              + "          <gmd:dimensionName>\n"
+              + "            <gmd:MD_DimensionNameTypeCode codeList=\"https://data.noaa.gov/resources/iso19139/schema/resources/Codelist/gmxCodelists.xml#gmd:MD_DimensionNameTypeCode\" codeListValue=\"temporal\">temporal</gmd:MD_DimensionNameTypeCode>\n"
+              + "          </gmd:dimensionName>\n"
+              + "          <gmd:dimensionSize>\n"
+              + "            <gco:Integer>NUMBER</gco:Integer>\n"
+              + "          </gmd:dimensionSize>\n"
+              + "          <gmd:resolution>\n"
+              + "            <gco:Measure uom=\"s\">VALUE</gco:Measure>\n"
+              + "          </gmd:resolution>\n"
+              + "        </gmd:MD_Dimension>\n"
+              + "      </gmd:axisDimensionProperties>\n"
+              + "      <gmd:cellGeometry>\n"
+              + "        <gmd:MD_CellGeometryCode codeList=\"https://data.noaa.gov/resources/iso19139/schema/resources/Codelist/gmxCodelists.xml#gmd:MD_CellGeometryCode\" codeListValue=\"area\">area</gmd:MD_CellGeometryCode>\n"
+              + "      </gmd:cellGeometry>\n"
+              + "      <gmd:transformationParameterAvailability gco:nilReason=\"unknown\"/>\n"
+              + "    </gmd:MD_GridSpatialRepresentation>\n"
+              + "  </gmd:spatialRepresentationInfo>\n"
+              + "  <gmd:identificationInfo>\n"
+              + "    <gmd:MD_DataIdentification id=\"DataIdentification\">\n"
+              + "      <gmd:citation>\n"
+              + "        <gmd:CI_Citation>\n"
+              + "          <gmd:title>\n"
+              + "            <gco:CharacterString>Chlorophyll-a, Aqua MODIS, NPP, L3SMI, Global, 4km, Science Quality, 2003-present (1 Day Composite)</gco:CharacterString>\n"
+              + "          </gmd:title>\n"
+              + "          <gmd:date>\n"
+              + "            <gmd:CI_Date>\n"
+              + "              <gmd:date>\n"
+              + "                <gco:Date>YYYY-MM-DD</gco:Date>\n"
+              + "              </gmd:date>\n"
+              + "              <gmd:dateType>\n"
+              + "                <gmd:CI_DateTypeCode codeList=\"https://data.noaa.gov/resources/iso19139/schema/resources/Codelist/gmxCodelists.xml#gmd:CI_DateTypeCode\" codeListValue=\"creation\">creation</gmd:CI_DateTypeCode>\n"
+              + "              </gmd:dateType>\n"
+              + "            </gmd:CI_Date>\n"
+              + "          </gmd:date>\n"
+              + "          <gmd:identifier>\n"
+              + "            <gmd:MD_Identifier>\n"
+              + "              <gmd:authority>\n"
+              + "                <gmd:CI_Citation>\n"
+              + "                  <gmd:title>\n"
+              + "                    <gco:CharacterString>localhost:8080</gco:CharacterString>\n"
+              + "                  </gmd:title>\n"
+              + "                  <gmd:date gco:nilReason=\"inapplicable\"/>\n"
+              + "                </gmd:CI_Citation>\n"
+              + "              </gmd:authority>\n"
+              + "              <gmd:code>\n"
+              + "                <gco:CharacterString>erdMH1chla1day</gco:CharacterString>\n"
+              + "              </gmd:code>\n"
+              + "            </gmd:MD_Identifier>\n"
+              + "          </gmd:identifier>\n"
+              + "          <gmd:citedResponsibleParty>\n"
+              + "            <gmd:CI_ResponsibleParty>\n"
+              + "              <gmd:individualName gco:nilReason=\"missing\"/>\n"
+              + "              <gmd:organisationName>\n"
+              + "                <gco:CharacterString>NASA/GSFC/OBPG</gco:CharacterString>\n"
+              + "              </gmd:organisationName>\n"
+              + "              <gmd:contactInfo>\n"
+              + "                <gmd:CI_Contact>\n"
+              + "                  <gmd:address>\n"
+              + "                    <gmd:CI_Address>\n"
+              + "                      <gmd:electronicMailAddress>\n"
+              + "                        <gco:CharacterString>data@oceancolor.gsfc.nasa.gov</gco:CharacterString>\n"
+              + "                      </gmd:electronicMailAddress>\n"
+              + "                    </gmd:CI_Address>\n"
+              + "                  </gmd:address>\n"
+              + "                  <gmd:onlineResource>\n"
+              + "                    <gmd:CI_OnlineResource>\n"
+              + "                      <gmd:linkage>\n"
+              + "                        <gmd:URL>https://coastwatch.pfeg.noaa.gov/infog/MH1_chla_las.html</gmd:URL>\n"
+              + "                      </gmd:linkage>\n"
+              + "                      <gmd:protocol>\n"
+              + "                        <gco:CharacterString>information</gco:CharacterString>\n"
+              + "                      </gmd:protocol>\n"
+              + "                      <gmd:applicationProfile>\n"
+              + "                        <gco:CharacterString>web browser</gco:CharacterString>\n"
+              + "                      </gmd:applicationProfile>\n"
+              + "                      <gmd:name>\n"
+              + "                        <gco:CharacterString>Background Information</gco:CharacterString>\n"
+              + "                      </gmd:name>\n"
+              + "                      <gmd:description>\n"
+              + "                        <gco:CharacterString>Background information from the source</gco:CharacterString>\n"
+              + "                      </gmd:description>\n"
+              + "                      <gmd:function>\n"
+              + "                        <gmd:CI_OnLineFunctionCode codeList=\"https://data.noaa.gov/resources/iso19139/schema/resources/Codelist/gmxCodelists.xml#gmd:CI_OnLineFunctionCode\" codeListValue=\"information\">information</gmd:CI_OnLineFunctionCode>\n"
+              + "                      </gmd:function>\n"
+              + "                    </gmd:CI_OnlineResource>\n"
+              + "                  </gmd:onlineResource>\n"
+              + "                </gmd:CI_Contact>\n"
+              + "              </gmd:contactInfo>\n"
+              + "              <gmd:role>\n"
+              + "                <gmd:CI_RoleCode codeList=\"https://data.noaa.gov/resources/iso19139/schema/resources/Codelist/gmxCodelists.xml#gmd:CI_RoleCode\" codeListValue=\"originator\">originator</gmd:CI_RoleCode>\n"
+              + "              </gmd:role>\n"
+              + "            </gmd:CI_ResponsibleParty>\n"
+              + "          </gmd:citedResponsibleParty>\n"
+              + "        </gmd:CI_Citation>\n"
+              + "      </gmd:citation>\n"
+              + "      <gmd:abstract>\n"
+              + "        <gco:CharacterString>This dataset has Level 3, Standard Mapped Image, 4km, chlorophyll-a concentration data from NASA&#39;s Aqua Spacecraft.  Measurements are gathered by the Moderate Resolution Imaging Spectroradiometer (MODIS) carried aboard the spacecraft.  This is Science Quality data.  This is the August 2015 version of this dataset.</gco:CharacterString>\n"
+              + "      </gmd:abstract>\n"
+              + "      <gmd:credit gco:nilReason=\"missing\"/>\n"
+              + "      <gmd:pointOfContact>\n"
+              + "        <gmd:CI_ResponsibleParty>\n"
+              + "          <gmd:individualName gco:nilReason=\"missing\"/>\n"
+              + "          <gmd:organisationName>\n"
+              + "            <gco:CharacterString>NASA/GSFC/OBPG</gco:CharacterString>\n"
+              + "          </gmd:organisationName>\n"
+              + "          <gmd:contactInfo>\n"
+              + "            <gmd:CI_Contact>\n"
+              + "              <gmd:address>\n"
+              + "                <gmd:CI_Address>\n"
+              + "                  <gmd:electronicMailAddress>\n"
+              + "                    <gco:CharacterString>data@oceancolor.gsfc.nasa.gov</gco:CharacterString>\n"
+              + "                  </gmd:electronicMailAddress>\n"
+              + "                </gmd:CI_Address>\n"
+              + "              </gmd:address>\n"
+              + "              <gmd:onlineResource>\n"
+              + "                <gmd:CI_OnlineResource>\n"
+              + "                  <gmd:linkage>\n"
+              + "                    <gmd:URL>https://coastwatch.pfeg.noaa.gov/infog/MH1_chla_las.html</gmd:URL>\n"
+              + "                  </gmd:linkage>\n"
+              + "                  <gmd:protocol>\n"
+              + "                    <gco:CharacterString>information</gco:CharacterString>\n"
+              + "                  </gmd:protocol>\n"
+              + "                  <gmd:applicationProfile>\n"
+              + "                    <gco:CharacterString>web browser</gco:CharacterString>\n"
+              + "                  </gmd:applicationProfile>\n"
+              + "                  <gmd:name>\n"
+              + "                    <gco:CharacterString>Background Information</gco:CharacterString>\n"
+              + "                  </gmd:name>\n"
+              + "                  <gmd:description>\n"
+              + "                    <gco:CharacterString>Background information from the source</gco:CharacterString>\n"
+              + "                  </gmd:description>\n"
+              + "                  <gmd:function>\n"
+              + "                    <gmd:CI_OnLineFunctionCode codeList=\"https://data.noaa.gov/resources/iso19139/schema/resources/Codelist/gmxCodelists.xml#gmd:CI_OnLineFunctionCode\" codeListValue=\"information\">information</gmd:CI_OnLineFunctionCode>\n"
+              + "                  </gmd:function>\n"
+              + "                </gmd:CI_OnlineResource>\n"
+              + "              </gmd:onlineResource>\n"
+              + "            </gmd:CI_Contact>\n"
+              + "          </gmd:contactInfo>\n"
+              + "          <gmd:role>\n"
+              + "            <gmd:CI_RoleCode codeList=\"https://data.noaa.gov/resources/iso19139/schema/resources/Codelist/gmxCodelists.xml#gmd:CI_RoleCode\" codeListValue=\"pointOfContact\">pointOfContact</gmd:CI_RoleCode>\n"
+              + "          </gmd:role>\n"
+              + "        </gmd:CI_ResponsibleParty>\n"
+              + "      </gmd:pointOfContact>\n"
+              + "      <gmd:descriptiveKeywords>\n"
+              + "        <gmd:MD_Keywords>\n"
+              + "          <gmd:keyword>\n"
+              + "            <gco:CharacterString>algorithm</gco:CharacterString>\n"
+              + "          </gmd:keyword>\n"
+              + "          <gmd:keyword>\n"
+              + "            <gco:CharacterString>biology</gco:CharacterString>\n"
+              + "          </gmd:keyword>\n"
+              + "          <gmd:keyword>\n"
+              + "            <gco:CharacterString>center</gco:CharacterString>\n"
+              + "          </gmd:keyword>\n"
+              + "          <gmd:keyword>\n"
+              + "            <gco:CharacterString>chemistry</gco:CharacterString>\n"
+              + "          </gmd:keyword>\n"
+              + "          <gmd:keyword>\n"
+              + "            <gco:CharacterString>chlorophyll</gco:CharacterString>\n"
+              + "          </gmd:keyword>\n"
+              + "          <gmd:keyword>\n"
+              + "            <gco:CharacterString>color</gco:CharacterString>\n"
+              + "          </gmd:keyword>\n"
+              + "          <gmd:keyword>\n"
+              + "            <gco:CharacterString>concentration</gco:CharacterString>\n"
+              + "          </gmd:keyword>\n"
+              + "          <gmd:keyword>\n"
+              + "            <gco:CharacterString>data</gco:CharacterString>\n"
+              + "          </gmd:keyword>\n"
+              + "          <gmd:keyword>\n"
+              + "            <gco:CharacterString>ecology</gco:CharacterString>\n"
+              + "          </gmd:keyword>\n"
+              + "          <gmd:keyword>\n"
+              + "            <gco:CharacterString>flight</gco:CharacterString>\n"
+              + "          </gmd:keyword>\n"
+              + "          <gmd:keyword>\n"
+              + "            <gco:CharacterString>goddard</gco:CharacterString>\n"
+              + "          </gmd:keyword>\n"
+              + "          <gmd:keyword>\n"
+              + "            <gco:CharacterString>group</gco:CharacterString>\n"
+              + "          </gmd:keyword>\n"
+              + "          <gmd:keyword>\n"
+              + "            <gco:CharacterString>gsfc</gco:CharacterString>\n"
+              + "          </gmd:keyword>\n"
+              + "          <gmd:keyword>\n"
+              + "            <gco:CharacterString>image</gco:CharacterString>\n"
+              + "          </gmd:keyword>\n"
+              + "          <gmd:keyword>\n"
+              + "            <gco:CharacterString>imaging</gco:CharacterString>\n"
+              + "          </gmd:keyword>\n"
+              + "          <gmd:keyword>\n"
+              + "            <gco:CharacterString>L3</gco:CharacterString>\n"
+              + "          </gmd:keyword>\n"
+              + "          <gmd:keyword>\n"
+              + "            <gco:CharacterString>laboratory</gco:CharacterString>\n"
+              + "          </gmd:keyword>\n"
+              + "          <gmd:keyword>\n"
+              + "            <gco:CharacterString>level</gco:CharacterString>\n"
+              + "          </gmd:keyword>\n"
+              + "          <gmd:keyword>\n"
+              + "            <gco:CharacterString>level-3</gco:CharacterString>\n"
+              + "          </gmd:keyword>\n"
+              + "          <gmd:keyword>\n"
+              + "            <gco:CharacterString>mapped</gco:CharacterString>\n"
+              + "          </gmd:keyword>\n"
+              + "          <gmd:keyword>\n"
+              + "            <gco:CharacterString>mass</gco:CharacterString>\n"
+              + "          </gmd:keyword>\n"
+              + "          <gmd:keyword>\n"
+              + "            <gco:CharacterString>moderate</gco:CharacterString>\n"
+              + "          </gmd:keyword>\n"
+              + "          <gmd:keyword>\n"
+              + "            <gco:CharacterString>modis</gco:CharacterString>\n"
+              + "          </gmd:keyword>\n"
+              + "          <gmd:keyword>\n"
+              + "            <gco:CharacterString>nasa</gco:CharacterString>\n"
+              + "          </gmd:keyword>\n"
+              + "          <gmd:keyword>\n"
+              + "            <gco:CharacterString>ocean</gco:CharacterString>\n"
+              + "          </gmd:keyword>\n"
+              + "          <gmd:keyword>\n"
+              + "            <gco:CharacterString>ocean color</gco:CharacterString>\n"
+              + "          </gmd:keyword>\n"
+              + "          <gmd:keyword>\n"
+              + "            <gco:CharacterString>oceans</gco:CharacterString>\n"
+              + "          </gmd:keyword>\n"
+              + "          <gmd:keyword>\n"
+              + "            <gco:CharacterString>oci</gco:CharacterString>\n"
+              + "          </gmd:keyword>\n"
+              + "          <gmd:keyword>\n"
+              + "            <gco:CharacterString>optics</gco:CharacterString>\n"
+              + "          </gmd:keyword>\n"
+              + "          <gmd:keyword>\n"
+              + "            <gco:CharacterString>processing</gco:CharacterString>\n"
+              + "          </gmd:keyword>\n"
+              + "          <gmd:keyword>\n"
+              + "            <gco:CharacterString>resolution</gco:CharacterString>\n"
+              + "          </gmd:keyword>\n"
+              + "          <gmd:keyword>\n"
+              + "            <gco:CharacterString>sea</gco:CharacterString>\n"
+              + "          </gmd:keyword>\n"
+              + "          <gmd:keyword>\n"
+              + "            <gco:CharacterString>seawater</gco:CharacterString>\n"
+              + "          </gmd:keyword>\n"
+              + "          <gmd:keyword>\n"
+              + "            <gco:CharacterString>smi</gco:CharacterString>\n"
+              + "          </gmd:keyword>\n"
+              + "          <gmd:keyword>\n"
+              + "            <gco:CharacterString>space</gco:CharacterString>\n"
+              + "          </gmd:keyword>\n"
+              + "          <gmd:keyword>\n"
+              + "            <gco:CharacterString>spectroradiometer</gco:CharacterString>\n"
+              + "          </gmd:keyword>\n"
+              + "          <gmd:keyword>\n"
+              + "            <gco:CharacterString>standard</gco:CharacterString>\n"
+              + "          </gmd:keyword>\n"
+              + "          <gmd:keyword>\n"
+              + "            <gco:CharacterString>water</gco:CharacterString>\n"
+              + "          </gmd:keyword>\n"
+              + "          <gmd:type>\n"
+              + "            <gmd:MD_KeywordTypeCode codeList=\"https://data.noaa.gov/resources/iso19139/schema/resources/Codelist/gmxCodelists.xml#gmd:MD_KeywordTypeCode\" codeListValue=\"theme\">theme</gmd:MD_KeywordTypeCode>\n"
+              + "          </gmd:type>\n"
+              + "          <gmd:thesaurusName gco:nilReason=\"unknown\"/>\n"
+              + "        </gmd:MD_Keywords>\n"
+              + "      </gmd:descriptiveKeywords>\n"
+              + "      <gmd:descriptiveKeywords>\n"
+              + "        <gmd:MD_Keywords>\n"
+              + "          <gmd:keyword>\n"
+              + "            <gco:CharacterString>Earth Science &gt; Oceans &gt; Ocean Optics &gt; Ocean Color</gco:CharacterString>\n"
+              + "          </gmd:keyword>\n"
+              + "          <gmd:keyword>\n"
+              + "            <gco:CharacterString>Earth Science &gt; Oceans &gt; Ocean Chemistry &gt; Chlorophyll</gco:CharacterString>\n"
+              + "          </gmd:keyword>\n"
+              + "          <gmd:type>\n"
+              + "            <gmd:MD_KeywordTypeCode codeList=\"https://data.noaa.gov/resources/iso19139/schema/resources/Codelist/gmxCodelists.xml#gmd:MD_KeywordTypeCode\" codeListValue=\"theme\">theme</gmd:MD_KeywordTypeCode>\n"
+              + "          </gmd:type>\n"
+              + "          <gmd:thesaurusName>\n"
+              + "            <gmd:CI_Citation>\n"
+              + "              <gmd:title>\n"
+              + "                <gco:CharacterString>GCMD Science Keywords</gco:CharacterString>\n"
+              + "              </gmd:title>\n"
+              + "              <gmd:date gco:nilReason=\"unknown\"/>\n"
+              + "            </gmd:CI_Citation>\n"
+              + "          </gmd:thesaurusName>\n"
+              + "        </gmd:MD_Keywords>\n"
+              + "      </gmd:descriptiveKeywords>\n"
+              + "      <gmd:descriptiveKeywords>\n"
+              + "        <gmd:MD_Keywords>\n"
+              + "          <gmd:keyword>\n"
+              + "            <gco:CharacterString>Ocean Biology Processing Group (NASA/GSFC/OBPG)</gco:CharacterString>\n"
+              + "          </gmd:keyword>\n"
+              + "          <gmd:type>\n"
+              + "            <gmd:MD_KeywordTypeCode codeList=\"https://data.noaa.gov/resources/iso19139/schema/resources/Codelist/gmxCodelists.xml#gmd:MD_KeywordTypeCode\" codeListValue=\"project\">project</gmd:MD_KeywordTypeCode>\n"
+              + "          </gmd:type>\n"
+              + "          <gmd:thesaurusName gco:nilReason=\"unknown\"/>\n"
+              + "        </gmd:MD_Keywords>\n"
+              + "      </gmd:descriptiveKeywords>\n"
+              + "      <gmd:descriptiveKeywords>\n"
+              + "        <gmd:MD_Keywords>\n"
+              + "          <gmd:keyword>\n"
+              + "            <gco:CharacterString>time</gco:CharacterString>\n"
+              + "          </gmd:keyword>\n"
+              + "          <gmd:keyword>\n"
+              + "            <gco:CharacterString>latitude</gco:CharacterString>\n"
+              + "          </gmd:keyword>\n"
+              + "          <gmd:keyword>\n"
+              + "            <gco:CharacterString>longitude</gco:CharacterString>\n"
+              + "          </gmd:keyword>\n"
+              + "          <gmd:keyword>\n"
+              + "            <gco:CharacterString>concentration_of_chlorophyll_in_sea_water</gco:CharacterString>\n"
+              + "          </gmd:keyword>\n"
+              + "          <gmd:type>\n"
+              + "            <gmd:MD_KeywordTypeCode codeList=\"https://data.noaa.gov/resources/iso19139/schema/resources/Codelist/gmxCodelists.xml#gmd:MD_KeywordTypeCode\" codeListValue=\"theme\">theme</gmd:MD_KeywordTypeCode>\n"
+              + "          </gmd:type>\n"
+              + "          <gmd:thesaurusName>\n"
+              + "            <gmd:CI_Citation>\n"
+              + "              <gmd:title>\n"
+              + "                <gco:CharacterString>CF Standard Name Table v70</gco:CharacterString>\n"
+              + "              </gmd:title>\n"
+              + "              <gmd:date gco:nilReason=\"unknown\"/>\n"
+              + "            </gmd:CI_Citation>\n"
+              + "          </gmd:thesaurusName>\n"
+              + "        </gmd:MD_Keywords>\n"
+              + "      </gmd:descriptiveKeywords>\n"
+              + "      <gmd:resourceConstraints>\n"
+              + "        <gmd:MD_LegalConstraints>\n"
+              + "          <gmd:useLimitation>\n"
+              + "            <gco:CharacterString>https://science.nasa.gov/earth-science/earth-science-data/data-information-policy/\n"
+              + "The data may be used and redistributed for free but is not intended\n"
+              + "for legal use, since it may contain inaccuracies. Neither the data\n"
+              + "Contributor, ERD, NOAA, nor the United States Government, nor any\n"
+              + "of their employees or contractors, makes any warranty, express or\n"
+              + "implied, including warranties of merchantability and fitness for a\n"
+              + "particular purpose, or assumes any legal liability for the accuracy,\n"
+              + "completeness, or usefulness, of this information.</gco:CharacterString>\n"
+              + "          </gmd:useLimitation>\n"
+              + "        </gmd:MD_LegalConstraints>\n"
+              + "      </gmd:resourceConstraints>\n"
+              + "      <gmd:aggregationInfo>\n"
+              + "        <gmd:MD_AggregateInformation>\n"
+              + "          <gmd:aggregateDataSetName>\n"
+              + "            <gmd:CI_Citation>\n"
+              + "              <gmd:title>\n"
+              + "                <gco:CharacterString>Ocean Biology Processing Group (NASA/GSFC/OBPG)</gco:CharacterString>\n"
+              + "              </gmd:title>\n"
+              + "              <gmd:date gco:nilReason=\"inapplicable\"/>\n"
+              + "            </gmd:CI_Citation>\n"
+              + "          </gmd:aggregateDataSetName>\n"
+              + "          <gmd:associationType>\n"
+              + "            <gmd:DS_AssociationTypeCode codeList=\"https://data.noaa.gov/resources/iso19139/schema/resources/Codelist/gmxCodelists.xml#gmd:DS_AssociationTypeCode\" codeListValue=\"largerWorkCitation\">largerWorkCitation</gmd:DS_AssociationTypeCode>\n"
+              + "          </gmd:associationType>\n"
+              + "          <gmd:initiativeType>\n"
+              + "            <gmd:DS_InitiativeTypeCode codeList=\"https://data.noaa.gov/resources/iso19139/schema/resources/Codelist/gmxCodelists.xml#gmd:DS_InitiativeTypeCode\" codeListValue=\"project\">project</gmd:DS_InitiativeTypeCode>\n"
+              + "          </gmd:initiativeType>\n"
+              + "        </gmd:MD_AggregateInformation>\n"
+              + "      </gmd:aggregationInfo>\n"
+              + "      <gmd:aggregationInfo>\n"
+              + "        <gmd:MD_AggregateInformation>\n"
+              + "          <gmd:aggregateDataSetIdentifier>\n"
+              + "            <gmd:MD_Identifier>\n"
+              + "              <gmd:authority>\n"
+              + "                <gmd:CI_Citation>\n"
+              + "                  <gmd:title>\n"
+              + "                    <gco:CharacterString>Unidata Common Data Model</gco:CharacterString>\n"
+              + "                  </gmd:title>\n"
+              + "                  <gmd:date gco:nilReason=\"inapplicable\"/>\n"
+              + "                </gmd:CI_Citation>\n"
+              + "              </gmd:authority>\n"
+              + "              <gmd:code>\n"
+              + "                <gco:CharacterString>Grid</gco:CharacterString>\n"
+              + "              </gmd:code>\n"
+              + "            </gmd:MD_Identifier>\n"
+              + "          </gmd:aggregateDataSetIdentifier>\n"
+              + "          <gmd:associationType>\n"
+              + "            <gmd:DS_AssociationTypeCode codeList=\"https://data.noaa.gov/resources/iso19139/schema/resources/Codelist/gmxCodelists.xml#gmd:DS_AssociationTypeCode\" codeListValue=\"largerWorkCitation\">largerWorkCitation</gmd:DS_AssociationTypeCode>\n"
+              + "          </gmd:associationType>\n"
+              + "          <gmd:initiativeType>\n"
+              + "            <gmd:DS_InitiativeTypeCode codeList=\"https://data.noaa.gov/resources/iso19139/schema/resources/Codelist/gmxCodelists.xml#gmd:DS_InitiativeTypeCode\" codeListValue=\"project\">project</gmd:DS_InitiativeTypeCode>\n"
+              + "          </gmd:initiativeType>\n"
+              + "        </gmd:MD_AggregateInformation>\n"
+              + "      </gmd:aggregationInfo>\n"
+              + "      <gmd:language>\n"
+              + "        <gco:CharacterString>eng</gco:CharacterString>\n"
+              + "      </gmd:language>\n"
+              + "      <gmd:topicCategory>\n"
+              + "        <gmd:MD_TopicCategoryCode>geoscientificInformation</gmd:MD_TopicCategoryCode>\n"
+              + "      </gmd:topicCategory>\n"
+              + "      <gmd:extent>\n"
+              + "        <gmd:EX_Extent id=\"boundingExtent\">\n"
+              + "          <gmd:geographicElement>\n"
+              + "            <gmd:EX_GeographicBoundingBox id=\"boundingGeographicBoundingBox\">\n"
+              + "              <gmd:extentTypeCode>\n"
+              + "                <gco:Boolean>1</gco:Boolean>\n"
+              + "              </gmd:extentTypeCode>\n"
+              + "              <gmd:westBoundLongitude>\n"
+              + "                <gco:Decimal>-179.9792</gco:Decimal>\n"
+              + "              </gmd:westBoundLongitude>\n"
+              + "              <gmd:eastBoundLongitude>\n"
+              + "                <gco:Decimal>179.9792</gco:Decimal>\n"
+              + "              </gmd:eastBoundLongitude>\n"
+              + "              <gmd:southBoundLatitude>\n"
+              + "                <gco:Decimal>-89.97918</gco:Decimal>\n"
+              + "              </gmd:southBoundLatitude>\n"
+              + "              <gmd:northBoundLatitude>\n"
+              + "                <gco:Decimal>89.97916</gco:Decimal>\n"
+              + "              </gmd:northBoundLatitude>\n"
+              + "            </gmd:EX_GeographicBoundingBox>\n"
+              + "          </gmd:geographicElement>\n"
+              + "          <gmd:temporalElement>\n"
+              + "            <gmd:EX_TemporalExtent id=\"boundingTemporalExtent\">\n"
+              + "              <gmd:extent>\n"
+              + "                <gml:TimePeriod gml:id=\"DI_gmdExtent_timePeriod_id\">\n"
+              + "                  <gml:description>seconds</gml:description>\n"
+              + "                   <gml:beginPosition>YYYY-MM-DDThh:00:00Z</gml:beginPosition>\n"
+              + "                  <gml:endPosition>YYYY-MM-DDThh:00:00Z</gml:endPosition>\n"
+              + "                </gml:TimePeriod>\n"
+              + "              </gmd:extent>\n"
+              + "            </gmd:EX_TemporalExtent>\n"
+              + "          </gmd:temporalElement>\n"
+              + "        </gmd:EX_Extent>\n"
+              + "      </gmd:extent>\n"
+              + "    </gmd:MD_DataIdentification>\n"
+              + "  </gmd:identificationInfo>\n"
+              + "  <gmd:identificationInfo>\n"
+              + "    <srv:SV_ServiceIdentification id=\"ERDDAP-griddap\">\n"
+              + "      <gmd:citation>\n"
+              + "        <gmd:CI_Citation>\n"
+              + "          <gmd:title>\n"
+              + "            <gco:CharacterString>Chlorophyll-a, Aqua MODIS, NPP, L3SMI, Global, 4km, Science Quality, 2003-present (1 Day Composite)</gco:CharacterString>\n"
+              + "          </gmd:title>\n"
+              + "          <gmd:date>\n"
+              + "            <gmd:CI_Date>\n"
+              + "              <gmd:date>\n"
+              + "                <gco:Date>YYYY-MM-DD</gco:Date>\n"
+              + "              </gmd:date>\n"
+              + "              <gmd:dateType>\n"
+              + "                <gmd:CI_DateTypeCode codeList=\"https://data.noaa.gov/resources/iso19139/schema/resources/Codelist/gmxCodelists.xml#gmd:CI_DateTypeCode\" codeListValue=\"creation\">creation</gmd:CI_DateTypeCode>\n"
+              + "              </gmd:dateType>\n"
+              + "            </gmd:CI_Date>\n"
+              + "          </gmd:date>\n"
+              + "          <gmd:citedResponsibleParty>\n"
+              + "            <gmd:CI_ResponsibleParty>\n"
+              + "              <gmd:individualName gco:nilReason=\"missing\"/>\n"
+              + "              <gmd:organisationName>\n"
+              + "                <gco:CharacterString>NASA/GSFC/OBPG</gco:CharacterString>\n"
+              + "              </gmd:organisationName>\n"
+              + "              <gmd:contactInfo>\n"
+              + "                <gmd:CI_Contact>\n"
+              + "                  <gmd:address>\n"
+              + "                    <gmd:CI_Address>\n"
+              + "                      <gmd:electronicMailAddress>\n"
+              + "                        <gco:CharacterString>data@oceancolor.gsfc.nasa.gov</gco:CharacterString>\n"
+              + "                      </gmd:electronicMailAddress>\n"
+              + "                    </gmd:CI_Address>\n"
+              + "                  </gmd:address>\n"
+              + "                  <gmd:onlineResource>\n"
+              + "                    <gmd:CI_OnlineResource>\n"
+              + "                      <gmd:linkage>\n"
+              + "                        <gmd:URL>https://coastwatch.pfeg.noaa.gov/infog/MH1_chla_las.html</gmd:URL>\n"
+              + "                      </gmd:linkage>\n"
+              + "                      <gmd:protocol>\n"
+              + "                        <gco:CharacterString>information</gco:CharacterString>\n"
+              + "                      </gmd:protocol>\n"
+              + "                      <gmd:applicationProfile>\n"
+              + "                        <gco:CharacterString>web browser</gco:CharacterString>\n"
+              + "                      </gmd:applicationProfile>\n"
+              + "                      <gmd:name>\n"
+              + "                        <gco:CharacterString>Background Information</gco:CharacterString>\n"
+              + "                      </gmd:name>\n"
+              + "                      <gmd:description>\n"
+              + "                        <gco:CharacterString>Background information from the source</gco:CharacterString>\n"
+              + "                      </gmd:description>\n"
+              + "                      <gmd:function>\n"
+              + "                        <gmd:CI_OnLineFunctionCode codeList=\"https://data.noaa.gov/resources/iso19139/schema/resources/Codelist/gmxCodelists.xml#gmd:CI_OnLineFunctionCode\" codeListValue=\"information\">information</gmd:CI_OnLineFunctionCode>\n"
+              + "                      </gmd:function>\n"
+              + "                    </gmd:CI_OnlineResource>\n"
+              + "                  </gmd:onlineResource>\n"
+              + "                </gmd:CI_Contact>\n"
+              + "              </gmd:contactInfo>\n"
+              + "              <gmd:role>\n"
+              + "                <gmd:CI_RoleCode codeList=\"https://data.noaa.gov/resources/iso19139/schema/resources/Codelist/gmxCodelists.xml#gmd:CI_RoleCode\" codeListValue=\"originator\">originator</gmd:CI_RoleCode>\n"
+              + "              </gmd:role>\n"
+              + "            </gmd:CI_ResponsibleParty>\n"
+              + "          </gmd:citedResponsibleParty>\n"
+              + "        </gmd:CI_Citation>\n"
+              + "      </gmd:citation>\n"
+              + "      <gmd:abstract>\n"
+              + "        <gco:CharacterString>This dataset has Level 3, Standard Mapped Image, 4km, chlorophyll-a concentration data from NASA&#39;s Aqua Spacecraft.  Measurements are gathered by the Moderate Resolution Imaging Spectroradiometer (MODIS) carried aboard the spacecraft.  This is Science Quality data.  This is the August 2015 version of this dataset.</gco:CharacterString>\n"
+              + "      </gmd:abstract>\n"
+              + "      <srv:serviceType>\n"
+              + "        <gco:LocalName>ERDDAP griddap</gco:LocalName>\n"
+              + "      </srv:serviceType>\n"
+              + "      <srv:extent>\n"
+              + "        <gmd:EX_Extent>\n"
+              + "          <gmd:geographicElement>\n"
+              + "            <gmd:EX_GeographicBoundingBox>\n"
+              + "              <gmd:extentTypeCode>\n"
+              + "                <gco:Boolean>1</gco:Boolean>\n"
+              + "              </gmd:extentTypeCode>\n"
+              + "              <gmd:westBoundLongitude>\n"
+              + "                <gco:Decimal>-179.9792</gco:Decimal>\n"
+              + "              </gmd:westBoundLongitude>\n"
+              + "              <gmd:eastBoundLongitude>\n"
+              + "                <gco:Decimal>179.9792</gco:Decimal>\n"
+              + "              </gmd:eastBoundLongitude>\n"
+              + "              <gmd:southBoundLatitude>\n"
+              + "                <gco:Decimal>-89.97918</gco:Decimal>\n"
+              + "              </gmd:southBoundLatitude>\n"
+              + "              <gmd:northBoundLatitude>\n"
+              + "                <gco:Decimal>89.97916</gco:Decimal>\n"
+              + "              </gmd:northBoundLatitude>\n"
+              + "            </gmd:EX_GeographicBoundingBox>\n"
+              + "          </gmd:geographicElement>\n"
+              + "          <gmd:temporalElement>\n"
+              + "            <gmd:EX_TemporalExtent>\n"
+              + "              <gmd:extent>\n"
+              + "                <gml:TimePeriod gml:id=\"ED_gmdExtent_timePeriod_id\">\n"
+              + "                  <gml:description>seconds</gml:description>\n"
+              + "                  <gml:beginPosition>YYYY-MM-DDThh:00:00Z</gml:beginPosition>\n"
+              + "                  <gml:endPosition>YYYY-MM-DDThh:00:00Z</gml:endPosition>\n"
+              + "                </gml:TimePeriod>\n"
+              + "              </gmd:extent>\n"
+              + "            </gmd:EX_TemporalExtent>\n"
+              + "          </gmd:temporalElement>\n"
+              + "        </gmd:EX_Extent>\n"
+              + "      </srv:extent>\n"
+              + "      <srv:couplingType>\n"
+              + "        <srv:SV_CouplingType codeList=\"https://data.noaa.gov/ISO19139/resources/codeList.xml#SV_CouplingType\" codeListValue=\"tight\">tight</srv:SV_CouplingType>\n"
+              + "      </srv:couplingType>\n"
+              + "      <srv:containsOperations>\n"
+              + "        <srv:SV_OperationMetadata>\n"
+              + "          <srv:operationName>\n"
+              + "            <gco:CharacterString>ERDDAPgriddapDatasetQueryAndAccess</gco:CharacterString>\n"
+              + "          </srv:operationName>\n"
+              + "          <srv:DCP gco:nilReason=\"unknown\"/>\n"
+              + "          <srv:connectPoint>\n"
+              + "            <gmd:CI_OnlineResource>\n"
+              + "              <gmd:linkage>\n"
+              + "                <gmd:URL>http://localhost:8080/erddap/griddap/erdMH1chla1day</gmd:URL>\n"
+              + "              </gmd:linkage>\n"
+              + "              <gmd:protocol>\n"
+              + "                <gco:CharacterString>ERDDAP:griddap</gco:CharacterString>\n"
+              + "              </gmd:protocol>\n"
+              + "              <gmd:name>\n"
+              + "                <gco:CharacterString>ERDDAP-griddap</gco:CharacterString>\n"
+              + "              </gmd:name>\n"
+              + "              <gmd:description>\n"
+              + "                <gco:CharacterString>ERDDAP's griddap service (a flavor of OPeNDAP) for gridded data. Add different extensions (e.g., .html, .graph, .das, .dds) to the base URL for different purposes.</gco:CharacterString>\n"
+              + "              </gmd:description>\n"
+              + "              <gmd:function>\n"
+              + "                <gmd:CI_OnLineFunctionCode codeList=\"http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_OnLineFunctionCode\" codeListValue=\"download\">download</gmd:CI_OnLineFunctionCode>\n"
+              + "              </gmd:function>\n"
+              + "            </gmd:CI_OnlineResource>\n"
+              + "          </srv:connectPoint>\n"
+              + "        </srv:SV_OperationMetadata>\n"
+              + "      </srv:containsOperations>\n"
+              + "      <srv:operatesOn xlink:href=\"#DataIdentification\"/>\n"
+              + "    </srv:SV_ServiceIdentification>\n"
+              + "  </gmd:identificationInfo>\n"
+              + "  <gmd:identificationInfo>\n"
+              + "    <srv:SV_ServiceIdentification id=\"OPeNDAP\">\n"
+              + "      <gmd:citation>\n"
+              + "        <gmd:CI_Citation>\n"
+              + "          <gmd:title>\n"
+              + "            <gco:CharacterString>Chlorophyll-a, Aqua MODIS, NPP, L3SMI, Global, 4km, Science Quality, 2003-present (1 Day Composite)</gco:CharacterString>\n"
+              + "          </gmd:title>\n"
+              + "          <gmd:date>\n"
+              + "            <gmd:CI_Date>\n"
+              + "              <gmd:date>\n"
+              + "                <gco:Date>YYYY-MM-DD</gco:Date>\n"
+              + "              </gmd:date>\n"
+              + "              <gmd:dateType>\n"
+              + "                <gmd:CI_DateTypeCode codeList=\"https://data.noaa.gov/resources/iso19139/schema/resources/Codelist/gmxCodelists.xml#gmd:CI_DateTypeCode\" codeListValue=\"creation\">creation</gmd:CI_DateTypeCode>\n"
+              + "              </gmd:dateType>\n"
+              + "            </gmd:CI_Date>\n"
+              + "          </gmd:date>\n"
+              + "          <gmd:citedResponsibleParty>\n"
+              + "            <gmd:CI_ResponsibleParty>\n"
+              + "              <gmd:individualName gco:nilReason=\"missing\"/>\n"
+              + "              <gmd:organisationName>\n"
+              + "                <gco:CharacterString>NASA/GSFC/OBPG</gco:CharacterString>\n"
+              + "              </gmd:organisationName>\n"
+              + "              <gmd:contactInfo>\n"
+              + "                <gmd:CI_Contact>\n"
+              + "                  <gmd:address>\n"
+              + "                    <gmd:CI_Address>\n"
+              + "                      <gmd:electronicMailAddress>\n"
+              + "                        <gco:CharacterString>data@oceancolor.gsfc.nasa.gov</gco:CharacterString>\n"
+              + "                      </gmd:electronicMailAddress>\n"
+              + "                    </gmd:CI_Address>\n"
+              + "                  </gmd:address>\n"
+              + "                  <gmd:onlineResource>\n"
+              + "                    <gmd:CI_OnlineResource>\n"
+              + "                      <gmd:linkage>\n"
+              + "                        <gmd:URL>https://coastwatch.pfeg.noaa.gov/infog/MH1_chla_las.html</gmd:URL>\n"
+              + "                      </gmd:linkage>\n"
+              + "                      <gmd:protocol>\n"
+              + "                        <gco:CharacterString>information</gco:CharacterString>\n"
+              + "                      </gmd:protocol>\n"
+              + "                      <gmd:applicationProfile>\n"
+              + "                        <gco:CharacterString>web browser</gco:CharacterString>\n"
+              + "                      </gmd:applicationProfile>\n"
+              + "                      <gmd:name>\n"
+              + "                        <gco:CharacterString>Background Information</gco:CharacterString>\n"
+              + "                      </gmd:name>\n"
+              + "                      <gmd:description>\n"
+              + "                        <gco:CharacterString>Background information from the source</gco:CharacterString>\n"
+              + "                      </gmd:description>\n"
+              + "                      <gmd:function>\n"
+              + "                        <gmd:CI_OnLineFunctionCode codeList=\"https://data.noaa.gov/resources/iso19139/schema/resources/Codelist/gmxCodelists.xml#gmd:CI_OnLineFunctionCode\" codeListValue=\"information\">information</gmd:CI_OnLineFunctionCode>\n"
+              + "                      </gmd:function>\n"
+              + "                    </gmd:CI_OnlineResource>\n"
+              + "                  </gmd:onlineResource>\n"
+              + "                </gmd:CI_Contact>\n"
+              + "              </gmd:contactInfo>\n"
+              + "              <gmd:role>\n"
+              + "                <gmd:CI_RoleCode codeList=\"https://data.noaa.gov/resources/iso19139/schema/resources/Codelist/gmxCodelists.xml#gmd:CI_RoleCode\" codeListValue=\"originator\">originator</gmd:CI_RoleCode>\n"
+              + "              </gmd:role>\n"
+              + "            </gmd:CI_ResponsibleParty>\n"
+              + "          </gmd:citedResponsibleParty>\n"
+              + "        </gmd:CI_Citation>\n"
+              + "      </gmd:citation>\n"
+              + "      <gmd:abstract>\n"
+              + "        <gco:CharacterString>This dataset has Level 3, Standard Mapped Image, 4km, chlorophyll-a concentration data from NASA&#39;s Aqua Spacecraft.  Measurements are gathered by the Moderate Resolution Imaging Spectroradiometer (MODIS) carried aboard the spacecraft.  This is Science Quality data.  This is the August 2015 version of this dataset.</gco:CharacterString>\n"
+              + "      </gmd:abstract>\n"
+              + "      <srv:serviceType>\n"
+              + "        <gco:LocalName>OPeNDAP</gco:LocalName>\n"
+              + "      </srv:serviceType>\n"
+              + "      <srv:extent>\n"
+              + "        <gmd:EX_Extent>\n"
+              + "          <gmd:geographicElement>\n"
+              + "            <gmd:EX_GeographicBoundingBox>\n"
+              + "              <gmd:extentTypeCode>\n"
+              + "                <gco:Boolean>1</gco:Boolean>\n"
+              + "              </gmd:extentTypeCode>\n"
+              + "              <gmd:westBoundLongitude>\n"
+              + "                <gco:Decimal>-179.9792</gco:Decimal>\n"
+              + "              </gmd:westBoundLongitude>\n"
+              + "              <gmd:eastBoundLongitude>\n"
+              + "                <gco:Decimal>179.9792</gco:Decimal>\n"
+              + "              </gmd:eastBoundLongitude>\n"
+              + "              <gmd:southBoundLatitude>\n"
+              + "                <gco:Decimal>-89.97918</gco:Decimal>\n"
+              + "              </gmd:southBoundLatitude>\n"
+              + "              <gmd:northBoundLatitude>\n"
+              + "                <gco:Decimal>89.97916</gco:Decimal>\n"
+              + "              </gmd:northBoundLatitude>\n"
+              + "            </gmd:EX_GeographicBoundingBox>\n"
+              + "          </gmd:geographicElement>\n"
+              + "          <gmd:temporalElement>\n"
+              + "            <gmd:EX_TemporalExtent>\n"
+              + "              <gmd:extent>\n"
+              + "                <gml:TimePeriod gml:id=\"OD_gmdExtent_timePeriod_id\">\n"
+              + "                  <gml:description>seconds</gml:description>\n"
+              + "                  <gml:beginPosition>YYYY-MM-DDThh:00:00Z</gml:beginPosition>\n"
+              + "                  <gml:endPosition>YYYY-MM-DDThh:00:00Z</gml:endPosition>\n"
+              + "                </gml:TimePeriod>\n"
+              + "              </gmd:extent>\n"
+              + "            </gmd:EX_TemporalExtent>\n"
+              + "          </gmd:temporalElement>\n"
+              + "        </gmd:EX_Extent>\n"
+              + "      </srv:extent>\n"
+              + "      <srv:couplingType>\n"
+              + "        <srv:SV_CouplingType codeList=\"https://data.noaa.gov/ISO19139/resources/codeList.xml#SV_CouplingType\" codeListValue=\"tight\">tight</srv:SV_CouplingType>\n"
+              + "      </srv:couplingType>\n"
+              + "      <srv:containsOperations>\n"
+              + "        <srv:SV_OperationMetadata>\n"
+              + "          <srv:operationName>\n"
+              + "            <gco:CharacterString>OPeNDAPDatasetQueryAndAccess</gco:CharacterString>\n"
+              + "          </srv:operationName>\n"
+              + "          <srv:DCP gco:nilReason=\"unknown\"/>\n"
+              + "          <srv:connectPoint>\n"
+              + "            <gmd:CI_OnlineResource>\n"
+              + "              <gmd:linkage>\n"
+              + "                <gmd:URL>http://localhost:8080/erddap/griddap/erdMH1chla1day</gmd:URL>\n"
+              + "              </gmd:linkage>\n"
+              + "              <gmd:protocol>\n"
+              + "                <gco:CharacterString>OPeNDAP:OPeNDAP</gco:CharacterString>\n"
+              + "              </gmd:protocol>\n"
+              + "              <gmd:name>\n"
+              + "                <gco:CharacterString>OPeNDAP</gco:CharacterString>\n"
+              + "              </gmd:name>\n"
+              + "              <gmd:description>\n"
+              + "                <gco:CharacterString>An OPeNDAP service for gridded data. Add different extensions (e.g., .html, .das, .dds) to the base URL for different purposes.</gco:CharacterString>\n"
+              + "              </gmd:description>\n"
+              + "              <gmd:function>\n"
+              + "                <gmd:CI_OnLineFunctionCode codeList=\"http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_OnLineFunctionCode\" codeListValue=\"download\">download</gmd:CI_OnLineFunctionCode>\n"
+              + "              </gmd:function>\n"
+              + "            </gmd:CI_OnlineResource>\n"
+              + "          </srv:connectPoint>\n"
+              + "        </srv:SV_OperationMetadata>\n"
+              + "      </srv:containsOperations>\n"
+              + "      <srv:operatesOn xlink:href=\"#DataIdentification\"/>\n"
+              + "    </srv:SV_ServiceIdentification>\n"
+              + "  </gmd:identificationInfo>\n"
+              + "  <gmd:identificationInfo>\n"
+              + "    <srv:SV_ServiceIdentification id=\"OGC-WMS\">\n"
+              + "      <gmd:citation>\n"
+              + "        <gmd:CI_Citation>\n"
+              + "          <gmd:title>\n"
+              + "            <gco:CharacterString>Chlorophyll-a, Aqua MODIS, NPP, L3SMI, Global, 4km, Science Quality, 2003-present (1 Day Composite)</gco:CharacterString>\n"
+              + "          </gmd:title>\n"
+              + "          <gmd:date>\n"
+              + "            <gmd:CI_Date>\n"
+              + "              <gmd:date>\n"
+              + "                <gco:Date>YYYY-MM-DD</gco:Date>\n"
+              + "              </gmd:date>\n"
+              + "              <gmd:dateType>\n"
+              + "                <gmd:CI_DateTypeCode codeList=\"https://data.noaa.gov/resources/iso19139/schema/resources/Codelist/gmxCodelists.xml#gmd:CI_DateTypeCode\" codeListValue=\"creation\">creation</gmd:CI_DateTypeCode>\n"
+              + "              </gmd:dateType>\n"
+              + "            </gmd:CI_Date>\n"
+              + "          </gmd:date>\n"
+              + "          <gmd:citedResponsibleParty>\n"
+              + "            <gmd:CI_ResponsibleParty>\n"
+              + "              <gmd:individualName gco:nilReason=\"missing\"/>\n"
+              + "              <gmd:organisationName>\n"
+              + "                <gco:CharacterString>NASA/GSFC/OBPG</gco:CharacterString>\n"
+              + "              </gmd:organisationName>\n"
+              + "              <gmd:contactInfo>\n"
+              + "                <gmd:CI_Contact>\n"
+              + "                  <gmd:address>\n"
+              + "                    <gmd:CI_Address>\n"
+              + "                      <gmd:electronicMailAddress>\n"
+              + "                        <gco:CharacterString>data@oceancolor.gsfc.nasa.gov</gco:CharacterString>\n"
+              + "                      </gmd:electronicMailAddress>\n"
+              + "                    </gmd:CI_Address>\n"
+              + "                  </gmd:address>\n"
+              + "                  <gmd:onlineResource>\n"
+              + "                    <gmd:CI_OnlineResource>\n"
+              + "                      <gmd:linkage>\n"
+              + "                        <gmd:URL>https://coastwatch.pfeg.noaa.gov/infog/MH1_chla_las.html</gmd:URL>\n"
+              + "                      </gmd:linkage>\n"
+              + "                      <gmd:protocol>\n"
+              + "                        <gco:CharacterString>information</gco:CharacterString>\n"
+              + "                      </gmd:protocol>\n"
+              + "                      <gmd:applicationProfile>\n"
+              + "                        <gco:CharacterString>web browser</gco:CharacterString>\n"
+              + "                      </gmd:applicationProfile>\n"
+              + "                      <gmd:name>\n"
+              + "                        <gco:CharacterString>Background Information</gco:CharacterString>\n"
+              + "                      </gmd:name>\n"
+              + "                      <gmd:description>\n"
+              + "                        <gco:CharacterString>Background information from the source</gco:CharacterString>\n"
+              + "                      </gmd:description>\n"
+              + "                      <gmd:function>\n"
+              + "                        <gmd:CI_OnLineFunctionCode codeList=\"https://data.noaa.gov/resources/iso19139/schema/resources/Codelist/gmxCodelists.xml#gmd:CI_OnLineFunctionCode\" codeListValue=\"information\">information</gmd:CI_OnLineFunctionCode>\n"
+              + "                      </gmd:function>\n"
+              + "                    </gmd:CI_OnlineResource>\n"
+              + "                  </gmd:onlineResource>\n"
+              + "                </gmd:CI_Contact>\n"
+              + "              </gmd:contactInfo>\n"
+              + "              <gmd:role>\n"
+              + "                <gmd:CI_RoleCode codeList=\"https://data.noaa.gov/resources/iso19139/schema/resources/Codelist/gmxCodelists.xml#gmd:CI_RoleCode\" codeListValue=\"originator\">originator</gmd:CI_RoleCode>\n"
+              + "              </gmd:role>\n"
+              + "            </gmd:CI_ResponsibleParty>\n"
+              + "          </gmd:citedResponsibleParty>\n"
+              + "        </gmd:CI_Citation>\n"
+              + "      </gmd:citation>\n"
+              + "      <gmd:abstract>\n"
+              + "        <gco:CharacterString>This dataset has Level 3, Standard Mapped Image, 4km, chlorophyll-a concentration data from NASA&#39;s Aqua Spacecraft.  Measurements are gathered by the Moderate Resolution Imaging Spectroradiometer (MODIS) carried aboard the spacecraft.  This is Science Quality data.  This is the August 2015 version of this dataset.</gco:CharacterString>\n"
+              + "      </gmd:abstract>\n"
+              + "      <srv:serviceType>\n"
+              + "        <gco:LocalName>Open Geospatial Consortium Web Map Service (WMS)</gco:LocalName>\n"
+              + "      </srv:serviceType>\n"
+              + "      <srv:extent>\n"
+              + "        <gmd:EX_Extent>\n"
+              + "          <gmd:geographicElement>\n"
+              + "            <gmd:EX_GeographicBoundingBox>\n"
+              + "              <gmd:extentTypeCode>\n"
+              + "                <gco:Boolean>1</gco:Boolean>\n"
+              + "              </gmd:extentTypeCode>\n"
+              + "              <gmd:westBoundLongitude>\n"
+              + "                <gco:Decimal>-179.9792</gco:Decimal>\n"
+              + "              </gmd:westBoundLongitude>\n"
+              + "              <gmd:eastBoundLongitude>\n"
+              + "                <gco:Decimal>179.9792</gco:Decimal>\n"
+              + "              </gmd:eastBoundLongitude>\n"
+              + "              <gmd:southBoundLatitude>\n"
+              + "                <gco:Decimal>-89.97918</gco:Decimal>\n"
+              + "              </gmd:southBoundLatitude>\n"
+              + "              <gmd:northBoundLatitude>\n"
+              + "                <gco:Decimal>89.97916</gco:Decimal>\n"
+              + "              </gmd:northBoundLatitude>\n"
+              + "            </gmd:EX_GeographicBoundingBox>\n"
+              + "          </gmd:geographicElement>\n"
+              + "          <gmd:temporalElement>\n"
+              + "            <gmd:EX_TemporalExtent>\n"
+              + "              <gmd:extent>\n"
+              + "                <gml:TimePeriod gml:id=\"WMS_gmdExtent_timePeriod_id\">\n"
+              + "                  <gml:description>seconds</gml:description>\n"
+              + "                  <gml:beginPosition>YYYY-MM-DDThh:00:00Z</gml:beginPosition>\n"
+              + "                  <gml:endPosition>YYYY-MM-DDThh:00:00Z</gml:endPosition>\n"
+              + "                </gml:TimePeriod>\n"
+              + "              </gmd:extent>\n"
+              + "            </gmd:EX_TemporalExtent>\n"
+              + "          </gmd:temporalElement>\n"
+              + "        </gmd:EX_Extent>\n"
+              + "      </srv:extent>\n"
+              + "      <srv:couplingType>\n"
+              + "        <srv:SV_CouplingType codeList=\"https://data.noaa.gov/ISO19139/resources/codeList.xml#SV_CouplingType\" codeListValue=\"tight\">tight</srv:SV_CouplingType>\n"
+              + "      </srv:couplingType>\n"
+              + "      <srv:containsOperations>\n"
+              + "        <srv:SV_OperationMetadata>\n"
+              + "          <srv:operationName>\n"
+              + "            <gco:CharacterString>GetCapabilities</gco:CharacterString>\n"
+              + "          </srv:operationName>\n"
+              + "          <srv:DCP gco:nilReason=\"unknown\"/>\n"
+              + "          <srv:connectPoint>\n"
+              + "            <gmd:CI_OnlineResource>\n"
+              + "              <gmd:linkage>\n"
+              + "                <gmd:URL>http://localhost:8080/erddap/wms/erdMH1chla1day/request?service=WMS&amp;version=1.3.0&amp;request=GetCapabilities</gmd:URL>\n"
+              + "              </gmd:linkage>\n"
+              + "              <gmd:protocol>\n"
+              + "                <gco:CharacterString>OGC:WMS</gco:CharacterString>\n"
+              + "              </gmd:protocol>\n"
+              + "              <gmd:name>\n"
+              + "                <gco:CharacterString>OGC-WMS</gco:CharacterString>\n"
+              + "              </gmd:name>\n"
+              + "              <gmd:description>\n"
+              + "                <gco:CharacterString>Open Geospatial Consortium Web Map Service (WMS)</gco:CharacterString>\n"
+              + "              </gmd:description>\n"
+              + "              <gmd:function>\n"
+              + "                <gmd:CI_OnLineFunctionCode codeList=\"http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_OnLineFunctionCode\" codeListValue=\"download\">download</gmd:CI_OnLineFunctionCode>\n"
+              + "              </gmd:function>\n"
+              + "            </gmd:CI_OnlineResource>\n"
+              + "          </srv:connectPoint>\n"
+              + "        </srv:SV_OperationMetadata>\n"
+              + "      </srv:containsOperations>\n"
+              + "      <srv:operatesOn xlink:href=\"#DataIdentification\"/>\n"
+              + "    </srv:SV_ServiceIdentification>\n"
+              + "  </gmd:identificationInfo>\n"
+              + "  <gmd:contentInfo>\n"
+              + "    <gmi:MI_CoverageDescription>\n"
+              + "      <gmd:attributeDescription gco:nilReason=\"unknown\"/>\n"
+              + "      <gmd:contentType>\n"
+              + "        <gmd:MD_CoverageContentTypeCode codeList=\"https://data.noaa.gov/resources/iso19139/schema/resources/Codelist/gmxCodelists.xml#gmd:MD_CoverageContentTypeCode\" codeListValue=\"physicalMeasurement\">physicalMeasurement</gmd:MD_CoverageContentTypeCode>\n"
+              + "      </gmd:contentType>\n"
+              + "      <gmd:dimension>\n"
+              + "        <gmd:MD_Band>\n"
+              + "          <gmd:sequenceIdentifier>\n"
+              + "            <gco:MemberName>\n"
+              + "              <gco:aName>\n"
+              + "                <gco:CharacterString>chlorophyll</gco:CharacterString>\n"
+              + "              </gco:aName>\n"
+              + "              <gco:attributeType>\n"
+              + "                <gco:TypeName>\n"
+              + "                  <gco:aName>\n"
+              + "                    <gco:CharacterString>float</gco:CharacterString>\n"
+              + "                  </gco:aName>\n"
+              + "                </gco:TypeName>\n"
+              + "              </gco:attributeType>\n"
+              + "            </gco:MemberName>\n"
+              + "          </gmd:sequenceIdentifier>\n"
+              + "          <gmd:descriptor>\n"
+              + "            <gco:CharacterString>Mean Chlorophyll a Concentration</gco:CharacterString>\n"
+              + "          </gmd:descriptor>\n"
+              + "          <gmd:units xlink:href=\"https://unitsofmeasure.org/ucum.html#mg&#x2e;m&#x2d;3\"/>\n"
+              + "        </gmd:MD_Band>\n"
+              + "      </gmd:dimension>\n"
+              + "    </gmi:MI_CoverageDescription>\n"
+              + "  </gmd:contentInfo>\n"
+              + "  <gmd:distributionInfo>\n"
+              + "    <gmd:MD_Distribution>\n"
+              + "      <gmd:distributor>\n"
+              + "        <gmd:MD_Distributor>\n"
+              + "          <gmd:distributorContact>\n"
+              + "            <gmd:CI_ResponsibleParty>\n"
+              + "              <gmd:individualName>\n"
+              + "                <gco:CharacterString>ERDDAP Jetty Developer</gco:CharacterString>\n"
+              + "              </gmd:individualName>\n"
+              + "              <gmd:organisationName>\n"
+              + "                <gco:CharacterString>ERDDAP Jetty Install</gco:CharacterString>\n"
+              + "              </gmd:organisationName>\n"
+              + "              <gmd:contactInfo>\n"
+              + "                <gmd:CI_Contact>\n"
+              + "                  <gmd:phone>\n"
+              + "                    <gmd:CI_Telephone>\n"
+              + "                      <gmd:voice>\n"
+              + "                        <gco:CharacterString>555-555-5555</gco:CharacterString>\n"
+              + "                      </gmd:voice>\n"
+              + "                    </gmd:CI_Telephone>\n"
+              + "                  </gmd:phone>\n"
+              + "                  <gmd:address>\n"
+              + "                    <gmd:CI_Address>\n"
+              + "                      <gmd:deliveryPoint>\n"
+              + "                        <gco:CharacterString>123 Irrelevant St.</gco:CharacterString>\n"
+              + "                      </gmd:deliveryPoint>\n"
+              + "                      <gmd:city>\n"
+              + "                        <gco:CharacterString>Nowhere</gco:CharacterString>\n"
+              + "                      </gmd:city>\n"
+              + "                      <gmd:administrativeArea>\n"
+              + "                        <gco:CharacterString>AK</gco:CharacterString>\n"
+              + "                      </gmd:administrativeArea>\n"
+              + "                      <gmd:postalCode>\n"
+              + "                        <gco:CharacterString>99504</gco:CharacterString>\n"
+              + "                      </gmd:postalCode>\n"
+              + "                      <gmd:country>\n"
+              + "                        <gco:CharacterString>USA</gco:CharacterString>\n"
+              + "                      </gmd:country>\n"
+              + "                      <gmd:electronicMailAddress>\n"
+              + "                        <gco:CharacterString>nobody@example.com</gco:CharacterString>\n"
+              + "                      </gmd:electronicMailAddress>\n"
+              + "                    </gmd:CI_Address>\n"
+              + "                  </gmd:address>\n"
+              + "                </gmd:CI_Contact>\n"
+              + "              </gmd:contactInfo>\n"
+              + "              <gmd:role>\n"
+              + "                <gmd:CI_RoleCode codeList=\"https://data.noaa.gov/resources/iso19139/schema/resources/Codelist/gmxCodelists.xml#gmd:CI_RoleCode\" codeListValue=\"distributor\">distributor</gmd:CI_RoleCode>\n"
+              + "              </gmd:role>\n"
+              + "            </gmd:CI_ResponsibleParty>\n"
+              + "          </gmd:distributorContact>\n"
+              + "          <gmd:distributorFormat>\n"
+              + "            <gmd:MD_Format>\n"
+              + "              <gmd:name>\n"
+              + "                <gco:CharacterString>OPeNDAP</gco:CharacterString>\n"
+              + "              </gmd:name>\n"
+              + "              <gmd:version>\n"
+              + "                <gco:CharacterString>DAP/2.0</gco:CharacterString>\n"
+              + "              </gmd:version>\n"
+              + "            </gmd:MD_Format>\n"
+              + "          </gmd:distributorFormat>\n"
+              + "          <gmd:distributorTransferOptions>\n"
+              + "            <gmd:MD_DigitalTransferOptions>\n"
+              + "              <gmd:onLine>\n"
+              + "                <gmd:CI_OnlineResource>\n"
+              + "                  <gmd:linkage>\n"
+              + "                    <gmd:URL>http://localhost:8080/erddap/griddap/erdMH1chla1day.html</gmd:URL>\n"
+              + "                  </gmd:linkage>\n"
+              + "                  <gmd:protocol>\n"
+              + "                    <gco:CharacterString>order</gco:CharacterString>\n"
+              + "                  </gmd:protocol>\n"
+              + "                  <gmd:name>\n"
+              + "                    <gco:CharacterString>Data Subset Form</gco:CharacterString>\n"
+              + "                  </gmd:name>\n"
+              + "                  <gmd:description>\n"
+              + "                    <gco:CharacterString>ERDDAP's version of the OPeNDAP .html web page for this dataset. Specify a subset of the dataset and download the data via OPeNDAP or in many different file types.</gco:CharacterString>\n"
+              + "                  </gmd:description>\n"
+              + "                  <gmd:function>\n"
+              + "                    <gmd:CI_OnLineFunctionCode codeList=\"http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_OnLineFunctionCode\" codeListValue=\"download\">download</gmd:CI_OnLineFunctionCode>\n"
+              + "                  </gmd:function>\n"
+              + "                </gmd:CI_OnlineResource>\n"
+              + "              </gmd:onLine>\n"
+              + "            </gmd:MD_DigitalTransferOptions>\n"
+              + "          </gmd:distributorTransferOptions>\n"
+              + "          <gmd:distributorTransferOptions>\n"
+              + "            <gmd:MD_DigitalTransferOptions>\n"
+              + "              <gmd:onLine>\n"
+              + "                <gmd:CI_OnlineResource>\n"
+              + "                  <gmd:linkage>\n"
+              + "                    <gmd:URL>http://localhost:8080/erddap/griddap/erdMH1chla1day.graph</gmd:URL>\n"
+              + "                  </gmd:linkage>\n"
+              + "                  <gmd:protocol>\n"
+              + "                    <gco:CharacterString>order</gco:CharacterString>\n"
+              + "                  </gmd:protocol>\n"
+              + "                  <gmd:name>\n"
+              + "                    <gco:CharacterString>Make-A-Graph Form</gco:CharacterString>\n"
+              + "                  </gmd:name>\n"
+              + "                  <gmd:description>\n"
+              + "                    <gco:CharacterString>ERDDAP's Make-A-Graph .html web page for this dataset. Create an image with a map or graph of a subset of the data.</gco:CharacterString>\n"
+              + "                  </gmd:description>\n"
+              + "                  <gmd:function>\n"
+              + "                    <gmd:CI_OnLineFunctionCode codeList=\"http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_OnLineFunctionCode\" codeListValue=\"mapDigital\">mapDigital</gmd:CI_OnLineFunctionCode>\n"
+              + "                  </gmd:function>\n"
+              + "                </gmd:CI_OnlineResource>\n"
+              + "              </gmd:onLine>\n"
+              + "            </gmd:MD_DigitalTransferOptions>\n"
+              + "          </gmd:distributorTransferOptions>\n"
+              + "        </gmd:MD_Distributor>\n"
+              + "      </gmd:distributor>\n"
+              + "    </gmd:MD_Distribution>\n"
+              + "  </gmd:distributionInfo>\n"
+              + "  <gmd:dataQualityInfo>\n"
+              + "    <gmd:DQ_DataQuality>\n"
+              + "      <gmd:scope>\n"
+              + "        <gmd:DQ_Scope>\n"
+              + "          <gmd:level>\n"
+              + "            <gmd:MD_ScopeCode codeList=\"https://data.noaa.gov/resources/iso19139/schema/resources/Codelist/gmxCodelists.xml#gmd:MD_ScopeCode\" codeListValue=\"dataset\">dataset</gmd:MD_ScopeCode>\n"
+              + "          </gmd:level>\n"
+              + "        </gmd:DQ_Scope>\n"
+              + "      </gmd:scope>\n"
+              + "      <gmd:lineage>\n"
+              + "        <gmd:LI_Lineage>\n"
+              + "          <gmd:statement>\n"
+              + "            <gco:CharacterString>Files downloaded daily from https://oceandata.sci.gsfc.nasa.gov/MODIS-Aqua/L3SMI to NOAA SWFSC ERD (erd.data@noaa.gov)\n"
+              + "ERDDAP adds the time dimension.\n"
+              + "Direct read of HDF4 file through CDM library</gco:CharacterString>\n"
+              + "          </gmd:statement>\n"
+              + "        </gmd:LI_Lineage>\n"
+              + "      </gmd:lineage>\n"
+              + "    </gmd:DQ_DataQuality>\n"
+              + "  </gmd:dataQualityInfo>\n"
+              + "  <gmd:metadataMaintenance>\n"
+              + "    <gmd:MD_MaintenanceInformation>\n"
+              + "      <gmd:maintenanceAndUpdateFrequency gco:nilReason=\"unknown\"/>\n"
+              + "      <gmd:maintenanceNote>\n"
+              + "        <gco:CharacterString>This record was created from dataset metadata by ERDDAP Version "
+              + EDStatic.erddapVersion
+              + "</gco:CharacterString>\n"
+              + "      </gmd:maintenanceNote>\n"
+              + "    </gmd:MD_MaintenanceInformation>\n"
+              + "  </gmd:metadataMaintenance>\n"
+              + "</gmi:MI_Metadata>\n";
+
+      results =
+          results.replaceAll("<gco:Date>....-..-..</gco:Date>", "<gco:Date>YYYY-MM-DD</gco:Date>");
+      results =
+          results.replaceAll(
+              "<gco:Measure uom=\\\"s\\\">[0-9]+.[0-9]+</gco:Measure>",
+              "<gco:Measure uom=\"s\">VALUE</gco:Measure>");
+      results =
+          results.replaceAll(
+              "<gco:Measure uom=\\\"s\\\">.*</gco:Measure>",
+              "<gco:Measure uom=\"s\">VALUE</gco:Measure>");
+      results =
+          results.replaceAll(
+              "<gml:endPosition>....-..-..T..:00:00Z</gml:endPosition>",
+              "<gml:endPosition>YYYY-MM-DDThh:00:00Z</gml:endPosition>");
+      results =
+          results.replaceAll(
+              "<gml:beginPosition>....-..-..T..:00:00-..:..</gml:beginPosition>",
+              "<gml:beginPosition>YYYY-MM-DDThh:00:00Z</gml:beginPosition>");
+      results =
+          results.replaceAll(
+              "<gco:Integer>[0-9]+</gco:Integer>", "<gco:Integer>NUMBER</gco:Integer>");
+      results = results.replaceAll(">-?[0-9]+.[0-9]+</gco:Measure>", ">measureValue</gco:Measure>");
+      Test.ensureEqual(results, expected, "results=" + results);
+    }
 
     results = SSR.getUrlResponseStringUnchanged("http://localhost:" + PORT + "/erddap/metadata/");
     expected =
         "<table class=\"compact nowrap\" style=\"border-collapse:separate; border-spacing:12px 0px;\">\n"
-            + //
-            "<tr><th><img class=\"B\" src=\"http://localhost:"
+            + "<tr><th><img class=\"B\" src=\"http://localhost:"
             + PORT
             + "/erddap/images/fileIcons/blank.gif\" alt=\"[ICO]\"></th><th><a href=\"?C=N;O=D\">Name</a></th><th><a href=\"?C=M;O=A\">Last modified</a></th><th><a href=\"?C=S;O=A\">Size</a></th><th><a href=\"?C=D;O=A\">Description</a></th></tr>\n"
-            + //
-            "<tr><th colspan=\"5\"><hr></th></tr>\n"
-            + //
-            "<tr><td><img class=\"B\" src=\"http://localhost:"
+            + "<tr><th colspan=\"5\"><hr></th></tr>\n"
+            + "<tr><td><img class=\"B\" src=\"http://localhost:"
             + PORT
             + "/erddap/images/fileIcons/back.gif\" alt=\"[DIR]\"></td><td><a href=\"&#x2e;&#x2e;\">Parent Directory</a></td><td class=\"R\">-</td><td class=\"R\">-</td><td></td></tr>\n"
-            + //
-            "<tr><td><img class=\"B\" src=\"http://localhost:"
+            + "<tr><td><img class=\"B\" src=\"http://localhost:"
             + PORT
             + "/erddap/images/fileIcons/dir.gif\" alt=\"[DIR]\"></td><td><a href=\"fgdc&#x2f;\">fgdc/</a></td><td class=\"R\">-</td><td class=\"R\">-</td><td></td></tr>\n"
-            + //
-            "<tr><td><img class=\"B\" src=\"http://localhost:"
+            + "<tr><td><img class=\"B\" src=\"http://localhost:"
             + PORT
             + "/erddap/images/fileIcons/dir.gif\" alt=\"[DIR]\"></td><td><a href=\"iso19115&#x2f;\">iso19115/</a></td><td class=\"R\">-</td><td class=\"R\">-</td><td></td></tr>\n"
-            + //
-            "<tr><th colspan=\"5\"><hr></th></tr>\n"
-            + //
-            "</table>\n"
-            + //
-            "3 directories, 0 files";
+            + "<tr><th colspan=\"5\"><hr></th></tr>\n"
+            + "</table>\n"
+            + "3 directories, 0 files";
     Test.ensureTrue(results.indexOf(expected) > 0, "No table found, results=" + results);
 
     results =
@@ -2408,24 +2551,18 @@ class JettyTests {
             "http://localhost:" + PORT + "/erddap/metadata/iso19115/");
     expected =
         "<table class=\"compact nowrap\" style=\"border-collapse:separate; border-spacing:12px 0px;\">\n"
-            + //
-            "<tr><th><img class=\"B\" src=\"http://localhost:"
+            + "<tr><th><img class=\"B\" src=\"http://localhost:"
             + PORT
             + "/erddap/images/fileIcons/blank.gif\" alt=\"[ICO]\"></th><th><a href=\"?C=N;O=D\">Name</a></th><th><a href=\"?C=M;O=A\">Last modified</a></th><th><a href=\"?C=S;O=A\">Size</a></th><th><a href=\"?C=D;O=A\">Description</a></th></tr>\n"
-            + //
-            "<tr><th colspan=\"5\"><hr></th></tr>\n"
-            + //
-            "<tr><td><img class=\"B\" src=\"http://localhost:"
+            + "<tr><th colspan=\"5\"><hr></th></tr>\n"
+            + "<tr><td><img class=\"B\" src=\"http://localhost:"
             + PORT
             + "/erddap/images/fileIcons/back.gif\" alt=\"[DIR]\"></td><td><a href=\"&#x2e;&#x2e;\">Parent Directory</a></td><td class=\"R\">-</td><td class=\"R\">-</td><td></td></tr>\n"
-            + //
-            "<tr><td><img class=\"B\" src=\"http://localhost:"
+            + "<tr><td><img class=\"B\" src=\"http://localhost:"
             + PORT
             + "/erddap/images/fileIcons/dir.gif\" alt=\"[DIR]\"></td><td><a href=\"xml&#x2f;\">xml/</a></td><td class=\"R\">-</td><td class=\"R\">-</td><td></td></tr>\n"
-            + //
-            "<tr><th colspan=\"5\"><hr></th></tr>\n"
-            + //
-            "</table>\n";
+            + "<tr><th colspan=\"5\"><hr></th></tr>\n"
+            + "</table>\n";
     Test.ensureTrue(results.indexOf(expected) > 0, "No table found, results=" + results);
 
     results =
@@ -2434,8 +2571,9 @@ class JettyTests {
     expected =
         "<tr><td><img class=\"B\" src=\"http://localhost:"
             + PORT
-            + "/erddap/images/fileIcons/xml.gif\" alt=\"[XML]\"></td><td><a rel=\"bookmark\" href=\"erdMH1chlamday&#x5f;iso19115&#x2e;xml\">erdMH1chlamday&#x5f;iso19115&#x2e;xml</a></td><td class=\"R\">DD-MMM-YYYY HH:mm</td><td class=\"R\">53721</td><td>Chlorophyll-a, Aqua MODIS, NPP, L3SMI, Global, 4km, Science Quality, 2003-present (Monthly Composite)</td></tr>";
+            + "/erddap/images/fileIcons/xml.gif\" alt=\"[XML]\"></td><td><a rel=\"bookmark\" href=\"erdMH1chlamday&#x5f;iso19115&#x2e;xml\">erdMH1chlamday&#x5f;iso19115&#x2e;xml</a></td><td class=\"R\">DD-MMM-YYYY HH:mm</td><td class=\"R\">SIZE</td><td>Chlorophyll-a, Aqua MODIS, NPP, L3SMI, Global, 4km, Science Quality, 2003-present (Monthly Composite)</td></tr>";
     results = results.replaceAll("..-...-.... ..:..", "DD-MMM-YYYY HH:mm");
+    results = results.replaceAll(">[0-9]+<", ">SIZE<");
     Test.ensureTrue(results.indexOf(expected) > 0, "No erdMH1chlamday found, results=" + results);
   }
 
@@ -2448,236 +2586,137 @@ class JettyTests {
             "http://localhost:" + PORT + "/erddap/metadata/fgdc/xml/erdMH1chla1day_fgdc.xml");
     String expected =
         "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
-            + //
-            "<metadata xmlns:xsi=\"https://www.w3.org/2001/XMLSchema-instance\" xsi:noNamespaceSchemaLocation=\"http://www.ngdc.noaa.gov/metadata/published/xsd/ngdcSchema/schema.xsd\" >\n"
-            + //
-            "  <idinfo>\n"
-            + //
-            "    <datsetid>localhost:"
+            + "<metadata xmlns:xsi=\"https://www.w3.org/2001/XMLSchema-instance\" xsi:noNamespaceSchemaLocation=\"http://www.ngdc.noaa.gov/metadata/published/xsd/ngdcSchema/schema.xsd\" >\n"
+            + "  <idinfo>\n"
+            + "    <datsetid>localhost:"
             + PORT
             + ":erdMH1chla1day</datsetid>\n"
-            + //
-            "    <citation>\n"
-            + //
-            "      <citeinfo>\n"
-            + //
-            "        <origin>\n"
-            + //
-            "Project: Ocean Biology Processing Group (NASA/GSFC/OBPG)\n"
-            + //
-            "Name: NASA/GSFC/OBPG\n"
-            + //
-            "Email: data@oceancolor.gsfc.nasa.gov\n"
-            + //
-            "Institution: NOAA NMFS SWFSC ERD\n"
-            + //
-            "InfoURL: https://coastwatch.pfeg.noaa.gov/infog/MH1_chla_las.html\n"
-            + //
-            "Source URL: (local files)\n"
-            + //
-            "        </origin>\n"
-            + //
-            "        <origin_cntinfo>\n"
-            + //
-            "          <cntinfo>\n"
-            + //
-            "            <cntorgp>\n"
-            + //
-            "              <cntorg>NOAA NMFS SWFSC ERD</cntorg>\n"
-            + //
-            "              <cntper>NASA/GSFC/OBPG</cntper>\n"
-            + //
-            "            </cntorgp>\n"
-            + //
-            "            <cntemail>data@oceancolor.gsfc.nasa.gov</cntemail>\n"
-            + //
-            "          </cntinfo>\n"
-            + //
-            "        </origin_cntinfo>\n"
-            + //
-            "        <pubdate></pubdate>\n"
-            + //
-            "        <title>Chlorophyll-a, Aqua MODIS, NPP, L3SMI, Global, 4km, Science Quality, 2003-present (1 Day Composite)</title>\n"
-            + //
-            "        <edition>Unknown</edition>\n"
-            + //
-            "        <geoform>raster digital data</geoform>\n"
-            + //
-            "        <pubinfo>\n"
-            + //
-            "          <pubplace>Nowhere, AK, USA</pubplace>\n"
-            + //
-            "          <publish>ERDDAP, version 2.24, at ERDDAP Jetty Install</publish>\n"
-            + //
-            "          <publish_cntinfo>\n"
-            + //
-            "            <cntinfo>\n"
-            + //
-            "              <cntorgp>\n"
-            + //
-            "                <cntorg>ERDDAP Jetty Install</cntorg>\n"
-            + //
-            "                <cntper>ERDDAP Jetty Developer</cntper>\n"
-            + //
-            "              </cntorgp>\n"
-            + //
-            "              <cntpos>Software Engineer</cntpos>\n"
-            + //
-            "              <cntaddr>\n"
-            + //
-            "                <addrtype>Mailing and Physical Address</addrtype>\n"
-            + //
-            "                <address>123 Irrelevant St.</address>\n"
-            + //
-            "                <city>Nowhere</city>\n"
-            + //
-            "                <state>AK</state>\n"
-            + //
-            "                <postal>99504</postal>\n"
-            + //
-            "                <country>USA</country>\n"
-            + //
-            "              </cntaddr>\n"
-            + //
-            "              <cntvoice>555-555-5555</cntvoice>\n"
-            + //
-            "              <cntemail>nobody@example.com</cntemail>\n"
-            + //
-            "            </cntinfo>\n"
-            + //
-            "          </publish_cntinfo>\n"
-            + //
-            "        </pubinfo>\n"
-            + //
-            "        <onlink>http://localhost:"
+            + "    <citation>\n"
+            + "      <citeinfo>\n"
+            + "        <origin>\n"
+            + "Project: Ocean Biology Processing Group (NASA/GSFC/OBPG)\n"
+            + "Name: NASA/GSFC/OBPG\n"
+            + "Email: data@oceancolor.gsfc.nasa.gov\n"
+            + "Institution: NOAA NMFS SWFSC ERD\n"
+            + "InfoURL: https://coastwatch.pfeg.noaa.gov/infog/MH1_chla_las.html\n"
+            + "Source URL: (local files)\n"
+            + "        </origin>\n"
+            + "        <origin_cntinfo>\n"
+            + "          <cntinfo>\n"
+            + "            <cntorgp>\n"
+            + "              <cntorg>NOAA NMFS SWFSC ERD</cntorg>\n"
+            + "              <cntper>NASA/GSFC/OBPG</cntper>\n"
+            + "            </cntorgp>\n"
+            + "            <cntemail>data@oceancolor.gsfc.nasa.gov</cntemail>\n"
+            + "          </cntinfo>\n"
+            + "        </origin_cntinfo>\n"
+            + "        <pubdate></pubdate>\n"
+            + "        <title>Chlorophyll-a, Aqua MODIS, NPP, L3SMI, Global, 4km, Science Quality, 2003-present (1 Day Composite)</title>\n"
+            + "        <edition>Unknown</edition>\n"
+            + "        <geoform>raster digital data</geoform>\n"
+            + "        <pubinfo>\n"
+            + "          <pubplace>Nowhere, AK, USA</pubplace>\n"
+            + "          <publish>ERDDAP, version "
+            + EDStatic.erddapVersion
+            + ", at ERDDAP Jetty Install</publish>\n"
+            + "          <publish_cntinfo>\n"
+            + "            <cntinfo>\n"
+            + "              <cntorgp>\n"
+            + "                <cntorg>ERDDAP Jetty Install</cntorg>\n"
+            + "                <cntper>ERDDAP Jetty Developer</cntper>\n"
+            + "              </cntorgp>\n"
+            + "              <cntpos>Software Engineer</cntpos>\n"
+            + "              <cntaddr>\n"
+            + "                <addrtype>Mailing and Physical Address</addrtype>\n"
+            + "                <address>123 Irrelevant St.</address>\n"
+            + "                <city>Nowhere</city>\n"
+            + "                <state>AK</state>\n"
+            + "                <postal>99504</postal>\n"
+            + "                <country>USA</country>\n"
+            + "              </cntaddr>\n"
+            + "              <cntvoice>555-555-5555</cntvoice>\n"
+            + "              <cntemail>nobody@example.com</cntemail>\n"
+            + "            </cntinfo>\n"
+            + "          </publish_cntinfo>\n"
+            + "        </pubinfo>\n"
+            + "        <onlink>http://localhost:"
             + PORT
             + "/erddap/griddap/erdMH1chla1day.html</onlink>\n"
-            + //
-            "        <onlink>http://localhost:"
+            + "        <onlink>http://localhost:"
             + PORT
             + "/erddap/griddap/erdMH1chla1day.graph</onlink>\n"
-            + //
-            "        <onlink>http://localhost:"
+            + "        <onlink>http://localhost:"
             + PORT
             + "/erddap/wms/erdMH1chla1day/request</onlink>\n"
-            + //
-            "        <CI_OnlineResource>\n"
-            + //
-            "          <linkage>http://localhost:"
+            + "        <CI_OnlineResource>\n"
+            + "          <linkage>http://localhost:"
             + PORT
             + "/erddap/griddap/erdMH1chla1day.html</linkage>\n"
-            + //
-            "          <name>Download data: Chlorophyll-a, Aqua MODIS, NPP, L3SMI, Global, 4km, Science Quality, 2003-present (1 Day Composite)</name>\n"
-            + //
-            "          <description>A web page for specifying a subset of the dataset and downloading data in any of several file formats.</description>\n"
-            + //
-            "          <function>download data</function>\n"
-            + //
-            "        </CI_OnlineResource>\n"
-            + //
-            "        <CI_OnlineResource>\n"
-            + //
-            "          <linkage>http://localhost:"
+            + "          <name>Download data: Chlorophyll-a, Aqua MODIS, NPP, L3SMI, Global, 4km, Science Quality, 2003-present (1 Day Composite)</name>\n"
+            + "          <description>A web page for specifying a subset of the dataset and downloading data in any of several file formats.</description>\n"
+            + "          <function>download data</function>\n"
+            + "        </CI_OnlineResource>\n"
+            + "        <CI_OnlineResource>\n"
+            + "          <linkage>http://localhost:"
             + PORT
             + "/erddap/griddap/erdMH1chla1day.graph</linkage>\n"
-            + //
-            "          <name>Make a graph or map: Chlorophyll-a, Aqua MODIS, NPP, L3SMI, Global, 4km, Science Quality, 2003-present (1 Day Composite)</name>\n"
-            + //
-            "          <description>A web page for creating a graph or map of the data.</description>\n"
-            + //
-            "          <function>download graph or map</function>\n"
-            + //
-            "        </CI_OnlineResource>\n"
-            + //
-            "        <CI_OnlineResource>\n"
-            + //
-            "          <linkage>http://localhost:"
+            + "          <name>Make a graph or map: Chlorophyll-a, Aqua MODIS, NPP, L3SMI, Global, 4km, Science Quality, 2003-present (1 Day Composite)</name>\n"
+            + "          <description>A web page for creating a graph or map of the data.</description>\n"
+            + "          <function>download graph or map</function>\n"
+            + "        </CI_OnlineResource>\n"
+            + "        <CI_OnlineResource>\n"
+            + "          <linkage>http://localhost:"
             + PORT
             + "/erddap/griddap/erdMH1chla1day</linkage>\n"
-            + //
-            "          <name>OPeNDAP service: Chlorophyll-a, Aqua MODIS, NPP, L3SMI, Global, 4km, Science Quality, 2003-present (1 Day Composite)</name>\n"
-            + //
-            "          <description>The base URL for the OPeNDAP service.  Add .html to get a web page with a form to download data. Add .dds to get the dataset's structure. Add .das to get the dataset's metadata. Add .dods to download data via the OPeNDAP protocol.</description>\n"
-            + //
-            "          <function>OPeNDAP</function>\n"
-            + //
-            "        </CI_OnlineResource>\n"
-            + //
-            "        <CI_OnlineResource>\n"
-            + //
-            "          <linkage>https://coastwatch.pfeg.noaa.gov/infog/MH1_chla_las.html</linkage>\n"
-            + //
-            "          <name>Background information: Chlorophyll-a, Aqua MODIS, NPP, L3SMI, Global, 4km, Science Quality, 2003-present (1 Day Composite)</name>\n"
-            + //
-            "          <description>Background information for the dataset.</description>\n"
-            + //
-            "          <function>background information</function>\n"
-            + //
-            "        </CI_OnlineResource>\n"
-            + //
-            "        <CI_OnlineResource>\n"
-            + //
-            "          <linkage>http://localhost:"
+            + "          <name>OPeNDAP service: Chlorophyll-a, Aqua MODIS, NPP, L3SMI, Global, 4km, Science Quality, 2003-present (1 Day Composite)</name>\n"
+            + "          <description>The base URL for the OPeNDAP service.  Add .html to get a web page with a form to download data. Add .dds to get the dataset's structure. Add .das to get the dataset's metadata. Add .dods to download data via the OPeNDAP protocol.</description>\n"
+            + "          <function>OPeNDAP</function>\n"
+            + "        </CI_OnlineResource>\n"
+            + "        <CI_OnlineResource>\n"
+            + "          <linkage>https://coastwatch.pfeg.noaa.gov/infog/MH1_chla_las.html</linkage>\n"
+            + "          <name>Background information: Chlorophyll-a, Aqua MODIS, NPP, L3SMI, Global, 4km, Science Quality, 2003-present (1 Day Composite)</name>\n"
+            + "          <description>Background information for the dataset.</description>\n"
+            + "          <function>background information</function>\n"
+            + "        </CI_OnlineResource>\n"
+            + "        <CI_OnlineResource>\n"
+            + "          <linkage>http://localhost:"
             + PORT
             + "/erddap/wms/erdMH1chla1day/request</linkage>\n"
-            + //
-            "          <name>WMS service: Chlorophyll-a, Aqua MODIS, NPP, L3SMI, Global, 4km, Science Quality, 2003-present (1 Day Composite)</name>\n"
-            + //
-            "          <description>The base URL for the WMS service for this dataset.</description>\n"
-            + //
-            "          <function>WMS</function>\n"
-            + //
-            "        </CI_OnlineResource>\n"
-            + //
-            "        <lworkcit>\n"
-            + //
-            "          <citeinfo>\n"
-            + //
-            "            <origin>Ocean Biology Processing Group (NASA/GSFC/OBPG)</origin>\n"
-            + //
-            "          </citeinfo>\n"
-            + //
-            "        </lworkcit>\n"
-            + //
-            "      </citeinfo>\n"
-            + //
-            "    </citation>\n"
-            + //
-            "    <descript>\n"
-            + //
-            "      <abstract>This dataset has Level 3, Standard Mapped Image, 4km, chlorophyll-a concentration data from NASA&#39;s Aqua Spacecraft.  Measurements are gathered by the Moderate Resolution Imaging Spectroradiometer (MODIS) carried aboard the spacecraft.  This is Science Quality data.  This is the August 2015 version of this dataset.</abstract>\n"
-            + //
-            "      <purpose>Unknown</purpose>\n"
-            + //
-            "      <supplinf>https://coastwatch.pfeg.noaa.gov/infog/MH1_chla_las.html</supplinf>\n"
-            + //
-            "    </descript>\n"; //
+            + "          <name>WMS service: Chlorophyll-a, Aqua MODIS, NPP, L3SMI, Global, 4km, Science Quality, 2003-present (1 Day Composite)</name>\n"
+            + "          <description>The base URL for the WMS service for this dataset.</description>\n"
+            + "          <function>WMS</function>\n"
+            + "        </CI_OnlineResource>\n"
+            + "        <lworkcit>\n"
+            + "          <citeinfo>\n"
+            + "            <origin>Ocean Biology Processing Group (NASA/GSFC/OBPG)</origin>\n"
+            + "          </citeinfo>\n"
+            + "        </lworkcit>\n"
+            + "      </citeinfo>\n"
+            + "    </citation>\n"
+            + "    <descript>\n"
+            + "      <abstract>This dataset has Level 3, Standard Mapped Image, 4km, chlorophyll-a concentration data from NASA&#39;s Aqua Spacecraft.  Measurements are gathered by the Moderate Resolution Imaging Spectroradiometer (MODIS) carried aboard the spacecraft.  This is Science Quality data.  This is the August 2015 version of this dataset.</abstract>\n"
+            + "      <purpose>Unknown</purpose>\n"
+            + "      <supplinf>https://coastwatch.pfeg.noaa.gov/infog/MH1_chla_las.html</supplinf>\n"
+            + "    </descript>\n"; //
     results = results.replaceAll("<pubdate>........</pubdate>", "<pubdate>YYYYMMDD</pubdate>");
     Test.ensureEqual(results.substring(0, expected.length()), expected, "results=" + results);
     results =
         SSR.getUrlResponseStringUnchanged("http://localhost:" + PORT + "/erddap/metadata/fgdc");
     expected =
         "<table class=\"compact nowrap\" style=\"border-collapse:separate; border-spacing:12px 0px;\">\n"
-            + //
-            "<tr><th><img class=\"B\" src=\"http://localhost:"
+            + "<tr><th><img class=\"B\" src=\"http://localhost:"
             + PORT
             + "/erddap/images/fileIcons/blank.gif\" alt=\"[ICO]\"></th><th><a href=\"?C=N;O=D\">Name</a></th><th><a href=\"?C=M;O=A\">Last modified</a></th><th><a href=\"?C=S;O=A\">Size</a></th><th><a href=\"?C=D;O=A\">Description</a></th></tr>\n"
-            + //
-            "<tr><th colspan=\"5\"><hr></th></tr>\n"
-            + //
-            "<tr><td><img class=\"B\" src=\"http://localhost:"
+            + "<tr><th colspan=\"5\"><hr></th></tr>\n"
+            + "<tr><td><img class=\"B\" src=\"http://localhost:"
             + PORT
             + "/erddap/images/fileIcons/back.gif\" alt=\"[DIR]\"></td><td><a href=\"&#x2e;&#x2e;\">Parent Directory</a></td><td class=\"R\">-</td><td class=\"R\">-</td><td></td></tr>\n"
-            + //
-            "<tr><td><img class=\"B\" src=\"http://localhost:"
+            + "<tr><td><img class=\"B\" src=\"http://localhost:"
             + PORT
             + "/erddap/images/fileIcons/dir.gif\" alt=\"[DIR]\"></td><td><a href=\"xml&#x2f;\">xml/</a></td><td class=\"R\">-</td><td class=\"R\">-</td><td></td></tr>\n"
-            + //
-            "<tr><th colspan=\"5\"><hr></th></tr>\n"
-            + //
-            "</table>\n"
-            + //
-            "2 directories, 0 files";
+            + "<tr><th colspan=\"5\"><hr></th></tr>\n"
+            + "</table>\n"
+            + "2 directories, 0 files";
     Test.ensureTrue(results.indexOf(expected) > 0, "No table found, results=" + results);
 
     results =
@@ -2686,9 +2725,9 @@ class JettyTests {
     expected =
         "<tr><td><img class=\"B\" src=\"http://localhost:"
             + PORT
-            + "/erddap/images/fileIcons/xml.gif\" alt=\"[XML]\"></td><td><a rel=\"bookmark\" href=\"erdMH1chlamday&#x5f;fgdc&#x2e;xml\">erdMH1chlamday&#x5f;fgdc&#x2e;xml</a></td><td class=\"R\">DD-MMM-YYYY HH:mm</td><td class=\"R\">71098</td><td>Chlorophyll-a, Aqua MODIS, NPP, L3SMI, Global, 4km, Science Quality, 2003-present (Monthly Composite)</td></tr>\n";
-    ;
+            + "/erddap/images/fileIcons/xml.gif\" alt=\"[XML]\"></td><td><a rel=\"bookmark\" href=\"erdMH1chlamday&#x5f;fgdc&#x2e;xml\">erdMH1chlamday&#x5f;fgdc&#x2e;xml</a></td><td class=\"R\">DD-MMM-YYYY HH:mm</td><td class=\"R\">SIZE</td><td>Chlorophyll-a, Aqua MODIS, NPP, L3SMI, Global, 4km, Science Quality, 2003-present (Monthly Composite)</td></tr>\n";
     results = results.replaceAll("..-...-.... ..:..", "DD-MMM-YYYY HH:mm");
+    results = results.replaceAll(">[0-9]+<", ">SIZE<");
     Test.ensureTrue(results.indexOf(expected) > 0, "No erdMH1chlamday found, results=" + results);
   }
 
@@ -2699,570 +2738,326 @@ class JettyTests {
         SSR.getUrlResponseStringUnchanged("http://localhost:" + PORT + "/erddap/sitemap.xml");
     String expected =
         "<?xml version='1.0' encoding='UTF-8'?>\n"
-            + //
-            "<urlset xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\">\n"
-            + //
-            "\n"
-            + //
-            "<url>\n"
-            + //
-            "<loc>http://localhost:"
+            + "<urlset xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\">\n"
+            + "\n"
+            + "<url>\n"
+            + "<loc>http://localhost:"
             + PORT
             + "/erddap/categorize/index.html</loc>\n"
-            + //
-            "<lastmod>YYYY-MM-DD</lastmod>\n"
-            + //
-            "<changefreq>monthly</changefreq>\n"
-            + //
-            "<priority>0.5</priority>\n"
-            + //
-            "</url>\n"
-            + //
-            "\n"
-            + //
-            "<url>\n"
-            + //
-            "<loc>http://localhost:"
+            + "<lastmod>YYYY-MM-DD</lastmod>\n"
+            + "<changefreq>monthly</changefreq>\n"
+            + "<priority>0.5</priority>\n"
+            + "</url>\n"
+            + "\n"
+            + "<url>\n"
+            + "<loc>http://localhost:"
             + PORT
             + "/erddap/convert/index.html</loc>\n"
-            + //
-            "<lastmod>YYYY-MM-DD</lastmod>\n"
-            + //
-            "<changefreq>monthly</changefreq>\n"
-            + //
-            "<priority>0.5</priority>\n"
-            + //
-            "</url>\n"
-            + //
-            "\n"
-            + //
-            "<url>\n"
-            + //
-            "<loc>http://localhost:"
+            + "<lastmod>YYYY-MM-DD</lastmod>\n"
+            + "<changefreq>monthly</changefreq>\n"
+            + "<priority>0.5</priority>\n"
+            + "</url>\n"
+            + "\n"
+            + "<url>\n"
+            + "<loc>http://localhost:"
             + PORT
             + "/erddap/convert/oceanicAtmosphericAcronyms.html</loc>\n"
-            + //
-            "<lastmod>YYYY-MM-DD</lastmod>\n"
-            + //
-            "<changefreq>monthly</changefreq>\n"
-            + //
-            "<priority>0.7</priority>\n"
-            + //
-            "</url>\n"
-            + //
-            "\n"
-            + //
-            "<url>\n"
-            + //
-            "<loc>http://localhost:"
+            + "<lastmod>YYYY-MM-DD</lastmod>\n"
+            + "<changefreq>monthly</changefreq>\n"
+            + "<priority>0.7</priority>\n"
+            + "</url>\n"
+            + "\n"
+            + "<url>\n"
+            + "<loc>http://localhost:"
             + PORT
             + "/erddap/convert/oceanicAtmosphericVariableNames.html</loc>\n"
-            + //
-            "<lastmod>YYYY-MM-DD</lastmod>\n"
-            + //
-            "<changefreq>monthly</changefreq>\n"
-            + //
-            "<priority>0.7</priority>\n"
-            + //
-            "</url>\n"
-            + //
-            "\n"
-            + //
-            "<url>\n"
-            + //
-            "<loc>http://localhost:"
+            + "<lastmod>YYYY-MM-DD</lastmod>\n"
+            + "<changefreq>monthly</changefreq>\n"
+            + "<priority>0.7</priority>\n"
+            + "</url>\n"
+            + "\n"
+            + "<url>\n"
+            + "<loc>http://localhost:"
             + PORT
             + "/erddap/convert/fipscounty.html</loc>\n"
-            + //
-            "<lastmod>YYYY-MM-DD</lastmod>\n"
-            + //
-            "<changefreq>monthly</changefreq>\n"
-            + //
-            "<priority>0.7</priority>\n"
-            + //
-            "</url>\n"
-            + //
-            "\n"
-            + //
-            "<url>\n"
-            + //
-            "<loc>http://localhost:"
+            + "<lastmod>YYYY-MM-DD</lastmod>\n"
+            + "<changefreq>monthly</changefreq>\n"
+            + "<priority>0.7</priority>\n"
+            + "</url>\n"
+            + "\n"
+            + "<url>\n"
+            + "<loc>http://localhost:"
             + PORT
             + "/erddap/convert/keywords.html</loc>\n"
-            + //
-            "<lastmod>YYYY-MM-DD</lastmod>\n"
-            + //
-            "<changefreq>monthly</changefreq>\n"
-            + //
-            "<priority>0.7</priority>\n"
-            + //
-            "</url>\n"
-            + //
-            "\n"
-            + //
-            "<url>\n"
-            + //
-            "<loc>http://localhost:"
+            + "<lastmod>YYYY-MM-DD</lastmod>\n"
+            + "<changefreq>monthly</changefreq>\n"
+            + "<priority>0.7</priority>\n"
+            + "</url>\n"
+            + "\n"
+            + "<url>\n"
+            + "<loc>http://localhost:"
             + PORT
             + "/erddap/convert/time.html</loc>\n"
-            + //
-            "<lastmod>YYYY-MM-DD</lastmod>\n"
-            + //
-            "<changefreq>monthly</changefreq>\n"
-            + //
-            "<priority>0.7</priority>\n"
-            + //
-            "</url>\n"
-            + //
-            "\n"
-            + //
-            "<url>\n"
-            + //
-            "<loc>http://localhost:"
+            + "<lastmod>YYYY-MM-DD</lastmod>\n"
+            + "<changefreq>monthly</changefreq>\n"
+            + "<priority>0.7</priority>\n"
+            + "</url>\n"
+            + "\n"
+            + "<url>\n"
+            + "<loc>http://localhost:"
             + PORT
             + "/erddap/convert/units.html</loc>\n"
-            + //
-            "<lastmod>YYYY-MM-DD</lastmod>\n"
-            + //
-            "<changefreq>monthly</changefreq>\n"
-            + //
-            "<priority>0.7</priority>\n"
-            + //
-            "</url>\n"
-            + //
-            "\n"
-            + //
-            "<url>\n"
-            + //
-            "<loc>http://localhost:"
+            + "<lastmod>YYYY-MM-DD</lastmod>\n"
+            + "<changefreq>monthly</changefreq>\n"
+            + "<priority>0.7</priority>\n"
+            + "</url>\n"
+            + "\n"
+            + "<url>\n"
+            + "<loc>http://localhost:"
             + PORT
             + "/erddap/convert/urls.html</loc>\n"
-            + //
-            "<lastmod>YYYY-MM-DD</lastmod>\n"
-            + //
-            "<changefreq>monthly</changefreq>\n"
-            + //
-            "<priority>0.7</priority>\n"
-            + //
-            "</url>\n"
-            + //
-            "\n"
-            + //
-            "<url>\n"
-            + //
-            "<loc>http://localhost:"
+            + "<lastmod>YYYY-MM-DD</lastmod>\n"
+            + "<changefreq>monthly</changefreq>\n"
+            + "<priority>0.7</priority>\n"
+            + "</url>\n"
+            + "\n"
+            + "<url>\n"
+            + "<loc>http://localhost:"
             + PORT
             + "/erddap/griddap/documentation.html</loc>\n"
-            + //
-            "<lastmod>YYYY-MM-DD</lastmod>\n"
-            + //
-            "<changefreq>monthly</changefreq>\n"
-            + //
-            "<priority>0.7</priority>\n"
-            + //
-            "</url>\n"
-            + //
-            "\n"
-            + //
-            "<url>\n"
-            + //
-            "<loc>http://localhost:"
+            + "<lastmod>YYYY-MM-DD</lastmod>\n"
+            + "<changefreq>monthly</changefreq>\n"
+            + "<priority>0.7</priority>\n"
+            + "</url>\n"
+            + "\n"
+            + "<url>\n"
+            + "<loc>http://localhost:"
             + PORT
             + "/erddap/griddap/index.html?page=1&#x26;itemsPerPage=1000000000</loc>\n"
-            + //
-            "<lastmod>YYYY-MM-DD</lastmod>\n"
-            + //
-            "<changefreq>monthly</changefreq>\n"
-            + //
-            "<priority>0.7</priority>\n"
-            + //
-            "</url>\n"
-            + //
-            "\n"
-            + //
-            "<url>\n"
-            + //
-            "<loc>http://localhost:"
+            + "<lastmod>YYYY-MM-DD</lastmod>\n"
+            + "<changefreq>monthly</changefreq>\n"
+            + "<priority>0.7</priority>\n"
+            + "</url>\n"
+            + "\n"
+            + "<url>\n"
+            + "<loc>http://localhost:"
             + PORT
             + "/erddap/images/embed.html</loc>\n"
-            + //
-            "<lastmod>YYYY-MM-DD</lastmod>\n"
-            + //
-            "<changefreq>monthly</changefreq>\n"
-            + //
-            "<priority>0.7</priority>\n"
-            + //
-            "</url>\n"
-            + //
-            "\n"
-            + //
-            "<url>\n"
-            + //
-            "<loc>http://localhost:"
+            + "<lastmod>YYYY-MM-DD</lastmod>\n"
+            + "<changefreq>monthly</changefreq>\n"
+            + "<priority>0.7</priority>\n"
+            + "</url>\n"
+            + "\n"
+            + "<url>\n"
+            + "<loc>http://localhost:"
             + PORT
             + "/erddap/index.html</loc>\n"
-            + //
-            "<lastmod>YYYY-MM-DD</lastmod>\n"
-            + //
-            "<changefreq>monthly</changefreq>\n"
-            + //
-            "<priority>0.7</priority>\n"
-            + //
-            "</url>\n"
-            + //
-            "\n"
-            + //
-            "<url>\n"
-            + //
-            "<loc>http://localhost:"
+            + "<lastmod>YYYY-MM-DD</lastmod>\n"
+            + "<changefreq>monthly</changefreq>\n"
+            + "<priority>0.7</priority>\n"
+            + "</url>\n"
+            + "\n"
+            + "<url>\n"
+            + "<loc>http://localhost:"
             + PORT
             + "/erddap/info/index.html?page=1&#x26;itemsPerPage=1000000000</loc>\n"
-            + //
-            "<lastmod>YYYY-MM-DD</lastmod>\n"
-            + //
-            "<changefreq>monthly</changefreq>\n"
-            + //
-            "<priority>0.7</priority>\n"
-            + //
-            "</url>\n"
-            + //
-            "\n"
-            + //
-            "<url>\n"
-            + //
-            "<loc>http://localhost:"
+            + "<lastmod>YYYY-MM-DD</lastmod>\n"
+            + "<changefreq>monthly</changefreq>\n"
+            + "<priority>0.7</priority>\n"
+            + "</url>\n"
+            + "\n"
+            + "<url>\n"
+            + "<loc>http://localhost:"
             + PORT
             + "/erddap/information.html</loc>\n"
-            + //
-            "<lastmod>YYYY-MM-DD</lastmod>\n"
-            + //
-            "<changefreq>monthly</changefreq>\n"
-            + //
-            "<priority>0.7</priority>\n"
-            + //
-            "</url>\n"
-            + //
-            "\n"
-            + //
-            "<url>\n"
-            + //
-            "<loc>http://localhost:"
+            + "<lastmod>YYYY-MM-DD</lastmod>\n"
+            + "<changefreq>monthly</changefreq>\n"
+            + "<priority>0.7</priority>\n"
+            + "</url>\n"
+            + "\n"
+            + "<url>\n"
+            + "<loc>http://localhost:"
             + PORT
             + "/erddap/metadata/fgdc/xml/</loc>\n"
-            + //
-            "<lastmod>YYYY-MM-DD</lastmod>\n"
-            + //
-            "<changefreq>monthly</changefreq>\n"
-            + //
-            "<priority>0.3</priority>\n"
-            + //
-            "</url>\n"
-            + //
-            "\n"
-            + //
-            "<url>\n"
-            + //
-            "<loc>http://localhost:"
+            + "<lastmod>YYYY-MM-DD</lastmod>\n"
+            + "<changefreq>monthly</changefreq>\n"
+            + "<priority>0.3</priority>\n"
+            + "</url>\n"
+            + "\n"
+            + "<url>\n"
+            + "<loc>http://localhost:"
             + PORT
             + "/erddap/metadata/iso19115/xml/</loc>\n"
-            + //
-            "<lastmod>YYYY-MM-DD</lastmod>\n"
-            + //
-            "<changefreq>monthly</changefreq>\n"
-            + //
-            "<priority>0.3</priority>\n"
-            + //
-            "</url>\n"
-            + //
-            "\n"
-            + //
-            "<url>\n"
-            + //
-            "<loc>http://localhost:"
+            + "<lastmod>YYYY-MM-DD</lastmod>\n"
+            + "<changefreq>monthly</changefreq>\n"
+            + "<priority>0.3</priority>\n"
+            + "</url>\n"
+            + "\n"
+            + "<url>\n"
+            + "<loc>http://localhost:"
             + PORT
             + "/erddap/legal.html</loc>\n"
-            + //
-            "<lastmod>YYYY-MM-DD</lastmod>\n"
-            + //
-            "<changefreq>monthly</changefreq>\n"
-            + //
-            "<priority>0.7</priority>\n"
-            + //
-            "</url>\n"
-            + //
-            "\n"
-            + //
-            "<url>\n"
-            + //
-            "<loc>http://localhost:"
+            + "<lastmod>YYYY-MM-DD</lastmod>\n"
+            + "<changefreq>monthly</changefreq>\n"
+            + "<priority>0.7</priority>\n"
+            + "</url>\n"
+            + "\n"
+            + "<url>\n"
+            + "<loc>http://localhost:"
             + PORT
             + "/erddap/rest.html</loc>\n"
-            + //
-            "<lastmod>YYYY-MM-DD</lastmod>\n"
-            + //
-            "<changefreq>monthly</changefreq>\n"
-            + //
-            "<priority>0.7</priority>\n"
-            + //
-            "</url>\n"
-            + //
-            "\n"
-            + //
-            "<url>\n"
-            + //
-            "<loc>http://localhost:"
+            + "<lastmod>YYYY-MM-DD</lastmod>\n"
+            + "<changefreq>monthly</changefreq>\n"
+            + "<priority>0.7</priority>\n"
+            + "</url>\n"
+            + "\n"
+            + "<url>\n"
+            + "<loc>http://localhost:"
             + PORT
             + "/erddap/search/advanced.html?page=1&#x26;itemsPerPage=1000000000</loc>\n"
-            + //
-            "<lastmod>YYYY-MM-DD</lastmod>\n"
-            + //
-            "<changefreq>monthly</changefreq>\n"
-            + //
-            "<priority>0.7</priority>\n"
-            + //
-            "</url>\n"
-            + //
-            "\n"
-            + //
-            "<url>\n"
-            + //
-            "<loc>http://localhost:"
+            + "<lastmod>YYYY-MM-DD</lastmod>\n"
+            + "<changefreq>monthly</changefreq>\n"
+            + "<priority>0.7</priority>\n"
+            + "</url>\n"
+            + "\n"
+            + "<url>\n"
+            + "<loc>http://localhost:"
             + PORT
             + "/erddap/search/index.html?page=1&#x26;itemsPerPage=1000000000</loc>\n"
-            + //
-            "<lastmod>YYYY-MM-DD</lastmod>\n"
-            + //
-            "<changefreq>monthly</changefreq>\n"
-            + //
-            "<priority>0.7</priority>\n"
-            + //
-            "</url>\n"
-            + //
-            "\n"
-            + //
-            "<url>\n"
-            + //
-            "<loc>http://localhost:"
+            + "<lastmod>YYYY-MM-DD</lastmod>\n"
+            + "<changefreq>monthly</changefreq>\n"
+            + "<priority>0.7</priority>\n"
+            + "</url>\n"
+            + "\n"
+            + "<url>\n"
+            + "<loc>http://localhost:"
             + PORT
             + "/erddap/slidesorter.html</loc>\n"
-            + //
-            "<lastmod>YYYY-MM-DD</lastmod>\n"
-            + //
-            "<changefreq>monthly</changefreq>\n"
-            + //
-            "<priority>0.7</priority>\n"
-            + //
-            "</url>\n"
-            + //
-            "\n"
-            + //
-            "<url>\n"
-            + //
-            "<loc>http://localhost:"
+            + "<lastmod>YYYY-MM-DD</lastmod>\n"
+            + "<changefreq>monthly</changefreq>\n"
+            + "<priority>0.7</priority>\n"
+            + "</url>\n"
+            + "\n"
+            + "<url>\n"
+            + "<loc>http://localhost:"
             + PORT
             + "/erddap/subscriptions/index.html</loc>\n"
-            + //
-            "<lastmod>YYYY-MM-DD</lastmod>\n"
-            + //
-            "<changefreq>monthly</changefreq>\n"
-            + //
-            "<priority>0.7</priority>\n"
-            + //
-            "</url>\n"
-            + //
-            "\n"
-            + //
-            "<url>\n"
-            + //
-            "<loc>http://localhost:"
+            + "<lastmod>YYYY-MM-DD</lastmod>\n"
+            + "<changefreq>monthly</changefreq>\n"
+            + "<priority>0.7</priority>\n"
+            + "</url>\n"
+            + "\n"
+            + "<url>\n"
+            + "<loc>http://localhost:"
             + PORT
             + "/erddap/subscriptions/add.html</loc>\n"
-            + //
-            "<lastmod>YYYY-MM-DD</lastmod>\n"
-            + //
-            "<changefreq>monthly</changefreq>\n"
-            + //
-            "<priority>0.5</priority>\n"
-            + //
-            "</url>\n"
-            + //
-            "\n"
-            + //
-            "<url>\n"
-            + //
-            "<loc>http://localhost:"
+            + "<lastmod>YYYY-MM-DD</lastmod>\n"
+            + "<changefreq>monthly</changefreq>\n"
+            + "<priority>0.5</priority>\n"
+            + "</url>\n"
+            + "\n"
+            + "<url>\n"
+            + "<loc>http://localhost:"
             + PORT
             + "/erddap/subscriptions/validate.html</loc>\n"
-            + //
-            "<lastmod>YYYY-MM-DD</lastmod>\n"
-            + //
-            "<changefreq>monthly</changefreq>\n"
-            + //
-            "<priority>0.5</priority>\n"
-            + //
-            "</url>\n"
-            + //
-            "\n"
-            + //
-            "<url>\n"
-            + //
-            "<loc>http://localhost:"
+            + "<lastmod>YYYY-MM-DD</lastmod>\n"
+            + "<changefreq>monthly</changefreq>\n"
+            + "<priority>0.5</priority>\n"
+            + "</url>\n"
+            + "\n"
+            + "<url>\n"
+            + "<loc>http://localhost:"
             + PORT
             + "/erddap/subscriptions/list.html</loc>\n"
-            + //
-            "<lastmod>YYYY-MM-DD</lastmod>\n"
-            + //
-            "<changefreq>monthly</changefreq>\n"
-            + //
-            "<priority>0.5</priority>\n"
-            + //
-            "</url>\n"
-            + //
-            "\n"
-            + //
-            "<url>\n"
-            + //
-            "<loc>http://localhost:"
+            + "<lastmod>YYYY-MM-DD</lastmod>\n"
+            + "<changefreq>monthly</changefreq>\n"
+            + "<priority>0.5</priority>\n"
+            + "</url>\n"
+            + "\n"
+            + "<url>\n"
+            + "<loc>http://localhost:"
             + PORT
             + "/erddap/subscriptions/remove.html</loc>\n"
-            + //
-            "<lastmod>YYYY-MM-DD</lastmod>\n"
-            + //
-            "<changefreq>monthly</changefreq>\n"
-            + //
-            "<priority>0.5</priority>\n"
-            + //
-            "</url>\n"
-            + //
-            "\n"
-            + //
-            "<url>\n"
-            + //
-            "<loc>http://localhost:"
+            + "<lastmod>YYYY-MM-DD</lastmod>\n"
+            + "<changefreq>monthly</changefreq>\n"
+            + "<priority>0.5</priority>\n"
+            + "</url>\n"
+            + "\n"
+            + "<url>\n"
+            + "<loc>http://localhost:"
             + PORT
             + "/erddap/tabledap/documentation.html</loc>\n"
-            + //
-            "<lastmod>YYYY-MM-DD</lastmod>\n"
-            + //
-            "<changefreq>monthly</changefreq>\n"
-            + //
-            "<priority>0.7</priority>\n"
-            + //
-            "</url>\n"
-            + //
-            "\n"
-            + //
-            "<url>\n"
-            + //
-            "<loc>http://localhost:"
+            + "<lastmod>YYYY-MM-DD</lastmod>\n"
+            + "<changefreq>monthly</changefreq>\n"
+            + "<priority>0.7</priority>\n"
+            + "</url>\n"
+            + "\n"
+            + "<url>\n"
+            + "<loc>http://localhost:"
             + PORT
             + "/erddap/tabledap/index.html?page=1&#x26;itemsPerPage=1000000000</loc>\n"
-            + //
-            "<lastmod>YYYY-MM-DD</lastmod>\n"
-            + //
-            "<changefreq>monthly</changefreq>\n"
-            + //
-            "<priority>0.7</priority>\n"
-            + //
-            "</url>\n"
-            + //
-            "\n"
-            + //
-            "<url>\n"
-            + //
-            "<loc>http://localhost:"
+            + "<lastmod>YYYY-MM-DD</lastmod>\n"
+            + "<changefreq>monthly</changefreq>\n"
+            + "<priority>0.7</priority>\n"
+            + "</url>\n"
+            + "\n"
+            + "<url>\n"
+            + "<loc>http://localhost:"
             + PORT
             + "/erddap/wms/documentation.html</loc>\n"
-            + //
-            "<lastmod>YYYY-MM-DD</lastmod>\n"
-            + //
-            "<changefreq>monthly</changefreq>\n"
-            + //
-            "<priority>0.7</priority>\n"
-            + //
-            "</url>\n"
-            + //
-            "\n"
-            + //
-            "<url>\n"
-            + //
-            "<loc>http://localhost:"
+            + "<lastmod>YYYY-MM-DD</lastmod>\n"
+            + "<changefreq>monthly</changefreq>\n"
+            + "<priority>0.7</priority>\n"
+            + "</url>\n"
+            + "\n"
+            + "<url>\n"
+            + "<loc>http://localhost:"
             + PORT
             + "/erddap/wms/index.html?page=1&#x26;itemsPerPage=1000000000</loc>\n"
-            + //
-            "<lastmod>YYYY-MM-DD</lastmod>\n"
-            + //
-            "<changefreq>monthly</changefreq>\n"
-            + //
-            "<priority>0.7</priority>\n"
-            + //
-            "</url>\n";
+            + "<lastmod>YYYY-MM-DD</lastmod>\n"
+            + "<changefreq>monthly</changefreq>\n"
+            + "<priority>0.7</priority>\n"
+            + "</url>\n";
 
     results = results.replaceAll("<lastmod>....-..-..</lastmod>", "<lastmod>YYYY-MM-DD</lastmod>");
     Test.ensureEqual(results.substring(0, expected.length()), expected, "results=" + results);
 
     String expected2 =
         "<url>\n"
-            + //
-            "<loc>http://localhost:"
+            + "<loc>http://localhost:"
             + PORT
             + "/erddap/griddap/erdMH1chla1day.html</loc>\n"
-            + //
-            "<lastmod>YYYY-MM-DD</lastmod>\n"
-            + //
-            "<changefreq>monthly</changefreq>\n"
-            + //
-            "<priority>0.5</priority>\n"
-            + //
-            "</url>\n"
-            + //
-            "\n"
-            + //
-            "<url>\n"
-            + //
-            "<loc>http://localhost:"
+            + "<lastmod>YYYY-MM-DD</lastmod>\n"
+            + "<changefreq>monthly</changefreq>\n"
+            + "<priority>0.5</priority>\n"
+            + "</url>\n"
+            + "\n"
+            + "<url>\n"
+            + "<loc>http://localhost:"
             + PORT
             + "/erddap/info/erdMH1chla1day/index.html</loc>\n"
-            + //
-            "<lastmod>YYYY-MM-DD</lastmod>\n"
-            + //
-            "<changefreq>monthly</changefreq>\n"
-            + //
-            "<priority>0.5</priority>\n"
-            + //
-            "</url>\n"
-            + //
-            "\n"
-            + //
-            "<url>\n"
-            + //
-            "<loc>http://localhost:"
+            + "<lastmod>YYYY-MM-DD</lastmod>\n"
+            + "<changefreq>monthly</changefreq>\n"
+            + "<priority>0.5</priority>\n"
+            + "</url>\n"
+            + "\n"
+            + "<url>\n"
+            + "<loc>http://localhost:"
             + PORT
             + "/erddap/griddap/erdMH1chla1day.graph</loc>\n"
-            + //
-            "<lastmod>YYYY-MM-DD</lastmod>\n"
-            + //
-            "<changefreq>monthly</changefreq>\n"
-            + //
-            "<priority>0.5</priority>\n"
-            + //
-            "</url>\n"
-            + //
-            "\n"
-            + //
-            "<url>\n"
-            + //
-            "<loc>http://localhost:"
+            + "<lastmod>YYYY-MM-DD</lastmod>\n"
+            + "<changefreq>monthly</changefreq>\n"
+            + "<priority>0.5</priority>\n"
+            + "</url>\n"
+            + "\n"
+            + "<url>\n"
+            + "<loc>http://localhost:"
             + PORT
             + "/erddap/wms/erdMH1chla1day/index.html</loc>\n"
-            + //
-            "<lastmod>YYYY-MM-DD</lastmod>\n"
-            + //
-            "<changefreq>monthly</changefreq>\n"
-            + //
-            "<priority>0.3</priority>\n"
-            + //
-            "</url>\n";
+            + "<lastmod>YYYY-MM-DD</lastmod>\n"
+            + "<changefreq>monthly</changefreq>\n"
+            + "<priority>0.3</priority>\n"
+            + "</url>\n";
     int startIndex = results.indexOf(expected2.substring(0, 72));
     Test.ensureEqual(
         results.substring(startIndex, startIndex + expected2.length()),
@@ -3281,28 +3076,17 @@ class JettyTests {
                 + "/erddap/convert/interpolate.json?TimeLatLonTable=time%2Clatitude%2Clongitude%0A2006-04-17T06%3A00%3A00Z%2C35.580%2C-122.550%0A2006-04-17T12%3A00%3A00Z%2C35.576%2C-122.553%0A2006-04-17T18%3A00%3A00Z%2C35.572%2C-122.568%0A2007-01-02T00%3A00%3A00Z%2C35.569%2C-122.571%0A&requestCSV=erdMH1chla8day%2Fchlorophyll%2FBilinear%2F4");
     String expected =
         "{\n"
-            + //
-            "  \"table\": {\n"
-            + //
-            "    \"columnNames\": [\"time\", \"latitude\", \"longitude\", \"erdMH1chla8day_chlorophyll_Bilinear_4\"],\n"
-            + //
-            "    \"columnTypes\": [\"String\", \"double\", \"double\", \"double\"],\n"
-            + //
-            "    \"rows\": [\n"
-            + //
-            "      [\"2006-04-17T06:00:00Z\", 35.58, -122.55, null],\n"
-            + //
-            "      [\"2006-04-17T12:00:00Z\", 35.576, -122.553, null],\n"
-            + //
-            "      [\"2006-04-17T18:00:00Z\", 35.572, -122.568, null],\n"
-            + //
-            "      [\"2007-01-02T00:00:00Z\", 35.569, -122.571, null]\n"
-            + //
-            "    ]\n"
-            + //
-            "  }\n"
-            + //
-            "}\n";
+            + "  \"table\": {\n"
+            + "    \"columnNames\": [\"time\", \"latitude\", \"longitude\", \"erdMH1chla8day_chlorophyll_Bilinear_4\"],\n"
+            + "    \"columnTypes\": [\"String\", \"double\", \"double\", \"double\"],\n"
+            + "    \"rows\": [\n"
+            + "      [\"2006-04-17T06:00:00Z\", 35.58, -122.55, null],\n"
+            + "      [\"2006-04-17T12:00:00Z\", 35.576, -122.553, null],\n"
+            + "      [\"2006-04-17T18:00:00Z\", 35.572, -122.568, null],\n"
+            + "      [\"2007-01-02T00:00:00Z\", 35.569, -122.571, null]\n"
+            + "    ]\n"
+            + "  }\n"
+            + "}\n";
     Test.ensureEqual(results, expected, "results=" + results);
 
     // Request an html page, to test the html generation
@@ -3313,68 +3097,37 @@ class JettyTests {
                 + "/erddap/convert/interpolate.htmlTable?TimeLatLonTable=time%2Clatitude%2Clongitude%0A2006-04-17T06%3A00%3A00Z%2C35.580%2C-122.550%0A2006-04-17T12%3A00%3A00Z%2C35.576%2C-122.553%0A2006-04-17T18%3A00%3A00Z%2C35.572%2C-122.568%0A2007-01-02T00%3A00%3A00Z%2C35.569%2C-122.571%0A&requestCSV=erdMH1chla8day%2Fchlorophyll%2FBilinear%2F4");
     expected =
         "<table class=\"erd commonBGColor nowrap\">\n"
-            + //
-            "<tr>\n"
-            + //
-            "<th>time\n"
-            + //
-            "<th>latitude\n"
-            + //
-            "<th>longitude\n"
-            + //
-            "<th>erdMH1chla8day_chlorophyll_Bilinear_4\n"
-            + //
-            "</tr>\n"
-            + //
-            "<tr>\n"
-            + //
-            "<td>2006-04-17T06:00:00Z\n"
-            + //
-            "<td class=\"R\">35.58\n"
-            + //
-            "<td class=\"R\">-122.55\n"
-            + //
-            "<td>\n"
-            + //
-            "</tr>\n"
-            + //
-            "<tr>\n"
-            + //
-            "<td>2006-04-17T12:00:00Z\n"
-            + //
-            "<td class=\"R\">35.576\n"
-            + //
-            "<td class=\"R\">-122.553\n"
-            + //
-            "<td>\n"
-            + //
-            "</tr>\n"
-            + //
-            "<tr>\n"
-            + //
-            "<td>2006-04-17T18:00:00Z\n"
-            + //
-            "<td class=\"R\">35.572\n"
-            + //
-            "<td class=\"R\">-122.568\n"
-            + //
-            "<td>\n"
-            + //
-            "</tr>\n"
-            + //
-            "<tr>\n"
-            + //
-            "<td>2007-01-02T00:00:00Z\n"
-            + //
-            "<td class=\"R\">35.569\n"
-            + //
-            "<td class=\"R\">-122.571\n"
-            + //
-            "<td>\n"
-            + //
-            "</tr>\n"
-            + //
-            "</table>\n";
+            + "<tr>\n"
+            + "<th>time\n"
+            + "<th>latitude\n"
+            + "<th>longitude\n"
+            + "<th>erdMH1chla8day_chlorophyll_Bilinear_4\n"
+            + "</tr>\n"
+            + "<tr>\n"
+            + "<td>2006-04-17T06:00:00Z\n"
+            + "<td class=\"R\">35.58\n"
+            + "<td class=\"R\">-122.55\n"
+            + "<td>\n"
+            + "</tr>\n"
+            + "<tr>\n"
+            + "<td>2006-04-17T12:00:00Z\n"
+            + "<td class=\"R\">35.576\n"
+            + "<td class=\"R\">-122.553\n"
+            + "<td>\n"
+            + "</tr>\n"
+            + "<tr>\n"
+            + "<td>2006-04-17T18:00:00Z\n"
+            + "<td class=\"R\">35.572\n"
+            + "<td class=\"R\">-122.568\n"
+            + "<td>\n"
+            + "</tr>\n"
+            + "<tr>\n"
+            + "<td>2007-01-02T00:00:00Z\n"
+            + "<td class=\"R\">35.569\n"
+            + "<td class=\"R\">-122.571\n"
+            + "<td>\n"
+            + "</tr>\n"
+            + "</table>\n";
     Test.ensureTrue(results.indexOf(expected) > 0, "No table found, results=" + results);
   }
 
@@ -3408,7 +3161,6 @@ class JettyTests {
     Table table = new Table();
     int nRows;
     String url;
-    float lon, lat;
     String results, expected;
 
     // 2016-07-25 test for Kevin's dataset: from remote erddap
@@ -3520,18 +3272,7 @@ class JettyTests {
             + "\t\t:institution = \"PMEL EcoFOCI\" ;\n"
             + "\t\t:keywords = \"2010-2012, active, ammonia, ammonium, bottle, calibration, cast, chemistry, chlorophyll, chukchi, concentration, concentration_of_chlorophyll_in_sea_water, cooperative, cruise, data, density, depth, dissolved, Earth Science > Oceans > Ocean Chemistry > Ammonia, Earth Science > Oceans > Ocean Chemistry > Chlorophyll, Earth Science > Oceans > Ocean Chemistry > Nitrate, Earth Science > Oceans > Ocean Chemistry > Oxygen, Earth Science > Oceans > Ocean Chemistry > Phosphate, Earth Science > Oceans > Ocean Chemistry > Silicate, Earth Science > Oceans > Salinity/Density > Salinity, ecofoci, environmental, factory, fisheries, fisheries-oceanography, flourescence, foci, fraction, fractional, fractional_saturation_of_oxygen_in_sea_water, investigations, laboratory, latitude, lon360, longitude, marine, ml/l, mmoles, mmoles/kg, mole, mole_concentration_of_ammonium_in_sea_water, mole_concentration_of_dissolved_molecular_oxygen_in_sea_water, mole_concentration_of_nitrate_in_sea_water, mole_concentration_of_nitrite_in_sea_water, mole_concentration_of_phosphate_in_sea_water, mole_concentration_of_silicate_in_sea_water, molecular, n02, name, nh4, niskin, nitrate, nitrite, no2, no3, noaa, number, nutrients, O2, ocean, ocean_chlorophyll_a_concentration_factoryCal, ocean_chlorophyll_fluorescence_raw, ocean_dissolved_oxygen_concentration_1_mLperL, ocean_dissolved_oxygen_concentration_1_mMperkg, ocean_dissolved_oxygen_concentration_2_mLperL, ocean_dissolved_oxygen_concentration_2_mMperkg, ocean_oxygen_saturation_1, ocean_practical_salinity_1, ocean_practical_salinity_2, ocean_sigma_t, ocean_temperature_1, ocean_temperature_2, oceanography, oceans, oxygen, pacific, percent, phosphate, photosynthetically, photosynthetically_active_radiation, pmel, po4, practical, prof, profile, pss, pss-78, psu, radiation, raw, salinity, saturation, scale, sea, sea_water_ammonium_concentration, sea_water_nitrate_concentration, sea_water_nitrite_concentration, sea_water_nutrient_bottle_number, sea_water_phosphate_concentration, sea_water_practical_salinity, sea_water_silicate_concentration, seawater, sigma, sigma-t, silicate, station, temperature, time, unit, volume, volume_fraction_of_oxygen_in_sea_water, water\" ;\n"
             + "\t\t:keywords_vocabulary = \"GCMD Science Keywords\" ;\n"
-            + "\t\t:license = \"Data Licenses / Data Usage Restrictions\n"
-            + "The data may be used and redistributed for free but is not intended\n"
-            + "for legal use, since it may contain inaccuracies. Neither the data\n"
-            + "Contributor, ERD, NOAA, nor the United States Government, nor any\n"
-            + "of their employees or contractors, makes any warranty, express or\n"
-            + "implied, including warranties of merchantability and fitness for a\n"
-            + "particular purpose, or assumes any legal liability for the accuracy,\n"
-            + "completeness, or usefulness, of this information.\n"
-            + "\n"
-            + "Unless otherwise noted, data served through this ERDDAP server are \n"
-            + "not quality controlled.  Users may need to do quality control when using \n"
-            + "these data. These data are made available at the users own risk.\" ;\n"
+            + "\t\t:license = \"These data were produced by NOAA and are not subject to copyright protection in the United States. NOAA waives any potential copyright and related rights in these data worldwide through the Creative Commons Zero 1.0 Universal Public Domain Dedication (CC0-1.0).\" ;\n"
             + "\t\t:Northernmost_Northing = 73.11517 ;\n"
             + "\t\t:PROG_CMNT1 = \"cat_ctd v1.36 06Aug2010\" ;\n"
             + "\t\t:PROG_CMNT2 = \"Variables Extrapolated from 2 db to 0\" ;\n"
@@ -3662,18 +3403,7 @@ class JettyTests {
             + "\t\t:institution = \"PMEL EcoFOCI\" ;\n"
             + "\t\t:keywords = \"2010-2012, active, ammonia, ammonium, bottle, calibration, cast, chemistry, chlorophyll, chukchi, concentration, concentration_of_chlorophyll_in_sea_water, cooperative, cruise, data, density, depth, dissolved, Earth Science > Oceans > Ocean Chemistry > Ammonia, Earth Science > Oceans > Ocean Chemistry > Chlorophyll, Earth Science > Oceans > Ocean Chemistry > Nitrate, Earth Science > Oceans > Ocean Chemistry > Oxygen, Earth Science > Oceans > Ocean Chemistry > Phosphate, Earth Science > Oceans > Ocean Chemistry > Silicate, Earth Science > Oceans > Salinity/Density > Salinity, ecofoci, environmental, factory, fisheries, fisheries-oceanography, flourescence, foci, fraction, fractional, fractional_saturation_of_oxygen_in_sea_water, investigations, laboratory, latitude, lon360, longitude, marine, ml/l, mmoles, mmoles/kg, mole, mole_concentration_of_ammonium_in_sea_water, mole_concentration_of_dissolved_molecular_oxygen_in_sea_water, mole_concentration_of_nitrate_in_sea_water, mole_concentration_of_nitrite_in_sea_water, mole_concentration_of_phosphate_in_sea_water, mole_concentration_of_silicate_in_sea_water, molecular, n02, name, nh4, niskin, nitrate, nitrite, no2, no3, noaa, number, nutrients, O2, ocean, ocean_chlorophyll_a_concentration_factoryCal, ocean_chlorophyll_fluorescence_raw, ocean_dissolved_oxygen_concentration_1_mLperL, ocean_dissolved_oxygen_concentration_1_mMperkg, ocean_dissolved_oxygen_concentration_2_mLperL, ocean_dissolved_oxygen_concentration_2_mMperkg, ocean_oxygen_saturation_1, ocean_practical_salinity_1, ocean_practical_salinity_2, ocean_sigma_t, ocean_temperature_1, ocean_temperature_2, oceanography, oceans, oxygen, pacific, percent, phosphate, photosynthetically, photosynthetically_active_radiation, pmel, po4, practical, prof, profile, pss, pss-78, psu, radiation, raw, salinity, saturation, scale, sea, sea_water_ammonium_concentration, sea_water_nitrate_concentration, sea_water_nitrite_concentration, sea_water_nutrient_bottle_number, sea_water_phosphate_concentration, sea_water_practical_salinity, sea_water_silicate_concentration, seawater, sigma, sigma-t, silicate, station, temperature, time, unit, volume, volume_fraction_of_oxygen_in_sea_water, water\" ;\n"
             + "\t\t:keywords_vocabulary = \"GCMD Science Keywords\" ;\n"
-            + "\t\t:license = \"Data Licenses / Data Usage Restrictions\n"
-            + "The data may be used and redistributed for free but is not intended\n"
-            + "for legal use, since it may contain inaccuracies. Neither the data\n"
-            + "Contributor, ERD, NOAA, nor the United States Government, nor any\n"
-            + "of their employees or contractors, makes any warranty, express or\n"
-            + "implied, including warranties of merchantability and fitness for a\n"
-            + "particular purpose, or assumes any legal liability for the accuracy,\n"
-            + "completeness, or usefulness, of this information.\n"
-            + "\n"
-            + "Unless otherwise noted, data served through this ERDDAP server are \n"
-            + "not quality controlled.  Users may need to do quality control when using \n"
-            + "these data. These data are made available at the users own risk.\" ;\n"
+            + "\t\t:license = \"These data were produced by NOAA and are not subject to copyright protection in the United States. NOAA waives any potential copyright and related rights in these data worldwide through the Creative Commons Zero 1.0 Universal Public Domain Dedication (CC0-1.0).\" ;\n"
             + "\t\t:Northernmost_Northing = 73.11517 ;\n"
             + "\t\t:PROG_CMNT1 = \"cat_ctd v1.36 06Aug2010\" ;\n"
             + "\t\t:PROG_CMNT2 = \"Variables Extrapolated from 2 db to 0\" ;\n"
@@ -3822,7 +3552,7 @@ class JettyTests {
     Test.ensureEqual(table.getColumnName(0), "abund_m3", "");
     Test.ensureEqual(table.columnAttributes(0).getString("long_name"), "Abundance", "");
     Test.ensureEqual(table.getFloatData(0, 0), 11.49f, "");
-    Test.ensureEqual(table.getFloatData(0, 1), 74.720001f, "");
+    Test.ensureEqual(table.getFloatData(0, 1), 74.72f, "");
 
     url = "http://localhost:8080/erddap/tabledap/erdGlobecBottle?cruise_id&distinct()";
     table.readOpendapSequence(url, false);
@@ -4253,7 +3983,7 @@ class JettyTests {
     String fileName = TEMP_DIR.toAbsolutePath().toString() + "/tempTable.json";
     table.saveAsJson(fileName, 0, true);
     // String2.log(fileName + "=\n" + File2.readFromFile(fileName)[1]);
-    // Test.displayInBrowser("file://" + fileName); //.json
+    // TestUtil.displayInBrowser("file://" + fileName); //.json
 
     // read it from the file
     String results = File2.directReadFromUtf8File(fileName);
@@ -4786,7 +4516,7 @@ class JettyTests {
       }
 
       // Look for ZsomethingZ
-      hs = new HashSet();
+      hs = new HashSet<>();
       hs.addAll(
           Arrays.asList(
               String2.extractAllCaptureGroupsAsHashSet(content, "(Z[a-zA-Z0-9]Z)", 1)
@@ -4802,7 +4532,7 @@ class JettyTests {
       // replaceAll().
       // There are some legit uses in changes.html, setup.html, and
       // setupDatasetsXml.html.
-      hs = new HashSet();
+      hs = new HashSet<>();
       hs.addAll(
           Arrays.asList(
               String2.extractAllCaptureGroupsAsHashSet(content, "(&amp;[a-zA-Z]+?;)", 1)
@@ -4818,7 +4548,7 @@ class JettyTests {
       // Look for {0}, {1}, etc that should have been replaced by replaceAll().
       // There are some legit values on setupDatasetsXml.html in regexes ({nChar}:
       // 12,14,4,6,7,8).
-      hs = new HashSet();
+      hs = new HashSet<>();
       hs.addAll(
           Arrays.asList(
               String2.extractAllCaptureGroupsAsHashSet(content, "(\\{\\d+\\})", 1)
@@ -4849,7 +4579,7 @@ class JettyTests {
     String2.log("\n*** Erddap.testBasic");
     int po;
     int language = 0;
-    EDStatic.sosActive =
+    EDStatic.config.sosActive =
         false; // currently, never true because sos is unfinished //some other tests may have
     // left this as true
 
@@ -5266,7 +4996,7 @@ class JettyTests {
     // and read the header to see the mime type
     results =
         String2.toNewlineString(
-            SSR.dosOrCShell(
+            TestSSR.dosOrCShell(
                     "curl -i \""
                         + EDStatic.erddapUrl
                         + "/search/index.json?"
@@ -5280,7 +5010,7 @@ class JettyTests {
     results = results.substring(0, po + 7);
     expected =
         "HTTP/1.1 200 OK\n"
-            + "Server: Jetty(12.0.11)\n"
+            + "Server: Jetty(12.0.22)\n"
             + "Date: Today\n"
             + "Content-Type: application/javascript;charset=utf-8\n"
             + "Content-Encoding: identity\n"
@@ -6031,22 +5761,22 @@ class JettyTests {
         "{\n"
             + "  \"table\": {\n"
             + "    \"columnNames\": [\"griddap\", \"Subset\", \"tabledap\", \"Make A Graph\", "
-            + (EDStatic.sosActive ? "\"sos\", " : "")
-            + (EDStatic.wcsActive ? "\"wcs\", " : "")
-            + (EDStatic.wmsActive ? "\"wms\", " : "")
-            + (EDStatic.filesActive ? "\"files\", " : "")
-            + (EDStatic.authentication.length() > 0 ? "\"Accessible\", " : "")
+            + (EDStatic.config.sosActive ? "\"sos\", " : "")
+            + (EDStatic.config.wcsActive ? "\"wcs\", " : "")
+            + (EDStatic.config.wmsActive ? "\"wms\", " : "")
+            + (EDStatic.config.filesActive ? "\"files\", " : "")
+            + (EDStatic.config.authentication.length() > 0 ? "\"Accessible\", " : "")
             + "\"Title\", \"Summary\", \"FGDC\", \"ISO 19115\", \"Info\", \"Background Info\", \"RSS\", "
-            + (EDStatic.subscriptionSystemActive ? "\"Email\", " : "")
+            + (EDStatic.config.subscriptionSystemActive ? "\"Email\", " : "")
             + "\"Institution\", \"Dataset ID\"],\n"
             + "    \"columnTypes\": [\"String\", \"String\", \"String\", \"String\", "
-            + (EDStatic.sosActive ? "\"String\", " : "")
-            + (EDStatic.wcsActive ? "\"String\", " : "")
-            + (EDStatic.wmsActive ? "\"String\", " : "")
-            + (EDStatic.filesActive ? "\"String\", " : "")
-            + (EDStatic.authentication.length() > 0 ? "\"String\", " : "")
+            + (EDStatic.config.sosActive ? "\"String\", " : "")
+            + (EDStatic.config.wcsActive ? "\"String\", " : "")
+            + (EDStatic.config.wmsActive ? "\"String\", " : "")
+            + (EDStatic.config.filesActive ? "\"String\", " : "")
+            + (EDStatic.config.authentication.length() > 0 ? "\"String\", " : "")
             + "\"String\", \"String\", \"String\", \"String\", \"String\", \"String\", \"String\", "
-            + (EDStatic.subscriptionSystemActive ? "\"String\", " : "")
+            + (EDStatic.config.subscriptionSystemActive ? "\"String\", " : "")
             + "\"String\", \"String\"],\n"
             + "    \"rows\": [\n";
     Test.ensureEqual(results.substring(0, expected.length()), expected, "results=\n" + results);
@@ -6061,14 +5791,14 @@ class JettyTests {
             + "\"http://localhost:"
             + PORT
             + "/erddap/tabledap/erdGlobecBottle.graph\", "
-            + (EDStatic.sosActive ? "\"\", " : "")
+            + (EDStatic.config.sosActive ? "\"\", " : "")
             + // currently, it isn't made available via sos
-            (EDStatic.wcsActive ? "\"\", " : "")
-            + (EDStatic.wmsActive ? "\"\", " : "")
-            + (EDStatic.filesActive
+            (EDStatic.config.wcsActive ? "\"\", " : "")
+            + (EDStatic.config.wmsActive ? "\"\", " : "")
+            + (EDStatic.config.filesActive
                 ? "\"http://localhost:" + PORT + "/erddap/files/erdGlobecBottle/\", "
                 : "")
-            + (EDStatic.authentication.length() > 0 ? "\"public\", " : "")
+            + (EDStatic.config.authentication.length() > 0 ? "\"public\", " : "")
             + "\"GLOBEC NEP Rosette Bottle Data (2002)\", \"GLOBEC (GLOBal "
             + "Ocean ECosystems Dynamics) NEP (Northeast Pacific)\\nRosette Bottle Data from "
             + "New Horizon Cruise (NH0207: 1-19 August 2002).\\nNotes:\\nPhysical data "
@@ -6114,7 +5844,7 @@ class JettyTests {
             "\"http://localhost:"
             + PORT
             + "/erddap/rss/erdGlobecBottle.rss\", "
-            + (EDStatic.subscriptionSystemActive
+            + (EDStatic.config.subscriptionSystemActive
                 ? "\"http://localhost:"
                     + PORT
                     + "/erddap/subscriptions/add.html?datasetID=erdGlobecBottle&showErrors=false&email=\", "
@@ -6239,7 +5969,7 @@ class JettyTests {
     Test.ensureTrue(results.indexOf("directory") >= 0, "results=\n" + results);
     Test.ensureTrue(results.indexOf("ERDDAP, Version") >= 0, "results=\n" + results);
 
-    String localName = EDStatic.fullTestCacheDirectory + "46012_2005.csv";
+    String localName = EDStatic.config.fullTestCacheDirectory + "46012_2005.csv";
     File2.delete(localName);
     SSR.downloadFile( // throws Exception if trouble
         EDStatic.erddapUrl + "/files/testTableAscii/subdir/46012_2005.csv",
@@ -6250,7 +5980,7 @@ class JettyTests {
     File2.delete(localName);
 
     // sos
-    if (EDStatic.sosActive) {
+    if (EDStatic.config.sosActive) {
       results =
           SSR.getUrlResponseStringUnchanged(
               EDStatic.erddapUrl + "/sos/index.html?" + EDStatic.defaultPIppQuery);
@@ -6308,7 +6038,7 @@ class JettyTests {
     }
 
     // wcs
-    if (EDStatic.wcsActive) {
+    if (EDStatic.config.wcsActive) {
       results =
           SSR.getUrlResponseStringUnchanged(
               EDStatic.erddapUrl + "/wcs/index.html?" + EDStatic.defaultPIppQuery);
@@ -6370,7 +6100,7 @@ class JettyTests {
     }
 
     // wms
-    if (EDStatic.wmsActive) {
+    if (EDStatic.config.wmsActive) {
       results =
           SSR.getUrlResponseStringUnchanged(
               EDStatic.erddapUrl + "/wms/index.html?" + EDStatic.defaultPIppQuery);
@@ -6445,9 +6175,9 @@ class JettyTests {
      * String s = https://xmlvalidation.com/ ".../xml/validate/?lang=en" +
      * "&url=" + EDStatic.erddapUrl + "/wms/" + EDD.WMS_SERVER + "?service=WMS&" +
      * "request=GetCapabilities&version=";
-     * Test.displayInBrowser(s + "1.1.0");
-     * Test.displayInBrowser(s + "1.1.1");
-     * Test.displayInBrowser(s + "1.3.0");
+     * TestUtil.displayInBrowser(s + "1.1.0");
+     * TestUtil.displayInBrowser(s + "1.1.1");
+     * TestUtil.displayInBrowser(s + "1.3.0");
      */
 
     // more information
@@ -6458,7 +6188,7 @@ class JettyTests {
         "results=\n" + results);
 
     // subscriptions
-    if (EDStatic.subscriptionSystemActive) {
+    if (EDStatic.config.subscriptionSystemActive) {
       results = SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + "/subscriptions/index.html");
       Test.ensureTrue(results.indexOf("Add a new subscription") >= 0, "results=\n" + results);
       Test.ensureTrue(results.indexOf("Validate a subscription") >= 0, "results=\n" + results);
@@ -6502,7 +6232,7 @@ class JettyTests {
     }
 
     // slideSorter
-    if (EDStatic.slideSorterActive) {
+    if (EDStatic.config.slideSorterActive) {
       results = SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + "/slidesorter.html");
       Test.ensureTrue(
           results.indexOf(
@@ -6560,21 +6290,21 @@ class JettyTests {
             + "/erddap/tabledap/index.csv?"
             + EDStatic.defaultPIppQuery
             + "\n"
-            + (EDStatic.sosActive
+            + (EDStatic.config.sosActive
                 ? "sos,http://localhost:"
                     + PORT
                     + "/erddap/sos/index.csv?"
                     + EDStatic.defaultPIppQuery
                     + "\n"
                 : "")
-            + (EDStatic.wcsActive
+            + (EDStatic.config.wcsActive
                 ? "wcs,http://localhost:"
                     + PORT
                     + "/erddap/wcs/index.csv?"
                     + EDStatic.defaultPIppQuery
                     + "\n"
                 : "")
-            + (EDStatic.wmsActive
+            + (EDStatic.config.wmsActive
                 ? "wms,http://localhost:"
                     + PORT
                     + "/erddap/wms/index.csv?"
@@ -6589,10 +6319,10 @@ class JettyTests {
         SSR.getUrlResponseStringUnchanged(
             EDStatic.erddapUrl + "/index.htmlTable?" + EDStatic.defaultPIppQuery);
     expected =
-        EDStatic.startHeadHtml(0, EDStatic.erddapUrl((String) null, language), "Resources")
+        EDStatic.startHeadHtml(0, EDStatic.erddapUrl(null, (String) null, language), "Resources")
             + "\n"
             + "</head>\n"
-            + EDStatic.startBodyHtml(0, null, "index.html", EDStatic.defaultPIppQuery)
+            + EDStatic.startBodyHtml(null, 0, null, "index.html", EDStatic.defaultPIppQuery)
             + // 2022-11-22 .htmlTable
             // converted to
             // .html to avoid user
@@ -6637,7 +6367,7 @@ class JettyTests {
             + PORT
             + "/erddap/tabledap/index.htmlTable?page=1&amp;itemsPerPage=1000</a>\n"
             + "</tr>\n"
-            + (EDStatic.sosActive
+            + (EDStatic.config.sosActive
                 ? "<tr>\n"
                     + "<td>sos\n"
                     + "<td><a href=\"http&#x3a;&#x2f;&#x2f;localhost&#x3a;8080&#x2f;erddap&#x2f;sos&#x2f;index&#x2e;htmlTable&#x3f;page&#x3d;1&#x26;itemsPerPage&#x3d;1000\">http://localhost:"
@@ -6652,7 +6382,8 @@ class JettyTests {
             + "/erddap/wms/index.htmlTable?page=1&amp;itemsPerPage=1000</a>\n"
             + "</tr>\n"
             + "</table>\n"
-            + EDStatic.endBodyHtml(0, EDStatic.erddapUrl((String) null, language), (String) null)
+            + EDStatic.endBodyHtml(
+                null, 0, EDStatic.erddapUrl(null, (String) null, language), (String) null)
             + "\n"
             + "</html>\n";
     Test.ensureEqual(results, expected, "results=\n" + results);
@@ -6679,23 +6410,25 @@ class JettyTests {
             + "      [\"tabledap\", \"http://localhost:"
             + PORT
             + "/erddap/tabledap/index.json?page=1&itemsPerPage=1000\"]"
-            + (EDStatic.sosActive || EDStatic.wcsActive || EDStatic.wmsActive ? "," : "")
+            + (EDStatic.config.sosActive || EDStatic.config.wcsActive || EDStatic.config.wmsActive
+                ? ","
+                : "")
             + "\n"
-            + (EDStatic.sosActive
+            + (EDStatic.config.sosActive
                 ? "      [\"sos\", \"http://localhost:"
                     + PORT
                     + "/erddap/sos/index.json?page=1&itemsPerPage=1000\"]"
-                    + (EDStatic.wcsActive || EDStatic.wmsActive ? "," : "")
+                    + (EDStatic.config.wcsActive || EDStatic.config.wmsActive ? "," : "")
                     + "\n"
                 : "")
-            + (EDStatic.wcsActive
+            + (EDStatic.config.wcsActive
                 ? "      [\"wcs\", \"http://localhost:"
                     + PORT
                     + "/erddap/wcs/index.json?page=1&itemsPerPage=1000\"]"
-                    + (EDStatic.wmsActive ? "," : "")
+                    + (EDStatic.config.wmsActive ? "," : "")
                     + "\n"
                 : "")
-            + (EDStatic.wmsActive
+            + (EDStatic.config.wmsActive
                 ? "      [\"wms\", \"http://localhost:"
                     + PORT
                     + "/erddap/wms/index.json?page=1&itemsPerPage=1000\"]\n"
@@ -6727,17 +6460,17 @@ class JettyTests {
             + "tabledap[9]http://localhost:"
             + PORT
             + "/erddap/tabledap/index.tsv?page=1&itemsPerPage=1000[10]\n"
-            + (EDStatic.sosActive
+            + (EDStatic.config.sosActive
                 ? "sos[9]http://localhost:"
                     + PORT
                     + "/erddap/sos/index.tsv?page=1&itemsPerPage=1000[10]\n"
                 : "")
-            + (EDStatic.wcsActive
+            + (EDStatic.config.wcsActive
                 ? "wcs[9]http://localhost:"
                     + PORT
                     + "/erddap/wcs/index.tsv?page=1&itemsPerPage=1000[10]\n"
                 : "")
-            + (EDStatic.wmsActive
+            + (EDStatic.config.wmsActive
                 ? "wms[9]http://localhost:"
                     + PORT
                     + "/erddap/wms/index.tsv?page=1&itemsPerPage=1000[10]\n"
@@ -6796,7 +6529,7 @@ class JettyTests {
             + PORT
             + "/erddap/tabledap/index.xhtml?page=1&amp;itemsPerPage=1000</td>\n"
             + "</tr>\n"
-            + (EDStatic.sosActive
+            + (EDStatic.config.sosActive
                 ? "<tr>\n"
                     + "<td>sos</td>\n"
                     + "<td>http://localhost:"
@@ -6804,7 +6537,7 @@ class JettyTests {
                     + "/erddap/sos/index.xhtml?page=1&amp;itemsPerPage=1000</td>\n"
                     + "</tr>\n"
                 : "")
-            + (EDStatic.wcsActive
+            + (EDStatic.config.wcsActive
                 ? "<tr>\n"
                     + "<td>wcs</td>\n"
                     + "<td>http://localhost:"
@@ -6812,7 +6545,7 @@ class JettyTests {
                     + "/erddap/wcs/index.xhtml?page=1&amp;itemsPerPage=1000</td>\n"
                     + "</tr>\n"
                 : "")
-            + (EDStatic.wmsActive
+            + (EDStatic.config.wmsActive
                 ? "<tr>\n"
                     + "<td>wms</td>\n"
                     + "<td>http://localhost:"
@@ -6840,7 +6573,7 @@ class JettyTests {
     String lines[] = SSR.getUrlResponseLines(tUrl);
     StringBuilder log = new StringBuilder();
     int errorCount = 0;
-    HashSet<String> tried = new HashSet();
+    HashSet<String> tried = new HashSet<>();
     String skip[] =
         new String[] {
           "http://",
@@ -6918,6 +6651,21 @@ class JettyTests {
               + PORT
               + "/erddap/griddap/erdMHchla8day.timeGaps", // dataset not found
           "https://linux.die.net/man/1/ncdump", // fail, works in browser
+          "https://www.noaa.gov", // fail, works in browser
+          "https://www.noaa.gov/", // fail, works in browser
+          "https://sbclter.msi.ucsb.edu/external/InformationManagement/eml_2018_erddap/", // Whole
+          // site
+          // seems
+          // to be
+          // down
+          // (temporary?) early 2025
+          // pcreview site down early 2025
+          "https://www.pcreview.co.uk/threads/datetime-accounts-for-leap-seconds.1357623/",
+          // site returns 403 in test, but works in browser
+          "https://www.cnmoc.usff.navy.mil/Our-Commands/United-States-Naval-Observatory/Precise-Time-Department/The-USNO-Master-Clock/Definitions-of-Systems-of-Time/",
+          // Stackoverflow and stackexchange seem to be error during tests, but work in browser.
+          "https://stackoverflow.com/questions/31136211/how-to-handle-leap-seconds-in-oracle",
+          "https://dba.stackexchange.com/questions/105514/leap-second-in-database-system-postgresql-and-sql-server",
         };
     // https://unitsofmeasure.org/ucum.html fails in tests because of certificate,
     // but succeeds in my browser. Others are like this, too.
@@ -6966,7 +6714,7 @@ class JettyTests {
         continue;
       } else {
         try {
-          Thread.sleep(1000 * (i + 1) * (i + 1));
+          Thread.sleep(1000l * (i + 1) * ((long) (i + 1)));
           msg = null;
         } catch (InterruptedException e) {
           return msg;
@@ -6989,22 +6737,6 @@ class JettyTests {
     this.testForBrokenLinks("http://localhost:" + PORT + "/erddap/convert/urls.html");
     this.testForBrokenLinks(
         "http://localhost:" + PORT + "/erddap/convert/oceanicAtmosphericVariableNames.html");
-
-    this.testForBrokenLinks(
-        "http://localhost:" + PORT + "/erddap/download/AccessToPrivateDatasets.html");
-    // this.testForBrokenLinks("http://localhost:" + PORT +
-    // "/erddap/download/changes.html"); // todo re-enable, a couple links seem to
-    // be broken, needs more investigation
-    this.testForBrokenLinks("http://localhost:" + PORT + "/erddap/download/EDDTableFromEML.html");
-    this.testForBrokenLinks("http://localhost:" + PORT + "/erddap/download/grids.html");
-    this.testForBrokenLinks("http://localhost:" + PORT + "/erddap/download/NCCSV.html");
-    this.testForBrokenLinks("http://localhost:" + PORT + "/erddap/download/NCCSV_1.00.html");
-    // this.testForBrokenLinks("http://localhost:" + PORT +
-    // "/erddap/download/setup.html"); // todo re-enable, a number of links are
-    // broken
-    // this.testForBrokenLinks("http://localhost:" + PORT +
-    // "/erddap/download/setupDatasetsXml.html"); // todo re-enable, a number of
-    // links are broken
 
     // this.testForBrokenLinks("http://localhost:" + PORT +
     // "/erddap/information.html"); // todo rtech link breaks, but its already
@@ -7102,696 +6834,353 @@ class JettyTests {
         SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + "/info/erdMH1chla1day/index.html");
     expected =
         "<script type=\"application/ld+json\">\n"
-            + //
-            "{\n"
-            + //
-            "  \"@context\": \"http://schema.org\",\n"
-            + //
-            "  \"@type\": \"Dataset\",\n"
-            + //
-            "  \"name\": \"Chlorophyll-a, Aqua MODIS, NPP, L3SMI, Global, 4km, Science Quality, 2003-present (1 Day Composite)\",\n"
-            + //
-            "  \"headline\": \"erdMH1chla1day\",\n"
-            + //
-            "  \"description\": \"This dataset has Level 3, Standard Mapped Image, 4km, chlorophyll-a concentration data from NASA's Aqua Spacecraft.  Measurements are gathered by the Moderate Resolution Imaging Spectroradiometer (MODIS) carried aboard the spacecraft.  This is Science Quality data.  This is the August 2015 version of this dataset.\\n"
-            + //
-            "_lastModified=YYYY-MM-DDThh:mm:ss.000Z\\n"
-            + //
-            "cdm_data_type=Grid\\n"
-            + //
-            "Conventions=CF-1.6, COARDS, ACDD-1.3\\n"
-            + //
-            "Easternmost_Easting=179.9792\\n"
-            + //
-            "geospatial_lat_max=89.97916\\n"
-            + //
-            "geospatial_lat_min=-89.97918\\n"
-            + //
-            "geospatial_lat_units=degrees_north\\n"
-            + //
-            "geospatial_lon_max=179.9792\\n"
-            + //
-            "geospatial_lon_min=-179.9792\\n"
-            + //
-            "geospatial_lon_units=degrees_east\\n"
-            + //
-            "grid_mapping_name=latitude_longitude\\n"
-            + //
-            "history=Files downloaded daily from https://oceandata.sci.gsfc.nasa.gov/MODIS-Aqua/L3SMI to NOAA SWFSC ERD (erd.data@noaa.gov)\\n"
-            + //
-            "ERDDAP adds the time dimension.\\n"
-            + //
-            "Direct read of HDF4 file through CDM library\\n"
-            + //
-            "identifier_product_doi=10.5067/AQUA/MODIS_OC.2014.0\\n"
-            + //
-            "identifier_product_doi_authority=https://dx.doi.org\\n"
-            + //
-            "infoUrl=https://coastwatch.pfeg.noaa.gov/infog/MH1_chla_las.html\\n"
-            + //
-            "institution=NOAA NMFS SWFSC ERD\\n"
-            + //
-            "instrument=MODIS\\n"
-            + //
-            "keywords_vocabulary=GCMD Science Keywords\\n"
-            + //
-            "l2_flag_names=ATMFAIL,LAND,HILT,HISATZEN,STRAYLIGHT,CLDICE,COCCOLITH,LOWLW,CHLWARN,CHLFAIL,NAVWARN,MAXAERITER,ATMWARN,HISOLZEN,NAVFAIL,FILTER,HIGLINT\\n"
-            + //
-            "map_projection=Equidistant Cylindrical\\n"
-            + //
-            "measure=Mean\\n"
-            + //
-            "naming_authority=gov.noaa.pfeg.coastwatch\\n"
-            + //
-            "Northernmost_Northing=89.97916\\n"
-            + //
-            "platform=Aqua\\n"
-            + //
-            "processing_level=L3 Mapped\\n"
-            + //
-            "processing_version=VERSION\\n"
-            + //
-            "product_name=AYYYYMMDD.L3m_DAY_CHL_chlor_a_4km.nc\\n"
-            + //
-            "project=Ocean Biology Processing Group (NASA/GSFC/OBPG)\\n"
-            + //
-            "sourceUrl=(local files)\\n"
-            + //
-            "Southernmost_Northing=-89.97918\\n"
-            + //
-            "spatialResolution=DIST km\\n"
-            + //
-            "standard_name_vocabulary=CF Standard Name Table v70\\n"
-            + //
-            "temporal_range=day\\n"
-            + //
-            "testOutOfDate=now-3days\\n"
-            + //
-            "time_coverage_end=2016-10-17T12:00:00Z\\n"
-            + //
-            "time_coverage_start=2003-01-01T12:00:00Z\\n"
-            + //
-            "Westernmost_Easting=-179.9792\",\n"
-            + //
-            "  \"url\": \"http://localhost:8080/erddap/griddap/erdMH1chla1day.html\",\n"
-            + //
-            "  \"includedInDataCatalog\": {\n"
-            + //
-            "    \"@type\": \"DataCatalog\",\n"
-            + //
-            "    \"name\": \"ERDDAP Data Server at ERDDAP Jetty Install\",\n"
-            + //
-            "    \"sameAs\": \"http://localhost:8080/erddap\"\n"
-            + //
-            "  },\n"
-            + //
-            "  \"keywords\": [\n"
-            + //
-            "    \"algorithm\",\n"
-            + //
-            "    \"biology\",\n"
-            + //
-            "    \"center\",\n"
-            + //
-            "    \"chemistry\",\n"
-            + //
-            "    \"chlor_a\",\n"
-            + //
-            "    \"chlorophyll\",\n"
-            + //
-            "    \"color\",\n"
-            + //
-            "    \"concentration\",\n"
-            + //
-            "    \"data\",\n"
-            + //
-            "    \"Earth Science > Oceans > Ocean Chemistry > Chlorophyll\",\n"
-            + //
-            "    \"Earth Science > Oceans > Ocean Optics > Ocean Color\",\n"
-            + //
-            "    \"ecology\",\n"
-            + //
-            "    \"flight\",\n"
-            + //
-            "    \"goddard\",\n"
-            + //
-            "    \"group\",\n"
-            + //
-            "    \"gsfc\",\n"
-            + //
-            "    \"image\",\n"
-            + //
-            "    \"imaging\",\n"
-            + //
-            "    \"L3\",\n"
-            + //
-            "    \"laboratory\",\n"
-            + //
-            "    \"level\",\n"
-            + //
-            "    \"level-3\",\n"
-            + //
-            "    \"mapped\",\n"
-            + //
-            "    \"mass\",\n"
-            + //
-            "    \"mass_concentration_chlorophyll_concentration_in_sea_water\",\n"
-            + //
-            "    \"moderate\",\n"
-            + //
-            "    \"modis\",\n"
-            + //
-            "    \"nasa\",\n"
-            + //
-            "    \"ocean\",\n"
-            + //
-            "    \"ocean color\",\n"
-            + //
-            "    \"oceans\",\n"
-            + //
-            "    \"oci\",\n"
-            + //
-            "    \"optics\",\n"
-            + //
-            "    \"processing\",\n"
-            + //
-            "    \"resolution\",\n"
-            + //
-            "    \"sea\",\n"
-            + //
-            "    \"seawater\",\n"
-            + //
-            "    \"smi\",\n"
-            + //
-            "    \"space\",\n"
-            + //
-            "    \"spectroradiometer\",\n"
-            + //
-            "    \"standard\",\n"
-            + //
-            "    \"time\",\n"
-            + //
-            "    \"water\"\n"
-            + //
-            "  ],\n"
-            + //
-            "  \"license\": \"https://science.nasa.gov/earth-science/earth-science-data/data-information-policy/\\n"
-            + //
-            "The data may be used and redistributed for free but is not intended\\n"
-            + //
-            "for legal use, since it may contain inaccuracies. Neither the data\\n"
-            + //
-            "Contributor, ERD, NOAA, nor the United States Government, nor any\\n"
-            + //
-            "of their employees or contractors, makes any warranty, express or\\n"
-            + //
-            "implied, including warranties of merchantability and fitness for a\\n"
-            + //
-            "particular purpose, or assumes any legal liability for the accuracy,\\n"
-            + //
-            "completeness, or usefulness, of this information.\",\n"
-            + //
-            "  \"variableMeasured\": [\n"
-            + //
-            "    {\n"
-            + //
-            "      \"@type\": \"PropertyValue\",\n"
-            + //
-            "      \"name\": \"time\",\n"
-            + //
-            "      \"alternateName\": \"Centered Time\",\n"
-            + //
-            "      \"description\": \"Centered Time\",\n"
-            + //
-            "      \"valueReference\": [\n"
-            + //
-            "        {\n"
-            + //
-            "          \"@type\": \"PropertyValue\",\n"
-            + //
-            "          \"name\": \"axisOrDataVariable\",\n"
-            + //
-            "          \"value\": \"axis\"\n"
-            + //
-            "        },\n"
-            + //
-            "        {\n"
-            + //
-            "          \"@type\": \"PropertyValue\",\n"
-            + //
-            "          \"name\": \"_CoordinateAxisType\",\n"
-            + //
-            "          \"value\": \"Time\"\n"
-            + //
-            "        },\n"
-            + //
-            "        {\n"
-            + //
-            "          \"@type\": \"PropertyValue\",\n"
-            + //
-            "          \"name\": \"axis\",\n"
-            + //
-            "          \"value\": \"T\"\n"
-            + //
-            "        },\n"
-            + //
-            "        {\n"
-            + //
-            "          \"@type\": \"PropertyValue\",\n"
-            + //
-            "          \"name\": \"ioos_category\",\n"
-            + //
-            "          \"value\": \"Time\"\n"
-            + //
-            "        },\n"
-            + //
-            "        {\n"
-            + //
-            "          \"@type\": \"PropertyValue\",\n"
-            + //
-            "          \"name\": \"long_name\",\n"
-            + //
-            "          \"value\": \"Centered Time\"\n"
-            + //
-            "        },\n"
-            + //
-            "        {\n"
-            + //
-            "          \"@type\": \"PropertyValue\",\n"
-            + //
-            "          \"name\": \"standard_name\",\n"
-            + //
-            "          \"value\": \"time\"\n"
-            + //
-            "        },\n"
-            + //
-            "        {\n"
-            + //
-            "          \"@type\": \"PropertyValue\",\n"
-            + //
-            "          \"name\": \"time_origin\",\n"
-            + //
-            "          \"value\": \"01-JAN-1970 00:00:00\"\n"
-            + //
-            "        }\n"
-            + //
-            "      ],\n"
-            + //
-            "      \"maxValue\": \"2016-10-17T12:00:00Z\",\n"
-            + //
-            "      \"minValue\": \"2003-01-01T12:00:00Z\",\n"
-            + //
-            "      \"propertyID\": \"time\"\n"
-            + //
-            "    },\n"
-            + //
-            "    {\n"
-            + //
-            "      \"@type\": \"PropertyValue\",\n"
-            + //
-            "      \"name\": \"latitude\",\n"
-            + //
-            "      \"alternateName\": \"Latitude\",\n"
-            + //
-            "      \"description\": \"Latitude\",\n"
-            + //
-            "      \"valueReference\": [\n"
-            + //
-            "        {\n"
-            + //
-            "          \"@type\": \"PropertyValue\",\n"
-            + //
-            "          \"name\": \"axisOrDataVariable\",\n"
-            + //
-            "          \"value\": \"axis\"\n"
-            + //
-            "        },\n"
-            + //
-            "        {\n"
-            + //
-            "          \"@type\": \"PropertyValue\",\n"
-            + //
-            "          \"name\": \"_CoordinateAxisType\",\n"
-            + //
-            "          \"value\": \"Lat\"\n"
-            + //
-            "        },\n"
-            + //
-            "        {\n"
-            + //
-            "          \"@type\": \"PropertyValue\",\n"
-            + //
-            "          \"name\": \"axis\",\n"
-            + //
-            "          \"value\": \"Y\"\n"
-            + //
-            "        },\n"
-            + //
-            "        {\n"
-            + //
-            "          \"@type\": \"PropertyValue\",\n"
-            + //
-            "          \"name\": \"ioos_category\",\n"
-            + //
-            "          \"value\": \"Location\"\n"
-            + //
-            "        },\n"
-            + //
-            "        {\n"
-            + //
-            "          \"@type\": \"PropertyValue\",\n"
-            + //
-            "          \"name\": \"long_name\",\n"
-            + //
-            "          \"value\": \"Latitude\"\n"
-            + //
-            "        },\n"
-            + //
-            "        {\n"
-            + //
-            "          \"@type\": \"PropertyValue\",\n"
-            + //
-            "          \"name\": \"standard_name\",\n"
-            + //
-            "          \"value\": \"latitude\"\n"
-            + //
-            "        },\n"
-            + //
-            "        {\n"
-            + //
-            "          \"@type\": \"PropertyValue\",\n"
-            + //
-            "          \"name\": \"valid_max\",\n"
-            + //
-            "          \"value\": 90\n"
-            + //
-            "        },\n"
-            + //
-            "        {\n"
-            + //
-            "          \"@type\": \"PropertyValue\",\n"
-            + //
-            "          \"name\": \"valid_min\",\n"
-            + //
-            "          \"value\": -90\n"
-            + //
-            "        }\n"
-            + //
-            "      ],\n"
-            + //
-            "      \"maxValue\": 89.97916,\n"
-            + //
-            "      \"minValue\": -89.97918,\n"
-            + //
-            "      \"propertyID\": \"latitude\",\n"
-            + //
-            "      \"unitText\": \"degrees_north\"\n"
-            + //
-            "    },\n"
-            + //
-            "    {\n"
-            + //
-            "      \"@type\": \"PropertyValue\",\n"
-            + //
-            "      \"name\": \"longitude\",\n"
-            + //
-            "      \"alternateName\": \"Longitude\",\n"
-            + //
-            "      \"description\": \"Longitude\",\n"
-            + //
-            "      \"valueReference\": [\n"
-            + //
-            "        {\n"
-            + //
-            "          \"@type\": \"PropertyValue\",\n"
-            + //
-            "          \"name\": \"axisOrDataVariable\",\n"
-            + //
-            "          \"value\": \"axis\"\n"
-            + //
-            "        },\n"
-            + //
-            "        {\n"
-            + //
-            "          \"@type\": \"PropertyValue\",\n"
-            + //
-            "          \"name\": \"_CoordinateAxisType\",\n"
-            + //
-            "          \"value\": \"Lon\"\n"
-            + //
-            "        },\n"
-            + //
-            "        {\n"
-            + //
-            "          \"@type\": \"PropertyValue\",\n"
-            + //
-            "          \"name\": \"axis\",\n"
-            + //
-            "          \"value\": \"X\"\n"
-            + //
-            "        },\n"
-            + //
-            "        {\n"
-            + //
-            "          \"@type\": \"PropertyValue\",\n"
-            + //
-            "          \"name\": \"ioos_category\",\n"
-            + //
-            "          \"value\": \"Location\"\n"
-            + //
-            "        },\n"
-            + //
-            "        {\n"
-            + //
-            "          \"@type\": \"PropertyValue\",\n"
-            + //
-            "          \"name\": \"long_name\",\n"
-            + //
-            "          \"value\": \"Longitude\"\n"
-            + //
-            "        },\n"
-            + //
-            "        {\n"
-            + //
-            "          \"@type\": \"PropertyValue\",\n"
-            + //
-            "          \"name\": \"standard_name\",\n"
-            + //
-            "          \"value\": \"longitude\"\n"
-            + //
-            "        },\n"
-            + //
-            "        {\n"
-            + //
-            "          \"@type\": \"PropertyValue\",\n"
-            + //
-            "          \"name\": \"valid_max\",\n"
-            + //
-            "          \"value\": 180\n"
-            + //
-            "        },\n"
-            + //
-            "        {\n"
-            + //
-            "          \"@type\": \"PropertyValue\",\n"
-            + //
-            "          \"name\": \"valid_min\",\n"
-            + //
-            "          \"value\": -180\n"
-            + //
-            "        }\n"
-            + //
-            "      ],\n"
-            + //
-            "      \"maxValue\": 179.9792,\n"
-            + //
-            "      \"minValue\": -179.9792,\n"
-            + //
-            "      \"propertyID\": \"longitude\",\n"
-            + //
-            "      \"unitText\": \"degrees_east\"\n"
-            + //
-            "    },\n"
-            + //
-            "    {\n"
-            + //
-            "      \"@type\": \"PropertyValue\",\n"
-            + //
-            "      \"name\": \"chlorophyll\",\n"
-            + //
-            "      \"alternateName\": \"Mean Chlorophyll a Concentration\",\n"
-            + //
-            "      \"description\": \"Mean Chlorophyll a Concentration\",\n"
-            + //
-            "      \"valueReference\": [\n"
-            + //
-            "        {\n"
-            + //
-            "          \"@type\": \"PropertyValue\",\n"
-            + //
-            "          \"name\": \"axisOrDataVariable\",\n"
-            + //
-            "          \"value\": \"data\"\n"
-            + //
-            "        },\n"
-            + //
-            "        {\n"
-            + //
-            "          \"@type\": \"PropertyValue\",\n"
-            + //
-            "          \"name\": \"_FillValue\",\n"
-            + //
-            "          \"value\": null\n"
-            + //
-            "        },\n"
-            + //
-            "        {\n"
-            + //
-            "          \"@type\": \"PropertyValue\",\n"
-            + //
-            "          \"name\": \"colorBarMaximum\",\n"
-            + //
-            "          \"value\": 30\n"
-            + //
-            "        },\n"
-            + //
-            "        {\n"
-            + //
-            "          \"@type\": \"PropertyValue\",\n"
-            + //
-            "          \"name\": \"colorBarMinimum\",\n"
-            + //
-            "          \"value\": 0.03\n"
-            + //
-            "        },\n"
-            + //
-            "        {\n"
-            + //
-            "          \"@type\": \"PropertyValue\",\n"
-            + //
-            "          \"name\": \"colorBarScale\",\n"
-            + //
-            "          \"value\": \"Log\"\n"
-            + //
-            "        },\n"
-            + //
-            "        {\n"
-            + //
-            "          \"@type\": \"PropertyValue\",\n"
-            + //
-            "          \"name\": \"ioos_category\",\n"
-            + //
-            "          \"value\": \"Ocean Color\"\n"
-            + //
-            "        },\n"
-            + //
-            "        {\n"
-            + //
-            "          \"@type\": \"PropertyValue\",\n"
-            + //
-            "          \"name\": \"long_name\",\n"
-            + //
-            "          \"value\": \"Mean Chlorophyll a Concentration\"\n"
-            + //
-            "        },\n"
-            + //
-            "        {\n"
-            + //
-            "          \"@type\": \"PropertyValue\",\n"
-            + //
-            "          \"name\": \"references\",\n"
-            + //
-            "          \"value\": \"Hu, C., Lee Z., and Franz, B.A. (2012). Chlorophyll-a algorithms for oligotrophic oceans: A novel approach based on three-band reflectance difference, J. Geophys. Res., 117, C01011, doi:10.1029/2011JC007395.\"\n"
-            + //
-            "        },\n"
-            + //
-            "        {\n"
-            + //
-            "          \"@type\": \"PropertyValue\",\n"
-            + //
-            "          \"name\": \"standard_name\",\n"
-            + //
-            "          \"value\": \"concentration_of_chlorophyll_in_sea_water\"\n"
-            + //
-            "        },\n"
-            + //
-            "        {\n"
-            + //
-            "          \"@type\": \"PropertyValue\",\n"
-            + //
-            "          \"name\": \"valid_max\",\n"
-            + //
-            "          \"value\": 100\n"
-            + //
-            "        },\n"
-            + //
-            "        {\n"
-            + //
-            "          \"@type\": \"PropertyValue\",\n"
-            + //
-            "          \"name\": \"valid_min\",\n"
-            + //
-            "          \"value\": 0.001\n"
-            + //
-            "        }\n"
-            + //
-            "      ],\n"
-            + //
-            "      \"propertyID\": \"concentration_of_chlorophyll_in_sea_water\",\n"
-            + //
-            "      \"unitText\": \"mg m-3\"\n"
-            + //
-            "    }\n"
-            + //
-            "  ],\n"
-            + //
-            "  \"creator\": {\n"
-            + //
-            "    \"@type\": \"Organization\",\n"
-            + //
-            "    \"name\": \"NASA/GSFC/OBPG\",\n"
-            + //
-            "    \"email\": \"data@oceancolor.gsfc.nasa.gov\",\n"
-            + //
-            "    \"sameAs\": \"https://oceandata.sci.gsfc.nasa.gov\"\n"
-            + //
-            "  },\n"
-            + //
-            "  \"publisher\": {\n"
-            + //
-            "    \"@type\": \"Organization\",\n"
-            + //
-            "    \"name\": \"NOAA NMFS SWFSC ERD\",\n"
-            + //
-            "    \"email\": \"erd.data@noaa.gov\",\n"
-            + //
-            "    \"sameAs\": \"https://www.pfeg.noaa.gov\"\n"
-            + //
-            "  },\n"
-            + //
-            "  \"dateCreated\": \"2016-10-18T06:45:00.000Z\",\n"
-            + //
-            "  \"identifier\": \"erdMH1chla1day\",\n"
-            + //
-            "  \"temporalCoverage\": \"2003-01-01T12:00:00Z/2016-10-17T12:00:00Z\",\n"
-            + //
-            "  \"spatialCoverage\": {\n"
-            + //
-            "    \"@type\": \"Place\",\n"
-            + //
-            "    \"geo\": {\n"
-            + //
-            "      \"@type\": \"GeoShape\",\n"
-            + //
-            "      \"box\": \"-89.97918 -179.9792 89.97916 179.9792\"\n"
-            + //
-            "    }\n"
-            + //
-            "  }\n"
-            + //
-            "}\n"
-            + //
-            "</script>\n";
+            + "{\n"
+            + "  \"@context\": \"http://schema.org\",\n"
+            + "  \"@type\": \"Dataset\",\n"
+            + "  \"name\": \"Chlorophyll-a, Aqua MODIS, NPP, L3SMI, Global, 4km, Science Quality, 2003-present (1 Day Composite)\",\n"
+            + "  \"headline\": \"erdMH1chla1day\",\n"
+            + "  \"description\": \"This dataset has Level 3, Standard Mapped Image, 4km, chlorophyll-a concentration data from NASA's Aqua Spacecraft.  Measurements are gathered by the Moderate Resolution Imaging Spectroradiometer (MODIS) carried aboard the spacecraft.  This is Science Quality data.  This is the August 2015 version of this dataset.\\n"
+            + "_lastModified=YYYY-MM-DDThh:mm:ss.000Z\\n"
+            + "att1=value for att1\\n"
+            + "att2=value for att2\\n"
+            + "cdm_data_type=Grid\\n"
+            + "Conventions=CF-1.6, COARDS, ACDD-1.3\\n"
+            + "Easternmost_Easting=179.9792\\n"
+            + "geospatial_lat_max=89.97916\\n"
+            + "geospatial_lat_min=-89.97918\\n"
+            + "geospatial_lat_units=degrees_north\\n"
+            + "geospatial_lon_max=179.9792\\n"
+            + "geospatial_lon_min=-179.9792\\n"
+            + "geospatial_lon_units=degrees_east\\n"
+            + "grid_mapping_name=latitude_longitude\\n"
+            + "history=Files downloaded daily from https://oceandata.sci.gsfc.nasa.gov/MODIS-Aqua/L3SMI to NOAA SWFSC ERD (erd.data@noaa.gov)\\n"
+            + "ERDDAP adds the time dimension.\\n"
+            + "Direct read of HDF4 file through CDM library\\n"
+            + "identifier_product_doi=10.5067/AQUA/MODIS_OC.2014.0\\n"
+            + "identifier_product_doi_authority=https://dx.doi.org\\n"
+            + "infoUrl=https://coastwatch.pfeg.noaa.gov/infog/MH1_chla_las.html\\n"
+            + "institution=NOAA NMFS SWFSC ERD\\n"
+            + "instrument=MODIS\\n"
+            + "keywords_vocabulary=GCMD Science Keywords\\n"
+            + "l2_flag_names=ATMFAIL,LAND,HILT,HISATZEN,STRAYLIGHT,CLDICE,COCCOLITH,LOWLW,CHLWARN,CHLFAIL,NAVWARN,MAXAERITER,ATMWARN,HISOLZEN,NAVFAIL,FILTER,HIGLINT\\n"
+            + "map_projection=Equidistant Cylindrical\\n"
+            + "measure=Mean\\n"
+            + "naming_authority=gov.noaa.pfeg.coastwatch\\n"
+            + "Northernmost_Northing=89.97916\\n"
+            + "platform=Aqua\\n"
+            + "processing_level=L3 Mapped\\n"
+            + "processing_version=VERSION\\n"
+            + "product_name=AYYYYMMDD.L3m_DAY_CHL_chlor_a_4km.nc\\n"
+            + "project=Ocean Biology Processing Group (NASA/GSFC/OBPG)\\n"
+            + "sourceUrl=(local files)\\n"
+            + "Southernmost_Northing=-89.97918\\n"
+            + "spatialResolution=DIST km\\n"
+            + "standard_name_vocabulary=CF Standard Name Table v70\\n"
+            + "temporal_range=day\\n"
+            + "testOutOfDate=now-3days\\n"
+            + "time_coverage_end=2016-10-17T12:00:00Z\\n"
+            + "time_coverage_start=2003-01-01T12:00:00Z\\n"
+            + "Westernmost_Easting=-179.9792\",\n"
+            + "  \"url\": \"http://localhost:8080/erddap/griddap/erdMH1chla1day.html\",\n"
+            + "  \"includedInDataCatalog\": {\n"
+            + "    \"@type\": \"DataCatalog\",\n"
+            + "    \"name\": \"ERDDAP Data Server at ERDDAP Jetty Install\",\n"
+            + "    \"sameAs\": \"http://localhost:8080/erddap\"\n"
+            + "  },\n"
+            + "  \"keywords\": [\n"
+            + "    \"algorithm\",\n"
+            + "    \"biology\",\n"
+            + "    \"center\",\n"
+            + "    \"chemistry\",\n"
+            + "    \"chlor_a\",\n"
+            + "    \"chlorophyll\",\n"
+            + "    \"color\",\n"
+            + "    \"concentration\",\n"
+            + "    \"data\",\n"
+            + "    \"Earth Science > Oceans > Ocean Chemistry > Chlorophyll\",\n"
+            + "    \"Earth Science > Oceans > Ocean Optics > Ocean Color\",\n"
+            + "    \"ecology\",\n"
+            + "    \"flight\",\n"
+            + "    \"goddard\",\n"
+            + "    \"group\",\n"
+            + "    \"gsfc\",\n"
+            + "    \"image\",\n"
+            + "    \"imaging\",\n"
+            + "    \"L3\",\n"
+            + "    \"laboratory\",\n"
+            + "    \"level\",\n"
+            + "    \"level-3\",\n"
+            + "    \"mapped\",\n"
+            + "    \"mass\",\n"
+            + "    \"mass_concentration_chlorophyll_concentration_in_sea_water\",\n"
+            + "    \"moderate\",\n"
+            + "    \"modis\",\n"
+            + "    \"nasa\",\n"
+            + "    \"ocean\",\n"
+            + "    \"ocean color\",\n"
+            + "    \"oceans\",\n"
+            + "    \"oci\",\n"
+            + "    \"optics\",\n"
+            + "    \"processing\",\n"
+            + "    \"resolution\",\n"
+            + "    \"sea\",\n"
+            + "    \"seawater\",\n"
+            + "    \"smi\",\n"
+            + "    \"space\",\n"
+            + "    \"spectroradiometer\",\n"
+            + "    \"standard\",\n"
+            + "    \"time\",\n"
+            + "    \"water\"\n"
+            + "  ],\n"
+            + "  \"license\": \"https://science.nasa.gov/earth-science/earth-science-data/data-information-policy/\\n"
+            + "The data may be used and redistributed for free but is not intended\\n"
+            + "for legal use, since it may contain inaccuracies. Neither the data\\n"
+            + "Contributor, ERD, NOAA, nor the United States Government, nor any\\n"
+            + "of their employees or contractors, makes any warranty, express or\\n"
+            + "implied, including warranties of merchantability and fitness for a\\n"
+            + "particular purpose, or assumes any legal liability for the accuracy,\\n"
+            + "completeness, or usefulness, of this information.\",\n"
+            + "  \"variableMeasured\": [\n"
+            + "    {\n"
+            + "      \"@type\": \"PropertyValue\",\n"
+            + "      \"name\": \"time\",\n"
+            + "      \"alternateName\": \"Centered Time\",\n"
+            + "      \"description\": \"Centered Time\",\n"
+            + "      \"valueReference\": [\n"
+            + "        {\n"
+            + "          \"@type\": \"PropertyValue\",\n"
+            + "          \"name\": \"axisOrDataVariable\",\n"
+            + "          \"value\": \"axis\"\n"
+            + "        },\n"
+            + "        {\n"
+            + "          \"@type\": \"PropertyValue\",\n"
+            + "          \"name\": \"_CoordinateAxisType\",\n"
+            + "          \"value\": \"Time\"\n"
+            + "        },\n"
+            + "        {\n"
+            + "          \"@type\": \"PropertyValue\",\n"
+            + "          \"name\": \"axis\",\n"
+            + "          \"value\": \"T\"\n"
+            + "        },\n"
+            + "        {\n"
+            + "          \"@type\": \"PropertyValue\",\n"
+            + "          \"name\": \"ioos_category\",\n"
+            + "          \"value\": \"Time\"\n"
+            + "        },\n"
+            + "        {\n"
+            + "          \"@type\": \"PropertyValue\",\n"
+            + "          \"name\": \"long_name\",\n"
+            + "          \"value\": \"Centered Time\"\n"
+            + "        },\n"
+            + "        {\n"
+            + "          \"@type\": \"PropertyValue\",\n"
+            + "          \"name\": \"standard_name\",\n"
+            + "          \"value\": \"time\"\n"
+            + "        },\n"
+            + "        {\n"
+            + "          \"@type\": \"PropertyValue\",\n"
+            + "          \"name\": \"time_origin\",\n"
+            + "          \"value\": \"01-JAN-1970 00:00:00\"\n"
+            + "        }\n"
+            + "      ],\n"
+            + "      \"maxValue\": \"2016-10-17T12:00:00Z\",\n"
+            + "      \"minValue\": \"2003-01-01T12:00:00Z\",\n"
+            + "      \"propertyID\": \"time\"\n"
+            + "    },\n"
+            + "    {\n"
+            + "      \"@type\": \"PropertyValue\",\n"
+            + "      \"name\": \"latitude\",\n"
+            + "      \"alternateName\": \"Latitude\",\n"
+            + "      \"description\": \"Latitude\",\n"
+            + "      \"valueReference\": [\n"
+            + "        {\n"
+            + "          \"@type\": \"PropertyValue\",\n"
+            + "          \"name\": \"axisOrDataVariable\",\n"
+            + "          \"value\": \"axis\"\n"
+            + "        },\n"
+            + "        {\n"
+            + "          \"@type\": \"PropertyValue\",\n"
+            + "          \"name\": \"_CoordinateAxisType\",\n"
+            + "          \"value\": \"Lat\"\n"
+            + "        },\n"
+            + "        {\n"
+            + "          \"@type\": \"PropertyValue\",\n"
+            + "          \"name\": \"axis\",\n"
+            + "          \"value\": \"Y\"\n"
+            + "        },\n"
+            + "        {\n"
+            + "          \"@type\": \"PropertyValue\",\n"
+            + "          \"name\": \"ioos_category\",\n"
+            + "          \"value\": \"Location\"\n"
+            + "        },\n"
+            + "        {\n"
+            + "          \"@type\": \"PropertyValue\",\n"
+            + "          \"name\": \"long_name\",\n"
+            + "          \"value\": \"Latitude\"\n"
+            + "        },\n"
+            + "        {\n"
+            + "          \"@type\": \"PropertyValue\",\n"
+            + "          \"name\": \"standard_name\",\n"
+            + "          \"value\": \"latitude\"\n"
+            + "        },\n"
+            + "        {\n"
+            + "          \"@type\": \"PropertyValue\",\n"
+            + "          \"name\": \"valid_max\",\n"
+            + "          \"value\": 90\n"
+            + "        },\n"
+            + "        {\n"
+            + "          \"@type\": \"PropertyValue\",\n"
+            + "          \"name\": \"valid_min\",\n"
+            + "          \"value\": -90\n"
+            + "        }\n"
+            + "      ],\n"
+            + "      \"maxValue\": 89.97916,\n"
+            + "      \"minValue\": -89.97918,\n"
+            + "      \"propertyID\": \"latitude\",\n"
+            + "      \"unitText\": \"degrees_north\"\n"
+            + "    },\n"
+            + "    {\n"
+            + "      \"@type\": \"PropertyValue\",\n"
+            + "      \"name\": \"longitude\",\n"
+            + "      \"alternateName\": \"Longitude\",\n"
+            + "      \"description\": \"Longitude\",\n"
+            + "      \"valueReference\": [\n"
+            + "        {\n"
+            + "          \"@type\": \"PropertyValue\",\n"
+            + "          \"name\": \"axisOrDataVariable\",\n"
+            + "          \"value\": \"axis\"\n"
+            + "        },\n"
+            + "        {\n"
+            + "          \"@type\": \"PropertyValue\",\n"
+            + "          \"name\": \"_CoordinateAxisType\",\n"
+            + "          \"value\": \"Lon\"\n"
+            + "        },\n"
+            + "        {\n"
+            + "          \"@type\": \"PropertyValue\",\n"
+            + "          \"name\": \"axis\",\n"
+            + "          \"value\": \"X\"\n"
+            + "        },\n"
+            + "        {\n"
+            + "          \"@type\": \"PropertyValue\",\n"
+            + "          \"name\": \"ioos_category\",\n"
+            + "          \"value\": \"Location\"\n"
+            + "        },\n"
+            + "        {\n"
+            + "          \"@type\": \"PropertyValue\",\n"
+            + "          \"name\": \"long_name\",\n"
+            + "          \"value\": \"Longitude\"\n"
+            + "        },\n"
+            + "        {\n"
+            + "          \"@type\": \"PropertyValue\",\n"
+            + "          \"name\": \"standard_name\",\n"
+            + "          \"value\": \"longitude\"\n"
+            + "        },\n"
+            + "        {\n"
+            + "          \"@type\": \"PropertyValue\",\n"
+            + "          \"name\": \"valid_max\",\n"
+            + "          \"value\": 180\n"
+            + "        },\n"
+            + "        {\n"
+            + "          \"@type\": \"PropertyValue\",\n"
+            + "          \"name\": \"valid_min\",\n"
+            + "          \"value\": -180\n"
+            + "        }\n"
+            + "      ],\n"
+            + "      \"maxValue\": 179.9792,\n"
+            + "      \"minValue\": -179.9792,\n"
+            + "      \"propertyID\": \"longitude\",\n"
+            + "      \"unitText\": \"degrees_east\"\n"
+            + "    },\n"
+            + "    {\n"
+            + "      \"@type\": \"PropertyValue\",\n"
+            + "      \"name\": \"chlorophyll\",\n"
+            + "      \"alternateName\": \"Mean Chlorophyll a Concentration\",\n"
+            + "      \"description\": \"Mean Chlorophyll a Concentration\",\n"
+            + "      \"valueReference\": [\n"
+            + "        {\n"
+            + "          \"@type\": \"PropertyValue\",\n"
+            + "          \"name\": \"axisOrDataVariable\",\n"
+            + "          \"value\": \"data\"\n"
+            + "        },\n"
+            + "        {\n"
+            + "          \"@type\": \"PropertyValue\",\n"
+            + "          \"name\": \"_FillValue\",\n"
+            + "          \"value\": null\n"
+            + "        },\n"
+            + "        {\n"
+            + "          \"@type\": \"PropertyValue\",\n"
+            + "          \"name\": \"colorBarMaximum\",\n"
+            + "          \"value\": 30\n"
+            + "        },\n"
+            + "        {\n"
+            + "          \"@type\": \"PropertyValue\",\n"
+            + "          \"name\": \"colorBarMinimum\",\n"
+            + "          \"value\": 0.03\n"
+            + "        },\n"
+            + "        {\n"
+            + "          \"@type\": \"PropertyValue\",\n"
+            + "          \"name\": \"colorBarScale\",\n"
+            + "          \"value\": \"Log\"\n"
+            + "        },\n"
+            + "        {\n"
+            + "          \"@type\": \"PropertyValue\",\n"
+            + "          \"name\": \"ioos_category\",\n"
+            + "          \"value\": \"Ocean Color\"\n"
+            + "        },\n"
+            + "        {\n"
+            + "          \"@type\": \"PropertyValue\",\n"
+            + "          \"name\": \"long_name\",\n"
+            + "          \"value\": \"Mean Chlorophyll a Concentration\"\n"
+            + "        },\n"
+            + "        {\n"
+            + "          \"@type\": \"PropertyValue\",\n"
+            + "          \"name\": \"references\",\n"
+            + "          \"value\": \"Hu, C., Lee Z., and Franz, B.A. (2012). Chlorophyll-a algorithms for oligotrophic oceans: A novel approach based on three-band reflectance difference, J. Geophys. Res., 117, C01011, doi:10.1029/2011JC007395.\"\n"
+            + "        },\n"
+            + "        {\n"
+            + "          \"@type\": \"PropertyValue\",\n"
+            + "          \"name\": \"standard_name\",\n"
+            + "          \"value\": \"concentration_of_chlorophyll_in_sea_water\"\n"
+            + "        },\n"
+            + "        {\n"
+            + "          \"@type\": \"PropertyValue\",\n"
+            + "          \"name\": \"valid_max\",\n"
+            + "          \"value\": 100\n"
+            + "        },\n"
+            + "        {\n"
+            + "          \"@type\": \"PropertyValue\",\n"
+            + "          \"name\": \"valid_min\",\n"
+            + "          \"value\": 0.001\n"
+            + "        }\n"
+            + "      ],\n"
+            + "      \"propertyID\": \"concentration_of_chlorophyll_in_sea_water\",\n"
+            + "      \"unitText\": \"mg m-3\"\n"
+            + "    }\n"
+            + "  ],\n"
+            + "  \"creator\": {\n"
+            + "    \"@type\": \"Organization\",\n"
+            + "    \"name\": \"NASA/GSFC/OBPG\",\n"
+            + "    \"email\": \"data@oceancolor.gsfc.nasa.gov\",\n"
+            + "    \"sameAs\": \"https://oceandata.sci.gsfc.nasa.gov\"\n"
+            + "  },\n"
+            + "  \"publisher\": {\n"
+            + "    \"@type\": \"Organization\",\n"
+            + "    \"name\": \"NOAA NMFS SWFSC ERD\",\n"
+            + "    \"email\": \"erd.data@noaa.gov\",\n"
+            + "    \"sameAs\": \"https://www.pfeg.noaa.gov\"\n"
+            + "  },\n"
+            + "  \"dateCreated\": \"2016-10-18T06:45:00.000Z\",\n"
+            + "  \"identifier\": \"erdMH1chla1day\",\n"
+            + "  \"temporalCoverage\": \"2003-01-01T12:00:00Z/2016-10-17T12:00:00Z\",\n"
+            + "  \"spatialCoverage\": {\n"
+            + "    \"@type\": \"Place\",\n"
+            + "    \"geo\": {\n"
+            + "      \"@type\": \"GeoShape\",\n"
+            + "      \"box\": \"-89.97918 -179.9792 89.97916 179.9792\"\n"
+            + "    }\n"
+            + "  }\n"
+            + "}\n"
+            + "</script>\n";
     results =
         results.replaceAll(
             "time_coverage_end=....-..-..T09:00:00Z", "time_coverage_end=yyyy-mm-ddT09:00:00Z");
@@ -7832,22 +7221,21 @@ class JettyTests {
     EDD.testVerboseOn();
     String htmlUrl = EDStatic.erddapUrl + "/search/advanced.html?page=1&itemsPerPage=1000";
     String csvUrl = EDStatic.erddapUrl + "/search/advanced.csv?page=1&itemsPerPage=1000";
-    String expected = "pmelTaoMonPos";
+    String expected = "nceiPH53sstd1day";
     String expected2, query, results;
     String2.log(
         "\n*** Erddap.testAdvancedSearch\n"
             + "This assumes localhost ERDDAP is running with at least glerAvgTemp.");
-    int po;
 
     // test valid search string, values are case-insensitive
     query = "";
     String goodQueries[] = {
-      "&searchFor=pmelTao",
-      "&protocol=TAbleDAp",
+      "&searchFor=nceiPH53",
+      "&protocol=GrIdDaP",
       "&short_name=depth",
       "&minLat=-45&maxLat=45",
       "&minLon=-25&maxLon=25",
-      "&minTime=now-3years&maxTime=now-1years"
+      "&minTime=now-5years&maxTime=now-2years"
     };
     for (int i = 0; i < goodQueries.length; i++) {
       query += goodQueries[i];
@@ -7858,7 +7246,7 @@ class JettyTests {
     }
 
     // valid for .html but error for .csv: protocol
-    query = "&searchFor=pmelTao&protocol=gibberish";
+    query = "&searchFor=nceiPH53&protocol=gibberish";
     results = SSR.getUrlResponseStringUnchanged(htmlUrl + query);
     Test.ensureTrue(results.indexOf(expected) >= 0, "results=\n" + results);
     try {
@@ -7875,7 +7263,7 @@ class JettyTests {
         results.indexOf(expected2) >= 0, "results=\n" + String2.annotatedString(results));
 
     // valid for .html but error for .csv: standard_name
-    query = "&searchFor=pmelTao&standard_name=gibberish";
+    query = "&searchFor=nceiPH53&standard_name=gibberish";
     results = SSR.getUrlResponseStringUnchanged(htmlUrl + query);
     Test.ensureTrue(results.indexOf(expected) >= 0, "results=\n" + results);
     try {
@@ -7892,7 +7280,7 @@ class JettyTests {
         results.indexOf(expected2) >= 0, "results=\n" + String2.annotatedString(results));
 
     // valid for .html but error for .csv: &minLat > &maxLat
-    query = "&searchFor=pmelTao&minLat=45&maxLat=0";
+    query = "&searchFor=nceiPH53&minLat=45&maxLat=0";
     results = SSR.getUrlResponseStringUnchanged(htmlUrl + query);
     Test.ensureTrue(results.indexOf(expected) >= 0, "results=\n" + results);
     try {
@@ -7909,7 +7297,7 @@ class JettyTests {
         results.indexOf(expected2) >= 0, "results=\n" + String2.annotatedString(results));
 
     // valid for .html but error for .csv: &minTime > &maxTime
-    query = "&searchFor=pmelTao&minTime=now-10years&maxTime=now-11years";
+    query = "&searchFor=nceiPH53&minTime=now-10years&maxTime=now-11years";
     results = SSR.getUrlResponseStringUnchanged(htmlUrl + query);
     Test.ensureTrue(results.indexOf(expected) >= 0, "results=\n" + results);
     try {
@@ -7935,11 +7323,11 @@ class JettyTests {
     // testVerboseOn();
     int language = 0;
     String2.log("\n*** EDDTableFromNcFiles.testGlobec");
-    String name, tName, results, tResults, expected, userDapQuery, tQuery;
+    String tName, results, tResults, expected, userDapQuery;
     String dir = TEMP_DIR.toAbsolutePath().toString() + "/";
     String error = "";
     EDV edv;
-    int po, epo;
+    int po;
     // 12 is enough to check day. Hard to check min:sec and hour is more likely to
     // be different
     String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 12);
@@ -8113,8 +7501,8 @@ class JettyTests {
           results, // This fails rarely (at minute transitions). Just rerun it.
           "com.cohort.util.SimpleException: Your query produced no matching results. "
               + "\\(time="
-              + s.substring(0, 17)
-              + ".{2}Z is outside of the variable's actual_range: "
+              + s.substring(0, 10)
+              + ".{9}Z is outside of the variable's actual_range: "
               + "2002-05-30T03:21:00Z to 2002-08-19T20:18:00Z\\)",
           "results=\n" + results);
     }
@@ -8762,7 +8150,7 @@ class JettyTests {
     tName =
         globecBottle.makeNewFileForDapQuery(
             language, null, null, "", dir, globecBottle.className() + "_Entire", ".html");
-    // Test.displayInBrowser("file://" + dir + tName);
+    // TestUtil.displayInBrowser("file://" + dir + tName);
 
     // *** test make data files
     String2.log("\n*** EDDTableFromNcFiles.test make DATA FILES\n");
@@ -8891,7 +8279,7 @@ class JettyTests {
             dir,
             globecBottle.className() + "_NumRegex",
             ".csv");
-    // Test.displayInBrowser("file://" + dir + tName);
+    // TestUtil.displayInBrowser("file://" + dir + tName);
     results = File2.directReadFrom88591File(dir + tName);
     // String2.log(results);
     expected =
@@ -8924,7 +8312,7 @@ class JettyTests {
     tName =
         globecBottle.makeNewFileForDapQuery(
             language, null, null, tDapQuery, dir, globecBottle.className() + "_StrEq", ".csv");
-    // Test.displayInBrowser("file://" + dir + tName);
+    // TestUtil.displayInBrowser("file://" + dir + tName);
     results = File2.directReadFrom88591File(dir + tName);
     // String2.log(results);
     expected =
@@ -8958,7 +8346,7 @@ class JettyTests {
     tName =
         globecBottle.makeNewFileForDapQuery(
             language, null, null, tDapQuery, dir, globecBottle.className() + "_GTLT", ".csv");
-    // Test.displayInBrowser("file://" + dir + tName);
+    // TestUtil.displayInBrowser("file://" + dir + tName);
     results = File2.directReadFrom88591File(dir + tName);
     // String2.log(results);
     expected =
@@ -9110,7 +8498,7 @@ class JettyTests {
     // tName = globecBottle.makeNewFileForDapQuery(language, null, null,
     // userDapQuery, dir,
     // globecBottle.className() + "_Data", ".dods");
-    // Test.displayInBrowser("file://" + dir + tName);
+    // TestUtil.displayInBrowser("file://" + dir + tName);
     try {
       String2.log("\ndo .dods test");
       String tUrl =
@@ -9293,15 +8681,18 @@ class JettyTests {
             dir,
             globecBottle.className() + "_Data",
             ".htmlTable");
-    // Test.displayInBrowser("file://" + dir + tName);
+    // TestUtil.displayInBrowser("file://" + dir + tName);
     results = File2.directReadFromUtf8File(dir + tName);
     // String2.log(results);
     expected =
         EDStatic.startHeadHtml(
-                language, EDStatic.erddapUrl((String) null, language), "EDDTableFromNcFiles_Data")
+                language,
+                EDStatic.erddapUrl(null, (String) null, language),
+                "EDDTableFromNcFiles_Data")
             + "\n"
             + "</head>\n"
-            + EDStatic.startBodyHtml(language, null, "tabledap/testGlobecBottle.html", userDapQuery)
+            + EDStatic.startBodyHtml(
+                null, language, null, "tabledap/testGlobecBottle.html", userDapQuery)
             + // 2022-11-22
             // .htmlTable
             // converted
@@ -9354,7 +8745,7 @@ class JettyTests {
             + "</tr>\n"
             + "</table>\n"
             + EDStatic.endBodyHtml(
-                language, EDStatic.erddapUrl((String) null, language), (String) null)
+                null, language, EDStatic.erddapUrl(null, (String) null, language), (String) null)
             + "\n"
             + "</html>\n";
     tResults = results.substring(results.length() - expected.length());
@@ -9558,7 +8949,7 @@ class JettyTests {
     tName =
         globecBottle.makeNewFileForDapQuery(
             language, null, null, regexDapQuery, dir, globecBottle.className() + "_Data", ".mat");
-    // Test.displayInBrowser("file://" + dir + tName);
+    // TestUtil.displayInBrowser("file://" + dir + tName);
     results = File2.hexDump(dir + tName, 1000000);
     // String2.log(results);
     Test.ensureEqual(
@@ -9799,7 +9190,7 @@ class JettyTests {
             dir,
             globecBottle.className() + "_Data",
             ".ncHeader");
-    // Test.displayInBrowser("file://" + dir + tName);
+    // TestUtil.displayInBrowser("file://" + dir + tName);
     results = File2.directReadFromUtf8File(dir + tName);
     String2.log(results);
 
@@ -9881,7 +9272,7 @@ class JettyTests {
     tName =
         globecBottle.makeNewFileForDapQuery(
             language, null, null, userDapQuery, dir, globecBottle.className() + "_Data", ".tsv");
-    // Test.displayInBrowser("file://" + dir + tName);
+    // TestUtil.displayInBrowser("file://" + dir + tName);
     results = File2.directReadFrom88591File(dir + tName);
     // String2.log(results);
     expected =
@@ -9900,7 +9291,7 @@ class JettyTests {
     tName =
         globecBottle.makeNewFileForDapQuery(
             language, null, null, userDapQuery, dir, globecBottle.className() + "_Data", ".tsvp");
-    // Test.displayInBrowser("file://" + dir + tName);
+    // TestUtil.displayInBrowser("file://" + dir + tName);
     results = File2.directReadFrom88591File(dir + tName);
     // String2.log(results);
     expected =
@@ -9918,7 +9309,7 @@ class JettyTests {
     tName =
         globecBottle.makeNewFileForDapQuery(
             language, null, null, userDapQuery, dir, globecBottle.className() + "_Data", ".tsv0");
-    // Test.displayInBrowser("file://" + dir + tName);
+    // TestUtil.displayInBrowser("file://" + dir + tName);
     results = File2.directReadFrom88591File(dir + tName);
     // String2.log(results);
     expected = "-124.4\t35.7\t2002-08-03T01:29:00Z\tNew_Horizon\n";
@@ -9934,7 +9325,7 @@ class JettyTests {
     tName =
         globecBottle.makeNewFileForDapQuery(
             language, null, null, userDapQuery, dir, globecBottle.className() + "_Data", ".xhtml");
-    // Test.displayInBrowser("file://" + dir + tName);
+    // TestUtil.displayInBrowser("file://" + dir + tName);
     results = File2.directReadFromUtf8File(dir + tName);
     // String2.log(results);
     expected =
@@ -10028,34 +9419,34 @@ class JettyTests {
               "",
               null,
               null,
-              new Object[][] { // dataVariables: sourceName, addAttributes
-                {"longitude", null, null},
-                {"latitude", null, null},
-                {"altitude", null, null},
-                {"time", null, null},
-                {"ship", null, null},
-                {"cruise_id", null, null},
-                {"cast", null, null},
-                {"bottle_posn", null, null},
-                {"chl_a_total", null, null},
-                {"chl_a_10um", null, null},
-                {"phaeo_total", null, null},
-                {"phaeo_10um", null, null},
-                {"sal00", null, null},
-                {"sal11", null, null},
-                {"temperature0", null, null},
-                {"temperature1", null, null},
-                {"fluor_v", null, null},
-                {"xmiss_v", null, null},
-                {"PO4", null, null},
-                {"N_N", null, null},
-                {"NO3", null, null},
-                {"Si", null, null},
-                {"NO2", null, null},
-                {"NH4", null, null},
-                {"oxygen", null, null},
-                {"par", null, null}
-              },
+              new ArrayList<>(
+                  List.of(
+                      new DataVariableInfo("longitude", null, null, null),
+                      new DataVariableInfo("latitude", null, null, null),
+                      new DataVariableInfo("altitude", null, null, null),
+                      new DataVariableInfo("time", null, null, null),
+                      new DataVariableInfo("ship", null, null, null),
+                      new DataVariableInfo("cruise_id", null, null, null),
+                      new DataVariableInfo("cast", null, null, null),
+                      new DataVariableInfo("bottle_posn", null, null, null),
+                      new DataVariableInfo("chl_a_total", null, null, null),
+                      new DataVariableInfo("chl_a_10um", null, null, null),
+                      new DataVariableInfo("phaeo_total", null, null, null),
+                      new DataVariableInfo("phaeo_10um", null, null, null),
+                      new DataVariableInfo("sal00", null, null, null),
+                      new DataVariableInfo("sal11", null, null, null),
+                      new DataVariableInfo("temperature0", null, null, null),
+                      new DataVariableInfo("temperature1", null, null, null),
+                      new DataVariableInfo("fluor_v", null, null, null),
+                      new DataVariableInfo("xmiss_v", null, null, null),
+                      new DataVariableInfo("PO4", null, null, null),
+                      new DataVariableInfo("N_N", null, null, null),
+                      new DataVariableInfo("NO3", null, null, null),
+                      new DataVariableInfo("Si", null, null, null),
+                      new DataVariableInfo("NO2", null, null, null),
+                      new DataVariableInfo("NH4", null, null, null),
+                      new DataVariableInfo("oxygen", null, null, null),
+                      new DataVariableInfo("par", null, null, null))),
               60, // int tReloadEveryNMinutes,
               EDStatic.erddapUrl
                   + // in tests, always use non-https url
@@ -10072,7 +9463,7 @@ class JettyTests {
       tName =
           eddTable2.makeNewFileForDapQuery(
               language, null, null, userDapQuery, dir, eddTable2.className() + "_Itself", ".xhtml");
-      // Test.displayInBrowser("file://" + dir + tName);
+      // TestUtil.displayInBrowser("file://" + dir + tName);
       results = File2.directReadFromUtf8File(dir + tName);
       // String2.log(results);
       expected =
@@ -10123,7 +9514,6 @@ class JettyTests {
   void testNetcdf() throws Throwable {
 
     // use testGlobecBottle which has fixed altitude=0, not erdGlobecBottle
-    int language = 0;
     EDDTable globecBottle =
         (EDDTableFromNcFiles) EDDTestDataset.gettestGlobecBottle(); // should work
     String tUrl =
@@ -10139,7 +9529,7 @@ class JettyTests {
     // tName = globecBottle.makeNewFileForDapQuery(language, null, null,
     // userDapQuery,
     // dir, globecBottle.className() + "_Data", ".dods");
-    // Test.displayInBrowser("file://" + dir + tName);
+    // TestUtil.displayInBrowser("file://" + dir + tName);
     {
       String2.log("\n*** EDDTableFromNcFiles.testNctcdf do netcdf-java opendap test");
       // !!!THIS READS DATA FROM LOCAL ERDDAP SERVER RUNNING ON EDStatic.erddapUrl!!!
@@ -10240,7 +9630,7 @@ class JettyTests {
     }
 
     // OTHER APPROACH: GET .NC FILE -- HOW SPECIFY CONSTRAINT EXPRESSION???
-    // Test.displayInBrowser("file://" + dir + tName);
+    // TestUtil.displayInBrowser("file://" + dir + tName);
     if (false) {
       try {
         String2.log("\n*** do netcdf-java .nc test");
@@ -10268,16 +9658,7 @@ class JettyTests {
   /** This tests makeCopyFileTasks. */
   @org.junit.jupiter.api.Test
   @TagJetty
-  @TagFlaky // This is flaky. Specifically for the check after the files are supposed to be
-  // downloaded.
   void testMakeCopyFileTasks() throws Exception {
-
-    // String2.log("\n*** testMakeCopyFileTasks\n" +
-    // "This requires fedCalLandings in localhost ERDDAP.");
-
-    int language = 0;
-
-    boolean testMode = false;
     boolean tRecursive = true;
     boolean tDirectoriesToo = false;
     String tDatasetID = "myDatasetID";
@@ -10406,9 +9787,7 @@ class JettyTests {
   @org.junit.jupiter.api.Test
   @TagJetty
   void testCopyFilesGenerateDatasetsXml() throws Throwable {
-
-    // String2.log("\n*** EDDTableFromNcFiles.testCopyFilesGenerateDatasetsXml");
-    int language = 0;
+    int language = EDMessages.DEFAULT_LANGUAGE;
     String dataDir =
         File2.addSlash(
             Path.of(JettyTests.class.getResource("/data/points/testEDDTableCopyFiles3/").toURI())
@@ -10901,7 +10280,7 @@ class JettyTests {
       edd = EDDTableFromNcFiles.oneFromXmlFragment(null, results);
 
       Test.ensureEqual(edd.datasetID(), tDatasetID, "");
-      Test.ensureEqual(edd.title(), "Data from a local source.", "");
+      Test.ensureEqual(edd.title(language), "Data from a local source.", "");
       Test.ensureEqual(
           String2.toCSSVString(edd.dataVariableDestinationNames()),
           "row, region, year, market_category, month, block, pounds, area, imported, region_caught, time, description, nominal_species, species_group, comments",
@@ -10934,13 +10313,7 @@ class JettyTests {
     // FileVisitorDNLS.reallyVerbose = true;
     // FileVisitorDNLS.debugMode = true;
 
-    String name, tName, results, tResults, expected, userDapQuery, tQuery;
-    String error = "";
-    int po;
-    EDV edv;
-
-    String today =
-        Calendar2.getCurrentISODateTimeStringZulu().substring(0, 14); // 14 is enough to check
+    String tName, results, tResults, expected, userDapQuery;
     // hour. Hard
     // to check min:sec.
     String tDir = TEMP_DIR.toAbsolutePath().toString() + "/";
@@ -10951,18 +10324,8 @@ class JettyTests {
       EDDTableFromNcFiles.deleteCachedDatasetInfo(id);
     }
 
-    // first attempt will start file downloads (but if deleteCachedInfo, will fail
-    // to load)
     EDDTable eddTable;
-    try {
-      eddTable = (EDDTable) EDDTestDataset.gettestEDDTableCopyFiles();
-    } catch (Exception e2) {
-      String2.log("Caught expected error:\n" + MustBe.throwableToString(e2));
-      String2.log("Waiting 20 seconds until files load...");
-      Math2.sleep(20000);
-      // String2.pressEnterToContinue("Wait for download tasks to finish, then:");
-      eddTable = (EDDTable) EDDTestDataset.gettestEDDTableCopyFiles();
-    }
+    eddTable = (EDDTable) EDDTestDataset.gettestEDDTableCopyFiles();
 
     // *** test getting das for entire dataset
     String2.log("\n****************** EDDTableCopyFiles  das and dds for entire dataset\n");
@@ -11094,7 +10457,7 @@ class JettyTests {
             + //
             "    String _CoordinateAxisType \"Time\";\n"
             + //
-            "    Float64 actual_range -1.071792e+9, 2.19456e+8;\n"
+            "    Float64 actual_range 1.90512e+8, 2.19456e+8;\n"
             + //
             "    String axis \"T\";\n"
             + //
@@ -11196,7 +10559,7 @@ class JettyTests {
             + //
             "    String time_coverage_end \"1976-12-15T00:00:00Z\";\n"
             + //
-            "    String time_coverage_start \"1936-01-15T00:00:00Z\";\n"
+            "    String time_coverage_start \"1976-01-15T00:00:00Z\";\n"
             + //
             "    String title \"Data from a local source.\";\n"
             + //
@@ -11249,17 +10612,10 @@ class JettyTests {
     results = File2.directReadFrom88591File(tDir + tName);
     // String2.log(results);
     expected =
-        // "area\n" +
-        //         "\n" +
-        "Central America\n"
-            + "Central California\n"
-            + "Mexico\n"
+        "Central California\n"
             + "Northern California\n"
             + "Oregon\n"
-            + "SF Bay\n"
-            + "South America\n"
             + "Southern California\n"
-            + "Unknown\n"
             + "Washington\n";
     Test.ensureTrue(results.indexOf(expected) > 0, "\nresults=\n" + results);
 
@@ -11327,10 +10683,8 @@ class JettyTests {
     // "!!!This test requires pmelTaoDySst and rlPmelTaoDySst in localhost
     // ERDDAP.\n");
     // testVerboseOn();
-    String name, tName, results, tResults, expected, expected2, expected3, userDapQuery, tQuery;
-    String error = "";
-    int epo, tPo;
-    String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 10);
+    String results, expected, expected2, tQuery;
+    int tPo;
     String baseUrl = "http://localhost:" + PORT + "/erddap/tabledap/pmelTaoDySst";
     String rbaseUrl = "http://localhost:" + PORT + "/erddap/tabledap/rlPmelTaoDySst";
 
@@ -11340,10 +10694,10 @@ class JettyTests {
     results = SSR.getUrlResponseStringUnchanged(baseUrl + tQuery);
     expected =
         "*GLOBAL*,Conventions,\"COARDS, CF-1.6, ACDD-1.3, NCCSV-1.2\"\n"
-            + (EDStatic.useSaxParser ? "*GLOBAL*,_FillValue,1.0E35f\n" : "")
+            + (EDStatic.config.useSaxParser ? "*GLOBAL*,_FillValue,1.0E35f\n" : "")
             + "*GLOBAL*,cdm_data_type,TimeSeries\n"
             + "*GLOBAL*,cdm_timeseries_variables,\"array, station, wmo_platform_code, longitude, latitude, depth\"\n"
-            + (EDStatic.useSaxParser ? "*GLOBAL*,CREATION_DATE,07:12  3-JAN-2022\n" : "")
+            + (EDStatic.config.useSaxParser ? "*GLOBAL*,CREATION_DATE,hh:mm  D-MMM-YYYY\n" : "")
             + "*GLOBAL*,creator_email,Dai.C.McClurg@noaa.gov\n"
             + "*GLOBAL*,creator_name,GTMBA Project Office/NOAA/PMEL\n"
             + "*GLOBAL*,creator_type,group\n"
@@ -11370,9 +10724,9 @@ class JettyTests {
             + "*GLOBAL*,keywords,\"buoys, centered, daily, depth, Earth Science > Oceans > Ocean Temperature > Sea Surface Temperature, identifier, noaa, ocean, oceans, pirata, pmel, quality, rama, sea, sea_surface_temperature, source, station, surface, tao, temperature, time, triton\"\n"
             + "*GLOBAL*,keywords_vocabulary,GCMD Science Keywords\n"
             + "*GLOBAL*,license,\"Request for Acknowledgement: If you use these data in publications or presentations, please acknowledge the GTMBA Project Office of NOAA/PMEL. Also, we would appreciate receiving a preprint and/or reprint of publications utilizing the data for inclusion in our bibliography. Relevant publications should be sent to: GTMBA Project Office, NOAA/Pacific Marine Environmental Laboratory, 7600 Sand Point Way NE, Seattle, WA 98115\\n\\nThe data may be used and redistributed for free but is not intended\\nfor legal use, since it may contain inaccuracies. Neither the data\\nContributor, ERD, NOAA, nor the United States Government, nor any\\nof their employees or contractors, makes any warranty, express or\\nimplied, including warranties of merchantability and fitness for a\\nparticular purpose, or assumes any legal liability for the accuracy,\\ncompleteness, or usefulness, of this information.\"\n"
-            + (EDStatic.useSaxParser ? "*GLOBAL*,missing_value,1.0E35f\n" : "")
+            + (EDStatic.config.useSaxParser ? "*GLOBAL*,missing_value,1.0E35f\n" : "")
             + "*GLOBAL*,Northernmost_Northing,21.0d\n"
-            + (EDStatic.useSaxParser ? "*GLOBAL*,platform_code,0n3w\n" : "")
+            + (EDStatic.config.useSaxParser ? "*GLOBAL*,platform_code,CODE\n" : "")
             + "*GLOBAL*,project,\"TAO/TRITON, RAMA, PIRATA\"\n"
             + "*GLOBAL*,Request_for_acknowledgement,\"If you use these data in publications or presentations, please acknowledge the GTMBA Project Office of NOAA/PMEL. Also, we would appreciate receiving a preprint and/or reprint of publications utilizing the data for inclusion in our bibliography. Relevant publications should be sent to: GTMBA Project Office, NOAA/Pacific Marine Environmental Laboratory, 7600 Sand Point Way NE, Seattle, WA 98115\"\n"
             + "*GLOBAL*,sourceUrl,(local files)\n"
@@ -11497,6 +10851,13 @@ class JettyTests {
             "*GLOBAL*,time_coverage_end,dddd-dd-ddT12:00:00Z\n");
     results =
         results.replaceAll(
+            "\\*GLOBAL\\*,CREATION_DATE,..:..  .-...-....\n",
+            "*GLOBAL*,CREATION_DATE,hh:mm  D-MMM-YYYY\n");
+    results =
+        results.replaceAll(
+            "\\*GLOBAL\\*,platform_code,[a-zA-Z0-9]+", "*GLOBAL*,platform_code,CODE");
+    results =
+        results.replaceAll(
             "time,actual_range,1977-11-03T12:00:00Z\\\\n....-..-..T12:00:00Z\n",
             "time,actual_range,1977-11-03T12:00:00Z\\\\ndddd-dd-ddT12:00:00Z\n");
     results =
@@ -11513,6 +10874,13 @@ class JettyTests {
             "*GLOBAL*,time_coverage_end,dddd-dd-ddT12:00:00Z\n");
     results =
         results.replaceAll(
+            "\\*GLOBAL\\*,CREATION_DATE,..:..  .-...-....\n",
+            "*GLOBAL*,CREATION_DATE,hh:mm  D-MMM-YYYY\n");
+    results =
+        results.replaceAll(
+            "\\*GLOBAL\\*,platform_code,[a-zA-Z0-9]+", "*GLOBAL*,platform_code,CODE");
+    results =
+        results.replaceAll(
             "time,actual_range,1977-11-03T12:00:00Z\\\\n....-..-..T12:00:00Z\n",
             "time,actual_range,1977-11-03T12:00:00Z\\\\ndddd-dd-ddT12:00:00Z\n");
     results =
@@ -11523,12 +10891,14 @@ class JettyTests {
 
     // *** test getting .nccsv
     tQuery = ".nccsv?&station=%220n125w%22&time%3E=2010-01-01&time%3C=2010-01-05";
+    // note no actual_range info
+    results = SSR.getUrlResponseStringUnchanged(baseUrl + tQuery);
     expected =
         "*GLOBAL*,Conventions,\"COARDS, CF-1.6, ACDD-1.3, NCCSV-1.2\"\n"
-            + (EDStatic.useSaxParser ? "*GLOBAL*,_FillValue,1.0E35f\n" : "")
+            + (EDStatic.config.useSaxParser ? "*GLOBAL*,_FillValue,1.0E35f\n" : "")
             + "*GLOBAL*,cdm_data_type,TimeSeries\n"
             + "*GLOBAL*,cdm_timeseries_variables,\"array, station, wmo_platform_code, longitude, latitude, depth\"\n"
-            + (EDStatic.useSaxParser ? "*GLOBAL*,CREATION_DATE,07:12  3-JAN-2022\n" : "")
+            + (EDStatic.config.useSaxParser ? "*GLOBAL*,CREATION_DATE,hh:mm  D-MMM-YYYY\n" : "")
             + "*GLOBAL*,creator_email,Dai.C.McClurg@noaa.gov\n"
             + "*GLOBAL*,creator_name,GTMBA Project Office/NOAA/PMEL\n"
             + "*GLOBAL*,creator_type,group\n"
@@ -11566,9 +10936,9 @@ class JettyTests {
             + "*GLOBAL*,keywords,\"buoys, centered, daily, depth, Earth Science > Oceans > Ocean Temperature > Sea Surface Temperature, identifier, noaa, ocean, oceans, pirata, pmel, quality, rama, sea, sea_surface_temperature, source, station, surface, tao, temperature, time, triton\"\n"
             + "*GLOBAL*,keywords_vocabulary,GCMD Science Keywords\n"
             + "*GLOBAL*,license,\"Request for Acknowledgement: If you use these data in publications or presentations, please acknowledge the GTMBA Project Office of NOAA/PMEL. Also, we would appreciate receiving a preprint and/or reprint of publications utilizing the data for inclusion in our bibliography. Relevant publications should be sent to: GTMBA Project Office, NOAA/Pacific Marine Environmental Laboratory, 7600 Sand Point Way NE, Seattle, WA 98115\\n\\nThe data may be used and redistributed for free but is not intended\\nfor legal use, since it may contain inaccuracies. Neither the data\\nContributor, ERD, NOAA, nor the United States Government, nor any\\nof their employees or contractors, makes any warranty, express or\\nimplied, including warranties of merchantability and fitness for a\\nparticular purpose, or assumes any legal liability for the accuracy,\\ncompleteness, or usefulness, of this information.\"\n"
-            + (EDStatic.useSaxParser ? "*GLOBAL*,missing_value,1.0E35f\n" : "")
+            + (EDStatic.config.useSaxParser ? "*GLOBAL*,missing_value,1.0E35f\n" : "")
             + "*GLOBAL*,Northernmost_Northing,21.0d\n"
-            + (EDStatic.useSaxParser ? "*GLOBAL*,platform_code,0n3w\n" : "")
+            + (EDStatic.config.useSaxParser ? "*GLOBAL*,platform_code,CODE\n" : "")
             + "*GLOBAL*,project,\"TAO/TRITON, RAMA, PIRATA\"\n"
             + "*GLOBAL*,Request_for_acknowledgement,\"If you use these data in publications or presentations, please acknowledge the GTMBA Project Office of NOAA/PMEL. Also, we would appreciate receiving a preprint and/or reprint of publications utilizing the data for inclusion in our bibliography. Relevant publications should be sent to: GTMBA Project Office, NOAA/Pacific Marine Environmental Laboratory, 7600 Sand Point Way NE, Seattle, WA 98115\"\n"
             + "*GLOBAL*,sourceUrl,(local files)\n"
@@ -11683,9 +11053,14 @@ class JettyTests {
             + "TAO/TRITON,0n125w,51011,235.0,0.0,2010-01-04T12:00:00Z,1.0,1.0E35,0.0,0.0\n"
             + "*END_DATA*\n";
 
-    // note no actual_range info
-    results = SSR.getUrlResponseStringUnchanged(baseUrl + tQuery);
     results = results.replaceAll("....-..-.. Bob Simons", "dddd-dd-dd Bob Simons");
+    results =
+        results.replaceAll(
+            "\\*GLOBAL\\*,CREATION_DATE,..:..  .-...-....\n",
+            "*GLOBAL*,CREATION_DATE,hh:mm  D-MMM-YYYY\n");
+    results =
+        results.replaceAll(
+            "\\*GLOBAL\\*,platform_code,[a-zA-Z0-9]+", "*GLOBAL*,platform_code,CODE");
     results =
         results.replaceAll(
             "time_coverage_end,....-..-..T12:00:00Z\n", "time_coverage_end,dddd-dd-ddT12:00:00Z\n");
@@ -11698,6 +11073,13 @@ class JettyTests {
     results =
         results.replaceAll(
             "time_coverage_end,....-..-..T12:00:00Z\n", "time_coverage_end,dddd-dd-ddT12:00:00Z\n");
+    results =
+        results.replaceAll(
+            "\\*GLOBAL\\*,CREATION_DATE,..:..  .-...-....\n",
+            "*GLOBAL*,CREATION_DATE,hh:mm  D-MMM-YYYY\n");
+    results =
+        results.replaceAll(
+            "\\*GLOBAL\\*,platform_code,[a-zA-Z0-9]+", "*GLOBAL*,platform_code,CODE");
     Test.ensureEqual(results.substring(0, expected.length()), expected, "\nresults=\n" + results);
     tPo = results.indexOf(expected2.substring(0, 100));
     Test.ensureEqual(results.substring(tPo), expected2, "\nresults=\n" + results);
@@ -11759,10 +11141,10 @@ class JettyTests {
             null,
             null,
             "",
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             "EDDGridLonPM180_testGridWithDepth2",
             ".das");
-    results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+    results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
     po = results.indexOf("depth {");
     Test.ensureTrue(po >= 0, "results=\n" + results);
     expected =
@@ -11772,18 +11154,18 @@ class JettyTests {
             + "    Float64 actual_range 5.01, 5375.0;\n"
             + // 2014-01-17 was 5.0, 5374.0
             "    String axis \"Z\";\n"
-            + (EDStatic.useSaxParser
+            + (EDStatic.config.useSaxParser
                 ? "    String grads_dim \"z\";\n" + "    String grads_mapping \"levels\";\n"
                 : "")
             + "    String ioos_category \"Location\";\n"
             + "    String long_name \"Depth\";\n"
-            + (EDStatic.useSaxParser
+            + (EDStatic.config.useSaxParser
                 ? "    Float64 maximum 5375.0;\n"
                     + "    Float64 minimum 5.01;\n"
                     + "    String name \"Depth\";\n"
                 : "")
             + "    String positive \"down\";\n"
-            + (EDStatic.useSaxParser ? "    Float32 resolution 137.69205;\n" : "")
+            + (EDStatic.config.useSaxParser ? "    Float32 resolution 137.69205;\n" : "")
             + "    String standard_name \"depth\";\n"
             + "    String units \"m\";\n"
             + "  }";
@@ -11797,10 +11179,10 @@ class JettyTests {
             null,
             null,
             "",
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             "EDDGridLonPM180_testGridWithDepth2",
             ".fgdc");
-    results = File2.directReadFromUtf8File(EDStatic.fullTestCacheDirectory + tName);
+    results = File2.directReadFromUtf8File(EDStatic.config.fullTestCacheDirectory + tName);
     po = results.indexOf("<vertdef>");
     Test.ensureTrue(po >= 0, "po=-1 results=\n" + results);
     expected =
@@ -11823,38 +11205,67 @@ class JettyTests {
             null,
             null,
             "",
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             "EDDGridLonPM180_testGridWithDepth2",
             ".iso19115");
-    results = File2.directReadFromUtf8File(EDStatic.fullTestCacheDirectory + tName);
+    results = File2.directReadFromUtf8File(EDStatic.config.fullTestCacheDirectory + tName);
 
     po = results.indexOf("codeListValue=\"vertical\">");
     Test.ensureTrue(po >= 0, "po=-1 results=\n" + results);
-    expected =
-        "codeListValue=\"vertical\">vertical</gmd:MD_DimensionNameTypeCode>\n"
-            + "          </gmd:dimensionName>\n"
-            + "          <gmd:dimensionSize>\n"
-            + "            <gco:Integer>40</gco:Integer>\n"
-            + "          </gmd:dimensionSize>\n"
-            + "          <gmd:resolution>\n"
-            + "            <gco:Measure uom=\"m\">137.69205128205127</gco:Measure>\n"
-            + // 2014-01-17
-            // was
-            // 137.66666666666666
-            "          </gmd:resolution>\n"
-            + "        </gmd:MD_Dimension>\n"
-            + "      </gmd:axisDimensionProperties>\n";
+    if (EDStatic.config.useSisISO19115) {
+      expected =
+          "codeListValue=\"vertical\">Vertical</msr:MD_DimensionNameTypeCode>\n"
+              + "          </msr:dimensionName>\n"
+              + "          <msr:dimensionSize>\n"
+              + "            <gco:Integer>40</gco:Integer>\n"
+              + "          </msr:dimensionSize>\n"
+              + "          <msr:resolution>\n"
+              + "            <gco:Measure uom=\"http://www.isotc211.org/2005/resources/uom/gmxUom.xml#xpointer(//*[@gml:id='m'])\">137.69205128205127</gco:Measure>\n"
+              + "          </msr:resolution>\n"
+              + "        </msr:MD_Dimension>\n";
+    } else {
+      expected =
+          "codeListValue=\"vertical\">vertical</gmd:MD_DimensionNameTypeCode>\n"
+              + "          </gmd:dimensionName>\n"
+              + "          <gmd:dimensionSize>\n"
+              + "            <gco:Integer>40</gco:Integer>\n"
+              + "          </gmd:dimensionSize>\n"
+              + "          <gmd:resolution>\n"
+              + "            <gco:Measure uom=\"m\">137.69205128205127</gco:Measure>\n"
+              + // 2014-01-17
+              // was
+              // 137.66666666666666
+              "          </gmd:resolution>\n"
+              + "        </gmd:MD_Dimension>\n"
+              + "      </gmd:axisDimensionProperties>\n";
+    }
     Test.ensureEqual(
         results.substring(po, po + expected.length()), expected, "results=\n" + results);
 
-    po = results.indexOf("<gmd:EX_VerticalExtent>");
     Test.ensureTrue(po >= 0, "po=-1 results=\n" + results);
-    expected =
-        "<gmd:EX_VerticalExtent>\n"
-            + "              <gmd:minimumValue><gco:Real>-5375.0</gco:Real></gmd:minimumValue>\n"
-            + "              <gmd:maximumValue><gco:Real>-5.01</gco:Real></gmd:maximumValue>\n"
-            + "              <gmd:verticalCRS gco:nilReason=\"missing\"/>\n"
-            + "            </gmd:EX_VerticalExtent>";
+    if (EDStatic.config.useSisISO19115) {
+      po = results.indexOf("<gex:verticalElement>");
+      expected =
+          "<gex:verticalElement>\n"
+              + "            <gex:EX_VerticalExtent>\n"
+              + "              <gex:minimumValue>\n"
+              + "                <gco:Real>-5375.0</gco:Real>\n"
+              + "              </gex:minimumValue>\n"
+              + "              <gex:maximumValue>\n"
+              + "                <gco:Real>-5.01</gco:Real>\n"
+              + "              </gex:maximumValue>\n"
+              + "            </gex:EX_VerticalExtent>\n"
+              + "          </gex:verticalElement>\n"
+              + "        </gex:EX_Extent>";
+    } else {
+      po = results.indexOf("<gmd:EX_VerticalExtent>");
+      expected =
+          "<gmd:EX_VerticalExtent>\n"
+              + "              <gmd:minimumValue><gco:Real>-5375.0</gco:Real></gmd:minimumValue>\n"
+              + "              <gmd:maximumValue><gco:Real>-5.01</gco:Real></gmd:maximumValue>\n"
+              + "              <gmd:verticalCRS gco:nilReason=\"missing\"/>\n"
+              + "            </gmd:EX_VerticalExtent>";
+    }
     Test.ensureEqual(
         results.substring(po, po + expected.length()), expected, "results=\n" + results);
 
@@ -11916,7 +11327,7 @@ class JettyTests {
             + "&BBOX=-80,-90,80,63.6&WIDTH=256&HEIGHT=256",
         tName,
         false);
-    // Test.displayInBrowser("file://" + tName);
+    // TestUtil.displayInBrowser("file://" + tName);
     Image2Tests.testImagesIdentical(tName, baseName + ".png", baseName + "_diff.png");
 
     // WMS 1.1.0 default elevation
@@ -11932,7 +11343,7 @@ class JettyTests {
             + "&BBOX=-80,-90,80,63.6&WIDTH=256&HEIGHT=256",
         tName,
         false);
-    // Test.displayInBrowser("file://" + tName);
+    // TestUtil.displayInBrowser("file://" + tName);
     Image2Tests.testImagesIdentical(tName, baseName + ".png", baseName + "_diff.png");
 
     // test WMS 1.3.0 service getCapabilities from localhost erddap
@@ -11981,10 +11392,10 @@ class JettyTests {
             null,
             null,
             "temp%5B(2008-11-15)%5D%5B(5)%5D%5B(-75):100:(75)%5D%5B(-90):100:(63.6)%5D",
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             "EDDGridLonPM180_testGridWithDepthPreWMS",
             ".csv");
-    results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+    results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
     expected =
         "time,depth,latitude,longitude,temp\n"
             + "UTC,m,degrees_north,degrees_east,degree_C\n"
@@ -12019,7 +11430,7 @@ class JettyTests {
             + "&BBOX=-75,-90,75,63.6&WIDTH=256&HEIGHT=256",
         tName,
         false);
-    // Test.displayInBrowser("file://" + tName);
+    // TestUtil.displayInBrowser("file://" + tName);
     Image2Tests.testImagesIdentical(tName, baseName + ".png", baseName + "_diff.png");
 
     // WMS 1.1.0 default elevation
@@ -12035,7 +11446,7 @@ class JettyTests {
             + "&BBOX=-75,-90,75,63.6&WIDTH=256&HEIGHT=256",
         tName,
         false);
-    // Test.displayInBrowser("file://" + tName);
+    // TestUtil.displayInBrowser("file://" + tName);
     Image2Tests.testImagesIdentical(tName, baseName + ".png", baseName + "_diff.png");
 
     // test lat beyond dataset range (changed from -75:75 above to -80:80 here)
@@ -12051,20 +11462,21 @@ class JettyTests {
             + "&BBOX=-80,-90,80,63.6&WIDTH=256&HEIGHT=256",
         tName,
         false);
-    // Test.displayInBrowser("file://" + tName);
+    // TestUtil.displayInBrowser("file://" + tName);
     Image2Tests.testImagesIdentical(tName, baseName + ".png", baseName + "_diff.png");
   }
 
   /** This tests saveAsKml. */
   @org.junit.jupiter.api.Test
   @TagJetty
+  @TagThredds // external server is failing to respond, so disable the test for now
   void testKml() throws Throwable {
     // testVerboseOn();
     int language = 0;
 
     EDDGridFromDap gridDataset = (EDDGridFromDap) EDDTestDataset.gettestActualRange();
-    String name, tName, results, expected;
-    String dir = EDStatic.fullTestCacheDirectory;
+    String tName, results, expected;
+    String dir = EDStatic.config.fullTestCacheDirectory;
 
     // overall kml
     tName =
@@ -12076,7 +11488,7 @@ class JettyTests {
             dir,
             gridDataset.className() + "_testKml",
             ".kml");
-    // Test.displayInBrowser("file://" + dir + tName);
+    // TestUtil.displayInBrowser("file://" + dir + tName);
     results = File2.directReadFromUtf8File(dir + tName);
     expected =
         "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
@@ -12277,12 +11689,9 @@ class JettyTests {
             + "!!!"); // in tests, always non-https url
     // testVerboseOn();
     String results, expected, tName;
-    int tPo;
-    String userDapQuery = "chlorophyll[(2007-02-06)][][(29):10:(50)][(225):10:(247)]";
-    String graphDapQuery = "chlorophyll[0:10:200][][(29)][(225)]";
-    String mapDapQuery = "chlorophyll[200][][(29):(50)][(225):(247)]"; // stride irrelevant
-    StringArray destinationNames = new StringArray();
-    IntArray constraints = new IntArray();
+    // String userDapQuery = "chlorophyll[(2007-02-06)][][(29):10:(50)][(225):10:(247)]";
+    // String graphDapQuery = "chlorophyll[0:10:200][][(29)][(225)]";
+    // String mapDapQuery = "chlorophyll[200][][(29):(50)][(225):(247)]"; // stride irrelevant
     int language = 0;
 
     // get das and dds
@@ -12292,7 +11701,6 @@ class JettyTests {
     DConnect threddsConnect = new DConnect(threddsUrl, true, 1, 1);
     DConnect erddapConnect = new DConnect(erddapUrl, true, 1, 1); // in tests, always non-https url
     DAS das = erddapConnect.getDAS(OpendapHelper.DEFAULT_TIMEOUT);
-    DDS dds = erddapConnect.getDDS(OpendapHelper.DEFAULT_TIMEOUT);
     PrimitiveArray tpas[], epas[];
 
     // get global attributes
@@ -12387,9 +11795,6 @@ class JettyTests {
     Test.ensureEqual(epas[3], tpas[3], ""); // lat
     Test.ensureEqual(epas[4], tpas[4], ""); // lon
     Test.ensureEqual(epas[0], tpas[0], ""); // data
-    String tTime = Calendar2.epochSecondsToIsoStringTZ(tpas[1].getDouble(0));
-    float tData1 = tpas[0].getFloat(0);
-    float tData2 = tpas[0].getFloat(1);
 
     // *** test that EDDGridFromDAP works via netcdf-java library
     String2.log("\n****************** EDDGridFromDap test netcdf-java\n");
@@ -12402,7 +11807,6 @@ class JettyTests {
     try {
       results = nc.toString();
       results = NcHelper.decodeNcDump(results); // added with switch to netcdf-java 4.0
-      String tUrl = String2.replaceAll(EDStatic.erddapUrl, "http:", "dods:"); // in tests, always
       // non-https url
       expected = // these are regex lines
           "netcdf hawaii_d90f_20ee_c4cb {\n"
@@ -12427,7 +11831,7 @@ class JettyTests {
               + //
               "      :axis = \"T\";\n"
               + //
-              (EDStatic.useSaxParser
+              (EDStatic.config.useSaxParser
                   ? "      :grads_dim = \"t\";\n"
                       + //
                       "      :grads_mapping = \"linear\";\n"
@@ -12438,7 +11842,7 @@ class JettyTests {
               + "      :ioos_category = \"Time\";\n"
               + //
               "      :long_name = \"Centered Time\";\n"
-              + (EDStatic.useSaxParser
+              + (EDStatic.config.useSaxParser
                   ? "      :maximum = \"00z15dec2010\";\n"
                       + "      :minimum = \"00z15jan1871\";\n"
                       + "      :resolution = 30.43657f; // float\n"
@@ -12461,18 +11865,18 @@ class JettyTests {
               + //
               "      :axis = \"Z\";\n"
               + //
-              (EDStatic.useSaxParser
+              (EDStatic.config.useSaxParser
                   ? "      :grads_dim = \"z\";\n" + "      :grads_mapping = \"levels\";\n"
                   : "")
               + "      :ioos_category = \"Location\";\n"
               + "      :long_name = \"Depth\";\n"
-              + (EDStatic.useSaxParser
+              + (EDStatic.config.useSaxParser
                   ? "      :maximum = 5375.0; // double\n"
                       + "      :minimum = 5.01; // double\n"
                       + "      :name = \"Depth\";\n"
                   : "")
               + "      :positive = \"down\";\n"
-              + (EDStatic.useSaxParser ? "      :resolution = 137.69205f; // float\n" : "")
+              + (EDStatic.config.useSaxParser ? "      :resolution = 137.69205f; // float\n" : "")
               + "      :standard_name = \"depth\";\n"
               + //
               "      :units = \"m\";\n"
@@ -12487,14 +11891,14 @@ class JettyTests {
               + //
               "      :axis = \"Y\";\n"
               + //
-              (EDStatic.useSaxParser
+              (EDStatic.config.useSaxParser
                   ? "      :grads_dim = \"y\";\n"
                       + "      :grads_mapping = \"linear\";\n"
                       + "      :grads_size = \"330\";\n"
                   : "")
               + "      :ioos_category = \"Location\";\n"
               + "      :long_name = \"Latitude\";\n"
-              + (EDStatic.useSaxParser
+              + (EDStatic.config.useSaxParser
                   ? "      :maximum = 89.25; // double\n"
                       + "      :minimum = -75.25; // double\n"
                       + "      :resolution = 0.5f; // float\n"
@@ -12513,14 +11917,14 @@ class JettyTests {
               + //
               "      :axis = \"X\";\n"
               + //
-              (EDStatic.useSaxParser
+              (EDStatic.config.useSaxParser
                   ? "      :grads_dim = \"x\";\n"
                       + "      :grads_mapping = \"linear\";\n"
                       + "      :grads_size = \"720\";\n"
                   : "")
               + "      :ioos_category = \"Location\";\n"
               + "      :long_name = \"Longitude\";\n"
-              + (EDStatic.useSaxParser
+              + (EDStatic.config.useSaxParser
                   ? "      :maximum = 359.75; // double\n"
                       + "      :minimum = 0.25; // double\n"
                       + "      :resolution = 0.5f; // float\n"
@@ -12676,7 +12080,11 @@ class JettyTests {
               + //
               "  :geospatial_lon_units = \"degrees_east\";\n"
               + //
-              "  :history = \"Tue Apr 30 05:42:52 HST 2024 : imported by GrADS Data Server 2.0\n";
+              "  :history = \"DDD MMM dd hh:mm:ss ZZZ YYYY : imported by GrADS Data Server 2.0\n";
+      results =
+          results.replaceAll(
+              "\\w{3} \\w{3} \\d{2} \\d{2}:\\d{2}:\\d{2} \\w{3} \\d{4}",
+              "DDD MMM dd hh:mm:ss ZZZ YYYY");
       // int po = results.indexOf(":history = \"NASA GSFC (OBPG)\n");
       // Test.ensureTrue(po > 0, "RESULTS=\n" + results);
       // Test.ensureLinesMatch(results.substring(0, po + 29), expected, "RESULTS=\n" +
@@ -12830,11 +12238,8 @@ class JettyTests {
             null,
             null,
             null,
-            new Object[][] {
-              { // dataVariables[dvIndex][0=sourceName, 1=destName, 2=addAttributes]
-                "salt", null, null
-              }
-            },
+            new ArrayList<DataVariableInfo>(
+                List.of(new DataVariableInfo("salt", null, null, null))),
             60, // int tReloadEveryNMinutes,
             -1, // updateEveryNMillis,
             erddapUrl,
@@ -12850,10 +12255,10 @@ class JettyTests {
             null,
             null,
             griddapUserDapQuery,
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             eddGrid2.className() + "_Itself",
             ".xhtml");
-    results = File2.directReadFromUtf8File(EDStatic.fullTestCacheDirectory + tName);
+    results = File2.directReadFromUtf8File(EDStatic.config.fullTestCacheDirectory + tName);
     // String2.log(results);
     expected =
         "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
@@ -12955,7 +12360,7 @@ class JettyTests {
   @TagJetty
   void testEDDGridFromErddapGenerateDatasetsXml() throws Throwable {
     // testVerboseOn();
-
+    int language = EDMessages.DEFAULT_LANGUAGE;
     // test local generateDatasetsXml
     String results =
         EDDGridFromErddap.generateDatasetsXml(EDStatic.erddapUrl, false) + "\n"; // in tests, always
@@ -13005,14 +12410,14 @@ class JettyTests {
     String2.log(
         "\n!!! The first dataset will vary, depending on which are currently active!!!\n"
             + "title="
-            + edd.title()
+            + edd.title(language)
             + "\n"
             + "datasetID="
             + edd.datasetID()
             + "\n"
             + "vars="
             + String2.toCSSVString(edd.dataVariableDestinationNames()));
-    Test.ensureEqual(edd.title(), "Audio data from a local source.", "");
+    Test.ensureEqual(edd.title(language), "Audio data from a local source.", "");
     Test.ensureEqual(edd.datasetID(), tDatasetID, "");
     Test.ensureEqual(String2.toCSSVString(edd.dataVariableDestinationNames()), "channel_1", "");
   }
@@ -13025,17 +12430,13 @@ class JettyTests {
     // testVerboseOn();
     int language = 0;
     EDDGridFromErddap gridDataset;
-    String name, tName, axisDapQuery, query, results, expected, expected2, error;
+    String tName, query, results, expected, expected2;
     int tPo;
-    String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 10);
     String userDapQuery =
         SSR.minimalPercentEncode("chlorophyll[(2003-01-17)][(29.020832)][(-147.97917):1:(-147.8)]");
-    String graphDapQuery = SSR.minimalPercentEncode("chlorophyll[0:10:200][][(29)][(225)]");
-    String mapDapQuery =
-        SSR.minimalPercentEncode("chlorophyll[200][][(29):(50)][(225):(247)]"); // stride
-    // irrelevant
-    StringArray destinationNames = new StringArray();
-    IntArray constraints = new IntArray();
+    // String graphDapQuery = SSR.minimalPercentEncode("chlorophyll[0:10:200][][(29)][(225)]");
+    // String mapDapQuery =
+    //     SSR.minimalPercentEncode("chlorophyll[200][][(29):(50)][(225):(247)]"); // stride
     String localUrl =
         EDStatic.erddapUrl + "/griddap/rMH1chla8day"; // in tests, always non-https url
 
@@ -13049,10 +12450,10 @@ class JettyTests {
             null,
             null,
             "",
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             gridDataset.className() + "_Entire",
             ".das");
-    results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+    results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
     // String2.log(results);
     expected =
         "Attributes {\n"
@@ -13351,10 +12752,10 @@ class JettyTests {
             null,
             null,
             "",
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             gridDataset.className() + "_Entire",
             ".dds");
-    results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+    results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
     // String2.log(results);
     expected =
         "Dataset {\n"
@@ -13406,10 +12807,10 @@ class JettyTests {
             null,
             null,
             query,
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             gridDataset.className() + "_Axis",
             ".asc");
-    results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+    results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
     // String2.log(results);
     expected =
         "Dataset {\n"
@@ -13455,12 +12856,12 @@ class JettyTests {
             null,
             null,
             query,
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             gridDataset.className() + "_Axis",
             ".csv");
-    results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+    results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
     // String2.log(results);
-    // Test.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
+    // TestUtil.displayInBrowser("file://" + EDStatic.config.fullTestCacheDirectory + tName);
     expected =
         "time,longitude\n"
             + "UTC,degrees_east\n"
@@ -13486,12 +12887,12 @@ class JettyTests {
             null,
             null,
             query,
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             gridDataset.className() + "_AxisG.A",
             ".csv");
-    results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+    results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
     // String2.log(results);
-    // Test.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
+    // TestUtil.displayInBrowser("file://" + EDStatic.config.fullTestCacheDirectory + tName);
     // expected = "time,longitude\n" +
     // "UTC,degrees_east\n" +
     // "2002-07-08T00:00:00Z,360.0\n" +
@@ -13513,12 +12914,12 @@ class JettyTests {
             null,
             null,
             query,
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             gridDataset.className() + "_Axis",
             ".dods");
     results =
         String2.annotatedString(
-            File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName));
+            File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName));
     // String2.log(results);
     expected =
         "Dataset {[10]\n"
@@ -13549,11 +12950,11 @@ class JettyTests {
             null,
             null,
             matlabAxisQuery,
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             gridDataset.className() + "_Axis",
             ".mat");
-    String2.log(".mat test file is " + EDStatic.fullTestCacheDirectory + tName);
-    results = File2.hexDump(EDStatic.fullTestCacheDirectory + tName, 1000000);
+    String2.log(".mat test file is " + EDStatic.config.fullTestCacheDirectory + tName);
+    results = File2.hexDump(EDStatic.config.fullTestCacheDirectory + tName, 1000000);
     String2.log(results);
     expected =
         "4d 41 54 4c 41 42 20 35   2e 30 20 4d 41 54 2d 66   MATLAB 5.0 MAT-f |\n"
@@ -13607,7 +13008,7 @@ class JettyTests {
     Test.ensureEqual(
         results.substring(0, 71 * 4) + results.substring(71 * 7), // remove the creation dateTime
         expected,
-        "RESULTS(" + EDStatic.fullTestCacheDirectory + tName + ")=\n" + results);
+        "RESULTS(" + EDStatic.config.fullTestCacheDirectory + tName + ")=\n" + results);
 
     // .ncHeader
     String2.log("\n*** EDDGridFromErddap test get .NCHEADER axis data\n");
@@ -13618,10 +13019,10 @@ class JettyTests {
             null,
             null,
             query,
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             gridDataset.className() + "_Axis",
             ".ncHeader");
-    results = File2.directReadFromUtf8File(EDStatic.fullTestCacheDirectory + tName);
+    results = File2.directReadFromUtf8File(EDStatic.config.fullTestCacheDirectory + tName);
     // String2.log(results);
     expected =
         // "netcdf EDDGridFromErddap_Axis.nc {\n" +
@@ -13705,10 +13106,10 @@ class JettyTests {
             null,
             null,
             userDapQuery,
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             gridDataset.className() + "_Data",
             ".csv");
-    results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+    results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
     expected = // missing values are "NaN"
         // pre 2010-10-26 was
         "time,latitude,longitude,chlorophyll\n"
@@ -13766,10 +13167,10 @@ class JettyTests {
             null,
             null,
             "chlorophyll." + userDapQuery,
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             gridDataset.className() + "_DotNotation",
             ".csv");
-    results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+    results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
     // expected =
     // // pre 2010-10-26 was
     // // "time, altitude, latitude, longitude, chlorophyll\n" +
@@ -13823,10 +13224,10 @@ class JettyTests {
             null,
             null,
             userDapQuery,
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             gridDataset.className() + "_Data",
             ".nc");
-    results = NcHelper.ncdump(EDStatic.fullTestCacheDirectory + tName, "");
+    results = NcHelper.ncdump(EDStatic.config.fullTestCacheDirectory + tName, "");
     expected =
         "netcdf EDDGridFromErddap_Data.nc {\n"
             + //
@@ -14085,6 +13486,84 @@ class JettyTests {
     /* */
   }
 
+  /** EDDGridFromAudioFiles */
+  /** This tests byte range requests to /files/ */
+  @org.junit.jupiter.api.Test
+  @TagJetty
+  void testByteRangeRequest() throws Throwable {
+
+    // String2.log("\n*** EDDGridFromAudioFiles.testByteRangeRequest\n");
+    // testVerboseOn();
+
+    String results, results2, expected;
+    List<String> al;
+    List<String> list;
+    int po;
+    int timeOutSeconds = 120;
+    String reqBase = "curl http://localhost:8080/erddap/";
+    String req =
+        reqBase + "files/testGridWav/aco_acoustic.20141119_001500.wav -i "; // -i includes header in
+    // response
+
+    // * request no byte range
+    al = TestSSR.dosOrCShell(req, timeOutSeconds);
+    list = al.subList(0, 8);
+    results = String2.annotatedString(String2.toNewlineString(list.toArray()));
+    Test.ensureTrue(results.contains("HTTP/1.1 200 OK"), results);
+    Test.ensureTrue(results.contains("Content-Encoding: identity"), results);
+    Test.ensureTrue(results.contains("Content-Type: audio/wav"), results);
+    Test.ensureTrue(results.contains("Content-Length: 57600044"), results);
+
+    // * request short byte range
+    al = TestSSR.dosOrCShell(req + "-H \"Range: bytes=0-30\"", timeOutSeconds);
+    list = al.subList(0, 8);
+    results = String2.annotatedString(String2.toNewlineString(list.toArray()));
+    Test.ensureTrue(
+        results.contains("HTTP/1.1 206 Partial Content"), results); // 206=SC_PARTIAL_CONTENT
+    Test.ensureTrue(results.contains("Content-Encoding: identity"), results);
+    Test.ensureTrue(results.contains("Content-Type: audio/wav"), results);
+    Test.ensureTrue(results.contains("Content-Length: 31"), results);
+    Test.ensureTrue(results.contains("Content-Range: bytes 0-30/57600044"), results);
+
+    // * request bytes=0- which is what <audio> seems to do
+    al = TestSSR.dosOrCShell(req + "-H \"Range: bytes=0-\"", timeOutSeconds);
+    list = al.subList(0, 8);
+    results = String2.annotatedString(String2.toNewlineString(list.toArray()));
+    Test.ensureTrue(
+        results.contains("HTTP/1.1 206 Partial Content"), results); // 206=SC_PARTIAL_CONTENT
+    Test.ensureTrue(results.contains("Content-Encoding: identity"), results);
+    Test.ensureTrue(results.contains("Content-Type: audio/wav"), results);
+    Test.ensureTrue(results.contains("Content-Length: 57600044"), results);
+    Test.ensureTrue(results.contains("Content-Range: bytes 0-57600043/57600044"), results);
+
+    // * request bytes=[start]- which is what <audio> seems to do
+    al = TestSSR.dosOrCShell(req + "-H \"Range: bytes=50000000-\"", timeOutSeconds);
+    list = al.subList(0, 8);
+    results = String2.annotatedString(String2.toNewlineString(list.toArray()));
+    Test.ensureTrue(
+        results.contains("HTTP/1.1 206 Partial Content"), results); // 206=SC_PARTIAL_CONTENT
+    Test.ensureTrue(results.contains("Content-Encoding: identity"), results);
+    Test.ensureTrue(results.contains("Content-Type: audio/wav"), results);
+    Test.ensureTrue(results.contains("Content-Length: 7600044"), results);
+    Test.ensureTrue(results.contains("Content-Range: bytes 50000000-57600043/57600044"), results);
+
+    // * request images/wz_tooltip.js
+    al = TestSSR.dosOrCShell(reqBase + "images/wz_tooltip.js -i", timeOutSeconds);
+    list = al.subList(0, 5);
+    results = String2.annotatedString(String2.toNewlineString(list.toArray()));
+    Test.ensureTrue(results.contains("HTTP/1.1 200 OK"), results);
+    Test.ensureTrue(
+        results.contains("Cache-Control: PUBLIC, max-age=604800, must-revalidate"), results);
+
+    list = al.subList(4, 10);
+    results = String2.annotatedString(String2.toNewlineString(list.toArray()));
+    Test.ensureTrue(results.contains("Content-Encoding: identity"), results);
+    Test.ensureTrue(results.contains("Accept-Ranges: bytes"), results);
+    Test.ensureTrue(
+        results.contains("Content-Type: application/x-javascript;charset=utf-8"), results);
+    Test.ensureTrue(results.contains("Content-Length: "), results);
+  }
+
   /**
    * This tests the /files/ "files" system. This requires nceiPH53sstn1day and testGridFromErddap in
    * the local ERDDAP.
@@ -14094,11 +13573,7 @@ class JettyTests {
   @org.junit.jupiter.api.Test
   @TagJetty
   void testGridFromErddapFiles() throws Throwable {
-
-    String2.log("\n*** EDDGridFromErddap.testFiles()\n");
-    String tDir = EDStatic.fullTestCacheDirectory;
-    String dapQuery, tName, start, query, results, expected;
-    int po;
+    String results, expected;
 
     // get /files/.csv
     results =
@@ -14344,6 +13819,71 @@ class JettyTests {
     Test.ensureEqual(results, expected, "results=\n" + results);
   }
 
+  /** This tests that a dataset can be quick restarted, */
+  @org.junit.jupiter.api.Test
+  void testQuickRestart2_EDDGridFromNcFiles() throws Throwable {
+    String2.log("\n*** EDDGridFromNcFiles.testQuickRestart2\n");
+    String datasetID = "testGriddedNcFiles";
+    String fullName =
+        Path.of(
+                JettyTests.class
+                    .getResource("/largeFiles/erdQSwind1day/subfolder/erdQSwind1day_20080108_10.nc")
+                    .toURI())
+            .toString();
+    long timestamp = File2.getLastModified(fullName); // orig 2009-01-07T11:55 local
+    try {
+      // restart local erddap
+      // String2.pressEnterToContinue(
+      // "Restart the local erddap with quickRestart=true and with datasetID=" +
+      // datasetID + " .\n" +
+      // "Wait until all datasets are loaded.");
+      Math2.sleep(30000); // allow tasks to finish
+
+      // change the file's timestamp
+      File2.setLastModified(fullName, timestamp - 60000); // 1 minute earlier
+      Math2.sleep(1000);
+
+      // request info from that dataset
+      // .csv with data from one file
+      String2.log("\n*** .nc test read from one file\n");
+      String userDapQuery = "y_wind[(1.1999664e9)][0][(36.5)][(230):3:(238)]";
+      String results =
+          SSR.getUrlResponseStringUnchanged(
+              EDStatic.erddapUrl + "/griddap/" + datasetID + ".csv?" + userDapQuery);
+      String expected =
+          // verified with
+          // https://coastwatch.pfeg.noaa.gov/erddap/griddap/erdQSwind1day.csv?y_wind[(1.1999664e9)][0][(36.5)][(230):3:(238)]
+          "time,altitude,latitude,longitude,y_wind\n"
+              + "UTC,m,degrees_north,degrees_east,m s-1\n"
+              + "2008-01-10T12:00:00Z,0.0,36.625,230.125,3.555585\n"
+              + "2008-01-10T12:00:00Z,0.0,36.625,230.875,2.82175\n"
+              + "2008-01-10T12:00:00Z,0.0,36.625,231.625,4.539375\n"
+              + "2008-01-10T12:00:00Z,0.0,36.625,232.375,4.975015\n"
+              + "2008-01-10T12:00:00Z,0.0,36.625,233.125,5.643055\n"
+              + "2008-01-10T12:00:00Z,0.0,36.625,233.875,2.72394\n"
+              + "2008-01-10T12:00:00Z,0.0,36.625,234.625,1.39762\n"
+              + "2008-01-10T12:00:00Z,0.0,36.625,235.375,2.10711\n"
+              + "2008-01-10T12:00:00Z,0.0,36.625,236.125,3.019165\n"
+              + "2008-01-10T12:00:00Z,0.0,36.625,236.875,3.551915\n"
+              + "2008-01-10T12:00:00Z,0.0,36.625,237.625,NaN\n"; // test of NaN
+      Test.ensureEqual(results, expected, "\nresults=\n" + results);
+
+      // request status.html
+      SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + "/status.html");
+      // Math2.sleep(1000);
+      // TestUtil.displayInBrowser("file://" + EDStatic.config.bigParentDirectory +
+      // "logs/log.txt");
+
+      // String2.pressEnterToContinue(
+      // "Look at log.txt to see if update was run and successfully " +
+      // "noticed the changed file.");
+
+    } finally {
+      // change timestamp back to original
+      File2.setLastModified(fullName, timestamp);
+    }
+  }
+
   /** EDDGridFromEtopo */
 
   /**
@@ -14358,16 +13898,20 @@ class JettyTests {
   void testEtopoGridFiles(String tDatasetID) throws Throwable {
 
     String2.log("\n*** EDDGridFromEtopo.testFiles(" + tDatasetID + ")\n");
-    String tDir = EDStatic.fullTestCacheDirectory;
-    String dapQuery, tName, start, query, results, expected;
-    int po;
+    String results, expected;
+
+    String etopoFilePath = File2.getRefDirectory() + "etopo1_ice_g_i2.bin";
+    long etopoLastModifiedMillis = File2.getLastModified(etopoFilePath);
 
     // get /files/datasetID/.csv
     results =
         SSR.getUrlResponseStringNewline(
             "http://localhost:" + PORT + "/erddap/files/" + tDatasetID + "/.csv");
     expected =
-        "Name,Last modified,Size,Description\n" + "etopo1_ice_g_i2.bin,1642733858000,466624802,\n";
+        "Name,Last modified,Size,Description\n"
+            + "etopo1_ice_g_i2.bin,"
+            + etopoLastModifiedMillis
+            + ",466624802,\n";
     Test.ensureEqual(results, expected, "results=\n" + results);
 
     // get /files/datasetID/
@@ -14472,10 +14016,6 @@ class JettyTests {
     String expected = "pmelTaoDySst";
     String expected2, query, results;
     int count;
-    String2.log(
-        "\n*** Erddap.testSearch\n"
-            + "This assumes localhost ERDDAP is running with erdMHchla8day and rMHchla8day (among others which will be not matched).");
-    int po;
 
     // test valid search string, values are case-insensitive
     query = "";
@@ -14520,15 +14060,50 @@ class JettyTests {
         results.indexOf(expected2) >= 0, "results=\n" + String2.annotatedString(results));
   }
 
+  /**
+   * This repeatedly gets the info/index.html web page and ensures it is without error. It is best
+   * to run this when many datasets are loaded. For a harder test: run this in 4 threads
+   * simultaneously.
+   */
+  @org.junit.jupiter.api.Test
+  @TagJetty
+  void testHammerGetDatasets() throws Throwable {
+    Erddap.verbose = true;
+    Erddap.reallyVerbose = true;
+    EDD.testVerboseOn();
+    String results, expected;
+    String2.log("\n*** Erddap.testHammerGetDatasets");
+    long sumTime = 0;
+    // count = -5 to let it warm up
+    for (int count = -5; count < 1000; count++) {
+      if (count == 0) sumTime = 0;
+      sumTime -= System.currentTimeMillis();
+      // if uncompressed, it is 1Thread=280 4Threads=900ms
+      results =
+          SSR.getUrlResponseStringUnchanged(
+              EDStatic.erddapUrl + "/info/index.html?" + EDStatic.defaultPIppQuery);
+      // if compressed, it is 1Thread=1575 4=Threads=5000ms
+      // results = SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl +
+      // "/info/index.html?" + EDStatic.defaultPIppQuery);
+      sumTime += System.currentTimeMillis();
+      if (count > 0) String2.log("count=" + count + " AvgTime=" + (sumTime / count));
+      expected = "List of All Datasets";
+      Test.ensureTrue(
+          results.indexOf(expected) >= 0,
+          "results=\n" + results.substring(0, Math.min(results.length(), 10000)));
+      expected = "matching datasets";
+      Test.ensureTrue(
+          results.indexOf(expected) >= 0,
+          "results=\n" + results.substring(0, Math.min(results.length(), 10000)));
+    }
+  }
+
   /** EDDGridCopy */
   /** This tests the /files/ "files" system. This requires testGridCopy in the localhost ERDDAP. */
   @org.junit.jupiter.api.Test
   @TagJetty
   void testGridFiles() throws Throwable {
-    // String2.log("\n*** EDDGridCopy.testFiles()\n");
-    String tDir = EDStatic.fullTestCacheDirectory;
-    String dapQuery, tName, start, query, results, expected;
-    int po;
+    String results, expected;
 
     // get /files/datasetID/.csv
     results =
@@ -14635,11 +14210,6 @@ class JettyTests {
   @org.junit.jupiter.api.Test
   @TagJetty
   void testGenerateDatasetsXmlFromErddapCatalog0360() throws Throwable {
-
-    // String2.log("\n*** EDDGridLon0360.testGenerateDatasetsXmlFromErddapCatalog()
-    // ***\n");
-    // testVerboseOn();
-    int language = 0;
     String url =
         "http://localhost:" + PORT + "/erddap/"; // purposefully http:// to test if ERDDAP will
     // promote
@@ -14696,9 +14266,9 @@ class JettyTests {
     // *****************\n");
     // testVerboseOn();
     int language = 0;
-    String name, tName, userDapQuery, results, expected, error;
+    String tName, userDapQuery, results, expected;
     int po;
-    String dir = EDStatic.fullTestCacheDirectory;
+    String dir = EDStatic.config.fullTestCacheDirectory;
 
     EDDGrid eddGrid = (EDDGrid) EDDTestDataset.gettest_erdVHNchlamday_Lon0360();
 
@@ -14832,7 +14402,7 @@ class JettyTests {
             Image2Tests.urlToAbsolutePath(Image2Tests.OBS_DIR),
             baseName,
             ".png");
-    // Test.displayInBrowser("file://" + dir + tName);
+    // TestUtil.displayInBrowser("file://" + dir + tName);
     Image2Tests.testImagesIdentical(tName, baseName + ".png", baseName + "_diff.png");
 
     // test of /files/ system for fromErddap in local host dataset
@@ -14857,12 +14427,9 @@ class JettyTests {
     // testVerboseOn();
     int language = 0;
 
-    String name, tName, results, tResults, expected, expected2, expected3, userDapQuery, tQuery;
-    String tDir = EDStatic.fullTestCacheDirectory;
-    String error = "";
-    int epo, tPo;
-    String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 10);
-    String mapDapQuery = "longitude,latitude,NO3,time&latitude>0&time>=2002-08-03";
+    String tName, results, expected, expected2, expected3, userDapQuery;
+    String tDir = EDStatic.config.fullTestCacheDirectory;
+    int tPo;
     userDapQuery = "longitude,NO3,time,ship&latitude%3E0&time%3E=2002-08-03";
 
     EDDTable edd = (EDDTableCopy) EDDTestDataset.gettestTableCopy();
@@ -15278,7 +14845,7 @@ class JettyTests {
     expected2 = "    String _CoordinateAxisType &quot;Lon&quot;;";
     Test.ensureTrue(results.indexOf(expected) > 0, "\nresults=\n" + results);
     Test.ensureTrue(results.indexOf(expected2) > 0, "\nresults=\n" + results);
-    // Test.displayInBrowser("file://" + tDir + tName);
+    // TestUtil.displayInBrowser("file://" + tDir + tName);
 
     // *** test make data files
     String2.log("\n****************** EDDTableCopy.test make DATA FILES\n");
@@ -15358,7 +14925,7 @@ class JettyTests {
     // .dods
     // tName = edd.makeNewFileForDapQuery(language, null, null, userDapQuery, tDir,
     // edd.className() + "_Data", ".dods");
-    // Test.displayInBrowser("file://" + tDir + tName);
+    // TestUtil.displayInBrowser("file://" + tDir + tName);
     String2.log("\ndo .dods test");
     String tUrl =
         EDStatic.erddapUrl
@@ -15402,7 +14969,7 @@ class JettyTests {
             Image2Tests.urlToAbsolutePath(Image2Tests.OBS_DIR),
             baseName,
             ".png");
-    // Test.displayInBrowser("file://" + tDir + tName);
+    // TestUtil.displayInBrowser("file://" + tDir + tName);
     Image2Tests.testImagesIdentical(tName, baseName + ".png", baseName + "_diff.png");
   } // end of testBasic
 
@@ -15410,11 +14977,7 @@ class JettyTests {
   @org.junit.jupiter.api.Test
   @TagJetty
   void testTableCopyFiles() throws Throwable {
-
-    String2.log("\n*** EDDTableCopy.testFiles()\n");
-    String tDir = EDStatic.fullTestCacheDirectory;
-    String dapQuery, tName, start, query, results, expected;
-    int po;
+    String results, expected;
 
     // get /files/datasetID/.csv
     results =
@@ -15648,9 +15211,9 @@ class JettyTests {
     int language = 0;
     // boolean oDebugMode = debugMode;
     // debugMode = true;
-    String name, tName, userDapQuery, results, expected, error;
+    String tName, userDapQuery, results, expected;
     int po;
-    String dir = EDStatic.fullTestCacheDirectory;
+    String dir = EDStatic.config.fullTestCacheDirectory;
     EDDGrid eddGrid = null;
 
     // test notApplicable (dataset maxLon already <180)
@@ -15663,7 +15226,7 @@ class JettyTests {
                   + "The child longitude axis has no values >180 (max=179.9792)!")
           < 0) throw t;
     }
-    if (EDStatic.useSaxParser) {
+    if (EDStatic.config.useSaxParser) {
       Test.ensureEqual(eddGrid, null, "Dataset should be null from exception during construction.");
     }
 
@@ -16050,11 +15613,96 @@ class JettyTests {
             Image2Tests.urlToAbsolutePath(Image2Tests.OBS_DIR),
             baseName,
             ".png");
-    // Test.displayInBrowser("file://" + dir + tName);
+    // TestUtil.displayInBrowser("file://" + dir + tName);
     Image2Tests.testImagesIdentical(tName, baseName + ".png", baseName + "_diff.png");
 
     // String2.log("\n*** EDDGridLonPM180.test120to320 finished.");
     // debugMode = oDebugMode;
+  }
+
+  /** This tests hardFlag. */
+  @org.junit.jupiter.api.Test
+  @TagJetty
+  @TagIncompleteTest
+  void testHardFlag() throws Throwable {
+    // String2.log("\n*** EDDGridLonPM180.testHardFlag()\n" +
+    // "This test requires hawaii_d90f_20ee_c4cb and
+    // hawaii_d90f_20ee_c4cb_LonPM180\n" +
+    // "be loaded in the local ERDDAP.");
+
+    // set hardFlag
+    String startTime = Calendar2.getCurrentISODateTimeStringLocalTZ();
+    Math2.sleep(1000);
+    File2.writeToFile88591(
+        EDStatic.config.fullHardFlagDirectory + "hawaii_d90f_20ee_c4cb_LonPM180", "test");
+    String2.log(
+        "I just set a hardFlag for hawaii_d90f_20ee_c4cb_LonPM180.\n"
+            + "Now I'm waiting 180 seconds.");
+    Math2.sleep(180000);
+    // flush the log file
+    String tIndex = SSR.getUrlResponseStringUnchanged("http://localhost:8080/erddap/status.html");
+    Math2.sleep(30000);
+
+    // read the log file
+    String tLog = File2.readFromFileUtf8(EDStatic.config.fullLogsDirectory + "log.txt")[1];
+    String expected = // ***
+        /*
+         * "deleting cached dataset info for datasetID=hawaii_d90f_20ee_c4cb_LonPM180Child\n"
+         * +
+         * "\\*\\*\\* unloading datasetID=hawaii_d90f_20ee_c4cb_LonPM180\n" +
+         * "\\*\\*\\* deleting cached dataset info for datasetID=hawaii_d90f_20ee_c4cb_LonPM180\n"
+         * +
+         * "\n" +
+         * "\\*\\*\\* RunLoadDatasets is starting a new hardFlag LoadDatasets thread at (..........T..............)\n"
+         * +
+         * "\n" +
+         * "\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\n"
+         * +
+         * "LoadDatasets.run EDStatic.config.developmentMode=true ..........T..............\n"
+         * +
+         * "  datasetsRegex=\\(hawaii_d90f_20ee_c4cb_LonPM180\\) inputStream=null majorLoad=false"
+         * ;
+         */
+
+        "deleting cached dataset info for datasetID=hawaii_d90f_20ee_c4cb_LonPM180Child\n"
+            + "File2.deleteIfOld\\(/erddapBPD/dataset/ld/hawaii_d90f_20ee_c4cb_LonPM180Child/\\) nDir=   . nDeleted=   . nRemain=   .\n"
+            + "\\*\\*\\* unloading datasetID=hawaii_d90f_20ee_c4cb_LonPM180\n"
+            + "nActions=0\n"
+            + "\\*\\*\\* deleting cached dataset info for datasetID=hawaii_d90f_20ee_c4cb_LonPM180\n"
+            + "File2.deleteIfOld\\(/erddapBPD/dataset/80/hawaii_d90f_20ee_c4cb_LonPM180/  \\) nDir=   . nDeleted=   . nRemain=   .\n"
+            + "\n"
+            + "\\*\\*\\* RunLoadDatasets is starting a new hardFlag LoadDatasets thread at (..........T..............)\n"
+            + "\n"
+            + "\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\n"
+            + "LoadDatasets.run EDStatic.config.developmentMode=true ..........T..............\n"
+            + "  datasetsRegex=\\(hawaii_d90f_20ee_c4cb_LonPM180\\) inputStream=null majorLoad=false";
+
+    int po = Math.max(0, tLog.lastIndexOf(expected.substring(0, 78)));
+    int po2 = tLog.indexOf("majorLoad=false", po) + 15;
+    String tResults = tLog.substring(po, po2);
+    String2.log("\ntResults=<quote>" + tResults + "</quote>\n");
+    Test.testLinesMatch(tResults, expected, "tResults and expected don't match!");
+
+    // so far so good, tResults matches expected
+    int po3 = tResults.indexOf("thread at ");
+    String reloadTime = tResults.substring(po3 + 10, po3 + 35);
+    String2.log(" startTime=" + startTime + "\n" + "reloadTime=" + reloadTime);
+    Test.ensureTrue(
+        startTime.compareTo(reloadTime) < 0,
+        "startTime (" + startTime + ") is after reloadTime(" + reloadTime + ")?!");
+
+    // test that child was successfully constructed after that
+    int po4 =
+        tLog.indexOf(
+            "*** EDDGridFromErddap hawaii_d90f_20ee_c4cb_LonPM180Child constructor finished. TIME=",
+            po);
+    Test.ensureTrue(po4 > po, "po4=" + po4 + " isn't greater than po=" + po + " !");
+
+    // test that parent was successfully constructed after that
+    int po5 =
+        tLog.indexOf(
+            "*** EDDGridLonPM180 hawaii_d90f_20ee_c4cb_LonPM180 constructor finished. TIME=", po4);
+    Test.ensureTrue(po5 > po4, "po5=" + po5 + " isn't greater than po4=" + po4 + " !");
   }
 
   /** EDDGridFromNcFiles */
@@ -16072,11 +15720,6 @@ class JettyTests {
   void testSpeed() throws Throwable {
     int firstTest = 0;
     int lastTest = 1000;
-    // String2.log("\n*** EDDGridFromNcFiles.testSpeed\n" +
-    // "THIS REQUIRES THE testGriddedNcFiles DATASET TO BE IN LOCALHOST ERDDAP!!!\n"
-    // +
-    // SgtUtil.isBufferedImageAccelerated() + "\n");
-    int language = 0;
     // gc and sleep to give computer time to catch up from previous tests
     for (int i = 0; i < 4; i++) Math2.gc("EDDGridFromNcFiles.testSpeed (between tests)", 5000);
     // boolean oReallyVerbose = reallyVerbose;
@@ -16096,9 +15739,7 @@ class JettyTests {
             // lon=180
             "&.vec="; // avoid get cached response
     String baseName = "EDDGridFromNcFilesTestSpeed";
-    String baseOut = EDStatic.fullTestCacheDirectory + baseName;
-    ArrayList al;
-    int timeOutSeconds = 120;
+    String baseOut = EDStatic.config.fullTestCacheDirectory + baseName;
     String extensions[] =
         new String[] {
           ".asc",
@@ -16197,7 +15838,7 @@ class JettyTests {
     outName = baseOut + "Warmup.csvp.csv";
     SSR.downloadFile(
         baseRequest + ".csvp" + userDapQuery + Math2.random(1000), outName, tryToCompress);
-    // was al = SSR.dosShell(baseRequest + ".csvp" + userDapQuery +
+    // was al = SSR.dosOrCShell(baseRequest + ".csvp" + userDapQuery +
     // Math2.random(1000) +
     // " -o " + outName, timeOutSeconds);
     // String2.log(String2.toNewlineString(al.toArray()));
@@ -16205,13 +15846,13 @@ class JettyTests {
     outName = baseOut + "Warmup.png.png";
     SSR.downloadFile(
         baseRequest + ".png" + userDapQuery + Math2.random(1000), outName, tryToCompress);
-    // al = SSR.dosShell(baseRequest + ".png" + userDapQuery + Math2.random(1000) +
+    // al = SSR.dosOrCShell(baseRequest + ".png" + userDapQuery + Math2.random(1000) +
     // " -o " + outName, timeOutSeconds);
 
     outName = baseOut + "Warmup.pdf.pdf";
     SSR.downloadFile(
         baseRequest + ".pdf" + userDapQuery + Math2.random(1000), outName, tryToCompress);
-    // al = SSR.dosShell(baseRequest + ".pdf" + userDapQuery + Math2.random(1000) +
+    // al = SSR.dosOrCShell(baseRequest + ".pdf" + userDapQuery + Math2.random(1000) +
     // " -o " + outName, timeOutSeconds);
 
     lastTest = Math.min(lastTest, extensions.length - 1);
@@ -16229,7 +15870,7 @@ class JettyTests {
       outName = baseOut + chance + dotExt;
       SSR.downloadFile(
           baseRequest + dotExt + userDapQuery + Math2.random(1000), outName, tryToCompress);
-      // al = SSR.dosShell(baseRequest + dotExt + userDapQuery + Math2.random(1000) +
+      // al = SSR.dosOrCShell(baseRequest + dotExt + userDapQuery + Math2.random(1000) +
       // " -o " + outName, timeOutSeconds);
 
       time = System.currentTimeMillis() - time;
@@ -16293,7 +15934,7 @@ class JettyTests {
       // display last image
       if (ext == extensions.length - 1) {
         File2.rename(outName, outName + ".png");
-        // Test.displayInBrowser(outName + ".png"); // complicated to switch to
+        // TestUtil.displayInBrowser(outName + ".png"); // complicated to switch to
         // testImagesIdentical
       }
 
@@ -16313,12 +15954,7 @@ class JettyTests {
   @org.junit.jupiter.api.Test
   @TagJetty
   void testGridFromNcFiles() throws Throwable {
-
-    String2.log("\n*** EDDGridFromNcFiles.testFiles()\n");
-    String tDir = EDStatic.fullTestCacheDirectory;
-    String dapQuery, tName, start, query, results, expected;
-    int language = 0;
-    int po;
+    String results, expected;
 
     // get /files/.csv
     results =
@@ -16432,7 +16068,7 @@ class JettyTests {
             + //
             "</table>\n"
             + //
-            "<hr/><a href=\"https://jetty.org/\">Powered by Jetty:// 12.0.11</a><hr/>\n"
+            "<hr/><a href=\"https://jetty.org/\">Powered by Jetty:// 12.0.22</a><hr/>\n"
             + //
             "\n"
             + //
@@ -16478,7 +16114,7 @@ class JettyTests {
             + //
             "</table>\n"
             + //
-            "<hr/><a href=\"https://jetty.org/\">Powered by Jetty:// 12.0.11</a><hr/>\n"
+            "<hr/><a href=\"https://jetty.org/\">Powered by Jetty:// 12.0.22</a><hr/>\n"
             + //
             "\n"
             + //
@@ -16632,10 +16268,11 @@ class JettyTests {
   @org.junit.jupiter.api.Test
   @TagJetty
   void testInPortXml() throws Throwable {
-    String dir = EDStatic.fullTestCacheDirectory;
+    String dir = EDStatic.config.fullTestCacheDirectory;
     String gridTable = "grid"; // grid or table
     String tDatasetID = "erdSWchlamday";
     String fileName = "ErddapToInPort_" + tDatasetID + ".xml";
+    int currentYear = Year.now().getValue();
     EDD edd =
         EDD.oneFromXmlFragment(
             null,
@@ -16710,7 +16347,9 @@ class JettyTests {
             + //
             "      <support-role-type>Metadata Contact</support-role-type>\n"
             + //
-            "      <from-date>2024</from-date>\n"
+            "      <from-date>"
+            + currentYear
+            + "</from-date>\n"
             + //
             "      <person-email>nobody@example.com</person-email>\n"
             + //
@@ -16724,7 +16363,9 @@ class JettyTests {
             + //
             "      <support-role-type>Distributor</support-role-type>\n"
             + //
-            "      <from-date>2024</from-date>\n"
+            "      <from-date>"
+            + currentYear
+            + "</from-date>\n"
             + //
             "      <person-email>nobody@example.com</person-email>\n"
             + //
@@ -16738,7 +16379,9 @@ class JettyTests {
             + //
             "      <support-role-type>Author</support-role-type>\n"
             + //
-            "      <from-date>2024</from-date>\n"
+            "      <from-date>"
+            + currentYear
+            + "</from-date>\n"
             + //
             "      <person-email>erd.data@noaa.gov</person-email>\n"
             + //
@@ -16752,7 +16395,9 @@ class JettyTests {
             + //
             "      <support-role-type>Data Set Credit</support-role-type>\n"
             + //
-            "      <from-date>2024</from-date>\n"
+            "      <from-date>"
+            + currentYear
+            + "</from-date>\n"
             + //
             "      <person-email>erd.data@noaa.gov</person-email>\n"
             + //
@@ -16766,7 +16411,9 @@ class JettyTests {
             + //
             "      <support-role-type>Data Steward</support-role-type>\n"
             + //
-            "      <from-date>2024</from-date>\n"
+            "      <from-date>"
+            + currentYear
+            + "</from-date>\n"
             + //
             "      <person-email>erd.data@noaa.gov</person-email>\n"
             + //
@@ -16780,7 +16427,9 @@ class JettyTests {
             + //
             "      <support-role-type>Point of Contact</support-role-type>\n"
             + //
-            "      <from-date>2024</from-date>\n"
+            "      <from-date>"
+            + currentYear
+            + "</from-date>\n"
             + //
             "      <person-email>erd.data@noaa.gov</person-email>\n"
             + //
@@ -16922,10 +16571,11 @@ class JettyTests {
   /** This tests dapToNc DGrid. */
   @org.junit.jupiter.api.Test
   @TagJetty
+  @TagFlaky // It seems if data is not cached to frequently fail for one of the sides
+  // in erdQSwindmday
   void testDapToNcDGrid() throws Throwable {
     String2.log("\n\n*** OpendapHelper.testDapToNcDGrid");
     String fileName, expected, results;
-    String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 10);
 
     // There was a bug where loading the wms page for this dataset would cause the altitude value to
     // increase by 10 every time. To verify that isn't happening, load the wms page.
@@ -17379,6 +17029,8 @@ class JettyTests {
   /** This tests findVarsWithSharedDimensions. */
   @org.junit.jupiter.api.Test
   @TagJetty
+  @TagFlaky // It seems if data is not cached to frequently fail for one of the sides
+  // in erdQSwindmday
   void testFindVarsWithSharedDimensions() throws Throwable {
     String2.log("\n\n*** OpendapHelper.findVarsWithSharedDimensions");
     String expected, results;
@@ -17426,6 +17078,7 @@ class JettyTests {
   /** This tests findAllVars. */
   @org.junit.jupiter.api.Test
   @TagJetty
+  @TagThredds
   void testFindAllScalarOrMultiDimVars() throws Throwable {
     String2.log("\n\n*** OpendapHelper.testFindAllScalarOrMultiDimVars");
     String expected, results;
@@ -17497,6 +17150,10 @@ class JettyTests {
   @TagJetty
   void parserAllDatasetsTest() throws Throwable {
 
+    if (!EDStatic.config.useSaxParser) {
+      // This test requires SAX parser.
+      return;
+    }
     TopLevelHandler topLevelHandler;
     SAXParserFactory factory;
     SAXParser saxParser;
@@ -17514,11 +17171,12 @@ class JettyTests {
     context.setDatasetsThatFailedToLoadSB(new StringBuilder());
     context.setFailedDatasetsWithErrorsSB(new StringBuilder());
     context.setWarningsFromLoadDatasets(new StringBuilder());
+    context.setDatasetsThatFailedToLoadSB(new StringBuilder());
     context.settUserHashMap(new HashMap<String, Object[]>());
     context.setMajorLoad(false);
     context.setErddap(new Erddap());
     context.setLastLuceneUpdate(0);
-    context.setDatasetsRegex(EDStatic.datasetsRegex);
+    context.setDatasetsRegex(EDStatic.config.datasetsRegex);
     context.setReallyVerbose(false);
 
     factory = SAXParserFactory.newInstance();
@@ -17529,56 +17187,319 @@ class JettyTests {
     topLevelHandler = new TopLevelHandler(saxHandler, context);
     saxHandler.setState(topLevelHandler);
 
-    inputStream = JettyTests.class.getResourceAsStream("/datasets/datasetHandlerTest.xml");
+    inputStream = File2.getBufferedInputStream("development/test/datasets.xml");
     if (inputStream == null) {
-      throw new IllegalArgumentException("File not found: /datasets/datasetHandlerTest.xml");
+      throw new IllegalArgumentException("File not found: development/test/datasets.xml");
     }
     saxParser.parse(inputStream, saxHandler);
 
     EDDTableFromErddap eddTableFromErddap =
-        (EDDTableFromErddap) context.getErddap().tableDatasetHashMap.get("cwwcNDBCMet");
+        (EDDTableFromErddap) context.getErddap().tableDatasetHashMap.get("rlPmelTaoDySst");
     assertEquals(
-        "https://coastwatch.pfeg.noaa.gov/erddap/tabledap/cwwcNDBCMet",
-        eddTableFromErddap.localSourceUrl());
+        "http://localhost:8080/erddap/tabledap/pmelTaoDySst", eddTableFromErddap.localSourceUrl());
 
-    // TODO erdMH1cflh1day is not in the jetty test datasets, update this to be something that is
-    //   EDDTableFromEDDGrid eddTableFromEDDGrid = (EDDTableFromEDDGrid)
-    // context.getErddap().tableDatasetHashMap.get("erdMH1cflh1day_AsATable");
-    //   assertEquals(
-    //   "http://localhost:8080/erddap/griddap/erdMH1cflh1day",
-    //   eddTableFromEDDGrid.localSourceUrl());
+    EDDTableFromEDDGrid eddTableFromEDDGrid =
+        (EDDTableFromEDDGrid) context.getErddap().tableDatasetHashMap.get("erdMPOC1day_AsATable");
+    assertEquals("(local files)", eddTableFromEDDGrid.localSourceUrl());
+    assertEquals("String for accessibleTo", eddTableFromEDDGrid.getAccessibleTo()[0]);
 
     EDDGridFromDap eddGridFromDap =
-        (EDDGridFromDap) context.getErddap().gridDatasetHashMap.get("erdMHchla8day");
+        (EDDGridFromDap) context.getErddap().gridDatasetHashMap.get("hawaii_d90f_20ee_c4cb");
     assertEquals(
-        "https://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/MH/chla/8day",
+        "http://apdrc.soest.hawaii.edu/dods/public_data/SODA/soda_pop2.2.4",
         eddGridFromDap.localSourceUrl());
 
     EDDGridLonPM180 eddGridLonPM180 =
-        (EDDGridLonPM180) context.getErddap().gridDatasetHashMap.get("erdTAssh1day_LonPM180");
-    assertEquals("person1", eddGridLonPM180.getAccessibleTo()[0]);
+        (EDDGridLonPM180) context.getErddap().gridDatasetHashMap.get("erdQSwindmday_LonPM180");
+    assertEquals(1, eddGridLonPM180.childDatasetIDs().size());
+    assertEquals("erdQSwindmday", eddGridLonPM180.childDatasetIDs().get(0));
+    assertEquals("(local files)", eddGridLonPM180.getChildDataset(0).localSourceUrl());
 
-    // TODO jplMURSST41 is not in the jetty test datasets, update this to be
-    // something that is
-    //   EDDGridFromErddap eddGridFromErddap = (EDDGridFromErddap)
-    // context.getErddap().gridDatasetHashMap
-    //           .get("jplMURSST41");
-    //   assertEquals(
-    //           "https://coastwatch.pfeg.noaa.gov/erddap/griddap/jplMURSST41",
-    //           eddGridFromErddap.localSourceUrl());
+    EDDGridFromErddap eddGridFromErddap =
+        (EDDGridFromErddap) context.getErddap().gridDatasetHashMap.get("testGridFromErddap");
+    assertEquals(
+        "http://localhost:8080/erddap/griddap/nceiPH53sstn1day",
+        eddGridFromErddap.localSourceUrl());
 
-    // TODO testTimeAxis is not in the jetty test datasets, update this to be
-    //   EDDTableFromAsciiFiles eddTableFromAsciiFiles = (EDDTableFromAsciiFiles)
-    // context.getErddap().tableDatasetHashMap
-    //           .get("testTimeAxis");
-    //   assertEquals("historical_tsi\\.csv", eddTableFromAsciiFiles.fileNameRegex());
+    EDDTableFromAsciiFiles eddTableFromAsciiFiles =
+        (EDDTableFromAsciiFiles)
+            context.getErddap().tableDatasetHashMap.get("LiquidR_HBG3_2015_weather");
+    assertEquals("weather.*\\.csv", eddTableFromAsciiFiles.fileNameRegex());
 
     EDDGridSideBySide eddGridSideBySide =
-        (EDDGridSideBySide) context.getErddap().gridDatasetHashMap.get("erdTAssh1day");
+        (EDDGridSideBySide) context.getErddap().gridDatasetHashMap.get("erdQSwindmday");
     assertEquals(2, eddGridSideBySide.childDatasetIDs().size());
 
     EDDGridFromEtopo eddGridFromEtopo =
         (EDDGridFromEtopo) context.getErddap().gridDatasetHashMap.get("etopo180");
     assertEquals("etopo180", eddGridFromEtopo.datasetID());
+  }
+
+  /** EDDTableFromAsciiFiles */
+
+  /**
+   * This tests the /files/ "files" system. This requires testTableAscii in the localhost ERDDAP.
+   */
+  @org.junit.jupiter.api.Test
+  @TagJetty
+  void testFiles_EDDTableFromAsciiFiles() throws Throwable {
+    String results, expected;
+
+    // get /files/datasetID/.csv
+    results =
+        SSR.getUrlResponseStringNewline("http://localhost:8080/erddap/files/testTableAscii/.csv");
+    expected =
+        "Name,Last modified,Size,Description\n"
+            + "subdir/,NaN,NaN,\n"
+            + "31201_2009.csv,TIMESTAMP,201320,\n"
+            + "46026_2005.csv,TIMESTAMP,621644,\n"
+            + "46028_2005.csv,TIMESTAMP,623250,\n";
+    results = results.replaceAll(",[0-9]{13},", ",TIMESTAMP,");
+    Test.ensureEqual(results, expected, "results=\n" + results);
+
+    // get /files/datasetID/
+    results = SSR.getUrlResponseStringNewline("http://localhost:8080/erddap/files/testTableAscii/");
+    Test.ensureTrue(results.indexOf("subdir&#x2f;") > 0, "results=\n" + results);
+    Test.ensureTrue(results.indexOf("subdir/") > 0, "results=\n" + results);
+    Test.ensureTrue(results.indexOf("31201&#x5f;2009&#x2e;csv") > 0, "results=\n" + results);
+    Test.ensureTrue(results.indexOf(">201320<") > 0, "results=\n" + results);
+
+    // get /files/datasetID/subdir/.csv
+    results =
+        SSR.getUrlResponseStringNewline(
+            "http://localhost:8080/erddap/files/testTableAscii/subdir/.csv");
+    expected =
+        "Name,Last modified,Size,Description\n"
+            + "46012_2005.csv,TIMESTAMP,622197,\n"
+            + "46012_2006.csv,TIMESTAMP,621812,\n";
+    results = results.replaceAll(",[0-9]{13},", ",TIMESTAMP,");
+    Test.ensureEqual(results, expected, "results=\n" + results);
+
+    // download a file in root
+    results =
+        SSR.getUrlResponseStringNewline(
+            "http://localhost:8080/erddap/files/testTableAscii/31201_2009.csv");
+    expected =
+        "This is a header line.\n"
+            + "*** END OF HEADER\n"
+            + "# a comment line\n"
+            + "longitude, latitude, altitude, time, station, wd, wspd, atmp, wtmp\n"
+            + "# a comment line\n"
+            + "degrees_east, degrees_north, m, UTC, , degrees_true, m s-1, degree_C, degree_C\n"
+            + "# a comment line\n"
+            + "-48.13, -27.7, 0.0, 2005-04-19T00:00:00Z, 31201, NaN, NaN, NaN, 24.4\n"
+            + "# a comment line\n"
+            + "#-48.13, -27.7, 0.0, 2005-04-19T01:00:00Z, 31201, NaN, NaN, NaN, 24.4\n"
+            + "-48.13, -27.7, 0.0, 2005-04-19T01:00:00Z, 31201, NaN, NaN, NaN, 24.4\n";
+    Test.ensureEqual(results.substring(0, expected.length()), expected, "results=\n" + results);
+
+    // download a file in subdir
+    results =
+        SSR.getUrlResponseStringNewline(
+            "http://localhost:8080/erddap/files/testTableAscii/subdir/46012_2005.csv");
+    expected =
+        "This is a header line.\n"
+            + "*** END OF HEADER\n"
+            + "# a comment line\n"
+            + "longitude, latitude, altitude, time, station, wd, wspd, atmp, wtmp\n"
+            + "# a comment line\n"
+            + "degrees_east, degrees_north, m, UTC, , degrees_true, m s-1, degree_C, degree_C\n"
+            + "# a comment line\n"
+            + "-122.88, 37.36, 0.0, 2005-01-01T00:00:00Z, 46012, 190, 8.2, 11.8, 12.5\n"
+            + "# a comment line\n"
+            + "# a comment line\n"
+            + "-122.88, 37.36, 0.0, 2005-01-01T01:00:00Z, 46012, 214, 8.4, 10.4, 12.5\n";
+    Test.ensureEqual(results.substring(0, expected.length()), expected, "results=\n" + results);
+
+    // try to download a non-existent dataset
+    try {
+      results = SSR.getUrlResponseStringNewline("http://localhost:8080/erddap/files/gibberish/");
+    } catch (Exception e) {
+      results = e.toString();
+    }
+    expected =
+        "java.io.IOException: HTTP status code=404 java.io.FileNotFoundException: http://localhost:8080/erddap/files/gibberish/\n"
+            + "(Error {\n"
+            + "    code=404;\n"
+            + "    message=\"Not Found: Currently unknown datasetID=gibberish\";\n"
+            + "})";
+    Test.ensureEqual(results, expected, "results=\n" + results);
+
+    // try to download a non-existent directory
+    try {
+      results =
+          SSR.getUrlResponseStringNewline(
+              "http://localhost:8080/erddap/files/testTableAscii/gibberish/");
+    } catch (Exception e) {
+      results = e.toString();
+    }
+    expected =
+        "java.io.IOException: HTTP status code=404 java.io.FileNotFoundException: http://localhost:8080/erddap/files/testTableAscii/gibberish/\n"
+            + "(Error {\n"
+            + "    code=404;\n"
+            + "    message=\"Not Found: Resource not found: directory=gibberish/\";\n"
+            + "})";
+    Test.ensureEqual(results, expected, "results=\n" + results);
+
+    // try to download a non-existent file
+    try {
+      results =
+          SSR.getUrlResponseStringNewline(
+              "http://localhost:8080/erddap/files/testTableAscii/gibberish.csv");
+    } catch (Exception e) {
+      results = e.toString();
+    }
+    expected =
+        "java.io.IOException: HTTP status code=404 java.io.FileNotFoundException: http://localhost:8080/erddap/files/testTableAscii/gibberish.csv\n"
+            + "(Error {\n"
+            + "    code=404;\n"
+            + "    message=\"Not Found: File not found: gibberish.csv .\";\n"
+            + "})";
+    Test.ensureEqual(results, expected, "results=\n" + results);
+
+    // try to download a non-existent file in existant subdir
+    try {
+      results =
+          SSR.getUrlResponseStringNewline(
+              "http://localhost:8080/erddap/files/testTableAscii/subdir/gibberish.csv");
+    } catch (Exception e) {
+      results = e.toString();
+    }
+    expected =
+        "java.io.IOException: HTTP status code=404 java.io.FileNotFoundException: http://localhost:8080/erddap/files/testTableAscii/subdir/gibberish.csv\n"
+            + "(Error {\n"
+            + "    code=404;\n"
+            + "    message=\"Not Found: File not found: gibberish.csv .\";\n"
+            + "})";
+    Test.ensureEqual(results, expected, "results=\n" + results);
+  }
+
+  /** This tests that a dataset can be quick restarted. */
+  @org.junit.jupiter.api.Test
+  @TagJetty
+  void testQuickRestart_EDDTableFromAsciiFiles() throws Throwable {
+    // String2.log("\n*** EDDTableFromAsciiFiles.testQuickRestart\n");
+    String datasetID = "testTableAscii";
+    String dataDir =
+        Path.of(EDDTestDataset.class.getResource("/data/asciiNdbc/").toURI()).toString();
+    String fullName = dataDir + "/46012_2005.csv";
+    long timestamp = File2.getLastModified(fullName); // orig 2009-08-05T08:49 local
+    try {
+      // restart local erddap
+      //   String2.pressEnterToContinue(
+      //       "Restart the local erddap with quickRestart=true and with datasetID="
+      //           + datasetID
+      //           + " .\n"
+      //           + "Wait until all datasets are loaded.");
+
+      // change the file's timestamp
+      File2.setLastModified(fullName, timestamp - 60000); // 1 minute earlier
+      Math2.sleep(1000);
+
+      // request info from that dataset
+      // .csv for one lat,lon,time
+      // 46012 -122.879997 37.360001
+      String userDapQuery =
+          "&longitude=-122.88&latitude=37.36&time%3E=2005-07-01&time%3C2005-07-01T10";
+      String results =
+          SSR.getUrlResponseStringUnchanged(
+              EDStatic.erddapUrl + "/tabledap/" + datasetID + ".csv?" + userDapQuery);
+      // String2.log(results);
+      String expected =
+          "longitude,latitude,altitude,time,station,wd,wspd,atmp,wtmp\n"
+              + "degrees_east,degrees_north,m,UTC,,m s-1,m s-1,degree_C,degree_C\n"
+              + "-122.88,37.36,0,2005-07-01T00:00:00Z,46012,294,2.6,12.7,13.4\n"
+              + "-122.88,37.36,0,2005-07-01T01:00:00Z,46012,297,3.5,12.6,13.0\n"
+              + "-122.88,37.36,0,2005-07-01T02:00:00Z,46012,315,4.0,12.2,12.9\n"
+              + "-122.88,37.36,0,2005-07-01T03:00:00Z,46012,325,4.2,11.9,12.8\n"
+              + "-122.88,37.36,0,2005-07-01T04:00:00Z,46012,330,4.1,11.8,12.8\n"
+              + "-122.88,37.36,0,2005-07-01T05:00:00Z,46012,321,4.9,11.8,12.8\n"
+              + "-122.88,37.36,0,2005-07-01T06:00:00Z,46012,320,4.4,12.1,12.8\n"
+              + "-122.88,37.36,0,2005-07-01T07:00:00Z,46012,325,3.8,12.4,12.8\n"
+              + "-122.88,37.36,0,2005-07-01T08:00:00Z,46012,298,4.0,12.5,12.8\n"
+              + "-122.88,37.36,0,2005-07-01T09:00:00Z,46012,325,4.0,12.5,12.8\n";
+      Test.ensureEqual(results, expected, "\nresults=\n" + results);
+
+      // request status.html
+      SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + "/status.html");
+      Math2.sleep(1000);
+      //   TestUtil.displayInBrowser("file://" + EDStatic.config.bigParentDirectory +
+      // "logs/log.txt");
+
+      //   String2.pressEnterToContinue(
+      //       "Look at log.txt to see if update was run and successfully "
+      //           + "noticed the changed file.");
+
+    } finally {
+      // change timestamp back to original
+      File2.setLastModified(fullName, timestamp);
+    }
+  }
+
+  /** EDDTableFromErddap */
+
+  /** testGenerateDatasetsXml */
+  @org.junit.jupiter.api.Test
+  @TagJetty
+  void testGenerateDatasetsXml_EDDTableFromErddap() throws Throwable {
+    // testVerboseOn();
+    int po;
+
+    // test local generateDatasetsXml. In tests, always use non-https url.
+    String results = EDDTableFromErddap.generateDatasetsXml(EDStatic.erddapUrl, true) + "\n";
+    String2.log("results=\n" + results);
+
+    // GenerateDatasetsXml
+    String gdxResults =
+        new GenerateDatasetsXml()
+            .doIt(
+                new String[] {
+                  "-verbose", "EDDTableFromErddap", EDStatic.erddapUrl, "true", "-1"
+                }, // keep original names?, defaultStandardizeWhat
+                false); // doIt loop?
+    Test.ensureEqual(gdxResults, results, "Unexpected results from GenerateDatasetsXml.doIt.");
+
+    String expected =
+        "<dataset type=\"EDDTableFromErddap\" datasetID=\"erdGlobecBottle\" active=\"true\">\n"
+            + "    <!-- GLOBEC NEP Rosette Bottle Data (2002) -->\n"
+            + "    <sourceUrl>http://localhost:8080/erddap/tabledap/erdGlobecBottle</sourceUrl>\n"
+            + "</dataset>\n";
+    String fragment = expected;
+    String2.log("\nresults=\n" + results);
+    po = results.indexOf(expected.substring(0, 70));
+    Test.ensureEqual(results.substring(po, po + expected.length()), expected, "");
+
+    expected =
+        "<!-- Of the datasets above, the following datasets are EDDTableFromErddap's at the remote ERDDAP.\n";
+    po = results.indexOf(expected.substring(0, 20));
+    Test.ensureEqual(
+        results.substring(po, po + expected.length()), expected, "results=\n" + results);
+    // try {
+    //   Test.ensureTrue(results.indexOf("rGlobecBottle", po) > 0, "results=\n" + results);
+    // } catch (Throwable t) {
+    //   throw new RuntimeException(
+    //       "Unexpected error. This test requires rGlobecBottle in localhost ERDDAP.", t);
+    // }
+
+    /*
+     * //ensure it is ready-to-use by making a dataset from it
+     * //NO - don't mess with existing erdGlobecBottle
+     * String tDatasetID = "erdGlobecBottle";
+     * EDD.deleteCachedDatasetInfo(tDatasetID);
+     * EDD edd = oneFromXmlFragment(null, fragment);
+     * Test.ensureEqual(edd.title(), "GLOBEC NEP Rosette Bottle Data (2002)", "");
+     * Test.ensureEqual(edd.datasetID(), tDatasetID, "");
+     * Test.ensureEqual(String2.toCSSVString(edd.dataVariableDestinationNames()),
+     * "cruise_id, ship, cast, longitude, latitude, time, bottle_posn, chl_a_total, chl_a_10um, phaeo_total, phaeo_10um, sal00, sal11, temperature0, temperature1, fluor_v, xmiss_v, PO4, N_N, NO3, Si, NO2, NH4, oxygen, par"
+     * ,
+     * "");
+     */
+  }
+
+  @org.junit.jupiter.api.Test
+  @TagJetty
+  void testVersionPage() {
+    Semver version = EDD.getRemoteErddapVersion(EDStatic.erddapUrl + "/");
+    assertEquals(0, version.compareTo(EDStatic.erddapVersion));
   }
 }

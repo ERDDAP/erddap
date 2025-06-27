@@ -1,12 +1,15 @@
 package com.cohort.util;
 
+import gov.noaa.pfel.coastwatch.sgt.SgtUtil;
 import java.awt.Color;
-import java.awt.Graphics;
 import java.awt.Image;
 import java.awt.image.BufferedImage;
 import java.awt.image.PixelGrabber;
 import java.awt.image.RenderedImage;
+import java.io.BufferedOutputStream;
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.OutputStream;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Path;
@@ -24,7 +27,7 @@ public class Image2Tests {
   public static URL OBS_DIR = Image2Tests.class.getResource("/data/images/obs/");
 
   public static String urlToAbsolutePath(URL url) throws URISyntaxException {
-    return Path.of(url.toURI()).toString() + "/";
+    return Path.of(url.toURI()).toString() + File.separator;
   }
 
   /** This intentionally throws an Exception to test testImagesIdentical(). */
@@ -68,15 +71,15 @@ public class Image2Tests {
 
     // test ImageIO
     BufferedImage bi = ImageIO.read(new File(testDir + "testmap.gif"));
-    Graphics g = bi.getGraphics();
+    bi.getGraphics();
     ImageIO.write(bi, "png", new File(testDir + "temp.png"));
-    Image2.saveAsGif(bi, testDir + "temp.gif");
+    SgtUtil.saveAsGif(bi, testDir + "temp");
 
     long localTime = System.currentTimeMillis();
     String2.log("test() here 1");
     Color gray = new Color(128, 128, 128);
     String2.log("test() here 2=" + (System.currentTimeMillis() - localTime));
-    Image image = Image2.getImage(testDir + "temp.gif", 10000, false); // javaShouldCache
+    BufferedImage image = Image2.getImage(testDir + "temp.gif", 10000, false); // javaShouldCache
     String2.log("test() here 3=" + (System.currentTimeMillis() - localTime));
 
     // convert 128,128,128 to transparent
@@ -84,7 +87,7 @@ public class Image2Tests {
     String2.log("test() here 4=" + (System.currentTimeMillis() - localTime));
 
     // save as gif again
-    Image2.saveAsGif(image, testDir + "temp2.gif");
+    SgtUtil.saveAsGif(image, testDir + "temp2");
     String2.log("test() here 5=" + (System.currentTimeMillis() - localTime));
 
     File2.delete(testDir + "temp.png");
@@ -215,7 +218,7 @@ public class Image2Tests {
 
     // if different, save differences as an image file
     RenderedImage image3 = Image2.makeImageFromArray(pixels3, width1, height1, 5000);
-    Image2.saveAsPng(image3, diffName);
+    saveAsPng(image3, diffName);
     String msg =
         cmd
             + "There were "
@@ -231,6 +234,19 @@ public class Image2Tests {
       return "";
     } else {
       return msg;
+    }
+  }
+
+  /**
+   * Save an image (with any number of colors) as a .png file.
+   *
+   * @param image may be a BufferedImage, too
+   * @param fullFileName (e.g., c:\myDir\myFile.png)
+   * @throws Exception if trouble
+   */
+  private static void saveAsPng(RenderedImage image, String fullFileName) throws Exception {
+    try (OutputStream out = new BufferedOutputStream(new FileOutputStream(fullFileName))) {
+      ImageIO.write(image, "png", out);
     }
   }
 
@@ -269,7 +285,7 @@ public class Image2Tests {
     // if expected doesn't exist, save observed as expected?
     if (!File2.isFile(expected)) {
       if (displayImages) {
-        Test.displayInBrowser("file://" + observed);
+        TestUtil.displayInBrowser("file://" + observed);
       }
       File2.appendFile("missingImage.txt", expected + "\n", File2.UTF_8);
       if (autoCreateMissing) {
@@ -302,9 +318,9 @@ public class Image2Tests {
     // allowNPixelsDifferent
     if (error.length() == 0) return;
     if (displayImages) {
-      Test.displayInBrowser("file://" + observed);
-      Test.displayInBrowser("file://" + expected);
-      if (File2.isFile(diffName)) Test.displayInBrowser("file://" + diffName);
+      TestUtil.displayInBrowser("file://" + observed);
+      TestUtil.displayInBrowser("file://" + expected);
+      if (File2.isFile(diffName)) TestUtil.displayInBrowser("file://" + diffName);
     }
     throw new RuntimeException(
         "testImagesIdentical found differences:\n"

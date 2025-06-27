@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
+<erddapMessages>
 <!--  teachtaireachtaí.xml tá teachtaireachtaí téacs le haghaidh ERDDAP (a léitear in EDSStatic).
 Nuair a shuiteálann tú ERDDAP ar do fhreastalaí, is féidir na teachtaireachtaí seo go léir a fhágáil mar atá,
 ós rud é go mbíonn na teachtaireachtaí seo mar a chéile de ghnáth ag suiteálacha éagsúla ERDDAP.
@@ -30,7 +30,7 @@ CUIREANN SÍ I bhFÁTH nach n-úsáideann “pseudoEntity” ach [a-zA-Z0-9] don
   teachtaireachtaí-de.xml agus -ga tá go leor naisc dúbailt. Doigh liom go bhfuil go leor eile mar seo.
 
  -->
-<erddapMessages>
+
 <!--  Filleann sé seo ábhar HTML ag cur síos ar Iarraidh Comhaid Chomhbhrúite.
 Féach https://httpd.apache.org/docs/1.3/mod/mod_mime.html
 a deir go bhfuil x-gzip=gzip agus x-compress=compress
@@ -81,11 +81,13 @@ Ansin, cuirfidh ERDDAP gach ceann díobh
   Má tá moltaí agat maidir le naisc bhreise, déan teagmháil le <kbd>erd dot data at noaa dot gov</kbd> .
   
 ]]></additionalLinks>
+
 <!-- (a)ll(D)atasets (m)etadata and (v)ariable text -->
 <admKeywords>19115, accessible, altitude, average, background, base, dataset, depth, email, erddap, fgdc, graph, grid, information, institution, iso, latitude, location, longitude, make-a-graph, maximum, metadata, minimum, opendap, rss, sequence, service, sos, source, spacing, structure, subscription, subset, summary, table, time, title, url, wcs, wms</admKeywords>
 <admSubsetVariables>accessible, dataStructure, cdm_data_type, class, institution, testOutOfDate</admSubsetVariables>
 <admSummary>Is tábla é an tacar sonraí seo ina bhfuil sraith faisnéise do gach tacar sonraí atá gníomhach san ERDDAP seo.</admSummary>
 <admTitle>Liosta na Thacar Sonraí Gníomhacha go léir san ERDDAP seo</admTitle>
+
 <!-- (a)ll (d)atasets (v)ariable (c)omment, (l)ong_name, or (r)eference text -->
 <advl_datasetID>Dataset ID</advl_datasetID>
 <advc_accessible>Tá roinnt tacar sonraí poiblí. D’fhéadfadh go mbeadh cuid acu príobháideach agus b’fhéidir nach bhfuil rochtain agat orthu.</advc_accessible>
@@ -93,11 +95,11 @@ Ansin, cuirfidh ERDDAP gach ceann díobh
 <advl_institution>Institiúid</advl_institution>
 <advc_dataStructure>Déileálann ERDDAP le gach tacar sonraí mar &#39;eangach&#39; nó mar thacar sonraí &#39;tábla&#39;.</advc_dataStructure>
 <advl_dataStructure>Struchtúr Sonraí</advl_dataStructure>
-<advr_dataStructure>https://erddap.github.io/setupDatasetsXml.html#dataStructures</advr_dataStructure>
+<advr_dataStructure>https://erddap.github.io/docs/server-admin/datasets#why-just-two-basic-data-structures</advr_dataStructure>
 <advl_cdm_data_type>Cineál Múnla Sonraí Coitianta</advl_cdm_data_type>
-<advr_cdm_data_type>https://erddap.github.io/setupDatasetsXml.html#cdm_data_type</advr_cdm_data_type>
+<advr_cdm_data_type>https://erddap.github.io/docs/server-admin/datasets#cdm_data_type</advr_cdm_data_type>
 <advl_class>Aicme ERDDAP</advl_class>
-<advr_class>https://erddap.github.io/setupDatasetsXml.html#datasetTypes</advr_class>
+<advr_class>https://erddap.github.io/docs/server-admin/datasets#list-of-types-datasets</advr_class>
 <advl_title>Teideal</advl_title>
 <advl_minLongitude>Íosfhad</advl_minLongitude>
 <advl_maxLongitude>Uasfhadfhad</advl_maxLongitude>
@@ -142,7 +144,7 @@ Ansin, cuirfidh ERDDAP gach ceann díobh
 <advn_outOfDate><![CDATA[
 
 De réir dealraimh, níl an tréith
-<a rel="help" href="https://erddap.github.io/setupDatasetsXml.html#testOutOfDate"
+<a rel="help" href="https://erddap.github.io/docs/server-admin/datasets#testoutofdate"
 ><kbd>testOutOfDate</kbd></a> ag aon tacar sonraí.
 B’fhéidir nach bhfuil aon tacair sonraí gar-fhíor-ama san ERDDAP seo .
 
@@ -359,6 +361,8 @@ Nó,
 <a rel="help" href="#computerProgram">seachnaigh an leathanach gréasáin seo</a> agus déan tiontaithe ó laistigh de chlár ríomhaire, script nó leathanach gréasáin.
 
 ]]></convertBypass>
+<convertCOLORs>Dathanna</convertCOLORs>
+<convertCOLORsMessage>Luach a thiontú go dath ó colorbar</convertCOLORsMessage>
 <convertToAFullName><![CDATA[
 <strong>Tiontaigh ó {0} go ainm iomlán.</strong>
 ]]></convertToAFullName>
@@ -551,6 +555,7 @@ Tá
 <convertFipsCounty>Tiontaigh Cód Contae FIPS go/ó Ainm Contae</convertFipsCounty>
 
 <!--  Ná athraigh na samplaí (ó réamhshocrúN...).  -->
+
 <!--  Bhí &quot;cód contae FIPS&quot; ina nasc chuig http://www.itl.nist.gov/fipspubs/fip6-4.htm 
      ansin https://www.census.gov/geo/reference/codes/cou.html 
      Is é an ceann is gaire(?) anois ná http://www.datypic.com/sc/niem31/t-fips_6-4_USCountyCodeSimpleType.html
@@ -1884,7 +1889,7 @@ mar shonraí greille nó mar shonraí tábla.
 <ul>
 <li><a class="selfLink" id="databases" href="#databases" rel="bookmark">Sonraí</a> atá stóráilte faoi láthair i mbunachar sonraí coibhneasta.
 <br>Léigh le do thoil an fhaisnéis faoin gcineál tacair sonraí
-<a rel="help" href="https://erddap.github.io/setupDatasetsXml.html#EDDTableFromDatabase">EDDTableFromDatabase</a> in ERDDAP, go háirithe na scáileáin tosaigh ~2 faisnéise a labhraíonn faoin ngá atá le tábla dí-normalaithe a chruthú.
+<a rel="help" href="https://erddap.github.io/docs/server-admin/datasets#eddtablefromdatabase">EDDTableFromDatabase</a> in ERDDAP, go háirithe na scáileáin tosaigh ~2 faisnéise a labhraíonn faoin ngá atá le tábla dí-normalaithe a chruthú.
 Seans go bhfuil sé sin dÚsachtach.
 Cuir muinín go leor chun an réasúnaíocht atá leis seo a léamh.
 <br>&nbsp;
@@ -2698,7 +2703,7 @@ Más mian leat na samplaí a chur in iúl do do ERDDAP, is é an modh is éasca:
      Tá súil agam gur féidir leat do ID tacar sonraí a chur in ionad &quot;jplMURSST41&quot;
      agus modhnaigh &quot;[0 32]&quot; (an raon sonraí don bharra datha).   -->
 <EDDGridMatlabPlotExample>imagesc(jplMURSST41.longitude, jplMURSST41.latitude, squeeze(jplMURSST41.analysed_sst), [0 32])
-set(gca, 'YDir', 'normal')</EDDGridMatlabPlotExample>
+set(gca, &#39;YDir&#39;, &#39;normal&#39;)</EDDGridMatlabPlotExample>
 
 <!--  Taispeántar na teachtaireachtaí EDDTable ar an bhFoirm Rochtana Sonraí tábladap agus Déan Graf.  -->
 <EDDTableConstraints>Srianta</EDDTableConstraints>
@@ -2855,7 +2860,7 @@ Más mian leat na samplaí a chur in iúl do do ERDDAP, is é an modh is éasca:
 
 <!--  Seo ceist shamplach a ghineann graf. 
      D’fhéadfá do shampla a ghiniúint trí fhoirm Make A Graph do thacair sonraí in ERDDAP.   -->
-<EDDTableGraphExample>time,T_25&amp;station="0n0e"&amp;time&gt;=2015-05-23T12:00:00Z&amp;time&lt;=2015-05-31T12:00:00Z&amp;.draw=lines</EDDTableGraphExample>
+<EDDTableGraphExample>time,T_25&amp;station=&quot;0n0e&quot;&amp;time&gt;=2015-05-23T12:00:00Z&amp;time&lt;=2015-05-31T12:00:00Z&amp;.draw=lines</EDDTableGraphExample>
 
 <!--  Seo ceist shamplach a ghineann léarscáil.  -->
 <EDDTableMapExample>longitude,latitude,T_25&amp;time=2015-05-31T12:00:00Z&amp;.draw=markers&amp;.marker=5|5</EDDTableMapExample>
@@ -2959,6 +2964,8 @@ Mar shampla:
 <fileHelp_ncml>Féach ar struchtúr agus ar mheiteashonraí an tacair sonraí mar chomhad UTF-8 NCML .xml.</fileHelp_ncml>
 <fileHelpGrid_odvTxt>Íoslódáil am, domhanleithead, domhanfhad,Athróga eile mar Chomhad Scarbhileog Cineálach ODV (.txt).</fileHelpGrid_odvTxt>
 <fileHelpTable_odvTxt>Íoslódáil domhanfhad, domhanleithead, am,Colúin eile mar Chomhad Scarbhileog Cineálach ISO-8859-1 ODV (.txt).</fileHelpTable_odvTxt>
+<fileHelp_parquet>Íoslódáil mar chomhad parquet. Tá ainmneacha colúin (&quot;column_names&quot;) agus aonaid (&quot;column_units&quot;).</fileHelp_parquet>
+<fileHelp_parquet_with_meta>Íoslódáil mar chomhad parquet le meiteashonraí mionsonraithe.</fileHelp_parquet_with_meta>
 <fileHelp_subset>Féach ar fhoirm HTML a úsáideann cuardach ilghnéitheach chun roghnú fo-thacair na sonraí a shimpliú.</fileHelp_subset>
 <fileHelp_timeGaps>Féach ar liosta UTF-8 de bhearnaí sna luachanna ama atá níos mó ná an bhearna airmheánach.</fileHelp_timeGaps>
 <fileHelp_tsv>Íoslódáil tábla téacs deighilte ISO-8859-1 (líne 1: ainmneacha; líne 2: aonaid; amanna ISO 8601).</fileHelp_tsv>
@@ -3250,7 +3257,7 @@ Tá an síneadh .nc ag comhaid den dá leagan agus is féidir le cláir a léann
 <a rel="help" href="https://anaconda.org/eumetsat/ncview">trí Conda <img
        src="https://coastwatch.pfeg.noaa.gov/erddap/images/external.png" alt=" (external link)"
        title="Ní formhuiniú é an nasc seo chuig suíomh Gréasáin seachtrach."></a>).
-<li><a rel="help" href="https://erddap.github.io/setupDatasetsXml.html#NCO">NCO</a>, uirlis chumhachtach na n-orduithe chun comhaid .nc a mhodhnú go buan.
+<li><a rel="help" href="https://erddap.github.io/docs/server-admin/datasets#netcdf-operators-nco">NCO</a>, uirlis chumhachtach na n-orduithe chun comhaid .nc a mhodhnú go buan.
 <li><a rel="help" href="https://www.unidata.ucar.edu/downloads/netcdf/">NetCDF -C agus NetCDF - Java <img
        src="https://coastwatch.pfeg.noaa.gov/erddap/images/external.png" alt=" (external link)"
        title="Ní formhuiniú é an nasc seo chuig suíomh Gréasáin seachtrach."></a>, na príomhleabharlanna bogearraí do C, C++, Fortran, nó Java chun comhaid .nc a léamh agus a scríobh.
@@ -3650,9 +3657,11 @@ Nó, bain úsáid as uimhreacha níos airde má leanann an fhadhb.
 Is é 8192 an réamhshocrú le haghaidh uaireadóirí. Is é 128 an réamhshocrú le haghaidh cásanna.</inotifyFix>
 
 <!--  ná aistrigh  -->
-<inotifyFixCommands>sudo sysctl fs.inotify.max_user_watches=65536
+<inotifyFixCommands>
+  sudo sysctl fs.inotify.max_user_watches=65536
   sudo sysctl fs.inotify.max_user_instances=1024
-  sudo sysctl -p</inotifyFixCommands>
+  sudo sysctl -p
+</inotifyFixCommands>
 <interpolate>Idirshuíomh</interpolate>
 <javaProgramsHTML><![CDATA[
 
@@ -3662,7 +3671,7 @@ Mar a thuairiscítear thuas, toisc gur féidir le cláir Java rochtain a fháil 
 <p>Nó, ós rud é gur clár foinse oscailte uile é ERDDAP, is féidir leat do chóip féin de ERDDAP a chur ar bun ar do fhreastalaí féin (inrochtana poiblí nó nach bhfuil) chun do shonraí féin a sheirbheáil.
 Is féidir le do ríomhchláir Java sonraí a fháil ón gcóip sin de ERDDAP .
 Féach
-<a rel="help" href="https://erddap.github.io/setup.html">Socrú Do ERDDAP Féin</a> .
+<a rel="help" href="https://erddap.github.io/docs/server-admin/deploy-install">Socrú Do ERDDAP Féin</a> .
   
 ]]></javaProgramsHTML>
 
@@ -3749,7 +3758,7 @@ Níl fíordheimhniú cumasaithe ag go leor suiteálacha ERDDAP agus mar sin ní 
 Faoi láthair, ní thacaíonn ERDDAP ach le fíordheimhniú trí chuntais ríomhphoist arna mbainistiú ag Google, lena n-áirítear cuntais ríomhphoist ag NOAA agus go leor ollscoileanna.
 Má tá fíordheimhniú cumasaithe ag ERDDAP, is féidir le duine ar bith a bhfuil cuntas ríomhphoist arna bhainistiú ag Google aige logáil isteach, ach ní bheidh rochtain acu ach ar na tacair shonraí príobháideacha a bhfuil údarú sainráite tugtha ag riarthóir ERDDAP dóibh rochtain a fháil orthu.
 Le treoracha ar logáil isteach in ERDDAP ó bhrabhsálaí nó trí script, féach
-<a rel="help" href="https://erddap.github.io/AccessToPrivateDatasets.html">Rochtain ar Thacair Sonraí Príobháideacha in ERDDAP</a> .
+<a rel="help" href="https://erddap.github.io/docs/user/AccessToPrivateDatasets">Rochtain ar Thacair Sonraí Príobháideacha in ERDDAP</a> .
   
 ]]></loginHTML>
 <loginAttemptBlocked>EARRÁID: Tá bac sealadach á chur ar iarrachtaí logáil isteach le haghaidh {0} tar éis theip ar 3 iarracht.
@@ -4219,6 +4228,7 @@ Féach an nasc &quot;Seachbhóthar an fhoirm seo&quot; thíos.
 <moreInformation>Tuilleadh eolais</moreInformation>
 
 <!--  Tá na teachtaireachtaí seo ar stíl MessageFormat á bhrú isteach i MustBe.xxx.  -->
+
 <!--  Is teachtaireacht earráide thábhachtach í seo. Tugann sé le fios go raibh an t-iarratas bailí,
 ach ba é an toradh aon sonraí. Seans go bhfuil an teachtaireacht chruinn seo á lorg ag cliaint.
 Go dtí seo, is fearr gan é seo a athrú.
@@ -4316,6 +4326,12 @@ Féach ar na Roghanna ag bun an leathanaigh ghréasáin sin.
 <br>&nbsp;
   
 ]]></outOfDateKeepTrack>
+
+<!--An chéad leathanach × uair an chloig
+r-phost: josezbaeutier@gmail.com
+r-phostCurrent líreatha/leathanach Baile
+r-phost: cuir isteach uimhir r-phoist
+cliceáil grianghraf a mhéadú-->
 
 <!--  Is iad seo na roghanna pailéad.
      Caithfidh comhad .cpt a bheith ann do gach ceann díobh san eolaire erddap/WEB-INF/cptfiles.
@@ -4436,7 +4452,7 @@ Mar shampla, is féidir le daoine an URL seo a úsáid chun Cuardach Téacs Ioml
 Tá go leor gnéithe in ERDDAP ar féidir le ríomhchláir nó scripteanna a scríobhann tú úsáid a bhaint astu.
 Is féidir leat iad a úsáid chun feidhmchláir nó seirbhísí gréasáin eile a thógáil ar bharr ERDDAP, rud a fhágann go ndéanann ERDDAP an chuid is mó den obair! Mar sin má tá smaoineamh agat maidir le comhéadan níos fearr leis na sonraí a fhreastalaíonn ERDDAP nó leathanach gréasáin a dteastaíonn bealach éasca chun sonraí a rochtain, molaimid duit d&#39;fheidhmchlár gréasáin féin, do sheirbhís gréasáin nó do leathanach gréasáin a thógáil agus ERDDAP a úsáid mar an bunús.
 Is féidir le do chóras sonraí, graif agus faisnéis eile a fháil ó ERDDAP ERD nó ó shuiteálacha ERDDAP eile, nó is féidir leat<!-- setup always from coastwatch's erddap -->
-<a rel="help" href="https://erddap.github.io/setup.html">cuir do fhreastalaí ERDDAP féin ar bun</a>, ar féidir é a rochtain go poiblí nó díreach inrochtana go príobháideach.
+<a rel="help" href="https://erddap.github.io/docs/server-admin/deploy-install">cuir do fhreastalaí ERDDAP féin ar bun</a>, ar féidir é a rochtain go poiblí nó díreach inrochtana go príobháideach.
 <h3><a class="selfLink" id="requests" href="#requests" rel="bookmark">Iarratais URL RESTful</a></h3>
 Úsáideann iarratais ar fhaisnéis faoin gcomhéadan úsáideora ó ERDDAP (mar shampla, torthaí cuardaigh) caighdeán uilíoch an ghréasáin le haghaidh iarratas:
 <a rel="help" href="https://en.wikipedia.org/wiki/Uniform_Resource_Locator">URLanna &externalLinkHtml;</a> seolta trí
@@ -4496,7 +4512,7 @@ Is féidir le ERDDAP torthaí an chomhéadain úsáideora a sheoladh ar ais mar 
 <li>.nc - comhad dénártha NetCDF -3 atá cothrom, cosúil le tábla.
 (<a rel="help" href="https://www.unidata.ucar.edu/software/netcdf/">níos mó&nbsp;faisnéis &externalLinkHtml;</a>)
 <li>.nccsv - comhad CSV cothrom, cosúil le tábla, NetCDF -mhaith, ASCII.
-(<a rel="help" href="https://erddap.github.io/NCCSV.html">níos mó&nbsp;faisnéis &externalLinkHtml;</a>)
+(<a rel="help" href="https://erddap.github.io/docs/user/nccsv-1.20">níos mó&nbsp;faisnéis &externalLinkHtml;</a>)
 <li>.tsv - tábla téacs ASCII deighilte le táb.
 (<a rel="help" href="https://jkorpela.fi/TSV.html">níos mó&nbsp;faisnéis &externalLinkHtml;</a>)
 <li>.xhtml - comhad XHTML (XML) leis na sonraí i dtábla.
@@ -5212,7 +5228,7 @@ Tá sé intuigthe.)
 <p><a rel="help" href="&erddapUrl;/information.html"><strong>Faigh tuilleadh eolais faoi ERDDAP .</strong></a>
 <p><strong>Soláthraithe Sonraí:
 Is féidir leat
-<a rel="help" href="https://erddap.github.io/setup.html">do fhreastalaí ERDDAP féin a bhunú</a> agus do shonraí féin a sheirbheáil.</strong> Tá ERDDAP saor in aisce agus foinse oscailte.
+<a rel="help" href="https://erddap.github.io/docs/server-admin/deploy-install">do fhreastalaí ERDDAP féin a bhunú</a> agus do shonraí féin a sheirbheáil.</strong> Tá ERDDAP saor in aisce agus foinse oscailte.
 Úsáideann sé ceadúnais cosúil le Apache, ionas gur féidir leat aon rud is mian leat a dhéanamh leis.
 Is féidir cuma ERDDAP a shaincheapadh, mar sin léireoidh do ERDDAP d&#39;institiúid, ní NOAA .
 Tá go leor buntáistí ag baint leis an iarracht bheag ERDDAP a bhunú.
@@ -5227,6 +5243,7 @@ href="https://www.ngdc.noaa.gov/wiki/index.php/Data_Access_Technical_Recommendat
 ]]></standardShortDescriptionHtml>
 
 <!--  Bob: féach css tábla comhionann in Table.ERD_TABLE_CSS  -->
+
 <!--  Tá tús an doiciméid HTML agus na clibeanna &#39;ceann&#39; ag startHeadHtml 
 (ag tosú ag &quot;&lt;!DOCTYPE&quot;, ach gan &quot;&lt;/head&gt; san áireamh&quot;) 
 do gach leathanach gréasáin HTML. 
@@ -5263,6 +5280,7 @@ eolas.
 <link href="&erddapUrl;/images/erddap2.css" rel="stylesheet" type="text/css">
 <meta name="viewport" content="width=device-width, initial-scale=1">  
 ]]></startHeadHtml5>
+
 <!-- The standard startBodyHtml -->
 <startBodyHtml5><![CDATA[
 <body>
@@ -5569,7 +5587,7 @@ Tá sé intuigthe.)
 <br>&nbsp;
 <li><strong><a class="selfLink" id="localAndRemote" href="#localAndRemote" rel="bookmark">Is féidir le ERDDAP sonraí a fháil ó fhoinsí sonraí áitiúla (ar thiomántán crua an fhreastalaí) agus ó fhoinsí sonraí cianda (a bhfuil rochtain orthu tríd an ngréasán).</a></strong>
 <br>Féach ar an
-<a rel="help" href="https://erddap.github.io/setupDatasetsXml.html#datasetTypes">liosta de na cineálacha foinsí sonraí</a> ar féidir le ERDDAP rochtain a fháil orthu.
+<a rel="help" href="https://erddap.github.io/docs/server-admin/datasets#list-of-types-datasets">liosta de na cineálacha foinsí sonraí</a> ar féidir le ERDDAP rochtain a fháil orthu.
 <br>&nbsp;
 <li><strong><a class="selfLink" id="scientificData" href="#scientificData" rel="bookmark">Is féidir le ERDDAP freastal ar go leor cineálacha sonraí eolaíocha, ní hamháin sonraí aigéaneolaíochta.</a></strong>
 <br>Is freastalaí sonraí é ERDDAP a scríobhadh ag
@@ -5723,8 +5741,8 @@ Nuair a iarrann tú sonraí nó graf ó
       title="Ní formhuiniú é an nasc seo chuig suíomh Gréasáin seachtrach."></a>) ag cur síos ar na sonraí.
 Ligeann ERDDAP don riarthóir (agus spreagann sé) cur síos a dhéanamh ar mheiteashonraí a chuirfear le tacair shonraí agus a n-athróga ar an eitilt.
 Féach an
-<a rel="help" href="https://erddap.github.io/setupDatasetsXml.html#addAttributes">rannán addAttributes</a> de na
-<a rel="help" href="https://erddap.github.io/setupDatasetsXml.html">treoracha do riarthóirí</a> .
+<a rel="help" href="https://erddap.github.io/docs/server-admin/datasets#addattributes">rannán addAttributes</a> de na
+<a rel="help" href="https://erddap.github.io/docs/server-admin/datasets">treoracha do riarthóirí</a> .
 <br>&nbsp;
 <li><strong><a class="selfLink" id="images" href="#images" rel="bookmark"
  >Ligeann ERDDAP duit comhaid íomhá .png agus .pdf a iarraidh le graif agus léarscáileanna</a></strong>
@@ -5879,7 +5897,7 @@ Is féidir le húsáideoirí atá logáilte isteach rochtain a fháil ar thacair
 Ní mór d’úsáideoirí https:
 (Secure Sockets Layer) a úsáid chun logáil isteach agus chun rochtain a fháil ar thacair sonraí príobháideacha.
 Is féidir tacair sonraí a chumrú chun graif agus léarscáileanna a bheith inrochtana don phobal, ach níl rochtain ag úsáideoirí údaraithe ar shonraí ach amháin.
-(<a rel="help" href="https://erddap.github.io/setup.html#security">Tuilleadh eolais</a>)
+(<a rel="help" href="https://erddap.github.io/docs/server-admin/additional-information#security">Tuilleadh eolais</a>)
 <br>&nbsp;
 <li><strong><a class="selfLink" id="chunks" href="#chunks" rel="bookmark">Próiseálann ERDDAP sonraí ina smután.</a></strong>
 <br>Chun cuimhne a shábháil (saincheist mhór) agus tús a chur le freagraí níos luaithe, déanann ERDDAP iarratais ar shonraí a phróiseáil ina smután - ag fáil smután sonraí arís agus arís eile ón bhfoinse, é a ghlanadh (mar shampla,
@@ -5902,16 +5920,16 @@ glacann sé iarratas ó úsáideoir; faigheann sé sonraí ó fhoinse sonraí ci
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
       title="Ní formhuiniú é an nasc seo chuig suíomh Gréasáin seachtrach."></a> :
 Ach tá an cumas ag ERDDAP freisin na sonraí go léir atá ar fáil a fháil go gníomhach ó chianfhoinse sonraí agus
-<a rel="help" href="https://erddap.github.io/setupDatasetsXml.html#EDDGridCopy">cóip áitiúil de na sonraí a stóráil</a> .
+<a rel="help" href="https://erddap.github.io/docs/server-admin/datasets#eddgridcopy">cóip áitiúil de na sonraí a stóráil</a> .
 <a rel="help" href="https://en.wikipedia.org/wiki/Push_technology">Teicneolaíocht Push <img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
       title="Ní formhuiniú é an nasc seo chuig suíomh Gréasáin seachtrach."></a> :
 Trí úsáid a bhaint as
 <a href="#subscriptions">seirbhísí síntiúis</a> ERDDAP, is féidir freastalaithe sonraí eile a chur ar an eolas a luaithe a bhíonn sonraí nua ar fáil ionas gur féidir leo na sonraí a iarraidh (trí na sonraí a tharraingt).
 Úsáideann
-<a rel="help"  href="https://erddap.github.io/setupDatasetsXml.html#EDDGridFromErddap">EDDGrid FromErddap</a> agus
-<a rel="help"  href="https://erddap.github.io/setupDatasetsXml.html#EDDTableFromErddap">EDDTableFromErddap</a> ERDDAP seirbhísí síntiúis agus
-<a rel="help" href="https://erddap.github.io/setup.html#flag">córas bratach</a> ERDDAP ionas go gcuirfear ar an eolas iad láithreach nuair a bheidh sonraí nua ar fáil.
+<a rel="help"  href="https://erddap.github.io/docs/server-admin/datasets#eddfromerddap">EDDGrid FromErddap</a> agus
+<a rel="help"  href="https://erddap.github.io/docs/server-admin/datasets#eddfromerddap">EDDTableFromErddap</a> ERDDAP seirbhísí síntiúis agus
+<a rel="help" href="https://erddap.github.io/docs/server-admin/additional-information#flag">córas bratach</a> ERDDAP ionas go gcuirfear ar an eolas iad láithreach nuair a bheidh sonraí nua ar fáil.
 Is féidir leat iad seo a chomhcheangal go héifeachtach:
 má fhillteann tú Cóip EDDGrid timpeall tacar sonraí EDDGrid FromErddap (nó má fhillteann tú Cóip EDDTable timpeall ar thacar sonraí EDDTableFromErddap), cruthóidh agus coimeádfaidh ERDDAP cóip áitiúil de thacar sonraí ERDDAP eile go huathoibríoch.
 Toisc go n-oibríonn na seirbhísí síntiúis chomh luath agus a bhíonn sonraí nua ar fáil, scaipeann teicneolaíocht bhrú sonraí go han-tapa (laistigh de soicind).
@@ -6001,9 +6019,9 @@ Tugann an chúis sin amháin údar leis an gcostas a bhaineann le ERDDAP a fhorb
 (Sílim go bhféadfaí a thaispeáint gur shábháil ERDDAP níos mó ama eolaí NOAA ná mar a chaith mé ag forbairt ERDDAP .
 Am = Airgead.) Ach is é an buntáiste taobh leis gur féidir le haon eagraíocht eile
 <a rel="bookmark" 
-href="https://erddap.github.io/setup.html">ERDDAP a íoslódáil, a shuiteáil agus a úsáid</a> <strong>saor in aisce</strong> chun a gcuid sonraí eolaíocha.
+href="https://erddap.github.io/docs/server-admin/deploy-install">ERDDAP a íoslódáil, a shuiteáil agus a úsáid</a> <strong>saor in aisce</strong> chun a gcuid sonraí eolaíocha.
 <p><a rel="bookmark" 
-href="https://erddap.github.io/setup.html#organizations"
+href="https://erddap.github.io/#who-uses-erddap"
 >Úsáideann breis agus 90 eagraíocht i 14 thír ar a laghad ERDDAP</a> .
 B’fhéidir go bhfuil a leithéid de rud ann agus lón saor in aisce.
 <p>Is clár Java é ERDDAP .
@@ -6120,14 +6138,14 @@ Anois, le do thoil, smaoinigh air mar ainm, ní mar acrainm.
 <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/images/erddapTalk/erdData.html">anseo</a> .
 <br>&nbsp;
 <p><strong><a class="selfLink" id="setup" href="#setup" rel="bookmark">Is féidir leat</a></strong>
-<a rel="help" href="https://erddap.github.io/setup.html"><strong>do fhreastalaí ERDDAP Féin a Shocrú</strong></a> agus do shonraí féin a sheirbheáil.
+<a rel="help" href="https://erddap.github.io/docs/server-admin/deploy-install"><strong>do fhreastalaí ERDDAP Féin a Shocrú</strong></a> agus do shonraí féin a sheirbheáil.
 <ul>
 <li>Tá go leor buntáistí ag baint leis an iarracht bheag ERDDAP a bhunú.
 <li>Má tá seirbhís gréasáin agat cheana féin chun do shonraí a dháileadh, is féidir leat ERDDAP a chur ar bun chun rochtain a fháil ar do shonraí tríd an tseirbhís atá ann cheana féin nó trí na comhaid foinse nó an bhunachar sonraí.
 Ansin, beidh bealach eile ag daoine rochtain a fháil ar do shonraí agus beidh siad in ann na sonraí a íoslódáil i bhformáidí breise comhaid nó mar ghraif nó léarscáileanna.
 <li>Má tá tacair shonraí agat a bhfuil éileamh mór orthu, is féidir leat
 <a rel="help" 
-  href="https://erddap.github.io/grids.html"
+  href="https://erddap.github.io/docs/server-admin/scaling"
   >ERDDAP iolracha a shuiteáil a oibríonn le chéile</a> chun scála suas agus chun freastal ar riachtanais lárionad mór dáilte sonraí.
 </ul>
 <h2><a class="selfLink" id="contact" href="#contact" rel="bookmark">Glaoigh orainn</a></h2>
@@ -6152,11 +6170,14 @@ Má mheaitseálann téad UDUNITS iomlán le téad &#39;roimh&#39;,
 déanfar é a thiontú go luach UDUNITS &#39;i ndiaidh&#39;.
 Cinntíonn na línte bána gur línte &#39;roimh&#39; agus &#39;i ndiaidh&#39; iad na línte eile.
  -->
-<standardizeUdunits>degrees +E
+<standardizeUdunits>
+degrees +E
 degrees_east
 
 degrees +N
-degrees_north</standardizeUdunits>
+degrees_north
+
+</standardizeUdunits>
 <time>Am</time>
 <timeoutOtherRequests>Teorainn ama ag fanacht le d&#39;iarratais eile a phróiseáil.</timeoutOtherRequests>
 
@@ -6167,7 +6188,8 @@ Má mheaitseálann téad UCUM iomlán le teaghrán &#39;roimh&#39;,
 déanfar é a thiontú go luach UDUNITS &#39;i ndiaidh&#39;.
 Cinntíonn na línte bána gur línte &#39;roimh&#39; agus &#39;i ndiaidh&#39; iad na línte eile.
  -->
-<ucumToUdunits>%.{cover}
+<ucumToUdunits>
+%.{cover}
 % cover
 
 deg{azimuth}
@@ -6177,7 +6199,9 @@ deg east
 degrees_east
 
 deg north 
-degrees_north</ucumToUdunits>
+degrees_north 
+
+</ucumToUdunits>
 
 <!--  Is bealach é seo chun UDUNITS ERDDAP go tiontaire UCUM a shárú
 trí tiontuithe sonracha a sholáthar. 
@@ -6186,7 +6210,8 @@ Má mheaitseálann téad UDUNITS iomlán le téad &#39;roimh&#39;,
 déanfar é a thiontú go luach UCUM &#39;i ndiaidh&#39;.
 Cinntíonn na línte bána gur línte &#39;roimh&#39; agus &#39;i ndiaidh&#39; iad na línte eile.
  -->
-<udunitsToUcum>degrees +E
+<udunitsToUcum>
+degrees +E
 deg{east}
 
 degrees (+E)
@@ -6208,7 +6233,9 @@ degrees-north
 deg{north}
 
 degrees north
-deg{north}</udunitsToUcum>
+deg{north}
+
+</udunitsToUcum>
 
 <!--  Is iarracht é seo chun déileáil le meiteashonraí foinse URLanna atá as dáta.
 Cuirtear updateUrls i bhfeidhm ar gach ceann de na tréithe meiteashonraí Teaghrán de chuid tacar sonraí 
@@ -6232,7 +6259,8 @@ Níl * dods go opendap.jpl.nasa.gov foirfe, athruithe eile ar eolairí
 * Tá an tiontú http://www.csc.noaa.gov chuig an gcósta neamhfhoirfe: 
   doiciméid in áiteanna éagsúla.  Tá sé seo coitianta i gcás athruithe móra ar ainm fearainn.
  -->
-<updateUrls>http://accession.nodc.noaa.gov/
+<updateUrls>
+http://accession.nodc.noaa.gov/
 https://data.nodc.noaa.gov/cgi-bin/iso?id=gov.noaa.nodc:
 
 www.unidata.ucar.edu/software/thredds/current/netcdf-java/ncml/AnnotatedSchema4.html
@@ -7325,7 +7353,9 @@ http://xerial.org
 https://xerial.org
 
 http://xkcd.com
-https://xkcd.com</updateUrls>
+https://xkcd.com
+
+</updateUrls>
 
 <!--  Is URLanna http iad seo is dócha go mbeidh rochtain orthu lá éigin ag https.
 Tá liostaithe mar trácht anseo le haghaidh tástála tapa.
@@ -7408,6 +7438,7 @@ https://www.slf4j.org
 https://www.usgin.org
 
  -->
+
 <!--  Seo liosta ainmneacha aitreabúide deighilte le camóg a tharchuirfidh updateUrls. 
 Ní féidir é seo a bheith rud ar bith. Mar sin mura bhfuil rud ar bith uait, cuir isteach focal gibberish a dhéanfaidh
 a bheith riamh ina ainm tréithe.  -->
@@ -7747,7 +7778,7 @@ Tá
 (Tá athróga ais eile ROGHNACH.)
 <li>NÍ MÓR roinnt luachanna domhanfhad a bheith ann idir -180 agus 180.
 <li>NÍ MÓR na
-<a rel="help" href="https://erddap.github.io/setupDatasetsXml.html#colorBar">tréithe colorBarMinimum agus colorBarMaximum</a> a shonrú.
+<a rel="help" href="https://erddap.github.io/docs/server-admin/datasets#color-bar-attributes">tréithe colorBarMinimum agus colorBarMaximum</a> a shonrú.
 (Tá tréithe barra datha eile ROGHNACH.)
 </ul>
 <li><strong>Sraitheanna sonraí greille:</strong> I WMS ERDDAP, tá gach athróg sonraí i dtacar sonraí greille a úsáideann toisí domhanleithead agus domhanleithead ar fáil trí WMS .

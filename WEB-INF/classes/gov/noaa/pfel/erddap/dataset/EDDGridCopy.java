@@ -4,7 +4,6 @@
  */
 package gov.noaa.pfel.erddap.dataset;
 
-import com.cohort.array.Attributes;
 import com.cohort.array.IntArray;
 import com.cohort.array.PAType;
 import com.cohort.array.PrimitiveArray;
@@ -20,10 +19,15 @@ import gov.noaa.pfel.coastwatch.util.RegexFilenameFilter;
 import gov.noaa.pfel.coastwatch.util.SSR;
 import gov.noaa.pfel.coastwatch.util.SimpleXMLReader;
 import gov.noaa.pfel.erddap.Erddap;
+import gov.noaa.pfel.erddap.dataset.metadata.LocalizedAttributes;
+import gov.noaa.pfel.erddap.handlers.EDDGridCopyHandler;
+import gov.noaa.pfel.erddap.handlers.SaxHandlerClass;
+import gov.noaa.pfel.erddap.util.EDMessages;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.util.TaskThread;
 import gov.noaa.pfel.erddap.variable.*;
 import java.text.MessageFormat;
+import java.util.ArrayList;
 import java.util.List;
 import ucar.nc2.*;
 
@@ -33,9 +37,10 @@ import ucar.nc2.*;
  *
  * @author Bob Simons (was bob.simons@noaa.gov, now BobSimons2.00@gmail.com) 2009-05-25
  */
+@SaxHandlerClass(EDDGridCopyHandler.class)
 public class EDDGridCopy extends EDDGrid {
 
-  protected EDDGrid sourceEdd;
+  protected final EDDGrid sourceEdd;
   protected EDDGridFromNcFiles localEdd;
 
   /**
@@ -46,8 +51,6 @@ public class EDDGridCopy extends EDDGrid {
 
   /** Some tests set EDDGridCopy.defaultCheckSourceData = false; Don't set it here. */
   public static boolean defaultCheckSourceData = true;
-
-  private static int maxChunks = Integer.MAX_VALUE; // some test methods reduce this
 
   protected String onlySince = null;
 
@@ -61,6 +64,7 @@ public class EDDGridCopy extends EDDGrid {
    *     &lt;erddapDatasets&gt;&lt;/dataset&gt; .
    * @throws Throwable if trouble
    */
+  @EDDFromXmlMethod
   public static EDDGridCopy fromXml(Erddap erddap, SimpleXMLReader xmlReader) throws Throwable {
 
     // data to be obtained (or not)
@@ -80,7 +84,7 @@ public class EDDGridCopy extends EDDGrid {
     String tDefaultDataQuery = null;
     String tDefaultGraphQuery = null;
     int tnThreads = -1; // interpret invalid values (like -1) as EDStatic.nGridThreads
-    boolean tAccessibleViaFiles = EDStatic.defaultAccessibleViaFiles;
+    boolean tAccessibleViaFiles = EDStatic.config.defaultAccessibleViaFiles;
     boolean tDimensionValuesInMemory = true;
     String tOnlySince = null;
 
@@ -97,92 +101,88 @@ public class EDDGridCopy extends EDDGrid {
       String localTags = tags.substring(startOfTagsLength);
 
       // try to make the tag names as consistent, descriptive and readable as possible
-      if (localTags.equals("<accessibleTo>")) {
-      } else if (localTags.equals("</accessibleTo>")) tAccessibleTo = content;
-      else if (localTags.equals("<graphsAccessibleTo>")) {
-      } else if (localTags.equals("</graphsAccessibleTo>")) tGraphsAccessibleTo = content;
-      else if (localTags.equals("<accessibleViaWMS>")) {
-      } else if (localTags.equals("</accessibleViaWMS>"))
-        tAccessibleViaWMS = String2.parseBoolean(content);
-      else if (localTags.equals("<matchAxisNDigits>")) {
-      } else if (localTags.equals("</matchAxisNDigits>"))
-        tMatchAxisNDigits = String2.parseInt(content, DEFAULT_MATCH_AXIS_N_DIGITS);
-      else if (localTags.equals("<ensureAxisValuesAreEqual>")) {
-      } // deprecated
-      else if (localTags.equals("</ensureAxisValuesAreEqual>"))
-        tMatchAxisNDigits = String2.parseBoolean(content) ? 20 : 0;
-      else if (localTags.equals("<onChange>")) {
-      } else if (localTags.equals("</onChange>")) tOnChange.add(content);
-      else if (localTags.equals("<fgdcFile>")) {
-      } else if (localTags.equals("</fgdcFile>")) tFgdcFile = content;
-      else if (localTags.equals("<iso19115File>")) {
-      } else if (localTags.equals("</iso19115File>")) tIso19115File = content;
-      else if (localTags.equals("<reloadEveryNMinutes>")) {
-      } else if (localTags.equals("</reloadEveryNMinutes>"))
-        tReloadEveryNMinutes = String2.parseInt(content);
-      else if (localTags.equals("<checkSourceData>")) {
-      } else if (localTags.equals("</checkSourceData>"))
-        checkSourceData = String2.parseBoolean(content);
-      else if (localTags.equals("<fileTableInMemory>")) {
-      } else if (localTags.equals("</fileTableInMemory>"))
-        tFileTableInMemory = String2.parseBoolean(content);
-      else if (localTags.equals("<defaultDataQuery>")) {
-      } else if (localTags.equals("</defaultDataQuery>")) tDefaultDataQuery = content;
-      else if (localTags.equals("<defaultGraphQuery>")) {
-      } else if (localTags.equals("</defaultGraphQuery>")) tDefaultGraphQuery = content;
-      else if (localTags.equals("<nThreads>")) {
-      } else if (localTags.equals("</nThreads>")) tnThreads = String2.parseInt(content);
-      else if (localTags.equals("<dimensionValuesInMemory>")) {
-      } else if (localTags.equals("</dimensionValuesInMemory>"))
-        tDimensionValuesInMemory = String2.parseBoolean(content);
-      else if (localTags.equals("<accessibleViaFiles>")) {
-      } else if (localTags.equals("</accessibleViaFiles>"))
-        tAccessibleViaFiles = String2.parseBoolean(content);
-      else if (localTags.equals("<onlySince>")) {
-      } else if (localTags.equals("</onlySince>")) tOnlySince = content;
-      else if (localTags.equals("<dataset>")) {
-
-        if ("false".equals(xmlReader.attributeValue("active"))) {
-          // skip it - read to </dataset>
-          if (verbose)
-            String2.log(
-                "  skipping datasetID="
-                    + xmlReader.attributeValue("datasetID")
-                    + " because active=\"false\".");
-          while (xmlReader.stackSize() != startOfTagsN + 1
-              || !xmlReader.allTags().substring(startOfTagsLength).equals("</dataset>")) {
-            xmlReader.nextTag();
-            // String2.log("  skippping tags: " + xmlReader.allTags());
-          }
-
-        } else {
-          try {
-            if (checkSourceData) {
-              // after first time, it's ok if source dataset isn't available
-              tSourceEdd =
-                  (EDDGrid) EDD.fromXml(erddap, xmlReader.attributeValue("type"), xmlReader);
-            } else {
+      switch (localTags) {
+        case "<accessibleTo>",
+            "<onlySince>",
+            "<accessibleViaFiles>",
+            "<dimensionValuesInMemory>",
+            "<nThreads>",
+            "<defaultGraphQuery>",
+            "<defaultDataQuery>",
+            "<fileTableInMemory>",
+            "<checkSourceData>",
+            "<reloadEveryNMinutes>",
+            "<iso19115File>",
+            "<fgdcFile>",
+            "<onChange>",
+            "<ensureAxisValuesAreEqual>",
+            "<matchAxisNDigits>",
+            "<accessibleViaWMS>",
+            "<graphsAccessibleTo>" -> {}
+        case "</accessibleTo>" -> tAccessibleTo = content;
+        case "</graphsAccessibleTo>" -> tGraphsAccessibleTo = content;
+        case "</accessibleViaWMS>" -> tAccessibleViaWMS = String2.parseBoolean(content);
+        case "</matchAxisNDigits>" ->
+            tMatchAxisNDigits = String2.parseInt(content, DEFAULT_MATCH_AXIS_N_DIGITS);
+        case "</ensureAxisValuesAreEqual>" ->
+            tMatchAxisNDigits = String2.parseBoolean(content) ? 20 : 0;
+        case "</onChange>" -> tOnChange.add(content);
+        case "</fgdcFile>" -> tFgdcFile = content;
+        case "</iso19115File>" -> tIso19115File = content;
+        case "</reloadEveryNMinutes>" -> tReloadEveryNMinutes = String2.parseInt(content);
+        case "</checkSourceData>" -> checkSourceData = String2.parseBoolean(content);
+        case "</fileTableInMemory>" -> tFileTableInMemory = String2.parseBoolean(content);
+        case "</defaultDataQuery>" -> tDefaultDataQuery = content;
+        case "</defaultGraphQuery>" -> tDefaultGraphQuery = content;
+        case "</nThreads>" -> tnThreads = String2.parseInt(content);
+        case "</dimensionValuesInMemory>" ->
+            tDimensionValuesInMemory = String2.parseBoolean(content);
+        case "</accessibleViaFiles>" -> tAccessibleViaFiles = String2.parseBoolean(content);
+        case "</onlySince>" -> tOnlySince = content;
+        case "<dataset>" -> {
+          if ("false".equals(xmlReader.attributeValue("active"))) {
+            // skip it - read to </dataset>
+            if (verbose)
               String2.log(
-                  "WARNING!!! checkSourceData is false, so EDDGridCopy datasetID="
-                      + tDatasetID
-                      + " is not checking the source dataset!");
-              int stackSize = xmlReader.stackSize();
-              do { // will throw Exception if trouble (e.g., unexpected end-of-file
-                xmlReader.nextTag();
-              } while (xmlReader.stackSize() != stackSize);
-              tSourceEdd = null;
+                  "  skipping datasetID="
+                      + xmlReader.attributeValue("datasetID")
+                      + " because active=\"false\".");
+            while (xmlReader.stackSize() != startOfTagsN + 1
+                || !xmlReader.allTags().substring(startOfTagsLength).equals("</dataset>")) {
+              xmlReader.nextTag();
+              // String2.log("  skippping tags: " + xmlReader.allTags());
             }
 
-            // was  (so xmlReader in right place)
-            // if (!checkSourceData) {
-            //    tSourceEdd = null;
-            //    throw new RuntimeException("TESTING checkSourceData=false.");
-            // }
-          } catch (Throwable t) {
-            String2.log(MustBe.throwableToString(t));
+          } else {
+            try {
+              if (checkSourceData) {
+                // after first time, it's ok if source dataset isn't available
+                tSourceEdd =
+                    (EDDGrid) EDD.fromXml(erddap, xmlReader.attributeValue("type"), xmlReader);
+              } else {
+                String2.log(
+                    "WARNING!!! checkSourceData is false, so EDDGridCopy datasetID="
+                        + tDatasetID
+                        + " is not checking the source dataset!");
+                int stackSize = xmlReader.stackSize();
+                do { // will throw Exception if trouble (e.g., unexpected end-of-file
+                  xmlReader.nextTag();
+                } while (xmlReader.stackSize() != stackSize);
+                tSourceEdd = null;
+              }
+
+              // was  (so xmlReader in right place)
+              // if (!checkSourceData) {
+              //    tSourceEdd = null;
+              //    throw new RuntimeException("TESTING checkSourceData=false.");
+              // }
+            } catch (Throwable t) {
+              String2.log(MustBe.throwableToString(t));
+            }
           }
         }
-      } else xmlReader.unexpectedTagException();
+        default -> xmlReader.unexpectedTagException();
+      }
     }
 
     return new EDDGridCopy(
@@ -246,8 +246,8 @@ public class EDDGridCopy extends EDDGrid {
       throws Throwable {
 
     if (verbose) String2.log("\n*** constructing EDDGridCopy " + tDatasetID);
+    int language = EDMessages.DEFAULT_LANGUAGE;
     long constructionStartMillis = System.currentTimeMillis();
-    String errorInMethod = "Error in EDDGridCopy(" + tDatasetID + ") constructor:\n";
 
     // save the parameters
     className = "EDDGridCopy";
@@ -256,7 +256,8 @@ public class EDDGridCopy extends EDDGrid {
     setAccessibleTo(tAccessibleTo);
     setGraphsAccessibleTo(tGraphsAccessibleTo);
     if (!tAccessibleViaWMS)
-      accessibleViaWMS = String2.canonical(MessageFormat.format(EDStatic.noXxxAr[0], "WMS"));
+      accessibleViaWMS =
+          String2.canonical(MessageFormat.format(EDStatic.messages.noXxxAr[0], "WMS"));
     onChange = tOnChange;
     fgdcFile = tFgdcFile;
     iso19115File = tIso19115File;
@@ -265,12 +266,12 @@ public class EDDGridCopy extends EDDGrid {
     setReloadEveryNMinutes(tReloadEveryNMinutes);
     matchAxisNDigits = tMatchAxisNDigits;
     onlySince = tOnlySince;
-    accessibleViaFiles = EDStatic.filesActive && tAccessibleViaFiles;
+    accessibleViaFiles = EDStatic.config.filesActive && tAccessibleViaFiles;
     nThreads = tnThreads; // interpret invalid values (like -1) as EDStatic.nGridThreads
     dimensionValuesInMemory = tDimensionValuesInMemory;
 
     // ensure copyDatasetDir exists
-    String copyDatasetDir = EDStatic.fullCopyDirectory + datasetID + "/";
+    String copyDatasetDir = EDStatic.config.fullCopyDirectory + datasetID + "/";
     File2.makeDirectory(copyDatasetDir);
 
     // assign copy tasks to taskThread
@@ -280,13 +281,13 @@ public class EDDGridCopy extends EDDGrid {
 
         // check if taskThread has finished previously assigned tasks for this dataset
         EDStatic.ensureTaskThreadIsRunningIfNeeded(); // ensure info is up-to-date
-        Integer lastAssignedTask = (Integer) EDStatic.lastAssignedTask.get(datasetID);
+        Integer lastAssignedTask = EDStatic.lastAssignedTask.get(datasetID);
         boolean pendingTasks =
-            lastAssignedTask != null && EDStatic.lastFinishedTask < lastAssignedTask.intValue();
+            lastAssignedTask != null && EDStatic.lastFinishedTask.get() < lastAssignedTask;
         if (verbose)
           String2.log(
               "  lastFinishedTask="
-                  + EDStatic.lastFinishedTask
+                  + EDStatic.lastFinishedTask.get()
                   + " < lastAssignedTask("
                   + tDatasetID
                   + ")="
@@ -302,6 +303,8 @@ public class EDDGridCopy extends EDDGrid {
           StringBuilder av1on = new StringBuilder();
           for (int av = 1; av < nAV; av++) av1on.append(SSR.minimalPercentEncode("[]"));
           int nValues = tDestValues.size();
+          // some test methods reduce this
+          int maxChunks = Integer.MAX_VALUE;
           nValues = Math.min(maxChunks, nValues);
           double onlySinceDouble = Double.NaN; // usually epochSeconds
           if (String2.isSomething(onlySince)) {
@@ -358,7 +361,7 @@ public class EDDGridCopy extends EDDGrid {
                     "  task#"
                         + taskNumber
                         + " TASK_MAKE_A_DATAFILE "
-                        + tQuery.toString()
+                        + tQuery
                         + "\n    "
                         + copyDatasetDir
                         + fileName
@@ -393,16 +396,22 @@ public class EDDGridCopy extends EDDGrid {
                 + MustBe.throwableToString(t));
       }
       if (taskNumber >= 0) {
-        EDStatic.lastAssignedTask.put(datasetID, Integer.valueOf(taskNumber));
+        EDStatic.lastAssignedTask.put(datasetID, taskNumber);
         EDStatic
             .ensureTaskThreadIsRunningIfNeeded(); // clients (like this class) are responsible for
         // checking on it
+
+        if (EDStatic.config.forceSynchronousLoading) {
+          while (EDStatic.lastFinishedTask.get() < taskNumber) {
+            Thread.sleep(2000);
+          }
+        }
       }
     }
 
     // gather info about dataVariables to create localEdd
-    Object[][] tAxisVariables = null;
-    Object[][] tDataVariables = null;
+    ArrayList<AxisVariableInfo> tAxisVariables = null;
+    ArrayList<DataVariableInfo> tDataVariables = null;
     if (sourceEdd == null) {
       // get info from existing copied datafiles, which is a standard EDDGrid)
       // get a list of copied files
@@ -425,21 +434,21 @@ public class EDDGridCopy extends EDDGrid {
           "!!! sourceEDD is unavailable, so getting info from youngest file\n" + getFromName);
       StringArray ncDataVarNames = new StringArray();
       StringArray ncDataVarTypes = new StringArray();
-      NetcdfFile ncFile = NcHelper.openFile(getFromName);
-      try {
+      try (NetcdfFile ncFile = NcHelper.openFile(getFromName)) {
         // list all variables with dimensions
-        List allVariables = ncFile.getVariables();
-        for (int v = 0; v < allVariables.size(); v++) {
-          Variable var = (Variable) allVariables.get(v);
+        List<Variable> allVariables = ncFile.getVariables();
+        for (Object allVariable : allVariables) {
+          Variable var = (Variable) allVariable;
           String varName = var.getShortName();
-          List dimensions = var.getDimensions();
+          List<Dimension> dimensions = var.getDimensions();
           if (dimensions != null && dimensions.size() > 1) {
             if (tAxisVariables == null) {
               // gather tAxisVariables
-              tAxisVariables = new Object[dimensions.size()][];
+              tAxisVariables = new ArrayList<>(dimensions.size());
               for (int avi = 0; avi < dimensions.size(); avi++) {
                 String axisName = ((Dimension) dimensions.get(avi)).getName();
-                tAxisVariables[avi] = new Object[] {axisName, axisName, new Attributes()};
+                tAxisVariables.add(
+                    new AxisVariableInfo(axisName, axisName, new LocalizedAttributes(), null));
               }
             }
             ncDataVarNames.add(varName);
@@ -454,38 +463,34 @@ public class EDDGridCopy extends EDDGrid {
         if (ncDataVarNames.size() == 0 || tAxisVariables == null)
           throw new RuntimeException(
               "Error: No multidimensional variables were found in " + getFromName);
-        tDataVariables = new Object[ncDataVarNames.size()][];
+        tDataVariables = new ArrayList<>(ncDataVarNames.size());
         for (int dv = 0; dv < ncDataVarNames.size(); dv++) {
-          tDataVariables[dv] =
-              new Object[] {
-                ncDataVarNames.get(dv),
-                ncDataVarNames.get(dv),
-                new Attributes(),
-                ncDataVarTypes.get(dv)
-              };
-        }
-      } finally {
-        try {
-          if (ncFile != null) ncFile.close();
-        } catch (Exception e9) {
+          tDataVariables.add(
+              new DataVariableInfo(
+                  ncDataVarNames.get(dv),
+                  ncDataVarNames.get(dv),
+                  new LocalizedAttributes(),
+                  ncDataVarTypes.get(dv)));
         }
       }
     } else {
       // get info from sourceEdd, which is a standard EDDGrid
       int nAxisVariables = sourceEdd.axisVariableDestinationNames().length;
-      tAxisVariables = new Object[nAxisVariables][];
+      tAxisVariables = new ArrayList<>(nAxisVariables);
       for (int av = 0; av < nAxisVariables; av++) {
         String tName = sourceEdd.axisVariableDestinationNames[av];
-        tAxisVariables[av] = new Object[] {tName, tName, new Attributes()};
+        tAxisVariables.add(new AxisVariableInfo(tName, tName, new LocalizedAttributes(), null));
       }
       int nDataVariables = sourceEdd.dataVariables.length;
-      tDataVariables = new Object[nDataVariables][];
+      tDataVariables = new ArrayList<>(nDataVariables);
       for (int dv = 0; dv < nDataVariables; dv++) {
         EDV edv = sourceEdd.dataVariables[dv];
-        tDataVariables[dv] =
-            new Object[] {
-              edv.destinationName(), edv.destinationName(), new Attributes(), edv.sourceDataType()
-            };
+        tDataVariables.add(
+            new DataVariableInfo(
+                edv.destinationName(),
+                edv.destinationName(),
+                new LocalizedAttributes(),
+                edv.sourceDataType()));
       }
     }
 
@@ -505,7 +510,7 @@ public class EDDGridCopy extends EDDGrid {
             tIso19115File,
             tDefaultDataQuery,
             tDefaultGraphQuery,
-            new Attributes(), // addGlobalAttributes
+            new LocalizedAttributes(), // addGlobalAttributes
             tAxisVariables,
             tDataVariables,
             tReloadEveryNMinutes,
@@ -526,19 +531,19 @@ public class EDDGridCopy extends EDDGrid {
 
     // copy things from localEdd
     // remove last 2 lines from history (will be redundant)
-    String tHistory = localEdd.combinedGlobalAttributes.getString("history");
+    String tHistory = localEdd.combinedGlobalAttributes.getString(language, "history");
     if (tHistory != null) {
       StringArray tHistoryLines =
           (StringArray) PrimitiveArray.factory(String2.split(tHistory, '\n'));
       if (tHistoryLines.size() > 2) {
         tHistoryLines.removeRange(tHistoryLines.size() - 2, tHistoryLines.size());
         String ts = tHistoryLines.toNewlineString();
-        localEdd.combinedGlobalAttributes.add(
-            "history", ts.substring(0, ts.length() - 1)); // remove last \n
+        localEdd.combinedGlobalAttributes.set(
+            language, "history", ts.substring(0, ts.length() - 1)); // remove last \n
       }
     }
-    sourceGlobalAttributes = localEdd.combinedGlobalAttributes;
-    addGlobalAttributes = new Attributes();
+    sourceGlobalAttributes = localEdd.combinedGlobalAttributes.toAttributes(language);
+    addGlobalAttributes = new LocalizedAttributes();
     combinedGlobalAttributes =
         localEdd.combinedGlobalAttributes; // new Attributes(addGlobalAttributes,
     // sourceGlobalAttributes); //order is important
@@ -562,7 +567,7 @@ public class EDDGridCopy extends EDDGrid {
     long cTime = System.currentTimeMillis() - constructionStartMillis;
     if (verbose)
       String2.log(
-          (debugMode ? "\n" + toString() : "")
+          (debugMode ? "\n" + this : "")
               + "\n*** EDDGridCopy "
               + datasetID
               + " constructor finished. TIME="
@@ -600,7 +605,7 @@ public class EDDGridCopy extends EDDGrid {
   /**
    * This gets data (not yet standardized) from the data source for this EDDGrid. Because this is
    * called by GridDataAccessor, the request won't be the full user's request, but will be a partial
-   * request (for less than EDStatic.partialRequestMaxBytes).
+   * request (for less than EDStatic.config.partialRequestMaxBytes).
    *
    * @param language the index of the selected language
    * @param tDirTable If EDDGridFromFiles, this MAY be the dirTable, else null.

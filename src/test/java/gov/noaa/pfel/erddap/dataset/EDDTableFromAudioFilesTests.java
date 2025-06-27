@@ -6,8 +6,8 @@ import com.cohort.util.String2;
 import com.cohort.util.Test;
 import gov.noaa.pfel.coastwatch.pointdata.Table;
 import gov.noaa.pfel.erddap.GenerateDatasetsXml;
+import gov.noaa.pfel.erddap.util.EDMessages;
 import gov.noaa.pfel.erddap.util.EDStatic;
-import gov.noaa.pfel.erddap.variable.EDV;
 import java.nio.file.Path;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -26,6 +26,7 @@ class EDDTableFromAudioFilesTests {
   /** testGenerateDatasetsXml */
   @org.junit.jupiter.api.Test
   void testGenerateDatasetsXml() throws Throwable {
+    int language = EDMessages.DEFAULT_LANGUAGE;
     // testVerboseOn();
     boolean oEDDDebugMode = EDD.debugMode;
     // EDD.debugMode = true;
@@ -179,7 +180,7 @@ class EDDTableFromAudioFilesTests {
     EDD.deleteCachedDatasetInfo(suggDatasetID);
     EDD edd = EDDTableFromAudioFiles.oneFromXmlFragment(null, results);
     Test.ensureEqual(edd.datasetID(), suggDatasetID, "");
-    Test.ensureEqual(edd.title(), "Audio data from a local source.", "");
+    Test.ensureEqual(edd.title(language), "Audio data from a local source.", "");
     Test.ensureEqual(
         String2.toCSSVString(edd.dataVariableDestinationNames()),
         "time, elapsedTime, channel_1",
@@ -201,10 +202,8 @@ class EDDTableFromAudioFilesTests {
     // *****************\n");
     // testVerboseOn();
     int language = 0;
-    String name, tName, results, tResults, expected, userDapQuery, tQuery;
-    String error = "";
-    EDV edv;
-    String dir = EDStatic.fullTestCacheDirectory;
+    String tName, results, tResults, expected, userDapQuery;
+    String dir = EDStatic.config.fullTestCacheDirectory;
     String today =
         Calendar2.getCurrentISODateTimeStringZulu().substring(0, 12); // 12 is enough to check date
 
@@ -386,7 +385,7 @@ class EDDTableFromAudioFilesTests {
             + "9.375E-5,-7458\n"
             + "...\n";
     Test.ensureEqual(results, expected, "\nresults=\n" + results);
-    // Test.displayInBrowser("file://" + dir + tName);
+    // TestUtil.displayInBrowser("file://" + dir + tName);
     // String2.pressEnterToContinue("Close audio player when done.");
     File2.delete(dir + tName);
   }

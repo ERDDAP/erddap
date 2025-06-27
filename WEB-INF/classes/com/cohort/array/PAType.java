@@ -125,8 +125,7 @@ public enum PAType {
       case USHORT -> "ushort";
       case UBYTE -> "ubyte";
       default -> {
-        throw new IllegalArgumentException(
-            "PAType.toCohortString unsupported type: " + type.toString());
+        throw new IllegalArgumentException("PAType.toCohortString unsupported type: " + type);
       }
     };
   }
@@ -210,10 +209,9 @@ public enum PAType {
       case INT -> "S32";
       case UINT -> "U32";
       case SHORT -> "S16";
-      case USHORT -> "U16";
+      case USHORT, CHAR -> "U16";
       case BYTE -> "S8";
       case UBYTE -> "U8";
-      case CHAR -> "U16"; //
         //    case STRING ->   ...
       default -> "UNKNOWN";
     };

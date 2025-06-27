@@ -28,7 +28,7 @@ See https://www.owasp.org/index.php/Testing_for_HTTP_Methods_and_XST_%28OWASP-CM
 http://www.j2eeprogrammer.com/2011/11/disabling-certain-http-methods-in.html
 Use netcat to test if this works:  
   nc 127.0.0.1 8080[Enter]  //or some other domain
-  OPTIONS / HTTP/1.1[Enter] 
+  TRACE / HTTP/1.1[Enter]
   Host: 127.0.0.1[Enter]    //or some other domain
   [Enter]  
   //If you get HTTP/1.1 403 Forbidden, the constraint is in effect. Yea!
@@ -36,15 +36,14 @@ Use netcat to test if this works:
   ^C   //exits netcat
 -->
 <security-constraint>
-<web-resource-collection>
-<web-resource-name>restricted methods</web-resource-name>
-<url-pattern>/*</url-pattern>
-<http-method>TRACE</http-method>
-<http-method>PUT</http-method>
-<http-method>OPTIONS</http-method>
-<http-method>DELETE</http-method>
-</web-resource-collection>
-<auth-constraint />
+  <web-resource-collection>
+    <web-resource-name>restricted methods</web-resource-name>
+    <url-pattern>/*</url-pattern>
+    <http-method>TRACE</http-method>
+    <http-method>PUT</http-method>
+    <http-method>DELETE</http-method>
+  </web-resource-collection>
+  <auth-constraint />
 </security-constraint>
 
 <!-- This filter (for Consumer side) automatically parses OpenID responses and sets the user's identity in the session. netcdf-java 4.6.4 - ->
@@ -63,6 +62,15 @@ Use netcat to test if this works:
     </filter-mapping>
 
 <!- - JSPC servlet mappings start -->
+
+    <filter>
+        <filter-name>CorsResponseFilter</filter-name>
+        <filter-class>gov.noaa.pfel.erddap.http.CorsResponseFilter</filter-class>
+    </filter>
+    <filter-mapping>
+        <filter-name>CorsResponseFilter</filter-name>
+        <url-pattern>/*</url-pattern>
+    </filter-mapping>
 
     <servlet>
         <servlet-name>metrics</servlet-name>

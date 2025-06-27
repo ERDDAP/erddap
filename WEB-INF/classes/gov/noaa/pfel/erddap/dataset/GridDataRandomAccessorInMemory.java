@@ -37,7 +37,7 @@ public class GridDataRandomAccessorInMemory {
    * @throws Throwable if trouble
    */
   public GridDataRandomAccessorInMemory(GridDataAccessor gridDataAccessor) throws Throwable {
-    try {
+    try (gridDataAccessor) {
       if (!gridDataAccessor.rowMajor())
         throw new RuntimeException(
             "GridDataRandomAccessorInMemory.constructor requires the gridDataAccessor to be rowMajor.");
@@ -48,7 +48,6 @@ public class GridDataRandomAccessorInMemory {
       dataPAType = new PAType[nDv];
       dataPA = new PrimitiveArray[nDv];
       PAOne tPAOne[] = new PAOne[nDv];
-      String tQuery = gridDataAccessor.userDapQuery();
       long longCapacity = gridDataAccessor.totalIndex().size();
       if (longCapacity >= Integer.MAX_VALUE)
         throw new RuntimeException(
@@ -70,8 +69,6 @@ public class GridDataRandomAccessorInMemory {
           dataPA[dv].addPAOne(gridDataAccessor.getDataValueAsPAOne(dv, tPAOne[dv]));
       }
       gdaTotalIndex = gridDataAccessor.totalIndex();
-    } finally {
-      gridDataAccessor.releaseGetResources();
     }
   }
 

@@ -78,8 +78,8 @@ public class EDDTableFromPostNcFiles extends EDDTableFromNcFiles {
         StringArray tOnChange, String tFgdcFile, String tIso19115File, 
         String tSosOfferingPrefix,
         String tDefaultDataQuery, String tDefaultGraphQuery, 
-        Attributes tAddGlobalAttributes,
-        Object[][] tDataVariables,
+        LocalizedAttributes tAddGlobalAttributes,
+        ArrayList<DataVariableInfo> tDataVariables,
         int tReloadEveryNMinutes, int tUpdateEveryNMillis,
         String tFileDir, String tFileNameRegex, boolean tRecursive, String tPathRegex, 
         String tMetadataFrom, String tCharset, String tSkipHeaderToRegex, String tSkipLinesRegex,
@@ -180,7 +180,7 @@ public class EDDTableFromPostNcFiles extends EDDTableFromNcFiles {
      *
      * @param language the index of the selected language
      * @param loggedInAs the user's login name if logged in (or null if not logged in).
-     * @param requestUrl the part of the user's request, after EDStatic.baseUrl, before '?'.
+     * @param requestUrl the part of the user's request, after EDStatic.config.baseUrl, before '?'.
      * @param userDapQuery the part of the user's request after the '?', still percentEncoded, may be null.
      * @param tableWriter
      * @throws Throwable if trouble (notably, WaitThenTryAgainException)

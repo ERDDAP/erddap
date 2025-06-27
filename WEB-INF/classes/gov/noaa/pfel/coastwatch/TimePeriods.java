@@ -8,6 +8,7 @@ import com.cohort.util.Calendar2;
 import com.cohort.util.Math2;
 import com.cohort.util.String2;
 import com.cohort.util.Test;
+import com.google.common.collect.ImmutableList;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 
@@ -26,31 +27,31 @@ public class TimePeriods {
    * All possible time period OPTIONS used within CWBrowser, in order of duration. Note that other
    * options may be added in the future.
    */
-  public static final String OPTIONS[] = {
-    // If these change, make similar changes in closestTimePeriod below.
-    "pass",
-    "pass",
-    "1 observation",
-    "hourly",
-    "1 day",
-    _25HOUR_OPTION,
-    _33HOUR_OPTION,
-    "3 day",
-    "4 day",
-    "5 day",
-    "7 day",
-    "8 day",
-    "10 day",
-    "14 day",
-    "1 month",
-    MONTHLY_OPTION,
-    "3 month",
-    "1 year",
-    "5 year",
-    "10 year",
-    "20 year",
-    "all"
-  };
+  public static final ImmutableList<String> OPTIONS =
+      ImmutableList.of(
+          // If these change, make similar changes in closestTimePeriod below.
+          "pass",
+          "pass",
+          "1 observation",
+          "hourly",
+          "1 day",
+          _25HOUR_OPTION,
+          _33HOUR_OPTION,
+          "3 day",
+          "4 day",
+          "5 day",
+          "7 day",
+          "8 day",
+          "10 day",
+          "14 day",
+          "1 month",
+          MONTHLY_OPTION,
+          "3 month",
+          "1 year",
+          "5 year",
+          "10 year",
+          "20 year",
+          "all");
 
   /** The OPTIONs index for "1 day". */
   public static final int _1DAY_INDEX = 4;
@@ -65,57 +66,57 @@ public class TimePeriods {
    * All possible time period OPTIONS used within CWBrowser-style file names, in order of duration.
    * Note that other options may be added in the future.
    */
-  public static final String IN_FILE_NAMES[] = {
-    // If these change, make similar changes in closestTimePeriod below.
-    "pass",
-    "hday",
-    "1obs",
-    "hourly",
-    "1day",
-    "25hour",
-    "33hour",
-    "3day",
-    "4day",
-    "5day",
-    "7day",
-    "8day",
-    "10day",
-    "14day",
-    "mday",
-    "mday",
-    "3month",
-    "1year",
-    "5year",
-    "10year",
-    "20year",
-    "all"
-  };
+  public static final ImmutableList<String> IN_FILE_NAMES =
+      ImmutableList.of(
+          // If these change, make similar changes in closestTimePeriod below.
+          "pass",
+          "hday",
+          "1obs",
+          "hourly",
+          "1day",
+          "25hour",
+          "33hour",
+          "3day",
+          "4day",
+          "5day",
+          "7day",
+          "8day",
+          "10day",
+          "14day",
+          "mday",
+          "mday",
+          "3month",
+          "1year",
+          "5year",
+          "10year",
+          "20year",
+          "all");
 
   /** The titles related to the OPTIONS. */
-  public static final String TITLES[] = {
-    "Get the data from one observation.",
-    "Get the data from one observation.",
-    "Get the data from one observation.",
-    "Get the data from one hourly observation.",
-    "Get the mean of 1 days' data.",
-    "Get the mean of 25 hours' data.",
-    "Get the mean of 33 hours' data.",
-    "Get the mean of 3 days' data.",
-    "Get the mean of 4 days' data.",
-    "Get the mean of 5 days' data.",
-    "Get the mean of 7 days' data.",
-    "Get the mean of 8 days' data.",
-    "Get the mean of 10 days' data.",
-    "Get the mean of 14 days' data.",
-    "Get the mean of 1 months' data.",
-    "Get the mean of 1 months' data.",
-    "Get the mean of 3 months' data.",
-    "Get the mean of 1 years' data.",
-    "Get the mean of 5 years' data.",
-    "Get the mean of 10 years' data.",
-    "Get the mean of 20 years' data.",
-    "Get the mean of all available data."
-  };
+  public static final ImmutableList<String> TITLES =
+      ImmutableList.of(
+          "Get the data from one observation.",
+          "Get the data from one observation.",
+          "Get the data from one observation.",
+          "Get the data from one hourly observation.",
+          "Get the mean of 1 days' data.",
+          "Get the mean of 25 hours' data.",
+          "Get the mean of 33 hours' data.",
+          "Get the mean of 3 days' data.",
+          "Get the mean of 4 days' data.",
+          "Get the mean of 5 days' data.",
+          "Get the mean of 7 days' data.",
+          "Get the mean of 8 days' data.",
+          "Get the mean of 10 days' data.",
+          "Get the mean of 14 days' data.",
+          "Get the mean of 1 months' data.",
+          "Get the mean of 1 months' data.",
+          "Get the mean of 3 months' data.",
+          "Get the mean of 1 years' data.",
+          "Get the mean of 5 years' data.",
+          "Get the mean of 10 years' data.",
+          "Get the mean of 20 years' data.",
+          "Get the mean of all available data.");
 
   /** The value of N_HOURS for timePeriod = "all". */
   public static final int N_HOURS_ALL = Integer.MAX_VALUE;
@@ -128,90 +129,91 @@ public class TimePeriods {
    * 'month' options are represented as multiples of 30*24 hours, and 'year' options are represented
    * as multiples of 365*24 hours. "all" time is represented is Integer.MAX_VALUE.
    */
-  public static final int N_HOURS[] = {
-    0,
-    0,
-    0,
-    0,
-    24,
-    25,
-    33,
-    3 * 24,
-    4 * 24,
-    5 * 24,
-    7 * 24,
-    8 * 24,
-    10 * 24,
-    14 * 24,
-    N_HOURS_MONTHLY,
-    30 * 24,
-    90 * 24,
-    365 * 24,
-    5 * 365 * 24,
-    10 * 365 * 24,
-    20 * 365 * 24,
-    N_HOURS_ALL
-  };
+  public static final ImmutableList<Integer> N_HOURS =
+      ImmutableList.of(
+          0,
+          0,
+          0,
+          0,
+          24,
+          25,
+          33,
+          3 * 24,
+          4 * 24,
+          5 * 24,
+          7 * 24,
+          8 * 24,
+          10 * 24,
+          14 * 24,
+          N_HOURS_MONTHLY,
+          30 * 24,
+          90 * 24,
+          365 * 24,
+          5 * 365 * 24,
+          10 * 365 * 24,
+          20 * 365 * 24,
+          N_HOURS_ALL);
 
   /**
    * pickFrom indicates the level of resolution needed to pick a data from given timePeriod (related
    * to OPTIONS) with EmaDateTimeText2.
    */
-  public static final String PICK_FROM[] = {
-    // pass and 1 observation timePeriods every hour; YMDhms is appropriate for current data sets,
-    // but others?
-    "YMDhms",
-    "YMDhms",
-    "YMDhms",
-    "YMDhms",
-    "YMDhms",
-    "YMDhms",
-    "YMDhms", // nDay  start every day
-    "YMDhms",
-    "YMDhms",
-    "YMDhms",
-    "YMDhms",
-    "YMDhms",
-    "YMDhms",
-    "YMDhms",
-    "YMDhms",
-    "YMDhms",
-    "YMDhms", // nMonth start every month
-    "YMD",
-    "Y",
-    "Y", // 1Year starts every month; nYear start every year
-    "Y",
-    "Y"
-  }; // "Y" for "all" is irrelevant,
+  public static final ImmutableList<String> PICK_FROM =
+      ImmutableList.of(
+          // pass and 1 observation timePeriods every hour; YMDhms is appropriate for current data
+          // sets,
+          // but others?
+          "YMDhms",
+          "YMDhms",
+          "YMDhms",
+          "YMDhms",
+          "YMDhms",
+          "YMDhms",
+          "YMDhms", // nDay  start every day
+          "YMDhms",
+          "YMDhms",
+          "YMDhms",
+          "YMDhms",
+          "YMDhms",
+          "YMDhms",
+          "YMDhms",
+          "YMDhms",
+          "YMDhms",
+          "YMDhms", // nMonth start every month
+          "YMD",
+          "Y",
+          "Y", // 1Year starts every month; nYear start every year
+          "Y",
+          "Y"); // "Y" for "all" is irrelevant,
 
   /**
    * increment indicates the Calendar field that +,- buttons (if visible) affect (used by
    * emaDateTimeText2.setIncrement). sec=13, min=12, hr=10, date=5, mon=2, yr=1
    */
-  public static final int INCREMENT[] = {
-    Calendar.HOUR,
-    Calendar.HOUR,
-    Calendar.HOUR,
-    Calendar.HOUR,
-    Calendar.DATE,
-    Calendar.HOUR,
-    Calendar.HOUR,
-    Calendar.DATE,
-    Calendar.DATE,
-    Calendar.DATE,
-    Calendar.DATE,
-    Calendar.DATE,
-    Calendar.DATE,
-    Calendar.DATE,
-    Calendar.MONTH,
-    Calendar.MONTH,
-    Calendar.MONTH,
-    Calendar.YEAR,
-    Calendar.YEAR,
-    Calendar.YEAR,
-    Calendar.YEAR,
-    Calendar.YEAR
-  };
+  public static final ImmutableList<Integer> INCREMENT =
+      ImmutableList.of(
+          Calendar.HOUR,
+          Calendar.HOUR,
+          Calendar.HOUR,
+          Calendar.HOUR,
+          Calendar.DATE,
+          Calendar.HOUR,
+          Calendar.HOUR,
+          Calendar.DATE,
+          Calendar.DATE,
+          Calendar.DATE,
+          Calendar.DATE,
+          Calendar.DATE,
+          Calendar.DATE,
+          Calendar.DATE,
+          Calendar.MONTH,
+          Calendar.MONTH,
+          Calendar.MONTH,
+          Calendar.YEAR,
+          Calendar.YEAR,
+          Calendar.YEAR,
+          Calendar.YEAR,
+          Calendar.YEAR);
 
   /**
    * Find the index of a time period option in OPTIONS.
@@ -220,7 +222,7 @@ public class TimePeriods {
    * @return the index in OPTIONS for value, or -1 if not found.
    */
   public static int exactTimePeriod(String option) {
-    return String2.indexOf(OPTIONS, option);
+    return OPTIONS.indexOf(option);
   }
 
   /**
@@ -236,7 +238,7 @@ public class TimePeriods {
         index,
         -1,
         String2.ERROR + " in TimePeriods.getNHours: '" + option + "' not in TimePeriods.OPTIONS.");
-    return N_HOURS[index];
+    return N_HOURS.get(index);
   }
 
   /**
@@ -255,7 +257,7 @@ public class TimePeriods {
             + " in TimePeriods.getInFileName: '"
             + option
             + "' not in TimePeriods.OPTIONS.");
-    return IN_FILE_NAMES[index];
+    return IN_FILE_NAMES.get(index);
   }
 
   /**
@@ -271,7 +273,7 @@ public class TimePeriods {
     String titles[] = new String[n + 1];
     titles[0] = "Specify the length of time in which you are interested.";
     for (int i = 0; i < n; i++)
-      titles[i + 1] = options[i].length() == 0 ? "" : TITLES[exactTimePeriod(options[i])];
+      titles[i + 1] = options[i].length() == 0 ? "" : TITLES.get(exactTimePeriod(options[i]));
     return titles;
   }
 
@@ -284,22 +286,22 @@ public class TimePeriods {
    *     this returns the index of the option in list closest to "1 day".
    * @throws Exception if trouble
    */
-  public static int closestTimePeriod(String value, String[] list) {
+  public static int closestTimePeriod(String value, ImmutableList<String> list) {
     // make sure it is one of standard timePeriods
     int valueIndex = exactTimePeriod(value);
     if (valueIndex < 0) valueIndex = _1DAY_INDEX;
-    value = OPTIONS[valueIndex];
-    int valueHours = N_HOURS[valueIndex];
+    value = OPTIONS.get(valueIndex);
+    int valueHours = N_HOURS.get(valueIndex);
 
     // find exact
-    int index = String2.indexOf(list, value);
+    int index = list.indexOf(value);
     if (index >= 0) return index;
 
     // find closest
     int diff = Integer.MAX_VALUE;
     index = -1;
-    for (int i = 0; i < list.length; i++) {
-      int tHours = getNHours(list[i]);
+    for (int i = 0; i < list.size(); i++) {
+      int tHours = getNHours(list.get(i));
       if (tHours == N_HOURS_ALL) tHours = 30 * 365 * 24;
       int tDiff = Math.abs(tHours - valueHours);
       // String2.log(i + " TimePeriods.closestTimePeriod value=" + value +
@@ -320,14 +322,14 @@ public class TimePeriods {
    * @return index in list for the closest time period. If value is NaN, this returns the index of
    *     the option in list closest to "1 day".
    */
-  public static int closestTimePeriod(int nHours, String[] list) {
-    if (nHours == Integer.MAX_VALUE) return closestTimePeriod(OPTIONS[_1DAY_INDEX], list);
+  public static int closestTimePeriod(int nHours, ImmutableList<String> list) {
+    if (nHours == Integer.MAX_VALUE) return closestTimePeriod(OPTIONS.get(_1DAY_INDEX), list);
 
     // find closest
     int diff = Integer.MAX_VALUE;
     int closestI = -1;
-    for (int i = 0; i < list.length; i++) {
-      int tNHours = getNHours(list[i]);
+    for (int i = 0; i < list.size(); i++) {
+      int tNHours = getNHours(list.get(i));
       if (tNHours == N_HOURS_ALL) tNHours = 30 * 365 * 24;
       int tDiff = Math.abs(nHours - tNHours);
       // String2.log(i + " TimePeriods.closestTimePeriod tNHours=" + tNHours +

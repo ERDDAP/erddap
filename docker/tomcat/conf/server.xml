@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Server port="-1" shutdown="SHUTDOWN_PORT_DISABLED">
+  <Listener className="org.apache.catalina.core.JreMemoryLeakPreventionListener"/>
+  <Listener className="org.apache.catalina.core.ThreadLocalLeakPreventionListener"/>
+
+  <Service name="Catalina">
+    <Connector server="Apache" port="8080" protocol="HTTP/1.1"
+      connectionTimeout="300000" relaxedQueryChars="[]|:&quot;&lt;&gt;" maxParameterCount="1000"/>
+
+    <Engine name="Catalina" defaultHost="localhost">
+      <Host name="localhost" appBase="webapps" unpackWARs="false" autoDeploy="false">
+        <Valve className="org.apache.catalina.valves.AccessLogValve"
+          directory="logs" prefix="localhost_access_log" suffix=".txt"
+          pattern="%h %l %u %t &quot;%r&quot; %s %b"/>
+
+        <Valve className="org.apache.catalina.valves.ErrorReportValve"
+          showReport="false" showServerInfo="false"/>
+
+        <Valve className="org.apache.catalina.valves.RemoteIpValve"
+          remoteIpHeader="X-Forwarded-For" protocolHeader="X-Forwarded-Proto"
+          protocolHeaderHttpsValue="https"/>
+      </Host>
+    </Engine>
+  </Service>
+</Server>

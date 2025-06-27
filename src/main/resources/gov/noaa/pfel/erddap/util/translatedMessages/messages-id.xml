@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
+<erddapMessages>
 <!--  messages.xml berisi pesan teks untuk ERDDAP (yang dibaca di EDStatic).
 Saat Anda menginstal ERDDAP di server Anda, semua pesan ini dapat dibiarkan apa adanya,
 karena pesan-pesan ini biasanya sama pada instalasi ERDDAP yang berbeda.
@@ -30,7 +30,7 @@ Sistem terjemahan MEMERLUKAN &quot;pseudoEntity&quot; hanya menggunakan [a-zA-Z0
   messages-de.xml dan -ga memiliki banyak tautan yang diduplikasi. Saya yakin masih banyak lagi yang seperti ini.
 
  -->
-<erddapMessages>
+
 <!--  Ini mengembalikan konten HTML yang menjelaskan Meminta File Terkompresi.
 Lihat https://httpd.apache.org/docs/1.3/mod/mod_mime.html
 yang mengatakan bahwa x-gzip=gzip dan x-compress=compress
@@ -81,11 +81,13 @@ Kemudian, ERDDAP akan menambahkan semuanya
   Jika Anda memiliki saran untuk tautan tambahan, hubungi <kbd>erd dot data at noaa dot gov</kbd> .
   
 ]]></additionalLinks>
+
 <!-- (a)ll(D)atasets (m)etadata and (v)ariable text -->
 <admKeywords>19115, accessible, altitude, average, background, base, dataset, depth, email, erddap, fgdc, graph, grid, information, institution, iso, latitude, location, longitude, make-a-graph, maximum, metadata, minimum, opendap, rss, sequence, service, sos, source, spacing, structure, subscription, subset, summary, table, time, title, url, wcs, wms</admKeywords>
 <admSubsetVariables>accessible, dataStructure, cdm_data_type, class, institution, testOutOfDate</admSubsetVariables>
 <admSummary>Dataset ini berupa tabel yang berisi deretan informasi untuk setiap dataset yang sedang aktif di ERDDAP ini.</admSummary>
 <admTitle>Daftar Semua Dataset Aktif di ERDDAP ini</admTitle>
+
 <!-- (a)ll (d)atasets (v)ariable (c)omment, (l)ong_name, or (r)eference text -->
 <advl_datasetID>Dataset ID</advl_datasetID>
 <advc_accessible>Beberapa kumpulan data bersifat publik. Beberapa mungkin bersifat pribadi dan mungkin tidak dapat Anda akses.</advc_accessible>
@@ -93,11 +95,11 @@ Kemudian, ERDDAP akan menambahkan semuanya
 <advl_institution>Lembaga</advl_institution>
 <advc_dataStructure>ERDDAP memperlakukan setiap kumpulan data sebagai kumpulan data &#39;kisi&#39; atau &#39;tabel&#39;.</advc_dataStructure>
 <advl_dataStructure>Struktur data</advl_dataStructure>
-<advr_dataStructure>https://erddap.github.io/setupDatasetsXml.html#dataStructures</advr_dataStructure>
+<advr_dataStructure>https://erddap.github.io/docs/server-admin/datasets#why-just-two-basic-data-structures</advr_dataStructure>
 <advl_cdm_data_type>Tipe Model Data Umum</advl_cdm_data_type>
-<advr_cdm_data_type>https://erddap.github.io/setupDatasetsXml.html#cdm_data_type</advr_cdm_data_type>
+<advr_cdm_data_type>https://erddap.github.io/docs/server-admin/datasets#cdm_data_type</advr_cdm_data_type>
 <advl_class>Kelas ERDDAP</advl_class>
-<advr_class>https://erddap.github.io/setupDatasetsXml.html#datasetTypes</advr_class>
+<advr_class>https://erddap.github.io/docs/server-admin/datasets#list-of-types-datasets</advr_class>
 <advl_title>Judul</advl_title>
 <advl_minLongitude>Bujur Minimum</advl_minLongitude>
 <advl_maxLongitude>Bujur Maksimum</advl_maxLongitude>
@@ -142,7 +144,7 @@ Kemudian, ERDDAP akan menambahkan semuanya
 <advn_outOfDate><![CDATA[
 
 Tampaknya, tidak ada kumpulan data yang memiliki atribut
-<a rel="help" href="https://erddap.github.io/setupDatasetsXml.html#testOutOfDate"
+<a rel="help" href="https://erddap.github.io/docs/server-admin/datasets#testoutofdate"
 ><kbd>testOutOfDate</kbd></a> .
 Mungkin tidak ada kumpulan data yang hampir real-time di ERDDAP ini.
 
@@ -359,6 +361,8 @@ Atau,
 <a rel="help" href="#computerProgram">lewati halaman web ini</a> dan lakukan konversi dari dalam program komputer, skrip, atau halaman web.
 
 ]]></convertBypass>
+<convertCOLORs>Login</convertCOLORs>
+<convertCOLORsMessage>Mengkonversi nilai warna dari bilah warna</convertCOLORsMessage>
 <convertToAFullName><![CDATA[
 <strong>Ubah dari {0} menjadi nama lengkap.</strong>
 ]]></convertToAFullName>
@@ -553,6 +557,7 @@ Ada
 <convertFipsCounty>Konversikan Kode Wilayah FIPS ke/dari Nama Wilayah</convertFipsCounty>
 
 <!--  Jangan ubah contoh (dari defaultN...).  -->
+
 <!--  &quot;Kode wilayah FIPS&quot; adalah tautan ke http://www.itl.nist.gov/fipspubs/fip6-4.htm 
      lalu https://www.census.gov/geo/reference/codes/cou.html 
      Sekarang yang terdekat(?) adalah http://www.datypic.com/sc/niem31/t-fips_6-4_USCountyCodeSimpleType.html
@@ -1889,7 +1894,7 @@ Ini termasuk:
 <ul>
 <li><a class="selfLink" id="databases" href="#databases" rel="bookmark">Data</a> yang saat ini disimpan dalam database relasional.
 <br>Silakan baca informasi tentang tipe dataset
-<a rel="help" href="https://erddap.github.io/setupDatasetsXml.html#EDDTableFromDatabase">EDDTableFromDatabase</a> di ERDDAP, terutama ~2 layar informasi awal yang membahas tentang perlunya membuat tabel yang didenormalisasi.
+<a rel="help" href="https://erddap.github.io/docs/server-admin/datasets#eddtablefromdatabase">EDDTableFromDatabase</a> di ERDDAP, terutama ~2 layar informasi awal yang membahas tentang perlunya membuat tabel yang didenormalisasi.
 Ini mungkin terdengar gila.
 Harap cukup percaya untuk membaca alasannya.
 <br>&nbsp;
@@ -2704,7 +2709,7 @@ Jika Anda ingin contoh mengarah ke ERDDAP Anda, cara termudah adalah:
      Mudah-mudahan, Anda bisa mengganti datasetID Anda dengan &quot;jplMURSST41&quot;
      dan ubah &quot;[0 32]&quot; (rentang data untuk bilah warna).   -->
 <EDDGridMatlabPlotExample>imagesc(jplMURSST41.longitude, jplMURSST41.latitude, squeeze(jplMURSST41.analysed_sst), [0 32])
-set(gca, 'YDir', 'normal')</EDDGridMatlabPlotExample>
+set(gca, &#39;YDir&#39;, &#39;normal&#39;)</EDDGridMatlabPlotExample>
 
 <!--  Pesan EDDTable ditampilkan pada tabledap Formulir Akses Data dan Buat Grafik.  -->
 <EDDTableConstraints>Kendala</EDDTableConstraints>
@@ -2861,7 +2866,7 @@ Jika Anda ingin contoh mengarah ke ERDDAP Anda, cara termudah adalah:
 
 <!--  Ini adalah contoh kueri yang menghasilkan grafik. 
      Anda dapat membuat contoh melalui formulir Make A Graph kumpulan data Anda di ERDDAP.   -->
-<EDDTableGraphExample>time,T_25&amp;station="0n0e"&amp;time&gt;=2015-05-23T12:00:00Z&amp;time&lt;=2015-05-31T12:00:00Z&amp;.draw=lines</EDDTableGraphExample>
+<EDDTableGraphExample>time,T_25&amp;station=&quot;0n0e&quot;&amp;time&gt;=2015-05-23T12:00:00Z&amp;time&lt;=2015-05-31T12:00:00Z&amp;.draw=lines</EDDTableGraphExample>
 
 <!--  Ini adalah contoh kueri yang menghasilkan peta.  -->
 <EDDTableMapExample>longitude,latitude,T_25&amp;time=2015-05-31T12:00:00Z&amp;.draw=markers&amp;.marker=5|5</EDDTableMapExample>
@@ -2965,6 +2970,8 @@ Misalnya:
 <fileHelp_ncml>Lihat struktur dan metadata himpunan data sebagai file .xml UTF-8 NCML.</fileHelp_ncml>
 <fileHelpGrid_odvTxt>Unduh waktu, lintang, bujur, Variabel lain sebagai File Spreadsheet Generik ODV (.txt).</fileHelpGrid_odvTxt>
 <fileHelpTable_odvTxt>Unduh bujur, lintang, waktu, kolom lain sebagai File Spreadsheet Generik ODV ISO-8859-1 (.txt).</fileHelpTable_odvTxt>
+<fileHelp_parquet>Unduh sebagai file parket. Metadata mengandung nama kolom (&quot;column_names&quot;) dan unit (&quot;kolumn_units&quot;).</fileHelp_parquet>
+<fileHelp_parquet_with_meta>Unduh sebagai file parket dengan metadata rinci.</fileHelp_parquet_with_meta>
 <fileHelp_subset>Lihat formulir HTML yang menggunakan penelusuran tersaring untuk menyederhanakan pemilihan subkumpulan data.</fileHelp_subset>
 <fileHelp_timeGaps>Lihat daftar kesenjangan UTF-8 dalam nilai waktu yang lebih besar dari kesenjangan median.</fileHelp_timeGaps>
 <fileHelp_tsv>Unduh tabel teks yang dipisahkan tab ISO-8859-1 (baris 1: nama; baris 2: unit; ISO 8601 kali).</fileHelp_tsv>
@@ -3253,7 +3260,7 @@ File kedua versi memiliki ekstensi .nc dan dapat dibaca oleh program yang membac
 <a rel="help" href="https://anaconda.org/eumetsat/ncview">melalui Conda <img
        src="https://coastwatch.pfeg.noaa.gov/erddap/images/external.png" alt=" (external link)"
        title="Tautan ke situs web eksternal ini bukan merupakan suatu dukungan."></a>).
-<li><a rel="help" href="https://erddap.github.io/setupDatasetsXml.html#NCO">NCO</a>, alat baris perintah yang kuat untuk memodifikasi file .nc secara permanen.
+<li><a rel="help" href="https://erddap.github.io/docs/server-admin/datasets#netcdf-operators-nco">NCO</a>, alat baris perintah yang kuat untuk memodifikasi file .nc secara permanen.
 <li><a rel="help" href="https://www.unidata.ucar.edu/downloads/netcdf/">NetCDF -C dan NetCDF - Java <img
        src="https://coastwatch.pfeg.noaa.gov/erddap/images/external.png" alt=" (external link)"
        title="Tautan ke situs web eksternal ini bukan merupakan suatu dukungan."></a>, pustaka perangkat lunak utama untuk C, C++, Fortran, atau Java untuk membaca dan menulis file .nc .
@@ -3651,9 +3658,11 @@ Atau, gunakan angka yang lebih tinggi jika masalah terus berlanjut.
 Default untuk jam tangan adalah 8192. Default untuk instance adalah 128.</inotifyFix>
 
 <!--  jangan terjemahkan  -->
-<inotifyFixCommands>sudo sysctl fs.inotify.max_user_watches=65536
+<inotifyFixCommands>
+  sudo sysctl fs.inotify.max_user_watches=65536
   sudo sysctl fs.inotify.max_user_instances=1024
-  sudo sysctl -p</inotifyFixCommands>
+  sudo sysctl -p
+</inotifyFixCommands>
 <interpolate>Menambah</interpolate>
 <javaProgramsHTML><![CDATA[
 
@@ -3663,7 +3672,7 @@ Seperti dijelaskan di atas, karena program Java dapat mengakses data yang tersed
 <p>Atau, karena ERDDAP adalah program sumber terbuka, Anda juga dapat mengatur salinan ERDDAP Anda sendiri di server Anda sendiri (dapat diakses publik atau tidak) untuk menyajikan data Anda sendiri.
 Program Java Anda bisa mendapatkan data dari salinan ERDDAP tersebut.
 Lihat
-<a rel="help" href="https://erddap.github.io/setup.html">Mengatur ERDDAP Anda Sendiri</a> .
+<a rel="help" href="https://erddap.github.io/docs/server-admin/deploy-install">Mengatur ERDDAP Anda Sendiri</a> .
   
 ]]></javaProgramsHTML>
 
@@ -3750,7 +3759,7 @@ Banyak penginstalan ERDDAP yang tidak mengaktifkan autentikasi sehingga tidak me
 Saat ini, ERDDAP hanya mendukung autentikasi melalui akun email yang dikelola Google, yang mencakup akun email di NOAA dan banyak universitas.
 Jika autentikasi ERDDAP diaktifkan, siapa pun yang memiliki akun email yang dikelola Google dapat masuk, namun mereka hanya akan memiliki akses ke kumpulan data pribadi yang secara eksplisit telah diizinkan oleh administrator ERDDAP untuk diakses.
 Untuk instruksi masuk ke ERDDAP dari browser atau melalui skrip, lihat
-<a rel="help" href="https://erddap.github.io/AccessToPrivateDatasets.html">Akses ke Kumpulan Data Pribadi di ERDDAP</a> .
+<a rel="help" href="https://erddap.github.io/docs/user/AccessToPrivateDatasets">Akses ke Kumpulan Data Pribadi di ERDDAP</a> .
   
 ]]></loginHTML>
 <loginAttemptBlocked>GALAT: Upaya masuk untuk {0} diblokir sementara setelah 3 kali gagal.
@@ -4220,6 +4229,7 @@ Lihat tautan &quot;Abaikan formulir ini&quot; di bawah.
 <moreInformation>informasi lebih lanjut</moreInformation>
 
 <!--  Pesan bergaya MessageFormat ini dimasukkan ke MustBe.xxx.  -->
+
 <!--  Ini adalah pesan kesalahan yang penting. Ini menunjukkan permintaan itu valid,
 tapi hasilnya tidak ada data. Klien mungkin mencari pesan persis seperti ini.
 Untuk saat ini, yang terbaik adalah tidak mengubahnya.
@@ -4317,6 +4327,12 @@ Lihat Opsi di bagian bawah halaman web itu.
 <br>&nbsp;
   
 ]]></outOfDateKeepTrack>
+
+<!--halamanPertama>pertama</pageFirst>
+<pageSebelumnya>previous</pageSebelumnya>
+<pageCurrent>current</pageCurrent>
+<pageNext></pageNext>
+<pageLast> terakhir</pageLast-->
 
 <!--  Ini adalah pilihan palet.
      Harus ada file .cpt untuk masing-masing di direktori erddap/WEB-INF/cptfiles.
@@ -4439,7 +4455,7 @@ Misalnya, manusia dapat menggunakan URL ini untuk melakukan Pencarian Teks Lengk
 Ada banyak fitur di ERDDAP yang dapat digunakan oleh program komputer atau script yang Anda tulis.
 Anda dapat menggunakannya untuk membangun aplikasi web atau layanan web lain di atas ERDDAP, sehingga ERDDAP melakukan sebagian besar pekerjaan! Jadi jika Anda mempunyai ide untuk antarmuka yang lebih baik terhadap data yang disajikan ERDDAP atau halaman web yang memerlukan cara mudah untuk mengakses data, kami mendorong Anda untuk membangun aplikasi web, layanan web, atau halaman web Anda sendiri dan menggunakan ERDDAP sebagai dasar.
 Sistem Anda dapat memperoleh data, grafik, dan informasi lainnya dari ERDDAP ERD atau dari instalasi ERDDAP lainnya, atau Anda dapat<!-- setup always from coastwatch's erddap -->
-<a rel="help" href="https://erddap.github.io/setup.html">siapkan server ERDDAP Anda sendiri</a>, yang dapat diakses publik atau hanya dapat diakses secara pribadi.
+<a rel="help" href="https://erddap.github.io/docs/server-admin/deploy-install">siapkan server ERDDAP Anda sendiri</a>, yang dapat diakses publik atau hanya dapat diakses secara pribadi.
 <h3><a class="selfLink" id="requests" href="#requests" rel="bookmark">Permintaan URL RESTful</a></h3>
 Permintaan informasi antarmuka pengguna dari ERDDAP (misalnya, hasil pencarian) menggunakan standar universal web untuk permintaan:
 <a rel="help" href="https://en.wikipedia.org/wiki/Uniform_Resource_Locator">URL &externalLinkHtml;</a> dikirim melalui
@@ -4499,7 +4515,7 @@ ERDDAP dapat mengembalikan hasil antarmuka pengguna sebagai tabel data dalam tip
 <li>.nc - file biner NetCDF -3 yang datar, seperti tabel.
 (<a rel="help" href="https://www.unidata.ucar.edu/software/netcdf/">lagi&nbsp;informasi &externalLinkHtml;</a>)
 <li>.nccsv - file CSV ASCII yang datar, seperti tabel, seperti NetCDF .
-(<a rel="help" href="https://erddap.github.io/NCCSV.html">lagi&nbsp;informasi &externalLinkHtml;</a>)
+(<a rel="help" href="https://erddap.github.io/docs/user/nccsv-1.20">lagi&nbsp;informasi &externalLinkHtml;</a>)
 <li>.tsv - tabel teks ASCII yang dipisahkan tab.
 (<a rel="help" href="https://jkorpela.fi/TSV.html">lagi&nbsp;informasi &externalLinkHtml;</a>)
 <li>.xhtml - file XHTML (XML) dengan data dalam tabel.
@@ -5210,7 +5226,7 @@ Ini tersirat.)
 <p><a rel="help" href="&erddapUrl;/information.html"><strong>Cari tahu lebih lanjut tentang ERDDAP .</strong></a>
 <p><strong>Penyedia Data:
 Anda dapat
-<a rel="help" href="https://erddap.github.io/setup.html">mengatur server ERDDAP Anda sendiri</a> dan menyajikan data Anda sendiri.</strong> ERDDAP gratis dan sumber terbuka.
+<a rel="help" href="https://erddap.github.io/docs/server-admin/deploy-install">mengatur server ERDDAP Anda sendiri</a> dan menyajikan data Anda sendiri.</strong> ERDDAP gratis dan sumber terbuka.
 Ia menggunakan lisensi mirip Apache, sehingga Anda dapat melakukan apa pun yang Anda inginkan dengannya.
 Tampilan ERDDAP dapat disesuaikan, sehingga ERDDAP Anda akan mencerminkan institusi Anda, bukan NOAA .
 Upaya kecil untuk mendirikan ERDDAP membawa banyak manfaat.
@@ -5225,6 +5241,7 @@ href="https://www.ngdc.noaa.gov/wiki/index.php/Data_Access_Technical_Recommendat
 ]]></standardShortDescriptionHtml>
 
 <!--  Bob: lihat tabel css yang identik di Table.ERD_TABLE_CSS  -->
+
 <!--  startHeadHtml memiliki awal dokumen HTML dan tag &#39;head&#39; 
 (dimulai dari &quot;&lt;!DOCTYPE&quot;, tetapi tidak termasuk &quot;&lt;/head&gt;&quot;) 
 untuk semua halaman web HTML. 
@@ -5261,6 +5278,7 @@ informasi.
 <link href="&erddapUrl;/images/erddap2.css" rel="stylesheet" type="text/css">
 <meta name="viewport" content="width=device-width, initial-scale=1">  
 ]]></startHeadHtml5>
+
 <!-- The standard startBodyHtml -->
 <startBodyHtml5><![CDATA[
 <body>
@@ -5566,7 +5584,7 @@ Ini tersirat.)
 <br>&nbsp;
 <li><strong><a class="selfLink" id="localAndRemote" href="#localAndRemote" rel="bookmark">ERDDAP bisa mendapatkan data dari sumber data lokal (di hard drive server) dan jarak jauh (diakses melalui web).</a></strong>
 <br>Lihat
-<a rel="help" href="https://erddap.github.io/setupDatasetsXml.html#datasetTypes">daftar tipe sumber data</a> yang dapat diakses ERDDAP .
+<a rel="help" href="https://erddap.github.io/docs/server-admin/datasets#list-of-types-datasets">daftar tipe sumber data</a> yang dapat diakses ERDDAP .
 <br>&nbsp;
 <li><strong><a class="selfLink" id="scientificData" href="#scientificData" rel="bookmark">ERDDAP dapat menyajikan banyak jenis data ilmiah, tidak hanya data oseanografi saja.</a></strong>
 <br>ERDDAP adalah server data yang ditulis di
@@ -5720,8 +5738,8 @@ Saat Anda meminta data atau grafik dari
       title="Tautan ke situs web eksternal ini bukan merupakan suatu dukungan."></a>) mendeskripsikan data.
 ERDDAP memungkinkan (dan mendorong) administrator untuk mendeskripsikan metadata yang akan ditambahkan ke kumpulan data dan variabelnya saat itu juga.
 Lihat
-<a rel="help" href="https://erddap.github.io/setupDatasetsXml.html#addAttributes">bagian addAttributes</a> pada
-<a rel="help" href="https://erddap.github.io/setupDatasetsXml.html">petunjuk untuk administrator</a> .
+<a rel="help" href="https://erddap.github.io/docs/server-admin/datasets#addattributes">bagian addAttributes</a> pada
+<a rel="help" href="https://erddap.github.io/docs/server-admin/datasets">petunjuk untuk administrator</a> .
 <br>&nbsp;
 <li><strong><a class="selfLink" id="images" href="#images" rel="bookmark"
  >ERDDAP memungkinkan Anda meminta file gambar .png dan .pdf dengan grafik dan peta</a></strong>
@@ -5871,7 +5889,7 @@ Pengguna yang telah login dapat mengakses kumpulan data publik dan kumpulan data
 Pengguna harus menggunakan https:
 (Secure Sockets Layer) untuk masuk dan mengakses kumpulan data pribadi.
 Kumpulan data dapat dikonfigurasi agar grafik dan peta dapat diakses publik, namun data hanya dapat diakses oleh pengguna yang berwenang.
-(<a rel="help" href="https://erddap.github.io/setup.html#security">informasi lebih lanjut</a>)
+(<a rel="help" href="https://erddap.github.io/docs/server-admin/additional-information#security">informasi lebih lanjut</a>)
 <br>&nbsp;
 <li><strong><a class="selfLink" id="chunks" href="#chunks" rel="bookmark">ERDDAP memproses data dalam beberapa bagian.</a></strong>
 <br>Untuk menghemat memori (masalah besar) dan membuat respons dimulai lebih cepat, ERDDAP memproses permintaan data dalam beberapa bagian — berulang kali mengambil sebagian data dari sumber, membersihkannya (misalnya, menambahkan
@@ -5893,15 +5911,15 @@ ia menerima permintaan dari pengguna; mendapatkan data dari sumber data jarak ja
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
       title="Tautan ke situs web eksternal ini bukan merupakan suatu dukungan."></a> :
 Namun ERDDAP juga memiliki kemampuan untuk secara aktif mendapatkan semua data yang tersedia dari sumber data jarak jauh dan
-<a rel="help" href="https://erddap.github.io/setupDatasetsXml.html#EDDGridCopy">menyimpan salinan data lokal</a> .
+<a rel="help" href="https://erddap.github.io/docs/server-admin/datasets#eddgridcopy">menyimpan salinan data lokal</a> .
 <a rel="help" href="https://en.wikipedia.org/wiki/Push_technology">Teknologi Push <img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
       title="Tautan ke situs web eksternal ini bukan merupakan suatu dukungan."></a> :
 Dengan menggunakan
 <a href="#subscriptions">layanan berlangganan</a> ERDDAP, server data lain dapat diberitahu segera setelah data baru tersedia sehingga mereka dapat meminta data tersebut (dengan menarik data tersebut).
-<a rel="help"  href="https://erddap.github.io/setupDatasetsXml.html#EDDGridFromErddap">EDDGrid FromErddap</a> dan
-<a rel="help"  href="https://erddap.github.io/setupDatasetsXml.html#EDDTableFromErddap">EDDTableFromErddap</a> ERDDAP menggunakan layanan berlangganan dan
-<a rel="help" href="https://erddap.github.io/setup.html#flag">sistem flag</a> ERDDAP sehingga mereka akan segera diberitahu ketika data baru tersedia.
+<a rel="help"  href="https://erddap.github.io/docs/server-admin/datasets#eddfromerddap">EDDGrid FromErddap</a> dan
+<a rel="help"  href="https://erddap.github.io/docs/server-admin/datasets#eddfromerddap">EDDTableFromErddap</a> ERDDAP menggunakan layanan berlangganan dan
+<a rel="help" href="https://erddap.github.io/docs/server-admin/additional-information#flag">sistem flag</a> ERDDAP sehingga mereka akan segera diberitahu ketika data baru tersedia.
 Anda dapat mengombinasikan hal ini dengan efek yang luar biasa:
 jika Anda membungkus EDDGrid Copy di sekitar kumpulan data EDDGrid FromErddap (atau membungkus EDDTableCopy di sekitar kumpulan data EDDTableFromErddap), ERDDAP akan secara otomatis membuat dan memelihara salinan lokal dari kumpulan data ERDDAP yang lain.
 Karena layanan berlangganan bekerja segera setelah data baru tersedia, teknologi push menyebarkan data dengan sangat cepat (dalam hitungan detik).
@@ -5991,10 +6009,10 @@ Alasan tersebut saja yang membenarkan biaya pengembangan ERDDAP .
 (Saya rasa dapat ditunjukkan bahwa ERDDAP telah menghemat lebih banyak waktu ilmuwan NOAA daripada yang saya habiskan untuk mengembangkan ERDDAP .
 Waktu=Uang.) Namun manfaat sampingnya adalah organisasi lain dapat
 <a rel="bookmark" 
-href="https://erddap.github.io/setup.html">mengunduh, menginstal, dan menggunakan ERDDAP</a> <strong>secara gratis</strong> untuk mendistribusikan produk mereka.
+href="https://erddap.github.io/docs/server-admin/deploy-install">mengunduh, menginstal, dan menggunakan ERDDAP</a> <strong>secara gratis</strong> untuk mendistribusikan produk mereka.
 data ilmiah.
 <p><a rel="bookmark" 
-href="https://erddap.github.io/setup.html#organizations"
+href="https://erddap.github.io/#who-uses-erddap"
 >Lebih dari 90 organisasi di setidaknya 14 negara menggunakan ERDDAP</a> .
 Mungkin ada yang namanya makan siang gratis.
 <p>ERDDAP adalah program Java .
@@ -6108,14 +6126,14 @@ Sekarang, tolong anggap saja itu sebagai nama, bukan akronim.
 <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/images/erddapTalk/erdData.html">di sini</a> .
 <br>&nbsp;
 <p><strong><a class="selfLink" id="setup" href="#setup" rel="bookmark">Anda dapat</a></strong>
-<a rel="help" href="https://erddap.github.io/setup.html"><strong>Mengatur Server ERDDAP Anda Sendiri</strong></a> dan menyajikan data Anda sendiri.
+<a rel="help" href="https://erddap.github.io/docs/server-admin/deploy-install"><strong>Mengatur Server ERDDAP Anda Sendiri</strong></a> dan menyajikan data Anda sendiri.
 <ul>
 <li>Upaya kecil untuk mendirikan ERDDAP membawa banyak manfaat.
 <li>Jika Anda sudah memiliki layanan web untuk mendistribusikan data Anda, Anda dapat mengatur ERDDAP untuk mengakses data Anda melalui layanan yang ada atau melalui file sumber atau database.
 Kemudian, orang-orang akan memiliki cara lain untuk mengakses data Anda dan akan dapat mengunduh data tersebut dalam format file tambahan atau dalam bentuk grafik atau peta.
 <li>Jika Anda memiliki kumpulan data yang banyak diminati, Anda dapat menginstal
 <a rel="help" 
-  href="https://erddap.github.io/grids.html"
+  href="https://erddap.github.io/docs/server-admin/scaling"
   >beberapa ERDDAP yang bekerja sama</a> untuk meningkatkan dan memenuhi kebutuhan pusat distribusi data yang besar.
 </ul>
 <h2><a class="selfLink" id="contact" href="#contact" rel="bookmark">Hubungi kami</a></h2>
@@ -6140,11 +6158,14 @@ Jika seluruh string UDUNITS cocok dengan string &#39;sebelum&#39;,
 itu akan dikonversi ke nilai UDUNITS &#39;setelah&#39;.
 Baris kosong memastikan bahwa baris lainnya adalah baris &#39;sebelum&#39; dan &#39;sesudah&#39;.
  -->
-<standardizeUdunits>degrees +E
+<standardizeUdunits>
+degrees +E
 degrees_east
 
 degrees +N
-degrees_north</standardizeUdunits>
+degrees_north
+
+</standardizeUdunits>
 <time>Waktu</time>
 <timeoutOtherRequests>Batas waktu menunggu permintaan Anda yang lain diproses.</timeoutOtherRequests>
 
@@ -6155,7 +6176,8 @@ Jika seluruh string UCUM cocok dengan string &#39;sebelum&#39;,
 itu akan dikonversi ke nilai UDUNITS &#39;setelah&#39;.
 Baris kosong memastikan bahwa baris lainnya adalah baris &#39;sebelum&#39; dan &#39;sesudah&#39;.
  -->
-<ucumToUdunits>%.{cover}
+<ucumToUdunits>
+%.{cover}
 % cover
 
 deg{azimuth}
@@ -6165,7 +6187,9 @@ deg east
 degrees_east
 
 deg north 
-degrees_north</ucumToUdunits>
+degrees_north 
+
+</ucumToUdunits>
 
 <!--  Ini adalah cara untuk mengganti konverter UDUNITS ke UCUM ERDDAP
 dengan memberikan konversi tertentu. 
@@ -6174,7 +6198,8 @@ Jika seluruh string UDUNITS cocok dengan string &#39;sebelum&#39;,
 itu akan dikonversi ke nilai UCUM &#39;setelah&#39;.
 Baris kosong memastikan bahwa baris lainnya adalah baris &#39;sebelum&#39; dan &#39;sesudah&#39;.
  -->
-<udunitsToUcum>degrees +E
+<udunitsToUcum>
+degrees +E
 deg{east}
 
 degrees (+E)
@@ -6196,7 +6221,9 @@ degrees-north
 deg{north}
 
 degrees north
-deg{north}</udunitsToUcum>
+deg{north}
+
+</udunitsToUcum>
 
 <!--  Ini merupakan upaya untuk menangani metadata sumber URL yang kedaluwarsa.
 updateUrls diterapkan ke setiap atribut metadata String kumpulan data 
@@ -6220,7 +6247,8 @@ Catatan:
 * Konversi http://www.csc.noaa.gov ke pantai tidak sempurna: 
   dokumen di tempat yang berbeda.  Hal ini biasa terjadi pada perubahan besar pada nama domain.
  -->
-<updateUrls>http://accession.nodc.noaa.gov/
+<updateUrls>
+http://accession.nodc.noaa.gov/
 https://data.nodc.noaa.gov/cgi-bin/iso?id=gov.noaa.nodc:
 
 www.unidata.ucar.edu/software/thredds/current/netcdf-java/ncml/AnnotatedSchema4.html
@@ -7313,7 +7341,9 @@ http://xerial.org
 https://xerial.org
 
 http://xkcd.com
-https://xkcd.com</updateUrls>
+https://xkcd.com
+
+</updateUrls>
 
 <!--  Ini adalah URL http yang suatu saat mungkin dapat diakses melalui https.
 Ada yang terdaftar sebagai komentar di sini untuk pengujian cepat.
@@ -7396,6 +7426,7 @@ https://www.slf4j.org
 https://www.usgin.org
 
  -->
+
 <!--  Ini adalah daftar nama atribut yang dipisahkan koma yang akan dilewati oleh updateUrls. 
 Ini tidak mungkin apa-apa. Jadi jika Anda tidak menginginkan apa pun, masukkan kata yang tidak masuk akal
 tidak pernah menjadi nama atribut.  -->
@@ -7728,7 +7759,7 @@ Ada
 <li>Variabel data WAJIB mempunyai variabel sumbu bujur dan lintang.
 (Variabel sumbu lainnya bersifat OPSIONAL.)
 <li>HARUS ada beberapa nilai garis bujur antara -180 dan 180.
-<li><a rel="help" href="https://erddap.github.io/setupDatasetsXml.html#colorBar">Atribut colorBarMinimum dan colorBarMaximum</a> HARUS ditentukan.
+<li><a rel="help" href="https://erddap.github.io/docs/server-admin/datasets#color-bar-attributes">Atribut colorBarMinimum dan colorBarMaximum</a> HARUS ditentukan.
 (Atribut bilah warna lainnya bersifat OPSIONAL.)
 </ul>
 <li><strong>Lapisan data kisi:</strong> Dalam WMS ERDDAP, semua variabel data dalam kumpulan data kisi yang menggunakan dimensi bujur dan lintang tersedia melalui WMS .

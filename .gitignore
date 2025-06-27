@@ -9,7 +9,6 @@ images/post
 /content/
 /data/
 /target/
-download_cache/
 *.class
 Thumbs.db
 .vscode
@@ -19,11 +18,11 @@ Thumbs.db
 /build/
 /out/
 /.gradle/
-src/test/resources/*
-!src/test/resources/datasets/
+/test-data/
 .idea
 development/test/datasets.xml
 development/test/datasets.xml*
+development/test/PH53_*
 missingImage.txt
 *.hprof
 jmeter.log

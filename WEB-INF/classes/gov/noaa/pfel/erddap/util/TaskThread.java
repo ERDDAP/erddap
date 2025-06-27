@@ -12,6 +12,7 @@ import com.cohort.util.String2;
 import gov.noaa.pfel.coastwatch.griddata.OpendapHelper;
 import gov.noaa.pfel.coastwatch.util.SSR;
 import gov.noaa.pfel.erddap.dataset.EDD;
+import io.prometheus.metrics.model.snapshots.Unit;
 
 /**
  * This does a series of tasks.
@@ -27,33 +28,32 @@ public class TaskThread extends Thread {
    * If taskOA[0].equals(TASK_MAKE_A_DATAFILE), then make taskOA[1]=edd, taskOA[2]=query,
    * taskOA[3]=fileDir, taskOA[4]=fileName, taskOA[5]=fileType
    */
-  public static final Integer TASK_MAKE_A_DATAFILE = Integer.valueOf(0);
+  public static final Integer TASK_MAKE_A_DATAFILE = 0;
 
   /** If taskOA[0].equals(TASK_SET_FLAG), then make taskOA[1]=datasetID */
-  public static final Integer TASK_SET_FLAG = Integer.valueOf(1);
+  public static final Integer TASK_SET_FLAG = 1;
 
   /**
    * If taskOA[0].equals(TASK_DAP_TO_NC), then make taskOA[1]=dapUrl, taskOA[2]=StringArray(vars),
    * taskOA[3]=projection, taskOA[4]=fullFileName, taskOA[5]=jplMode (Boolean.TRUE|FALSE),
    * taskOA[6]=lastModified (Long)
    */
-  public static final Integer TASK_DAP_TO_NC = Integer.valueOf(2);
+  public static final Integer TASK_DAP_TO_NC = 2;
 
   /**
    * If taskOA[0].equals(TASK_ALL_DAP_TO_NC), then make taskOA[1]=dapUrl, taskOA[2]=fullFileName,
    * taskOA[3]=lastModified (Long)
    */
-  public static final Integer TASK_ALL_DAP_TO_NC = Integer.valueOf(3);
+  public static final Integer TASK_ALL_DAP_TO_NC = 3;
 
   /**
    * If taskOA[0].equals(TASK_DOWNLOAD), then make taskOA[1]=remoteUrl, taskOA[2]=fullFileName,
    * taskOA[3]=lastModified (Long) if MAX_VALUE, will be ignored
    */
-  public static final Integer TASK_DOWNLOAD = Integer.valueOf(4);
+  public static final Integer TASK_DOWNLOAD = 4;
 
-  /** TASK_NAMES parallels the TASK Integers. */
-  public static final String[] TASK_NAMES =
-      new String[] {"MAKE_A_DATAFILE", "SET_FLAG", "DAP_TO_NC", "ALL_DAP_TO_NC", "DOWNLOAD"};
+  /** If taskOA[0].equals(TASK_CLEAR_CACHE) */
+  public static final Integer TASK_CLEAR_CACHE = 5;
 
   /**
    * Set this to true (by calling verbose=true in your program, not by changing the code here) if
@@ -69,7 +69,7 @@ public class TaskThread extends Thread {
   /** The constructor. TaskThread uses task variables in EDStatic. */
   public TaskThread(int tNextTask) {
     EDStatic.nextTask.set(tNextTask);
-    EDStatic.lastFinishedTask = tNextTask - 1;
+    EDStatic.lastFinishedTask.set(tNextTask - 1);
     setName("TaskThread");
   }
 
@@ -105,7 +105,7 @@ public class TaskThread extends Thread {
         EDStatic.nextTask.incrementAndGet();
 
         // get the task settings
-        Object taskOA[] = (Object[]) EDStatic.taskList.get(EDStatic.nextTask.get() - 1);
+        Object taskOA[] = EDStatic.taskList.get(EDStatic.nextTask.get() - 1);
         if (taskOA == null) {
           String2.log("task #" + (EDStatic.nextTask.get() - 1) + " was null.");
           continue;
@@ -172,13 +172,11 @@ public class TaskThread extends Thread {
                   + "    file="
                   + fullFileName
                   + " lastMod="
-                  + Calendar2.safeEpochSecondsToIsoStringTZ(
-                      lastModified.longValue() / 1000.0, "NaN");
+                  + Calendar2.safeEpochSecondsToIsoStringTZ(lastModified / 1000.0, "NaN");
           String2.log(taskSummary);
 
-          OpendapHelper.dapToNc(
-              dapUrl, vars.toArray(), projection, fullFileName, jplMode.booleanValue());
-          File2.setLastModified(fullFileName, lastModified.longValue());
+          OpendapHelper.dapToNc(dapUrl, vars.toArray(), projection, fullFileName, jplMode);
+          File2.setLastModified(fullFileName, lastModified);
 
           // TASK_ALL_DAP_TO_NC
         } else if (taskType.equals(TASK_ALL_DAP_TO_NC)) {
@@ -193,19 +191,18 @@ public class TaskThread extends Thread {
                   + "    file="
                   + fullFileName
                   + " lastMod="
-                  + Calendar2.safeEpochSecondsToIsoStringTZ(
-                      lastModified.longValue() / 1000.0, "NaN");
+                  + Calendar2.safeEpochSecondsToIsoStringTZ(lastModified / 1000.0, "NaN");
           String2.log(taskSummary);
 
           OpendapHelper.allDapToNc(dapUrl, fullFileName);
-          File2.setLastModified(fullFileName, lastModified.longValue());
+          File2.setLastModified(fullFileName, lastModified);
 
           // TASK_DOWNLOAD
         } else if (taskType.equals(TASK_DOWNLOAD)) {
 
           String sourceUrl = (String) taskOA[1];
           String fullFileName = (String) taskOA[2];
-          long lastMod = ((Long) taskOA[3]).longValue();
+          long lastMod = (Long) taskOA[3];
           taskSummary =
               "  TASK_DOWNLOAD sourceUrl="
                   + sourceUrl
@@ -223,6 +220,9 @@ public class TaskThread extends Thread {
               fullFileName,
               true); // tryToUseCompression, throws Exception
           if (lastMod < Long.MAX_VALUE) File2.setLastModified(fullFileName, lastMod);
+
+        } else if (taskType.equals(TASK_CLEAR_CACHE)) {
+          EDStatic.clearCache("TASK_CLEAR_CACHE", false);
 
           // UNKNOWN taskType
         } else {
@@ -245,24 +245,34 @@ public class TaskThread extends Thread {
                 + Calendar2.elapsedTimeString(tElapsedTime));
         String2.distributeTime(tElapsedTime, EDStatic.taskThreadSucceededDistribution24);
         String2.distributeTime(tElapsedTime, EDStatic.taskThreadSucceededDistributionTotal);
+        EDStatic.metrics
+            .taskThreadDuration
+            .labelValues(Metrics.ThreadStatus.success.name(), "" + taskType)
+            .observe(Unit.millisToSeconds(tElapsedTime));
 
       } catch (Throwable t) {
         long tElapsedTime = elapsedTime();
         String2.distributeTime(tElapsedTime, EDStatic.taskThreadFailedDistribution24);
         String2.distributeTime(tElapsedTime, EDStatic.taskThreadFailedDistributionTotal);
+        Object taskOA[] = EDStatic.taskList.get(EDStatic.nextTask.get() - 1);
+        Integer taskType = (Integer) taskOA[0];
+        EDStatic.metrics
+            .taskThreadDuration
+            .labelValues(Metrics.ThreadStatus.fail.name(), "" + taskType)
+            .observe(Unit.millisToSeconds(tElapsedTime));
         String subject =
             "TaskThread error: task #"
                 + (EDStatic.nextTask.get() - 1)
                 + " failed after "
                 + Calendar2.elapsedTimeString(tElapsedTime);
-        String content = "" + taskSummary + "\n" + MustBe.throwableToString(t);
+        String content = taskSummary + "\n" + MustBe.throwableToString(t);
         String2.log("%%% " + subject + "\n" + content);
-        EDStatic.email(EDStatic.emailEverythingToCsv, subject, content);
+        EDStatic.email(EDStatic.config.emailEverythingToCsv, subject, content);
       }
 
       // whether succeeded or failed
       synchronized (EDStatic.taskList) {
-        EDStatic.lastFinishedTask = EDStatic.nextTask.get() - 1;
+        EDStatic.lastFinishedTask.set(EDStatic.nextTask.get() - 1);
         EDStatic.taskList.set(EDStatic.nextTask.get() - 1, null); // throw away the task info (gc)
       }
     }

@@ -3,14 +3,12 @@ package gov.noaa.pfel.coastwatch.util;
 import com.cohort.util.File2;
 import com.cohort.util.String2;
 import com.cohort.util.Test;
-import gov.noaa.pfel.erddap.util.EDStatic;
-import org.junit.jupiter.api.BeforeAll;
-import testDataset.Initialization;
-
 import java.io.BufferedOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.FileOutputStream;
+import org.junit.jupiter.api.BeforeAll;
+import testDataset.Initialization;
 
 class DataStreamTests {
 
@@ -23,10 +21,7 @@ class DataStreamTests {
   @org.junit.jupiter.api.Test
   void basicTest() throws Exception {
     // write bytes to a file
-    String fileName =
-        EDStatic.getWebInfParentDirectory()
-            + // with / separator and / at the end
-            "WEB-INF/temp/TestDataStream";
+    String fileName = SSR.getTempDirectory() + "TestDataStream";
     DataOutputStream dos =
         new DataOutputStream(new BufferedOutputStream(new FileOutputStream(fileName)));
     byte buffer[] = new byte[128];

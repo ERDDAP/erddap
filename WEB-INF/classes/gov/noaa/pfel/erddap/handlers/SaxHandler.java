@@ -9,6 +9,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
@@ -18,7 +20,7 @@ import org.xml.sax.helpers.DefaultHandler;
 
 public class SaxHandler extends DefaultHandler {
   private State state;
-  SaxParsingContext context;
+  final SaxParsingContext context;
 
   public SaxHandler(SaxParsingContext context) {
     this.context = context;
@@ -95,7 +97,7 @@ public class SaxHandler extends DefaultHandler {
     context.setDatasetsThatFailedToLoadSB(new StringBuilder());
     context.setFailedDatasetsWithErrorsSB(new StringBuilder());
     context.setWarningsFromLoadDatasets(new StringBuilder());
-    context.settUserHashMap(new HashMap<String, Object[]>());
+    context.settUserHashMap(new HashMap<>());
     context.setMajorLoad(false);
     context.setErddap(erddap);
     context.setLastLuceneUpdate(System.currentTimeMillis());
@@ -121,13 +123,13 @@ public class SaxHandler extends DefaultHandler {
       InputStream inputStream,
       int[] nTryAndDatasets,
       StringArray changedDatasetIDs,
-      HashSet<String> orphanIDSet,
-      HashSet<String> datasetIDSet,
+      Set<String> orphanIDSet,
+      Set<String> datasetIDSet,
       StringArray duplicateDatasetIDs,
       StringBuilder datasetsThatFailedToLoadSB,
       StringBuilder failedDatasetsWithErrors,
       StringBuilder warningsFromLoadDatasets,
-      HashMap<String, Object[]> tUserHashMap,
+      Map<String, Object[]> tUserHashMap,
       boolean majorLoad,
       Erddap erddap,
       long lastLuceneUpdate,

@@ -19,6 +19,7 @@ import gov.noaa.pfel.coastwatch.pointdata.Table;
 import gov.noaa.pfel.coastwatch.util.FileVisitorDNLS;
 import gov.noaa.pfel.coastwatch.util.RegexFilenameFilter;
 import gov.noaa.pfel.coastwatch.util.Tally;
+import gov.noaa.pfel.erddap.dataset.metadata.LocalizedAttributes;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.*;
 import java.util.ArrayList;
@@ -48,7 +49,7 @@ public class EDDTableFromNcFiles extends EDDTableFromFiles {
     return DEFAULT_STANDARDIZEWHAT;
   }
 
-  public static int DEFAULT_STANDARDIZEWHAT = 0;
+  public static final int DEFAULT_STANDARDIZEWHAT = 0;
 
   /**
    * The constructor just calls the super constructor.
@@ -75,8 +76,8 @@ public class EDDTableFromNcFiles extends EDDTableFromFiles {
       String tSosOfferingPrefix,
       String tDefaultDataQuery,
       String tDefaultGraphQuery,
-      Attributes tAddGlobalAttributes,
-      Object[][] tDataVariables,
+      LocalizedAttributes tAddGlobalAttributes,
+      List<DataVariableInfo> tDataVariables,
       int tReloadEveryNMinutes,
       int tUpdateEveryNMillis,
       String tFileDir,
@@ -164,8 +165,8 @@ public class EDDTableFromNcFiles extends EDDTableFromFiles {
       String tSosOfferingPrefix,
       String tDefaultDataQuery,
       String tDefaultGraphQuery,
-      Attributes tAddGlobalAttributes,
-      Object[][] tDataVariables,
+      LocalizedAttributes tAddGlobalAttributes,
+      List<DataVariableInfo> tDataVariables,
       int tReloadEveryNMinutes,
       int tUpdateEveryNMillis,
       String tFileDir,
@@ -416,13 +417,12 @@ public class EDDTableFromNcFiles extends EDDTableFromFiles {
     double maxTimeES = Double.NaN;
     if (useDimensions.length > 0) {
       // find the varNames
-      NetcdfFile ncFile = NcHelper.openFile(sampleFileName);
-      try {
+      try (NetcdfFile ncFile = NcHelper.openFile(sampleFileName)) {
 
         Group rootGroup = ncFile.getRootGroup();
         List rootGroupVariables = rootGroup.getVariables();
-        for (int v = 0; v < rootGroupVariables.size(); v++) {
-          Variable var = (Variable) rootGroupVariables.get(v);
+        for (Object rootGroupVariable : rootGroupVariables) {
+          Variable var = (Variable) rootGroupVariable;
           boolean isChar = var.getDataType() == DataType.CHAR;
           if (var.getRank() + (isChar ? -1 : 0) == useDimensions.length) {
             boolean matches = true;
@@ -438,11 +438,6 @@ public class EDDTableFromNcFiles extends EDDTableFromFiles {
 
       } catch (Exception e) {
         String2.log(MustBe.throwableToString(e));
-      } finally {
-        try {
-          if (ncFile != null) ncFile.close();
-        } catch (Exception e9) {
-        }
       }
       Test.ensureTrue(
           varNames.size() > 0, "The file has no variables with dimensions: " + useDimensionsCSV);
@@ -629,7 +624,10 @@ public class EDDTableFromNcFiles extends EDDTableFromFiles {
     // last 2 params: includeDataType, questionDestinationName
     sb.append(
         writeVariablesForDatasetsXml(dataSourceTable, dataAddTable, "dataVariable", true, false));
-    sb.append("</dataset>\n" + "\n");
+    sb.append("""
+            </dataset>
+
+            """);
 
     String2.log("\n\n*** generateDatasetsXml finished successfully.\n\n");
     return sb.toString();
@@ -957,19 +955,18 @@ public class EDDTableFromNcFiles extends EDDTableFromFiles {
 
   /** For WOD, get all source variable names and file they are in. */
   public static void getAllSourceVariableNames(String dir, String fileNameRegex) {
-    HashSet<String> hashset = new HashSet();
+    HashSet<String> hashset = new HashSet<>();
     String2.log(
         "\n*** EDDTableFromNcFiles.getAllsourceVariableNames from " + dir + " " + fileNameRegex);
     Table.verbose = false;
     Table.reallyVerbose = false;
     String sourceFiles[] = RegexFilenameFilter.recursiveFullNameList(dir, fileNameRegex, false);
-    int nSourceFiles = sourceFiles.length;
 
     Table table = new Table();
-    for (int sf = 0; sf < nSourceFiles; sf++) {
+    for (String sourceFile : sourceFiles) {
       try {
         table.readNDNc(
-            sourceFiles[sf],
+            sourceFile,
             null,
             0, // standardizeWhat=0
             null,
@@ -988,7 +985,7 @@ public class EDDTableFromNcFiles extends EDDTableFromFiles {
                   + "  "
                   + table.getColumn(c).elementTypeString()
                   + "\n  file="
-                  + sourceFiles[sf]
+                  + sourceFile
                   + "\n  attributes=\n"
                   + table.columnAttributes(c).toString());
         }
@@ -1057,15 +1054,15 @@ public class EDDTableFromNcFiles extends EDDTableFromFiles {
    */
   public static void displayAttributeFromFiles(
       String dir, String regex, String vars[], String attribute) {
-    ArrayList arrayList = new ArrayList();
+    ArrayList<String> arrayList = new ArrayList<>();
     RegexFilenameFilter.recursiveFullNameList(arrayList, dir, regex, true); // recursive?
     Table table = new Table();
     Tally tally = new Tally();
-    for (int i = 0; i < arrayList.size(); i++) {
+    for (String o : arrayList) {
       table.clear();
       try {
         table.readNDNc(
-            (String) arrayList.get(i),
+            o,
             vars,
             0, // standardizeWhat=0
             null,
@@ -1078,6 +1075,6 @@ public class EDDTableFromNcFiles extends EDDTableFromFiles {
         // String2.log(t.toString());
       }
     }
-    String2.log("\n" + tally.toString());
+    String2.log("\n" + tally);
   }
 }

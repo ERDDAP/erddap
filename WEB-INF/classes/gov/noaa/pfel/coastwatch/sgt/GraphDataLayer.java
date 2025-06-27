@@ -4,6 +4,7 @@
  */
 package gov.noaa.pfel.coastwatch.sgt;
 
+import com.google.common.collect.ImmutableList;
 import gov.noaa.pfel.coastwatch.griddata.Grid;
 import gov.noaa.pfel.coastwatch.pointdata.Table;
 import gov.noaa.pmel.sgt.ColorMap;
@@ -76,17 +77,17 @@ public class GraphDataLayer {
   public static final int DRAW_COLORED_SURFACE_AND_CONTOUR_LINES = 8;
 
   /** The names of the DRAW options (currently just for diagnostic purposes). */
-  public static final String DRAW_NAMES[] = {
-    "Markers",
-    "Lines",
-    "Markers and Lines",
-    "Sticks",
-    "Grid Vectors",
-    "Point Vectors",
-    "Colored Surface",
-    "Contour Lines",
-    "Colored Surface and Contour Lines"
-  };
+  public static final ImmutableList<String> DRAW_NAMES =
+      ImmutableList.of(
+          "Markers",
+          "Lines",
+          "Markers and Lines",
+          "Sticks",
+          "Grid Vectors",
+          "Point Vectors",
+          "Colored Surface",
+          "Contour Lines",
+          "Colored Surface and Contour Lines");
 
   public static final int MARKER_TYPE_NONE = 0;
   public static final int MARKER_TYPE_PLUS = 1;
@@ -106,105 +107,96 @@ public class GraphDataLayer {
    * These exactly parallel the MARKER_TYPEs. Some code elsewhere relies on filled options having
    * s.toLowerCase().indexOf("filled") >= 0.
    */
-  public static final String MARKER_TYPES[] = {
-    "None",
-    "Plus",
-    "X",
-    "Dot",
-    "Square",
-    "Filled Square",
-    "Circle",
-    "Filled Circle",
-    "Up Triangle",
-    "Filled Up Triangle",
-    "Borderless Filled Square",
-    "Borderless Filled Circle",
-    "Borderless Filled Up Triangle"
-  };
-
-  /**
-   * These don't parallel the MARKER_TYPEs, but the names are the same as in MARKER_TYPES, so you
-   * can look them up.
-   */
-  public static final String FILLED_MARKER_TYPES[] = {
-    "Filled Square", "Filled Circle", "Filled Up Triangle",
-    "Borderless Filled Square", "Borderless Filled Circle", "Borderless Filled Up Triangle"
-  };
+  public static final ImmutableList<String> MARKER_TYPES =
+      ImmutableList.of(
+          "None",
+          "Plus",
+          "X",
+          "Dot",
+          "Square",
+          "Filled Square",
+          "Circle",
+          "Filled Circle",
+          "Up Triangle",
+          "Filled Up Triangle",
+          "Borderless Filled Square",
+          "Borderless Filled Circle",
+          "Borderless Filled Up Triangle");
 
   public static final int REGRESS_NONE = -1;
   public static final int REGRESS_MEAN = 0;
 
   /** The v1 column number. */
   // was x
-  public int v1;
+  public final int v1;
 
   /** The v2 column number. */
   // was y
-  public int v2;
+  public final int v2;
 
   /** The v3 column number. Set to -1 for safety if not needed. */
   // was data
-  public int v3;
+  public final int v3;
 
   /** The v4 column number. Set to -1 for safety if not needed. */
   // was id
-  public int v4;
+  public final int v4;
 
   /** The v5 column number. Set to -1 for safety if not needed. */
   // was id
-  public int v5;
+  public final int v5;
 
   /** How the data should be drawn. See the DRAW_xxx options, e.e., DRAW_FILLED_MARKER. */
-  public int draw;
+  public final int draw;
 
   /**
    * Indicates if the x axis is a date/time axis (and the x data values are seconds since
    * 1970-01-01).
    */
-  public boolean xIsTimeAxis;
+  public final boolean xIsTimeAxis;
 
   /**
    * Indicates if the y axis is a date/time axis (and the y data values are seconds since
    * 1970-01-01).
    */
-  public boolean yIsTimeAxis;
+  public final boolean yIsTimeAxis;
 
   /**
    * The sourceID identifies the source of this (0..n-1, or -1 for pointVectorScreen, or -2 for
    * vectorScreen). This is just used for tables of returned information (e.g., where points were
    * plotted).
    */
-  public int sourceID;
+  public final int sourceID;
 
   /**
    * The x axis title (ignored if null or if x axis isTimeAxis). This is only used by SgtGraph and
    * only if the graph's x title is generated automatically (from the first GraphDataLayer.
    */
-  public String xAxisTitle;
+  public final String xAxisTitle;
 
   /** For y axis title. Ignored if null. */
-  public String yAxisTitle;
+  public final String yAxisTitle;
 
   /** For the legend. If null, nothing in legend for this GraphDataLayer. */
-  public String boldTitle;
+  public final String boldTitle;
 
   /** For the legend. Ignored if null. */
-  public String title2;
+  public final String title2;
 
   /** For the legend. Ignored if null. */
-  public String title3;
+  public final String title3;
 
   /** For the legend. Ignored if null. */
-  public String title4;
+  public final String title4;
 
   /** The table of data to be plotted (or null). */
-  public Table table;
+  public final Table table;
 
   /** The grid data to be plotted (or null). */
-  public Grid grid1;
+  public final Grid grid1;
 
   /** The other grid data to be plotted (e.g., the yVector grid) (or null). */
-  public Grid grid2;
+  public final Grid grid2;
 
   /**
    * An optional ColorMap (used for DRAW_MARKERS, DRAW_POINT_VECTORS, DRAW_GRID_VECTORS). Set to
@@ -213,7 +205,7 @@ public class GraphDataLayer {
   public ColorMap colorMap = null;
 
   /** lineColor for the lines between points and/or the color of the edges of the markers. */
-  public Color lineColor;
+  public final Color lineColor;
 
   /** markerType: e.g., MARKER_TYPE_SQUARE */
   public int markerType = MARKER_TYPE_SQUARE;
@@ -222,7 +214,7 @@ public class GraphDataLayer {
    * markerSize in pixels (Graph2D units), but will be modified by fontScale (or whatever the
    * variable name that modifies the basic font size). Ignored if not relevant.
    */
-  public int markerSize;
+  public final int markerSize;
 
   public static final int MARKER_SIZE_XSMALL = 3;
   public static final int MARKER_SIZE_SMALL = 5;
@@ -234,13 +226,13 @@ public class GraphDataLayer {
    * VectorStandard is the length which should generate a standard vector (e.g., .1 for .1 m/s).
    * Ignored if not relevant, but use 0 or NaN to be safe.
    */
-  public double vectorStandard;
+  public final double vectorStandard;
 
   /**
    * regressionType indicates if a regression line should be calculated and displayed in addition to
    * the data. See the REGRESS_xxx options.
    */
-  public int regressionType;
+  public final int regressionType;
 
   /** The constructor. */
   public GraphDataLayer(
@@ -314,7 +306,7 @@ public class GraphDataLayer {
         + " v4="
         + v4
         + " draw="
-        + (draw < 0 || draw >= DRAW_NAMES.length ? "" + draw : DRAW_NAMES[draw])
+        + (draw < 0 || draw >= DRAW_NAMES.size() ? "" + draw : DRAW_NAMES.get(draw))
         + " xIsTimeAxis="
         + xIsTimeAxis
         + " yIsTimeAxis="

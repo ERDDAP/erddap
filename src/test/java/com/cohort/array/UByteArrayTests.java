@@ -15,7 +15,6 @@ class UByteArrayTests {
     String2.log("*** UByteArray.basicTest");
 
     byte b;
-    short s;
     b = 0;
     Test.ensureEqual(0, b & 255, "");
     b = 127;

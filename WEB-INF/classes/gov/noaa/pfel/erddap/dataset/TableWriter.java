@@ -20,7 +20,7 @@ import gov.noaa.pfel.erddap.variable.EDV;
  *
  * @author Bob Simons (was bob.simons@noaa.gov, now BobSimons2.00@gmail.com) 2007-08-23
  */
-public abstract class TableWriter {
+public abstract class TableWriter implements AutoCloseable {
 
   /**
    * Set this to true (by calling verbose=true in your program, not by changing the code here) if
@@ -43,11 +43,11 @@ public abstract class TableWriter {
   public boolean ignoreFinish = false;
 
   // these are set by the constructor
-  protected long time;
-  protected int language;
-  protected EDD edd;
-  protected String newHistory;
-  protected OutputStreamSource outputStreamSource;
+  protected final long time;
+  protected final int language;
+  protected final EDD edd;
+  protected final String newHistory;
+  protected final OutputStreamSource outputStreamSource;
 
   // these are set the first time ensureCompatible is called
   protected String[] columnNames;
@@ -102,7 +102,7 @@ public abstract class TableWriter {
           try { // findVar throws exception if not found
             EDV edv =
                 edd.findVariableByDestinationName(columnNames[col]); // finds axis or dataVariable
-            colAttsClone = new Attributes(edv.combinedAttributes());
+            colAttsClone = edv.combinedAttributes().toAttributes(language);
           } catch (Throwable t) {
             // rare, e.g., happens with added "Count" and "Percent"
             // columns in countTable for "2 = viewDistinctDataCounts"
@@ -126,7 +126,8 @@ public abstract class TableWriter {
         // columnAttributes[col]);
       }
       if (edd == null) globalAttributes = table.globalAttributes(); // table already has deep clone
-      else globalAttributes = new Attributes(edd.combinedGlobalAttributes()); // make deep clone
+      else
+        globalAttributes = edd.combinedGlobalAttributes().toAttributes(language); // make deep clone
       globalAttributes.set("history", newHistory); // if null, it won't be set.
       return;
     }

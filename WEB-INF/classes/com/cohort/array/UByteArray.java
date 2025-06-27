@@ -201,16 +201,13 @@ public class UByteArray extends PrimitiveArray {
    */
   public static UByteArray fromFile(final String fileName) throws Exception {
     UByteArray uba = new UByteArray();
-    final InputStream stream = File2.getDecompressedBufferedInputStream(fileName);
-    try {
+    try (final InputStream stream = File2.getDecompressedBufferedInputStream(fileName)) {
       int available = stream.available();
       while (available > 0) {
         uba.ensureCapacity(uba.size + (long) available);
         uba.size += stream.read(uba.array, uba.size, available);
         available = stream.available();
       }
-    } finally {
-      stream.close();
     }
     return uba;
   }
@@ -482,7 +479,7 @@ public class UByteArray extends PrimitiveArray {
   @Override
   public void addObject(final Object value) {
     // double is good intermediate because it has the idea of NaN
-    addDouble(value != null && value instanceof Number nu ? nu.doubleValue() : Double.NaN);
+    addDouble(value instanceof Number nu ? nu.doubleValue() : Double.NaN);
   }
 
   /**
@@ -1584,17 +1581,17 @@ public class UByteArray extends PrimitiveArray {
 
     // make a hashMap with all the unique values (associated values are initially all dummy)
     // (actually bytes could be done more efficiently with a boolean array -128 to 127... )
-    final Integer dummy = Integer.valueOf(-1);
+    final Integer dummy = -1;
     final HashMap hashMap = new HashMap(Math2.roundToInt(1.4 * size));
     short lastValue = unpack(array[0]); // since lastValue often equals currentValue, cache it
-    hashMap.put(Short.valueOf(lastValue), dummy);
+    hashMap.put(lastValue, dummy);
     boolean alreadySorted = true;
     for (int i = 1; i < size; i++) {
       short currentValue = unpack(array[i]);
       if (currentValue != lastValue) {
         if (currentValue < lastValue) alreadySorted = false;
         lastValue = currentValue;
-        hashMap.put(Short.valueOf(lastValue), dummy);
+        hashMap.put(lastValue, dummy);
       }
     }
 
@@ -1623,21 +1620,21 @@ public class UByteArray extends PrimitiveArray {
     // and make tUnique
     final short tUnique[] = new short[nUnique];
     for (int i = 0; i < count; i++) {
-      hashMap.put(unique[i], Integer.valueOf(i));
-      tUnique[i] = ((Short) unique[i]).shortValue();
+      hashMap.put(unique[i], i);
+      tUnique[i] = (Short) unique[i];
     }
 
     // convert original values to ranks
     final int ranks[] = new int[size];
     lastValue = unpack(array[0]);
-    ranks[0] = ((Integer) hashMap.get(Short.valueOf(lastValue))).intValue();
+    ranks[0] = (Integer) hashMap.get(lastValue);
     int lastRank = ranks[0];
     for (int i = 1; i < size; i++) {
       if (array[i] == lastValue) {
         ranks[i] = lastRank;
       } else {
         lastValue = unpack(array[i]);
-        ranks[i] = ((Integer) hashMap.get(Short.valueOf(lastValue))).intValue();
+        ranks[i] = (Integer) hashMap.get(lastValue);
         lastRank = ranks[i];
       }
     }

@@ -22,6 +22,7 @@ import com.cohort.util.SimpleException;
 import com.cohort.util.String2;
 import com.cohort.util.Test;
 import com.cohort.util.XML;
+import com.google.common.collect.ImmutableList;
 import gov.noaa.pfel.coastwatch.griddata.FileNameUtility;
 import gov.noaa.pfel.coastwatch.griddata.NcHelper;
 import gov.noaa.pfel.coastwatch.griddata.OpendapHelper;
@@ -36,9 +37,29 @@ import gov.noaa.pfel.coastwatch.util.SSR;
 import gov.noaa.pfel.coastwatch.util.SimpleXMLReader;
 import gov.noaa.pfel.coastwatch.util.Tally;
 import gov.noaa.pfel.erddap.Erddap;
+import gov.noaa.pfel.erddap.dataset.metadata.LocalizedAttributes;
+import gov.noaa.pfel.erddap.filetypes.FileTypeClass;
+import gov.noaa.pfel.erddap.filetypes.FileTypeInterface;
 import gov.noaa.pfel.erddap.handlers.SaxHandler;
-import gov.noaa.pfel.erddap.util.*;
-import gov.noaa.pfel.erddap.variable.*;
+import gov.noaa.pfel.erddap.handlers.SaxHandlerClass;
+import gov.noaa.pfel.erddap.handlers.State;
+import gov.noaa.pfel.erddap.util.CfToFromGcmd;
+import gov.noaa.pfel.erddap.util.EDMessages;
+import gov.noaa.pfel.erddap.util.EDStatic;
+import gov.noaa.pfel.erddap.util.EmailThread;
+import gov.noaa.pfel.erddap.util.Subscriptions;
+import gov.noaa.pfel.erddap.util.TaskThread;
+import gov.noaa.pfel.erddap.util.TouchThread;
+import gov.noaa.pfel.erddap.util.TranslateMessages;
+import gov.noaa.pfel.erddap.variable.AxisVariableInfo;
+import gov.noaa.pfel.erddap.variable.DataVariableInfo;
+import gov.noaa.pfel.erddap.variable.EDV;
+import io.github.classgraph.AnnotationClassRef;
+import io.github.classgraph.AnnotationInfo;
+import io.github.classgraph.ClassGraph;
+import io.github.classgraph.ClassInfo;
+import io.github.classgraph.MethodInfo;
+import io.github.classgraph.ScanResult;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.BufferedOutputStream;
@@ -47,17 +68,25 @@ import java.io.FileOutputStream;
 import java.io.OutputStream;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.text.MessageFormat;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.document.StringField;
@@ -65,6 +94,7 @@ import org.apache.lucene.document.TextField;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.json.JSONTokener;
+import org.semver4j.Semver;
 import ucar.nc2.NetcdfFile;
 
 /**
@@ -174,39 +204,39 @@ public abstract class EDD {
    * added in alphabetic order.) Note that CF 1.6 section 9.4 says "The value assigned to the
    * featureType attribute is case-insensitive".
    */
-  public static final String[] CDM_TYPES = {
-    CDM_GRID,
-    CDM_MOVINGGRID,
-    CDM_OTHER,
-    CDM_POINT,
-    CDM_PROFILE,
-    CDM_RADIALSWEEP,
-    CDM_TIMESERIES,
-    CDM_TIMESERIESPROFILE,
-    CDM_SWATH,
-    CDM_TRAJECTORY,
-    CDM_TRAJECTORYPROFILE
-  };
+  public static final ImmutableList<String> CDM_TYPES =
+      ImmutableList.of(
+          CDM_GRID,
+          CDM_MOVINGGRID,
+          CDM_OTHER,
+          CDM_POINT,
+          CDM_PROFILE,
+          CDM_RADIALSWEEP,
+          CDM_TIMESERIES,
+          CDM_TIMESERIESPROFILE,
+          CDM_SWATH,
+          CDM_TRAJECTORY,
+          CDM_TRAJECTORYPROFILE);
 
   /**
    * The CF 1.6 standard featureTypes are just the point CDM_TYPES. See featureType definition and
    * table 9.1 in the CF standard.
    */
-  public static final String[] CF_FEATURE_TYPES = {
-    CDM_POINT,
-    CDM_PROFILE,
-    CDM_TIMESERIES,
-    CDM_TIMESERIESPROFILE,
-    CDM_TRAJECTORY,
-    CDM_TRAJECTORYPROFILE
-  };
+  public static final ImmutableList<String> CF_FEATURE_TYPES =
+      ImmutableList.of(
+          CDM_POINT,
+          CDM_PROFILE,
+          CDM_TIMESERIES,
+          CDM_TIMESERIESPROFILE,
+          CDM_TRAJECTORY,
+          CDM_TRAJECTORYPROFILE);
 
   /**
    * LEGEND constants define the options for legend placements on graphs "Bottom" is the default.
    */
   public static final String LEGEND_BOTTOM = "Bottom", LEGEND_OFF = "Off", LEGEND_ONLY = "Only";
 
-  public static int DEFAULT_RELOAD_EVERY_N_MINUTES =
+  public static final int DEFAULT_RELOAD_EVERY_N_MINUTES =
       10080; // 1 week  //The value is mentioned in datasets.xml.
 
   public static final String _dirFileTableVersion_ = "_dirFileTableVersion_";
@@ -244,51 +274,62 @@ public abstract class EDD {
 
   public static final String STANDARDIZEWHAT = "standardizeWhat";
 
-  public static final String ONE_WORD_CF_STANDARD_NAMES[] = {
-    "altitude",
-    "cakes123",
-    "depth",
-    "geopotential",
-    "height",
-    "latitude",
-    "longitude",
-    "omega",
-    "realization",
-    "region",
-    "time"
-  };
+  public static final ImmutableList<String> ONE_WORD_CF_STANDARD_NAMES =
+      ImmutableList.of(
+          "altitude",
+          "cakes123",
+          "depth",
+          "geopotential",
+          "height",
+          "latitude",
+          "longitude",
+          "omega",
+          "realization",
+          "region",
+          "time");
   public static final int LONGEST_ONE_WORD_CF_STANDARD_NAMES = 12; // characters
 
   public static final byte[] NOT_ORIGINAL_SEARCH_ENGINE_BYTES =
       String2.stringToUtf8Bytes("In setup.xml, <searchEngine> is not 'original'.");
 
-  public static final String KEEP_SHORT_KEYWORDS[] = {"u", "v", "w", "xi"};
-  public static final String KEEP_SHORT_UC_KEYWORDS[] = {"hf", "l2", "l3", "l4", "o2", "us"};
+  public static final ImmutableList<String> KEEP_SHORT_KEYWORDS =
+      ImmutableList.of("u", "v", "w", "xi");
+  public static final ImmutableList<String> KEEP_SHORT_UC_KEYWORDS =
+      ImmutableList.of("hf", "l2", "l3", "l4", "o2", "us");
 
   public static final String GCMD_EARTH_SCIENCE = "Earth Science > "; // title case
   public static final String GCMD_EARTH_SCIENCE_LC = "earth science > "; // lower case
-  public static final String GCMD_LEVEL1[] = { // lower case
-    "agriculture > ", "atmosphere > ", "biological classification > ",
-    "biosphere > ", "climate Indicators > ", "cryosphere > ",
-    "human dimensions > ", "land surface > ", "oceans > ",
-    "paleoclimate > ", "solid earth > ", "spectral/engineering > ",
-    "sun-earth interactions > ", "terrestrial hydrosphere > "
-  };
+  public static final ImmutableList<String> GCMD_LEVEL1 =
+      ImmutableList.of( // lower case
+          "agriculture > ",
+          "atmosphere > ",
+          "biological classification > ",
+          "biosphere > ",
+          "climate Indicators > ",
+          "cryosphere > ",
+          "human dimensions > ",
+          "land surface > ",
+          "oceans > ",
+          "paleoclimate > ",
+          "solid earth > ",
+          "spectral/engineering > ",
+          "sun-earth interactions > ",
+          "terrestrial hydrosphere > ");
 
   /**
    * suggestReloadEveryNMinutes multiplies the original suggestion by this factor. So, e.g., using
    * 0.5 will cause suggestReloadEveryNMinutes to return smaller numbers (hence more aggressive
    * reloading). Don't change this value here. Change it in calling code as needed.
    */
-  public static double suggestReloadEveryNMinutesFactor = 1.0;
+  public static final double suggestReloadEveryNMinutesFactor = 1.0;
 
   /**
    * This sets the minimum and maximum values that will be returned by suggestReloadEveryNMinutes.
    * Don't change this value here. Change it in calling code as needed.
    */
-  public static int suggestReloadEveryNMinutesMin = 1;
+  public static final int suggestReloadEveryNMinutesMin = 1;
 
-  public static int suggestReloadEveryNMinutesMax = 2000000000;
+  public static final int suggestReloadEveryNMinutesMax = 2000000000;
 
   /**
    * generateDatasetsXml may set this to true to force
@@ -318,7 +359,9 @@ public abstract class EDD {
    * sourceAttributes. combinedAtt are made from sourceAtt and addAtt, then revised (e.g., remove
    * "null" values)
    */
-  protected Attributes sourceGlobalAttributes, addGlobalAttributes, combinedGlobalAttributes;
+  protected Attributes sourceGlobalAttributes;
+
+  protected LocalizedAttributes addGlobalAttributes, combinedGlobalAttributes;
 
   // dataVariables isn't a hashMap because it is nice to allow a specified order for the variables
   protected EDV[] dataVariables;
@@ -344,23 +387,14 @@ public abstract class EDD {
   protected String localSourceUrl;
 
   /**
-   * The publicSourceUrl which is what appears in combinedGlobalAttributes (e.g., the url which
-   * users can use outside of the DMZ).
-   */
-  protected String publicSourceUrl;
-
-  /**
    * defaultDataQuery is used for .html if the user doesn't provide a query. defaultGraphQuery is
    * used for .graph if the user doesn't provide a query.
    */
   protected String defaultDataQuery, defaultGraphQuery;
 
-  /** These are created as needed (in the constructor) from combinedGlobalAttributes. */
-  protected String id, title, summary, extendedSummaryPartB, institution, infoUrl, cdmDataType;
-
   /**
    * These are created as needed (in the constructor) by accessibleVia...(). See also
-   * EDStatic.accessibleViaNC4.
+   * EDStatic.config.accessibleViaNC4.
    */
   protected String accessibleViaMAG,
       accessibleViaSubset,
@@ -374,7 +408,6 @@ public abstract class EDD {
 
   protected boolean accessibleViaFiles = false; // it's up to the constructor to set this to true
   protected String fgdcFile, iso19115File; // the names of pre-made, external files; or null
-  protected byte[] searchBytes;
 
   /** These are created as needed (in the constructor) from dataVariables[]. */
   protected String[] dataVariableSourceNames, dataVariableDestinationNames;
@@ -405,6 +438,200 @@ public abstract class EDD {
     return filesInPrivateS3Bucket;
   }
 
+  /** Internal class for storing conrete EDD subclass information. */
+  public record EDDFileTypeInfo(
+      Class<? extends FileTypeInterface> fileType, AnnotationInfo annotationInfo) {
+    public String getFileTypeName() {
+      return annotationInfo.getParameterValues().get("fileTypeName").getValue().toString();
+    }
+
+    public String getFileTypeExtension() {
+      return annotationInfo.getParameterValues().get("fileTypeExtension").getValue().toString();
+    }
+
+    public String getInfoUrl() {
+      return annotationInfo.getParameterValues().get("infoUrl").getValue().toString();
+    }
+
+    public Semver getVersionAdded() {
+      return new Semver(
+          annotationInfo.getParameterValues().get("versionAdded").getValue().toString());
+    }
+
+    public boolean getAvailableTable() {
+      return (Boolean) annotationInfo.getParameterValues().get("availableTable").getValue();
+    }
+
+    public boolean getAvailableGrid() {
+      return (Boolean) annotationInfo.getParameterValues().get("availableGrid").getValue();
+    }
+
+    public boolean getIsImage() {
+      return (Boolean) annotationInfo.getParameterValues().get("isImage").getValue();
+    }
+
+    public boolean getAddContentDispositionHeader() {
+      return (Boolean)
+          annotationInfo.getParameterValues().get("addContentDispositionHeader").getValue();
+    }
+
+    public String getContentType() {
+      return (String) annotationInfo.getParameterValues().get("contentType").getValue();
+    }
+
+    public String getContentDescription() {
+      return (String) annotationInfo.getParameterValues().get("contentDescription").getValue();
+    }
+
+    public FileTypeInterface getInstance() {
+      try {
+        return fileType.getConstructor().newInstance();
+      } catch (InstantiationException
+          | IllegalAccessException
+          | IllegalArgumentException
+          | InvocationTargetException
+          | NoSuchMethodException
+          | SecurityException e) {
+        throw new SimpleException(e.getMessage());
+      }
+    }
+
+    public String getTableDescription(int language) {
+      return getInstance().getTableHelpText(language);
+    }
+
+    public String getGridDescription(int language) {
+      return getInstance().getGridHelpText(language);
+    }
+  }
+
+  /** List of all concrete/non-abstact EDD subclass EDDClassInfo */
+  public static final Map<String, EDDFileTypeInfo> EDD_FILE_TYPE_INFO = initEddFileTypeInfoMap();
+
+  public static List<EDDFileTypeInfo> getFileTypeOptions(boolean isGrid, boolean isImage) {
+    return EDD_FILE_TYPE_INFO.values().stream()
+        .filter(
+            fileTypeInfo ->
+                isGrid ? fileTypeInfo.getAvailableGrid() : fileTypeInfo.getAvailableTable())
+        .filter(fileTypeInfo -> isImage == fileTypeInfo.getIsImage())
+        .toList();
+  }
+
+  /**
+   * Scan classpath for concrete/non-abstract EDD subclasses in package gov.noaa.pfel.erddap.dataset
+   * and store metadata for each discovered subclass in map of EDDClassInfo objects.
+   */
+  private static final Map<String, EDDFileTypeInfo> initEddFileTypeInfoMap() {
+    String2.log("Scanning FileType classes in package " + FileTypeInterface.class.getPackageName());
+    try (ScanResult scanResult =
+        new ClassGraph()
+            .enableAnnotationInfo()
+            .enableClassInfo()
+            .enableMethodInfo()
+            .acceptPackages(FileTypeInterface.class.getPackageName())
+            .scan()) {
+      return scanResult.getSubclasses(FileTypeInterface.class).stream()
+          .filter(c -> !c.isAbstract())
+          .filter(c -> c.hasAnnotation(FileTypeClass.class))
+          .collect(
+              Collectors.toUnmodifiableMap(
+                  classInfo -> getFileTypeName(classInfo),
+                  classInfo ->
+                      new EDDFileTypeInfo(
+                          classInfo.loadClass(FileTypeInterface.class),
+                          classInfo.getAnnotationInfo(FileTypeClass.class))));
+    }
+  }
+
+  /**
+   * Get State (Sax handler) class for EDD class from annotation if it exists
+   *
+   * @param eddClassInfo the ClassInfo object to check
+   * @return Optional of a State subclass
+   */
+  private static final String getFileTypeName(ClassInfo classInfo) {
+    return classInfo
+        .getAnnotationInfo(FileTypeClass.class)
+        .getParameterValues()
+        .get("fileTypeName")
+        .getValue()
+        .toString();
+  }
+
+  /** Internal class for storing conrete EDD subclass information. */
+  public record EDDClassInfo(
+      Class<EDD> eddClass, Optional<Method> fromXmlMethod, Optional<Class<State>> saxHandlerClass) {
+
+    public boolean hasFromXmlMethod() {
+      return fromXmlMethod.isPresent();
+    }
+
+    public boolean hasSaxHandlerClass() {
+      return saxHandlerClass.isPresent();
+    }
+  }
+
+  /** List of all concrete/non-abstact EDD subclass EDDClassInfo */
+  public static final Map<String, EDDClassInfo> EDD_CLASS_INFO_MAP = initEddClassInfoMap();
+
+  /**
+   * Scan classpath for concrete/non-abstract EDD subclasses in package gov.noaa.pfel.erddap.dataset
+   * and store metadata for each discovered subclass in map of EDDClassInfo objects.
+   */
+  private static final Map<String, EDDClassInfo> initEddClassInfoMap() {
+    String2.log("Scanning EDD classes in package " + EDD.class.getPackageName());
+    try (ScanResult scanResult =
+        new ClassGraph()
+            .enableAnnotationInfo()
+            .enableClassInfo()
+            .enableMethodInfo()
+            .acceptPackages(EDD.class.getPackageName())
+            .scan()) {
+      return scanResult.getSubclasses(EDD.class).stream()
+          .filter(c -> !c.isAbstract())
+          .collect(
+              Collectors.toUnmodifiableMap(
+                  ClassInfo::getSimpleName,
+                  classInfo ->
+                      new EDDClassInfo(
+                          classInfo.loadClass(EDD.class),
+                          getFromXmlMethod(classInfo),
+                          getSaxHandler(classInfo))));
+    }
+  }
+
+  /**
+   * Get State (Sax handler) class for EDD class from annotation if it exists
+   *
+   * @param eddClassInfo the ClassInfo object to check
+   * @return Optional of a State subclass
+   */
+  private static final Optional<Class<State>> getSaxHandler(ClassInfo classInfo) {
+    return Stream.of(classInfo.getAnnotationInfo(SaxHandlerClass.class))
+        .filter(Objects::nonNull)
+        .map(AnnotationInfo::getParameterValues)
+        .map(parameterValues -> parameterValues.get("value"))
+        .filter(Objects::nonNull)
+        .map(annotationParameterValue -> (AnnotationClassRef) annotationParameterValue.getValue())
+        .filter(Objects::nonNull)
+        .map(annotationClassRef -> (Class<State>) annotationClassRef.loadClass())
+        .filter(Objects::nonNull)
+        .findFirst();
+  }
+
+  /**
+   * Get fromXml method annotated with EDDFromXmlMethod from EDD class if it exists
+   *
+   * @param eddClassInfo the ClassInfo object to check
+   * @return Optional of the fromXml method
+   */
+  private static final Optional<Method> getFromXmlMethod(ClassInfo classInfo) {
+    return classInfo.getMethodInfo("fromXml").stream()
+        .filter(mi -> mi.hasAnnotation(EDDFromXmlMethod.class))
+        .map(MethodInfo::loadClassAndGetMethod)
+        .findFirst();
+  }
+
   /**
    * This constructs an EDDXxx based on the information in an .xml file. This ignores the
    * &lt;dataset active=.... &gt; setting. All of the subclasses fromXml() methods ignore the
@@ -422,94 +649,180 @@ public abstract class EDD {
     String startStartError =
         "datasets.xml error on"; // does the error message already start with this?
     String startError = "datasets.xml error on or before line #";
-    if (type == null)
-      throw new SimpleException(
-          startError + xmlReader.lineNumber() + ": Unexpected <dataset> type=" + type + ".");
-    try {
-      // FUTURE: classes could be added at runtime if I used reflection
-      if (type.equals("EDDGridAggregateExistingDimension"))
-        return EDDGridAggregateExistingDimension.fromXml(erddap, xmlReader);
-      if (type.equals("EDDGridCopy")) return EDDGridCopy.fromXml(erddap, xmlReader);
-      if (type.equals("EDDGridFromAudioFiles"))
-        return EDDGridFromAudioFiles.fromXml(erddap, xmlReader);
-      if (type.equals("EDDGridFromDap")) return EDDGridFromDap.fromXml(erddap, xmlReader);
-      if (type.equals("EDDGridFromEDDTable")) return EDDGridFromEDDTable.fromXml(erddap, xmlReader);
-      if (type.equals("EDDGridFromErddap")) return EDDGridFromErddap.fromXml(erddap, xmlReader);
-      if (type.equals("EDDGridFromEtopo")) return EDDGridFromEtopo.fromXml(erddap, xmlReader);
-      if (type.equals("EDDGridFromMergeIRFiles"))
-        return EDDGridFromMergeIRFiles.fromXml(erddap, xmlReader);
-      if (type.equals("EDDGridFromNcFiles")) return EDDGridFromNcFiles.fromXml(erddap, xmlReader);
-      if (type.equals("EDDGridFromNcFilesUnpacked"))
-        return EDDGridFromNcFilesUnpacked.fromXml(erddap, xmlReader);
-      if (type.equals("EDDGridLonPM180")) return EDDGridLonPM180.fromXml(erddap, xmlReader);
-      if (type.equals("EDDGridLon0360")) return EDDGridLon0360.fromXml(erddap, xmlReader);
-      if (type.equals("EDDGridSideBySide")) return EDDGridSideBySide.fromXml(erddap, xmlReader);
-
-      if (type.equals("EDDTableAggregateRows"))
-        return EDDTableAggregateRows.fromXml(erddap, xmlReader);
-      if (type.equals("EDDTableCopy")) return EDDTableCopy.fromXml(erddap, xmlReader);
-      // if (type.equals("EDDTableCopyPost"))        return EDDTableCopyPost.fromXml(erddap,
-      // xmlReader); //inactive
-      if (type.equals("EDDTableFromAsciiServiceNOS"))
-        return EDDTableFromAsciiServiceNOS.fromXml(erddap, xmlReader);
-      // if (type.equals("EDDTableFromBMDE"))        return EDDTableFromBMDE.fromXml(erddap,
-      // xmlReader); //inactive
-      if (type.equals("EDDTableFromCassandra"))
-        return EDDTableFromCassandra.fromXml(erddap, xmlReader);
-      if (type.equals("EDDTableFromDapSequence"))
-        return EDDTableFromDapSequence.fromXml(erddap, xmlReader);
-      if (type.equals("EDDTableFromDatabase"))
-        return EDDTableFromDatabase.fromXml(erddap, xmlReader);
-      if (type.equals("EDDTableFromEDDGrid")) return EDDTableFromEDDGrid.fromXml(erddap, xmlReader);
-      if (type.equals("EDDTableFromErddap")) return EDDTableFromErddap.fromXml(erddap, xmlReader);
-      if (type.equals("EDDTableFromFileNames"))
-        return EDDTableFromFileNames.fromXml(erddap, xmlReader);
-      // if (type.equals("EDDTableFromMWFS"))        return EDDTableFromMWFS.fromXml(erddap,
-      // xmlReader); //inactive as of 2009-01-14
-      if (type.equals("EDDTableFromAsciiFiles"))
-        return EDDTableFromAsciiFiles.fromXml(erddap, xmlReader);
-      if (type.equals("EDDTableFromAudioFiles"))
-        return EDDTableFromAudioFiles.fromXml(erddap, xmlReader);
-      if (type.equals("EDDTableFromAwsXmlFiles"))
-        return EDDTableFromAwsXmlFiles.fromXml(erddap, xmlReader);
-      if (type.equals("EDDTableFromColumnarAsciiFiles"))
-        return EDDTableFromColumnarAsciiFiles.fromXml(erddap, xmlReader);
-      if (type.equals("EDDTableFromHttpGet")) return EDDTableFromHttpGet.fromXml(erddap, xmlReader);
-      if (type.equals("EDDTableFromInvalidCRAFiles"))
-        return EDDTableFromInvalidCRAFiles.fromXml(erddap, xmlReader);
-      if (type.equals("EDDTableFromJsonlCSVFiles"))
-        return EDDTableFromJsonlCSVFiles.fromXml(erddap, xmlReader);
-      if (type.equals("EDDTableFromHyraxFiles"))
-        return EDDTableFromHyraxFiles.fromXml(erddap, xmlReader);
-      if (type.equals("EDDTableFromMultidimNcFiles"))
-        return EDDTableFromMultidimNcFiles.fromXml(erddap, xmlReader);
-      if (type.equals("EDDTableFromNcFiles")) return EDDTableFromNcFiles.fromXml(erddap, xmlReader);
-      if (type.equals("EDDTableFromNcCFFiles"))
-        return EDDTableFromNcCFFiles.fromXml(erddap, xmlReader);
-      if (type.equals("EDDTableFromNccsvFiles"))
-        return EDDTableFromNccsvFiles.fromXml(erddap, xmlReader);
-      // if (type.equals("EDDTableFromNOS"))         return EDDTableFromNOS.fromXml(erddap,
-      // xmlReader); //inactive 2010-09-08
-      // if (type.equals("EDDTableFromNWISDV"))      return EDDTableFromNWISDV.fromXml(erddap,
-      // xmlReader); //inactive 2011-12-16
-      if (type.equals("EDDTableFromOBIS")) return EDDTableFromOBIS.fromXml(erddap, xmlReader);
-      // if (type.equals("EDDTableFromPostDatabase"))return EDDTableFromPostDatabase.fromXml(erddap,
-      // xmlReader);
-      // if (type.equals("EDDTableFromPostNcFiles")) return EDDTableFromPostNcFiles.fromXml(erddap,
-      // xmlReader);
-      if (type.equals("EDDTableFromSOS")) return EDDTableFromSOS.fromXml(erddap, xmlReader);
-      if (type.equals("EDDTableFromThreddsFiles"))
-        return EDDTableFromThreddsFiles.fromXml(erddap, xmlReader);
-      if (type.equals("EDDTableFromWFSFiles"))
-        return EDDTableFromWFSFiles.fromXml(erddap, xmlReader);
-    } catch (Throwable t) {
-      String msg = MustBe.getShortErrorMessage(t);
-      throw new RuntimeException(
-          (msg.startsWith(startStartError) ? "" : startError + xmlReader.lineNumber() + ": ") + msg,
-          t);
+    if (type == null) {
+      throw new SimpleException(startError + xmlReader.lineNumber() + ": Missing <dataset> type");
     }
-    throw new RuntimeException(
-        startError + xmlReader.lineNumber() + ": Unexpected <dataset> type=" + type + ".");
+
+    if (EDStatic.config.useEddReflection) {
+      // use reflection to find the fromXml method
+      EDDClassInfo eddClassInfo = EDD_CLASS_INFO_MAP.get(type);
+      if (eddClassInfo == null || !eddClassInfo.hasFromXmlMethod()) {
+        throw new RuntimeException(
+            startError + xmlReader.lineNumber() + ": Unexpected <daFtaset> type=" + type + ".");
+      }
+
+      try {
+        return (EDD) eddClassInfo.fromXmlMethod().get().invoke(null, erddap, xmlReader);
+      } catch (Throwable t) {
+        // unwrap InvocationTargetExceptions
+        if (t instanceof InvocationTargetException && t.getCause() != null) {
+          t = t.getCause();
+        }
+        String msg = MustBe.getShortErrorMessage(t);
+        throw new RuntimeException(
+            (msg.startsWith(startStartError) ? "" : startError + xmlReader.lineNumber() + ": ")
+                + msg,
+            t);
+      }
+    } else {
+      // legacy hardcoded approach
+      try {
+        switch (type) {
+          case "EDDGridAggregateExistingDimension" -> {
+            return EDDGridAggregateExistingDimension.fromXml(erddap, xmlReader);
+          }
+          case "EDDGridCopy" -> {
+            return EDDGridCopy.fromXml(erddap, xmlReader);
+          }
+          case "EDDGridFromAudioFiles" -> {
+            return EDDGridFromAudioFiles.fromXml(erddap, xmlReader);
+          }
+          case "EDDGridFromNcFilesUnpacked" -> {
+            return EDDGridFromNcFilesUnpacked.fromXml(erddap, xmlReader);
+          }
+          case "EDDGridFromNcFiles" -> {
+            return EDDGridFromNcFiles.fromXml(erddap, xmlReader);
+          }
+          case "EDDGridFromMergeIRFiles" -> {
+            return EDDGridFromMergeIRFiles.fromXml(erddap, xmlReader);
+          }
+          case "EDDGridLonPM180" -> {
+            return EDDGridLonPM180.fromXml(erddap, xmlReader);
+          }
+          case "EDDGridLon0360" -> {
+            return EDDGridLon0360.fromXml(erddap, xmlReader);
+          }
+          case "EDDGridSideBySide" -> {
+            return EDDGridSideBySide.fromXml(erddap, xmlReader);
+          }
+          case "EDDGridFromDap" -> {
+            return EDDGridFromDap.fromXml(erddap, xmlReader);
+          }
+          case "EDDGridFromEDDTable" -> {
+            return EDDGridFromEDDTable.fromXml(erddap, xmlReader);
+          }
+          case "EDDGridFromErddap" -> {
+            return EDDGridFromErddap.fromXml(erddap, xmlReader);
+          }
+          case "EDDGridFromEtopo" -> {
+            return EDDGridFromEtopo.fromXml(erddap, xmlReader);
+          }
+          case "EDDTableAggregateRows" -> {
+            return EDDTableAggregateRows.fromXml(erddap, xmlReader);
+          }
+          case "EDDTableCopy" -> {
+            return EDDTableCopy.fromXml(erddap, xmlReader);
+          }
+            // if (type.equals("EDDTableCopyPost"))        return EDDTableCopyPost.fromXml(erddap,
+            // xmlReader); //inactive
+          case "EDDTableFromAsciiServiceNOS" -> {
+            return EDDTableFromAsciiServiceNOS.fromXml(erddap, xmlReader);
+          }
+            // if (type.equals("EDDTableFromBMDE"))        return EDDTableFromBMDE.fromXml(erddap,
+            // xmlReader); //inactive
+          case "EDDTableFromCassandra" -> {
+            return EDDTableFromCassandra.fromXml(erddap, xmlReader);
+          }
+          case "EDDTableFromDapSequence" -> {
+            return EDDTableFromDapSequence.fromXml(erddap, xmlReader);
+          }
+          case "EDDTableFromDatabase" -> {
+            return EDDTableFromDatabase.fromXml(erddap, xmlReader);
+          }
+          case "EDDTableFromEDDGrid" -> {
+            return EDDTableFromEDDGrid.fromXml(erddap, xmlReader);
+          }
+          case "EDDTableFromErddap" -> {
+            return EDDTableFromErddap.fromXml(erddap, xmlReader);
+          }
+          case "EDDTableFromFileNames" -> {
+            return EDDTableFromFileNames.fromXml(erddap, xmlReader);
+          }
+            // if (type.equals("EDDTableFromMWFS"))        return EDDTableFromMWFS.fromXml(erddap,
+            // xmlReader); //inactive as of 2009-01-14
+          case "EDDTableFromAsciiFiles" -> {
+            return EDDTableFromAsciiFiles.fromXml(erddap, xmlReader);
+          }
+          case "EDDTableFromAudioFiles" -> {
+            return EDDTableFromAudioFiles.fromXml(erddap, xmlReader);
+          }
+          case "EDDTableFromAwsXmlFiles" -> {
+            return EDDTableFromAwsXmlFiles.fromXml(erddap, xmlReader);
+          }
+          case "EDDTableFromColumnarAsciiFiles" -> {
+            return EDDTableFromColumnarAsciiFiles.fromXml(erddap, xmlReader);
+          }
+          case "EDDTableFromHttpGet" -> {
+            return EDDTableFromHttpGet.fromXml(erddap, xmlReader);
+          }
+          case "EDDTableFromInvalidCRAFiles" -> {
+            return EDDTableFromInvalidCRAFiles.fromXml(erddap, xmlReader);
+          }
+          case "EDDTableFromJsonlCSVFiles" -> {
+            return EDDTableFromJsonlCSVFiles.fromXml(erddap, xmlReader);
+          }
+          case "EDDTableFromParquetFiles" -> {
+            return EDDTableFromParquetFiles.fromXml(erddap, xmlReader);
+          }
+          case "EDDTableFromHyraxFiles" -> {
+            return EDDTableFromHyraxFiles.fromXml(erddap, xmlReader);
+          }
+          case "EDDTableFromMultidimNcFiles" -> {
+            return EDDTableFromMultidimNcFiles.fromXml(erddap, xmlReader);
+          }
+          case "EDDTableFromNcFiles" -> {
+            return EDDTableFromNcFiles.fromXml(erddap, xmlReader);
+          }
+          case "EDDTableFromNcCFFiles" -> {
+            return EDDTableFromNcCFFiles.fromXml(erddap, xmlReader);
+          }
+          case "EDDTableFromNccsvFiles" -> {
+            return EDDTableFromNccsvFiles.fromXml(erddap, xmlReader);
+          }
+            // if (type.equals("EDDTableFromNOS"))         return EDDTableFromNOS.fromXml(erddap,
+            // xmlReader); //inactive 2010-09-08
+            // if (type.equals("EDDTableFromNWISDV"))      return EDDTableFromNWISDV.fromXml(erddap,
+            // xmlReader); //inactive 2011-12-16
+          case "EDDTableFromOBIS" -> {
+            return EDDTableFromOBIS.fromXml(erddap, xmlReader);
+          }
+            // if (type.equals("EDDTableFromPostDatabase"))return
+            // EDDTableFromPostDatabase.fromXml(erddap,
+            // xmlReader);
+            // if (type.equals("EDDTableFromPostNcFiles")) return
+            // EDDTableFromPostNcFiles.fromXml(erddap,
+            // xmlReader);
+          case "EDDTableFromSOS" -> {
+            return EDDTableFromSOS.fromXml(erddap, xmlReader);
+          }
+          case "EDDTableFromThreddsFiles" -> {
+            return EDDTableFromThreddsFiles.fromXml(erddap, xmlReader);
+          }
+          case "EDDTableFromWFSFiles" -> {
+            return EDDTableFromWFSFiles.fromXml(erddap, xmlReader);
+          }
+        }
+
+      } catch (Throwable t) {
+        String msg = MustBe.getShortErrorMessage(t);
+        throw new RuntimeException(
+            (msg.startsWith(startStartError) ? "" : startError + xmlReader.lineNumber() + ": ")
+                + msg,
+            t);
+      }
+      throw new RuntimeException(
+          startError + xmlReader.lineNumber() + ": Unexpected <dataset> type=" + type + ".");
+    }
   }
 
   /**
@@ -524,13 +837,12 @@ public abstract class EDD {
    */
   public static EDD oneFromXml(Erddap erddap, String xml) throws Throwable {
     String2.log("\nEDD.oneFromXml...");
-    if (EDStatic.useSaxParser) {
-      EDD edd =
-          SaxHandler.parseOneDataset(
-              new ByteArrayInputStream(String2.toByteArray(xml)),
-              ".*" /* dataset id, but this xml is supposed to have only one dataset */,
-              null);
-      return edd;
+    if (EDStatic.config.useSaxParser) {
+      /* dataset id, but this xml is supposed to have only one dataset */
+      return SaxHandler.parseOneDataset(
+          new ByteArrayInputStream(String2.toByteArray(xml)),
+          ".*" /* dataset id, but this xml is supposed to have only one dataset */,
+          null);
     } else {
       SimpleXMLReader xmlReader =
           new SimpleXMLReader(new ByteArrayInputStream(String2.toByteArray(xml)), "erddapDatasets");
@@ -541,8 +853,7 @@ public abstract class EDD {
           if (tags.equals("</erddapDatasets>")) {
             throw new IllegalArgumentException("No <dataset> tag in xml.");
           } else if (tags.equals("<erddapDatasets><dataset>")) {
-            EDD edd = fromXml(erddap, xmlReader.attributeValue("type"), xmlReader);
-            return edd;
+            return fromXml(erddap, xmlReader.attributeValue("type"), xmlReader);
           } else {
             xmlReader.unexpectedTagException();
           }
@@ -560,13 +871,24 @@ public abstract class EDD {
    * @param erddap if known in this context, else null
    */
   public static EDD oneFromXmlFragment(Erddap erddap, String xmlFragment) throws Throwable {
-    String xml =
-        "<?xml version=\"1.0\" encoding=\"ISO-8859-1\" ?>\n"
-            + (EDStatic.useSaxParser ? "<!DOCTYPE note [<!ENTITY deg '&#176;'>]>\n" : "")
-            + "<erddapDatasets>\n"
-            + xmlFragment
-            + "</erddapDatasets>\n";
-    return oneFromXml(erddap, xml);
+    boolean initialSynchronousLoading = EDStatic.config.forceSynchronousLoading;
+    EDD dataset = null;
+    try {
+      EDStatic.config.forceSynchronousLoading = true;
+      String xml =
+          "<?xml version=\"1.0\" encoding=\"ISO-8859-1\" ?>\n"
+              + (EDStatic.config.useSaxParser ? "<!DOCTYPE note [<!ENTITY deg '&#176;'>]>\n" : "")
+              + "<erddapDatasets>\n"
+              + xmlFragment
+              + "</erddapDatasets>\n";
+      dataset = oneFromXml(erddap, xml);
+    } catch (Throwable e) {
+      throw e;
+    } finally {
+      EDStatic.config.forceSynchronousLoading = initialSynchronousLoading;
+    }
+
+    return dataset;
   }
 
   /**
@@ -580,188 +902,151 @@ public abstract class EDD {
    */
   public static EDD oneFromDatasetsXml(Erddap erddap, String tDatasetID) throws Throwable {
     String2.log("\nEDD.oneFromDatasetsXml(" + tDatasetID + ")...");
-
-    if (EDStatic.useSaxParser) {
-      EDD edd =
-          SaxHandler.parseOneDataset(
-              File2.getBufferedInputStream(
-                  EDStatic.contentDirectory
-                      + // not File2.getDecompressedBufferedInputStream(). Read file as is.
-                      "datasets"
-                      + (EDStatic.developmentMode ? "2" : "")
-                      + ".xml"),
-              tDatasetID,
-              null);
-      return edd;
-    } else {
-      SimpleXMLReader xmlReader =
-          new SimpleXMLReader(
-              File2.getBufferedInputStream(
-                  EDStatic.contentDirectory
-                      + // not File2.getDecompressedBufferedInputStream(). Read file as is.
-                      "datasets"
-                      + (EDStatic.developmentMode ? "2" : "")
-                      + ".xml"),
-              "erddapDatasets");
-      try {
-        while (true) {
-          xmlReader.nextTag();
-          String tags = xmlReader.allTags();
-          if (tags.equals("</erddapDatasets>")) {
-            throw new IllegalArgumentException(tDatasetID + " not found in datasets.xml.");
-          } else if (tags.equals("<erddapDatasets><dataset>")) {
-            if (xmlReader.attributeValue("datasetID").equals(tDatasetID)) {
-              EDD edd = EDD.fromXml(erddap, xmlReader.attributeValue("type"), xmlReader);
-              return edd;
-            } else {
-              // skip to </dataset> tag
-              while (!tags.equals("<erddapDatasets></dataset>")) {
-                xmlReader.nextTag();
-                tags = xmlReader.allTags();
+    boolean initialSynchronousLoading = EDStatic.config.forceSynchronousLoading;
+    EDD dataset = null;
+    try {
+      EDStatic.config.forceSynchronousLoading = true;
+      if (EDStatic.config.useSaxParser) {
+        dataset =
+            SaxHandler.parseOneDataset(
+                File2.getBufferedInputStream(
+                    EDStatic.config.contentDirectory
+                        + // not File2.getDecompressedBufferedInputStream(). Read file as is.
+                        "datasets"
+                        + (EDStatic.config.developmentMode ? "2" : "")
+                        + ".xml"),
+                tDatasetID,
+                null);
+      } else {
+        SimpleXMLReader xmlReader =
+            new SimpleXMLReader(
+                File2.getBufferedInputStream(
+                    EDStatic.config.contentDirectory
+                        + // not File2.getDecompressedBufferedInputStream(). Read file as is.
+                        "datasets"
+                        + (EDStatic.config.developmentMode ? "2" : "")
+                        + ".xml"),
+                "erddapDatasets");
+        try {
+          label:
+          while (true) {
+            xmlReader.nextTag();
+            String tags = xmlReader.allTags();
+            switch (tags) {
+              case "</erddapDatasets>" ->
+                  throw new IllegalArgumentException(tDatasetID + " not found in datasets.xml.");
+              case "<erddapDatasets><dataset>" -> {
+                if (xmlReader.attributeValue("datasetID").equals(tDatasetID)) {
+                  dataset = EDD.fromXml(erddap, xmlReader.attributeValue("type"), xmlReader);
+                  break label;
+                } else {
+                  // skip to </dataset> tag
+                  while (!tags.equals("<erddapDatasets></dataset>")) {
+                    xmlReader.nextTag();
+                    tags = xmlReader.allTags();
+                  }
+                }
               }
+              case "<erddapDatasets><convertToPublicSourceUrl>" -> {
+                String tFrom = xmlReader.attributeValue("from");
+                String tTo = xmlReader.attributeValue("to");
+                int spo = EDStatic.convertToPublicSourceUrlFromSlashPo(tFrom);
+                if (tFrom != null && tFrom.length() > 3 && spo == tFrom.length() - 1 && tTo != null)
+                  EDStatic.convertToPublicSourceUrl.put(tFrom, tTo);
+              }
+              case "<erddapDatasets></convertToPublicSourceUrl>",
+                  "<erddapDatasets></user>",
+                  "<erddapDatasets><user>",
+                  "<erddapDatasets></updateMaxEvents>",
+                  "<erddapDatasets><updateMaxEvents>",
+                  "<erddapDatasets></unusualActivity>",
+                  "<erddapDatasets><unusualActivity>",
+                  "<erddapDatasets></convertInterpolateDatasetIDVariableList>",
+                  "<erddapDatasets><convertInterpolateDatasetIDVariableList>",
+                  "<erddapDatasets></convertInterpolateRequestCSVExample>",
+                  "<erddapDatasets><convertInterpolateRequestCSVExample>",
+                  "<erddapDatasets></endBodyHtml5>",
+                  "<erddapDatasets><endBodyHtml5>",
+                  "<erddapDatasets></theShortDescriptionHtml>",
+                  "<erddapDatasets><theShortDescriptionHtml>",
+                  "<erddapDatasets></startBodyHtml5>",
+                  "<erddapDatasets><startBodyHtml5>",
+                  "<erddapDatasets></startHeadHtml5>",
+                  "<erddapDatasets><startHeadHtml5>",
+                  "<erddapDatasets></standardPrivacyPolicy>",
+                  "<erddapDatasets><standardPrivacyPolicy>",
+                  "<erddapDatasets></standardGeneralDisclaimer>",
+                  "<erddapDatasets><standardGeneralDisclaimer>",
+                  "<erddapDatasets></standardDisclaimerOfExternalLinks>",
+                  "<erddapDatasets><standardDisclaimerOfExternalLinks>",
+                  "<erddapDatasets></standardDisclaimerOfEndorsement>",
+                  "<erddapDatasets><standardDisclaimerOfEndorsement>",
+                  "<erddapDatasets></standardDataLicenses>",
+                  "<erddapDatasets><standardDataLicenses>",
+                  "<erddapDatasets></standardContact>",
+                  "<erddapDatasets><standardContact>",
+                  "<erddapDatasets></standardLicense>",
+                  "<erddapDatasets><standardLicense>",
+                  "<erddapDatasets></subscriptionEmailBlacklist>",
+                  "<erddapDatasets><subscriptionEmailBlacklist>",
+                  "<erddapDatasets></slowDownTroubleMillis>",
+                  "<erddapDatasets><slowDownTroubleMillis>",
+                  "<erddapDatasets></requestBlacklist>",
+                  "<erddapDatasets><requestBlacklist>",
+                  "<erddapDatasets></partialRequestMaxCells>",
+                  "<erddapDatasets><partialRequestMaxCells>",
+                  "<erddapDatasets></partialRequestMaxBytes>",
+                  "<erddapDatasets><partialRequestMaxBytes>",
+                  "<erddapDatasets></palettes>",
+                  "<erddapDatasets><palettes>",
+                  "<erddapDatasets></nTableThreads>",
+                  "<erddapDatasets><nTableThreads>",
+                  "<erddapDatasets></nGridThreads>",
+                  "<erddapDatasets><nGridThreads>",
+                  "<erddapDatasets></logLevel>",
+                  "<erddapDatasets><logLevel>",
+                  "<erddapDatasets></loadDatasetsMaxMinutes>",
+                  "<erddapDatasets><loadDatasetsMaxMinutes>",
+                  "<erddapDatasets></loadDatasetsMinMinutes>",
+                  "<erddapDatasets><loadDatasetsMinMinutes>",
+                  "<erddapDatasets></ipAddressUnlimited>",
+                  "<erddapDatasets><ipAddressUnlimited>",
+                  "<erddapDatasets></ipAddressMaxRequestsActive>",
+                  "<erddapDatasets><ipAddressMaxRequestsActive>",
+                  "<erddapDatasets></ipAddressMaxRequests>",
+                  "<erddapDatasets><ipAddressMaxRequests>",
+                  "<erddapDatasets></graphBackgroundColor>",
+                  "<erddapDatasets><graphBackgroundColor>",
+                  "<erddapDatasets></emailDiagnosticsToErdData>",
+                  "<erddapDatasets><emailDiagnosticsToErdData>",
+                  "<erddapDatasets></drawLandMask>",
+                  "<erddapDatasets><drawLandMask>",
+                  "<erddapDatasets></decompressedCacheMaxMinutesOld>",
+                  "<erddapDatasets><decompressedCacheMaxMinutesOld>",
+                  "<erddapDatasets></decompressedCacheMaxGB>",
+                  "<erddapDatasets><decompressedCacheMaxGB>",
+                  "<erddapDatasets></commonStandardNames>",
+                  "<erddapDatasets><commonStandardNames>",
+                  "<erddapDatasets></cacheMinutes>",
+                  "<erddapDatasets><cacheMinutes>",
+                  "<erddapDatasets></angularDegreeTrueUnits>",
+                  "<erddapDatasets><angularDegreeTrueUnits>",
+                  "<erddapDatasets></angularDegreeUnits>",
+                  "<erddapDatasets><angularDegreeUnits>" -> {}
+              default -> xmlReader.unexpectedTagException();
             }
-
-          } else if (tags.equals("<erddapDatasets><convertToPublicSourceUrl>")) {
-            String tFrom = xmlReader.attributeValue("from");
-            String tTo = xmlReader.attributeValue("to");
-            int spo = EDStatic.convertToPublicSourceUrlFromSlashPo(tFrom);
-            if (tFrom != null && tFrom.length() > 3 && spo == tFrom.length() - 1 && tTo != null)
-              EDStatic.convertToPublicSourceUrl.put(tFrom, tTo);
-          } else if (tags.equals("<erddapDatasets></convertToPublicSourceUrl>")) {
-
-          } else if (tags.equals("<erddapDatasets><angularDegreeUnits>")) {
-          } else if (tags.equals("<erddapDatasets></angularDegreeUnits>")) {
-          } else if (tags.equals("<erddapDatasets><angularDegreeTrueUnits>")) {
-          } else if (tags.equals("<erddapDatasets></angularDegreeTrueUnits>")) {
-          } else if (tags.equals("<erddapDatasets><cacheMinutes>")) {
-          } else if (tags.equals("<erddapDatasets></cacheMinutes>")) {
-          } else if (tags.equals("<erddapDatasets><commonStandardNames>")) {
-          } else if (tags.equals("<erddapDatasets></commonStandardNames>")) {
-          } else if (tags.equals("<erddapDatasets><decompressedCacheMaxGB>")) {
-          } else if (tags.equals("<erddapDatasets></decompressedCacheMaxGB>")) {
-          } else if (tags.equals("<erddapDatasets><decompressedCacheMaxMinutesOld>")) {
-          } else if (tags.equals("<erddapDatasets></decompressedCacheMaxMinutesOld>")) {
-          } else if (tags.equals("<erddapDatasets><drawLandMask>")) {
-          } else if (tags.equals("<erddapDatasets></drawLandMask>")) {
-          } else if (tags.equals("<erddapDatasets><emailDiagnosticsToErdData>")) {
-          } else if (tags.equals("<erddapDatasets></emailDiagnosticsToErdData>")) {
-          } else if (tags.equals("<erddapDatasets><graphBackgroundColor>")) {
-          } else if (tags.equals("<erddapDatasets></graphBackgroundColor>")) {
-          } else if (tags.equals("<erddapDatasets><ipAddressMaxRequests>")) {
-          } else if (tags.equals("<erddapDatasets></ipAddressMaxRequests>")) {
-          } else if (tags.equals("<erddapDatasets><ipAddressMaxRequestsActive>")) {
-          } else if (tags.equals("<erddapDatasets></ipAddressMaxRequestsActive>")) {
-          } else if (tags.equals("<erddapDatasets><ipAddressUnlimited>")) {
-          } else if (tags.equals("<erddapDatasets></ipAddressUnlimited>")) {
-          } else if (tags.equals("<erddapDatasets><loadDatasetsMinMinutes>")) {
-          } else if (tags.equals("<erddapDatasets></loadDatasetsMinMinutes>")) {
-          } else if (tags.equals("<erddapDatasets><loadDatasetsMaxMinutes>")) {
-          } else if (tags.equals("<erddapDatasets></loadDatasetsMaxMinutes>")) {
-          } else if (tags.equals("<erddapDatasets><logLevel>")) {
-          } else if (tags.equals("<erddapDatasets></logLevel>")) {
-          } else if (tags.equals("<erddapDatasets><nGridThreads>")) {
-          } else if (tags.equals("<erddapDatasets></nGridThreads>")) {
-          } else if (tags.equals("<erddapDatasets><nTableThreads>")) {
-          } else if (tags.equals("<erddapDatasets></nTableThreads>")) {
-          } else if (tags.equals("<erddapDatasets><palettes>")) {
-          } else if (tags.equals("<erddapDatasets></palettes>")) {
-          } else if (tags.equals("<erddapDatasets><partialRequestMaxBytes>")) {
-          } else if (tags.equals("<erddapDatasets></partialRequestMaxBytes>")) {
-          } else if (tags.equals("<erddapDatasets><partialRequestMaxCells>")) {
-          } else if (tags.equals("<erddapDatasets></partialRequestMaxCells>")) {
-          } else if (tags.equals("<erddapDatasets><requestBlacklist>")) {
-          } else if (tags.equals("<erddapDatasets></requestBlacklist>")) {
-          } else if (tags.equals("<erddapDatasets><slowDownTroubleMillis>")) {
-          } else if (tags.equals("<erddapDatasets></slowDownTroubleMillis>")) {
-          } else if (tags.equals("<erddapDatasets><subscriptionEmailBlacklist>")) {
-          } else if (tags.equals("<erddapDatasets></subscriptionEmailBlacklist>")) {
-          } else if (tags.equals("<erddapDatasets><standardLicense>")) {
-          } else if (tags.equals("<erddapDatasets></standardLicense>")) {
-          } else if (tags.equals("<erddapDatasets><standardContact>")) {
-          } else if (tags.equals("<erddapDatasets></standardContact>")) {
-          } else if (tags.equals("<erddapDatasets><standardDataLicenses>")) {
-          } else if (tags.equals("<erddapDatasets></standardDataLicenses>")) {
-          } else if (tags.equals("<erddapDatasets><standardDisclaimerOfEndorsement>")) {
-          } else if (tags.equals("<erddapDatasets></standardDisclaimerOfEndorsement>")) {
-          } else if (tags.equals("<erddapDatasets><standardDisclaimerOfExternalLinks>")) {
-          } else if (tags.equals("<erddapDatasets></standardDisclaimerOfExternalLinks>")) {
-          } else if (tags.equals("<erddapDatasets><standardGeneralDisclaimer>")) {
-          } else if (tags.equals("<erddapDatasets></standardGeneralDisclaimer>")) {
-          } else if (tags.equals("<erddapDatasets><standardPrivacyPolicy>")) {
-          } else if (tags.equals("<erddapDatasets></standardPrivacyPolicy>")) {
-          } else if (tags.equals("<erddapDatasets><startHeadHtml5>")) {
-          } else if (tags.equals("<erddapDatasets></startHeadHtml5>")) {
-          } else if (tags.equals("<erddapDatasets><startBodyHtml5>")) {
-          } else if (tags.equals("<erddapDatasets></startBodyHtml5>")) {
-          } else if (tags.equals("<erddapDatasets><theShortDescriptionHtml>")) {
-          } else if (tags.equals("<erddapDatasets></theShortDescriptionHtml>")) {
-          } else if (tags.equals("<erddapDatasets><endBodyHtml5>")) {
-          } else if (tags.equals("<erddapDatasets></endBodyHtml5>")) {
-          } else if (tags.equals("<erddapDatasets><convertInterpolateRequestCSVExample>")) {
-          } else if (tags.equals("<erddapDatasets></convertInterpolateRequestCSVExample>")) {
-          } else if (tags.equals("<erddapDatasets><convertInterpolateDatasetIDVariableList>")) {
-          } else if (tags.equals("<erddapDatasets></convertInterpolateDatasetIDVariableList>")) {
-          } else if (tags.equals("<erddapDatasets><unusualActivity>")) {
-          } else if (tags.equals("<erddapDatasets></unusualActivity>")) {
-          } else if (tags.equals("<erddapDatasets><updateMaxEvents>")) {
-          } else if (tags.equals("<erddapDatasets></updateMaxEvents>")) {
-          } else if (tags.equals("<erddapDatasets><user>")) {
-          } else if (tags.equals("<erddapDatasets></user>")) {
-          } else {
-            xmlReader.unexpectedTagException();
           }
+        } finally {
+          xmlReader.close();
         }
-      } finally {
-        xmlReader.close();
       }
+    } catch (Throwable e) {
+      throw e;
+    } finally {
+      EDStatic.config.forceSynchronousLoading = initialSynchronousLoading;
     }
-  }
 
-  /**
-   * This is commonly used by subclass constructors to set all the items common to all EDDs. Or,
-   * subclasses can just set these things directly.
-   *
-   * <p>sourceGlobalAttributes and/or addGlobalAttributes must include:
-   *
-   * <ul>
-   *   <li>"title" - the short (&lt; 80 characters) description of the dataset
-   *   <li>"summary" - the longer description of the dataset
-   *   <li>"institution" - the source of the data (best if &lt; 50 characters so it fits in a
-   *       graph's legend).
-   *   <li>"infoUrl" - the url with information about this data set
-   *   <li>"sourceUrl" - the url (for descriptive purposes only) of the public source of the data,
-   *       e.g., the basic opendap url.
-   *   <li>"cdm_data_type" - one of the EDD.CDM_xxx options
-   * </ul>
-   *
-   * Special case: value="null" causes that item to be removed from combinedGlobalAttributes.
-   * Special case: for combinedGlobalAttributes name="license", any instance of "[standard]" will be
-   * converted to the EDStatic.standardLicense.
-   */
-  public void setup(
-      String tDatasetID,
-      Attributes tSourceGlobalAttributes,
-      Attributes tAddGlobalAttributes,
-      EDV[] tDataVariables,
-      int tReloadEveryNMinutes) {
-
-    // save the parameters
-    datasetID = tDatasetID;
-    sourceGlobalAttributes = tSourceGlobalAttributes;
-    addGlobalAttributes = tAddGlobalAttributes;
-    combinedGlobalAttributes =
-        new Attributes(addGlobalAttributes, sourceGlobalAttributes); // order is important
-    String tLicense = combinedGlobalAttributes.getString("license");
-    if (tLicense != null)
-      combinedGlobalAttributes.set(
-          "license", String2.replaceAll(tLicense, "[standard]", EDStatic.standardLicense));
-    combinedGlobalAttributes.removeValue("\"null\"");
-
-    dataVariables = tDataVariables;
-    reloadEveryNMinutes =
-        tReloadEveryNMinutes <= 0 || tReloadEveryNMinutes == Integer.MAX_VALUE
-            ? DEFAULT_RELOAD_EVERY_N_MINUTES
-            : tReloadEveryNMinutes;
+    return dataset;
   }
 
   /**
@@ -772,6 +1057,7 @@ public abstract class EDD {
    */
   public void ensureValid() throws Throwable {
     // ensure valid
+    int language = EDMessages.DEFAULT_LANGUAGE;
     String errorInMethod = "datasets.xml/EDD.ensureValid error for datasetID=" + datasetID + ":\n ";
 
     // test that required things are set
@@ -786,61 +1072,65 @@ public abstract class EDD {
     // Don't test Test.ensureSomethingUnicode(sourceGlobalAttributes, errorInMethod +
     // "sourceGlobalAttributes");
     // Admin can't control source and addAttributes may overwrite offending characters.
-    Test.ensureSomethingUnicode(addGlobalAttributes, errorInMethod + "addGlobalAttributes");
-    EDStatic.updateUrls(null, combinedGlobalAttributes);
-    Test.ensureSomethingUnicode(
-        combinedGlobalAttributes,
+    addGlobalAttributes.ensureSomethingUnicode(errorInMethod + "addGlobalAttributes");
+    combinedGlobalAttributes.updateUrls();
+    combinedGlobalAttributes.ensureSomethingUnicode(
         errorInMethod + "combinedGlobalAttributes (but probably caused by the source attributes)");
-    Test.ensureSomethingUnicode(title(), errorInMethod + "title");
-    Test.ensureSomethingUnicode(summary(), errorInMethod + "summary");
-    if (!String2.isSomething(institution()))
-      institution = combinedGlobalAttributes.getString("creator_institution"); // may be null
-    Test.ensureSomethingUnicode(institution(), errorInMethod + "institution");
-    Test.ensureSomethingUnicode(infoUrl(), errorInMethod + "infoUrl");
-    Test.ensureSomethingUnicode(publicSourceUrl(), errorInMethod + "sourceUrl");
-    if (!String2.isSomething(cdmDataType())) {
-      String ft = combinedGlobalAttributes.getString("featureType");
-      if (String2.isSomething(ft)) combinedGlobalAttributes.set("cdm_data_type", ft);
+    Test.ensureSomethingUnicode(title(language), errorInMethod + "title");
+    Test.ensureSomethingUnicode(summary(language), errorInMethod + "summary");
+    if (!String2.isSomething(institution(language)))
+      combinedGlobalAttributes.set(
+          language,
+          "institution",
+          combinedGlobalAttributes.getString(language, "creator_institution")); // may be null
+    Test.ensureSomethingUnicode(institution(language), errorInMethod + "institution");
+    Test.ensureSomethingUnicode(infoUrl(language), errorInMethod + "infoUrl");
+    Test.ensureSomethingUnicode(publicSourceUrl(language), errorInMethod + "sourceUrl");
+    if (!String2.isSomething(cdmDataType(language))) {
+      String ft = combinedGlobalAttributes.getString(language, "featureType");
+      if (String2.isSomething(ft)) combinedGlobalAttributes.set(language, "cdm_data_type", ft);
     }
-    String tLicense = combinedGlobalAttributes.getString("license");
-    if (tLicense == null) combinedGlobalAttributes.set("license", EDStatic.standardLicense);
-    Test.ensureSomethingUnicode(cdmDataType(), errorInMethod + "cdm_data_type");
+    String tLicense = combinedGlobalAttributes.getString(language, "license");
+    if (tLicense == null)
+      combinedGlobalAttributes.set(language, "license", EDStatic.messages.standardLicense);
+    Test.ensureSomethingUnicode(cdmDataType(language), errorInMethod + "cdm_data_type");
     Test.ensureSomethingUnicode(className(), errorInMethod + "className");
     if (defaultDataQuery == null || defaultDataQuery.length() == 0) {
       // if not from <defaultDataQuery>tag, try to get from attributes
-      defaultDataQuery = combinedGlobalAttributes.getString("defaultDataQuery");
+      defaultDataQuery = combinedGlobalAttributes.getString(language, "defaultDataQuery");
     } else {
       // make atts same as separate <defaultDataQuery> tag
-      addGlobalAttributes.set("defaultDataQuery", defaultDataQuery);
-      combinedGlobalAttributes.set("defaultDataQuery", defaultDataQuery);
+      addGlobalAttributes.set(language, "defaultDataQuery", defaultDataQuery);
+      combinedGlobalAttributes.set(language, "defaultDataQuery", defaultDataQuery);
     }
     if (defaultGraphQuery == null || defaultGraphQuery.length() == 0) {
-      defaultGraphQuery = combinedGlobalAttributes.getString("defaultGraphQuery");
+      defaultGraphQuery = combinedGlobalAttributes.getString(language, "defaultGraphQuery");
     } else {
-      addGlobalAttributes.set("defaultGraphQuery", defaultGraphQuery);
-      combinedGlobalAttributes.set("defaultGraphQuery", defaultGraphQuery);
+      addGlobalAttributes.set(language, "defaultGraphQuery", defaultGraphQuery);
+      combinedGlobalAttributes.set(language, "defaultGraphQuery", defaultGraphQuery);
     }
-    int cdmPo = String2.indexOf(CDM_TYPES, cdmDataType());
+    int cdmPo = CDM_TYPES.indexOf(cdmDataType(language));
     if (cdmPo < 0) {
       // if cdm_data_type is just a different case, fix it
-      cdmPo = String2.caseInsensitiveIndexOf(CDM_TYPES, cdmDataType());
+      cdmPo = String2.caseInsensitiveIndexOf(CDM_TYPES, cdmDataType(language));
       if (cdmPo >= 0) {
-        cdmDataType = CDM_TYPES[cdmPo];
-        combinedGlobalAttributes.set("cdm_data_type", cdmDataType);
+        combinedGlobalAttributes.set(language, "cdm_data_type", CDM_TYPES.get(cdmPo));
       }
     }
     Test.ensureTrue(
         cdmPo >= 0,
         errorInMethod
             + "cdm_data_type="
-            + cdmDataType
+            + cdmDataType(language)
             + " isn't one of the standard CDM types ("
             + String2.toCSSVString(CDM_TYPES)
             + ").");
-    if (String2.indexOf(CF_FEATURE_TYPES, cdmDataType) >= 0)
+    if (CF_FEATURE_TYPES.indexOf(cdmDataType(language)) >= 0)
       combinedGlobalAttributes.set(
+          language,
           "featureType",
-          cdmDataType); // case-insensitive (see CF 1.6, section 9.4), so match ERDDAP's name
+          cdmDataType(
+              language)); // case-insensitive (see CF 1.6, section 9.4), so match ERDDAP's name
     else
       combinedGlobalAttributes.remove(
           "featureType"); // featureType is for point types only (table 9.1)
@@ -868,7 +1158,7 @@ public abstract class EDD {
     {
       String kw =
           combinedGlobalAttributes.getString(
-              "keywords"); // not keywords(), because that may return default keywords
+              language, "keywords"); // not keywords(), because that may return default keywords
       if (String2.isSomething(kw)) {
         StringArray kar = StringArray.fromCSV(kw, ",;"); // split at , or ;
         for (int i = kar.size() - 1; i >= 0; i--) { // backwards since may remove some
@@ -878,29 +1168,30 @@ public abstract class EDD {
         }
         kar.sortIgnoreCase();
         kar.removeDuplicates();
-        combinedGlobalAttributes.set("keywords", kar.toString());
+        combinedGlobalAttributes.set(language, "keywords", kar.toString());
       }
     }
     String dateAtts[] = {"date_created", "date_issued", "date_modified", "date_metadata_modified"};
-    for (int i = 0; i < dateAtts.length; i++) {
-      String name = dateAtts[i];
-      String value = combinedGlobalAttributes.getString(name);
+    for (String name : dateAtts) {
+      String value = combinedGlobalAttributes.getString(language, name);
       if (String2.isSomething(value)) {
         String tValue = Calendar2.tryToIsoString(value);
         if (tValue.length() > 0 && !tValue.equals(value))
-          combinedGlobalAttributes.set(name, tValue);
+          combinedGlobalAttributes.set(language, name, tValue);
       }
     }
 
     realTime =
         "true"
-            .equals(combinedGlobalAttributes.getString("real_time")); // very strict, default=false
+            .equals(
+                combinedGlobalAttributes.getString(
+                    language, "real_time")); // very strict, default=false
 
     // last with combinedGlobalAttributes
     combinedGlobalAttributes.ensureNamesAreVariableNameSafe("In the combined global attributes");
 
     // ensure these are set in the constructor (they may be "")
-    extendedSummary(); // ensures that extendedSummaryPartB is constructed
+    extendedSummary(language); // ensures that extendedSummaryPartB is constructed
     accessibleViaMAG();
     accessibleViaSubset();
     accessibleViaGeoServicesRest();
@@ -931,23 +1222,24 @@ public abstract class EDD {
     // make this JSON format?
     // if (true) throw new RuntimeException("toString"); //test to determine who's calling this
     StringBuilder sb = new StringBuilder();
+    int language = EDMessages.DEFAULT_LANGUAGE;
     sb.append(
         datasetID
             + ": "
             + "\ntitle="
-            + title()
+            + title(language)
             + "\nsummary="
-            + summary()
+            + summary(language)
             + "\ninstitution="
-            + institution()
+            + institution(language)
             + "\ninfoUrl="
-            + infoUrl()
+            + infoUrl(language)
             + "\nlocalSourceUrl="
             + localSourceUrl
             + "\npublicSourceUrl="
-            + publicSourceUrl()
+            + publicSourceUrl(language)
             + "\ncdm_data_type="
-            + cdmDataType()
+            + cdmDataType(language)
             + "\nreloadEveryNMinutes="
             + reloadEveryNMinutes
             + " updateEveryNMillis="
@@ -974,11 +1266,11 @@ public abstract class EDD {
   public String similar(EDD other) {
 
     try {
-      if (other == null) return "EDSimilar: " + EDStatic.EDDChangedWasnt;
+      if (other == null) return "EDSimilar: " + EDStatic.messages.EDDChangedWasnt;
 
       int nDv = dataVariables.length;
       if (nDv != other.dataVariables.length)
-        return EDStatic.EDDSimilarDifferentNVar
+        return EDStatic.messages.EDDSimilarDifferentNVar
             + " ("
             + nDv
             + " != "
@@ -995,21 +1287,27 @@ public abstract class EDD {
         String msg2 = "#" + dv + "=" + s1;
         if (!s1.equals(s2))
           return MessageFormat.format(
-              EDStatic.EDDSimilarDifferent, "destinationName", msg2, "(" + s1 + " != " + s2 + ")");
+              EDStatic.messages.EDDSimilarDifferent,
+              "destinationName",
+              msg2,
+              "(" + s1 + " != " + s2 + ")");
 
         // sourceDataType
         s1 = dv1.sourceDataType();
         s2 = dv2.sourceDataType();
         if (!s1.equals(s2))
           return MessageFormat.format(
-              EDStatic.EDDSimilarDifferent, "sourceDataType", msg2, "(" + s1 + " != " + s2 + ")");
+              EDStatic.messages.EDDSimilarDifferent,
+              "sourceDataType",
+              msg2,
+              "(" + s1 + " != " + s2 + ")");
 
         // destinationDataType
         s1 = dv1.destinationDataType();
         s2 = dv2.destinationDataType();
         if (!s1.equals(s2))
           return MessageFormat.format(
-              EDStatic.EDDSimilarDifferent,
+              EDStatic.messages.EDDSimilarDifferent,
               "destinationDataType",
               msg2,
               "(" + s1 + " != " + s2 + ")");
@@ -1019,14 +1317,14 @@ public abstract class EDD {
         s2 = dv2.units();
         if (!Test.equal(s1, s2)) // may be null
         return MessageFormat.format(
-              EDStatic.EDDSimilarDifferent, "units", msg2, "(" + s1 + " != " + s2 + ")");
+              EDStatic.messages.EDDSimilarDifferent, "units", msg2, "(" + s1 + " != " + s2 + ")");
 
         // sourceMissingValue
         double d1 = dv1.sourceMissingValue();
         double d2 = dv2.sourceMissingValue();
         if (!Test.equal(d1, d2)) // says NaN==NaN is true
         return MessageFormat.format(
-              EDStatic.EDDSimilarDifferent,
+              EDStatic.messages.EDDSimilarDifferent,
               "sourceMissingValue",
               msg2,
               "(" + d1 + " != " + d2 + ")");
@@ -1036,7 +1334,10 @@ public abstract class EDD {
         d2 = dv2.sourceFillValue();
         if (!Test.equal(d1, d2)) // says NaN==NaN is true
         return MessageFormat.format(
-              EDStatic.EDDSimilarDifferent, "sourceFillValue", msg2, "(" + d1 + " != " + d2 + ")");
+              EDStatic.messages.EDDSimilarDifferent,
+              "sourceFillValue",
+              msg2,
+              "(" + d1 + " != " + d2 + ")");
       }
 
       // they are similar
@@ -1044,6 +1345,106 @@ public abstract class EDD {
     } catch (Throwable t) {
       return MustBe.throwableToShortString(t);
     }
+  }
+
+  protected Map<String, String> snapshot() {
+    Map<String, String> snapshot = new HashMap<>();
+    snapshot.put("nDv", "" + dataVariables.length);
+
+    for (int dv = 0; dv < dataVariables.length; dv++) {
+      EDV variable = dataVariables()[dv];
+      snapshot.put("dv_" + dv + "_name", variable.destinationName());
+      snapshot.put("dv_" + dv + "_type", variable.destinationDataType());
+      snapshot.put("dv_" + dv + "_attr", variable.combinedAttributes().toString());
+    }
+
+    snapshot.put("globalAttributes", combinedGlobalAttributes.toString());
+
+    return snapshot;
+  }
+
+  protected boolean mapValueMatches(
+      Map<String, String> snapshotA, Map<String, String> snapshotB, String key) {
+    if (snapshotA.get(key) == null) {
+      return snapshotB.get(key) == null;
+    }
+    return snapshotA.get(key).equals(snapshotB.get(key));
+  }
+
+  /**
+   * This tests if 'oldSnapshot' is different from this in any way. <br>
+   * This test is from the view of a subscriber who wants to know when a dataset has changed in any
+   * way. <br>
+   * So some things like onChange and reloadEveryNMinutes are not checked. <br>
+   * This only lists the first change found.
+   *
+   * <p>EDDGrid overwrites this to also check the axis variables.
+   *
+   * @param old
+   * @return "" if same or message if not.
+   */
+  public String changed(Map<String, String> oldSnapshot) {
+
+    // FUTURE: perhaps it would be nice if EDDTable changed showed new data.
+    //  so it would appear in email subscription and rss.
+    //  but for many datasets (e.g., ndbc met) there are huge number of buoys. so not practical.
+    if (oldSnapshot == null) return EDStatic.messages.EDDChangedWasnt;
+
+    Map<String, String> newSnapshot = snapshot();
+    StringBuilder diff = new StringBuilder();
+    // check most important things first
+    if (!oldSnapshot.get("nDv").equals(newSnapshot.get("nDv"))) {
+      diff.append(
+          MessageFormat.format(
+              EDStatic.messages.EDDChangedDifferentNVar,
+              oldSnapshot.get("nDv"),
+              newSnapshot.get("nDv")));
+      return diff.toString(); // because tests below assume nDv are same
+    }
+
+    int nDv = dataVariables.length;
+    for (int dv = 0; dv < nDv; dv++) {
+      String nameKey = "dv_" + dv + "_name";
+      String typeKey = "dv_" + dv + "_type";
+      String attrKey = "dv_" + dv + "_attr";
+      String msg2 = "#" + dv + "=" + newSnapshot.get(nameKey);
+      if (!mapValueMatches(oldSnapshot, newSnapshot, nameKey)) {
+        diff.append(
+            MessageFormat.format(
+                    EDStatic.messages.EDDChanged2Different,
+                    "destinationName",
+                    msg2,
+                    oldSnapshot.get(nameKey),
+                    newSnapshot.get(nameKey))
+                + "\n");
+      }
+      if (!mapValueMatches(oldSnapshot, newSnapshot, typeKey)) {
+        diff.append(
+            MessageFormat.format(
+                    EDStatic.messages.EDDChanged2Different,
+                    "destinationDataType",
+                    msg2,
+                    oldSnapshot.get(typeKey),
+                    newSnapshot.get(typeKey))
+                + "\n");
+      }
+      String s = String2.differentLine(oldSnapshot.get(attrKey), newSnapshot.get(attrKey));
+      if (s.length() > 0) {
+        diff.append(
+            MessageFormat.format(
+                    EDStatic.messages.EDDChanged1Different, "combinedAttribute", msg2, s)
+                + "\n");
+      }
+    }
+
+    // check least important things last
+    String s =
+        String2.differentLine(
+            oldSnapshot.get("globalAttributes"), newSnapshot.get("globalAttributes"));
+    if (s.length() > 0)
+      diff.append(MessageFormat.format(EDStatic.messages.EDDChangedCGADifferent, s) + "\n");
+
+    return diff.toString();
   }
 
   //    protected static String test1Changed(String msg, String diff) {
@@ -1074,7 +1475,7 @@ public abstract class EDD {
     // FUTURE: perhaps it would be nice if EDDTable changed showed new data.
     //  so it would appear in email subscription and rss.
     //  but for many datasets (e.g., ndbc met) there are huge number of buoys. so not practical.
-    if (old == null) return EDStatic.EDDChangedWasnt;
+    if (old == null) return EDStatic.messages.EDDChangedWasnt;
 
     // check most important things first
     int nDv = dataVariables.length;
@@ -1082,7 +1483,7 @@ public abstract class EDD {
     String oldS = "" + old.dataVariables.length;
     String newS = "" + nDv;
     if (!oldS.equals(newS)) {
-      diff.append(MessageFormat.format(EDStatic.EDDChangedDifferentNVar, oldS, newS));
+      diff.append(MessageFormat.format(EDStatic.messages.EDDChangedDifferentNVar, oldS, newS));
       return diff.toString(); // because tests below assume nDv are same
     }
 
@@ -1096,7 +1497,8 @@ public abstract class EDD {
       newS = newName;
       if (!oldS.equals(newS))
         diff.append(
-            MessageFormat.format(EDStatic.EDDChanged2Different, "destinationName", msg2, oldS, newS)
+            MessageFormat.format(
+                    EDStatic.messages.EDDChanged2Different, "destinationName", msg2, oldS, newS)
                 + "\n");
 
       oldS = oldDV.destinationDataType();
@@ -1104,7 +1506,7 @@ public abstract class EDD {
       if (!oldS.equals(newS))
         diff.append(
             MessageFormat.format(
-                    EDStatic.EDDChanged2Different, "destinationDataType", msg2, oldS, newS)
+                    EDStatic.messages.EDDChanged2Different, "destinationDataType", msg2, oldS, newS)
                 + "\n");
 
       String s =
@@ -1112,7 +1514,8 @@ public abstract class EDD {
               oldDV.combinedAttributes().toString(), newDV.combinedAttributes().toString());
       if (s.length() > 0)
         diff.append(
-            MessageFormat.format(EDStatic.EDDChanged1Different, "combinedAttribute", msg2, s)
+            MessageFormat.format(
+                    EDStatic.messages.EDDChanged1Different, "combinedAttribute", msg2, s)
                 + "\n");
     }
 
@@ -1121,7 +1524,7 @@ public abstract class EDD {
         String2.differentLine(
             old.combinedGlobalAttributes().toString(), combinedGlobalAttributes().toString());
     if (s.length() > 0)
-      diff.append(MessageFormat.format(EDStatic.EDDChangedCGADifferent, s) + "\n");
+      diff.append(MessageFormat.format(EDStatic.messages.EDDChangedCGADifferent, s) + "\n");
 
     return diff.toString();
   }
@@ -1134,9 +1537,10 @@ public abstract class EDD {
    *     returns "")
    * @return the rss document
    */
-  public String updateRSS(Erddap erddap, String change) {
+  public String updateRSS(String change) {
     if (change == null || change.length() == 0) return "";
     try {
+      int language = EDMessages.DEFAULT_LANGUAGE;
       // generate the rss xml
       // See general info: https://en.wikipedia.org/wiki/RSS_(file_format)
       //  background: http://www.mnot.net/rss/tutorial/
@@ -1155,7 +1559,7 @@ public abstract class EDD {
               + "<rss version=\"2.0\" xmlns=\"http://backend.userland.com/rss2\">\n"
               + "  <channel>\n"
               + "    <title>ERDDAP: "
-              + XML.encodeAsXML(title())
+              + XML.encodeAsXML(title(language))
               + "</title>\n"
               + "    <description>This RSS feed changes when the dataset changes.</description>\n"
               + link
@@ -1177,7 +1581,7 @@ public abstract class EDD {
 
       // store the xml
       String rssString = rss.toString();
-      if (erddap != null) erddap.rssHashMap.put(datasetID(), String2.stringToUtf8Bytes(rssString));
+      Erddap.rssHashMap.put(datasetID(), String2.stringToUtf8Bytes(rssString));
       return rssString;
 
     } catch (Throwable rssT) {
@@ -1218,19 +1622,19 @@ public abstract class EDD {
           "If you want to keep this dataset up-to-date, use a small reloadEveryNMinutes.";
       if (!tryToSubscribe) {
         String2.log(
-            EDStatic.warningAr[0]
+            EDStatic.messages.warningAr[0]
                 + " <tryToSubscribeToRemoteErddapDataset> is false. If that is permanent, then:\n"
                 + keepUpToDate);
       } else if (EDStatic.urlIsLocalhost(thisErddapUrl)) {
         String2.log(
-            EDStatic.warningAr[0]
+            EDStatic.messages.warningAr[0]
                 + " This ERDDAP won't try to subscribe to the dataset on the remote\n"
                 + "ERDDAP because this ERDDAP isn't publicly accessible.\n"
                 + keepUpToDate);
-      } else if (!String2.isSomething(EDStatic.emailSubscriptionsFrom)) {
+      } else if (!String2.isSomething(EDStatic.config.emailSubscriptionsFrom)) {
         // this erddap's subscription system isn't active
         String2.log(
-            EDStatic.warningAr[0]
+            EDStatic.messages.warningAr[0]
                 + " Subscribing to the remote ERDDAP dataset failed because\n"
                 + "emailEverythingTo wasn't specified in this ERDDAP's setup.xml.\n"
                 + keepUpToDate);
@@ -1257,7 +1661,7 @@ public abstract class EDD {
                 + File2.getNameNoExtension(remoteUrl)
                 + // that extracts the remote datasetID
                 "&email="
-                + SSR.minimalPercentEncode(EDStatic.emailSubscriptionsFrom)
+                + SSR.minimalPercentEncode(EDStatic.config.emailSubscriptionsFrom)
                 + "&emailIfAlreadyValid=false"
                 + "&action="
                 + SSR.minimalPercentEncode(
@@ -1291,7 +1695,7 @@ public abstract class EDD {
     String cause = "";
     try {
       String thisErddapUrl = EDStatic.preferredErddapUrl; // prefer https
-      String tEmail = EDStatic.emailSubscriptionsFrom;
+      String tEmail = EDStatic.config.emailSubscriptionsFrom;
       String tfeSourceUrl =
           ((FromErddap) tChild).getLocalSourceErddapUrl(); // "remote" erddap may be local
       int gpo = tfeSourceUrl.indexOf(tChild instanceof EDDGrid ? "/griddap/" : "/tabledap/");
@@ -1302,7 +1706,7 @@ public abstract class EDD {
         // underlying dataset is on this ERDDAP -- subscribe directly!
         EDStatic.subscriptions.addAndValidate(
             underlyingID, // throw exception if trouble
-            String2.isSomething(tEmail) ? tEmail : EDStatic.adminEmail,
+            String2.isSomething(tEmail) ? tEmail : EDStatic.config.adminEmail,
             tFlagUrl);
         if (verbose)
           String2.log(
@@ -1312,7 +1716,7 @@ public abstract class EDD {
                   + underlyingID);
         return; // success
 
-      } else if (!EDStatic.subscribeToRemoteErddapDataset) {
+      } else if (!EDStatic.config.subscribeToRemoteErddapDataset) {
         cause = "\nCause: <subscribeToRemoteErddapDataset> is set to 'false'.";
 
       } else if (EDStatic.urlIsLocalhost(thisErddapUrl)) {
@@ -1366,10 +1770,10 @@ public abstract class EDD {
 
   /**
    * The directory in which information for a dataset (e.g., fileTable.nc) is stored.
-   * EDStatic.fullDatasetDirectory/[last2char]/tDatasetID/
+   * EDStatic.config.fullDatasetDirectory/[last2char]/tDatasetID/
    */
   public static String datasetDir(String tDatasetID) {
-    return EDStatic.fullDatasetDirectory
+    return EDStatic.config.fullDatasetDirectory
         + (tDatasetID.length() <= 2 ? tDatasetID : tDatasetID.substring(tDatasetID.length() - 2))
         + "/"
         + tDatasetID
@@ -1423,7 +1827,7 @@ public abstract class EDD {
   /** The directory to be used for caching files for this dataset (with "/" at end). */
   public static String cacheDirectory(String tDatasetID) {
 
-    return EDStatic.fullCacheDirectory
+    return EDStatic.config.fullCacheDirectory
         + (tDatasetID.length() <= 2 ? tDatasetID : tDatasetID.substring(tDatasetID.length() - 2))
         + "/"
         + tDatasetID
@@ -1443,7 +1847,7 @@ public abstract class EDD {
    */
   public static String decompressedDirectory(String tDatasetID) {
 
-    return EDStatic.fullDecompressedDirectory
+    return EDStatic.config.fullDecompressedDirectory
         + (tDatasetID.length() <= 2 ? tDatasetID : tDatasetID.substring(tDatasetID.length() - 2))
         + "/"
         + tDatasetID
@@ -1453,8 +1857,10 @@ public abstract class EDD {
   /**
    * This returns the link tag for an HTML head section which advertises the RSS feed for this
    * dataset.
+   *
+   * @param language language to use for the attributes
    */
-  public String rssHeadLink() {
+  public String rssHeadLink(int language) {
     return "<link rel=\"alternate\" type=\"application/rss+xml\" \n"
         + "  href=\""
         + EDStatic.preferredErddapUrl
@@ -1463,7 +1869,7 @@ public abstract class EDD {
         + datasetID
         + ".rss\" \n"
         + "  title=\"ERDDAP: "
-        + title()
+        + title(language)
         + "\">\n";
   }
 
@@ -1472,7 +1878,7 @@ public abstract class EDD {
    *
    * @param language the index of the selected language
    */
-  public String rssHref(int language, String loggedInAs) {
+  public String rssHref(HttpServletRequest request, int language, String loggedInAs) {
     return "<a rel=\"alternate\" type=\"application/rss+xml\" "
         + "  href=\""
         + EDStatic.preferredErddapUrl
@@ -1482,21 +1888,23 @@ public abstract class EDD {
         + ".rss\" \n"
         + "  title=\"\"><img alt=\"RSS\"\n"
         + "    title=\""
-        + EDStatic.subscriptionRSSAr[language]
+        + EDStatic.messages.subscriptionRSSAr[language]
         + "\" \n"
         + "    src=\""
-        + EDStatic.imageDirUrl(loggedInAs, language)
+        + EDStatic.imageDirUrl(request, loggedInAs, language)
         + "rss.gif\" ></a>"; // no img end tag
   }
 
   /**
    * This returns the a/href tag which advertises the email subscription url for this dataset (or ""
-   * if !EDStatic.subscriptionSystemActive).
+   * if !EDStatic.config.subscriptionSystemActive).
    *
+   * @param request the request
    * @param language the index of the selected language
+   * @param loggedInAs
    */
-  public String emailHref(int language, String loggedInAs) {
-    if (EDStatic.subscriptionSystemActive)
+  public String emailHref(HttpServletRequest request, int language, String loggedInAs) {
+    if (EDStatic.config.subscriptionSystemActive)
       return "<a rel=\"alternate\" \n"
           + "  href=\""
           + EDStatic.preferredErddapUrl
@@ -1508,10 +1916,10 @@ public abstract class EDD {
           + "&amp;showErrors=false&amp;email=\" \n"
           + "  title=\"\"><img alt=\"Subscribe\"\n"
           + "    title=\""
-          + XML.encodeAsHTMLAttribute(EDStatic.subscriptionEmailAr[language])
+          + XML.encodeAsHTMLAttribute(EDStatic.messages.subscriptionEmailAr[language])
           + "\" \n"
           + "    src=\""
-          + EDStatic.imageDirUrl(loggedInAs, language)
+          + EDStatic.imageDirUrl(request, loggedInAs, language)
           + "envelope.gif\" ></a>";
     return "&nbsp;";
   }
@@ -1538,13 +1946,14 @@ public abstract class EDD {
    *     read (e.g.,) ...</globalAttributes>
    * @throws Throwable if trouble
    */
-  public static Attributes getAttributesFromXml(SimpleXMLReader xmlReader) throws Throwable {
+  public static LocalizedAttributes getAttributesFromXml(SimpleXMLReader xmlReader)
+      throws Throwable {
 
     // process the tags
     if (debugMode) String2.log("    getAttributesFromXml...");
-    Attributes tAttributes = new Attributes();
+    LocalizedAttributes tAttributes = new LocalizedAttributes();
     int startOfTagsN = xmlReader.stackSize();
-    String tName = null, tType = null;
+    String tName = null, tType = null, tLang = null;
     while (true) {
       xmlReader.nextTag();
       String topTag = xmlReader.topTag();
@@ -1557,7 +1966,7 @@ public abstract class EDD {
       if (topTag.equals("att")) {
         tName = xmlReader.attributeValue("name");
         tType = xmlReader.attributeValue("type");
-
+        tLang = xmlReader.attributeValue("xml:lang");
       } else if (topTag.equals("/att")) {
         String content = xmlReader.content();
         // if (reallyVerbose)
@@ -1597,7 +2006,7 @@ public abstract class EDD {
         // if (tName.equals("_FillValue"))
         //    String2.log(">>EDD attribute name=\"" + tName + "\" content=" + content +
         //    "\n  type=" + pa.elementTypeString() + " pa=" + pa.toString());
-        tAttributes.add(tName, pa);
+        tAttributes.set(TranslateMessages.getIndexForLanguageCode(tLang), tName, pa);
         // String2.log(">>????EDD _FillValue=" + tAttributes.get("_FillValue"));
 
       } else {
@@ -1618,15 +2027,14 @@ public abstract class EDD {
    *     The xmlReader will have just read ...&lt;/axisVariable&gt; or ...&lt;/dataVariable&gt;.
    * @throws Throwable if trouble
    */
-  public static Object[] getSDAVVariableFromXml(SimpleXMLReader xmlReader) throws Throwable {
+  public static AxisVariableInfo getSDAVVariableFromXml(SimpleXMLReader xmlReader)
+      throws Throwable {
 
     // process the tags
     if (debugMode) String2.log("  getSDAVVariableFromXml...");
-    String startOfTags = xmlReader.allTags();
     int startOfTagsN = xmlReader.stackSize();
-    int startOfTagsLength = startOfTags.length();
     String tSourceName = null, tDestinationName = null;
-    Attributes tAttributes = null;
+    LocalizedAttributes tAttributes = null;
     PrimitiveArray tValuesPA = null;
     while (true) {
       xmlReader.nextTag();
@@ -1641,51 +2049,52 @@ public abstract class EDD {
                   + tSourceName
                   + " destName="
                   + tDestinationName);
-        return new Object[] {tSourceName, tDestinationName, tAttributes, tValuesPA};
+        return new AxisVariableInfo(tSourceName, tDestinationName, tAttributes, tValuesPA);
       }
       if (xmlReader.stackSize() > startOfTagsN + 1) xmlReader.unexpectedTagException();
 
-      if (topTag.equals("sourceName")) {
-      } else if (topTag.equals("/sourceName")) tSourceName = content;
-      else if (topTag.equals("destinationName")) {
-      } else if (topTag.equals("/destinationName")) tDestinationName = content;
-      else if (topTag.equals("addAttributes")) tAttributes = getAttributesFromXml(xmlReader);
-      else if (topTag.equals(
-          "values")) { // 2017-04-27 what is this? An unfinished system for specifying a set of
-        // values for a GridAxisVariable?
-        // always make a PA
-        String type = xmlReader.attributeValue("type");
-        if (type == null) type = "";
-        if (type.endsWith("List")) type = type.substring(0, type.length() - 4);
-        if (type.equals("unsignedShort")) // the xml name
-        type = "char"; // the PrimitiveArray name
-        else if (type.equals("string")) // the xml name
-        type = "String"; // the PrimitiveArray name
-        PAType elementPAType = PAType.fromCohortString(type); // throws Throwable if trouble
-        double start = String2.parseDouble(xmlReader.attributeValue("start"));
-        double increment = String2.parseDouble(xmlReader.attributeValue("increment"));
-        int n = String2.parseInt(xmlReader.attributeValue("n"));
-        if (!Double.isNaN(start)
-            && increment > 0
-            && // this could change to !NaN and !0
-            n > 0
-            && n < Integer.MAX_VALUE) {
-          // make PA with 1+ evenly spaced values
-          tValuesPA = PrimitiveArray.factory(elementPAType, n, false);
-          for (int i = 0; i < n; i++) tValuesPA.addDouble(start + i * increment);
-        } else {
-          // make PA with correct type, but size=0
-          tValuesPA = PrimitiveArray.factory(elementPAType, 0, "");
-        }
-      } else if (topTag.equals("/values")) {
-        if (tValuesPA.size() == 0) {
-          // make a new PA from content values
-          tValuesPA = PrimitiveArray.csvFactory(tValuesPA.elementType(), content);
-        }
-        if (reallyVerbose)
-          String2.log("values for sourceName=" + tSourceName + "=" + tValuesPA.toString());
+      switch (topTag) {
+        case "sourceName", "destinationName" -> {}
+        case "/sourceName" -> tSourceName = content;
+        case "/destinationName" -> tDestinationName = content;
+        case "addAttributes" -> tAttributes = getAttributesFromXml(xmlReader);
+        case "values" -> {
+          // values for a GridAxisVariable?
+          // always make a PA
+          String type = xmlReader.attributeValue("type");
+          if (type == null) type = "";
+          if (type.endsWith("List")) type = type.substring(0, type.length() - 4);
+          if (type.equals("unsignedShort")) // the xml name
+          type = "char"; // the PrimitiveArray name
+          else if (type.equals("string")) // the xml name
+          type = "String"; // the PrimitiveArray name
+          PAType elementPAType = PAType.fromCohortString(type); // throws Throwable if trouble
 
-      } else xmlReader.unexpectedTagException();
+          double start = String2.parseDouble(xmlReader.attributeValue("start"));
+          double increment = String2.parseDouble(xmlReader.attributeValue("increment"));
+          int n = String2.parseInt(xmlReader.attributeValue("n"));
+          if (!Double.isNaN(start)
+              && increment > 0
+              && // this could change to !NaN and !0
+              n > 0
+              && n < Integer.MAX_VALUE) {
+            // make PA with 1+ evenly spaced values
+            tValuesPA = PrimitiveArray.factory(elementPAType, n, false);
+            for (int i = 0; i < n; i++) tValuesPA.addDouble(start + i * increment);
+          } else {
+            // make PA with correct type, but size=0
+            tValuesPA = PrimitiveArray.factory(elementPAType, 0, "");
+          }
+        }
+        case "/values" -> {
+          if (tValuesPA.size() == 0) {
+            // make a new PA from content values
+            tValuesPA = PrimitiveArray.csvFactory(tValuesPA.elementType(), content);
+          }
+          if (reallyVerbose) String2.log("values for sourceName=" + tSourceName + "=" + tValuesPA);
+        }
+        default -> xmlReader.unexpectedTagException();
+      }
     }
   }
 
@@ -1701,15 +2110,14 @@ public abstract class EDD {
    *     read ...&lt;/axisVariable&gt; or ...&lt;/dataVariable&gt;
    * @throws Throwable if trouble
    */
-  public static Object[] getSDADVariableFromXml(SimpleXMLReader xmlReader) throws Throwable {
+  public static DataVariableInfo getSDADVariableFromXml(SimpleXMLReader xmlReader)
+      throws Throwable {
 
     // process the tags
     if (debugMode) String2.log("  getSDADVVariableFromXml...");
-    String startOfTags = xmlReader.allTags();
     int startOfTagsN = xmlReader.stackSize();
-    int startOfTagsLength = startOfTags.length();
     String tSourceName = null, tDestinationName = null, tDataType = null;
-    Attributes tAttributes = null;
+    LocalizedAttributes tAttributes = null;
     while (true) {
       xmlReader.nextTag();
       String topTag = xmlReader.topTag();
@@ -1725,21 +2133,21 @@ public abstract class EDD {
                   + tDestinationName
                   + " dataType="
                   + tDataType);
-        return new Object[] {tSourceName, tDestinationName, tAttributes, tDataType};
+        return new DataVariableInfo(tSourceName, tDestinationName, tAttributes, tDataType);
       }
       if (xmlReader.stackSize() > startOfTagsN + 1) xmlReader.unexpectedTagException();
 
-      if (topTag.equals("sourceName")) {
-      } else if (topTag.equals("/sourceName")) tSourceName = content;
-      else if (topTag.equals("destinationName")) {
-      } else if (topTag.equals("/destinationName")) tDestinationName = content;
-      else if (topTag.equals("dataType")) {
-      } else if (topTag.equals("/dataType")) tDataType = content;
-      else if (topTag.equals("addAttributes")) {
-        tAttributes = getAttributesFromXml(xmlReader);
-        // PrimitiveArray taa= tAttributes.get("_FillValue");
-        // String2.log("getSDAD " + tSourceName + " _FillValue=" + taa);
-      } else xmlReader.unexpectedTagException();
+      switch (topTag) {
+        case "sourceName", "dataType", "destinationName" -> {}
+        case "/sourceName" -> tSourceName = content;
+        case "/destinationName" -> tDestinationName = content;
+        case "/dataType" -> tDataType = content;
+        case "addAttributes" -> tAttributes = getAttributesFromXml(xmlReader);
+
+          // PrimitiveArray taa= tAttributes.get("_FillValue");
+          // String2.log("getSDAD " + tSourceName + " _FillValue=" + taa);
+        default -> xmlReader.unexpectedTagException();
+      }
     }
   }
 
@@ -1941,7 +2349,7 @@ public abstract class EDD {
 
     if (accessibleViaFGDC == null) {
 
-      if (EDStatic.fgdcActive) {
+      if (EDStatic.config.fgdcActive) {
 
         // see if error while creating the FGDC file
         // (The constructor calls this, so no need to be careful about concurrency.)
@@ -1976,17 +2384,18 @@ public abstract class EDD {
             } else {
               // file doesn't exist
               throw new SimpleException(
-                  EDStatic.resourceNotFoundAr[0] + "the <fgdcFile> specified in datasets.xml.");
+                  EDStatic.messages.resourceNotFoundAr[0]
+                      + "the <fgdcFile> specified in datasets.xml.");
             }
 
           } else {
-            accessibleViaFGDC = MessageFormat.format(EDStatic.noXxxAr[0], "FGDC");
+            accessibleViaFGDC = MessageFormat.format(EDStatic.messages.noXxxAr[0], "FGDC");
           }
 
         } catch (Throwable t) {
           String2.log(
               MessageFormat.format(
-                  EDStatic.noXxxBecause2Ar[0],
+                  EDStatic.messages.noXxxBecause2Ar[0],
                   "FGDC",
                   (t instanceof SimpleException
                       ? MustBe.getShortErrorMessage(t)
@@ -2000,9 +2409,9 @@ public abstract class EDD {
         accessibleViaFGDC =
             String2.canonical(
                 MessageFormat.format(
-                    EDStatic.noXxxBecause2Ar[0],
+                    EDStatic.messages.noXxxBecause2Ar[0],
                     "FGDC",
-                    MessageFormat.format(EDStatic.noXxxNotActiveAr[0], "FGDC")));
+                    MessageFormat.format(EDStatic.messages.noXxxNotActiveAr[0], "FGDC")));
       }
     }
     return accessibleViaFGDC;
@@ -2013,7 +2422,7 @@ public abstract class EDD {
 
     if (accessibleViaISO19115 == null) {
 
-      if (EDStatic.iso19115Active) {
+      if (EDStatic.config.iso19115Active) {
 
         // create the ISO19115 file
         // (The constructor calls this, so no need to be careful about concurrency.)
@@ -2047,17 +2456,19 @@ public abstract class EDD {
             } else {
               // file doesn't exist
               throw new SimpleException(
-                  EDStatic.resourceNotFoundAr[0] + "the <iso19115File> specified in datasets.xml.");
+                  EDStatic.messages.resourceNotFoundAr[0]
+                      + "the <iso19115File> specified in datasets.xml.");
             }
 
           } else {
-            accessibleViaISO19115 = MessageFormat.format(EDStatic.noXxxAr[0], "ISO 19115-2/19139");
+            accessibleViaISO19115 =
+                MessageFormat.format(EDStatic.messages.noXxxAr[0], "ISO 19115-2/19139");
           }
 
         } catch (Throwable t) {
           String2.log(
               MessageFormat.format(
-                  EDStatic.noXxxBecause2Ar[0],
+                  EDStatic.messages.noXxxBecause2Ar[0],
                   "ISO 19115-2/19139",
                   (t instanceof SimpleException
                       ? MustBe.getShortErrorMessage(t)
@@ -2071,9 +2482,10 @@ public abstract class EDD {
         accessibleViaISO19115 =
             String2.canonical(
                 MessageFormat.format(
-                    EDStatic.noXxxBecause2Ar[0],
+                    EDStatic.messages.noXxxBecause2Ar[0],
                     "ISO 19115-2/19139",
-                    MessageFormat.format(EDStatic.noXxxNotActiveAr[0], "ISO 19115-2/19139")));
+                    MessageFormat.format(
+                        EDStatic.messages.noXxxNotActiveAr[0], "ISO 19115-2/19139")));
       }
     }
     return accessibleViaISO19115;
@@ -2174,11 +2586,11 @@ public abstract class EDD {
    * and Night, 0.05 degrees, Global, Science Quality". It is usually &lt; 80 characters long. The
    * information is often originally from the CF global metadata for "title".
    *
+   * @param language the index of the selected language
    * @return the title
    */
-  public String title() {
-    if (title == null) title = combinedGlobalAttributes.getString("title");
-    return title;
+  public String title(int language) {
+    return combinedGlobalAttributes.getString(language, "title");
   }
 
   /**
@@ -2186,72 +2598,73 @@ public abstract class EDD {
    * It may have newline characters (usually at &lt;= 72 chars per line). The information is often
    * originally from the CF global metadata for "summary".
    *
+   * @param language the index of the selected language
    * @return the summary
    */
-  public String summary() {
-    if (summary == null) summary = combinedGlobalAttributes.getString("summary");
-    return summary;
+  public String summary(int language) {
+    return combinedGlobalAttributes.getString(language, "summary");
   }
 
   /**
    * The extendedSummary is summary() plus a list of variable names, long names, and units.
    *
+   * @param language the index of the selected language
    * @return the extendedSummary
    */
-  public String extendedSummary() {
-    String tSummary = summary();
-    if (extendedSummaryPartB == null) {
-      String nllSummary = String2.noLongLinesAtSpace(tSummary, 100, ""); // as it will be shown
-      int nllSummaryLength = nllSummary.length();
-      int nLines = 0;
-      for (int i = 0; i < nllSummaryLength; i++) {
-        if (nllSummary.charAt(i) == '\n') nLines++;
-      }
+  public String extendedSummary(int language) {
+    String tSummary = summary(language);
 
-      // standardize the blank lines
-      StringBuilder sb = new StringBuilder();
-      if (tSummary.endsWith("\n\n")) {
-        // do nothing
-      } else if (tSummary.endsWith("\n")) {
-        sb.append('\n');
-        nLines++;
-      } else {
-        sb.append("\n\n");
-        nLines += 2;
-      }
-
-      // add the CDM info
-      sb.append("cdm_data_type = " + cdmDataType() + "\n");
-      nLines++;
-      // list the stationVariables, trajectoryVariables, profileVariables?
-
-      // add the list of variables
-      sb.append("VARIABLES");
-      if (this instanceof EDDGrid eddGrid)
-        sb.append(" (all of which use the dimensions " + eddGrid.allDimString() + ")");
-      sb.append(":\n");
-      nLines++;
-      for (int dv = 0; dv < dataVariables.length; dv++) {
-        EDV edv = dataVariables[dv];
-        String lName =
-            edv.destinationName().length() == edv.longName().length() ? "" : edv.longName();
-        String tUnits = edv.units() == null ? "" : edv.units();
-        String glue = lName.length() > 0 && tUnits.length() > 0 ? ", " : "";
-        sb.append(
-            edv.destinationName()
-                + (lName.length() > 0 || tUnits.length() > 0
-                    ? " (" + lName + glue + tUnits + ")"
-                    : "")
-                + "\n");
-
-        nLines++;
-        if (nLines > 30 && dv < dataVariables.length - 4) { // don't do this if just a few more dv
-          sb.append("... (" + (dataVariables.length - dv - 1) + " more variables)\n");
-          break;
-        }
-      }
-      extendedSummaryPartB = sb.toString(); // it is important that assignment be atomic
+    String nllSummary = String2.noLongLinesAtSpace(tSummary, 100, ""); // as it will be shown
+    int nllSummaryLength = nllSummary.length();
+    int nLines = 0;
+    for (int i = 0; i < nllSummaryLength; i++) {
+      if (nllSummary.charAt(i) == '\n') nLines++;
     }
+
+    // standardize the blank lines
+    StringBuilder sb = new StringBuilder();
+    if (tSummary.endsWith("\n\n")) {
+      // do nothing
+    } else if (tSummary.endsWith("\n")) {
+      sb.append('\n');
+      nLines++;
+    } else {
+      sb.append("\n\n");
+      nLines += 2;
+    }
+
+    // add the CDM info
+    sb.append("cdm_data_type = " + cdmDataType(language) + "\n");
+    nLines++;
+    // list the stationVariables, trajectoryVariables, profileVariables?
+
+    // add the list of variables
+    sb.append("VARIABLES");
+    if (this instanceof EDDGrid eddGrid)
+      sb.append(" (all of which use the dimensions " + eddGrid.allDimString() + ")");
+    sb.append(":\n");
+    nLines++;
+    for (int dv = 0; dv < dataVariables.length; dv++) {
+      EDV edv = dataVariables[dv];
+      String lName =
+          edv.destinationName().length() == edv.longName().length() ? "" : edv.longName();
+      String tUnits = edv.units() == null ? "" : edv.units();
+      String glue = lName.length() > 0 && tUnits.length() > 0 ? ", " : "";
+      sb.append(
+          edv.destinationName()
+              + (lName.length() > 0 || tUnits.length() > 0
+                  ? " (" + lName + glue + tUnits + ")"
+                  : "")
+              + "\n");
+
+      nLines++;
+      if (nLines > 30 && dv < dataVariables.length - 4) { // don't do this if just a few more dv
+        sb.append("... (" + (dataVariables.length - dv - 1) + " more variables)\n");
+        break;
+      }
+    }
+    String extendedSummaryPartB = sb.toString(); // it is important that assignment be atomic
+
     return extendedSummaryPartB.length() == 0 ? tSummary : tSummary + extendedSummaryPartB;
   }
 
@@ -2261,22 +2674,22 @@ public abstract class EDD {
    * usually &lt; 20 characters long. The information is often originally from the CF global
    * metadata for "institution".
    *
+   * @param language the index of the selected language
    * @return the institution
    */
-  public String institution() {
-    if (institution == null) institution = combinedGlobalAttributes.getString(EDStatic.INSTITUTION);
-    return institution;
+  public String institution(int language) {
+    return combinedGlobalAttributes.getString(language, EDStatic.INSTITUTION);
   }
 
   /**
    * The infoUrl identifies a url with information about the dataset. The information was supplied
    * by the constructor and is stored as global metadata for "infoUrl" (non-standard).
    *
+   * @param language the index of the selected language
    * @return the infoUrl
    */
-  public String infoUrl() {
-    if (infoUrl == null) infoUrl = combinedGlobalAttributes.getString("infoUrl");
-    return infoUrl;
+  public String infoUrl(int language) {
+    return combinedGlobalAttributes.getString(language, "infoUrl");
   }
 
   /**
@@ -2294,11 +2707,11 @@ public abstract class EDD {
    * The publicSourceUrl identifies the source (usually) url from the combinedGlobalAttributes. For
    * a FromErddap, this is the (e.g.,) opendap server that the remote ERDDAP gets data from.
    *
+   * @param language the index of the selected language
    * @return the publicSourceUrl
    */
-  public String publicSourceUrl() {
-    if (publicSourceUrl == null) publicSourceUrl = combinedGlobalAttributes.getString("sourceUrl");
-    return publicSourceUrl;
+  public String publicSourceUrl(int language) {
+    return combinedGlobalAttributes.getString(language, "sourceUrl");
   }
 
   /**
@@ -2317,7 +2730,7 @@ public abstract class EDD {
     int slashPo2 = EDStatic.convertToPublicSourceUrlFromSlashPo(tLocalSourceUrl);
     if (slashPo2 > 0) {
       String tFrom = tLocalSourceUrl.substring(0, slashPo2 + 1);
-      String tTo = (String) EDStatic.convertToPublicSourceUrl.get(tFrom);
+      String tTo = EDStatic.convertToPublicSourceUrl.get(tFrom);
       if (tTo != null) // there is a match
       return tTo + tLocalSourceUrl.substring(slashPo2 + 1);
     }
@@ -2346,42 +2759,48 @@ public abstract class EDD {
    * The cdm_data_type global attribute identifies the type of data. Valid values include the CF
    * featureType's + Grid.
    *
+   * @param language language to use from attributes
    * @return the cdmDataType
    */
-  public String cdmDataType() {
-    if (cdmDataType == null) cdmDataType = combinedGlobalAttributes.getString("cdm_data_type");
-    return cdmDataType;
+  public String cdmDataType(int language) {
+    return combinedGlobalAttributes.getString(language, "cdm_data_type");
   }
 
   /**
    * This returns the accessConstraints (e.g., for ERDDAP's SOS, WCS, WMS) from
    * combinedGlobalAttributes (checked first) or EDStatic (from setup.xml).
+   *
+   * @param language language to use from attributes
    */
-  public String accessConstraints() {
-    String ac = combinedGlobalAttributes().getString("accessConstraints");
+  public String accessConstraints(int language) {
+    String ac = combinedGlobalAttributes().getString(language, "accessConstraints");
     if (ac != null) return ac;
 
     return getAccessibleTo() == null
-        ? EDStatic.accessConstraints
-        : EDStatic.accessRequiresAuthorization;
+        ? EDStatic.config.accessConstraints
+        : EDStatic.config.accessRequiresAuthorization;
   }
 
   /**
    * This returns the fees (e.g., for ERDDAP's SOS, WCS, WMS) from combinedGlobalAttributes (checked
    * first) or EDStatic (from setup.xml).
+   *
+   * @param language language to use from attributes
    */
-  public String fees() {
-    String fees = combinedGlobalAttributes().getString("fees");
-    return fees == null ? EDStatic.fees : fees;
+  public String fees(int language) {
+    String fees = combinedGlobalAttributes().getString(language, "fees");
+    return fees == null ? EDStatic.config.fees : fees;
   }
 
   /**
    * This returns the keywords (e.g., for ERDDAP's SOS, WCS, WMS) from combinedGlobalAttributes
    * (checked first) or EDStatic (from setup.xml).
+   *
+   * @param language language to use from attributes
    */
-  public String[] keywords() {
-    String kw = combinedGlobalAttributes().getString("keywords");
-    if (kw == null) kw = EDStatic.keywords;
+  public String[] keywords(int language) {
+    String kw = combinedGlobalAttributes().getString(language, "keywords");
+    if (kw == null) kw = EDStatic.config.keywords;
     if (kw == null || kw.length() == 0) return new String[0];
 
     // split it  (this makes duplicates, so sort and remove them)
@@ -2399,39 +2818,47 @@ public abstract class EDD {
   /**
    * This returns the featureOfInterest from combinedGlobalAttributes (checked first) or EDStatic
    * (from setup.xml).
+   *
+   * @param language language to use from attributes
    */
-  public String sosFeatureOfInterest() {
-    String foi = combinedGlobalAttributes().getString("sosFeatureOfInterest");
-    return foi == null ? EDStatic.sosFeatureOfInterest : foi;
+  public String sosFeatureOfInterest(int language) {
+    String foi = combinedGlobalAttributes().getString(language, "sosFeatureOfInterest");
+    return foi == null ? EDStatic.config.sosFeatureOfInterest : foi;
   }
 
   /**
    * This returns the sosStandardNamePrefix from combinedGlobalAttributes (checked first) or
    * EDStatic (from setup.xml).
+   *
+   * @param language the index of the selected language
    */
-  public String sosStandardNamePrefix() {
-    String snp = combinedGlobalAttributes().getString("sosStandardNamePrefix");
-    return snp == null ? EDStatic.sosStandardNamePrefix : snp;
+  public String sosStandardNamePrefix(int language) {
+    String snp = combinedGlobalAttributes().getString(language, "sosStandardNamePrefix");
+    return snp == null ? EDStatic.config.sosStandardNamePrefix : snp;
   }
 
   /**
    * This returns the sosUrnBase from combinedGlobalAttributes (checked first) or EDStatic (from
    * setup.xml).
+   *
+   * @param language the index of the selected language
    */
-  public String sosUrnBase() {
-    String sub = combinedGlobalAttributes().getString("sosUrnBase");
-    return sub == null ? EDStatic.sosUrnBase : sub;
+  public String sosUrnBase(int language) {
+    String sub = combinedGlobalAttributes().getString(language, "sosUrnBase");
+    return sub == null ? EDStatic.config.sosUrnBase : sub;
   }
 
   /**
    * This returns the default value of drawLandMask ("under", "over", "outline", or "off") for
    * variables in this dataset. The combinedAttributes setting (if any) has priority over the
    * setup.xml setting.
+   *
+   * @param language the index of the selected language
    */
-  public String defaultDrawLandMask() {
-    String dlm = combinedGlobalAttributes().getString("drawLandMask");
-    int which = String2.indexOf(SgtMap.drawLandMask_OPTIONS, dlm);
-    return which < 1 ? EDStatic.drawLandMask : dlm;
+  public String defaultDrawLandMask(int language) {
+    String dlm = combinedGlobalAttributes().getString(language, "drawLandMask");
+    int which = SgtMap.drawLandMask_OPTIONS.indexOf(dlm);
+    return which < 1 ? EDStatic.config.drawLandMask : dlm;
   }
 
   /**
@@ -2450,7 +2877,7 @@ public abstract class EDD {
    * @return the global attributes which will be added to (and take precedence over) the
    *     sourceGlobal attributes when results files are created.
    */
-  public Attributes addGlobalAttributes() {
+  public LocalizedAttributes addGlobalAttributes() {
     return addGlobalAttributes;
   }
 
@@ -2459,7 +2886,7 @@ public abstract class EDD {
    *
    * @return the source+add global attributes.
    */
-  public Attributes combinedGlobalAttributes() {
+  public LocalizedAttributes combinedGlobalAttributes() {
     return combinedGlobalAttributes;
   }
 
@@ -2475,7 +2902,7 @@ public abstract class EDD {
     if (which < 0)
       throw new SimpleException(
           MessageFormat.format(
-              EDStatic.errorNotFoundAr[0],
+              EDStatic.messages.errorNotFoundAr[0],
               "sourceVariableName=" + tSourceName + " in datasetID=" + datasetID));
     return dataVariables[which];
   }
@@ -2495,7 +2922,7 @@ public abstract class EDD {
     if (which < 0)
       throw new SimpleException(
           MessageFormat.format(
-              EDStatic.errorNotFoundInAr[0],
+              EDStatic.messages.errorNotFoundInAr[0],
               "destinationVariableName=" + tDestinationName,
               "datasetID=" + datasetID));
     return dataVariables[which];
@@ -2707,8 +3134,8 @@ public abstract class EDD {
   }
 
   /**
-   * This creates a flag file in the EDStatic.fullResetFlagDirectory to mark this dataset so that it
-   * will be reloaded as soon as possible.
+   * This creates a flag file in the EDStatic.config.fullResetFlagDirectory to mark this dataset so
+   * that it will be reloaded as soon as possible.
    *
    * <p>Normal use: if a true source error occurs while getting data (e.g., not
    * ClientAbortException) then edd throws a gov.noaa.pfel.erddap.dataset.WaitThenTryAgainException.
@@ -2721,7 +3148,7 @@ public abstract class EDD {
   public static void requestReloadASAP(String tDatasetID) {
     String2.log("EDD.requestReloadASAP " + tDatasetID);
     if (String2.isFileNameSafe(tDatasetID)) {
-      File2.writeToFileUtf8(EDStatic.fullResetFlagDirectory + tDatasetID, tDatasetID);
+      File2.writeToFileUtf8(EDStatic.config.fullResetFlagDirectory + tDatasetID, tDatasetID);
       EDStatic.tally.add("RequestReloadASAP (since startup)", tDatasetID);
       EDStatic.tally.add("RequestReloadASAP (since last daily report)", tDatasetID);
     }
@@ -2732,16 +3159,17 @@ public abstract class EDD {
    * case-insensitve search. This uses a Boyer-Moore-like search (see String2.indexOf(byte[],
    * byte[], int[])).
    *
+   * @param language the index of the selected language
    * @param words the words or phrases to be searched for (already lowercase) stored as byte[] via
    *     word.getBytes(File2.UTF_8).
    * @param jump the jumpTables from String2.makeJumpTable(word).
    * @return a rating value for this dataset (lower numbers are better), or Integer.MAX_VALUE if
    *     words.length == 0 or one of the words wasn't found or a negative search word was found.
    */
-  public int searchRank(boolean isNegative[], byte words[][], int jump[][]) {
+  public int searchRank(int language, boolean isNegative[], byte words[][], int jump[][]) {
     if (words.length == 0) return Integer.MAX_VALUE;
     int rank = 0;
-    byte tSearchBytes[] = searchBytes(); // hold on, since it may be recreated each time
+    byte tSearchBytes[] = searchBytes(language); // hold on, since it may be recreated each time
     for (int w = 0; w < words.length; w++) {
       if (words[w].length == 0) // search word was removed
       continue;
@@ -2761,7 +3189,7 @@ public abstract class EDD {
       // rank += po < 0? penalty : po;
     }
     // special case of deprecated datasets
-    if (title().indexOf("DEPRECATED") >= 0) rank += 10000;
+    if (title(language).indexOf("DEPRECATED") >= 0) rank += 10000;
     return rank;
 
     // standardize to 0..1000
@@ -2784,14 +3212,14 @@ public abstract class EDD {
       // new system
       return String2.passwordDigest(
           "SHA-256", // makes it harder for hacker to deduce flagKeyKey from a set of flagKeys
-          EDStatic.preferredErddapUrl + "_" + tDatasetID + "_" + EDStatic.flagKeyKey);
+          EDStatic.preferredErddapUrl + "_" + tDatasetID + "_" + EDStatic.config.flagKeyKey);
 
     // original system. Best to not change, because existing subscriptions use it.
     return Math2.reduceHashCode(
         EDStatic.erddapUrl.hashCode()
             ^ // always use non-https url
             tDatasetID.hashCode()
-            ^ EDStatic.flagKeyKey.hashCode());
+            ^ EDStatic.config.flagKeyKey.hashCode());
   }
 
   /**
@@ -2813,34 +3241,27 @@ public abstract class EDD {
   /**
    * This makes/returns the searchBytes that originalSearchEngine searchRank searches.
    *
+   * @param language the index of the selected language
    * @return the searchBytes that searchRank searches.
    */
-  public byte[] searchBytes() {
-
-    if (searchBytes == null) {
-      byte tSearchBytes[] = String2.stringToUtf8Bytes(searchString().toLowerCase());
-      if (EDStatic.useLuceneSearchEngine) {
-        return tSearchBytes; // don't cache it (10^6 datasets?!) (uses should be rare)
-      } else {
-        searchBytes = tSearchBytes; // cache it
-      }
-    }
-    return searchBytes;
+  public byte[] searchBytes(int language) {
+    return String2.stringToUtf8Bytes(searchString(language).toLowerCase());
   }
 
   /**
    * This makes the searchString (mixed case) used to create searchBytes or searchDocument.
    *
+   * @param language the index of the selected language
    * @return the searchString (mixed case) used to create searchBytes or searchDocument.
    */
-  public abstract String searchString();
+  public abstract String searchString(int language);
 
-  protected StringBuilder startOfSearchString() {
+  protected StringBuilder startOfSearchString(int language) {
 
     // make a string to search through
     StringBuilder sb = new StringBuilder();
     sb.append("all\n");
-    sb.append("title=" + title() + "\n");
+    sb.append("title=" + title(language) + "\n");
     sb.append("datasetID=" + datasetID + "\n");
     // protocol=...  is suggested in Advanced Search for text searches from protocols
     // protocol=griddap and protocol=tabledap *were* mentioned in searchHintsTooltip, now commented
@@ -2857,15 +3278,15 @@ public abstract class EDD {
     if (accessibleViaNcCF().length() == 0) sb.append("service=NcCF\n");
     if (accessibleViaSubset().length() == 0) sb.append("service=Subset\n");
     // doing all varNames, then all attributes, treats varNames as more important
-    for (int dv = 0; dv < dataVariables.length; dv++) {
-      sb.append("variableName=" + dataVariables[dv].destinationName() + "\n");
-      sb.append("sourceName=" + dataVariables[dv].sourceName() + "\n");
-      sb.append("long_name=" + dataVariables[dv].longName() + "\n");
-      sb.append("type=" + dataVariables[dv].destinationDataType() + "\n");
+    for (EDV variable : dataVariables) {
+      sb.append("variableName=" + variable.destinationName() + "\n");
+      sb.append("sourceName=" + variable.sourceName() + "\n");
+      sb.append("long_name=" + variable.longName() + "\n");
+      sb.append("type=" + variable.destinationDataType() + "\n");
     }
     sb.append(combinedGlobalAttributes.toString() + "\n");
-    for (int dv = 0; dv < dataVariables.length; dv++)
-      sb.append(dataVariables[dv].combinedAttributes().toString() + "\n");
+    for (EDV dataVariable : dataVariables)
+      sb.append(dataVariable.combinedAttributes().toString() + "\n");
     return sb;
   }
 
@@ -2875,7 +3296,7 @@ public abstract class EDD {
    * @return the Document that Lucene searches.
    */
   public Document searchDocument() {
-
+    int language = EDMessages.DEFAULT_LANGUAGE;
     Document doc = new Document();
     // Store specifies if the original string also needs to be stored as is
     //  (e.g., so I can retrieve datasetID field from a matched document).
@@ -2891,91 +3312,19 @@ public abstract class EDD {
     doc.add(
         new TextField(
             EDStatic.luceneDefaultField,
-            searchString(),
+            searchString(language),
             Field.Store.NO)); // NO=  TextField is tokenized
 
     // Do duplicate searches of title to boost the score,
     //  so score from lucene and original are closer.
     // !!! FUTURE: support separate searches within the datasets' titles
     //   If so, add support in searchEngine=original, too.
-    Field field = new TextField("title", title(), Field.Store.NO); // NO=  TextField is tokenized
+    Field field =
+        new TextField("title", title(language), Field.Store.NO); // NO=  TextField is tokenized
     // field.setBoost(10);  //in 3.5.0 the title field was boosted. Then query was boosted. Now?
     doc.add(field);
     return doc;
   }
-
-  /**
-   * This returns the types of data files that this dataset can be returned as. These are short
-   * descriptive names that are put in the request url after the dataset name and before the "?",
-   * e.g., ".nc".
-   *
-   * @return the types of data files that this dataset can be returned as (e.g., ".nc").
-   */
-  public abstract String[] dataFileTypeNames();
-
-  /**
-   * This returns the file extensions corresponding to the dataFileTypes. E.g.,
-   * dataFileTypeName=".ncCF" returns dataFileTypeExtension=".nc".
-   *
-   * @return the file extensions corresponding to the dataFileTypes (e.g., ".nc").
-   */
-  public abstract String[] dataFileTypeExtensions();
-
-  /**
-   * This returns descriptions (up to 80 characters long, suitable for a tooltip) corresponding to
-   * the dataFileTypes.
-   *
-   * @param language the index of the selected language
-   * @return descriptions corresponding to the dataFileTypes.
-   */
-  public abstract String[] dataFileTypeDescriptions(int language);
-
-  /**
-   * This returns an info URL corresponding to the dataFileTypes.
-   *
-   * @return an info URL corresponding to the dataFileTypes (an element is "" if not not available)
-   */
-  public abstract String[] dataFileTypeInfo();
-
-  /**
-   * This returns the types of image files that this dataset can be returned as. These are short
-   * descriptive names that are put in the request url after the dataset name and before the "?",
-   * e.g., ".largePng".
-   *
-   * @return the types of image files that this dataset can be returned as (e.g., ".largePng").
-   */
-  public abstract String[] imageFileTypeNames();
-
-  /**
-   * This returns the file extensions corresponding to the imageFileTypes, e.g.,
-   * imageFileTypeNames=".largePng" returns imageFileTypeExtensions=".png".
-   *
-   * @return the file extensions corresponding to the imageFileTypes (e.g., ".png").
-   */
-  public abstract String[] imageFileTypeExtensions();
-
-  /**
-   * This returns descriptions corresponding to the imageFileTypes (each is suitable for a tooltip).
-   *
-   * @param language the index of the selected language
-   * @return descriptions corresponding to the imageFileTypes.
-   */
-  public abstract String[] imageFileTypeDescriptions(int language);
-
-  /**
-   * This returns an info URL corresponding to the imageFileTypes.
-   *
-   * @return an info URL corresponding to the imageFileTypes.
-   */
-  public abstract String[] imageFileTypeInfo();
-
-  /**
-   * This returns the "[name] - [description]" for all dataFileTypes and imageFileTypes.
-   *
-   * @param language the index of the selected language
-   * @return the "[name] - [description]" for all dataFileTypes and imageFileTypes.
-   */
-  public abstract String[] allFileTypeOptions(int language);
 
   /**
    * This returns the file extension corresponding to a dataFileType or imageFileType.
@@ -2987,11 +3336,17 @@ public abstract class EDD {
    */
   public String fileTypeExtension(int language, String fileTypeName) throws Throwable {
     // if there is need for speed in the future: use hashmap
-    int po = String2.indexOf(dataFileTypeNames(), fileTypeName);
-    if (po >= 0) return dataFileTypeExtensions()[po];
+    EDDFileTypeInfo fileInfo = EDD_FILE_TYPE_INFO.get(fileTypeName);
+    if (fileInfo != null) {
+      return fileInfo.getFileTypeExtension();
+    }
 
-    po = String2.indexOf(imageFileTypeNames(), fileTypeName);
-    if (po >= 0) return imageFileTypeExtensions()[po];
+    if (".graph".equals(fileTypeName)
+        || ".help".equals(fileTypeName)
+        || ".html".equals(fileTypeName)
+        || ".subset".equals(fileTypeName)) {
+      return ".html";
+    }
 
     // The pngInfo fileTypeNames could be in regular list,
     //  but audience is so small, and normal audience might be confused
@@ -3009,10 +3364,11 @@ public abstract class EDD {
     throw new SimpleException(
         EDStatic.bilingual(
             language,
-            EDStatic.queryErrorAr[0]
-                + MessageFormat.format(EDStatic.queryErrorFileTypeAr[0], fileTypeName),
-            EDStatic.queryErrorAr[language]
-                + MessageFormat.format(EDStatic.queryErrorFileTypeAr[language], fileTypeName)));
+            EDStatic.messages.queryErrorAr[0]
+                + MessageFormat.format(EDStatic.messages.queryErrorFileTypeAr[0], fileTypeName),
+            EDStatic.messages.queryErrorAr[language]
+                + MessageFormat.format(
+                    EDStatic.messages.queryErrorFileTypeAr[language], fileTypeName)));
   }
 
   /**
@@ -3042,14 +3398,13 @@ public abstract class EDD {
 
     // include fileTypeName in hash so, e.g., different sized .png
     //  have different file names
-    String name =
-        datasetID
-            + "_"
-            + // so all files from this dataset will sort together
-            String2.md5Hex12(userDapQuery + fileTypeName);
+    // so all files from this dataset will sort together
     // String2.log("%% suggestFileName=" + name + "\n  from query=" + userDapQuery + "\n  from
     // type=" + fileTypeName);
-    return name;
+    return datasetID
+        + "_"
+        + // so all files from this dataset will sort together
+        String2.md5Hex12(userDapQuery + fileTypeName);
   }
 
   /**
@@ -3070,7 +3425,8 @@ public abstract class EDD {
     if (!Double.isFinite(epochSecondsLastTime) || Math.abs(epochSecondsLastTime) > 1e18)
       return DEFAULT_RELOAD_EVERY_N_MINUTES; // DEFAULT is only returned as the default
     double daysAgo =
-        (System.currentTimeMillis() / 1000 - epochSecondsLastTime) / Calendar2.SECONDS_PER_DAY;
+        (Math2.divideNoRemainder(System.currentTimeMillis(), 1000) - epochSecondsLastTime)
+            / Calendar2.SECONDS_PER_DAY;
     int snm =
         daysAgo < -370
             ? Calendar2.MINUTES_PER_30DAYS
@@ -3162,7 +3518,7 @@ public abstract class EDD {
    *     not used to test if this edd is accessibleTo loggedInAs, but it unusual cases
    *     (EDDTableFromPost?) it could be. Normally, this is just used to determine which erddapUrl
    *     to use (http vs https).
-   * @param requestUrl the part of the user's request, after EDStatic.baseUrl, before '?'.
+   * @param requestUrl the part of the user's request, after EDStatic.config.baseUrl, before '?'.
    * @param userQuery the part of the user's request after the '?', still percentEncoded, may be
    *     null.
    * @param outputStreamSource the source of an outputStream that receives the results, usually
@@ -3198,7 +3554,7 @@ public abstract class EDD {
    *     not used to test if this edd is accessibleTo loggedInAs, but it unusual cases
    *     (EDDTableFromPost?) it could be. Normally, this is just used to determine which erddapUrl
    *     to use (http vs https).
-   * @param requestUrl the part of the user's request, after EDStatic.baseUrl, before '?'.
+   * @param requestUrl the part of the user's request, after EDStatic.config.baseUrl, before '?'.
    * @param userQuery the part of the user's request after the '?', still percentEncoded, may be
    *     null.
    * @param outputStreamSource the source of an outputStream that receives the results, usually
@@ -3358,7 +3714,7 @@ public abstract class EDD {
           response,
           "lowMakeFileForDapQuery", // ipAddress
           loggedInAs,
-          "/" + EDStatic.warName + "/" + endOfRequest,
+          "/" + EDStatic.config.warName + "/" + endOfRequest,
           endOfRequest,
           userDapQuery,
           outputStreamSource,
@@ -3390,6 +3746,7 @@ public abstract class EDD {
    * This writes the dataset info (id, title, institution, infoUrl, summary) to an html document
    * (e.g., the top of a Data Access Form).
    *
+   * @param request the request
    * @param language the index of the selected language
    * @param loggedInAs the name of the logged in user (or null if not logged in). Normally, this is
    *     not used to test if this edd is accessibleTo loggedInAs, but it unusual cases
@@ -3409,6 +3766,7 @@ public abstract class EDD {
    * @throws Throwable if trouble
    */
   public void writeHtmlDatasetInfo(
+      HttpServletRequest request,
       int language,
       String loggedInAs,
       Writer writer,
@@ -3422,10 +3780,9 @@ public abstract class EDD {
     // String type = this instanceof EDDGrid? "Gridded" :
     //   this instanceof EDDTable? "Tabular" : "(type???)";
 
-    boolean isLoggedIn = loggedInAs != null && !loggedInAs.equals(EDStatic.loggedInAsHttps);
     boolean isAccessible = isAccessibleTo(EDStatic.getRoles(loggedInAs));
     boolean graphsAccessible = isAccessible || graphsAccessibleToPublic();
-    String tErddapUrl = EDStatic.erddapUrl(loggedInAs, language);
+    String tErddapUrl = EDStatic.erddapUrl(request, loggedInAs, language);
     String tQuery =
         userDapQuery == null || userDapQuery.length() == 0
             ? ""
@@ -3441,20 +3798,20 @@ public abstract class EDD {
       dafLink =
           "     | <a rel=\"alternate\" "
               + "title=\""
-              + EDStatic.clickAccessAr[language]
+              + EDStatic.messages.clickAccessAr[language]
               + "\" \n"
               + "         href=\""
               + dapUrl
               + ".html"
               + tQuery
               + "\">"
-              + EDStatic.dafAr[language]
+              + EDStatic.messages.dafAr[language]
               + "</a>\n";
     if (isAccessible && showSubsetLink && accessibleViaSubset().length() == 0)
       subsetLink =
           "     | <a rel=\"alternate\" "
               + "title=\""
-              + EDStatic.dtSubsetAr[language]
+              + EDStatic.messages.dtSubsetAr[language]
               + "\" \n"
               + "         href=\""
               + dapUrl
@@ -3464,77 +3821,60 @@ public abstract class EDD {
                   ? ""
                   : XML.encodeAsHTMLAttribute(EDDTable.DEFAULT_SUBSET_VIEWS))
               + "\">"
-              + EDStatic.subsetAr[language]
+              + EDStatic.messages.subsetAr[language]
               + "</a>\n";
     if (isAccessible && showFilesLink && accessibleViaFiles) // > because it has sourceDir
     filesLink =
           "     | <a rel=\"alternate\" "
               + "title=\""
               + XML.encodeAsHTMLAttribute(
-                  EDStatic.filesDescriptionAr[language]
+                  EDStatic.messages.filesDescriptionAr[language]
                       + (this instanceof EDDTableFromFileNames
                           ? ""
                           : "\n"
-                              + EDStatic.warningAr[language]
+                              + EDStatic.messages.warningAr[language]
                               + " "
-                              + String2.replaceAll(EDStatic.filesWarningAr[language], "<br>", "")))
+                              + String2.replaceAll(
+                                  EDStatic.messages.filesWarningAr[language], "<br>", "")))
               + "\" \n"
               + "         href=\""
               + tErddapUrl
               + "/files/"
               + datasetID
               + "/\">"
-              + EDStatic.EDDFilesAr[language]
+              + EDStatic.messages.EDDFilesAr[language]
               + "</a>\n";
     if (graphsAccessible && showGraphLink && accessibleViaMAG().length() == 0)
       graphLink =
           "     | <a rel=\"alternate\" "
               + "title=\""
-              + EDStatic.dtMAGAr[language]
+              + EDStatic.messages.dtMAGAr[language]
               + "\" \n"
               + "         href=\""
               + dapUrl
               + ".graph"
               + tQuery
               + "\">"
-              + EDStatic.EDDMakeAGraphAr[language]
+              + EDStatic.messages.EDDMakeAGraphAr[language]
               + "</a>\n";
-    String tSummary = extendedSummary();
-    String tLicense = combinedGlobalAttributes().getString("license");
-    boolean nonStandardLicense = tLicense != null && !tLicense.equals(EDStatic.standardLicense);
-    tLicense =
-        tLicense == null
-            ? ""
-            : "    | "
-                + (nonStandardLicense ? "<span class=\"warningColor\">" : "")
-                + EDStatic.licenseAr[language]
-                + " "
-                + (nonStandardLicense ? "</span>" : "")
-                +
-                // link below should have rel=\"license\"
-                EDStatic.htmlTooltipImage(
-                    language,
-                    loggedInAs,
-                    "<div class=\"standard_max_width\">" + XML.encodeAsPreHTML(tLicense) + "</div>")
-                + "\n";
-    String encTitle = XML.encodeAsHTML(String2.noLongLines(title(), 80, ""));
+    String encTitle = XML.encodeAsHTML(String2.noLongLines(title(language), 80, ""));
     encTitle = String2.replaceAll(encTitle, "\n", "<br>");
     writer.write(
         // "<p><strong>" + type + " Dataset:</strong>\n" +
         "<table class=\"compact nowrap\">\n"
             + "  <tr>\n"
             + "    <td>"
-            + EDStatic.EDDDatasetTitleAr[language]
+            + EDStatic.messages.EDDDatasetTitleAr[language]
             + ":&nbsp;</td>\n"
             + "    <td style=\"vertical-align:middle\"><span class=\"standoutColor\" style=\"font-size:130%; line-height:130%;\"><strong>"
             + encTitle
             + "</strong>\n"
             + (graphsAccessible
                 ? "      "
-                    + emailHref(language, loggedInAs)
+                    + emailHref(request, language, loggedInAs)
                     + "\n"
                     + "      "
-                    + rssHref(language, loggedInAs)
+                    + rssHref(request, language, loggedInAs)
                     + "\n"
                 : "")
             + "      </span>\n"
@@ -3542,13 +3882,13 @@ public abstract class EDD {
             + "  </tr>\n"
             + "  <tr>\n"
             + "    <td>"
-            + EDStatic.EDDInstitutionAr[language]
+            + EDStatic.messages.EDDInstitutionAr[language]
             + ":&nbsp;</td>\n"
             + "    <td>"
-            + XML.encodeAsHTML(institution())
+            + XML.encodeAsHTML(institution(language))
             + "&nbsp;&nbsp;\n"
             + "    ("
-            + EDStatic.EDDDatasetIDAr[language]
+            + EDStatic.messages.EDDDatasetIDAr[language]
             + ": "
             + XML.encodeAsHTML(datasetID)
             + ")</td>\n"
@@ -3557,61 +3897,54 @@ public abstract class EDD {
             + "\n"
             + "  <tr>\n"
             + "    <td>"
-            + EDStatic.EDDInformationAr[language]
+            + EDStatic.messages.EDDInformationAr[language]
             + ":&nbsp;</td>\n"
             + "    <td>"
-            + EDStatic.EDDSummaryAr[language]
-            + " "
-            + EDStatic.htmlTooltipImage(
-                language,
-                loggedInAs,
-                "<div class=\"standard_max_width\">" + XML.encodeAsPreHTML(tSummary) + "</div>")
-            + "\n"
-            + tLicense
+            + getDisplayInfo(request, language, loggedInAs)
             + (accessibleViaFGDC.length() > 0
                 ? ""
                 : "     | <a rel=\"alternate\" \n"
                     + "          title=\""
-                    + EDStatic.EDDFgdcMetadataAr[language]
+                    + EDStatic.messages.EDDFgdcMetadataAr[language]
                     + "\" \n"
                     + "          href=\""
                     + dapUrl
                     + ".fgdc\">"
-                    + EDStatic.EDDFgdc
+                    + EDStatic.messages.EDDFgdc
                     + "</a>\n")
             + (accessibleViaISO19115().length() > 0
                 ? ""
                 : "     | <a rel=\"alternate\" \n"
                     + "          title=\""
-                    + EDStatic.EDDIso19115MetadataAr[language]
+                    + EDStatic.messages.EDDIso19115MetadataAr[language]
                     + "\" \n"
                     + "          href=\""
                     + dapUrl
                     + ".iso19115\">"
-                    + EDStatic.EDDIso19115
+                    + EDStatic.messages.EDDIso19115
                     + "</a>\n")
             + "     | <a rel=\"alternate\" \n"
             + "          title=\""
-            + EDStatic.clickInfoAr[language]
+            + EDStatic.messages.clickInfoAr[language]
             + "\" \n"
             + "          href=\""
             + tErddapUrl
             + "/info/"
             + datasetID
             + "/index.html\">"
-            + EDStatic.EDDMetadataAr[language]
+            + EDStatic.messages.EDDMetadataAr[language]
             + "</a>\n"
             + "     | <a rel=\"bookmark\" \n"
             + "          title=\""
-            + EDStatic.clickBackgroundInfoAr[language]
+            + EDStatic.messages.clickBackgroundInfoAr[language]
             + "\" \n"
             + "          href=\""
-            + XML.encodeAsHTMLAttribute(infoUrl())
+            + XML.encodeAsHTMLAttribute(infoUrl(language))
             + "\">"
-            + EDStatic.EDDBackgroundAr[language]
-            + (infoUrl().startsWith(EDStatic.baseUrl)
+            + EDStatic.messages.EDDBackgroundAr[language]
+            + (infoUrl(language).startsWith(EDStatic.config.baseUrl)
                 ? ""
-                : EDStatic.externalLinkHtml(language, tErddapUrl))
+                : EDStatic.messages.externalLinkHtml(language, tErddapUrl))
             + "</a>\n"
             + subsetLink
             + "\n"
@@ -3626,34 +3959,53 @@ public abstract class EDD {
   }
 
   /**
-   * This returns the kml code for the screenOverlay (which is the KML code which describes
-   * how/where to display the googleEarthLogoFile). This is used by EDD subclasses when creating KML
-   * files.
+   * This renders the string for the Information section of the dataset page
    *
-   * @return the kml code for the screenOverlay.
+   * @return the String to append to Information row
    */
-  public String getKmlIconScreenOverlay() {
-    return "  <ScreenOverlay id=\"Logo\">\n"
-        + // generic id
-        "    <description>"
-        + EDStatic.preferredErddapUrl
-        + "</description>\n"
-        + "    <name>Logo</name>\n"
-        + // generic name
-        "    <Icon>"
-        + "<href>"
-        + EDStatic.preferredErddapUrl
-        + "/"
-        + EDStatic.IMAGES_DIR
-        + // has trailing /
-        EDStatic.googleEarthLogoFile
-        + "</href>"
-        + "</Icon>\n"
-        + "    <overlayXY x=\"0.005\" y=\".04\" xunits=\"fraction\" yunits=\"fraction\"/>\n"
-        + "    <screenXY x=\"0.005\" y=\".04\" xunits=\"fraction\" yunits=\"fraction\"/>\n"
-        + "    <size x=\"0\" y=\"0\" xunits=\"pixels\" yunits=\"pixels\"/>\n"
-        + // 0=original size
-        "  </ScreenOverlay>\n";
+  private String getDisplayInfo(HttpServletRequest request, int language, String loggedInAs) {
+    if (EDStatic.displayAttributeAr.length != EDStatic.displayInfoAr.get(language).length) {
+      String2.log("Incorrect input to the displayAttribute and displayInfo tags");
+      return "";
+    }
+
+    StringBuilder displayInfoStr = new StringBuilder();
+
+    for (int i = 0; i < EDStatic.displayAttributeAr.length; i++) {
+      String attribute = EDStatic.displayAttributeAr[i];
+      String displayInfo = EDStatic.displayInfoAr.get(language)[i];
+      String value;
+
+      String attVal = combinedGlobalAttributes().getString(language, attribute);
+      boolean warningColor = false;
+      // Handle "summary"
+      if ("summary".equals(attribute)) {
+        attVal = extendedSummary(language);
+        displayInfo = EDStatic.messages.EDDSummaryAr[language];
+      }
+      if ("license".equals(attribute)) {
+        warningColor = attVal != null && !attVal.equals(EDStatic.messages.standardLicense);
+        displayInfo = EDStatic.messages.licenseAr[language];
+      }
+      if (warningColor) {
+        displayInfo = "<span class=\"warningColor\">" + displayInfo + "</span>";
+      }
+      value =
+          EDStatic.htmlTooltipImage(
+              request,
+              language,
+              loggedInAs,
+              "<div class=\"standard_max_width\">"
+                  + XML.encodeAsPreHTML(attVal != null ? attVal : attribute + " is undefined")
+                  + "</div>");
+      if (i != 0) {
+        // Add a spacer between items after the first.
+        displayInfoStr.append("    | ");
+      }
+      displayInfoStr.append(displayInfo).append(" ").append(value).append("\n");
+    }
+
+    return displayInfoStr.toString();
   }
 
   /**
@@ -3673,7 +4025,7 @@ public abstract class EDD {
     // get the readyToUseAddGlobalAttributes for suggestions
     Attributes addAtts =
         makeReadyToUseAddGlobalAttributesForDatasetsXml(
-            sourceAtts, tCdmDataType, tLocalSourceUrl, null, new HashSet());
+            sourceAtts, tCdmDataType, tLocalSourceUrl, null, new HashSet<>());
     String aConventions = addAtts.getString("Conventions");
     String aInfo = addAtts.getString("infoUrl");
     String aIns = addAtts.getString("institution");
@@ -3683,7 +4035,9 @@ public abstract class EDD {
     if (!String2.isSomething2(value))
       sourceAtts.add(
           name,
-          tCdmDataType == null ? "???" + String2.toSVString(CDM_TYPES, "|", false) : tCdmDataType);
+          tCdmDataType == null
+              ? "???" + String2.toSVString(CDM_TYPES.toArray(), "|", false)
+              : tCdmDataType);
 
     name = "Conventions";
     value = sourceAtts.getString(name);
@@ -3828,77 +4182,82 @@ public abstract class EDD {
       // Do LLAT already exist?
       // String2.log("\n>>colName=" + colName + " units=" + units);
       String colNameLC = colName.toLowerCase();
-      if (colNameLC.equals(EDV.LON_NAME)) {
-        if (isNumeric && EDV.couldBeLonUnits(units)) {
-          addTable.setColumnName(col, EDV.LON_NAME);
-          if (!String2.looselyEquals(sourceName, EDV.LON_NAME)
-              && !"lon".equals(sourceName.toLowerCase())) addAtts.set("source_name", sourceName);
-          if (!EDV.LON_UNITS.equals(units)) addAtts.set("units", EDV.LON_UNITS);
-          if (stdName == null) addAtts.set("standard_name", EDV.LON_STANDARD_NAME);
-        } else {
-          int n = 2;
-          while (addTable.findColumnNumber(EDV.LON_NAME + n) >= 0) n++;
-          addTable.setColumnName(col, EDV.LON_NAME + n);
-          if (!String2.looselyEquals(sourceName, EDV.LON_NAME)
-              && !"lon".equals(sourceName.toLowerCase())) addAtts.set("source_name", sourceName);
+      switch (colNameLC) {
+        case EDV.LON_NAME -> {
+          if (isNumeric && EDV.couldBeLonUnits(units)) {
+            addTable.setColumnName(col, EDV.LON_NAME);
+            if (!String2.looselyEquals(sourceName, EDV.LON_NAME)
+                && !"lon".equalsIgnoreCase(sourceName)) addAtts.set("source_name", sourceName);
+            if (!EDV.LON_UNITS.equals(units)) addAtts.set("units", EDV.LON_UNITS);
+            if (stdName == null) addAtts.set("standard_name", EDV.LON_STANDARD_NAME);
+          } else {
+            int n = 2;
+            while (addTable.findColumnNumber(EDV.LON_NAME + n) >= 0) n++;
+            addTable.setColumnName(col, EDV.LON_NAME + n);
+            if (!String2.looselyEquals(sourceName, EDV.LON_NAME)
+                && !"lon".equalsIgnoreCase(sourceName)) addAtts.set("source_name", sourceName);
+          }
         }
-      } else if (colNameLC.equals(EDV.LAT_NAME)) {
-        if (isNumeric && EDV.couldBeLatUnits(units)) {
-          addTable.setColumnName(col, EDV.LAT_NAME);
-          if (!String2.looselyEquals(sourceName, EDV.LAT_NAME)
-              && !"lat".equals(sourceName.toLowerCase())) addAtts.set("source_name", sourceName);
-          if (!EDV.LAT_UNITS.equals(units)) addAtts.set("units", EDV.LAT_UNITS);
-          if (stdName == null) addAtts.set("standard_name", EDV.LAT_STANDARD_NAME);
-        } else {
-          int n = 2;
-          while (addTable.findColumnNumber(EDV.LAT_NAME + n) >= 0) n++;
-          addTable.setColumnName(col, EDV.LAT_NAME + n);
-          if (!String2.looselyEquals(sourceName, EDV.LAT_NAME)
-              && !"lat".equals(sourceName.toLowerCase())) addAtts.set("source_name", sourceName);
+        case EDV.LAT_NAME -> {
+          if (isNumeric && EDV.couldBeLatUnits(units)) {
+            addTable.setColumnName(col, EDV.LAT_NAME);
+            if (!String2.looselyEquals(sourceName, EDV.LAT_NAME)
+                && !"lat".equalsIgnoreCase(sourceName)) addAtts.set("source_name", sourceName);
+            if (!EDV.LAT_UNITS.equals(units)) addAtts.set("units", EDV.LAT_UNITS);
+            if (stdName == null) addAtts.set("standard_name", EDV.LAT_STANDARD_NAME);
+          } else {
+            int n = 2;
+            while (addTable.findColumnNumber(EDV.LAT_NAME + n) >= 0) n++;
+            addTable.setColumnName(col, EDV.LAT_NAME + n);
+            if (!String2.looselyEquals(sourceName, EDV.LAT_NAME)
+                && !"lat".equalsIgnoreCase(sourceName)) addAtts.set("source_name", sourceName);
+          }
         }
-      } else if ((colNameLC.equals(EDV.ALT_NAME) || colNameLC.equals(EDV.DEPTH_NAME))) {
-        if (isNumeric
-            && (units == null
-                || units.length() == 0
-                || String2.indexOf(EDV.METERS_VARIANTS, units) >= 0)) { // case sensitive
-          addTable.setColumnName(col, colNameLC);
-          if (!EDV.ALT_UNITS.equals(units))
-            addAtts.set("units", EDV.ALT_UNITS); // EDV.DEPTH_UNITS are also "m"
-          if (colNameLC.equals(EDV.ALT_NAME)) {
+        case EDV.ALT_NAME, EDV.DEPTH_NAME -> {
+          if (isNumeric
+              && (units == null
+                  || units.length() == 0
+                  || EDV.METERS_VARIANTS.indexOf(units) >= 0)) { // case sensitive
+            addTable.setColumnName(col, colNameLC);
+            if (!EDV.ALT_UNITS.equals(units))
+              addAtts.set("units", EDV.ALT_UNITS); // EDV.DEPTH_UNITS are also "m"
+            if (colNameLC.equals(EDV.ALT_NAME)) {
+              if (!String2.looselyEquals(sourceName, EDV.ALT_NAME))
+                addAtts.set("source_name", sourceName);
+              if (stdName == null) addAtts.set("standard_name", EDV.ALT_STANDARD_NAME);
+            } else {
+              if (!String2.looselyEquals(sourceName, EDV.DEPTH_NAME))
+                addAtts.set("source_name", sourceName);
+              if (stdName == null) addAtts.set("standard_name", EDV.DEPTH_STANDARD_NAME);
+            }
+          } else if (EDV.ALT_NAME.equals(colNameLC)) {
+            int n = 2;
+            while (addTable.findColumnNumber(EDV.ALT_NAME + n) >= 0) n++;
+            addTable.setColumnName(col, EDV.ALT_NAME + n);
             if (!String2.looselyEquals(sourceName, EDV.ALT_NAME))
               addAtts.set("source_name", sourceName);
-            if (stdName == null) addAtts.set("standard_name", EDV.ALT_STANDARD_NAME);
-          } else {
+          } else if (EDV.DEPTH_NAME.equals(colNameLC)) {
+            int n = 2;
+            while (addTable.findColumnNumber(EDV.DEPTH_NAME + n) >= 0) n++;
+            addTable.setColumnName(col, EDV.DEPTH_NAME + n);
             if (!String2.looselyEquals(sourceName, EDV.DEPTH_NAME))
               addAtts.set("source_name", sourceName);
-            if (stdName == null) addAtts.set("standard_name", EDV.DEPTH_STANDARD_NAME);
           }
-        } else if (EDV.ALT_NAME.equals(colNameLC)) {
-          int n = 2;
-          while (addTable.findColumnNumber(EDV.ALT_NAME + n) >= 0) n++;
-          addTable.setColumnName(col, EDV.ALT_NAME + n);
-          if (!String2.looselyEquals(sourceName, EDV.ALT_NAME))
-            addAtts.set("source_name", sourceName);
-        } else if (EDV.DEPTH_NAME.equals(colNameLC)) {
-          int n = 2;
-          while (addTable.findColumnNumber(EDV.DEPTH_NAME + n) >= 0) n++;
-          addTable.setColumnName(col, EDV.DEPTH_NAME + n);
-          if (!String2.looselyEquals(sourceName, EDV.DEPTH_NAME))
-            addAtts.set("source_name", sourceName);
         }
-      } else if (colNameLC.equals(EDV.TIME_NAME)) {
-        if (Calendar2.isTimeUnits(units)) {
-          addTable.setColumnName(col, EDV.TIME_NAME);
-          if (!String2.looselyEquals(sourceName, EDV.TIME_NAME))
-            addAtts.set("source_name", sourceName);
-          if (stdName == null) addAtts.set("standard_name", EDV.TIME_STANDARD_NAME);
-        } else {
-          int n = 2;
-          while (addTable.findColumnNumber(EDV.TIME_NAME + n) >= 0) n++;
-          addTable.setColumnName(col, EDV.TIME_NAME + n);
-          if (!String2.looselyEquals(sourceName, EDV.TIME_NAME))
-            addAtts.set("source_name", sourceName);
-          // String2.log(">>Set time_");
+        case EDV.TIME_NAME -> {
+          if (Calendar2.isTimeUnits(units)) {
+            addTable.setColumnName(col, EDV.TIME_NAME);
+            if (!String2.looselyEquals(sourceName, EDV.TIME_NAME))
+              addAtts.set("source_name", sourceName);
+            if (stdName == null) addAtts.set("standard_name", EDV.TIME_STANDARD_NAME);
+          } else {
+            int n = 2;
+            while (addTable.findColumnNumber(EDV.TIME_NAME + n) >= 0) n++;
+            addTable.setColumnName(col, EDV.TIME_NAME + n);
+            if (!String2.looselyEquals(sourceName, EDV.TIME_NAME))
+              addAtts.set("source_name", sourceName);
+            // String2.log(">>Set time_");
+          }
         }
       }
     }
@@ -3971,7 +4330,7 @@ public abstract class EDD {
         if (isNumeric && EDV.couldBeLonUnits(units)) {
           addTable.setColumnName(col, EDV.LON_NAME);
           if (!String2.looselyEquals(sourceName, EDV.LON_NAME)
-              && !"lon".equals(sourceName.toLowerCase())) addAtts.set("source_name", sourceName);
+              && !"lon".equalsIgnoreCase(sourceName)) addAtts.set("source_name", sourceName);
           if (!EDV.LON_UNITS.equals(units)) addAtts.set("units", EDV.LON_UNITS);
           if (stdName == null) addAtts.set("standard_name", EDV.LON_STANDARD_NAME);
           hasLon = true;
@@ -3980,13 +4339,13 @@ public abstract class EDD {
           while (addTable.findColumnNumber(EDV.LON_NAME + n) >= 0) n++;
           addTable.setColumnName(col, EDV.LON_NAME + n);
           if (!String2.looselyEquals(sourceName, EDV.LON_NAME)
-              && !"lon".equals(sourceName.toLowerCase())) addAtts.set("source_name", sourceName);
+              && !"lon".equalsIgnoreCase(sourceName)) addAtts.set("source_name", sourceName);
         }
       } else if (!hasLat && colNameLC.equals(EDV.LAT_NAME)) {
         if (isNumeric && EDV.couldBeLatUnits(units)) {
           addTable.setColumnName(col, EDV.LAT_NAME);
           if (!String2.looselyEquals(sourceName, EDV.LAT_NAME)
-              && !"lat".equals(sourceName.toLowerCase())) addAtts.set("source_name", sourceName);
+              && !"lat".equalsIgnoreCase(sourceName)) addAtts.set("source_name", sourceName);
           if (!EDV.LAT_UNITS.equals(units)) addAtts.set("units", EDV.LAT_UNITS);
           if (stdName == null) addAtts.set("standard_name", EDV.LAT_STANDARD_NAME);
           hasLat = true;
@@ -3995,14 +4354,14 @@ public abstract class EDD {
           while (addTable.findColumnNumber(EDV.LAT_NAME + n) >= 0) n++;
           addTable.setColumnName(col, EDV.LAT_NAME + n);
           if (!String2.looselyEquals(sourceName, EDV.LAT_NAME)
-              && !"lat".equals(sourceName.toLowerCase())) addAtts.set("source_name", sourceName);
+              && !"lat".equalsIgnoreCase(sourceName)) addAtts.set("source_name", sourceName);
         }
       } else if (!hasAltDepth
           && (colNameLC.equals(EDV.ALT_NAME) || colNameLC.equals(EDV.DEPTH_NAME))) {
         if (isNumeric
             && (units == null
                 || units.length() == 0
-                || String2.indexOf(EDV.METERS_VARIANTS, units) >= 0)) { // case sensitive
+                || EDV.METERS_VARIANTS.indexOf(units) >= 0)) { // case sensitive
           addTable.setColumnName(col, colNameLC);
           if (!EDV.ALT_UNITS.equals(units))
             addAtts.set("units", EDV.ALT_UNITS); // EDV.DEPTH_UNITS are also "m"
@@ -4059,7 +4418,6 @@ public abstract class EDD {
       Attributes sourceAtts = sourceTable == null ? null : sourceTable.columnAttributes(col);
       Attributes addAtts = addTable.columnAttributes(col);
       String units = getAddOrSourceAtt(addAtts, sourceAtts, "units", null);
-      String positive = getAddOrSourceAtt(addAtts, sourceAtts, "positive", null);
       String stdName = getAddOrSourceAtt(addAtts, sourceAtts, "standard_name", null);
       if (!hasLon
           && isNumeric
@@ -4067,8 +4425,8 @@ public abstract class EDD {
           && // extra criteria compared to below
           (EDV.LON_STANDARD_NAME.equals(stdName) || EDV.probablyLon(colName, units))) {
         addTable.setColumnName(col, EDV.LON_NAME);
-        if (!String2.looselyEquals(sourceName, EDV.LON_NAME)
-            && !"lon".equals(sourceName.toLowerCase())) addAtts.set("source_name", sourceName);
+        if (!String2.looselyEquals(sourceName, EDV.LON_NAME) && !"lon".equalsIgnoreCase(sourceName))
+          addAtts.set("source_name", sourceName);
         if (!EDV.LON_UNITS.equals(units)) addAtts.set("units", EDV.LON_UNITS);
         if (stdName == null) addAtts.set("standard_name", EDV.LON_STANDARD_NAME);
         hasLon = true;
@@ -4078,8 +4436,8 @@ public abstract class EDD {
           && // extra criteria compared to below
           (EDV.LAT_STANDARD_NAME.equals(stdName) || EDV.probablyLat(colName, units))) {
         addTable.setColumnName(col, EDV.LAT_NAME);
-        if (!String2.looselyEquals(sourceName, EDV.LAT_NAME)
-            && !"lat".equals(sourceName.toLowerCase())) addAtts.set("source_name", sourceName);
+        if (!String2.looselyEquals(sourceName, EDV.LAT_NAME) && !"lat".equalsIgnoreCase(sourceName))
+          addAtts.set("source_name", sourceName);
         if (!EDV.LAT_UNITS.equals(units)) addAtts.set("units", EDV.LAT_UNITS);
         if (stdName == null) addAtts.set("standard_name", EDV.LAT_STANDARD_NAME);
         hasLat = true;
@@ -4118,8 +4476,8 @@ public abstract class EDD {
           && isNumeric
           && (EDV.LON_STANDARD_NAME.equals(stdName) || EDV.probablyLon(colName, units))) {
         addTable.setColumnName(col, EDV.LON_NAME);
-        if (!String2.looselyEquals(sourceName, EDV.LON_NAME)
-            && !"lon".equals(sourceName.toLowerCase())) addAtts.set("source_name", sourceName);
+        if (!String2.looselyEquals(sourceName, EDV.LON_NAME) && !"lon".equalsIgnoreCase(sourceName))
+          addAtts.set("source_name", sourceName);
         if (!EDV.LON_UNITS.equals(units)) addAtts.set("units", EDV.LON_UNITS);
         if (stdName == null) addAtts.set("standard_name", EDV.LON_STANDARD_NAME);
         hasLon = true;
@@ -4127,14 +4485,14 @@ public abstract class EDD {
           && isNumeric
           && (EDV.LAT_STANDARD_NAME.equals(stdName) || EDV.probablyLat(colName, units))) {
         addTable.setColumnName(col, EDV.LAT_NAME);
-        if (!String2.looselyEquals(sourceName, EDV.LAT_NAME)
-            && !"lat".equals(sourceName.toLowerCase())) addAtts.set("source_name", sourceName);
+        if (!String2.looselyEquals(sourceName, EDV.LAT_NAME) && !"lat".equalsIgnoreCase(sourceName))
+          addAtts.set("source_name", sourceName);
         if (!EDV.LAT_UNITS.equals(units)) addAtts.set("units", EDV.LAT_UNITS);
         if (stdName == null) addAtts.set("standard_name", EDV.LAT_STANDARD_NAME);
         hasLat = true;
       } else if (!hasAltDepth
           && isNumeric
-          && String2.indexOf(EDV.METERS_VARIANTS, units) >= 0
+          && EDV.METERS_VARIANTS.indexOf(units) >= 0
           && // case sensitive
           (colNameLC.indexOf("altitude") >= 0
               || colNameLC.indexOf("elevation") >= 0
@@ -4147,7 +4505,7 @@ public abstract class EDD {
         hasAltDepth = true;
       } else if (!hasAltDepth
           && isNumeric
-          && String2.indexOf(EDV.METERS_VARIANTS, units) >= 0
+          && EDV.METERS_VARIANTS.indexOf(units) >= 0
           && // case sensitive
           (colNameLC.indexOf("depth") >= 0
               || colNameLC.equals("z")
@@ -4187,7 +4545,7 @@ public abstract class EDD {
    * @param hashset
    * @return the same hashSet for convenience
    */
-  public static void addAllAndParts(String phrase, HashSet<String> hashSet) {
+  public static void addAllAndParts(String phrase, Set<String> hashSet) {
     if (phrase == null || phrase.length() == 0) return;
     phrase = phrase.toLowerCase().trim();
     while (phrase.endsWith("*") || phrase.endsWith("_"))
@@ -4203,12 +4561,11 @@ public abstract class EDD {
    * @param hashset
    * @return the same hashSet for convenience
    */
-  public static HashSet<String> chopUpCsvAddAllAndParts(String csv, HashSet<String> hashSet) {
+  public static Set<String> chopUpCsvAddAllAndParts(String csv, Set<String> hashSet) {
     // String2.log("chopUpAndAdd " + phrase);
     if (csv == null || csv.length() == 0) return hashSet;
     String tWords[] = StringArray.arrayFromCSV(csv, ",;"); // split at , or ;
-    int ntWords = tWords.length;
-    for (int tw = 0; tw < ntWords; tw++) addAllAndParts(tWords[tw], hashSet);
+    for (String tWord : tWords) addAllAndParts(tWord, hashSet);
     return hashSet;
   }
 
@@ -4219,13 +4576,12 @@ public abstract class EDD {
    * @param hashset
    * @return the same hashSet for convenience
    */
-  public static HashSet<String> chopUpCsvAndAdd(String csv, HashSet<String> hashSet) {
+  public static Set<String> chopUpCsvAndAdd(String csv, Set<String> hashSet) {
     // String2.log(">> chopUpAndAdd " + csv);
     if (csv == null || csv.length() == 0) return hashSet;
     String tWords[] = StringArray.arrayFromCSV(csv, ",;"); // split at , or ;
-    int ntWords = tWords.length;
-    for (int tw = 0; tw < ntWords; tw++) {
-      String w = tWords[tw];
+    for (String tWord : tWords) {
+      String w = tWord;
       while (w.endsWith("*") || w.endsWith("_")) w = w.substring(0, w.length() - 1).trim();
       hashSet.add(w);
       chopUpAndAdd(w, hashSet);
@@ -4240,7 +4596,7 @@ public abstract class EDD {
    * @param hashset
    * @return the same hashSet for convenience
    */
-  public static HashSet<String> chopUpAndAdd(String phrase, HashSet<String> hashSet) {
+  public static Set<String> chopUpAndAdd(String phrase, Set<String> hashSet) {
     // String2.log("chopUpAndAdd " + phrase);
     // remove . at end of sentence or abbreviation, but not within number or word.word
     if (phrase == null || phrase.length() == 0) return hashSet;
@@ -4289,8 +4645,7 @@ public abstract class EDD {
       if (s.length() > 2) {
         // String2.log("  add " + s);
         hashSet.add(s);
-      } else if (String2.indexOf(KEEP_SHORT_KEYWORDS, s) >= 0
-          || String2.indexOf(KEEP_SHORT_UC_KEYWORDS, s) >= 0) {
+      } else if (KEEP_SHORT_KEYWORDS.indexOf(s) >= 0 || KEEP_SHORT_UC_KEYWORDS.indexOf(s) >= 0) {
         hashSet.add(s); // uppercase will be upper-cased when written to generateDatasetsXml
       }
 
@@ -4321,9 +4676,9 @@ public abstract class EDD {
    * @param dataAddTable
    * @return a HashSet of suggested keywords (may be String[0])
    */
-  public static HashSet<String> suggestKeywords(Table dataSourceTable, Table dataAddTable) {
+  public static Set<String> suggestKeywords(Table dataSourceTable, Table dataAddTable) {
 
-    HashSet<String> keywordHashSet = new HashSet(128);
+    Set<String> keywordHashSet = new HashSet<>(128);
 
     // from the global metadata
     Attributes sourceGAtt = dataSourceTable.globalAttributes();
@@ -4354,9 +4709,8 @@ public abstract class EDD {
       if (stdName != null) {
         // get matching gcmd keywords
         String tKeywords[] = CfToFromGcmd.cfToGcmd(stdName);
-        for (int i = 0; i < tKeywords.length; i++) {
+        for (String tk : tKeywords) {
           // add the whole gcmd keyword phrase
-          String tk = tKeywords[i];
           keywordHashSet.add(tk);
 
           // add individual words from gcmd keywords
@@ -4406,7 +4760,7 @@ public abstract class EDD {
       kw = kw.substring(0, kw.length() - 3) + " pH"; // only occurs at end of keywords
       return kw;
     }
-    if (String2.indexOf(GCMD_LEVEL1, kwlc.substring(0, gtpo + 3)) >= 0) { // everything is lowercase
+    if (GCMD_LEVEL1.indexOf(kwlc.substring(0, gtpo + 3)) >= 0) { // everything is lowercase
       // add missing level 0 "Earth Science > "
       kw = GCMD_EARTH_SCIENCE + String2.toTitleCase(kw);
       if (kw.endsWith(" Ph")) // flaw in toTitleCase
@@ -4422,12 +4776,12 @@ public abstract class EDD {
    * @param suggestedKeywords
    * @throws Exception if touble
    */
-  public static void cleanSuggestedKeywords(HashSet<String> keywords) throws Exception {
+  public static void cleanSuggestedKeywords(Set<String> keywords) throws Exception {
 
     // look in keywords for acronyms -- expand them
     String keys[] = keywords.toArray(new String[0]);
     int n = keys.length;
-    HashMap<String, String> achm = EDStatic.gdxAcronymsHashMap();
+    Map<String, String> achm = EDStatic.gdxAcronymsHashMap();
     for (int i = 0; i < n; i++) {
       // String2.log(">> 1keyword#" + i + "=" + keys[i]);
       chopUpAndAdd(achm.get(keys[i].toUpperCase()), keywords);
@@ -4717,7 +5071,7 @@ public abstract class EDD {
       "will",
       "would"
     };
-    for (int i = 0; i < toRemove.length; i++) keywords.remove(toRemove[i]);
+    for (String string : toRemove) keywords.remove(string);
 
     // always!
     keywords.add("data");
@@ -4746,8 +5100,8 @@ public abstract class EDD {
       // ; separated gcmd phrases, but now hopefully caught sooner
       if (k.indexOf(" > ") > 0 && k.indexOf('<') < 0 && k.indexOf(';') >= 0) {
         String sar[] = String2.split(k, ';');
-        for (int i2 = 0; i2 < sar.length; i2++) {
-          if (sar[i2].length() > 3) keywords.add(cleanIfGcmdKeyword(sar[i2]));
+        for (String s : sar) {
+          if (s.length() > 3) keywords.add(cleanIfGcmdKeyword(s));
         }
         keywords.remove(k);
         continue;
@@ -4923,20 +5277,20 @@ public abstract class EDD {
       // cohort mv, if present
       if (sfv == null || smv == null) { // yes, ||
         // get cohort missingValue (MAX_VALUE) as a string that looks like an integer
-        String ts = cohortMV; // e.g., "127" for ByteArray
+        // e.g., "127" for ByteArray
         if ("palette".equals(destVarName)
             || "rgb".equals(destVarName)
             || "eightbitcolor".equals(destVarName)) { // common vars which have no missing values
-        } else if (pa.getMaxIsMV() || pa.indexOf(ts) >= 0) {
-          if (sfv == null && !ts.equals(smv)) sfv = ts;
-          else if (smv == null && !ts.equals(sfv)) smv = ts;
+        } else if (pa.getMaxIsMV() || pa.indexOf(cohortMV) >= 0) {
+          if (sfv == null && !cohortMV.equals(smv)) sfv = cohortMV;
+          else if (smv == null && !cohortMV.equals(sfv)) smv = cohortMV;
         }
       }
 
       // last: cohort mv, even if not present
       if (sfv == null && smv == null) {
         // get cohort missingValue (MAX_VALUE) as a string that looks like an integer
-        String ts = cohortMV; // e.g., "127" for ByteArray
+        // e.g., "127" for ByteArray
         // String2.pressEnterToContinue(">> addMvFvAttsIfNeeded integerType max_value=" + ts + "
         // sfv=" + sfv + " smv=" + smv);
         // even if value is not observed
@@ -4944,7 +5298,7 @@ public abstract class EDD {
             || "rgb".equals(destVarName)
             || "eightbitcolor".equals(destVarName)) {
         } // common vars which have no missing values
-        else sfv = ts;
+        else sfv = cohortMV;
       }
 
     } else { // float or double
@@ -5052,7 +5406,7 @@ public abstract class EDD {
    * @return the new tSummary (or the same one if unchanged)
    */
   static String expandInSummary(
-      String tSummary, HashSet<String> suggestedKeywords, String acronym, String expanded) {
+      String tSummary, Set<String> suggestedKeywords, String acronym, String expanded) {
 
     String full = expanded + " (" + acronym + ")";
     if (String2.looselyContains(tSummary, expanded)) {
@@ -5101,7 +5455,7 @@ public abstract class EDD {
       String tCdmDataType,
       String tLocalSourceUrl,
       Attributes externalAtts,
-      HashSet<String> suggestedKeywords)
+      Set<String> suggestedKeywords)
       throws Exception {
 
     // TO DO: look at other metadata standards (e.g., FGDC) to find similar attributes to look for
@@ -5120,7 +5474,7 @@ public abstract class EDD {
               + "\n"
               + "  externalAtts="
               + (externalAtts == null ? "null" : "\n" + externalAtts.toString()));
-    if (suggestedKeywords == null) suggestedKeywords = new HashSet(128);
+    if (suggestedKeywords == null) suggestedKeywords = new HashSet<>(128);
     // String2.log("initial suggestedKeywords: " + String2.toCSSVString(suggestedKeywords));
 
     String name, value;
@@ -5178,7 +5532,7 @@ public abstract class EDD {
     // fgdc_metadata_url is fgdc metadata, so not so useful as infoUrl
     String infoUrl = null;
     HashSet<String> toRemove =
-        new HashSet(
+        new HashSet<>(
             Arrays.asList(
                 // Enter them lowercase here. The search for them is case-insensitive.
                 "_ncproperties", // If I write this, netcdf nc4 code later throws Exception when it
@@ -5354,8 +5708,7 @@ public abstract class EDD {
                 "wind_vector_cell_resolution",
                 "wind_vector_source",
                 "year"));
-    for (int i = 0; i < sourceNames.length; i++) {
-      String sn = sourceNames[i];
+    for (String sn : sourceNames) {
       String val = sourceAtts.getString(sn);
       String pre = String2.findPrefix(removePrefixes, sn, 0);
       if (toRemove.contains(sn.toLowerCase())) {
@@ -5619,7 +5972,7 @@ public abstract class EDD {
       // make sure it is correct case
       int which = String2.caseInsensitiveIndexOf(CDM_TYPES, value);
       if (which >= 0) {
-        value = CDM_TYPES[which];
+        value = CDM_TYPES.get(which);
       } else {
         // outdated synonym?
         String valueLC = value.toLowerCase();
@@ -5667,8 +6020,8 @@ public abstract class EDD {
     value = getAddOrSourceAtt(addAtts, sourceAtts, "contact__email", value);
     value = getAddOrSourceAtt(addAtts, sourceAtts, "Principle_investigator_email", value);
     String creator_email = String2.isSomething2(value) ? value : "";
-    if (creator_email.toLowerCase().equals("dave.foley@noaa.gov")
-        || creator_email.toLowerCase().equals("roy.mendelssohn@noaa.gov"))
+    if (creator_email.equalsIgnoreCase("dave.foley@noaa.gov")
+        || creator_email.equalsIgnoreCase("roy.mendelssohn@noaa.gov"))
       creator_email = "erd.data@noaa.gov";
 
     // creator_name    (not required, but useful ACDD and for ISO 19115 and FGDC)
@@ -5696,8 +6049,8 @@ public abstract class EDD {
       "time_coverage_start",
       "time_coverage_end"
     };
-    for (int i = 0; i < dateAtts.length; i++) {
-      name = dateAtts[i];
+    for (String dateAtt : dateAtts) {
+      name = dateAtt;
       value = getAddOrSourceAtt(addAtts, sourceAtts, name, null);
       if (String2.isSomething(value)) {
         String tValue = Calendar2.tryToIsoString(value);
@@ -5714,7 +6067,6 @@ public abstract class EDD {
     // do early   so available for tEmailSource
     name = "summary";
     value = getAddOrSourceAtt(addAtts, sourceAtts, name, null);
-    String oSummary = value;
     // best ones first
     value = getAddOrSourceAtt(addAtts, sourceAtts, "abstract", value);
     value = getAddOrSourceAtt(addAtts, sourceAtts, "Abstract", value);
@@ -5958,7 +6310,6 @@ public abstract class EDD {
 
           break;
         }
-        parti++;
       }
     }
 
@@ -6316,7 +6667,7 @@ public abstract class EDD {
         if (tInstitution.startsWith(". ")
             || tInstitution.startsWith(", ")
             || tInstitution.startsWith("; ")) {
-          newValue.append(tInstitution.substring(0, 2));
+          newValue.append(tInstitution, 0, 2);
           tInstitution = tInstitution.substring(2);
         } else if (tInstitution.startsWith("and ")) {
           newValue.append(" " + tInstitution.substring(0, 4));
@@ -6687,7 +7038,6 @@ public abstract class EDD {
       Table tTable = EDStatic.gdxAcronymsTable();
       StringArray acronymSA = (StringArray) tTable.getColumn(0);
       StringArray fullNameSA = (StringArray) tTable.getColumn(1);
-      int n = acronymSA.size();
       for (int i = 0; i < acronymSA.size(); i++)
         tSummary =
             expandInSummary(tSummary, suggestedKeywords, acronymSA.get(i), fullNameSA.get(i));
@@ -6722,9 +7072,13 @@ public abstract class EDD {
     // almost last thing
     // improve creator_email, creator_name, tInstitution, creator_url
     if (String2.isSomething2(creator_name)) {
-      if (creator_name.equals("RSIGNELL")) creator_name = "Rich Signell";
-      else if (creator_name.equals("Esrl Psd Data")) creator_name = "NOAA ESRL PSD";
-      else if (creator_name.equals("PODAAC")) creator_name = "PODAAC NASA JPL";
+      creator_name =
+          switch (creator_name) {
+            case "RSIGNELL" -> "Rich Signell";
+            case "Esrl Psd Data" -> "NOAA ESRL PSD";
+            case "PODAAC" -> "PODAAC NASA JPL";
+            default -> creator_name;
+          };
       // shorten acronyms
       creator_name =
           String2.replaceAll(creator_name, "National Geophysical Data Center (NGDC)", "NGDC");
@@ -6956,14 +7310,13 @@ public abstract class EDD {
             if (!String2.isSomething2(creator_name)) creator_name = "NOAA ESRL PSD";
             if (!String2.isSomething2(tInstitution)) tInstitution = "NOAA ESRL PSD";
             if (!String2.isSomething2(creator_url)) creator_url = "https://www.esrl.noaa.gov/psd/";
-            break;
           } else {
             if (!String2.isSomething2(creator_email)) creator_email = "webmaster.esrl@noaa.gov";
             if (!String2.isSomething2(creator_name)) creator_name = "NOAA ESRL";
             if (!String2.isSomething2(tInstitution)) tInstitution = "NOAA ESRL";
             if (!String2.isSomething2(creator_url)) creator_url = "https://www.esrl.noaa.gov/";
-            break;
           }
+          break;
         }
         if (lc.indexOf("gfdl") >= 0) {
           if (!String2.isSomething2(creator_email))
@@ -7326,8 +7679,7 @@ public abstract class EDD {
       // build hashset of current keywords
       String words[] =
           StringArray.arrayFromCSV(value == null ? "" : value, ",;"); // csv, not chop up
-      for (int w = 0; w < words.length; w++) {
-        String kw = words[w];
+      for (String kw : words) {
         if (kw.length() > 0) {
           if (kw.indexOf(" > ") >= 0) { // GCMD
             suggestedKeywords.add(cleanIfGcmdKeyword(kw));
@@ -7390,15 +7742,14 @@ public abstract class EDD {
       cleanSuggestedKeywords(suggestedKeywords);
 
       // build new keywords String
-      StringBuilder sb = new StringBuilder("");
-      String keywordSar[] = (String[]) suggestedKeywords.toArray(new String[0]);
+      StringBuilder sb = new StringBuilder();
+      String keywordSar[] = suggestedKeywords.toArray(new String[0]);
       // they are consistently capitalized, so will sort very nicely:
       //  single words then gcmd
       Arrays.sort(keywordSar, String2.STRING_COMPARATOR_IGNORE_CASE);
-      for (int w = 0; w < keywordSar.length; w++) {
+      for (String kw : keywordSar) {
 
         // don't save numbers
-        String kw = keywordSar[w];
         boolean aNumber = true;
         for (int kwpo = 0; kwpo < kw.length(); kwpo++) {
           char ch = kw.charAt(kwpo);
@@ -7412,10 +7763,10 @@ public abstract class EDD {
         if (kw.length() > 2) { // lose lots of junk and a few greek letters
           sb.append(kw);
           sb.append(", ");
-        } else if (String2.indexOf(KEEP_SHORT_KEYWORDS, kw) >= 0) {
+        } else if (KEEP_SHORT_KEYWORDS.indexOf(kw) >= 0) {
           sb.append(kw);
           sb.append(", ");
-        } else if (String2.indexOf(KEEP_SHORT_UC_KEYWORDS, kw) >= 0) {
+        } else if (KEEP_SHORT_UC_KEYWORDS.indexOf(kw) >= 0) {
           sb.append(kw.toUpperCase());
           sb.append(", ");
         }
@@ -7574,16 +7925,16 @@ public abstract class EDD {
 
     // replace e.g., "none" with "null"
     String sourceNames[] = sourceAtts.getNames();
-    for (int i = 0; i < sourceNames.length; i++) {
+    for (String sourceName : sourceNames) {
       // not getAddOrSourceAtt since want pa
-      PrimitiveArray pa = addAtts.get(sourceNames[i]);
-      if (pa == null) pa = sourceAtts.get(sourceNames[i]);
+      PrimitiveArray pa = addAtts.get(sourceName);
+      if (pa == null) pa = sourceAtts.get(sourceName);
       if (pa == null || pa.elementType() != PAType.STRING) continue;
       value = pa.getString(0);
       if (!String2.isSomething2(value)) { // e.g., "none"
         // String2.pressEnterToContinue(">> set sourceName=" + tSourceName + ": " + sourceNames[i] +
         // "=" + value + " to \"null\"");
-        addAtts.add(sourceNames[i], "null");
+        addAtts.add(sourceName, "null");
       }
     }
 
@@ -7848,8 +8199,7 @@ public abstract class EDD {
       "sw_point_longitude",
       "westernmost_longitude"
     };
-    for (int i = 0; i < sourceNames.length; i++) {
-      String sn = sourceNames[i];
+    for (String sn : sourceNames) {
       String pre = String2.findPrefix(removePrefixes, sn, 0);
       if (String2.indexOf(toRemove, sn.toLowerCase()) >= 0) {
         addAtts.set(sn, "null"); // remove toRemove att name
@@ -8126,379 +8476,374 @@ public abstract class EDD {
                                                                                                                                                                                                       : // ss
                                                                                                                                                                                                       tUnitsLC
                                                                                                                                                                                                               .equals(
-                                                                                                                                                                                                                  "degress_celsius")
-                                                                                                                                                                                                          ? "degree_C"
-                                                                                                                                                                                                          : // ss
-                                                                                                                                                                                                          tUnitsLC
+                                                                                                                                                                                                                  "dimensionless")
+                                                                                                                                                                                                          ? ""
+                                                                                                                                                                                                          : tUnits
                                                                                                                                                                                                                   .equals(
-                                                                                                                                                                                                                      "dimensionless")
-                                                                                                                                                                                                              ? ""
-                                                                                                                                                                                                              : tUnits
+                                                                                                                                                                                                                      "F")
+                                                                                                                                                                                                              ? "degree_F"
+                                                                                                                                                                                                              : tUnitsLC
                                                                                                                                                                                                                       .equals(
-                                                                                                                                                                                                                          "F")
-                                                                                                                                                                                                                  ? "degree_F"
+                                                                                                                                                                                                                          "g")
+                                                                                                                                                                                                                  ? "grams"
                                                                                                                                                                                                                   : tUnitsLC
                                                                                                                                                                                                                           .equals(
-                                                                                                                                                                                                                              "g")
-                                                                                                                                                                                                                      ? "grams"
+                                                                                                                                                                                                                              "holding cell number")
+                                                                                                                                                                                                                      ? "1"
                                                                                                                                                                                                                       : tUnitsLC
                                                                                                                                                                                                                               .equals(
-                                                                                                                                                                                                                                  "holding cell number")
-                                                                                                                                                                                                                          ? "1"
+                                                                                                                                                                                                                                  "hour:minute")
+                                                                                                                                                                                                                          ? "HH:mm"
                                                                                                                                                                                                                           : tUnitsLC
                                                                                                                                                                                                                                   .equals(
-                                                                                                                                                                                                                                      "hour:minute")
-                                                                                                                                                                                                                              ? "HH:mm"
+                                                                                                                                                                                                                                      "hours")
+                                                                                                                                                                                                                              ? "hours"
                                                                                                                                                                                                                               : tUnitsLC
                                                                                                                                                                                                                                       .equals(
-                                                                                                                                                                                                                                          "hours")
-                                                                                                                                                                                                                                  ? "hours"
+                                                                                                                                                                                                                                          "inches")
+                                                                                                                                                                                                                                  ? "inches"
                                                                                                                                                                                                                                   : tUnitsLC
                                                                                                                                                                                                                                           .equals(
-                                                                                                                                                                                                                                              "inches")
-                                                                                                                                                                                                                                      ? "inches"
+                                                                                                                                                                                                                                              "integer")
+                                                                                                                                                                                                                                      ? "count"
                                                                                                                                                                                                                                       : tUnitsLC
                                                                                                                                                                                                                                               .equals(
-                                                                                                                                                                                                                                                  "integer")
-                                                                                                                                                                                                                                          ? "count"
-                                                                                                                                                                                                                                          : tUnitsLC
+                                                                                                                                                                                                                                                  "julian date")
+                                                                                                                                                                                                                                          ? "day_of_year"
+                                                                                                                                                                                                                                          : // ???
+                                                                                                                                                                                                                                          tUnitsLC
                                                                                                                                                                                                                                                   .equals(
-                                                                                                                                                                                                                                                      "julian date")
-                                                                                                                                                                                                                                              ? "day_of_year"
-                                                                                                                                                                                                                                              : // ???
-                                                                                                                                                                                                                                              tUnitsLC
+                                                                                                                                                                                                                                                      "kg")
+                                                                                                                                                                                                                                              ? "kg"
+                                                                                                                                                                                                                                              : tUnitsLC
                                                                                                                                                                                                                                                       .equals(
-                                                                                                                                                                                                                                                          "kg")
-                                                                                                                                                                                                                                                  ? "kg"
+                                                                                                                                                                                                                                                          "khz")
+                                                                                                                                                                                                                                                  ? "kHz"
                                                                                                                                                                                                                                                   : tUnitsLC
                                                                                                                                                                                                                                                           .equals(
-                                                                                                                                                                                                                                                              "khz")
-                                                                                                                                                                                                                                                      ? "kHz"
+                                                                                                                                                                                                                                                              "kilograms")
+                                                                                                                                                                                                                                                      ? "kilograms"
                                                                                                                                                                                                                                                       : tUnitsLC
                                                                                                                                                                                                                                                               .equals(
-                                                                                                                                                                                                                                                                  "kilograms")
-                                                                                                                                                                                                                                                          ? "kilograms"
+                                                                                                                                                                                                                                                                  "kilometer")
+                                                                                                                                                                                                                                                          ? "kilometer"
                                                                                                                                                                                                                                                           : tUnitsLC
                                                                                                                                                                                                                                                                   .equals(
-                                                                                                                                                                                                                                                                      "kilometer")
-                                                                                                                                                                                                                                                              ? "kilometer"
+                                                                                                                                                                                                                                                                      "kilometers")
+                                                                                                                                                                                                                                                              ? "kilometers"
                                                                                                                                                                                                                                                               : tUnitsLC
                                                                                                                                                                                                                                                                       .equals(
-                                                                                                                                                                                                                                                                          "kilometers")
-                                                                                                                                                                                                                                                                  ? "kilometers"
+                                                                                                                                                                                                                                                                          "km")
+                                                                                                                                                                                                                                                                  ? "km"
                                                                                                                                                                                                                                                                   : tUnitsLC
                                                                                                                                                                                                                                                                           .equals(
-                                                                                                                                                                                                                                                                              "km")
-                                                                                                                                                                                                                                                                      ? "km"
+                                                                                                                                                                                                                                                                              "knots")
+                                                                                                                                                                                                                                                                      ? "knots"
                                                                                                                                                                                                                                                                       : tUnitsLC
                                                                                                                                                                                                                                                                               .equals(
-                                                                                                                                                                                                                                                                                  "knots")
-                                                                                                                                                                                                                                                                          ? "knots"
+                                                                                                                                                                                                                                                                                  "latitude")
+                                                                                                                                                                                                                                                                          ? "degrees_north"
                                                                                                                                                                                                                                                                           : tUnitsLC
                                                                                                                                                                                                                                                                                   .equals(
-                                                                                                                                                                                                                                                                                      "latitude")
-                                                                                                                                                                                                                                                                              ? "degrees_north"
+                                                                                                                                                                                                                                                                                      "lbs")
+                                                                                                                                                                                                                                                                              ? "pounds"
                                                                                                                                                                                                                                                                               : tUnitsLC
                                                                                                                                                                                                                                                                                       .equals(
-                                                                                                                                                                                                                                                                                          "lbs")
-                                                                                                                                                                                                                                                                                  ? "pounds"
-                                                                                                                                                                                                                                                                                  : tUnitsLC
+                                                                                                                                                                                                                                                                                          "longitude")
+                                                                                                                                                                                                                                                                                  ? "degrees_east"
+                                                                                                                                                                                                                                                                                  :
+                                                                                                                                                                                                                                                                                  // tUnits.equals("mEq/L")? "" :  ???
+                                                                                                                                                                                                                                                                                  tUnitsLC
                                                                                                                                                                                                                                                                                           .equals(
-                                                                                                                                                                                                                                                                                              "longitude")
-                                                                                                                                                                                                                                                                                      ? "degrees_east"
-                                                                                                                                                                                                                                                                                      :
-                                                                                                                                                                                                                                                                                      // tUnits.equals("mEq/L")? "" :  ???
+                                                                                                                                                                                                                                                                                              "meter")
+                                                                                                                                                                                                                                                                                      ? "meter"
+                                                                                                                                                                                                                                                                                      : // case
                                                                                                                                                                                                                                                                                       tUnitsLC
                                                                                                                                                                                                                                                                                               .equals(
-                                                                                                                                                                                                                                                                                                  "meter")
-                                                                                                                                                                                                                                                                                          ? "meter"
+                                                                                                                                                                                                                                                                                                  "meters")
+                                                                                                                                                                                                                                                                                          ? "meters"
                                                                                                                                                                                                                                                                                           : // case
                                                                                                                                                                                                                                                                                           tUnitsLC
                                                                                                                                                                                                                                                                                                   .equals(
-                                                                                                                                                                                                                                                                                                      "meters")
-                                                                                                                                                                                                                                                                                              ? "meters"
-                                                                                                                                                                                                                                                                                              : // case
-                                                                                                                                                                                                                                                                                              tUnitsLC
+                                                                                                                                                                                                                                                                                                      "metric tons")
+                                                                                                                                                                                                                                                                                              ? "metric_tons"
+                                                                                                                                                                                                                                                                                              : tUnitsLC
                                                                                                                                                                                                                                                                                                       .equals(
-                                                                                                                                                                                                                                                                                                          "metric tons")
-                                                                                                                                                                                                                                                                                                  ? "metric_tons"
+                                                                                                                                                                                                                                                                                                          "mg/lit")
+                                                                                                                                                                                                                                                                                                  ? "mg/liter"
                                                                                                                                                                                                                                                                                                   : tUnitsLC
                                                                                                                                                                                                                                                                                                           .equals(
-                                                                                                                                                                                                                                                                                                              "mg/lit")
-                                                                                                                                                                                                                                                                                                      ? "mg/liter"
-                                                                                                                                                                                                                                                                                                      : tUnitsLC
+                                                                                                                                                                                                                                                                                                              "mg o2/min")
+                                                                                                                                                                                                                                                                                                      ? "mg O2/min"
+                                                                                                                                                                                                                                                                                                      : // ???
+                                                                                                                                                                                                                                                                                                      // tUnits.equals("mi")? "" :  mL???
+                                                                                                                                                                                                                                                                                                      tUnitsLC
                                                                                                                                                                                                                                                                                                               .equals(
-                                                                                                                                                                                                                                                                                                                  "mg o2/min")
-                                                                                                                                                                                                                                                                                                          ? "mg O2/min"
-                                                                                                                                                                                                                                                                                                          : // ???
-                                                                                                                                                                                                                                                                                                          // tUnits.equals("mi")? "" :  mL???
+                                                                                                                                                                                                                                                                                                                  "micormoles per kilogram")
+                                                                                                                                                                                                                                                                                                          ? "micromoles/kilogram"
+                                                                                                                                                                                                                                                                                                          : // or
                                                                                                                                                                                                                                                                                                           tUnitsLC
                                                                                                                                                                                                                                                                                                                   .equals(
-                                                                                                                                                                                                                                                                                                                      "micormoles per kilogram")
-                                                                                                                                                                                                                                                                                                              ? "micromoles/kilogram"
-                                                                                                                                                                                                                                                                                                              : // or
-                                                                                                                                                                                                                                                                                                              tUnitsLC
+                                                                                                                                                                                                                                                                                                                      "micro atmospheres")
+                                                                                                                                                                                                                                                                                                              ? "µatmospheres"
+                                                                                                                                                                                                                                                                                                              : tUnitsLC
                                                                                                                                                                                                                                                                                                                       .equals(
-                                                                                                                                                                                                                                                                                                                          "micro atmospheres")
-                                                                                                                                                                                                                                                                                                                  ? "µatmospheres"
+                                                                                                                                                                                                                                                                                                                          "microgram/kilogram")
+                                                                                                                                                                                                                                                                                                                  ? "microgram/kilogram"
                                                                                                                                                                                                                                                                                                                   : tUnitsLC
                                                                                                                                                                                                                                                                                                                           .equals(
-                                                                                                                                                                                                                                                                                                                              "microgram/kilogram")
-                                                                                                                                                                                                                                                                                                                      ? "microgram/kilogram"
-                                                                                                                                                                                                                                                                                                                      : tUnitsLC
+                                                                                                                                                                                                                                                                                                                              "micromolar")
+                                                                                                                                                                                                                                                                                                                      ? "micromoles/liter"
+                                                                                                                                                                                                                                                                                                                      : // case
+                                                                                                                                                                                                                                                                                                                      tUnitsLC
                                                                                                                                                                                                                                                                                                                               .equals(
-                                                                                                                                                                                                                                                                                                                                  "micromolar")
-                                                                                                                                                                                                                                                                                                                          ? "micromoles/liter"
+                                                                                                                                                                                                                                                                                                                                  "microsiemens per centimeter")
+                                                                                                                                                                                                                                                                                                                          ? "microSiemens per centimeter"
                                                                                                                                                                                                                                                                                                                           : // case
                                                                                                                                                                                                                                                                                                                           tUnitsLC
                                                                                                                                                                                                                                                                                                                                   .equals(
-                                                                                                                                                                                                                                                                                                                                      "microsiemens per centimeter")
-                                                                                                                                                                                                                                                                                                                              ? "microSiemens per centimeter"
-                                                                                                                                                                                                                                                                                                                              : // case
+                                                                                                                                                                                                                                                                                                                                      "miligram")
+                                                                                                                                                                                                                                                                                                                              ? "miligram"
+                                                                                                                                                                                                                                                                                                                              : // sic
                                                                                                                                                                                                                                                                                                                               tUnitsLC
                                                                                                                                                                                                                                                                                                                                       .equals(
-                                                                                                                                                                                                                                                                                                                                          "miligram")
-                                                                                                                                                                                                                                                                                                                                  ? "miligram"
+                                                                                                                                                                                                                                                                                                                                          "milimeters")
+                                                                                                                                                                                                                                                                                                                                  ? "millimeters"
                                                                                                                                                                                                                                                                                                                                   : // sic
                                                                                                                                                                                                                                                                                                                                   tUnitsLC
                                                                                                                                                                                                                                                                                                                                           .equals(
-                                                                                                                                                                                                                                                                                                                                              "milimeters")
-                                                                                                                                                                                                                                                                                                                                      ? "millimeters"
-                                                                                                                                                                                                                                                                                                                                      : // sic
+                                                                                                                                                                                                                                                                                                                                              "milliliter per liter")
+                                                                                                                                                                                                                                                                                                                                      ? "milliliter per liter"
+                                                                                                                                                                                                                                                                                                                                      : // case
                                                                                                                                                                                                                                                                                                                                       tUnitsLC
                                                                                                                                                                                                                                                                                                                                               .equals(
-                                                                                                                                                                                                                                                                                                                                                  "milliliter per liter")
-                                                                                                                                                                                                                                                                                                                                          ? "milliliter per liter"
+                                                                                                                                                                                                                                                                                                                                                  "millimeter")
+                                                                                                                                                                                                                                                                                                                                          ? "millimeter"
                                                                                                                                                                                                                                                                                                                                           : // case
                                                                                                                                                                                                                                                                                                                                           tUnitsLC
                                                                                                                                                                                                                                                                                                                                                   .equals(
-                                                                                                                                                                                                                                                                                                                                                      "millimeter")
-                                                                                                                                                                                                                                                                                                                                              ? "millimeter"
+                                                                                                                                                                                                                                                                                                                                                      "millimeters")
+                                                                                                                                                                                                                                                                                                                                              ? "millimeters"
                                                                                                                                                                                                                                                                                                                                               : // case
                                                                                                                                                                                                                                                                                                                                               tUnitsLC
                                                                                                                                                                                                                                                                                                                                                       .equals(
-                                                                                                                                                                                                                                                                                                                                                          "millimeters")
+                                                                                                                                                                                                                                                                                                                                                          "millimeters (mm)")
                                                                                                                                                                                                                                                                                                                                                   ? "millimeters"
-                                                                                                                                                                                                                                                                                                                                                  : // case
-                                                                                                                                                                                                                                                                                                                                                  tUnitsLC
+                                                                                                                                                                                                                                                                                                                                                  : tUnitsLC
                                                                                                                                                                                                                                                                                                                                                           .equals(
-                                                                                                                                                                                                                                                                                                                                                              "millimeters (mm)")
-                                                                                                                                                                                                                                                                                                                                                      ? "millimeters"
-                                                                                                                                                                                                                                                                                                                                                      : tUnitsLC
+                                                                                                                                                                                                                                                                                                                                                              "millisiemens per centimeter")
+                                                                                                                                                                                                                                                                                                                                                      ? "milliSiemens per centimeter"
+                                                                                                                                                                                                                                                                                                                                                      : // case
+                                                                                                                                                                                                                                                                                                                                                      tUnitsLC
                                                                                                                                                                                                                                                                                                                                                               .equals(
-                                                                                                                                                                                                                                                                                                                                                                  "millisiemens per centimeter")
-                                                                                                                                                                                                                                                                                                                                                          ? "milliSiemens per centimeter"
+                                                                                                                                                                                                                                                                                                                                                                  "minutes")
+                                                                                                                                                                                                                                                                                                                                                          ? "minutes"
                                                                                                                                                                                                                                                                                                                                                           : // case
                                                                                                                                                                                                                                                                                                                                                           tUnitsLC
                                                                                                                                                                                                                                                                                                                                                                   .equals(
-                                                                                                                                                                                                                                                                                                                                                                      "minutes")
-                                                                                                                                                                                                                                                                                                                                                              ? "minutes"
-                                                                                                                                                                                                                                                                                                                                                              : // case
-                                                                                                                                                                                                                                                                                                                                                              tUnitsLC
+                                                                                                                                                                                                                                                                                                                                                                      "moles per killogram")
+                                                                                                                                                                                                                                                                                                                                                              ? "moles per kilogram"
+                                                                                                                                                                                                                                                                                                                                                              : tUnitsLC
                                                                                                                                                                                                                                                                                                                                                                       .equals(
-                                                                                                                                                                                                                                                                                                                                                                          "moles per killogram")
-                                                                                                                                                                                                                                                                                                                                                                  ? "moles per kilogram"
-                                                                                                                                                                                                                                                                                                                                                                  : tUnitsLC
+                                                                                                                                                                                                                                                                                                                                                                          "month number")
+                                                                                                                                                                                                                                                                                                                                                                  ? "month"
+                                                                                                                                                                                                                                                                                                                                                                  : // ???
+                                                                                                                                                                                                                                                                                                                                                                  tUnitsLC
                                                                                                                                                                                                                                                                                                                                                                           .equals(
-                                                                                                                                                                                                                                                                                                                                                                              "month number")
-                                                                                                                                                                                                                                                                                                                                                                      ? "month"
-                                                                                                                                                                                                                                                                                                                                                                      : // ???
-                                                                                                                                                                                                                                                                                                                                                                      tUnitsLC
+                                                                                                                                                                                                                                                                                                                                                                              "month/day/year")
+                                                                                                                                                                                                                                                                                                                                                                      ? "M/d/yyyy"
+                                                                                                                                                                                                                                                                                                                                                                      : tUnitsLC
                                                                                                                                                                                                                                                                                                                                                                               .equals(
-                                                                                                                                                                                                                                                                                                                                                                                  "month/day/year")
-                                                                                                                                                                                                                                                                                                                                                                          ? "M/d/yyyy"
+                                                                                                                                                                                                                                                                                                                                                                                  "na")
+                                                                                                                                                                                                                                                                                                                                                                          ? ""
                                                                                                                                                                                                                                                                                                                                                                           : tUnitsLC
                                                                                                                                                                                                                                                                                                                                                                                   .equals(
-                                                                                                                                                                                                                                                                                                                                                                                      "na")
+                                                                                                                                                                                                                                                                                                                                                                                      "n/a")
                                                                                                                                                                                                                                                                                                                                                                               ? ""
                                                                                                                                                                                                                                                                                                                                                                               : tUnitsLC
                                                                                                                                                                                                                                                                                                                                                                                       .equals(
-                                                                                                                                                                                                                                                                                                                                                                                          "n/a")
+                                                                                                                                                                                                                                                                                                                                                                                          "none")
                                                                                                                                                                                                                                                                                                                                                                                   ? ""
                                                                                                                                                                                                                                                                                                                                                                                   : tUnitsLC
                                                                                                                                                                                                                                                                                                                                                                                           .equals(
-                                                                                                                                                                                                                                                                                                                                                                                              "none")
-                                                                                                                                                                                                                                                                                                                                                                                      ? ""
-                                                                                                                                                                                                                                                                                                                                                                                      : tUnitsLC
+                                                                                                                                                                                                                                                                                                                                                                                              "number")
+                                                                                                                                                                                                                                                                                                                                                                                      ? "count"
+                                                                                                                                                                                                                                                                                                                                                                                      :
+                                                                                                                                                                                                                                                                                                                                                                                      // tUnitsLC.equals("parts per thousand")? "" :   //???
+                                                                                                                                                                                                                                                                                                                                                                                      tUnitsLC
                                                                                                                                                                                                                                                                                                                                                                                               .equals(
-                                                                                                                                                                                                                                                                                                                                                                                                  "number")
-                                                                                                                                                                                                                                                                                                                                                                                          ? "count"
-                                                                                                                                                                                                                                                                                                                                                                                          :
-                                                                                                                                                                                                                                                                                                                                                                                          // tUnitsLC.equals("parts per thousand")? "" :   //???
-                                                                                                                                                                                                                                                                                                                                                                                          tUnitsLC
+                                                                                                                                                                                                                                                                                                                                                                                                  "parts per thousand (ppt)")
+                                                                                                                                                                                                                                                                                                                                                                                          ? "parts per thousand"
+                                                                                                                                                                                                                                                                                                                                                                                          : tUnitsLC
                                                                                                                                                                                                                                                                                                                                                                                                   .equals(
-                                                                                                                                                                                                                                                                                                                                                                                                      "parts per thousand (ppt)")
-                                                                                                                                                                                                                                                                                                                                                                                              ? "parts per thousand"
+                                                                                                                                                                                                                                                                                                                                                                                                      "percentage")
+                                                                                                                                                                                                                                                                                                                                                                                              ? "percent"
                                                                                                                                                                                                                                                                                                                                                                                               : tUnitsLC
                                                                                                                                                                                                                                                                                                                                                                                                       .equals(
-                                                                                                                                                                                                                                                                                                                                                                                                          "percentage")
-                                                                                                                                                                                                                                                                                                                                                                                                  ? "percent"
-                                                                                                                                                                                                                                                                                                                                                                                                  : tUnitsLC
+                                                                                                                                                                                                                                                                                                                                                                                                          "ph (free scale)")
+                                                                                                                                                                                                                                                                                                                                                                                                  ? "pH (free scale)"
+                                                                                                                                                                                                                                                                                                                                                                                                  : // ???
+                                                                                                                                                                                                                                                                                                                                                                                                  tUnitsLC
                                                                                                                                                                                                                                                                                                                                                                                                           .equals(
-                                                                                                                                                                                                                                                                                                                                                                                                              "ph (free scale)")
-                                                                                                                                                                                                                                                                                                                                                                                                      ? "pH (free scale)"
-                                                                                                                                                                                                                                                                                                                                                                                                      : // ???
-                                                                                                                                                                                                                                                                                                                                                                                                      tUnitsLC
+                                                                                                                                                                                                                                                                                                                                                                                                              "ph (unit)")
+                                                                                                                                                                                                                                                                                                                                                                                                      ? "pH"
+                                                                                                                                                                                                                                                                                                                                                                                                      : tUnitsLC
                                                                                                                                                                                                                                                                                                                                                                                                               .equals(
-                                                                                                                                                                                                                                                                                                                                                                                                                  "ph (unit)")
-                                                                                                                                                                                                                                                                                                                                                                                                          ? "pH"
-                                                                                                                                                                                                                                                                                                                                                                                                          : tUnitsLC
+                                                                                                                                                                                                                                                                                                                                                                                                                  "ph units, free scale)")
+                                                                                                                                                                                                                                                                                                                                                                                                          ? "pH (free scale)"
+                                                                                                                                                                                                                                                                                                                                                                                                          : // ???
+                                                                                                                                                                                                                                                                                                                                                                                                          // tUnitsLC.equals("ppt")? "" :  //???
+                                                                                                                                                                                                                                                                                                                                                                                                          tUnitsLC
                                                                                                                                                                                                                                                                                                                                                                                                                   .equals(
-                                                                                                                                                                                                                                                                                                                                                                                                                      "ph units, free scale)")
-                                                                                                                                                                                                                                                                                                                                                                                                              ? "pH (free scale)"
-                                                                                                                                                                                                                                                                                                                                                                                                              : // ???
-                                                                                                                                                                                                                                                                                                                                                                                                              // tUnitsLC.equals("ppt")? "" :  //???
-                                                                                                                                                                                                                                                                                                                                                                                                              tUnitsLC
+                                                                                                                                                                                                                                                                                                                                                                                                                      "practical salinity units")
+                                                                                                                                                                                                                                                                                                                                                                                                              ? "PSU"
+                                                                                                                                                                                                                                                                                                                                                                                                              : tUnitsLC
                                                                                                                                                                                                                                                                                                                                                                                                                       .equals(
-                                                                                                                                                                                                                                                                                                                                                                                                                          "practical salinity units")
+                                                                                                                                                                                                                                                                                                                                                                                                                          "practical salinity units (concentration)")
                                                                                                                                                                                                                                                                                                                                                                                                                   ? "PSU"
                                                                                                                                                                                                                                                                                                                                                                                                                   : tUnitsLC
                                                                                                                                                                                                                                                                                                                                                                                                                           .equals(
-                                                                                                                                                                                                                                                                                                                                                                                                                              "practical salinity units (concentration)")
+                                                                                                                                                                                                                                                                                                                                                                                                                              "psu")
                                                                                                                                                                                                                                                                                                                                                                                                                       ? "PSU"
                                                                                                                                                                                                                                                                                                                                                                                                                       : tUnitsLC
                                                                                                                                                                                                                                                                                                                                                                                                                               .equals(
-                                                                                                                                                                                                                                                                                                                                                                                                                                  "psu")
-                                                                                                                                                                                                                                                                                                                                                                                                                          ? "PSU"
-                                                                                                                                                                                                                                                                                                                                                                                                                          : tUnitsLC
+                                                                                                                                                                                                                                                                                                                                                                                                                                  "probability")
+                                                                                                                                                                                                                                                                                                                                                                                                                          ? "probability"
+                                                                                                                                                                                                                                                                                                                                                                                                                          : // ???
+                                                                                                                                                                                                                                                                                                                                                                                                                          tUnitsLC
                                                                                                                                                                                                                                                                                                                                                                                                                                   .equals(
-                                                                                                                                                                                                                                                                                                                                                                                                                                      "probability")
-                                                                                                                                                                                                                                                                                                                                                                                                                              ? "probability"
-                                                                                                                                                                                                                                                                                                                                                                                                                              : // ???
-                                                                                                                                                                                                                                                                                                                                                                                                                              tUnitsLC
+                                                                                                                                                                                                                                                                                                                                                                                                                                      "ratio")
+                                                                                                                                                                                                                                                                                                                                                                                                                              ? "1"
+                                                                                                                                                                                                                                                                                                                                                                                                                              : tUnitsLC
                                                                                                                                                                                                                                                                                                                                                                                                                                       .equals(
-                                                                                                                                                                                                                                                                                                                                                                                                                                          "ratio")
+                                                                                                                                                                                                                                                                                                                                                                                                                                          "ratio numeric")
                                                                                                                                                                                                                                                                                                                                                                                                                                   ? "1"
                                                                                                                                                                                                                                                                                                                                                                                                                                   : tUnitsLC
                                                                                                                                                                                                                                                                                                                                                                                                                                           .equals(
-                                                                                                                                                                                                                                                                                                                                                                                                                                              "ratio numeric")
-                                                                                                                                                                                                                                                                                                                                                                                                                                      ? "1"
+                                                                                                                                                                                                                                                                                                                                                                                                                                              "reticles")
+                                                                                                                                                                                                                                                                                                                                                                                                                                      ? "count"
                                                                                                                                                                                                                                                                                                                                                                                                                                       : tUnitsLC
                                                                                                                                                                                                                                                                                                                                                                                                                                               .equals(
-                                                                                                                                                                                                                                                                                                                                                                                                                                                  "reticles")
-                                                                                                                                                                                                                                                                                                                                                                                                                                          ? "count"
+                                                                                                                                                                                                                                                                                                                                                                                                                                                  "seconds")
+                                                                                                                                                                                                                                                                                                                                                                                                                                          ? "seconds"
                                                                                                                                                                                                                                                                                                                                                                                                                                           : tUnitsLC
                                                                                                                                                                                                                                                                                                                                                                                                                                                   .equals(
-                                                                                                                                                                                                                                                                                                                                                                                                                                                      "seconds")
-                                                                                                                                                                                                                                                                                                                                                                                                                                              ? "seconds"
+                                                                                                                                                                                                                                                                                                                                                                                                                                                      "seimens/m")
+                                                                                                                                                                                                                                                                                                                                                                                                                                              ? "Siemens/m"
                                                                                                                                                                                                                                                                                                                                                                                                                                               : tUnitsLC
                                                                                                                                                                                                                                                                                                                                                                                                                                                       .equals(
-                                                                                                                                                                                                                                                                                                                                                                                                                                                          "seimens/m")
-                                                                                                                                                                                                                                                                                                                                                                                                                                                  ? "Siemens/m"
-                                                                                                                                                                                                                                                                                                                                                                                                                                                  : tUnitsLC
+                                                                                                                                                                                                                                                                                                                                                                                                                                                          "seq")
+                                                                                                                                                                                                                                                                                                                                                                                                                                                  ? "count"
+                                                                                                                                                                                                                                                                                                                                                                                                                                                  : // netcdf-java 4.6.4 generates this
+                                                                                                                                                                                                                                                                                                                                                                                                                                                  tUnitsLC
                                                                                                                                                                                                                                                                                                                                                                                                                                                           .equals(
-                                                                                                                                                                                                                                                                                                                                                                                                                                                              "seq")
-                                                                                                                                                                                                                                                                                                                                                                                                                                                      ? "count"
-                                                                                                                                                                                                                                                                                                                                                                                                                                                      : // netcdf-java 4.6.4 generates this
+                                                                                                                                                                                                                                                                                                                                                                                                                                                              "square kilometers")
+                                                                                                                                                                                                                                                                                                                                                                                                                                                      ? "square kilometers"
+                                                                                                                                                                                                                                                                                                                                                                                                                                                      : // case
                                                                                                                                                                                                                                                                                                                                                                                                                                                       tUnitsLC
                                                                                                                                                                                                                                                                                                                                                                                                                                                               .equals(
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                  "square kilometers")
-                                                                                                                                                                                                                                                                                                                                                                                                                                                          ? "square kilometers"
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                  "square meter")
+                                                                                                                                                                                                                                                                                                                                                                                                                                                          ? "square meter"
                                                                                                                                                                                                                                                                                                                                                                                                                                                           : // case
                                                                                                                                                                                                                                                                                                                                                                                                                                                           tUnitsLC
                                                                                                                                                                                                                                                                                                                                                                                                                                                                   .equals(
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                      "square meter")
-                                                                                                                                                                                                                                                                                                                                                                                                                                                              ? "square meter"
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                      "square meters")
+                                                                                                                                                                                                                                                                                                                                                                                                                                                              ? "square meters"
                                                                                                                                                                                                                                                                                                                                                                                                                                                               : // case
                                                                                                                                                                                                                                                                                                                                                                                                                                                               tUnitsLC
                                                                                                                                                                                                                                                                                                                                                                                                                                                                       .equals(
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                          "square meters")
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                  ? "square meters"
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                  : // case
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                  tUnitsLC
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                          "text")
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                  ? ""
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                  : tUnitsLC
                                                                                                                                                                                                                                                                                                                                                                                                                                                                           .equals(
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                              "text")
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                              "this quantity is unitless")
                                                                                                                                                                                                                                                                                                                                                                                                                                                                       ? ""
                                                                                                                                                                                                                                                                                                                                                                                                                                                                       : tUnitsLC
                                                                                                                                                                                                                                                                                                                                                                                                                                                                               .equals(
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  "this quantity is unitless")
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  "time")
                                                                                                                                                                                                                                                                                                                                                                                                                                                                           ? ""
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                          : tUnitsLC
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                          : // ??  HHmm?
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                          tUnitsLC
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   .equals(
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      "time")
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                              ? ""
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                              : // ??  HHmm?
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                              tUnitsLC
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      "ug/l as n")
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                              ? "µg/L as N"
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                              : tUnitsLC
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       .equals(
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          "ug/l as n")
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  ? "µg/L as N"
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  : tUnitsLC
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          "umole")
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  ? "µmole"
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  : tUnits
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           .equals(
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              "umole")
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      ? "µmole"
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              "um")
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      ? "µm"
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       : tUnits
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               .equals(
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  "um")
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          ? "µm"
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          : tUnits
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  "uM")
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          ? "µmole/liter"
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          : // not meters
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          tUnitsLC
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   .equals(
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      "uM")
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              ? "µmole/liter"
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              : // not meters
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              tUnitsLC
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      "umol/kg")
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              ? "µmole/kg"
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              : tUnitsLC
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       .equals(
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          "umol/kg")
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  ? "µmole/kg"
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          "unitless")
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  ? ""
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   : tUnitsLC
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           .equals(
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              "unitless")
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      ? ""
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              "volts")
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      ? "volts"
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       : tUnitsLC
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               .equals(
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  "volts")
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          ? "volts"
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  "whole number")
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          ? "count"
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           : tUnitsLC
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   .equals(
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      "whole number")
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              ? "count"
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              : tUnitsLC
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      "year")
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              ? "year"
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              : // case
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              tUnitsLC
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       .equals(
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          "year")
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  ? "year"
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  : // case
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  tUnitsLC
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          "year (yyyy)")
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  ? "yyyy"
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  : tUnitsLC
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           .equals(
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              "year (yyyy)")
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      ? "yyyy"
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      : tUnitsLC
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              "years")
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      ? "years"
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      : // case
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      tUnitsLC
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               .equals(
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  "years")
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  "years old")
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           ? "years"
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          : // case
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          tUnitsLC
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          : tUnitsLC
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   .equals(
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      "years old")
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      "yr")
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               ? "years"
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               : tUnitsLC
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       .equals(
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          "yr")
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          "yrs")
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   ? "years"
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   : tUnitsLC
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           .equals(
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              "yrs")
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      ? "years"
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              "yyyy-mm-ddthh:mm:ss.ssz")
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      ? "yyyy-MM-dd'T'HH:mm:ss.SSZ"
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       : tUnitsLC
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               .equals(
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  "yyyy-mm-ddthh:mm:ss.ssz")
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          ? "yyyy-MM-dd'T'HH:mm:ss.SSZ"
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  "0=no comment, 1=positive, 2=negative, 3=neutural")
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          ? // neutural
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          "0=no comment, 1=positive, 2=negative, 3=neutral"
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           : tUnitsLC
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   .equals(
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      "0=no comment, 1=positive, 2=negative, 3=neutural")
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              ? // neutural
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              "0=no comment, 1=positive, 2=negative, 3=neutral"
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      "0=unknown/unknown")
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              ? ""
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               : tUnitsLC
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       .equals(
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          "0=unknown/unknown")
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  ? ""
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          "1/minute")
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  ? "count/minute"
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   : tUnitsLC
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           .equals(
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              "1/minute")
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      ? "count/minute"
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      : tUnitsLC
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              .equals(
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  "4")
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          ? ""
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          : tUnits;
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              "4")
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      ? ""
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      : tUnits;
 
       if (tUnits.indexOf(" since -4713") > 0)
         tUnits =
@@ -8668,7 +9013,7 @@ public abstract class EDD {
     testUnits = String2.replaceAll(testUnits, '=', '|');
     testUnits = String2.replaceAll(testUnits, ',', '|');
     testUnits = String2.replaceAll(testUnits, '/', '|');
-    boolean isMeters = String2.indexOf(EDV.METERS_VARIANTS, tUnits) >= 0; // case sensitive
+    boolean isMeters = EDV.METERS_VARIANTS.indexOf(tUnits) >= 0; // case sensitive
 
     // convert feet to meters
     boolean isFeet =
@@ -8702,29 +9047,32 @@ public abstract class EDD {
             oPositive,
             Math2.doubleToFloatNaN(tScaleFactor),
             tryToFindLLAT);
-    if (tDestName.equals(EDV.LON_NAME)) {
-      tLongName =
-          String2.isSomething2(tLongName) && !tLongName.toLowerCase().equals(EDV.LON_NAME)
-              ? tLongName
-              : "Longitude";
-      tStandardName = EDV.LON_NAME;
-      tUnits = EDV.LON_UNITS;
-    } else if (tDestName.equals(EDV.LAT_NAME)) {
-      tLongName =
-          String2.isSomething2(tLongName) && !tLongName.toLowerCase().equals(EDV.LAT_NAME)
-              ? tLongName
-              : "Latitude";
-      tStandardName = EDV.LAT_NAME;
-      tUnits = EDV.LAT_UNITS;
-    } else if (tDestName.equals(EDV.ALT_NAME)) {
-      // let tLongName be set below
-      tStandardName = EDV.ALT_NAME;
-    } else if (tDestName.equals(EDV.DEPTH_NAME)) {
-      // let tLongName be set below
-      tStandardName = EDV.DEPTH_NAME;
-    } else if (tDestName.equals(EDV.TIME_NAME)) {
-      // let tLongName be set below
-      tStandardName = EDV.TIME_NAME;
+    switch (tDestName) {
+      case EDV.LON_NAME -> {
+        tLongName =
+            String2.isSomething2(tLongName) && !tLongName.equalsIgnoreCase(EDV.LON_NAME)
+                ? tLongName
+                : "Longitude";
+        tStandardName = EDV.LON_NAME;
+        tUnits = EDV.LON_UNITS;
+      }
+      case EDV.LAT_NAME -> {
+        tLongName =
+            String2.isSomething2(tLongName) && !tLongName.equalsIgnoreCase(EDV.LAT_NAME)
+                ? tLongName
+                : "Latitude";
+        tStandardName = EDV.LAT_NAME;
+        tUnits = EDV.LAT_UNITS;
+      }
+      case EDV.ALT_NAME ->
+          // let tLongName be set below
+          tStandardName = EDV.ALT_NAME;
+      case EDV.DEPTH_NAME ->
+          // let tLongName be set below
+          tStandardName = EDV.DEPTH_NAME;
+      case EDV.TIME_NAME ->
+          // let tLongName be set below
+          tStandardName = EDV.TIME_NAME;
     }
 
     // if Sea Data Net SeaDataNet P01 exists, generate P02 and standard_name (if none already)
@@ -8779,74 +9127,60 @@ public abstract class EDD {
     if (String2.isSomething2(tStandardName)) {
 
       // fix some common invalid standard_names in WOA 2005 and elsewhere
-      if (tStandardName.equals("chlorophyll")
-          || // avoids mol vs. g
-          tStandardName.equals("mass_concentration_chlorophyll_concentration_in_sea_water"))
-        tStandardName = "concentration_of_chlorophyll_in_sea_water";
-      else if (tStandardName.equals("nitrate")) // no g option
-      tStandardName = "mole_concentration_of_nitrate_in_sea_water";
-      else if (tStandardName.equals("nitrite")) // no g option
-      tStandardName = "mole_concentration_of_nitrite_in_sea_water";
-      else if (tStandardName.equals("dissolved_oxygen"))
-        tStandardName =
-            moleUnits
-                ? "mole_concentration_of_dissolved_molecular_oxygen_in_sea_water"
-                : "mass_concentration_of_oxygen_in_sea_water";
-      else if (tStandardName.equals("apparent_oxygen_saturation")
-          || tStandardName.equals("percentage_oxygen_saturation"))
-        tStandardName = "fractional_saturation_of_oxygen_in_sea_water";
-      else if (tStandardName.equals("phosphate"))
-        tStandardName =
-            moleUnits
-                ? "mole_concentration_of_phosphate_in_sea_water"
-                : "mass_concentration_of_phosphate_in_sea_water";
-      else if (tStandardName.equals("salinity"))
-        // many of these from nodc are wrong. they are statistical measures
-        tStandardName =
-            (ttLongName.indexOf("statistic") >= 0 || ttLongName.indexOf("the number of") >= 0)
-                ? ""
-                : "sea_water_salinity";
-      else if (tStandardName.equals("silicate"))
-        tStandardName =
-            moleUnits
-                ? "mole_concentration_of_silicate_in_sea_water"
-                : "mass_concentration_of_silicate_in_sea_water";
-      else if (tStandardName.equals("temperature")) // dealt with specially below
-      tStandardName = ""; // perhaps sea_water_temperature, perhaps air or land
-      else if (tStandardName.equals("mask1")
-          || tStandardName.equals("mask2")
-          || tStandardName.equals("not defined")
-          || tStandardName.equals("num")
-          || tStandardName.equals("qual")) tStandardName = "";
+      tStandardName =
+          switch (tStandardName) {
+            case "chlorophyll", "mass_concentration_chlorophyll_concentration_in_sea_water" ->
+                "concentration_of_chlorophyll_in_sea_water";
+            case "nitrate" ->
+                // no g option
+                "mole_concentration_of_nitrate_in_sea_water";
+            case "nitrite" ->
+                // no g option
+                "mole_concentration_of_nitrite_in_sea_water";
+            case "dissolved_oxygen" ->
+                moleUnits
+                    ? "mole_concentration_of_dissolved_molecular_oxygen_in_sea_water"
+                    : "mass_concentration_of_oxygen_in_sea_water";
+            case "apparent_oxygen_saturation", "percentage_oxygen_saturation" ->
+                "fractional_saturation_of_oxygen_in_sea_water";
+            case "phosphate" ->
+                moleUnits
+                    ? "mole_concentration_of_phosphate_in_sea_water"
+                    : "mass_concentration_of_phosphate_in_sea_water";
+            case "salinity" ->
+                // many of these from nodc are wrong. they are statistical measures
+                (ttLongName.indexOf("statistic") >= 0 || ttLongName.indexOf("the number of") >= 0)
+                    ? ""
+                    : "sea_water_salinity";
+            case "silicate" ->
+                moleUnits
+                    ? "mole_concentration_of_silicate_in_sea_water"
+                    : "mass_concentration_of_silicate_in_sea_water";
+            case "temperature" ->
+                // dealt with specially below
+                ""; // perhaps sea_water_temperature, perhaps air or land
+            case "mask1", "mask2", "not defined", "num", "qual" -> "";
 
-      // and other common incorrect names
-      else if (tStandardName.equals("best_sea_surface_temperature"))
-        tStandardName = "sea_surface_temperature";
-      else if (tStandardName.equals("eastward_sea_water_velocit")) // missing y
-      tStandardName = "eastward_sea_water_velocity";
-      else if (tStandardName.equals("northward_sea_water_velocit")) // missing y
-      tStandardName = "northward_sea_water_velocity";
-      else if (tStandardName.equals("grid_eastward_sea_water_velocity"))
-        tStandardName = "eastward_sea_water_velocity";
-      else if (tStandardName.equals("grid_northward_sea_water_velocity"))
-        tStandardName = "northward_sea_water_velocity";
-      else if (tStandardName.equals("ice_thickness")) tStandardName = "sea_ice_thickness";
-      else if (tStandardName.equals("ice_u_veloctiy")
-          || // sic
-          tStandardName.equals("grid_eastward_sea_ice_velocity"))
-        tStandardName = "sea_ice_x_velocity";
-      else if (tStandardName.equals("ice_v_veloctiy")
-          || // sic
-          tStandardName.equals("grid_northward_sea_ice_velocity"))
-        tStandardName = "sea_ice_y_velocity";
-      else if (tStandardName.equals("net_surface_heat_flux")
-          || tStandardName.equals("surface_heat_flux"))
-        tStandardName = "surface_downward_heat_flux_in_air";
-      else if (tStandardName.equals("wave_direction_to"))
-        tStandardName = "sea_surface_wave_to_direction";
-      else if (tStandardName.equals("wave_height"))
-        tStandardName = "sea_surface_wave_significant_height";
-      else if (tStandardName.equals("wave_period")) tStandardName = "sea_surface_swell_wave_period";
+              // and other common incorrect names
+            case "best_sea_surface_temperature" -> "sea_surface_temperature";
+            case "eastward_sea_water_velocit" ->
+                // missing y
+                "eastward_sea_water_velocity";
+            case "northward_sea_water_velocit" ->
+                // missing y
+                "northward_sea_water_velocity";
+            case "grid_eastward_sea_water_velocity" -> "eastward_sea_water_velocity";
+            case "grid_northward_sea_water_velocity" -> "northward_sea_water_velocity";
+            case "ice_thickness" -> "sea_ice_thickness";
+            case "ice_u_veloctiy", "grid_eastward_sea_ice_velocity" -> "sea_ice_x_velocity";
+            case "ice_v_veloctiy", "grid_northward_sea_ice_velocity" -> "sea_ice_y_velocity";
+            case "net_surface_heat_flux", "surface_heat_flux" ->
+                "surface_downward_heat_flux_in_air";
+            case "wave_direction_to" -> "sea_surface_wave_to_direction";
+            case "wave_height" -> "sea_surface_wave_significant_height";
+            case "wave_period" -> "sea_surface_swell_wave_period";
+            default -> tStandardName;
+          };
     }
     // String2.log("tStandard_name=" + tStandardName);
 
@@ -8928,23 +9262,22 @@ public abstract class EDD {
       // fix problems
 
       // deal with the mess that is salinity
-      if (tStandardName.equals("sea_water_salinity")
-          || tStandardName.equals("sea_surface_salinity")) {
-        // g/g and kg/kg are very rare
-        if ("|g/g|kg/kg|g kg-1|g/kg|".indexOf("|" + tUnits + "|") >= 0) {
-          tStandardName = "sea_water_absolute_salinity"; // canonical is g/kg
-        } else {
-          tStandardName = "sea_water_practical_salinity";
-          // Possibly changing units is very aggressive. I know.
-          // 1 is CF canonical, but datasets have 1e-3, 1, psu, ...
-          // It is better to be aggressive and defy CF than have misleading/
-          //  bizarre units based on previous versions of CF standard names.
-          if (tUnitsLC.indexOf("pss") < 0) tUnits = "PSU";
+      switch (tStandardName) {
+        case "sea_water_salinity", "sea_surface_salinity" -> {
+          // g/g and kg/kg are very rare
+          if ("|g/g|kg/kg|g kg-1|g/kg|".indexOf("|" + tUnits + "|") >= 0) {
+            tStandardName = "sea_water_absolute_salinity"; // canonical is g/kg
+          } else {
+            tStandardName = "sea_water_practical_salinity";
+            // Possibly changing units is very aggressive. I know.
+            // 1 is CF canonical, but datasets have 1e-3, 1, psu, ...
+            // It is better to be aggressive and defy CF than have misleading/
+            //  bizarre units based on previous versions of CF standard names.
+            if (tUnitsLC.indexOf("pss") < 0) tUnits = "PSU";
+          }
         }
-      } else if (tStandardName.equals("i-directed_wind_stress")) {
-        tStandardName = "surface_downward_eastward_stress";
-      } else if (tStandardName.equals("j-directed_wind_stress")) {
-        tStandardName = "surface_downward_northward_stress";
+        case "i-directed_wind_stress" -> tStandardName = "surface_downward_eastward_stress";
+        case "j-directed_wind_stress" -> tStandardName = "surface_downward_northward_stress";
       }
 
       tStandardName =
@@ -9521,7 +9854,7 @@ public abstract class EDD {
                   : PrimitiveArray.factory(PAType.INT, StringArray.wordsAndQuotedPhrases(s));
         }
         double d = pa.getDouble(pa.size() - 1);
-        if (Double.isNaN(d)) d = Math2.Two[pa.size()];
+        if (Double.isNaN(d)) d = Math2.Two.get(pa.size());
         double d2[] = Math2.suggestLowHigh(0, d);
         tMin = d2[0];
         tMax = d2[1];
@@ -9538,7 +9871,7 @@ public abstract class EDD {
                   : PrimitiveArray.factory(PAType.INT, StringArray.wordsAndQuotedPhrases(s));
         }
         double d = pa.getDouble(pa.size() - 1);
-        if (Double.isNaN(d)) d = Math2.Two[pa.size()];
+        if (Double.isNaN(d)) d = Math2.Two.get(pa.size());
         double d2[] = Math2.suggestLowHigh(0, d);
         tMin = d2[0];
         tMax = d2[1];
@@ -9981,7 +10314,6 @@ public abstract class EDD {
         tMin = 0;
         tMax = 5000;
       } else if (tStandardName.equals("sea_surface_salinity")
-          || tStandardName.equals("sea_water_salinity")
           || tStandardName.equals("sea_water_absolute_salinity")
           || tStandardName.equals("sea_water_cox_salinity")
           || tStandardName.equals("sea_water_knudsen_salinity")
@@ -10328,8 +10660,7 @@ public abstract class EDD {
 
       // and remove display_min, display_max, display_scale
       String rep[] = {"display_min", "display_max", "display_scale"};
-      for (int ti = 0; ti < rep.length; ti++)
-        if (String2.isSomething(sourceAtts.getString(rep[ti]))) addAtts.add(rep[ti], "null");
+      for (String s : rep) if (String2.isSomething(sourceAtts.getString(s))) addAtts.add(s, "null");
     }
 
     // and if colorBarMin <= 0, colorBarScale can't be log
@@ -10350,8 +10681,6 @@ public abstract class EDD {
       if (!String2.isSomething2(tLongName))
         tLongName = EDV.suggestLongName(oLongName, tSourceName, tStandardName);
     }
-
-    tUnitsLC = tUnits.toLowerCase();
 
     // deal with scale_factor (e.g., 0.1) and in tUnits  (e.g., "* 10")
     if (String2.isSomething2(tUnits) && tScaleFactor != 0) {
@@ -10378,13 +10707,13 @@ public abstract class EDD {
 
       // ensure valid / fix wrong case
       int ti = String2.caseInsensitiveIndexOf(EDV.IOOS_CATEGORIES, oIoosCat);
-      oIoosCat = ti < 0 ? null : EDV.IOOS_CATEGORIES[ti];
+      oIoosCat = ti < 0 ? null : EDV.IOOS_CATEGORIES.get(ti);
 
       // save it
       if (oIoosCat == null) addAtts.add("ioos_category", "null");
       else if (!ooIoosCat.equals(oIoosCat)) addAtts.add("ioos_category", oIoosCat);
     }
-    if (EDStatic.variablesMustHaveIoosCategory && !String2.isSomething2(oIoosCat)) {
+    if (EDStatic.config.variablesMustHaveIoosCategory && !String2.isSomething2(oIoosCat)) {
       // It is hard to be absolutely certain when assigning ioos_category.
       // Fortunately, this isn't crucial information and is used mostly for data discovery.
       // Occasional errors are okay.
@@ -10475,8 +10804,8 @@ public abstract class EDD {
           || tDestName.equals(EDV.LAT_NAME)
           || tDestName.equals(EDV.ALT_NAME)
           || tDestName.equals(EDV.DEPTH_NAME)
-          || String2.indexOf(EDV.LON_UNITS_VARIANTS, tUnits) >= 0
-          || String2.indexOf(EDV.LAT_UNITS_VARIANTS, tUnits) >= 0) {
+          || EDV.LON_UNITS_VARIANTS.indexOf(tUnits) >= 0
+          || EDV.LAT_UNITS_VARIANTS.indexOf(tUnits) >= 0) {
         addAtts.add("ioos_category", "Location");
 
       } else if (lcu.indexOf("bathym") >= 0
@@ -10633,7 +10962,6 @@ public abstract class EDD {
       } else if (lcu.indexOf("cldc") >= 0
           || // cloud cover
           lcu.indexOf("cloud") >= 0
-          || lcu.indexOf("cloud") >= 0
           || lcu.indexOf("dew point") >= 0
           || lcu.indexOf("dewp") >= 0
           || lcu.indexOf("evapora") >= 0
@@ -10690,7 +11018,7 @@ public abstract class EDD {
                   || lcu.indexOf("|solar|") >= 0)
               && (lcu.indexOf("|flux|") >= 0 || lcu.indexOf("|fluxd|") >= 0))
           || lcu.indexOf("|w/m^2|") >= 0
-          || tSourceName.toLowerCase().equals("graphics")) {
+          || tSourceName.equalsIgnoreCase("graphics")) {
         addAtts.add("ioos_category", "Optical Properties");
 
         // Physical Oceanography, see below
@@ -10788,10 +11116,9 @@ public abstract class EDD {
           || // 4 letter NDBC abbreviation
           lcu.indexOf("wtemp") >= 0
           || lcu.indexOf("temp.") >= 0
-          ||
-          // temperature units often used with other units for other purposes
-          // but if alone, it means temperature
-          hasTemperatureUnits) { // also caught above before others
+      // temperature units often used with other units for other purposes
+      // but if alone, it means temperature
+      ) {
 
         addAtts.add("ioos_category", "Temperature");
 
@@ -11163,34 +11490,36 @@ public abstract class EDD {
    * @throws Throwable if trouble
    */
   public static String directionsForGenerateDatasetsXml() throws Throwable {
-    return "<!--\n"
-        + " DISCLAIMER:\n"
-        + "   The chunk of datasets.xml made by GenerageDatasetsXml isn't perfect.\n"
-        + "   YOU MUST READ AND EDIT THE XML BEFORE USING IT IN A PUBLIC ERDDAP.\n"
-        + "   GenerateDatasetsXml relies on a lot of rules-of-thumb which aren't always\n"
-        + "   correct.  *YOU* ARE RESPONSIBLE FOR ENSURING THE CORRECTNESS OF THE XML\n"
-        + "   THAT YOU ADD TO ERDDAP'S datasets.xml FILE.\n"
-        + "\n"
-        + " DIRECTIONS:\n"
-        + " * Read about this type of dataset in\n"
-        + "   https://erddap.github.io/setupDatasetsXml.html .\n"
-        + " * Read https://erddap.github.io/setupDatasetsXml.html#addAttributes\n"
-        + "   so that you understand about sourceAttributes and addAttributes.\n"
-        + " * Note: Global sourceAttributes and variable sourceAttributes are listed\n"
-        + "   below as comments, for informational purposes only.\n"
-        + "   ERDDAP combines sourceAttributes and addAttributes (which have\n"
-        + "   precedence) to make the combinedAttributes that are shown to the user.\n"
-        + "   (And other attributes are automatically added to longitude, latitude,\n"
-        + "   altitude, depth, and time variables).\n"
-        + " * If you don't like a sourceAttribute, overwrite it by adding an\n"
-        + "   addAttribute with the same name but a different value\n"
-        + "   (or no value, if you want to remove it).\n"
-        + " * All of the addAttributes are computer-generated suggestions. Edit them!\n"
-        + "   If you don't like an addAttribute, change it.\n"
-        + " * If you want to add other addAttributes, add them.\n"
-        + " * If you want to change a destinationName, change it.\n"
-        + "   But don't change sourceNames.\n"
-        + " * You can change the order of the dataVariables or remove any of them.\n";
+    return """
+            <!--
+             DISCLAIMER:
+               The chunk of datasets.xml made by GenerageDatasetsXml isn't perfect.
+               YOU MUST READ AND EDIT THE XML BEFORE USING IT IN A PUBLIC ERDDAP.
+               GenerateDatasetsXml relies on a lot of rules-of-thumb which aren't always
+               correct.  *YOU* ARE RESPONSIBLE FOR ENSURING THE CORRECTNESS OF THE XML
+               THAT YOU ADD TO ERDDAP'S datasets.xml FILE.
+
+             DIRECTIONS:
+             * Read about this type of dataset in
+               https://erddap.github.io/docs/server-admin/datasets .
+             * Read https://erddap.github.io/docs/server-admin/datasets#global-attributes
+               so that you understand about sourceAttributes and addAttributes.
+             * Note: Global sourceAttributes and variable sourceAttributes are listed
+               below as comments, for informational purposes only.
+               ERDDAP combines sourceAttributes and addAttributes (which have
+               precedence) to make the combinedAttributes that are shown to the user.
+               (And other attributes are automatically added to longitude, latitude,
+               altitude, depth, and time variables).
+             * If you don't like a sourceAttribute, overwrite it by adding an
+               addAttribute with the same name but a different value
+               (or no value, if you want to remove it).
+             * All of the addAttributes are computer-generated suggestions. Edit them!
+               If you don't like an addAttribute, change it.
+             * If you want to add other addAttributes, add them.
+             * If you want to change a destinationName, change it.
+               But don't change sourceNames.
+             * You can change the order of the dataVariables or remove any of them.
+            """;
     // This doesn't have the closing "-->\n\n" so users can add other comments.
   }
 
@@ -11235,12 +11564,7 @@ public abstract class EDD {
     String indent = "    ";
     StringBuilder sb = new StringBuilder();
 
-    // e.g., don't change "lon" to "longitude" if there is already a "longitude" variable
-    int sLongitude = addTable.findColumnNumber("longitude"),
-        sLatitude = addTable.findColumnNumber("latitude"),
-        sAltitude = addTable.findColumnNumber("altitude"), // but just one of altitude or depth
-        sDepth = addTable.findColumnNumber("depth"), // but just one of altitude or depth
-        sTime = addTable.findColumnNumber("time");
+    int sTime = addTable.findColumnNumber("time");
 
     // ensure time has proper units
     if (sTime >= 0) {
@@ -11278,7 +11602,6 @@ public abstract class EDD {
       if (tUnits == null) tUnits = sourceAtts.getString("units");
       String tPositive = addAtts.getString("positive");
       if (tPositive == null) tPositive = sourceAtts.getString("positive");
-      float tScaleFactor = sourceAtts.getFloat("scale_factor");
       String tDestName = addTable.getColumnName(col);
       if (!String2.isSomething2(tDestName)) tDestName = tSourceName;
 
@@ -11338,8 +11661,6 @@ public abstract class EDD {
       float tScaleFactor,
       boolean tryToFindLLAT) {
 
-    String oSourceName = tSourceName;
-
     // remove (units) from SOS sourceNames, e.g., "name (units)"
     int po = tSourceName.indexOf(" (");
     if (po > 0 && tSourceName.endsWith(")")) tSourceName = tSourceName.substring(0, po);
@@ -11372,7 +11693,7 @@ public abstract class EDD {
     po = tUnits.indexOf("???");
     if (po >= 0) tUnits = tUnits.substring(po + 3);
     String tUnitsLC = tUnits.toLowerCase();
-    boolean unitsAreMeters = String2.indexOf(EDV.METERS_VARIANTS, tUnitsLC) >= 0; // case sensitive
+    boolean unitsAreMeters = EDV.METERS_VARIANTS.indexOf(tUnitsLC) >= 0; // case sensitive
 
     if (tPositive == null) tPositive = "";
     tPositive = tPositive.toLowerCase();
@@ -11409,7 +11730,7 @@ public abstract class EDD {
       // see Calendar2.suggestDateTimeFormat for common java.time (was Joda) date time formats
       if (Calendar2.isStringTimeUnits(tUnitsLC) || tUnitsLC.indexOf("%y") >= 0) return "time";
 
-      if (tSourceName.equals("time") && !tUnits.equals(""))
+      if (tSourceName.equals("time") && !tUnits.isEmpty())
         // name is time but units aren't "... since ..." or "???" or ""!
         // so change name
         return "time2";
@@ -11504,10 +11825,12 @@ public abstract class EDD {
    * @throws Throwable if trouble
    */
   public static String cdmSuggestion() {
-    return "    <!-- Please specify the actual cdm_data_type (TimeSeries?) and related info below, for example...\n"
-        + "        <att name=\"cdm_timeseries_variables\">station_id, longitude, latitude</att>\n"
-        + "        <att name=\"subsetVariables\">station_id, longitude, latitude</att>\n"
-        + "    -->\n";
+    return """
+                <!-- Please specify the actual cdm_data_type (TimeSeries?) and related info below, for example...
+                    <att name="cdm_timeseries_variables">station_id, longitude, latitude</att>
+                    <att name="subsetVariables">station_id, longitude, latitude</att>
+                -->
+            """;
   }
 
   /**
@@ -11525,9 +11848,9 @@ public abstract class EDD {
     StringBuilder sb = new StringBuilder();
     sb.append(indent + (isAddAtts ? "<addAttributes>\n" : "<!-- sourceAttributes>\n"));
     String names[] = addAtts.getNames();
-    for (int att = 0; att < names.length; att++) {
-      PrimitiveArray attPa = addAtts.get(names[att]);
-      sb.append(indent + "    <att name=\"" + names[att] + "\"");
+    for (String name : names) {
+      PrimitiveArray attPa = addAtts.get(name);
+      sb.append(indent + "    <att name=\"" + name + "\"");
       if (attPa instanceof StringArray) {
         String val = XML.encodeAsXML(attPa.getString(0));
         if (!isAddAtts)
@@ -11552,15 +11875,17 @@ public abstract class EDD {
    * This is used by standardizeResultsTable (and places that bypass standardizeResultsTable) to
    * update the globalAttributes of a response table.
    *
+   * @param language the index of the selected language
    * @return null if trouble. The new history is used for tableWriters, which allow null.
    */
-  public String getNewHistory(String requestUrl, String userDapQuery) {
+  public String getNewHistory(int language, String requestUrl, String userDapQuery) {
     try {
       String tHistory =
-          addToHistory(combinedGlobalAttributes.getString("history"), publicSourceUrl());
+          addToHistory(
+              combinedGlobalAttributes.getString(language, "history"), publicSourceUrl(language));
       return addToHistory(
           tHistory,
-          EDStatic.baseUrl
+          EDStatic.config.baseUrl
               + requestUrl
               + (userDapQuery == null || userDapQuery.length() == 0 ? "" : "?" + userDapQuery));
     } catch (Exception e) {
@@ -11675,9 +12000,7 @@ public abstract class EDD {
         for (int row = 0; row < nRows; row++)
           badFilesMap.put(
               badTable.getStringData(0, row),
-              new Object[] {
-                Long.valueOf(badTable.getLongData(1, row)), badTable.getStringData(2, row)
-              });
+              new Object[] {badTable.getLongData(1, row), badTable.getStringData(2, row)});
       }
       return badFilesMap;
     } catch (Throwable t) {
@@ -11686,7 +12009,8 @@ public abstract class EDD {
       String2.log(subject);
       String2.log(content);
       File2.delete(fileName);
-      if (content.indexOf(msg) < 0) EDStatic.email(EDStatic.emailEverythingToCsv, subject, content);
+      if (content.indexOf(msg) < 0)
+        EDStatic.email(EDStatic.config.emailEverythingToCsv, subject, content);
       return newEmptyBadFileMap();
     }
   }
@@ -11709,12 +12033,12 @@ public abstract class EDD {
       LongArray lastMods = new LongArray();
       StringArray reasons = new StringArray();
       Object keys[] = badFilesMap.keySet().toArray();
-      for (int k = 0; k < keys.length; k++) {
-        Object o = badFilesMap.get(keys[k]);
+      for (Object key : keys) {
+        Object o = badFilesMap.get(key);
         if (o != null) {
-          fileNames.add(keys[k].toString());
+          fileNames.add(key.toString());
           Object oar[] = (Object[]) o;
-          lastMods.add(((Long) oar[0]).longValue());
+          lastMods.add((Long) oar[0]);
           reasons.add(oar[1].toString());
         }
       }
@@ -11731,7 +12055,7 @@ public abstract class EDD {
       String subject = "Error while writing table of badFiles";
       String content = randomFileName + "\n" + MustBe.throwableToString(t);
       String2.log(subject + ":\n" + content);
-      EDStatic.email(EDStatic.emailEverythingToCsv, subject, content);
+      EDStatic.email(EDStatic.config.emailEverythingToCsv, subject, content);
       File2.delete(randomFileName);
       throw t;
     }
@@ -11749,7 +12073,7 @@ public abstract class EDD {
   public void addBadFile(
       ConcurrentHashMap badFileMap, int dirIndex, String fileName, long lastMod, String reason) {
     String2.log(datasetID + " addBadFile: " + fileName + "\n  reason=" + reason);
-    badFileMap.put(dirIndex + "/" + fileName, new Object[] {Long.valueOf(lastMod), reason});
+    badFileMap.put(dirIndex + "/" + fileName, new Object[] {lastMod, reason});
   }
 
   /**
@@ -11803,9 +12127,9 @@ public abstract class EDD {
                 + "\n\n");
     int nDir = dirList.size();
     Arrays.sort(keys);
-    for (int k = 0; k < keys.length; k++) {
-      Object o = badFileMap.get(keys[k]);
-      String dir = File2.getDirectory(keys[k].toString());
+    for (Object key : keys) {
+      Object o = badFileMap.get(key);
+      String dir = File2.getDirectory(key.toString());
       int dirI =
           dir.length() > 1 && dir.endsWith("/")
               ? String2.parseInt(dir.substring(0, dir.length() - 1))
@@ -11814,7 +12138,7 @@ public abstract class EDD {
         Object oar[] = (Object[]) o;
         sb.append(
             dirList.get(dirI)
-                + File2.getNameAndExtension(keys[k].toString())
+                + File2.getNameAndExtension(key.toString())
                 + "\n"
                 + oar[1].toString()
                 + "\n\n"); // reason
@@ -11952,7 +12276,7 @@ public abstract class EDD {
           String2.ERROR + " while saving dirTable, fileTable, or badFiles for " + datasetID;
       String msg = MustBe.throwableToString(t);
       String2.log(subject + "\n" + msg);
-      EDStatic.email(EDStatic.emailEverythingToCsv, subject, msg);
+      EDStatic.email(EDStatic.config.emailEverythingToCsv, subject, msg);
 
       File2.delete(dirTableFileName + random);
       File2.delete(fileTableFileName + random);
@@ -11974,19 +12298,19 @@ public abstract class EDD {
    *     If a part doesn't have '=', then it doesn't generate an entry in hashmap.
    * @throws Throwable if trouble (e.g., invalid percentEncoding)
    */
-  public static HashMap<String, String> userQueryHashMap(String userQuery, boolean namesLC)
+  public static Map<String, String> userQueryHashMap(String userQuery, boolean namesLC)
       throws Throwable {
-    HashMap<String, String> queryHash = new HashMap<String, String>();
+    Map<String, String> queryHash = new HashMap<>();
     if (userQuery != null) {
       String tParts[] =
           Table.getDapQueryParts(userQuery); // decoded.  userQuery="" returns String[1]  with #0=""
-      for (int i = 0; i < tParts.length; i++) {
-        int po = tParts[i].indexOf('=');
+      for (String tPart : tParts) {
+        int po = tPart.indexOf('=');
         if (po > 0) {
           // if (reallyVerbose) String2.log(tParts[i]);
-          String name = tParts[i].substring(0, po);
+          String name = tPart.substring(0, po);
           if (namesLC) name = name.toLowerCase();
-          queryHash.put(name, tParts[i].substring(po + 1));
+          queryHash.put(name, tPart.substring(po + 1));
         }
       }
     }
@@ -12043,7 +12367,7 @@ public abstract class EDD {
    * @param yMax the double-value range of the graph
    */
   public void writePngInfo(
-      String loggedInAs, String userDapQuery, String fileTypeName, ArrayList mmal) {
+      String loggedInAs, String userDapQuery, String fileTypeName, List<PrimitiveArray> mmal) {
     String infoFileName =
         String2.canonical(getPngInfoFileName(loggedInAs, userDapQuery, fileTypeName));
     try {
@@ -12059,9 +12383,9 @@ public abstract class EDD {
         StringBuilder sb = new StringBuilder();
         sb.append("{\n");
         PrimitiveArray pa;
-        pa = (DoubleArray) mmal.get(7);
+        pa = mmal.get(7);
         sb.append(String2.toJson("graphDoubleWESN") + ": [" + pa.toJsonCsvString() + "],\n");
-        pa = (IntArray) mmal.get(6);
+        pa = mmal.get(6);
         sb.append(String2.toJson("graphIntWESN") + ": [" + pa.toJsonCsvString() + "],\n");
         sb.append("}\n");
 
@@ -12087,7 +12411,7 @@ public abstract class EDD {
                   + "    infoFileName="
                   + infoFileName
                   + "\n"
-                  + sb.toString());
+                  + sb);
 
       } finally {
         lock.unlock();
@@ -12134,7 +12458,7 @@ public abstract class EDD {
 
       // if the pngInfo file is at a remote ERDDAP, get it and store it as if created here
       if (this instanceof FromErddap fe && !File2.isFile(infoFileName)) {
-        if (fe.intSourceErddapVersion() > 122) {
+        if (fe.sourceErddapVersion().isGreaterThan(EDStatic.getSemver("1.22"))) {
           // if this fails, the method fails since infoFile isn't in the dir anyway
           String tUrl =
               fe.getLocalSourceErddapUrl()
@@ -12294,7 +12618,7 @@ public abstract class EDD {
       fileTable.addColumn(0, "ext", exts);
 
       // get the most common file extension
-      ArrayList tallyArrayList = tally.getSortedNamesAndCounts("ext");
+      List<PrimitiveArray> tallyArrayList = tally.getSortedNamesAndCounts("ext");
       if (tallyArrayList == null) return "";
       StringArray tallyExts = (StringArray) tallyArrayList.get(0);
       IntArray tallyCounts = (IntArray) tallyArrayList.get(1);
@@ -12331,19 +12655,13 @@ public abstract class EDD {
         String featureType = null;
         try {
           // does it have featureType metadata?
-          NetcdfFile ncFile = NcHelper.openFile(tDir + sampleName);
-          try {
+          try (NetcdfFile ncFile = NcHelper.openFile(tDir + sampleName)) {
             Attributes gAtts = new Attributes();
             NcHelper.getGroupAttributes(ncFile.getRootGroup(), gAtts);
             featureType = gAtts.getString("featureType");
             if (featureType == null) // cdm allows these aliases
             featureType = gAtts.getString("CF:featureType");
             if (featureType == null) featureType = gAtts.getString("CF:feature_type");
-          } finally {
-            try {
-              if (ncFile != null) ncFile.close();
-            } catch (Exception e9) {
-            }
           }
           if (featureType == null)
             throw new RuntimeException("No featureType, so it isn't an .ncCF file.");
@@ -12392,7 +12710,7 @@ public abstract class EDD {
           || topExt.equals(".grb")
           || topExt.equals(".grb2")
           || topExt.equals(".bufr")
-          || topExt.equals("")) { // .hdf are sometimes unidentified
+          || topExt.isEmpty()) { // .hdf are sometimes unidentified
         try {
           String xmlChunk =
               EDDGridFromNcFiles.generateDatasetsXml(
@@ -12497,6 +12815,41 @@ public abstract class EDD {
         }
       }
 
+      if (topExt.equals(".parquet")) {
+        try {
+          String xmlChunk =
+              EDDTableFromParquetFiles.generateDatasetsXml(
+                  tDir,
+                  ".*\\" + topExt,
+                  tDir + sampleName,
+                  -1,
+                  "",
+                  "",
+                  "",
+                  "",
+                  "",
+                  "",
+                  "",
+                  "",
+                  "",
+                  0, // standardizeWhat=0, cacheFromUrl
+                  "",
+                  null); // other info
+          resultsSB.append(xmlChunk); // recursive=true
+          for (int diri2 = diri; diri2 < nDirs; diri2++)
+            if (dirs.get(diri2).startsWith(tDir)) dirDone.set(diri2);
+          String msg = topOfAre + "EDDTableFromParquetFiles";
+          dirInfo.set(diri, indent + msg);
+          String2.log(success + msg);
+          nTableAscii++;
+          nCreated++;
+          continue;
+        } catch (Throwable t) {
+          String2.log(
+              "> Attempt with EDDTableFromParquetFiles failed:\n" + MustBe.throwableToString(t));
+        }
+      }
+
       // all fail? Use EDDTableFromFileNames and serve all files (not just topExt)
       try {
         String xmlChunk =
@@ -12586,14 +12939,15 @@ public abstract class EDD {
             null,
             null,
             "",
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             "EDD.testDasDds_" + tDatasetID,
             ".das");
     results.append(
         "**************************** The .das for "
             + tDatasetID
             + " ****************************\n");
-    results.append(File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName) + "\n");
+    results.append(
+        File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName) + "\n");
 
     tName =
         edd.makeNewFileForDapQuery(
@@ -12601,14 +12955,15 @@ public abstract class EDD {
             null,
             null,
             "",
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             "EDD.testDasDds_" + tDatasetID,
             ".dds");
     results.append(
         "**************************** The .dds for "
             + tDatasetID
             + " ****************************\n");
-    results.append(File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName) + "\n");
+    results.append(
+        File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName) + "\n");
 
     if (edd instanceof EDDGrid eddGrid) {
       if (eddGrid.timeIndex() >= 0) {
@@ -12679,15 +13034,17 @@ public abstract class EDD {
     boolean isGrid = this instanceof EDDGrid;
     EDDGrid eddGrid = isGrid ? (EDDGrid) this : null;
     EDDTable eddTable = isGrid ? null : (EDDTable) this;
-    Attributes gatts = combinedGlobalAttributes();
+    int language = EDMessages.DEFAULT_LANGUAGE;
+    Attributes gatts = combinedGlobalAttributes().toAttributes(language);
     String now = Calendar2.getCompactCurrentISODateTimeStringLocal();
 
     /// help/xml-loader documentation says:
     // An omitted tag causes previous value to be preserved -- sounds accident-prone.
     // An empty tag causes value to be "nulled out" (emptied) -- sounds safer -- do this.
 
-    String tOrganization = EDStatic.adminInstitution == null ? "" : EDStatic.adminInstitution;
-    String tCity = EDStatic.adminCity == null ? "" : EDStatic.adminCity;
+    String tOrganization =
+        EDStatic.config.adminInstitution == null ? "" : EDStatic.config.adminInstitution;
+    String tCity = EDStatic.config.adminCity == null ? "" : EDStatic.config.adminCity;
     if (tOrganization.equals("NOAA NMFS SWFSC Environmental Research Division")) {
       tOrganization = "Southwest Fisheries Science Center"; // in InPort
       tCity = "Santa Cruz"; // where data is located
@@ -12713,7 +13070,7 @@ public abstract class EDD {
             +
             // Enter the catalog item type of the item being created or updated (e.g. Data Set)
             "    <title>"
-            + XML.encodeAsXML(title())
+            + XML.encodeAsXML(title(language))
             + "</title>\n"
             +
             // Enter the catalog item title. If this upload is updating an existing catalog item,
@@ -12727,7 +13084,7 @@ public abstract class EDD {
             + // ??? while still working on these records, then Complete
             // Enter the status. Must be one of the following values: In Work, Planned, Complete.
             "    <abstract>"
-            + XML.encodeAsXML(summary())
+            + XML.encodeAsXML(summary(language))
             + "</abstract>\n"
             +
             // Enter the abstract/description of the catalog item.
@@ -12738,7 +13095,7 @@ public abstract class EDD {
             "    <other-citation-details></other-citation-details>\n"
             + // Enter other citation details.
             "    <supplemental-information>"
-            + XML.encodeAsXML(infoUrl())
+            + XML.encodeAsXML(infoUrl(language))
             + "</supplemental-information>\n"
             +
             // Enter supplemental information if applicable.
@@ -12759,12 +13116,15 @@ public abstract class EDD {
             // Enter the city.
             "    <state-province>"
             + XML.encodeAsXML(
-                EDStatic.adminStateOrProvince == null ? "" : EDStatic.adminStateOrProvince)
+                EDStatic.config.adminStateOrProvince == null
+                    ? ""
+                    : EDStatic.config.adminStateOrProvince)
             + "</state-province>\n"
             +
             // Enter the state or province (2 letter acronym). Must be a valid state/province.
             "    <country>"
-            + XML.encodeAsXML(EDStatic.adminCountry == null ? "" : EDStatic.adminCountry)
+            + XML.encodeAsXML(
+                EDStatic.config.adminCountry == null ? "" : EDStatic.config.adminCountry)
             + "</country>\n"
             +
             // Enter the country.
@@ -12840,7 +13200,7 @@ public abstract class EDD {
             // appropriate granularity which is significant. For example, if the date is significant
             // only up to the month, enter YYYYMM.
             "      <person-email>"
-            + XML.encodeAsXML(EDStatic.adminEmail == null ? "" : EDStatic.adminEmail)
+            + XML.encodeAsXML(EDStatic.config.adminEmail == null ? "" : EDStatic.config.adminEmail)
             + "</person-email>\n"
             +
             // If the support role is a person, enter the person's email address. The person must
@@ -12853,7 +13213,8 @@ public abstract class EDD {
             // organization acronym, as it is listed in InPort. The organization must exist in
             // InPort.
             "      <contact-instructions>"
-            + XML.encodeAsXML(EDStatic.adminEmail == null ? "" : "email " + EDStatic.adminEmail)
+            + XML.encodeAsXML(
+                EDStatic.config.adminEmail == null ? "" : "email " + EDStatic.config.adminEmail)
             + "</contact-instructions>\n"
             +
             // Enter the contact instructions for the person or organization specified for the
@@ -12947,10 +13308,12 @@ public abstract class EDD {
 
     // end of support roles
     sb.append(
-        "  </support-roles>\n"
-            + "  <extents mode=\"replace\">\n"
-            + "    <extent>\n"
-            + "      <description></description>\n");
+        """
+                      </support-roles>
+                      <extents mode="replace">
+                        <extent>
+                          <description></description>
+                    """);
     // Enter a general description of the extent, if any.
 
     // time-frame
@@ -13021,10 +13384,6 @@ public abstract class EDD {
               : eddTable.dataVariables()[eddTable.latIndex()];
       double south = edv.destinationMinDouble();
       double north = edv.destinationMaxDouble();
-      boolean global =
-          (west <= -179 && east >= 179)
-              || // test before modifying west and east
-              (west <= 0 && east >= 359);
       if (Double.isFinite(west) && Double.isFinite(east)) {
         if (west >= 180) {
           west -= 360;
@@ -13342,9 +13701,9 @@ public abstract class EDD {
       // ??? Is history 1 string, so split it at '/n'?
       String historySA[] = String2.split(gatts.getString("history"), '\n');
       int sequenceNumber = 1;
-      for (int historyi = 0; historyi < historySA.length; historyi++) {
+      for (String s : historySA) {
         // look for date at beginning
-        String th = historySA[historyi].trim();
+        String th = s.trim();
         if (th.length() == 0) continue;
         String tDate = "";
         int po = th.indexOf(' ');
@@ -13486,14 +13845,14 @@ public abstract class EDD {
     long eTime = System.currentTimeMillis();
 
     // get a list of datasets from addDatasets on coastwatch Erddap
-    ArrayList<String> lines =
+    List<String> lines =
         SSR.getUrlResponseArrayList(
             "https://coastwatch.pfeg.noaa.gov/erddap/tabledap/allDatasets.csv0?datasetID,dataStructure");
     int nLines = lines.size();
 
     // make HashSet with datasetIDs
-    HashSet<String> hashset = new HashSet();
-    for (int line = 0; line < nLines; line++) hashset.add(String2.split(lines.get(line), ',')[0]);
+    HashSet<String> hashset = new HashSet<>();
+    for (String s : lines) hashset.add(String2.split(s, ',')[0]);
 
     // consider making InPort Xml for these datasets
     for (int line = 0; line < nLines; line++) {
@@ -13595,7 +13954,7 @@ public abstract class EDD {
                     + tDatasetID
                     + "</sourceUrl>\n"
                     + "</dataset>\n");
-        Attributes gatts = edd.combinedGlobalAttributes();
+        Attributes gatts = edd.combinedGlobalAttributes().toAttributes(EDMessages.DEFAULT_LANGUAGE);
         String tCreatorEmail = gatts.getString("creator_email");
         String tInstitution = gatts.getString("institution");
         String tTitle = gatts.getString("title");
@@ -13834,7 +14193,8 @@ public abstract class EDD {
   public static String sparqlP01toP02(String p01) {
     // FUTURE: move this to messages.txt and EDStatic and make it setable in setup.xml
 
-    String urlString = EDStatic.sparqlP01toP02pre + p01 + EDStatic.sparqlP01toP02post;
+    String urlString =
+        EDStatic.messages.sparqlP01toP02pre + p01 + EDStatic.messages.sparqlP01toP02post;
     try {
       Table table = new Table();
       table.readASCII(
@@ -13869,8 +14229,7 @@ public abstract class EDD {
       return s;
 
     } catch (Exception e) {
-      String2.log(
-          String2.ERROR + " in sparqlP01toP02(" + p01 + ") url=" + urlString + "\n" + e.toString());
+      String2.log(String2.ERROR + " in sparqlP01toP02(" + p01 + ") url=" + urlString + "\n" + e);
       return null;
     }
   }
@@ -13911,8 +14270,9 @@ public abstract class EDD {
    * @param localSourceUrl a URL which includes /erddap/
    * @return the version of the remote ERDDAP, or 1.22 if trouble.
    */
-  public static double getRemoteErddapVersion(String localSourceUrl) {
-    String find = "/erddap/"; // EDStatic.warName, but developmentMode is irrelevant/trouble here
+  public static Semver getRemoteErddapVersion(String localSourceUrl) {
+    String find =
+        "/erddap/"; // EDStatic.config.warName, but developmentMode is irrelevant/trouble here
     int po = localSourceUrl.indexOf(find);
     if (po < 0) {
       find = "/cwexperimental/";
@@ -13924,21 +14284,29 @@ public abstract class EDD {
               + " in getRemoteErddapVersion("
               + localSourceUrl
               + "): \"/erddap/\" not found in URL.");
-      return 1.22;
+      return EDStatic.getSemver("1.22");
     }
-    String vUrl = localSourceUrl.substring(0, po + find.length()) + "version";
+    String vUrl = localSourceUrl.substring(0, po + find.length()) + "version?format=json";
     try {
-      ArrayList<String> response =
+      List<String> response =
           SSR.getUrlResponseArrayList(vUrl); // has timeout and descriptive error
       double v = Double.NaN;
-      String response0 = response.get(0);
-      if (response0.startsWith("ERDDAP_version=")) v = String2.parseDouble(response0.substring(15));
-      if (reallyVerbose) String2.log("  remote ERDDAP version=" + v);
-      return Double.isNaN(v) ? 1.22 : v;
+      String fullResponse = String.join("\n", response);
+      if (fullResponse.contains("version_full")) {
+        JSONObject json = new JSONObject(fullResponse);
+        return EDStatic.getSemver(json.getString("version_full"));
+      }
+
+      String response0 = response.getFirst();
+      if (response0.startsWith("ERDDAP_version=")) {
+        v = String2.parseDouble(response0.substring(15));
+        if (reallyVerbose) String2.log("  remote ERDDAP version=" + v);
+        return EDStatic.getSemver(Double.isNaN(v) ? "1.22" : String.valueOf(v));
+      }
     } catch (Throwable t) {
-      String2.log(String2.ERROR + " in getRemoteErddapVersion(" + vUrl + ")\n" + t.toString());
-      return 1.22;
+      String2.log(String2.ERROR + " in getRemoteErddapVersion(" + vUrl + ")\n" + t);
     }
+    return EDStatic.getSemver("1.22");
   }
 
   /**

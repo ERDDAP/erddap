@@ -43,7 +43,7 @@ import java.util.concurrent.ExecutionException;
  *
  * @author Bob Simons (was bob.simons@noaa.gov, now BobSimons2.00@gmail.com) 2007-07-06
  */
-public class GridDataAccessor {
+public class GridDataAccessor implements AutoCloseable {
 
   /**
    * Set this to true (by calling verbose=true in your program, not by changing the code here) if
@@ -61,19 +61,19 @@ public class GridDataAccessor {
    * Set this to true (by calling debugMode=true in your program, not by changing the code here) if
    * you want all diagnostic messages sent to String2.log.
    */
-  public static boolean debugMode = false;
+  public static final boolean debugMode = false;
 
   // things passed into the constructor
-  protected int language;
-  protected EDDGrid eddGrid;
-  protected String userDapQuery;
-  protected boolean rowMajor;
-  protected boolean convertToNaN;
+  protected final int language;
+  protected final EDDGrid eddGrid;
+  protected final String userDapQuery;
+  protected final boolean rowMajor;
+  protected final boolean convertToNaN;
 
   // things the constructor generates
   protected int nAxisVariables;
   protected EDV dataVariables[]; // [dv in the query]
-  protected IntArray constraints;
+  protected final IntArray constraints;
   protected int getAllOfNAxes;
   protected NDimensionalIndex totalIndex, driverIndex, partialIndex;
   protected boolean avInDriver[];
@@ -93,8 +93,8 @@ public class GridDataAccessor {
    * This is the constructor. This constructor sets everything up, but doesn't get any grid data.
    *
    * @param tEDDGrid the data source
-   * @param tRequestUrl the part of the user's request, after EDStatic.baseUrl, before '?'. Here, it
-   *     is just used for history metadata.
+   * @param tRequestUrl the part of the user's request, after EDStatic.config.baseUrl, before '?'.
+   *     Here, it is just used for history metadata.
    * @param tUserDapQuery the original user DAP-style query after the '?', still percentEncoded, may
    *     be null.
    * @param tRowMajor Set this to true if you want to get the data in row major order. Set this to
@@ -145,13 +145,13 @@ public class GridDataAccessor {
       String2.log("      dataVariables=" + destinationNames + "\n      constraints=" + constraints);
 
     // make globalAttributes
-    globalAttributes = new Attributes(eddGrid.combinedGlobalAttributes()); // make a copy
+    globalAttributes = eddGrid.combinedGlobalAttributes().toAttributes(language); // make a copy
 
     // fix up global attributes  (always to a local COPY of global attributes)
-    EDD.addToHistory(globalAttributes, eddGrid.publicSourceUrl());
+    EDD.addToHistory(globalAttributes, eddGrid.publicSourceUrl(language));
     EDD.addToHistory(
         globalAttributes,
-        EDStatic.baseUrl
+        EDStatic.config.baseUrl
             + tRequestUrl
             + (tUserDapQuery == null || tUserDapQuery.length() == 0 ? "" : "?" + tUserDapQuery));
 
@@ -177,7 +177,8 @@ public class GridDataAccessor {
       totalShape[av] = axisValues[av].size();
 
       // make axisAttributes
-      axisAttributes[av] = new Attributes(axisVariables[av].combinedAttributes()); // make a copy
+      axisAttributes[av] =
+          axisVariables[av].combinedAttributes().toAttributes(language); // make a copy
 
       // convert source values to destination values
       // (e.g., convert datatype and apply scale_factor/scaleFactor and add_offset/addOffset)
@@ -283,7 +284,8 @@ public class GridDataAccessor {
     for (int dv = 0; dv < dataVariables.length; dv++) { // dv in the query
 
       // add dataAttributes
-      dataAttributes[dv] = new Attributes(dataVariables[dv].combinedAttributes()); // make a copy
+      dataAttributes[dv] =
+          dataVariables[dv].combinedAttributes().toAttributes(language); // make a copy
       // dataAttributes NEEDS actual_range, and ... , but not available, so remove...
       dataAttributes[dv].remove("actual_range");
 
@@ -313,7 +315,7 @@ public class GridDataAccessor {
     Arrays.fill(avInDriver, true);
     long nBytesPerPartialRequest = nDataBytesPerRow; // long to safely avoid overflow
     int tPartialRequestMaxBytes =
-        EDStatic.partialRequestMaxBytes; // local copy so constant for this calculation
+        EDStatic.config.partialRequestMaxBytes; // local copy so constant for this calculation
     if (rowMajor) {
       // work from right
       int av = axisAttributes.length - 1;
@@ -556,8 +558,12 @@ public class GridDataAccessor {
     if (totalIndex.getIndex() == -1) {
       // first time
       boolean tb = rowMajor ? totalIndex.increment() : totalIndex.incrementCM();
-      if (!tb) return false;
-      tb = rowMajor ? partialIndex.increment() : partialIndex.incrementCM(); // should succeed
+      if (!tb) {
+        return false;
+      }
+      @SuppressWarnings("unused")
+      boolean unused =
+          rowMajor ? partialIndex.increment() : partialIndex.incrementCM(); // should succeed
     } else {
       // subsequent times
       // increment totalIndex by partialIndex.size, for row major or column major
@@ -625,9 +631,9 @@ public class GridDataAccessor {
       throw t instanceof WaitThenTryAgainException
           ? t
           : new WaitThenTryAgainException(
-              EDStatic.simpleBilingual(language, EDStatic.waitThenTryAgainAr)
+              EDStatic.simpleBilingual(language, EDStatic.messages.waitThenTryAgainAr)
                   + "\n("
-                  + EDStatic.errorFromDataSource
+                  + EDStatic.messages.errorFromDataSource
                   + tToString
                   + ")",
               t);
@@ -663,8 +669,7 @@ public class GridDataAccessor {
       }
 
       // get the data
-      PrimitiveArray[] partialResults = null;
-      partialResults =
+      PrimitiveArray[] partialResults =
           gda.eddGrid.getSourceData(
               language, gda.tDirTable, gda.tFileTable, gda.dataVariables, partialConstraints);
 
@@ -705,7 +710,7 @@ public class GridDataAccessor {
               || !Math2.almostEqual(
                   9, pa.getDouble(0), avInDriverExpectedValues[av])) { // source values
             throw new WaitThenTryAgainException(
-                EDStatic.simpleBilingual(language, EDStatic.waitThenTryAgainAr)
+                EDStatic.simpleBilingual(language, EDStatic.messages.waitThenTryAgainAr)
                     + "\n(Details: GridDataAccessor.increment: partialResults["
                     + av
                     + "]=\""
@@ -720,7 +725,7 @@ public class GridDataAccessor {
           String tError = gda.axisValues[av].almostEqual(pa); // destination values
           if (tError.length() > 0)
             throw new WaitThenTryAgainException(
-                EDStatic.simpleBilingual(language, EDStatic.waitThenTryAgainAr)
+                EDStatic.simpleBilingual(language, EDStatic.messages.waitThenTryAgainAr)
                     + "\n(Details: GridDataAccessor.increment: partialResults["
                     + av
                     + "] was not as expected.\n"
@@ -872,22 +877,13 @@ public class GridDataAccessor {
           return partialDataValues[dv].getString((int)partialIndex.getIndex()); //safe since partialIndex size checked when constructed
       }
   */
-  /** The garbage collector calls this. Users should call releaseGetResources instead(). */
-  protected void finalize() throws Throwable {
-    releaseResources();
-    super.finalize();
-  }
-
-  /** Call this when completely done to release all resources. */
-  public void releaseResources() {
-    releaseGetResources();
-  }
 
   /**
-   * Call this when done getting data to release resources related to initially getting data (e.g.,
-   * threads).
+   * Call this when completely done to release all resources. Call this when done getting data to
+   * release resources related to initially getting data (e.g., threads).
    */
-  public void releaseGetResources() {
+  @Override
+  public void close() {
     tDirTable = null;
     tFileTable = null;
   }

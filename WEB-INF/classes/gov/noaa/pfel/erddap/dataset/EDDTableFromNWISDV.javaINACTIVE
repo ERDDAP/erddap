@@ -327,7 +327,7 @@ public class EDDTableFromNWISDV extends EDDTable{
      *   </ul>
      *   Special case: value="null" causes that item to be removed from combinedGlobalAttributes.
      *   Special case: if combinedGlobalAttributes name="license", any instance of "[standard]"
-     *     will be converted to the EDStatic.standardLicense.
+     *     will be converted to the EDStatic.messages.standardLicense.
      * @param tDataVariables is an Object[nDataVariables][3]: 
      *    <br>[0]=String sourceName (the name of the data variable in the dataset source, 
      *         without the outer or inner sequence name),
@@ -362,8 +362,8 @@ public class EDDTableFromNWISDV extends EDDTable{
         StringArray tOnChange, String tFgdcFile, String tIso19115File, 
         String tSosOfferingPrefix,
         String tDefaultDataQuery, String tDefaultGraphQuery, String tAddVariablesWhere, 
-        Attributes tAddGlobalAttributes,
-        Object[][] tDataVariables,
+        LocalizedAttributes tAddGlobalAttributes,
+        ArrayList<DataVariableInfo> tDataVariables,
         int tReloadEveryNMinutes,
         String tLocalSourceUrl) throws Throwable {
 
@@ -387,7 +387,7 @@ public class EDDTableFromNWISDV extends EDDTable{
         if (tAddGlobalAttributes == null)
             tAddGlobalAttributes = new Attributes();
         addGlobalAttributes = tAddGlobalAttributes;
-        addGlobalAttributes.set("sourceUrl", convertToPublicSourceUrl(tLocalSourceUrl));
+        addGlobalAttributes.set(language, "sourceUrl", convertToPublicSourceUrl(tLocalSourceUrl));
         localSourceUrl = tLocalSourceUrl;
         setReloadEveryNMinutes(tReloadEveryNMinutes);
       
@@ -398,13 +398,13 @@ public class EDDTableFromNWISDV extends EDDTable{
 
         //get global attributes
         combinedGlobalAttributes = new Attributes(addGlobalAttributes); 
-        String tLicense = combinedGlobalAttributes.getString("license");
+        String tLicense = combinedGlobalAttributes.getString(language, "license");
         if (tLicense != null)
-            combinedGlobalAttributes.set("license", 
-                String2.replaceAll(tLicense, "[standard]", EDStatic.standardLicense));
+            combinedGlobalAttributes.set(language, "license", 
+                String2.replaceAll(tLicense, "[standard]", EDStatic.messages.standardLicense));
         combinedGlobalAttributes.removeValue("\"null\"");
-        parameterCode = combinedGlobalAttributes.getString("parameterCode");
-        statisticCode = combinedGlobalAttributes.getString("statisticCode");
+        parameterCode = combinedGlobalAttributes.getString(language, "parameterCode");
+        statisticCode = combinedGlobalAttributes.getString(language, "statisticCode");
         if (parameterCode == null)
             throw new SimpleException("\"parameterCode\" must be included in global <addAttributes>.");
         if (statisticCode == null)
@@ -557,7 +557,7 @@ public class EDDTableFromNWISDV extends EDDTable{
      *
      * @param language the index of the selected language
      * @param loggedInAs the user's login name if logged in (or null if not logged in).
-     * @param requestUrl the part of the user's request, after EDStatic.baseUrl, before '?'.
+     * @param requestUrl the part of the user's request, after EDStatic.config.baseUrl, before '?'.
      * @param userDapQuery the part of the user's request after the '?', still percentEncoded, may be null.
      * @param tableWriter
      * @throws Throwable if trouble (notably, WaitThenTryAgainException)
@@ -744,7 +744,7 @@ public class EDDTableFromNWISDV extends EDDTable{
             } catch (Throwable t) {
                 if (!reallyVerbose)  //if reallyVerbose, it was done above
                     String2.log(encodedSourceUrl);
-                throw new Throwable(EDStatic.errorFromDataSource + t.toString(), t);
+                throw new Throwable(EDStatic.messages.errorFromDataSource + t.toString(), t);
             }
 
             int nRows = table.nRows();
@@ -1482,7 +1482,7 @@ public class EDDTableFromNWISDV extends EDDTable{
         String logFileName        = "c:/data/waterML/NWISDVDatasetFailures" + today + ".txt";
         Writer logFile = File2.getBufferedFileWriterUtf8(logFileName); 
         try {
-            String subsetDir   = EDStatic.contentDirectory + "subset/";
+            String subsetDir   = EDStatic.config.contentDirectory + "subset/";
             String fileNames[] = RegexFilenameFilter.list(dataStationsDir, ".*\\.json");
             StringBuilder results  = new StringBuilder();
             int nSkip = 0;
@@ -2791,7 +2791,7 @@ String2.log("\ndatasetStations=\n" + datasetStations.dataToString());
     public static void testBasic() throws Throwable {
         EDD edd = EDD.oneFromDatasetsXml(null, "usgs_waterservices_f8b2_b8b1_96dd");
         int language = 0;
-        String dir = EDStatic.fullTestCacheDirectory;
+        String dir = EDStatic.config.fullTestCacheDirectory;
         String tName, query, tRestuls, results[], expected;
         String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 10);
         Table table;
@@ -2799,7 +2799,7 @@ String2.log("\ndatasetStations=\n" + datasetStations.dataToString());
         //dds
         tName = edd.makeNewFileForDapQuery(language, null, null, "", dir, 
             edd.className() + "_Entire", ".dds"); 
-        results = File2.readFromFile(EDStatic.fullTestCacheDirectory + tName);
+        results = File2.readFromFile(EDStatic.config.fullTestCacheDirectory + tName);
         expected = 
 "Dataset {\n" +
 "  Sequence {\n" +
@@ -2831,7 +2831,7 @@ String2.log("\ndatasetStations=\n" + datasetStations.dataToString());
         //das
         tName = edd.makeNewFileForDapQuery(language, null, null, "", dir, 
             edd.className() + "_Entire", ".das"); 
-        results = File2.readFromFile(EDStatic.fullTestCacheDirectory + tName);
+        results = File2.readFromFile(EDStatic.config.fullTestCacheDirectory + tName);
         expected = 
 "Attributes {\n" +
 " s {\n" +

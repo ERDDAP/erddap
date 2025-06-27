@@ -18,8 +18,8 @@
 
 package dods.dap;
 
-import java.util.Enumeration;
-import java.util.Vector;
+import java.util.ArrayList;
+import java.util.Iterator;
 
 /**
  * An <code>Attribute</code> holds information about a single attribute in an <code>AttributeTable
@@ -79,8 +79,10 @@ public class Attribute implements Cloneable {
   /** If <code>is_alias</code> is true, the name of the <code>Attribute</code> we are aliased to. */
   private String aliased_to;
 
-  /** Either an AttributeTable or a Vector of String. */
-  private Object attr;
+  /** Either an AttributeTable or a List of String. */
+  private ArrayList<String> attrList;
+
+  private AttributeTable attr;
 
   /**
    * Construct a container attribute.
@@ -114,8 +116,8 @@ public class Attribute implements Cloneable {
     this.type = type;
     this.name = name;
     is_alias = false;
-    attr = new Vector();
-    ((Vector) attr).addElement(value);
+    attrList = new ArrayList<>();
+    attrList.add(value);
   }
 
   /**
@@ -136,8 +138,8 @@ public class Attribute implements Cloneable {
     this.type = type;
     this.name = name;
     is_alias = false;
-    attr = new Vector();
-    ((Vector) attr).addElement(value);
+    attrList = new ArrayList<>();
+    attrList.add(value);
   }
 
   /**
@@ -181,7 +183,7 @@ public class Attribute implements Cloneable {
     this.name = name;
     if (type == CONTAINER)
       throw new IllegalArgumentException("can't construct Attribute(CONTAINER)");
-    else attr = new Vector();
+    else attrList = new ArrayList<>();
   }
 
   /**
@@ -191,12 +193,12 @@ public class Attribute implements Cloneable {
    * @return a clone of this <code>Attribute</code>.
    */
   @Override
-  public Object clone() {
+  public Attribute clone() {
     try {
       Attribute a = (Attribute) super.clone();
       // assume type, is_alias, and aliased_to have been cloned already
-      if (type == CONTAINER) a.attr = ((AttributeTable) attr).clone();
-      else a.attr = ((Vector) attr).clone();
+      if (type == CONTAINER) a.attr = attr.clone();
+      else a.attrList = (ArrayList<String>) attrList.clone();
       return a;
     } catch (CloneNotSupportedException e) {
       // this shouldn't happen, since we are Cloneable
@@ -210,31 +212,20 @@ public class Attribute implements Cloneable {
    * @return the attribute type <code>String</code>.
    */
   public final String getTypeString() {
-    switch (type) {
-      case CONTAINER:
-        return "Container";
-      case BYTE:
-        return "Byte";
-      case INT16:
-        return "Int16";
-      case UINT16:
-        return "UInt16";
-      case INT32:
-        return "Int32";
-      case UINT32:
-        return "UInt32";
-      case FLOAT32:
-        return "Float32";
-      case FLOAT64:
-        return "Float64";
-      case STRING:
-        return "String";
-      case URL:
-        return "Url";
+    return switch (type) {
+      case CONTAINER -> "Container";
+      case BYTE -> "Byte";
+      case INT16 -> "Int16";
+      case UINT16 -> "UInt16";
+      case INT32 -> "Int32";
+      case UINT32 -> "UInt32";
+      case FLOAT32 -> "Float32";
+      case FLOAT64 -> "Float64";
+      case STRING -> "String";
+      case URL -> "Url";
         //    case BOOLEAN: return "Boolean";
-      default:
-        return "";
-    }
+      default -> "";
+    };
   }
 
   /**
@@ -288,7 +279,7 @@ public class Attribute implements Cloneable {
    * @return the <code>AttributeTable</code> container.
    */
   public final AttributeTable getContainer() {
-    return (AttributeTable) attr;
+    return attr;
   }
 
   /**
@@ -296,8 +287,8 @@ public class Attribute implements Cloneable {
    *
    * @return an <code>Enumeration</code> of <code>String</code>.
    */
-  public final Enumeration getValues() {
-    return ((Vector) attr).elements();
+  public final Iterator<String> getValues() {
+    return attrList.iterator();
   }
 
   /**
@@ -307,7 +298,7 @@ public class Attribute implements Cloneable {
    * @return the attribute <code>String</code> at <code>index</code>.
    */
   public final String getValueAt(int index) {
-    return (String) ((Vector) attr).elementAt(index);
+    return attrList.get(index);
   }
 
   /**
@@ -331,7 +322,7 @@ public class Attribute implements Cloneable {
 
     if (check) dispatchCheckValue(type, value);
 
-    ((Vector) attr).addElement(value);
+    attrList.add(value);
   }
 
   /**
@@ -340,7 +331,7 @@ public class Attribute implements Cloneable {
    * @param index the index of the value to remove.
    */
   public final void deleteValueAt(int index) {
-    ((Vector) attr).removeElementAt(index);
+    attrList.remove(index);
   }
 
   /**
@@ -408,8 +399,7 @@ public class Attribute implements Cloneable {
     try {
       // Byte.parseByte() can't be used because values > 127 are allowed
       short val = Short.parseShort(s);
-      if (val > 0xFF) return false;
-      else return true;
+      return val <= 0xFF;
     } catch (NumberFormatException e) {
       throw new AttributeBadValueException("`" + s + "' is not a Byte value.");
     }
@@ -440,8 +430,7 @@ public class Attribute implements Cloneable {
     // Note: Because there is no Unsigned class in Java, use Long instead.
     try {
       long val = Long.parseLong(s);
-      if (val > 0xFFFFL) return false;
-      else return true;
+      return val <= 0xFFFFL;
     } catch (NumberFormatException e) {
       return false;
     }
@@ -472,8 +461,7 @@ public class Attribute implements Cloneable {
     // Note: Because there is no Unsigned class in Java, use Long instead.
     try {
       long val = Long.parseLong(s);
-      if (val > 0xFFFFFFFFL) return false;
-      else return true;
+      return val <= 0xFFFFFFFFL;
     } catch (NumberFormatException e) {
       return false;
     }
@@ -490,9 +478,7 @@ public class Attribute implements Cloneable {
       Float.valueOf(s);
       return true;
     } catch (NumberFormatException e) {
-      if (s.equalsIgnoreCase("nan") || s.equalsIgnoreCase("inf")) return true;
-
-      return false;
+      return s.equalsIgnoreCase("nan") || s.equalsIgnoreCase("inf");
     }
   }
 
@@ -510,8 +496,7 @@ public class Attribute implements Cloneable {
       Double.valueOf(s);
       return true;
     } catch (NumberFormatException e) {
-      if (s.equalsIgnoreCase("nan") || s.equalsIgnoreCase("inf")) return true;
-      return false;
+      return s.equalsIgnoreCase("nan") || s.equalsIgnoreCase("inf");
     }
   }
 

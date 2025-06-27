@@ -12,31 +12,28 @@
 
 package gov.noaa.pmel.util;
 
-import java.text.DateFormat;
-import java.text.ParsePosition;
 import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.GregorianCalendar;
-import java.util.TimeZone;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 
 /**
  * <code>GeoDate</code> extends the capabilities of <code>Date</code>. Additional features of <code>
  * GeoDate</code> include methods for incrementing and decrementing, adding and substracting <code>
- * GeoDate</code> objects. All <code>GeoDate</code> objects share the same <code>GregorianCalendar
- * </code> set to a "GMT" time zone. Thus, all <code>GeoDate</code> times are in "GMT". This
- * simplifies the conversion to and from <code>String</code> representations of time.
+ * GeoDate</code> objects. All <code>GeoDate</code> times are in "UTC". This simplifies the
+ * conversion to and from <code>String</code> representations of time.
  *
- * @see GregorianCalendar
  * @author Donald Denbo
  * @version $Revision: 1.17 $, $Date: 2003/08/22 23:02:40 $
  * @since sgt 1.0
  */
-public class GeoDate extends java.util.Date implements java.io.Serializable {
-  private int max_day_[] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
+public class GeoDate implements java.io.Serializable, Comparable<GeoDate> {
+  private final int[] max_day_ = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
   private boolean splitDone_;
   private int yearday_;
-  private int dayofweek_;
   private int year_;
   private int month_;
   private int day_;
@@ -44,12 +41,8 @@ public class GeoDate extends java.util.Date implements java.io.Serializable {
   private int minute_;
   private int second_;
   private int msec_;
-  private int MSec_;
-  private int JDay_;
-  private boolean EPICTimeDone_;
-  private boolean relativeTime_ = false;
-  private Calendar cal_ =
-      new GregorianCalendar(TimeZone.getTimeZone("GMT")); // 2015-09-02 was static!
+
+  private Instant instant = Instant.now();
 
   /** Increment or decrement in days. */
   public static final int DAYS = 1;
@@ -81,32 +74,12 @@ public class GeoDate extends java.util.Date implements java.io.Serializable {
   }
 
   /**
-   * Construct a new <code>GeoDate</code> from a <code>String</code>. Formatting is done using
-   * <code>SimpleDateFormat</code>. The specified time is taken to be "GMT".
-   *
-   * @param time character representation of time
-   * @param format codes used to read time
-   */
-  public GeoDate(String time, String format) throws IllegalTimeValue {
-    super();
-    ParsePosition pos = new ParsePosition(0);
-    DateFormat df = new SimpleDateFormat(format);
-    df.setCalendar(cal_);
-
-    Date dte = df.parse(time, pos);
-    if (dte == null) {
-      throw new IllegalTimeValue("Parse error: " + time + ", " + format);
-    }
-    setTime(dte.getTime());
-  }
-
-  /**
    * Constructs a new <code>GeoDate</code> from an existing <code>GeoDate</code>.
    *
    * @param t <code>GeoDate</code>
    */
   public GeoDate(GeoDate t) {
-    super(t.getTime());
+    this(t.getTime());
   }
 
   /**
@@ -128,27 +101,6 @@ public class GeoDate extends java.util.Date implements java.io.Serializable {
   }
 
   /**
-   * Construct a new <code>GeoDate</code> from a <code>Date</code> object. No time zone conversion
-   * is done.
-   *
-   * @param date Date object
-   */
-  public GeoDate(Date date) {
-    setTime(date.getTime());
-  }
-
-  /**
-   * Construct a new <code>GeoDate</code> from EPIC double integers. Time zone for conversion is
-   * "GMT".
-   *
-   * @param jday julian day
-   * @param msec milliseconds since midnight
-   */
-  public GeoDate(int jday, int msec) {
-    set(jday, msec);
-  }
-
-  /**
    * Allocates a GeoDate object and initializes it to represent the specified number of milliseconds
    * since the standard base time know as "the epoch", namely January 1, 1970, 00:00:00 GMT.
    */
@@ -157,61 +109,29 @@ public class GeoDate extends java.util.Date implements java.io.Serializable {
   }
 
   /**
-   * Set the relativeTime flag. The relativeTime flag indicates that the <code>GeoDate</code> object
-   * does not represent an actual absolute time, but a temporal duration.
+   * Gets the milliseconds since epoch.
+   *
+   * @return milliseconds since epoch
    */
-  public void setRelativeTime(boolean relative) {
-    relativeTime_ = relative;
+  public long getTime() {
+    return instant.toEpochMilli();
   }
 
   /**
-   * Tests the relativeTime flag.
+   * Sets the time to be milliseconds since epoch of time.
    *
-   * @return if true, time is a duration
+   * @param time
    */
-  public boolean isRelativeTime() {
-    return relativeTime_;
+  public void setTime(long time) {
+    instant = Instant.ofEpochMilli(time);
   }
 
-  /**
-   * Change value of <code>GeoDate</code> from EPIC double integers. Time zone for conversion is
-   * "GMT".
-   *
-   * @param jday julian day
-   * @param msec milliseconds since midnight
-   */
-  public void set(int jday, int msec) {
-    int ja, jb, jc, jd, je;
-    double jalpha, second;
-    int day, month, year, hour, minute, sec;
+  public boolean before(GeoDate other) {
+    return getTime() < other.getTime();
+  }
 
-    if (jday > 2299161) {
-      jalpha = ((double) (jday - 1867216) - 0.25) / 36524.25;
-      ja = jday + 1 + (int) jalpha - (int) (0.25 * jalpha);
-    } else {
-      ja = jday;
-    }
-    jb = ja + 1524;
-    jc = (int) (6680.0 + ((double) (jb - 2439870) - 122.1) / 365.25);
-    jd = (int) (365 * jc + (0.25 * jc));
-    je = (int) ((jb - jd) / 30.6001);
-
-    day = (int) (jb - jd) - (int) (30.6001 * je);
-    month = (int) (je - 1);
-    if (month > 12) month -= 12;
-    year = (int) (jc - 4715);
-    if (month > 2) --year;
-    if (year <= 0) --year;
-    ja = msec / 1000;
-    hour = (int) (ja / 3600);
-    minute = (int) ((ja - hour * 3600) / 60);
-    second = (double) (msec - (hour * 3600 + minute * 60) * 1000) / 1000.0;
-    sec = (int) second;
-    msec = ((int) (second * 1000.0)) % 1000;
-    try {
-      set(month, day, year, hour, minute, sec, msec);
-    } catch (IllegalTimeValue e) {
-    }
+  public boolean after(GeoDate other) {
+    return getTime() > other.getTime();
   }
 
   /**
@@ -229,7 +149,6 @@ public class GeoDate extends java.util.Date implements java.io.Serializable {
    */
   public void set(int mon, int day, int year, int hour, int min, int sec, int msec)
       throws IllegalTimeValue {
-    int jy, jm, ja, jul;
     int leap = (year % 4 != 0 ? 0 : (year % 400 == 0 ? 1 : (year % 100 == 0 ? 0 : 1)));
     max_day_[1] = 28 + leap;
 
@@ -258,32 +177,11 @@ public class GeoDate extends java.util.Date implements java.io.Serializable {
       throw new IllegalTimeValue("value of msec out of range");
     }
 
-    cal_.clear();
-    cal_.set(year, mon - 1, day, hour, min, sec);
+    instant =
+        LocalDateTime.of(year, mon, day, hour, min, sec, msec * 1000000 /* milli to nano */)
+            .toInstant(ZoneOffset.UTC);
 
-    //    this.setTime(cal.getTimeInMillis() + msec);
-    this.setTime(cal_.getTime().getTime() + msec);
     splitDone_ = false;
-    EPICTimeDone_ = false;
-  }
-
-  /**
-   * Get the number of days in the current month.
-   *
-   * @return number of days in current month
-   */
-  public int getDaysInMonth() {
-    int leap;
-    int year = cal_.get(Calendar.YEAR);
-    leap = (year % 4 != 0 ? 0 : (year % 400 == 0 ? 1 : (year % 100 == 0 ? 0 : 1)));
-    max_day_[1] = 28 + leap;
-    return max_day_[month_ - 1];
-  }
-
-  /** Set to current time. */
-  public void now() {
-    Date nw = new Date();
-    this.setTime(nw.getTime());
   }
 
   /**
@@ -298,7 +196,6 @@ public class GeoDate extends java.util.Date implements java.io.Serializable {
     long MSec = getTime() + time.getTime();
 
     time2.splitDone_ = false;
-    time2.EPICTimeDone_ = false;
     time2.setTime(MSec);
     return time2;
   }
@@ -314,9 +211,7 @@ public class GeoDate extends java.util.Date implements java.io.Serializable {
     long MSec = getTime() - time2.getTime();
 
     delta.splitDone_ = false;
-    delta.EPICTimeDone_ = false;
     delta.setTime(MSec);
-    delta.setRelativeTime(true);
     return delta;
   }
 
@@ -335,28 +230,21 @@ public class GeoDate extends java.util.Date implements java.io.Serializable {
     result.setTime((long) (((double) getTime()) / val));
 
     result.splitDone_ = false;
-    result.EPICTimeDone_ = false;
-    result.setRelativeTime(true);
     return result;
   }
 
   void splitTimeFormat() {
-    int ja, jb, jc, jd, je;
-    double jalpha;
-    GeoDate gt;
-
     if (splitDone_) return;
 
-    cal_.setTime(this);
-    day_ = cal_.get(Calendar.DAY_OF_MONTH);
-    month_ = cal_.get(Calendar.MONTH) + 1;
-    year_ = cal_.get(Calendar.YEAR);
-    hour_ = cal_.get(Calendar.HOUR_OF_DAY);
-    minute_ = cal_.get(Calendar.MINUTE);
-    second_ = cal_.get(Calendar.SECOND);
-    msec_ = cal_.get(Calendar.MILLISECOND);
-    dayofweek_ = cal_.get(Calendar.DAY_OF_WEEK) - 1;
-    yearday_ = cal_.get(Calendar.DAY_OF_YEAR);
+    ZonedDateTime dateTime = ZonedDateTime.ofInstant(instant, ZoneId.of("UTC"));
+    day_ = dateTime.getDayOfMonth();
+    month_ = dateTime.getMonthValue();
+    year_ = dateTime.getYear();
+    hour_ = dateTime.getHour();
+    minute_ = dateTime.getMinute();
+    second_ = dateTime.getSecond();
+    msec_ = dateTime.getNano() / 1000000; // Nano to millis
+    yearday_ = dateTime.getDayOfYear();
 
     splitDone_ = true;
   }
@@ -444,99 +332,6 @@ public class GeoDate extends java.util.Date implements java.io.Serializable {
         break;
     }
     splitDone_ = false;
-    EPICTimeDone_ = false;
-    return this;
-  }
-
-  /**
-   * Decrement current <code>GeoDate</code> by <code>SECONDS</code>, <code>MINUTES</code>, <code>
-   * HOURS</code>, <code>DAYS</code>, <code>MONTHS</code>, or <code>YEARS</code>
-   *
-   * @param val amount to decrement
-   * @param tu time units (<code>SECONDS</code>, <code>MINUTES</code>, <code>HOURS</code>, <code>
-   *     DAYS</code>, <code>MONTHS</code>, or <code>YEARS</code>) operation.
-   */
-  public GeoDate decrement(float val, int tu) {
-    return decrement((double) val, tu);
-  }
-
-  /**
-   * Decrement current <code>GeoDate</code> by <code>SECONDS</code>, <code>MINUTES</code>, <code>
-   * HOURS</code>, <code>DAYS</code>, <code>MONTHS</code>, or <code>YEARS</code>
-   *
-   * @param val amount to decrement
-   * @param tu time units (<code>SECONDS</code>, <code>MINUTES</code>, <code>HOURS</code>, <code>
-   *     DAYS</code>, <code>MONTHS</code>, or <code>YEARS</code>) operation.
-   */
-  public GeoDate decrement(double val, int tu) {
-    int leap;
-    int ival = (int) val;
-    double fract = (val - ival);
-    long MSec = getTime();
-
-    switch (tu) {
-      case MSEC:
-        MSec -= (long) val;
-        setTime(MSec);
-        break;
-      case SECONDS:
-        MSec -= (long) (val * 1000);
-        setTime(MSec);
-        break;
-      case MINUTES:
-        MSec -= (long) (val * 60000);
-        setTime(MSec);
-        break;
-      case HOURS:
-        MSec -= (long) (val * 3600000);
-        setTime(MSec);
-        break;
-      case DAYS:
-        MSec -= (long) (val * MSECS_IN_DAY);
-        setTime(MSec);
-        break;
-      case MONTHS:
-        splitTimeFormat();
-        month_ -= ival;
-        if (month_ <= 0) {
-          year_ -= (month_ - 1) / 12 + 1;
-          month_ += ((month_ - 1) / 12) * 12 + 12;
-        }
-        if (month_ == 0) month_ = 12;
-        leap = (year_ % 4 != 0 ? 0 : (year_ % 400 == 0 ? 1 : (year_ % 100 == 0 ? 0 : 1)));
-        max_day_[1] = 28 + leap;
-        day_ -= (int) (fract * max_day_[month_ - 1]);
-        if (day_ > max_day_[month_ - 1]) {
-          day_ -= max_day_[month_ - 1];
-          month_--;
-          if (month_ <= 0) {
-            year_ -= (month_ - 1) / 12 + 1;
-            month_ += ((month_ - 1) / 12) * 12;
-          }
-          if (month_ == 0) month_ = 12;
-        }
-        try {
-          this.set(month_, day_, year_, hour_, minute_, second_, msec_);
-        } catch (IllegalTimeValue e) {
-          System.err.println(e);
-        }
-        break;
-      case YEARS:
-        splitTimeFormat();
-        year_ -= ival;
-        leap = (year_ % 4 != 0 ? 0 : (year_ % 400 == 0 ? 1 : (year_ % 100 == 0 ? 0 : 1)));
-        max_day_[1] = 28 + leap;
-        if (day_ > max_day_[month_ - 1]) day_ = max_day_[month_ - 1];
-        try {
-          this.set(month_, day_, year_, hour_, minute_, second_, msec_);
-        } catch (IllegalTimeValue e) {
-          System.err.println(e);
-        }
-        setTime(getTime() - (long) ((fract * 365.25) * MSECS_IN_DAY));
-        break;
-    }
-    splitDone_ = false;
-    EPICTimeDone_ = false;
     return this;
   }
 
@@ -550,33 +345,6 @@ public class GeoDate extends java.util.Date implements java.io.Serializable {
     double val;
     val = ((double) (this.getTime() - ref.getTime())) / 86400000.0;
     return val;
-  }
-
-  /**
-   * Set a <code>GeoDate</code> from year and year-day.
-   *
-   * @param year year
-   * @param yearday year-day number (Jan 1 = 1) parameters that does not constitute a legitimate
-   *     time value.
-   */
-  public void setYearYearDay(int year, int yearday) {
-    try {
-      this.set(1, 1, year, 0, 0, 0, 0);
-    } catch (IllegalTimeValue e) {
-      System.err.println(e);
-    }
-    setTime(getTime() + (yearday - 1) * MSECS_IN_DAY);
-  }
-
-  /**
-   * Get a reference to the <code>GregorianCalendar</code> set to the current <code>GeoDate</code>
-   * time.
-   *
-   * @return <code>Calendar</code>
-   */
-  public Calendar getCalendar() {
-    cal_.setTime(this);
-    return cal_;
   }
 
   /** Get year-day number (Jan 1 = 1) */
@@ -662,54 +430,6 @@ public class GeoDate extends java.util.Date implements java.io.Serializable {
     return msec_;
   }
 
-  /** get EPIC Julian Day */
-  public int getJDay() {
-    splitTimeFormat();
-    computeEPICTime();
-    return JDay_;
-  }
-
-  /** get milliseconds since midnight */
-  public int getMSec() {
-    splitTimeFormat();
-    computeEPICTime();
-    return MSec_;
-  }
-
-  private void computeEPICTime() {
-    if (EPICTimeDone_) return;
-    int GREGORIAN__ = (15 + 31 * (10 + 12 * 1582));
-    int jy, jm, ja, jul;
-    int year = year_;
-    int mon = month_;
-    int day = day_;
-    int hour = hour_;
-    int min = minute_;
-    int sec = second_;
-    int msec = msec_;
-
-    int leap = (year % 4 != 0 ? 0 : (year % 400 == 0 ? 1 : (year % 100 == 0 ? 0 : 1)));
-
-    if (year < 0) ++year;
-    if (mon > 2) {
-      jy = year;
-      jm = mon + 1;
-    } else {
-      jy = year - 1;
-      jm = mon + 13;
-    }
-    jul = (int) (Math.floor(365.25 * jy) + Math.floor(30.6001 * jm) + day + 1720995);
-    if (day + 31L * (mon + 12L * year) >= GREGORIAN__) {
-      ja = (int) (0.01 * jy);
-      jul += 2 - ja + (int) (0.25 * ja);
-    }
-
-    JDay_ = jul;
-    MSec_ = (int) ((hour * 3600L + min * 60L) * 1000L + sec * 1000L + msec);
-
-    EPICTimeDone_ = true;
-  }
-
   /**
    * Convert <code>GeoDate</code> to <code>String</code> using standard format
    * "yyyy-MM-dd'T'HH:mm:ss z" and "GMT" time zone.
@@ -719,9 +439,9 @@ public class GeoDate extends java.util.Date implements java.io.Serializable {
   @Override
   public String toString() {
     // 2011-12-15 Bob Simons changed space to 'T'
-    DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss z");
-    df.setCalendar(cal_);
-    return df.format(this);
+    DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss z");
+    ZonedDateTime zdt = ZonedDateTime.ofInstant(instant, ZoneId.of("UTC"));
+    return zdt.format(dtf);
   }
 
   /**
@@ -737,9 +457,9 @@ public class GeoDate extends java.util.Date implements java.io.Serializable {
       splitTimeFormat();
       return Integer.toString((year_ / 10) * 10);
     } else {
-      DateFormat df = new SimpleDateFormat(format);
-      df.setCalendar(cal_);
-      return df.format(this);
+      DateTimeFormatter dtf = DateTimeFormatter.ofPattern(format);
+      ZonedDateTime zdt = ZonedDateTime.ofInstant(instant, ZoneId.of("UTC"));
+      return zdt.format(dtf);
     }
   }
 
@@ -760,6 +480,7 @@ public class GeoDate extends java.util.Date implements java.io.Serializable {
    * @return a negative int if anotherDate is greater than this date; 0 if they are equal; or a
    *     positive int it is less. This returns -1 if anotherDate is not a Date object.
    */
+  @Override
   public int compareTo(GeoDate anotherDate) {
     if (anotherDate != null) {
       return Long.compare(getTime(), anotherDate.getTime());

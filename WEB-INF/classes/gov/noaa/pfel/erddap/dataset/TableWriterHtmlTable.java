@@ -19,7 +19,10 @@ import gov.noaa.pfel.coastwatch.pointdata.Table;
 import gov.noaa.pfel.coastwatch.util.HtmlWidgets;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.EDV;
+import jakarta.servlet.http.HttpServletRequest;
 import java.io.BufferedWriter;
+import java.io.IOException;
+import java.util.List;
 
 /**
  * TableWriterHtmlTable provides a way to write a table to an HTML or XHTML Table outputStream in
@@ -43,16 +46,20 @@ public class TableWriterHtmlTable extends TableWriter {
   public static int htmlTableMaxMB = 15;
 
   // set by constructor
-  protected String loggedInAs,
-      endOfRequest,
-      queryString,
-      fileNameNoExt,
-      preTableHtml,
-      postTableHtml,
-      tErddapUrl,
-      externalLinkHtml,
-      questionMarkImageUrl;
-  protected boolean writeHeadAndBodyTags, xhtmlMode, encode, writeUnits;
+  protected final HttpServletRequest request;
+  protected final String loggedInAs;
+  protected final String endOfRequest;
+  protected final String queryString;
+  protected final String fileNameNoExt;
+  protected final String preTableHtml;
+  protected final String postTableHtml;
+  protected final String tErddapUrl;
+  protected final String externalLinkHtml;
+  protected final String questionMarkImageUrl;
+  protected final boolean writeHeadAndBodyTags;
+  protected final boolean xhtmlMode;
+  protected final boolean encode;
+  protected final boolean writeUnits;
   protected int totalRows = 0, rowsShown = 0;
   protected int showFirstNRows; // perhaps modified by htmlTableMaxMB in "do firstTime stuff"
   protected String noWrap;
@@ -93,6 +100,7 @@ public class TableWriterHtmlTable extends TableWriter {
    *     the remaining rows.
    */
   public TableWriterHtmlTable(
+      HttpServletRequest tRequest,
       int tLanguage,
       EDD tEdd,
       String tNewHistory,
@@ -111,6 +119,7 @@ public class TableWriterHtmlTable extends TableWriter {
       String tQuestionMarkImageUrl) {
 
     super(tLanguage, tEdd, tNewHistory, tOutputStreamSource);
+    request = tRequest;
     loggedInAs = tLoggedInAs;
     endOfRequest = tEndOfRequest;
     queryString = tQueryString;
@@ -122,8 +131,8 @@ public class TableWriterHtmlTable extends TableWriter {
     encode = tEncode;
     writeUnits = tWriteUnits;
     showFirstNRows = tShowFirstNRows >= 0 ? tShowFirstNRows : Integer.MAX_VALUE;
-    tErddapUrl = EDStatic.erddapUrl(loggedInAs, language);
-    externalLinkHtml = EDStatic.externalLinkHtml(language, tErddapUrl);
+    tErddapUrl = EDStatic.erddapUrl(null, loggedInAs, language);
+    externalLinkHtml = EDStatic.messages.externalLinkHtml(language, tErddapUrl);
     questionMarkImageUrl = tQuestionMarkImageUrl;
   }
 
@@ -246,7 +255,7 @@ public class TableWriterHtmlTable extends TableWriter {
                   + XML.encodeAsXML(fileNameNoExt)
                   + "</title>\n"
                   + "  <link rel=\"stylesheet\" type=\"text/css\" href=\""
-                  + EDStatic.imageDirUrl(loggedInAs, language)
+                  + EDStatic.imageDirUrl(request, loggedInAs, language)
                   + "erddap2.css\" />\n"
                   + // xhtml has closing /
                   "</head>\n"
@@ -256,6 +265,7 @@ public class TableWriterHtmlTable extends TableWriter {
           writer.write("\n</head>\n");
           writer.write(
               EDStatic.startBodyHtml(
+                  null,
                   language,
                   loggedInAs,
                   edd == null
@@ -346,7 +356,7 @@ public class TableWriterHtmlTable extends TableWriter {
     }
 
     // write the data
-    boolean baseHttpsUrlIsSomething = String2.isSomething(EDStatic.baseHttpsUrl);
+    boolean baseHttpsUrlIsSomething = String2.isSomething(EDStatic.config.baseHttpsUrl);
     for (int row = 0; row < showNRows; row++) {
       writer.write("<tr>\n");
       somethingWritten = false;
@@ -360,7 +370,7 @@ public class TableWriterHtmlTable extends TableWriter {
           writer.write(s);
         } else {
           s = colPA[col].getString(row);
-          if (s.length() == 0) {
+          if (s == null || s.length() == 0) {
             writer.write("<td>");
 
           } else if (isCharOrString[col]) {
@@ -374,8 +384,9 @@ public class TableWriterHtmlTable extends TableWriter {
                   // display as a link
                   url = fileAccessBaseUrl[col] + s + fileAccessSuffix[col];
                   boolean isLocal =
-                      url.startsWith(EDStatic.baseUrl)
-                          || (baseHttpsUrlIsSomething && url.startsWith(EDStatic.baseHttpsUrl));
+                      url.startsWith(EDStatic.config.baseUrl)
+                          || (baseHttpsUrlIsSomething
+                              && url.startsWith(EDStatic.config.baseHttpsUrl));
                   s =
                       "<a href=\""
                           + XML.encodeAsHTMLAttribute(url)
@@ -384,19 +395,30 @@ public class TableWriterHtmlTable extends TableWriter {
                           + // just the fileName
                           (isLocal ? "" : externalLinkHtml)
                           + "</a>";
-                } else if (String2.isUrl(s)) {
-                  // display as a link
-                  url = s;
-                  boolean isLocal =
-                      url.startsWith(EDStatic.baseUrl)
-                          || (baseHttpsUrlIsSomething && url.startsWith(EDStatic.baseHttpsUrl));
-                  s =
-                      "<a href=\""
-                          + XML.encodeAsHTMLAttribute(url)
-                          + "\">"
-                          + encode(s)
-                          + (isLocal ? "" : externalLinkHtml)
-                          + "</a>";
+                } else if (String2.containsUrl(s)) {
+                  List<String> separatedText = String2.extractUrls(s);
+                  StringBuilder output = new StringBuilder();
+                  for (String text : separatedText) {
+                    if (String2.containsUrl(text)) {
+                      // display as a link
+                      url = text;
+                      boolean isLocal =
+                          url.startsWith(EDStatic.config.baseUrl)
+                              || (baseHttpsUrlIsSomething
+                                  && url.startsWith(EDStatic.config.baseHttpsUrl));
+
+                      output.append(
+                          "<a href=\""
+                              + XML.encodeAsHTMLAttribute(String2.addHttpsForWWW(url))
+                              + "\">"
+                              + encode(text)
+                              + (isLocal ? "" : externalLinkHtml)
+                              + "</a>");
+                    } else {
+                      output.append(encode(text));
+                    }
+                  }
+                  s = output.toString();
                 } else if (String2.isEmailAddress(s)) {
                   // to improve security, convert "@" to " at "
                   s = XML.encodeAsHTMLAttribute(String2.replaceAll(s, "@", " at "));
@@ -485,7 +507,7 @@ public class TableWriterHtmlTable extends TableWriter {
     if (isMBLimited && !allDataDisplayed)
       writer.write(
           "<span class=\"warningColor\">"
-              + EDStatic.htmlTableMaxMessageAr[language]
+              + EDStatic.messages.htmlTableMaxMessageAr[language]
               + "</span>"
               + (xhtmlMode ? "<br />" : "<br>")
               + "\n");
@@ -493,10 +515,15 @@ public class TableWriterHtmlTable extends TableWriter {
     // close the document
     writer.write(postTableHtml);
     if (writeHeadAndBodyTags)
-      if (xhtmlMode) writer.write("</body>\n" + "</html>\n");
+      if (xhtmlMode)
+        writer.write("""
+              </body>
+              </html>
+              """);
       else
         writer.write(
-            EDStatic.endBodyHtml(language, EDStatic.erddapUrl(loggedInAs, language), loggedInAs)
+            EDStatic.endBodyHtml(
+                    request, language, EDStatic.erddapUrl(null, loggedInAs, language), loggedInAs)
                 + "\n</html>\n");
 
     writer.flush(); // essential
@@ -523,6 +550,7 @@ public class TableWriterHtmlTable extends TableWriter {
    * @throws Throwable if trouble (no columns is trouble; no rows is not trouble)
    */
   public static void writeAllAndFinish(
+      HttpServletRequest request,
       int language,
       EDD tEdd,
       String tNewHistory,
@@ -543,6 +571,7 @@ public class TableWriterHtmlTable extends TableWriter {
 
     TableWriterHtmlTable tw =
         new TableWriterHtmlTable(
+            request,
             language,
             tEdd,
             tNewHistory,
@@ -558,7 +587,16 @@ public class TableWriterHtmlTable extends TableWriter {
             encode,
             writeUnits,
             tShowFirstNRows,
-            EDStatic.imageDirUrl(loggedInAs, language) + EDStatic.questionMarkImageFile);
+            EDStatic.imageDirUrl(null, loggedInAs, language)
+                + EDStatic.messages.questionMarkImageFile);
     tw.writeAllAndFinish(table);
+    tw.close();
+  }
+
+  @Override
+  public void close() throws IOException {
+    if (writer != null) {
+      writer.close();
+    }
   }
 }

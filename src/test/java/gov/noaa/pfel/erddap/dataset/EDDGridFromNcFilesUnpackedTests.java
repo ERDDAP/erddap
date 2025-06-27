@@ -10,17 +10,15 @@ import com.cohort.util.Test;
 import com.cohort.util.Units2;
 import gov.noaa.pfel.coastwatch.griddata.NcHelper;
 import gov.noaa.pfel.erddap.GenerateDatasetsXml;
+import gov.noaa.pfel.erddap.util.EDMessages;
 import gov.noaa.pfel.erddap.util.EDStatic;
-import gov.noaa.pfel.erddap.variable.EDV;
 import java.nio.file.Path;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import tags.TagImageComparison;
-import tags.TagIncompleteTest;
 import testDataset.EDDTestDataset;
 import testDataset.Initialization;
-import ucar.ma2.Array;
 import ucar.ma2.Section;
 import ucar.nc2.NetcdfFile;
 import ucar.nc2.Variable;
@@ -37,9 +35,8 @@ class EDDGridFromNcFilesUnpackedTests {
    * @throws Throwable if touble
    */
   @org.junit.jupiter.api.Test
-  @TagIncompleteTest
   void testGenerateDatasetsXml() throws Throwable {
-
+    int language = EDMessages.DEFAULT_LANGUAGE;
     // String2.log("\n*** EDDGridFromNcFilesUnpacked.testGenerateDatasetsXml");
 
     String sampleDir =
@@ -353,7 +350,8 @@ class EDDGridFromNcFilesUnpackedTests {
     EDD.deleteCachedDatasetInfo(tDatasetID);
     EDD edd = EDDGridFromNcFilesUnpacked.oneFromXmlFragment(null, results);
     Test.ensureEqual(edd.datasetID(), tDatasetID, "");
-    Test.ensureEqual(edd.title(), "Daily MUR SST, Interim near-real-time (nrt) product", "");
+    Test.ensureEqual(
+        edd.title(language), "Daily MUR SST, Interim near-real-time (nrt) product", "");
     Test.ensureEqual(String2.toCSSVString(edd.dataVariableDestinationNames()), "analysed_sst", "");
 
     String2.log("\nEDDGridFromNcFilesUnpacked.testGenerateDatasetsXml passed the test.");
@@ -368,9 +366,7 @@ class EDDGridFromNcFilesUnpackedTests {
     // String2.log("\n*** EDDGridFromNcFilesUnpacked.testBasic()\n");
     // testVerboseOn();
     int language = 0;
-    String name, tName, results, tResults, expected, userDapQuery, tQuery;
-    String error = "";
-    EDV edv;
+    String tName, results, tResults, expected, userDapQuery;
     String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 10);
 
     // generateDatasetsXml
@@ -382,8 +378,14 @@ class EDDGridFromNcFilesUnpackedTests {
     String2.log("\n*** test das dds for entire dataset\n");
     tName =
         eddGrid.makeNewFileForDapQuery(
-            language, null, null, "", EDStatic.fullTestCacheDirectory, eddGrid.className(), ".das");
-    results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+            language,
+            null,
+            null,
+            "",
+            EDStatic.config.fullTestCacheDirectory,
+            eddGrid.className(),
+            ".das");
+    results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
     // String2.log(results);
     expected =
         "Attributes {\n"
@@ -496,8 +498,14 @@ class EDDGridFromNcFilesUnpackedTests {
     // *** test getting dds for entire dataset
     tName =
         eddGrid.makeNewFileForDapQuery(
-            language, null, null, "", EDStatic.fullTestCacheDirectory, eddGrid.className(), ".dds");
-    results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+            language,
+            null,
+            null,
+            "",
+            EDStatic.config.fullTestCacheDirectory,
+            eddGrid.className(),
+            ".dds");
+    results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
     // String2.log(results);
     expected =
         "Dataset {\n"
@@ -524,10 +532,10 @@ class EDDGridFromNcFilesUnpackedTests {
             null,
             null,
             userDapQuery,
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             eddGrid.className(),
             ".csv");
-    results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+    results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
     // String2.log(results);
     expected =
         "time,latitude,longitude,analysed_sst\n"
@@ -567,8 +575,7 @@ class EDDGridFromNcFilesUnpackedTests {
     // String2.log("\n*** EDDGridFromNcFilesUnpacked.testUInt16File()");
     // testVerboseOn();
     int language = 0;
-    String name, tName, results, tResults, expected, userDapQuery;
-    String today = Calendar2.getCurrentISODateTimeStringZulu() + "Z";
+    String tName, results, tResults, expected, userDapQuery;
     String fileDir =
         Path.of(EDDGridFromNcFilesUnpackedTests.class.getResource("/data/unsigned/").toURI())
                 .toString()
@@ -578,7 +585,7 @@ class EDDGridFromNcFilesUnpackedTests {
     NcHelper.debugMode = true;
     boolean oAttDebugMode = Attributes.debugMode;
     Attributes.debugMode = true;
-    String tDir = EDStatic.fullTestCacheDirectory;
+    String tDir = EDStatic.config.fullTestCacheDirectory;
 
     // DumpString
     results = NcHelper.ncdump(fileDir + fileName, "-h");
@@ -1173,7 +1180,7 @@ class EDDGridFromNcFilesUnpackedTests {
             Image2Tests.urlToAbsolutePath(Image2Tests.OBS_DIR),
             baseName,
             ".png");
-    // Test.displayInBrowser("file://" + tDir + tName);
+    // TestUtil.displayInBrowser("file://" + tDir + tName);
     Image2Tests.testImagesIdentical(tName, baseName + ".png", baseName + "_diff.png");
 
     NcHelper.debugMode = oNcDebugMode;
@@ -1190,12 +1197,12 @@ class EDDGridFromNcFilesUnpackedTests {
     // String2.log("\n*** EDDGridFromNcFilesUnpacked.testSuperPreciseTimeUnits");
     // testVerboseOn();
     int language = 0;
-    String name, tName, results, tResults, expected, userDapQuery;
+    String tName, results, expected;
     String fileDir =
         Path.of(EDDGridFromNcFilesUnpackedTests.class.getResource("/largeFiles/nc/").toURI())
                 .toString()
             + "/";
-    String tDir = EDStatic.fullTestCacheDirectory;
+    String tDir = EDStatic.config.fullTestCacheDirectory;
     boolean oDebugMode = NcHelper.debugMode;
     NcHelper.debugMode = true;
 
@@ -1479,7 +1486,6 @@ class EDDGridFromNcFilesUnpackedTests {
     Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
     // .csv data values
-    userDapQuery = "time";
     tName =
         eddGrid.makeNewFileForDapQuery(
             language, null, null, "time", tDir, eddGrid.className(), ".csv");
@@ -1529,9 +1535,8 @@ class EDDGridFromNcFilesUnpackedTests {
     // String2.log("\n*** EDDGridFromNcFilesUnpacked.testMissingValue");
     // testVerboseOn();
     int language = 0;
-    String name, tName, results, tResults, expected, userDapQuery;
-    String today = Calendar2.getCurrentISODateTimeStringZulu() + "Z";
-    String tDir = EDStatic.fullTestCacheDirectory;
+    String tName, results, tResults, expected, userDapQuery;
+    String tDir = EDStatic.config.fullTestCacheDirectory;
     String fileDir =
         Path.of(EDDGridFromNcFilesUnpackedTests.class.getResource("/data/unpacked/").toURI())
                 .toString()
@@ -1540,7 +1545,6 @@ class EDDGridFromNcFilesUnpackedTests {
     String fileName2 = "A2016241.L3m_DAY_POC_poc_4km.nc";
     Variable var;
     Attributes atts;
-    Array array;
     PrimitiveArray pa;
     boolean oDebugMode = NcHelper.debugMode;
     NcHelper.debugMode = true;
@@ -2228,7 +2232,7 @@ class EDDGridFromNcFilesUnpackedTests {
             Image2Tests.urlToAbsolutePath(Image2Tests.OBS_DIR),
             baseName,
             ".png");
-    // Test.displayInBrowser("file://" + tDir + tName);
+    // TestUtil.displayInBrowser("file://" + tDir + tName);
     Image2Tests.testImagesIdentical(tName, baseName + ".png", baseName + "_diff.png");
 
     NcHelper.debugMode = oDebugMode;

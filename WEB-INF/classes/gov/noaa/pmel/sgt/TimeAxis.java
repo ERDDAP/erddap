@@ -23,8 +23,7 @@ import gov.noaa.pmel.util.TimeRange;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Rectangle;
-import java.util.Enumeration;
-import java.util.Vector;
+import java.util.ArrayList;
 
 // jdk1.2
 // import java.awt.geom.Point2D;
@@ -144,41 +143,41 @@ public class TimeAxis extends Axis implements Cloneable {
     if (days > 260000.0) { // ~800 years
       // System.out.println("CenturyAxis");
       if (!(txt_ instanceof CenturyAxis)) {
-        newStyle = (TimeAxisStyle) new CenturyAxis();
+        newStyle = new CenturyAxis();
       }
     } else if (days > 26000.0) { // ~80 years
       // System.out.println("DecadeAxis");
       if (!(txt_ instanceof DecadeAxis)) {
-        newStyle = (TimeAxisStyle) new DecadeAxis();
+        newStyle = new DecadeAxis();
       }
     } else if (days > 1000.0) { // ~3 years
       // System.out.println("YearDecadeAxis");
       if (!(txt_ instanceof YearDecadeAxis)) {
-        newStyle = (TimeAxisStyle) new YearDecadeAxis();
+        newStyle = new YearDecadeAxis();
       }
     } else if (days > 91.0) {
       if (!(txt_ instanceof MonthYearAxis)) {
-        newStyle = (TimeAxisStyle) new MonthYearAxis();
+        newStyle = new MonthYearAxis();
       }
     } else if (days > 3.0) {
       if (!(txt_ instanceof DayMonthAxis)) {
-        newStyle = (TimeAxisStyle) new DayMonthAxis();
+        newStyle = new DayMonthAxis();
       }
     } else if (days > 0.1666666) { // 4 hours     (5 has cramped major labels)
       if (!(txt_ instanceof HourDayAxis)) {
-        newStyle = (TimeAxisStyle) new HourDayAxis();
+        newStyle = new HourDayAxis();
       }
     } else if (days > 2.777777e-3) { // 4 minutes   (5 has cramped major labels)
       if (!(txt_ instanceof MinuteHourAxis)) {
-        newStyle = (TimeAxisStyle) new MinuteHourAxis();
+        newStyle = new MinuteHourAxis();
       }
     } else if (days > 4.62961e-5) { // 4 seconds   (5 has cramped major labels)
       if (!(txt_ instanceof SecondMinuteAxis)) {
-        newStyle = (TimeAxisStyle) new SecondMinuteAxis();
+        newStyle = new SecondMinuteAxis();
       }
     } else {
       if (!(txt_ instanceof MilliSecondAxis)) {
-        newStyle = (TimeAxisStyle) new MilliSecondAxis();
+        newStyle = new MilliSecondAxis();
       }
     }
     if (newStyle != null) {
@@ -232,8 +231,8 @@ public class TimeAxis extends Axis implements Cloneable {
   protected void updateRegisteredTransforms() {
     if (!registeredTransforms_.isEmpty()) {
       AxisTransform trns;
-      for (Enumeration it = registeredTransforms_.elements(); it.hasMoreElements(); ) {
-        trns = (AxisTransform) it.nextElement();
+      for (Transform item : registeredTransforms_) {
+        trns = (AxisTransform) item;
         trns.setRangeP(pRange_);
         trns.setRangeU(tRange_);
       }
@@ -245,8 +244,8 @@ public class TimeAxis extends Axis implements Cloneable {
   protected void updateRegisteredAxes() {
     if (!registeredAxes_.isEmpty()) {
       TimeAxis ax;
-      for (Enumeration it = registeredAxes_.elements(); it.hasMoreElements(); ) {
-        ax = (TimeAxis) it.nextElement();
+      for (Axis axis : registeredAxes_) {
+        ax = (TimeAxis) axis;
         ax.setRangeU(tRange_);
         ax.setRangeP(pRange_);
       }
@@ -369,15 +368,15 @@ public class TimeAxis extends Axis implements Cloneable {
     axisStyle_ = style;
     //
     if (axisStyle_ == AUTO || axisStyle_ == MONTH_YEAR) {
-      txt_ = (TimeAxisStyle) new MonthYearAxis();
+      txt_ = new MonthYearAxis();
     } else if (axisStyle_ == YEAR_DECADE) {
-      txt_ = (TimeAxisStyle) new YearDecadeAxis();
+      txt_ = new YearDecadeAxis();
     } else if (axisStyle_ == DAY_MONTH) {
-      txt_ = (TimeAxisStyle) new DayMonthAxis();
+      txt_ = new DayMonthAxis();
     } else if (axisStyle_ == HOUR_DAY) {
-      txt_ = (TimeAxisStyle) new HourDayAxis();
+      txt_ = new HourDayAxis();
     } else {
-      txt_ = (TimeAxisStyle) new MinuteHourAxis();
+      txt_ = new MinuteHourAxis();
     }
     minorLabelFormat_ = txt_.getDefaultMinorLabelFormat();
     majorLabelFormat_ = txt_.getDefaultMajorLabelFormat();
@@ -405,8 +404,8 @@ public class TimeAxis extends Axis implements Cloneable {
     //
     // remove registered axes and transforms
     //
-    newAxis.registeredAxes_ = new Vector(2, 2);
-    newAxis.registeredTransforms_ = new Vector(2, 2);
+    newAxis.registeredAxes_ = new ArrayList<>();
+    newAxis.registeredTransforms_ = new ArrayList<>();
     //
     return newAxis;
   }
@@ -705,19 +704,15 @@ public class TimeAxis extends Axis implements Cloneable {
   @Override
   public void draw(Graphics g) {
     int xloc, yloc, xend, yend;
-    int vertalign;
-    int minor_val, minor_val_old;
+    int minor_val;
     int major_val, major_val_old;
     double xp, yp;
-    double xp_minor_old, yp_minor_old;
     double x, y;
     double xp_major_old, yp_major_old;
     boolean draw_minor, draw_major;
     boolean time_increasing;
-    GeoDate time = new GeoDate();
     GeoDate major_time_old;
-    GeoDate time_end = new GeoDate();
-    SGLabel label;
+    GeoDate time_end;
     if (!visible_) return;
     //
     if (lineColor_ == null) {
@@ -731,7 +726,7 @@ public class TimeAxis extends Axis implements Cloneable {
     //
     time_increasing = tRange_.end.after(tRange_.start);
     //
-    time = txt_.getStartTime(tRange_);
+    GeoDate time = txt_.getStartTime(tRange_);
     if (time_increasing) {
       time_end = new GeoDate(tRange_.end);
     } else {
@@ -751,9 +746,7 @@ public class TimeAxis extends Axis implements Cloneable {
       setupDraw(yp);
       major_val = txt_.getMajorValue(time);
       major_val_old = major_val;
-      minor_val_old = txt_.getMinorValue(time);
       xp_major_old = xp;
-      xp_minor_old = xp;
       major_time_old = new GeoDate(time);
       //
       // System.out.println("  minor draw=" + draw_minor + " interval=" + minorLabelInterval_ +
@@ -783,8 +776,6 @@ public class TimeAxis extends Axis implements Cloneable {
           major_val_old = major_val;
           major_time_old = new GeoDate(time);
         }
-        xp_minor_old = xp;
-        minor_val_old = minor_val;
         time.increment(txt_.getIncrementValue(), txt_.getIncrementUnits());
       } // end of while
       if (draw_major && (!aMajorDrawn || major_val_old % majorLabelInterval_ == 0)) {
@@ -808,9 +799,7 @@ public class TimeAxis extends Axis implements Cloneable {
 
       major_val = txt_.getMajorValue(time);
       major_val_old = major_val;
-      minor_val_old = txt_.getMinorValue(time);
       yp_major_old = yp;
-      yp_minor_old = yp;
       major_time_old = new GeoDate(time);
       //
       while (time.before(time_end)) {
@@ -837,8 +826,6 @@ public class TimeAxis extends Axis implements Cloneable {
           major_val_old = major_val;
           major_time_old = new GeoDate(time);
         }
-        yp_minor_old = yp;
-        minor_val_old = minor_val;
         time.increment(txt_.getIncrementValue(), txt_.getIncrementUnits());
       } // end of while
       if (draw_major && (!aMajorDrawn || major_val_old % majorLabelInterval_ == 0)) {

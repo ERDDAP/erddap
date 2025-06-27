@@ -28,13 +28,11 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
-
-import com.google.common.io.Resources;
-import gov.noaa.pfel.erddap.util.EDStatic;
 import org.apache.commons.compress.archivers.ArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
@@ -297,8 +295,7 @@ public class File2 {
 
   private static String tempDirectory; // lazy creation by getSystemTempDirectory
 
-  private static ConcurrentHashMap<String, S3Client> s3ClientMap =
-      new ConcurrentHashMap<String, S3Client>();
+  private static final ConcurrentHashMap<String, S3Client> s3ClientMap = new ConcurrentHashMap<>();
 
   public static String getClassPath() {
     String find = "/com/cohort/util/String2.class";
@@ -309,9 +306,9 @@ public class File2 {
 
     // on windows, remove the troublesome leading "/"
     if (String2.OSIsWindows
-            && classPath.length() > 2
-            && classPath.charAt(0) == '/'
-            && classPath.charAt(2) == ':') classPath = classPath.substring(1);
+        && classPath.length() > 2
+        && classPath.charAt(0) == '/'
+        && classPath.charAt(2) == ':') classPath = classPath.substring(1);
 
     // classPath is a URL! so spaces are encoded as %20 on Windows!
     // UTF-8: see https://en.wikipedia.org/wiki/Percent-encoding#Current_standard
@@ -339,7 +336,7 @@ public class File2 {
     int po = classPath.indexOf("/WEB-INF/");
     if (po < 0)
       throw new RuntimeException(
-              String2.ERROR + ": '/WEB-INF/' not found in classPath=" + classPath);
+          String2.ERROR + ": '/WEB-INF/' not found in classPath=" + classPath);
     classPath = classPath.substring(0, po + 1);
     Path path;
     if (classPath.startsWith("file:/")) {
@@ -357,13 +354,17 @@ public class File2 {
     return webInfParentDirectory;
   }
 
+  public static String getRefDirectory() {
+    return getWebInfParentDirectory() + "WEB-INF/ref/";
+  }
+
   public static void setWebInfParentDirectory(String webInfParentDir) {
     webInfParentDirectory = webInfParentDir.replace("\\", "/");
   }
 
   /**
-   * Access a classpath resource via a filesystem path.
-   * NOTE: this will not work unless resource is exploded.
+   * Access a classpath resource via a filesystem path. NOTE: this will not work unless resource is
+   * exploded.
    *
    * @param resourcePath Classpath of resource.
    * @return Filesystem path.
@@ -566,7 +567,7 @@ public class File2 {
                     + fullName
                     + "\n"
                     + MustBe.getStackTrace());
-            return result;
+            return false;
           }
           String2.log(
               "WARNING #"
@@ -665,37 +666,37 @@ public class File2 {
       // String2.log(">> File2.deleteIfOld dir=" + dir + " nFiles=" + files.length);
       int nRemain = 0;
       int nDir = 0;
-      for (int i = 0; i < files.length; i++) {
+      for (File value : files) {
         // String2.log(">> File2.deleteIfOld files[" + i + "]=" + files[i].getAbsolutePath());
         try {
-          if (files[i].isFile()) {
-            if (files[i].lastModified() < time) {
-              if (!files[i].delete()) {
+          if (value.isFile()) {
+            if (value.lastModified() < time) {
+              if (!value.delete()) {
                 // unable to delete
-                String2.log(msg + files[i].getCanonicalPath());
+                String2.log(msg + value.getCanonicalPath());
                 nRemain = -1;
               }
             } else if (nRemain != -1) { // once nRemain is -1, it isn't changed
               nRemain++;
             }
-          } else if (recursive && files[i].isDirectory()) {
+          } else if (recursive && value.isDirectory()) {
             nDir++;
             int tnRemain =
-                deleteIfOld(files[i].getAbsolutePath(), time, recursive, deleteEmptySubdirectories);
+                deleteIfOld(value.getAbsolutePath(), time, recursive, deleteEmptySubdirectories);
             // String2.log(">> File2.deleteIfOld might delete this dir. tnRemain=" + tnRemain);
             if (tnRemain == -1) nRemain = -1;
             else {
               if (nRemain != -1) // once nRemain is -1, it isn't changed
               nRemain += tnRemain;
               if (tnRemain == 0 && deleteEmptySubdirectories) {
-                files[i].delete();
+                value.delete();
               }
             }
           }
         } catch (Exception e) {
           try {
             nRemain = -1;
-            String2.log(msg + files[i].getCanonicalPath());
+            String2.log(msg + value.getCanonicalPath());
           } catch (Exception e2) {
           }
         }
@@ -738,7 +739,7 @@ public class File2 {
           .deleteObject(DeleteObjectRequest.builder().bucket(bro[0]).key(bro[2]).build());
       return true;
     } catch (Exception e) {
-      String2.log("Caught exception while deleting " + awsUrl + " : " + e.toString());
+      String2.log("Caught exception while deleting " + awsUrl + " : " + e);
       return false;
     }
     // even with response, no easy way to determine if successfull
@@ -795,7 +796,6 @@ public class File2 {
       if (String2.OSIsWindows)
         Math2.sleep(Math2.shortSleep); // if Windows: encourage successful file deletion
     }
-
     // rename
     if (oldFile.renameTo(newFile)) return;
 
@@ -803,6 +803,26 @@ public class File2 {
     // The problem might be that something needs to be gc'd.
     Math2.gcAndWait("File2.rename (before retry)");
     if (oldFile.renameTo(newFile)) return;
+
+    // This is a bad idea, but its better than datasets failing to load.
+    try {
+      Thread.sleep(5000);
+    } catch (InterruptedException e) {
+      String2.log("Was sleeping to allow file handles time to free, but got interrupted.");
+    }
+    Math2.gcAndWait("File2.rename (before retry)");
+
+    if (oldFile.renameTo(newFile)) return;
+
+    if (!oldFile.canWrite()) {
+      throw new RuntimeException(
+          "Unable to rename\n"
+              + fullOldName
+              + " to\n"
+              + fullNewName
+              + "\nbecause the source file is not writable.");
+    }
+
     throw new RuntimeException("Unable to rename\n" + fullOldName + " to\n" + fullNewName);
   }
 
@@ -912,8 +932,7 @@ public class File2 {
         // isAwsS3Url
         return getS3Client(bro[1])
             .headObject(HeadObjectRequest.builder().bucket(bro[0]).key(bro[2]).build())
-            .contentLength()
-            .longValue();
+            .contentLength();
       }
     } catch (NoSuchKeyException nske) { // if aws key/object doesn't exist
       return -1;
@@ -1027,19 +1046,6 @@ public class File2 {
     int po = fullName.lastIndexOf('/');
     if (po < 0) po = fullName.lastIndexOf('\\');
     return po > 0 ? fullName.substring(0, po + 1) : "";
-  }
-
-  /**
-   * This returns the current directory (with the proper separator at the end).
-   *
-   * @return the current directory (with the proper separator at the end)
-   */
-  public static String getCurrentDirectory() {
-    String dir = System.getProperty("user.dir");
-
-    if (!dir.endsWith(File.separator)) dir += File.separator;
-
-    return dir;
   }
 
   /**
@@ -1180,7 +1186,6 @@ public class File2 {
    */
   public static BufferedInputStream getBufferedInputStream(
       String fullFileName, long firstByte, long lastByte) throws Exception {
-    String ext = getExtension(fullFileName); // if e.g., .tar.gz, this returns .gz
 
     // is it an AWS S3 object?
     String bro[] = String2.parseAwsS3Url(fullFileName); // [bucket, region, objectKey]
@@ -1219,7 +1224,7 @@ public class File2 {
    * @throws Exception if trouble
    */
   public static InputStream getDecompressedBufferedInputStream(String fullFileName, InputStream is)
-          throws Exception {
+      throws Exception {
     String ext = getExtension(fullFileName); // if e.g., .tar.gz, this returns .gz
 
     // !!!!! IF CHANGE SUPPORTED COMPRESSION TYPES, CHANGE isDecompressible ABOVE !!!
@@ -1238,8 +1243,8 @@ public class File2 {
     if (ext.indexOf('z') < 0) return is;
 
     if (ext.equals(".tgz")
-            || fullFileName.endsWith(".tar.gz")
-            || fullFileName.endsWith(".tar.gzip")) {
+        || fullFileName.endsWith(".tar.gz")
+        || fullFileName.endsWith(".tar.gzip")) {
       // modified from
       // https://stackoverflow.com/questions/7128171/how-to-compress-decompress-tar-gz-files-in-java
       GzipCompressorInputStream gzipIn = null;
@@ -1247,11 +1252,11 @@ public class File2 {
       try {
         gzipIn = new GzipCompressorInputStream(is);
         tarIn = new TarArchiveInputStream(gzipIn);
-        TarArchiveEntry entry = tarIn.getNextTarEntry();
-        while (entry != null && entry.isDirectory()) entry = tarIn.getNextTarEntry();
+        TarArchiveEntry entry = tarIn.getNextEntry();
+        while (entry != null && entry.isDirectory()) entry = tarIn.getNextEntry();
         if (entry == null)
           throw new IOException(
-                  String2.ERROR + " while reading " + fullFileName + ": no file found in archive.");
+              String2.ERROR + " while reading " + fullFileName + ": no file found in archive.");
         is = tarIn;
       } catch (Exception e) {
         if (tarIn != null) tarIn.close();
@@ -1276,7 +1281,7 @@ public class File2 {
         while (entry != null && entry.isDirectory()) entry = zis.getNextEntry();
         if (entry == null)
           throw new IOException(
-                  String2.ERROR + " while reading " + fullFileName + ": no file found in archive.");
+              String2.ERROR + " while reading " + fullFileName + ": no file found in archive.");
         is = zis;
       } catch (Exception e) {
         if (zis != null) zis.close();
@@ -1323,8 +1328,7 @@ public class File2 {
    * @return a decompressed, buffered InputStream from a file.
    * @throws Exception if trouble
    */
-  public static InputStream getDecompressedBufferedInputStream(URL resourceFile)
-          throws Exception {
+  public static InputStream getDecompressedBufferedInputStream(URL resourceFile) throws Exception {
     return getDecompressedBufferedInputStream(resourceFile.getFile(), resourceFile.openStream());
   }
 
@@ -1338,13 +1342,10 @@ public class File2 {
     // handle .Z (capital Z) specially first
     // This assumes Z files contain only 1 file.
     if (ext.equals(".Z")) {
-      FileOutputStream out = null;
-      ZCompressorInputStream zIn = null;
-      try {
-        out = new FileOutputStream(destDir);
-        zIn =
-            new ZCompressorInputStream(
-                new BufferedInputStream(new FileInputStream(sourceFullName)));
+      try (FileOutputStream out = new FileOutputStream(destDir);
+          ZCompressorInputStream zIn =
+              new ZCompressorInputStream(
+                  new BufferedInputStream(new FileInputStream(sourceFullName)))) {
         final byte[] buffer = new byte[1024];
         int n = 0;
         while (-1 != (n = zIn.read(buffer))) {
@@ -1352,13 +1353,6 @@ public class File2 {
         }
       } catch (Exception e) {
         throw e;
-      } finally {
-        if (out != null) {
-          out.close();
-        }
-        if (zIn != null) {
-          zIn.close();
-        }
       }
     }
 
@@ -1464,25 +1458,15 @@ public class File2 {
       }
 
     } else if (ext.equals(".bz2")) {
-      OutputStream out = null;
-      BZip2CompressorInputStream bzIn = null;
 
-      try {
-        out = Files.newOutputStream(Paths.get(destDir));
-        bzIn =
-            new BZip2CompressorInputStream(
-                new BufferedInputStream(Files.newInputStream(Paths.get(sourceFullName))));
+      try (OutputStream out = Files.newOutputStream(Paths.get(destDir));
+          BZip2CompressorInputStream bzIn =
+              new BZip2CompressorInputStream(
+                  new BufferedInputStream(Files.newInputStream(Paths.get(sourceFullName))))) {
         final byte[] buffer = new byte[bufferSize];
         int n = 0;
         while (-1 != (n = bzIn.read(buffer))) {
           out.write(buffer, 0, n);
-        }
-      } finally {
-        if (out != null) {
-          out.close();
-        }
-        if (bzIn != null) {
-          bzIn.close();
         }
       }
     }
@@ -1587,10 +1571,8 @@ public class File2 {
     // declare the results variable: String results[] = {"", ""};
     // BufferedReader and results are declared outside try/catch so
     // that they can be accessed from within either try/catch block.
-    long time = System.currentTimeMillis();
-    BufferedReader br = getDecompressedBufferedFileReader(fileName, charset);
-    StringBuilder sb = new StringBuilder(8192);
-    try {
+    try (BufferedReader br = getDecompressedBufferedFileReader(fileName, charset)) {
+      StringBuilder sb = new StringBuilder(8192);
 
       // get the text from the file
       char buffer[] = new char[8192];
@@ -1598,11 +1580,6 @@ public class File2 {
       while ((nRead = br.read(buffer)) >= 0) // -1 = end-of-file
       sb.append(buffer, 0, nRead);
       return sb.toString();
-    } finally {
-      try {
-        br.close();
-      } catch (Exception e) {
-      }
     }
   }
 
@@ -1656,7 +1633,6 @@ public class File2 {
     // declare the results variable: String results[] = {"", ""};
     // BufferedReader and results are declared outside try/catch so
     // that they can be accessed from within either try/catch block.
-    long time = System.currentTimeMillis();
     BufferedReader br = null;
     String results[] = {"", ""};
     int errorIndex = 0;
@@ -1736,10 +1712,9 @@ public class File2 {
    * @return ArrayList with the lines from the file
    * @throws Exception if trouble
    */
-  public static ArrayList<String> readLinesFromFile(String fileName, String charset, int maxAttempt)
+  public static List<String> readLinesFromFile(String fileName, String charset, int maxAttempt)
       throws Exception {
 
-    long time = System.currentTimeMillis();
     BufferedReader bufferedReader = null;
     try {
       for (int i = 0; i < maxAttempt; i++) {
@@ -1751,7 +1726,7 @@ public class File2 {
           Math2.sleep(100);
         }
       }
-      ArrayList<String> al = new ArrayList();
+      ArrayList<String> al = new ArrayList<>();
       String s = bufferedReader.readLine();
       while (s != null) { // null = end-of-file
         al.add(s);
@@ -1762,6 +1737,7 @@ public class File2 {
       if (bufferedReader != null) bufferedReader.close();
     }
   }
+
   /**
    * This is like the other readFromFile, but returns ArrayList of Strings and throws Exception is
    * trouble. The strings in the ArrayList are not canonical! So this is useful for reading,
@@ -1777,32 +1753,26 @@ public class File2 {
    * @return ArrayList with the lines from the file
    * @throws Exception if trouble
    */
-  public static ArrayList<String> readLinesFromFile(URL resourceFile, String charset, int maxAttempt)
-          throws Exception {
+  public static List<String> readLinesFromFile(URL resourceFile, String charset, int maxAttempt)
+      throws Exception {
 
-    long time = System.currentTimeMillis();
-    BufferedReader bufferedReader = null;
-    try {
-      for (int i = 0; i < maxAttempt; i++) {
-        try {
-          InputStream is = getDecompressedBufferedInputStream(resourceFile);
-          bufferedReader = new BufferedReader(new InputStreamReader(is, charset));
-          break; // success
-        } catch (RuntimeException e) {
-          if (i == maxAttempt - 1) throw e;
-          Math2.sleep(100);
+    for (int i = 0; i < maxAttempt; i++) {
+      try (InputStream is = getDecompressedBufferedInputStream(resourceFile);
+          BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(is, charset))) {
+        ArrayList<String> al = new ArrayList<>();
+        String s = bufferedReader.readLine();
+        while (s != null) { // null = end-of-file
+          al.add(s);
+          s = bufferedReader.readLine();
         }
+        return al;
+      } catch (RuntimeException e) {
+        if (i == maxAttempt - 1) throw e;
+        Math2.sleep(100);
       }
-      ArrayList<String> al = new ArrayList();
-      String s = bufferedReader.readLine();
-      while (s != null) { // null = end-of-file
-        al.add(s);
-        s = bufferedReader.readLine();
-      }
-      return al;
-    } finally {
-      if (bufferedReader != null) bufferedReader.close();
     }
+
+    return null;
   }
 
   /*
@@ -1822,14 +1792,6 @@ public class File2 {
           bufferedReader.close();
       }
   */
-
-  /**
-   * Creating a buffered FileWriter this way helps me check that charset is set. (Instead of the
-   * default charset used by "new FileWriter()").
-   */
-  public static BufferedWriter getBufferedFileWriter88591(String fullFileName) throws IOException {
-    return getBufferedFileWriter(fullFileName, ISO_8859_1_CHARSET);
-  }
 
   /**
    * Creating a buffered FileWriter this way helps me check that charset is set. (Instead of the
@@ -2027,15 +1989,12 @@ public class File2 {
    * @throws Exception if trouble
    */
   public static String hexDump(String fullFileName, int nBytes) throws Exception {
-    InputStream fis = getDecompressedBufferedInputStream(fullFileName);
-    try {
+    try (InputStream fis = getDecompressedBufferedInputStream(fullFileName)) {
       nBytes = Math.min(nBytes, Math2.narrowToInt(length(fullFileName))); // max 2GB
       byte ba[] = new byte[nBytes];
       int bytesRead = 0;
       while (bytesRead < nBytes) bytesRead += fis.read(ba, bytesRead, nBytes - bytesRead);
       return String2.hexDump(ba);
-    } finally {
-      fis.close();
     }
   }
 
@@ -2135,7 +2094,7 @@ public class File2 {
       out = new BufferedOutputStream(new FileOutputStream(destination));
       success = copy(source, out, first, last);
     } catch (Exception e) {
-      String2.log(String2.ERROR + " in File2.copy source=" + source + "\n" + e.toString());
+      String2.log(String2.ERROR + " in File2.copy source=" + source + "\n" + e);
     }
     try {
       if (out != null) out.close();
@@ -2153,43 +2112,6 @@ public class File2 {
   }
 
   /**
-   * This is like copy(), but decompresses if the source is compressed
-   *
-   * @param source the full file name of the source file. If compressed, this does decompress!
-   * @param destination the full file name of the destination file. If the directory doesn't exist,
-   *     it will be created. It is closed at the end.
-   * @return true if successful. If not successful, the destination file won't exist.
-   */
-  public static boolean decompress(String source, String destination) {
-
-    if (source.equals(destination)) return false;
-    InputStream in = null;
-    OutputStream out = null;
-    boolean success = false;
-    try {
-      File dir = new File(getDirectory(destination));
-      if (!dir.isDirectory()) dir.mkdirs();
-      in = getDecompressedBufferedInputStream(source);
-      out = new BufferedOutputStream(new FileOutputStream(destination));
-      success = copy(in, out, 0, -1);
-    } catch (Exception e) {
-      String2.log(String2.ERROR + " in File2.copy source=" + source + "\n" + e.toString());
-    }
-    try {
-      if (in != null) in.close();
-    } catch (Exception e) {
-    }
-    try {
-      if (out != null) out.close();
-    } catch (Exception e) {
-    }
-
-    if (!success) delete(destination);
-
-    return success;
-  }
-
-  /**
    * This makes a copy of a file to an outputStream.
    *
    * @param source the full file name of the source. If compressed, this doesn't decompress!
@@ -2200,20 +2122,12 @@ public class File2 {
    */
   public static boolean copy(String source, OutputStream out, long first, long last) {
 
-    InputStream in = null;
-    try {
-      in =
-          getBufferedInputStream(
-              source); // not getDecompressedBufferedInputStream(). Read file as is.
+    try (InputStream in = getBufferedInputStream(source)) {
+      // not getDecompressedBufferedInputStream(). Read file as is.
       return copy(in, out, first, last);
     } catch (Exception e) {
       String2.log(MustBe.throwable(String2.ERROR + " in File2.copy.", e));
       return false;
-    } finally {
-      try {
-        if (in != null) in.close();
-      } catch (Exception e2) {
-      }
     }
   }
 
@@ -2287,42 +2201,6 @@ public class File2 {
         remain -= skipped;
       }
     }
-  }
-
-  /**
-   * This reads the specified number of bytes from the inputstream (unlike InputStream.read, which
-   * may not read all of the bytes).
-   *
-   * @param inputStream Best if buffered.
-   * @param byteArray
-   * @param offset the first position of byteArray to be written to
-   * @param length the number of bytes to be read
-   * @throws Exception if trouble
-   */
-  public static void readFully(InputStream inputStream, byte[] byteArray, int offset, int length)
-      throws Exception {
-
-    int po = offset;
-    int remain = length;
-    while (remain > 0) {
-      int read = inputStream.read(byteArray, po, remain);
-      po += read;
-      remain -= read;
-    }
-  }
-
-  /**
-   * This creates, reads, and returns a byte array of the specified length.
-   *
-   * @param inputStream Best if buffered.
-   * @param length the number of bytes to be read
-   * @throws Exception if trouble
-   */
-  public static byte[] readFully(InputStream inputStream, int length) throws Exception {
-
-    byte[] byteArray = new byte[length];
-    readFully(inputStream, byteArray, 0, length);
-    return byteArray;
   }
 
   /**
@@ -2486,10 +2364,9 @@ public class File2 {
       String fullInFileName, String fullOutFileName, String charset, String search, String replace)
       throws Exception {
 
-    BufferedReader bufferedReader = getDecompressedBufferedFileReader(fullInFileName, charset);
-    try {
-      BufferedWriter bufferedWriter = getBufferedFileWriter(fullOutFileName, charset);
-      try {
+    try (BufferedReader bufferedReader =
+        getDecompressedBufferedFileReader(fullInFileName, charset)) {
+      try (BufferedWriter bufferedWriter = getBufferedFileWriter(fullOutFileName, charset)) {
         // get the text from the file
         // This uses bufferedReader.readLine() to repeatedly
         // read lines from the file and thus can handle various
@@ -2500,11 +2377,7 @@ public class File2 {
           bufferedWriter.write(String2.lineSeparator);
           s = bufferedReader.readLine();
         }
-      } finally {
-        bufferedWriter.close();
       }
-    } finally {
-      bufferedReader.close();
     }
   }
 }

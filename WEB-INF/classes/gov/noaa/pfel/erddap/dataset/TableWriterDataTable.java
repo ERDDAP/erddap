@@ -33,7 +33,7 @@ import java.util.GregorianCalendar;
 public class TableWriterDataTable extends TableWriter {
 
   // set by constructor
-  protected boolean writeUnits;
+  protected final boolean writeUnits;
 
   // set by firstTime
   protected boolean isCharOrString[];
@@ -324,6 +324,7 @@ public class TableWriterDataTable extends TableWriter {
     TableWriterDataTable tdt =
         new TableWriterDataTable(language, tEdd, tNewHistory, outputStreamSource, writeUnits);
     tdt.writeAllAndFinish(table);
+    tdt.close();
   }
 
   protected void writeNumber(String s, PAType elementPAType) throws IOException {
@@ -331,18 +332,25 @@ public class TableWriterDataTable extends TableWriter {
       writer.write("{\"v\":null,\"f\":null}");
     } else {
       if (elementPAType == PAType.DOUBLE) {
-        double dv = Double.valueOf(s).doubleValue();
+        double dv = Double.parseDouble(s);
         writer.write("{\"v\":" + dv + ",\"f\":null}");
       } else if (elementPAType == PAType.FLOAT) {
-        float f = Float.valueOf(s).floatValue();
+        float f = Float.parseFloat(s);
         writer.write("{\"v\":" + f + ",\"f\":null}");
       } else if (elementPAType == PAType.LONG) {
-        long f = Long.valueOf(s).longValue();
+        long f = Long.parseLong(s);
         writer.write("{\"v\":" + f + ",\"f\":null}");
       } else {
-        int f = Integer.valueOf(s).intValue();
+        int f = Integer.parseInt(s);
         writer.write("{\"v\":" + f + ",\"f\":null}");
       }
+    }
+  }
+
+  @Override
+  public void close() throws IOException {
+    if (writer != null) {
+      writer.close();
     }
   }
 }

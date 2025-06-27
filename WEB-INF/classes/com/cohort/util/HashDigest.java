@@ -297,21 +297,23 @@ public class HashDigest {
   }
 
   public static final String usage =
-      "Usage:\n"
-          + "To print a hash digest (checksum) of a password:\n"
-          + "  HashDigest password:myPassword type:algorithm\n"
-          + "To print a hash digest of a file:\n"
-          + "  HashDigest filename:myFileName type:algorithm\n"
-          + "To make a file with a hash digest of a file:\n"
-          + "  HashDigest filename:myFileName type:algorithm -file\n"
-          + "where algorithm can be MD5, SHA-1, or SHA-256.\n";
+      """
+                  Usage:
+                  To print a hash digest (checksum) of a password:
+                    HashDigest password:myPassword type:algorithm
+                  To print a hash digest of a file:
+                    HashDigest filename:myFileName type:algorithm
+                  To make a file with a hash digest of a file:
+                    HashDigest filename:myFileName type:algorithm -file
+                  where algorithm can be MD5, SHA-1, or SHA-256.
+                  """;
 
   /** This does the work. */
   public static String doIt(String args[]) throws Throwable {
     String algorithm = String2.stringStartsWith(args, "type:");
     if (algorithm == null) return usage;
     algorithm = algorithm.substring(5);
-    int whichAlgo = String2.indexOf(String2.FILE_DIGEST_OPTIONS, algorithm);
+    int whichAlgo = String2.FILE_DIGEST_OPTIONS.indexOf(algorithm);
     if (whichAlgo < 0) return "Invalid algorithm.\n" + usage;
 
     String password = String2.stringStartsWith(args, "password:");
@@ -322,7 +324,7 @@ public class HashDigest {
     filename = filename.substring(9);
     String digest = String2.fileDigest(algorithm, filename);
     if (String2.indexOf(args, "-file") >= 0) {
-      String ext = String2.FILE_DIGEST_EXTENSIONS[whichAlgo];
+      String ext = String2.FILE_DIGEST_EXTENSIONS.get(whichAlgo);
       File2.writeToFileUtf8(filename + ext, digest + "  " + File2.getNameAndExtension(filename));
       return "Created " + filename + ext;
     } else {

@@ -15,7 +15,7 @@ package gov.noaa.pfel.coastwatch.netcheck;
  */
 public class TestThread extends Thread {
 
-  private NetCheckTest test;
+  private final NetCheckTest test;
   private String result = null;
 
   /**

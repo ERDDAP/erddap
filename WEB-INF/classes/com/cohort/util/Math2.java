@@ -4,6 +4,9 @@
  */
 package com.cohort.util;
 
+import com.google.common.collect.ImmutableList;
+import gov.noaa.pfel.erddap.util.EDStatic;
+import java.io.File;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.MathContext;
@@ -48,7 +51,7 @@ public class Math2 {
   public static final BigInteger LONG_MAX_VALUE = new BigInteger("" + Long.MAX_VALUE);
   public static final BigInteger ULONG_MAX_VALUE = new BigInteger("18446744073709551615");
   public static final double ULONG_MAX_VALUE_AS_DOUBLE =
-      18446744073709551615.0; // trouble: won't be stored exactly
+      1.8446744073709552E+19; // rounded to what double can store
   public static final int Binary0 = -2000; // less than -980-980
   public static final int BinaryLimit = 980; // 2^980 = ~1e295
   public static final int BytesPerKB = 1024;
@@ -57,24 +60,26 @@ public class Math2 {
   public static final long BytesPerTB = BytesPerGB * BytesPerKB;
   public static final long BytesPerPB = BytesPerTB * BytesPerKB;
   public static final long loAnd = ((long) Integer.MAX_VALUE * 2) + 1; // mask for low 32 bits
-  public static java.util.Random random = new java.util.Random();
+  public static final java.util.Random random = new java.util.Random();
   public static volatile long lastUsingMemory = 0; // volatile: used by all threads
   public static volatile long maxUsingMemory = 0; // volatile: used by all threads
-  public static long maxMemory = Runtime.getRuntime().maxMemory();
+  public static final long maxMemory = Runtime.getRuntime().maxMemory();
 
-  public static long halfMemory =
+  public static final long halfMemory =
       maxMemory / 2; // 50%   time for shedThisRequest to call gc and reject highMemory requests
-  public static long highMemory =
+  public static final long highMemory =
       maxMemory * 65L
           / 100; // 65%   time for shedThisRequest to call gc and reject lowMemory requests
-  public static long maxSafeMemory =
+  public static final long maxSafeMemory =
       maxMemory * 3L / 4; // 75%   the max we should consider getting to
-  public static long dangerousMemory = maxMemory * 9L / 10; // 90%   this is really bad
+  public static final long dangerousMemory = maxMemory * 9L / 10; // 90%   this is really bad
 
-  public static long alwaysOkayMemoryRequest = maxSafeMemory / 40;
-  public static volatile AtomicInteger gcCallCount =
+  public static final long alwaysOkayMemoryRequest = maxSafeMemory / 40;
+  public static final AtomicInteger gcCallCount =
       new AtomicInteger(0); // since last Major LoadDatasets
   public static volatile long timeGCLastCalled = 0;
+
+  public static final long alwaysOkayDiskRequest = 10000000; // 10 mb
 
   /**
    * These are *not* final so EDStatic can replace them with translated Strings. These are
@@ -107,13 +112,13 @@ public class Math2 {
    * smaller tasks are usually given to computers with fewer, slower cores and less memory.
    * 2022-09-12 On CoastWatch ERDDAP, about 85% of "Pause Full (System.gc())" complete in <=400ms.
    */
-  public static int shortSleep = 400;
+  public static final int shortSleep = 400;
 
   /** If memory use jumps by this amount, a call to incgc will trigger a call to System.gc. */
-  public static long gcTrigger = maxMemory / 8;
+  public static final long gcTrigger = maxMemory / 8;
 
   /** This should return "?", "32", or "64". */
-  public static String JavaBits =
+  public static final String JavaBits =
       System.getProperty("sun.arch.data.model") == null
           ? "?"
           : System.getProperty("sun.arch.data.model");
@@ -130,99 +135,116 @@ public class Math2 {
   public static final double kmPerNMile = 1.852; // #exact in UDUNITS
 
   /** <tt>two</tt> defines powers of two, e.g., Two[0]=1, Two[1]=2, Two[2]=4, ... Two[31]. */
-  public static final int[] Two = {
-    0x1,
-    0x2,
-    0x4,
-    0x8,
-    0x10,
-    0x20,
-    0x40,
-    0x80,
-    0x100,
-    0x200,
-    0x400,
-    0x800,
-    0x1000,
-    0x2000,
-    0x4000,
-    0x8000,
-    0x10000,
-    0x20000,
-    0x40000,
-    0x80000,
-    0x100000,
-    0x200000,
-    0x400000,
-    0x800000,
-    0x1000000,
-    0x2000000,
-    0x4000000,
-    0x8000000,
-    0x10000000,
-    0x20000000,
-    0x40000000,
-    0x80000000
-  };
+  public static final ImmutableList<Integer> Two =
+      ImmutableList.of(
+          0x1,
+          0x2,
+          0x4,
+          0x8,
+          0x10,
+          0x20,
+          0x40,
+          0x80,
+          0x100,
+          0x200,
+          0x400,
+          0x800,
+          0x1000,
+          0x2000,
+          0x4000,
+          0x8000,
+          0x10000,
+          0x20000,
+          0x40000,
+          0x80000,
+          0x100000,
+          0x200000,
+          0x400000,
+          0x800000,
+          0x1000000,
+          0x2000000,
+          0x4000000,
+          0x8000000,
+          0x10000000,
+          0x20000000,
+          0x40000000,
+          0x80000000);
 
   /** This defines powers of ten. e.g., Ten[0]=1, Ten[1]=10, Ten[2]=100... Ten[18] */
-  public static final double[] Ten = {
-    1.0,
-    10.0,
-    100.0,
-    1000.0,
-    10000.0,
-    100000.0,
-    1000000.0,
-    10000000.0,
-    100000000.0,
-    1000000000.0,
-    10000000000.0,
-    100000000000.0,
-    1000000000000.0,
-    10000000000000.0,
-    100000000000000.0,
-    1000000000000000.0,
-    10000000000000000.0,
-    100000000000000000.0,
-    1000000000000000000.0
-  };
+  public static final ImmutableList<Double> Ten =
+      ImmutableList.of(
+          1.0,
+          10.0,
+          100.0,
+          1000.0,
+          10000.0,
+          100000.0,
+          1000000.0,
+          10000000.0,
+          100000000.0,
+          1000000000.0,
+          10000000000.0,
+          100000000000.0,
+          1000000000000.0,
+          10000000000000.0,
+          100000000000000.0,
+          1000000000000000.0,
+          10000000000000000.0,
+          100000000000000000.0,
+          1000000000000000000.0);
 
   /**
    * This defines inverse powers of ten. e.g., InverseTen[0]=1, InverseTen[1]=.01,
    * InverseTen[2]=.001... InverseTen[18]
    */
-  public static final double[] InverseTen = {
-    1.0,
-    0.1,
-    0.01,
-    0.001,
-    .0001,
-    .00001,
-    .000001,
-    .0000001,
-    .00000001,
-    .000000001,
-    .0000000001,
-    .00000000001,
-    .000000000001,
-    .0000000000001,
-    .00000000000001,
-    .000000000000001,
-    .0000000000000001,
-    .00000000000000001,
-    .000000000000000001
-  };
+  public static final ImmutableList<Double> InverseTen =
+      ImmutableList.of(
+          1.0,
+          0.1,
+          0.01,
+          0.001,
+          .0001,
+          .00001,
+          .000001,
+          .0000001,
+          .00000001,
+          .000000001,
+          .0000000001,
+          .00000000001,
+          .000000000001,
+          .0000000000001,
+          .00000000000001,
+          .000000000000001,
+          .0000000000000001,
+          .00000000000000001,
+          .000000000000000001);
 
-  private static final int[] niceNumbers = {
-    -110, -100, -90, -80, -70, -60, -50, -45, -40, -35, -30, -25, -22, -20, -18, -16, -14, -12, -11,
-    -10, -9, 9, 10, 11, 12, 14, 16, 18, 20, 22, 25, 30, 35, 40, 45, 50, 60, 70, 80, 90, 100, 110
-  };
+  private static final ImmutableList<Integer> niceNumbers =
+      ImmutableList.of(
+          -110, -100, -90, -80, -70, -60, -50, -45, -40, -35, -30, -25, -22, -20, -18, -16, -14,
+          -12, -11, -10, -9, 9, 10, 11, 12, 14, 16, 18, 20, 22, 25, 30, 35, 40, 45, 50, 60, 70, 80,
+          90, 100, 110);
 
-  public static final double[] COMMON_MV9 = {
-    -99, -99.9, -99.99, -999, -999.9, -9999, -99999, -999999, -9999999, 99, 99.9, 99.99, 999, 999.9,
-    9999, 99999, 999999, 9999999
-  };
+  public static final ImmutableList<Double> COMMON_MV9 =
+      ImmutableList.of(
+          -99.0,
+          -99.9,
+          -99.99,
+          -999.0,
+          -999.9,
+          -9999.0,
+          -99999.0,
+          -999999.0,
+          -9999999.0,
+          99.0,
+          99.9,
+          99.99,
+          999.0,
+          999.9,
+          9999.0,
+          99999.0,
+          999999.0,
+          9999999.0);
 
   /**
    * This returns the truncated part of a double.
@@ -497,6 +519,59 @@ public class Math2 {
   }
 
   /**
+   * This throws an exception if the requested nBytes leads to out of disk space. This isn't
+   * perfect, but is better than nothing. Future: locks? synchronization? ...?
+   *
+   * @param nBytes size of data structure that caller plans to create
+   * @param path file path where files will be stored
+   * @param attributeTo for a WARNING or ERROR message, this is the string to which this
+   *     not-enough-memory issue should be attributed.
+   * @throws RuntimeException if the requested nBytes are unlikely to be available.
+   */
+  public static void ensureDiskAvailable(
+      final long nBytes, final String path, final String attributeTo) {
+    // Danger: this method can reject any request for lots of memory,
+    //  even if it was for ERDDAP management (i.e., shooting myself in the foot).
+
+    // this is a little risky, but avoids frequent calls to calculate memoryInUse
+    if (nBytes < alwaysOkayDiskRequest) return;
+
+    File file = new File(path);
+    long usableSpace = file.getUsableSpace();
+
+    // Check if the file will fit in 1/2 the remaining space to try to account for
+    // other possible file writing.
+    // request is fine
+    if (nBytes < usableSpace / 2) { // it'll work
+      return;
+    }
+
+    // Request a task thread to clear cache.
+    EDStatic.clearCache("DISK_CHECK_LOW", true);
+
+    file = new File(path);
+    usableSpace = file.getUsableSpace();
+
+    // request is fine
+    if (nBytes < usableSpace / 2) { // it'll work
+      return;
+    }
+
+    // not currently enough memory
+    String msg =
+        memoryTooMuchData
+            + "  "
+            + MessageFormat.format(
+                memoryThanCurrentlySafe,
+                "" + (nBytes / BytesPerMB),
+                "" + (usableSpace / BytesPerMB))
+            + (attributeTo == null || attributeTo.length() == 0 ? "" : " (" + attributeTo + ")");
+    String2.log("ERROR: " + msg + "\n" + MustBe.stackTrace());
+    String2.flushLog();
+    throw new RuntimeException(msg);
+  }
+
+  /**
    * This throws an exception if the requested nBytes leads to memoryInUse&gt;dangerousMemory. This
    * isn't perfect, but is better than nothing. Future: locks? synchronization? ...?
    *
@@ -593,7 +668,7 @@ public class Math2 {
    * @return 10^toThe
    */
   public static double ten(final int toThe) {
-    if ((toThe >= 0) && (toThe <= 18)) return Ten[toThe];
+    if ((toThe >= 0) && (toThe <= 18)) return Ten.get(toThe);
 
     return Math.pow(10.0, toThe);
   }
@@ -683,13 +758,12 @@ public class Math2 {
     final double eps = nSignificantDigits >= 6 ? dEps : fEps;
     if (Math.abs(d2) < eps) {
       // This won't overflow, since d1 can't be <eps.
-      return (Math.abs(d1) < eps)
-          ? true
-          : Math.rint(d2 / d1 * Ten[nSignificantDigits]) == Ten[nSignificantDigits];
+      return Math.abs(d1) < eps
+          || Math.rint(d2 / d1 * Ten.get(nSignificantDigits)) == Ten.get(nSignificantDigits);
     }
 
     // This won't overflow, since d2 can't be <eps.
-    return Math.rint(d1 / d2 * Ten[nSignificantDigits]) == Ten[nSignificantDigits];
+    return Math.rint(d1 / d2 * Ten.get(nSignificantDigits)) == Ten.get(nSignificantDigits);
   }
 
   /**
@@ -706,13 +780,12 @@ public class Math2 {
     // Ten[nSignificantDigits]);
     if (Math.abs(f2) < fEps) {
       // This won't overflow, since f1 can't be <eps.
-      return (Math.abs(f1) < fEps)
-          ? true
-          : Math.rint(f2 / f1 * Ten[nSignificantDigits]) == Ten[nSignificantDigits];
+      return Math.abs(f1) < fEps
+          || Math.rint(f2 / f1 * Ten.get(nSignificantDigits)) == Ten.get(nSignificantDigits);
     }
 
     // This won't overflow, since f2 can't be <eps.
-    return Math.rint(f1 / f2 * Ten[nSignificantDigits]) == Ten[nSignificantDigits];
+    return Math.rint(f1 / f2 * Ten.get(nSignificantDigits)) == Ten.get(nSignificantDigits);
   }
 
   /**
@@ -787,7 +860,7 @@ public class Math2 {
    *     the current value.
    */
   public static final int minMax(final int min, final int max, final int current) {
-    return (current < min) ? min : ((current > max) ? max : current);
+    return (current < min) ? min : Math.min(current, max);
   }
 
   /**
@@ -800,7 +873,7 @@ public class Math2 {
    *     the current value.
    */
   public static final double minMax(final double min, final double max, final double current) {
-    return (current < min) ? min : ((current > max) ? max : current);
+    return (current < min) ? min : Math.min(current, max);
   }
 
   /**
@@ -905,6 +978,33 @@ public class Math2 {
     return d > Integer.MAX_VALUE || d <= Integer.MIN_VALUE - 0.5 || !Double.isFinite(d)
         ? Integer.MAX_VALUE
         : (int) Math.round(d); // safe since checked for larger values above
+  }
+
+  /**
+   * Safely rounds a double to an int. (Math.round but rounds to a long and not safely.)
+   *
+   * @param d any double
+   * @return Integer.MAX_VALUE if d is too small, too big, or NaN; otherwise d, rounded to the
+   *     nearest int. Undesirable: d.5 rounds up for positive numbers, down for negative.
+   */
+  public static final int longToInt(final long l) {
+    return l > Integer.MAX_VALUE || l <= Integer.MIN_VALUE - 0.5
+        ? Integer.MAX_VALUE
+        : (int) l; // safe since checked for larger values above
+  }
+
+  /**
+   * Divides a long. This is used to tell the compiler we are intentionally loosing the remainder.
+   */
+  public static final long divideNoRemainder(final long l, final long divisor) {
+    return l / divisor;
+  }
+
+  /**
+   * Divides an int. This is used to tell the compiler we are intentionally loosing the remainder.
+   */
+  public static final int divideNoRemainder(final int l, final int divisor) {
+    return l / divisor;
   }
 
   /**
@@ -1231,7 +1331,7 @@ public class Math2 {
             || i.compareTo(new BigInteger("" + UINT_MAX_VALUE)) > 0
             || i.compareTo(new BigInteger("" + UINT_MIN_VALUE)) < 0
         ? UINT_MAX_VALUE
-        : (long) i.longValue();
+        : i.longValue();
   }
 
   /**
@@ -1522,7 +1622,7 @@ public class Math2 {
     //  9,223,372,036,854,775,808
     // +9,223,372,036,854,775,808
     // =18 446 744 073 709 551 616
-    return tl < 0 ? tl + 18446744073709551616.0 : tl; // 2^64
+    return tl < 0 ? tl + ULONG_MAX_VALUE_AS_DOUBLE : tl; // 2^64
   }
 
   /**
@@ -1546,7 +1646,7 @@ public class Math2 {
   public static final double floatToDoubleNaN(final double f) {
     if (Double.isNaN(f) || Double.isInfinite(f)) return Double.NaN;
 
-    return (double) f;
+    return f;
   }
 
   /**
@@ -1646,9 +1746,9 @@ public class Math2 {
     final int m = roundToInt(mantissa(d) * 10); // -100..-10, 10..100
     int i = 0;
 
-    while (niceNumbers[i] <= m) i++;
+    while (niceNumbers.get(i) <= m) i++;
 
-    return (niceNumbers[i] * exponent(d)) / 10;
+    return (niceNumbers.get(i) * exponent(d)) / 10;
   }
 
   /**
@@ -1664,11 +1764,11 @@ public class Math2 {
     if (almost0(d)) return -0.01;
 
     int m = roundToInt(mantissa(d) * 10); // -100..-10, 10..100
-    int i = niceNumbers.length - 1;
+    int i = niceNumbers.size() - 1;
 
-    while (niceNumbers[i] >= m) i--;
+    while (niceNumbers.get(i) >= m) i--;
 
-    return (niceNumbers[i] * exponent(d)) / 10;
+    return (niceNumbers.get(i) * exponent(d)) / 10;
   }
 
   /**

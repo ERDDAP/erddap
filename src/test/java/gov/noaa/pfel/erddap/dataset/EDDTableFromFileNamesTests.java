@@ -8,6 +8,7 @@ import com.cohort.util.Test;
 import gov.noaa.pfel.coastwatch.pointdata.Table;
 import gov.noaa.pfel.coastwatch.util.SSR;
 import gov.noaa.pfel.erddap.GenerateDatasetsXml;
+import gov.noaa.pfel.erddap.util.EDMessages;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.EDV;
 import java.nio.file.Path;
@@ -30,6 +31,7 @@ class EDDTableFromFileNamesTests {
   /** testGenerateDatasetsXml */
   @org.junit.jupiter.api.Test
   void testGenerateDatasetsXml() throws Throwable {
+    int language = EDMessages.DEFAULT_LANGUAGE;
     // String2.log("\n*** EDDTableFromFileNames.testGenerateDatasetsXml()");
     // testVerboseOn();
 
@@ -200,7 +202,7 @@ class EDDTableFromFileNamesTests {
     EDD.deleteCachedDatasetInfo(tDatasetID);
     EDD edd = EDDTableFromFileNames.oneFromXmlFragment(null, results);
     Test.ensureEqual(edd.datasetID(), tDatasetID, "");
-    Test.ensureEqual(edd.title(), tTitle, "");
+    Test.ensureEqual(edd.title(language), tTitle, "");
     Test.ensureEqual(
         String2.toCSSVString(edd.dataVariableDestinationNames()),
         "url, name, lastModified, size, fileType",
@@ -219,6 +221,7 @@ class EDDTableFromFileNamesTests {
   void testGenerateDatasetsXmlAwsS3() throws Throwable {
     // String2.log("\n*** EDDTableFromFileNames.testGenerateDatasetsXmlAwsS3()");
     // testVerboseOn();
+    int language = EDMessages.DEFAULT_LANGUAGE;
 
     String tDir =
         "https://nasanex.s3.us-west-2.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS";
@@ -386,7 +389,7 @@ class EDDTableFromFileNamesTests {
     EDD.deleteCachedDatasetInfo(tDatasetID);
     EDD edd = EDDTableFromFileNames.oneFromXmlFragment(null, results);
     Test.ensureEqual(edd.datasetID(), tDatasetID, "");
-    Test.ensureEqual(edd.title(), tTitle, "");
+    Test.ensureEqual(edd.title(language), tTitle, "");
     Test.ensureEqual(
         String2.toCSSVString(edd.dataVariableDestinationNames()),
         "url, name, lastModified, size, fileType",
@@ -400,6 +403,7 @@ class EDDTableFromFileNamesTests {
   @org.junit.jupiter.api.Test
   @TagSlowTests
   void testGenerateDatasetsXmlFromFiles() throws Throwable {
+    int language = EDMessages.DEFAULT_LANGUAGE;
     // String2.log("\n***
     // EDDTableFromFileNames.testGenerateDatasetsXmlFromFiles()");
     // testVerboseOn();
@@ -577,7 +581,7 @@ class EDDTableFromFileNamesTests {
     EDD.deleteCachedDatasetInfo(tDatasetID);
     EDD edd = EDDTableFromFileNames.oneFromXmlFragment(null, results);
     Test.ensureEqual(edd.datasetID(), tDatasetID, "");
-    Test.ensureEqual(edd.title(), tTitle, "");
+    Test.ensureEqual(edd.title(language), tTitle, "");
     Test.ensureEqual(
         String2.toCSSVString(edd.dataVariableDestinationNames()),
         "url, name, lastModified, size, fileType",
@@ -595,7 +599,7 @@ class EDDTableFromFileNamesTests {
     // debugMode = true;
     // testVerboseOn();
     int language = 0;
-    String dir = EDStatic.fullTestCacheDirectory;
+    String dir = EDStatic.config.fullTestCacheDirectory;
     String results, expected, query, tName;
 
     EDDTable tedd = (EDDTable) EDDTestDataset.gettestFileNames();
@@ -853,7 +857,7 @@ class EDDTableFromFileNamesTests {
   void testAwsS3() throws Throwable {
     // String2.log("\n*** EDDTableFromFileNames.testAwsS3\n");
     // testVerboseOn();
-    String dir = EDStatic.fullTestCacheDirectory;
+    String dir = EDStatic.config.fullTestCacheDirectory;
     String results, expected, query, tName;
     int language = 0;
 
@@ -1134,6 +1138,7 @@ class EDDTableFromFileNamesTests {
     // String2.log("\n***
     // EDDTableFromFileNames.testGenerateDatasetsXmlFromOnTheFly()");
     // testVerboseOn();
+    int language = EDMessages.DEFAULT_LANGUAGE;
     String tDir = // ***fromOnTheFly,urlDir
         "***fromOnTheFly, https://noaa-goes17.s3.us-east-1.amazonaws.com/";
     String tRegex = ".*\\.nc"; // for testing. would be .*
@@ -1299,7 +1304,7 @@ class EDDTableFromFileNamesTests {
     EDD.deleteCachedDatasetInfo(tDatasetID);
     EDD edd = EDDTableFromFileNames.oneFromXmlFragment(null, results);
     Test.ensureEqual(edd.datasetID(), tDatasetID, "");
-    Test.ensureEqual(edd.title(), "File Names from the AWS S3 noaa-goes17 Bucket", "");
+    Test.ensureEqual(edd.title(language), "File Names from the AWS S3 noaa-goes17 Bucket", "");
     Test.ensureEqual(
         String2.toCSSVString(edd.dataVariableDestinationNames()),
         "url, name, lastModified, size, fileType",
@@ -1372,7 +1377,6 @@ class EDDTableFromFileNamesTests {
   void testOnTheFly() throws Throwable {
     // String2.log("\n*** EDDTableFromFileNames.testAccessibleViaFilesFileTable");
     int language = 0;
-    String id = "awsS3NoaaGoes17";
     long time = System.currentTimeMillis();
     EDDTableFromFileNames edd = (EDDTableFromFileNames) EDDTestDataset.getawsS3NoaaGoes17();
     time = System.currentTimeMillis() - time;
@@ -1381,7 +1385,7 @@ class EDDTableFromFileNamesTests {
     String2.log(msg);
     Test.ensureTrue(time < expTime * 2, "Too slow: " + msg);
     Object o2[];
-    String dir = EDStatic.fullTestCacheDirectory;
+    String dir = EDStatic.config.fullTestCacheDirectory;
     Table fileTable;
     StringArray subDirs;
     int fileTableNRows;

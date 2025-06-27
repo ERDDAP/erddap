@@ -11,7 +11,7 @@ import com.cohort.util.Math2;
 import com.cohort.util.String2;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -24,7 +24,8 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class Tally {
   // thread-safe; use default nConcurrent
-  protected ConcurrentHashMap mainHashMap = new ConcurrentHashMap();
+  protected final ConcurrentHashMap<String, ConcurrentHashMap<String, IntObject>> mainHashMap =
+      new ConcurrentHashMap<>();
 
   /** This adds 1 tally mark. */
   public void add(String categoryName, String attributeName) {
@@ -48,14 +49,12 @@ public class Tally {
     if (attributeName == null) attributeName = "(null)";
 
     // get the category's hashMap
-    ConcurrentHashMap hashMap = (ConcurrentHashMap) mainHashMap.get(categoryName);
-    if (hashMap == null) {
-      hashMap = new ConcurrentHashMap(); // use default nConcurrent
-      mainHashMap.put(categoryName, hashMap);
-    }
+    ConcurrentHashMap<String, IntObject> hashMap =
+        mainHashMap.computeIfAbsent(categoryName, k -> new ConcurrentHashMap<>());
+    // use default nConcurrent
 
     // get the attribute's intObject
-    IntObject intObject = (IntObject) hashMap.get(attributeName);
+    IntObject intObject = hashMap.get(attributeName);
     if (intObject == null) hashMap.put(attributeName, new IntObject(nTimes));
     else intObject.i += nTimes;
   }
@@ -95,7 +94,7 @@ public class Tally {
    */
   public String toString(int maxAttributeNames) {
     // get the categoryNames
-    Set categorySet = mainHashMap.keySet();
+    Set<String> categorySet = mainHashMap.keySet();
     if (categorySet == null || categorySet.size() == 0) return "Tally system has no entries.\n\n";
     Object categoryArray[] = categorySet.toArray();
 
@@ -104,8 +103,7 @@ public class Tally {
 
     // for each category
     StringBuilder results = new StringBuilder();
-    for (int cat = 0; cat < categoryArray.length; cat++)
-      results.append(toString((String) categoryArray[cat], maxAttributeNames));
+    for (Object o : categoryArray) results.append(toString((String) o, maxAttributeNames));
 
     return results.toString();
   }
@@ -116,23 +114,21 @@ public class Tally {
    *
    * @return null if no items for categoryName
    */
-  public ArrayList getSortedNamesAndCounts(String categoryName) {
+  public List<PrimitiveArray> getSortedNamesAndCounts(String categoryName) {
 
-    ConcurrentHashMap hashMap = (ConcurrentHashMap) mainHashMap.get(categoryName);
+    ConcurrentHashMap<String, IntObject> hashMap = mainHashMap.get(categoryName);
     if (hashMap == null) return null;
 
     // make a StringArray of attributeNames and IntArray of counts
     StringArray attributeNames = new StringArray();
     IntArray counts = new IntArray();
-    Iterator it = hashMap.entrySet().iterator();
-    while (it.hasNext()) {
-      Map.Entry me = (Map.Entry) it.next();
-      attributeNames.add((String) me.getKey());
-      counts.add(((IntObject) me.getValue()).i);
+    for (Map.Entry<String, IntObject> me : hashMap.entrySet()) {
+      attributeNames.add(me.getKey());
+      counts.add(me.getValue().i);
     }
 
     // sort by counts
-    ArrayList arrayList = new ArrayList();
+    ArrayList<PrimitiveArray> arrayList = new ArrayList<>();
     arrayList.add(attributeNames);
     arrayList.add(counts);
     PrimitiveArray.sortIgnoreCase(arrayList, new int[] {1, 0}, new boolean[] {false, true});
@@ -147,7 +143,7 @@ public class Tally {
    * @param maxAttributeNames the maximum number of attribute names printed per category
    */
   public String toString(String categoryName, int maxAttributeNames) {
-    ArrayList arrayList = getSortedNamesAndCounts(categoryName);
+    List<PrimitiveArray> arrayList = getSortedNamesAndCounts(categoryName);
     if (arrayList == null) return "";
     StringArray attributeNames = (StringArray) arrayList.get(0);
     IntArray counts = (IntArray) arrayList.get(1);

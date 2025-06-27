@@ -10,16 +10,14 @@ import com.cohort.util.Test;
 import gov.noaa.pfel.coastwatch.pointdata.Table;
 import gov.noaa.pfel.coastwatch.util.SSR;
 import gov.noaa.pfel.erddap.GenerateDatasetsXml;
+import gov.noaa.pfel.erddap.util.EDMessages;
 import gov.noaa.pfel.erddap.util.EDStatic;
-import gov.noaa.pfel.erddap.variable.EDV;
 import java.nio.file.Path;
-import java.time.ZoneId;
 import java.util.TimeZone;
 import org.junit.jupiter.api.BeforeAll;
 import tags.TagAWS;
 import tags.TagExternalERDDAP;
 import tags.TagImageComparison;
-import tags.TagLocalERDDAP;
 import tags.TagSlowTests;
 import testDataset.EDDTestDataset;
 import testDataset.Initialization;
@@ -44,9 +42,7 @@ class EDDTableFromAsciiFilesTests {
     // *****************\n");
     // testVerboseOn();
     int language = 0;
-    String name, tName, results, tResults, expected, userDapQuery, tQuery;
-    String error = "";
-    EDV edv;
+    String tName, results, tResults, expected, userDapQuery;
     String today =
         Calendar2.getCurrentISODateTimeStringZulu().substring(0, 14); // 14 is enough to check
     // hour. Hard
@@ -65,10 +61,10 @@ class EDDTableFromAsciiFilesTests {
             null,
             null,
             "",
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             eddTable.className() + "_Entire",
             ".das");
-    results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+    results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
     // String2.log(results);
     expected =
         "Attributes {\n"
@@ -107,7 +103,10 @@ class EDDTableFromAsciiFilesTests {
             + "    String _CoordinateAxisType \"Time\";\n"
             + "    Float64 actual_range 1.1045376e+9, 1.167606e+9;\n"
             + "    String axis \"T\";\n"
-            + "    String ioos_category \"Time\";\n"
+            // Sometimes uppercase, sometimes lowercase
+            + (results.indexOf("String ioos_category \"time\";") > -1
+                ? "    String ioos_category \"time\";\n"
+                : "    String ioos_category \"Time\";\n")
             + "    String long_name \"Time\";\n"
             + "    String standard_name \"time\";\n"
             + "    String time_origin \"01-JAN-1970 00:00:00\";\n"
@@ -115,7 +114,7 @@ class EDDTableFromAsciiFilesTests {
             + "  }\n"
             + "  station {\n"
             + "    String cf_role \"timeseries_id\";\n"
-            + "    String ioos_category \"Identifier\";\n"
+            + "    String ioos_category \"identifier\";\n" // Make sure lowercase categories pass
             + "    String long_name \"Station\";\n"
             + "  }\n"
             + "  wd {\n"
@@ -220,10 +219,10 @@ class EDDTableFromAsciiFilesTests {
             null,
             null,
             "",
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             eddTable.className() + "_Entire",
             ".dds");
-    results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+    results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
     // String2.log(results);
     expected =
         "Dataset {\n"
@@ -253,10 +252,10 @@ class EDDTableFromAsciiFilesTests {
             null,
             null,
             userDapQuery,
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             eddTable.className() + "_1",
             ".csv");
-    results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+    results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
     // String2.log(results);
     expected =
         "longitude,latitude,altitude,time,station,wd,wspd,atmp,wtmp\n"
@@ -281,10 +280,10 @@ class EDDTableFromAsciiFilesTests {
             null,
             null,
             userDapQuery,
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             eddTable.className() + "_2",
             ".csv");
-    results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+    results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
     // String2.log(results);
     // same expected
     Test.ensureEqual(results, expected, "\nresults=\n" + results);
@@ -297,10 +296,10 @@ class EDDTableFromAsciiFilesTests {
             null,
             null,
             userDapQuery,
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             eddTable.className() + "_3",
             ".csv");
-    results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+    results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
     // String2.log(results);
     expected =
         "longitude,latitude,altitude,time,station,wd,wspd,atmp,wtmp\n"
@@ -319,10 +318,10 @@ class EDDTableFromAsciiFilesTests {
             null,
             null,
             userDapQuery,
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             eddTable.className() + "_4",
             ".csv");
-    results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+    results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
     // String2.log(results);
     expected =
         "longitude,latitude,altitude,time,station,wd,wspd,atmp,wtmp\n"
@@ -340,10 +339,10 @@ class EDDTableFromAsciiFilesTests {
             null,
             null,
             userDapQuery,
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             eddTable.className() + "_5",
             ".csv");
-    results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+    results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
     // String2.log(results);
     expected =
         "longitude,latitude,altitude,time,station,atmp,wtmp\n"
@@ -365,10 +364,7 @@ class EDDTableFromAsciiFilesTests {
     // EDDTableFromAsciiFiles.testFixedValueAndScripts() *****************\n");
     // testVerboseOn();
     int language = 0;
-    String name, tName, results, tResults, expected, dapQuery, tQuery;
-    String dir = EDStatic.fullTestCacheDirectory;
-    String error = "";
-    EDV edv;
+    String tName, results, expected, dapQuery;
     String today =
         Calendar2.getCurrentISODateTimeStringZulu().substring(0, 14); // 14 is enough to check
     // hour. Hard
@@ -391,10 +387,10 @@ class EDDTableFromAsciiFilesTests {
               null,
               null,
               "",
-              EDStatic.fullTestCacheDirectory,
+              EDStatic.config.fullTestCacheDirectory,
               eddTable.className() + "_fv" + test,
               ".das");
-      results = File2.readFromFile88591(EDStatic.fullTestCacheDirectory + tName)[1];
+      results = File2.readFromFile88591(EDStatic.config.fullTestCacheDirectory + tName)[1];
       expected =
           "Attributes {\n"
               + " s {\n"
@@ -516,10 +512,10 @@ class EDDTableFromAsciiFilesTests {
               null,
               null,
               "&time<2013-04-05T17",
-              EDStatic.fullTestCacheDirectory,
+              EDStatic.config.fullTestCacheDirectory,
               eddTable.className() + "_fva" + test,
               ".csv");
-      results = File2.readFromFile88591(EDStatic.fullTestCacheDirectory + tName)[1];
+      results = File2.readFromFile88591(EDStatic.config.fullTestCacheDirectory + tName)[1];
       expected =
           "ship_call_sign,time,latitude,longitude0360,longitude,seaTemperature,seaTemperatureF\n"
               + ",UTC,degrees_north,degrees_east,degrees_east,degree_C,degree_F\n"
@@ -536,10 +532,10 @@ class EDDTableFromAsciiFilesTests {
               null,
               null,
               "ship_call_sign&ship_call_sign!=\"zztop\"",
-              EDStatic.fullTestCacheDirectory,
+              EDStatic.config.fullTestCacheDirectory,
               eddTable.className() + "_fvb" + test,
               ".csv");
-      results = File2.readFromFile88591(EDStatic.fullTestCacheDirectory + tName)[1];
+      results = File2.readFromFile88591(EDStatic.config.fullTestCacheDirectory + tName)[1];
       expected = "ship_call_sign\n" + "\n" + "WTDL\n";
       Test.ensureEqual(results, expected, "test=" + test + " results=\n" + results);
 
@@ -550,10 +546,10 @@ class EDDTableFromAsciiFilesTests {
               null,
               null,
               "longitude0360,longitude&time<2013-04-05T17",
-              EDStatic.fullTestCacheDirectory,
+              EDStatic.config.fullTestCacheDirectory,
               eddTable.className() + "_fva" + test,
               ".csv");
-      results = File2.readFromFile88591(EDStatic.fullTestCacheDirectory + tName)[1];
+      results = File2.readFromFile88591(EDStatic.config.fullTestCacheDirectory + tName)[1];
       expected =
           "longitude0360,longitude\n"
               + "degrees_east,degrees_east\n"
@@ -570,10 +566,10 @@ class EDDTableFromAsciiFilesTests {
               null,
               null,
               "time,longitude&time<2013-04-05T17",
-              EDStatic.fullTestCacheDirectory,
+              EDStatic.config.fullTestCacheDirectory,
               eddTable.className() + "_fva" + test,
               ".csv");
-      results = File2.readFromFile88591(EDStatic.fullTestCacheDirectory + tName)[1];
+      results = File2.readFromFile88591(EDStatic.config.fullTestCacheDirectory + tName)[1];
       expected =
           "time,longitude\n"
               + "UTC,degrees_east\n"
@@ -590,10 +586,10 @@ class EDDTableFromAsciiFilesTests {
               null,
               null,
               "longitude&time<2013-04-05T17",
-              EDStatic.fullTestCacheDirectory,
+              EDStatic.config.fullTestCacheDirectory,
               eddTable.className() + "_fva" + test,
               ".csv");
-      results = File2.readFromFile88591(EDStatic.fullTestCacheDirectory + tName)[1];
+      results = File2.readFromFile88591(EDStatic.config.fullTestCacheDirectory + tName)[1];
       expected =
           "longitude\n"
               + "degrees_east\n"
@@ -610,10 +606,10 @@ class EDDTableFromAsciiFilesTests {
               null,
               null,
               "seaTemperatureF&time<2013-04-05T17",
-              EDStatic.fullTestCacheDirectory,
+              EDStatic.config.fullTestCacheDirectory,
               eddTable.className() + "_fva" + test,
               ".csv");
-      results = File2.readFromFile88591(EDStatic.fullTestCacheDirectory + tName)[1];
+      results = File2.readFromFile88591(EDStatic.config.fullTestCacheDirectory + tName)[1];
       expected = "seaTemperatureF\n" + "degree_F\n" + "62.78\n" + "62.6\n" + "62.42\n" + "64.22\n";
       Test.ensureEqual(results, expected, "test=" + test + " results=\n" + results);
 
@@ -630,7 +626,7 @@ class EDDTableFromAsciiFilesTests {
               Image2Tests.urlToAbsolutePath(Image2Tests.OBS_DIR),
               baseName,
               ".png");
-      // Test.displayInBrowser("file://" + dir + tName);
+      // TestUtil.displayInBrowser("file://" + dir + tName);
       Image2Tests.testImagesIdentical(tName, baseName + ".png", baseName + "_diff.png");
     }
 
@@ -647,14 +643,12 @@ class EDDTableFromAsciiFilesTests {
     // String2.log("\n*** EDDTableFromAsciiFiles.testBasic2() \n");
     // testVerboseOn();
     int language = 0;
-    String name, tName, results, tResults, expected, userDapQuery, tQuery;
-    String error = "";
-    EDV edv;
+    String tName, results, tResults, expected, userDapQuery;
     String today =
         Calendar2.getCurrentISODateTimeStringZulu().substring(0, 14); // 14 is enough to check
     // hour. Hard
     // to check min:sec.
-    String testDir = EDStatic.fullTestCacheDirectory;
+    String testDir = EDStatic.config.fullTestCacheDirectory;
 
     String id = "testTableAscii2";
     EDDTableFromAsciiFiles.deleteCachedDatasetInfo(id);
@@ -1000,10 +994,10 @@ class EDDTableFromAsciiFilesTests {
             null,
             null,
             "",
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             eddTable.className() + "_TestAwsS3StandadizeWhat",
             ".das");
-    results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+    results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
     expected =
         "Attributes {\n"
             + " s {\n"
@@ -1035,10 +1029,10 @@ class EDDTableFromAsciiFilesTests {
             null,
             null,
             "&time=2010-01-01",
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             eddTable.className() + "_TestAwsS3StandadizeWhat",
             ".csv");
-    results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+    results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
     expected = "time,data\n" + "UTC,\n" + "2010-01-01T00:00:00Z,1\n";
     Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
@@ -1049,162 +1043,12 @@ class EDDTableFromAsciiFilesTests {
             null,
             null,
             "&time=2010-01-03",
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             eddTable.className() + "_TestAwsS3StandadizeWhat2",
             ".csv");
-    results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+    results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
     expected = "time,data\n" + "UTC,\n" + "2010-01-03T00:00:00Z,3\n";
     Test.ensureEqual(results, expected, "\nresults=\n" + results);
-  }
-
-  /**
-   * This tests the /files/ "files" system. This requires testTableAscii in the localhost ERDDAP.
-   */
-  @org.junit.jupiter.api.Test
-  @TagLocalERDDAP
-  void testFiles() throws Throwable {
-
-    String2.log("\n*** EDDTableFromAsciiFiles.testFiles()\n");
-    String tDir = EDStatic.fullTestCacheDirectory;
-    String dapQuery, tName, start, query, results, expected;
-    int po;
-
-    try {
-      // get /files/datasetID/.csv
-      results =
-          SSR.getUrlResponseStringNewline(
-              "http://localhost:8080/cwexperimental/files/testTableAscii/.csv");
-      expected =
-          "Name,Last modified,Size,Description\n"
-              + "subdir/,NaN,NaN,\n"
-              + "31201_2009.csv,1576697736354,201320,\n"
-              + "46026_2005.csv,1576697015884,621644,\n"
-              + "46028_2005.csv,1576697015900,623250,\n";
-      Test.ensureEqual(results, expected, "results=\n" + results);
-
-      // get /files/datasetID/
-      results =
-          SSR.getUrlResponseStringNewline(
-              "http://localhost:8080/cwexperimental/files/testTableAscii/");
-      Test.ensureTrue(results.indexOf("subdir&#x2f;") > 0, "results=\n" + results);
-      Test.ensureTrue(results.indexOf("subdir/") > 0, "results=\n" + results);
-      Test.ensureTrue(results.indexOf("31201&#x5f;2009&#x2e;csv") > 0, "results=\n" + results);
-      Test.ensureTrue(results.indexOf(">201320<") > 0, "results=\n" + results);
-
-      // get /files/datasetID/subdir/.csv
-      results =
-          SSR.getUrlResponseStringNewline(
-              "http://localhost:8080/cwexperimental/files/testTableAscii/subdir/.csv");
-      expected =
-          "Name,Last modified,Size,Description\n"
-              + "46012_2005.csv,1576697015869,622197,\n"
-              + "46012_2006.csv,1576697015884,621812,\n";
-      Test.ensureEqual(results, expected, "results=\n" + results);
-
-      // download a file in root
-      results =
-          SSR.getUrlResponseStringNewline(
-              "http://localhost:8080/cwexperimental/files/testTableAscii/31201_2009.csv");
-      expected =
-          "This is a header line.\n"
-              + "*** END OF HEADER\n"
-              + "# a comment line\n"
-              + "longitude, latitude, altitude, time, station, wd, wspd, atmp, wtmp\n"
-              + "# a comment line\n"
-              + "degrees_east, degrees_north, m, UTC, , degrees_true, m s-1, degree_C, degree_C\n"
-              + "# a comment line\n"
-              + "-48.13, -27.7, 0.0, 2005-04-19T00:00:00Z, 31201, NaN, NaN, NaN, 24.4\n"
-              + "# a comment line\n"
-              + "#-48.13, -27.7, 0.0, 2005-04-19T01:00:00Z, 31201, NaN, NaN, NaN, 24.4\n"
-              + "-48.13, -27.7, 0.0, 2005-04-19T01:00:00Z, 31201, NaN, NaN, NaN, 24.4\n";
-      Test.ensureEqual(results.substring(0, expected.length()), expected, "results=\n" + results);
-
-      // download a file in subdir
-      results =
-          SSR.getUrlResponseStringNewline(
-              "http://localhost:8080/cwexperimental/files/testTableAscii/subdir/46012_2005.csv");
-      expected =
-          "This is a header line.\n"
-              + "*** END OF HEADER\n"
-              + "# a comment line\n"
-              + "longitude, latitude, altitude, time, station, wd, wspd, atmp, wtmp\n"
-              + "# a comment line\n"
-              + "degrees_east, degrees_north, m, UTC, , degrees_true, m s-1, degree_C, degree_C\n"
-              + "# a comment line\n"
-              + "-122.88, 37.36, 0.0, 2005-01-01T00:00:00Z, 46012, 190, 8.2, 11.8, 12.5\n"
-              + "# a comment line\n"
-              + "# a comment line\n"
-              + "-122.88, 37.36, 0.0, 2005-01-01T01:00:00Z, 46012, 214, 8.4, 10.4, 12.5\n";
-      Test.ensureEqual(results.substring(0, expected.length()), expected, "results=\n" + results);
-
-      // try to download a non-existent dataset
-      try {
-        results =
-            SSR.getUrlResponseStringNewline(
-                "http://localhost:8080/cwexperimental/files/gibberish/");
-      } catch (Exception e) {
-        results = e.toString();
-      }
-      expected =
-          "java.io.IOException: HTTP status code=404 java.io.FileNotFoundException: http://localhost:8080/cwexperimental/files/gibberish/\n"
-              + "(Error {\n"
-              + "    code=404;\n"
-              + "    message=\"Not Found: Currently unknown datasetID=gibberish\";\n"
-              + "})";
-      Test.ensureEqual(results, expected, "results=\n" + results);
-
-      // try to download a non-existent directory
-      try {
-        results =
-            SSR.getUrlResponseStringNewline(
-                "http://localhost:8080/cwexperimental/files/testTableAscii/gibberish/");
-      } catch (Exception e) {
-        results = e.toString();
-      }
-      expected =
-          "java.io.IOException: HTTP status code=404 java.io.FileNotFoundException: http://localhost:8080/cwexperimental/files/testTableAscii/gibberish/\n"
-              + "(Error {\n"
-              + "    code=404;\n"
-              + "    message=\"Not Found: Resource not found: directory=gibberish/\";\n"
-              + "})";
-      Test.ensureEqual(results, expected, "results=\n" + results);
-
-      // try to download a non-existent file
-      try {
-        results =
-            SSR.getUrlResponseStringNewline(
-                "http://localhost:8080/cwexperimental/files/testTableAscii/gibberish.csv");
-      } catch (Exception e) {
-        results = e.toString();
-      }
-      expected =
-          "java.io.IOException: HTTP status code=404 java.io.FileNotFoundException: http://localhost:8080/cwexperimental/files/testTableAscii/gibberish.csv\n"
-              + "(Error {\n"
-              + "    code=404;\n"
-              + "    message=\"Not Found: File not found: gibberish.csv .\";\n"
-              + "})";
-      Test.ensureEqual(results, expected, "results=\n" + results);
-
-      // try to download a non-existent file in existant subdir
-      try {
-        results =
-            SSR.getUrlResponseStringNewline(
-                "http://localhost:8080/cwexperimental/files/testTableAscii/subdir/gibberish.csv");
-      } catch (Exception e) {
-        results = e.toString();
-      }
-      expected =
-          "java.io.IOException: HTTP status code=404 java.io.FileNotFoundException: http://localhost:8080/cwexperimental/files/testTableAscii/subdir/gibberish.csv\n"
-              + "(Error {\n"
-              + "    code=404;\n"
-              + "    message=\"Not Found: File not found: gibberish.csv .\";\n"
-              + "})";
-      Test.ensureEqual(results, expected, "results=\n" + results);
-
-    } catch (Throwable t) {
-      throw new RuntimeException(
-          "Unexpected error. This test requires testTableAscii in the localhost ERDDAP.", t);
-    }
   }
 
   /**
@@ -1224,10 +1068,8 @@ class EDDTableFromAsciiFilesTests {
     // EDD.reallyVerbose = false;
     // EDD.debugMode = false;
     // EDDTableFromFilesCallable.debugMode = true;
-    String name, tName, results, tResults, expected, userDapQuery, tQuery;
-    String dir = EDStatic.fullTestCacheDirectory;
-    String error = "";
-    int po;
+    String tName, results, expected, userDapQuery;
+    String dir = EDStatic.config.fullTestCacheDirectory;
 
     // one time: make csv version of ndbc2/nrt directory in ndbcMet2Csv
     /*
@@ -1245,7 +1087,6 @@ class EDDTableFromAsciiFilesTests {
 
     // this dataset and this request are a good test that the results are always in
     // the same order
-    String id = "ndbcMet2Csv";
     userDapQuery = "&time=2020-05-22T20:40:00Z";
 
     // warmup
@@ -1398,7 +1239,7 @@ class EDDTableFromAsciiFilesTests {
               + "WFPM4,2020-05-22T20:40:00Z,0.0,46.762,-84.966,0,4.6,6.7,NaN,NaN,NaN,,1015.9,18.7,NaN,NaN,NaN,NaN,NaN,0.0,-4.6\n";
       Test.ensureEqual(results, expected, "\nresults=\n" + results);
     }
-    String2.log(bigResults.toString());
+    // String2.log(bigResults.toString());
     /*
      * times truncted to seconds
      * 2022-04-27 with Bob's changes to String2 and Chris John's changes to
@@ -1428,11 +1269,6 @@ class EDDTableFromAsciiFilesTests {
   /** This tests GenerateDatasetsXml with EDDTableFromInPort when there are data variables. */
   @org.junit.jupiter.api.Test
   void testGenerateDatasetsXmlFromBCODMO() throws Throwable {
-    // String2.log("\n***
-    // EDDTableFromAsciiFiles.testGenerateDatasetsXmlFromBCODMO()\n");
-    // testVerboseOn();
-    String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 10);
-
     boolean useLocal = true;
     String catalogUrl = "https://www.bco-dmo.org/erddap/datasets";
     String dataDir =
@@ -2162,67 +1998,6 @@ class EDDTableFromAsciiFilesTests {
     Test.ensureEqual(tResults, expected, "tResults=\n" + tResults);
   }
 
-  /** This tests that a dataset can be quick restarted. */
-  @org.junit.jupiter.api.Test
-  @TagLocalERDDAP
-  void testQuickRestart() throws Throwable {
-    // String2.log("\n*** EDDTableFromAsciiFiles.testQuickRestart\n");
-    String datasetID = "testTableAscii";
-    String dataDir =
-        Path.of(EDDTestDataset.class.getResource("/data/asciiNdbc/").toURI()).toString();
-    String fullName = dataDir + "/46012_2005.csv";
-    long timestamp = File2.getLastModified(fullName); // orig 2009-08-05T08:49 local
-    try {
-      // restart local erddap
-      String2.pressEnterToContinue(
-          "Restart the local erddap with quickRestart=true and with datasetID="
-              + datasetID
-              + " .\n"
-              + "Wait until all datasets are loaded.");
-
-      // change the file's timestamp
-      File2.setLastModified(fullName, timestamp - 60000); // 1 minute earlier
-      Math2.sleep(1000);
-
-      // request info from that dataset
-      // .csv for one lat,lon,time
-      // 46012 -122.879997 37.360001
-      String userDapQuery =
-          "&longitude=-122.88&latitude=37.36&time%3E=2005-07-01&time%3C2005-07-01T10";
-      String results =
-          SSR.getUrlResponseStringUnchanged(
-              EDStatic.erddapUrl + "/tabledap/" + datasetID + ".csv?" + userDapQuery);
-      // String2.log(results);
-      String expected =
-          "longitude,latitude,altitude,time,station,wd,wspd,atmp,wtmp\n"
-              + "degrees_east,degrees_north,m,UTC,,m s-1,m s-1,degree_C,degree_C\n"
-              + "-122.88,37.36,0,2005-07-01T00:00:00Z,46012,294,2.6,12.7,13.4\n"
-              + "-122.88,37.36,0,2005-07-01T01:00:00Z,46012,297,3.5,12.6,13.0\n"
-              + "-122.88,37.36,0,2005-07-01T02:00:00Z,46012,315,4.0,12.2,12.9\n"
-              + "-122.88,37.36,0,2005-07-01T03:00:00Z,46012,325,4.2,11.9,12.8\n"
-              + "-122.88,37.36,0,2005-07-01T04:00:00Z,46012,330,4.1,11.8,12.8\n"
-              + "-122.88,37.36,0,2005-07-01T05:00:00Z,46012,321,4.9,11.8,12.8\n"
-              + "-122.88,37.36,0,2005-07-01T06:00:00Z,46012,320,4.4,12.1,12.8\n"
-              + "-122.88,37.36,0,2005-07-01T07:00:00Z,46012,325,3.8,12.4,12.8\n"
-              + "-122.88,37.36,0,2005-07-01T08:00:00Z,46012,298,4.0,12.5,12.8\n"
-              + "-122.88,37.36,0,2005-07-01T09:00:00Z,46012,325,4.0,12.5,12.8\n";
-      Test.ensureEqual(results, expected, "\nresults=\n" + results);
-
-      // request status.html
-      SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + "/status.html");
-      Math2.sleep(1000);
-      Test.displayInBrowser("file://" + EDStatic.bigParentDirectory + "logs/log.txt");
-
-      String2.pressEnterToContinue(
-          "Look at log.txt to see if update was run and successfully "
-              + "noticed the changed file.");
-
-    } finally {
-      // change timestamp back to original
-      File2.setLastModified(fullName, timestamp);
-    }
-  }
-
   /** This tests querying a dataset that is using standardizeWhat. */
   @org.junit.jupiter.api.Test
   void testStandardizeWhat() throws Throwable {
@@ -2361,10 +2136,10 @@ class EDDTableFromAsciiFilesTests {
             null,
             null,
             "",
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             eddTable.className() + "_TestStandadizeWhat",
             ".das");
-    results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+    results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
     expected =
         "Attributes {\n"
             + " s {\n"
@@ -2396,10 +2171,10 @@ class EDDTableFromAsciiFilesTests {
             null,
             null,
             "&time=2010-01-01",
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             eddTable.className() + "_TestStandadizeWhat",
             ".csv");
-    results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+    results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
     expected = "time,data\n" + "UTC,\n" + "2010-01-01T00:00:00Z,1\n";
     Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
@@ -2410,10 +2185,10 @@ class EDDTableFromAsciiFilesTests {
             null,
             null,
             "&time=2010-01-03",
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             eddTable.className() + "_TestStandadizeWhat2",
             ".csv");
-    results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+    results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
     expected = "time,data\n" + "UTC,\n" + "2010-01-03T00:00:00Z,3\n";
     Test.ensureEqual(results, expected, "\nresults=\n" + results);
   }
@@ -2476,7 +2251,7 @@ class EDDTableFromAsciiFilesTests {
             + "\" active=\"true\">\n"
             + "    <defaultGraphQuery>&amp;.marker=1|5</defaultGraphQuery>\n"
             + "    <fileDir>"
-            + File2.addSlash(dataDir)
+            + File2.addSlash(dataDir.replace(".", "\\."))
             + "26938/</fileDir>\n"
             + "    <fileNameRegex>???</fileNameRegex>\n"
             + "    <charset>ISO-8859-1</charset>\n"
@@ -2635,7 +2410,7 @@ class EDDTableFromAsciiFilesTests {
             + "\" active=\"true\">\n"
             + "    <defaultGraphQuery>&amp;.marker=1|5</defaultGraphQuery>\n"
             + "    <fileDir>"
-            + File2.addSlash(dataDir)
+            + File2.addSlash(dataDir.replace(".", "\\."))
             + "26938/</fileDir>\n"
             + "    <fileNameRegex>AFSC_RACE_FBEP_Hurst__Distributional_patterns_of_0-group_Pacific_cod__Gadus_macrocephalus__in_the_eastern_Bering_Sea_under_variable_recruitment_and_thermal_conditions\\.csv</fileNameRegex>\n"
             + "    <charset>ISO-8859-1</charset>\n"
@@ -3024,10 +2799,8 @@ class EDDTableFromAsciiFilesTests {
     // String2.log("\n*** EDDTableFromAsciiFiles.testTimeRange()\n");
     // testVerboseOn();
     int language = 0;
-    String name, tName, results, tResults, expected, userDapQuery, tQuery;
-    String error = "";
+    String tName, results, expected;
 
-    String id = "knb_lter_sbc_14_t1"; // has MM/dd/yyyy time strings
     EDDTable eddTable = (EDDTable) EDDTestDataset.getknb_lter_sbc_14_t1();
 
     // test getting das for entire dataset
@@ -3037,10 +2810,10 @@ class EDDTableFromAsciiFilesTests {
             null,
             null,
             "",
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             eddTable.className() + "_ttr",
             ".das");
-    results = File2.readFromFile88591(EDStatic.fullTestCacheDirectory + tName)[1];
+    results = File2.readFromFile88591(EDStatic.config.fullTestCacheDirectory + tName)[1];
     expected =
         "Attributes {\n"
             + " s {\n"
@@ -3068,10 +2841,10 @@ class EDDTableFromAsciiFilesTests {
             null,
             null,
             "time&orderByMinMax(\"time\")",
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             eddTable.className() + "_ttr",
             ".csv");
-    results = File2.readFromFile88591(EDStatic.fullTestCacheDirectory + tName)[1];
+    results = File2.readFromFile88591(EDStatic.config.fullTestCacheDirectory + tName)[1];
     expected = "time\n" + "UTC\n" + "1957-08-13T00:00:00Z\n" + "2007-04-28T00:00:00Z\n";
     Test.ensureEqual(results, expected, "results=\n" + results);
   }
@@ -3084,10 +2857,8 @@ class EDDTableFromAsciiFilesTests {
     // String2.log("\n*** EDDTableFromAsciiFiles.testTimeRange2()\n");
     // testVerboseOn();
     int language = 0;
-    String name, tName, results, tResults, expected, userDapQuery, tQuery;
-    String error = "";
+    String tName, results, expected;
 
-    String id = "knb_lter_sbc_15_t1"; // has yyyy-MM-dd time strings
     EDDTable eddTable = (EDDTable) EDDTestDataset.getknb_lter_sbc_15_t1();
 
     // test getting das for entire dataset
@@ -3097,10 +2868,10 @@ class EDDTableFromAsciiFilesTests {
             null,
             null,
             "",
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             eddTable.className() + "_ttr2",
             ".das");
-    results = File2.readFromFile88591(EDStatic.fullTestCacheDirectory + tName)[1];
+    results = File2.readFromFile88591(EDStatic.config.fullTestCacheDirectory + tName)[1];
     expected =
         "Attributes {\n"
             + " s {\n"
@@ -3128,10 +2899,10 @@ class EDDTableFromAsciiFilesTests {
             null,
             null,
             "time&orderByMinMax(\"time\")",
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             eddTable.className() + "_ttr",
             ".csv");
-    results = File2.readFromFile88591(EDStatic.fullTestCacheDirectory + tName)[1];
+    results = File2.readFromFile88591(EDStatic.config.fullTestCacheDirectory + tName)[1];
     expected = "time\n" + "UTC\n" + "2000-09-07T00:00:00Z\n" + "2016-07-26T00:00:00Z\n";
     Test.ensureEqual(results, expected, "results=\n" + results);
 
@@ -3154,12 +2925,11 @@ class EDDTableFromAsciiFilesTests {
     // testVerboseOn();
     int language = 0;
     int po;
-    String name, tName, results, tResults, expected, userDapQuery, tQuery;
-    String testDir = EDStatic.fullTestCacheDirectory;
+    String tName, results, expected, userDapQuery;
+    String testDir = EDStatic.config.fullTestCacheDirectory;
 
     // test Calendar2.unitsSinceToEpochSeconds() with timeZone
     TimeZone timeZone = TimeZone.getTimeZone("US/Pacific");
-    ZoneId zoneId = ZoneId.of("US/Pacific");
     double epSec;
 
     // test winter/standard time: 2005-04-03T00:00 Pacific
@@ -3212,7 +2982,7 @@ class EDDTableFromAsciiFilesTests {
     tName =
         eddTable.makeNewFileForDapQuery(
             language, null, null, userDapQuery, testDir, eddTable.className() + "_tz_all", ".das");
-    results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+    results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
     // String2.log(results);
     expected =
         "Attributes {\n"
@@ -3309,20 +3079,9 @@ class EDDTableFromAsciiFilesTests {
   /** This does more tests of string time. */
   @org.junit.jupiter.api.Test
   void testTimeZone2() throws Throwable {
-
-    // String2.log("\n****************** EDDTableFromAsciiFiles.testTimeZone2()
-    // *****************\n");
-    // testVerboseOn();
     int language = 0;
-    String name, tName, results, tResults, expected, userDapQuery, tQuery;
-    String error = "";
-    EDV edv;
-    String today =
-        Calendar2.getCurrentISODateTimeStringZulu().substring(0, 14); // 14 is enough to check
-    // hour. Hard to check
-    // min:sec.
+    String tName, results, expected, userDapQuery;
 
-    String id = "testTimeZone2";
     EDDTable eddTable = (EDDTable) EDDTestDataset.gettestTimeZone2();
 
     // .csv
@@ -3333,10 +3092,10 @@ class EDDTableFromAsciiFilesTests {
             null,
             null,
             userDapQuery,
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             eddTable.className() + "_1",
             ".csv");
-    results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+    results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
     // String2.log(results);
     expected =
         "time,a,b\n"
@@ -3357,13 +3116,7 @@ class EDDTableFromAsciiFilesTests {
     // *****************\n");
     // testVerboseOn();
     int language = 0;
-    String name, tName, results, tResults, expected, userDapQuery, tQuery;
-    String error = "";
-    EDV edv;
-    String today =
-        Calendar2.getCurrentISODateTimeStringZulu().substring(0, 14); // 14 is enough to check
-    // hour. Hard to check
-    // min:sec.
+    String tName, results, expected, userDapQuery;
 
     // the source file
     results =
@@ -3385,7 +3138,6 @@ class EDDTableFromAsciiFilesTests {
             + "k,2010-12-07T12:00:00,11\n";
     Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
-    String id = "testTimeMV";
     EDDTable eddTable = (EDDTable) EDDTestDataset.gettestTimeMV();
 
     // .das
@@ -3396,10 +3148,10 @@ class EDDTableFromAsciiFilesTests {
             null,
             null,
             userDapQuery,
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             eddTable.className() + "_3",
             ".das");
-    results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+    results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
     // String2.log(results);
     expected =
         "Attributes {\n"
@@ -3464,10 +3216,10 @@ class EDDTableFromAsciiFilesTests {
             null,
             null,
             userDapQuery,
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             eddTable.className() + "_mv1",
             ".csv");
-    results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+    results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
     // String2.log(results);
     expected =
         "a,time,m\n"
@@ -3490,10 +3242,10 @@ class EDDTableFromAsciiFilesTests {
             null,
             null,
             userDapQuery,
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             eddTable.className() + "_mv2",
             ".csv");
-    results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+    results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
     // String2.log(results);
     expected =
         "a,time,m\n"
@@ -3518,10 +3270,10 @@ class EDDTableFromAsciiFilesTests {
             null,
             null,
             userDapQuery,
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             eddTable.className() + "_mv2b",
             ".csv");
-    results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+    results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
     // String2.log(results);
     expected =
         "a,time,m\n"
@@ -3542,10 +3294,10 @@ class EDDTableFromAsciiFilesTests {
             null,
             null,
             userDapQuery,
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             eddTable.className() + "_mv3",
             ".csv");
-    results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+    results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
     // String2.log(results);
     expected = "a,time,m\n" + ",UTC,m\n" + ",,NaN\n" + ",2008-07-29T16:50:00Z,NaN\n" + ",,NaN\n";
     Test.ensureEqual(results, expected, "\nresults=\n" + results);
@@ -3558,10 +3310,10 @@ class EDDTableFromAsciiFilesTests {
             null,
             null,
             userDapQuery,
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             eddTable.className() + "_mv3b",
             ".csv");
-    results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+    results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
     // String2.log(results);
     expected =
         "a,time,m\n"
@@ -3584,10 +3336,10 @@ class EDDTableFromAsciiFilesTests {
             null,
             null,
             userDapQuery,
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             eddTable.className() + "_mv4",
             ".csv");
-    results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+    results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
     // String2.log(results);
     expected = "a,time,m\n" + ",UTC,m\n" + "k,2010-12-07T20:00:00Z,11\n"; // local +8 hrs
     Test.ensureEqual(results, expected, "\nresults=\n" + results);
@@ -3600,10 +3352,10 @@ class EDDTableFromAsciiFilesTests {
             null,
             null,
             userDapQuery,
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             eddTable.className() + "_mv4aa",
             ".csv");
-    results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+    results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
     // String2.log(results);
     expected =
         "a,time,m\n" + ",UTC,m\n" + ",,NaN\n" + "d,,4\n" + ",,NaN\n" + "i,,NaN\n" + "j,,NaN\n";
@@ -3617,10 +3369,10 @@ class EDDTableFromAsciiFilesTests {
             null,
             null,
             userDapQuery,
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             eddTable.className() + "_mv4b",
             ".csv");
-    results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+    results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
     // String2.log(results);
     expected = "a,time,m\n" + ",UTC,m\n" + "k,2010-12-07T20:00:00Z,11\n"; // local +8 hrs
     Test.ensureEqual(results, expected, "\nresults=\n" + results);
@@ -3633,10 +3385,10 @@ class EDDTableFromAsciiFilesTests {
             null,
             null,
             userDapQuery,
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             eddTable.className() + "_mv4c",
             ".csv");
-    results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+    results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
     // String2.log(results);
     expected = "a,time,m\n" + ",UTC,m\n" + "a,2004-09-13T14:15:00Z,1\n"; // local +8 hrs
     Test.ensureEqual(results, expected, "\nresults=\n" + results);
@@ -3649,10 +3401,10 @@ class EDDTableFromAsciiFilesTests {
             null,
             null,
             userDapQuery,
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             eddTable.className() + "_mv5",
             ".csv");
-    results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+    results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
     // String2.log(results);
     expected =
         "a,time,m\n"
@@ -3725,7 +3477,7 @@ class EDDTableFromAsciiFilesTests {
             + "\" active=\"true\">\n"
             + "    <defaultGraphQuery>&amp;.marker=1|5</defaultGraphQuery>\n"
             + "    <fileDir>"
-            + File2.addSlash(dataDir)
+            + File2.addSlash(dataDir.replace(".", "\\."))
             + "27377/</fileDir>\n"
             + "    <fileNameRegex>???</fileNameRegex>\n"
             + "    <charset>ISO-8859-1</charset>\n"
@@ -3928,7 +3680,7 @@ class EDDTableFromAsciiFilesTests {
             + "\" active=\"true\">\n"
             + "    <defaultGraphQuery>&amp;.marker=1|5</defaultGraphQuery>\n"
             + "    <fileDir>"
-            + File2.addSlash(dataDir)
+            + File2.addSlash(dataDir.replace(".", "\\."))
             + "27377/</fileDir>\n"
             + "    <fileNameRegex>dummy\\.csv</fileNameRegex>\n"
             + "    <charset>ISO-8859-1</charset>\n"
@@ -4324,6 +4076,7 @@ class EDDTableFromAsciiFilesTests {
   /** testGenerateDatasetsXml */
   @org.junit.jupiter.api.Test
   void testGenerateDatasetsXml() throws Throwable {
+    int language = EDMessages.DEFAULT_LANGUAGE;
     // testVerboseOn();
     // String2.log("\n*** EDDTableFromAsciiFiles.testGenerateDatasetsXml()");
     String dir = Path.of(EDDTestDataset.class.getResource("/data/ascii/").toURI()).toString() + "/";
@@ -4613,7 +4366,7 @@ class EDDTableFromAsciiFilesTests {
     EDD.deleteCachedDatasetInfo(tDatasetID);
     EDD edd = EDDTableFromAsciiFiles.oneFromXmlFragment(null, results);
     Test.ensureEqual(edd.datasetID(), tDatasetID, "");
-    Test.ensureEqual(edd.title(), "The Newer Title!", "");
+    Test.ensureEqual(edd.title(language), "The Newer Title!", "");
     Test.ensureEqual(
         String2.toCSSVString(edd.dataVariableDestinationNames()),
         "stationID, longitude, latitude, altitude, time, station, wd, wspd, atmp, wtmp, wtmp_2, test_parens_not_at_end",
@@ -4930,7 +4683,7 @@ class EDDTableFromAsciiFilesTests {
   @TagExternalERDDAP
   void testGenerateDatasetsXml2() throws Throwable {
     // testVerboseOn();
-
+    int language = EDMessages.DEFAULT_LANGUAGE;
     String sourceUrl =
         "https://coastwatch.pfeg.noaa.gov/erddap/tabledap/cwwcNDBCMet.csv?station%2Ctime%2Catmp%2Cwtmp&station=%2241004%22&time%3E=now-1year";
     String destDir = File2.getSystemTempDirectory();
@@ -5115,7 +4868,7 @@ class EDDTableFromAsciiFilesTests {
     EDD.deleteCachedDatasetInfo(tDatasetID);
     EDD edd = EDDTableFromAsciiFiles.oneFromXmlFragment(null, results);
     Test.ensureEqual(edd.datasetID(), tDatasetID, "");
-    Test.ensureEqual(edd.title(), "The Newer Title!", "");
+    Test.ensureEqual(edd.title(language), "The Newer Title!", "");
     Test.ensureEqual(
         String2.toCSSVString(edd.dataVariableDestinationNames()), "station, time, atmp, wtmp", "");
   }
@@ -5123,6 +4876,7 @@ class EDDTableFromAsciiFilesTests {
   /** testGenerateDatasetsXml */
   @org.junit.jupiter.api.Test
   void testGenerateDatasetsXmlWithMV() throws Throwable {
+    int language = EDMessages.DEFAULT_LANGUAGE;
     // testVerboseOn();
     // String2.log("\n*** EDDTableFromAsciiFiles.testGenerateDatasetsXmlWithMV()");
 
@@ -5351,7 +5105,7 @@ class EDDTableFromAsciiFilesTests {
     EDD.deleteCachedDatasetInfo(tDatasetID);
     EDD edd = EDDTableFromAsciiFiles.oneFromXmlFragment(null, results);
     Test.ensureEqual(edd.datasetID(), tDatasetID, "");
-    Test.ensureEqual(edd.title(), "The Newer Title!", "");
+    Test.ensureEqual(edd.title(language), "The Newer Title!", "");
     Test.ensureEqual(
         String2.toCSSVString(edd.dataVariableDestinationNames()),
         "aString, aFloat, aFloat_with_NaN, aFloat_with_nd, aDouble, aLong, anInt, aShort, aByte",

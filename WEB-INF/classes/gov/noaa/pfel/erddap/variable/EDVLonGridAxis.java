@@ -6,6 +6,8 @@ package gov.noaa.pfel.erddap.variable;
 
 import com.cohort.array.Attributes;
 import com.cohort.array.PrimitiveArray;
+import gov.noaa.pfel.erddap.dataset.metadata.LocalizedAttributes;
+import gov.noaa.pfel.erddap.util.EDMessages;
 
 /**
  * This class holds information about the longitude grid axis variable.
@@ -33,13 +35,16 @@ public class EDVLonGridAxis extends EDVGridAxis {
       String tParentDatasetID,
       String tSourceName,
       Attributes tSourceAttributes,
-      Attributes tAddAttributes,
+      LocalizedAttributes tAddAttributes,
       PrimitiveArray tSourceValues)
       throws Throwable {
 
     super(
         tParentDatasetID, tSourceName, LON_NAME, tSourceAttributes, tAddAttributes, tSourceValues);
 
+    // The attributes this gets/sets should not need to be localized (max/min
+    // value for example). Just use the default language.
+    int language = EDMessages.DEFAULT_LANGUAGE;
     if (destinationDataType().equals("String"))
       throw new RuntimeException(
           "datasets.xml error: "
@@ -47,15 +52,15 @@ public class EDVLonGridAxis extends EDVGridAxis {
 
     longName = LON_LONGNAME;
     units = LON_UNITS;
-    combinedAttributes.set("_CoordinateAxisType", "Lon"); // unidata-related
-    combinedAttributes.set("axis", "X");
-    combinedAttributes.set("ioos_category", LOCATION_CATEGORY);
-    combinedAttributes.set("long_name", longName);
-    combinedAttributes.set("standard_name", LON_STANDARD_NAME);
-    combinedAttributes.set("units", units);
+    combinedAttributes.set(language, "_CoordinateAxisType", "Lon"); // unidata-related
+    combinedAttributes.set(language, "axis", "X");
+    combinedAttributes.set(language, "ioos_category", LOCATION_CATEGORY);
+    combinedAttributes.set(language, "long_name", longName);
+    combinedAttributes.set(language, "standard_name", LON_STANDARD_NAME);
+    combinedAttributes.set(language, "units", units);
 
     // remember that gridAxes get min max from actual axis tSourceValues
-    setActualRangeFromDestinationMinMax();
+    setActualRangeFromDestinationMinMax(language);
   }
 
   /**

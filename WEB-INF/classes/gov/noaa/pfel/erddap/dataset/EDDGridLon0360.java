@@ -21,6 +21,10 @@ import gov.noaa.pfel.coastwatch.pointdata.Table;
 import gov.noaa.pfel.coastwatch.util.SSR;
 import gov.noaa.pfel.coastwatch.util.SimpleXMLReader;
 import gov.noaa.pfel.erddap.Erddap;
+import gov.noaa.pfel.erddap.dataset.metadata.LocalizedAttributes;
+import gov.noaa.pfel.erddap.handlers.EDDGridLon0360Handler;
+import gov.noaa.pfel.erddap.handlers.SaxHandlerClass;
+import gov.noaa.pfel.erddap.util.EDMessages;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.*;
 import java.io.BufferedReader;
@@ -32,6 +36,7 @@ import java.text.MessageFormat;
  *
  * @author Bob Simons (was bob.simons@noaa.gov, now BobSimons2.00@gmail.com) 2021-05-28
  */
+@SaxHandlerClass(EDDGridLon0360Handler.class)
 public class EDDGridLon0360 extends EDDGrid {
 
   private EDDGrid childDataset;
@@ -45,7 +50,9 @@ public class EDDGridLon0360 extends EDDGrid {
   // corresponding destination lon indices, after the 2 parts are reordered
   // i.e., where are sloni in the destination lon array?
   // If dloni0/179 are -1, there are no values in that range in this dataset.
-  private int dlonim180, dlonim1, dloni0, dloni179;
+  private int dlonim180;
+  private int dloni0;
+  private int dloni179;
 
   // dInsert179/180 are used if there is a big gap between lon179 and lon180 (e.g.,
   // 120...-120(->240))
@@ -65,6 +72,7 @@ public class EDDGridLon0360 extends EDDGrid {
    *     &lt;erddapDatasets&gt;&lt;/dataset&gt; .
    * @throws Throwable if trouble
    */
+  @EDDFromXmlMethod
   public static EDDGridLon0360 fromXml(Erddap erddap, SimpleXMLReader xmlReader) throws Throwable {
 
     if (verbose) String2.log("\n*** constructing EDDGridLon0360(xmlReader)...");
@@ -75,7 +83,7 @@ public class EDDGridLon0360 extends EDDGrid {
     String tAccessibleTo = null;
     String tGraphsAccessibleTo = null;
     boolean tAccessibleViaWMS = true;
-    boolean tAccessibleViaFiles = EDStatic.defaultAccessibleViaFiles;
+    boolean tAccessibleViaFiles = EDStatic.config.defaultAccessibleViaFiles;
     StringArray tOnChange = new StringArray();
     String tFgdcFile = null;
     String tIso19115File = null;
@@ -99,71 +107,69 @@ public class EDDGridLon0360 extends EDDGrid {
       String localTags = tags.substring(startOfTagsLength);
 
       // try to make the tag names as consistent, descriptive and readable as possible
-      if (localTags.equals("<dataset>")) {
-        if ("false".equals(xmlReader.attributeValue("active"))) {
-          // skip it - read to </dataset>
-          if (verbose)
-            String2.log(
-                "  skipping datasetID="
-                    + xmlReader.attributeValue("datasetID")
-                    + " because active=\"false\".");
-          while (xmlReader.stackSize() != startOfTagsN + 1
-              || !xmlReader.allTags().substring(startOfTagsLength).equals("</dataset>")) {
-            xmlReader.nextTag();
-            // String2.log("  skippping tags: " + xmlReader.allTags());
-          }
+      switch (localTags) {
+        case "<dataset>" -> {
+          if ("false".equals(xmlReader.attributeValue("active"))) {
+            // skip it - read to </dataset>
+            if (verbose)
+              String2.log(
+                  "  skipping datasetID="
+                      + xmlReader.attributeValue("datasetID")
+                      + " because active=\"false\".");
+            while (xmlReader.stackSize() != startOfTagsN + 1
+                || !xmlReader.allTags().substring(startOfTagsLength).equals("</dataset>")) {
+              xmlReader.nextTag();
+              // String2.log("  skippping tags: " + xmlReader.allTags());
+            }
 
-        } else {
-          if (tChildDataset == null) {
-            EDD edd = EDD.fromXml(erddap, xmlReader.attributeValue("type"), xmlReader);
-            if (edd instanceof EDDGrid eddGrid) {
-              tChildDataset = eddGrid;
+          } else {
+            if (tChildDataset == null) {
+              EDD edd = EDD.fromXml(erddap, xmlReader.attributeValue("type"), xmlReader);
+              if (edd instanceof EDDGrid eddGrid) {
+                tChildDataset = eddGrid;
+              } else {
+                throw new RuntimeException(
+                    "Datasets.xml error: "
+                        + "The dataset defined in an "
+                        + "EDDGridLon0360 must be a subclass of EDDGrid.");
+              }
             } else {
               throw new RuntimeException(
                   "Datasets.xml error: "
-                      + "The dataset defined in an "
-                      + "EDDGridLon0360 must be a subclass of EDDGrid.");
+                      + "There can be only one <dataset> defined within an "
+                      + "EDDGridLon0360 <dataset>.");
             }
-          } else {
-            throw new RuntimeException(
-                "Datasets.xml error: "
-                    + "There can be only one <dataset> defined within an "
-                    + "EDDGridLon0360 <dataset>.");
           }
         }
-
-      } else if (localTags.equals("<reloadEveryNMinutes>")) {
-      } else if (localTags.equals("</reloadEveryNMinutes>"))
-        tReloadEveryNMinutes = String2.parseInt(content);
-      else if (localTags.equals("<updateEveryNMillis>")) {
-      } else if (localTags.equals("</updateEveryNMillis>"))
-        tUpdateEveryNMillis = String2.parseInt(content);
-      else if (localTags.equals("<accessibleTo>")) {
-      } else if (localTags.equals("</accessibleTo>")) tAccessibleTo = content;
-      else if (localTags.equals("<graphsAccessibleTo>")) {
-      } else if (localTags.equals("</graphsAccessibleTo>")) tGraphsAccessibleTo = content;
-      else if (localTags.equals("<accessibleViaWMS>")) {
-      } else if (localTags.equals("</accessibleViaWMS>"))
-        tAccessibleViaWMS = String2.parseBoolean(content);
-      else if (localTags.equals("<accessibleViaFiles>")) {
-      } else if (localTags.equals("</accessibleViaFiles>"))
-        tAccessibleViaFiles = String2.parseBoolean(content);
-      else if (localTags.equals("<onChange>")) {
-      } else if (localTags.equals("</onChange>")) tOnChange.add(content);
-      else if (localTags.equals("<fgdcFile>")) {
-      } else if (localTags.equals("</fgdcFile>")) tFgdcFile = content;
-      else if (localTags.equals("<iso19115File>")) {
-      } else if (localTags.equals("</iso19115File>")) tIso19115File = content;
-      else if (localTags.equals("<defaultDataQuery>")) {
-      } else if (localTags.equals("</defaultDataQuery>")) tDefaultDataQuery = content;
-      else if (localTags.equals("<defaultGraphQuery>")) {
-      } else if (localTags.equals("</defaultGraphQuery>")) tDefaultGraphQuery = content;
-      else if (localTags.equals("<nThreads>")) {
-      } else if (localTags.equals("</nThreads>")) tnThreads = String2.parseInt(content);
-      else if (localTags.equals("<dimensionValuesInMemory>")) {
-      } else if (localTags.equals("</dimensionValuesInMemory>"))
-        tDimensionValuesInMemory = String2.parseBoolean(content);
-      else xmlReader.unexpectedTagException();
+        case "<reloadEveryNMinutes>",
+            "<dimensionValuesInMemory>",
+            "<nThreads>",
+            "<defaultGraphQuery>",
+            "<defaultDataQuery>",
+            "<iso19115File>",
+            "<fgdcFile>",
+            "<onChange>",
+            "<accessibleViaFiles>",
+            "<accessibleViaWMS>",
+            "<graphsAccessibleTo>",
+            "<accessibleTo>",
+            "<updateEveryNMillis>" -> {}
+        case "</reloadEveryNMinutes>" -> tReloadEveryNMinutes = String2.parseInt(content);
+        case "</updateEveryNMillis>" -> tUpdateEveryNMillis = String2.parseInt(content);
+        case "</accessibleTo>" -> tAccessibleTo = content;
+        case "</graphsAccessibleTo>" -> tGraphsAccessibleTo = content;
+        case "</accessibleViaWMS>" -> tAccessibleViaWMS = String2.parseBoolean(content);
+        case "</accessibleViaFiles>" -> tAccessibleViaFiles = String2.parseBoolean(content);
+        case "</onChange>" -> tOnChange.add(content);
+        case "</fgdcFile>" -> tFgdcFile = content;
+        case "</iso19115File>" -> tIso19115File = content;
+        case "</defaultDataQuery>" -> tDefaultDataQuery = content;
+        case "</defaultGraphQuery>" -> tDefaultGraphQuery = content;
+        case "</nThreads>" -> tnThreads = String2.parseInt(content);
+        case "</dimensionValuesInMemory>" ->
+            tDimensionValuesInMemory = String2.parseBoolean(content);
+        default -> xmlReader.unexpectedTagException();
+      }
     }
 
     // make the main dataset based on the information gathered
@@ -225,6 +231,7 @@ public class EDDGridLon0360 extends EDDGrid {
       throws Throwable {
 
     if (verbose) String2.log("\n*** constructing EDDGridLon0360 " + tDatasetID);
+    int language = EDMessages.DEFAULT_LANGUAGE;
     long constructionStartMillis = System.currentTimeMillis();
     String errorInMethod = "Error in EDDGridLon0360(" + tDatasetID + ") constructor:\n";
 
@@ -235,7 +242,8 @@ public class EDDGridLon0360 extends EDDGrid {
     setAccessibleTo(tAccessibleTo);
     setGraphsAccessibleTo(tGraphsAccessibleTo);
     if (!tAccessibleViaWMS)
-      accessibleViaWMS = String2.canonical(MessageFormat.format(EDStatic.noXxxAr[0], "WMS"));
+      accessibleViaWMS =
+          String2.canonical(MessageFormat.format(EDStatic.messages.noXxxAr[0], "WMS"));
     onChange = tOnChange;
     fgdcFile = tFgdcFile;
     iso19115File = tIso19115File;
@@ -254,8 +262,7 @@ public class EDDGridLon0360 extends EDDGrid {
     // Get childDataset or localChildDataset. Work with stable local reference.
     EDDGrid tChildDataset = null;
     if (tErddap != null && oChildDataset instanceof EDDGridFromErddap t) {
-      EDDGridFromErddap tFromErddap = t;
-      String tSourceUrl = tFromErddap.getPublicSourceErddapUrl();
+      String tSourceUrl = t.getPublicSourceErddapUrl();
       if (EDStatic.urlIsThisComputer(tSourceUrl)) {
         String lcdid = File2.getNameNoExtension(tSourceUrl);
         if (datasetID.equals(lcdid))
@@ -280,10 +287,11 @@ public class EDDGridLon0360 extends EDDGrid {
       tChildDataset = oChildDataset;
     }
     // for rest of constructor, use temporary, stable tChildDataset reference.
-    // String2.log(">> accessibleViaFiles " + EDStatic.filesActive + " " + tAccessibleViaFiles + " "
+    // String2.log(">> accessibleViaFiles " + EDStatic.config.filesActive + " " +
+    // tAccessibleViaFiles + " "
     // + tChildDataset.accessibleViaFiles);
     accessibleViaFiles =
-        EDStatic.filesActive && tAccessibleViaFiles && tChildDataset.accessibleViaFiles;
+        EDStatic.config.filesActive && tAccessibleViaFiles && tChildDataset.accessibleViaFiles;
 
     // UNUSUAL: if valid value not specified, copy from childDataset
     setReloadEveryNMinutes(
@@ -298,10 +306,12 @@ public class EDDGridLon0360 extends EDDGrid {
     // make/copy the local globalAttributes
     localSourceUrl = tChildDataset.localSourceUrl();
     sourceGlobalAttributes = (Attributes) tChildDataset.sourceGlobalAttributes().clone();
-    addGlobalAttributes = (Attributes) tChildDataset.addGlobalAttributes().clone();
-    combinedGlobalAttributes = (Attributes) tChildDataset.combinedGlobalAttributes().clone();
+    addGlobalAttributes = new LocalizedAttributes(tChildDataset.addGlobalAttributes());
+    combinedGlobalAttributes = new LocalizedAttributes(tChildDataset.combinedGlobalAttributes());
     combinedGlobalAttributes.set(
-        "title", combinedGlobalAttributes.getString("title").trim() + ", Lon0360");
+        language,
+        "title",
+        combinedGlobalAttributes.getString(language, "title").trim() + ", Lon0360");
 
     // make/copy the local axisVariables
     int nAv = tChildDataset.axisVariables.length;
@@ -435,15 +445,15 @@ public class EDDGridLon0360 extends EDDGrid {
         childLonValues.subset(slonim180, 1, slonim1); // always a new backing array
     tLonValues.addOffsetScale(360, 1); // -180 ... -1 -> 180 ... 359
     newLonValues.append(tLonValues);
-    dlonim1 = newLonValues.size() - 1;
+    int dlonim1 = newLonValues.size() - 1;
 
     // make the new lon axis
     EDVLonGridAxis newEDVLon =
         new EDVLonGridAxis(
             tDatasetID,
             EDV.LON_NAME,
-            new Attributes(childLon.combinedAttributes()),
-            new Attributes(),
+            childLon.combinedAttributes().toAttributes(language),
+            new LocalizedAttributes(),
             newLonValues);
     newEDVLon.combinedAttributes().remove("valid_min");
     newEDVLon.combinedAttributes().remove("valid_max");
@@ -462,7 +472,7 @@ public class EDDGridLon0360 extends EDDGrid {
       String2.log(
           (reallyVerbose
                   ? "\n"
-                      + toString()
+                      + this
                       + "slonim180="
                       + slonim180
                       + " slonim1="
@@ -514,7 +524,7 @@ public class EDDGridLon0360 extends EDDGrid {
       if (tChildDataset == null) {
         EDD.requestReloadASAP(localChildDatasetID);
         throw new WaitThenTryAgainException(
-            EDStatic.simpleBilingual(language, EDStatic.waitThenTryAgainAr)
+            EDStatic.simpleBilingual(language, EDStatic.messages.waitThenTryAgainAr)
                 + "\n(underlying local datasetID="
                 + localChildDatasetID
                 + " not found)");
@@ -619,9 +629,9 @@ public class EDDGridLon0360 extends EDDGrid {
     if (changed && timeIndex >= 0) {
       axisVariables[timeIndex] = tChildDataset.axisVariables[timeIndex];
       combinedGlobalAttributes()
-          .set("time_coverage_start", axisVariables[timeIndex].destinationMinString());
+          .set(language, "time_coverage_start", axisVariables[timeIndex].destinationMinString());
       combinedGlobalAttributes()
-          .set("time_coverage_end", axisVariables[timeIndex].destinationMaxString());
+          .set(language, "time_coverage_end", axisVariables[timeIndex].destinationMaxString());
     }
 
     return changed;
@@ -630,7 +640,7 @@ public class EDDGridLon0360 extends EDDGrid {
   /**
    * This gets data (not yet standardized) from the data source for this EDDGrid. Because this is
    * called by GridDataAccessor, the request won't be the full user's request, but will be a partial
-   * request (for less than EDStatic.partialRequestMaxBytes).
+   * request (for less than EDStatic.config.partialRequestMaxBytes).
    *
    * @param language the index of the selected language
    * @param tDirTable If EDDGridFromFiles, this MAY be the dirTable, else null.
@@ -902,8 +912,10 @@ public class EDDGridLon0360 extends EDDGrid {
       br = SSR.getBufferedUrlReader(query);
     } catch (Throwable t) {
       if (t.toString().indexOf("no data") >= 0)
-        return "<!-- No griddap datasets at that ERDDAP match that regex\n"
-            + "     and have minLongitude values &lt;0. -->\n";
+        return """
+                <!-- No griddap datasets at that ERDDAP match that regex
+                     and have minLongitude values &lt;0. -->
+                """;
       throw t;
     }
     Table table = new Table();

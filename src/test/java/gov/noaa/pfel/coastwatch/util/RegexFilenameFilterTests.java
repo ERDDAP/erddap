@@ -25,7 +25,7 @@ class RegexFilenameFilterTests {
   void basicTest() throws Exception {
     String2.log("\n* RegexFilenameFilter.basicTest ...");
     String coastwatchDir =
-            File2.getClassPath() // with / separator and / at the end
+        File2.getClassPath() // with / separator and / at the end
             + "gov/noaa/pfel/coastwatch/";
 
     // test list
@@ -45,16 +45,14 @@ class RegexFilenameFilterTests {
         new String[] {
           coastwatchDir + "griddata/",
           coastwatchDir + "griddata/SaveOpendap.class",
-          coastwatchDir + "hdf/",
-          coastwatchDir + "hdf/SdsReader.class",
-          coastwatchDir + "hdf/SdsWriter.class",
           coastwatchDir + "netcheck/",
           coastwatchDir + "pointdata/",
-          coastwatchDir + "pointdata/ScriptRow.class",
+          coastwatchDir + "pointdata/parquet/",
           coastwatchDir + "sgt/",
           coastwatchDir + "sgt/SGTPointsVector.class",
           coastwatchDir + "sgt/SgtGraph.class",
           coastwatchDir + "sgt/SgtMap.class",
+          coastwatchDir + "sgt/SgtUtil$PDFPageSize.class",
           coastwatchDir + "sgt/SgtUtil.class",
           coastwatchDir + "util/",
           coastwatchDir + "util/SSR$1.class",
@@ -69,12 +67,10 @@ class RegexFilenameFilterTests {
     shouldBe =
         new String[] {
           coastwatchDir + "griddata/SaveOpendap.class",
-          coastwatchDir + "hdf/SdsReader.class",
-          coastwatchDir + "hdf/SdsWriter.class",
-          coastwatchDir + "pointdata/ScriptRow.class",
           coastwatchDir + "sgt/SGTPointsVector.class",
           coastwatchDir + "sgt/SgtGraph.class",
           coastwatchDir + "sgt/SgtMap.class",
+          coastwatchDir + "sgt/SgtUtil$PDFPageSize.class",
           coastwatchDir + "sgt/SgtUtil.class",
           coastwatchDir + "util/SSR$1.class",
           coastwatchDir + "util/SSR.class",
@@ -89,7 +85,7 @@ class RegexFilenameFilterTests {
     StringArray lastMod = new StringArray();
     for (int i = 0; i < tn; i++)
       lastMod.add(Calendar2.safeEpochSecondsToIsoStringTZ(info[2].getLong(i) / 1000.0, "ERROR"));
-    Test.ensureEqual(info[0].toString(), "griddata, hdf, netcheck, pointdata, sgt, util", "");
+    Test.ensureEqual(info[0].toString(), "griddata, netcheck, pointdata, sgt, util", "");
     Test.ensureEqual(info[1].toString(), "BrowserDefault.properties", "");
     // The below is flaky. Consider using a dedicated test resource directory
     // instead of a code directory

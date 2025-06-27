@@ -4,7 +4,7 @@
  */
 package com.cohort.util;
 
-import java.util.HashSet;
+import java.util.Set;
 import java.util.regex.Pattern;
 import org.apache.commons.jexl3.JexlBuilder;
 import org.apache.commons.jexl3.JexlEngine;
@@ -13,15 +13,14 @@ import org.apache.commons.jexl3.introspection.JexlPermissions;
 import org.apache.commons.jexl3.introspection.JexlSandbox;
 
 /**
- * A class with static Jexl script methods. For tests, see
- * gov.noaa.pfel.coastwatch.pointdata.ScriptRow.testScript().
+ * A class with static Jexl script methods. For tests, see com.cohort.util.ScriptRow.testScript().
  */
 public class Script2 {
 
   /** Use jexlEngine to instantiate and obtain this. */
   private static JexlEngine jexlEngine;
 
-  public static JexlPermissions permissions =
+  public static final JexlPermissions permissions =
       JexlPermissions.parse(
           "com.cohort.util.*\n"
               + "gov.noaa.pfel.coastwatch.pointdata.*\n"
@@ -86,7 +85,7 @@ public class Script2 {
       jsandbox.allow("com.cohort.util.ScriptCalendar2");
       jsandbox.allow("com.cohort.util.ScriptMath");
       jsandbox.allow("com.cohort.util.ScriptMath2");
-      jsandbox.allow("gov.noaa.pfel.coastwatch.pointdata.ScriptRow");
+      jsandbox.allow("com.cohort.util.ScriptRow");
       jsandbox.allow("java.lang.String");
       jsandbox.allow("com.cohort.util.ScriptString2");
       jexlEngine =
@@ -117,7 +116,7 @@ public class Script2 {
       scriptCalendar2 = new ScriptCalendar2();
       scriptMath = new ScriptMath();
       scriptMath2 = new ScriptMath2();
-      scriptString = new String("");
+      scriptString = "";
       scriptString2 = new ScriptString2();
     }
     MapContext jcontext = new MapContext();
@@ -141,7 +140,7 @@ public class Script2 {
    * @param script The script with or without the starting '='.
    * @return a HashSet with the referenced column names (may be size=0).
    */
-  public static HashSet<String> jexlScriptNeedsColumns(String script) {
+  public static Set<String> jexlScriptNeedsColumns(String script) {
 
     return String2.extractAllCaptureGroupsAsHashSet(script, SCRIPT_COLUMN_REFERENCE_PATTERN, 2);
   }

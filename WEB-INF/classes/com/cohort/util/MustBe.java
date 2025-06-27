@@ -6,9 +6,10 @@ package com.cohort.util;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
+import java.nio.charset.StandardCharsets;
 import java.text.MessageFormat;
-import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -37,7 +38,7 @@ import java.util.Map;
  * </UL>
  */
 public class MustBe {
-  public static String lineSeparator = "\n"; // not String2.lineSeparator;
+  public static final String lineSeparator = "\n"; // not String2.lineSeparator;
 
   /**
    * This matches the standard DAP message (except different case) for no data found. This is NOT
@@ -62,13 +63,11 @@ public class MustBe {
     // this is (relatively) a very slow method: ~50ms.
     // so generating lots of stackTraces takes a lot of time!
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
-    PrintStream ps = new PrintStream(baos);
-    try {
+    try (PrintStream ps = new PrintStream(baos)) {
       new Exception().printStackTrace(ps);
-    } finally {
-      ps.close(); // it flushes first
     }
-    return baos.toString();
+    // it flushes first
+    return baos.toString(StandardCharsets.UTF_8);
   }
 
   /**
@@ -79,7 +78,7 @@ public class MustBe {
     try {
       StringBuilder sb = new StringBuilder("Stack trace for thread=" + thread.getName() + ":\n");
       StackTraceElement st[] = thread.getStackTrace();
-      for (int i = 0; i < st.length; i++) sb.append(st[i].toString() + "\n");
+      for (StackTraceElement stackTraceElement : st) sb.append(stackTraceElement.toString() + "\n");
       return sb.toString();
     } catch (Throwable t) {
       return "ERROR while trying to get stack trace:\n" + throwableToString(t);
@@ -135,20 +134,20 @@ public class MustBe {
     for (i = 0; i < n; i++) if (ba[i] == '\t') ba[i] = (byte) 32;
 
     // convert to ArrayList of Strings
-    ArrayList<String> arrayList = String2.multiLineStringToArrayList(new String(ba));
+    List<String> arrayList =
+        String2.multiLineStringToArrayList(new String(ba, StandardCharsets.UTF_8));
 
     // remove the first nRemoveLines lines; trim strings; store results in ca
     if (nRemoveLines < 0) nRemoveLines = 0;
     if (nRemoveLines > arrayList.size()) nRemoveLines = arrayList.size();
     for (i = 0; i < nRemoveLines; i++)
-      arrayList.remove(0); // each time #0 is removed, another becomes #0
+      arrayList.removeFirst(); // each time #0 is removed, another becomes #0
     String seBase = "com.cohort.util.";
     String seName = "SimpleException";
     StringBuilder sb = new StringBuilder();
     for (i = 0; i < arrayList.size(); i++) {
       String s = arrayList.get(i);
       if (i == 0 && s.startsWith(seBase + seName)) s = s.substring(seBase.length());
-      String trims = s.trim();
       // if (removeAtJava && trims.startsWith("at java")) {}       //with Java 17, there is no "at
       // "!!! Comment out because I like seeing the java, sun, apache lines.
       // else if (removeAtSun && trims.startsWith("at sun")) {}
@@ -383,15 +382,14 @@ public class MustBe {
     try {
       // gather info for each thread
       // long tTime = System.currentTimeMillis();
-      Thread thread = Thread.currentThread();
-      Object oar[] = thread.getAllStackTraces().entrySet().toArray();
+      Object oar[] = Thread.getAllStackTraces().entrySet().toArray();
       int count = 0;
       int tomcatWaiting = 0;
       int inotify = 0;
       String sar[] = new String[oar.length];
-      for (int i = 0; i < oar.length; i++) {
+      for (Object o : oar) {
         try {
-          Map.Entry me = (Map.Entry) oar[i];
+          Map.Entry me = (Map.Entry) o;
           Thread t = (Thread) me.getKey();
           String threadName = t.getName();
           if (threadName == null) threadName = "";
@@ -421,9 +419,9 @@ public class MustBe {
           }
 
           sar[count] =
-              t.toString()
+              t
                   + " "
-                  + t.getState().toString()
+                  + t.getState()
                   + (t.isDaemon() ? " daemon\n" : "\n")
                   + String2.toNewlineString(ste)
                   + "\n";

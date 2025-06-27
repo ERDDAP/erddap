@@ -29,15 +29,20 @@ import gov.noaa.pfel.coastwatch.pointdata.Table;
 import gov.noaa.pfel.coastwatch.util.SSR;
 import gov.noaa.pfel.coastwatch.util.SimpleXMLReader;
 import gov.noaa.pfel.erddap.Erddap;
+import gov.noaa.pfel.erddap.dataset.metadata.LocalizedAttributes;
+import gov.noaa.pfel.erddap.handlers.EDDGridFromDapHandler;
+import gov.noaa.pfel.erddap.handlers.SaxHandlerClass;
+import gov.noaa.pfel.erddap.util.EDMessages;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.*;
 import java.io.ByteArrayInputStream;
 import java.io.Writer;
 import java.text.MessageFormat;
 import java.util.ArrayList;
-import java.util.Enumeration;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 import thredds.client.catalog.Access;
 import thredds.client.catalog.Catalog;
 import thredds.client.catalog.Dataset;
@@ -56,13 +61,14 @@ import thredds.client.catalog.builder.CatalogBuilder;
  *
  * @author Bob Simons (was bob.simons@noaa.gov, now BobSimons2.00@gmail.com) 2007-06-04
  */
+@SaxHandlerClass(EDDGridFromDapHandler.class)
 public class EDDGridFromDap extends EDDGrid {
 
   /**
    * Indicates if data can be transmitted in a compressed form. It is unlikely anyone would want to
    * change this.
    */
-  public static boolean acceptDeflate = true;
+  public static final boolean acceptDeflate = true;
 
   /**
    * This constructs an EDDGridFromDap based on the information in an .xml file.
@@ -74,20 +80,21 @@ public class EDDGridFromDap extends EDDGrid {
    *     &lt;erddapDatasets&gt;&lt;/dataset&gt; .
    * @throws Throwable if trouble
    */
+  @EDDFromXmlMethod
   public static EDDGridFromDap fromXml(Erddap erddap, SimpleXMLReader xmlReader) throws Throwable {
 
     // data to be obtained (or not)
     if (verbose) String2.log("\n*** constructing EDDGridFromDap(xmlReader)...");
     String tDatasetID = xmlReader.attributeValue("datasetID");
-    Attributes tGlobalAttributes = null;
+    LocalizedAttributes tGlobalAttributes = null;
     String tAccessibleTo = null;
     String tGraphsAccessibleTo = null;
     boolean tAccessibleViaWMS = true;
     StringArray tOnChange = new StringArray();
     String tFgdcFile = null;
     String tIso19115File = null;
-    ArrayList tAxisVariables = new ArrayList();
-    ArrayList tDataVariables = new ArrayList();
+    ArrayList<AxisVariableInfo> tAxisVariables = new ArrayList<>();
+    ArrayList<DataVariableInfo> tDataVariables = new ArrayList<>();
     int tReloadEveryNMinutes = DEFAULT_RELOAD_EVERY_N_MINUTES;
     int tUpdateEveryNMillis = 0;
     String tLocalSourceUrl = null;
@@ -111,54 +118,42 @@ public class EDDGridFromDap extends EDDGrid {
       // String2.log(">>  localTags=" + localTags + content);
 
       // try to make the tag names as consistent, descriptive and readable as possible
-      if (localTags.equals("<addAttributes>")) tGlobalAttributes = getAttributesFromXml(xmlReader);
-      else if (localTags.equals("<altitudeMetersPerSourceUnit>"))
-        throw new SimpleException(EDVAlt.stopUsingAltitudeMetersPerSourceUnit);
-      else if (localTags.equals("<axisVariable>"))
-        tAxisVariables.add(getSDAVVariableFromXml(xmlReader));
-      else if (localTags.equals("<dataVariable>"))
-        tDataVariables.add(getSDADVariableFromXml(xmlReader));
-      else if (localTags.equals("<accessibleTo>")) {
-      } else if (localTags.equals("</accessibleTo>")) tAccessibleTo = content;
-      else if (localTags.equals("<graphsAccessibleTo>")) {
-      } else if (localTags.equals("</graphsAccessibleTo>")) tGraphsAccessibleTo = content;
-      else if (localTags.equals("<accessibleViaWMS>")) {
-      } else if (localTags.equals("</accessibleViaWMS>"))
-        tAccessibleViaWMS = String2.parseBoolean(content);
-      else if (localTags.equals("<reloadEveryNMinutes>")) {
-      } else if (localTags.equals("</reloadEveryNMinutes>"))
-        tReloadEveryNMinutes = String2.parseInt(content);
-      else if (localTags.equals("<updateEveryNMillis>")) {
-      } else if (localTags.equals("</updateEveryNMillis>"))
-        tUpdateEveryNMillis = String2.parseInt(content);
-      else if (localTags.equals("<sourceUrl>")) {
-      } else if (localTags.equals("</sourceUrl>")) tLocalSourceUrl = content;
-      else if (localTags.equals("<onChange>")) {
-      } else if (localTags.equals("</onChange>")) tOnChange.add(content);
-      else if (localTags.equals("<fgdcFile>")) {
-      } else if (localTags.equals("</fgdcFile>")) tFgdcFile = content;
-      else if (localTags.equals("<iso19115File>")) {
-      } else if (localTags.equals("</iso19115File>")) tIso19115File = content;
-      else if (localTags.equals("<defaultDataQuery>")) {
-      } else if (localTags.equals("</defaultDataQuery>")) tDefaultDataQuery = content;
-      else if (localTags.equals("<defaultGraphQuery>")) {
-      } else if (localTags.equals("</defaultGraphQuery>")) tDefaultGraphQuery = content;
-      else if (localTags.equals("<nThreads>")) {
-      } else if (localTags.equals("</nThreads>")) tnThreads = String2.parseInt(content);
-      else if (localTags.equals("<dimensionValuesInMemory>")) {
-      } else if (localTags.equals("</dimensionValuesInMemory>"))
-        tDimensionValuesInMemory = String2.parseBoolean(content);
-      else xmlReader.unexpectedTagException();
+      switch (localTags) {
+        case "<addAttributes>" -> tGlobalAttributes = getAttributesFromXml(xmlReader);
+        case "<altitudeMetersPerSourceUnit>" ->
+            throw new SimpleException(EDVAlt.stopUsingAltitudeMetersPerSourceUnit);
+        case "<axisVariable>" -> tAxisVariables.add(getSDAVVariableFromXml(xmlReader));
+        case "<dataVariable>" -> tDataVariables.add(getSDADVariableFromXml(xmlReader));
+        case "<accessibleTo>",
+            "<dimensionValuesInMemory>",
+            "<nThreads>",
+            "<defaultGraphQuery>",
+            "<defaultDataQuery>",
+            "<iso19115File>",
+            "<fgdcFile>",
+            "<onChange>",
+            "<sourceUrl>",
+            "<updateEveryNMillis>",
+            "<reloadEveryNMinutes>",
+            "<accessibleViaWMS>",
+            "<graphsAccessibleTo>" -> {}
+        case "</accessibleTo>" -> tAccessibleTo = content;
+        case "</graphsAccessibleTo>" -> tGraphsAccessibleTo = content;
+        case "</accessibleViaWMS>" -> tAccessibleViaWMS = String2.parseBoolean(content);
+        case "</reloadEveryNMinutes>" -> tReloadEveryNMinutes = String2.parseInt(content);
+        case "</updateEveryNMillis>" -> tUpdateEveryNMillis = String2.parseInt(content);
+        case "</sourceUrl>" -> tLocalSourceUrl = content;
+        case "</onChange>" -> tOnChange.add(content);
+        case "</fgdcFile>" -> tFgdcFile = content;
+        case "</iso19115File>" -> tIso19115File = content;
+        case "</defaultDataQuery>" -> tDefaultDataQuery = content;
+        case "</defaultGraphQuery>" -> tDefaultGraphQuery = content;
+        case "</nThreads>" -> tnThreads = String2.parseInt(content);
+        case "</dimensionValuesInMemory>" ->
+            tDimensionValuesInMemory = String2.parseBoolean(content);
+        default -> xmlReader.unexpectedTagException();
+      }
     }
-    int nav = tAxisVariables.size();
-    Object ttAxisVariables[][] = nav == 0 ? null : new Object[nav][];
-    for (int i = 0; i < tAxisVariables.size(); i++)
-      ttAxisVariables[i] = (Object[]) tAxisVariables.get(i);
-
-    int ndv = tDataVariables.size();
-    Object ttDataVariables[][] = new Object[ndv][];
-    for (int i = 0; i < tDataVariables.size(); i++)
-      ttDataVariables[i] = (Object[]) tDataVariables.get(i);
 
     return new EDDGridFromDap(
         tDatasetID,
@@ -171,8 +166,8 @@ public class EDDGridFromDap extends EDDGrid {
         tDefaultDataQuery,
         tDefaultGraphQuery,
         tGlobalAttributes,
-        ttAxisVariables,
-        ttDataVariables,
+        tAxisVariables,
+        tDataVariables,
         tReloadEveryNMinutes,
         tUpdateEveryNMillis,
         tLocalSourceUrl,
@@ -213,7 +208,7 @@ public class EDDGridFromDap extends EDDGrid {
    *     </ul>
    *     Special case: value="null" causes that item to be removed from combinedGlobalAttributes.
    *     Special case: if combinedGlobalAttributes name="license", any instance of "[standard]" will
-   *     be converted to the EDStatic.standardLicense.
+   *     be converted to the EDStatic.messages.standardLicense.
    * @param tAxisVariables is an Object[nAxisVariables][3]: <br>
    *     [0]=String sourceName (the name of the data variable in the dataset source), <br>
    *     [1]=String destinationName (the name to be presented to the ERDDAP user, or null to use the
@@ -255,9 +250,9 @@ public class EDDGridFromDap extends EDDGrid {
       String tIso19115File,
       String tDefaultDataQuery,
       String tDefaultGraphQuery,
-      Attributes tAddGlobalAttributes,
-      Object tAxisVariables[][],
-      Object tDataVariables[][],
+      LocalizedAttributes tAddGlobalAttributes,
+      List<AxisVariableInfo> tAxisVariables,
+      List<DataVariableInfo> tDataVariables,
       int tReloadEveryNMinutes,
       int tUpdateEveryNMillis,
       String tLocalSourceUrl,
@@ -266,6 +261,7 @@ public class EDDGridFromDap extends EDDGrid {
       throws Throwable {
 
     if (verbose) String2.log("\n*** constructing EDDGridFromDap " + tDatasetID);
+    int language = EDMessages.DEFAULT_LANGUAGE;
     long constructionStartMillis = System.currentTimeMillis();
     String errorInMethod = "Error in EDDGridFromDap(" + tDatasetID + ") constructor:\n";
 
@@ -275,15 +271,16 @@ public class EDDGridFromDap extends EDDGrid {
     setAccessibleTo(tAccessibleTo);
     setGraphsAccessibleTo(tGraphsAccessibleTo);
     if (!tAccessibleViaWMS)
-      accessibleViaWMS = String2.canonical(MessageFormat.format(EDStatic.noXxxAr[0], "WMS"));
+      accessibleViaWMS =
+          String2.canonical(MessageFormat.format(EDStatic.messages.noXxxAr[0], "WMS"));
     onChange = tOnChange;
     fgdcFile = tFgdcFile;
     iso19115File = tIso19115File;
     defaultDataQuery = tDefaultDataQuery;
     defaultGraphQuery = tDefaultGraphQuery;
-    if (tAddGlobalAttributes == null) tAddGlobalAttributes = new Attributes();
+    if (tAddGlobalAttributes == null) tAddGlobalAttributes = new LocalizedAttributes();
     addGlobalAttributes = tAddGlobalAttributes;
-    addGlobalAttributes.set("sourceUrl", convertToPublicSourceUrl(tLocalSourceUrl));
+    addGlobalAttributes.set(language, "sourceUrl", convertToPublicSourceUrl(tLocalSourceUrl));
     localSourceUrl = tLocalSourceUrl;
     setReloadEveryNMinutes(tReloadEveryNMinutes);
     setUpdateEveryNMillis(tUpdateEveryNMillis);
@@ -292,7 +289,7 @@ public class EDDGridFromDap extends EDDGrid {
 
     // quickRestart
     Attributes quickRestartAttributes = null;
-    if (EDStatic.quickRestart
+    if (EDStatic.config.quickRestart
         && EDStatic.initialLoadDatasets()
         && File2.isFile(quickRestartFullFileName())) {
       // try to do quick initialLoadDatasets()
@@ -343,25 +340,27 @@ public class EDDGridFromDap extends EDDGrid {
     sourceGlobalAttributes = new Attributes();
     OpendapHelper.getAttributes(das, "GLOBAL", sourceGlobalAttributes);
     combinedGlobalAttributes =
-        new Attributes(addGlobalAttributes, sourceGlobalAttributes); // order is important
-    String tLicense = combinedGlobalAttributes.getString("license");
+        new LocalizedAttributes(addGlobalAttributes, sourceGlobalAttributes); // order is important
+    String tLicense = combinedGlobalAttributes.getString(language, "license");
     if (tLicense != null)
       combinedGlobalAttributes.set(
-          "license", String2.replaceAll(tLicense, "[standard]", EDStatic.standardLicense));
+          language,
+          "license",
+          String2.replaceAll(tLicense, "[standard]", EDStatic.messages.standardLicense));
     combinedGlobalAttributes.removeValue("\"null\"");
-    if (combinedGlobalAttributes.getString("cdm_data_type") == null)
-      combinedGlobalAttributes.add("cdm_data_type", "Grid");
+    if (combinedGlobalAttributes.getString(language, "cdm_data_type") == null)
+      combinedGlobalAttributes.set(language, "cdm_data_type", "Grid");
 
     // create dataVariables[]
-    dataVariables = new EDV[tDataVariables.length];
-    for (int dv = 0; dv < tDataVariables.length; dv++) {
-      String tDataSourceName = (String) tDataVariables[dv][0];
-      String tDataDestName = (String) tDataVariables[dv][1];
+    dataVariables = new EDV[tDataVariables.size()];
+    for (int dv = 0; dv < tDataVariables.size(); dv++) {
+      String tDataSourceName = tDataVariables.get(dv).sourceName();
+      String tDataDestName = tDataVariables.get(dv).destinationName();
       if (tDataDestName == null || tDataDestName.length() == 0) tDataDestName = tDataSourceName;
       Attributes tDataSourceAtts = new Attributes();
       OpendapHelper.getAttributes(das, tDataSourceName, tDataSourceAtts);
-      Attributes tDataAddAtts = (Attributes) tDataVariables[dv][2];
-      if (tDataAddAtts == null) tDataAddAtts = new Attributes();
+      LocalizedAttributes tDataAddAtts = tDataVariables.get(dv).attributes();
+      if (tDataAddAtts == null) tDataAddAtts = new LocalizedAttributes();
 
       // get the variable
       BaseType bt = dds.getVariable(tDataSourceName); // throws Throwable if not found
@@ -424,7 +423,7 @@ public class EDDGridFromDap extends EDDGrid {
         } else {
           Test.ensureEqual(
               tSourceAxisName,
-              (String) tAxisVariables[av][0],
+              tAxisVariables.get(av).sourceName(),
               errorInMethod
                   + "Observed dimension name doesn't equal "
                   + "expected dimension name for dimension #"
@@ -479,18 +478,19 @@ public class EDDGridFromDap extends EDDGrid {
                 "    " + tSourceAxisName + " not found.  So made from indices 0 - " + dadSize1);
         } // but other exceptions aren't caught
 
-        Attributes tAddAttributes =
-            tAxisVariables == null ? new Attributes() : (Attributes) tAxisVariables[av][2];
+        LocalizedAttributes tAddAttributes =
+            tAxisVariables == null
+                ? new LocalizedAttributes()
+                : tAxisVariables.get(av).attributes();
 
         String tDestinationAxisName =
-            tAxisVariables == null ? null : (String) tAxisVariables[av][1];
+            tAxisVariables == null ? null : tAxisVariables.get(av).destinationName();
         if (tDestinationAxisName == null || tDestinationAxisName.trim().length() == 0)
           tDestinationAxisName = tSourceAxisName;
 
         // if _Unsigned=true or false, change tSourceType
-        if (tAddAttributes == null) tAddAttributes = new Attributes();
-        tSourceValues =
-            Attributes.adjustSourceType(tSourceValues, tSourceAttributes, tAddAttributes);
+        if (tAddAttributes == null) tAddAttributes = new LocalizedAttributes();
+        tSourceValues = tAddAttributes.adjustSourceType(tSourceValues, tSourceAttributes);
 
         // make the axisVariable
         axisVariables[av] =
@@ -505,14 +505,13 @@ public class EDDGridFromDap extends EDDGrid {
       }
 
       // if _Unsigned=true or false, change tSourceType
-      dvSourceDataType =
-          Attributes.adjustSourceType(dvSourceDataType, tDataSourceAtts, tDataAddAtts);
+      dvSourceDataType = tDataAddAtts.adjustSourceType(dvSourceDataType, tDataSourceAtts);
 
       // create the EDV dataVariable
       if (tDataDestName.equals(EDV.TIME_NAME))
         throw new RuntimeException(
             errorInMethod + "No EDDGrid dataVariable may have destinationName=" + EDV.TIME_NAME);
-      else if (EDVTime.hasTimeUnits(tDataSourceAtts, tDataAddAtts))
+      else if (EDVTime.hasTimeUnits(language, tDataSourceAtts, tDataAddAtts))
         dataVariables[dv] =
             new EDVTimeStamp(
                 datasetID,
@@ -532,7 +531,7 @@ public class EDDGridFromDap extends EDDGrid {
                 dvSourceDataType,
                 PAOne.fromDouble(Double.NaN),
                 PAOne.fromDouble(Double.NaN)); // hard to get min and max
-      dataVariables[dv].extractAndSetActualRange();
+      dataVariables[dv].extractAndSetActualRange(language);
       // String2.log(">> EDDGridFromDap construct " + tDataDestName + " type=" + dvSourceDataType);
     }
 
@@ -546,10 +545,10 @@ public class EDDGridFromDap extends EDDGrid {
         quickRestartAttributes.set("creationTimeMillis", "" + creationTimeMillis);
         quickRestartAttributes.set("dasBytes", new ByteArray(dasBytes));
         quickRestartAttributes.set("ddsBytes", new ByteArray(ddsBytes));
-        for (int av = 0; av < axisVariables.length; av++) {
+        for (EDVGridAxis axisVariable : axisVariables) {
           quickRestartAttributes.set(
-              "sourceValues_" + String2.encodeVariableNameSafe(axisVariables[av].sourceName()),
-              axisVariables[av].sourceValues());
+              "sourceValues_" + String2.encodeVariableNameSafe(axisVariable.sourceName()),
+              axisVariable.sourceValues());
         }
         File2.makeDirectory(File2.getDirectory(quickRestartFullFileName()));
         NcHelper.writeAttributesToNc3(quickRestartFullFileName(), quickRestartAttributes);
@@ -562,7 +561,7 @@ public class EDDGridFromDap extends EDDGrid {
     long cTime = System.currentTimeMillis() - constructionStartMillis;
     if (verbose)
       String2.log(
-          (debugMode ? "\n" + toString() : "")
+          (debugMode ? "\n" + this : "")
               + "\n*** EDDGridFromDap "
               + datasetID
               + " constructor finished. TIME="
@@ -636,7 +635,7 @@ public class EDDGridFromDap extends EDDGrid {
     int newSize = dad.getSize();
     if (newSize < oldSize)
       throw new WaitThenTryAgainException(
-          EDStatic.simpleBilingual(language, EDStatic.waitThenTryAgainAr)
+          EDStatic.simpleBilingual(language, EDStatic.messages.waitThenTryAgainAr)
               + "\n("
               + msg
               + "["
@@ -690,7 +689,7 @@ public class EDDGridFromDap extends EDDGrid {
     }
     if (oldValues.elementType() != newValues.elementType()) // they're canonical, so != works
     throw new WaitThenTryAgainException(
-          EDStatic.simpleBilingual(language, EDStatic.waitThenTryAgainAr)
+          EDStatic.simpleBilingual(language, EDStatic.messages.waitThenTryAgainAr)
               + "\n("
               + msg
               + edvga.destinationName()
@@ -704,7 +703,7 @@ public class EDDGridFromDap extends EDDGrid {
     // ensure last old value is unchanged
     if (oldValues.getDouble(oldSize - 1) != newValues.getDouble(0)) // they should be exactly equal
     throw new WaitThenTryAgainException(
-          EDStatic.simpleBilingual(language, EDStatic.waitThenTryAgainAr)
+          EDStatic.simpleBilingual(language, EDStatic.messages.waitThenTryAgainAr)
               + "\n("
               + msg
               + edvga.destinationName()
@@ -740,7 +739,7 @@ public class EDDGridFromDap extends EDDGrid {
     String error = edvga.isAscending() ? newValues.isAscending() : newValues.isDescending();
     if (error.length() > 0)
       throw new WaitThenTryAgainException(
-          EDStatic.simpleBilingual(language, EDStatic.waitThenTryAgainAr)
+          EDStatic.simpleBilingual(language, EDStatic.messages.waitThenTryAgainAr)
               + "\n("
               + edvga.destinationName()
               + " was "
@@ -807,12 +806,15 @@ public class EDDGridFromDap extends EDDGrid {
     edvga.setDestinationMinMax(newMin, newMax);
     edvga.setIsEvenlySpaced(newIsEvenlySpaced);
     edvga.initializeAverageSpacingAndCoarseMinMax();
-    edvga.setActualRangeFromDestinationMinMax();
+    edvga.setActualRangeFromDestinationMinMax(language);
     if (edvga instanceof EDVTimeGridAxis)
       combinedGlobalAttributes.set(
+          language,
           "time_coverage_end",
           Calendar2.epochSecondsToLimitedIsoStringT(
-              edvga.combinedAttributes().getString(EDV.TIME_PRECISION), newMax.getDouble(), ""));
+              edvga.combinedAttributes().getString(language, EDV.TIME_PRECISION),
+              newMax.getDouble(),
+              ""));
     edvga.clearSliderCsvValues(); // do last, to force recreation next time needed
 
     updateCount++;
@@ -855,21 +857,27 @@ public class EDDGridFromDap extends EDDGrid {
     if (verbose) String2.log("EDDGridFromDap.sibling " + tLocalSourceUrl);
 
     int nAv = axisVariables.length;
-    Object tAxisVariables[][] = new Object[nAv][3];
+    ArrayList<AxisVariableInfo> tAxisVariables = new ArrayList<>(nAv);
     for (int av = 0; av < nAv; av++) {
-      tAxisVariables[av][0] = axisVariables[av].sourceName();
-      tAxisVariables[av][1] = axisVariables[av].destinationName();
-      tAxisVariables[av][2] = axisVariables[av].addAttributes();
+      tAxisVariables.add(
+          new AxisVariableInfo(
+              axisVariables[av].sourceName(),
+              axisVariables[av].destinationName(),
+              axisVariables[av].addAttributes(),
+              null));
     }
     // String2.pressEnterToContinue("\nsibling axis0 addAtts=\n" +
     // axisVariables[0].addAttributes());
 
     int nDv = dataVariables.length;
-    Object tDataVariables[][] = new Object[nDv][3];
+    ArrayList<DataVariableInfo> tDataVariables = new ArrayList<>(nDv);
     for (int dv = 0; dv < nDv; dv++) {
-      tDataVariables[dv][0] = dataVariables[dv].sourceName();
-      tDataVariables[dv][1] = dataVariables[dv].destinationName();
-      tDataVariables[dv][2] = dataVariables[dv].addAttributes();
+      tDataVariables.add(
+          new DataVariableInfo(
+              dataVariables[dv].sourceName(),
+              dataVariables[dv].destinationName(),
+              dataVariables[dv].addAttributes(),
+              dataVariables[dv].sourceDataType()));
     }
 
     // need a unique datasetID for sibling
@@ -925,12 +933,6 @@ public class EDDGridFromDap extends EDDGrid {
       // shareInfo  (the EDD variables)
       newEDDGrid.dataVariableSourceNames = dataVariableSourceNames();
       newEDDGrid.dataVariableDestinationNames = dataVariableDestinationNames();
-      newEDDGrid.title = title();
-      newEDDGrid.summary = summary();
-      newEDDGrid.institution = institution();
-      newEDDGrid.infoUrl = infoUrl();
-      newEDDGrid.cdmDataType = cdmDataType();
-      newEDDGrid.searchBytes = searchBytes();
       // not sourceUrl, which will be different
       newEDDGrid.sourceGlobalAttributes = sourceGlobalAttributes();
       newEDDGrid.addGlobalAttributes = addGlobalAttributes();
@@ -943,7 +945,7 @@ public class EDDGridFromDap extends EDDGrid {
   /**
    * This gets source data (not yet converted to destination data) from the data source for this
    * EDDGrid. Because this is called by GridDataAccessor, the request won't be the full user's
-   * request, but will be a partial request (for less than EDStatic.partialRequestMaxBytes).
+   * request, but will be a partial request (for less than EDStatic.config.partialRequestMaxBytes).
    *
    * @param language the index of the selected language
    * @param tDirTable If EDDGridFromFiles, this MAY be the dirTable, else null.
@@ -993,10 +995,10 @@ public class EDDGridFromDap extends EDDGrid {
         throw t instanceof WaitThenTryAgainException
             ? t
             : new WaitThenTryAgainException(
-                EDStatic.simpleBilingual(language, EDStatic.waitThenTryAgainAr)
+                EDStatic.simpleBilingual(language, EDStatic.messages.waitThenTryAgainAr)
                     + "\n("
-                    + EDStatic.errorFromDataSource
-                    + t.toString()
+                    + EDStatic.messages.errorFromDataSource
+                    + t
                     + ")",
                 t);
       }
@@ -1022,15 +1024,13 @@ public class EDDGridFromDap extends EDDGrid {
         // it's a DGrid;  test the axes
         if (dv == 0) {
           // GridDataAccessor compares observed and expected axis values
-          for (int av = 0; av < axisVariables.length; av++) {
-            results[av] = pa[av + 1];
-          }
+          System.arraycopy(pa, 1, results, 0, axisVariables.length);
         } else if (pa.length != 1) {
           for (int av = 0; av < axisVariables.length; av++) {
             String tError = results[av].almostEqual(pa[av + 1]);
             if (tError.length() > 0)
               throw new WaitThenTryAgainException(
-                  EDStatic.simpleBilingual(language, EDStatic.waitThenTryAgainAr)
+                  EDStatic.simpleBilingual(language, EDStatic.messages.waitThenTryAgainAr)
                       + "\nDetails: The axis values for dataVariable=0,axis="
                       + av
                       + ")\ndon't equal the axis values for dataVariable="
@@ -1044,7 +1044,7 @@ public class EDDGridFromDap extends EDDGrid {
 
       } else {
         throw new WaitThenTryAgainException(
-            EDStatic.simpleBilingual(language, EDStatic.waitThenTryAgainAr)
+            EDStatic.simpleBilingual(language, EDStatic.messages.waitThenTryAgainAr)
                 + "\nDetails: An unexpected data structure was returned from the source (size observed="
                 + pa.length
                 + ", expected="
@@ -1168,18 +1168,17 @@ public class EDDGridFromDap extends EDDGrid {
     OpendapHelper.getAttributes(das, "GLOBAL", axisSourceTable.globalAttributes());
 
     // read through the variables[]
-    HashSet<String> dimensionNameCsvsFound = new HashSet();
-    Enumeration vars = dds.getVariables();
+    HashSet<String> dimensionNameCsvsFound = new HashSet<>();
+    Iterator<BaseType> vars = dds.getVariables();
     StringArray varNames = new StringArray();
     StringBuilder results = new StringBuilder();
     // if dimensionName!=null, this notes if a var with another dimension combo was found
     boolean otherComboFound = false;
     String sourceDimensionNamesInBrackets = null;
-    String destDimensionNamesInBrackets = null;
     Attributes gridMappingAtts = null;
     NEXT_VAR:
-    while (vars.hasMoreElements()) {
-      BaseType bt = (BaseType) vars.nextElement();
+    while (vars.hasNext()) {
+      BaseType bt = vars.next();
       String dName = bt.getName();
       varNames.add(dName);
 
@@ -1196,8 +1195,7 @@ public class EDDGridFromDap extends EDDGrid {
       // ensure it is a DGrid or DArray
       DArray mainDArray;
       if (bt instanceof DGrid dgrid)
-        mainDArray =
-            (DArray) dgrid.getVariables().nextElement(); // first element is always main array
+        mainDArray = (DArray) dgrid.getVariables().next(); // first element is always main array
       else if (bt instanceof DArray darray) mainDArray = darray;
       else continue;
 
@@ -1489,7 +1487,7 @@ public class EDDGridFromDap extends EDDGrid {
                 + "?"
                 + tSourceName
                 + "\n"
-                + sb.toString());
+                + sb);
 
       // ensure no missing values or values > 1e20
       double stats[] = axisPAs[av].calculateStats();
@@ -1526,7 +1524,6 @@ public class EDDGridFromDap extends EDDGrid {
     }
 
     // suggestReloadEveryNMinutes and add ", startYear-EndYear" to the title
-    String timeUnits = null;
     double es5mo =
         (System.currentTimeMillis() / 1000.0)
             - 150 * Calendar2.SECONDS_PER_DAY; // approximately 150 days ago
@@ -1696,7 +1693,10 @@ public class EDDGridFromDap extends EDDGrid {
         writeVariablesForDatasetsXml(axisSourceTable, axisAddTable, "axisVariable", false, false));
     results.append(
         writeVariablesForDatasetsXml(dataSourceTable, dataAddTable, "dataVariable", false, false));
-    results.append("</dataset>\n" + "\n");
+    results.append("""
+            </dataset>
+
+            """);
 
     String2.log("\n\n*** generateDatasetsXml finished successfully.\n\n");
     return results.toString();
@@ -1859,8 +1859,7 @@ public class EDDGridFromDap extends EDDGrid {
             + "\n"
             + String2.standardHelpAboutMessage());
 
-    Writer results = File2.getBufferedFileWriterUtf8(resultsFileName);
-    try {
+    try (Writer results = File2.getBufferedFileWriterUtf8(resultsFileName)) {
       // crawl THREDDS catalog
       crawlThreddsCatalog(
           oLocalSourceUrl == null
@@ -1870,15 +1869,13 @@ public class EDDGridFromDap extends EDDGrid {
           pathRegex,
           negativePathRegex,
           results);
-    } finally {
-      results.close();
     }
 
     String2.returnLoggingToSystemOut();
 
     if (oLocalSourceUrl != null) {
-      Test.displayInBrowser(resultsFileName);
-      Test.displayInBrowser(logFileName);
+      // Test.displayInBrowser(resultsFileName);
+      // Test.displayInBrowser(logFileName);
       return;
     }
 
@@ -2163,7 +2160,6 @@ public class EDDGridFromDap extends EDDGrid {
     String baseUrl = "https://oceanwatch.pfeg.noaa.gov/thredds/";
     String mainCat = SSR.getUrlResponseStringUnchanged(baseUrl + "catalog.html");
     int mainCatPo = 0;
-    int mainCount = 0;
 
     StringBuilder sb = new StringBuilder();
 
@@ -2345,12 +2341,13 @@ public class EDDGridFromDap extends EDDGrid {
     // process the catalog's datasets
     // ???getDatasets or getDatasetsLogical()?
     List<Dataset> datasets = catalog.getDatasets(); // getDatasetsLogical();
-    HashSet<String> set = new HashSet();
+    HashSet<String> set = new HashSet<>();
     if (datasets != null) {
       if (verbose) String2.log("crawlThreddsCatalog will process " + datasets.size() + " datasets");
-      for (int i = 0; i < datasets.size(); i++) // usually just 1
-      processThreddsDataset(
-            datasets.get(i),
+      // usually just 1
+      for (Dataset dataset : datasets)
+        processThreddsDataset(
+            dataset,
             set,
             datasetNameRegex,
             pathRegex,
@@ -2400,7 +2397,7 @@ public class EDDGridFromDap extends EDDGrid {
    */
   public static void processThreddsDataset(
       Dataset dataset,
-      HashSet<String> set,
+      Set<String> set,
       String datasetNameRegex,
       String pathRegex,
       String negativePathRegex,
@@ -2484,8 +2481,8 @@ public class EDDGridFromDap extends EDDGrid {
             if (list != null && list.size() > 0) {
               StringBuilder names = new StringBuilder();
               StringBuilder roles = new StringBuilder();
-              for (int i = 0; i < list.size(); i++) {
-                Contributor contributor = (Contributor) list.get(i);
+              for (Object o : list) {
+                Contributor contributor = (Contributor) o;
                 String2.ifSomethingConcat(names, ", ", contributor.getName());
                 String2.ifSomethingConcat(roles, ", ", contributor.getRole());
               }
@@ -2495,7 +2492,7 @@ public class EDDGridFromDap extends EDDGrid {
 
             list = dataset.getCreators();
             if (list != null && list.size() > 0) {
-              Source source = (Source) list.get(0);
+              Source source = (Source) list.getFirst();
               atts.add("creator_name", source.getName());
               atts.add("creator_email", source.getEmail());
               atts.add("creator_url", source.getUrl());
@@ -2503,8 +2500,8 @@ public class EDDGridFromDap extends EDDGrid {
 
             list = dataset.getDocumentation();
             if (list != null) {
-              for (int i = 0; i < list.size(); i++) {
-                Documentation id = (Documentation) list.get(i);
+              for (Object o : list) {
+                Documentation id = (Documentation) o;
                 // String2.log(">> Doc#" + i + ": type:" + id.getType());
                 // String2.log(">> Doc#" + i + ": inlineContent:" + id.getInlineContent());
                 // String2.log(">> Doc#" + i + ": URI:" + id.getURI());
@@ -2518,13 +2515,13 @@ public class EDDGridFromDap extends EDDGrid {
                 String tType = id.getType();
                 if (!String2.isSomething(tType)) continue;
                 String tContent = id.getInlineContent();
-                if (tType.toLowerCase().equals("funding")
+                if (tType.equalsIgnoreCase("funding")
                     && !String2.looselyContains(tAck.toString(), tContent))
                   String2.ifSomethingConcat(tAck, " ", tContent);
-                if (tType.toLowerCase().equals("rights")
+                if (tType.equalsIgnoreCase("rights")
                     && !String2.looselyContains(tLicense.toString(), tContent))
                   String2.ifSomethingConcat(tLicense, " ", tContent);
-                if (tType.toLowerCase().equals("summary")
+                if (tType.equalsIgnoreCase("summary")
                     && !String2.looselyContains(tSummary.toString(), tContent))
                   String2.ifSomethingConcat(tSummary, " ", tContent);
               }
@@ -2532,24 +2529,26 @@ public class EDDGridFromDap extends EDDGrid {
 
             // String2.pressEnterToContinue(">> title=" + title.toString() + " name=" +
             // dataset.getName());
-            String fullName = dataset.getName();
-            if (fullName == null) fullName = "";
+            StringBuilder fullName = new StringBuilder(dataset.getName());
+            if (fullName == null) fullName = new StringBuilder();
             Dataset tParentDataset = dataset.getParentDataset();
             while (tParentDataset != null) {
               String tpName = tParentDataset.getName();
-              if (String2.isSomething(tpName)) fullName = tpName + ", " + fullName;
+              if (String2.isSomething(tpName)) fullName.insert(0, tpName + ", ");
               tParentDataset = tParentDataset.getParentDataset();
             }
             String2.ifSomethingConcat(
-                title, "",
-                fullName); // 2020-01-17 in netcdfjava 4.6, there was dataset.getFullName()
+                title,
+                "",
+                fullName
+                    .toString()); // 2020-01-17 in netcdfjava 4.6, there was dataset.getFullName()
             String2.ifSomethingConcat(history, "\n", dataset.getHistory());
 
             list = dataset.getKeywords();
             if (list != null) {
               StringBuilder sb = new StringBuilder();
-              for (int i = 0; i < list.size(); i++) {
-                Vocab v = (Vocab) list.get(i);
+              for (Object o : list) {
+                Vocab v = (Vocab) o;
                 // if (i == 0) String2.listMethods(v);
                 sb.append(v.getText() + ", ");
               }
@@ -2569,7 +2568,7 @@ public class EDDGridFromDap extends EDDGrid {
 
             list = dataset.getPublishers();
             if (list != null && list.size() > 0) {
-              Source source = (Source) list.get(0);
+              Source source = (Source) list.getFirst();
               atts.add("publisher_name", source.getName());
               atts.add("publisher_email", source.getEmail());
               atts.add("publisher_url", source.getUrl());
@@ -2624,9 +2623,9 @@ public class EDDGridFromDap extends EDDGrid {
       List<Dataset> datasets = dataset.getDatasetsLogical();
       if (datasets != null) {
         if (reallyVerbose) String2.log("  processing " + datasets.size() + " nested datasets...");
-        for (int i = 0; i < datasets.size(); i++) {
+        for (Dataset value : datasets) {
           processThreddsDataset(
-              datasets.get(i),
+              value,
               set,
               datasetNameRegex,
               pathRegex,

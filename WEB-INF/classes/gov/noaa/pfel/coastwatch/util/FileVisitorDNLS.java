@@ -16,6 +16,7 @@ import com.cohort.util.MustBe;
 import com.cohort.util.SimpleException;
 import com.cohort.util.String2;
 import com.cohort.util.XML;
+import com.google.common.collect.ImmutableList;
 import gov.noaa.pfel.coastwatch.pointdata.Table;
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
@@ -31,14 +32,12 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
 import java.util.EnumSet;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
-import java.util.ListIterator;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -95,8 +94,10 @@ public class FileVisitorDNLS extends SimpleFileVisitor<Path> {
   public static final String NAME = "name";
   public static final String LASTMODIFIED = "lastModified";
   public static final String SIZE = "size";
-  public static final String DNLS_COLUMN_NAMES[] = {DIRECTORY, NAME, LASTMODIFIED, SIZE};
-  public static final String DNLS_COLUMN_TYPES_SSLL[] = {"String", "String", "long", "long"};
+  public static final ImmutableList<String> DNLS_COLUMN_NAMES =
+      ImmutableList.of(DIRECTORY, NAME, LASTMODIFIED, SIZE);
+  public static final ImmutableList<String> DNLS_COLUMN_TYPES_SSLL =
+      ImmutableList.of("String", "String", "long", "long");
 
   public static final String URL = "url"; // in place of directory for oneStepAccessibleViaFiles
 
@@ -125,18 +126,18 @@ public class FileVisitorDNLS extends SimpleFileVisitor<Path> {
    *
    * <p>Files with lastMod in the last n milliseconds are not removed from the cache.
    */
-  public static int PRUNE_CACHE_SAFE_MILLIS =
+  public static final int PRUNE_CACHE_SAFE_MILLIS =
       20 * 1000; // 20 seconds = 2*10 (10 seconds to decompress jplMur files)
 
   /**
    * When threshold size is reached, prune the cache to fraction*threshold. Normally, you won't
    * change this, but will change the fraction in code calling pruneCache().
    */
-  public static double PRUNE_CACHE_DEFAULT_FRACTION = 0.75;
+  public static final double PRUNE_CACHE_DEFAULT_FRACTION = 0.75;
 
   /** ConcurrentHashMap handles multi-threaded access well. */
-  public static ConcurrentHashMap<String, Long> pruneCacheDirSize =
-      new ConcurrentHashMap(); /* dirName, bytes */
+  public static final ConcurrentHashMap<String, Long> pruneCacheDirSize =
+      new ConcurrentHashMap<>(); /* dirName, bytes */
 
   /** Max allowed is 1000. Only use smaller number for testing. */
   public static int S3_MAX_KEYS = 1000;
@@ -421,7 +422,7 @@ public class FileVisitorDNLS extends SimpleFileVisitor<Path> {
           // https://docs.aws.amazon.com/AmazonS3/latest/API/API_ListObjectsV2.html says v2 is the
           // recommended approach.
           // https://docs.aws.amazon.com/AWSJavaSDK/latest/javadoc/index.html?com/amazonaws/services/s3/model/ListObjectsV2Request.html
-          HashSet<String> dirHashSet = new HashSet();
+          HashSet<String> dirHashSet = new HashSet<>();
           ListObjectsV2Request.Builder reqBuilder =
               ListObjectsV2Request.builder()
                   .bucket(bucketName)
@@ -448,17 +449,15 @@ public class FileVisitorDNLS extends SimpleFileVisitor<Path> {
             // get common prefixes
             if (tDirectoriesToo) {
               List<CommonPrefix> list = response.commonPrefixes();
-              int tn = list.size();
-              for (int i = 0; i < tn; i++) {
-                String td2 = baseURL + list.get(i).prefix(); // list.get(i)= e.g., BCSD/
+              for (CommonPrefix commonPrefix : list) {
+                String td2 = baseURL + commonPrefix.prefix(); // list.get(i)= e.g., BCSD/
                 dirHashSet.add(td2);
                 // String2.log(">> add dir=" + td2);
               }
             }
 
             List<S3Object> objects = response.contents();
-            for (ListIterator iterVals = objects.listIterator(); iterVals.hasNext(); ) {
-              S3Object s3Object = (S3Object) iterVals.next();
+            for (S3Object s3Object : objects) {
               String keyFullName = s3Object.key();
               String keyDir = File2.getDirectory(baseURL + keyFullName);
               String keyName = File2.getNameAndExtension(keyFullName);
@@ -510,7 +509,7 @@ public class FileVisitorDNLS extends SimpleFileVisitor<Path> {
                   (!response.isTruncated() && writtenToFile)) { // write final chunk
                 if (!writtenToFile)
                   File2.makeDirectory(File2.getDirectory(dnlsFileName)); // ensure dir exists
-                table.writeJsonlCSV(dnlsFileName, writtenToFile ? true : false); // append
+                table.writeJsonlCSV(dnlsFileName, writtenToFile); // append
                 table.removeAllRows();
                 writtenToFile = true;
               }
@@ -546,9 +545,7 @@ public class FileVisitorDNLS extends SimpleFileVisitor<Path> {
             lastModifiedPA = (LongArray) table.getColumn(LASTMODIFIED);
             sizePA = (LongArray) table.getColumn(SIZE);
 
-            Iterator<String> it = dirHashSet.iterator();
-            while (it.hasNext()) {
-              String s = it.next();
+            for (String s : dirHashSet) {
               // String2.log(">> add dir=" + s);
               directoryPA.add(s);
               namePA.add("");
@@ -866,10 +863,8 @@ public class FileVisitorDNLS extends SimpleFileVisitor<Path> {
       if (sourceFullName.contains("zarr")) {
         File2.decompressAllFiles(sourceFullName, cacheFullName);
       } else {
-        InputStream is = File2.getDecompressedBufferedInputStream(sourceFullName);
-        OutputStream os = null;
-        try {
-          os = new BufferedOutputStream(new FileOutputStream(cacheFullName));
+        try (InputStream is = File2.getDecompressedBufferedInputStream(sourceFullName);
+            OutputStream os = new BufferedOutputStream(new FileOutputStream(cacheFullName))) {
           if (!File2.copy(is, os)) throw new IOException("Unable to decompress " + sourceFullName);
           if (verbose)
             String2.log(
@@ -878,15 +873,6 @@ public class FileVisitorDNLS extends SimpleFileVisitor<Path> {
                     + "  time="
                     + (System.currentTimeMillis() - time)
                     + "ms");
-        } finally {
-          try {
-            if (os != null) os.close();
-          } catch (Exception e2) {
-          }
-          try {
-            if (is != null) is.close();
-          } catch (Exception e2) {
-          }
         }
       }
 
@@ -916,7 +902,7 @@ public class FileVisitorDNLS extends SimpleFileVisitor<Path> {
    */
   public static long getPruneCacheDirSize(String dir) {
     Long tl = pruneCacheDirSize.get(dir);
-    return tl == null ? -1 : tl.longValue();
+    return tl == null ? -1 : tl;
   }
 
   /**
@@ -926,7 +912,7 @@ public class FileVisitorDNLS extends SimpleFileVisitor<Path> {
    * @param sizeB total size of files, in bytes
    */
   public static void setPruneCacheDirSize(String dir, long sizeB) {
-    pruneCacheDirSize.put(dir, Long.valueOf(sizeB));
+    pruneCacheDirSize.put(dir, sizeB);
   }
 
   /**
@@ -938,8 +924,8 @@ public class FileVisitorDNLS extends SimpleFileVisitor<Path> {
    */
   public static long incrementPruneCacheDirSize(String dir, long addB) {
     Long tl = pruneCacheDirSize.get(dir);
-    long tll = (tl == null ? 0 : tl.longValue()) + addB;
-    pruneCacheDirSize.put(dir, Long.valueOf(tll));
+    long tll = (tl == null ? 0 : tl) + addB;
+    pruneCacheDirSize.put(dir, tll);
     return tll;
   }
 
@@ -1119,29 +1105,31 @@ public class FileVisitorDNLS extends SimpleFileVisitor<Path> {
       String colName = tTable.getColumnName(col);
       Attributes atts = tTable.columnAttributes(col);
 
-      if (colName.equals(DIRECTORY)) {
-        atts.set("ioos_category", "Identifier");
-        atts.set("long_name", "Directory");
-
-      } else if (colName.equals(NAME)) {
-        atts.set("ioos_category", "Identifier");
-        atts.set("long_name", "File Name");
-
-      } else if (colName.equals(LASTMODIFIED)) {
-        atts.set("ioos_category", "Time");
-        atts.set("long_name", "Last Modified");
-        atts.set("units", Calendar2.SECONDS_SINCE_1970);
-        LongArray la = (LongArray) tTable.getColumn(col);
-        DoubleArray da = new DoubleArray(nRows, false);
-        for (int row = 0; row < nRows; row++)
-          da.add(la.getDouble(row) / 1000.0); // to epochSeconds    //getDouble handles mv
-        tTable.setColumn(col, da);
-
-      } else if (colName.equals(SIZE)) {
-        atts.set("ioos_category", "Other");
-        atts.set("long_name", "Size");
-        atts.set("units", "bytes");
-        tTable.setColumn(col, new DoubleArray(tTable.getColumn(col)));
+      switch (colName) {
+        case DIRECTORY -> {
+          atts.set("ioos_category", "Identifier");
+          atts.set("long_name", "Directory");
+        }
+        case NAME -> {
+          atts.set("ioos_category", "Identifier");
+          atts.set("long_name", "File Name");
+        }
+        case LASTMODIFIED -> {
+          atts.set("ioos_category", "Time");
+          atts.set("long_name", "Last Modified");
+          atts.set("units", Calendar2.SECONDS_SINCE_1970);
+          LongArray la = (LongArray) tTable.getColumn(col);
+          DoubleArray da = new DoubleArray(nRows, false);
+          for (int row = 0; row < nRows; row++)
+            da.add(la.getDouble(row) / 1000.0); // to epochSeconds    //getDouble handles mv
+          tTable.setColumn(col, da);
+        }
+        case SIZE -> {
+          atts.set("ioos_category", "Other");
+          atts.set("long_name", "Size");
+          atts.set("units", "bytes");
+          tTable.setColumn(col, new DoubleArray(tTable.getColumn(col)));
+        }
       }
     }
 
@@ -1154,8 +1142,8 @@ public class FileVisitorDNLS extends SimpleFileVisitor<Path> {
    *
    * @param tDir The starting directory, with \\ or /, with or without trailing slash, which will be
    *     removed.
-   * @param startOfUrl usually EDStatic.erddapUrl(loggedInAs, language) + "/files/" + datasetID() +
-   *     "/" which will be prepended.
+   * @param startOfUrl usually EDStatic.erddapUrl(request, loggedInAs, language) + "/files/" +
+   *     datasetID() + "/" which will be prepended.
    * @return a table with columns with DIRECTORY (always "/"), NAME, LASTMODIFIED (long
    *     epochMilliseconds), and SIZE (long) columns.
    */
@@ -1176,8 +1164,8 @@ public class FileVisitorDNLS extends SimpleFileVisitor<Path> {
    *
    * @param tDir The starting directory, with \\ or /, with or without trailing slash, which will be
    *     removed.
-   * @param startOfUrl usually EDStatic.erddapUrl(loggedInAs, language) + "/files/" + datasetID() +
-   *     "/" which will be prepended.
+   * @param startOfUrl usually EDStatic.erddapUrl(request, loggedInAs, language) + "/files/" +
+   *     datasetID() + "/" which will be prepended.
    * @return a table with columns with DIRECTORY (always "/"), NAME, LASTMODIFIED (double
    *     epochSeconds), and SIZE (doubles) columns.
    */
@@ -1202,7 +1190,6 @@ public class FileVisitorDNLS extends SimpleFileVisitor<Path> {
   public static Table oneStepDoubleWithUrlsNotDirs(Table tTable, String tDir, String startOfUrl)
       throws IOException {
 
-    int nCols = tTable.nColumns();
     int nRows = tTable.nRows();
 
     // replace directory with virtual url
@@ -2085,8 +2072,7 @@ public class FileVisitorDNLS extends SimpleFileVisitor<Path> {
       // note that String2.extractCaptureGroup fails if the string has line terminators
       String content1 = String2.extractRegex(td1, TT_REGEX, 0);
       String content2 = String2.extractRegex(thisRow.substring(td2Po, td3Po), TT_REGEX, 0);
-      String content3 =
-          String2.extractRegex(thisRow.substring(td3Po, thisRow.length()), TT_REGEX, 0);
+      String content3 = String2.extractRegex(thisRow.substring(td3Po), TT_REGEX, 0);
       if (diagnosticMode)
         String2.log("=== <td><tt> content #1=" + content1 + " #2=" + content2 + " #3=" + content3);
       content1 = content1 == null ? "" : content1.substring(4, content1.length() - 5);
@@ -2333,95 +2319,6 @@ public class FileVisitorDNLS extends SimpleFileVisitor<Path> {
   }
 
   /**
-   * This looks in all the specified files until a file with a line that matches lineRegex is found.
-   *
-   * @param tDir The starting directory.
-   * @param tFileNameRegex The regex to specify which file names to include.
-   * @param tRecursive If true, subdirectories are also searched.
-   * @param tPathRegex If tRecursive, this specifies which subdirs should be searched.
-   * @param lineRegex This is the main regex. We seek lines that match this regex.
-   * @param tallyWhich If &gt;= 0, this tabulates the values of the tallyWhich-th capture group in
-   *     the lineRegex.
-   * @param interactiveNLines if &gt;0, this shows the file, the matching line and nLines
-   *     thereafter, and calls pressEnterToContinue(). If false, this returns the name of the first
-   *     file matching lineRegex.
-   * @param showTopN If tallyWhich &gt;=0, the results will show the topN matched values.
-   * @return this returns the first matching fileName, or null if none
-   */
-  public static String findFileWith(
-      String tDir,
-      String tFileNameRegex,
-      boolean tRecursive,
-      String tPathRegex,
-      String lineRegex,
-      int tallyWhich,
-      int interactiveNLines,
-      int showTopN)
-      throws Throwable {
-    String2.log("\n*** findFileWith(\"" + lineRegex + "\")");
-    Table table = oneStep(tDir, tFileNameRegex, tRecursive, tPathRegex, false);
-    StringArray dirs = (StringArray) table.getColumn(DIRECTORY);
-    StringArray names = (StringArray) table.getColumn(NAME);
-    Tally tally = tallyWhich >= 0 ? new Tally() : null;
-    int nFiles = names.size();
-    Pattern linePattern = Pattern.compile(lineRegex);
-    String firstFullName = null;
-    int lastFileiMatch = -1;
-    int nFilesMatched = 0;
-    int nLinesMatched = 0;
-    for (int filei = 0; filei < nFiles; filei++) {
-      if (filei % 100 == 0)
-        String2.log(
-            "file#"
-                + filei
-                + " nFilesMatched="
-                + nFilesMatched
-                + " nLinesMatched="
-                + nLinesMatched);
-      try {
-        String fullName = dirs.get(filei) + names.get(filei);
-        ArrayList<String> lines = SSR.getUrlResponseArrayList(fullName);
-        int nLines = lines.size();
-        for (int linei = 0; linei < nLines; linei++) {
-          Matcher matcher = linePattern.matcher(lines.get(linei));
-          if (matcher.matches()) {
-            nLinesMatched++;
-            if (lastFileiMatch != filei) {
-              lastFileiMatch = filei;
-              nFilesMatched++;
-            }
-            if (firstFullName == null) firstFullName = fullName;
-            if (tallyWhich >= 0) tally.add(lineRegex, matcher.group(tallyWhich));
-            if (interactiveNLines > 0) {
-              String msg =
-                  "\n***** Found match in fileName#" + filei + "=" + fullName + " on line#" + linei;
-              String2.log(msg + ". File contents=");
-              String2.log(String2.toNewlineString(lines.toArray(new String[0])));
-              String2.log("\n" + msg + ":\n");
-              for (int tl = linei; tl < Math.min(linei + interactiveNLines + 1, nLines); tl++)
-                String2.log(lines.get(tl));
-              String2.pressEnterToContinue();
-            } else if (tallyWhich < 0) {
-              return firstFullName;
-            }
-          }
-        }
-      } catch (Exception e) {
-        String2.log(MustBe.throwableToString(e));
-      }
-    }
-    String2.log(
-        "\nfindFileWhich finished successfully. nFiles="
-            + nFiles
-            + " nFilesMatched="
-            + nFilesMatched
-            + " nLinesMatched="
-            + nLinesMatched);
-    if (tallyWhich >= 0) String2.log(tally.toString(showTopN)); // most common n will be shown
-    return firstFullName;
-  }
-
-  /**
    * This makes a .tgz or .tar.gz file.
    *
    * @param tResultName is the full result file name, usually the name of the dir being archived,
@@ -2430,12 +2327,10 @@ public class FileVisitorDNLS extends SimpleFileVisitor<Path> {
   public static void makeTgz(
       String tDir, String tFileNameRegex, boolean tRecursive, String tPathRegex, String tResultName)
       throws Exception {
-    TarArchiveOutputStream tar = null;
     String outerDir = File2.getDirectory(tDir.substring(0, tDir.length() - 1));
-    tar =
+    try (TarArchiveOutputStream tar =
         new TarArchiveOutputStream(
-            new GZIPOutputStream(new BufferedOutputStream(new FileOutputStream(tResultName))));
-    try {
+            new GZIPOutputStream(new BufferedOutputStream(new FileOutputStream(tResultName))))) {
 
       // Add data to out and flush stream
       Table filesTable =
@@ -2453,18 +2348,12 @@ public class FileVisitorDNLS extends SimpleFileVisitor<Path> {
         entry.setSize(sizePA.get(fi));
         entry.setModTime(lastModifiedPA.get(fi));
         tar.putArchiveEntry(entry);
-        InputStream fis =
-            File2.getBufferedInputStream(
-                fullName); // not File2.getDecompressedBufferedInputStream(). Read file as is.
-        try {
+        // not File2.getDecompressedBufferedInputStream(). Read file as is.
+        try (InputStream fis = File2.getBufferedInputStream(fullName)) {
           while ((nBytes = fis.read(buffer)) > 0) tar.write(buffer, 0, nBytes);
-        } finally {
-          fis.close();
         }
         tar.closeArchiveEntry();
       }
-    } finally {
-      tar.close();
     }
   }
 
@@ -2519,7 +2408,9 @@ public class FileVisitorDNLS extends SimpleFileVisitor<Path> {
         if (addLastModified) {
           sb.append(
               String2.left(
-                  cTime == Long.MAX_VALUE ? "" : Calendar2.epochSecondsToIsoStringTZ(cTime / 1000),
+                  cTime == Long.MAX_VALUE
+                      ? ""
+                      : Calendar2.epochSecondsToIsoStringTZ(Math2.divideNoRemainder(cTime, 1000)),
                   21)); // 21
           sb.append(' '); // 1
         }
@@ -2545,7 +2436,6 @@ public class FileVisitorDNLS extends SimpleFileVisitor<Path> {
     StringArray names = (StringArray) table.getColumn(FileVisitorDNLS.NAME);
     Tally tally = new Tally();
     int nErrors = 0;
-    int nFindTags = findTags.length;
     for (int i = 0; i < names.size(); i++) {
 
       String2.log("reading #" + i + ": " + dirs.get(i) + names.get(i));
@@ -2558,8 +2448,8 @@ public class FileVisitorDNLS extends SimpleFileVisitor<Path> {
           xmlReader.nextTag();
           String tags = xmlReader.allTags();
           if (tags.length() == 0) break;
-          for (int t = 0; t < nFindTags; t++) {
-            if (tags.equals(findTags[t])) tally.add(findTags[t], xmlReader.content());
+          for (String findTag : findTags) {
+            if (tags.equals(findTag)) tally.add(findTag, xmlReader.content());
           }
         }
         xmlReader.close();
@@ -2575,53 +2465,15 @@ public class FileVisitorDNLS extends SimpleFileVisitor<Path> {
     return tally;
   }
 
-  /** This finds the file names where an xml findTags matches a regex. */
-  public static void findMatchingContentInXml(
-      String dir, String fileNameRegex, boolean recursive, String findTag, String matchRegex)
-      throws Exception {
-
-    Table table =
-        oneStep(
-            dir, fileNameRegex, recursive, ".*", false); // tRecursive, tPathRegex, tDirectoriesToo
-    StringArray dirs = (StringArray) table.getColumn(FileVisitorDNLS.DIRECTORY);
-    StringArray names = (StringArray) table.getColumn(FileVisitorDNLS.NAME);
-    Tally tally = new Tally();
-    int nErrors = 0;
-    for (int i = 0; i < names.size(); i++) {
-
-      SimpleXMLReader xmlReader = null;
-      try {
-        String2.log("reading #" + i + ": " + dirs.get(i) + names.get(i));
-        xmlReader =
-            new SimpleXMLReader(
-                File2.getDecompressedBufferedInputStream(dirs.get(i) + names.get(i)));
-        while (true) {
-          xmlReader.nextTag();
-          String tags = xmlReader.allTags();
-          if (tags.length() == 0) break;
-          if (tags.equals(findTag) && xmlReader.content().matches(matchRegex))
-            String2.log(dirs.get(i) + names.get(i) + " has \"" + xmlReader.content() + "\"");
-        }
-        xmlReader.close();
-
-      } catch (Throwable t) {
-        String2.log(MustBe.throwableToString(t));
-        nErrors++;
-        if (xmlReader != null) xmlReader.close();
-      }
-    }
-    String2.log("\n*** findMatchingContentInXml() finished. nErrors=" + nErrors);
-  }
-
   /**
    * A variant of reduceDnlsTableToOneDir that doesn't use subdirHash and returns the sorted subDir
    * short names as a String[].
    */
   public static String[] reduceDnlsTableToOneDir(Table dnlsTable, String oneDir) {
-    HashSet<String> subdirHash = new HashSet();
+    HashSet<String> subdirHash = new HashSet<>();
     reduceDnlsTableToOneDir(dnlsTable, oneDir, subdirHash);
 
-    String subDirs[] = (String[]) subdirHash.toArray(new String[0]);
+    String subDirs[] = subdirHash.toArray(new String[0]);
     Arrays.sort(subDirs, String2.STRING_COMPARATOR_IGNORE_CASE);
     return subDirs;
   }
@@ -2639,7 +2491,7 @@ public class FileVisitorDNLS extends SimpleFileVisitor<Path> {
    * @param subdirHash to collect (additional) subsir (short) names.
    */
   public static void reduceDnlsTableToOneDir(
-      Table dnlsTable, String oneDir, HashSet<String> subdirHash) {
+      Table dnlsTable, String oneDir, Set<String> subdirHash) {
     int nRows = dnlsTable.nRows();
     if (nRows == 0) return;
     char separator = oneDir.indexOf('\\') >= 0 ? '\\' : '/';

@@ -86,7 +86,7 @@ public class VectorPointsRenderer extends CartesianRenderer {
    *
    * @param transparent if true, antialiasing is turned off; else it is turned on.
    */
-  private void drawVector(Graphics g, VectorAttribute2 attr) {
+  private void drawVector(Graphics g) {
 
     Layer ly = cg_.getLayer();
     Graphics2D g2 = (Graphics2D) g;
@@ -123,10 +123,8 @@ public class VectorPointsRenderer extends CartesianRenderer {
     int nValues = xValues.length;
     int[] xtail = new int[nValues];
     int[] ytail = new int[nValues];
-    int xdhead, ydhead;
-    int xdtemp, ydtemp;
     float xphead, yphead;
-    int count, size, nout;
+    int count;
     float vx, vy, vclen;
     double vdx, vdy;
     resultBaseX = new IntArray();
@@ -194,13 +192,6 @@ public class VectorPointsRenderer extends CartesianRenderer {
           if (attr_.getVectorStyle() == VectorAttribute2.HEAD) {
             // unscaled head
             tScale = fixedScale / vclen;
-            hx1 = xPtoD(xphead + (-vx - 0.35f * vy) * tScale);
-            hy1 = yPtoD(yphead + (-vy + 0.35f * vx) * tScale);
-            hx2 = xPtoD(xphead + (-vx + 0.35f * vy) * tScale);
-            hy2 = yPtoD(yphead + (-vy - 0.35f * vx) * tScale);
-            gp.moveTo(hx1, hy1);
-            gp.lineTo(headX, headY);
-            gp.lineTo(hx2, hy2);
           } else {
             // scaled head
             if (vclen >= maxSize) {
@@ -210,14 +201,14 @@ public class VectorPointsRenderer extends CartesianRenderer {
             } else {
               tScale = headScale;
             }
-            hx1 = xPtoD(xphead + (-vx - 0.35f * vy) * tScale);
-            hy1 = yPtoD(yphead + (-vy + 0.35f * vx) * tScale);
-            hx2 = xPtoD(xphead + (-vx + 0.35f * vy) * tScale);
-            hy2 = yPtoD(yphead + (-vy - 0.35f * vx) * tScale);
-            gp.moveTo(hx1, hy1);
-            gp.lineTo(headX, headY);
-            gp.lineTo(hx2, hy2);
           }
+          hx1 = xPtoD(xphead + (-vx - 0.35f * vy) * tScale);
+          hy1 = yPtoD(yphead + (-vy + 0.35f * vx) * tScale);
+          hx2 = xPtoD(xphead + (-vx + 0.35f * vy) * tScale);
+          hy2 = yPtoD(yphead + (-vy - 0.35f * vx) * tScale);
+          gp.moveTo(hx1, hy1);
+          gp.lineTo(headX, headY);
+          gp.lineTo(hx2, hy2);
           gp.closePath(); // bob added
           g2.draw(gp); // bob added
           g2.fill(gp); // bob added
@@ -301,9 +292,6 @@ public class VectorPointsRenderer extends CartesianRenderer {
    */
   @Override
   public void draw(Graphics g) {
-    VectorAttribute2 attr;
-    Object vector;
-
     if (cg_.clipping_) {
       int xmin, xmax, ymin, ymax;
       int x, y, width, height;
@@ -337,8 +325,7 @@ public class VectorPointsRenderer extends CartesianRenderer {
       }
       g.setClip(x, y, width, height);
     }
-    attr = attr_;
-    drawVector(g, attr);
+    drawVector(g);
 
     //
     // reset clip

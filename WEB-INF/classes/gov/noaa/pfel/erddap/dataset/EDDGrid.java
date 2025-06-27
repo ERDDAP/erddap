@@ -5,7 +5,6 @@
 package gov.noaa.pfel.erddap.dataset;
 
 import com.cohort.array.Attributes;
-import com.cohort.array.CharArray;
 import com.cohort.array.DoubleArray;
 import com.cohort.array.IntArray;
 import com.cohort.array.LongArray;
@@ -23,51 +22,46 @@ import com.cohort.util.SimpleException;
 import com.cohort.util.String2;
 import com.cohort.util.Test;
 import com.cohort.util.XML;
+import com.google.common.collect.ImmutableList;
 import gov.noaa.pfel.coastwatch.griddata.DataHelper;
-import gov.noaa.pfel.coastwatch.griddata.Grid;
 import gov.noaa.pfel.coastwatch.griddata.Matlab;
 import gov.noaa.pfel.coastwatch.griddata.NcHelper;
 import gov.noaa.pfel.coastwatch.griddata.OpendapHelper;
 import gov.noaa.pfel.coastwatch.pointdata.Table;
-import gov.noaa.pfel.coastwatch.sgt.CompoundColorMap;
 import gov.noaa.pfel.coastwatch.sgt.GraphDataLayer;
 import gov.noaa.pfel.coastwatch.sgt.SgtMap;
 import gov.noaa.pfel.coastwatch.sgt.SgtUtil;
 import gov.noaa.pfel.coastwatch.util.HtmlWidgets;
 import gov.noaa.pfel.coastwatch.util.SSR;
+import gov.noaa.pfel.erddap.dataset.metadata.LocalizedAttributes;
+import gov.noaa.pfel.erddap.dataset.metadata.MetadataBuilder;
+import gov.noaa.pfel.erddap.filetypes.DapRequestInfo;
+import gov.noaa.pfel.erddap.filetypes.FileTypeInterface;
 import gov.noaa.pfel.erddap.util.*;
 import gov.noaa.pfel.erddap.variable.*;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.xml.bind.JAXBException;
 import java.awt.Color;
-import java.awt.Font;
-import java.awt.Graphics2D;
-import java.awt.image.BufferedImage;
-import java.io.BufferedOutputStream;
-import java.io.BufferedWriter;
-import java.io.DataInputStream;
 import java.io.DataOutputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.Writer;
 import java.text.MessageFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.GregorianCalendar;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
-import java.util.concurrent.locks.ReentrantLock;
+import java.util.List;
+import java.util.Map;
 import java.util.zip.ZipOutputStream;
+import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.storage.UnsupportedStorageException;
+import org.opengis.metadata.Metadata;
 import ucar.ma2.Array;
 import ucar.nc2.Dimension;
 import ucar.nc2.Group;
 import ucar.nc2.Variable;
-import ucar.nc2.dt.grid.GeoGrid;
-import ucar.nc2.dt.grid.GridDataset;
-import ucar.nc2.geotiff.GeotiffWriter;
 import ucar.nc2.write.NetcdfFileFormat;
 import ucar.nc2.write.NetcdfFormatWriter;
 
@@ -100,167 +94,18 @@ public abstract class EDDGrid extends EDD {
    */
   public static final int DEFAULT_MATCH_AXIS_N_DIGITS = 20;
 
-  /** These are needed for EDD-required methods of the same name. */
-  public static final String[] dataFileTypeNames = {
-    // If add new type and not actual-data type (e.g., .das),
-    //  add to graphsAccessibleToFileTypeNames below
-    ".asc",
-    ".csv",
-    ".csvp",
-    ".csv0",
-    ".das",
-    ".dds",
-    ".dods",
-    ".esriAscii", // ".grd", ".hdf",
-    ".fgdc",
-    ".graph",
-    ".help",
-    ".html",
-    ".htmlTable",
-    ".iso19115",
-    ".itx",
-    ".json",
-    ".jsonlCSV1",
-    ".jsonlCSV",
-    ".jsonlKVP",
-    ".mat",
-    ".nc",
-    ".ncHeader",
-    ".ncml",
-    //        ".nc4", ".nc4Header",
-    ".nccsv",
-    ".nccsvMetadata",
-    ".ncoJson",
-    ".odvTxt",
-    ".timeGaps",
-    ".tsv",
-    ".tsvp",
-    ".tsv0",
-    ".wav",
-    ".xhtml"
-  };
-
-  public static final String[] dataFileTypeExtensions = {
-    ".asc",
-    ".csv",
-    ".csv",
-    ".csv",
-    ".das",
-    ".dds",
-    ".dods",
-    ".asc", // ".grd", ".hdf",
-    ".xml",
-    ".html",
-    ".html",
-    ".html",
-    ".html",
-    ".xml",
-    ".itx",
-    ".json",
-    ".jsonl",
-    ".jsonl",
-    ".jsonl",
-    ".mat",
-    ".nc",
-    ".txt",
-    ".xml",
-    //        ".nc", ".txt",
-    ".csv",
-    ".csv",
-    ".json",
-    // .subset currently isn't included
-    ".txt",
-    ".asc",
-    ".tsv",
-    ".tsv",
-    ".tsv",
-    ".wav",
-    ".xhtml"
-  };
-  public static String[][] dataFileTypeDescriptionsAr; // [lang][n]  see static constructor below
-  // These are encoded for use as HTML attributes (href)
-  public static String[] dataFileTypeInfo = { // "" if not available
-    "https://docs.opendap.org/index.php/UserGuideOPeNDAPMessages#ASCII_Service", // OPeNDAP ascii
-    // csv: also see https://www.ietf.org/rfc/rfc4180.txt
-    "https://en.wikipedia.org/wiki/Comma-separated_values", // csv was
-    // "http://www.creativyst.com/Doc/Articles/CSV/CSV01.htm",
-    "https://en.wikipedia.org/wiki/Comma-separated_values", // csv was
-    // "http://www.creativyst.com/Doc/Articles/CSV/CSV01.htm",
-    "https://en.wikipedia.org/wiki/Comma-separated_values", // csv was
-    // "http://www.creativyst.com/Doc/Articles/CSV/CSV01.htm",
-    "https://docs.opendap.org/index.php/UserGuideOPeNDAPMessages#Dataset_Attribute_Structure", // das
-    "https://docs.opendap.org/index.php/UserGuideOPeNDAPMessages#Dataset_Descriptor_Structure", // dds
-    "https://docs.opendap.org/index.php/UserGuideOPeNDAPMessages#Data_Transmission", // dods
-    "https://en.wikipedia.org/wiki/Esri_grid", // esriAscii
-    // was "https://www.soest.hawaii.edu/gmt/doc/5.1.0/GMT_Docs.html#grid-file-format", //grd
-    // "https://www.hdfgroup.org/products/hdf4/", //hdf
-    "https://www.fgdc.gov/standards/projects/FGDC-standards-projects/metadata/base-metadata/index_html", // fgdc
-    "https://coastwatch.pfeg.noaa.gov/erddap/griddap/documentation.html#GraphicsCommands", // GraphicsCommands
-    "https://www.opendap.org/pdf/ESE-RFC-004v1.2.pdf", // help
-    "https://docs.opendap.org/index.php/UserGuideOPeNDAPMessages#WWW_Interface_Service", // html
-    "https://www.w3schools.com/html/html_tables.asp", // htmlTable
-    "https://en.wikipedia.org/wiki/Geospatial_metadata", // iso19115
-    "https://www.wavemetrics.net/doc/igorman/II-09%20Data%20Import%20Export.pdf", // igor
-    "https://www.json.org/", // json
-    "https://jsonlines.org/", // jsonlCSV
-    "https://jsonlines.org/", // jsonlCSV
-    "https://jsonlines.org/", // jsonlKVP
-    "https://www.mathworks.com/", // mat
-    "https://www.unidata.ucar.edu/software/netcdf/", // nc3
-    "https://linux.die.net/man/1/ncdump", // nc4Header
-    "https://docs.unidata.ucar.edu/netcdf-java/current/userguide/ncml_overview.html", // ncml
-    //        "https://www.unidata.ucar.edu/software/netcdf/", //nc4
-    //        "https://linux.die.net/man/1/ncdump", //nc4Header
-    "https://erddap.github.io/NCCSV.html",
-    "https://erddap.github.io/NCCSV.html",
-    "https://nco.sourceforge.net/nco.html#json",
-    "https://odv.awi.de/en/documentation/", // odv
-    "https://coastwatch.pfeg.noaa.gov/erddap/griddap/documentation.html#timeGaps", // .timeGaps
-    "https://jkorpela.fi/TSV.html", // tsv
-    "https://jkorpela.fi/TSV.html", // tsv
-    "https://jkorpela.fi/TSV.html", // tsv
-    "https://en.wikipedia.org/wiki/WAV", // wav
-    "https://www.w3schools.com/html/html_tables.asp" // xhtml
-  };
-
-  public static final String[] imageFileTypeNames = {
-    ".geotif",
-    ".kml",
-    ".smallPdf",
-    ".pdf",
-    ".largePdf",
-    ".smallPng",
-    ".png",
-    ".largePng",
-    ".transparentPng"
-  };
-  public static final String[] imageFileTypeExtensions = {
-    ".tif", ".kml", ".pdf", ".pdf", ".pdf", ".png", ".png", ".png", ".png"
-  };
-  public static String[][] imageFileTypeDescriptionsAr; // [lang][n]  see static constructor below
-  public static String[] imageFileTypeInfo = {
-    "https://trac.osgeo.org/geotiff/", // geotiff
-    "https://developers.google.com/kml/", // kml
-    "https://www.adobe.com/acrobat/about-adobe-pdf.html", // pdf
-    "https://www.adobe.com/acrobat/about-adobe-pdf.html", // pdf
-    "https://www.adobe.com/acrobat/about-adobe-pdf.html", // pdf
-    "http://www.libpng.org/pub/png/", // png
-    "http://www.libpng.org/pub/png/", // png
-    "http://www.libpng.org/pub/png/", // png
-    "http://www.libpng.org/pub/png/" // png
-  };
-
-  private static String[][] allFileTypeOptionsAr;
-  private static String[] allFileTypeNames;
-  private static String[] publicGraphFileTypeNames;
-  private static int defaultFileTypeOption, defaultPublicGraphFileTypeOption;
+  private static final List<String> publicGraphFileTypeNames;
+  private static final String defaultFileTypeOption;
+  private static final String defaultPublicGraphFileTypeOption;
 
   // wcs
   public static final String wcsServer = "server";
   public static final String wcsVersion = "1.0.0"; // , "1.1.0", "1.1.1", "1.1.2"};
   // wcsResponseFormats parallels wcsRequestFormats
-  public static final String wcsRequestFormats100[] = {"GeoTIFF", "NetCDF3", "PNG"};
-  public static final String wcsResponseFormats100[] = {".geotif", ".nc", ".transparentPng"};
+  public static final ImmutableList<String> wcsRequestFormats100 =
+      ImmutableList.of("GeoTIFF", "NetCDF3", "PNG");
+  public static final ImmutableList<String> wcsResponseFormats100 =
+      ImmutableList.of(".geotif", ".nc", ".transparentPng");
   // public final static String wcsRequestFormats112[]  = {"image/tiff", "application/x-netcdf",
   // "image/png"};
   // public final static String wcsResponseFormats112[] = {".geotif",    ".nc",
@@ -269,129 +114,29 @@ public abstract class EDDGrid extends EDD {
 
   // static constructor
   static {
-    int nDFTN = dataFileTypeNames.length;
-    int nIFTN = imageFileTypeNames.length;
+    defaultFileTypeOption = ".htmlTable";
 
-    dataFileTypeDescriptionsAr = new String[EDStatic.nLanguages][nDFTN];
-    imageFileTypeDescriptionsAr = new String[EDStatic.nLanguages][nIFTN];
+    List<EDDFileTypeInfo> imageTypes = EDD.getFileTypeOptions(true, true);
+    publicGraphFileTypeNames = new ArrayList<String>();
+    publicGraphFileTypeNames.add(".das");
+    publicGraphFileTypeNames.add(".dds");
+    publicGraphFileTypeNames.add(".fgdc");
+    publicGraphFileTypeNames.add(".graph");
+    publicGraphFileTypeNames.add(".help");
+    publicGraphFileTypeNames.add(".iso19115");
 
-    for (int tl = 0; tl < EDStatic.nLanguages; tl++) {
-      dataFileTypeDescriptionsAr[tl] =
-          new String[] {
-            EDStatic.fileHelp_ascAr[tl],
-            EDStatic.fileHelp_csvAr[tl],
-            EDStatic.fileHelp_csvpAr[tl],
-            EDStatic.fileHelp_csv0Ar[tl],
-            EDStatic.fileHelp_dasAr[tl],
-            EDStatic.fileHelp_ddsAr[tl],
-            EDStatic.fileHelp_dodsAr[tl],
-            EDStatic.fileHelpGrid_esriAsciiAr[tl],
-            // "Download a GMT-style NetCDF .grd file (for lat lon data only).",
-            // "Download a Hierarchal Data Format Version 4 SDS file (for lat lon data only).",
-            EDStatic.fileHelp_fgdcAr[tl],
-            EDStatic.fileHelp_graphAr[tl],
-            EDStatic.fileHelpGrid_helpAr[tl],
-            EDStatic.fileHelp_htmlAr[tl],
-            EDStatic.fileHelp_htmlTableAr[tl],
-            EDStatic.fileHelp_iso19115Ar[tl],
-            EDStatic.fileHelp_itxGridAr[tl],
-            EDStatic.fileHelp_jsonAr[tl],
-            EDStatic.fileHelp_jsonlCSV1Ar[tl],
-            EDStatic.fileHelp_jsonlCSVAr[tl],
-            EDStatic.fileHelp_jsonlKVPAr[tl],
-            EDStatic.fileHelp_matAr[tl],
-            EDStatic.fileHelpGrid_nc3Ar[tl],
-            EDStatic.fileHelp_nc3HeaderAr[tl],
-            EDStatic.fileHelp_ncmlAr[tl],
-            //        EDStatic.fileHelpGrid_nc4Ar[tl],
-            //        EDStatic.fileHelp_nc4HeaderAr[tl],
-            EDStatic.fileHelp_nccsvAr[tl],
-            EDStatic.fileHelp_nccsvMetadataAr[tl],
-            EDStatic.fileHelp_ncoJsonAr[tl],
-            EDStatic.fileHelpGrid_odvTxtAr[tl],
-            EDStatic.fileHelp_timeGapsAr[tl],
-            EDStatic.fileHelp_tsvAr[tl],
-            EDStatic.fileHelp_tsvpAr[tl],
-            EDStatic.fileHelp_tsv0Ar[tl],
-            EDStatic.fileHelp_wavAr[tl],
-            EDStatic.fileHelp_xhtmlAr[tl]
-          };
-
-      imageFileTypeDescriptionsAr[tl] =
-          new String[] {
-            EDStatic.fileHelp_geotifAr[tl],
-            EDStatic.fileHelpGrid_kmlAr[tl],
-            EDStatic.fileHelp_smallPdfAr[tl],
-            EDStatic.fileHelp_pdfAr[tl],
-            EDStatic.fileHelp_largePdfAr[tl],
-            EDStatic.fileHelp_smallPngAr[tl],
-            EDStatic.fileHelp_pngAr[tl],
-            EDStatic.fileHelp_largePngAr[tl],
-            EDStatic.fileHelp_transparentPngAr[tl]
-          }; // .transparentPng: if lon and lat are evenly spaced, .png size will be 1:1; otherwise,
-      // 1:1 but morphed a little
+    for (int i = 0; i < imageTypes.size(); i++) {
+      for (int tl = 0; tl < EDStatic.messages.nLanguages; tl++)
+        publicGraphFileTypeNames.add(imageTypes.get(i).getFileTypeName());
     }
 
-    Test.ensureEqual(
-        nDFTN,
-        dataFileTypeDescriptionsAr[0].length,
-        "'dataFileTypeNames.length' not equal to 'dataFileTypeDescriptionsAr[0].length'.");
-    Test.ensureEqual(
-        nDFTN,
-        dataFileTypeExtensions.length,
-        "'dataFileTypeNames.length' not equal to 'dataFileTypeExtensions.length'.");
-    Test.ensureEqual(
-        nDFTN,
-        dataFileTypeInfo.length,
-        "'dataFileTypeNames.length' not equal to 'dataFileTypeInfo.length'.");
-    Test.ensureEqual(
-        nIFTN,
-        imageFileTypeDescriptionsAr[0].length,
-        "'imageFileTypeNames.length' not equal to 'imageFileTypeDescriptionsAr[0].length'.");
-    Test.ensureEqual(
-        nIFTN,
-        imageFileTypeExtensions.length,
-        "'imageFileTypeNames.length' not equal to 'imageFileTypeExtensions.length'.");
-    Test.ensureEqual(
-        nIFTN,
-        imageFileTypeInfo.length,
-        "'imageFileTypeNames.length' not equal to 'imageFileTypeInfo.length'.");
-    defaultFileTypeOption = String2.indexOf(dataFileTypeNames, ".htmlTable");
-
-    int tExtra = 6;
-    publicGraphFileTypeNames = new String[tExtra + nIFTN];
-    publicGraphFileTypeNames[0] = ".das";
-    publicGraphFileTypeNames[1] = ".dds";
-    publicGraphFileTypeNames[2] = ".fgdc";
-    publicGraphFileTypeNames[3] = ".graph";
-    publicGraphFileTypeNames[4] = ".help";
-    publicGraphFileTypeNames[5] = ".iso19115";
-
-    // construct allFileTypeOptions
-    allFileTypeOptionsAr = new String[EDStatic.nLanguages][nDFTN + nIFTN];
-    allFileTypeNames = new String[nDFTN + nIFTN];
-    for (int i = 0; i < nDFTN; i++) {
-      for (int tl = 0; tl < EDStatic.nLanguages; tl++)
-        allFileTypeOptionsAr[tl][i] =
-            dataFileTypeNames[i] + " - " + dataFileTypeDescriptionsAr[tl][i];
-      allFileTypeNames[i] = dataFileTypeNames[i];
-    }
-    for (int i = 0; i < nIFTN; i++) {
-      for (int tl = 0; tl < EDStatic.nLanguages; tl++)
-        allFileTypeOptionsAr[tl][nDFTN + i] =
-            imageFileTypeNames[i] + " - " + imageFileTypeDescriptionsAr[tl][i];
-      allFileTypeNames[nDFTN + i] = imageFileTypeNames[i];
-      publicGraphFileTypeNames[tExtra + i] = imageFileTypeNames[i];
-    }
-
-    graphsAccessibleTo_fileTypeNames = new HashSet(); // read only, so needn't be thread-safe
-    for (int i = 0; i < publicGraphFileTypeNames.length; i++)
-      graphsAccessibleTo_fileTypeNames.add(publicGraphFileTypeNames[i]);
-    defaultPublicGraphFileTypeOption = String2.indexOf(publicGraphFileTypeNames, ".png");
+    graphsAccessibleTo_fileTypeNames = new HashSet<>(); // read only, so needn't be thread-safe
+    graphsAccessibleTo_fileTypeNames.addAll(publicGraphFileTypeNames);
+    defaultPublicGraphFileTypeOption = ".png";
   }
 
   // the diagnostic tests change this just for testing
-  static int tableWriterNBufferRows = 100000;
+  static final int tableWriterNBufferRows = 100000;
 
   // *********** end of static declarations ***************************
 
@@ -423,7 +168,7 @@ public abstract class EDDGrid extends EDD {
       String tSourceName,
       String tDestName,
       Attributes tSourceAtt,
-      Attributes tAddAtt,
+      LocalizedAttributes tAddAtt,
       PrimitiveArray sourceAxisValues)
       throws Throwable {
 
@@ -454,7 +199,7 @@ public abstract class EDDGrid extends EDD {
       EDVGridAxis edvga =
           new EDVGridAxis(
               tParentDatasetID, tSourceName, tDestName, tSourceAtt, tAddAtt, sourceAxisValues);
-      edvga.setActualRangeFromDestinationMinMax();
+      edvga.setActualRangeFromDestinationMinMax(EDMessages.DEFAULT_LANGUAGE);
       return edvga;
     }
   }
@@ -508,8 +253,7 @@ public abstract class EDDGrid extends EDD {
    */
   protected void setDimensionValuesToNull() {
     if (debugMode) String2.log(">> setDimensionValuesToNull for datasetID=" + datasetID);
-    int nav = axisVariables.length;
-    for (int av = 0; av < nav; av++) axisVariables[av].setSourceValuesToNull();
+    for (EDVGridAxis axisVariable : axisVariables) axisVariable.setSourceValuesToNull();
   }
 
   /**
@@ -518,21 +262,21 @@ public abstract class EDDGrid extends EDD {
    * @return the searchString (mixed case) used to create searchBytes or searchDocument.
    */
   @Override
-  public String searchString() {
+  public String searchString(int language) {
 
     // make a string to search through
-    StringBuilder sb = startOfSearchString();
+    StringBuilder sb = startOfSearchString(language);
 
     // add axisVariable info
     // doing all varNames, then all attributes, treats varNames as more important
-    for (int av = 0; av < axisVariables.length; av++) {
-      sb.append("variableName=" + axisVariables[av].destinationName() + "\n");
-      sb.append("sourceName=" + axisVariables[av].sourceName() + "\n");
-      sb.append("long_name=" + axisVariables[av].longName() + "\n");
-      sb.append("type=" + axisVariables[av].destinationDataType() + "\n");
+    for (EDVGridAxis variable : axisVariables) {
+      sb.append("variableName=" + variable.destinationName() + "\n");
+      sb.append("sourceName=" + variable.sourceName() + "\n");
+      sb.append("long_name=" + variable.longName() + "\n");
+      sb.append("type=" + variable.destinationDataType() + "\n");
     }
-    for (int av = 0; av < axisVariables.length; av++)
-      sb.append(axisVariables[av].combinedAttributes().toString() + "\n");
+    for (EDVGridAxis axisVariable : axisVariables)
+      sb.append(axisVariable.combinedAttributes().toString() + "\n");
 
     String2.replaceAll(sb, "\"", ""); // no double quotes (esp around attribute values)
     String2.replaceAll(sb, "\n    ", "\n"); // occurs for all attributes
@@ -543,111 +287,11 @@ public abstract class EDDGrid extends EDD {
   public String allDimString() {
     if (allDimString == null) {
       StringBuilder sb = new StringBuilder();
-      for (int av = 0; av < axisVariables.length; av++)
-        sb.append("[" + axisVariables[av].destinationName() + "]");
+      for (EDVGridAxis axisVariable : axisVariables)
+        sb.append("[" + axisVariable.destinationName() + "]");
       allDimString = sb.toString(); // last thing: atomic assignment
     }
     return allDimString;
-  }
-
-  /**
-   * This returns the types of data files that this dataset can be returned as. These are short
-   * descriptive names that are put in the request url after the dataset name and before the "?",
-   * e.g., ".nc".
-   *
-   * @return the types of data files that this dataset can be returned as.
-   */
-  @Override
-  public String[] dataFileTypeNames() {
-    return dataFileTypeNames;
-  }
-
-  /**
-   * This returns the file extensions corresponding to the dataFileTypes. E.g.,
-   * dataFileTypeName=".htmlTable" returns dataFileTypeExtension=".html".
-   *
-   * @return the file extensions corresponding to the dataFileTypes.
-   */
-  @Override
-  public String[] dataFileTypeExtensions() {
-    return dataFileTypeExtensions;
-  }
-
-  /**
-   * This returns descriptions (up to 80 characters long, suitable for a tooltip) corresponding to
-   * the dataFileTypes.
-   *
-   * @param language the index of the selected language
-   * @return descriptions corresponding to the dataFileTypes.
-   */
-  @Override
-  public String[] dataFileTypeDescriptions(int language) {
-    return dataFileTypeDescriptionsAr[language];
-  }
-
-  /**
-   * This returns an info URL corresponding to the dataFileTypes.
-   *
-   * @return an info URL corresponding to the dataFileTypes (an element is "" if not available).
-   */
-  @Override
-  public String[] dataFileTypeInfo() {
-    return dataFileTypeInfo;
-  }
-
-  /**
-   * This returns the types of image files that this dataset can be returned as. These are short
-   * descriptive names that are put in the request url after the dataset name and before the "?",
-   * e.g., ".largePng".
-   *
-   * @return the types of image files that this dataset can be returned as.
-   */
-  @Override
-  public String[] imageFileTypeNames() {
-    return imageFileTypeNames;
-  }
-
-  /**
-   * This returns the file extensions corresponding to the imageFileTypes, e.g.,
-   * imageFileTypeNames=".largePng" returns imageFileTypeExtensions=".png".
-   *
-   * @return the file extensions corresponding to the imageFileTypes.
-   */
-  @Override
-  public String[] imageFileTypeExtensions() {
-    return imageFileTypeExtensions;
-  }
-
-  /**
-   * This returns descriptions corresponding to the imageFileTypes (each is suitable for a tooltip).
-   *
-   * @param language the index of the selected language
-   * @return descriptions corresponding to the imageFileTypes.
-   */
-  @Override
-  public String[] imageFileTypeDescriptions(int language) {
-    return imageFileTypeDescriptionsAr[language];
-  }
-
-  /**
-   * This returns an info URL corresponding to the imageFileTypes.
-   *
-   * @return an info URL corresponding to the imageFileTypes.
-   */
-  @Override
-  public String[] imageFileTypeInfo() {
-    return imageFileTypeInfo;
-  }
-
-  /**
-   * This returns the "[name] - [description]" for all dataFileTypes and imageFileTypes.
-   *
-   * @param language the index of the selected language
-   * @return the "[name] - [description]" for all dataFileTypes and imageFileTypes.
-   */
-  @Override
-  public String[] allFileTypeOptions(int language) {
-    return allFileTypeOptionsAr[language];
   }
 
   /** This indicates why the dataset isn't accessible via Make A Graph (or "" if it is). */
@@ -656,9 +300,8 @@ public abstract class EDDGrid extends EDD {
     if (accessibleViaMAG == null) {
       // find the axisVariables (all are always numeric) with >1 value
       boolean hasAG1V = false;
-      StringArray sa = new StringArray();
-      for (int av = 0; av < axisVariables.length; av++) {
-        if (axisVariables[av].sourceValues().size() > 1) {
+      for (EDVGridAxis axisVariable : axisVariables) {
+        if (axisVariable.sourceValues().size() > 1) {
           hasAG1V = true;
           break;
         }
@@ -667,13 +310,15 @@ public abstract class EDDGrid extends EDD {
         accessibleViaMAG =
             String2.canonical(
                 MessageFormat.format(
-                    EDStatic.noXxxBecause2Ar[0], EDStatic.magAr[0], EDStatic.noXxxNoAxis1Ar[0]));
+                    EDStatic.messages.noXxxBecause2Ar[0],
+                    EDStatic.messages.magAr[0],
+                    EDStatic.messages.noXxxNoAxis1Ar[0]));
       } else {
 
         // find the numeric dataVariables
         boolean hasNumeric = false;
-        for (int dv = 0; dv < dataVariables.length; dv++) {
-          if (dataVariables[dv].destinationDataPAType() != PAType.STRING) {
+        for (EDV dataVariable : dataVariables) {
+          if (dataVariable.destinationDataPAType() != PAType.STRING) {
             hasNumeric = true;
             break;
           }
@@ -683,9 +328,9 @@ public abstract class EDDGrid extends EDD {
           accessibleViaMAG =
               String2.canonical(
                   MessageFormat.format(
-                      EDStatic.noXxxBecause2Ar[0],
-                      EDStatic.magAr[0],
-                      EDStatic.noXxxNoNonStringAr[0]));
+                      EDStatic.messages.noXxxBecause2Ar[0],
+                      EDStatic.messages.magAr[0],
+                      EDStatic.messages.noXxxNoNonStringAr[0]));
       }
     }
     return accessibleViaMAG;
@@ -698,9 +343,9 @@ public abstract class EDDGrid extends EDD {
       accessibleViaSubset =
           String2.canonical(
               MessageFormat.format(
-                  EDStatic.noXxxBecause2Ar[0],
-                  EDStatic.subsetAr[0],
-                  EDStatic.noXxxItsGriddedAr[0]));
+                  EDStatic.messages.noXxxBecause2Ar[0],
+                  EDStatic.messages.subsetAr[0],
+                  EDStatic.messages.noXxxItsGriddedAr[0]));
     return accessibleViaSubset;
   }
 
@@ -709,18 +354,20 @@ public abstract class EDDGrid extends EDD {
   public String accessibleViaSOS() {
     if (accessibleViaSOS == null) {
 
-      if (!EDStatic.sosActive)
+      if (!EDStatic.config.sosActive)
         accessibleViaSOS =
             String2.canonical(
                 MessageFormat.format(
-                    EDStatic.noXxxBecauseAr[0],
+                    EDStatic.messages.noXxxBecauseAr[0],
                     "SOS",
-                    MessageFormat.format(EDStatic.noXxxNotActiveAr[0], "SOS")));
+                    MessageFormat.format(EDStatic.messages.noXxxNotActiveAr[0], "SOS")));
       else
         accessibleViaSOS =
             String2.canonical(
                 MessageFormat.format(
-                    EDStatic.noXxxBecauseAr[0], "SOS", EDStatic.noXxxItsGriddedAr[0]));
+                    EDStatic.messages.noXxxBecauseAr[0],
+                    "SOS",
+                    EDStatic.messages.noXxxItsGriddedAr[0]));
     }
     return accessibleViaSOS;
   }
@@ -730,19 +377,22 @@ public abstract class EDDGrid extends EDD {
   public String accessibleViaGeoServicesRest() {
     if (accessibleViaGeoServicesRest == null) {
 
-      if (!EDStatic.geoServicesRestActive) {
+      if (!EDStatic.config.geoServicesRestActive) {
         accessibleViaGeoServicesRest =
             String2.canonical(
                 MessageFormat.format(
-                    EDStatic.noXxxBecauseAr[0],
+                    EDStatic.messages.noXxxBecauseAr[0],
                     "GeoServicesRest",
-                    MessageFormat.format(EDStatic.noXxxNotActiveAr[0], "GeoServicesRest")));
+                    MessageFormat.format(
+                        EDStatic.messages.noXxxNotActiveAr[0], "GeoServicesRest")));
       } else if (lonIndex < 0 || latIndex < 0) {
         // must have lat and lon axes
         accessibleViaGeoServicesRest =
             String2.canonical(
                 MessageFormat.format(
-                    EDStatic.noXxxBecauseAr[0], "GeoServicesRest", EDStatic.noXxxNoLLAr[0]));
+                    EDStatic.messages.noXxxBecauseAr[0],
+                    "GeoServicesRest",
+                    EDStatic.messages.noXxxNoLLAr[0]));
       } else {
         // must have more than one value for lat and lon axes
         EDVGridAxis lonVar = axisVariables[lonIndex];
@@ -753,25 +403,27 @@ public abstract class EDDGrid extends EDD {
           accessibleViaGeoServicesRest =
               String2.canonical(
                   MessageFormat.format(
-                      EDStatic.noXxxBecauseAr[0], "GeoServicesRest", EDStatic.noXxxNoLLGt1Ar[0]));
+                      EDStatic.messages.noXxxBecauseAr[0],
+                      "GeoServicesRest",
+                      EDStatic.messages.noXxxNoLLGt1Ar[0]));
         else if (lonVar.destinationMinDouble() >= 360
             || // unlikely
             lonVar.destinationMaxDouble() <= -180) // unlikely
         accessibleViaGeoServicesRest =
               String2.canonical(
                   MessageFormat.format(
-                      EDStatic.noXxxBecauseAr[0],
+                      EDStatic.messages.noXxxBecauseAr[0],
                       "GeoServicesRest",
-                      EDStatic.noXxxNoLonIn180Ar[0]));
+                      EDStatic.messages.noXxxNoLonIn180Ar[0]));
         else if (!lonVar.isEvenlySpaced()
             || // ???Future: not necessary? draw map as appropriate.
             !latVar.isEvenlySpaced())
           accessibleViaGeoServicesRest =
               String2.canonical(
                   MessageFormat.format(
-                      EDStatic.noXxxBecauseAr[0],
+                      EDStatic.messages.noXxxBecauseAr[0],
                       "GeoServicesRest",
-                      EDStatic.noXxxNoLLEvenlySpacedAr[0]));
+                      EDStatic.messages.noXxxNoLLEvenlySpacedAr[0]));
 
         // else {  //NO. other axes are allowed.
 
@@ -780,8 +432,8 @@ public abstract class EDDGrid extends EDD {
       // ensure at least one var has colorBarMinimum/Maximum
       if (accessibleViaGeoServicesRest == null) {
         boolean ok = false;
-        for (int dvi = 0; dvi < dataVariables.length; dvi++) {
-          if (dataVariables[dvi].hasColorBarMinMax()) {
+        for (EDV dataVariable : dataVariables) {
+          if (dataVariable.hasColorBarMinMax()) {
             ok = true;
             break;
           }
@@ -790,9 +442,9 @@ public abstract class EDDGrid extends EDD {
           accessibleViaGeoServicesRest =
               String2.canonical(
                   MessageFormat.format(
-                      EDStatic.noXxxBecauseAr[0],
+                      EDStatic.messages.noXxxBecauseAr[0],
                       "GeoServicesRest",
-                      EDStatic.noXxxNoColorBarAr[0]));
+                      EDStatic.messages.noXxxNoColorBarAr[0]));
       }
 
       // okay!
@@ -810,18 +462,19 @@ public abstract class EDDGrid extends EDD {
   public String accessibleViaWCS() {
     if (accessibleViaWCS == null) {
 
-      if (!EDStatic.wcsActive)
+      if (!EDStatic.config.wcsActive)
         accessibleViaWCS =
             String2.canonical(
                 MessageFormat.format(
-                    EDStatic.noXxxBecauseAr[0],
+                    EDStatic.messages.noXxxBecauseAr[0],
                     "WCS",
-                    MessageFormat.format(EDStatic.noXxxNotActiveAr[0], "WCS")));
+                    MessageFormat.format(EDStatic.messages.noXxxNotActiveAr[0], "WCS")));
       else if (lonIndex < 0 || latIndex < 0)
         // must have lat and lon axes
         accessibleViaWCS =
             String2.canonical(
-                MessageFormat.format(EDStatic.noXxxBecauseAr[0], "WCS", EDStatic.noXxxNoLLAr[0]));
+                MessageFormat.format(
+                    EDStatic.messages.noXxxBecauseAr[0], "WCS", EDStatic.messages.noXxxNoLLAr[0]));
       else {
         // must have more than one value for lat and lon axes
         EDVGridAxis lonVar = axisVariables[lonIndex];
@@ -832,21 +485,27 @@ public abstract class EDDGrid extends EDD {
           accessibleViaWCS =
               String2.canonical(
                   MessageFormat.format(
-                      EDStatic.noXxxBecauseAr[0], "WCS", EDStatic.noXxxNoLLGt1Ar[0]));
+                      EDStatic.messages.noXxxBecauseAr[0],
+                      "WCS",
+                      EDStatic.messages.noXxxNoLLGt1Ar[0]));
         else if (lonVar.destinationMinDouble() >= 360
             || // unlikely
             lonVar.destinationMaxDouble() <= -180) // unlikely
         accessibleViaWCS =
               String2.canonical(
                   MessageFormat.format(
-                      EDStatic.noXxxBecauseAr[0], "WCS", EDStatic.noXxxNoLonIn180Ar[0]));
+                      EDStatic.messages.noXxxBecauseAr[0],
+                      "WCS",
+                      EDStatic.messages.noXxxNoLonIn180Ar[0]));
         else if (!lonVar.isEvenlySpaced()
             || // ???Future: not necessary? draw map as appropriate.
             !latVar.isEvenlySpaced())
           accessibleViaWCS =
               String2.canonical(
                   MessageFormat.format(
-                      EDStatic.noXxxBecauseAr[0], "WCS", EDStatic.noXxxNoLLEvenlySpacedAr[0]));
+                      EDStatic.messages.noXxxBecauseAr[0],
+                      "WCS",
+                      EDStatic.messages.noXxxNoLLEvenlySpacedAr[0]));
 
         // else {  //NO. other axes are allowed.
 
@@ -864,17 +523,18 @@ public abstract class EDDGrid extends EDD {
   public String accessibleViaWMS() {
     if (accessibleViaWMS == null) {
 
-      if (!EDStatic.wmsActive)
+      if (!EDStatic.config.wmsActive)
         accessibleViaWMS =
             String2.canonical(
                 MessageFormat.format(
-                    EDStatic.noXxxBecauseAr[0],
+                    EDStatic.messages.noXxxBecauseAr[0],
                     "WMS",
-                    MessageFormat.format(EDStatic.noXxxNotActiveAr[0], "WMS")));
+                    MessageFormat.format(EDStatic.messages.noXxxNotActiveAr[0], "WMS")));
       else if (lonIndex < 0 || latIndex < 0)
         accessibleViaWMS =
             String2.canonical(
-                MessageFormat.format(EDStatic.noXxxBecauseAr[0], "WMS", EDStatic.noXxxNoLLAr[0]));
+                MessageFormat.format(
+                    EDStatic.messages.noXxxBecauseAr[0], "WMS", EDStatic.messages.noXxxNoLLAr[0]));
       else {
         EDVGridAxis lonVar = axisVariables[lonIndex];
         EDVGridAxis latVar = axisVariables[latIndex];
@@ -884,14 +544,18 @@ public abstract class EDDGrid extends EDD {
           accessibleViaWMS =
               String2.canonical(
                   MessageFormat.format(
-                      EDStatic.noXxxBecauseAr[0], "WMS", EDStatic.noXxxNoLLGt1Ar[0]));
+                      EDStatic.messages.noXxxBecauseAr[0],
+                      "WMS",
+                      EDStatic.messages.noXxxNoLLGt1Ar[0]));
         else if (lonVar.destinationMinDouble() >= 360
             || // unlikely
             lonVar.destinationMaxDouble() <= -180) // unlikely
         accessibleViaWMS =
               String2.canonical(
                   MessageFormat.format(
-                      EDStatic.noXxxBecauseAr[0], "WMS", EDStatic.noXxxNoLonIn180Ar[0]));
+                      EDStatic.messages.noXxxBecauseAr[0],
+                      "WMS",
+                      EDStatic.messages.noXxxNoLonIn180Ar[0]));
         // else if (!lonVar.isEvenlySpaced() ||  //not necessary. map is drawn as appropriate.
         //    !latVar.isEvenlySpaced())
         //   accessibleViaWMS = String2.canonical(start + "???";
@@ -899,9 +563,11 @@ public abstract class EDDGrid extends EDD {
         else {
           String ta =
               MessageFormat.format(
-                  EDStatic.noXxxBecauseAr[0], "WMS", EDStatic.noXxxNoColorBarAr[0]);
-          for (int dv = 0; dv < dataVariables.length; dv++) {
-            if (dataVariables[dv].hasColorBarMinMax()) {
+                  EDStatic.messages.noXxxBecauseAr[0],
+                  "WMS",
+                  EDStatic.messages.noXxxNoColorBarAr[0]);
+          for (EDV dataVariable : dataVariables) {
+            if (dataVariable.hasColorBarMinMax()) {
               ta = ""; // set back to OK
               break;
             }
@@ -948,7 +614,7 @@ public abstract class EDDGrid extends EDD {
    */
   @Override
   public String dapDescription(int language) {
-    return EDStatic.EDDGridDapDescriptionAr[language];
+    return EDStatic.messages.EDDGridDapDescriptionAr[language];
   }
 
   /**
@@ -959,7 +625,7 @@ public abstract class EDDGrid extends EDD {
    */
   public static String longDapDescription(int language, String tErddapUrl) {
     return String2.replaceAll(
-        EDStatic.EDDGridDapLongDescriptionAr[language], "&erddapUrl;", tErddapUrl);
+        EDStatic.messages.EDDGridDapLongDescriptionAr[language], "&erddapUrl;", tErddapUrl);
   }
 
   /**
@@ -971,6 +637,7 @@ public abstract class EDDGrid extends EDD {
   @Override
   public void ensureValid() throws Throwable {
     super.ensureValid();
+    int language = EDMessages.DEFAULT_LANGUAGE;
     String errorInMethod =
         "datasets.xml/EDDGrid.ensureValid error for datasetID=" + datasetID + ":\n ";
 
@@ -979,8 +646,9 @@ public abstract class EDDGrid extends EDD {
     new StringArray(axisVariableDestinationNames())
         .ensureNoDuplicates("Duplicate axisVariableDestinationNames: ");
 
-    HashSet<String> sourceNamesHS = new HashSet(2 * (axisVariables.length + dataVariables.length));
-    HashSet<String> destNamesHS = new HashSet(2 * (axisVariables.length + dataVariables.length));
+    HashSet<String> sourceNamesHS =
+        new HashSet<>(2 * (axisVariables.length + dataVariables.length));
+    HashSet<String> destNamesHS = new HashSet<>(2 * (axisVariables.length + dataVariables.length));
     for (int v = 0; v < axisVariables.length; v++) {
       Test.ensureTrue(axisVariables[v] != null, errorInMethod + "axisVariable[" + v + "] is null.");
       String tErrorInMethod =
@@ -1011,15 +679,15 @@ public abstract class EDDGrid extends EDD {
 
       // standard_name is the only case-sensitive CF attribute name (see Sec 3.3)
       // All are all lower case.
-      Attributes tAtts = axisVariables[v].combinedAttributes();
-      String tStandardName = tAtts.getString("standard_name");
+      LocalizedAttributes tAtts = axisVariables[v].combinedAttributes();
+      String tStandardName = tAtts.getString(language, "standard_name");
       if (String2.isSomething(tStandardName))
-        tAtts.set("standard_name", tStandardName.toLowerCase());
+        tAtts.set(language, "standard_name", tStandardName.toLowerCase());
     }
 
-    for (int v = 0; v < dataVariables.length; v++) {
+    for (EDV dataVariable : dataVariables) {
       // ensure unique sourceNames
-      String sn = dataVariables[v].sourceName();
+      String sn = dataVariable.sourceName();
       if (!sn.startsWith("=")) {
         if (!sourceNamesHS.add(sn))
           throw new RuntimeException(
@@ -1027,17 +695,17 @@ public abstract class EDDGrid extends EDD {
       }
 
       // ensure unique destNames
-      String dn = dataVariables[v].destinationName();
+      String dn = dataVariable.destinationName();
       if (!destNamesHS.add(dn))
         throw new RuntimeException(
             errorInMethod + "Two variables have the same destinationName=" + dn + ".");
 
       // standard_name is the only case-sensitive CF attribute name (see Sec 3.3)
       // All are all lower case.
-      Attributes tAtts = dataVariables[v].combinedAttributes();
-      String tStandardName = tAtts.getString("standard_name");
+      LocalizedAttributes tAtts = dataVariable.combinedAttributes();
+      String tStandardName = tAtts.getString(language, "standard_name");
       if (String2.isSomething(tStandardName))
-        tAtts.set("standard_name", tStandardName.toLowerCase());
+        tAtts.set(language, "standard_name", tStandardName.toLowerCase());
     }
 
     Test.ensureTrue(
@@ -1073,19 +741,20 @@ public abstract class EDDGrid extends EDD {
     combinedGlobalAttributes.remove("Easternmost_Easting");
     int av = String2.indexOf(avDestNames, EDV.LON_NAME);
     if (av >= 0) {
-      combinedGlobalAttributes.add("geospatial_lon_units", EDV.LON_UNITS);
+      combinedGlobalAttributes.set(language, "geospatial_lon_units", EDV.LON_UNITS);
       EDVGridAxis edvga = axisVariables[av];
       if (edvga.sourceValues().size() > 1 && edvga.isEvenlySpaced())
-        combinedGlobalAttributes.add("geospatial_lon_resolution", Math.abs(edvga.averageSpacing()));
+        combinedGlobalAttributes.set(
+            language, "geospatial_lon_resolution", Math.abs(edvga.averageSpacing()));
 
-      PrimitiveArray pa = edvga.combinedAttributes().get("actual_range");
+      PrimitiveArray pa = edvga.combinedAttributes().get(language, "actual_range");
       if (pa != null) { // it should be; but it can be low,high or high,low, so
         double ttMin = Math.min(pa.getNiceDouble(0), pa.getNiceDouble(1));
         double ttMax = Math.max(pa.getNiceDouble(0), pa.getNiceDouble(1));
-        combinedGlobalAttributes.add("geospatial_lon_min", ttMin);
-        combinedGlobalAttributes.add("geospatial_lon_max", ttMax);
-        combinedGlobalAttributes.add("Westernmost_Easting", ttMin);
-        combinedGlobalAttributes.add("Easternmost_Easting", ttMax);
+        combinedGlobalAttributes.set(language, "geospatial_lon_min", ttMin);
+        combinedGlobalAttributes.set(language, "geospatial_lon_max", ttMax);
+        combinedGlobalAttributes.set(language, "Westernmost_Easting", ttMin);
+        combinedGlobalAttributes.set(language, "Easternmost_Easting", ttMax);
       }
     }
 
@@ -1098,19 +767,20 @@ public abstract class EDDGrid extends EDD {
     combinedGlobalAttributes.remove("Northernmost_Northing");
     av = String2.indexOf(avDestNames, EDV.LAT_NAME);
     if (av >= 0) {
-      combinedGlobalAttributes.add("geospatial_lat_units", EDV.LAT_UNITS);
+      combinedGlobalAttributes.set(language, "geospatial_lat_units", EDV.LAT_UNITS);
       EDVGridAxis edvga = axisVariables[av];
       if (edvga.sourceValues().size() > 1 && edvga.isEvenlySpaced())
-        combinedGlobalAttributes.add("geospatial_lat_resolution", Math.abs(edvga.averageSpacing()));
+        combinedGlobalAttributes.set(
+            language, "geospatial_lat_resolution", Math.abs(edvga.averageSpacing()));
 
-      PrimitiveArray pa = edvga.combinedAttributes().get("actual_range");
+      PrimitiveArray pa = edvga.combinedAttributes().get(language, "actual_range");
       if (pa != null) { // it should be; but it can be low,high or high,low, so
         double ttMin = Math.min(pa.getNiceDouble(0), pa.getNiceDouble(1));
         double ttMax = Math.max(pa.getNiceDouble(0), pa.getNiceDouble(1));
-        combinedGlobalAttributes.add("geospatial_lat_min", ttMin);
-        combinedGlobalAttributes.add("geospatial_lat_max", ttMax);
-        combinedGlobalAttributes.add("Southernmost_Northing", ttMin);
-        combinedGlobalAttributes.add("Northernmost_Northing", ttMax);
+        combinedGlobalAttributes.set(language, "geospatial_lat_min", ttMin);
+        combinedGlobalAttributes.set(language, "geospatial_lat_max", ttMax);
+        combinedGlobalAttributes.set(language, "Southernmost_Northing", ttMin);
+        combinedGlobalAttributes.set(language, "Northernmost_Northing", ttMax);
       }
     }
 
@@ -1122,19 +792,19 @@ public abstract class EDDGrid extends EDD {
     combinedGlobalAttributes.remove("geospatial_vertical_units");
     av = String2.indexOf(avDestNames, EDV.ALT_NAME);
     if (av >= 0) {
-      combinedGlobalAttributes.add("geospatial_vertical_positive", "up");
-      combinedGlobalAttributes.add("geospatial_vertical_units", EDV.ALT_UNITS);
+      combinedGlobalAttributes.set(language, "geospatial_vertical_positive", "up");
+      combinedGlobalAttributes.set(language, "geospatial_vertical_units", EDV.ALT_UNITS);
       EDVGridAxis edvga = axisVariables[av];
       if (edvga.sourceValues().size() > 1 && edvga.isEvenlySpaced())
-        combinedGlobalAttributes.add(
-            "geospatial_vertical_resolution", Math.abs(edvga.averageSpacing()));
+        combinedGlobalAttributes.set(
+            language, "geospatial_vertical_resolution", Math.abs(edvga.averageSpacing()));
 
-      PrimitiveArray pa = edvga.combinedAttributes().get("actual_range");
+      PrimitiveArray pa = edvga.combinedAttributes().get(language, "actual_range");
       if (pa != null) { // it should be; but it can be low,high or high,low, so
         double ttMin = Math.min(pa.getNiceDouble(0), pa.getNiceDouble(1));
         double ttMax = Math.max(pa.getNiceDouble(0), pa.getNiceDouble(1));
-        combinedGlobalAttributes.add("geospatial_vertical_min", ttMin);
-        combinedGlobalAttributes.add("geospatial_vertical_max", ttMax);
+        combinedGlobalAttributes.set(language, "geospatial_vertical_min", ttMin);
+        combinedGlobalAttributes.set(language, "geospatial_vertical_max", ttMax);
       }
     }
 
@@ -1143,17 +813,21 @@ public abstract class EDDGrid extends EDD {
     combinedGlobalAttributes.remove("time_coverage_end");
     av = String2.indexOf(avDestNames, EDV.TIME_NAME);
     if (av >= 0) {
-      PrimitiveArray pa = axisVariables[av].combinedAttributes().get("actual_range");
+      PrimitiveArray pa = axisVariables[av].combinedAttributes().get(language, "actual_range");
       if (pa != null) { // it should be; but it can be low,high or high,low, so
         double ttMin = Math.min(pa.getDouble(0), pa.getDouble(1));
         double ttMax = Math.max(pa.getDouble(0), pa.getDouble(1));
-        String tp = axisVariables[av].combinedAttributes().getString(EDV.TIME_PRECISION);
+        String tp = axisVariables[av].combinedAttributes().getString(language, EDV.TIME_PRECISION);
         // "" unsets the attribute if dMin or dMax isNaN
         combinedGlobalAttributes.set(
-            "time_coverage_start", Calendar2.epochSecondsToLimitedIsoStringT(tp, ttMin, ""));
+            language,
+            "time_coverage_start",
+            Calendar2.epochSecondsToLimitedIsoStringT(tp, ttMin, ""));
         // for tables (not grids) will be NaN for 'present'.   Deal with this better???
         combinedGlobalAttributes.set(
-            "time_coverage_end", Calendar2.epochSecondsToLimitedIsoStringT(tp, ttMax, ""));
+            language,
+            "time_coverage_end",
+            Calendar2.epochSecondsToLimitedIsoStringT(tp, ttMax, ""));
       }
 
       // print time gaps greater than median
@@ -1176,7 +850,7 @@ public abstract class EDDGrid extends EDD {
     // really last: it uses accessibleViaFGDC and accessibleViaISO19115
     // make searchString  (since should have all finished/correct metadata)
     // This makes creation of searchString thread-safe (always done in constructor's thread).
-    searchString();
+    searchString(language);
   }
 
   /**
@@ -1189,7 +863,7 @@ public abstract class EDDGrid extends EDD {
     // make this JSON format?
     StringBuilder sb = new StringBuilder();
     sb.append("//** EDDGrid " + super.toString());
-    for (int v = 0; v < axisVariables.length; v++) sb.append(axisVariables[v].toString());
+    for (EDVGridAxis axisVariable : axisVariables) sb.append(axisVariable.toString());
     sb.append("\\**\n\n");
     return sb.toString();
   }
@@ -1202,10 +876,9 @@ public abstract class EDDGrid extends EDD {
    */
   @Override
   public EDV findVariableByDestinationName(String tDestinationName) throws Throwable {
-    for (int v = 0; v < axisVariables.length; v++)
-      if (axisVariables[v].destinationName().equals(tDestinationName))
-        return (EDV) axisVariables[v];
-    return (EDV) findDataVariableByDestinationName(tDestinationName);
+    for (EDVGridAxis axisVariable : axisVariables)
+      if (axisVariable.destinationName().equals(tDestinationName)) return axisVariable;
+    return findDataVariableByDestinationName(tDestinationName);
   }
 
   /**
@@ -1277,11 +950,11 @@ public abstract class EDDGrid extends EDD {
           EDStatic.bilingual(
               language,
               MessageFormat.format(
-                  EDStatic.errorNotFoundInAr[0],
+                  EDStatic.messages.errorNotFoundInAr[0],
                   "sourceAxisVariableName=" + tSourceName,
                   "datasetID=" + datasetID),
               MessageFormat.format(
-                  EDStatic.errorNotFoundInAr[language],
+                  EDStatic.messages.errorNotFoundInAr[language],
                   "sourceAxisVariableName=" + tSourceName,
                   "datasetID=" + datasetID)));
     return axisVariables[which];
@@ -1302,11 +975,11 @@ public abstract class EDDGrid extends EDD {
           EDStatic.bilingual(
               language,
               MessageFormat.format(
-                  EDStatic.errorNotFoundInAr[0],
+                  EDStatic.messages.errorNotFoundInAr[0],
                   "variableName=" + tDestinationName,
                   "datasetID=" + datasetID),
               MessageFormat.format(
-                  EDStatic.errorNotFoundInAr[language],
+                  EDStatic.messages.errorNotFoundInAr[language],
                   "variableName=" + tDestinationName,
                   "datasetID=" + datasetID)));
     return axisVariables[which];
@@ -1477,8 +1150,9 @@ public abstract class EDDGrid extends EDD {
         throw new SimpleException(
             EDStatic.bilingual(
                 language,
-                EDStatic.queryErrorAr[0] + EDStatic.queryErrorGridAmpAr[0],
-                EDStatic.queryErrorAr[language] + EDStatic.queryErrorGridAmpAr[language]));
+                EDStatic.messages.queryErrorAr[0] + EDStatic.messages.queryErrorGridAmpAr[0],
+                EDStatic.messages.queryErrorAr[language]
+                    + EDStatic.messages.queryErrorGridAmpAr[language]));
     }
     String query = ampParts[0]; // it has been percentDecoded
 
@@ -1490,17 +1164,17 @@ public abstract class EDDGrid extends EDD {
 
     // process queries with no [], just csv list of desired dataVariables
     if (query.indexOf('[') < 0) {
-      for (int av = 0; av < axisVariables.length; av++) {
+      for (EDVGridAxis axisVariable : axisVariables) {
         constraints.add(0);
         constraints.add(1);
-        constraints.add(axisVariables[av].sourceValues().size() - 1);
+        constraints.add(axisVariable.sourceValues().size() - 1);
       }
       String destNames[] = String2.split(query, ',');
-      for (int dv = 0; dv < destNames.length; dv++) {
+      for (String name : destNames) {
         // if gridName.gridName notation, remove "gridName."
         // This isn't exactly correct: technically, the response shouldn't include the axis
         // variables.
-        String destName = destNames[dv];
+        String destName = name;
         int period = destName.indexOf('.');
         if (period > 0) {
           String shortName = destName.substring(0, period);
@@ -1518,11 +1192,12 @@ public abstract class EDDGrid extends EDD {
               throw new SimpleException(
                   EDStatic.bilingual(
                       language,
-                      EDStatic.queryErrorAr[0]
-                          + MessageFormat.format(EDStatic.queryErrorGridNoAxisVarAr[0], destName),
-                      EDStatic.queryErrorAr[language]
+                      EDStatic.messages.queryErrorAr[0]
                           + MessageFormat.format(
-                              EDStatic.queryErrorGridNoAxisVarAr[language], destName)));
+                              EDStatic.messages.queryErrorGridNoAxisVarAr[0], destName),
+                      EDStatic.messages.queryErrorAr[language]
+                          + MessageFormat.format(
+                              EDStatic.messages.queryErrorGridNoAxisVarAr[language], destName)));
             findDataVariableByDestinationName(destName); // throws Throwable if trouble
           }
         }
@@ -1532,7 +1207,7 @@ public abstract class EDDGrid extends EDD {
         if (tdi >= 0) {
           if (!repair)
             throw new SimpleException(
-                EDStatic.simpleBilingual(language, EDStatic.queryErrorAr)
+                EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
                     + "Variable name='"
                     + destName
                     + "' occurs twice.");
@@ -1554,15 +1229,15 @@ public abstract class EDDGrid extends EDD {
             throw new SimpleException(
                 EDStatic.bilingual(
                     language,
-                    EDStatic.queryErrorAr[0]
+                    EDStatic.messages.queryErrorAr[0]
                         + MessageFormat.format(
-                            EDStatic.queryErrorExpectedAtAr[0],
+                            EDStatic.messages.queryErrorExpectedAtAr[0],
                             ",\" or \"[end of query]",
                             "" + po,
                             "\"" + query.charAt(po) + "\""),
-                    EDStatic.queryErrorAr[language]
+                    EDStatic.messages.queryErrorAr[language]
                         + MessageFormat.format(
-                            EDStatic.queryErrorExpectedAtAr[language],
+                            EDStatic.messages.queryErrorExpectedAtAr[language],
                             ",\" or \"[end of query]",
                             "" + po,
                             "\"" + query.charAt(po) + "\"")));
@@ -1579,12 +1254,15 @@ public abstract class EDDGrid extends EDD {
           throw new SimpleException(
               EDStatic.bilingual(
                   language,
-                  EDStatic.queryErrorAr[0]
+                  EDStatic.messages.queryErrorAr[0]
                       + MessageFormat.format(
-                          EDStatic.queryErrorExpectedAtAr[0], "[", "" + po, "[end of query]"),
-                  EDStatic.queryErrorAr[language]
+                          EDStatic.messages.queryErrorExpectedAtAr[0],
+                          "[",
+                          "" + po,
+                          "[end of query]"),
+                  EDStatic.messages.queryErrorAr[language]
                       + MessageFormat.format(
-                          EDStatic.queryErrorExpectedAtAr[language],
+                          EDStatic.messages.queryErrorExpectedAtAr[language],
                           "[",
                           "" + po,
                           "[end of query]")));
@@ -1616,11 +1294,12 @@ public abstract class EDDGrid extends EDD {
           throw new SimpleException(
               EDStatic.bilingual(
                   language,
-                  EDStatic.queryErrorAr[0]
-                      + MessageFormat.format(EDStatic.queryErrorOccursTwiceAr[0], destinationName),
-                  EDStatic.queryErrorAr[language]
+                  EDStatic.messages.queryErrorAr[0]
                       + MessageFormat.format(
-                          EDStatic.queryErrorOccursTwiceAr[language], destinationName)));
+                          EDStatic.messages.queryErrorOccursTwiceAr[0], destinationName),
+                  EDStatic.messages.queryErrorAr[language]
+                      + MessageFormat.format(
+                          EDStatic.messages.queryErrorOccursTwiceAr[language], destinationName)));
       } else {
         destinationNames.add(destinationName);
       }
@@ -1651,9 +1330,9 @@ public abstract class EDDGrid extends EDD {
               throw new SimpleException(
                   EDStatic.bilingual(
                       language,
-                      EDStatic.queryErrorAr[0]
+                      EDStatic.messages.queryErrorAr[0]
                           + MessageFormat.format(
-                              EDStatic.queryErrorGridNotIdenticalAr[0],
+                              EDStatic.messages.queryErrorGridNotIdenticalAr[0],
                               axisVariableDestinationNames()[axis]
                                   + "["
                                   + startI
@@ -1672,9 +1351,9 @@ public abstract class EDDGrid extends EDD {
                                   + constraints.get(axis * 3 + 2)
                                   + "]"
                                   + destinationNames.get(0)),
-                      EDStatic.queryErrorAr[language]
+                      EDStatic.messages.queryErrorAr[language]
                           + MessageFormat.format(
-                              EDStatic.queryErrorGridNotIdenticalAr[language],
+                              EDStatic.messages.queryErrorGridNotIdenticalAr[language],
                               axisVariableDestinationNames()[axis]
                                   + "["
                                   + startI
@@ -1745,13 +1424,15 @@ public abstract class EDDGrid extends EDD {
     // ensure not nothing (which is a data request)
     if (ampParts[0].length() == 0)
       throw new SimpleException(
-          EDStatic.bilingual(language, EDStatic.queryErrorAr, EDStatic.queryErrorGrid1AxisAr));
+          EDStatic.bilingual(
+              language, EDStatic.messages.queryErrorAr, EDStatic.messages.queryErrorGrid1AxisAr));
 
     // ignore any &.cmd constraints
     for (int ap = 1; ap < ampParts.length; ap++)
       if (!repair && !ampParts[ap].startsWith("."))
         throw new SimpleException(
-            EDStatic.bilingual(language, EDStatic.queryErrorAr, EDStatic.queryErrorGridAmpAr));
+            EDStatic.bilingual(
+                language, EDStatic.messages.queryErrorAr, EDStatic.messages.queryErrorGridAmpAr));
     userDapQuery = ampParts[0];
 
     // get the destinationNames
@@ -1775,13 +1456,13 @@ public abstract class EDDGrid extends EDD {
           throw new SimpleException(
               EDStatic.bilingual(
                   language,
-                  EDStatic.queryErrorAr[0]
+                  EDStatic.messages.queryErrorAr[0]
                       + MessageFormat.format(
-                          EDStatic.queryErrorUnknownVariableAr[0],
+                          EDStatic.messages.queryErrorUnknownVariableAr[0],
                           destinationName.substring(0, period)),
-                  EDStatic.queryErrorAr[language]
+                  EDStatic.messages.queryErrorAr[language]
                       + MessageFormat.format(
-                          EDStatic.queryErrorUnknownVariableAr[language],
+                          EDStatic.messages.queryErrorUnknownVariableAr[language],
                           destinationName.substring(0, period))));
         destinationName = destinationName.substring(period + 1);
       }
@@ -1796,12 +1477,13 @@ public abstract class EDDGrid extends EDD {
             throw new SimpleException(
                 EDStatic.bilingual(
                     language,
-                    EDStatic.queryErrorAr[0]
+                    EDStatic.messages.queryErrorAr[0]
                         + MessageFormat.format(
-                            EDStatic.queryErrorGridNoDataVarAr[0], destinationName),
-                    EDStatic.queryErrorAr[language]
+                            EDStatic.messages.queryErrorGridNoDataVarAr[0], destinationName),
+                    EDStatic.messages.queryErrorAr[language]
                         + MessageFormat.format(
-                            EDStatic.queryErrorGridNoDataVarAr[language], destinationName)));
+                            EDStatic.messages.queryErrorGridNoDataVarAr[language],
+                            destinationName)));
           findAxisVariableByDestinationName(
               language, destinationName); // throws Throwable if trouble
         }
@@ -1815,11 +1497,12 @@ public abstract class EDDGrid extends EDD {
           throw new SimpleException(
               EDStatic.bilingual(
                   language,
-                  EDStatic.queryErrorAr[0]
-                      + MessageFormat.format(EDStatic.queryErrorOccursTwiceAr[0], destinationName),
-                  EDStatic.queryErrorAr[language]
+                  EDStatic.messages.queryErrorAr[0]
                       + MessageFormat.format(
-                          EDStatic.queryErrorOccursTwiceAr[language], destinationName)));
+                          EDStatic.messages.queryErrorOccursTwiceAr[0], destinationName),
+                  EDStatic.messages.queryErrorAr[language]
+                      + MessageFormat.format(
+                          EDStatic.messages.queryErrorOccursTwiceAr[language], destinationName)));
       } else {
         destinationNames.add(destinationName);
       }
@@ -1837,14 +1520,14 @@ public abstract class EDDGrid extends EDD {
           throw new SimpleException(
               EDStatic.bilingual(
                   language,
-                  EDStatic.queryErrorAr[0]
+                  EDStatic.messages.queryErrorAr[0]
                       + MessageFormat.format(
-                          EDStatic.queryErrorNotExpectedAtAr[0],
+                          EDStatic.messages.queryErrorNotExpectedAtAr[0],
                           userDapQuery.charAt(po),
                           "" + (po + 1)),
-                  EDStatic.queryErrorAr[language]
+                  EDStatic.messages.queryErrorAr[language]
                       + MessageFormat.format(
-                          EDStatic.queryErrorNotExpectedAtAr[language],
+                          EDStatic.messages.queryErrorNotExpectedAtAr[language],
                           userDapQuery.charAt(po),
                           "" + (po + 1))));
         // if (reallyVerbose) String2.log("      axis=" + axis +
@@ -1897,13 +1580,13 @@ public abstract class EDDGrid extends EDD {
             : av.destinationDataPAType() == PAType.DOUBLE ? 9 : 5;
     String diagnostic0 =
         MessageFormat.format(
-            EDStatic.queryErrorGridDiagnosticAr[0],
+            EDStatic.messages.queryErrorGridDiagnosticAr[0],
             destinationName,
             "" + axis,
             av.destinationName());
     String diagnosticl =
         MessageFormat.format(
-            EDStatic.queryErrorGridDiagnosticAr[language],
+            EDStatic.messages.queryErrorGridDiagnosticAr[language],
             destinationName,
             "" + axis,
             av.destinationName());
@@ -1922,21 +1605,21 @@ public abstract class EDDGrid extends EDD {
         throw new SimpleException(
             EDStatic.bilingual(
                 language,
-                EDStatic.queryErrorAr[0]
+                EDStatic.messages.queryErrorAr[0]
                     + diagnostic0
                     + ": "
                     + MessageFormat.format(
-                        EDStatic.queryErrorExpectedAtAr[0],
+                        EDStatic.messages.queryErrorExpectedAtAr[0],
                         "[",
                         "" + po,
                         po >= deQuery.length()
                             ? "[end of query]"
                             : "\"" + deQuery.charAt(po) + "\""),
-                EDStatic.queryErrorAr[language]
+                EDStatic.messages.queryErrorAr[language]
                     + diagnosticl
                     + ": "
                     + MessageFormat.format(
-                        EDStatic.queryErrorExpectedAtAr[language],
+                        EDStatic.messages.queryErrorExpectedAtAr[language],
                         "[",
                         "" + po,
                         po >= deQuery.length()
@@ -1953,22 +1636,27 @@ public abstract class EDDGrid extends EDD {
         throw new SimpleException(
             EDStatic.bilingual(
                 language,
-                EDStatic.queryErrorAr[0]
+                EDStatic.messages.queryErrorAr[0]
                     + diagnostic0
                     + ": "
-                    + MessageFormat.format(EDStatic.queryErrorNotFoundAfterAr[0], "]", "" + leftPo),
-                EDStatic.queryErrorAr[language]
+                    + MessageFormat.format(
+                        EDStatic.messages.queryErrorNotFoundAfterAr[0], "]", "" + leftPo),
+                EDStatic.messages.queryErrorAr[language]
                     + diagnosticl
                     + ": "
                     + MessageFormat.format(
-                        EDStatic.queryErrorNotFoundAfterAr[language], "]", "" + leftPo)));
+                        EDStatic.messages.queryErrorNotFoundAfterAr[language], "]", "" + leftPo)));
     }
     defaults[3] = rightPo;
     diagnostic0 +=
-        " " + EDStatic.EDDConstraintAr[0] + "=\"" + deQuery.substring(leftPo, rightPo + 1) + "\"";
+        " "
+            + EDStatic.messages.EDDConstraintAr[0]
+            + "=\""
+            + deQuery.substring(leftPo, rightPo + 1)
+            + "\"";
     diagnosticl +=
         " "
-            + EDStatic.EDDConstraintAr[language]
+            + EDStatic.messages.EDDConstraintAr[language]
             + "=\""
             + deQuery.substring(leftPo, rightPo + 1)
             + "\"";
@@ -1993,16 +1681,18 @@ public abstract class EDDGrid extends EDD {
             throw new SimpleException(
                 EDStatic.bilingual(
                     language,
-                    EDStatic.queryErrorAr[0]
+                    EDStatic.messages.queryErrorAr[0]
                         + diagnostic0
                         + ": "
                         + MessageFormat.format(
-                            EDStatic.queryErrorNotFoundAfterAr[0], ")", "" + leftPo),
-                    EDStatic.queryErrorAr[language]
+                            EDStatic.messages.queryErrorNotFoundAfterAr[0], ")", "" + leftPo),
+                    EDStatic.messages.queryErrorAr[language]
                         + diagnosticl
                         + ": "
                         + MessageFormat.format(
-                            EDStatic.queryErrorNotFoundAfterAr[language], ")", "" + leftPo)));
+                            EDStatic.messages.queryErrorNotFoundAfterAr[language],
+                            ")",
+                            "" + leftPo)));
         }
         colon1++;
       } else {
@@ -2026,16 +1716,18 @@ public abstract class EDDGrid extends EDD {
             throw new SimpleException(
                 EDStatic.bilingual(
                     language,
-                    EDStatic.queryErrorAr[0]
+                    EDStatic.messages.queryErrorAr[0]
                         + diagnostic0
                         + ": "
                         + MessageFormat.format(
-                            EDStatic.queryErrorNotFoundAfterAr[0], ")", "" + (colon2 + 2)),
-                    EDStatic.queryErrorAr[language]
+                            EDStatic.messages.queryErrorNotFoundAfterAr[0], ")", "" + (colon2 + 2)),
+                    EDStatic.messages.queryErrorAr[language]
                         + diagnosticl
                         + ": "
                         + MessageFormat.format(
-                            EDStatic.queryErrorNotFoundAfterAr[language], ")", "" + (colon2 + 2))));
+                            EDStatic.messages.queryErrorNotFoundAfterAr[language],
+                            ")",
+                            "" + (colon2 + 2))));
         } else {
           // next char must be ']' or ':'
           colon2++;
@@ -2049,19 +1741,19 @@ public abstract class EDDGrid extends EDD {
               throw new SimpleException(
                   EDStatic.bilingual(
                       language,
-                      EDStatic.queryErrorAr[0]
+                      EDStatic.messages.queryErrorAr[0]
                           + diagnostic0
                           + ": "
                           + MessageFormat.format(
-                              EDStatic.queryErrorExpectedAtAr[0],
+                              EDStatic.messages.queryErrorExpectedAtAr[0],
                               "]\" or \":",
                               "" + colon2,
                               "\"" + deQuery.charAt(colon2) + "\""),
-                      EDStatic.queryErrorAr[language]
+                      EDStatic.messages.queryErrorAr[language]
                           + diagnosticl
                           + ": "
                           + MessageFormat.format(
-                              EDStatic.queryErrorExpectedAtAr[language],
+                              EDStatic.messages.queryErrorExpectedAtAr[language],
                               "]\" or \":",
                               "" + colon2,
                               "\"" + deQuery.charAt(colon2) + "\"")));
@@ -2098,31 +1790,29 @@ public abstract class EDDGrid extends EDD {
             throw new SimpleException(
                 EDStatic.bilingual(
                     language,
-                    EDStatic.queryErrorAr[0]
+                    EDStatic.messages.queryErrorAr[0]
                         + diagnostic0
                         + ": "
                         + MessageFormat.format(
-                            EDStatic.queryErrorInvalidAr[0],
-                            EDStatic.EDDGridStrideAr[0] + "=" + strideS),
-                    EDStatic.queryErrorAr[language]
+                            EDStatic.messages.queryErrorInvalidAr[0],
+                            EDStatic.messages.EDDGridStrideAr[0] + "=" + strideS),
+                    EDStatic.messages.queryErrorAr[language]
                         + diagnosticl
                         + ": "
                         + MessageFormat.format(
-                            EDStatic.queryErrorInvalidAr[language],
-                            EDStatic.EDDGridStrideAr[language] + "=" + strideS)));
+                            EDStatic.messages.queryErrorInvalidAr[language],
+                            EDStatic.messages.EDDGridStrideAr[language] + "=" + strideS)));
         }
       }
       startS = startS.trim();
       stopS = stopS.trim();
       // String2.log("      startS=" + startS + " strideI=" + strideI + " stopS=" + stopS);
 
-      double sourceMin = av.sourceValues().getDouble(0);
-      double sourceMax = av.sourceValues().getDouble(nAvSourceValues - 1);
       // if (startS.equals("last") || startS.equals("(last)")) {
       //    startI = av.sourceValues().size() - 1;
       // } else
       if (startS.startsWith("last") || startS.startsWith("(last"))
-        startS = convertLast(language, av, EDStatic.EDDGridStartAr, startS);
+        startS = convertLast(language, av, EDStatic.messages.EDDGridStartAr, startS);
 
       if (startS.startsWith("(")) {
         // convert paren startS
@@ -2131,17 +1821,18 @@ public abstract class EDDGrid extends EDD {
           throw new SimpleException(
               EDStatic.bilingual(
                   language,
-                  EDStatic.queryErrorAr[0]
+                  EDStatic.messages.queryErrorAr[0]
                       + diagnostic0
                       + ": "
                       + MessageFormat.format(
-                          EDStatic.queryErrorGridMissingAr[0], EDStatic.EDDGridStartAr[0]),
-                  EDStatic.queryErrorAr[language]
+                          EDStatic.messages.queryErrorGridMissingAr[0],
+                          EDStatic.messages.EDDGridStartAr[0]),
+                  EDStatic.messages.queryErrorAr[language]
                       + diagnosticl
                       + ": "
                       + MessageFormat.format(
-                          EDStatic.queryErrorGridMissingAr[language],
-                          EDStatic.EDDGridStartAr[language])));
+                          EDStatic.messages.queryErrorGridMissingAr[language],
+                          EDStatic.messages.EDDGridStartAr[language])));
         double startDestD =
             av.destinationToDouble(startS); // ISO 8601 times -> to epochSeconds w/millis precision
         // String2.log("\n! startS=" + startS + " startDestD=" + startDestD + "\n");
@@ -2153,18 +1844,19 @@ public abstract class EDDGrid extends EDD {
             throw new SimpleException(
                 EDStatic.bilingual(
                     language,
-                    EDStatic.queryErrorAr[0]
+                    EDStatic.messages.queryErrorAr[0]
                         + diagnostic0
                         + ": "
                         + MessageFormat.format(
-                            EDStatic.notAllowedAr[0],
-                            EDStatic.EDDGridStartAr[0] + "=NaN (invalid format?)"),
-                    EDStatic.queryErrorAr[language]
+                            EDStatic.messages.notAllowedAr[0],
+                            EDStatic.messages.EDDGridStartAr[0] + "=NaN (invalid format?)"),
+                    EDStatic.messages.queryErrorAr[language]
                         + diagnosticl
                         + ": "
                         + MessageFormat.format(
-                            EDStatic.notAllowedAr[language],
-                            EDStatic.EDDGridStartAr[language] + "=NaN (invalid format?)")));
+                            EDStatic.messages.notAllowedAr[language],
+                            EDStatic.messages.EDDGridStartAr[language]
+                                + "=NaN (invalid format?)")));
         }
 
         startDestD =
@@ -2174,7 +1866,7 @@ public abstract class EDDGrid extends EDD {
                 startS,
                 av,
                 repair,
-                EDStatic.EDDGridStartAr,
+                EDStatic.messages.EDDGridStartAr,
                 language,
                 diagnostic0,
                 diagnosticl);
@@ -2185,7 +1877,7 @@ public abstract class EDDGrid extends EDD {
                 startS,
                 av,
                 repair,
-                EDStatic.EDDGridStartAr,
+                EDStatic.messages.EDDGridStartAr,
                 language,
                 diagnostic0,
                 diagnosticl);
@@ -2202,20 +1894,20 @@ public abstract class EDDGrid extends EDD {
             throw new SimpleException(
                 EDStatic.bilingual(
                     language,
-                    EDStatic.queryErrorAr[0]
+                    EDStatic.messages.queryErrorAr[0]
                         + diagnostic0
                         + ": "
                         + MessageFormat.format(
-                            EDStatic.queryErrorGridBetweenAr[0],
-                            EDStatic.EDDGridStartAr[0],
+                            EDStatic.messages.queryErrorGridBetweenAr[0],
+                            EDStatic.messages.EDDGridStartAr[0],
                             startS,
                             "" + (nAvSourceValues - 1)),
-                    EDStatic.queryErrorAr[language]
+                    EDStatic.messages.queryErrorAr[language]
                         + diagnosticl
                         + ": "
                         + MessageFormat.format(
-                            EDStatic.queryErrorGridBetweenAr[language],
-                            EDStatic.EDDGridStartAr[language],
+                            EDStatic.messages.queryErrorGridBetweenAr[language],
+                            EDStatic.messages.EDDGridStartAr[language],
                             startS,
                             "" + (nAvSourceValues - 1))));
         }
@@ -2228,20 +1920,20 @@ public abstract class EDDGrid extends EDD {
             throw new SimpleException(
                 EDStatic.bilingual(
                     language,
-                    EDStatic.queryErrorAr[0]
+                    EDStatic.messages.queryErrorAr[0]
                         + diagnostic0
                         + ": "
                         + MessageFormat.format(
-                            EDStatic.queryErrorGridBetweenAr[0],
-                            EDStatic.EDDGridStartAr[0],
+                            EDStatic.messages.queryErrorGridBetweenAr[0],
+                            EDStatic.messages.EDDGridStartAr[0],
                             startS,
                             "" + (nAvSourceValues - 1)),
-                    EDStatic.queryErrorAr[language]
+                    EDStatic.messages.queryErrorAr[language]
                         + diagnosticl
                         + ": "
                         + MessageFormat.format(
-                            EDStatic.queryErrorGridBetweenAr[language],
-                            EDStatic.EDDGridStartAr[language],
+                            EDStatic.messages.queryErrorGridBetweenAr[language],
+                            EDStatic.messages.EDDGridStartAr[language],
                             startS,
                             "" + (nAvSourceValues - 1))));
         }
@@ -2252,7 +1944,7 @@ public abstract class EDDGrid extends EDD {
       //    stopI = av.sourceValues().size() - 1;
       // } else
       if (stopS.startsWith("last") || stopS.startsWith("(last"))
-        stopS = convertLast(language, av, EDStatic.EDDGridStopAr, stopS);
+        stopS = convertLast(language, av, EDStatic.messages.EDDGridStopAr, stopS);
 
       if (stopS.startsWith("(")) {
         // convert paren stopS
@@ -2261,17 +1953,18 @@ public abstract class EDDGrid extends EDD {
           throw new SimpleException(
               EDStatic.bilingual(
                   language,
-                  EDStatic.queryErrorAr[0]
+                  EDStatic.messages.queryErrorAr[0]
                       + diagnostic0
                       + ": "
                       + MessageFormat.format(
-                          EDStatic.queryErrorGridMissingAr[0], EDStatic.EDDGridStopAr[0]),
-                  EDStatic.queryErrorAr[language]
+                          EDStatic.messages.queryErrorGridMissingAr[0],
+                          EDStatic.messages.EDDGridStopAr[0]),
+                  EDStatic.messages.queryErrorAr[language]
                       + diagnosticl
                       + ": "
                       + MessageFormat.format(
-                          EDStatic.queryErrorGridMissingAr[language],
-                          EDStatic.EDDGridStopAr[language])));
+                          EDStatic.messages.queryErrorGridMissingAr[language],
+                          EDStatic.messages.EDDGridStopAr[language])));
         double stopDestD =
             av.destinationToDouble(stopS); // ISO 8601 times -> to epochSeconds w/millis precision
         // String2.log("\n! stopS=" + stopS + " stopDestD=" + stopDestD + "\n");
@@ -2283,18 +1976,18 @@ public abstract class EDDGrid extends EDD {
             throw new SimpleException(
                 EDStatic.bilingual(
                     language,
-                    EDStatic.queryErrorAr[0]
+                    EDStatic.messages.queryErrorAr[0]
                         + diagnostic0
                         + ": "
                         + MessageFormat.format(
-                            EDStatic.notAllowedAr[0],
-                            EDStatic.EDDGridStopAr[0] + "=NaN (invalid format?)"),
-                    EDStatic.queryErrorAr[language]
+                            EDStatic.messages.notAllowedAr[0],
+                            EDStatic.messages.EDDGridStopAr[0] + "=NaN (invalid format?)"),
+                    EDStatic.messages.queryErrorAr[language]
                         + diagnosticl
                         + ": "
                         + MessageFormat.format(
-                            EDStatic.notAllowedAr[language],
-                            EDStatic.EDDGridStopAr[language] + "=NaN (invalid format?)")));
+                            EDStatic.messages.notAllowedAr[language],
+                            EDStatic.messages.EDDGridStopAr[language] + "=NaN (invalid format?)")));
         }
 
         stopDestD =
@@ -2304,7 +1997,7 @@ public abstract class EDDGrid extends EDD {
                 stopS,
                 av,
                 repair,
-                EDStatic.EDDGridStopAr,
+                EDStatic.messages.EDDGridStopAr,
                 language,
                 diagnostic0,
                 diagnosticl);
@@ -2315,7 +2008,7 @@ public abstract class EDDGrid extends EDD {
                 stopS,
                 av,
                 repair,
-                EDStatic.EDDGridStopAr,
+                EDStatic.messages.EDDGridStopAr,
                 language,
                 diagnostic0,
                 diagnosticl);
@@ -2333,20 +2026,20 @@ public abstract class EDDGrid extends EDD {
             throw new SimpleException(
                 EDStatic.bilingual(
                     language,
-                    EDStatic.queryErrorAr[0]
+                    EDStatic.messages.queryErrorAr[0]
                         + diagnostic0
                         + ": "
                         + MessageFormat.format(
-                            EDStatic.queryErrorGridBetweenAr[0],
-                            EDStatic.EDDGridStopAr[0],
+                            EDStatic.messages.queryErrorGridBetweenAr[0],
+                            EDStatic.messages.EDDGridStopAr[0],
                             stopS,
                             "" + (nAvSourceValues - 1)),
-                    EDStatic.queryErrorAr[language]
+                    EDStatic.messages.queryErrorAr[language]
                         + diagnosticl
                         + ": "
                         + MessageFormat.format(
-                            EDStatic.queryErrorGridBetweenAr[language],
-                            EDStatic.EDDGridStopAr[language],
+                            EDStatic.messages.queryErrorGridBetweenAr[language],
+                            EDStatic.messages.EDDGridStopAr[language],
                             stopS,
                             "" + (nAvSourceValues - 1))));
         }
@@ -2357,20 +2050,20 @@ public abstract class EDDGrid extends EDD {
             throw new SimpleException(
                 EDStatic.bilingual(
                     language,
-                    EDStatic.queryErrorAr[0]
+                    EDStatic.messages.queryErrorAr[0]
                         + diagnostic0
                         + ": "
                         + MessageFormat.format(
-                            EDStatic.queryErrorGridBetweenAr[0],
-                            EDStatic.EDDGridStopAr[0],
+                            EDStatic.messages.queryErrorGridBetweenAr[0],
+                            EDStatic.messages.EDDGridStopAr[0],
                             stopS,
                             "" + (nAvSourceValues - 1)),
-                    EDStatic.queryErrorAr[language]
+                    EDStatic.messages.queryErrorAr[language]
                         + diagnosticl
                         + ": "
                         + MessageFormat.format(
-                            EDStatic.queryErrorGridBetweenAr[language],
-                            EDStatic.EDDGridStopAr[language],
+                            EDStatic.messages.queryErrorGridBetweenAr[language],
+                            EDStatic.messages.EDDGridStopAr[language],
                             stopS,
                             "" + (nAvSourceValues - 1))));
         }
@@ -2399,7 +2092,8 @@ public abstract class EDDGrid extends EDD {
    *
    * @param language the index of the selected language
    * @param av an EDVGridAxis variable
-   * @param name EDStatic.EDDGridStartAr ("Start") or EDStatic.EDDGridStopAr ("Stop")
+   * @param name EDStatic.messages.EDDGridStartAr ("Start") or EDStatic.messages.EDDGridStopAr
+   *     ("Stop")
    * @param ssValue the start or stop value
    * @return ssValue converted to "index" or a "(value)"
    * @throws Throwable if invalid format or n is too large
@@ -2415,12 +2109,12 @@ public abstract class EDDGrid extends EDD {
         throw new SimpleException(
             EDStatic.bilingual(
                 language,
-                EDStatic.queryErrorAr[0]
+                EDStatic.messages.queryErrorAr[0]
                     + MessageFormat.format(
-                        EDStatic.queryErrorLastEndPAr[0], nameAr[0] + "=" + ossValue),
-                EDStatic.queryErrorAr[language]
+                        EDStatic.messages.queryErrorLastEndPAr[0], nameAr[0] + "=" + ossValue),
+                EDStatic.messages.queryErrorAr[language]
                     + MessageFormat.format(
-                        EDStatic.queryErrorLastEndPAr[language],
+                        EDStatic.messages.queryErrorLastEndPAr[language],
                         nameAr[language] + "=" + ossValue)));
     }
 
@@ -2430,12 +2124,12 @@ public abstract class EDDGrid extends EDD {
       throw new SimpleException(
           EDStatic.bilingual(
               language,
-              EDStatic.queryErrorAr[0]
+              EDStatic.messages.queryErrorAr[0]
                   + MessageFormat.format(
-                      EDStatic.queryErrorLastExpectedAr[0], nameAr[0] + "=" + ossValue),
-              EDStatic.queryErrorAr[language]
+                      EDStatic.messages.queryErrorLastExpectedAr[0], nameAr[0] + "=" + ossValue),
+              EDStatic.messages.queryErrorAr[language]
                   + MessageFormat.format(
-                      EDStatic.queryErrorLastExpectedAr[language],
+                      EDStatic.messages.queryErrorLastExpectedAr[language],
                       nameAr[language] + "=" + ossValue)));
 
     // done?
@@ -2449,12 +2143,12 @@ public abstract class EDDGrid extends EDD {
       throw new SimpleException(
           EDStatic.bilingual(
               language,
-              EDStatic.queryErrorAr[0]
+              EDStatic.messages.queryErrorAr[0]
                   + MessageFormat.format(
-                      EDStatic.queryErrorLastUnexpectedAr[0], nameAr[0] + "=" + ossValue),
-              EDStatic.queryErrorAr[language]
+                      EDStatic.messages.queryErrorLastUnexpectedAr[0], nameAr[0] + "=" + ossValue),
+              EDStatic.messages.queryErrorAr[language]
                   + MessageFormat.format(
-                      EDStatic.queryErrorLastUnexpectedAr[language],
+                      EDStatic.messages.queryErrorLastUnexpectedAr[language],
                       nameAr[language] + "=" + ossValue)));
     ssValue = ssValue.substring(1).trim();
 
@@ -2465,12 +2159,12 @@ public abstract class EDDGrid extends EDD {
         throw new SimpleException(
             EDStatic.bilingual(
                 language,
-                EDStatic.queryErrorAr[0]
+                EDStatic.messages.queryErrorAr[0]
                     + MessageFormat.format(
-                        EDStatic.queryErrorLastPMInvalidAr[0], nameAr[0] + "=" + ossValue),
-                EDStatic.queryErrorAr[language]
+                        EDStatic.messages.queryErrorLastPMInvalidAr[0], nameAr[0] + "=" + ossValue),
+                EDStatic.messages.queryErrorAr[language]
                     + MessageFormat.format(
-                        EDStatic.queryErrorLastPMInvalidAr[language],
+                        EDStatic.messages.queryErrorLastPMInvalidAr[language],
                         nameAr[language] + "=" + ossValue)));
       return "(" + (av.lastDestinationValue() + pm * td) + ")";
     } else {
@@ -2481,12 +2175,12 @@ public abstract class EDDGrid extends EDD {
         throw new SimpleException(
             EDStatic.bilingual(
                 language,
-                EDStatic.queryErrorAr[0]
+                EDStatic.messages.queryErrorAr[0]
                     + MessageFormat.format(
-                        EDStatic.queryErrorLastPMIntegerAr[0], nameAr[0] + "=" + ossValue),
-                EDStatic.queryErrorAr[language]
+                        EDStatic.messages.queryErrorLastPMIntegerAr[0], nameAr[0] + "=" + ossValue),
+                EDStatic.messages.queryErrorAr[language]
                     + MessageFormat.format(
-                        EDStatic.queryErrorLastPMIntegerAr[language],
+                        EDStatic.messages.queryErrorLastPMIntegerAr[language],
                         nameAr[language] + "=" + ossValue)),
             t);
       }
@@ -2541,7 +2235,7 @@ public abstract class EDDGrid extends EDD {
   /**
    * This gets data (not yet standardized) from the data source for this EDDGrid. Because this is
    * called by GridDataAccessor, the request won't be the full user's request, but will be a partial
-   * request (for less than EDStatic.partialRequestMaxBytes).
+   * request (for less than EDStatic.config.partialRequestMaxBytes).
    *
    * @param language the index of the selected language
    * @param tDirTable If EDDGridFromFiles, this MAY be the dirTable, else null.
@@ -2599,6 +2293,111 @@ public abstract class EDDGrid extends EDD {
     }
   }
 
+  @Override
+  public Map<String, String> snapshot() {
+    Map<String, String> snapshot = super.snapshot();
+    snapshot.put("nAv", "" + dataVariables.length);
+    for (int av = 0; av < axisVariables.length; av++) {
+      EDVGridAxis variable = axisVariables()[av];
+      snapshot.put("av_" + av + "_name", variable.destinationName());
+      snapshot.put("av_" + av + "_type", variable.destinationDataType());
+      snapshot.put("av_" + av + "_sourceSize", "" + variable.sourceValues().size());
+      snapshot.put("av_" + av + "_minValue", "" + variable.destinationCoarseMin());
+      snapshot.put("av_" + av + "_maxValue", "" + variable.destinationCoarseMax());
+      snapshot.put("av_" + av + "_attr", variable.combinedAttributes().toString());
+    }
+
+    return snapshot;
+  }
+
+  @Override
+  public String changed(Map<String, String> oldSnapshot) {
+    if (oldSnapshot == null) return super.changed(oldSnapshot); // so message is consistent
+
+    Map<String, String> newSnapshot = snapshot();
+    StringBuilder diff = new StringBuilder();
+    // check most important things first
+    if (!oldSnapshot.get("nAv").equals(newSnapshot.get("nAv"))) {
+      diff.append(
+          MessageFormat.format(
+              EDStatic.messages.EDDChangedAxesDifferentNVar,
+              oldSnapshot.get("nAv"),
+              newSnapshot.get("nAv")));
+      return diff.toString(); // because tests below assume nAv are same
+    }
+
+    int nAv = dataVariables.length;
+    for (int av = 0; av < nAv; av++) {
+      String nameKey = "av_" + av + "_name";
+      String typeKey = "av_" + av + "_type";
+      String sourceSizeKey = "av_" + av + "_sourceSize";
+      String minKey = "av_" + av + "_minValue";
+      String maxKey = "av_" + av + "_maxValue";
+      String attrKey = "av_" + av + "_attr";
+      String msg2 = "#" + av + "=" + newSnapshot.get(nameKey);
+      if (!mapValueMatches(oldSnapshot, newSnapshot, nameKey)) {
+        diff.append(
+            MessageFormat.format(
+                    EDStatic.messages.EDDChangedAxes2Different,
+                    "destinationName",
+                    msg2,
+                    oldSnapshot.get(nameKey),
+                    newSnapshot.get(nameKey))
+                + "\n");
+      }
+      if (!mapValueMatches(oldSnapshot, newSnapshot, typeKey)) {
+        diff.append(
+            MessageFormat.format(
+                    EDStatic.messages.EDDChangedAxes2Different,
+                    "destinationDataType",
+                    msg2,
+                    oldSnapshot.get(typeKey),
+                    newSnapshot.get(typeKey))
+                + "\n");
+      }
+      if (!mapValueMatches(oldSnapshot, newSnapshot, sourceSizeKey)) {
+        diff.append(
+            MessageFormat.format(
+                    EDStatic.messages.EDDChangedAxes2Different,
+                    "numberOfValues",
+                    msg2,
+                    oldSnapshot.get(sourceSizeKey),
+                    newSnapshot.get(sourceSizeKey))
+                + "\n");
+      }
+      if (!mapValueMatches(oldSnapshot, newSnapshot, minKey)) {
+        diff.append(
+            MessageFormat.format(
+                    EDStatic.messages.EDDChangedAxes2Different,
+                    "minValue",
+                    msg2,
+                    oldSnapshot.get(minKey),
+                    newSnapshot.get(minKey))
+                + "\n");
+      }
+      if (!mapValueMatches(oldSnapshot, newSnapshot, maxKey)) {
+        diff.append(
+            MessageFormat.format(
+                    EDStatic.messages.EDDChangedAxes2Different,
+                    "maxValue",
+                    msg2,
+                    oldSnapshot.get(maxKey),
+                    newSnapshot.get(maxKey))
+                + "\n");
+      }
+      String s = String2.differentLine(oldSnapshot.get(attrKey), newSnapshot.get(attrKey));
+      if (s.length() > 0) {
+        diff.append(
+            MessageFormat.format(
+                    EDStatic.messages.EDDChangedAxes1Different, "combinedAttribute", msg2, s)
+                + "\n");
+      }
+    }
+
+    diff.append(super.changed(oldSnapshot));
+    return diff.toString();
+  }
+
   /**
    * This tests if 'old' is different from this in any way. <br>
    * This test is from the view of a subscriber who wants to know when a dataset has changed in any
@@ -2615,7 +2414,7 @@ public abstract class EDDGrid extends EDD {
   public String changed(EDD old) {
     if (old == null) return super.changed(old); // so message is consistent
 
-    if (!(old instanceof EDDGrid)) return EDStatic.EDDChangedTableToGrid + "\n";
+    if (!(old instanceof EDDGrid)) return EDStatic.messages.EDDChangedTableToGrid + "\n";
 
     EDDGrid oldG = (EDDGrid) old;
 
@@ -2625,7 +2424,8 @@ public abstract class EDDGrid extends EDD {
     String oldS = "" + oldG.axisVariables().length;
     String newS = "" + nAv;
     if (!oldS.equals(newS)) {
-      diff.append(MessageFormat.format(EDStatic.EDDChangedAxesDifferentNVar, oldS, newS) + "\n");
+      diff.append(
+          MessageFormat.format(EDStatic.messages.EDDChangedAxesDifferentNVar, oldS, newS) + "\n");
       return diff.toString(); // because tests below assume nAv are same
     }
 
@@ -2640,7 +2440,7 @@ public abstract class EDDGrid extends EDD {
       if (!oldS.equals(newS))
         diff.append(
             MessageFormat.format(
-                    EDStatic.EDDChangedAxes2Different, "destinationName", msg2, oldS, newS)
+                    EDStatic.messages.EDDChangedAxes2Different, "destinationName", msg2, oldS, newS)
                 + "\n");
 
       oldS = oldAV.destinationDataType();
@@ -2648,7 +2448,11 @@ public abstract class EDDGrid extends EDD {
       if (!oldS.equals(newS))
         diff.append(
             MessageFormat.format(
-                    EDStatic.EDDChangedAxes2Different, "destinationDataType", msg2, oldS, newS)
+                    EDStatic.messages.EDDChangedAxes2Different,
+                    "destinationDataType",
+                    msg2,
+                    oldS,
+                    newS)
                 + "\n");
 
       // most import case: new time value will be displayed as an iso time
@@ -2657,28 +2461,28 @@ public abstract class EDDGrid extends EDD {
       if (!oldS.equals(newS))
         diff.append(
             MessageFormat.format(
-                    EDStatic.EDDChangedAxes2Different, "numberOfValues", msg2, oldS, newS)
+                    EDStatic.messages.EDDChangedAxes2Different, "numberOfValues", msg2, oldS, newS)
                 + "\n");
 
       int diffIndex = newAV.sourceValues().diffIndex(oldAV.sourceValues());
       if (diffIndex >= 0)
         diff.append(
             MessageFormat.format(
-                    EDStatic.EDDChangedAxes2Different,
+                    EDStatic.messages.EDDChangedAxes2Different,
                     "destinationValues",
                     msg2,
                     "index #"
                         + diffIndex
                         + "="
                         + (diffIndex >= oldAV.sourceValues().size()
-                            ? EDStatic.EDDChangedNoValue
+                            ? EDStatic.messages.EDDChangedNoValue
                             : oldAV.destinationToString(
                                 oldAV.destinationValue(diffIndex).getDouble(0))),
                     "index #"
                         + diffIndex
                         + "="
                         + (diffIndex >= newAV.sourceValues().size()
-                            ? EDStatic.EDDChangedNoValue
+                            ? EDStatic.messages.EDDChangedNoValue
                             : newAV.destinationToString(
                                 newAV.destinationValue(diffIndex).getDouble(0))))
                 + "\n");
@@ -2688,7 +2492,8 @@ public abstract class EDDGrid extends EDD {
               oldAV.combinedAttributes().toString(), newAV.combinedAttributes().toString());
       if (s.length() > 0)
         diff.append(
-            MessageFormat.format(EDStatic.EDDChangedAxes1Different, "combinedAttribute", msg2, s)
+            MessageFormat.format(
+                    EDStatic.messages.EDDChangedAxes1Different, "combinedAttribute", msg2, s)
                 + "\n");
     }
 
@@ -2787,7 +2592,7 @@ public abstract class EDDGrid extends EDD {
    *     not used to test if this edd is accessibleTo loggedInAs, but in unusual cases
    *     (EDDTableFromPost?) it could be. Normally, this is just used to determine which erddapUrl
    *     to use (http vs https).
-   * @param requestUrl the part of the user's request, after EDStatic.baseUrl, before '?'.
+   * @param requestUrl the part of the user's request, after EDStatic.config.baseUrl, before '?'.
    * @param userDapQuery the part of the user's request after the '?', still percentEncoded
    *     (shouldn't be null).
    * @param outputStreamSource the source of an outputStream that receives the results, usually
@@ -2816,268 +2621,117 @@ public abstract class EDDGrid extends EDD {
       throws Throwable {
 
     try {
-
-      String tErddapUrl = EDStatic.erddapUrl(loggedInAs, language);
-
+      String tErddapUrl = EDStatic.erddapUrl(request, loggedInAs, language);
       // save data to outputStream
-      if (fileTypeName.equals(".asc")) {
-        saveAsAsc(language, requestUrl, userDapQuery, outputStreamSource);
-        return;
-      }
-
-      if (fileTypeName.equals(".csv")) {
-        saveAsCsv(language, requestUrl, userDapQuery, outputStreamSource, true, '2');
-        return;
-      }
-
-      if (fileTypeName.equals(".csvp")) {
-        saveAsCsv(language, requestUrl, userDapQuery, outputStreamSource, true, '(');
-        return;
-      }
-
-      if (fileTypeName.equals(".csv0")) {
-        saveAsCsv(language, requestUrl, userDapQuery, outputStreamSource, false, '0');
-        return;
-      }
-
-      if (fileTypeName.equals(".das")) {
-        saveAsDAS(language, requestUrl, userDapQuery, outputStreamSource);
-        return;
-      }
-
-      if (fileTypeName.equals(".dds")) {
-        Writer writer =
-            File2.getBufferedWriter88591(
-                outputStreamSource.outputStream(
-                    File2.ISO_8859_1)); // OPeNDAP 2.0 section 3.2.3 says US-ASCII (7bit), so might
-        // as well go for compatible common 8bit
-        try {
-          writeDDS(language, requestUrl, userDapQuery, writer);
-        } finally {
-          writer.close();
+      switch (fileTypeName) {
+        case ".graph" -> {
+          respondToGraphQuery(
+              language,
+              request,
+              loggedInAs,
+              requestUrl,
+              endOfRequest,
+              userDapQuery,
+              outputStreamSource,
+              dir,
+              fileName,
+              fileTypeName);
+          return;
         }
-        return;
-      }
-
-      if (fileTypeName.equals(".dods")) {
-        saveAsDODS(language, requestUrl, userDapQuery, outputStreamSource);
-        return;
-      }
-
-      if (fileTypeName.equals(".esriAscii")) {
-        saveAsEsriAscii(language, requestUrl, userDapQuery, outputStreamSource);
-        return;
-      }
-
-      if (fileTypeName.equals(".fgdc")) {
-        if (accessibleViaFGDC.length() == 0) {
+        case ".html" -> {
+          // it is important that this use outputStreamSource so stream is compressed (if possible)
+          // OPeNDAP 2.0 section 3.2.3 says US-ASCII (7bit), so might as well go for compatible
+          // unicode
+          // With HTML 5 and for future, best to go with UTF_8.  Also, <startHeadHtml> says UTF_8.
           OutputStream out = outputStreamSource.outputStream(File2.UTF_8);
+          Writer writer = File2.getBufferedWriterUtf8(out);
           try {
-            if (!File2.copy(datasetDir() + datasetID + fgdcSuffix + ".xml", out))
-              throw new SimpleException(String2.ERROR + " while transmitting file.");
-          } finally {
-            try {
-              out.close();
-            } catch (Exception e) {
-            } // downloads of e.g., erddap2.css don't work right if not closed. (just if gzip'd?)
+            writer.write(
+                EDStatic.startHeadHtml(
+                    language,
+                    tErddapUrl,
+                    title(language) + " - " + EDStatic.messages.dafAr[language]));
+            writer.write("\n" + rssHeadLink(language));
+            writer.write("\n</head>\n");
+            writer.write(
+                EDStatic.startBodyHtml(
+                    request,
+                    language,
+                    loggedInAs,
+                    "griddap/" + datasetID + ".html", // was endOfRequest,
+                    userDapQuery));
+            writer.write("\n");
+            writer.write(
+                HtmlWidgets.htmlTooltipScript(
+                    EDStatic.imageDirUrl(
+                        request, loggedInAs, language))); // this is a link to a script
+            writer.write(
+                HtmlWidgets.dragDropScript(
+                    EDStatic.imageDirUrl(
+                        request, loggedInAs, language))); // this is a link to a script
+            writer.flush(); // Steve Souder says: the sooner you can send some html to user, the
+            // better
+            writer.write("<div class=\"standard_width\">\n");
+            writer.write(
+                EDStatic.youAreHereWithHelp(
+                    request,
+                    language,
+                    loggedInAs,
+                    dapProtocol,
+                    EDStatic.messages.dafAr[language],
+                    "<div class=\"standard_max_width\">"
+                        + EDStatic.messages.dafGridTooltipAr[language]
+                        + "<p>"
+                        + EDStatic.messages.EDDGridDownloadDataTooltipAr[language]
+                        + "</ol>\n"
+                        + EDStatic.messages.dafGridBypassTooltipAr[language]
+                        + "</div>"));
+            writeHtmlDatasetInfo(
+                request, language, loggedInAs, writer, true, false, true, true, userDapQuery, "");
+            if (userDapQuery.length() == 0)
+              userDapQuery =
+                  defaultDataQuery(); // after writeHtmlDatasetInfo and before writeDapHtmlForm
+            writeDapHtmlForm(request, language, loggedInAs, userDapQuery, writer);
+
+            // End of page / other info
+
+            // das (with info about this dataset)
+            writer.write(
+                "<hr>\n"
+                    + "<h2><a class=\"selfLink\" id=\"DAS\" href=\"#DAS\" rel=\"bookmark\">"
+                    + EDStatic.messages.dasTitleAr[language]
+                    + "</a></h2>\n"
+                    + "<pre style=\"white-space:pre-wrap;\">\n");
+            writeDAS(
+                language,
+                File2.forceExtension(requestUrl, ".das"),
+                "",
+                writer,
+                true); // useful so search engines find all relevant words
+            writer.write("</pre>\n");
+
+            // then dap instructions
+            writer.write(
+                """
+                            <br>&nbsp;
+                            <hr>
+                            """);
+            writeGeneralDapHtmlInstructions(language, tErddapUrl, writer, false);
+            writer.write("</div>\n");
+            writer.write(EDStatic.endBodyHtml(request, language, tErddapUrl, loggedInAs));
+            writer.write("</html>");
+            writer.close();
+
+          } catch (Exception e) {
+            EDStatic.rethrowClientAbortException(e); // first thing in catch{}
+            writer.write(EDStatic.htmlForException(language, e));
+            writer.write(EDStatic.endBodyHtml(request, language, tErddapUrl, loggedInAs));
+            writer.write("</html>");
+            writer.close();
+            throw e;
           }
-
-        } else {
-          throw new SimpleException(
-              EDStatic.simpleBilingual(language, EDStatic.queryErrorAr) + accessibleViaFGDC);
+          return;
         }
-        return;
-      }
-
-      if (fileTypeName.equals(".graph")) {
-        respondToGraphQuery(
-            language,
-            request,
-            loggedInAs,
-            requestUrl,
-            endOfRequest,
-            userDapQuery,
-            outputStreamSource,
-            dir,
-            fileName,
-            fileTypeName);
-        return;
-      }
-
-      if (fileTypeName.equals(".html")) {
-        // it is important that this use outputStreamSource so stream is compressed (if possible)
-        // OPeNDAP 2.0 section 3.2.3 says US-ASCII (7bit), so might as well go for compatible
-        // unicode
-        // With HTML 5 and for future, best to go with UTF_8.  Also, <startHeadHtml> says UTF_8.
-        OutputStream out = outputStreamSource.outputStream(File2.UTF_8);
-        Writer writer = File2.getBufferedWriterUtf8(out);
-        try {
-          writer.write(
-              EDStatic.startHeadHtml(
-                  language, tErddapUrl, title() + " - " + EDStatic.dafAr[language]));
-          writer.write("\n" + rssHeadLink());
-          writer.write("\n</head>\n");
-          writer.write(
-              EDStatic.startBodyHtml(
-                  language,
-                  loggedInAs,
-                  "griddap/" + datasetID + ".html", // was endOfRequest,
-                  userDapQuery));
-          writer.write("\n");
-          writer.write(
-              HtmlWidgets.htmlTooltipScript(
-                  EDStatic.imageDirUrl(loggedInAs, language))); // this is a link to a script
-          writer.write(
-              HtmlWidgets.dragDropScript(
-                  EDStatic.imageDirUrl(loggedInAs, language))); // this is a link to a script
-          writer
-              .flush(); // Steve Souder says: the sooner you can send some html to user, the better
-          writer.write("<div class=\"standard_width\">\n");
-          writer.write(
-              EDStatic.youAreHereWithHelp(
-                  language,
-                  loggedInAs,
-                  dapProtocol,
-                  EDStatic.dafAr[language],
-                  "<div class=\"standard_max_width\">"
-                      + EDStatic.dafGridTooltipAr[language]
-                      + "<p>"
-                      + EDStatic.EDDGridDownloadDataTooltipAr[language]
-                      + "</ol>\n"
-                      + EDStatic.dafGridBypassTooltipAr[language]
-                      + "</div>"));
-          writeHtmlDatasetInfo(
-              language, loggedInAs, writer, true, false, true, true, userDapQuery, "");
-          if (userDapQuery.length() == 0)
-            userDapQuery =
-                defaultDataQuery(); // after writeHtmlDatasetInfo and before writeDapHtmlForm
-          writeDapHtmlForm(language, loggedInAs, userDapQuery, writer);
-
-          // End of page / other info
-
-          // das (with info about this dataset)
-          writer.write(
-              "<hr>\n"
-                  + "<h2><a class=\"selfLink\" id=\"DAS\" href=\"#DAS\" rel=\"bookmark\">"
-                  + EDStatic.dasTitleAr[language]
-                  + "</a></h2>\n"
-                  + "<pre style=\"white-space:pre-wrap;\">\n");
-          writeDAS(
-              File2.forceExtension(requestUrl, ".das"),
-              "",
-              writer,
-              true); // useful so search engines find all relevant words
-          writer.write("</pre>\n");
-
-          // then dap instructions
-          writer.write("<br>&nbsp;\n" + "<hr>\n");
-          writeGeneralDapHtmlInstructions(language, tErddapUrl, writer, false);
-          writer.write("</div>\n");
-          writer.write(EDStatic.endBodyHtml(language, tErddapUrl, loggedInAs));
-          writer.write("</html>");
-          writer.close();
-
-        } catch (Exception e) {
-          EDStatic.rethrowClientAbortException(e); // first thing in catch{}
-          writer.write(EDStatic.htmlForException(language, e));
-          writer.write(EDStatic.endBodyHtml(language, tErddapUrl, loggedInAs));
-          writer.write("</html>");
-          writer.close();
-          throw e;
-        }
-        return;
-      }
-
-      if (fileTypeName.equals(".htmlTable")) {
-        saveAsHtmlTable(
-            language,
-            loggedInAs,
-            requestUrl,
-            endOfRequest,
-            userDapQuery,
-            outputStreamSource,
-            fileName,
-            false,
-            "",
-            "");
-        return;
-      }
-
-      if (fileTypeName.equals(".iso19115")) {
-        if (accessibleViaISO19115.length() == 0) {
-          OutputStream out = outputStreamSource.outputStream(File2.UTF_8);
-          try {
-            if (!File2.copy(datasetDir() + datasetID + iso19115Suffix + ".xml", out))
-              throw new SimpleException(String2.ERROR + " while transmitting file.");
-          } finally {
-            try {
-              out.close();
-            } catch (Exception e) {
-            } // downloads of e.g., erddap2.css don't work right if not closed. (just if gzip'd?)
-          }
-        } else {
-          throw new SimpleException(
-              EDStatic.simpleBilingual(language, EDStatic.queryErrorAr) + accessibleViaISO19115);
-        }
-        return;
-      }
-
-      if (fileTypeName.equals(".itx")) {
-        saveAsIgor(language, requestUrl, userDapQuery, outputStreamSource);
-        return;
-      }
-
-      if (fileTypeName.equals(".json")) {
-        saveAsJson(language, requestUrl, userDapQuery, outputStreamSource);
-        return;
-      }
-
-      if (fileTypeName.equals(".jsonlCSV1")) {
-        saveAsJsonl(
-            language,
-            requestUrl,
-            userDapQuery,
-            outputStreamSource,
-            true,
-            false); // writeColNames, writeKVP
-        return;
-      }
-
-      if (fileTypeName.equals(".jsonlCSV")) {
-        saveAsJsonl(
-            language,
-            requestUrl,
-            userDapQuery,
-            outputStreamSource,
-            false,
-            false); // writeColNames, writeKVP
-        return;
-      }
-
-      if (fileTypeName.equals(".jsonlKVP")) {
-        saveAsJsonl(
-            language,
-            requestUrl,
-            userDapQuery,
-            outputStreamSource,
-            false,
-            true); // writeColNames, writeKVP
-        return;
-      }
-
-      if (fileTypeName.equals(".mat")) {
-        saveAsMatlab(language, requestUrl, userDapQuery, outputStreamSource);
-        return;
-      }
-
-      if (fileTypeName.equals(".ncml")) {
-        saveAsNCML(language, loggedInAs, requestUrl, outputStreamSource);
-        return;
-      }
-
-      if (fileTypeName.equals(".nccsv") || fileTypeName.equals(".nccsvMetadata")) {
-        saveAsNccsv(language, fileTypeName, requestUrl, userDapQuery, outputStreamSource);
-        return;
       }
 
       if (fileTypeName.endsWith("Info")
@@ -3095,275 +2749,44 @@ public abstract class EDDGrid extends EDD {
           throw new SimpleException(
               EDStatic.bilingual(
                   language,
-                  EDStatic.queryErrorAr[0] + EDStatic.errorFileNotFoundImageAr[0],
-                  EDStatic.queryErrorAr[language] + EDStatic.errorFileNotFoundImageAr[language]));
+                  EDStatic.messages.queryErrorAr[0] + EDStatic.messages.errorFileNotFoundImageAr[0],
+                  EDStatic.messages.queryErrorAr[language]
+                      + EDStatic.messages.errorFileNotFoundImageAr[language]));
 
         // ok, copy it  (and don't close the outputStream)
-        OutputStream out = outputStreamSource.outputStream(File2.UTF_8);
-        try {
+        try (OutputStream out = outputStreamSource.outputStream(File2.UTF_8)) {
           if (!File2.copy(getPngInfoFileName(loggedInAs, userDapQuery, imageFileType), out))
             throw new SimpleException(String2.ERROR + " while transmitting file.");
-        } finally {
-          try {
-            out.close();
-          } catch (Exception e) {
-          } // downloads of e.g., erddap2.css don't work right if not closed. (just if gzip'd?)
         }
+        // downloads of e.g., erddap2.css don't work right if not closed. (just if gzip'd?)
         return;
       }
 
-      if (fileTypeName.equals(".ncoJson")) {
-        saveAsNcoJson(language, requestUrl, userDapQuery, outputStreamSource);
+      EDDFileTypeInfo fileInfo = EDD_FILE_TYPE_INFO.get(fileTypeName);
+      if (fileInfo == null) {
         return;
       }
-
-      if (fileTypeName.equals(".odvTxt")) {
-        saveAsODV(language, requestUrl, userDapQuery, outputStreamSource);
-        return;
-      }
-
-      if (fileTypeName.equals(".timeGaps")) {
-        String ts = findTimeGaps();
-        OutputStream out = outputStreamSource.outputStream(File2.UTF_8);
-        Writer writer = File2.getBufferedWriterUtf8(out);
-        try {
-          writer.write(ts);
-          writer.flush(); // essential
-        } finally {
-          writer.close();
-        }
-        return;
-      }
-
-      if (fileTypeName.equals(".tsv")) {
-        saveAsTsv(language, requestUrl, userDapQuery, outputStreamSource, true, '2');
-        return;
-      }
-
-      if (fileTypeName.equals(".tsvp")) {
-        saveAsTsv(language, requestUrl, userDapQuery, outputStreamSource, true, '(');
-        return;
-      }
-
-      if (fileTypeName.equals(".tsv0")) {
-        saveAsTsv(language, requestUrl, userDapQuery, outputStreamSource, false, '0');
-        return;
-      }
-
-      if (fileTypeName.equals(".xhtml")) {
-        saveAsHtmlTable(
-            language,
-            loggedInAs,
-            requestUrl,
-            endOfRequest,
-            userDapQuery,
-            outputStreamSource,
-            fileName,
-            true,
-            "",
-            "");
-        return;
-      }
-
-      // *** make a file (then copy it to outputStream)
-      // If update system active or real_time=true, don't cache anything.  Make all files unique.
-      if (updateEveryNMillis > 0 || realTime()) {
-        fileName +=
-            "_U" + System.currentTimeMillis(); // useful because it identifies time of request
-        outputStreamSource.setFileName(fileName);
-      }
-
-      // nc files are handled this way because .ncHeader needs to call
-      //  NcHelper.ncdump(aRealFile, "-h").
-      String fileTypeExtension = fileTypeExtension(language, fileTypeName);
-      String fullName = dir + fileName + fileTypeExtension;
-      // Normally, this is cacheDirectory and it already exists,
-      //  but my testing environment (2+ things running) may have removed it.
-      File2.makeDirectory(dir);
-
-      // what is the cacheFullName?
-      // if .ncHeader, make sure the .nc file exists (and it is the better file to cache)
-      String cacheFullName =
-          String2.canonical(
-              fileTypeName.equals(".ncHeader") || fileTypeName.equals(".nc4Header")
-                  ? // the only exceptions there will ever be
-                  dir + fileName + ".nc"
-                  : fullName);
-      int random = Math2.random(Integer.MAX_VALUE);
-
-      // thread-safe creation of the file
-      // (If there are almost simultaneous requests for the same one, only one thread will make it.)
-      ReentrantLock lock = String2.canonicalLock(cacheFullName);
-      if (!lock.tryLock(String2.longTimeoutSeconds, TimeUnit.SECONDS))
-        throw new TimeoutException("Timeout waiting for lock on EDDGrid.cacheFullName.");
-      try {
-        if (File2.isFile(cacheFullName)) { // don't 'touch()'; files for latest data will change
-          if (verbose) String2.log("  reusing cached " + cacheFullName);
-
-        } else if (fileTypeName.equals(".nc") || fileTypeName.equals(".ncHeader")) {
-          // if .ncHeader, make sure the .nc file exists (and it is the better file to cache)
-          saveAsNc(
+      FileTypeInterface fileTypeHandler = fileInfo.getInstance();
+      DapRequestInfo requestInfo =
+          new DapRequestInfo(
               language,
-              NetcdfFileFormat.NETCDF3,
-              ipAddress,
+              this,
+              null,
+              outputStreamSource,
               requestUrl,
               userDapQuery,
-              cacheFullName,
-              true,
-              0); // it saves to temp random file first
-          File2.isFile(
-              cacheFullName,
-              5); // for possible waiting thread, wait till file is visible via operating system
-
-        } else if (fileTypeName.equals(".nc4") || fileTypeName.equals(".nc4Header")) {
-
-          if (EDStatic.accessibleViaNC4.length() > 0)
-            throw new SimpleException(
-                EDStatic.simpleBilingual(language, EDStatic.queryErrorAr)
-                    + EDStatic.accessibleViaNC4);
-
-          // if .nc4Header, make sure the .nc4 file exists (and it is the better file to cache)
-          saveAsNc(
-              language,
-              NetcdfFileFormat.NETCDF4,
+              loggedInAs,
+              endOfRequest,
+              fileName,
+              dir,
+              fileTypeName,
               ipAddress,
-              requestUrl,
-              userDapQuery,
-              cacheFullName,
-              true,
-              0); // it saves to temp random file first
-          File2.isFile(
-              cacheFullName,
-              5); // for possible waiting thread, wait till file is visible via operating system
+              request,
+              response);
 
-        } else if (fileTypeName.equals(".wav")) {
-          saveAsWav(language, requestUrl, userDapQuery, cacheFullName);
-          File2.isFile(
-              cacheFullName,
-              5); // for possible waiting thread, wait till file is visible via operating system
-
-        } else {
-          // all other file types
-          // create random file; and if error, only partial random file will be created
-          OutputStream fos = new BufferedOutputStream(new FileOutputStream(cacheFullName + random));
-          boolean ok;
-          try {
-            OutputStreamSourceSimple osss = new OutputStreamSourceSimple(fos);
-
-            if (fileTypeName.equals(".geotif")) {
-              ok =
-                  saveAsGeotiff(language, ipAddress, requestUrl, userDapQuery, osss, dir, fileName);
-
-            } else if (fileTypeName.equals(".kml")) {
-              ok = saveAsKml(language, loggedInAs, requestUrl, userDapQuery, osss);
-
-            } else if (String2.indexOf(imageFileTypeNames, fileTypeName) >= 0) {
-              // do pdf and png LAST, so kml caught above
-              ok =
-                  saveAsImage(
-                      language,
-                      loggedInAs,
-                      requestUrl,
-                      userDapQuery,
-                      dir,
-                      fileName,
-                      osss,
-                      fileTypeName);
-
-            } else {
-              File2.delete(cacheFullName + random);
-              throw new SimpleException(
-                  EDStatic.bilingual(
-                      language,
-                      EDStatic.queryErrorAr[0]
-                          + MessageFormat.format(EDStatic.queryErrorFileTypeAr[0], fileTypeName),
-                      EDStatic.queryErrorAr[language]
-                          + MessageFormat.format(
-                              EDStatic.queryErrorFileTypeAr[language], fileTypeName)));
-            }
-          } finally {
-            fos.close();
-          }
-          File2.rename(cacheFullName + random, cacheFullName);
-          if (!ok) // make eligible to be removed from cache in 5 minutes
-          File2.touch(
-                cacheFullName, Math.max(0, EDStatic.cacheMillis - 5 * Calendar2.MILLIS_PER_MINUTE));
-
-          File2.isFile(
-              cacheFullName,
-              5); // for possible waiting thread, wait till file is visible via operating system
-        }
-      } finally {
-        lock.unlock();
-      }
-
-      // then handle .ncHeader
-      if (fileTypeName.equals(".ncHeader") || fileTypeName.equals(".nc4Header")) {
-        // thread-safe creation of the file
-        // (If there are almost simultaneous requests for the same one, only one thread will make
-        // it.)
-        fullName = String2.canonical(fullName);
-        ReentrantLock lock2 = String2.canonicalLock(fullName);
-        if (!lock2.tryLock(String2.longTimeoutSeconds, TimeUnit.SECONDS))
-          throw new TimeoutException("Timeout waiting for lock on EDDGrid .ncHeader fullName.");
-        try {
-
-          String error =
-              File2.writeToFileUtf8(
-                  fullName + random,
-                  NcHelper.ncdump(
-                      cacheFullName,
-                      "-h")); // !!!this doesn't do anything to internal " in a String attribute
-          // value.
-          if (error.length() == 0) {
-            File2.rename(fullName + random, fullName); // make available in an instant
-            File2.isFile(
-                fullName,
-                5); // for possible waiting thread, wait till file is visible via operating system
-          } else {
-            throw new RuntimeException(error);
-          }
-        } finally {
-          lock2.unlock();
-        }
-      }
-
-      // copy file to ...
-      if (EDStatic.awsS3OutputBucketUrl == null) {
-
-        // copy file to outputStream
-        // (I delayed getting actual outputStream as long as possible.)
-        OutputStream out =
-            outputStreamSource.outputStream(
-                fileTypeName.equals(".ncHeader")
-                    ? File2.UTF_8
-                    : fileTypeName.equals(".nc4Header")
-                        ? File2.UTF_8
-                        : fileTypeName.equals(".kml") ? File2.UTF_8 : "");
-        try {
-          if (!File2.copy(fullName, out)) {
-            // outputStream contentType already set,
-            // so I can't go back to html and display error message
-            // note than the message is thrown if user cancels the transmission; so don't email to
-            // me
-            throw new SimpleException(String2.ERROR + " while transmitting file.");
-          }
-        } finally {
-          try {
-            out.close();
-          } catch (Exception e) {
-          } // downloads of e.g., erddap2.css don't work right if not closed. (just if gzip'd?)
-        }
-      } else {
-
-        // copy file to AWS and redirect user
-        String contentType =
-            OutputStreamFromHttpResponse.getFileContentType(
-                request, fileTypeName, fileTypeExtension);
-        String fullAwsUrl = EDStatic.awsS3OutputBucketUrl + File2.getNameAndExtension(fullName);
-        SSR.uploadFileToAwsS3(
-            EDStatic.awsS3OutputTransferManager, fullName, fullAwsUrl, contentType);
-        response.sendRedirect(fullAwsUrl);
+      if (fileTypeHandler != null) {
+        fileTypeHandler.writeGridToStream(requestInfo);
+        return;
       }
 
     } finally {
@@ -3380,7 +2803,7 @@ public abstract class EDDGrid extends EDD {
    *     not used to test if this edd is accessibleTo loggedInAs, but it unusual cases
    *     (EDDTableFromPost?) it could be. Normally, this is just used to determine which erddapUrl
    *     to use (http vs https).
-   * @param requestUrl the part of the user's request, after EDStatic.baseUrl, before '?'.
+   * @param requestUrl the part of the user's request, after EDStatic.config.baseUrl, before '?'.
    * @param userDapQuery from the user (may be "" or null), still percentEncoded (shouldn't be
    *     null). If the query has missing or invalid parameters, defaults will be used. If the query
    *     has irrelevant parameters, they will be ignored.
@@ -3409,22 +2832,25 @@ public abstract class EDDGrid extends EDD {
     if (reallyVerbose) String2.log("*** respondToGraphQuery");
     if (accessibleViaMAG().length() > 0)
       throw new SimpleException(
-          EDStatic.simpleBilingual(language, EDStatic.queryErrorAr) + accessibleViaMAG());
+          EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr) + accessibleViaMAG());
 
-    String tErddapUrl = EDStatic.erddapUrl(loggedInAs, language);
+    String tErddapUrl = EDStatic.erddapUrl(request, loggedInAs, language);
     String formName = "f1"; // change JavaScript below if this changes
     OutputStream out = outputStreamSource.outputStream(File2.UTF_8);
     Writer writer = File2.getBufferedWriterUtf8(out);
     try {
-      HtmlWidgets widgets = new HtmlWidgets(true, EDStatic.imageDirUrl(loggedInAs, language));
+      HtmlWidgets widgets =
+          new HtmlWidgets(true, EDStatic.imageDirUrl(request, loggedInAs, language));
 
       // write the header
       writer.write(
-          EDStatic.startHeadHtml(language, tErddapUrl, title() + " - " + EDStatic.magAr[language]));
-      writer.write("\n" + rssHeadLink());
+          EDStatic.startHeadHtml(
+              language, tErddapUrl, title(language) + " - " + EDStatic.messages.magAr[language]));
+      writer.write("\n" + rssHeadLink(language));
       writer.write("\n</head>\n");
       writer.write(
           EDStatic.startBodyHtml(
+              request,
               language,
               loggedInAs,
               "griddap/" + datasetID + ".graph", // was endOfRequest,
@@ -3432,22 +2858,24 @@ public abstract class EDDGrid extends EDD {
       writer.write("\n");
       writer.write(
           HtmlWidgets.htmlTooltipScript(
-              EDStatic.imageDirUrl(loggedInAs, language))); // this is a link to a script
+              EDStatic.imageDirUrl(request, loggedInAs, language))); // this is a link to a script
       writer.write(
           HtmlWidgets.dragDropScript(
-              EDStatic.imageDirUrl(loggedInAs, language))); // this is a link to a script
+              EDStatic.imageDirUrl(request, loggedInAs, language))); // this is a link to a script
       writer.flush(); // Steve Souder says: the sooner you can send some html to user, the better
       writer.write("<div class=\"standard_width\">\n");
       writer.write(
           EDStatic.youAreHereWithHelp(
+              request,
               language,
               loggedInAs,
               "griddap",
-              EDStatic.magAr[language],
+              EDStatic.messages.magAr[language],
               "<div class=\"standard_max_width\">"
-                  + EDStatic.magGridTooltipAr[language]
+                  + EDStatic.messages.magGridTooltipAr[language]
                   + "</div>"));
-      writeHtmlDatasetInfo(language, loggedInAs, writer, true, true, true, false, userDapQuery, "");
+      writeHtmlDatasetInfo(
+          request, language, loggedInAs, writer, true, true, true, false, userDapQuery, "");
       if (userDapQuery.length() == 0)
         userDapQuery =
             defaultGraphQuery(); // after writeHtmlDatasetInfo and before Table.getDapQueryParts
@@ -3464,7 +2892,7 @@ public abstract class EDDGrid extends EDD {
       writer.write(widgets.beginForm(formName, "GET", "", ""));
 
       // parse the query so &-separated parts are handy
-      String paramName, paramValue, partName, partValue, pParts[];
+      String paramName, partName, partValue, pParts[];
       String queryParts[] =
           Table.getDapQueryParts(userDapQuery); // decoded.  always at least 1 part (may be "")
 
@@ -3479,9 +2907,9 @@ public abstract class EDDGrid extends EDD {
 
       // find the numeric dataVariables
       sa = new StringArray();
-      for (int dv = 0; dv < dataVariables.length; dv++) {
-        if (dataVariables[dv].destinationDataPAType() != PAType.STRING)
-          sa.add(dataVariables[dv].destinationName());
+      for (EDV dataVariable : dataVariables) {
+        if (dataVariable.destinationDataPAType() != PAType.STRING)
+          sa.add(dataVariable.destinationName());
       }
       String[] dvNames = sa.toArray(); // list of dvNames
       sa.atInsert(0, "");
@@ -3508,8 +2936,8 @@ public abstract class EDDGrid extends EDD {
       if (axisVariables.length >= 1 && dataVariables.length >= 2) drawsSA.add("sticks");
       if (nAvNames >= 2) {
         if ((lonIndex >= 0 && latIndex >= 0)
-            || ("x".equals(avNames[nAvNames - 1].toLowerCase())
-                && "y".equals(avNames[nAvNames - 2].toLowerCase()))) defaultDraw = drawsSA.size();
+            || ("x".equalsIgnoreCase(avNames[nAvNames - 1])
+                && "y".equalsIgnoreCase(avNames[nAvNames - 2]))) defaultDraw = drawsSA.size();
         drawsSA.add("surface");
       }
       if (lonIndex >= 0 && latIndex >= 0 && dataVariables.length >= 2) drawsSA.add("vectors");
@@ -3522,8 +2950,7 @@ public abstract class EDDGrid extends EDD {
         if (draw >= 0) { // valid .draw was specified
           preferDefaultVars = false;
           // but check that it is possible
-          boolean trouble = false;
-          if (draws[draw].equals("surface") && nAvNames < 2) trouble = true;
+          boolean trouble = draws[draw].equals("surface") && nAvNames < 2;
           if (draws[draw].equals("vectors") && (lonIndex < 0 || latIndex < 0)) trouble = true;
           if ((draws[draw].equals("sticks") || draws[draw].equals("vectors")) && dvNames.length < 2)
             trouble = true;
@@ -3561,7 +2988,7 @@ public abstract class EDDGrid extends EDD {
       }
 
       // set draw-related things
-      int nVars = -1, dvPo = 0;
+      int nVars = -1;
       String varLabel[], varHelp[], varOptions[][];
       String varName[] = {"", "", "", ""}; // fill from .vars, else with defaults
       String varsPartName = ".vars=";
@@ -3572,10 +2999,14 @@ public abstract class EDDGrid extends EDD {
       if (drawLines) {
         nVars = 2;
         varLabel =
-            new String[] {EDStatic.magAxisXAr[language] + ":", EDStatic.magAxisYAr[language] + ":"};
+            new String[] {
+              EDStatic.messages.magAxisXAr[language] + ":",
+              EDStatic.messages.magAxisYAr[language] + ":"
+            };
         varHelp =
             new String[] {
-              EDStatic.magAxisHelpGraphXAr[language], EDStatic.magAxisHelpGraphYAr[language]
+              EDStatic.messages.magAxisHelpGraphXAr[language],
+              EDStatic.messages.magAxisHelpGraphYAr[language]
             };
         varOptions = new String[][] {avNames, dvNames};
         varName[0] =
@@ -3590,15 +3021,15 @@ public abstract class EDDGrid extends EDD {
         nVars = 3;
         varLabel =
             new String[] {
-              EDStatic.magAxisXAr[language] + ":",
-              EDStatic.magAxisYAr[language] + ":",
-              EDStatic.magAxisColorAr[language] + ":"
+              EDStatic.messages.magAxisXAr[language] + ":",
+              EDStatic.messages.magAxisYAr[language] + ":",
+              EDStatic.messages.magAxisColorAr[language] + ":"
             };
         varHelp =
             new String[] {
-              EDStatic.magAxisHelpGraphXAr[language],
-              EDStatic.magAxisHelpGraphYAr[language],
-              EDStatic.magAxisHelpMarkerColorAr[language]
+              EDStatic.messages.magAxisHelpGraphXAr[language],
+              EDStatic.messages.magAxisHelpGraphYAr[language],
+              EDStatic.messages.magAxisHelpMarkerColorAr[language]
             };
         varOptions = new String[][] {avNames, dvNames, dvNames0};
         varName[0] =
@@ -3618,14 +3049,16 @@ public abstract class EDDGrid extends EDD {
         nVars = 3;
         varLabel =
             new String[] {
-              EDStatic.magAxisXAr[language] + ":",
-              EDStatic.magAxisStickXAr[language] + ":",
-              EDStatic.magAxisStickYAr[language] + ":"
+              EDStatic.messages.magAxisXAr[language] + ":",
+              EDStatic.messages.magAxisStickXAr[language] + ":",
+              EDStatic.messages.magAxisStickYAr[language] + ":"
             };
         varHelp =
             new String[] {
-              EDStatic.magAxisHelpGraphXAr[language], EDStatic.magAxisHelpGraphYAr[language],
-              EDStatic.magAxisHelpStickXAr[language], EDStatic.magAxisHelpStickYAr[language]
+              EDStatic.messages.magAxisHelpGraphXAr[language],
+                  EDStatic.messages.magAxisHelpGraphYAr[language],
+              EDStatic.messages.magAxisHelpStickXAr[language],
+                  EDStatic.messages.magAxisHelpStickYAr[language]
             };
         varOptions = new String[][] {avNames, dvNames, dvNames};
         varName[0] =
@@ -3645,15 +3078,15 @@ public abstract class EDDGrid extends EDD {
         nVars = 3;
         varLabel =
             new String[] {
-              EDStatic.magAxisXAr[language] + ":",
-              EDStatic.magAxisYAr[language] + ":",
-              EDStatic.magAxisColorAr[language] + ":"
+              EDStatic.messages.magAxisXAr[language] + ":",
+              EDStatic.messages.magAxisYAr[language] + ":",
+              EDStatic.messages.magAxisColorAr[language] + ":"
             };
         varHelp =
             new String[] {
-              EDStatic.magAxisHelpMapXAr[language],
-              EDStatic.magAxisHelpMapYAr[language],
-              EDStatic.magAxisHelpSurfaceColorAr[language]
+              EDStatic.messages.magAxisHelpMapXAr[language],
+              EDStatic.messages.magAxisHelpMapYAr[language],
+              EDStatic.messages.magAxisHelpSurfaceColorAr[language]
             };
         varOptions = new String[][] {avNames, avNames, dvNames};
         varName[0] =
@@ -3676,17 +3109,17 @@ public abstract class EDDGrid extends EDD {
         nVars = 4;
         varLabel =
             new String[] {
-              EDStatic.magAxisXAr[language] + ":",
-              EDStatic.magAxisYAr[language] + ":",
-              EDStatic.magAxisVectorXAr[language] + ":",
-              EDStatic.magAxisVectorYAr[language] + ":"
+              EDStatic.messages.magAxisXAr[language] + ":",
+              EDStatic.messages.magAxisYAr[language] + ":",
+              EDStatic.messages.magAxisVectorXAr[language] + ":",
+              EDStatic.messages.magAxisVectorYAr[language] + ":"
             };
         varHelp =
             new String[] {
-              EDStatic.magAxisHelpMapXAr[language],
-              EDStatic.magAxisHelpMapYAr[language],
-              EDStatic.magAxisHelpVectorXAr[language],
-              EDStatic.magAxisHelpVectorYAr[language]
+              EDStatic.messages.magAxisHelpMapXAr[language],
+              EDStatic.messages.magAxisHelpMapYAr[language],
+              EDStatic.messages.magAxisHelpVectorXAr[language],
+              EDStatic.messages.magAxisHelpVectorYAr[language]
             };
         varOptions =
             new String[][] {
@@ -3705,7 +3138,8 @@ public abstract class EDDGrid extends EDD {
         }
         // ??? ensure same units???
       } else
-        throw new SimpleException(EDStatic.errorInternalAr[0] + "'draw' wasn't set correctly.");
+        throw new SimpleException(
+            EDStatic.messages.errorInternalAr[0] + "'draw' wasn't set correctly.");
       // if (debugMode) String2.log("respondToGraphQuery 4");
 
       // avoid lat lon reversed (which sgtMap will reverse)
@@ -3850,7 +3284,7 @@ public abstract class EDDGrid extends EDD {
           timeStop = dStop;
           timeCenter = (dStart + dStop) / 2;
           timeRange = dStop - dStart;
-          time_precision = edvga.combinedAttributes().getString(EDV.TIME_PRECISION);
+          time_precision = edvga.combinedAttributes().getString(language, EDV.TIME_PRECISION);
         }
       }
 
@@ -3971,7 +3405,7 @@ public abstract class EDDGrid extends EDD {
           String parts[] = String2.split(partValue.substring(11), ',');
           if (parts.length == 2) {
             idealTimeN = String2.parseInt(parts[0]);
-            idealTimeUnits = String2.indexOf(Calendar2.IDEAL_UNITS_OPTIONS, parts[1]);
+            idealTimeUnits = Calendar2.IDEAL_UNITS_OPTIONS.indexOf(parts[1]);
           }
         }
         // if not set, find closest
@@ -3985,8 +3419,9 @@ public abstract class EDDGrid extends EDD {
                   + idealTimeUnits);
         if (idealTimeN < 1 || idealTimeN > 100 || idealTimeUnits < 0) {
 
-          idealTimeUnits = Calendar2.IDEAL_UNITS_OPTIONS.length - 1;
-          while (idealTimeUnits > 0 && timeRange < Calendar2.IDEAL_UNITS_SECONDS[idealTimeUnits]) {
+          idealTimeUnits = Calendar2.IDEAL_UNITS_OPTIONS.size() - 1;
+          while (idealTimeUnits > 0
+              && timeRange < Calendar2.IDEAL_UNITS_SECONDS.get(idealTimeUnits)) {
             idealTimeUnits--;
             // String2.log("  selecting timeRange=" + timeRange + " timeUnits=" + idealTimeUnits);
           }
@@ -3994,17 +3429,18 @@ public abstract class EDDGrid extends EDD {
               Math2.minMax(
                   1,
                   100,
-                  Math2.roundToInt(timeRange / Calendar2.IDEAL_UNITS_SECONDS[idealTimeUnits]));
+                  Math2.roundToInt(timeRange / Calendar2.IDEAL_UNITS_SECONDS.get(idealTimeUnits)));
         }
         if (reallyVerbose)
           String2.log(
               "  idealTimeN+Units="
                   + idealTimeN
                   + " "
-                  + Calendar2.IDEAL_UNITS_SECONDS[idealTimeUnits]);
+                  + Calendar2.IDEAL_UNITS_SECONDS.get(idealTimeUnits));
 
         // make idealized timeRange
-        timeRange = idealTimeN * Calendar2.IDEAL_UNITS_SECONDS[idealTimeUnits]; // sometimes too low
+        timeRange =
+            idealTimeN * Calendar2.IDEAL_UNITS_SECONDS.get(idealTimeUnits); // sometimes too low
       }
 
       // show Graph Type choice
@@ -4013,7 +3449,7 @@ public abstract class EDDGrid extends EDD {
       writer.write(
           "<tr>\n"
               + "  <td><strong>"
-              + EDStatic.magGraphTypeAr[language]
+              + EDStatic.messages.magGraphTypeAr[language]
               + ":&nbsp;</strong>"
               + "  </td>\n"
               + "  <td>\n");
@@ -4036,10 +3472,11 @@ public abstract class EDDGrid extends EDD {
           " "
               + // spacer
               EDStatic.htmlTooltipImage(
+                  request,
                   language,
                   loggedInAs,
                   "<div class=\"standard_max_width\">"
-                      + EDStatic.magGraphTypeTooltipGridAr[language]
+                      + EDStatic.messages.magGraphTypeTooltipGridAr[language]
                       + "</div>")
               + "  </td>\n"
               + "</tr>\n");
@@ -4058,7 +3495,8 @@ public abstract class EDDGrid extends EDD {
             varName[v] = tvNames[0];
             vi = 0;
           } else {
-            throw new SimpleException(EDStatic.errorInternalAr[0] + "No varOptions for v=" + v);
+            throw new SimpleException(
+                EDStatic.messages.errorInternalAr[0] + "No varOptions for v=" + v);
           }
         }
         // avoid duplicate with previous var
@@ -4081,11 +3519,15 @@ public abstract class EDDGrid extends EDD {
             " "
                 + // spacer
                 EDStatic.htmlTooltipImage(
+                    request,
                     language,
                     loggedInAs,
-                    MessageFormat.format(EDStatic.magAxisVarHelpAr[language], varHelp[v])
-                        + EDStatic.magAxisVarHelpGridAr[language]));
-        writer.write("  </td>\n" + "</tr>\n");
+                    MessageFormat.format(EDStatic.messages.magAxisVarHelpAr[language], varHelp[v])
+                        + EDStatic.messages.magAxisVarHelpGridAr[language]));
+        writer.write("""
+                  </td>
+                </tr>
+                """);
       }
 
       // end the Graph Type and vars table
@@ -4097,40 +3539,43 @@ public abstract class EDDGrid extends EDD {
       writer.write(
           "<tr>\n"
               + "  <th class=\"L\">"
-              + EDStatic.EDDGridDimensionRangesAr[language]
+              + EDStatic.messages.EDDGridDimensionRangesAr[language]
               + " "
               + EDStatic.htmlTooltipImage(
+                  request,
                   language,
                   loggedInAs,
-                  EDStatic.EDDGridDimensionTooltipAr[0]
+                  EDStatic.messages.EDDGridDimensionTooltipAr[0]
                       + "<br>"
-                      + EDStatic.EDDGridVarHasDimTooltipAr[language])
+                      + EDStatic.messages.EDDGridVarHasDimTooltipAr[language])
               + "</th>\n"
               + "  <th style=\"text-align:center;\">"
               + gap
-              + EDStatic.EDDGridStartAr[language]
+              + EDStatic.messages.EDDGridStartAr[language]
               + " "
               + EDStatic.htmlTooltipImage(
+                  request,
                   language,
                   loggedInAs,
-                  EDStatic.EDDGridDimensionTooltipAr[language]
+                  EDStatic.messages.EDDGridDimensionTooltipAr[language]
                       + "<br>"
-                      + EDStatic.EDDGridStartStopTooltipAr[language]
+                      + EDStatic.messages.EDDGridStartStopTooltipAr[language]
                       + "<br>"
-                      + EDStatic.EDDGridStartTooltipAr[language])
+                      + EDStatic.messages.EDDGridStartTooltipAr[language])
               + "</th>\n"
               + "  <th style=\"text-align:center;\">"
               + gap
-              + EDStatic.EDDGridStopAr[0]
+              + EDStatic.messages.EDDGridStopAr[0]
               + " "
               + EDStatic.htmlTooltipImage(
+                  request,
                   language,
                   loggedInAs,
-                  EDStatic.EDDGridDimensionTooltipAr[0]
+                  EDStatic.messages.EDDGridDimensionTooltipAr[0]
                       + "<br>"
-                      + EDStatic.EDDGridStartStopTooltipAr[language]
+                      + EDStatic.messages.EDDGridStartStopTooltipAr[language]
                       + "<br>"
-                      + EDStatic.EDDGridStopTooltipAr[language])
+                      + EDStatic.messages.EDDGridStopTooltipAr[language])
               + "</th>\n"
               + "</tr>\n");
 
@@ -4138,7 +3583,6 @@ public abstract class EDDGrid extends EDD {
       for (int av = 0; av < nAv; av++) {
         EDVGridAxis edvga = axisVariables[av];
         String tFirst = edvga.destinationToString(edvga.firstDestinationValue());
-        String tLast = edvga.destinationToString(edvga.lastDestinationValue());
         String edvgaTooltip = edvga.htmlRangeTooltip(language);
 
         String tUnits = edvga instanceof EDVTimeStampGridAxis ? "UTC" : edvga.units();
@@ -4149,7 +3593,7 @@ public abstract class EDDGrid extends EDD {
                 + edvga.destinationName()
                 + " "
                 + tUnits
-                + EDStatic.htmlTooltipImageEDVGA(language, loggedInAs, edvga)
+                + EDStatic.htmlTooltipImageEDVGA(request, language, loggedInAs, edvga)
                 + "</td>\n");
 
         for (int ss = 0; ss < 2; ss++) { // 0=start, 1=stop
@@ -4169,9 +3613,9 @@ public abstract class EDDGrid extends EDD {
               buttons.append(
                   "<td class=\"B\">\n"
                       + HtmlWidgets.htmlTooltipImage(
-                          EDStatic.imageDirUrl(loggedInAs, language) + "arrowLL.gif",
+                          EDStatic.imageDirUrl(request, loggedInAs, language) + "arrowLL.gif",
                           "|<",
-                          EDStatic.magItemFirstAr[language],
+                          EDStatic.messages.magItemFirstAr[language],
                           "class=\"B\" "
                               + // vertical-align: 'b'ottom
                               "onMouseUp='f1."
@@ -4194,9 +3638,9 @@ public abstract class EDDGrid extends EDD {
               buttons.append(
                   "<td class=\"B\">\n"
                       + HtmlWidgets.htmlTooltipImage(
-                          EDStatic.imageDirUrl(loggedInAs, language) + "minus.gif",
+                          EDStatic.imageDirUrl(request, loggedInAs, language) + "minus.gif",
                           "-",
-                          EDStatic.magItemPreviousAr[language],
+                          EDStatic.messages.magItemPreviousAr[language],
                           "class=\"B\" "
                               + // vertical-align: 'b'ottom
                               "onMouseUp='f1."
@@ -4215,9 +3659,9 @@ public abstract class EDDGrid extends EDD {
               buttons.append(
                   "<td class=\"B\">\n"
                       + HtmlWidgets.htmlTooltipImage(
-                          EDStatic.imageDirUrl(loggedInAs, language) + "plus.gif",
+                          EDStatic.imageDirUrl(request, loggedInAs, language) + "plus.gif",
                           "+",
-                          EDStatic.magItemNextAr[language],
+                          EDStatic.messages.magItemNextAr[language],
                           "class=\"B\" "
                               + // vertical-align: 'b'ottom
                               "onMouseUp='f1."
@@ -4233,9 +3677,9 @@ public abstract class EDDGrid extends EDD {
               buttons.append(
                   "<td class=\"B\">\n"
                       + HtmlWidgets.htmlTooltipImage(
-                          EDStatic.imageDirUrl(loggedInAs, language) + "arrowRR.gif",
+                          EDStatic.imageDirUrl(request, loggedInAs, language) + "arrowRR.gif",
                           ">|",
-                          EDStatic.magItemLastAr[language],
+                          EDStatic.messages.magItemLastAr[language],
                           // the word "last" works for all datasets
                           // and works better than tLast for updateEveryNMillis datasets
                           "class=\"B\" "
@@ -4266,7 +3710,7 @@ public abstract class EDDGrid extends EDD {
             writer.write(
                 gap
                     + "<span class=\"subduedColor\">&nbsp;"
-                    + EDStatic.magJust1ValueAr[language]
+                    + EDStatic.messages.magJust1ValueAr[language]
                     + "</span>\n");
             writer.write(widgets.hidden(paramName, "SeeStop"));
           }
@@ -4333,7 +3777,7 @@ public abstract class EDDGrid extends EDD {
       if (zoomTime) {
         writer.write(
             widgets.hidden("timeN", "" + idealTimeN)
-                + widgets.hidden("timeUnits", "" + Calendar2.IDEAL_UNITS_OPTIONS[idealTimeUnits]));
+                + widgets.hidden("timeUnits", Calendar2.IDEAL_UNITS_OPTIONS.get(idealTimeUnits)));
       }
 
       // add .draw and .vars to graphQuery
@@ -4353,7 +3797,9 @@ public abstract class EDDGrid extends EDD {
       writer.write("&nbsp;\n"); // necessary for the blank line before start of table (not <p>)
       writer.write(widgets.beginTable("class=\"compact nowrap\""));
       writer.write(
-          "  <tr><th class=\"L\" colspan=\"6\">" + EDStatic.magGSAr[language] + "</th></tr>\n");
+          "  <tr><th class=\"L\" colspan=\"6\">"
+              + EDStatic.messages.magGSAr[language]
+              + "</th></tr>\n");
       if (drawLinesAndMarkers || drawMarkers) {
         // get Marker settings
         int mType = -1, mSize = -1;
@@ -4367,7 +3813,7 @@ public abstract class EDDGrid extends EDD {
 
         // markerType
         paramName = "mType";
-        if (mType < 0 || mType >= GraphDataLayer.MARKER_TYPES.length)
+        if (mType < 0 || mType >= GraphDataLayer.MARKER_TYPES.size())
           mType = GraphDataLayer.MARKER_TYPE_FILLED_SQUARE;
         // if (!yIsAxisVar && varName[2].length() > 0 &&
         //    GraphDataLayer.MARKER_TYPES[mType].toLowerCase().indexOf("filled") < 0)
@@ -4375,7 +3821,7 @@ public abstract class EDDGrid extends EDD {
         writer.write(
             "  <tr>\n"
                 + "    <td>"
-                + EDStatic.magGSMarkerTypeAr[language]
+                + EDStatic.messages.magGSMarkerTypeAr[language]
                 + ":&nbsp;</td>\n"
                 + "    <td>");
         writer.write(widgets.select(paramName, "", 1, GraphDataLayer.MARKER_TYPES, mType, ""));
@@ -4390,35 +3836,46 @@ public abstract class EDDGrid extends EDD {
             String2.indexOf(mSizes, "" + mSize); // convert from literal 3.. to index in mSizes[0..]
         if (mSize < 0) mSize = String2.indexOf(mSizes, "" + GraphDataLayer.MARKER_SIZE_SMALL);
         writer.write(
-            "    <td>&nbsp;" + EDStatic.magGSSizeAr[language] + ":&nbsp;</td>" + "    <td>");
+            "    <td>&nbsp;"
+                + EDStatic.messages.magGSSizeAr[language]
+                + ":&nbsp;</td>"
+                + "    <td>");
         writer.write(widgets.select(paramName, "", 1, mSizes, mSize, ""));
-        writer.write("</td>\n" + "    <td></td>\n" + "    <td></td>\n" + "  </tr>\n");
+        writer.write(
+            """
+                </td>
+                    <td></td>
+                    <td></td>
+                  </tr>
+                """);
 
         // add to graphQuery
         graphQuery.append("&.marker=" + SSR.minimalPercentEncode(mType + "|" + mSizes[mSize]));
       }
 
-      String colors[] = HtmlWidgets.PALETTE17;
       if (drawLines || drawLinesAndMarkers || drawMarkers || drawSticks || drawVectors) {
 
         // color
         paramName = "colr"; // not color, to avoid possible conflict
         partValue = String2.stringStartsWith(queryParts, partName = ".color=0x");
         int colori =
-            String2.indexOf(
-                colors, partValue == null ? "" : partValue.substring(partName.length()));
-        if (colori < 0) colori = String2.indexOf(colors, "000000");
+            HtmlWidgets.PALETTE17.indexOf(
+                partValue == null ? "" : partValue.substring(partName.length()));
+        if (colori < 0) colori = HtmlWidgets.PALETTE17.indexOf("000000");
         writer.write(
             "  <tr>\n"
                 + "    <td>"
-                + EDStatic.magGSColorAr[language]
+                + EDStatic.messages.magGSColorAr[language]
                 + ":&nbsp;</td>\n"
                 + "    <td colspan=\"5\">");
         writer.write(widgets.color17("", paramName, "", colori, ""));
-        writer.write("</td>\n" + "  </tr>\n");
+        writer.write("""
+                </td>
+                  </tr>
+                """);
 
         // add to graphQuery
-        graphQuery.append("&.color=0x" + HtmlWidgets.PALETTE17[colori]);
+        graphQuery.append("&.color=0x" + HtmlWidgets.PALETTE17.get(colori));
       }
 
       if (drawLinesAndMarkers || drawMarkers || drawSurface) {
@@ -4430,14 +3887,6 @@ public abstract class EDDGrid extends EDD {
                 : String2.split(partValue.substring(partName.length()), '|');
         if (reallyVerbose) String2.log(".colorBar=" + String2.toCSSVString(pParts));
 
-        // find dataVariable relevant to colorBar
-        // (force change in values if this var changes?  but how know, since no state?)
-        int tDataVariablePo =
-            String2.indexOf(
-                dataVariableDestinationNames(),
-                varName[2]); // currently, bothrelevant representation uses varName[2] for "Color"
-        EDV tDataVariable = tDataVariablePo >= 0 ? dataVariables[tDataVariablePo] : null;
-
         paramName = "p";
         String defaultPalette = "";
         // String2.log("defaultPalette=" + defaultPalette + " pParts.length=" + pParts.length);
@@ -4445,19 +3894,19 @@ public abstract class EDDGrid extends EDD {
             Math.max(
                 0,
                 String2.indexOf(
-                    EDStatic.palettes0, pParts.length > 0 ? pParts[0] : defaultPalette));
+                    EDStatic.messages.palettes0, pParts.length > 0 ? pParts[0] : defaultPalette));
         writer.write(
             "  <tr>\n"
                 + "    <td>"
-                + EDStatic.magGSColorBarAr[language]
+                + EDStatic.messages.magGSColorBarAr[language]
                 + ":&nbsp;</td>\n"
                 + "    <td>");
         writer.write(
             widgets.select(
                 paramName,
-                EDStatic.magGSColorBarTooltipAr[language],
+                EDStatic.messages.magGSColorBarTooltipAr[language],
                 1,
-                EDStatic.palettes0,
+                EDStatic.messages.palettes0,
                 palette,
                 ""));
         writer.write("</td>\n");
@@ -4468,31 +3917,40 @@ public abstract class EDDGrid extends EDD {
             pParts.length > 1 ? (pParts[1].equals("D") ? 2 : pParts[1].equals("C") ? 1 : 0) : 0;
         writer.write(
             "    <td>&nbsp;"
-                + EDStatic.magGSContinuityAr[language]
+                + EDStatic.messages.magGSContinuityAr[language]
                 + ":&nbsp;</td>\n"
                 + "    <td>");
         writer.write(
             widgets.select(
-                paramName, EDStatic.magGSContinuityTooltipAr[language], 1, conDis, continuous, ""));
+                paramName,
+                EDStatic.messages.magGSContinuityTooltipAr[language],
+                1,
+                conDis,
+                continuous,
+                ""));
         writer.write("</td>\n");
 
         paramName = "ps";
         String defaultScale = "";
         int scale =
-            Math.max(
-                0,
-                String2.indexOf(EDV.VALID_SCALES0, pParts.length > 2 ? pParts[2] : defaultScale));
+            Math.max(0, EDV.VALID_SCALES0.indexOf(pParts.length > 2 ? pParts[2] : defaultScale));
         writer.write(
-            "    <td>&nbsp;" + EDStatic.magGSScaleAr[language] + ":&nbsp;</td>\n" + "    <td>");
+            "    <td>&nbsp;"
+                + EDStatic.messages.magGSScaleAr[language]
+                + ":&nbsp;</td>\n"
+                + "    <td>");
         writer.write(
             widgets.select(
                 paramName,
-                EDStatic.magGSScaleTooltipAr[language],
+                EDStatic.messages.magGSScaleTooltipAr[language],
                 1,
                 EDV.VALID_SCALES0,
                 scale,
                 ""));
-        writer.write("</td>\n" + "  </tr>\n");
+        writer.write("""
+                </td>
+                  </tr>
+                """);
 
         // new row
         paramName = "pMin";
@@ -4502,53 +3960,63 @@ public abstract class EDDGrid extends EDD {
             "  <tr>\n"
                 + "    <td>"
                 + gap
-                + EDStatic.magGSMinAr[language]
+                + EDStatic.messages.magGSMinAr[language]
                 + ":&nbsp;</td>\n"
                 + "    <td>");
         writer.write(
-            widgets.textField(paramName, EDStatic.magGSMinTooltipAr[language], 10, 60, palMin, ""));
+            widgets.textField(
+                paramName, EDStatic.messages.magGSMinTooltipAr[language], 10, 60, palMin, ""));
         writer.write("</td>\n");
 
         paramName = "pMax";
         String defaultMax = "";
         String palMax = pParts.length > 4 ? pParts[4] : defaultMax;
         writer.write(
-            "    <td>&nbsp;" + EDStatic.magGSMaxAr[language] + ":&nbsp;</td>\n" + "    <td>");
+            "    <td>&nbsp;"
+                + EDStatic.messages.magGSMaxAr[language]
+                + ":&nbsp;</td>\n"
+                + "    <td>");
         writer.write(
-            widgets.textField(paramName, EDStatic.magGSMaxTooltipAr[language], 10, 60, palMax, ""));
+            widgets.textField(
+                paramName, EDStatic.messages.magGSMaxTooltipAr[language], 10, 60, palMax, ""));
         writer.write("</td>\n");
 
         paramName = "pSec";
         int pSections =
-            Math.max(
-                0, String2.indexOf(EDStatic.paletteSections, pParts.length > 5 ? pParts[5] : ""));
+            Math.max(0, EDStatic.paletteSections.indexOf(pParts.length > 5 ? pParts[5] : ""));
         writer.write(
-            "    <td>&nbsp;" + EDStatic.magGSNSectionsAr[language] + ":&nbsp;</td>\n" + "    <td>");
+            "    <td>&nbsp;"
+                + EDStatic.messages.magGSNSectionsAr[language]
+                + ":&nbsp;</td>\n"
+                + "    <td>");
         writer.write(
             widgets.select(
                 paramName,
-                EDStatic.magGSNSectionsTooltipAr[language],
+                EDStatic.messages.magGSNSectionsTooltipAr[language],
                 1,
                 EDStatic.paletteSections,
                 pSections,
                 ""));
-        writer.write("</td>\n" + "  </tr>\n");
+        writer.write("""
+                </td>
+                  </tr>
+                """);
 
         // add to graphQuery
         graphQuery.append(
             "&.colorBar="
                 + SSR.minimalPercentEncode(
-                    EDStatic.palettes0[palette]
+                    EDStatic.messages.palettes0[palette]
                         + "|"
                         + (conDis[continuous].length() == 0 ? "" : conDis[continuous].charAt(0))
                         + "|"
-                        + EDV.VALID_SCALES0[scale]
+                        + EDV.VALID_SCALES0.get(scale)
                         + "|"
                         + palMin
                         + "|"
                         + palMax
                         + "|"
-                        + EDStatic.paletteSections[pSections]));
+                        + EDStatic.paletteSections.get(pSections)));
       }
 
       if (drawVectors) {
@@ -4560,19 +4028,26 @@ public abstract class EDDGrid extends EDD {
         writer.write(
             "  <tr>\n"
                 + "    <td>"
-                + EDStatic.magGSVectorStandardAr[language]
+                + EDStatic.messages.magGSVectorStandardAr[language]
                 + ":&nbsp;</td>\n"
                 + "    <td>");
         writer.write(
             widgets.textField(
-                paramName, EDStatic.magGSVectorStandardTooltipAr[language], 10, 30, vec, ""));
+                paramName,
+                EDStatic.messages.magGSVectorStandardTooltipAr[language],
+                10,
+                30,
+                vec,
+                ""));
         writer.write(
-            "</td>\n"
-                + "    <td></td>\n"
-                + "    <td></td>\n"
-                + "    <td></td>\n"
-                + "    <td></td>\n"
-                + "  </tr>\n");
+            """
+                        </td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                          </tr>
+                        """);
 
         // add to graphQuery
         if (vec.length() > 0) graphQuery.append("&.vec=" + SSR.minimalPercentEncode(vec));
@@ -4584,36 +4059,38 @@ public abstract class EDDGrid extends EDD {
         partValue = String2.stringStartsWith(queryParts, partName = ".land=");
         if (partValue != null) {
           partValue = partValue.substring(6);
-          tLand = Math.max(0, String2.indexOf(SgtMap.drawLandMask_OPTIONS, partValue));
+          tLand = Math.max(0, SgtMap.drawLandMask_OPTIONS.indexOf(partValue));
         }
         writer.write(
             "  <tr>\n"
                 + "    <td>"
-                + EDStatic.magGSLandMaskAr[language]
+                + EDStatic.messages.magGSLandMaskAr[language]
                 + ":&nbsp;</td>\n"
                 + "    <td>");
         writer.write(
             widgets.select(
                 "land",
-                EDStatic.magGSLandMaskTooltipGridAr[language],
+                EDStatic.messages.magGSLandMaskTooltipGridAr[language],
                 1,
                 SgtMap.drawLandMask_OPTIONS,
                 tLand,
                 ""));
         writer.write(
-            "</td>\n"
-                + "    <td></td>\n"
-                + "    <td></td>\n"
-                + "    <td></td>\n"
-                + "    <td></td>\n"
-                + "</tr>\n");
+            """
+                        </td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                        """);
 
         // add to graphQuery
-        if (tLand > 0) graphQuery.append("&.land=" + SgtMap.drawLandMask_OPTIONS[tLand]);
+        if (tLand > 0) graphQuery.append("&.land=" + SgtMap.drawLandMask_OPTIONS.get(tLand));
       }
 
       // bgColor
-      Color bgColor = EDStatic.graphBackgroundColor;
+      Color bgColor = EDStatic.config.graphBackgroundColor;
       String tBGColor = String2.stringStartsWith(queryParts, partName = ".bgColor=");
       if (tBGColor != null) {
         String tBGColorAr[] = String2.split(tBGColor.substring(partName.length()), '|');
@@ -4651,15 +4128,15 @@ public abstract class EDDGrid extends EDD {
         writer.write(
             "  <tr>\n"
                 + "    <td>"
-                + EDStatic.magGSYAxisMinAr[language]
+                + EDStatic.messages.magGSYAxisMinAr[language]
                 + ":&nbsp;</td>\n"
                 + "    <td>");
         writer.write(
             widgets.textField(
                 "yRangeMin",
                 "<div class=\"narrow_max_width\">"
-                    + EDStatic.magGSYRangeMinTooltipAr[language]
-                    + EDStatic.magGSYRangeTooltipAr[language]
+                    + EDStatic.messages.magGSYRangeMinTooltipAr[language]
+                    + EDStatic.messages.magGSYRangeTooltipAr[language]
                     + "</div>",
                 10,
                 30,
@@ -4668,15 +4145,15 @@ public abstract class EDDGrid extends EDD {
         writer.write(
             "</td>\n"
                 + "    <td>&nbsp;"
-                + EDStatic.magGSYAxisMaxAr[language]
+                + EDStatic.messages.magGSYAxisMaxAr[language]
                 + ":&nbsp;</td>\n"
                 + "    <td>");
         writer.write(
             widgets.textField(
                 "yRangeMax",
                 "<div class=\"narrow_max_width\">"
-                    + EDStatic.magGSYRangeMaxTooltipAr[language]
-                    + EDStatic.magGSYRangeTooltipAr[language]
+                    + EDStatic.messages.magGSYRangeMaxTooltipAr[language]
+                    + EDStatic.messages.magGSYRangeTooltipAr[language]
                     + "</div>",
                 10,
                 30,
@@ -4686,7 +4163,7 @@ public abstract class EDDGrid extends EDD {
         writer.write(
             widgets.select(
                 "yRangeAscending",
-                EDStatic.magGSYAscendingTooltipAr[language],
+                EDStatic.messages.magGSYAscendingTooltipAr[language],
                 1,
                 new String[] {"Ascending", "Descending"},
                 yAscending ? 0 : 1,
@@ -4696,7 +4173,7 @@ public abstract class EDDGrid extends EDD {
                 + "    <td>"
                 + widgets.select(
                     "yScale",
-                    EDStatic.magGSYScaleTooltipAr[language],
+                    EDStatic.messages.magGSYScaleTooltipAr[language],
                     1,
                     new String[] {"", "Linear", "Log"},
                     yAxisScale.equals("Linear") ? 1 : yAxisScale.equals("Log") ? 2 : 0,
@@ -4720,11 +4197,13 @@ public abstract class EDDGrid extends EDD {
 
       // make javascript function to generate query    \\x26=& %5B=[ %5D=] %7C=|
       writer.write(
-          "<script> \n"
-              + "function makeQuery(varsToo) { \n"
-              + "  try { \n"
-              + "    var d = document; \n"
-              + "    var start, tv, c = \"\", q = \"\"; \n"); // c=constraint  q=query
+          """
+                      <script>\s
+                      function makeQuery(varsToo) {\s
+                        try {\s
+                          var d = document;\s
+                          var start, tv, c = "", q = "";\s
+                      """); // c=constraint  q=query
       // gather constraints
       for (int av = 0; av < nAv; av++)
         writer.write(
@@ -4775,9 +4254,11 @@ public abstract class EDDGrid extends EDD {
       // graph settings
       writer.write("    q += \"&.draw=\" + d.f1.draw.options[d.f1.draw.selectedIndex].text; \n");
       writer.write(
-          "    if (varsToo) { \n"
-              + "      q += \"&.vars=\" + d.f1.var0.options[d.f1.var0.selectedIndex].text + \n"
-              + "        \"%7C\" + d.f1.var1.options[d.f1.var1.selectedIndex].text; \n");
+          """
+                          if (varsToo) {\s
+                            q += "&.vars=" + d.f1.var0.options[d.f1.var0.selectedIndex].text +\s
+                              "%7C" + d.f1.var1.options[d.f1.var1.selectedIndex].text;\s
+                      """);
       if (nVars >= 3)
         writer.write("      q += \"%7C\" + d.f1.var2.options[d.f1.var2.selectedIndex].text; \n");
       if (nVars >= 4)
@@ -4785,25 +4266,29 @@ public abstract class EDDGrid extends EDD {
       writer.write("    } \n");
       if (drawLinesAndMarkers || drawMarkers)
         writer.write(
-            "    q += \"&.marker=\" + d.f1.mType.selectedIndex + \"%7C\" + \n"
-                + "      d.f1.mSize.options[d.f1.mSize.selectedIndex].text; \n");
+            """
+                            q += "&.marker=" + d.f1.mType.selectedIndex + "%7C" +\s
+                              d.f1.mSize.options[d.f1.mSize.selectedIndex].text;\s
+                        """);
       if (drawLines || drawLinesAndMarkers || drawMarkers || drawSticks || drawVectors)
         writer.write(
             "    q += \"&.color=0x\"; \n"
                 + "    for (var rb = 0; rb < "
-                + colors.length
+                + HtmlWidgets.PALETTE17.size()
                 + "; rb++) \n"
                 + "      if (d.f1.colr[rb].checked) q += d.f1.colr[rb].value; \n"); // always: one
       // will be
       // checked
       if (drawLinesAndMarkers || drawMarkers || drawSurface)
         writer.write(
-            "    var tpc = d.f1.pc.options[d.f1.pc.selectedIndex].text;\n"
-                + "    q += \"&.colorBar=\" + d.f1.p.options[d.f1.p.selectedIndex].text + \"%7C\" + \n"
-                + "      (tpc.length > 0? tpc.charAt(0) : \"\") + \"%7C\" + \n"
-                + "      d.f1.ps.options[d.f1.ps.selectedIndex].text + \"%7C\" + \n"
-                + "      d.f1.pMin.value + \"%7C\" + d.f1.pMax.value + \"%7C\" + \n"
-                + "      d.f1.pSec.options[d.f1.pSec.selectedIndex].text; \n");
+            """
+                            var tpc = d.f1.pc.options[d.f1.pc.selectedIndex].text;
+                            q += "&.colorBar=" + d.f1.p.options[d.f1.p.selectedIndex].text + "%7C" +\s
+                              (tpc.length > 0? tpc.charAt(0) : "") + "%7C" +\s
+                              d.f1.ps.options[d.f1.ps.selectedIndex].text + "%7C" +\s
+                              d.f1.pMin.value + "%7C" + d.f1.pMax.value + "%7C" +\s
+                              d.f1.pSec.options[d.f1.pSec.selectedIndex].text;\s
+                        """);
       if (drawVectors)
         writer.write("    if (d.f1.vec.value.length > 0) q += \"&.vec=\" + d.f1.vec.value; \n");
       if (drawSurface && isMap)
@@ -4812,12 +4297,14 @@ public abstract class EDDGrid extends EDD {
                 + "q += \"&.land=\" + d.f1.land.options[d.f1.land.selectedIndex].text; \n");
       if (true)
         writer.write(
-            "    var yRMin=d.f1.yRangeMin.value; \n"
-                + "    var yRMax=d.f1.yRangeMax.value; \n"
-                + "    var yRAsc=d.f1.yRangeAscending.selectedIndex; \n"
-                + "    var yScl =d.f1.yScale.options[d.f1.yScale.selectedIndex].text; \n"
-                + "    if (yRMin.length > 0 || yRMax.length > 0 || yRAsc == 1 || yScl.length > 0)\n"
-                + "      q += \"\\x26.yRange=\" + yRMin + \"%7C\" + yRMax + \"%7C\" + (yRAsc==0) + \"%7C\" + yScl; \n");
+            """
+                            var yRMin=d.f1.yRangeMin.value;\s
+                            var yRMax=d.f1.yRangeMax.value;\s
+                            var yRAsc=d.f1.yRangeAscending.selectedIndex;\s
+                            var yScl =d.f1.yScale.options[d.f1.yScale.selectedIndex].text;\s
+                            if (yRMin.length > 0 || yRMax.length > 0 || yRAsc == 1 || yScl.length > 0)
+                              q += "\\x26.yRange=" + yRMin + "%7C" + yRMax + "%7C" + (yRAsc==0) + "%7C" + yScl;\s
+                        """);
       if (zoomTime)
         writer.write(
             "    q += \"&.timeRange=\" + d.f1.timeN.value + \",\" + d.f1.timeUnits.value; \n");
@@ -4850,30 +4337,40 @@ public abstract class EDDGrid extends EDD {
               "button",
               "",
               "",
-              EDStatic.magRedrawTooltipAr[language],
+              EDStatic.messages.magRedrawTooltipAr[language],
               "<span style=\"font-size:large;\"><strong>"
-                  + EDStatic.magRedrawAr[language]
+                  + EDStatic.messages.magRedrawAr[language]
                   + "</strong></span>",
               "onMouseUp='mySubmit(true);'"));
-      writer.write(" " + EDStatic.patientDataAr[language] + "\n" + "</td></tr>\n");
+      writer.write(" " + EDStatic.messages.patientDataAr[language] + "\n" + "</td></tr>\n");
 
       // Download the Data
       writer.write(
           "<tr><td>&nbsp;<br>"
-              + EDStatic.optionalAr[language]
+              + EDStatic.messages.optionalAr[language]
               + ":"
               + "<br>"
-              + EDStatic.magFileTypeAr[language]
+              + EDStatic.messages.magFileTypeAr[language]
               + ":\n");
       paramName = "fType";
       boolean tAccessibleTo = isAccessibleTo(EDStatic.getRoles(loggedInAs));
+      List<String> fileTypeOptions =
+          tAccessibleTo
+              ? EDD_FILE_TYPE_INFO.values().stream()
+                  .filter(fileTypeInfo -> fileTypeInfo.getAvailableGrid())
+                  .map(fileTypeInfo -> fileTypeInfo.getFileTypeName())
+                  .toList()
+              : publicGraphFileTypeNames;
+      int defaultIndex =
+          fileTypeOptions.indexOf(
+              tAccessibleTo ? defaultFileTypeOption : defaultPublicGraphFileTypeOption);
       writer.write(
           widgets.select(
               paramName,
-              EDStatic.EDDSelectFileTypeAr[language],
+              EDStatic.messages.EDDSelectFileTypeAr[language],
               1,
-              tAccessibleTo ? allFileTypeNames : publicGraphFileTypeNames,
-              tAccessibleTo ? defaultFileTypeOption : defaultPublicGraphFileTypeOption,
+              fileTypeOptions,
+              defaultIndex,
               "onChange='f1.tUrl.value=\""
                   + tErddapUrl
                   + "/griddap/"
@@ -4886,7 +4383,7 @@ public abstract class EDDGrid extends EDD {
           " (<a rel=\"help\" href=\""
               + tErddapUrl
               + "/griddap/documentation.html#fileType\">"
-              + EDStatic.EDDFileTypeInformationAr[language]
+              + EDStatic.messages.EDDFileTypeInformationAr[language]
               + "</a>)\n");
 
       writer.write("<br>and\n");
@@ -4894,8 +4391,10 @@ public abstract class EDDGrid extends EDD {
           widgets.button(
               "button",
               "",
-              EDStatic.magDownloadTooltipAr[language] + "<br>" + EDStatic.patientDataAr[language],
-              EDStatic.magDownloadAr[language],
+              EDStatic.messages.magDownloadTooltipAr[language]
+                  + "<br>"
+                  + EDStatic.messages.patientDataAr[language],
+              EDStatic.messages.magDownloadAr[language],
               // "class=\"skinny\" " + //only IE needs it but only IE ignores it
               "onMouseUp='window.location=\""
                   + tErddapUrl
@@ -4914,11 +4413,11 @@ public abstract class EDDGrid extends EDD {
       String genViewHtml =
           String2.replaceAll(
               "<div class=\"standard_max_width\">"
-                  + EDStatic.justGenerateAndViewGraphUrlTooltipAr[language]
+                  + EDStatic.messages.justGenerateAndViewGraphUrlTooltipAr[language]
                   + "</div>",
               "&protocolName;",
               dapProtocol);
-      writer.write("<tr><td>" + EDStatic.magViewUrlAr[language] + ":\n");
+      writer.write("<tr><td>" + EDStatic.messages.magViewUrlAr[language] + ":\n");
       writer.write(
           widgets.textField(
               "tUrl",
@@ -4928,9 +4427,7 @@ public abstract class EDDGrid extends EDD {
               tErddapUrl
                   + "/griddap/"
                   + datasetID
-                  + (tAccessibleTo
-                      ? allFileTypeNames[defaultFileTypeOption]
-                      : publicGraphFileTypeNames[defaultPublicGraphFileTypeOption])
+                  + (tAccessibleTo ? defaultFileTypeOption : defaultPublicGraphFileTypeOption)
                   + "?"
                   + graphQuery.toString(),
               ""));
@@ -4939,11 +4436,15 @@ public abstract class EDDGrid extends EDD {
               + tErddapUrl
               + "/griddap/documentation.html\" "
               + "title=\"griddap documentation\">"
-              + EDStatic.magDocumentationAr[language]
+              + EDStatic.messages.magDocumentationAr[language]
               + "</a>\n"
-              + EDStatic.htmlTooltipImage(language, loggedInAs, genViewHtml)
+              + EDStatic.htmlTooltipImage(request, language, loggedInAs, genViewHtml)
               + ")\n");
-      writer.write("</td></tr>\n" + "</table>\n\n");
+      writer.write("""
+              </td></tr>
+              </table>
+
+              """);
 
       // end form
       writer.write(widgets.endForm());
@@ -4963,12 +4464,15 @@ public abstract class EDDGrid extends EDD {
       // *** zoomLatLon stuff
       if (zoomLatLon) {
         writer.write(
-            EDStatic.magZoomCenterAr[language]
+            EDStatic.messages.magZoomCenterAr[language]
                 + "\n"
                 + EDStatic.htmlTooltipImage(
-                    language, loggedInAs, EDStatic.magZoomCenterTooltipAr[language])
+                    request,
+                    language,
+                    loggedInAs,
+                    EDStatic.messages.magZoomCenterTooltipAr[language])
                 + "<br><strong>"
-                + EDStatic.magZoomAr[language]
+                + EDStatic.messages.magZoomAr[language]
                 + ":</strong>\n");
 
         double cRadius =
@@ -4989,13 +4493,14 @@ public abstract class EDDGrid extends EDD {
 
         writer.write(
             // HtmlWidgets.htmlTooltipImage(
-            //    EDStatic.imageDirUrl(loggedInAs, language) + "arrowDD.gif",
+            //    EDStatic.imageDirUrl(request, loggedInAs, language) + "arrowDD.gif",
             widgets.button(
                 "button",
                 "",
                 MessageFormat.format(
-                    EDStatic.magZoomOutTooltipAr[language], EDStatic.magZoomOutDataAr[language]),
-                EDStatic.magZoomDataAr[language],
+                    EDStatic.messages.magZoomOutTooltipAr[language],
+                    EDStatic.messages.magZoomOutDataAr[language]),
+                EDStatic.messages.magZoomDataAr[language],
                 "class=\"skinny\" "
                     + (disableZoomOut
                         ? "disabled"
@@ -5031,8 +4536,8 @@ public abstract class EDDGrid extends EDD {
             widgets.button(
                 "button",
                 "",
-                MessageFormat.format(EDStatic.magZoomOutTooltipAr[language], "8x"),
-                MessageFormat.format(EDStatic.magZoomOutAr[language], "8x"),
+                MessageFormat.format(EDStatic.messages.magZoomOutTooltipAr[language], "8x"),
+                MessageFormat.format(EDStatic.messages.magZoomOutAr[language], "8x"),
                 "class=\"skinny\" "
                     + (disableZoomOut
                         ? "disabled"
@@ -5067,8 +4572,8 @@ public abstract class EDDGrid extends EDD {
             widgets.button(
                 "button",
                 "",
-                MessageFormat.format(EDStatic.magZoomOutTooltipAr[language], "2x"),
-                MessageFormat.format(EDStatic.magZoomOutAr[language], "2x"),
+                MessageFormat.format(EDStatic.messages.magZoomOutTooltipAr[language], "2x"),
+                MessageFormat.format(EDStatic.messages.magZoomOutAr[language], "2x"),
                 "class=\"skinny\" "
                     + (disableZoomOut
                         ? "disabled"
@@ -5104,8 +4609,9 @@ public abstract class EDDGrid extends EDD {
                 "button",
                 "",
                 MessageFormat.format(
-                    EDStatic.magZoomOutTooltipAr[language], EDStatic.magZoomALittleAr[language]),
-                MessageFormat.format(EDStatic.magZoomOutAr[language], "").trim(),
+                    EDStatic.messages.magZoomOutTooltipAr[language],
+                    EDStatic.messages.magZoomALittleAr[language]),
+                MessageFormat.format(EDStatic.messages.magZoomOutAr[language], "").trim(),
                 "class=\"skinny\" "
                     + (disableZoomOut
                         ? "disabled"
@@ -5137,8 +4643,9 @@ public abstract class EDDGrid extends EDD {
                     "button",
                     "",
                     MessageFormat.format(
-                        EDStatic.magZoomInTooltipAr[language], EDStatic.magZoomALittleAr[language]),
-                    MessageFormat.format(EDStatic.magZoomInAr[language], "").trim(),
+                        EDStatic.messages.magZoomInTooltipAr[language],
+                        EDStatic.messages.magZoomALittleAr[language]),
+                    MessageFormat.format(EDStatic.messages.magZoomInAr[language], "").trim(),
                     "class=\"skinny\" "
                         + "onMouseUp='f1.start"
                         + lonIndex
@@ -5164,8 +4671,8 @@ public abstract class EDDGrid extends EDD {
                 + widgets.button(
                     "button",
                     "",
-                    MessageFormat.format(EDStatic.magZoomInTooltipAr[language], "2x"),
-                    MessageFormat.format(EDStatic.magZoomInAr[language], "2x"),
+                    MessageFormat.format(EDStatic.messages.magZoomInTooltipAr[language], "2x"),
+                    MessageFormat.format(EDStatic.messages.magZoomInAr[language], "2x"),
                     "class=\"skinny\" "
                         + "onMouseUp='f1.start"
                         + lonIndex
@@ -5191,8 +4698,8 @@ public abstract class EDDGrid extends EDD {
                 + widgets.button(
                     "button",
                     "",
-                    MessageFormat.format(EDStatic.magZoomInTooltipAr[language], "8x"),
-                    MessageFormat.format(EDStatic.magZoomInAr[language], "8x"),
+                    MessageFormat.format(EDStatic.messages.magZoomInTooltipAr[language], "8x"),
+                    MessageFormat.format(EDStatic.messages.magZoomInAr[language], "8x"),
                     "class=\"skinny\" "
                         + "onMouseUp='f1.start"
                         + lonIndex
@@ -5237,12 +4744,14 @@ public abstract class EDDGrid extends EDD {
                   + "   stop="
                   + Calendar2.epochSecondsToLimitedIsoStringT(time_precision, timeStop, ""));
 
-        writer.write("<strong>" + EDStatic.magTimeRangeAr[language] + "</strong>\n");
+        writer.write("<strong>" + EDStatic.messages.magTimeRangeAr[language] + "</strong>\n");
 
-        String timeRangeString = idealTimeN + " " + Calendar2.IDEAL_UNITS_OPTIONS[idealTimeUnits];
-        String timesVary = "<br>(" + EDStatic.magTimesVaryAr[language] + ")";
+        String timeRangeString =
+            idealTimeN + " " + Calendar2.IDEAL_UNITS_OPTIONS.get(idealTimeUnits);
+        String timesVary = "<br>(" + EDStatic.messages.magTimesVaryAr[language] + ")";
         String timeRangeTip =
-            EDStatic.magTimeRangeTooltipAr[language] + EDStatic.magTimeRangeTooltip2Ar[language];
+            EDStatic.messages.magTimeRangeTooltipAr[language]
+                + EDStatic.messages.magTimeRangeTooltip2Ar[language];
         String timeGap = "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;\n";
 
         // n = 1..100
@@ -5271,10 +4780,11 @@ public abstract class EDDGrid extends EDD {
         GregorianCalendar idMinGc =
             Calendar2.roundToIdealGC(timeCenter, idealTimeN, idealTimeUnits);
         // if it rounded to later time period, shift to earlier time period
-        if (idMinGc.getTimeInMillis() / 1000 > timeCenter)
-          idMinGc.add(Calendar2.IDEAL_UNITS_FIELD[idealTimeUnits], -idealTimeN);
+        long roundedTime = idMinGc.getTimeInMillis() / 1000;
+        if (roundedTime > timeCenter)
+          idMinGc.add(Calendar2.IDEAL_UNITS_FIELD.get(idealTimeUnits), -idealTimeN);
         GregorianCalendar idMaxGc = Calendar2.newGCalendarZulu(idMinGc.getTimeInMillis());
-        idMaxGc.add(Calendar2.IDEAL_UNITS_FIELD[idealTimeUnits], idealTimeN);
+        idMaxGc.add(Calendar2.IDEAL_UNITS_FIELD.get(idealTimeUnits), idealTimeN);
 
         // time back
         {
@@ -5282,22 +4792,25 @@ public abstract class EDDGrid extends EDD {
           GregorianCalendar tidMinGc =
               Calendar2.roundToIdealGC(timeFirst, idealTimeN, idealTimeUnits);
           // if it rounded to later time period, shift to earlier time period
-          if (tidMinGc.getTimeInMillis() / 1000 > timeFirst)
-            tidMinGc.add(Calendar2.IDEAL_UNITS_FIELD[idealTimeUnits], -idealTimeN);
+          long roundedTimeTid = tidMinGc.getTimeInMillis() / 1000;
+          if (roundedTimeTid > timeFirst)
+            tidMinGc.add(Calendar2.IDEAL_UNITS_FIELD.get(idealTimeUnits), -idealTimeN);
           GregorianCalendar tidMaxGc = Calendar2.newGCalendarZulu(tidMinGc.getTimeInMillis());
-          tidMaxGc.add(Calendar2.IDEAL_UNITS_FIELD[idealTimeUnits], idealTimeN);
+          tidMaxGc.add(Calendar2.IDEAL_UNITS_FIELD.get(idealTimeUnits), idealTimeN);
 
           // always show LL button if idealTime is different from current selection
-          double idRange = (tidMaxGc.getTimeInMillis() - tidMinGc.getTimeInMillis()) / 1000;
+          double idRange =
+              Math2.divideNoRemainder(
+                  tidMaxGc.getTimeInMillis() - tidMinGc.getTimeInMillis(), 1000);
           double ratio = (timeStop - timeStart) / idRange;
           if (timeStart > timeFirst || ratio < 0.99 || ratio > 1.01) {
             writer.write(
                 "&nbsp;"
                     + HtmlWidgets.htmlTooltipImage(
-                        EDStatic.imageDirUrl(loggedInAs, language) + "arrowLL.gif",
+                        EDStatic.imageDirUrl(request, loggedInAs, language) + "arrowLL.gif",
                         "|<",
                         MessageFormat.format(
-                                EDStatic.magTimeRangeFirstAr[language], timeRangeString)
+                                EDStatic.messages.magTimeRangeFirstAr[language], timeRangeString)
                             + timesVary,
                         "class=\"B\" "
                             + // vertical-align: 'b'ottom
@@ -5319,14 +4832,15 @@ public abstract class EDDGrid extends EDD {
           // idealized (rounded) time shift to left
           // (show based on more strict circumstances than LL (since relative shift, not absolute))
           if (timeStart > timeFirst) {
-            idMinGc.add(Calendar2.IDEAL_UNITS_FIELD[idealTimeUnits], -idealTimeN);
-            idMaxGc.add(Calendar2.IDEAL_UNITS_FIELD[idealTimeUnits], -idealTimeN);
+            idMinGc.add(Calendar2.IDEAL_UNITS_FIELD.get(idealTimeUnits), -idealTimeN);
+            idMaxGc.add(Calendar2.IDEAL_UNITS_FIELD.get(idealTimeUnits), -idealTimeN);
             writer.write(
                 "&nbsp;"
                     + HtmlWidgets.htmlTooltipImage(
-                        EDStatic.imageDirUrl(loggedInAs, language) + "minus.gif",
+                        EDStatic.imageDirUrl(request, loggedInAs, language) + "minus.gif",
                         "-",
-                        MessageFormat.format(EDStatic.magTimeRangeBackAr[language], timeRangeString)
+                        MessageFormat.format(
+                                EDStatic.messages.magTimeRangeBackAr[language], timeRangeString)
                             + timesVary,
                         "class=\"B\" "
                             + // vertical-align: 'b'ottom
@@ -5341,8 +4855,8 @@ public abstract class EDDGrid extends EDD {
                             + Calendar2.limitedFormatAsISODateTimeT(time_precision, idMaxGc)
                             + "\"; "
                             + "mySubmit(true);'"));
-            idMinGc.add(Calendar2.IDEAL_UNITS_FIELD[idealTimeUnits], idealTimeN);
-            idMaxGc.add(Calendar2.IDEAL_UNITS_FIELD[idealTimeUnits], idealTimeN);
+            idMinGc.add(Calendar2.IDEAL_UNITS_FIELD.get(idealTimeUnits), idealTimeN);
+            idMaxGc.add(Calendar2.IDEAL_UNITS_FIELD.get(idealTimeUnits), idealTimeN);
 
           } else {
             writer.write(timeGap);
@@ -5355,15 +4869,15 @@ public abstract class EDDGrid extends EDD {
           // (show based on more strict circumstances than RR (since relative shift, not absolute))
           if (timeStop < timeLast) {
             // idealized (rounded) time shift to right
-            idMinGc.add(Calendar2.IDEAL_UNITS_FIELD[idealTimeUnits], idealTimeN);
-            idMaxGc.add(Calendar2.IDEAL_UNITS_FIELD[idealTimeUnits], idealTimeN);
+            idMinGc.add(Calendar2.IDEAL_UNITS_FIELD.get(idealTimeUnits), idealTimeN);
+            idMaxGc.add(Calendar2.IDEAL_UNITS_FIELD.get(idealTimeUnits), idealTimeN);
             writer.write(
                 "&nbsp;"
                     + HtmlWidgets.htmlTooltipImage(
-                        EDStatic.imageDirUrl(loggedInAs, language) + "plus.gif",
+                        EDStatic.imageDirUrl(request, loggedInAs, language) + "plus.gif",
                         "+",
                         MessageFormat.format(
-                                EDStatic.magTimeRangeForwardAr[language], timeRangeString)
+                                EDStatic.messages.magTimeRangeForwardAr[language], timeRangeString)
                             + timesVary,
                         "class=\"B\" "
                             + // vertical-align: 'b'ottom
@@ -5378,8 +4892,8 @@ public abstract class EDDGrid extends EDD {
                             + Calendar2.limitedFormatAsISODateTimeT(time_precision, idMaxGc)
                             + "\"; "
                             + "mySubmit(true);'"));
-            idMinGc.add(Calendar2.IDEAL_UNITS_FIELD[idealTimeUnits], -idealTimeN);
-            idMaxGc.add(Calendar2.IDEAL_UNITS_FIELD[idealTimeUnits], -idealTimeN);
+            idMinGc.add(Calendar2.IDEAL_UNITS_FIELD.get(idealTimeUnits), -idealTimeN);
+            idMaxGc.add(Calendar2.IDEAL_UNITS_FIELD.get(idealTimeUnits), -idealTimeN);
           } else {
             writer.write(timeGap);
           }
@@ -5388,22 +4902,25 @@ public abstract class EDDGrid extends EDD {
           GregorianCalendar tidMaxGc =
               Calendar2.roundToIdealGC(timeLast, idealTimeN, idealTimeUnits);
           // if it rounded to earlier time period, shift to later time period
-          if (tidMaxGc.getTimeInMillis() / 1000 < timeLast)
-            tidMaxGc.add(Calendar2.IDEAL_UNITS_FIELD[idealTimeUnits], idealTimeN);
+          if (Math2.divideNoRemainder(tidMaxGc.getTimeInMillis(), 1000) < timeLast)
+            tidMaxGc.add(Calendar2.IDEAL_UNITS_FIELD.get(idealTimeUnits), idealTimeN);
           GregorianCalendar tidMinGc = Calendar2.newGCalendarZulu(tidMaxGc.getTimeInMillis());
-          tidMinGc.add(Calendar2.IDEAL_UNITS_FIELD[idealTimeUnits], -idealTimeN);
+          tidMinGc.add(Calendar2.IDEAL_UNITS_FIELD.get(idealTimeUnits), -idealTimeN);
 
           // end time
           // always show RR button if idealTime is different from current selection
-          double idRange = (tidMaxGc.getTimeInMillis() - tidMinGc.getTimeInMillis()) / 1000;
+          double idRange =
+              Math2.divideNoRemainder(
+                  tidMaxGc.getTimeInMillis() - tidMinGc.getTimeInMillis(), 1000);
           double ratio = (timeStop - timeStart) / idRange;
           if (timeStop < timeLast || ratio < 0.99 || ratio > 1.01) {
             writer.write(
                 "&nbsp;"
                     + HtmlWidgets.htmlTooltipImage(
-                        EDStatic.imageDirUrl(loggedInAs, language) + "arrowRR.gif",
+                        EDStatic.imageDirUrl(request, loggedInAs, language) + "arrowRR.gif",
                         ">|",
-                        MessageFormat.format(EDStatic.magTimeRangeLastAr[language], timeRangeString)
+                        MessageFormat.format(
+                                EDStatic.messages.magTimeRangeLastAr[language], timeRangeString)
                             + timesVary,
                         "class=\"B\" "
                             + // vertical-align: 'b'ottom
@@ -5452,8 +4969,8 @@ public abstract class EDDGrid extends EDD {
                       "button",
                       "zoomXzoomIn",
                       "", // value
-                      EDStatic.zoomInAr[language],
-                      EDStatic.zoomInAr[language], // tooltip, labelHtml
+                      EDStatic.messages.zoomInAr[language],
+                      EDStatic.messages.zoomInAr[language], // tooltip, labelHtml
                       "onMouseUp='f1.start"
                           + axisVarX
                           + ".value=\""
@@ -5488,8 +5005,8 @@ public abstract class EDDGrid extends EDD {
                       "button",
                       "zoomXzoomOut",
                       "", // value
-                      EDStatic.zoomOutAr[language],
-                      EDStatic.zoomOutAr[language], // tooltip, labelHtml
+                      EDStatic.messages.zoomOutAr[language],
+                      EDStatic.messages.zoomOutAr[language], // tooltip, labelHtml
                       "onMouseUp='f1.start"
                           + axisVarX
                           + ".value=\""
@@ -5508,9 +5025,9 @@ public abstract class EDDGrid extends EDD {
           // all the way left
           writer.write(
               HtmlWidgets.htmlTooltipImage(
-                      EDStatic.imageDirUrl(loggedInAs, language) + "arrowLL.gif",
+                      EDStatic.imageDirUrl(request, loggedInAs, language) + "arrowLL.gif",
                       "|<",
-                      EDStatic.shiftXAllTheWayLeftAr[language],
+                      EDStatic.messages.shiftXAllTheWayLeftAr[language],
                       "class=\"B\" "
                           + // vertical-align: 'b'ottom
                           "onMouseUp='f1.start"
@@ -5530,9 +5047,9 @@ public abstract class EDDGrid extends EDD {
           int howMuch = Math.min(tRange2, tStartIndex);
           writer.write(
               HtmlWidgets.htmlTooltipImage(
-                      EDStatic.imageDirUrl(loggedInAs, language) + "minus.gif",
+                      EDStatic.imageDirUrl(request, loggedInAs, language) + "minus.gif",
                       "-",
-                      EDStatic.shiftXLeftAr[language],
+                      EDStatic.messages.shiftXLeftAr[language],
                       "class=\"B\" "
                           + // vertical-align: 'b'ottom
                           "onMouseUp='f1.start"
@@ -5556,9 +5073,9 @@ public abstract class EDDGrid extends EDD {
           int howMuch = Math.min(tRange2, tSize1 - tStopIndex);
           writer.write(
               HtmlWidgets.htmlTooltipImage(
-                      EDStatic.imageDirUrl(loggedInAs, language) + "plus.gif",
+                      EDStatic.imageDirUrl(request, loggedInAs, language) + "plus.gif",
                       "+",
-                      EDStatic.shiftXRightAr[0],
+                      EDStatic.messages.shiftXRightAr[0],
                       "class=\"B\" "
                           + // vertical-align: 'b'ottom
                           "onMouseUp='f1.start"
@@ -5577,9 +5094,9 @@ public abstract class EDDGrid extends EDD {
           // all the way right
           writer.write(
               HtmlWidgets.htmlTooltipImage(
-                  EDStatic.imageDirUrl(loggedInAs, language) + "arrowRR.gif",
+                  EDStatic.imageDirUrl(request, loggedInAs, language) + "arrowRR.gif",
                   ">|",
-                  EDStatic.shiftXAllTheWayRightAr[language],
+                  EDStatic.messages.shiftXAllTheWayRightAr[language],
                   "class=\"B\" "
                       + // vertical-align: 'b'ottom
                       "onMouseUp='f1.start"
@@ -5618,12 +5135,12 @@ public abstract class EDDGrid extends EDD {
           "<img "
               + (zoomLatLon ? "ismap " : "")
               + "width=\""
-              + EDStatic.imageWidths[1]
+              + EDStatic.messages.imageWidths[1]
               + "\" height=\""
-              + EDStatic.imageHeights[1]
+              + EDStatic.messages.imageHeights[1]
               + "\" "
               + "alt=\""
-              + EDStatic.patientYourGraphAr[language]
+              + EDStatic.messages.patientYourGraphAr[language]
               + "\" "
               + "src=\""
               + XML.encodeAsHTMLAttribute(tErddapUrl + "/griddap/" + datasetID + ".png?" + aQuery)
@@ -5645,7 +5162,7 @@ public abstract class EDDGrid extends EDD {
       // *** Things you can do with graphs
       writer.write(
           String2.replaceAll(
-              MessageFormat.format(EDStatic.doWithGraphsAr[language], tErddapUrl),
+              MessageFormat.format(EDStatic.messages.doWithGraphsAr[language], tErddapUrl),
               "&erddapUrl;",
               tErddapUrl));
       writer.write("\n\n");
@@ -5654,10 +5171,11 @@ public abstract class EDDGrid extends EDD {
       writer.write(
           "<hr>\n"
               + "<h2><a class=\"selfLink\" id=\"DAS\" href=\"#DAS\" rel=\"bookmark\">"
-              + EDStatic.dasTitleAr[language]
+              + EDStatic.messages.dasTitleAr[language]
               + "</a></h2>\n"
               + "<pre style=\"white-space:pre-wrap;\">\n");
       writeDAS(
+          language,
           "/griddap/" + datasetID + ".das",
           "",
           writer,
@@ -5665,7 +5183,10 @@ public abstract class EDDGrid extends EDD {
       writer.write("</pre>\n");
 
       // then write DAP instructions
-      writer.write("<br>&nbsp;\n" + "<hr>\n");
+      writer.write("""
+              <br>&nbsp;
+              <hr>
+              """);
       writeGeneralDapHtmlInstructions(language, tErddapUrl, writer, false);
 
       // the javascript for the sliders
@@ -5680,7 +5201,7 @@ public abstract class EDDGrid extends EDD {
               EDV.SLIDER_PIXELS - 1));
 
       writer.write("</div>\n"); // standard_width
-      writer.write(EDStatic.endBodyHtml(language, tErddapUrl, loggedInAs));
+      writer.write(EDStatic.endBodyHtml(request, language, tErddapUrl, loggedInAs));
       writer.write("</html>");
       if (!dimensionValuesInMemory) setDimensionValuesToNull();
 
@@ -5692,229 +5213,13 @@ public abstract class EDDGrid extends EDD {
               + " when writing web page:\n"
               + MustBe.throwableToString(e)); // before writer.write's
       writer.write(EDStatic.htmlForException(language, e));
-      writer.write(EDStatic.endBodyHtml(language, tErddapUrl, loggedInAs));
+      writer.write(EDStatic.endBodyHtml(request, language, tErddapUrl, loggedInAs));
       writer.write("</html>");
       if (!dimensionValuesInMemory) setDimensionValuesToNull();
 
       writer.close();
       throw e;
     }
-  }
-
-  /**
-   * This gets the data for the userDapQuery and writes the grid data to the outputStream in the
-   * DODS ASCII data format, which is not defined in OPeNDAP 2.0, but which is very close to
-   * saveAsDODS below. This mimics
-   * https://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/MH/chla/8day.asc?MHchla[1477][0][2080:2:2082][4940]
-   * .
-   *
-   * @param language the index of the selected language
-   * @param requestUrl
-   * @param userDapQuery an OPeNDAP DAP-style query string, still percentEncoded (shouldn't be
-   *     null). e.g., ATssta[45:1:45][0:1:0][120:10:140][130:10:160]
-   * @param outputStreamSource the source of an outputStream (usually already buffered) to receive
-   *     the results. At the end of this method the outputStream is flushed, not closed.
-   * @throws Throwable if trouble.
-   */
-  public void saveAsAsc(
-      int language, String requestUrl, String userDapQuery, OutputStreamSource outputStreamSource)
-      throws Throwable {
-
-    if (reallyVerbose) String2.log("  EDDGrid.saveAsAsc");
-    long time = System.currentTimeMillis();
-
-    // handle axis request
-    if (isAxisDapQuery(userDapQuery)) {
-      // get AxisDataAccessor first, in case of error when parsing query
-      AxisDataAccessor ada = new AxisDataAccessor(language, this, requestUrl, userDapQuery);
-      int nRAV = ada.nRequestedAxisVariables();
-
-      // write the dds    //OPeNDAP 2.0, 7.2.3
-      Writer writer =
-          File2.getBufferedWriter88591(
-              outputStreamSource.outputStream(
-                  File2.ISO_8859_1)); // OPeNDAP 2.0 section 3.2.3 says US-ASCII (7bit), so might as
-      // well go for compatible common 8bit
-      try {
-        writeDDS(language, requestUrl, userDapQuery, writer);
-
-        // write the connector  //OPeNDAP 2.0, 7.2.3
-        writer.write(
-            "---------------------------------------------"
-                + OpendapHelper.EOL
-                + "Data:"
-                + OpendapHelper.EOL); // see EOL definition for comments
-
-        // write the data  //OPeNDAP 2.0, 7.3.2.4
-        for (int av = 0; av < nRAV; av++) {
-          writer.write(
-              ada.axisVariables(av).destinationName()
-                  + "["
-                  + ada.axisValues(av).size()
-                  + "]"
-                  + OpendapHelper.EOL);
-          writer.write(ada.axisValues(av).toString());
-          writer.write(OpendapHelper.EOL);
-        }
-
-        writer.flush(); // essential
-      } finally {
-        writer.close();
-      }
-
-      // diagnostic
-      if (reallyVerbose) String2.log("  EDDGrid.saveAsAsc axis done.\n");
-      return;
-    }
-
-    // get full gridDataAccessor first, in case of error when parsing query
-    GridDataAccessor gridDataAccessor =
-        new GridDataAccessor(
-            language, this, requestUrl, userDapQuery, true, false); // rowMajor, convertToNaN
-    String arrayQuery = buildDapArrayQuery(gridDataAccessor.constraints());
-    EDV tDataVariables[] = gridDataAccessor.dataVariables();
-    boolean entireDataset = userDapQuery.trim().length() == 0;
-
-    // get partial gridDataAccessor, to test for size error
-    GridDataAccessor partialGda =
-        new GridDataAccessor(
-            language,
-            this,
-            requestUrl,
-            tDataVariables[0].destinationName() + arrayQuery,
-            true,
-            false); // rowMajor, convertToNaN
-    long tSize = partialGda.totalIndex().size();
-    Math2.ensureArraySizeOkay(tSize, "OPeNDAP limit");
-
-    // write the dds    //OPeNDAP 2.0, 7.2.3
-    Writer writer =
-        File2.getBufferedWriter88591(
-            outputStreamSource.outputStream(
-                File2.ISO_8859_1)); // OPeNDAP 2.0 section 3.2.3 says US-ASCII (7bit), so might as
-    // well go for compatible common 8bit
-    try {
-      writeDDS(language, requestUrl, userDapQuery, writer);
-
-      // write the connector  //OPeNDAP 2.0, 7.2.3
-      writer.write(
-          "---------------------------------------------"
-              + OpendapHelper.EOL); // see EOL definition for comments
-
-      // write the axis variables
-      int nAxisVariables = axisVariables.length;
-      if (entireDataset) {
-        // send the axis data
-        int tShape[] = gridDataAccessor.totalIndex().shape();
-        for (int av = 0; av < nAxisVariables; av++) {
-          writer.write(
-              axisVariables[av].destinationName()
-                  + "["
-                  + tShape[av]
-                  + "]"
-                  + OpendapHelper.EOL); // see EOL definition for comments
-          writer.write(gridDataAccessor.axisValues[av].toString());
-          writer.write(OpendapHelper.EOL); // see EOL definition for comments
-        }
-        writer.write(OpendapHelper.EOL); // see EOL definition for comments
-      }
-
-      // write the data  //OPeNDAP 2.0, 7.3.2.4
-      // write elements of the array, in dds order
-      int nDataVariables = tDataVariables.length;
-      for (int dv = 0; dv < nDataVariables; dv++) {
-        String dvDestName = tDataVariables[dv].destinationName();
-        partialGda =
-            new GridDataAccessor(
-                language,
-                this,
-                requestUrl,
-                dvDestName + arrayQuery,
-                true,
-                false); // rowMajor, convertToNaN
-        int shape[] = partialGda.totalIndex().shape();
-        int current[] = partialGda.totalIndex().getCurrent();
-
-        // identify the array
-        writer.write(dvDestName + "." + dvDestName);
-        int nAv = axisVariables.length;
-        for (int av = 0; av < nAv; av++) writer.write("[" + shape[av] + "]");
-
-        // send the array data
-        while (partialGda.increment()) {
-          // if last dimension's value is 0, start a new row
-          if (current[nAv - 1] == 0) {
-            writer.write(OpendapHelper.EOL); // see EOL definition for comments
-            for (int av = 0; av < nAv - 1; av++) writer.write("[" + current[av] + "]");
-          }
-          writer.write(", " + partialGda.getDataValueAsString(0));
-        }
-
-        // send the axis data
-        for (int av = 0; av < nAxisVariables; av++) {
-          writer.write(
-              OpendapHelper.EOL
-                  + OpendapHelper.EOL
-                  + dvDestName
-                  + "."
-                  + axisVariables[av].destinationName()
-                  + "["
-                  + shape[av]
-                  + "]"
-                  + OpendapHelper.EOL); // see EOL definition for comments
-          writer.write(partialGda.axisValues[av].toString());
-        }
-        writer.write(OpendapHelper.EOL); // see EOL definition for comments
-      }
-
-      writer.flush(); // essential
-    } finally {
-      gridDataAccessor.releaseResources();
-      partialGda.releaseResources();
-      writer.close();
-    }
-
-    // diagnostic
-    if (reallyVerbose)
-      String2.log("  EDDGrid.saveAsAsc done. TIME=" + (System.currentTimeMillis() - time) + "ms\n");
-  }
-
-  /**
-   * This writes the dataset data attributes (DAS) to the outputStream. It is always the same
-   * regardless of the userDapQuery. (That's what THREDDS does -- OPeNDAP 2.0 7.2.1 is vague.
-   * THREDDs doesn't even object if userDapQuery is invalid.) See writeDAS().
-   *
-   * @param language the index of the selected language
-   * @param requestUrl the part of the user's request, after EDStatic.baseUrl, before '?'.
-   * @param userDapQuery the part of the user's request after the '?', still percentEncoded
-   *     (shouldn't be null).
-   * @param outputStreamSource the source of an outputStream (usually already buffered) to receive
-   *     the results. If all goes well, at the end of this method the outputStream is closed.
-   * @throws Throwable if trouble.
-   */
-  public void saveAsDAS(
-      int language, String requestUrl, String userDapQuery, OutputStreamSource outputStreamSource)
-      throws Throwable {
-
-    if (reallyVerbose) String2.log("  EDDGrid.saveAsDAS");
-    long time = System.currentTimeMillis();
-
-    // get the modified outputStream
-    Writer writer =
-        File2.getBufferedWriter88591(
-            outputStreamSource.outputStream(
-                File2.ISO_8859_1)); // OPeNDAP 2.0 section 3.2.3 says US-ASCII (7bit), so might as
-    // well go for compatible common 8bit
-    try {
-      // write the DAS
-      writeDAS(File2.forceExtension(requestUrl, ".das"), "", writer, false);
-    } finally {
-      writer.close();
-    }
-
-    // diagnostic
-    if (reallyVerbose)
-      String2.log("  EDDGrid.saveAsDAS done. TIME=" + (System.currentTimeMillis() - time) + "ms\n");
   }
 
   /**
@@ -5940,14 +5245,15 @@ public abstract class EDDGrid extends EDD {
    * }
    * </pre>
    *
-   * @param requestUrl the part of the user's request, after EDStatic.baseUrl, before '?'.
+   * @param requestUrl the part of the user's request, after EDStatic.config.baseUrl, before '?'.
    * @param userDapQuery the part of the user's request after the '?', still percentEncoded
    *     (shouldn't be null). (Affects history only.)
    * @param writer a Writer. At the end of this method the Writer is flushed, not closed.
    * @param encodeAsHtml if true, characters like &lt; are converted to their character entities.
    * @throws Throwable if trouble.
    */
-  public void writeDAS(String requestUrl, String userDapQuery, Writer writer, boolean encodeAsHtml)
+  public void writeDAS(
+      int language, String requestUrl, String userDapQuery, Writer writer, boolean encodeAsHtml)
       throws Throwable {
 
     int nAxisVariables = axisVariables.length;
@@ -5957,25 +5263,25 @@ public abstract class EDDGrid extends EDD {
       OpendapHelper.writeToDAS(
           axisVariables[av].destinationName(),
           axisVariables[av].destinationDataPAType(),
-          axisVariables[av].combinedAttributes(),
+          axisVariables[av].combinedAttributes().toAttributes(language),
           writer,
           encodeAsHtml);
     for (int dv = 0; dv < nDataVariables; dv++)
       OpendapHelper.writeToDAS(
           dataVariables[dv].destinationName(),
           dataVariables[dv].destinationDataPAType(),
-          dataVariables[dv].combinedAttributes(),
+          dataVariables[dv].combinedAttributes().toAttributes(language),
           writer,
           encodeAsHtml);
 
     // how do global attributes fit into opendap view of attributes?
-    Attributes gAtts = new Attributes(combinedGlobalAttributes); // a copy
+    Attributes gAtts = combinedGlobalAttributes.toAttributes(language); // a copy
 
     // fix up global attributes  (always to a local COPY of global attributes)
-    EDD.addToHistory(gAtts, publicSourceUrl());
+    EDD.addToHistory(gAtts, publicSourceUrl(language));
     EDD.addToHistory(
         gAtts,
-        EDStatic.baseUrl
+        EDStatic.config.baseUrl
             + requestUrl
             + (userDapQuery == null || userDapQuery.length() == 0 ? "" : "?" + userDapQuery));
 
@@ -6011,7 +5317,7 @@ public abstract class EDDGrid extends EDD {
    * </pre>
    *
    * @param language the index of the selected language
-   * @param requestUrl the part of the user's request, after EDStatic.baseUrl, before '?'.
+   * @param requestUrl the part of the user's request, after EDStatic.config.baseUrl, before '?'.
    * @param userDapQuery an OPeNDAP DAP-style query string, still percentEncoded (shouldn't be
    *     null). e.g., ATssta[45:1:45][0:1:0][120:10:140][130:10:160]
    * @param writer an 8859-1 writer, usually already buffered, to receive the results. At the end of
@@ -6058,2660 +5364,58 @@ public abstract class EDDGrid extends EDD {
     }
 
     // get gridDataAccessor first, in case of error when parsing query
-    GridDataAccessor gridDataAccessor =
+    try (GridDataAccessor gridDataAccessor =
         new GridDataAccessor(
-            language, this, requestUrl, userDapQuery, true, false); // rowMajor, convertToNaN
-    boolean entireDataset =
-        userDapQuery == null || SSR.percentDecode(userDapQuery).trim().length() == 0;
+            language, this, requestUrl, userDapQuery, true, false)) { // rowMajor, convertToNaN
+      boolean entireDataset =
+          userDapQuery == null || SSR.percentDecode(userDapQuery).trim().length() == 0;
 
-    int nAxisVariables = axisVariables.length;
-    int nDataVariables = gridDataAccessor.dataVariables().length;
-    writer.write("Dataset {" + OpendapHelper.EOL); // see EOL definition for comments
-    String arrayDims[] = new String[nAxisVariables]; // each e.g., [time = 404]
-    String dims[] = new String[nAxisVariables]; // each e.g., Float64 time[time = 404];
-    StringBuilder allArrayDims = new StringBuilder();
-    for (int av = 0; av < nAxisVariables; av++) {
-      PrimitiveArray apa = gridDataAccessor.axisValues(av);
-      arrayDims[av] = "[" + axisVariables[av].destinationName() + " = " + apa.size() + "]";
-      dims[av] =
-          OpendapHelper.getAtomicType(apa.elementType())
-              + " "
-              + axisVariables[av].destinationName()
-              + arrayDims[av]
-              + ";"
-              + OpendapHelper.EOL;
-      allArrayDims.append(arrayDims[av]);
-      if (entireDataset) writer.write("  " + dims[av]);
-    }
-    for (int dv = 0; dv < nDataVariables; dv++) {
-      String dvName = gridDataAccessor.dataVariables()[dv].destinationName();
-      writer.write("  GRID {" + OpendapHelper.EOL);
-      writer.write("    ARRAY:" + OpendapHelper.EOL);
-      writer.write(
-          "      "
-              + OpendapHelper.getAtomicType(
-                  gridDataAccessor.dataVariables()[dv].destinationDataPAType())
-              + " "
-              + dvName
-              + allArrayDims
-              + ";"
-              + OpendapHelper.EOL);
-      writer.write("    MAPS:" + OpendapHelper.EOL);
-      for (int av = 0; av < nAxisVariables; av++) writer.write("      " + dims[av]);
-      writer.write("  } " + dvName + ";" + OpendapHelper.EOL);
-    }
+      int nAxisVariables = axisVariables.length;
+      int nDataVariables = gridDataAccessor.dataVariables().length;
+      writer.write("Dataset {" + OpendapHelper.EOL); // see EOL definition for comments
+      String arrayDims[] = new String[nAxisVariables]; // each e.g., [time = 404]
+      String dims[] = new String[nAxisVariables]; // each e.g., Float64 time[time = 404];
+      StringBuilder allArrayDims = new StringBuilder();
+      for (int av = 0; av < nAxisVariables; av++) {
+        PrimitiveArray apa = gridDataAccessor.axisValues(av);
+        arrayDims[av] = "[" + axisVariables[av].destinationName() + " = " + apa.size() + "]";
+        dims[av] =
+            OpendapHelper.getAtomicType(apa.elementType())
+                + " "
+                + axisVariables[av].destinationName()
+                + arrayDims[av]
+                + ";"
+                + OpendapHelper.EOL;
+        allArrayDims.append(arrayDims[av]);
+        if (entireDataset) writer.write("  " + dims[av]);
+      }
+      for (int dv = 0; dv < nDataVariables; dv++) {
+        String dvName = gridDataAccessor.dataVariables()[dv].destinationName();
+        writer.write("  GRID {" + OpendapHelper.EOL);
+        writer.write("    ARRAY:" + OpendapHelper.EOL);
+        writer.write(
+            "      "
+                + OpendapHelper.getAtomicType(
+                    gridDataAccessor.dataVariables()[dv].destinationDataPAType())
+                + " "
+                + dvName
+                + allArrayDims
+                + ";"
+                + OpendapHelper.EOL);
+        writer.write("    MAPS:" + OpendapHelper.EOL);
+        for (int av = 0; av < nAxisVariables; av++) writer.write("      " + dims[av]);
+        writer.write("  } " + dvName + ";" + OpendapHelper.EOL);
+      }
 
-    // Thredds recently started using urlEncoding the final name (and other names?).
-    // I don't (yet).
-    writer.write("} " + datasetID + ";" + OpendapHelper.EOL);
-    writer.flush(); // essential
-    gridDataAccessor.releaseResources();
+      // Thredds recently started using urlEncoding the final name (and other names?).
+      // I don't (yet).
+      writer.write("} " + datasetID + ";" + OpendapHelper.EOL);
+      writer.flush(); // essential
+    }
 
     // diagnostic
     if (reallyVerbose)
       String2.log("  EDDGrid.writeDDS done. TIME=" + (System.currentTimeMillis() - time) + "ms\n");
-  }
-
-  /**
-   * This writes attributes to an nc3 .ncml file. .ncml are XML files so UTF-8.
-   *
-   * @param writer
-   * @param atts
-   * @param indent e.g., " "
-   */
-  public static void writeNcmlAttributes(Writer writer, Attributes atts, String indent)
-      throws IOException {
-
-    String[] names = atts.getNames();
-    for (int i = 0; i < names.length; i++) {
-      writer.write(indent + "<attribute name=\"" + XML.encodeAsXML(names[i]) + "\" ");
-      // title" value="Daily MUR SST, Interim near-real-time (nrt) product" />
-      PrimitiveArray pa = atts.get(names[i]);
-      if (pa.elementType() == PAType.LONG) pa = new DoubleArray(pa);
-      // even nc3 files write char and String attributes as UTF-8
-
-      // write the attribute
-      if (pa instanceof StringArray sa) {
-        String s = String2.toSVString(sa.toArray(), "\n", false); // newline separated
-        writer.write("value=\"" + XML.encodeAsXML(s) + "\" />\n");
-      } else {
-        String s = String2.replaceAll(pa.toString(), ",", ""); // comma-space -> space separated
-        // NCML types same as Java: String (default), byte, short, int, float, double (and long, but
-        // not in nc3)
-        writer.write("type=\"" + pa.elementTypeString() + "\" " + "value=\"" + s + "\" />\n");
-      }
-    }
-  }
-
-  /**
-   * This writes the dataset structure and attributes in .ncml form (mimicking TDS).
-   * https://oceanwatch.pfeg.noaa.gov/thredds/ncml/satellite/MUR/ssta/1day?catalog=http%3A%2F%2Foceanwatch.pfeg.noaa.gov%2Fthredds%2FSatellite%2FaggregsatMUR%2Fssta%2Fcatalog.html&dataset=satellite%2FMUR%2Fssta%2F1day
-   * stored locally as c:/data/ncml/MUR.xml <br>
-   * Annotated Schema for NcML
-   * "https://www.unidata.ucar.edu/software/thredds/current/netcdf-java/ncml/AnnotatedSchema4.html"
-   *
-   * @param language the index of the selected language
-   * @param loggedInAs
-   * @param requestUrl the part of the user's request, after EDStatic.baseUrl, before '?'.
-   * @param outputStreamSource the source of an outputStream (usually already buffered) to receive
-   *     the results. At the end of this method the outputStream is flushed, not closed.
-   * @throws Throwable if trouble.
-   */
-  public void saveAsNCML(
-      int language, String loggedInAs, String requestUrl, OutputStreamSource outputStreamSource)
-      throws Throwable {
-    if (reallyVerbose) String2.log("  EDDGrid.saveAsNCML " + datasetID);
-    long time = System.currentTimeMillis();
-
-    // get the writer
-    Writer writer = File2.getBufferedWriterUtf8(outputStreamSource.outputStream(File2.UTF_8));
-    try {
-      String opendapBaseUrl = EDStatic.baseUrl(loggedInAs) + "/griddap/" + datasetID;
-      writer.write( // NCML
-          "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
-              + "<netcdf xmlns=\"https://www.unidata.ucar.edu/namespaces/netcdf/ncml-2.2\" "
-              + "location=\""
-              + opendapBaseUrl
-              + "\">\n");
-
-      // global atts
-      // TDS puts different types of atts in different groups. ERDDAP doesn't.
-      Attributes atts = new Attributes(combinedGlobalAttributes); // make a copy to be safe
-      // don't append .ncml request to history attribute
-      writeNcmlAttributes(writer, atts, "  ");
-
-      // dimensions
-      int nAxisVariables = axisVariables.length;
-      StringBuilder dvShape = new StringBuilder();
-      for (int av = 0; av < nAxisVariables; av++) {
-        //  <dimension name="lat" length="16384" />
-        EDVGridAxis ega = axisVariables[av];
-        dvShape.append((av == 0 ? "" : " ") + ega.destinationName());
-        writer.write(
-            "  <dimension name=\""
-                + XML.encodeAsXML(ega.destinationName())
-                + "\" length=\""
-                + ega.sourceValues().size()
-                + "\" />\n");
-      }
-
-      // axis variables
-      for (int av = 0; av < nAxisVariables; av++) {
-        //  <variable name="lat" shape="lat" type="double">
-        EDVGridAxis ega = axisVariables[av];
-        writer.write(
-            "  <variable name=\""
-                + XML.encodeAsXML(ega.destinationName())
-                + "\" shape=\""
-                + XML.encodeAsXML(ega.destinationName())
-                + "\" ");
-        atts = new Attributes(ega.combinedAttributes()); // make a copy since it may be changed
-        String type = ega.destinationDataType();
-        if (type.equals("long")) {
-          type = "String"; // but trouble since there will be no NcHelper.StringLengthSuffix _strlen
-          // dimension
-          atts.add("NcHelper", NcHelper.originally_a_LongArray);
-        } else if (type.equals("char")) {
-          type = "short";
-          atts.add("NcHelper", NcHelper.originally_a_CharArray);
-        }
-        // NCML types same as Java: String (default), byte, short, int, float, double (and long, but
-        // not in nc3)
-        if (!type.equals("String")) writer.write("type=\"" + type + "\"");
-        writer.write(">\n");
-        writeNcmlAttributes(writer, atts, "    ");
-        writer.write("  </variable>\n");
-      }
-
-      // data variables
-      int nDataVariables = dataVariables.length;
-      for (int dv = 0; dv < nDataVariables; dv++) {
-        EDV edv = dataVariables[dv];
-        writer.write(
-            "  <variable name=\""
-                + XML.encodeAsXML(edv.destinationName())
-                + "\" shape=\""
-                + XML.encodeAsXML(dvShape.toString())
-                + "\" ");
-        String type = edv.destinationDataType();
-        if (type.equals("long")) {
-          type = "String"; // but trouble since there will be no NcHelper.StringLengthSuffix _strlen
-          // dimension
-          atts.add("NcHelper", NcHelper.originally_a_LongArray);
-        } else if (type.equals("char")) {
-          type = "short";
-          atts.add("NcHelper", NcHelper.originally_a_CharArray);
-        }
-        // NCML types same as Java: String (default), byte, short, int, float, double (and long, but
-        // not in nc3)
-        if (!type.equals("String")) writer.write("type=\"" + type + "\"");
-        writer.write(">\n");
-        Attributes tAtts = new Attributes(edv.combinedAttributes()); // use a copy
-
-        PAType paType = edv.destinationDataPAType();
-        if (paType == PAType.STRING) tAtts.add(File2.ENCODING, File2.ISO_8859_1);
-        // disabled until there is a standard
-        //            else if (paType == PAType.CHAR)
-        //                tAtts.add(String2.CHARSET, File2.ISO_8859_1);
-
-        writeNcmlAttributes(writer, tAtts, "    ");
-        writer.write("  </variable>\n");
-      }
-
-      writer.write("</netcdf>\n");
-      writer.flush(); // essential
-    } finally {
-      writer.close();
-    }
-
-    // diagnostic
-    if (reallyVerbose)
-      String2.log(
-          "  EDDGrid.saveAsNcML done. TIME=" + (System.currentTimeMillis() - time) + "ms\n");
-  }
-
-  /**
-   * This gets the data for the userDapQuery and writes the grid data to the outputStream in the
-   * DODS DataDDS format (OPeNDAP 2.0, 7.2.3).
-   *
-   * @param language the index of the selected language
-   * @param requestUrl the part of the user's request, after EDStatic.baseUrl, before '?'.
-   * @param userDapQuery an OPeNDAP DAP-style query string, still percentEncoded (shouldn't be
-   *     null). e.g., ATssta[45:1:45][0:1:0][120:10:140][130:10:160]
-   * @param outputStreamSource the source of an outputStream (usually already buffered) to receive
-   *     the results. At the end of this method the outputStream is flushed, not closed.
-   * @throws Throwable if trouble.
-   */
-  public void saveAsDODS(
-      int language, String requestUrl, String userDapQuery, OutputStreamSource outputStreamSource)
-      throws Throwable {
-
-    if (reallyVerbose) String2.log("  EDDGrid.saveAsDODS");
-    long time = System.currentTimeMillis();
-
-    // handle axisDapQuery
-    if (isAxisDapQuery(userDapQuery)) {
-      // get axisDataAccessor first, in case of error when parsing query
-      AxisDataAccessor ada = new AxisDataAccessor(language, this, requestUrl, userDapQuery);
-      int nRAV = ada.nRequestedAxisVariables();
-
-      // write the dds    //OPeNDAP 2.0, 7.2.3
-      OutputStream outputStream = outputStreamSource.outputStream(File2.ISO_8859_1);
-      Writer writer =
-          File2.getBufferedWriter88591(
-              outputStream); // OPeNDAP 2.0 section 3.2.3 says US-ASCII (7bit), so might as well go
-      // for compatible common 8bit
-      try {
-        writeDDS(language, requestUrl, userDapQuery, writer); // writer is flushed
-
-        // write the connector  //OPeNDAP 2.0, 7.2.3
-        // see EOL definition for comments
-        writer.write(OpendapHelper.EOL + "Data:" + OpendapHelper.EOL);
-        writer.flush(); // essential
-        // don't close the writer. Leave it hanging. dos.close below closes the outputStream.
-
-        // write the data  //OPeNDAP 2.0, 7.3.2.4
-        // write elements of the array, in dds order
-        DataOutputStream dos = new DataOutputStream(outputStream);
-        try {
-          for (int av = 0; av < nRAV; av++) ada.axisValues(av).externalizeForDODS(dos);
-          dos.flush(); // essential
-        } finally {
-          dos.close();
-          writer = null;
-        }
-      } finally {
-        if (writer != null)
-          try {
-            writer.close();
-          } catch (Exception e) {
-          }
-      }
-
-      // diagnostic
-      if (reallyVerbose) String2.log("  EDDGrid.saveAsDODS axis done.\n");
-      return;
-    }
-
-    // get gridDataAccessor first, in case of error when parsing query
-    GridDataAccessor gridDataAccessor =
-        new GridDataAccessor(
-            language, this, requestUrl, userDapQuery, true, false); // rowMajor, convertToNaN
-    String arrayQuery = buildDapArrayQuery(gridDataAccessor.constraints());
-    EDV tDataVariables[] = gridDataAccessor.dataVariables();
-    boolean entireDataset =
-        userDapQuery == null || SSR.percentDecode(userDapQuery).trim().length() == 0;
-
-    // get partial gridDataAccessor, in case of size error
-    GridDataAccessor partialGda =
-        new GridDataAccessor(
-            language,
-            this,
-            requestUrl,
-            tDataVariables[0].destinationName() + arrayQuery,
-            true,
-            false);
-    long tSize = partialGda.totalIndex().size();
-    Math2.ensureArraySizeOkay(tSize, "OPeNDAP limit");
-
-    // write the dds    //OPeNDAP 2.0, 7.2.3
-    OutputStream outputStream = outputStreamSource.outputStream(File2.ISO_8859_1);
-    Writer writer =
-        File2.getBufferedWriter88591(
-            outputStream); // OPeNDAP 2.0 section 3.2.3 says US-ASCII (7bit), so might as well go
-    // for compatible common 8bit
-    try {
-      writeDDS(language, requestUrl, userDapQuery, writer);
-
-      // write the connector  //OPeNDAP 2.0, 7.2.3
-      // see EOL definition for comments
-      writer.write(OpendapHelper.EOL + "Data:" + OpendapHelper.EOL);
-      writer.flush(); // essential
-      // don't close the writer. Leave it hanging. dos.close below closes the outputStream.
-
-      // make the dataOutputStream
-      DataOutputStream dos = new DataOutputStream(outputStream);
-      try {
-        // write the axis variables
-        int nAxisVariables = axisVariables.length;
-        if (entireDataset) {
-          for (int av = 0; av < nAxisVariables; av++)
-            gridDataAccessor.axisValues[av].externalizeForDODS(dos);
-        }
-
-        // write the data  //OPeNDAP 2.0, 7.3.2.4
-        // write elements of the array, in dds order
-        int nDataVariables = tDataVariables.length;
-        for (int dv = 0; dv < nDataVariables; dv++) {
-          partialGda =
-              new GridDataAccessor(
-                  language,
-                  this,
-                  requestUrl,
-                  tDataVariables[dv].destinationName() + arrayQuery,
-                  true,
-                  false); // rowMajor, convertToNaN
-
-          tSize = partialGda.totalIndex().size();
-
-          // send the array size (twice)  //OPeNDAP 2.0, 7.3.2.1
-          dos.writeInt((int) tSize); // safe since checked above
-          dos.writeInt((int) tSize); // safe since checked above
-
-          // send the array data   (Note that DAP doesn't have exact match for some Java data
-          // types.)
-          PAType type = tDataVariables[dv].destinationDataPAType();
-
-          PrimitiveArray[] pas = partialGda.getPartialDataValues();
-          if (type == PAType.BYTE) {
-            while (partialGda.incrementChunk()) pas[0].writeDos(dos);
-            // pad byte array to 4 byte boundary
-            long tn = partialGda.totalIndex().size();
-            while (tn++ % 4 != 0) dos.writeByte(0);
-          } else if (type == PAType.SHORT
-              || // no exact DAP equivalent
-              type == PAType.CHAR
-              || // no exact DAP equivalent
-              type == PAType.INT) {
-            while (partialGda.incrementChunk())
-              (type == PAType.INT ? pas[0] : new IntArray(pas[0])).writeDos(dos);
-          } else if (type == PAType.FLOAT) {
-            while (partialGda.incrementChunk()) pas[0].writeDos(dos);
-          } else if (type == PAType.LONG
-              || // no exact DAP equivalent
-              type == PAType.DOUBLE) {
-            while (partialGda.incrementChunk())
-              (type == PAType.DOUBLE ? pas[0] : new DoubleArray(pas[0])).writeDos(dos);
-          } else if (type == PAType.STRING) {
-            while (partialGda.incrementChunk()) pas[0].externalizeForDODS(dos);
-          } else {
-            throw new RuntimeException(
-                EDStatic.errorInternalAr[0] + "unsupported source data type=" + type);
-          } /* */
-
-          for (int av = 0; av < nAxisVariables; av++)
-            gridDataAccessor.axisValues[av].externalizeForDODS(dos);
-
-          dos.flush();
-        }
-
-        dos.flush(); // essential
-      } finally {
-        dos.close();
-        writer = null;
-      }
-    } finally {
-      gridDataAccessor.releaseResources();
-      partialGda.releaseResources();
-      if (writer != null)
-        try {
-          writer.close();
-        } catch (Exception e) {
-        }
-    }
-
-    // diagnostic
-    if (reallyVerbose)
-      String2.log(
-          "  EDDGrid.saveAsDODS done. TIME=" + (System.currentTimeMillis() - time) + "ms\n");
-  }
-
-  /**
-   * This gets the data for the userDapQuery and writes the grid data to the outputStream in the
-   * ESRI ASCII data format. For .esriAsci, dataVariable queries can specify multiple longitude and
-   * latitude values, but just one value for other dimensions. Currently, the requested lon values
-   * can't be below and above 180 (below is fine; above is automatically shifted down). [future: do
-   * more extensive fixup].
-   *
-   * @param language the index of the selected language
-   * @param requestUrl the part of the user's request, after EDStatic.baseUrl, before '?'.
-   * @param userDapQuery an OPeNDAP DAP-style query string, still percentEncoded (shouldn't be
-   *     null). e.g., ATssta[45:1:45][0:1:0][120:10:140][130:10:160]
-   * @param outputStreamSource the source of an outputStream (usually already buffered) to receive
-   *     the results. At the end of this method the outputStream is flushed, not closed.
-   * @throws Throwable if trouble.
-   */
-  public void saveAsEsriAscii(
-      int language, String requestUrl, String userDapQuery, OutputStreamSource outputStreamSource)
-      throws Throwable {
-
-    if (reallyVerbose) String2.log("  EDDGrid.saveAsEsriAscii");
-    long time = System.currentTimeMillis();
-
-    // does the dataset support .esriAscii?
-    if (lonIndex < 0 || latIndex < 0)
-      throw new SimpleException(
-          EDStatic.bilingual(
-              language,
-              EDStatic.queryErrorAr[0]
-                  + MessageFormat.format(
-                      EDStatic.noXxxBecause2Ar[0], ".esriAscii", EDStatic.noXxxNoLLAr[0]),
-              EDStatic.queryErrorAr[language]
-                  + MessageFormat.format(
-                      EDStatic.noXxxBecause2Ar[language],
-                      ".esriAscii",
-                      EDStatic.noXxxNoLLAr[language])));
-
-    if (!axisVariables[latIndex].isEvenlySpaced() || !axisVariables[lonIndex].isEvenlySpaced())
-      throw new SimpleException(
-          EDStatic.bilingual(
-              language,
-              EDStatic.queryErrorAr[0]
-                  + MessageFormat.format(
-                      EDStatic.noXxxBecause2Ar[0],
-                      ".esriAscii",
-                      EDStatic.noXxxNoLLEvenlySpacedAr[0]),
-              EDStatic.queryErrorAr[language]
-                  + MessageFormat.format(
-                      EDStatic.noXxxBecause2Ar[language],
-                      ".esriAscii",
-                      EDStatic.noXxxNoLLEvenlySpacedAr[language])));
-
-    // can't handle axis request
-    if (isAxisDapQuery(userDapQuery))
-      throw new SimpleException(
-          EDStatic.bilingual(
-              language,
-              EDStatic.queryErrorAr[0]
-                  + MessageFormat.format(EDStatic.queryErrorNotAxisAr[0], ".esriAscii"),
-              EDStatic.queryErrorAr[language]
-                  + MessageFormat.format(EDStatic.queryErrorNotAxisAr[language], ".esriAscii")));
-
-    // parse the userDapQuery and get the GridDataAccessor
-    // this also tests for error when parsing query
-    GridDataAccessor gridDataAccessor =
-        new GridDataAccessor(
-            language, this, requestUrl, userDapQuery, true, true); // rowMajor, convertToNaN
-    if (gridDataAccessor.dataVariables().length > 1)
-      throw new SimpleException(
-          EDStatic.bilingual(
-              language,
-              EDStatic.queryErrorAr[0]
-                  + MessageFormat.format(EDStatic.queryError1VarAr[0], ".esriAscii"),
-              EDStatic.queryErrorAr[language]
-                  + MessageFormat.format(EDStatic.queryError1VarAr[language], ".esriAscii")));
-    EDV edv = gridDataAccessor.dataVariables()[0];
-    PAType edvPAType = edv.destinationDataPAType();
-    PAOne edvPAOne = new PAOne(edvPAType);
-
-    // check that request meets ESRI restrictions
-    PrimitiveArray lonPa = null, latPa = null;
-    for (int av = 0; av < axisVariables.length; av++) {
-      PrimitiveArray avpa = gridDataAccessor.axisValues(av);
-      if (av == lonIndex) {
-        lonPa = avpa;
-      } else if (av == latIndex) {
-        latPa = avpa;
-      } else {
-        if (avpa.size() > 1)
-          throw new SimpleException(
-              EDStatic.bilingual(
-                  language,
-                  EDStatic.queryErrorAr[0]
-                      + MessageFormat.format(
-                          EDStatic.queryError1ValueAr[0],
-                          ".esriAscii",
-                          axisVariables[av].destinationName()),
-                  EDStatic.queryErrorAr[language]
-                      + MessageFormat.format(
-                          EDStatic.queryError1ValueAr[language],
-                          ".esriAscii",
-                          axisVariables[av].destinationName())));
-      }
-    }
-
-    int nLon = lonPa.size();
-    int nLat = latPa.size();
-    double minX = lonPa.getDouble(0);
-    double minY = latPa.getDouble(0);
-    double maxX = lonPa.getDouble(nLon - 1);
-    double maxY = latPa.getDouble(nLat - 1);
-    boolean flipX = false;
-    boolean flipY = false;
-    if (minX > maxX) {
-      flipX = true;
-      double d = minX;
-      minX = maxX;
-      maxX = d;
-    }
-    if (minY > maxY) {
-      flipY = true;
-      double d = minY;
-      minY = maxY;
-      maxY = d;
-    }
-    double lonSpacing = lonPa.size() <= 1 ? Double.NaN : (maxX - minX) / (nLon - 1);
-    double latSpacing = latPa.size() <= 1 ? Double.NaN : (maxY - minY) / (nLat - 1);
-    if (Double.isNaN(lonSpacing) && !Double.isNaN(latSpacing)) lonSpacing = latSpacing;
-    if (!Double.isNaN(lonSpacing) && Double.isNaN(latSpacing)) latSpacing = lonSpacing;
-    if (Double.isNaN(lonSpacing) && Double.isNaN(latSpacing))
-      throw new SimpleException(
-          EDStatic.bilingual(
-              language,
-              EDStatic.queryErrorAr[0]
-                  + MessageFormat.format(EDStatic.queryErrorLLGt1Ar[0], ".esriAscii"),
-              EDStatic.queryErrorAr[language]
-                  + MessageFormat.format(EDStatic.queryErrorLLGt1Ar[language], ".esriAscii")));
-
-    // for almostEqual(3, lonSpacing, latSpacing) DON'T GO BELOW 3!!!
-    // For example: PHssta has 4096 lon points so spacing is ~.0878
-    // But .0878 * 4096 = 359.6
-    // and .0879 * 4096 = 360.0    (just beyond extreme test of 3 digit match)
-    // That is unacceptable. So 2 would be abominable.  Even 3 is stretching the limits.
-    if (!Math2.almostEqual(3, lonSpacing, latSpacing))
-      throw new SimpleException(
-          EDStatic.bilingual(
-              language,
-              EDStatic.queryErrorAr[0]
-                  + MessageFormat.format(
-                      EDStatic.queryErrorEqualSpacingAr[0],
-                      ".esriAscii",
-                      "" + lonSpacing,
-                      "" + latSpacing),
-              EDStatic.queryErrorAr[language]
-                  + MessageFormat.format(
-                      EDStatic.queryErrorEqualSpacingAr[language],
-                      ".esriAscii",
-                      "" + lonSpacing,
-                      "" + latSpacing)));
-    if (minX < 180 && maxX > 180)
-      throw new SimpleException(
-          EDStatic.bilingual(
-              language,
-              EDStatic.queryErrorAr[0]
-                  + MessageFormat.format(EDStatic.queryError180Ar[0], ".esriAscii"),
-              EDStatic.queryErrorAr[language]
-                  + MessageFormat.format(EDStatic.queryError180Ar[language], ".esriAscii")));
-    double lonAdjust = lonPa.getDouble(0) >= 180 ? -360 : 0;
-    if (minX + lonAdjust < -180 || maxX + lonAdjust > 180)
-      throw new SimpleException(
-          EDStatic.bilingual(
-              language,
-              EDStatic.queryErrorAr[0]
-                  + MessageFormat.format(
-                      EDStatic.queryErrorAdjustedAr[0],
-                      ".esriAscii",
-                      "" + (minX + lonAdjust),
-                      "" + (maxX + lonAdjust)),
-              EDStatic.queryErrorAr[language]
-                  + MessageFormat.format(
-                      EDStatic.queryErrorAdjustedAr[language],
-                      ".esriAscii",
-                      "" + (minX + lonAdjust),
-                      "" + (maxX + lonAdjust))));
-
-    // request is ok and compatible with ESRI .asc!
-
-    // complications:
-    // * lonIndex and latIndex can be in any position in axisVariables.
-    // * ESRI .asc wants latMajor (that might be rowMajor or columnMajor),
-    //   and TOP row first!
-    // The simplest solution is to save all data to temp file,
-    // then read values as needed from file and write to writer.
-
-    // make the GridDataRandomAccessor
-    GridDataRandomAccessor gdra = new GridDataRandomAccessor(gridDataAccessor);
-    int current[] = gridDataAccessor.totalIndex().getCurrent(); // the internal object that changes
-
-    // then get the writer
-    // ???!!! ISO-8859-1 is a guess. I found no specification.
-    Writer writer = File2.getBufferedWriter88591(outputStreamSource.outputStream(File2.ISO_8859_1));
-    try {
-      // ESRI .asc doesn't like NaN
-      double dmv = edv.safeDestinationMissingValue();
-      String NaNString =
-          Double.isNaN(dmv)
-              ? "-9999999"
-              : // good for int and floating data types
-              dmv == Math2.roundToLong(dmv) ? "" + Math2.roundToLong(dmv) : "" + dmv;
-
-      // write the data
-      writer.write("ncols " + nLon + "\n");
-      writer.write("nrows " + nLat + "\n");
-      // ???!!! ERD always uses centered, but others might need was xllcorner yllcorner
-      writer.write("xllcenter " + (minX + lonAdjust) + "\n");
-      writer.write("yllcenter " + minY + "\n");
-      // ArcGIS forces cellsize to be square; see test above
-      writer.write("cellsize " + latSpacing + "\n");
-      writer.write("nodata_value " + NaNString + "\n");
-
-      // write values from row to row, top to bottom
-      Arrays.fill(current, 0); // manipulate indices in current[]
-
-      for (int tLat = 0; tLat < nLat; tLat++) {
-        current[latIndex] = flipY ? tLat : nLat - tLat - 1;
-        for (int tLon = 0; tLon < nLon; tLon++) {
-          current[lonIndex] = flipX ? nLon - tLon - 1 : tLon;
-          gdra.getDataValueAsPAOne(current, 0, edvPAOne);
-          String s = edvPAOne.toString();
-          writer.write(s.equals("") || s.equals("NaN") ? NaNString : s);
-          writer.write(tLon == nLon - 1 ? '\n' : ' ');
-        }
-      }
-      gdra.releaseResources();
-
-      writer.flush(); // essential
-    } finally {
-      gdra.releaseResources();
-      writer.close();
-    }
-
-    // diagnostic
-    if (reallyVerbose)
-      String2.log(
-          "  EDDGrid.saveAsEsriAscii done. TIME=" + (System.currentTimeMillis() - time) + "ms\n");
-  }
-
-  /**
-   * This saves the requested data (must be lat- lon-based data only) as a grayscale GeoTIFF file.
-   * For .geotiff, dataVariable queries can specify multiple longitude and latitude values, but just
-   * one value for other dimensions. GeotiffWriter requires that lons are +/-180 (because ESRI only
-   * accepts that range). Currently, the lons in the request can't be below and above 180 (below is
-   * fine; above is automatically shifted down). [future: do more extensive fixup].
-   *
-   * <p>javaDoc for the netcdf GeotiffWriter class isn't in standard javaDocs. Try
-   * https://www.unidata.ucar.edu/software/netcdf-java/v4.3/javadocAll/ucar/nc2/geotiff/GeotiffWriter.html
-   * or search Google for GeotiffWriter.
-   *
-   * <p>Grayscale GeoTIFFs may not be very colorful, but they have an advantage over color GeoTIFFs:
-   * the clear correspondence of the gray level of each pixel (0 - 255) to the original data allows
-   * programs to reconstruct (crudely) the original data values, something that is not possible with
-   * color GeoTIFFS.
-   *
-   * @param language the index of the selected language
-   * @param ipAddress The IP address of the user (for statistics).
-   * @param userDapQuery an OPeNDAP DAP-style query string, still percentEncoded (shouldn't be
-   *     null). e.g., ATssta[45:1:45][0:1:0][120:10:140][130:10:160]
-   * @param outputStreamSource the source of an outputStream (usually already buffered) to receive
-   *     the results. At the end of this method the outputStream is flushed, not closed.
-   * @param directory with a slash at the end in which to cache the file
-   * @param fileName The file name with out the extension (e.g., myFile). The extension ".tif" will
-   *     be added to create the output file name.
-   * @return true of written ok; false if exception occurred (and written on image)
-   * @throws Throwable
-   */
-  public boolean saveAsGeotiff(
-      int language,
-      String ipAddress,
-      String requestUrl,
-      String userDapQuery,
-      OutputStreamSource outputStreamSource,
-      String directory,
-      String fileName)
-      throws Throwable {
-
-    if (reallyVerbose) String2.log("Grid.saveAsGeotiff " + fileName);
-    long time = System.currentTimeMillis();
-
-    // Can GeotiffWriter handle this dataset?
-    // GeotiffWriter just throws non-helpful error messages if these requirements aren't met.
-
-    // Has Lon and Lat?
-    if (lonIndex < 0 || latIndex < 0)
-      throw new SimpleException(
-          EDStatic.bilingual(
-              language,
-              EDStatic.queryErrorAr[0]
-                  + MessageFormat.format(
-                      EDStatic.noXxxBecause2Ar[0], ".geotif", EDStatic.noXxxNoLLAr[0]),
-              EDStatic.queryErrorAr[language]
-                  + MessageFormat.format(
-                      EDStatic.noXxxBecause2Ar[language],
-                      ".geotif",
-                      EDStatic.noXxxNoLLAr[language])));
-
-    // Lon and Lat are evenly spaced?
-    // See 2nd test in EDDGridFromDap.testDescendingAxisGeotif()
-    if (!axisVariables[latIndex].isEvenlySpaced() || !axisVariables[lonIndex].isEvenlySpaced())
-      throw new SimpleException(
-          EDStatic.bilingual(
-              language,
-              EDStatic.queryErrorAr[0]
-                  + MessageFormat.format(
-                      EDStatic.noXxxBecause2Ar[0], ".geotif", EDStatic.noXxxNoLLEvenlySpacedAr[0]),
-              EDStatic.queryErrorAr[language]
-                  + MessageFormat.format(
-                      EDStatic.noXxxBecause2Ar[language],
-                      ".geotif",
-                      EDStatic.noXxxNoLLEvenlySpacedAr[language])));
-
-    // 2013-10-21 NO LONGER A LIMITATION: lon and lat are ascending?
-    //  GeotiffWriter now deals with descending.
-    //  see test in EDDGridFromDap.testDescendingAxisGeotif
-    // if (axisVariables[latIndex].averageSpacing() <= 0 ||
-    //    axisVariables[lonIndex].averageSpacing() <= 0)
-    //    throw new SimpleException(EDStatic.bilingual(language,
-    //    EDStatic.queryErrorAr[0]        + MessageFormat.format(EDStatic.queryErrorAscending,
-    // ".geotif"),
-    //    EDStatic.queryErrorAr[language] + MessageFormat.format(EDStatic.queryErrorAscending,
-    // ".geotif")));
-
-    // can't handle axis request
-    if (isAxisDapQuery(userDapQuery))
-      throw new SimpleException(
-          EDStatic.bilingual(
-              language,
-              EDStatic.queryErrorAr[0]
-                  + MessageFormat.format(EDStatic.queryErrorNotAxisAr[0], ".geotif"),
-              EDStatic.queryErrorAr[language]
-                  + MessageFormat.format(EDStatic.queryErrorNotAxisAr[language], ".geotif")));
-
-    // parse the userDapQuery and get the GridDataAccessor
-    // this also tests for error when parsing query
-    GridDataAccessor gridDataAccessor =
-        new GridDataAccessor(
-            language, this, requestUrl, userDapQuery, true, true); // rowMajor, convertToNaN
-    if (gridDataAccessor.dataVariables().length > 1)
-      throw new SimpleException(
-          EDStatic.bilingual(
-              language,
-              EDStatic.queryErrorAr[0]
-                  + MessageFormat.format(EDStatic.queryError1VarAr[0], ".geotif"),
-              EDStatic.queryErrorAr[language]
-                  + MessageFormat.format(EDStatic.queryError1VarAr[language], ".geotif")));
-    EDV edv = gridDataAccessor.dataVariables()[0];
-    String dataName = edv.destinationName();
-
-    PrimitiveArray lonPa = null, latPa = null;
-    double minX = Double.NaN,
-        maxX = Double.NaN,
-        minY = Double.NaN,
-        maxY = Double.NaN,
-        lonAdjust = 0;
-    for (int av = 0; av < axisVariables.length; av++) {
-      PrimitiveArray avpa = gridDataAccessor.axisValues(av);
-      if (av == lonIndex) {
-        lonPa = avpa;
-        minX = lonPa.getNiceDouble(0);
-        maxX = lonPa.getNiceDouble(lonPa.size() - 1);
-        if (minX > maxX) { // then deal with descending axis values
-          double d = minX;
-          minX = maxX;
-          maxX = d;
-        }
-        if (minX < 180 && maxX > 180)
-          throw new SimpleException(
-              EDStatic.bilingual(
-                  language,
-                  EDStatic.queryErrorAr[0]
-                      + MessageFormat.format(EDStatic.queryError180Ar[0], ".geotif"),
-                  EDStatic.queryErrorAr[language]
-                      + MessageFormat.format(EDStatic.queryError180Ar[language], ".geotif")));
-        if (minX >= 180) lonAdjust = -360;
-        minX += lonAdjust;
-        maxX += lonAdjust;
-        if (minX < -180 || maxX > 180)
-          throw new SimpleException(
-              EDStatic.bilingual(
-                  language,
-                  EDStatic.queryErrorAr[0]
-                      + MessageFormat.format(
-                          EDStatic.queryErrorAdjustedAr[0], ".geotif", "" + minX, "" + maxX),
-                  EDStatic.queryErrorAr[language]
-                      + MessageFormat.format(
-                          EDStatic.queryErrorAdjustedAr[language],
-                          ".geotif",
-                          "" + minX,
-                          "" + maxX)));
-      } else if (av == latIndex) {
-        latPa = avpa;
-        minY = latPa.getNiceDouble(0);
-        maxY = latPa.getNiceDouble(latPa.size() - 1);
-        if (minY > maxY) { // then deal with descending axis values
-          double d = minY;
-          minY = maxY;
-          maxY = d;
-        }
-      } else {
-        if (avpa.size() > 1)
-          throw new SimpleException(
-              EDStatic.bilingual(
-                  language,
-                  EDStatic.queryErrorAr[0]
-                      + MessageFormat.format(
-                          EDStatic.queryError1ValueAr[0],
-                          ".geotif",
-                          axisVariables[av].destinationName()),
-                  EDStatic.queryErrorAr[language]
-                      + MessageFormat.format(
-                          EDStatic.queryError1ValueAr[language],
-                          ".geotif",
-                          axisVariables[av].destinationName())));
-      }
-    }
-
-    // The request is ok and compatible with geotiffWriter!
-
-    /*
-    //was &.size=width|height specified?
-    String ampParts[] = Table.getDapQueryParts(userDapQuery); //decoded.  always at least 1 part (may be "")
-    int imageWidth = -1, imageHeight = -1;
-    for (int ap = 0; ap < ampParts.length; ap++) {
-        String ampPart = ampParts[ap];
-
-        //.colorBar ignored
-        //.color    ignored
-        //.draw     ignored
-        //.font     ignored
-        //.land     ignored
-        //.legend   ignored
-        //.marker   ignored
-
-        //.size
-        if (ampPart.startsWith(".size=")) {
-            customSize = true;
-            String pParts[] = String2.split(ampPart.substring(6), '|'); //subparts may be ""; won't be null
-            if (pParts == null) pParts = new String[0];
-            if (pParts.length > 0) {
-                int w = String2.parseInt(pParts[0]);
-                if (w > 0 && w < EDD.WMS_MAX_WIDTH) imageWidth = w;
-            }
-            if (pParts.length > 1) {
-                int h = String2.parseInt(pParts[1]);
-                if (h > 0 && h < EDD.WMS_MAX_WIDTH) imageHeight = h;
-            }
-            if (reallyVerbose)
-                String2.log(".size=  imageWidth=" + imageWidth + " imageHeight=" + imageHeight);
-        }
-
-        //.trim   ignored
-        //.vars   ignored
-        //.vec    ignored
-        //.xRange ignored
-        //.yRange ignored
-    }
-
-    //recalculate stride?
-    if (imageWidth > 0 && imageHeight > 0) {
-
-        //pull apart userDapQuery
-        ...
-
-        //lat
-        int have = maxXIndex - minXIndex + 1;
-        int stride = constraints.get(xAxisIndex * 3 + 1);
-        imageWidth = DataHelper.strideWillFind(have, stride);
-        //protect against huge .png (and huge amount of data in memory)
-        if (imageWidth > 3601) {
-            stride = DataHelper.findStride(have, 3601);
-            imageWidth = DataHelper.strideWillFind(have, stride);
-            constraints.set(xAxisIndex * 3 + 1, stride);
-            if (reallyVerbose) String2.log("  xStride reduced to stride=" + stride);
-        }
-
-        //lon
-        ...
-
-        //recreate userDapQuery
-        ...
-    }
-    */
-
-    // save the data in a .nc file
-    // ???I'm pretty sure the axis order can be lon,lat or lat,lon, but not certain.
-    // ???The GeotiffWriter seems to be detecting lat and lon and reacting accordingly.
-    String ncFullName =
-        directory + fileName + "_tiff.nc"; // _tiff is needed because unused axes aren't saved
-    if (!File2.isFile(ncFullName))
-      saveAsNc(
-          language,
-          NetcdfFileFormat.NETCDF3,
-          ipAddress,
-          requestUrl,
-          userDapQuery,
-          ncFullName,
-          false, // keepUnusedAxes=false  this is necessary
-          lonAdjust);
-    // String2.log(NcHelper.ncdump(ncFullName, "-h"));
-
-    // attempt to create geotif via java netcdf libraries
-    GeotiffWriter writer = new GeotiffWriter(directory + fileName + ".tif");
-    try {
-
-      // 2013-08-28 new code to deal with GeotiffWritter in netcdf-java 4.3+
-      GridDataset gridDataset = GridDataset.open(ncFullName);
-      java.util.List grids = gridDataset.getGrids();
-      // if (grids.size() == 0) ...
-      GeoGrid geoGrid = (GeoGrid) grids.get(0);
-      Array dataArray = geoGrid.readDataSlice(-1, -1, -1, -1); // get all
-      writer.writeGrid(gridDataset, geoGrid, dataArray, true); // true=grayscale
-
-      // old code for netcdf-java <4.3
-      // LatLonRect latLonRect = new LatLonRect(
-      //    new LatLonPointImpl(minY, minX),
-      //    new LatLonPointImpl(maxY, maxX));
-      // writer.writeGrid(ncFullName, dataName, 0, 0,
-      //    true, //true=grayscale   color didn't work for me. and see javadocs above.
-      //    latLonRect);
-
-    } finally {
-      try {
-        writer.close();
-      } catch (Exception e) {
-      }
-    }
-
-    // copy to outputStream
-    OutputStream out = outputStreamSource.outputStream("");
-    try {
-      if (!File2.copy(directory + fileName + ".tif", out)) {
-        // outputStream contentType already set,
-        // so I can't go back to html and display error message
-        // note than the message is thrown if user cancels the transmission; so don't email to me
-        throw new SimpleException(String2.ERROR + " while transmitting file.");
-      }
-    } finally {
-      try {
-        out.close();
-      } catch (Exception e) {
-      } // downloads of e.g., erddap2.css don't work right if not closed. (just if gzip'd?)
-    }
-
-    if (reallyVerbose)
-      String2.log(
-          "  Grid.saveAsGeotiff done. TIME=" + (System.currentTimeMillis() - time) + "ms\n");
-    return true;
-  }
-
-  /**
-   * This writes the data to various types of images. This requires a dataDapQuery (not an
-   * axisDapQuery) where just 1 or 2 of the dimensions be size &gt; 1. One active dimension results
-   * in a graph. Two active dimensions results in a map (one active data variable results in colored
-   * graph, two results in vector plot).
-   *
-   * <p>Note that for transparentPng maps, GoogleEarth assumes requested image will be isotropic
-   * (but presumably that is what it will request).
-   *
-   * @param language the index of the selected language
-   * @param requestUrl the part of the user's request, after EDStatic.baseUrl, before '?'.
-   * @param userDapQuery an OPeNDAP DAP-style query string, still percentEncoded (shouldn't be
-   *     null). e.g., ATssta[45:1:45][0:1:0][120:10:140][130:10:160]
-   * @param dir the directory (on this computer's hard drive) to use for temporary/cache files
-   * @param fileName the name for the 'file' (no dir, no extension), which is used to write the
-   *     suggested name for the file to the response header and is also used to write the
-   *     [fileTypeName]Info (e.g., .pngInfo) file.
-   * @param outputStreamSource
-   * @param fileTypeName
-   * @return true of written ok; false if exception occurred (and written on image)
-   * @throws Throwable if trouble.
-   */
-  public boolean saveAsImage(
-      int language,
-      String loggedInAs,
-      String requestUrl,
-      String userDapQuery,
-      String dir,
-      String fileName,
-      OutputStreamSource outputStreamSource,
-      String fileTypeName)
-      throws Throwable {
-    if (reallyVerbose) String2.log("  EDDGrid.saveAsImage query=" + userDapQuery);
-    long time = System.currentTimeMillis();
-
-    // determine the image size
-    int sizeIndex =
-        fileTypeName.startsWith(".small")
-            ? 0
-            : fileTypeName.startsWith(".medium") ? 1 : fileTypeName.startsWith(".large") ? 2 : 1;
-    boolean pdf = fileTypeName.toLowerCase().endsWith("pdf");
-    boolean png = fileTypeName.toLowerCase().endsWith("png");
-    boolean transparentPng = fileTypeName.equals(".transparentPng");
-    if (!pdf && !png)
-      throw new SimpleException(
-          EDStatic.simpleBilingual(language, EDStatic.queryErrorAr)
-              + "Unexpected image type="
-              + fileTypeName);
-    int imageWidth, imageHeight;
-    if (pdf) {
-      imageWidth = EDStatic.pdfWidths[sizeIndex];
-      imageHeight = EDStatic.pdfHeights[sizeIndex];
-    } else if (transparentPng) {
-      imageWidth = EDStatic.imageWidths[sizeIndex];
-      imageHeight = imageWidth;
-    } else {
-      imageWidth = EDStatic.imageWidths[sizeIndex];
-      imageHeight = EDStatic.imageHeights[sizeIndex];
-    }
-    if (reallyVerbose)
-      String2.log(
-          "  sizeIndex="
-              + sizeIndex
-              + " pdf="
-              + pdf
-              + " imageWidth="
-              + imageWidth
-              + " imageHeight="
-              + imageHeight);
-    Object pdfInfo[] = null;
-    BufferedImage bufferedImage = null;
-    Graphics2D g2 = null;
-    Color transparentColor =
-        transparentPng ? Color.white : null; // getBufferedImage returns white background
-    String drawLegend = LEGEND_BOTTOM;
-    int trim = Integer.MAX_VALUE;
-    boolean ok = true;
-
-    try {
-      // can't handle axis request
-      if (isAxisDapQuery(userDapQuery))
-        throw new SimpleException(
-            EDStatic.bilingual(
-                language,
-                EDStatic.queryErrorAr[0]
-                    + MessageFormat.format(EDStatic.queryErrorNotAxisAr[0], fileTypeName),
-                EDStatic.queryErrorAr[language]
-                    + MessageFormat.format(EDStatic.queryErrorNotAxisAr[language], fileTypeName)));
-
-      // modify the query to get no more data than needed
-      StringArray reqDataNames = new StringArray();
-      IntArray constraints = new IntArray();
-      DoubleArray inputValues = new DoubleArray();
-
-      // TransparentPng repairs input ranges during parsing and stores raw input values in the
-      // inputValues array.
-      parseDataDapQuery(
-          language,
-          userDapQuery,
-          reqDataNames,
-          constraints,
-          transparentPng /* repair */,
-          inputValues);
-
-      // for now, just plot first 1 or 2 data variables
-      int nDv = reqDataNames.size();
-      EDV reqDataVars[] = new EDV[nDv];
-      for (int dv = 0; dv < nDv; dv++)
-        reqDataVars[dv] = findDataVariableByDestinationName(reqDataNames.get(dv));
-
-      // extract optional .graphicsSettings from userDapQuery
-      //  xRange, yRange, color and colorbar information
-      //  title2 -- a prettified constraint string
-      boolean drawLines = false,
-          drawLinesAndMarkers = false,
-          drawMarkers = false,
-          drawSticks = false,
-          drawSurface = false,
-          drawVectors = false;
-      Color color = Color.black;
-
-      // for now, palette values are unset.
-      String palette = "";
-      String scale = "";
-      double paletteMin = Double.NaN;
-      double paletteMax = Double.NaN;
-      String continuousS = "";
-      int nSections = Integer.MAX_VALUE;
-
-      // minX/Y < maxX/Y
-      double minX = Double.NaN, maxX = Double.NaN, minY = Double.NaN, maxY = Double.NaN;
-      boolean xAscending = true, yAscending = true; // this is what controls flipping of the axes
-      String xScale = "", yScale = ""; // (default) or Linear or Log
-      int nVars = 4;
-      EDV vars[] = null; // set by .vars or lower
-      int axisVarI[] = null, dataVarI[] = null; // set by .vars or lower
-      String ampParts[] =
-          Table.getDapQueryParts(userDapQuery); // decoded.  always at least 1 part (may be "")
-      boolean customSize = false;
-      int markerType = GraphDataLayer.MARKER_TYPE_FILLED_SQUARE;
-      int markerSize = GraphDataLayer.MARKER_SIZE_SMALL;
-      double fontScale = 1, vectorStandard = Double.NaN;
-      String currentDrawLandMask = null; // null = not yet set
-      Color bgColor = EDStatic.graphBackgroundColor;
-      for (int ap = 0; ap < ampParts.length; ap++) {
-        String ampPart = ampParts[ap];
-
-        // .bgColor
-        if (ampPart.startsWith(".bgColor=")) {
-          String pParts[] = String2.split(ampPart.substring(9), '|');
-          if (pParts.length > 0 && pParts[0].length() > 0)
-            bgColor = new Color(String2.parseInt(pParts[0]), true); // hasAlpha
-
-          // .colorBar defaults: palette=""|continuous=C|scale=Linear|min=NaN|max=NaN|nSections=-1
-        } else if (ampPart.startsWith(".colorBar=")) {
-          String pParts[] =
-              String2.split(ampPart.substring(10), '|'); // subparts may be ""; won't be null
-          if (pParts == null) pParts = new String[0];
-          if (pParts.length > 0 && pParts[0].length() > 0) palette = pParts[0];
-          if (pParts.length > 1 && pParts[1].length() > 0) continuousS = pParts[1].toLowerCase();
-          if (pParts.length > 2 && pParts[2].length() > 0) scale = pParts[2];
-          if (pParts.length > 3 && pParts[3].length() > 0)
-            paletteMin = String2.parseDouble(pParts[3]);
-          if (pParts.length > 4 && pParts[4].length() > 0)
-            paletteMax = String2.parseDouble(pParts[4]);
-          if (pParts.length > 5 && pParts[5].length() > 0) nSections = String2.parseInt(pParts[5]);
-          if (reallyVerbose)
-            String2.log(
-                ".colorBar palette="
-                    + palette
-                    + " continuousS="
-                    + continuousS
-                    + " scale="
-                    + scale
-                    + " min="
-                    + paletteMin
-                    + " max="
-                    + paletteMax
-                    + " nSections="
-                    + nSections);
-
-          // .color
-        } else if (ampPart.startsWith(".color=")) {
-          int iColor = String2.parseInt(ampPart.substring(7));
-          if (iColor < Integer.MAX_VALUE) {
-            color = new Color(iColor);
-            if (reallyVerbose) String2.log(".color=" + String2.to0xHexString(iColor, 0));
-          }
-
-          // .draw
-        } else if (ampPart.startsWith(".draw=")) {
-          String gt = ampPart.substring(6);
-          // try to set an option to true
-          // ensure others are false in case of multiple .draw
-          drawLines = gt.equals("lines");
-          drawLinesAndMarkers = gt.equals("linesAndMarkers");
-          drawMarkers = gt.equals("markers");
-          drawSticks = gt.equals("sticks");
-          drawSurface = gt.equals("surface");
-          drawVectors = gt.equals("vectors");
-
-          // .font
-        } else if (ampPart.startsWith(".font=")) {
-          String pParts[] =
-              String2.split(ampPart.substring(6), '|'); // subparts may be ""; won't be null
-          if (pParts == null) pParts = new String[0];
-          if (pParts.length > 0) fontScale = String2.parseDouble(pParts[0]);
-          fontScale =
-              Double.isNaN(fontScale) ? 1 : fontScale < 0.1 ? 0.1 : fontScale > 10 ? 10 : fontScale;
-          if (reallyVerbose) String2.log(".font= scale=" + fontScale);
-
-          // .land
-        } else if (ampPart.startsWith(".land=")) {
-          String gt = ampPart.substring(6);
-          int which = String2.indexOf(SgtMap.drawLandMask_OPTIONS, gt);
-          if (which >= 1) currentDrawLandMask = gt;
-          if (reallyVerbose) String2.log(".land= currentDrawLandMask=" + currentDrawLandMask);
-
-          // .legend
-        } else if (ampPart.startsWith(".legend=")) {
-          drawLegend = ampPart.substring(8);
-          if (!drawLegend.equals(LEGEND_OFF) && !drawLegend.equals(LEGEND_ONLY))
-            drawLegend = LEGEND_BOTTOM;
-          if (drawLegend.equals(LEGEND_ONLY)) {
-            transparentPng = false; // if it was transparent, it was already png=true, size=1
-            transparentColor = null;
-          }
-
-          // .marker
-        } else if (ampPart.startsWith(".marker=")) {
-          String pParts[] =
-              String2.split(ampPart.substring(8), '|'); // subparts may be ""; won't be null
-          if (pParts == null) pParts = new String[0];
-          if (pParts.length > 0) markerType = String2.parseInt(pParts[0]);
-          if (pParts.length > 1) markerSize = String2.parseInt(pParts[1]);
-          if (markerType < 0 || markerType >= GraphDataLayer.MARKER_TYPES.length)
-            markerType = GraphDataLayer.MARKER_TYPE_FILLED_SQUARE;
-          if (markerSize < 1 || markerSize > 50) markerSize = GraphDataLayer.MARKER_SIZE_SMALL;
-          if (reallyVerbose) String2.log(".marker= type=" + markerType + " size=" + markerSize);
-
-          // .size
-        } else if (ampPart.startsWith(".size=")) {
-          customSize = true;
-          String pParts[] =
-              String2.split(ampPart.substring(6), '|'); // subparts may be ""; won't be null
-          if (pParts == null) pParts = new String[0];
-          if (pParts.length > 0) {
-            int w = String2.parseInt(pParts[0]);
-            if (w > 0 && w <= EDD.WMS_MAX_WIDTH) imageWidth = w;
-          }
-          if (pParts.length > 1) {
-            int h = String2.parseInt(pParts[1]);
-            if (h > 0 && h <= EDD.WMS_MAX_HEIGHT) imageHeight = h;
-          }
-          if (reallyVerbose)
-            String2.log(".size=  imageWidth=" + imageWidth + " imageHeight=" + imageHeight);
-
-          // .trim
-        } else if (ampPart.startsWith(".trim=")) {
-          trim = String2.parseInt(ampPart.substring(6));
-          if (reallyVerbose) String2.log(".trim " + trim);
-
-          // .vars    request should use this with values or don't use this; no defaults
-        } else if (ampPart.startsWith(".vars=")) {
-          vars = new EDV[nVars];
-          axisVarI = new int[nVars];
-          Arrays.fill(axisVarI, -1);
-          dataVarI = new int[nVars];
-          Arrays.fill(dataVarI, -1);
-          String pParts[] = String2.split(ampPart.substring(6), '|');
-          for (int p = 0; p < nVars; p++) {
-            if (pParts.length > p && pParts[p].length() > 0) {
-              int ti = String2.indexOf(axisVariableDestinationNames(), pParts[p]);
-              if (ti >= 0) {
-                vars[p] = axisVariables[ti];
-                axisVarI[p] = ti;
-              } else if (reqDataNames.indexOf(pParts[p]) >= 0) {
-                ti = String2.indexOf(dataVariableDestinationNames(), pParts[p]);
-                vars[p] = dataVariables[ti];
-                dataVarI[p] = ti;
-              } else {
-                throw new SimpleException(
-                    EDStatic.bilingual(
-                        language,
-                        EDStatic.queryErrorAr[0]
-                            + MessageFormat.format(
-                                EDStatic.queryErrorUnknownVariableAr[0], pParts[p]),
-                        EDStatic.queryErrorAr[language]
-                            + MessageFormat.format(
-                                EDStatic.queryErrorUnknownVariableAr[language], pParts[p])));
-              }
-            }
-          }
-
-          // .vec
-        } else if (ampPart.startsWith(".vec=")) {
-          vectorStandard = String2.parseDouble(ampPart.substring(5));
-          if (reallyVerbose) String2.log(".vec " + vectorStandard);
-
-          // .xRange   (supported, but currently not created by the Make A Graph form)
-          //  prefer set via xVar constraints
-        } else if (ampPart.startsWith(".xRange=")) {
-          String pParts[] = String2.split(ampPart.substring(8), '|');
-          if (pParts.length > 0) minX = String2.parseDouble(pParts[0]);
-          if (pParts.length > 1) maxX = String2.parseDouble(pParts[1]);
-          if (pParts.length > 2)
-            // if the param slot is there, the param determines Ascending
-            xAscending = String2.parseBoolean(pParts[2]); // "" -> true(the default)
-          if (pParts.length > 3) {
-            // if the param slot is there, the param determines Scale
-            xScale = String2.toTitleCase(pParts[3].trim()); // "" -> (the default)
-            if (!xScale.equals("Log") && !xScale.equals("Linear"))
-              xScale = ""; // "" -> (the default)
-          }
-          if (reallyVerbose)
-            String2.log(
-                ".xRange min="
-                    + minX
-                    + " max="
-                    + maxX
-                    + " ascending="
-                    + xAscending
-                    + " scale="
-                    + xScale);
-
-          // .yRange   (supported, as of 2010-10-22 it's on the Make A Graph form)
-          //  prefer set via yVar constraints
-        } else if (ampPart.startsWith(".yRange=")) {
-          String pParts[] = String2.split(ampPart.substring(8), '|');
-          if (pParts.length > 0) minY = String2.parseDouble(pParts[0]);
-          if (pParts.length > 1) maxY = String2.parseDouble(pParts[1]);
-          if (pParts.length > 2)
-            // if the param slot is there, the param determines Ascending
-            yAscending = String2.parseBoolean(pParts[2]); // "" -> true(the default)
-          if (pParts.length > 3) {
-            // if the param slot is there, the param determines Scale
-            yScale = String2.toTitleCase(pParts[3].trim()); // "" -> (the default)
-            if (!yScale.equals("Log") && !yScale.equals("Linear"))
-              yScale = ""; // "" -> (the default)
-          }
-          if (reallyVerbose)
-            String2.log(
-                ".yRange min="
-                    + minY
-                    + " max="
-                    + maxY
-                    + " ascending="
-                    + yAscending
-                    + " scale="
-                    + yScale);
-
-          // just to be clear: ignore any unrecognized .something
-        } else if (ampPart.startsWith(".")) {
-        }
-      }
-      boolean reallySmall = imageWidth < 260; // .smallPng is 240
-
-      // figure out which axes are active (>1 value)
-      IntArray activeAxes = new IntArray();
-      for (int av = 0; av < axisVariables.length; av++)
-        if (constraints.get(av * 3) < constraints.get(av * 3 + 2)) activeAxes.add(av);
-      int nAAv = activeAxes.size();
-      if (nAAv < 1 || nAAv > 2)
-        throw new SimpleException(
-            EDStatic.simpleBilingual(language, EDStatic.queryErrorAr)
-                + "To draw a graph, either 1 or 2 axes must be active and have 2 or more values.");
-
-      // figure out / validate graph set up
-      // if .draw= was provided...
-      int cAxisI = 0, cDataI = 0; // use them up as needed
-      if (drawLines) {
-        if (vars == null) { // use default var selection
-          vars = new EDV[nVars];
-          for (int v = 0; v < 2; v++) { // get 2 vars
-            if (nAAv > cAxisI) vars[v] = axisVariables[activeAxes.get(cAxisI++)];
-            else if (nDv > cDataI) vars[v] = reqDataVars[cDataI++];
-            else
-              throw new SimpleException(
-                  EDStatic.simpleBilingual(language, EDStatic.queryErrorAr)
-                      + "Too few active axes and/or data variables for .draw=lines.");
-          }
-        } else {
-          // vars 0,1 must be valid (any type)
-          if (vars[0] == null)
-            throw new SimpleException(
-                EDStatic.simpleBilingual(language, EDStatic.queryErrorAr)
-                    + "For .draw=lines, .var #0 is required.");
-          if (vars[1] == null)
-            throw new SimpleException(
-                EDStatic.simpleBilingual(language, EDStatic.queryErrorAr)
-                    + "For .draw=lines, .var #1 is required.");
-        }
-        vars[2] = null;
-        vars[3] = null;
-      } else if (drawLinesAndMarkers || drawMarkers) {
-        String what = drawLinesAndMarkers ? "linesAndMarkers" : "markers";
-        if (vars == null) { // use default var selection
-          vars = new EDV[nVars];
-          for (int v = 0; v < 3; v++) { // get 2 or 3 vars
-            if (nAAv > cAxisI) vars[v] = axisVariables[activeAxes.get(cAxisI++)];
-            else if (nDv > cDataI) vars[v] = reqDataVars[cDataI++];
-            else if (v < 2)
-              throw new SimpleException(
-                  EDStatic.simpleBilingual(language, EDStatic.queryErrorAr)
-                      + "Too few active axes and/or data variables for .draw="
-                      + what
-                      + ".");
-          }
-        } else {
-          // vars 0,1 must be valid (any type)
-          if (vars[0] == null)
-            throw new SimpleException(
-                EDStatic.simpleBilingual(language, EDStatic.queryErrorAr)
-                    + "For .draw="
-                    + what
-                    + ", .var #0 is required.");
-          if (vars[1] == null)
-            throw new SimpleException(
-                EDStatic.simpleBilingual(language, EDStatic.queryErrorAr)
-                    + "For .draw="
-                    + what
-                    + ", .var #1 is required.");
-        }
-        vars[3] = null;
-      } else if (drawSticks) {
-        if (vars == null) { // use default var selection
-          vars = new EDV[nVars];
-          // var0 must be axis
-          if (nAAv > 0) vars[0] = axisVariables[activeAxes.get(cAxisI++)];
-          else
-            throw new SimpleException(
-                EDStatic.simpleBilingual(language, EDStatic.queryErrorAr)
-                    + ".draw=sticks requires an active axis variable.");
-          // var 1,2 must be data
-          for (int v = 1; v <= 2; v++) {
-            if (nDv > cDataI) vars[v] = reqDataVars[cDataI++];
-            else
-              throw new SimpleException(
-                  EDStatic.simpleBilingual(language, EDStatic.queryErrorAr)
-                      + "Too few data variables to .draw=sticks.");
-          }
-        } else {
-          // vars 0 must be axis, 1,2 must be data
-          if (axisVarI[0] < 0)
-            throw new SimpleException(
-                EDStatic.simpleBilingual(language, EDStatic.queryErrorAr)
-                    + "For .draw=sticks, .var #0 must be an axis variable.");
-          if (dataVarI[1] < 0)
-            throw new SimpleException(
-                EDStatic.simpleBilingual(language, EDStatic.queryErrorAr)
-                    + "For .draw=sticks, .var #1 must be a data variable.");
-          if (dataVarI[2] < 0)
-            throw new SimpleException(
-                EDStatic.simpleBilingual(language, EDStatic.queryErrorAr)
-                    + "For .draw=sticks, .var #2 must be a data variable.");
-        }
-        vars[3] = null;
-      } else if (drawSurface) {
-        if (vars == null) { // use default var selection
-          vars = new EDV[nVars];
-          // var0,1 must be axis, prefer lon,lat
-          if (activeAxes.indexOf("" + lonIndex) >= 0 && activeAxes.indexOf("" + latIndex) >= 0) {
-            vars[0] = axisVariables[lonIndex];
-            vars[1] = axisVariables[latIndex];
-          } else if (nAAv < 2) {
-            throw new SimpleException(
-                EDStatic.simpleBilingual(language, EDStatic.queryErrorAr)
-                    + ".draw=surface requires 2 axes with >1 value.");
-          } else {
-            // prefer last 2 axes (e.g., if [time][altitude][y][x]
-            vars[0] = axisVariables[activeAxes.get(nAAv - 1)];
-            vars[1] = axisVariables[activeAxes.get(nAAv - 2)];
-          }
-          // var 2 must be data
-          vars[2] = reqDataVars[cDataI++]; // at least one is valid
-        } else {
-          // vars 0,1 must be axis, 2 must be data
-          if (axisVarI[0] < 0 || axisVarI[1] < 0)
-            throw new SimpleException(
-                EDStatic.simpleBilingual(language, EDStatic.queryErrorAr)
-                    + "For .draw=surface, .var #0 and #1 must be axis variables.");
-          if (axisVarI[0] == axisVarI[1])
-            throw new SimpleException(
-                EDStatic.simpleBilingual(language, EDStatic.queryErrorAr)
-                    + "For .draw=surface, .var #0 and #1 must be different axis variables.");
-          if (dataVarI[2] < 0)
-            throw new SimpleException(
-                EDStatic.simpleBilingual(language, EDStatic.queryErrorAr)
-                    + "For .draw=surface, .var #2 must be a data variable.");
-        }
-        vars[3] = null;
-      } else if (drawVectors) {
-        if (vars == null) { // use default var selection
-          vars = new EDV[nVars];
-          // var0,1 must be axes
-          if (nAAv == 2) {
-            vars[0] = axisVariables[activeAxes.get(0)];
-            vars[1] = axisVariables[activeAxes.get(1)];
-          } else
-            throw new SimpleException(
-                EDStatic.simpleBilingual(language, EDStatic.queryErrorAr)
-                    + ".draw=vectors requires 2 active axis variables.");
-          // var2,3 must be data
-          if (nDv == 2) {
-            vars[2] = reqDataVars[0];
-            vars[3] = reqDataVars[1];
-          } else
-            throw new SimpleException(
-                EDStatic.simpleBilingual(language, EDStatic.queryErrorAr)
-                    + ".draw=vectors requires 2 data variables.");
-        } else {
-          // vars 0,1 must be axes, 2,3 must be data
-          if (axisVarI[0] < 0)
-            throw new SimpleException(
-                EDStatic.simpleBilingual(language, EDStatic.queryErrorAr)
-                    + "For .draw=vectors, .var #0 must be an axis variable.");
-          if (axisVarI[1] < 0)
-            throw new SimpleException(
-                EDStatic.simpleBilingual(language, EDStatic.queryErrorAr)
-                    + "For .draw=vectors, .var #1 must be an axis variable.");
-          if (dataVarI[2] < 0)
-            throw new SimpleException(
-                EDStatic.simpleBilingual(language, EDStatic.queryErrorAr)
-                    + "For .draw=vectors, .var #2 must be a data variable.");
-          if (dataVarI[3] < 0)
-            throw new SimpleException(
-                EDStatic.simpleBilingual(language, EDStatic.queryErrorAr)
-                    + "For .draw=vectors, .var #3 must be a data variable.");
-        }
-
-      } else if (vars == null) {
-        // neither .vars nor .draw were provided
-        // detect from OPeNDAP request
-        vars = new EDV[nVars];
-        if (nAAv == 0) {
-          throw new SimpleException(
-              EDStatic.simpleBilingual(language, EDStatic.queryErrorAr)
-                  + "At least 1 axis variable must be active and have a range of values.");
-        } else if (nAAv == 1) { // favor linesAndMarkers
-          drawLinesAndMarkers = true;
-          vars[0] = axisVariables[activeAxes.get(0)];
-          vars[1] = reqDataVars[0];
-          if (nDv > 1) vars[2] = reqDataVars[1];
-        } else if (nAAv == 2) { // favor Surface
-          // if lon lat in dataset
-          if (lonIndex >= 0
-              && latIndex >= 0
-              && activeAxes.indexOf(lonIndex) >= 0
-              && activeAxes.indexOf(latIndex) >= 0) {
-            vars[0] = axisVariables[lonIndex];
-            vars[1] = axisVariables[latIndex];
-            vars[2] = reqDataVars[0];
-            if (reqDataVars.length >= 2) {
-              // draw vectors
-              drawVectors = true;
-              vars[3] = reqDataVars[1];
-            } else {
-              // draw surface
-              drawSurface = true;
-            }
-
-          } else {
-            // use last 2 axis vars (e.g., when time,alt,y,x)
-            drawSurface = true;
-            vars[0] = axisVariables[activeAxes.get(nAAv - 1)];
-            vars[1] = axisVariables[activeAxes.get(nAAv - 2)];
-            vars[2] = reqDataVars[0];
-          }
-        } else {
-          throw new SimpleException(
-              EDStatic.simpleBilingual(language, EDStatic.queryErrorAr)
-                  + "Either 1 or 2 axes must be active and have a range of values.");
-        }
-      } else {
-        // .vars was provided, .draw wasn't
-        // look for drawVector (2 axisVars + 2 dataVars)
-        if (axisVarI[0] >= 0 && axisVarI[1] >= 0 && dataVarI[2] >= 0 && dataVarI[3] >= 0) {
-          // ??? require map (lat lon), not graph???
-          drawVectors = true;
-
-          // look for drawSurface (2 axisVars + 1 dataVar)
-        } else if (axisVarI[0] >= 0 && axisVarI[1] >= 0 && dataVarI[2] >= 0 && dataVarI[3] < 0) {
-          drawSurface = true;
-
-          // drawMarker
-        } else {
-          // ensure marker compatible
-          if (axisVarI[0] < 0)
-            throw new SimpleException(
-                EDStatic.simpleBilingual(language, EDStatic.queryErrorAr)
-                    + ".var #0 must be an axis variable.");
-          if (axisVarI[1] < 0 && dataVarI[1] < 0)
-            throw new SimpleException(
-                EDStatic.simpleBilingual(language, EDStatic.queryErrorAr)
-                    + ".var #1 must be an axis or a data variable.");
-          axisVarI[1] = -1;
-          // var2 may be a dataVar or ""
-          vars[3] = null;
-          drawLinesAndMarkers = true;
-        }
-      }
-
-      boolean isMap = vars[0] instanceof EDVLonGridAxis && vars[1] instanceof EDVLatGridAxis;
-      boolean xIsTimeAxis =
-          vars[0] instanceof EDVTimeStampGridAxis || vars[0] instanceof EDVTimeStamp;
-      boolean yIsTimeAxis =
-          vars[1] instanceof EDVTimeStampGridAxis || vars[1] instanceof EDVTimeStamp;
-      if (xScale.length() == 0) {
-        // use the default from colorBarScale
-        xScale = vars[0].combinedAttributes().getString("colorBarScale");
-        xScale = xScale == null ? "" : String2.toTitleCase(xScale.trim());
-        if (!xScale.equals("Log")) xScale = "Linear"; // apply "" default -> Linear
-      }
-      boolean xIsLogAxis = !xIsTimeAxis && xScale.equals("Log");
-      if (yScale.length() == 0) {
-        // use the default from colorBarScale
-        yScale = vars[1].combinedAttributes().getString("colorBarScale");
-        yScale = yScale == null ? "" : String2.toTitleCase(yScale.trim());
-        if (!yScale.equals("Log")) yScale = "Linear"; // apply "" default -> Linear
-      }
-      boolean yIsLogAxis = !yIsTimeAxis && yScale.equals("Log");
-
-      int xAxisIndex = String2.indexOf(axisVariableDestinationNames(), vars[0].destinationName());
-      int yAxisIndex = String2.indexOf(axisVariableDestinationNames(), vars[1].destinationName());
-
-      // if map or coloredSurface, modify the constraints so as to get only minimal amount of data
-      // if 1D graph, no restriction
-      EDVGridAxis xAxisVar = null;
-      int minXIndex = -1, maxXIndex = -1;
-      if (xAxisIndex < 0)
-        // It is probably possible to not require x be an axis var,
-        // but it is currently an assumption and what drives the creation of all graphs.
-        // And the GUI always sets it up this way.
-        throw new SimpleException(
-            EDStatic.simpleBilingual(language, EDStatic.queryErrorAr)
-                + "The variable assigned to the x axis ("
-                + vars[0].destinationName()
-                + ") must be an axis variable.");
-      if (xAxisIndex >= 0) {
-        xAxisVar = axisVariables[xAxisIndex];
-        minXIndex = constraints.get(xAxisIndex * 3);
-        maxXIndex = constraints.get(xAxisIndex * 3 + 2);
-        if (Double.isNaN(minX)) minX = xAxisVar.destinationValue(minXIndex).getNiceDouble(0);
-        if (Double.isNaN(maxX)) maxX = xAxisVar.destinationValue(maxXIndex).getNiceDouble(0);
-      }
-      if (minX > maxX) { // can only be true if both are finite
-        double d = minX;
-        minX = maxX;
-        maxX = d;
-      }
-
-      int minYIndex = -1, maxYIndex = -1;
-      EDVGridAxis yAxisVar = yAxisIndex >= 0 ? axisVariables[yAxisIndex] : null;
-      double minData = Double.NaN, maxData = Double.NaN;
-
-      if (drawSurface || drawVectors) {
-        if (yAxisVar == null) // because yAxisIndex < 0
-        throw new SimpleException(
-              EDStatic.simpleBilingual(language, EDStatic.queryErrorAr)
-                  + "The variable assigned to the y axis ("
-                  + vars[0].destinationName()
-                  + ") must be an axis variable.");
-        minYIndex = constraints.get(yAxisIndex * 3);
-        maxYIndex = constraints.get(yAxisIndex * 3 + 2);
-        if (Double.isNaN(minY)) minY = yAxisVar.destinationValue(minYIndex).getNiceDouble(0);
-        if (Double.isNaN(maxY)) maxY = yAxisVar.destinationValue(maxYIndex).getNiceDouble(0);
-        if (minY > maxY) {
-          double d = minY;
-          minY = maxY;
-          maxY = d;
-        }
-
-        if (transparentPng && drawSurface && !customSize) {
-
-          // This is the one situation to change imageWidth/Height to ~1 pixel/lon or lat
-          int have = maxXIndex - minXIndex + 1;
-          int stride = constraints.get(xAxisIndex * 3 + 1);
-          imageWidth = DataHelper.strideWillFind(have, stride);
-          // protect against huge .png (and huge amount of data in memory)
-          if (imageWidth > 3601) {
-            stride = DataHelper.findStride(have, 3601);
-            imageWidth = DataHelper.strideWillFind(have, stride);
-            constraints.set(xAxisIndex * 3 + 1, stride);
-            if (reallyVerbose) String2.log("  xStride reduced to stride=" + stride);
-          }
-          have = maxYIndex - minYIndex + 1;
-          stride = constraints.get(yAxisIndex * 3 + 1);
-          imageHeight = DataHelper.strideWillFind(have, stride);
-          if (imageHeight > 1801) {
-            stride = DataHelper.findStride(have, 1801);
-            imageHeight = DataHelper.strideWillFind(have, stride);
-            constraints.set(yAxisIndex * 3 + 1, stride);
-            if (reallyVerbose) String2.log("  yStride reduced to stride=" + stride);
-          }
-
-        } else {
-          // calculate/fix up stride so as to get enough data (but not too much)
-          // find size of map or graph
-          int activeWidth = imageWidth - 50; // decent guess for drawSurface
-          int activeHeight = imageHeight - 75;
-
-          if (drawVectors) {
-
-            double maxXY = Math.max(maxX - minX, maxY - minY);
-            double vecInc =
-                SgtMap.suggestVectorIncrement( // e.g. 2 degrees
-                    maxXY, Math.max(imageWidth, imageHeight), fontScale);
-
-            activeWidth =
-                Math.max(5, Math2.roundToInt((maxX - minX) / vecInc)); // e.g., 20 deg / 2 deg -> 10
-            activeHeight = Math.max(5, Math2.roundToInt((maxY - minY) / vecInc));
-
-          } else { // drawSurface;
-
-            if (transparentPng) {
-              activeWidth = imageWidth;
-              activeHeight = imageHeight;
-
-            } else if (isMap) {
-              int wh[] =
-                  SgtMap.predictGraphSize(
-                      fontScale, imageWidth, imageHeight, minX, maxX, minY, maxY);
-              activeWidth = wh[0];
-              activeHeight = wh[1];
-
-            } else {
-              activeWidth = imageWidth;
-              activeHeight = imageHeight;
-            }
-          }
-
-          // calculate/fix up stride so as to get enough data (but not too much)
-          int have = maxXIndex - minXIndex + 1;
-          int stride = DataHelper.findStride(have, activeWidth);
-          constraints.set(xAxisIndex * 3 + 1, stride);
-          if (reallyVerbose)
-            String2.log(
-                "  xStride="
-                    + stride
-                    + " activeHeight="
-                    + activeHeight
-                    + " strideWillFind="
-                    + DataHelper.strideWillFind(have, stride));
-
-          have = maxYIndex - minYIndex + 1;
-          stride = DataHelper.findStride(have, activeHeight);
-          constraints.set(yAxisIndex * 3 + 1, stride);
-          if (reallyVerbose)
-            String2.log(
-                "  yStride="
-                    + stride
-                    + " activeHeight="
-                    + activeHeight
-                    + " strideWillFind="
-                    + DataHelper.strideWillFind(have, stride));
-        }
-      }
-
-      // units
-      String xUnits = vars[0].units();
-      String yUnits = vars[1].units();
-      String zUnits = vars[2] == null ? null : vars[2].units();
-      String tUnits = vars[3] == null ? null : vars[3].units();
-      xUnits = xUnits == null ? "" : " (" + xUnits + ")";
-      yUnits = yUnits == null ? "" : " (" + yUnits + ")";
-      zUnits = zUnits == null ? "" : " (" + zUnits + ")";
-      tUnits = tUnits == null ? "" : " (" + tUnits + ")";
-
-      // get the desctiptive info for the other axes (the ones with 1 value)
-      StringBuilder otherInfo = new StringBuilder();
-      for (int av = 0; av < axisVariables.length; av++) {
-        if (av != xAxisIndex && av != yAxisIndex) {
-          int ttIndex = constraints.get(av * 3);
-          EDVGridAxis axisVar = axisVariables[av];
-          if (otherInfo.length() > 0) otherInfo.append(", ");
-          double td = axisVar.destinationValue(ttIndex).getNiceDouble(0);
-          if (av == lonIndex) otherInfo.append(td + "°E");
-          else if (av == latIndex) otherInfo.append(td + "°N");
-          else if (axisVar instanceof EDVTimeStampGridAxis)
-            otherInfo.append(
-                Calendar2.epochSecondsToLimitedIsoStringT(
-                    axisVar.combinedAttributes().getString(EDV.TIME_PRECISION), td, "NaN"));
-          else {
-            String avDN = axisVar.destinationName();
-            String avLN = axisVar.longName();
-            String avUnits = axisVar.units();
-            otherInfo.append(
-                (avLN.length() <= 12 || avLN.length() <= avDN.length() ? avLN : avDN)
-                    + "="
-                    + td
-                    + (avUnits == null ? "" : " " + avUnits));
-          }
-        }
-      }
-      if (otherInfo.length() > 0) {
-        otherInfo.insert(0, "(");
-        otherInfo.append(")");
-      }
-
-      // prepare to get the data
-      StringArray newReqDataNames = new StringArray();
-      int nBytesPerElement = 0;
-      for (int v = 0; v < nVars; v++) {
-        if (vars[v] != null && !(vars[v] instanceof EDVGridAxis)) {
-          newReqDataNames.add(vars[v].destinationName());
-          nBytesPerElement +=
-              drawSurface
-                  ? 8
-                  : // grid always stores data in double[]
-                  vars[v].destinationBytesPerElement();
-        }
-      }
-      String newQuery = buildDapQuery(newReqDataNames, constraints);
-      if (reallyVerbose) String2.log("  newQuery=" + newQuery);
-      GridDataAccessor gda =
-          new GridDataAccessor(
-              language,
-              this,
-              requestUrl,
-              newQuery,
-              yAxisVar == null
-                  ? true
-                  : // Table needs row-major order
-                  yAxisIndex
-                      > xAxisIndex, // Grid needs column-major order (so depends on axis order)
-              // //??? what if xAxisIndex < 0???
-              true); // convertToNaN
-      long requestNL = gda.totalIndex().size();
-      Math2.ensureArraySizeOkay(requestNL, "EDDGrid.saveAsImage");
-      Math2.ensureMemoryAvailable(requestNL * nBytesPerElement, "EDDGrid.saveAsImage");
-      int requestN = (int) requestNL; // safe since checked above
-      Grid grid = null;
-      Table table = null;
-      GraphDataLayer graphDataLayer = null;
-      ArrayList<GraphDataLayer> graphDataLayers = new ArrayList();
-      String cptFullName = null;
-
-      if (drawVectors) {
-        // put the data in a Table   0=xAxisVar 1=yAxisVar 2=dataVar1 3=dataVar2
-        if (yAxisVar == null) // because yAxisIndex < 0      //redundant, since tested above
-        throw new SimpleException(
-              EDStatic.simpleBilingual(language, EDStatic.queryErrorAr)
-                  + "The variable assigned to the y axis ("
-                  + vars[0].destinationName()
-                  + ") must be an axis variable.");
-        table = new Table();
-        PrimitiveArray xpa =
-            PrimitiveArray.factory(vars[0].destinationDataPAType(), requestN, false);
-        PrimitiveArray ypa =
-            PrimitiveArray.factory(vars[1].destinationDataPAType(), requestN, false);
-        PrimitiveArray zpa =
-            PrimitiveArray.factory(vars[2].destinationDataPAType(), requestN, false);
-        PrimitiveArray tpa =
-            PrimitiveArray.factory(vars[3].destinationDataPAType(), requestN, false);
-        table.addColumn(vars[0].destinationName(), xpa);
-        table.addColumn(vars[1].destinationName(), ypa);
-        table.addColumn(vars[2].destinationName(), zpa);
-        table.addColumn(vars[3].destinationName(), tpa);
-        PAOne xPAOne = new PAOne(xpa);
-        PAOne yPAOne = new PAOne(ypa);
-        PAOne zPAOne = new PAOne(zpa);
-        PAOne tPAOne = new PAOne(tpa);
-        while (gda.increment()) {
-          gda.getAxisValueAsPAOne(xAxisIndex, xPAOne).addTo(xpa);
-          gda.getAxisValueAsPAOne(yAxisIndex, yPAOne).addTo(ypa);
-          gda.getDataValueAsPAOne(0, zPAOne).addTo(zpa);
-          gda.getDataValueAsPAOne(1, tPAOne).addTo(tpa);
-        }
-        if (Double.isNaN(vectorStandard)) {
-          double stats1[] = zpa.calculateStats();
-          double stats2[] = tpa.calculateStats();
-          double lh[] =
-              Math2.suggestLowHigh(
-                  0,
-                  Math.max( // suggestLowHigh handles NaNs
-                      Math.abs(stats1[PrimitiveArray.STATS_MAX]),
-                      Math.abs(stats2[PrimitiveArray.STATS_MAX])));
-          vectorStandard = lh[1];
-        }
-
-        String varInfo =
-            vars[2].longName()
-                + (zUnits.equals(tUnits) ? "" : zUnits)
-                + ", "
-                + vars[3].longName()
-                + " ("
-                + (float) vectorStandard
-                + (tUnits.length() == 0 ? "" : " " + vars[3].units())
-                + ")";
-
-        // make a graphDataLayer with data  time series line
-        graphDataLayer =
-            new GraphDataLayer(
-                -1, // which pointScreen
-                0,
-                1,
-                2,
-                3,
-                1, // x,y,z1,z2,z3 column numbers
-                GraphDataLayer.DRAW_POINT_VECTORS,
-                xIsTimeAxis,
-                yIsTimeAxis,
-                vars[0].longName() + xUnits,
-                vars[1].longName() + yUnits,
-                varInfo,
-                title(),
-                otherInfo.toString(),
-                MessageFormat.format(EDStatic.imageDataCourtesyOfAr[language], institution()),
-                table,
-                null,
-                null,
-                null,
-                color,
-                GraphDataLayer.MARKER_TYPE_NONE,
-                0,
-                vectorStandard,
-                GraphDataLayer.REGRESS_NONE);
-        graphDataLayers.add(graphDataLayer);
-
-      } else if (drawSticks) {
-        // put the data in a Table   0=xAxisVar 1=uDataVar 2=vDataVar
-        table = new Table();
-        PrimitiveArray xpa =
-            PrimitiveArray.factory(vars[0].destinationDataPAType(), requestN, false);
-        PrimitiveArray ypa =
-            PrimitiveArray.factory(vars[1].destinationDataPAType(), requestN, false);
-        PrimitiveArray zpa =
-            PrimitiveArray.factory(vars[2].destinationDataPAType(), requestN, false);
-        table.addColumn(vars[0].destinationName(), xpa);
-        table.addColumn(vars[1].destinationName(), ypa);
-        table.addColumn(vars[2].destinationName(), zpa);
-        PAOne xPAOne = new PAOne(xpa);
-        PAOne yPAOne = new PAOne(ypa);
-        PAOne zPAOne = new PAOne(zpa);
-        while (gda.increment()) {
-          gda.getAxisValueAsPAOne(xAxisIndex, xPAOne).addTo(xpa);
-          gda.getDataValueAsPAOne(0, yPAOne).addTo(ypa);
-          gda.getDataValueAsPAOne(1, zPAOne).addTo(zpa);
-        }
-
-        String varInfo =
-            vars[1].longName()
-                + (yUnits.equals(zUnits) ? "" : yUnits)
-                + ", "
-                + vars[2].longName()
-                + (zUnits.length() == 0 ? "" : zUnits);
-
-        // make a graphDataLayer with data  time series line
-        graphDataLayer =
-            new GraphDataLayer(
-                -1, // which pointScreen
-                0,
-                1,
-                2,
-                1,
-                1, // x,y,z1,z2,z3 column numbers
-                GraphDataLayer.DRAW_STICKS,
-                xIsTimeAxis,
-                yIsTimeAxis,
-                vars[0].longName() + xUnits,
-                varInfo,
-                title(),
-                otherInfo.toString(),
-                "",
-                MessageFormat.format(EDStatic.imageDataCourtesyOfAr[language], institution()),
-                table,
-                null,
-                null,
-                null,
-                color,
-                GraphDataLayer.MARKER_TYPE_NONE,
-                0,
-                1,
-                GraphDataLayer.REGRESS_NONE);
-        graphDataLayers.add(graphDataLayer);
-
-      } else if (isMap || drawSurface) {
-        // if .colorBar info didn't provide info, try to get defaults from vars[2] colorBarXxx
-        // attributes
-        if (yAxisVar == null) // because yAxisIndex < 0
-        throw new SimpleException(
-              EDStatic.simpleBilingual(language, EDStatic.queryErrorAr)
-                  + "The variable assigned to the y axis ("
-                  + vars[0].destinationName()
-                  + ") must be an axis variable.");
-        if (vars[2] != null) { // it shouldn't be
-          Attributes colorVarAtts = vars[2].combinedAttributes();
-          if (palette.length() == 0) palette = colorVarAtts.getString("colorBarPalette");
-          if (scale.length() == 0) scale = colorVarAtts.getString("colorBarScale");
-          if (nSections == Integer.MAX_VALUE) nSections = colorVarAtts.getInt("colorBarNSections");
-          if (Double.isNaN(paletteMin)) paletteMin = colorVarAtts.getDouble("colorBarMinimum");
-          if (Double.isNaN(paletteMax)) paletteMax = colorVarAtts.getDouble("colorBarMaximum");
-          String ts = colorVarAtts.getString("colorBarContinuous");
-          if (continuousS.length() == 0 && ts != null)
-            continuousS = String2.parseBoolean(ts) ? "c" : "d"; // defaults to true
-        }
-
-        if (String2.indexOf(EDStatic.palettes, palette) < 0) palette = "";
-        if (String2.indexOf(EDV.VALID_SCALES, scale) < 0) scale = "Linear";
-        if (nSections < 0 || nSections >= 100) nSections = -1;
-        boolean continuous = continuousS.startsWith("d") ? false : true;
-
-        // put the data in a Grid, data in column-major order
-        grid = new Grid();
-        grid.data = new double[requestN];
-        if (png
-            && drawLegend.equals(LEGEND_ONLY)
-            && palette.length() > 0
-            && !Double.isNaN(paletteMin)
-            && !Double.isNaN(paletteMax)) {
-
-          // legend=Only and palette range is known, so don't need to get the data
-          if (reallyVerbose) String2.log("***LEGEND ONLY: SO NOT GETTING THE DATA");
-          Arrays.fill(grid.data, Double.NaN); // safe for all situations
-
-        } else {
-
-          // get the data
-          int po = 0;
-          while (gda.increment()) grid.data[po++] = gda.getDataValueAsDouble(0);
-        }
-
-        if (false) { // reallyVerbose) {
-          DoubleArray da = new DoubleArray(grid.data);
-          double stats[] = da.calculateStats();
-          String2.log(
-              "dataNTotal="
-                  + da.size()
-                  + " dataN="
-                  + stats[PrimitiveArray.STATS_N]
-                  + " dataMin="
-                  + stats[PrimitiveArray.STATS_MIN]
-                  + " dataMax="
-                  + stats[PrimitiveArray.STATS_MAX]);
-        }
-
-        // get the x axis "lon" values
-        PrimitiveArray tpa = gda.axisValues(xAxisIndex);
-        int tn = tpa.size();
-        grid.lon = new double[tn];
-        for (int i = 0; i < tn; i++) grid.lon[i] = tpa.getDouble(i);
-        grid.lonSpacing = (grid.lon[tn - 1] - grid.lon[0]) / Math.max(1, tn - 1);
-
-        // get the y axis "lat" values
-        tpa = gda.axisValues(yAxisIndex);
-        tn = tpa.size();
-        // String2.log(">>gdaYsize=" + tn);
-        grid.lat = new double[tn];
-        for (int i = 0; i < tn; i++) grid.lat[i] = tpa.getDouble(i);
-        grid.latSpacing = (grid.lat[tn - 1] - grid.lat[0]) / Math.max(1, tn - 1);
-
-        // cptFullName
-        if (Double.isNaN(paletteMin) || Double.isNaN(paletteMax)) {
-          // if not specified, I have the right to change
-          DoubleArray da = new DoubleArray(grid.data);
-          double stats[] = da.calculateStats();
-          minData = stats[PrimitiveArray.STATS_MIN];
-          maxData = stats[PrimitiveArray.STATS_MAX];
-          if (maxData >= minData / -2 && maxData <= minData * -2) {
-            double td = Math.max(maxData, -minData);
-            minData = -td;
-            maxData = td;
-          }
-          double tRange[] = Math2.suggestLowHigh(minData, maxData);
-          minData = tRange[0];
-          maxData = tRange[1];
-          if (maxData >= minData / -2 && maxData <= minData * -2) {
-            double td = Math.max(maxData, -minData);
-            minData = -td;
-            maxData = td;
-          }
-          if (Double.isNaN(paletteMin)) paletteMin = minData;
-          if (Double.isNaN(paletteMax)) paletteMax = maxData;
-        }
-        if (paletteMin > paletteMax) {
-          double d = paletteMin;
-          paletteMin = paletteMax;
-          paletteMax = d;
-        }
-        if (paletteMin == paletteMax) {
-          double tRange[] = Math2.suggestLowHigh(paletteMin, paletteMax);
-          paletteMin = tRange[0];
-          paletteMax = tRange[1];
-        }
-        if (palette.length() == 0)
-          palette = Math2.almostEqual(3, -paletteMin, paletteMax) ? "BlueWhiteRed" : "Rainbow";
-        if (scale.length() == 0) scale = "Linear";
-        cptFullName =
-            CompoundColorMap.makeCPT(
-                EDStatic.fullPaletteDirectory,
-                palette,
-                scale,
-                paletteMin,
-                paletteMax,
-                nSections,
-                continuous,
-                EDStatic.fullCptCacheDirectory);
-
-        // make a graphDataLayer with coloredSurface setup
-        graphDataLayer =
-            new GraphDataLayer(
-                -1, // which pointScreen
-                0,
-                1,
-                1,
-                1,
-                1, // x,y,z1,z2,z3 column numbers    irrelevant
-                GraphDataLayer.DRAW_COLORED_SURFACE, // AND_CONTOUR_LINE?
-                xIsTimeAxis,
-                yIsTimeAxis,
-                (reallySmall ? vars[0].destinationName() : vars[0].longName())
-                    + xUnits, // x,yAxisTitle  for now, always std units
-                (reallySmall ? vars[1].destinationName() : vars[1].longName()) + yUnits,
-                (reallySmall ? vars[2].destinationName() : vars[2].longName())
-                    + zUnits, // boldTitle
-                title(),
-                otherInfo.toString(),
-                MessageFormat.format(EDStatic.imageDataCourtesyOfAr[language], institution()),
-                null,
-                grid,
-                null,
-                new CompoundColorMap(cptFullName),
-                color, // color is irrelevant
-                -1,
-                -1, // marker type, size
-                0, // vectorStandard
-                GraphDataLayer.REGRESS_NONE);
-        graphDataLayers.add(graphDataLayer);
-
-      } else { // make graph with lines, linesAndMarkers, or markers
-        // put the data in a Table   x,y,(z)
-        table = new Table();
-        PrimitiveArray xpa =
-            PrimitiveArray.factory(vars[0].destinationDataPAType(), requestN, false);
-        PrimitiveArray ypa =
-            PrimitiveArray.factory(vars[1].destinationDataPAType(), requestN, false);
-        PrimitiveArray zpa =
-            vars[2] == null
-                ? null
-                : PrimitiveArray.factory(vars[2].destinationDataPAType(), requestN, false);
-        table.addColumn(vars[0].destinationName(), xpa);
-        table.addColumn(vars[1].destinationName(), ypa);
-
-        if (vars[2] != null) {
-          table.addColumn(vars[2].destinationName(), zpa);
-
-          // if .colorBar info didn't provide info, try to get defaults from vars[2] colorBarXxx
-          // attributes
-          Attributes colorVarAtts = vars[2].combinedAttributes();
-          if (palette.length() == 0) palette = colorVarAtts.getString("colorBarPalette");
-          if (scale.length() == 0) scale = colorVarAtts.getString("colorBarScale");
-          if (nSections == Integer.MAX_VALUE) nSections = colorVarAtts.getInt("colorBarNSections");
-          if (Double.isNaN(paletteMin)) paletteMin = colorVarAtts.getDouble("colorBarMinimum");
-          if (Double.isNaN(paletteMax)) paletteMax = colorVarAtts.getDouble("colorBarMaximum");
-          String ts = colorVarAtts.getString("colorBarContinuous");
-          if (continuousS.length() == 0 && ts != null)
-            continuousS = String2.parseBoolean(ts) ? "c" : "d"; // defaults to true
-
-          if (String2.indexOf(EDStatic.palettes, palette) < 0) palette = "";
-          if (String2.indexOf(EDV.VALID_SCALES, scale) < 0) scale = "Linear";
-          if (nSections < 0 || nSections >= 100) nSections = -1;
-        }
-
-        PAOne xpaPAOne = new PAOne(xpa);
-        PAOne ypaPAOne = new PAOne(ypa);
-        PAOne zpaPAOne = zpa == null ? null : new PAOne(zpa);
-        if (png
-            && drawLegend.equals(LEGEND_ONLY)
-            && (vars[2] == null
-                || (palette.length() > 0
-                    && !Double.isNaN(paletteMin)
-                    && !Double.isNaN(paletteMax)))) {
-
-          // legend=Only and (no color var or palette range is known), so don't need to get the data
-          if (reallyVerbose) String2.log("***LEGEND ONLY: SO NOT GETTING THE DATA");
-          xpaPAOne.setDouble(Double.NaN).addTo(xpa);
-          ypaPAOne.setDouble(Double.NaN).addTo(ypa);
-          if (vars[2] != null) zpaPAOne.setDouble(Double.NaN).addTo(zpa);
-
-        } else {
-          // need to get the data
-          while (gda.increment()) {
-            gda.getAxisValueAsPAOne(xAxisIndex, xpaPAOne).addTo(xpa);
-            if (yAxisIndex >= 0) gda.getAxisValueAsPAOne(yAxisIndex, ypaPAOne).addTo(ypa);
-            else gda.getDataValueAsPAOne(0, ypaPAOne).addTo(ypa);
-            if (vars[2] != null)
-              gda.getDataValueAsPAOne(yAxisIndex >= 0 ? 0 : 1, zpaPAOne)
-                  .addTo(zpa); // yAxisIndex>=0 is true if y is axisVariable
-          }
-        }
-
-        // make the colorbar
-        CompoundColorMap colorMap = null;
-        if (vars[2] != null) {
-          boolean continuous = continuousS.startsWith("d") ? false : true;
-
-          if (palette.length() == 0 || Double.isNaN(paletteMin) || Double.isNaN(paletteMax)) {
-            // set missing items based on z data
-            double zStats[] = table.getColumn(2).calculateStats();
-            if (zStats[PrimitiveArray.STATS_N] > 0) {
-              double minMax[];
-              if (vars[2] instanceof EDVTimeStamp) {
-                // ???I think this is too crude. Smarter code elsewhere? Or handled by
-                // compoundColorMap?
-                double r20 =
-                    (zStats[PrimitiveArray.STATS_MAX] - zStats[PrimitiveArray.STATS_MIN]) / 20;
-                minMax =
-                    new double[] {
-                      zStats[PrimitiveArray.STATS_MIN] - r20, zStats[PrimitiveArray.STATS_MAX] + r20
-                    };
-              } else {
-                minMax =
-                    Math2.suggestLowHigh(
-                        zStats[PrimitiveArray.STATS_MIN], zStats[PrimitiveArray.STATS_MAX]);
-              }
-
-              if (palette.length() == 0) {
-                if (minMax[1] >= minMax[0] / -2 && minMax[1] <= minMax[0] * -2) {
-                  double td = Math.max(minMax[1], -minMax[0]);
-                  minMax[0] = -td;
-                  minMax[1] = td;
-                  palette = "BlueWhiteRed";
-                  // } else if (minMax[0] >= 0 && minMax[0] < minMax[1] / 5) {
-                  //    palette = "WhiteRedBlack";
-                } else {
-                  palette = "Rainbow";
-                }
-              }
-              if (Double.isNaN(paletteMin)) paletteMin = minMax[0];
-              if (Double.isNaN(paletteMax)) paletteMax = minMax[1];
-            }
-          }
-          if (palette.length() == 0 || Double.isNaN(paletteMin) || Double.isNaN(paletteMax)) {
-            // don't create a colorMap
-            String2.log(
-                "Warning in EDDTable.saveAsImage: NaNs not allowed (zVar has no numeric data):"
-                    + " palette="
-                    + palette
-                    + " paletteMin="
-                    + paletteMin
-                    + " paletteMax="
-                    + paletteMax);
-          } else {
-            if (reallyVerbose)
-              String2.log(
-                  "create colorBar palette="
-                      + palette
-                      + " continuous="
-                      + continuous
-                      + " scale="
-                      + scale
-                      + " min="
-                      + paletteMin
-                      + " max="
-                      + paletteMax
-                      + " nSections="
-                      + nSections);
-            if (vars[2] instanceof EDVTimeStamp)
-              colorMap =
-                  new CompoundColorMap(
-                      EDStatic.fullPaletteDirectory,
-                      palette,
-                      false, // false= data is seconds
-                      paletteMin,
-                      paletteMax,
-                      nSections,
-                      continuous,
-                      EDStatic.fullCptCacheDirectory);
-            else
-              colorMap =
-                  new CompoundColorMap(
-                      EDStatic.fullPaletteDirectory,
-                      palette,
-                      scale,
-                      paletteMin,
-                      paletteMax,
-                      nSections,
-                      continuous,
-                      EDStatic.fullCptCacheDirectory);
-          }
-        }
-
-        // make a graphDataLayer with data  time series line
-        graphDataLayer =
-            new GraphDataLayer(
-                -1, // which pointScreen
-                0,
-                1,
-                vars[2] == null ? 1 : 2,
-                1,
-                1, // x,y,z1,z2,z3 column numbers
-                drawLines
-                    ? GraphDataLayer.DRAW_LINES
-                    : drawMarkers
-                        ? GraphDataLayer.DRAW_MARKERS
-                        : GraphDataLayer.DRAW_MARKERS_AND_LINES,
-                xIsTimeAxis,
-                yIsTimeAxis,
-                (reallySmall ? vars[0].destinationName() : vars[0].longName())
-                    + xUnits, // x,yAxisTitle  for now, always std units
-                (reallySmall ? vars[1].destinationName() : vars[1].longName()) + yUnits,
-                vars[2] == null
-                    ? title()
-                    : (reallySmall ? vars[2].destinationName() : vars[2].longName()) + zUnits,
-                vars[2] == null ? "" : title(),
-                otherInfo.toString(),
-                MessageFormat.format(EDStatic.imageDataCourtesyOfAr[language], institution()),
-                table,
-                null,
-                null,
-                colorMap,
-                color,
-                markerType,
-                markerSize,
-                0, // vectorStandard
-                GraphDataLayer.REGRESS_NONE);
-        graphDataLayers.add(graphDataLayer);
-      }
-
-      // setup graphics2D
-      String logoImageFile;
-      // transparentPng will revise this below
-      if (pdf) {
-        fontScale *= 1.4 * fontScale; // SgtMap.PDF_FONTSCALE=1.5 is too big
-        logoImageFile = EDStatic.highResLogoImageFile;
-        pdfInfo =
-            SgtUtil.createPdf(
-                SgtUtil.PDF_PORTRAIT,
-                imageWidth,
-                imageHeight,
-                outputStreamSource.outputStream(File2.UTF_8));
-        g2 = (Graphics2D) pdfInfo[0];
-      } else {
-        fontScale *= imageWidth < 500 ? 1 : 1.25;
-        logoImageFile =
-            sizeIndex <= 1 ? EDStatic.lowResLogoImageFile : EDStatic.highResLogoImageFile;
-
-        // transparentPng supports returning requests outside of data
-        // range to enable tiles that partially contain data. This
-        // section adjusts the map output to match the requested
-        // inputs.
-
-        if (transparentPng && isMap) { // Chris didn't have &&isMap
-          // Chris had this section much higher in method and without &&isMap
-          double inputMinX = Double.MIN_VALUE;
-          double inputMaxX = Double.MAX_VALUE;
-          double inputMinY = Double.MIN_NORMAL;
-          double inputMaxY = Double.MAX_VALUE;
-          // transparentPng supports returning requests outside of data range
-          // to enable tiles that partially contain data. This section
-          // validates there is data to return before continuing.
-          // Get the X input values.
-          inputMinX = inputValues.get(lonIndex * 2);
-          inputMaxX = inputValues.get(lonIndex * 2 + 1);
-          if (inputMinX > inputMaxX) {
-            double d = inputMinX;
-            inputMinX = inputMaxX;
-            inputMaxX = d;
-          }
-          // Get the Y input values.
-          inputMinY = inputValues.get(latIndex * 2);
-          inputMaxY = inputValues.get(latIndex * 2 + 1);
-          if (inputMinY > inputMaxY) {
-            double d = inputMinY;
-            inputMinY = inputMaxY;
-            inputMaxY = d;
-          }
-          validateLatLon(language, inputMinX, inputMaxX, inputMinY, inputMaxY);
-          // end moved section
-
-          double diffAllowance = 1;
-          double minXDiff = Math.abs(minX - inputMinX);
-          double maxXDiff = Math.abs(inputMaxX - maxX);
-          double minYDiff = Math.abs(minY - inputMinY);
-          double maxYDiff = Math.abs(inputMaxY - maxY);
-          // Use the inputParams compared to the repaired axis to
-          // determine if we need to adjust
-          // the image width or height.
-          if (minXDiff < diffAllowance && maxXDiff < diffAllowance) {
-            // xAxis good
-          } else {
-            double repairedWidth = maxX - minX;
-            double inputWidth = inputMaxX - inputMinX;
-            if (!customSize) imageWidth = (int) (imageWidth * inputWidth / repairedWidth);
-            minX = inputMinX;
-            maxX = inputMaxX;
-          }
-          if (minYDiff < diffAllowance && maxYDiff < diffAllowance) {
-            // yAxis good
-          } else {
-            double repairedHeight = maxY - minY;
-            double inputHeight = inputMaxY - inputMinY;
-            if (!customSize) imageHeight = (int) (imageHeight * inputHeight / repairedHeight);
-            minY = inputMinY;
-            maxY = inputMaxY;
-          }
-        }
-
-        bufferedImage = SgtUtil.getBufferedImage(imageWidth, imageHeight);
-        g2 = (Graphics2D) bufferedImage.getGraphics();
-      }
-
-      if (transparentPng) {
-        // fill with unusual color --> later convert to transparent
-        // Not a great approach to the problem.
-        transparentColor = new Color(0, 3, 1); // not common, not in grayscale, not white
-        g2.setColor(transparentColor);
-        g2.fillRect(0, 0, imageWidth, imageHeight);
-      }
-
-      if (isMap) {
-        // for maps, ignore xAscending and yAscending
-        // ensure minX < maxX and minY < maxY
-        if (minX > maxX) {
-          double d = minX;
-          minX = maxX;
-          maxX = d;
-        }
-        if (minY > maxY) {
-          double d = minY;
-          minY = maxY;
-          maxY = d;
-        }
-      }
-
-      if (drawSurface && isMap) {
-
-        // draw the map
-        if (transparentPng) {
-          SgtMap.makeCleanMap(
-              minX,
-              maxX,
-              minY,
-              maxY,
-              false,
-              grid,
-              1,
-              1,
-              0, // double gridScaleFactor, gridAltScaleFactor, gridAltOffset,
-              cptFullName,
-              false,
-              false,
-              SgtMap.NO_LAKES_AND_RIVERS,
-              false,
-              false,
-              g2,
-              imageWidth,
-              imageHeight,
-              0,
-              0,
-              imageWidth,
-              imageHeight);
-        } else {
-          if (currentDrawLandMask == null)
-            currentDrawLandMask = vars[2].drawLandMask(defaultDrawLandMask());
-
-          ArrayList mmal =
-              SgtMap.makeMap(
-                  false,
-                  SgtUtil.LEGEND_BELOW,
-                  EDStatic.legendTitle1,
-                  EDStatic.legendTitle2,
-                  EDStatic.imageDir,
-                  logoImageFile,
-                  minX,
-                  maxX,
-                  minY,
-                  maxY,
-                  currentDrawLandMask,
-                  true, // plotGridData
-                  grid,
-                  1,
-                  1,
-                  0, // double gridScaleFactor, gridAltScaleFactor, gridAltOffset,
-                  cptFullName,
-                  vars[2].longName() + zUnits,
-                  title(),
-                  otherInfo.toString(),
-                  MessageFormat.format(EDStatic.imageDataCourtesyOfAr[language], institution()),
-                  "off".equals(currentDrawLandMask)
-                      ? SgtMap.NO_LAKES_AND_RIVERS
-                      : palette.equals("Ocean") || palette.equals("Topography")
-                          ? SgtMap.FILL_LAKES_AND_RIVERS
-                          : SgtMap.STROKE_LAKES_AND_RIVERS,
-                  false,
-                  null,
-                  1,
-                  1,
-                  1,
-                  "",
-                  null,
-                  "",
-                  "",
-                  "",
-                  "",
-                  "", // plot contour
-                  new ArrayList(),
-                  g2,
-                  0,
-                  0,
-                  imageWidth,
-                  imageHeight,
-                  0, // no boundaryResAdjust,
-                  fontScale);
-
-          writePngInfo(loggedInAs, userDapQuery, fileTypeName, mmal);
-        }
-
-      } else if (drawVectors
-          || drawLines
-          || drawLinesAndMarkers
-          || drawMarkers
-          || drawSticks
-          || (drawSurface && !isMap)) {
-        if (currentDrawLandMask == null) {
-          EDV edv = vars[2] == null ? vars[1] : vars[2];
-          currentDrawLandMask = edv.drawLandMask(defaultDrawLandMask());
-        }
-
-        ArrayList mmal =
-            isMap
-                ? SgtMap.makeMap(
-                    transparentPng,
-                    SgtUtil.LEGEND_BELOW,
-                    EDStatic.legendTitle1,
-                    EDStatic.legendTitle2,
-                    EDStatic.imageDir,
-                    logoImageFile,
-                    minX,
-                    maxX,
-                    minY,
-                    maxY,
-                    currentDrawLandMask,
-                    false, // plotGridData
-                    null,
-                    1,
-                    1,
-                    0,
-                    "",
-                    "",
-                    "",
-                    "",
-                    "",
-                    "off".equals(currentDrawLandMask)
-                        ? SgtMap.NO_LAKES_AND_RIVERS
-                        : SgtMap.FILL_LAKES_AND_RIVERS,
-                    false,
-                    null,
-                    1,
-                    1,
-                    1,
-                    "",
-                    null,
-                    "",
-                    "",
-                    "",
-                    "",
-                    "", // plot contour
-                    graphDataLayers,
-                    g2,
-                    0,
-                    0,
-                    imageWidth,
-                    imageHeight,
-                    0, // no boundaryResAdjust,
-                    fontScale)
-                : EDStatic.sgtGraph.makeGraph(
-                    transparentPng,
-                    graphDataLayer.xAxisTitle,
-                    png && drawLegend.equals(LEGEND_ONLY)
-                        ? "."
-                        : graphDataLayer.yAxisTitle, // avoid running into legend
-                    SgtUtil.LEGEND_BELOW,
-                    EDStatic.legendTitle1,
-                    EDStatic.legendTitle2,
-                    EDStatic.imageDir,
-                    logoImageFile,
-                    minX,
-                    maxX,
-                    xAscending,
-                    xIsTimeAxis,
-                    xIsLogAxis,
-                    minY,
-                    maxY,
-                    yAscending,
-                    yIsTimeAxis,
-                    yIsLogAxis,
-                    graphDataLayers,
-                    g2,
-                    0,
-                    0,
-                    imageWidth,
-                    imageHeight,
-                    Double.NaN, // graph imageWidth/imageHeight
-                    drawSurface
-                        ? (!bgColor.equals(EDStatic.graphBackgroundColor)
-                            ? bgColor
-                            : palette.equals("BlackWhite") || palette.equals("WhiteBlack")
-                                ? new Color(0xccccff)
-                                : // opaque light blue
-                                new Color(0x808080))
-                        : // opaque gray
-                        bgColor,
-                    fontScale);
-
-        writePngInfo(loggedInAs, userDapQuery, fileTypeName, mmal);
-      }
-
-      // .legend
-      if (png && !transparentPng) {
-        if (drawLegend.equals(LEGEND_OFF)) bufferedImage = SgtUtil.removeLegend(bufferedImage);
-        else if (drawLegend.equals(LEGEND_ONLY))
-          bufferedImage = SgtUtil.extractLegend(bufferedImage);
-
-        // do after removeLegend
-        bufferedImage = SgtUtil.trimBottom(bufferedImage, trim);
-      }
-
-    } catch (WaitThenTryAgainException wttae) {
-      throw wttae;
-
-    } catch (Throwable t) {
-      EDStatic.rethrowClientAbortException(t); // first thing in catch{}
-      ok = false;
-      try {
-        String msg = MustBe.getShortErrorMessage(t);
-        String fullMsg = MustBe.throwableToString(t);
-        String2.log(fullMsg); // log full message with stack trace
-
-        if (png && drawLegend.equals(LEGEND_ONLY)) {
-          // return a transparent 1x1 pixel image
-          bufferedImage = SgtUtil.getBufferedImage(1, 1); // has white background
-          transparentColor = Color.white;
-
-        } else {
-          // write exception info on image
-          double tFontScale = pdf ? 1.25 : 1;
-          int tHeight = Math2.roundToInt(tFontScale * 12);
-
-          if (pdf) {
-            if (pdfInfo == null)
-              pdfInfo =
-                  SgtUtil.createPdf(
-                      SgtUtil.PDF_PORTRAIT,
-                      imageWidth,
-                      imageHeight,
-                      outputStreamSource.outputStream(File2.UTF_8));
-            if (g2 == null) g2 = (Graphics2D) pdfInfo[0];
-          } else { // png
-            // make a new image (I don't think pdf can work this way -- sent as created)
-            bufferedImage = SgtUtil.getBufferedImage(imageWidth, imageHeight);
-            g2 = (Graphics2D) bufferedImage.getGraphics();
-          }
-          if (transparentPng) {
-            // don't write the message
-            // The "right" thing to do is different in different situations.
-            // But e.g., No Data, should just be a transparent image.
-            transparentColor = Color.white;
-          } else {
-
-            g2.setClip(0, 0, imageWidth, imageHeight); // unset in case set by sgtGraph
-            msg = String2.noLongLines(msg, (imageWidth * 10 / 6) / tHeight, "    ");
-            String lines[] = msg.split("\\n"); // not String2.split which trims
-            g2.setColor(Color.black);
-            g2.setFont(new Font(EDStatic.fontFamily, Font.PLAIN, tHeight));
-            int ty = tHeight * 2;
-            for (int i = 0; i < lines.length; i++) {
-              g2.drawString(lines[i], tHeight, ty);
-              ty += tHeight + 2;
-            }
-          }
-        }
-      } catch (Throwable t2) {
-        EDStatic.rethrowClientAbortException(t2); // first thing in catch{}
-        String2.log("ERROR2 while creating error image:\n" + MustBe.throwableToString(t2));
-        if (pdf) {
-          if (pdfInfo == null) throw t;
-        } else {
-          if (bufferedImage == null) throw t;
-        }
-        // else fall through to close/save image below
-      }
-    }
-
-    // save image
-    if (pdf) {
-      SgtUtil.closePdf(pdfInfo);
-    } else {
-      SgtUtil.saveAsTransparentPng(
-          bufferedImage, transparentColor, outputStreamSource.outputStream(""));
-    }
-
-    OutputStream out = outputStreamSource.existingOutputStream();
-    if (out != null) out.flush(); // safety
-
-    if (reallyVerbose)
-      String2.log(
-          "  EDDGrid.saveAsImage done. TIME=" + (System.currentTimeMillis() - time) + "ms\n");
-    return ok;
   }
 
   /**
@@ -8855,22 +5559,22 @@ public abstract class EDDGrid extends EDD {
                 language,
                 MustBe.THERE_IS_NO_DATA
                     + " "
-                    + EDStatic.queryErrorAr[0]
+                    + EDStatic.messages.queryErrorAr[0]
                     + diagnostic0
                     + ": "
                     + MessageFormat.format(
-                        EDStatic.queryErrorGridGreaterMaxAr[0],
+                        EDStatic.messages.queryErrorGridGreaterMaxAr[0],
                         idAr[0],
                         stringValue,
                         stringMax,
                         coarseMaxString),
                 MustBe.THERE_IS_NO_DATA
                     + " "
-                    + EDStatic.queryErrorAr[language]
+                    + EDStatic.messages.queryErrorAr[language]
                     + diagnosticl
                     + ": "
                     + MessageFormat.format(
-                        EDStatic.queryErrorGridGreaterMaxAr[language],
+                        EDStatic.messages.queryErrorGridGreaterMaxAr[language],
                         idAr[language],
                         stringValue,
                         stringMax,
@@ -8925,22 +5629,22 @@ public abstract class EDDGrid extends EDD {
                 language,
                 MustBe.THERE_IS_NO_DATA
                     + " "
-                    + EDStatic.queryErrorAr[0]
+                    + EDStatic.messages.queryErrorAr[0]
                     + diagnostic0
                     + ": "
                     + MessageFormat.format(
-                        EDStatic.queryErrorGridLessMinAr[0],
+                        EDStatic.messages.queryErrorGridLessMinAr[0],
                         idAr[0],
                         stringValue,
                         stringMin,
                         coarseMinString),
                 MustBe.THERE_IS_NO_DATA
                     + " "
-                    + EDStatic.queryErrorAr[language]
+                    + EDStatic.messages.queryErrorAr[language]
                     + diagnosticl
                     + ": "
                     + MessageFormat.format(
-                        EDStatic.queryErrorGridLessMinAr[language],
+                        EDStatic.messages.queryErrorGridLessMinAr[language],
                         idAr[language],
                         stringValue,
                         stringMin,
@@ -8969,13 +5673,13 @@ public abstract class EDDGrid extends EDD {
     EDVGridAxis av = axisVariables[lonIndex];
     String diagnostic0 =
         MessageFormat.format(
-            EDStatic.queryErrorGridDiagnosticAr[0],
+            EDStatic.messages.queryErrorGridDiagnosticAr[0],
             av.destinationName(),
             "" + lonIndex,
             av.destinationName());
     String diagnosticl =
         MessageFormat.format(
-            EDStatic.queryErrorGridDiagnosticAr[language],
+            EDStatic.messages.queryErrorGridDiagnosticAr[language],
             av.destinationName(),
             "" + lonIndex,
             av.destinationName());
@@ -8987,7 +5691,7 @@ public abstract class EDDGrid extends EDD {
         "" + minX,
         av,
         false /* repair */,
-        EDStatic.advl_minLongitudeAr,
+        EDStatic.messages.advl_minLongitudeAr,
         language,
         diagnostic0,
         diagnosticl);
@@ -8997,7 +5701,7 @@ public abstract class EDDGrid extends EDD {
         "" + maxX,
         av,
         false /* repair */,
-        EDStatic.advl_maxLongitudeAr,
+        EDStatic.messages.advl_maxLongitudeAr,
         language,
         diagnostic0,
         diagnosticl);
@@ -9006,13 +5710,13 @@ public abstract class EDDGrid extends EDD {
     av = axisVariables[latIndex];
     diagnostic0 =
         MessageFormat.format(
-            EDStatic.queryErrorGridDiagnosticAr[0],
+            EDStatic.messages.queryErrorGridDiagnosticAr[0],
             av.destinationName(),
             "" + latIndex,
             av.destinationName());
     diagnosticl =
         MessageFormat.format(
-            EDStatic.queryErrorGridDiagnosticAr[language],
+            EDStatic.messages.queryErrorGridDiagnosticAr[language],
             av.destinationName(),
             "" + latIndex,
             av.destinationName());
@@ -9026,7 +5730,7 @@ public abstract class EDDGrid extends EDD {
         -91,
         "-91" /* coarseMin */,
         false /* repair */,
-        EDStatic.advl_minLatitudeAr,
+        EDStatic.messages.advl_minLatitudeAr,
         language,
         diagnostic0,
         diagnosticl);
@@ -9039,7 +5743,7 @@ public abstract class EDDGrid extends EDD {
         91,
         "91" /* coarseMax */,
         false /* repair */,
-        EDStatic.advl_maxLatitudeAr,
+        EDStatic.messages.advl_maxLatitudeAr,
         language,
         diagnostic0,
         diagnosticl);
@@ -9050,7 +5754,7 @@ public abstract class EDDGrid extends EDD {
         "" + minY,
         av,
         false /* repair */,
-        EDStatic.advl_minLatitudeAr,
+        EDStatic.messages.advl_minLatitudeAr,
         language,
         diagnostic0,
         diagnosticl);
@@ -9060,1285 +5764,10 @@ public abstract class EDDGrid extends EDD {
         "" + maxY,
         av,
         false /* repair */,
-        EDStatic.advl_maxLatitudeAr,
+        EDStatic.messages.advl_maxLatitudeAr,
         language,
         diagnostic0,
         diagnosticl);
-  }
-
-  /**
-   * This writes the requested axis or grid data to the outputStream in JSON (https://www.json.org/)
-   * format. If no exception is thrown, the data was successfully written.
-   *
-   * @param language the index of the selected language
-   * @param requestUrl the part of the user's request, after EDStatic.baseUrl, before '?'.
-   * @param userDapQuery an OPeNDAP DAP-style query string, still percentEncoded (shouldn't be
-   *     null). e.g., ATssta[45:1:45][0:1:0][120:10:140][130:10:160]. This method extracts the jsonp
-   *     text to be prepended to the results (or null if none). See
-   *     https://niryariv.wordpress.com/2009/05/05/jsonp-quickly/ and
-   *     https://bob.pythonmac.org/archives/2005/12/05/remote-json-jsonp/ and
-   *     http://www.insideria.com/2009/03/what-in-the-heck-is-jsonp-and.html .
-   * @param outputStreamSource the source of an outputStream (usually already buffered) to receive
-   *     the results. At the end of this method the outputStream is flushed, not closed.
-   * @throws Throwable if trouble.
-   */
-  public void saveAsJson(
-      int language, String requestUrl, String userDapQuery, OutputStreamSource outputStreamSource)
-      throws Throwable {
-
-    // currently, this writes a table.
-    // Perhaps better to write nDimensional array?
-    if (reallyVerbose) String2.log("  EDDGrid.saveAsJson");
-    long time = System.currentTimeMillis();
-
-    // did query include &.jsonp= ?
-    String parts[] = Table.getDapQueryParts(userDapQuery); // decoded
-    String jsonp = String2.stringStartsWith(parts, ".jsonp="); // may be null
-    if (jsonp != null) {
-      jsonp = jsonp.substring(7);
-      if (!String2.isJsonpNameSafe(jsonp))
-        throw new SimpleException(
-            EDStatic.bilingual(
-                language,
-                EDStatic.queryErrorAr[0] + EDStatic.errorJsonpFunctionNameAr[0],
-                EDStatic.queryErrorAr[language] + EDStatic.errorJsonpFunctionNameAr[language]));
-    }
-
-    // get dataAccessor first, in case of error when parsing query
-    boolean isAxisDapQuery = isAxisDapQuery(userDapQuery);
-    AxisDataAccessor ada = null;
-    GridDataAccessor gda = null;
-    if (isAxisDapQuery) ada = new AxisDataAccessor(language, this, requestUrl, userDapQuery);
-    else
-      gda =
-          new GridDataAccessor(
-              language, this, requestUrl, userDapQuery, true, false); // rowMajor, convertToNaN
-
-    // write the data to the tableWriter
-    TableWriter tw =
-        new TableWriterJson(
-            language,
-            this,
-            getNewHistory(requestUrl, userDapQuery),
-            outputStreamSource,
-            jsonp,
-            true); // writeUnits
-    if (isAxisDapQuery) {
-      saveAsTableWriter(ada, tw);
-    } else {
-      saveAsTableWriter(gda, tw);
-      gda.releaseResources();
-    }
-
-    // diagnostic
-    if (reallyVerbose)
-      String2.log(
-          "  EDDGrid.saveAsJson done. TIME=" + (System.currentTimeMillis() - time) + "ms\n");
-  }
-
-  /**
-   * This writes the requested axis or grid data to the outputStream in NCCSV
-   * (https://erddap.github.io/NCCSV.html) format. If no exception is thrown, the data was
-   * successfully written.
-   *
-   * @param language the index of the selected language
-   * @param requestUrl the part of the user's request, after EDStatic.baseUrl, before '?'.
-   * @param userDapQuery an OPeNDAP DAP-style query string, still percentEncoded (shouldn't be
-   *     null). e.g., ATssta[45:1:45][0:1:0][120:10:140][130:10:160].
-   * @param outputStreamSource the source of an outputStream (usually already buffered) to receive
-   *     the results. At the end of this method the outputStream is flushed, not closed.
-   * @throws Throwable if trouble.
-   */
-  public void saveAsNccsv(
-      int language,
-      String fileTypeName,
-      String requestUrl,
-      String userDapQuery,
-      OutputStreamSource outputStreamSource)
-      throws Throwable {
-
-    if (reallyVerbose) String2.log("  EDDGrid.saveAsNccsv");
-    long time = System.currentTimeMillis();
-
-    // .nccsvMetadata?
-    if (fileTypeName.equals(".nccsvMetadata")) {
-      Writer writer =
-          File2.getBufferedWriter88591(outputStreamSource.outputStream(File2.ISO_8859_1));
-      try {
-        Table table = new Table();
-        table.globalAttributes().add(combinedGlobalAttributes());
-        for (int avi = 0; avi < axisVariables.length; avi++) {
-          EDVGridAxis av = axisVariables[avi];
-          Attributes catts = av.combinedAttributes();
-          PAType tPAType = av.destinationDataPAType();
-          if (av instanceof EDVTimeStampGridAxis) {
-            // convert to String times
-            tPAType = PAType.STRING;
-            catts = new Attributes(catts); // make changes to a copy
-            String timePre = catts.getString(EDV.TIME_PRECISION);
-            catts.set("units", Calendar2.timePrecisionToTimeFormat(timePre));
-
-            PrimitiveArray pa = catts.get("actual_range");
-            if (pa != null && pa instanceof DoubleArray && pa.size() == 2) {
-              StringArray sa = new StringArray();
-              for (int i = 0; i < 2; i++)
-                sa.add(Calendar2.epochSecondsToLimitedIsoStringT(timePre, pa.getDouble(i), ""));
-              catts.set("actual_range", sa);
-            }
-          }
-          table.addColumn(
-              avi, av.destinationName(), PrimitiveArray.factory(tPAType, 1, false), catts);
-        }
-        for (int dvi = 0; dvi < dataVariables.length; dvi++) {
-          EDV dv = dataVariables[dvi];
-          Attributes catts = dv.combinedAttributes();
-          PAType tPAType = dv.destinationDataPAType();
-          if (dv instanceof EDVTimeStamp) {
-            catts = new Attributes(catts); // make changes to a copy
-            catts.set(
-                "units", Calendar2.timePrecisionToTimeFormat(catts.getString(EDV.TIME_PRECISION)));
-            tPAType = PAType.STRING;
-          }
-          table.addColumn(
-              table.nColumns(),
-              dv.destinationName(),
-              PrimitiveArray.factory(tPAType, 1, false),
-              catts);
-        }
-        table.saveAsNccsv(
-            false, true, 0, 0,
-            writer); // catchScalars, writeMetadata, writeDataRows; writer is flushed not closed
-      } finally {
-        try {
-          writer.close();
-        } catch (Exception e) {
-        }
-      }
-      return;
-    }
-
-    // get dataAccessor first, in case of error when parsing query
-    boolean isAxisDapQuery = isAxisDapQuery(userDapQuery);
-    AxisDataAccessor ada = null;
-    GridDataAccessor gda = null;
-    if (isAxisDapQuery) ada = new AxisDataAccessor(language, this, requestUrl, userDapQuery);
-    else
-      gda =
-          new GridDataAccessor(
-              language, this, requestUrl, userDapQuery, true, false); // rowMajor, convertToNaN
-
-    // write the data to the tableWriter
-    TableWriter tw =
-        new TableWriterNccsv(
-            language, this, getNewHistory(requestUrl, userDapQuery), outputStreamSource);
-    if (isAxisDapQuery) {
-      saveAsTableWriter(ada, tw);
-    } else {
-      saveAsTableWriter(gda, tw);
-      gda.releaseResources();
-    }
-
-    // diagnostic
-    if (reallyVerbose)
-      String2.log(
-          "  EDDGrid.saveAsNccsv done. TIME=" + (System.currentTimeMillis() - time) + "ms\n");
-  }
-
-  /**
-   * This writes the axis or grid data to the outputStream in JSON Lines (https://jsonlines.org/)
-   * KVP format. If no exception is thrown, the data was successfully written.
-   *
-   * @param language the index of the selected language
-   * @param requestUrl the part of the user's request, after EDStatic.baseUrl, before '?'.
-   * @param userDapQuery an OPeNDAP DAP-style query string, still percentEncoded (shouldn't be
-   *     null). e.g., ATssta[45:1:45][0:1:0][120:10:140][130:10:160]. This method extracts the jsonp
-   *     text to be prepended to the results (or null if none). See
-   *     https://niryariv.wordpress.com/2009/05/05/jsonp-quickly/ and
-   *     https://bob.pythonmac.org/archives/2005/12/05/remote-json-jsonp/ and
-   *     https://www.raymondcamden.com/2014/03/12/Reprint-What-in-the-heck-is-JSONP-and-why-would-you-use-it/
-   *     .
-   * @param outputStreamSource the source of an outputStream (usually already buffered) to receive
-   *     the results. At the end of this method the outputStream is flushed, not closed.
-   * @throws Throwable if trouble.
-   */
-  public void saveAsJsonl(
-      int language,
-      String requestUrl,
-      String userDapQuery,
-      OutputStreamSource outputStreamSource,
-      boolean tWriteColNames,
-      boolean tWriteKVP)
-      throws Throwable {
-
-    // currently, this writes a table.
-    // Perhaps better to write nDimensional array?
-    if (reallyVerbose) String2.log("  EDDGrid.saveAsJsonl");
-    long time = System.currentTimeMillis();
-
-    // NO: a jsonp constraint won't get this far. jsonp won't work with jsonl.
-    // did query include &.jsonp= ?
-    String parts[] = Table.getDapQueryParts(userDapQuery); // decoded
-    String jsonp = String2.stringStartsWith(parts, ".jsonp="); // may be null
-    if (jsonp != null) {
-      jsonp = jsonp.substring(7);
-      if (!String2.isJsonpNameSafe(jsonp))
-        throw new SimpleException(
-            EDStatic.bilingual(
-                language,
-                EDStatic.queryErrorAr[0] + EDStatic.errorJsonpFunctionNameAr[0],
-                EDStatic.queryErrorAr[language] + EDStatic.errorJsonpFunctionNameAr[language]));
-    }
-
-    // get dataAccessor first, in case of error when parsing query
-    boolean isAxisDapQuery = isAxisDapQuery(userDapQuery);
-    AxisDataAccessor ada = null;
-    GridDataAccessor gda = null;
-    if (isAxisDapQuery) ada = new AxisDataAccessor(language, this, requestUrl, userDapQuery);
-    else
-      gda =
-          new GridDataAccessor(
-              language, this, requestUrl, userDapQuery, true, false); // rowMajor, convertToNaN
-
-    // write the data to the tableWriter
-    TableWriter tw =
-        new TableWriterJsonl(
-            language,
-            this,
-            getNewHistory(requestUrl, userDapQuery),
-            outputStreamSource,
-            tWriteColNames,
-            tWriteKVP,
-            jsonp);
-    if (isAxisDapQuery) {
-      saveAsTableWriter(ada, tw);
-    } else {
-      saveAsTableWriter(gda, tw);
-      gda.releaseResources();
-    }
-
-    // diagnostic
-    if (reallyVerbose)
-      String2.log(
-          "  EDDGrid.saveAsJsonl done. TIME=" + (System.currentTimeMillis() - time) + "ms\n");
-  }
-
-  /**
-   * This writes grid data (not axis data) to the outputStream in Google Earth's .kml format
-   * (https://developers.google.com/kml/documentation/kmlreference ). If no exception is thrown, the
-   * data was successfully written. For .kml, dataVariable queries can specify multiple longitude,
-   * latitude, and time values, but just one value for other dimensions.
-   *
-   * @param language the index of the selected language
-   * @param loggedInAs the name of the logged in user (or null if not logged in). Normally, this is
-   *     not used to test if this edd is accessibleTo loggedInAs, but it unusual cases
-   *     (EDDTableFromPost?) it could be. Normally, this is just used to determine which erddapUrl
-   *     to use (http vs https).
-   * @param requestUrl the part of the user's request, after EDStatic.baseUrl, before '?'.
-   * @param userDapQuery an OPeNDAP DAP-style query string, still percentEncoded (shouldn't be
-   *     null). e.g., ATssta[45:1:45][0:1:0][120:10:140][130:10:160].
-   * @param outputStreamSource the source of an outputStream (usually already buffered) to receive
-   *     the results. At the end of this method the outputStream is flushed, not closed.
-   * @return true of written ok; false if exception occurred (and written on image)
-   * @throws Throwable if trouble.
-   */
-  public boolean saveAsKml(
-      int language,
-      String loggedInAs,
-      String requestUrl,
-      String userDapQuery,
-      OutputStreamSource outputStreamSource)
-      throws Throwable {
-
-    if (reallyVerbose) String2.log("  EDDGrid.saveAsKml");
-    long time = System.currentTimeMillis();
-    String tErddapUrl = EDStatic.erddapUrl(loggedInAs, language);
-
-    // check that request meets .kml restrictions.
-    // .transparentPng does some of these tests, but better to catch problems
-    //  here than in GoogleEarth.
-
-    // .kml not available for axis request
-    // lon and lat are required; time is not required
-    if (isAxisDapQuery(userDapQuery) || lonIndex < 0 || latIndex < 0)
-      throw new SimpleException(
-          EDStatic.simpleBilingual(language, EDStatic.queryErrorAr)
-              + "The .kml format is for latitude longitude data requests only.");
-
-    // parse the userDapQuery
-    // this also tests for error when parsing query
-    StringArray tDestinationNames = new StringArray();
-    IntArray tConstraints = new IntArray();
-    parseDataDapQuery(language, userDapQuery, tDestinationNames, tConstraints, false);
-    if (tDestinationNames.size() != 1)
-      throw new SimpleException(
-          EDStatic.simpleBilingual(language, EDStatic.queryErrorAr)
-              + "The .kml format can only handle one data variable.");
-
-    // find any &constraints (simplistic approach, but sufficient for here and hard to replace with
-    // Table.getDapQueryParts)
-    int ampPo = -1;
-    if (userDapQuery != null) {
-      ampPo = userDapQuery.indexOf('&');
-      if (ampPo == -1)
-        ampPo =
-            userDapQuery.indexOf(
-                "%26"); // shouldn't be.  but allow overly zealous percent encoding.
-    }
-    String percentEncodedAmpQuery =
-        ampPo >= 0
-            ? // so constraints can be used in reference urls in kml
-            XML.encodeAsXML(userDapQuery.substring(ampPo))
-            : "";
-
-    EDVTimeGridAxis timeEdv = null;
-    PrimitiveArray timePa = null;
-    double timeStartd = Double.NaN, timeStopd = Double.NaN;
-    int nTimes = 0;
-    for (int av = 0; av < axisVariables.length; av++) {
-      if (av == lonIndex) {
-
-      } else if (av == latIndex) {
-
-      } else if (av == timeIndex) {
-        timeEdv = (EDVTimeGridAxis) axisVariables[timeIndex];
-        timePa =
-            timeEdv
-                .sourceValues()
-                .subset(
-                    tConstraints.get(av * 3 + 0),
-                    tConstraints.get(av * 3 + 1),
-                    tConstraints.get(av * 3 + 2));
-        timePa = timeEdv.toDestination(timePa);
-        nTimes = timePa.size();
-        timeStartd = timePa.getNiceDouble(0);
-        timeStopd = timePa.getNiceDouble(nTimes - 1);
-        if (nTimes > 500) // arbitrary: prevents requests that would take too long to respond to
-        throw new SimpleException(
-              EDStatic.simpleBilingual(language, EDStatic.queryErrorAr)
-                  + "For .kml requests, the time dimension's size must be less than 500.");
-
-      } else {
-        if (tConstraints.get(av * 3 + 0) != tConstraints.get(av * 3 + 2))
-          throw new SimpleException(
-              EDStatic.simpleBilingual(language, EDStatic.queryErrorAr)
-                  + "For .kml requests, the "
-                  + axisVariables[av].destinationName()
-                  + " dimension's size must be 1.");
-      }
-    }
-
-    // lat lon info
-    // lon and lat axis values don't have to be evenly spaced.
-    // .transparentPng uses Sgt.makeCleanMap which projects data (even, e.g., Mercator)
-    // so resulting .png will use a geographic projection.
-
-    // although the Google docs say lon must be +-180, lon > 180 is sort of ok!
-    EDVLonGridAxis lonEdv = (EDVLonGridAxis) axisVariables[lonIndex];
-    EDVLatGridAxis latEdv = (EDVLatGridAxis) axisVariables[latIndex];
-
-    int totalNLon = lonEdv.sourceValues().size();
-    int lonStarti = tConstraints.get(lonIndex * 3 + 0);
-    int lonStopi = tConstraints.get(lonIndex * 3 + 2);
-    double lonStartd = lonEdv.destinationValue(lonStarti).getNiceDouble(0);
-    double lonStopd = lonEdv.destinationValue(lonStopi).getNiceDouble(0);
-    if (lonStopd <= -180 || lonStartd >= 360)
-      throw new SimpleException(
-          EDStatic.simpleBilingual(language, EDStatic.queryErrorAr)
-              + "For .kml requests, there must be some longitude values must be between -180 and 360.");
-    if (lonStartd < -180) {
-      lonStarti = lonEdv.destinationToClosestIndex(-180);
-      lonStartd = lonEdv.destinationValue(lonStarti).getNiceDouble(0);
-    }
-    if (lonStopd > Math.min(lonStartd + 360, 360)) {
-      lonStopi = lonEdv.destinationToClosestIndex(Math.min(lonStartd + 360, 360));
-      lonStopd = lonEdv.destinationValue(lonStopi).getNiceDouble(0);
-    }
-    int lonMidi = (lonStarti + lonStopi) / 2;
-    double lonMidd = lonEdv.destinationValue(lonMidi).getNiceDouble(0);
-    double lonAverageSpacing = Math.abs(lonEdv.averageSpacing());
-
-    int totalNLat = latEdv.sourceValues().size();
-    int latStarti = tConstraints.get(latIndex * 3 + 0);
-    int latStopi = tConstraints.get(latIndex * 3 + 2);
-    double latStartd = latEdv.destinationValue(latStarti).getNiceDouble(0);
-    double latStopd = latEdv.destinationValue(latStopi).getNiceDouble(0);
-    if (latStartd < -90 || latStopd > 90)
-      throw new SimpleException(
-          EDStatic.simpleBilingual(language, EDStatic.queryErrorAr)
-              + "For .kml requests, the latitude values must be between -90 and 90.");
-    int latMidi = (latStarti + latStopi) / 2;
-    double latMidd = latEdv.destinationValue(latMidi).getNiceDouble(0);
-    double latAverageSpacing = Math.abs(latEdv.averageSpacing());
-
-    if (lonStarti == lonStopi || latStarti == latStopi)
-      throw new SimpleException(
-          EDStatic.simpleBilingual(language, EDStatic.queryErrorAr)
-              + "For .kml requests, the lon and lat dimension sizes must be greater than 1.");
-    // request is ok and compatible with .kml request!
-
-    String datasetUrl = tErddapUrl + "/" + dapProtocol + "/" + datasetID;
-    String timeString = "";
-    if (nTimes >= 1)
-      timeString +=
-          Calendar2.epochSecondsToLimitedIsoStringT(
-              timeEdv.combinedAttributes().getString(EDV.TIME_PRECISION),
-              Math.min(timeStartd, timeStopd),
-              "");
-    if (nTimes >= 2)
-      throw new SimpleException(
-          EDStatic.simpleBilingual(language, EDStatic.queryErrorAr)
-              + "For .kml requests, the time dimension size must be 1.");
-    // timeString += " through " + limitedIsoStringT ... Math.max(timeStartd, timeStopd), "");
-    String brTimeString = timeString.length() == 0 ? "" : "Time: " + timeString + "<br />\n";
-
-    // calculate doMax and get drawOrder
-    int drawOrder = 1;
-    int doMax = 1; // max value of drawOrder for this dataset
-    double tnLon = totalNLon;
-    double tnLat = totalNLat;
-    int txPo = Math2.roundToInt(lonStarti / tnLon); // at this level, the txPo'th x tile
-    int tyPo = Math2.roundToInt(latStarti / tnLat);
-    while (Math.min(tnLon, tnLat) > 512) { // 256 led to lots of artifacts and gaps at seams
-      // This determines size of all tiles.
-      // 512 leads to smallest tile edge being >256.
-      // 256 here relates to minLodPixels 256 below (although Google example used 128 below)
-      // and Google example uses tile sizes of 256x256.
-
-      // go to next level
-      tnLon /= 2;
-      tnLat /= 2;
-      doMax++;
-
-      // if user requested lat lon range < this level, drawOrder is at least this level
-      // !!!THIS IS TRICKY if user starts at some wierd subset (not full image).
-      if (reallyVerbose)
-        String2.log(
-            "doMax="
-                + doMax
-                + "; cLon="
-                + (lonStopi - lonStarti + 1)
-                + " <= 1.5*tnLon="
-                + (1.5 * tnLon)
-                + "; cLat="
-                + (latStopi - latStarti + 1)
-                + " <= 1.5*tnLat="
-                + (1.5 * tnLat));
-      if (lonStopi - lonStarti + 1 <= 1.5 * tnLon
-          && // 1.5 ~rounds to nearest drawOrder
-          latStopi - latStarti + 1 <= 1.5 * tnLat) {
-        drawOrder++;
-        txPo = Math2.roundToInt(lonStarti / tnLon); // at this level, this is the txPo'th x tile
-        tyPo = Math2.roundToInt(latStarti / tnLat);
-        if (reallyVerbose)
-          String2.log(
-              "    drawOrder="
-                  + drawOrder
-                  + " txPo="
-                  + lonStarti
-                  + "/"
-                  + tnLon
-                  + "+"
-                  + txPo
-                  + " tyPo="
-                  + latStarti
-                  + "/"
-                  + tnLat
-                  + "+"
-                  + tyPo);
-      }
-    }
-
-    // calculate lonLatStride: 1 for doMax, 2 for doMax-1
-    int lonLatStride = 1;
-    for (int i = drawOrder; i < doMax; i++) lonLatStride *= 2;
-    if (reallyVerbose)
-      String2.log(
-          "    final drawOrder="
-              + drawOrder
-              + " txPo="
-              + txPo
-              + " tyPo="
-              + tyPo
-              + " doMax="
-              + doMax
-              + " lonLatStride="
-              + lonLatStride);
-
-    // Based on https://code.google.com/apis/kml/documentation/kml_21tutorial.html#superoverlays
-    // Was based on quirky example (but lots of useful info):
-    // http://161.55.17.243/cgi-bin/pydap.cgi/AG/ssta/3day/AG2006001_2006003_ssta.nc.kml?LAYERS=AGssta
-    // kml docs: https://developers.google.com/kml/documentation/kmlreference
-    // CDATA is necessary for url's with queries
-    BufferedWriter writer =
-        File2.getBufferedWriterUtf8(outputStreamSource.outputStream(File2.UTF_8));
-    try {
-      writer.write( // KML
-          "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
-              + "<kml xmlns=\"http://www.opengis.net/kml/2.2\">\n"
-              + "<Document>\n"
-              +
-              // human-friendly, but descriptive, <name>
-              // name is used as link title -- leads to <description>
-              "  <name>");
-      if (drawOrder == 1)
-        writer.write(
-            XML.encodeAsXML(title())
-                + "</name>\n"
-                +
-                // <description appears in help balloon
-                // <br /> is what kml/description documentation recommends
-                "  <description><![CDATA["
-                + brTimeString
-                + MessageFormat.format(
-                    EDStatic.imageDataCourtesyOfAr[language], XML.encodeAsXML(institution()))
-                + "<br />\n"
-                +
-                // link to download data
-                "<a href=\""
-                + datasetUrl
-                + ".html?"
-                + SSR.minimalPercentEncode(tDestinationNames.get(0))
-                + // XML.encodeAsXML doesn't work
-                "\">Download data from this dataset.</a><br />\n"
-                + "    ]]></description>\n");
-      else writer.write(drawOrder + "_" + txPo + "_" + tyPo + "</name>\n");
-
-      // GoogleEarth says it just takes lon +/-180, but it does ok (not perfect) with 180.. 360.
-      // If minLon>=180, it is easy to adjust the lon value references in the kml,
-      //  but leave the userDapQuery for the .transparentPng unchanged.
-      // lonAdjust is ESSENTIAL for proper work with lon > 180.
-      // GoogleEarth doesn't select correct drawOrder region if lon > 180.
-      double lonAdjust = Math.min(lonStartd, lonStopd) >= 180 ? -360 : 0;
-      String llBox =
-          "      <west>"
-              + (Math.min(lonStartd, lonStopd) + lonAdjust)
-              + "</west>\n"
-              + "      <east>"
-              + (Math.max(lonStartd, lonStopd) + lonAdjust)
-              + "</east>\n"
-              + "      <south>"
-              + Math.min(latStartd, latStopd)
-              + "</south>\n"
-              + "      <north>"
-              + Math.max(latStartd, latStopd)
-              + "</north>\n";
-
-      // is nTimes <= 1?
-      StringBuilder tQuery;
-      if (nTimes <= 1) {
-        // the Region
-        writer.write(
-            // min Level Of Detail: minimum size (initially while zooming in) at which this region
-            // is made visible
-            // see https://code.google.com/apis/kml/documentation/kmlreference.html#lod
-            "  <Region>\n"
-                + "    <Lod><minLodPixels>"
-                + (drawOrder == 1 ? 2 : 256)
-                + "</minLodPixels>"
-                +
-                // "<maxLodPixels>" + (drawOrder == 1? -1 : 1024) + "</maxLodPixels>" + //doesn't
-                // work as expected
-                "</Lod>\n"
-                + "    <LatLonAltBox>\n"
-                + llBox
-                + "    </LatLonAltBox>\n"
-                + "  </Region>\n");
-
-        if (drawOrder < doMax) {
-          // NetworkLinks to subregions (quadrant)
-          tQuery =
-              new StringBuilder(tDestinationNames.get(0)); // limited chars, no need to URLEncode
-          for (int nl = 0; nl < 4; nl++) {
-            double tLonStartd = nl < 2 ? lonStartd : lonMidd;
-            double tLonStopd = nl < 2 ? lonMidd : lonStopd;
-            int ttxPo = txPo * 2 + (nl < 2 ? 0 : 1);
-            double tLatStartd = Math2.odd(nl) ? latMidd : latStartd;
-            double tLatStopd = Math2.odd(nl) ? latStopd : latMidd;
-            int ttyPo = tyPo * 2 + (Math2.odd(nl) ? 1 : 0);
-            double tLonAdjust =
-                Math.min(tLonStartd, tLonStopd) >= 180
-                    ? -360
-                    : 0; // see comments for lonAdjust above
-
-            tQuery =
-                new StringBuilder(tDestinationNames.get(0)); // limited chars, no need to URLEncode
-            for (int av = 0; av < axisVariables.length; av++) {
-              if (av == lonIndex) tQuery.append("[(" + tLonStartd + "):(" + tLonStopd + ")]");
-              else if (av == latIndex) tQuery.append("[(" + tLatStartd + "):(" + tLatStopd + ")]");
-              else if (av == timeIndex) tQuery.append("[(" + timeString + ")]");
-              else tQuery.append("[" + tConstraints.get(av * 3 + 0) + "]");
-            }
-
-            writer.write(
-                "  <NetworkLink>\n"
-                    + "    <name>"
-                    + drawOrder
-                    + "_"
-                    + txPo
-                    + "_"
-                    + tyPo
-                    + "_"
-                    + nl
-                    + "</name>\n"
-                    + "    <Region>\n"
-                    + "      <Lod><minLodPixels>256</minLodPixels>"
-                    +
-                    // "<maxLodPixels>1024</maxLodPixels>" + //doesn't work as expected.
-                    "</Lod>\n"
-                    + "      <LatLonAltBox>\n"
-                    + "        <west>"
-                    + (Math.min(tLonStartd, tLonStopd) + tLonAdjust)
-                    + "</west>\n"
-                    + "        <east>"
-                    + (Math.max(tLonStartd, tLonStopd) + tLonAdjust)
-                    + "</east>\n"
-                    + "        <south>"
-                    + Math.min(tLatStartd, tLatStopd)
-                    + "</south>\n"
-                    + "        <north>"
-                    + Math.max(tLatStartd, tLatStopd)
-                    + "</north>\n"
-                    + "      </LatLonAltBox>\n"
-                    + "    </Region>\n"
-                    + "    <Link>\n"
-                    + "      <href>"
-                    + datasetUrl
-                    + ".kml?"
-                    + SSR.minimalPercentEncode(tQuery.toString())
-                    + // XML.encodeAsXML doesn't work
-                    percentEncodedAmpQuery
-                    + "</href>\n"
-                    + "      <viewRefreshMode>onRegion</viewRefreshMode>\n"
-                    + "    </Link>\n"
-                    + "  </NetworkLink>\n");
-          }
-        }
-
-        // the GroundOverlay which shows the current image
-        tQuery = new StringBuilder(tDestinationNames.get(0)); // limited chars, no need to URLEncode
-        for (int av = 0; av < axisVariables.length; av++) {
-          if (av == lonIndex)
-            tQuery.append("[(" + lonStartd + "):" + lonLatStride + ":(" + lonStopd + ")]");
-          else if (av == latIndex)
-            tQuery.append("[(" + latStartd + "):" + lonLatStride + ":(" + latStopd + ")]");
-          else if (av == timeIndex) tQuery.append("[(" + timeString + ")]");
-          else tQuery.append("[" + tConstraints.get(av * 3 + 0) + "]");
-        }
-        writer.write(
-            "  <GroundOverlay>\n"
-                +
-                // "    <name>" + XML.encodeAsXML(title()) +
-                //    (timeString.length() > 0? ", " + timeString : "") +
-                //    "</name>\n" +
-                "    <drawOrder>"
-                + drawOrder
-                + "</drawOrder>\n"
-                + "    <Icon>\n"
-                + "      <href>"
-                + datasetUrl
-                + ".transparentPng?"
-                + SSR.minimalPercentEncode(tQuery.toString())
-                + // XML.encodeAsXML doesn't work
-                percentEncodedAmpQuery
-                + "</href>\n"
-                + "    </Icon>\n"
-                + "    <LatLonBox>\n"
-                + llBox
-                + "    </LatLonBox>\n"
-                +
-                // "    <visibility>1</visibility>\n" +
-                "  </GroundOverlay>\n");
-      } /*else {
-            //nTimes >= 2, so make a timeline in Google Earth
-            //Problem: I don't know what time range each image represents.
-            //  Because I don't know what the timePeriod is for the dataset (e.g., 8day).
-            //  And I don't know if the images overlap (e.g., 8day composites, every day)
-            //  And if the stride>1, it is further unknown.
-            //Solution (crummy): assume an image represents -1/2 time to previous image until 1/2 time till next image
-
-            //get all the .dotConstraints
-            String parts[] = Table.getDapQueryParts(userDapQuery); //decoded.  always at least 1 part (may be "")
-            StringBuilder dotConstraintsSB = new StringBuilder();
-            for (int i = 0; i < parts.length; i++) {
-                if (parts[i].startsWith(".")) {
-                    if (dotConstraintsSB.size() > 0)
-                        dotConstraintsSB.append("&");
-                    dotConstraintsSB.append(parts[i]);
-                }
-            }
-            String dotConstraints = dotConstraintsSB.toString();
-
-            IntArray tConstraints = (IntArray)gridDataAccessor.constraints().clone();
-            int startTimeIndex = tConstraints.get(timeIndex * 3);
-            int timeStride     = tConstraints.get(timeIndex * 3 + 1);
-            int stopTimeIndex  = tConstraints.get(timeIndex * 3 + 2);
-            double preTime = Double.NaN;
-            double nextTime = allTimeDestPa.getDouble(startTimeIndex);
-            double currentTime = nextTime - (allTimeDestPa.getDouble(startTimeIndex + timeStride) - nextTime);
-            for (int tIndex = startTimeIndex; tIndex <= stopTimeIndex; tIndex += timeStride) {
-                preTime = currentTime;
-                currentTime = nextTime;
-                nextTime = tIndex + timeStride > stopTimeIndex?
-                    currentTime + (currentTime - preTime) :
-                    allTimeDestPa.getDouble(tIndex + timeStride);
-                //String2.log("  tIndex=" + tIndex + " preT=" + preTime + " curT=" + currentTime + " nextT=" + nextTime);
-                //just change the time constraints; leave all others unchanged
-                tConstraints.set(timeIndex * 3, tIndex);
-                tConstraints.set(timeIndex * 3 + 1, 1);
-                tConstraints.set(timeIndex * 3 + 2, tIndex);
-                String tDapQuery = buildDapQuery(tDestinationNames, tConstraints) + dotConstraints;
-                writer.write(
-                    //the kml link to the data
-                    "  <GroundOverlay>\n" +
-                    "    <name>" + Calendar2.epochSecondsToIsoStringTZ(currentTime) + "</name>\n" +
-                    "    <Icon>\n" +
-                    "      <href>" +
-                        datasetUrl + ".transparentPng?" + I changed this: was minimalPercentEncode()... tDapQuery + //XML.encodeAsXML isn't ok
-                        "</href>\n" +
-                    "    </Icon>\n" +
-                    "    <LatLonBox>\n" +
-                    "      <west>" + west + "</west>\n" +
-                    "      <east>" + east + "</east>\n" +
-                    "      <south>" + south + "</south>\n" +
-                    "      <north>" + north + "</north>\n" +
-                    "    </LatLonBox>\n" +
-                    "    <TimeSpan>\n" +
-                    "      <begin>" + Calendar2.epochSecondsToIsoStringTZ((preTime + currentTime)  / 2.0) + "</begin>\n" +
-                    "      <end>"   + Calendar2.epochSecondsToIsoStringTZ((currentTime + nextTime) / 2.0) + "</end>\n" +
-                    "    </TimeSpan>\n" +
-                    "    <visibility>1</visibility>\n" +
-                    "  </GroundOverlay>\n");
-            }
-        }*/
-      if (drawOrder == 1) writer.write(getKmlIconScreenOverlay());
-      writer.write("</Document>\n" + "</kml>\n");
-      writer.flush(); // essential
-    } finally {
-      writer.close();
-    }
-
-    // diagnostic
-    if (reallyVerbose)
-      String2.log("  EDDGrid.saveAsKml done. TIME=" + (System.currentTimeMillis() - time) + "ms\n");
-    return true;
-  }
-
-  /**
-   * This creates a .wav file with the requested grid (not axis) data. If no exception is thrown,
-   * the data was successfully written.
-   *
-   * @param language the index of the selected language
-   * @param loggedInAs the name of the logged in user (or null if not logged in). Normally, this is
-   *     not used to test if this edd is accessibleTo loggedInAs, but it unusual cases
-   *     (EDDTableFromPost?) it could be. Normally, this is just used to determine which erddapUrl
-   *     to use (http vs https).
-   * @param requestUrl the part of the user's request, after EDStatic.baseUrl, before '?'.
-   * @param userDapQuery an OPeNDAP DAP-style query string, still percentEncoded (shouldn't be
-   *     null). e.g., ATssta[45:1:45][0:1:0][120:10:140][130:10:160].
-   * @param fullOutName is dir + UniqueName + ".wav"
-   * @throws Throwable if trouble.
-   */
-  public void saveAsWav(int language, String requestUrl, String userDapQuery, String fullOutName)
-      throws Throwable {
-
-    if (reallyVerbose) String2.log("  EDDGrid.saveAsWav");
-    long time = System.currentTimeMillis();
-    int randomInt = Math2.random(Integer.MAX_VALUE);
-    String fullDosName = fullOutName + ".dos" + randomInt;
-    String errorWhile =
-        EDStatic.simpleBilingual(language, EDStatic.queryErrorAr) + " while writing .wav file: ";
-
-    // .kml not available for axis request
-    if (isAxisDapQuery(userDapQuery))
-      throw new SimpleException(errorWhile + "The .wav format is for data requests only.");
-
-    // ** create gridDataAccessor first,
-    // to check for error when parsing query or getting data
-    GridDataAccessor gda =
-        new GridDataAccessor(
-            language, this, requestUrl, userDapQuery, true, false); // rowMajor, convertToNaN
-    EDV tDataVariables[] = gda.dataVariables();
-    int nDV = tDataVariables.length;
-
-    // ensure all same type of data (and not char or string)
-    String tPATypeString = tDataVariables[0].destinationDataType();
-    Test.ensureTrue(
-        !tPATypeString.equals("String") && !tPATypeString.equals("char"),
-        errorWhile + "All data columns must be numeric.");
-    boolean java8 = System.getProperty("java.version").startsWith("1.8.");
-    if (java8 && (tPATypeString.equals("float") || tPATypeString.equals("double")))
-      throw new SimpleException(
-          errorWhile + "Until Java 9, float and double values can't be written to .wav files.");
-    for (int dvi = 1; dvi < nDV; dvi++) {
-      Test.ensureEqual(
-          tPATypeString,
-          tDataVariables[dvi].destinationDataType(),
-          errorWhile + "All data columns must be of the same data type.");
-    }
-
-    // write data to dos
-    DataOutputStream dos =
-        new DataOutputStream(new BufferedOutputStream(new FileOutputStream(fullDosName)));
-    try {
-
-      // send the data to dos
-      PrimitiveArray[] pdv = gda.getPartialDataValues();
-      NDimensionalIndex partialIndex = gda.partialIndex();
-      if (tPATypeString.equals("long")) {
-        while (gda.increment()) {
-          int i =
-              (int)
-                  partialIndex.getIndex(); // safe since partialIndex size checked when constructed
-          for (int dvi = 0; dvi < nDV; dvi++)
-            dos.writeInt((int) (pdv[dvi].getLong(i) >> 32)); // as int
-        }
-      } else {
-        // all other types
-        while (gda.increment()) {
-          int i =
-              (int)
-                  partialIndex.getIndex(); // safe since partialIndex size checked when constructed
-          for (int dvi = 0; dvi < nDV; dvi++) pdv[dvi].writeDos(dos, i);
-        }
-      }
-    } finally {
-      gda.releaseResources();
-      dos.close();
-    }
-
-    // create the wav file
-    Table.writeWaveFile(
-        fullDosName,
-        nDV,
-        gda.totalIndex().size(),
-        tPATypeString.equals("long") ? "int" : tPATypeString,
-        gda.globalAttributes,
-        randomInt,
-        fullOutName,
-        time);
-    File2.delete(fullDosName);
-
-    // diagnostic
-    if (reallyVerbose)
-      String2.log("  EDDGrid.saveAsWav done. TIME=" + (System.currentTimeMillis() - time) + "ms\n");
-  }
-
-  /**
-   * Save the TableWriterAllWithMetadata data as an Igor Text File .itx file. <br>
-   * File reference: in Bob's /programs/igor/ or
-   * https://www.wavemetrics.net/doc/igorman/II-09%20Data%20Import%20Export.pdf <br>
-   * Command reference: in Bob's /programs/igor/ or
-   * https://www.wavemetrics.net/doc/igorman/V-01%20Reference.pdf <br>
-   * The file extension should be .itx
-   *
-   * @param language the index of the selected language
-   * @param requestUrl the part of the user's request, after EDStatic.baseUrl, before '?'.
-   * @param userDapQuery an OPeNDAP DAP-style query string, still percentEncoded (shouldn't be
-   *     null). e.g., ATssta[45:1:45][0:1:0][120:10:140][130:10:160]
-   * @param outputStreamSource the source of an outputStream (usually already buffered) to receive
-   *     the results. If all goes well, at the end of this method the outputStream is closed.
-   * @throws Throwable
-   */
-  public void saveAsIgor(
-      int language, String requestUrl, String userDapQuery, OutputStreamSource oss)
-      throws Throwable {
-    if (reallyVerbose) String2.log("  EDDGrid.saveAsIgor");
-    long time = System.currentTimeMillis();
-
-    // handle axisDapQuery
-    if (isAxisDapQuery(userDapQuery)) {
-      // get axisDataAccessor first, in case of error when parsing query
-      AxisDataAccessor ada = new AxisDataAccessor(language, this, requestUrl, userDapQuery);
-      int nRAV = ada.nRequestedAxisVariables();
-
-      // make a table and saveAsIgor
-      Table table = new Table();
-      for (int av = 0; av < nRAV; av++) {
-        table.addColumn(
-            av,
-            ada.axisVariables(av).destinationName(),
-            ada.axisValues(av),
-            ada.axisAttributes(av));
-      }
-      table.saveAsIgor(
-          File2.getBufferedWriter(oss.outputStream(Table.IgorCharset), Table.IgorCharset));
-
-      // diagnostic
-      if (reallyVerbose) String2.log("  EDDGrid.saveAsIgor axis done\n");
-      // String2.log(NcHelper.ncdump(fullFileName, "-h"));
-
-      return;
-    }
-
-    // ** create gridDataAccessor first,
-    // to check for error when parsing query or getting data,
-    // and to check n values
-    GridDataAccessor gda =
-        new GridDataAccessor(
-            language, this, requestUrl, userDapQuery, true, true); // rowMajor, convertToNaN
-    EDV tDataVariables[] = gda.dataVariables();
-    int nDV = tDataVariables.length;
-
-    // ensure < Integer.MAX_VALUE items
-    // No specific limit in Igor. But this is suggested as very large.
-    // And this is limit for PrimitiveArray size.
-    NDimensionalIndex totalIndex = gda.totalIndex();
-    if (nDV * totalIndex.size() >= Integer.MAX_VALUE)
-      throw new SimpleException(
-          Math2.memoryTooMuchData
-              + " ("
-              + (nDV * totalIndex.size())
-              + " values is more than "
-              + (Integer.MAX_VALUE - 1)
-              + ")");
-    int nAV = axisVariables.length;
-    if (nAV > 4)
-      throw new SimpleException(
-          EDStatic.simpleBilingual(language, EDStatic.queryErrorAr)
-              + "Igor Text Files can handle 4 dimensions, not "
-              + nAV);
-
-    // ** Then get gridDataAllAccessor
-    // AllAccessor so I can just request PA with a var's values.
-    GridDataAllAccessor gdaa = new GridDataAllAccessor(gda);
-
-    // write the data
-    BufferedWriter writer =
-        File2.getBufferedWriter(oss.outputStream(Table.IgorCharset), Table.IgorCharset);
-    try {
-      writer.write("IGOR" + Table.IgorEndOfLine);
-
-      HashSet<String> colNamesHashset = new HashSet();
-      StringBuilder setScaleForDims = new StringBuilder();
-      StringArray avUNames = new StringArray();
-      for (int av = 0; av < nAV; av++) {
-        Attributes atts = gda.axisAttributes(av);
-        String units = atts.getString("units");
-        boolean isTimeStamp =
-            units != null && (units.equals(EDV.TIME_UNITS) || units.equals(EDV.TIME_UCUM_UNITS));
-
-        PrimitiveArray pa = gda.axisValues(av);
-        // pa.convertToStandardMissingValues( //no need, since no missing values
-        //    atts.getDouble("_FillValue"),
-        //    atts.getDouble("missing_value"));
-
-        String uName =
-            Table.makeUniqueIgorColumnName(axisVariables[av].destinationName(), colNamesHashset);
-        Table.writeIgorWave(writer, uName, "", pa, units, isTimeStamp, "");
-        avUNames.add(uName);
-
-        // setScaleForDims
-        setScaleForDims.append("X SetScale ");
-        if (pa.size() == 1 || pa.isEvenlySpaced().length() > 0) {
-          // just 1 value or isn't evenlySpaced
-          setScaleForDims.append(
-              "/I "
-                  + "xyzt".charAt(nAV - av - 1)
-                  + ", "
-                  + pa.getString(0)
-                  + ","
-                  + pa.getString(pa.size() - 1));
-
-        } else {
-          // isEvenlySpaced, num2 is average spacing
-          setScaleForDims.append(
-              "/P "
-                  + "xyzt".charAt(nAV - av - 1)
-                  + ", "
-                  + pa.getString(0)
-                  + ","
-                  + ((pa.getDouble(pa.size() - 1) - pa.getDouble(0)) / (pa.size() - 1)));
-        }
-        String tUnits = isTimeStamp ? "dat" : String2.isSomething(units) ? units : ""; // space?
-        setScaleForDims.append(
-            ", " + String2.toJson(tUnits) + ", $WAVE_NAME$" + Table.IgorEndOfLine);
-      }
-
-      StringBuilder dimInfo = new StringBuilder();
-      StringBuilder notes = new StringBuilder(); // the in-common quoted part
-      for (int av = nAV - 1; av >= 0; av--) {
-        // write each axisVar as a wave separately, so data type is preserved
-        // Igor wants the dimension definition to be nRow, nColumn, nLayer, nChunk !
-        int n = gda.axisValues(av).size();
-        if (av == nAV - 1) dimInfo.append(n);
-        else if (av == nAV - 2) dimInfo.insert(0, n + ",");
-        else dimInfo.append("," + n);
-
-        // e.g., X Note analysed_sst_mod, "RowsDim:longitude;ColumnsDim:latitude;LayersDim:time2"
-        if (notes.length() > 0) notes.append(';');
-        notes.append(
-            (av == nAV - 1
-                    ? "RowsDim"
-                    : av == nAV - 2
-                        ? "ColumnsDim"
-                        : av == nAV - 3
-                            ? "LayersDim"
-                            : av == nAV - 4 ? "ChunkDim" : "Dim" + (nAV - av - 1))
-                + // shouldn't happen since limited to 4 dims above
-                ":"
-                + avUNames.get(av));
-      }
-
-      // write each dataVar as a wave separately, so data type is preserved
-      // Igor wants same row-major order as ERDDAP:
-      //  "Igor expects the data to be in column/row/layer/chunk order." [t,z,y,x]
-      for (int dv = 0; dv < nDV; dv++) {
-        Attributes atts = gda.dataAttributes(dv);
-        String units = atts.getString("units");
-        boolean isTimeStamp =
-            units != null && (units.equals(EDV.TIME_UNITS) || units.equals(EDV.TIME_UCUM_UNITS));
-
-        PrimitiveArray pa = gdaa.getPrimitiveArray(dv);
-        // converted to NaN by "convertToNaN" above
-
-        String uName =
-            Table.makeUniqueIgorColumnName(tDataVariables[dv].destinationName(), colNamesHashset);
-        Table.writeIgorWave(
-            writer,
-            uName,
-            "/N=(" + dimInfo + ")",
-            pa,
-            units,
-            isTimeStamp,
-            String2.replaceAll(setScaleForDims.toString(), "$WAVE_NAME$", uName)
-                +
-                // e.g., X Note analysed_sst_mod,
-                // "RowsDim:longitude;ColumnsDim:latitude;LayersDim:time2"
-                "X Note "
-                + uName
-                + ", \""
-                + notes
-                + "\""
-                + Table.IgorEndOfLine);
-      }
-
-      // done!
-      writer.flush(); // essential
-    } finally {
-      gda.releaseResources();
-      writer.close();
-    }
-
-    // diagnostic
-    if (reallyVerbose)
-      String2.log(
-          "  EDDGrid.saveAsIgor done.  TIME=" + (System.currentTimeMillis() - time) + "ms\n");
-    // String2.log(NcHelper.ncdump(directory + name + ext, "-h"));
-
-  }
-
-  /**
-   * This writes the grid from this dataset to the outputStream in Matlab .mat format. This writes
-   * the lon values as they are currently in this grid (e.g., +-180 or 0..360). If no exception is
-   * thrown, the data was successfully written.
-   *
-   * @param language the index of the selected language
-   * @param requestUrl the part of the user's request, after EDStatic.baseUrl, before '?'.
-   * @param userDapQuery an OPeNDAP DAP-style query string, still percent-encoded (shouldn't be
-   *     null), e.g., ATssta[45:1:45][0:1:0][120:10:140][130:10:160]
-   * @param outputStreamSource the source of an outputStream (usually already buffered) to receive
-   *     the results. At the end of this method the outputStream is flushed, not closed.
-   * @throws Throwable
-   */
-  public void saveAsMatlab(
-      int language, String requestUrl, String userDapQuery, OutputStreamSource outputStreamSource)
-      throws Throwable {
-
-    if (reallyVerbose) String2.log("  EDDGrid.saveAsMatlab");
-    long time = System.currentTimeMillis();
-
-    // handle axisDapQuery
-    if (isAxisDapQuery(userDapQuery)) {
-      // this doesn't write attributes because .mat files don't store attributes
-      // get axisDataAccessor first, in case of error when parsing query
-      AxisDataAccessor ada = new AxisDataAccessor(language, this, requestUrl, userDapQuery);
-
-      // make the table
-      Table table = new Table();
-      int nRAV = ada.nRequestedAxisVariables();
-      for (int av = 0; av < nRAV; av++)
-        table.addColumn(ada.axisVariables(av).destinationName(), ada.axisValues(av));
-      // don't call table.makeColumnsSameSize();  leave them different lengths
-
-      // then get the modified outputStream
-      DataOutputStream dos = new DataOutputStream(outputStreamSource.outputStream(""));
-      table.saveAsMatlab(dos, datasetID); // it makes structure and varNames Matlab-safe
-      dos.flush(); // essential
-
-      if (reallyVerbose) String2.log("  EDDGrid.saveAsMatlab axis done.\n");
-      return;
-    }
-
-    // get gridDataAccessor first, in case of error when parsing query
-    GridDataAccessor mainGda =
-        new GridDataAccessor(
-            language,
-            this,
-            requestUrl,
-            userDapQuery,
-            false, // Matlab is one of the few drivers that needs column-major order
-            true); // convertToNaN
-    String structureName = String2.encodeMatlabNameSafe(datasetID);
-
-    // Make sure no String data and that gridsize isn't > Integer.MAX_VALUE bytes (Matlab's limit)
-    EDV tDataVariables[] = mainGda.dataVariables();
-    int nAv = axisVariables.length;
-    int ntDv = tDataVariables.length;
-    byte structureNameInfo[] = Matlab.nameInfo(structureName);
-    // int largest = 1; //find the largest data item nBytesPerElement
-    long cumSize = // see 1-32
-        16
-            + // for array flags
-            16
-            + // my structure is always 2 dimensions
-            structureNameInfo.length
-            + 8
-            + // field name length (for all fields)
-            8
-            + (nAv + ntDv) * 32L; // field names
-
-    PrimitiveArray avPa[] = new PrimitiveArray[nAv];
-    NDimensionalIndex avNDIndex[] = new NDimensionalIndex[nAv];
-    for (int av = 0; av < nAv; av++) {
-      avPa[av] = mainGda.axisValues[av];
-      avNDIndex[av] = Matlab.make2DNDIndex(avPa[av].size());
-      cumSize +=
-          8
-              + Matlab.sizeOfNDimensionalArray( // throws exception if too big for Matlab
-                  "", // names are done separately
-                  avPa[av].elementType(),
-                  avNDIndex[av]);
-    }
-
-    GridDataAccessor tGda[] = new GridDataAccessor[ntDv];
-    NDimensionalIndex dvNDIndex[] = new NDimensionalIndex[ntDv];
-    String arrayQuery = buildDapArrayQuery(mainGda.constraints());
-    for (int dv = 0; dv < ntDv; dv++) {
-      if (tDataVariables[dv].destinationDataPAType() == PAType.STRING)
-        // can't do String data because you need random access to all values
-        // that could be a memory nightmare
-        // so just don't allow it
-        throw new SimpleException(
-            EDStatic.simpleBilingual(language, EDStatic.queryErrorAr)
-                + "ERDDAP doesn't support String data in Matlab grid data files.");
-      // largest = Math.max(largest,
-      //    tDataVariables[dv].destinationBytesPerElement());
-
-      // make a GridDataAccessor for this dataVariable
-      String tUserDapQuery = tDataVariables[dv].destinationName() + arrayQuery;
-      tGda[dv] =
-          new GridDataAccessor(
-              language,
-              this,
-              requestUrl,
-              tUserDapQuery,
-              false, // Matlab is one of the few drivers that needs column-major order
-              true); // convertToNaN
-      dvNDIndex[dv] = tGda[dv].totalIndex();
-      if (dvNDIndex[dv].nDimensions() == 1)
-        dvNDIndex[dv] = Matlab.make2DNDIndex(dvNDIndex[dv].shape()[0]);
-
-      cumSize +=
-          8
-              + Matlab.sizeOfNDimensionalArray( // throws exception if too big for Matlab
-                  "", // names are done separately
-                  tDataVariables[dv].destinationDataPAType(),
-                  dvNDIndex[dv]);
-    }
-    if (cumSize >= Integer.MAX_VALUE - 1000)
-      throw new SimpleException(
-          Math2.memoryTooMuchData
-              + "  "
-              + MessageFormat.format(
-                  EDStatic.errorMoreThan2GBAr[0], ".mat", (cumSize / Math2.BytesPerMB) + " MB"));
-    // "Error: " +
-    // "The requested data (" +
-    // (cumSize / Math2.BytesPerMB) +
-    // " MB) is greater than Matlab's limit (" +
-    // (Integer.MAX_VALUE / Math2.BytesPerMB) + " MB)."); //safe
-
-    // then get the modified outputStream
-    DataOutputStream stream = new DataOutputStream(outputStreamSource.outputStream(""));
-
-    // write the header
-    Matlab.writeMatlabHeader(stream);
-
-    // write the miMatrix dataType and nBytes
-    stream.writeInt(Matlab.miMATRIX); // dataType
-    stream.writeInt((int) cumSize); // safe since checked above
-
-    // write array flags
-    stream.writeInt(Matlab.miUINT32); // dataType
-    stream.writeInt(8); // fixed nBytes of data
-    stream.writeInt(Matlab.mxSTRUCT_CLASS); // array flags
-    stream.writeInt(0); // reserved; ends on 8 byte boundary
-
-    // write structure's dimension array
-    stream.writeInt(Matlab.miINT32); // dataType
-    stream.writeInt(2 * 4); // nBytes
-    // matlab docs have 2,1, octave has 1,1.
-    // Think of structure as one row of a table, where elements are entire arrays:  e.g., sst.lon
-    // sst.lat sst.sst.
-    // Having multidimensions (e.g., 2 here) lets you have additional rows, e.g., sst(2).lon
-    // sst(2).lat sst(2).sst.
-    // So 1,1 makes sense.
-    stream.writeInt(1);
-    stream.writeInt(1);
-
-    // write structure name
-    stream.write(structureNameInfo, 0, structureNameInfo.length);
-
-    // write length for all field names (always 32)  (short form)
-    stream.writeShort(4); // nBytes
-    stream.writeShort(Matlab.miINT32); // dataType
-    stream.writeInt(32); // 32 bytes per field name
-
-    // write the structure's field names (each 32 bytes)
-    stream.writeInt(Matlab.miINT8); // dataType
-    stream.writeInt((nAv + ntDv) * 32); // 32 bytes per field name
-    String nulls = String2.makeString('\u0000', 32);
-    for (int av = 0; av < nAv; av++)
-      stream.write(
-          String2.toByteArray(
-              String2.noLongerThan(
-                      String2.encodeMatlabNameSafe(axisVariables[av].destinationName()), 31)
-                  + nulls),
-          0,
-          32); // EEEK! Better not be longer.
-    for (int dv = 0; dv < ntDv; dv++)
-      stream.write(
-          String2.toByteArray(
-              String2.noLongerThan(
-                      String2.encodeMatlabNameSafe(tDataVariables[dv].destinationName()), 31)
-                  + nulls),
-          0,
-          32); // EEEK! Better not be longer.
-
-    // write the axis miMatrix
-    for (int av = 0; av < nAv; av++)
-      Matlab.writeNDimensionalArray(
-          stream,
-          "", // name is written above
-          avPa[av],
-          avNDIndex[av]);
-
-    // make the data miMatrix
-    for (int dv = 0; dv < ntDv; dv++) {
-      writeNDimensionalMatlabArray(
-          language,
-          stream,
-          "", // name is written above
-          tGda[dv],
-          dvNDIndex[dv]);
-      tGda[dv].releaseResources();
-    }
-
-    // this doesn't write attributes because .mat files don't store attributes
-    stream.flush(); // essential
-
-    if (reallyVerbose)
-      String2.log(
-          "  EDDGrid.saveAsMatlab done. TIME=" + (System.currentTimeMillis() - time) + "ms\n");
   }
 
   /**
@@ -10361,7 +5790,7 @@ public abstract class EDDGrid extends EDD {
 
     if (gda.rowMajor())
       throw new SimpleException(
-          EDStatic.errorInternalAr[0]
+          EDStatic.messages.errorInternalAr[0]
               + "In EDDGrid.writeNDimensionalMatlabArray, the GridDataAccessor must be column-major.");
 
     // do the first part
@@ -10372,7 +5801,7 @@ public abstract class EDDGrid extends EDD {
       // that could be a memory nightmare
       // so just don't allow it
       throw new SimpleException(
-          EDStatic.simpleBilingual(language, EDStatic.queryErrorAr)
+          EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
               + "Matlab files can't have String data.");
     int nDataBytes = Matlab.writeNDimensionalArray1(stream, name, elementPAType, ndIndex);
 
@@ -10414,7 +5843,7 @@ public abstract class EDDGrid extends EDD {
    *
    * @param language the index of the selected language
    * @param ncVersion either NetcdfFileFormat.NETCDF3 or NETCDF4.
-   * @param requestUrl the part of the user's request, after EDStatic.baseUrl, before '?'.
+   * @param requestUrl the part of the user's request, after EDStatic.config.baseUrl, before '?'.
    * @param userDapQuery an OPeNDAP DAP-style query string, still percentEncoded (shouldn't be
    *     null). e.g., ATssta[45:1:45][0:1:0][120:10:140][130:10:160]
    * @param fullFileName the name for the file (including directory and extension)
@@ -10429,6 +5858,7 @@ public abstract class EDDGrid extends EDD {
       String ipAddress,
       String requestUrl,
       String userDapQuery,
+      String dir,
       String fullFileName,
       boolean keepUnusedAxes,
       double lonAdjust)
@@ -10485,7 +5915,7 @@ public abstract class EDDGrid extends EDD {
                   NcHelper.getNc3DataType(
                       pa.elementType()), // nc3Mode long & ulong->double done above. No Strings as
                   // axes.
-                  Arrays.asList(dimension));
+                  List.of(dimension));
 
           // write axis attributes
           Attributes atts = new Attributes(ada.axisAttributes(av)); // use a copy
@@ -10540,838 +5970,194 @@ public abstract class EDDGrid extends EDD {
     // to check for error when parsing query or getting data,
     // and to check that file size < 2GB
     // This throws exception if invalid query.
-    GridDataAccessor gda =
+    try (GridDataAccessor gda =
         new GridDataAccessor(
-            language, this, requestUrl, userDapQuery, true, false); // rowMajor, convertToNaN
+            language, this, requestUrl, userDapQuery, true, false)) { // rowMajor, convertToNaN
 
-    // ensure file size < 2GB
-    // ???is there a way to allow >2GB netcdf 3 files?
-    // Yes: the 64-bit extension!  But this code doesn't yet use that.
-    //   And even if so, what about OS limit ERDDAP is running on? and client OS?
-    // Or, view this as protection against accidental requests for too much data (e.g., whole
-    // dataset).
-    if (gda.totalNBytes() > 2100000000) // leave some space for axis vars, etc.
-    throw new SimpleException(
-          Math2.memoryTooMuchData
-              + "  "
-              + MessageFormat.format(
-                  EDStatic.errorMoreThan2GBAr[0],
-                  ".nc",
-                  ((gda.totalNBytes() + 100000) / Math2.BytesPerMB) + " MB"));
+      // ensure file size < 2GB
+      // ???is there a way to allow >2GB netcdf 3 files?
+      // Yes: the 64-bit extension!  But this code doesn't yet use that.
+      //   And even if so, what about OS limit ERDDAP is running on? and client OS?
+      // Or, view this as protection against accidental requests for too much data (e.g., whole
+      // dataset).
+      if (gda.totalNBytes() > 2100000000) // leave some space for axis vars, etc.
+      throw new SimpleException(
+            Math2.memoryTooMuchData
+                + "  "
+                + MessageFormat.format(
+                    EDStatic.messages.errorMoreThan2GBAr[0],
+                    ".nc",
+                    ((gda.totalNBytes() + 100000) / Math2.BytesPerMB) + " MB"));
 
-    if (gda.totalNBytes() > 1000000000) { // 1GB
-      EDStatic.tally.add("Large Request, IP address (since last Major LoadDatasets)", ipAddress);
-      EDStatic.tally.add("Large Request, IP address (since last daily report)", ipAddress);
-      EDStatic.tally.add("Large Request, IP address (since startup)", ipAddress);
-    }
-
-    // ** Then get gridDataAllAccessor
-    // AllAccessor so max length of String variables will be known.
-    GridDataAllAccessor gdaa = new GridDataAllAccessor(gda);
-    EDV tDataVariables[] = gda.dataVariables();
-
-    // write the data
-    // items determined by looking at a .nc file; items written in that order
-    NetcdfFormatWriter ncWriter = null;
-    try {
-      NetcdfFormatWriter.Builder nc = NetcdfFormatWriter.createNewNetcdf3(fullFileName + randomInt);
-      Group.Builder rootGroup = nc.getRootGroup();
-      nc.setFill(false);
-
-      // find active axes
-      IntArray activeAxes = new IntArray();
-      for (int av = 0; av < axisVariables.length; av++) {
-        if (keepUnusedAxes || gda.axisValues(av).size() > 1) activeAxes.add(av);
+      if (gda.totalNBytes() > 1000000000) { // 1GB
+        EDStatic.tally.add("Large Request, IP address (since last Major LoadDatasets)", ipAddress);
+        EDStatic.tally.add("Large Request, IP address (since last daily report)", ipAddress);
+        EDStatic.tally.add("Large Request, IP address (since startup)", ipAddress);
       }
+      Math2.ensureDiskAvailable(gda.totalNBytes(), dir, "EDDGrid.saveAsNc");
 
-      // define the dimensions
-      int nActiveAxes = activeAxes.size();
-      ArrayList<Dimension> axisDimensionList = new ArrayList();
-      Array axisArrays[] = new Array[nActiveAxes];
-      Variable.Builder newAxisVars[] = new Variable.Builder[nActiveAxes];
-      int stdShape[] = new int[nActiveAxes];
-      for (int a = 0; a < nActiveAxes; a++) {
-        int av = activeAxes.get(a);
-        String avName = axisVariables[av].destinationName();
-        PrimitiveArray pa = gda.axisValues(av);
-        // if (reallyVerbose) String2.log(" create dim=" + avName + " size=" + pa.size());
-        if (nc3Mode && (pa instanceof LongArray || pa instanceof ULongArray))
-          pa = new DoubleArray(pa);
-        stdShape[a] = pa.size();
-        Dimension tDim = NcHelper.addDimension(rootGroup, avName, pa.size());
-        axisDimensionList.add(tDim);
-        if (av == lonIndex) pa.scaleAddOffset(1, lonAdjust);
-        axisArrays[a] =
-            Array.factory(
-                NcHelper.getNc3DataType(gda.axisValues(av).elementType()),
-                new int[] {pa.size()},
-                pa.toObjectArray());
-        // if (reallyVerbose) String2.log(" create var=" + avName);
-        newAxisVars[a] =
-            NcHelper.addVariable(
-                rootGroup,
-                avName,
-                NcHelper.getNc3DataType(
-                    pa.elementType()), // nc3Mode long->double done above. No Strings as axes.
-                Arrays.asList(axisDimensionList.get(a)));
-      }
+      NetcdfFormatWriter ncWriter = null;
+      // ** Then get gridDataAllAccessor
+      // AllAccessor so max length of String variables will be known.
+      try (GridDataAllAccessor gdaa = new GridDataAllAccessor(gda)) {
+        EDV tDataVariables[] = gda.dataVariables();
 
-      // define the data variables
-      Variable.Builder newVars[] = new Variable.Builder[tDataVariables.length];
-      for (int dv = 0; dv < tDataVariables.length; dv++) {
-        String destName = tDataVariables[dv].destinationName();
-        PAType destPAType = tDataVariables[dv].destinationDataPAType();
-        // if (reallyVerbose) String2.log(" create var=" + destName);
+        // write the data
+        // items determined by looking at a .nc file; items written in that order
+        NetcdfFormatWriter.Builder nc =
+            NetcdfFormatWriter.createNewNetcdf3(fullFileName + randomInt);
+        Group.Builder rootGroup = nc.getRootGroup();
+        nc.setFill(false);
 
-        // nc3 String data? need to create specially (so there's a strlen dimension for this
-        // variable)
-        if (nc3Mode && destPAType == PAType.STRING) {
-          StringArray tsa = (StringArray) gdaa.getPrimitiveArray(dv);
-          newVars[dv] =
-              NcHelper.addNc3StringVariable(
-                  rootGroup, destName, axisDimensionList, tsa.maxStringLength());
+        // find active axes
+        IntArray activeAxes = new IntArray();
+        for (int av = 0; av < axisVariables.length; av++) {
+          if (keepUnusedAxes || gda.axisValues(av).size() > 1) activeAxes.add(av);
+        }
 
-        } else {
-          newVars[dv] =
+        // define the dimensions
+        int nActiveAxes = activeAxes.size();
+        ArrayList<Dimension> axisDimensionList = new ArrayList<>();
+        Array axisArrays[] = new Array[nActiveAxes];
+        Variable.Builder newAxisVars[] = new Variable.Builder[nActiveAxes];
+        int stdShape[] = new int[nActiveAxes];
+        for (int a = 0; a < nActiveAxes; a++) {
+          int av = activeAxes.get(a);
+          String avName = axisVariables[av].destinationName();
+          PrimitiveArray pa = gda.axisValues(av);
+          // if (reallyVerbose) String2.log(" create dim=" + avName + " size=" + pa.size());
+          if (nc3Mode && (pa instanceof LongArray || pa instanceof ULongArray))
+            pa = new DoubleArray(pa);
+          stdShape[a] = pa.size();
+          Dimension tDim = NcHelper.addDimension(rootGroup, avName, pa.size());
+          axisDimensionList.add(tDim);
+          if (av == lonIndex) pa.scaleAddOffset(1, lonAdjust);
+          axisArrays[a] =
+              Array.factory(
+                  NcHelper.getNc3DataType(gda.axisValues(av).elementType()),
+                  new int[] {pa.size()},
+                  pa.toObjectArray());
+          // if (reallyVerbose) String2.log(" create var=" + avName);
+          newAxisVars[a] =
               NcHelper.addVariable(
                   rootGroup,
-                  destName,
-                  NcHelper.getDataType(nc3Mode, destPAType),
-                  axisDimensionList);
+                  avName,
+                  NcHelper.getNc3DataType(
+                      pa.elementType()), // nc3Mode long->double done above. No Strings as axes.
+                  Collections.singletonList(axisDimensionList.get(a)));
         }
-      }
 
-      // write global attributes
-      NcHelper.setAttributes(nc3Mode, rootGroup, gda.globalAttributes);
+        // define the data variables
+        Variable.Builder newVars[] = new Variable.Builder[tDataVariables.length];
+        for (int dv = 0; dv < tDataVariables.length; dv++) {
+          String destName = tDataVariables[dv].destinationName();
+          PAType destPAType = tDataVariables[dv].destinationDataPAType();
+          // if (reallyVerbose) String2.log(" create var=" + destName);
 
-      // write axis attributes
-      for (int a = 0; a < nActiveAxes; a++) {
-        int av = activeAxes.get(a);
-        Attributes atts = new Attributes(gda.axisAttributes[av]); // use a copy
-        PAType paType = gda.axisValues[av].elementType();
-        if (paType == PAType.STRING) // never
-        atts.add(File2.ENCODING, File2.ISO_8859_1);
-        // disabled until there is a standard
-        //                else if (paType == PAType.CHAR)  //never
-        //                    atts.add(String2.CHARSET, File2.ISO_8859_1);
+          // nc3 String data? need to create specially (so there's a strlen dimension for this
+          // variable)
+          if (nc3Mode && destPAType == PAType.STRING) {
+            StringArray tsa = (StringArray) gdaa.getPrimitiveArray(dv);
+            newVars[dv] =
+                NcHelper.addNc3StringVariable(
+                    rootGroup, destName, axisDimensionList, tsa.maxStringLength());
 
-        NcHelper.setAttributes(nc3Mode, newAxisVars[a], atts, paType.isUnsigned());
-      }
-
-      // write data attributes
-      for (int dv = 0; dv < tDataVariables.length; dv++) {
-        Attributes atts = new Attributes(gda.dataAttributes[dv]); // use a copy
-        PAType paType = gda.dataVariables[dv].destinationDataPAType();
-        if (paType == PAType.STRING) // never
-        atts.add(File2.ENCODING, File2.ISO_8859_1);
-        // disabled until there is a standard
-        //                else if (paType == PAType.CHAR)  //never
-        //                    atts.add(String2.CHARSET, File2.ISO_8859_1);
-
-        NcHelper.setAttributes(nc3Mode, newVars[dv], atts, paType.isUnsigned());
-      }
-
-      // leave "define" mode
-      ncWriter = nc.build();
-
-      // write the axis variables
-      for (int a = 0; a < nActiveAxes; a++) {
-        int av = activeAxes.get(a);
-        ncWriter.write(newAxisVars[a].getFullName(), axisArrays[a]);
-      }
-
-      // write the data variables
-      for (int dv = 0; dv < tDataVariables.length; dv++) {
-
-        EDV edv = tDataVariables[dv];
-        String destName = edv.destinationName();
-        PAType edvPAType = edv.destinationDataPAType();
-        PrimitiveArray pa = gdaa.getPrimitiveArray(dv);
-        if (nc3Mode && (pa instanceof LongArray || pa instanceof ULongArray))
-          pa = new DoubleArray(pa);
-        Array array =
-            Array.factory(NcHelper.getNc3DataType(edvPAType), stdShape, pa.toObjectArray());
-        Variable newVar =
-            ncWriter.findVariable(
-                newVars[dv].getFullName()); // because newVars are Variable.Builder's
-        if (nc3Mode && edvPAType == PAType.STRING) {
-          ncWriter.writeStringDataToChar(newVar, array);
-        } else {
-          ncWriter.write(newVar, array);
-        }
-      }
-
-      // if close throws Throwable, it is trouble
-      ncWriter.close(); // it calls flush() and doesn't like flush called separately
-      ncWriter = null;
-
-      // rename the file to the specified name
-      File2.rename(fullFileName + randomInt, fullFileName);
-
-      // diagnostic
-      if (reallyVerbose)
-        String2.log(
-            "  EDDGrid.saveAsNc done.  TIME=" + (System.currentTimeMillis() - time) + "ms\n");
-      // String2.log(NcHelper.ncdump(directory + name + ext, "-h"));
-      gdaa.releaseResources();
-
-    } catch (Throwable t) {
-      String2.log(NcHelper.ERROR_WHILE_CREATING_NC_FILE + MustBe.throwableToString(t));
-      gdaa.releaseResources();
-      if (ncWriter != null) {
-        try {
-          ncWriter.abort();
-        } catch (Exception e9) {
-        }
-        File2.delete(fullFileName + randomInt);
-        ncWriter = null;
-      }
-
-      throw t;
-    }
-  }
-
-  /**
-   * Save the grid data in an NCO JSON .ncoJson file. See https://nco.sourceforge.net/nco.html#json
-   * See issues in JavaDocs for EDDTable.saveAsNcoJson().
-   *
-   * <p>This gives up a few things (e.g., actual_range) in order to make this a streaming response
-   * (not write file then transfer file).
-   *
-   * @param language the index of the selected language
-   * @param ncVersion either NetcdfFileFormat.NETCDF3 or NETCDF4.
-   * @param requestUrl the part of the user's request, after EDStatic.baseUrl, before '?'.
-   * @param userDapQuery an OPeNDAP DAP-style query string, still percentEncoded (shouldn't be
-   *     null). e.g., ATssta[45:1:45][0:1:0][120:10:140][130:10:160]
-   * @throws Throwable
-   */
-  public void saveAsNcoJson(
-      int language, String requestUrl, String userDapQuery, OutputStreamSource outputStreamSource)
-      throws Throwable {
-    if (reallyVerbose) String2.log("  EDDGrid.saveAsNc");
-    long time = System.currentTimeMillis();
-
-    // for now, write strings as if in nc3 file: char arrays with extra dimension for strlen
-    boolean writeStringsAsStrings = false; // if false, they are written as chars
-    String stringOpenBracket = writeStringsAsStrings ? "" : "[";
-    String stringCloseBracket = writeStringsAsStrings ? "" : "]";
-
-    // did query include &.jsonp= ?
-    String parts[] = Table.getDapQueryParts(userDapQuery); // decoded
-    String jsonp = String2.stringStartsWith(parts, ".jsonp="); // may be null
-    if (jsonp != null) {
-      jsonp = jsonp.substring(7);
-      if (!String2.isJsonpNameSafe(jsonp))
-        throw new SimpleException(
-            EDStatic.bilingual(
-                language,
-                EDStatic.queryErrorAr[0] + EDStatic.errorJsonpFunctionNameAr[0],
-                EDStatic.queryErrorAr[language] + EDStatic.errorJsonpFunctionNameAr[language]));
-    }
-
-    // handle axisDapQuery
-    if (isAxisDapQuery(userDapQuery)) {
-      // get axisDataAccessor first, in case of error when parsing query
-      AxisDataAccessor ada = new AxisDataAccessor(language, this, requestUrl, userDapQuery);
-      int nRAV = ada.nRequestedAxisVariables();
-
-      // create a writer
-      BufferedWriter writer =
-          File2.getBufferedWriterUtf8(outputStreamSource.outputStream(File2.UTF_8));
-      try {
-        if (jsonp != null) writer.write(jsonp + "(");
-
-        // write start
-        writer.write("{\n");
-
-        // write the global attributes
-        writer.write(ada.globalAttributes().toNcoJsonString("  "));
-
-        // write dimensions
-        // {
-        //  "dimensions": {
-        //    "row": 10,
-        //    "bnd": 2
-        //  }
-        writer.write("  \"dimensions\": {\n");
-        for (int avi = 0; avi < nRAV; avi++) {
-          writer.write(
-              (avi == 0 ? "" : ",\n")
-                  + // end of previous line
-                  "    "
-                  + String2.toJson(ada.axisVariables(avi).destinationName())
-                  + ": "
-                  + ada.axisValues(avi).size());
-        }
-        writer.write(
-            "\n" + // end of previous line
-                "  },\n");
-
-        // write the variables
-        writer.write("  \"variables\": {\n");
-
-        for (int avi = 0; avi < nRAV; avi++) {
-          //    "att_var": {
-          //      "shape": ["time"],
-          //      "type": "float",
-          //      "attributes": { ... },
-          //      "data": [10.0, 10.10, 10.20, 10.30, 10.40101, 10.50, 10.60, 10.70, 10.80, 10.990]
-          //    }
-          EDVGridAxis av = ada.axisVariables(avi);
-          String tType = av.destinationDataType();
-          if (tType.equals("String")) { // shouldn't be any
-            tType = writeStringsAsStrings ? "string" : "char";
-          } else if (tType.equals("long")) {
-            tType = "int64"; // see
-            // https://www.unidata.ucar.edu/software/netcdf/docs/netcdf_utilities_guide.html#cdl_data_types and NCO JSON examples
-          } else if (tType.equals("ulong")) {
-            tType = "uint64";
-          }
-          writer.write(
-              "    "
-                  + String2.toJson(av.destinationName())
-                  + ": {\n"
-                  + "      \"shape\": ["
-                  + String2.toJson(av.destinationName())
-                  + "],\n"
-                  + "      \"type\": \""
-                  + tType
-                  + "\",\n");
-          writer.write(ada.axisAttributes(avi).toNcoJsonString("      "));
-          writer.write("      \"data\": [");
-          writer.write(ada.axisValues(avi).toJsonCsvString());
-          writer.write(
-              "]\n"
-                  + // end of data
-                  "    }"
-                  + (avi < nRAV - 1 ? ",\n" : "\n")); // end of variable
-        }
-        writer.write(
-            "  }\n" + // end of variables object
-                "}\n"); // end of main object
-        if (jsonp != null) writer.write(")");
-        writer.flush(); // essential
-      } finally {
-        writer.close();
-      }
-      return;
-    }
-
-    // Need to use GridDataAllAccessor because need to know max String lengths.
-    // Get this early so error thrown before writer created.
-    GridDataAccessor gda =
-        new GridDataAccessor(
-            language, this, requestUrl, userDapQuery, true, false); // tRowMajor, tConvertToNaN
-    GridDataAllAccessor gdaa = new GridDataAllAccessor(gda);
-    int nAV = axisVariables.length;
-    int nRDV = gda.dataVariables().length;
-
-    // create a writer
-    BufferedWriter writer =
-        File2.getBufferedWriterUtf8(outputStreamSource.outputStream(File2.UTF_8));
-    try {
-      if (jsonp != null) writer.write(jsonp + "(");
-
-      // write start
-      writer.write("{\n");
-
-      // write the global attributes
-      writer.write(gda.globalAttributes().toNcoJsonString("  "));
-
-      // write dimensions
-      // {
-      //  "dimensions": {
-      //    "row": 10,
-      //    "bnd": 2
-      //  }
-      writer.write("  \"dimensions\": {\n");
-      for (int avi = 0; avi < nAV; avi++) {
-        writer.write(
-            (avi == 0 ? "" : ",\n")
-                + // end of previous line
-                "    "
-                + String2.toJson(axisVariables[avi].destinationName())
-                + ": "
-                + gda.axisValues(avi).size());
-      }
-      // need to create dimensions for string lengths
-      int dvStringMaxLength[] = new int[nRDV];
-      if (!writeStringsAsStrings) {
-        for (int dvi = 0; dvi < nRDV; dvi++) {
-          EDV dv = gda.dataVariables[dvi];
-          if (dv.destinationDataPAType() == PAType.STRING) {
-            int max = 1;
-            long n = gda.totalIndex().size();
-            DataInputStream dis = gdaa.getDataInputStream(dvi);
-            try {
-              for (int i = 0; i < n; i++) max = Math.max(max, dis.readUTF().length());
-            } finally {
-              dis.close();
-            }
-            writer.write(
-                ",\n"
-                    + // end of previous line
-                    "    "
-                    + String2.toJson(dv.destinationName() + NcHelper.StringLengthSuffix)
-                    + ": "
-                    + max);
-          }
-        }
-      }
-      writer.write(
-          "\n" + // end of previous line
-              "  },\n");
-
-      // write the variables
-      writer.write("  \"variables\": {\n");
-
-      // axisVariables
-      for (int avi = 0; avi < nAV; avi++) {
-        //    "att_var": {
-        //      "shape": ["time"],
-        //      "type": "float",
-        //      "attributes": { ... },
-        //      "data": [10.0, 10.10, 10.20, 10.30, 10.40101, 10.50, 10.60, 10.70, 10.80, 10.990]
-        //    }
-        EDVGridAxis av = axisVariables[avi];
-        String tType = av.destinationDataType(); // never char or string
-        if (tType.equals("long")) {
-          tType = "int64"; // see
-          // https://www.unidata.ucar.edu/software/netcdf/docs/netcdf_utilities_guide.html#cdl_data_types and NCO JSON examples
-        } else if (tType.equals("ulong")) {
-          tType = "uint64";
-        }
-        writer.write(
-            "    "
-                + String2.toJson(av.destinationName())
-                + ": {\n"
-                + "      \"shape\": ["
-                + String2.toJson(av.destinationName())
-                + "],\n"
-                + "      \"type\": \""
-                + tType
-                + "\",\n");
-        writer.write(gda.axisAttributes(avi).toNcoJsonString("      "));
-
-        writer.write("      \"data\": [");
-        writer.write(gda.axisValues(avi).toJsonCsvString());
-        writer.write(
-            "]\n"
-                + // end of data
-                "    },\n"); // end of variable
-      }
-
-      // dataVariables
-      String tdvShape = new StringArray(axisVariableDestinationNames).toJsonCsvString();
-      NDimensionalIndex tIndex =
-          (NDimensionalIndex) gda.totalIndex().clone(); // incremented before get data
-      int tnDim = tIndex.nDimensions();
-      long nRows = tIndex.size();
-      for (int dvi = 0; dvi < nRDV; dvi++) {
-        //    "att_var": {
-        //      "shape": ["time"],
-        //      "type": "float",
-        //      "attributes": { ... },
-        //      "data": [10.0, 10.10, 10.20, 10.30, 10.40101, 10.50, 10.60, 10.70, 10.80, 10.990]
-        //    }
-        EDV dv = gda.dataVariables[dvi];
-        Attributes atts = gda.dataAttributes(dvi);
-        String tType = dv.destinationDataType();
-        boolean isChar = tType.equals("char");
-        boolean isString = tType.equals("String");
-        String slShape = "";
-        if (isString) {
-          if (writeStringsAsStrings) {
-            tType = "string";
           } else {
-            slShape += ", " + String2.toJson(dv.destinationName() + NcHelper.StringLengthSuffix);
-            tType = "char";
+            newVars[dv] =
+                NcHelper.addVariable(
+                    rootGroup,
+                    destName,
+                    NcHelper.getDataType(nc3Mode, destPAType),
+                    axisDimensionList);
           }
-        } else if (tType.equals("long")) {
-          tType = "int64"; // see
-          // https://www.unidata.ucar.edu/software/netcdf/docs/netcdf_utilities_guide.html#cdl_data_types and NCO JSON examples
-        } else if (tType.equals("ulong")) {
-          tType = "uint64";
         }
-        writer.write(
-            "    "
-                + String2.toJson(dv.destinationName())
-                + ": {\n"
-                + "      \"shape\": ["
-                + tdvShape
-                + slShape
-                + "],\n"
-                + "      \"type\": \""
-                + tType
-                + "\",\n");
-        writer.write(atts.toNcoJsonString("      "));
 
-        writer.write("      \"data\":\n");
-        for (int avi = 0; avi < nAV; avi++) writer.write("[ ");
-        DataInputStream dis = gdaa.getDataInputStream(dvi);
-        try {
+        // write global attributes
+        NcHelper.setAttributes(nc3Mode, rootGroup, gda.globalAttributes);
 
-          // create the bufferPA
-          PrimitiveArray pa =
-              PrimitiveArray.factory(
-                  dv.destinationDataPAType(), 1, false); // safe since checked above
-          CharArray ca = isChar ? (CharArray) pa : null;
-          if (isChar) writer.write("\""); // start the string
-          tIndex.reset();
-          tIndex.increment(); // so we're at 1st datum
-          for (long nRowsRead = 0; nRowsRead < nRows; nRowsRead++) {
+        // write axis attributes
+        for (int a = 0; a < nActiveAxes; a++) {
+          int av = activeAxes.get(a);
+          Attributes atts = new Attributes(gda.axisAttributes[av]); // use a copy
+          PAType paType = gda.axisValues[av].elementType();
+          if (paType == PAType.STRING) // never
+          atts.add(File2.ENCODING, File2.ISO_8859_1);
+          // disabled until there is a standard
+          //                else if (paType == PAType.CHAR)  //never
+          //                    atts.add(String2.CHARSET, File2.ISO_8859_1);
 
-            // String2.log(">> preCurrent=" + String2.toCSSVString(preCurrent));
-            pa.clear();
-            pa.readDis(dis, 1);
-
-            // write one data value
-            if (isChar) {
-              // write it as one string with chars concatenated
-              // see "md5_abc" in in http://dust.ess.uci.edu/tmp/in.json.fmt2
-              //  "shape": ["lev"],          //dim lev size=3
-              //  ...
-              //  "data": ["abc"]
-              writer.write(String2.charToJsonString(ca.get(0), 127, true)); // encodeNewline
-            } else if (isString) {
-              // Arrays of Strings are written oddly: (example from
-              // http://dust.ess.uci.edu/tmp/in.json.fmt2)
-              //    "date_rec": {
-              //      "shape": ["time", "char_dmn_lng26"],
-              //      "type": "char",
-              //      "attributes": ...,
-              //      "data": [["2010-11-01T00:00:00.000000"], ["2010-11-01T01:00:00.000000"],
-              // ["2010-11-01T02:00:00.000000"], ["2010-11-01T03:00:00.000000"],
-              // ["2010-11-01T04:00:00.000000"], ["2010-11-01T05:00:00.000000"],
-              // ["2010-11-01T06:00:00.000000"], ["2010-11-01T07:00:00.000000"],
-              // ["2010-11-01T08:00:00.000000"], ["2010-11-01T09:00:00.000000"]]
-              //    },
-              writer.write(
-                  stringOpenBracket + String2.toJson(pa.getString(0)) + stringCloseBracket);
-            } else {
-              writer.write(pa.toJsonCsvString());
-            }
-
-            // write commas and brackets
-            // This was difficult for me: It took me a while to figure out:
-            // Given n (tIndex.nDimensionschanged()),
-            //  the proper separators between data items are
-            //  n-1 close brackets, 1 comma, n-1 open brackets.
-            if (tIndex.increment()) {
-              int nDimChanged = tIndex.nDimensionsChanged();
-              if (nDimChanged == 1) {
-                // easier to deal with this specially
-                if (!isChar) writer.write(", ");
-              } else {
-                if (isChar) writer.write('\"'); // close the quote
-                for (int dim = 0; dim < nDimChanged - 1; dim++) writer.write(" ]");
-                writer.write(",\n");
-                for (int dim = 0; dim < nDimChanged - 1; dim++) writer.write("[ ");
-                if (isChar) writer.write('\"'); // open the quote
-              }
-            } // else it is the end of the data. Handle brackets specially below...
-          } // end of data
-        } finally {
-          dis.close();
+          NcHelper.setAttributes(nc3Mode, newAxisVars[a], atts, paType.isUnsigned());
         }
-        if (isChar) writer.write("\""); // start the string
-        for (int avi = 0; avi < nAV; avi++) writer.write(" ]");
-        writer.write("\n" + "    }" + (dvi < nRDV - 1 ? "," : "") + "\n"); // end of variable
+
+        // write data attributes
+        for (int dv = 0; dv < tDataVariables.length; dv++) {
+          Attributes atts = new Attributes(gda.dataAttributes[dv]); // use a copy
+          PAType paType = gda.dataVariables[dv].destinationDataPAType();
+          if (paType == PAType.STRING) // never
+          atts.add(File2.ENCODING, File2.ISO_8859_1);
+          // disabled until there is a standard
+          //                else if (paType == PAType.CHAR)  //never
+          //                    atts.add(String2.CHARSET, File2.ISO_8859_1);
+
+          NcHelper.setAttributes(nc3Mode, newVars[dv], atts, paType.isUnsigned());
+        }
+
+        Math2.ensureDiskAvailable(gda.totalNBytes(), dir, "EDDGrid.saveAsNc");
+        // leave "define" mode
+        ncWriter = nc.build();
+
+        // write the axis variables
+        for (int a = 0; a < nActiveAxes; a++) {
+          ncWriter.write(newAxisVars[a].getFullName(), axisArrays[a]);
+        }
+
+        // write the data variables
+        for (int dv = 0; dv < tDataVariables.length; dv++) {
+
+          EDV edv = tDataVariables[dv];
+          PAType edvPAType = edv.destinationDataPAType();
+          PrimitiveArray pa = gdaa.getPrimitiveArray(dv);
+          if (nc3Mode && (pa instanceof LongArray || pa instanceof ULongArray))
+            pa = new DoubleArray(pa);
+          Array array =
+              Array.factory(NcHelper.getNc3DataType(edvPAType), stdShape, pa.toObjectArray());
+          Variable newVar =
+              ncWriter.findVariable(
+                  newVars[dv].getFullName()); // because newVars are Variable.Builder's
+          if (nc3Mode && edvPAType == PAType.STRING) {
+            ncWriter.writeStringDataToChar(newVar, array);
+          } else {
+            ncWriter.write(newVar, array);
+          }
+        }
+
+        // if close throws Throwable, it is trouble
+        ncWriter.close(); // it calls flush() and doesn't like flush called separately
+        ncWriter = null;
+
+        // rename the file to the specified name
+        File2.rename(fullFileName + randomInt, fullFileName);
+
+        // diagnostic
+        if (reallyVerbose)
+          String2.log(
+              "  EDDGrid.saveAsNc done.  TIME=" + (System.currentTimeMillis() - time) + "ms\n");
+        // String2.log(NcHelper.ncdump(directory + name + ext, "-h"));
+
+      } catch (Throwable t) {
+        String2.log(NcHelper.ERROR_WHILE_CREATING_NC_FILE + MustBe.throwableToString(t));
+        if (ncWriter != null) {
+          try {
+            ncWriter.abort();
+          } catch (Exception e9) {
+          }
+          File2.delete(fullFileName + randomInt);
+          ncWriter = null;
+        }
+
+        throw t;
       }
-      writer.write(
-          "  }\n" + // end of variables object
-              "}\n"); // end of main object
-      if (jsonp != null) writer.write(")");
-      writer.flush(); // essential
-    } finally {
-      gdaa.releaseResources();
-      writer.close();
     }
-  }
-
-  /**
-   * This writes the grid data to the outputStream in comma-separated-value ASCII format. If no
-   * exception is thrown, the data was successfully written.
-   *
-   * @param language the index of the selected language
-   * @param requestUrl the part of the user's request, after EDStatic.baseUrl, before '?'.
-   * @param userDapQuery an OPeNDAP DAP-style query string, still percentEncoded (shouldn't be
-   *     null). e.g., ATssta[45:1:45][0:1:0][120:10:140][130:10:160]
-   * @param outputStreamSource the source of an outputStream (usually already buffered) to receive
-   *     the results. At the end of this method the outputStream is flushed, not closed.
-   * @param writeColumnNames
-   * @param writeUnits '0'=no, '('=on the first line as "variableName (units)" (if present), 2=on
-   *     the second line.
-   * @throws Throwable if trouble.
-   */
-  public void saveAsCsv(
-      int language,
-      String requestUrl,
-      String userDapQuery,
-      OutputStreamSource outputStreamSource,
-      boolean writeColumnNames,
-      char writeUnits)
-      throws Throwable {
-
-    saveAsSeparatedAscii(
-        language,
-        requestUrl,
-        userDapQuery,
-        outputStreamSource,
-        ",",
-        true, // true=twoQuotes
-        writeColumnNames,
-        writeUnits);
-  }
-
-  /**
-   * This writes the grid data to the outputStream in tab-separated-value ASCII format. If no
-   * exception is thrown, the data was successfully written.
-   *
-   * @param language the index of the selected language
-   * @param requestUrl the part of the user's request, after EDStatic.baseUrl, before '?'.
-   * @param userDapQuery an OPeNDAP DAP-style query string, still percentEncoded (shouldn't be
-   *     null). e.g., ATssta[45:1:45][0:1:0][120:10:140][130:10:160]
-   * @param outputStreamSource the source of an outputStream (usually already buffered) to receive
-   *     the results. At the end of this method the outputStream is flushed, not closed.
-   * @param writeColumnNames
-   * @param writeUnits '0'=no, '('=on the first line as "variableName (units)" (if present), 2=on
-   *     the second line.
-   * @throws Throwable if trouble.
-   */
-  public void saveAsTsv(
-      int language,
-      String requestUrl,
-      String userDapQuery,
-      OutputStreamSource outputStreamSource,
-      boolean writeColumnNames,
-      char writeUnits)
-      throws Throwable {
-
-    saveAsSeparatedAscii(
-        language,
-        requestUrl,
-        userDapQuery,
-        outputStreamSource,
-        "\t",
-        false, // false = !twoQuotes
-        writeColumnNames,
-        writeUnits);
-  }
-
-  /**
-   * This writes the axis or grid data to the outputStream in a separated-value ASCII format. If no
-   * exception is thrown, the data was successfully written.
-   *
-   * @param language the index of the selected language
-   * @param requestUrl the part of the user's request, after EDStatic.baseUrl, before '?'.
-   * @param userDapQuery an OPeNDAP DAP-style query string, still percentEncoded (shouldn't be
-   *     null). e.g., ATssta[45:1:45][0:1:0][120:10:140][130:10:160]
-   * @param outputStreamSource the source of an outputStream (usually already buffered) to receive
-   *     the results. At the end of this method the outputStream is flushed, not closed.
-   * @param separator e.g., tab or comma (without space)
-   * @param twoQuotes if true, internal double quotes are converted to 2 double quotes.
-   * @param writeColumnNames
-   * @param writeUnits '0'=no, '('=on the first line as "variableName (units)" (if present), 2=on
-   *     the second line.
-   * @throws Throwable if trouble.
-   */
-  public void saveAsSeparatedAscii(
-      int language,
-      String requestUrl,
-      String userDapQuery,
-      OutputStreamSource outputStreamSource,
-      String separator,
-      boolean twoQuotes,
-      boolean writeColumnNames,
-      char writeUnits)
-      throws Throwable {
-
-    if (reallyVerbose)
-      String2.log(
-          "  EDDGrid.saveAsSeparatedAscii separator=\""
-              + String2.annotatedString(separator)
-              + "\"");
-    long time = System.currentTimeMillis();
-
-    // get dataAccessor first, in case of error when parsing query
-    boolean isAxisDapQuery = isAxisDapQuery(userDapQuery);
-    AxisDataAccessor ada = null;
-    GridDataAccessor gda = null;
-    if (isAxisDapQuery) ada = new AxisDataAccessor(language, this, requestUrl, userDapQuery);
-    else
-      gda =
-          new GridDataAccessor(
-              language, this, requestUrl, userDapQuery, true, false); // rowMajor, convertToNaN
-
-    // write the data to the tableWriter
-    TableWriter tw =
-        new TableWriterSeparatedValue(
-            language,
-            this,
-            getNewHistory(requestUrl, userDapQuery),
-            outputStreamSource,
-            separator,
-            twoQuotes,
-            writeColumnNames,
-            writeUnits,
-            "NaN");
-    if (isAxisDapQuery) {
-      saveAsTableWriter(ada, tw);
-    } else {
-      saveAsTableWriter(gda, tw);
-      gda.releaseResources();
-    }
-
-    // diagnostic
-    if (reallyVerbose)
-      String2.log(
-          "  EDDGrid.saveAsSeparatedAscii done. TIME="
-              + (System.currentTimeMillis() - time)
-              + "ms\n");
-  }
-
-  /**
-   * This writes grid data (not just axis data) to the outputStream in an ODV Generic Spreadsheet
-   * Format .txt file. If no exception is thrown, the data was successfully written.
-   *
-   * @param language the index of the selected language
-   * @param requestUrl the part of the user's request, after EDStatic.baseUrl, before '?'.
-   * @param userDapQuery an OPeNDAP DAP-style query string, still percentEncoded (shouldn't be
-   *     null). e.g., ATssta[45:1:45][0:1:0][120:10:140][130:10:160]
-   * @param outputStreamSource the source of an outputStream (usually already buffered) to receive
-   *     the results. At the end of this method the outputStream is flushed, not closed.
-   * @throws Throwable if trouble.
-   */
-  public void saveAsODV(
-      int language, String requestUrl, String userDapQuery, OutputStreamSource outputStreamSource)
-      throws Throwable {
-    // FUTURE: it might be nice if this prevented a user from getting
-    // a very high resolution subset (wasted in ODV) by reducing the
-    // resolution automatically.
-
-    if (reallyVerbose) String2.log("  EDDGrid.saveAsODV");
-    long time = System.currentTimeMillis();
-
-    // do quick error checking
-    if (isAxisDapQuery(userDapQuery))
-      throw new SimpleException(
-          EDStatic.simpleBilingual(language, EDStatic.queryErrorAr)
-              + "You can't save just axis data in on ODV .txt file. Please select a subset of a data variable.");
-    if (lonIndex < 0 || latIndex < 0 || timeIndex < 0)
-      throw new SimpleException(
-          EDStatic.bilingual(
-              language,
-              EDStatic.queryErrorAr[0] + EDStatic.errorOdvLLTGridAr[0],
-              EDStatic.queryErrorAr[language] + EDStatic.errorOdvLLTGridAr[language]));
-    // lon can be +-180 or 0-360. See EDDTable.saveAsODV
-
-    // get dataAccessor first, in case of error when parsing query
-    GridDataAccessor gda =
-        new GridDataAccessor(
-            language, this, requestUrl, userDapQuery, true, false); // rowMajor, convertToNaN
-
-    // write the data to the tableWriterAllWithMetadata
-    TableWriterAllWithMetadata twawm =
-        new TableWriterAllWithMetadata(
-            language,
-            this,
-            getNewHistory(requestUrl, userDapQuery),
-            cacheDirectory(),
-            "ODV"); // A random number will be added to it for safety.
-    saveAsTableWriter(gda, twawm);
-    gda.releaseResources();
-
-    // write the ODV .txt file
-    EDDTable.saveAsODV(
-        language, outputStreamSource, twawm, datasetID, publicSourceUrl(), infoUrl());
-
-    // diagnostic
-    if (reallyVerbose)
-      String2.log("  EDDGrid.saveAsODV done. TIME=" + (System.currentTimeMillis() - time) + "ms\n");
-  }
-
-  /**
-   * This gets the data for the userDapQuery and writes the data to the outputStream as an html or
-   * xhtml table. See TableWriterHtml for details.
-   *
-   * @param language the index of the selected language
-   * @param requestUrl the part of the user's request, after EDStatic.baseUrl, before '?'.
-   * @param userDapQuery an OPeNDAP DAP-style query string, still percentEncoded (shouldn't be
-   *     null). for a axis data, e.g., time[40:45], or for a grid data, e.g.,
-   *     ATssta[45:1:45][0:1:0][120:10:140][130:10:160]
-   * @param outputStreamSource the source of an outputStream (usually already buffered) to receive
-   *     the results. At the end of this method the outputStream is flushed, not closed.
-   * @param fileName (no extension) used for the document title
-   * @param xhtmlMode if true, the table is stored as an XHTML table. If false, it is stored as an
-   *     HTML table.
-   * @param preTableHtml is html or xhtml text to be inserted at the start of the body of the
-   *     document, before the table tag (or "" if none).
-   * @param postTableHtml is html or xhtml text to be inserted at the end of the body of the
-   *     document, after the table tag (or "" if none).
-   * @throws Throwable if trouble.
-   */
-  public void saveAsHtmlTable(
-      int language,
-      String loggedInAs,
-      String requestUrl,
-      String endOfRequest,
-      String userDapQuery,
-      OutputStreamSource outputStreamSource,
-      String fileName,
-      boolean xhtmlMode,
-      String preTableHtml,
-      String postTableHtml)
-      throws Throwable {
-
-    if (reallyVerbose) String2.log("  EDDGrid.saveAsHtmlTable");
-    long time = System.currentTimeMillis();
-
-    // get dataAccessor first, in case of error when parsing query
-    boolean isAxisDapQuery = isAxisDapQuery(userDapQuery);
-    AxisDataAccessor ada = null;
-    GridDataAccessor gda = null;
-    if (isAxisDapQuery) ada = new AxisDataAccessor(language, this, requestUrl, userDapQuery);
-    else
-      gda =
-          new GridDataAccessor(
-              language,
-              this,
-              requestUrl,
-              userDapQuery,
-              true,
-              true); // rowMajor, convertToNaN  (better to do it here)
-
-    // write the data to the tableWriter
-    TableWriter tw =
-        new TableWriterHtmlTable(
-            language,
-            this,
-            getNewHistory(requestUrl, userDapQuery),
-            loggedInAs,
-            endOfRequest,
-            userDapQuery,
-            outputStreamSource,
-            true,
-            fileName,
-            xhtmlMode,
-            preTableHtml,
-            postTableHtml,
-            true,
-            true,
-            -1, // tencodeAsHTML, tWriteUnits
-            EDStatic.imageDirUrl(loggedInAs, language) + EDStatic.questionMarkImageFile);
-    if (isAxisDapQuery) {
-      saveAsTableWriter(ada, tw);
-    } else {
-      saveAsTableWriter(gda, tw);
-      gda.releaseResources();
-    }
-
-    // diagnostic
-    if (reallyVerbose)
-      String2.log(
-          "  EDDGrid.saveAsHtmlTable done. TIME=" + (System.currentTimeMillis() - time) + "ms\n");
   }
 
   /**
@@ -11422,12 +6208,7 @@ public abstract class EDDGrid extends EDD {
     EDV queryDataVariables[] = gridDataAccessor.dataVariables();
     int nDv = queryDataVariables.length;
     PrimitiveArray avPa[] = new PrimitiveArray[nAv];
-    boolean isDoubleAv[] = new boolean[nAv];
-    boolean isFloatAv[] = new boolean[nAv];
     PrimitiveArray dvPa[] = new PrimitiveArray[nDv];
-    boolean isStringDv[] = new boolean[nDv];
-    boolean isDoubleDv[] = new boolean[nDv];
-    boolean isFloatDv[] = new boolean[nDv];
     int nBufferRows = tableWriterNBufferRows;
     PAOne avPAOne[] = new PAOne[nAv];
     for (int av = 0; av < nAv; av++) {
@@ -11487,6 +6268,7 @@ public abstract class EDDGrid extends EDD {
    * This writes an HTML form requesting info from this dataset (like the OPeNDAP Data Access
    * forms).
    *
+   * @param request the request
    * @param language the index of the selected language
    * @param loggedInAs the name of the logged in user (or null if not logged in). Normally, this is
    *     not used to test if this edd is accessibleTo loggedInAs, but it unusual cases
@@ -11496,11 +6278,16 @@ public abstract class EDDGrid extends EDD {
    * @param writer
    * @throws Throwable if trouble
    */
-  public void writeDapHtmlForm(int language, String loggedInAs, String userDapQuery, Writer writer)
+  public void writeDapHtmlForm(
+      HttpServletRequest request,
+      int language,
+      String loggedInAs,
+      String userDapQuery,
+      Writer writer)
       throws Throwable {
 
     // parse userDapQuery
-    String tErddapUrl = EDStatic.erddapUrl(loggedInAs, language);
+    String tErddapUrl = EDStatic.erddapUrl(request, loggedInAs, language);
     if (userDapQuery == null) userDapQuery = "";
     userDapQuery = userDapQuery.trim();
     StringArray destinationNames = new StringArray();
@@ -11521,10 +6308,9 @@ public abstract class EDDGrid extends EDD {
 
     // beginning of form   ("form1" is used in javascript below")
     writer.write(HtmlWidgets.ifJavaScriptDisabled + "\n");
-    HtmlWidgets widgets = new HtmlWidgets(true, EDStatic.imageDirUrl(loggedInAs, language));
+    HtmlWidgets widgets =
+        new HtmlWidgets(true, EDStatic.imageDirUrl(request, loggedInAs, language));
     String formName = "form1";
-    String liClickSubmit =
-        "\n" + "  <li> " + EDStatic.EDDClickOnSubmitHtmlAr[language] + "\n" + "  </ol>\n";
     writer.write("&nbsp;\n"); // necessary for the blank line before the form (not <p>)
     writer.write(widgets.beginForm(formName, "GET", "", ""));
 
@@ -11532,61 +6318,65 @@ public abstract class EDDGrid extends EDD {
     writer.write(widgets.beginTable("class=\"compact nowrap\""));
 
     // write the table's column names
-    String dimHelp = EDStatic.EDDGridDimensionTooltipAr[language] + "\n<br>";
-    String sss = dimHelp + EDStatic.EDDGridSSSTooltipAr[language] + "\n<br>";
-    String startTooltip = sss + EDStatic.EDDGridStartTooltipAr[language];
-    String stopTooltip = sss + EDStatic.EDDGridStopTooltipAr[language];
-    String strideTooltip = sss + EDStatic.EDDGridStrideTooltipAr[language];
-    String downloadTooltip = EDStatic.EDDGridDownloadTooltipAr[language];
+    String dimHelp = EDStatic.messages.EDDGridDimensionTooltipAr[language] + "\n<br>";
+    String sss = dimHelp + EDStatic.messages.EDDGridSSSTooltipAr[language] + "\n<br>";
+    String startTooltip = sss + EDStatic.messages.EDDGridStartTooltipAr[language];
+    String stopTooltip = sss + EDStatic.messages.EDDGridStopTooltipAr[language];
+    String strideTooltip = sss + EDStatic.messages.EDDGridStrideTooltipAr[language];
+    String downloadTooltip = EDStatic.messages.EDDGridDownloadTooltipAr[language];
     String gap = "&nbsp;&nbsp;&nbsp;";
     writer.write(
         "<tr>\n"
             + "  <th class=\"L\">"
-            + EDStatic.EDDGridDimensionAr[language]
+            + EDStatic.messages.EDDGridDimensionAr[language]
             + " "
             + EDStatic.htmlTooltipImage(
-                language, loggedInAs, dimHelp + EDStatic.EDDGridVarHasDimTooltipAr[language])
+                request,
+                language,
+                loggedInAs,
+                dimHelp + EDStatic.messages.EDDGridVarHasDimTooltipAr[language])
             + " </th>\n"
             + "  <th class=\"L\">"
-            + EDStatic.EDDGridStartAr[language]
+            + EDStatic.messages.EDDGridStartAr[language]
             + " "
-            + EDStatic.htmlTooltipImage(language, loggedInAs, startTooltip)
+            + EDStatic.htmlTooltipImage(request, language, loggedInAs, startTooltip)
             + " </th>\n"
             + "  <th class=\"L\">"
-            + EDStatic.EDDGridStrideAr[language]
+            + EDStatic.messages.EDDGridStrideAr[language]
             + " "
-            + EDStatic.htmlTooltipImage(language, loggedInAs, strideTooltip)
+            + EDStatic.htmlTooltipImage(request, language, loggedInAs, strideTooltip)
             + " </th>\n"
             + "  <th class=\"L\">"
-            + EDStatic.EDDGridStopAr[language]
+            + EDStatic.messages.EDDGridStopAr[language]
             + " "
-            + EDStatic.htmlTooltipImage(language, loggedInAs, stopTooltip)
+            + EDStatic.htmlTooltipImage(request, language, loggedInAs, stopTooltip)
             + " </th>\n"
             +
-            // "  <th class=\"L\">&nbsp;" + EDStatic.EDDGridFirst + " " +
+            // "  <th class=\"L\">&nbsp;" + EDStatic.messages.EDDGridFirst + " " +
             //    EDStatic.htmlTooltipImage(language, loggedInAs,
-            // EDStatic.EDDGridDimensionFirstTooltip) + "</th>\n" +
+            // EDStatic.messages.EDDGridDimensionFirstTooltip) + "</th>\n" +
             "  <th class=\"L\">&nbsp;"
-            + EDStatic.EDDGridNValuesAr[language]
+            + EDStatic.messages.EDDGridNValuesAr[language]
             + " "
             + EDStatic.htmlTooltipImage(
-                language, loggedInAs, EDStatic.EDDGridNValuesHtmlAr[language])
+                request, language, loggedInAs, EDStatic.messages.EDDGridNValuesHtmlAr[language])
             + "</th>\n"
             + "  <th class=\"L\">"
             + gap
-            + EDStatic.EDDGridSpacingAr[language]
+            + EDStatic.messages.EDDGridSpacingAr[language]
             + " "
             + EDStatic.htmlTooltipImage(
+                request,
                 language,
                 loggedInAs,
                 "<div class=\"narrow_max_width\">"
-                    + EDStatic.EDDGridSpacingTooltipAr[language]
+                    + EDStatic.messages.EDDGridSpacingTooltipAr[language]
                     + "</div>")
             + "</th>\n"
             +
-            // "  <th class=\"L\">" + gap + EDStatic.EDDGridLast + " " +
+            // "  <th class=\"L\">" + gap + EDStatic.messages.EDDGridLast + " " +
             //    EDStatic.htmlTooltipImage(language, loggedInAs,
-            // EDStatic.EDDGridDimensionLastTooltipAr[language]) + "</th>\n" +
+            // EDStatic.messages.EDDGridDimensionLastTooltipAr[language]) + "</th>\n" +
             "</tr>\n");
 
     // a row for each axisVariable
@@ -11617,15 +6407,15 @@ public abstract class EDDGrid extends EDD {
           widgets.checkbox(
               "avar" + av,
               downloadTooltip,
-              (userDapQuery.length() > 0 && isAxisDapQuery)
-                  ? destinationNames.indexOf(edvga.destinationName()) >= 0
-                  : true,
+              userDapQuery.length() <= 0
+                  || !isAxisDapQuery
+                  || destinationNames.indexOf(edvga.destinationName()) >= 0,
               edvga.destinationName(),
               edvga.destinationName(),
               ""));
 
       writer.write(extra + " ");
-      writer.write(EDStatic.htmlTooltipImageEDVGA(language, loggedInAs, edvga));
+      writer.write(EDStatic.htmlTooltipImageEDVGA(request, language, loggedInAs, edvga));
       writer.write("&nbsp;</td>\n");
 
       // set default start, stride, stop
@@ -11718,7 +6508,7 @@ public abstract class EDDGrid extends EDD {
         widgets.beginTable("class=\"compact nowrap\"")
             + "<tr>\n"
             + "  <td>&nbsp;<br>"
-            + EDStatic.EDDGridGridVariableHtmlAr[language]
+            + EDStatic.messages.EDDGridGridVariableHtmlAr[language]
             + "&nbsp;");
 
     StringBuilder checkAll = new StringBuilder();
@@ -11733,16 +6523,16 @@ public abstract class EDDGrid extends EDD {
         widgets.button(
             "button",
             "CheckAll",
-            EDStatic.EDDGridCheckAllTooltipAr[language],
-            EDStatic.EDDGridCheckAllAr[language],
-            "onclick=\"" + checkAll.toString() + "\""));
+            EDStatic.messages.EDDGridCheckAllTooltipAr[language],
+            EDStatic.messages.EDDGridCheckAllAr[language],
+            "onclick=\"" + checkAll + "\""));
     writer.write(
         widgets.button(
             "button",
             "UncheckAll",
-            EDStatic.EDDGridUncheckAllTooltipAr[language],
-            EDStatic.EDDGridUncheckAllAr[language],
-            "onclick=\"" + uncheckAll.toString() + "\""));
+            EDStatic.messages.EDDGridUncheckAllTooltipAr[language],
+            EDStatic.messages.EDDGridUncheckAllAr[language],
+            "onclick=\"" + uncheckAll + "\""));
 
     writer.write("</td></tr>\n");
 
@@ -11764,17 +6554,16 @@ public abstract class EDDGrid extends EDD {
           widgets.checkbox(
               "dvar" + dv,
               downloadTooltip,
-              (userDapQuery.length() > 0 && isAxisDapQuery)
-                  ? false
-                  : userDapQuery.length() > 0
-                      ? destinationNames.indexOf(edv.destinationName()) >= 0
-                      : true,
+              (userDapQuery.length() <= 0 || !isAxisDapQuery)
+                  && (userDapQuery.length() <= 0
+                      || destinationNames.indexOf(edv.destinationName()) >= 0),
               edv.destinationName(),
               edv.destinationName(),
               ""));
 
       writer.write(extra + " ");
-      writer.write(EDStatic.htmlTooltipImageEDVG(language, loggedInAs, edv, allDimString()));
+      writer.write(
+          EDStatic.htmlTooltipImageEDVG(request, language, loggedInAs, edv, allDimString()));
       writer.write("</td>\n");
 
       // end of row
@@ -11787,20 +6576,35 @@ public abstract class EDDGrid extends EDD {
     // fileType
     writer.write(
         "<p><strong>"
-            + EDStatic.EDDFileTypeAr[language]
+            + EDStatic.messages.EDDFileTypeAr[language]
             + "</strong>\n"
             + " (<a rel=\"help\" href=\""
             + tErddapUrl
             + "/griddap/documentation.html#fileType\">"
-            + EDStatic.moreInformationAr[language]
+            + EDStatic.messages.moreInformationAr[language]
             + "</a>)\n");
+    List<String> fileTypeDescriptions =
+        EDD_FILE_TYPE_INFO.values().stream()
+            .filter(fileTypeInfo -> fileTypeInfo.getAvailableGrid())
+            .map(
+                fileTypeInfo ->
+                    fileTypeInfo.getFileTypeName()
+                        + " - "
+                        + fileTypeInfo.getGridDescription(language))
+            .toList();
+    int defaultIndex =
+        EDD_FILE_TYPE_INFO.values().stream()
+            .filter(fileTypeInfo -> fileTypeInfo.getAvailableGrid())
+            .map(fileTypeInfo -> fileTypeInfo.getFileTypeName())
+            .toList()
+            .indexOf(defaultFileTypeOption);
     writer.write(
         widgets.select(
             "fileType",
-            EDStatic.EDDSelectFileTypeAr[language],
+            EDStatic.messages.EDDSelectFileTypeAr[language],
             1,
-            allFileTypeOptionsAr[language],
-            defaultFileTypeOption,
+            fileTypeDescriptions,
+            defaultIndex,
             ""));
 
     // generate the javaScript
@@ -11869,24 +6673,27 @@ public abstract class EDDGrid extends EDD {
     String genViewHtml =
         "<div class=\"standard_max_width\">"
             + String2.replaceAll(
-                EDStatic.justGenerateAndViewTooltipAr[language], "&protocolName;", dapProtocol)
+                EDStatic.messages.justGenerateAndViewTooltipAr[language],
+                "&protocolName;",
+                dapProtocol)
             + "</div>";
     writer.write(
         widgets.button(
             "button",
             "getUrl",
             genViewHtml,
-            EDStatic.justGenerateAndViewAr[language],
+            EDStatic.messages.justGenerateAndViewAr[language],
             // "class=\"skinny\" " + //only IE needs it but only IE ignores it
             "onclick='" + javaScript + "'"));
     writer.write(
-        widgets.textField("tUrl", EDStatic.justGenerateAndViewUrlAr[language], 60, 1000, "", ""));
+        widgets.textField(
+            "tUrl", EDStatic.messages.justGenerateAndViewUrlAr[language], 60, 1000, "", ""));
     writer.write(
         "\n<br>(<a rel=\"help\" href=\""
             + tErddapUrl
             + "/griddap/documentation.html\" "
             + "title=\"griddap documentation\">Documentation&nbsp;/&nbsp;Bypass&nbsp;this&nbsp;form</a>)\n"
-            + EDStatic.htmlTooltipImage(language, loggedInAs, genViewHtml));
+            + EDStatic.htmlTooltipImage(request, language, loggedInAs, genViewHtml));
 
     // submit
     writer.write(
@@ -11896,9 +6703,9 @@ public abstract class EDDGrid extends EDD {
                 "button",
                 "submit1",
                 "",
-                EDStatic.submitTooltipAr[language],
+                EDStatic.messages.submitTooltipAr[language],
                 "<span style=\"font-size:large;\"><strong>"
-                    + EDStatic.submitAr[language]
+                    + EDStatic.messages.submitAr[language]
                     + "</strong></span>",
                 "onclick='"
                     + javaScript
@@ -11906,7 +6713,7 @@ public abstract class EDDGrid extends EDD {
                     + // or open a new window: window.open(result);\n" +
                     "'")
             + " "
-            + EDStatic.patientDataAr[language]
+            + EDStatic.messages.patientDataAr[language]
             + "\n");
 
     // end of form
@@ -11931,8 +6738,8 @@ public abstract class EDDGrid extends EDD {
    * This writes HTML info on forming OPeNDAP DAP-style requests for this type of dataset.
    *
    * @param language the index of the selected language
-   * @param tErddapUrl from EDStatic.erddapUrl(loggedInAs, language) (erddapUrl, or erddapHttpsUrl
-   *     if user is logged in)
+   * @param tErddapUrl from EDStatic.erddapUrl(request, loggedInAs, language) (erddapUrl, or
+   *     erddapHttpsUrl if user is logged in)
    * @param writer to which will be written HTML info on forming OPeNDAP DAP-style requests for this
    *     type of dataset.
    * @param complete if false, this just writes a paragraph and shows a link to
@@ -11942,46 +6749,56 @@ public abstract class EDDGrid extends EDD {
   public static void writeGeneralDapHtmlInstructions(
       int language, String tErddapUrl, Writer writer, boolean complete) throws Throwable {
 
-    String dapBase = EDStatic.EDDGridErddapUrlExample + dapProtocol + "/";
-    String datasetBase = dapBase + EDStatic.EDDGridIdExample;
+    String dapBase = EDStatic.messages.EDDGridErddapUrlExample + dapProtocol + "/";
+    String datasetBase = dapBase + EDStatic.messages.EDDGridIdExample;
     String ddsExample = datasetBase + ".dds";
-    String dds1VarExample = datasetBase + ".dds?" + EDStatic.EDDGridNoHyperExample;
+    String dds1VarExample = datasetBase + ".dds?" + EDStatic.messages.EDDGridNoHyperExample;
 
     // variants encoded to be Html Examples
     String fullDimensionExampleHE =
-        datasetBase + ".htmlTable?" + EDStatic.EDDGridDimensionExampleHE;
-    String fullIndexExampleHE = datasetBase + ".htmlTable?" + EDStatic.EDDGridDataIndexExampleHE;
-    String fullValueExampleHE = datasetBase + ".htmlTable?" + EDStatic.EDDGridDataValueExampleHE;
-    String fullTimeExampleHE = datasetBase + ".htmlTable?" + EDStatic.EDDGridDataTimeExampleHE;
-    String fullTimeCsvExampleHE = datasetBase + ".csv?" + EDStatic.EDDGridDataTimeExampleHE;
-    String fullTimeNcExampleHE = datasetBase + ".nc?" + EDStatic.EDDGridDataTimeExampleHE;
-    String fullMatExampleHE = datasetBase + ".mat?" + EDStatic.EDDGridDataTimeExampleHE;
-    String fullGraphExampleHE = datasetBase + ".png?" + EDStatic.EDDGridGraphExampleHE;
-    String fullGraphMAGExampleHE = datasetBase + ".graph?" + EDStatic.EDDGridGraphExampleHE;
-    String fullGraphDataExampleHE = datasetBase + ".htmlTable?" + EDStatic.EDDGridGraphExampleHE;
-    String fullMapExampleHE = datasetBase + ".png?" + EDStatic.EDDGridMapExampleHE;
-    String fullMapMAGExampleHE = datasetBase + ".graph?" + EDStatic.EDDGridMapExampleHE;
-    String fullMapDataExampleHE = datasetBase + ".htmlTable?" + EDStatic.EDDGridMapExampleHE;
+        datasetBase + ".htmlTable?" + EDStatic.messages.EDDGridDimensionExampleHE;
+    String fullIndexExampleHE =
+        datasetBase + ".htmlTable?" + EDStatic.messages.EDDGridDataIndexExampleHE;
+    String fullValueExampleHE =
+        datasetBase + ".htmlTable?" + EDStatic.messages.EDDGridDataValueExampleHE;
+    String fullTimeExampleHE =
+        datasetBase + ".htmlTable?" + EDStatic.messages.EDDGridDataTimeExampleHE;
+    String fullTimeCsvExampleHE =
+        datasetBase + ".csv?" + EDStatic.messages.EDDGridDataTimeExampleHE;
+    String fullTimeNcExampleHE = datasetBase + ".nc?" + EDStatic.messages.EDDGridDataTimeExampleHE;
+    String fullMatExampleHE = datasetBase + ".mat?" + EDStatic.messages.EDDGridDataTimeExampleHE;
+    String fullGraphExampleHE = datasetBase + ".png?" + EDStatic.messages.EDDGridGraphExampleHE;
+    String fullGraphMAGExampleHE =
+        datasetBase + ".graph?" + EDStatic.messages.EDDGridGraphExampleHE;
+    String fullGraphDataExampleHE =
+        datasetBase + ".htmlTable?" + EDStatic.messages.EDDGridGraphExampleHE;
+    String fullMapExampleHE = datasetBase + ".png?" + EDStatic.messages.EDDGridMapExampleHE;
+    String fullMapMAGExampleHE = datasetBase + ".graph?" + EDStatic.messages.EDDGridMapExampleHE;
+    String fullMapDataExampleHE =
+        datasetBase + ".htmlTable?" + EDStatic.messages.EDDGridMapExampleHE;
 
     // variants encoded to be Html Attributes
     String fullDimensionExampleHA =
-        datasetBase + ".htmlTable?" + EDStatic.EDDGridDimensionExampleHA;
-    String fullIndexExampleHA = datasetBase + ".htmlTable?" + EDStatic.EDDGridDataIndexExampleHA;
-    String fullValueExampleHA = datasetBase + ".htmlTable?" + EDStatic.EDDGridDataValueExampleHA;
-    String fullTimeExampleHA = datasetBase + ".htmlTable?" + EDStatic.EDDGridDataTimeExampleHA;
-    String fullTimeCsvExampleHA = datasetBase + ".csv?" + EDStatic.EDDGridDataTimeExampleHA;
-    String fullTimeNcExampleHA = datasetBase + ".nc?" + EDStatic.EDDGridDataTimeExampleHA;
-    String fullMatExampleHA = datasetBase + ".mat?" + EDStatic.EDDGridDataTimeExampleHA;
-    String fullGraphExampleHA = datasetBase + ".png?" + EDStatic.EDDGridGraphExampleHA;
-    String fullGraphMAGExampleHA = datasetBase + ".graph?" + EDStatic.EDDGridGraphExampleHA;
-    String fullGraphDataExampleHA = datasetBase + ".htmlTable?" + EDStatic.EDDGridGraphExampleHA;
-    String fullMapExampleHA = datasetBase + ".png?" + EDStatic.EDDGridMapExampleHA;
-    String fullMapMAGExampleHA = datasetBase + ".graph?" + EDStatic.EDDGridMapExampleHA;
-    String fullMapDataExampleHA = datasetBase + ".htmlTable?" + EDStatic.EDDGridMapExampleHA;
+        datasetBase + ".htmlTable?" + EDStatic.messages.EDDGridDimensionExampleHA;
+    String fullIndexExampleHA =
+        datasetBase + ".htmlTable?" + EDStatic.messages.EDDGridDataIndexExampleHA;
+    String fullValueExampleHA =
+        datasetBase + ".htmlTable?" + EDStatic.messages.EDDGridDataValueExampleHA;
+    String fullTimeExampleHA =
+        datasetBase + ".htmlTable?" + EDStatic.messages.EDDGridDataTimeExampleHA;
+    String fullGraphExampleHA = datasetBase + ".png?" + EDStatic.messages.EDDGridGraphExampleHA;
+    String fullGraphMAGExampleHA =
+        datasetBase + ".graph?" + EDStatic.messages.EDDGridGraphExampleHA;
+    String fullGraphDataExampleHA =
+        datasetBase + ".htmlTable?" + EDStatic.messages.EDDGridGraphExampleHA;
+    String fullMapExampleHA = datasetBase + ".png?" + EDStatic.messages.EDDGridMapExampleHA;
+    String fullMapMAGExampleHA = datasetBase + ".graph?" + EDStatic.messages.EDDGridMapExampleHA;
+    String fullMapDataExampleHA =
+        datasetBase + ".htmlTable?" + EDStatic.messages.EDDGridMapExampleHA;
 
     writer.write(
         "<h2><a class=\"selfLink\" id=\"instructions\" href=\"#instructions\" rel=\"bookmark\">"
-            + EDStatic.usingGriddapAr[language]
+            + EDStatic.messages.usingGriddapAr[language]
             + "</a></h2>\n"
             + longDapDescription(language, tErddapUrl)
             + "<p><strong>griddap request URLs must be in the form</strong>\n"
@@ -12003,12 +6820,12 @@ public abstract class EDDGrid extends EDD {
             + fullTimeExampleHE
             + "</kbd></a>\n"
             + "<br>Thus, the query is often a data variable name (e.g., <kbd>"
-            + EDStatic.EDDGridNoHyperExample
+            + EDStatic.messages.EDDGridNoHyperExample
             + "</kbd>),\n"
             + "followed by <kbd>[(<i>start</i>):<i>stride</i>:(<i>stop</i>)]</kbd>\n"
             + "(or a shorter variation of that) for each of the variable's dimensions\n"
             + "(for example, <kbd>"
-            + EDStatic.EDDGridDimNamesExample
+            + EDStatic.messages.EDDGridDimNamesExample
             + "</kbd>). \n"
             + "\n");
 
@@ -12036,7 +6853,7 @@ public abstract class EDDGrid extends EDD {
             "<li><a class=\"selfLink\" id=\"datasetID\" href=\"#datasetID\" rel=\"bookmark\""
             + "><strong>datasetID</strong></a> identifies the name that ERDDAP\n"
             + "  assigned to the dataset (for example, <kbd>"
-            + EDStatic.EDDGridIdExample
+            + EDStatic.messages.EDDGridIdExample
             + "</kbd>). \n"
             + "  You can see a list of "
             + "<a rel=\"bookmark\" href=\""
@@ -12066,8 +6883,10 @@ public abstract class EDDGrid extends EDD {
             + "  <br>&nbsp;\n"
             + "  <table class=\"erd\" style=\"width:100%; \">\n"
             + "    <tr><th>Data<br>fileTypes</th><th>Description</th><th>Info</th><th>Example</th></tr>\n");
-    for (int i = 0; i < dataFileTypeNames.length; i++) {
-      String ft = dataFileTypeNames[i];
+    List<EDDFileTypeInfo> dataFileTypes = EDD.getFileTypeOptions(true, false);
+    for (int i = 0; i < dataFileTypes.size(); i++) {
+      EDDFileTypeInfo curType = dataFileTypes.get(i);
+      String ft = curType.getFileTypeName();
       String ft1 = ft.substring(1);
       writer.write(
           "    <tr>\n"
@@ -12079,22 +6898,22 @@ public abstract class EDDGrid extends EDD {
               + ft
               + "</a></td>\n"
               + "      <td>"
-              + dataFileTypeDescriptionsAr[language][i]
+              + curType.getGridDescription(language)
               + "</td>\n"
               + "      <td class=\"N\">"
-              + (dataFileTypeInfo[i].equals("")
+              + (curType.getInfoUrl().isEmpty()
                   ? "&nbsp;"
                   : "<a rel=\"help\" href=\""
-                      + XML.encodeAsHTMLAttribute(dataFileTypeInfo[i])
+                      + XML.encodeAsHTMLAttribute(curType.getInfoUrl())
                       + "\">info"
-                      + EDStatic.externalLinkHtml(language, tErddapUrl)
+                      + EDStatic.messages.externalLinkHtml(language, tErddapUrl)
                       + "</a>")
               + "</td>\n"
               + "      <td class=\"N\"><a rel=\"bookmark\" href=\""
               + datasetBase
-              + dataFileTypeNames[i]
+              + curType.getFileTypeName()
               + "?"
-              + EDStatic.EDDGridDataTimeExampleHA
+              + EDStatic.messages.EDDGridDataTimeExampleHA
               + "\">example</a></td>\n"
               + "    </tr>\n");
     }
@@ -12111,10 +6930,10 @@ public abstract class EDDGrid extends EDD {
 
             // ArcGIS
             "<p><strong><a rel=\"bookmark\" href=\"https://www.esri.com/en-us/arcgis/about-arcgis/overview\">ArcGIS"
-            + EDStatic.externalLinkHtml(language, tErddapUrl)
+            + EDStatic.messages.externalLinkHtml(language, tErddapUrl)
             + "</a><a class=\"selfLink\" id=\"ArcGIS\" href=\"#ArcGIS\" rel=\"bookmark\">&nbsp;</a>\n"
             + "     <a rel=\"help\" href=\"https://en.wikipedia.org/wiki/Esri_grid\">.esriAsc"
-            + EDStatic.externalLinkHtml(language, tErddapUrl)
+            + EDStatic.messages.externalLinkHtml(language, tErddapUrl)
             + "</a></strong>\n"
             + "   <br>.esriAsc is an old and inherently limited file format. If you have <strong>ArcGIS 10 or higher</strong>, we strongly recommend\n"
             + "   that you download gridded data from ERDDAP in a <a rel=\"help\" href=\"#nc\">NetCDF .nc file</a>,"
@@ -12122,7 +6941,7 @@ public abstract class EDDGrid extends EDD {
             + "   using the\n"
             + "   <a rel=\"help\" href=\"https://desktop.arcgis.com/en/arcmap/latest/tools/multidimension-toolbox/make-netcdf-raster-layer.htm\">Make\n"
             + "     NetCDF Raster Layer tool in the Multidimension Tools toolbox"
-            + EDStatic.externalLinkHtml(language, tErddapUrl)
+            + EDStatic.messages.externalLinkHtml(language, tErddapUrl)
             + "</a>.\n"
             + "   <p>If you have <strong>ArcGIS 9.x or lower</strong>:\n"
             + "   <br>ArcGIS is a family of Geographical Information Systems (GIS) products from ESRI: ArcView, ArcEditor, and ArcInfo.\n"
@@ -12183,13 +7002,13 @@ public abstract class EDDGrid extends EDD {
             +
             // Ferret
             "  <p><strong><a rel=\"bookmark\" href=\"https://ferret.pmel.noaa.gov/Ferret/\">Ferret"
-            + EDStatic.externalLinkHtml(language, tErddapUrl)
+            + EDStatic.messages.externalLinkHtml(language, tErddapUrl)
             + "</a></strong>\n"
             + "    <a class=\"selfLink\" id=\"Ferret\" href=\"#Ferret\" rel=\"bookmark\">is</a> a free program for visualizing and analyzing large and complex gridded\n"
             + "  datasets. Ferret should work well with all datasets in griddap since griddap is\n"
             + "  fully compatible with OPeNDAP. See the\n"
             + "    <a rel=\"help\" href=\"https://ferret.pmel.noaa.gov/Ferret/documentation/ferret-documentation\">Ferret documentation"
-            + EDStatic.externalLinkHtml(language, tErddapUrl)
+            + EDStatic.messages.externalLinkHtml(language, tErddapUrl)
             + "</a>.\n"
             + "  Note that the griddap dataset's OPeNDAP base URL that you use with Ferret's\n"
             + "  <kbd>set data</kbd>, for example,\n"
@@ -12201,20 +7020,20 @@ public abstract class EDDGrid extends EDD {
             +
             // IDL
             "  <p><strong><a rel=\"bookmark\" href=\"https://www.harrisgeospatial.com/Software-Technology/IDL/\">IDL"
-            + EDStatic.externalLinkHtml(language, tErddapUrl)
+            + EDStatic.messages.externalLinkHtml(language, tErddapUrl)
             + "</a></strong> - \n"
             + "    <a class=\"selfLink\" id=\"IDL\" href=\"#IDL\" rel=\"bookmark\">IDL</a> is a commercial scientific data visualization program. To get data from ERDDAP\n"
             + "  into IDL, first use ERDDAP to select a subset of data and download a .nc file.\n"
             + "  Then, use these\n"
             + "    <a rel=\"help\" href=\"https://northstar-www.dartmouth.edu/doc/idl/html_6.2/Using_Macros_to_Import_HDF_Files.html\">instructions"
-            + EDStatic.externalLinkHtml(language, tErddapUrl)
+            + EDStatic.messages.externalLinkHtml(language, tErddapUrl)
             + "</a>\n"
             + "    to import the data from the .nc file into IDL.\n"
             + "\n"
             +
             // json
             "  <p><strong><a rel=\"help\" href=\"https://www.json.org/\">JSON .json"
-            + EDStatic.externalLinkHtml(language, tErddapUrl)
+            + EDStatic.messages.externalLinkHtml(language, tErddapUrl)
             + "</a></strong>\n"
             + "    <a class=\"selfLink\" id=\"json\" href=\"#json\" rel=\"bookmark\">files</a> are widely used to transfer data to JavaScript scripts running on web pages.\n"
             + "  All .json responses from ERDDAP (metadata, gridded data, and tabular/in-situ data) use the\n"
@@ -12249,10 +7068,10 @@ public abstract class EDDGrid extends EDD {
             +
             // jsonp
             "  <p><strong><a rel=\"help\" href=\"https://niryariv.wordpress.com/2009/05/05/jsonp-quickly/\">JSONP"
-            + EDStatic.externalLinkHtml(language, tErddapUrl)
+            + EDStatic.messages.externalLinkHtml(language, tErddapUrl)
             + "</a>\n"
             + "    (from <a href=\"https://www.json.org/\">.json"
-            + EDStatic.externalLinkHtml(language, tErddapUrl)
+            + EDStatic.messages.externalLinkHtml(language, tErddapUrl)
             + "</a>)</strong> -\n"
             + "  <a class=\"selfLink\" id=\"jsonp\" href=\"#jsonp\" rel=\"bookmark\">Jsonp</a> is an easy way for a JavaScript script on a web page to\n"
             + "  import and access data from ERDDAP.  Requests for .geoJson, .json, and .ncoJson files may include an optional\n"
@@ -12266,16 +7085,16 @@ public abstract class EDDGrid extends EDD {
             + "  JavaScript script via that JavaScript function.\n"
             + "  Here is an example using \n"
             + "  <a rel=\"bookmark\" href=\"https://jsfiddle.net/jpatterson/0ycu1zjy/\">jsonp and Javascript with ERDDAP"
-            + EDStatic.externalLinkHtml(language, tErddapUrl)
+            + EDStatic.messages.externalLinkHtml(language, tErddapUrl)
             + "</a> (thanks to Jenn Patterson Sevadjian of PolarWatch).\n"
             + "\n"
             +
             // matlab
             "  <p><strong><a rel=\"bookmark\" href=\"https://www.mathworks.com/products/matlab/\">MATLAB"
-            + EDStatic.externalLinkHtml(language, tErddapUrl)
+            + EDStatic.messages.externalLinkHtml(language, tErddapUrl)
             + "</a>\n"
             + "    <a rel=\"help\" href=\"https://www.mathworks.com/help/pdf_doc/matlab/matfile_format.pdf\">.mat"
-            + EDStatic.externalLinkHtml(language, tErddapUrl)
+            + EDStatic.messages.externalLinkHtml(language, tErddapUrl)
             + "</a></strong>\n"
             + "    <a class=\"selfLink\" id=\"matlab\" href=\"#matlab\" rel=\"bookmark\">users</a> can use griddap's .mat file type to download data from within MATLAB.\n"
             + "  Here is a one line example:\n"
@@ -12285,16 +7104,16 @@ public abstract class EDDGrid extends EDD {
             + "  (You may need to <a rel=\"help\" href=\"#PercentEncoded\">percent encode</a> the query part of the URL.)\n"
             + "  The data will be in a MATLAB structure. The structure's name will be the datasetID\n"
             + "  (for example, <kbd>"
-            + EDStatic.EDDGridIdExample
+            + EDStatic.messages.EDDGridIdExample
             + "</kbd>). \n"
             + "  The structure's internal variables will have the same names as in ERDDAP,\n"
             + "  (for example, use <kbd>fieldnames("
-            + EDStatic.EDDGridIdExample
+            + EDStatic.messages.EDDGridIdExample
             + ")</kbd>). \n"
             + "  If you download a 2D matrix of data (as in the example above), you can plot it with\n"
             + "  (for example):\n"
             + "<pre>"
-            + EDStatic.EDDGridMatlabPlotExample
+            + EDStatic.messages.EDDGridMatlabPlotExample
             + "</pre>\n"
             + "  The numbers at the end of the first line specify the range for the color mapping. \n"
             + "  The 'set' command flips the map to make it upright.\n"
@@ -12303,7 +7122,7 @@ public abstract class EDDGrid extends EDD {
             + "    which are particularly useful for\n"
             + "  getting environmental data related to points along an animal's track (e.g.,\n"
             + "    <a rel=\"bookmark\" href=\"https://gtopp.org/\">GTOPP"
-            + EDStatic.externalLinkHtml(language, tErddapUrl)
+            + EDStatic.messages.externalLinkHtml(language, tErddapUrl)
             + "</a> data).\n"
             + "  <p>ERDDAP stores datetime values in .mat files as \"seconds since 1970-01-01T00:00:00Z\".\n"
             + "  To display one of these values as a String in Matlab, you can use, e.g.,\n"
@@ -12321,10 +7140,10 @@ public abstract class EDDGrid extends EDD {
             +
             // nc
             "  <p><strong><a rel=\"bookmark\" href=\"https://www.unidata.ucar.edu/software/netcdf/\">NetCDF"
-            + EDStatic.externalLinkHtml(language, tErddapUrl)
+            + EDStatic.messages.externalLinkHtml(language, tErddapUrl)
             + "</a>\n"
             + "    <a rel=\"help\" href=\"https://github.com/Unidata/netcdf-c/blob/master/docs/file_format_specifications.md\">.nc"
-            + EDStatic.externalLinkHtml(language, tErddapUrl)
+            + EDStatic.messages.externalLinkHtml(language, tErddapUrl)
             + "</a></strong>\n"
             + "    - <a class=\"selfLink\" id=\"nc\" href=\"#nc\" rel=\"bookmark\">Requests</a> for .nc files return the requested subset of the dataset in a\n"
             + "  standard, NetCDF-3, 32-bit, .nc file.\n"
@@ -12347,7 +7166,7 @@ public abstract class EDDGrid extends EDD {
             + "\n"
             + "  <p><a class=\"selfLink\" id=\"netcdfjava\" href=\"#netcdfjava\" rel=\"bookmark\">If</a> you are using\n"
             + "  <a rel=\"bookmark\" href=\"https://www.unidata.ucar.edu/software/netcdf-java/\">NetCDF-Java"
-            + EDStatic.externalLinkHtml(language, tErddapUrl)
+            + EDStatic.messages.externalLinkHtml(language, tErddapUrl)
             + "</a>,\n"
             + "  don't try to directly access an ERDDAP dataset or subset\n"
             + "  as a .nc file. (It won't work, mostly because that .nc file isn't a static, persistent file. It is a\n"
@@ -12393,18 +7212,18 @@ public abstract class EDDGrid extends EDD {
             + "    - <a class=\"selfLink\" id=\"ncHeader\" href=\"#ncHeader\" rel=\"bookmark\">Requests</a> for .ncHeader files will return the header information (UTF-8 text) that\n"
             + "  would be generated if you used\n"
             + "    <a rel=\"help\" href=\"https://linux.die.net/man/1/ncdump\">ncdump -h <i>fileName</i>"
-            + EDStatic.externalLinkHtml(language, tErddapUrl)
+            + EDStatic.messages.externalLinkHtml(language, tErddapUrl)
             + "</a>\n"
             + "    on the corresponding .nc file.\n"
             + "\n"
             +
             // odv
             "  <p><strong><a rel=\"bookmark\" href=\"https://odv.awi.de/\">Ocean Data View"
-            + EDStatic.externalLinkHtml(language, tErddapUrl)
+            + EDStatic.messages.externalLinkHtml(language, tErddapUrl)
             + "</a> .odvTxt</strong>\n"
             + "    - <a class=\"selfLink\" id=\"ODV\" href=\"#ODV\" rel=\"bookmark\">ODV</a> users can download data in a\n"
             + "  <a rel=\"help\" href=\"https://odv.awi.de/en/documentation/\">ODV Generic Spreadsheet Format .txt file"
-            + EDStatic.externalLinkHtml(language, tErddapUrl)
+            + EDStatic.messages.externalLinkHtml(language, tErddapUrl)
             + "</a>\n"
             + "    by requesting griddap's .odvTxt fileType.\n"
             + "  The dataset MUST include longitude, latitude, and time dimensions.\n"
@@ -12439,21 +7258,21 @@ public abstract class EDDGrid extends EDD {
             // opendapLibraries
             "  <p><strong><a class=\"selfLink\" id=\"opendapLibraries\" href=\"#opendapLibraries\" rel=\"bookmark\">OPeNDAP Libraries</a></strong> - Since ERDDAP is an\n"
             + "    <a rel=\"bookmark\" href=\"https://www.opendap.org/\">OPeNDAP"
-            + EDStatic.externalLinkHtml(language, tErddapUrl)
+            + EDStatic.messages.externalLinkHtml(language, tErddapUrl)
             + "</a>-compatible data server,\n"
             + "    you can use\n"
             + "  any OPeNDAP client library, such as\n"
             + "    <a rel=\"bookmark\" href=\"https://www.unidata.ucar.edu/software/netcdf/\">NetCDF-Java, NetCDF-C, NetCDF-Fortran, NetCDF-Perl"
-            + EDStatic.externalLinkHtml(language, tErddapUrl)
+            + EDStatic.messages.externalLinkHtml(language, tErddapUrl)
             + "</a>,\n"
             + "  <a rel=\"bookmark\" href=\"https://www.opendap.org/deprecated-software/java-dap\">Java-DAP2"
-            + EDStatic.externalLinkHtml(language, tErddapUrl)
+            + EDStatic.messages.externalLinkHtml(language, tErddapUrl)
             + "</a>,\n"
             + "  <a rel=\"bookmark\" href=\"https://ferret.pmel.noaa.gov/Ferret/\">Ferret"
-            + EDStatic.externalLinkHtml(language, tErddapUrl)
+            + EDStatic.messages.externalLinkHtml(language, tErddapUrl)
             + "</a>, or the\n"
             + "     <a rel=\"bookmark\" href=\"https://www.pydap.org/en/latest/client.html\">Pydap Client"
-            + EDStatic.externalLinkHtml(language, tErddapUrl)
+            + EDStatic.messages.externalLinkHtml(language, tErddapUrl)
             + "</a>,\n"
             + "  to get data from an ERDDAP griddap dataset.\n"
             + "  When creating the initial connection to an ERDDAP griddap dataset from any OPeNDAP library:\n"
@@ -12487,17 +7306,17 @@ public abstract class EDDGrid extends EDD {
             +
             // Pydap Client
             "  <p><strong><a rel=\"bookmark\" href=\"https://www.pydap.org/en/latest/client.html\">Pydap Client"
-            + EDStatic.externalLinkHtml(language, tErddapUrl)
+            + EDStatic.messages.externalLinkHtml(language, tErddapUrl)
             + "</a></strong>\n"
             + "    <a class=\"selfLink\" id=\"PydapClient\" href=\"#PydapClient\" rel=\"bookmark\">users</a>\n"
             + "    can access griddap datasets via ERDDAP's standard OPeNDAP services.\n"
             + "  See the\n"
             + "    <a rel=\"help\" href=\"https://www.pydap.org/en/latest/client.html#accessing-gridded-data\">Pydap Client instructions for accessing gridded data"
-            + EDStatic.externalLinkHtml(language, tErddapUrl)
+            + EDStatic.messages.externalLinkHtml(language, tErddapUrl)
             + "</a>.\n"
             + "  Note that the name of a dataset in ERDDAP will always be a single word,\n"
             + "  (e.g., "
-            + EDStatic.EDDGridIdExample
+            + EDStatic.messages.EDDGridIdExample
             + " in the OPeNDAP dataset URL\n"
             + "  <br>"
             + datasetBase
@@ -12508,7 +7327,7 @@ public abstract class EDDGrid extends EDD {
             +
             // Python
             "  <p><strong><a rel=\"bookmark\" href=\"https://www.python.org\">Python"
-            + EDStatic.externalLinkHtml(language, tErddapUrl)
+            + EDStatic.messages.externalLinkHtml(language, tErddapUrl)
             + "</a></strong>\n"
             + "    <a class=\"selfLink\" id=\"Python\" href=\"#Python\" rel=\"bookmark\">is</a> a widely-used computer language that is very popular among scientists.\n"
             + "    In addition to the <a rel=\"help\" href=\"#PydapClient\">Pydap Client</a>, you can use Python to download various files from ERDDAP\n"
@@ -12525,11 +7344,11 @@ public abstract class EDDGrid extends EDD {
             +
             // erddapy
             "  <p><a rel=\"bookmark\" href=\"https://github.com/ioos/erddapy#--erddapy\">erddapy"
-            + EDStatic.externalLinkHtml(language, tErddapUrl)
+            + EDStatic.messages.externalLinkHtml(language, tErddapUrl)
             + "</a>\n"
             + "    <a class=\"selfLink\" id=\"erddapy\" href=\"#erddapy\" rel=\"bookmark\">(ERDDAP + Python, by Filipe Pires Alvarenga Fernandes)</a> and\n"
             + "  <br><a rel=\"bookmark\" href=\"https://github.com/hmedrano/erddap-python\">erddap-python"
-            + EDStatic.externalLinkHtml(language, tErddapUrl)
+            + EDStatic.messages.externalLinkHtml(language, tErddapUrl)
             + "</a> (by Favio Medrano)\n"
             + "  <br>are Python libraries that \"take advantage of ERDDAP’s RESTful web services and create the\n"
             + "    ERDDAP URL for any request like searching for datasets, acquiring metadata, downloading data, etc.\"\n"
@@ -12539,7 +7358,7 @@ public abstract class EDDGrid extends EDD {
             //
             // Python/Jupyter Notebook
             "  <p>\"<a rel=\"bookmark\" href=\"https://jupyter.org/\">Jupyter Notebook"
-            + EDStatic.externalLinkHtml(language, tErddapUrl)
+            + EDStatic.messages.externalLinkHtml(language, tErddapUrl)
             + "</a>\n"
             + "      <a class=\"selfLink\" id=\"JupyterNotebook\" href=\"#JupyterNotebook\" rel=\"bookmark\">is</a> an open-source web application that\n"
             + "      allows you to create and\n"
@@ -12549,18 +7368,18 @@ public abstract class EDDGrid extends EDD {
             + "    <a rel=\"bookmark\"\n"
             + "      href=\"https://github.com/rsignell-usgs/notebook/blob/master/ERDDAP/ERDDAP_advanced_search_test.ipynb/\"\n"
             + "      >ERDDAP Advanced Search Test"
-            + EDStatic.externalLinkHtml(language, tErddapUrl)
+            + EDStatic.messages.externalLinkHtml(language, tErddapUrl)
             + "</a> and\n"
             + "    <a rel=\"bookmark\" \n"
             + "      href=\"https://github.com/rsignell-usgs/notebook/blob/master/ERDDAP/ERDDAP_timing.ipynb\"\n"
             + "      >ERDDAP Timing"
-            + EDStatic.externalLinkHtml(language, tErddapUrl)
+            + EDStatic.messages.externalLinkHtml(language, tErddapUrl)
             + "</a>.\n"
             + "    Thanks to Rich Signell.\n"
             +
             // R
             "  <p><strong><a rel=\"bookmark\" href=\"https://www.r-project.org/\">R Statistical Package"
-            + EDStatic.externalLinkHtml(language, tErddapUrl)
+            + EDStatic.messages.externalLinkHtml(language, tErddapUrl)
             + "</a></strong> -\n"
             + "    <a class=\"selfLink\" id=\"R\" href=\"#R\" rel=\"bookmark\">R</a> is an open source statistical package for many operating systems.\n"
             + "  In R, you can download a NetCDF version 3 .nc file from ERDDAP. For example:\n"
@@ -12570,7 +7389,7 @@ public abstract class EDDGrid extends EDD {
             + "  (You may need to <a rel=\"help\" href=\"#PercentEncoded\">percent encode</a> the query part of the URL.)\n"
             + "  Then import data from that .nc file into R with the RNetCDF, ncdf, or ncdf4 packages available\n"
             + "  from <a rel=\"bookmark\" href=\"https://cran.r-project.org/\">CRAN"
-            + EDStatic.externalLinkHtml(language, tErddapUrl)
+            + EDStatic.messages.externalLinkHtml(language, tErddapUrl)
             + "</a>.\n"
             + "    Or, if you want the data in tabular form, download and import the data in a .csv file.\n"
             + "  For example,\n"
@@ -12580,13 +7399,13 @@ public abstract class EDDGrid extends EDD {
             + "test&lt;-read.csv(file=\"/home/bsimons/test.csv\")</pre>\n"
             + "  There are third-party R packages designed to make it easier to work with ERDDAP from within R:\n"
             + "    <a rel=\"bookmark\" href=\"https://cran.r-project.org/web/packages/rerddap/index.html\">rerddap"
-            + EDStatic.externalLinkHtml(language, tErddapUrl)
+            + EDStatic.messages.externalLinkHtml(language, tErddapUrl)
             + "</a>,\n"
             + "    <a rel=\"bookmark\" href=\"https://cran.r-project.org/web/packages/rerddapXtracto/index.html\">rerddapXtracto"
-            + EDStatic.externalLinkHtml(language, tErddapUrl)
+            + EDStatic.messages.externalLinkHtml(language, tErddapUrl)
             + "</a>, and\n"
             + "    <a rel=\"bookmark\" href=\"https://cran.r-project.org/web/packages/plotdap/index.html\">plotdap"
-            + EDStatic.externalLinkHtml(language, tErddapUrl)
+            + EDStatic.messages.externalLinkHtml(language, tErddapUrl)
             + "</a>.\n"
             + "  Thanks to \n"
             + "  <a rel=\"bookmark\" href=\"https://ropensci.org/\">rOpenSci<img \n"
@@ -12598,7 +7417,7 @@ public abstract class EDDGrid extends EDD {
             + "    which are particularly useful for getting\n"
             + "  environmental data related to points along an animal's track (e.g.,\n"
             + "    <a rel=\"bookmark\" href=\"https://gtopp.org/\">GTOPP"
-            + EDStatic.externalLinkHtml(language, tErddapUrl)
+            + EDStatic.messages.externalLinkHtml(language, tErddapUrl)
             + "</a> data).\n"
             + "     <br>&nbsp;\n"
             + "\n"
@@ -12615,13 +7434,13 @@ public abstract class EDDGrid extends EDD {
             +
             // .wav
             "  <p><strong><a rel=\"bookmark\" href=\"https://en.wikipedia.org/wiki/WAV\">.wav"
-            + EDStatic.externalLinkHtml(language, tErddapUrl)
+            + EDStatic.messages.externalLinkHtml(language, tErddapUrl)
             + "</a></strong> -\n"
             + "    <a class=\"selfLink\" id=\"wav\" href=\"#wav\" rel=\"bookmark\">ERDDAP can return data in .wav files,</a> which are uncompressed audio files.\n"
             + "  <ul>\n"
             + "  <li>You can save any numeric data in .wav files, but this file format is clearly intended to be used\n"
             + "    with <a rel=\"bookmark\" href=\"https://en.wikipedia.org/wiki/Pulse-code_modulation\">PCM"
-            + EDStatic.externalLinkHtml(language, tErddapUrl)
+            + EDStatic.messages.externalLinkHtml(language, tErddapUrl)
             + "</a> digitized sound waves.\n"
             + "    We do not recommend saving other types of data in .wav files.\n"
             + "  <li>All of the data variables you select to save in a .wav file must have the same data type, e.g., int.\n"
@@ -12667,8 +7486,10 @@ public abstract class EDDGrid extends EDD {
             + "   <p>The fileType options for downloading images of graphs and maps of grid data are:\n"
             + "  <table class=\"erd\" style=\"width:100%; \">\n"
             + "    <tr><th>Image<br>fileTypes</th><th>Description</th><th>Info</th><th>Example</th></tr>\n");
-    for (int i = 0; i < imageFileTypeNames.length; i++) {
-      String ft = imageFileTypeNames[i];
+    List<EDDFileTypeInfo> imageFileTypes = EDD.getFileTypeOptions(true, true);
+    for (int i = 0; i < imageFileTypes.size(); i++) {
+      EDDFileTypeInfo curType = imageFileTypes.get(i);
+      String ft = curType.getFileTypeName();
       String ft1 = ft.substring(1);
       writer.write(
           "    <tr>\n"
@@ -12680,23 +7501,23 @@ public abstract class EDDGrid extends EDD {
               + ft
               + "</a></td>\n"
               + "      <td>"
-              + imageFileTypeDescriptionsAr[language][i]
+              + curType.getGridDescription(language)
               + "</td>\n"
               + "      <td class=\"N\">"
-              + (imageFileTypeInfo[i] == null || imageFileTypeInfo[i].equals("")
+              + (curType.getInfoUrl() == null || curType.getInfoUrl().isEmpty()
                   ? "&nbsp;"
                   : "<a rel=\"help\" href=\""
-                      + XML.encodeAsHTMLAttribute(imageFileTypeInfo[i])
+                      + XML.encodeAsHTMLAttribute(curType.getInfoUrl())
                       + "\">info"
-                      + EDStatic.externalLinkHtml(language, tErddapUrl)
+                      + EDStatic.messages.externalLinkHtml(language, tErddapUrl)
                       + "</a>")
               + "</td>\n"
               + // must be mapExample below because kml doesn't work with graphExample
               "      <td class=\"N\"><a rel=\"bookmark\" href=\""
               + datasetBase
-              + imageFileTypeNames[i]
+              + curType.getFileTypeName()
               + "?"
-              + EDStatic.EDDGridMapExampleHA
+              + EDStatic.messages.EDDGridMapExampleHA
               + "\">example</a></td>\n"
               + "    </tr>\n");
     }
@@ -12750,7 +7571,7 @@ public abstract class EDDGrid extends EDD {
             + "Or, if you are comfortable running command line programs\n"
             + "(from a Linux or Windows command line, or a Mac OS Terminal), you can use curl (or a similar program like\n"
             + "  <a rel=\"bookmark\" href=\"https://www.gnu.org/software/wget/\">wget"
-            + EDStatic.externalLinkHtml(language, tErddapUrl)
+            + EDStatic.messages.externalLinkHtml(language, tErddapUrl)
             + "</a>)\n"
             + "to save results files from ERDDAP into files on your hard drive,\n"
             + "without using a browser or writing a computer program or script.\n"
@@ -12759,7 +7580,7 @@ public abstract class EDDGrid extends EDD {
             + "<br>On Mac OS X, to get to a command line, use \"Finder : Go : Utilities : Terminal\".\n"
             + "<br>On Windows, you need to\n"
             + "  <a rel=\"bookmark\" href=\"https://curl.haxx.se/download.html\">download curl"
-            + EDStatic.externalLinkHtml(language, tErddapUrl)
+            + EDStatic.messages.externalLinkHtml(language, tErddapUrl)
             + "</a>\n"
             + "  (the \"Windows 64 - binary, the curl project\" variant worked for me on Windows 10)\n"
             + "  and install it.\n"
@@ -12768,10 +7589,10 @@ public abstract class EDDGrid extends EDD {
             + "<br><strong>Please be kind to other ERDDAP users: run just one script or curl command at a time.</strong>\n"
             + "<br>Instructions for using curl are on the \n"
             + "<a rel=\"help\" href=\"https://curl.haxx.se/download.html\">curl man page"
-            + EDStatic.externalLinkHtml(language, tErddapUrl)
+            + EDStatic.messages.externalLinkHtml(language, tErddapUrl)
             + "</a> and in this\n"
             + "<a rel=\"help\" href=\"https://curl.haxx.se/docs/httpscripting.html\">curl tutorial"
-            + EDStatic.externalLinkHtml(language, tErddapUrl)
+            + EDStatic.messages.externalLinkHtml(language, tErddapUrl)
             + "</a>.\n"
             + "<br>But here is a quick tutorial related to using curl with ERDDAP:\n"
             + "<ul>\n"
@@ -12785,7 +7606,7 @@ public abstract class EDDGrid extends EDD {
             + "<pre>curl --compressed -g \""
             + fullGraphExampleHA
             + "\" -o "
-            + EDStatic.EDDGridIdExample
+            + EDStatic.messages.EDDGridIdExample
             + "_example.png</pre>\n"
             + "  (That example includes <kbd>--compressed</kbd> because it is a generally useful option,\n"
             + "  but there is little benefit to <kbd>--compressed</kbd> when requesting .png files\n"
@@ -12795,7 +7616,7 @@ public abstract class EDDGrid extends EDD {
             // BAssta5day20100901.png</pre>\n" +
             "  <p><a class=\"selfLink\" id=\"PercentEncoded\" href=\"#PercentEncoded\" rel=\"bookmark\">In curl, as in many other programs, the query part of the erddapUrl must be</a>\n"
             + "  <a class=\"N\" rel=\"help\" href=\"https://en.wikipedia.org/wiki/Percent-encoding\">percent encoded"
-            + EDStatic.externalLinkHtml(language, tErddapUrl)
+            + EDStatic.messages.externalLinkHtml(language, tErddapUrl)
             + "</a>.  To do this, you need to convert\n"
             + "  special characters (other than the initial '&amp;' and the main '=' of a constraint)\n"
             + "  into the form %HH, where HH is the 2 digit hexadecimal value of the character.\n"
@@ -12810,21 +7631,21 @@ public abstract class EDDGrid extends EDD {
             + "  A-Za-z0-9_-!.~'()* .\n"
             + "  Programming languages have tools to do this (for example, see Java's\n"
             + "  <a rel=\"help\" href=\"https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/net/URLEncoder.html\">java.net.URLEncoder"
-            + EDStatic.externalLinkHtml(language, tErddapUrl)
+            + EDStatic.messages.externalLinkHtml(language, tErddapUrl)
             + "</a>\n"
             + "     and JavaScript's\n"
             + "<a rel=\"help\" href=\"https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/encodeURIComponent\">encodeURIComponent()"
-            + EDStatic.externalLinkHtml(language, tErddapUrl)
+            + EDStatic.messages.externalLinkHtml(language, tErddapUrl)
             + "</a>) and there are\n"
             + "   <a class=\"N\" rel=\"help\" href=\"https://www.url-encode-decode.com\">websites that percent encode/decode for you"
-            + EDStatic.externalLinkHtml(language, tErddapUrl)
+            + EDStatic.messages.externalLinkHtml(language, tErddapUrl)
             + "</a>.\n"
             + "  <br>&nbsp;\n"
             + "<li>To download and save many files in one step, use curl with the globbing feature enabled:\n"
             + "  <br><kbd>curl --compressed \"<i>erddapUrl</i>\" -o <i>fileDir/fileName#1.ext</i></kbd>\n"
             + "  <br>Since the globbing feature treats the characters [, ], {, and } as special, you must\n"
             + "  <a class=\"N\" rel=\"help\" href=\"https://en.wikipedia.org/wiki/Percent-encoding\">percent encode"
-            + EDStatic.externalLinkHtml(language, tErddapUrl)
+            + EDStatic.messages.externalLinkHtml(language, tErddapUrl)
             + "</a> \n"
             + "them in the erddapURL as &#37;5B, &#37;5D, &#37;7B, &#37;7D, respectively.\n"
             + "  Then, in the erddapUrl, replace a zero-padded number (for example <kbd>01</kbd>) with a range\n"
@@ -12856,13 +7677,13 @@ public abstract class EDDGrid extends EDD {
             + "  <br>It specifies the subset of data that you want to receive.\n"
             + "  In griddap, it is an optional\n"
             + "    <a rel=\"bookmark\" href=\"https://www.opendap.org\">OPeNDAP"
-            + EDStatic.externalLinkHtml(language, tErddapUrl)
+            + EDStatic.messages.externalLinkHtml(language, tErddapUrl)
             + "</a>\n "
             + "    <a rel=\"help\" href=\"https://www.opendap.org/pdf/ESE-RFC-004v1.2.pdf\">DAP"
-            + EDStatic.externalLinkHtml(language, tErddapUrl)
+            + EDStatic.messages.externalLinkHtml(language, tErddapUrl)
             + "</a>\n"
             + "    <a rel=\"help\" href=\"https://opendap.github.io/documentation/UserGuideComprehensive.html#Constraint_Expressions\">projection constraint"
-            + EDStatic.externalLinkHtml(language, tErddapUrl)
+            + EDStatic.messages.externalLinkHtml(language, tErddapUrl)
             + "</a> query\n"
             + "  which can request:\n"
             + "   <ul>\n"
@@ -12940,7 +7761,7 @@ public abstract class EDDGrid extends EDD {
             + "     and/or stop values to be actual dimension values (for example, longitude values\n"
             + "     in degrees_east) within parentheses, instead of array indices.  \n"
             + "     This example with "
-            + EDStatic.EDDGridDimNamesExample
+            + EDStatic.messages.EDDGridDimNamesExample
             + " dimension values \n"
             + "     <br><a href=\""
             + fullValueExampleHA
@@ -12981,11 +7802,11 @@ public abstract class EDDGrid extends EDD {
             + "     <br>The more human-oriented fileTypes (notably, .csv, .tsv, .htmlTable, .odvTxt, and .xhtml)\n"
             + "     display date/time values as "
             + "       <a rel=\"help\" href=\"https://en.wikipedia.org/wiki/ISO_8601\">ISO 8601:2004 \"extended\" date/time strings"
-            + EDStatic.externalLinkHtml(language, tErddapUrl)
+            + EDStatic.messages.externalLinkHtml(language, tErddapUrl)
             + "</a>\n"
             + "     (e.g., 2002-08-03T12:30:00Z, but some variables include milliseconds, e.g.,\n"
             + "     2002-08-03T12:30:00.123Z).\n"
-            + (EDStatic.convertersActive
+            + (EDStatic.config.convertersActive
                 ? "     <br>ERDDAP has a utility to\n"
                     + "       <a rel=\"bookmark\" href=\""
                     + tErddapUrl
@@ -12999,7 +7820,7 @@ public abstract class EDDGrid extends EDD {
                 : "")
             + "   <li>For the time dimension, griddap extends the OPeNDAP standard by allowing you to specify an\n"
             + "     <a rel=\"help\" href=\"https://en.wikipedia.org/wiki/ISO_8601\">ISO 8601:2004 \"extended\" date/time string"
-            + EDStatic.externalLinkHtml(language, tErddapUrl)
+            + EDStatic.messages.externalLinkHtml(language, tErddapUrl)
             + "</a>\n"
             + "       in parentheses, which griddap then converts to the\n"
             + "     internal number (in seconds since 1970-01-01T00:00:00Z) and then to the appropriate\n"
@@ -13031,7 +7852,7 @@ public abstract class EDDGrid extends EDD {
             + "     And this is consistent with some other places in ERDDAP that try to repair\n"
             + "     invalid input when the intention is clear, instead of just returning an error\n"
             + "     message.)\n"
-            + (EDStatic.convertersActive
+            + (EDStatic.config.convertersActive
                 ? "     ERDDAP has a utility to\n"
                     + "       <a rel=\"bookmark\" href=\""
                     + tErddapUrl
@@ -13098,7 +7919,7 @@ public abstract class EDDGrid extends EDD {
             + "       For example, a fully opaque (ff) greenish-blue color with red=22, green=88, blue=ee\n"
             + "       would be 0xff2288ee. Opaque white is 0xffffffff. Opaque light blue is 0xffccccff.\n"
             + "       The default on this ERDDAP is "
-            + String2.to0xHexString(EDStatic.graphBackgroundColor.getRGB(), 8)
+            + String2.to0xHexString(EDStatic.config.graphBackgroundColor.getRGB(), 8)
             + ".\n"
             + "     <li><kbd>&amp;.colorBar=<i>palette</i>|<i>continuous</i>|<i>scale</i>|<i>min</i>|<i>max</i>|<i>nSections</i></kbd> \n"
             + "       <br>This specifies the settings for a color bar.  The sub-values are:\n"
@@ -13262,7 +8083,7 @@ public abstract class EDDGrid extends EDD {
             + "can log in, but they will only have access to the private datasets\n"
             + "that the ERDDAP administrator has explicitly authorized them to access.\n"
             + "For instructions on logging into ERDDAP from a browser or via a script, see\n"
-            + "<a rel=\"help\" href=\"https://erddap.github.io/AccessToPrivateDatasets.html\">Access to Private Datasets in ERDDAP</a>.\n"
+            + "<a rel=\"help\" href=\"https://erddap.github.io/docs/user/AccessToPrivateDatasets\">Access to Private Datasets in ERDDAP</a>.\n"
             + "\n"
             + "<li><strong><a class=\"selfLink\" id=\"longTimeRange\" href=\"#longTimeRange\" rel=\"bookmark\">Requests for a long time range</a></strong> (&gt;30 time points) from a gridded dataset\n"
             + "are prone to time out failures, which often appear as Proxy Errors, because it\n"
@@ -13277,7 +8098,7 @@ public abstract class EDDGrid extends EDD {
             + "Then make all the requests (each for a different chunk of time) needed to get\n"
             + "all of the data.\n"
             + "An ERDDAP administrator can lessen this problem by increasing the\n"
-            + "<a rel=\"help\" href=\"https://erddap.github.io/setup.html#ApacheTimeout\">Apache timeout settings</a>.\n"
+            + "<a rel=\"help\" href=\"https://erddap.github.io/docs/server-admin/deploy-install#apache-timeout\">Apache timeout settings</a>.\n"
             + "<br>&nbsp;\n"
             + "<li><a class=\"selfLink\" id=\"dataModel\" href=\"#dataModel\" rel=\"bookmark\"><strong>Data Model</strong></a>\n"
             + "  <br>Each griddap dataset can be represented as:\n"
@@ -13286,7 +8107,7 @@ public abstract class EDDGrid extends EDD {
             + "      associated dimension with the same name.\n"
             + "      <ul>\n"
             + "      <li>Each axis variable has data of one specific data type.\n"
-            + "        See the <a rel=\"help\" href=\"https://erddap.github.io/setupDatasetsXml.html#dataTypes\">Data Type documentation</a> for details.\n"
+            + "        See the <a rel=\"help\" href=\"https://erddap.github.io/docs/server-admin/datasets#data-types\">Data Type documentation</a> for details.\n"
             + "        If the data source has a dimension with a size but no values, ERDDAP uses the integer values\n"
             + "        0, 1, 2, ...\n"
             + "        Axis variables can't contain char or String data.\n"
@@ -13301,7 +8122,7 @@ public abstract class EDDGrid extends EDD {
             + "        Tied values are not allowed because requests for a single <kbd>[(value)]</kbd> must\n"
             + "        translate unambiguously to one index. Also, the\n"
             + "        <a rel=\"help\" href=\"https://cfconventions.org/Data/cf-conventions/cf-conventions-1.8/cf-conventions.html#terminology\">CF Conventions"
-            + EDStatic.externalLinkHtml(language, tErddapUrl)
+            + EDStatic.messages.externalLinkHtml(language, tErddapUrl)
             + "</a>\n"
             + "        require that \"coordinate variables\", as it calls them, be \"ordered monotonically\".\n"
             + "      <li>Each axis variable has a name composed of a letter (A-Z, a-z) and then 0 or more\n"
@@ -13312,7 +8133,7 @@ public abstract class EDDGrid extends EDD {
             + "      <ul>\n"
             + "      <li>All data variables use all of the axis variables, in order, as their dimensions.\n"
             + "      <li>Each data variable has data of one\n"
-            + "        <a rel=\"help\" href=\"https://erddap.github.io/setupDatasetsXml.html#dataTypes\">data type</a>.\n"
+            + "        <a rel=\"help\" href=\"https://erddap.github.io/docs/server-admin/datasets#data-types\">data type</a>.\n"
             + "      <li>Missing values are allowed.\n"
             + "      <li>Each data variable has a name composed of a letter (A-Z, a-z) and then 0\n"
             + "        or more characters (A-Z, a-z, 0-9, _).\n"
@@ -13327,7 +8148,7 @@ public abstract class EDDGrid extends EDD {
             + "      <li>Each Key is a String consisting of a letter (A-Z, a-z) and then 0 or more other\n"
             + "        characters (A-Z, a-z, 0-9, '_').\n"
             + "      <li>Each Value is an array of one (usually) or more values of one\n"
-            + "        <a rel=\"help\" href=\"https://erddap.github.io/setupDatasetsXml.html#dataTypes\">data type</a>.\n"
+            + "        <a rel=\"help\" href=\"https://erddap.github.io/docs/server-admin/datasets#data-types\">data type</a>.\n"
             + "      <br>&nbsp;\n"
             + "      </ul>\n"
             + "  </ul>\n"
@@ -13384,7 +8205,7 @@ public abstract class EDDGrid extends EDD {
             + "    <br>&nbsp;\n"
             + "  </ul>\n"
             + "<li>"
-            + EDStatic.acceptEncodingHtml(language, "h3", tErddapUrl)
+            + EDStatic.messages.acceptEncodingHtml(language, "h3", tErddapUrl)
             + "    <br>&nbsp;\n"
             + "<li><a class=\"selfLink\" id=\"citeDataset\" href=\"#citeDataset\" rel=\"bookmark\"><strong>How to Cite a Dataset in a Paper</strong></a>\n"
             + "<br>It is important to let readers of your paper know how you got the data that\n"
@@ -13550,8 +8371,7 @@ public abstract class EDDGrid extends EDD {
           subset.append("[0:" + (nValues / 18) + ":" + (nValues - 1) + "]");
         else subset.append("[" + (nValues / 2) + "]");
       }
-      String2.log(
-          "subset=" + subset.toString() + "\nnDim=" + nDim + " vars=" + dataVars.toString());
+      String2.log("subset=" + subset + "\nnDim=" + nDim + " vars=" + dataVars);
 
       // get suggested range for each dataVariable
       Table data = new Table();
@@ -13564,7 +8384,7 @@ public abstract class EDDGrid extends EDD {
                   + dsName
                   + ".tsv?"
                   + varName
-                  + subset.toString(),
+                  + subset,
               tDir + tName,
               true);
 
@@ -13623,18 +8443,20 @@ public abstract class EDDGrid extends EDD {
   /**
    * This responds by writing WCS info for this dataset.
    *
+   * @param request the request
    * @param language the index of the selected language
    * @param loggedInAs the name of the logged in user (or null if not logged in). Caller should have
    *     already checked that user has access to this dataset.
    */
-  public void wcsInfo(int language, String loggedInAs, Writer writer) throws Throwable {
+  public void wcsInfo(HttpServletRequest request, int language, String loggedInAs, Writer writer)
+      throws Throwable {
 
-    String tErddapUrl = EDStatic.erddapUrl(loggedInAs, language);
+    String tErddapUrl = EDStatic.erddapUrl(request, loggedInAs, language);
     String wcsUrl = tErddapUrl + "/wcs/" + datasetID + "/" + EDDGrid.wcsServer;
     String getCapabilities = wcsUrl + "?service=WCS&amp;request=GetCapabilities";
     String wcsExample = wcsUrl + "?NotYetFinished"; // EDStatic.wcsSampleStation;
     writer.write(
-        EDStatic.youAreHere(language, loggedInAs, "Web Coverage Service (WCS)")
+        EDStatic.youAreHere(request, language, loggedInAs, "Web Coverage Service (WCS)")
             + "\n"
             + "<h2>Overview</h2>\n"
             + "In addition to making data available via \n"
@@ -13654,13 +8476,13 @@ public abstract class EDDGrid extends EDD {
             + "\n"
             + "<p>"
             + String2.replaceAll(
-                EDStatic.wcsLongDescriptionHtmlAr[language], "&erddapUrl;", tErddapUrl)
+                EDStatic.messages.wcsLongDescriptionHtmlAr[language], "&erddapUrl;", tErddapUrl)
             + "\n"
             + "\n"
             + "<p>WCS clients send HTTP POST or GET requests (specially formed URLs) to the WCS service and get XML responses.\n"
             + "See this <a rel=\"bookmark\" href=\"https://en.wikipedia.org/wiki/Web_Coverage_Service#WCS_Implementations\" \n"
             + ">list of WCS clients (and servers)"
-            + EDStatic.externalLinkHtml(language, tErddapUrl)
+            + EDStatic.messages.externalLinkHtml(language, tErddapUrl)
             + "</a>\n"
             + "<h2>Sample WCS Requests</h2>\n"
             + "<ul>\n"
@@ -13684,26 +8506,26 @@ public abstract class EDDGrid extends EDD {
    * called if accessibleViaWCS is true and loggedInAs has access to this dataset (so redirected to
    * login, instead of getting an error here).
    *
+   * @param request the request
    * @param language the index of the selected language
    * @param loggedInAs the name of the logged in user (or null if not logged in).
    * @param version Currently, only "1.0.0" is supported.
    * @param writer In the end, the writer is flushed, not closed.
    */
-  public void wcsGetCapabilities(int language, String loggedInAs, String version, Writer writer)
+  public void wcsGetCapabilities(
+      HttpServletRequest request, int language, String loggedInAs, String version, Writer writer)
       throws Throwable {
 
     if (accessibleViaWCS().length() > 0)
       throw new SimpleException(
-          EDStatic.simpleBilingual(language, EDStatic.queryErrorAr) + accessibleViaWCS());
+          EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr) + accessibleViaWCS());
 
-    String tErddapUrl = EDStatic.erddapUrl(loggedInAs, language);
+    String tErddapUrl = EDStatic.erddapUrl(request, loggedInAs, language);
     String wcsUrl = tErddapUrl + "/wcs/" + datasetID + "/" + wcsServer;
-    String titleXml = XML.encodeAsXML(title());
-    String keywordsSA[] = keywords();
+    String titleXml = XML.encodeAsXML(title(language));
+    String keywordsSA[] = keywords(language);
     EDVGridAxis lonEdv = axisVariables[lonIndex];
     EDVGridAxis latEdv = axisVariables[latIndex];
-    EDVGridAxis altEdv = altIndex < 0 ? null : axisVariables[altIndex];
-    EDVGridAxis depthEdv = depthIndex < 0 ? null : axisVariables[depthIndex];
     EDVGridAxis timeEdv = timeIndex < 0 ? null : axisVariables[timeIndex];
     String lonLatLowerCorner = lonEdv.destinationMinString() + " " + latEdv.destinationMinString();
     String lonLatUpperCorner = lonEdv.destinationMaxString() + " " + latEdv.destinationMaxString();
@@ -13729,7 +8551,7 @@ public abstract class EDDGrid extends EDD {
               "  >\n"
               + "  <Service>\n"
               + "    <description>"
-              + XML.encodeAsXML(summary())
+              + XML.encodeAsXML(summary(language))
               + "</description>\n"
               + "    <name>"
               + datasetID
@@ -13738,44 +8560,44 @@ public abstract class EDDGrid extends EDD {
               + titleXml
               + "</label>\n"
               + "    <keywords>\n");
-      for (int i = 0; i < keywordsSA.length; i++)
-        writer.write("      <keyword>" + XML.encodeAsXML(keywordsSA[i]) + "</keyword>\n");
+      for (String s : keywordsSA)
+        writer.write("      <keyword>" + XML.encodeAsXML(s) + "</keyword>\n");
       writer.write(
           "    </keywords>\n"
               + "    <responsibleParty>\n"
               + "      <individualName>"
-              + XML.encodeAsXML(EDStatic.adminIndividualName)
+              + XML.encodeAsXML(EDStatic.config.adminIndividualName)
               + "</individualName>\n"
               + "      <organisationName>"
-              + XML.encodeAsXML(EDStatic.adminInstitution)
+              + XML.encodeAsXML(EDStatic.config.adminInstitution)
               + "</organisationName>\n"
               + "      <positionName>"
-              + XML.encodeAsXML(EDStatic.adminPosition)
+              + XML.encodeAsXML(EDStatic.config.adminPosition)
               + "</positionName>\n"
               + "      <contactInfo>\n"
               + "        <phone>\n"
               + "          <voice>"
-              + XML.encodeAsXML(EDStatic.adminPhone)
+              + XML.encodeAsXML(EDStatic.config.adminPhone)
               + "</voice>\n"
               + "        </phone>\n"
               + "        <address>\n"
               + "          <deliveryPoint>"
-              + XML.encodeAsXML(EDStatic.adminAddress)
+              + XML.encodeAsXML(EDStatic.config.adminAddress)
               + "</deliveryPoint>\n"
               + "          <city>"
-              + XML.encodeAsXML(EDStatic.adminCity)
+              + XML.encodeAsXML(EDStatic.config.adminCity)
               + "</city>\n"
               + "          <administrativeArea>"
-              + XML.encodeAsXML(EDStatic.adminStateOrProvince)
+              + XML.encodeAsXML(EDStatic.config.adminStateOrProvince)
               + "</administrativeArea>\n"
               + "          <postalCode>"
-              + XML.encodeAsXML(EDStatic.adminPostalCode)
+              + XML.encodeAsXML(EDStatic.config.adminPostalCode)
               + "</postalCode>\n"
               + "          <country>"
-              + XML.encodeAsXML(EDStatic.adminCountry)
+              + XML.encodeAsXML(EDStatic.config.adminCountry)
               + "</country>\n"
               + "          <electronicMailAddress>"
-              + XML.encodeAsXML(EDStatic.adminEmail)
+              + XML.encodeAsXML(EDStatic.config.adminEmail)
               + "</electronicMailAddress>\n"
               + "        </address>\n"
               + "        <onlineResource xlink:href=\""
@@ -13784,10 +8606,10 @@ public abstract class EDDGrid extends EDD {
               + "      </contactInfo>\n"
               + "    </responsibleParty>\n"
               + "    <fees>"
-              + XML.encodeAsXML(fees())
+              + XML.encodeAsXML(fees(language))
               + "</fees>\n"
               + "    <accessConstraints>"
-              + XML.encodeAsXML(accessConstraints())
+              + XML.encodeAsXML(accessConstraints(language))
               + "</accessConstraints>\n"
               + "  </Service>\n"
               + "  <Capability>\n"
@@ -13854,21 +8676,25 @@ public abstract class EDDGrid extends EDD {
       String varInfoString = varInfo.toString();
 
       // write for each dataVariable...
-      for (int dv = 0; dv < dataVariables.length; dv++) {
+      for (EDV dataVariable : dataVariables) {
         writer.write(
             "    <CoverageOfferingBrief>\n"
                 + "      <name>"
-                + XML.encodeAsXML(dataVariables[dv].destinationName())
+                + XML.encodeAsXML(dataVariable.destinationName())
                 + "</name>\n"
                 + "      <label>"
-                + XML.encodeAsXML(dataVariables[dv].longName())
+                + XML.encodeAsXML(dataVariable.longName())
                 + "</label>\n"
                 + varInfoString);
 
         writer.write("    </CoverageOfferingBrief>\n");
       }
 
-      writer.write("  </ContentMetadata>\n" + "</WCS_Capabilities>\n");
+      writer.write(
+          """
+                </ContentMetadata>
+              </WCS_Capabilities>
+              """);
 
       // **** getCapabilities 1.1.2
       // based on WCS 1.1.2 spec, Annex C
@@ -13905,22 +8731,22 @@ public abstract class EDDGrid extends EDD {
       "    <ows:AccessConstraints>" + XML.encodeAsXML(accessConstraints()) + "</ows:AccessConstraints>\n" +
       "  </ows:ServiceIdentification>\n" +
       "  <ows:ServiceProvider>\n" +
-      "    <ows:ProviderName>" + XML.encodeAsXML(EDStatic.adminInstitution) + "</ows:ProviderName>\n" +
+      "    <ows:ProviderName>" + XML.encodeAsXML(EDStatic.config.adminInstitution) + "</ows:ProviderName>\n" +
       "    <ows:ProviderSite xlink:href=\"" + XML.encodeAsXML(EDStatic.erddapUrl) + "\">\n" +
       "    <ows:ServiceContact>\n" +
-      "      <ows:IndividualName>" + XML.encodeAsXML(EDStatic.adminIndividualName) + "</ows:IndividualName>\n" +
-      "      <ows:PositionName>" + XML.encodeAsXML(EDStatic.adminPosition) + "</ows:PositionName>\n" +
+      "      <ows:IndividualName>" + XML.encodeAsXML(EDStatic.config.adminIndividualName) + "</ows:IndividualName>\n" +
+      "      <ows:PositionName>" + XML.encodeAsXML(EDStatic.config.adminPosition) + "</ows:PositionName>\n" +
       "      <ows:ContactInfo>\n" +
       "        <ows:Phone>\n" +
-      "          <ows:Voice>" + XML.encodeAsXML(EDStatic.adminPhone) + "</ows:Voice>\n" +
+      "          <ows:Voice>" + XML.encodeAsXML(EDStatic.config.adminPhone) + "</ows:Voice>\n" +
       "        </ows:Phone>\n" +
       "        <ows:Address>\n" +
-      "          <ows:DeliveryPoint>" + XML.encodeAsXML(EDStatic.adminAddress) + "</ows:DeliveryPoint>\n" +
-      "          <ows:City>" + XML.encodeAsXML(EDStatic.adminCity) + "</ows:City>\n" +
-      "          <ows:AdministrativeArea>" + XML.encodeAsXML(EDStatic.adminStateOrProvince) + "</ows:AdministrativeArea>\n" +
-      "          <ows:PostalCode>" + XML.encodeAsXML(EDStatic.adminPostalCode) + "</ows:PostalCode>\n" +
-      "          <ows:Country>" + XML.encodeAsXML(EDStatic.adminCountry) + "</ows:Country>\n" +
-      "          <ows:ElectronicMailAddress>" + XML.encodeAsXML(EDStatic.adminEmail) + "</ows:ElectronicMailAddress>\n" +
+      "          <ows:DeliveryPoint>" + XML.encodeAsXML(EDStatic.config.adminAddress) + "</ows:DeliveryPoint>\n" +
+      "          <ows:City>" + XML.encodeAsXML(EDStatic.config.adminCity) + "</ows:City>\n" +
+      "          <ows:AdministrativeArea>" + XML.encodeAsXML(EDStatic.config.adminStateOrProvince) + "</ows:AdministrativeArea>\n" +
+      "          <ows:PostalCode>" + XML.encodeAsXML(EDStatic.config.adminPostalCode) + "</ows:PostalCode>\n" +
+      "          <ows:Country>" + XML.encodeAsXML(EDStatic.config.adminCountry) + "</ows:Country>\n" +
+      "          <ows:ElectronicMailAddress>" + XML.encodeAsXML(EDStatic.config.adminEmail) + "</ows:ElectronicMailAddress>\n" +
       "        </ows:Address>\n" +
       "      </ows:ContactInfo>\n" +
       "      <ows:Role>ERDDAP/WCS Administrator</ows:Role>\n" +
@@ -14059,7 +8885,7 @@ public abstract class EDDGrid extends EDD {
       */
     } else {
       throw new SimpleException(
-          EDStatic.simpleBilingual(language, EDStatic.queryErrorAr)
+          EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
               + "version="
               + version
               + " must be \""
@@ -14090,26 +8916,20 @@ public abstract class EDDGrid extends EDD {
 
     if (accessibleViaWCS().length() > 0)
       throw new SimpleException(
-          EDStatic.simpleBilingual(language, EDStatic.queryErrorAr) + accessibleViaWCS());
+          EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr) + accessibleViaWCS());
 
-    String tErddapUrl = EDStatic.erddapUrl(loggedInAs, language);
-    String wcsUrl = tErddapUrl + "/wcs/" + datasetID + "/" + wcsServer;
-    String titleXml = XML.encodeAsXML(title());
-    String keywordsSA[] = keywords();
     EDVGridAxis lonEdv = axisVariables[lonIndex];
     EDVGridAxis latEdv = axisVariables[latIndex];
-    EDVGridAxis altEdv = altIndex < 0 ? null : axisVariables[altIndex];
-    EDVGridAxis depthEdv = depthIndex < 0 ? null : axisVariables[depthIndex];
     EDVGridAxis timeEdv = timeIndex < 0 ? null : axisVariables[timeIndex];
     String lonLatLowerCorner = lonEdv.destinationMinString() + " " + latEdv.destinationMinString();
     String lonLatUpperCorner = lonEdv.destinationMaxString() + " " + latEdv.destinationMaxString();
     String coverages[] = String2.split(coveragesCSV, ',');
-    for (int cov = 0; cov < coverages.length; cov++) {
-      if (String2.indexOf(dataVariableDestinationNames(), coverages[cov]) < 0)
+    for (String s : coverages) {
+      if (String2.indexOf(dataVariableDestinationNames(), s) < 0)
         throw new SimpleException(
-            EDStatic.simpleBilingual(language, EDStatic.queryErrorAr)
+            EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
                 + "coverage="
-                + coverages[cov]
+                + s
                 + " isn't a valid coverage name.");
     }
 
@@ -14120,22 +8940,25 @@ public abstract class EDDGrid extends EDD {
     if (version == null || version.equals("1.0.0")) {
       if (version == null) version = "1.0.0";
       writer.write( // WCS 1.0.0
-          "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
-              + "<CoverageDescription version=\"1.0.0\"\n"
-              + "  xmlns=\"http://www.opengis.net/wcs\"\n"
-              + "  xmlns:xlink=\"https://www.w3.org/1999/xlink\"\n"
-              + "  xmlns:gml=\"http://www.opengis.net/gml\"\n"
-              + "  xmlns:xsi=\"https://www.w3.org/2001/XMLSchema-instance\"\n"
-              + "  xsi:schemaLocation=\"http://www.opengis.net/wcs http://schemas.opengis.net/wcs/1.0.0/describeCoverage.xsd\"\n"
-              + "  >\n");
+          """
+                      <?xml version="1.0" encoding="UTF-8"?>
+                      <CoverageDescription version="1.0.0"
+                        xmlns="http://www.opengis.net/wcs"
+                        xmlns:xlink="https://www.w3.org/1999/xlink"
+                        xmlns:gml="http://www.opengis.net/gml"
+                        xmlns:xsi="https://www.w3.org/2001/XMLSchema-instance"
+                        xsi:schemaLocation="http://www.opengis.net/wcs http://schemas.opengis.net/wcs/1.0.0/describeCoverage.xsd"
+                        >
+                      """);
 
       // for each requested
-      for (int cov = 0; cov < coverages.length; cov++) {
-        EDV edv = findDataVariableByDestinationName(coverages[cov]);
+      //// ???
+      for (String coverage : coverages) {
+        EDV edv = findDataVariableByDestinationName(coverage);
         writer.write(
             "  <CoverageOffering>\n"
                 + "    <name>"
-                + coverages[cov]
+                + coverage
                 + "</name>\n"
                 + "    <label>"
                 + XML.encodeAsXML(edv.longName())
@@ -14215,10 +9038,12 @@ public abstract class EDDGrid extends EDD {
           if (!rsPrinted) {
             rsPrinted = true;
             writer.write(
-                "    <rangeSet>\n"
-                    + "      <RangeSet>\n"
-                    + "        <name>RangeSetName</name>\n"
-                    + "        <label>RangeSetLabel</label>\n");
+                """
+                                        <rangeSet>
+                                          <RangeSet>
+                                            <name>RangeSetName</name>
+                                            <label>RangeSetLabel</label>
+                                    """);
           }
 
           EDVGridAxis edvga = axisVariables[av];
@@ -14262,30 +9087,39 @@ public abstract class EDDGrid extends EDD {
           // "        </nullValues>\n" +
         } // end of av loop
 
-        if (rsPrinted) writer.write("      </RangeSet>\n" + "    </rangeSet>\n");
+        if (rsPrinted)
+          writer.write(
+              """
+                          </RangeSet>
+                        </rangeSet>
+                    """);
 
         writer.write(
-            "    <supportedCRSs>\n"
-                + "      <requestCRSs>urn:ogc:def:crs:EPSG:4326</requestCRSs>\n"
-                + "      <responseCRSs>urn:ogc:def:crs:EPSG:4326</responseCRSs>\n"
-                + "      <nativeCRSs>urn:ogc:def:crs:EPSG:4326</nativeCRSs>\n"
-                + "    </supportedCRSs>\n"
-                + "    <supportedFormats>\n");
-        for (int f = 0; f < wcsRequestFormats100.length; f++)
-          writer.write("      <formats>" + wcsRequestFormats100[f] + "</formats>\n");
+            """
+                                <supportedCRSs>
+                                  <requestCRSs>urn:ogc:def:crs:EPSG:4326</requestCRSs>
+                                  <responseCRSs>urn:ogc:def:crs:EPSG:4326</responseCRSs>
+                                  <nativeCRSs>urn:ogc:def:crs:EPSG:4326</nativeCRSs>
+                                </supportedCRSs>
+                                <supportedFormats>
+                            """);
+        for (int f = 0; f < wcsRequestFormats100.size(); f++)
+          writer.write("      <formats>" + wcsRequestFormats100.get(f) + "</formats>\n");
         writer.write(
-            "    </supportedFormats>\n"
-                + "    <supportedInterpolations>\n"
-                + "      <interpolationMethod>none</interpolationMethod>\n"
-                + "    </supportedInterpolations>\n"
-                + "  </CoverageOffering>\n");
+            """
+                                </supportedFormats>
+                                <supportedInterpolations>
+                                  <interpolationMethod>none</interpolationMethod>
+                                </supportedInterpolations>
+                              </CoverageOffering>
+                            """);
       } // end of cov loop
 
       writer.write("</CoverageDescription>\n");
 
     } else {
       throw new SimpleException(
-          EDStatic.simpleBilingual(language, EDStatic.queryErrorAr)
+          EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
               + "version="
               + version
               + " must be \""
@@ -14320,12 +9154,11 @@ public abstract class EDDGrid extends EDD {
       throws Throwable {
 
     if (reallyVerbose) String2.log("\nrespondToWcsQuery q=" + wcsQuery);
-    String tErddapUrl = EDStatic.erddapUrl(loggedInAs, language);
     String requestUrl = "/wcs/" + datasetID + "/" + wcsServer;
 
     if (accessibleViaWCS().length() > 0)
       throw new SimpleException(
-          EDStatic.simpleBilingual(language, EDStatic.queryErrorAr) + accessibleViaWCS);
+          EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr) + accessibleViaWCS);
 
     // parse the wcsQuery
     String dapQuery[] = wcsQueryToDapQuery(language, EDD.userQueryHashMap(wcsQuery, true));
@@ -14364,7 +9197,7 @@ public abstract class EDDGrid extends EDD {
    * @return [0]=dapQuery, [1]=format (e.g., .nc)
    * @throws Exception if trouble (e.g., invalid query parameter)
    */
-  public String[] wcsQueryToDapQuery(int language, HashMap<String, String> wcsQueryMap)
+  public String[] wcsQueryToDapQuery(int language, Map<String, String> wcsQueryMap)
       throws Throwable {
 
     // parse the query and build the dapQuery
@@ -14378,17 +9211,16 @@ public abstract class EDDGrid extends EDD {
     String service = wcsQueryMap.get("service"); // test name.toLowerCase()
     if (service == null || !service.equals("WCS"))
       throw new SimpleException(
-          EDStatic.simpleBilingual(language, EDStatic.queryErrorAr)
+          EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
               + "service="
               + service
               + " should have been \"WCS\".");
 
     // version
     String version = wcsQueryMap.get("version"); // test name.toLowerCase()
-    if (version == null
-        || !wcsVersion.equals(version)) // String2.indexOf(wcsVersions, version) < 0)
+    if (!wcsVersion.equals(version)) // String2.indexOf(wcsVersions, version) < 0)
     throw new SimpleException(
-          EDStatic.simpleBilingual(language, EDStatic.queryErrorAr)
+          EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
               + "version="
               + version
               + " should have been \""
@@ -14401,30 +9233,26 @@ public abstract class EDDGrid extends EDD {
     String request = wcsQueryMap.get("request"); // test name.toLowerCase()
     if (request == null || !request.equals("GetCoverage"))
       throw new SimpleException(
-          EDStatic.simpleBilingual(language, EDStatic.queryErrorAr)
+          EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
               + "request="
               + request
               + " should have been \"GetCoverage\".");
 
     // format
     String requestFormat = wcsQueryMap.get("format"); // test name.toLowerCase()
-    String tRequestFormats[] =
-        wcsRequestFormats100; // version100? wcsRequestFormats100  : wcsRequestFormats112;
-    String tResponseFormats[] =
-        wcsResponseFormats100; // version100? wcsResponseFormats100 : wcsResponseFormats112;
-    int fi = String2.caseInsensitiveIndexOf(tRequestFormats, requestFormat);
+    int fi = String2.caseInsensitiveIndexOf(wcsRequestFormats100, requestFormat);
     if (fi < 0)
       throw new SimpleException(
-          EDStatic.simpleBilingual(language, EDStatic.queryErrorAr)
+          EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
               + "format="
               + requestFormat
               + " isn't supported.");
-    String responseFormat = tResponseFormats[fi];
+    String responseFormat = wcsResponseFormats100.get(fi);
 
     // interpolation (1.0.0)
     if (wcsQueryMap.get("interpolation") != null) // test name.toLowerCase()
     throw new SimpleException(
-          EDStatic.simpleBilingual(language, EDStatic.queryErrorAr)
+          EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
               + "'interpolation' isn't supported.");
 
     // GridXxx (for regridding in 1.1.2)
@@ -14438,14 +9266,14 @@ public abstract class EDDGrid extends EDD {
         || // test name.toLowerCase()
         wcsQueryMap.get("gridoffsets") != null) // test name.toLowerCase()
     throw new SimpleException(
-          EDStatic.simpleBilingual(language, EDStatic.queryErrorAr)
+          EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
               + "regridding via 'GridXxx' parameters isn't supported.");
 
     // exceptions    optional
     String exceptions = wcsQueryMap.get("exceptions");
     if (exceptions != null && !exceptions.equals(wcsExceptions))
       throw new SimpleException(
-          EDStatic.simpleBilingual(language, EDStatic.queryErrorAr)
+          EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
               + "exceptions="
               + exceptions
               + " must be "
@@ -14454,7 +9282,8 @@ public abstract class EDDGrid extends EDD {
 
     // store (1.1.2)
     // if (wcsQueryMap.get("store") != null)  //test name.toLowerCase()
-    //    throw new SimpleException(EDStatic.simpleBilingual(language, EDStatic.queryErrorAr) +
+    //    throw new SimpleException(EDStatic.simpleBilingual(language,
+    // EDStatic.messages.queryErrorAr) +
     //        "'store' isn't supported.");
 
     // 1.0.0 coverage or 1.1.2 identifier
@@ -14462,7 +9291,7 @@ public abstract class EDDGrid extends EDD {
     String coverage = wcsQueryMap.get(cName);
     if (String2.indexOf(dataVariableDestinationNames(), coverage) < 0)
       throw new SimpleException(
-          EDStatic.simpleBilingual(language, EDStatic.queryErrorAr)
+          EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
               + cName
               + "="
               + coverage
@@ -14493,7 +9322,7 @@ public abstract class EDDGrid extends EDD {
       String bboxSA[] = String2.split(bbox, ',');
       if (bboxSA.length < 4)
         throw new SimpleException(
-            EDStatic.simpleBilingual(language, EDStatic.queryErrorAr)
+            EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
                 + bboxName
                 + " must have at least 4 comma-separated values.");
       minLon = bboxSA[0]; // note goofy ordering of options
@@ -14510,7 +9339,7 @@ public abstract class EDDGrid extends EDD {
     double maxLonD = String2.parseDouble(maxLon);
     if (Double.isNaN(minLonD) || Double.isNaN(maxLonD) || minLonD > maxLonD)
       throw new SimpleException(
-          EDStatic.simpleBilingual(language, EDStatic.queryErrorAr)
+          EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
               + bboxName
               + " minLongitude="
               + minLonD
@@ -14521,7 +9350,7 @@ public abstract class EDDGrid extends EDD {
     double maxLatD = String2.parseDouble(maxLat);
     if (Double.isNaN(minLatD) || Double.isNaN(maxLatD) || minLatD > maxLatD)
       throw new SimpleException(
-          EDStatic.simpleBilingual(language, EDStatic.queryErrorAr)
+          EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
               + bboxName
               + " minLatitude="
               + minLatD
@@ -14533,7 +9362,7 @@ public abstract class EDDGrid extends EDD {
     if ((altIndex >= 0 || depthIndex >= 0)
         && (Double.isNaN(minAltD) || Double.isNaN(maxAltD) || minAltD > maxAltD))
       throw new SimpleException(
-          EDStatic.simpleBilingual(language, EDStatic.queryErrorAr)
+          EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
               + bboxName
               + " minAltitude="
               + minAltD
@@ -14561,7 +9390,7 @@ public abstract class EDDGrid extends EDD {
         int ni = String2.parseInt(n);
         if (ni == Integer.MAX_VALUE || ni <= 0)
           throw new SimpleException(
-              EDStatic.simpleBilingual(language, EDStatic.queryErrorAr)
+              EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
                   + "width="
                   + n
                   + " must be > 0.");
@@ -14570,7 +9399,7 @@ public abstract class EDDGrid extends EDD {
         double resD = String2.parseDouble(res);
         if (Double.isNaN(resD) || resD <= 0)
           throw new SimpleException(
-              EDStatic.simpleBilingual(language, EDStatic.queryErrorAr)
+              EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
                   + "resx="
                   + res
                   + " must be > 0.");
@@ -14591,7 +9420,7 @@ public abstract class EDDGrid extends EDD {
         int ni = String2.parseInt(n);
         if (ni == Integer.MAX_VALUE || ni <= 0)
           throw new SimpleException(
-              EDStatic.simpleBilingual(language, EDStatic.queryErrorAr)
+              EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
                   + "height="
                   + n
                   + " must be > 0.");
@@ -14602,7 +9431,7 @@ public abstract class EDDGrid extends EDD {
         double resD = String2.parseDouble(res);
         if (Double.isNaN(resD) || resD <= 0)
           throw new SimpleException(
-              EDStatic.simpleBilingual(language, EDStatic.queryErrorAr)
+              EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
                   + "resy="
                   + res
                   + " must be > 0.");
@@ -14624,7 +9453,7 @@ public abstract class EDDGrid extends EDD {
           int ni = String2.parseInt(n);
           if (ni == Integer.MAX_VALUE || ni <= 0)
             throw new SimpleException(
-                EDStatic.simpleBilingual(language, EDStatic.queryErrorAr)
+                EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
                     + "depth="
                     + n
                     + " must be > 0.");
@@ -14633,7 +9462,7 @@ public abstract class EDDGrid extends EDD {
           double resD = String2.parseDouble(res);
           if (Double.isNaN(resD) || resD <= 0)
             throw new SimpleException(
-                EDStatic.simpleBilingual(language, EDStatic.queryErrorAr)
+                EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
                     + "resz="
                     + res
                     + " must be > 0.");
@@ -14675,24 +9504,23 @@ public abstract class EDDGrid extends EDD {
       } else if (av == timeIndex) {
         String paramName = version100 ? "time" : "timesequence";
         String time = wcsQueryMap.get(paramName); // test name.toLowerCase()
-        String minTime = null, maxTime = null;
         if (time == null) {
           dapQuery.append("[(last)]"); // default
         } else {
           if (time.indexOf(',') >= 0)
             throw new SimpleException(
-                EDStatic.simpleBilingual(language, EDStatic.queryErrorAr)
+                EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
                     + "comma-separated lists of "
                     + paramName
                     + "s are not supported.");
           String timeSA[] = String2.split(time, '/');
           // 'now', see 1.0.0 section 9.2.2.8
           for (int ti = 0; ti < timeSA.length; ti++) {
-            if (timeSA[ti].toLowerCase().equals("now")) timeSA[ti] = "last";
+            if (timeSA[ti].equalsIgnoreCase("now")) timeSA[ti] = "last";
           }
           if (timeSA.length == 0 || timeSA[0].length() == 0) {
             throw new SimpleException(
-                EDStatic.simpleBilingual(language, EDStatic.queryErrorAr)
+                EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
                     + "invalid "
                     + paramName
                     + "=\"\".");
@@ -14703,7 +9531,7 @@ public abstract class EDDGrid extends EDD {
             else dapQuery.append("[(" + timeSA[1] + "):(" + timeSA[0] + ")]");
           } else {
             throw new SimpleException(
-                EDStatic.simpleBilingual(language, EDStatic.queryErrorAr)
+                EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
                     + paramName
                     + " resolution values are not supported.");
           }
@@ -14721,14 +9549,14 @@ public abstract class EDDGrid extends EDD {
         } else {
           if (val.indexOf(',') >= 0)
             throw new SimpleException(
-                EDStatic.simpleBilingual(language, EDStatic.queryErrorAr)
+                EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
                     + "comma-separated lists of "
                     + dName
                     + "'s are not supported.");
           String valSA[] = String2.split(val, '/');
           if (valSA.length == 0 || valSA[0].length() == 0) {
             throw new SimpleException(
-                EDStatic.simpleBilingual(language, EDStatic.queryErrorAr)
+                EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
                     + "invalid "
                     + paramName
                     + "=\"\".");
@@ -14743,7 +9571,7 @@ public abstract class EDDGrid extends EDD {
             double resD = String2.parseDouble(valSA[2]);
             if (Double.isNaN(minD) || Double.isNaN(maxD) || minD > maxD)
               throw new SimpleException(
-                  EDStatic.simpleBilingual(language, EDStatic.queryErrorAr)
+                  EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
                       + dName
                       + " min="
                       + valSA[0]
@@ -14759,7 +9587,7 @@ public abstract class EDDGrid extends EDD {
             }
             if (Double.isNaN(resD) || resD <= 0)
               throw new SimpleException(
-                  EDStatic.simpleBilingual(language, EDStatic.queryErrorAr)
+                  EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
                       + dName
                       + " res="
                       + valSA[2]
@@ -14770,7 +9598,7 @@ public abstract class EDDGrid extends EDD {
             else dapQuery.append("[(" + valSA[1] + "):" + stride + ":(" + valSA[0] + ")]");
           } else {
             throw new SimpleException(
-                EDStatic.simpleBilingual(language, EDStatic.queryErrorAr)
+                EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
                     + "number="
                     + valSA.length
                     + " of values for "
@@ -14784,7 +9612,7 @@ public abstract class EDDGrid extends EDD {
     if (reallyVerbose)
       String2.log(
           "wcsQueryToDapQuery="
-              + dapQuery.toString()
+              + dapQuery
               + "\n  version="
               + version
               + " format="
@@ -14797,15 +9625,17 @@ public abstract class EDDGrid extends EDD {
    * Currently, this just works as a WCS 1.0.0 server. <br>
    * The caller should have already checked loggedInAs and accessibleViaWCS().
    *
+   * @param request the servlet request
    * @param language the index of the selected language
    * @param loggedInAs the name of the logged in user (or null if not logged in). This doesn't check
    *     if eddGrid is accessible to loggedInAs. The caller should do that.
    * @param writer afterwards, the writer is flushed, not closed
    * @throws Throwable if trouble (there shouldn't be)
    */
-  public void wcsDatasetHtml(int language, String loggedInAs, Writer writer) throws Throwable {
+  public void wcsDatasetHtml(
+      HttpServletRequest request, int language, String loggedInAs, Writer writer) throws Throwable {
 
-    String tErddapUrl = EDStatic.erddapUrl(loggedInAs, language);
+    String tErddapUrl = EDStatic.erddapUrl(request, loggedInAs, language);
 
     String wcsUrl = tErddapUrl + "/wcs/" + datasetID + "/" + wcsServer;
     String destName0 = dataVariables[0].destinationName();
@@ -14859,47 +9689,34 @@ public abstract class EDDGrid extends EDD {
     // writer.write(EDStatic.startBodyHtml(language, loggedInAs,
     //    "wcs/" + datasetID + "/index.html", //was endOfRequest,
     //    queryString) + "\n");
-    // writer.write(HtmlWidgets.htmlTooltipScript(EDStatic.imageDirUrl(loggedInAs, language)));
+    // writer.write(HtmlWidgets.htmlTooltipScript(EDStatic.imageDirUrl(request, loggedInAs,
+    // language)));
     // writer.flush(); //Steve Souder says: the sooner you can send some html to user, the better
 
     // *** html body content
     writer.write("<div class=\"standard_width\">\n");
     writer.write(
         EDStatic.youAreHere(
-            language, loggedInAs, "wcs", datasetID)); // wcs must be lowercase for link to work
-    writeHtmlDatasetInfo(language, loggedInAs, writer, true, true, true, true, "", "");
+            request,
+            language,
+            loggedInAs,
+            "wcs",
+            datasetID)); // wcs must be lowercase for link to work
+    writeHtmlDatasetInfo(request, language, loggedInAs, writer, true, true, true, true, "", "");
 
-    String makeAGraphRef =
-        "<a href=\""
-            + tErddapUrl
-            + "/griddap/"
-            + datasetID
-            + ".graph\">"
-            + EDStatic.magAr[language]
-            + "</a>";
     String datasetListRef =
         "<br>See the\n"
             + "  <a rel=\"bookmark\" href=\""
             + tErddapUrl
             + "/wcs/index.html\">list \n"
             + "    of datasets available via WCS</a> at this ERDDAP installation.\n";
-    String makeAGraphListRef =
-        "  <br>See the\n"
-            + "    <a rel=\"bookmark\" href=\""
-            + XML.encodeAsHTMLAttribute(
-                tErddapUrl
-                    + "/info/index.html"
-                    + "?page=1&itemsPerPage="
-                    + EDStatic.defaultItemsPerPage)
-            + "\">list \n"
-            + "      of datasets with Make A Graph</a> at this ERDDAP installation.\n";
 
     // What is WCS?   (for tDatasetID)
     // !!!see the almost identical documentation above
     writer.write(
         "<h2><a class=\"selfLink\" id=\"description\" href=\"#description\" rel=\"bookmark\">What</a> is WCS?</h2>\n"
             + String2.replaceAll(
-                EDStatic.wcsLongDescriptionHtmlAr[language], "&erddapUrl;", tErddapUrl)
+                EDStatic.messages.wcsLongDescriptionHtmlAr[language], "&erddapUrl;", tErddapUrl)
             + "\n"
             + datasetListRef
             + "\n"
@@ -15044,7 +9861,7 @@ public abstract class EDDGrid extends EDD {
             + "<br>There are three types of WCS requests: GetCapabilities, DescribeCoverage, GetCoverage.\n"
             + "<br>For detailed information, please see the\n"
             + "  <a rel=\"help\" href=\"https://www.opengeospatial.org/standards/wcs\">WCS standard documentation"
-            + EDStatic.externalLinkHtml(language, tErddapUrl)
+            + EDStatic.messages.externalLinkHtml(language, tErddapUrl)
             + "</a>.\n"
             + "\n"
             + "<p><strong>GetCapabilities</strong> - A GetCapabilities request returns an XML document which provides\n"
@@ -15082,14 +9899,14 @@ public abstract class EDDGrid extends EDD {
             + "  <sup>*</sup> Parameter names are case-insensitive.\n"
             + "  <br>Parameter values are case sensitive and must be\n"
             + "    <a class=\"N\" rel=\"help\" href=\"https://en.wikipedia.org/wiki/Percent-encoding\">percent encoded"
-            + EDStatic.externalLinkHtml(language, tErddapUrl)
+            + EDStatic.messages.externalLinkHtml(language, tErddapUrl)
             + "</a>:\n"
             + "   <br>all characters in query values (the parts after the '=' signs) other than A-Za-z0-9_-!.~'()* must be\n"
             + "   <br>encoded as %HH, where HH is the 2 digit hexadecimal value of the character, for example, space becomes %20.\n"
             + "   <br>Characters above #127 must be converted to UTF-8 bytes, then each UTF-8 byte must be percent encoded\n"
             + "   <br>(ask a programmer for help). There are\n"
             + "<a class=\"N\" rel=\"help\" href=\"https://www.url-encode-decode.com\">websites that percent encode/decode for you"
-            + EDStatic.externalLinkHtml(language, tErddapUrl)
+            + EDStatic.messages.externalLinkHtml(language, tErddapUrl)
             + "</a>.\n"
             + "  <br>The parameters may be in any order in the URL, separated by '&amp;' .\n"
             + "  <br>&nbsp;\n"
@@ -15139,14 +9956,14 @@ public abstract class EDDGrid extends EDD {
             + "  <sup>*</sup> Parameter names are case-insensitive.\n"
             + "  <br>Parameter values are case sensitive and must be\n"
             + "    <a class=\"N\" rel=\"help\" href=\"https://en.wikipedia.org/wiki/Percent-encoding\">percent encoded"
-            + EDStatic.externalLinkHtml(language, tErddapUrl)
+            + EDStatic.messages.externalLinkHtml(language, tErddapUrl)
             + "</a>:\n"
             + "   <br>all characters in query values (the parts after the '=' signs) other than A-Za-z0-9_-!.~'()* must be\n"
             + "   <br>encoded as %HH, where HH is the 2 digit hexadecimal value of the character, for example, space becomes %20.\n"
             + "   <br>Characters above #127 must be converted to UTF-8 bytes, then each UTF-8 byte must be percent encoded\n"
             + "   <br>(ask a programmer for help). There are\n"
             + "<a class=\"N\" rel=\"help\" href=\"https://www.url-encode-decode.com\">websites that percent encode/decode for you"
-            + EDStatic.externalLinkHtml(language, tErddapUrl)
+            + EDStatic.messages.externalLinkHtml(language, tErddapUrl)
             + "</a>.\n"
             + "  <br>The parameters may be in any order in the URL, separated by '&amp;' .\n"
             + "  <br>&nbsp;\n"
@@ -15206,7 +10023,7 @@ public abstract class EDDGrid extends EDD {
             + "      <br>time=<i>beginTime/endTime</i></td>\n"
             + "    <td>The time values must be in\n"
             + "      <a rel=\"help\" href=\"https://en.wikipedia.org/wiki/ISO_8601\">ISO 8601:2004 \"extended\" format"
-            + EDStatic.externalLinkHtml(language, tErddapUrl)
+            + EDStatic.messages.externalLinkHtml(language, tErddapUrl)
             + "</a>,\n"
             + "      for example, <span style=\"white-space:nowrap;\">\"1985-01-02T00:00:00Z\").</span>\n"
             + "      <br>In ERDDAP, any time value specified rounds to the nearest available time.\n"
@@ -15215,7 +10032,7 @@ public abstract class EDDGrid extends EDD {
             + "      <br>In ERDDAP, this parameter is optional and the default is always the last time available.\n"
             + "      <br>The WCS standard allows <i>time=beginTime,endTime,timeRes</i>.  ERDDAP doesn't allow this.\n"
             + "      <br>The WCS standard allows <i>time=time1,time2,...</i>  ERDDAP doesn't allow this.</td>\n"
-            + (EDStatic.convertersActive
+            + (EDStatic.config.convertersActive
                 ? "      <br>ERDDAP has a utility to\n"
                     + "        <a rel=\"bookmark\" href=\""
                     + tErddapUrl
@@ -15271,9 +10088,9 @@ public abstract class EDDGrid extends EDD {
             + "    <td>format=<i>format</i></td>\n"
             + "    <td>In ERDDAP, this can be any one of several response formats:\n"
             + "      <br>");
-    for (int f = 0; f < wcsRequestFormats100.length; f++) {
+    for (int f = 0; f < wcsRequestFormats100.size(); f++) {
       if (f > 0) writer.write(", ");
-      writer.write("\"" + SSR.minimalPercentEncode(wcsRequestFormats100[f]) + "\"");
+      writer.write("\"" + SSR.minimalPercentEncode(wcsRequestFormats100.get(f)) + "\"");
     }
     writer.write(
         ".\n"
@@ -15291,14 +10108,14 @@ public abstract class EDDGrid extends EDD {
             + "  <sup>*</sup> Parameter names are case-insensitive.\n"
             + "  <br>Parameter values are case sensitive and must be\n"
             + "    <a class=\"N\" rel=\"help\" href=\"https://en.wikipedia.org/wiki/Percent-encoding\">percent encoded"
-            + EDStatic.externalLinkHtml(language, tErddapUrl)
+            + EDStatic.messages.externalLinkHtml(language, tErddapUrl)
             + "</a>:\n"
             + "   <br>all characters in query values (the parts after the '=' signs) other than A-Za-z0-9_-!.~'()* must be\n"
             + "   <br>encoded as %HH, where HH is the 2 digit hexadecimal value of the character, for example, space becomes %20.\n"
             + "   <br>Characters above #127 must be converted to UTF-8 bytes, then each UTF-8 byte must be percent encoded\n"
             + "   <br>(ask a programmer for help). There are\n"
             + "<a class=\"N\" rel=\"help\" href=\"https://www.url-encode-decode.com\">websites that percent encode/decode for you"
-            + EDStatic.externalLinkHtml(language, tErddapUrl)
+            + EDStatic.messages.externalLinkHtml(language, tErddapUrl)
             + "</a>.\n"
             + "  <br>The parameters may be in any order in the URL, separated by '&amp;' .\n"
             + "  <br>&nbsp;\n"
@@ -15352,35 +10169,36 @@ public abstract class EDDGrid extends EDD {
     // requirements
     if (lonIndex < 0 || latIndex < 0)
       throw new SimpleException(
-          EDStatic.simpleBilingual(language, EDStatic.queryErrorAr)
-              + EDStatic.noXxxNoLLAr[language]);
+          EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
+              + EDStatic.messages.noXxxNoLLAr[language]);
 
     String tErddapUrl = EDStatic.preferredErddapUrl;
     String datasetUrl = tErddapUrl + "/" + dapProtocol + "/" + datasetID();
     String wcsUrl = tErddapUrl + "/wcs/" + datasetID() + "/" + wcsServer; // "?" at end?
     String wmsUrl = tErddapUrl + "/wms/" + datasetID() + "/" + WMS_SERVER; // "?" at end?
-    String domain = EDStatic.baseUrl;
+    String domain = EDStatic.config.baseUrl;
     if (domain.startsWith("http://")) domain = domain.substring(7);
     else if (domain.startsWith("https://")) domain = domain.substring(8);
     String eddCreationDate =
         String2.replaceAll(Calendar2.millisToIsoDateString(creationTimeMillis()), "-", "");
     String unknown = "Unknown"; // pg viii of FGDC document
 
-    String acknowledgement = combinedGlobalAttributes.getString("acknowledgement"); // acdd 1.3
+    String acknowledgement =
+        combinedGlobalAttributes.getString(language, "acknowledgement"); // acdd 1.3
     if (acknowledgement == null)
-      acknowledgement = combinedGlobalAttributes.getString("acknowledgment"); // acdd 1.0
-    String contributorName = combinedGlobalAttributes.getString("contributor_name");
-    String contributorEmail = combinedGlobalAttributes.getString("contributor_email");
-    String contributorRole = combinedGlobalAttributes.getString("contributor_role");
-    String creatorName = combinedGlobalAttributes.getString("creator_name");
-    String creatorEmail = combinedGlobalAttributes.getString("creator_email");
+      acknowledgement = combinedGlobalAttributes.getString(language, "acknowledgment"); // acdd 1.0
+    String contributorName = combinedGlobalAttributes.getString(language, "contributor_name");
+    String contributorEmail = combinedGlobalAttributes.getString(language, "contributor_email");
+    String contributorRole = combinedGlobalAttributes.getString(language, "contributor_role");
+    String creatorName = combinedGlobalAttributes.getString(language, "creator_name");
+    String creatorEmail = combinedGlobalAttributes.getString(language, "creator_email");
     // creatorUrl: use infoUrl
     String dateCreated =
         Calendar2.tryToIsoString(
-            combinedGlobalAttributes.getString("date_created")); // "" if trouble
+            combinedGlobalAttributes.getString(language, "date_created")); // "" if trouble
     String dateIssued =
         Calendar2.tryToIsoString(
-            combinedGlobalAttributes.getString("date_issued")); // "" if trouble
+            combinedGlobalAttributes.getString(language, "date_issued")); // "" if trouble
     if (dateCreated.length() > 10) dateCreated = dateCreated.substring(0, 10);
     if (dateIssued.length() > 10) dateIssued = dateIssued.substring(0, 10);
     if (dateCreated.startsWith("0000")) // year=0000 isn't valid
@@ -15389,37 +10207,44 @@ public abstract class EDDGrid extends EDD {
     // make compact form  YYYYMMDD
     dateCreated = String2.replaceAll(dateCreated, "-", "");
     dateIssued = String2.replaceAll(dateIssued, "-", "");
-    String history = combinedGlobalAttributes.getString("history");
-    String infoUrl = combinedGlobalAttributes.getString("infoUrl");
-    String institution = combinedGlobalAttributes.getString("institution");
-    String keywords = combinedGlobalAttributes.getString("keywords");
-    String keywordsVocabulary = combinedGlobalAttributes.getString("keywords_vocabulary");
+    String history = combinedGlobalAttributes.getString(language, "history");
+    String infoUrl = combinedGlobalAttributes.getString(language, "infoUrl");
+    String institution = combinedGlobalAttributes.getString(language, "institution");
+    String keywords = combinedGlobalAttributes.getString(language, "keywords");
+    String keywordsVocabulary = combinedGlobalAttributes.getString(language, "keywords_vocabulary");
     if (keywords == null) { // use the crude, ERDDAP keywords
-      keywords = EDStatic.keywords;
+      keywords = EDStatic.config.keywords;
       keywordsVocabulary = null;
     }
-    String license = combinedGlobalAttributes.getString("license");
-    String project = combinedGlobalAttributes.getString("project");
+    String license = combinedGlobalAttributes.getString(language, "license");
+    String project = combinedGlobalAttributes.getString(language, "project");
     if (project == null) project = institution;
-    String references = combinedGlobalAttributes.getString("references");
-    String satellite = combinedGlobalAttributes.getString("satellite");
-    String sensor = combinedGlobalAttributes.getString("sensor");
-    String sourceUrl = publicSourceUrl();
-    String standardNameVocabulary = combinedGlobalAttributes.getString("standard_name_vocabulary");
+    String references = combinedGlobalAttributes.getString(language, "references");
+    String satellite = combinedGlobalAttributes.getString(language, "satellite");
+    String sensor = combinedGlobalAttributes.getString(language, "sensor");
+    String sourceUrl = publicSourceUrl(language);
+    String standardNameVocabulary =
+        combinedGlobalAttributes.getString(language, "standard_name_vocabulary");
 
     String adminInstitution =
-        EDStatic.adminInstitution == null ? unknown : EDStatic.adminInstitution;
+        EDStatic.config.adminInstitution == null ? unknown : EDStatic.config.adminInstitution;
     String adminIndividualName =
-        EDStatic.adminIndividualName == null ? unknown : EDStatic.adminIndividualName;
-    String adminPosition = EDStatic.adminPosition == null ? unknown : EDStatic.adminPosition;
-    String adminPhone = EDStatic.adminPhone == null ? unknown : EDStatic.adminPhone;
-    String adminAddress = EDStatic.adminAddress == null ? unknown : EDStatic.adminAddress;
-    String adminCity = EDStatic.adminCity == null ? unknown : EDStatic.adminCity;
+        EDStatic.config.adminIndividualName == null ? unknown : EDStatic.config.adminIndividualName;
+    String adminPosition =
+        EDStatic.config.adminPosition == null ? unknown : EDStatic.config.adminPosition;
+    String adminPhone = EDStatic.config.adminPhone == null ? unknown : EDStatic.config.adminPhone;
+    String adminAddress =
+        EDStatic.config.adminAddress == null ? unknown : EDStatic.config.adminAddress;
+    String adminCity = EDStatic.config.adminCity == null ? unknown : EDStatic.config.adminCity;
     String adminStateOrProvince =
-        EDStatic.adminStateOrProvince == null ? unknown : EDStatic.adminStateOrProvince;
-    String adminPostalCode = EDStatic.adminPostalCode == null ? unknown : EDStatic.adminPostalCode;
-    String adminCountry = EDStatic.adminCountry == null ? unknown : EDStatic.adminCountry;
-    String adminEmail = EDStatic.adminEmail == null ? unknown : EDStatic.adminEmail;
+        EDStatic.config.adminStateOrProvince == null
+            ? unknown
+            : EDStatic.config.adminStateOrProvince;
+    String adminPostalCode =
+        EDStatic.config.adminPostalCode == null ? unknown : EDStatic.config.adminPostalCode;
+    String adminCountry =
+        EDStatic.config.adminCountry == null ? unknown : EDStatic.config.adminCountry;
+    String adminEmail = EDStatic.config.adminEmail == null ? unknown : EDStatic.config.adminEmail;
 
     // testMinimalMetadata is useful for Bob doing tests of validity of FGDC results
     //  when a dataset has minimal metadata
@@ -15473,12 +10298,12 @@ public abstract class EDDGrid extends EDD {
     // standardNames
     StringArray standardNames = new StringArray();
     if (!testMinimalMetadata) {
-      for (int v = 0; v < axisVariables.length; v++) {
-        String sn = axisVariables[v].combinedAttributes().getString("standard_name");
+      for (EDVGridAxis axisVariable : axisVariables) {
+        String sn = axisVariable.combinedAttributes().getString(language, "standard_name");
         if (sn != null) standardNames.add(sn);
       }
-      for (int v = 0; v < dataVariables.length; v++) {
-        String sn = dataVariables[v].combinedAttributes().getString("standard_name");
+      for (EDV dataVariable : dataVariables) {
+        String sn = dataVariable.combinedAttributes().getString(language, "standard_name");
         if (sn != null) standardNames.add(sn);
       }
     }
@@ -15548,15 +10373,15 @@ public abstract class EDDGrid extends EDD {
             // origin: from project, creator_email, creator_name, infoUrl, institution
             "        <origin>\n"
             + XML.encodeAsXML(
-                (project == unknown ? "" : "Project: " + project + "\n")
-                    + (creatorName == unknown ? "" : "Name: " + creatorName + "\n")
-                    + (creatorEmail == unknown ? "" : "Email: " + creatorEmail + "\n")
+                (unknown.equals(project) ? "" : "Project: " + project + "\n")
+                    + (unknown.equals(creatorName) ? "" : "Name: " + creatorName + "\n")
+                    + (unknown.equals(creatorEmail) ? "" : "Email: " + creatorEmail + "\n")
                     + "Institution: "
                     + institution
                     + "\n"
                     + // always known
-                    (infoUrl == unknown ? "" : "InfoURL: " + infoUrl + "\n")
-                    + (sourceUrl == unknown ? "" : "Source URL: " + sourceUrl + "\n"))
+                    (unknown.equals(infoUrl) ? "" : "InfoURL: " + infoUrl + "\n")
+                    + (unknown.equals(sourceUrl) ? "" : "Source URL: " + sourceUrl + "\n"))
             + "        </origin>\n"
             + "        <origin_cntinfo>\n"
             + // ngdc added?
@@ -15588,10 +10413,10 @@ public abstract class EDDGrid extends EDD {
             "          </cntinfo>\n"
             + "        </origin_cntinfo>\n"
             + "        <pubdate>"
-            + XML.encodeAsXML(dateIssued == unknown ? eddCreationDate : dateIssued)
+            + XML.encodeAsXML(unknown.equals(dateIssued) ? eddCreationDate : dateIssued)
             + "</pubdate>\n"
             + "        <title>"
-            + XML.encodeAsXML(title)
+            + XML.encodeAsXML(title(language))
             + "</title>\n"
             + "        <edition>"
             + unknown
@@ -15641,7 +10466,7 @@ public abstract class EDDGrid extends EDD {
             + XML.encodeAsXML(datasetUrl + ".html")
             + "</linkage>\n"
             + "          <name>Download data: "
-            + XML.encodeAsXML(title)
+            + XML.encodeAsXML(title(language))
             + "</name>\n"
             + "          <description>A web page for specifying a subset of the dataset and downloading "
             + "data in any of several file formats.</description>\n"
@@ -15654,7 +10479,7 @@ public abstract class EDDGrid extends EDD {
                     + XML.encodeAsXML(datasetUrl + ".graph")
                     + "</linkage>\n"
                     + "          <name>Make a graph or map: "
-                    + XML.encodeAsXML(title)
+                    + XML.encodeAsXML(title(language))
                     + "</name>\n"
                     + "          <description>A web page for creating a graph or map of the data.</description>\n"
                     + "          <function>download graph or map</function>\n"
@@ -15664,7 +10489,7 @@ public abstract class EDDGrid extends EDD {
             + XML.encodeAsXML(datasetUrl)
             + "</linkage>\n"
             + "          <name>OPeNDAP service: "
-            + XML.encodeAsXML(title)
+            + XML.encodeAsXML(title(language))
             + "</name>\n"
             + "          <description>The base URL for the OPeNDAP service.  "
             + "Add .html to get a web page with a form to download data. "
@@ -15673,14 +10498,14 @@ public abstract class EDDGrid extends EDD {
             + "Add .dods to download data via the OPeNDAP protocol.</description>\n"
             + "          <function>OPeNDAP</function>\n"
             + "        </CI_OnlineResource>\n"
-            + (infoUrl == unknown
+            + (unknown.equals(infoUrl)
                 ? ""
                 : "        <CI_OnlineResource>\n"
                     + "          <linkage>"
                     + XML.encodeAsXML(infoUrl)
                     + "</linkage>\n"
                     + "          <name>Background information: "
-                    + XML.encodeAsXML(title)
+                    + XML.encodeAsXML(title(language))
                     + "</name>\n"
                     + "          <description>Background information for the dataset.</description>\n"
                     + "          <function>background information</function>\n"
@@ -15692,14 +10517,14 @@ public abstract class EDDGrid extends EDD {
                     + XML.encodeAsXML(wmsUrl)
                     + "</linkage>\n"
                     + "          <name>WMS service: "
-                    + XML.encodeAsXML(title)
+                    + XML.encodeAsXML(title(language))
                     + "</name>\n"
                     + "          <description>The base URL for the WMS service for this dataset.</description>\n"
                     + "          <function>WMS</function>\n"
                     + "        </CI_OnlineResource>\n"));
 
     // larger work citation: project
-    if (project != unknown)
+    if (!unknown.equals(project))
       writer.write(
           "        <lworkcit>\n"
               + "          <citeinfo>\n"
@@ -15747,13 +10572,16 @@ public abstract class EDDGrid extends EDD {
               "          </citeinfo>\n"
               + "        </lworkcit>\n");
 
-    writer.write("      </citeinfo>\n" + "    </citation>\n");
+    writer.write("""
+                  </citeinfo>
+                </citation>
+            """);
 
     // description
     writer.write(
         "    <descript>\n"
             + "      <abstract>"
-            + XML.encodeAsXML(summary)
+            + XML.encodeAsXML(summary(language))
             + "</abstract>\n"
             + "      <purpose>"
             + unknown
@@ -15846,10 +10674,10 @@ public abstract class EDDGrid extends EDD {
             + "      <timeinfo>\n"
             + "        <rngdates>\n"
             + "          <begdate>"
-            + (minTime.equals("") ? unknown : minTime)
+            + (minTime.isEmpty() ? unknown : minTime)
             + "</begdate>\n"
             + "          <enddate>"
-            + (maxTime.equals("") ? unknown : maxTime)
+            + (maxTime.isEmpty() ? unknown : maxTime)
             + "</enddate>\n"
             + "        </rngdates>\n"
             + "      </timeinfo>\n"
@@ -15904,7 +10732,9 @@ public abstract class EDDGrid extends EDD {
         "    <keywords>\n"
             + "      <theme>\n"
             + "        <themekt>"
-            + (keywordsVocabulary == unknown ? "Uncontrolled" : XML.encodeAsXML(keywordsVocabulary))
+            + (unknown.equals(keywordsVocabulary)
+                ? "Uncontrolled"
+                : XML.encodeAsXML(keywordsVocabulary))
             + "</themekt>\n");
     for (int i = 0; i < kar.size(); i++)
       writer.write("        <themekey>" + XML.encodeAsXML(kar.get(i)) + "</themekey>\n");
@@ -15916,7 +10746,7 @@ public abstract class EDDGrid extends EDD {
           "      <theme>\n"
               + "        <themekt>"
               + XML.encodeAsXML(
-                  standardNameVocabulary == unknown ? "Uncontrolled" : standardNameVocabulary)
+                  unknown.equals(standardNameVocabulary) ? "Uncontrolled" : standardNameVocabulary)
               + "</themekt>\n");
       for (int i = 0; i < standardNames.size(); i++)
         writer.write(
@@ -15927,7 +10757,7 @@ public abstract class EDDGrid extends EDD {
     writer.write("    </keywords>\n");
 
     // Platform and Instrument Indentification: satellite, sensor
-    if (satellite != unknown || sensor != unknown)
+    if (!unknown.equals(satellite) || !unknown.equals(sensor))
       writer.write(
           "    <plainsid>\n"
               + // long and short names the same since that's all I have
@@ -15963,7 +10793,7 @@ public abstract class EDDGrid extends EDD {
     String conPhone = unknown;
     String conEmail = creatorEmail;
     String conPos = unknown;
-    if (conEmail == unknown) {
+    if (unknown.equals(conEmail)) {
       conOrg = adminInstitution;
       conName = adminIndividualName;
       conPhone = adminPhone;
@@ -16031,21 +10861,23 @@ public abstract class EDDGrid extends EDD {
             + "      <browset>HTML</browset>\n"
             + "    </browse>\n");
 
-    if (contributorName != unknown
-        || contributorEmail != unknown
-        || contributorRole != unknown
-        || acknowledgement != unknown)
+    if (!unknown.equals(contributorName)
+        || !unknown.equals(contributorEmail)
+        || !unknown.equals(contributorRole)
+        || !unknown.equals(acknowledgement))
       writer.write(
           "    <datacred>"
               + XML.encodeAsXML(
-                  (contributorName == unknown ? "" : "Contributor Name: " + contributorName + "\n")
-                      + (contributorEmail == unknown
+                  (unknown.equals(contributorName)
+                          ? ""
+                          : "Contributor Name: " + contributorName + "\n")
+                      + (unknown.equals(contributorEmail)
                           ? ""
                           : "Contributor Email: " + contributorEmail + "\n")
-                      + (contributorRole == unknown
+                      + (unknown.equals(contributorRole)
                           ? ""
                           : "Contributor Role: " + contributorRole + "\n")
-                      + (acknowledgement == unknown
+                      + (unknown.equals(acknowledgement)
                           ? ""
                           : "Acknowledgement: " + acknowledgement + "\n"))
               + "    </datacred>\n");
@@ -16142,8 +10974,7 @@ public abstract class EDDGrid extends EDD {
 
     // process step:  lines from history
     String historyLines[] = String2.split(history, '\n');
-    for (int hl = 0; hl < historyLines.length; hl++) {
-      String step = historyLines[hl];
+    for (String step : historyLines) {
       String date = unknown;
       int spo = step.indexOf(' '); // date must be YYYY-MM-DD.* initially
       if (spo >= 10 && step.substring(0, 10).matches("[0-9]{4}-[0-9]{2}-[0-9]{2}")) {
@@ -16162,7 +10993,10 @@ public abstract class EDDGrid extends EDD {
               + "      </procstep>\n");
     }
 
-    writer.write("    </lineage>\n" + "  </dataqual>\n");
+    writer.write("""
+                </lineage>
+              </dataqual>
+            """);
 
     // Spatial Data Organization information
     writer.write(
@@ -16270,18 +11104,21 @@ public abstract class EDDGrid extends EDD {
             + "    <stdorder>\n");
 
     // data file types
-    for (int ft = 0; ft < dataFileTypeNames.length; ft++)
+    List<EDDFileTypeInfo> dataFileTypes = EDD.getFileTypeOptions(true, false);
+    for (int ft = 0; ft < dataFileTypes.size(); ft++)
       writer.write(
           "      <digform>\n"
               + "        <digtinfo>\n"
               + // digital transfer info
               "          <formname>"
-              + dataFileTypeNames[ft]
+              + dataFileTypes.get(ft).getFileTypeName()
               + "</formname>\n"
               + "          <formvern>1</formvern>\n"
               + "          <formspec>"
               + XML.encodeAsXML(
-                  dataFileTypeDescriptionsAr[language][ft] + " " + dataFileTypeInfo[ft])
+                  dataFileTypes.get(ft).getGridDescription(language)
+                      + " "
+                      + dataFileTypes.get(ft).getInfoUrl())
               + "</formspec>\n"
               +
               //           I think file decompression technique only used if file *always* encoded.
@@ -16299,7 +11136,7 @@ public abstract class EDDGrid extends EDD {
               + XML.encodeAsXML(datasetUrl + ".html")
               + "</linkage>\n"
               + "                  <name>"
-              + XML.encodeAsXML(title)
+              + XML.encodeAsXML(title(language))
               + "</name>\n"
               + "                  <description>Web page for accessing metadata and downloading data.</description>\n"
               + "                  <function>download</function>\n"
@@ -16309,7 +11146,7 @@ public abstract class EDDGrid extends EDD {
               + XML.encodeAsXML(datasetUrl + ".html")
               + "</linkage>\n"
               + "                  <name>"
-              + XML.encodeAsXML(title)
+              + XML.encodeAsXML(title(language))
               + "</name>\n"
               + "                  <description>Web page for accessing metadata and downloading data.</description>\n"
               + "                  <function>information</function>\n"
@@ -16321,18 +11158,21 @@ public abstract class EDDGrid extends EDD {
               + "      </digform>\n");
 
     // image file types
-    for (int ft = 0; ft < imageFileTypeNames.length; ft++)
+    List<EDDFileTypeInfo> imageFileTypes = EDD.getFileTypeOptions(true, true);
+    for (int ft = 0; ft < imageFileTypes.size(); ft++)
       writer.write(
           "      <digform>\n"
               + "        <digtinfo>\n"
               + // digital transfer info
               "          <formname>"
-              + imageFileTypeNames[ft]
+              + imageFileTypes.get(ft).getFileTypeName()
               + "</formname>\n"
               + "          <formvern>1</formvern>\n"
               + "          <formspec>"
               + XML.encodeAsXML(
-                  imageFileTypeDescriptionsAr[language][ft] + " " + imageFileTypeInfo[ft])
+                  imageFileTypes.get(ft).getGridDescription(language)
+                      + " "
+                      + imageFileTypes.get(ft).getInfoUrl())
               + "</formspec>\n"
               +
               //           I think file decompression technique only used if file *always* encoded.
@@ -16350,7 +11190,7 @@ public abstract class EDDGrid extends EDD {
               + XML.encodeAsXML(datasetUrl + ".graph")
               + "</linkage>\n"
               + "                  <name>"
-              + XML.encodeAsXML(title)
+              + XML.encodeAsXML(title(language))
               + "</name>\n"
               + "                  <description>Web page for making a graph or map.</description>\n"
               + "                  <function>graphing</function>\n"
@@ -16361,7 +11201,12 @@ public abstract class EDDGrid extends EDD {
               + "        </digtopt>\n"
               + "      </digform>\n");
 
-    writer.write("      <fees>None</fees>\n" + "    </stdorder>\n" + "  </distinfo>\n");
+    writer.write(
+        """
+                  <fees>None</fees>
+                </stdorder>
+              </distinfo>
+            """);
 
     writer.write(
         "  <metainfo>\n"
@@ -16386,6 +11231,29 @@ public abstract class EDDGrid extends EDD {
             + "</metuc>\n"
             + "  </metainfo>\n"
             + "</metadata>\n");
+  }
+
+  private void lower_writeISO19115(int language, Writer writer)
+      throws UnsupportedStorageException, DataStoreException, JAXBException, IOException {
+
+    Metadata metadata =
+        MetadataBuilder.buildMetadata(
+            language,
+            datasetID,
+            creationTimeMillis(),
+            combinedGlobalAttributes(),
+            dataVariables(),
+            axisVariables(),
+            !String2.isSomething(accessibleViaWMS()),
+            false);
+    /*
+     * By default the XML schema is the most recent version of the standard supported
+     * by Apache SIS. But the legacy version published in 2007 is still in wide use.
+     * The legacy version can be requested with the `METADATA_VERSION` property.
+     */
+    // Map<String,String> config = Map.of(org.apache.sis.xml.XML.METADATA_VERSION, "2007");
+
+    writer.write(org.apache.sis.xml.XML.marshal(metadata));
   }
 
   /**
@@ -16414,32 +11282,38 @@ public abstract class EDDGrid extends EDD {
   public void writeISO19115(int language, Writer writer) throws Throwable {
     // FUTURE: support datasets with x,y (and not longitude,latitude)
 
+    if (EDStatic.config.useSisISO19115) {
+      lower_writeISO19115(language, writer);
+      return;
+    }
+
     // requirements
     if (lonIndex < 0 || latIndex < 0)
       throw new SimpleException(
           EDStatic.bilingual(
               language,
-              EDStatic.queryErrorAr[0] + EDStatic.noXxxNoLLAr[0],
-              EDStatic.queryErrorAr[language] + EDStatic.noXxxNoLLAr[language]));
+              EDStatic.messages.queryErrorAr[0] + EDStatic.messages.noXxxNoLLAr[0],
+              EDStatic.messages.queryErrorAr[language] + EDStatic.messages.noXxxNoLLAr[language]));
 
     String tErddapUrl = EDStatic.preferredErddapUrl;
     String datasetUrl = tErddapUrl + "/griddap/" + datasetID;
     // String wcsUrl     = tErddapUrl + "/wcs/"     + datasetID() + "/" + wcsServer;  // "?" at end?
     String wmsUrl = tErddapUrl + "/wms/" + datasetID() + "/" + WMS_SERVER; // "?" at end?
-    String domain = EDStatic.baseUrl;
+    String domain = EDStatic.config.baseUrl;
     if (domain.startsWith("http://")) domain = domain.substring(7);
     else if (domain.startsWith("https://")) domain = domain.substring(8);
     String eddCreationDate = Calendar2.millisToIsoDateString(creationTimeMillis());
 
-    String acknowledgement = combinedGlobalAttributes.getString("acknowledgement"); // acdd 1.3
+    String acknowledgement =
+        combinedGlobalAttributes.getString(language, "acknowledgement"); // acdd 1.3
     if (acknowledgement == null)
-      acknowledgement = combinedGlobalAttributes.getString("acknowledgment"); // acdd 1.0
-    String contributorName = combinedGlobalAttributes.getString("contributor_name");
-    String contributorEmail = combinedGlobalAttributes.getString("contributor_email");
-    String contributorRole = combinedGlobalAttributes.getString("contributor_role");
-    String creatorName = combinedGlobalAttributes.getString("creator_name");
-    String creatorEmail = combinedGlobalAttributes.getString("creator_email");
-    String creatorType = combinedGlobalAttributes.getString("creator_type");
+      acknowledgement = combinedGlobalAttributes.getString(language, "acknowledgment"); // acdd 1.0
+    String contributorName = combinedGlobalAttributes.getString(language, "contributor_name");
+    String contributorEmail = combinedGlobalAttributes.getString(language, "contributor_email");
+    String contributorRole = combinedGlobalAttributes.getString(language, "contributor_role");
+    String creatorName = combinedGlobalAttributes.getString(language, "creator_name");
+    String creatorEmail = combinedGlobalAttributes.getString(language, "creator_email");
+    String creatorType = combinedGlobalAttributes.getString(language, "creator_type");
     creatorType = String2.validateAcddContactType(creatorType);
     if (!String2.isSomething2(creatorType) && String2.isSomething2(creatorName))
       creatorType = String2.guessAcddContactType(creatorName);
@@ -16447,29 +11321,27 @@ public abstract class EDDGrid extends EDD {
     creatorType = "person"; // assume
     String dateCreated =
         Calendar2.tryToIsoString(
-            combinedGlobalAttributes.getString("date_created")); // "" if trouble
+            combinedGlobalAttributes.getString(language, "date_created")); // "" if trouble
     String dateIssued =
         Calendar2.tryToIsoString(
-            combinedGlobalAttributes.getString("date_issued")); // "" if trouble
+            combinedGlobalAttributes.getString(language, "date_issued")); // "" if trouble
     if (dateCreated.length() > 10) dateCreated = dateCreated.substring(0, 10);
     if (dateIssued.length() > 10) dateIssued = dateIssued.substring(0, 10);
     if (dateCreated.startsWith("0000")) // year=0000 isn't valid
     dateCreated = "";
     if (dateIssued.startsWith("0000")) dateIssued = "";
-    String history = combinedGlobalAttributes.getString("history");
-    String infoUrl = combinedGlobalAttributes.getString("infoUrl");
-    String institution = combinedGlobalAttributes.getString("institution");
-    String keywords = combinedGlobalAttributes.getString("keywords");
-    String keywordsVocabulary = combinedGlobalAttributes.getString("keywordsVocabulary");
+    String history = combinedGlobalAttributes.getString(language, "history");
+    String infoUrl = combinedGlobalAttributes.getString(language, "infoUrl");
+    String institution = combinedGlobalAttributes.getString(language, "institution");
+    String keywords = combinedGlobalAttributes.getString(language, "keywords");
     if (keywords == null) { // use the crude, ERDDAP keywords
-      keywords = EDStatic.keywords;
-      keywordsVocabulary = null;
+      keywords = EDStatic.config.keywords;
     }
-    String license = combinedGlobalAttributes.getString("license");
-    String project = combinedGlobalAttributes.getString("project");
+    String license = combinedGlobalAttributes.getString(language, "license");
+    String project = combinedGlobalAttributes.getString(language, "project");
     if (project == null) project = institution;
-    String standardNameVocabulary = combinedGlobalAttributes.getString("standard_name_vocabulary");
-    String sourceUrl = publicSourceUrl();
+    String standardNameVocabulary =
+        combinedGlobalAttributes.getString(language, "standard_name_vocabulary");
 
     // testMinimalMetadata is useful for Bob doing tests of validity of FGDC results
     //  when a dataset has minimal metadata
@@ -16487,7 +11359,6 @@ public abstract class EDDGrid extends EDD {
       // infoUrl         = null;  //ensureValid ensure that some things exist
       // institution     = null;
       keywords = null;
-      keywordsVocabulary = null;
       license = null;
       project = null;
       standardNameVocabulary = null;
@@ -16525,12 +11396,12 @@ public abstract class EDDGrid extends EDD {
 
     StringArray standardNames = new StringArray();
     if (!testMinimalMetadata) {
-      for (int v = 0; v < axisVariables.length; v++) {
-        String sn = axisVariables[v].combinedAttributes().getString("standard_name");
+      for (EDVGridAxis axisVariable : axisVariables) {
+        String sn = axisVariable.combinedAttributes().getString(language, "standard_name");
         if (sn != null) standardNames.add(sn);
       }
-      for (int v = 0; v < dataVariables.length; v++) {
-        String sn = dataVariables[v].combinedAttributes().getString("standard_name");
+      for (EDV dataVariable : dataVariables) {
+        String sn = dataVariable.combinedAttributes().getString(language, "standard_name");
         if (sn != null) standardNames.add(sn);
       }
     }
@@ -16612,12 +11483,12 @@ public abstract class EDDGrid extends EDD {
             + "    <gmd:CI_ResponsibleParty>\n"
             + "      <gmd:individualName>\n"
             + "        <gco:CharacterString>"
-            + XML.encodeAsXML(EDStatic.adminIndividualName)
+            + XML.encodeAsXML(EDStatic.config.adminIndividualName)
             + "</gco:CharacterString>\n"
             + "      </gmd:individualName>\n"
             + "      <gmd:organisationName>\n"
             + "        <gco:CharacterString>"
-            + XML.encodeAsXML(EDStatic.adminInstitution)
+            + XML.encodeAsXML(EDStatic.config.adminInstitution)
             + "</gco:CharacterString>\n"
             + "      </gmd:organisationName>\n"
             + "      <gmd:contactInfo>\n"
@@ -16626,7 +11497,7 @@ public abstract class EDDGrid extends EDD {
             + "            <gmd:CI_Telephone>\n"
             + "              <gmd:voice>\n"
             + "                <gco:CharacterString>"
-            + XML.encodeAsXML(EDStatic.adminPhone)
+            + XML.encodeAsXML(EDStatic.config.adminPhone)
             + "</gco:CharacterString>\n"
             + "              </gmd:voice>\n"
             + "            </gmd:CI_Telephone>\n"
@@ -16635,32 +11506,32 @@ public abstract class EDDGrid extends EDD {
             + "            <gmd:CI_Address>\n"
             + "              <gmd:deliveryPoint>\n"
             + "                <gco:CharacterString>"
-            + XML.encodeAsXML(EDStatic.adminAddress)
+            + XML.encodeAsXML(EDStatic.config.adminAddress)
             + "</gco:CharacterString>\n"
             + "              </gmd:deliveryPoint>\n"
             + "              <gmd:city>\n"
             + "                <gco:CharacterString>"
-            + XML.encodeAsXML(EDStatic.adminCity)
+            + XML.encodeAsXML(EDStatic.config.adminCity)
             + "</gco:CharacterString>\n"
             + "              </gmd:city>\n"
             + "              <gmd:administrativeArea>\n"
             + "                <gco:CharacterString>"
-            + XML.encodeAsXML(EDStatic.adminStateOrProvince)
+            + XML.encodeAsXML(EDStatic.config.adminStateOrProvince)
             + "</gco:CharacterString>\n"
             + "              </gmd:administrativeArea>\n"
             + "              <gmd:postalCode>\n"
             + "                <gco:CharacterString>"
-            + XML.encodeAsXML(EDStatic.adminPostalCode)
+            + XML.encodeAsXML(EDStatic.config.adminPostalCode)
             + "</gco:CharacterString>\n"
             + "              </gmd:postalCode>\n"
             + "              <gmd:country>\n"
             + "                <gco:CharacterString>"
-            + XML.encodeAsXML(EDStatic.adminCountry)
+            + XML.encodeAsXML(EDStatic.config.adminCountry)
             + "</gco:CharacterString>\n"
             + "              </gmd:country>\n"
             + "              <gmd:electronicMailAddress>\n"
             + "                <gco:CharacterString>"
-            + XML.encodeAsXML(EDStatic.adminEmail)
+            + XML.encodeAsXML(EDStatic.config.adminEmail)
             + "</gco:CharacterString>\n"
             + "              </gmd:electronicMailAddress>\n"
             + "            </gmd:CI_Address>\n"
@@ -16840,14 +11711,16 @@ public abstract class EDDGrid extends EDD {
 
     // cellGeometry
     writer.write(
-        "      <gmd:cellGeometry>\n"
-            + "        <gmd:MD_CellGeometryCode "
-            + "codeList=\"https://data.noaa.gov/resources/iso19139/schema/resources/Codelist/gmxCodelists.xml#gmd:MD_CellGeometryCode\" "
-            + "codeListValue=\"area\">area</gmd:MD_CellGeometryCode>\n"
-            + "      </gmd:cellGeometry>\n"
-            + "      <gmd:transformationParameterAvailability gco:nilReason=\"unknown\"/>\n"
-            + "    </gmd:MD_GridSpatialRepresentation>\n"
-            + "  </gmd:spatialRepresentationInfo>\n");
+        """
+                          <gmd:cellGeometry>
+                            <gmd:MD_CellGeometryCode \
+                    codeList="https://data.noaa.gov/resources/iso19139/schema/resources/Codelist/gmxCodelists.xml#gmd:MD_CellGeometryCode" \
+                    codeListValue="area">area</gmd:MD_CellGeometryCode>
+                          </gmd:cellGeometry>
+                          <gmd:transformationParameterAvailability gco:nilReason="unknown"/>
+                        </gmd:MD_GridSpatialRepresentation>
+                      </gmd:spatialRepresentationInfo>
+                    """);
 
     // *** IdentificationInfo loop
     int iiDataIdentification = 0;
@@ -16873,7 +11746,7 @@ public abstract class EDDGrid extends EDD {
               + "        <gmd:CI_Citation>\n"
               + "          <gmd:title>\n"
               + "            <gco:CharacterString>"
-              + XML.encodeAsXML(title())
+              + XML.encodeAsXML(title(language))
               + "</gco:CharacterString>\n"
               + "          </gmd:title>\n"
               + "          <gmd:date>\n"
@@ -17056,7 +11929,7 @@ public abstract class EDDGrid extends EDD {
               // abstract
               "      <gmd:abstract>\n"
               + "        <gco:CharacterString>"
-              + XML.encodeAsXML(summary())
+              + XML.encodeAsXML(summary(language))
               + "</gco:CharacterString>\n"
               + "      </gmd:abstract>\n");
 
@@ -17166,15 +12039,18 @@ public abstract class EDDGrid extends EDD {
 
             } else if (kari.length() <= LONGEST_ONE_WORD_CF_STANDARD_NAMES
                 && // quick accept if short enough
-                String2.indexOf(ONE_WORD_CF_STANDARD_NAMES, kari)
-                    >= 0) { // few, so linear search is quick
+                ONE_WORD_CF_STANDARD_NAMES.indexOf(kari) >= 0) { // few, so linear search is quick
               kar.remove(i); // a one word CF Standard Name
             }
           }
 
           // keywords not from vocabulary
           if (kar.size() > 0) {
-            writer.write("      <gmd:descriptiveKeywords>\n" + "        <gmd:MD_Keywords>\n");
+            writer.write(
+                """
+                          <gmd:descriptiveKeywords>
+                            <gmd:MD_Keywords>
+                    """);
 
             for (int i = 0; i < kar.size(); i++)
               writer.write(
@@ -17185,19 +12061,25 @@ public abstract class EDDGrid extends EDD {
                       + "          </gmd:keyword>\n");
 
             writer.write(
-                "          <gmd:type>\n"
-                    + "            <gmd:MD_KeywordTypeCode "
-                    + "codeList=\"https://data.noaa.gov/resources/iso19139/schema/resources/Codelist/gmxCodelists.xml#gmd:MD_KeywordTypeCode\" "
-                    + "codeListValue=\"theme\">theme</gmd:MD_KeywordTypeCode>\n"
-                    + "          </gmd:type>\n"
-                    + "          <gmd:thesaurusName gco:nilReason=\"unknown\"/>\n"
-                    + "        </gmd:MD_Keywords>\n"
-                    + "      </gmd:descriptiveKeywords>\n");
+                """
+                                      <gmd:type>
+                                        <gmd:MD_KeywordTypeCode \
+                            codeList="https://data.noaa.gov/resources/iso19139/schema/resources/Codelist/gmxCodelists.xml#gmd:MD_KeywordTypeCode" \
+                            codeListValue="theme">theme</gmd:MD_KeywordTypeCode>
+                                      </gmd:type>
+                                      <gmd:thesaurusName gco:nilReason="unknown"/>
+                                    </gmd:MD_Keywords>
+                                  </gmd:descriptiveKeywords>
+                            """);
           }
 
           // gcmd keywords
           if (gcmdKeywords.size() > 0) {
-            writer.write("      <gmd:descriptiveKeywords>\n" + "        <gmd:MD_Keywords>\n");
+            writer.write(
+                """
+                          <gmd:descriptiveKeywords>
+                            <gmd:MD_Keywords>
+                    """);
 
             for (int i = 0; i < gcmdKeywords.size(); i++)
               writer.write(
@@ -17208,21 +12090,23 @@ public abstract class EDDGrid extends EDD {
                       + "          </gmd:keyword>\n");
 
             writer.write(
-                "          <gmd:type>\n"
-                    + "            <gmd:MD_KeywordTypeCode "
-                    + "codeList=\"https://data.noaa.gov/resources/iso19139/schema/resources/Codelist/gmxCodelists.xml#gmd:MD_KeywordTypeCode\" "
-                    + "codeListValue=\"theme\">theme</gmd:MD_KeywordTypeCode>\n"
-                    + "          </gmd:type>\n"
-                    + "          <gmd:thesaurusName>\n"
-                    + "            <gmd:CI_Citation>\n"
-                    + "              <gmd:title>\n"
-                    + "                <gco:CharacterString>GCMD Science Keywords</gco:CharacterString>\n"
-                    + "              </gmd:title>\n"
-                    + "              <gmd:date gco:nilReason=\"unknown\"/>\n"
-                    + "            </gmd:CI_Citation>\n"
-                    + "          </gmd:thesaurusName>\n"
-                    + "        </gmd:MD_Keywords>\n"
-                    + "      </gmd:descriptiveKeywords>\n");
+                """
+                                      <gmd:type>
+                                        <gmd:MD_KeywordTypeCode \
+                            codeList="https://data.noaa.gov/resources/iso19139/schema/resources/Codelist/gmxCodelists.xml#gmd:MD_KeywordTypeCode" \
+                            codeListValue="theme">theme</gmd:MD_KeywordTypeCode>
+                                      </gmd:type>
+                                      <gmd:thesaurusName>
+                                        <gmd:CI_Citation>
+                                          <gmd:title>
+                                            <gco:CharacterString>GCMD Science Keywords</gco:CharacterString>
+                                          </gmd:title>
+                                          <gmd:date gco:nilReason="unknown"/>
+                                        </gmd:CI_Citation>
+                                      </gmd:thesaurusName>
+                                    </gmd:MD_Keywords>
+                                  </gmd:descriptiveKeywords>
+                            """);
           }
         }
 
@@ -17247,7 +12131,11 @@ public abstract class EDDGrid extends EDD {
 
         // keywords - variable (CF) standard_names
         if (standardNames.size() > 0) {
-          writer.write("      <gmd:descriptiveKeywords>\n" + "        <gmd:MD_Keywords>\n");
+          writer.write(
+              """
+                        <gmd:descriptiveKeywords>
+                          <gmd:MD_Keywords>
+                  """);
           for (int sn = 0; sn < standardNames.size(); sn++)
             writer.write(
                 "          <gmd:keyword>\n"
@@ -17318,7 +12206,7 @@ public abstract class EDDGrid extends EDD {
                   + "      </gmd:aggregationInfo>\n");
 
         // aggregation, larger work       Unidata CDM  (? ncISO does this)
-        if (!CDM_OTHER.equals(cdmDataType())) {
+        if (!CDM_OTHER.equals(cdmDataType(language))) {
           writer.write(
               "      <gmd:aggregationInfo>\n"
                   + "        <gmd:MD_AggregateInformation>\n"
@@ -17334,7 +12222,7 @@ public abstract class EDDGrid extends EDD {
                   + "              </gmd:authority>\n"
                   + "              <gmd:code>\n"
                   + "                <gco:CharacterString>"
-                  + cdmDataType()
+                  + cdmDataType(language)
                   + "</gco:CharacterString>\n"
                   + "              </gmd:code>\n"
                   + "            </gmd:MD_Identifier>\n"
@@ -17435,7 +12323,7 @@ public abstract class EDDGrid extends EDD {
               + "              </gmd:northBoundLatitude>\n"
               + "            </gmd:EX_GeographicBoundingBox>\n"
               + "          </gmd:geographicElement>\n"
-              + (minTime.equals("") || maxTime.equals("")
+              + (minTime.isEmpty() || maxTime.isEmpty()
                   ? ""
                   : "          <gmd:temporalElement>\n"
                       + "            <gmd:EX_TemporalExtent"
@@ -17481,7 +12369,11 @@ public abstract class EDDGrid extends EDD {
               + "        </gmd:EX_Extent>\n");
 
       if (ii == iiDataIdentification) {
-        writer.write("      </gmd:extent>\n" + "    </gmd:MD_DataIdentification>\n");
+        writer.write(
+            """
+                      </gmd:extent>
+                    </gmd:MD_DataIdentification>
+                """);
       }
 
       if (ii == iiERDDAP) {
@@ -17631,7 +12523,7 @@ public abstract class EDDGrid extends EDD {
 
     // contentInfo  (dataVariables)    See Ted Habermann's emails 2012-05-10 and 11.
     String coverageType =
-        combinedGlobalAttributes.getString("coverage_content_type"); // used by GOES-R
+        combinedGlobalAttributes.getString(language, "coverage_content_type"); // used by GOES-R
     String validCoverageTypes[] = { // in 19115-1
       "image",
       "thematicClassification",
@@ -17660,8 +12552,7 @@ public abstract class EDDGrid extends EDD {
             + "      </gmd:contentType>\n");
 
     // dataVariables
-    for (int v = 0; v < dataVariables.length; v++) {
-      EDV edv = dataVariables[v];
+    for (EDV edv : dataVariables) {
       String tUnits = testMinimalMetadata ? null : edv.ucumUnits();
       writer.write(
           "      <gmd:dimension>\n"
@@ -17722,12 +12613,12 @@ public abstract class EDDGrid extends EDD {
             "            <gmd:CI_ResponsibleParty>\n"
             + "              <gmd:individualName>\n"
             + "                <gco:CharacterString>"
-            + XML.encodeAsXML(EDStatic.adminIndividualName)
+            + XML.encodeAsXML(EDStatic.config.adminIndividualName)
             + "</gco:CharacterString>\n"
             + "              </gmd:individualName>\n"
             + "              <gmd:organisationName>\n"
             + "                <gco:CharacterString>"
-            + XML.encodeAsXML(EDStatic.adminInstitution)
+            + XML.encodeAsXML(EDStatic.config.adminInstitution)
             + "</gco:CharacterString>\n"
             + "              </gmd:organisationName>\n"
             + "              <gmd:contactInfo>\n"
@@ -17736,7 +12627,7 @@ public abstract class EDDGrid extends EDD {
             + "                    <gmd:CI_Telephone>\n"
             + "                      <gmd:voice>\n"
             + "                        <gco:CharacterString>"
-            + XML.encodeAsXML(EDStatic.adminPhone)
+            + XML.encodeAsXML(EDStatic.config.adminPhone)
             + "</gco:CharacterString>\n"
             + "                      </gmd:voice>\n"
             + "                    </gmd:CI_Telephone>\n"
@@ -17745,32 +12636,32 @@ public abstract class EDDGrid extends EDD {
             + "                    <gmd:CI_Address>\n"
             + "                      <gmd:deliveryPoint>\n"
             + "                        <gco:CharacterString>"
-            + XML.encodeAsXML(EDStatic.adminAddress)
+            + XML.encodeAsXML(EDStatic.config.adminAddress)
             + "</gco:CharacterString>\n"
             + "                      </gmd:deliveryPoint>\n"
             + "                      <gmd:city>\n"
             + "                        <gco:CharacterString>"
-            + XML.encodeAsXML(EDStatic.adminCity)
+            + XML.encodeAsXML(EDStatic.config.adminCity)
             + "</gco:CharacterString>\n"
             + "                      </gmd:city>\n"
             + "                      <gmd:administrativeArea>\n"
             + "                        <gco:CharacterString>"
-            + XML.encodeAsXML(EDStatic.adminStateOrProvince)
+            + XML.encodeAsXML(EDStatic.config.adminStateOrProvince)
             + "</gco:CharacterString>\n"
             + "                      </gmd:administrativeArea>\n"
             + "                      <gmd:postalCode>\n"
             + "                        <gco:CharacterString>"
-            + XML.encodeAsXML(EDStatic.adminPostalCode)
+            + XML.encodeAsXML(EDStatic.config.adminPostalCode)
             + "</gco:CharacterString>\n"
             + "                      </gmd:postalCode>\n"
             + "                      <gmd:country>\n"
             + "                        <gco:CharacterString>"
-            + XML.encodeAsXML(EDStatic.adminCountry)
+            + XML.encodeAsXML(EDStatic.config.adminCountry)
             + "</gco:CharacterString>\n"
             + "                      </gmd:country>\n"
             + "                      <gmd:electronicMailAddress>\n"
             + "                        <gco:CharacterString>"
-            + XML.encodeAsXML(EDStatic.adminEmail)
+            + XML.encodeAsXML(EDStatic.config.adminEmail)
             + "</gco:CharacterString>\n"
             + "                      </gmd:electronicMailAddress>\n"
             + "                    </gmd:CI_Address>\n"
@@ -17955,14 +12846,14 @@ public abstract class EDDGrid extends EDD {
       EDD edd = oneFromDatasetsXml(null, datasetID);
       if (edd instanceof EDDTable)
         throw new SimpleException(
-            EDStatic.simpleBilingual(language, EDStatic.queryErrorAr)
+            EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
                 + "datasetID="
                 + datasetID
                 + " isn't an EDDGrid dataset.");
       EDDGrid eddGrid = (EDDGrid) edd;
       if (eddGrid.timeIndex() < 0)
         throw new SimpleException(
-            EDStatic.simpleBilingual(language, EDStatic.queryErrorAr)
+            EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
                 + "datasetID="
                 + datasetID
                 + " has no time variable.");
@@ -17979,7 +12870,10 @@ public abstract class EDDGrid extends EDD {
   /** This returns time gap information. */
   public String findTimeGaps() {
     if (timeIndex < 0)
-      return "Time gaps: (none, because there is no time axis variable)\n" + "nGaps=0\n";
+      return """
+              Time gaps: (none, because there is no time axis variable)
+              nGaps=0
+              """;
 
     PrimitiveArray pa = axisVariables[timeIndex].destinationValues();
     DoubleArray times =

@@ -8,13 +8,12 @@ import com.cohort.util.Test;
 import gov.noaa.pfel.coastwatch.griddata.NcHelper;
 import gov.noaa.pfel.coastwatch.pointdata.Table;
 import gov.noaa.pfel.erddap.GenerateDatasetsXml;
+import gov.noaa.pfel.erddap.util.EDMessages;
 import gov.noaa.pfel.erddap.util.EDStatic;
-import gov.noaa.pfel.erddap.variable.EDV;
 import java.nio.file.Path;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
-import tags.TagIncompleteTest;
 import tags.TagMissingFile;
 import testDataset.EDDTestDataset;
 import testDataset.Initialization;
@@ -35,7 +34,7 @@ class EDDTableFromNcCFFilesTests {
   void testGenerateDatasetsXml() throws Throwable {
     // testVerboseOn();
     // debugMode = true;
-
+    int language = EDMessages.DEFAULT_LANGUAGE;
     // public static String generateDatasetsXml(
     // String tFileDir, String tFileNameRegex, String sampleFileName,
     // int tReloadEveryNMinutes,
@@ -172,6 +171,7 @@ class EDDTableFromNcCFFilesTests {
             + "        <att name=\"keywords\">1984-2004, altitude, animals, animals/vertebrates, aquatic, atmosphere, biological, biology, biosphere, calcofi, california, classification, coastal, code, common, cooperative, count, cruise, data, earth, Earth Science &gt; Atmosphere &gt; Altitude &gt; Station Height, Earth Science &gt; Biological Classification &gt; Animals/Vertebrates &gt; Fish, Earth Science &gt; Biosphere &gt; Aquatic Ecosystems &gt; Coastal Habitat, Earth Science &gt; Biosphere &gt; Aquatic Ecosystems &gt; Marine Habitat, Earth Science &gt; Oceans &gt; Aquatic Sciences &gt; Fisheries, ecosystems, fish, fisheries, habitat, height, identifier, investigations, larvae, latitude, line, line_station, longitude, marine, name, number, observed, obsScientific, obsUnits, obsValue, occupancy, ocean, oceanic, oceans, order, science, sciences, scientific, ship, start, station, time, tow, units, value, vertebrates</att>\n"
             + "        <att name=\"Metadata_Conventions\">null</att>\n"
             + "        <att name=\"standard_name_vocabulary\">CF Standard Name Table v70</att>\n"
+            + "        <att name=\"subsetVariables\">line_station</att>\n"
             + "    </addAttributes>\n"
             + "    <dataVariable>\n"
             + "        <sourceName>line_station</sourceName>\n"
@@ -314,7 +314,7 @@ class EDDTableFromNcCFFilesTests {
     EDD.deleteCachedDatasetInfo(tDatasetID);
     EDD edd = EDDTableFromNcCFFiles.oneFromXmlFragment(null, results);
     Test.ensureEqual(edd.datasetID(), tDatasetID, "");
-    Test.ensureEqual(edd.title(), "CalCOFI Fish Larvae Count, 1984-2004", "");
+    Test.ensureEqual(edd.title(language), "CalCOFI Fish Larvae Count, 1984-2004", "");
     Test.ensureEqual(
         String2.toCSSVString(edd.dataVariableDestinationNames()),
         "line_station, longitude, latitude, altitude, time, obsScientific, obsValue, obsUnits",
@@ -326,8 +326,6 @@ class EDDTableFromNcCFFilesTests {
    * doesn't suggest anything.
    */
   @org.junit.jupiter.api.Test
-  @TagIncompleteTest // Simple ERROR on line #1 of ind199105_ctd.nc *GLOBAL*,Conventions,"...,
-  // NCCSV-..." not found on line 1.
   void testGenerateDatasetsXml2() throws Throwable {
     // testVerboseOn();
     // debugMode = true;
@@ -351,7 +349,7 @@ class EDDTableFromNcCFFilesTests {
     String fileNameRegex = "ind199105_ctd\\.nc";
 
     String results =
-        EDDTableFromNccsvFiles.generateDatasetsXml(
+        EDDTableFromNcCFFiles.generateDatasetsXml(
                 dataDir,
                 fileNameRegex,
                 "",
@@ -471,6 +469,7 @@ class EDDTableFromNcCFFilesTests {
             + "        <att name=\"references\">World Ocean Database 2013. URL:https://data.nodc.noaa.gov/woa/WOD/DOC/wod_intro.pdf</att>\n"
             + "        <att name=\"sourceUrl\">(local files)</att>\n"
             + "        <att name=\"standard_name_vocabulary\">CF Standard Name Table v70</att>\n"
+            + "        <att name=\"subsetVariables\">country, WOD_cruise_identifier, originators_cruise_identifier, wod_unique_cast, lat, lon, time, date, GMT_time, Access_no, Project, Platform, Institute, Cast_Tow_number, Orig_Stat_Num, Bottom_Depth, Cast_Duration, Cast_Direction, High_res_pair, dataset, dbase_orig, origflagset, Temperature_row_size, Temperature_WODprofileflag, Temperature_Scale, Temperature_Instrument, Salinity_row_size, Salinity_WODprofileflag, Salinity_Scale, Salinity_Instrument, Oxygen_row_size, Oxygen_WODprofileflag, Oxygen_Instrument, Oxygen_Original_units, Pressure_row_size, Chlorophyll_row_size, Chlorophyll_WODprofileflag, Chlorophyll_Instrument, Chlorophyll_uncalibrated, Conductivit_row_size, crs, WODf, WODfp, WODfd</att>\n"
             + "        <att name=\"summary\">World Ocean Database - Multi-cast file. Data for multiple casts from the World Ocean Database</att>\n"
             + "        <att name=\"title\">World Ocean Database, Multi-cast file</att>\n"
             + "    </addAttributes>\n"
@@ -1162,11 +1161,7 @@ class EDDTableFromNcCFFilesTests {
     // *****************\n");
     // testVerboseOn();
     int language = 0;
-    String name, tName, results, tResults, expected, userDapQuery, tQuery;
-    String error = "";
-    EDV edv;
-    String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 10);
-
+    String tName, results, expected, userDapQuery;
     String id = "testNcCF1b";
     if (deleteCachedDatasetInfo) EDDTableFromNcCFFiles.deleteCachedDatasetInfo(id);
 
@@ -1180,10 +1175,10 @@ class EDDTableFromNcCFFilesTests {
             null,
             null,
             userDapQuery,
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             eddTable.className() + "_test1a",
             ".csv");
-    results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+    results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
     // String2.log(results);
     expected =
         "line_station,longitude,latitude,altitude,time,obsScientific,obsValue,obsUnits\n"
@@ -1202,10 +1197,10 @@ class EDDTableFromNcCFFilesTests {
             null,
             null,
             userDapQuery,
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             eddTable.className() + "_test1b",
             ".csv");
-    results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+    results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
     // String2.log(results);
     expected =
         "line_station\n"
@@ -1230,12 +1225,7 @@ class EDDTableFromNcCFFilesTests {
     // boolean oDebugMode = debugMode; debugMode = true;
     // boolean oTableDebug = Table.debugMode; Table.debugMode = true;
 
-    String name, tName, results, tResults, expected, userDapQuery, tQuery;
-    String error = "";
-    EDV edv;
-    String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 10);
-
-    String id = "testKevin20130109";
+    String tName, results, expected, userDapQuery;
     EDDTable eddTable = (EDDTable) EDDTestDataset.gettestKevin20130109();
 
     // test time < first time is 2011-02-15T00:00:00Z
@@ -1246,10 +1236,10 @@ class EDDTableFromNcCFFilesTests {
             null,
             null,
             userDapQuery,
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             eddTable.className() + "_test1Kevin20130109a",
             ".csv");
-    results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+    results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
     // String2.log(results);
     expected =
         "traj,obs,time,longitude,latitude,temp,ve,vn\n"
@@ -1267,10 +1257,10 @@ class EDDTableFromNcCFFilesTests {
             null,
             null,
             userDapQuery,
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             eddTable.className() + "_test1Kevin20130109a",
             ".csv");
-    results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+    results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
     // String2.log(results);
     expected =
         "traj,obs,time,longitude,latitude,temp,ve,vn\n"
@@ -1302,10 +1292,7 @@ class EDDTableFromNcCFFilesTests {
     // boolean oTableDebug = Table.debugMode; Table.debugMode = true;
 
     String tName, results, expected, userDapQuery;
-    String dir = EDStatic.fullTestCacheDirectory;
-    String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 10);
-
-    String id = "pmelTaoMonPos";
+    String dir = EDStatic.config.fullTestCacheDirectory;
     EDDTable eddTable = (EDDTable) EDDTestDataset.getpmelTaoMonPos();
     Table table;
 
@@ -1329,7 +1316,8 @@ class EDDTableFromNcCFFilesTests {
         0, // standardizeWhat
         null,
         null,
-        null);
+        null,
+        false);
     results = table.dataToString();
     expected = // depth/time are unexpected order because of .ncCF file read then flatten
         "array,station,wmo_platform_code,longitude,latitude,depth,time,LON_502,QX_5502,LAT_500,QY_5500\n"
@@ -1389,7 +1377,8 @@ class EDDTableFromNcCFFilesTests {
         0, // standardizeWhat
         null,
         null,
-        null);
+        null,
+        false);
     results = table.dataToString();
     expected = // depth/time are unexpected order because of .ncCF file read then flatten
         "array,station,wmo_platform_code,longitude,latitude,depth,time,LON_502,QX_5502,LAT_500,QY_5500\n"
@@ -1419,7 +1408,7 @@ class EDDTableFromNcCFFilesTests {
           "java.lang.RuntimeException: datasets.xml error on line #\\d{1,7}: An <att> tag doesn't have a \"name\" attribute.",
           "");
     }
-    if (EDStatic.useSaxParser) {
+    if (EDStatic.config.useSaxParser) {
       Test.ensureEqual(
           eddTable, null, "Dataset should be null from exception during construction.");
     }
@@ -1433,7 +1422,7 @@ class EDDTableFromNcCFFilesTests {
           "java.lang.RuntimeException: datasets.xml error on line #\\d{1,7}: An <att> tag doesn't have a \"name\" attribute.",
           "");
     }
-    if (EDStatic.useSaxParser) {
+    if (EDStatic.config.useSaxParser) {
       Test.ensureEqual(
           eddTable, null, "Dataset should be null from exception during construction.");
     }
@@ -1450,9 +1439,7 @@ class EDDTableFromNcCFFilesTests {
     // *****************\n");
     // testVerboseOn();
     int language = 0;
-    String name, tName, results, tResults, expected, userDapQuery, tQuery;
-    String error = "";
-    EDV edv;
+    String tName, results, expected, userDapQuery;
     String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 10);
     Table table;
 
@@ -1466,7 +1453,8 @@ class EDDTableFromNcCFFilesTests {
         0, // standardizeWhat
         null,
         null,
-        null);
+        null,
+        false);
     Test.ensureSomethingUnicode(table.globalAttributes(), "historical global attributes");
 
     table = new Table();
@@ -1476,7 +1464,8 @@ class EDDTableFromNcCFFilesTests {
         0, // standardizeWhat
         null,
         null,
-        null);
+        null,
+        false);
     Test.ensureSomethingUnicode(table.globalAttributes(), "realtime global attributes");
 
     String id = "UMaineAccB01";
@@ -1490,10 +1479,10 @@ class EDDTableFromNcCFFilesTests {
             null,
             null,
             "",
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             eddTable.className() + "_bridger",
             ".dds");
-    results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+    results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
     // String2.log(results);
     expected =
         "Dataset {\n"
@@ -1520,11 +1509,13 @@ class EDDTableFromNcCFFilesTests {
             null,
             null,
             "",
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             eddTable.className() + "_bridger",
             ".das");
-    results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+    results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
     // String2.log(results);
+    boolean simplifiedTimeBlocks =
+        results.indexOf("Float64 actual_range 56463.676934285555, 56683.652143735904") > -1;
     expected =
         "Attributes \\{\n"
             + " s \\{\n"
@@ -1585,31 +1576,45 @@ class EDDTableFromNcCFFilesTests {
             + "    String units \"seconds since 1970-01-01T00:00:00Z\";\n"
             + "  \\}\n"
             + "  time_created \\{\n"
-            + "    Float64 actual_range 1.371744887122e\\+9, 1.390750745219e\\+9;\n"
-            + "    String coordinates \"time lon lat depth\";\n"
+            + (results.indexOf("Float64 actual_range 1.371744887122e") > -1
+                ? "    Float64 actual_range 1.371744887122e\\+9, 1.390750745219e\\+9;\n"
+                : "")
+            + (simplifiedTimeBlocks
+                ? "    Float64 actual_range 56463.676934285555, 56683.652143735904;\n"
+                : "")
+            + (!simplifiedTimeBlocks ? "    String coordinates \"time lon lat depth\";\n" : "")
             + "    String ioos_category \"Time\";\n"
-            + "    String long_name \"Time Record Created\";\n"
-            + "    String short_name \"time_cr\";\n"
+            + (!simplifiedTimeBlocks ? "    String long_name \"Time Record Created\";\n" : "")
+            + (!simplifiedTimeBlocks ? "    String short_name \"time_cr\";\n" : "")
             + "    String standard_name \"time\";\n"
-            + "    String time_origin \"01-JAN-1970 00:00:00\";\n"
-            + "    String units \"seconds since 1970-01-01T00:00:00Z\";\n"
-            + "    Float64 valid_range 0.0, 99999.0;\n"
+            + (!simplifiedTimeBlocks ? "    String time_origin \"01-JAN-1970 00:00:00\";\n" : "")
+            + (!simplifiedTimeBlocks
+                ? "    String units \"seconds since 1970-01-01T00:00:00Z\";\n"
+                : "")
+            + (!simplifiedTimeBlocks ? "    Float64 valid_range 0.0, 99999.0;\n" : "")
             + "  \\}\n"
             + "  time_modified \\{\n"
-            + "    Float64 actual_range 1.371744887122e\\+9, 1.390750745219e\\+9;\n"
-            + "    String coordinates \"time lon lat depth\";\n"
+            + (results.indexOf("Float64 actual_range 1.371744887122e") > -1
+                ? "    Float64 actual_range 1.371744887122e\\+9, 1.390750745219e\\+9;\n"
+                : "")
+            + (simplifiedTimeBlocks
+                ? "    Float64 actual_range 56463.676934285555, 56683.652143735904;\n"
+                : "")
+            + (!simplifiedTimeBlocks ? "    String coordinates \"time lon lat depth\";\n" : "")
             + "    String ioos_category \"Time\";\n"
-            + "    String long_name \"Time Record Last Modified\";\n"
-            + "    String short_name \"time_mod\";\n"
+            + (!simplifiedTimeBlocks ? "    String long_name \"Time Record Last Modified\";\n" : "")
+            + (!simplifiedTimeBlocks ? "    String short_name \"time_mod\";\n" : "")
             + "    String standard_name \"time\";\n"
-            + "    String time_origin \"01-JAN-1970 00:00:00\";\n"
-            + "    String units \"seconds since 1970-01-01T00:00:00Z\";\n"
-            + "    Float64 valid_range 0.0, 99999.0;\n"
+            + (!simplifiedTimeBlocks ? "    String time_origin \"01-JAN-1970 00:00:00\";\n" : "")
+            + (!simplifiedTimeBlocks
+                ? "    String units \"seconds since 1970-01-01T00:00:00Z\";\n"
+                : "")
+            + (!simplifiedTimeBlocks ? "    Float64 valid_range 0.0, 99999.0;\n" : "")
             + "  \\}\n"
             + "  significant_wave_height \\{\n"
             + (results.indexOf("UInt32 _ChunkSizes 1;\n") > -1 ? "    UInt32 _ChunkSizes 1;\n" : "")
             + "    Float32 _FillValue -999.0;\n"
-            + "    Float64 accuracy 0.5;\n"
+            + (results.indexOf("Float64 accuracy 0.5;") > -1 ? "    Float64 accuracy 0.5;\n" : "")
             + "    Float32 actual_range 0.009102137, 9.613417;\n"
             + "    String ancillary_variables \"significant_wave_height_qc\";\n"
             + "    Float64 colorBarMaximum 10.0;\n"
@@ -1700,10 +1705,10 @@ class EDDTableFromNcCFFilesTests {
             + "    String creator_email \"nealp@maine.edu,ljm@umeoce.maine.edu,bfleming@umeoce.maine.edu\";\n"
             + "    String creator_name \"Neal Pettigrew\";\n"
             + "    String creator_url \"http://gyre.umeoce.maine.edu\";\n"
-            + (EDStatic.useSaxParser ? "    Int32 delta_t 30;\n" : "")
+            + (EDStatic.config.useSaxParser ? "    Int32 delta_t 30;\n" : "")
             + "    String depth_datum \"Sea Level\";\n"
             + "    Float64 Easternmost_Easting -70.42755;\n"
-            + (EDStatic.useSaxParser
+            + (EDStatic.config.useSaxParser
                 ? "    Float64 ending_julian_day_number 56683.64583333349;\n"
                     + "    String ending_julian_day_string \"2014-01-26 15:30:00\";\n"
                 : "")
@@ -1733,7 +1738,7 @@ class EDDTableFromNcCFFilesTests {
             + "    String institution \"Department of Physical Oceanography, School of Marine Sciences, University of Maine\";\n"
             + "    String institution_url \"http://gyre.umeoce.maine.edu\";\n"
             + "    Int32 instrument_number 0;\n"
-            + (EDStatic.useSaxParser
+            + (EDStatic.config.useSaxParser
                 ? "    String julian_day_convention \"Julian date convention begins at 00:00:00 UTC on 17 November 1858 AD\";\n"
                 : "")
             + "    String keywords \"accelerometer, b01, buoy, chemistry, chlorophyll, circulation, conductivity, control, currents, data, density, department, depth, dominant, dominant_wave_period data_quality, Earth Science > Oceans > Ocean Chemistry > Chlorophyll, Earth Science > Oceans > Ocean Chemistry > Oxygen, Earth Science > Oceans > Ocean Circulation > Ocean Currents, Earth Science > Oceans > Ocean Optics > Turbidity, Earth Science > Oceans > Ocean Pressure > Sea Level Pressure, Earth Science > Oceans > Ocean Temperature > Water Temperature, Earth Science > Oceans > Ocean Waves > Significant Wave Height, Earth Science > Oceans > Ocean Waves > Swells, Earth Science > Oceans > Ocean Waves > Wave Period, Earth Science > Oceans > Ocean Winds > Surface Winds, Earth Science > Oceans > Salinity/Density > Conductivity, Earth Science > Oceans > Salinity/Density > Density, Earth Science > Oceans > Salinity/Density > Salinity, height, level, maine, marine, name, o2, ocean, oceanography, oceans, optics, oxygen, period, physical, pressure, quality, salinity, school, sciences, sea, seawater, sensor, significant, significant_height_of_wind_and_swell_waves, significant_wave_height data_quality, station, station_name, surface, surface waves, swell, swells, temperature, time, turbidity, university, water, wave, waves, wind, winds\";\n"
@@ -1773,7 +1778,7 @@ class EDDTableFromNcCFFilesTests {
             + "    String sourceUrl \"\\(local files\\)\";\n"
             + "    Float64 Southernmost_Northing 43.18019;\n"
             + "    String standard_name_vocabulary \"CF-1.6\";\n"
-            + (EDStatic.useSaxParser
+            + (EDStatic.config.useSaxParser
                 ? "    Float64 starting_julian_day_number 56463.66666666651;\n"
                     + "    String starting_julian_day_string \"2013-06-20 16:00:00\";\n"
                 : "")
@@ -1804,10 +1809,10 @@ class EDDTableFromNcCFFilesTests {
             null,
             null,
             userDapQuery,
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             eddTable.className() + "_bridger1",
             ".csv");
-    results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+    results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
     // String2.log(results);
     expected =
         "station,longitude,latitude,depth,time,time_created,time_modified,significant_wave_height,significant_wave_height_qc,dominant_wave_period,dominant_wave_period_qc\n"
@@ -1825,10 +1830,10 @@ class EDDTableFromNcCFFilesTests {
             null,
             null,
             userDapQuery,
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             eddTable.className() + "_bridger2",
             ".csv");
-    results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+    results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
     // String2.log(results);
     expected =
         "station,longitude,latitude,depth,time,time_created,time_modified,significant_wave_height,significant_wave_height_qc,dominant_wave_period,dominant_wave_period_qc\n"
@@ -1845,10 +1850,10 @@ class EDDTableFromNcCFFilesTests {
             null,
             null,
             userDapQuery,
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             eddTable.className() + "_bridger3",
             ".csv");
-    results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+    results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
     // String2.log(results);
     expected = "station\n" + "\n" + "B01\n";
     Test.ensureEqual(results, expected, "\nresults=\n" + results);
@@ -1869,17 +1874,14 @@ class EDDTableFromNcCFFilesTests {
    *
    * @throws Throwable if trouble
    */
+  @org.junit.jupiter.api.Test
   void test7SampleDimensions() throws Throwable {
     // String2.log("\n******************
     // EDDTableFromNcCFFiles.test7SampleDimensions() *****************\n");
     // testVerboseOn();
     int language = 0;
-    String name, tName, results, tResults, expected, userDapQuery, tQuery;
-    String error = "";
-    EDV edv;
-    String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 10);
-    Table table;
-    String testCacheDir = EDStatic.fullTestCacheDirectory;
+    String tName, results, expected, userDapQuery;
+    String testCacheDir = EDStatic.config.fullTestCacheDirectory;
     String scalarVars = ",crs,WODf,WODfd";
 
     // From Ajay Krishnan, NCEI/NODC, from
@@ -2452,7 +2454,8 @@ class EDDTableFromNcCFFilesTests {
         0, // standardizeWhat
         null,
         null,
-        null);
+        null,
+        false);
     results = table.toString(5);
     results = String2.replaceAll(results, '\t', ' ');
     expected =
@@ -2558,7 +2561,8 @@ class EDDTableFromNcCFFilesTests {
         0, // standardizeWhat
         null,
         null,
-        null);
+        null,
+        false);
     results = table.dataToString();
     results = String2.replaceAll(results, '\t', ' ');
     expected =
@@ -2575,14 +2579,13 @@ class EDDTableFromNcCFFilesTests {
    * @throws Throwable if trouble
    */
   @org.junit.jupiter.api.Test
-  @TagIncompleteTest // Unable to open file or file not .nc-compatible.
   void testJP14323() throws Throwable {
     // String2.log("\n****************** EDDTableFromNcCFFiles.testJP14323()
     // *****************\n");
     // testVerboseOn();
     String dir =
-        Path.of(EDDTableFromNcCFFilesTests.class.getResource("/data/nccf/ncei/").toURI())
-            .toString();
+        Path.of(EDDTableFromNcCFFilesTests.class.getResource("/data/nccf/ncei/").toURI()).toString()
+            + "/";
     String sampleName = "biology_JP14323.nc";
     String results, expected;
     Table table;
@@ -2770,7 +2773,7 @@ class EDDTableFromNcCFFilesTests {
             + "  // global attributes:\n"
             + "  :institution = \"National Oceanographic Data Center(NODC), NOAA\";\n"
             + "  :source = \"World Ocean Database\";\n"
-            + "  :references = \"World Ocean Database 2013. URL:https://data.nodc.noaa.gov/woa/WOD/DOC/wod_intro.pdf\";\n"
+            + "  :references = \"World Ocean Database 2013. URL:http://data.nodc.noaa.gov/woa/WOD/DOC/wod_intro.pdf\";\n"
             + "  :title = \"World Ocean Database - Multi-cast file\";\n"
             + "  :summary = \"Data for multiple casts from the World Ocean Database\";\n"
             + "  :id = \"biology_JP14323.nc\";\n"
@@ -2789,24 +2792,23 @@ class EDDTableFromNcCFFilesTests {
             + "  :geospatial_vertical_units = \"meters\";\n"
             + "  :creator_name = \"Ocean Climate Lab/NODC\";\n"
             + "  :creator_email = \"OCLhelp@noaa.gov\";\n"
-            + "  :creator_url = \"https://www.nodc.noaa.gov\";\n"
+            + "  :creator_url = \"http://www.nodc.noaa.gov\";\n"
             + "  :project = \"World Ocean Database\";\n"
-            + "  :acknowledgements = \"\";\n"
-            + "  :processing_level = \"\";\n"
-            + "  :keywords = \"\";\n"
-            + "  :keywords_vocabulary = \"\";\n"
+            + "  :acknowledgements = ;\n"
+            + "  :processing_level = ;\n"
+            + "  :keywords = ;\n"
+            + "  :keywords_vocabulary = ;\n"
             + "  :date_created = \"2016-05-20\";\n"
             + "  :date_modified = \"2016-05-20\";\n"
             + "  :publisher_name = \"US DOC; NESDIS; NATIONAL OCEANOGRAPHIC DATA CENTER - IN295\";\n"
-            + "  :publisher_url = \"https://www.nodc.noaa.gov\";\n"
+            + "  :publisher_url = \"http://www.nodc.noaa.gov\";\n"
             + "  :publisher_email = \"NODC.Services@noaa.gov\";\n"
-            + "  :history = \"\";\n"
-            + "  :license = \"\";\n"
+            + "  :history = ;\n"
+            + "  :license = ;\n"
             + "  :standard_name_vocabulary = \"CF-1.6\";\n"
             + "  :featureType = \"Profile\";\n"
             + "  :cdm_data_type = \"Profile\";\n"
             + "  :Conventions = \"CF-1.6\";\n"
-            + " data:\n"
             + "}\n";
     Test.ensureEqual(results, expected, "results=\n" + results);
 
@@ -2818,10 +2820,18 @@ class EDDTableFromNcCFFilesTests {
         0, // standardizeWhat
         null,
         null,
-        null);
+        null,
+        false);
 
     results = table.dataToString(5);
-    expected = "zztop\n";
+    expected =
+        "country,WOD_cruise_identifier,wod_unique_cast,lat,lon,time,date,GMT_time,Access_no,Platform,Institute,dataset,z,z_WODflag,z_sigfig,Temperature_row_size,Temperature_WODprofileflag,Mesh_size,Type_tow,Gear_code,net_mouth_area,GMT_sample_start_time,Biology_Accno,plankton_row_size,crs,WODf,WODfp,WODfd\n"
+            + "JAPAN,JP014323,7935654,36.3,140.61667,73328.7638888359,19701008,18.333332,273,TOKIWA,IBARAKI PREFECTURAL FISHERIES EXPERIMENTAL STATION,bottle/rossette/net,0.0,0,1,1,0,333.0,VERTICAL TOW,Marutoku B Net,0.159,18.333332,273,1,-2147483647,-32767,-32767,-32767\n"
+            + "JAPAN,JP014323,7935655,36.316666,140.7,73328.78125,19701008,18.75,273,TOKIWA,IBARAKI PREFECTURAL FISHERIES EXPERIMENTAL STATION,bottle/rossette/net,0.0,0,1,1,0,333.0,VERTICAL TOW,Marutoku B Net,0.159,18.75,273,1,-2147483647,-32767,-32767,-32767\n"
+            + "JAPAN,JP014323,7935656,36.316666,140.8,73328.82361108065,19701008,19.766666,273,TOKIWA,IBARAKI PREFECTURAL FISHERIES EXPERIMENTAL STATION,bottle/rossette/net,0.0,0,1,1,0,333.0,VERTICAL TOW,Marutoku B Net,0.159,19.766666,273,1,-2147483647,-32767,-32767,-32767\n"
+            + "JAPAN,JP014323,7935657,36.333332,140.9,73328.84722214937,19701008,20.333332,273,TOKIWA,IBARAKI PREFECTURAL FISHERIES EXPERIMENTAL STATION,bottle/rossette/net,0.0,0,1,2,0,333.0,VERTICAL TOW,Marutoku B Net,0.159,20.333332,273,1,-2147483647,-32767,-32767,-32767\n"
+            + "JAPAN,JP014323,7935657,36.333332,140.9,73328.84722214937,19701008,20.333332,273,TOKIWA,IBARAKI PREFECTURAL FISHERIES EXPERIMENTAL STATION,bottle/rossette/net,100.0,0,3,2,0,333.0,VERTICAL TOW,Marutoku B Net,0.159,20.333332,273,1,-2147483647,-32767,-32767,-32767\n"
+            + "...\n";
     Test.ensureEqual(results, expected, "results=\n" + results);
 
     /*

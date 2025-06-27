@@ -121,24 +121,20 @@ public class DString extends BaseType implements ClientIO {
     source.readFully(byteArray, 0, len);
 
     // pad out to a multiple of four bytes
+    @SuppressWarnings("unused")
     byte unused;
-    for (int i = 0; i < pad; i++) unused = source.readByte();
+    for (int i = 0; i < pad; i++) {
+      unused = source.readByte();
+    }
 
     if (statusUI != null) statusUI.incrementByteCount(4 + len + pad);
 
     // convert bytes to a new String using ISO8859_1 (Latin 1) encoding.
     // This was chosen because it converts each byte to its Unicode value
     // with no translation (the first 256 glyphs in Unicode are ISO8859_1)
-    try {
-      val = new String(byteArray, 0, len, "ISO-8859-1"); // bob changed from ISO8859_1
-      // System.out.println(">>DString string=\"" + com.cohort.util.String2.replaceAll(val,
-      // "\u0007", "") + "\"");
-    } catch (UnsupportedEncodingException e) {
-      // this should never happen
-      System.err.println(
-          "ISO-8859-1 encoding not supported by this VM!"); // bob changed from ISO8859_1
-      System.exit(1);
-    }
+    val = new String(byteArray, 0, len, StandardCharsets.ISO_8859_1); // bob changed from ISO8859_1
+    // System.out.println(">>DString string=\"" + com.cohort.util.String2.replaceAll(val,
+    // "\u0007", "") + "\"");
   }
 
   /**

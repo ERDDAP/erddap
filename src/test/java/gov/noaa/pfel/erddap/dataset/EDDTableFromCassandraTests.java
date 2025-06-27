@@ -1,7 +1,6 @@
 package gov.noaa.pfel.erddap.dataset;
 
 import com.cohort.array.Attributes;
-import com.cohort.util.Calendar2;
 import com.cohort.util.File2;
 import com.cohort.util.MustBe;
 import com.cohort.util.String2;
@@ -630,10 +629,9 @@ class EDDTableFromCassandraTests {
     int language = 0;
     long cumTime = 0;
     String query;
-    String dir = EDStatic.fullTestCacheDirectory;
+    String dir = EDStatic.config.fullTestCacheDirectory;
     String tName, results, expected;
     int po;
-    String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 10);
     String tDatasetID = "cass_bobKeyspace_bobTable";
 
     try {
@@ -1209,10 +1207,8 @@ class EDDTableFromCassandraTests {
     int language = 0;
     long cumTime = 0;
     String query = null;
-    String dir = EDStatic.fullTestCacheDirectory;
+    String dir = EDStatic.config.fullTestCacheDirectory;
     String tName, results, expected;
-    int po;
-    String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 10);
     String tDatasetID = "cassTestFraction";
 
     try {
@@ -1314,10 +1310,9 @@ class EDDTableFromCassandraTests {
     int language = 0;
     long cumTime = 0;
     String query;
-    String dir = EDStatic.fullTestCacheDirectory;
+    String dir = EDStatic.config.fullTestCacheDirectory;
     String tName, results, expected;
     int po;
-    String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 10);
     String tDatasetID = "cass1Device";
 
     try {
@@ -1723,10 +1718,9 @@ class EDDTableFromCassandraTests {
     // debugMode = true;
     long cumTime = 0;
     String query;
-    String dir = EDStatic.fullTestCacheDirectory;
+    String dir = EDStatic.config.fullTestCacheDirectory;
     String tName, results, expected;
     int po;
-    String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 10);
     String tDatasetID = "cass_bobKeyspace_staticTest";
 
     try {

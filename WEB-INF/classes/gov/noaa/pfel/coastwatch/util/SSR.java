@@ -11,10 +11,8 @@ import com.cohort.util.File2;
 import com.cohort.util.Math2;
 import com.cohort.util.MustBe;
 import com.cohort.util.String2;
-import com.cohort.util.Test;
 import com.cohort.util.XML;
 import com.sun.mail.smtp.SMTPTransport;
-import gov.noaa.pfel.erddap.util.EDStatic;
 import jakarta.mail.Message;
 import jakarta.mail.PasswordAuthentication;
 import jakarta.mail.Session;
@@ -23,7 +21,6 @@ import jakarta.mail.internet.MimeMessage;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -37,24 +34,20 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
-import java.util.Iterator;
-import java.util.Map;
+import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.regex.Pattern;
 import java.util.zip.GZIPInputStream;
-import java.util.zip.GZIPOutputStream;
 import java.util.zip.InflaterInputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
-
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3AsyncClient;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
@@ -110,39 +103,10 @@ public class SSR {
   public static String erddapVersion = "2"; // vague. will be updated by EDStatic
 
   private static String tempDirectory; // lazy creation by getTempDirectory
-  public static ReentrantLock emailLock = new ReentrantLock();
+  public static final ReentrantLock emailLock = new ReentrantLock();
 
   static {
     HttpURLConnection.setFollowRedirects(true); // it's a static method!
-  }
-
-  /**
-   * Returns a String which is a substring of the current string. This checks for and deals with bad
-   * first and last values.
-   *
-   * @param s the string
-   * @param first the first character to be extracted (1..)
-   * @param last the last character to be extracted (1..)
-   * @return the extracted String (or "")
-   */
-  public static String cutChar(String s, int first, int last) {
-    int size = s.length();
-
-    if (first < 1) first = 1;
-    if (last > size) last = size;
-    return first > last ? "" : s.substring(first - 1, last); // last is exclusive
-  }
-
-  /**
-   * Returns a String which is a substring at the end of the current string, starting at
-   * <tt>first</tt>. This checks for and deals with a bad first values.
-   *
-   * @param s the string
-   * @param first the first character to be extracted (1..)
-   * @return the extracted String (or "")
-   */
-  public static String cutChar(String s, int first) {
-    return cutChar(s, first, s.length());
   }
 
   /**
@@ -158,8 +122,8 @@ public class SSR {
   public static String getFirstLineStartsWith(URL resourceFile, String charset, String start)
       throws Exception {
     try (InputStream decompressedStream = File2.getDecompressedBufferedInputStream(resourceFile);
-            InputStreamReader reader = new InputStreamReader(decompressedStream, charset);
-            BufferedReader bufferedReader = new BufferedReader(reader)) {
+        InputStreamReader reader = new InputStreamReader(decompressedStream, charset);
+        BufferedReader bufferedReader = new BufferedReader(reader)) {
       String s;
       while ((s = bufferedReader.readLine()) != null) { // null = end-of-file
         // String2.log(s);
@@ -181,8 +145,8 @@ public class SSR {
   public static String getFirstLineMatching(URL resourceFile, String charset, String regex)
       throws Exception {
     try (InputStream decompressedStream = File2.getDecompressedBufferedInputStream(resourceFile);
-         InputStreamReader reader = new InputStreamReader(decompressedStream, charset);
-         BufferedReader bufferedReader = new BufferedReader(reader)) {
+        InputStreamReader reader = new InputStreamReader(decompressedStream, charset);
+        BufferedReader bufferedReader = new BufferedReader(reader)) {
       String s;
       Pattern pattern = Pattern.compile(regex);
       while ((s = bufferedReader.readLine()) != null) { // null = end-of-file
@@ -191,64 +155,6 @@ public class SSR {
       }
     }
     return null;
-  }
-
-  /**
-   * This runs the specified command with dosShell (if String2.OSISWindows) or cShell (otherwise).
-   *
-   * @param commandLine with file names specified with forward slashes
-   * @param timeOutSeconds (use 0 for no timeout)
-   * @return an ArrayList of Strings with the output from the program (or null if there is a fatal
-   *     error)
-   * @throws Exception if exitStatus of cmd is not 0 (or other fatal error)
-   */
-  public static ArrayList dosOrCShell(String commandLine, int timeOutSeconds) throws Exception {
-    if (String2.OSIsWindows) {
-      // commandLine = String2.replaceAll(commandLine, "/", "\\");
-      return dosShell(commandLine, timeOutSeconds);
-    } else {
-      return cShell(commandLine, timeOutSeconds);
-    }
-  }
-
-  /**
-   * This is a variant of shell() for DOS command lines.
-   *
-   * @param commandLine the command line to be executed (for example, "myprogram <filename>") with
-   *     backslashes
-   * @param timeOutSeconds (use 0 for no timeout)
-   * @return an ArrayList of Strings with the output from the program (or null if there is a fatal
-   *     error)
-   * @throws Exception if exitStatus of cmd is not 0 (or other fatal error)
-   * @see #shell
-   */
-  public static ArrayList dosShell(String commandLine, int timeOutSeconds) throws Exception {
-    if (verbose) String2.log("dosShell        in: " + commandLine);
-    PipeToStringArray outCatcher = new PipeToStringArray();
-    PipeToStringArray errCatcher = new PipeToStringArray();
-
-    //        int exitValue = shell(String2.tokenize("cmd.exe /C " + commandLine),
-    int exitValue =
-        shell(new String[] {"cmd.exe", "/C", commandLine}, outCatcher, errCatcher, timeOutSeconds);
-
-    // collect and print results (or throw exception)
-    String err = errCatcher.getString();
-    if (verbose || err.length() > 0 || exitValue != 0) {
-      String s =
-          "dosShell       cmd: "
-              + commandLine
-              + "\n"
-              + "dosShell exitValue: "
-              + exitValue
-              + "\n"
-              + "dosShell       err: "
-              + err
-              + (err.length() > 0 ? "" : "\n");
-      // "dosShell       out: " + outCatcher.getString();
-      if (exitValue == 0) String2.log(s);
-      else throw new Exception(String2.ERROR + " in SSR.dosShell:\n" + s);
-    }
-    return outCatcher.getArrayList();
   }
 
   /**
@@ -261,13 +167,28 @@ public class SSR {
    * @throws Exception if exitStatus of cmd is not 0 (or other fatal error)
    * @see #shell
    */
-  public static ArrayList cShell(String commandLine, int timeOutSeconds) throws Exception {
+  public static List<String> cShell(String commandLine, int timeOutSeconds) throws Exception {
     if (verbose) String2.log("cShell        in: " + commandLine);
-    PipeToStringArray outCatcher = new PipeToStringArray();
-    PipeToStringArray errCatcher = new PipeToStringArray();
-
-    int exitValue =
-        shell(new String[] {"/bin/csh", "-c", commandLine}, outCatcher, errCatcher, timeOutSeconds);
+    PipeToStringArray outCatcher;
+    PipeToStringArray errCatcher;
+    int exitValue = 0;
+    try {
+      outCatcher = new PipeToStringArray();
+      errCatcher = new PipeToStringArray();
+      exitValue =
+          shell(
+              new String[] {"/bin/csh", "-c", commandLine}, outCatcher, errCatcher, timeOutSeconds);
+    } catch (IOException e) {
+      // Try to fallback to bash.
+      outCatcher = new PipeToStringArray();
+      errCatcher = new PipeToStringArray();
+      exitValue =
+          shell(
+              new String[] {"/bin/bash", "-c", commandLine},
+              outCatcher,
+              errCatcher,
+              timeOutSeconds);
+    }
 
     // collect and print results (or throw exception)
     String err = errCatcher.getString();
@@ -290,67 +211,71 @@ public class SSR {
   }
 
   /**
-   * This is a variant of shell() for cShell command lines.
+   * Extract all of the files from a zip file to the base directory. Any existing files of the same
+   * name are overwritten.
    *
-   * @param commandLine the command line to be executed (for example, "myprogram <filename>")
-   * @param outStream an outputStream to capture the results. This does not close the outStream
-   *     afterwards. (Use "null" if you don't want to capture out.)
-   * @param errStream an outputStream to capture the error. This does not close the errStream
-   *     afterwards. (Use "null" if you don't want to capture err.)
-   * @param timeOutSeconds (use 0 for no timeout)
-   * @return the exitValue
-   * @throws Exception but unlike the other shell commands, this doesn't throw an exception just
-   *     because exitValue != 0.
-   * @see #shell
+   * @param fullZipName (with .zip at end)
+   * @param baseDir The destination base directory (with slash at end).
+   * @param ignoreZipDirectories if true, the directories (if any) of the files in the .zip file are
+   *     ignored, and all files are stored in baseDir itself. If false, new directories will be
+   *     created as needed.
+   * @param timeOutSeconds (use -1 for no time out)
+   * @param resultingFullFileNames If this isn't null, the full names of unzipped files are added to
+   *     this. This method doesn't initially cleared this StringArray!
+   * @throws Exception
    */
-  public static int cShell(
-      String commandLine, OutputStream outStream, OutputStream errStream, int timeOutSeconds)
+  public static void unzip(
+      String fullZipName,
+      String baseDir,
+      boolean ignoreZipDirectories,
+      int timeOutSeconds,
+      StringArray resultingFullFileNames)
       throws Exception {
-    if (verbose) String2.log("cShell        in: " + commandLine);
-    ByteArrayOutputStream outBAOS = null;
-    ByteArrayOutputStream errBAOS = null;
-    if (outStream == null) {
-      outBAOS = new ByteArrayOutputStream();
-      outStream = outBAOS;
-    }
-    if (errStream == null) {
-      errBAOS = new ByteArrayOutputStream();
-      errStream = errBAOS;
-    }
-    PipeToOutputStream outCatcher = new PipeToOutputStream(outStream);
-    PipeToOutputStream errCatcher = new PipeToOutputStream(errStream);
 
-    // call shell()
-    int exitValue =
-        shell(new String[] {"/bin/csh", "-c", commandLine}, outCatcher, errCatcher, timeOutSeconds);
+    // if Linux, it is faster to use the zip utility
+    // not File2.getDecompressedBufferedInputStream(). Read file as is.
+    try (ZipInputStream in = new ZipInputStream(File2.getBufferedInputStream(fullZipName))) {
+      // create a buffer for reading the files
+      byte[] buf = new byte[4096];
 
-    // if I created the streams, close them
-    if (outBAOS != null)
-      try {
-        outBAOS.close();
-      } catch (Exception e) {
+      // unzip the files
+      ZipEntry entry = in.getNextEntry();
+      while (entry != null) {
+
+        // isDirectory?
+        String name = entry.getName();
+        if (entry.isDirectory()) {
+          if (ignoreZipDirectories) {
+          } else {
+            File tDir = new File(baseDir + name);
+            if (!tDir.exists()) tDir.mkdirs();
+          }
+        } else {
+          // open an output file
+          if (ignoreZipDirectories) name = File2.getNameAndExtension(name); // remove dir info
+          File2.makeDirectory(File2.getDirectory(baseDir + name)); // name may incude subdir names
+          try (OutputStream out = new BufferedOutputStream(new FileOutputStream(baseDir + name))) {
+
+            // transfer bytes from the .zip file to the output file
+            // in.read reads from current zipEntry
+            byte[] buffer = new byte[8192]; // best if smaller than java buffered...stream size
+            int bytesRead;
+            while ((bytesRead = in.read(buffer, 0, buf.length)) > 0) {
+              out.write(buffer, 0, bytesRead);
+            }
+          }
+          // close the output file
+          if (resultingFullFileNames != null) resultingFullFileNames.add(baseDir + name);
+        }
+
+        // close this entry
+        in.closeEntry();
+
+        // get the next entry
+        entry = in.getNextEntry();
       }
-    if (errBAOS != null)
-      try {
-        errBAOS.close();
-      } catch (Exception e) {
-      }
-
-    // collect and print results (or throw exception)
-    String err = errBAOS == null ? "" : errBAOS.toString();
-    if (verbose || err.length() > 0 || exitValue != 0) {
-      String2.log(
-          "cShell       cmd: "
-              + commandLine
-              + "\n"
-              + "cShell exitValue: "
-              + exitValue
-              + "\n"
-              + "cShell       err: "
-              + (errBAOS == null ? "[unknown]" : err));
     }
-
-    return exitValue;
+    // close the input file
   }
 
   /**
@@ -428,7 +353,6 @@ public class SSR {
    */
   public static void zipADirectory(String dir, int timeOutSeconds) throws Exception {
     // remove trailing slash
-    char slash = dir.indexOf('/') >= 0 ? '/' : '\\';
     if (dir.endsWith("/") || dir.endsWith("\\")) dir = dir.substring(0, dir.length() - 1);
 
     SSR.zip(dir + ".zip", new String[] {dir}, timeOutSeconds, true, File2.getDirectory(dir));
@@ -533,35 +457,32 @@ public class SSR {
     // for all other operating systems...
     if (verbose) String2.log("Using Java's zip to make " + zipDirName);
     // create the ZIP file
-    ZipOutputStream out =
-        new ZipOutputStream(new BufferedOutputStream(new FileOutputStream(zipDirName)));
-    try {
+    try (ZipOutputStream out =
+        new ZipOutputStream(new BufferedOutputStream(new FileOutputStream(zipDirName)))) {
 
       // create a buffer for reading the files
       byte[] buf = new byte[4096];
 
       // compress the files
-      for (int i = 0; i < dirNames.length; i++) {
+      for (String dirName : dirNames) {
         // if directory, get all file names
-        ArrayList<String> al = new ArrayList();
-        if (File2.isDirectory(dirNames[i])) {
-          RegexFilenameFilter.recursiveFullNameList(al, dirNames[i], ".*", false); // directoriesToo
+        ArrayList<String> al = new ArrayList<>();
+        if (File2.isDirectory(dirName)) {
+          RegexFilenameFilter.recursiveFullNameList(al, dirName, ".*", false); // directoriesToo
         } else {
-          al.add(dirNames[i]);
+          al.add(dirName);
         }
 
-        for (int i2 = 0; i2 < al.size(); i2++) {
-          InputStream in =
-              File2.getBufferedInputStream(
-                  al.get(i2)); // not File2.getDecompressedBufferedInputStream(). Read files as is.
-          try {
+        for (String s : al) {
+          // not File2.getDecompressedBufferedInputStream(). Read files as is.
+          try (InputStream in = File2.getBufferedInputStream(s)) {
 
             // add ZIP entry to output stream
             String tName =
                 includeDirectoryInfo
-                    ? al.get(i2).substring(removeDirPrefix.length())
+                    ? s.substring(removeDirPrefix.length())
                     : // already validated above
-                    File2.getNameAndExtension(al.get(i2));
+                    File2.getNameAndExtension(s);
             out.putNextEntry(new ZipEntry(tName));
 
             // transfer bytes from the file to the ZIP file
@@ -572,425 +493,12 @@ public class SSR {
 
             // complete the entry
             out.closeEntry();
-          } finally {
-            in.close();
           }
         }
       }
-    } finally {
-      // close the ZIP file
-      out.close();
     }
+    // close the ZIP file
     if (verbose) String2.log("  zip done. TIME=" + (System.currentTimeMillis() - tTime) + "ms\n");
-  }
-
-  /**
-   * Put the specified files in a gz file (without directory info). If a file named gzipDirName
-   * already exists, it is overwritten.
-   *
-   * @param gzipDirName the full name for the .gz file (path + name + ".gz")
-   * @param dirNames the full names of the files to be put in the gz file. These can use forward or
-   *     backslashes as directory separators. CURRENTLY LIMITED TO 1 FILE.
-   * @param timeOutSeconds (use -1 for no time out)
-   * @throws Exception if trouble
-   */
-  public static void gzip(String gzipDirName, String dirNames[], int timeOutSeconds)
-      throws Exception {
-
-    gzip(gzipDirName, dirNames, timeOutSeconds, false, "");
-  }
-
-  /**
-   * Put the specified files in a gzip file (with some directory info). If a file named gzipDirName
-   * already exists, it is overwritten.
-   *
-   * @param gzipDirName the full name for the .gz file (path + name + ".gz")
-   * @param dirNames the full names of the files to be put in the gzip file. These can use forward
-   *     or backslashes as directory separators. CURRENTLY LIMITED TO 1 FILE.
-   * @param timeOutSeconds (use -1 for no time out)
-   * @param removeDirPrefix the prefix to be removed from the start of each dir name (ending with a
-   *     slash)
-   * @throws Exception if trouble
-   */
-  public static void gzip(
-      String gzipDirName, String dirNames[], int timeOutSeconds, String removeDirPrefix)
-      throws Exception {
-
-    gzip(gzipDirName, dirNames, timeOutSeconds, true, removeDirPrefix);
-  }
-
-  /**
-   * Put the specified files in a gzip file (without directory info). If a file named gzipDirName
-   * already exists, it is overwritten.
-   *
-   * @param gzipDirName the full name for the .zip file (path + name + ".gz")
-   * @param dirNames the full names of the files to be put in the gzip file. These can use forward
-   *     or backslashes as directory separators. CURRENTLY LIMITED TO 1 FILE.
-   * @param timeOutSeconds (use -1 for no time out)
-   * @param includeDirectoryInfo set this to false if you don't want any dir invo stored with the
-   *     files
-   * @param removeDirPrefix if includeDirectoryInfo is true, this is the prefix to be removed from
-   *     the start of each dir name (ending with a slash). If includeDirectoryInfo is false, this is
-   *     removed.
-   * @throws Exception if trouble
-   */
-  private static void gzip(
-      String gzipDirName,
-      String dirNames[],
-      int timeOutSeconds,
-      boolean includeDirectoryInfo,
-      String removeDirPrefix)
-      throws Exception {
-
-    // validate
-    if (includeDirectoryInfo) {
-      // ensure slash at end of removeDirPrefix
-      if ("\\/".indexOf(removeDirPrefix.charAt(removeDirPrefix.length() - 1)) < 0)
-        throw new IllegalArgumentException(
-            String2.ERROR + " in SSR.gzip: removeDirPrefix must end with a slash.");
-
-      // ensure dirNames start with removeDirPrefix
-      for (int i = 0; i < dirNames.length; i++)
-        if (!dirNames[i].startsWith(removeDirPrefix))
-          throw new IllegalArgumentException(
-              String2.ERROR
-                  + " in SSR.zip: dirName["
-                  + i
-                  + "] doesn't start with "
-                  + removeDirPrefix
-                  + ".");
-    }
-
-    // if Linux, it is faster to use the zip utility
-    // I don't know how to include just partial dir info with Linux,
-    //  since I can't cd to that directory.
-    /*if (String2.OSIsLinux && !includeDirectoryInfo) {
-        //-j: don't include dir info
-        if (verbose) String2.log("Using Linux's zip");
-        File2.delete(zipDirName); //delete any exiting .zip file of that name
-        cShell("zip -j " + zipDirName + " " + String2.toSSVString(dirNames),
-            timeOutSeconds);
-        return;
-    }*/
-
-    // for all other operating systems...
-    // create the ZIP file
-    long tTime = System.currentTimeMillis();
-    GZIPOutputStream out =
-        new GZIPOutputStream(new BufferedOutputStream(new FileOutputStream(gzipDirName)));
-    try {
-      // create a buffer for reading the files
-      byte[] buf = new byte[4096];
-
-      // compress the files
-      for (int i = 0; i < 1; i++) { // i < dirNames.length; i++) {
-        InputStream in =
-            File2.getBufferedInputStream(
-                dirNames[i]); // not File2.getDecompressedBufferedInputStream() Read files as is.
-        try {
-          // add ZIP entry to output stream
-          String tName =
-              includeDirectoryInfo
-                  ? dirNames[i].substring(removeDirPrefix.length())
-                  : // already validated above
-                  File2.getNameAndExtension(dirNames[i]);
-          // out.putNextEntry(new ZipEntry(tName));
-
-          // transfer bytes from the file to the ZIP file
-          int len;
-          while ((len = in.read(buf)) > 0) {
-            out.write(buf, 0, len);
-          }
-          // complete the entry
-          // out.closeEntry();
-        } finally {
-          in.close();
-        }
-      }
-    } finally {
-      // close the GZIP file
-      out.close();
-    }
-    if (verbose) String2.log("  gzip done. TIME=" + (System.currentTimeMillis() - tTime) + "ms\n");
-  }
-
-  /**
-   * This handles the common case of unzipping a zip file (in place) that contains a directory with
-   * subdirectories and files.
-   */
-  public static void unzipADirectory(
-      String fullZipName, int timeOutSeconds, StringArray resultingFullFileNames) throws Exception {
-
-    unzip(
-        fullZipName,
-        File2.getDirectory(fullZipName),
-        false,
-        timeOutSeconds,
-        resultingFullFileNames);
-  }
-
-  /**
-   * Extract all of the files from a zip file to the base directory. Any existing files of the same
-   * name are overwritten.
-   *
-   * @param fullZipName (with .zip at end)
-   * @param baseDir The destination base directory (with slash at end).
-   * @param ignoreZipDirectories if true, the directories (if any) of the files in the .zip file are
-   *     ignored, and all files are stored in baseDir itself. If false, new directories will be
-   *     created as needed.
-   * @param timeOutSeconds (use -1 for no time out)
-   * @param resultingFullFileNames If this isn't null, the full names of unzipped files are added to
-   *     this. This method doesn't initially cleared this StringArray!
-   * @throws Exception
-   */
-  public static void unzip(
-      String fullZipName,
-      String baseDir,
-      boolean ignoreZipDirectories,
-      int timeOutSeconds,
-      StringArray resultingFullFileNames)
-      throws Exception {
-
-    // if Linux, it is faster to use the zip utility
-    long tTime = System.currentTimeMillis();
-    if (verbose) String2.log("Using Java's unzip on " + fullZipName);
-    ZipInputStream in =
-        new ZipInputStream(
-            File2.getBufferedInputStream(
-                fullZipName)); // not File2.getDecompressedBufferedInputStream(). Read file as is.
-    try {
-      // create a buffer for reading the files
-      byte[] buf = new byte[4096];
-
-      // unzip the files
-      ZipEntry entry = in.getNextEntry();
-      while (entry != null) {
-
-        // isDirectory?
-        String name = entry.getName();
-        if (verbose) String2.log("  unzipping " + name);
-        if (entry.isDirectory()) {
-          if (ignoreZipDirectories) {
-          } else {
-            File tDir = new File(baseDir + name);
-            if (!tDir.exists()) tDir.mkdirs();
-          }
-        } else {
-          // open an output file
-          if (ignoreZipDirectories) name = File2.getNameAndExtension(name); // remove dir info
-          File2.makeDirectory(File2.getDirectory(baseDir + name)); // name may incude subdir names
-          OutputStream out = new BufferedOutputStream(new FileOutputStream(baseDir + name));
-          try {
-
-            // transfer bytes from the .zip file to the output file
-            // in.read reads from current zipEntry
-            byte[] buffer = new byte[8192]; // best if smaller than java buffered...stream size
-            int bytesRead;
-            while ((bytesRead = in.read(buffer, 0, buf.length)) > 0) {
-              out.write(buffer, 0, bytesRead);
-            }
-          } finally {
-            // close the output file
-            out.close();
-          }
-          if (resultingFullFileNames != null) resultingFullFileNames.add(baseDir + name);
-        }
-
-        // close this entry
-        in.closeEntry();
-
-        // get the next entry
-        entry = in.getNextEntry();
-      }
-    } finally {
-      // close the input file
-      in.close();
-    }
-
-    if (verbose) String2.log("  unzip done. TIME=" + (System.currentTimeMillis() - tTime) + "ms\n");
-  }
-
-  /**
-   * Extract the ONE file from a .gz file to the base directory. An existing file of the same name
-   * will be overwritten.
-   *
-   * @param fullGzName (with .gz at end)
-   * @param baseDir (with slash at end)
-   * @param ignoreGzDirectories if true, the directories (if any) of the files in the .gz file are
-   *     ignored, and all files are stored in baseDir itself. If false, new directories will be
-   *     created as needed. CURRENTLY, ONLY 'TRUE' IS SUPPORTED. THE FILE IS ALWAYS GIVEN THE NAME
-   *     fullGzName.substring(0, fullGzName.length() - 3).
-   * @param timeOutSeconds (use -1 for no time out)
-   * @throws Exception
-   */
-  public static void unGzip(
-      String fullGzName, String baseDir, boolean ignoreGzDirectories, int timeOutSeconds)
-      throws Exception {
-
-    // if Linux, it is faster to use the zip utility
-    long tTime = System.currentTimeMillis();
-    if (!ignoreGzDirectories)
-      throw new RuntimeException("Currently, SSR.unGzip only supports ignoreGzDirectories=true!");
-    /*Do this in the future?
-     if (String2.OSIsLinux) {
-        //-d: the directory to put the files in
-        if (verbose) String2.log("Using Linux's ungz");
-        cShell("ungz -o " + //-o overwrites existing files without asking
-            (ignoreGzDirectories? "-j " : "") +
-            fullGzName + " " +
-            "-d " + baseDir.substring(0, baseDir.length() - 1),  //remove trailing slash   necessary?
-            timeOutSeconds);
-    } else */ {
-      // use Java's gzip procedures for all other operating systems
-      if (verbose) String2.log("Java's ungzip " + fullGzName);
-      GZIPInputStream in =
-          new GZIPInputStream(
-              File2.getBufferedInputStream(
-                  fullGzName)); // not File2.getDecompressedBufferedInputStream(). Read file as is.
-      try {
-        // create a buffer for reading the files
-        byte[] buf = new byte[4096];
-
-        //// unzip the files
-        // ZipEntry entry = in.getNextEntry();
-        // while (entry != null) {
-        String ext = File2.getExtension(fullGzName); // should be .gz
-        String name = fullGzName.substring(0, fullGzName.length() - ext.length());
-        /*
-        //isDirectory?
-        if (entry.isDirectory()) {
-            if (ignoreZipDirectories) {
-            } else {
-                File tDir = new File(baseDir + name);
-                if (!tDir.exists())
-                    tDir.mkdirs();
-            }
-        } else */ {
-          // open an output file
-          // ???do I need to make the directory???
-          if (ignoreGzDirectories) name = File2.getNameAndExtension(name); // remove dir info
-          OutputStream out = new BufferedOutputStream(new FileOutputStream(baseDir + name));
-          try {
-            // transfer bytes from the .zip file to the output file
-            // in.read reads from current zipEntry
-            byte[] buffer = new byte[8192]; // best if smaller than java buffered...Stream size
-            int bytesRead;
-            while ((bytesRead = in.read(buffer, 0, buf.length)) > 0) {
-              out.write(buffer, 0, bytesRead);
-            }
-          } finally {
-            // close the output file
-            out.close();
-          }
-        }
-
-        //// close this entry
-        // in.closeEntry();
-
-        //// get the next entry
-        // entry = in.getNextEntry();
-        // }
-      } finally {
-        // close the input file
-        in.close();
-      }
-    }
-    if (verbose)
-      String2.log("  ungzip done. TIME=" + (System.currentTimeMillis() - tTime) + "ms\n");
-  }
-
-  /**
-   * This decompresses a .tar.gz file on Bob's Windows computer, in a directory with the name from
-   * the .tar.gz file.
-   *
-   * @throws Exception if trouble
-   */
-  public static void windowsDecompressTargz(
-      String sourceFullName, boolean makeBaseDir, int timeOutMinutes) throws Exception {
-
-    String sourceDir = File2.getDirectory(sourceFullName);
-    String sourceTarName = File2.getNameNoExtension(sourceFullName);
-    String sourceJustName = File2.getNameNoExtension(sourceTarName);
-
-    // extract tar from .gzip
-    String cmd = windows7Zip + " -y e " + sourceFullName + " -o" + sourceDir + " -r";
-    long cmdTime = System.currentTimeMillis();
-    dosShell(cmd, timeOutMinutes * 60);
-    String2.log("  cmd time=" + Calendar2.elapsedTimeString(System.currentTimeMillis() - cmdTime));
-
-    // extract from the .tar file   //gtspp4_at199001.tar
-    if (makeBaseDir) File2.makeDirectory(sourceDir + sourceJustName);
-    File2.makeDirectory(sourceDir + sourceJustName + "/");
-    cmd =
-        windows7Zip
-            + " -y x "
-            + sourceDir
-            + sourceTarName
-            + // xtract with full dir names
-            " -o"
-            + sourceDir
-            + (makeBaseDir ? sourceJustName + "/" : "")
-            + " -r";
-    cmdTime = System.currentTimeMillis();
-    dosShell(cmd, timeOutMinutes * 60);
-    String2.log("  cmd time=" + Calendar2.elapsedTimeString(System.currentTimeMillis() - cmdTime));
-
-    // delete the .tar file
-    File2.delete(sourceDir + sourceTarName);
-  }
-
-  /**
-   * Unzip oldDir + oldName.zip (a zip containing one file: oldName) and rename it to newDir +
-   * newName. If newDir + newName already exists, it is File2.'touch'ed.
-   *
-   * @param oldDir (with slash at end)
-   * @param oldName (with .zip at end)
-   * @param newDir (with slash at end)
-   * @param newName
-   * @param timeOutSeconds (use 0 for no timeout)
-   * @throws Exception
-   */
-  public static void unzipRename(
-      String oldDir, String oldName, String newDir, String newName, int timeOutSeconds)
-      throws Exception {
-
-    // already exists?
-    if (File2.touch(newDir + newName)) {
-      String2.log("SSR.unzipRename is reusing " + newName);
-      return;
-    }
-
-    // unzip the file
-    unzip(oldDir + oldName, newDir, true, timeOutSeconds, null);
-
-    // rename the file
-    String oldNameNoZip = oldName.substring(0, oldName.length() - 4);
-    if (!oldNameNoZip.equals(newName)) File2.rename(newDir, oldNameNoZip, newName);
-  }
-
-  /**
-   * This opens a ZipOutputStream with one entry (with the fileName, but no data). This is not
-   * wrapped in a BufferedOutputStream, since it often doesn't need to be.
-   *
-   * @param zipDirName the full name for the .zip file (path + name + ".zip")
-   * @param fileName the file name to be put in the zip file. Your choice: with directory info or
-   *     not. Use forward directory separators [I'm pretty sure].
-   * @return the ZipOutputStream (or null if trouble)
-   */
-  public static ZipOutputStream startZipOutputStream(String zipDirName, String fileName) {
-
-    try {
-      // Create the ZIP file
-      ZipOutputStream out =
-          new ZipOutputStream(new BufferedOutputStream(new FileOutputStream(zipDirName)));
-
-      // Add ZIP entry to output stream.
-      out.putNextEntry(new ZipEntry(fileName));
-
-      return out;
-    } catch (Exception e) {
-      return null;
-    }
   }
 
   /**
@@ -1016,6 +524,7 @@ public class SSR {
       double bBoxLLX,
       double bBoxLLY,
       String epsContents) {
+    // "} bind def\n" +
     return
     // This is from PostScript Language Reference Manual 2nd ed, pg 726
     // (in "Appendix H: Encapsulated PostScript File Format - Version 3.0"
@@ -1070,10 +579,7 @@ public class SSR {
         "  count op_count sub {pop} repeat\n"
         + "  countdictstack dict_count sub {end} repeat\n"
         + // clean up dict stack
-        "  b4_inc_state restore\n"
-        +
-        // "} bind def\n" +
-        "";
+        "  b4_inc_state restore\n";
   }
 
   /**
@@ -1087,107 +593,6 @@ public class SSR {
     emailAddress = String2.replaceAll(emailAddress, ".", " dot ");
     emailAddress = String2.replaceAll(emailAddress, "@", " at ");
     return emailAddress;
-  }
-
-  /**
-   * This returns a string with the topNMostRequested items.
-   *
-   * @param printTopN
-   * @param header (e.g., printTopN + " Most Requested .grd Files")
-   * @param requestedFilesMap (map with key=String (e.g., fileName), value=IntObject with frequency
-   *     info). If it needs to be thread-safe, use ConcurrentHashMap.
-   * @return a string with the topN items in a table
-   */
-  public static String getTopN(int printTopN, String header, Map requestedFilesMap) {
-    // printTopNMostRequested
-    // many of these will be artifacts: e.g., initial default file
-    StringBuilder sb = new StringBuilder();
-    if (printTopN > 0 && !requestedFilesMap.isEmpty()) {
-      // topN will be kept as sorted ascending, so best will be at end
-      String topN[] = new String[printTopN];
-      Arrays.fill(topN, "\t");
-      int worst = 0;
-      int nActive = 0;
-      Iterator it = requestedFilesMap.keySet().iterator();
-      while (it.hasNext()) {
-        String key = (String) it.next();
-        int value = ((IntObject) requestedFilesMap.get(key)).i;
-        if (value <= 0) continue;
-        if (nActive < printTopN || value > worst) {
-          if (nActive < printTopN) nActive++;
-          if (value < worst) worst = value;
-          String ts = String2.right("" + value, 9) + "  " + key;
-          int where = Arrays.binarySearch(topN, ts);
-          if (where >= 0)
-            // it is already in the array -- shouldn't ever happen
-            sb.append(
-                String2.ERROR
-                    + ": SSR.getTopN wants to insert \""
-                    + ts
-                    + "\"\n"
-                    + "at "
-                    + where
-                    + ", where values are\n"
-                    + String2.toNewlineString(topN)
-                    + "\n");
-          else {
-            // make 'where' positively stated
-            where = -where - 2; // would be -1, but worst is always thrown out
-
-            // 'where' may be -1 if tie for worst and file name sorts it at beginning
-            if (where >= 0) {
-              // open up a space (worst is always thrown out)
-              System.arraycopy(topN, 1, topN, 0, where);
-
-              // insert it
-              topN[where] = ts;
-            }
-          }
-        }
-      }
-
-      // print the most requested .grd files
-      sb.append(printTopN + header + "\n");
-      for (int i = printTopN - 1; i >= 0; i--) {
-        if (!topN[i].equals("\t"))
-          sb.append(String2.right("#" + (printTopN - i), 7) + topN[i] + "\n");
-      }
-    }
-    return sb.toString();
-  }
-
-  /**
-   * This runs a series matlab commands, ending with 'exit' or 'quit'. This is set up for Linux
-   * computers and uses cShell commands.
-   *
-   * @param fullControlName the name of the file with the commands for Matlabs command line (one per
-   *     line).
-   * @param fullOutputName the name for the file that will be created to hold the Matlab output.
-   * @param timeOutSeconds (use -1 for no time out)
-   * @throws Exception if trouble
-   */
-  public static void runMatlab(String fullControlName, String fullOutputName, int timeOutSeconds)
-      throws Exception {
-    // this is Dave Foley's trick in his /u00/chump/matcom script
-    Exception e = null;
-    try {
-      SSR.cShell("set OLDDISPLAY = $DISPLAY", 1);
-      SSR.cShell("unsetenv DISPLAY", 1);
-      SSR.cShell(
-          "nohup matlab < "
-              + fullControlName
-              + " >! "
-              + fullOutputName, // ">!" writes to a new file
-          timeOutSeconds);
-    } catch (Exception e2) {
-      e = e2;
-    }
-
-    // The purpose of try/catch above is to ensure this gets done.
-    // Problem was: DISPLAY was unset, then error occurred and DISPLAY was never reset.
-    SSR.cShell("setenv DISPLAY $OLDDISPLAY", 1);
-
-    if (e != null) throw e;
   }
 
   /**
@@ -1274,6 +679,7 @@ public class SSR {
    *
    * @throws Exception if trouble
    */
+  @SuppressWarnings("JavaUtilDate") // Date is needed for MimeMessage
   public static void lowSendEmail(
       Session session,
       SMTPTransport smtpTransport,
@@ -1519,7 +925,7 @@ public class SSR {
    */
   public static String percentEncode(String query) throws Exception {
     if (query == null) return "";
-    return String2.replaceAll(URLEncoder.encode(query, File2.UTF_8), "+", "%20");
+    return String2.replaceAll(URLEncoder.encode(query, StandardCharsets.UTF_8), "+", "%20");
   }
 
   /**
@@ -1533,7 +939,7 @@ public class SSR {
    */
   public static String percentDecode(String query) throws Exception {
     if (query == null) return "";
-    return URLDecoder.decode(query, File2.UTF_8);
+    return URLDecoder.decode(query, StandardCharsets.UTF_8);
   }
 
   /**
@@ -1600,7 +1006,7 @@ public class SSR {
                 // .credentialsProvider(credentialProvider)  //handled by default credentials
                 // provider
                 .targetThroughputInGbps(20.0) // ??? make a separate setting?
-                .minimumPartSizeInBytes(Long.valueOf(8 * Math2.BytesPerMB))
+                .minimumPartSizeInBytes((long) (8 * Math2.BytesPerMB))
                 .build())
         .build();
   }
@@ -1826,8 +1232,8 @@ public class SSR {
    *     See https://en.wikipedia.org/wiki/Percent-encoding . <br>
    *     Note that reserved characters only need to be percent encoded in special circumstances (not
    *     always).
-   * @param connectTimeOutMillis the time out for opening a connection in milliseconds (use -1 to get high
-   *     default, currently 10 minutes)
+   * @param connectTimeOutMillis the time out for opening a connection in milliseconds (use -1 to
+   *     get high default, currently 10 minutes)
    * @return Object[3], [0]=UrlConnection, [1]=a (decompressed if necessary) BufferedInputStream,
    *     [2]=charset (will be valid)
    * @throws Exception if trouble
@@ -2106,7 +1512,6 @@ public class SSR {
         } else {
           // is cType supported by Java?
           try {
-            Charset cset = Charset.forName(cType);
             charset = cType; // no exception means it's valid
           } catch (Exception e) {
             // charset remains default
@@ -2167,14 +1572,13 @@ public class SSR {
    *     assumption that basically all the lines of the file are different).
    * @throws Exception if error occurs
    */
-  public static ArrayList<String> getUrlResponseArrayList(String urlString) throws Exception {
+  public static List<String> getUrlResponseArrayList(String urlString) throws Exception {
     try {
       if (!String2.isUrl(urlString)) return File2.readLinesFromFile(urlString, File2.UTF_8, 1);
 
       long time = System.currentTimeMillis();
-      BufferedReader in = getBufferedUrlReader(urlString);
-      try {
-        ArrayList<String> sa = new ArrayList();
+      try (BufferedReader in = getBufferedUrlReader(urlString)) {
+        ArrayList<String> sa = new ArrayList<>();
         String s;
         while ((s = in.readLine()) != null) {
           sa.add(s);
@@ -2187,13 +1591,11 @@ public class SSR {
                   + (System.currentTimeMillis() - time)
                   + "ms");
         return sa;
-      } finally {
-        in.close();
       }
     } catch (Exception e) {
       String msg = e.toString();
       if (String2.isSomething(msg) && msg.indexOf(urlString) >= 0) throw e;
-      throw new IOException(String2.ERROR + " from url=" + urlString + " : " + e.toString(), e);
+      throw new IOException(String2.ERROR + " from url=" + urlString + " : " + e, e);
     }
   }
 
@@ -2229,15 +1631,12 @@ public class SSR {
       try {
         long time = System.currentTimeMillis();
         StringBuilder sb = new StringBuilder(4096);
-        BufferedReader in = getBufferedUrlReader(urlString);
-        try {
+        try (BufferedReader in = getBufferedUrlReader(urlString)) {
           String s;
           while ((s = in.readLine()) != null) {
             sb.append(s);
             sb.append('\n');
           }
-        } finally {
-          in.close();
         }
         if (reallyVerbose)
           String2.log(
@@ -2250,7 +1649,7 @@ public class SSR {
       } catch (Exception e) {
         String msg = e.toString();
         if (String2.isSomething(msg) && msg.indexOf(urlString) >= 0) throw e;
-        throw new IOException(String2.ERROR + " from url=" + urlString + " : " + e.toString(), e);
+        throw new IOException(String2.ERROR + " from url=" + urlString + " : " + e, e);
       }
     }
 
@@ -2297,7 +1696,7 @@ public class SSR {
       long time = System.currentTimeMillis();
       char buffer[] = new char[8192];
       StringBuilder sb = new StringBuilder(8192);
-      try {
+      try (in) {
         int got;
         while ((got = in.read(buffer)) >= 0) { // -1 if end-of-stream
           sb.append(buffer, 0, got);
@@ -2307,8 +1706,6 @@ public class SSR {
             break;
           }
         }
-      } finally {
-        in.close();
       }
       if (reallyVerbose)
         String2.log(
@@ -2321,7 +1718,7 @@ public class SSR {
     } catch (Exception e) {
       String msg = e.toString();
       if (String2.isSomething(msg) && msg.indexOf(urlString) >= 0) throw e;
-      throw new IOException(String2.ERROR + " from url=" + urlString + " : " + e.toString(), e);
+      throw new IOException(String2.ERROR + " from url=" + urlString + " : " + e, e);
     }
   }
 
@@ -2340,8 +1737,7 @@ public class SSR {
       // String2.log(">> SSR.getUrlResponseBytes(" + urlString + ")");
       long time = System.currentTimeMillis();
       byte buffer[] = new byte[8096];
-      BufferedInputStream is = getUrlBufferedInputStream(urlString);
-      try {
+      try (BufferedInputStream is = getUrlBufferedInputStream(urlString)) {
         ByteArray ba = new ByteArray();
         int gotN;
         while ((gotN = is.read(buffer)) > 0) { // -1 = end of stream, but should block so gotN > 0
@@ -2358,87 +1754,12 @@ public class SSR {
                   + (System.currentTimeMillis() - time)
                   + "ms");
         return ba.toArray();
-      } finally {
-        is.close();
       }
     } catch (Exception e) {
       String msg = e.toString();
       if (String2.isSomething(msg) && msg.indexOf(urlString) >= 0) throw e;
-      throw new Exception(String2.ERROR + " from url=" + urlString + " : " + e.toString(), e);
+      throw new Exception(String2.ERROR + " from url=" + urlString + " : " + e, e);
     }
-  }
-
-  /**
-   * This gets the bytes from a file.
-   *
-   * @param fileName
-   * @return a byte[] with the response.
-   * @throws Exception if error occurs
-   */
-  public static String getFileString(String fileName) throws Exception {
-    return new String(getFileBytes(fileName));
-  }
-
-  /**
-   * This gets the bytes from a file.
-   *
-   * @param fileName If compressed file, this reads the decompressed, first file in the archive.
-   * @return a byte[] with the response.
-   * @throws Exception if error occurs
-   */
-  public static byte[] getFileBytes(String fileName) throws Exception {
-    InputStream is = null;
-    try {
-      long time = System.currentTimeMillis();
-      byte buffer[] = new byte[1024];
-      is = File2.getDecompressedBufferedInputStream(fileName);
-      ByteArrayOutputStream baos = new ByteArrayOutputStream();
-      for (int s; (s = is.read(buffer)) != -1; ) baos.write(buffer, 0, s);
-      is.close();
-      is = null;
-      if (reallyVerbose)
-        String2.log(
-            "  SSR.getFileBytes "
-                + fileName
-                + " finished. TIME="
-                + (System.currentTimeMillis() - time)
-                + "ms");
-      return baos.toByteArray();
-    } catch (Exception e) {
-      // String2.log(e.toString());
-      if (is != null)
-        try {
-          is.close();
-        } catch (Throwable t) {
-        }
-      ;
-      throw new Exception("ERROR while reading file=" + fileName + " : " + e.toString(), e);
-    }
-  }
-
-  public static void genericTunnelTest(int nTimes, String baseUrl, String varName)
-      throws Exception {
-    // currently, GAssta hday on otter has time dimension size is 1392
-    // currently, GAssta hday on oceanwatch has time dimension size is 2877
-    int nTimePoints = 1000;
-    System.out.println("\nSSR.genericTunnelTest(" + nTimes + ", " + baseUrl + ")");
-    long elapsedTime = System.currentTimeMillis();
-    java.util.Random random = new java.util.Random();
-
-    // run the test
-    for (int time = 0; time < nTimes; time++) {
-      // String2.log("iteration #" + time);
-      int tIndex = random.nextInt(nTimePoints);
-      int xIndex = random.nextInt(52);
-      int yIndex = random.nextInt(52);
-      String ts =
-          getUrlResponseStringUnchanged(
-              baseUrl + "?" + varName + "[" + tIndex + ":1:" + tIndex + "]" + "[0:1:0]" + "["
-                  + yIndex + ":1:" + yIndex + "]" + "[" + xIndex + ":1:" + xIndex + "]");
-      // if (time == 0) System.out.println(ts);
-    }
-    System.out.println(
-        "SSR.threddsTunnelTest done.  TIME=" + (System.currentTimeMillis() - elapsedTime) + "ms\n");
   }
 
   /**
@@ -2452,7 +1773,7 @@ public class SSR {
    */
   public static String getTempDirectory() {
     if (tempDirectory == null) {
-      String tdir = EDStatic.getWebInfParentDirectory() + "WEB-INF/temp/";
+      String tdir = File2.getWebInfParentDirectory() + "WEB-INF/temp/";
       // make it, because Git doesn't track empty dirs
       File2.makeDirectory(tdir);
       // then set it if successful
@@ -2460,224 +1781,6 @@ public class SSR {
     }
 
     return tempDirectory;
-  }
-
-  /**
-   * This is a one time method to change the names of chl2 files in chla .zip's to chla. This
-   * unzips, renames, re-zips the files.
-   *
-   * @param zipDir the dir with the chla .zip files
-   * @param emptyDir needs to be an empty temporary directory
-   */
-  public static void changeChl2ToChla(String zipDir, String emptyDir) {
-    String2.log("SSR.changeChl2ToChla zipDir=" + zipDir + " emptyDir=" + emptyDir);
-
-    // get the names of all the chla files in zipDir
-    String names[] = RegexFilenameFilter.fullNameList(zipDir, ".+chla.+\\.zip");
-
-    // for each file
-    int countRenamed = 0;
-    for (int i = 0; i < names.length; i++) {
-      try {
-        // unzip to temp dir
-        unzip(names[i], emptyDir, true, 10, null);
-
-        // if internal file was already chla, delete internal file and continue
-        String tNames[] = RegexFilenameFilter.list(emptyDir, ".+");
-        Test.ensureEqual(tNames.length, 1, "nFiles in .zip not 1!");
-        if (tNames[0].indexOf("chla") >= 0) {
-          File2.delete(emptyDir + tNames[0]);
-          continue;
-        }
-        String2.log("changing " + tNames[0]);
-
-        // rename internal file
-        Test.ensureTrue(tNames[0].indexOf("chl2") >= 0, "tNames[0] not chl2 file!");
-        String newName = String2.replaceAll(tNames[0], "chl2", "chla");
-        File2.rename(emptyDir, tNames[0], newName);
-
-        // delete old zip file
-        File2.delete(names[i]);
-
-        // make new zip file
-        zip(
-            names[i],
-            new String[] {emptyDir + newName},
-            10,
-            false,
-            ""); // false = don't include dir names
-
-        // delete internal file
-        File2.delete(newName);
-
-        countRenamed++;
-
-      } catch (Exception e) {
-        String2.log(MustBe.throwableToString(e));
-      }
-
-      // empty the directory
-      String tNames2[] = RegexFilenameFilter.list(emptyDir, ".+");
-      for (int j = 0; j < tNames2.length; j++) File2.delete(emptyDir + tNames2[j]);
-    }
-    String2.log(
-        "successfully changed " + countRenamed + " out of " + names.length + " chla .zip files.");
-  }
-
-  /**
-   * This is a one time method to change the names of GH files in GA .zip's to GA. This unzips,
-   * renames, re-zips the files into their correct original location.
-   *
-   * @param zipDir the dir with the chla .zip files
-   * @param emptyDir needs to be an empty temporary directory
-   */
-  public static void changeGHToGA(String zipDir, String emptyDir) {
-    String2.log("SSR.changeGHToGA zipDir=" + zipDir + " emptyDir=" + emptyDir);
-
-    // get the names of all the GA files in zipDir
-    String names[] = RegexFilenameFilter.fullNameList(zipDir, "GA.+\\.zip");
-
-    // for each file
-    int countRenamed = 0;
-    for (int i = 0; i < names.length; i++) {
-      try {
-        // unzip to temp dir
-        unzip(names[i], emptyDir, true, 10, null);
-
-        // if internal file was already GA, delete internal file and continue
-        String tNames[] = RegexFilenameFilter.list(emptyDir, ".+");
-        Test.ensureEqual(tNames.length, 1, "nFiles in .zip not 1!");
-        if (tNames[0].startsWith("GA")) {
-          File2.delete(emptyDir + tNames[0]);
-          continue;
-        }
-        String2.log("changing " + tNames[0]);
-
-        // rename internal file
-        Test.ensureTrue(tNames[0].startsWith("GH"), "tNames[0] not GH file!");
-        String newName = "GA" + tNames[0].substring(2);
-        File2.rename(emptyDir, tNames[0], newName);
-
-        // delete old zip file
-        File2.delete(names[i]);
-
-        // make new zip file
-        zip(
-            names[i],
-            new String[] {emptyDir + newName},
-            10,
-            false,
-            ""); // false = don't include dir names
-
-        // delete internal file
-        File2.delete(newName);
-
-        countRenamed++;
-
-      } catch (Exception e) {
-        String2.log(MustBe.throwableToString(e));
-      }
-
-      // empty the directory
-      String tNames2[] = RegexFilenameFilter.list(emptyDir, ".+");
-      for (int j = 0; j < tNames2.length; j++) File2.delete(emptyDir + tNames2[j]);
-    }
-    String2.log(
-        "successfully changed " + countRenamed + " out of " + names.length + " GA .zip files.");
-  }
-
-  /**
-   * This is a one time method to change the names of GA0 files in GA .zip's to GA20. This unzips,
-   * renames, re-zips the files into their correct original location.
-   *
-   * @param zipDir the dir with the chla .zip files
-   * @param emptyDir needs to be an empty temporary directory
-   */
-  public static void changeGA0ToGA20(String zipDir, String emptyDir) {
-    String2.log("SSR.changeGA0ToGA20 zipDir=" + zipDir + " emptyDir=" + emptyDir);
-
-    // get the names of all the GA files in zipDir
-    String names[] = RegexFilenameFilter.fullNameList(zipDir, "GA.+\\.zip");
-
-    // for each file
-    int countRenamed = 0;
-    for (int i = 0; i < names.length; i++) {
-      try {
-        // unzip to temp dir
-        unzip(names[i], emptyDir, true, 10, null);
-
-        // if internal file was already GA, delete internal file and continue
-        String tNames[] = RegexFilenameFilter.list(emptyDir, ".+");
-        Test.ensureEqual(tNames.length, 1, "nFiles in .zip not 1!");
-        if (tNames[0].startsWith("GA20")) {
-          File2.delete(emptyDir + tNames[0]);
-          continue;
-        }
-        String2.log("changing " + tNames[0]);
-
-        // rename internal file
-        Test.ensureTrue(tNames[0].startsWith("GA0"), "tNames[0] not GA0 file!");
-        String newName = "GA2" + tNames[0].substring(2);
-        File2.rename(emptyDir, tNames[0], newName);
-
-        // delete old zip file
-        File2.delete(names[i]);
-
-        // make new zip file
-        zip(
-            names[i],
-            new String[] {emptyDir + newName},
-            10,
-            false,
-            ""); // false = don't include dir names
-
-        // delete internal file
-        File2.delete(newName);
-
-        countRenamed++;
-
-      } catch (Exception e) {
-        String2.log(MustBe.throwableToString(e));
-      }
-
-      // empty the directory
-      String tNames2[] = RegexFilenameFilter.list(emptyDir, ".+");
-      for (int j = 0; j < tNames2.length; j++) File2.delete(emptyDir + tNames2[j]);
-    }
-    String2.log(
-        "successfully changed " + countRenamed + " out of " + names.length + " GA0 .zip files.");
-  }
-
-  /**
-   * This is a one time method to enclose each of the files in a directory in its own zip file.
-   *
-   * @param dir
-   */
-  public static void zipEach(String dir) {
-    String2.log("SSR.zipEach dir=" + dir);
-
-    // get the names of all the files dir
-    String names[] = RegexFilenameFilter.fullNameList(dir, ".+");
-
-    // for each file
-    int countRenamed = 0;
-    for (int i = 0; i < names.length; i++) {
-      try {
-        // make new zip file
-        zip(
-            names[i] + ".zip",
-            new String[] {names[i]},
-            10,
-            false,
-            ""); // false = don't include dir names
-
-        countRenamed++;
-
-      } catch (Exception e) {
-        String2.log(MustBe.throwableToString(e));
-      }
-    }
-    String2.log("successfully zipped " + countRenamed + " out of " + names.length + " .zip files.");
   }
 
   /**
@@ -2718,12 +1821,10 @@ public class SSR {
     con.setDoInput(true);
 
     // send the content
-    Writer writer = File2.getBufferedWriterUtf8(new BufferedOutputStream(con.getOutputStream()));
-    try {
+    try (Writer writer =
+        File2.getBufferedWriterUtf8(new BufferedOutputStream(con.getOutputStream()))) {
       writer.write(content);
       writer.flush();
-    } finally {
-      writer.close();
     }
 
     BufferedInputStream is = getBufferedInputStream(urlString, con); // this is in SSR, not File2
@@ -2766,18 +1867,18 @@ public class SSR {
         || source.startsWith("https://")
         || source.startsWith("ftp://")) { // untested. presumably anonymous
       // URL
-      BufferedInputStream in = null;
-      try {
-        in =
-            (BufferedInputStream)
-                getUrlConnBufferedInputStream(
-                    source, // throws Exception   //handles AWS S3
-                    120000,
-                    true,
-                    false,
-                    firstByte,
-                    lastByte,
-                    handleS3ViaSDK)[1]; // timeOutMillis, requestCompression, touchMode, ...
+      try (BufferedInputStream in =
+          (BufferedInputStream)
+              getUrlConnBufferedInputStream(
+                  source, // throws Exception   //handles AWS S3
+                  120000,
+                  true,
+                  false,
+                  firstByte,
+                  lastByte,
+                  handleS3ViaSDK)[1]) {
+        // throws Exception   //handles AWS S3
+        // timeOutMillis, requestCompression, touchMode, ...
 
         // adjust firstByte,lastByte
         long newLastByte = lastByte - (firstByte > 0 && lastByte >= 0 ? firstByte : 0);
@@ -2786,11 +1887,6 @@ public class SSR {
         String2.log(
             String2.ERROR + " in SSR.copy(source=" + source + ")\n" + MustBe.throwableToString(e));
         return false;
-      } finally {
-        try {
-          if (in != null) in.close();
-        } catch (Exception e2) {
-        }
       }
 
     } else {

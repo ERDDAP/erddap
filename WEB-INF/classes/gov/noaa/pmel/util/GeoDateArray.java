@@ -13,7 +13,6 @@
 package gov.noaa.pmel.util;
 
 import java.io.Serializable;
-import java.util.Date;
 
 /**
  * <code>GeoDateArray</code> creates an efficient storage of <code>GeoDate</code> objects. This is
@@ -25,7 +24,7 @@ import java.util.Date;
  * @since sgt 3.0
  */
 public class GeoDateArray implements Serializable {
-  private long[] date_;
+  private final long[] date_;
 
   /**
    * Construct a new <code>GeoDateArray</code> from an array of <code>GeoDate</code>s.
@@ -36,22 +35,6 @@ public class GeoDateArray implements Serializable {
     date_ = new long[dates.length];
     for (int i = 0; i < dates.length; i++) {
       if (!(dates[i] == null || dates[i].isMissing())) {
-        date_[i] = dates[i].getTime();
-      } else {
-        date_[i] = Long.MAX_VALUE;
-      }
-    }
-  }
-
-  /**
-   * Construct a new <code>GeoDateArray</code> from an array of <code>Date</code>s.
-   *
-   * @param dates an array of <code>Date</code>s.
-   */
-  public GeoDateArray(Date[] dates) {
-    date_ = new long[dates.length];
-    for (int i = 0; i < dates.length; i++) {
-      if (!(dates[i] == null)) {
         date_[i] = dates[i].getTime();
       } else {
         date_[i] = Long.MAX_VALUE;

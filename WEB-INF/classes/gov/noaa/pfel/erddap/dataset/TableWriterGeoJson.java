@@ -16,6 +16,7 @@ import gov.noaa.pfel.coastwatch.pointdata.Table;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.EDV;
 import java.io.BufferedWriter;
+import java.io.IOException;
 
 /**
  * TableWriterGeoJson provides a way to write a longitude,latitude,otherColumns table to a GeoJSON
@@ -31,7 +32,7 @@ import java.io.BufferedWriter;
 public class TableWriterGeoJson extends TableWriter {
 
   // set by constructor
-  protected String jsonp;
+  protected final String jsonp;
 
   // set by firstTime
   protected int lonColumn = -1, latColumn = -1, altColumn = -1;
@@ -75,8 +76,9 @@ public class TableWriterGeoJson extends TableWriter {
       throw new SimpleException(
           EDStatic.bilingual(
               language,
-              EDStatic.queryErrorAr[0] + EDStatic.errorJsonpFunctionNameAr[0],
-              EDStatic.queryErrorAr[language] + EDStatic.errorJsonpFunctionNameAr[language]));
+              EDStatic.messages.queryErrorAr[0] + EDStatic.messages.errorJsonpFunctionNameAr[0],
+              EDStatic.messages.queryErrorAr[language]
+                  + EDStatic.messages.errorJsonpFunctionNameAr[language]));
   }
 
   /**
@@ -110,9 +112,9 @@ public class TableWriterGeoJson extends TableWriter {
         throw new SimpleException(
             EDStatic.bilingual(
                 language,
-                EDStatic.queryErrorAr[0]
+                EDStatic.messages.queryErrorAr[0]
                     + "Requests for GeoJSON data must include the longitude and latitude variables.",
-                EDStatic.queryErrorAr[language]
+                EDStatic.messages.queryErrorAr[language]
                     + "Requests for GeoJSON data must include the longitude and latitude variables."));
       // it is unclear to me if specification supports altitude in coordinates info...
       isTimeStamp = new boolean[nColumns];
@@ -138,10 +140,19 @@ public class TableWriterGeoJson extends TableWriter {
       isString = new boolean[nColumns];
       if (nColumns == 2 || (nColumns == 3 && altColumn >= 0)) {
         // write as MultiPoint
-        writer.write("{\n" + "  \"type\": \"MultiPoint\",\n" + "  \"coordinates\": [\n");
+        writer.write(
+            """
+                {
+                  "type": "MultiPoint",
+                  "coordinates": [
+                """);
       } else {
         // write as FeatureCollection
-        writer.write("{\n" + "  \"type\": \"FeatureCollection\",\n" + "  \"propertyNames\": [");
+        writer.write(
+            """
+                {
+                  "type": "FeatureCollection",
+                  "propertyNames": [""");
         boolean somethingWritten = false;
         for (int col = 0; col < nColumns; col++) {
           PAType cPAType = table.getColumn(col).elementType();
@@ -167,7 +178,10 @@ public class TableWriterGeoJson extends TableWriter {
             writer.write(String2.toJson(units));
           }
         }
-        writer.write("],\n" + "  \"features\": [\n");
+        writer.write("""
+                ],
+                  "features": [
+                """);
       }
     }
 
@@ -352,5 +366,13 @@ public class TableWriterGeoJson extends TableWriter {
     TableWriterGeoJson twgj =
         new TableWriterGeoJson(language, tEdd, tNewHistory, outputStreamSource, tJsonp);
     twgj.writeAllAndFinish(table);
+    twgj.close();
+  }
+
+  @Override
+  public void close() throws IOException {
+    if (writer != null) {
+      writer.close();
+    }
   }
 }

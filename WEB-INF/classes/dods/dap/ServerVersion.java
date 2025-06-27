@@ -29,7 +29,7 @@ public class ServerVersion {
   private int minor;
 
   /** Full version string. */
-  private String versionString;
+  private final String versionString;
 
   /**
    * Construct a new ServerVersion, setting major and minor version based on the full version

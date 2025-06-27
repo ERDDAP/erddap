@@ -9,6 +9,7 @@ import com.cohort.util.Math2;
 import com.cohort.util.MustBe;
 import com.cohort.util.String2;
 import gov.noaa.pfel.coastwatch.util.SSR;
+import io.prometheus.metrics.model.snapshots.Unit;
 
 /**
  * This does a series of touches.
@@ -25,8 +26,8 @@ public class TouchThread extends Thread {
 
   public static boolean reallyVerbose = false;
 
-  public static int TIMEOUT_MILLIS = 60 * 1000;
-  public static int sleepMillis = 500;
+  public static final int TIMEOUT_MILLIS = 60 * 1000;
+  public static final int sleepMillis = 500;
 
   // set while running
   private long lastStartTime = -1; // for 1 touch
@@ -34,7 +35,7 @@ public class TouchThread extends Thread {
   /** The constructor. TouchThread uses touch variables in EDStatic. */
   public TouchThread(int tNextTouch) {
     EDStatic.nextTouch.set(tNextTouch);
-    EDStatic.lastFinishedTouch = tNextTouch - 1;
+    EDStatic.lastFinishedTouch.set(tNextTouch - 1);
     setName("TouchThread");
   }
 
@@ -58,7 +59,7 @@ public class TouchThread extends Thread {
         return; // only return (stop thread) if interrupted
       }
 
-      while (EDStatic.nextTouch.get() < EDStatic.touchList.size()) {
+      while (EDStatic.touchList.hasNext()) {
         String url = null;
         try {
           // check isInterrupted
@@ -72,7 +73,7 @@ public class TouchThread extends Thread {
           // start to do the touch
           // do these things quickly to keep internal consistency
           EDStatic.nextTouch.incrementAndGet();
-          url = EDStatic.touchList.get(EDStatic.nextTouch.get() - 1);
+          url = EDStatic.touchList.getNext();
           lastStartTime = System.currentTimeMillis();
           String2.log(
               "%%% TouchThread started touch #"
@@ -100,6 +101,10 @@ public class TouchThread extends Thread {
                   + (tElapsedTime > 10000 ? " (>10s!)" : ""));
           String2.distributeTime(tElapsedTime, EDStatic.touchThreadSucceededDistribution24);
           String2.distributeTime(tElapsedTime, EDStatic.touchThreadSucceededDistributionTotal);
+          EDStatic.metrics
+              .touchThreadDuration
+              .labelValues(Metrics.ThreadStatus.success.name())
+              .observe(Unit.millisToSeconds(tElapsedTime));
 
         } catch (InterruptedException e) {
           String2.log("%%% TouchThread was interrupted.");
@@ -120,14 +125,16 @@ public class TouchThread extends Thread {
                   + MustBe.throwableToString(e));
           String2.distributeTime(tElapsedTime, EDStatic.touchThreadFailedDistribution24);
           String2.distributeTime(tElapsedTime, EDStatic.touchThreadFailedDistributionTotal);
+          EDStatic.metrics
+              .touchThreadDuration
+              .labelValues(Metrics.ThreadStatus.fail.name())
+              .observe(Unit.millisToSeconds(tElapsedTime));
 
         } finally {
           // whether succeeded or failed
           lastStartTime = -1;
           synchronized (EDStatic.touchList) {
-            EDStatic.lastFinishedTouch = (EDStatic.nextTouch.get() - 1);
-            EDStatic.touchList.set(
-                (EDStatic.nextTouch.get() - 1), null); // throw away the touch info (gc)
+            EDStatic.lastFinishedTouch.set(EDStatic.nextTouch.get() - 1);
           }
         }
       }

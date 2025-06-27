@@ -8,8 +8,8 @@ import com.cohort.array.IntArray;
 import com.cohort.util.File2;
 import com.cohort.util.LRUCache;
 import com.cohort.util.String2;
-import gov.noaa.pfel.erddap.util.EDStatic;
-
+import gov.noaa.pfel.erddap.util.BoundaryCounter;
+import gov.noaa.pfel.erddap.util.Metrics;
 import java.awt.geom.GeneralPath;
 import java.io.*;
 import java.util.Collections;
@@ -51,10 +51,7 @@ public class GSHHS {
    * from the GSHHS project (https://www.ngdc.noaa.gov/mgg/shorelines/gshhs.html). landMaskDir
    * should have slash at end.
    */
-  public static String gshhsDirectory =
-      EDStatic.getWebInfParentDirectory()
-          + // with / separator and / at the end
-          "WEB-INF/ref/";
+  public static final String gshhsDirectory = File2.getRefDirectory();
 
   /**
    * Since GeneralPaths are time-consuming to contruct, getGeneralPath caches the last CACHE_SIZE
@@ -70,16 +67,16 @@ public class GSHHS {
    */
   public static final int CACHE_SIZE = 100;
 
-  private static Map cache = Collections.synchronizedMap(new LRUCache(CACHE_SIZE));
-  private static int nCoarse = 0;
-  private static int nSuccesses = 0;
-  private static int nTossed = 0;
+  private static final Map<String, GeneralPath> cache =
+      Collections.synchronizedMap(new LRUCache<>(CACHE_SIZE));
+  public static final BoundaryCounter requestStatus =
+      new BoundaryCounter("gshhs_request_total", "Requests to the GSHHS");
 
   /**
    * This limits the number of lakes that appear at lower resolutions. Smaller numbers lead to more
    * lakes. 0=all
    */
-  public static int lakeMinN = 12;
+  public static final int lakeMinN = 12;
 
   /**
    * This gets the GeneralPath with the relevant shoreline information. This is thread-safe because
@@ -137,7 +134,7 @@ public class GSHHS {
       // Don't cache it. Coarse resolutions are always fast because source file is small.
       // And the request is usually a large part of whole world. Most paths will be used.
       tCoarse = "*";
-      nCoarse++;
+      requestStatus.increment(Metrics.BoundaryRequest.coarse);
 
       // make GeneralPath
       path =
@@ -158,7 +155,7 @@ public class GSHHS {
       try {
 
         // *** is GeneralPath in cache?
-        path = (GeneralPath) cache.get(cachedName);
+        path = cache.get(cachedName);
         if (path == null) {
 
           // not in cache, so make GeneralPath
@@ -175,10 +172,10 @@ public class GSHHS {
           // cache full?
           if (cache.size() == CACHE_SIZE) {
             tTossed = "*";
-            nTossed++;
+            requestStatus.increment(Metrics.BoundaryRequest.tossed);
           } else {
             tSuccess = "*"; // if cache wasn't full, treat as success
-            nSuccesses++;
+            requestStatus.increment(Metrics.BoundaryRequest.success);
           }
 
           // put new path in the cache
@@ -187,7 +184,7 @@ public class GSHHS {
         } else {
           // yes, it is in cache.
           tSuccess = "*(already in cache)";
-          nSuccesses++;
+          requestStatus.increment(Metrics.BoundaryRequest.success);
         }
       } finally {
         lock.unlock();
@@ -203,13 +200,13 @@ public class GSHHS {
               + (desiredLevel == 1 ? "land" : desiredLevel == 2 ? "lake" : "" + desiredLevel)
               + " done,"
               + " nCoarse="
-              + nCoarse
+              + requestStatus.get(Metrics.BoundaryRequest.coarse)
               + tCoarse
               + " nSuccesses="
-              + nSuccesses
+              + requestStatus.get(Metrics.BoundaryRequest.success)
               + tSuccess
               + " nTossed="
-              + nTossed
+              + requestStatus.get(Metrics.BoundaryRequest.tossed)
               + tTossed
               + " totalTime="
               + (System.currentTimeMillis() - time));
@@ -223,11 +220,11 @@ public class GSHHS {
         + " of "
         + CACHE_SIZE
         + ", nCoarse="
-        + nCoarse
+        + requestStatus.get(Metrics.BoundaryRequest.coarse)
         + ", nSuccesses="
-        + nSuccesses
+        + requestStatus.get(Metrics.BoundaryRequest.success)
         + ", nTossed="
-        + nTossed;
+        + requestStatus.get(Metrics.BoundaryRequest.tossed);
   }
 
   /** This is like getGeneralPath, but with no caching. */
@@ -261,12 +258,10 @@ public class GSHHS {
     int n = lon.size();
     int lonAr[] = lon.array;
     int latAr[] = lat.array;
-    int nObjects = 0;
     for (int i = 0; i < n; i++) {
       if (lonAr[i] == Integer.MAX_VALUE) {
         i++; // move to next point
         path.moveTo(lonAr[i], latAr[i]);
-        nObjects++;
       } else {
         path.lineTo(lonAr[i], latAr[i]);
       }
@@ -320,11 +315,9 @@ public class GSHHS {
     // The adjustment is crude: either keep original values
     // (generally 0..360, but not always) or subtract 360
     // (so generally -360..360).
-    boolean lonPM180 = westDeg < 0;
     int intShift = 360 * 1000000;
     int shift[] = {-2 * intShift, -intShift, 0, intShift};
     boolean doShift[] = new boolean[4];
-    byte buffer[] = new byte[4];
 
     // read the records
     // the xArrays and yArrays grow as needed
@@ -332,16 +325,12 @@ public class GSHHS {
     int yArray[] = new int[1];
     int xArray2[] = new int[1];
     int yArray2[] = new int[1];
-    boolean aMsgDisplayed = false;
-    boolean gMsgDisplayed = false;
-    int count = 0;
 
     // open the file
     // String2.log(File2.hexDump(dir + "gshhs_" + resolution + ".b", 10000));
-    DataInputStream dis =
+    try (DataInputStream dis =
         new DataInputStream(
-            File2.getDecompressedBufferedInputStream(gshhsDir + "gshhs_" + resolution + ".b"));
-    try {
+            File2.getDecompressedBufferedInputStream(gshhsDir + "gshhs_" + resolution + ".b"))) {
       while (dis.available() > 0) {
         // read the header
         /* old GSHHS v 1.x
@@ -361,7 +350,8 @@ public class GSHHS {
         // GPL License http://www.soest.hawaii.edu/pwessel/gshhs/README.TXT
         // int id        = DataStream.readInt(true, dis, buffer); // Unique polygon id number,
         // starting at 0
-        int id = dis.readInt(); // Unique polygon id number, starting at 0
+        @SuppressWarnings("unused")
+        int unusedId = dis.readInt(); // Unique polygon id number, starting at 0
         int n = dis.readInt(); // Number of points in this polygon
         int flag =
             dis.readInt(); // = level + version << 8 + greenwich << 16 + source << 24 + river << 25
@@ -378,11 +368,16 @@ public class GSHHS {
         int east = dis.readInt();
         int south = dis.readInt();
         int north = dis.readInt();
-        int area = dis.readInt(); // Area of polygon in 1/10 km^2
-        int area_full = dis.readInt(); // Area of original full-resolution polygon in 1/10 km^2
-        int container =
+        @SuppressWarnings("unused")
+        int unusedArea = dis.readInt(); // Area of polygon in 1/10 km^2
+        @SuppressWarnings("unused")
+        int unusedArea_full =
+            dis.readInt(); // Area of original full-resolution polygon in 1/10 km^2
+        @SuppressWarnings("unused")
+        int unusedContainer =
             dis.readInt(); // Id of container polygon that encloses this polygon (-1 if none)
-        int ancestor =
+        @SuppressWarnings("unused")
+        int unusedAncestor =
             dis.readInt(); // Id of ancestor polygon in the full resolution set that was the source
         // of this polygon (-1 if none)
 
@@ -525,8 +520,6 @@ public class GSHHS {
           while (remain > 0) remain -= dis.skip(remain);
         }
       }
-    } finally {
-      dis.close();
     }
     if (reallyVerbose)
       String2.log(

@@ -13,7 +13,10 @@ import com.cohort.util.String2;
 import com.cohort.util.XML;
 import gov.noaa.pfel.coastwatch.pointdata.Table;
 import gov.noaa.pfel.coastwatch.util.FileVisitorDNLS;
+import gov.noaa.pfel.erddap.dataset.metadata.LocalizedAttributes;
+import gov.noaa.pfel.erddap.util.EDMessages;
 import gov.noaa.pfel.erddap.variable.*;
+import java.util.List;
 
 /**
  * This class represents a table of data from a collection of AWS (Automatic Weather Station) XML
@@ -35,7 +38,7 @@ public class EDDTableFromAwsXmlFiles extends EDDTableFromFiles {
     return DEFAULT_STANDARDIZEWHAT;
   }
 
-  public static int DEFAULT_STANDARDIZEWHAT = 0;
+  public static final int DEFAULT_STANDARDIZEWHAT = 0;
 
   /**
    * The constructor just calls the super constructor.
@@ -56,8 +59,8 @@ public class EDDTableFromAwsXmlFiles extends EDDTableFromFiles {
       String tSosOfferingPrefix,
       String tDefaultDataQuery,
       String tDefaultGraphQuery,
-      Attributes tAddGlobalAttributes,
-      Object[][] tDataVariables,
+      LocalizedAttributes tAddGlobalAttributes,
+      List<DataVariableInfo> tDataVariables,
       int tReloadEveryNMinutes,
       int tUpdateEveryNMillis,
       String tFileDir,
@@ -269,6 +272,7 @@ public class EDDTableFromAwsXmlFiles extends EDDTableFromFiles {
             + tTitle
             + "\nexternalAddGlobalAttributes="
             + externalAddGlobalAttributes);
+    int language = EDMessages.DEFAULT_LANGUAGE;
     if (!String2.isSomething(tFileDir))
       throw new IllegalArgumentException("fileDir wasn't specified.");
     tFileDir = File2.addSlash(tFileDir); // ensure it has trailing slash
@@ -349,7 +353,7 @@ public class EDDTableFromAwsXmlFiles extends EDDTableFromFiles {
 
       // if a variable has timeUnits, files are likely sorted by time
       // and no harm if files aren't sorted that way
-      boolean hasTimeUnits = EDVTimeStamp.hasTimeUnits(sourceAtts, null);
+      boolean hasTimeUnits = EDVTimeStamp.hasTimeUnits(language, sourceAtts, null);
       if (tSortedColumnSourceName.length() == 0 && hasTimeUnits)
         tSortedColumnSourceName = dataSourceTable.getColumnName(col);
 
@@ -460,7 +464,10 @@ public class EDDTableFromAwsXmlFiles extends EDDTableFromFiles {
     // last 2 params: includeDataType, questionDestinationName
     sb.append(
         writeVariablesForDatasetsXml(dataSourceTable, dataAddTable, "dataVariable", true, false));
-    sb.append("</dataset>\n" + "\n");
+    sb.append("""
+            </dataset>
+
+            """);
 
     String2.log("\n\n*** generateDatasetsXml finished successfully.\n\n");
     return sb.toString();

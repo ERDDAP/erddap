@@ -6,12 +6,13 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
 
 public class ThreadedWorkManager<T> {
   ExecutorService executorService = null;
-  List<FutureTask<T>> taskList = new ArrayList<>();
-  WorkConsumer<T> processor;
+  final List<FutureTask<T>> taskList = new ArrayList<>();
+  final WorkConsumer<T> processor;
 
   int completed = 0;
 
@@ -25,10 +26,11 @@ public class ThreadedWorkManager<T> {
   public void addTask(Callable<T> callable) throws Exception, Throwable {
     // If we're threaded add the work to the thread.
     if (executorService != null) {
-      FutureTask<T> task = new FutureTask<T>(callable);
+      FutureTask<T> task = new FutureTask<>(callable);
       taskList.add(task);
       if (executorService != null) {
-        executorService.submit(task);
+        @SuppressWarnings("unused")
+        Future<?> unused = executorService.submit(task);
       }
     } else {
       // No threading here, just do the work and process it.

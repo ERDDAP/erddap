@@ -6,15 +6,16 @@ import com.cohort.util.Calendar2;
 import com.cohort.util.File2;
 import com.cohort.util.String2;
 import com.cohort.util.Test;
+import com.cohort.util.TestUtil;
 import gov.noaa.pfel.coastwatch.pointdata.Table;
 import gov.noaa.pfel.erddap.GenerateDatasetsXml;
 import gov.noaa.pfel.erddap.util.EDStatic;
-import gov.noaa.pfel.erddap.variable.EDV;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import tags.TagIncompleteTest;
 import tags.TagMissingDataset;
+import tags.TagSlowTests;
 import tags.TagThredds;
 import testDataset.EDDTestDataset;
 import testDataset.Initialization;
@@ -32,16 +33,14 @@ class EDDTableFromThreddsFilesTests {
    */
   @ParameterizedTest
   @ValueSource(booleans = {true, false})
-  @TagIncompleteTest
+  @TagSlowTests // Very slow
+  @TagIncompleteTest //  Also not consistent output
   void testShipWTEP(boolean deleteCachedInfo) throws Throwable {
     // String2.log("\n****************** EDDTableFromThreddsFiles.testShipWTEP()
     // *****************\n");
     // testVerboseOn();
     int language = 0;
-    String name, tName, results, tResults, expected, userDapQuery, tQuery;
-    String error = "";
-    int po;
-    EDV edv;
+    String tName, results, expected, userDapQuery;
 
     String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 11); // [10]='T'
 
@@ -60,10 +59,10 @@ class EDDTableFromThreddsFilesTests {
               null,
               null,
               "",
-              EDStatic.fullTestCacheDirectory,
+              EDStatic.config.fullTestCacheDirectory,
               eddTable.className() + "_ShipEntire",
               ".das");
-      results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+      results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
       // String2.log(results);
       boolean with = false; // 2014-01-09 several lines disappeared, 2016-09-16 returned, ...
       // disappeared,
@@ -222,6 +221,10 @@ class EDDTableFromThreddsFilesTests {
               + "  conductivity \\{\n"
               + "    Float32 _FillValue -8888.0;\n"
               + "    Float32 actual_range [0-9.]+, [0-9.e+]+;\n"
+              + "    String average_center \"unknown\";\n"
+              + "    Int16 average_length 60;\n"
+              + "    String average_method \"average\";\n"
+              + "    Float32 centerline_offset -9999.0;\n"
               + // 2013-03-26
               // new
               // value
@@ -230,10 +233,15 @@ class EDDTableFromThreddsFilesTests {
               // was
               "    Float64 colorBarMaximum 4.0;\n"
               + "    Float64 colorBarMinimum 0.0;\n"
+              + "    Float32 data_precision -9999.0;\n"
+              + "    Float32 distance_from_bow -9999.0;\n"
+              + "    Float32 height -9999.0;\n"
+              + "    String instrument \"unknown\";\n"
               + "    String ioos_category \"Salinity\";\n"
               + "    String long_name \"Conductivity\";\n"
               + "    Float32 missing_value -9999.0;\n"
               + "    String observation_type \"measured\";\n"
+              + "    String original_units \"siemens meter-1\";\n"
               + "    Int32 qcindex 16;\n"
               + (with
                   ?
@@ -250,7 +258,7 @@ class EDDTableFromThreddsFilesTests {
                       + "    Float32 sampling_rate [0-9.]+;\n"
                       + "    String serial_number \"157\";\n"
                       + "    Float32 special_value -8888.0;\n"
-                  : "")
+                  : "    Float32 sampling_rate -9999.0;\n" + "    Float32 special_value -8888.0;\n")
               + "    String standard_name \"sea_water_electrical_conductivity\";\n"
               + "    String units \"siemens meter-1\";\n"
               + "  \\}\n"
@@ -695,7 +703,7 @@ class EDDTableFromThreddsFilesTests {
       Test.ensureTrue(tPo >= 0, "tPo=-1 results=\n" + results);
       Test.ensureLinesMatch(results.substring(tPo), expected, "results=\n" + results);
     } catch (Throwable t) {
-      Test.knownProblem("This often has small metadata changes.", t);
+      TestUtil.knownProblem("This often has small metadata changes.", t);
     }
 
     // *** test getting dds for entire dataset
@@ -705,10 +713,10 @@ class EDDTableFromThreddsFilesTests {
             null,
             null,
             "",
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             eddTable.className() + "_ShipEntire",
             ".dds");
-    results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+    results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
     // String2.log(results);
     expected =
         "Dataset {\n"
@@ -753,10 +761,10 @@ class EDDTableFromThreddsFilesTests {
             null,
             null,
             userDapQuery,
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             eddTable.className() + "_ShipCruiseList",
             ".csv");
-    results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+    results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
     // String2.log(results);
     expected = "cruise_id\n" + "\n" + "Cruise_id undefined for now\n";
     Test.ensureEqual(results, expected, "\nresults=\n" + results);
@@ -770,10 +778,10 @@ class EDDTableFromThreddsFilesTests {
             null,
             null,
             userDapQuery,
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             eddTable.className() + "_Ship1StationGTLT",
             ".csv");
-    results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+    results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
     // String2.log(results);
     expected =
         "time,latitude,longitude,airPressure,airTemperature,flag\n"
@@ -1214,10 +1222,7 @@ class EDDTableFromThreddsFilesTests {
     // *****************\n");
     // testVerboseOn();
     int language = 0;
-    String name, tName, results, tResults, expected, userDapQuery, tQuery;
-    String error = "";
-    int po;
-    EDV edv;
+    String tName, results, tResults, expected, userDapQuery;
 
     String today =
         Calendar2.getCurrentISODateTimeStringZulu().substring(0, 14); // 14 is enough to check
@@ -1238,10 +1243,10 @@ class EDDTableFromThreddsFilesTests {
             null,
             null,
             "",
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             eddTable.className() + "_Entire",
             ".das");
-    results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+    results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
     // String2.log(results);
     expected =
         "Attributes {\n"
@@ -1385,10 +1390,10 @@ class EDDTableFromThreddsFilesTests {
             null,
             null,
             "",
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             eddTable.className() + "_Entire",
             ".dds");
-    results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+    results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
     // String2.log(results);
     expected =
         "Dataset {\n"
@@ -1415,10 +1420,10 @@ class EDDTableFromThreddsFilesTests {
             null,
             null,
             userDapQuery,
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             eddTable.className() + "_stationList",
             ".csv");
-    results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+    results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
     // String2.log(results);
     expected =
         "station\n"
@@ -1467,10 +1472,10 @@ class EDDTableFromThreddsFilesTests {
             null,
             null,
             userDapQuery,
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             eddTable.className() + "_1StationGTLT",
             ".csv");
-    results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+    results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
     // String2.log(results);
     // one depth, by hand via DAP form: (note that depth is already negative!)
     // Lat, 37.13015 Time=1122592440 depth=-12 Lon=-122.361253

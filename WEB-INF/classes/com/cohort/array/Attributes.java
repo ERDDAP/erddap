@@ -25,12 +25,13 @@ public class Attributes {
    * Set this to true (by calling verbose=true in your program, not by changing the code here) if
    * you want lots of diagnostic messages sent to String2.log.
    */
-  public static boolean verbose = false;
+  public static final boolean verbose = false;
 
   public static boolean debugMode = false;
 
   /** The backing data structure. It is thread-safe. */
-  private ConcurrentHashMap<String, PrimitiveArray> hashmap = new ConcurrentHashMap(16, 0.75f, 4);
+  private final ConcurrentHashMap<String, PrimitiveArray> hashmap =
+      new ConcurrentHashMap<>(16, 0.75f, 4);
 
   public static String signedToUnsignedAttNames[] =
       new String[] {
@@ -692,8 +693,8 @@ public class Attributes {
   public String toString() {
     StringBuilder sb = new StringBuilder();
     String names[] = getNames();
-    for (int i = 0; i < names.length; i++) {
-      sb.append("    " + names[i] + "=" + get(names[i]).toNccsv127AttString() + "\n");
+    for (String name : names) {
+      sb.append("    " + name + "=" + get(name).toNccsv127AttString() + "\n");
     }
     return sb.toString();
   }
@@ -729,9 +730,9 @@ public class Attributes {
     // converts \ to \\, and " to \", and appends 'f' to float values.
     StringBuilder sb = new StringBuilder();
     String names[] = getNames();
-    for (int index = 0; index < names.length; index++) {
-      sb.append(prefix + names[index] + " = ");
-      PrimitiveArray pa = hashmap.get(names[index]);
+    for (String name : names) {
+      sb.append(prefix + name + " = ");
+      PrimitiveArray pa = hashmap.get(name);
       String connect = "";
       boolean isCharArray = pa instanceof CharArray;
       if (pa.elementType() == PAType.STRING || isCharArray) {
@@ -750,7 +751,7 @@ public class Attributes {
           sb.append("f");
         }
       } else {
-        sb.append(pa.toString());
+        sb.append(pa);
       }
       sb.append(suffix + "\n");
     }
@@ -798,7 +799,7 @@ public class Attributes {
   public String testEquals(Object o) {
     if (o == null) return "The new Attributes object is null.";
     if (!(o instanceof Attributes)) return "The new object isn't an Attributes object.";
-    return Test.testEqual(toString(), ((Attributes) o).toString(), "");
+    return Test.testEqual(toString(), o.toString(), "");
   }
 
   /**
@@ -810,8 +811,7 @@ public class Attributes {
    */
   public static String valueToNcString(PrimitiveArray pa) {
     if (pa.elementType() == PAType.STRING)
-      return String2.toSVString(
-          ((StringArray) pa).toStringArray(), "\n", false); // false=no trailing newline
+      return String2.toSVString(pa.toStringArray(), "\n", false); // false=no trailing newline
     return pa.toString();
   }
 
@@ -825,12 +825,10 @@ public class Attributes {
     if (otherAtts == null) return;
 
     // go through all atts in this or otherAtts
-    HashSet<String> set = new HashSet();
+    HashSet<String> set = new HashSet<>();
     set.addAll(otherAtts.hashmap.keySet());
     set.addAll(hashmap.keySet());
-    Iterator<String> it = set.iterator();
-    while (it.hasNext()) {
-      String name = it.next();
+    for (String name : set) {
       PrimitiveArray pa = get(name); // prefer from this Atts
       if (pa == null) pa = otherAtts.get(name);
       if (pa == null) continue;
@@ -878,9 +876,7 @@ public class Attributes {
 
   /** This trim()s all names/keys and trim()s all 1 String values. */
   public void trim() {
-    Iterator it = hashmap.keySet().iterator();
-    while (it.hasNext()) {
-      String name = (String) it.next();
+    for (String name : hashmap.keySet()) {
       String tName = name.trim();
       PrimitiveArray pa = null;
       if (name.equals(tName)) {
@@ -904,9 +900,7 @@ public class Attributes {
    * values, this makes them valid Unicode.
    */
   public void trimAndMakeValidUnicode() {
-    Iterator it = hashmap.keySet().iterator();
-    while (it.hasNext()) {
-      String name = (String) it.next();
+    for (String name : hashmap.keySet()) {
       String tName = String2.makeValidUnicode(name.trim(), "\r\n\t");
 
       PrimitiveArray pa = null;
@@ -936,9 +930,7 @@ public class Attributes {
 
   /** This uses StringArray.fromNccsv() on all StringArray values to de-JSON and convert "" to ". */
   public void fromNccsvStrings() {
-    Iterator it = hashmap.keySet().iterator();
-    while (it.hasNext()) {
-      String name = (String) it.next();
+    for (String name : hashmap.keySet()) {
       PrimitiveArray pa = get(name);
       if (pa.elementType() == PAType.STRING) ((StringArray) pa).fromNccsv();
     }
@@ -957,9 +949,7 @@ public class Attributes {
 
     // remove/change atts already in 'a' that aren't correct
     String[] aNames = a.getNames();
-    int naNames = aNames.length;
-    for (int i = 0; i < naNames; i++) {
-      String aName = aNames[i];
+    for (String aName : aNames) {
       PrimitiveArray aPA = a.get(aName);
       PrimitiveArray bPA = b.get(aName);
       if (bPA == null) addAtts.set(aName, "null");
@@ -968,9 +958,7 @@ public class Attributes {
 
     // add atts from 'b' that aren't already in 'a'
     String[] bNames = b.getNames();
-    int nbNames = bNames.length;
-    for (int i = 0; i < nbNames; i++) {
-      String bName = bNames[i];
+    for (String bName : bNames) {
       if (a.get(bName) == null) addAtts.set(bName, b.get(bName));
     }
 
@@ -1016,8 +1004,8 @@ public class Attributes {
 
     // each of the attributes
     String names[] = getNames();
-    for (int ni = 0; ni < names.length; ni++) {
-      tName = names[ni];
+    for (String name : names) {
+      tName = name;
       if (varName.equals(String2.NCCSV_GLOBAL) && tName.equals("Conventions")) continue;
       if (!String2.isSomething(tName) || tName.equals("_NCProperties")) continue;
       PrimitiveArray tValue = get(tName);
@@ -1042,12 +1030,12 @@ public class Attributes {
    */
   public void ensureNamesAreVariableNameSafe(String sourceDescription) {
     String names[] = getNames();
-    for (int ni = 0; ni < names.length; ni++) {
-      if (!String2.isVariableNameSafe(names[ni]))
+    for (String name : names) {
+      if (!String2.isVariableNameSafe(name))
         throw new RuntimeException(
             sourceDescription
                 + ", attributeName="
-                + String2.toJson(names[ni])
+                + String2.toJson(name)
                 + " isn't variableNameSafe. It must start with iso8859Letter|_ and contain only iso8859Letter|_|0-9 .");
     }
   }
@@ -1130,8 +1118,7 @@ public class Attributes {
     // each of the attributes
     String names[] = getNames();
     boolean somethingWritten = false;
-    for (int ni = 0; ni < names.length; ni++) {
-      String tName = names[ni];
+    for (String tName : names) {
       PrimitiveArray pa = get(tName);
       if (pa == null || pa.size() == 0) continue; // do nothing
       String tType = pa.elementTypeString();
@@ -1243,7 +1230,6 @@ public class Attributes {
     // determine what the destClass will be (for packed numeric variables)
     PAType oPAType = dataPa.elementType();
     boolean isNumeric = oPAType != PAType.CHAR && oPAType != PAType.STRING;
-    boolean isString = oPAType == PAType.STRING;
     PAType destPAType = oPAType;
 
     // determine if this is numeric dateTimes that will be converted to epochSeconds
@@ -1345,7 +1331,7 @@ public class Attributes {
                   + " dataPaMV="
                   + dataPaMV
                   + " dataPa= "
-                  + dataPa.toString());
+                  + dataPa);
         dataPa =
             // if stated missing_value or _FillValue is same as cohort missingValue...
             unsigned
@@ -1389,21 +1375,21 @@ public class Attributes {
           "valid_min", "valid_max", "valid_range"
         };
         if (destPAType == PAType.FLOAT || destPAType == PAType.DOUBLE) {
-          for (int i = 0; i < names.length; i++) {
-            PrimitiveArray pa = newAtts.get(names[i]);
+          for (String name : names) {
+            PrimitiveArray pa = newAtts.get(name);
             if (pa != null
                 && pa.elementType() != PAType.FLOAT
                 && pa.elementType() != PAType.DOUBLE) {
               pa = PrimitiveArray.factory(destPAType, pa);
               pa.scaleAddOffset(scale, add);
-              newAtts.set(names[i], pa);
+              newAtts.set(name, pa);
             }
           }
         } else if (unsigned) {
-          for (int i = 0; i < names.length; i++) {
-            PrimitiveArray pa = newAtts.get(names[i]);
+          for (String name : names) {
+            PrimitiveArray pa = newAtts.get(name);
             if (pa != null && pa.isIntegerType() && !pa.isUnsigned()) {
-              newAtts.set(names[i], pa.makeUnsignedPA());
+              newAtts.set(name, pa.makeUnsignedPA());
             }
           }
         }
@@ -1438,12 +1424,12 @@ public class Attributes {
         "valid_min", "valid_max", "valid_range",
         "_FillValue", "missing_value"
       };
-      for (int i = 0; i < names.length; i++) {
-        PrimitiveArray pa = newAtts.remove(names[i]);
+      for (String name : names) {
+        PrimitiveArray pa = newAtts.remove(name);
         if (pa != null) {
           pa = new DoubleArray(pa);
           pa.scaleAddOffset(baseFactor[1], baseFactor[0]);
-          newAtts.add(names[i], pa);
+          newAtts.add(name, pa);
         }
       }
 
@@ -1647,7 +1633,6 @@ public class Attributes {
       }
       if (tPAType == null) // might be
       tPAType = dataPaPAType;
-      boolean willScale = scale != 1 || add != 0;
 
       // switch data type
       if (dataPa.isIntegerType() && dMissingValue == dataPaMV) { // e.g., 127 == 127
@@ -1714,7 +1699,7 @@ public class Attributes {
       try {
         baseFactor = Calendar2.getTimeBaseAndFactor(tUnits); // throws exception
       } catch (Exception e) {
-        String2.log(tUnits.toString());
+        String2.log(tUnits);
         return PrimitiveArray.factory(PAType.DOUBLE, dataPa.size(), ""); // i.e. uninterpretable
       }
 
@@ -1828,8 +1813,7 @@ public class Attributes {
    */
   public void convertSomeSignedToUnsigned() {
     // if var isUnsigned and select atts in nc3 file are signed, change to unsigned
-    for (int i = 0; i < signedToUnsignedAttNames.length; i++) {
-      String name = signedToUnsignedAttNames[i];
+    for (String name : signedToUnsignedAttNames) {
       PrimitiveArray tPa = get(name);
       if (tPa != null && !tPa.isUnsigned()) set(name, tPa.makeUnsignedPA());
     }
@@ -1842,8 +1826,7 @@ public class Attributes {
    */
   public void convertSomeUnsignedToSigned() {
     // if var isUnsigned and select atts in nc3 file are signed, change to unsigned
-    for (int i = 0; i < signedToUnsignedAttNames.length; i++) {
-      String name = signedToUnsignedAttNames[i];
+    for (String name : signedToUnsignedAttNames) {
       PrimitiveArray tPa = get(name);
       if (tPa != null && tPa.isUnsigned()) set(name, tPa.makeSignedPA());
     }

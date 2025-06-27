@@ -1,6 +1,5 @@
 package gov.noaa.pfel.erddap.dataset;
 
-import com.cohort.util.Calendar2;
 import com.cohort.util.File2;
 import com.cohort.util.Image2Tests;
 import com.cohort.util.Math2;
@@ -34,9 +33,9 @@ class EDDGridLonPM180Tests {
     // String2.log("\n****************** EDDGridLonPM180.testGT180()
     // *****************\n");
     // testVerboseOn();
-    String name, tName, userDapQuery, results, expected, error;
+    String tName, userDapQuery, results, expected;
     int po;
-    String dir = EDStatic.fullTestCacheDirectory;
+    String dir = EDStatic.config.fullTestCacheDirectory;
     int language = 0;
 
     EDDGrid eddGrid =
@@ -184,7 +183,7 @@ class EDDGridLonPM180Tests {
             Image2Tests.urlToAbsolutePath(Image2Tests.OBS_DIR),
             baseName,
             ".png");
-    // Test.displayInBrowser("file://" + dir + tName);
+    // TestUtil.displayInBrowser("file://" + dir + tName);
     Image2Tests.testImagesIdentical(tName, baseName + ".png", baseName + "_diff.png");
 
     // test of /files/ system for fromErddap in local host dataset
@@ -211,9 +210,9 @@ class EDDGridLonPM180Tests {
     // *****************\n");
     // testVerboseOn();
     int language = 0;
-    String name, tName, userDapQuery, results, expected, error;
+    String tName, userDapQuery, results, expected;
     int po;
-    String dir = EDStatic.fullTestCacheDirectory;
+    String dir = EDStatic.config.fullTestCacheDirectory;
 
     EDDGrid eddGrid = (EDDGrid) EDDTestDataset.geterdRWdhws1day_LonPM180();
 
@@ -385,7 +384,7 @@ class EDDGridLonPM180Tests {
             Image2Tests.urlToAbsolutePath(Image2Tests.OBS_DIR),
             baseName,
             ".png");
-    // Test.displayInBrowser("file://" + dir + tName);
+    // TestUtil.displayInBrowser("file://" + dir + tName);
     Image2Tests.testImagesIdentical(tName, baseName + ".png", baseName + "_diff.png");
 
     // THIS TEST NEEDS A NEW DATASET because source is now from tds, so no files
@@ -414,9 +413,9 @@ class EDDGridLonPM180Tests {
     // *****************\n");
     // testVerboseOn();
     int language = 0;
-    String name, tName, userDapQuery, results, expected, error;
+    String tName, userDapQuery, results, expected;
     int po;
-    String dir = EDStatic.fullTestCacheDirectory;
+    String dir = EDStatic.config.fullTestCacheDirectory;
 
     EDDGrid eddGrid = (EDDGrid) EDDTestDataset.gettest_erdMHsstnmday_LonPM180();
 
@@ -626,7 +625,7 @@ class EDDGridLonPM180Tests {
             Image2Tests.urlToAbsolutePath(Image2Tests.OBS_DIR),
             baseName,
             ".png");
-    // Test.displayInBrowser("file://" + dir + tName);
+    // TestUtil.displayInBrowser("file://" + dir + tName);
     Image2Tests.testImagesIdentical(tName, baseName + ".png", baseName + "_diff.png");
 
     // !!!??? what's with that gap near lon=0? It's from the source.
@@ -652,7 +651,7 @@ class EDDGridLonPM180Tests {
     String results, expected;
 
     // set badFileFlag (to delete the badFiles.nc file and reload the dataset)
-    File2.writeToFile88591(EDStatic.fullBadFilesFlagDirectory + datasetID, "doesn't matter");
+    File2.writeToFile88591(EDStatic.config.fullBadFilesFlagDirectory + datasetID, "doesn't matter");
 
     // wait 10 seconds and test that all times are present
     String2.log(
@@ -675,7 +674,7 @@ class EDDGridLonPM180Tests {
         dirIndex, fileName, lastMod, "for EDDGridLonPM180.testBadFilesFlag()");
 
     // set regular flag
-    File2.writeToFile88591(EDStatic.fullResetFlagDirectory + datasetID, "doesn't matter");
+    File2.writeToFile88591(EDStatic.config.fullResetFlagDirectory + datasetID, "doesn't matter");
 
     // wait 10 seconds and test that that time point is gone
     String2.log(
@@ -686,7 +685,7 @@ class EDDGridLonPM180Tests {
     Test.ensureEqual(results, expected, "results=\n" + results);
 
     // set badFileFlag (to delete the badFiles.nc file and reload the dataset)
-    File2.writeToFile88591(EDStatic.fullBadFilesFlagDirectory + datasetID, "doesn't matter");
+    File2.writeToFile88591(EDStatic.config.fullBadFilesFlagDirectory + datasetID, "doesn't matter");
 
     // wait 10 seconds and test that all times are present
     String2.log(
@@ -696,88 +695,6 @@ class EDDGridLonPM180Tests {
     Test.ensureEqual(results, fullExpected, "results=\n" + results);
   }
 
-  /** This tests hardFlag. */
-  @org.junit.jupiter.api.Test
-  @TagLocalERDDAP
-  void testHardFlag() throws Throwable {
-    // String2.log("\n*** EDDGridLonPM180.testHardFlag()\n" +
-    // "This test requires hawaii_d90f_20ee_c4cb and
-    // hawaii_d90f_20ee_c4cb_LonPM180\n" +
-    // "be loaded in the local ERDDAP.");
-
-    // set hardFlag
-    String startTime = Calendar2.getCurrentISODateTimeStringLocalTZ();
-    Math2.sleep(1000);
-    File2.writeToFile88591(
-        EDStatic.fullHardFlagDirectory + "hawaii_d90f_20ee_c4cb_LonPM180", "test");
-    String2.log(
-        "I just set a hardFlag for hawaii_d90f_20ee_c4cb_LonPM180.\n"
-            + "Now I'm waiting 10 seconds.");
-    Math2.sleep(10000);
-    // flush the log file
-    String tIndex =
-        SSR.getUrlResponseStringUnchanged("http://localhost:8080/cwexperimental/status.html");
-    Math2.sleep(2000);
-    // read the log file
-    String tLog = File2.readFromFileUtf8(EDStatic.fullLogsDirectory + "log.txt")[1];
-    String expected = // ***
-        /*
-         * "deleting cached dataset info for datasetID=hawaii_d90f_20ee_c4cb_LonPM180Child\n"
-         * +
-         * "\\*\\*\\* unloading datasetID=hawaii_d90f_20ee_c4cb_LonPM180\n" +
-         * "\\*\\*\\* deleting cached dataset info for datasetID=hawaii_d90f_20ee_c4cb_LonPM180\n"
-         * +
-         * "\n" +
-         * "\\*\\*\\* RunLoadDatasets is starting a new hardFlag LoadDatasets thread at (..........T..............)\n"
-         * +
-         * "\n" +
-         * "\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\n"
-         * +
-         * "LoadDatasets.run EDStatic.developmentMode=true ..........T..............\n"
-         * +
-         * "  datasetsRegex=\\(hawaii_d90f_20ee_c4cb_LonPM180\\) inputStream=null majorLoad=false"
-         * ;
-         */
-
-        "deleting cached dataset info for datasetID=hawaii_d90f_20ee_c4cb_LonPM180Child\n"
-            + "File2.deleteIfOld\\(/erddapBPD/dataset/ld/hawaii_d90f_20ee_c4cb_LonPM180Child/\\) nDir=   . nDeleted=   . nRemain=   .\n"
-            + "\\*\\*\\* unloading datasetID=hawaii_d90f_20ee_c4cb_LonPM180\n"
-            + "nActions=0\n"
-            + "\\*\\*\\* deleting cached dataset info for datasetID=hawaii_d90f_20ee_c4cb_LonPM180\n"
-            + "File2.deleteIfOld\\(/erddapBPD/dataset/80/hawaii_d90f_20ee_c4cb_LonPM180/  \\) nDir=   . nDeleted=   . nRemain=   .\n"
-            + "\n"
-            + "\\*\\*\\* RunLoadDatasets is starting a new hardFlag LoadDatasets thread at (..........T..............)\n"
-            + "\n"
-            + "\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\n"
-            + "LoadDatasets.run EDStatic.developmentMode=true ..........T..............\n"
-            + "  datasetsRegex=\\(hawaii_d90f_20ee_c4cb_LonPM180\\) inputStream=null majorLoad=false";
-
-    int po = Math.max(0, tLog.lastIndexOf(expected.substring(0, 78)));
-    int po2 = tLog.indexOf("majorLoad=false", po) + 15;
-    String tResults = tLog.substring(po, po2);
-    String2.log("\ntResults=<quote>" + tResults + "</quote>\n");
-    Test.testLinesMatch(tResults, expected, "tResults and expected don't match!");
-
-    // so far so good, tResults matches expected
-    int po3 = tResults.indexOf("thread at ");
-    String reloadTime = tResults.substring(po3 + 10, po3 + 35);
-    String2.log(" startTime=" + startTime + "\n" + "reloadTime=" + reloadTime);
-    Test.ensureTrue(startTime.compareTo(reloadTime) < 0, "startTime is after reloadTime?!");
-
-    // test that child was successfully constructed after that
-    int po4 =
-        tLog.indexOf(
-            "*** EDDGridFromErddap hawaii_d90f_20ee_c4cb_LonPM180Child constructor finished. TIME=",
-            po);
-    Test.ensureTrue(po4 > po, "po4=" + po4 + " isn't greater than po=" + po + " !");
-
-    // test that parent was successfully constructed after that
-    int po5 =
-        tLog.indexOf(
-            "*** EDDGridLonPM180 hawaii_d90f_20ee_c4cb_LonPM180 constructor finished. TIME=", po4);
-    Test.ensureTrue(po5 > po4, "po5=" + po5 + " isn't greater than po4=" + po4 + " !");
-  }
-
   /**
    * This tests the /files/ "files" system. This requires local_erdMWchlamday_LonPM180 in the
    * localhost ERDDAP.
@@ -785,11 +702,7 @@ class EDDGridLonPM180Tests {
   @org.junit.jupiter.api.Test
   @TagLocalERDDAP
   void testFiles() throws Throwable {
-
-    String2.log("\n*** EDDGridLonPM180.testFiles()\n");
-    String tDir = EDStatic.fullTestCacheDirectory;
-    String dapQuery, tName, start, query, results, expected;
-    int po;
+    String results, expected;
 
     // get /files/datasetID/.csv
     results =
@@ -886,9 +799,9 @@ class EDDGridLonPM180Tests {
     // *****************\n");
     // testVerboseOn();
     int language = 0;
-    String name, tName, userDapQuery, results, expected, error;
+    String tName, results, expected;
     int po;
-    String dir = EDStatic.fullTestCacheDirectory;
+    String dir = EDStatic.config.fullTestCacheDirectory;
 
     EDDGrid eddGrid = (EDDGrid) EDDTestDataset.gettestPM180LonValidMinMax();
     tName =

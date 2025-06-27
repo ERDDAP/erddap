@@ -25,7 +25,6 @@ class SubscriptionsTests {
     // reallyVerbose = true;
     String results, expected;
     int key = -1;
-    boolean ok = true;
     String sampleDatasetID = "pmelTao";
     String sampleEmail = "john.smith@company.com";
 
@@ -36,7 +35,7 @@ class SubscriptionsTests {
     Test.ensureTrue(Integer.valueOf(17).equals(Integer.valueOf(17)), "");
 
     // test empty system
-    String ffName = EDStatic.fullTestCacheDirectory + "subscriptionsV1.txt";
+    String ffName = EDStatic.config.fullTestCacheDirectory + "subscriptionsV1.txt";
     File2.delete(ffName);
     Subscriptions sub = new Subscriptions(ffName, 72, EDStatic.erddapHttpsUrl);
     Test.ensureEqual(sub.persistentTable.nRows(), 0, "");

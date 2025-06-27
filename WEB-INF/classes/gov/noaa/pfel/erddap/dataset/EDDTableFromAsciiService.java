@@ -15,10 +15,15 @@ import gov.noaa.pfel.coastwatch.pointdata.Table;
 import gov.noaa.pfel.coastwatch.util.SSR;
 import gov.noaa.pfel.coastwatch.util.SimpleXMLReader;
 import gov.noaa.pfel.erddap.Erddap;
+import gov.noaa.pfel.erddap.dataset.metadata.LocalizedAttributes;
+import gov.noaa.pfel.erddap.handlers.EDDTableFromAsciiServiceHandler;
+import gov.noaa.pfel.erddap.handlers.SaxHandlerClass;
+import gov.noaa.pfel.erddap.util.EDMessages;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.*;
 import java.io.BufferedReader;
 import java.util.ArrayList;
+import java.util.List;
 
 // import java.util.GregorianCalendar;
 
@@ -28,9 +33,10 @@ import java.util.ArrayList;
  *
  * @author Bob Simons (was bob.simons@noaa.gov, now BobSimons2.00@gmail.com) 2010-11-12
  */
+@SaxHandlerClass(EDDTableFromAsciiServiceHandler.class)
 public abstract class EDDTableFromAsciiService extends EDDTable {
 
-  protected String beforeData[];
+  protected final String[] beforeData;
   protected String afterData = null; // inactive if null or ""
   protected String noData = null; // inactive if null or ""
   protected int responseSubstringStart[] =
@@ -48,6 +54,7 @@ public abstract class EDDTableFromAsciiService extends EDDTable {
    *     &lt;erddapDatasets&gt;&lt;/dataset&gt; .
    * @throws Throwable if trouble
    */
+  @EDDFromXmlMethod
   public static EDDTableFromAsciiService fromXml(Erddap erddap, SimpleXMLReader xmlReader)
       throws Throwable {
 
@@ -56,8 +63,8 @@ public abstract class EDDTableFromAsciiService extends EDDTable {
     String tDatasetID = xmlReader.attributeValue("datasetID");
     String tDatasetType = xmlReader.attributeValue("type");
 
-    Attributes tGlobalAttributes = null;
-    ArrayList tDataVariables = new ArrayList();
+    LocalizedAttributes tGlobalAttributes = null;
+    List<DataVariableInfo> tDataVariables = new ArrayList<>();
     int tReloadEveryNMinutes = Integer.MAX_VALUE;
     String tAccessibleTo = null;
     String tGraphsAccessibleTo = null;
@@ -87,65 +94,62 @@ public abstract class EDDTableFromAsciiService extends EDDTable {
       String localTags = tags.substring(startOfTagsLength);
 
       // try to make the tag names as consistent, descriptive and readable as possible
-      if (localTags.equals("<addAttributes>")) tGlobalAttributes = getAttributesFromXml(xmlReader);
-      else if (localTags.equals("<altitudeMetersPerSourceUnit>"))
-        throw new SimpleException(EDVAlt.stopUsingAltitudeMetersPerSourceUnit);
-      else if (localTags.equals("<dataVariable>"))
-        tDataVariables.add(getSDADVariableFromXml(xmlReader));
-      else if (localTags.equals("<accessibleTo>")) {
-      } else if (localTags.equals("</accessibleTo>")) tAccessibleTo = content;
-      else if (localTags.equals("<graphsAccessibleTo>")) {
-      } else if (localTags.equals("</graphsAccessibleTo>")) tGraphsAccessibleTo = content;
-      else if (localTags.equals("<reloadEveryNMinutes>")) {
-      } else if (localTags.equals("</reloadEveryNMinutes>"))
-        tReloadEveryNMinutes = String2.parseInt(content);
-      else if (localTags.equals("<sourceUrl>")) {
-      } else if (localTags.equals("</sourceUrl>")) tLocalSourceUrl = content;
-      else if (localTags.equals("<beforeData1>")
-          || localTags.equals("<beforeData2>")
-          || localTags.equals("<beforeData3>")
-          || localTags.equals("<beforeData4>")
-          || localTags.equals("<beforeData5>")
-          || localTags.equals("<beforeData6>")
-          || localTags.equals("<beforeData7>")
-          || localTags.equals("<beforeData8>")
-          || localTags.equals("<beforeData9>")
-          || localTags.equals("<beforeData10>")) {
-      } else if (localTags.equals("</beforeData1>")
-          || localTags.equals("</beforeData2>")
-          || localTags.equals("</beforeData3>")
-          || localTags.equals("</beforeData4>")
-          || localTags.equals("</beforeData5>")
-          || localTags.equals("</beforeData6>")
-          || localTags.equals("</beforeData7>")
-          || localTags.equals("</beforeData8>")
-          || localTags.equals("</beforeData9>")
-          || localTags.equals("</beforeData10>"))
-        tBeforeData[String2.parseInt(localTags.substring(12, localTags.length() - 1))] = content;
-      else if (localTags.equals("<afterData>")) {
-      } else if (localTags.equals("</afterData>")) tAfterData = content;
-      else if (localTags.equals("<noData>")) {
-      } else if (localTags.equals("</noData>")) tNoData = content;
-      else if (localTags.equals("<onChange>")) {
-      } else if (localTags.equals("</onChange>")) tOnChange.add(content);
-      else if (localTags.equals("<fgdcFile>")) {
-      } else if (localTags.equals("</fgdcFile>")) tFgdcFile = content;
-      else if (localTags.equals("<iso19115File>")) {
-      } else if (localTags.equals("</iso19115File>")) tIso19115File = content;
-      else if (localTags.equals("<sosOfferingPrefix>")) {
-      } else if (localTags.equals("</sosOfferingPrefix>")) tSosOfferingPrefix = content;
-      else if (localTags.equals("<defaultDataQuery>")) {
-      } else if (localTags.equals("</defaultDataQuery>")) tDefaultDataQuery = content;
-      else if (localTags.equals("<defaultGraphQuery>")) {
-      } else if (localTags.equals("</defaultGraphQuery>")) tDefaultGraphQuery = content;
-      else if (localTags.equals("<addVariablesWhere>")) {
-      } else if (localTags.equals("</addVariablesWhere>")) tAddVariablesWhere = content;
-      else xmlReader.unexpectedTagException();
+      switch (localTags) {
+        case "<addAttributes>" -> tGlobalAttributes = getAttributesFromXml(xmlReader);
+        case "<altitudeMetersPerSourceUnit>" ->
+            throw new SimpleException(EDVAlt.stopUsingAltitudeMetersPerSourceUnit);
+        case "<dataVariable>" -> tDataVariables.add(getSDADVariableFromXml(xmlReader));
+        case "<accessibleTo>",
+            "<addVariablesWhere>",
+            "<defaultGraphQuery>",
+            "<defaultDataQuery>",
+            "<sosOfferingPrefix>",
+            "<iso19115File>",
+            "<fgdcFile>",
+            "<onChange>",
+            "<noData>",
+            "<afterData>",
+            "<beforeData1>",
+            "<beforeData2>",
+            "<beforeData3>",
+            "<beforeData4>",
+            "<beforeData5>",
+            "<beforeData6>",
+            "<beforeData7>",
+            "<beforeData8>",
+            "<beforeData9>",
+            "<beforeData10>",
+            "<sourceUrl>",
+            "<reloadEveryNMinutes>",
+            "<graphsAccessibleTo>" -> {}
+        case "</accessibleTo>" -> tAccessibleTo = content;
+        case "</graphsAccessibleTo>" -> tGraphsAccessibleTo = content;
+        case "</reloadEveryNMinutes>" -> tReloadEveryNMinutes = String2.parseInt(content);
+        case "</sourceUrl>" -> tLocalSourceUrl = content;
+        case "</beforeData1>",
+                "</beforeData2>",
+                "</beforeData3>",
+                "</beforeData4>",
+                "</beforeData5>",
+                "</beforeData6>",
+                "</beforeData7>",
+                "</beforeData8>",
+                "</beforeData9>",
+                "</beforeData10>" ->
+            tBeforeData[String2.parseInt(localTags.substring(12, localTags.length() - 1))] =
+                content;
+        case "</afterData>" -> tAfterData = content;
+        case "</noData>" -> tNoData = content;
+        case "</onChange>" -> tOnChange.add(content);
+        case "</fgdcFile>" -> tFgdcFile = content;
+        case "</iso19115File>" -> tIso19115File = content;
+        case "</sosOfferingPrefix>" -> tSosOfferingPrefix = content;
+        case "</defaultDataQuery>" -> tDefaultDataQuery = content;
+        case "</defaultGraphQuery>" -> tDefaultGraphQuery = content;
+        case "</addVariablesWhere>" -> tAddVariablesWhere = content;
+        default -> xmlReader.unexpectedTagException();
+      }
     }
-    int ndv = tDataVariables.size();
-    Object ttDataVariables[][] = new Object[ndv][];
-    for (int i = 0; i < tDataVariables.size(); i++)
-      ttDataVariables[i] = (Object[]) tDataVariables.get(i);
 
     if (tDatasetType.equals("EDDTableFromAsciiServiceNOS")) {
 
@@ -161,7 +165,7 @@ public abstract class EDDTableFromAsciiService extends EDDTable {
           tDefaultGraphQuery,
           tAddVariablesWhere,
           tGlobalAttributes,
-          ttDataVariables,
+          tDataVariables,
           tReloadEveryNMinutes,
           tLocalSourceUrl,
           tBeforeData,
@@ -209,7 +213,7 @@ public abstract class EDDTableFromAsciiService extends EDDTable {
    *     </ul>
    *     Special case: value="null" causes that item to be removed from combinedGlobalAttributes.
    *     Special case: if combinedGlobalAttributes name="license", any instance of "[standard]" will
-   *     be converted to the EDStatic.standardLicense.
+   *     be converted to the EDStatic.messages.standardLicense.
    * @param tDataVariables is an Object[nDataVariables][3]: <br>
    *     [0]=String sourceName (the name of the data variable in the dataset source, without the
    *     outer or inner sequence name), <br>
@@ -250,8 +254,8 @@ public abstract class EDDTableFromAsciiService extends EDDTable {
       String tDefaultDataQuery,
       String tDefaultGraphQuery,
       String tAddVariablesWhere,
-      Attributes tAddGlobalAttributes,
-      Object[][] tDataVariables,
+      LocalizedAttributes tAddGlobalAttributes,
+      List<DataVariableInfo> tDataVariables,
       int tReloadEveryNMinutes,
       String tLocalSourceUrl,
       String tBeforeData[],
@@ -260,6 +264,7 @@ public abstract class EDDTableFromAsciiService extends EDDTable {
       throws Throwable {
 
     if (verbose) String2.log("\n*** constructing " + tDatasetType + ": " + tDatasetID);
+    int language = EDMessages.DEFAULT_LANGUAGE;
     long constructionStartMillis = System.currentTimeMillis();
     String errorInMethod = "Error in " + tDatasetType + "(" + tDatasetID + ") constructor:\n";
 
@@ -274,9 +279,9 @@ public abstract class EDDTableFromAsciiService extends EDDTable {
     sosOfferingPrefix = tSosOfferingPrefix;
     defaultDataQuery = tDefaultDataQuery;
     defaultGraphQuery = tDefaultGraphQuery;
-    if (tAddGlobalAttributes == null) tAddGlobalAttributes = new Attributes();
+    if (tAddGlobalAttributes == null) tAddGlobalAttributes = new LocalizedAttributes();
     addGlobalAttributes = tAddGlobalAttributes;
-    addGlobalAttributes.set("sourceUrl", convertToPublicSourceUrl(tLocalSourceUrl));
+    addGlobalAttributes.set(language, "sourceUrl", convertToPublicSourceUrl(tLocalSourceUrl));
     localSourceUrl = tLocalSourceUrl;
     setReloadEveryNMinutes(tReloadEveryNMinutes);
     beforeData = tBeforeData == null ? new String[0] : tBeforeData;
@@ -290,33 +295,29 @@ public abstract class EDDTableFromAsciiService extends EDDTable {
         PrimitiveArray.REGEX_OP; // standardizeResultsTable always (re)tests regex constraints
 
     // get global attributes
-    combinedGlobalAttributes = new Attributes(addGlobalAttributes);
-    String tLicense = combinedGlobalAttributes.getString("license");
+    combinedGlobalAttributes = new LocalizedAttributes(addGlobalAttributes);
+    String tLicense = combinedGlobalAttributes.getString(language, "license");
     if (tLicense != null)
       combinedGlobalAttributes.set(
-          "license", String2.replaceAll(tLicense, "[standard]", EDStatic.standardLicense));
+          language,
+          "license",
+          String2.replaceAll(tLicense, "[standard]", EDStatic.messages.standardLicense));
     combinedGlobalAttributes.removeValue("\"null\"");
 
     // create structures to hold the sourceAttributes temporarily
-    int ndv = tDataVariables.length;
-    Attributes tDataSourceAttributes[] = new Attributes[ndv];
-    String tDataSourceTypes[] = new String[ndv];
-    String tDataSourceNames[] = new String[ndv];
-    for (int dv = 0; dv < ndv; dv++) {
-      tDataSourceNames[dv] = (String) tDataVariables[dv][0];
-    }
+    int ndv = tDataVariables.size();
 
     // create dataVariables[]
     dataVariables = new EDV[ndv];
     responseSubstringStart = new int[ndv];
     responseSubstringEnd = new int[ndv];
     for (int dv = 0; dv < ndv; dv++) {
-      String tSourceName = (String) tDataVariables[dv][0];
-      String tDestName = (String) tDataVariables[dv][1];
+      String tSourceName = tDataVariables.get(dv).sourceName();
+      String tDestName = tDataVariables.get(dv).destinationName();
       if (tDestName == null || tDestName.trim().length() == 0) tDestName = tSourceName;
       Attributes tSourceAtt = new Attributes();
-      Attributes tAddAtt = (Attributes) tDataVariables[dv][2];
-      String tSourceType = (String) tDataVariables[dv][3];
+      LocalizedAttributes tAddAtt = tDataVariables.get(dv).attributes();
+      String tSourceType = tDataVariables.get(dv).dataType();
       // if (reallyVerbose) String2.log("  dv=" + dv + " sourceName=" + tSourceName + " sourceType="
       // + tSourceType);
 
@@ -335,7 +336,7 @@ public abstract class EDDTableFromAsciiService extends EDDTable {
 
       // get responseSubstring start and end
       // <att name="responseSubstring">0, 7</att>
-      String resSubS = tAddAtt.getString("responseSubstring");
+      String resSubS = tAddAtt.getString(language, "responseSubstring");
       tAddAtt.remove("responseSubstring");
       String resSub[] = StringArray.arrayFromCSV(resSubS);
       if (resSub.length == 2) {
@@ -343,7 +344,7 @@ public abstract class EDDTableFromAsciiService extends EDDTable {
         int i2 = String2.parseInt(resSub[1]);
         responseSubstringStart[dv] = i1;
         responseSubstringEnd[dv] = i2;
-        if (i1 < 0 || i1 > 100000 || i2 <= i1 || i2 > 100000)
+        if (i1 < 0 || i2 <= i1 || i2 > 100000)
           throw new SimpleException(
               errorInMethod
                   + "For destinationName="
@@ -419,7 +420,7 @@ public abstract class EDDTableFromAsciiService extends EDDTable {
                 tAddAtt,
                 tSourceType); // this constructor gets source / sets destination actual_range
         timeIndex = dv;
-      } else if (EDVTimeStamp.hasTimeUnits(tSourceAtt, tAddAtt)) {
+      } else if (EDVTimeStamp.hasTimeUnits(language, tSourceAtt, tAddAtt)) {
         dataVariables[dv] =
             new EDVTimeStamp(
                 datasetID,
@@ -437,7 +438,7 @@ public abstract class EDDTableFromAsciiService extends EDDTable {
                 tSourceAtt,
                 tAddAtt,
                 tSourceType); // the constructor that reads actual_range
-        dataVariables[dv].setActualRangeFromDestinationMinMax();
+        dataVariables[dv].setActualRangeFromDestinationMinMax(language);
       }
     }
     if (verbose)
@@ -459,7 +460,7 @@ public abstract class EDDTableFromAsciiService extends EDDTable {
     long cTime = System.currentTimeMillis() - constructionStartMillis;
     if (verbose)
       String2.log(
-          (debugMode ? "\n" + toString() : "")
+          (debugMode ? "\n" + this : "")
               + "\n*** "
               + tDatasetType
               + " "
@@ -477,7 +478,7 @@ public abstract class EDDTableFromAsciiService extends EDDTable {
    *
    * @param language the index of the selected language
    * @param loggedInAs the user's login name if logged in (or null if not logged in).
-   * @param requestUrl the part of the user's request, after EDStatic.baseUrl, before '?'.
+   * @param requestUrl the part of the user's request, after EDStatic.config.baseUrl, before '?'.
    * @param userDapQuery the part of the user's request after the '?', still percentEncoded, may be
    *     null.
    * @param tableWriter
@@ -500,13 +501,10 @@ public abstract class EDDTableFromAsciiService extends EDDTable {
    * @return a table where some of the PrimitiveArrays have data, some don't
    */
   public Table getTable(String encodedSourceUrl) throws Throwable {
-    BufferedReader in = SSR.getBufferedUrlReader(encodedSourceUrl);
-    try {
+    try (BufferedReader in = SSR.getBufferedUrlReader(encodedSourceUrl)) {
       String s = in.readLine();
       s = findBeforeData(in, s);
       return getTable(in, s);
-    } finally {
-      in.close();
     }
   }
 

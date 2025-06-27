@@ -1,5 +1,12 @@
 package gov.noaa.pfel.erddap.dataset;
 
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.when;
+
 import com.cohort.util.File2;
 import com.cohort.util.Image2Tests;
 import com.cohort.util.Math2;
@@ -7,13 +14,21 @@ import com.cohort.util.String2;
 import com.cohort.util.Test;
 import gov.noaa.pfel.coastwatch.griddata.NcHelper;
 import gov.noaa.pfel.coastwatch.util.SSR;
+import gov.noaa.pfel.erddap.filetypes.AsciiFiles;
+import gov.noaa.pfel.erddap.filetypes.DapRequestInfo;
+import gov.noaa.pfel.erddap.filetypes.DodsFiles;
+import gov.noaa.pfel.erddap.filetypes.NcoJsonFiles;
+import gov.noaa.pfel.erddap.filetypes.PngFiles;
 import gov.noaa.pfel.erddap.util.EDStatic;
+import jakarta.servlet.ServletOutputStream;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.FileOutputStream;
 import java.security.MessageDigest;
 import java.text.MessageFormat;
-import java.util.HashMap;
+import java.util.Map;
 import org.junit.jupiter.api.BeforeAll;
 import tags.TagImageComparison;
 import tags.TagIncompleteTest;
@@ -25,6 +40,123 @@ class EDDGridTests {
   @BeforeAll
   static void init() {
     Initialization.edStatic();
+  }
+
+  @org.junit.jupiter.api.Test
+  void testSaveAsDODS() throws Throwable {
+    EDDGrid eddGrid = (EDDGrid) EDDTestDataset.getetopo180();
+    String mapDapQuery = "altitude%5B(-90.0):(-88.0)%5D%5B(-180.0):(-178.0)%5D";
+    String requestUrl = "/erddap/griddap/etopo180.dods";
+    HttpServletRequest request = mock(HttpServletRequest.class);
+    HttpServletResponse response = mock(HttpServletResponse.class);
+    ServletOutputStream outStream = mock(ServletOutputStream.class);
+    when(request.getHeader("Range")).thenReturn(null);
+    when(response.getOutputStream()).thenReturn(outStream);
+    when(request.getHeader("accept-encoding")).thenReturn("gzip");
+    doThrow(new RuntimeException()).when(outStream).close();
+
+    OutputStreamFromHttpResponse outputStreamSource =
+        new OutputStreamFromHttpResponse(request, response, "temp", ".dods", ".dods");
+    DodsFiles dods = new DodsFiles();
+    dods.writeGridToStream(
+        new DapRequestInfo(
+            0,
+            eddGrid,
+            null,
+            outputStreamSource,
+            requestUrl,
+            mapDapQuery,
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            null,
+            null));
+
+    verify(request).getHeader("Range");
+    verify(request).getHeader("accept-encoding");
+    verify(outStream, times(1)).close();
+    verifyNoMoreInteractions(request);
+  }
+
+  @org.junit.jupiter.api.Test
+  void testSaveAsAsc() throws Throwable {
+    EDDGrid eddGrid = (EDDGrid) EDDTestDataset.getetopo180();
+    String mapDapQuery = "altitude%5B(-90.0):(-88.0)%5D%5B(-180.0):(-178.0)%5D";
+    String requestUrl = "/erddap/griddap/etopo180.dods";
+    HttpServletRequest request = mock(HttpServletRequest.class);
+    HttpServletResponse response = mock(HttpServletResponse.class);
+    ServletOutputStream outStream = mock(ServletOutputStream.class);
+    when(request.getHeader("Range")).thenReturn(null);
+    when(response.getOutputStream()).thenReturn(outStream);
+    when(request.getHeader("accept-encoding")).thenReturn("gzip");
+    doThrow(new RuntimeException()).when(outStream).close();
+
+    OutputStreamFromHttpResponse outputStreamSource =
+        new OutputStreamFromHttpResponse(request, response, "temp", ".dods", ".dods");
+    AsciiFiles ascii = new AsciiFiles();
+    ascii.writeGridToStream(
+        new DapRequestInfo(
+            0,
+            eddGrid,
+            null,
+            outputStreamSource,
+            requestUrl,
+            mapDapQuery,
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            null,
+            null));
+
+    verify(request).getHeader("Range");
+    verify(request).getHeader("accept-encoding");
+    verify(outStream, times(1)).close();
+    verifyNoMoreInteractions(request);
+  }
+
+  @org.junit.jupiter.api.Test
+  void testSaveAsNcoJson() throws Throwable {
+    EDDGrid eddGrid = (EDDGrid) EDDTestDataset.getetopo180();
+    String mapDapQuery = "altitude%5B(-90.0):(-88.0)%5D%5B(-180.0):(-178.0)%5D";
+    String requestUrl = "/erddap/griddap/etopo180.dods";
+    HttpServletRequest request = mock(HttpServletRequest.class);
+    HttpServletResponse response = mock(HttpServletResponse.class);
+    ServletOutputStream outStream = mock(ServletOutputStream.class);
+    when(request.getHeader("Range")).thenReturn(null);
+    when(response.getOutputStream()).thenReturn(outStream);
+    when(request.getHeader("accept-encoding")).thenReturn("gzip");
+    doThrow(new RuntimeException()).when(outStream).close();
+
+    OutputStreamFromHttpResponse outputStreamSource =
+        new OutputStreamFromHttpResponse(request, response, "temp", ".dods", ".dods");
+    NcoJsonFiles nco = new NcoJsonFiles();
+    nco.writeGridToStream(
+        new DapRequestInfo(
+            0,
+            eddGrid,
+            null,
+            outputStreamSource,
+            requestUrl,
+            mapDapQuery,
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            null,
+            null));
+
+    verify(request).getHeader("Range");
+    verify(request).getHeader("accept-encoding");
+    verify(outStream, times(1)).close();
+    verifyNoMoreInteractions(request);
   }
 
   /**
@@ -240,13 +372,14 @@ class EDDGridTests {
             "testGeotif",
             ".geotif");
 
-    // Test.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
+    // TestUtil.displayInBrowser("file://" + EDStatic.config.fullTestCacheDirectory + tName);
     Image2Tests.testImagesIdentical(
         tName, "EDDGrid_testGeotif" + ".tif", "EDDGrid_testGeotif" + "_diff.png");
   }
 
   @org.junit.jupiter.api.Test
   @TagImageComparison
+  @TagThredds
   void testGeotif2() throws Throwable {
     String tDir = Image2Tests.urlToAbsolutePath(Image2Tests.OBS_DIR);
     EDDGrid gridDataset = (EDDGrid) EDDTestDataset.geterdMHchla8day();
@@ -318,7 +451,7 @@ class EDDGridTests {
               tDir,
               gridDataset.className() + "_GraphTiny",
               ".largePng"); // to show it's irrelevant
-      // Test.displayInBrowser("file://" + tDir + tName);
+      // TestUtil.displayInBrowser("file://" + tDir + tName);
       Image2Tests.testImagesIdentical(
           tName,
           "EDDGridTestGraphics_GraphTiny" + ".png",
@@ -333,7 +466,7 @@ class EDDGridTests {
               tDir,
               gridDataset.className() + "_GraphS",
               ".smallPng");
-      // Test.displayInBrowser("file://" + tDir + tName);
+      // TestUtil.displayInBrowser("file://" + tDir + tName);
       Image2Tests.testImagesIdentical(
           tName,
           "EDDGridTestGraphics_GraphSmall" + ".png",
@@ -348,7 +481,7 @@ class EDDGridTests {
               tDir,
               gridDataset.className() + "_Graph",
               ".png");
-      // Test.displayInBrowser("file://" + tDir + tName);
+      // TestUtil.displayInBrowser("file://" + tDir + tName);
       Image2Tests.testImagesIdentical(
           tName,
           "EDDGridTestGraphics_GraphPng" + ".png",
@@ -363,7 +496,7 @@ class EDDGridTests {
               tDir,
               gridDataset.className() + "_GraphL",
               ".largePng");
-      // Test.displayInBrowser("file://" + tDir + tName);
+      // TestUtil.displayInBrowser("file://" + tDir + tName);
       Image2Tests.testImagesIdentical(
           tName, "EDDGridTestGraphics_GraphL" + ".png", "EDDGridTestGraphics_GraphL" + "_diff.png");
 
@@ -376,7 +509,7 @@ class EDDGridTests {
               tDir,
               gridDataset.className() + "_GraphHuge",
               ".smallPng"); // to show it's irrelevant
-      // Test.displayInBrowser("file://" + tDir + tName);
+      // TestUtil.displayInBrowser("file://" + tDir + tName);
       Image2Tests.testImagesIdentical(
           tName,
           "EDDGridTestGraphics_GraphHuge" + ".png",
@@ -394,7 +527,7 @@ class EDDGridTests {
               tDir,
               gridDataset.className() + "_GraphS",
               ".smallPdf");
-      // Test.displayInBrowser("file://" + tDir + tName);
+      // TestUtil.displayInBrowser("file://" + tDir + tName);
 
       tName =
           gridDataset.makeNewFileForDapQuery(
@@ -405,7 +538,7 @@ class EDDGridTests {
               tDir,
               gridDataset.className() + "_Graph",
               ".pdf");
-      // Test.displayInBrowser("file://" + tDir + tName);
+      // TestUtil.displayInBrowser("file://" + tDir + tName);
 
       tName =
           gridDataset.makeNewFileForDapQuery(
@@ -416,7 +549,7 @@ class EDDGridTests {
               tDir,
               gridDataset.className() + "_GraphL",
               ".largePdf");
-      // Test.displayInBrowser("file://" + tDir + tName);
+      // TestUtil.displayInBrowser("file://" + tDir + tName);
     }
 
     // test legend= options
@@ -430,7 +563,7 @@ class EDDGridTests {
               tDir,
               gridDataset.className() + "_GraphLegendOff",
               ".png");
-      // Test.displayInBrowser("file://" + tDir + tName);
+      // TestUtil.displayInBrowser("file://" + tDir + tName);
       Image2Tests.testImagesIdentical(
           tName,
           "EDDGridTestGraphics_LegendOff" + ".png",
@@ -445,7 +578,7 @@ class EDDGridTests {
               tDir,
               gridDataset.className() + "_GraphLegendOnlySmall",
               ".smallPng");
-      // Test.displayInBrowser("file://" + tDir + tName);
+      // TestUtil.displayInBrowser("file://" + tDir + tName);
       Image2Tests.testImagesIdentical(
           tName,
           "EDDGridTestGraphics_LegendOnly" + ".png",
@@ -460,7 +593,7 @@ class EDDGridTests {
               tDir,
               gridDataset.className() + "_GraphLegendOnlyMed",
               ".png");
-      // Test.displayInBrowser("file://" + tDir + tName);
+      // TestUtil.displayInBrowser("file://" + tDir + tName);
       Image2Tests.testImagesIdentical(
           tName,
           "EDDGridTestGraphics_LegendOnlyMed" + ".png",
@@ -475,7 +608,7 @@ class EDDGridTests {
               tDir,
               gridDataset.className() + "_GraphLegendOnlyLarge",
               ".largePng");
-      // Test.displayInBrowser("file://" + tDir + tName);
+      // TestUtil.displayInBrowser("file://" + tDir + tName);
       Image2Tests.testImagesIdentical(
           tName,
           "EDDGridTestGraphics_LegendOnlyLarge" + ".png",
@@ -490,7 +623,7 @@ class EDDGridTests {
               tDir,
               gridDataset.className() + "_GraphTransparentLegendOnly",
               ".transparentPng");
-      // Test.displayInBrowser("file://" + tDir + tName);
+      // TestUtil.displayInBrowser("file://" + tDir + tName);
       Image2Tests.testImagesIdentical(
           tName,
           "EDDGridTestGraphics_LegendOnlyTransparent" + ".png",
@@ -505,7 +638,7 @@ class EDDGridTests {
     // tName = gridDataset.makeNewFileForDapQuery(language, null, null,
     // tempDapQuery,
     // tDir, gridDataset.className() + "_CSGraph", ".png");
-    // Test.displayInBrowser("file://" + tDir + tName);
+    // TestUtil.displayInBrowser("file://" + tDir + tName);
 
     // *** test getting map .png
     if (testAll || false) {
@@ -520,7 +653,7 @@ class EDDGridTests {
               tDir,
               gridDataset.className() + "_MapTiny",
               ".largePng"); // to show it's irrelevant
-      // Test.displayInBrowser("file://" + tDir + tName);
+      // TestUtil.displayInBrowser("file://" + tDir + tName);
       Image2Tests.testImagesIdentical(
           tName,
           "EDDGridTestGraphics_MapTiny" + ".png",
@@ -535,7 +668,7 @@ class EDDGridTests {
               tDir,
               gridDataset.className() + "_MapS",
               ".smallPng");
-      // Test.displayInBrowser("file://" + tDir + tName);
+      // TestUtil.displayInBrowser("file://" + tDir + tName);
       Image2Tests.testImagesIdentical(
           tName,
           "EDDGridTestGraphics_MapSmall" + ".png",
@@ -544,7 +677,7 @@ class EDDGridTests {
       tName =
           gridDataset.makeNewFileForDapQuery(
               language, null, null, mapDapQuery, tDir, gridDataset.className() + "_Map", ".png");
-      // Test.displayInBrowser("file://" + tDir + tName);
+      // TestUtil.displayInBrowser("file://" + tDir + tName);
       Image2Tests.testImagesIdentical(
           tName, "EDDGridTestGraphics_Map" + ".png", "EDDGridTestGraphics_Map" + "_diff.png");
 
@@ -557,7 +690,7 @@ class EDDGridTests {
               tDir,
               gridDataset.className() + "_MapL",
               ".largePng");
-      // Test.displayInBrowser("file://" + tDir + tName);
+      // TestUtil.displayInBrowser("file://" + tDir + tName);
       Image2Tests.testImagesIdentical(
           tName,
           "EDDGridTestGraphics_MapLarge" + ".png",
@@ -572,7 +705,7 @@ class EDDGridTests {
               tDir,
               gridDataset.className() + "_MapHuge",
               ".smallPng"); // to show it's irrelevant
-      // Test.displayInBrowser("file://" + tDir + tName);
+      // TestUtil.displayInBrowser("file://" + tDir + tName);
       Image2Tests.testImagesIdentical(
           tName,
           "EDDGridTestGraphics_MapHuge" + ".png",
@@ -592,7 +725,7 @@ class EDDGridTests {
               tDir,
               gridDataset.className() + "_MapTPSmall",
               ".transparentPng");
-      // Test.displayInBrowser("file://" + tDir + tName);
+      // TestUtil.displayInBrowser("file://" + tDir + tName);
       Image2Tests.testImagesIdentical(
           tName,
           "EDDGridTestGraphics_MapTPSmall" + ".png",
@@ -607,7 +740,7 @@ class EDDGridTests {
               tDir,
               gridDataset.className() + "_MapTP",
               ".transparentPng");
-      // Test.displayInBrowser("file://" + tDir + tName);
+      // TestUtil.displayInBrowser("file://" + tDir + tName);
       Image2Tests.testImagesIdentical(
           tName, "EDDGridTestGraphics_MapTP" + ".png", "EDDGridTestGraphics_MapTP" + "_diff.png");
     }
@@ -623,12 +756,12 @@ class EDDGridTests {
               tDir,
               gridDataset.className() + "_MapS",
               ".smallPdf");
-      // Test.displayInBrowser("file://" + tDir + tName);
+      // TestUtil.displayInBrowser("file://" + tDir + tName);
 
       tName =
           gridDataset.makeNewFileForDapQuery(
               language, null, null, mapDapQuery, tDir, gridDataset.className() + "_Map", ".pdf");
-      // Test.displayInBrowser("file://" + tDir + tName);
+      // TestUtil.displayInBrowser("file://" + tDir + tName);
 
       tName =
           gridDataset.makeNewFileForDapQuery(
@@ -639,7 +772,7 @@ class EDDGridTests {
               tDir,
               gridDataset.className() + "_MapL",
               ".largePdf");
-      // Test.displayInBrowser("file://" + tDir + tName);
+      // TestUtil.displayInBrowser("file://" + tDir + tName);
     }
 
     // test map kml
@@ -651,7 +784,7 @@ class EDDGridTests {
               language, null, null, kmlQuery, tDir, gridDataset.className() + "_Map", ".kml");
       results = File2.directReadFromUtf8File(tDir + tName);
       // String2.log("results=\n" + results);
-      // Test.displayInBrowser("file://" + tDir + tName);
+      // TestUtil.displayInBrowser("file://" + tDir + tName);
     }
   }
 
@@ -661,7 +794,7 @@ class EDDGridTests {
    *
    * @param eddGrid EDDGrid that saveAsImage is called on.
    * @param dir Directory used for temporary/cache files.
-   * @param requestUrl The part of the user's request, after EDStatic.baseUrl, before '?'.
+   * @param requestUrl The part of the user's request, after EDStatic.config.baseUrl, before '?'.
    * @param userDapQuery An OPeNDAP DAP-style query string, still percentEncoded (shouldn't be
    *     null). e.g., ATssta[45:1:45][0:1:0][120:10:140][130:10:160]
    * @param fileTypeName File type being requested (eg: .transparentPng)
@@ -682,7 +815,8 @@ class EDDGridTests {
     OutputStreamSourceSimple osss = new OutputStreamSourceSimple(baos);
     String filename = dir + Math2.random(Integer.MAX_VALUE) + ".png";
 
-    eddGrid.saveAsImage(
+    PngFiles pngCreator = new PngFiles();
+    pngCreator.saveAsImage(
         0 /* language */,
         null /* loggedInAs */,
         requestUrl,
@@ -690,7 +824,8 @@ class EDDGridTests {
         dir,
         filename,
         osss /* outputStreamSource */,
-        fileTypeName);
+        fileTypeName,
+        eddGrid);
 
     try {
       MessageDigest digest = MessageDigest.getInstance("SHA-256");
@@ -715,7 +850,7 @@ class EDDGridTests {
       fos.write(baos.toByteArray());
       fos.flush();
       fos.close();
-      // Test.displayInBrowser("file://" + filename);
+      // TestUtil.displayInBrowser("file://" + filename);
       throw new RuntimeException(ex);
     }
   }
@@ -726,17 +861,15 @@ class EDDGridTests {
   void testWcsBAssta() throws Throwable {
     String2.log("\n*** EDDGridFromNcFiles.testWcsBAssta()");
     EDDGrid eddGrid = (EDDGrid) EDDTestDataset.geterdBAssta5day();
-    String wcsQuery, fileName, results, expected;
+    String fileName, results;
     java.io.StringWriter writer;
-    ByteArrayOutputStream baos;
-    OutputStreamSourceSimple osss;
     String loggedInAs = null;
 
     // 1.0.0 capabilities
     // try to validate with https://xmlvalidation.com/ (just an error in a schema)
     String2.log("\n+++ GetCapabilities 1.0.0");
     writer = new java.io.StringWriter();
-    eddGrid.wcsGetCapabilities(0, loggedInAs, "1.0.0", writer);
+    eddGrid.wcsGetCapabilities(null, 0, loggedInAs, "1.0.0", writer);
     results = writer.toString();
     String2.log(results);
 
@@ -763,9 +896,9 @@ class EDDGridTests {
             + "&format=png"
             + "&time=2008-08-01T00:00:00Z"
             + "&bbox=220,20,250,50";
-    HashMap<String, String> wcsQueryMap1 = EDD.userQueryHashMap(wcsQuery1, true);
-    HashMap<String, String> wcsQueryMap2 = EDD.userQueryHashMap(wcsQuery2, true);
-    HashMap<String, String> wcsQueryMap3 = EDD.userQueryHashMap(wcsQuery3, true);
+    Map<String, String> wcsQueryMap1 = EDD.userQueryHashMap(wcsQuery1, true);
+    Map<String, String> wcsQueryMap2 = EDD.userQueryHashMap(wcsQuery2, true);
+    Map<String, String> wcsQueryMap3 = EDD.userQueryHashMap(wcsQuery3, true);
 
     String dapQuery1[] = eddGrid.wcsQueryToDapQuery(0, wcsQueryMap1);
     String2.log("\nwcsQuery1=" + wcsQuery1 + "\n\ndapQuery1=" + dapQuery1[0]);
@@ -790,7 +923,7 @@ class EDDGridTests {
 
     // *** check netcdf response
     String2.log("\n+++ GetCoverage\n" + wcsQuery1);
-    fileName = EDStatic.fullTestCacheDirectory + "testWcsBA_2.nc";
+    fileName = EDStatic.config.fullTestCacheDirectory + "testWcsBA_2.nc";
     String endOfRequest = "myEndOfRequest";
     eddGrid.wcsGetCoverage(
         0,
@@ -806,7 +939,7 @@ class EDDGridTests {
 
     // *** check png response
     String2.log("\n+++ GetCoverage\n" + wcsQuery1);
-    fileName = EDStatic.fullTestCacheDirectory + "testWcsBA_3.png";
+    fileName = EDStatic.config.fullTestCacheDirectory + "testWcsBA_3.png";
     eddGrid.wcsGetCoverage(
         0,
         "someIPAddress",
@@ -814,7 +947,7 @@ class EDDGridTests {
         endOfRequest,
         wcsQuery3,
         new OutputStreamSourceSimple(new BufferedOutputStream(new FileOutputStream(fileName))));
-    // Test.displayInBrowser("file://" + fileName);
+    // TestUtil.displayInBrowser("file://" + fileName);
 
     /*
      * //*** observations for all stations and with BBOX (but just same 1 station)
@@ -846,7 +979,7 @@ class EDDGridTests {
     EDDGrid gridDataset = (EDDGrid) EDDTestDataset.getetopo180();
     String tName;
     int language = 0;
-    String tDir = EDStatic.fullTestCacheDirectory;
+    String tDir = EDStatic.config.fullTestCacheDirectory;
 
     // *** test getting graphs
     String2.log("\n****************** EDDGrid test get graphs\n");

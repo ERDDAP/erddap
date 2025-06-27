@@ -34,7 +34,7 @@ public class StringHolderComparator implements Comparator<StringHolder> {
    */
   @Override
   public boolean equals(Object obj) {
-    return obj != null && obj instanceof StringHolderComparator;
+    return obj instanceof StringHolderComparator;
   }
 
   @Override

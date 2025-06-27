@@ -7,7 +7,7 @@ import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 
 public class TopLevelDatasetCapture extends State {
-  private SaxParsingContext context;
+  private final SaxParsingContext context;
   private EDD dataset;
 
   public TopLevelDatasetCapture(SaxHandler saxHandler, SaxParsingContext context) {

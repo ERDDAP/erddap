@@ -94,11 +94,10 @@ public class TimeRange implements java.io.Serializable {
       return false;
     }
     if (delta != null && tr.delta != null) {
-      if (!delta.equals(tr.delta)) return false;
+      return delta.equals(tr.delta);
     } else {
       return false;
     }
-    return true;
   }
 
   @Override
@@ -108,7 +107,7 @@ public class TimeRange implements java.io.Serializable {
 
   @Override
   public String toString() {
-    StringBuffer buf = new StringBuffer(50);
+    StringBuilder buf = new StringBuilder(50);
     buf.append("[").append(start).append(";").append(end);
     if (delta == null) {
       buf.append("]");

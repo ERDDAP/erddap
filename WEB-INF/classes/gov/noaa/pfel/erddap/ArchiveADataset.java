@@ -17,9 +17,9 @@ import gov.noaa.pfel.coastwatch.pointdata.Table;
 import gov.noaa.pfel.coastwatch.util.FileVisitorDNLS;
 import gov.noaa.pfel.coastwatch.util.SSR;
 import gov.noaa.pfel.erddap.dataset.*;
+import gov.noaa.pfel.erddap.util.EDMessages;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.*;
-import java.io.FileOutputStream;
 import java.io.Writer;
 import java.util.GregorianCalendar;
 import ucar.nc2.write.NetcdfFileFormat;
@@ -80,7 +80,7 @@ public class ArchiveADataset {
     GregorianCalendar gcZ = Calendar2.newGCalendarZulu();
     String isoTime = Calendar2.formatAsISODateTimeTZ(gcZ);
     String compactTime = Calendar2.formatAsCompactDateTime(gcZ) + "Z";
-    String aadDir = EDStatic.bigParentDirectory + "ArchiveADataset/";
+    String aadDir = EDStatic.config.bigParentDirectory + "ArchiveADataset/";
     File2.makeDirectory(aadDir);
     String logFileName = aadDir + "log_" + compactTime + ".txt";
     String2.setupLog(
@@ -100,8 +100,6 @@ public class ArchiveADataset {
             + "\n"
             + String2.standardHelpAboutMessage());
     String resultName;
-    FileOutputStream fos;
-    Writer writer;
     String tgzName = null;
     int nErrors = 0;
     int nDataFilesCreated = 0;
@@ -113,7 +111,7 @@ public class ArchiveADataset {
     String digestPrompt =
         "Which type of file digest (checksum) do you want\n"
             + "(specify one of "
-            + String2.toCSSVString(String2.FILE_DIGEST_OPTIONS)
+            + String2.toCSSVString(String2.FILE_DIGEST_OPTIONS.toArray())
             + ")";
     String bagitDigestPrompt =
         digestPrompt + "\n" + "(BagIt spec recommends MD5 and SHA-1. NCEI prefers SHA-256.)";
@@ -183,7 +181,7 @@ public class ArchiveADataset {
               + "\n"
               + "Press ^D or ^C to exit this program at any time.\n"
               + "For detailed information, see\n"
-              + "https://erddap.github.io/setup.html#ArchiveADataset");
+              + "https://erddap.github.io/docs/server-admin/additional-information#archiveadataset");
 
       // get bagitMode
       int whichArg = 0;
@@ -215,25 +213,23 @@ public class ArchiveADataset {
           get(
               args,
               whichArg++,
-              EDStatic.adminEmail, // default
+              EDStatic.config.adminEmail, // default
               "What is a contact email address for this archive\n"
                   + "(it will be written in the READ_ME.txt file in the archive)");
 
       // get the datasetID
       // FUTURE? allow datasetID to be a URL of a remote dataset?
       String datasetID =
-          datasetID =
-              get(
-                  args,
-                  whichArg++,
-                  "", // default
-                  "What is the datasetID of the dataset to be archived");
+          get(
+              args,
+              whichArg++,
+              "", // default
+              "What is the datasetID of the dataset to be archived");
       if (datasetID.length() == 0)
         throw new RuntimeException("You must specify a valid datasetID.");
       String2.log("Creating the dataset...");
       EDD edd = EDD.oneFromDatasetsXml(null, datasetID);
       EDV dataVars[] = edd.dataVariables();
-      int ndv = dataVars.length;
 
       tgzName = aadDir + datasetID + "_" + compactTime + "." + compression;
       String archiveDir = aadDir + datasetID + "_" + compactTime + "/";
@@ -343,14 +339,18 @@ public class ArchiveADataset {
                 whichArg++,
                 bagitMode ? bagitDigestDefault : digestDefault,
                 bagitMode ? bagitDigestPrompt : digestPrompt);
-        int whichDigest = String2.indexOf(String2.FILE_DIGEST_OPTIONS, digestType);
+        int whichDigest = String2.FILE_DIGEST_OPTIONS.indexOf(digestType);
         if (whichDigest < 0) throw new RuntimeException("Invalid file digest type.");
-        digestExtension = String2.FILE_DIGEST_EXTENSIONS[whichDigest];
+        digestExtension = String2.FILE_DIGEST_EXTENSIONS.get(whichDigest);
         digestExtension1 = digestExtension.substring(1);
 
         // *** write info about this archiving to archiveDir
         String2.log(
-            "\n*** Creating the files to be archived...\n" + "    This may take a long time.\n");
+            """
+
+                        *** Creating the files to be archived...
+                            This may take a long time.
+                        """);
         Math2.sleep(5000);
 
         if (bagitMode) {
@@ -477,6 +477,7 @@ public class ArchiveADataset {
                   "ArchiveADataset", // pseudo ipAddress
                   baseRequestUrl + ".nc",
                   query.toString(),
+                  archiveDataDir,
                   fullName,
                   true,
                   0); // keepUnusedAxes, lonAdjust
@@ -505,8 +506,6 @@ public class ArchiveADataset {
 
         // *** EDDTable datasets
         EDDTable eddTable = (EDDTable) edd;
-        String baseRequestUrl = EDStatic.erddapUrl + "/tabledap/" + datasetID;
-        StringBuilder sb;
 
         // which data variables?
         String dataVarsCSV =
@@ -521,7 +520,6 @@ public class ArchiveADataset {
                     + "Which data variables do you want to archive\n"
                     + "(enter a comma-separated list, or press Enter to archive all)");
         dataVarsCSV = String2.replaceAll(dataVarsCSV, " ", ""); // remove any spaces
-        StringArray dataVarsSA = StringArray.fromCSV(dataVarsCSV);
         StringArray resultVars = new StringArray();
         StringArray conVars = new StringArray();
         StringArray conOps = new StringArray();
@@ -535,12 +533,13 @@ public class ArchiveADataset {
                 args,
                 whichArg++,
                 "", // default
-                "For all but the largest tabular datasets, you can archive the dataset\n"
-                    + "all at once.\n"
-                    + "If you want to archive a subset of the dataset,\n"
-                    + "enter an ERDDAP constraint expression to specify the subset,\n"
-                    + "for example, &time>=2015-01-01&time<2015-02-01\n"
-                    + "or press Enter for no constraints");
+                """
+                            For all but the largest tabular datasets, you can archive the dataset
+                            all at once.
+                            If you want to archive a subset of the dataset,
+                            enter an ERDDAP constraint expression to specify the subset,
+                            for example, &time>=2015-01-01&time<2015-02-01
+                            or press Enter for no constraints""");
         // parse dataVars+constraints to ensure valid
         eddTable.parseUserDapQuery(
             language,
@@ -554,23 +553,25 @@ public class ArchiveADataset {
         // subset by which variables?
         // default is cf_role variables
         StringArray cfRoleVars = new StringArray();
-        for (int dv = 0; dv < ndv; dv++) {
-          String tRole = dataVars[dv].combinedAttributes().getString("cf_role");
+        for (EDV dataVar : dataVars) {
+          String tRole =
+              dataVar.combinedAttributes().getString(EDMessages.DEFAULT_LANGUAGE, "cf_role");
           if (tRole == null
               || tRole.equals("profile_id")) // put all profiles for a (trajectory) in one file
           continue;
-          cfRoleVars.add(dataVars[dv].destinationName());
+          cfRoleVars.add(dataVar.destinationName());
         }
         String subsetByCSV =
             get(
                 args,
                 whichArg++,
                 cfRoleVars.toString(), // default
-                "Separate files will be made for each unique combination of values of some\n"
-                    + "variables. Each of those files must be <2GB.\n"
-                    + "If you don't specify any variables, everything will be put into one file --\n"
-                    + "for some datasets, this will be >2GB and will fail.\n"
-                    + "Which variables will be used for this");
+                """
+                            Separate files will be made for each unique combination of values of some
+                            variables. Each of those files must be <2GB.
+                            If you don't specify any variables, everything will be put into one file --
+                            for some datasets, this will be >2GB and will fail.
+                            Which variables will be used for this""");
         subsetByCSV = String2.replaceAll(subsetByCSV, " ", ""); // remove any spaces
         StringArray subsetBySA = StringArray.fromCSV(subsetByCSV);
 
@@ -593,7 +594,7 @@ public class ArchiveADataset {
                   whichArg,
                   def,
                   "Create which file type ("
-                      + fileTypeOptions.toString()
+                      + fileTypeOptions
                       + ")\n"
                       + "(NCEI prefers .ncCFMA if it is an option)");
           if (fileTypeOptions.indexOf(fileType) < 0) {
@@ -615,14 +616,18 @@ public class ArchiveADataset {
                 whichArg++,
                 bagitMode ? bagitDigestDefault : digestDefault,
                 bagitMode ? bagitDigestPrompt : digestPrompt);
-        int whichDigest = String2.indexOf(String2.FILE_DIGEST_OPTIONS, digestType);
+        int whichDigest = String2.FILE_DIGEST_OPTIONS.indexOf(digestType);
         if (whichDigest < 0) throw new RuntimeException("Invalid file digest type.");
-        digestExtension = String2.FILE_DIGEST_EXTENSIONS[whichDigest];
+        digestExtension = String2.FILE_DIGEST_EXTENSIONS.get(whichDigest);
         digestExtension1 = digestExtension.substring(1);
 
         // *** write info about this archiving to archiveDir
         String2.log(
-            "\n*** Creating the files to be archived...\n" + "    This may take a long time.\n");
+            """
+
+                        *** Creating the files to be archived...
+                            This may take a long time.
+                        """);
         Math2.sleep(5000);
 
         if (bagitMode) {
@@ -844,7 +849,11 @@ public class ArchiveADataset {
         // create required bagit.txt
         Writer tw = File2.getBufferedFileWriterUtf8(archiveDir + "bagit.txt");
         try {
-          tw.write("BagIt-Version: 0.97\n" + "Tag-File-Character-Encoding: UTF-8\n");
+          tw.write(
+              """
+                  BagIt-Version: 0.97
+                  Tag-File-Character-Encoding: UTF-8
+                  """);
         } finally {
           tw.close();
         }

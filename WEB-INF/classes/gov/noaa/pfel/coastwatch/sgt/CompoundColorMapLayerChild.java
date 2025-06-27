@@ -155,7 +155,6 @@ public class CompoundColorMapLayerChild implements LayerChild {
           Math.max(1, Math2.roundToInt(Math.ceil(n * 0.55 * max * labelHeight / width)));
 
       // draw the colorbar
-      SGLabel label;
       for (int piece = 0; piece < n; piece++) {
         left = right;
         right = layer.getXPtoD(leftX + (piece + 1) * width / n);

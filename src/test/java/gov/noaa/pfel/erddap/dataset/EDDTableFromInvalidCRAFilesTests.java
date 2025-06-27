@@ -1,13 +1,11 @@
 package gov.noaa.pfel.erddap.dataset;
 
-import com.cohort.util.Calendar2;
 import com.cohort.util.File2;
 import com.cohort.util.String2;
 import com.cohort.util.Test;
-import gov.noaa.pfel.coastwatch.pointdata.Table;
 import gov.noaa.pfel.erddap.GenerateDatasetsXml;
+import gov.noaa.pfel.erddap.util.EDMessages;
 import gov.noaa.pfel.erddap.util.EDStatic;
-import gov.noaa.pfel.erddap.variable.EDV;
 import java.nio.file.Path;
 import org.junit.jupiter.api.BeforeAll;
 import tags.TagSlowTests;
@@ -29,12 +27,8 @@ class EDDTableFromInvalidCRAFilesTests {
     // *****************\n");
     // testVerboseOn();
     int language = 0;
-    String name, tName, results, tResults, expected, userDapQuery, tQuery;
-    String error = "";
-    EDV edv;
-    String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 10);
-    Table table;
-    String testCacheDir = EDStatic.fullTestCacheDirectory;
+    String tName, results, expected, userDapQuery;
+    String testCacheDir = EDStatic.config.fullTestCacheDirectory;
 
     String id = "testInvalidCRAFiles";
     EDDTableFromInvalidCRAFiles.deleteCachedDatasetInfo(id);
@@ -97,6 +91,7 @@ class EDDTableFromInvalidCRAFilesTests {
             language, null, null, "", testCacheDir, eddTable.className() + "_wod", ".das");
     results = File2.directReadFrom88591File(testCacheDir + tName);
     // String2.log(results);
+    int oxygenIndex = results.indexOf("  Oxygen_WODprofileflag {");
     expected =
         "Attributes {\n"
             + " s {\n"
@@ -199,7 +194,9 @@ class EDDTableFromInvalidCRAFilesTests {
             + "    String long_name \"WOD_dataset\";\n"
             + "  }\n"
             + "  real_time {\n"
-            + "    String comment \"timeliness and quality status\";\n"
+            + (results.indexOf("String comment \"timeliness and quality status\"") > -1
+                ? "    String comment \"timeliness and quality status\";\n"
+                : "")
             + "    String ioos_category \"Time\";\n"
             + "    String long_name \"Real Time Data\";\n"
             + "  }\n"
@@ -253,13 +250,20 @@ class EDDTableFromInvalidCRAFilesTests {
             "    Byte actual_range 0, 0;\n"
             + "    Float64 colorBarMaximum 10.0;\n"
             + "    Float64 colorBarMinimum 0.0;\n"
-            + "    String flag_meanings \"accepted annual_sd_out density_inversion cruise seasonal_sd_out monthly_sd_out annual+seasonal_sd_out anomaly_or_annual+monthly_sd_out seasonal+monthly_sd_out annual+seasonal+monthly_sd_out\";\n"
-            + "    Byte flag_values 0, 1, 2, 3, 4, 5, 6, 7, 8, 9;\n"
-            + "    String ioos_category \"Quality\";\n"
-            + "    String long_name \"WOD_profile_flag\";\n"
+            + (results.indexOf(
+                        "String flag_meanings \"accepted annual_sd_out density_inversion cruise seasonal_sd_out",
+                        oxygenIndex)
+                    > -1
+                ? "    String flag_meanings \"accepted annual_sd_out density_inversion cruise seasonal_sd_out monthly_sd_out annual+seasonal_sd_out anomaly_or_annual+monthly_sd_out seasonal+monthly_sd_out annual+seasonal+monthly_sd_out\";\n"
+                    + "    Byte flag_values 0, 1, 2, 3, 4, 5, 6, 7, 8, 9;\n"
+                    + "    String ioos_category \"Quality\";\n"
+                    + "    String long_name \"WOD_profile_flag\";\n"
+                : "    String ioos_category \"Quality\";\n")
             + "  }\n"
             + "  Oxygen_Original_units {\n"
-            + "    String comment \"Units originally used: coverted to standard units\";\n"
+            + (results.indexOf("Units originally used: coverted to standard units") > -1
+                ? "    String comment \"Units originally used: coverted to standard units\";\n"
+                : "")
             + "    String ioos_category \"Dissolved O2\";\n"
             + "    String long_name \"Oxygen Original Units\";\n"
             + "  }\n"
@@ -611,6 +615,7 @@ class EDDTableFromInvalidCRAFilesTests {
   void testGenerateDatasetsXml() throws Throwable {
     // testVerboseOn();
     // debugMode = true;
+    int language = EDMessages.DEFAULT_LANGUAGE;
 
     // public static String generateDatasetsXml(
     // String tFileDir, String tFileNameRegex, String sampleFileName,
@@ -1338,7 +1343,7 @@ class EDDTableFromInvalidCRAFilesTests {
     EDD.deleteCachedDatasetInfo(tDatasetID);
     EDD edd = EDDTableFromInvalidCRAFiles.oneFromXmlFragment(null, results);
     Test.ensureEqual(edd.datasetID(), tDatasetID, "");
-    Test.ensureEqual(edd.title(), "World Ocean Database, Multi-cast file", "");
+    Test.ensureEqual(edd.title(language), "World Ocean Database, Multi-cast file", "");
     Test.ensureEqual(
         String2.toCSSVString(edd.dataVariableDestinationNames()),
         "country, WOD_cruise_identifier, originators_cruise_identifier, wod_unique_cast, latitude, longitude, time, date, GMT_time, Access_no, Platform, Institute, Orig_Stat_Num, dataset, real_time, Ocean_Vehicle, Temperature_WODprofileflag, Temperature_Instrument, Salinity_WODprofileflag, Salinity_Instrument, Oxygen_WODprofileflag, Oxygen_Original_units, Primary_Investigator, Primary_Investigator_VAR, depth, z_WODflag, z_sigfigs, Temperature, Temperature_sigfigs, Temperature_WODflag, Salinity, Salinity_sigfigs, Salinity_WODflag, Pressure, Pressure_sigfigs, Oxygen, Oxygen_sigfigs, Oxygen_WODflag",

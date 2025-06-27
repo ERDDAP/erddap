@@ -10,6 +10,7 @@ import com.cohort.util.MustBe;
 import com.cohort.util.String2;
 import com.sun.mail.smtp.SMTPTransport;
 import gov.noaa.pfel.coastwatch.util.SSR;
+import io.prometheus.metrics.model.snapshots.Unit;
 import jakarta.mail.Session;
 import java.util.concurrent.TimeUnit;
 
@@ -32,13 +33,13 @@ public class EmailThread extends Thread {
   private long lastStartTime = -1; // -1 if session not active
   public long lastSessionMillis = -1; // duration
 
-  public static long defaultSleepMillis = 15000;
+  public static final long defaultSleepMillis = 15000;
   public static long sleepMillis = defaultSleepMillis;
 
   /** The constructor. EmailThread uses email variables in EDStatic. */
   public EmailThread(int tNextEmail) {
-    EDStatic.nextEmail = tNextEmail;
-    EDStatic.lastFinishedEmail = tNextEmail - 1;
+    EDStatic.nextEmail.set(tNextEmail);
+    EDStatic.lastFinishedEmail.set(tNextEmail - 1);
     setName("EmailThread");
   }
 
@@ -68,7 +69,7 @@ public class EmailThread extends Thread {
       // THIS MIMICS SSR.sendEmail, but allows for sending many emails in one session
 
       // if no emails pending, continue
-      if (EDStatic.nextEmail >= EDStatic.emailList.size()) continue;
+      if (EDStatic.nextEmail.get() >= EDStatic.emailList.size()) continue;
 
       // get the SSR.emailLock
       try {
@@ -96,29 +97,30 @@ public class EmailThread extends Thread {
                 + Calendar2.getCurrentISODateTimeStringLocalTZ());
         Object oar[] =
             SSR.openEmailSession(
-                EDStatic.emailSmtpHost,
-                EDStatic.emailSmtpPort, // throws Exception
-                EDStatic.emailUserName,
-                EDStatic.emailPassword,
-                EDStatic.emailProperties);
+                EDStatic.config.emailSmtpHost,
+                EDStatic.config.emailSmtpPort, // throws Exception
+                EDStatic.config.emailUserName,
+                EDStatic.config.emailPassword,
+                EDStatic.config.emailProperties);
         session = (Session) oar[0];
         smtpTransport = (SMTPTransport) oar[1];
 
         // send each of the emails
-        while (EDStatic.nextEmail < EDStatic.emailList.size()) {
+        while (EDStatic.nextEmail.get() < EDStatic.emailList.size()) {
 
           // get email spec off emailList
           // Do these things quickly to keep internal consistency
           String emailOA[] = null;
           synchronized (EDStatic.emailList) {
             nEmailsPerSession++;
-            EDStatic.nextEmail++;
-            emailOA = EDStatic.emailList.get(EDStatic.nextEmail - 1);
+            EDStatic.nextEmail.incrementAndGet();
+            emailOA = EDStatic.emailList.get(EDStatic.nextEmail.get() - 1);
 
             // treat it as immediately done.   Failures below won't be retried. I worry about queue
             // accumlating forever.
-            EDStatic.lastFinishedEmail = EDStatic.nextEmail - 1;
-            EDStatic.emailList.set(EDStatic.nextEmail - 1, null); // throw away the email info (gc)
+            EDStatic.lastFinishedEmail.set(EDStatic.nextEmail.get() - 1);
+            EDStatic.emailList.set(
+                EDStatic.nextEmail.get() - 1, null); // throw away the email info (gc)
           }
 
           // send one email
@@ -127,7 +129,7 @@ public class EmailThread extends Thread {
             SSR.lowSendEmail(
                 session,
                 smtpTransport,
-                EDStatic.emailFromAddress,
+                EDStatic.config.emailFromAddress,
                 emailOA[0],
                 emailOA[1],
                 emailOA[2]); // toAddresses, subject, content);
@@ -136,9 +138,13 @@ public class EmailThread extends Thread {
             oneEmailTime = System.currentTimeMillis() - oneEmailTime;
             String2.distributeTime(oneEmailTime, EDStatic.emailThreadSucceededDistribution24);
             String2.distributeTime(oneEmailTime, EDStatic.emailThreadSucceededDistributionTotal);
+            EDStatic.metrics
+                .emailThreadDuration
+                .labelValues(Metrics.ThreadStatus.success.name())
+                .observe(Unit.millisToSeconds(oneEmailTime));
             String2.log(
                 "%%% EmailThread successfully sent email #"
-                    + (EDStatic.nextEmail - 1)
+                    + (EDStatic.nextEmail.get() - 1)
                     + " to "
                     + emailOA[0]
                     + ". elapsedTime="
@@ -155,9 +161,13 @@ public class EmailThread extends Thread {
             oneEmailTime = System.currentTimeMillis() - oneEmailTime;
             String2.distributeTime(oneEmailTime, EDStatic.emailThreadFailedDistribution24);
             String2.distributeTime(oneEmailTime, EDStatic.emailThreadFailedDistributionTotal);
+            EDStatic.metrics
+                .emailThreadDuration
+                .labelValues(Metrics.ThreadStatus.fail.name())
+                .observe(Unit.millisToSeconds(oneEmailTime));
             String2.log(
                 "%%% EmailThread ERROR sending email #"
-                    + (EDStatic.nextEmail - 1)
+                    + (EDStatic.nextEmail.get() - 1)
                     + " to "
                     + emailOA[0]
                     + ". elapsedTime="
@@ -174,7 +184,7 @@ public class EmailThread extends Thread {
 
         String2.log(
             "%%% EmailThread session finished after email #"
-                + (EDStatic.nextEmail - 1)
+                + (EDStatic.nextEmail.get() - 1)
                 + " at "
                 + Calendar2.getCurrentISODateTimeStringLocalTZ());
 
@@ -187,9 +197,13 @@ public class EmailThread extends Thread {
         // tally as failure with time=0 (also shows up as nEmails/session = 0)
         String2.distributeTime(0, EDStatic.emailThreadFailedDistribution24);
         String2.distributeTime(0, EDStatic.emailThreadFailedDistributionTotal);
+        EDStatic.metrics
+            .emailThreadDuration
+            .labelValues(Metrics.ThreadStatus.fail.name())
+            .observe(0);
         String2.log(
             "%%% EmailThread session ERROR at email #"
-                + (EDStatic.nextEmail - 1)
+                + (EDStatic.nextEmail.get() - 1)
                 + " at "
                 + Calendar2.getCurrentISODateTimeStringLocalTZ()
                 + "\n"
@@ -215,21 +229,22 @@ public class EmailThread extends Thread {
         // note: failed session shows up as 0 emailsPerSession
         String2.distributeCount(nEmailsPerSession, EDStatic.emailThreadNEmailsDistribution24);
         String2.distributeCount(nEmailsPerSession, EDStatic.emailThreadNEmailsDistributionTotal);
+        EDStatic.metrics.emailsCountDistribution.observe(nEmailsPerSession);
 
         // if >=200 pending emails, dump the first 100 of them
         try {
           synchronized (EDStatic.emailList) {
-            if (EDStatic.emailList.size() - EDStatic.nextEmail >= 200) {
-              int oNextEmail = EDStatic.nextEmail;
-              while (EDStatic.emailList.size() - EDStatic.nextEmail > 100) {
-                EDStatic.emailList.set(EDStatic.nextEmail++, null);
+            if (EDStatic.emailList.size() - EDStatic.nextEmail.get() >= 200) {
+              int oNextEmail = EDStatic.nextEmail.get();
+              while (EDStatic.emailList.size() - EDStatic.nextEmail.get() > 100) {
+                EDStatic.emailList.set(EDStatic.nextEmail.getAndIncrement(), null);
               }
-              EDStatic.lastFinishedEmail = EDStatic.nextEmail - 1;
+              EDStatic.lastFinishedEmail.set(EDStatic.nextEmail.get() - 1);
               String2.log(
                   "%%% EmailThread ERROR: I'm having trouble sending emails, so I dumped emails #"
                       + oNextEmail
                       + " through "
-                      + (EDStatic.nextEmail - 2)
+                      + (EDStatic.nextEmail.get() - 2)
                       + ".");
             }
           }

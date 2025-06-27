@@ -9,6 +9,7 @@ import com.cohort.util.String2;
 import com.cohort.util.Test;
 import gov.noaa.pfel.coastwatch.pointdata.Table;
 import gov.noaa.pfel.erddap.GenerateDatasetsXml;
+import gov.noaa.pfel.erddap.util.EDMessages;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import org.junit.jupiter.api.BeforeAll;
 import tags.TagExternalOther;
@@ -29,7 +30,7 @@ class EDDTableFromWFSFilesTests {
     // testVerboseOn();
     // boolean oDevelopmentMode = developmentMode;
     // developmentMode = tDevelopmentMode;
-
+    int language = EDMessages.DEFAULT_LANGUAGE;
     Attributes externalAddAttributes = new Attributes();
     externalAddAttributes.add("title", "Old Title!");
     String results =
@@ -825,7 +826,7 @@ class EDDTableFromWFSFilesTests {
     EDD edd = EDDTableFromWFSFiles.oneFromXmlFragment(null, results);
     // these won't actually be tested...
     Test.ensureEqual(edd.datasetID(), tDatasetID, "");
-    Test.ensureEqual(edd.title(), "The Title", "");
+    Test.ensureEqual(edd.title(language), "The Title", "");
     Test.ensureEqual(
         String2.toCSSVString(edd.dataVariableDestinationNames()),
         "ObservationURI, WellName, APINo, HeaderURI, OtherName, Label, Operator, time, "
@@ -842,7 +843,7 @@ class EDDTableFromWFSFilesTests {
 
     // ensure LatDegree=latitude and LongDegree=longitude
     Table table = new Table();
-    table.readASCII(EDStatic.fullCopyDirectory + edd.datasetID() + "/data.tsv", 0, 2);
+    table.readASCII(EDStatic.config.fullCopyDirectory + edd.datasetID() + "/data.tsv", 0, 2);
     PrimitiveArray pa1 = new FloatArray(table.getColumn("aasg:BoreholeTemperature/aasg:LatDegree"));
     PrimitiveArray pa2 =
         new FloatArray(table.getColumn("aasg:BoreholeTemperature/aasg:Shape/gml:Point/latitude"));
@@ -867,8 +868,7 @@ class EDDTableFromWFSFilesTests {
     // 2021-06-25 server is gone. Initial query url is
     // https://kgs.uky.edu/usgin/services/aasggeothermal/WVBoreholeTemperatures/MapServer/WFSServer?request=GetFeature&service=WFS&typename=aasg:BoreholeTemperature&format="text/xml;%20subType=gml/3.1.1/profiles/gmlsf/1.0.0/0"
     EDDTable tedd = (EDDTable) EDDTestDataset.getkgsBoreTempWVTRUE();
-    String tName, error, results, tResults, expected;
-    int po;
+    String tName, results, tResults, expected;
     String today =
         Calendar2.getCurrentISODateTimeStringZulu()
             .substring(0, 14); // 14 is enough to check hour. Hard to
@@ -877,8 +877,14 @@ class EDDTableFromWFSFilesTests {
     // *** .das
     tName =
         tedd.makeNewFileForDapQuery(
-            language, null, null, "", EDStatic.fullTestCacheDirectory, "kgsBoreTempWVTRUE", ".das");
-    results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+            language,
+            null,
+            null,
+            "",
+            EDStatic.config.fullTestCacheDirectory,
+            "kgsBoreTempWVTRUE",
+            ".das");
+    results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
     // String2.log(results);
     expected =
         "Attributes {\n"
@@ -1243,8 +1249,14 @@ class EDDTableFromWFSFilesTests {
     // *** .dds
     tName =
         tedd.makeNewFileForDapQuery(
-            language, null, null, "", EDStatic.fullTestCacheDirectory, "kgsBoreTempWVTRUE", ".dds");
-    results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+            language,
+            null,
+            null,
+            "",
+            EDStatic.config.fullTestCacheDirectory,
+            "kgsBoreTempWVTRUE",
+            ".dds");
+    results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
     expected =
         "Dataset {\n"
             + "  Sequence {\n"
@@ -1320,10 +1332,10 @@ class EDDTableFromWFSFilesTests {
             null,
             null,
             "&APINo=\"4700102422\"",
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             "kgsBoreTempWVTRUE",
             ".csv");
-    results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+    results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
     // String2.log(results);
     expected =
         "ObservationURI,WellName,APINo,HeaderURI,OtherName,Label,Operator,time,EndedDrillingDate,WellType,StatusDate,ReleaseDate,Field,County,State,UTM_E,UTM_N,latitude,longitude,SRS,LocationUncertaintyStatement,LocationUncertaintyRadius,DrillerTotalDepth,DepthReferencePoint,LengthUnits,WellBoreShape,TrueVerticalDepth,ElevationKB,ElevationDF,ElevationGL,FormationTD,BitDiameterTD,MaximumRecordedTemperature,MeasuredTemperature,CorrectedTemperature,TemperatureUnits,CirculationDuration,MeasurementProcedure,DepthOfMeasurement,MeasurementDateTime,MeasurementFormation,MeasurementSource,RelatedResource,CasingBottomDepthDriller,CasingTopDepth,CasingPipeDiameter,CasingWeight,CasingThickness,pH,InformationSource,Shape_gml_Point_latitude,Shape_gml_Point_longitude,LeaseName,LeaseOwner,LeaseNo,TimeSinceCirculation,Status,CommodityOfInterest,Function,Production,ProducingInterval,Notes\n"

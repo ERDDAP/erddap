@@ -18,8 +18,6 @@ import gov.noaa.pmel.util.Point2D;
 import gov.noaa.pmel.util.Rectangle2D;
 import java.awt.*;
 import java.beans.*;
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
 import java.io.Serializable;
 
 // jdk1.2
@@ -80,8 +78,7 @@ public class SGLabel implements Cloneable, LayerChild, Moveable, Serializable {
     try {
       BeanInfo info = Introspector.getBeanInfo(SGLabel.class);
       PropertyDescriptor[] descriptors = info.getPropertyDescriptors();
-      for (int i = 0; i < descriptors.length; i++) {
-        PropertyDescriptor pd = descriptors[i];
+      for (PropertyDescriptor pd : descriptors) {
         if (pd.getName().equals("layer")) {
           pd.setValue("transient", Boolean.TRUE);
         }
@@ -187,7 +184,7 @@ public class SGLabel implements Cloneable, LayerChild, Moveable, Serializable {
    */
   @Override
   public boolean equals(Object obj) {
-    if (obj == null || !(obj instanceof SGLabel)) return false;
+    if (!(obj instanceof SGLabel)) return false;
     SGLabel sg = (SGLabel) obj;
     /*    boolean t1 = !ident_.equals(sg.getId());
     boolean t2 = !proxy_.getText().equals(sg.getText());
@@ -209,7 +206,7 @@ public class SGLabel implements Cloneable, LayerChild, Moveable, Serializable {
         || ((proxy_.getFont() != null) && !proxy_.getFont().equals(sg.getFont()))
         || (proxy_.getOrientation() != sg.getOrientation())) return false;
     if (proxy_.getOrientation() == ANGLE) {
-      if (proxy_.getAngle() != sg.getAngle()) return false;
+      return proxy_.getAngle() == sg.getAngle();
     }
     return true;
   }

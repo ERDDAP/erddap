@@ -14,6 +14,8 @@ import com.cohort.util.Calendar2;
 import com.cohort.util.MustBe;
 import com.cohort.util.String2;
 import com.cohort.util.Test;
+import gov.noaa.pfel.erddap.dataset.metadata.LocalizedAttributes;
+import gov.noaa.pfel.erddap.util.EDMessages;
 import java.time.format.DateTimeFormatter;
 import java.util.TimeZone;
 
@@ -79,7 +81,7 @@ public class EDVTimeStampGridAxis extends EDVGridAxis {
       String tSourceName,
       String tDestinationName,
       Attributes tSourceAttributes,
-      Attributes tAddAttributes,
+      LocalizedAttributes tAddAttributes,
       PrimitiveArray tSourceValues)
       throws Throwable {
 
@@ -92,8 +94,11 @@ public class EDVTimeStampGridAxis extends EDVGridAxis {
         tSourceValues);
     superConstructorIsFinished = true;
 
+    // The attributes this gets/sets should not need to be localized (max/min
+    // value for example). Just use the default language.
+    int language = EDMessages.DEFAULT_LANGUAGE;
     // time_precision e.g., 1970-01-01T00:00:00Z
-    time_precision = combinedAttributes.getString(EDV.TIME_PRECISION);
+    time_precision = combinedAttributes.getString(language, EDV.TIME_PRECISION);
     if (time_precision != null) {
       // ensure not just year (can't distinguish user input a year vs. epochSeconds)
       if (time_precision.equals("1970")) time_precision = null;
@@ -115,7 +120,7 @@ public class EDVTimeStampGridAxis extends EDVGridAxis {
     Test.ensureNotNothing(
         sourceTimeFormat, errorInMethod + "'units' wasn't found."); // match name in datasets.xml
 
-    timeZoneString = combinedAttributes.getString("time_zone");
+    timeZoneString = combinedAttributes.getString(language, "time_zone");
     combinedAttributes.remove("time_zone");
     if (!String2.isSomething(timeZoneString)) timeZoneString = "Zulu";
     timeZone = TimeZone.getTimeZone(timeZoneString);
@@ -163,18 +168,17 @@ public class EDVTimeStampGridAxis extends EDVGridAxis {
 
     units = TIME_UNITS;
     if (destinationName.equals(EDV.TIME_NAME)) {
-      combinedAttributes.set("_CoordinateAxisType", "Time"); // unidata-related
-      combinedAttributes.set("axis", "T");
+      combinedAttributes.set(language, "_CoordinateAxisType", "Time"); // unidata-related
+      combinedAttributes.set(language, "axis", "T");
     }
-    combinedAttributes.set("ioos_category", TIME_CATEGORY);
-    combinedAttributes.set("standard_name", TIME_STANDARD_NAME);
-    combinedAttributes.set("time_origin", "01-JAN-1970 00:00:00");
-    combinedAttributes.set("units", units);
-    longName = combinedAttributes.getString("long_name");
-    if (longName == null
-        || longName.toLowerCase().equals("time")) // catch nothing or alternate case
-    combinedAttributes.set("long_name", TIME_LONGNAME);
-    longName = combinedAttributes.getString("long_name");
+    combinedAttributes.set(language, "ioos_category", TIME_CATEGORY);
+    combinedAttributes.set(language, "standard_name", TIME_STANDARD_NAME);
+    combinedAttributes.set(language, "time_origin", "01-JAN-1970 00:00:00");
+    combinedAttributes.set(language, "units", units);
+    longName = combinedAttributes.getString(language, "long_name");
+    if (longName == null || longName.equalsIgnoreCase("time")) // catch nothing or alternate case
+    combinedAttributes.set(language, "long_name", TIME_LONGNAME);
+    longName = combinedAttributes.getString(language, "long_name");
 
     // previously computed evenSpacing is fine
     // since source must be numeric, isEvenlySpaced is fine.
@@ -203,7 +207,7 @@ public class EDVTimeStampGridAxis extends EDVGridAxis {
               + tSourceValues.getString(n - 1)
               + " => NaN epochSeconds.");
 
-    setActualRangeFromDestinationMinMax();
+    setActualRangeFromDestinationMinMax(language);
     initializeAverageSpacingAndCoarseMinMax();
     if (reallyVerbose)
       String2.log(
@@ -377,13 +381,12 @@ public class EDVTimeStampGridAxis extends EDVGridAxis {
    */
   public double sourceTimeToEpochSeconds(double sourceTime) {
     if (scaleAddOffset) sourceTime = sourceTime * scaleFactor + addOffset;
-    double sec = Calendar2.unitsSinceToEpochSeconds(sourceTimeBase, sourceTimeFactor, sourceTime);
     // if (reallyVerbose)
     //    String2.log("    EDVTimeStampGridAxis stBase=" + sourceTimeBase +
     //        " scale=" + scaleFactor + " addOffset=" + addOffset +
     //        " stFactor=" + sourceTimeFactor + " sourceTime=" + sourceTime +
     //        " result=" + sec + " = " + Calendar2.epochSecondsToIsoStringTZ(sec));
-    return sec;
+    return Calendar2.unitsSinceToEpochSeconds(sourceTimeBase, sourceTimeFactor, sourceTime);
   }
 
   /**
@@ -406,17 +409,18 @@ public class EDVTimeStampGridAxis extends EDVGridAxis {
 
     // time is a string
     try {
-      double d =
-          parseISOWithCalendar2
-              ?
-              // parse with Calendar2.parseISODateTime
-              Calendar2.isoStringToEpochSeconds(sourceTime)
-              :
-              // parse
-              Calendar2.parseToEpochSeconds(sourceTime, dateTimeFormat, timeZone); // thread safe
+      // parse with Calendar2.parseISODateTime
+      // parse
+      // thread safe
       // String2.log("  EDVTimeStampGridAxis sourceTime=" + sourceTime +
       //    " epSec=" + d + " Calendar2=" + Calendar2.epochSecondsToIsoStringTZ(d));
-      return d;
+      return parseISOWithCalendar2
+          ?
+          // parse with Calendar2.parseISODateTime
+          Calendar2.isoStringToEpochSeconds(sourceTime)
+          :
+          // parse
+          Calendar2.parseToEpochSeconds(sourceTime, dateTimeFormat, timeZone);
     } catch (Throwable t) {
       if (verbose && sourceTime != null && sourceTime.length() > 0)
         String2.log(
@@ -607,10 +611,11 @@ public class EDVTimeStampGridAxis extends EDVGridAxis {
    * a formatting string which has the year designator) in the units attribute because this class
    * currently doesn't support String times.
    */
-  public static boolean hasTimeUnits(Attributes sourceAttributes, Attributes addAttributes) {
+  public static boolean hasTimeUnits(
+      Attributes sourceAttributes, LocalizedAttributes addAttributes) {
     String tUnits = null;
     if (addAttributes != null) // priority
-    tUnits = addAttributes.getString("units");
+    tUnits = addAttributes.getString(EDMessages.DEFAULT_LANGUAGE, "units");
     if (tUnits == null && sourceAttributes != null) tUnits = sourceAttributes.getString("units");
     return hasTimeUnits(tUnits);
   }

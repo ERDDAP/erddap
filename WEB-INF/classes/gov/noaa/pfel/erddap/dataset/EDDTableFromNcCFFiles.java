@@ -16,8 +16,10 @@ import com.cohort.util.XML;
 import gov.noaa.pfel.coastwatch.griddata.NcHelper;
 import gov.noaa.pfel.coastwatch.pointdata.Table;
 import gov.noaa.pfel.coastwatch.util.FileVisitorDNLS;
+import gov.noaa.pfel.erddap.dataset.metadata.LocalizedAttributes;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.*;
+import java.util.List;
 
 /**
  * This class represents a table of data from a collection of FeatureDatasets using CF Discrete
@@ -38,7 +40,7 @@ public class EDDTableFromNcCFFiles extends EDDTableFromFiles {
     return DEFAULT_STANDARDIZEWHAT;
   }
 
-  public static int DEFAULT_STANDARDIZEWHAT = 0;
+  public static final int DEFAULT_STANDARDIZEWHAT = 0;
 
   /**
    * The constructor just calls the super constructor.
@@ -74,8 +76,8 @@ public class EDDTableFromNcCFFiles extends EDDTableFromFiles {
       String tSosOfferingPrefix,
       String tDefaultDataQuery,
       String tDefaultGraphQuery,
-      Attributes tAddGlobalAttributes,
-      Object[][] tDataVariables,
+      LocalizedAttributes tAddGlobalAttributes,
+      List<DataVariableInfo> tDataVariables,
       int tReloadEveryNMinutes,
       int tUpdateEveryNMillis,
       String tFileDir,
@@ -195,7 +197,8 @@ public class EDDTableFromNcCFFiles extends EDDTableFromFiles {
         standardizeWhat,
         sourceConVars,
         sourceConOps,
-        sourceConValues);
+        sourceConValues,
+        EDStatic.config.includeNcCFSubsetVariables);
     // } else {
     //    //Just return a table with globalAtts, columns with atts, but no rows.
     //    table.readNcMetadata(decompFullName, sourceDataNames.toArray(), sourceDataTypes,
@@ -315,7 +318,7 @@ public class EDDTableFromNcCFFiles extends EDDTableFromFiles {
         tStandardizeWhat < 0 || tStandardizeWhat == Integer.MAX_VALUE
             ? DEFAULT_STANDARDIZEWHAT
             : tStandardizeWhat;
-    dataSourceTable.readNcCF(sampleFileName, null, tStandardizeWhat, null, null, null);
+    dataSourceTable.readNcCF(sampleFileName, null, tStandardizeWhat, null, null, null, true);
     double maxTimeES = Double.NaN;
     for (int c = 0; c < dataSourceTable.nColumns(); c++) {
       String colName = dataSourceTable.getColumnName(c);
@@ -385,10 +388,15 @@ public class EDDTableFromNcCFFiles extends EDDTableFromFiles {
 
     // subsetVariables  (or get from outer variables in some file types?)
     if (dataSourceTable.globalAttributes().getString("subsetVariables") == null
-        && dataAddTable.globalAttributes().getString("subsetVariables") == null)
+        && dataAddTable.globalAttributes().getString("subsetVariables") == null) {
       dataAddTable
           .globalAttributes()
           .add("subsetVariables", suggestSubsetVariables(dataSourceTable, dataAddTable, false));
+    } else if (dataAddTable.globalAttributes().getString("subsetVariables") == null) {
+      dataAddTable
+          .globalAttributes()
+          .add("subsetVariables", dataSourceTable.globalAttributes().getString("subsetVariables"));
+    }
 
     // add the columnNameForExtract variable
     if (tColumnNameForExtract.length() > 0) {
@@ -470,7 +478,10 @@ public class EDDTableFromNcCFFiles extends EDDTableFromFiles {
     // last 2 params: includeDataType, questionDestinationName
     sb.append(
         writeVariablesForDatasetsXml(dataSourceTable, dataAddTable, "dataVariable", true, false));
-    sb.append("</dataset>\n" + "\n");
+    sb.append("""
+            </dataset>
+
+            """);
 
     String2.log("\n\n*** generateDatasetsXml finished successfully.\n\n");
     return sb.toString();

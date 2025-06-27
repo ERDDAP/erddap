@@ -16,6 +16,7 @@ import gov.noaa.pfel.coastwatch.pointdata.Table;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.EDV;
 import java.io.BufferedWriter;
+import java.io.IOException;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
@@ -29,8 +30,9 @@ import java.util.concurrent.atomic.AtomicLong;
 public class TableWriterJsonl extends TableWriter {
 
   // set by constructor
-  protected String jsonp;
-  protected boolean writeColNames, writeKVP;
+  protected final String jsonp;
+  protected final boolean writeColNames;
+  protected final boolean writeKVP;
 
   // set by firstTime
   protected volatile boolean isTimeStamp[];
@@ -38,7 +40,7 @@ public class TableWriterJsonl extends TableWriter {
   protected volatile BufferedWriter writer;
 
   // other
-  public volatile AtomicLong totalNRows = new AtomicLong(0);
+  public final AtomicLong totalNRows = new AtomicLong(0);
 
   /**
    * The constructor.
@@ -70,7 +72,10 @@ public class TableWriterJsonl extends TableWriter {
     jsonp = tJsonp;
     if (jsonp != null && !String2.isJsonpNameSafe(jsonp))
       throw new SimpleException(
-          EDStatic.bilingual(language, EDStatic.queryErrorAr, EDStatic.errorJsonpFunctionNameAr));
+          EDStatic.bilingual(
+              language,
+              EDStatic.messages.queryErrorAr,
+              EDStatic.messages.errorJsonpFunctionNameAr));
   }
 
   /**
@@ -209,5 +214,13 @@ public class TableWriterJsonl extends TableWriter {
         new TableWriterJsonl(
             language, tEdd, tNewHistory, outputStreamSource, tWriteColNames, tWriteKVP, tJsonp);
     twjl.writeAllAndFinish(table);
+    twjl.close();
+  }
+
+  @Override
+  public void close() throws IOException {
+    if (writer != null) {
+      writer.close();
+    }
   }
 }

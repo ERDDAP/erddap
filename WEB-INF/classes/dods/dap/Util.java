@@ -11,7 +11,9 @@
 
 package dods.dap;
 
+import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.List;
 import java.util.Vector;
 
 /**
@@ -21,6 +23,39 @@ import java.util.Vector;
  * @author jehamby
  */
 class Util {
+  /**
+   * Compares elements in a <code>List</code> of <code>BaseType</code>s and throw a <code>
+   * BadSemanticsException</code> if there are any duplicate elements.
+   *
+   * @param v The <code>List</code> to check
+   * @param varName the name of the variable which called us
+   * @param typeName the type name of the variable which called us
+   * @exception BadSemanticsException if there are duplicate elements
+   * @exception IndexOutOfBoundsException if size doesn't match the number of elements in the <code>
+   *     Enumeration</code>
+   */
+  static void uniqueNames(List<BaseType> v, String varName, String typeName)
+      throws BadSemanticsException {
+    List<String> nameList = new ArrayList<>();
+    for (BaseType bt : v) {
+      nameList.add(bt.getName());
+    }
+    nameList.sort(null);
+
+    for (int i = 1; i < nameList.size(); i++) {
+      if (nameList.get(i - 1).equals(nameList.get(i))) {
+        throw new BadSemanticsException(
+            "The variable `"
+                + nameList.get(i)
+                + "' is used more than once in "
+                + typeName
+                + " `"
+                + varName
+                + "'");
+      }
+    }
+  }
+
   /**
    * Compares elements in a <code>Vector</code> of <code>BaseType</code>s and throw a <code>
    * BadSemanticsException</code> if there are any duplicate elements.
@@ -32,7 +67,8 @@ class Util {
    * @exception IndexOutOfBoundsException if size doesn't match the number of elements in the <code>
    *     Enumeration</code>
    */
-  static void uniqueNames(Vector v, String varName, String typeName) throws BadSemanticsException {
+  static void uniqueNames(Vector<BaseType> v, String varName, String typeName)
+      throws BadSemanticsException {
     String[] names = sortedNames(v);
     // DEBUG: print out names
     // for(int i=0; i<names.length; i++) {
@@ -61,11 +97,11 @@ class Util {
    * @return a sorted array of <code>String</code>
    * @exception BadSemanticsException if there is an element with no name
    */
-  static String[] sortedNames(Vector v) throws BadSemanticsException {
+  static String[] sortedNames(Vector<BaseType> v) throws BadSemanticsException {
     String[] names = new String[v.size()];
     int count = 0;
-    for (Enumeration e = v.elements(); e.hasMoreElements(); ) {
-      BaseType bt = (BaseType) e.nextElement();
+    for (Enumeration<BaseType> e = v.elements(); e.hasMoreElements(); ) {
+      BaseType bt = e.nextElement();
       String tempName = bt.getName();
       if (tempName == null)
         throw new BadSemanticsException(bt.getClass().getName() + " variable with no name");
@@ -149,7 +185,7 @@ class Util {
    * @return the escaped <code>String</code>.
    */
   static String escattr(String s) {
-    StringBuffer buf = new StringBuffer(s.length());
+    StringBuilder buf = new StringBuilder(s.length());
     for (int i = 0; i < s.length(); i++) {
       char c = s.charAt(i);
       if (c == ' ' || (c >= '!' && c <= '~')) {
@@ -160,7 +196,7 @@ class Util {
         // padded with leading zeros
         buf.append('\\');
         String numVal = Integer.toString((int) c & 0xFF, 8);
-        for (int pad = 0; pad < (3 - numVal.length()); pad++) buf.append('0');
+        buf.append("0".repeat(Math.max(0, (3 - numVal.length()))));
         buf.append(numVal);
       }
     }
