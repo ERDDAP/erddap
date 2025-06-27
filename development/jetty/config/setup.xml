@@ -386,7 +386,7 @@ If an attribute is a global attribute, identify it by prefixing it with "global:
 "variableName" is a special case: it categorizes the dataVariable destinationNames.
 -->
 <categoryAttributes>global:cdm_data_type, global:institution, ioos_category, global:keywords, long_name, standard_name, variableName</categoryAttributes>
-<useHtmlTemplates>true</useHtmlTemplates>
+<useHtmlTemplates>false</useHtmlTemplates>
 <useSharedWatchService>true</useSharedWatchService>
 <useSaxParser>true</useSaxParser>
 <usePrometheusMetrics>true</usePrometheusMetrics>

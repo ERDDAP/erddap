@@ -8,20 +8,17 @@ import com.sun.management.UnixOperatingSystemMXBean;
 import gov.noaa.pfel.coastwatch.sgt.GSHHS;
 import gov.noaa.pfel.coastwatch.sgt.SgtMap;
 import gov.noaa.pfel.coastwatch.sgt.SgtUtil;
-import gov.noaa.pfel.erddap.Erddap;
 import gov.noaa.pfel.erddap.util.*;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import java.lang.management.ManagementFactory;
 
 public class Status {
-  private static Erddap erddap;
+  private int gridDatasetCount;
+  private int tableDatasetCount;
 
-  static {
-    try {
-      erddap = new Erddap();
-    } catch (Throwable e) {
-      throw new RuntimeException("Failed to initialize Erddap", e);
-    }
+  public Status(int gridDatasetCount, int tableDatasetCount) {
+    this.gridDatasetCount = gridDatasetCount;
+    this.tableDatasetCount = tableDatasetCount;
   }
 
   public static String getCurrentTimeLocal() {
@@ -77,12 +74,12 @@ public class Status {
       return erddap.tableDatasetHashMap;
   }
   */
-  public static int getGridDatasetCount() {
-    return erddap.gridDatasetHashMap == null ? 0 : erddap.gridDatasetHashMap.size();
+  public int getGridDatasetCount() {
+    return gridDatasetCount;
   }
 
-  public static int getTableDatasetCount() {
-    return erddap.tableDatasetHashMap == null ? 0 : erddap.tableDatasetHashMap.size();
+  public int getTableDatasetCount() {
+    return tableDatasetCount;
   }
 
   public static boolean getShowLoadErrorsOnStatusPage() {
@@ -140,13 +137,8 @@ public class Status {
   }
 
   public static String getTaskThreadStatusMessage() {
-    TaskThread thread = EDStatic.getTaskThread(); // use the getter
-    long tElapsedTime = thread == null ? -1 : thread.elapsedTime();
-    return tElapsedTime < 0
-        ? "Currently, no task is running.\n"
-        : "The current task has been running for "
-            + Calendar2.elapsedTimeString(tElapsedTime)
-            + ".\n";
+    long tElapsedTime = EDStatic.getTaskThreadElapsedTime();
+    return tElapsedTime < 0 ? null : Calendar2.elapsedTimeString(tElapsedTime);
   }
 
   public static String getTaskThreadFailedDistribution24() {
@@ -180,11 +172,7 @@ public class Status {
 
   public static String getEmailThreadStatusMessage() {
     long tElapsedTime = EDStatic.getEmailThread();
-    return tElapsedTime < 0
-        ? "Currently, the thread is sleeping.\n"
-        : "The current email session has been running for "
-            + Calendar2.elapsedTimeString(tElapsedTime)
-            + ".\n";
+    return tElapsedTime < 0 ? null : Calendar2.elapsedTimeString(tElapsedTime);
   }
 
   public static String getEmailThreadFailedDistribution24() {
@@ -204,13 +192,8 @@ public class Status {
   }
 
   public static String getTouchThreadStatusMessage() {
-    TouchThread touchThread = EDStatic.getTouchThread();
-    long tElapsedTime = touchThread == null ? -1 : touchThread.elapsedTime();
-    return tElapsedTime < 0
-        ? "Currently, the thread is sleeping.\n"
-        : "The current touch has been running for "
-            + Calendar2.elapsedTimeString(tElapsedTime)
-            + ".\n";
+    long tElapsedTime = EDStatic.getTouchThreadElapsedTime();
+    return tElapsedTime < 0 ? null : Calendar2.elapsedTimeString(tElapsedTime);
   }
 
   public static String getTouchThreadFailedDistribution24() {

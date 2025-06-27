@@ -1,12 +1,16 @@
 @import gov.noaa.pfel.erddap.jte.Status
+@import gov.noaa.pfel.erddap.jte.YouAreHere
+@param YouAreHere youAreHere
+@param Status status
+@template.youarehere(youAreHere)
 <pre>
 Current time is ${Status.getCurrentTimeLocal()}
 Startup was at ${Status.getStartupTimeLocal()}
 Last major LoadDatasets started ${Status.getTimeSinceLastMajorLoadDatasetsStarted()} ago and@if(Status.isLoadDatasetsRunning()) is still running.@else finshed after ${Status.getLoadDatasetsElapsedTimeSeconds()} seconds.@endif
 @if(!Status.isDatasetLoading())Currently, no dataset is loading.@elseCurrently @if(Status.isDatasetLoadingMajor())major@else minor @endif LoadDatasets is loading dataset ${Status.getDatasetLoadingNumber()} = ${Status.getDatasetLoadingID()} (${Status.getDatasetLoadingTime()})@endif
-nGridDatasets = ${Status.getGridDatasetCount()}
-nTableDatasets = ${Status.getTableDatasetCount()}
-nTotalDatasets = ${Status.getGridDatasetCount()+Status.getTableDatasetCount()}
+nGridDatasets = ${status.getGridDatasetCount()}
+nTableDatasets = ${status.getTableDatasetCount()}
+nTotalDatasets = ${status.getGridDatasetCount()+status.getTableDatasetCount()}
 ${Status.getdatasetsfailedtoload()}
 @if(Status.getShowLoadErrorsOnStatusPage())${Status.getdatasetsfailedtoload()}@endif
 ${Status.getErrorsDuringMajorReload()}
@@ -20,6 +24,7 @@ Response Succeeded Time (since startup)                 ${Status.getResponseTime
 
 TaskThread has finished ${Status.getLastFinishedTaskPlusOne()} out of ${Status.getTaskListSize()} tasks.
 ${Status.getTaskThreadStatusMessage()}
+@if(Status.getTaskThreadStatusMessage()==null)Currently, no task is running.@elseThe current task has been running for ${Status.getTaskThreadStatusMessage()}@endif
 TaskThread Failed    Time (since last Daily Report)     ${Status.getTaskThreadFailedDistribution24()}
 TaskThread Failed    Time (since startup)               ${Status.getTaskThreadFailedDistributionTotal()}
 TaskThread Succeeded Time (since last Daily Report)     ${Status.getTaskThreadSucceededDistribution24()}
@@ -27,14 +32,15 @@ TaskThread Succeeded Time (since startup)               ${Status.getTaskThreadSu
 
 @if(Status.isEmailSystemActive())
 EmailThread has sent ${Status.getLastFinishedEmailPlusOne()} out of ${Status.getEmailListSize()} emails.
-${Status.getEmailThreadStatusMessage()}
+@if(Status.getEmailThreadStatusMessage()==null)Currently, the thread is sleeping@elseThe current email session has been running for ${Status.getEmailThreadStatusMessage()}@endif
 EmailThread Failed    Time (since last Daily Report)    ${Status.getEmailThreadFailedDistribution24()}
 EmailThread Succeeded Time (since last Daily Report)    ${Status.getEmailThreadSucceededDistribution24()}
 @else
 The email system is inactive.
 @endif
 TouchThread has finished ${Status.getLastFinishedTouchPlusOne()} out of ${Status.getTouchListSize()} touches.
-${Status.getTouchThreadStatusMessage()}
+
+@if(Status.getTouchThreadStatusMessage()==null)"Currently, the thread is sleeping.@elseThe current touch has been running for ${Status.getTouchThreadStatusMessage()}@endif
 TouchThread Failed    Time (since last Daily Report)    ${Status.getTouchThreadFailedDistribution24()}
 TouchThread Succeeded Time (since last Daily Report)    ${Status.getTouchThreadSucceededDistribution24()}
 OS info: totalCPULoad=${Status.getTotalCpuLoad()} processCPULoad=${Status.getProcessCpuLoad()}

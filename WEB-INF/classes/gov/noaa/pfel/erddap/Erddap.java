@@ -42,6 +42,8 @@ import gov.noaa.pfel.erddap.dataset.*;
 import gov.noaa.pfel.erddap.dataset.EDD.EDDFileTypeInfo;
 import gov.noaa.pfel.erddap.filetypes.TransparentPngFiles;
 import gov.noaa.pfel.erddap.handlers.SaxParsingContext;
+import gov.noaa.pfel.erddap.jte.Status;
+import gov.noaa.pfel.erddap.jte.YouAreHere;
 import gov.noaa.pfel.erddap.util.*;
 import gov.noaa.pfel.erddap.variable.*;
 import io.prometheus.metrics.model.snapshots.Unit;
@@ -368,6 +370,13 @@ public class Erddap extends HttpServlet {
   @Override
   public void destroy() {
     EDStatic.destroy();
+  }
+
+  public static boolean useHtmlTemplates(HttpServletRequest request) {
+    if (request.getParameter("jte") != null) {
+      return Boolean.parseBoolean(request.getParameter("jte"));
+    }
+    return EDStatic.config.useHtmlTemplates;
   }
 
   /**
@@ -4972,48 +4981,60 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     OutputStream out = getHtmlOutputStreamUtf8(request, response);
     Writer writer =
         getHtmlWriterUtf8(request, language, loggedInAs, "status.html", queryString, "Status", out);
+    if (useHtmlTemplates(request)) {
+      Status status =
+          new Status(
+              gridDatasetHashMap == null ? 0 : gridDatasetHashMap.size(),
+              tableDatasetHashMap == null ? 0 : tableDatasetHashMap.size());
+      YouAreHere youAreHere =
+          EDStatic.getYouAreHere(
+              request, language, loggedInAs, EDStatic.messages.statusAr[language]);
+      TemplateEngine engine = TemplateEngine.createPrecompiled(ContentType.Html);
+      engine.render(
+          "status.jte",
+          Map.of(
+              "status", status,
+              "youAreHere", youAreHere),
+          new WriterOutput(writer));
+      endHtmlWriter(request, language, out, writer, tErddapUrl, loggedInAs, false);
+    } else {
+      try {
+        String youAreHereHtml =
+            EDStatic.youAreHere(
+                request, language, loggedInAs, EDStatic.messages.statusAr[language]);
 
-    try {
-      String youAreHereHtml =
-          EDStatic.youAreHere(request, language, loggedInAs, EDStatic.messages.statusAr[language]);
+        StringBuilder sb = new StringBuilder();
+        EDStatic.addIntroStatistics(sb, EDStatic.config.showLoadErrorsOnStatusPage, this);
+        String traces = MustBe.allStackTraces(true, true);
+        int po = traces.indexOf('\n');
+        if (po > 0) sb.append(traces, 0, po + 1);
+        sb.append(
+            Math2.gcCallCount
+                + " gc calls, "
+                + EDStatic.requestsShed
+                + " requests shed, and "
+                + EDStatic.dangerousMemoryEmails
+                + " dangerousMemoryEmails since last major LoadDatasets\n");
+        sb.append(Math2.memoryString()).append(" ").append(Math2.xmxMemoryString()).append("\n\n");
+        EDStatic.addCommonStatistics(sb);
+        sb.append(traces);
 
-      StringBuilder sb = new StringBuilder();
-      EDStatic.addIntroStatistics(sb, EDStatic.config.showLoadErrorsOnStatusPage, this);
-      String traces = MustBe.allStackTraces(true, true);
-      int po = traces.indexOf('\n');
-      if (po > 0) sb.append(traces, 0, po + 1);
-      sb.append(
-          Math2.gcCallCount
-              + " gc calls, "
-              + EDStatic.requestsShed
-              + " requests shed, and "
-              + EDStatic.dangerousMemoryEmails
-              + " dangerousMemoryEmails since last major LoadDatasets\n");
-      sb.append(Math2.memoryString()).append(" ").append(Math2.xmxMemoryString()).append("\n\n");
-      EDStatic.addCommonStatistics(sb);
-      sb.append(traces);
+        String statisticsHtml = XML.encodeAsHTML(sb.toString());
 
-      String statisticsHtml = XML.encodeAsHTML(sb.toString());
-
-      writer.write("<div class=\"standard_width\">\n");
-
-      if (EDStatic.config.useHtmlTemplates) {
-        TemplateEngine engine = TemplateEngine.createPrecompiled(ContentType.Html);
-        engine.render("status.jte", Map.of(), new WriterOutput(writer));
-      } else {
+        writer.write("<div class=\"standard_width\">\n");
         writer.write(youAreHereHtml + "<pre>" + statisticsHtml + "</pre>\n");
-      }
 
-      writer.write("</div>\n");
-      endHtmlWriter(request, language, out, writer, tErddapUrl, loggedInAs, false);
-      String2.flushLog();
-    } catch (Throwable t) {
-      EDStatic.rethrowClientAbortException(t);
-      writer.write(EDStatic.htmlForException(language, t));
-      writer.write("</div>\n");
-      endHtmlWriter(request, language, out, writer, tErddapUrl, loggedInAs, false);
-      String2.flushLog();
-      throw t;
+        writer.write("</div>\n");
+        endHtmlWriter(request, language, out, writer, tErddapUrl, loggedInAs, false);
+        String2.flushLog();
+      } catch (Throwable t) {
+        EDStatic.rethrowClientAbortException(t);
+        writer.write(EDStatic.htmlForException(language, t));
+        writer.write("</div>\n");
+        endHtmlWriter(request, language, out, writer, tErddapUrl, loggedInAs, false);
+        String2.flushLog();
+        throw t;
+      }
     }
   }
 
