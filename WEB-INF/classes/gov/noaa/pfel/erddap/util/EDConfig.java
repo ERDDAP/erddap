@@ -227,6 +227,7 @@ public class EDConfig {
   @FeatureFlag public boolean quickRestart;
   @FeatureFlag public final boolean subscribeToRemoteErddapDataset;
   @FeatureFlag public boolean showLoadErrorsOnStatusPage = DEFAULT_showLoadErrorsOnStatusPage;
+  @FeatureFlag public boolean useHtmlTemplates;
 
   @FeatureFlag
   public
@@ -626,6 +627,7 @@ public class EDConfig {
         getSetupEVBoolean(setup, ev, "variablesMustHaveIoosCategory", true);
     warName = getSetupEVString(setup, ev, "warName", "erddap");
     includeNcCFSubsetVariables = getSetupEVBoolean(setup, ev, "includeNcCFSubsetVariables", false);
+    useHtmlTemplates = getSetupEVBoolean(setup, ev, "useHtmlTemplates", true);
     useSisISO19115 = getSetupEVBoolean(setup, ev, "useSisISO19115", false);
     generateCroissantSchema = getSetupEVBoolean(setup, ev, "generateCroissantSchema", true);
     deploymentInfo = getSetupEVString(setup, ev, "deploymentInfo", "");
