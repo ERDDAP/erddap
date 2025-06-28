@@ -227,6 +227,7 @@ public class EDConfig {
   @FeatureFlag public boolean quickRestart;
   @FeatureFlag public final boolean subscribeToRemoteErddapDataset;
   @FeatureFlag public boolean showLoadErrorsOnStatusPage = DEFAULT_showLoadErrorsOnStatusPage;
+  @FeatureFlag public boolean useHtmlTemplates;
 
   @FeatureFlag
   public
@@ -629,6 +630,7 @@ public class EDConfig {
     warName = getSetupEVString(setup, ev, "warName", "erddap");
     includeNcCFSubsetVariables = getSetupEVBoolean(setup, ev, "includeNcCFSubsetVariables", false);
     useSharedWatchService = getSetupEVBoolean(setup, ev, "useSharedWatchService", true);
+    useHtmlTemplates = getSetupEVBoolean(setup, ev, "useHtmlTemplates", true);
     redirectDocumentationToGitHubIo =
         getSetupEVBoolean(setup, ev, "redirectDocumentationToGitHubIo", true);
     useSisISO19115 = getSetupEVBoolean(setup, ev, "useSisISO19115", false);
