@@ -228,7 +228,6 @@ public class EDConfig {
   @FeatureFlag public final boolean subscribeToRemoteErddapDataset;
   @FeatureFlag public boolean showLoadErrorsOnStatusPage = DEFAULT_showLoadErrorsOnStatusPage;
   @FeatureFlag public boolean useHtmlTemplates;
-  @FeatureFlag public boolean useHtmlTemplates;
 
   @FeatureFlag
   public
