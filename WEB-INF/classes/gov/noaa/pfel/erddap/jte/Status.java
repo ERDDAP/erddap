@@ -66,14 +66,6 @@ public class Status {
         Math2.longToDoubleNaN(System.currentTimeMillis() - EDStatic.cldStartMillis));
   }
 
-  /*
-  public static ConcurrentHashMap<String, EDDGrid> getDatasetHashMap() {
-      return erddap.gridDatasetHashMap;
-  }
-  public static ConcurrentHashMap<String, EDDTable> getTableDatasetHashMap() {
-      return erddap.tableDatasetHashMap;
-  }
-  */
   public int getGridDatasetCount() {
     return gridDatasetCount;
   }
