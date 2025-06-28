@@ -23,6 +23,7 @@ import gov.noaa.pfel.erddap.handlers.SaxHandlerClass;
 import gov.noaa.pfel.erddap.util.EDMessages;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.*;
+import jakarta.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
 
 /**
@@ -610,11 +611,12 @@ public class EDDTableAggregateRows extends EDDTable {
   }
 
   @Override
-  public Table getFilesUrlList() throws Throwable {
+  public Table getFilesUrlList(HttpServletRequest request, String loggedInAs, int language)
+      throws Throwable {
     Table table = FileVisitorDNLS.makeEmptyTable();
     for (int child = 0; child < children.length; child++) {
       if (children[child].accessibleViaFiles) {
-        Table childTable = children[child].getFilesUrlList();
+        Table childTable = children[child].getFilesUrlList(request, loggedInAs, language);
         if (childTable != null) {
           table.append(childTable);
         }

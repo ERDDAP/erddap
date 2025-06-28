@@ -25,6 +25,7 @@ import gov.noaa.pfel.erddap.handlers.EDDGridAggregateExistingDimensionHandler;
 import gov.noaa.pfel.erddap.handlers.SaxHandlerClass;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.*;
+import jakarta.servlet.http.HttpServletRequest;
 import java.text.MessageFormat;
 import java.util.List;
 
@@ -615,11 +616,12 @@ public class EDDGridAggregateExistingDimension extends EDDGrid {
   }
 
   @Override
-  public Table getFilesUrlList() throws Throwable {
+  public Table getFilesUrlList(HttpServletRequest request, String loggedInAs, int language)
+      throws Throwable {
     Table table = FileVisitorDNLS.makeEmptyTable();
     for (int child = 0; child < childDatasets.length; child++) {
       if (childDatasets[child].accessibleViaFiles) {
-        Table childTable = childDatasets[child].getFilesUrlList();
+        Table childTable = childDatasets[child].getFilesUrlList(request, loggedInAs, language);
         if (childTable != null) {
           table.append(childTable);
         }

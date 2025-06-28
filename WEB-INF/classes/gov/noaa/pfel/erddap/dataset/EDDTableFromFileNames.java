@@ -31,6 +31,7 @@ import gov.noaa.pfel.erddap.handlers.SaxHandlerClass;
 import gov.noaa.pfel.erddap.util.EDMessages;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.*;
+import jakarta.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
@@ -958,12 +959,13 @@ public class EDDTableFromFileNames extends EDDTable {
     }
   }
 
-  private Table prepareFileTableToReturn(Table table) {
+  private Table prepareFileTableToReturn(
+      Table table, HttpServletRequest request, String loggedInAs, int language) {
     for (int i = 0; i < table.nRows(); i++) {
       String dir = table.getStringData(0, i).replace(fileDir, "").replace("\\", "/");
       String id = dir + table.getStringData(1, i);
       String url =
-          EDStatic.preferredErddapUrl
+          EDStatic.erddapHttpsUrl(request, language)
               + "/files/"
               + datasetID()
               + "/"
@@ -976,7 +978,8 @@ public class EDDTableFromFileNames extends EDDTable {
   }
 
   @Override
-  public Table getFilesUrlList() throws Throwable {
+  public Table getFilesUrlList(HttpServletRequest request, String loggedInAs, int language)
+      throws Throwable {
     if (!accessibleViaFiles) return null;
     try {
       // fromOnTheFly
@@ -990,7 +993,7 @@ public class EDDTableFromFileNames extends EDDTable {
                 recursive,
                 pathRegex,
                 true); // tRecursive, pathRegex, tDirectoriesToo
-        return prepareFileTableToReturn(dnlsTable);
+        return prepareFileTableToReturn(dnlsTable, request, loggedInAs, language);
       }
 
       // fromFiles
@@ -1000,12 +1003,9 @@ public class EDDTableFromFileNames extends EDDTable {
           Table dnlsTable =
               readFromFilesCache3LevelFileTable(); // It's always a copy from disk. May be null.
           if (dnlsTable != null) {
-            return prepareFileTableToReturn(dnlsTable);
+            return prepareFileTableToReturn(dnlsTable, request, loggedInAs, language);
           }
         }
-
-        int language = EDMessages.DEFAULT_LANGUAGE;
-
         // The code for this is very similar to the getTwoLevelsOfInfo() above.
         // MAKE SIMILAR CHANGES?
         String tDir = cacheDirectory(); // tDir is created by EDD.ensureValid
@@ -1053,7 +1053,7 @@ public class EDDTableFromFileNames extends EDDTable {
 
         String subDirs[] = twardt.subdirHash().toArray(new String[0]);
         Arrays.sort(subDirs, String2.STRING_COMPARATOR_IGNORE_CASE);
-        return prepareFileTableToReturn(dnlsTable);
+        return prepareFileTableToReturn(dnlsTable, request, loggedInAs, language);
       }
 
       Table dnlsTable =
@@ -1062,7 +1062,7 @@ public class EDDTableFromFileNames extends EDDTable {
               : FileVisitorDNLS
                   .oneStep( // fromLocalFiles   //throws IOException if "Too many open files"
                       fileDir, fileNameRegex, recursive, pathRegex, false); // dirToo=false
-      return prepareFileTableToReturn(dnlsTable);
+      return prepareFileTableToReturn(dnlsTable, request, loggedInAs, language);
 
     } catch (Throwable t) {
       String2.log("Caught ERROR in getFileList():\n" + MustBe.throwableToString(t));

@@ -31,6 +31,7 @@ import gov.noaa.pfel.erddap.handlers.SaxHandlerClass;
 import gov.noaa.pfel.erddap.util.EDMessages;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.*;
+import jakarta.servlet.http.HttpServletRequest;
 import java.io.BufferedOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -520,11 +521,17 @@ public class EDDGridFromEtopo extends EDDGrid {
   }
 
   @Override
-  public Table getFilesUrlList() throws Throwable {
+  public Table getFilesUrlList(HttpServletRequest request, String loggedInAs, int language)
+      throws Throwable {
     Table table = FileVisitorDNLS.makeEmptyTable();
     table.addStringData(0, etopoFileName);
     table.addStringData(
-        1, EDStatic.preferredErddapUrl + "/files/" + datasetID() + "/" + etopoFileName);
+        1,
+        EDStatic.erddapUrl(request, loggedInAs, language)
+            + "/files/"
+            + datasetID()
+            + "/"
+            + etopoFileName);
     table.addLongData(2, File2.getLastModified(fileName));
     table.addLongData(3, File2.length(fileName));
     return table;

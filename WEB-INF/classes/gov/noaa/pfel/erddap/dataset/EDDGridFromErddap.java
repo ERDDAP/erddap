@@ -33,6 +33,7 @@ import gov.noaa.pfel.erddap.handlers.SaxHandlerClass;
 import gov.noaa.pfel.erddap.util.EDMessages;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.*;
+import jakarta.servlet.http.HttpServletRequest;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
@@ -1005,7 +1006,8 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
   }
 
   @Override
-  public Table getFilesUrlList() throws Throwable {
+  public Table getFilesUrlList(HttpServletRequest request, String loggedInAs, int language)
+      throws Throwable {
     Table resultsTable = FileVisitorDNLS.makeEmptyTable();
     Queue<String> subdirs = new ArrayDeque<>();
     subdirs.add("");
@@ -1014,6 +1016,11 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
       getFilesForSubdir(subdir, resultsTable, subdirs);
     }
     return resultsTable;
+  }
+
+  @Override
+  public String getFilesetUrl(HttpServletRequest request, String loggedInAs, int language) {
+    return String2.replaceAll(localSourceUrl, "/griddap/", "/files/") + "/";
   }
 
   /**

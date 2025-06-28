@@ -7053,7 +7053,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       }
 
       // copy to awsS3OutputBucket and redirect
-      String contentType = OutputStreamFromHttpResponse.getFileContentType(request, ext, ext);
+      String contentType = OutputStreamFromHttpResponse.getFileContentType(ext, ext);
       String fullAwsUrl =
           EDStatic.config.awsS3OutputBucketUrl
               + edd.datasetID()
@@ -17860,7 +17860,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
             if (!isAllDatasets) {
               // javascript version: writer.write(EDStatic.theSchemaDotOrgDataset(edd));
               // java version:
-              theSchemaDotOrgDataset(language, writer, edd);
+              theSchemaDotOrgDataset(request, loggedInAs, language, writer, edd);
             }
           } catch (Exception e) {
             EDStatic.rethrowClientAbortException(e); // first thing in catch{}
@@ -18007,14 +18007,36 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
    *
    * @throws IOException if trouble
    */
-  public static void theSchemaDotOrgDataset(int language, Writer writer, EDD edd)
+  public static void theSchemaDotOrgDataset(
+      HttpServletRequest request, String loggedInAs, int language, Writer writer, EDD edd)
       throws IOException {
     writer.write("<script type=\"application/ld+json\">\n");
-    theSchemaDotOrgDatasetJson(language, writer, edd);
+    theSchemaDotOrgDatasetJson(request, loggedInAs, language, writer, edd);
     writer.write("</script>\n");
   }
 
-  public static void theSchemaDotOrgDatasetJson(int language, Writer writer, EDD edd)
+  private static String variableTypeToSchemaType(String type) {
+    return switch (type) {
+      case "double" -> "cr:Float64";
+      case "float" -> "cr:Float32";
+      case "long" -> "cr:Int64";
+      case "int" -> "cr:Int32";
+      case "short" -> "cr:Int16";
+      case "byte", "boolean" -> "cr:Int8"; // erddap stores booleans as bytes
+      case "char" -> "cr:UInt16";
+      case "String" -> "sc:Text";
+      case "ulong" -> "cr:UInt64";
+      case "uint" -> "cr:UInt32";
+      case "ushort" -> "cr:UInt16";
+      case "ubyte" -> "cr:UInt8";
+        // Default to return "text", it hopefully should be the least likely to break with an
+        // unknown type.
+      default -> "sc:Text";
+    };
+  }
+
+  public static void theSchemaDotOrgDatasetJson(
+      HttpServletRequest request, String loggedInAs, int language, Writer writer, EDD edd)
       throws IOException {
     String baseUrl = EDStatic.preferredErddapUrl;
     Attributes gatts = edd.combinedGlobalAttributes().toAttributes(language);
@@ -18085,11 +18107,13 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
             + ",\n");
 
     if (EDStatic.config.generateCroissantSchema && edd.accessibleViaFiles()) {
+      writer.write("  \"isLiveDataset\": true,\n");
       try {
-        Table fileTable = edd.getFilesUrlList();
+        Table fileTable = edd.getFilesUrlList(request, loggedInAs, language);
         if (fileTable != null) {
-          writer.write("\"distribution\": [\n");
+          writer.write("  \"distribution\": [\n");
           for (int i = 0; i < fileTable.nRows(); i++) {
+            String extension = File2.getExtension(fileTable.getStringData(1, i));
             writer.write(
                 "  {\n"
                     + "    \"@type\": \"cr:FileObject\",\n"
@@ -18101,22 +18125,119 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                     + " B\",\n"
                     + "    \"contentUrl\": \""
                     + fileTable.getStringData(1, i)
+                    + "\",\n"
+                    + "    \"encodingFormat\": \""
+                    + OutputStreamFromHttpResponse.getFileContentType(extension, extension)
                     + "\"\n"
-                    + "  }"
-                    + (i < fileTable.nRows() - 1 ? "," : "")
-                    + "\n");
+                    + "  },\n");
           }
+          writer.write(
+              "  {\n"
+                  + "    \"@type\": \"cr:FileSet\",\n"
+                  + "    \"@id\": \""
+                  + edd.datasetID()
+                  + "Files"
+                  + "\",\n"
+                  + "    \"description\": \"Files that contain the data.\",\n"
+                  + "    \"encodingFormat\": \"application/json\",\n"
+                  + "    \"includes\": \""
+                  + edd.getFilesetUrl(request, loggedInAs, language)
+                  + "*.*\"\n"
+                  + "  }\n");
           writer.write("  ],\n");
         }
       } catch (Throwable e) {
         String2.log(
-            "Error generation list of FileObject for dataset: "
+            "Error generating list of FileObject for dataset: "
                 + edd.datasetID()
                 + "\n"
                 + e.getMessage());
       }
     }
-    // TODO croissant- add recordSet
+    if (EDStatic.config.generateCroissantSchema) {
+      try {
+        writer.write(
+            "  \"recordSet\": [\n"
+                + "    {\n"
+                + "      \"@type\": \"cr:RecordSet\",\n"
+                + "      \"@id\": \"dataRecordSet\",\n"
+                + "      \"field\": [\n");
+        if (edd instanceof EDDGrid) {
+          EDDGrid grid = (EDDGrid) edd;
+          for (int i = 0; i < grid.axisVariables().length; i++) {
+            EDV axisVariable = grid.axisVariables()[i];
+            writer.write(
+                "        {\n"
+                    + "          \"@type\": \"cr:Field\",\n"
+                    + "          \"@id\": \"dataRecordSet/"
+                    + axisVariable.destinationName()
+                    + "\",\n"
+                    + "          \"description\": \""
+                    + axisVariable.longName()
+                    + "\",\n"
+                    + "          \"dataType\": \""
+                    + variableTypeToSchemaType(axisVariable.destinationDataType())
+                    + "\",\n"
+                    + "          \"source\": {\n"
+                    + "            \"fileSet\": {\n"
+                    + "              \"@id\": \""
+                    + edd.datasetID()
+                    + "Files"
+                    + "\"\n"
+                    + "            },\n"
+                    + "            \"extract\": {\n"
+                    + "              \"column\": \""
+                    + axisVariable.destinationName()
+                    + "\"\n"
+                    + "            }\n"
+                    + "          }\n"
+                    + "        }"
+                    + (i == grid.axisVariables().length - 1 && grid.dataVariables().length == 0
+                        ? ""
+                        : ",")
+                    + "\n");
+          }
+        }
+        for (int i = 0; i < edd.dataVariables().length; i++) {
+          EDV dataVariable = edd.dataVariables()[i];
+          writer.write(
+              "        {\n"
+                  + "          \"@type\": \"cr:Field\",\n"
+                  + "          \"@id\": \"dataRecordSet/"
+                  + dataVariable.destinationName()
+                  + "\",\n"
+                  + "          \"description\": \""
+                  + dataVariable.longName()
+                  + "\",\n"
+                  + "          \"dataType\": \""
+                  + variableTypeToSchemaType(dataVariable.destinationDataType())
+                  + "\",\n"
+                  + "          \"source\": {\n"
+                  + "            \"fileSet\": {\n"
+                  + "              \"@id\": \""
+                  + edd.datasetID()
+                  + "Files"
+                  + "\"\n"
+                  + "            },\n"
+                  + "            \"extract\": {\n"
+                  + "              \"column\": \""
+                  + dataVariable.destinationName()
+                  + "\"\n"
+                  + "            }\n"
+                  + "          }\n"
+                  + "        }"
+                  + (i == edd.dataVariables().length - 1 ? "" : ",")
+                  + "\n");
+        }
+
+        writer.write("      ]\n");
+        writer.write("    }\n");
+        writer.write("  ],\n");
+      } catch (Throwable e) {
+        String2.log(
+            "Error generating RecordSet for dataset: " + edd.datasetID() + "\n" + e.getMessage());
+      }
+    }
 
     // add everything not used elsewhere into description
     String names[] = gatts.getNames();

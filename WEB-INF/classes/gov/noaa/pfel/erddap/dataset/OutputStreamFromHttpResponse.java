@@ -79,9 +79,8 @@ public class OutputStreamFromHttpResponse implements OutputStreamSource {
   }
 
   /** This is like getFiletypeInfo, but just returns the contentType. */
-  public static String getFileContentType(
-      HttpServletRequest request, String fileType, String extension) {
-    return (String) getFileTypeInfo(request, fileType, extension)[0];
+  public static String getFileContentType(String fileType, String extension) {
+    return (String) getFileTypeInfo(fileType, extension)[0];
   }
 
   /**
@@ -93,8 +92,7 @@ public class OutputStreamFromHttpResponse implements OutputStreamSource {
    * @return an Object[] with {String contentType, HashMap headerMap, Boolean genericCompressed,
    *     Boolean otherCompressed). contentType will always be something. headerMap may be empty.
    */
-  public static Object[] getFileTypeInfo(
-      HttpServletRequest request, String fileType, String extension) {
+  public static Object[] getFileTypeInfo(String fileType, String extension) {
 
     // see mime type list at http://www.webmaster-toolkit.com/mime-types.shtml
     // or http://html.megalink.com/programmer/pltut/plMimeTypes.html
@@ -736,7 +734,7 @@ public class OutputStreamFromHttpResponse implements OutputStreamSource {
 
     // get and apply the fileTypeInfo
     // 2020-12-07 this is the section that was inline but now uses the static methods above
-    Object fileTypeInfo[] = getFileTypeInfo(request, fileType, extension);
+    Object fileTypeInfo[] = getFileTypeInfo(fileType, extension);
     String contentType = (String) fileTypeInfo[0];
     HashMap<String, String> headerMap = (HashMap<String, String>) fileTypeInfo[1];
     boolean genericCompressed =

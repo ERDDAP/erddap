@@ -2304,9 +2304,14 @@ public abstract class EDD {
    * @return a table, which contains the list of files for the dataset.
    * @throws Throwable
    */
-  public Table getFilesUrlList() throws Throwable {
+  public Table getFilesUrlList(HttpServletRequest request, String loggedInAs, int language)
+      throws Throwable {
     // Default is null, for dataset types that have a file list, override this.
     return null;
+  }
+
+  public String getFilesetUrl(HttpServletRequest request, String loggedInAs, int language) {
+    return EDStatic.erddapUrl(request, loggedInAs, language) + "/files/" + datasetID() + "/";
   }
 
   /**

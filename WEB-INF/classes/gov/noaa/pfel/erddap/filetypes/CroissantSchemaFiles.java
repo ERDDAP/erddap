@@ -17,7 +17,12 @@ public class CroissantSchemaFiles extends FileTypeInterface {
 
     try (Writer writer =
         File2.getBufferedWriter88591(requestInfo.outputStream().outputStream(File2.ISO_8859_1))) {
-      Erddap.theSchemaDotOrgDatasetJson(requestInfo.language(), writer, requestInfo.edd());
+      Erddap.theSchemaDotOrgDatasetJson(
+          requestInfo.request(),
+          requestInfo.loggedInAs(),
+          requestInfo.language(),
+          writer,
+          requestInfo.edd());
       writer.flush();
     }
   }
