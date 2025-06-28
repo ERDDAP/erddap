@@ -49,6 +49,7 @@ import gov.noaa.pfel.erddap.dataset.EDDTableFromCassandra;
 import gov.noaa.pfel.erddap.dataset.GridDataAccessor;
 import gov.noaa.pfel.erddap.dataset.OutputStreamFromHttpResponse;
 import gov.noaa.pfel.erddap.dataset.metadata.LocalizedAttributes;
+import gov.noaa.pfel.erddap.jte.YouAreHere;
 import gov.noaa.pfel.erddap.variable.EDV;
 import gov.noaa.pfel.erddap.variable.EDVGridAxis;
 import jakarta.servlet.ServletException;
@@ -386,6 +387,10 @@ public class EDStatic {
       new ArrayList<>(); // keep here in case EmailThread needs to be restarted
   private static EmailThread emailThread;
 
+  public static long getEmailThread() {
+    return emailThread == null ? -1 : emailThread.elapsedTime();
+  }
+
   // no lastAssignedEmail since not needed
   /**
    * This returns the index number of the email in emailList (-1,0..) of the last completed email
@@ -408,6 +413,10 @@ public class EDStatic {
   public static final ArrayList<Object[]> taskList =
       new ArrayList<>(); // keep here in case TaskThread needs to be restarted
   private static TaskThread taskThread;
+
+  public static long getTaskThreadElapsedTime() {
+    return taskThread == null ? -1 : taskThread.elapsedTime();
+  }
 
   /**
    * lastAssignedTask is used by EDDxxxCopy instances to keep track of the number of the last task
@@ -434,6 +443,10 @@ public class EDStatic {
   public static final RequestQueue<String> touchList =
       new RequestQueue<>(); // keep here in case TouchThread needs to be restarted
   private static TouchThread touchThread;
+
+  public static long getTouchThreadElapsedTime() {
+    return touchThread == null ? -1 : touchThread.elapsedTime();
+  }
 
   // no lastAssignedTouch since not needed
   /**
@@ -1097,6 +1110,23 @@ public class EDStatic {
         + " &gt; "
         + current
         + "</h1>\n";
+  }
+
+  /**
+   * Create a YouAreHere model for JTE rendering.
+   *
+   * @param request the request
+   * @param language the index of the selected language
+   * @param loggedInAs the logged in user
+   * @param protocol the protocol (e.g., tabledap, griddap, etc.)
+   * @return a YouAreHere model for JTE rendering
+   */
+  public static YouAreHere getYouAreHere(
+      HttpServletRequest request, int language, String loggedInAs, String protocol) {
+    return new YouAreHere(
+        erddapUrl(request, loggedInAs, language),
+        EDStatic.messages.clickERDDAPAr[language],
+        protocol);
   }
 
   /**
