@@ -8,7 +8,6 @@ import com.sun.management.UnixOperatingSystemMXBean;
 import gov.noaa.pfel.coastwatch.sgt.GSHHS;
 import gov.noaa.pfel.coastwatch.sgt.SgtMap;
 import gov.noaa.pfel.coastwatch.sgt.SgtUtil;
-import gov.noaa.pfel.erddap.util.*;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import java.lang.management.ManagementFactory;
 
@@ -78,11 +77,11 @@ public class Status {
     return EDStatic.config.showLoadErrorsOnStatusPage;
   }
 
-  public static String getdatasetsfailedtoload() {
+  public static String getDatasetsFailedToLoad() {
     return EDStatic.datasetsThatFailedToLoad;
   }
 
-  public static String getFailedDatasetErros() {
+  public static String getFailedDatasetsWithErrors() {
     return EDStatic.failedDatasetsWithErrors;
   }
 
@@ -275,8 +274,8 @@ public class Status {
     return EDStatic.majorLoadDatasetsTimeSeriesSB.length() > 0;
   }
 
-  public static String getTimeDistributionStatistics() {
-    return String2.getBriefTimeDistributionStatistics(EDStatic.majorLoadDatasetsDistribution24);
+  public static String getMajorLoadDatasetsTimeDistribution24() {
+    return String2.getTimeDistributionStatistics(EDStatic.majorLoadDatasetsDistribution24);
   }
 
   public static String getMajorLoadDatasetsTimeDistributionTotal() {
@@ -303,15 +302,23 @@ public class Status {
     return String2.getTimeDistributionStatistics(EDStatic.failureTimesDistributionTotal);
   }
 
+  public static String getResponseTimeDistributionLoadDatasets() {
+    return String2.getTimeDistributionStatistics(EDStatic.responseTimesDistributionLoadDatasets);
+  }
+
   public static String getResponseTimeDistribution24() {
     return String2.getTimeDistributionStatistics(EDStatic.responseTimesDistribution24);
+  }
+
+  public static String getResponseTimeDistributionTotal() {
+    return String2.getTimeDistributionStatistics(EDStatic.responseTimesDistributionTotal);
   }
 
   public static String getEmailThreadFailedDistributions24() {
     return String2.getTimeDistributionStatistics(EDStatic.emailThreadFailedDistribution24);
   }
 
-  public static String getEmailThreadFailedDistributions() {
+  public static String getEmailThreadFailedDistributionsTotal() {
     return String2.getTimeDistributionStatistics(EDStatic.emailThreadFailedDistributionTotal);
   }
 
@@ -319,7 +326,7 @@ public class Status {
     return String2.getTimeDistributionStatistics(EDStatic.emailThreadSucceededDistribution24);
   }
 
-  public static String getEmailThreadSucceededDistributions() {
+  public static String getEmailThreadSucceededDistributionsTotal() {
     return String2.getTimeDistributionStatistics(EDStatic.emailThreadSucceededDistributionTotal);
   }
 
@@ -327,7 +334,7 @@ public class Status {
     return String2.getCountDistributionStatistics(EDStatic.emailThreadNEmailsDistribution24);
   }
 
-  public static String getEmailThreadNEmailsDistributions() {
+  public static String getEmailThreadNEmailsDistributionsTotal() {
     return String2.getCountDistributionStatistics(EDStatic.emailThreadNEmailsDistributionTotal);
   }
 
@@ -336,7 +343,7 @@ public class Status {
     return String2.getTimeDistributionStatistics(EDStatic.taskThreadFailedDistribution24);
   }
 
-  public static String getTaskThreadFailedDistributions() {
+  public static String getTaskThreadFailedDistributionsTotal() {
     return String2.getTimeDistributionStatistics(EDStatic.taskThreadFailedDistributionTotal);
   }
 
@@ -344,7 +351,7 @@ public class Status {
     return String2.getTimeDistributionStatistics(EDStatic.taskThreadSucceededDistribution24);
   }
 
-  public static String getTaskThreadSucceededDistributions() {
+  public static String getTaskThreadSucceededDistributionsTotal() {
     return String2.getTimeDistributionStatistics(EDStatic.taskThreadSucceededDistributionTotal);
   }
 
@@ -353,7 +360,7 @@ public class Status {
     return String2.getTimeDistributionStatistics(EDStatic.touchThreadFailedDistribution24);
   }
 
-  public static String getTouchThreadFailedDistributions() {
+  public static String getTouchThreadFailedDistributionsTotal() {
     return String2.getTimeDistributionStatistics(EDStatic.touchThreadFailedDistributionTotal);
   }
 
@@ -361,7 +368,7 @@ public class Status {
     return String2.getTimeDistributionStatistics(EDStatic.touchThreadSucceededDistribution24);
   }
 
-  public static String getTouchThreadSucceededDistributions() {
+  public static String getTouchThreadSucceededDistributionsTotal() {
     return String2.getTimeDistributionStatistics(EDStatic.touchThreadSucceededDistributionTotal);
   }
 
@@ -370,7 +377,7 @@ public class Status {
     return EDStatic.tally.toString("Language (since last daily report)", 50);
   }
 
-  public static String getLanguageTallyDistributions() {
+  public static String getLanguageTallyDistributionsTotal() {
     return EDStatic.tally.toString("Language (since startup)", 50);
   }
 
