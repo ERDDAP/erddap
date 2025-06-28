@@ -628,6 +628,7 @@
                     <!-- This is the directory where compiled templates are located. -->
                     <targetDirectory>${project.build.directory}/classes</targetDirectory>
                     <contentType>Html</contentType>
+                    <trimControlStructures>true</trimControlStructures>
                 </configuration>
                 <executions>
                     <execution>
