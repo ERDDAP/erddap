@@ -26,6 +26,9 @@ import com.google.common.collect.ImmutableList;
 import gg.jte.ContentType;
 import gg.jte.TemplateEngine;
 import gg.jte.output.WriterOutput;
+import gg.jte.ContentType;
+import gg.jte.TemplateEngine;
+import gg.jte.output.WriterOutput;
 import gov.noaa.pfel.coastwatch.griddata.DataHelper;
 import gov.noaa.pfel.coastwatch.griddata.Grid;
 import gov.noaa.pfel.coastwatch.griddata.OpendapHelper;
@@ -5122,7 +5125,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
               tableDatasetHashMap == null ? 0 : tableDatasetHashMap.size());
       YouAreHere youAreHere =
           EDStatic.getYouAreHere(
-              request, language, loggedInAs, EDStatic.messages.get(Message.STATUS, language));
+              request, language, loggedInAs, EDStatic.messages.statusAr[language]);
       TemplateEngine engine = TemplateEngine.createPrecompiled(ContentType.Html);
       engine.render(
           "status.jte",
@@ -5135,7 +5138,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       try {
         String youAreHereHtml =
             EDStatic.youAreHere(
-                request, language, loggedInAs, EDStatic.messages.get(Message.STATUS, language));
+                request, language, loggedInAs, EDStatic.messages.statusAr[language]);
 
         StringBuilder sb = new StringBuilder();
         EDStatic.addIntroStatistics(sb, EDStatic.config.showLoadErrorsOnStatusPage, this);
