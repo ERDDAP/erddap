@@ -388,10 +388,9 @@ If an attribute is a global attribute, identify it by prefixing it with "global:
 <categoryAttributes>global:cdm_data_type, global:institution, ioos_category, global:keywords, long_name, standard_name, variableName</categoryAttributes>
 
 <enableMqttBroker>true</enableMqttBroker>
-
+<useHtmlTemplates>true</useHtmlTemplates>
 <useSaxParser>true</useSaxParser>
 <usePrometheusMetrics>true</usePrometheusMetrics>
 <useHeadersForUrl>true</useHeadersForUrl>
 <useHtmlTemplates>true</useHtmlTemplates>
 </erddapSetup>
-
