@@ -617,6 +617,27 @@
                     </dokkaPlugins>
                 </configuration>
             </plugin>
+            <plugin>
+                <groupId>gg.jte</groupId>
+                <artifactId>jte-maven-plugin</artifactId>
+                <version>3.2.1</version>
+                <configuration>
+                    <!-- This is the directory where your .jte files are located. -->
+                    <sourceDirectory>${project.basedir}/src/main/jte</sourceDirectory>
+                    <!-- This is the directory where compiled templates are located. -->
+                    <targetDirectory>${project.build.directory}/classes</targetDirectory>
+                    <contentType>Html</contentType>
+                    <trimControlStructures>true</trimControlStructures>
+                </configuration>
+                <executions>
+                    <execution>
+                        <phase>compile</phase>
+                        <goals>
+                            <goal>precompile</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
         <pluginManagement>
           <plugins>
@@ -1140,6 +1161,12 @@
             <version>${parquetVersion}</version>
         </dependency>
 
+        <!-- https://jte.gg/ -->
+        <dependency>
+            <groupId>gg.jte</groupId>
+            <artifactId>jte</artifactId>
+            <version>3.2.1</version>
+        </dependency>
         <!-- https://mvnrepository.com/artifact/org.semver4j/semver4j -->
         <dependency>
             <groupId>org.semver4j</groupId>
