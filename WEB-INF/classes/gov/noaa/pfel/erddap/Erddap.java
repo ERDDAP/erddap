@@ -1758,18 +1758,32 @@ public class Erddap extends HttpServlet {
             "Legal Notices",
             out);
     try {
-      writer.write(
-          "<div class=\"standard_width\">\n"
-              + EDStatic.youAreHere(
-                  request, language, loggedInAs, EDStatic.messages.legalNoticesTitleAr[language])
-              + EDStatic.messages.legalNoticesAr[language]
-              + "\n"
-              + EDStatic.messages.standardGeneralDisclaimerAr[language]
-              + "\n\n"
-              + EDStatic.legal(language, tErddapUrl));
-      writer.write("</div>\n");
-      endHtmlWriter(request, language, out, writer, tErddapUrl, loggedInAs, false);
-
+      if (useHtmlTemplates(request)) {
+        YouAreHere youAreHere =
+            EDStatic.getYouAreHere(
+                request, language, loggedInAs, EDStatic.messages.legalNoticesTitleAr[language]);
+        TemplateEngine engine = TemplateEngine.createPrecompiled(ContentType.Html);
+        engine.render(
+            "legal.html",
+            Map.of(
+                "tErddapUrl", tErddapUrl,
+                "language", language,
+                "youAreHere", youAreHere),
+            new WriterOutput(writer));
+        endHtmlWriter(request, language, out, writer, tErddapUrl, loggedInAs, false);
+      } else {
+        writer.write(
+            "<div class=\"standard_width\">\n"
+                + EDStatic.youAreHere(
+                    request, language, loggedInAs, EDStatic.messages.legalNoticesTitleAr[language])
+                + EDStatic.messages.legalNoticesAr[language]
+                + "\n"
+                + EDStatic.messages.standardGeneralDisclaimerAr[language]
+                + "\n\n"
+                + EDStatic.legal(language, tErddapUrl));
+        writer.write("</div>\n");
+        endHtmlWriter(request, language, out, writer, tErddapUrl, loggedInAs, false);
+      }
     } catch (Throwable t) {
       EDStatic.rethrowClientAbortException(t); // first thing in catch{}
       writer.write(EDStatic.htmlForException(language, t));
