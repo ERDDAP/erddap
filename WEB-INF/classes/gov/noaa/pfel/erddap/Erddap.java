@@ -5097,7 +5097,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
               tableDatasetHashMap == null ? 0 : tableDatasetHashMap.size());
       YouAreHere youAreHere =
           EDStatic.getYouAreHere(
-              request, language, loggedInAs, EDStatic.messages.statusAr[language]);
+              request, language, loggedInAs, EDStatic.messages.get(Message.STATUS, language));
       TemplateEngine engine = TemplateEngine.createPrecompiled(ContentType.Html);
       engine.render(
           "status.jte",
@@ -5110,7 +5110,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       try {
         String youAreHereHtml =
             EDStatic.youAreHere(
-                request, language, loggedInAs, EDStatic.messages.statusAr[language]);
+                request, language, loggedInAs, EDStatic.messages.get(Message.STATUS, language));
 
         StringBuilder sb = new StringBuilder();
         EDStatic.addIntroStatistics(sb, EDStatic.config.showLoadErrorsOnStatusPage, this);
