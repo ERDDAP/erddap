@@ -159,11 +159,10 @@ public class EDDTableFromMqtt extends EDDTableFromFiles {
       columnPATypes[dvi] = edv.sourceDataPAType();
       columnIsFixed[dvi] = edv.sourceName().startsWith("=");
 
-      // from EDDTableFromHttpGet: get mv/fv values for stats calculations
       if (columnPATypes[dvi] == PAType.STRING) {
         StringArray tsa = new StringArray(2, false);
-        if (edv.stringMissingValue().length() > 0) tsa.add(edv.stringMissingValue());
-        if (edv.stringFillValue().length() > 0) tsa.add(edv.stringFillValue());
+        if (!edv.stringMissingValue().isEmpty()) tsa.add(edv.stringMissingValue());
+        if (!edv.stringFillValue().isEmpty()) tsa.add(edv.stringFillValue());
         columnMvFv[dvi] = tsa.size() == 0 ? null : tsa;
       } else if (columnPATypes[dvi] == PAType.LONG || columnPATypes[dvi] == PAType.ULONG) {
         StringArray tsa = new StringArray(2, false);
@@ -213,9 +212,7 @@ public class EDDTableFromMqtt extends EDDTableFromFiles {
 
     // Generate client ID if not provided
     String effectiveClientId =
-        (clientId != null && !clientId.isEmpty())
-            ? clientId
-            : "erddap-mqtt-" + UUID.randomUUID().toString();
+        (clientId != null && !clientId.isEmpty()) ? clientId : "erddap-mqtt-" + UUID.randomUUID();
 
     // Determine default port based on SSL usage
     int effectivePort = (serverPort != null) ? serverPort : (useSsl ? MQTT_SECURE_PORT : MQTT_PORT);
@@ -230,12 +227,11 @@ public class EDDTableFromMqtt extends EDDTableFromFiles {
 
     // Configure SSL if enabled
     if (useSsl) {
-      clientBuilder.sslWithDefaultConfig();
+      clientBuilder = clientBuilder.sslWithDefaultConfig();
     }
 
-    // Configure automatic reconnect - crucial for ERDDAP continuous operation
     if (automaticReconnect) {
-      clientBuilder.automaticReconnectWithDefaultConfig();
+      clientBuilder = clientBuilder.automaticReconnectWithDefaultConfig();
     }
 
     // Build the async client instance
@@ -295,11 +291,11 @@ public class EDDTableFromMqtt extends EDDTableFromFiles {
           .whenComplete(
               (suback, throwable) -> {
                 if (throwable != null) {
-                  System.err.println(
+                  String2.log(
                       "Failed to subscribe to topic " + topic + ": " + throwable.getMessage());
                 } else {
-                  System.out.println("Successfully subscribed to topic: " + topic);
-                  System.out.println("Subscription result: " + suback.getReasonCodes().get(0));
+                  String2.log("Successfully subscribed to topic: " + topic);
+                  String2.log("Subscription result: " + suback.getReasonCodes().get(0));
                 }
               });
     }
@@ -313,7 +309,7 @@ public class EDDTableFromMqtt extends EDDTableFromFiles {
   public void processMqttData(Mqtt5Publish publish) {
     String topic = publish.getTopic().toString();
     byte[] payload = publish.getPayloadAsBytes();
-    if (payload == null || payload.length == 0) {
+    if (payload.length == 0) {
       return; // No data to process
     }
     String message = new String(payload, StandardCharsets.UTF_8);
@@ -359,7 +355,7 @@ public class EDDTableFromMqtt extends EDDTableFromFiles {
    * @return The full path for the corresponding .jsonl file (e.g.,
    *     "/data/erddap/sensors/temp/room1.jsonl").
    */
-  private String getFilePathForTopic(String topic) {
+  public String getFilePathForTopic(String topic) {
     if (topic.contains("..")) {
       throw new IllegalArgumentException("Invalid topic name (contains '..'): " + topic);
     }
@@ -376,7 +372,7 @@ public class EDDTableFromMqtt extends EDDTableFromFiles {
    * @throws IOException if a file I/O error occurs.
    * @throws TimeoutException if the file lock cannot be acquired.
    */
-  private void appendTableToJsonlFile(Table table, String fullFileName)
+  public void appendTableToJsonlFile(Table table, String fullFileName)
       throws IOException, TimeoutException {
     String canonicalFileName = String2.canonical(fullFileName);
     ReentrantLock lock = String2.canonicalLock(canonicalFileName);
@@ -447,8 +443,7 @@ public class EDDTableFromMqtt extends EDDTableFromFiles {
    * @param fullFileName the full path of the file that was written to
    * @throws TimeoutException
    */
-  private void updateFileTableWithStats(Table newData, String fullFileName)
-      throws TimeoutException {
+  public void updateFileTableWithStats(Table newData, String fullFileName) throws TimeoutException {
     if (fileTable == null) {
       return;
     }
@@ -484,8 +479,7 @@ public class EDDTableFromMqtt extends EDDTableFromFiles {
       for (int col = 0; col < nColumns; col++) {
         PrimitiveArray pa = newData.getColumn(col);
         String sValue = pa.getString(row);
-        if (sValue.length() == 0
-            || (columnMvFv[col] != null && columnMvFv[col].indexOf(sValue) >= 0)) {
+        if (sValue.isEmpty() || (columnMvFv[col] != null && columnMvFv[col].indexOf(sValue) >= 0)) {
           columnHasNaN[col] = true;
           continue;
         }

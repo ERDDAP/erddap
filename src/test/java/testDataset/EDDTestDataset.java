@@ -15656,6 +15656,67 @@ public class EDDTestDataset {
         + "</dataset>\n";
   }
 
+  public static EDD gettestFromMqtt() throws Throwable {
+    return EDD.oneFromXmlFragment(null, xmlFragment_testFromMqtt());
+  }
+
+  private static String xmlFragment_testFromMqtt() throws URISyntaxException {
+    return "<dataset type=\"EDDTableFromMqtt\" datasetID=\"testFromMqtt\" active=\"true\">\n"
+        + "    <fileDir>"
+        + Path.of(EDDTestDataset.class.getResource("/data/points/testFromMqtt/").toURI())
+        + "    </fileDir>\n"
+        + "    <serverHost>broker.hivemq.com</serverHost>\n"
+        + "    <serverPort>1883</serverPort>\n"
+        + "    <clientId>client-id</clientId>\n"
+        + "    <username>name</username>\n"
+        + "    <password>pass</password>\n"
+        + "    <topics>test/topic1</topics>\n"
+        + "    <useSsl>false</useSsl>\n"
+        + "    <sessionExpiryInterval>10</sessionExpiryInterval>\n"
+        + "    <connectionTimeout>10</connectionTimeout>\n"
+        + "    <automaticReconnect>true</automaticReconnect>"
+        + "    <fileTableInMemory>false</fileTableInMemory>\n"
+        + "    <addAttributes>\n"
+        + "        <att name=\"cdm_data_type\">Other</att>\n"
+        + "        <att name=\"Conventions\">COARDS, CF-1.6, ACDD-1.3</att>\n"
+        + "        <att name=\"creator_name\">NOAA NDBC</att>\n"
+        + "        <att name=\"creator_url\">https://www.ndbc.noaa.gov/</att>\n"
+        + "        <att name=\"infoUrl\">https://www.ndbc.noaa.gov/</att>\n"
+        + "        <att name=\"institution\">NOAA NDBC</att>\n"
+        + "        <att name=\"keywords\">boolean, byte, char, double, float, int, long, ndbc, newer, noaa, short, string, title</att>\n"
+        + "        <att name=\"license\">[standard]</att>\n"
+        + "        <att name=\"Metadata_Conventions\">null</att>\n"
+        + "        <att name=\"sourceUrl\">(local files)</att>\n"
+        + "        <att name=\"standard_name_vocabulary\">CF Standard Name Table v70</att>\n"
+        // + "        <att name=\"subsetVariables\">aString, aChar, aBoolean, aByte, aShort, anInt,
+        // aLong, aFloat, aDouble, five, fileName</att>\n"
+        + "        <att name=\"summary\">The new summary!</att>\n"
+        + "        <att name=\"title\">The Newer Title!</att>\n"
+        + "    </addAttributes>\n"
+        + "    <dataVariable>\n"
+        + "        <sourceName>lat</sourceName>\n"
+        + "        <dataType>double</dataType>\n"
+        + "        <addAttributes>\n"
+        + "            <att name=\"ioos_category\">Identifier</att>\n"
+        + "        </addAttributes>\n"
+        + "    </dataVariable>\n"
+        + "    <dataVariable>\n"
+        + "        <sourceName>lon</sourceName>\n"
+        + "        <dataType>double</dataType>\n"
+        + "        <addAttributes>\n"
+        + "            <att name=\"ioos_category\">Identifier</att>\n"
+        + "        </addAttributes>\n"
+        + "    </dataVariable>\n"
+        + "    <dataVariable>\n"
+        + "        <sourceName>temperature</sourceName>\n"
+        + "        <dataType>double</dataType>\n"
+        + "        <addAttributes>\n"
+        + "            <att name=\"ioos_category\">Identifier</att>\n"
+        + "        </addAttributes>\n"
+        + "    </dataVariable>\n"
+        + "</dataset>\n";
+  }
+
   public static EDD gettestFromHttpGet() throws Throwable {
     return EDD.oneFromXmlFragment(null, xmlFragment_testFromHttpGet());
   }
