@@ -15639,7 +15639,7 @@ public class EDDTestDataset {
   private static String xmlFragment_testFromMqtt() throws URISyntaxException {
     return "<dataset type=\"EDDTableFromMqtt\" datasetID=\"testFromMqtt\" active=\"true\">\n"
         + "    <fileDir>"
-        + Path.of(EDDTestDataset.class.getResource("/data/points/testFromMqtt/").toURI())
+        + Path.of(EDDTestDataset.class.getResource("/testFromMqtt").toURI())
         + "    </fileDir>\n"
         + "    <serverHost>broker.hivemq.com</serverHost>\n"
         + "    <serverPort>1883</serverPort>\n"
