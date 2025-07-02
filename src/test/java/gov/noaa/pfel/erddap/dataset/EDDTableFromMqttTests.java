@@ -4,13 +4,18 @@ import com.cohort.util.String2;
 import com.cohort.util.Test;
 import com.hivemq.client.mqtt.mqtt5.message.publish.Mqtt5Publish;
 import gov.noaa.pfel.coastwatch.pointdata.Table;
+import java.net.URL;
+import java.nio.file.Path;
 import java.util.concurrent.CompletableFuture;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.io.TempDir;
 import org.mockito.Mockito;
 import testDataset.EDDTestDataset;
 import testDataset.Initialization;
 
 class EDDTableFromMqttTests {
+
+  @TempDir private static Path TEMP_DIR;
 
   @BeforeAll
   static void init() {
@@ -20,6 +25,7 @@ class EDDTableFromMqttTests {
   @org.junit.jupiter.api.Test
   void testProcessMqttData() throws Throwable {
     EDDTableFromMqtt eddTableFromMqtt = (EDDTableFromMqtt) EDDTestDataset.gettestFromMqtt();
+    eddTableFromMqtt.fileDir = TEMP_DIR.toAbsolutePath().toString();
     Mqtt5Publish publish = Mockito.mock(Mqtt5Publish.class);
     String topic = "sensor/data";
     String payload = "{\"lat\": 20.0, \"lon\": -150.0, \"temperature\": 22.5}";
@@ -38,20 +44,14 @@ class EDDTableFromMqttTests {
   }
 
   @org.junit.jupiter.api.Test
-  void testAppendTableToJsonlFile() throws Throwable {
-    EDDTableFromMqtt eddTableFromMqtt = (EDDTableFromMqtt) EDDTestDataset.gettestFromMqtt();
-    eddTableFromMqtt.appendTableToJsonlFile(
-        Mockito.mock(Table.class),
-        "/home/ayush/Progs/erddap/test-data/data/points/testFromMqtt/test/topic1.jsonl");
-  }
-
-  @org.junit.jupiter.api.Test
   void testGetFilePathForTopic() throws Throwable {
     EDDTableFromMqtt eddTableFromMqtt = (EDDTableFromMqtt) EDDTestDataset.gettestFromMqtt();
-    String output = eddTableFromMqtt.getFilePathForTopic("test/topic1");
+    URL url = EDDTableFromMqttTests.class.getResource("/testFromMqtt/test/");
+    String filePath = Path.of(url.toURI()).toString();
+
     Test.ensureEqual(
-        output,
-        "/home/ayush/Progs/erddap/test-data/data/points/testFromMqtt/test/topic1.jsonl",
+        eddTableFromMqtt.getFilePathForTopic("test/topic1"),
+        filePath + "/topic1.jsonl",
         "topic file path");
   }
 
