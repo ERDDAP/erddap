@@ -21,6 +21,7 @@ import gov.noaa.pfel.erddap.variable.DataVariableInfo;
 import gov.noaa.pfel.erddap.variable.EDV;
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -614,7 +615,7 @@ public class EDDTableFromMqtt extends EDDTableFromFiles {
         }
 
         // Update lastMod and size
-        java.io.File file = new java.io.File(fullFileName);
+        File file = new File(fullFileName);
         fileTable.getColumn(FT_LAST_MOD_COL).setLong(fileTableRow, file.lastModified());
         fileTable.getColumn(FT_SIZE_COL).setLong(fileTableRow, file.length());
 
@@ -655,18 +656,18 @@ public class EDDTableFromMqtt extends EDDTableFromFiles {
     // Use file lock to avoid race conditions while reading the file
     String fullFileName = tFileDir + tFileName;
     fullFileName = String2.canonical(fullFileName);
+    Table table = new Table();
     ReentrantLock lock = String2.canonicalLock(fullFileName);
     if (!lock.tryLock(String2.longTimeoutSeconds, TimeUnit.SECONDS))
       throw new TimeoutException(
           "Timeout waiting for lock on file in EDDTableFromMqtt.lowGetSourceDataFromFile: "
               + fullFileName);
     try {
-      Table table = new Table();
       table.readJsonlCSV(fullFileName, sourceDataNames, sourceDataTypes, false);
-      table.standardize(standardizeWhat);
-      return table;
     } finally {
       lock.unlock();
     }
+    table.standardize(standardizeWhat);
+    return table;
   }
 }
