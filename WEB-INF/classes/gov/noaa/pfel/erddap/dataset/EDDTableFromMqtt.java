@@ -251,13 +251,13 @@ public class EDDTableFromMqtt extends EDDTableFromFiles {
         .orTimeout(connectionTimeout, TimeUnit.SECONDS)
         .thenApply(
             connAck -> {
-              System.out.println("ERDDAP MQTT Client connected successfully!");
-              System.out.println("Connection ACK Reason Code: " + connAck.getReasonCode());
+              String2.log("ERDDAP MQTT Client connected successfully!");
+              String2.log("Connection ACK Reason Code: " + connAck.getReasonCode());
               return client;
             })
         .exceptionally(
             throwable -> {
-              System.err.println("Failed to connect ERDDAP MQTT client: " + throwable.getMessage());
+              String2.log("Failed to connect ERDDAP MQTT client: " + throwable.getMessage());
               throw new RuntimeException("MQTT connection failed", throwable);
             });
   }
@@ -652,13 +652,21 @@ public class EDDTableFromMqtt extends EDDTableFromFiles {
       // Just return a table with columns but no rows. There is never any metadata.
       return Table.makeEmptyTable(sourceDataNames.toArray(), sourceDataTypes);
 
-    // read the file
-    Table table = new Table();
-    table.readJsonlCSV(tFileDir + tFileName, sourceDataNames, sourceDataTypes, false);
-
-    // unpack
-    table.standardize(standardizeWhat);
-
-    return table;
+    // Use file lock to avoid race conditions while reading the file
+    String fullFileName = tFileDir + tFileName;
+    fullFileName = String2.canonical(fullFileName);
+    ReentrantLock lock = String2.canonicalLock(fullFileName);
+    if (!lock.tryLock(String2.longTimeoutSeconds, TimeUnit.SECONDS))
+      throw new TimeoutException(
+          "Timeout waiting for lock on file in EDDTableFromMqtt.lowGetSourceDataFromFile: "
+              + fullFileName);
+    try {
+      Table table = new Table();
+      table.readJsonlCSV(fullFileName, sourceDataNames, sourceDataTypes, false);
+      table.standardize(standardizeWhat);
+      return table;
+    } finally {
+      lock.unlock();
+    }
   }
 }
