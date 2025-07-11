@@ -11,11 +11,9 @@ import com.cohort.array.IntArray;
 import com.cohort.array.PAOne;
 import com.cohort.array.PAType;
 import com.cohort.array.PrimitiveArray;
-import com.cohort.array.ShortArray;
 import com.cohort.array.StringArray;
 import com.cohort.util.Calendar2;
 import com.cohort.util.File2;
-import com.cohort.util.Math2;
 import com.cohort.util.MustBe;
 import com.cohort.util.SimpleException;
 import com.cohort.util.String2;
@@ -28,14 +26,13 @@ import gov.noaa.pfel.erddap.dataset.metadata.LocalizedAttributes;
 import gov.noaa.pfel.erddap.util.EDMessages;
 import gov.noaa.pfel.erddap.util.EDMessages.Message;
 import gov.noaa.pfel.erddap.util.EDStatic;
-import gov.noaa.pfel.erddap.variable.*;
+import gov.noaa.pfel.erddap.variable.DataVariableInfo;
+import gov.noaa.pfel.erddap.variable.EDV;
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.FileOutputStream;
 import java.io.Writer;
 import java.math.BigInteger;
-import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
@@ -1324,178 +1321,31 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
           lock.unlock();
         }
 
-        // adjust min/max in fileTable
-        // (only .insert because only it adds values (and .delete only has required variables))
-        if (fileTable != null) {
-
-          // prepare to calculate statistics
-          Arrays.fill(columnMinString, "\uFFFF");
-          Arrays.fill(columnMaxString, "\u0000");
-          Arrays.fill(columnMinLong, Long.MAX_VALUE);
-          Arrays.fill(columnMaxLong, Long.MIN_VALUE);
-          Arrays.fill(columnMinDouble, Double.MAX_VALUE);
-          Arrays.fill(columnMaxDouble, -Double.MAX_VALUE);
-          Arrays.fill(columnHasNaN, false);
-
-          // calculate statistics
-          for (int tRow = startRow; tRow < stopRow; tRow++) {
-            for (int col = 0; col < nColumns; col++) {
-              if (columnIsFixed[col]) {
-                // do nothing
-              } else if (columnIsString[col]) {
-                String s = columnValues[col].getString(tRow);
-                if (s.length() == 0 || (columnMvFv[col] != null && columnMvFv[col].indexOf(s) >= 0))
-                  columnHasNaN[col] = true;
-                else {
-                  if (s.compareTo(columnMinString[col]) < 0) columnMinString[col] = s;
-                  if (s.compareTo(columnMaxString[col]) > 0) columnMaxString[col] = s;
-                }
-              } else if (columnIsLong[col]) {
-                long d = columnValues[col].getLong(tRow);
-                if (d == Long.MAX_VALUE
-                    || (columnMvFv[col] != null
-                        && columnMvFv[col].indexOf(columnValues[col].getString(tRow)) >= 0))
-                  columnHasNaN[col] = true;
-                else {
-                  if (d < columnMinLong[col]) columnMinLong[col] = d;
-                  if (d > columnMaxLong[col]) columnMaxLong[col] = d;
-                }
-              } else if (columnIsULong[col]) {
-                BigInteger d = columnValues[col].getULong(tRow);
-                if (d.equals(Math2.ULONG_MAX_VALUE)
-                    || (columnMvFv[col] != null
-                        && columnMvFv[col].indexOf(columnValues[col].getString(tRow)) >= 0))
-                  columnHasNaN[col] = true;
-                else {
-                  if (d.compareTo(columnMinULong[col]) < 0) columnMinULong[col] = d;
-                  if (d.compareTo(columnMaxULong[col]) > 0) columnMaxULong[col] = d;
-                }
-              } else {
-                double d = columnValues[col].getDouble(tRow);
-                if (Double.isNaN(d)
-                    || (columnMvFv[col] != null
-                        && columnMvFv[col].indexOf(columnValues[col].getString(tRow)) >= 0))
-                  columnHasNaN[col] = true;
-                else {
-                  if (d < columnMinDouble[col]) columnMinDouble[col] = d;
-                  if (d > columnMaxDouble[col]) columnMaxDouble[col] = d;
-                }
-              }
-            }
-          }
-
-          // save statistics to fileTable
-          ReentrantLock lock2 = String2.canonicalLock(fileTable);
-          if (!lock2.tryLock(String2.longTimeoutSeconds, TimeUnit.SECONDS))
-            throw new TimeoutException(
-                "Timeout waiting for lock on fileTable in EDDTableFromHttpGet.");
-          try {
-            String fileDir = File2.getDirectory(fullFileName);
-            String fileName = File2.getNameAndExtension(fullFileName);
-
-            // which row in dirTable?
-            int dirTableRow = dirTable.getColumn(0).indexOf(fileDir);
-            if (dirTableRow < 0) {
-              dirTableRow = dirTable.getColumn(0).size();
-              dirTable.getColumn(0).addString(fileDir);
-            }
-
-            // which row in the fileTable?
-            int fileTableRow = 0;
-            ShortArray fileTableDirPA = (ShortArray) fileTable.getColumn(FT_DIR_INDEX_COL);
-            StringArray fileTableNamePA = (StringArray) fileTable.getColumn(FT_FILE_LIST_COL);
-            int fileTableNRows = fileTable.nRows();
-            while (fileTableRow < fileTableNRows
-                && (fileTableDirPA.get(fileTableRow) != dirTableRow
-                    || !fileTableNamePA.get(fileTableRow).equals(fileName))) {
-              fileTableRow++;
-            }
-
-            if (fileTableRow == fileTableNRows) {
-              // add row to fileTable
-              fileTableDirPA.addInt(dirTableRow);
-              fileTableNamePA.add(fileName);
-              fileTable.getColumn(FT_LAST_MOD_COL).addLong(0); // will be updated below
-              fileTable.getColumn(FT_SIZE_COL).addLong(0); // will be updated below
-              fileTable.getColumn(FT_SORTED_SPACING_COL).addDouble(1); // irrelevant
-              for (int col = 0; col < nColumns; col++) {
-                int baseFTC =
-                    dv0 + col * 3; // first of 3 File Table Columns (min, max, hasNaN) for this col
-                if (columnIsFixed[col]) {
-                  fileTable.getColumn(baseFTC).addString(columnNames[col].substring(1)); // ???
-                  fileTable.getColumn(baseFTC + 1).addString(columnNames[col].substring(1));
-                } else if (columnIsString[col]) {
-                  fileTable.getColumn(baseFTC).addString(columnMinString[col]);
-                  fileTable.getColumn(baseFTC + 1).addString(columnMaxString[col]);
-                } else if (columnIsLong[col]) {
-                  fileTable.getColumn(baseFTC).addLong(columnMinLong[col]);
-                  fileTable.getColumn(baseFTC + 1).addLong(columnMaxLong[col]);
-                } else {
-                  fileTable.getColumn(baseFTC).addDouble(columnMinDouble[col]);
-                  fileTable.getColumn(baseFTC + 1).addDouble(columnMaxDouble[col]);
-                }
-                fileTable.getColumn(baseFTC + 2).addInt(columnHasNaN[col] ? 1 : 0);
-              }
-
-            } else {
-              // adjust current row:
-              // dir unchanged
-              // name unchanged
-              // lastMod will be updated below
-              // size be updated below
-              // spacing unchanged/irrelevant
-              for (int col = 0; col < nColumns; col++) {
-                int baseFTC =
-                    dv0 + col * 3; // first of 3 File Table Columns (min, max, hasNaN) for this col
-                PrimitiveArray minColPA = fileTable.getColumn(baseFTC);
-                PrimitiveArray maxColPA = fileTable.getColumn(baseFTC + 1);
-                if (columnIsFixed[col]) {
-                  // already has fixed value
-                } else if (columnIsString[col]) {
-                  String tt = columnMinString[col];
-                  if (!tt.equals("\uFFFF")) { // has data
-                    if (tt.compareTo(minColPA.getString(fileTableRow)) < 0)
-                      minColPA.setString(fileTableRow, tt);
-                    tt = columnMaxString[col];
-                    if (tt.compareTo(maxColPA.getString(fileTableRow)) > 0)
-                      maxColPA.setString(fileTableRow, tt);
-                  }
-                } else if (columnIsLong[col]) {
-                  long tt = columnMinLong[col];
-                  if (tt != Long.MAX_VALUE) { // has data
-                    if (tt < minColPA.getLong(fileTableRow)) minColPA.setLong(fileTableRow, tt);
-                    if (tt > maxColPA.getLong(fileTableRow)) maxColPA.setLong(fileTableRow, tt);
-                  }
-                } else {
-                  double tt = columnMinDouble[col];
-                  if (!Double.isNaN(tt)) { // has data
-                    if (tt < minColPA.getDouble(fileTableRow)) minColPA.setDouble(fileTableRow, tt);
-                    if (tt > maxColPA.getDouble(fileTableRow)) maxColPA.setDouble(fileTableRow, tt);
-                  }
-                }
-                if (columnHasNaN[col]) fileTable.getColumn(baseFTC + 2).setInt(fileTableRow, 1);
-              }
-            }
-
-            // update file's lastMod and size
-            long tLastMod = -1;
-            long tLength = -1;
-            try {
-              File file = new File(fullFileName);
-              tLastMod = file.lastModified();
-              tLength = file.length();
-            } catch (Exception e) {
-              String2.log(
-                  String2.ERROR
-                      + " in EDDTableFromHttpGet while getting lastModified and length of "
-                      + fullFileName);
-            }
-            fileTable.getColumn(FT_LAST_MOD_COL).setLong(fileTableRow, tLastMod);
-            fileTable.getColumn(FT_SIZE_COL).setLong(fileTableRow, tLength);
-          } finally {
-            lock2.unlock();
-          }
-        }
+        EDDTableFromHttpGet.updateFileTableWithStats(
+            fileTable,
+            fullFileName,
+            dirTable,
+            nColumns,
+            columnIsFixed,
+            columnIsString,
+            columnIsLong,
+            columnIsULong,
+            columnNames,
+            columnUnits,
+            columnPATypes,
+            columnMvFv,
+            columnMinString,
+            columnMaxString,
+            columnValues,
+            columnMinULong,
+            columnMaxULong,
+            columnMinLong,
+            columnMaxLong,
+            columnMinDouble,
+            columnMaxDouble,
+            columnHasNaN,
+            startRow,
+            stopRow);
 
       } catch (Throwable t) {
         if (fileIsNew) File2.delete(fullFileName);
