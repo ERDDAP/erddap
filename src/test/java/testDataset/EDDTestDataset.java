@@ -15688,8 +15688,6 @@ public class EDDTestDataset {
         + "        <att name=\"Metadata_Conventions\">null</att>\n"
         + "        <att name=\"sourceUrl\">(local files)</att>\n"
         + "        <att name=\"standard_name_vocabulary\">CF Standard Name Table v70</att>\n"
-        // + "        <att name=\"subsetVariables\">aString, aChar, aBoolean, aByte, aShort, anInt,
-        // aLong, aFloat, aDouble, five, fileName</att>\n"
         + "        <att name=\"summary\">The new summary!</att>\n"
         + "        <att name=\"title\">The Newer Title!</att>\n"
         + "    </addAttributes>\n"

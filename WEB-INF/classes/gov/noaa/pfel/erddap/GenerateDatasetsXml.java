@@ -14,7 +14,42 @@ import gov.noaa.pfel.coastwatch.griddata.NcHelper;
 import gov.noaa.pfel.coastwatch.griddata.OpendapHelper;
 import gov.noaa.pfel.coastwatch.pointdata.Table;
 import gov.noaa.pfel.coastwatch.util.SSR;
-import gov.noaa.pfel.erddap.dataset.*;
+import gov.noaa.pfel.erddap.dataset.EDD;
+import gov.noaa.pfel.erddap.dataset.EDDGridAggregateExistingDimension;
+import gov.noaa.pfel.erddap.dataset.EDDGridFromAudioFiles;
+import gov.noaa.pfel.erddap.dataset.EDDGridFromDap;
+import gov.noaa.pfel.erddap.dataset.EDDGridFromEDDTable;
+import gov.noaa.pfel.erddap.dataset.EDDGridFromErddap;
+import gov.noaa.pfel.erddap.dataset.EDDGridFromMergeIRFiles;
+import gov.noaa.pfel.erddap.dataset.EDDGridFromNcFiles;
+import gov.noaa.pfel.erddap.dataset.EDDGridFromNcFilesUnpacked;
+import gov.noaa.pfel.erddap.dataset.EDDGridLon0360;
+import gov.noaa.pfel.erddap.dataset.EDDGridLonPM180;
+import gov.noaa.pfel.erddap.dataset.EDDTableFromAsciiFiles;
+import gov.noaa.pfel.erddap.dataset.EDDTableFromAudioFiles;
+import gov.noaa.pfel.erddap.dataset.EDDTableFromAwsXmlFiles;
+import gov.noaa.pfel.erddap.dataset.EDDTableFromCassandra;
+import gov.noaa.pfel.erddap.dataset.EDDTableFromColumnarAsciiFiles;
+import gov.noaa.pfel.erddap.dataset.EDDTableFromDapSequence;
+import gov.noaa.pfel.erddap.dataset.EDDTableFromDatabase;
+import gov.noaa.pfel.erddap.dataset.EDDTableFromEDDGrid;
+import gov.noaa.pfel.erddap.dataset.EDDTableFromErddap;
+import gov.noaa.pfel.erddap.dataset.EDDTableFromFileNames;
+import gov.noaa.pfel.erddap.dataset.EDDTableFromFiles;
+import gov.noaa.pfel.erddap.dataset.EDDTableFromHttpGet;
+import gov.noaa.pfel.erddap.dataset.EDDTableFromInvalidCRAFiles;
+import gov.noaa.pfel.erddap.dataset.EDDTableFromJsonlCSVFiles;
+import gov.noaa.pfel.erddap.dataset.EDDTableFromMqtt;
+import gov.noaa.pfel.erddap.dataset.EDDTableFromMultidimNcFiles;
+import gov.noaa.pfel.erddap.dataset.EDDTableFromNcCFFiles;
+import gov.noaa.pfel.erddap.dataset.EDDTableFromNcFiles;
+import gov.noaa.pfel.erddap.dataset.EDDTableFromNccsvFiles;
+import gov.noaa.pfel.erddap.dataset.EDDTableFromOBIS;
+import gov.noaa.pfel.erddap.dataset.EDDTableFromParquetFiles;
+import gov.noaa.pfel.erddap.dataset.EDDTableFromSOS;
+import gov.noaa.pfel.erddap.dataset.EDDTableFromThreddsFiles;
+import gov.noaa.pfel.erddap.dataset.EDDTableFromWFSFiles;
+import gov.noaa.pfel.erddap.dataset.FindDuplicateTime;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -210,6 +245,7 @@ public class GenerateDatasetsXml {
         "EDDTableFromErddap",
         "EDDTableFromFileNames",
         "EDDTableFromHttpGet",
+        "EDDTableFromMqtt",
         "EDDTableFromInPort",
         "EDDTableFromIoosSOS",
         "EDDTableFromJsonlCSVFiles",
@@ -787,6 +823,36 @@ public class GenerateDatasetsXml {
                       language, s1, s2, s3, s4, s5, s6, s7, s8, s9, null));
 
               // INACTIVE: "EDDTableFromHyraxFiles"
+            }
+            case "EDDTableFromMqtt" -> {
+              s1 = get(args, 1, s1, "Starting directory");
+              s2 = get(args, 2, s2, sampleFileNamePrompt);
+              s3 = get(args, 3, s3, "serverHost");
+              s4 = get(args, 4, s4, "serverPort");
+              s5 = get(args, 5, s5, "username");
+              s6 = get(args, 6, s6, "password");
+              s7 = get(args, 7, s7, "topics");
+              s8 = get(args, 8, s8, "useSsl");
+              s9 = get(args, 9, s9, "infoUrl");
+              s10 = get(args, 7, s10, "institution");
+              s11 = get(args, 8, s11, "summary");
+              s12 = get(args, 9, s12, "title");
+              String2.log("working...");
+              printToBoth(
+                  EDDTableFromMqtt.generateDatasetsXml(
+                      s1,
+                      s2,
+                      s3,
+                      String2.parseInt(s4),
+                      s5,
+                      s6,
+                      s7,
+                      String2.parseBoolean(s8),
+                      s9,
+                      s10,
+                      s11,
+                      s12,
+                      null));
             }
             case "EDDTableFromInPort" -> {
               s1 = get(args, 1, s1, "URL or fullFileName of InPort xml file");
