@@ -32,7 +32,6 @@ import java.io.BufferedOutputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.FileOutputStream;
 import java.io.Writer;
-import java.math.BigInteger;
 import java.util.BitSet;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
@@ -918,9 +917,6 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
     if (nColumns == 0) throw new SimpleException(String2.ERROR + ": columnNames not specified.");
     PrimitiveArray columnValues[] = new PrimitiveArray[nColumns];
     boolean columnIsFixed[] = new boolean[nColumns];
-    boolean columnIsString[] = new boolean[nColumns];
-    boolean columnIsLong[] = new boolean[nColumns];
-    boolean columnIsULong[] = new boolean[nColumns];
     int timeColumn = -1;
     String timeFormat = null; // used if time variable is string
     double timeBaseAndFactor[] = null; // used if time variable is numeric
@@ -929,16 +925,13 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
     int commandColumn = -1;
     for (int col = 0; col < nColumns; col++) {
       columnIsFixed[col] = columnNames[col].charAt(0) == '=';
-      columnIsString[col] = columnPATypes[col] == PAType.STRING; // char treated as numeric
-      columnIsLong[col] = columnPATypes[col] == PAType.LONG;
-      columnIsULong[col] = columnPATypes[col] == PAType.ULONG;
 
       if (!String2.isSomething(columnUnits[col])) columnUnits[col] = "";
 
       switch (columnNames[col]) {
         case EDV.TIME_NAME -> {
           timeColumn = col;
-          if (columnIsString[col]) {
+          if (columnPATypes[col] == PAType.STRING) {
             // string times
             if (!Calendar2.isStringTimeUnits(columnUnits[col])) {
               String2.log("columnUnits[" + col + "]=" + columnUnits[col]);
@@ -1222,15 +1215,6 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
     // append each input row to the appropriate file
     int row = 0;
     ByteArrayOutputStream baos = new ByteArrayOutputStream(4096);
-    String columnMinString[] = new String[nColumns];
-    String columnMaxString[] = new String[nColumns];
-    long columnMinLong[] = new long[nColumns];
-    long columnMaxLong[] = new long[nColumns];
-    BigInteger columnMinULong[] = new BigInteger[nColumns];
-    BigInteger columnMaxULong[] = new BigInteger[nColumns];
-    double columnMinDouble[] = new double[nColumns];
-    double columnMaxDouble[] = new double[nColumns];
-    boolean columnHasNaN[] = new boolean[nColumns];
     while (row < maxSize) {
       // figure out which file
       // EFFICIENT: Code below handles all rows that use this fullFileName.
@@ -1321,29 +1305,16 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
           lock.unlock();
         }
 
-        EDDTableFromHttpGet.updateFileTableWithStats(
+        EDDTableFromFiles.updateFileTableWithStats(
             fileTable,
             fullFileName,
             dirTable,
             nColumns,
             columnIsFixed,
-            columnIsString,
-            columnIsLong,
-            columnIsULong,
             columnNames,
-            columnUnits,
             columnPATypes,
             columnMvFv,
-            columnMinString,
-            columnMaxString,
             columnValues,
-            columnMinULong,
-            columnMaxULong,
-            columnMinLong,
-            columnMaxLong,
-            columnMinDouble,
-            columnMaxDouble,
-            columnHasNaN,
             startRow,
             stopRow);
 

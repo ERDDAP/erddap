@@ -23,7 +23,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.io.Writer;
-import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.UUID;
@@ -337,32 +336,18 @@ public class EDDTableFromMqtt extends EDDTableFromFiles {
       // Append the data to the corresponding .jsonl file
       appendTableToJsonlFile(table, fullFileName);
 
-      int nColumns = columnNames.length;
-      EDDTableFromMqtt.updateFileTableWithStats(
+      EDDTableFromFiles.updateFileTableWithStats(
           fileTable,
           fullFileName,
           dirTable,
           columnNames.length,
           columnIsFixed,
-          new boolean[nColumns],
-          new boolean[nColumns],
-          new boolean[nColumns],
           columnNames,
-          new String[nColumns],
           columnPATypes,
           columnMvFv,
-          new String[nColumns],
-          new String[nColumns],
-          new PrimitiveArray[nColumns],
-          new BigInteger[nColumns],
-          new BigInteger[nColumns],
-          new long[nColumns],
-          new long[nColumns],
-          new double[nColumns],
-          new double[nColumns],
-          new boolean[nColumns],
+          table.getColumns(),
           0,
-          nColumns); // Not sure how to get the rows value here
+          table.nRows());
 
     } catch (IOException | InterruptedException | TimeoutException | JSONException e) {
       throw new RuntimeException("Error processing MQTT message from topic=" + topic, e);

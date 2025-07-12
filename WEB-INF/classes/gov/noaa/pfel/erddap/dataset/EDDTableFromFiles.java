@@ -3177,35 +3177,43 @@ public abstract class EDDTableFromFiles extends EDDTable implements WatchUpdateH
     return minMaxTable;
   }
 
+  // TODO: This is static because EDDTableFromHttpGet doesn't handle fileTable and dirTable
+  // normally.
   public static void updateFileTableWithStats(
       Table fileTable,
       String fullFileName,
       Table dirTable,
       int nColumns,
       boolean[] columnIsFixed,
-      boolean[] columnIsString,
-      boolean[] columnIsLong,
-      boolean[] columnIsULong,
       String columnNames[],
-      String columnUnits[],
       PAType columnPATypes[],
       PrimitiveArray columnMvFv[],
-      String columnMinString[],
-      String columnMaxString[],
       PrimitiveArray columnValues[],
-      BigInteger columnMinULong[],
-      BigInteger columnMaxULong[],
-      long columnMinLong[],
-      long columnMaxLong[],
-      double columnMinDouble[],
-      double columnMaxDouble[],
-      boolean columnHasNaN[],
       int startRow,
       int stopRow)
       throws InterruptedException, TimeoutException {
 
     if (fileTable == null) {
       return;
+    }
+
+    String columnMinString[] = new String[nColumns];
+    String columnMaxString[] = new String[nColumns];
+    long columnMinLong[] = new long[nColumns];
+    long columnMaxLong[] = new long[nColumns];
+    BigInteger columnMinULong[] = new BigInteger[nColumns];
+    BigInteger columnMaxULong[] = new BigInteger[nColumns];
+    double columnMinDouble[] = new double[nColumns];
+    double columnMaxDouble[] = new double[nColumns];
+    boolean columnHasNaN[] = new boolean[nColumns];
+
+    boolean columnIsString[] = new boolean[nColumns];
+    boolean columnIsLong[] = new boolean[nColumns];
+    boolean columnIsULong[] = new boolean[nColumns];
+    for (int col = 0; col < nColumns; col++) {
+      columnIsString[col] = columnPATypes[col] == PAType.STRING; // char treated as numeric
+      columnIsLong[col] = columnPATypes[col] == PAType.LONG;
+      columnIsULong[col] = columnPATypes[col] == PAType.ULONG;
     }
 
     Arrays.fill(columnMinString, "\uFFFF");
