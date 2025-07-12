@@ -1,18 +1,22 @@
 package gov.noaa.pfel.erddap.dataset;
 
+import com.cohort.array.Attributes;
 import com.cohort.array.DoubleArray;
 import com.cohort.array.PAType;
 import com.cohort.array.PrimitiveArray;
 import com.cohort.array.StringArray;
+import com.cohort.util.Calendar2;
 import com.cohort.util.File2;
 import com.cohort.util.MustBe;
 import com.cohort.util.String2;
+import com.cohort.util.XML;
 import com.hivemq.client.mqtt.MqttClient;
 import com.hivemq.client.mqtt.datatypes.MqttQos;
 import com.hivemq.client.mqtt.mqtt5.Mqtt5AsyncClient;
 import com.hivemq.client.mqtt.mqtt5.Mqtt5ClientBuilder;
 import com.hivemq.client.mqtt.mqtt5.message.publish.Mqtt5Publish;
 import gov.noaa.pfel.coastwatch.pointdata.Table;
+import gov.noaa.pfel.coastwatch.util.RegexFilenameFilter;
 import gov.noaa.pfel.erddap.dataset.metadata.LocalizedAttributes;
 import gov.noaa.pfel.erddap.util.EDMessages;
 import gov.noaa.pfel.erddap.variable.DataVariableInfo;
@@ -483,5 +487,183 @@ public class EDDTableFromMqtt extends EDDTableFromFiles {
     }
     table.standardize(standardizeWhat);
     return table;
+  }
+
+  public static String generateDatasetsXml(
+      String tFileDir,
+      String sampleFileName,
+      String serverHost,
+      int serverPort,
+      String username,
+      String password,
+      String topics,
+      boolean useSsl,
+      String tInfoUrl,
+      String tInstitution,
+      String tSummary,
+      String tTitle,
+      Attributes externalAddGlobalAttributes)
+      throws Throwable {
+
+    String2.log(
+        "\n*** EDDTableFromMqtt.generateDatasetsXml"
+            + "\nfileDir="
+            + tFileDir
+            + "\nsampleFileName="
+            + sampleFileName);
+    if (!String2.isSomething(tFileDir))
+      throw new IllegalArgumentException("fileDir wasn't specified.");
+    tFileDir = File2.addSlash(tFileDir); // ensure it has trailing slash
+
+    if (!String2.isSomething(sampleFileName)) {
+      String[] fileNames =
+          RegexFilenameFilter.list(
+              tFileDir, ".*\\.jsonl"); // this is what the class uses to find files
+      if (fileNames.length > 0) {
+        sampleFileName = tFileDir + fileNames[0];
+      } else {
+        throw new IllegalArgumentException(
+            "No .jsonl files found in the specified directory: " + tFileDir);
+      }
+    }
+
+    // *** basically, make a table to hold the sourceAttributes
+    // and a parallel table to hold the addAttributes
+    Table dataSourceTable = new Table();
+    dataSourceTable.readJsonlCSV(sampleFileName, null, null, true); // read all and simplify
+    // EDDTableFromMqtt doesn't support standardizeWhat.
+    int tnCol = dataSourceTable.nColumns();
+
+    Table dataAddTable = new Table();
+    for (int c = 0; c < tnCol; c++) {
+      String colName = dataSourceTable.getColumnName(c);
+      PrimitiveArray sourcePA = dataSourceTable.getColumn(c);
+      Attributes sourceAtts = dataSourceTable.columnAttributes(c);
+      Attributes destAtts = new Attributes();
+      PrimitiveArray destPA;
+
+      if (colName.equals("time")) {
+        if (sourcePA.elementType() == PAType.STRING) {
+          String tFormat =
+              Calendar2.suggestDateTimeFormat(
+                  sourcePA, true); // evenIfPurelyNumeric? true since String data
+          destAtts.add(
+              "units",
+              tFormat.length() > 0
+                  ? tFormat
+                  : "yyyy-MM-dd'T'HH:mm:ss'Z'"); // default, so valid, so var name remains 'time'
+          destPA = new StringArray(sourcePA);
+        } else {
+          destAtts.add("units", Calendar2.SECONDS_SINCE_1970); // a guess
+          destPA = new DoubleArray(sourcePA);
+        }
+      } else if (colName.equals("latitude")) {
+        destAtts.add("units", "degrees_north");
+        destPA = new DoubleArray(sourcePA);
+      } else if (colName.equals("longitude")) {
+        destAtts.add("units", "degrees_east");
+        destPA = new DoubleArray(sourcePA);
+      } else if (colName.equals("depth")) {
+        destAtts.add("units", "m");
+        destPA = new DoubleArray(sourcePA);
+      } else if (colName.equals("altitude")) {
+        destAtts.add("units", "m");
+        destPA = new DoubleArray(sourcePA);
+      } else if (sourcePA.elementType() == PAType.STRING) {
+        destPA = new StringArray(sourcePA);
+      } else { // non-StringArray
+        destAtts.add("units", "_placeholder");
+        destPA = (PrimitiveArray) sourcePA.clone();
+      }
+
+      if (destPA.elementType() != PAType.STRING)
+        destAtts.add(
+            "missing_value",
+            PrimitiveArray.factory(destPA.elementType(), 1, "" + destPA.missingValue()));
+
+      destAtts =
+          makeReadyToUseAddVariableAttributesForDatasetsXml(
+              dataSourceTable.globalAttributes(),
+              sourceAtts,
+              destAtts,
+              colName,
+              destPA.elementType() != PAType.STRING, // tryToAddStandardName
+              destPA.elementType() != PAType.STRING, // addColorBarMinMax
+              false); // tryToFindLLAT
+
+      if ("_placeholder".equals(destAtts.getString("units"))) destAtts.add("units", "???");
+      dataAddTable.addColumn(c, colName, destPA, destAtts);
+
+      // add missing_value and/or _FillValue if needed
+      addMvFvAttsIfNeeded(colName, destPA, sourceAtts, destAtts);
+    }
+
+    // globalAttributes
+    if (externalAddGlobalAttributes == null) externalAddGlobalAttributes = new Attributes();
+    if (String2.isSomething(tInfoUrl)) externalAddGlobalAttributes.add("infoUrl", tInfoUrl);
+    if (String2.isSomething(tInstitution))
+      externalAddGlobalAttributes.add("institution", tInstitution);
+    if (String2.isSomething(tSummary)) externalAddGlobalAttributes.add("summary", tSummary);
+    if (String2.isSomething(tTitle)) externalAddGlobalAttributes.add("title", tTitle);
+    externalAddGlobalAttributes.setIfNotAlreadySet("sourceUrl", "(local files)");
+
+    // after dataVariables known, add global attributes in the dataAddTable
+    Attributes addGlobalAtts = dataAddTable.globalAttributes();
+    addGlobalAtts.set(
+        makeReadyToUseAddGlobalAttributesForDatasetsXml(
+            dataSourceTable.globalAttributes(),
+            // another cdm_data_type could be better; this is ok
+            hasLonLatTime(dataAddTable) ? "Point" : "Other",
+            tFileDir,
+            externalAddGlobalAttributes,
+            suggestKeywords(dataSourceTable, dataAddTable)));
+
+    // write the information
+    StringBuilder sb = new StringBuilder();
+    sb.append(
+        "<!-- NOTE! Since JSON Lines CSV files have no metadata, you MUST edit the chunk\n"
+            + "  of datasets.xml below to add all of the metadata (especially \"units\"). -->\n"
+            + "<dataset type=\"EDDTableFromMqtt\" datasetID=\""
+            + suggestDatasetID(tFileDir + "mqtt")
+            + "\" active=\"true\">\n"
+            + "    <reloadEveryNMinutes>1440</reloadEveryNMinutes>\n"
+            + "    <updateEveryNMillis>-1</updateEveryNMillis>\n"
+            + "    <fileDir>"
+            + XML.encodeAsXML(tFileDir)
+            + "</fileDir>\n"
+            + "    <fileNameRegex>.*\\.jsonl</fileNameRegex>\n"
+            + "    <recursive>true</recursive>\n"
+            + "    <pathRegex>.*</pathRegex>\n"
+            + "    <metadataFrom>last</metadataFrom>\n"
+            + "    <fileTableInMemory>false</fileTableInMemory>\n"
+            + "    <accessibleViaFiles>true</accessibleViaFiles>\n"
+            + "    <serverHost>"
+            + XML.encodeAsXML(serverHost)
+            + "</serverHost>\n"
+            + "    <serverPort>"
+            + serverPort
+            + "</serverPort>\n"
+            + "    <username>"
+            + XML.encodeAsXML(username)
+            + "</username>\n"
+            + "    <password>"
+            + XML.encodeAsXML(password)
+            + "</password>\n"
+            + "    <topics>"
+            + XML.encodeAsXML(topics)
+            + "</topics>\n"
+            + "    <useSsl>"
+            + useSsl
+            + "</useSsl>\n"
+            + writeAttsForDatasetsXml(false, dataSourceTable.globalAttributes(), "    ")
+            + cdmSuggestion()
+            + writeAttsForDatasetsXml(true, dataAddTable.globalAttributes(), "    ")
+            + writeVariablesForDatasetsXml(
+                dataSourceTable, dataAddTable, "dataVariable", true, false) // includeDataType,
+            // questionDestinationName
+            + "</dataset>\n\n");
+
+    String2.log("\n\n*** generateDatasetsXml finished successfully.\n\n");
+    return sb.toString();
   }
 }
