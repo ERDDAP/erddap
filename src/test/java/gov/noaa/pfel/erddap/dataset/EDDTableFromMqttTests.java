@@ -47,10 +47,10 @@ class EDDTableFromMqttTests {
   void testGetFilePathForTopic() throws Throwable {
     EDDTableFromMqtt eddTableFromMqtt = (EDDTableFromMqtt) EDDTestDataset.gettestFromMqtt();
     URL url = EDDTableFromMqttTests.class.getResource("/testFromMqtt/test/");
-    String filePath = Path.of(url.toURI()).toString();
+    String filePath = Path.of(url.toURI()).toString().replace('\\', '/');
 
     Test.ensureEqual(
-        eddTableFromMqtt.getFilePathForTopic("test/topic1"),
+        eddTableFromMqtt.getFilePathForTopic("test/topic1").replace('\\', '/'),
         filePath + "/topic1.jsonl",
         "topic file path");
   }
