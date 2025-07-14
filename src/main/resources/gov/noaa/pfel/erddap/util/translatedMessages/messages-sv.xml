@@ -2785,6 +2785,7 @@ Till exempel:
 <externalLink>(extern länk)</externalLink>
 <externalWebSite>Denna länk till en extern webbplats utgör inte ett stöd.</externalWebSite>
 <fileHelp_asc>Visa OPeNDAP-stil ISO-8859-1 kommaseparerad text.</fileHelp_asc>
+<fileHelp_croissant>Ladda ner dataset croissant schema.</fileHelp_croissant>
 <fileHelp_csv>Ladda ner en ISO-8859-1 kommaseparerad texttabell (rad 1: namn; rad 2: enheter; ISO 8601 gånger).</fileHelp_csv>
 <fileHelp_csvp>Ladda ner en ISO-8859-1 .csv-fil med rad 1: namn (enheter). Tiderna är ISO 8601-strängar.</fileHelp_csvp>
 <fileHelp_csv0>Ladda ner en ISO-8859-1 .csv-fil utan kolumnnamn eller enheter. Tiderna är ISO 8601-strängar.</fileHelp_csv0>

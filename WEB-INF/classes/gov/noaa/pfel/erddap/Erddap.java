@@ -18011,7 +18011,8 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       HttpServletRequest request, String loggedInAs, int language, Writer writer, EDD edd)
       throws IOException {
     writer.write("<script type=\"application/ld+json\">\n");
-    theSchemaDotOrgDatasetJson(request, loggedInAs, language, writer, edd);
+    theSchemaDotOrgDatasetJson(
+        request, loggedInAs, language, writer, edd, EDStatic.config.generateCroissantSchema);
     writer.write("</script>\n");
   }
 
@@ -18036,14 +18037,19 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
   }
 
   public static void theSchemaDotOrgDatasetJson(
-      HttpServletRequest request, String loggedInAs, int language, Writer writer, EDD edd)
+      HttpServletRequest request,
+      String loggedInAs,
+      int language,
+      Writer writer,
+      EDD edd,
+      boolean useCroissant)
       throws IOException {
     String baseUrl = EDStatic.preferredErddapUrl;
     Attributes gatts = edd.combinedGlobalAttributes().toAttributes(language);
     String ts;
     writer.write(
         "{\n"
-            + (EDStatic.config.generateCroissantSchema
+            + (useCroissant
                 ? "  \"@context\":  {\n"
                     + "    \"@language\": \""
                     + TranslateMessages.languageCodeList.get(language)
@@ -18094,11 +18100,9 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                 : "  \"@context\": \"http://schema.org\",\n")
             + // for now, leave as http://
             "  \"@type\": \""
-            + (EDStatic.config.generateCroissantSchema ? "sc:" : "")
+            + (useCroissant ? "sc:" : "")
             + "Dataset\",\n"
-            + (EDStatic.config.generateCroissantSchema
-                ? "  \"conformsTo\": \"http://mlcommons.org/croissant/1.0\",\n"
-                : "")
+            + (useCroissant ? "  \"conformsTo\": \"http://mlcommons.org/croissant/1.0\",\n" : "")
             + "  \"name\": "
             + String2.toJson65536(edd.title(language))
             + ",\n"
@@ -18106,7 +18110,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
             + String2.toJson65536(edd.datasetID())
             + ",\n");
 
-    if (EDStatic.config.generateCroissantSchema && edd.accessibleViaFiles()) {
+    if (useCroissant && edd.accessibleViaFiles()) {
       writer.write("  \"isLiveDataset\": true,\n");
       try {
         Table fileTable = edd.getFilesUrlList(request, loggedInAs, language);
@@ -18154,7 +18158,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                 + e.getMessage());
       }
     }
-    if (EDStatic.config.generateCroissantSchema) {
+    if (useCroissant) {
       try {
         writer.write(
             "  \"recordSet\": [\n"

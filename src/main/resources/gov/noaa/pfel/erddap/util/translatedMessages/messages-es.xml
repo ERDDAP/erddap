@@ -3025,6 +3025,7 @@ Por ejemplo:
 <externalLink>(Enlace externo)</externalLink>
 <externalWebSite>Este enlace a un sitio web externo no constituye un respaldo.</externalWebSite>
 <fileHelp_asc>Vea texto separado por comas ISO-8859-1 estilo OPeNDAP.</fileHelp_asc>
+<fileHelp_croissant>Descargar el esquema croissant de conjunto de datos.</fileHelp_croissant>
 <fileHelp_csv>Descargue una tabla de texto separado por comas ISO-8859-1 (línea 1: nombres; línea 2: unidades; tiempos ISO 8601).</fileHelp_csv>
 <fileHelp_csvp>Descargue un archivo .csv ISO-8859-1 con la línea 1: nombre (unidades). Los tiempos son cadenas ISO 8601.</fileHelp_csvp>
 <fileHelp_csv0>Descargue un archivo .csv ISO-8859-1 sin nombres de columnas ni unidades. Los tiempos son cadenas ISO 8601.</fileHelp_csv0>

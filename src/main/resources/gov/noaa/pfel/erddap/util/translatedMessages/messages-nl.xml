@@ -2959,6 +2959,7 @@ Bijvoorbeeld:
 <externalLink>(externe link)</externalLink>
 <externalWebSite>Deze link naar een externe website houdt geen goedkeuring in.</externalWebSite>
 <fileHelp_asc>Bekijk ISO-8859-1 door komma&#39;s gescheiden tekst in OPeNDAP-stijl.</fileHelp_asc>
+<fileHelp_croissant>Download de dataset croissant schema.</fileHelp_croissant>
 <fileHelp_csv>Download een ISO-8859-1 door komma&#39;s gescheiden teksttabel (regel 1: namen; regel 2: eenheden; ISO 8601 keer).</fileHelp_csv>
 <fileHelp_csvp>Download een ISO-8859-1 .csv-bestand met regel 1: naam (eenheden). Tijden zijn ISO 8601-reeksen.</fileHelp_csvp>
 <fileHelp_csv0>Download een ISO-8859-1 .csv-bestand zonder kolomnamen of eenheden. Tijden zijn ISO 8601-reeksen.</fileHelp_csv0>

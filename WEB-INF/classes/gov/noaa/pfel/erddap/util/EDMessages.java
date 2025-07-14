@@ -532,6 +532,7 @@ public class EDMessages {
   public final String[] externalLinkAr;
   public final String[] externalWebSiteAr;
   public final String[] fileHelp_ascAr;
+  public final String[] fileHelp_croissantAr;
   public final String[] fileHelp_csvAr;
   public final String[] fileHelp_csvpAr;
   public final String[] fileHelp_csv0Ar;
@@ -1813,6 +1814,7 @@ public class EDMessages {
 
     externalWebSiteAr = getNotNothingString(messagesAr, "externalWebSite", errorInMethod);
     fileHelp_ascAr = getNotNothingString(messagesAr, "fileHelp_asc", errorInMethod);
+    fileHelp_croissantAr = getNotNothingString(messagesAr, "fileHelp_croissant", errorInMethod);
     fileHelp_csvAr = getNotNothingString(messagesAr, "fileHelp_csv", errorInMethod);
     fileHelp_csvpAr = getNotNothingString(messagesAr, "fileHelp_csvp", errorInMethod);
     fileHelp_csv0Ar = getNotNothingString(messagesAr, "fileHelp_csv0", errorInMethod);

@@ -2871,6 +2871,7 @@ ERDDAP - это сервер данных, который дает вам про
 <externalLink>(внешняя ссылка)</externalLink>
 <externalWebSite>Эта ссылка на внешний веб-сайт не означает одобрения.</externalWebSite>
 <fileHelp_asc>Просмотр текста, разделенного запятыми ISO-8859-1 в стиле OPeNDAP.</fileHelp_asc>
+<fileHelp_croissant>Скачайте схему набора данных.</fileHelp_croissant>
 <fileHelp_csv>Загрузите текстовую таблицу ISO-8859-1, разделенную запятыми (строка 1: имена; строка 2: единицы измерения; ISO 8601 раз).</fileHelp_csv>
 <fileHelp_csvp>Загрузите файл .csv ISO-8859-1 со строкой 1: имя (единицы измерения). Время - это строки ISO 8601.</fileHelp_csvp>
 <fileHelp_csv0>Загрузите файл .csv ISO-8859-1 без имен столбцов и единиц измерения. Время - это строки ISO 8601.</fileHelp_csv0>

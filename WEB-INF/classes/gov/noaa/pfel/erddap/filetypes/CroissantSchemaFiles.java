@@ -2,13 +2,14 @@ package gov.noaa.pfel.erddap.filetypes;
 
 import com.cohort.util.File2;
 import gov.noaa.pfel.erddap.Erddap;
+import gov.noaa.pfel.erddap.util.EDStatic;
 import java.io.Writer;
 
 @FileTypeClass(
     fileTypeExtension = ".jsonld",
     fileTypeName = ".croissant",
     infoUrl = "https://docs.mlcommons.org/croissant/docs/croissant-spec.html",
-    versionAdded = "2.27.0",
+    versionAdded = "2.28.0",
     contentType = "application/ld+json")
 public class CroissantSchemaFiles extends FileTypeInterface {
 
@@ -22,7 +23,8 @@ public class CroissantSchemaFiles extends FileTypeInterface {
           requestInfo.loggedInAs(),
           requestInfo.language(),
           writer,
-          requestInfo.edd());
+          requestInfo.edd(),
+          true /* useCroissant */);
       writer.flush();
     }
   }
@@ -34,7 +36,6 @@ public class CroissantSchemaFiles extends FileTypeInterface {
 
   @Override
   public String getHelpText(int language) {
-    return "Croissant files!";
-    // return EDStatic.messages.fileHelp_croissantAr[language];
+    return EDStatic.messages.fileHelp_croissantAr[language];
   }
 }
