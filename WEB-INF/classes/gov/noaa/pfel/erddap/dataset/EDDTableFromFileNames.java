@@ -965,7 +965,7 @@ public class EDDTableFromFileNames extends EDDTable {
       String dir = table.getStringData(0, i).replace(fileDir, "").replace("\\", "/");
       String id = dir + table.getStringData(1, i);
       String url =
-          EDStatic.erddapHttpsUrl(request, language)
+          EDStatic.erddapUrl(request, loggedInAs, language)
               + "/files/"
               + datasetID()
               + "/"
