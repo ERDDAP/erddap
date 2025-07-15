@@ -200,7 +200,7 @@ public class EDStatic {
    * anything following it. A request to http.../erddap/version will return just the number (as
    * text). A request to http.../erddap/version_string will return the full string.
    */
-  public static final Semver erddapVersion = new Semver("2.27.0");
+  public static final Semver erddapVersion = new Semver("2.28.0-alpha");
 
   /** This identifies the dods server/version that this mimics. */
   public static final String dapVersion = "DAP/2.0";
