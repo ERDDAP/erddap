@@ -313,11 +313,6 @@ public class EDDTableAggregateRows extends EDDTable {
       PAOne tMin = childVar.destinationMin();
       PAOne tMax = childVar.destinationMax();
 
-      if (!knowsActualRange) {
-        tMin = new PAOne(tMin.paType(), ""); // same type, but value=NaN
-        tMax = new PAOne(tMax.paType(), "");
-      }
-
       // ensure all tChildren are consistent
       for (int c = 1; c < nChildren; c++) {
         EDV cEdv = tChildren[c].dataVariables[dv];
@@ -367,10 +362,8 @@ public class EDDTableAggregateRows extends EDDTable {
               hasADifferent + "_FillValue=" + cFV + than + "_FillValue=" + tFV + ".");
 
         // and get the minimum min and maximum max
-        if (knowsActualRange) { // only gather if all children knowActualRange
-          tMin = tMin.min(cEdv.destinationMin());
-          tMax = tMax.max(cEdv.destinationMax());
-        }
+        tMin = tMin.min(cEdv.destinationMin());
+        tMax = tMax.max(cEdv.destinationMax());
       }
 
       /// override actual_range with min/max calculated on all chidren
