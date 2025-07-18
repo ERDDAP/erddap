@@ -2810,6 +2810,7 @@ Například:
 <externalLink>(Externí odkaz)</externalLink>
 <externalWebSite>Tento odkaz na externí webovou stránku nepředstavuje podporu.</externalWebSite>
 <fileHelp_asc>Zobrazit text ve stylu OPeNDAP ISO-8859-1 oddělený čárkami.</fileHelp_asc>
+<fileHelp_croissant>Stáhněte si soubor croissant schéma.</fileHelp_croissant>
 <fileHelp_csv>Stáhněte si textovou tabulku ISO-8859-1 oddělenou čárkami (řádek 1: názvy; řádek 2: jednotky; ISO 8601 krát).</fileHelp_csv>
 <fileHelp_csvp>Stáhněte si soubor .csv ISO-8859-1 s řádkem 1: název (jednotky). Časy jsou řetězce ISO 8601.</fileHelp_csvp>
 <fileHelp_csv0>Stáhněte si soubor CSV ISO-8859-1 bez názvů sloupců nebo jednotek. Časy jsou řetězce ISO 8601.</fileHelp_csv0>

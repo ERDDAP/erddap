@@ -38,6 +38,7 @@ import gov.noaa.pfel.erddap.util.EDMessages;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.util.ThreadedWorkManager;
 import gov.noaa.pfel.erddap.variable.*;
+import jakarta.servlet.http.HttpServletRequest;
 import java.io.FileNotFoundException;
 import java.nio.file.Path;
 import java.nio.file.WatchEvent;
@@ -2133,6 +2134,26 @@ public abstract class EDDGridFromFiles extends EDDGrid implements WatchUpdateHan
     }
 
     return handleEventContexts(contexts, msg);
+  }
+
+  @Override
+  public Table getFilesUrlList(HttpServletRequest request, String loggedInAs, int language)
+      throws Throwable {
+    Table table = getFileInfo(fileDir, fileNameRegex, recursive, pathRegex);
+    for (int i = 0; i < table.nRows(); i++) {
+      String dir = table.getStringData(0, i).replace(fileDir, "").replace("\\", "/");
+      String id = dir + table.getStringData(1, i);
+      String url =
+          EDStatic.erddapUrl(request, loggedInAs, language)
+              + "/files/"
+              + datasetID()
+              + "/"
+              + dir
+              + table.getStringData(1, i);
+      table.setStringData(0, i, id);
+      table.setStringData(1, i, url);
+    }
+    return table;
   }
 
   /**

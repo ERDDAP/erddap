@@ -3084,6 +3084,7 @@ ERDDAP 는 일반 파일 형식으로 과학 데이터 세트의 하위 집합�
 <externalLink>(외부 링크)</externalLink>
 <externalWebSite>외부 웹사이트에 대한 이 링크는 보증을 의미하지 않습니다.</externalWebSite>
 <fileHelp_asc>OPeNDAP 스타일 ISO-8859-1 쉼표로 구분된 텍스트를 봅니다.</fileHelp_asc>
+<fileHelp_croissant>dataset croissant 스키마 다운로드.</fileHelp_croissant>
 <fileHelp_csv>ISO-8859-1 쉼표로 구분된 텍스트 테이블(1행: 이름, 2행: 단위, ISO 8601 시간)을 다운로드합니다.</fileHelp_csv>
 <fileHelp_csvp>줄 1: 이름(단위)이 포함된 ISO-8859-1 .csv 파일을 다운로드합니다. 시간은 ISO 8601 문자열입니다.</fileHelp_csvp>
 <fileHelp_csv0>열 이름이나 단위가 없는 ISO-8859-1 .csv 파일을 다운로드합니다. 시간은 ISO 8601 문자열입니다.</fileHelp_csv0>

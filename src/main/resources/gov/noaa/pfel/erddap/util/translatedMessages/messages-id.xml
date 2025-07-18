@@ -2930,6 +2930,7 @@ Misalnya:
 <externalLink>(tautan eksternal)</externalLink>
 <externalWebSite>Tautan ke situs web eksternal ini bukan merupakan suatu dukungan.</externalWebSite>
 <fileHelp_asc>Lihat teks yang dipisahkan koma ISO-8859-1 gaya OPeNDAP.</fileHelp_asc>
+<fileHelp_croissant>Download dataset croissant schema.</fileHelp_croissant>
 <fileHelp_csv>Unduh tabel teks ISO-8859-1 yang dipisahkan koma (baris 1: nama; baris 2: unit; ISO 8601 kali).</fileHelp_csv>
 <fileHelp_csvp>Unduh file ISO-8859-1 .csv dengan baris 1: nama (unit). Waktu adalah string ISO 8601.</fileHelp_csvp>
 <fileHelp_csv0>Unduh file .csv ISO-8859-1 tanpa nama kolom atau unit. Waktu adalah string ISO 8601.</fileHelp_csv0>

@@ -2988,6 +2988,7 @@ Uzak bir ERDDAP üzerinde yeni bir özellik kullanmak istiyorsanız, ERDDAP sür
 <externalLink>(harici bağlantı)</externalLink>
 <externalWebSite>Harici bir web sitesine verilen bu bağlantı, bir onay teşkil etmez.</externalWebSite>
 <fileHelp_asc>OPeNDAP stili ISO-8859-1 virgülle ayrılmış metni görüntüleyin.</fileHelp_asc>
+<fileHelp_croissant>Veri kümesi croissant şemasını indirin.</fileHelp_croissant>
 <fileHelp_csv>ISO-8859-1 virgülle ayrılmış metin tablosunu indirin (1. satır: adlar; 2. satır: birimler; ISO 8601 kez).</fileHelp_csv>
 <fileHelp_csvp>1. satır: ad (birimler) içeren bir ISO-8859-1 .csv dosyası indirin. Zamanlar ISO 8601 dizeleridir.</fileHelp_csvp>
 <fileHelp_csv0>Sütun adları veya birimleri olmayan bir ISO-8859-1 .csv dosyasını indirin. Zamanlar ISO 8601 dizeleridir.</fileHelp_csv0>

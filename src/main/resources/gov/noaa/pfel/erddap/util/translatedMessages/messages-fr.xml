@@ -2947,6 +2947,7 @@ Par exemple:
 <externalLink>(lien externe)</externalLink>
 <externalWebSite>Ce lien vers un site Web externe ne constitue pas une approbation.</externalWebSite>
 <fileHelp_asc>Affichez le texte séparé par des virgules de style OPeNDAP ISO-8859-1.</fileHelp_asc>
+<fileHelp_croissant>Télécharger le schéma de croissant de données.</fileHelp_croissant>
 <fileHelp_csv>Téléchargez un tableau de texte ISO-8859-1 séparé par des virgules (ligne 1 : noms ; ligne 2 : unités ; ISO 8601 fois).</fileHelp_csv>
 <fileHelp_csvp>Téléchargez un fichier ISO-8859-1 .csv avec la ligne 1 : nom (unités). Les temps sont des chaînes ISO 8601.</fileHelp_csvp>
 <fileHelp_csv0>Téléchargez un fichier .csv ISO-8859-1 sans noms de colonnes ni unités. Les temps sont des chaînes ISO 8601.</fileHelp_csv0>

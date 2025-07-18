@@ -22,6 +22,7 @@ import gov.noaa.pfel.coastwatch.griddata.FileNameUtility;
 import gov.noaa.pfel.coastwatch.pointdata.Table;
 import gov.noaa.pfel.coastwatch.sgt.SgtMap;
 import gov.noaa.pfel.coastwatch.util.BufferedReadRandomAccessFile;
+import gov.noaa.pfel.coastwatch.util.FileVisitorDNLS;
 import gov.noaa.pfel.coastwatch.util.SimpleXMLReader;
 import gov.noaa.pfel.erddap.Erddap;
 import gov.noaa.pfel.erddap.dataset.metadata.LocalizedAttributes;
@@ -30,6 +31,7 @@ import gov.noaa.pfel.erddap.handlers.SaxHandlerClass;
 import gov.noaa.pfel.erddap.util.EDMessages;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.*;
+import jakarta.servlet.http.HttpServletRequest;
 import java.io.BufferedOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -48,8 +50,10 @@ import java.util.concurrent.locks.ReentrantLock;
 @SaxHandlerClass(EDDGridFromEtopoHandler.class)
 public class EDDGridFromEtopo extends EDDGrid {
 
+  private static final String etopoFileName = "etopo1_ice_g_i2.bin";
+
   /** Properties of the datafile */
-  protected static final String fileName = File2.getRefDirectory() + "etopo1_ice_g_i2.bin";
+  protected static final String fileName = File2.getRefDirectory() + etopoFileName;
 
   protected static final double fileMinLon = -180, fileMaxLon = 180;
   protected static final double fileMinLat = -90, fileMaxLat = 90;
@@ -514,6 +518,23 @@ public class EDDGridFromEtopo extends EDDGrid {
         + nReadFromCache
         + ", nFailed="
         + nFailed;
+  }
+
+  @Override
+  public Table getFilesUrlList(HttpServletRequest request, String loggedInAs, int language)
+      throws Throwable {
+    Table table = FileVisitorDNLS.makeEmptyTable();
+    table.addStringData(0, etopoFileName);
+    table.addStringData(
+        1,
+        EDStatic.erddapUrl(request, loggedInAs, language)
+            + "/files/"
+            + datasetID()
+            + "/"
+            + etopoFileName);
+    table.addLongData(2, File2.getLastModified(fileName));
+    table.addLongData(3, File2.length(fileName));
+    return table;
   }
 
   /**

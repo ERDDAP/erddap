@@ -2773,6 +2773,7 @@ De exemplu:
 <externalLink>(Link extern)</externalLink>
 <externalWebSite>Acest link către un site extern nu constituie o aprobare.</externalWebSite>
 <fileHelp_asc>Vizualizați textul ISO-8859-1 în stil OPeNDAP, separat prin virgulă.</fileHelp_asc>
+<fileHelp_croissant>Descărcaţi schema croissant set de date.</fileHelp_croissant>
 <fileHelp_csv>Descărcați un tabel text ISO-8859-1 separat prin virgulă (linia 1: nume; rândul 2: unități; ISO 8601 ori).</fileHelp_csv>
 <fileHelp_csvp>Descărcați un fișier .csv ISO-8859-1 cu linia 1: nume (unități). Timpurile sunt șiruri ISO 8601.</fileHelp_csvp>
 <fileHelp_csv0>Descărcați un fișier .csv ISO-8859-1 fără nume de coloane sau unități. Timpurile sunt șiruri ISO 8601.</fileHelp_csv0>

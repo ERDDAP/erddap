@@ -2959,6 +2959,7 @@ For eksempel:
 <externalLink>(ekstern lenke)</externalLink>
 <externalWebSite>Denne lenken til et eksternt nettsted utgjør ikke en godkjenning.</externalWebSite>
 <fileHelp_asc>Se OPeNDAP-stil ISO-8859-1 kommadelt tekst.</fileHelp_asc>
+<fileHelp_croissant>Last ned datasettet croissant skjema.</fileHelp_croissant>
 <fileHelp_csv>Last ned en ISO-8859-1 kommaseparert teksttabell (linje 1: navn; linje 2: enheter; ISO 8601 ganger).</fileHelp_csv>
 <fileHelp_csvp>Last ned en ISO-8859-1 .csv-fil med linje 1: navn (enheter). Tidene er ISO 8601-strenger.</fileHelp_csvp>
 <fileHelp_csv0>Last ned en ISO-8859-1 .csv-fil uten kolonnenavn eller enheter. Tidene er ISO 8601-strenger.</fileHelp_csv0>

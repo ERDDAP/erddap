@@ -2915,6 +2915,7 @@ Halimbawa:
 <externalLink>(panlabas na link)</externalLink>
 <externalWebSite>Ang link na ito sa isang panlabas na website ay hindi bumubuo ng isang pag-endorso.</externalWebSite>
 <fileHelp_asc>Tingnan ang OPeNDAP-style na ISO-8859-1 na comma-separated text.</fileHelp_asc>
+<fileHelp_croissant>I-download ang dataset croissant schema.</fileHelp_croissant>
 <fileHelp_csv>Mag-download ng ISO-8859-1 comma-separated text table (line 1: names; line 2: units; ISO 8601 times).</fileHelp_csv>
 <fileHelp_csvp>Mag-download ng ISO-8859-1 .csv file na may linya 1: pangalan (mga unit). Ang mga oras ay ISO 8601 na mga string.</fileHelp_csvp>
 <fileHelp_csv0>Mag-download ng ISO-8859-1 .csv file na walang mga pangalan ng column o unit. Ang mga oras ay ISO 8601 na mga string.</fileHelp_csv0>

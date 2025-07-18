@@ -2924,6 +2924,7 @@ Mar shampla:
 <externalLink>(nasc seachtrach)</externalLink>
 <externalWebSite>Ní formhuiniú é an nasc seo chuig suíomh Gréasáin seachtrach.</externalWebSite>
 <fileHelp_asc>Féach ar théacs OPeNDAP ISO-8859-1 deighilte le camóga.</fileHelp_asc>
+<fileHelp_croissant>Íoslódáil an scéimre croissant tacar sonraí.</fileHelp_croissant>
 <fileHelp_csv>Íoslódáil tábla téacs scartha le camóga ISO-8859-1 (líne 1: ainmneacha; líne 2: aonaid; amanna ISO 8601).</fileHelp_csv>
 <fileHelp_csvp>Íoslódáil comhad ISO-8859-1 .csv le líne 1: ainm (aonaid). Is teaghráin ISO 8601 iad na hamanna.</fileHelp_csvp>
 <fileHelp_csv0>Íoslódáil comhad ISO-8859-1 .csv gan ainmneacha nó aonaid colúin. Is teaghráin ISO 8601 iad na hamanna.</fileHelp_csv0>
