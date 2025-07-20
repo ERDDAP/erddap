@@ -44,6 +44,7 @@ import gov.noaa.pfel.erddap.dataset.EDD.EDDFileTypeInfo;
 import gov.noaa.pfel.erddap.filetypes.TransparentPngFiles;
 import gov.noaa.pfel.erddap.handlers.SaxParsingContext;
 import gov.noaa.pfel.erddap.jte.Status;
+import gov.noaa.pfel.erddap.jte.TableOptions;
 import gov.noaa.pfel.erddap.jte.YouAreHere;
 import gov.noaa.pfel.erddap.util.*;
 import gov.noaa.pfel.erddap.variable.*;
@@ -13920,83 +13921,107 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
         titleSA.set(row, tTitle);
       }
       table.setColumn(oodCol, outOfDateSA);
-
-      // write html response
-      writer.write("<div class=\"standard_width\">");
-      writer.write(EDStatic.youAreHere(request, language, loggedInAs, shortTitle));
-      writer.write(XML.encodeAsHTML(EDStatic.messages.advc_outOfDateAr[language]));
-      writer.write("\n<p>");
-      if (table.nRows() == 0) {
-        writer.write(
-            "["
-                + MessageFormat.format(EDStatic.messages.nMatchingAr[language], "0")
-                + " "
-                + EDStatic.messages.advn_outOfDateAr[language]
-                + "]");
+      if (useHtmlTemplates(request)) {
+        // use html templates
+        YouAreHere youAreHere = EDStatic.getYouAreHere(request, language, loggedInAs, shortTitle);
+        TableOptions tableOptions =
+            new TableOptions(
+                "commonBGColor",
+                null,
+                1, // other classes, bgColor, border,
+                false,
+                mtCol,
+                false, // writeUnits, timeColumn, needEncodingAsHtml,
+                false,
+                table);
+        TemplateEngine engine = TemplateEngine.createPrecompiled(ContentType.Html);
+        engine.render(
+            "outofdatedatasets.jte",
+            Map.of(
+                "youAreHere", youAreHere,
+                "language", language,
+                "tableOptions", tableOptions,
+                "table", table),
+            new WriterOutput(writer));
+        endHtmlWriter(request, language, out, writer, tErddapUrl, loggedInAs, false);
       } else {
+        // write html response
+        writer.write("<div class=\"standard_width\">");
+        writer.write(EDStatic.youAreHere(request, language, loggedInAs, shortTitle));
+        writer.write(XML.encodeAsHTML(EDStatic.messages.advc_outOfDateAr[language]));
+        writer.write("\n<p>");
+        if (table.nRows() == 0) {
+          writer.write(
+              "["
+                  + MessageFormat.format(EDStatic.messages.nMatchingAr[language], "0")
+                  + " "
+                  + EDStatic.messages.advn_outOfDateAr[language]
+                  + "]");
+        } else {
+          writer.write(
+              MessageFormat.format(EDStatic.messages.nMatchingAr[language], "" + table.nRows())
+                  + " "
+                  + MessageFormat.format(
+                      EDStatic.messages.generatedAtAr[language],
+                      "<span class=\"N\">" + currentTimeZulu + "</span>")
+                  + "\n<br>");
+          table.saveAsHtmlTable(
+              writer,
+              "commonBGColor",
+              null,
+              1, // other classes, bgColor, border,
+              false,
+              mtCol,
+              false, // writeUnits, timeColumn, needEncodingAsHtml,
+              false); // allowWrap
+        }
+
+        // autoRefresh message
         writer.write(
-            MessageFormat.format(EDStatic.messages.nMatchingAr[language], "" + table.nRows())
-                + " "
+            "<p>"
                 + MessageFormat.format(
                     EDStatic.messages.generatedAtAr[language],
                     "<span class=\"N\">" + currentTimeZulu + "</span>")
-                + "\n<br>");
-        table.saveAsHtmlTable(
-            writer,
-            "commonBGColor",
-            null,
-            1, // other classes, bgColor, border,
-            false,
-            mtCol,
-            false, // writeUnits, timeColumn, needEncodingAsHtml,
-            false); // allowWrap
+                + "\n<br>"
+                + MessageFormat.format(
+                    EDStatic.messages.autoRefreshAr[language], "" + refreshEveryNMinutes)
+                + "\n");
+
+        // addConstraints
+        writer.write(
+            "<h3><a class=\"selfLink\" id=\"Options\" href=\"#Options\" rel=\"bookmark\">"
+                + EDStatic.messages.optionsAr[language]
+                + "</a></h3>\n"
+                + XML.encodeAsHTML(EDStatic.messages.addConstraintsAr[language])
+                + "<br><a rel=\"bookmark\" href=\""
+                + tErddapUrl
+                + "/"
+                + start
+                + "html?&amp;outOfDate%3E=0.5\">"
+                + tErddapUrl
+                + "/"
+                + start
+                + "html?&amp;outOfDate&gt;=0.5</a> .\n"
+                + String2.replaceAll(
+                    EDStatic.messages.percentEncodeAr[language], "&erddapUrl;", tErddapUrl));
+
+        // list plain file types
+        writer.write(
+            "\n"
+                + "<p>"
+                + EDStatic.messages.restfulInformationFormatsAr[language]
+                + " \n("
+                + plainFileTypesString
+                + // not links, which would be indexed by search engines
+                ") <a rel=\"help\" href=\""
+                + tErddapUrl
+                + "/rest.html\">"
+                + EDStatic.messages.restfulViaServiceAr[language]
+                + "</a>.\n");
+
+        writer.write("</div>\n");
+        endHtmlWriter(request, language, out, writer, tErddapUrl, loggedInAs, false);
       }
-
-      // autoRefresh message
-      writer.write(
-          "<p>"
-              + MessageFormat.format(
-                  EDStatic.messages.generatedAtAr[language],
-                  "<span class=\"N\">" + currentTimeZulu + "</span>")
-              + "\n<br>"
-              + MessageFormat.format(
-                  EDStatic.messages.autoRefreshAr[language], "" + refreshEveryNMinutes)
-              + "\n");
-
-      // addConstraints
-      writer.write(
-          "<h3><a class=\"selfLink\" id=\"Options\" href=\"#Options\" rel=\"bookmark\">"
-              + EDStatic.messages.optionsAr[language]
-              + "</a></h3>\n"
-              + XML.encodeAsHTML(EDStatic.messages.addConstraintsAr[language])
-              + "<br><a rel=\"bookmark\" href=\""
-              + tErddapUrl
-              + "/"
-              + start
-              + "html?&amp;outOfDate%3E=0.5\">"
-              + tErddapUrl
-              + "/"
-              + start
-              + "html?&amp;outOfDate&gt;=0.5</a> .\n"
-              + String2.replaceAll(
-                  EDStatic.messages.percentEncodeAr[language], "&erddapUrl;", tErddapUrl));
-
-      // list plain file types
-      writer.write(
-          "\n"
-              + "<p>"
-              + EDStatic.messages.restfulInformationFormatsAr[language]
-              + " \n("
-              + plainFileTypesString
-              + // not links, which would be indexed by search engines
-              ") <a rel=\"help\" href=\""
-              + tErddapUrl
-              + "/rest.html\">"
-              + EDStatic.messages.restfulViaServiceAr[language]
-              + "</a>.\n");
-
-      writer.write("</div>\n");
-      endHtmlWriter(request, language, out, writer, tErddapUrl, loggedInAs, false);
     } catch (Throwable t) {
       EDStatic.rethrowClientAbortException(t); // first thing in catch{}
       writer.write(EDStatic.htmlForException(language, t));
