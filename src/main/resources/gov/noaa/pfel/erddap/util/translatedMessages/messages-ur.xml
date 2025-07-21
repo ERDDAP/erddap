@@ -2437,6 +2437,7 @@ ERDDAP ایک ڈیٹا سرور ہے جو آپ کو عام فائل فارمیٹ
 <externalLink>(بیرونی لنک)</externalLink>
 <externalWebSite>کسی بیرونی ویب سائٹ کا یہ لنک توثیق نہیں کرتا۔</externalWebSite>
 <fileHelp_asc>OPeNDAP طرز کا ISO-8859-1 کوما سے الگ کردہ متن دیکھیں۔</fileHelp_asc>
+<fileHelp_croissant>اعداد و شمار کو گرا ئيں</fileHelp_croissant>
 <fileHelp_csv>ISO-8859-1 کوما سے الگ کردہ ٹیکسٹ ٹیبل ڈاؤن لوڈ کریں (لائن 1: نام؛ لائن 2: یونٹس؛ ISO 8601 بار)۔</fileHelp_csv>
 <fileHelp_csvp>لائن 1: نام (یونٹ) کے ساتھ ISO-8859-1 .csv فائل ڈاؤن لوڈ کریں۔ اوقات ISO 8601 سٹرنگز ہیں۔</fileHelp_csvp>
 <fileHelp_csv0>کالم کے ناموں یا اکائیوں کے بغیر ISO-8859-1 .csv فائل ڈاؤن لوڈ کریں۔ اوقات ISO 8601 سٹرنگز ہیں۔</fileHelp_csv0>

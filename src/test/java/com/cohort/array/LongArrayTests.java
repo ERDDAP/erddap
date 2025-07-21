@@ -12,7 +12,7 @@ class LongArrayTests {
    * @throws Throwable if trouble.
    */
   @org.junit.jupiter.api.Test
-  public static void basicTest() throws Throwable {
+  public void basicTest() throws Throwable {
     String2.log("*** LongArray.basicTest");
 
     // smallest long and biggest long which can round-trip to double:

@@ -2819,6 +2819,7 @@ Zum Beispiel:
 <externalLink>(externer Link)</externalLink>
 <externalWebSite>Dieser Link zu einer externen Website stellt keine Billigung dar.</externalWebSite>
 <fileHelp_asc>Zeigen Sie durch Kommas getrennten Text nach ISO-8859-1 im OPeNDAP-Stil an.</fileHelp_asc>
+<fileHelp_croissant>Laden Sie das Datenset croissant Schema herunter.</fileHelp_croissant>
 <fileHelp_csv>Laden Sie eine durch Kommas getrennte Texttabelle nach ISO-8859-1 herunter (Zeile 1: Namen; Zeile 2: Einheiten; ISO 8601-Zeiten).</fileHelp_csv>
 <fileHelp_csvp>Laden Sie eine ISO-8859-1 .csv-Datei mit Zeile 1 herunter: Name (Einheiten). Die Zeiten sind ISO 8601-Strings.</fileHelp_csvp>
 <fileHelp_csv0>Laden Sie eine ISO-8859-1 .csv-Datei ohne Spaltennamen oder Einheiten herunter. Die Zeiten sind ISO 8601-Strings.</fileHelp_csv0>

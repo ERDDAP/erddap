@@ -13,6 +13,8 @@ import com.cohort.util.MustBe;
 import com.cohort.util.SimpleException;
 import com.cohort.util.String2;
 import com.cohort.util.Test;
+import gov.noaa.pfel.coastwatch.pointdata.Table;
+import gov.noaa.pfel.coastwatch.util.FileVisitorDNLS;
 import gov.noaa.pfel.coastwatch.util.SimpleXMLReader;
 import gov.noaa.pfel.erddap.Erddap;
 import gov.noaa.pfel.erddap.dataset.metadata.LocalizedAttributes;
@@ -21,6 +23,7 @@ import gov.noaa.pfel.erddap.handlers.SaxHandlerClass;
 import gov.noaa.pfel.erddap.util.EDMessages;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.*;
+import jakarta.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
 
 /**
@@ -605,5 +608,20 @@ public class EDDTableAggregateRows extends EDDTable {
     // finish
     tableWriter.ignoreFinish = false;
     tableWriter.finish();
+  }
+
+  @Override
+  public Table getFilesUrlList(HttpServletRequest request, String loggedInAs, int language)
+      throws Throwable {
+    Table table = FileVisitorDNLS.makeEmptyTable();
+    for (int child = 0; child < children.length; child++) {
+      if (children[child].accessibleViaFiles) {
+        Table childTable = children[child].getFilesUrlList(request, loggedInAs, language);
+        if (childTable != null) {
+          table.append(childTable);
+        }
+      }
+    }
+    return table;
   }
 }

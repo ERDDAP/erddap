@@ -2498,6 +2498,7 @@ ERDDAP是一個資料伺服器，它為您提供了一種簡單、一致的方�
 <externalLink>（外部連結）</externalLink>
 <externalWebSite>此外部網站連結並不構成認可。</externalWebSite>
 <fileHelp_asc>查看 OPeNDAP 樣式的 ISO-8859-1 逗號分隔文字。</fileHelp_asc>
+<fileHelp_croissant>下載資料集 croissant schema。</fileHelp_croissant>
 <fileHelp_csv>下載 ISO-8859-1 逗號分隔文字表（第 1 行：名稱；第 2 行：單位；ISO 8601 時間）。</fileHelp_csv>
 <fileHelp_csvp>下載 ISO-8859-1 .csv 文件，其中第 1 行：名稱（單位）。時間是 ISO 8601 字串。</fileHelp_csvp>
 <fileHelp_csv0>下載不含列名稱或單位的 ISO-8859-1 .csv 檔案。時間是 ISO 8601 字串。</fileHelp_csv0>

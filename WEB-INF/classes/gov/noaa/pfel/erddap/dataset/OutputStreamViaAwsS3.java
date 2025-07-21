@@ -61,8 +61,7 @@ public class OutputStreamViaAwsS3 extends BufferedOutputStream {
     // get and apply the fileTypeInfo
     // 2020-12-07 this is the section that was inline but now uses a static method
     Object fileTypeInfo[] =
-        OutputStreamFromHttpResponse.getFileTypeInfo(
-            parent.request, parent.fileType, parent.extension);
+        OutputStreamFromHttpResponse.getFileTypeInfo(parent.fileType, parent.extension);
     String contentType = (String) fileTypeInfo[0];
     // copy to AWS bucket
     // tell Aws about other file attributes when file accessed as from web site

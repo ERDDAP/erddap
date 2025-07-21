@@ -27,6 +27,7 @@ import gov.noaa.pfel.erddap.handlers.SaxHandlerClass;
 import gov.noaa.pfel.erddap.util.EDMessages;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.*;
+import jakarta.servlet.http.HttpServletRequest;
 import java.io.BufferedReader;
 import java.text.MessageFormat;
 
@@ -535,6 +536,13 @@ public class EDDGridLonPM180 extends EDDGrid {
       String tLocalSourceUrl, int firstAxisToMatch, int matchAxisNDigits, boolean shareInfo)
       throws Throwable {
     throw new SimpleException("Error: EDDGridLonPM180 doesn't support method=\"sibling\".");
+  }
+
+  @Override
+  public Table getFilesUrlList(HttpServletRequest request, String loggedInAs, int language)
+      throws Throwable {
+    EDDGrid tChildDataset = getChildDataset(EDMessages.DEFAULT_LANGUAGE);
+    return tChildDataset.getFilesUrlList(request, loggedInAs, language);
   }
 
   /**

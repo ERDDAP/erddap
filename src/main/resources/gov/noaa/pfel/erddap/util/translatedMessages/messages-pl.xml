@@ -2960,6 +2960,7 @@ Na przykład:
 <externalLink>(link zewnętrzny)</externalLink>
 <externalWebSite>To łącze do zewnętrznej strony internetowej nie stanowi poparcia.</externalWebSite>
 <fileHelp_asc>Wyświetl tekst rozdzielany przecinkami w stylu OPeNDAP ISO-8859-1.</fileHelp_asc>
+<fileHelp_croissant>Pobierz zestaw danych schemat croissant.</fileHelp_croissant>
 <fileHelp_csv>Pobierz tabelę tekstu rozdzielanego przecinkami ISO-8859-1 (wiersz 1: nazwy; wiersz 2: jednostki; czasy ISO 8601).</fileHelp_csv>
 <fileHelp_csvp>Pobierz plik .csv ISO-8859-1 z linią 1: nazwa (jednostki). Czasy są ciągami ISO 8601.</fileHelp_csvp>
 <fileHelp_csv0>Pobierz plik .csv ISO-8859-1 bez nazw kolumn i jednostek. Czasy są ciągami ISO 8601.</fileHelp_csv0>

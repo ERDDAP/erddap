@@ -27,6 +27,7 @@ import gov.noaa.pfel.erddap.handlers.SaxHandlerClass;
 import gov.noaa.pfel.erddap.util.EDMessages;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.*;
+import jakarta.servlet.http.HttpServletRequest;
 import java.io.DataInputStream;
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -800,6 +801,13 @@ public class EDDGridFromEDDTable extends EDDGrid {
     String2.log(
         "EDDGridFromEDDTable nMatches=" + nMatches + " out of TableWriterAll nRows=" + nRows);
     return results;
+  }
+
+  @Override
+  public Table getFilesUrlList(HttpServletRequest request, String loggedInAs, int language)
+      throws Throwable {
+    if (!accessibleViaFiles) return null;
+    return eddTable.getFilesUrlList(request, loggedInAs, language);
   }
 
   /**

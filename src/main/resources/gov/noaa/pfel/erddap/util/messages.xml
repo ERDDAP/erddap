@@ -3070,6 +3070,7 @@ subsets of scientific datasets in common file formats and make graphs and maps.
 <externalWebSite>This link to an external website does not constitute an endorsement.</externalWebSite>
 
 <fileHelp_asc>View OPeNDAP-style ISO-8859-1 comma-separated text.</fileHelp_asc>
+<fileHelp_croissant>Download the dataset croissant schema.</fileHelp_croissant>
 <fileHelp_csv>Download a ISO-8859-1 comma-separated text table (line 1: names; line 2: units; ISO 8601 times).</fileHelp_csv>
 <fileHelp_csvp>Download a ISO-8859-1 .csv file with line 1: name (units). Times are ISO 8601 strings.</fileHelp_csvp>
 <fileHelp_csv0>Download a ISO-8859-1 .csv file without column names or units. Times are ISO 8601 strings.</fileHelp_csv0>

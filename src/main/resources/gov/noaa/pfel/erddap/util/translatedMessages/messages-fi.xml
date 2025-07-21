@@ -2969,6 +2969,7 @@ Esimerkiksi:
 <externalLink>(Ulkoinen linkki)</externalLink>
 <externalWebSite>Tämä linkki ulkoiselle verkkosivustolle ei ole suositus.</externalWebSite>
 <fileHelp_asc>Näytä OPeNDAP-tyylinen ISO-8859-1 pilkuilla eroteltu teksti.</fileHelp_asc>
+<fileHelp_croissant>Download &quot;Croissant schema&quot;</fileHelp_croissant>
 <fileHelp_csv>Lataa ISO-8859-1 pilkuilla eroteltu tekstitaulukko (rivi 1: nimet; rivi 2: yksiköt; ISO 8601 kertaa).</fileHelp_csv>
 <fileHelp_csvp>Lataa ISO-8859-1 .csv-tiedosto, jonka rivi on 1: nimi (yksiköt). Ajat ovat ISO 8601 merkkijonoja.</fileHelp_csvp>
 <fileHelp_csv0>Lataa ISO-8859-1 .csv-tiedosto ilman sarakkeiden nimiä tai yksiköitä. Ajat ovat ISO 8601 merkkijonoja.</fileHelp_csv0>

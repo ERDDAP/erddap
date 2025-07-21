@@ -3039,6 +3039,7 @@ Például:
 <externalLink>(külső hivatkozás)</externalLink>
 <externalWebSite>Ez a külső webhelyre mutató hivatkozás nem minősül jóváhagyásnak.</externalWebSite>
 <fileHelp_asc>Tekintse meg az OPeNDAP-stílusú ISO-8859-1 vesszővel elválasztott szöveget.</fileHelp_asc>
+<fileHelp_croissant>Töltse le az adatkészlet croissant schema.</fileHelp_croissant>
 <fileHelp_csv>Töltse le az ISO-8859-1 vesszővel elválasztott szövegtáblázatot (1. sor: nevek; 2. sor: egységek; ISO 8601-szer).</fileHelp_csv>
 <fileHelp_csvp>Töltsön le egy ISO-8859-1 .csv fájlt 1. sorral: név (egységek). Az idők ISO 8601 karakterláncok.</fileHelp_csvp>
 <fileHelp_csv0>Töltsön le egy ISO-8859-1 .csv fájlt oszlopnevek és mértékegységek nélkül. Az idők ISO 8601 karakterláncok.</fileHelp_csv0>

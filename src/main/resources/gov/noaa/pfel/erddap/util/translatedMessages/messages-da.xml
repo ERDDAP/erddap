@@ -2805,6 +2805,7 @@ For eksempel:
 <externalLink>(eksternt link)</externalLink>
 <externalWebSite>Dette link til en ekstern hjemmeside udgør ikke en godkendelse.</externalWebSite>
 <fileHelp_asc>Se OPeNDAP-stil ISO-8859-1 kommasepareret tekst.</fileHelp_asc>
+<fileHelp_croissant>Download datasættet croissant schema.</fileHelp_croissant>
 <fileHelp_csv>Download en ISO-8859-1 kommasepareret teksttabel (linje 1: navne; linje 2: enheder; ISO 8601 gange).</fileHelp_csv>
 <fileHelp_csvp>Download en ISO-8859-1 .csv-fil med linje 1: navn (enheder). Tiderne er ISO 8601 strenge.</fileHelp_csvp>
 <fileHelp_csv0>Download en ISO-8859-1 .csv-fil uden kolonnenavne eller enheder. Tiderne er ISO 8601 strenge.</fileHelp_csv0>

@@ -27,6 +27,7 @@ import gov.noaa.pfel.erddap.handlers.SaxHandlerClass;
 import gov.noaa.pfel.erddap.util.EDMessages;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.*;
+import jakarta.servlet.http.HttpServletRequest;
 import java.io.BufferedReader;
 import java.text.MessageFormat;
 
@@ -817,6 +818,14 @@ public class EDDTableFromEDDGrid extends EDDTable {
               EDStatic.messages.queryErrorAr[0] + " No results variables?!",
               EDStatic.messages.queryErrorAr[language] + " No results variables?!"));
     }
+  }
+
+  @Override
+  public Table getFilesUrlList(HttpServletRequest request, String loggedInAs, int language)
+      throws Throwable {
+    if (!accessibleViaFiles) return null;
+    EDDGrid tChildDataset = getChildDataset(EDMessages.DEFAULT_LANGUAGE);
+    return tChildDataset.getFilesUrlList(request, loggedInAs, language);
   }
 
   /**

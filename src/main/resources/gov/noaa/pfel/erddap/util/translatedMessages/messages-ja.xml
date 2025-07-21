@@ -2610,6 +2610,7 @@ ERDDAPは、科学データセットのサブセットを一般的なファイ�
 <externalLink>（外部リンク）</externalLink>
 <externalWebSite>この外部ウェブサイトへのリンクは推奨を意味するものではありません。</externalWebSite>
 <fileHelp_asc>OPeNDAP スタイルの ISO-8859-1 カンマ区切りテキストを表示します。</fileHelp_asc>
+<fileHelp_croissant>データセットクロワッサンスキーマをダウンロードします。</fileHelp_croissant>
 <fileHelp_csv>ISO-8859-1 のカンマ区切りテキスト テーブル (行 1: 名前、行 2: 単位、ISO 8601 時間) をダウンロードします。</fileHelp_csv>
 <fileHelp_csvp>行 1: 名前 (単位) を含む ISO-8859-1 .csv ファイルをダウンロードします。時間は ISO 8601 文字列です。</fileHelp_csvp>
 <fileHelp_csv0>列名や単位のない ISO-8859-1 .csv ファイルをダウンロードします。時間は ISO 8601 文字列です。</fileHelp_csv0>
