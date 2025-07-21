@@ -2423,49 +2423,6 @@ public class FileVisitorDNLS extends SimpleFileVisitor<Path> {
   }
 
   /**
-   * This tallys the contents of the specified XML findTags in the specified files and returns the
-   * Tally object.
-   */
-  public static Tally tallyXml(
-      String dir, String fileNameRegex, boolean recursive, String findTags[]) throws Exception {
-
-    Table table =
-        oneStep(
-            dir, fileNameRegex, recursive, ".*", false); // tRecursive, tPathRegex, tDirectoriesToo
-    StringArray dirs = (StringArray) table.getColumn(FileVisitorDNLS.DIRECTORY);
-    StringArray names = (StringArray) table.getColumn(FileVisitorDNLS.NAME);
-    Tally tally = new Tally();
-    int nErrors = 0;
-    for (int i = 0; i < names.size(); i++) {
-
-      String2.log("reading #" + i + ": " + dirs.get(i) + names.get(i));
-      SimpleXMLReader xmlReader = null;
-      try {
-        xmlReader =
-            new SimpleXMLReader(
-                File2.getDecompressedBufferedInputStream(dirs.get(i) + names.get(i)));
-        while (true) {
-          xmlReader.nextTag();
-          String tags = xmlReader.allTags();
-          if (tags.length() == 0) break;
-          for (String findTag : findTags) {
-            if (tags.equals(findTag)) tally.add(findTag, xmlReader.content());
-          }
-        }
-        xmlReader.close();
-        xmlReader = null;
-
-      } catch (Throwable t) {
-        String2.log(MustBe.throwableToString(t));
-        nErrors++;
-        if (xmlReader != null) xmlReader.close();
-      }
-    }
-    String2.log("\n*** tallyXml() finished. nErrors=" + nErrors);
-    return tally;
-  }
-
-  /**
    * A variant of reduceDnlsTableToOneDir that doesn't use subdirHash and returns the sorted subDir
    * short names as a String[].
    */
