@@ -1,6 +1,5 @@
 package gov.noaa.pfel.coastwatch.griddata;
 
-import com.cohort.util.Math2;
 import com.cohort.util.String2;
 import com.cohort.util.Test;
 
@@ -104,6 +103,5 @@ class DataHelperTests {
 
     // done
     String2.log("\n***** DataHelper.test finished successfully");
-    Math2.incgc("DataHelper (between tests)", 2000); // in a test
   }
 }

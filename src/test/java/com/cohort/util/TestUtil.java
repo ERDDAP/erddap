@@ -26,7 +26,6 @@ import java.util.Set;
 import java.util.TimeZone;
 import java.util.concurrent.locks.Lock;
 import org.junit.jupiter.api.RepeatedTest;
-import org.junit.jupiter.api.condition.DisabledIf;
 import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.api.parallel.Isolated;
 import tags.TagFlaky;
@@ -280,12 +279,6 @@ public class TestUtil {
     String2.log("maxSafeMemory = " + Math2.maxSafeMemory);
     String2.log("getUsingMemory = " + Math2.getMemoryInUse());
     String2.log("memoryString = " + Math2.memoryString());
-
-    // incgc
-    String2.log("test incgc(3000)");
-    da = null; // free the memory
-    Math2.incgc("EDDTableFromNcFiles (between tests)", 3000);
-    String2.log("after incgc: " + Math2.memoryString());
 
     // gc
     String2.log("test gcAndWait()");
@@ -583,15 +576,6 @@ public class TestUtil {
     Test.ensureEqual(Math2.narrowToByte(Byte.MIN_VALUE - 1), Byte.MAX_VALUE, "b");
     Test.ensureEqual(Math2.narrowToByte(5), 5, "c");
 
-    // narrowToUByte
-    String2.log("test narrowToUByte");
-    Test.ensureEqual(Math2.narrowToUByte(0), 0, "");
-    Test.ensureEqual(Math2.narrowToUByte(127), 127, "");
-    Test.ensureEqual(Math2.narrowToUByte(254), 254, "");
-    Test.ensureEqual(Math2.narrowToUByte(255), 255, "");
-    Test.ensureEqual(Math2.narrowToUByte(-1), 255, "");
-    Test.ensureEqual(Math2.narrowToUByte(256), 255, "");
-
     // narrowToChar
     String2.log("test narrowToChar");
     Test.ensureEqual(Math2.narrowToChar(Character.MAX_VALUE + 1), Character.MAX_VALUE, "a");
@@ -612,15 +596,6 @@ public class TestUtil {
     Test.ensureEqual(Math2.narrowToUShort(65535), 65535, "");
     Test.ensureEqual(Math2.narrowToUShort(-1), 65535, "");
     Test.ensureEqual(Math2.narrowToUShort(65536), 65535, "");
-
-    // narrowToUInt
-    String2.log("test narrowToUInt");
-    Test.ensureEqual(Math2.narrowToUInt(0), 0, "");
-    Test.ensureEqual(Math2.narrowToUInt(2147483647), 2147483647, "");
-    Test.ensureEqual(Math2.narrowToUInt(4294967294L), 4294967294L, "");
-    Test.ensureEqual(Math2.narrowToUInt(4294967295L), 4294967295L, "");
-    Test.ensureEqual(Math2.narrowToUInt(-1), 4294967295L, "");
-    Test.ensureEqual(Math2.narrowToUInt(4294967296L), 4294967295L, "");
 
     // floatToDouble
     String2.log("test floatToDouble");
@@ -1569,8 +1544,6 @@ public class TestUtil {
       if (test < 10) String2.log(sb.toString());
       // if (test == 10) System.exit(0);
     }
-
-    Math2.incgc("EDDTableFromNcFiles (between tests)", 3000);
 
     // binaryFindLastLE
     String tsar[] = {"abc", "bcd", "bcj"};
@@ -3145,17 +3118,6 @@ public class TestUtil {
     sb.append('a');
     Test.ensureEqual(String2.addNewlineIfNone(sb).toString(), "a\n", "");
     Test.ensureEqual(String2.addNewlineIfNone(sb).toString(), "a\n", "");
-  }
-
-  @org.junit.jupiter.api.Test
-  @DisabledIf(
-      value = "java.awt.GraphicsEnvironment#isHeadless",
-      disabledReason = "headless environment")
-  void testString2Clipboard() throws Throwable {
-    // clipboard
-    String2.log("Clipboard was: " + String2.getClipboardString());
-    String2.setClipboardString("Test String2.setClipboardString.");
-    Test.ensureEqual(String2.getClipboardString(), "Test String2.setClipboardString.", "");
   }
 
   private static double nextEpochSecond() {
