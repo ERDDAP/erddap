@@ -35,6 +35,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.lang.management.ManagementFactory;
 import java.lang.management.OperatingSystemMXBean;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
@@ -44,6 +45,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.apache.commons.io.input.ReaderInputStream;
 import org.apache.commons.text.StringSubstitutor;
 import org.apache.commons.text.io.StringSubstitutorReader;
 
@@ -207,11 +209,13 @@ public class LoadDatasets extends Thread {
       //    Good: easy to catch/report mistyped tag Names
       //    Low memory use.
       // I went with SimpleXMLReader
-      inputStream = getInputStream(inputStream);
 
       // this class processes all the environment variables in the datasets.xml
       var ssr =
-          new StringSubstitutorReader(new InputStreamReader(inputStream), new StringSubstitutor());
+          new StringSubstitutorReader(
+              new InputStreamReader(getInputStream(inputStream)), new StringSubstitutor());
+
+      inputStream = new ReaderInputStream(ssr, StandardCharsets.UTF_8);
 
       boolean useSaxParser = EDStatic.config.useSaxParser;
       int[] nTryAndDatasets = new int[2];
