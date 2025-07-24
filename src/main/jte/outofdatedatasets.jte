@@ -6,10 +6,6 @@
 @param int language
 @param TableOptions tableOptions
 @param Table table
-<head>
-    <link href="https://coastwatch.pfeg.noaa.gov/erddap/images/erddap2.css" rel="stylesheet" type="text/css">
-</head>
-
 
 @template.youarehere(youAreHere)
 

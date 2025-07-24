@@ -2,7 +2,8 @@
 @import gov.noaa.pfel.coastwatch.pointdata.Table
 @param TableOptions tableOptions
 
-<table class="${tableOptions.getWrap()} ${tableOptions.getOtherClasses()}" style="background-color:${tableOptions.getBgColor()};">
+<table class="erd${tableOptions.getWrap()}${tableOptions.getOtherClasses()}" style="background-color:${tableOptions.getBgColor()};">
+
     
     <!-- Table Headings -->
     <tr>
@@ -31,7 +32,6 @@
                         ${tableOptions.getDoubleDataConverted(col, row)}
                     @else
                         !{var s = tableOptions.getStringData(col, row);}
-
                         @if(tableOptions.checkLengthFile(col))
                             <a href="${tableOptions.getUrl(col, s)}">
                                 ${tableOptions.getEncodeashtml(s)}
@@ -59,6 +59,8 @@
 
                         @elseif(tableOptions.checkEncodingAsHtml())
                             ${tableOptions.getEncodeashtml(s)}
+                        @else
+                            $unsafe{s}
                         @endif
                     @endif
                 </td>

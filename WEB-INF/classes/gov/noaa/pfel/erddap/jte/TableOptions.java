@@ -43,16 +43,12 @@ public class TableOptions {
     this.fileAccessSuffix = new String[nCols];
   }
 
-  public long getTime() {
-    return System.currentTimeMillis();
-  }
-
   public String getNoData() {
     return MustBe.THERE_IS_NO_DATA;
   }
 
   public String getWrap() {
-    return allowWrap ? "" : "nowrap";
+    return allowWrap ? "" : " nowrap";
   }
 
   public String getOtherClasses() {
@@ -141,7 +137,7 @@ public class TableOptions {
   }
 
   public String getUrl(int col, String s) {
-    return XML.encodeAsHTMLAttribute(fileAccessBaseUrl[col] + getTs(s) + fileAccessSuffix[col]);
+    return fileAccessBaseUrl[col] + getTs(s) + fileAccessSuffix[col];
   }
 
   public String getEncodeashtml(String s) {
