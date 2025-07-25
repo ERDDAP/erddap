@@ -9,8 +9,13 @@ import java.io.File;
 import java.io.Writer;
 import java.lang.ref.WeakReference;
 import java.nio.file.Path;
+import java.time.OffsetDateTime;
 import java.time.ZoneId;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoField;
+import java.time.temporal.TemporalAccessor;
 import java.util.ArrayList;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
@@ -21,7 +26,6 @@ import java.util.Set;
 import java.util.TimeZone;
 import java.util.concurrent.locks.Lock;
 import org.junit.jupiter.api.RepeatedTest;
-import org.junit.jupiter.api.condition.DisabledIf;
 import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.api.parallel.Isolated;
 import tags.TagFlaky;
@@ -275,12 +279,6 @@ public class TestUtil {
     String2.log("maxSafeMemory = " + Math2.maxSafeMemory);
     String2.log("getUsingMemory = " + Math2.getMemoryInUse());
     String2.log("memoryString = " + Math2.memoryString());
-
-    // incgc
-    String2.log("test incgc(3000)");
-    da = null; // free the memory
-    Math2.incgc("EDDTableFromNcFiles (between tests)", 3000);
-    String2.log("after incgc: " + Math2.memoryString());
 
     // gc
     String2.log("test gcAndWait()");
@@ -578,15 +576,6 @@ public class TestUtil {
     Test.ensureEqual(Math2.narrowToByte(Byte.MIN_VALUE - 1), Byte.MAX_VALUE, "b");
     Test.ensureEqual(Math2.narrowToByte(5), 5, "c");
 
-    // narrowToUByte
-    String2.log("test narrowToUByte");
-    Test.ensureEqual(Math2.narrowToUByte(0), 0, "");
-    Test.ensureEqual(Math2.narrowToUByte(127), 127, "");
-    Test.ensureEqual(Math2.narrowToUByte(254), 254, "");
-    Test.ensureEqual(Math2.narrowToUByte(255), 255, "");
-    Test.ensureEqual(Math2.narrowToUByte(-1), 255, "");
-    Test.ensureEqual(Math2.narrowToUByte(256), 255, "");
-
     // narrowToChar
     String2.log("test narrowToChar");
     Test.ensureEqual(Math2.narrowToChar(Character.MAX_VALUE + 1), Character.MAX_VALUE, "a");
@@ -607,15 +596,6 @@ public class TestUtil {
     Test.ensureEqual(Math2.narrowToUShort(65535), 65535, "");
     Test.ensureEqual(Math2.narrowToUShort(-1), 65535, "");
     Test.ensureEqual(Math2.narrowToUShort(65536), 65535, "");
-
-    // narrowToUInt
-    String2.log("test narrowToUInt");
-    Test.ensureEqual(Math2.narrowToUInt(0), 0, "");
-    Test.ensureEqual(Math2.narrowToUInt(2147483647), 2147483647, "");
-    Test.ensureEqual(Math2.narrowToUInt(4294967294L), 4294967294L, "");
-    Test.ensureEqual(Math2.narrowToUInt(4294967295L), 4294967295L, "");
-    Test.ensureEqual(Math2.narrowToUInt(-1), 4294967295L, "");
-    Test.ensureEqual(Math2.narrowToUInt(4294967296L), 4294967295L, "");
 
     // floatToDouble
     String2.log("test floatToDouble");
@@ -1564,8 +1544,6 @@ public class TestUtil {
       if (test < 10) String2.log(sb.toString());
       // if (test == 10) System.exit(0);
     }
-
-    Math2.incgc("EDDTableFromNcFiles (between tests)", 3000);
 
     // binaryFindLastLE
     String tsar[] = {"abc", "bcd", "bcj"};
@@ -3142,19 +3120,92 @@ public class TestUtil {
     Test.ensureEqual(String2.addNewlineIfNone(sb).toString(), "a\n", "");
   }
 
-  @org.junit.jupiter.api.Test
-  @DisabledIf(
-      value = "java.awt.GraphicsEnvironment#isHeadless",
-      disabledReason = "headless environment")
-  void testString2Clipboard() throws Throwable {
-    // clipboard
-    String2.log("Clipboard was: " + String2.getClipboardString());
-    String2.setClipboardString("Test String2.setClipboardString.");
-    Test.ensureEqual(String2.getClipboardString(), "Test String2.setClipboardString.", "");
-  }
-
   private static double nextEpochSecond() {
     return Math.ceil(System.currentTimeMillis() / 1000.0);
+  }
+
+  /**
+   * DON'T USE THIS EXCEPT FOR TESTING BECAUSE OF BUGS IN DateTimeFormatter. This uses the
+   * DateTimeFormatter to parse the formatted time string.
+   *
+   * @param s a formatted time string
+   * @param dtf the DateTimeFormatter to do the parsing.
+   * @throws RuntimeException
+   */
+  public static double parseToEpochSecondsViaBuggyDateTimeFormatter(
+      String s, DateTimeFormatter dtf) {
+    TemporalAccessor ta = dtf.parse(s);
+    // Who designed the new Java.time?! It's brutally complex.
+    // If it's a date, it doesn't have a time zone or a way to get time at start of day.
+    // I miss Joda.
+
+    // convert year or year month into dateTime
+    if (dtf.getZone() == null) {
+      // OffsetDateTime
+      if (!ta.isSupported(ChronoField.MONTH_OF_YEAR))
+        ta =
+            OffsetDateTime.of(
+                ta.get(ChronoField.YEAR),
+                1,
+                1,
+                0,
+                0,
+                0,
+                0,
+                ZoneOffset.ofTotalSeconds(ta.get(ChronoField.OFFSET_SECONDS)));
+      else if (!ta.isSupported(ChronoField.DAY_OF_MONTH))
+        ta =
+            OffsetDateTime.of(
+                ta.get(ChronoField.YEAR),
+                ta.get(ChronoField.MONTH_OF_YEAR),
+                1,
+                0,
+                0,
+                0,
+                0,
+                ZoneOffset.ofTotalSeconds(ta.get(ChronoField.OFFSET_SECONDS)));
+      // convert year month date into dateTime
+      else if (!ta.isSupported(ChronoField.INSTANT_SECONDS))
+        ta =
+            OffsetDateTime.of(
+                ta.get(ChronoField.YEAR),
+                ta.get(ChronoField.MONTH_OF_YEAR),
+                ta.get(ChronoField.DAY_OF_MONTH),
+                0,
+                0,
+                0,
+                0,
+                ZoneOffset.ofTotalSeconds(ta.get(ChronoField.OFFSET_SECONDS)));
+    } else {
+      // ZonedDateTime
+      if (!ta.isSupported(ChronoField.MONTH_OF_YEAR))
+        ta = ZonedDateTime.of(ta.get(ChronoField.YEAR), 1, 1, 0, 0, 0, 0, dtf.getZone());
+      else if (!ta.isSupported(ChronoField.DAY_OF_MONTH))
+        ta =
+            ZonedDateTime.of(
+                ta.get(ChronoField.YEAR),
+                ta.get(ChronoField.MONTH_OF_YEAR),
+                1,
+                0,
+                0,
+                0,
+                0,
+                dtf.getZone());
+      // convert year month date into dateTime
+      else if (!ta.isSupported(ChronoField.INSTANT_SECONDS))
+        ta =
+            ZonedDateTime.of(
+                ta.get(ChronoField.YEAR),
+                ta.get(ChronoField.MONTH_OF_YEAR),
+                ta.get(ChronoField.DAY_OF_MONTH),
+                0,
+                0,
+                0,
+                0,
+                dtf.getZone());
+    }
+
+    return ta.getLong(ChronoField.INSTANT_SECONDS) + ta.get(ChronoField.MILLI_OF_SECOND) / 1000.0;
   }
 
   /**
@@ -3171,7 +3222,7 @@ public class TestUtil {
     DateTimeFormatter dtfr = Calendar2.makeDateTimeFormatter(dtf, tzs);
     String s =
         Calendar2.epochSecondsToIsoStringT3Z(
-            Calendar2.parseToEpochSecondsViaBuggyDateTimeFormatter(dts, dtfr));
+            parseToEpochSecondsViaBuggyDateTimeFormatter(dts, dtfr));
     Test.ensureEqual(
         s, eis, "viaBuggyOfficialJavaDateTimeFormatter: " + dts + "  " + dtf + "  " + tzs);
     s = Calendar2.epochSecondsToIsoStringT3Z(Calendar2.parseToEpochSeconds(dts, dtf, tzs));
@@ -6376,15 +6427,6 @@ public class TestUtil {
     } catch (Exception e) {
     }
 
-    // getMonthName
-    Test.ensureEqual(Calendar2.getMonthName(1), "January", "a");
-    Test.ensureEqual(Calendar2.getMonthName(12), "December", "b");
-    try {
-      Calendar2.getMonthName(0);
-      throw new Throwable("Shouldn't get here.3");
-    } catch (Exception e) {
-    }
-
     // equals
     Test.ensureEqual(
         Calendar2.newGCalendarZulu(2005, 9, 1).equals(Calendar2.newGCalendarZulu(2005, 8, 32)),
@@ -6809,24 +6851,13 @@ public class TestUtil {
     } catch (Exception e) {
     }
     Test.ensureEqual(
-        Calendar2.formatAsISODate(Calendar2.newGCalendarLocal(2003, 1, 2)), "2003-01-02", "fL");
-    Test.ensureEqual(
         Calendar2.formatAsISODate(Calendar2.newGCalendarZulu(2003, 1, 2)), "2003-01-02", "fZ");
-    try {
-      Calendar2.newGCalendarLocal(Integer.MAX_VALUE, 1, 2);
-      throw new Throwable("Shouldn't get here.32");
-    } catch (Exception e) {
-    }
     try {
       Calendar2.newGCalendarZulu(Integer.MAX_VALUE, 1, 2);
       throw new Throwable("Shouldn't get here.33");
     } catch (Exception e) {
     }
 
-    Test.ensureEqual(
-        Calendar2.formatAsCompactDateTime(Calendar2.newGCalendarLocal(2003, 1, 2, 3, 4, 5, 6)),
-        "20030102030405",
-        "hL");
     Test.ensureEqual(
         Calendar2.formatAsCompactDateTime(Calendar2.newGCalendarZulu(2003, 1, 2, 3, 4, 5, 6)),
         "20030102030405",
@@ -6849,17 +6880,10 @@ public class TestUtil {
     } catch (Exception e) {
     }
     try {
-      Calendar2.newGCalendarLocal(Integer.MAX_VALUE, 1, 2, 3, 4, 5, 6);
-      throw new Throwable("Shouldn't get here.35");
-    } catch (Exception e) {
-    }
-    try {
       Calendar2.newGCalendarZulu(Integer.MAX_VALUE, 1, 2, 3, 4, 5, 6);
       throw new Throwable("Shouldn't get here.36");
     } catch (Exception e) {
     }
-    Test.ensureEqual(
-        Calendar2.formatAsYYYYDDD(Calendar2.newGCalendarLocal(2003, 1, 2)), "2003002", "mL");
     Test.ensureEqual(
         Calendar2.formatAsYYYYDDD(Calendar2.newGCalendarZulu(2003, 1, 2)), "2003002", "mZ");
     Test.ensureEqual(
@@ -6868,70 +6892,6 @@ public class TestUtil {
         Calendar2.formatAsYYYYDDD(Calendar2.newGCalendarZulu(0, 1, 2)), "0000002", "mZ");
     Test.ensureEqual(
         Calendar2.formatAsYYYYDDD(Calendar2.newGCalendarZulu(-1, 1, 2)), "-0001002", "mZ");
-
-    Test.ensureEqual(
-        Calendar2.formatAsUSSlash24(Calendar2.parseUSSlash24(zuluGC, "1/2/2006 03:04:05")),
-        "1/2/2006 03:04:05",
-        "qe1");
-    Test.ensureEqual(
-        Calendar2.formatAsUSSlash24(Calendar2.parseUSSlash24(zuluGC, "1/2/06 3:4")),
-        "1/2/2006 03:04:00",
-        "qe2");
-    Test.ensureEqual(
-        Calendar2.formatAsUSSlash24(Calendar2.parseUSSlash24(zuluGC, "12/31/99 3")),
-        "12/31/1999 03:00:00",
-        "qe3");
-    Test.ensureEqual(
-        Calendar2.formatAsUSSlash24(Calendar2.parseUSSlash24(zuluGC, "1/2/2006")),
-        "1/2/2006 00:00:00",
-        "qe4");
-    Test.ensureEqual(
-        Calendar2.formatAsUSSlash24(Calendar2.parseUSSlash24(zuluGC, "1/2/06")),
-        "1/2/2006 00:00:00",
-        "qe5");
-    Test.ensureEqual(
-        Calendar2.formatAsUSSlash24(Calendar2.parseUSSlash24(zuluGC, "12/31/99")),
-        "12/31/1999 00:00:00",
-        "qe6");
-    try {
-      Calendar2.formatAsUSSlash24(null);
-      throw new Throwable("Shouldn't get here.37");
-    } catch (Exception e) {
-    }
-    try {
-      Calendar2.parseUSSlash24(null, "12/31/99");
-      throw new Throwable("Shouldn't get here.38");
-    } catch (Exception e) {
-    }
-    Test.ensureEqual(
-        Calendar2.formatAsUSSlash24(Calendar2.parseUSSlash24Zulu("12/31/99")),
-        "12/31/1999 00:00:00",
-        "qe7");
-    try {
-      Calendar2.parseUSSlash24Zulu(null);
-      throw new Throwable("Shouldn't get here.39");
-    } catch (Exception e) {
-    }
-    try {
-      Calendar2.parseUSSlash24Zulu("12");
-      throw new Throwable("Shouldn't get here.40");
-    } catch (Exception e) {
-    }
-    try {
-      Calendar2.parseUSSlash24Zulu("12/31");
-      throw new Throwable("Shouldn't get here.41");
-    } catch (Exception e) {
-    }
-    try {
-      Calendar2.parseUSSlash24Zulu("12/31/a");
-      throw new Throwable("Shouldn't get here.42");
-    } catch (Exception e) {
-    }
-    try {
-      Calendar2.parseUSSlash24Zulu("12-31-99");
-      throw new Throwable("Shouldn't get here.43");
-    } catch (Exception e) {
-    }
 
     Test.ensureEqual(
         Calendar2.formatAsUSSlashAmPm(Calendar2.parseISODateTimeZulu("2006-01-02 00:03:04")),
@@ -7028,10 +6988,6 @@ public class TestUtil {
     } catch (Exception e) {
     }
 
-    Test.ensureEqual(
-        Calendar2.formatAsDDMonYYYY(Calendar2.newGCalendarLocal(2003, 1, 2, 3, 4, 5, 6)),
-        "02-Jan-2003 03:04:05",
-        "hL");
     Test.ensureEqual(
         Calendar2.formatAsDDMonYYYY(Calendar2.newGCalendarZulu(2003, 1, 2, 3, 4, 5, 6)),
         "02-Jan-2003 03:04:05",
@@ -7546,169 +7502,6 @@ public class TestUtil {
       throw new Throwable("Shouldn't get here.78");
     } catch (Exception e) {
     }
-
-    // binaryFindClosest
-    String tsar1[] = {"0000-03-02", "2000-05-02", "2000-05-04", "2000-05-06"}; // 0000 ok; <0 isn't
-    String tsar2[] = {
-      "2000-05-02 12:00:00", "2000-05-03 12:00:00", "2000-05-04 12:00:00"
-    }; // important tests
-    String dupSar1[] = {
-      "2000-05-02",
-      "2000-05-04",
-      "2000-05-04",
-      "2000-05-04",
-      "2000-05-04",
-      "2000-05-04",
-      "2000-05-06"
-    };
-    String dupSar2[] = {
-      "2000-05-02 00:00:00",
-      "2000-05-04 00:00:00",
-      "2000-05-04 00:00:00",
-      "2000-05-04 00:00:00",
-      "2000-05-04 00:00:00",
-      "2000-05-04 00:00:00",
-      "2000-05-06 00:00:00"
-    };
-    Test.ensureEqual(Calendar2.binaryFindClosest(tsar1, "0000-01-01"), 0, "");
-    Test.ensureEqual(Calendar2.binaryFindClosest(tsar1, "0500-01-01"), 0, "");
-    Test.ensureEqual(Calendar2.binaryFindClosest(tsar1, "2000-05-01 23:00:00"), 1, "");
-    Test.ensureEqual(Calendar2.binaryFindClosest(tsar1, "2000-05-03 23:00:00"), 2, "");
-    Test.ensureEqual(Calendar2.binaryFindClosest(tsar1, "2000-05-04 00:00:00"), 2, "");
-    Test.ensureEqual(Calendar2.binaryFindClosest(tsar1, "2000-05-04 01:00:00"), 2, "");
-    Test.ensureEqual(Calendar2.binaryFindClosest(tsar1, "2000-05-05 23:00:00"), 3, "");
-    Test.ensureEqual(Calendar2.binaryFindClosest(tsar1, "2000-05-07 23:00:00"), 3, "");
-
-    Test.ensureEqual(Calendar2.binaryFindClosest(tsar2, "2000-05-01"), 0, "");
-    Test.ensureEqual(Calendar2.binaryFindClosest(tsar2, "2000-05-03 23:00:00"), 1, "");
-    Test.ensureEqual(Calendar2.binaryFindClosest(tsar2, "2000-05-03"), 1, ""); // important
-    Test.ensureEqual(Calendar2.binaryFindClosest(tsar2, "2000-05-03 01:00:00"), 1, "");
-    Test.ensureEqual(Calendar2.binaryFindClosest(tsar2, "2000-05-04 23:00:00"), 2, "");
-    Test.ensureEqual(Calendar2.binaryFindClosest(tsar2, "2000-05-05"), 2, "");
-    Test.ensureEqual(Calendar2.binaryFindClosest(tsar2, ""), 2, ""); // binaryFinds last in list
-    Test.ensureEqual(Calendar2.binaryFindClosest(tsar2, "a"), 2, "");
-    Test.ensureEqual(Calendar2.binaryFindClosest(tsar2, null), 2, "");
-
-    Test.ensureEqual(Calendar2.binaryFindClosest(dupSar1, "2000-05-01 00:00:00"), 0, "");
-    int i = Calendar2.binaryFindClosest(dupSar1, "2000-05-04");
-    Test.ensureTrue(i >= 1 && i <= 5, "");
-    i = Calendar2.binaryFindClosest(dupSar1, "2000-05-04 00:00:00");
-    Test.ensureTrue(i >= 1 && i <= 5, "");
-    Test.ensureEqual(Calendar2.binaryFindClosest(dupSar1, "2000-05-05 01:00:00"), 6, "");
-    Test.ensureEqual(Calendar2.binaryFindClosest(dupSar1, "2000-05-07 00:00:00"), 6, "");
-
-    Test.ensureEqual(Calendar2.binaryFindClosest(dupSar2, "2000-05-01"), 0, "");
-    i = Calendar2.binaryFindClosest(dupSar2, "2000-05-04");
-    Test.ensureTrue(i >= 1 && i <= 5, "");
-    i = Calendar2.binaryFindClosest(dupSar2, "2000-05-04 00:00:00");
-    Test.ensureTrue(i >= 1 && i <= 5, "");
-    Test.ensureEqual(Calendar2.binaryFindClosest(dupSar2, "2000-05-06"), 6, "");
-    Test.ensureEqual(Calendar2.binaryFindClosest(dupSar2, "2000-05-07"), 6, "");
-
-    // binaryFindLastLE
-    // String tsar1[] = {"0000-03-02", "2000-05-02", "2000-05-04", "2000-05-06"};
-    // String tsar2[] = {"2000-05-02 12:00:00", "2000-05-03 12:00:00", "2000-05-04
-    // 12:00:00"}; //important tests
-    // String dupSar1[] = {"2000-05-02", "2000-05-04", "2000-05-04", "2000-05-04",
-    // "2000-05-04", "2000-05-04", "2000-05-06"};
-    // String dupSar2[] = {"2000-05-02 00:00:00", "2000-05-04 00:00:00", "2000-05-04
-    // 00:00:00",
-    // "2000-05-04 00:00:00", "2000-05-04 00:00:00", "2000-05-04 00:00:00",
-    // "2000-05-06 00:00:00"};
-    Test.ensureEqual(Calendar2.binaryFindLastLE(tsar1, "0000-01-01"), -1, "");
-    Test.ensureEqual(Calendar2.binaryFindLastLE(tsar1, "2000-05-01 23:00:00"), 0, "");
-    Test.ensureEqual(Calendar2.binaryFindLastLE(tsar1, "2000-05-03 23:00:00"), 1, "");
-    Test.ensureEqual(Calendar2.binaryFindLastLE(tsar1, "2000-05-04 00:00:00"), 2, "");
-    Test.ensureEqual(Calendar2.binaryFindLastLE(tsar1, "2000-05-04 01:00:00"), 2, "");
-    Test.ensureEqual(Calendar2.binaryFindLastLE(tsar1, "2000-05-05 23:00:00"), 2, "");
-    Test.ensureEqual(Calendar2.binaryFindLastLE(tsar1, "2000-05-07 23:00:00"), 3, "");
-    Test.ensureEqual(Calendar2.binaryFindLastLE(tsar1, ""), -1, "");
-    Test.ensureEqual(Calendar2.binaryFindLastLE(tsar1, "a"), -1, "");
-    Test.ensureEqual(Calendar2.binaryFindLastLE(tsar1, null), -1, "");
-
-    Test.ensureEqual(Calendar2.binaryFindLastLE(tsar2, "2000-05-01"), -1, "");
-    Test.ensureEqual(Calendar2.binaryFindLastLE(tsar2, "2000-05-02 23:00:00"), 0, "");
-    Test.ensureEqual(Calendar2.binaryFindLastLE(tsar2, "2000-05-03"), 0, "");
-    Test.ensureEqual(Calendar2.binaryFindLastLE(tsar2, "2000-05-03 01:00:00"), 0, "");
-    Test.ensureEqual(Calendar2.binaryFindLastLE(tsar2, "2000-05-03 12:00:00"), 1, "");
-    Test.ensureEqual(Calendar2.binaryFindLastLE(tsar2, "2000-05-05"), 2, "");
-
-    Test.ensureEqual(Calendar2.binaryFindLastLE(dupSar1, "2000-05-01"), -1, "");
-    Test.ensureEqual(Calendar2.binaryFindLastLE(dupSar1, "2000-05-03"), 0, "");
-    Test.ensureEqual(Calendar2.binaryFindLastLE(dupSar1, "2000-05-04"), 5, "");
-    Test.ensureEqual(Calendar2.binaryFindLastLE(dupSar1, "2000-05-04 00:00:00"), 5, "");
-    Test.ensureEqual(Calendar2.binaryFindLastLE(dupSar1, "2000-05-05"), 5, "");
-    Test.ensureEqual(Calendar2.binaryFindLastLE(dupSar1, "2000-05-07"), 6, "");
-
-    Test.ensureEqual(Calendar2.binaryFindLastLE(dupSar2, "2000-05-01"), -1, "");
-    Test.ensureEqual(Calendar2.binaryFindLastLE(dupSar2, "2000-05-03"), 0, "");
-    Test.ensureEqual(Calendar2.binaryFindLastLE(dupSar2, "2000-05-04"), 5, "");
-    Test.ensureEqual(Calendar2.binaryFindLastLE(dupSar2, "2000-05-04 00:00:00"), 5, "");
-    Test.ensureEqual(Calendar2.binaryFindLastLE(dupSar2, "2000-05-05"), 5, "");
-    Test.ensureEqual(Calendar2.binaryFindLastLE(dupSar2, "2000-05-07"), 6, "");
-
-    // binaryFindLastGE
-    // String tsar1[] = {"0000-03-02", "2000-05-02", "2000-05-04", "2000-05-06"};
-    // String tsar2[] = {"2000-05-02 12:00:00", "2000-05-03 12:00:00", "2000-05-04
-    // 12:00:00"}; //important tests
-    // String dupSar1[] = {"2000-05-02", "2000-05-04", "2000-05-04", "2000-05-04",
-    // "2000-05-04", "2000-05-04", "2000-05-06"};
-    // String dupSar2[] = {"2000-05-02 00:00:00", "2000-05-04 00:00:00", "2000-05-04
-    // 00:00:00",
-    // "2000-05-04 00:00:00", "2000-05-04 00:00:00", "2000-05-04 00:00:00",
-    // "2000-05-06 00:00:00"};
-    Test.ensureEqual(Calendar2.binaryFindFirstGE(tsar1, "0000-01-01"), 0, "");
-    Test.ensureEqual(Calendar2.binaryFindFirstGE(tsar1, "2000-05-01 23:00:00"), 1, "");
-    Test.ensureEqual(Calendar2.binaryFindFirstGE(tsar1, "2000-05-03 23:00:00"), 2, "");
-    Test.ensureEqual(Calendar2.binaryFindFirstGE(tsar1, "2000-05-04 00:00:00"), 2, "");
-    Test.ensureEqual(Calendar2.binaryFindFirstGE(tsar1, "2000-05-04 01:00:00"), 3, "");
-    Test.ensureEqual(Calendar2.binaryFindFirstGE(tsar1, "2000-05-05 23:00:00"), 3, "");
-    Test.ensureEqual(Calendar2.binaryFindFirstGE(tsar1, "2000-05-07 23:00:00"), 4, "");
-    Test.ensureEqual(Calendar2.binaryFindFirstGE(tsar1, ""), tsar1.length, ""); //
-    Test.ensureEqual(Calendar2.binaryFindFirstGE(tsar1, "a"), tsar1.length, "");
-    Test.ensureEqual(Calendar2.binaryFindFirstGE(tsar1, null), tsar1.length, "");
-
-    Test.ensureEqual(Calendar2.binaryFindFirstGE(tsar2, "2000-05-01"), 0, "");
-    Test.ensureEqual(Calendar2.binaryFindFirstGE(tsar2, "2000-05-02 23:00:00"), 1, "");
-    Test.ensureEqual(Calendar2.binaryFindFirstGE(tsar2, "2000-05-03"), 1, "");
-    Test.ensureEqual(Calendar2.binaryFindFirstGE(tsar2, "2000-05-03 01:00:00"), 1, "");
-    Test.ensureEqual(Calendar2.binaryFindFirstGE(tsar2, "2000-05-03 12:00:00"), 1, "");
-    Test.ensureEqual(Calendar2.binaryFindFirstGE(tsar2, "2000-05-03 13:00:00"), 2, "");
-    Test.ensureEqual(Calendar2.binaryFindFirstGE(tsar2, "2000-05-05"), 3, "");
-
-    Test.ensureEqual(Calendar2.binaryFindFirstGE(dupSar1, "2000-05-01"), 0, "");
-    Test.ensureEqual(Calendar2.binaryFindFirstGE(dupSar1, "2000-05-03"), 1, "");
-    Test.ensureEqual(Calendar2.binaryFindFirstGE(dupSar1, "2000-05-04 00:00:00"), 1, "");
-    Test.ensureEqual(Calendar2.binaryFindFirstGE(dupSar1, "2000-05-04"), 1, "");
-    Test.ensureEqual(Calendar2.binaryFindFirstGE(dupSar1, "2000-05-05"), 6, "");
-    Test.ensureEqual(Calendar2.binaryFindFirstGE(dupSar1, "2000-05-07"), 7, "");
-
-    Test.ensureEqual(Calendar2.binaryFindFirstGE(dupSar2, "2000-05-01"), 0, "");
-    Test.ensureEqual(Calendar2.binaryFindFirstGE(dupSar2, "2000-05-03"), 1, "");
-    Test.ensureEqual(Calendar2.binaryFindFirstGE(dupSar2, "2000-05-04 00:00:00"), 1, "");
-    Test.ensureEqual(Calendar2.binaryFindFirstGE(dupSar2, "2000-05-04"), 1, "");
-    Test.ensureEqual(Calendar2.binaryFindFirstGE(dupSar2, "2000-05-05"), 6, "");
-    Test.ensureEqual(Calendar2.binaryFindFirstGE(dupSar2, "2000-05-07"), 7, "");
-
-    // test binaryFindClosest
-    String activeTimeOptions[] = {
-      "2005-12-31 12:00:00", "2006-01-01 13:00:00", "2006-01-01 14:00:00", "2006-02-05 02:00:00"
-    };
-    Test.ensureEqual(Calendar2.binaryFindClosest(activeTimeOptions, "2001-12-31 12:00:00"), 0, "");
-    Test.ensureEqual(Calendar2.binaryFindClosest(activeTimeOptions, "2005-12-31 11:00:00"), 0, "");
-    Test.ensureEqual(Calendar2.binaryFindClosest(activeTimeOptions, "2005-12-31 12:00:00"), 0, "");
-    Test.ensureEqual(Calendar2.binaryFindClosest(activeTimeOptions, "2005-12-31 13:00:00"), 0, "");
-    Test.ensureEqual(Calendar2.binaryFindClosest(activeTimeOptions, "2006-01-01 12:00:00"), 1, "");
-    Test.ensureEqual(Calendar2.binaryFindClosest(activeTimeOptions, "2006-01-01 13:00:00"), 1, "");
-    Test.ensureEqual(Calendar2.binaryFindClosest(activeTimeOptions, "2006-01-01 13:29:00"), 1, "");
-    Test.ensureEqual(Calendar2.binaryFindClosest(activeTimeOptions, "2006-01-01 13:31:00"), 2, "");
-    Test.ensureEqual(Calendar2.binaryFindClosest(activeTimeOptions, "2006-01-01 14:00:00"), 2, "");
-    Test.ensureEqual(Calendar2.binaryFindClosest(activeTimeOptions, "2006-01-01 15:00:00"), 2, "");
-    Test.ensureEqual(Calendar2.binaryFindClosest(activeTimeOptions, "2006-01-31 14:00:00"), 3, "");
-    Test.ensureEqual(Calendar2.binaryFindClosest(activeTimeOptions, "2006-02-05 02:00:00"), 3, "");
-    Test.ensureEqual(Calendar2.binaryFindClosest(activeTimeOptions, "2006-03-01 14:00:00"), 3, "");
-    Test.ensureEqual(Calendar2.binaryFindClosest(activeTimeOptions, ""), 3, "");
-    Test.ensureEqual(Calendar2.binaryFindClosest(activeTimeOptions, null), 3, "");
 
     // elapsedTimeString
     Test.ensureEqual(Calendar2.elapsedTimeString(0), "0 ms", "");
