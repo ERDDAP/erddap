@@ -67,18 +67,6 @@ public class TableOptions {
     return table.nRows();
   }
 
-  public String[] getColumnNames() {
-    return table.getColumnNames();
-  }
-
-  public boolean getSomethingWritten() {
-    return this.somethingWritten;
-  }
-
-  public void setSomethingWritten(boolean somethingWritten) {
-    this.somethingWritten = somethingWritten;
-  }
-
   public String insideForLoophead(int col) {
     String s = table.getColumnName(col);
     if (needEncodingAsHtml) {

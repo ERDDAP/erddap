@@ -1,7 +1,9 @@
 @import gov.noaa.pfel.erddap.jte.TableOptions
 @import gov.noaa.pfel.coastwatch.pointdata.Table
 @param TableOptions tableOptions
-
+@if(tableOptions.getNRows()==0)
+    <p>${tableOptions.getNoData()} (nRows =0)</p>
+@else
 <table class="erd${tableOptions.getWrap()}${tableOptions.getOtherClasses()}" style="background-color:${tableOptions.getBgColor()};">
 
     
@@ -15,7 +17,6 @@
     <!-- Units Row (if applicable) -->
     @if(tableOptions.getWriteUnits())
         <tr>
-            !{tableOptions.setSomethingWritten(false);}
             @for(int col = 0; col < tableOptions.getNColumns(); col++)
                 <th>${tableOptions.insideForLoopUnits(col)}</th>
             @endfor
@@ -25,7 +26,6 @@
     <!-- Data Rows -->
     @for(int row = 0; row < tableOptions.getNRows(); row++)
         <tr>
-            !{tableOptions.setSomethingWritten(false);}
             @for(int col = 0; col < tableOptions.getNColumns(); col++)
                 <td>
                     @if(col == tableOptions.getTimeColumn())
@@ -69,3 +69,4 @@
     @endfor
 
 </table>
+@endif
