@@ -33,7 +33,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.lang.management.ManagementFactory;
 import java.lang.management.OperatingSystemMXBean;
-import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
@@ -209,11 +208,16 @@ public class LoadDatasets extends Thread {
       // I went with SimpleXMLReader
 
       // this class processes all the environment variables in the datasets.xml
-      var ssr =
-          new StringSubstitutorReader(
-              new InputStreamReader(getInputStream(inputStream)), new StringSubstitutor());
-
-      inputStream = new ReaderInputStream(ssr, StandardCharsets.UTF_8);
+      if (EDStatic.config.enableEnvParsing) {
+        inputStream =
+            ReaderInputStream.builder()
+                .setReader(
+                    new StringSubstitutorReader(
+                        new InputStreamReader(inputStream), new StringSubstitutor()))
+                .get();
+      } else {
+        inputStream = getInputStream(inputStream);
+      }
 
       boolean useSaxParser = EDStatic.config.useSaxParser;
       int[] nTryAndDatasets = new int[2];
