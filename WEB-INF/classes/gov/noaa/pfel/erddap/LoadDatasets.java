@@ -19,6 +19,7 @@ import gov.noaa.pfel.erddap.dataset.*;
 import gov.noaa.pfel.erddap.dataset.metadata.LocalizedAttributes;
 import gov.noaa.pfel.erddap.handlers.SaxHandler;
 import gov.noaa.pfel.erddap.util.*;
+import gov.noaa.pfel.erddap.util.EDMessages.Message;
 import gov.noaa.pfel.erddap.variable.EDV;
 import io.prometheus.metrics.model.snapshots.Unit;
 import java.awt.Color;
@@ -1149,11 +1150,15 @@ public class LoadDatasets extends Thread {
           case "<erddapDatasets></standardContact>":
             {
               String ts = xmlReader.content();
-              ts = String2.isSomething(ts) ? ts : EDStatic.messages.DEFAULT_standardContactAr[0];
+              ts =
+                  String2.isSomething(ts)
+                      ? ts
+                      : EDStatic.messages.get(Message.DEFAULT_STANDARD_CONTACT, 0);
               ts =
                   String2.replaceAll(
                       ts, "&adminEmail;", SSR.getSafeEmailAddress(EDStatic.config.adminEmail));
-              EDStatic.messages.standardContactAr[0] = ts; // swap into place
+              EDStatic.messages.setDefault(
+                  Message.STANDARD_CONTACT, ts, Message.DEFAULT_STANDARD_CONTACT);
 
               String2.log("standardContact was set.");
 
@@ -1162,10 +1167,8 @@ public class LoadDatasets extends Thread {
           case "<erddapDatasets></standardDataLicenses>":
             {
               String ts = xmlReader.content();
-              EDStatic.messages.standardDataLicensesAr[0] =
-                  String2.isSomething(ts)
-                      ? ts
-                      : EDStatic.messages.DEFAULT_standardDataLicensesAr[0];
+              EDStatic.messages.setDefault(
+                  Message.STANDARD_DATA_LICENSES, ts, Message.DEFAULT_STANDARD_DATA_LICENSES);
               String2.log("standardDataLicenses was set.");
 
               break;
@@ -1173,10 +1176,10 @@ public class LoadDatasets extends Thread {
           case "<erddapDatasets></standardDisclaimerOfEndorsement>":
             {
               String ts = xmlReader.content();
-              EDStatic.messages.standardDisclaimerOfEndorsementAr[0] =
-                  String2.isSomething(ts)
-                      ? ts
-                      : EDStatic.messages.DEFAULT_standardDisclaimerOfEndorsementAr[0];
+              EDStatic.messages.setDefault(
+                  Message.STANDARD_DISCLAIMER_OF_ENDORSEMENT,
+                  ts,
+                  Message.DEFAULT_STANDARD_DISCLAIMER_OF_ENDORSEMENT);
               String2.log("standardDisclaimerOfEndorsement was set.");
 
               break;
@@ -1184,10 +1187,10 @@ public class LoadDatasets extends Thread {
           case "<erddapDatasets></standardDisclaimerOfExternalLinks>":
             {
               String ts = xmlReader.content();
-              EDStatic.messages.standardDisclaimerOfExternalLinksAr[0] =
-                  String2.isSomething(ts)
-                      ? ts
-                      : EDStatic.messages.DEFAULT_standardDisclaimerOfExternalLinksAr[0];
+              EDStatic.messages.setDefault(
+                  Message.STANDARD_DISCLAIMER_OF_EXTERNAL_LINKS,
+                  ts,
+                  Message.DEFAULT_STANDARD_DISCLAIMER_OF_EXTERNAL_LINKS);
               String2.log("standardDisclaimerOfExternalLinks was set.");
 
               break;
@@ -1195,10 +1198,10 @@ public class LoadDatasets extends Thread {
           case "<erddapDatasets></standardGeneralDisclaimer>":
             {
               String ts = xmlReader.content();
-              EDStatic.messages.standardGeneralDisclaimerAr[0] =
-                  String2.isSomething(ts)
-                      ? ts
-                      : EDStatic.messages.DEFAULT_standardGeneralDisclaimerAr[0];
+              EDStatic.messages.setDefault(
+                  Message.STANDARD_GENERAL_DISCLAIMER,
+                  ts,
+                  Message.DEFAULT_STANDARD_GENERAL_DISCLAIMER);
               String2.log("standardGeneralDisclaimer was set.");
 
               break;
@@ -1206,10 +1209,8 @@ public class LoadDatasets extends Thread {
           case "<erddapDatasets></standardPrivacyPolicy>":
             {
               String ts = xmlReader.content();
-              EDStatic.messages.standardPrivacyPolicyAr[0] =
-                  String2.isSomething(ts)
-                      ? ts
-                      : EDStatic.messages.DEFAULT_standardPrivacyPolicyAr[0];
+              EDStatic.messages.setDefault(
+                  Message.STANDARD_PRIVACY_POLICY, ts, Message.DEFAULT_STANDARD_PRIVACY_POLICY);
               String2.log("standardPrivacyPolicy was set.");
 
               break;
@@ -1233,8 +1234,8 @@ public class LoadDatasets extends Thread {
           case "<erddapDatasets></startBodyHtml5>":
             {
               String ts = xmlReader.content();
-              ts = String2.isSomething(ts) ? ts : EDStatic.messages.DEFAULT_startBodyHtmlAr[0];
-              EDStatic.messages.startBodyHtmlAr[0] = ts; // swap into place
+              EDStatic.messages.setDefault(
+                  Message.START_BODY_HTML, ts, Message.DEFAULT_START_BODY_HTML);
 
               String2.log("startBodyHtml5 was set.");
 
@@ -1243,12 +1244,10 @@ public class LoadDatasets extends Thread {
           case "<erddapDatasets></theShortDescriptionHtml>":
             {
               String ts = xmlReader.content();
-              ts =
-                  String2.isSomething(ts)
-                      ? ts
-                      : EDStatic.messages.DEFAULT_theShortDescriptionHtmlAr[0];
-              EDStatic.messages.theShortDescriptionHtmlAr[0] = ts; // swap into place
-
+              EDStatic.messages.setDefault(
+                  Message.THE_SHORT_DESCRIPTION_HTML,
+                  ts,
+                  Message.DEFAULT_THE_SHORT_DESCRIPTION_HTML);
               String2.log("theShortDescriptionHtml was set.");
 
               break;
@@ -1256,11 +1255,15 @@ public class LoadDatasets extends Thread {
           case "<erddapDatasets></endBodyHtml5>":
             {
               String ts = xmlReader.content();
-              EDStatic.messages.endBodyHtmlAr[0] =
+              EDStatic.messages.setDefault(
+                  Message.END_BODY_HTML,
                   String2.replaceAll(
-                      String2.isSomething(ts) ? ts : EDStatic.messages.DEFAULT_endBodyHtmlAr[0],
+                      String2.isSomething(ts)
+                          ? ts
+                          : EDStatic.messages.get(Message.DEFAULT_END_BODY_HTML, 0),
                       "&erddapVersion;",
-                      EDStatic.erddapVersion.getVersion());
+                      EDStatic.erddapVersion.getVersion()),
+                  Message.DEFAULT_END_BODY_HTML);
               String2.log("endBodyHtml5 was set.");
 
               break;

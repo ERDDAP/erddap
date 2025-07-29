@@ -11,6 +11,7 @@ import com.cohort.util.XML;
 import gov.noaa.pfel.coastwatch.griddata.NcHelper;
 import gov.noaa.pfel.erddap.dataset.EDDGrid;
 import gov.noaa.pfel.erddap.dataset.OutputStreamSource;
+import gov.noaa.pfel.erddap.util.EDMessages.Message;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.EDV;
 import gov.noaa.pfel.erddap.variable.EDVGridAxis;
@@ -42,7 +43,7 @@ public class NcmlFiles extends FileTypeInterface {
 
   @Override
   public String getHelpText(int language) {
-    return EDStatic.messages.fileHelp_ncmlAr[language];
+    return EDStatic.messages.get(Message.FILE_HELP_NCML, language);
   }
 
   /**

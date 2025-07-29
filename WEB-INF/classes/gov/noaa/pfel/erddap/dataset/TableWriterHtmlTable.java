@@ -17,6 +17,7 @@ import com.cohort.util.String2;
 import com.cohort.util.XML;
 import gov.noaa.pfel.coastwatch.pointdata.Table;
 import gov.noaa.pfel.coastwatch.util.HtmlWidgets;
+import gov.noaa.pfel.erddap.util.EDMessages.Message;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.EDV;
 import jakarta.servlet.http.HttpServletRequest;
@@ -507,7 +508,7 @@ public class TableWriterHtmlTable extends TableWriter {
     if (isMBLimited && !allDataDisplayed)
       writer.write(
           "<span class=\"warningColor\">"
-              + EDStatic.messages.htmlTableMaxMessageAr[language]
+              + EDStatic.messages.get(Message.HTML_TABLE_MAX_MESSAGE, language)
               + "</span>"
               + (xhtmlMode ? "<br />" : "<br>")
               + "\n");

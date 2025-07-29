@@ -18,6 +18,7 @@ import gov.noaa.pfel.erddap.dataset.OutputStreamSource;
 import gov.noaa.pfel.erddap.dataset.OutputStreamSourceSimple;
 import gov.noaa.pfel.erddap.dataset.TableWriterAllWithMetadata;
 import gov.noaa.pfel.erddap.util.EDConfig;
+import gov.noaa.pfel.erddap.util.EDMessages.Message;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.EDV;
 import gov.noaa.pfel.erddap.variable.EDVLatGridAxis;
@@ -72,12 +73,12 @@ public class KmlFiles extends ImageTypes {
 
   @Override
   public String getHelpText(int language) {
-    return EDStatic.messages.fileHelpTable_kmlAr[language];
+    return EDStatic.messages.get(Message.FILE_HELP_TABLE_KML, language);
   }
 
   @Override
   public String getGridHelpText(int language) {
-    return EDStatic.messages.fileHelpGrid_kmlAr[language];
+    return EDStatic.messages.get(Message.FILE_HELP_GRID_KML, language);
   }
 
   /**
@@ -125,10 +126,11 @@ public class KmlFiles extends ImageTypes {
       throw new SimpleException(
           EDStatic.bilingual(
               language,
-              EDStatic.messages.queryErrorAr[0]
-                  + MessageFormat.format(EDStatic.messages.queryErrorLLAr[0], ".kml"),
-              EDStatic.messages.queryErrorAr[language]
-                  + MessageFormat.format(EDStatic.messages.queryErrorLLAr[language], ".kml")));
+              EDStatic.messages.get(Message.QUERY_ERROR, 0)
+                  + MessageFormat.format(EDStatic.messages.get(Message.QUERY_ERROR_LL, 0), ".kml"),
+              EDStatic.messages.get(Message.QUERY_ERROR, language)
+                  + MessageFormat.format(
+                      EDStatic.messages.get(Message.QUERY_ERROR_LL, language), ".kml")));
 
     // get the table with all the data
     TableWriterAllWithMetadata twawm =
@@ -149,10 +151,11 @@ public class KmlFiles extends ImageTypes {
       throw new SimpleException(
           EDStatic.bilingual(
               language,
-              EDStatic.messages.queryErrorAr[0]
-                  + MessageFormat.format(EDStatic.messages.queryErrorLLAr[0], ".kml"),
-              EDStatic.messages.queryErrorAr[language]
-                  + MessageFormat.format(EDStatic.messages.queryErrorLLAr[language], ".kml")));
+              EDStatic.messages.get(Message.QUERY_ERROR, 0)
+                  + MessageFormat.format(EDStatic.messages.get(Message.QUERY_ERROR_LL, 0), ".kml"),
+              EDStatic.messages.get(Message.QUERY_ERROR, language)
+                  + MessageFormat.format(
+                      EDStatic.messages.get(Message.QUERY_ERROR_LL, language), ".kml")));
 
     // remember this may be many stations one time, or one station many times, or many/many
     // sort table by lat, lon, depth, then time (if possible)
@@ -182,8 +185,10 @@ public class KmlFiles extends ImageTypes {
       throw new SimpleException(
           EDStatic.bilingual(
               language,
-              MustBe.THERE_IS_NO_DATA + " " + EDStatic.messages.noDataNoLLAr[0],
-              MustBe.THERE_IS_NO_DATA + " " + EDStatic.messages.noDataNoLLAr[language]));
+              MustBe.THERE_IS_NO_DATA + " " + EDStatic.messages.get(Message.NO_DATA_NO_LL, 0),
+              MustBe.THERE_IS_NO_DATA
+                  + " "
+                  + EDStatic.messages.get(Message.NO_DATA_NO_LL, language)));
     double lonRange = maxLon - minLon;
     double latRange = maxLat - minLat;
     double maxRange = Math.max(lonRange, latRange);
@@ -263,7 +268,8 @@ public class KmlFiles extends ImageTypes {
         eddTable.institution(language).length() == 0
             ? ""
             : MessageFormat.format(
-                EDStatic.messages.imageDataCourtesyOfAr[language], eddTable.institution(language));
+                EDStatic.messages.get(Message.IMAGE_DATA_COURTESY_OF, language),
+                eddTable.institution(language));
     double iconSize =
         maxRange > 90
             ? 1.2
@@ -597,7 +603,7 @@ public class KmlFiles extends ImageTypes {
     // lon and lat are required; time is not required
     if (eddGrid.isAxisDapQuery(userDapQuery) || eddGrid.lonIndex() < 0 || eddGrid.latIndex() < 0)
       throw new SimpleException(
-          EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
+          EDStatic.simpleBilingual(language, Message.QUERY_ERROR)
               + "The .kml format is for latitude longitude data requests only.");
 
     // parse the userDapQuery
@@ -607,7 +613,7 @@ public class KmlFiles extends ImageTypes {
     eddGrid.parseDataDapQuery(language, userDapQuery, tDestinationNames, tConstraints, false);
     if (tDestinationNames.size() != 1)
       throw new SimpleException(
-          EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
+          EDStatic.simpleBilingual(language, Message.QUERY_ERROR)
               + "The .kml format can only handle one data variable.");
 
     // find any &constraints (simplistic approach, but sufficient for here and hard to replace with
@@ -650,13 +656,13 @@ public class KmlFiles extends ImageTypes {
         timeStopd = timePa.getNiceDouble(nTimes - 1);
         if (nTimes > 500) // arbitrary: prevents requests that would take too long to respond to
         throw new SimpleException(
-              EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
+              EDStatic.simpleBilingual(language, Message.QUERY_ERROR)
                   + "For .kml requests, the time dimension's size must be less than 500.");
 
       } else {
         if (tConstraints.get(av * 3 + 0) != tConstraints.get(av * 3 + 2))
           throw new SimpleException(
-              EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
+              EDStatic.simpleBilingual(language, Message.QUERY_ERROR)
                   + "For .kml requests, the "
                   + eddGrid.axisVariables()[av].destinationName()
                   + " dimension's size must be 1.");
@@ -679,7 +685,7 @@ public class KmlFiles extends ImageTypes {
     double lonStopd = lonEdv.destinationValue(lonStopi).getNiceDouble(0);
     if (lonStopd <= -180 || lonStartd >= 360)
       throw new SimpleException(
-          EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
+          EDStatic.simpleBilingual(language, Message.QUERY_ERROR)
               + "For .kml requests, there must be some longitude values must be between -180 and 360.");
     if (lonStartd < -180) {
       lonStarti = lonEdv.destinationToClosestIndex(-180);
@@ -699,14 +705,14 @@ public class KmlFiles extends ImageTypes {
     double latStopd = latEdv.destinationValue(latStopi).getNiceDouble(0);
     if (latStartd < -90 || latStopd > 90)
       throw new SimpleException(
-          EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
+          EDStatic.simpleBilingual(language, Message.QUERY_ERROR)
               + "For .kml requests, the latitude values must be between -90 and 90.");
     int latMidi = (latStarti + latStopi) / 2;
     double latMidd = latEdv.destinationValue(latMidi).getNiceDouble(0);
 
     if (lonStarti == lonStopi || latStarti == latStopi)
       throw new SimpleException(
-          EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
+          EDStatic.simpleBilingual(language, Message.QUERY_ERROR)
               + "For .kml requests, the lon and lat dimension sizes must be greater than 1.");
     // request is ok and compatible with .kml request!
 
@@ -720,7 +726,7 @@ public class KmlFiles extends ImageTypes {
               "");
     if (nTimes >= 2)
       throw new SimpleException(
-          EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
+          EDStatic.simpleBilingual(language, Message.QUERY_ERROR)
               + "For .kml requests, the time dimension size must be 1.");
     // timeString += " through " + limitedIsoStringT ... Math.max(timeStartd, timeStopd), "");
     String brTimeString = timeString.length() == 0 ? "" : "Time: " + timeString + "<br />\n";
@@ -823,7 +829,7 @@ public class KmlFiles extends ImageTypes {
                 "  <description><![CDATA["
                 + brTimeString
                 + MessageFormat.format(
-                    EDStatic.messages.imageDataCourtesyOfAr[language],
+                    EDStatic.messages.get(Message.IMAGE_DATA_COURTESY_OF, language),
                     XML.encodeAsXML(eddGrid.institution(language)))
                 + "<br />\n"
                 +

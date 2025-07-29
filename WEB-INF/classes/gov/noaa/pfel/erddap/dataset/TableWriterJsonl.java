@@ -13,6 +13,7 @@ import com.cohort.util.MustBe;
 import com.cohort.util.SimpleException;
 import com.cohort.util.String2;
 import gov.noaa.pfel.coastwatch.pointdata.Table;
+import gov.noaa.pfel.erddap.util.EDMessages.Message;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.EDV;
 import java.io.BufferedWriter;
@@ -72,10 +73,7 @@ public class TableWriterJsonl extends TableWriter {
     jsonp = tJsonp;
     if (jsonp != null && !String2.isJsonpNameSafe(jsonp))
       throw new SimpleException(
-          EDStatic.bilingual(
-              language,
-              EDStatic.messages.queryErrorAr,
-              EDStatic.messages.errorJsonpFunctionNameAr));
+          EDStatic.bilingual(language, Message.QUERY_ERROR, Message.ERROR_JSONP_FUNCTION_NAME));
   }
 
   /**

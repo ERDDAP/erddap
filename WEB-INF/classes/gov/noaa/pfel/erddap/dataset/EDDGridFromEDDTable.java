@@ -25,6 +25,7 @@ import gov.noaa.pfel.erddap.dataset.metadata.LocalizedAttributes;
 import gov.noaa.pfel.erddap.handlers.EDDGridFromEDDTableHandler;
 import gov.noaa.pfel.erddap.handlers.SaxHandlerClass;
 import gov.noaa.pfel.erddap.util.EDMessages;
+import gov.noaa.pfel.erddap.util.EDMessages.Message;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.*;
 import jakarta.servlet.http.HttpServletRequest;
@@ -295,7 +296,7 @@ public class EDDGridFromEDDTable extends EDDGrid {
     setGraphsAccessibleTo(tGraphsAccessibleTo);
     if (!tAccessibleViaWMS)
       accessibleViaWMS =
-          String2.canonical(MessageFormat.format(EDStatic.messages.noXxxAr[0], "WMS"));
+          String2.canonical(MessageFormat.format(EDStatic.messages.get(Message.NO_XXX, 0), "WMS"));
     accessibleViaFiles =
         EDStatic.config.filesActive && tAccessibleViaFiles && tEDDTable.accessibleViaFiles;
     onChange = tOnChange;

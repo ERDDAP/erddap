@@ -29,6 +29,7 @@ import gov.noaa.pfel.erddap.dataset.metadata.LocalizedAttributes;
 import gov.noaa.pfel.erddap.handlers.EDDTableFromSOSHandler;
 import gov.noaa.pfel.erddap.handlers.SaxHandlerClass;
 import gov.noaa.pfel.erddap.util.EDMessages;
+import gov.noaa.pfel.erddap.util.EDMessages.Message;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.*;
 import java.io.BufferedReader;
@@ -1477,7 +1478,8 @@ public class EDDTableFromSOS extends EDDTable {
     for (int station = 0; station < nStations; station++) {
       if (Thread.currentThread().isInterrupted())
         throw new SimpleException(
-            "EDDTableFromSOS.getDataForDapQuery" + EDStatic.messages.caughtInterruptedAr[0]);
+            "EDDTableFromSOS.getDataForDapQuery"
+                + EDStatic.messages.get(Message.CAUGHT_INTERRUPTED, 0));
 
       String tStationLonString = "",
           tStationLatString = "",
@@ -1795,10 +1797,7 @@ public class EDDTableFromSOS extends EDDTable {
       throw t instanceof WaitThenTryAgainException
           ? t
           : new WaitThenTryAgainException(
-              EDStatic.simpleBilingual(language, EDStatic.messages.waitThenTryAgainAr)
-                  + "\n("
-                  + t
-                  + ")");
+              EDStatic.simpleBilingual(language, Message.WAIT_THEN_TRY_AGAIN) + "\n(" + t + ")");
     }
 
     try {
@@ -2125,10 +2124,7 @@ public class EDDTableFromSOS extends EDDTable {
       throw t instanceof WaitThenTryAgainException
           ? t
           : new WaitThenTryAgainException(
-              EDStatic.simpleBilingual(language, EDStatic.messages.waitThenTryAgainAr)
-                  + "\n("
-                  + t
-                  + ")");
+              EDStatic.simpleBilingual(language, Message.WAIT_THEN_TRY_AGAIN) + "\n(" + t + ")");
     }
     try {
 
@@ -2465,10 +2461,7 @@ public class EDDTableFromSOS extends EDDTable {
       throw t instanceof WaitThenTryAgainException
           ? t
           : new WaitThenTryAgainException(
-              EDStatic.simpleBilingual(language, EDStatic.messages.waitThenTryAgainAr)
-                  + "\n("
-                  + t
-                  + ")");
+              EDStatic.simpleBilingual(language, Message.WAIT_THEN_TRY_AGAIN) + "\n(" + t + ")");
     }
 
     try {

@@ -20,6 +20,7 @@ import gov.noaa.pfel.coastwatch.griddata.NcHelper;
 import gov.noaa.pfel.erddap.dataset.EDD;
 import gov.noaa.pfel.erddap.dataset.metadata.LocalizedAttributes;
 import gov.noaa.pfel.erddap.util.EDMessages;
+import gov.noaa.pfel.erddap.util.EDMessages.Message;
 import gov.noaa.pfel.erddap.util.EDStatic;
 
 /**
@@ -563,7 +564,7 @@ public class EDVGridAxis extends EDV {
   public String spacingDescription(int language) {
     boolean isTimeStamp = this instanceof EDVTimeStampGridAxis;
     if (sourceValues().size() == 1)
-      return "(" + EDStatic.messages.EDDGridJustOneValueAr[language] + ")";
+      return "(" + EDStatic.messages.get(Message.EDD_GRID_JUST_ONE_VALUE, language) + ")";
     String s =
         isTimeStamp
             ? Calendar2.elapsedTimeString(Math.rint(averageSpacing()) * 1000)
@@ -571,8 +572,8 @@ public class EDVGridAxis extends EDV {
     return s
         + " ("
         + (isEvenlySpaced()
-            ? EDStatic.messages.EDDGridEvenAr[language]
-            : EDStatic.messages.EDDGridUnevenAr[language])
+            ? EDStatic.messages.get(Message.EDD_GRID_EVEN, language)
+            : EDStatic.messages.get(Message.EDD_GRID_UNEVEN, language))
         + ")";
   }
 
@@ -612,8 +613,8 @@ public class EDVGridAxis extends EDV {
         + "<br>"
         + "with "
         + (isEvenlySpaced()
-            ? EDStatic.messages.EDDGridEvenAr[language]
-            : EDStatic.messages.EDDGridUnevenAr[language])
+            ? EDStatic.messages.get(Message.EDD_GRID_EVEN, language)
+            : EDStatic.messages.get(Message.EDD_GRID_UNEVEN, language))
         + " spacing "
         + (isEvenlySpaced() ? "" : "~")
         + "= "

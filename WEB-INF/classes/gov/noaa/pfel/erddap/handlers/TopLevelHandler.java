@@ -8,6 +8,7 @@ import gov.noaa.pfel.coastwatch.sgt.SgtMap;
 import gov.noaa.pfel.coastwatch.util.SSR;
 import gov.noaa.pfel.erddap.dataset.EDD;
 import gov.noaa.pfel.erddap.util.EDConfig;
+import gov.noaa.pfel.erddap.util.EDMessages.Message;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.util.TranslateMessages;
 import java.awt.*;
@@ -415,11 +416,15 @@ public class TopLevelHandler extends State {
       }
       case "standardContact" -> {
         String ts = data.toString();
-        ts = String2.isSomething(ts) ? ts : EDStatic.messages.DEFAULT_standardContactAr[0];
+        ts =
+            String2.isSomething(ts)
+                ? ts
+                : EDStatic.messages.get(Message.DEFAULT_STANDARD_CONTACT, 0);
         ts =
             String2.replaceAll(
                 ts, "&adminEmail;", SSR.getSafeEmailAddress(EDStatic.config.adminEmail));
-        EDStatic.messages.standardContactAr[0] = ts; // swap into place
+        EDStatic.messages.setDefault(
+            Message.STANDARD_CONTACT, ts, Message.DEFAULT_STANDARD_CONTACT);
 
         if (reallyVerbose) {
           String2.log("standardContact was set.");
@@ -427,8 +432,8 @@ public class TopLevelHandler extends State {
       }
       case "standardDataLicenses" -> {
         String ts = data.toString();
-        EDStatic.messages.standardDataLicensesAr[0] =
-            String2.isSomething(ts) ? ts : EDStatic.messages.DEFAULT_standardDataLicensesAr[0];
+        EDStatic.messages.setDefault(
+            Message.STANDARD_DATA_LICENSES, ts, Message.DEFAULT_STANDARD_DATA_LICENSES);
 
         if (reallyVerbose) {
           String2.log("standardDataLicenses was set.");
@@ -436,10 +441,10 @@ public class TopLevelHandler extends State {
       }
       case "standardDisclaimerOfEndorsement" -> {
         String ts = data.toString();
-        EDStatic.messages.standardDisclaimerOfEndorsementAr[0] =
-            String2.isSomething(ts)
-                ? ts
-                : EDStatic.messages.DEFAULT_standardDisclaimerOfEndorsementAr[0];
+        EDStatic.messages.setDefault(
+            Message.STANDARD_DISCLAIMER_OF_ENDORSEMENT,
+            ts,
+            Message.DEFAULT_STANDARD_DISCLAIMER_OF_ENDORSEMENT);
 
         if (reallyVerbose) {
           String2.log("standardDisclaimerOfEndorsement was set.");
@@ -447,10 +452,10 @@ public class TopLevelHandler extends State {
       }
       case "standardDisclaimerOfExternalLinks" -> {
         String ts = data.toString();
-        EDStatic.messages.standardDisclaimerOfExternalLinksAr[0] =
-            String2.isSomething(ts)
-                ? ts
-                : EDStatic.messages.DEFAULT_standardDisclaimerOfExternalLinksAr[0];
+        EDStatic.messages.setDefault(
+            Message.STANDARD_DISCLAIMER_OF_EXTERNAL_LINKS,
+            ts,
+            Message.DEFAULT_STANDARD_DISCLAIMER_OF_EXTERNAL_LINKS);
 
         if (reallyVerbose) {
           String2.log("standardDisclaimerOfExternalLinks was set.");
@@ -458,8 +463,8 @@ public class TopLevelHandler extends State {
       }
       case "standardGeneralDisclaimer" -> {
         String ts = data.toString();
-        EDStatic.messages.standardGeneralDisclaimerAr[0] =
-            String2.isSomething(ts) ? ts : EDStatic.messages.DEFAULT_standardGeneralDisclaimerAr[0];
+        EDStatic.messages.setDefault(
+            Message.STANDARD_GENERAL_DISCLAIMER, ts, Message.DEFAULT_STANDARD_GENERAL_DISCLAIMER);
 
         if (reallyVerbose) {
           String2.log("standardGeneralDisclaimer was set.");
@@ -467,8 +472,8 @@ public class TopLevelHandler extends State {
       }
       case "standardPrivacyPolicy" -> {
         String ts = data.toString();
-        EDStatic.messages.standardPrivacyPolicyAr[0] =
-            String2.isSomething(ts) ? ts : EDStatic.messages.DEFAULT_standardPrivacyPolicyAr[0];
+        EDStatic.messages.setDefault(
+            Message.STANDARD_PRIVACY_POLICY, ts, Message.DEFAULT_STANDARD_PRIVACY_POLICY);
 
         if (reallyVerbose) {
           String2.log("standardPrivacyPolicy was set.");
@@ -491,8 +496,7 @@ public class TopLevelHandler extends State {
       }
       case "startBodyHtml5" -> {
         String ts = data.toString();
-        ts = String2.isSomething(ts) ? ts : EDStatic.messages.DEFAULT_startBodyHtmlAr[0];
-        EDStatic.messages.startBodyHtmlAr[0] = ts; // swap into place
+        EDStatic.messages.setDefault(Message.START_BODY_HTML, ts, Message.DEFAULT_START_BODY_HTML);
 
         if (reallyVerbose) {
           String2.log("startBodyHtml5 was set.");
@@ -500,8 +504,8 @@ public class TopLevelHandler extends State {
       }
       case "theShortDescriptionHtml" -> {
         String ts = data.toString();
-        ts = String2.isSomething(ts) ? ts : EDStatic.messages.DEFAULT_theShortDescriptionHtmlAr[0];
-        EDStatic.messages.theShortDescriptionHtmlAr[0] = ts; // swap into place
+        EDStatic.messages.setDefault(
+            Message.THE_SHORT_DESCRIPTION_HTML, ts, Message.DEFAULT_THE_SHORT_DESCRIPTION_HTML);
 
         if (reallyVerbose) {
           String2.log("theShortDescriptionHtml was set.");
@@ -509,11 +513,15 @@ public class TopLevelHandler extends State {
       }
       case "endBodyHtml5" -> {
         String ts = data.toString();
-        EDStatic.messages.endBodyHtmlAr[0] =
+        EDStatic.messages.setDefault(
+            Message.END_BODY_HTML,
             String2.replaceAll(
-                String2.isSomething(ts) ? ts : EDStatic.messages.DEFAULT_endBodyHtmlAr[0],
+                String2.isSomething(ts)
+                    ? ts
+                    : EDStatic.messages.get(Message.DEFAULT_END_BODY_HTML, 0),
                 "&erddapVersion;",
-                EDStatic.erddapVersion.getVersion());
+                EDStatic.erddapVersion.getVersion()),
+            Message.DEFAULT_END_BODY_HTML);
 
         if (reallyVerbose) {
           String2.log("endBodyHtml5 was set.");

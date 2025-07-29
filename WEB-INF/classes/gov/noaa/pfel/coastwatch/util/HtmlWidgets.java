@@ -10,6 +10,7 @@ import com.cohort.util.MustBe;
 import com.cohort.util.String2;
 import com.cohort.util.XML;
 import com.google.common.collect.ImmutableList;
+import gov.noaa.pfel.erddap.util.EDMessages.Message;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import java.io.File;
 import java.text.MessageFormat;
@@ -562,17 +563,17 @@ public class HtmlWidgets {
         // "copy text/image to clipboard" buttons
         "\ndata:image/png;base64\n"
         + "<button type=\"button\" onclick=\"javascript:if(navigator.clipboard==undefined){alert('"
-        + EDStatic.messages.copyToClipboardNotAvailableAr[language]
+        + EDStatic.messages.get(Message.COPY_TO_CLIPBOARD_NOT_AVAILABLE, language)
         + "');return false};navigator.clipboard.writeText("
         + "document.getElementById('"
         + img2ID
         + "').getAttribute('data-src')"
         + // reuse img2Url data from img2ID.data-src
         ");\" style=\"cursor: pointer; cursor: hand;\" >"
-        + EDStatic.messages.copyTextToClipboardAr[language]
+        + EDStatic.messages.get(Message.COPY_TEXT_TO_CLIPBOARD, language)
         + "</button>\n"
         + "<button type=\"button\" onclick=\"javascript:if(navigator.clipboard==undefined){alert('"
-        + EDStatic.messages.copyToClipboardNotAvailableAr[language]
+        + EDStatic.messages.get(Message.COPY_TO_CLIPBOARD_NOT_AVAILABLE, language)
         + "');return false};"
         + " var img = new Image();"
         + " img.onload = () => {"
@@ -588,7 +589,7 @@ public class HtmlWidgets {
         + // reuse img2Url data from img2ID.data-src
         " return false;\""
         + " style=\"cursor: pointer; cursor: hand;\" >"
-        + EDStatic.messages.copyImageToClipboardAr[language]
+        + EDStatic.messages.get(Message.COPY_IMAGE_TO_CLIPBOARD, language)
         + "</button>";
   }
 

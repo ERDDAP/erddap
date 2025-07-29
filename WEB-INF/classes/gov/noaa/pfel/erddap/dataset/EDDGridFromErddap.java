@@ -31,6 +31,7 @@ import gov.noaa.pfel.erddap.dataset.metadata.LocalizedAttributes;
 import gov.noaa.pfel.erddap.handlers.EDDGridFromErddapHandler;
 import gov.noaa.pfel.erddap.handlers.SaxHandlerClass;
 import gov.noaa.pfel.erddap.util.EDMessages;
+import gov.noaa.pfel.erddap.util.EDMessages.Message;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.*;
 import jakarta.servlet.http.HttpServletRequest;
@@ -230,7 +231,7 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
     setGraphsAccessibleTo(tGraphsAccessibleTo);
     if (!tAccessibleViaWMS)
       accessibleViaWMS =
-          String2.canonical(MessageFormat.format(EDStatic.messages.noXxxAr[0], "WMS"));
+          String2.canonical(MessageFormat.format(EDStatic.messages.get(Message.NO_XXX, 0), "WMS"));
     onChange = tOnChange;
     fgdcFile = tFgdcFile;
     iso19115File = tIso19115File;
@@ -577,7 +578,7 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
     int newSize = dad.getSize();
     if (newSize < oldSize)
       throw new WaitThenTryAgainException(
-          EDStatic.simpleBilingual(language, EDStatic.messages.waitThenTryAgainAr)
+          EDStatic.simpleBilingual(language, Message.WAIT_THEN_TRY_AGAIN)
               + "\n("
               + msg
               + "["
@@ -631,7 +632,7 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
     }
     if (oldValues.elementType() != newValues.elementType())
       throw new WaitThenTryAgainException(
-          EDStatic.simpleBilingual(language, EDStatic.messages.waitThenTryAgainAr)
+          EDStatic.simpleBilingual(language, Message.WAIT_THEN_TRY_AGAIN)
               + "\n("
               + msg
               + edvga.destinationName()
@@ -645,7 +646,7 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
     // ensure last old value is unchanged
     if (oldValues.getDouble(oldSize - 1) != newValues.getDouble(0)) // they should be exactly equal
     throw new WaitThenTryAgainException(
-          EDStatic.simpleBilingual(language, EDStatic.messages.waitThenTryAgainAr)
+          EDStatic.simpleBilingual(language, Message.WAIT_THEN_TRY_AGAIN)
               + "\n("
               + msg
               + edvga.destinationName()
@@ -681,7 +682,7 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
     String error = edvga.isAscending() ? newValues.isAscending() : newValues.isDescending();
     if (error.length() > 0)
       throw new WaitThenTryAgainException(
-          EDStatic.simpleBilingual(language, EDStatic.messages.waitThenTryAgainAr)
+          EDStatic.simpleBilingual(language, Message.WAIT_THEN_TRY_AGAIN)
               + "\n("
               + edvga.destinationName()
               + " was "
@@ -937,7 +938,7 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
         throw t instanceof WaitThenTryAgainException
             ? t
             : new WaitThenTryAgainException(
-                EDStatic.simpleBilingual(language, EDStatic.messages.waitThenTryAgainAr)
+                EDStatic.simpleBilingual(language, Message.WAIT_THEN_TRY_AGAIN)
                     + "\n("
                     + EDStatic.messages.errorFromDataSource
                     + t
@@ -946,7 +947,7 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
       }
       if (pa.length != axisVariables.length + 1)
         throw new WaitThenTryAgainException(
-            EDStatic.simpleBilingual(language, EDStatic.messages.waitThenTryAgainAr)
+            EDStatic.simpleBilingual(language, Message.WAIT_THEN_TRY_AGAIN)
                 + "\n(Details: An unexpected data structure was returned from the source.)");
       results[axisVariables.length + dv] = pa[0];
       if (dv == 0) {
@@ -957,7 +958,7 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
           String tError = results[av].almostEqual(pa[av + 1]);
           if (tError.length() > 0)
             throw new WaitThenTryAgainException(
-                EDStatic.simpleBilingual(language, EDStatic.messages.waitThenTryAgainAr)
+                EDStatic.simpleBilingual(language, Message.WAIT_THEN_TRY_AGAIN)
                     + "\n(Details: The axis values for dataVariable=0,axis="
                     + av
                     + "\ndon't equal the axis values for dataVariable="

@@ -12,6 +12,7 @@ import gov.noaa.pfel.coastwatch.pointdata.Table;
 import gov.noaa.pfel.erddap.dataset.EDD;
 import gov.noaa.pfel.erddap.dataset.EDDGrid;
 import gov.noaa.pfel.erddap.dataset.OutputStreamSource;
+import gov.noaa.pfel.erddap.util.EDMessages.Message;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.EDV;
 import gov.noaa.pfel.erddap.variable.EDVGridAxis;
@@ -67,7 +68,7 @@ public class NccsvMetadataFiles extends FileTypeInterface {
 
   @Override
   public String getHelpText(int language) {
-    return EDStatic.messages.fileHelp_nccsvMetadataAr[language];
+    return EDStatic.messages.get(Message.FILE_HELP_NCCSV_METADATA, language);
   }
 
   /**

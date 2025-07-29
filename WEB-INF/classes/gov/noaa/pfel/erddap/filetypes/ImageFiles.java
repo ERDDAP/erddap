@@ -28,6 +28,7 @@ import gov.noaa.pfel.erddap.dataset.OutputStreamSourceSimple;
 import gov.noaa.pfel.erddap.dataset.TableWriterAllWithMetadata;
 import gov.noaa.pfel.erddap.dataset.WaitThenTryAgainException;
 import gov.noaa.pfel.erddap.dataset.metadata.LocalizedAttributes;
+import gov.noaa.pfel.erddap.util.EDMessages.Message;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.EDV;
 import gov.noaa.pfel.erddap.variable.EDVGridAxis;
@@ -114,7 +115,9 @@ public abstract class ImageFiles extends ImageTypes {
     boolean transparentPng = fileTypeName.equals(".transparentPng");
     if (!pdf && !png)
       throw new SimpleException(
-          EDStatic.messages.errorInternalAr[0] + "Unexpected image type=" + fileTypeName);
+          EDStatic.messages.get(Message.ERROR_INTERNAL, 0)
+              + "Unexpected image type="
+              + fileTypeName);
     Object pdfInfo[] = null;
     BufferedImage bufferedImage = null;
     Graphics2D g2 = null;
@@ -156,11 +159,12 @@ public abstract class ImageFiles extends ImageTypes {
         throw new SimpleException(
             EDStatic.bilingual(
                 language,
-                EDStatic.messages.queryErrorAr[0]
-                    + MessageFormat.format(EDStatic.messages.queryError2VarAr[0], fileTypeName),
-                EDStatic.messages.queryErrorAr[language]
+                EDStatic.messages.get(Message.QUERY_ERROR, 0)
                     + MessageFormat.format(
-                        EDStatic.messages.queryError2VarAr[language], fileTypeName)));
+                        EDStatic.messages.get(Message.QUERY_ERROR_2_VAR, 0), fileTypeName),
+                EDStatic.messages.get(Message.QUERY_ERROR, language)
+                    + MessageFormat.format(
+                        EDStatic.messages.get(Message.QUERY_ERROR_2_VAR, language), fileTypeName)));
       // xVar,yVar are 1st and 2nd request variables
       EDV xVar = eddTable.findVariableByDestinationName(resultsVariables.get(0));
       EDV yVar = eddTable.findVariableByDestinationName(resultsVariables.get(1));
@@ -689,7 +693,7 @@ public abstract class ImageFiles extends ImageTypes {
               varTitle.length() > 0 ? eddTable.title(language) : "",
               constraintTitle.toString(), // title2.toString(),
               MessageFormat.format(
-                  EDStatic.messages.imageDataCourtesyOfAr[language],
+                  EDStatic.messages.get(Message.IMAGE_DATA_COURTESY_OF, language),
                   eddTable.institution(language)),
               table,
               null,
@@ -750,9 +754,10 @@ public abstract class ImageFiles extends ImageTypes {
             throw new SimpleException(
                 EDStatic.bilingual(
                     language,
-                    EDStatic.messages.queryErrorAr[0] + EDStatic.messages.noDataNoLLAr[0],
-                    EDStatic.messages.queryErrorAr[language]
-                        + EDStatic.messages.noDataNoLLAr[language]));
+                    EDStatic.messages.get(Message.QUERY_ERROR, 0)
+                        + EDStatic.messages.get(Message.NO_DATA_NO_LL, 0),
+                    EDStatic.messages.get(Message.QUERY_ERROR, language)
+                        + EDStatic.messages.get(Message.NO_DATA_NO_LL, language)));
 
           // old way  (too tied to big round numbers like 100, 200, 300)
           // often had big gap on one side
@@ -1128,7 +1133,7 @@ public abstract class ImageFiles extends ImageTypes {
     boolean transparentPng = fileTypeName.equals(".transparentPng");
     if (!pdf && !png)
       throw new SimpleException(
-          EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
+          EDStatic.simpleBilingual(language, Message.QUERY_ERROR)
               + "Unexpected image type="
               + fileTypeName);
     int imageWidth, imageHeight;
@@ -1167,11 +1172,13 @@ public abstract class ImageFiles extends ImageTypes {
         throw new SimpleException(
             EDStatic.bilingual(
                 language,
-                EDStatic.messages.queryErrorAr[0]
-                    + MessageFormat.format(EDStatic.messages.queryErrorNotAxisAr[0], fileTypeName),
-                EDStatic.messages.queryErrorAr[language]
+                EDStatic.messages.get(Message.QUERY_ERROR, 0)
                     + MessageFormat.format(
-                        EDStatic.messages.queryErrorNotAxisAr[language], fileTypeName)));
+                        EDStatic.messages.get(Message.QUERY_ERROR_NOT_AXIS, 0), fileTypeName),
+                EDStatic.messages.get(Message.QUERY_ERROR, language)
+                    + MessageFormat.format(
+                        EDStatic.messages.get(Message.QUERY_ERROR_NOT_AXIS, language),
+                        fileTypeName)));
 
       // modify the query to get no more data than needed
       StringArray reqDataNames = new StringArray();
@@ -1368,12 +1375,14 @@ public abstract class ImageFiles extends ImageTypes {
                 throw new SimpleException(
                     EDStatic.bilingual(
                         language,
-                        EDStatic.messages.queryErrorAr[0]
+                        EDStatic.messages.get(Message.QUERY_ERROR, 0)
                             + MessageFormat.format(
-                                EDStatic.messages.queryErrorUnknownVariableAr[0], pParts[p]),
-                        EDStatic.messages.queryErrorAr[language]
+                                EDStatic.messages.get(Message.QUERY_ERROR_UNKNOWN_VARIABLE, 0),
+                                pParts[p]),
+                        EDStatic.messages.get(Message.QUERY_ERROR, language)
                             + MessageFormat.format(
-                                EDStatic.messages.queryErrorUnknownVariableAr[language],
+                                EDStatic.messages.get(
+                                    Message.QUERY_ERROR_UNKNOWN_VARIABLE, language),
                                 pParts[p])));
               }
             }
@@ -1448,7 +1457,7 @@ public abstract class ImageFiles extends ImageTypes {
       int nAAv = activeAxes.size();
       if (nAAv < 1 || nAAv > 2)
         throw new SimpleException(
-            EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
+            EDStatic.simpleBilingual(language, Message.QUERY_ERROR)
                 + "To draw a graph, either 1 or 2 axes must be active and have 2 or more values.");
 
       // figure out / validate graph set up
@@ -1462,18 +1471,18 @@ public abstract class ImageFiles extends ImageTypes {
             else if (nDv > cDataI) vars[v] = reqDataVars[cDataI++];
             else
               throw new SimpleException(
-                  EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
+                  EDStatic.simpleBilingual(language, Message.QUERY_ERROR)
                       + "Too few active axes and/or data variables for .draw=lines.");
           }
         } else {
           // vars 0,1 must be valid (any type)
           if (vars[0] == null)
             throw new SimpleException(
-                EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
+                EDStatic.simpleBilingual(language, Message.QUERY_ERROR)
                     + "For .draw=lines, .var #0 is required.");
           if (vars[1] == null)
             throw new SimpleException(
-                EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
+                EDStatic.simpleBilingual(language, Message.QUERY_ERROR)
                     + "For .draw=lines, .var #1 is required.");
         }
         vars[2] = null;
@@ -1487,7 +1496,7 @@ public abstract class ImageFiles extends ImageTypes {
             else if (nDv > cDataI) vars[v] = reqDataVars[cDataI++];
             else if (v < 2)
               throw new SimpleException(
-                  EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
+                  EDStatic.simpleBilingual(language, Message.QUERY_ERROR)
                       + "Too few active axes and/or data variables for .draw="
                       + what
                       + ".");
@@ -1496,13 +1505,13 @@ public abstract class ImageFiles extends ImageTypes {
           // vars 0,1 must be valid (any type)
           if (vars[0] == null)
             throw new SimpleException(
-                EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
+                EDStatic.simpleBilingual(language, Message.QUERY_ERROR)
                     + "For .draw="
                     + what
                     + ", .var #0 is required.");
           if (vars[1] == null)
             throw new SimpleException(
-                EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
+                EDStatic.simpleBilingual(language, Message.QUERY_ERROR)
                     + "For .draw="
                     + what
                     + ", .var #1 is required.");
@@ -1515,29 +1524,29 @@ public abstract class ImageFiles extends ImageTypes {
           if (nAAv > 0) vars[0] = eddGrid.axisVariables()[activeAxes.get(cAxisI++)];
           else
             throw new SimpleException(
-                EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
+                EDStatic.simpleBilingual(language, Message.QUERY_ERROR)
                     + ".draw=sticks requires an active axis variable.");
           // var 1,2 must be data
           for (int v = 1; v <= 2; v++) {
             if (nDv > cDataI) vars[v] = reqDataVars[cDataI++];
             else
               throw new SimpleException(
-                  EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
+                  EDStatic.simpleBilingual(language, Message.QUERY_ERROR)
                       + "Too few data variables to .draw=sticks.");
           }
         } else {
           // vars 0 must be axis, 1,2 must be data
           if (axisVarI[0] < 0)
             throw new SimpleException(
-                EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
+                EDStatic.simpleBilingual(language, Message.QUERY_ERROR)
                     + "For .draw=sticks, .var #0 must be an axis variable.");
           if (dataVarI[1] < 0)
             throw new SimpleException(
-                EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
+                EDStatic.simpleBilingual(language, Message.QUERY_ERROR)
                     + "For .draw=sticks, .var #1 must be a data variable.");
           if (dataVarI[2] < 0)
             throw new SimpleException(
-                EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
+                EDStatic.simpleBilingual(language, Message.QUERY_ERROR)
                     + "For .draw=sticks, .var #2 must be a data variable.");
         }
         vars[3] = null;
@@ -1551,7 +1560,7 @@ public abstract class ImageFiles extends ImageTypes {
             vars[1] = eddGrid.axisVariables()[eddGrid.latIndex()];
           } else if (nAAv < 2) {
             throw new SimpleException(
-                EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
+                EDStatic.simpleBilingual(language, Message.QUERY_ERROR)
                     + ".draw=surface requires 2 axes with >1 value.");
           } else {
             // prefer last 2 axes (e.g., if [time][altitude][y][x]
@@ -1564,15 +1573,15 @@ public abstract class ImageFiles extends ImageTypes {
           // vars 0,1 must be axis, 2 must be data
           if (axisVarI[0] < 0 || axisVarI[1] < 0)
             throw new SimpleException(
-                EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
+                EDStatic.simpleBilingual(language, Message.QUERY_ERROR)
                     + "For .draw=surface, .var #0 and #1 must be axis variables.");
           if (axisVarI[0] == axisVarI[1])
             throw new SimpleException(
-                EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
+                EDStatic.simpleBilingual(language, Message.QUERY_ERROR)
                     + "For .draw=surface, .var #0 and #1 must be different axis variables.");
           if (dataVarI[2] < 0)
             throw new SimpleException(
-                EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
+                EDStatic.simpleBilingual(language, Message.QUERY_ERROR)
                     + "For .draw=surface, .var #2 must be a data variable.");
         }
         vars[3] = null;
@@ -1585,7 +1594,7 @@ public abstract class ImageFiles extends ImageTypes {
             vars[1] = eddGrid.axisVariables()[activeAxes.get(1)];
           } else
             throw new SimpleException(
-                EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
+                EDStatic.simpleBilingual(language, Message.QUERY_ERROR)
                     + ".draw=vectors requires 2 active axis variables.");
           // var2,3 must be data
           if (nDv == 2) {
@@ -1593,25 +1602,25 @@ public abstract class ImageFiles extends ImageTypes {
             vars[3] = reqDataVars[1];
           } else
             throw new SimpleException(
-                EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
+                EDStatic.simpleBilingual(language, Message.QUERY_ERROR)
                     + ".draw=vectors requires 2 data variables.");
         } else {
           // vars 0,1 must be axes, 2,3 must be data
           if (axisVarI[0] < 0)
             throw new SimpleException(
-                EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
+                EDStatic.simpleBilingual(language, Message.QUERY_ERROR)
                     + "For .draw=vectors, .var #0 must be an axis variable.");
           if (axisVarI[1] < 0)
             throw new SimpleException(
-                EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
+                EDStatic.simpleBilingual(language, Message.QUERY_ERROR)
                     + "For .draw=vectors, .var #1 must be an axis variable.");
           if (dataVarI[2] < 0)
             throw new SimpleException(
-                EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
+                EDStatic.simpleBilingual(language, Message.QUERY_ERROR)
                     + "For .draw=vectors, .var #2 must be a data variable.");
           if (dataVarI[3] < 0)
             throw new SimpleException(
-                EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
+                EDStatic.simpleBilingual(language, Message.QUERY_ERROR)
                     + "For .draw=vectors, .var #3 must be a data variable.");
         }
 
@@ -1621,7 +1630,7 @@ public abstract class ImageFiles extends ImageTypes {
         vars = new EDV[nVars];
         if (nAAv == 0) {
           throw new SimpleException(
-              EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
+              EDStatic.simpleBilingual(language, Message.QUERY_ERROR)
                   + "At least 1 axis variable must be active and have a range of values.");
         } else if (nAAv == 1) { // favor linesAndMarkers
           drawLinesAndMarkers = true;
@@ -1655,7 +1664,7 @@ public abstract class ImageFiles extends ImageTypes {
           }
         } else {
           throw new SimpleException(
-              EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
+              EDStatic.simpleBilingual(language, Message.QUERY_ERROR)
                   + "Either 1 or 2 axes must be active and have a range of values.");
         }
       } else {
@@ -1674,11 +1683,11 @@ public abstract class ImageFiles extends ImageTypes {
           // ensure marker compatible
           if (axisVarI[0] < 0)
             throw new SimpleException(
-                EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
+                EDStatic.simpleBilingual(language, Message.QUERY_ERROR)
                     + ".var #0 must be an axis variable.");
           if (axisVarI[1] < 0 && dataVarI[1] < 0)
             throw new SimpleException(
-                EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
+                EDStatic.simpleBilingual(language, Message.QUERY_ERROR)
                     + ".var #1 must be an axis or a data variable.");
           axisVarI[1] = -1;
           // var2 may be a dataVar or ""
@@ -1721,7 +1730,7 @@ public abstract class ImageFiles extends ImageTypes {
         // but it is currently an assumption and what drives the creation of all graphs.
         // And the GUI always sets it up this way.
         throw new SimpleException(
-            EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
+            EDStatic.simpleBilingual(language, Message.QUERY_ERROR)
                 + "The variable assigned to the x axis ("
                 + vars[0].destinationName()
                 + ") must be an axis variable.");
@@ -1745,7 +1754,7 @@ public abstract class ImageFiles extends ImageTypes {
       if (drawSurface || drawVectors) {
         if (yAxisVar == null) // because yAxisIndex < 0
         throw new SimpleException(
-              EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
+              EDStatic.simpleBilingual(language, Message.QUERY_ERROR)
                   + "The variable assigned to the y axis ("
                   + vars[0].destinationName()
                   + ") must be an axis variable.");
@@ -1930,7 +1939,7 @@ public abstract class ImageFiles extends ImageTypes {
           // put the data in a Table   0=xAxisVar 1=yAxisVar 2=dataVar1 3=dataVar2
           if (yAxisVar == null) // because yAxisIndex < 0      //redundant, since tested above
           throw new SimpleException(
-                EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
+                EDStatic.simpleBilingual(language, Message.QUERY_ERROR)
                     + "The variable assigned to the y axis ("
                     + vars[0].destinationName()
                     + ") must be an axis variable.");
@@ -1997,7 +2006,7 @@ public abstract class ImageFiles extends ImageTypes {
                   eddGrid.title(language),
                   otherInfo.toString(),
                   MessageFormat.format(
-                      EDStatic.messages.imageDataCourtesyOfAr[language],
+                      EDStatic.messages.get(Message.IMAGE_DATA_COURTESY_OF, language),
                       eddGrid.institution(language)),
                   table,
                   null,
@@ -2056,7 +2065,7 @@ public abstract class ImageFiles extends ImageTypes {
                   otherInfo.toString(),
                   "",
                   MessageFormat.format(
-                      EDStatic.messages.imageDataCourtesyOfAr[language],
+                      EDStatic.messages.get(Message.IMAGE_DATA_COURTESY_OF, language),
                       eddGrid.institution(language)),
                   table,
                   null,
@@ -2074,7 +2083,7 @@ public abstract class ImageFiles extends ImageTypes {
           // attributes
           if (yAxisVar == null) // because yAxisIndex < 0
           throw new SimpleException(
-                EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
+                EDStatic.simpleBilingual(language, Message.QUERY_ERROR)
                     + "The variable assigned to the y axis ("
                     + vars[0].destinationName()
                     + ") must be an axis variable.");
@@ -2215,7 +2224,7 @@ public abstract class ImageFiles extends ImageTypes {
                   eddGrid.title(language),
                   otherInfo.toString(),
                   MessageFormat.format(
-                      EDStatic.messages.imageDataCourtesyOfAr[language],
+                      EDStatic.messages.get(Message.IMAGE_DATA_COURTESY_OF, language),
                       eddGrid.institution(language)),
                   null,
                   grid,
@@ -2412,7 +2421,7 @@ public abstract class ImageFiles extends ImageTypes {
                   vars[2] == null ? "" : eddGrid.title(language),
                   otherInfo.toString(),
                   MessageFormat.format(
-                      EDStatic.messages.imageDataCourtesyOfAr[language],
+                      EDStatic.messages.get(Message.IMAGE_DATA_COURTESY_OF, language),
                       eddGrid.institution(language)),
                   table,
                   null,
@@ -2584,7 +2593,7 @@ public abstract class ImageFiles extends ImageTypes {
                   eddGrid.title(language),
                   otherInfo.toString(),
                   MessageFormat.format(
-                      EDStatic.messages.imageDataCourtesyOfAr[language],
+                      EDStatic.messages.get(Message.IMAGE_DATA_COURTESY_OF, language),
                       eddGrid.institution(language)),
                   "off".equals(currentDrawLandMask)
                       ? SgtMap.NO_LAKES_AND_RIVERS
