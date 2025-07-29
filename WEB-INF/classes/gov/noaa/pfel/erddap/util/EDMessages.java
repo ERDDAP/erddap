@@ -151,8 +151,6 @@ public class EDMessages {
     START_BODY_HTML,
     THE_SHORT_DESCRIPTION_HTML,
     END_BODY_HTML,
-    COMMON_STANDARD_NAMES,
-    DEFAULT_COMMON_STANDARD_NAMES,
 
     // Translated messages
     ACCEPT_ENCODING_HTML,
@@ -160,7 +158,6 @@ public class EDMessages {
     ACCESS_RESTFUL,
     ACRONYMS,
     ADD_CONSTRAINTS,
-    ADD_VAR_WHERE_ATT_NAME,
     ADD_VAR_WHERE_ATT_VALUE,
     ADD_VAR_WHERE,
     ADDITIONAL_LINKS,
@@ -246,7 +243,6 @@ public class EDMessages {
     CATEGORY3_HTML,
     CATEGORY_PICK_ATTRIBUTE,
     CATEGORY_SEARCH_HTML,
-    CATEGORY_SEARCH_DIFFERENT_HTML,
     CATEGORY_CLICK_HTML,
     CATEGORY_NOT_AN_OPTION,
     CAUGHT_INTERRUPTED,
@@ -344,7 +340,6 @@ public class EDMessages {
     DAF_TABLE_BYPASS_TOOLTIP,
     DAF_TABLE_TOOLTIP,
     DAS_TITLE,
-    DATA_ACCESS_NOT_ALLOWED,
     DATABASE_UNABLE_TO_CONNECT,
     DATA_PROVIDER_FORM,
     DATA_PROVIDER_FORM_P1,
@@ -363,10 +358,6 @@ public class EDMessages {
     DOCUMENTATION,
     DPF_SUBMIT,
     DPF_FIX_PROBLEM,
-    DPF_YOUR_NAME,
-    DPF_EMAIL_ADDRESS,
-    DPF_TIMESTAMP,
-    DPF_FREQUENCY,
     DPF_TITLE,
     DPF_TITLE_TOOLTIP,
     DPF_SUMMARY,
@@ -383,7 +374,6 @@ public class EDMessages {
     DPF_INFO_URL_TOOLTIP,
     DPF_LICENSE,
     DPF_LICENSE_TOOLTIP,
-    DPF_HOW_YOU_STORE_DATA,
     DPF_PROVIDE_IF_AVAILABLE,
     DPF_ACKNOWLEDGEMENT,
     DPF_ACKNOWLEDGEMENT_TOOLTIP,
@@ -446,14 +436,11 @@ public class EDMessages {
     EDD_ISO19115_METADATA,
     EDD_METADATA,
     EDD_BACKGROUND,
-    EDD_CLICK_ON_SUBMIT_HTML,
     EDD_INSTITUTION,
     EDD_INFORMATION,
     EDD_SUMMARY,
     EDD_DATASET_TITLE,
-    EDD_DOWNLOAD_DATA,
     EDD_MAKE_A_GRAPH,
-    EDD_MAKE_A_MAP,
     EDD_FILE_TYPE,
     EDD_FILE_TYPE_INFORMATION,
     EDD_SELECT_FILE_TYPE,
@@ -465,8 +452,6 @@ public class EDMessages {
     EDD_GRID_DOWNLOAD_DATA_TOOLTIP,
     EDD_GRID_DIMENSION,
     EDD_GRID_DIMENSION_RANGES,
-    EDD_GRID_FIRST,
-    EDD_GRID_LAST,
     EDD_GRID_START,
     EDD_GRID_STOP,
     EDD_GRID_START_STOP_TOOLTIP,
@@ -478,8 +463,6 @@ public class EDMessages {
     EDD_GRID_EVEN,
     EDD_GRID_UNEVEN,
     EDD_GRID_DIMENSION_TOOLTIP,
-    EDD_GRID_DIMENSION_FIRST_TOOLTIP,
-    EDD_GRID_DIMENSION_LAST_TOOLTIP,
     EDD_GRID_VAR_HAS_DIM_TOOLTIP,
     EDD_GRID_SSS_TOOLTIP,
     EDD_GRID_START_TOOLTIP,
@@ -518,10 +501,6 @@ public class EDMessages {
     ERDDAP_IS,
     ERDDAP_VERSION_HTML,
     ERROR_TITLE,
-    ERROR_REQUEST_URL,
-    ERROR_REQUEST_QUERY,
-    ERROR_THE_ERROR,
-    ERROR_COPY_FROM,
     ERROR_FILE_NOT_FOUND,
     ERROR_FILE_NOT_FOUND_IMAGE,
     ERROR_INTERNAL,
@@ -548,9 +527,6 @@ public class EDMessages {
     FILE_HELP_TABLE_ESRI_CSV,
     FILE_HELP_FGDC,
     FILE_HELP_GEO_JSON,
-    FILE_HELP_GRAPH,
-    FILE_HELP_GRID_HELP,
-    FILE_HELP_TABLE_HELP,
     FILE_HELP_HTML,
     FILE_HELP_HTML_TABLE,
     FILE_HELP_ISO19115,
@@ -579,7 +555,6 @@ public class EDMessages {
     FILE_HELP_TABLE_ODV_TXT,
     FILE_HELP_PARQUET,
     FILE_HELP_PARQUET_WITH_META,
-    FILE_HELP_SUBSET,
     FILE_HELP_TIME_GAPS,
     FILE_HELP_TSV,
     FILE_HELP_TSVP,
@@ -597,9 +572,7 @@ public class EDMessages {
     FILE_HELP_LARGE_PNG,
     FILE_HELP_TRANSPARENT_PNG,
     FILES_DESCRIPTION,
-    FILES_SORT,
     FILES_WARNING,
-    FIND_OUT_CHANGE,
     FIPS_COUNTY_CODES,
     FOR_SOS_USE,
     FOR_WCS_USE,
@@ -608,7 +581,6 @@ public class EDMessages {
     FUNCTION_TOOLTIP,
     FUNCTION_DISTINCT_CHECK,
     FUNCTION_DISTINCT_TOOLTIP,
-    FUNCTION_ORDER_BY_EXTRA,
     FUNCTION_ORDER_BY_TOOLTIP,
     FUNCTION_ORDER_BY_SORT,
     FUNCTION_ORDER_BY_SORT1,
@@ -616,7 +588,6 @@ public class EDMessages {
     FUNCTION_ORDER_BY_SORT3,
     FUNCTION_ORDER_BY_SORT4,
     FUNCTION_ORDER_BY_SORT_LEAST,
-    FUNCTION_ORDER_BY_SORT_ROW_MAX,
     GENERATED_AT,
     GEO_SERVICES_DESCRIPTION,
     GET_STARTED_HTML,
@@ -660,7 +631,6 @@ public class EDMessages {
     LIKE_THIS,
     LIST_ALL,
     LIST_OF_DATASETS,
-    LOG_IN,
     LOGIN,
     LOGIN_HTML,
     LOGIN_ATTEMPT_BLOCKED,
@@ -669,22 +639,15 @@ public class EDMessages {
     LOGIN_DESCRIBE_GOOGLE,
     LOGIN_DESCRIBE_ORCID,
     LOGIN_DESCRIBE_OAUTH2,
-    LOGIN_ERDDAP,
     LOGIN_CAN_NOT,
     LOGIN_ARE_NOT,
     LOGIN_TO_LOG_IN,
-    LOGIN_EMAIL_ADDRESS,
     LOGIN_YOUR_EMAIL_ADDRESS,
     LOGIN_USER_NAME,
     LOGIN_PASSWORD,
     LOGIN_USER_NAME_AND_PASSWORD,
     LOGIN_GOOGLE_SIGN_IN,
     LOGIN_ORCID_SIGN_IN,
-    LOGIN_OPEN_ID,
-    LOGIN_OPEN_ID_OR,
-    LOGIN_OPEN_ID_CREATE,
-    LOGIN_OPEN_ID_FREE,
-    LOGIN_OPEN_ID_SAME,
     LOGIN_AS,
     LOGIN_PARTWAY_AS,
     LOGIN_FAILED,
@@ -704,7 +667,6 @@ public class EDMessages {
     LOGIN_PUBLIC_ACCESS,
     LOG_OUT,
     LOGOUT,
-    LOGOUT_OPEN_ID,
     LOGOUT_SUCCESS,
     MAG,
     MAG_AXIS_X,
@@ -824,11 +786,9 @@ public class EDMessages {
     NO_XXX_NO_LON_IN_180,
     NO_XXX_NO_NON_STRING,
     NO_XXX_NO_2_NON_STRING,
-    NO_XXX_NO_STATION,
     NO_XXX_NO_STATION_ID,
     NO_XXX_NO_SUBSET_VARIABLES,
     NO_XXX_NO_OLL_SUBSET_VARIABLES,
-    NO_XXX_NO_MIN_MAX,
     NO_XXX_ITS_GRIDDED,
     NO_XXX_ITS_TABULAR,
     ONE_REQUEST_AT_A_TIME,
@@ -837,7 +797,6 @@ public class EDMessages {
     OPTIONS,
     OR_A_LIST_OF_VALUES,
     OR_REFINE_SEARCH_WITH,
-    OR_SEARCH_WITH,
     OR_COMMA,
     OTHER_FEATURES,
     OUT_OF_DATE_DATASETS,
@@ -846,7 +805,6 @@ public class EDMessages {
     PATIENT_DATA,
     PATIENT_YOUR_GRAPH,
     PERCENT_ENCODE,
-    PICK_A_DATASET,
     PROTOCOL_SEARCH_HTML,
     PROTOCOL_SEARCH_2_HTML,
     PROTOCOL_CLICK,
@@ -857,7 +815,6 @@ public class EDMessages {
     QUERY_ERROR_2_VAR,
     QUERY_ERROR_ACTUAL_RANGE,
     QUERY_ERROR_ADJUSTED,
-    QUERY_ERROR_ASCENDING,
     QUERY_ERROR_CONSTRAINT_NAN,
     QUERY_ERROR_EQUAL_SPACING,
     QUERY_ERROR_EXPECTED_AT,
@@ -888,7 +845,6 @@ public class EDMessages {
     QUERY_ERROR_GRID_NO_AXIS_VAR,
     QUERY_ERROR_GRID_NO_DATA_VAR,
     QUERY_ERROR_GRID_NOT_IDENTICAL,
-    QUERY_ERROR_GRID_S_LESS_S,
     QUERY_ERROR_LAST_END_P,
     QUERY_ERROR_LAST_EXPECTED,
     QUERY_ERROR_LAST_UNEXPECTED,
@@ -986,7 +942,6 @@ public class EDMessages {
     SUBSCRIPTION_REMOVE_2,
     SUBSCRIPTION_REMOVE_SUCCESS,
     SUBSCRIPTION_RSS,
-    SUBSCRIPTIONS_NOT_AVAILABLE,
     SUBSCRIPTION_URL_HTML,
     SUBSCRIPTION_URL_INVALID,
     SUBSCRIPTION_URL_TOO_LONG,
@@ -1011,7 +966,6 @@ public class EDMessages {
     SUBSET_WHEN,
     SUBSET_WHEN_NO_CONSTRAINTS,
     SUBSET_WHEN_COUNTS,
-    SUBSET_COMBO_CLICK_SELECT,
     SUBSET_N_VARIABLE_COMBOS,
     SUBSET_SHOWING_ALL_ROWS,
     SUBSET_SHOWING_N_ROWS,
@@ -1044,7 +998,6 @@ public class EDMessages {
     THE_KEY,
     THE_SUBSCRIPTION_ID,
     THE_URL_ACTION,
-    THEN,
     THIS_PARTICULAR_ERDDAP,
     TIME,
     TIMEOUT_OTHER_REQUESTS,
@@ -1055,7 +1008,6 @@ public class EDMessages {
     USING_GRIDDAP,
     USING_TABLEDAP,
     VARIABLE_NAMES,
-    VIEW_ALL_DATASETS_HTML,
     WAIT_THEN_TRY_AGAIN,
     WARNING,
     WCS,
@@ -1128,9 +1080,6 @@ public class EDMessages {
         Message.ACRONYMS, getNotNothingString(messagesAr, "acronyms", errorInMethod));
     translatedMessages.put(
         Message.ADD_CONSTRAINTS, getNotNothingString(messagesAr, "addConstraints", errorInMethod));
-    translatedMessages.put(
-        Message.ADD_VAR_WHERE_ATT_NAME,
-        getNotNothingString(messagesAr, "addVarWhereAttName", errorInMethod));
     translatedMessages.put(
         Message.ADD_VAR_WHERE_ATT_VALUE,
         getNotNothingString(messagesAr, "addVarWhereAttValue", errorInMethod));
@@ -1355,9 +1304,6 @@ public class EDMessages {
     translatedMessages.put(
         Message.CATEGORY_SEARCH_HTML,
         getNotNothingString(messagesAr, "categorySearchHtml", errorInMethod));
-    translatedMessages.put(
-        Message.CATEGORY_SEARCH_DIFFERENT_HTML,
-        getNotNothingString(messagesAr, "categorySearchDifferentHtml", errorInMethod));
     translatedMessages.put(
         Message.CATEGORY_CLICK_HTML,
         getNotNothingString(messagesAr, "categoryClickHtml", errorInMethod));
@@ -1662,9 +1608,6 @@ public class EDMessages {
     translatedMessages.put(
         Message.DAS_TITLE, getNotNothingString(messagesAr, "dasTitle", errorInMethod));
     translatedMessages.put(
-        Message.DATA_ACCESS_NOT_ALLOWED,
-        getNotNothingString(messagesAr, "dataAccessNotAllowed", errorInMethod));
-    translatedMessages.put(
         Message.DATABASE_UNABLE_TO_CONNECT,
         getNotNothingString(messagesAr, "databaseUnableToConnect", errorInMethod));
     translatedMessages.put(
@@ -1719,15 +1662,6 @@ public class EDMessages {
     translatedMessages.put(
         Message.DPF_FIX_PROBLEM, getNotNothingString(messagesAr, "dpf_fixProblem", errorInMethod));
     translatedMessages.put(
-        Message.DPF_YOUR_NAME, getNotNothingString(messagesAr, "dpf_yourName", errorInMethod));
-    translatedMessages.put(
-        Message.DPF_EMAIL_ADDRESS,
-        getNotNothingString(messagesAr, "dpf_emailAddress", errorInMethod));
-    translatedMessages.put(
-        Message.DPF_TIMESTAMP, getNotNothingString(messagesAr, "dpf_Timestamp", errorInMethod));
-    translatedMessages.put(
-        Message.DPF_FREQUENCY, getNotNothingString(messagesAr, "dpf_frequency", errorInMethod));
-    translatedMessages.put(
         Message.DPF_TITLE, getNotNothingString(messagesAr, "dpf_title", errorInMethod));
     translatedMessages.put(
         Message.DPF_TITLE_TOOLTIP,
@@ -1770,9 +1704,6 @@ public class EDMessages {
     translatedMessages.put(
         Message.DPF_LICENSE_TOOLTIP,
         getNotNothingString(messagesAr, "dpf_licenseTooltip", errorInMethod));
-    translatedMessages.put(
-        Message.DPF_HOW_YOU_STORE_DATA,
-        getNotNothingString(messagesAr, "dpf_howYouStoreData", errorInMethod));
     translatedMessages.put(
         Message.DPF_PROVIDE_IF_AVAILABLE,
         getNotNothingString(messagesAr, "dpf_provideIfAvailable", errorInMethod));
@@ -1933,9 +1864,6 @@ public class EDMessages {
     translatedMessages.put(
         Message.EDD_BACKGROUND, getNotNothingString(messagesAr, "EDDBackground", errorInMethod));
     translatedMessages.put(
-        Message.EDD_CLICK_ON_SUBMIT_HTML,
-        getNotNothingString(messagesAr, "EDDClickOnSubmitHtml", errorInMethod));
-    translatedMessages.put(
         Message.EDD_INFORMATION, getNotNothingString(messagesAr, "EDDInformation", errorInMethod));
     translatedMessages.put(
         Message.EDD_INSTITUTION, getNotNothingString(messagesAr, "EDDInstitution", errorInMethod));
@@ -1945,12 +1873,7 @@ public class EDMessages {
         Message.EDD_DATASET_TITLE,
         getNotNothingString(messagesAr, "EDDDatasetTitle", errorInMethod));
     translatedMessages.put(
-        Message.EDD_DOWNLOAD_DATA,
-        getNotNothingString(messagesAr, "EDDDownloadData", errorInMethod));
-    translatedMessages.put(
         Message.EDD_MAKE_A_GRAPH, getNotNothingString(messagesAr, "EDDMakeAGraph", errorInMethod));
-    translatedMessages.put(
-        Message.EDD_MAKE_A_MAP, getNotNothingString(messagesAr, "EDDMakeAMap", errorInMethod));
     translatedMessages.put(
         Message.EDD_FILE_TYPE, getNotNothingString(messagesAr, "EDDFileType", errorInMethod));
     translatedMessages.put(
@@ -2006,10 +1929,6 @@ public class EDMessages {
         Message.EDD_GRID_DIMENSION_RANGES,
         getNotNothingString(messagesAr, "EDDGridDimensionRanges", errorInMethod));
     translatedMessages.put(
-        Message.EDD_GRID_FIRST, getNotNothingString(messagesAr, "EDDGridFirst", errorInMethod));
-    translatedMessages.put(
-        Message.EDD_GRID_LAST, getNotNothingString(messagesAr, "EDDGridLast", errorInMethod));
-    translatedMessages.put(
         Message.EDD_GRID_START, getNotNothingString(messagesAr, "EDDGridStart", errorInMethod));
     translatedMessages.put(
         Message.EDD_GRID_STOP, getNotNothingString(messagesAr, "EDDGridStop", errorInMethod));
@@ -2036,12 +1955,6 @@ public class EDMessages {
     translatedMessages.put(
         Message.EDD_GRID_DIMENSION_TOOLTIP,
         getNotNothingString(messagesAr, "EDDGridDimensionTooltip", errorInMethod));
-    translatedMessages.put(
-        Message.EDD_GRID_DIMENSION_FIRST_TOOLTIP,
-        getNotNothingString(messagesAr, "EDDGridDimensionFirstTooltip", errorInMethod));
-    translatedMessages.put(
-        Message.EDD_GRID_DIMENSION_LAST_TOOLTIP,
-        getNotNothingString(messagesAr, "EDDGridDimensionLastTooltip", errorInMethod));
     translatedMessages.put(
         Message.EDD_GRID_VAR_HAS_DIM_TOOLTIP,
         getNotNothingString(messagesAr, "EDDGridVarHasDimTooltip", errorInMethod));
@@ -2278,16 +2191,6 @@ public class EDMessages {
         Message.ERDDAP_VERSION_HTML,
         getNotNothingString(messagesAr, "erddapVersionHTML", errorInMethod));
     translatedMessages.put(
-        Message.ERROR_REQUEST_URL,
-        getNotNothingString(messagesAr, "errorRequestUrl", errorInMethod));
-    translatedMessages.put(
-        Message.ERROR_REQUEST_QUERY,
-        getNotNothingString(messagesAr, "errorRequestQuery", errorInMethod));
-    translatedMessages.put(
-        Message.ERROR_THE_ERROR, getNotNothingString(messagesAr, "errorTheError", errorInMethod));
-    translatedMessages.put(
-        Message.ERROR_COPY_FROM, getNotNothingString(messagesAr, "errorCopyFrom", errorInMethod));
-    translatedMessages.put(
         Message.ERROR_FILE_NOT_FOUND,
         getNotNothingString(messagesAr, "errorFileNotFound", errorInMethod));
     translatedMessages.put(
@@ -2370,14 +2273,6 @@ public class EDMessages {
         Message.FILE_HELP_GEO_JSON,
         getNotNothingString(messagesAr, "fileHelp_geoJson", errorInMethod));
     translatedMessages.put(
-        Message.FILE_HELP_GRAPH, getNotNothingString(messagesAr, "fileHelp_graph", errorInMethod));
-    translatedMessages.put(
-        Message.FILE_HELP_GRID_HELP,
-        getNotNothingString(messagesAr, "fileHelpGrid_help", errorInMethod));
-    translatedMessages.put(
-        Message.FILE_HELP_TABLE_HELP,
-        getNotNothingString(messagesAr, "fileHelpTable_help", errorInMethod));
-    translatedMessages.put(
         Message.FILE_HELP_HTML, getNotNothingString(messagesAr, "fileHelp_html", errorInMethod));
     translatedMessages.put(
         Message.FILE_HELP_HTML_TABLE,
@@ -2456,9 +2351,6 @@ public class EDMessages {
         Message.FILE_HELP_PARQUET_WITH_META,
         getNotNothingString(messagesAr, "fileHelp_parquet_with_meta", errorInMethod));
     translatedMessages.put(
-        Message.FILE_HELP_SUBSET,
-        getNotNothingString(messagesAr, "fileHelp_subset", errorInMethod));
-    translatedMessages.put(
         Message.FILE_HELP_TIME_GAPS,
         getNotNothingString(messagesAr, "fileHelp_timeGaps", errorInMethod));
     translatedMessages.put(
@@ -2506,11 +2398,7 @@ public class EDMessages {
         Message.FILES_DOCUMENTATION,
         getNotNothingString(messagesAr, "filesDocumentation", errorInMethod));
     translatedMessages.put(
-        Message.FILES_SORT, getNotNothingString(messagesAr, "filesSort", errorInMethod));
-    translatedMessages.put(
         Message.FILES_WARNING, getNotNothingString(messagesAr, "filesWarning", errorInMethod));
-    translatedMessages.put(
-        Message.FIND_OUT_CHANGE, getNotNothingString(messagesAr, "findOutChange", errorInMethod));
     translatedMessages.put(
         Message.FIPS_COUNTY_CODES,
         getNotNothingString(messagesAr, "FIPSCountyCodes", errorInMethod));
@@ -2543,9 +2431,6 @@ public class EDMessages {
     }
 
     translatedMessages.put(
-        Message.FUNCTION_ORDER_BY_EXTRA,
-        getNotNothingString(messagesAr, "functionOrderByExtra", errorInMethod));
-    translatedMessages.put(
         Message.FUNCTION_ORDER_BY_TOOLTIP,
         getNotNothingString(messagesAr, "functionOrderByTooltip", errorInMethod));
     translatedMessages.put(
@@ -2566,9 +2451,6 @@ public class EDMessages {
     translatedMessages.put(
         Message.FUNCTION_ORDER_BY_SORT_LEAST,
         getNotNothingString(messagesAr, "functionOrderBySortLeast", errorInMethod));
-    translatedMessages.put(
-        Message.FUNCTION_ORDER_BY_SORT_ROW_MAX,
-        getNotNothingString(messagesAr, "functionOrderBySortRowMax", errorInMethod));
     translatedMessages.put(
         Message.GENERATED_AT, getNotNothingString(messagesAr, "generatedAt", errorInMethod));
     translatedMessages.put(
@@ -2698,7 +2580,7 @@ public class EDMessages {
         Message.LIST_ALL, getNotNothingString(messagesAr, "listAll", errorInMethod));
     translatedMessages.put(
         Message.LIST_OF_DATASETS, getNotNothingString(messagesAr, "listOfDatasets", errorInMethod));
-    translatedMessages.put(Message.LOG_IN, getNotNothingString(messagesAr, "LogIn", errorInMethod));
+
     translatedMessages.put(Message.LOGIN, getNotNothingString(messagesAr, "login", errorInMethod));
     translatedMessages.put(
         Message.LOGIN_HTML, getNotNothingString(messagesAr, "loginHTML", errorInMethod));
@@ -2727,9 +2609,6 @@ public class EDMessages {
     translatedMessages.put(
         Message.LOGIN_TO_LOG_IN, getNotNothingString(messagesAr, "loginToLogIn", errorInMethod));
     translatedMessages.put(
-        Message.LOGIN_EMAIL_ADDRESS,
-        getNotNothingString(messagesAr, "loginEmailAddress", errorInMethod));
-    translatedMessages.put(
         Message.LOGIN_YOUR_EMAIL_ADDRESS,
         getNotNothingString(messagesAr, "loginYourEmailAddress", errorInMethod));
     translatedMessages.put(
@@ -2745,21 +2624,6 @@ public class EDMessages {
     translatedMessages.put(
         Message.LOGIN_ORCID_SIGN_IN,
         getNotNothingString(messagesAr, "loginOrcidSignIn", errorInMethod));
-    translatedMessages.put(
-        Message.LOGIN_ERDDAP, getNotNothingString(messagesAr, "loginErddap", errorInMethod));
-    translatedMessages.put(
-        Message.LOGIN_OPEN_ID, getNotNothingString(messagesAr, "loginOpenID", errorInMethod));
-    translatedMessages.put(
-        Message.LOGIN_OPEN_ID_OR, getNotNothingString(messagesAr, "loginOpenIDOr", errorInMethod));
-    translatedMessages.put(
-        Message.LOGIN_OPEN_ID_CREATE,
-        getNotNothingString(messagesAr, "loginOpenIDCreate", errorInMethod));
-    translatedMessages.put(
-        Message.LOGIN_OPEN_ID_FREE,
-        getNotNothingString(messagesAr, "loginOpenIDFree", errorInMethod));
-    translatedMessages.put(
-        Message.LOGIN_OPEN_ID_SAME,
-        getNotNothingString(messagesAr, "loginOpenIDSame", errorInMethod));
     translatedMessages.put(
         Message.LOGIN_AS, getNotNothingString(messagesAr, "loginAs", errorInMethod));
     translatedMessages.put(
@@ -2807,8 +2671,6 @@ public class EDMessages {
         Message.LOG_OUT, getNotNothingString(messagesAr, "LogOut", errorInMethod));
     translatedMessages.put(
         Message.LOGOUT, getNotNothingString(messagesAr, "logout", errorInMethod));
-    translatedMessages.put(
-        Message.LOGOUT_OPEN_ID, getNotNothingString(messagesAr, "logoutOpenID", errorInMethod));
     translatedMessages.put(
         Message.LOGOUT_SUCCESS, getNotNothingString(messagesAr, "logoutSuccess", errorInMethod));
     translatedMessages.put(Message.MAG, getNotNothingString(messagesAr, "mag", errorInMethod));
@@ -3111,9 +2973,6 @@ public class EDMessages {
         Message.NO_XXX_NO_2_NON_STRING,
         getNotNothingString(messagesAr, "noXxxNo2NonString", errorInMethod));
     translatedMessages.put(
-        Message.NO_XXX_NO_STATION,
-        getNotNothingString(messagesAr, "noXxxNoStation", errorInMethod));
-    translatedMessages.put(
         Message.NO_XXX_NO_STATION_ID,
         getNotNothingString(messagesAr, "noXxxNoStationID", errorInMethod));
     translatedMessages.put(
@@ -3122,8 +2981,6 @@ public class EDMessages {
     translatedMessages.put(
         Message.NO_XXX_NO_OLL_SUBSET_VARIABLES,
         getNotNothingString(messagesAr, "noXxxNoOLLSubsetVariables", errorInMethod));
-    translatedMessages.put(
-        Message.NO_XXX_NO_MIN_MAX, getNotNothingString(messagesAr, "noXxxNoMinMax", errorInMethod));
     translatedMessages.put(
         Message.NO_XXX_ITS_GRIDDED,
         getNotNothingString(messagesAr, "noXxxItsGridded", errorInMethod));
@@ -3147,12 +3004,9 @@ public class EDMessages {
         Message.OR_REFINE_SEARCH_WITH,
         getNotNothingString(messagesAr, "orRefineSearchWith", errorInMethod));
     translatedMessages.put(
-        Message.OR_SEARCH_WITH, getNotNothingString(messagesAr, "orSearchWith", errorInMethod));
-    translatedMessages.put(
         Message.OR_COMMA, getNotNothingString(messagesAr, "orComma", errorInMethod));
     for (int tl = 0; tl < nLanguages; tl++) {
       translatedMessages.get(Message.OR_REFINE_SEARCH_WITH)[tl] += " ";
-      translatedMessages.get(Message.OR_SEARCH_WITH)[tl] += " ";
       translatedMessages.get(Message.OR_COMMA)[tl] += " ";
     }
     translatedMessages.put(
@@ -3190,8 +3044,6 @@ public class EDMessages {
     translatedMessages.put(
         Message.PERCENT_ENCODE, getNotNothingString(messagesAr, "percentEncode", errorInMethod));
     translatedMessages.put(
-        Message.PICK_A_DATASET, getNotNothingString(messagesAr, "pickADataset", errorInMethod));
-    translatedMessages.put(
         Message.PROTOCOL_SEARCH_HTML,
         getNotNothingString(messagesAr, "protocolSearchHtml", errorInMethod));
     translatedMessages.put(
@@ -3222,9 +3074,6 @@ public class EDMessages {
     translatedMessages.put(
         Message.QUERY_ERROR_ADJUSTED,
         getNotNothingString(messagesAr, "queryErrorAdjusted", errorInMethod));
-    translatedMessages.put(
-        Message.QUERY_ERROR_ASCENDING,
-        getNotNothingString(messagesAr, "queryErrorAscending", errorInMethod));
     translatedMessages.put(
         Message.QUERY_ERROR_CONSTRAINT_NAN,
         getNotNothingString(messagesAr, "queryErrorConstraintNaN", errorInMethod));
@@ -3315,9 +3164,6 @@ public class EDMessages {
     translatedMessages.put(
         Message.QUERY_ERROR_GRID_NOT_IDENTICAL,
         getNotNothingString(messagesAr, "queryErrorGridNotIdentical", errorInMethod));
-    translatedMessages.put(
-        Message.QUERY_ERROR_GRID_S_LESS_S,
-        getNotNothingString(messagesAr, "queryErrorGridSLessS", errorInMethod));
     translatedMessages.put(
         Message.QUERY_ERROR_LAST_END_P,
         getNotNothingString(messagesAr, "queryErrorLastEndP", errorInMethod));
@@ -3600,9 +3446,6 @@ public class EDMessages {
         Message.SUBSCRIPTION_RSS,
         getNotNothingString(messagesAr, "subscriptionRSS", errorInMethod));
     translatedMessages.put(
-        Message.SUBSCRIPTIONS_NOT_AVAILABLE,
-        getNotNothingString(messagesAr, "subscriptionsNotAvailable", errorInMethod));
-    translatedMessages.put(
         Message.SUBSCRIPTION_URL_HTML,
         getNotNothingString(messagesAr, "subscriptionUrlHtml", errorInMethod));
     translatedMessages.put(
@@ -3670,9 +3513,6 @@ public class EDMessages {
     translatedMessages.put(
         Message.SUBSET_WHEN_COUNTS,
         getNotNothingString(messagesAr, "subsetWhenCounts", errorInMethod));
-    translatedMessages.put(
-        Message.SUBSET_COMBO_CLICK_SELECT,
-        getNotNothingString(messagesAr, "subsetComboClickSelect", errorInMethod));
     translatedMessages.put(
         Message.SUBSET_N_VARIABLE_COMBOS,
         getNotNothingString(messagesAr, "subsetNVariableCombos", errorInMethod));
@@ -3769,7 +3609,6 @@ public class EDMessages {
         Message.THE_LONG_DESCRIPTION_HTML,
         getNotNothingString(messagesAr, "theLongDescriptionHtml", errorInMethod));
     translatedMessages.put(Message.TIME, getNotNothingString(messagesAr, "time", errorInMethod));
-    translatedMessages.put(Message.THEN, getNotNothingString(messagesAr, "Then", errorInMethod));
     translatedMessages.put(
         Message.THIS_PARTICULAR_ERDDAP,
         getNotNothingString(messagesAr, "thisParticularErddap", errorInMethod));
@@ -3814,9 +3653,6 @@ public class EDMessages {
         Message.USING_TABLEDAP, getNotNothingString(messagesAr, "usingTabledap", errorInMethod));
     translatedMessages.put(
         Message.VARIABLE_NAMES, getNotNothingString(messagesAr, "variableNames", errorInMethod));
-    translatedMessages.put(
-        Message.VIEW_ALL_DATASETS_HTML,
-        getNotNothingString(messagesAr, "viewAllDatasetsHtml", errorInMethod));
     translatedMessages.put(
         Message.WAIT_THEN_TRY_AGAIN,
         getNotNothingString(messagesAr, "waitThenTryAgain", errorInMethod));

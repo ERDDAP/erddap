@@ -63,7 +63,6 @@ Tá sé roghnach comhbhrú a iarraidh, ach is minic a bhíonn freagraí comhbhr�
 <acronyms>Acrainmneacha</acronyms>
 <addConstraints>Is féidir leat srianta cosúil le tábla-pháipéir a chur le hiarratais ar an leathanach Gréasáin seo,
 mar shampla,</addConstraints>
-<addVarWhereAttName>Roghnach: Sonraigh ainm aitreabúide.</addVarWhereAttName>
 <addVarWhereAttValue>Roghnach: Sonraigh luach aitreabúide.</addVarWhereAttValue>
 <addVarWhere><![CDATA[
 
@@ -296,9 +295,6 @@ Ansin, is féidir leat cliceáil ar chatagóir chun liosta de na tacair shonraí
 <categorySearchHtml><![CDATA[
 Roghnaigh a(n) <kbd>{0}</kbd>
 ]]></categorySearchHtml>
-<categorySearchDifferentHtml><![CDATA[
-Cuardach do Thacair Sonraí a bhfuil <kbd>&category;</kbd>
-]]></categorySearchDifferentHtml>
 <categoryClickHtml>Cliceáil ar chatagóir (luach aitreabúide) chun liosta de na tacair sonraí ábhartha a fheiceáil.</categoryClickHtml>
 <categoryNotAnOption>Nuair nach rogha é tréith = &quot;{0}&quot;, luach = &quot;{1}&quot;.</categoryNotAnOption>
 <caughtInterrupted>gafa currentThread().Idirbhriseadh().</caughtInterrupted>
@@ -1772,9 +1768,6 @@ Léiríonn gach sraith sampla difriúil de na sonraí (m.sh., ó am nó ó shuí
 
 ]]></dafTableTooltip>
 <dasTitle>An Struchtúr Tréithe Tacar Sonraí (.das) don Tacar Sonraí seo</dasTitle>
-
-<!--  An teachtaireacht atá le taispeáint murar féidir na sonraí a íoslódáil (m.sh. SeaWiFS &lt;=14 lá d&#39;aois).  -->
-<dataAccessNotAllowed>[Tá brón orm. Ní féidir na sonraí sin a íoslódáil.]</dataAccessNotAllowed>
 <databaseUnableToConnect>Ní féidir ceangal leis an mbunachar sonraí.</databaseUnableToConnect>
 <dataProviderForm>Foirm Soláthraí Sonraí</dataProviderForm>
 <dataProviderFormP1>Foirm Soláthraí Sonraí - Cuid 1</dataProviderFormP1>
@@ -2100,10 +2093,6 @@ Cliceáil &widgetSubmitButton; an fhaisnéis seo a sheoladh chuig an riarthóir 
 <br>Déan na fadhbanna seo a réiteach, agus ansin &#39;Cuir isteach&#39; an chuid seo den fhoirm arís.
 
 ]]></dpf_fixProblem>
-<dpf_yourName>Do ainm</dpf_yourName>
-<dpf_emailAddress>Seoladh ríomhphoist</dpf_emailAddress>
-<dpf_Timestamp>Stampa ama</dpf_Timestamp>
-<dpf_frequency>Minicíocht</dpf_frequency>
 <dpf_title>teideal</dpf_title>
 <dpf_titleTooltip><![CDATA[
 
@@ -2181,12 +2170,6 @@ Seo é an ceadúnas agus an séanadh chun na sonraí seo a úsáid.
 <br><kbd>
 
 ]]></dpf_licenseTooltip>
-<dpf_howYouStoreData><![CDATA[
-
-<br>• Earráid:
-Sonraigh (thíos) conas a stóráiltear do shonraí greille nó tábla.
-
-]]></dpf_howYouStoreData>
 <dpf_provideIfAvailable>Tabhair an t-eolas má tá sé ar fáil do do thacair sonraí.</dpf_provideIfAvailable>
 <dpf_acknowledgement>admháil</dpf_acknowledgement>
 <dpf_acknowledgementTooltip><![CDATA[
@@ -2487,10 +2470,7 @@ Is é stampa ama na haighneachta tacair sonraí seo ná &tTimestamp; .
 <dtWMS>Cliceáil le fáil amach faoi léarscáileanna a dhéanamh de na sonraí seo trí Sheirbhís Mapaí Gréasáin an tacair sonraí seo.</dtWMS>
 <EasierAccessToScientificData>Rochtain níos éasca ar shonraí eolaíocha</EasierAccessToScientificData>
 
-<!--  Taispeántar na teachtaireachtaí EDD ar na Foirmeacha Rochtana Sonraí tábla agus greille.  -->
-<EDDClickOnSubmitHtml><![CDATA[
-Cliceáil ar <kbd>Submit</kbd> .
-]]></EDDClickOnSubmitHtml>
+<!--Tá na teachtaireachtaí EDD ar taispeáint ar na foirmeacha iarratais agus ar na Foirmeacha Rochtana Sonraí greille.-->
 <EDDDatasetID>Aitheantas tacair sonraí</EDDDatasetID>
 <EDDFgdc>FGDC</EDDFgdc>
 <EDDFgdcMetadata>FGDC-STD-001-1998 Meiteashonraí</EDDFgdcMetadata>
@@ -2503,9 +2483,7 @@ Cliceáil ar <kbd>Submit</kbd> .
 <EDDInformation>Eolas</EDDInformation>
 <EDDSummary>Achoimre</EDDSummary>
 <EDDDatasetTitle>Teideal an tSocraithe Sonraí</EDDDatasetTitle>
-<EDDDownloadData>Íosluchtaigh sonraí</EDDDownloadData>
 <EDDMakeAGraph>Déan graf</EDDMakeAGraph>
-<EDDMakeAMap>Déan léarscáil</EDDMakeAMap>
 <EDDMinimum>íosmhéid</EDDMinimum>
 <EDDMaximum>Uasmhéid</EDDMaximum>
 <EDDFileType>Cineál comhaid:</EDDFileType>
@@ -2573,8 +2551,6 @@ Déanann sé an URL ar do shon.
 ]]></EDDGridDownloadDataTooltip>
 <EDDGridDimension>Toisí</EDDGridDimension>
 <EDDGridDimensionRanges>Toisí</EDDGridDimensionRanges>
-<EDDGridFirst>Ar dtús</EDDGridFirst>
-<EDDGridLast>seo caite</EDDGridLast>
 <EDDGridStart>Tosaigh</EDDGridStart>
 <EDDGridStop>Stop</EDDGridStop>
 <EDDGridStartStopTooltip><![CDATA[
@@ -2618,14 +2594,6 @@ is é seo an meánspásáil idir luachanna toise (in aonaid na toise) agus léir
 Is minic a thugann spásáil chorr, mhíchothrom le fios go bhfuil comhad amháin nó cúpla comhad in easnamh nó go dona i tacar sonraí atá sách cothrom.
 
 ]]></EDDGridSpacingTooltip>
-<EDDGridDimensionFirstTooltip><![CDATA[
-Mar eolas duit:
-is é seo an chéad luach atá ag toise.
-]]></EDDGridDimensionFirstTooltip>
-<EDDGridDimensionLastTooltip><![CDATA[
-Mar eolas duit:
-is é seo an luach deiridh atá ag toise.
-]]></EDDGridDimensionLastTooltip>
 <EDDGridDownloadTooltip><![CDATA[
 Roghnaigh na hathróga is mian leat a íoslódáil:
 <br>* Chun sonraí toise amháin a íoslódáil:
@@ -2899,10 +2867,6 @@ Mar shampla:
 
 <!--  Taispeántar na teachtaireachtaí seo nuair a thaispeántar teachtaireacht earráide.  -->
 <errorTitle>Earráid</errorTitle>
-<errorRequestUrl>URL d&#39;iarratas:</errorRequestUrl>
-<errorRequestQuery>Do cheist iarratais:</errorRequestQuery>
-<errorTheError>An earráid:</errorTheError>
-<errorCopyFrom>Ní féidir cóip a dhéanamh ó {0}.</errorCopyFrom>
 <errorFileNotFound>Comhad gan aimsiú: {0} .</errorFileNotFound>
 <errorFileNotFoundImage>Ní bhfuarthas an comhad sa taisce. Athchruthaigh an íomhá agus bain triail eile as.</errorFileNotFoundImage>
 <errorInternal>Earráid inmheánach:</errorInternal>
@@ -2936,7 +2900,6 @@ Mar shampla:
 <fileHelpTable_esriCsv>Íoslódáil comhad ISO_8859_1 .csv le haghaidh ArcGIS 9.x an ESRI agus thíos (colúin dáta agus ama ar leith).</fileHelpTable_esriCsv>
 <fileHelp_fgdc>Féach ar mheiteashonraí UTF-8 FGDC .xml an tacair sonraí.</fileHelp_fgdc>
 <fileHelp_geoJson>Íoslódáil domhanfhad, domhanleithead, sonraí Colúin eile mar chomhad UTF-8 GeoJSON .json.</fileHelp_geoJson>
-<fileHelp_graph>Féach ar leathanach gréasáin Make A Graph.</fileHelp_graph>
 <fileHelpGrid_help>Féach ar leathanach gréasáin le cur síos ar griddap.</fileHelpGrid_help>
 <fileHelpTable_help>Féach ar leathanach gréasáin le cur síos ar an tábla.</fileHelpTable_help>
 <fileHelp_html>Féach ar Fhoirm Rochtana Sonraí HTML ar stíl OPeNDAP.</fileHelp_html>
@@ -2967,7 +2930,6 @@ Mar shampla:
 <fileHelpTable_odvTxt>Íoslódáil domhanfhad, domhanleithead, am,Colúin eile mar Chomhad Scarbhileog Cineálach ISO-8859-1 ODV (.txt).</fileHelpTable_odvTxt>
 <fileHelp_parquet>Íoslódáil mar chomhad parquet. Tá ainmneacha colúin (&quot;column_names&quot;) agus aonaid (&quot;column_units&quot;).</fileHelp_parquet>
 <fileHelp_parquet_with_meta>Íoslódáil mar chomhad parquet le meiteashonraí mionsonraithe.</fileHelp_parquet_with_meta>
-<fileHelp_subset>Féach ar fhoirm HTML a úsáideann cuardach ilghnéitheach chun roghnú fo-thacair na sonraí a shimpliú.</fileHelp_subset>
 <fileHelp_timeGaps>Féach ar liosta UTF-8 de bhearnaí sna luachanna ama atá níos mó ná an bhearna airmheánach.</fileHelp_timeGaps>
 <fileHelp_tsv>Íoslódáil tábla téacs deighilte ISO-8859-1 (líne 1: ainmneacha; líne 2: aonaid; amanna ISO 8601).</fileHelp_tsv>
 <fileHelp_tsvp>Íoslódáil comhad ISO-8859-1 .tsv le líne 1: ainm (aonaid). Is teaghráin ISO 8601 iad na hamanna.</fileHelp_tsvp>
@@ -2987,7 +2949,6 @@ Mar shampla:
 
 <!--  Tá an fhoclaíocht Cur Síos agus Rabhadh doiléir chun tacar sonraí amháin nó go leor a cheadú.  -->
 <filesDescription>Ligeann córas &quot;comhaid&quot; ERDDAP duit córas comhaid fíorúil a bhrabhsáil agus comhaid foinse sonraí a íoslódáil.</filesDescription>
-<filesSort>Cliceáil ar cheannteideal (m.sh., Ainm, Athraíodh go deireanach, Méid) chun an t-ord sórtála a athrú.  Úsáideann &quot;Athraithe deiridh&quot; an crios ama Súlúis.</filesSort>
 <filesWarning><![CDATA[
 
 Féadfaidh meiteashonraí an tacair sonraí agus ainmneacha athraitheacha sna comhaid foinse seo a bheith difriúil ná in áiteanna eile in ERDDAP ! B&#39;fhéidir gurbh fhearr leat Foirm Rochtana Sonraí an tacair sonraí a úsáid ina ionad sin.
@@ -3429,12 +3390,6 @@ Beidh suim gach ceann de na hathróga eile ag an tsraith sin.
 Mar shampla, cruthóidh orderByMax(&quot;stationID, time/1day&quot;) grúpa do gach stationID do gach lá, agus ríomhfaidh agus seolfaidh sé suim na n-athróg eile.
 
 ]]></functionOrderByTooltip>
-<functionOrderByExtra><![CDATA[
-
-Le haghaidh orderByClosest, sonraigh an t-eatramh (ag baint úsáide as an bhformáid n[timeUnits], m.sh., 1 uair) anseo.
-<br>Le haghaidh orderByLimit, sonraigh uaslíon na sraitheanna in aghaidh an ghrúpa anseo.
-
-]]></functionOrderByExtra>
 <functionOrderBySort><![CDATA[
 
 Is é an sliotán seo an sliotán {0} orderBy tábhachtachBy ....
@@ -3446,7 +3401,6 @@ Is é an sliotán seo an sliotán {0} orderBy tábhachtachBy ....
 <functionOrderBySort3>an tríú cuid is mó</functionOrderBySort3>
 <functionOrderBySort4>ceathrú is mó</functionOrderBySort4>
 <functionOrderBySortLeast>laghad</functionOrderBySortLeast>
-<functionOrderBySortRowMax>Ní choimeádfar ach an tsraith leis an uasluach.</functionOrderBySortRowMax>
 <generatedAt>Gineadh an leathanach gréasáin seo ag {0} .</generatedAt>
 <geoServicesDescription><![CDATA[
 
@@ -3748,7 +3702,6 @@ Is é an réamhshocraithe rud ar bith (gan úsáid).
 <!--  m.sh., {0}=WMS nó liostaAll  -->
 <listOfDatasets>Liosta de {0} Thacar Sonraí</listOfDatasets>
 <listAll>Gach</listAll>
-<LogIn>Logáil isteach</LogIn>
 <login>Logáil isteach</login>
 <loginHTML><![CDATA[
 
@@ -3807,22 +3760,15 @@ Is féidir le duine ar bith a bhfuil cuntas ríomhphoist Google nó iD ORCID acu
 Ní féidir ach le daoine a bhfuil socruithe déanta acu le riarthóir an ERDDAP seo logáil isteach.
 
 ]]></loginDescribeOpenID>
-<loginErddap>Logáil isteach ERDDAP</loginErddap>
 <loginCanNot>Níl an ERDDAP seo cumraithe chun ligean d&#39;úsáideoirí logáil isteach.</loginCanNot>
 <loginAreNot>Níl tú logáilte isteach.</loginAreNot>
 <loginToLogIn>Chun logáil isteach</loginToLogIn>
-<loginEmailAddress>seoladh ríomhphoist</loginEmailAddress>
 <loginYourEmailAddress>Do sheoladh ríomhphoist</loginYourEmailAddress>
 <loginUserName>Ainm Úsáideora</loginUserName>
 <loginPassword>Pasfhocal</loginPassword>
 <loginUserNameAndPassword>Ainm Úsáideora agus Pasfhocal</loginUserNameAndPassword>
 <loginGoogleSignIn>Fíordheimhnigh le do Chuntas Google.</loginGoogleSignIn>
 <loginOrcidSignIn>Fíordheimhnigh le d’aitheantas ORCID.</loginOrcidSignIn>
-<loginOpenID>Logáil isteach le do URL OpenID</loginOpenID>
-<loginOpenIDOr>Nó logáil isteach ar do chuntas reatha (neamhOpenID) ag</loginOpenIDOr>
-<loginOpenIDCreate>Nó cruthaigh URL OpenID ag</loginOpenIDCreate>
-<loginOpenIDFree>Tá siad ar fad saor in aisce!</loginOpenIDFree>
-<loginOpenIDSame>Cinntigh gur logáil tú isteach leis an URL OpenID céanna a thug tú don riarthóir ERDDAP.</loginOpenIDSame>
 <loginAs>Tá tú logáilte isteach mar {0} .</loginAs>
 <loginPartwayAs>Tá tú logáilte isteach leathshlí mar {0} .</loginPartwayAs>
 <loginFailed>EARRÁID: Theip ar logáil isteach</loginFailed>
@@ -3937,7 +3883,6 @@ Is féidir nach bhfuil roinnt tacar sonraí ar fáil faoi láthair nó nach bhfu
 ]]></loginPublicAccess>
 <LogOut>Logáil Amach</LogOut>
 <logout>Logáil Amach</logout>
-<logoutOpenID>Logáil amach ó do sholáthraí OpenID.</logoutOpenID>
 
 <!--  logoutSuccess nuashonraithe an 2019-12-19  -->
 <logoutSuccess>D&#39;éirigh leat logáil amach. 
@@ -4282,11 +4227,9 @@ Níos fearr comhad folamh a thabhairt ar ais? Ach ní cheadaíonn .nc agus daoin
 <noXxxNoLonIn180>níl aon luachanna domhanfhad laistigh de -180 go 360</noXxxNoLonIn180>
 <noXxxNoNonString>níl aon athróg neamh-Teaghrán</noXxxNoNonString>
 <noXxxNo2NonString>níl ar a laghad dhá athróg nach Teaghrán iad</noXxxNo2NonString>
-<noXxxNoStation>cdmDataType=Ní &quot;TimeSeries&quot; é {0}</noXxxNoStation>
 <noXxxNoStationID>níl aon athróg cosúil le stationID</noXxxNoStationID>
 <noXxxNoSubsetVariables>níor sonraíodh subsetVariables</noXxxNoSubsetVariables>
 <noXxxNoOLLSubsetVariables>Níl na hathróga tairisceana, domhanleithead agus domhanleithead ag subsetVariables</noXxxNoOLLSubsetVariables>
-<noXxxNoMinMax>ní sholáthraíonn an freastalaí foinse sonraí luachanna íosta agus uasta</noXxxNoMinMax>
 <noXxxItsGridded>is tacar sonraí greille é</noXxxItsGridded>
 <noXxxItsTabular>is tacar sonraí táblach é</noXxxItsTabular>
 <oneRequestAtATime>Déan iarratas amháin ag an am le do thoil.</oneRequestAtATime>
@@ -4313,7 +4256,6 @@ Is féidir le forbróirí ríomhchláir agus leathanaigh ghréasáin Java Script
 <options>Roghanna</options>
 <orAListOfValues>nó Liosta Luachanna</orAListOfValues>
 <orRefineSearchWith>Nó, déan an cuardach seo a fheabhsú le</orRefineSearchWith>
-<orSearchWith>Nó, cuardaigh tacair shonraí le</orSearchWith>
 <orComma>Nó,</orComma>
 <otherFeatures>Gnéithe Eile</otherFeatures>
 <outOfDateDatasets>Tacair Sonraí As Dáta</outOfDateDatasets>
@@ -4372,7 +4314,6 @@ Tá
     title="Ní formhuiniú é an nasc seo chuig suíomh Gréasáin seachtrach."></a> .
 
 ]]></percentEncode>
-<pickADataset>Roghnaigh Tacar Sonraí</pickADataset>
 
 <!--  Teachtaireachtaí a bhaineann le cuardaigh tacar sonraí prótacal-bhunaithe.  -->
 <protocolSearchHtml>Cuardaigh Thacair Sonraí de réir Prótacail</protocolSearchHtml>
@@ -4389,7 +4330,6 @@ Tá prótacail éagsúla oiriúnach do chineálacha éagsúla sonraí agus d’f
 <queryError1Var>Ní féidir leis an bhformáid {0} ach athróg sonraí amháin a láimhseáil.</queryError1Var>
 <queryError2Var>Caithfidh dhá athróg uimhriúil ar a laghad a bheith san áireamh in iarratais ar fhormáid {0} (do na haiseanna X agus Y).</queryError2Var>
 <queryErrorActualRange>Tá {0} lasmuigh de raon_iarbhír na hathróige: {1} go {2}</queryErrorActualRange>
-<queryErrorAscending>I gcás {0} iarratas, caithfidh na luachanna domhanleithead agus luachanna domhanleithead a bheith ardaitheach.</queryErrorAscending>
 <queryErrorAdjusted>Le haghaidh {0} iarratas, caithfidh na luachanna coigeartaithe domhanfhad ({1} go {2}) a bheith idir -180 agus 180.</queryErrorAdjusted>
 <queryErrorConstraintNaN>Déantar luach srianta = &quot;{0}&quot; a mheas go NaN.  Más mian leat NaN i ndáiríre, scríobh mar NaN é.</queryErrorConstraintNaN>
 <queryErrorEqualSpacing>I gcás {0} iarratas, caithfidh an spásáil dhomhanda ({1}) a bheith comhionann leis an spásáil domhanleithead ({2}).</queryErrorEqualSpacing>
@@ -4421,7 +4361,6 @@ Tá prótacail éagsúla oiriúnach do chineálacha éagsúla sonraí agus d’f
 <queryErrorGridNoAxisVar>Ní féidir athróg aise ({0}) a áireamh le ceist athróg sonraí griddap.</queryErrorGridNoAxisVar>
 <queryErrorGridNoDataVar>Ní féidir athróg sonraí ({0}) a chur san áireamh i gceist le hathróg aise griddap.</queryErrorGridNoDataVar>
 <queryErrorGridNotIdentical>Níl an srian {0} don athróg={1} comhionann leis an srian {2} don athróg={2}.  Má theastaíonn fo-thacair éagsúla uait, déan iarratais ar leith.</queryErrorGridNotIdentical>
-<queryErrorGridSLessS>StartIndex=Tá {0} níos mó ná StopIndex={1}.</queryErrorGridSLessS>
 <queryErrorLastEndP>Tosaíonn {0} le &quot;(&quot;, ach ní chríochnaíonn sé le &quot;)&quot;.</queryErrorLastEndP>
 <queryErrorLastExpected>Bhíothas ag súil le &quot;deireanach&quot; ag tús {0}.</queryErrorLastExpected>
 <queryErrorLastUnexpected>Carachtar gan choinne i ndiaidh &quot;deireanach&quot; in {0}.</queryErrorLastUnexpected>
@@ -4664,7 +4603,6 @@ Féach
 <SOSDocumentation>Doiciméadú SOS ERDDAP</SOSDocumentation>
 <WCSDocumentation>Doiciméadú WCS ERDDAP</WCSDocumentation>
 <WMSDocumentation>Doiciméadú WMS ERDDAP</WMSDocumentation>
-<findOutChange>ionas gur féidir le do ríomhchlár a fháil amach an bhfuil athrú ar thacar sonraí.</findOutChange>
 <requestFormatExamplesHtml><![CDATA[
 
 (mar shampla,
@@ -5117,14 +5055,6 @@ Ina áit sin, iarr ríomhphost le
 
 ]]></subscriptionRemoveSuccess>
 <subscriptionRSS>Liostáil leis an bhfotha RSS don tacar sonraí seo...</subscriptionRSS>
-<subscriptionsNotAvailable><![CDATA[
-
-<p><strong>Tá brón orm.
-Níl an córas síntiúis ríomhphoist/URL ar fáil ag an suiteáil ERDDAP seo.</strong>
-<br>Smaoinigh ar an tseirbhís síntiúis
-<a rel="help" href="{0}/information.html#subscriptions">RSS</a> a úsáid ina ionad sin.
-
-]]></subscriptionsNotAvailable>
 <subscriptionUrlHtml><![CDATA[
 
 Is URL roghnach é <kbd>URL/action</kbd> a rachaidh ERDDAP i dteagmháil léi seachas ríomhphost a sheoladh chugat.
@@ -5388,13 +5318,6 @@ Chun {0} a fheiceáil,
 <!--  Cuirtear 1 den 2 chlib roimhe seo roimh an gclib seo a leanas. 
   Is subsetViewSelectDistintCombos nó subsetViewSelectRelatedCounts é {0}.  -->
 <subsetWhenCounts>Is iad {0} do na luachanna {1} de &quot;{2}&quot; ná:</subsetWhenCounts>
-<subsetComboClickSelect><![CDATA[
-
-Chun féachaint ar chomhaireamh na dteaglaim ar leith de na hathróga atá liostaithe thuas,
-<br>seiceáil <kbd>{0} :
-{1}</kbd> thuas agus roghnaigh luach do cheann de na hathróga thuas.
-
-]]></subsetComboClickSelect>
 <subsetNVariableCombos>San iomlán, tá {0} sraitheanna de chomhcheangail ar leith de na hathróga atá liostaithe thuas.</subsetNVariableCombos>
 <subsetShowingAllRows>Taispeántar na sraitheanna go léir thuas.</subsetShowingAllRows>
 <subsetShowingNRows>Taispeántar na chéad {0} sraitheanna thuas.  Níl na {1} rónna eile á dtaispeáint.</subsetShowingNRows>
@@ -6161,7 +6084,6 @@ Nuair atá tú i do bhall, is féidir leat do cheist a phostáil ansin nó cuard
 Is tuairimí pearsanta Bob Simons iad na tuairimí ar an leathanach gréasáin seo agus ní gá go léiríonn siad seasamh ar bith de chuid an Rialtais nó an National Oceanic and Atmospheric Administration .
 
 ]]></theLongDescriptionHtml>
-<Then>Ansin</Then>
 <twoClickMapDefaultTooltip>Sonraigh dronuilleog trí chliceáil ar dhá choirnéal trasnánach.  Déan arís é más gá.</twoClickMapDefaultTooltip>
 
 <!--  Is bealach é seo chun tiontaire UDUnits Caighdeánú ERDDAP a shárú
@@ -7445,7 +7367,6 @@ Ní féidir é seo a bheith rud ar bith. Mar sin mura bhfuil rud ar bith uait, c
 a bheith riamh ina ainm tréithe.  -->
 <updateUrlsSkipAttributes>foinseUrl</updateUrlsSkipAttributes>
 <variableNames>Ainmneacha Athraitheacha</variableNames>
-<viewAllDatasetsHtml>Féach ar Liosta Gach Tacar Sonraí</viewAllDatasetsHtml>
 <waitThenTryAgain>Bhí fadhb (sealadach?) ann.  Fan nóiméad, ansin bain triail eile as.  (I mbrabhsálaí, cliceáil ar an gcnaipe Athlódáil.)</waitThenTryAgain>
 <warning>RABHADH!</warning>
 <units>Aonaid</units>
