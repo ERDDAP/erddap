@@ -1,6 +1,5 @@
 package gov.noaa.pfel.coastwatch.griddata;
 
-import com.cohort.util.Math2;
 import com.cohort.util.String2;
 import com.cohort.util.Test;
 
@@ -23,28 +22,6 @@ class DataHelperTests {
     Test.ensureEqual(DataHelper.copy(dar, 0, 5, 1), dar, "copy a");
     Test.ensureEqual(DataHelper.copy(dar, 0, 5, 2), new double[] {0, 0.2, 0.4}, "copy b");
     Test.ensureEqual(DataHelper.copy(dar, 1, 4, 2), new double[] {0.1, 0.3}, "copy c");
-
-    // binaryFindClosestIndex(double dar[], double end) {
-    Test.ensureEqual(
-        DataHelper.binaryFindClosestIndex(dar, -.06), -1, "binaryFindClosestIndex a1"); // important
-    Test.ensureEqual(DataHelper.binaryFindClosestIndex(dar, -.05), 0, "binaryFindClosestIndex a2");
-    Test.ensureEqual(
-        DataHelper.binaryFindClosestIndex(dar, -.00000001), 0, "binaryFindClosestIndex a");
-    Test.ensureEqual(DataHelper.binaryFindClosestIndex(dar, 0), 0, "binaryFindClosestIndex b");
-    Test.ensureEqual(
-        DataHelper.binaryFindClosestIndex(dar, .00000001), 0, "binaryFindClosestIndex c");
-    Test.ensureEqual(DataHelper.binaryFindClosestIndex(dar, 0.01), 0, "binaryFindClosestIndex d");
-    Test.ensureEqual(DataHelper.binaryFindClosestIndex(dar, 0.09), 1, "binaryFindClosestIndex e");
-    Test.ensureEqual(
-        DataHelper.binaryFindClosestIndex(dar, 0.4999999), 5, "binaryFindClosestIndex f");
-    Test.ensureEqual(DataHelper.binaryFindClosestIndex(dar, 0.5), 5, "binaryFindClosestIndex g");
-    Test.ensureEqual(
-        DataHelper.binaryFindClosestIndex(dar, 0.50000001), 5, "binaryFindClosestIndex h");
-    Test.ensureEqual(DataHelper.binaryFindClosestIndex(dar, 0.55), 5, "binaryFindClosestIndex j");
-    Test.ensureEqual(
-        DataHelper.binaryFindClosestIndex(dar, 0.56), -1, "binaryFindClosestIndex j2"); // important
-    Test.ensureEqual(
-        DataHelper.binaryFindClosestIndex(dar, Double.NaN), -1, "binaryFindClosestIndex m");
 
     // binaryFindStartIndex(double dar[], double end) {
     Test.ensureEqual(
@@ -118,30 +95,6 @@ class DataHelperTests {
         new double[] {2, 2.1, 2.2, 2.3, 2.4},
         "getRegularArray");
 
-    // addExponentToUnits
-    Test.ensureEqual(
-        DataHelper.makeUdUnitsReadable("-1 degree_C m-2 s-33 m2 s33 chl-a -"),
-        "-1 degree C m^-2 s^-33 m^2 s^33 chl-a -",
-        ""); // not initial -
-    Test.ensureEqual(
-        DataHelper.makeUdUnitsReadable("1 degree_C m-2 s-33 m2 s33 chl-a 2"),
-        "1 degree C m^-2 s^-33 m^2 s^33 chl-a 2",
-        ""); // not initial digit
-
-    // centerOfStartDateAndInclusiveEndDate
-    Test.ensureEqual(
-        DataHelper.centerOfStartDateAndInclusiveEndDate("2004-08-22", "2004-08-22"),
-        "2004-08-22 12:00:00",
-        "a"); // 1 day
-    Test.ensureEqual(
-        DataHelper.centerOfStartDateAndInclusiveEndDate("2004-08-22", "2004-08-24"),
-        "2004-08-23 12:00:00",
-        "b"); // 3 day
-    Test.ensureEqual(
-        DataHelper.centerOfStartDateAndInclusiveEndDate("2004-08-22", "2004-08-25"),
-        "2004-08-24 00:00:00",
-        "c"); // 4 day
-
     // adjustNPointsNeeded n, oldRange, newRange
     Test.ensureEqual(DataHelper.adjustNPointsNeeded(100, 30, 10), 34, "");
     Test.ensureEqual(DataHelper.adjustNPointsNeeded(100, 30, 10.00001), 34, "");
@@ -150,6 +103,5 @@ class DataHelperTests {
 
     // done
     String2.log("\n***** DataHelper.test finished successfully");
-    Math2.incgc("DataHelper (between tests)", 2000); // in a test
   }
 }

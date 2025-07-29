@@ -12928,11 +12928,6 @@ public abstract class EDD {
     return resultsSB.toString();
   }
 
-  /** This calls testDasDds(tDatasetID, true). */
-  public static String testDasDds(String tDatasetID) throws Throwable {
-    return testDasDds(true, tDatasetID, true);
-  }
-
   /** Return a dataset's .das and .dds (usually for test purposes when setting up a dataset). */
   public static String testDasDds(boolean clearCache, String tDatasetID, boolean tReallyVerbose)
       throws Throwable {

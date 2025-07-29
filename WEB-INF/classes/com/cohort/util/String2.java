@@ -9,9 +9,7 @@ import com.cohort.array.StringComparatorIgnoreCase;
 import com.google.common.collect.ImmutableList;
 import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
-import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.StringSelection;
-import java.awt.datatransfer.Transferable;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -5208,17 +5206,6 @@ public class String2 {
   }
 
   /**
-   * This converts all of the Strings to ISO_8859_1 encoding.
-   *
-   * @return sar for convenience
-   */
-  public static String[] toIso88591Strings(String sar[]) {
-    int n = sar.length;
-    for (int i = 0; i < n; i++) sar[i] = toIso88591String(sar[i]);
-    return sar;
-  }
-
-  /**
    * This returns the UTF-8 encoding of the string (or null if trouble). The inverse of this is
    * utf8BytesToString. This won't throw an exception and returns ERROR (as bytes) if trouble.
    *
@@ -5467,11 +5454,6 @@ public class String2 {
     return s == null
         ? null
         : s.substring(20, 24) + "_" + s.substring(24, 28) + "_" + s.substring(28, 32);
-  }
-
-  /** This is like md5Hex12, but with _ and 4 random hex digits appended to the end. */
-  public static String md5Hex12PlusRandom(String password) {
-    return md5Hex(password) + "_" + String2.zeroPad(Integer.toHexString(Math2.random(0x10000)), 4);
   }
 
   /**
@@ -5775,22 +5757,6 @@ public class String2 {
     if (sb.length() == 0) sb.append("a_");
 
     return sb.toString();
-  }
-
-  /**
-   * Get gets the String from the system clipboard (or null if none). This works in a standalone
-   * Java program, not an applet. From Java Developers Almanac. This won't throw an exception.
-   */
-  public static String getClipboardString() {
-    try {
-      Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
-      Transferable t = clipboard.getContents(null);
-      if (t != null && t.isDataFlavorSupported(DataFlavor.stringFlavor))
-        return (String) t.getTransferData(DataFlavor.stringFlavor);
-    } catch (Throwable th) {
-      log(ERROR + " while getting the string from the clipboard:\n" + MustBe.throwableToString(th));
-    }
-    return null;
   }
 
   /**
@@ -6310,11 +6276,5 @@ public class String2 {
         set.remove(val);
       }
     }
-  }
-
-  public static String[] immutableListToArray(ImmutableList<String> list) {
-    String[] array = new String[list.size()];
-    array = list.toArray(array);
-    return array;
   }
 } // End of String2 class.

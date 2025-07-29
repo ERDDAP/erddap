@@ -905,7 +905,6 @@ public class TestAll {
     ResourceBundle2 rb2;
     RowComparator rc;
     RowComparatorIgnoreCase rcic;
-    SaveOpendap so;
     SgtGraph sgtGraph;
     SgtMap sgtMap;
     SgtUtil sgtUtil;
