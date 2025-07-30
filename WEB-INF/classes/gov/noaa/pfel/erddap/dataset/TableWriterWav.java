@@ -13,6 +13,7 @@ import com.cohort.util.SimpleException;
 import com.cohort.util.String2;
 import com.cohort.util.Test;
 import gov.noaa.pfel.coastwatch.pointdata.Table;
+import gov.noaa.pfel.erddap.util.EDMessages.Message;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import java.io.BufferedOutputStream;
 import java.io.DataOutputStream;
@@ -94,7 +95,7 @@ public class TableWriterWav extends TableWriter {
       boolean java8 = System.getProperty("java.version").startsWith("1.8.");
       if (java8 && (tClass.equals("float") || tClass.equals("double")))
         throw new SimpleException(
-            EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
+            EDStatic.simpleBilingual(language, Message.QUERY_ERROR)
                 + "Until Java 9, float and double values can't be written to .wav files.");
       for (int col = 0; col < nColumns; col++) {
         Test.ensureEqual(

@@ -4,6 +4,7 @@ import com.cohort.util.File2;
 import com.cohort.util.SimpleException;
 import com.cohort.util.String2;
 import gov.noaa.pfel.erddap.dataset.EDD;
+import gov.noaa.pfel.erddap.util.EDMessages.Message;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import java.io.OutputStream;
 
@@ -26,7 +27,7 @@ public class Iso19115Files extends FileTypeInterface {
       // downloads of e.g., erddap2.css don't work right if not closed. (just if gzip'd?)
     } else {
       throw new SimpleException(
-          EDStatic.simpleBilingual(requestInfo.language(), EDStatic.messages.queryErrorAr)
+          EDStatic.simpleBilingual(requestInfo.language(), Message.QUERY_ERROR)
               + edd.accessibleViaISO19115());
     }
   }
@@ -38,6 +39,6 @@ public class Iso19115Files extends FileTypeInterface {
 
   @Override
   public String getHelpText(int language) {
-    return EDStatic.messages.fileHelp_iso19115Ar[language];
+    return EDStatic.messages.get(Message.FILE_HELP_ISO19115, language);
   }
 }

@@ -2,6 +2,7 @@ package gov.noaa.pfel.erddap.filetypes;
 
 import gov.noaa.pfel.erddap.dataset.TableWriter;
 import gov.noaa.pfel.erddap.dataset.TableWriterDataTable;
+import gov.noaa.pfel.erddap.util.EDMessages.Message;
 import gov.noaa.pfel.erddap.util.EDStatic;
 
 @FileTypeClass(
@@ -31,6 +32,6 @@ public class DataTableFiles extends TableWriterFileType {
 
   @Override
   public String getHelpText(int language) {
-    return EDStatic.messages.fileHelp_dataTableAr[language];
+    return EDStatic.messages.get(Message.FILE_HELP_DATA_TABLE, language);
   }
 }

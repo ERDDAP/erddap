@@ -8,6 +8,7 @@ import com.cohort.util.Calendar2;
 import com.cohort.util.SimpleException;
 import com.cohort.util.String2;
 import gov.noaa.pfel.coastwatch.pointdata.Table;
+import gov.noaa.pfel.erddap.util.EDMessages.Message;
 import gov.noaa.pfel.erddap.util.EDStatic;
 
 /**
@@ -60,10 +61,7 @@ public class TableWriterOrderByClosest extends TableWriterAll {
     otherTableWriter = tOtherTableWriter;
     if (tOrderByCsv == null || tOrderByCsv.trim().length() == 0)
       throw new SimpleException(
-          EDStatic.bilingual(
-                  language,
-                  EDStatic.messages.queryErrorAr,
-                  EDStatic.messages.queryErrorOrderByClosestAr)
+          EDStatic.bilingual(language, Message.QUERY_ERROR, Message.QUERY_ERROR_ORDER_BY_CLOSEST)
               + (language == 0 ? " " : "\n")
               + "no CSV.");
     String csv[] = String2.split(tOrderByCsv, ',');
@@ -83,10 +81,7 @@ public class TableWriterOrderByClosest extends TableWriterAll {
 
     if (csv.length < 2)
       throw new SimpleException(
-          EDStatic.bilingual(
-                  language,
-                  EDStatic.messages.queryErrorAr,
-                  EDStatic.messages.queryErrorOrderByClosestAr)
+          EDStatic.bilingual(language, Message.QUERY_ERROR, Message.QUERY_ERROR_ORDER_BY_CLOSEST)
               + (language == 0 ? " " : "\n")
               + "CSV.length<2.");
 
@@ -98,10 +93,7 @@ public class TableWriterOrderByClosest extends TableWriterAll {
     numberTimeUnits = Calendar2.parseNumberTimeUnits(csv[csv.length - 1]); // throws Exception
     if (numberTimeUnits[0] <= 0)
       throw new SimpleException(
-          EDStatic.bilingual(
-                  language,
-                  EDStatic.messages.queryErrorAr,
-                  EDStatic.messages.queryErrorOrderByClosestAr)
+          EDStatic.bilingual(language, Message.QUERY_ERROR, Message.QUERY_ERROR_ORDER_BY_CLOSEST)
               + (language == 0 ? " " : "\n")
               + "number="
               + numberTimeUnits[0]

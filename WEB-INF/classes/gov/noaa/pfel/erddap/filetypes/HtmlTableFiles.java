@@ -7,6 +7,7 @@ import gov.noaa.pfel.erddap.dataset.GridDataAccessor;
 import gov.noaa.pfel.erddap.dataset.OutputStreamSource;
 import gov.noaa.pfel.erddap.dataset.TableWriter;
 import gov.noaa.pfel.erddap.dataset.TableWriterHtmlTable;
+import gov.noaa.pfel.erddap.util.EDMessages.Message;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import jakarta.servlet.http.HttpServletRequest;
 
@@ -61,7 +62,7 @@ public class HtmlTableFiles extends TableWriterFileType {
 
   @Override
   public String getHelpText(int language) {
-    return EDStatic.messages.fileHelp_htmlTableAr[language];
+    return EDStatic.messages.get(Message.FILE_HELP_HTML_TABLE, language);
   }
 
   /**

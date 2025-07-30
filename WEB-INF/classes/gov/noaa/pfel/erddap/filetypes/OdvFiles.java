@@ -18,6 +18,7 @@ import gov.noaa.pfel.erddap.dataset.OutputStreamSource;
 import gov.noaa.pfel.erddap.dataset.TableWriter;
 import gov.noaa.pfel.erddap.dataset.TableWriterAll;
 import gov.noaa.pfel.erddap.dataset.TableWriterAllWithMetadata;
+import gov.noaa.pfel.erddap.util.EDMessages.Message;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.EDV;
 import java.io.Writer;
@@ -53,9 +54,10 @@ public class OdvFiles extends TableWriterFileType {
       throw new SimpleException(
           EDStatic.bilingual(
               requestInfo.language(),
-              EDStatic.messages.queryErrorAr[0] + EDStatic.messages.errorOdvLLTTableAr[0],
-              EDStatic.messages.queryErrorAr[requestInfo.language()]
-                  + EDStatic.messages.errorOdvLLTTableAr[requestInfo.language()]));
+              EDStatic.messages.get(Message.QUERY_ERROR, 0)
+                  + EDStatic.messages.get(Message.ERROR_ODV_LLT_TABLE, 0),
+              EDStatic.messages.get(Message.QUERY_ERROR, requestInfo.language())
+                  + EDStatic.messages.get(Message.ERROR_ODV_LLT_TABLE, requestInfo.language())));
     return new TableWriterAllWithMetadata(
         requestInfo.language(),
         requestInfo.edd(),
@@ -90,12 +92,12 @@ public class OdvFiles extends TableWriterFileType {
 
   @Override
   public String getHelpText(int language) {
-    return EDStatic.messages.fileHelpTable_odvTxtAr[language];
+    return EDStatic.messages.get(Message.FILE_HELP_TABLE_ODV_TXT, language);
   }
 
   @Override
   public String getGridHelpText(int language) {
-    return EDStatic.messages.fileHelpGrid_odvTxtAr[language];
+    return EDStatic.messages.get(Message.FILE_HELP_GRID_ODV_TXT, language);
   }
 
   /**
@@ -136,14 +138,16 @@ public class OdvFiles extends TableWriterFileType {
     // the other params are all required by EDD, so it's a programming error if they are missing
     if (!String2.isSomething(tDatasetID))
       throw new SimpleException(
-          EDStatic.messages.errorInternalAr[0] + "saveAsODV error: datasetID wasn't specified.");
+          EDStatic.messages.get(Message.ERROR_INTERNAL, 0)
+              + "saveAsODV error: datasetID wasn't specified.");
     if (!String2.isSomething(tPublicSourceUrl))
       throw new SimpleException(
-          EDStatic.messages.errorInternalAr[0]
+          EDStatic.messages.get(Message.ERROR_INTERNAL, 0)
               + "saveAsODV error: publicSourceUrl wasn't specified.");
     if (!String2.isSomething(tInfoUrl))
       throw new SimpleException(
-          EDStatic.messages.errorInternalAr[0] + "saveAsODV error: infoUrl wasn't specified.");
+          EDStatic.messages.get(Message.ERROR_INTERNAL, 0)
+              + "saveAsODV error: infoUrl wasn't specified.");
 
     // make sure there isn't too much data before getting outputStream
     Table table = twawm.cumulativeTable(); // it checks memory usage
@@ -161,10 +165,12 @@ public class OdvFiles extends TableWriterFileType {
       throw new SimpleException(
           EDStatic.bilingual(
               language,
-              EDStatic.messages.queryErrorAr[0]
-                  + MessageFormat.format(EDStatic.messages.queryErrorLLTAr[0], ".odvTxt"),
-              EDStatic.messages.queryErrorAr[language]
-                  + MessageFormat.format(EDStatic.messages.queryErrorLLTAr[language], ".odvTxt")));
+              EDStatic.messages.get(Message.QUERY_ERROR, 0)
+                  + MessageFormat.format(
+                      EDStatic.messages.get(Message.QUERY_ERROR_LLT, 0), ".odvTxt"),
+              EDStatic.messages.get(Message.QUERY_ERROR, language)
+                  + MessageFormat.format(
+                      EDStatic.messages.get(Message.QUERY_ERROR_LLT, language), ".odvTxt")));
 
     // Move columns into preferred order, see table 3-1, 3-2, 3-3, 3-4
     // This would be very complicated if you worked forwards, because some vars are in a couple of
@@ -379,7 +385,7 @@ public class OdvFiles extends TableWriterFileType {
       else if (paType == PAType.STRING) odvType = "INDEXED_TEXT";
       else
         throw new SimpleException(
-            EDStatic.messages.errorInternalAr[0]
+            EDStatic.messages.get(Message.ERROR_INTERNAL, 0)
                 + "No odvDataType specified for type="
                 + pas[col].elementTypeString()
                 + ".");
@@ -467,15 +473,16 @@ public class OdvFiles extends TableWriterFileType {
     // do quick error checking
     if (grid.isAxisDapQuery(userDapQuery))
       throw new SimpleException(
-          EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
+          EDStatic.simpleBilingual(language, Message.QUERY_ERROR)
               + "You can't save just axis data in on ODV .txt file. Please select a subset of a data variable.");
     if (grid.lonIndex() < 0 || grid.latIndex() < 0 || grid.timeIndex() < 0)
       throw new SimpleException(
           EDStatic.bilingual(
               language,
-              EDStatic.messages.queryErrorAr[0] + EDStatic.messages.errorOdvLLTGridAr[0],
-              EDStatic.messages.queryErrorAr[language]
-                  + EDStatic.messages.errorOdvLLTGridAr[language]));
+              EDStatic.messages.get(Message.QUERY_ERROR, 0)
+                  + EDStatic.messages.get(Message.ERROR_ODV_LLT_GRID, 0),
+              EDStatic.messages.get(Message.QUERY_ERROR, language)
+                  + EDStatic.messages.get(Message.ERROR_ODV_LLT_GRID, language)));
     // lon can be +-180 or 0-360. See EDDTable.saveAsODV
 
     // get dataAccessor first, in case of error when parsing query

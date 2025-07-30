@@ -13,6 +13,7 @@ import gov.noaa.pfel.erddap.dataset.EDDTable;
 import gov.noaa.pfel.erddap.dataset.GridDataAccessor;
 import gov.noaa.pfel.erddap.dataset.TableWriter;
 import gov.noaa.pfel.erddap.dataset.TableWriterWav;
+import gov.noaa.pfel.erddap.util.EDMessages.Message;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.EDV;
 import java.io.BufferedOutputStream;
@@ -54,9 +55,10 @@ public class WavFiles extends CacheLockFiles {
       throw new SimpleException(
           EDStatic.bilingual(
               requestInfo.language(),
-              EDStatic.messages.queryErrorAr[0] + EDStatic.messages.errorInternalAr[0],
-              EDStatic.messages.queryErrorAr[requestInfo.language()]
-                  + EDStatic.messages.errorInternalAr[requestInfo.language()]));
+              EDStatic.messages.get(Message.QUERY_ERROR, 0)
+                  + EDStatic.messages.get(Message.ERROR_INTERNAL, 0),
+              EDStatic.messages.get(Message.QUERY_ERROR, requestInfo.language())
+                  + EDStatic.messages.get(Message.ERROR_INTERNAL, requestInfo.language())));
     }
     TableWriter tableWriter =
         new TableWriterWav(
@@ -122,7 +124,7 @@ public class WavFiles extends CacheLockFiles {
 
   @Override
   public String getHelpText(int language) {
-    return EDStatic.messages.fileHelp_wavAr[language];
+    return EDStatic.messages.get(Message.FILE_HELP_WAV, language);
   }
 
   /**
@@ -149,8 +151,7 @@ public class WavFiles extends CacheLockFiles {
     int randomInt = Math2.random(Integer.MAX_VALUE);
     String fullDosName = fullOutName + ".dos" + randomInt;
     String errorWhile =
-        EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
-            + " while writing .wav file: ";
+        EDStatic.simpleBilingual(language, Message.QUERY_ERROR) + " while writing .wav file: ";
 
     // .kml not available for axis request
     if (grid.isAxisDapQuery(userDapQuery))

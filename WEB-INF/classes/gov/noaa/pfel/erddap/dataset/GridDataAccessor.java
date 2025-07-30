@@ -20,6 +20,7 @@ import com.cohort.util.Math2;
 import com.cohort.util.MustBe;
 import com.cohort.util.String2;
 import gov.noaa.pfel.coastwatch.pointdata.Table;
+import gov.noaa.pfel.erddap.util.EDMessages.Message;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.EDV;
 import gov.noaa.pfel.erddap.variable.EDVGridAxis;
@@ -631,7 +632,7 @@ public class GridDataAccessor implements AutoCloseable {
       throw t instanceof WaitThenTryAgainException
           ? t
           : new WaitThenTryAgainException(
-              EDStatic.simpleBilingual(language, EDStatic.messages.waitThenTryAgainAr)
+              EDStatic.simpleBilingual(language, Message.WAIT_THEN_TRY_AGAIN)
                   + "\n("
                   + EDStatic.messages.errorFromDataSource
                   + tToString
@@ -710,7 +711,7 @@ public class GridDataAccessor implements AutoCloseable {
               || !Math2.almostEqual(
                   9, pa.getDouble(0), avInDriverExpectedValues[av])) { // source values
             throw new WaitThenTryAgainException(
-                EDStatic.simpleBilingual(language, EDStatic.messages.waitThenTryAgainAr)
+                EDStatic.simpleBilingual(language, Message.WAIT_THEN_TRY_AGAIN)
                     + "\n(Details: GridDataAccessor.increment: partialResults["
                     + av
                     + "]=\""
@@ -725,7 +726,7 @@ public class GridDataAccessor implements AutoCloseable {
           String tError = gda.axisValues[av].almostEqual(pa); // destination values
           if (tError.length() > 0)
             throw new WaitThenTryAgainException(
-                EDStatic.simpleBilingual(language, EDStatic.messages.waitThenTryAgainAr)
+                EDStatic.simpleBilingual(language, Message.WAIT_THEN_TRY_AGAIN)
                     + "\n(Details: GridDataAccessor.increment: partialResults["
                     + av
                     + "] was not as expected.\n"

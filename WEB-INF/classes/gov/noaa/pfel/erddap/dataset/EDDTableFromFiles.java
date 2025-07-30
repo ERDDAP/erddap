@@ -37,6 +37,7 @@ import gov.noaa.pfel.erddap.dataset.metadata.LocalizedAttributes;
 import gov.noaa.pfel.erddap.handlers.EDDTableFromFilesHandler;
 import gov.noaa.pfel.erddap.handlers.SaxHandlerClass;
 import gov.noaa.pfel.erddap.util.EDMessages;
+import gov.noaa.pfel.erddap.util.EDMessages.Message;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.util.ThreadedWorkManager;
 import gov.noaa.pfel.erddap.variable.*;
@@ -1718,7 +1719,8 @@ public abstract class EDDTableFromFiles extends EDDTable implements WatchUpdateH
         updateEveryNMillis = 0; // disable the inotify system for this instance
         String subject = String2.ERROR + " in " + datasetID + " constructor (inotify)";
         msg = MustBe.throwableToString(t);
-        if (msg.indexOf("inotify instances") >= 0) msg += EDStatic.messages.inotifyFixAr[0];
+        if (msg.indexOf("inotify instances") >= 0)
+          msg += EDStatic.messages.get(Message.INOTIFY_FIX, 0);
         EDStatic.email(EDStatic.config.adminEmail, subject, msg);
         msg = "";
       }
@@ -1911,7 +1913,7 @@ public abstract class EDDTableFromFiles extends EDDTable implements WatchUpdateH
       while (tFileListPo < tFileNamePA.size()) {
         if (Thread.currentThread().isInterrupted())
           throw new SimpleException(
-              "EDDTableFromFiles.init" + EDStatic.messages.caughtInterruptedAr[0]);
+              "EDDTableFromFiles.init" + EDStatic.messages.get(Message.CAUGHT_INTERRUPTED, 0));
 
         int tDirI = tFileDirIndexPA.get(tFileListPo);
         String tFileS = tFileNamePA.get(tFileListPo);
@@ -3248,7 +3250,7 @@ public abstract class EDDTableFromFiles extends EDDTable implements WatchUpdateH
     for (int evi = 0; evi < nEvents; evi++) {
       if (Thread.currentThread().isInterrupted())
         throw new SimpleException(
-            "EDDTableFromFiles.lowUpdate" + EDStatic.messages.caughtInterruptedAr[0]);
+            "EDDTableFromFiles.lowUpdate" + EDStatic.messages.get(Message.CAUGHT_INTERRUPTED, 0));
 
       String fullName = contexts.get(evi);
       String dirName = File2.getDirectory(fullName);
@@ -4998,7 +5000,7 @@ public abstract class EDDTableFromFiles extends EDDTable implements WatchUpdateH
         throw t;
         // throw t instanceof WaitThenTryAgainException? t :
         // new WaitThenTryAgainException(
-        // EDStatic.simpleBilingual(language, EDStatic.messages.waitThenTryAgainAr) +
+        // EDStatic.simpleBilingual(language, Message.WAIT_THEN_TRY_AGAIN) +
         // "\n(" + EDStatic.messages.errorFromDataSource + tToString + ")", t);
       }
 

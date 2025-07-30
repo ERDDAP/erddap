@@ -7,6 +7,7 @@ package gov.noaa.pfel.erddap.dataset;
 import com.cohort.util.SimpleException;
 import com.cohort.util.String2;
 import gov.noaa.pfel.coastwatch.pointdata.Table;
+import gov.noaa.pfel.erddap.util.EDMessages.Message;
 import gov.noaa.pfel.erddap.util.EDStatic;
 
 /**
@@ -58,19 +59,13 @@ public class TableWriterOrderByLimit extends TableWriterAll {
     otherTableWriter = tOtherTableWriter;
     if (tOrderByCsv == null || tOrderByCsv.trim().length() == 0)
       throw new SimpleException(
-          EDStatic.bilingual(
-                  language,
-                  EDStatic.messages.queryErrorAr,
-                  EDStatic.messages.queryErrorOrderByLimitAr)
+          EDStatic.bilingual(language, Message.QUERY_ERROR, Message.QUERY_ERROR_ORDER_BY_LIMIT)
               + (language == 0 ? " " : "\n")
               + "No CSV.");
     String csv[] = String2.split(tOrderByCsv, ',');
     if (csv.length == 0)
       throw new SimpleException(
-          EDStatic.bilingual(
-                  language,
-                  EDStatic.messages.queryErrorAr,
-                  EDStatic.messages.queryErrorOrderByLimitAr)
+          EDStatic.bilingual(language, Message.QUERY_ERROR, Message.QUERY_ERROR_ORDER_BY_LIMIT)
               + (language == 0 ? " " : "\n")
               + "CSV.length=0.");
 
@@ -82,10 +77,7 @@ public class TableWriterOrderByLimit extends TableWriterAll {
     limitN = String2.parseInt(csv[csv.length - 1]);
     if (limitN <= 0 || limitN == Integer.MAX_VALUE)
       throw new SimpleException(
-          EDStatic.bilingual(
-                  language,
-                  EDStatic.messages.queryErrorAr,
-                  EDStatic.messages.queryErrorOrderByLimitAr)
+          EDStatic.bilingual(language, Message.QUERY_ERROR, Message.QUERY_ERROR_ORDER_BY_LIMIT)
               + (language == 0 ? " " : "\n")
               + "limit="
               + csv[csv.length - 1]

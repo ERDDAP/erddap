@@ -8,6 +8,7 @@ import com.cohort.array.Attributes;
 import com.cohort.util.SimpleException;
 import com.cohort.util.Units2;
 import gov.noaa.pfel.coastwatch.pointdata.Table;
+import gov.noaa.pfel.erddap.util.EDMessages.Message;
 import gov.noaa.pfel.erddap.util.EDStatic;
 
 /**
@@ -68,7 +69,7 @@ public class TableWriterUnits extends TableWriter {
 
     if (toUnits == null || !(toUnits.equals("UDUNITS") || toUnits.equals("UCUM")))
       throw new SimpleException(
-          EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
+          EDStatic.simpleBilingual(language, Message.QUERY_ERROR)
               + "toUnits="
               + fromUnits
               + " must be UDUNITS or UCUM.");
