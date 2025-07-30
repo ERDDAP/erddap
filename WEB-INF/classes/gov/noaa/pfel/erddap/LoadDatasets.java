@@ -213,7 +213,8 @@ public class LoadDatasets extends Thread {
             ReaderInputStream.builder()
                 .setReader(
                     new StringSubstitutorReader(
-                        new InputStreamReader(inputStream), new StringSubstitutor()))
+                        new InputStreamReader(getInputStream(inputStream)),
+                        new StringSubstitutor()))
                 .get();
       } else {
         inputStream = getInputStream(inputStream);
