@@ -18447,57 +18447,70 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
             queryString,
             EDStatic.messages.subscriptionsTitleAr[language],
             out);
-    try {
-      writer.write(
-          "<div class=\"standard_width\">\n"
-              + EDStatic.youAreHere(
-                  request, language, loggedInAs, EDStatic.messages.subscriptionsTitleAr[language])
-              + EDStatic.messages.subscription0HtmlAr[language]
-              + MessageFormat.format(EDStatic.messages.subscription1HtmlAr[language], tErddapUrl)
-              + "\n");
-      writer.write(
-          "<p><strong>"
-              + EDStatic.messages.optionsAr[language]
-              + ":</strong>\n"
-              + "<ul>\n"
-              + "<li> <a rel=\"bookmark\" href=\""
-              + tErddapUrl
-              + "/"
-              + Subscriptions.ADD_HTML
-              + "\">"
-              + EDStatic.messages.subscriptionAddAr[language]
-              + "</a>\n"
-              + "<li> <a rel=\"bookmark\" href=\""
-              + tErddapUrl
-              + "/"
-              + Subscriptions.VALIDATE_HTML
-              + "\">"
-              + EDStatic.messages.subscriptionValidateAr[language]
-              + "</a>\n"
-              + "<li> <a rel=\"bookmark\" href=\""
-              + tErddapUrl
-              + "/"
-              + Subscriptions.LIST_HTML
-              + "\">"
-              + EDStatic.messages.subscriptionListAr[language]
-              + "</a>\n"
-              + "<li> <a rel=\"bookmark\" href=\""
-              + tErddapUrl
-              + "/"
-              + Subscriptions.REMOVE_HTML
-              + "\">"
-              + EDStatic.messages.subscriptionRemoveAr[language]
-              + "</a>\n"
-              + "</ul>\n");
-      writer.write("</div>\n");
+    if (useHtmlTemplates(request)) {
+      YouAreHere youAreHere =
+          EDStatic.getYouAreHere(
+              request, language, loggedInAs, EDStatic.messages.subscriptionsTitleAr[language]);
+      TemplateEngine engine = TemplateEngine.createPrecompiled(ContentType.Html);
+      engine.render(
+          "subscription.jte",
+          Map.of(
+              "youAreHere", youAreHere,
+              "language", language),
+          new WriterOutput(writer));
       endHtmlWriter(request, language, out, writer, tErddapUrl, loggedInAs, false);
-
-    } catch (Throwable t) {
-      EDStatic.rethrowClientAbortException(t); // first thing in catch{}
-      writer.write(EDStatic.htmlForException(language, t));
-      writer.write("</div>\n");
-      endHtmlWriter(request, language, out, writer, tErddapUrl, loggedInAs, false);
-      throw t;
+    } else {
+      try {
+        writer.write(
+            "<div class=\"standard_width\">\n"
+                + EDStatic.youAreHere(
+                    request, language, loggedInAs, EDStatic.messages.subscriptionsTitleAr[language])
+                + EDStatic.messages.subscription0HtmlAr[language]
+                + MessageFormat.format(EDStatic.messages.subscription1HtmlAr[language], tErddapUrl)
+                + "\n");
+        writer.write(
+            "<p><strong>"
+                + EDStatic.messages.optionsAr[language]
+                + ":</strong>\n"
+                + "<ul>\n"
+                + "<li> <a rel=\"bookmark\" href=\""
+                + tErddapUrl
+                + "/"
+                + Subscriptions.ADD_HTML
+                + "\">"
+                + EDStatic.messages.subscriptionAddAr[language]
+                + "</a>\n"
+                + "<li> <a rel=\"bookmark\" href=\""
+                + tErddapUrl
+                + "/"
+                + Subscriptions.VALIDATE_HTML
+                + "\">"
+                + EDStatic.messages.subscriptionValidateAr[language]
+                + "</a>\n"
+                + "<li> <a rel=\"bookmark\" href=\""
+                + tErddapUrl
+                + "/"
+                + Subscriptions.LIST_HTML
+                + "\">"
+                + EDStatic.messages.subscriptionListAr[language]
+                + "</a>\n"
+                + "<li> <a rel=\"bookmark\" href=\""
+                + tErddapUrl
+                + "/"
+                + Subscriptions.REMOVE_HTML
+                + "\">"
+                + EDStatic.messages.subscriptionRemoveAr[language]
+                + "</a>\n"
+                + "</ul>\n");
+        writer.write("</div>\n");
+        endHtmlWriter(request, language, out, writer, tErddapUrl, loggedInAs, false);
+      } catch (Throwable t) {
+        EDStatic.rethrowClientAbortException(t); // first thing in catch{}
+        writer.write(EDStatic.htmlForException(language, t));
+        writer.write("</div>\n");
+        endHtmlWriter(request, language, out, writer, tErddapUrl, loggedInAs, false);
+        throw t;
+      }
     }
   }
 
