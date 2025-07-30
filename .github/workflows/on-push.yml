@@ -82,4 +82,4 @@ jobs:
           tags: |
             erddap/erddap:alpha-latest
             erddap/erddap:${{ steps.date.outputs.now }}
-            ghcr.io/erddap:${{ steps.date.outputs.now }}
+            ghcr.io/${{ github.repository }}:${{ steps.date.outputs.now }}
