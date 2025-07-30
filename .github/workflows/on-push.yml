@@ -3,6 +3,8 @@ name: Push Build and test ERDDAP
 on:
   push:
     branches: [ "main" ]
+    tags:
+      - 'v*'
 
 jobs:
   build:
@@ -68,9 +70,26 @@ jobs:
           username: erddap
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Get current date for tag
-        id: date
-        run: echo "::set-output name=now::$(date +'%Y%m%d%H%M%S')"
+      - name: Docker Metadata action
+        uses: docker/metadata-action@v5.7.0
+        id: meta
+        with:
+          images: |
+            erddap/erddap
+            ghcr.io/erddap
+          tags: |
+            type=semver,pattern={{raw}}
+            type=raw,value=alpha-latest,enable={{is_default_branch}}
+            type=raw,value={{date 'YYYYMMDDTHHmmss}},enable={{is_default_branch}}
+            
+          # type=semver,pattern={{raw}} should cause an image to be
+          # tagged with the version number from the tag, e.g., v1.2.3
+          #
+          # type=raw,value=latest,enable={{is_default_branch}}
+          # will generate a `latest` tag for commits to the main branch
+          #
+          # type=raw,value={{date 'YYYYMMDDTHHmmss}}
+          # will generate a tag with the current date and time
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
@@ -79,7 +98,5 @@ jobs:
           context: .
           file: ./Dockerfile
           push: true
-          tags: |
-            erddap/erddap:alpha-latest
-            erddap/erddap:${{ steps.date.outputs.now }}
-            ghcr.io/erddap:${{ steps.date.outputs.now }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
