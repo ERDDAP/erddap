@@ -61,6 +61,13 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PUSH_TOKEN }}
 
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Get current date for tag
         id: date
         run: echo "::set-output name=now::$(date +'%Y%m%d%H%M%S')"
@@ -68,9 +75,11 @@ jobs:
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
+          platforms: linux/amd64,linux/arm64
           context: .
           file: ./Dockerfile
           push: true
           tags: |
             erddap/erddap:alpha-latest
             erddap/erddap:${{ steps.date.outputs.now }}
+            ghcr.io/erddap/erddap:${{ steps.date.outputs.now }}
