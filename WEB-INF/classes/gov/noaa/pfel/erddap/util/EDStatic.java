@@ -1121,7 +1121,7 @@ public class EDStatic {
       HttpServletRequest request, int language, String loggedInAs, String protocol) {
     return new YouAreHere(
         erddapUrl(request, loggedInAs, language),
-        EDStatic.messages.clickERDDAPAr[language],
+        EDStatic.messages.get(Message.CLICK_ERDDAP, language),
         protocol);
   }
 
