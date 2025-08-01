@@ -134,19 +134,6 @@ public class GeotifFiles extends ImageTypes {
                       ".geotif",
                       EDStatic.messages.get(Message.NO_XXX_NO_LL_EVENLY_SPACED, language))));
 
-    // 2013-10-21 NO LONGER A LIMITATION: lon and lat are ascending?
-    //  GeotiffWriter now deals with descending.
-    //  see test in EDDGridFromDap.testDescendingAxisGeotif
-    // if (axisVariables[eddGrid.latIndex()].averageSpacing() <= 0 ||
-    //    axisVariables[eddGrid.lonIndex()].averageSpacing() <= 0)
-    //    throw new SimpleException(EDStatic.bilingual(language,
-    //    EDStatic.messages.get(Message.QUERY_ERROR, 0)        +
-    // MessageFormat.format(EDStatic.messages.queryErrorAscending,
-    // ".geotif"),
-    //    EDStatic.messages.get(Message.QUERY_ERROR, language) +
-    // MessageFormat.format(EDStatic.messages.queryErrorAscending,
-    // ".geotif")));
-
     // can't handle axis request
     if (eddGrid.isAxisDapQuery(userDapQuery))
       throw new SimpleException(

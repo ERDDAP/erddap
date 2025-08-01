@@ -3396,7 +3396,7 @@ public class EDStatic {
   public static String nMatchingDatasetsHtml(
       int language, int nMatches, int page, int lastPage, boolean relevant, String urlWithQuery) {
 
-    if (nMatches == 1) return messages.get(Message.N_MATCHING, language);
+    if (nMatches == 1) return messages.get(Message.N_MATCHING_1, language);
 
     StringBuilder results =
         new StringBuilder(

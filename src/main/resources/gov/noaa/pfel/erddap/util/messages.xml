@@ -70,7 +70,6 @@ to requesting compressed .png files since the files' contents are already compre
 <addConstraints>You can add tabledap-like constraints to requests to this web page,
 for example,</addConstraints>
 
-<addVarWhereAttName>Optional: Specify an attribute name.</addVarWhereAttName>
 <addVarWhereAttValue>Optional: Specify an attribute value.</addVarWhereAttValue>
 <addVarWhere><![CDATA[
 Optional: If you specify an attribute value here,
@@ -291,7 +290,6 @@ Datasets can be categorized in different ways by the values of various metadata 
 <category3Html><![CDATA[Then, you can click on a category to see a list of relevant datasets.]]></category3Html>
 <categoryPickAttribute>Pick an attribute:</categoryPickAttribute>
 <categorySearchHtml><![CDATA[Pick a(n) <kbd>{0}</kbd>]]></categorySearchHtml>
-<categorySearchDifferentHtml><![CDATA[Search for Datasets with a different <kbd>&category;</kbd>]]></categorySearchDifferentHtml>
 <categoryClickHtml>Click on a category (an attribute value) to see a list of relevant datasets.</categoryClickHtml>
 <categoryNotAnOption>When attribute="{0}", value="{1}" is not an option.</categoryNotAnOption>
 
@@ -1993,9 +1991,6 @@ location).
 
 <dasTitle>The Dataset Attribute Structure (.das) for this Dataset</dasTitle>
 
-<!-- The message to be displayed if the data can't be downloaded (e.g., SeaWiFS <=14 days old). -->
-<dataAccessNotAllowed>[Sorry. That data can't be downloaded.]</dataAccessNotAllowed>
-
 <databaseUnableToConnect>Unable to connect to database.</databaseUnableToConnect>
 <dataProviderForm>Data Provider Form</dataProviderForm>
 <dataProviderFormP1>Data Provider Form - Part 1</dataProviderFormP1>
@@ -2340,10 +2335,6 @@ Click &widgetSubmitButton; to send this information to the ERDDAP administrator 
 <dpf_fixProblem><![CDATA[
 <br>Please fix these problems, then 'Submit' this part of the form again.
 ]]></dpf_fixProblem>
-<dpf_yourName>Your Name</dpf_yourName>
-<dpf_emailAddress>Email Address</dpf_emailAddress>
-<dpf_Timestamp>Timestamp</dpf_Timestamp>
-<dpf_frequency>Frequency</dpf_frequency>
 <dpf_title>title</dpf_title>
 <dpf_titleTooltip><![CDATA[
 This is a short (&lt;=80 characters) description of the dataset. For example,
@@ -2407,9 +2398,6 @@ This is the license and disclaimer for use of this data.
 <br><kbd>
 ]]></dpf_licenseTooltip>
 
-<dpf_howYouStoreData><![CDATA[
-<br>&bull; Error: Please specify (below) how your gridded or tabular data is stored.
-]]></dpf_howYouStoreData>
 <dpf_provideIfAvailable>Please provide the information if it is available for your dataset.</dpf_provideIfAvailable>
 
 <dpf_acknowledgement>acknowledgement</dpf_acknowledgement>
@@ -2662,7 +2650,6 @@ or go back to the <a rel="bookmark" href="&tErddapUrl;/index.html">ERDDAP home p
 
 <EasierAccessToScientificData>Easier access to scientific data</EasierAccessToScientificData>
 <!-- The EDD messages are displayed on the tabledap and griddap Data Access Forms. -->
-<EDDClickOnSubmitHtml><![CDATA[Click on <kbd>Submit</kbd>.]]></EDDClickOnSubmitHtml>
 <EDDDatasetID>Dataset ID</EDDDatasetID>
 <EDDFgdc>FGDC</EDDFgdc>
 <EDDFgdcMetadata>FGDC-STD-001-1998 Metadata</EDDFgdcMetadata>
@@ -2675,9 +2662,7 @@ or go back to the <a rel="bookmark" href="&tErddapUrl;/index.html">ERDDAP home p
 <EDDInformation>Information</EDDInformation>
 <EDDSummary>Summary</EDDSummary>
 <EDDDatasetTitle>Dataset Title</EDDDatasetTitle>
-<EDDDownloadData>Download data</EDDDownloadData>
 <EDDMakeAGraph>Make a graph</EDDMakeAGraph>
-<EDDMakeAMap>Make a map</EDDMakeAMap>
 <EDDMinimum>Minimum</EDDMinimum>
 <EDDMaximum>Maximum</EDDMaximum>
 <EDDFileType>File type:</EDDFileType>
@@ -2759,8 +2744,6 @@ of the graph or the subset of the data, and the file type for the response.
 
 <EDDGridDimension>Dimensions</EDDGridDimension>
 <EDDGridDimensionRanges>Dimensions</EDDGridDimensionRanges>
-<EDDGridFirst>First</EDDGridFirst>
-<EDDGridLast>Last</EDDGridLast>
 <EDDGridStart>Start</EDDGridStart>
 <EDDGridStop>Stop</EDDGridStop>
 
@@ -2789,8 +2772,6 @@ and an indication of whether the values are perfectly evenly spaced or not.
 A slightly odd, uneven spacing often indicates that one or a few files are
 missing or bad in an otherwise perfectly evenly spaced dataset.
 ]]></EDDGridSpacingTooltip>
-<EDDGridDimensionFirstTooltip><![CDATA[For your information: this is the first value of a dimension.]]></EDDGridDimensionFirstTooltip>
-<EDDGridDimensionLastTooltip><![CDATA[For your information: this is the last value of a dimension.]]></EDDGridDimensionLastTooltip>
 
 <EDDGridDownloadTooltip><![CDATA[Select the variables that you want to download:
   <br>* To download just dimension data: Just select one or more dimensions (axes).
@@ -3044,10 +3025,6 @@ subsets of scientific datasets in common file formats and make graphs and maps.
 
 <!-- These messages are displayed when an error message is shown. -->
 <errorTitle>Error</errorTitle>
-<errorRequestUrl>Your request URL:</errorRequestUrl>
-<errorRequestQuery>Your request query:</errorRequestQuery>
-<errorTheError>The error:</errorTheError>
-<errorCopyFrom>Unable to copy from {0}.</errorCopyFrom>
 <errorFileNotFound>File not found: {0} .</errorFileNotFound>
 <errorFileNotFoundImage>File not found in cache. Recreate the image and try again.</errorFileNotFoundImage>
 <errorInternal>Internal error:</errorInternal>
@@ -3083,7 +3060,6 @@ subsets of scientific datasets in common file formats and make graphs and maps.
 </fileHelpTable_esriCsv>
 <fileHelp_fgdc>View the dataset's UTF-8 FGDC .xml metadata.</fileHelp_fgdc>
 <fileHelp_geoJson>Download longitude,latitude,otherColumns data as a UTF-8 GeoJSON .json file.</fileHelp_geoJson>
-<fileHelp_graph>View a Make A Graph web page.</fileHelp_graph>
 <fileHelpGrid_help>View a web page with a description of griddap.</fileHelpGrid_help>
 <fileHelpTable_help>View a web page with a description of tabledap.</fileHelpTable_help>
 <fileHelp_html>View an OPeNDAP-style HTML Data Access Form.</fileHelp_html>
@@ -3114,7 +3090,6 @@ subsets of scientific datasets in common file formats and make graphs and maps.
 <fileHelpTable_odvTxt>Download longitude,latitude,time,otherColumns as an ISO-8859-1 ODV Generic Spreadsheet File (.txt).</fileHelpTable_odvTxt>
 <fileHelp_parquet>Download as a parquet file. Metadata contains column names ("column_names") and units ("column_units").</fileHelp_parquet>
 <fileHelp_parquet_with_meta>Download as a parquet file with detailed metadata.</fileHelp_parquet_with_meta>
-<fileHelp_subset>View an HTML form which uses faceted search to simplify picking subsets of the data.</fileHelp_subset>
 <fileHelp_timeGaps>View a UTF-8 list of gaps in the time values which are larger than the median gap.</fileHelp_timeGaps>
 <fileHelp_tsv>Download a ISO-8859-1 tab-separated text table (line 1: names; line 2: units; ISO 8601 times).</fileHelp_tsv>
 <fileHelp_tsvp>Download a ISO-8859-1 .tsv file with line 1: name (units). Times are ISO 8601 strings.</fileHelp_tsvp>
@@ -3135,7 +3110,6 @@ subsets of scientific datasets in common file formats and make graphs and maps.
 
 <!-- The Description and Warning wording is vague to allow for one or many datasets. -->
 <filesDescription>ERDDAP's "files" system lets you browse a virtual file system and download source data files.</filesDescription>
-<filesSort>Click on a heading (e.g., Name, Last modified, Size) to change the sort order.  "Last modified" uses the Zulu time zone.</filesSort>
 <filesWarning><![CDATA[
 The dataset's metadata and variable names in these source files may be different 
 than elsewhere in ERDDAP! 
@@ -3732,10 +3706,6 @@ For example, orderByMax("stationID, time/1day") will create a group for each
 stationID for each day, and will calculate and return the sum of the other variables.
 ]]></functionOrderByTooltip>
 
-<functionOrderByExtra><![CDATA[
-For orderByClosest, specify the interval (using the format n[timeUnits], e.g., 1 hour) here.
-<br>For orderByLimit, specify the maximum number of rows per group here.
-]]></functionOrderByExtra>
 <functionOrderBySort><![CDATA[
 This slot is the {0} important orderBy... slot.
 <br>Pick a variable from the dropdown list at right and/or modify the text in this text field.
@@ -3745,7 +3715,6 @@ This slot is the {0} important orderBy... slot.
 <functionOrderBySort3>third most</functionOrderBySort3>
 <functionOrderBySort4>fourth most</functionOrderBySort4>
 <functionOrderBySortLeast>least</functionOrderBySortLeast>
-<functionOrderBySortRowMax>Only the row with the maximum value will be kept.</functionOrderBySortRowMax>
 
 <generatedAt>This web page was generated at {0} .</generatedAt>
 
@@ -4084,7 +4053,6 @@ The default is nothing (unused).
 <listOfDatasets>List of {0} Datasets</listOfDatasets>
 <listAll>All</listAll>
 
-<LogIn>Log In</LogIn>
 <login>log in</login>
 
 <loginHTML><![CDATA[
@@ -4158,11 +4126,9 @@ and then log in without your password at many other websites, including ERDDAP.
 Only people who have made arrangements with the administrator of this ERDDAP may log in.
 ]]></loginDescribeOpenID>
 
-<loginErddap>Log into ERDDAP</loginErddap>
 <loginCanNot>This ERDDAP is not configured to let users log in.</loginCanNot>
 <loginAreNot>You aren't logged in.</loginAreNot>
 <loginToLogIn>To log in</loginToLogIn>
-<loginEmailAddress>email address</loginEmailAddress>
 <loginYourEmailAddress>Your email address</loginYourEmailAddress>
 <loginUserName>User Name</loginUserName>
 <loginPassword>Password</loginPassword>
@@ -4170,12 +4136,6 @@ Only people who have made arrangements with the administrator of this ERDDAP may
 
 <loginGoogleSignIn>Authenticate with your Google account.</loginGoogleSignIn>
 <loginOrcidSignIn>Authenticate with your ORCID iD.</loginOrcidSignIn>
-
-<loginOpenID>Log in with your OpenID URL</loginOpenID>
-<loginOpenIDOr>Or log in to your existing (non-OpenID) account at</loginOpenIDOr>
-<loginOpenIDCreate>Or create an OpenID URL at</loginOpenIDCreate>
-<loginOpenIDFree>They are all free!</loginOpenIDFree>
-<loginOpenIDSame>Make sure that you logged in with the exact same OpenID URL that you gave to the ERDDAP administrator.</loginOpenIDSame>
 
 <loginAs>You are logged in as {0} .</loginAs>
 <loginPartwayAs>You are logged in partway as {0} .</loginPartwayAs>
@@ -4284,8 +4244,6 @@ If a cached web page says you aren't logged in, reload the page.
 
 <LogOut>Log Out</LogOut>
 <logout>log out</logout>
-
-<logoutOpenID>Log out from your OpenID provider.</logoutOpenID>
 
 <!-- logoutSuccess last updated 2019-12-19 -->
 <logoutSuccess>
@@ -4639,11 +4597,9 @@ Better to return an empty file? But .nc and others don't allow 0-length data.
 <noXxxNoLonIn180>there are no longitude values within -180 to 360</noXxxNoLonIn180>
 <noXxxNoNonString>there are no non-String variables</noXxxNoNonString>
 <noXxxNo2NonString>there aren't at least two non-String variables</noXxxNo2NonString>
-<noXxxNoStation>cdmDataType={0} isn''t "TimeSeries"</noXxxNoStation>
 <noXxxNoStationID>there is no stationID-like variable</noXxxNoStationID>
 <noXxxNoSubsetVariables>subsetVariables wasn't specified</noXxxNoSubsetVariables>
 <noXxxNoOLLSubsetVariables>subsetVariables doesn't have the offering, longitude, and latitude variables</noXxxNoOLLSubsetVariables>
-<noXxxNoMinMax>the source data server doesn't provide minimum and maximum values</noXxxNoMinMax>
 <noXxxItsGridded>it's a gridded dataset</noXxxItsGridded>
 <noXxxItsTabular>it's a tabular dataset</noXxxItsTabular>
 
@@ -4680,7 +4636,6 @@ search options as
 
 <orAListOfValues>or a List of Values</orAListOfValues>
 <orRefineSearchWith>Or, refine this search with</orRefineSearchWith>
-<orSearchWith>Or, search for datasets with</orSearchWith>
 <orComma>Or,</orComma>
 <otherFeatures>Other Features</otherFeatures>
 
@@ -4739,8 +4694,6 @@ Usually, the parameter values in the URL (the parts after '=' signs) must be pro
     title="This link to an external website does not constitute an endorsement."></a>.  
 ]]></percentEncode>
 
-<pickADataset>Pick a Dataset</pickADataset>
-
 <!-- Messages related to protocol-based dataset searches. -->
 <protocolSearchHtml>Search for Datasets by Protocol</protocolSearchHtml>
 <protocolSearch2Html><![CDATA[
@@ -4756,7 +4709,6 @@ Usually, the parameter values in the URL (the parts after '=' signs) must be pro
 <queryError1Var>The {0} format can only handle one data variable.</queryError1Var>
 <queryError2Var>Requests for the {0} format must include at least two numeric variables (for the X and Y axes).</queryError2Var>
 <queryErrorActualRange>{0} is outside of the variable''s actual_range: {1} to {2}</queryErrorActualRange>
-<queryErrorAscending>For {0} requests, the longitude values and latitude values must be ascending.</queryErrorAscending>
 <queryErrorAdjusted>For {0} requests, the adjusted longitude values ({1} to {2}) must be between -180 and 180.</queryErrorAdjusted>
 <queryErrorConstraintNaN>Constraint value="{0}" evaluates to NaN.  If you really want NaN, write it as NaN.</queryErrorConstraintNaN>
 <queryErrorEqualSpacing>For {0} requests, the longitude spacing ({1}) must equal the latitude spacing ({2}).</queryErrorEqualSpacing>
@@ -4798,8 +4750,6 @@ Usually, the parameter values in the URL (the parts after '=' signs) must be pro
 <queryErrorGridNoDataVar>A griddap axis variable query can''t include a data variable ({0}).</queryErrorGridNoDataVar>
 
 <queryErrorGridNotIdentical>The constraint {0} for variable={1} is not identical the constraint {2} for variable={2}.  If you need different subsets, make separate requests.</queryErrorGridNotIdentical>
-
-<queryErrorGridSLessS>StartIndex={0} is greater than StopIndex={1}.</queryErrorGridSLessS>
 
 <queryErrorLastEndP>{0} starts with "(", but doesn't end with ")".</queryErrorLastEndP>
 <queryErrorLastExpected>"last" was expected at the beginning of {0}.</queryErrorLastExpected>
@@ -5136,7 +5086,6 @@ ERDDAP has these URL access points for computer programs:
   <SOSDocumentation>ERDDAP's SOS documentation</SOSDocumentation>
   <WCSDocumentation>ERDDAP's WCS documentation</WCSDocumentation>
   <WMSDocumentation>ERDDAP's WMS documentation</WMSDocumentation>
-  <findOutChange>so that your computer program can find out if a dataset has changed.</findOutChange>
   
 <requestFormatExamplesHtml><![CDATA[
 (for example,
@@ -5614,12 +5563,6 @@ then click on the "remove" links in the email.
 
 <subscriptionRSS>Subscribe to the RSS feed for this dataset...</subscriptionRSS>
 
-<subscriptionsNotAvailable><![CDATA[
-<p><strong>Sorry.  The email/URL subscription system is not available at this ERDDAP installation.</strong>
-<br>Consider using the <a rel="help" href="{0}/information.html#subscriptions">RSS</a>
-  subscription service instead.
-]]></subscriptionsNotAvailable>
-
 <subscriptionUrlHtml><![CDATA[
 <kbd>URL/action</kbd> is an optional URL that ERDDAP will contact instead of sending you an email.
 <br>So if you want to receive an email whenever the dataset changes, leave <kbd>URL/action</kbd> blank.
@@ -5911,12 +5854,6 @@ To view {0},
 <!-- The following tag is preceded by 1 of the 2 preceding tags. 
   {0} is subsetViewSelectDistintCombos or subsetViewSelectRelatedCounts. -->
 <subsetWhenCounts>{0} for the {1} values of "{2}" are:</subsetWhenCounts>
-
-
-<subsetComboClickSelect><![CDATA[
-To view the counts of distinct combinations of the variables listed above,
-<br>check <kbd>{0} : {1}</kbd> above and select a value for one of the variables above.
-]]></subsetComboClickSelect>
 
 <subsetNVariableCombos>In total, there are {0} rows of distinct combinations of the variables listed above.</subsetNVariableCombos>
 
@@ -6925,8 +6862,6 @@ or search to see if the question has already been asked and answered.
 do not necessarily reflect any position of the Government or the National Oceanic and Atmospheric Administration.
 
 ]]></theLongDescriptionHtml>
-
-<Then>Then</Then>
 
 <twoClickMapDefaultTooltip>Specify a rectangle by clicking on two diagonal corners.  Do it again if needed.</twoClickMapDefaultTooltip>
 
@@ -8216,8 +8151,6 @@ never be an attribute name. -->
 <updateUrlsSkipAttributes>sourceUrl</updateUrlsSkipAttributes>
 
 <variableNames>Variable Names</variableNames>
-
-<viewAllDatasetsHtml>View a List of All Datasets</viewAllDatasetsHtml>
 
 <waitThenTryAgain>There was a (temporary?) problem.  Wait a minute, then try again.  (In a browser, click the Reload button.)</waitThenTryAgain>
 
