@@ -21,20 +21,9 @@ import java.beans.PropertyChangeEvent;
  * @since 3.0
  */
 public class AttributeChangeEvent extends PropertyChangeEvent {
-  private boolean local_ = true;
 
   public AttributeChangeEvent(
       Object source, String propertyName, Object oldValue, Object newValue) {
-    this(source, propertyName, oldValue, newValue, true);
-  }
-
-  public AttributeChangeEvent(
-      Object source, String propertyName, Object oldValue, Object newValue, boolean local) {
     super(source, propertyName, oldValue, newValue);
-    local_ = local;
-  }
-
-  public boolean isLocal() {
-    return local_;
   }
 }

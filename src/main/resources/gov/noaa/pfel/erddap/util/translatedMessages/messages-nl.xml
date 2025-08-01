@@ -4217,10 +4217,6 @@ Maar dods.dap.DODSException heeft geen relevante uitzondering.
 Is het beter om een ​​leeg bestand terug te sturen? Maar .nc en anderen staan ​​geen gegevens met een lengte van 0 toe.
  -->
 <MustBeThereIsNoData>Uw zoekopdracht heeft geen overeenkomende resultaten opgeleverd.</MustBeThereIsNoData>
-
-<!--  Veel bestandstypen stellen een limiet aan de hoeveelheid gegevens die een bestand kan bevatten (bijvoorbeeld 2 GB).  -->
-<MustBeNotNull>{0} mag niet nul zijn.</MustBeNotNull>
-<MustBeNotEmpty>{0} mag geen lege tekenreeks zijn.</MustBeNotEmpty>
 <MustBeInternalError>Interne fout</MustBeInternalError>
 <MustBeOutOfMemoryError>Onvoldoende geheugen fout</MustBeOutOfMemoryError>
 

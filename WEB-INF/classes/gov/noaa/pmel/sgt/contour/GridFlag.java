@@ -98,16 +98,6 @@ class GridFlag {
     return (value_[ind] == MISSING);
   }
 
-  public boolean isGreater(int i, int j) {
-    int ind = index(i, j);
-    if (Debug.CONTOUR) {
-      if (ind < 0 || ind >= nx_ * ny_) {
-        System.out.println("GridFlag.isGreater(): (i,j) = (" + i + ", " + j + ")");
-      }
-    }
-    return (value_[ind] == GREATER_THAN_ZC);
-  }
-
   public int getValue(int i, int j) {
     int ind = index(i, j);
     if (Debug.CONTOUR) {

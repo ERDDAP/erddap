@@ -3762,10 +3762,6 @@ href="https://groups.google.com/forum/#!forum/erddap">https://groups.google.com/
 ดีกว่าที่จะคืนไฟล์เปล่าเหรอ? แต่ .nc และอื่นๆ ไม่อนุญาตให้ใช้ข้อมูลที่มีความยาว 0
  -->
 <MustBeThereIsNoData>ข้อความค้นหาของคุณไม่มีผลลัพธ์ที่ตรงกัน</MustBeThereIsNoData>
-
-<!--  ไฟล์หลายประเภทมีการจำกัดปริมาณข้อมูลในไฟล์ (เช่น 2GB)  -->
-<MustBeNotNull>{0} ต้องไม่เป็นค่าว่าง</MustBeNotNull>
-<MustBeNotEmpty>{0} ต้องไม่เป็นสตริงว่าง</MustBeNotEmpty>
 <MustBeInternalError>ข้อผิดพลาดภายใน</MustBeInternalError>
 <MustBeOutOfMemoryError>ข้อผิดพลาดหน่วยความจำไม่เพียงพอ</MustBeOutOfMemoryError>
 

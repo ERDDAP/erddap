@@ -2127,21 +2127,6 @@ public abstract class ImageFiles extends ImageTypes {
             int po = 0;
             while (gda.increment()) grid.data[po++] = gda.getDataValueAsDouble(0);
           }
-
-          if (false) { // reallyVerbose) {
-            DoubleArray da = new DoubleArray(grid.data);
-            double stats[] = da.calculateStats();
-            String2.log(
-                "dataNTotal="
-                    + da.size()
-                    + " dataN="
-                    + stats[PrimitiveArray.STATS_N]
-                    + " dataMin="
-                    + stats[PrimitiveArray.STATS_MIN]
-                    + " dataMax="
-                    + stats[PrimitiveArray.STATS_MAX]);
-          }
-
           // get the x axis "lon" values
           PrimitiveArray tpa = gda.axisValues(xAxisIndex);
           int tn = tpa.size();

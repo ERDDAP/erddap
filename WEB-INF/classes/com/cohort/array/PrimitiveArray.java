@@ -5,7 +5,9 @@
  */
 package com.cohort.array;
 
-import com.cohort.util.*;
+import com.cohort.util.Math2;
+import com.cohort.util.SimpleException;
+import com.cohort.util.String2;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -1957,226 +1959,6 @@ public abstract class PrimitiveArray {
   }
 
   /**
-   * Given a sorted PrimitiveArray, stored to a randomAccessFile, this finds the index of an
-   * instance of the value (not necessarily the first or last instance) (or -index-1 where it should
-   * be inserted).
-   *
-   * @param raf the RandomAccessFile
-   * @param type the element type of the original PrimitiveArray
-   * @param start the raf offset of the start of the array
-   * @param lowPo the low index to start with, usually 0
-   * @param highPo the high index to start with, usually (originalPrimitiveArray.size() - 1)
-   * @param value the value you are searching for
-   * @return the index of an instance of the value (not necessarily the first or last instance) (or
-   *     -index-1 where it should be inserted, with extremes of -lowPo-1 and -(highPo+1)-1).
-   * @throws Exception if trouble
-   */
-  public static long rafBinarySearch(
-      RandomAccessFile raf, PAType type, long start, long lowPo, long highPo, PAOne value)
-      throws Exception {
-
-    // ensure lowPo <= highPo
-    // lowPo == highPo is handled by the following two chunks of code
-    if (lowPo > highPo)
-      throw new RuntimeException(
-          String2.ERROR
-              + " in PrimitiveArray.rafBinarySearch: lowPo("
-              + lowPo
-              + ") > highPo("
-              + highPo
-              + ").");
-
-    PAOne tValue = new PAOne(type);
-    tValue.readFromRAF(raf, start, lowPo);
-    // String2.log("rafBinarySearch value=" + value + " po=" + lowPo + " tValue=" + tValue);
-    int compare = tValue.compareTo(value);
-    if (compare == 0) return lowPo;
-    if (compare > 0) return -lowPo - 1;
-
-    tValue.readFromRAF(raf, start, highPo);
-    // String2.log("rafBinarySearch value=" + value + " po=" + highPo + " tValue=" + tValue);
-    compare = tValue.compareTo(value);
-    if (compare == 0) return highPo;
-    if (compare < 0) return -(highPo + 1) - 1;
-
-    // repeatedly look at midpoint
-    // If no match, this always ends with highPo - lowPo = 1
-    //  and desired value would be in between them.
-    while (highPo - lowPo > 1) {
-      long midPo = (highPo + lowPo) / 2;
-      tValue.readFromRAF(raf, start, midPo);
-      // String2.log("rafBinarySearch value=" + value + " po=" + midPo + " tValue=" + tValue);
-      compare = tValue.compareTo(value);
-      if (compare == 0) return midPo;
-      if (compare < 0) lowPo = midPo;
-      else highPo = midPo;
-    }
-
-    // not found
-    return -highPo - 1;
-  }
-
-  /**
-   * Given a sorted PrimitiveArray, stored to a randomAccessFile, this finds the index of the first
-   * element &gt;= value.
-   *
-   * <p>If firstGE &gt; lastLE, there are no matching elements (because the requested range is less
-   * than or greater than all the values, or between two adjacent values).
-   *
-   * @param raf the RandomAccessFile
-   * @param type the element type of the original PrimitiveArray
-   * @param start the raf offset of the start of the array
-   * @param lowPo the low index to start with, usually 0
-   * @param highPo the high index to start with, usually (originalPrimitiveArray.size() - 1)
-   * @param value the value you are searching for
-   * @return the index of the first element &gt;= value (or highPo + 1, if there are none)
-   * @throws Exception if trouble
-   */
-  public static long rafFirstGE(
-      RandomAccessFile raf, PAType type, long start, long lowPo, long highPo, PAOne value)
-      throws Exception {
-
-    if (lowPo > highPo) return highPo + 1;
-    long po = rafBinarySearch(raf, type, start, lowPo, highPo, value);
-
-    // an exact match? find the first exact match
-    PAOne tValue = new PAOne(type);
-    if (po >= 0) {
-      while (po > lowPo && tValue.readFromRAF(raf, start, po - 1).compareTo(value) == 0) po--;
-      return po;
-    }
-
-    // no exact match? return the binary search po
-    // thus returning a positive number
-    // the inverse of -x-1 is -x-1 !
-    return -po - 1;
-  }
-
-  /**
-   * Given a sorted PrimitiveArray, stored to a randomAccessFile, this finds the index of the first
-   * element &gt; or almostEqual5 to value.
-   *
-   * <p>If firstGE &gt; lastLE, there are no matching elements (because the requested range is less
-   * than or greater than all the values, or between two adjacent values).
-   *
-   * @param raf the RandomAccessFile
-   * @param type the element type of the original PrimitiveArray
-   * @param start the raf offset of the start of the array
-   * @param lowPo the low index to start with, usually 0
-   * @param highPo the high index to start with, usually (originalPrimitiveArray.size() - 1)
-   * @param value the value you are searching for
-   * @param precision e.g., 5 for floats and 9 for doubles
-   * @return the index of the first element &gt; or Math2.almostEqual5 to value (or highPo + 1, if
-   *     there are none)
-   * @throws Exception if trouble
-   */
-  public static long rafFirstGAE(
-      RandomAccessFile raf,
-      PAType type,
-      long start,
-      long lowPo,
-      long highPo,
-      PAOne value,
-      int precision)
-      throws Exception {
-
-    if (lowPo > highPo) return highPo + 1;
-
-    long po = rafBinarySearch(raf, type, start, lowPo, highPo, value);
-
-    // no exact match? return the binary search po
-    // thus returning a positive number
-    // the inverse of -x-1 is -x-1 !
-    if (po < 0) po = -po - 1;
-
-    // find the first GAE
-    PAOne tValue = new PAOne(type);
-    while (po > lowPo && tValue.readFromRAF(raf, start, po - 1).almostEqual(precision, value)) po--;
-
-    return po;
-  }
-
-  /**
-   * Given a sorted PrimitiveArray, stored to a randomAccessFile, this finds the index of the last
-   * element &lt;= value.
-   *
-   * <p>If firstGE &gt; lastLE, there are no matching elements (because the requested range is less
-   * than or greater than all the values, or between two adjacent values).
-   *
-   * @param raf the RandomAccessFile
-   * @param type the element type of the original PrimitiveArray
-   * @param start the raf offset of the start of the array
-   * @param lowPo the low index to start with, usually 0
-   * @param highPo the high index to start with, usually (originalPrimitiveArray.size() - 1)
-   * @param value the value you are searching for
-   * @return the index of the first element &lt;= value (or -1, if there are none)
-   * @throws Exception if trouble
-   */
-  public static long rafLastLE(
-      RandomAccessFile raf, PAType type, long start, long lowPo, long highPo, PAOne value)
-      throws Exception {
-
-    if (lowPo > highPo) return -1;
-    long po = rafBinarySearch(raf, type, start, lowPo, highPo, value);
-
-    // an exact match? find the first exact match
-    PAOne tValue = new PAOne(type);
-    if (po >= 0) {
-      while (po < highPo && tValue.readFromRAF(raf, start, po + 1).equals(value)) po++;
-      return po;
-    }
-
-    // no exact match? return binary search po -1
-    // thus returning a positive number
-    // the inverse of -x-1 is -x-1 !
-    return -po - 1 - 1;
-  }
-
-  /**
-   * Given a sorted PrimitiveArray, stored to a randomAccessFile, this finds the index of the last
-   * element &lt; or almostEqual to value.
-   *
-   * <p>If firstGE &gt; lastLE, there are no matching elements (because the requested range is less
-   * than or greater than all the values, or between two adjacent values).
-   *
-   * @param raf the RandomAccessFile
-   * @param type the element type of the original PrimitiveArray
-   * @param start the raf offset of the start of the array
-   * @param lowPo the low index to start with, usually 0
-   * @param highPo the high index to start with, usually (originalPrimitiveArray.size() - 1)
-   * @param value the value you are searching for
-   * @param precision e.g., 5 for floats and 9 for doubles
-   * @return the index of the first element &lt; or Math2.almostEqual to value (or -1, if there are
-   *     none)
-   * @throws Exception if trouble
-   */
-  public static long rafLastLAE(
-      RandomAccessFile raf,
-      PAType type,
-      long start,
-      long lowPo,
-      long highPo,
-      PAOne value,
-      int precision)
-      throws Exception {
-
-    if (lowPo > highPo) return -1;
-    long po = rafBinarySearch(raf, type, start, lowPo, highPo, value);
-
-    // no exact match? return previous value (binary search po -1)
-    // thus returning a positive number
-    // the inverse of -x-1 is -x-1 !
-    if (po < 0) po = -po - 1 - 1;
-
-    // look for last almost equal value
-    PAOne tValue = new PAOne(type);
-    while (po < highPo && tValue.readFromRAF(raf, start, po + 1).almostEqual(precision, value))
-      po++;
-
-    return po;
-  }
-
-  /**
    * Given an ascending sorted PrimitiveArray, this finds the index of an instance of the value (not
    * necessarily the first or last instance) (or -index-1 where it should be inserted).
    *
@@ -2835,7 +2617,7 @@ public abstract class PrimitiveArray {
    * @param column the column which should be ascending
    * @return the number of rows removed
    */
-  public static int ensureAscending(List table, int column) {
+  public static int ensureAscending(List<PrimitiveArray> table, int column) {
 
     PrimitiveArray columnPA = (PrimitiveArray) table.get(column);
     int nRows = columnPA.size();

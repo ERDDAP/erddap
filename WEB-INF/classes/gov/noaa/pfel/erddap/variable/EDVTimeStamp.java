@@ -319,17 +319,6 @@ public class EDVTimeStamp extends EDV {
   }
 
   /**
-   * This overwrites the EDV method of the same name in order to deal with numeric source time other
-   * than "seconds since 1970-01-01T00:00:00Z".
-   */
-  public void setDestinationMinMaxFromSource(double sourceMin, double sourceMax) {
-    // this works because scaleAddOffset is always false (guaranteed in constructor)
-    setDestinationMinMax(
-        PAOne.fromDouble(sourceTimeToEpochSeconds(sourceMin)),
-        PAOne.fromDouble(sourceTimeToEpochSeconds(sourceMax)));
-  }
-
-  /**
    * This determines if a variable is a TimeStamp variable by looking for " since " (used for
    * UDUNITS numeric times) or "yyyy" or "YYYY" (a formatting string which has the year designator)
    * in the units attribute.
@@ -595,18 +584,6 @@ public class EDVTimeStamp extends EDV {
         source.setString(i, epochSecondsToSourceTimeString(destination.getDouble(i)));
     }
     return source;
-  }
-
-  /**
-   * This converts a source time to a (limited) destination ISO TZ time.
-   *
-   * @param sourceTime either a number (as a string) or a string
-   * @return a (limited) ISO T Time (e.g., 1993-12-31T23:59:59Z). If sourceTime is invalid or is
-   *     sourceMissingValue, this returns "".
-   */
-  public String sourceTimeToIsoStringT(String sourceTime) {
-    return Calendar2.epochSecondsToLimitedIsoStringT(
-        time_precision, sourceTimeToEpochSeconds(sourceTime), "");
   }
 
   /**

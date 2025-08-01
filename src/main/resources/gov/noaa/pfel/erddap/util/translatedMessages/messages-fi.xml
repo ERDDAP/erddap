@@ -4236,10 +4236,6 @@ Mutta dods.dap.DODSExceptionillä ei ole asiaankuuluvaa poikkeusta.
 Onko parempi palauttaa tyhjä tiedosto? Mutta .nc ja muut eivät salli 0-pituista dataa.
  -->
 <MustBeThereIsNoData>Kyselysi ei tuottanut vastaavia tuloksia.</MustBeThereIsNoData>
-
-<!--  Monet tiedostotyypit asettavat rajan sille, kuinka paljon dataa tiedostoon mahtuu (esim. 2 Gt).  -->
-<MustBeNotNull>{0} ei saa olla tyhjä.</MustBeNotNull>
-<MustBeNotEmpty>{0} ei saa olla tyhjä merkkijono.</MustBeNotEmpty>
 <MustBeInternalError>Sisäinen virhe</MustBeInternalError>
 <MustBeOutOfMemoryError>Muisti täynnä -virhe</MustBeOutOfMemoryError>
 

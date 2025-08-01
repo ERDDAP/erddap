@@ -7,7 +7,6 @@ package com.cohort.util;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
-import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -46,10 +45,6 @@ public class MustBe {
    */
   public static String THERE_IS_NO_DATA = "Your query produced no matching results.";
 
-  /** These are MessageFormat-style strings that are NOT final so EDStatic can change them. */
-  public static String NotNull = "{0} must not be null.";
-
-  public static String NotEmpty = "{0} must not be an empty string.";
   public static String InternalError = "Internal Error";
   public static String OutOfMemoryError = "Out Of Memory Error";
 
@@ -68,30 +63,6 @@ public class MustBe {
     }
     // it flushes first
     return baos.toString(StandardCharsets.UTF_8);
-  }
-
-  /**
-   * This gets the stack trace of the thread, which can be useful for debugging. This is useful for
-   * debugging when no throwable is already available.
-   */
-  public static String getStackTrace(Thread thread) {
-    try {
-      StringBuilder sb = new StringBuilder("Stack trace for thread=" + thread.getName() + ":\n");
-      StackTraceElement st[] = thread.getStackTrace();
-      for (StackTraceElement stackTraceElement : st) sb.append(stackTraceElement.toString() + "\n");
-      return sb.toString();
-    } catch (Throwable t) {
-      return "ERROR while trying to get stack trace:\n" + throwableToString(t);
-    }
-  }
-
-  /**
-   * This prints the current stack trace to System.err. This is useful for debugging when no
-   * throwable is already available.
-   */
-  public static void printStackTrace() {
-    // generate the Exception
-    String2.log(throwableToString(new Exception()));
   }
 
   /**
@@ -213,89 +184,6 @@ public class MustBe {
         3
         // , true, true, true
         );
-  }
-
-  /**
-   * This returns an error message like:
-   *
-   * <pre>
-   *   String2.toUpperCase:
-   *   's' must not be null</pre>
-   *
-   * .
-   *
-   * <UL>
-   *   <LI>E.g., MustBe.notNull("MyClass.myMethod", "Value");
-   * </UL>
-   */
-  public static String notNull(String classAndMethodName, String valueName) {
-    return classAndMethodName
-        + ":"
-        + lineSeparator
-        + MessageFormat.format(NotNull, String2.toJson(valueName))
-        + lineSeparator
-        + stackTrace();
-  }
-
-  /**
-   * This returns an error message like:
-   *
-   * <pre>
-   *   String2.toUpperCase:
-   *   's' must not be an empty string</pre>
-   *
-   * .
-   *
-   * <UL>
-   *   <LI>E.g., MustBe.notEmpty("MyClass.myMethod", "Value");
-   * </UL>
-   */
-  public static String notEmpty(String classAndMethodName, String valueName) {
-    return classAndMethodName
-        + ":"
-        + lineSeparator
-        + MessageFormat.format(NotEmpty, String2.toJson(valueName))
-        + lineSeparator
-        + stackTrace();
-  }
-
-  /**
-   * This returns an error message like:
-   *
-   * <pre>
-   *   Data.keepIf:
-   *   Internal error: f.u.n.=-1.</pre>
-   *
-   * .
-   *
-   * <UL>
-   *   <LI>E.g., MustBe.internalError("MyClass.myMethod", "message");
-   * </UL>
-   */
-  public static String internalError(String classAndMethodName, String message) {
-    return classAndMethodName
-        + ":"
-        + lineSeparator
-        + InternalError
-        + ": "
-        + message
-        + lineSeparator
-        + stackTrace();
-  }
-
-  /**
-   * This returns an error message like:
-   *
-   * <pre>
-   *   Data.keepIf:
-   *   Not enough data.</pre>
-   *
-   * <UL>
-   *   <LI>E.g., MustBe.error("MyClass.myMethod", "My message.");
-   * </UL>
-   */
-  public static String error(String classAndMethodName, String message) {
-    return classAndMethodName + ":" + lineSeparator + message + lineSeparator + stackTrace();
   }
 
   /**

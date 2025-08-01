@@ -4208,10 +4208,6 @@ Ma dods.dap.DODSException non ha eccezioni rilevanti.
 Meglio restituire un file vuoto? Ma .nc e altri non consentono dati di lunghezza 0.
  -->
 <MustBeThereIsNoData>La tua query non ha prodotto risultati corrispondenti.</MustBeThereIsNoData>
-
-<!--  Molti tipi di file impongono un limite alla quantità di dati che un file può contenere (ad esempio, 2 GB).  -->
-<MustBeNotNull>{0} non deve essere nullo.</MustBeNotNull>
-<MustBeNotEmpty>{0} non deve essere una stringa vuota.</MustBeNotEmpty>
 <MustBeInternalError>Errore interno</MustBeInternalError>
 <MustBeOutOfMemoryError>Errore di memoria esaurita</MustBeOutOfMemoryError>
 

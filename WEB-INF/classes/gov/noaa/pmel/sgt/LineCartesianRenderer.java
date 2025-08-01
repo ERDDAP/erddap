@@ -294,26 +294,6 @@ public class LineCartesianRenderer extends CartesianRenderer {
   }
 
   /**
-   * Set the <code>LineAttribute</code>. The line appearance is controlled by this object.
-   *
-   * @param l <code>LineAttribute</code>
-   */
-  public void setLineAttribute(LineAttribute l) {
-    if (attr_ != null) attr_.removePropertyChangeListener(this);
-    attr_ = l;
-    if (attr_ != null) attr_.addPropertyChangeListener(this);
-  }
-
-  /**
-   * Get the <code>LineAttribute</code>.
-   *
-   * @return <code>LineAttribute</code>
-   */
-  public LineAttribute getLineAttribute() {
-    return attr_;
-  }
-
-  /**
    * Get the <code>SGTLine</code> object.
    *
    * @return <code>SGTLine</code>

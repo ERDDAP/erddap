@@ -260,17 +260,6 @@ public class GridCartesianRenderer extends CartesianRenderer {
     return attr_;
   }
 
-  /**
-   * Set the <code>GridAttribute</code> for the renderer.
-   *
-   * @since 2.0
-   */
-  public void setAttribute(GridAttribute attr) {
-    if (attr_ != null) attr_.removePropertyChangeListener(this);
-    attr_ = attr;
-    attr_.addPropertyChangeListener(this);
-  }
-
   private void drawRect(Graphics g, int x1, int y1, int x2, int y2) {
     int x, y, width, height;
     if (x1 < x2) {

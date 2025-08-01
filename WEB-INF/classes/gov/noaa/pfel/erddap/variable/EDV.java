@@ -1187,15 +1187,6 @@ public class EDV {
   }
 
   /**
-   * The number of bytes per element of source data (Strings arbitrarily return 20).
-   *
-   * @return the number of bytes per element of source data (Strings arbitrarily return 20)
-   */
-  public int sourceBytesPerElement() {
-    return PAType.elementSize(sourceDataPAType);
-  }
-
-  /**
    * The number of bytes per element of destination data (Strings arbitrarily return 20).
    *
    * @return the number of bytes per element of destination data (Strings arbitrarily return 20)
@@ -1348,15 +1339,6 @@ public class EDV {
    */
   public boolean scaleAddOffset() {
     return scaleAddOffset;
-  }
-
-  /**
-   * This returns true if the source if scaleAddOffset is true and _Unsigned="true".
-   *
-   * @return true if the source has _Unsigned="true".
-   */
-  public boolean sourceIsUnsigned() {
-    return sourceIsUnsigned;
   }
 
   /**
@@ -1827,52 +1809,6 @@ public class EDV {
    */
   public LocalizedAttributes combinedAttributes() {
     return combinedAttributes;
-  }
-
-  /**
-   * This converts a deg°[min'[sec"]][D] into decimal degrees. deg, min, or sec can be a decimal
-   * value. [min'[sec"]], [sec"], '[D]' is optional. A 'D'irection value of E or N is ignored, but W
-   * or S is treated as *-1.
-   *
-   * @param location deg°[min'[sec"]][D]
-   * @return the location as decimal degrees (or NaN if invalid)
-   */
-  public static double toDecimalDegrees(String location) {
-    if (location == null) return Double.NaN;
-    location = location.trim();
-    if (location.length() == 0) return Double.NaN;
-
-    // deal with 'D'irection
-    char end = location.charAt(location.length() - 1);
-    double factor = 1;
-    if (end == 'E' || end == 'N') {
-      location = location.substring(0, location.length() - 1);
-    } else if (end == 'W' || end == 'S') {
-      factor = -1;
-      location = location.substring(0, location.length() - 1);
-    }
-    int len = location.length();
-
-    // just degrees?
-    int degPo = location.indexOf('°');
-    if (degPo < 0) degPo = len;
-    if (degPo >= len - 1) return factor * String2.parseDouble(location.substring(0, degPo));
-
-    // just deg min?
-    int minPo = location.indexOf('\'');
-    if (minPo < 0) minPo = len;
-    if (minPo >= len - 1)
-      return factor
-          * (String2.parseDouble(location.substring(0, degPo))
-              + String2.parseDouble(location.substring(degPo + 1, minPo)) / 60);
-
-    // deg min sec
-    int secPo = location.indexOf('"');
-    if (secPo < 0) secPo = len;
-    return factor
-        * (String2.parseDouble(location.substring(0, degPo))
-            + String2.parseDouble(location.substring(degPo + 1, minPo)) / 60
-            + String2.parseDouble(location.substring(minPo + 1, secPo)) / 3600);
   }
 
   /** This returns true if this variable is probably longitude. */

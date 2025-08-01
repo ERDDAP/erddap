@@ -4,7 +4,10 @@
  */
 package gov.noaa.pfel.coastwatch.sgt;
 
-import com.cohort.array.*;
+import com.cohort.array.DoubleArray;
+import com.cohort.array.IntArray;
+import com.cohort.array.PrimitiveArray;
+import com.cohort.array.StringArray;
 import com.cohort.util.File2;
 import com.cohort.util.Math2;
 import com.cohort.util.MustBe;
@@ -20,9 +23,18 @@ import gov.noaa.pfel.coastwatch.pointdata.Table;
 import gov.noaa.pfel.coastwatch.util.SSR;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.util.Metrics;
-import gov.noaa.pmel.sgt.*;
-import gov.noaa.pmel.sgt.dm.*;
-import gov.noaa.pmel.util.*;
+import gov.noaa.pmel.sgt.Axis;
+import gov.noaa.pmel.sgt.CartesianGraph;
+import gov.noaa.pmel.sgt.ContourLevels;
+import gov.noaa.pmel.sgt.ContourLineAttribute;
+import gov.noaa.pmel.sgt.GridAttribute;
+import gov.noaa.pmel.sgt.JPane;
+import gov.noaa.pmel.sgt.Layer;
+import gov.noaa.pmel.sgt.LineAttribute;
+import gov.noaa.pmel.sgt.StackedLayout;
+import gov.noaa.pmel.sgt.dm.SimpleGrid;
+import gov.noaa.pmel.util.Point2D;
+import gov.noaa.pmel.util.Range2D;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics2D;
@@ -778,7 +790,7 @@ public class SgtMap {
       IntArray resultPointScreen = new IntArray();
       IntArray graphIntWESN = new IntArray();
       DoubleArray graphDoubleWESN = new DoubleArray();
-      ArrayList<PrimitiveArray> results = new ArrayList<>();
+      List<PrimitiveArray> results = new ArrayList<>();
       results.add(resultMinX);
       results.add(resultMaxX);
       results.add(resultMinY);
@@ -812,9 +824,8 @@ public class SgtMap {
       gov.noaa.pmel.sgt.LinearTransform yt =
           new gov.noaa.pmel.sgt.LinearTransform(yPhysRange, yUserRange);
       Point2D.Double origin = new Point2D.Double(xUserRange.start, yUserRange.start);
-      Dimension2D layerDimension2D =
-          new Dimension2D(
-              baseULXPixel / dpi + imageWidthInches, baseULYPixel / dpi + imageHeightInches);
+      double imageWidth = baseULXPixel / dpi + imageWidthInches;
+      double imageHeight = baseULYPixel / dpi + imageHeightInches;
       StringArray layerNames = new StringArray();
       ArrayList<VectorPointsRenderer> vectorPointsRenderers = new ArrayList<>();
 
@@ -830,7 +841,7 @@ public class SgtMap {
           // *** draw land as base
           {
             CartesianGraph graph = new CartesianGraph("", xt, yt);
-            Layer layer = new Layer("landunder", layerDimension2D);
+            Layer layer = new Layer("landunder", imageWidth, imageHeight);
             layerNames.add(layer.getId());
             jPane.add(layer); // calls layer.setPane(this);
             layer.setGraph(graph); // calls graph.setLayer(this);
@@ -857,7 +868,7 @@ public class SgtMap {
           // *** draw lakes as base
           if (drawLakesAndRivers != NO_LAKES_AND_RIVERS && boundaryResolution < cRes) {
             CartesianGraph graph = new CartesianGraph("", xt, yt);
-            Layer layer = new Layer("lakesunder", layerDimension2D);
+            Layer layer = new Layer("lakesunder", imageWidth, imageHeight);
             layerNames.add(layer.getId());
             jPane.add(layer); // calls layer.setPane(this);
             layer.setGraph(graph); // calls graph.setLayer(this);
@@ -885,7 +896,7 @@ public class SgtMap {
           // String2.log("NO DATA=false; griddata.");
           colorMap = new CompoundColorMap(gridPaletteFileName);
           CartesianGraph graph = new CartesianGraph("", xt, yt);
-          Layer layer = new Layer("grid", layerDimension2D);
+          Layer layer = new Layer("grid", imageWidth, imageHeight);
           layerNames.add(layer.getId());
           jPane.add(layer); // calls layer.setPane(this);
           layer.setGraph(graph); // calls graph.setLayer(this);
@@ -991,7 +1002,7 @@ public class SgtMap {
         if (plotContourData) {
           // String2.log("NO DATA=false; contourdata.");
           CartesianGraph graph = new CartesianGraph("", xt, yt);
-          Layer layer = new Layer("contour", layerDimension2D);
+          Layer layer = new Layer("contour", imageWidth, imageHeight);
           layerNames.add(layer.getId());
           jPane.add(layer); // calls layer.setPane(this);
           layer.setGraph(graph); // calls graph.setLayer(this);
@@ -1129,7 +1140,7 @@ public class SgtMap {
         // [For CWBrowsers: this was Dave's request  2006-03-29.]
         if (!transparent) {
           CartesianGraph graph = new CartesianGraph("", xt, yt);
-          Layer layer = new Layer("landmask", layerDimension2D);
+          Layer layer = new Layer("landmask", imageWidth, imageHeight);
           layerNames.add(layer.getId());
           jPane.add(layer); // calls layer.setPane(this);
           layer.setGraph(graph); // calls graph.setLayer(this);
@@ -1164,7 +1175,7 @@ public class SgtMap {
             && boundaryResolution < cRes
             && !transparent) {
           CartesianGraph graph = new CartesianGraph("", xt, yt);
-          Layer layer = new Layer("lakes", layerDimension2D);
+          Layer layer = new Layer("lakes", imageWidth, imageHeight);
           layerNames.add(layer.getId());
           jPane.add(layer); // calls layer.setPane(this);
           layer.setGraph(graph); // calls graph.setLayer(this);
@@ -1191,7 +1202,7 @@ public class SgtMap {
             && boundaryResolution < cRes
             && !transparent) {
           CartesianGraph graph = new CartesianGraph("", xt, yt);
-          Layer layer = new Layer("rivers", layerDimension2D);
+          Layer layer = new Layer("rivers", imageWidth, imageHeight);
           layerNames.add(layer.getId());
           jPane.add(layer); // calls layer.setPane(this);
           layer.setGraph(graph); // calls graph.setLayer(this);
@@ -1212,7 +1223,7 @@ public class SgtMap {
             && !"off".equals(drawLandMask)
             && !transparent) {
           CartesianGraph graph = new CartesianGraph("", xt, yt);
-          Layer layer = new Layer("stateBoundary", layerDimension2D);
+          Layer layer = new Layer("stateBoundary", imageWidth, imageHeight);
           layerNames.add(layer.getId());
           jPane.add(layer); // calls layer.setPane(this);
           layer.setGraph(graph); // calls graph.setLayer(this);
@@ -1231,7 +1242,7 @@ public class SgtMap {
         // *** draw the NationalBOUNDARY
         if (drawPoliticalBoundaries && !"off".equals(drawLandMask) && !transparent) {
           CartesianGraph graph = new CartesianGraph("", xt, yt);
-          Layer layer = new Layer("nationalBoundary", layerDimension2D);
+          Layer layer = new Layer("nationalBoundary", imageWidth, imageHeight);
           layerNames.add(layer.getId());
           jPane.add(layer); // calls layer.setPane(this);
           layer.setGraph(graph); // calls graph.setLayer(this);
@@ -1254,7 +1265,7 @@ public class SgtMap {
           long tTime = System.currentTimeMillis();
 
           CartesianGraph graph = new CartesianGraph("", xt, yt);
-          Layer layer = new Layer("pointLayer" + i, layerDimension2D);
+          Layer layer = new Layer("pointLayer" + i, imageWidth, imageHeight);
           layerNames.add(layer.getId());
           jPane.add(layer); // calls layer.setPane(this);
           layer.setGraph(graph); // calls graph.setLayer(this);
@@ -1365,11 +1376,10 @@ public class SgtMap {
               VectorPointsRenderer vectorPointsRenderer =
                   new VectorPointsRenderer(
                       graph,
-                      new SGTPointsVector(
-                          xColumn.toDoubleArray(),
-                          yColumn.toDoubleArray(),
-                          uColumn.toDoubleArray(),
-                          vColumn.toDoubleArray()),
+                      xColumn.toDoubleArray(),
+                      yColumn.toDoubleArray(),
+                      uColumn.toDoubleArray(),
+                      vColumn.toDoubleArray(),
                       vectorAttribute);
               graph.setRenderer(vectorPointsRenderer);
               vectorPointsRenderers.add(vectorPointsRenderer);
@@ -1596,7 +1606,7 @@ public class SgtMap {
         int grx1 = 0, gry1 = 0, grWidth = 0, grHeight = 0;
         if (!transparent) {
           CartesianGraph graph = new CartesianGraph("", xt, yt);
-          Layer layer = new Layer("axis", layerDimension2D);
+          Layer layer = new Layer("axis", imageWidth, imageHeight);
           layerNames.add(layer.getId());
           jPane.add(layer); // calls layer.setPane(this);
           layer.setGraph(graph); // calls graph.setLayer(this);
@@ -1981,7 +1991,6 @@ public class SgtMap {
           new gov.noaa.pmel.sgt.LinearTransform(xPhysRange, xUserRange);
       gov.noaa.pmel.sgt.LinearTransform yt =
           new gov.noaa.pmel.sgt.LinearTransform(yPhysRange, yUserRange);
-      Dimension2D layerDimension2D = new Dimension2D(imageWidth, imageHeight);
       StringArray layerNames = new StringArray();
       if (drawLakesAndRivers < NO_LAKES_AND_RIVERS) drawLakesAndRivers = SgtMap.NO_LAKES_AND_RIVERS;
       if (drawLakesAndRivers > FILL_LAKES_AND_RIVERS)
@@ -1990,7 +1999,7 @@ public class SgtMap {
       // *** draw land under
       if (drawLandUnder) {
         CartesianGraph graph = new CartesianGraph("", xt, yt);
-        Layer layer = new Layer("landunder", layerDimension2D);
+        Layer layer = new Layer("landunder", imageWidth, imageHeight);
         layerNames.add(layer.getId());
         jPane.add(layer); // calls layer.setPane(this);
         layer.setGraph(graph); // calls graph.setLayer(this);
@@ -2018,7 +2027,7 @@ public class SgtMap {
       if (grid != null) {
         colorMap = new CompoundColorMap(gridPaletteFileName);
         CartesianGraph graph = new CartesianGraph("", xt, yt);
-        Layer layer = new Layer("grid", layerDimension2D);
+        Layer layer = new Layer("grid", imageWidth, imageHeight);
         layerNames.add(layer.getId());
         jPane.add(layer); // calls layer.setPane(this);
         layer.setGraph(graph); // calls graph.setLayer(this);
@@ -2053,7 +2062,7 @@ public class SgtMap {
       if (drawLandOver || drawCoastline) {
         // draw land
         CartesianGraph graph = new CartesianGraph("", xt, yt);
-        Layer layer = new Layer("landover", layerDimension2D);
+        Layer layer = new Layer("landover", imageWidth, imageHeight);
         layerNames.add(layer.getId());
         jPane.add(layer); // calls layer.setPane(this);
         layer.setGraph(graph); // calls graph.setLayer(this);
@@ -2081,7 +2090,7 @@ public class SgtMap {
         {
           // draw Lakes
           CartesianGraph graph = new CartesianGraph("", xt, yt);
-          Layer layer = new Layer("lakesover", layerDimension2D);
+          Layer layer = new Layer("lakesover", imageWidth, imageHeight);
           layerNames.add(layer.getId());
           jPane.add(layer); // calls layer.setPane(this);
           layer.setGraph(graph); // calls graph.setLayer(this);
@@ -2106,7 +2115,7 @@ public class SgtMap {
         {
           // draw rivers
           CartesianGraph graph = new CartesianGraph("", xt, yt);
-          Layer layer = new Layer("riversover", layerDimension2D);
+          Layer layer = new Layer("riversover", imageWidth, imageHeight);
           layerNames.add(layer.getId());
           jPane.add(layer); // calls layer.setPane(this);
           layer.setGraph(graph); // calls graph.setLayer(this);
@@ -2125,7 +2134,7 @@ public class SgtMap {
       // *** draw the StateBOUNDARY
       if (drawStateBoundaries) {
         CartesianGraph graph = new CartesianGraph("", xt, yt);
-        Layer layer = new Layer("stateBoundary", layerDimension2D);
+        Layer layer = new Layer("stateBoundary", imageWidth, imageHeight);
         layerNames.add(layer.getId());
         jPane.add(layer); // calls layer.setPane(this);
         layer.setGraph(graph); // calls graph.setLayer(this);
@@ -2143,7 +2152,7 @@ public class SgtMap {
       // *** draw the NationalBOUNDARY
       if (drawNationalBoundaries) {
         CartesianGraph graph = new CartesianGraph("", xt, yt);
-        Layer layer = new Layer("nationalBoundary", layerDimension2D);
+        Layer layer = new Layer("nationalBoundary", imageWidth, imageHeight);
         layerNames.add(layer.getId());
         jPane.add(layer); // calls layer.setPane(this);
         layer.setGraph(graph); // calls graph.setLayer(this);

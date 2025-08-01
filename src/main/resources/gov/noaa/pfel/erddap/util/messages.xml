@@ -4551,9 +4551,6 @@ But dods.dap.DODSException has no relevant exception.
 Better to return an empty file? But .nc and others don't allow 0-length data.
 -->
 <MustBeThereIsNoData>Your query produced no matching results.</MustBeThereIsNoData>
-<!-- Many file types put a limit on how much data a file can hold (e.g., 2GB). -->
-<MustBeNotNull>{0} must not be null.</MustBeNotNull>
-<MustBeNotEmpty>{0} must not be an empty string.</MustBeNotEmpty>
 <MustBeInternalError>Internal Error</MustBeInternalError>
 <MustBeOutOfMemoryError>Out Of Memory Error</MustBeOutOfMemoryError>
 

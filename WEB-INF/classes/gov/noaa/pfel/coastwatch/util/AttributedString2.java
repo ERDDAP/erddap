@@ -14,6 +14,7 @@ import java.awt.font.TextLayout;
 import java.text.AttributedCharacterIterator;
 import java.text.AttributedString;
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * This class facilitates building an AttributedString in chunks. To use it: you
@@ -37,11 +38,11 @@ public class AttributedString2 {
   protected final StringBuilder cumulative = new StringBuilder();
   protected int lastStart = 0;
 
-  protected final ArrayList baseAttributes = new ArrayList();
-  protected final ArrayList baseObjects = new ArrayList();
+  protected final List<AttributedCharacterIterator.Attribute> baseAttributes = new ArrayList<>();
+  protected final List<Object> baseObjects = new ArrayList<>();
 
-  protected final ArrayList attributes = new ArrayList();
-  protected final ArrayList objects = new ArrayList();
+  protected final List<AttributedCharacterIterator.Attribute> attributes = new ArrayList<>();
+  protected final List<Object> objects = new ArrayList<>();
   protected final IntArray start = new IntArray();
   protected final IntArray end = new IntArray();
 
@@ -73,16 +74,6 @@ public class AttributedString2 {
   }
 
   /**
-   * This adds a chunk of text and resets lastStart.
-   *
-   * @param text
-   */
-  public void addText(String text) {
-    lastStart = cumulative.length();
-    cumulative.append(text);
-  }
-
-  /**
    * This adds a character but doesn't reset lastStart.
    *
    * @param ch
@@ -98,21 +89,6 @@ public class AttributedString2 {
    */
   public void addChars(String s) {
     cumulative.append(s);
-  }
-
-  /**
-   * This adds attributes for the last addText text to the cumulative String. Note that italic is
-   * done with TextAttribute.POSTURE and Float.valueOf(0.2).
-   *
-   * @param attribute e.g., TextAttribute.BACKGROUND
-   * @param object e.g., color
-   */
-  public void addAttributesForLastAddText(
-      AttributedCharacterIterator.Attribute attribute, Object object) {
-    attributes.add(attribute);
-    objects.add(object);
-    start.add(lastStart);
-    end.add(cumulative.length());
   }
 
   /**

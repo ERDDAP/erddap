@@ -14,8 +14,6 @@ package gov.noaa.pmel.sgt;
 import gov.noaa.pmel.util.GeoDate;
 import gov.noaa.pmel.util.Range2D;
 import gov.noaa.pmel.util.SoTRange;
-import gov.noaa.pmel.util.SoTValue;
-import gov.noaa.pmel.util.TimeRange;
 
 /**
  * Transform class for creation of "log" axes. An {@link gov.noaa.pmel.sgt.demo.JLogLogDemo example}
@@ -49,22 +47,6 @@ public class LogTransform extends AxisTransform implements Cloneable {
     super();
   }
 
-  public LogTransform(double p1, double p2, double u1, double u2) {
-    super(p1, p2, u1, u2);
-  }
-
-  public LogTransform(Range2D pr, Range2D ur) {
-    super(pr, ur);
-  }
-
-  public LogTransform(double p1, double p2, GeoDate t1, GeoDate t2) {
-    super(p1, p2, t1, t2);
-  }
-
-  public LogTransform(Range2D pr, TimeRange tr) {
-    super(pr, tr);
-  }
-
   public LogTransform(Range2D pr, SoTRange str) {
     super(pr, str);
   }
@@ -95,53 +77,12 @@ public class LogTransform extends AxisTransform implements Cloneable {
 
   @Override
   public double getTransP(GeoDate t) {
-    throw new MethodNotImplementedError();
+    throw new UnsupportedOperationException();
   }
 
   @Override
   public double getTransP(long t) {
-    throw new MethodNotImplementedError();
-  }
-
-  @Override
-  public double getTransP(SoTValue v) {
-    if (v.isTime()) {
-      throw new MethodNotImplementedError();
-    } else {
-      double u = ((SoTValue.Double) v).getValue();
-      try { //
-        if (u <= 0) throw new NegativeLogException("Can't Log negative values");
-      } catch (NegativeLogException e) {
-        e.printStackTrace();
-      }
-      return a_ * Math.log10(u) + b_;
-    }
-  }
-
-  @Override
-  public double getTransU(double p) {
-    if ((p - b_) / a_ < min_) {
-      return Math.pow(10, min_);
-    }
-    return Math.pow(10, (p - b_) / a_);
-  }
-
-  @Override
-  public GeoDate getTimeTransU(double p) {
-    throw new MethodNotImplementedError();
-  }
-
-  @Override
-  public long getLongTimeTransU(double p) {
-    throw new MethodNotImplementedError();
-  }
-
-  @Override
-  public SoTValue getSoTTransU(double p) {
-    if ((p - b_) / a_ < min_) {
-      return new SoTValue.Double(Math.pow(10, min_));
-    }
-    return new SoTValue.Double(Math.pow(10, (p - b_) / a_));
+    throw new UnsupportedOperationException();
   }
 
   @Override
@@ -165,13 +106,5 @@ public class LogTransform extends AxisTransform implements Cloneable {
       a_ = (p1_ - p2_) / denom;
       b_ = p1_ - a_ * Math.log10(u1_);
     }
-  }
-
-  public void setMinValue(int minVal) {
-    min_ = minVal;
-  }
-
-  public int getMinValue() {
-    return min_;
   }
 }

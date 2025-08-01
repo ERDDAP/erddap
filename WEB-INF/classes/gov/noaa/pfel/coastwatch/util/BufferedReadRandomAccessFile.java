@@ -18,7 +18,6 @@ public class BufferedReadRandomAccessFile implements AutoCloseable {
   private long startpos = -1;
   private long endpos = -1;
   private int bufsize;
-  private int seeks = 0;
 
   public BufferedReadRandomAccessFile(String name) throws FileNotFoundException {
     this(name, DEFAULT_BUFSIZE);
@@ -51,16 +50,11 @@ public class BufferedReadRandomAccessFile implements AutoCloseable {
       }
       startpos = blockstart;
       endpos = blockstart + n - 1;
-      seeks++;
       if (pos < startpos || pos > endpos) return -1;
     }
     return (short)
         ((inbuf[(int) (pos - startpos) + 1] & 0xff)
             + ((inbuf[(int) (pos - startpos)] & 0xff) << 8));
-  }
-
-  public int getSeeks() {
-    return seeks;
   }
 
   @Override

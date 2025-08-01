@@ -19,7 +19,6 @@ import gov.noaa.pmel.sgt.Layer;
 import gov.noaa.pmel.sgt.LineAttribute;
 import gov.noaa.pmel.sgt.StackedLayout;
 import gov.noaa.pmel.sgt.dm.SimpleGrid;
-import gov.noaa.pmel.util.Dimension2D;
 import gov.noaa.pmel.util.Point2D;
 import gov.noaa.pmel.util.Range2D;
 import java.awt.Color;
@@ -64,7 +63,7 @@ class SgtMapTests {
       String tName =
           Image2Tests.urlToAbsolutePath(Image2Tests.OBS_DIR) + fileName + testImageExtension;
       File2.delete(tName); // old version? delete it
-      SgtUtil.saveImage(bufferedImage, tName);
+      Image2Tests.saveImage(bufferedImage, tName);
       // TestUtil.displayInBrowser("file://" + tName);
       Image2Tests.testImagesIdentical(tName, fileName + ".png", fileName + "_diff.png");
     }
@@ -91,7 +90,7 @@ class SgtMapTests {
       String tName =
           Image2Tests.urlToAbsolutePath(Image2Tests.OBS_DIR) + baseName + testImageExtension;
       File2.delete(tName); // old version? delete it
-      SgtUtil.saveImage(bufferedImage, tName);
+      Image2Tests.saveImage(bufferedImage, tName);
       // String2.log("displaying " + tName);
       // TestUtil.displayInBrowser("file://" + tName);
       Image2Tests.testImagesIdentical(tName, baseName + ".png", baseName + "_diff.png");
@@ -209,7 +208,6 @@ class SgtMapTests {
     gov.noaa.pmel.sgt.LinearTransform yt =
         new gov.noaa.pmel.sgt.LinearTransform(yPhysRange, yUserRange);
     Point2D.Double origin = new Point2D.Double(xUserRange.start, yUserRange.start);
-    Dimension2D layerDimension2D = new Dimension2D(imageWidth / 100.0, imageHeight / 100.0);
 
     // draw bathymetry colors
     boolean plotBathymetryColors = false;
@@ -221,7 +219,7 @@ class SgtMapTests {
           Resources.getResource("gov/noaa/pfel/coastwatch/sgt/" + SgtMap.bathymetryCpt);
       CompoundColorMap oceanColorMap = new CompoundColorMap(resourceFile);
       graph = new CartesianGraph("", xt, yt);
-      layer = new Layer("bathymetryColors", layerDimension2D);
+      layer = new Layer("bathymetryColors", imageWidth / 100.0, imageHeight / 100.0);
       layerNames.add(layer.getId());
       jPane.add(layer); // calls layer.setPane(this);
       layer.setGraph(graph); // calls graph.setLayer(this);
@@ -240,7 +238,7 @@ class SgtMapTests {
 
     // draw the landMask
     graph = new CartesianGraph("", xt, yt);
-    layer = new Layer("landmask", layerDimension2D);
+    layer = new Layer("landmask", imageWidth / 100.0, imageHeight / 100.0);
     layerNames.add(layer.getId());
     jPane.add(layer); // calls layer.setPane(this);
     layer.setGraph(graph); // calls graph.setLayer(this);
@@ -285,7 +283,7 @@ class SgtMapTests {
     LineAttribute lineAttribute;
     if (SgtMap.drawPoliticalBoundaries && boundaryResolution != SgtMap.CRUDE_RESOLUTION) {
       graph = new CartesianGraph("", xt, yt);
-      layer = new Layer("state", layerDimension2D);
+      layer = new Layer("state", imageWidth / 100.0, imageHeight / 100.0);
       layerNames.add(layer.getId());
       jPane.add(layer); // calls layer.setPane(this);
       layer.setGraph(graph); // calls graph.setLayer(this);
@@ -307,7 +305,7 @@ class SgtMapTests {
         yUserRange.start, yUserRange.end);
     graph.setClipping(true);
     if (SgtMap.drawPoliticalBoundaries) {
-      layer = new Layer("national", layerDimension2D);
+      layer = new Layer("national", imageWidth / 100.0, imageHeight / 100.0);
       layerNames.add(layer.getId());
       jPane.add(layer); // calls layer.setPane(this);
       layer.setGraph(graph); // calls graph.setLayer(this);
@@ -514,7 +512,7 @@ class SgtMapTests {
           2,
           0,
           1); // region=2
-      SgtUtil.saveImage(bufferedImage, tName);
+      Image2Tests.saveImage(bufferedImage, tName);
       // TestUtil.displayInBrowser("file://" + SSR.getTempDirectory() + "temp" +
       // testImageExtension);
       Image2Tests.testImagesIdentical(tName, baseName + ".png", baseName + "_diff.png");
@@ -545,7 +543,7 @@ class SgtMapTests {
                 region,
                 0,
                 1);
-            SgtUtil.saveImage(bufferedImage, tName);
+            Image2Tests.saveImage(bufferedImage, tName);
 
             // view it in browser?
             if (showInBrowser && rep == 0 && region == 2 && size == 1) {
@@ -980,7 +978,7 @@ class SgtMapTests {
       String fileName = "SgtMapOceanPalette" + i;
       String tName = Image2Tests.urlToAbsolutePath(Image2Tests.OBS_DIR) + fileName + ".png";
       File2.delete(tName); // old version? delete it
-      SgtUtil.saveImage(bufferedImage, tName);
+      Image2Tests.saveImage(bufferedImage, tName);
       String2.log("displaying " + tName);
       // TestUtil.displayInBrowser("file://" + tName);
       Image2Tests.testImagesIdentical(tName, fileName + ".png", fileName + "_diff.png");

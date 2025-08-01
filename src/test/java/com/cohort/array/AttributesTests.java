@@ -108,8 +108,6 @@ class AttributesTests {
     Test.ensureEqual(atts.getDouble("double"), Math.PI, "");
     Test.ensureEqual(atts.getInt("double"), 3, "");
     Test.ensureEqual(atts.getString("String1"), "a, csv, ÿ\u20ac, string", "");
-    Test.ensureEqual(
-        atts.getStringsFromCSV("String1"), new String[] {"a", "csv", "ÿ\u20ac", "string"}, "");
     Test.ensureEqual(atts.getInt("String1"), Integer.MAX_VALUE, "");
     Test.ensureEqual(atts.get("PA"), new IntArray(new int[] {1, 2, 3}), "");
     Test.ensureEqual(atts.getInt("PA"), 1, "");
@@ -251,17 +249,6 @@ class AttributesTests {
         "    a=1i\n" + "    c=3.0f\n", // different type
         "");
 
-    // trim
-    atts.clear();
-    atts.add(" a ", " A ");
-    atts.add("b ", "B");
-    atts.add("c", "C");
-    atts.add("d", 4);
-    atts.trim();
-    results = atts.toString();
-    Test.ensureEqual(
-        results, "    a=A\n" + "    b=B\n" + "    c=C\n" + "    d=4i\n", "results=\n" + results);
-
     // trimIfNeeded
     atts.clear();
     atts.add("a", " A ");
@@ -298,16 +285,6 @@ class AttributesTests {
     b.set("s", new StringArray(new String[] {"theString"})); // same
     b.set("number", new IntArray(new int[] {11, 22})); // different
     b.set("inB", new IntArray(new int[] {3, 4, 5})); // unique
-
-    atts = Attributes.makeALikeB(a, b);
-    Test.ensureEqual(
-        atts.toString(),
-        "    inA=\"null\"\n" + "    inB=3i,4i,5i\n" + "    number=11i,22i\n",
-        "atts=\n" + atts.toString());
-    a.add(atts);
-    a.removeValue("\"null\"");
-    Test.ensureEqual(a, b, "");
-    Test.ensureEqual(a.toString(), b.toString(), "");
 
     // ***** PrimitiveArray standardizeVariable(int standardizeWhat, String varName,
     // PrimitiveArray dataPa)

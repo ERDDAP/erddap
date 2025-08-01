@@ -143,11 +143,6 @@ public class Subscriptions implements AutoCloseable {
     if (verbose) String2.log("Subscriptions loaded successfully. nValid=" + nValid);
   }
 
-  /** This returns this ERDDAP's preferred baseUrl. */
-  public String preferredErddapUrl() {
-    return preferredErddapUrl;
-  }
-
   /**
    * This flushes and closes the persistentTable. Future operations on this instance will fail. If
    * the program crashes, similar things are done automatically.
@@ -686,29 +681,6 @@ public class Subscriptions implements AutoCloseable {
   }
 
   /**
-   * This removes a pending or valid subscription (this method is used internally). It is ok of the
-   * subscription isn't found.
-   *
-   * @param datasetID
-   * @param email
-   * @param action
-   * @return true if it existed
-   * @throws Throwable if error reading file. But if datasetID+email+action not found, it isn't an
-   *     exception.
-   */
-  public synchronized boolean remove(String datasetID, String email, String action)
-      throws Throwable {
-
-    String comboKey = comboKey(datasetID, email, action);
-    Integer rowInteger = validSubscriptions.get(comboKey);
-    if (rowInteger == null) rowInteger = pendingSubscriptions.get(comboKey);
-    if (rowInteger == null) return false;
-    int row = rowInteger;
-    remove(row, readKey(row));
-    return true;
-  }
-
-  /**
    * This removes a pending or valid subscription. It is ok of the subscription isn't found.
    *
    * @param row
@@ -883,20 +855,5 @@ public class Subscriptions implements AutoCloseable {
     }
     if (reallyVerbose) String2.log("Subscriptions.listSubscriptions()=\n" + sb);
     return sb.toString();
-  }
-
-  /** for diagnostics */
-  public synchronized String toString(int row) throws IOException {
-    return (char) readStatus(row)
-        + ", "
-        + readCreationMinute(row)
-        + ", "
-        +
-        // readKey(row) + ", " +
-        readDatasetID(row)
-        + ", "
-        + readEmail(row)
-        + ", "
-        + readAction(row);
   }
 }

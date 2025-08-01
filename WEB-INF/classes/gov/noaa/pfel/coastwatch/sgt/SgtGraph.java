@@ -15,9 +15,24 @@ import com.cohort.util.Math2;
 import com.cohort.util.String2;
 import gov.noaa.pfel.coastwatch.griddata.Grid;
 import gov.noaa.pfel.coastwatch.pointdata.Table;
-import gov.noaa.pmel.sgt.*;
-import gov.noaa.pmel.sgt.dm.*;
-import gov.noaa.pmel.util.*;
+import gov.noaa.pmel.sgt.Axis;
+import gov.noaa.pmel.sgt.CartesianGraph;
+import gov.noaa.pmel.sgt.ContourLevels;
+import gov.noaa.pmel.sgt.ContourLineAttribute;
+import gov.noaa.pmel.sgt.GridAttribute;
+import gov.noaa.pmel.sgt.JPane;
+import gov.noaa.pmel.sgt.Layer;
+import gov.noaa.pmel.sgt.LogAxis;
+import gov.noaa.pmel.sgt.SGLabel;
+import gov.noaa.pmel.sgt.StackedLayout;
+import gov.noaa.pmel.sgt.TimeAxis;
+import gov.noaa.pmel.sgt.dm.SimpleGrid;
+import gov.noaa.pmel.util.GeoDate;
+import gov.noaa.pmel.util.Point2D;
+import gov.noaa.pmel.util.Range2D;
+import gov.noaa.pmel.util.SoTPoint;
+import gov.noaa.pmel.util.SoTRange;
+import gov.noaa.pmel.util.SoTValue;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics2D;
@@ -840,9 +855,8 @@ public class SgtGraph {
                   + graphBottomY,
               imageHeightInches - graphULY,
               1);
-      Dimension2D layerDimension2D =
-          new Dimension2D(
-              baseULXPixel / dpi + imageWidthInches, baseULYPixel / dpi + imageHeightInches);
+      double imageWidth = baseULXPixel / dpi + imageWidthInches;
+      double imageHeight = baseULYPixel / dpi + imageHeightInches;
 
       // redefine some graph parts for this graph with SoT objects -- minX vs beginX
       SoTRange xUserRange =
@@ -1093,13 +1107,14 @@ public class SgtGraph {
                   yarray[nMarkerXs1],
                   markerInteriorColors.get(nMarkerXs1),
                   gdl.lineColor);
-              if (reallyVerbose)
+              if (reallyVerbose) {
                 String2.log(
                     "  draw markers n="
                         + nMarkerXs
                         + " time="
                         + (System.currentTimeMillis() - markerTime)
                         + "ms");
+              }
             }
           }
 
@@ -1122,10 +1137,12 @@ public class SgtGraph {
           }*/
 
           if (drawColoredSurface) {
-            if (reallyVerbose) String2.log("  drawColoredSurface: " + gdl);
+            if (reallyVerbose) {
+              String2.log("  drawColoredSurface: " + gdl);
+            }
             CompoundColorMap colorMap = (CompoundColorMap) gdl.colorMap;
             CartesianGraph graph = new CartesianGraph("", xt, yt);
-            Layer layer = new Layer("coloredSurface", layerDimension2D);
+            Layer layer = new Layer("coloredSurface", imageWidth, imageHeight);
             layerNames.add(layer.getId());
             jPane.add(layer); // calls layer.setPane(this);
             layer.setGraph(graph); // calls graph.setLayer(this);
@@ -1191,7 +1208,7 @@ public class SgtGraph {
           }
           if (drawContourLines) {
             CartesianGraph graph = new CartesianGraph("", xt, yt);
-            Layer layer = new Layer("contourLines", layerDimension2D);
+            Layer layer = new Layer("contourLines", imageWidth, imageHeight);
             layerNames.add(layer.getId());
             jPane.add(layer); // calls layer.setPane(this);
             layer.setGraph(graph); // calls graph.setLayer(this);
@@ -1250,7 +1267,7 @@ public class SgtGraph {
           if ((drawMarkers || drawMarkersAndLines || drawColoredSurface) && gdl.colorMap != null) {
             // draw the color bar
             CartesianGraph graph = new CartesianGraph("colorbar" + gdli, xt, yt);
-            Layer layer = new Layer("colorbar" + gdli, layerDimension2D);
+            Layer layer = new Layer("colorbar" + gdli, imageWidth, imageHeight);
             layerNames.add(layer.getId());
             jPane.add(layer); // calls layer.setPane(this);
             layer.setGraph(graph); // calls graph.setLayer(this);
@@ -1387,7 +1404,7 @@ public class SgtGraph {
 
       if (!transparent) {
         CartesianGraph graph = new CartesianGraph("", xt, yt);
-        Layer layer = new Layer("axis", layerDimension2D);
+        Layer layer = new Layer("axis", imageWidth, imageHeight);
         layerNames.add(layer.getId());
         jPane.add(layer); // calls layer.setPane(this);
         layer.setGraph(graph); // calls graph.setLayer(this);

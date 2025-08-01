@@ -170,7 +170,7 @@ class SgtGraphTests {
           SgtGraph.DefaultBackgroundColor,
           1); // fontScale
       String fileName = tempDir + "SgtGraphMemoryTest" + rep + ".png";
-      SgtUtil.saveImage(bufferedImage1, fileName);
+      Image2Tests.saveImage(bufferedImage1, fileName);
 
       // view it in browser?
       // Graph of random points seems like its going to fail image diff eery time.
@@ -947,14 +947,14 @@ class SgtGraphTests {
     File2.delete(fileName + "6.png");
 
     // save image
-    SgtUtil.saveImage(bufferedImage, fileName + ".png");
+    Image2Tests.saveImage(bufferedImage, fileName + ".png");
     if (testAllAndDisplay) {
-      SgtUtil.saveImage(bufferedImage1, fileName + "1.png");
-      SgtUtil.saveImage(bufferedImage2, fileName + "2.png");
-      SgtUtil.saveImage(bufferedImage3, fileName + "3.png");
-      SgtUtil.saveImage(bufferedImage4, fileName + "4.png");
-      SgtUtil.saveImage(bufferedImage5, fileName + "5.png");
-      SgtUtil.saveImage(bufferedImage6, fileName + "6.png");
+      Image2Tests.saveImage(bufferedImage1, fileName + "1.png");
+      Image2Tests.saveImage(bufferedImage2, fileName + "2.png");
+      Image2Tests.saveImage(bufferedImage3, fileName + "3.png");
+      Image2Tests.saveImage(bufferedImage4, fileName + "4.png");
+      Image2Tests.saveImage(bufferedImage5, fileName + "5.png");
+      Image2Tests.saveImage(bufferedImage6, fileName + "6.png");
     } else {
       String2.log("fileName=" + fileName + ".png");
     }
@@ -1206,7 +1206,7 @@ class SgtGraphTests {
     // save image
     String fileName = "SgtGraphTestSurface" + (xIsLogAxis ? "X" : "") + (yIsLogAxis ? "Y" : "");
     String obsDir = Image2Tests.urlToAbsolutePath(Image2Tests.OBS_DIR);
-    SgtUtil.saveImage(bufferedImage, obsDir + fileName + ".png");
+    Image2Tests.saveImage(bufferedImage, obsDir + fileName + ".png");
 
     // view it
     // TestUtil.displayInBrowser("file://" + fileName);

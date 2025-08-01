@@ -2197,15 +2197,6 @@ public class TestUtil {
     sb = new StringBuilder("AbBbBaBBaB");
     Test.ensureEqual(String2.repeatedlyReplaceAll(sb, "c", "c", true).toString(), "AbBbBaBBaB", "");
 
-    // regexReplaceAll
-    sb =
-        new StringBuilder(
-            "test1 &term1; <kbd>&amp;justLettersNumbers3;</kbd> and <kbd>&amp;good;</kbd> but not &amp;bad; or <kbd>&amp;other_char;</kbd> or <kbd>&amp;noCloseSemi</kbd>!");
-    Test.ensureEqual(
-        String2.regexReplaceAll(sb, "<kbd>(&amp;)[a-zA-Z0-9]+;</kbd>", 1, "&").toString(),
-        "test1 &term1; <kbd>&justLettersNumbers3;</kbd> and <kbd>&good;</kbd> but not &amp;bad; or <kbd>&amp;other_char;</kbd> or <kbd>&amp;noCloseSemi</kbd>!",
-        "");
-
     // canonical
     s = "twopart";
     String s2 = "two";
@@ -2451,20 +2442,6 @@ public class TestUtil {
     Test.ensureEqual(String2.toCSSVString(String2.toDoubleArray(Dar)), "1.1, 333.3", "a");
     oar = new Object[] {Double.valueOf(-1.1), " -333.3 ", "b"};
     Test.ensureEqual(String2.toCSSVString(String2.toDoubleArray(oar)), "-1.1, -333.3, NaN", "b");
-
-    // toIntArray(arrayList)
-    String2.log("test toIntArray(arrayList)");
-    ArrayList<Integer> alInt = new ArrayList<>();
-    alInt.add(Integer.valueOf(1));
-    alInt.add(Integer.valueOf(333));
-    Test.ensureEqual(String2.toCSSVString(String2.toIntArray(alInt)), "1, 333", "a");
-
-    // toFloatArray(arrayList)
-    String2.log("test toFloatArray(arrayList)");
-    ArrayList<Float> alFloat = new ArrayList<>();
-    alFloat.add(Float.valueOf(1.1f));
-    alFloat.add(Float.valueOf(333.3f));
-    Test.ensureEqual(String2.toCSSVString(String2.toFloatArray(alFloat)), "1.1, 333.3", "a");
 
     // toDoubleArray(arrayList)
     String2.log("test toDoubleArray(arrayList)");
@@ -2739,45 +2716,6 @@ public class TestUtil {
     n = String2.getCountDistributionN(countDist);
     Test.ensureEqual(n, 3, "");
     Test.ensureEqual(String2.getCountDistributionMedian(countDist, n), 4, "");
-
-    // simpleSearchAndReplace
-    String2.log("test simpleSearchAndReplace");
-    int random = Math2.random(Integer.MAX_VALUE);
-    String utilDir = TEMP_DIR.toAbsolutePath().toString() + "/";
-    Test.ensureEqual(
-        File2.writeToFile88591(utilDir + random + ".asc", "1\nNaNny\nhi, NaN!\n4\n"), "", "a");
-    File2.simpleSearchAndReplace(
-        utilDir + random + ".asc", utilDir + random + "b.asc", File2.ISO_8859_1, "NaN", "99999");
-    sar = File2.readFromFile88591(utilDir + random + "b.asc");
-    Test.ensureEqual(sar[0], "", "b");
-    Test.ensureEqual(sar[1], "1\n99999ny\nhi, 99999!\n4\n", "c");
-    File2.delete(utilDir + random + "b.asc");
-
-    // regexSearchAndReplace
-    String2.log("test regexSearchAndReplace");
-    File2.regexSearchAndReplace(
-        utilDir + random + ".asc",
-        utilDir + random + "b.asc",
-        File2.ISO_8859_1,
-        "\\bNaN\\b",
-        "99999"); // \b = word boundary
-    sar = File2.readFromFile88591(utilDir + random + "b.asc");
-    Test.ensureEqual(sar[0], "", "b");
-    Test.ensureEqual(sar[1], "1\nNaNny\nhi, 99999!\n4\n", "c");
-    File2.delete(utilDir + random + ".asc");
-    File2.delete(utilDir + random + "b.asc");
-
-    // getKeysAndValuesString
-    String2.log("test getKeysAndValuesString");
-    HashMap<String, String> hm = new HashMap<>();
-    hm.put("key3", "value3");
-    hm.put("key2", "value2");
-    hm.put("key1", "value1");
-    hm.put("key4", "value4");
-    Test.ensureEqual(
-        String2.getKeysAndValuesString(hm),
-        "key1: value1\n" + "key2: value2\n" + "key3: value3\n" + "key4: value4\n",
-        "a");
 
     // genEFormat6
     String2.log("test genEFormat6");
@@ -6767,21 +6705,6 @@ public class TestUtil {
     } catch (Exception e) {
     }
 
-    s = "2003002";
-    Test.ensureEqual(Calendar2.formatAsYYYYDDD(Calendar2.parseYYYYDDD(localGC, s)), s, "pL");
-    Test.ensureEqual(Calendar2.formatAsYYYYDDD(Calendar2.parseYYYYDDD(zuluGC, s)), s, "pZ");
-    Test.ensureEqual(Calendar2.formatAsYYYYDDD(Calendar2.parseYYYYDDDZulu(s)), s, "pZ");
-    Test.ensureEqual(
-        Calendar2.formatAsYYYYDDD(Calendar2.parseYYYYDDDZulu("0001002")), "0001002", "pL0001");
-    Test.ensureEqual(
-        Calendar2.formatAsYYYYDDD(Calendar2.parseYYYYDDDZulu("0000003")), "0000003", "pL0000");
-    Test.ensureEqual(
-        Calendar2.formatAsYYYYDDD(Calendar2.parseYYYYDDDZulu("-0001004")), "-0001004", "pL-0001");
-    try {
-      Calendar2.formatAsYYYYDDD(null);
-      throw new Throwable("Shouldn't get here.20");
-    } catch (Exception e) {
-    }
     try {
       Calendar2.parseYYYYDDD(zuluGC, null);
       throw new Throwable("Shouldn't get here.21");
@@ -6818,20 +6741,8 @@ public class TestUtil {
     } catch (Exception e) {
     }
 
-    s = "2006-02-03";
-    Test.ensureEqual(Calendar2.formatAsYYYYMM(Calendar2.parseISODateTimeZulu(s)), "200602", "pL");
-    try {
-      Calendar2.formatAsYYYYMM(null);
-      throw new Throwable("Shouldn't get here.28");
-    } catch (Exception e) {
-    }
-
-    Test.ensureEqual(
-        Calendar2.formatAsISODate(Calendar2.newGCalendarLocal(2003, 365)), "2003-12-31", "cL");
     Test.ensureEqual(
         Calendar2.formatAsISODate(Calendar2.newGCalendarZulu(2003, 365)), "2003-12-31", "cZ");
-    Test.ensureEqual(
-        Calendar2.formatAsISODate(Calendar2.newGCalendarLocal(2004, 365)), "2004-12-30", "dL");
     Test.ensureEqual(
         Calendar2.formatAsISODate(Calendar2.newGCalendarZulu(2004, 365)), "2004-12-30", "dZ");
     Test.ensureEqual(
@@ -6840,11 +6751,6 @@ public class TestUtil {
         Calendar2.formatAsISODate(Calendar2.newGCalendarZulu(0, 34)), "0000-02-03", "dZ0");
     Test.ensureEqual(
         Calendar2.formatAsISODate(Calendar2.newGCalendarZulu(-1, 34)), "-0001-02-03", "dZ-1");
-    try {
-      Calendar2.newGCalendarLocal(Integer.MAX_VALUE, 365);
-      throw new Throwable("Shouldn't get here.30");
-    } catch (Exception e) {
-    }
     try {
       Calendar2.newGCalendarZulu(Integer.MAX_VALUE, 365);
       throw new Throwable("Shouldn't get here.31");
@@ -6884,14 +6790,6 @@ public class TestUtil {
       throw new Throwable("Shouldn't get here.36");
     } catch (Exception e) {
     }
-    Test.ensureEqual(
-        Calendar2.formatAsYYYYDDD(Calendar2.newGCalendarZulu(2003, 1, 2)), "2003002", "mZ");
-    Test.ensureEqual(
-        Calendar2.formatAsYYYYDDD(Calendar2.newGCalendarZulu(1, 1, 2)), "0001002", "mZ");
-    Test.ensureEqual(
-        Calendar2.formatAsYYYYDDD(Calendar2.newGCalendarZulu(0, 1, 2)), "0000002", "mZ");
-    Test.ensureEqual(
-        Calendar2.formatAsYYYYDDD(Calendar2.newGCalendarZulu(-1, 1, 2)), "-0001002", "mZ");
 
     Test.ensureEqual(
         Calendar2.formatAsUSSlashAmPm(Calendar2.parseISODateTimeZulu("2006-01-02 00:03:04")),
@@ -7155,26 +7053,6 @@ public class TestUtil {
     }
     Test.ensureEqual(
         Calendar2.epochSecondsToIsoStringTZ(1125504062.0), "2005-08-31T16:01:02Z", "x3");
-
-    // epoch hours
-    Test.ensureEqual(Calendar2.isoStringToEpochHours("2005-08-31T16:01:02"), 312640, "xa1");
-    Test.ensureEqual(Calendar2.isoStringToEpochHours("1970-01-01"), 0, "xa1");
-    Test.ensureEqual(Calendar2.isoStringToEpochHours("1969-12-31T23"), -1, "xa1");
-    int h0001 = -17259936;
-    Test.ensureEqual(Calendar2.isoStringToEpochHours("0001-01-01"), h0001, "xa1");
-    Test.ensureEqual(Calendar2.isoStringToEpochHours("0000-01-01"), h0001 + -366 * 24, "xa1");
-    Test.ensureEqual(
-        Calendar2.isoStringToEpochHours("-0001-01-01"), h0001 + (-365 - 366) * 24, "xa1");
-    try {
-      Calendar2.isoStringToEpochHours("");
-      throw new Throwable("Shouldn't get here.66");
-    } catch (Exception e) {
-    }
-    try {
-      Calendar2.isoStringToEpochHours(null);
-      throw new Throwable("Shouldn't get here.67");
-    } catch (Exception e) {
-    }
 
     // gcToEpochSeconds(GregorianCalendar gc) (test with values above)
     gc = Calendar2.parseISODateTimeZulu("2005-08-31T16:01:02");
@@ -7770,11 +7648,6 @@ public class TestUtil {
     String2.log("test getStackTrace");
     String2.log("intentional trace=" + MustBe.getStackTrace());
 
-    // printStackTrace
-    String2.log("test printStackTrace");
-    System.err.print("intentional trace=");
-    MustBe.printStackTrace();
-
     try {
       throw new Exception("I threw this exception!");
     } catch (Exception e) {
@@ -7852,18 +7725,6 @@ public class TestUtil {
 
     Test.ensureEqual(File2.writeToFile88591(utilDir + "temp3.txt", "This\nis"), "", "writeToFile3");
 
-    // test whereDifferent
-    String2.log("test whereDifferent");
-    Test.ensureEqual(File2.whereDifferent(utilDir + "temp.txt", utilDir + "temp.txt"), -1, "a");
-    Test.ensureEqual(
-        File2.whereDifferent(utilDir + "temp.txt", utilDir + "temp2.txt"), 9, "b"); // different
-    // character
-    Test.ensureEqual(
-        File2.whereDifferent(utilDir + "temp.txt", utilDir + "temp3.txt"), 7, "b"); // different
-    // length;
-    // otherwise the
-    // same
-
     // test hexDump
     String2.log("test hexDump");
     Test.ensureEqual(
@@ -7936,9 +7797,6 @@ public class TestUtil {
     // test copy
     String2.log("test copy");
     Test.ensureEqual(File2.copy(utilDir + "temp.txt", utilDir + "temp2.txt"), true, "a");
-    Test.ensureEqual(
-        File2.whereDifferent(utilDir + "temp.txt", utilDir + "temp2.txt"), -1, "b"); // different
-    // character
     Test.ensureEqual(File2.delete(utilDir + "temp2.txt"), true, "c");
 
     // delete the temp.txt file
@@ -7982,14 +7840,6 @@ public class TestUtil {
 
     // delete tTempDir
     Test.ensureTrue(File2.simpleDelete(tTempDir), "");
-
-    // ensurePrintable
-    Test.ensurePrintable("test123\n\t ~¡ÿ", "ensurePrintable");
-    try {
-      Test.ensurePrintable("test123\n\t ~¡ÿ’", "ensurePrintable");
-      Test.error(String2.ERROR + ": previous line should have failed.");
-    } catch (Exception e) {
-    }
 
     // addSlash
     String2.log("test addSlash");

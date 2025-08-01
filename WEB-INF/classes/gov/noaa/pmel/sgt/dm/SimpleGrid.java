@@ -230,11 +230,6 @@ public class SimpleGrid implements SGTGrid, Cartesian, Cloneable, Serializable {
     return id_;
   }
 
-  /** Set the unique identifier. */
-  public void setId(String ident) {
-    id_ = ident;
-  }
-
   @Override
   public void addPropertyChangeListener(PropertyChangeListener l) {
     changes_.addPropertyChangeListener(l);

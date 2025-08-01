@@ -1802,18 +1802,6 @@ public class File2 {
   }
 
   /**
-   * Creating a buffered FileWriter this way helps me check that charset is set. (Instead of the
-   * default charset used by "new File(outputStream)").
-   *
-   * @param charset Must not be "" or null.
-   * @return the BufferedWriter
-   */
-  public static BufferedWriter getBufferedFileWriter(String fullFileName, String charset)
-      throws IOException {
-    return getBufferedFileWriter(fullFileName, Charset.forName(charset));
-  }
-
-  /**
    * Creating a buffered FileWriter this way helps me check that charset is set (instead of using
    * the default charset).
    *
@@ -1910,10 +1898,6 @@ public class File2 {
     return lowWriteToFile(fileName, contents, charset, "\n", true);
   }
 
-  public static String appendFile88591(String fileName, String contents) {
-    return lowWriteToFile(fileName, contents, ISO_8859_1, "\n", true);
-  }
-
   public static String appendFileUtf8(String fileName, String contents) {
     return lowWriteToFile(fileName, contents, UTF_8, "\n", true);
   }
@@ -1996,50 +1980,6 @@ public class File2 {
       while (bytesRead < nBytes) bytesRead += fis.read(ba, bytesRead, nBytes - bytesRead);
       return String2.hexDump(ba);
     }
-  }
-
-  /**
-   * This returns the byte# at which the two files are different (or -1 if same).
-   *
-   * @param fullFileName1
-   * @param fullFileName2
-   * @return byte# at which the two files are different (or -1 if same).
-   */
-  public static long whereDifferent(String fullFileName1, String fullFileName2) {
-
-    long length1 = length(fullFileName1);
-    long length2 = length(fullFileName2);
-    long length = Math.min(length1, length2);
-    InputStream bis1 = null, bis2 = null;
-    long po = 0;
-    try {
-      bis1 = getDecompressedBufferedInputStream(fullFileName1);
-      bis2 = getDecompressedBufferedInputStream(fullFileName2);
-      for (po = 0; po < length; po++) {
-        if (bis1.read() != bis2.read()) break;
-      }
-    } catch (Exception e) {
-      String2.log(
-          String2.ERROR
-              + " in whereDifferent(\n1:"
-              + fullFileName1
-              + "\n2:"
-              + fullFileName2
-              + "\n"
-              + MustBe.throwableToString(e));
-    }
-    try {
-      if (bis1 != null) bis1.close();
-    } catch (Exception e) {
-    }
-    try {
-      if (bis2 != null) bis2.close();
-    } catch (Exception e) {
-    }
-
-    if (po < length) return po;
-    if (length1 != length2) return length;
-    return -1;
   }
 
   /**
@@ -2263,121 +2203,5 @@ public class File2 {
   public static String removeSlash(String dir) {
     if (dir.length() == 0 || "\\/".indexOf(dir.charAt(dir.length() - 1)) < 0) return dir;
     return dir.substring(0, dir.length() - 1);
-  }
-
-  /**
-   * This reads a file line by line (with any common end-of-line characters), does a simple (not
-   * regex) search and replace on each line, and saves the lines in another file (with
-   * String2.lineSeparator's).
-   *
-   * @param fullInFileName the full name of the input file (may be externally compressed)
-   * @param fullOutFileName the full name of the output file (if same as fullInFileName,
-   *     fullInFileName will be renamed +.original)
-   * @param charset e.g., File2.UTF_8.
-   * @param search a plain text string to search for
-   * @param replace a plain text string to replace any instances of 'search'
-   * @throws Exception if any trouble
-   */
-  public static void simpleSearchAndReplace(
-      String fullInFileName, String fullOutFileName, String charset, String search, String replace)
-      throws Exception {
-
-    String2.log(
-        "simpleSearchAndReplace in="
-            + fullInFileName
-            + " out="
-            + fullOutFileName
-            + " charset="
-            + charset
-            + " search="
-            + search
-            + " replace="
-            + replace);
-    String tOutFileName = fullOutFileName + Math2.random(Integer.MAX_VALUE);
-    BufferedReader bufferedReader = getDecompressedBufferedFileReader(fullInFileName, charset);
-    try {
-      BufferedWriter bufferedWriter = getBufferedFileWriter(tOutFileName, charset);
-      try {
-
-        // convert the text, line by line
-        // This uses bufferedReader.readLine() to repeatedly
-        // read lines from the file and thus can handle various
-        // end-of-line characters.
-        String s = bufferedReader.readLine();
-        while (s != null) { // null = end-of-file
-          bufferedWriter.write(String2.replaceAll(s, search, replace));
-          bufferedWriter.write(String2.lineSeparator);
-          s = bufferedReader.readLine();
-        }
-
-        bufferedReader.close();
-        bufferedReader = null;
-        bufferedWriter.close();
-        bufferedWriter = null;
-
-        if (fullInFileName.equals(fullOutFileName))
-          rename(fullInFileName, fullInFileName + ".original");
-        rename(tOutFileName, fullOutFileName);
-        if (fullInFileName.equals(fullOutFileName)) delete(fullInFileName + ".original");
-
-      } catch (Exception e) {
-        try {
-          if (bufferedWriter != null) {
-            bufferedWriter.close();
-            bufferedWriter = null;
-          }
-        } catch (Exception e2) {
-        }
-        try {
-          if (bufferedReader != null) {
-            bufferedReader.close();
-            bufferedReader = null;
-          }
-        } catch (Exception e2) {
-        }
-        delete(tOutFileName);
-        throw e;
-      }
-    } catch (Exception e3) {
-      try {
-        if (bufferedReader != null) bufferedReader.close();
-      } catch (Exception e4) {
-      }
-      delete(tOutFileName);
-      throw e3;
-    }
-  }
-
-  /**
-   * This reads an ISO_8859_1 file line by line (with any common end-of-line characters), does a
-   * regex search and replace on each line, and saves the lines in another file (with
-   * String2.lineSeparator's).
-   *
-   * @param fullInFileName the full name of the input file (may be externally compressed)
-   * @param fullOutFileName the full name of the output file
-   * @param charset e.g., File2.UTF_8
-   * @param search a regex to search for
-   * @param replace a plain text string to replace any instances of 'search'
-   * @throws Exception if any trouble
-   */
-  public static void regexSearchAndReplace(
-      String fullInFileName, String fullOutFileName, String charset, String search, String replace)
-      throws Exception {
-
-    try (BufferedReader bufferedReader =
-        getDecompressedBufferedFileReader(fullInFileName, charset)) {
-      try (BufferedWriter bufferedWriter = getBufferedFileWriter(fullOutFileName, charset)) {
-        // get the text from the file
-        // This uses bufferedReader.readLine() to repeatedly
-        // read lines from the file and thus can handle various
-        // end-of-line characters.
-        String s = bufferedReader.readLine();
-        while (s != null) { // null = end-of-file
-          bufferedWriter.write(s.replaceAll(search, replace));
-          bufferedWriter.write(String2.lineSeparator);
-          s = bufferedReader.readLine();
-        }
-      }
-    }
   }
 }

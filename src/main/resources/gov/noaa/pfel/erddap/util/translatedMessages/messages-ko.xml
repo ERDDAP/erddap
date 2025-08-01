@@ -4393,10 +4393,6 @@ X=경도, Y=위도이면 지도가 생성됩니다.
 빈 파일을 반환하는 것이 더 낫습니까? 그러나 .nc 및 기타 파일은 길이가 0인 데이터를 허용하지 않습니다.
  -->
 <MustBeThereIsNoData>귀하의 쿼리에서 일치하는 결과가 나오지 않았습니다.</MustBeThereIsNoData>
-
-<!--  많은 파일 형식에는 파일이 저장할 수 있는 데이터 양에 제한이 있습니다(예: 2GB).  -->
-<MustBeNotNull>{0}은(는) null일 수 없습니다.</MustBeNotNull>
-<MustBeNotEmpty>{0}은 빈 문자열이 아니어야 합니다.</MustBeNotEmpty>
 <MustBeInternalError>내부 오류</MustBeInternalError>
 <MustBeOutOfMemoryError>메모리 부족 오류</MustBeOutOfMemoryError>
 

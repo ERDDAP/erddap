@@ -663,17 +663,6 @@ class NcHelperTests {
          * }
          */
       }
-
-      // NOTE: instead of closing the ncWriter to write changes to disk, you can use
-      // ncWriter.flush().
-      if (ncWriter != null) {
-        try {
-          ncWriter.abort();
-        } catch (Exception e9) {
-        }
-        File2.delete(testUnlimitedFileName);
-        ncWriter = null;
-      }
     } catch (Exception e9) {
       String2.log(
           "row="

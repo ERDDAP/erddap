@@ -265,34 +265,6 @@ public class EDVTimeStampGridAxis extends EDVGridAxis {
   }
 
   /**
-   * sourceTimeFormat is either a udunits string describing how to interpret numbers (e.g., "seconds
-   * since 1970-01-01T00:00:00") or a java.text.SimpleDateFormat string describing how to interpret
-   * string times (see
-   * https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/text/SimpleDateFormat.html)).
-   * Examples: <br>
-   * Date and Time Pattern Result <br>
-   * "yyyy.MM.dd G 'at' HH:mm:ss z" 2001.07.04 AD at 12:08:56 PDT <br>
-   * "EEE, MMM d, ''yy" Wed, Jul 4, '01 <br>
-   * "yyyyy.MMMMM.dd GGG hh:mm aaa" 02001.July.04 AD 12:08 PM <br>
-   * "yyMMddHHmmssZ" 010704120856-0700 <br>
-   * "yyyy-MM-dd'T'HH:mm:ss.SSSZ" 2001-07-04T12:08:56.235-0700
-   *
-   * @return the source time's units
-   */
-  public String sourceTimeFormat() {
-    return sourceTimeFormat;
-  }
-
-  /**
-   * This returns true if the source time is numeric.
-   *
-   * @return true if the source time is numeric.
-   */
-  public boolean sourceTimeIsNumeric() {
-    return sourceTimeIsNumeric;
-  }
-
-  /**
    * This returns true if the destinationValues equal the sourceValues (e.g., scaleFactor = 1 and
    * addOffset = 0). <br>
    * Some subclasses overwrite this to cover other situations: <br>
@@ -362,14 +334,6 @@ public class EDVTimeStampGridAxis extends EDVGridAxis {
         destinationMax
             .getDouble()); // time always full precision, not "niceDouble", but it is already a
     // double
-  }
-
-  /**
-   * An indication of the precision of the time values, e.g., "1970-01-01T00:00:00Z" (default) or
-   * null (goes to default). See Calendar2.epochSecondsToLimitedIsoStringT()
-   */
-  public String time_precision() {
-    return time_precision;
   }
 
   /**
@@ -580,29 +544,6 @@ public class EDVTimeStampGridAxis extends EDVGridAxis {
     if (Double.isNaN(epochSeconds)) return sourceTimeIsNumeric ? "" + sourceMissingValue : "";
     if (sourceTimeIsNumeric) return "" + epochSecondsToSourceTimeDouble(epochSeconds);
     return Calendar2.format(epochSeconds, dateTimeFormatter);
-  }
-
-  /**
-   * This converts a source time to a (limited) destination ISO TZ time.
-   *
-   * @param sourceTime
-   * @return a (limited) ISO T Time (e.g., "1993-12-31T23:59:59Z"). If sourceTime is invalid, this
-   *     returns "" (but there shouldn't ever be missing values).
-   */
-  public String sourceTimeToIsoStringT(double sourceTime) {
-    double destD = sourceTimeToEpochSeconds(sourceTime);
-    return destinationToString(destD);
-  }
-
-  /**
-   * This converts a destination ISO time to a source time.
-   *
-   * @param isoString an ISO T Time (e.g., "1993-12-31T23:59:59").
-   * @return sourceTime
-   * @throws Throwable if ISO time is invalid
-   */
-  public double isoStringToSourceTime(String isoString) {
-    return epochSecondsToSourceTimeDouble(Calendar2.isoStringToEpochSeconds(isoString));
   }
 
   /**

@@ -16,17 +16,13 @@ import com.cohort.util.MustBe;
 import com.cohort.util.String2;
 import gov.noaa.pmel.sgt.dm.SGTData;
 import gov.noaa.pmel.util.GeoDate;
-import gov.noaa.pmel.util.Point2D;
 import gov.noaa.pmel.util.Range2D;
-import gov.noaa.pmel.util.SoTPoint;
 import gov.noaa.pmel.util.SoTRange;
-import gov.noaa.pmel.util.SoTValue;
 import java.awt.Graphics;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.beans.PropertyChangeEvent;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -214,12 +210,6 @@ public class CartesianGraph extends Graph {
     if (yTransform_ != null) yTransform_.addPropertyChangeListener(this);
   }
 
-  /** Create a copy of the <code>CartesianGraph</code> */
-  @Override
-  public Graph copy() {
-    throw new MethodNotImplementedError();
-  }
-
   /**
    * Associates <code>SGTData</code> and <code>Attribute</code> with the <code>CartesianGraph</code>
    * . A renderer is constucted based on the two arguements.
@@ -381,84 +371,12 @@ public class CartesianGraph extends Graph {
   }
 
   /**
-   * Set the clipping rectangle in user coordinates.
-   *
-   * @since 3.0
-   * @param tmin mimimum time
-   * @param tmax maximum time
-   * @param min miminum user coordinate
-   * @param max maximum user coordinate
-   */
-  public void setClip(long tmin, long tmax, double min, double max) {
-    if (xTransform_.isTime() || yTransform_.isTime()) {
-      clipping_ = true;
-      tClipRange_ = new SoTRange.Time(tmin, tmax);
-      if (xTransform_.isTime()) {
-        yClipRange_ = new Range2D(min, max);
-      } else {
-        xClipRange_ = new Range2D(min, max);
-      }
-    } else {
-      clipping_ = false;
-    }
-  }
-
-  /**
-   * Set the clipping rectangle in user coordinates.
-   *
-   * @since 2.0
-   */
-  public void setClip(SoTRange xr, SoTRange yr) {
-    if (xr.isTime() || yr.isTime()) {
-      SoTRange.Double dub;
-      long tstart;
-      long tend;
-      if (xr.isTime()) {
-        tstart = xr.getStart().getLongTime();
-        tend = xr.getEnd().getLongTime();
-        dub = (SoTRange.Double) yr;
-      } else {
-        tstart = yr.getStart().getLongTime();
-        tend = yr.getEnd().getLongTime();
-        dub = (SoTRange.Double) xr;
-      }
-      setClip(tstart, tend, dub.start, dub.end);
-    } else {
-      SoTRange.Double xrd = (SoTRange.Double) xr;
-      SoTRange.Double yrd = (SoTRange.Double) yr;
-      setClip(xrd.start, xrd.end, yrd.start, yrd.end);
-    }
-  }
-
-  /**
    * Set the clipping property.
    *
    * @param clip clipping
    */
   public void setClipping(boolean clip) {
     clipping_ = clip;
-  }
-
-  /**
-   * Test the clipping property.
-   *
-   * @return true if clipping is active
-   */
-  public boolean isClipping() {
-    return clipping_;
-  }
-
-  /**
-   * Add a X axis (<code>Axis.HORIZONTAL</code>) to the graph.
-   *
-   * @param id axis identifier
-   * @param axis X axis
-   * @see Axis
-   * @see PlainAxis
-   */
-  public void addXAxis(String id, Axis axis) {
-    if (id.length() != 0) axis.setId(id);
-    addXAxis(axis);
   }
 
   /**
@@ -475,62 +393,6 @@ public class CartesianGraph extends Graph {
   }
 
   /**
-   * Get a reference to an X axis.
-   *
-   * @param id axis identifier
-   * @return axis found
-   * @exception AxisNotFoundException An axis was not found with the correct identifier.
-   * @see Axis
-   * @see PlainAxis
-   */
-  public Axis getXAxis(String id) throws AxisNotFoundException {
-    if (!xAxis_.isEmpty()) {
-      for (Axis ax : xAxis_) {
-        if (ax.getId().equals(id)) return ax;
-      }
-    }
-    throw new AxisNotFoundException();
-  }
-
-  /** Remove all X axes from the graph. */
-  public void removeAllXAxes() {
-    xAxis_.clear();
-  }
-
-  /**
-   * Get the number of X axes associated with the graph.
-   *
-   * @return number of axes
-   * @see Axis
-   * @see PlainAxis
-   */
-  public int getNumberXAxis() {
-    return xAxis_.size();
-  }
-
-  /**
-   * Get an <code>Enumeration</code> object for the X axes.
-   *
-   * @return enumeration
-   */
-  public Iterator<Axis> xAxisElements() {
-    return xAxis_.iterator();
-  }
-
-  /**
-   * Add a Y axis (<code>Axis.VERTICAL</code>) to the graph.
-   *
-   * @param id axis identifier
-   * @param axis Y axis
-   * @see Axis
-   * @see PlainAxis
-   */
-  public void addYAxis(String id, Axis axis) {
-    if (id.length() != 0) axis.setId(id);
-    addYAxis(axis);
-  }
-
-  /**
    * Add a Y axis (<code>Axis.VERTICAL</code>) to the graph. Uses the existing axis identifier.
    *
    * @param axis Y axis
@@ -544,63 +406,6 @@ public class CartesianGraph extends Graph {
   }
 
   /**
-   * Get a reference to an Y axis.
-   *
-   * @param id axis identifier
-   * @return axis found
-   * @exception AxisNotFoundException An axis was not found with the correct identifier.
-   * @see Axis
-   * @see PlainAxis
-   */
-  public Axis getYAxis(String id) throws AxisNotFoundException {
-    if (!yAxis_.isEmpty()) {
-      for (Axis ax : yAxis_) {
-        if (ax.getId().equals(id)) return ax;
-      }
-    }
-    throw new AxisNotFoundException();
-  }
-
-  /** Remove all Y axes from the graph. */
-  public void removeAllYAxes() {
-    yAxis_.clear();
-  }
-
-  /**
-   * Get the number of Y axes associated with the graph.
-   *
-   * @return number of axes
-   * @see Axis
-   * @see PlainAxis
-   */
-  public int getNumberYAxis() {
-    return yAxis_.size();
-  }
-
-  /**
-   * Get an <code>Enumeration</code> object for the Y axes.
-   *
-   * @return enumeration
-   */
-  public Iterator<Axis> yAxisElements() {
-    return yAxis_.iterator();
-  }
-
-  /**
-   * Set the X <code>AxisTransform</code>. This transform is used to convert to and from user to
-   * physical coordinates.
-   *
-   * @param xfrm X transform
-   * @see AxisTransform
-   * @see LinearTransform
-   */
-  public void setXTransform(AxisTransform xfrm) {
-    if (xTransform_ != null) xTransform_.removePropertyChangeListener(this);
-    xTransform_ = xfrm;
-    if (xfrm != null) xTransform_.addPropertyChangeListener(this);
-  }
-
-  /**
    * Get the current X <code>AxisTransform</code>.
    *
    * @return X Transform
@@ -609,20 +414,6 @@ public class CartesianGraph extends Graph {
    */
   public AxisTransform getXTransform() {
     return xTransform_;
-  }
-
-  /**
-   * Set the Y <code>AxisTransform</code>. This transform is used to convert to and from user to
-   * physical coordinates.
-   *
-   * @param xfrm Y transform
-   * @see AxisTransform
-   * @see LinearTransform
-   */
-  public void setYTransform(AxisTransform xfrm) {
-    if (yTransform_ != null) yTransform_.removePropertyChangeListener(this);
-    yTransform_ = xfrm;
-    if (xfrm != null) yTransform_.addPropertyChangeListener(this);
   }
 
   /**
@@ -694,30 +485,11 @@ public class CartesianGraph extends Graph {
   }
 
   /**
-   * Transform user X coordinate to device coordinate.
-   *
-   * @since 3.0
-   */
-  public double getXUtoD2(double u) {
-    if (Double.isNaN(u)) return u;
-    return getLayer().getXPtoD2(xTransform_.getTransP(u));
-  }
-
-  /**
    * Transform <code>GeoDate</code> to physical coordinate.
    *
    * @since 2.0
    */
   public double getXUtoP(GeoDate t) {
-    return xTransform_.getTransP(t);
-  }
-
-  /**
-   * Transform <code>long</code> to physical coordinate.
-   *
-   * @since 3.0
-   */
-  public double getXUtoP(long t) {
     return xTransform_.getTransP(t);
   }
 
@@ -742,174 +514,6 @@ public class CartesianGraph extends Graph {
   }
 
   /**
-   * Transform <code>GeoDate</code> to device coordinate.
-   *
-   * @since 3.0
-   */
-  public double getXUtoD2(GeoDate t) {
-    if (t == null) return Double.NaN;
-    return getLayer().getXPtoD2(xTransform_.getTransP(t));
-  }
-
-  /**
-   * Transform <code>long</code> to device coordinate.
-   *
-   * @since 3.0
-   */
-  public double getXUtoD2(long t) {
-    if (t == Long.MAX_VALUE) return Double.NaN;
-    return getLayer().getXPtoD2(xTransform_.getTransP(t));
-  }
-
-  /**
-   * Transform X <code>SoTValue</code> to device coordinate.
-   *
-   * @since 3.0
-   */
-  public int getXUtoD(SoTValue val) {
-    if (val.isTime()) {
-      return getXUtoD(val.getLongTime());
-    } else {
-      return getXUtoD(((SoTValue.Double) val).getValue());
-    }
-  }
-
-  /**
-   * Transform Y <code>SoTValue</code> to device coordinate.
-   *
-   * @since 3.0
-   */
-  public int getYUtoD(SoTValue val) {
-    if (val.isTime()) {
-      return getYUtoD(val.getLongTime());
-    } else {
-      return getYUtoD(((SoTValue.Double) val).getValue());
-    }
-  }
-
-  /**
-   * Transform X <code>SoTValue</code> to device coordinate.
-   *
-   * @since 3.0
-   */
-  public double getXUtoD2(SoTValue val) {
-    if (val.isTime()) {
-      return getXUtoD2(val.getLongTime());
-    } else {
-      return getXUtoD2(((SoTValue.Double) val).getValue());
-    }
-  }
-
-  /**
-   * Transform Y <code>SoTValue</code> to device coordinate.
-   *
-   * @since 3.0
-   */
-  public double getYUtoD2(SoTValue val) {
-    if (val.isTime()) {
-      return getYUtoD2(val.getLongTime());
-    } else {
-      return getYUtoD2(((SoTValue.Double) val).getValue());
-    }
-  }
-
-  /**
-   * Transform X <code>SoTValue</code> to physical coordinate.
-   *
-   * @since 3.0
-   */
-  public double getXUtoP(SoTValue val) {
-    if (val.isTime()) {
-      return getXUtoP(val.getLongTime());
-    } else {
-      return getXUtoP(((SoTValue.Double) val).getValue());
-    }
-  }
-
-  /**
-   * Transform Y <code>SoTValue</code> to physical coordinate.
-   *
-   * @since 3.0
-   */
-  public double getYUtoP(SoTValue val) {
-    if (val.isTime()) {
-      return getYUtoP(val.getLongTime());
-    } else {
-      return getYUtoP(((SoTValue.Double) val).getValue());
-    }
-  }
-
-  /**
-   * Transform physical X coordinate to user coordinate using <code>SoTValue</code>
-   *
-   * @param p physical coordinate
-   * @return user coorindinate
-   * @since 3.0
-   */
-  public SoTValue getXPtoSoT(double p) {
-    if (xTransform_.isTime()) {
-      return new SoTValue.Time(xTransform_.getLongTimeTransU(p));
-    } else {
-      return new SoTValue.Double(xTransform_.getTransU(p));
-    }
-  }
-
-  /**
-   * Transform physical X coordinate to user coordinate.
-   *
-   * @param p physical coorindate
-   * @return user coordinate
-   */
-  public double getXPtoU(double p) {
-    return xTransform_.getTransU(p);
-  }
-
-  /**
-   * Transform physical X coordinate to time.
-   *
-   * @param p physical coordinate
-   * @return time
-   */
-  public GeoDate getXPtoTime(double p) {
-    return xTransform_.getTimeTransU(p);
-  }
-
-  /**
-   * Transform physical X coordinate to time.
-   *
-   * @param p physical coordinate
-   * @return time
-   * @since 3.0
-   */
-  public long getXPtoLongTime(double p) {
-    return xTransform_.getLongTimeTransU(p);
-  }
-
-  /**
-   * Transform physical coordinate to a <code>SoTPoint</code>
-   *
-   * @since 3.0
-   * @param p physical coordinate
-   * @return <code>SoTPoint</code>
-   */
-  public SoTPoint getPtoU(Point2D.Double loc) {
-    SoTValue xv;
-    SoTValue yv;
-    // x - transform
-    if (xTransform_.isTime()) {
-      xv = new SoTValue.Time(getXPtoLongTime(loc.x));
-    } else {
-      xv = new SoTValue.Double(getXPtoU(loc.x));
-    }
-    if (yTransform_.isTime()) {
-      yv = new SoTValue.Time(getYPtoLongTime(loc.y));
-    } else {
-      yv = new SoTValue.Double(getYPtoU(loc.y));
-    }
-    return new SoTPoint(xv, yv);
-  }
-
-  /**
    * Transoform user Y coordinate to physical coordinate.
    *
    * @since 2.0
@@ -929,31 +533,11 @@ public class CartesianGraph extends Graph {
   }
 
   /**
-   * Transform user Y coordinate to device coordinate
-   *
-   * @since 3.0
-   */
-  public double getYUtoD2(double u) {
-    if (Double.isNaN(u)) return u;
-    return getLayer().getYPtoD2(yTransform_.getTransP(u));
-  }
-
-  /**
    * Transform time to physical coordinate.
    *
    * @since 2.0
    */
   public double getYUtoP(GeoDate t) {
-    return yTransform_.getTransP(t);
-  }
-
-  /**
-   * Transform time to physical coordinate.
-   *
-   * @since 3.0
-   */
-  public double getYUtoP(long t) {
-    if (t == Long.MAX_VALUE) return Double.NaN;
     return yTransform_.getTransP(t);
   }
 
@@ -975,72 +559,6 @@ public class CartesianGraph extends Graph {
   public int getYUtoD(long t) {
     if (t == Long.MAX_VALUE) return Integer.MIN_VALUE;
     return getLayer().getYPtoD(yTransform_.getTransP(t));
-  }
-
-  /**
-   * Transform time to device coordinate.
-   *
-   * @since 3.0
-   */
-  public double getYUtoD2(GeoDate t) {
-    if (t == null) return Double.NaN;
-    return getLayer().getYPtoD2(yTransform_.getTransP(t));
-  }
-
-  /**
-   * Transform time to device coordinate.
-   *
-   * @since 3.0
-   */
-  public double getYUtoD2(long t) {
-    if (t == Long.MAX_VALUE) return Double.NaN;
-    return getLayer().getYPtoD2(yTransform_.getTransP(t));
-  }
-
-  /**
-   * Transform physical Y coordinate to user coordinate using <code>SoTValue</code>
-   *
-   * @param p physical coordinate
-   * @return user coorindinate
-   * @since 3.0
-   */
-  public SoTValue getYPtoSoT(double p) {
-    if (yTransform_.isTime()) {
-      return new SoTValue.Time(yTransform_.getLongTimeTransU(p));
-    } else {
-      return new SoTValue.Double(yTransform_.getTransU(p));
-    }
-  }
-
-  /**
-   * Transform physical Y coordinate to user coordinate.
-   *
-   * @param p physical coorindate
-   * @return user coordinate
-   */
-  public double getYPtoU(double p) {
-    return yTransform_.getTransU(p);
-  }
-
-  /**
-   * Transform physical Y coordinate to time.
-   *
-   * @param p physical coordinate
-   * @return time
-   */
-  public GeoDate getYPtoTime(double p) {
-    return yTransform_.getTimeTransU(p);
-  }
-
-  /**
-   * Transform physical Y coordinate to time.
-   *
-   * @param p physical coordinate
-   * @return time
-   * @since 3.0
-   */
-  public long getYPtoLongTime(double p) {
-    return yTransform_.getLongTimeTransU(p);
   }
 
   @Override

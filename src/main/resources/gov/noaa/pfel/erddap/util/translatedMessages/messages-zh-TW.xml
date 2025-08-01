@@ -3551,10 +3551,6 @@ URL 標識資料集、回應所需的文件類型、要查看的資料子集以�
 最好返回一個空文件？但 .nc 和其他格式不允許 0 長度的資料。
  -->
 <MustBeThereIsNoData>您的查詢沒有產生符合的結果。</MustBeThereIsNoData>
-
-<!--  許多檔案類型對檔案可以容納的資料量有限制（例如 2GB）。  -->
-<MustBeNotNull>{0} 不得為空。</MustBeNotNull>
-<MustBeNotEmpty>{0} 不能是空字串。</MustBeNotEmpty>
 <MustBeInternalError>內部錯誤</MustBeInternalError>
 <MustBeOutOfMemoryError>記憶體不足錯誤</MustBeOutOfMemoryError>
 

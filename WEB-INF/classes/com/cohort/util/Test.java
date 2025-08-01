@@ -8,7 +8,6 @@ import com.cohort.array.Attributes;
 import com.cohort.array.PAOne;
 import com.cohort.array.PrimitiveArray;
 import java.math.BigInteger;
-import java.util.GregorianCalendar;
 
 /** This is a Java program to test all of the methods in com.cohort.util. */
 public class Test {
@@ -482,51 +481,6 @@ public class Test {
   }
 
   /**
-   * If the two GregorianCalendar values aren't equal, this throws a RuntimeException with the
-   * specified message.
-   *
-   * @param g1
-   * @param g2
-   * @param message
-   */
-  public static void ensureEqual(GregorianCalendar g1, GregorianCalendar g2, String message)
-      throws RuntimeException {
-    if (g1 == null && g2 == null) return;
-    if (g1 == null && g2 != null)
-      error(
-          "\n"
-              + String2.ERROR
-              + " in Test.ensureEqual(GregorianCalendar):\n"
-              + message
-              + "\nSpecifically: "
-              + "g1=[null]\n"
-              + "g2="
-              + Calendar2.formatAsISODateTimeT(g2));
-    if (g1 != null && g2 == null)
-      error(
-          "\n"
-              + String2.ERROR
-              + " in Test.ensureEqual(GregorianCalendar):\n"
-              + message
-              + "\nSpecifically:\n"
-              + "g1="
-              + Calendar2.formatAsISODateTimeT(g1)
-              + "\n"
-              + "g2=[null]");
-    if (!g1.equals(g2)) {
-      error(
-          "\n"
-              + String2.ERROR
-              + " in Test.ensureEqual(GregorianCalendar):\n"
-              + message
-              + "\nSpecifically: "
-              + Calendar2.formatAsISODateTimeT(g1)
-              + " != "
-              + Calendar2.formatAsISODateTimeT(g2));
-    }
-  }
-
-  /**
    * If the object is null, this throws a RuntimeException with the specified message.
    *
    * @param o
@@ -545,64 +499,6 @@ public class Test {
   public static void ensureNotNothing(String s, String message) throws RuntimeException {
     if (s == null || s.length() == 0)
       error("\n" + String2.ERROR + " in Test.ensureNotNothing:\n" + message);
-  }
-
-  /**
-   * If the object is null or any character is not String2.isPrintable or newline or tab, this
-   * throws a RuntimeException with the specified message.
-   *
-   * @param s a String
-   * @param message the message to be included in the error message (if there is one)
-   */
-  public static void ensurePrintable(String s, String message) throws RuntimeException {
-    ensureNotNull(s, message);
-    int n = s.length();
-    for (int i = 0; i < n; i++) {
-      char ch = s.charAt(i);
-      if (String2.isPrintable(ch) || ch == '\n' || ch == '\t') {
-      } else
-        error(
-            "\n"
-                + String2.ERROR
-                + " in Test.ensurePrintable:\n"
-                + message
-                + "\nTrouble: ["
-                + (int) ch
-                + "] at position "
-                + i
-                + " in:\n"
-                + // safe type conversion
-                String2.annotatedString(s));
-    }
-  }
-
-  /**
-   * If the object is null or any character is not ASCII (32 - 126) or newline, this throws a
-   * RuntimeException with the specified message.
-   *
-   * @param s a String
-   * @param message the message to be included in the error message (if there is one)
-   */
-  public static void ensureASCII(String s, String message) throws RuntimeException {
-    ensureNotNull(s, message);
-    int n = s.length();
-    for (int i = 0; i < n; i++) {
-      char ch = s.charAt(i);
-      if ((ch >= 32 && ch <= 126) || ch == '\n') {
-      } else
-        error(
-            "\n"
-                + String2.ERROR
-                + " in Test.ensureASCII:\n"
-                + message
-                + "\nTrouble: ["
-                + (int) ch
-                + "] at position "
-                + i
-                + " in:\n"
-                + // safe type conversion
-                String2.annotatedString(s));
-    }
   }
 
   /**

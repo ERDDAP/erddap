@@ -15,9 +15,17 @@ package gov.noaa.pmel.sgt;
 import com.cohort.util.MustBe;
 import com.cohort.util.String2;
 import gov.noaa.pmel.util.Point2D;
-import gov.noaa.pmel.util.Rectangle2D;
-import java.awt.*;
-import java.beans.*;
+import java.awt.Color;
+import java.awt.Font;
+import java.awt.Graphics;
+import java.awt.Point;
+import java.awt.Rectangle;
+import java.beans.BeanInfo;
+import java.beans.IntrospectionException;
+import java.beans.Introspector;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
+import java.beans.PropertyDescriptor;
 import java.io.Serializable;
 
 // jdk1.2
@@ -329,38 +337,12 @@ public class SGLabel implements Cloneable, LayerChild, Moveable, Serializable {
   }
 
   /**
-   * Set the horizontal alignment. The alignment can be LEFT, CENTER, or RIGHT.
-   *
-   * @param horz The horizontal alignment.
-   */
-  public void setHAlign(int horz) {
-    int halign = proxy_.getHAlign();
-    if (halign != horz) {
-      proxy_.setHAlign(horz);
-      modified("SGLabeo: setHAlign()");
-    }
-  }
-
-  /**
    * Get the horizontal alignment.
    *
    * @return the horizontal alignment.
    */
   public int getHAlign() {
     return proxy_.getHAlign();
-  }
-
-  /**
-   * Set the vertical alignment. The alignment can be TOP, MIDDLE, or BOTTOM.
-   *
-   * @param vert The vertical alignment.
-   */
-  public void setVAlign(int vert) {
-    int valign = proxy_.getVAlign();
-    if (valign != vert) {
-      proxy_.setVAlign(vert);
-      modified("SGLabel: setVAlign()");
-    }
   }
 
   /**
@@ -457,11 +439,6 @@ public class SGLabel implements Cloneable, LayerChild, Moveable, Serializable {
   }
 
   @Override
-  public AbstractPane getPane() {
-    return proxy_.getLayer().getPane();
-  }
-
-  @Override
   public void modified(String text) {
     Layer layer = proxy_.getLayer();
     if (layer != null) {
@@ -476,19 +453,6 @@ public class SGLabel implements Cloneable, LayerChild, Moveable, Serializable {
    */
   public String getText() {
     return proxy_.getText();
-  }
-
-  /**
-   * Set the label text.
-   *
-   * @param lbl the label text
-   */
-  public void setText(String lbl) {
-    String label = proxy_.getText();
-    if (label == null || !label.equals(lbl)) {
-      proxy_.setText(lbl);
-      modified("SGLabel: setText()");
-    }
   }
 
   /**
@@ -509,15 +473,6 @@ public class SGLabel implements Cloneable, LayerChild, Moveable, Serializable {
   @Override
   public void setId(String id) {
     ident_ = id;
-  }
-
-  /**
-   * Get the label height in device coordinates.
-   *
-   * @return the label height
-   */
-  public int getHeight() {
-    return 0;
   }
 
   /**
@@ -548,15 +503,6 @@ public class SGLabel implements Cloneable, LayerChild, Moveable, Serializable {
   }
 
   /**
-   * Get the label bounds in physical units.
-   *
-   * @return the label bounds
-   */
-  public Rectangle2D.Double getBoundsP() {
-    return proxy_.getBoundsP();
-  }
-
-  /**
    * Get the label bounds in device units.
    *
    * @return the label bounds
@@ -564,16 +510,6 @@ public class SGLabel implements Cloneable, LayerChild, Moveable, Serializable {
   @Override
   public Rectangle getBounds() {
     return proxy_.getBounds();
-  }
-
-  /** Set the label bounds in device units. */
-  public void setBounds(Rectangle r) {
-    setBounds(r.x, r.y, r.width, r.height);
-  }
-
-  /** Set the label bounds in device units. */
-  public void setBounds(int x, int y, int width, int height) {
-    proxy_.setBounds(x, y, width, height);
   }
 
   @Override

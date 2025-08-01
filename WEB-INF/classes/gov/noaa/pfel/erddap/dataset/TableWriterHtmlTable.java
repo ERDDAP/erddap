@@ -540,11 +540,6 @@ public class TableWriterHtmlTable extends TableWriter {
     return totalRows;
   }
 
-  /** This returns the total number of rows of data shown so far. */
-  public int rowsShown() {
-    return rowsShown;
-  }
-
   /**
    * This is a convenience method to write an entire table in one step.
    *

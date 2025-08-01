@@ -6,7 +6,6 @@ import com.cohort.util.Test;
 import java.io.BufferedOutputStream;
 import java.io.DataOutputStream;
 import java.io.FileOutputStream;
-import java.io.RandomAccessFile;
 import java.util.Arrays;
 import java.util.BitSet;
 import java.util.List;
@@ -544,8 +543,7 @@ class PrimitiveArrayTests {
     FloatArray arFloat = new FloatArray(new float[] {1, 3, 3, -5});
     DoubleArray arDouble = new DoubleArray(new double[] {17, 1e300, 3, 0});
     StringArray arString = new StringArray(new String[] {"a", "abe", "A", "ABE"});
-    List<PrimitiveArray> table =
-        String2.toArrayList(new PrimitiveArray[] {arByte, arFloat, arDouble, arString});
+    List<PrimitiveArray> table = List.of(arByte, arFloat, arDouble, arString);
     Test.ensureEqual(
         PrimitiveArray.rank(table, new int[] {0}, new boolean[] {true}), // ascending
         new int[] {0, 2, 1, 3},
@@ -632,7 +630,7 @@ class PrimitiveArrayTests {
     // test removeDuplicates
     IntArray arInt3a = new IntArray(new int[] {1, 5, 5, 7, 7, 7});
     IntArray arInt3b = new IntArray(new int[] {2, 6, 6, 8, 8, 8});
-    List<PrimitiveArray> table3 = String2.toArrayList(new PrimitiveArray[] {arInt3a, arInt3b});
+    List<PrimitiveArray> table3 = List.of(arInt3a, arInt3b);
     PrimitiveArray.removeDuplicates(table3);
     Test.ensureEqual(arInt3a.toString(), "1, 5, 7", "");
     Test.ensureEqual(arInt3b.toString(), "2, 6, 8", "");
@@ -871,255 +869,6 @@ class PrimitiveArrayTests {
     // String2.log(File2.hexDump(dosName, 500));
 
     dos.close();
-
-    // test rafReadDouble
-    RandomAccessFile raf = new RandomAccessFile(rafName, "rw");
-    /*
-     * Test.ensureEqual(rafReadDouble(raf, PAType.BYTE, barStart, 0), 2, "");
-     * Test.ensureEqual(rafReadDouble(raf, PAType.BYTE, barStart, 5), 8, "");
-     * Test.ensureEqual(rafReadDouble(raf, PAType.CHAR, carStart, 0), 2, "");
-     * Test.ensureEqual(rafReadDouble(raf, PAType.CHAR, carStart, 5), 8, "");
-     * Test.ensureEqual(rafReadDouble(raf, PAType.DOUBLE, darStart, 0), 2, "");
-     * Test.ensureEqual(rafReadDouble(raf, PAType.DOUBLE, darStart, 5), 8, "");
-     * Test.ensureEqual(rafReadDouble(raf, PAType.FLOAT, farStart, 0), 2, "");
-     * Test.ensureEqual(rafReadDouble(raf, PAType.FLOAT, farStart, 5), 8, "");
-     * Test.ensureEqual(rafReadDouble(raf, PAType.INT, IarStart, 0), 2, "");
-     * Test.ensureEqual(rafReadDouble(raf, PAType.INT, IarStart, 5), 8, "");
-     * Test.ensureEqual(rafReadDouble(raf, PAType.LONG, larStart, 0), 2, "");
-     * Test.ensureEqual(rafReadDouble(raf, PAType.LONG, larStart, 5), 8, "");
-     * Test.ensureEqual(rafReadDouble(raf, PAType.SHORT, sarStart, 0), 2, "");
-     * Test.ensureEqual(rafReadDouble(raf, PAType.SHORT, sarStart, 5), 8, "");
-     * //Test.ensureEqual(StringArray.rafReadString(raf, SarStart, 0, nBytesPerS),
-     * "22", "");
-     * //Test.ensureEqual(StringArray.rafReadString(raf, SarStart, 5, nBytesPerS),
-     * "88888888", "");
-     */
-
-    // test rafBinarySearch
-    Test.ensureEqual(
-        PrimitiveArray.rafBinarySearch(raf, PAType.FLOAT, farStart, 0, 5, PAOne.fromFloat(2)),
-        0,
-        "");
-    Test.ensureEqual(
-        PrimitiveArray.rafBinarySearch(raf, PAType.FLOAT, farStart, 0, 5, PAOne.fromFloat(4)),
-        1,
-        "");
-    Test.ensureEqual(
-        PrimitiveArray.rafBinarySearch(raf, PAType.FLOAT, farStart, 0, 5, PAOne.fromFloat(6)),
-        2,
-        ""); // 2,3,4
-    Test.ensureEqual(
-        PrimitiveArray.rafBinarySearch(raf, PAType.FLOAT, farStart, 0, 5, PAOne.fromFloat(8)),
-        5,
-        "");
-    Test.ensureEqual(
-        PrimitiveArray.rafBinarySearch(raf, PAType.FLOAT, farStart, 0, 5, PAOne.fromFloat(1)),
-        -1,
-        "");
-    Test.ensureEqual(
-        PrimitiveArray.rafBinarySearch(raf, PAType.FLOAT, farStart, 0, 5, PAOne.fromFloat(3)),
-        -2,
-        "");
-    Test.ensureEqual(
-        PrimitiveArray.rafBinarySearch(raf, PAType.FLOAT, farStart, 0, 5, PAOne.fromFloat(5)),
-        -3,
-        "");
-    Test.ensureEqual(
-        PrimitiveArray.rafBinarySearch(raf, PAType.FLOAT, farStart, 0, 5, PAOne.fromFloat(7)),
-        -6,
-        "");
-    Test.ensureEqual(
-        PrimitiveArray.rafBinarySearch(raf, PAType.FLOAT, farStart, 0, 5, PAOne.fromFloat(9)),
-        -7,
-        "");
-
-    Test.ensureEqual(
-        PrimitiveArray.rafBinarySearch(raf, PAType.FLOAT, farStart, 0, 4, PAOne.fromFloat(2)),
-        0,
-        "");
-    Test.ensureEqual(
-        PrimitiveArray.rafBinarySearch(raf, PAType.FLOAT, farStart, 0, 4, PAOne.fromFloat(4)),
-        1,
-        "");
-    Test.ensureEqual(
-        PrimitiveArray.rafBinarySearch(raf, PAType.FLOAT, farStart, 0, 4, PAOne.fromFloat(6)),
-        4,
-        ""); // any
-    // of
-    // 2,3,4
-    Test.ensureEqual(
-        PrimitiveArray.rafBinarySearch(raf, PAType.FLOAT, farStart, 0, 4, PAOne.fromFloat(1)),
-        -1,
-        "");
-    Test.ensureEqual(
-        PrimitiveArray.rafBinarySearch(raf, PAType.FLOAT, farStart, 0, 4, PAOne.fromFloat(3)),
-        -2,
-        "");
-    Test.ensureEqual(
-        PrimitiveArray.rafBinarySearch(raf, PAType.FLOAT, farStart, 0, 4, PAOne.fromFloat(5)),
-        -3,
-        "");
-    Test.ensureEqual(
-        PrimitiveArray.rafBinarySearch(raf, PAType.FLOAT, farStart, 0, 4, PAOne.fromFloat(7)),
-        -6,
-        "");
-
-    // test rafFirstGE
-    Test.ensureEqual(
-        PrimitiveArray.rafFirstGE(raf, PAType.FLOAT, farStart, 0, 5, PAOne.fromFloat(2)), 0, "");
-    Test.ensureEqual(
-        PrimitiveArray.rafFirstGE(raf, PAType.FLOAT, farStart, 0, 5, PAOne.fromFloat(4)), 1, "");
-    Test.ensureEqual(
-        PrimitiveArray.rafFirstGE(raf, PAType.FLOAT, farStart, 0, 5, PAOne.fromFloat(6)),
-        2,
-        ""); // first
-    Test.ensureEqual(
-        PrimitiveArray.rafFirstGE(raf, PAType.FLOAT, farStart, 0, 5, PAOne.fromFloat(8)), 5, "");
-    Test.ensureEqual(
-        PrimitiveArray.rafFirstGE(raf, PAType.FLOAT, farStart, 0, 5, PAOne.fromFloat(1)), 0, "");
-    Test.ensureEqual(
-        PrimitiveArray.rafFirstGE(raf, PAType.FLOAT, farStart, 0, 5, PAOne.fromFloat(3)), 1, "");
-    Test.ensureEqual(
-        PrimitiveArray.rafFirstGE(raf, PAType.FLOAT, farStart, 0, 5, PAOne.fromFloat(5)), 2, "");
-    Test.ensureEqual(
-        PrimitiveArray.rafFirstGE(raf, PAType.FLOAT, farStart, 0, 5, PAOne.fromFloat(7)), 5, "");
-    Test.ensureEqual(
-        PrimitiveArray.rafFirstGE(raf, PAType.FLOAT, farStart, 0, 5, PAOne.fromFloat(9)), 6, "");
-
-    // test rafFirstGAE lastParam: precision = 5
-    Test.ensureEqual(
-        PrimitiveArray.rafFirstGAE(raf, PAType.FLOAT, farStart, 0, 5, PAOne.fromFloat(2), 5),
-        0,
-        "");
-    Test.ensureEqual(
-        PrimitiveArray.rafFirstGAE(raf, PAType.FLOAT, farStart, 0, 5, PAOne.fromFloat(2.0f), 5),
-        0,
-        "");
-    Test.ensureEqual(
-        PrimitiveArray.rafFirstGAE(
-            raf, PAType.FLOAT, farStart, 0, 5, PAOne.fromFloat(1.9999999f), 5),
-        0,
-        "");
-    Test.ensureEqual(
-        PrimitiveArray.rafFirstGAE(raf, PAType.FLOAT, farStart, 0, 5, PAOne.fromFloat(4), 5),
-        1,
-        "");
-    Test.ensureEqual(
-        PrimitiveArray.rafFirstGAE(raf, PAType.FLOAT, farStart, 0, 5, PAOne.fromFloat(6), 5),
-        2,
-        ""); // first
-    Test.ensureEqual(
-        PrimitiveArray.rafFirstGAE(raf, PAType.FLOAT, farStart, 0, 5, PAOne.fromFloat(6.0f), 5),
-        2,
-        "");
-    Test.ensureEqual(
-        PrimitiveArray.rafFirstGAE(raf, PAType.FLOAT, farStart, 0, 5, PAOne.fromFloat(6.0f), 5),
-        2,
-        "");
-    Test.ensureEqual(
-        PrimitiveArray.rafFirstGAE(raf, PAType.FLOAT, farStart, 0, 5, PAOne.fromFloat(8), 5),
-        5,
-        "");
-    Test.ensureEqual(
-        PrimitiveArray.rafFirstGAE(raf, PAType.FLOAT, farStart, 0, 5, PAOne.fromFloat(1), 5),
-        0,
-        "");
-    Test.ensureEqual(
-        PrimitiveArray.rafFirstGAE(raf, PAType.FLOAT, farStart, 0, 5, PAOne.fromFloat(3), 5),
-        1,
-        "");
-    Test.ensureEqual(
-        PrimitiveArray.rafFirstGAE(raf, PAType.FLOAT, farStart, 0, 5, PAOne.fromFloat(3.0f), 5),
-        1,
-        "");
-    Test.ensureEqual(
-        PrimitiveArray.rafFirstGAE(raf, PAType.FLOAT, farStart, 0, 5, PAOne.fromFloat(3.0f), 5),
-        1,
-        "");
-    Test.ensureEqual(
-        PrimitiveArray.rafFirstGAE(raf, PAType.FLOAT, farStart, 0, 5, PAOne.fromFloat(5), 5),
-        2,
-        "");
-    Test.ensureEqual(
-        PrimitiveArray.rafFirstGAE(raf, PAType.FLOAT, farStart, 0, 5, PAOne.fromFloat(7), 5),
-        5,
-        "");
-    Test.ensureEqual(
-        PrimitiveArray.rafFirstGAE(raf, PAType.FLOAT, farStart, 0, 5, PAOne.fromFloat(9), 5),
-        6,
-        "");
-
-    // test rafLastLE
-    Test.ensureEqual(
-        PrimitiveArray.rafLastLE(raf, PAType.FLOAT, farStart, 0, 5, PAOne.fromFloat(2)), 0, "");
-    Test.ensureEqual(
-        PrimitiveArray.rafLastLE(raf, PAType.FLOAT, farStart, 0, 5, PAOne.fromFloat(4)), 1, "");
-    Test.ensureEqual(
-        PrimitiveArray.rafLastLE(raf, PAType.FLOAT, farStart, 0, 5, PAOne.fromFloat(6)),
-        4,
-        ""); // last
-    Test.ensureEqual(
-        PrimitiveArray.rafLastLE(raf, PAType.FLOAT, farStart, 0, 5, PAOne.fromFloat(8)), 5, "");
-    Test.ensureEqual(
-        PrimitiveArray.rafLastLE(raf, PAType.FLOAT, farStart, 0, 5, PAOne.fromFloat(1)), -1, "");
-    Test.ensureEqual(
-        PrimitiveArray.rafLastLE(raf, PAType.FLOAT, farStart, 0, 5, PAOne.fromFloat(3)), 0, "");
-    Test.ensureEqual(
-        PrimitiveArray.rafLastLE(raf, PAType.FLOAT, farStart, 0, 5, PAOne.fromFloat(5)), 1, "");
-    Test.ensureEqual(
-        PrimitiveArray.rafLastLE(raf, PAType.FLOAT, farStart, 0, 5, PAOne.fromFloat(7)), 4, "");
-    Test.ensureEqual(
-        PrimitiveArray.rafLastLE(raf, PAType.FLOAT, farStart, 0, 5, PAOne.fromFloat(9)), 5, "");
-
-    // test rafLastLAE lastParam: precision = 5
-    Test.ensureEqual(
-        PrimitiveArray.rafLastLAE(raf, PAType.FLOAT, farStart, 0, 5, PAOne.fromFloat(2), 5), 0, "");
-    Test.ensureEqual(
-        PrimitiveArray.rafLastLAE(raf, PAType.FLOAT, farStart, 0, 5, PAOne.fromFloat(2.0f), 5),
-        0,
-        "");
-    Test.ensureEqual(
-        PrimitiveArray.rafLastLAE(
-            raf, PAType.FLOAT, farStart, 0, 5, PAOne.fromFloat(1.9999999f), 5),
-        0,
-        "");
-    Test.ensureEqual(
-        PrimitiveArray.rafLastLAE(raf, PAType.FLOAT, farStart, 0, 5, PAOne.fromFloat(4), 5), 1, "");
-    Test.ensureEqual(
-        PrimitiveArray.rafLastLAE(raf, PAType.FLOAT, farStart, 0, 5, PAOne.fromFloat(6), 5),
-        4,
-        ""); // last
-    Test.ensureEqual(
-        PrimitiveArray.rafLastLAE(raf, PAType.FLOAT, farStart, 0, 5, PAOne.fromFloat(6.0f), 5),
-        4,
-        "");
-    Test.ensureEqual(
-        PrimitiveArray.rafLastLAE(raf, PAType.FLOAT, farStart, 0, 5, PAOne.fromFloat(6.0f), 5),
-        4,
-        "");
-    Test.ensureEqual(
-        PrimitiveArray.rafLastLAE(raf, PAType.FLOAT, farStart, 0, 5, PAOne.fromFloat(8), 5), 5, "");
-    Test.ensureEqual(
-        PrimitiveArray.rafLastLAE(raf, PAType.FLOAT, farStart, 0, 5, PAOne.fromFloat(1), 5),
-        -1,
-        "");
-    Test.ensureEqual(
-        PrimitiveArray.rafLastLAE(raf, PAType.FLOAT, farStart, 0, 5, PAOne.fromFloat(3), 5), 0, "");
-    Test.ensureEqual(
-        PrimitiveArray.rafLastLAE(raf, PAType.FLOAT, farStart, 0, 5, PAOne.fromFloat(3.0f), 5),
-        0,
-        "");
-    Test.ensureEqual(
-        PrimitiveArray.rafLastLAE(raf, PAType.FLOAT, farStart, 0, 5, PAOne.fromFloat(3.0f), 5),
-        0,
-        "");
-    Test.ensureEqual(
-        PrimitiveArray.rafLastLAE(raf, PAType.FLOAT, farStart, 0, 5, PAOne.fromFloat(5), 5), 1, "");
-    Test.ensureEqual(
-        PrimitiveArray.rafLastLAE(raf, PAType.FLOAT, farStart, 0, 5, PAOne.fromFloat(7), 5), 4, "");
-    Test.ensureEqual(
-        PrimitiveArray.rafLastLAE(raf, PAType.FLOAT, farStart, 0, 5, PAOne.fromFloat(9), 5), 5, "");
-    raf.close();
 
     // test binarySearch
     // FloatArray far = new FloatArray(new float[]{2,4,6,6,6,8});

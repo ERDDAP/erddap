@@ -12,7 +12,8 @@
 
 package gov.noaa.pmel.sgt;
 
-import java.awt.*;
+import java.awt.Color;
+import java.awt.Font;
 
 /**
  * Sets the default rendering style for contour line data. <code>Color</code>, width, and dash
@@ -66,11 +67,6 @@ public class DefaultContourLineAttribute extends LineAttribute {
     return this;
   }
 
-  /** Get the associated <code>ContourLineAttribute</code> */
-  public ContourLineAttribute getContourLineAttribute() {
-    return attr_;
-  }
-
   /** Set label text for associated <code>ContourLineAttribute</code>. */
   public void setLabelText(String label) {
     if (attr_ != null) attr_.setLabelText(label);
@@ -89,18 +85,6 @@ public class DefaultContourLineAttribute extends LineAttribute {
   }
 
   /**
-   * Enable/disable the contour label. <br>
-   * <strong>Property Change:</strong> <code>labelEnabled</code>.
-   */
-  public void setLabelEnabled(boolean sle) {
-    if (labelEnabled_ != sle) {
-      Boolean tempOld = labelEnabled_;
-      labelEnabled_ = sle;
-      changes_.firePropertyChange("labelEnabled", tempOld, Boolean.valueOf(labelEnabled_));
-    }
-  }
-
-  /**
    * Test if the contour label is enabled. Use associated <code>ContourLineAttribute</code> if it
    * exists and has labelEnabledOverrideen set to <code>false</code>.
    */
@@ -109,18 +93,6 @@ public class DefaultContourLineAttribute extends LineAttribute {
       return attr_.isLabelEnabled();
     } else {
       return labelEnabled_;
-    }
-  }
-
-  /**
-   * Set the default contour label color <br>
-   * <strong>Property Change:</strong> <code>labelColor</code>.
-   */
-  public void setLabelColor(Color color) {
-    if (!labelColor_.equals(color)) {
-      Color tempOld = labelColor_;
-      labelColor_ = color;
-      changes_.firePropertyChange("labelColor", tempOld, labelColor_);
     }
   }
 
@@ -137,18 +109,6 @@ public class DefaultContourLineAttribute extends LineAttribute {
   }
 
   /**
-   * Set the default contour label height. <br>
-   * <strong>Property Change:</strong> <code>labelHeightP</code>.
-   */
-  public void setLabelHeightP(double height) {
-    if (labelHeightP_ != height) {
-      Double tempOld = labelHeightP_;
-      labelHeightP_ = height;
-      changes_.firePropertyChange("labelHeightP", tempOld, labelHeightP_);
-    }
-  }
-
-  /**
    * Get the contour label height. Use associated <code>ContourLineAttribute</code> if it exists and
    * has labelHeightPOverrideen set to <code>false</code>.
    */
@@ -157,18 +117,6 @@ public class DefaultContourLineAttribute extends LineAttribute {
       return attr_.getLabelHeightP();
     } else {
       return labelHeightP_;
-    }
-  }
-
-  /**
-   * Set the default contour label font. <br>
-   * <strong>Property Change:</strong> <code>labelFont</code>.
-   */
-  public void setLabelFont(Font font) {
-    if (labelFont_ == null || !labelFont_.equals(font)) {
-      Font tempOld = labelFont_;
-      labelFont_ = font;
-      changes_.firePropertyChange("labelFont", tempOld, labelFont_);
     }
   }
 
@@ -184,33 +132,9 @@ public class DefaultContourLineAttribute extends LineAttribute {
     }
   }
 
-  /**
-   * Set the number of significant digits for auto labelling. <br>
-   * <strong>Property Change:</strong> <code>significantDigits</code>.
-   */
-  public void setSignificantDigits(int sig) {
-    if (sigDigits_ != sig) {
-      Integer tempOld = sigDigits_;
-      sigDigits_ = sig;
-      changes_.firePropertyChange("significantDigits", tempOld, Integer.valueOf(sigDigits_));
-    }
-  }
-
   /** Get the number of significant digits for auto labelling. */
   public int getSignificantDigits() {
     return sigDigits_;
-  }
-
-  /**
-   * Set the default contour label format. <br>
-   * <strong>Property Change:</strong> <code>labelFormat</code>.
-   */
-  public void setLabelFormat(String format) {
-    if (!labelFormat_.equals(format)) {
-      String tempOld = labelFormat_;
-      labelFormat_ = format;
-      changes_.firePropertyChange("labelFormat", tempOld, labelFormat_);
-    }
   }
 
   /**

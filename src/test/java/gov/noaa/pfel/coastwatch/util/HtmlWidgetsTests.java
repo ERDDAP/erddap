@@ -57,19 +57,6 @@ class HtmlWidgetsTests {
                     // height=\"331\" width=\"375\"
                     "<br><img src=\"https://www.cohortsoftware.com/wings.gif\" alt=\"wings\">",
                 ""));
-    sb.append(
-        "<br>Large image scaled down to max=600:\n"
-            + HtmlWidgets.imageInTooltip(
-                "/programs/_tomcat/webapps/cwexperimental/images/HowDoISpecifyARegion.png",
-                "http://localhost:8080/cwexperimental/images/HowDoISpecifyARegion.png",
-                "http://localhost:8080/cwexperimental/images/QuestionMark.png"));
-
-    sb.append(
-        "<br>Small image (plus1000.gif):\n"
-            + HtmlWidgets.imageInTooltip(
-                "/programs/_tomcat/webapps/cwexperimental/images/plus1000.gif",
-                "http://localhost:8080/cwexperimental/images/plus1000.gif",
-                "http://localhost:8080/cwexperimental/images/QuestionMark.png"));
 
     // pure CSS image tooltip
     // try to defer loading the image
@@ -194,28 +181,12 @@ class HtmlWidgetsTests {
                 true,
                 "checkboxValue4",
                 "rightLabel4",
-                "")
-            + widgets.comment("This is a comment."));
+                ""));
     String options[] = new String[1200];
     for (int i = 0; i < 1200; i++)
       options[i] = i == 1 ? "1 (2 is empty)" : i == 2 ? "" : "option" + i;
     sb.append(
         "<br>\n"
-            + widgets.radioButtons(
-                "radioName1",
-                "radioTooltip literal: &lt;&gt;&amp;\"!",
-                true,
-                new String[] {"apple", "banana", "cucumber"},
-                1,
-                "")
-            + "<br>\n"
-            + widgets.radioButtons(
-                "radioName2",
-                "radioTooltip literal: &lt;&gt;&amp;\"!",
-                true,
-                new String[] {"apple", "banana", "cucumber"},
-                2,
-                "")
             + widgets.select(
                 "dropdownName",
                 "dropdownTooltip literal: &lt;&gt;&amp;\"!",

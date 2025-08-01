@@ -493,6 +493,18 @@ class OpendapHelperTests {
     }
   }
 
+  public static String dds(String fileName) throws Exception {
+    String sar[] = String2.splitNoTrim(NcHelper.readCDL(fileName), '\n');
+    int n = sar.length;
+    StringBuilder sb = new StringBuilder();
+    for (int i = 0; i < n; i++) {
+      String trimS = sar[i].trim();
+      if (trimS.length() > 0 && !trimS.startsWith(":")) sb.append(sar[i] + "\n");
+      sar[i] = null;
+    }
+    return sb.toString();
+  }
+
   /**
    * Test allDapToNc.
    *
@@ -518,7 +530,7 @@ class OpendapHelperTests {
     fileName = "pointKachemakBay.nc";
     url = tdsUrl + "point/KachemakBay.nc";
     OpendapHelper.allDapToNc(url, dir + fileName);
-    results = NcHelper.dds(dir + fileName);
+    results = dds(dir + fileName);
     // String2.log(results);
     // expected = "zztop";
     // Test.ensureEqual(results, expected, "");
@@ -527,7 +539,7 @@ class OpendapHelperTests {
     fileName = "timeSeriesBodegaMarineLabBuoy.nc";
     url = tdsUrl + "timeSeries/BodegaMarineLabBuoy.nc";
     OpendapHelper.allDapToNc(url, dir + fileName);
-    results = NcHelper.dds(dir + fileName);
+    results = dds(dir + fileName);
     expected =
         "netcdf "
             + dir
@@ -564,7 +576,7 @@ class OpendapHelperTests {
     fileName = "trajectoryAoml_tsg.nc";
     url = tdsUrl + "trajectory/aoml_tsg.nc";
     OpendapHelper.allDapToNc(url, dir + fileName);
-    results = NcHelper.dds(dir + fileName);
+    results = dds(dir + fileName);
     // String2.log(results);
     expected =
         "netcdf "
@@ -608,7 +620,7 @@ class OpendapHelperTests {
     fileName = "trajectoryJason2_satelliteAltimeter.nc";
     url = tdsUrl + "trajectory/jason2_satelliteAltimeter.nc";
     OpendapHelper.allDapToNc(url, dir + fileName);
-    results = NcHelper.dds(dir + fileName);
+    results = dds(dir + fileName);
     // String2.log(results);
     expected =
         "netcdf "
@@ -669,7 +681,7 @@ class OpendapHelperTests {
     fileName = "timeSeriesProfileUsgs_internal_wave_timeSeries.nc";
     url = tdsUrl + "timeSeriesProfile/usgs_internal_wave_timeSeries.nc";
     OpendapHelper.allDapToNc(url, dir + fileName);
-    results = NcHelper.dds(dir + fileName);
+    results = dds(dir + fileName);
     // String2.log(results);
     expected =
         "netcdf "

@@ -3717,10 +3717,6 @@ ERDDAP の水平凡例の場合、legendTitle1 と 2 は同じ行に配置され
 空のファイルを返す方がよいですか? ただし、.nc などでは長さ 0 のデータが許可されません。
  -->
 <MustBeThereIsNoData>検索に一致する結果は生成されませんでした。</MustBeThereIsNoData>
-
-<!-- 多くのファイルタイプでは、ファイルが保存できるデータの量に制限が設けられています (例: 2GB)。 -->
-<MustBeNotNull>{0} は null であってはなりません。</MustBeNotNull>
-<MustBeNotEmpty>{0} は空の文字列であってはなりません。</MustBeNotEmpty>
 <MustBeInternalError>内部エラー</MustBeInternalError>
 <MustBeOutOfMemoryError>メモリ不足エラー</MustBeOutOfMemoryError>
 

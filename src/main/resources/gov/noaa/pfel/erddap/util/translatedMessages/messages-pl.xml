@@ -4220,10 +4220,6 @@ Ale dods.dap.DODSException nie ma istotnego wyjątku.
 Lepiej zwrócić pusty plik? Ale .nc i inne nie pozwalają na dane o długości 0.
  -->
 <MustBeThereIsNoData>Twoje zapytanie nie przyniosło żadnych pasujących wyników.</MustBeThereIsNoData>
-
-<!--  Wiele typów plików ogranicza ilość danych, jakie może pomieścić plik (np. 2 GB).  -->
-<MustBeNotNull>{0} nie może mieć wartości null.</MustBeNotNull>
-<MustBeNotEmpty>{0} nie może być pustym ciągiem.</MustBeNotEmpty>
 <MustBeInternalError>Błąd wewnętrzny</MustBeInternalError>
 <MustBeOutOfMemoryError>Błąd brak pamięci</MustBeOutOfMemoryError>
 

@@ -1038,29 +1038,6 @@ public class Grid {
    * @param fullFileName
    * @param dataName is the name of the gridded data variable, or use null to read the first
    *     variable which uses the lat and lon dimensions.
-   * @param makeLonPM180
-   * @throws Exception if trouble (e.g., no data)
-   */
-  public void readNetCDF(String fullFileName, String dataName, boolean makeLonPM180)
-      throws Exception {
-    readNetCDF(
-        fullFileName,
-        dataName,
-        makeLonPM180 ? -180 : 0,
-        makeLonPM180 ? 180 : 360,
-        -90,
-        90,
-        Integer.MAX_VALUE,
-        Integer.MAX_VALUE);
-  }
-
-  /**
-   * This is like readNetCDF with more parameters, but uses NaN or MAX_VALUE for all of the
-   * desiredXxx parameters, and so reads all of the data.
-   *
-   * @param fullFileName
-   * @param dataName is the name of the gridded data variable, or use null to read the first
-   *     variable which uses the lat and lon dimensions.
    * @throws Exception if trouble (e.g., no data)
    */
   public void readNetCDF(String fullFileName, String dataName) throws Exception {

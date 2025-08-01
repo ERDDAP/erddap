@@ -4314,10 +4314,6 @@ De a dods.dap.DODSExceptionnek nincs releváns kivétele.
 Jobb, ha üres fájlt küld vissza? De az .nc és mások nem engedélyezik a 0 hosszúságú adatokat.
  -->
 <MustBeThereIsNoData>Lekérdezése nem hozott megfelelő eredményt.</MustBeThereIsNoData>
-
-<!--  Sok fájltípus korlátozza, hogy egy fájl mennyi adatot tárolhat (például 2 GB).  -->
-<MustBeNotNull>A(z) {0} nem lehet null.</MustBeNotNull>
-<MustBeNotEmpty>A(z) {0} nem lehet üres karakterlánc.</MustBeNotEmpty>
 <MustBeInternalError>Belső hiba</MustBeInternalError>
 <MustBeOutOfMemoryError>Kifogyott a memória hiba</MustBeOutOfMemoryError>
 

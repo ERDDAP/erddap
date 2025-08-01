@@ -106,7 +106,7 @@ public abstract class CartesianRenderer implements PropertyChangeListener {
     } else if (dmo instanceof SGTGrid) {
       return new GridCartesianRenderer(cg, (SGTGrid) dmo, (GridAttribute) attr);
     }
-    throw new MethodNotImplementedError();
+    throw new UnsupportedOperationException();
     // return null;
   }
 
@@ -157,30 +157,12 @@ public abstract class CartesianRenderer implements PropertyChangeListener {
   protected CartesianGraph cg_;
 
   /**
-   * Get parent pane.
-   *
-   * @since 2.0
-   */
-  public AbstractPane getPane() {
-    return cg_.getPane();
-  }
-
-  /**
    * For internal sgt use.
    *
    * @since 2.0
    */
   public void modified(String mess) {
     if (cg_ != null) cg_.modified(mess);
-  }
-
-  /**
-   * Find data object.
-   *
-   * @since 3.0
-   */
-  public SGTData getDataAt(int x, int y) {
-    return getDataAt(new Point(x, y));
   }
 
   /**

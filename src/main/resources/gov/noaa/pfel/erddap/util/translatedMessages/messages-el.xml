@@ -4194,10 +4194,6 @@ href="https://groups.google.com/forum/#!forum/erddap">https://groups.google.com/
 Καλύτερα να επιστρέψετε ένα κενό αρχείο; Αλλά το .nc και άλλα δεν επιτρέπουν δεδομένα μήκους 0.
  -->
 <MustBeThereIsNoData>Το ερώτημά σας δεν έδωσε αποτελέσματα που να ταιριάζουν.</MustBeThereIsNoData>
-
-<!--  Πολλοί τύποι αρχείων θέτουν ένα όριο στο πόσα δεδομένα μπορεί να χωρέσει ένα αρχείο (π.χ. 2 GB).  -->
-<MustBeNotNull>Το {0} δεν πρέπει να είναι μηδενικό.</MustBeNotNull>
-<MustBeNotEmpty>Το {0} δεν πρέπει να είναι κενή συμβολοσειρά.</MustBeNotEmpty>
 <MustBeInternalError>Εσωτερικό σφάλμα</MustBeInternalError>
 <MustBeOutOfMemoryError>Σφάλμα εκτός μνήμης</MustBeOutOfMemoryError>
 

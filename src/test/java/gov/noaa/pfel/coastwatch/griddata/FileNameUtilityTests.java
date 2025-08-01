@@ -24,43 +24,6 @@ class FileNameUtilityTests {
     Test.ensureEqual(FileNameUtility.fourNameIs33Hour("u25h"), false, "");
     Test.ensureEqual(FileNameUtility.fourNameIs33Hour("t33h"), true, "");
 
-    Test.ensureEqual(FileNameUtility.is25Hour("LGAt24h"), true, "");
-    Test.ensureEqual(FileNameUtility.is25Hour("LCBu25h"), true, "");
-    Test.ensureEqual(FileNameUtility.is25Hour("LGAt33h"), false, "");
-
-    Test.ensureEqual(FileNameUtility.is33Hour("LGAt24h"), false, "");
-    Test.ensureEqual(FileNameUtility.is33Hour("LCBu25h"), false, "");
-    Test.ensureEqual(FileNameUtility.is33Hour("LGAt33h"), true, "");
-
-    Test.ensureEqual(
-        FileNameUtility.getTimePeriodNHours("LAHsstdSpass_20010331230000_x225_X255_y22_Y50"),
-        0,
-        "");
-    Test.ensureEqual(
-        FileNameUtility.getTimePeriodNHours("LAHsstdS1day_20010331120000_x225_X255_y22_Y50"),
-        24,
-        "");
-    Test.ensureEqual(
-        FileNameUtility.getTimePeriodNHours("LAHsstdS25hour_20010331150000_x225_X255_y22_Y50"),
-        25,
-        "");
-    Test.ensureEqual(
-        FileNameUtility.getTimePeriodNHours("LAHsstdS33hour_20010331150000_x225_X255_y22_Y50"),
-        33,
-        "");
-    Test.ensureEqual(
-        FileNameUtility.getTimePeriodNHours("LAHsstdS3day_20010310120000_x225_X255_y22_Y50"),
-        3 * 24,
-        "");
-    Test.ensureEqual(
-        FileNameUtility.getTimePeriodNHours("LAHsstdSmday_20010116120000_x225_X255_y22_Y50"),
-        30 * 24,
-        "");
-    Test.ensureEqual(
-        FileNameUtility.getTimePeriodNHours("LAHsstdS1year_200100701_x225_X255_y22_Y50"),
-        365 * 24,
-        "");
-
     // test convertDaveNameToCWBrowserName
     // composite, westus center day 3/10 => 31 + 28 + 10 = 69
     Test.ensureEqual(
@@ -141,18 +104,12 @@ class FileNameUtilityTests {
     };
     for (int i = 0; i < names.length; i++) {
       String2.log("i=" + i);
-      Test.ensureEqual(FileNameUtility.get6CharName(names[i]), "ATssta", "get6CharName");
-      Test.ensureEqual(FileNameUtility.getAlternateUnits(names[i]), false, "getAlternateUnits");
-      Test.ensureEqual(
-          FileNameUtility.getTimePeriodString(names[i]), "mday", "getTimePeriodString");
       Test.ensureEqual(
           FileNameUtility.getRawDateString(names[i]), "20030116120000", "getRawDateString");
       Test.ensureEqual(
           FileNameUtility.getCenteredCalendar(names[i]),
           Calendar2.newGCalendarZulu(2003, 1, 16, 12, 0, 0, 0),
           "getCenteredCalendar");
-      Test.ensureEqual(
-          FileNameUtility.getTimePeriodNHours(names[i]), 30 * 24, "getTimePeriodNHours");
     }
 
     names =
@@ -164,7 +121,6 @@ class FileNameUtilityTests {
 
     // 8 day composite, alt units
     String name2 = "LATsstaA8day_20030110000000";
-    Test.ensureEqual(FileNameUtility.getTimePeriodNHours(name2), 8 * 24, "getTimePeriodNHours 2");
     Test.ensureEqual(
         FileNameUtility.getRawDateString(name2), "20030110000000", "getRawDateString 2");
     Test.ensureEqual(
@@ -174,7 +130,6 @@ class FileNameUtilityTests {
 
     // pass, std units
     String name3 = "LQNux10Spass_20030331123456";
-    Test.ensureEqual(FileNameUtility.getTimePeriodNHours(name3), 0, "getTimePeriodNHours 3");
     Test.ensureEqual(
         FileNameUtility.getRawDateString(name3), "20030331123456", "getRawDateString 3");
     Test.ensureEqual(
@@ -184,7 +139,6 @@ class FileNameUtilityTests {
 
     // 25hours
     String name25 = "LGAt24hS25hour_20030331083000";
-    Test.ensureEqual(FileNameUtility.getTimePeriodNHours(name25), 25, "getTimePeriodNHours 25");
     Test.ensureEqual(
         FileNameUtility.getRawDateString(name25), "20030331083000", "getRawDateString 25");
     Test.ensureEqual(
@@ -194,7 +148,6 @@ class FileNameUtilityTests {
 
     // 33hours
     String name33 = "LGAt33hS33hour_20030331083000";
-    Test.ensureEqual(FileNameUtility.getTimePeriodNHours(name33), 33, "getTimePeriodNHours 33");
     Test.ensureEqual(
         FileNameUtility.getRawDateString(name33), "20030331083000", "getRawDateString 33");
     Test.ensureEqual(
@@ -204,7 +157,6 @@ class FileNameUtilityTests {
 
     // 1 day composite climatology
     String name4 = "LATsstaS1day_00010110120000";
-    Test.ensureEqual(FileNameUtility.getTimePeriodNHours(name4), 24, "getTimePeriodNHours 4");
     Test.ensureEqual(
         FileNameUtility.getRawDateString(name4), "00010110120000", "getRawDateString 4");
     Test.ensureEqual(

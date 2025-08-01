@@ -3994,10 +3994,6 @@ Aber dods.dap.DODSException hat keine relevante Ausnahme.
 Besser eine leere Datei zurückgeben? Aber .nc und andere erlauben keine Daten der Länge 0.
  -->
 <MustBeThereIsNoData>Ihre Abfrage hat keine übereinstimmenden Ergebnisse erbracht.</MustBeThereIsNoData>
-
-<!--  Viele Dateitypen begrenzen die Datenmenge, die eine Datei enthalten kann (z. B. 2 GB). -->
-<MustBeNotNull>{0} darf nicht null sein.</MustBeNotNull>
-<MustBeNotEmpty>{0} darf kein leerer String sein.</MustBeNotEmpty>
 <MustBeInternalError>Interner Fehler</MustBeInternalError>
 <MustBeOutOfMemoryError>Außerhalb des Speicherfehler</MustBeOutOfMemoryError>
 

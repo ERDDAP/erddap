@@ -331,25 +331,6 @@ public class TestSSR {
         SSR.getFirstLineStartsWith(tFileName, File2.ISO_8859_1, "with "), "with a few lines.", "a");
     Test.ensureEqual(SSR.getFirstLineStartsWith(tFileName, File2.ISO_8859_1, "hi "), null, "b");
 
-    // getFirstLineMatching
-    String2.log("test getFirstLineMatching");
-    Test.ensureEqual(
-        SSR.getFirstLineMatching(tFileName, File2.ISO_8859_1, ".*?i.*"),
-        "This is",
-        "a"); // find first
-    // of many
-    // matches
-    Test.ensureEqual(
-        SSR.getFirstLineMatching(tFileName, File2.ISO_8859_1, "^a.*"),
-        "a file",
-        "b"); // start of line
-    Test.ensureEqual(
-        SSR.getFirstLineMatching(tFileName, File2.ISO_8859_1, ".*?\\sfew\\s.*"),
-        "with a few lines.",
-        "c"); // containing
-    Test.ensureEqual(
-        SSR.getFirstLineMatching(tFileName, File2.ISO_8859_1, "q"), null, "d"); // no match
-
     Test.ensureTrue(File2.delete(tFilePath.toString()), "delete " + tFileName);
 
     // getContextDirectory
