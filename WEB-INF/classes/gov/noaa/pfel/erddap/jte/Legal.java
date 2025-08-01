@@ -1,14 +1,12 @@
 package gov.noaa.pfel.erddap.jte;
 
+import gov.noaa.pfel.erddap.util.EDMessages.Message;
 import gov.noaa.pfel.erddap.util.EDStatic;
 
 public class Legal {
-  public static String getLegalNoticesAr(int language) {
-    return EDStatic.messages.legalNoticesAr[language];
-  }
 
-  public static String getStandardGeneralDisclaimerAr(int language) {
-    return EDStatic.messages.standardGeneralDisclaimerAr[language];
+  public static String getMessage(Message message, int language) {
+    return EDStatic.messages.get(message, language);
   }
 
   public static String getLegal(int language, String tErddapUrl) {
