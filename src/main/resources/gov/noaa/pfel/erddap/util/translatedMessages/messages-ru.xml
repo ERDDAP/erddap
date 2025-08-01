@@ -4049,10 +4049,6 @@ URL-адрес, который вы видите здесь, является UR
 Лучше вернуть пустой файл? Но .nc и другие не допускают данных нулевой длины.
  -->
 <MustBeThereIsNoData>Ваш запрос не дал подходящих результатов.</MustBeThereIsNoData>
-
-<!--  Многие типы файлов ограничивают объем данных, которые может содержать файл (например, 2 ГБ). -->
-<MustBeNotNull>{0} не может быть пустым.</MustBeNotNull>
-<MustBeNotEmpty>{0} не может быть пустой строкой.</MustBeNotEmpty>
 <MustBeInternalError>Внутренняя ошибка</MustBeInternalError>
 <MustBeOutOfMemoryError>Ошибка нехватки памяти</MustBeOutOfMemoryError>
 

@@ -3948,10 +3948,6 @@ Dar dods.dap.DODSException nu are nicio excepție relevantă.
 Mai bine să returnați un fișier gol? Dar .nc și altele nu permit date cu lungimea 0.
  -->
 <MustBeThereIsNoData>Interogarea dvs. nu a produs niciun rezultat potrivit.</MustBeThereIsNoData>
-
-<!--  Multe tipuri de fișiere stabilesc o limită pentru cantitatea de date pe care un fișier poate conține (de exemplu, 2 GB). -->
-<MustBeNotNull>{0} nu trebuie să fie nul.</MustBeNotNull>
-<MustBeNotEmpty>{0} nu trebuie să fie un șir gol.</MustBeNotEmpty>
 <MustBeInternalError>Eroare internă</MustBeInternalError>
 <MustBeOutOfMemoryError>Eroare de memorie lipsită</MustBeOutOfMemoryError>
 

@@ -1801,11 +1801,6 @@ public abstract class EDD {
     // was: delete individual files, e.g, dir + QUICK_RESTART_FILENAME
   }
 
-  /** This deletes this dataset's cached dataset info. No error if it doesn't exist. */
-  public void deleteCachedDatasetInfo() {
-    deleteCachedDatasetInfo(datasetID);
-  }
-
   /** The full name of the quick restart .nc file for this dataset. */
   public String quickRestartFullFileName() {
     return quickRestartFullFileName(datasetID);
@@ -4110,47 +4105,6 @@ public abstract class EDD {
   }
 
   /**
-   * This is used by generateDatasetsXml to find out if a table probably has longitude, latitude,
-   * and time variables.
-   *
-   * @param sourceTable This can't be null.
-   * @param addTable with columns meanings that exactly parallel sourceTable (although, often
-   *     different column names, e.g., lat, latitude). This can't be null.
-   * @return true if it probably does
-   */
-  public static boolean probablyHasLonLatTime(Table sourceTable, Table addTable) {
-    boolean hasLon = false, hasLat = false, hasTime = false;
-    int sn = sourceTable.nColumns();
-    int an = addTable.nColumns();
-    if (sn != an)
-      throw new RuntimeException(
-          "sourceTable nColumns="
-              + sn
-              + " ("
-              + sourceTable.getColumnNamesCSVString()
-              + ")\n"
-              + "!= addTable nColumns="
-              + an
-              + " ("
-              + addTable.getColumnNamesCSVString()
-              + ")");
-    for (int col = 0; col < sn; col++) {
-      String colName = addTable.getColumnName(col).toLowerCase();
-      String units =
-          getAddOrSourceAtt(
-              addTable.columnAttributes(col), sourceTable.columnAttributes(col), "units", null);
-      if (colName.equals(EDV.LON_NAME) || colName.equals("lon") || EDV.LON_UNITS.equals(units))
-        hasLon = true;
-      else if (colName.equals(EDV.LAT_NAME) || colName.equals("lat") || EDV.LAT_UNITS.equals(units))
-        hasLat = true;
-      else if (colName.equals(EDV.TIME_NAME) || Calendar2.isTimeUnits(units)) hasTime = true;
-      // String2.log(">> colName=" + colName + " units=" + units + " hasLon=" + hasLon + " hasLat="
-      // + hasLat + " hasTime=" + hasTime);
-    }
-    return hasLon && hasLat && hasTime;
-  }
-
-  /**
    * This ensures the destination names are valid (e.g., no bad chars).
    *
    * @param sourceTable May be null.
@@ -5191,12 +5145,6 @@ public abstract class EDD {
 
   static void addIfNoAddOrSourceAtt(
       Attributes addAtts, Attributes sourceAtts, String name, String value) {
-    if (!String2.isSomething2(addAtts.getString(name))
-        && !String2.isSomething2(sourceAtts.getString(name))) addAtts.add(name, value);
-  }
-
-  static void addIfNoAddOrSourceAtt(
-      Attributes addAtts, Attributes sourceAtts, String name, PrimitiveArray value) {
     if (!String2.isSomething2(addAtts.getString(name))
         && !String2.isSomething2(sourceAtts.getString(name))) addAtts.add(name, value);
   }
@@ -11505,47 +11453,6 @@ public abstract class EDD {
   }
 
   /**
-   * This is used by subclass's generateDatasetsXml methods to write directions to datasets.xml
-   * file. <br>
-   * This doesn't have the closing "-->\n\n" so users can add other comments.
-   *
-   * @throws Throwable if trouble
-   */
-  public static String directionsForGenerateDatasetsXml() throws Throwable {
-    return """
-            <!--
-             DISCLAIMER:
-               The chunk of datasets.xml made by GenerageDatasetsXml isn't perfect.
-               YOU MUST READ AND EDIT THE XML BEFORE USING IT IN A PUBLIC ERDDAP.
-               GenerateDatasetsXml relies on a lot of rules-of-thumb which aren't always
-               correct.  *YOU* ARE RESPONSIBLE FOR ENSURING THE CORRECTNESS OF THE XML
-               THAT YOU ADD TO ERDDAP'S datasets.xml FILE.
-
-             DIRECTIONS:
-             * Read about this type of dataset in
-               https://erddap.github.io/docs/server-admin/datasets .
-             * Read https://erddap.github.io/docs/server-admin/datasets#global-attributes
-               so that you understand about sourceAttributes and addAttributes.
-             * Note: Global sourceAttributes and variable sourceAttributes are listed
-               below as comments, for informational purposes only.
-               ERDDAP combines sourceAttributes and addAttributes (which have
-               precedence) to make the combinedAttributes that are shown to the user.
-               (And other attributes are automatically added to longitude, latitude,
-               altitude, depth, and time variables).
-             * If you don't like a sourceAttribute, overwrite it by adding an
-               addAttribute with the same name but a different value
-               (or no value, if you want to remove it).
-             * All of the addAttributes are computer-generated suggestions. Edit them!
-               If you don't like an addAttribute, change it.
-             * If you want to add other addAttributes, add them.
-             * If you want to change a destinationName, change it.
-               But don't change sourceNames.
-             * You can change the order of the dataVariables or remove any of them.
-            """;
-    // This doesn't have the closing "-->\n\n" so users can add other comments.
-  }
-
-  /**
    * This is used by subclass's generateDatasetsXml methods to write the variables to the writer in
    * the datasets.xml format.
    *
@@ -12340,29 +12247,6 @@ public abstract class EDD {
   }
 
   /**
-   * This builds a user query from the parts.
-   *
-   * @param queryParts not percentEncoded
-   * @return a userQuery, &amp; separated, with percentEncoded parts, or "" if queryParts is null or
-   *     length = 0.
-   * @throws Throwable
-   */
-  public static String buildUserQuery(String queryParts[]) throws Throwable {
-    if (queryParts == null || queryParts.length == 0) return "";
-
-    for (int i = 0; i < queryParts.length; i++) {
-      int po = queryParts[i].indexOf('=');
-      if (po >= 0)
-        queryParts[i] =
-            SSR.minimalPercentEncode(queryParts[i].substring(0, po))
-                + "="
-                + SSR.minimalPercentEncode(queryParts[i].substring(po + 1));
-      else queryParts[i] = SSR.minimalPercentEncode(queryParts[i]);
-    }
-    return String2.toSVString(queryParts, "&", false);
-  }
-
-  /**
    * This returns the pngInfo file name for a request.
    *
    * @param loggedInAs
@@ -12944,7 +12828,6 @@ public abstract class EDD {
     StringBuilder results = new StringBuilder();
     // Math2.gcAndWait("EDD (between tests)"); Math2.gcAndWait("EDD (between tests)"); //used in
     // development, before getMemoryInUse
-    long memory = Math2.getMemoryInUse();
 
     if (clearCache) EDD.deleteCachedDatasetInfo(tDatasetID);
 
@@ -12992,18 +12875,6 @@ public abstract class EDD {
       }
     }
 
-    // memory
-    if (false) { // enabled when testing
-      Math2.gcAndWait("EDD (between tests)");
-      Math2.gcAndWait("EDD (between tests)"); // Used in development.  Before getMemoryInUse().
-      memory = Math2.getMemoryInUse() - memory;
-      String2.log(
-          "\n*** DasDds: memoryUse="
-              + (memory / 1024)
-              + " KB\nPress CtrlBreak in console window to generate hprof heap info.");
-      String2.pressEnterToContinue();
-    }
-
     return results.toString();
   }
 
@@ -13014,15 +12885,6 @@ public abstract class EDD {
    */
   public static void testVerboseOn() {
     testVerbose(true);
-  }
-
-  /**
-   * This sets verbose=true and reallyVerbose=true for this class and related clases, for tests.
-   *
-   * @throws Throwable if trouble
-   */
-  public static void testVerboseOff() {
-    testVerbose(false);
   }
 
   /**

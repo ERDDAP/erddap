@@ -449,10 +449,4 @@ public class LogAxis extends SpaceAxis implements Cloneable {
     }
     return new Rectangle(x, y, width, height);
   }
-
-  public void setBounds(int x, int y, int width, int height) {}
-
-  public void setBounds(Rectangle rect) {
-    setBounds(rect.x, rect.y, rect.width, rect.height);
-  }
 }

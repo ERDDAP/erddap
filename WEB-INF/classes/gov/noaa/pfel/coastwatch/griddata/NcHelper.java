@@ -4,7 +4,18 @@
  */
 package gov.noaa.pfel.coastwatch.griddata;
 
-import com.cohort.array.*;
+import com.cohort.array.Attributes;
+import com.cohort.array.CharArray;
+import com.cohort.array.DoubleArray;
+import com.cohort.array.FloatArray;
+import com.cohort.array.IntArray;
+import com.cohort.array.LongArray;
+import com.cohort.array.NDimensionalIndex;
+import com.cohort.array.PAType;
+import com.cohort.array.PrimitiveArray;
+import com.cohort.array.ShortArray;
+import com.cohort.array.StringArray;
+import com.cohort.array.ULongArray;
 import com.cohort.util.Calendar2;
 import com.cohort.util.File2;
 import com.cohort.util.Math2;
@@ -17,11 +28,26 @@ import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Collections;
 import java.util.List;
-import ucar.ma2.*;
-import ucar.nc2.*;
-import ucar.nc2.dataset.NetcdfDataset;
+import ucar.ma2.Array;
+import ucar.ma2.ArrayBoolean;
+import ucar.ma2.ArrayChar;
+import ucar.ma2.ArrayObject;
+import ucar.ma2.ArrayString;
+import ucar.ma2.DataType;
+import ucar.ma2.StructureData;
+import ucar.ma2.StructureDataIterator;
+import ucar.ma2.StructureMembers;
+import ucar.nc2.Attribute;
+import ucar.nc2.AttributeContainer;
+import ucar.nc2.Dimension;
+import ucar.nc2.Group;
+import ucar.nc2.NetcdfFile;
+import ucar.nc2.NetcdfFiles;
+import ucar.nc2.Structure;
+import ucar.nc2.Variable;
 import ucar.nc2.dataset.NetcdfDatasets;
-import ucar.nc2.write.*;
+import ucar.nc2.write.Ncdump;
+import ucar.nc2.write.NetcdfFormatWriter;
 
 /**
  * This class has some static convenience methods related to NetCDF files and the other Data
@@ -689,54 +715,6 @@ public class NcHelper {
   }
 
   /**
-   * From an arrayList which alternates attributeName (a String) and attributeValue (an object),
-   * this generates a String with startLine+"<name>=<value>" on each line. If arrayList == null,
-   * this returns startLine+"[null]\n".
-   *
-   * <p>This nc version is used to print netcdf header attributes. It puts quotes around String
-   * attributeValues, converts \ to \\, and " to \", and appends 'f' to float values/
-   *
-   * @param arrayList
-   * @return the desired string representation
-   */
-  public static String alternateToString(
-      String prefix, List<PrimitiveArray> arrayList, String suffix) {
-    if (arrayList == null) return prefix + "[null]\n";
-    StringBuilder sb = new StringBuilder();
-    for (int index = 0; index < arrayList.size(); index += 2) {
-      sb.append(prefix);
-      sb.append(arrayList.get(index).toString());
-      sb.append(" = ");
-      Object o = arrayList.get(index + 1);
-      if (o instanceof StringArray sa) {
-        int n = sa.size();
-        String connect = "";
-        for (int i = 0; i < n; i++) {
-          sb.append(connect);
-          connect = ", ";
-          String s = String2.replaceAll(sa.get(i), "\\", "\\\\"); //  \ becomes \\
-          s = String2.replaceAll(s, "\"", "\\\""); //  " becomes \"
-          sb.append("\"" + s + "\"");
-        }
-      } else if (o instanceof FloatArray fa) {
-        int n = fa.size();
-        String connect = "";
-        for (int i = 0; i < n; i++) {
-          sb.append(connect);
-          connect = ", ";
-          sb.append(fa.get(i));
-          sb.append("f");
-        }
-      } else {
-        sb.append(o.toString());
-      }
-      sb.append(suffix);
-      sb.append('\n');
-    }
-    return sb.toString();
-  }
-
-  /**
    * This gets a string representation of the header of a .nc file.
    *
    * <p>If the fullName is an http address, the name needs to start with "http:\\" (upper or lower
@@ -755,19 +733,6 @@ public class NcHelper {
       return String2.replaceAll(results, "\r", ""); // 2013-09-03 netcdf-java 4.3 started using \r\n
     }
     // make sure it is explicitly closed
-  }
-
-  /** THIS IS IMPERFECT/UNFINISHED. This generates a .dds-like list of variables in a .nc file. */
-  public static String dds(String fileName) throws Exception {
-    String sar[] = String2.splitNoTrim(readCDL(fileName), '\n');
-    int n = sar.length;
-    StringBuilder sb = new StringBuilder();
-    for (int i = 0; i < n; i++) {
-      String trimS = sar[i].trim();
-      if (trimS.length() > 0 && !trimS.startsWith(":")) sb.append(sar[i] + "\n");
-      sar[i] = null;
-    }
-    return sb.toString();
   }
 
   /**
@@ -1929,19 +1894,6 @@ public class NcHelper {
           origin,
           Array.factory(getNc3DataType(paType), shape, pa.toObjectArray()));
     }
-  }
-
-  /**
-   * This opens an opendap dataset as a NetcdfDataset. ALWAYS explicitly use netcdfDataset.close()
-   * when you are finished with it, preferably in a "finally" clause.
-   *
-   * @param url This should not include a list of variables (e.g., ?varName,varName) or a constraint
-   *     expression at the end.
-   * @return a NetcdfDataset which is a superclass of NetcdfFile
-   * @throws Exception if trouble
-   */
-  public static NetcdfDataset openOpendapAsNetcdfDataset(String url) throws Exception {
-    return NetcdfDatasets.openDataset(url); // 2021 v5.4.1: 's' is new API
   }
 
   /**

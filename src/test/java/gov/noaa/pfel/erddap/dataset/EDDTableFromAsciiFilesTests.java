@@ -2937,13 +2937,13 @@ class EDDTableFromAsciiFilesTests {
     epSec = 1112515200; // from 2005-04-03T08:00Z in convert / time
     Test.ensureEqual(
         Calendar2.epochSecondsToIsoStringTZ(epSec), "2005-04-03T08:00:00Z", ""); // 8hrs
-    Test.ensureEqual(Calendar2.isoStringToEpochSeconds("2005-04-03T00:00", timeZone), epSec, "");
+    Test.ensureEqual(Calendar2.isoStringToMillis("2005-04-03T00:00", timeZone) / 1000.0, epSec, "");
 
     // test summer/daylight saving time: 2005-04-03T05:00 Pacific
     epSec = 1112529600; // from 2005-04-03T12:00Z in convert / time
     Test.ensureEqual(
         Calendar2.epochSecondsToIsoStringTZ(epSec), "2005-04-03T12:00:00Z", ""); // 7hrs
-    Test.ensureEqual(Calendar2.isoStringToEpochSeconds("2005-04-03T05:00", timeZone), epSec, "");
+    Test.ensureEqual(Calendar2.isoStringToMillis("2005-04-03T05:00", timeZone) / 1000.0, epSec, "");
 
     // the source file
     results =

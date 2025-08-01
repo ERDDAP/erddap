@@ -37,9 +37,17 @@ import gov.noaa.pfel.erddap.dataset.metadata.LocalizedAttributes;
 import gov.noaa.pfel.erddap.dataset.metadata.MetadataBuilder;
 import gov.noaa.pfel.erddap.filetypes.DapRequestInfo;
 import gov.noaa.pfel.erddap.filetypes.FileTypeInterface;
-import gov.noaa.pfel.erddap.util.*;
+import gov.noaa.pfel.erddap.util.EDMessages;
 import gov.noaa.pfel.erddap.util.EDMessages.Message;
-import gov.noaa.pfel.erddap.variable.*;
+import gov.noaa.pfel.erddap.util.EDStatic;
+import gov.noaa.pfel.erddap.variable.EDV;
+import gov.noaa.pfel.erddap.variable.EDVAltGridAxis;
+import gov.noaa.pfel.erddap.variable.EDVDepthGridAxis;
+import gov.noaa.pfel.erddap.variable.EDVGridAxis;
+import gov.noaa.pfel.erddap.variable.EDVLatGridAxis;
+import gov.noaa.pfel.erddap.variable.EDVLonGridAxis;
+import gov.noaa.pfel.erddap.variable.EDVTimeGridAxis;
+import gov.noaa.pfel.erddap.variable.EDVTimeStampGridAxis;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.xml.bind.JAXBException;
@@ -943,31 +951,6 @@ public abstract class EDDGrid extends EDD {
    */
   public EDVGridAxis[] axisVariables() {
     return axisVariables;
-  }
-
-  /**
-   * This returns the axis variable which has the specified source name.
-   *
-   * @param language the index of the selected language
-   * @return the specified axis variable sourceName
-   * @throws SimpleException if not found
-   */
-  public EDVGridAxis findAxisVariableBySourceName(int language, String tSourceName) {
-
-    int which = String2.indexOf(axisVariableSourceNames(), tSourceName);
-    if (which < 0)
-      throw new SimpleException(
-          EDStatic.bilingual(
-              language,
-              MessageFormat.format(
-                  EDStatic.messages.get(Message.ERROR_NOT_FOUND_IN, 0),
-                  "sourceAxisVariableName=" + tSourceName,
-                  "datasetID=" + datasetID),
-              MessageFormat.format(
-                  EDStatic.messages.get(Message.ERROR_NOT_FOUND_IN, language),
-                  "sourceAxisVariableName=" + tSourceName,
-                  "datasetID=" + datasetID)));
-    return axisVariables[which];
   }
 
   /**
@@ -8393,127 +8376,6 @@ public abstract class EDDGrid extends EDD {
   }
 
   /**
-   * Get colorBarMinimum and Maximum for all grid variables in erddap. Currently, this is just set
-   * up for Bob's use.
-   */
-  public static void suggestGraphMinMax() throws Throwable {
-    String tDir = "c:/temp/griddap/";
-    String tName = "datasets.tsv";
-
-    while (true) {
-      String dsName = String2.getStringFromSystemIn("Grid datasetID? ");
-      if (dsName.length() == 0) dsName = "erdBAssta5day"; // hycomPacS";
-
-      Table info = new Table();
-      SSR.downloadFile(
-          "https://coastwatch.pfeg.noaa.gov/erddap/info/" + dsName + "/index.tsv",
-          tDir + tName,
-          true);
-
-      String response[] = File2.readFromFile88591(tDir + tName);
-      Test.ensureTrue(response[0].length() == 0, response[0]);
-      String2.log(
-          "Dataset info (500 chars):\n"
-              + response[1].substring(0, Math.min(response[1].length(), 500)));
-
-      info.readASCII(tDir + tName);
-      // String2.log(info.toString());
-
-      // generate request for data for range of lat and lon  and middle one of other axes
-      StringBuilder subset = new StringBuilder();
-      StringArray dataVars = new StringArray();
-      int nDim = 0;
-      for (int row = 0; row < info.nRows(); row++) {
-        String type = info.getStringData(0, row);
-        String varName = info.getStringData(1, row);
-        if (type.equals("variable")) {
-          dataVars.add(varName);
-          continue;
-        }
-
-        if (!type.equals("dimension")) continue;
-
-        // deal with dimensions
-        nDim++;
-        String s4[] = String2.split(info.getStringData(4, row), ',');
-        int nValues = String2.parseInt(String2.split(s4[0], '=')[1]);
-        String2.log(varName + " " + nValues);
-        if (varName.equals("longitude"))
-          subset.append("[0:" + (nValues / 36) + ":" + (nValues - 1) + "]");
-        else if (varName.equals("latitude"))
-          subset.append("[0:" + (nValues / 18) + ":" + (nValues - 1) + "]");
-        else subset.append("[" + (nValues / 2) + "]");
-      }
-      String2.log("subset=" + subset + "\nnDim=" + nDim + " vars=" + dataVars);
-
-      // get suggested range for each dataVariable
-      Table data = new Table();
-      int ndv = dataVars.size();
-      for (int v = 0; v < ndv; v++) {
-        try {
-          String varName = dataVars.get(v);
-          SSR.downloadFile(
-              "https://coastwatch.pfeg.noaa.gov/erddap/griddap/"
-                  + dsName
-                  + ".tsv?"
-                  + varName
-                  + subset,
-              tDir + tName,
-              true);
-
-          response = File2.readFromFile88591(tDir + tName);
-          Test.ensureTrue(response[0].length() == 0, response[0]);
-          if (response[1].startsWith("<!DOCTYPE HTML")) {
-            int start = response[1].indexOf("The error:");
-            int stop = response[1].length();
-            if (start >= 0) {
-              start = response[1].indexOf("Your request URL:");
-              stop = response[1].indexOf("</tr>", start);
-              stop = response[1].indexOf("</tr>", stop);
-              stop = response[1].indexOf("</tr>", stop);
-            }
-            if (start < 0) {
-              start = 0;
-              stop = response[1].length();
-            }
-            String2.log(
-                "Response for varName="
-                    + varName
-                    + ":\n"
-                    + String2.replaceAll(response[1].substring(start, stop), "<br>", "\n<br>"));
-          }
-
-          data.readASCII(tDir + tName);
-          PrimitiveArray pa = data.getColumn(data.nColumns() - 1);
-          double stats[] = pa.calculateStats();
-          double tMin = stats[PrimitiveArray.STATS_MIN];
-          double tMax = stats[PrimitiveArray.STATS_MAX];
-          double range = tMax - tMin;
-          double loHi[] =
-              Math2.suggestLowHigh(tMin + range / 10, tMax - range / 10); // interior range
-          String2.log(
-              "varName="
-                  + varName
-                  + " min="
-                  + tMin
-                  + " max="
-                  + tMax
-                  + "\n"
-                  + "                <att name=\"colorBarMinimum\" type=\"double\">"
-                  + loHi[0]
-                  + "</att>\n"
-                  + "                <att name=\"colorBarMaximum\" type=\"double\">"
-                  + loHi[1]
-                  + "</att>\n");
-
-        } catch (Throwable t) {
-          String2.log("\n" + MustBe.throwableToString(t));
-        }
-      }
-    }
-  }
-
-  /**
    * This responds by writing WCS info for this dataset.
    *
    * @param request the request
@@ -12886,64 +12748,6 @@ public abstract class EDDGrid extends EDD {
             + "    </gmd:MD_MaintenanceInformation>\n"
             + "  </gmd:metadataMaintenance>\n"
             + "</gmi:MI_Metadata>\n");
-  }
-
-  /**
-   * This looks for missing files by looking for larger-than-expected time gaps in datasets.
-   *
-   * @param language the index of the selected language
-   * @param datasetID The datasetID of a dataset that can be constructed, or the base URL of an
-   *     existing ERDDAP dataset that you want to test.
-   * @return a newline-separated string (with a trailing newline) with a line for each time gap &gt;
-   *     the median gap or gap=NaN. If there are no gaps, this returns "".
-   * @throws throwable
-   */
-  public static String findTimeGaps(int language, String datasetID) throws Throwable {
-
-    DoubleArray times;
-    if (String2.isUrl(datasetID)) {
-      Table table = new Table();
-      table.readASCII(
-          datasetID,
-          SSR.getBufferedUrlReader(datasetID + ".csvp?time"),
-          "",
-          "",
-          0,
-          1,
-          ",",
-          null,
-          null,
-          null,
-          null,
-          false);
-      PrimitiveArray isoPA = table.getColumn(0);
-      int n = isoPA.size();
-      times = new DoubleArray(n, false);
-      for (int i = 0; i < n; i++) times.add(Calendar2.isoStringToEpochSeconds(isoPA.getString(i)));
-
-    } else {
-      EDD edd = oneFromDatasetsXml(null, datasetID);
-      if (edd instanceof EDDTable)
-        throw new SimpleException(
-            EDStatic.simpleBilingual(language, Message.QUERY_ERROR)
-                + "datasetID="
-                + datasetID
-                + " isn't an EDDGrid dataset.");
-      EDDGrid eddGrid = (EDDGrid) edd;
-      if (eddGrid.timeIndex() < 0)
-        throw new SimpleException(
-            EDStatic.simpleBilingual(language, Message.QUERY_ERROR)
-                + "datasetID="
-                + datasetID
-                + " has no time variable.");
-      PrimitiveArray pa = eddGrid.axisVariables[eddGrid.timeIndex].destinationValues();
-      times =
-          pa instanceof DoubleArray da
-              ? da
-              : // should be
-              new DoubleArray(pa);
-    }
-    return times.findTimeGaps();
   }
 
   /** This returns time gap information. */

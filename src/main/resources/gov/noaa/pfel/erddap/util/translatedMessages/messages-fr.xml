@@ -4201,10 +4201,6 @@ Mais dods.dap.DODSException n&#39;a pas d&#39;exception pertinente.
 Mieux vaut renvoyer un fichier vide ? Mais .nc et autres n&#39;autorisent pas les données de longueur nulle.
  -->
 <MustBeThereIsNoData>Votre requête n&#39;a produit aucun résultat correspondant.</MustBeThereIsNoData>
-
-<!--  De nombreux types de fichiers imposent une limite à la quantité de données qu&#39;un fichier peut contenir (par exemple, 2 Go).  -->
-<MustBeNotNull>{0} ne doit pas être nul.</MustBeNotNull>
-<MustBeNotEmpty>{0} ne doit pas être une chaîne vide.</MustBeNotEmpty>
 <MustBeInternalError>Erreur interne</MustBeInternalError>
 <MustBeOutOfMemoryError>Erreur de mémoire insuffisante</MustBeOutOfMemoryError>
 

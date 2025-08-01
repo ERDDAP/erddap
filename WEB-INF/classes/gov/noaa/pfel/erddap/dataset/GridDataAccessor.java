@@ -390,16 +390,6 @@ public class GridDataAccessor implements AutoCloseable {
   }
 
   /**
-   * This returns the driverIndex.
-   *
-   * @return driverIndex so you can call .size(), .shape(), .current(), .... Don't call
-   *     driverIndex.increment() or make other changes to its state.
-   */
-  public NDimensionalIndex driverIndex() {
-    return driverIndex;
-  }
-
-  /**
    * This returns the partialIndex.
    *
    * @return partialIndex so you can call .size(), .shape(), .current(), .... Don't call
@@ -453,15 +443,6 @@ public class GridDataAccessor implements AutoCloseable {
    */
   public IntArray constraints() {
     return constraints;
-  }
-
-  /**
-   * This returns the constraints derived from the userDapQuery as a String.
-   *
-   * @return the constraints string derived from the userDapQuery.
-   */
-  public String constraintsString() {
-    return EDDGrid.buildDapArrayQuery(constraints);
   }
 
   /**
@@ -804,16 +785,6 @@ public class GridDataAccessor implements AutoCloseable {
    */
   public PAOne getAxisValueAsPAOne(int av, PAOne paOne) {
     return paOne.readFrom(axisValues[av], totalIndex.getCurrent()[av]);
-  }
-
-  /**
-   * Call this after increment() to get a current axis destination value (as a double).
-   *
-   * @param av an axisVariable number
-   * @return the axis destination value
-   */
-  public double getAxisValueAsDouble(int av) {
-    return axisValues[av].getDouble(totalIndex.getCurrent()[av]);
   }
 
   /**

@@ -4184,10 +4184,6 @@ Namun dods.dap.DODSException tidak memiliki pengecualian yang relevan.
 Lebih baik mengembalikan file kosong? Namun .nc dan lainnya tidak mengizinkan data dengan panjang 0.
  -->
 <MustBeThereIsNoData>Kueri Anda tidak memberikan hasil yang cocok.</MustBeThereIsNoData>
-
-<!--  Banyak jenis file yang membatasi jumlah data yang dapat ditampung suatu file (misalnya, 2 GB).  -->
-<MustBeNotNull>{0} tidak boleh nol.</MustBeNotNull>
-<MustBeNotEmpty>{0} tidak boleh berupa string kosong.</MustBeNotEmpty>
 <MustBeInternalError>Kesalahan internal</MustBeInternalError>
 <MustBeOutOfMemoryError>Kesalahan Kehabisan Memori</MustBeOutOfMemoryError>
 

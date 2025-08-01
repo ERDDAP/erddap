@@ -23,7 +23,6 @@ import gov.noaa.pmel.util.TimeRange;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Rectangle;
-import java.util.ArrayList;
 
 // jdk1.2
 // import java.awt.geom.Point2D;
@@ -227,31 +226,6 @@ public class TimeAxis extends Axis implements Cloneable {
     }
   }
 
-  @Override
-  protected void updateRegisteredTransforms() {
-    if (!registeredTransforms_.isEmpty()) {
-      AxisTransform trns;
-      for (Transform item : registeredTransforms_) {
-        trns = (AxisTransform) item;
-        trns.setRangeP(pRange_);
-        trns.setRangeU(tRange_);
-      }
-    }
-  }
-
-  //
-  @Override
-  protected void updateRegisteredAxes() {
-    if (!registeredAxes_.isEmpty()) {
-      TimeAxis ax;
-      for (Axis axis : registeredAxes_) {
-        ax = (TimeAxis) axis;
-        ax.setRangeU(tRange_);
-        ax.setRangeP(pRange_);
-      }
-    }
-  }
-
   protected void setupDraw(double val) {
     if (orientation_ == Axis.HORIZONTAL) {
       if (labelPosition_ == POSITIVE_SIDE) {
@@ -402,86 +376,7 @@ public class TimeAxis extends Axis implements Cloneable {
       newAxis = new TimeAxis(getStyle());
     }
     //
-    // remove registered axes and transforms
-    //
-    newAxis.registeredAxes_ = new ArrayList<>();
-    newAxis.registeredTransforms_ = new ArrayList<>();
-    //
     return newAxis;
-  }
-
-  /**
-   * Set the minor and major label formats.
-   *
-   * @param minor minor label format
-   * @param major major label format
-   */
-  public void setLabelFormat(String minor, String major) {
-    if (minorLabelFormat_ == null
-        || majorLabelFormat_ == null
-        || !minorLabelFormat_.equals(minor)
-        || !majorLabelFormat_.equals(major)) {
-
-      minorLabelFormat_ = minor;
-      majorLabelFormat_ = major;
-      modified("TimeAxis: setLabelFormat()");
-    }
-  }
-
-  /**
-   * Set the minor label format.
-   *
-   * @param minor minor label format
-   */
-  public void setMinorLabelFormat(String minor) {
-    if (minorLabelFormat_ == null || !minorLabelFormat_.equals(minor)) {
-      minorLabelFormat_ = minor;
-      modified("TimeAxis: setMinorLabelFormat()");
-    }
-  }
-
-  /**
-   * Set the major label format.
-   *
-   * @param major major label format
-   */
-  public void setMajorLabelFormat(String major) {
-    if (majorLabelFormat_ == null || !majorLabelFormat_.equals(major)) {
-      majorLabelFormat_ = major;
-      modified("TimeAxis: setMajorLabelFormat()");
-    }
-  }
-
-  /**
-   * Get the minor label format.
-   *
-   * @return minor label format
-   */
-  public String getMinorLabelFormat() {
-    return minorLabelFormat_;
-  }
-
-  /**
-   * Get the major label format.
-   *
-   * @return major label format
-   */
-  public String getMajorLabelFormat() {
-    return majorLabelFormat_;
-  }
-
-  /**
-   * Set the minor and major label intervals.
-   *
-   * @param minor minor label interval
-   * @param major major label interval
-   */
-  public void setLabelInterval(int minor, int major) {
-    if (minorLabelInterval_ != minor || majorLabelInterval_ != major) {
-      minorLabelInterval_ = minor;
-      majorLabelInterval_ = major;
-      modified("TimeAxis: setLabelInterval()");
-    }
   }
 
   /**
@@ -497,48 +392,12 @@ public class TimeAxis extends Axis implements Cloneable {
   }
 
   /**
-   * Set the major label interval.
-   *
-   * @param major major label interval
-   */
-  public void setMajorLabelInterval(int major) {
-    if (majorLabelInterval_ != major) {
-      majorLabelInterval_ = major;
-      modified("TimeAxis: setMajorLabelInterval()");
-    }
-  }
-
-  /**
    * Get the minor label interval.
    *
    * @return minor label interval
    */
   public int getMinorLabelInterval() {
     return minorLabelInterval_;
-  }
-
-  /**
-   * Get the major label interval.
-   *
-   * @return major label interval
-   */
-  public int getMajorLabelInterval() {
-    return majorLabelInterval_;
-  }
-
-  /**
-   * Set the time axis style.
-   *
-   * @param style new time axis style
-   */
-  public void setStyle(int style) {
-    if (axisStyle_ != style) {
-      axisStyle_ = style;
-      if (axisStyle_ == AUTO && tRange_ != null) {
-        setAuto();
-      }
-      modified("TimeAxis: setStyle()");
-    }
   }
 
   /**
@@ -561,31 +420,15 @@ public class TimeAxis extends Axis implements Cloneable {
       if (axisStyle_ == AUTO) {
         setAuto();
       }
-      updateRegisteredAxes();
-      updateRegisteredTransforms();
       modified("TimeAxis: setRangeU()");
     }
-  }
-
-  /**
-   * Get the time range of the axis.
-   *
-   * @return TimeRange of axis
-   */
-  public TimeRange getTimeRangeU() {
-    return tRange_;
   }
 
   @Override
   public void setRangeU(SoTRange tr) {
     setRangeU(
         new TimeRange(
-            tr.getStart().getLongTime(), tr.getEnd().getLongTime(), tr.getDelta().getLongTime()));
-  }
-
-  @Override
-  public SoTRange getSoTRangeU() {
-    return new SoTRange.Time(tRange_);
+            tr.getStart().getGeoDate(), tr.getEnd().getGeoDate(), tr.getDelta().getGeoDate()));
   }
 
   /**
@@ -612,25 +455,6 @@ public class TimeAxis extends Axis implements Cloneable {
       x = ((SoTValue.Double) tp.getX()).getValue();
     }
     setLocationU(new TimePoint(x, new GeoDate(t)));
-  }
-
-  /** Returns origin as a <code>SoTPoint</code>. */
-  @Override
-  public SoTPoint getSoTLocationU() {
-    if (orientation_ == HORIZONTAL) {
-      return new SoTPoint(tLocation_.t, tLocation_.x);
-    } else {
-      return new SoTPoint(tLocation_.x, tLocation_.t);
-    }
-  }
-
-  /**
-   * Get the origin in user units.
-   *
-   * @return origin in user units
-   */
-  public TimePoint getLocationU() {
-    return tLocation_;
   }
 
   //
@@ -687,12 +511,6 @@ public class TimeAxis extends Axis implements Cloneable {
     }
     return new Rectangle(x, y, width, height);
   }
-
-  public void setBounds(Rectangle r) {
-    setBounds(r.x, r.y, r.width, r.height);
-  }
-
-  public void setBounds(int x, int y, int width, int height) {}
 
   @Override
   public void modified(String mess) {

@@ -4270,10 +4270,6 @@ Ancak dods.dap.DODSException&#39;ın konuyla ilgili bir istisnası yoktur.
 Boş bir dosyayı iade etmek daha mı iyi? Ancak .nc ve diğerleri 0 uzunluktaki verilere izin vermez.
  -->
 <MustBeThereIsNoData>Sorgunuz eşleşen sonuç üretmedi.</MustBeThereIsNoData>
-
-<!--  Birçok dosya türü, bir dosyanın tutabileceği veri miktarına (ör. 2 GB) bir sınır koyar.  -->
-<MustBeNotNull>{0} boş olmamalıdır.</MustBeNotNull>
-<MustBeNotEmpty>{0} boş bir dize olmamalıdır.</MustBeNotEmpty>
 <MustBeInternalError>İç hata</MustBeInternalError>
 <MustBeOutOfMemoryError>Bellek Yetersiz Hatası</MustBeOutOfMemoryError>
 

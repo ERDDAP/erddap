@@ -2650,15 +2650,6 @@ public class Calendar2 {
     return isoStringToMillis(isoString) / 1000.0;
   }
 
-  /**
-   * A variant of isoStringToEpochSeconds for any TimeZone.
-   *
-   * @param timeZone mull is interpreted as Zulu
-   */
-  public static double isoStringToEpochSeconds(String isoString, TimeZone timeZone) {
-    return isoStringToMillis(isoString, timeZone) / 1000.0;
-  }
-
   /** This is like isoStringToEpochSeconds, but returns NaN if trouble. */
   public static double safeIsoStringToEpochSeconds(String isoString) {
     if (isoString == null || isoString.length() < 4) return Double.NaN;
@@ -2880,23 +2871,6 @@ public class Calendar2 {
   }
 
   /**
-   * This converts an ISO dateTime String to hours since 1970-01-01T00:00:00Z, rounded to the
-   * nearest hour. In many ways trunc would be better, but doubles are often bruised. round works
-   * symmetrically with + and - numbers. If any of the end of the dateTime is missing, a trailing
-   * portion of "1970-01-01T00:00:00Z" or "1970-01-01T00:00:00-00:00" is added. The 'T' connector
-   * can be any non-digit. This may optionally include hours, minutes, seconds, decimal, and
-   * timezone offset (default=Zulu).
-   *
-   * @param isoString (default time zone is Z)
-   * @return seconds
-   * @throws RuntimeException if trouble (e.g., input is null or invalid format)
-   */
-  public static int isoStringToEpochHours(String isoString) {
-    long tl = isoStringToMillis(isoString);
-    return Math2.roundToInt(tl / (double) MILLIS_PER_HOUR);
-  }
-
-  /**
    * This converts seconds since 1970-01-01T00:00:00Z to an ISO Zulu dateTime String with 'T'. The
    * doubles are rounded to the nearest millisecond. In many ways trunc would be better, but doubles
    * are often bruised. round works symmetrically with + and - numbers.
@@ -2991,15 +2965,6 @@ public class Calendar2 {
     } catch (Exception e) {
       return NaNString;
     }
-  }
-
-  /**
-   * This formats as date only.
-   *
-   * @throws RuntimeException if trouble
-   */
-  public static String epochSecondsToIsoDateString(double seconds) {
-    return millisToIsoDateString(Math2.roundToLong(seconds * 1000)); // round to nearest milli
   }
 
   /** This formats as date only, and returns NaNString if seconds is NaN. */
@@ -3141,25 +3106,6 @@ public class Calendar2 {
     gc.clear();
     gc.set(year, month - 1, dayOfMonth, hour, minute, second);
     gc.set(MILLISECOND, millis);
-    gc.get(MONTH); // force recalculations
-    return gc;
-  }
-
-  /**
-   * Get a GregorianCalendar object (local time zone) for the specified time. [Currently, it is
-   * lenient -- e.g., day 366 -&gt; Jan 1 of the next year.] Information can be retrieved via
-   * calendar.get(Calendar.XXXX), where XXXX is one of the Calendar constants, like DAY_OF_YEAR.
-   *
-   * @param year (e.g., 2005)
-   * @param dayOfYear (usually 1..365, but 1..366 in leap years)
-   * @return the corresponding GregorianCalendar object (local time zone)
-   * @throws RuntimeException if trouble (e.g., year is Integer.MAX_VALUE)
-   */
-  public static GregorianCalendar newGCalendarLocal(int year, int dayOfYear) {
-    if (year == Integer.MAX_VALUE)
-      Test.error(String2.ERROR + " in newGCalendarLocal: year value is Integer.MAX_VALUE!");
-    GregorianCalendar gc = new GregorianCalendar(year, 0, 1);
-    gc.set(Calendar.DAY_OF_YEAR, dayOfYear);
     gc.get(MONTH); // force recalculations
     return gc;
   }
@@ -3544,30 +3490,6 @@ public class Calendar2 {
     sb.append(":" + cdt.substring(12 + tLen)); // to the end, e.g., time zone? Z?
 
     return sb.toString();
-  }
-
-  /**
-   * This returns a [-]uuuuDDD string e.g., "2004001" using its current get() values (not influenced
-   * by the format's timeZone).
-   *
-   * @param gc a GregorianCalendar object
-   * @return the date in gc, formatted as (for example) "2004001".
-   * @throws RuntimeException if trouble (e.g., gc is null)
-   */
-  public static String formatAsYYYYDDD(GregorianCalendar gc) {
-    return formatAsISOYear(gc) + String2.zeroPad("" + gc.get(DAY_OF_YEAR), 3);
-  }
-
-  /**
-   * This returns a [-]uuuuMM string e.g., "200401" using its current get() values (not influenced
-   * by the format's timeZone).
-   *
-   * @param gc a GregorianCalendar object
-   * @return the date in gc, formatted as (for example) "200401".
-   * @throws RuntimeException if trouble (e.g., gc is null)
-   */
-  public static String formatAsYYYYMM(GregorianCalendar gc) {
-    return formatAsISOYear(gc) + String2.zeroPad("" + (gc.get(MONTH) + 1), 2);
   }
 
   /**
@@ -4491,18 +4413,6 @@ public class Calendar2 {
   }
 
   /**
-   * This returns an error message indicating that the specified isoDateString couldn't be parsed.
-   *
-   * @param s dateTimeString
-   * @param e a Exception
-   * @return an error string
-   */
-  public static String getParseErrorString(String s, Exception e) {
-    // String2.log(error);
-    return MustBe.throwable(String2.ERROR + " while parsing \"" + s + "\".", e);
-  }
-
-  /**
    * Convert a String with [-]uuuuDDD to a String with YYYY-mm-dd. This works the same for Local or
    * Zulu or other time zones.
    *
@@ -4583,15 +4493,6 @@ public class Calendar2 {
    */
   public static String getCurrentISODateStringZulu() {
     return formatAsISODate(newGCalendarZulu());
-  }
-
-  /**
-   * This returns the current local date in ISO format.
-   *
-   * @return the current local date in ISO format
-   */
-  public static String getCurrentISODateStringLocal() {
-    return formatAsISODate(newGCalendarLocal());
   }
 
   /**

@@ -3395,10 +3395,6 @@ ERDDAP کے افقی لیجنڈ کے لیے، legendTitle1 اور 2 کو ایک 
 خالی فائل واپس کرنا بہتر ہے؟ لیکن .nc اور دیگر 0 لمبائی والے ڈیٹا کی اجازت نہیں دیتے ہیں۔
  -->
 <MustBeThereIsNoData>آپ کے استفسار سے کوئی مماثل نتیجہ نہیں نکلا۔</MustBeThereIsNoData>
-
-<!--  فائل کی بہت سی قسمیں اس بات کی حد رکھتی ہیں کہ ایک فائل کتنا ڈیٹا رکھ سکتی ہے (جیسے 2GB)۔  -->
-<MustBeNotNull>{0} کو کالعدم نہیں ہونا چاہیے۔</MustBeNotNull>
-<MustBeNotEmpty>{0} ایک خالی تار نہیں ہونا چاہیے۔</MustBeNotEmpty>
 <MustBeInternalError>داخلی خامی</MustBeInternalError>
 <MustBeOutOfMemoryError>میموری کی خرابی</MustBeOutOfMemoryError>
 

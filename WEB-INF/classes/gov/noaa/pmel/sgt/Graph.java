@@ -13,7 +13,6 @@ package gov.noaa.pmel.sgt;
 
 import gov.noaa.pmel.sgt.dm.SGTData;
 import gov.noaa.pmel.util.Range2D;
-import gov.noaa.pmel.util.SoTRange;
 import java.awt.Graphics;
 import java.awt.Point;
 import java.beans.PropertyChangeListener;
@@ -115,18 +114,6 @@ public abstract class Graph implements PropertyChangeListener {
     ident_ = id;
   }
 
-  /** Copy the <code>Graph</code> object and all attached classes. */
-  public abstract Graph copy();
-
-  /**
-   * Get the <code>Graph</code> identifier
-   *
-   * @return ident
-   */
-  public String getId() {
-    return ident_;
-  }
-
   //
   abstract void draw(Graphics g);
 
@@ -160,33 +147,6 @@ public abstract class Graph implements PropertyChangeListener {
    */
   public void modified(String mess) {
     if (layer_ != null) layer_.modified(mess);
-  }
-
-  /**
-   * Compute a "nice" range from a range and number of intervals.
-   *
-   * @param range min and max values
-   * @param num number of intervals
-   * @return "nice" range
-   */
-  public static Range2D computeRange(Range2D range, int num) {
-    return computeRange(range.start, range.end, num);
-  }
-
-  /**
-   * Compute a "nice" range from a range and number of intervals.
-   *
-   * @since 2.0
-   * @param range min and max values
-   * @param num number of intervals
-   * @return "nice" range
-   */
-  public static SoTRange computeRange(SoTRange range, int num) {
-    if (!range.isTime()) {
-      SoTRange.Double drange = (SoTRange.Double) range;
-      return new SoTRange.Double(computeRange(drange.start, drange.end, num));
-    }
-    return null;
   }
 
   /**

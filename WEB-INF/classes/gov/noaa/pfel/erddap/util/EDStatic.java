@@ -1915,34 +1915,6 @@ public class EDStatic {
   }
 
   /**
-   * This uses MessageFormat.format to format the message (usually an error) in English and, if
-   * language&gt;0, in another language (separated by a newline).
-   *
-   * @param language the index of the selected language
-   * @param messageAr the message array with {0} substitution locations
-   * @param sub0 the text to be substituted into the message
-   */
-  public static String bilingualMessageFormat(int language, String messageAr[], String sub0) {
-    return MessageFormat.format(messageAr[0], sub0)
-        + (language > 0 ? "\n" + MessageFormat.format(messageAr[language], sub0) : "");
-  }
-
-  /**
-   * This uses MessageFormat.format to format the message (usually an error) in English and, if
-   * language&gt;0, in another language (separated by a newline).
-   *
-   * @param language the index of the selected language
-   * @param messageAr the message array with {0} and {1} substitution locations
-   * @param sub0 the text to be substituted into the message
-   * @param sub1 the text to be substituted into the message
-   */
-  public static String bilingualMessageFormat(
-      int language, String messageAr[], String sub0, String sub1) {
-    return MessageFormat.format(messageAr[0], sub0, sub1)
-        + (language > 0 ? "\n" + MessageFormat.format(messageAr[language], sub0, sub1) : "");
-  }
-
-  /**
    * If language=0, this returns eng. If language&gt;0, this returns eng+(space if needed)+other.
    * This is mostly used so that error messages can be bilingual.
    *
@@ -2784,22 +2756,10 @@ public class EDStatic {
     }
   }
 
-  /** This returns the number of unfinished emails. */
-  public static int nUnfinishedEmails() {
-    return (emailList.size() - lastFinishedEmail.get()) - 1;
-  }
-
   /** This returns the number of unfinished tasks. */
   public static int nUnfinishedTasks() {
-    return (taskList.size() - lastFinishedTask.get()) - 1;
+    return taskList.size() - lastFinishedTask.get() - 1;
   }
-
-  /** This returns the number of unfinished touches. */
-  public static int nUnfinishedTouches() {
-    return (touchList.size() - lastFinishedTouch.get()) - 1;
-  }
-
-  // addEmail is inside EDStatic.email()
 
   /**
    * This adds a task to the taskList if it (other than TASK_SET_FLAG) isn't already on the

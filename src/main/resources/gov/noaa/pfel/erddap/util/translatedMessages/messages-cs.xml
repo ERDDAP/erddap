@@ -3985,10 +3985,6 @@ Ale dods.dap.DODSException nemá žádnou relevantní výjimku.
 Je lepší vrátit prázdný soubor? Ale .nc a další neumožňují data o délce 0.
  -->
 <MustBeThereIsNoData>Váš dotaz nepřinesl žádné odpovídající výsledky.</MustBeThereIsNoData>
-
-<!--  Mnoho typů souborů omezuje množství dat, které soubor pojme (např. 2 GB). -->
-<MustBeNotNull>{0} nesmí mít hodnotu null.</MustBeNotNull>
-<MustBeNotEmpty>{0} nesmí být prázdný řetězec.</MustBeNotEmpty>
 <MustBeInternalError>Interní chyba</MustBeInternalError>
 <MustBeOutOfMemoryError>Nedostatek paměti Chyba</MustBeOutOfMemoryError>
 

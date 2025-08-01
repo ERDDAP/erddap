@@ -211,17 +211,6 @@ public class EDVGridAxis extends EDV {
   }
 
   /**
-   * This is used by the EDVGridAxis constructor to determine if this EDVGridAxis is valid.
-   *
-   * @throws Throwable if this EDVGridAxis is not valid
-   */
-  public void ensureValid() throws Throwable {
-    String errorInMethod =
-        "datasets.xml/EDVGridAxis.ensureValid error for sourceName=" + sourceName + ":\n";
-    ensureValid(errorInMethod);
-  }
-
-  /**
    * This returns the PrimitiveArray with the values for this axis as stored in the source. Don't
    * change these values.
    */
@@ -501,14 +490,6 @@ public class EDVGridAxis extends EDV {
    */
   public double destinationCoarseMax() {
     return destinationCoarseMax;
-  }
-
-  public void setDestinationCoarseMin(double tMin) {
-    destinationCoarseMin = tMin;
-  }
-
-  public void setDestinationCoarseMax(double tMax) {
-    destinationCoarseMax = tMax;
   }
 
   /**

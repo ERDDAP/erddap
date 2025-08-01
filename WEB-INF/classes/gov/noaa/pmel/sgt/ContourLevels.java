@@ -14,7 +14,6 @@ package gov.noaa.pmel.sgt;
 
 import com.cohort.util.MustBe;
 import com.cohort.util.String2;
-import gov.noaa.pmel.util.Range2D;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
@@ -91,32 +90,6 @@ public class ContourLevels implements Cloneable {
     return cl;
   }
 
-  /** Construct a default <code>ContourLevels</code> object from a <code>Range2D</code>. */
-  public static ContourLevels getDefault(Range2D range) {
-    ContourLevels cl = new ContourLevels();
-    double val = range.start;
-    while (val <= range.end) {
-      cl.addLevel(val);
-      val = val + range.delta;
-    }
-    return cl;
-  }
-
-  /** Create a deep copy. */
-  public ContourLevels copy() {
-    ContourLevels newcls;
-    try {
-      newcls = (ContourLevels) clone();
-      //      newcls.defaultAttr_ =
-      //	(DefaultContourLineAttribute)this.defaultAttr_.copy();
-      newcls.levels_ = (ArrayList<Double>) this.levels_.clone();
-      newcls.lineAttrMap_ = (HashMap<Double, ContourLineAttribute>) this.lineAttrMap_.clone();
-    } catch (CloneNotSupportedException e) {
-      newcls = null;
-    }
-    return newcls;
-  }
-
   /** Get the contour level elements. */
   public Iterator<Double> levelElements() {
     // try { //bob added
@@ -127,18 +100,6 @@ public class ContourLevels implements Cloneable {
     // getContourLineAttribute(-4000).getLabelText());
     // } catch (Exception e) {}
     return levels_.iterator();
-  }
-
-  /** Set a the <code>ContourLineAttribute</code> for a value. */
-  public void setContourLineAttribute(double val, ContourLineAttribute l)
-      throws ContourLevelNotFoundException {
-    throw new MethodNotImplementedError();
-  }
-
-  /** Set a the <code>ContourLineAttribute</code> for an index. */
-  public void setContourLineAttribute(int indx, ContourLineAttribute l)
-      throws ContourLevelNotFoundException {
-    throw new MethodNotImplementedError();
   }
 
   /** Get the <code>ContourLineAttribute</code> for a value. */
@@ -153,13 +114,6 @@ public class ContourLevels implements Cloneable {
     return attr;
   }
 
-  /** Get the <code>ContourLineAttribute</code> for an index. */
-  public ContourLineAttribute getContourLineAttribute(int indx)
-      throws ContourLevelNotFoundException {
-    if (!sorted_) sort();
-    return getContourLineAttribute(getLevel(indx));
-  }
-
   /** Get the <code>DefaultContourLineAtrribute</code> */
   public DefaultContourLineAttribute getDefaultContourLineAttribute() {
     return defaultAttr_;
@@ -170,18 +124,6 @@ public class ContourLevels implements Cloneable {
       throws ContourLevelNotFoundException {
     if (!sorted_) sort();
     return defaultAttr_.setContourLineAttribute(getContourLineAttribute(getLevel(indx)));
-  }
-
-  /** Get the <code>DefaultContourLineAttribute</code> for value. */
-  public DefaultContourLineAttribute getDefaultContourLineAttribute(double val)
-      throws ContourLevelNotFoundException {
-    if (!sorted_) sort();
-    return defaultAttr_.setContourLineAttribute(getContourLineAttribute(val));
-  }
-
-  /** Set the <code>DefaultContourLineAttribute</code> */
-  public void setDefaultContourLineAttribute(DefaultContourLineAttribute attr) {
-    defaultAttr_ = attr;
   }
 
   /** Add a contour level with default <code>ContourLineAttribute</code>. */
@@ -216,16 +158,6 @@ public class ContourLevels implements Cloneable {
     return levels_.get(indx);
   }
 
-  /** Remove a level by value. */
-  public void removeLevel(double val) throws ContourLevelNotFoundException {
-    throw new MethodNotImplementedError();
-  }
-
-  /** Remove a level by index. */
-  public void removeLevel(int indx) throws ContourLevelNotFoundException {
-    throw new MethodNotImplementedError();
-  }
-
   /** Get the index of a level by value */
   public int getIndex(Double dval) {
     if (!sorted_) sort();
@@ -241,19 +173,6 @@ public class ContourLevels implements Cloneable {
   /** Get the maximum level index. */
   public int getMaximumIndex() {
     return levels_.size() - 1;
-  }
-
-  /** Get the range of levels */
-  public Range2D getRange() {
-    double min = Double.MAX_VALUE;
-    double max = -Double.MAX_VALUE; // bob changed this
-    double value;
-    for (Double o : levels_) {
-      value = o;
-      min = Math.min(min, value);
-      max = Math.max(max, value);
-    }
-    return new Range2D(min, max);
   }
 
   /** Get the number of levels. */
@@ -298,9 +217,5 @@ public class ContourLevels implements Cloneable {
   /** Add listener to changes in <code>ColorMap</code> properties. */
   public void addPropertyChangeListener(PropertyChangeListener listener) {
     changes_.addPropertyChangeListener(listener);
-  }
-
-  public void removePropertyChangeListener(PropertyChangeListener listener) {
-    changes_.removePropertyChangeListener(listener);
   }
 }

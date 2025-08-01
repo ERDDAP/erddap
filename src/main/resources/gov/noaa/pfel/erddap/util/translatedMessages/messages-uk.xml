@@ -4208,10 +4208,6 @@ URL-адреса, яку ви бачите тут, — це URL-адреса, з
 Краще повернути порожній файл? Але .nc та інші не дозволяють дані довжини 0.
  -->
 <MustBeThereIsNoData>Ваш запит не дав відповідних результатів.</MustBeThereIsNoData>
-
-<!--  Багато типів файлів обмежують обсяг даних, який може зберігатися у файлі (наприклад, 2 ГБ).  -->
-<MustBeNotNull>{0} не має бути нульовим.</MustBeNotNull>
-<MustBeNotEmpty>{0} не має бути порожнім рядком.</MustBeNotEmpty>
 <MustBeInternalError>Внутрішня помилка</MustBeInternalError>
 <MustBeOutOfMemoryError>Помилка «Нестача пам’яті».</MustBeOutOfMemoryError>
 

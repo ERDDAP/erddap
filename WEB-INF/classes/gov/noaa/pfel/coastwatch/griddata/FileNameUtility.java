@@ -209,31 +209,6 @@ public class FileNameUtility {
   }
 
   /**
-   * This returns the 6 character dataset designator (e.g., ATssta).
-   *
-   * @param fileName the CW fileName or the 7 charName (since only 6 char name is extracted)
-   * @return the 6 character dataset designator (e.g., ATssta). [2006-11-15 In the past there were
-   *     special cases: GAt24h, GAt25h, and GAt33h returned GAssta. But now: no special cases.]
-   */
-  public static String get6CharName(String fileName) {
-    // deal with special cases  where dave uses >1 variable names
-    // if (name6.equals("GAt24h") || name6.equals("GAt25h") || name6.equals("GAt33h")) return
-    // "GAssta";
-    return fileName.substring(1, 7);
-  }
-
-  /**
-   * This returns the 7 character dataset designator (e.g., LATssta).
-   *
-   * @param fileName a base or custom file name.
-   * @return the 7 character dataset designator (e.g., LATssta). [2006-11-15 In the past there were
-   *     special cases: XGAt24h, XGAt25h, and XGAt33h returned XGAssta. But now: no special cases.]
-   */
-  public static String get7CharName(String fileName) {
-    return fileName.charAt(0) + get6CharName(fileName);
-  }
-
-  /**
    * This indicates if a 4 letter variable name is from a 25 hour file, which is often handled as a
    * special case in this class. Yes, it is an anomaly that Dave's 24h variable names represent 25
    * hours, but 33h variable names represent 33 hours. Dave changed all use of 24h to 25h around
@@ -248,19 +223,6 @@ public class FileNameUtility {
   }
 
   /**
-   * This indicates if this is a 25 hour file, which is often handled as a special case in this
-   * class. Yes, it is an anomaly that Dave's 24h variable names represent 25 hours, but 33h
-   * variable names represent 33 hours. Dave changed all use of 24h to 25h around 2006-06-01. [No,
-   * still GAt24h.]
-   *
-   * @param fileName the CW fileName or the 7 charName (since only 6 char name is extracted)
-   * @return true if this is a special 25 hour file.
-   */
-  public static boolean is25Hour(String fileName) {
-    return fourNameIs25Hour(fileName.substring(3, 7));
-  }
-
-  /**
    * This indicates if a 4 letter variable name is from a 33 hour file, which is often handled as a
    * special case in this class.
    *
@@ -270,72 +232,6 @@ public class FileNameUtility {
   public static boolean fourNameIs33Hour(String fourName) {
     String s = fourName.substring(1, 4);
     return s.equals("33h");
-  }
-
-  /**
-   * This indicates if this is a 33 hour file, which is often handled as a special case in this
-   * class.
-   *
-   * @param fileName the CW fileName or the 7 charName (since only 6 char name is extracted)
-   * @return true if this is a special 33 hour file.
-   */
-  public static boolean is33Hour(String fileName) {
-    return fourNameIs33Hour(fileName.substring(3, 7));
-  }
-
-  /**
-   * This indicates if the file uses alternate units.
-   *
-   * @param fileName the CW fileName or the 7 charName (since only 6 char name is extracted)
-   * @return true if the file uses alternate units.
-   */
-  public static boolean getAlternateUnits(String fileName) {
-    return fileName.charAt(7) == 'A';
-  }
-
-  /**
-   * This returns the in-file-name time period String (e.g., 1day).
-   *
-   * @param fileName a base or custom file name.
-   * @return the time period String.
-   */
-  public static String getTimePeriodString(String fileName) {
-    int po = fileName.indexOf('_');
-    return fileName.substring(8, po);
-  }
-
-  /**
-   * This returns an index of TimePeriods.IN_FILE_NAMES.
-   *
-   * @param fileName a base or custom file name with one of TimePeriods.IN_FILE_NAMES options.
-   * @return an index from TimePeriods.IN_FILE_NAMES corresponding to the exact match of the time
-   *     period in the file name
-   * @throws Exception if trouble
-   */
-  public static int getTimePeriodIndex(String fileName) throws Exception {
-    String s = getTimePeriodString(fileName);
-    int i = TimePeriods.IN_FILE_NAMES.indexOf(s);
-    if (i == -1)
-      throw new RuntimeException(
-          String2.ERROR
-              + " in FileNameUtility.getTimePeriodIndex("
-              + fileName
-              + "):\ntimePeriod '"
-              + s
-              + "' not recognized.");
-    return i;
-  }
-
-  /**
-   * This returns the generic number of hours in the time period (e.g., 1 month returns 30*24,
-   * regardless of number of days in the month).
-   *
-   * @param fileName a base or custom file name with one of TimePeriods.IN_FILE_NAMES options.
-   * @return number of hours in the time period (from TimePeriods.N_HOURS)
-   * @throws Exception if trouble
-   */
-  public static int getTimePeriodNHours(String fileName) throws Exception {
-    return TimePeriods.N_HOURS.get(getTimePeriodIndex(fileName));
   }
 
   /**

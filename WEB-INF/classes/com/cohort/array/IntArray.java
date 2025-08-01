@@ -5,7 +5,8 @@
  */
 package com.cohort.array;
 
-import com.cohort.util.*;
+import com.cohort.util.Math2;
+import com.cohort.util.String2;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -1249,26 +1250,6 @@ public class IntArray extends PrimitiveArray {
   public void readDis(final DataInputStream dis, final int n) throws Exception {
     ensureCapacity(size + (long) n);
     for (int i = 0; i < n; i++) array[size++] = dis.readInt();
-  }
-
-  /**
-   * This reads/adds n 24-bit elements from a DataInputStream.
-   *
-   * @param dis the DataInputStream
-   * @param n the number of elements to be read/added
-   * @throws Exception if trouble
-   */
-  public void read24BitDis(final DataInputStream dis, final int n, final boolean bigEndian)
-      throws Exception {
-    ensureCapacity(size + (long) n);
-    final byte bar[] = new byte[3];
-    for (int i = 0; i < n; i++) {
-      dis.readFully(bar);
-      array[size++] =
-          bigEndian
-              ? ((((bar[0] & 0xFF) << 24) | ((bar[1] & 0xFF) << 16) | ((bar[2] & 0xFF) << 8)) >> 8)
-              : ((((bar[2] & 0xFF) << 24) | ((bar[1] & 0xFF) << 16) | ((bar[0] & 0xFF) << 8)) >> 8);
-    }
   }
 
   /**

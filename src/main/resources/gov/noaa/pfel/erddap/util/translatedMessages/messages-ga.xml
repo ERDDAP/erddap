@@ -4183,10 +4183,6 @@ Ach níl aon eisceacht ábhartha ag dods.dap.DODSException.
 Níos fearr comhad folamh a thabhairt ar ais? Ach ní cheadaíonn .nc agus daoine eile sonraí 0-fhad.
  -->
 <MustBeThereIsNoData>Níor tháinig aon torthaí meaitseála ar d&#39;iarratas.</MustBeThereIsNoData>
-
-<!--  Cuireann go leor cineálacha comhaid teorainn leis an méid sonraí is féidir le comhad a choinneáil (m.sh., 2GB).  -->
-<MustBeNotNull>Níor cheart go mbeadh {0} ar neamhní.</MustBeNotNull>
-<MustBeNotEmpty>Ní féidir le {0} a bheith ina theaghrán folamh.</MustBeNotEmpty>
 <MustBeInternalError>Earráid Inmheánach</MustBeInternalError>
 <MustBeOutOfMemoryError>Earráid As Cuimhne</MustBeOutOfMemoryError>
 

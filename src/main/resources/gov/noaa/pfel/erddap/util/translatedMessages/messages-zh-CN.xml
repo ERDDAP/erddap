@@ -3470,10 +3470,6 @@ justGenerateAndViewHtml 消息可以包含 &protocolName; 。
 最好返回一个空文件？但 .nc 和其他文件不允许 0 长度的数据。
  -->
 <MustBeThereIsNoData>您的查询未产生匹配的结果。</MustBeThereIsNoData>
-
-<!-- 许多文件类型对文件可容纳的数据量进行了限制（例如 2GB）。 -->
-<MustBeNotNull>{0} 不能为空。</MustBeNotNull>
-<MustBeNotEmpty>{0} 不能是空字符串。</MustBeNotEmpty>
 <MustBeInternalError>内部错误</MustBeInternalError>
 <MustBeOutOfMemoryError>内存不足错误</MustBeOutOfMemoryError>
 

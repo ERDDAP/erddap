@@ -4168,10 +4168,6 @@ Ngunit ang dods.dap.DODSException ay walang nauugnay na exception.
 Mas mahusay na ibalik ang isang walang laman na file? Ngunit hindi pinapayagan ng .nc at iba pa ang 0-length na data.
  -->
 <MustBeThereIsNoData>Walang tugmang resulta ang iyong query.</MustBeThereIsNoData>
-
-<!--  Maraming uri ng file ang naglalagay ng limitasyon sa kung gaano karaming data ang maaaring hawakan ng isang file (hal., 2GB).  -->
-<MustBeNotNull>Hindi dapat null ang {0}.</MustBeNotNull>
-<MustBeNotEmpty>Ang {0} ay hindi dapat isang walang laman na string.</MustBeNotEmpty>
 <MustBeInternalError>Panloob na Error</MustBeInternalError>
 <MustBeOutOfMemoryError>Out Of Memory Error</MustBeOutOfMemoryError>
 
