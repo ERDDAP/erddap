@@ -221,6 +221,7 @@ public class EDConfig {
   @FeatureFlag public final boolean outOfDateDatasetsActive;
   @FeatureFlag public final boolean politicalBoundariesActive;
   @FeatureFlag public final boolean wmsClientActive;
+  @FeatureFlag public final boolean enableMqttBroker;
   @FeatureFlag public boolean sosActive;
   @FeatureFlag public final boolean wcsActive;
   @FeatureFlag public final boolean wmsActive;
@@ -517,6 +518,7 @@ public class EDConfig {
     outOfDateDatasetsActive = getSetupEVBoolean(setup, ev, "outOfDateDatasetsActive", true);
     politicalBoundariesActive = getSetupEVBoolean(setup, ev, "politicalBoundariesActive", true);
     wmsClientActive = getSetupEVBoolean(setup, ev, "wmsClientActive", true);
+    enableMqttBroker = getSetupEVBoolean(setup, ev, "enableMqttBroker", false);
 
     // until SOS is finished, it is always inactive
     sosActive = false; //        sosActive                  = getSetupEVBoolean(setup, ev,
