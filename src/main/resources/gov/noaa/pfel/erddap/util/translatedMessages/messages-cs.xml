@@ -63,7 +63,6 @@ Požadavek na kompresi je volitelný, ale komprimované odezvy jsou často 3–1
 <acronyms>Zkratky</acronyms>
 <addConstraints>K požadavkům na tuto webovou stránku můžete přidat omezení podobná tabledap,
 například,</addConstraints>
-<addVarWhereAttName>Volitelné: Zadejte název atributu.</addVarWhereAttName>
 <addVarWhereAttValue>Volitelné: Zadejte hodnotu atributu.</addVarWhereAttValue>
 <addVarWhere><![CDATA[
 Volitelné:
@@ -283,9 +282,6 @@ Poté můžete kliknutím na kategorii zobrazit seznam relevantních datových s
 <categorySearchHtml><![CDATA[
 Vyberte (n) <kbd>{0}</kbd>
 ]]></categorySearchHtml>
-<categorySearchDifferentHtml><![CDATA[
-Hledat datové sady s jinou <kbd>&category;</kbd>
-]]></categorySearchDifferentHtml>
 <categoryClickHtml>Kliknutím na kategorii (hodnotu atributu) zobrazíte seznam relevantních datových sad.</categoryClickHtml>
 <categoryNotAnOption>Když atribut=&quot;{0}&quot;, value=&quot;{1}&quot; není možnost.</categoryNotAnOption>
 <caughtInterrupted>zachyceno currentThread().isInterrupted().</caughtInterrupted>
@@ -1755,9 +1751,6 @@ Každý řádek představuje jiný vzorek dat (např.
 z jiného času nebo místa).
 ]]></dafTableTooltip>
 <dasTitle>Struktura atributů datové sady (.das) pro tuto datovou sadu</dasTitle>
-
-<!--  Zpráva, která se zobrazí, pokud data nelze stáhnout (např. SeaWiFS &lt;=14 dní staré). -->
-<dataAccessNotAllowed>[Promiňte. Tato data nelze stáhnout.]</dataAccessNotAllowed>
 <databaseUnableToConnect>Nelze se připojit k databázi.</databaseUnableToConnect>
 <dataProviderForm>Formulář poskytovatele dat</dataProviderForm>
 <dataProviderFormP1>Formulář poskytovatele dat – část 1</dataProviderFormP1>
@@ -2066,10 +2059,6 @@ Klikněte &widgetSubmitButton; odeslat tyto informace správci ERDDAP a přejít
 
 <br>Opravte prosím tyto problémy a poté tuto část formuláře znovu &#39;Odeslat&#39;.
 ]]></dpf_fixProblem>
-<dpf_yourName>Tvé jméno</dpf_yourName>
-<dpf_emailAddress>Emailová adresa</dpf_emailAddress>
-<dpf_Timestamp>Časové razítko</dpf_Timestamp>
-<dpf_frequency>Frekvence</dpf_frequency>
 <dpf_title>titul</dpf_title>
 <dpf_titleTooltip><![CDATA[
 Toto je krátký (&lt;=80 znaků) popis datové sady.
@@ -2131,11 +2120,6 @@ Toto je licence a vyloučení odpovědnosti za použití těchto dat.
 &standardLicense;
 <br>
 ]]></dpf_licenseTooltip>
-<dpf_howYouStoreData><![CDATA[
-
-<br>• Chyba:
-Upřesněte prosím (níže), jak jsou vaše mřížková nebo tabulková data uložena.
-]]></dpf_howYouStoreData>
 <dpf_provideIfAvailable>Uveďte prosím informace, pokud jsou pro váš datový soubor dostupné.</dpf_provideIfAvailable>
 <dpf_acknowledgement>potvrzení</dpf_acknowledgement>
 <dpf_acknowledgementTooltip><![CDATA[
@@ -2396,10 +2380,7 @@ Administrátor ERDDAP vám brzy zašle e-mail, abyste zjistili nejlepší způso
 <dtWMS>Kliknutím získáte informace o vytváření map těchto dat prostřednictvím webové mapové služby této datové sady.</dtWMS>
 <EasierAccessToScientificData>Snazší přístup k vědeckým údajům</EasierAccessToScientificData>
 
-<!--  Zprávy EDD se zobrazují na formulářích pro přístup k datům tabledap a griddap. -->
-<EDDClickOnSubmitHtml><![CDATA[
-Klikněte na <kbd>Submit</kbd> .
-]]></EDDClickOnSubmitHtml>
+<!--Zprávy EDD jsou zobrazeny na předložených formulářích pro přístup k datům.-->
 <EDDDatasetID>ID datové sady</EDDDatasetID>
 <EDDFgdc>FGDC</EDDFgdc>
 <EDDFgdcMetadata>FGDC-STD-001-1998 Metadata</EDDFgdcMetadata>
@@ -2412,9 +2393,7 @@ Klikněte na <kbd>Submit</kbd> .
 <EDDInformation>Informace</EDDInformation>
 <EDDSummary>souhrn</EDDSummary>
 <EDDDatasetTitle>Název datové sady</EDDDatasetTitle>
-<EDDDownloadData>Stáhnout data</EDDDownloadData>
 <EDDMakeAGraph>Udělejte graf</EDDMakeAGraph>
-<EDDMakeAMap>Udělejte mapu</EDDMakeAMap>
 <EDDMinimum>Minimální</EDDMinimum>
 <EDDMaximum>Maximum</EDDMaximum>
 <EDDFileType>Typ souboru:</EDDFileType>
@@ -2479,8 +2458,6 @@ Vytvoří URL za vás.
 ]]></EDDGridDownloadDataTooltip>
 <EDDGridDimension>Rozměry</EDDGridDimension>
 <EDDGridDimensionRanges>Rozměry</EDDGridDimensionRanges>
-<EDDGridFirst>za prvé</EDDGridFirst>
-<EDDGridLast>Poslední</EDDGridLast>
 <EDDGridStart>Start</EDDGridStart>
 <EDDGridStop>Stop</EDDGridStop>
 <EDDGridStartStopTooltip><![CDATA[
@@ -2521,14 +2498,6 @@ Pro vaši informaci:
 toto je průměrný rozestup mezi hodnotami dimenze (v jednotkách dimenze) a údaj o tom, zda jsou hodnoty dokonale rovnoměrně rozmístěny či nikoli.
 Trochu zvláštní, nerovnoměrné rozestupy často znamenají, že jeden nebo několik souborů chybí nebo jsou špatné v jinak dokonale rovnoměrně rozloženém souboru dat.
 ]]></EDDGridSpacingTooltip>
-<EDDGridDimensionFirstTooltip><![CDATA[
-Pro vaši informaci:
-toto je první hodnota dimenze.
-]]></EDDGridDimensionFirstTooltip>
-<EDDGridDimensionLastTooltip><![CDATA[
-Pro vaši informaci:
-toto je poslední hodnota dimenze.
-]]></EDDGridDimensionLastTooltip>
 <EDDGridDownloadTooltip><![CDATA[
 Vyberte proměnné, které chcete stáhnout:
 <br>* Chcete-li stáhnout pouze údaje o rozměrech:
@@ -2785,10 +2754,6 @@ Například:
 
 <!--  Tyto zprávy se zobrazí, když se zobrazí chybová zpráva. -->
 <errorTitle>Chyba</errorTitle>
-<errorRequestUrl>Adresa URL vašeho požadavku:</errorRequestUrl>
-<errorRequestQuery>Váš dotaz dotaz:</errorRequestQuery>
-<errorTheError>Chyba:</errorTheError>
-<errorCopyFrom>Nelze kopírovat z {0}.</errorCopyFrom>
 <errorFileNotFound>Soubor nenalezen: {0} .</errorFileNotFound>
 <errorFileNotFoundImage>Soubor nebyl nalezen v mezipaměti. Znovu vytvořte obrázek a zkuste to znovu.</errorFileNotFoundImage>
 <errorInternal>Interní chyba:</errorInternal>
@@ -2810,6 +2775,7 @@ Například:
 <externalLink>(Externí odkaz)</externalLink>
 <externalWebSite>Tento odkaz na externí webovou stránku nepředstavuje podporu.</externalWebSite>
 <fileHelp_asc>Zobrazit text ve stylu OPeNDAP ISO-8859-1 oddělený čárkami.</fileHelp_asc>
+<fileHelp_croissant>Stáhněte si soubor croissant schéma.</fileHelp_croissant>
 <fileHelp_csv>Stáhněte si textovou tabulku ISO-8859-1 oddělenou čárkami (řádek 1: názvy; řádek 2: jednotky; ISO 8601 krát).</fileHelp_csv>
 <fileHelp_csvp>Stáhněte si soubor .csv ISO-8859-1 s řádkem 1: název (jednotky). Časy jsou řetězce ISO 8601.</fileHelp_csvp>
 <fileHelp_csv0>Stáhněte si soubor CSV ISO-8859-1 bez názvů sloupců nebo jednotek. Časy jsou řetězce ISO 8601.</fileHelp_csv0>
@@ -2821,7 +2787,6 @@ Například:
 <fileHelpTable_esriCsv>Stáhněte si soubor .csv ISO_8859_1 pro ESRI ArcGIS 9.xa nižší (samostatné sloupce data a času).</fileHelpTable_esriCsv>
 <fileHelp_fgdc>Prohlédněte si metadata UTF-8 FGDC .xml datové sady.</fileHelp_fgdc>
 <fileHelp_geoJson>Stáhněte si údaje o zeměpisné délce, zeměpisné šířce a dalších sloupcích jako soubor .json GeoJSON UTF-8.</fileHelp_geoJson>
-<fileHelp_graph>Zobrazit webovou stránku Make A Graph.</fileHelp_graph>
 <fileHelpGrid_help>Zobrazit webovou stránku s popisem griddap.</fileHelpGrid_help>
 <fileHelpTable_help>Zobrazit webovou stránku s popisem tabledap.</fileHelpTable_help>
 <fileHelp_html>Zobrazit formulář pro přístup k datům HTML ve stylu OPeNDAP.</fileHelp_html>
@@ -2852,7 +2817,6 @@ Například:
 <fileHelpTable_odvTxt>Stáhněte si zeměpisnou délku, šířku, čas, ostatní sloupce jako obecný soubor tabulky ISO-8859-1 ODV (.txt).</fileHelpTable_odvTxt>
 <fileHelp_parquet>Stáhnout jako parketový soubor. Metadata obsahuje názvy sloupců (&quot;sloupce_názvy&quot;) a jednotky (&quot;sloupce_jednotky&quot;).</fileHelp_parquet>
 <fileHelp_parquet_with_meta>Stáhnout jako parketový soubor s podrobnými metadaty.</fileHelp_parquet_with_meta>
-<fileHelp_subset>Zobrazte formulář HTML, který používá fasetované vyhledávání ke zjednodušení výběru podmnožin dat.</fileHelp_subset>
 <fileHelp_timeGaps>Prohlédněte si UTF-8 seznam mezer v hodnotách času, které jsou větší než střední mezera.</fileHelp_timeGaps>
 <fileHelp_tsv>Stáhněte si textovou tabulku ISO-8859-1 oddělenou tabulátory (řádek 1: názvy; řádek 2: jednotky; ISO 8601 krát).</fileHelp_tsv>
 <fileHelp_tsvp>Stáhněte si soubor .tsv ISO-8859-1 s řádkem 1: název (jednotky). Časy jsou řetězce ISO 8601.</fileHelp_tsvp>
@@ -2872,7 +2836,6 @@ Například:
 
 <!--  Znění popisu a varování je vágní, aby umožňovalo jednu nebo více datových sad. -->
 <filesDescription>Systém „souborů“ ERDDAP vám umožňuje procházet virtuální souborový systém a stahovat zdrojové datové soubory.</filesDescription>
-<filesSort>Kliknutím na nadpis (např. Název, Poslední úprava, Velikost) změníte pořadí řazení. &quot;Naposledy upraveno&quot; používá časové pásmo Zulu.</filesSort>
 <filesWarning><![CDATA[
 Metadata datové sady a názvy proměnných v těchto zdrojových souborech se mohou lišit od ostatních v ERDDAP ! Místo toho můžete dát přednost použití formuláře pro přístup k datům datové sady.
 ]]></filesWarning>
@@ -3306,11 +3269,6 @@ Například orderByMax(&quot;stationID, time/1day&quot;) vytvoří skupinu pro k
 Tento řádek bude obsahovat součet všech ostatních proměnných.
 Například orderByMax(&quot;stationID, time/1day&quot;) vytvoří skupinu pro každé stationID pro každý den a vypočítá a vrátí součet ostatních proměnných.
 ]]></functionOrderByTooltip>
-<functionOrderByExtra><![CDATA[
-Pro orderByClosest zadejte interval (ve formátu n[timeUnits], např.
-1 hodina).
-<br>Pro orderByLimit zadejte maximální počet řádků na skupinu.
-]]></functionOrderByExtra>
 <functionOrderBySort><![CDATA[
 Tento slot je {0} důležitým orderBy ...
 slot.
@@ -3321,7 +3279,6 @@ slot.
 <functionOrderBySort3>nejvíce třetí</functionOrderBySort3>
 <functionOrderBySort4>nejvíce čtvrtý</functionOrderBySort4>
 <functionOrderBySortLeast>nejméně</functionOrderBySortLeast>
-<functionOrderBySortRowMax>Bude zachován pouze řádek s maximální hodnotou.</functionOrderBySortRowMax>
 <generatedAt>Tato webová stránka byla vygenerována v {0}.</generatedAt>
 <geoServicesDescription><![CDATA[
 Aby byla tato data ERDDAP přístupnější uživatelům ArcGIS, tato část ERDDAP napodobuje část
@@ -3606,7 +3563,6 @@ Výchozí hodnota je nic (nepoužito).
 <!--  např. {0}=WMS nebo listAll -->
 <listOfDatasets>Seznam datových sad {0}</listOfDatasets>
 <listAll>Všechno</listAll>
-<LogIn>Přihlásit se</LogIn>
 <login>přihlásit se</login>
 <loginHTML><![CDATA[
 
@@ -3657,22 +3613,15 @@ Kdokoli s e-mailovým účtem Google nebo ORCID iD se může přihlásit, ale sp
     title="Tento odkaz na externí webovou stránku nepředstavuje podporu."></a> je otevřený standard, který vám umožňuje přihlásit se pomocí hesla na jedné webové stránce a poté se bez hesla přihlásit na mnoha dalších webových stránkách, včetně ERDDAP .
 Přihlásit se mohou pouze lidé, kteří se dohodli se správcem tohoto ERDDAP .
 ]]></loginDescribeOpenID>
-<loginErddap>Přihlaste se do ERDDAP</loginErddap>
 <loginCanNot>Tento ERDDAP není nakonfigurován tak, aby umožňoval přihlášení uživatelů.</loginCanNot>
 <loginAreNot>Nejste přihlášeni.</loginAreNot>
 <loginToLogIn>Přihlásit se</loginToLogIn>
-<loginEmailAddress>emailová adresa</loginEmailAddress>
 <loginYourEmailAddress>Vaše emailová adresa</loginYourEmailAddress>
 <loginUserName>Uživatelské jméno</loginUserName>
 <loginPassword>Heslo</loginPassword>
 <loginUserNameAndPassword>Uživatelské jméno a heslo</loginUserNameAndPassword>
 <loginGoogleSignIn>Proveďte ověření pomocí účtu Google.</loginGoogleSignIn>
 <loginOrcidSignIn>Ověřte se svým ORCID iD.</loginOrcidSignIn>
-<loginOpenID>Přihlaste se pomocí adresy URL OpenID</loginOpenID>
-<loginOpenIDOr>Nebo se přihlaste ke svému stávajícímu účtu (bez OpenID) na adrese</loginOpenIDOr>
-<loginOpenIDCreate>Nebo vytvořte OpenID URL na</loginOpenIDCreate>
-<loginOpenIDFree>Všechny jsou zdarma!</loginOpenIDFree>
-<loginOpenIDSame>Ujistěte se, že jste se přihlásili pomocí přesně stejné adresy URL OpenID, kterou jste poskytli správci ERDDAP.</loginOpenIDSame>
 <loginAs>Jste přihlášeni jako {0}.</loginAs>
 <loginPartwayAs>Jste přihlášeni jako {0}.</loginPartwayAs>
 <loginFailed>CHYBA: Přihlášení se nezdařilo</loginFailed>
@@ -3776,7 +3725,6 @@ Je možné, že některé datové sady nejsou aktuálně dostupné nebo že k ni
 ]]></loginPublicAccess>
 <LogOut>Odhlásit se</LogOut>
 <logout>odhlásit se</logout>
-<logoutOpenID>Odhlaste se od svého poskytovatele OpenID.</logoutOpenID>
 
 <!--  logoutSuccess naposledy aktualizováno 19.12.2019 -->
 <logoutSuccess>Úspěšně jste se odhlásili.
@@ -4081,11 +4029,9 @@ Je lepší vrátit prázdný soubor? Ale .nc a další neumožňují data o dél
 <noXxxNoLonIn180>neexistují žádné hodnoty zeměpisné délky v rozmezí -180 až 360</noXxxNoLonIn180>
 <noXxxNoNonString>neexistují žádné jiné než řetězcové proměnné</noXxxNoNonString>
 <noXxxNo2NonString>neexistují alespoň dvě neřetězcové proměnné</noXxxNo2NonString>
-<noXxxNoStation>cdmDataType={0} není &quot;TimeSeries&quot;</noXxxNoStation>
 <noXxxNoStationID>neexistuje žádná proměnná podobná stationID</noXxxNoStationID>
 <noXxxNoSubsetVariables>subsetVariables nebyl zadán</noXxxNoSubsetVariables>
 <noXxxNoOLLSubsetVariables>subsetVariables nemá proměnné nabídky, zeměpisné délky a šířky</noXxxNoOLLSubsetVariables>
-<noXxxNoMinMax>zdrojový datový server neposkytuje minimální a maximální hodnoty</noXxxNoMinMax>
 <noXxxItsGridded>je to mřížková datová sada</noXxxItsGridded>
 <noXxxItsTabular>je to tabulkový soubor dat</noXxxItsTabular>
 <oneRequestAtATime>Podávejte prosím vždy jen jednu žádost.</oneRequestAtATime>
@@ -4111,7 +4057,6 @@ Vývojáři počítačových programů a webových stránek skriptovaných v Jav
 <options>Možnosti</options>
 <orAListOfValues>nebo seznam hodnot</orAListOfValues>
 <orRefineSearchWith>Nebo toto vyhledávání upřesněte pomocí</orRefineSearchWith>
-<orSearchWith>Nebo vyhledejte datové sady pomocí</orSearchWith>
 <orComma>Nebo,</orComma>
 <otherFeatures>Další funkce</otherFeatures>
 <outOfDateDatasets>Zastaralé datové sady</outOfDateDatasets>
@@ -4166,7 +4111,6 @@ Existují
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
     title="Tento odkaz na externí webovou stránku nepředstavuje podporu."></a> .
 ]]></percentEncode>
-<pickADataset>Vyberte datovou sadu</pickADataset>
 
 <!--  Zprávy související s prohledáváním datových sad na základě protokolu. -->
 <protocolSearchHtml>Vyhledávání datových sad podle protokolu</protocolSearchHtml>
@@ -4181,7 +4125,6 @@ Různé protokoly jsou vhodné pro různé typy dat a pro různé klientské apl
 <queryError1Var>Formát {0} dokáže zpracovat pouze jednu datovou proměnnou.</queryError1Var>
 <queryError2Var>Požadavky na formát {0} musí obsahovat alespoň dvě číselné proměnné (pro osy X a Y).</queryError2Var>
 <queryErrorActualRange>{0} je mimo skutečný_rozsah proměnné: {1} až {2}</queryErrorActualRange>
-<queryErrorAscending>Pro požadavky typu {0} musí být hodnoty zeměpisné délky a šířky vzestupné.</queryErrorAscending>
 <queryErrorAdjusted>Pro požadavky typu {0} musí být upravené hodnoty zeměpisné délky ({1} až {2}) mezi -180 a 180.</queryErrorAdjusted>
 <queryErrorConstraintNaN>Omezení value=&quot;{0}&quot; se vyhodnotí jako NaN. Pokud opravdu chcete NaN, napište to jako NaN.</queryErrorConstraintNaN>
 <queryErrorEqualSpacing>U {0} požadavků se musí vzdálenost zeměpisné délky ({1}) rovnat zeměpisné vzdálenosti ({2}).</queryErrorEqualSpacing>
@@ -4213,7 +4156,6 @@ Různé protokoly jsou vhodné pro různé typy dat a pro různé klientské apl
 <queryErrorGridNoAxisVar>Dotaz datové proměnné griddap nemůže obsahovat proměnnou osy ({0}).</queryErrorGridNoAxisVar>
 <queryErrorGridNoDataVar>Dotaz na proměnnou osy griddap nemůže obsahovat datovou proměnnou ({0}).</queryErrorGridNoDataVar>
 <queryErrorGridNotIdentical>Omezení {0} pro variable={1} není totožné s omezením {2} pro variable={2}. Pokud potřebujete různé podmnožiny, vytvořte samostatné požadavky.</queryErrorGridNotIdentical>
-<queryErrorGridSLessS>StartIndex={0} je větší než StopIndex={1}.</queryErrorGridSLessS>
 <queryErrorLastEndP>{0} začíná „(“, ale nekončí „)“.</queryErrorLastEndP>
 <queryErrorLastExpected>&quot;poslední&quot; bylo očekáváno na začátku {0}.</queryErrorLastExpected>
 <queryErrorLastUnexpected>Neočekávaný znak za „posledním“ v {0}.</queryErrorLastUnexpected>
@@ -4448,7 +4390,6 @@ Vidět
 <SOSDocumentation>SOS dokumentace ERDDAP</SOSDocumentation>
 <WCSDocumentation>Dokumentace WCS ERDDAP</WCSDocumentation>
 <WMSDocumentation>Dokumentace WMS ERDDAP</WMSDocumentation>
-<findOutChange>aby váš počítačový program mohl zjistit, zda se datová sada změnila.</findOutChange>
 <requestFormatExamplesHtml><![CDATA[
 (například
 <a rel="help" href="https://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html#sec9.3">HTTP GET <img 
@@ -4855,13 +4796,6 @@ Místo toho si vyžádejte e-mail se
 <br>Pokud se ID předplatného a klíč shodují, předplatné bude odstraněno.</span>
 ]]></subscriptionRemoveSuccess>
 <subscriptionRSS>Přihlaste se k odběru kanálu RSS pro tuto datovou sadu...</subscriptionRSS>
-<subscriptionsNotAvailable><![CDATA[
-
-<p><strong>Promiňte.
-Systém předplatného e-mailu/URL není v této instalaci ERDDAP dostupný.</strong>
-<br>Zvažte místo toho použití služby předplatného
-<a rel="help" href="{0}/information.html#subscriptions">RSS</a> .
-]]></subscriptionsNotAvailable>
 <subscriptionUrlHtml><![CDATA[
 <kbd>URL/action</kbd> je volitelná adresa URL, kterou ERDDAP bude kontaktovat namísto zasílání e-mailu.
 <br>Pokud tedy chcete obdržet e-mail při každé změně datové sady, ponechte <kbd>URL/action</kbd> prázdné.
@@ -5112,11 +5046,6 @@ Chcete-li zobrazit {0},
 <!--  Následujícímu tagu předchází 1 ze 2 předchozích tagů.
   {0} je subsetViewSelectDistintCombos nebo subsetViewSelectRelatedCounts. -->
 <subsetWhenCounts>{0} pro {1} hodnoty &quot;{2}&quot; jsou:</subsetWhenCounts>
-<subsetComboClickSelect><![CDATA[
-Chcete-li zobrazit počty různých kombinací výše uvedených proměnných,
-<br>zkontrolujte <kbd>{0} :
-{1}</kbd> výše a vyberte hodnotu pro jednu z výše uvedených proměnných.
-]]></subsetComboClickSelect>
 <subsetNVariableCombos>Celkem existuje {0} řádků různých kombinací výše uvedených proměnných.</subsetNVariableCombos>
 <subsetShowingAllRows>Všechny řádky jsou zobrazeny výše.</subsetShowingAllRows>
 <subsetShowingNRows>Prvních {0} řádků je zobrazeno výše. Zbývajících {1} řádků se nezobrazuje.</subsetShowingNRows>
@@ -5870,7 +5799,6 @@ Jakmile se stanete členem, můžete tam umístit svou otázku nebo vyhledat, zd
 Názory na této webové stránce jsou osobními názory Boba Simonse a nemusí nutně odrážet jakýkoli postoj vlády nebo National Oceanic and Atmospheric Administration .
 
 ]]></theLongDescriptionHtml>
-<Then>Pak</Then>
 <twoClickMapDefaultTooltip>Určete obdélník kliknutím na dva diagonální rohy. V případě potřeby to udělejte znovu.</twoClickMapDefaultTooltip>
 
 <!--  Toto je způsob, jak přepsat převodník Standardize UDUnits ERDDAP
@@ -7088,7 +7016,6 @@ Tohle nemůže být nic.
 Pokud tedy nechcete nic, zadejte nesmyslné slovo, které nikdy nebude názvem atributu. -->
 <updateUrlsSkipAttributes>sourceUrl</updateUrlsSkipAttributes>
 <variableNames>Názvy proměnných</variableNames>
-<viewAllDatasetsHtml>Zobrazit seznam všech datových sad</viewAllDatasetsHtml>
 <waitThenTryAgain>Vyskytl se (dočasný?) problém. Počkejte chvíli a zkuste to znovu. (V prohlížeči klikněte na tlačítko Znovu načíst.)</waitThenTryAgain>
 <warning>VAROVÁNÍ!</warning>
 <units>Jednotky</units>

@@ -10,6 +10,7 @@ import com.cohort.array.PrimitiveArray;
 import com.cohort.util.Calendar2;
 import com.cohort.util.SimpleException;
 import gov.noaa.pfel.coastwatch.pointdata.Table;
+import gov.noaa.pfel.erddap.util.EDMessages.Message;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.EDV;
 import java.util.ArrayList;
@@ -76,8 +77,7 @@ public class TableWriterOrderBySum extends TableWriterAll {
     otherTableWriter = tOtherTableWriter;
     final String[] cols =
         Table.parseOrderByColumnNamesCsvString(
-            EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr) + "orderBySum: ",
-            tOrderByCsv);
+            EDStatic.simpleBilingual(language, Message.QUERY_ERROR) + "orderBySum: ", tOrderByCsv);
     orderBy = new String[cols.length];
 
     for (int col = 0; col < cols.length; col++) {
@@ -229,10 +229,7 @@ public class TableWriterOrderBySum extends TableWriterAll {
       int col = table.findColumnNumber(orderBy[k]);
       if (col < 0)
         throw new SimpleException(
-            EDStatic.bilingual(
-                    language,
-                    EDStatic.messages.queryErrorAr,
-                    EDStatic.messages.queryErrorOrderBySumAr)
+            EDStatic.bilingual(language, Message.QUERY_ERROR, Message.QUERY_ERROR_ORDER_BY_SUM)
                 + (language == 0 ? " " : "\n")
                 + "Unknown orderBy column="
                 + orderBy[k]
@@ -248,9 +245,7 @@ public class TableWriterOrderBySum extends TableWriterAll {
               if (!(column.isIntegerType() || column.isFloatingPointType())) {
                 throw new SimpleException(
                     EDStatic.bilingual(
-                            language,
-                            EDStatic.messages.queryErrorAr,
-                            EDStatic.messages.queryErrorOrderBySumAr)
+                            language, Message.QUERY_ERROR, Message.QUERY_ERROR_ORDER_BY_SUM)
                         + (language == 0 ? " " : "\n")
                         + "Cannot group numerically for column="
                         + columnName

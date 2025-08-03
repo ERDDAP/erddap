@@ -63,7 +63,6 @@ Ang paghiling ng compression ay opsyonal, ngunit ang mga naka-compress na tugon 
 <acronyms>Mga acronym</acronyms>
 <addConstraints>Maaari kang magdagdag ng mga hadlang na tulad ng tabledap sa mga kahilingan sa web page na ito,
 Halimbawa,</addConstraints>
-<addVarWhereAttName>Opsyonal: Tumukoy ng pangalan ng katangian.</addVarWhereAttName>
 <addVarWhereAttValue>Opsyonal: Tumukoy ng value ng attribute.</addVarWhereAttValue>
 <addVarWhere><![CDATA[
 
@@ -296,9 +295,6 @@ Pagkatapos, maaari kang mag-click sa isang kategorya upang makakita ng listahan 
 <categorySearchHtml><![CDATA[
 Pumili ng (n) <kbd>{0}</kbd>
 ]]></categorySearchHtml>
-<categorySearchDifferentHtml><![CDATA[
-Maghanap ng Mga Dataset na may ibang <kbd>&category;</kbd>
-]]></categorySearchDifferentHtml>
 <categoryClickHtml>Mag-click sa isang kategorya (isang attribute value) para makakita ng listahan ng mga nauugnay na dataset.</categoryClickHtml>
 <categoryNotAnOption>Kapag ang attribute=&quot;{0}&quot;, value=&quot;{1}&quot; ay hindi isang opsyon.</categoryNotAnOption>
 <caughtInterrupted>nahuli sa kasalukuyangThread().isInterrupted().</caughtInterrupted>
@@ -1761,9 +1757,6 @@ Ang bawat row ay kumakatawan sa ibang sample ng data (hal., mula sa ibang oras o
 
 ]]></dafTableTooltip>
 <dasTitle>Ang Dataset Attribute Structure (.das) para sa Dataset na ito</dasTitle>
-
-<!--  Ang mensaheng ipapakita kung ang data ay hindi ma-download (hal., SeaWiFS &lt;=14 na araw ang edad).  -->
-<dataAccessNotAllowed>[Paumanhin. Hindi ma-download ang data na iyon.]</dataAccessNotAllowed>
 <databaseUnableToConnect>Hindi makakonekta sa database.</databaseUnableToConnect>
 <dataProviderForm>Form ng Data Provider</dataProviderForm>
 <dataProviderFormP1>Form ng Data Provider - Bahagi 1</dataProviderFormP1>
@@ -2088,10 +2081,6 @@ I-click &widgetSubmitButton; upang ipadala ang impormasyong ito sa administrator
 <br>Mangyaring ayusin ang mga problemang ito, pagkatapos ay &#39;Isumite&#39; muli ang bahaging ito ng form.
 
 ]]></dpf_fixProblem>
-<dpf_yourName>Ang pangalan mo</dpf_yourName>
-<dpf_emailAddress>Email Address</dpf_emailAddress>
-<dpf_Timestamp>Timestamp</dpf_Timestamp>
-<dpf_frequency>Dalas</dpf_frequency>
 <dpf_title>pamagat</dpf_title>
 <dpf_titleTooltip><![CDATA[
 
@@ -2169,12 +2158,6 @@ Ito ang lisensya at disclaimer para sa paggamit ng data na ito.
 <br><kbd>
 
 ]]></dpf_licenseTooltip>
-<dpf_howYouStoreData><![CDATA[
-
-<br>• Error:
-Mangyaring tukuyin (sa ibaba) kung paano iniimbak ang iyong gridded o tabular na data.
-
-]]></dpf_howYouStoreData>
 <dpf_provideIfAvailable>Pakibigay ang impormasyon kung available ito para sa iyong dataset.</dpf_provideIfAvailable>
 <dpf_acknowledgement>pagkilala</dpf_acknowledgement>
 <dpf_acknowledgementTooltip><![CDATA[
@@ -2475,10 +2458,7 @@ Ang timestamp ng pagsusumite ng dataset na ito ay &tTimestamp; .
 <dtWMS>I-click upang malaman ang tungkol sa paggawa ng mga mapa ng data na ito sa pamamagitan ng Web Map Service ng dataset na ito.</dtWMS>
 <EasierAccessToScientificData>Mas madaling pag-access sa siyentipikong data</EasierAccessToScientificData>
 
-<!--  Ang mga mensaheng EDD ay ipinapakita sa tabledap at griddap Data Access Forms.  -->
-<EDDClickOnSubmitHtml><![CDATA[
-Mag-click sa <kbd>Submit</kbd> .
-]]></EDDClickOnSubmitHtml>
+<!--Ang mga mensahe ng EDD ay itinatanghal sa tabledap at griddap Data Access Forms.-->
 <EDDDatasetID>Dataset ID</EDDDatasetID>
 <EDDFgdc>FGDC</EDDFgdc>
 <EDDFgdcMetadata>FGDC-STD-001-1998 Metadata</EDDFgdcMetadata>
@@ -2491,9 +2471,7 @@ Mag-click sa <kbd>Submit</kbd> .
 <EDDInformation>Impormasyon</EDDInformation>
 <EDDSummary>Buod</EDDSummary>
 <EDDDatasetTitle>Pamagat ng Dataset</EDDDatasetTitle>
-<EDDDownloadData>Mag-download ng data</EDDDownloadData>
 <EDDMakeAGraph>Gumawa ng graph</EDDMakeAGraph>
-<EDDMakeAMap>Gumawa ng mapa</EDDMakeAMap>
 <EDDMinimum>pinakamababa</EDDMinimum>
 <EDDMaximum>Pinakamataas</EDDMaximum>
 <EDDFileType>Uri ng file:</EDDFileType>
@@ -2562,8 +2540,6 @@ Ginagawa nito ang URL para sa iyo.
 ]]></EDDGridDownloadDataTooltip>
 <EDDGridDimension>Mga sukat</EDDGridDimension>
 <EDDGridDimensionRanges>Mga sukat</EDDGridDimensionRanges>
-<EDDGridFirst>Una</EDDGridFirst>
-<EDDGridLast>Huling</EDDGridLast>
 <EDDGridStart>Magsimula</EDDGridStart>
 <EDDGridStop>Tumigil ka</EDDGridStop>
 <EDDGridStartStopTooltip><![CDATA[
@@ -2607,14 +2583,6 @@ ito ang average na espasyo sa pagitan ng mga value ng isang dimensyon (sa mga un
 Ang isang bahagyang kakaiba, hindi pantay na espasyo ay kadalasang nagpapahiwatig na ang isa o ilang mga file ay nawawala o masama sa isang dataset na may perpektong pantay na pagitan.
 
 ]]></EDDGridSpacingTooltip>
-<EDDGridDimensionFirstTooltip><![CDATA[
-Para sa iyong impormasyon:
-ito ang unang halaga ng isang dimensyon.
-]]></EDDGridDimensionFirstTooltip>
-<EDDGridDimensionLastTooltip><![CDATA[
-Para sa iyong impormasyon:
-ito ang huling halaga ng isang dimensyon.
-]]></EDDGridDimensionLastTooltip>
 <EDDGridDownloadTooltip><![CDATA[
 Piliin ang mga variable na gusto mong i-download:
 <br>* Para mag-download lang ng data ng dimensyon:
@@ -2890,10 +2858,6 @@ Halimbawa:
 
 <!--  Ang mga mensaheng ito ay ipinapakita kapag may ipinakitang mensahe ng error.  -->
 <errorTitle>Error</errorTitle>
-<errorRequestUrl>URL ng iyong kahilingan:</errorRequestUrl>
-<errorRequestQuery>Ang iyong query sa kahilingan:</errorRequestQuery>
-<errorTheError>Ang error:</errorTheError>
-<errorCopyFrom>Hindi makopya mula sa {0}.</errorCopyFrom>
 <errorFileNotFound>Hindi nahanap ang file: {0} .</errorFileNotFound>
 <errorFileNotFoundImage>Hindi nakita ang file sa cache. Gawin muli ang larawan at subukang muli.</errorFileNotFoundImage>
 <errorInternal>Panloob na error:</errorInternal>
@@ -2915,6 +2879,7 @@ Halimbawa:
 <externalLink>(panlabas na link)</externalLink>
 <externalWebSite>Ang link na ito sa isang panlabas na website ay hindi bumubuo ng isang pag-endorso.</externalWebSite>
 <fileHelp_asc>Tingnan ang OPeNDAP-style na ISO-8859-1 na comma-separated text.</fileHelp_asc>
+<fileHelp_croissant>I-download ang dataset croissant schema.</fileHelp_croissant>
 <fileHelp_csv>Mag-download ng ISO-8859-1 comma-separated text table (line 1: names; line 2: units; ISO 8601 times).</fileHelp_csv>
 <fileHelp_csvp>Mag-download ng ISO-8859-1 .csv file na may linya 1: pangalan (mga unit). Ang mga oras ay ISO 8601 na mga string.</fileHelp_csvp>
 <fileHelp_csv0>Mag-download ng ISO-8859-1 .csv file na walang mga pangalan ng column o unit. Ang mga oras ay ISO 8601 na mga string.</fileHelp_csv0>
@@ -2926,7 +2891,6 @@ Halimbawa:
 <fileHelpTable_esriCsv>Mag-download ng ISO_8859_1 .csv file para sa ArcGIS 9.x ng ESRI at mas mababa (magkahiwalay na mga column ng petsa at oras).</fileHelpTable_esriCsv>
 <fileHelp_fgdc>Tingnan ang UTF-8 FGDC .xml metadata ng dataset.</fileHelp_fgdc>
 <fileHelp_geoJson>Mag-download ng data ng longitude,latitude,otherColumns bilang isang UTF-8 GeoJSON .json file.</fileHelp_geoJson>
-<fileHelp_graph>Tingnan ang isang web page na Gumawa ng Graph.</fileHelp_graph>
 <fileHelpGrid_help>Tingnan ang isang web page na may paglalarawan ng griddap.</fileHelpGrid_help>
 <fileHelpTable_help>Tingnan ang isang web page na may paglalarawan ng tabledap.</fileHelpTable_help>
 <fileHelp_html>Tingnan ang isang OPeNDAP-style na HTML Data Access Form.</fileHelp_html>
@@ -2957,7 +2921,6 @@ Halimbawa:
 <fileHelpTable_odvTxt>I-download ang longitude,latitude,time,otherColumn bilang ISO-8859-1 ODV Generic Spreadsheet File (.txt).</fileHelpTable_odvTxt>
 <fileHelp_parquet>Ihulog bilang parquet file. Ang Metadata ay naglalaman ng mga pangalan ng tudling (&quot;column_names&quot;) at mga yunit (&quot;column_units&quot;).</fileHelp_parquet>
 <fileHelp_parquet_with_meta>Download bilang isang parquet file na may detalyadong metadata.</fileHelp_parquet_with_meta>
-<fileHelp_subset>Tingnan ang isang HTML form na gumagamit ng faceted na paghahanap upang pasimplehin ang pagpili ng mga subset ng data.</fileHelp_subset>
 <fileHelp_timeGaps>Tingnan ang isang UTF-8 na listahan ng mga gaps sa mga halaga ng oras na mas malaki kaysa sa median gap.</fileHelp_timeGaps>
 <fileHelp_tsv>Mag-download ng ISO-8859-1 tab-separated text table (line 1: names; line 2: units; ISO 8601 times).</fileHelp_tsv>
 <fileHelp_tsvp>Mag-download ng ISO-8859-1 .tsv file na may linya 1: pangalan (mga yunit). Ang mga oras ay ISO 8601 na mga string.</fileHelp_tsvp>
@@ -2977,7 +2940,6 @@ Halimbawa:
 
 <!--  Ang mga salita sa Paglalarawan at Babala ay malabo upang payagan ang isa o maraming mga dataset.  -->
 <filesDescription>Hinahayaan ka ng &quot;mga file&quot; ng ERDDAP na mag-browse ng isang virtual na file system at mag-download ng mga source data file.</filesDescription>
-<filesSort>Mag-click sa isang heading (hal., Pangalan, Huling binago, Sukat) upang baguhin ang pagkakasunud-sunod ng pag-uuri.  Ginagamit ng &quot;Huling binago&quot; ang Zulu time zone.</filesSort>
 <filesWarning><![CDATA[
 
 Maaaring iba ang metadata at variable na pangalan ng dataset sa mga source file na ito kaysa sa ibang lugar sa ERDDAP ! Sa halip, mas gusto mong gamitin ang Data Access Form ng dataset.
@@ -3414,12 +3376,6 @@ Ang row na iyon ay magkakaroon ng kabuuan ng bawat isa sa iba pang mga variable.
 Halimbawa, orderByMax(&quot;stationID, time/1day&quot;) ay gagawa ng grupo para sa bawat stationID para sa bawat araw, at kakalkulahin at ibabalik ang kabuuan ng iba pang mga variable.
 
 ]]></functionOrderByTooltip>
-<functionOrderByExtra><![CDATA[
-
-Para sa orderByClosest, tukuyin ang pagitan (gamit ang format na n[timeUnits], hal, 1 oras) dito.
-<br>Para sa orderByLimit, tukuyin ang maximum na bilang ng mga row sa bawat pangkat dito.
-
-]]></functionOrderByExtra>
 <functionOrderBySort><![CDATA[
 
 Ang slot na ito ay ang {0} mahalagang orderBy ...
@@ -3432,7 +3388,6 @@ slot.
 <functionOrderBySort3>pangatlo sa karamihan</functionOrderBySort3>
 <functionOrderBySort4>pang-apat sa karamihan</functionOrderBySort4>
 <functionOrderBySortLeast>hindi bababa sa</functionOrderBySortLeast>
-<functionOrderBySortRowMax>Ang row lang na may pinakamataas na halaga ang pananatilihin.</functionOrderBySortRowMax>
 <generatedAt>Ang web page na ito ay nabuo sa {0} .</generatedAt>
 <geoServicesDescription><![CDATA[
 
@@ -3732,7 +3687,6 @@ Ang default ay wala (hindi ginagamit).
 <!--  hal., {0}=WMS o listAll  -->
 <listOfDatasets>Listahan ng {0} Mga Dataset</listOfDatasets>
 <listAll>Lahat</listAll>
-<LogIn>Mag log in</LogIn>
 <login>mag log in</login>
 <loginHTML><![CDATA[
 
@@ -3791,22 +3745,15 @@ Maaaring mag-log in ang sinumang may Google email account o ORCID iD ngunit tinu
 Ang mga tao lamang na gumawa ng mga pakikipag-ayos sa administrator ng ERDDAP na ito ang maaaring mag-log in.
 
 ]]></loginDescribeOpenID>
-<loginErddap>Mag-log in sa ERDDAP</loginErddap>
 <loginCanNot>Ang ERDDAP na ito ay hindi naka-configure upang hayaan ang mga user na mag-log in.</loginCanNot>
 <loginAreNot>Hindi ka naka-log in.</loginAreNot>
 <loginToLogIn>Upang mag-log in</loginToLogIn>
-<loginEmailAddress>email address</loginEmailAddress>
 <loginYourEmailAddress>ang iyong email address</loginYourEmailAddress>
 <loginUserName>User Name</loginUserName>
 <loginPassword>Password</loginPassword>
 <loginUserNameAndPassword>User Name at Password</loginUserNameAndPassword>
 <loginGoogleSignIn>I-authenticate gamit ang iyong Google account.</loginGoogleSignIn>
 <loginOrcidSignIn>I-authenticate gamit ang iyong ORCID iD.</loginOrcidSignIn>
-<loginOpenID>Mag-log in gamit ang iyong OpenID URL</loginOpenID>
-<loginOpenIDOr>O mag-log in sa iyong umiiral na (non-OpenID) account sa</loginOpenIDOr>
-<loginOpenIDCreate>O gumawa ng OpenID URL sa</loginOpenIDCreate>
-<loginOpenIDFree>Libre silang lahat!</loginOpenIDFree>
-<loginOpenIDSame>Tiyaking naka-log in ka gamit ang eksaktong parehong OpenID URL na ibinigay mo sa administrator ng ERDDAP.</loginOpenIDSame>
 <loginAs>Naka-log in ka bilang {0} .</loginAs>
 <loginPartwayAs>Naka-log in ka sa kalagitnaan bilang {0} .</loginPartwayAs>
 <loginFailed>ERROR: Nabigo ang pag-login</loginFailed>
@@ -3921,7 +3868,6 @@ Posibleng ang ilang dataset ay kasalukuyang hindi available o wala kang pahintul
 ]]></loginPublicAccess>
 <LogOut>Log Out</LogOut>
 <logout>mag log out</logout>
-<logoutOpenID>Mag-log out mula sa iyong OpenID provider.</logoutOpenID>
 
 <!--  logoutSuccess huling na-update noong 2019-12-19  -->
 <logoutSuccess>Matagumpay kang naka-log out. 
@@ -4266,11 +4212,9 @@ Mas mahusay na ibalik ang isang walang laman na file? Ngunit hindi pinapayagan n
 <noXxxNoLonIn180>walang mga halaga ng longitude sa loob ng -180 hanggang 360</noXxxNoLonIn180>
 <noXxxNoNonString>walang mga variable na hindi String</noXxxNoNonString>
 <noXxxNo2NonString>walang hindi bababa sa dalawang non-String na variable</noXxxNo2NonString>
-<noXxxNoStation>cdmDataType={0} ay hindi &quot;TimeSeries&quot;</noXxxNoStation>
 <noXxxNoStationID>walang stationID-like variable</noXxxNoStationID>
 <noXxxNoSubsetVariables>subsetVariables ay hindi tinukoy</noXxxNoSubsetVariables>
 <noXxxNoOLLSubsetVariables>Ang subsetVariables ay walang mga variable na inaalok, longitude, at latitude</noXxxNoOLLSubsetVariables>
-<noXxxNoMinMax>ang source data server ay hindi nagbibigay ng minimum at maximum na mga halaga</noXxxNoMinMax>
 <noXxxItsGridded>ito ay isang gridded na dataset</noXxxItsGridded>
 <noXxxItsTabular>ito ay isang tabular na dataset</noXxxItsTabular>
 <oneRequestAtATime>Mangyaring gumawa lamang ng isang kahilingan sa isang pagkakataon.</oneRequestAtATime>
@@ -4297,7 +4241,6 @@ Maaaring ma-access ng mga developer ng mga computer program at Java Scripted web
 <options>Mga pagpipilian</options>
 <orAListOfValues>o isang Listahan ng mga Halaga</orAListOfValues>
 <orRefineSearchWith>O, pinuhin ang paghahanap na ito gamit ang</orRefineSearchWith>
-<orSearchWith>O kaya, maghanap ng mga dataset na may</orSearchWith>
 <orComma>O kaya,</orComma>
 <otherFeatures>Iba pang Mga Tampok</otherFeatures>
 <outOfDateDatasets>Mga Out-Of-Date na Dataset</outOfDateDatasets>
@@ -4356,7 +4299,6 @@ May
     title="Ang link na ito sa isang panlabas na website ay hindi bumubuo ng isang pag-endorso."></a> .
 
 ]]></percentEncode>
-<pickADataset>Pumili ng Dataset</pickADataset>
 
 <!--  Mga mensaheng nauugnay sa mga paghahanap sa dataset na nakabatay sa protocol.  -->
 <protocolSearchHtml>Maghanap ng Mga Dataset ayon sa Protocol</protocolSearchHtml>
@@ -4373,7 +4315,6 @@ Ang iba&#39;t ibang mga protocol ay angkop para sa iba&#39;t ibang uri ng data a
 <queryError1Var>Ang format na {0} ay maaari lamang pangasiwaan ang isang variable ng data.</queryError1Var>
 <queryError2Var>Ang mga kahilingan para sa format na {0} ay dapat magsama ng hindi bababa sa dalawang numeric na variable (para sa X at Y axes).</queryError2Var>
 <queryErrorActualRange>Ang {0} ay nasa labas ng actual_range ng variable: {1} hanggang {2}</queryErrorActualRange>
-<queryErrorAscending>Para sa {0} mga kahilingan, ang mga halaga ng longitude at mga halaga ng latitude ay dapat na pataas.</queryErrorAscending>
 <queryErrorAdjusted>Para sa {0} mga kahilingan, ang mga inayos na halaga ng longitude ({1} hanggang {2}) ay dapat nasa pagitan ng -180 at 180.</queryErrorAdjusted>
 <queryErrorConstraintNaN>Constraint value=&quot;{0}&quot; ay sinusuri sa NaN.  Kung talagang gusto mo ang NaN, isulat ito bilang NaN.</queryErrorConstraintNaN>
 <queryErrorEqualSpacing>Para sa {0} mga kahilingan, ang longitude spacing ({1}) ay dapat na katumbas ng latitude spacing ({2}).</queryErrorEqualSpacing>
@@ -4405,7 +4346,6 @@ Ang iba&#39;t ibang mga protocol ay angkop para sa iba&#39;t ibang uri ng data a
 <queryErrorGridNoAxisVar>Ang isang griddap data variable query ay hindi maaaring magsama ng isang axis variable ({0}).</queryErrorGridNoAxisVar>
 <queryErrorGridNoDataVar>Ang isang griddap axis variable query ay hindi maaaring magsama ng data variable ({0}).</queryErrorGridNoDataVar>
 <queryErrorGridNotIdentical>Ang constraint {0} para sa variable={1} ay hindi kapareho ng constraint {2} para sa variable={2}.  Kung kailangan mo ng iba&#39;t ibang subset, gumawa ng hiwalay na mga kahilingan.</queryErrorGridNotIdentical>
-<queryErrorGridSLessS>Ang StartIndex={0} ay mas malaki kaysa sa StopIndex={1}.</queryErrorGridSLessS>
 <queryErrorLastEndP>Ang {0} ay nagsisimula sa &quot;(&quot;, ngunit hindi nagtatapos sa &quot;)&quot;.</queryErrorLastEndP>
 <queryErrorLastExpected>Ang &quot;huling&quot; ay inaasahan sa simula ng {0}.</queryErrorLastExpected>
 <queryErrorLastUnexpected>Hindi inaasahang karakter pagkatapos ng &quot;huling&quot; sa {0}.</queryErrorLastUnexpected>
@@ -4646,7 +4586,6 @@ Tingnan mo
 <SOSDocumentation>Dokumentasyon ng SOS ng ERDDAP</SOSDocumentation>
 <WCSDocumentation>Dokumentasyon ng WCS ng ERDDAP</WCSDocumentation>
 <WMSDocumentation>Dokumentasyon ng WMS ng ERDDAP</WMSDocumentation>
-<findOutChange>upang malaman ng iyong computer program kung nagbago ang isang dataset.</findOutChange>
 <requestFormatExamplesHtml><![CDATA[
 
 (halimbawa,
@@ -5099,14 +5038,6 @@ Sa halip, humiling ng email na may
 
 ]]></subscriptionRemoveSuccess>
 <subscriptionRSS>Mag-subscribe sa RSS feed para sa dataset na ito...</subscriptionRSS>
-<subscriptionsNotAvailable><![CDATA[
-
-<p><strong>Paumanhin.
-Ang email/URL subscription system ay hindi available sa ERDDAP installation na ito.</strong>
-<br>Pag-isipang gamitin ang serbisyo sa subscription
-<a rel="help" href="{0}/information.html#subscriptions">RSS</a> sa halip.
-
-]]></subscriptionsNotAvailable>
 <subscriptionUrlHtml><![CDATA[
 
 <kbd>URL/action</kbd> ay isang opsyonal na URL na kokontakin ERDDAP sa halip na magpadala sa iyo ng email.
@@ -5370,13 +5301,6 @@ Upang tingnan ang {0},
 <!--  Ang sumusunod na tag ay pinangungunahan ng 1 sa 2 naunang tag. 
   Ang {0} ay subsetViewSelectDistintCombos o subsetViewSelectRelatedCounts.  -->
 <subsetWhenCounts>{0} para sa {1} mga halaga ng &quot;{2}&quot; ay:</subsetWhenCounts>
-<subsetComboClickSelect><![CDATA[
-
-Upang tingnan ang mga bilang ng mga natatanging kumbinasyon ng mga variable na nakalista sa itaas,
-<br>suriin <kbd>{0} :
-{1}</kbd> sa itaas at pumili ng halaga para sa isa sa mga variable sa itaas.
-
-]]></subsetComboClickSelect>
 <subsetNVariableCombos>Sa kabuuan, mayroong {0} (na) hilera ng mga natatanging kumbinasyon ng mga variable na nakalista sa itaas.</subsetNVariableCombos>
 <subsetShowingAllRows>Ang lahat ng mga hilera ay ipinapakita sa itaas.</subsetShowingAllRows>
 <subsetShowingNRows>Ang unang {0} na mga hilera ay ipinapakita sa itaas.  Ang natitirang {1} mga hilera ay hindi ipinapakita.</subsetShowingNRows>
@@ -6133,7 +6057,6 @@ Kapag member ka na, maaari mong i-post ang iyong tanong doon o maghanap para mak
 Ang mga opinyon sa web page na ito ay mga personal na opinyon ni Bob Simons at hindi kinakailangang sumasalamin sa anumang posisyon ng Gobyerno o ng National Oceanic and Atmospheric Administration .
 
 ]]></theLongDescriptionHtml>
-<Then>Pagkatapos</Then>
 <twoClickMapDefaultTooltip>Tukuyin ang isang parihaba sa pamamagitan ng pag-click sa dalawang diagonal na sulok.  Gawin itong muli kung kinakailangan.</twoClickMapDefaultTooltip>
 
 <!--  Ito ay isang paraan upang i-override ang converter ng Standardize UDUnits ng ERDDAP
@@ -7417,7 +7340,6 @@ Ito ay hindi maaaring wala. Kaya kung wala kang gusto, maglagay ng walang kwenta
 hindi kailanman maging isang pangalan ng katangian.  -->
 <updateUrlsSkipAttributes>sourceUrl</updateUrlsSkipAttributes>
 <variableNames>Mga Pangalan ng Variable</variableNames>
-<viewAllDatasetsHtml>Tingnan ang isang Listahan ng Lahat ng Dataset</viewAllDatasetsHtml>
 <waitThenTryAgain>Nagkaroon ng (pansamantalang?) problema.  Maghintay ng isang minuto, pagkatapos ay subukang muli.  (Sa isang browser, i-click ang button na I-reload.)</waitThenTryAgain>
 <warning>BABALA!</warning>
 <units>Mga yunit</units>

@@ -23,6 +23,7 @@ import dods.dap.*;
 import gov.noaa.pfel.coastwatch.griddata.NcHelper;
 import gov.noaa.pfel.coastwatch.griddata.OpendapHelper;
 import gov.noaa.pfel.coastwatch.pointdata.Table;
+import gov.noaa.pfel.coastwatch.util.FileVisitorDNLS;
 import gov.noaa.pfel.coastwatch.util.SSR;
 import gov.noaa.pfel.coastwatch.util.SimpleXMLReader;
 import gov.noaa.pfel.erddap.Erddap;
@@ -30,16 +31,20 @@ import gov.noaa.pfel.erddap.dataset.metadata.LocalizedAttributes;
 import gov.noaa.pfel.erddap.handlers.EDDGridFromErddapHandler;
 import gov.noaa.pfel.erddap.handlers.SaxHandlerClass;
 import gov.noaa.pfel.erddap.util.EDMessages;
+import gov.noaa.pfel.erddap.util.EDMessages.Message;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.*;
+import jakarta.servlet.http.HttpServletRequest;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.io.StringReader;
 import java.nio.charset.StandardCharsets;
 import java.text.MessageFormat;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.BitSet;
+import java.util.Queue;
 import org.semver4j.Semver;
 
 /**
@@ -226,7 +231,7 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
     setGraphsAccessibleTo(tGraphsAccessibleTo);
     if (!tAccessibleViaWMS)
       accessibleViaWMS =
-          String2.canonical(MessageFormat.format(EDStatic.messages.noXxxAr[0], "WMS"));
+          String2.canonical(MessageFormat.format(EDStatic.messages.get(Message.NO_XXX, 0), "WMS"));
     onChange = tOnChange;
     fgdcFile = tFgdcFile;
     iso19115File = tIso19115File;
@@ -573,7 +578,7 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
     int newSize = dad.getSize();
     if (newSize < oldSize)
       throw new WaitThenTryAgainException(
-          EDStatic.simpleBilingual(language, EDStatic.messages.waitThenTryAgainAr)
+          EDStatic.simpleBilingual(language, Message.WAIT_THEN_TRY_AGAIN)
               + "\n("
               + msg
               + "["
@@ -627,7 +632,7 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
     }
     if (oldValues.elementType() != newValues.elementType())
       throw new WaitThenTryAgainException(
-          EDStatic.simpleBilingual(language, EDStatic.messages.waitThenTryAgainAr)
+          EDStatic.simpleBilingual(language, Message.WAIT_THEN_TRY_AGAIN)
               + "\n("
               + msg
               + edvga.destinationName()
@@ -641,7 +646,7 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
     // ensure last old value is unchanged
     if (oldValues.getDouble(oldSize - 1) != newValues.getDouble(0)) // they should be exactly equal
     throw new WaitThenTryAgainException(
-          EDStatic.simpleBilingual(language, EDStatic.messages.waitThenTryAgainAr)
+          EDStatic.simpleBilingual(language, Message.WAIT_THEN_TRY_AGAIN)
               + "\n("
               + msg
               + edvga.destinationName()
@@ -677,7 +682,7 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
     String error = edvga.isAscending() ? newValues.isAscending() : newValues.isDescending();
     if (error.length() > 0)
       throw new WaitThenTryAgainException(
-          EDStatic.simpleBilingual(language, EDStatic.messages.waitThenTryAgainAr)
+          EDStatic.simpleBilingual(language, Message.WAIT_THEN_TRY_AGAIN)
               + "\n("
               + edvga.destinationName()
               + " was "
@@ -933,7 +938,7 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
         throw t instanceof WaitThenTryAgainException
             ? t
             : new WaitThenTryAgainException(
-                EDStatic.simpleBilingual(language, EDStatic.messages.waitThenTryAgainAr)
+                EDStatic.simpleBilingual(language, Message.WAIT_THEN_TRY_AGAIN)
                     + "\n("
                     + EDStatic.messages.errorFromDataSource
                     + t
@@ -942,7 +947,7 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
       }
       if (pa.length != axisVariables.length + 1)
         throw new WaitThenTryAgainException(
-            EDStatic.simpleBilingual(language, EDStatic.messages.waitThenTryAgainAr)
+            EDStatic.simpleBilingual(language, Message.WAIT_THEN_TRY_AGAIN)
                 + "\n(Details: An unexpected data structure was returned from the source.)");
       results[axisVariables.length + dv] = pa[0];
       if (dv == 0) {
@@ -953,7 +958,7 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
           String tError = results[av].almostEqual(pa[av + 1]);
           if (tError.length() > 0)
             throw new WaitThenTryAgainException(
-                EDStatic.simpleBilingual(language, EDStatic.messages.waitThenTryAgainAr)
+                EDStatic.simpleBilingual(language, Message.WAIT_THEN_TRY_AGAIN)
                     + "\n(Details: The axis values for dataVariable=0,axis="
                     + av
                     + "\ndon't equal the axis values for dataVariable="
@@ -967,6 +972,56 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
       }
     }
     return results;
+  }
+
+  private void getFilesForSubdir(String subDir, Table resultsTable, Queue<String> subdirs)
+      throws Exception {
+    String url =
+        String2.replaceAll(localSourceUrl, "/griddap/", "/files/")
+            + "/"
+            + subDir
+            + (subDir.length() > 0 ? "/" : "")
+            + ".csv";
+    BufferedReader reader = SSR.getBufferedUrlReader(url);
+    Table table = new Table();
+    table.readASCII(
+        url, reader, "", "", 0, 1, ",", null, null, null, null,
+        false); // testColumns[], testMin[], testMax[], loadColumns[], simplify)
+    table.setColumn(1, new LongArray(table.getColumn(1)));
+    table.setColumn(2, new LongArray(table.getColumn(2)));
+    StringArray names = (StringArray) table.getColumn(0);
+    for (int row = 0; row < table.nRows(); row++) {
+      String name = names.get(row);
+      if (name.endsWith("/")) {
+        subdirs.add(
+            subDir + (subDir.length() > 0 ? "/" : "") + name.substring(0, name.length() - 1));
+      } else {
+        resultsTable.addStringData(0, subDir + name);
+        resultsTable.addStringData(
+            1,
+            String2.replaceAll(localSourceUrl, "/griddap/", "/files/") + "/" + subDir + "/" + name);
+        resultsTable.addLongData(2, table.getLongData(1, row));
+        resultsTable.addLongData(3, table.getLongData(2, row));
+      }
+    }
+  }
+
+  @Override
+  public Table getFilesUrlList(HttpServletRequest request, String loggedInAs, int language)
+      throws Throwable {
+    Table resultsTable = FileVisitorDNLS.makeEmptyTable();
+    Queue<String> subdirs = new ArrayDeque<>();
+    subdirs.add("");
+    while (subdirs.size() > 0) {
+      String subdir = subdirs.remove();
+      getFilesForSubdir(subdir, resultsTable, subdirs);
+    }
+    return resultsTable;
+  }
+
+  @Override
+  public String getFilesetUrl(HttpServletRequest request, String loggedInAs, int language) {
+    return String2.replaceAll(localSourceUrl, "/griddap/", "/files/") + "/";
   }
 
   /**

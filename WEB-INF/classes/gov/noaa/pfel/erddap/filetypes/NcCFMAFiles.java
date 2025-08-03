@@ -1,5 +1,6 @@
 package gov.noaa.pfel.erddap.filetypes;
 
+import gov.noaa.pfel.erddap.util.EDMessages.Message;
 import gov.noaa.pfel.erddap.util.EDStatic;
 
 @FileTypeClass(
@@ -12,6 +13,6 @@ import gov.noaa.pfel.erddap.util.EDStatic;
 public class NcCFMAFiles extends NcCFFiles {
   @Override
   public String getHelpText(int language) {
-    return EDStatic.messages.fileHelp_ncCFMAAr[language];
+    return EDStatic.messages.get(Message.FILE_HELP_NC_CFMA, language);
   }
 }

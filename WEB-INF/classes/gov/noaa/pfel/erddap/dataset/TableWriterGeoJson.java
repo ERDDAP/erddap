@@ -13,6 +13,7 @@ import com.cohort.util.MustBe;
 import com.cohort.util.SimpleException;
 import com.cohort.util.String2;
 import gov.noaa.pfel.coastwatch.pointdata.Table;
+import gov.noaa.pfel.erddap.util.EDMessages.Message;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.EDV;
 import java.io.BufferedWriter;
@@ -76,9 +77,10 @@ public class TableWriterGeoJson extends TableWriter {
       throw new SimpleException(
           EDStatic.bilingual(
               language,
-              EDStatic.messages.queryErrorAr[0] + EDStatic.messages.errorJsonpFunctionNameAr[0],
-              EDStatic.messages.queryErrorAr[language]
-                  + EDStatic.messages.errorJsonpFunctionNameAr[language]));
+              EDStatic.messages.get(Message.QUERY_ERROR, 0)
+                  + EDStatic.messages.get(Message.ERROR_JSONP_FUNCTION_NAME, 0),
+              EDStatic.messages.get(Message.QUERY_ERROR, language)
+                  + EDStatic.messages.get(Message.ERROR_JSONP_FUNCTION_NAME, language)));
   }
 
   /**
@@ -112,9 +114,9 @@ public class TableWriterGeoJson extends TableWriter {
         throw new SimpleException(
             EDStatic.bilingual(
                 language,
-                EDStatic.messages.queryErrorAr[0]
+                EDStatic.messages.get(Message.QUERY_ERROR, 0)
                     + "Requests for GeoJSON data must include the longitude and latitude variables.",
-                EDStatic.messages.queryErrorAr[language]
+                EDStatic.messages.get(Message.QUERY_ERROR, language)
                     + "Requests for GeoJSON data must include the longitude and latitude variables."));
       // it is unclear to me if specification supports altitude in coordinates info...
       isTimeStamp = new boolean[nColumns];

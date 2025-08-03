@@ -16,6 +16,7 @@ import gov.noaa.pfel.erddap.dataset.GridDataAccessor;
 import gov.noaa.pfel.erddap.dataset.OutputStreamSource;
 import gov.noaa.pfel.erddap.dataset.TableWriter;
 import gov.noaa.pfel.erddap.dataset.TableWriterDods;
+import gov.noaa.pfel.erddap.util.EDMessages.Message;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.EDV;
 import java.io.DataOutputStream;
@@ -54,7 +55,7 @@ public class DodsFiles extends TableWriterFileType {
 
   @Override
   public String getHelpText(int language) {
-    return EDStatic.messages.fileHelp_dodsAr[language];
+    return EDStatic.messages.get(Message.FILE_HELP_DODS, language);
   }
 
   /**
@@ -214,7 +215,9 @@ public class DodsFiles extends TableWriterFileType {
               while (partialGda.incrementChunk()) pas[0].externalizeForDODS(dos);
             } else {
               throw new RuntimeException(
-                  EDStatic.messages.errorInternalAr[0] + "unsupported source data type=" + type);
+                  EDStatic.messages.get(Message.ERROR_INTERNAL, 0)
+                      + "unsupported source data type="
+                      + type);
             } /* */
 
             for (int av = 0; av < nAxisVariables; av++)

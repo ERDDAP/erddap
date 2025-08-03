@@ -39,6 +39,7 @@ import gov.noaa.pfel.erddap.dataset.metadata.MetadataBuilder;
 import gov.noaa.pfel.erddap.filetypes.DapRequestInfo;
 import gov.noaa.pfel.erddap.filetypes.FileTypeInterface;
 import gov.noaa.pfel.erddap.util.*;
+import gov.noaa.pfel.erddap.util.EDMessages.Message;
 import gov.noaa.pfel.erddap.variable.*;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -479,7 +480,7 @@ public abstract class EDDTable extends EDD {
    */
   @Override
   public String dapDescription(int language) {
-    return EDStatic.messages.EDDTableDapDescriptionAr[language];
+    return EDStatic.messages.get(Message.EDD_TABLE_DAP_DESCRIPTION, language);
   }
 
   public String[] requiredCfRequestVariables() {
@@ -504,7 +505,9 @@ public abstract class EDDTable extends EDD {
    */
   public static String longDapDescription(int language, String tErddapUrl) {
     return String2.replaceAll(
-        EDStatic.messages.EDDTableDapLongDescriptionAr[language], "&erddapUrl;", tErddapUrl);
+        EDStatic.messages.get(Message.EDD_TABLE_DAP_LONG_DESCRIPTION, language),
+        "&erddapUrl;",
+        tErddapUrl);
   }
 
   /**
@@ -1035,12 +1038,14 @@ public abstract class EDDTable extends EDD {
           throw new SimpleException(
               EDStatic.bilingual(
                   language,
-                  EDStatic.messages.queryErrorAr[0]
+                  EDStatic.messages.get(Message.QUERY_ERROR, 0)
                       + MessageFormat.format(
-                          EDStatic.messages.queryErrorConstraintNaNAr[0], constraintValue),
-                  EDStatic.messages.queryErrorAr[language]
+                          EDStatic.messages.get(Message.QUERY_ERROR_CONSTRAINT_NAN, 0),
+                          constraintValue),
+                  EDStatic.messages.get(Message.QUERY_ERROR, language)
                       + MessageFormat.format(
-                          EDStatic.messages.queryErrorConstraintNaNAr[language], constraintValue)));
+                          EDStatic.messages.get(Message.QUERY_ERROR_CONSTRAINT_NAN, language),
+                          constraintValue)));
         }
       }
       if (reallyVerbose)
@@ -1078,13 +1083,13 @@ public abstract class EDDTable extends EDD {
                   MustBe.THERE_IS_NO_DATA
                       + " "
                       + MessageFormat.format(
-                          EDStatic.messages.noDataFixedValueAr[0],
+                          EDStatic.messages.get(Message.NO_DATA_FIXED_VALUE, 0),
                           edv.destinationName(),
                           edv.fixedValue() + constraintOp + constraintValueD),
                   MustBe.THERE_IS_NO_DATA
                       + " "
                       + MessageFormat.format(
-                          EDStatic.messages.noDataFixedValueAr[language],
+                          EDStatic.messages.get(Message.NO_DATA_FIXED_VALUE, language),
                           edv.destinationName(),
                           edv.fixedValue() + constraintOp + constraintValueD)));
 
@@ -1205,13 +1210,13 @@ public abstract class EDDTable extends EDD {
         throw new SimpleException(
             EDStatic.bilingual(
                 language,
-                EDStatic.messages.queryErrorAr[0]
+                EDStatic.messages.get(Message.QUERY_ERROR, 0)
                     + MessageFormat.format(
-                        EDStatic.messages.queryErrorNeverTrueAr[0],
+                        EDStatic.messages.get(Message.QUERY_ERROR_NEVER_TRUE, 0),
                         edv1.destinationName() + op1 + val1),
-                EDStatic.messages.queryErrorAr[language]
+                EDStatic.messages.get(Message.QUERY_ERROR, language)
                     + MessageFormat.format(
-                        EDStatic.messages.queryErrorNeverTrueAr[language],
+                        EDStatic.messages.get(Message.QUERY_ERROR_NEVER_TRUE, language),
                         edv1.destinationName() + op1 + val1)));
 
       for (int cv2 = cv1 + 1; cv2 < constraintVariables.size(); cv2++) {
@@ -1291,14 +1296,14 @@ public abstract class EDDTable extends EDD {
           throw new SimpleException(
               EDStatic.bilingual(
                   language,
-                  EDStatic.messages.queryErrorAr[0]
+                  EDStatic.messages.get(Message.QUERY_ERROR, 0)
                       + MessageFormat.format(
-                          EDStatic.messages.queryErrorNeverBothTrueAr[0],
+                          EDStatic.messages.get(Message.QUERY_ERROR_NEVER_BOTH_TRUE, 0),
                           edv1.destinationName() + op1 + val1,
                           edv2.destinationName() + op2 + val2),
-                  EDStatic.messages.queryErrorAr[language]
+                  EDStatic.messages.get(Message.QUERY_ERROR, language)
                       + MessageFormat.format(
-                          EDStatic.messages.queryErrorNeverBothTrueAr[language],
+                          EDStatic.messages.get(Message.QUERY_ERROR_NEVER_BOTH_TRUE, language),
                           edv1.destinationName() + op1 + val1,
                           edv2.destinationName() + op2 + val2)));
       }
@@ -1961,7 +1966,7 @@ public abstract class EDDTable extends EDD {
           if (!repair) {
             if (tVar.equals(SEQUENCE_NAME))
               throw new SimpleException(
-                  EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
+                  EDStatic.simpleBilingual(language, Message.QUERY_ERROR)
                       + "If "
                       + SEQUENCE_NAME
                       + " is requested, it must be the only requested variable.");
@@ -1969,13 +1974,13 @@ public abstract class EDDTable extends EDD {
               int opPo = tVar.indexOf(OPERATORS.get(op));
               if (opPo >= 0)
                 throw new SimpleException(
-                    EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
+                    EDStatic.simpleBilingual(language, Message.QUERY_ERROR)
                         + "All constraints (including \""
                         + tVar.substring(0, opPo + OPERATORS.get(op).length())
                         + "...\") must be preceded by '&'.");
             }
             throw new SimpleException(
-                EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
+                EDStatic.simpleBilingual(language, Message.QUERY_ERROR)
                     + "Unrecognized variable=\""
                     + tVar
                     + "\".");
@@ -1985,7 +1990,7 @@ public abstract class EDDTable extends EDD {
           if (resultsVariables.indexOf(tVar) >= 0) {
             if (!repair)
               throw new SimpleException(
-                  EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
+                  EDStatic.simpleBilingual(language, Message.QUERY_ERROR)
                       + "variable="
                       + tVar
                       + " is listed twice in the results variables list.");
@@ -2023,12 +2028,14 @@ public abstract class EDDTable extends EDD {
               throw new SimpleException(
                   EDStatic.bilingual(
                       language,
-                      EDStatic.messages.queryErrorAr[0]
+                      EDStatic.messages.get(Message.QUERY_ERROR, 0)
                           + MessageFormat.format(
-                              EDStatic.messages.queryErrorOrderByVariableAr[0], obv.get(obvi)),
-                      EDStatic.messages.queryErrorAr[language]
+                              EDStatic.messages.get(Message.QUERY_ERROR_ORDER_BY_VARIABLE, 0),
+                              obv.get(obvi)),
+                      EDStatic.messages.get(Message.QUERY_ERROR, language)
                           + MessageFormat.format(
-                              EDStatic.messages.queryErrorOrderByVariableAr[language],
+                              EDStatic.messages.get(
+                                  Message.QUERY_ERROR_ORDER_BY_VARIABLE, language),
                               obv.get(obvi))));
           }
         }
@@ -2056,12 +2063,14 @@ public abstract class EDDTable extends EDD {
               throw new SimpleException(
                   EDStatic.bilingual(
                       language,
-                      EDStatic.messages.queryErrorAr[0]
+                      EDStatic.messages.get(Message.QUERY_ERROR, 0)
                           + MessageFormat.format(
-                              EDStatic.messages.queryErrorOrderByVariableAr[0], obv.get(obvi)),
-                      EDStatic.messages.queryErrorAr[language]
+                              EDStatic.messages.get(Message.QUERY_ERROR_ORDER_BY_VARIABLE, 0),
+                              obv.get(obvi)),
+                      EDStatic.messages.get(Message.QUERY_ERROR, language)
                           + MessageFormat.format(
-                              EDStatic.messages.queryErrorOrderByVariableAr[language],
+                              EDStatic.messages.get(
+                                  Message.QUERY_ERROR_ORDER_BY_VARIABLE, language),
                               obv.get(obvi))));
           }
         }
@@ -2090,9 +2099,7 @@ public abstract class EDDTable extends EDD {
           if (obv.size() < 2)
             throw new SimpleException(
                 EDStatic.bilingual(
-                        language,
-                        EDStatic.messages.queryErrorAr,
-                        EDStatic.messages.queryErrorOrderByClosestAr)
+                        language, Message.QUERY_ERROR, Message.QUERY_ERROR_ORDER_BY_CLOSEST)
                     + (language == 0 ? " " : "\n")
                     + "csv.length<2.");
           for (int obvi = 0; obvi < obv.size() - 1; obvi++) { // -1 since last item is interval
@@ -2101,9 +2108,7 @@ public abstract class EDDTable extends EDD {
             if (item.length() > 0 && resultsVariables.indexOf(item) < 0)
               throw new SimpleException(
                   EDStatic.bilingual(
-                          language,
-                          EDStatic.messages.queryErrorAr,
-                          EDStatic.messages.queryErrorOrderByClosestAr)
+                          language, Message.QUERY_ERROR, Message.QUERY_ERROR_ORDER_BY_CLOSEST)
                       + (language == 0 ? " " : "\n")
                       + "col="
                       + obv.get(obvi)
@@ -2126,9 +2131,7 @@ public abstract class EDDTable extends EDD {
           if (obv.size() == 0)
             throw new SimpleException(
                 EDStatic.bilingual(
-                        language,
-                        EDStatic.messages.queryErrorAr,
-                        EDStatic.messages.queryErrorOrderByLimitAr)
+                        language, Message.QUERY_ERROR, Message.QUERY_ERROR_ORDER_BY_LIMIT)
                     + (language == 0 ? " " : "\n")
                     + "csv.length=0.");
           for (int obvi = 0; obvi < obv.size() - 1; obvi++) { // -1 since last item is limitN
@@ -2137,9 +2140,7 @@ public abstract class EDDTable extends EDD {
             if (item.length() > 0 && resultsVariables.indexOf(item) < 0)
               throw new SimpleException(
                   EDStatic.bilingual(
-                          language,
-                          EDStatic.messages.queryErrorAr,
-                          EDStatic.messages.queryErrorOrderByLimitAr)
+                          language, Message.QUERY_ERROR, Message.QUERY_ERROR_ORDER_BY_LIMIT)
                       + (language == 0 ? " " : "\n")
                       + "col="
                       + obv.get(obvi)
@@ -2165,9 +2166,7 @@ public abstract class EDDTable extends EDD {
             if (item.length() > 0 && resultsVariables.indexOf(item) < 0)
               throw new SimpleException(
                   EDStatic.bilingual(
-                          language,
-                          EDStatic.messages.queryErrorAr,
-                          EDStatic.messages.queryErrorOrderByMeanAr)
+                          language, Message.QUERY_ERROR, Message.QUERY_ERROR_ORDER_BY_MEAN)
                       + (language == 0 ? " " : "\n")
                       + "col="
                       + obv.get(obvi)
@@ -2191,9 +2190,7 @@ public abstract class EDDTable extends EDD {
             if (item.length() > 0 && resultsVariables.indexOf(item) < 0)
               throw new SimpleException(
                   EDStatic.bilingual(
-                          language,
-                          EDStatic.messages.queryErrorAr,
-                          EDStatic.messages.queryErrorOrderBySumAr)
+                          language, Message.QUERY_ERROR, Message.QUERY_ERROR_ORDER_BY_SUM)
                       + (language == 0 ? " " : "\n")
                       + "col="
                       + obv.get(obvi)
@@ -2219,7 +2216,7 @@ public abstract class EDDTable extends EDD {
             || !String2.isSomething(obv.get(0))
             || !String2.isSomething(obv.get(1))) {
           String tmsg =
-              EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
+              EDStatic.simpleBilingual(language, Message.QUERY_ERROR)
                   + "&addVariablesWhere() MUST have 2 parameters: attributeName and attributeValue.";
           if (repair)
             // ignore the problem
@@ -2250,7 +2247,7 @@ public abstract class EDDTable extends EDD {
           constraintBeforeQuotes = quotePo >= 0 ? constraint.substring(0, quotePo) : constraint;
         } else {
           throw new SimpleException(
-              EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
+              EDStatic.simpleBilingual(language, Message.QUERY_ERROR)
                   + "Use '=' instead of '==' in constraints.");
         }
       }
@@ -2263,7 +2260,7 @@ public abstract class EDDTable extends EDD {
           constraintBeforeQuotes = quotePo >= 0 ? constraint.substring(0, quotePo) : constraint;
         } else {
           throw new SimpleException(
-              EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
+              EDStatic.simpleBilingual(language, Message.QUERY_ERROR)
                   + "Use '=~' instead of '~=' in constraints.");
         }
       }
@@ -2277,7 +2274,7 @@ public abstract class EDDTable extends EDD {
         if (repair) continue; // was IllegalArgumentException
         else
           throw new SimpleException(
-              EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
+              EDStatic.simpleBilingual(language, Message.QUERY_ERROR)
                   + "No operator found in constraint=\""
                   + constraint
                   + "\".");
@@ -2295,7 +2292,7 @@ public abstract class EDDTable extends EDD {
         if (repair) continue;
         else
           throw new SimpleException(
-              EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
+              EDStatic.simpleBilingual(language, Message.QUERY_ERROR)
                   + "Unrecognized constraint variable=\""
                   + tName
                   + "\"."); // + "\nValid=" + String2.toCSSVString(dataVariableDestionNames())
@@ -2319,7 +2316,7 @@ public abstract class EDDTable extends EDD {
           int cpo = tValue.indexOf(')');
           if (cpo < 0)
             throw new SimpleException(
-                EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
+                EDStatic.simpleBilingual(language, Message.QUERY_ERROR)
                     + "')' not found after \""
                     + mmString
                     + "(\".");
@@ -2333,7 +2330,7 @@ public abstract class EDDTable extends EDD {
                   mVar.destinationMaxDouble();
           if (Double.isNaN(conValueD))
             throw new SimpleException(
-                EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
+                EDStatic.simpleBilingual(language, Message.QUERY_ERROR)
                     + "\""
                     + mmString
                     + "("
@@ -2411,7 +2408,7 @@ public abstract class EDDTable extends EDD {
                 constraintValues.set(constraintValues.size() - 1, tValue);
               } else {
                 throw new SimpleException(
-                    EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
+                    EDStatic.simpleBilingual(language, Message.QUERY_ERROR)
                         + "Test for missing time values must use \"NaN\" or \"\", not value=\""
                         + tValue
                         + "\".");
@@ -2435,7 +2432,7 @@ public abstract class EDDTable extends EDD {
 
         } else {
           throw new SimpleException(
-              EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
+              EDStatic.simpleBilingual(language, Message.QUERY_ERROR)
                   + "For constraints of String variables, the right-hand-side value must be surrounded by double quotes. Bad constraint: "
                   + constraint);
         }
@@ -2455,7 +2452,7 @@ public abstract class EDDTable extends EDD {
             constraintValues.set(constraintValues.size() - 1, tValue);
           } else {
             throw new SimpleException(
-                EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
+                EDStatic.simpleBilingual(language, Message.QUERY_ERROR)
                     + "For =~ constraints of numeric variables, the right-hand-side value must be surrounded by double quotes. Bad constraint: "
                     + constraint);
           }
@@ -2469,7 +2466,7 @@ public abstract class EDDTable extends EDD {
               constraintValues.set(constraintValues.size() - 1, tValue);
             } else {
               throw new SimpleException(
-                  EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
+                  EDStatic.simpleBilingual(language, Message.QUERY_ERROR)
                       + "For non =~ constraints of numeric variables, the right-hand-side value must not be surrounded by double quotes. Bad constraint: "
                       + constraint);
             }
@@ -2484,7 +2481,7 @@ public abstract class EDDTable extends EDD {
               constraintValues.set(constraintValues.size() - 1, tValue);
             } else {
               throw new SimpleException(
-                  EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
+                  EDStatic.simpleBilingual(language, Message.QUERY_ERROR)
                       + "Numeric tests of NaN must use \"NaN\", not value=\""
                       + tValue
                       + "\".");
@@ -2550,13 +2547,13 @@ public abstract class EDDTable extends EDD {
                   tValue;
           String msg0 =
               MessageFormat.format(
-                  EDStatic.messages.queryErrorActualRangeAr[0],
+                  EDStatic.messages.get(Message.QUERY_ERROR_ACTUAL_RANGE, 0),
                   tName + constraintOp + tv,
                   Double.isFinite(destMin) ? conEdv.destinationMinString() : "NaN",
                   Double.isFinite(destMax) ? conEdv.destinationMaxString() : "NaN");
           String msgl =
               MessageFormat.format(
-                  EDStatic.messages.queryErrorActualRangeAr[language],
+                  EDStatic.messages.get(Message.QUERY_ERROR_ACTUAL_RANGE, language),
                   tName + constraintOp + tv,
                   Double.isFinite(destMin) ? conEdv.destinationMinString() : "NaN",
                   Double.isFinite(destMax) ? conEdv.destinationMaxString() : "NaN");
@@ -2655,7 +2652,7 @@ public abstract class EDDTable extends EDD {
       int conDVI = String2.indexOf(dataVariableDestinationNames(), destName);
       if (conDVI < 0)
         throw new SimpleException(
-            EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
+            EDStatic.simpleBilingual(language, Message.QUERY_ERROR)
                 + "constraint variable="
                 + destName
                 + " wasn't found.");
@@ -2699,7 +2696,7 @@ public abstract class EDDTable extends EDD {
           String maxS =
               i == 3 ? Calendar2.epochSecondsToIsoStringTZ(requestedMax[3]) : "" + requestedMax[i];
           throw new SimpleException(
-              EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
+              EDStatic.simpleBilingual(language, Message.QUERY_ERROR)
                   + "The requested "
                   + tName
                   + " min="
@@ -2749,7 +2746,7 @@ public abstract class EDDTable extends EDD {
           String maxS =
               i == 3 ? Calendar2.epochSecondsToIsoStringTZ(requestedMax[3]) : "" + requestedMax[i];
           throw new SimpleException(
-              EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
+              EDStatic.simpleBilingual(language, Message.QUERY_ERROR)
                   + tName
                   + " min="
                   + minS
@@ -2850,11 +2847,12 @@ public abstract class EDDTable extends EDD {
     throw new SimpleException(
         EDStatic.bilingual(
             language,
-            EDStatic.messages.queryErrorAr[0]
-                + MessageFormat.format(EDStatic.messages.queryErrorFileTypeAr[0], fileTypeName),
-            EDStatic.messages.queryErrorAr[language]
+            EDStatic.messages.get(Message.QUERY_ERROR, 0)
                 + MessageFormat.format(
-                    EDStatic.messages.queryErrorFileTypeAr[language], fileTypeName)));
+                    EDStatic.messages.get(Message.QUERY_ERROR_FILE_TYPE, 0), fileTypeName),
+            EDStatic.messages.get(Message.QUERY_ERROR, language)
+                + MessageFormat.format(
+                    EDStatic.messages.get(Message.QUERY_ERROR_FILE_TYPE, language), fileTypeName)));
   }
 
   /**
@@ -2919,7 +2917,7 @@ public abstract class EDDTable extends EDD {
         && (fileTypeName.equals(".insert") || fileTypeName.equals(".delete"))) {
       if (!EDStatic.config.developmentMode && loggedInAs == null)
         throw new SimpleException(
-            EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
+            EDStatic.simpleBilingual(language, Message.QUERY_ERROR)
                 + fileTypeName
                 + " requests must be made to the https URL.");
 
@@ -2967,7 +2965,7 @@ public abstract class EDDTable extends EDD {
               EDStatic.startHeadHtml(
                   language,
                   tErddapUrl,
-                  title(language) + " - " + EDStatic.messages.dafAr[language]));
+                  title(language) + " - " + EDStatic.messages.get(Message.DAF, language)));
           writer.write("\n" + rssHeadLink(language));
           writer.write("\n</head>\n");
           writer.write(
@@ -2995,13 +2993,13 @@ public abstract class EDDTable extends EDD {
                   language,
                   loggedInAs,
                   dapProtocol,
-                  EDStatic.messages.dafAr[language],
+                  EDStatic.messages.get(Message.DAF, language),
                   "<div class=\"standard_max_width\">"
-                      + EDStatic.messages.dafTableTooltipAr[language]
+                      + EDStatic.messages.get(Message.DAF_TABLE_TOOLTIP, language)
                       + "<p>"
-                      + EDStatic.messages.EDDTableDownloadDataTooltipAr[language]
+                      + EDStatic.messages.get(Message.EDD_TABLE_DOWNLOAD_DATA_TOOLTIP, language)
                       + "</ol>\n"
-                      + EDStatic.messages.dafTableBypassTooltipAr[language]
+                      + EDStatic.messages.get(Message.DAF_TABLE_BYPASS_TOOLTIP, language)
                       + "</div>"));
           writeHtmlDatasetInfo(
               request, language, loggedInAs, writer, true, false, true, true, userDapQuery, "");
@@ -3016,7 +3014,7 @@ public abstract class EDDTable extends EDD {
           writer.write("<hr>\n");
           writer.write(
               "<h2><a class=\"selfLink\" id=\"DAS\" href=\"#DAS\" rel=\"bookmark\">"
-                  + EDStatic.messages.dasTitleAr[language]
+                  + EDStatic.messages.get(Message.DAS_TITLE, language)
                   + "</a></h2>\n"
                   + "<pre style=\"white-space:pre-wrap;\">\n");
           table.writeDAS(
@@ -3078,9 +3076,10 @@ public abstract class EDDTable extends EDD {
         throw new SimpleException(
             EDStatic.bilingual(
                 language,
-                EDStatic.messages.queryErrorAr[0] + EDStatic.messages.errorFileNotFoundImageAr[0],
-                EDStatic.messages.queryErrorAr[language]
-                    + EDStatic.messages.errorFileNotFoundImageAr[language]));
+                EDStatic.messages.get(Message.QUERY_ERROR, 0)
+                    + EDStatic.messages.get(Message.ERROR_FILE_NOT_FOUND_IMAGE, 0),
+                EDStatic.messages.get(Message.QUERY_ERROR, language)
+                    + EDStatic.messages.get(Message.ERROR_FILE_NOT_FOUND_IMAGE, language)));
 
       // ok, copy it  (and don't close the outputStream)
       try (OutputStream out = outputStreamSource.outputStream(File2.UTF_8)) {
@@ -3216,7 +3215,7 @@ public abstract class EDDTable extends EDD {
           if (String2.indexOf(dataVariableDestinationNames(), twob.orderBy[ob]) < 0) {
             twob.close();
             throw new SimpleException(
-                EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
+                EDStatic.simpleBilingual(language, Message.QUERY_ERROR)
                     + "'orderBy' variable="
                     + twob.orderBy[ob]
                     + " isn't in the dataset.");
@@ -3238,7 +3237,7 @@ public abstract class EDDTable extends EDD {
           if (String2.indexOf(dataVariableDestinationNames(), twobd.orderBy[ob]) < 0) {
             twobd.close();
             throw new SimpleException(
-                EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
+                EDStatic.simpleBilingual(language, Message.QUERY_ERROR)
                     + "'orderByDescending' variable="
                     + twobd.orderBy[ob]
                     + " isn't in the dataset.");
@@ -3262,9 +3261,7 @@ public abstract class EDDTable extends EDD {
             twobc.close();
             throw new SimpleException(
                 EDStatic.bilingual(
-                        language,
-                        EDStatic.messages.queryErrorAr,
-                        EDStatic.messages.queryErrorOrderByClosestAr)
+                        language, Message.QUERY_ERROR, Message.QUERY_ERROR_ORDER_BY_CLOSEST)
                     + "\nunknown column name="
                     + twobc.orderBy[ob]
                     + ".");
@@ -3288,7 +3285,7 @@ public abstract class EDDTable extends EDD {
               < 0) {
             twobc.close();
             throw new SimpleException(
-                EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
+                EDStatic.simpleBilingual(language, Message.QUERY_ERROR)
                     + "'orderByCount' variable="
                     + twobc.orderBy[ob]
                     + " isn't in the dataset.");
@@ -3313,9 +3310,7 @@ public abstract class EDDTable extends EDD {
             twobl.close();
             throw new SimpleException(
                 EDStatic.bilingual(
-                        language,
-                        EDStatic.messages.queryErrorAr,
-                        EDStatic.messages.queryErrorOrderByLimitAr)
+                        language, Message.QUERY_ERROR, Message.QUERY_ERROR_ORDER_BY_LIMIT)
                     + "\nunknown column name="
                     + twobl.orderBy[ob]
                     + ".");
@@ -3358,7 +3353,7 @@ public abstract class EDDTable extends EDD {
               < 0) {
             twobm.close();
             throw new SimpleException(
-                EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
+                EDStatic.simpleBilingual(language, Message.QUERY_ERROR)
                     + "'orderByMax' variable="
                     + twobm.orderBy[ob]
                     + " isn't in the dataset.");
@@ -3382,7 +3377,7 @@ public abstract class EDDTable extends EDD {
               < 0) {
             twobm.close();
             throw new SimpleException(
-                EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
+                EDStatic.simpleBilingual(language, Message.QUERY_ERROR)
                     + "'orderByMin' variable="
                     + twobm.orderBy[ob]
                     + " isn't in the dataset.");
@@ -3405,7 +3400,7 @@ public abstract class EDDTable extends EDD {
               < 0) {
             twobm.close();
             throw new SimpleException(
-                EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
+                EDStatic.simpleBilingual(language, Message.QUERY_ERROR)
                     + "'orderByMinMax' variable="
                     + twobm.orderBy[ob]
                     + " isn't in the dataset.");
@@ -3620,9 +3615,9 @@ public abstract class EDDTable extends EDD {
           Math2.memoryTooMuchData
               + "  "
               + MessageFormat.format(
-                  EDStatic.messages.errorMoreThan2GBAr[0],
+                  EDStatic.messages.get(Message.ERROR_MORE_THAN_2GB, 0),
                   ".nc",
-                  twawm.nRows() + " " + EDStatic.messages.rowsAr[0]));
+                  twawm.nRows() + " " + EDStatic.messages.get(Message.ROWS, 0)));
     int nRows = (int) twawm.nRows(); // safe since checked above
     int nColumns = twawm.nColumns();
     if (nRows == 0)
@@ -3842,11 +3837,11 @@ public abstract class EDDTable extends EDD {
     // double check that this dataset supports .ncCF (but it should have been tested earlier)
     if (accessibleViaNcCF.length() > 0)
       throw new SimpleException(
-          EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr) + accessibleViaNcCF);
+          EDStatic.simpleBilingual(language, Message.QUERY_ERROR) + accessibleViaNcCF);
     String cdmType = combinedGlobalAttributes.getString(language, "cdm_data_type");
     if (!CDM_POINT.equals(cdmType)) // but already checked before calling this method
     throw new SimpleException(
-          EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
+          EDStatic.simpleBilingual(language, Message.QUERY_ERROR)
               + "cdm_data_type for convertFlatNcToNcCF0() must be Point, not "
               + cdmType
               + ".");
@@ -3920,7 +3915,7 @@ public abstract class EDDTable extends EDD {
     // double check that this dataset supports .ncCF (but it should have been tested earlier)
     if (accessibleViaNcCF.length() > 0)
       throw new SimpleException(
-          EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr) + accessibleViaNcCF);
+          EDStatic.simpleBilingual(language, Message.QUERY_ERROR) + accessibleViaNcCF);
     String cdmType = combinedGlobalAttributes.getString(language, "cdm_data_type");
     String lcCdmType = cdmType == null ? null : cdmType.toLowerCase();
 
@@ -3932,7 +3927,7 @@ public abstract class EDDTable extends EDD {
     else if (CDM_TRAJECTORY.equals(cdmType)) idDVI = trajectory_idIndex;
     else {
       throw new SimpleException(
-          EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
+          EDStatic.simpleBilingual(language, Message.QUERY_ERROR)
               + // but already checked before calling this method
               "For convertFlatNcToNcCF1(), cdm_data_type must be TimeSeries, Profile, or Trajectory, not "
               + cdmType
@@ -3941,7 +3936,7 @@ public abstract class EDDTable extends EDD {
 
     if (idDVI < 0) // but already checked by accessibleViaNcCF
     throw new SimpleException(
-          EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
+          EDStatic.simpleBilingual(language, Message.QUERY_ERROR)
               + "No variable has a cf_role="
               + lcCdmType
               + "_id attribute.");
@@ -3972,7 +3967,7 @@ public abstract class EDDTable extends EDD {
       int idPo = String2.indexOf(ncColNames, idName);
       if (idPo < 0) // but already checked before calling this method
       throw new SimpleException(
-            EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
+            EDStatic.simpleBilingual(language, Message.QUERY_ERROR)
                 + "The .nc file must have "
                 + idName);
 
@@ -4293,7 +4288,7 @@ public abstract class EDDTable extends EDD {
     // double check that this dataset supports .ncCF (but it should have been tested earlier)
     if (accessibleViaNcCF.length() > 0)
       throw new SimpleException(
-          EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr) + accessibleViaNcCF);
+          EDStatic.simpleBilingual(language, Message.QUERY_ERROR) + accessibleViaNcCF);
     String cdmType = combinedGlobalAttributes.getString(language, "cdm_data_type");
 
     // ensure profile_id and timeseries_id|trajectory_id variable is defined
@@ -4309,20 +4304,20 @@ public abstract class EDDTable extends EDD {
       olcCdmName = "trajectory";
     } else
       throw new SimpleException(
-          EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
+          EDStatic.simpleBilingual(language, Message.QUERY_ERROR)
               + // but already checked before calling this method
               "For convertFlatNcToNcCF2(), cdm_data_type must be TimeSeriesProfile or TrajectoryProfile, not "
               + cdmType
               + ".");
     if (oidDVI < 0) // but already checked by accessibleViaNcCF
     throw new SimpleException(
-          EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
+          EDStatic.simpleBilingual(language, Message.QUERY_ERROR)
               + "No variable has a cf_role="
               + olcCdmName
               + "_id attribute.");
     if (pidDVI < 0) // but already checked by accessibleViaNcCF
     throw new SimpleException(
-          EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
+          EDStatic.simpleBilingual(language, Message.QUERY_ERROR)
               + "No variable has a cf_role=profile_id attribute.");
     String oidName = dataVariableDestinationNames()[oidDVI]; // var name of ..._id var
     String pidName = dataVariableDestinationNames()[pidDVI];
@@ -4361,12 +4356,12 @@ public abstract class EDDTable extends EDD {
       int pidPo = String2.indexOf(ncColNames, pidName);
       if (oidPo < 0) // but already checked before calling this method
       throw new SimpleException(
-            EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
+            EDStatic.simpleBilingual(language, Message.QUERY_ERROR)
                 + "The .nc file must have "
                 + oidName);
       if (pidPo < 0) // but already checked before calling this method
       throw new SimpleException(
-            EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
+            EDStatic.simpleBilingual(language, Message.QUERY_ERROR)
                 + "The .nc file must have "
                 + pidName);
 
@@ -5003,14 +4998,14 @@ public abstract class EDDTable extends EDD {
     writer.write(
         "<tr>\n"
             + "  <th class=\"L\">"
-            + EDStatic.messages.EDDTableVariableAr[language]
+            + EDStatic.messages.get(Message.EDD_TABLE_VARIABLE, language)
             + " "
             + EDStatic.htmlTooltipImage(
                 request,
                 language,
                 loggedInAs,
                 "<div class=\"narrow_max_width\">"
-                    + EDStatic.messages.EDDTableTabularDatasetTooltipAr[language]
+                    + EDStatic.messages.get(Message.EDD_TABLE_TABULAR_DATASET_TOOLTIP, language)
                     + "</div>"));
 
     StringBuilder checkAll = new StringBuilder();
@@ -5024,52 +5019,55 @@ public abstract class EDDTable extends EDD {
         widgets.button(
             "button",
             "CheckAll",
-            EDStatic.messages.EDDTableCheckAllTooltipAr[language],
-            EDStatic.messages.EDDTableCheckAllAr[language],
+            EDStatic.messages.get(Message.EDD_TABLE_CHECK_ALL_TOOLTIP, language),
+            EDStatic.messages.get(Message.EDD_TABLE_CHECK_ALL, language),
             "onclick=\"" + checkAll + "\""));
     writer.write(
         widgets.button(
             "button",
             "UncheckAll",
-            EDStatic.messages.EDDTableUncheckAllTooltipAr[language],
-            EDStatic.messages.EDDTableUncheckAllAr[language],
+            EDStatic.messages.get(Message.EDD_TABLE_UNCHECK_ALL_TOOLTIP, language),
+            EDStatic.messages.get(Message.EDD_TABLE_UNCHECK_ALL, language),
             "onclick=\"" + uncheckAll + "\""));
 
     writer.write(
         "  &nbsp;</th>\n"
             + "  <th colspan=\"2\">"
-            + EDStatic.messages.EDDTableOptConstraint1HtmlAr[language]
+            + EDStatic.messages.get(Message.EDD_TABLE_OPT_CONSTRAINT1_HTML, language)
             + " "
             + EDStatic.htmlTooltipImage(
                 request,
                 language,
                 loggedInAs,
                 "<div class=\"narrow_max_width\">"
-                    + EDStatic.messages.EDDTableConstraintTooltipAr[language]
+                    + EDStatic.messages.get(Message.EDD_TABLE_CONSTRAINT_TOOLTIP, language)
                     + "</div>")
             + "</th>\n"
             + "  <th colspan=\"2\">"
-            + EDStatic.messages.EDDTableOptConstraint2HtmlAr[language]
+            + EDStatic.messages.get(Message.EDD_TABLE_OPT_CONSTRAINT2_HTML, language)
             + " "
             + EDStatic.htmlTooltipImage(
                 request,
                 language,
                 loggedInAs,
                 "<div class=\"narrow_max_width\">"
-                    + EDStatic.messages.EDDTableConstraintTooltipAr[language]
+                    + EDStatic.messages.get(Message.EDD_TABLE_CONSTRAINT_TOOLTIP, language)
                     + "</div>")
             + "</th>\n"
             + "  <th>"
             + gap
-            + EDStatic.messages.EDDMinimumAr[language]
+            + EDStatic.messages.get(Message.EDD_MINIMUM, language)
             + " "
             + EDStatic.htmlTooltipImage(
-                request, language, loggedInAs, EDStatic.messages.EDDTableMinimumTooltipAr[language])
+                request,
+                language,
+                loggedInAs,
+                EDStatic.messages.get(Message.EDD_TABLE_MINIMUM_TOOLTIP, language))
             + (distinctOptions == null
                 ? "<br>&nbsp;"
                 : "<br>"
                     + gap
-                    + EDStatic.messages.orAListOfValuesAr[language]
+                    + EDStatic.messages.get(Message.OR_A_LIST_OF_VALUES, language)
                     + " "
                     + // 2014-07-17 was Distinct Values
                     EDStatic.htmlTooltipImage(
@@ -5077,15 +5075,18 @@ public abstract class EDDTable extends EDD {
                         language,
                         loggedInAs,
                         "<div class=\"narrow_max_width\">"
-                            + EDStatic.messages.distinctValuesTooltipAr[language]
+                            + EDStatic.messages.get(Message.DISTINCT_VALUES_TOOLTIP, language)
                             + "</div>"))
             + "</th>\n"
             + "  <th>"
             + gap
-            + EDStatic.messages.EDDMaximumAr[language]
+            + EDStatic.messages.get(Message.EDD_MAXIMUM, language)
             + " "
             + EDStatic.htmlTooltipImage(
-                request, language, loggedInAs, EDStatic.messages.EDDTableMaximumTooltipAr[language])
+                request,
+                language,
+                loggedInAs,
+                EDStatic.messages.get(Message.EDD_TABLE_MAXIMUM_TOOLTIP, language))
             + "<br>&nbsp;"
             + "</th>\n"
             + "</tr>\n");
@@ -5122,7 +5123,7 @@ public abstract class EDDTable extends EDD {
       writer.write(
           widgets.checkbox(
               "varch" + dv,
-              EDStatic.messages.EDDTableCheckTheVariablesAr[language],
+              EDStatic.messages.get(Message.EDD_TABLE_CHECK_THE_VARIABLES, language),
               userDapQuery.length() == 0 || (resultsVariables.indexOf(edv.destinationName()) >= 0),
               edv.destinationName(),
               edv.destinationName()
@@ -5175,15 +5176,15 @@ public abstract class EDDTable extends EDD {
       String valueWidgetName = "val" + dv + "_";
       String tTooltip =
           isTimeStamp
-              ? EDStatic.messages.EDDTableTimeConstraintTooltipAr[language]
+              ? EDStatic.messages.get(Message.EDD_TABLE_TIME_CONSTRAINT_TOOLTIP, language)
               : isString || isChar
-                  ? EDStatic.messages.EDDTableStringConstraintTooltipAr[language]
-                  : EDStatic.messages.EDDTableNumericConstraintTooltipAr[language];
+                  ? EDStatic.messages.get(Message.EDD_TABLE_STRING_CONSTRAINT_TOOLTIP, language)
+                  : EDStatic.messages.get(Message.EDD_TABLE_NUMERIC_CONSTRAINT_TOOLTIP, language);
       if (edv.destinationMinString().length() > 0)
         tTooltip +=
             "<br>&nbsp;<br>"
                 + MessageFormat.format(
-                    EDStatic.messages.rangesFromToAr[language],
+                    EDStatic.messages.get(Message.RANGES_FROM_TO, language),
                     edv.destinationName(),
                     edv.destinationMinString(),
                     edv.destinationMaxString().length() > 0 ? edv.destinationMaxString() : "(?)");
@@ -5192,7 +5193,7 @@ public abstract class EDDTable extends EDD {
         writer.write(
             widgets.select(
                 "op" + dv + "_" + con,
-                EDStatic.messages.EDDTableSelectAnOperatorAr[language],
+                EDStatic.messages.get(Message.EDD_TABLE_SELECT_AN_OPERATOR, language),
                 1,
                 OPERATORS,
                 PPE_OPERATORS,
@@ -5270,7 +5271,7 @@ public abstract class EDDTable extends EDD {
                 + "minus.gif\""
                 + // vertical-align: 'b'ottom
                 "  "
-                + widgets.completeTooltip(EDStatic.messages.selectPreviousAr[language])
+                + widgets.completeTooltip(EDStatic.messages.get(Message.SELECT_PREVIOUS, language))
                 + " alt=\"-\"\n"
                 +
                 // onMouseUp works much better than onClick and onDblClick
@@ -5303,7 +5304,7 @@ public abstract class EDDTable extends EDD {
                 + "plus.gif\""
                 + // vertical-align: 'b'ottom
                 "  "
-                + widgets.completeTooltip(EDStatic.messages.selectNextAr[language])
+                + widgets.completeTooltip(EDStatic.messages.get(Message.SELECT_NEXT, language))
                 + " alt=\"+\"\n"
                 +
                 // onMouseUp works much better than onClick and onDblClick
@@ -5337,7 +5338,8 @@ public abstract class EDDTable extends EDD {
                     language,
                     loggedInAs,
                     "<div class=\"narrow_max_width\">"
-                        + EDStatic.messages.EDDTableSelectConstraintTooltipAr[language]
+                        + EDStatic.messages.get(
+                            Message.EDD_TABLE_SELECT_CONSTRAINT_TOOLTIP, language)
                         + "</div>")
                 + "  </tr>\n"
                 + "  </table>\n"
@@ -5454,14 +5456,17 @@ public abstract class EDDTable extends EDD {
                 // make the Select widget
                 widgets.select(
                     "avwav" + attNamei,
-                    EDStatic.messages.addVarWhereAttValueAr[language],
+                    EDStatic.messages.get(Message.ADD_VAR_WHERE_ATT_VALUE, language),
                     1,
                     addVariablesWhereAttValues.get(attNamei).toArray(),
                     attValuei,
                     "")
                 + "\n"
                 + EDStatic.htmlTooltipImage(
-                    request, language, loggedInAs, EDStatic.messages.addVarWhereAr[language])
+                    request,
+                    language,
+                    loggedInAs,
+                    EDStatic.messages.get(Message.ADD_VAR_WHERE, language))
                 + "</tr>\n");
       }
       writer.write(widgets.endTable());
@@ -5475,12 +5480,12 @@ public abstract class EDDTable extends EDD {
     // fileType
     writer.write(
         "<p><strong>"
-            + EDStatic.messages.EDDFileTypeAr[language]
+            + EDStatic.messages.get(Message.EDD_FILE_TYPE, language)
             + "</strong>\n"
             + " (<a rel=\"help\" href=\""
             + tErddapUrl
             + "/tabledap/documentation.html#fileType\">"
-            + EDStatic.messages.moreInformationAr[language]
+            + EDStatic.messages.get(Message.MORE_INFORMATION, language)
             + "</a>)\n");
     List<String> fileTypeDescriptions =
         EDD_FILE_TYPE_INFO.values().stream()
@@ -5500,7 +5505,7 @@ public abstract class EDDTable extends EDD {
     writer.write(
         widgets.select(
             "fileType",
-            EDStatic.messages.EDDSelectFileTypeAr[language],
+            EDStatic.messages.get(Message.EDD_SELECT_FILE_TYPE, language),
             1,
             fileTypeDescriptions,
             defaultIndex,
@@ -5573,7 +5578,7 @@ public abstract class EDDTable extends EDD {
     String genViewHtml =
         "<div class=\"standard_max_width\">"
             + String2.replaceAll(
-                EDStatic.messages.justGenerateAndViewTooltipAr[language],
+                EDStatic.messages.get(Message.JUST_GENERATE_AND_VIEW_TOOLTIP, language),
                 "&protocolName;",
                 dapProtocol)
             + "</div>";
@@ -5582,12 +5587,17 @@ public abstract class EDDTable extends EDD {
             "button",
             "getUrl",
             genViewHtml,
-            EDStatic.messages.justGenerateAndViewAr[language],
+            EDStatic.messages.get(Message.JUST_GENERATE_AND_VIEW, language),
             // "class=\"skinny\" " + //only IE needs it but only IE ignores it
             "onclick='" + javaScript + "'"));
     writer.write(
         widgets.textField(
-            "tUrl", EDStatic.messages.justGenerateAndViewUrlAr[language], 60, 1000, "", ""));
+            "tUrl",
+            EDStatic.messages.get(Message.JUST_GENERATE_AND_VIEW_URL, language),
+            60,
+            1000,
+            "",
+            ""));
     writer.write(
         "\n<br>(<a rel=\"help\" href=\""
             + tErddapUrl
@@ -5604,9 +5614,9 @@ public abstract class EDDTable extends EDD {
                 "button",
                 "submit1",
                 "",
-                EDStatic.messages.submitTooltipAr[language],
+                EDStatic.messages.get(Message.SUBMIT_TOOLTIP, language),
                 "<span style=\"font-size:large;\"><strong>"
-                    + EDStatic.messages.submitAr[language]
+                    + EDStatic.messages.get(Message.SUBMIT, language)
                     + "</strong></span>",
                 "onclick='"
                     + javaScript
@@ -5614,7 +5624,7 @@ public abstract class EDDTable extends EDD {
                     + // or open a new window: window.open(result);\n" +
                     "'")
             + " "
-            + EDStatic.messages.patientDataAr[language]
+            + EDStatic.messages.get(Message.PATIENT_DATA, language)
             + "\n");
 
     // end of form
@@ -5657,14 +5667,14 @@ public abstract class EDDTable extends EDD {
     writer.write(widgets.beginTable("class=\"compact W\"")); // not nowrap
     writer.write(
         "<tr><td><strong>"
-            + EDStatic.messages.functionsAr[language]
+            + EDStatic.messages.get(Message.FUNCTIONS, language)
             + "</strong> "
             + EDStatic.htmlTooltipImage(
                 request,
                 language,
                 loggedInAs,
                 "<div class=\"narrow_max_width\">"
-                    + EDStatic.messages.functionTooltipAr[language]
+                    + EDStatic.messages.get(Message.FUNCTION_TOOLTIP, language)
                     + "</div>")
             + "</td></tr>\n");
 
@@ -5673,7 +5683,7 @@ public abstract class EDDTable extends EDD {
     writer.write(
         widgets.checkbox(
             "distinct",
-            EDStatic.messages.functionDistinctCheckAr[language],
+            EDStatic.messages.get(Message.FUNCTION_DISTINCT_CHECK, language),
             String2.indexOf(queryParts, "distinct()") >= 0,
             "true",
             "distinct()",
@@ -5684,7 +5694,7 @@ public abstract class EDDTable extends EDD {
             language,
             loggedInAs,
             "<div class=\"narrow_max_width\">"
-                + EDStatic.messages.functionDistinctTooltipAr[language]
+                + EDStatic.messages.get(Message.FUNCTION_DISTINCT_TOOLTIP, language)
                 + "</div>"));
     writer.write("</td></tr>\n");
 
@@ -5697,17 +5707,17 @@ public abstract class EDDTable extends EDD {
             ?
             // "most", "second most", "third most", ["fourth most",] "least"};
             new String[] {
-              EDStatic.messages.functionOrderBySort1Ar[language],
-              EDStatic.messages.functionOrderBySort2Ar[language],
-              EDStatic.messages.functionOrderBySort3Ar[language],
-              EDStatic.messages.functionOrderBySortLeastAr[language]
+              EDStatic.messages.get(Message.FUNCTION_ORDER_BY_SORT1, language),
+              EDStatic.messages.get(Message.FUNCTION_ORDER_BY_SORT2, language),
+              EDStatic.messages.get(Message.FUNCTION_ORDER_BY_SORT3, language),
+              EDStatic.messages.get(Message.FUNCTION_ORDER_BY_SORT_LEAST, language)
             }
             : new String[] {
-              EDStatic.messages.functionOrderBySort1Ar[language],
-              EDStatic.messages.functionOrderBySort2Ar[language],
-              EDStatic.messages.functionOrderBySort3Ar[language],
-              EDStatic.messages.functionOrderBySort4Ar[language],
-              EDStatic.messages.functionOrderBySortLeastAr[language]
+              EDStatic.messages.get(Message.FUNCTION_ORDER_BY_SORT1, language),
+              EDStatic.messages.get(Message.FUNCTION_ORDER_BY_SORT2, language),
+              EDStatic.messages.get(Message.FUNCTION_ORDER_BY_SORT3, language),
+              EDStatic.messages.get(Message.FUNCTION_ORDER_BY_SORT4, language),
+              EDStatic.messages.get(Message.FUNCTION_ORDER_BY_SORT_LEAST, language)
             };
     // find first part that uses orderBy...
     String obPart = null;
@@ -5737,12 +5747,16 @@ public abstract class EDDTable extends EDD {
     writer.write(widgets.select("orderBy", "", 1, orderByOptions, whichOb, ""));
     writer.write(
         EDStatic.htmlTooltipImage(
-            request, language, loggedInAs, EDStatic.messages.functionOrderByTooltipAr[language]));
+            request,
+            language,
+            loggedInAs,
+            EDStatic.messages.get(Message.FUNCTION_ORDER_BY_TOOLTIP, language)));
     writer.write("(\"");
     for (int ob = 0; ob < nOrderByComboBox; ob++) {
       // if (ob > 0) writer.write(",\n");
       String tooltip =
-          MessageFormat.format(EDStatic.messages.functionOrderBySortAr[language], important[ob]);
+          MessageFormat.format(
+              EDStatic.messages.get(Message.FUNCTION_ORDER_BY_SORT, language), important[ob]);
       writer.write(
           widgets.comboBox(
               language,
@@ -5868,7 +5882,7 @@ public abstract class EDDTable extends EDD {
     writer.write(
         "<h2><a class=\"selfLink\" id=\"instructions\" href=\"#instructions\" rel=\"bookmark\"\n"
             + "      >"
-            + EDStatic.messages.usingTabledapAr[language]
+            + EDStatic.messages.get(Message.USING_TABLEDAP, language)
             + "</a></h2>\n"
             + longDapDescription(language, tErddapUrl)
             + "<p><strong>Tabledap request URLs must be in the form</strong>\n"
@@ -7829,7 +7843,7 @@ public abstract class EDDTable extends EDD {
 
     if (accessibleViaMAG().length() > 0)
       throw new SimpleException(
-          EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr) + accessibleViaMAG());
+          EDStatic.simpleBilingual(language, Message.QUERY_ERROR) + accessibleViaMAG());
 
     String tErddapUrl = EDStatic.erddapUrl(request, loggedInAs, language);
     if (userDapQuery == null) userDapQuery = "";
@@ -7911,7 +7925,7 @@ public abstract class EDDTable extends EDD {
                 + "&nbsp;=&nbsp;"
                 + tMin
                 + "&nbsp;"
-                + EDStatic.messages.magRangeToAr[language]
+                + EDStatic.messages.get(Message.MAG_RANGE_TO, language)
                 + "&nbsp;"
                 + tMax
                 + (llati == 0 ? "&deg;E" : llati == 1 ? "&deg;N" : llati == 2 ? "m" : "")
@@ -7923,7 +7937,7 @@ public abstract class EDDTable extends EDD {
       llatRange.setLength(llatRange.length() - 2); // remove last ", "
       otherRows =
           "  <tr><td>"
-              + EDStatic.messages.magRangeAr[language]
+              + EDStatic.messages.get(Message.MAG_RANGE, language)
               + ":&nbsp;</td>"
               + "<td>"
               + llatRange
@@ -7938,7 +7952,9 @@ public abstract class EDDTable extends EDD {
           new HtmlWidgets(true, EDStatic.imageDirUrl(request, loggedInAs, language));
       writer.write(
           EDStatic.startHeadHtml(
-              language, tErddapUrl, title(language) + " - " + EDStatic.messages.magAr[language]));
+              language,
+              tErddapUrl,
+              title(language) + " - " + EDStatic.messages.get(Message.MAG, language)));
       writer.write("\n" + rssHeadLink(language));
       writer.write("\n</head>\n");
       writer.write(
@@ -7960,9 +7976,9 @@ public abstract class EDDTable extends EDD {
               language,
               loggedInAs,
               "tabledap",
-              EDStatic.messages.magAr[language],
+              EDStatic.messages.get(Message.MAG, language),
               "<div class=\"standard_max_width\">"
-                  + EDStatic.messages.magTableTooltipAr[language]
+                  + EDStatic.messages.get(Message.MAG_TABLE_TOOLTIP, language)
                   + "</div>"));
       writeHtmlDatasetInfo(
           request, language, loggedInAs, writer, true, true, true, false, userDapQuery, otherRows);
@@ -8412,7 +8428,7 @@ public abstract class EDDTable extends EDD {
       writer.write(
           "<tr>\n"
               + "  <td><strong>"
-              + EDStatic.messages.magGraphTypeAr[language]
+              + EDStatic.messages.get(Message.MAG_GRAPH_TYPE, language)
               + ":&nbsp;</strong>"
               + "  </td>\n"
               + "  <td>\n");
@@ -8437,7 +8453,7 @@ public abstract class EDDTable extends EDD {
                   language,
                   loggedInAs,
                   "<div class=\"standard_max_width\">"
-                      + EDStatic.messages.magGraphTypeTooltipTableAr[language]
+                      + EDStatic.messages.get(Message.MAG_GRAPH_TYPE_TOOLTIP_TABLE, language)
                       + "</div>")
               + "  </td>\n"
               + "</tr>\n");
@@ -8473,13 +8489,13 @@ public abstract class EDDTable extends EDD {
         variablesShowPM = 1;
         varLabel =
             new String[] {
-              EDStatic.messages.magAxisXAr[language] + ":",
-              EDStatic.messages.magAxisYAr[language] + ":"
+              EDStatic.messages.get(Message.MAG_AXIS_X, language) + ":",
+              EDStatic.messages.get(Message.MAG_AXIS_Y, language) + ":"
             };
         varHelp =
             new String[] {
-              EDStatic.messages.magAxisHelpGraphXAr[language],
-              EDStatic.messages.magAxisHelpGraphYAr[language]
+              EDStatic.messages.get(Message.MAG_AXIS_HELP_GRAPH_X, language),
+              EDStatic.messages.get(Message.MAG_AXIS_HELP_GRAPH_Y, language)
             };
         varOptions = new String[][] {numDvNames, numDvNames};
         if (useDefaultVars || resultsVariables.size() < 2) {
@@ -8503,15 +8519,15 @@ public abstract class EDDTable extends EDD {
         variablesShowPM = 2;
         varLabel =
             new String[] {
-              EDStatic.messages.magAxisXAr[language] + ":",
-              EDStatic.messages.magAxisYAr[language] + ":",
-              EDStatic.messages.magAxisColorAr[language] + ":"
+              EDStatic.messages.get(Message.MAG_AXIS_X, language) + ":",
+              EDStatic.messages.get(Message.MAG_AXIS_Y, language) + ":",
+              EDStatic.messages.get(Message.MAG_AXIS_COLOR, language) + ":"
             };
         varHelp =
             new String[] {
-              EDStatic.messages.magAxisHelpGraphXAr[language],
-              EDStatic.messages.magAxisHelpGraphYAr[language],
-              EDStatic.messages.magAxisHelpMarkerColorAr[language]
+              EDStatic.messages.get(Message.MAG_AXIS_HELP_GRAPH_X, language),
+              EDStatic.messages.get(Message.MAG_AXIS_HELP_GRAPH_Y, language),
+              EDStatic.messages.get(Message.MAG_AXIS_HELP_MARKER_COLOR, language)
             };
         varOptions = new String[][] {numDvNames, numDvNames, numDvNames0};
         if (useDefaultVars || resultsVariables.size() < 2) {
@@ -8536,15 +8552,15 @@ public abstract class EDDTable extends EDD {
         variablesShowPM = 1;
         varLabel =
             new String[] {
-              EDStatic.messages.magAxisXAr[language] + ":",
-              EDStatic.messages.magAxisStickXAr[language] + ":",
-              EDStatic.messages.magAxisStickYAr[language] + ":"
+              EDStatic.messages.get(Message.MAG_AXIS_X, language) + ":",
+              EDStatic.messages.get(Message.MAG_AXIS_STICK_X, language) + ":",
+              EDStatic.messages.get(Message.MAG_AXIS_STICK_Y, language) + ":"
             };
         varHelp =
             new String[] {
-              EDStatic.messages.magAxisHelpGraphXAr[language],
-              EDStatic.messages.magAxisHelpStickXAr[language],
-              EDStatic.messages.magAxisHelpStickYAr[language]
+              EDStatic.messages.get(Message.MAG_AXIS_HELP_GRAPH_X, language),
+              EDStatic.messages.get(Message.MAG_AXIS_HELP_STICK_X, language),
+              EDStatic.messages.get(Message.MAG_AXIS_HELP_STICK_Y, language)
             };
         varOptions = new String[][] {numDvNames, numDvNames, numDvNames};
         if (useDefaultVars || resultsVariables.size() < 3) {
@@ -8559,17 +8575,17 @@ public abstract class EDDTable extends EDD {
         variablesShowPM = 100;
         varLabel =
             new String[] {
-              EDStatic.messages.magAxisXAr[language] + ":",
-              EDStatic.messages.magAxisYAr[language] + ":",
-              EDStatic.messages.magAxisVectorXAr[language] + ":",
-              EDStatic.messages.magAxisVectorYAr[language] + ":"
+              EDStatic.messages.get(Message.MAG_AXIS_X, language) + ":",
+              EDStatic.messages.get(Message.MAG_AXIS_Y, language) + ":",
+              EDStatic.messages.get(Message.MAG_AXIS_VECTOR_X, language) + ":",
+              EDStatic.messages.get(Message.MAG_AXIS_VECTOR_Y, language) + ":"
             };
         varHelp =
             new String[] {
-              EDStatic.messages.magAxisHelpMapXAr[language],
-                  EDStatic.messages.magAxisHelpMapYAr[language],
-              EDStatic.messages.magAxisHelpVectorXAr[language],
-                  EDStatic.messages.magAxisHelpVectorYAr[language]
+              EDStatic.messages.get(Message.MAG_AXIS_HELP_MAP_X, language),
+                  EDStatic.messages.get(Message.MAG_AXIS_HELP_MAP_Y, language),
+              EDStatic.messages.get(Message.MAG_AXIS_HELP_VECTOR_X, language),
+                  EDStatic.messages.get(Message.MAG_AXIS_HELP_VECTOR_Y, language)
             };
         varOptions =
             new String[][] {
@@ -8584,7 +8600,7 @@ public abstract class EDDTable extends EDD {
         }
       } else
         throw new SimpleException(
-            EDStatic.messages.errorInternalAr[0] + "No drawXxx value was set.");
+            EDStatic.messages.get(Message.ERROR_INTERNAL, 0) + "No drawXxx value was set.");
       if (debugMode) String2.log("respondToGraphQuery 4");
       if (reallyVerbose)
         String2.log("post set draw-related; resultsVariables=" + resultsVariables.toString());
@@ -8610,7 +8626,8 @@ public abstract class EDDTable extends EDD {
         writer.write(
             widgets.select(
                 paramName,
-                MessageFormat.format(EDStatic.messages.magAxisVarHelpAr[language], varHelp[v]),
+                MessageFormat.format(
+                    EDStatic.messages.get(Message.MAG_AXIS_VAR_HELP, language), varHelp[v]),
                 v >= variablesShowPM ? HtmlWidgets.BUTTONS_1 : 1, // was 1
                 tDvNames,
                 vi,
@@ -8637,31 +8654,34 @@ public abstract class EDDTable extends EDD {
       writer.write(
           "<tr>\n"
               + "  <th>"
-              + EDStatic.messages.EDDTableConstraintsAr[language]
+              + EDStatic.messages.get(Message.EDD_TABLE_CONSTRAINTS, language)
               + " "
               + EDStatic.htmlTooltipImage(
-                  request, language, loggedInAs, EDStatic.messages.magConstraintHelpAr[language])
+                  request,
+                  language,
+                  loggedInAs,
+                  EDStatic.messages.get(Message.MAG_CONSTRAINT_HELP, language))
               + "</th>\n"
               + "  <th style=\"text-align:center;\" colspan=\"2\">"
-              + EDStatic.messages.EDDTableOptConstraint1HtmlAr[language]
+              + EDStatic.messages.get(Message.EDD_TABLE_OPT_CONSTRAINT1_HTML, language)
               + " "
               + EDStatic.htmlTooltipImage(
                   request,
                   language,
                   loggedInAs,
                   "<div class=\"narrow_max_width\">"
-                      + EDStatic.messages.EDDTableConstraintTooltipAr[language]
+                      + EDStatic.messages.get(Message.EDD_TABLE_CONSTRAINT_TOOLTIP, language)
                       + "</div>")
               + "</th>\n"
               + "  <th style=\"text-align:center;\" colspan=\"2\">"
-              + EDStatic.messages.EDDTableOptConstraint2HtmlAr[language]
+              + EDStatic.messages.get(Message.EDD_TABLE_OPT_CONSTRAINT2_HTML, language)
               + " "
               + EDStatic.htmlTooltipImage(
                   request,
                   language,
                   loggedInAs,
                   "<div class=\"narrow_max_width\">"
-                      + EDStatic.messages.EDDTableConstraintTooltipAr[language]
+                      + EDStatic.messages.get(Message.EDD_TABLE_CONSTRAINT_TOOLTIP, language)
                       + "</div>")
               + "</th>\n"
               + "</tr>\n");
@@ -8823,7 +8843,7 @@ public abstract class EDDTable extends EDD {
             writer.write(
                 widgets.select(
                     "cVar" + cv,
-                    EDStatic.messages.EDDTableOptConstraintVarAr[language],
+                    EDStatic.messages.get(Message.EDD_TABLE_OPT_CONSTRAINT_VAR, language),
                     1,
                     dvNames0,
                     conVar[cv],
@@ -8833,13 +8853,14 @@ public abstract class EDDTable extends EDD {
 
           // make the constraintTooltip
           // ConstraintHtml below is worded in generic way so works with number and time, too
-          String constraintTooltip = EDStatic.messages.EDDTableStringConstraintTooltipAr[language];
+          String constraintTooltip =
+              EDStatic.messages.get(Message.EDD_TABLE_STRING_CONSTRAINT_TOOLTIP, language);
           // String2.log("cv=" + cv + " conVar[cv]=" + conVar[cv]);
           if (conEdv != null && conEdv.destinationMinString().length() > 0) {
             constraintTooltip +=
                 "<br>&nbsp;<br>"
                     + MessageFormat.format(
-                        EDStatic.messages.rangesFromToAr[language],
+                        EDStatic.messages.get(Message.RANGES_FROM_TO, language),
                         conEdv.destinationName(),
                         conEdv.destinationMinString(),
                         conEdv.destinationMaxString().length() > 0
@@ -8853,7 +8874,7 @@ public abstract class EDDTable extends EDD {
           writer.write(
               widgets.select(
                   "cOp" + cv + ab,
-                  EDStatic.messages.EDDTableSelectAnOperatorAr[language],
+                  EDStatic.messages.get(Message.EDD_TABLE_SELECT_AN_OPERATOR, language),
                   1,
                   OPERATORS,
                   PPE_OPERATORS,
@@ -8925,7 +8946,7 @@ public abstract class EDDTable extends EDD {
               widgets.select(
                   "dis" + cv,
                   "<div class=\"narrow_max_width\">"
-                      + EDStatic.messages.EDDTableSelectConstraintTooltipAr[language]
+                      + EDStatic.messages.get(Message.EDD_TABLE_SELECT_CONSTRAINT_TOOLTIP, language)
                       + "</div>",
                   1,
                   whichSV < 0 ? new String[] {""} : distinctOptions[whichSV],
@@ -8972,7 +8993,8 @@ public abstract class EDDTable extends EDD {
                   + widgets.imageDirUrl
                   + "minus.gif\" "
                   + // vertical-align: 'b'ottom
-                  widgets.completeTooltip(EDStatic.messages.magItemPreviousAr[language])
+                  widgets.completeTooltip(
+                      EDStatic.messages.get(Message.MAG_ITEM_PREVIOUS, language))
                   + "  alt=\"-\"\n"
                   +
                   // onMouseUp works much better than onClick and onDblClick
@@ -8998,7 +9020,7 @@ public abstract class EDDTable extends EDD {
                   + widgets.imageDirUrl
                   + "plus.gif\" "
                   + // vertical-align: 'b'ottom
-                  widgets.completeTooltip(EDStatic.messages.magItemNextAr[language])
+                  widgets.completeTooltip(EDStatic.messages.get(Message.MAG_ITEM_NEXT, language))
                   + "  alt=\"+\"\n"
                   +
                   // onMouseUp works much better than onClick and onDblClick
@@ -9116,7 +9138,7 @@ public abstract class EDDTable extends EDD {
       writer.write(widgets.beginTable("class=\"compact nowrap\""));
       writer.write(
           "  <tr><th class=\"L\" colspan=\"6\">"
-              + EDStatic.messages.magGSAr[language]
+              + EDStatic.messages.get(Message.MAG_GS, language)
               + "</th></tr>\n");
 
       // get Marker settings
@@ -9143,7 +9165,7 @@ public abstract class EDDTable extends EDD {
         writer.write(
             "  <tr>\n"
                 + "    <td>"
-                + EDStatic.messages.magGSMarkerTypeAr[language]
+                + EDStatic.messages.get(Message.MAG_GS_MARKER_TYPE, language)
                 + ":&nbsp;</td>\n"
                 + "    <td>"
                 + widgets.select(paramName, "", 1, GraphDataLayer.MARKER_TYPES, mType, "")
@@ -9156,7 +9178,7 @@ public abstract class EDDTable extends EDD {
         if (mSize < 0) mSize = String2.indexOf(mSizes, "" + GraphDataLayer.MARKER_SIZE_SMALL);
         writer.write(
             "    <td>&nbsp;"
-                + EDStatic.messages.magGSSizeAr[language]
+                + EDStatic.messages.get(Message.MAG_GS_SIZE, language)
                 + ":&nbsp;</td>\n"
                 + "    <td>"
                 + widgets.select(paramName, "", 1, mSizes, mSize, "")
@@ -9183,7 +9205,7 @@ public abstract class EDDTable extends EDD {
       writer.write(
           "  <tr>\n"
               + "    <td>"
-              + EDStatic.messages.magGSColorAr[language]
+              + EDStatic.messages.get(Message.MAG_GS_COLOR, language)
               + ":&nbsp;</td>\n"
               + "    <td colspan=\"5\">"
               + widgets.color17("", paramName, "", colori, "")
@@ -9216,12 +9238,12 @@ public abstract class EDDTable extends EDD {
         writer.write(
             "  <tr>\n"
                 + "    <td>"
-                + EDStatic.messages.magGSColorBarAr[language]
+                + EDStatic.messages.get(Message.MAG_GS_COLOR_BAR, language)
                 + ":&nbsp;</td>"
                 + "    <td>"
                 + widgets.select(
                     paramName,
-                    EDStatic.messages.magGSColorBarTooltipAr[language],
+                    EDStatic.messages.get(Message.MAG_GS_COLOR_BAR_TOOLTIP, language),
                     1,
                     EDStatic.messages.palettes0,
                     palette,
@@ -9234,12 +9256,12 @@ public abstract class EDDTable extends EDD {
             pParts.length > 1 ? (pParts[1].equals("D") ? 2 : pParts[1].equals("C") ? 1 : 0) : 0;
         writer.write(
             "    <td>&nbsp;"
-                + EDStatic.messages.magGSContinuityAr[language]
+                + EDStatic.messages.get(Message.MAG_GS_CONTINUITY, language)
                 + ":&nbsp;</td>"
                 + "    <td>"
                 + widgets.select(
                     paramName,
-                    EDStatic.messages.magGSContinuityTooltipAr[language],
+                    EDStatic.messages.get(Message.MAG_GS_CONTINUITY_TOOLTIP, language),
                     1,
                     conDisAr,
                     continuous,
@@ -9252,12 +9274,12 @@ public abstract class EDDTable extends EDD {
             Math.max(0, EDV.VALID_SCALES0.indexOf(pParts.length > 2 ? pParts[2] : defaultScale));
         writer.write(
             "    <td>&nbsp;"
-                + EDStatic.messages.magGSScaleAr[language]
+                + EDStatic.messages.get(Message.MAG_GS_SCALE, language)
                 + ":&nbsp;</td>"
                 + "    <td>"
                 + widgets.select(
                     paramName,
-                    EDStatic.messages.magGSScaleTooltipAr[language],
+                    EDStatic.messages.get(Message.MAG_GS_SCALE_TOOLTIP, language),
                     1,
                     EDV.VALID_SCALES0,
                     scale,
@@ -9273,11 +9295,16 @@ public abstract class EDDTable extends EDD {
             "  <tr>\n"
                 + "    <td>"
                 + gap
-                + EDStatic.messages.magGSMinAr[language]
+                + EDStatic.messages.get(Message.MAG_GS_MIN, language)
                 + ":&nbsp;</td>"
                 + "    <td>"
                 + widgets.textField(
-                    paramName, EDStatic.messages.magGSMinTooltipAr[language], 10, 60, palMin, "")
+                    paramName,
+                    EDStatic.messages.get(Message.MAG_GS_MIN_TOOLTIP, language),
+                    10,
+                    60,
+                    palMin,
+                    "")
                 + "</td>\n");
 
         paramName = "pMax";
@@ -9285,11 +9312,16 @@ public abstract class EDDTable extends EDD {
         palMax = pParts.length > 4 ? pParts[4] : defaultMax;
         writer.write(
             "    <td>&nbsp;"
-                + EDStatic.messages.magGSMaxAr[language]
+                + EDStatic.messages.get(Message.MAG_GS_MAX, language)
                 + ":&nbsp;</td>"
                 + "    <td>"
                 + widgets.textField(
-                    paramName, EDStatic.messages.magGSMaxTooltipAr[language], 10, 60, palMax, "")
+                    paramName,
+                    EDStatic.messages.get(Message.MAG_GS_MAX_TOOLTIP, language),
+                    10,
+                    60,
+                    palMax,
+                    "")
                 + "</td>\n");
 
         paramName = "pSec";
@@ -9297,12 +9329,12 @@ public abstract class EDDTable extends EDD {
             Math.max(0, EDStatic.paletteSections.indexOf(pParts.length > 5 ? pParts[5] : ""));
         writer.write(
             "    <td>&nbsp;"
-                + EDStatic.messages.magGSNSectionsAr[language]
+                + EDStatic.messages.get(Message.MAG_GS_N_SECTIONS, language)
                 + ":&nbsp;</td>"
                 + "    <td>"
                 + widgets.select(
                     paramName,
-                    EDStatic.messages.magGSNSectionsTooltipAr[language],
+                    EDStatic.messages.get(Message.MAG_GS_N_SECTIONS_TOOLTIP, language),
                     1,
                     EDStatic.paletteSections,
                     pSections,
@@ -9346,12 +9378,12 @@ public abstract class EDDTable extends EDD {
         writer.write(
             "  <tr>\n"
                 + "    <td>"
-                + EDStatic.messages.magGSLandMaskAr[language]
+                + EDStatic.messages.get(Message.MAG_GS_LAND_MASK, language)
                 + ":&nbsp;</td>\n"
                 + "    <td>"
                 + widgets.select(
                     "land",
-                    EDStatic.messages.magGSLandMaskTooltipTableAr[language],
+                    EDStatic.messages.get(Message.MAG_GS_LAND_MASK_TOOLTIP_TABLE, language),
                     1,
                     SgtMap.drawLandMask_OPTIONS,
                     tLand,
@@ -9389,12 +9421,12 @@ public abstract class EDDTable extends EDD {
         writer.write(
             "  <tr>\n"
                 + "    <td>"
-                + EDStatic.messages.magGSVectorStandardAr[language]
+                + EDStatic.messages.get(Message.MAG_GS_VECTOR_STANDARD, language)
                 + ":&nbsp;</td>\n"
                 + "    <td>"
                 + widgets.textField(
                     paramName,
-                    EDStatic.messages.magGSVectorStandardTooltipAr[language],
+                    EDStatic.messages.get(Message.MAG_GS_VECTOR_STANDARD_TOOLTIP, language),
                     10,
                     30,
                     vec,
@@ -9457,14 +9489,14 @@ public abstract class EDDTable extends EDD {
         writer.write(
             "  <tr>\n"
                 + "    <td>"
-                + EDStatic.messages.magGSYAxisMinAr[language]
+                + EDStatic.messages.get(Message.MAG_GS_Y_AXIS_MIN, language)
                 + ":&nbsp;</td>\n"
                 + "    <td>"
                 + widgets.textField(
                     "yRangeMin",
                     "<div class=\"narrow_max_width\">"
-                        + EDStatic.messages.magGSYRangeMinTooltipAr[language]
-                        + EDStatic.messages.magGSYRangeTooltipAr[language]
+                        + EDStatic.messages.get(Message.MAG_GS_Y_RANGE_MIN_TOOLTIP, language)
+                        + EDStatic.messages.get(Message.MAG_GS_Y_RANGE_TOOLTIP, language)
                         + "</div>",
                     10,
                     30,
@@ -9472,14 +9504,14 @@ public abstract class EDDTable extends EDD {
                     "")
                 + "</td>\n"
                 + "    <td>&nbsp;"
-                + EDStatic.messages.magGSYAxisMaxAr[language]
+                + EDStatic.messages.get(Message.MAG_GS_Y_AXIS_MAX, language)
                 + ":&nbsp;</td>\n"
                 + "    <td>"
                 + widgets.textField(
                     "yRangeMax",
                     "<div class=\"narrow_max_width\">"
-                        + EDStatic.messages.magGSYRangeMaxTooltipAr[language]
-                        + EDStatic.messages.magGSYRangeTooltipAr[language]
+                        + EDStatic.messages.get(Message.MAG_GS_Y_RANGE_MAX_TOOLTIP, language)
+                        + EDStatic.messages.get(Message.MAG_GS_Y_RANGE_TOOLTIP, language)
                         + "</div>",
                     10,
                     30,
@@ -9489,7 +9521,7 @@ public abstract class EDDTable extends EDD {
                 + "    <td>&nbsp;"
                 + widgets.select(
                     "yRangeAscending",
-                    EDStatic.messages.magGSYAscendingTooltipAr[language],
+                    EDStatic.messages.get(Message.MAG_GS_Y_ASCENDING_TOOLTIP, language),
                     1,
                     new String[] {"Ascending", "Descending"},
                     yAscending ? 0 : 1,
@@ -9498,7 +9530,7 @@ public abstract class EDDTable extends EDD {
                 + "    <td>"
                 + widgets.select(
                     "yScale",
-                    EDStatic.messages.magGSYScaleTooltipAr[language],
+                    EDStatic.messages.get(Message.MAG_GS_Y_SCALE_TOOLTIP, language),
                     1,
                     new String[] {"", "Linear", "Log"},
                     yAxisScale.equals("Linear") ? 1 : yAxisScale.equals("Log") ? 2 : 0,
@@ -9658,20 +9690,21 @@ public abstract class EDDTable extends EDD {
               "button",
               "",
               "",
-              EDStatic.messages.magRedrawTooltipAr[language],
+              EDStatic.messages.get(Message.MAG_REDRAW_TOOLTIP, language),
               "<span style=\"font-size:large;\"><strong>"
-                  + EDStatic.messages.magRedrawAr[language]
+                  + EDStatic.messages.get(Message.MAG_REDRAW, language)
                   + "</strong></span>",
               "onMouseUp='mySubmit(true);'"));
-      writer.write(" " + EDStatic.messages.patientDataAr[language] + "\n" + "</td></tr>\n");
+      writer.write(
+          " " + EDStatic.messages.get(Message.PATIENT_DATA, language) + "\n" + "</td></tr>\n");
 
       // Download the Data
       writer.write(
           "<tr><td>&nbsp;<br>"
-              + EDStatic.messages.optionalAr[language]
+              + EDStatic.messages.get(Message.OPTIONAL, language)
               + ":"
               + "<br>"
-              + EDStatic.messages.magFileTypeAr[language]
+              + EDStatic.messages.get(Message.MAG_FILE_TYPE, language)
               + ":\n");
       paramName = "fType";
       String htmlEncodedGraphQuery = XML.encodeAsHTMLAttribute(graphQuery.toString());
@@ -9689,7 +9722,7 @@ public abstract class EDDTable extends EDD {
       writer.write(
           widgets.select(
               paramName,
-              EDStatic.messages.EDDSelectFileTypeAr[language],
+              EDStatic.messages.get(Message.EDD_SELECT_FILE_TYPE, language),
               1,
               fileTypeOptions,
               defaultIndex,
@@ -9705,17 +9738,17 @@ public abstract class EDDTable extends EDD {
           " (<a rel=\"help\" href=\""
               + tErddapUrl
               + "/tabledap/documentation.html#fileType\">"
-              + EDStatic.messages.EDDFileTypeInformationAr[language]
+              + EDStatic.messages.get(Message.EDD_FILE_TYPE_INFORMATION, language)
               + "</a>)\n");
       writer.write("<br>and\n");
       writer.write(
           widgets.button(
               "button",
               "",
-              EDStatic.messages.magDownloadTooltipAr[language]
+              EDStatic.messages.get(Message.MAG_DOWNLOAD_TOOLTIP, language)
                   + "<br>"
-                  + EDStatic.messages.patientDataAr[language],
-              EDStatic.messages.magDownloadAr[language],
+                  + EDStatic.messages.get(Message.PATIENT_DATA, language),
+              EDStatic.messages.get(Message.MAG_DOWNLOAD, language),
               // "class=\"skinny\" " + //only IE needs it but only IE ignores it
               "onMouseUp='window.location=\""
                   + tErddapUrl
@@ -9731,11 +9764,12 @@ public abstract class EDDTable extends EDD {
       writer.write("</td></tr>\n");
 
       // view the url
-      writer.write("<tr><td>" + EDStatic.messages.magViewUrlAr[language] + ":\n");
+      writer.write("<tr><td>" + EDStatic.messages.get(Message.MAG_VIEW_URL, language) + ":\n");
       String genViewHtml =
           String2.replaceAll(
               "<div class=\"standard_max_width\">"
-                  + EDStatic.messages.justGenerateAndViewGraphUrlTooltipAr[language]
+                  + EDStatic.messages.get(
+                      Message.JUST_GENERATE_AND_VIEW_GRAPH_URL_TOOLTIP, language)
                   + "</div>",
               "&protocolName;",
               dapProtocol);
@@ -9757,7 +9791,7 @@ public abstract class EDDTable extends EDD {
               + tErddapUrl
               + "/tabledap/documentation.html\" "
               + "title=\"tabledap documentation\">"
-              + EDStatic.messages.magDocumentationAr[language]
+              + EDStatic.messages.get(Message.MAG_DOCUMENTATION, language)
               + "</a>\n"
               + EDStatic.htmlTooltipImage(request, language, loggedInAs, genViewHtml)
               + ")\n");
@@ -9801,15 +9835,15 @@ public abstract class EDDTable extends EDD {
                 + XML.encodeAsHTMLAttribute(graphQueryNoLatLon.toString());
 
         writer.write(
-            EDStatic.messages.magZoomCenterAr[language]
+            EDStatic.messages.get(Message.MAG_ZOOM_CENTER, language)
                 + "\n"
                 + EDStatic.htmlTooltipImage(
                     request,
                     language,
                     loggedInAs,
-                    EDStatic.messages.magZoomCenterTooltipAr[language])
+                    EDStatic.messages.get(Message.MAG_ZOOM_CENTER_TOOLTIP, language))
                 + "<br><strong>"
-                + EDStatic.messages.magZoomAr[language]
+                + EDStatic.messages.get(Message.MAG_ZOOM, language)
                 + ":&nbsp;</strong>\n");
 
         // zoom out?
@@ -9828,16 +9862,18 @@ public abstract class EDDTable extends EDD {
             widgets.button(
                 "button",
                 "",
-                MessageFormat.format(EDStatic.messages.magZoomOutTooltipAr[language], "8x"),
-                MessageFormat.format(EDStatic.messages.magZoomOutAr[language], "8x"),
+                MessageFormat.format(
+                    EDStatic.messages.get(Message.MAG_ZOOM_OUT_TOOLTIP, language), "8x"),
+                MessageFormat.format(EDStatic.messages.get(Message.MAG_ZOOM_OUT, language), "8x"),
                 "class=\"skinny\" " + (disableZoomOut ? "disabled" : gqz + "out8\";'")));
 
         writer.write(
             widgets.button(
                 "button",
                 "",
-                MessageFormat.format(EDStatic.messages.magZoomOutTooltipAr[language], "2x"),
-                MessageFormat.format(EDStatic.messages.magZoomOutAr[language], "2x"),
+                MessageFormat.format(
+                    EDStatic.messages.get(Message.MAG_ZOOM_OUT_TOOLTIP, language), "2x"),
+                MessageFormat.format(EDStatic.messages.get(Message.MAG_ZOOM_OUT, language), "2x"),
                 "class=\"skinny\" " + (disableZoomOut ? "disabled" : gqz + "out2\";'")));
 
         writer.write(
@@ -9845,9 +9881,10 @@ public abstract class EDDTable extends EDD {
                 "button",
                 "",
                 MessageFormat.format(
-                    EDStatic.messages.magZoomOutTooltipAr[language],
-                    EDStatic.messages.magZoomALittleAr[language]),
-                MessageFormat.format(EDStatic.messages.magZoomOutAr[language], "").trim(),
+                    EDStatic.messages.get(Message.MAG_ZOOM_OUT_TOOLTIP, language),
+                    EDStatic.messages.get(Message.MAG_ZOOM_A_LITTLE, language)),
+                MessageFormat.format(EDStatic.messages.get(Message.MAG_ZOOM_OUT, language), "")
+                    .trim(),
                 "class=\"skinny\" " + (disableZoomOut ? "disabled" : gqz + "out\";'")));
 
         // zoom data
@@ -9856,9 +9893,9 @@ public abstract class EDDTable extends EDD {
                 "button",
                 "",
                 MessageFormat.format(
-                    EDStatic.messages.magZoomOutTooltipAr[language],
-                    EDStatic.messages.magZoomOutDataAr[language]),
-                EDStatic.messages.magZoomDataAr[language],
+                    EDStatic.messages.get(Message.MAG_ZOOM_OUT_TOOLTIP, language),
+                    EDStatic.messages.get(Message.MAG_ZOOM_OUT_DATA, language)),
+                EDStatic.messages.get(Message.MAG_ZOOM_DATA, language),
                 "class=\"skinny\" " + gqnll + "\";'"));
 
         // zoom in
@@ -9867,25 +9904,28 @@ public abstract class EDDTable extends EDD {
                 "button",
                 "",
                 MessageFormat.format(
-                    EDStatic.messages.magZoomInTooltipAr[language],
-                    EDStatic.messages.magZoomALittleAr[language]),
-                MessageFormat.format(EDStatic.messages.magZoomInAr[language], "").trim(),
+                    EDStatic.messages.get(Message.MAG_ZOOM_IN_TOOLTIP, language),
+                    EDStatic.messages.get(Message.MAG_ZOOM_A_LITTLE, language)),
+                MessageFormat.format(EDStatic.messages.get(Message.MAG_ZOOM_IN, language), "")
+                    .trim(),
                 "class=\"skinny\" " + gqz + "in\";'"));
 
         writer.write(
             widgets.button(
                 "button",
                 "",
-                MessageFormat.format(EDStatic.messages.magZoomInTooltipAr[language], "2x"),
-                MessageFormat.format(EDStatic.messages.magZoomInAr[language], "2x"),
+                MessageFormat.format(
+                    EDStatic.messages.get(Message.MAG_ZOOM_IN_TOOLTIP, language), "2x"),
+                MessageFormat.format(EDStatic.messages.get(Message.MAG_ZOOM_IN, language), "2x"),
                 "class=\"skinny\" " + gqz + "in2\";'"));
 
         writer.write(
             widgets.button(
                 "button",
                 "",
-                MessageFormat.format(EDStatic.messages.magZoomInTooltipAr[language], "8x"),
-                MessageFormat.format(EDStatic.messages.magZoomInAr[language], "8x"),
+                MessageFormat.format(
+                    EDStatic.messages.get(Message.MAG_ZOOM_IN_TOOLTIP, language), "8x"),
+                MessageFormat.format(EDStatic.messages.get(Message.MAG_ZOOM_IN, language), "8x"),
                 "class=\"skinny\" " + gqz + "in8\";'"));
 
         // trailing <br>
@@ -9929,8 +9969,8 @@ public abstract class EDDTable extends EDD {
                   "button",
                   "zoomXzoomIn",
                   "", // value
-                  EDStatic.messages.zoomInAr[language],
-                  EDStatic.messages.zoomInAr[language], // tooltip, labelHtml
+                  EDStatic.messages.get(Message.ZOOM_IN, language),
+                  EDStatic.messages.get(Message.ZOOM_IN, language), // tooltip, labelHtml
                   "onMouseUp='"
                       + formTextField
                       + "a.value=\""
@@ -9952,8 +9992,8 @@ public abstract class EDDTable extends EDD {
                       "button",
                       "zoomXzoomOut",
                       "", // value
-                      EDStatic.messages.zoomOutAr[language],
-                      EDStatic.messages.zoomOutAr[language], // tooltip, labelHtml
+                      EDStatic.messages.get(Message.ZOOM_OUT, language),
+                      EDStatic.messages.get(Message.ZOOM_OUT, language), // tooltip, labelHtml
                       "onMouseUp='"
                           + formTextField
                           + "a.value=\""
@@ -9974,7 +10014,7 @@ public abstract class EDDTable extends EDD {
               HtmlWidgets.htmlTooltipImage(
                       EDStatic.imageDirUrl(request, loggedInAs, language) + "arrowLL.gif",
                       "|<",
-                      EDStatic.messages.shiftXAllTheWayLeftAr[language],
+                      EDStatic.messages.get(Message.SHIFT_X_ALL_THE_WAY_LEFT, language),
                       "class=\"B\" "
                           + // vertical-align: 'b'ottom
                           "onMouseUp='"
@@ -9998,7 +10038,7 @@ public abstract class EDDTable extends EDD {
             HtmlWidgets.htmlTooltipImage(
                     EDStatic.imageDirUrl(request, loggedInAs, language) + "minus.gif",
                     "-",
-                    EDStatic.messages.shiftXLeftAr[language],
+                    EDStatic.messages.get(Message.SHIFT_X_LEFT, language),
                     "class=\"B\" "
                         + // vertical-align: 'b'ottom
                         "onMouseUp='"
@@ -10019,7 +10059,7 @@ public abstract class EDDTable extends EDD {
             HtmlWidgets.htmlTooltipImage(
                     EDStatic.imageDirUrl(request, loggedInAs, language) + "plus.gif",
                     "+",
-                    EDStatic.messages.shiftXRightAr[language],
+                    EDStatic.messages.get(Message.SHIFT_X_RIGHT, language),
                     "class=\"B\" "
                         + // vertical-align: 'b'ottom
                         "onMouseUp='"
@@ -10041,7 +10081,7 @@ public abstract class EDDTable extends EDD {
               HtmlWidgets.htmlTooltipImage(
                       EDStatic.imageDirUrl(request, loggedInAs, language) + "arrowRR.gif",
                       ">|",
-                      EDStatic.messages.shiftXAllTheWayRightAr[language],
+                      EDStatic.messages.get(Message.SHIFT_X_ALL_THE_WAY_RIGHT, language),
                       "class=\"B\" "
                           + // vertical-align: 'b'ottom
                           "onMouseUp='"
@@ -10140,7 +10180,7 @@ public abstract class EDDTable extends EDD {
         // beginning of row in controls table
         writer.write(
             "<tr><td><strong>"
-                + EDStatic.messages.magTimeRangeAr[language]
+                + EDStatic.messages.get(Message.MAG_TIME_RANGE, language)
                 + "</strong>&nbsp;</td>\n"
                 + "<td>");
 
@@ -10156,7 +10196,7 @@ public abstract class EDDTable extends EDD {
         writer.write(
             widgets.select(
                 "timeN", // keep using widgets even though this isn't part of f1 form
-                EDStatic.messages.magTimeRangeTooltipAr[language],
+                EDStatic.messages.get(Message.MAG_TIME_RANGE_TOOLTIP, language),
                 1,
                 Calendar2.IDEAL_N_OPTIONS,
                 idealTimeN - 1, // -1 so index=0 .. 99
@@ -10174,7 +10214,7 @@ public abstract class EDDTable extends EDD {
         writer.write(
             widgets.select(
                 "timeUnits", // keep using widgets even though this isn't part of f1 form
-                EDStatic.messages.magTimeRangeTooltipAr[language],
+                EDStatic.messages.get(Message.MAG_TIME_RANGE_TOOLTIP, language),
                 1,
                 Calendar2.IDEAL_UNITS_OPTIONS,
                 idealTimeUnits,
@@ -10214,7 +10254,8 @@ public abstract class EDDTable extends EDD {
                         EDStatic.imageDirUrl(request, loggedInAs, language) + "arrowLL.gif",
                         "|<",
                         MessageFormat.format(
-                            EDStatic.messages.magTimeRangeFirstAr[language], timeRangeString),
+                            EDStatic.messages.get(Message.MAG_TIME_RANGE_FIRST, language),
+                            timeRangeString),
                         "class=\"B\" onMouseUp='"
                             + gqnt
                             + // vertical-align: 'b'ottom
@@ -10244,7 +10285,8 @@ public abstract class EDDTable extends EDD {
                       EDStatic.imageDirUrl(request, loggedInAs, language) + "minus.gif",
                       "-",
                       MessageFormat.format(
-                          EDStatic.messages.magTimeRangeBackAr[language], timeRangeString),
+                          EDStatic.messages.get(Message.MAG_TIME_RANGE_BACK, language),
+                          timeRangeString),
                       "class=\"B\" onMouseUp='"
                           + gqnt
                           + // vertical-align: 'b'ottom
@@ -10278,7 +10320,8 @@ public abstract class EDDTable extends EDD {
                       EDStatic.imageDirUrl(request, loggedInAs, language) + "plus.gif",
                       "+",
                       MessageFormat.format(
-                          EDStatic.messages.magTimeRangeForwardAr[language], timeRangeString),
+                          EDStatic.messages.get(Message.MAG_TIME_RANGE_FORWARD, language),
+                          timeRangeString),
                       "class=\"B\" onMouseUp='"
                           + gqnt
                           + // vertical-align: 'b'ottom
@@ -10321,7 +10364,8 @@ public abstract class EDDTable extends EDD {
                     EDStatic.imageDirUrl(request, loggedInAs, language) + "arrowRR.gif",
                     ">|",
                     MessageFormat.format(
-                        EDStatic.messages.magTimeRangeLastAr[language], timeRangeString),
+                        EDStatic.messages.get(Message.MAG_TIME_RANGE_LAST, language),
+                        timeRangeString),
                     "class=\"B\" onMouseUp='"
                         + gqnt
                         + // vertical-align: 'b'ottom
@@ -10366,7 +10410,7 @@ public abstract class EDDTable extends EDD {
               + EDStatic.messages.imageHeights[1]
               + "\" "
               + "alt=\""
-              + EDStatic.messages.patientYourGraphAr[language]
+              + EDStatic.messages.get(Message.PATIENT_YOUR_GRAPH, language)
               + "\" "
               + "src=\""
               + tErddapUrl
@@ -10387,7 +10431,8 @@ public abstract class EDDTable extends EDD {
       // do things with graphs
       writer.write(
           String2.replaceAll(
-              MessageFormat.format(EDStatic.messages.doWithGraphsAr[language], tErddapUrl),
+              MessageFormat.format(
+                  EDStatic.messages.get(Message.DO_WITH_GRAPHS, language), tErddapUrl),
               "&erddapUrl;",
               tErddapUrl));
       writer.write("\n\n");
@@ -10396,7 +10441,7 @@ public abstract class EDDTable extends EDD {
       writer.write(
           "<hr>\n"
               + "<h2><a class=\"selfLink\" id=\"DAS\" href=\"#DAS\" rel=\"bookmark\">"
-              + EDStatic.messages.dasTitleAr[language]
+              + EDStatic.messages.get(Message.DAS_TITLE, language)
               + "</a></h2>\n"
               + "<pre style=\"white-space:pre-wrap;\">\n");
       Table table =
@@ -10519,8 +10564,7 @@ public abstract class EDDTable extends EDD {
     // insures that subsetVariables has been created.
     if (subsetVariables().length == 0 || accessibleViaSubset().length() > 0)
       throw new SimpleException(
-          EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
-              + accessibleViaSubset());
+          EDStatic.simpleBilingual(language, Message.QUERY_ERROR) + accessibleViaSubset());
     String subsetVariablesCSV = String2.toSVString(subsetVariables, ",", false);
 
     // if present, the lastP parameter is not used for bigTable, but is used for smallTable
@@ -10863,7 +10907,7 @@ public abstract class EDDTable extends EDD {
           EDStatic.startHeadHtml(
               language,
               tErddapUrl,
-              title(language) + " - " + EDStatic.messages.subsetAr[language]));
+              title(language) + " - " + EDStatic.messages.get(Message.SUBSET, language)));
       writer.write("\n" + rssHeadLink(language));
       writer.write("\n</head>\n");
       writer.write(
@@ -10885,9 +10929,9 @@ public abstract class EDDTable extends EDD {
               language,
               loggedInAs,
               dapProtocol,
-              EDStatic.messages.subsetAr[language],
+              EDStatic.messages.get(Message.SUBSET, language),
               "<div class=\"narrow_max_width\">"
-                  + EDStatic.messages.subsetTooltipAr[language]
+                  + EDStatic.messages.get(Message.SUBSET_TOOLTIP, language)
                   + "</div>"));
 
       StringBuilder diQuery = new StringBuilder();
@@ -10925,7 +10969,7 @@ public abstract class EDDTable extends EDD {
             "<span class=\"warningColor\">"
                 + MustBe.THERE_IS_NO_DATA
                 + " "
-                + EDStatic.messages.resetTheFormWasAr[language]
+                + EDStatic.messages.get(Message.RESET_THE_FORM_WAS, language)
                 + "</span>\n");
 
         // reset all
@@ -10941,15 +10985,16 @@ public abstract class EDDTable extends EDD {
           widgets.beginForm("f1", "GET", subsetUrl, "")
               + "\n"
               + "<p><strong>"
-              + EDStatic.messages.subsetSelectAr[language]
+              + EDStatic.messages.get(Message.SUBSET_SELECT, language)
               + ":</strong>\n"
               + "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class=\"subduedColor\">"
               + "("
               + MessageFormat.format(
-                  EDStatic.messages.subsetNMatchingAr[language], "" + subsetTable.nRows())
+                  EDStatic.messages.get(Message.SUBSET_N_MATCHING, language),
+                  "" + subsetTable.nRows())
               + ")</span>\n"
               + "  <br>"
-              + EDStatic.messages.subsetInstructionsAr[language]
+              + EDStatic.messages.get(Message.SUBSET_INSTRUCTIONS, language)
               + "\n"
               + widgets.beginTable("class=\"compact nowrap\""));
 
@@ -11072,7 +11117,8 @@ public abstract class EDDTable extends EDD {
                   + "minus.gif\"\n"
                   + // vertical-align: 'b'ottom
                   "  "
-                  + widgets.completeTooltip(EDStatic.messages.selectPreviousAr[language])
+                  + widgets.completeTooltip(
+                      EDStatic.messages.get(Message.SELECT_PREVIOUS, language))
                   + "  alt=\"-\" "
                   +
                   // onMouseUp works much better than onClick and onDblClick
@@ -11094,7 +11140,7 @@ public abstract class EDDTable extends EDD {
                   + "plus.gif\"\n"
                   + // vertical-align: 'b'ottom
                   "  "
-                  + widgets.completeTooltip(EDStatic.messages.selectNextAr[language])
+                  + widgets.completeTooltip(EDStatic.messages.get(Message.SELECT_NEXT, language))
                   + "  alt=\"+\" "
                   +
                   // onMouseUp works much better than onClick and onDblClick
@@ -11136,12 +11182,12 @@ public abstract class EDDTable extends EDD {
                         + (pa.size() - 1)
                         + " "
                         + (pa.size() == 2
-                            ? EDStatic.messages.subsetOptionAr[language]
+                            ? EDStatic.messages.get(Message.SUBSET_OPTION, language)
                                 + ": "
                                 +
                                 // encodeSpaces so only option displays nicely
                                 XML.minimalEncodeSpaces(XML.encodeAsHTML(pa.getString(1)))
-                            : EDStatic.messages.subsetOptionsAr[language])
+                            : EDStatic.messages.get(Message.SUBSET_OPTIONS, language))
                         + "</span></td>\n"
                     : "")
                 + "</tr>\n");
@@ -11155,7 +11201,7 @@ public abstract class EDDTable extends EDD {
       // View the graph and/or data?
       writer.write(
           "<p><a class=\"selfLink\" id=\"View\" href=\"#View\" rel=\"bookmark\"><strong>"
-              + EDStatic.messages.subsetViewAr[language]
+              + EDStatic.messages.get(Message.SUBSET_VIEW, language)
               + ":</strong></a>\n");
       // !!! If changing these, change DEFAULT_SUBSET_VIEWS above.
       String viewParam[] = {
@@ -11167,24 +11213,24 @@ public abstract class EDDTable extends EDD {
         "viewRelatedData"
       };
       String viewTitle[] = {
-        EDStatic.messages.subsetViewDistinctMapAr[language],
-        EDStatic.messages.subsetViewRelatedMapAr[language],
-        EDStatic.messages.subsetViewDistinctDataCountsAr[language],
-        EDStatic.messages.subsetViewDistinctDataAr[language],
-        EDStatic.messages.subsetViewRelatedDataCountsAr[language],
-        EDStatic.messages.subsetViewRelatedDataAr[language]
+        EDStatic.messages.get(Message.SUBSET_VIEW_DISTINCT_MAP, language),
+        EDStatic.messages.get(Message.SUBSET_VIEW_RELATED_MAP, language),
+        EDStatic.messages.get(Message.SUBSET_VIEW_DISTINCT_DATA_COUNTS, language),
+        EDStatic.messages.get(Message.SUBSET_VIEW_DISTINCT_DATA, language),
+        EDStatic.messages.get(Message.SUBSET_VIEW_RELATED_DATA_COUNTS, language),
+        EDStatic.messages.get(Message.SUBSET_VIEW_RELATED_DATA, language)
       };
       String viewTooltip[] = {
-        EDStatic.messages.subsetViewDistinctMapTooltipAr[language],
-        EDStatic.messages.subsetViewRelatedMapTooltipAr[language]
-            + EDStatic.messages.subsetWarnAr[language],
-        EDStatic.messages.subsetViewDistinctDataCountsTooltipAr[language],
-        EDStatic.messages.subsetViewDistinctDataTooltipAr[language]
-            + EDStatic.messages.subsetWarn10000Ar[language],
-        EDStatic.messages.subsetViewRelatedDataCountsTooltipAr[language]
-            + EDStatic.messages.subsetWarnAr[language],
-        EDStatic.messages.subsetViewRelatedDataTooltipAr[language]
-            + EDStatic.messages.subsetWarn10000Ar[language]
+        EDStatic.messages.get(Message.SUBSET_VIEW_DISTINCT_MAP_TOOLTIP, language),
+        EDStatic.messages.get(Message.SUBSET_VIEW_RELATED_MAP_TOOLTIP, language)
+            + EDStatic.messages.get(Message.SUBSET_WARN, language),
+        EDStatic.messages.get(Message.SUBSET_VIEW_DISTINCT_DATA_COUNTS_TOOLTIP, language),
+        EDStatic.messages.get(Message.SUBSET_VIEW_DISTINCT_DATA_TOOLTIP, language)
+            + EDStatic.messages.get(Message.SUBSET_WARN_10000, language),
+        EDStatic.messages.get(Message.SUBSET_VIEW_RELATED_DATA_COUNTS_TOOLTIP, language)
+            + EDStatic.messages.get(Message.SUBSET_WARN, language),
+        EDStatic.messages.get(Message.SUBSET_VIEW_RELATED_DATA_TOOLTIP, language)
+            + EDStatic.messages.get(Message.SUBSET_WARN_10000, language)
       };
 
       boolean useCheckbox[] = {true, true, true, false, true, false};
@@ -11373,7 +11419,7 @@ public abstract class EDDTable extends EDD {
                 + ".graph?"
                 + XML.encodeAsHTML(graphDapQuery)
                 + "\">"
-                + EDStatic.messages.subsetRefineMapDownloadAr[language]
+                + EDStatic.messages.get(Message.SUBSET_REFINE_MAP_DOWNLOAD, language)
                 + "</a>)\n"
                 + "<br>");
 
@@ -11393,9 +11439,12 @@ public abstract class EDDTable extends EDD {
                             + // &.view marks end of graphDapQuery
                             "&distinct()")
                     + "\">"
-                    + MessageFormat.format(EDStatic.messages.subsetClickResetLLAr[language], ANY)
+                    + MessageFormat.format(
+                        EDStatic.messages.get(Message.SUBSET_CLICK_RESET_LL, language), ANY)
                     + "</a>)\n");
-          else writer.write(EDStatic.messages.subsetClickResetClosestAr[language] + "\n");
+          else
+            writer.write(
+                EDStatic.messages.get(Message.SUBSET_CLICK_RESET_CLOSEST, language) + "\n");
           // EDStatic.htmlTooltipImage(language, loggedInAs,
           //    "Unfortunately, after you click, some data sources respond with" +
           //    "<br><kbd>" + MustBe.THERE_IS_NO_DATA + "</kbd>" +
@@ -11433,9 +11482,9 @@ public abstract class EDDTable extends EDD {
           writer.write(
               "<p><span class=\"subduedColor\">"
                   + MessageFormat.format(
-                      EDStatic.messages.subsetViewCheckAr[language],
+                      EDStatic.messages.get(Message.SUBSET_VIEW_CHECK, language),
                       "<kbd>"
-                          + EDStatic.messages.subsetViewAr[language]
+                          + EDStatic.messages.get(Message.SUBSET_VIEW, language)
                           + " : "
                           + viewTitle[current]
                           + "</kbd>")
@@ -11467,7 +11516,7 @@ public abstract class EDDTable extends EDD {
                 + ".graph?"
                 + XML.encodeAsHTMLAttribute(graphDapQuery)
                 + "\">"
-                + EDStatic.messages.subsetRefineMapDownloadAr[language]
+                + EDStatic.messages.get(Message.SUBSET_REFINE_MAP_DOWNLOAD, language)
                 + "</a>)\n");
 
         if (viewValue[current] == 1) {
@@ -11475,7 +11524,9 @@ public abstract class EDDTable extends EDD {
             writer.write(
                 "\n<p><span class=\"subduedColor\">"
                     + MessageFormat.format(
-                        EDStatic.messages.subsetViewCheck1Ar[language], viewTitle[current], ANY)
+                        EDStatic.messages.get(Message.SUBSET_VIEW_CHECK_1, language),
+                        viewTitle[current],
+                        ANY)
                     + "</span>\n");
           } else {
             writer.write(
@@ -11485,7 +11536,7 @@ public abstract class EDDTable extends EDD {
                     + EDStatic.messages.imageHeights[1]
                     + "\" "
                     + "alt=\""
-                    + EDStatic.messages.patientYourGraphAr[language]
+                    + EDStatic.messages.get(Message.PATIENT_YOUR_GRAPH, language)
                     + "\" "
                     + "src=\""
                     + XML.encodeAsHTMLAttribute(
@@ -11496,14 +11547,15 @@ public abstract class EDDTable extends EDD {
           writer.write(
               "<p><span class=\"subduedColor\">"
                   + MessageFormat.format(
-                      EDStatic.messages.subsetViewCheckAr[language],
+                      EDStatic.messages.get(Message.SUBSET_VIEW_CHECK, language),
                       "<kbd>"
-                          + EDStatic.messages.subsetViewAr[language]
+                          + EDStatic.messages.get(Message.SUBSET_VIEW, language)
                           + " : "
                           + viewTitle[current]
                           + "</kbd>")
                   + "</span>\n"
-                  + String2.replaceAll(EDStatic.messages.subsetWarnAr[language], "<br>", " ")
+                  + String2.replaceAll(
+                      EDStatic.messages.get(Message.SUBSET_WARN, language), "<br>", " ")
                   + "\n");
         }
       }
@@ -11528,7 +11580,7 @@ public abstract class EDDTable extends EDD {
                 + XML.encodeAsHTMLAttribute(
                     countsVariables.toString() + newConstraintsNLP.toString() + "&distinct()")
                 + "\">"
-                + EDStatic.messages.subsetRefineSubsetDownloadAr[language]
+                + EDStatic.messages.get(Message.SUBSET_REFINE_SUBSET_DOWNLOAD, language)
                 + "</a>)\n");
 
         try {
@@ -11543,7 +11595,7 @@ public abstract class EDDTable extends EDD {
           // sort, count, remove duplicates
           varPA.sortIgnoreCase();
           IntArray countPA = new IntArray(n, false);
-          countTable.addColumn(EDStatic.messages.subsetCountAr[language], countPA);
+          countTable.addColumn(EDStatic.messages.get(Message.SUBSET_COUNT, language), countPA);
           int lastCount = 1;
           countPA.add(lastCount);
           keep = new BitSet(n);
@@ -11564,7 +11616,7 @@ public abstract class EDDTable extends EDD {
           double total = stats[PrimitiveArray.STATS_SUM];
           n = countPA.size();
           DoubleArray percentPA = new DoubleArray(n, false);
-          countTable.addColumn(EDStatic.messages.subsetPercentAr[language], percentPA);
+          countTable.addColumn(EDStatic.messages.get(Message.SUBSET_PERCENT, language), percentPA);
           for (int i = 0; i < n; i++) percentPA.add(Math2.roundTo(countPA.get(i) * 100 / total, 2));
 
           // write results
@@ -11572,13 +11624,14 @@ public abstract class EDDTable extends EDD {
           writer.write(
               "<br>"
                   + (countsCon.length() == 0
-                      ? EDStatic.messages.subsetWhenNoConstraintsAr[language]
+                      ? EDStatic.messages.get(Message.SUBSET_WHEN_NO_CONSTRAINTS, language)
                       : MessageFormat.format(
-                          EDStatic.messages.subsetWhenAr[language], XML.encodeAsHTML(countsCon)))
+                          EDStatic.messages.get(Message.SUBSET_WHEN, language),
+                          XML.encodeAsHTML(countsCon)))
                   + (countsCon.length() < 40 ? " " : "\n<br>")
                   + MessageFormat.format(
-                      EDStatic.messages.subsetWhenCountsAr[language],
-                      EDStatic.messages.subsetViewSelectDistinctCombosAr[language],
+                      EDStatic.messages.get(Message.SUBSET_WHEN_COUNTS, language),
+                      EDStatic.messages.get(Message.SUBSET_VIEW_SELECT_DISTINCT_COMBOS, language),
                       "" + countTable.nRows(),
                       XML.encodeAsHTML(lastPName))
                   + "\n");
@@ -11605,7 +11658,8 @@ public abstract class EDDTable extends EDD {
           writer.write(
               "<p>"
                   + MessageFormat.format(
-                      EDStatic.messages.subsetTotalCountAr[language], "" + Math2.roundToLong(total))
+                      EDStatic.messages.get(Message.SUBSET_TOTAL_COUNT, language),
+                      "" + Math2.roundToLong(total))
                   + "\n");
         } catch (Throwable t) {
           EDStatic.rethrowClientAbortException(t); // first thing in catch{}
@@ -11623,9 +11677,9 @@ public abstract class EDDTable extends EDD {
         writer.write(
             "<p><span class=\"subduedColor\">"
                 + MessageFormat.format(
-                    EDStatic.messages.subsetViewSelectAr[language],
-                    EDStatic.messages.subsetViewSelectDistinctCombosAr[language],
-                    EDStatic.messages.subsetViewAr[language],
+                    EDStatic.messages.get(Message.SUBSET_VIEW_SELECT, language),
+                    EDStatic.messages.get(Message.SUBSET_VIEW_SELECT_DISTINCT_COMBOS, language),
+                    EDStatic.messages.get(Message.SUBSET_VIEW, language),
                     viewTitle[current])
                 + "</span>\n");
       }
@@ -11644,7 +11698,7 @@ public abstract class EDDTable extends EDD {
               + "/tabledap/"
               + datasetID
               + ".das\">"
-              + EDStatic.messages.subsetMetadataAr[language]
+              + EDStatic.messages.get(Message.SUBSET_METADATA, language)
               + "</a>)\n");
       writer.write(
           "&nbsp;&nbsp;\n"
@@ -11656,7 +11710,7 @@ public abstract class EDDTable extends EDD {
               + XML.encodeAsHTMLAttribute(
                   subsetVariablesCSV + newConstraints.toString() + "&distinct()")
               + "\">"
-              + EDStatic.messages.subsetRefineSubsetDownloadAr[language]
+              + EDStatic.messages.get(Message.SUBSET_REFINE_SUBSET_DOWNLOAD, language)
               + "</a>)\n");
       int onRows = subsetTable.nRows();
       if (viewValue[current] > 0) {
@@ -11686,25 +11740,25 @@ public abstract class EDDTable extends EDD {
       writer.write(
           "<p>"
               + MessageFormat.format(
-                  EDStatic.messages.subsetNVariableCombosAr[language], "" + onRows)
+                  EDStatic.messages.get(Message.SUBSET_N_VARIABLE_COMBOS, language), "" + onRows)
               + "\n");
       if (onRows > viewValue[current]) {
         writer.write(
             "<br><span class=\"warningColor\">"
                 + MessageFormat.format(
-                    EDStatic.messages.subsetShowingNRowsAr[language],
+                    EDStatic.messages.get(Message.SUBSET_SHOWING_N_ROWS, language),
                     "" + Math.min(onRows, viewValue[current]),
                     "" + (onRows - viewValue[current]))
                 + "</span>\n");
       } else {
-        writer.write(EDStatic.messages.subsetShowingAllRowsAr[language] + "\n");
+        writer.write(EDStatic.messages.get(Message.SUBSET_SHOWING_ALL_ROWS, language) + "\n");
       }
       writer.write(
           "<br>"
               + MessageFormat.format(
-                  EDStatic.messages.subsetChangeShowingAr[language],
+                  EDStatic.messages.get(Message.SUBSET_CHANGE_SHOWING, language),
                   "<kbd>"
-                      + EDStatic.messages.subsetViewAr[language]
+                      + EDStatic.messages.get(Message.SUBSET_VIEW, language)
                       + " : "
                       + viewTitle[current]
                       + "</kbd>")
@@ -11730,7 +11784,7 @@ public abstract class EDDTable extends EDD {
                 + XML.encodeAsHTMLAttribute(newConstraintsNLP.toString())
                 + // no vars, not distinct
                 "\">"
-                + EDStatic.messages.subsetRefineSubsetDownloadAr[language]
+                + EDStatic.messages.get(Message.SUBSET_REFINE_SUBSET_DOWNLOAD, language)
                 + "</a>)\n");
 
         TableWriterAll twa = null;
@@ -11760,7 +11814,7 @@ public abstract class EDDTable extends EDD {
           varPA.sortIgnoreCase();
           int n = varPA.size();
           IntArray countPA = new IntArray(n, false);
-          countTable.addColumn(EDStatic.messages.subsetCountAr[language], countPA);
+          countTable.addColumn(EDStatic.messages.get(Message.SUBSET_COUNT, language), countPA);
           int lastCount = 1;
           countPA.add(lastCount);
           keep = new BitSet(n);
@@ -11781,7 +11835,7 @@ public abstract class EDDTable extends EDD {
           double total = stats[PrimitiveArray.STATS_SUM];
           n = countPA.size();
           DoubleArray percentPA = new DoubleArray(n, false);
-          countTable.addColumn(EDStatic.messages.subsetPercentAr[language], percentPA);
+          countTable.addColumn(EDStatic.messages.get(Message.SUBSET_PERCENT, language), percentPA);
           for (int i = 0; i < n; i++) percentPA.add(Math2.roundTo(countPA.get(i) * 100 / total, 2));
 
           // write results
@@ -11789,13 +11843,14 @@ public abstract class EDDTable extends EDD {
           writer.write(
               "<br>"
                   + (countsConNLP.length() == 0
-                      ? EDStatic.messages.subsetWhenNoConstraintsAr[language]
+                      ? EDStatic.messages.get(Message.SUBSET_WHEN_NO_CONSTRAINTS, language)
                       : MessageFormat.format(
-                          EDStatic.messages.subsetWhenAr[language], XML.encodeAsHTML(countsConNLP)))
+                          EDStatic.messages.get(Message.SUBSET_WHEN, language),
+                          XML.encodeAsHTML(countsConNLP)))
                   + (countsConNLP.length() < 40 ? " " : "\n<br>")
                   + MessageFormat.format(
-                      EDStatic.messages.subsetWhenCountsAr[language],
-                      EDStatic.messages.subsetViewSelectRelatedCountsAr[language],
+                      EDStatic.messages.get(Message.SUBSET_WHEN_COUNTS, language),
+                      EDStatic.messages.get(Message.SUBSET_VIEW_SELECT_RELATED_COUNTS, language),
                       "" + countTable.nRows(),
                       XML.encodeAsHTML(lastPName))
                   + "\n");
@@ -11822,7 +11877,8 @@ public abstract class EDDTable extends EDD {
           writer.write(
               "<p>"
                   + MessageFormat.format(
-                      EDStatic.messages.subsetTotalCountAr[language], "" + Math2.roundToLong(total))
+                      EDStatic.messages.get(Message.SUBSET_TOTAL_COUNT, language),
+                      "" + Math2.roundToLong(total))
                   + "\n");
         } catch (Throwable t) {
           EDStatic.rethrowClientAbortException(t); // first thing in catch{}
@@ -11844,12 +11900,13 @@ public abstract class EDDTable extends EDD {
         writer.write(
             "<p><span class=\"subduedColor\">"
                 + MessageFormat.format(
-                    EDStatic.messages.subsetViewSelectAr[language],
-                    EDStatic.messages.subsetViewSelectRelatedCountsAr[language],
-                    EDStatic.messages.subsetViewAr[language],
+                    EDStatic.messages.get(Message.SUBSET_VIEW_SELECT, language),
+                    EDStatic.messages.get(Message.SUBSET_VIEW_SELECT_RELATED_COUNTS, language),
+                    EDStatic.messages.get(Message.SUBSET_VIEW, language),
                     viewTitle[current])
                 + "</span>\n"
-                + String2.replaceAll(EDStatic.messages.subsetWarnAr[language], "<br>", " ")
+                + String2.replaceAll(
+                    EDStatic.messages.get(Message.SUBSET_WARN, language), "<br>", " ")
                 + "\n");
       }
 
@@ -11867,7 +11924,7 @@ public abstract class EDDTable extends EDD {
               + "/tabledap/"
               + datasetID
               + ".das\">"
-              + EDStatic.messages.subsetMetadataAr[language]
+              + EDStatic.messages.get(Message.SUBSET_METADATA, language)
               + "</a>)\n"
               + "&nbsp;&nbsp;\n"
               + "(<a href=\""
@@ -11880,14 +11937,16 @@ public abstract class EDDTable extends EDD {
                   : "?" + XML.encodeAsHTMLAttribute(newConstraints.toString()))
               + // no vars specified, and not distinct()
               "\">"
-              + EDStatic.messages.subsetRefineSubsetDownloadAr[language]
+              + EDStatic.messages.get(Message.SUBSET_REFINE_SUBSET_DOWNLOAD, language)
               + "</a>)\n");
       if (viewValue[current] > 0) {
         if (allData) {
           writer.write(
               "\n<p><span class=\"subduedColor\">"
                   + MessageFormat.format(
-                      EDStatic.messages.subsetViewCheck1Ar[language], viewTitle[current], ANY)
+                      EDStatic.messages.get(Message.SUBSET_VIEW_CHECK_1, language),
+                      viewTitle[current],
+                      ANY)
                   + "</span>\n");
 
         } else {
@@ -11933,23 +11992,25 @@ public abstract class EDDTable extends EDD {
             writer.write(
                 "<p>"
                     + MessageFormat.format(
-                        EDStatic.messages.subsetNRowsRelatedDataAr[language], "" + twht.totalRows())
+                        EDStatic.messages.get(Message.SUBSET_N_ROWS_RELATED_DATA, language),
+                        "" + twht.totalRows())
                     + "\n");
             if (twht.totalRows() > viewValue[current])
               writer.write(
                   "<br><span class=\"warningColor\">"
                       + MessageFormat.format(
-                          EDStatic.messages.subsetShowingNRowsAr[language],
+                          EDStatic.messages.get(Message.SUBSET_SHOWING_N_ROWS, language),
                           "" + Math.min(twht.totalRows(), viewValue[current]),
                           "" + (twht.totalRows() - viewValue[current]))
                       + "</span>\n");
-            else writer.write(EDStatic.messages.subsetShowingAllRowsAr[language] + "\n");
+            else
+              writer.write(EDStatic.messages.get(Message.SUBSET_SHOWING_ALL_ROWS, language) + "\n");
             writer.write(
                 "<br>"
                     + MessageFormat.format(
-                        EDStatic.messages.subsetChangeShowingAr[language],
+                        EDStatic.messages.get(Message.SUBSET_CHANGE_SHOWING, language),
                         "<kbd>"
-                            + EDStatic.messages.subsetViewAr[language]
+                            + EDStatic.messages.get(Message.SUBSET_VIEW, language)
                             + " : "
                             + viewTitle[current]
                             + "</kbd>")
@@ -12012,14 +12073,15 @@ public abstract class EDDTable extends EDD {
         writer.write(
             "<p><span class=\"subduedColor\">"
                 + MessageFormat.format(
-                    EDStatic.messages.subsetViewRelatedChangeAr[language],
+                    EDStatic.messages.get(Message.SUBSET_VIEW_RELATED_CHANGE, language),
                     "<kbd>"
-                        + EDStatic.messages.subsetViewAr[language]
+                        + EDStatic.messages.get(Message.SUBSET_VIEW, language)
                         + " : "
                         + viewTitle[current]
                         + "</kbd>")
                 + "</span>\n"
-                + String2.replaceAll(EDStatic.messages.subsetWarnAr[language], "<br>", " ")
+                + String2.replaceAll(
+                    EDStatic.messages.get(Message.SUBSET_WARN, language), "<br>", " ")
                 + "\n");
       }
 
@@ -12092,8 +12154,7 @@ public abstract class EDDTable extends EDD {
     // is this dataset accessibleViaSubset?
     if (accessibleViaSubset().length() > 0)
       throw new SimpleException(
-          EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
-              + accessibleViaSubset());
+          EDStatic.simpleBilingual(language, Message.QUERY_ERROR) + accessibleViaSubset());
 
     // Make the subsetVariablesDataTable.
     // If this fails, dataset won't load.  Locally, throws exception if failure.
@@ -12129,7 +12190,7 @@ public abstract class EDDTable extends EDD {
         int tCol = table.findColumnNumber(tSubsetVars[col]);
         if (tCol < 0)
           throw new SimpleException(
-              EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
+              EDStatic.simpleBilingual(language, Message.QUERY_ERROR)
                   + "subsetVariable="
                   + tSubsetVars[col]
                   + " wasn't found in "
@@ -12360,8 +12421,7 @@ public abstract class EDDTable extends EDD {
     String tSubsetVars[] = subsetVariables();
     if (tSubsetVars.length == 0 || accessibleViaSubset().length() > 0)
       throw new SimpleException(
-          EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
-              + accessibleViaSubset());
+          EDStatic.simpleBilingual(language, Message.QUERY_ERROR) + accessibleViaSubset());
 
     // create the table and store it in the file
     // **** NOTE: the columns are unrelated!  Each column is sorted separately!
@@ -12551,7 +12611,7 @@ public abstract class EDDTable extends EDD {
           sa.justKeep(bitset);
           if (bitset.nextClearBit(0)
               < n) // if don't keep 1 or more... (nextClearBit returns n if none)
-          sa.add(EDStatic.messages.subsetLongNotShownAr[language]);
+          sa.add(EDStatic.messages.get(Message.SUBSET_LONG_NOT_SHOWN, language));
           n = sa.size();
         }
 
@@ -12796,7 +12856,7 @@ public abstract class EDDTable extends EDD {
         }
       }
       if (tSubsetVariables.length == 0)
-        tAccessibleViaSubset = EDStatic.messages.subsetNotSetUpAr[0];
+        tAccessibleViaSubset = EDStatic.messages.get(Message.SUBSET_NOT_SET_UP, 0);
 
       if ((className.equals("EDDTableFromDapSequence") || className.equals("EDDTableFromErddap"))
           && EDStatic.config.quickRestart
@@ -12887,17 +12947,18 @@ public abstract class EDDTable extends EDD {
         accessibleViaMAG =
             String2.canonical(
                 MessageFormat.format(
-                    EDStatic.messages
-                        .noXxxBecause2Ar[0], // language=0 because only 1 value of accessibleViaMAG
-                    EDStatic.messages.magAr[0],
-                    EDStatic.messages.noXxxNoNonStringAr[0]));
+                    EDStatic.messages.get(
+                        Message.NO_XXX_BECAUSE_2,
+                        0), // language=0 because only 1 value of accessibleViaMAG
+                    EDStatic.messages.get(Message.MAG, 0),
+                    EDStatic.messages.get(Message.NO_XXX_NO_NON_STRING, 0)));
       else if (nNumeric == 1)
         accessibleViaMAG =
             String2.canonical(
                 MessageFormat.format(
-                    EDStatic.messages.noXxxBecause2Ar[0],
-                    EDStatic.messages.magAr[0],
-                    EDStatic.messages.noXxxNo2NonStringAr[0]));
+                    EDStatic.messages.get(Message.NO_XXX_BECAUSE_2, 0),
+                    EDStatic.messages.get(Message.MAG, 0),
+                    EDStatic.messages.get(Message.NO_XXX_NO_2_NON_STRING, 0)));
       else accessibleViaMAG = String2.canonical("");
     }
     return accessibleViaMAG;
@@ -12933,28 +12994,33 @@ public abstract class EDDTable extends EDD {
     if (!EDStatic.config.sosActive)
       return String2.canonical(
           MessageFormat.format(
-              EDStatic.messages.noXxxBecauseAr[0],
+              EDStatic.messages.get(Message.NO_XXX_BECAUSE, 0),
               "SOS",
-              MessageFormat.format(EDStatic.messages.noXxxNotActiveAr[0], "SOS")));
+              MessageFormat.format(EDStatic.messages.get(Message.NO_XXX_NOT_ACTIVE, 0), "SOS")));
 
     if (lonIndex < 0 || latIndex < 0 || timeIndex < 0)
       return String2.canonical(
           MessageFormat.format(
-              EDStatic.messages.noXxxBecauseAr[0], "SOS", EDStatic.messages.noXxxNoLLTAr[0]));
+              EDStatic.messages.get(Message.NO_XXX_BECAUSE, 0),
+              "SOS",
+              EDStatic.messages.get(Message.NO_XXX_NO_LLT, 0)));
 
     String cdt = combinedGlobalAttributes().getString(EDMessages.DEFAULT_LANGUAGE, "cdm_data_type");
     int type = sosCdmDataTypes.indexOf(cdt);
     if (type < 0)
       return String2.canonical(
           MessageFormat.format(
-              EDStatic.messages.noXxxBecauseAr[0],
+              EDStatic.messages.get(Message.NO_XXX_BECAUSE, 0),
               "SOS",
-              MessageFormat.format(EDStatic.messages.noXxxNoCdmDataTypeAr[0], cdt)));
+              MessageFormat.format(
+                  EDStatic.messages.get(Message.NO_XXX_NO_CDM_DATA_TYPE, 0), cdt)));
 
     if (!setSosOfferingTypeAndIndex())
       return String2.canonical(
           MessageFormat.format(
-              EDStatic.messages.noXxxBecauseAr[0], "SOS", EDStatic.messages.noXxxNoStationIDAr[0]));
+              EDStatic.messages.get(Message.NO_XXX_BECAUSE, 0),
+              "SOS",
+              EDStatic.messages.get(Message.NO_XXX_NO_STATION_ID, 0)));
 
     // this just doesn't check that sosOfferings, sosMinLat, sosMaxLat, ... were all set.
 
@@ -12994,9 +13060,9 @@ public abstract class EDDTable extends EDD {
     if (subsetVariables == null || subsetVariables.length == 0)
       return String2.canonical(
           MessageFormat.format(
-              EDStatic.messages.noXxxBecauseAr[0],
+              EDStatic.messages.get(Message.NO_XXX_BECAUSE, 0),
               "SOS", // language=0 in this method because only 1 version of accessibleViaSOS
-              EDStatic.messages.noXxxNoSubsetVariablesAr[0]));
+              EDStatic.messages.get(Message.NO_XXX_NO_SUBSET_VARIABLES, 0)));
 
     // are sosOfferingIndex, lon, lat in subsetVariablesDataTable?
     // This will only be true if lon and lat are point per offering.
@@ -13006,9 +13072,9 @@ public abstract class EDDTable extends EDD {
         || String2.indexOf(subsetVariables, "latitude") < 0)
       return String2.canonical(
           MessageFormat.format(
-              EDStatic.messages.noXxxBecauseAr[0],
+              EDStatic.messages.get(Message.NO_XXX_BECAUSE, 0),
               "SOS",
-              EDStatic.messages.noXxxNoOLLSubsetVariablesAr[0]));
+              EDStatic.messages.get(Message.NO_XXX_NO_OLL_SUBSET_VARIABLES, 0)));
 
     // Request the distinct() offerings (station names), lon, lat data
     //  from the subsetVariables data table.
@@ -13027,7 +13093,7 @@ public abstract class EDDTable extends EDD {
     if (table.getColumn(0).removeDuplicates() > 0)
       return String2.canonical(
           MessageFormat.format(
-              EDStatic.messages.noXxxBecauseAr[0],
+              EDStatic.messages.get(Message.NO_XXX_BECAUSE, 0),
               "SOS",
               "In the subsetVariables table, some offerings (stations) have "
                   + ">1 longitude,latitude."));
@@ -13057,17 +13123,17 @@ public abstract class EDDTable extends EDD {
         accessibleViaGeoServicesRest =
             String2.canonical(
                 MessageFormat.format(
-                    EDStatic.messages.noXxxBecauseAr[0],
+                    EDStatic.messages.get(Message.NO_XXX_BECAUSE, 0),
                     "GeoServicesRest", // language=0 here because only 1 value of accessibleVia...
                     MessageFormat.format(
-                        EDStatic.messages.noXxxNotActiveAr[0], "GeoServicesRest")));
+                        EDStatic.messages.get(Message.NO_XXX_NOT_ACTIVE, 0), "GeoServicesRest")));
       else
         accessibleViaGeoServicesRest =
             String2.canonical(
                 MessageFormat.format(
-                    EDStatic.messages.noXxxBecauseAr[0],
+                    EDStatic.messages.get(Message.NO_XXX_BECAUSE, 0),
                     "GeoServicesRest",
-                    EDStatic.messages.noXxxItsTabularAr[0]));
+                    EDStatic.messages.get(Message.NO_XXX_ITS_TABULAR, 0)));
     }
     return accessibleViaGeoServicesRest;
   }
@@ -13081,16 +13147,17 @@ public abstract class EDDTable extends EDD {
         accessibleViaWCS =
             String2.canonical(
                 MessageFormat.format(
-                    EDStatic.messages.noXxxBecauseAr[0],
+                    EDStatic.messages.get(Message.NO_XXX_BECAUSE, 0),
                     "WCS", // language=0 here because only 1 value of accessibleVia...
-                    MessageFormat.format(EDStatic.messages.noXxxNotActiveAr[0], "WCS")));
+                    MessageFormat.format(
+                        EDStatic.messages.get(Message.NO_XXX_NOT_ACTIVE, 0), "WCS")));
       else
         accessibleViaWCS =
             String2.canonical(
                 MessageFormat.format(
-                    EDStatic.messages.noXxxBecauseAr[0],
+                    EDStatic.messages.get(Message.NO_XXX_BECAUSE, 0),
                     "WCS",
-                    EDStatic.messages.noXxxItsTabularAr[0]));
+                    EDStatic.messages.get(Message.NO_XXX_ITS_TABULAR, 0)));
     }
     return accessibleViaWCS;
   }
@@ -13103,16 +13170,17 @@ public abstract class EDDTable extends EDD {
         accessibleViaWMS =
             String2.canonical(
                 MessageFormat.format(
-                    EDStatic.messages.noXxxBecauseAr[0],
+                    EDStatic.messages.get(Message.NO_XXX_BECAUSE, 0),
                     "WMS", // language=0 here because only 1 value of accessibleVia...
-                    MessageFormat.format(EDStatic.messages.noXxxNotActiveAr[0], "WMS")));
+                    MessageFormat.format(
+                        EDStatic.messages.get(Message.NO_XXX_NOT_ACTIVE, 0), "WMS")));
       else
         accessibleViaWMS =
             String2.canonical(
                 MessageFormat.format(
-                    EDStatic.messages.noXxxBecauseAr[0],
+                    EDStatic.messages.get(Message.NO_XXX_BECAUSE, 0),
                     "WMS",
-                    EDStatic.messages.noXxxItsTabularAr[0]));
+                    EDStatic.messages.get(Message.NO_XXX_ITS_TABULAR, 0)));
     return accessibleViaWMS;
   }
 
@@ -13394,9 +13462,10 @@ public abstract class EDDTable extends EDD {
         accessibleViaNcCF =
             String2.canonical(
                 MessageFormat.format(
-                    EDStatic.messages.noXxxBecause2Ar[0],
+                    EDStatic.messages.get(Message.NO_XXX_BECAUSE_2, 0),
                     ".ncCF/.ncCFMA",
-                    MessageFormat.format(EDStatic.messages.noXxxNoCdmDataTypeAr[0], cdmType)));
+                    MessageFormat.format(
+                        EDStatic.messages.get(Message.NO_XXX_NO_CDM_DATA_TYPE, 0), cdmType)));
       }
 
       // no errors so far
@@ -13481,7 +13550,7 @@ public abstract class EDDTable extends EDD {
 
     if (accessibleViaSOS().length() > 0)
       throw new SimpleException(
-          EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr) + accessibleViaSOS());
+          EDStatic.simpleBilingual(language, Message.QUERY_ERROR) + accessibleViaSOS());
 
     // validate section=    values are case-sensitive
     String section_ServiceIdentification = "ServiceIdentification";
@@ -14207,11 +14276,12 @@ public abstract class EDDTable extends EDD {
       offeringType = sosOfferingType;
       int which = sosOfferings.indexOf(shortName);
       if (which < 0)
-        // this format EDStatic.messages.queryErrorAr[language] + "xxx=" is parsed by Erddap section
+        // this format EDStatic.messages.get(Message.QUERY_ERROR, language) + "xxx=" is parsed by
+        // Erddap section
         // "deal
         // with SOS error"
         throw new SimpleException(
-            EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
+            EDStatic.simpleBilingual(language, Message.QUERY_ERROR)
                 + "procedure="
                 + shortName
                 + " isn't a valid sensor name.");
@@ -14686,11 +14756,12 @@ public abstract class EDDTable extends EDD {
   public static boolean isIoosSosXmlResponseFormat(int language, String responseFormat) {
     String tabledapType = sosResponseFormatToFileTypeName(responseFormat);
     if (tabledapType == null)
-      // this format EDStatic.messages.queryErrorAr[language] + "xxx=" is parsed by Erddap section
+      // this format EDStatic.messages.get(Message.QUERY_ERROR, language) + "xxx=" is parsed by
+      // Erddap section
       // "deal with
       // SOS error"
       throw new SimpleException(
-          EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
+          EDStatic.simpleBilingual(language, Message.QUERY_ERROR)
               + "responseFormat="
               + responseFormat
               + " is invalid.");
@@ -14746,7 +14817,7 @@ public abstract class EDDTable extends EDD {
 
     if (accessibleViaSOS().length() > 0)
       throw new SimpleException(
-          EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr) + accessibleViaSOS());
+          EDStatic.simpleBilingual(language, Message.QUERY_ERROR) + accessibleViaSOS());
 
     // parse the sosQuery
     String dapQueryAr[] = sosQueryToDapQuery(request, language, loggedInAs, sosQuery);
@@ -14873,11 +14944,12 @@ public abstract class EDDTable extends EDD {
     // service   required
     String service = sosQueryMap.get("service"); // test name.toLowerCase()
     if (service == null || !service.equals("SOS"))
-      // this format EDStatic.messages.queryErrorAr[language] + "xxx=" is parsed by Erddap section
+      // this format EDStatic.messages.get(Message.QUERY_ERROR, language) + "xxx=" is parsed by
+      // Erddap section
       // "deal with
       // SOS error"
       throw new SimpleException(
-          EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
+          EDStatic.simpleBilingual(language, Message.QUERY_ERROR)
               + "service="
               + service
               + " should have been \"SOS\".");
@@ -14885,11 +14957,12 @@ public abstract class EDDTable extends EDD {
     // version    required
     String version = sosQueryMap.get("version"); // test name.toLowerCase()
     if (version == null || !version.equals(sosVersion))
-      // this format EDStatic.messages.queryErrorAr[language] + "xxx=" is parsed by Erddap section
+      // this format EDStatic.messages.get(Message.QUERY_ERROR, language) + "xxx=" is parsed by
+      // Erddap section
       // "deal with
       // SOS error"
       throw new SimpleException(
-          EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
+          EDStatic.simpleBilingual(language, Message.QUERY_ERROR)
               + "version="
               + version
               + " should have been \""
@@ -14899,11 +14972,12 @@ public abstract class EDDTable extends EDD {
     // request    required
     String sosRequest = sosQueryMap.get("request"); // test name.toLowerCase()
     if (sosRequest == null || !sosRequest.equals("GetObservation"))
-      // this format EDStatic.messages.queryErrorAr[language] + "xxx=" is parsed by Erddap section
+      // this format EDStatic.messages.get(Message.QUERY_ERROR, language) + "xxx=" is parsed by
+      // Erddap section
       // "deal with
       // SOS error"
       throw new SimpleException(
-          EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
+          EDStatic.simpleBilingual(language, Message.QUERY_ERROR)
               + "request="
               + sosRequest
               + " should have been \"GetObservation\".");
@@ -14911,11 +14985,12 @@ public abstract class EDDTable extends EDD {
     // srsName  SOS required; erddap optional (default=4326, the only one supported)
     String srsName = sosQueryMap.get("srsname"); // test name.toLowerCase()
     if (srsName != null && !srsName.endsWith(":4326"))
-      // this format EDStatic.messages.queryErrorAr[language] + "xxx=" is parsed by Erddap section
+      // this format EDStatic.messages.get(Message.QUERY_ERROR, language) + "xxx=" is parsed by
+      // Erddap section
       // "deal with
       // SOS error"
       throw new SimpleException(
-          EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
+          EDStatic.simpleBilingual(language, Message.QUERY_ERROR)
               + "srsName="
               + srsName
               + " should have been \"urn:ogc:def:crs:epsg::4326\".");
@@ -14944,7 +15019,7 @@ public abstract class EDDTable extends EDD {
             || dv == timeIndex
             || dv == sosOfferingIndex)
           throw new SimpleException(
-              EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
+              EDStatic.simpleBilingual(language, Message.QUERY_ERROR)
                   + "observedProperty="
                   + property
                   + " is invalid.");
@@ -14980,11 +15055,12 @@ public abstract class EDDTable extends EDD {
 
       whichOffering = sosOfferings.indexOf(requestShortOfferingName);
       if (whichOffering < 0)
-        // this format EDStatic.messages.queryErrorAr[language] + "xxx=" is parsed by Erddap section
+        // this format EDStatic.messages.get(Message.QUERY_ERROR, language) + "xxx=" is parsed by
+        // Erddap section
         // "deal
         // with SOS error"
         throw new SimpleException(
-            EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
+            EDStatic.simpleBilingual(language, Message.QUERY_ERROR)
                 + "offering="
                 + requestOffering
                 + " is invalid.");
@@ -14999,15 +15075,14 @@ public abstract class EDDTable extends EDD {
     String procedure = sosQueryMap.get("procedure"); // test name.toLowerCase()
     if (procedure != null)
       throw new SimpleException(
-          EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
+          EDStatic.simpleBilingual(language, Message.QUERY_ERROR)
               + "\"procedure\" is not supported.");
 
     // result    forbidden
     String result = sosQueryMap.get("result"); // test name.toLowerCase()
     if (result != null)
       throw new SimpleException(
-          EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
-              + "\"result\" is not supported.");
+          EDStatic.simpleBilingual(language, Message.QUERY_ERROR) + "\"result\" is not supported.");
 
     // responseMode  SOS & erddap optional (default="inline")
     // String responseMode = sosQueryMap.get("responsemode"); //test name.toLowerCase()
@@ -15022,11 +15097,12 @@ public abstract class EDDTable extends EDD {
     String responseFormat = sosQueryMap.get("responseformat"); // test name.toLowerCase()
     String fileTypeName = sosResponseFormatToFileTypeName(responseFormat);
     if (fileTypeName == null)
-      // this format EDStatic.messages.queryErrorAr[language] + "xxx=" is parsed by Erddap section
+      // this format EDStatic.messages.get(Message.QUERY_ERROR, language) + "xxx=" is parsed by
+      // Erddap section
       // "deal with
       // SOS error"
       throw new SimpleException(
-          EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
+          EDStatic.simpleBilingual(language, Message.QUERY_ERROR)
               + "responseFormat="
               + responseFormat
               + " is invalid.");
@@ -15042,7 +15118,7 @@ public abstract class EDDTable extends EDD {
     String resultModel = sosQueryMap.get("resultmodel"); // test name.toLowerCase()
     if (resultModel != null && !resultModel.equals("om:Observation"))
       throw new SimpleException(
-          EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
+          EDStatic.simpleBilingual(language, Message.QUERY_ERROR)
               + "resultModel="
               + resultModel
               + " should have been \"om:Observation\".");
@@ -15068,7 +15144,7 @@ public abstract class EDDTable extends EDD {
         int lpo = eventTime.lastIndexOf('/');
         if (lpo != spo)
           throw new SimpleException(
-              EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
+              EDStatic.simpleBilingual(language, Message.QUERY_ERROR)
                   + "ERDDAP doesn't support '/resolution' in eventTime=beginTime/endTime/resolution.");
         dapQuery.append(
             "&time>=" + eventTime.substring(0, spo) + "&time<=" + eventTime.substring(spo + 1));
@@ -15083,7 +15159,7 @@ public abstract class EDDTable extends EDD {
       String bboxSA[] = String2.split(foi.substring(5), ',');
       if (bboxSA.length != 4)
         throw new SimpleException(
-            EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
+            EDStatic.simpleBilingual(language, Message.QUERY_ERROR)
                 + "featureOfInterest=BBOX must have 4 comma-separated values.");
 
       double d1 = String2.parseDouble(bboxSA[0]);
@@ -15105,7 +15181,7 @@ public abstract class EDDTable extends EDD {
       }
     } else {
       throw new SimpleException(
-          EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
+          EDStatic.simpleBilingual(language, Message.QUERY_ERROR)
               + "featureOfInterest="
               + foi
               + " is invalid. Only BBOX is allowed.");
@@ -15125,7 +15201,7 @@ public abstract class EDDTable extends EDD {
       // responseFormat is an image type
       if (requestedVars.size() == 0) {
         throw new SimpleException(
-            EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
+            EDStatic.simpleBilingual(language, Message.QUERY_ERROR)
                 + "For image responseFormats (e.g., "
                 + responseFormat
                 + "), observedProperty must list one or more simple observedProperties.");
@@ -15135,7 +15211,7 @@ public abstract class EDDTable extends EDD {
         EDV edv1 = findDataVariableByDestinationName(requestedVars.get(0));
         if (edv1.destinationDataPAType().equals(PAType.STRING))
           throw new SimpleException(
-              EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
+              EDStatic.simpleBilingual(language, Message.QUERY_ERROR)
                   + "For image responseFormats, observedProperty="
                   + requestedVars.get(0)
                   + " can't be a String phenomena.");
@@ -15156,13 +15232,13 @@ public abstract class EDDTable extends EDD {
         EDV edv2 = findDataVariableByDestinationName(requestedVars.get(1));
         if (edv1.destinationDataPAType().equals(PAType.STRING))
           throw new SimpleException(
-              EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
+              EDStatic.simpleBilingual(language, Message.QUERY_ERROR)
                   + "For image responseFormats, observedProperty="
                   + requestedVars.get(0)
                   + " can't be a String phenomena.");
         if (edv2.destinationDataPAType().equals(PAType.STRING))
           throw new SimpleException(
-              EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
+              EDStatic.simpleBilingual(language, Message.QUERY_ERROR)
                   + "For image responseFormats, observedProperty="
                   + requestedVars.get(1)
                   + " can't be a String phenomena.");
@@ -15667,22 +15743,29 @@ public abstract class EDDTable extends EDD {
     int tIdIndex = table.findColumnNumber(idName);
     if (tLonIndex < 0)
       throw new RuntimeException(
-          EDStatic.messages.errorInternalAr[0] + "'longitude' isn't in the response table.");
+          EDStatic.messages.get(Message.ERROR_INTERNAL, 0)
+              + "'longitude' isn't in the response table.");
     if (tLatIndex < 0)
       throw new RuntimeException(
-          EDStatic.messages.errorInternalAr[0] + "'latitude' isn't in the response table.");
+          EDStatic.messages.get(Message.ERROR_INTERNAL, 0)
+              + "'latitude' isn't in the response table.");
     if (altIndex >= 0 && tAltIndex < 0) // yes, first one is alt, not tAlt
     throw new RuntimeException(
-          EDStatic.messages.errorInternalAr[0] + "'altitude' isn't in the response table.");
+          EDStatic.messages.get(Message.ERROR_INTERNAL, 0)
+              + "'altitude' isn't in the response table.");
     if (depthIndex >= 0 && tDepthIndex < 0) // yes, first one is depth, not tDepth
     throw new RuntimeException(
-          EDStatic.messages.errorInternalAr[0] + "'depth' isn't in the response table.");
+          EDStatic.messages.get(Message.ERROR_INTERNAL, 0)
+              + "'depth' isn't in the response table.");
     if (tTimeIndex < 0)
       throw new RuntimeException(
-          EDStatic.messages.errorInternalAr[0] + "'time' isn't in the response table.");
+          EDStatic.messages.get(Message.ERROR_INTERNAL, 0) + "'time' isn't in the response table.");
     if (tIdIndex < 0)
       throw new RuntimeException(
-          EDStatic.messages.errorInternalAr[0] + "'" + idName + "' isn't in the response table.");
+          EDStatic.messages.get(Message.ERROR_INTERNAL, 0)
+              + "'"
+              + idName
+              + "' isn't in the response table.");
 
     // Ensure it is sorted by tIdIndex, tTimeIndex, [tAltIndex|tDepthIndex] (it usually is, but make
     // sure; it is assumed below)
@@ -16113,7 +16196,7 @@ public abstract class EDDTable extends EDD {
               // withinTimeIndex may not be tAltIndex or tDepthIndex,
               // so ensure there is an tAltIndex or tDepthIndex
               throw new SimpleException(
-                  EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
+                  EDStatic.simpleBilingual(language, Message.QUERY_ERROR)
                       + "This dataset is not suitable for SOS: there are multiple values for one time, but there is no altitude or depth variable.");
             } else {
               // withinTimeIndex may not be tAltIndex or tDepthIndex,
@@ -16122,7 +16205,7 @@ public abstract class EDDTable extends EDD {
               String val = table.getStringData(tAltDepthIndex, timeRow);
               if (val.equals(lastAltVal))
                 throw new SimpleException(
-                    EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
+                    EDStatic.simpleBilingual(language, Message.QUERY_ERROR)
                         + "This dataset is not suitable for SOS: there are multiple values for one time, but not because of the altitude or depth variable.");
               lastAltVal = val;
 
@@ -16208,7 +16291,7 @@ public abstract class EDDTable extends EDD {
                 // withinTimeIndex may not be tAltIndex or tDepthIndex,
                 // so ensure there is an tAltIndex or tDepthIndex
                 throw new SimpleException(
-                    EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
+                    EDStatic.simpleBilingual(language, Message.QUERY_ERROR)
                         + "This dataset is not suitable for SOS: there are multiple values for one time, but there is no altitude variable.");
               } else {
                 // withinTimeIndex may not be tAltIndex or tDepthIndex,
@@ -16217,7 +16300,7 @@ public abstract class EDDTable extends EDD {
                 String val = table.getStringData(tAltDepthIndex, timeRow);
                 if (val.equals(lastAltVal))
                   throw new SimpleException(
-                      EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
+                      EDStatic.simpleBilingual(language, Message.QUERY_ERROR)
                           + "This dataset is not suitable for SOS: there are multiple values for one time, but not because of the altitude or depth variable.");
                 lastAltVal = val;
 
@@ -16366,22 +16449,29 @@ public abstract class EDDTable extends EDD {
     int tIdIndex = table.findColumnNumber(idName);
     if (tLonIndex < 0)
       throw new RuntimeException(
-          EDStatic.messages.errorInternalAr[0] + "'longitude' isn't in the response table.");
+          EDStatic.messages.get(Message.ERROR_INTERNAL, 0)
+              + "'longitude' isn't in the response table.");
     if (tLatIndex < 0)
       throw new RuntimeException(
-          EDStatic.messages.errorInternalAr[0] + "'latitude' isn't in the response table.");
+          EDStatic.messages.get(Message.ERROR_INTERNAL, 0)
+              + "'latitude' isn't in the response table.");
     if (altIndex >= 0 && tAltIndex < 0) // yes, first one is alt, not tAlt
     throw new RuntimeException(
-          EDStatic.messages.errorInternalAr[0] + "'altitude' isn't in the response table.");
+          EDStatic.messages.get(Message.ERROR_INTERNAL, 0)
+              + "'altitude' isn't in the response table.");
     if (depthIndex >= 0 && tDepthIndex < 0) // yes, first one is depth, not tDepth
     throw new RuntimeException(
-          EDStatic.messages.errorInternalAr[0] + "'depth' isn't in the response table.");
+          EDStatic.messages.get(Message.ERROR_INTERNAL, 0)
+              + "'depth' isn't in the response table.");
     if (tTimeIndex < 0)
       throw new RuntimeException(
-          EDStatic.messages.errorInternalAr[0] + "'time' isn't in the response table.");
+          EDStatic.messages.get(Message.ERROR_INTERNAL, 0) + "'time' isn't in the response table.");
     if (tIdIndex < 0)
       throw new RuntimeException(
-          EDStatic.messages.errorInternalAr[0] + "'" + idName + "' isn't in the response table.");
+          EDStatic.messages.get(Message.ERROR_INTERNAL, 0)
+              + "'"
+              + idName
+              + "' isn't in the response table.");
 
     // Ensure it is sorted by tIdIndex, tTimeIndex, [tAltIndex|tDepthIndex] (it usually is, but make
     // sure; it is assumed below)
@@ -17052,7 +17142,9 @@ public abstract class EDDTable extends EDD {
     writer.write(
         "<h2><a class=\"selfLink\" id=\"description\" href=\"#description\" rel=\"bookmark\">What</a> is SOS?</h2>\n"
             + String2.replaceAll(
-                EDStatic.messages.sosLongDescriptionHtmlAr[language], "&erddapUrl;", tErddapUrl)
+                EDStatic.messages.get(Message.SOS_LONG_DESCRIPTION_HTML, language),
+                "&erddapUrl;",
+                tErddapUrl)
             + "\n"
             + datasetListRef
             + "\n"
@@ -17732,8 +17824,10 @@ public abstract class EDDTable extends EDD {
       throw new SimpleException(
           EDStatic.bilingual(
               language,
-              EDStatic.messages.queryErrorAr[0] + EDStatic.messages.noXxxNoLLAr[0],
-              EDStatic.messages.queryErrorAr[language] + EDStatic.messages.noXxxNoLLAr[language]));
+              EDStatic.messages.get(Message.QUERY_ERROR, 0)
+                  + EDStatic.messages.get(Message.NO_XXX_NO_LL, 0),
+              EDStatic.messages.get(Message.QUERY_ERROR, language)
+                  + EDStatic.messages.get(Message.NO_XXX_NO_LL, language)));
 
     String tErddapUrl = EDStatic.preferredErddapUrl;
     String datasetUrl = tErddapUrl + "/" + dapProtocol + "/" + datasetID();
@@ -18725,8 +18819,10 @@ public abstract class EDDTable extends EDD {
       throw new SimpleException(
           EDStatic.bilingual(
               language,
-              EDStatic.messages.queryErrorAr[0] + EDStatic.messages.noXxxNoLLAr[0],
-              EDStatic.messages.queryErrorAr[language] + EDStatic.messages.noXxxNoLLAr[language]));
+              EDStatic.messages.get(Message.QUERY_ERROR, 0)
+                  + EDStatic.messages.get(Message.NO_XXX_NO_LL, 0),
+              EDStatic.messages.get(Message.QUERY_ERROR, language)
+                  + EDStatic.messages.get(Message.NO_XXX_NO_LL, language)));
 
     String tErddapUrl = EDStatic.preferredErddapUrl;
     String datasetUrl = tErddapUrl + "/tabledap/" + datasetID;

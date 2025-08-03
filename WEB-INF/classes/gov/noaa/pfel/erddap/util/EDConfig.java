@@ -246,6 +246,7 @@ public class EDConfig {
   @FeatureFlag public boolean redirectDocumentationToGitHubIo = true;
   @FeatureFlag public boolean useSisISO19115 = false;
   @FeatureFlag public boolean useHeadersForUrl = false;
+  @FeatureFlag public boolean generateCroissantSchema = true;
   @FeatureFlag public boolean taskCacheClear = true;
 
   public EDConfig(String webInfParentDirectory) throws Exception {
@@ -633,6 +634,7 @@ public class EDConfig {
     redirectDocumentationToGitHubIo =
         getSetupEVBoolean(setup, ev, "redirectDocumentationToGitHubIo", true);
     useSisISO19115 = getSetupEVBoolean(setup, ev, "useSisISO19115", false);
+    generateCroissantSchema = getSetupEVBoolean(setup, ev, "generateCroissantSchema", true);
     deploymentInfo = getSetupEVString(setup, ev, "deploymentInfo", "");
 
     // ensure images exist and get their sizes

@@ -8,6 +8,7 @@ import gov.noaa.pfel.erddap.dataset.EDDGrid;
 import gov.noaa.pfel.erddap.dataset.GridDataAccessor;
 import gov.noaa.pfel.erddap.dataset.OutputStreamSource;
 import gov.noaa.pfel.erddap.dataset.OutputStreamSourceSimple;
+import gov.noaa.pfel.erddap.util.EDMessages.Message;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import java.io.OutputStream;
 import java.text.MessageFormat;
@@ -51,7 +52,7 @@ public class GeotifFiles extends ImageTypes {
 
   @Override
   public String getHelpText(int language) {
-    return EDStatic.messages.fileHelp_geotifAr[language];
+    return EDStatic.messages.get(Message.FILE_HELP_GEOTIF, language);
   }
 
   /**
@@ -104,16 +105,16 @@ public class GeotifFiles extends ImageTypes {
       throw new SimpleException(
           EDStatic.bilingual(
               language,
-              EDStatic.messages.queryErrorAr[0]
+              EDStatic.messages.get(Message.QUERY_ERROR, 0)
                   + MessageFormat.format(
-                      EDStatic.messages.noXxxBecause2Ar[0],
+                      EDStatic.messages.get(Message.NO_XXX_BECAUSE_2, 0),
                       ".geotif",
-                      EDStatic.messages.noXxxNoLLAr[0]),
-              EDStatic.messages.queryErrorAr[language]
+                      EDStatic.messages.get(Message.NO_XXX_NO_LL, 0)),
+              EDStatic.messages.get(Message.QUERY_ERROR, language)
                   + MessageFormat.format(
-                      EDStatic.messages.noXxxBecause2Ar[language],
+                      EDStatic.messages.get(Message.NO_XXX_BECAUSE_2, language),
                       ".geotif",
-                      EDStatic.messages.noXxxNoLLAr[language])));
+                      EDStatic.messages.get(Message.NO_XXX_NO_LL, language))));
 
     // Lon and Lat are evenly spaced?
     // See 2nd test in EDDGridFromDap.testDescendingAxisGeotif()
@@ -122,40 +123,28 @@ public class GeotifFiles extends ImageTypes {
       throw new SimpleException(
           EDStatic.bilingual(
               language,
-              EDStatic.messages.queryErrorAr[0]
+              EDStatic.messages.get(Message.QUERY_ERROR, 0)
                   + MessageFormat.format(
-                      EDStatic.messages.noXxxBecause2Ar[0],
+                      EDStatic.messages.get(Message.NO_XXX_BECAUSE_2, 0),
                       ".geotif",
-                      EDStatic.messages.noXxxNoLLEvenlySpacedAr[0]),
-              EDStatic.messages.queryErrorAr[language]
+                      EDStatic.messages.get(Message.NO_XXX_NO_LL_EVENLY_SPACED, 0)),
+              EDStatic.messages.get(Message.QUERY_ERROR, language)
                   + MessageFormat.format(
-                      EDStatic.messages.noXxxBecause2Ar[language],
+                      EDStatic.messages.get(Message.NO_XXX_BECAUSE_2, language),
                       ".geotif",
-                      EDStatic.messages.noXxxNoLLEvenlySpacedAr[language])));
-
-    // 2013-10-21 NO LONGER A LIMITATION: lon and lat are ascending?
-    //  GeotiffWriter now deals with descending.
-    //  see test in EDDGridFromDap.testDescendingAxisGeotif
-    // if (axisVariables[eddGrid.latIndex()].averageSpacing() <= 0 ||
-    //    axisVariables[eddGrid.lonIndex()].averageSpacing() <= 0)
-    //    throw new SimpleException(EDStatic.bilingual(language,
-    //    EDStatic.messages.queryErrorAr[0]        +
-    // MessageFormat.format(EDStatic.messages.queryErrorAscending,
-    // ".geotif"),
-    //    EDStatic.messages.queryErrorAr[language] +
-    // MessageFormat.format(EDStatic.messages.queryErrorAscending,
-    // ".geotif")));
+                      EDStatic.messages.get(Message.NO_XXX_NO_LL_EVENLY_SPACED, language))));
 
     // can't handle axis request
     if (eddGrid.isAxisDapQuery(userDapQuery))
       throw new SimpleException(
           EDStatic.bilingual(
               language,
-              EDStatic.messages.queryErrorAr[0]
-                  + MessageFormat.format(EDStatic.messages.queryErrorNotAxisAr[0], ".geotif"),
-              EDStatic.messages.queryErrorAr[language]
+              EDStatic.messages.get(Message.QUERY_ERROR, 0)
                   + MessageFormat.format(
-                      EDStatic.messages.queryErrorNotAxisAr[language], ".geotif")));
+                      EDStatic.messages.get(Message.QUERY_ERROR_NOT_AXIS, 0), ".geotif"),
+              EDStatic.messages.get(Message.QUERY_ERROR, language)
+                  + MessageFormat.format(
+                      EDStatic.messages.get(Message.QUERY_ERROR_NOT_AXIS, language), ".geotif")));
 
     // parse the userDapQuery and get the GridDataAccessor
     // this also tests for error when parsing query
@@ -167,11 +156,12 @@ public class GeotifFiles extends ImageTypes {
         throw new SimpleException(
             EDStatic.bilingual(
                 language,
-                EDStatic.messages.queryErrorAr[0]
-                    + MessageFormat.format(EDStatic.messages.queryError1VarAr[0], ".geotif"),
-                EDStatic.messages.queryErrorAr[language]
+                EDStatic.messages.get(Message.QUERY_ERROR, 0)
                     + MessageFormat.format(
-                        EDStatic.messages.queryError1VarAr[language], ".geotif")));
+                        EDStatic.messages.get(Message.QUERY_ERROR_1_VAR, 0), ".geotif"),
+                EDStatic.messages.get(Message.QUERY_ERROR, language)
+                    + MessageFormat.format(
+                        EDStatic.messages.get(Message.QUERY_ERROR_1_VAR, language), ".geotif")));
 
       PrimitiveArray lonPa = null, latPa = null;
       double minX = Double.NaN, maxX = Double.NaN, minY = Double.NaN, maxY = Double.NaN;
@@ -190,11 +180,12 @@ public class GeotifFiles extends ImageTypes {
             throw new SimpleException(
                 EDStatic.bilingual(
                     language,
-                    EDStatic.messages.queryErrorAr[0]
-                        + MessageFormat.format(EDStatic.messages.queryError180Ar[0], ".geotif"),
-                    EDStatic.messages.queryErrorAr[language]
+                    EDStatic.messages.get(Message.QUERY_ERROR, 0)
                         + MessageFormat.format(
-                            EDStatic.messages.queryError180Ar[language], ".geotif")));
+                            EDStatic.messages.get(Message.QUERY_ERROR_180, 0), ".geotif"),
+                    EDStatic.messages.get(Message.QUERY_ERROR, language)
+                        + MessageFormat.format(
+                            EDStatic.messages.get(Message.QUERY_ERROR_180, language), ".geotif")));
           if (minX >= 180) lonAdjust = -360;
           minX += lonAdjust;
           maxX += lonAdjust;
@@ -202,15 +193,15 @@ public class GeotifFiles extends ImageTypes {
             throw new SimpleException(
                 EDStatic.bilingual(
                     language,
-                    EDStatic.messages.queryErrorAr[0]
+                    EDStatic.messages.get(Message.QUERY_ERROR, 0)
                         + MessageFormat.format(
-                            EDStatic.messages.queryErrorAdjustedAr[0],
+                            EDStatic.messages.get(Message.QUERY_ERROR_ADJUSTED, 0),
                             ".geotif",
                             "" + minX,
                             "" + maxX),
-                    EDStatic.messages.queryErrorAr[language]
+                    EDStatic.messages.get(Message.QUERY_ERROR, language)
                         + MessageFormat.format(
-                            EDStatic.messages.queryErrorAdjustedAr[language],
+                            EDStatic.messages.get(Message.QUERY_ERROR_ADJUSTED, language),
                             ".geotif",
                             "" + minX,
                             "" + maxX)));
@@ -228,14 +219,14 @@ public class GeotifFiles extends ImageTypes {
             throw new SimpleException(
                 EDStatic.bilingual(
                     language,
-                    EDStatic.messages.queryErrorAr[0]
+                    EDStatic.messages.get(Message.QUERY_ERROR, 0)
                         + MessageFormat.format(
-                            EDStatic.messages.queryError1ValueAr[0],
+                            EDStatic.messages.get(Message.QUERY_ERROR_1_VALUE, 0),
                             ".geotif",
                             eddGrid.axisVariables()[av].destinationName()),
-                    EDStatic.messages.queryErrorAr[language]
+                    EDStatic.messages.get(Message.QUERY_ERROR, language)
                         + MessageFormat.format(
-                            EDStatic.messages.queryError1ValueAr[language],
+                            EDStatic.messages.get(Message.QUERY_ERROR_1_VALUE, language),
                             ".geotif",
                             eddGrid.axisVariables()[av].destinationName())));
         }
