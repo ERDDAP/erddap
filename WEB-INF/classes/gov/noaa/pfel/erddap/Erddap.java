@@ -1786,7 +1786,10 @@ public class Erddap extends HttpServlet {
       if (useHtmlTemplates(request)) {
         YouAreHere youAreHere =
             EDStatic.getYouAreHere(
-                request, language, loggedInAs, EDStatic.messages.get(Message.LEGAL_NOTICES_TITLE, language));
+                request,
+                language,
+                loggedInAs,
+                EDStatic.messages.get(Message.LEGAL_NOTICES_TITLE, language));
         TemplateEngine engine = TemplateEngine.createPrecompiled(ContentType.Html);
         engine.render(
             "legal.html",
@@ -1800,7 +1803,10 @@ public class Erddap extends HttpServlet {
         writer.write(
             "<div class=\"standard_width\">\n"
                 + EDStatic.youAreHere(
-                    request, language, loggedInAs, EDStatic.messages.get(Message.LEGAL_NOTICES_TITLE, language))
+                    request,
+                    language,
+                    loggedInAs,
+                    EDStatic.messages.get(Message.LEGAL_NOTICES_TITLE, language))
                 + EDStatic.messages.get(Message.LEGAL_NOTICES, language)
                 + "\n"
                 + EDStatic.messages.get(Message.STANDARD_GENERAL_DISCLAIMER, language)
@@ -14110,21 +14116,22 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
         // write html response
         writer.write("<div class=\"standard_width\">");
         writer.write(EDStatic.youAreHere(request, language, loggedInAs, shortTitle));
-        writer.write(XML.encodeAsHTML(EDStatic.messages.advc_outOfDateAr[language]));
+        writer.write(XML.encodeAsHTML(EDStatic.messages.get(Message.ADVC_OUT_OF_DATE, language)));
         writer.write("\n<p>");
         if (table.nRows() == 0) {
           writer.write(
               "["
-                  + MessageFormat.format(EDStatic.messages.nMatchingAr[language], "0")
+                  + MessageFormat.format(EDStatic.messages.get(Message.N_MATCHING, language), "0")
                   + " "
-                  + EDStatic.messages.advn_outOfDateAr[language]
+                  + EDStatic.messages.get(Message.ADVC_OUT_OF_DATE, language)
                   + "]");
         } else {
           writer.write(
-              MessageFormat.format(EDStatic.messages.nMatchingAr[language], "" + table.nRows())
+              MessageFormat.format(
+                      EDStatic.messages.get(Message.N_MATCHING, language), "" + table.nRows())
                   + " "
                   + MessageFormat.format(
-                      EDStatic.messages.generatedAtAr[language],
+                      EDStatic.messages.get(Message.GENERATED_AT, language),
                       "<span class=\"N\">" + currentTimeZulu + "</span>")
                   + "\n<br>");
           table.saveAsHtmlTable(
@@ -14200,9 +14207,8 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
               + "/rest.html\">"
               + EDStatic.messages.get(Message.RESTFUL_VIA_SERVICE, language)
               + "</a>.\n");
-        writer.write("</div>\n");
-        endHtmlWriter(request, language, out, writer, tErddapUrl, loggedInAs, false);
-      }
+      writer.write("</div>\n");
+      endHtmlWriter(request, language, out, writer, tErddapUrl, loggedInAs, false);
     } catch (Throwable t) {
       EDStatic.rethrowClientAbortException(t); // first thing in catch{}
       writer.write(EDStatic.htmlForException(language, t));
@@ -18890,7 +18896,10 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     if (useHtmlTemplates(request)) {
       YouAreHere youAreHere =
           EDStatic.getYouAreHere(
-              request, language, loggedInAs, EDStatic.messages.subscriptionsTitleAr[language]);
+              request,
+              language,
+              loggedInAs,
+              EDStatic.messages.get(Message.SUBSCRIPTIONS_TITLE, language));
       TemplateEngine engine = TemplateEngine.createPrecompiled(ContentType.Html);
       engine.render(
           "subscription.jte",
@@ -18904,13 +18913,17 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
         writer.write(
             "<div class=\"standard_width\">\n"
                 + EDStatic.youAreHere(
-                    request, language, loggedInAs, EDStatic.messages.subscriptionsTitleAr[language])
-                + EDStatic.messages.subscription0HtmlAr[language]
-                + MessageFormat.format(EDStatic.messages.subscription1HtmlAr[language], tErddapUrl)
+                    request,
+                    language,
+                    loggedInAs,
+                    EDStatic.messages.get(Message.SUBSCRIPTIONS_TITLE, language))
+                + EDStatic.messages.get(Message.SUBSCRIPTION_0_HTML, language)
+                + MessageFormat.format(
+                    EDStatic.messages.get(Message.SUBSCRIPTION_1_HTML, language), tErddapUrl)
                 + "\n");
         writer.write(
             "<p><strong>"
-                + EDStatic.messages.optionsAr[language]
+                + EDStatic.messages.get(Message.OPTIONS, language)
                 + ":</strong>\n"
                 + "<ul>\n"
                 + "<li> <a rel=\"bookmark\" href=\""
@@ -18918,28 +18931,28 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                 + "/"
                 + Subscriptions.ADD_HTML
                 + "\">"
-                + EDStatic.messages.subscriptionAddAr[language]
+                + EDStatic.messages.get(Message.SUBSCRIPTION_ADD, language)
                 + "</a>\n"
                 + "<li> <a rel=\"bookmark\" href=\""
                 + tErddapUrl
                 + "/"
                 + Subscriptions.VALIDATE_HTML
                 + "\">"
-                + EDStatic.messages.subscriptionValidateAr[language]
+                + EDStatic.messages.get(Message.SUBSCRIPTION_VALIDATE, language)
                 + "</a>\n"
                 + "<li> <a rel=\"bookmark\" href=\""
                 + tErddapUrl
                 + "/"
                 + Subscriptions.LIST_HTML
                 + "\">"
-                + EDStatic.messages.subscriptionListAr[language]
+                + EDStatic.messages.get(Message.SUBSCRIPTION_LIST, language)
                 + "</a>\n"
                 + "<li> <a rel=\"bookmark\" href=\""
                 + tErddapUrl
                 + "/"
                 + Subscriptions.REMOVE_HTML
                 + "\">"
-                + EDStatic.messages.subscriptionRemoveAr[language]
+                + EDStatic.messages.get(Message.SUBSCRIPTION_REMOVE, language)
                 + "</a>\n"
                 + "</ul>\n");
         writer.write("</div>\n");

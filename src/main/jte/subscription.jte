@@ -1,37 +1,38 @@
 @import gov.noaa.pfel.erddap.jte.YouAreHere
 @import gov.noaa.pfel.erddap.util.EDStatic
 @import gov.noaa.pfel.erddap.jte.Subscription
+@import gov.noaa.pfel.erddap.util.EDMessages.Message;
 @param YouAreHere youAreHere
 @param int language
 @template.youarehere(youAreHere)
-${EDStatic.messages.subscription0HtmlAr[language]}
-    $unsafe{Subscription.getFormated(EDStatic.messages.subscription1HtmlAr[language], youAreHere.getErddapUrl())}
+${Subscription.getMessage(Message.SUBSCRIPTION_0_HTML,language)}
+    $unsafe{Subscription.getFormated(Subscription.getMessage(Message.SUBSCRIPTION_1_HTML,language), youAreHere.getErddapUrl())}
 
 <p>
     <strong>
-        ${EDStatic.messages.optionsAr[language]}
+        ${Subscription.getMessage(Message.OPTIONS,language)}
         :
     </strong>
 </p>
 <ul>
     <li>
         <a rel="bookmark" href="${youAreHere.getErddapUrl()}/${Subscription.getAddHtml()}">
-            ${EDStatic.messages.subscriptionAddAr[language]}
+            ${Subscription.getMessage(Message.SUBSCRIPTION_ADD,language)}
         </a>
     </li>
     <li>
         <a rel="bookmark" href="${youAreHere.getErddapUrl()}/${Subscription.getValidateHtml()}">
-            ${EDStatic.messages.subscriptionValidateAr[language]}
+            ${Subscription.getMessage(Message.SUBSCRIPTION_VALIDATE,language)}
         </a>
     </li>
     <li>
         <a rel="bookmark" href="${youAreHere.getErddapUrl()}/${Subscription.getListHtml()}">
-            ${EDStatic.messages.subscriptionListAr[language]}
+            ${Subscription.getMessage(Message.SUBSCRIPTION_LIST,language)}
         </a>
     </li>
     <li>
         <a rel="bookmark" href="${youAreHere.getErddapUrl()}/${Subscription.getRemoveHtml()}">
-            ${EDStatic.messages.subscriptionRemoveAr[language]}
+            ${Subscription.getMessage(Message.SUBSCRIPTION_REMOVE,language)}
         </a>
     </li>
 </ul>
