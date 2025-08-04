@@ -22,6 +22,9 @@ import gov.noaa.pfel.erddap.util.EDMessages;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.*;
 import java.util.ArrayList;
+import java.util.Optional;
+import java.util.stream.Stream;
+import org.apache.commons.lang3.tuple.Pair;
 
 /**
  * This class creates an EDDTable by aggregating a list of EDDTables that have the same variables.
@@ -250,7 +253,7 @@ public class EDDTableAggregateRows extends EDDTable {
                 + c
                 + "] datasetID="
                 + datasetID
-                + " has a diffent number of variables ("
+                + " has a different number of variables ("
                 + cndv
                 + ") than the first child ("
                 + ndv
@@ -310,8 +313,6 @@ public class EDDTableAggregateRows extends EDDTable {
       String tUnits = childVar.units();
       double tMV = childVar.destinationMissingValue();
       double tFV = childVar.destinationFillValue();
-      PAOne tMin = childVar.destinationMin();
-      PAOne tMax = childVar.destinationMax();
 
       // ensure all tChildren are consistent
       for (int c = 1; c < nChildren; c++) {
@@ -360,19 +361,33 @@ public class EDDTableAggregateRows extends EDDTable {
         if (!Test.equal(tFV, cFV)) // 9 digits
         throw new RuntimeException(
               hasADifferent + "_FillValue=" + cFV + than + "_FillValue=" + tFV + ".");
-
-        // and get the minimum min and maximum max
-        tMin = tMin.min(cEdv.destinationMin());
-        tMax = tMax.max(cEdv.destinationMax());
       }
 
-      /// override actual_range with min/max calculated on all chidren
-      if (!tMin.isMissingValue() && !tMax.isMissingValue()) {
-        PrimitiveArray pa = PrimitiveArray.factory(childVar.destinationDataPAType(), 2, false);
-        pa.addPAOne(tMin);
-        pa.addPAOne(tMax);
-        tSourceAtts.set("actual_range", pa);
-      }
+      final int dvFinal = dv;
+      Optional<Pair<PAOne, PAOne>> optionalRange =
+          Stream.of(tChildren)
+              .map(c -> c.dataVariables[dvFinal])
+              .map(cEdv -> Pair.of(cEdv.destinationMin(), cEdv.destinationMax()))
+              .filter(
+                  range -> !(range.getLeft().isMissingValue() && range.getRight().isMissingValue()))
+              .reduce(
+                  (a, b) -> Pair.of(a.getLeft().min(b.getLeft()), a.getRight().max(b.getRight())));
+
+      Pair<PAOne, PAOne> actualRange =
+          optionalRange.orElseGet(
+              () -> {
+                PAOne defaultPAOne = new PAOne(childVar.destinationDataPAType(), "");
+                return Pair.of(defaultPAOne, defaultPAOne);
+              });
+
+      PAOne tMin = actualRange.getLeft();
+      PAOne tMax = actualRange.getRight();
+
+      PrimitiveArray pa = PrimitiveArray.factory(childVar.destinationDataPAType(), 2, false);
+      pa.addPAOne(tMin);
+      pa.addPAOne(tMax);
+      tSourceAtts.set("actual_range", pa);
+      tSourceAtts.set("actual_range", pa);
 
       // make the variable
       EDV newVar = null;
