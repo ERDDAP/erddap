@@ -6,6 +6,7 @@ package gov.noaa.pfel.erddap.dataset;
 
 import com.cohort.array.Attributes;
 import com.cohort.array.PAOne;
+import com.cohort.array.PAType;
 import com.cohort.array.PrimitiveArray;
 import com.cohort.array.StringArray;
 import com.cohort.util.File2;
@@ -22,8 +23,9 @@ import gov.noaa.pfel.erddap.util.EDMessages;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.*;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
-import java.util.stream.Stream;
+import java.util.stream.IntStream;
 import org.apache.commons.lang3.tuple.Pair;
 
 /**
@@ -363,22 +365,8 @@ public class EDDTableAggregateRows extends EDDTable {
               hasADifferent + "_FillValue=" + cFV + than + "_FillValue=" + tFV + ".");
       }
 
-      final int dvFinal = dv;
-      Optional<Pair<PAOne, PAOne>> optionalRange =
-          Stream.of(tChildren)
-              .map(c -> c.dataVariables[dvFinal])
-              .map(cEdv -> Pair.of(cEdv.destinationMin(), cEdv.destinationMax()))
-              .filter(
-                  range -> !(range.getLeft().isMissingValue() && range.getRight().isMissingValue()))
-              .reduce(
-                  (a, b) -> Pair.of(a.getLeft().min(b.getLeft()), a.getRight().max(b.getRight())));
-
       Pair<PAOne, PAOne> actualRange =
-          optionalRange.orElseGet(
-              () -> {
-                PAOne defaultPAOne = new PAOne(childVar.destinationDataPAType(), "");
-                return Pair.of(defaultPAOne, defaultPAOne);
-              });
+          accumulateActualRange(List.of(tChildren), dv, childVar.destinationDataPAType());
 
       PAOne tMin = actualRange.getLeft();
       PAOne tMax = actualRange.getRight();
@@ -453,6 +441,24 @@ public class EDDTableAggregateRows extends EDDTable {
               + "\n");
   }
 
+  private Pair<PAOne, PAOne> accumulateActualRange(
+      List<EDDTable> tChildren, int dv, PAType paType) {
+    Optional<Pair<PAOne, PAOne>> optionalRange =
+        tChildren.stream()
+            .map(c -> c.dataVariables[dv])
+            .map(cEdv -> Pair.of(cEdv.destinationMin(), cEdv.destinationMax()))
+            .filter(
+                range -> !(range.getLeft().isMissingValue() && range.getRight().isMissingValue()))
+            .reduce(
+                (a, b) -> Pair.of(a.getLeft().min(b.getLeft()), a.getRight().max(b.getRight())));
+
+    return optionalRange.orElseGet(
+        () -> {
+          PAOne defaultPAOne = new PAOne(paType, "");
+          return Pair.of(defaultPAOne, defaultPAOne);
+        });
+  }
+
   /**
    * This returns true if this EDDTable knows each variable's actual_range (e.g., EDDTableFromFiles)
    * or false if it doesn't (e.g., EDDTableFromDatabase).
@@ -494,24 +500,20 @@ public class EDDTableAggregateRows extends EDDTable {
     PAOne tMin[] = new PAOne[ndv];
     PAOne tMax[] = new PAOne[ndv];
     EDDTable tChild = getChild(language, 0);
+    List<EDDTable> tChildren =
+        IntStream.range(0, nChildren).mapToObj(c -> getChild(language, c)).toList();
     for (int dvi = 0; dvi < ndv; dvi++) {
-      EDV cEdv = tChild.dataVariables[dvi];
-      tMin[dvi] = new PAOne(cEdv.destinationMin().paType(), ""); // NaN, but of correct type
-      tMax[dvi] = new PAOne(cEdv.destinationMax().paType(), "");
+
+      Pair<PAOne, PAOne> actualRange =
+          accumulateActualRange(tChildren, dvi, tChild.dataVariables[dvi].destinationDataPAType());
+
+      tMin[dvi] = actualRange.getLeft();
+      tMax[dvi] = actualRange.getRight();
     }
 
     for (int c = 0; c < nChildren; c++) {
       tChild = getChild(language, c);
       if (tChild.lowUpdate(language, msg, startUpdateMillis)) anyChange = true;
-
-      if (knowsActualRange) {
-        // update all dataVariable's destinationMin/Max
-        for (int dvi = 0; dvi < ndv; dvi++) {
-          EDV cEdv = tChild.dataVariables[dvi];
-          tMin[dvi] = tMin[dvi].min(cEdv.destinationMin());
-          tMax[dvi] = tMax[dvi].max(cEdv.destinationMax());
-        }
-      }
     }
     for (int dvi = 0; dvi < ndv; dvi++) {
       dataVariables[dvi].setDestinationMinMax(tMin[dvi], tMax[dvi]);
