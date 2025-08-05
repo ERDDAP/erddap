@@ -21,7 +21,7 @@ public class MqttBrokerContextListener implements ServletContextListener {
         final EmbeddedHiveMQBuilder embeddedHiveMQBuilder =
             EmbeddedHiveMQ.builder()
                 .withConfigurationFolder(Path.of("WEB-INF/classes/gov/noaa/pfel/erddap/config"))
-                .withDataFolder(Path.of("target/mqtt-data"));
+                .withDataFolder(Path.of("target/data"));
 
         this.hiveMQ = embeddedHiveMQBuilder.build();
 
