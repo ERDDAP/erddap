@@ -14123,7 +14123,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
               "["
                   + MessageFormat.format(EDStatic.messages.get(Message.N_MATCHING, language), "0")
                   + " "
-                  + EDStatic.messages.get(Message.ADVC_OUT_OF_DATE, language)
+                  + EDStatic.messages.get(Message.ADVN_OUT_OF_DATE, language)
                   + "]");
         } else {
           writer.write(
@@ -14144,71 +14144,54 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
               false, // writeUnits, timeColumn, needEncodingAsHtml,
               false); // allowWrap
         }
-
         // autoRefresh message
         writer.write(
             "<p>"
                 + MessageFormat.format(
                     EDStatic.messages.get(Message.GENERATED_AT, language),
                     "<span class=\"N\">" + currentTimeZulu + "</span>")
-                + "\n<br>");
-        table.saveAsHtmlTable(
-            writer,
-            "commonBGColor",
-            null,
-            1, // other classes, bgColor, border,
-            false,
-            mtCol,
-            false, // writeUnits, timeColumn, needEncodingAsHtml,
-            false); // allowWrap
+                + "\n<br>"
+                + MessageFormat.format(
+                    EDStatic.messages.get(Message.AUTO_REFRESH, language),
+                    "" + refreshEveryNMinutes)
+                + "\n");
+
+        // addConstraints
+        writer.write(
+            "<h3><a class=\"selfLink\" id=\"Options\" href=\"#Options\" rel=\"bookmark\">"
+                + EDStatic.messages.get(Message.OPTIONS, language)
+                + "</a></h3>\n"
+                + XML.encodeAsHTML(EDStatic.messages.get(Message.ADD_CONSTRAINTS, language))
+                + "<br><a rel=\"bookmark\" href=\""
+                + tErddapUrl
+                + "/"
+                + start
+                + "html?&amp;outOfDate%3E=0.5\">"
+                + tErddapUrl
+                + "/"
+                + start
+                + "html?&amp;outOfDate&gt;=0.5</a> .\n"
+                + String2.replaceAll(
+                    EDStatic.messages.get(Message.PERCENT_ENCODE, language),
+                    "&erddapUrl;",
+                    tErddapUrl));
+
+        // list plain file types
+        writer.write(
+            "\n"
+                + "<p>"
+                + EDStatic.messages.get(Message.RESTFUL_INFORMATION_FORMATS, language)
+                + " \n("
+                + plainFileTypesString
+                + // not links, which would be indexed by search engines
+                ") <a rel=\"help\" href=\""
+                + tErddapUrl
+                + "/rest.html\">"
+                + EDStatic.messages.get(Message.RESTFUL_VIA_SERVICE, language)
+                + "</a>.\n");
+        writer.write("</div>\n");
+        endHtmlWriter(request, language, out, writer, tErddapUrl, loggedInAs, false);
       }
-
-      // autoRefresh message
-      writer.write(
-          "<p>"
-              + MessageFormat.format(
-                  EDStatic.messages.get(Message.GENERATED_AT, language),
-                  "<span class=\"N\">" + currentTimeZulu + "</span>")
-              + "\n<br>"
-              + MessageFormat.format(
-                  EDStatic.messages.get(Message.AUTO_REFRESH, language), "" + refreshEveryNMinutes)
-              + "\n");
-
-      // addConstraints
-      writer.write(
-          "<h3><a class=\"selfLink\" id=\"Options\" href=\"#Options\" rel=\"bookmark\">"
-              + EDStatic.messages.get(Message.OPTIONS, language)
-              + "</a></h3>\n"
-              + XML.encodeAsHTML(EDStatic.messages.get(Message.ADD_CONSTRAINTS, language))
-              + "<br><a rel=\"bookmark\" href=\""
-              + tErddapUrl
-              + "/"
-              + start
-              + "html?&amp;outOfDate%3E=0.5\">"
-              + tErddapUrl
-              + "/"
-              + start
-              + "html?&amp;outOfDate&gt;=0.5</a> .\n"
-              + String2.replaceAll(
-                  EDStatic.messages.get(Message.PERCENT_ENCODE, language),
-                  "&erddapUrl;",
-                  tErddapUrl));
-
-      // list plain file types
-      writer.write(
-          "\n"
-              + "<p>"
-              + EDStatic.messages.get(Message.RESTFUL_INFORMATION_FORMATS, language)
-              + " \n("
-              + plainFileTypesString
-              + // not links, which would be indexed by search engines
-              ") <a rel=\"help\" href=\""
-              + tErddapUrl
-              + "/rest.html\">"
-              + EDStatic.messages.get(Message.RESTFUL_VIA_SERVICE, language)
-              + "</a>.\n");
-      writer.write("</div>\n");
-      endHtmlWriter(request, language, out, writer, tErddapUrl, loggedInAs, false);
     } catch (Throwable t) {
       EDStatic.rethrowClientAbortException(t); // first thing in catch{}
       writer.write(EDStatic.htmlForException(language, t));
