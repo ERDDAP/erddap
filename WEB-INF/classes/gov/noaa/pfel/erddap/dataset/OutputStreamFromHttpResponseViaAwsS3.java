@@ -110,10 +110,12 @@ public class OutputStreamFromHttpResponseViaAwsS3 implements OutputStreamSource 
   @Override
   public OutputStream outputStream(String characterEncoding, long tLength) throws Throwable {
 
-    if (outputStream != null) return outputStream;
+    if (outputStream != null) {
+      return outputStream;
+    }
 
     // make an OutpuStreamViaAwsS3 which has special close() method
-    return outputStream = new OutputStreamViaAwsS3(this, characterEncoding);
+    return outputStream = new OutputStreamViaAwsS3(this);
   }
 
   /**

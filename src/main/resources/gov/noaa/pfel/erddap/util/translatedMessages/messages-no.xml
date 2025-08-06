@@ -4212,10 +4212,6 @@ Men dods.dap.DODSException har ikke noe relevant unntak.
 Bedre å returnere en tom fil? Men .nc og andre tillater ikke 0-lengde data.
  -->
 <MustBeThereIsNoData>Søket ditt ga ingen samsvarende resultater.</MustBeThereIsNoData>
-
-<!--  Mange filtyper setter en grense for hvor mye data en fil kan inneholde (f.eks. 2 GB).  -->
-<MustBeNotNull>{0} må ikke være null.</MustBeNotNull>
-<MustBeNotEmpty>{0} må ikke være en tom streng.</MustBeNotEmpty>
 <MustBeInternalError>Intern feil</MustBeInternalError>
 <MustBeOutOfMemoryError>Minnet er fullt feil</MustBeOutOfMemoryError>
 

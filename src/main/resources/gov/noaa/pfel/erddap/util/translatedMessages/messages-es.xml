@@ -4289,10 +4289,6 @@ Pero dods.dap.DODSException no tiene ninguna excepción relevante.
 ¿Es mejor devolver un archivo vacío? Pero .nc y otros no permiten datos de longitud 0.
  -->
 <MustBeThereIsNoData>Su consulta no produjo resultados coincidentes.</MustBeThereIsNoData>
-
-<!--  Muchos tipos de archivos imponen un límite a la cantidad de datos que puede contener un archivo (por ejemplo, 2 GB).  -->
-<MustBeNotNull>{0} no debe ser nulo.</MustBeNotNull>
-<MustBeNotEmpty>{0} no debe ser una cadena vacía.</MustBeNotEmpty>
 <MustBeInternalError>Error interno</MustBeInternalError>
 <MustBeOutOfMemoryError>Error de memoria insuficiente</MustBeOutOfMemoryError>
 

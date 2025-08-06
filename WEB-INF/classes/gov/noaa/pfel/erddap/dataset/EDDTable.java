@@ -38,9 +38,16 @@ import gov.noaa.pfel.erddap.dataset.metadata.LocalizedAttributes;
 import gov.noaa.pfel.erddap.dataset.metadata.MetadataBuilder;
 import gov.noaa.pfel.erddap.filetypes.DapRequestInfo;
 import gov.noaa.pfel.erddap.filetypes.FileTypeInterface;
-import gov.noaa.pfel.erddap.util.*;
+import gov.noaa.pfel.erddap.util.EDMessages;
 import gov.noaa.pfel.erddap.util.EDMessages.Message;
-import gov.noaa.pfel.erddap.variable.*;
+import gov.noaa.pfel.erddap.util.EDStatic;
+import gov.noaa.pfel.erddap.variable.EDV;
+import gov.noaa.pfel.erddap.variable.EDVAlt;
+import gov.noaa.pfel.erddap.variable.EDVDepth;
+import gov.noaa.pfel.erddap.variable.EDVLat;
+import gov.noaa.pfel.erddap.variable.EDVLon;
+import gov.noaa.pfel.erddap.variable.EDVTime;
+import gov.noaa.pfel.erddap.variable.EDVTimeStamp;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.xml.bind.JAXBException;
@@ -64,8 +71,11 @@ import org.apache.commons.jexl3.MapContext;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.UnsupportedStorageException;
 import org.opengis.metadata.Metadata;
-import ucar.ma2.*;
-import ucar.nc2.*;
+import ucar.ma2.Array;
+import ucar.ma2.DataType;
+import ucar.nc2.Dimension;
+import ucar.nc2.Group;
+import ucar.nc2.Variable;
 import ucar.nc2.write.NetcdfFileFormat;
 import ucar.nc2.write.NetcdfFormatWriter;
 
@@ -225,18 +235,6 @@ public abstract class EDDTable extends EDD {
       ImmutableList.of(".kml", ".pdf", ".png");
 
   protected Table minMaxTable;
-
-  /**
-   * minMaxTable has a col for each dv; row0=min for all files, row1=max for all files. The values
-   * are straight from the source; scale_factor and add_offset haven't been applied. Even time is
-   * stored as raw source values; see "//EEEK!!!" in EDDTableFromFiles.
-   *
-   * <p>Currently, only EDDTableFromFiles returns a table. For other subclasses, this will be null.
-   * Just read from this. Don't change the values.
-   */
-  public Table minMaxTable() {
-    return minMaxTable;
-  }
 
   /**
    * When inactive, these will be null. addVariablesWhereAttValues parallels
@@ -4765,165 +4763,6 @@ public abstract class EDDTable extends EDD {
       throw t;
     }
   } // end of saveAsNcCF2
-
-  /**
-   * This is used by administrators to get the empirical min and max for all non-String variables by
-   * doing a request for a time range (sometimes one time point). This could be used by constructors
-   * (at the end), but the results vary with different isoDateTimes, and would be wasteful to do
-   * this every time a dataset is constructed if results don't change.
-   *
-   * @param language the index of the selected language
-   * @param minTime the ISO 8601 min time to check (use null or "" if no min limit)
-   * @param maxTime the ISO 8601 max time to check (use null or "" if no max limit)
-   * @param makeChanges if true, the discovered values are used to set the variable's min and max
-   *     values if they aren't already set
-   * @param stringsToo if true, this determines if the String variables have any values
-   * @throws Throwable if trouble
-   */
-  public void getEmpiricalMinMax(
-      int language,
-      String loggedInAs,
-      String minTime,
-      String maxTime,
-      boolean makeChanges,
-      boolean stringsToo)
-      throws Throwable {
-    if (verbose)
-      String2.log(
-          "\nEDDTable.getEmpiricalMinMax for "
-              + datasetID
-              + ", "
-              + minTime
-              + " to "
-              + maxTime
-              + " total nVars="
-              + dataVariables.length);
-    long downloadTime = System.currentTimeMillis();
-
-    StringBuilder query = new StringBuilder();
-    int first = 0; // change temporarily for bmde to get e.g., 0 - 100, 100 - 200, ...
-    int last = dataVariables.length; // change temporarily for bmde
-    for (int dv = first; dv < last; dv++) {
-      // get vars
-      if (stringsToo || !dataVariables[dv].destinationDataType().equals("String"))
-        query.append("," + dataVariables[dv].destinationName());
-    }
-    if (query.length() == 0) {
-      String2.log("All variables are String variables.");
-      return;
-    }
-    query.deleteCharAt(0); // first comma
-    if (minTime != null && minTime.length() > 0) query.append("&time>=" + minTime);
-    if (maxTime != null && maxTime.length() > 0) query.append("&time<=" + maxTime);
-
-    // query
-    TableWriterAllWithMetadata twawm =
-        getTwawmForDapQuery(language, loggedInAs, "", query.toString());
-    Table table = twawm.cumulativeTable();
-    twawm.releaseResources();
-    twawm.close();
-    String2.log("  downloadTime=" + (System.currentTimeMillis() - downloadTime) + "ms");
-    String2.log("  found nRows=" + table.nRows());
-    for (int col = 0; col < table.nColumns(); col++) {
-      String destName = table.getColumnName(col);
-      EDV edv = findDataVariableByDestinationName(destName); // error if not found
-      if (edv.destinationDataType().equals("String")) {
-        String2.log(
-            "  "
-                + destName
-                + ": is String variable; maxStringLength found = "
-                + twawm.columnMaxStringLength(col)
-                + "\n");
-      } else {
-        String tMin = twawm.columnMinValue[col].getString();
-        String tMax = twawm.columnMaxValue[col].getString();
-        if (verbose) {
-          double loHi[] =
-              Math2.suggestLowHigh(
-                  twawm.columnMinValue[col].getDouble(), twawm.columnMaxValue[col].getDouble());
-          String2.log(
-              "  "
-                  + destName
-                  + ":\n"
-                  + "                <att name=\"actual_range\" type=\""
-                  + edv.destinationDataType().toLowerCase()
-                  + "List\">"
-                  + tMin
-                  + " "
-                  + tMax
-                  + "</att>\n"
-                  + "                <att name=\"colorBarMinimum\" type=\"double\">"
-                  + loHi[0]
-                  + "</att>\n"
-                  + "                <att name=\"colorBarMaximum\" type=\"double\">"
-                  + loHi[1]
-                  + "</att>\n");
-        }
-        if (makeChanges
-            && edv.destinationMin().isMissingValue()
-            && edv.destinationMax().isMissingValue()) {
-
-          edv.setDestinationMinMax(
-              PAOne.fromDouble(
-                  twawm.columnMinValue[col].getDouble() * edv.scaleFactor() + edv.addOffset()),
-              PAOne.fromDouble(
-                  twawm.columnMaxValue[col].getDouble() * edv.scaleFactor() + edv.addOffset()));
-          edv.setActualRangeFromDestinationMinMax(language);
-        }
-      }
-    }
-    if (verbose) String2.log("\ntotal nVars=" + dataVariables.length);
-  }
-
-  /**
-   * This is used by administrator to get min,max time by doing a request for lon,lat. This could be
-   * used by constructors (at the end). The problem is that the results vary with different
-   * isoDateTimes, and wasteful to do this every time constructed (if results don't change).
-   *
-   * @param language the index of the selected language
-   * @param lon the lon to check
-   * @param lat the lat to check
-   * @param dir the directory (on this computer's hard drive) to use for temporary/cache files
-   * @param fileName the name for the 'file' (no dir, no extension), which is used to write the
-   *     suggested name for the file to the response header.
-   * @throws Throwable if trouble
-   */
-  public void getMinMaxTime(
-      int language, String loggedInAs, double lon, double lat, String dir, String fileName)
-      throws Throwable {
-    if (verbose) String2.log("\nEDDTable.getMinMaxTime for lon=" + lon + " lat=" + lat);
-
-    StringBuilder query = new StringBuilder();
-    // get all vars since different vars at different altitudes
-    for (EDV dataVariable : dataVariables) query.append("," + dataVariable.destinationName());
-    query.deleteCharAt(0); // first comma
-    query.append("&" + EDV.LON_NAME + "=" + lon + "&" + EDV.LAT_NAME + "=" + lat);
-
-    // auto get source min/max time   for that one lat,lon location
-    TableWriterAllWithMetadata twawm =
-        getTwawmForDapQuery(language, loggedInAs, "", query.toString());
-    Table table = twawm.makeEmptyTable(); // no need for twawm.cumulativeTable();
-    twawm.releaseResources();
-    twawm.close();
-    int timeCol = table.findColumnNumber(EDV.TIME_NAME);
-    PAOne tMin = twawm.columnMinValue(timeCol);
-    PAOne tMax = twawm.columnMaxValue(timeCol);
-    if (verbose)
-      String2.log(
-          "  found time min="
-              + tMin
-              + "="
-              + (tMin.isMissingValue() ? "" : Calendar2.epochSecondsToIsoStringTZ(tMin.getDouble()))
-              + " max="
-              + tMax
-              + "="
-              + (tMax.isMissingValue()
-                  ? ""
-                  : Calendar2.epochSecondsToIsoStringTZ(tMax.getDouble())));
-    dataVariables[timeIndex].setDestinationMinMax(
-        tMin, tMax); // scaleFactor,addOffset not supported
-    dataVariables[timeIndex].setActualRangeFromDestinationMinMax(language);
-  }
 
   /**
    * This writes an HTML form requesting info from this dataset (like the OPeNDAP Data Access Forms,
@@ -10484,16 +10323,6 @@ public abstract class EDDTable extends EDD {
    */
   public static int lonLatNPlaces(double radius) {
     return radius > 100 ? 0 : radius > 10 ? 1 : radius > 1 ? 2 : radius > 0.1 ? 3 : 4;
-  }
-
-  /** This looks for var,op in constraintVariable,constraintOp (or returns -1). */
-  protected static int indexOf(
-      StringArray constraintVariables, StringArray constraintOps, String var, String op) {
-    int n = constraintVariables.size();
-    for (int i = 0; i < n; i++) {
-      if (constraintVariables.get(i).equals(var) && constraintOps.get(i).equals(op)) return i;
-    }
-    return -1;
   }
 
   /**

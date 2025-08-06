@@ -391,16 +391,6 @@ public class Math2 {
   /**
    * This returns the number of bytes currently in use by this program.
    *
-   * @param allocatedMemory the value from getAllocatedMemory()
-   * @return the number of bytes currently in use by this program
-   */
-  public static long getMemoryInUse(final long allocatedMemory) {
-    return allocatedMemory - Runtime.getRuntime().freeMemory();
-  }
-
-  /**
-   * This returns the number of bytes currently in use by this program.
-   *
    * @return the number of bytes currently in use by this program
    */
   public static long getMemoryInUse() {

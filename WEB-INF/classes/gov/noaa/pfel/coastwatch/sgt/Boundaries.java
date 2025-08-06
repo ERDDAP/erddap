@@ -5,7 +5,6 @@
 package gov.noaa.pfel.coastwatch.sgt;
 
 import com.cohort.array.DoubleArray;
-import com.cohort.array.PrimitiveArray;
 import com.cohort.util.File2;
 import com.cohort.util.LRUCache;
 import com.cohort.util.Math2;
@@ -13,7 +12,8 @@ import com.cohort.util.String2;
 import com.google.common.collect.ImmutableList;
 import gov.noaa.pfel.erddap.util.BoundaryCounter;
 import gov.noaa.pfel.erddap.util.Metrics;
-import gov.noaa.pmel.sgt.dm.*;
+import gov.noaa.pmel.sgt.dm.SGTLine;
+import gov.noaa.pmel.sgt.dm.SimpleLine;
 import java.io.*;
 import java.util.Collections;
 import java.util.Map;
@@ -467,196 +467,6 @@ public class Boundaries {
     //        String2.left("" + lon.get(i), 18) + String2.left("" + lat.get(i), 18));
 
     return line;
-  }
-
-  /**
-   * This is the older version that reads from .asc data files. [This probably doesn't work for
-   * min/requestMaxX&gt;360
-   */
-  public static SGTLine readSgtLineAsc(
-      String fullFileName,
-      int format,
-      double requestMinX,
-      double requestMaxX,
-      double requestMinY,
-      double requestMaxY)
-      throws Exception {
-
-    // if (reallyVerbose) String2.log("    readSGTLine");
-
-    boolean lonPM180 = requestMinX < 0;
-    DoubleArray lat = new DoubleArray();
-    DoubleArray lon = new DoubleArray();
-    DoubleArray tempLat = new DoubleArray();
-    DoubleArray tempLon = new DoubleArray();
-    String startGapLine1 = format == MATLAB_FORMAT ? "nan nan" : ">";
-    String startGapLine2 = format == MATLAB_FORMAT ? "nan nan" : "#";
-    int nObjects = 0;
-
-    try (BufferedReader bufferedReader =
-        File2.getDecompressedBufferedFileReader88591(fullFileName)) {
-      String s = bufferedReader.readLine();
-      while (s != null) { // null = end-of-file
-        if (s.startsWith(startGapLine1) || s.startsWith(startGapLine2)) {
-          // try to add this subpath
-          int tn =
-              GSHHS.reduce(
-                  tempLat.size(),
-                  tempLon.array,
-                  tempLat.array,
-                  requestMinX,
-                  requestMaxX,
-                  requestMinY,
-                  requestMaxY);
-          tempLat.removeRange(tn, tempLat.size());
-          tempLon.removeRange(tn, tempLon.size());
-          if (tn > 0) {
-            lon.append(tempLon);
-            lat.append(tempLat);
-            lon.add(Double.NaN);
-            lat.add(Double.NaN);
-            nObjects++;
-          }
-          tempLon.clear();
-          tempLat.clear();
-        } else {
-          // each line: x\ty
-          String[] items = String2.split(s, '\t');
-          if (items.length == 2) {
-            double tLon = String2.parseDouble(items[0]);
-            double tLat = String2.parseDouble(items[1]);
-            if (lonPM180) {
-              if (tLon >= 180) tLon -= 360;
-            } else {
-              if (tLon < 0) tLon += 360;
-            }
-            // cut lines going from one edge of world to the other
-            if (tempLon.size() > 0 && Math.abs(tLon - tempLon.get(tempLon.size() - 1)) > 50.0) {
-              // try to add this subpath
-              int tn =
-                  GSHHS.reduce(
-                      tempLat.size(),
-                      tempLon.array,
-                      tempLat.array,
-                      requestMinX,
-                      requestMaxX,
-                      requestMinY,
-                      requestMaxY);
-              tempLat.removeRange(tn, tempLat.size());
-              tempLon.removeRange(tn, tempLon.size());
-              if (tn > 0) {
-                lon.append(tempLon);
-                lat.append(tempLat);
-                lon.add(Double.NaN);
-                lat.add(Double.NaN);
-                nObjects++;
-              }
-              tempLon.clear();
-              tempLat.clear();
-            }
-            tempLon.add(tLon);
-            tempLat.add(tLat);
-          } else
-            String2.log(
-                String2.ERROR + " at readSGTLine items.length!=2 (" + items.length + ") s=" + s);
-        }
-        s = bufferedReader.readLine();
-      }
-    }
-    if (reallyVerbose) String2.log("    Boundaries.readSgtLine nObjects=" + nObjects);
-
-    lon.trimToSize();
-    lat.trimToSize();
-
-    SimpleLine line = new SimpleLine(lon.array, lat.array);
-    return line;
-  }
-
-  /**
-   * This converts an .asc SGTLine datafile into a .double SGTLine datafile. The .double file has
-   * groups of pairs of doubles: <br>
-   * NaN, nPoints <br>
-   * minLon, minLat <br>
-   * maxLon, maxLat <br>
-   * nPoints pairs of lon, lat
-   *
-   * <p>The end of the files has NaN, NaN.
-   *
-   * @throws Exception if trouble
-   */
-  public static void convertSgtLine(String sourceName, String destName) throws Exception {
-    int format = GMT_FORMAT;
-
-    String2.log("convertSgtLine\n in:" + sourceName + "\nout:" + destName);
-    DoubleArray tempLat = new DoubleArray();
-    DoubleArray tempLon = new DoubleArray();
-    String startGapLine1 = format == MATLAB_FORMAT ? "nan nan" : ">";
-    String startGapLine2 = format == MATLAB_FORMAT ? "nan nan" : "#";
-    int nObjects = 0;
-
-    try (BufferedReader bufferedReader = File2.getDecompressedBufferedFileReader88591(sourceName)) {
-      try (DataOutputStream dos =
-          new DataOutputStream(new BufferedOutputStream(new FileOutputStream(destName)))) {
-        String s = bufferedReader.readLine();
-        while (true) {
-          if (s == null
-              || // null = end-of-file
-              s.startsWith(startGapLine1)
-              || s.startsWith(startGapLine2)) {
-            // try to add this subpath
-            if (tempLat.size() > 0) {
-              double lonStats[] = tempLon.calculateStats();
-              double latStats[] = tempLat.calculateStats();
-              dos.writeDouble(Double.NaN);
-              dos.writeDouble(tempLat.size());
-              dos.writeDouble(lonStats[PrimitiveArray.STATS_MIN]);
-              dos.writeDouble(latStats[PrimitiveArray.STATS_MIN]);
-              dos.writeDouble(lonStats[PrimitiveArray.STATS_MAX]);
-              dos.writeDouble(latStats[PrimitiveArray.STATS_MAX]);
-              for (int i = 0; i < tempLat.size(); i++) {
-                dos.writeDouble(tempLon.get(i));
-                dos.writeDouble(tempLat.get(i));
-              }
-              nObjects++;
-            }
-            tempLon.clear();
-            tempLat.clear();
-            if (s == null) break;
-          } else {
-            // each line: x\ty
-            String[] items = String2.split(s, '\t');
-            if (items.length == 2) {
-              double tLon = String2.parseDouble(items[0]);
-              double tLat = String2.parseDouble(items[1]);
-              if (!Double.isNaN(tLon) && !Double.isNaN(tLat)) {
-                tempLon.add(tLon);
-                tempLat.add(tLat);
-              } else {
-                // bufferedReader and dos closed by finally{} below
-                throw new RuntimeException(String2.ERROR + " in convertSGTLine, s=" + s);
-              }
-            }
-          }
-          s = bufferedReader.readLine();
-        }
-        // mark of file
-        dos.writeDouble(Double.NaN);
-        dos.writeDouble(Double.NaN);
-      }
-    }
-    String2.log("    Boundaries.convertSgtLine nObjects=" + nObjects);
-  }
-
-  /** Bob reruns this whenever there is new data to convert all of the data files. */
-  public static void bobConvertAll() throws Exception {
-    String dir = "c:/programs/boundaries/";
-    String types[] = {"nationalBoundaries", "stateBoundaries", "rivers"};
-    String ress[] = {"c", "f", "h", "i", "l"};
-    for (String string : types) {
-      for (String s : ress) {
-        convertSgtLine(dir + string + s + ".asc", dir + string + s + ".double");
-      }
-    }
   }
 
   /** This returns a stats string for Boundaries. */

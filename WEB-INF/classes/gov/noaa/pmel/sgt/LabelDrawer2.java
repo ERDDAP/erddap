@@ -14,8 +14,13 @@ package gov.noaa.pmel.sgt;
 
 import gov.noaa.pmel.swing.MRJUtil;
 import gov.noaa.pmel.util.Point2D;
-import gov.noaa.pmel.util.Rectangle2D;
-import java.awt.*;
+import java.awt.Color;
+import java.awt.Font;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.Point;
+import java.awt.Polygon;
+import java.awt.Rectangle;
 import java.awt.font.FontRenderContext;
 import java.awt.font.TextAttribute;
 import java.awt.font.TextLayout;
@@ -40,7 +45,6 @@ public class LabelDrawer2 implements LabelDrawer, Cloneable {
   private final Point dorigin_;
   private Rectangle dbounds_;
   private Point2D.Double porigin_;
-  private final Rectangle2D.Double pbounds_;
   private double angle_;
   private double sinthta_;
   private double costhta_;
@@ -63,24 +67,6 @@ public class LabelDrawer2 implements LabelDrawer, Cloneable {
     //
     dbounds_ = new Rectangle();
     dorigin_ = new Point(0, 0);
-    pbounds_ = new Rectangle2D.Double();
-  }
-
-  public LabelDrawer copy() {
-    //      try {
-    //        newLabel = (LabelDrawer1)clone();
-    //      } catch (CloneNotSupportedException e) {
-    //        newLabel = new LabelDrawer1(ident_, label_, height_,
-    //  			     porigin_, valign_, halign_);
-    //        newLabel.setColor(clr_);
-    //        newLabel.setFont(font_);
-    //        if(orient_ == ANGLE) {
-    //  	newLabel.setAngle(angle_);
-    //        } else {
-    //  	newLabel.setOrientation(orient_);
-    //        }
-    //      }
-    return null;
   }
 
   @Override
@@ -116,11 +102,6 @@ public class LabelDrawer2 implements LabelDrawer, Cloneable {
       ys = layer_.getYPtoD(porigin_.y);
       drawString(g, xs, ys);
     }
-  }
-
-  @Override
-  public void setText(String lbl) {
-    label_ = lbl;
   }
 
   @Override
@@ -321,12 +302,6 @@ public class LabelDrawer2 implements LabelDrawer, Cloneable {
   }
 
   @Override
-  public Rectangle2D.Double getBoundsP() {
-    computeBoundsD(layer_.getPane().getComponent().getGraphics());
-    return pbounds_;
-  }
-
-  @Override
   public void setAngle(double angle) {
     angle_ = angle;
     double thta = angle_ * Math.PI / 180.0;
@@ -462,13 +437,6 @@ public class LabelDrawer2 implements LabelDrawer, Cloneable {
 
     Polygon dpolygon_ = new Polygon(xn, yn, 4);
     dbounds_ = dpolygon_.getBounds();
-    //
-    // compute pbounds
-    //
-    pbounds_.x = layer_.getXDtoP(dbounds_.x);
-    pbounds_.y = layer_.getYDtoP(dbounds_.y);
-    pbounds_.width = layer_.getXDtoP(dbounds_.x + dbounds_.width) - pbounds_.x;
-    pbounds_.height = pbounds_.y - layer_.getYDtoP(dbounds_.y + dbounds_.height);
   }
 
   //

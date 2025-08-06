@@ -97,13 +97,6 @@ public class PaneProxy { // Bob Simons made public
     testJava2D();
   }
 
-  /**
-   * @since 3.0
-   */
-  public static String getVersion() {
-    return SGTVersion;
-  }
-
   private void testJava2D() {
     @SuppressWarnings("unused")
     Class unusedCl;
@@ -119,10 +112,6 @@ public class PaneProxy { // Bob Simons made public
     } else {
       strokeDrawer = new StrokeDrawer1();
     }
-  }
-
-  public Dimension getSize() {
-    return panesize_;
   }
 
   void draw() {
@@ -209,10 +198,6 @@ public class PaneProxy { // Bob Simons made public
     opaque_ = opaque;
   }
 
-  boolean isOpaque() {
-    return opaque_;
-  }
-
   void drawLayers(Graphics g) {
     if (!printer_) {
       if (opaque_) {
@@ -262,16 +247,6 @@ public class PaneProxy { // Bob Simons made public
   }
 
   void paint(Graphics g) {
-    if (Debug.DEBUG || Debug.DRAW_TRACE)
-      System.out.println(
-          "PaneProxy: ["
-              + ident_
-              + "] paint(g): "
-              + g.getClipBounds()
-              + ", batch="
-              + batch_
-              + ", modified="
-              + modified_);
     Dimension isze = pane_.getSize();
     if (isze.width != panesize_.width || isze.height != panesize_.height) offscreen_ = null;
     if (offscreen_ != null && !modified_) {
@@ -867,21 +842,9 @@ public class PaneProxy { // Bob Simons made public
     return batch_;
   }
 
-  void setIgnoreModified(boolean ig) {
-    ignoreModified_ = ig;
-  }
-
-  void clearModified() {
-    modified_ = false;
-  }
-
   void setModified(boolean mod, String mess) {
     if (ignoreModified_) return;
     modified_ = mod;
-    if (Debug.EVENT && batch_) {
-      System.out.println(
-          "PaneProxy: [" + ident_ + "] setModified(" + modified_ + "), Batch on: " + mess);
-    }
     if (modified_ && !batch_) {
       if (Debug.EVENT)
         System.out.println(

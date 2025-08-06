@@ -33,20 +33,8 @@ public class TimeRange implements java.io.Serializable {
   public GeoDate delta;
 
   /** the Default constructor */
-  public TimeRange() {}
-
-  /**
-   * Constructor
-   *
-   * @param tstart first time
-   * @param tend last time
-   */
-  public TimeRange(GeoDate tstart, GeoDate tend) {
-    this(tstart, tend, null);
-  }
-
-  public TimeRange(long start, long end) {
-    this(new GeoDate(start), new GeoDate(end));
+  public TimeRange() {
+    // Intentional empty constructor
   }
 
   /**
@@ -60,20 +48,6 @@ public class TimeRange implements java.io.Serializable {
     this.start = tstart;
     this.end = tend;
     this.delta = tdelta;
-  }
-
-  public TimeRange(long start, long end, long delta) {
-    this(new GeoDate(start), new GeoDate(end), new GeoDate(delta));
-  }
-
-  /**
-   * Adds the <code>TimeRange</code> object to this <code>TimeRange</code>. The resulting <code>
-   * TimeRange</code> is the smallest <code>TimeRange</code> that contains both the origial <code>
-   * TimeRange</code> and the specified <code>TimeRange</code>.
-   */
-  public void add(TimeRange trange) {
-    if (trange.start.before(start)) start = trange.start;
-    if (trange.end.after(end)) end = trange.end;
   }
 
   /** Test for equality. The start, end, and delta must all be equal for equality. */

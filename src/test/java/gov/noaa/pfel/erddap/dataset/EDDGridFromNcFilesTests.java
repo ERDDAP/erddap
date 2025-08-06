@@ -3969,29 +3969,7 @@ class EDDGridFromNcFilesTests {
             + "    </dataVariable>\n"
             + "</dataset>\n"
             + "\n";
-    // String2.log(results);
     Test.ensureEqual(results, expected, "");
-
-    // test specifying axis0 (better if it included the size, e.g., axis0_10)
-    // This (reasonably) fails: "ERROR: dimension=axis0 not found in the file!"
-    if (false) { // so don't do this test
-      results =
-          EDDGridFromNcFiles.generateDatasetsXml(
-              fileDir,
-              "SDScompound\\.h5",
-              "",
-              "", // group
-              "axis0",
-              -1,
-              null,
-              null); // dimensionsCSV, reloadMinutes, cacheFromUrl
-      Test.ensureEqual(results, expected, "\nresults=\n" + results);
-    }
-
-    // String2.log("\nEDDGridFromNcFiles.testGenerateDatasetsXmlStructures passed
-    // the test.");
-    // debugMode = oDebug;
-
   }
 
   /**

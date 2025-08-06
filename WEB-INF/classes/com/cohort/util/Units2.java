@@ -17,7 +17,6 @@ import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import ucar.units.Unit;
 
 /**
  * This class has static methods to convert units from one standard to another. An old local copy of
@@ -356,13 +355,14 @@ public class Units2 {
     boolean dividePending = false;
     int po = 0; // po is next position to be read
     while (po < udLength) {
-      if (debugMode && ucum.length() > 0) String2.log("  ucum=" + ucum);
       char ch = udunits.charAt(po);
 
       // leave {a comment} unchanged
       if (ch == '{') {
         int po2 = po + 1;
-        while (po2 < udLength && udunits.charAt(po2) != '}') po2++;
+        while (po2 < udLength && udunits.charAt(po2) != '}') {
+          po2++;
+        }
         ucum.append(udunits, po, po2 + 1);
         po = po2 + 1;
         continue;
@@ -727,13 +727,14 @@ public class Units2 {
     int po = 0; // po is next position to be read
     boolean dividePending = false;
     while (po < ucLength) {
-      if (debugMode && udunits.length() > 0) String2.log("  udunits=" + udunits);
       char ch = ucum.charAt(po);
 
       // uncomment {a comment}
       if (ch == '{') {
         int po2 = po + 1;
-        while (po2 < ucLength && ucum.charAt(po2) != '}') po2++;
+        while (po2 < ucLength && ucum.charAt(po2) != '}') {
+          po2++;
+        }
         udunits.append(ucum, po + 1, po2); // non-standard udunits comment or unknown term
         po = po2 + 1;
         continue;
@@ -1082,26 +1083,6 @@ public class Units2 {
   }
 
   /**
-   * This was used by Bob once to generate a crude UcumToUdunits.properties file. No one else will
-   * need to use this.
-   */
-  public static void makeCrudeUcumToUdunits() {
-    String2.log("\n*** Units2.makeCrudeUcumToUdunits");
-    StringArray sa = new StringArray();
-    Object keys[] = udHashMap.keySet().toArray();
-    for (Object o : keys) {
-      String key = (String) o;
-      if (key.endsWith("s") && udHashMap.get(key.substring(0, key.length() - 1)) != null) {
-        // skip this plural (a singular exists)
-      } else {
-        sa.add(String2.left(udHashMap.get(key) + " = ", 21) + key);
-      }
-    }
-    sa.sortIgnoreCase();
-    String2.log(sa.toNewlineString());
-  }
-
-  /**
    * This checks if two udunits are equivalent (either both are null or "", or equal each other, or
    * have same ucom units). Sometimes different but equivalent (e.g., degrees_north and
    * degree_north).
@@ -1126,21 +1107,6 @@ public class Units2 {
     udunits = udunits.trim(); // so search HM works as expected
     String t = standardizeUdunitsHM.get(udunits); // do exceptions first
     return t == null ? safeUcumToUdunits(safeUdunitsToUcum(udunits)) : t; // do a round trip
-  }
-
-  /**
-   * This returns the UDUNITS canonical version of the units. It is pretty extreme, e.g., converting
-   * Joules to kg m2 s-2 and treating Hz (steady frequency) and becquerel's (radioactivity) as s-1.
-   *
-   * @return the canonical units (or null if trouble)
-   */
-  public static String safeCanonicalUdunitsString(String udunits) {
-    try {
-      Unit units = ucar.units.StandardUnitFormat.instance().parse(udunits);
-      return units == null ? null : units.getCanonicalString();
-    } catch (Exception e) {
-      return null;
-    }
   }
 
   /**

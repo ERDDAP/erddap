@@ -31,8 +31,7 @@ public class OutputStreamViaAwsS3 extends BufferedOutputStream {
    *
    * @param tParent the OutputStreamFromHttpResponseViaAwsS3 that created this
    */
-  public OutputStreamViaAwsS3(
-      OutputStreamFromHttpResponseViaAwsS3 tParent, String tCharacterEncoding) throws IOException {
+  public OutputStreamViaAwsS3(OutputStreamFromHttpResponseViaAwsS3 tParent) throws IOException {
 
     // make the superclass's BufferedOutputStream from an OutputStream
     super(new FileOutputStream(tParent.localDir + tParent.fileName + tParent.extension));

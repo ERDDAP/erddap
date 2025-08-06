@@ -4081,8 +4081,6 @@ public class EDMessages {
     Math2.memoryThanSafe = messagesAr[0].getNotNothingString("memoryThanSafe", errorInMethod);
     MustBe.THERE_IS_NO_DATA =
         messagesAr[0].getNotNothingString("MustBeThereIsNoData", errorInMethod);
-    MustBe.NotNull = messagesAr[0].getNotNothingString("MustBeNotNull", errorInMethod);
-    MustBe.NotEmpty = messagesAr[0].getNotNothingString("MustBeNotEmpty", errorInMethod);
     MustBe.InternalError = messagesAr[0].getNotNothingString("MustBeInternalError", errorInMethod);
     MustBe.OutOfMemoryError =
         messagesAr[0].getNotNothingString("MustBeOutOfMemoryError", errorInMethod);

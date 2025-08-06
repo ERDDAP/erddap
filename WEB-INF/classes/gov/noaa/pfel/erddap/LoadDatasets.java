@@ -15,11 +15,18 @@ import gov.noaa.pfel.coastwatch.sgt.SgtMap;
 import gov.noaa.pfel.coastwatch.util.FileVisitorDNLS;
 import gov.noaa.pfel.coastwatch.util.SSR;
 import gov.noaa.pfel.coastwatch.util.SimpleXMLReader;
-import gov.noaa.pfel.erddap.dataset.*;
+import gov.noaa.pfel.erddap.dataset.EDD;
+import gov.noaa.pfel.erddap.dataset.EDDGrid;
+import gov.noaa.pfel.erddap.dataset.EDDTable;
+import gov.noaa.pfel.erddap.dataset.EDDTableFromAllDatasets;
 import gov.noaa.pfel.erddap.dataset.metadata.LocalizedAttributes;
 import gov.noaa.pfel.erddap.handlers.SaxHandler;
-import gov.noaa.pfel.erddap.util.*;
+import gov.noaa.pfel.erddap.util.EDConfig;
+import gov.noaa.pfel.erddap.util.EDMessages;
 import gov.noaa.pfel.erddap.util.EDMessages.Message;
+import gov.noaa.pfel.erddap.util.EDStatic;
+import gov.noaa.pfel.erddap.util.Metrics;
+import gov.noaa.pfel.erddap.util.TranslateMessages;
 import gov.noaa.pfel.erddap.variable.EDV;
 import io.prometheus.metrics.model.snapshots.Unit;
 import java.awt.Color;
@@ -1692,14 +1699,6 @@ public class LoadDatasets extends Thread {
       String2.log("Caught: " + MustBe.throwableToString(t));
     }
     return openFiles;
-  }
-
-  /** Given a newline separated string in sb, this keeps the newest approximately keepLines. */
-  static void removeOldLines(StringBuffer sb, int keepLines, int lineLength) {
-    if (sb.length() > (keepLines + 1) * lineLength) {
-      int po = sb.indexOf("\n", sb.length() - keepLines * lineLength);
-      if (po > 0) sb.delete(0, po + 1);
-    }
   }
 
   /**

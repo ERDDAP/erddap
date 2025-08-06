@@ -57,10 +57,6 @@ public abstract class SoTRange implements java.io.Serializable, Cloneable {
       this(ustart, uend, java.lang.Long.MAX_VALUE);
     }
 
-    public Time(gov.noaa.pmel.util.GeoDate ustart, gov.noaa.pmel.util.GeoDate uend) {
-      this(ustart.getTime(), uend.getTime(), java.lang.Long.MAX_VALUE);
-    }
-
     /**
      * <code>SoTRange</code> constructor.
      *
@@ -72,30 +68,6 @@ public abstract class SoTRange implements java.io.Serializable, Cloneable {
       start = ustart;
       end = uend;
       delta = udel;
-    }
-
-    public Time(
-        gov.noaa.pmel.util.GeoDate ustart,
-        gov.noaa.pmel.util.GeoDate uend,
-        gov.noaa.pmel.util.GeoDate udel) {
-      this(ustart.getTime(), uend.getTime(), udel.getTime());
-    }
-
-    /**
-     * @Deprecated use SoTRange
-     */
-    public Time(TimeRange trange) {
-      start = trange.start.getTime();
-      end = trange.end.getTime();
-      if (trange.delta != null) {
-        delta = trange.delta.getTime();
-      } else {
-        delta = java.lang.Long.MAX_VALUE;
-      }
-    }
-
-    public Time(SoTRange.Time trange) {
-      this(trange.start, trange.end, trange.delta);
     }
 
     /** Get start value */
@@ -434,7 +406,9 @@ public abstract class SoTRange implements java.io.Serializable, Cloneable {
    * subclasses are available for instantiation and provide a number of formats for storing the
    * information necessary to satisfy the various accessor methods below.
    */
-  protected SoTRange() {}
+  protected SoTRange() {
+    // Intentional empty constructor
+  }
 
   public abstract boolean isTime();
 

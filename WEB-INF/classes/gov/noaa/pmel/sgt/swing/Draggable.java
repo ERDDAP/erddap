@@ -24,10 +24,6 @@ import java.awt.Point;
  * @since 2.0
  */
 public interface Draggable {
-  /**
-   * Set the location of the <code>Draggable</code> object. Change in location will not be vetoed.
-   */
-  public void setLocationNoVeto(int x, int y);
 
   /** Set the location of the <code>Draggable</code> object. */
   public void setLocation(Point loc);
