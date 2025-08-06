@@ -49,6 +49,7 @@ import gov.noaa.pfel.erddap.dataset.EDDTableFromCassandra;
 import gov.noaa.pfel.erddap.dataset.GridDataAccessor;
 import gov.noaa.pfel.erddap.dataset.OutputStreamFromHttpResponse;
 import gov.noaa.pfel.erddap.dataset.metadata.LocalizedAttributes;
+import gov.noaa.pfel.erddap.util.EDMessages.Message;
 import gov.noaa.pfel.erddap.variable.EDV;
 import gov.noaa.pfel.erddap.variable.EDVGridAxis;
 import jakarta.servlet.ServletException;
@@ -1073,7 +1074,7 @@ public class EDStatic {
    * @param language the index of the selected language
    * @param loggedInAs
    * @param protocol e.g., subscriptions
-   * @param protocolNameAr subscriptionsTitleAr
+   * @param protocolName Message.SUBSCRIPTIONS_TITLE
    * @param current
    * @return the You Are Here html for this EDD subclass.
    */
@@ -1082,7 +1083,7 @@ public class EDStatic {
       int language,
       String loggedInAs,
       String protocol,
-      String protocolNameAr[],
+      Message protocolName,
       String current) {
     String tErddapUrl = erddapUrl(request, loggedInAs, language);
     return "\n<h1 class=\"nowrap\">"
@@ -1092,7 +1093,7 @@ public class EDStatic {
         + "/"
         + protocol
         + "\">"
-        + protocolNameAr[language]
+        + EDStatic.messages.get(protocolName, language)
         + "</a>"
         + " &gt; "
         + current
@@ -1554,7 +1555,7 @@ public class EDStatic {
           requestNumber,
           response,
           HttpServletResponse.SC_FORBIDDEN, // a.k.a. Error 403
-          messages.blacklistMsgAr[language]);
+          messages.get(Message.BLACKLIST_MSG, language));
       return true;
     }
     return false;
@@ -1914,34 +1915,6 @@ public class EDStatic {
   }
 
   /**
-   * This uses MessageFormat.format to format the message (usually an error) in English and, if
-   * language&gt;0, in another language (separated by a newline).
-   *
-   * @param language the index of the selected language
-   * @param messageAr the message array with {0} substitution locations
-   * @param sub0 the text to be substituted into the message
-   */
-  public static String bilingualMessageFormat(int language, String messageAr[], String sub0) {
-    return MessageFormat.format(messageAr[0], sub0)
-        + (language > 0 ? "\n" + MessageFormat.format(messageAr[language], sub0) : "");
-  }
-
-  /**
-   * This uses MessageFormat.format to format the message (usually an error) in English and, if
-   * language&gt;0, in another language (separated by a newline).
-   *
-   * @param language the index of the selected language
-   * @param messageAr the message array with {0} and {1} substitution locations
-   * @param sub0 the text to be substituted into the message
-   * @param sub1 the text to be substituted into the message
-   */
-  public static String bilingualMessageFormat(
-      int language, String messageAr[], String sub0, String sub1) {
-    return MessageFormat.format(messageAr[0], sub0, sub1)
-        + (language > 0 ? "\n" + MessageFormat.format(messageAr[language], sub0, sub1) : "");
-  }
-
-  /**
    * If language=0, this returns eng. If language&gt;0, this returns eng+(space if needed)+other.
    * This is mostly used so that error messages can be bilingual.
    *
@@ -1950,8 +1923,10 @@ public class EDStatic {
    * @return If language=0, this returns eng. If language&gt;0, this returns eng+(space if
    *     needed)+other.
    */
-  public static String simpleBilingual(int language, String ar[]) {
-    return language == 0 ? ar[0] : String2.periodSpaceConcat(ar[0], ar[language]);
+  public static String simpleBilingual(int language, Message message) {
+    return language == 0
+        ? messages.get(message, 0)
+        : String2.periodSpaceConcat(messages.get(message, 0), messages.get(message, language));
   }
 
   /**
@@ -1978,8 +1953,12 @@ public class EDStatic {
    * @return If language=0, this returns ar0[0]+ar1[0]. If language&gt;0, this returns
    *     ar0[0]+ar1[0]+newline+ar0[language]+ar1[language].
    */
-  public static String bilingual(int language, String ar0[], String ar1[]) {
-    return ar0[0] + ar1[0] + (language > 0 ? "\n" + ar0[language] + ar1[language] : "");
+  public static String bilingual(int language, Message message0, Message message1) {
+    return messages.get(message0, 0)
+        + messages.get(message1, 0)
+        + (language > 0
+            ? "\n" + messages.get(message0, language) + messages.get(message1, language)
+            : "");
   }
 
   /**
@@ -2106,8 +2085,8 @@ public class EDStatic {
         message =
             MessageFormat.format(
                 graphsAccessibleToPublic
-                    ? messages.notAuthorizedForDataAr[language]
-                    : messages.notAuthorizedAr[language],
+                    ? messages.get(Message.NOT_AUTHORIZED_FOR_DATA, language)
+                    : messages.get(Message.NOT_AUTHORIZED, language),
                 loggedInAsHttps.equals(loggedInAs) ? "" : loggedInAs,
                 datasetID);
 
@@ -2148,7 +2127,7 @@ public class EDStatic {
       return loggedInAs == null || loggedInAsHttps.equals(loggedInAs)
           ? // ie not logged in
           // always use the erddapHttpsUrl for login/logout pages
-          "<a href=\"" + tUrl + "/login.html\">" + messages.loginAr[language] + "</a>"
+          "<a href=\"" + tUrl + "/login.html\">" + messages.get(Message.LOGIN, language) + "</a>"
           : "<a href=\""
               + tUrl
               + "/login.html\"><strong>"
@@ -2157,7 +2136,7 @@ public class EDStatic {
               + "<a href=\""
               + tUrl
               + "/logout.html\">"
-              + messages.logoutAr[language]
+              + messages.get(Message.LOGOUT, language)
               + "</a>";
     }
   }
@@ -2221,15 +2200,16 @@ public class EDStatic {
       String otherBody) {
 
     String tErddapUrl = erddapUrl(request, loggedInAs, language);
-    String s =
-        messages
-            .startBodyHtmlAr[
-            0]; // It's hard for admins to customized this for all languages. So for now, just use
-    // language=0.
+    // It's hard for admins to customized this for all languages. So for now, just use language=0.
+    String s = messages.get(Message.START_BODY_HTML, 0);
     s =
         String2.replaceAll(
-            s, "&EasierAccessToScientificData;", messages.EasierAccessToScientificDataAr[language]);
-    s = String2.replaceAll(s, "&BroughtToYouBy;", messages.BroughtToYouByAr[language]);
+            s,
+            "&EasierAccessToScientificData;",
+            messages.get(Message.EASIER_ACCESS_TO_SCIENTIFIC_DATA, language));
+    s =
+        String2.replaceAll(
+            s, "&BroughtToYouBy;", messages.get(Message.BROUGHT_TO_YOU_BY, language));
     if (String2.isSomething(otherBody))
       s = String2.replaceAll(s, "<body>", "<body " + otherBody + ">");
     s = String2.replaceAll(s, "&loginInfo;", getLoginHtml(request, language, loggedInAs));
@@ -2285,7 +2265,9 @@ public class EDStatic {
    */
   public static String endBodyHtml(
       HttpServletRequest request, int language, String tErddapUrl, String loggedInAs) {
-    String s = String2.replaceAll(messages.endBodyHtmlAr[language], "&erddapUrl;", tErddapUrl);
+    String s =
+        String2.replaceAll(
+            messages.get(Message.END_BODY_HTML, language), "&erddapUrl;", tErddapUrl);
     if (language > 0)
       s =
           s.replace(
@@ -2307,19 +2289,24 @@ public class EDStatic {
    */
   public static String legal(int language, String tErddapUrl) {
     StringBuilder tsb = new StringBuilder(messages.legal);
-    String2.replaceAll(tsb, "[standardContact]", messages.standardContactAr[language] + "\n\n");
     String2.replaceAll(
-        tsb, "[standardDataLicenses]", messages.standardDataLicensesAr[language] + "\n\n");
+        tsb, "[standardContact]", messages.get(Message.STANDARD_CONTACT, language) + "\n\n");
+    String2.replaceAll(
+        tsb,
+        "[standardDataLicenses]",
+        messages.get(Message.STANDARD_DATA_LICENSES, language) + "\n\n");
     String2.replaceAll(
         tsb,
         "[standardDisclaimerOfExternalLinks]",
-        messages.standardDisclaimerOfExternalLinksAr[language] + "\n\n");
+        messages.get(Message.STANDARD_DISCLAIMER_OF_EXTERNAL_LINKS, language) + "\n\n");
     String2.replaceAll(
         tsb,
         "[standardDisclaimerOfEndorsement]",
-        messages.standardDisclaimerOfEndorsementAr[language] + "\n\n");
+        messages.get(Message.STANDARD_DISCLAIMER_OF_ENDORSEMENT, language) + "\n\n");
     String2.replaceAll(
-        tsb, "[standardPrivacyPolicy]", messages.standardPrivacyPolicyAr[language] + "\n\n");
+        tsb,
+        "[standardPrivacyPolicy]",
+        messages.get(Message.STANDARD_PRIVACY_POLICY, language) + "\n\n");
     String2.replaceAll(tsb, "&erddapUrl;", tErddapUrl);
     return tsb.toString();
   }
@@ -2339,7 +2326,7 @@ public class EDStatic {
         String2.replaceAll(
             ts,
             "&langCode;",
-            messages.langCodeAr[language]
+            messages.get(Message.LANG_CODE, language)
                 + (language == 0
                     ? ""
                     : "-x-mtfrom-en")); // see https://cloud.google.com/translate/markup
@@ -2356,7 +2343,7 @@ public class EDStatic {
 
   public static String erddapHref(int language, String tErddapUrl) {
     return "<a title=\""
-        + messages.clickERDDAPAr[language]
+        + messages.get(Message.CLICK_ERDDAP, language)
         + "\" \n"
         + "rel=\"start\" "
         + "href=\""
@@ -2402,7 +2389,7 @@ public class EDStatic {
     String message = MustBe.throwableToShortString(t);
     return "<p>&nbsp;<hr>\n"
         + "<p><span class=\"warningColor\"><strong>"
-        + messages.errorOnWebPageAr[language]
+        + messages.get(Message.ERROR_ON_WEB_PAGE, language)
         + "</strong></span>\n"
         + "<pre>"
         + XML.encodeAsPreHTML(message, 100)
@@ -2769,22 +2756,10 @@ public class EDStatic {
     }
   }
 
-  /** This returns the number of unfinished emails. */
-  public static int nUnfinishedEmails() {
-    return (emailList.size() - lastFinishedEmail.get()) - 1;
-  }
-
   /** This returns the number of unfinished tasks. */
   public static int nUnfinishedTasks() {
-    return (taskList.size() - lastFinishedTask.get()) - 1;
+    return taskList.size() - lastFinishedTask.get() - 1;
   }
-
-  /** This returns the number of unfinished touches. */
-  public static int nUnfinishedTouches() {
-    return (touchList.size() - lastFinishedTouch.get()) - 1;
-  }
-
-  // addEmail is inside EDStatic.email()
 
   /**
    * This adds a task to the taskList if it (other than TASK_SET_FLAG) isn't already on the
@@ -3239,9 +3214,10 @@ public class EDStatic {
         throw new SimpleException(
             EDStatic.bilingual(
                 language,
-                EDStatic.messages.queryErrorAr[0] + EDStatic.messages.errorJsonpFunctionNameAr[0],
-                EDStatic.messages.queryErrorAr[language]
-                    + EDStatic.messages.errorJsonpFunctionNameAr[language]));
+                EDStatic.messages.get(Message.QUERY_ERROR, 0)
+                    + EDStatic.messages.get(Message.ERROR_JSONP_FUNCTION_NAME, 0),
+                EDStatic.messages.get(Message.QUERY_ERROR, language)
+                    + EDStatic.messages.get(Message.ERROR_JSONP_FUNCTION_NAME, language)));
       }
     }
     return jsonp;
@@ -3345,8 +3321,8 @@ public class EDStatic {
     if (searchFor == null) searchFor = "";
     return new String[] {
       MustBe.THERE_IS_NO_DATA,
-      (searchFor.length() > 0 ? messages.searchSpellingAr[language] + " " : "")
-          + (searchFor.indexOf(' ') >= 0 ? messages.searchFewerWordsAr[language] : "")
+      (searchFor.length() > 0 ? messages.get(Message.SEARCH_SPELLING, language) + " " : "")
+          + (searchFor.indexOf(' ') >= 0 ? messages.get(Message.SEARCH_FEWER_WORDS, language) : "")
     };
   }
 
@@ -3360,8 +3336,8 @@ public class EDStatic {
    */
   public static String[] noPage(int language, int page, int lastPage) {
     return new String[] {
-      MessageFormat.format(messages.noPage1Ar[language], "" + page, "" + lastPage),
-      MessageFormat.format(messages.noPage2Ar[language], "" + page, "" + lastPage)
+      MessageFormat.format(messages.get(Message.NO_PAGE_1, language), "" + page, "" + lastPage),
+      MessageFormat.format(messages.get(Message.NO_PAGE_2, language), "" + page, "" + lastPage)
     };
   }
 
@@ -3380,14 +3356,14 @@ public class EDStatic {
   public static String nMatchingDatasetsHtml(
       int language, int nMatches, int page, int lastPage, boolean relevant, String urlWithQuery) {
 
-    if (nMatches == 1) return messages.nMatching1Ar[language];
+    if (nMatches == 1) return messages.get(Message.N_MATCHING_1, language);
 
     StringBuilder results =
         new StringBuilder(
             MessageFormat.format(
                     relevant
-                        ? messages.nMatchingMostRelevantAr[language]
-                        : messages.nMatchingAlphabeticalAr[language],
+                        ? messages.get(Message.N_MATCHING_MOST_RELEVANT, language)
+                        : messages.get(Message.N_MATCHING_ALPHABETICAL, language),
                     "" + nMatches)
                 + "\n");
 
@@ -3424,7 +3400,7 @@ public class EDStatic {
           "&nbsp;"
               + page
               + "&nbsp;("
-              + messages.nMatchingCurrentAr[language]
+              + messages.get(Message.N_MATCHING_CURRENT, language)
               + ")&nbsp;\n"); // always show current page
       if (page <= lastPage - 2)
         sb.append(
@@ -3444,7 +3420,10 @@ public class EDStatic {
       results.append(
           "&nbsp;&nbsp;"
               + MessageFormat.format(
-                  messages.nMatchingPageAr[language], "" + page, "" + lastPage, sb.toString())
+                  messages.get(Message.N_MATCHING_PAGE, language),
+                  "" + page,
+                  "" + lastPage,
+                  sb.toString())
               + "\n");
     }
 
@@ -3815,7 +3794,7 @@ public class EDStatic {
         requestNumber,
         response,
         503, // Service Unavailable
-        messages.waitThenTryAgainAr[language]);
+        messages.get(Message.WAIT_THEN_TRY_AGAIN, language));
     metrics.shedRequests.inc();
     return true;
   }
@@ -3925,14 +3904,14 @@ public class EDStatic {
 
       // log the error
       String tErrorLC = tError.toLowerCase();
-      if (tError.indexOf(messages.resourceNotFoundAr[0]) >= 0
+      if (tError.indexOf(messages.get(Message.RESOURCE_NOT_FOUND, 0)) >= 0
           || tError.indexOf(MustBe.THERE_IS_NO_DATA)
               >= 0) { // check this first, since may also be Query error
         errorNo = HttpServletResponse.SC_NOT_FOUND; // http error 404  (might succeed later)
         // I wanted to use 204 No Content or 205 (similar) but browsers don't show any change for
         // these codes
 
-      } else if (tError.indexOf(messages.queryErrorAr[0]) >= 0) {
+      } else if (tError.indexOf(messages.get(Message.QUERY_ERROR, 0)) >= 0) {
         errorNo = HttpServletResponse.SC_BAD_REQUEST; // http error 400 (won't succeed later)
 
       } else if (tError.indexOf(REQUESTED_RANGE_NOT_SATISFIABLE) >= 0) {
@@ -4089,7 +4068,7 @@ public class EDStatic {
               + String2.toJson(msg, 65536, false)
               + ";\n"
               + "}\n";
-      if (msg.indexOf(messages.blacklistMsgAr[0]) < 0)
+      if (msg.indexOf(messages.get(Message.BLACKLIST_MSG, 0)) < 0)
         String2.log(
             "*** lowSendError for request #"
                 + requestNumber

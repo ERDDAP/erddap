@@ -37,8 +37,17 @@ import gov.noaa.pfel.erddap.dataset.metadata.LocalizedAttributes;
 import gov.noaa.pfel.erddap.dataset.metadata.MetadataBuilder;
 import gov.noaa.pfel.erddap.filetypes.DapRequestInfo;
 import gov.noaa.pfel.erddap.filetypes.FileTypeInterface;
-import gov.noaa.pfel.erddap.util.*;
-import gov.noaa.pfel.erddap.variable.*;
+import gov.noaa.pfel.erddap.util.EDMessages;
+import gov.noaa.pfel.erddap.util.EDMessages.Message;
+import gov.noaa.pfel.erddap.util.EDStatic;
+import gov.noaa.pfel.erddap.variable.EDV;
+import gov.noaa.pfel.erddap.variable.EDVAltGridAxis;
+import gov.noaa.pfel.erddap.variable.EDVDepthGridAxis;
+import gov.noaa.pfel.erddap.variable.EDVGridAxis;
+import gov.noaa.pfel.erddap.variable.EDVLatGridAxis;
+import gov.noaa.pfel.erddap.variable.EDVLonGridAxis;
+import gov.noaa.pfel.erddap.variable.EDVTimeGridAxis;
+import gov.noaa.pfel.erddap.variable.EDVTimeStampGridAxis;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.xml.bind.JAXBException;
@@ -310,9 +319,9 @@ public abstract class EDDGrid extends EDD {
         accessibleViaMAG =
             String2.canonical(
                 MessageFormat.format(
-                    EDStatic.messages.noXxxBecause2Ar[0],
-                    EDStatic.messages.magAr[0],
-                    EDStatic.messages.noXxxNoAxis1Ar[0]));
+                    EDStatic.messages.get(Message.NO_XXX_BECAUSE_2, 0),
+                    EDStatic.messages.get(Message.MAG, 0),
+                    EDStatic.messages.get(Message.NO_XXX_NO_AXIS_1, 0)));
       } else {
 
         // find the numeric dataVariables
@@ -328,9 +337,9 @@ public abstract class EDDGrid extends EDD {
           accessibleViaMAG =
               String2.canonical(
                   MessageFormat.format(
-                      EDStatic.messages.noXxxBecause2Ar[0],
-                      EDStatic.messages.magAr[0],
-                      EDStatic.messages.noXxxNoNonStringAr[0]));
+                      EDStatic.messages.get(Message.NO_XXX_BECAUSE_2, 0),
+                      EDStatic.messages.get(Message.MAG, 0),
+                      EDStatic.messages.get(Message.NO_XXX_NO_NON_STRING, 0)));
       }
     }
     return accessibleViaMAG;
@@ -343,9 +352,9 @@ public abstract class EDDGrid extends EDD {
       accessibleViaSubset =
           String2.canonical(
               MessageFormat.format(
-                  EDStatic.messages.noXxxBecause2Ar[0],
-                  EDStatic.messages.subsetAr[0],
-                  EDStatic.messages.noXxxItsGriddedAr[0]));
+                  EDStatic.messages.get(Message.NO_XXX_BECAUSE_2, 0),
+                  EDStatic.messages.get(Message.SUBSET, 0),
+                  EDStatic.messages.get(Message.NO_XXX_ITS_GRIDDED, 0)));
     return accessibleViaSubset;
   }
 
@@ -358,16 +367,17 @@ public abstract class EDDGrid extends EDD {
         accessibleViaSOS =
             String2.canonical(
                 MessageFormat.format(
-                    EDStatic.messages.noXxxBecauseAr[0],
+                    EDStatic.messages.get(Message.NO_XXX_BECAUSE, 0),
                     "SOS",
-                    MessageFormat.format(EDStatic.messages.noXxxNotActiveAr[0], "SOS")));
+                    MessageFormat.format(
+                        EDStatic.messages.get(Message.NO_XXX_NOT_ACTIVE, 0), "SOS")));
       else
         accessibleViaSOS =
             String2.canonical(
                 MessageFormat.format(
-                    EDStatic.messages.noXxxBecauseAr[0],
+                    EDStatic.messages.get(Message.NO_XXX_BECAUSE, 0),
                     "SOS",
-                    EDStatic.messages.noXxxItsGriddedAr[0]));
+                    EDStatic.messages.get(Message.NO_XXX_ITS_GRIDDED, 0)));
     }
     return accessibleViaSOS;
   }
@@ -381,18 +391,18 @@ public abstract class EDDGrid extends EDD {
         accessibleViaGeoServicesRest =
             String2.canonical(
                 MessageFormat.format(
-                    EDStatic.messages.noXxxBecauseAr[0],
+                    EDStatic.messages.get(Message.NO_XXX_BECAUSE, 0),
                     "GeoServicesRest",
                     MessageFormat.format(
-                        EDStatic.messages.noXxxNotActiveAr[0], "GeoServicesRest")));
+                        EDStatic.messages.get(Message.NO_XXX_NOT_ACTIVE, 0), "GeoServicesRest")));
       } else if (lonIndex < 0 || latIndex < 0) {
         // must have lat and lon axes
         accessibleViaGeoServicesRest =
             String2.canonical(
                 MessageFormat.format(
-                    EDStatic.messages.noXxxBecauseAr[0],
+                    EDStatic.messages.get(Message.NO_XXX_BECAUSE, 0),
                     "GeoServicesRest",
-                    EDStatic.messages.noXxxNoLLAr[0]));
+                    EDStatic.messages.get(Message.NO_XXX_NO_LL, 0)));
       } else {
         // must have more than one value for lat and lon axes
         EDVGridAxis lonVar = axisVariables[lonIndex];
@@ -403,27 +413,27 @@ public abstract class EDDGrid extends EDD {
           accessibleViaGeoServicesRest =
               String2.canonical(
                   MessageFormat.format(
-                      EDStatic.messages.noXxxBecauseAr[0],
+                      EDStatic.messages.get(Message.NO_XXX_BECAUSE, 0),
                       "GeoServicesRest",
-                      EDStatic.messages.noXxxNoLLGt1Ar[0]));
+                      EDStatic.messages.get(Message.NO_XXX_NO_LL_GT_1, 0)));
         else if (lonVar.destinationMinDouble() >= 360
             || // unlikely
             lonVar.destinationMaxDouble() <= -180) // unlikely
         accessibleViaGeoServicesRest =
               String2.canonical(
                   MessageFormat.format(
-                      EDStatic.messages.noXxxBecauseAr[0],
+                      EDStatic.messages.get(Message.NO_XXX_BECAUSE, 0),
                       "GeoServicesRest",
-                      EDStatic.messages.noXxxNoLonIn180Ar[0]));
+                      EDStatic.messages.get(Message.NO_XXX_NO_LON_IN_180, 0)));
         else if (!lonVar.isEvenlySpaced()
             || // ???Future: not necessary? draw map as appropriate.
             !latVar.isEvenlySpaced())
           accessibleViaGeoServicesRest =
               String2.canonical(
                   MessageFormat.format(
-                      EDStatic.messages.noXxxBecauseAr[0],
+                      EDStatic.messages.get(Message.NO_XXX_BECAUSE, 0),
                       "GeoServicesRest",
-                      EDStatic.messages.noXxxNoLLEvenlySpacedAr[0]));
+                      EDStatic.messages.get(Message.NO_XXX_NO_LL_EVENLY_SPACED, 0)));
 
         // else {  //NO. other axes are allowed.
 
@@ -442,9 +452,9 @@ public abstract class EDDGrid extends EDD {
           accessibleViaGeoServicesRest =
               String2.canonical(
                   MessageFormat.format(
-                      EDStatic.messages.noXxxBecauseAr[0],
+                      EDStatic.messages.get(Message.NO_XXX_BECAUSE, 0),
                       "GeoServicesRest",
-                      EDStatic.messages.noXxxNoColorBarAr[0]));
+                      EDStatic.messages.get(Message.NO_XXX_NO_COLOR_BAR, 0)));
       }
 
       // okay!
@@ -466,15 +476,18 @@ public abstract class EDDGrid extends EDD {
         accessibleViaWCS =
             String2.canonical(
                 MessageFormat.format(
-                    EDStatic.messages.noXxxBecauseAr[0],
+                    EDStatic.messages.get(Message.NO_XXX_BECAUSE, 0),
                     "WCS",
-                    MessageFormat.format(EDStatic.messages.noXxxNotActiveAr[0], "WCS")));
+                    MessageFormat.format(
+                        EDStatic.messages.get(Message.NO_XXX_NOT_ACTIVE, 0), "WCS")));
       else if (lonIndex < 0 || latIndex < 0)
         // must have lat and lon axes
         accessibleViaWCS =
             String2.canonical(
                 MessageFormat.format(
-                    EDStatic.messages.noXxxBecauseAr[0], "WCS", EDStatic.messages.noXxxNoLLAr[0]));
+                    EDStatic.messages.get(Message.NO_XXX_BECAUSE, 0),
+                    "WCS",
+                    EDStatic.messages.get(Message.NO_XXX_NO_LL, 0)));
       else {
         // must have more than one value for lat and lon axes
         EDVGridAxis lonVar = axisVariables[lonIndex];
@@ -485,27 +498,27 @@ public abstract class EDDGrid extends EDD {
           accessibleViaWCS =
               String2.canonical(
                   MessageFormat.format(
-                      EDStatic.messages.noXxxBecauseAr[0],
+                      EDStatic.messages.get(Message.NO_XXX_BECAUSE, 0),
                       "WCS",
-                      EDStatic.messages.noXxxNoLLGt1Ar[0]));
+                      EDStatic.messages.get(Message.NO_XXX_NO_LL_GT_1, 0)));
         else if (lonVar.destinationMinDouble() >= 360
             || // unlikely
             lonVar.destinationMaxDouble() <= -180) // unlikely
         accessibleViaWCS =
               String2.canonical(
                   MessageFormat.format(
-                      EDStatic.messages.noXxxBecauseAr[0],
+                      EDStatic.messages.get(Message.NO_XXX_BECAUSE, 0),
                       "WCS",
-                      EDStatic.messages.noXxxNoLonIn180Ar[0]));
+                      EDStatic.messages.get(Message.NO_XXX_NO_LON_IN_180, 0)));
         else if (!lonVar.isEvenlySpaced()
             || // ???Future: not necessary? draw map as appropriate.
             !latVar.isEvenlySpaced())
           accessibleViaWCS =
               String2.canonical(
                   MessageFormat.format(
-                      EDStatic.messages.noXxxBecauseAr[0],
+                      EDStatic.messages.get(Message.NO_XXX_BECAUSE, 0),
                       "WCS",
-                      EDStatic.messages.noXxxNoLLEvenlySpacedAr[0]));
+                      EDStatic.messages.get(Message.NO_XXX_NO_LL_EVENLY_SPACED, 0)));
 
         // else {  //NO. other axes are allowed.
 
@@ -527,14 +540,17 @@ public abstract class EDDGrid extends EDD {
         accessibleViaWMS =
             String2.canonical(
                 MessageFormat.format(
-                    EDStatic.messages.noXxxBecauseAr[0],
+                    EDStatic.messages.get(Message.NO_XXX_BECAUSE, 0),
                     "WMS",
-                    MessageFormat.format(EDStatic.messages.noXxxNotActiveAr[0], "WMS")));
+                    MessageFormat.format(
+                        EDStatic.messages.get(Message.NO_XXX_NOT_ACTIVE, 0), "WMS")));
       else if (lonIndex < 0 || latIndex < 0)
         accessibleViaWMS =
             String2.canonical(
                 MessageFormat.format(
-                    EDStatic.messages.noXxxBecauseAr[0], "WMS", EDStatic.messages.noXxxNoLLAr[0]));
+                    EDStatic.messages.get(Message.NO_XXX_BECAUSE, 0),
+                    "WMS",
+                    EDStatic.messages.get(Message.NO_XXX_NO_LL, 0)));
       else {
         EDVGridAxis lonVar = axisVariables[lonIndex];
         EDVGridAxis latVar = axisVariables[latIndex];
@@ -544,18 +560,18 @@ public abstract class EDDGrid extends EDD {
           accessibleViaWMS =
               String2.canonical(
                   MessageFormat.format(
-                      EDStatic.messages.noXxxBecauseAr[0],
+                      EDStatic.messages.get(Message.NO_XXX_BECAUSE, 0),
                       "WMS",
-                      EDStatic.messages.noXxxNoLLGt1Ar[0]));
+                      EDStatic.messages.get(Message.NO_XXX_NO_LL_GT_1, 0)));
         else if (lonVar.destinationMinDouble() >= 360
             || // unlikely
             lonVar.destinationMaxDouble() <= -180) // unlikely
         accessibleViaWMS =
               String2.canonical(
                   MessageFormat.format(
-                      EDStatic.messages.noXxxBecauseAr[0],
+                      EDStatic.messages.get(Message.NO_XXX_BECAUSE, 0),
                       "WMS",
-                      EDStatic.messages.noXxxNoLonIn180Ar[0]));
+                      EDStatic.messages.get(Message.NO_XXX_NO_LON_IN_180, 0)));
         // else if (!lonVar.isEvenlySpaced() ||  //not necessary. map is drawn as appropriate.
         //    !latVar.isEvenlySpaced())
         //   accessibleViaWMS = String2.canonical(start + "???";
@@ -563,9 +579,9 @@ public abstract class EDDGrid extends EDD {
         else {
           String ta =
               MessageFormat.format(
-                  EDStatic.messages.noXxxBecauseAr[0],
+                  EDStatic.messages.get(Message.NO_XXX_BECAUSE, 0),
                   "WMS",
-                  EDStatic.messages.noXxxNoColorBarAr[0]);
+                  EDStatic.messages.get(Message.NO_XXX_NO_COLOR_BAR, 0));
           for (EDV dataVariable : dataVariables) {
             if (dataVariable.hasColorBarMinMax()) {
               ta = ""; // set back to OK
@@ -614,7 +630,7 @@ public abstract class EDDGrid extends EDD {
    */
   @Override
   public String dapDescription(int language) {
-    return EDStatic.messages.EDDGridDapDescriptionAr[language];
+    return EDStatic.messages.get(Message.EDD_GRID_DAP_DESCRIPTION, language);
   }
 
   /**
@@ -625,7 +641,9 @@ public abstract class EDDGrid extends EDD {
    */
   public static String longDapDescription(int language, String tErddapUrl) {
     return String2.replaceAll(
-        EDStatic.messages.EDDGridDapLongDescriptionAr[language], "&erddapUrl;", tErddapUrl);
+        EDStatic.messages.get(Message.EDD_GRID_DAP_LONG_DESCRIPTION, language),
+        "&erddapUrl;",
+        tErddapUrl);
   }
 
   /**
@@ -936,31 +954,6 @@ public abstract class EDDGrid extends EDD {
   }
 
   /**
-   * This returns the axis variable which has the specified source name.
-   *
-   * @param language the index of the selected language
-   * @return the specified axis variable sourceName
-   * @throws SimpleException if not found
-   */
-  public EDVGridAxis findAxisVariableBySourceName(int language, String tSourceName) {
-
-    int which = String2.indexOf(axisVariableSourceNames(), tSourceName);
-    if (which < 0)
-      throw new SimpleException(
-          EDStatic.bilingual(
-              language,
-              MessageFormat.format(
-                  EDStatic.messages.errorNotFoundInAr[0],
-                  "sourceAxisVariableName=" + tSourceName,
-                  "datasetID=" + datasetID),
-              MessageFormat.format(
-                  EDStatic.messages.errorNotFoundInAr[language],
-                  "sourceAxisVariableName=" + tSourceName,
-                  "datasetID=" + datasetID)));
-    return axisVariables[which];
-  }
-
-  /**
    * This returns the axis variable which has the specified destination name.
    *
    * @param language the index of the selected language
@@ -975,11 +968,11 @@ public abstract class EDDGrid extends EDD {
           EDStatic.bilingual(
               language,
               MessageFormat.format(
-                  EDStatic.messages.errorNotFoundInAr[0],
+                  EDStatic.messages.get(Message.ERROR_NOT_FOUND_IN, 0),
                   "variableName=" + tDestinationName,
                   "datasetID=" + datasetID),
               MessageFormat.format(
-                  EDStatic.messages.errorNotFoundInAr[language],
+                  EDStatic.messages.get(Message.ERROR_NOT_FOUND_IN, language),
                   "variableName=" + tDestinationName,
                   "datasetID=" + datasetID)));
     return axisVariables[which];
@@ -1150,9 +1143,10 @@ public abstract class EDDGrid extends EDD {
         throw new SimpleException(
             EDStatic.bilingual(
                 language,
-                EDStatic.messages.queryErrorAr[0] + EDStatic.messages.queryErrorGridAmpAr[0],
-                EDStatic.messages.queryErrorAr[language]
-                    + EDStatic.messages.queryErrorGridAmpAr[language]));
+                EDStatic.messages.get(Message.QUERY_ERROR, 0)
+                    + EDStatic.messages.get(Message.QUERY_ERROR_GRID_AMP, 0),
+                EDStatic.messages.get(Message.QUERY_ERROR, language)
+                    + EDStatic.messages.get(Message.QUERY_ERROR_GRID_AMP, language)));
     }
     String query = ampParts[0]; // it has been percentDecoded
 
@@ -1192,12 +1186,14 @@ public abstract class EDDGrid extends EDD {
               throw new SimpleException(
                   EDStatic.bilingual(
                       language,
-                      EDStatic.messages.queryErrorAr[0]
+                      EDStatic.messages.get(Message.QUERY_ERROR, 0)
                           + MessageFormat.format(
-                              EDStatic.messages.queryErrorGridNoAxisVarAr[0], destName),
-                      EDStatic.messages.queryErrorAr[language]
+                              EDStatic.messages.get(Message.QUERY_ERROR_GRID_NO_AXIS_VAR, 0),
+                              destName),
+                      EDStatic.messages.get(Message.QUERY_ERROR, language)
                           + MessageFormat.format(
-                              EDStatic.messages.queryErrorGridNoAxisVarAr[language], destName)));
+                              EDStatic.messages.get(Message.QUERY_ERROR_GRID_NO_AXIS_VAR, language),
+                              destName)));
             findDataVariableByDestinationName(destName); // throws Throwable if trouble
           }
         }
@@ -1207,7 +1203,7 @@ public abstract class EDDGrid extends EDD {
         if (tdi >= 0) {
           if (!repair)
             throw new SimpleException(
-                EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
+                EDStatic.simpleBilingual(language, Message.QUERY_ERROR)
                     + "Variable name='"
                     + destName
                     + "' occurs twice.");
@@ -1229,15 +1225,15 @@ public abstract class EDDGrid extends EDD {
             throw new SimpleException(
                 EDStatic.bilingual(
                     language,
-                    EDStatic.messages.queryErrorAr[0]
+                    EDStatic.messages.get(Message.QUERY_ERROR, 0)
                         + MessageFormat.format(
-                            EDStatic.messages.queryErrorExpectedAtAr[0],
+                            EDStatic.messages.get(Message.QUERY_ERROR_EXPECTED_AT, 0),
                             ",\" or \"[end of query]",
                             "" + po,
                             "\"" + query.charAt(po) + "\""),
-                    EDStatic.messages.queryErrorAr[language]
+                    EDStatic.messages.get(Message.QUERY_ERROR, language)
                         + MessageFormat.format(
-                            EDStatic.messages.queryErrorExpectedAtAr[language],
+                            EDStatic.messages.get(Message.QUERY_ERROR_EXPECTED_AT, language),
                             ",\" or \"[end of query]",
                             "" + po,
                             "\"" + query.charAt(po) + "\"")));
@@ -1254,15 +1250,15 @@ public abstract class EDDGrid extends EDD {
           throw new SimpleException(
               EDStatic.bilingual(
                   language,
-                  EDStatic.messages.queryErrorAr[0]
+                  EDStatic.messages.get(Message.QUERY_ERROR, 0)
                       + MessageFormat.format(
-                          EDStatic.messages.queryErrorExpectedAtAr[0],
+                          EDStatic.messages.get(Message.QUERY_ERROR_EXPECTED_AT, 0),
                           "[",
                           "" + po,
                           "[end of query]"),
-                  EDStatic.messages.queryErrorAr[language]
+                  EDStatic.messages.get(Message.QUERY_ERROR, language)
                       + MessageFormat.format(
-                          EDStatic.messages.queryErrorExpectedAtAr[language],
+                          EDStatic.messages.get(Message.QUERY_ERROR_EXPECTED_AT, language),
                           "[",
                           "" + po,
                           "[end of query]")));
@@ -1294,12 +1290,14 @@ public abstract class EDDGrid extends EDD {
           throw new SimpleException(
               EDStatic.bilingual(
                   language,
-                  EDStatic.messages.queryErrorAr[0]
+                  EDStatic.messages.get(Message.QUERY_ERROR, 0)
                       + MessageFormat.format(
-                          EDStatic.messages.queryErrorOccursTwiceAr[0], destinationName),
-                  EDStatic.messages.queryErrorAr[language]
+                          EDStatic.messages.get(Message.QUERY_ERROR_OCCURS_TWICE, 0),
+                          destinationName),
+                  EDStatic.messages.get(Message.QUERY_ERROR, language)
                       + MessageFormat.format(
-                          EDStatic.messages.queryErrorOccursTwiceAr[language], destinationName)));
+                          EDStatic.messages.get(Message.QUERY_ERROR_OCCURS_TWICE, language),
+                          destinationName)));
       } else {
         destinationNames.add(destinationName);
       }
@@ -1330,9 +1328,9 @@ public abstract class EDDGrid extends EDD {
               throw new SimpleException(
                   EDStatic.bilingual(
                       language,
-                      EDStatic.messages.queryErrorAr[0]
+                      EDStatic.messages.get(Message.QUERY_ERROR, 0)
                           + MessageFormat.format(
-                              EDStatic.messages.queryErrorGridNotIdenticalAr[0],
+                              EDStatic.messages.get(Message.QUERY_ERROR_GRID_NOT_IDENTICAL, 0),
                               axisVariableDestinationNames()[axis]
                                   + "["
                                   + startI
@@ -1351,9 +1349,10 @@ public abstract class EDDGrid extends EDD {
                                   + constraints.get(axis * 3 + 2)
                                   + "]"
                                   + destinationNames.get(0)),
-                      EDStatic.messages.queryErrorAr[language]
+                      EDStatic.messages.get(Message.QUERY_ERROR, language)
                           + MessageFormat.format(
-                              EDStatic.messages.queryErrorGridNotIdenticalAr[language],
+                              EDStatic.messages.get(
+                                  Message.QUERY_ERROR_GRID_NOT_IDENTICAL, language),
                               axisVariableDestinationNames()[axis]
                                   + "["
                                   + startI
@@ -1424,15 +1423,13 @@ public abstract class EDDGrid extends EDD {
     // ensure not nothing (which is a data request)
     if (ampParts[0].length() == 0)
       throw new SimpleException(
-          EDStatic.bilingual(
-              language, EDStatic.messages.queryErrorAr, EDStatic.messages.queryErrorGrid1AxisAr));
+          EDStatic.bilingual(language, Message.QUERY_ERROR, Message.QUERY_ERROR_GRID_1_AXIS));
 
     // ignore any &.cmd constraints
     for (int ap = 1; ap < ampParts.length; ap++)
       if (!repair && !ampParts[ap].startsWith("."))
         throw new SimpleException(
-            EDStatic.bilingual(
-                language, EDStatic.messages.queryErrorAr, EDStatic.messages.queryErrorGridAmpAr));
+            EDStatic.bilingual(language, Message.QUERY_ERROR, Message.QUERY_ERROR_GRID_AMP));
     userDapQuery = ampParts[0];
 
     // get the destinationNames
@@ -1456,13 +1453,13 @@ public abstract class EDDGrid extends EDD {
           throw new SimpleException(
               EDStatic.bilingual(
                   language,
-                  EDStatic.messages.queryErrorAr[0]
+                  EDStatic.messages.get(Message.QUERY_ERROR, 0)
                       + MessageFormat.format(
-                          EDStatic.messages.queryErrorUnknownVariableAr[0],
+                          EDStatic.messages.get(Message.QUERY_ERROR_UNKNOWN_VARIABLE, 0),
                           destinationName.substring(0, period)),
-                  EDStatic.messages.queryErrorAr[language]
+                  EDStatic.messages.get(Message.QUERY_ERROR, language)
                       + MessageFormat.format(
-                          EDStatic.messages.queryErrorUnknownVariableAr[language],
+                          EDStatic.messages.get(Message.QUERY_ERROR_UNKNOWN_VARIABLE, language),
                           destinationName.substring(0, period))));
         destinationName = destinationName.substring(period + 1);
       }
@@ -1477,12 +1474,13 @@ public abstract class EDDGrid extends EDD {
             throw new SimpleException(
                 EDStatic.bilingual(
                     language,
-                    EDStatic.messages.queryErrorAr[0]
+                    EDStatic.messages.get(Message.QUERY_ERROR, 0)
                         + MessageFormat.format(
-                            EDStatic.messages.queryErrorGridNoDataVarAr[0], destinationName),
-                    EDStatic.messages.queryErrorAr[language]
+                            EDStatic.messages.get(Message.QUERY_ERROR_GRID_NO_DATA_VAR, 0),
+                            destinationName),
+                    EDStatic.messages.get(Message.QUERY_ERROR, language)
                         + MessageFormat.format(
-                            EDStatic.messages.queryErrorGridNoDataVarAr[language],
+                            EDStatic.messages.get(Message.QUERY_ERROR_GRID_NO_DATA_VAR, language),
                             destinationName)));
           findAxisVariableByDestinationName(
               language, destinationName); // throws Throwable if trouble
@@ -1497,12 +1495,14 @@ public abstract class EDDGrid extends EDD {
           throw new SimpleException(
               EDStatic.bilingual(
                   language,
-                  EDStatic.messages.queryErrorAr[0]
+                  EDStatic.messages.get(Message.QUERY_ERROR, 0)
                       + MessageFormat.format(
-                          EDStatic.messages.queryErrorOccursTwiceAr[0], destinationName),
-                  EDStatic.messages.queryErrorAr[language]
+                          EDStatic.messages.get(Message.QUERY_ERROR_OCCURS_TWICE, 0),
+                          destinationName),
+                  EDStatic.messages.get(Message.QUERY_ERROR, language)
                       + MessageFormat.format(
-                          EDStatic.messages.queryErrorOccursTwiceAr[language], destinationName)));
+                          EDStatic.messages.get(Message.QUERY_ERROR_OCCURS_TWICE, language),
+                          destinationName)));
       } else {
         destinationNames.add(destinationName);
       }
@@ -1520,14 +1520,14 @@ public abstract class EDDGrid extends EDD {
           throw new SimpleException(
               EDStatic.bilingual(
                   language,
-                  EDStatic.messages.queryErrorAr[0]
+                  EDStatic.messages.get(Message.QUERY_ERROR, 0)
                       + MessageFormat.format(
-                          EDStatic.messages.queryErrorNotExpectedAtAr[0],
+                          EDStatic.messages.get(Message.QUERY_ERROR_NOT_EXPECTED_AT, 0),
                           userDapQuery.charAt(po),
                           "" + (po + 1)),
-                  EDStatic.messages.queryErrorAr[language]
+                  EDStatic.messages.get(Message.QUERY_ERROR, language)
                       + MessageFormat.format(
-                          EDStatic.messages.queryErrorNotExpectedAtAr[language],
+                          EDStatic.messages.get(Message.QUERY_ERROR_NOT_EXPECTED_AT, language),
                           userDapQuery.charAt(po),
                           "" + (po + 1))));
         // if (reallyVerbose) String2.log("      axis=" + axis +
@@ -1580,13 +1580,13 @@ public abstract class EDDGrid extends EDD {
             : av.destinationDataPAType() == PAType.DOUBLE ? 9 : 5;
     String diagnostic0 =
         MessageFormat.format(
-            EDStatic.messages.queryErrorGridDiagnosticAr[0],
+            EDStatic.messages.get(Message.QUERY_ERROR_GRID_DIAGNOSTIC, 0),
             destinationName,
             "" + axis,
             av.destinationName());
     String diagnosticl =
         MessageFormat.format(
-            EDStatic.messages.queryErrorGridDiagnosticAr[language],
+            EDStatic.messages.get(Message.QUERY_ERROR_GRID_DIAGNOSTIC, language),
             destinationName,
             "" + axis,
             av.destinationName());
@@ -1605,21 +1605,21 @@ public abstract class EDDGrid extends EDD {
         throw new SimpleException(
             EDStatic.bilingual(
                 language,
-                EDStatic.messages.queryErrorAr[0]
+                EDStatic.messages.get(Message.QUERY_ERROR, 0)
                     + diagnostic0
                     + ": "
                     + MessageFormat.format(
-                        EDStatic.messages.queryErrorExpectedAtAr[0],
+                        EDStatic.messages.get(Message.QUERY_ERROR_EXPECTED_AT, 0),
                         "[",
                         "" + po,
                         po >= deQuery.length()
                             ? "[end of query]"
                             : "\"" + deQuery.charAt(po) + "\""),
-                EDStatic.messages.queryErrorAr[language]
+                EDStatic.messages.get(Message.QUERY_ERROR, language)
                     + diagnosticl
                     + ": "
                     + MessageFormat.format(
-                        EDStatic.messages.queryErrorExpectedAtAr[language],
+                        EDStatic.messages.get(Message.QUERY_ERROR_EXPECTED_AT, language),
                         "[",
                         "" + po,
                         po >= deQuery.length()
@@ -1636,27 +1636,31 @@ public abstract class EDDGrid extends EDD {
         throw new SimpleException(
             EDStatic.bilingual(
                 language,
-                EDStatic.messages.queryErrorAr[0]
+                EDStatic.messages.get(Message.QUERY_ERROR, 0)
                     + diagnostic0
                     + ": "
                     + MessageFormat.format(
-                        EDStatic.messages.queryErrorNotFoundAfterAr[0], "]", "" + leftPo),
-                EDStatic.messages.queryErrorAr[language]
+                        EDStatic.messages.get(Message.QUERY_ERROR_NOT_FOUND_AFTER, 0),
+                        "]",
+                        "" + leftPo),
+                EDStatic.messages.get(Message.QUERY_ERROR, language)
                     + diagnosticl
                     + ": "
                     + MessageFormat.format(
-                        EDStatic.messages.queryErrorNotFoundAfterAr[language], "]", "" + leftPo)));
+                        EDStatic.messages.get(Message.QUERY_ERROR_NOT_FOUND_AFTER, language),
+                        "]",
+                        "" + leftPo)));
     }
     defaults[3] = rightPo;
     diagnostic0 +=
         " "
-            + EDStatic.messages.EDDConstraintAr[0]
+            + EDStatic.messages.get(Message.EDD_CONSTRAINT, 0)
             + "=\""
             + deQuery.substring(leftPo, rightPo + 1)
             + "\"";
     diagnosticl +=
         " "
-            + EDStatic.messages.EDDConstraintAr[language]
+            + EDStatic.messages.get(Message.EDD_CONSTRAINT, language)
             + "=\""
             + deQuery.substring(leftPo, rightPo + 1)
             + "\"";
@@ -1681,16 +1685,18 @@ public abstract class EDDGrid extends EDD {
             throw new SimpleException(
                 EDStatic.bilingual(
                     language,
-                    EDStatic.messages.queryErrorAr[0]
+                    EDStatic.messages.get(Message.QUERY_ERROR, 0)
                         + diagnostic0
                         + ": "
                         + MessageFormat.format(
-                            EDStatic.messages.queryErrorNotFoundAfterAr[0], ")", "" + leftPo),
-                    EDStatic.messages.queryErrorAr[language]
+                            EDStatic.messages.get(Message.QUERY_ERROR_NOT_FOUND_AFTER, 0),
+                            ")",
+                            "" + leftPo),
+                    EDStatic.messages.get(Message.QUERY_ERROR, language)
                         + diagnosticl
                         + ": "
                         + MessageFormat.format(
-                            EDStatic.messages.queryErrorNotFoundAfterAr[language],
+                            EDStatic.messages.get(Message.QUERY_ERROR_NOT_FOUND_AFTER, language),
                             ")",
                             "" + leftPo)));
         }
@@ -1716,16 +1722,18 @@ public abstract class EDDGrid extends EDD {
             throw new SimpleException(
                 EDStatic.bilingual(
                     language,
-                    EDStatic.messages.queryErrorAr[0]
+                    EDStatic.messages.get(Message.QUERY_ERROR, 0)
                         + diagnostic0
                         + ": "
                         + MessageFormat.format(
-                            EDStatic.messages.queryErrorNotFoundAfterAr[0], ")", "" + (colon2 + 2)),
-                    EDStatic.messages.queryErrorAr[language]
+                            EDStatic.messages.get(Message.QUERY_ERROR_NOT_FOUND_AFTER, 0),
+                            ")",
+                            "" + (colon2 + 2)),
+                    EDStatic.messages.get(Message.QUERY_ERROR, language)
                         + diagnosticl
                         + ": "
                         + MessageFormat.format(
-                            EDStatic.messages.queryErrorNotFoundAfterAr[language],
+                            EDStatic.messages.get(Message.QUERY_ERROR_NOT_FOUND_AFTER, language),
                             ")",
                             "" + (colon2 + 2))));
         } else {
@@ -1741,19 +1749,19 @@ public abstract class EDDGrid extends EDD {
               throw new SimpleException(
                   EDStatic.bilingual(
                       language,
-                      EDStatic.messages.queryErrorAr[0]
+                      EDStatic.messages.get(Message.QUERY_ERROR, 0)
                           + diagnostic0
                           + ": "
                           + MessageFormat.format(
-                              EDStatic.messages.queryErrorExpectedAtAr[0],
+                              EDStatic.messages.get(Message.QUERY_ERROR_EXPECTED_AT, 0),
                               "]\" or \":",
                               "" + colon2,
                               "\"" + deQuery.charAt(colon2) + "\""),
-                      EDStatic.messages.queryErrorAr[language]
+                      EDStatic.messages.get(Message.QUERY_ERROR, language)
                           + diagnosticl
                           + ": "
                           + MessageFormat.format(
-                              EDStatic.messages.queryErrorExpectedAtAr[language],
+                              EDStatic.messages.get(Message.QUERY_ERROR_EXPECTED_AT, language),
                               "]\" or \":",
                               "" + colon2,
                               "\"" + deQuery.charAt(colon2) + "\"")));
@@ -1790,18 +1798,20 @@ public abstract class EDDGrid extends EDD {
             throw new SimpleException(
                 EDStatic.bilingual(
                     language,
-                    EDStatic.messages.queryErrorAr[0]
+                    EDStatic.messages.get(Message.QUERY_ERROR, 0)
                         + diagnostic0
                         + ": "
                         + MessageFormat.format(
-                            EDStatic.messages.queryErrorInvalidAr[0],
-                            EDStatic.messages.EDDGridStrideAr[0] + "=" + strideS),
-                    EDStatic.messages.queryErrorAr[language]
+                            EDStatic.messages.get(Message.QUERY_ERROR_INVALID, 0),
+                            EDStatic.messages.get(Message.EDD_GRID_STRIDE, 0) + "=" + strideS),
+                    EDStatic.messages.get(Message.QUERY_ERROR, language)
                         + diagnosticl
                         + ": "
                         + MessageFormat.format(
-                            EDStatic.messages.queryErrorInvalidAr[language],
-                            EDStatic.messages.EDDGridStrideAr[language] + "=" + strideS)));
+                            EDStatic.messages.get(Message.QUERY_ERROR_INVALID, language),
+                            EDStatic.messages.get(Message.EDD_GRID_STRIDE, language)
+                                + "="
+                                + strideS)));
         }
       }
       startS = startS.trim();
@@ -1812,7 +1822,7 @@ public abstract class EDDGrid extends EDD {
       //    startI = av.sourceValues().size() - 1;
       // } else
       if (startS.startsWith("last") || startS.startsWith("(last"))
-        startS = convertLast(language, av, EDStatic.messages.EDDGridStartAr, startS);
+        startS = convertLast(language, av, Message.EDD_GRID_START, startS);
 
       if (startS.startsWith("(")) {
         // convert paren startS
@@ -1821,18 +1831,18 @@ public abstract class EDDGrid extends EDD {
           throw new SimpleException(
               EDStatic.bilingual(
                   language,
-                  EDStatic.messages.queryErrorAr[0]
+                  EDStatic.messages.get(Message.QUERY_ERROR, 0)
                       + diagnostic0
                       + ": "
                       + MessageFormat.format(
-                          EDStatic.messages.queryErrorGridMissingAr[0],
-                          EDStatic.messages.EDDGridStartAr[0]),
-                  EDStatic.messages.queryErrorAr[language]
+                          EDStatic.messages.get(Message.QUERY_ERROR_GRID_MISSING, 0),
+                          EDStatic.messages.get(Message.EDD_GRID_START, 0)),
+                  EDStatic.messages.get(Message.QUERY_ERROR, language)
                       + diagnosticl
                       + ": "
                       + MessageFormat.format(
-                          EDStatic.messages.queryErrorGridMissingAr[language],
-                          EDStatic.messages.EDDGridStartAr[language])));
+                          EDStatic.messages.get(Message.QUERY_ERROR_GRID_MISSING, language),
+                          EDStatic.messages.get(Message.EDD_GRID_START, language))));
         double startDestD =
             av.destinationToDouble(startS); // ISO 8601 times -> to epochSeconds w/millis precision
         // String2.log("\n! startS=" + startS + " startDestD=" + startDestD + "\n");
@@ -1844,18 +1854,19 @@ public abstract class EDDGrid extends EDD {
             throw new SimpleException(
                 EDStatic.bilingual(
                     language,
-                    EDStatic.messages.queryErrorAr[0]
+                    EDStatic.messages.get(Message.QUERY_ERROR, 0)
                         + diagnostic0
                         + ": "
                         + MessageFormat.format(
-                            EDStatic.messages.notAllowedAr[0],
-                            EDStatic.messages.EDDGridStartAr[0] + "=NaN (invalid format?)"),
-                    EDStatic.messages.queryErrorAr[language]
+                            EDStatic.messages.get(Message.NOT_ALLOWED, 0),
+                            EDStatic.messages.get(Message.EDD_GRID_START, 0)
+                                + "=NaN (invalid format?)"),
+                    EDStatic.messages.get(Message.QUERY_ERROR, language)
                         + diagnosticl
                         + ": "
                         + MessageFormat.format(
-                            EDStatic.messages.notAllowedAr[language],
-                            EDStatic.messages.EDDGridStartAr[language]
+                            EDStatic.messages.get(Message.NOT_ALLOWED, language),
+                            EDStatic.messages.get(Message.EDD_GRID_START, language)
                                 + "=NaN (invalid format?)")));
         }
 
@@ -1866,7 +1877,7 @@ public abstract class EDDGrid extends EDD {
                 startS,
                 av,
                 repair,
-                EDStatic.messages.EDDGridStartAr,
+                Message.EDD_GRID_START,
                 language,
                 diagnostic0,
                 diagnosticl);
@@ -1877,7 +1888,7 @@ public abstract class EDDGrid extends EDD {
                 startS,
                 av,
                 repair,
-                EDStatic.messages.EDDGridStartAr,
+                Message.EDD_GRID_START,
                 language,
                 diagnostic0,
                 diagnosticl);
@@ -1894,20 +1905,20 @@ public abstract class EDDGrid extends EDD {
             throw new SimpleException(
                 EDStatic.bilingual(
                     language,
-                    EDStatic.messages.queryErrorAr[0]
+                    EDStatic.messages.get(Message.QUERY_ERROR, 0)
                         + diagnostic0
                         + ": "
                         + MessageFormat.format(
-                            EDStatic.messages.queryErrorGridBetweenAr[0],
-                            EDStatic.messages.EDDGridStartAr[0],
+                            EDStatic.messages.get(Message.QUERY_ERROR_GRID_BETWEEN, 0),
+                            EDStatic.messages.get(Message.EDD_GRID_START, 0),
                             startS,
                             "" + (nAvSourceValues - 1)),
-                    EDStatic.messages.queryErrorAr[language]
+                    EDStatic.messages.get(Message.QUERY_ERROR, language)
                         + diagnosticl
                         + ": "
                         + MessageFormat.format(
-                            EDStatic.messages.queryErrorGridBetweenAr[language],
-                            EDStatic.messages.EDDGridStartAr[language],
+                            EDStatic.messages.get(Message.QUERY_ERROR_GRID_BETWEEN, language),
+                            EDStatic.messages.get(Message.EDD_GRID_START, language),
                             startS,
                             "" + (nAvSourceValues - 1))));
         }
@@ -1920,20 +1931,20 @@ public abstract class EDDGrid extends EDD {
             throw new SimpleException(
                 EDStatic.bilingual(
                     language,
-                    EDStatic.messages.queryErrorAr[0]
+                    EDStatic.messages.get(Message.QUERY_ERROR, 0)
                         + diagnostic0
                         + ": "
                         + MessageFormat.format(
-                            EDStatic.messages.queryErrorGridBetweenAr[0],
-                            EDStatic.messages.EDDGridStartAr[0],
+                            EDStatic.messages.get(Message.QUERY_ERROR_GRID_BETWEEN, 0),
+                            EDStatic.messages.get(Message.EDD_GRID_START, 0),
                             startS,
                             "" + (nAvSourceValues - 1)),
-                    EDStatic.messages.queryErrorAr[language]
+                    EDStatic.messages.get(Message.QUERY_ERROR, language)
                         + diagnosticl
                         + ": "
                         + MessageFormat.format(
-                            EDStatic.messages.queryErrorGridBetweenAr[language],
-                            EDStatic.messages.EDDGridStartAr[language],
+                            EDStatic.messages.get(Message.QUERY_ERROR_GRID_BETWEEN, language),
+                            EDStatic.messages.get(Message.EDD_GRID_START, language),
                             startS,
                             "" + (nAvSourceValues - 1))));
         }
@@ -1944,7 +1955,7 @@ public abstract class EDDGrid extends EDD {
       //    stopI = av.sourceValues().size() - 1;
       // } else
       if (stopS.startsWith("last") || stopS.startsWith("(last"))
-        stopS = convertLast(language, av, EDStatic.messages.EDDGridStopAr, stopS);
+        stopS = convertLast(language, av, Message.EDD_GRID_STOP, stopS);
 
       if (stopS.startsWith("(")) {
         // convert paren stopS
@@ -1953,18 +1964,18 @@ public abstract class EDDGrid extends EDD {
           throw new SimpleException(
               EDStatic.bilingual(
                   language,
-                  EDStatic.messages.queryErrorAr[0]
+                  EDStatic.messages.get(Message.QUERY_ERROR, 0)
                       + diagnostic0
                       + ": "
                       + MessageFormat.format(
-                          EDStatic.messages.queryErrorGridMissingAr[0],
-                          EDStatic.messages.EDDGridStopAr[0]),
-                  EDStatic.messages.queryErrorAr[language]
+                          EDStatic.messages.get(Message.QUERY_ERROR_GRID_MISSING, 0),
+                          EDStatic.messages.get(Message.EDD_GRID_STOP, 0)),
+                  EDStatic.messages.get(Message.QUERY_ERROR, language)
                       + diagnosticl
                       + ": "
                       + MessageFormat.format(
-                          EDStatic.messages.queryErrorGridMissingAr[language],
-                          EDStatic.messages.EDDGridStopAr[language])));
+                          EDStatic.messages.get(Message.QUERY_ERROR_GRID_MISSING, language),
+                          EDStatic.messages.get(Message.EDD_GRID_STOP, language))));
         double stopDestD =
             av.destinationToDouble(stopS); // ISO 8601 times -> to epochSeconds w/millis precision
         // String2.log("\n! stopS=" + stopS + " stopDestD=" + stopDestD + "\n");
@@ -1976,18 +1987,20 @@ public abstract class EDDGrid extends EDD {
             throw new SimpleException(
                 EDStatic.bilingual(
                     language,
-                    EDStatic.messages.queryErrorAr[0]
+                    EDStatic.messages.get(Message.QUERY_ERROR, 0)
                         + diagnostic0
                         + ": "
                         + MessageFormat.format(
-                            EDStatic.messages.notAllowedAr[0],
-                            EDStatic.messages.EDDGridStopAr[0] + "=NaN (invalid format?)"),
-                    EDStatic.messages.queryErrorAr[language]
+                            EDStatic.messages.get(Message.NOT_ALLOWED, 0),
+                            EDStatic.messages.get(Message.EDD_GRID_STOP, 0)
+                                + "=NaN (invalid format?)"),
+                    EDStatic.messages.get(Message.QUERY_ERROR, language)
                         + diagnosticl
                         + ": "
                         + MessageFormat.format(
-                            EDStatic.messages.notAllowedAr[language],
-                            EDStatic.messages.EDDGridStopAr[language] + "=NaN (invalid format?)")));
+                            EDStatic.messages.get(Message.NOT_ALLOWED, language),
+                            EDStatic.messages.get(Message.EDD_GRID_STOP, language)
+                                + "=NaN (invalid format?)")));
         }
 
         stopDestD =
@@ -1997,7 +2010,7 @@ public abstract class EDDGrid extends EDD {
                 stopS,
                 av,
                 repair,
-                EDStatic.messages.EDDGridStopAr,
+                Message.EDD_GRID_STOP,
                 language,
                 diagnostic0,
                 diagnosticl);
@@ -2008,7 +2021,7 @@ public abstract class EDDGrid extends EDD {
                 stopS,
                 av,
                 repair,
-                EDStatic.messages.EDDGridStopAr,
+                Message.EDD_GRID_STOP,
                 language,
                 diagnostic0,
                 diagnosticl);
@@ -2026,20 +2039,20 @@ public abstract class EDDGrid extends EDD {
             throw new SimpleException(
                 EDStatic.bilingual(
                     language,
-                    EDStatic.messages.queryErrorAr[0]
+                    EDStatic.messages.get(Message.QUERY_ERROR, 0)
                         + diagnostic0
                         + ": "
                         + MessageFormat.format(
-                            EDStatic.messages.queryErrorGridBetweenAr[0],
-                            EDStatic.messages.EDDGridStopAr[0],
+                            EDStatic.messages.get(Message.QUERY_ERROR_GRID_BETWEEN, 0),
+                            EDStatic.messages.get(Message.EDD_GRID_STOP, 0),
                             stopS,
                             "" + (nAvSourceValues - 1)),
-                    EDStatic.messages.queryErrorAr[language]
+                    EDStatic.messages.get(Message.QUERY_ERROR, language)
                         + diagnosticl
                         + ": "
                         + MessageFormat.format(
-                            EDStatic.messages.queryErrorGridBetweenAr[language],
-                            EDStatic.messages.EDDGridStopAr[language],
+                            EDStatic.messages.get(Message.QUERY_ERROR_GRID_BETWEEN, language),
+                            EDStatic.messages.get(Message.EDD_GRID_STOP, language),
                             stopS,
                             "" + (nAvSourceValues - 1))));
         }
@@ -2050,20 +2063,20 @@ public abstract class EDDGrid extends EDD {
             throw new SimpleException(
                 EDStatic.bilingual(
                     language,
-                    EDStatic.messages.queryErrorAr[0]
+                    EDStatic.messages.get(Message.QUERY_ERROR, 0)
                         + diagnostic0
                         + ": "
                         + MessageFormat.format(
-                            EDStatic.messages.queryErrorGridBetweenAr[0],
-                            EDStatic.messages.EDDGridStopAr[0],
+                            EDStatic.messages.get(Message.QUERY_ERROR_GRID_BETWEEN, 0),
+                            EDStatic.messages.get(Message.EDD_GRID_STOP, 0),
                             stopS,
                             "" + (nAvSourceValues - 1)),
-                    EDStatic.messages.queryErrorAr[language]
+                    EDStatic.messages.get(Message.QUERY_ERROR, language)
                         + diagnosticl
                         + ": "
                         + MessageFormat.format(
-                            EDStatic.messages.queryErrorGridBetweenAr[language],
-                            EDStatic.messages.EDDGridStopAr[language],
+                            EDStatic.messages.get(Message.QUERY_ERROR_GRID_BETWEEN, language),
+                            EDStatic.messages.get(Message.EDD_GRID_STOP, language),
                             stopS,
                             "" + (nAvSourceValues - 1))));
         }
@@ -2092,13 +2105,12 @@ public abstract class EDDGrid extends EDD {
    *
    * @param language the index of the selected language
    * @param av an EDVGridAxis variable
-   * @param name EDStatic.messages.EDDGridStartAr ("Start") or EDStatic.messages.EDDGridStopAr
-   *     ("Stop")
+   * @param name EDMessages.Message enum
    * @param ssValue the start or stop value
    * @return ssValue converted to "index" or a "(value)"
    * @throws Throwable if invalid format or n is too large
    */
-  public static String convertLast(int language, EDVGridAxis av, String nameAr[], String ssValue)
+  public static String convertLast(int language, EDVGridAxis av, Message name, String ssValue)
       throws Throwable {
     // remove parens
     String ossValue = ssValue;
@@ -2109,13 +2121,14 @@ public abstract class EDDGrid extends EDD {
         throw new SimpleException(
             EDStatic.bilingual(
                 language,
-                EDStatic.messages.queryErrorAr[0]
+                EDStatic.messages.get(Message.QUERY_ERROR, 0)
                     + MessageFormat.format(
-                        EDStatic.messages.queryErrorLastEndPAr[0], nameAr[0] + "=" + ossValue),
-                EDStatic.messages.queryErrorAr[language]
+                        EDStatic.messages.get(Message.QUERY_ERROR_LAST_END_P, 0),
+                        EDStatic.messages.get(name, 0) + "=" + ossValue),
+                EDStatic.messages.get(Message.QUERY_ERROR, language)
                     + MessageFormat.format(
-                        EDStatic.messages.queryErrorLastEndPAr[language],
-                        nameAr[language] + "=" + ossValue)));
+                        EDStatic.messages.get(Message.QUERY_ERROR_LAST_END_P, language),
+                        EDStatic.messages.get(name, language) + "=" + ossValue)));
     }
 
     // remove "last"
@@ -2124,13 +2137,14 @@ public abstract class EDDGrid extends EDD {
       throw new SimpleException(
           EDStatic.bilingual(
               language,
-              EDStatic.messages.queryErrorAr[0]
+              EDStatic.messages.get(Message.QUERY_ERROR, 0)
                   + MessageFormat.format(
-                      EDStatic.messages.queryErrorLastExpectedAr[0], nameAr[0] + "=" + ossValue),
-              EDStatic.messages.queryErrorAr[language]
+                      EDStatic.messages.get(Message.QUERY_ERROR_LAST_EXPECTED, 0),
+                      EDStatic.messages.get(name, 0) + "=" + ossValue),
+              EDStatic.messages.get(Message.QUERY_ERROR, language)
                   + MessageFormat.format(
-                      EDStatic.messages.queryErrorLastExpectedAr[language],
-                      nameAr[language] + "=" + ossValue)));
+                      EDStatic.messages.get(Message.QUERY_ERROR_LAST_EXPECTED, language),
+                      EDStatic.messages.get(name, language) + "=" + ossValue)));
 
     // done?
     int lastIndex = av.sourceValues().size() - 1;
@@ -2143,13 +2157,14 @@ public abstract class EDDGrid extends EDD {
       throw new SimpleException(
           EDStatic.bilingual(
               language,
-              EDStatic.messages.queryErrorAr[0]
+              EDStatic.messages.get(Message.QUERY_ERROR, 0)
                   + MessageFormat.format(
-                      EDStatic.messages.queryErrorLastUnexpectedAr[0], nameAr[0] + "=" + ossValue),
-              EDStatic.messages.queryErrorAr[language]
+                      EDStatic.messages.get(Message.QUERY_ERROR_LAST_UNEXPECTED, 0),
+                      EDStatic.messages.get(name, 0) + "=" + ossValue),
+              EDStatic.messages.get(Message.QUERY_ERROR, language)
                   + MessageFormat.format(
-                      EDStatic.messages.queryErrorLastUnexpectedAr[language],
-                      nameAr[language] + "=" + ossValue)));
+                      EDStatic.messages.get(Message.QUERY_ERROR_LAST_UNEXPECTED, language),
+                      EDStatic.messages.get(name, language) + "=" + ossValue)));
     ssValue = ssValue.substring(1).trim();
 
     // parse the value
@@ -2159,13 +2174,14 @@ public abstract class EDDGrid extends EDD {
         throw new SimpleException(
             EDStatic.bilingual(
                 language,
-                EDStatic.messages.queryErrorAr[0]
+                EDStatic.messages.get(Message.QUERY_ERROR, 0)
                     + MessageFormat.format(
-                        EDStatic.messages.queryErrorLastPMInvalidAr[0], nameAr[0] + "=" + ossValue),
-                EDStatic.messages.queryErrorAr[language]
+                        EDStatic.messages.get(Message.QUERY_ERROR_LAST_PM_INVALID, 0),
+                        EDStatic.messages.get(name, 0) + "=" + ossValue),
+                EDStatic.messages.get(Message.QUERY_ERROR, language)
                     + MessageFormat.format(
-                        EDStatic.messages.queryErrorLastPMInvalidAr[language],
-                        nameAr[language] + "=" + ossValue)));
+                        EDStatic.messages.get(Message.QUERY_ERROR_LAST_PM_INVALID, language),
+                        EDStatic.messages.get(name, language) + "=" + ossValue)));
       return "(" + (av.lastDestinationValue() + pm * td) + ")";
     } else {
       try {
@@ -2175,13 +2191,14 @@ public abstract class EDDGrid extends EDD {
         throw new SimpleException(
             EDStatic.bilingual(
                 language,
-                EDStatic.messages.queryErrorAr[0]
+                EDStatic.messages.get(Message.QUERY_ERROR, 0)
                     + MessageFormat.format(
-                        EDStatic.messages.queryErrorLastPMIntegerAr[0], nameAr[0] + "=" + ossValue),
-                EDStatic.messages.queryErrorAr[language]
+                        EDStatic.messages.get(Message.QUERY_ERROR_LAST_PM_INTEGER, 0),
+                        EDStatic.messages.get(name, 0) + "=" + ossValue),
+                EDStatic.messages.get(Message.QUERY_ERROR, language)
                     + MessageFormat.format(
-                        EDStatic.messages.queryErrorLastPMIntegerAr[language],
-                        nameAr[language] + "=" + ossValue)),
+                        EDStatic.messages.get(Message.QUERY_ERROR_LAST_PM_INTEGER, language),
+                        EDStatic.messages.get(name, language) + "=" + ossValue)),
             t);
       }
     }
@@ -2650,7 +2667,7 @@ public abstract class EDDGrid extends EDD {
                 EDStatic.startHeadHtml(
                     language,
                     tErddapUrl,
-                    title(language) + " - " + EDStatic.messages.dafAr[language]));
+                    title(language) + " - " + EDStatic.messages.get(Message.DAF, language)));
             writer.write("\n" + rssHeadLink(language));
             writer.write("\n</head>\n");
             writer.write(
@@ -2678,13 +2695,13 @@ public abstract class EDDGrid extends EDD {
                     language,
                     loggedInAs,
                     dapProtocol,
-                    EDStatic.messages.dafAr[language],
+                    EDStatic.messages.get(Message.DAF, language),
                     "<div class=\"standard_max_width\">"
-                        + EDStatic.messages.dafGridTooltipAr[language]
+                        + EDStatic.messages.get(Message.DAF_GRID_TOOLTIP, language)
                         + "<p>"
-                        + EDStatic.messages.EDDGridDownloadDataTooltipAr[language]
+                        + EDStatic.messages.get(Message.EDD_GRID_DOWNLOAD_DATA_TOOLTIP, language)
                         + "</ol>\n"
-                        + EDStatic.messages.dafGridBypassTooltipAr[language]
+                        + EDStatic.messages.get(Message.DAF_GRID_BYPASS_TOOLTIP, language)
                         + "</div>"));
             writeHtmlDatasetInfo(
                 request, language, loggedInAs, writer, true, false, true, true, userDapQuery, "");
@@ -2699,7 +2716,7 @@ public abstract class EDDGrid extends EDD {
             writer.write(
                 "<hr>\n"
                     + "<h2><a class=\"selfLink\" id=\"DAS\" href=\"#DAS\" rel=\"bookmark\">"
-                    + EDStatic.messages.dasTitleAr[language]
+                    + EDStatic.messages.get(Message.DAS_TITLE, language)
                     + "</a></h2>\n"
                     + "<pre style=\"white-space:pre-wrap;\">\n");
             writeDAS(
@@ -2749,9 +2766,10 @@ public abstract class EDDGrid extends EDD {
           throw new SimpleException(
               EDStatic.bilingual(
                   language,
-                  EDStatic.messages.queryErrorAr[0] + EDStatic.messages.errorFileNotFoundImageAr[0],
-                  EDStatic.messages.queryErrorAr[language]
-                      + EDStatic.messages.errorFileNotFoundImageAr[language]));
+                  EDStatic.messages.get(Message.QUERY_ERROR, 0)
+                      + EDStatic.messages.get(Message.ERROR_FILE_NOT_FOUND_IMAGE, 0),
+                  EDStatic.messages.get(Message.QUERY_ERROR, language)
+                      + EDStatic.messages.get(Message.ERROR_FILE_NOT_FOUND_IMAGE, language)));
 
         // ok, copy it  (and don't close the outputStream)
         try (OutputStream out = outputStreamSource.outputStream(File2.UTF_8)) {
@@ -2832,7 +2850,7 @@ public abstract class EDDGrid extends EDD {
     if (reallyVerbose) String2.log("*** respondToGraphQuery");
     if (accessibleViaMAG().length() > 0)
       throw new SimpleException(
-          EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr) + accessibleViaMAG());
+          EDStatic.simpleBilingual(language, Message.QUERY_ERROR) + accessibleViaMAG());
 
     String tErddapUrl = EDStatic.erddapUrl(request, loggedInAs, language);
     String formName = "f1"; // change JavaScript below if this changes
@@ -2845,7 +2863,9 @@ public abstract class EDDGrid extends EDD {
       // write the header
       writer.write(
           EDStatic.startHeadHtml(
-              language, tErddapUrl, title(language) + " - " + EDStatic.messages.magAr[language]));
+              language,
+              tErddapUrl,
+              title(language) + " - " + EDStatic.messages.get(Message.MAG, language)));
       writer.write("\n" + rssHeadLink(language));
       writer.write("\n</head>\n");
       writer.write(
@@ -2870,9 +2890,9 @@ public abstract class EDDGrid extends EDD {
               language,
               loggedInAs,
               "griddap",
-              EDStatic.messages.magAr[language],
+              EDStatic.messages.get(Message.MAG, language),
               "<div class=\"standard_max_width\">"
-                  + EDStatic.messages.magGridTooltipAr[language]
+                  + EDStatic.messages.get(Message.MAG_GRID_TOOLTIP, language)
                   + "</div>"));
       writeHtmlDatasetInfo(
           request, language, loggedInAs, writer, true, true, true, false, userDapQuery, "");
@@ -3000,13 +3020,13 @@ public abstract class EDDGrid extends EDD {
         nVars = 2;
         varLabel =
             new String[] {
-              EDStatic.messages.magAxisXAr[language] + ":",
-              EDStatic.messages.magAxisYAr[language] + ":"
+              EDStatic.messages.get(Message.MAG_AXIS_X, language) + ":",
+              EDStatic.messages.get(Message.MAG_AXIS_Y, language) + ":"
             };
         varHelp =
             new String[] {
-              EDStatic.messages.magAxisHelpGraphXAr[language],
-              EDStatic.messages.magAxisHelpGraphYAr[language]
+              EDStatic.messages.get(Message.MAG_AXIS_HELP_GRAPH_X, language),
+              EDStatic.messages.get(Message.MAG_AXIS_HELP_GRAPH_Y, language)
             };
         varOptions = new String[][] {avNames, dvNames};
         varName[0] =
@@ -3021,15 +3041,15 @@ public abstract class EDDGrid extends EDD {
         nVars = 3;
         varLabel =
             new String[] {
-              EDStatic.messages.magAxisXAr[language] + ":",
-              EDStatic.messages.magAxisYAr[language] + ":",
-              EDStatic.messages.magAxisColorAr[language] + ":"
+              EDStatic.messages.get(Message.MAG_AXIS_X, language) + ":",
+              EDStatic.messages.get(Message.MAG_AXIS_Y, language) + ":",
+              EDStatic.messages.get(Message.MAG_AXIS_COLOR, language) + ":"
             };
         varHelp =
             new String[] {
-              EDStatic.messages.magAxisHelpGraphXAr[language],
-              EDStatic.messages.magAxisHelpGraphYAr[language],
-              EDStatic.messages.magAxisHelpMarkerColorAr[language]
+              EDStatic.messages.get(Message.MAG_AXIS_HELP_GRAPH_X, language),
+              EDStatic.messages.get(Message.MAG_AXIS_HELP_GRAPH_Y, language),
+              EDStatic.messages.get(Message.MAG_AXIS_HELP_MARKER_COLOR, language)
             };
         varOptions = new String[][] {avNames, dvNames, dvNames0};
         varName[0] =
@@ -3049,16 +3069,16 @@ public abstract class EDDGrid extends EDD {
         nVars = 3;
         varLabel =
             new String[] {
-              EDStatic.messages.magAxisXAr[language] + ":",
-              EDStatic.messages.magAxisStickXAr[language] + ":",
-              EDStatic.messages.magAxisStickYAr[language] + ":"
+              EDStatic.messages.get(Message.MAG_AXIS_X, language) + ":",
+              EDStatic.messages.get(Message.MAG_AXIS_STICK_X, language) + ":",
+              EDStatic.messages.get(Message.MAG_AXIS_STICK_Y, language) + ":"
             };
         varHelp =
             new String[] {
-              EDStatic.messages.magAxisHelpGraphXAr[language],
-                  EDStatic.messages.magAxisHelpGraphYAr[language],
-              EDStatic.messages.magAxisHelpStickXAr[language],
-                  EDStatic.messages.magAxisHelpStickYAr[language]
+              EDStatic.messages.get(Message.MAG_AXIS_HELP_GRAPH_X, language),
+                  EDStatic.messages.get(Message.MAG_AXIS_HELP_GRAPH_Y, language),
+              EDStatic.messages.get(Message.MAG_AXIS_HELP_STICK_X, language),
+                  EDStatic.messages.get(Message.MAG_AXIS_HELP_STICK_Y, language)
             };
         varOptions = new String[][] {avNames, dvNames, dvNames};
         varName[0] =
@@ -3078,15 +3098,15 @@ public abstract class EDDGrid extends EDD {
         nVars = 3;
         varLabel =
             new String[] {
-              EDStatic.messages.magAxisXAr[language] + ":",
-              EDStatic.messages.magAxisYAr[language] + ":",
-              EDStatic.messages.magAxisColorAr[language] + ":"
+              EDStatic.messages.get(Message.MAG_AXIS_X, language) + ":",
+              EDStatic.messages.get(Message.MAG_AXIS_Y, language) + ":",
+              EDStatic.messages.get(Message.MAG_AXIS_COLOR, language) + ":"
             };
         varHelp =
             new String[] {
-              EDStatic.messages.magAxisHelpMapXAr[language],
-              EDStatic.messages.magAxisHelpMapYAr[language],
-              EDStatic.messages.magAxisHelpSurfaceColorAr[language]
+              EDStatic.messages.get(Message.MAG_AXIS_HELP_MAP_X, language),
+              EDStatic.messages.get(Message.MAG_AXIS_HELP_MAP_Y, language),
+              EDStatic.messages.get(Message.MAG_AXIS_HELP_SURFACE_COLOR, language)
             };
         varOptions = new String[][] {avNames, avNames, dvNames};
         varName[0] =
@@ -3109,17 +3129,17 @@ public abstract class EDDGrid extends EDD {
         nVars = 4;
         varLabel =
             new String[] {
-              EDStatic.messages.magAxisXAr[language] + ":",
-              EDStatic.messages.magAxisYAr[language] + ":",
-              EDStatic.messages.magAxisVectorXAr[language] + ":",
-              EDStatic.messages.magAxisVectorYAr[language] + ":"
+              EDStatic.messages.get(Message.MAG_AXIS_X, language) + ":",
+              EDStatic.messages.get(Message.MAG_AXIS_Y, language) + ":",
+              EDStatic.messages.get(Message.MAG_AXIS_VECTOR_X, language) + ":",
+              EDStatic.messages.get(Message.MAG_AXIS_VECTOR_Y, language) + ":"
             };
         varHelp =
             new String[] {
-              EDStatic.messages.magAxisHelpMapXAr[language],
-              EDStatic.messages.magAxisHelpMapYAr[language],
-              EDStatic.messages.magAxisHelpVectorXAr[language],
-              EDStatic.messages.magAxisHelpVectorYAr[language]
+              EDStatic.messages.get(Message.MAG_AXIS_HELP_MAP_X, language),
+              EDStatic.messages.get(Message.MAG_AXIS_HELP_MAP_Y, language),
+              EDStatic.messages.get(Message.MAG_AXIS_HELP_VECTOR_X, language),
+              EDStatic.messages.get(Message.MAG_AXIS_HELP_VECTOR_Y, language)
             };
         varOptions =
             new String[][] {
@@ -3139,7 +3159,7 @@ public abstract class EDDGrid extends EDD {
         // ??? ensure same units???
       } else
         throw new SimpleException(
-            EDStatic.messages.errorInternalAr[0] + "'draw' wasn't set correctly.");
+            EDStatic.messages.get(Message.ERROR_INTERNAL, 0) + "'draw' wasn't set correctly.");
       // if (debugMode) String2.log("respondToGraphQuery 4");
 
       // avoid lat lon reversed (which sgtMap will reverse)
@@ -3449,7 +3469,7 @@ public abstract class EDDGrid extends EDD {
       writer.write(
           "<tr>\n"
               + "  <td><strong>"
-              + EDStatic.messages.magGraphTypeAr[language]
+              + EDStatic.messages.get(Message.MAG_GRAPH_TYPE, language)
               + ":&nbsp;</strong>"
               + "  </td>\n"
               + "  <td>\n");
@@ -3476,7 +3496,7 @@ public abstract class EDDGrid extends EDD {
                   language,
                   loggedInAs,
                   "<div class=\"standard_max_width\">"
-                      + EDStatic.messages.magGraphTypeTooltipGridAr[language]
+                      + EDStatic.messages.get(Message.MAG_GRAPH_TYPE_TOOLTIP_GRID, language)
                       + "</div>")
               + "  </td>\n"
               + "</tr>\n");
@@ -3496,7 +3516,7 @@ public abstract class EDDGrid extends EDD {
             vi = 0;
           } else {
             throw new SimpleException(
-                EDStatic.messages.errorInternalAr[0] + "No varOptions for v=" + v);
+                EDStatic.messages.get(Message.ERROR_INTERNAL, 0) + "No varOptions for v=" + v);
           }
         }
         // avoid duplicate with previous var
@@ -3522,8 +3542,9 @@ public abstract class EDDGrid extends EDD {
                     request,
                     language,
                     loggedInAs,
-                    MessageFormat.format(EDStatic.messages.magAxisVarHelpAr[language], varHelp[v])
-                        + EDStatic.messages.magAxisVarHelpGridAr[language]));
+                    MessageFormat.format(
+                            EDStatic.messages.get(Message.MAG_AXIS_VAR_HELP, language), varHelp[v])
+                        + EDStatic.messages.get(Message.MAG_AXIS_VAR_HELP_GRID, language)));
         writer.write("""
                   </td>
                 </tr>
@@ -3539,43 +3560,43 @@ public abstract class EDDGrid extends EDD {
       writer.write(
           "<tr>\n"
               + "  <th class=\"L\">"
-              + EDStatic.messages.EDDGridDimensionRangesAr[language]
+              + EDStatic.messages.get(Message.EDD_GRID_DIMENSION_RANGES, language)
               + " "
               + EDStatic.htmlTooltipImage(
                   request,
                   language,
                   loggedInAs,
-                  EDStatic.messages.EDDGridDimensionTooltipAr[0]
+                  EDStatic.messages.get(Message.EDD_GRID_DIMENSION_TOOLTIP, 0)
                       + "<br>"
-                      + EDStatic.messages.EDDGridVarHasDimTooltipAr[language])
+                      + EDStatic.messages.get(Message.EDD_GRID_VAR_HAS_DIM_TOOLTIP, language))
               + "</th>\n"
               + "  <th style=\"text-align:center;\">"
               + gap
-              + EDStatic.messages.EDDGridStartAr[language]
+              + EDStatic.messages.get(Message.EDD_GRID_START, language)
               + " "
               + EDStatic.htmlTooltipImage(
                   request,
                   language,
                   loggedInAs,
-                  EDStatic.messages.EDDGridDimensionTooltipAr[language]
+                  EDStatic.messages.get(Message.EDD_GRID_DIMENSION_TOOLTIP, language)
                       + "<br>"
-                      + EDStatic.messages.EDDGridStartStopTooltipAr[language]
+                      + EDStatic.messages.get(Message.EDD_GRID_START_STOP_TOOLTIP, language)
                       + "<br>"
-                      + EDStatic.messages.EDDGridStartTooltipAr[language])
+                      + EDStatic.messages.get(Message.EDD_GRID_START_TOOLTIP, language))
               + "</th>\n"
               + "  <th style=\"text-align:center;\">"
               + gap
-              + EDStatic.messages.EDDGridStopAr[0]
+              + EDStatic.messages.get(Message.EDD_GRID_STOP, 0)
               + " "
               + EDStatic.htmlTooltipImage(
                   request,
                   language,
                   loggedInAs,
-                  EDStatic.messages.EDDGridDimensionTooltipAr[0]
+                  EDStatic.messages.get(Message.EDD_GRID_DIMENSION_TOOLTIP, 0)
                       + "<br>"
-                      + EDStatic.messages.EDDGridStartStopTooltipAr[language]
+                      + EDStatic.messages.get(Message.EDD_GRID_START_STOP_TOOLTIP, language)
                       + "<br>"
-                      + EDStatic.messages.EDDGridStopTooltipAr[language])
+                      + EDStatic.messages.get(Message.EDD_GRID_STOP_TOOLTIP, language))
               + "</th>\n"
               + "</tr>\n");
 
@@ -3615,7 +3636,7 @@ public abstract class EDDGrid extends EDD {
                       + HtmlWidgets.htmlTooltipImage(
                           EDStatic.imageDirUrl(request, loggedInAs, language) + "arrowLL.gif",
                           "|<",
-                          EDStatic.messages.magItemFirstAr[language],
+                          EDStatic.messages.get(Message.MAG_ITEM_FIRST, language),
                           "class=\"B\" "
                               + // vertical-align: 'b'ottom
                               "onMouseUp='f1."
@@ -3640,7 +3661,7 @@ public abstract class EDDGrid extends EDD {
                       + HtmlWidgets.htmlTooltipImage(
                           EDStatic.imageDirUrl(request, loggedInAs, language) + "minus.gif",
                           "-",
-                          EDStatic.messages.magItemPreviousAr[language],
+                          EDStatic.messages.get(Message.MAG_ITEM_PREVIOUS, language),
                           "class=\"B\" "
                               + // vertical-align: 'b'ottom
                               "onMouseUp='f1."
@@ -3661,7 +3682,7 @@ public abstract class EDDGrid extends EDD {
                       + HtmlWidgets.htmlTooltipImage(
                           EDStatic.imageDirUrl(request, loggedInAs, language) + "plus.gif",
                           "+",
-                          EDStatic.messages.magItemNextAr[language],
+                          EDStatic.messages.get(Message.MAG_ITEM_NEXT, language),
                           "class=\"B\" "
                               + // vertical-align: 'b'ottom
                               "onMouseUp='f1."
@@ -3679,7 +3700,7 @@ public abstract class EDDGrid extends EDD {
                       + HtmlWidgets.htmlTooltipImage(
                           EDStatic.imageDirUrl(request, loggedInAs, language) + "arrowRR.gif",
                           ">|",
-                          EDStatic.messages.magItemLastAr[language],
+                          EDStatic.messages.get(Message.MAG_ITEM_LAST, language),
                           // the word "last" works for all datasets
                           // and works better than tLast for updateEveryNMillis datasets
                           "class=\"B\" "
@@ -3710,7 +3731,7 @@ public abstract class EDDGrid extends EDD {
             writer.write(
                 gap
                     + "<span class=\"subduedColor\">&nbsp;"
-                    + EDStatic.messages.magJust1ValueAr[language]
+                    + EDStatic.messages.get(Message.MAG_JUST_1_VALUE, language)
                     + "</span>\n");
             writer.write(widgets.hidden(paramName, "SeeStop"));
           }
@@ -3798,7 +3819,7 @@ public abstract class EDDGrid extends EDD {
       writer.write(widgets.beginTable("class=\"compact nowrap\""));
       writer.write(
           "  <tr><th class=\"L\" colspan=\"6\">"
-              + EDStatic.messages.magGSAr[language]
+              + EDStatic.messages.get(Message.MAG_GS, language)
               + "</th></tr>\n");
       if (drawLinesAndMarkers || drawMarkers) {
         // get Marker settings
@@ -3821,7 +3842,7 @@ public abstract class EDDGrid extends EDD {
         writer.write(
             "  <tr>\n"
                 + "    <td>"
-                + EDStatic.messages.magGSMarkerTypeAr[language]
+                + EDStatic.messages.get(Message.MAG_GS_MARKER_TYPE, language)
                 + ":&nbsp;</td>\n"
                 + "    <td>");
         writer.write(widgets.select(paramName, "", 1, GraphDataLayer.MARKER_TYPES, mType, ""));
@@ -3837,7 +3858,7 @@ public abstract class EDDGrid extends EDD {
         if (mSize < 0) mSize = String2.indexOf(mSizes, "" + GraphDataLayer.MARKER_SIZE_SMALL);
         writer.write(
             "    <td>&nbsp;"
-                + EDStatic.messages.magGSSizeAr[language]
+                + EDStatic.messages.get(Message.MAG_GS_SIZE, language)
                 + ":&nbsp;</td>"
                 + "    <td>");
         writer.write(widgets.select(paramName, "", 1, mSizes, mSize, ""));
@@ -3865,7 +3886,7 @@ public abstract class EDDGrid extends EDD {
         writer.write(
             "  <tr>\n"
                 + "    <td>"
-                + EDStatic.messages.magGSColorAr[language]
+                + EDStatic.messages.get(Message.MAG_GS_COLOR, language)
                 + ":&nbsp;</td>\n"
                 + "    <td colspan=\"5\">");
         writer.write(widgets.color17("", paramName, "", colori, ""));
@@ -3898,13 +3919,13 @@ public abstract class EDDGrid extends EDD {
         writer.write(
             "  <tr>\n"
                 + "    <td>"
-                + EDStatic.messages.magGSColorBarAr[language]
+                + EDStatic.messages.get(Message.MAG_GS_COLOR_BAR, language)
                 + ":&nbsp;</td>\n"
                 + "    <td>");
         writer.write(
             widgets.select(
                 paramName,
-                EDStatic.messages.magGSColorBarTooltipAr[language],
+                EDStatic.messages.get(Message.MAG_GS_COLOR_BAR_TOOLTIP, language),
                 1,
                 EDStatic.messages.palettes0,
                 palette,
@@ -3917,13 +3938,13 @@ public abstract class EDDGrid extends EDD {
             pParts.length > 1 ? (pParts[1].equals("D") ? 2 : pParts[1].equals("C") ? 1 : 0) : 0;
         writer.write(
             "    <td>&nbsp;"
-                + EDStatic.messages.magGSContinuityAr[language]
+                + EDStatic.messages.get(Message.MAG_GS_CONTINUITY, language)
                 + ":&nbsp;</td>\n"
                 + "    <td>");
         writer.write(
             widgets.select(
                 paramName,
-                EDStatic.messages.magGSContinuityTooltipAr[language],
+                EDStatic.messages.get(Message.MAG_GS_CONTINUITY_TOOLTIP, language),
                 1,
                 conDis,
                 continuous,
@@ -3936,13 +3957,13 @@ public abstract class EDDGrid extends EDD {
             Math.max(0, EDV.VALID_SCALES0.indexOf(pParts.length > 2 ? pParts[2] : defaultScale));
         writer.write(
             "    <td>&nbsp;"
-                + EDStatic.messages.magGSScaleAr[language]
+                + EDStatic.messages.get(Message.MAG_GS_SCALE, language)
                 + ":&nbsp;</td>\n"
                 + "    <td>");
         writer.write(
             widgets.select(
                 paramName,
-                EDStatic.messages.magGSScaleTooltipAr[language],
+                EDStatic.messages.get(Message.MAG_GS_SCALE_TOOLTIP, language),
                 1,
                 EDV.VALID_SCALES0,
                 scale,
@@ -3960,12 +3981,17 @@ public abstract class EDDGrid extends EDD {
             "  <tr>\n"
                 + "    <td>"
                 + gap
-                + EDStatic.messages.magGSMinAr[language]
+                + EDStatic.messages.get(Message.MAG_GS_MIN, language)
                 + ":&nbsp;</td>\n"
                 + "    <td>");
         writer.write(
             widgets.textField(
-                paramName, EDStatic.messages.magGSMinTooltipAr[language], 10, 60, palMin, ""));
+                paramName,
+                EDStatic.messages.get(Message.MAG_GS_MIN_TOOLTIP, language),
+                10,
+                60,
+                palMin,
+                ""));
         writer.write("</td>\n");
 
         paramName = "pMax";
@@ -3973,12 +3999,17 @@ public abstract class EDDGrid extends EDD {
         String palMax = pParts.length > 4 ? pParts[4] : defaultMax;
         writer.write(
             "    <td>&nbsp;"
-                + EDStatic.messages.magGSMaxAr[language]
+                + EDStatic.messages.get(Message.MAG_GS_MAX, language)
                 + ":&nbsp;</td>\n"
                 + "    <td>");
         writer.write(
             widgets.textField(
-                paramName, EDStatic.messages.magGSMaxTooltipAr[language], 10, 60, palMax, ""));
+                paramName,
+                EDStatic.messages.get(Message.MAG_GS_MAX_TOOLTIP, language),
+                10,
+                60,
+                palMax,
+                ""));
         writer.write("</td>\n");
 
         paramName = "pSec";
@@ -3986,13 +4017,13 @@ public abstract class EDDGrid extends EDD {
             Math.max(0, EDStatic.paletteSections.indexOf(pParts.length > 5 ? pParts[5] : ""));
         writer.write(
             "    <td>&nbsp;"
-                + EDStatic.messages.magGSNSectionsAr[language]
+                + EDStatic.messages.get(Message.MAG_GS_N_SECTIONS, language)
                 + ":&nbsp;</td>\n"
                 + "    <td>");
         writer.write(
             widgets.select(
                 paramName,
-                EDStatic.messages.magGSNSectionsTooltipAr[language],
+                EDStatic.messages.get(Message.MAG_GS_N_SECTIONS_TOOLTIP, language),
                 1,
                 EDStatic.paletteSections,
                 pSections,
@@ -4028,13 +4059,13 @@ public abstract class EDDGrid extends EDD {
         writer.write(
             "  <tr>\n"
                 + "    <td>"
-                + EDStatic.messages.magGSVectorStandardAr[language]
+                + EDStatic.messages.get(Message.MAG_GS_VECTOR_STANDARD, language)
                 + ":&nbsp;</td>\n"
                 + "    <td>");
         writer.write(
             widgets.textField(
                 paramName,
-                EDStatic.messages.magGSVectorStandardTooltipAr[language],
+                EDStatic.messages.get(Message.MAG_GS_VECTOR_STANDARD_TOOLTIP, language),
                 10,
                 30,
                 vec,
@@ -4064,13 +4095,13 @@ public abstract class EDDGrid extends EDD {
         writer.write(
             "  <tr>\n"
                 + "    <td>"
-                + EDStatic.messages.magGSLandMaskAr[language]
+                + EDStatic.messages.get(Message.MAG_GS_LAND_MASK, language)
                 + ":&nbsp;</td>\n"
                 + "    <td>");
         writer.write(
             widgets.select(
                 "land",
-                EDStatic.messages.magGSLandMaskTooltipGridAr[language],
+                EDStatic.messages.get(Message.MAG_GS_LAND_MASK_TOOLTIP_GRID, language),
                 1,
                 SgtMap.drawLandMask_OPTIONS,
                 tLand,
@@ -4128,15 +4159,15 @@ public abstract class EDDGrid extends EDD {
         writer.write(
             "  <tr>\n"
                 + "    <td>"
-                + EDStatic.messages.magGSYAxisMinAr[language]
+                + EDStatic.messages.get(Message.MAG_GS_Y_AXIS_MIN, language)
                 + ":&nbsp;</td>\n"
                 + "    <td>");
         writer.write(
             widgets.textField(
                 "yRangeMin",
                 "<div class=\"narrow_max_width\">"
-                    + EDStatic.messages.magGSYRangeMinTooltipAr[language]
-                    + EDStatic.messages.magGSYRangeTooltipAr[language]
+                    + EDStatic.messages.get(Message.MAG_GS_Y_RANGE_MIN_TOOLTIP, language)
+                    + EDStatic.messages.get(Message.MAG_GS_Y_RANGE_TOOLTIP, language)
                     + "</div>",
                 10,
                 30,
@@ -4145,15 +4176,15 @@ public abstract class EDDGrid extends EDD {
         writer.write(
             "</td>\n"
                 + "    <td>&nbsp;"
-                + EDStatic.messages.magGSYAxisMaxAr[language]
+                + EDStatic.messages.get(Message.MAG_GS_Y_AXIS_MAX, language)
                 + ":&nbsp;</td>\n"
                 + "    <td>");
         writer.write(
             widgets.textField(
                 "yRangeMax",
                 "<div class=\"narrow_max_width\">"
-                    + EDStatic.messages.magGSYRangeMaxTooltipAr[language]
-                    + EDStatic.messages.magGSYRangeTooltipAr[language]
+                    + EDStatic.messages.get(Message.MAG_GS_Y_RANGE_MAX_TOOLTIP, language)
+                    + EDStatic.messages.get(Message.MAG_GS_Y_RANGE_TOOLTIP, language)
                     + "</div>",
                 10,
                 30,
@@ -4163,7 +4194,7 @@ public abstract class EDDGrid extends EDD {
         writer.write(
             widgets.select(
                 "yRangeAscending",
-                EDStatic.messages.magGSYAscendingTooltipAr[language],
+                EDStatic.messages.get(Message.MAG_GS_Y_ASCENDING_TOOLTIP, language),
                 1,
                 new String[] {"Ascending", "Descending"},
                 yAscending ? 0 : 1,
@@ -4173,7 +4204,7 @@ public abstract class EDDGrid extends EDD {
                 + "    <td>"
                 + widgets.select(
                     "yScale",
-                    EDStatic.messages.magGSYScaleTooltipAr[language],
+                    EDStatic.messages.get(Message.MAG_GS_Y_SCALE_TOOLTIP, language),
                     1,
                     new String[] {"", "Linear", "Log"},
                     yAxisScale.equals("Linear") ? 1 : yAxisScale.equals("Log") ? 2 : 0,
@@ -4337,20 +4368,21 @@ public abstract class EDDGrid extends EDD {
               "button",
               "",
               "",
-              EDStatic.messages.magRedrawTooltipAr[language],
+              EDStatic.messages.get(Message.MAG_REDRAW_TOOLTIP, language),
               "<span style=\"font-size:large;\"><strong>"
-                  + EDStatic.messages.magRedrawAr[language]
+                  + EDStatic.messages.get(Message.MAG_REDRAW, language)
                   + "</strong></span>",
               "onMouseUp='mySubmit(true);'"));
-      writer.write(" " + EDStatic.messages.patientDataAr[language] + "\n" + "</td></tr>\n");
+      writer.write(
+          " " + EDStatic.messages.get(Message.PATIENT_DATA, language) + "\n" + "</td></tr>\n");
 
       // Download the Data
       writer.write(
           "<tr><td>&nbsp;<br>"
-              + EDStatic.messages.optionalAr[language]
+              + EDStatic.messages.get(Message.OPTIONAL, language)
               + ":"
               + "<br>"
-              + EDStatic.messages.magFileTypeAr[language]
+              + EDStatic.messages.get(Message.MAG_FILE_TYPE, language)
               + ":\n");
       paramName = "fType";
       boolean tAccessibleTo = isAccessibleTo(EDStatic.getRoles(loggedInAs));
@@ -4367,7 +4399,7 @@ public abstract class EDDGrid extends EDD {
       writer.write(
           widgets.select(
               paramName,
-              EDStatic.messages.EDDSelectFileTypeAr[language],
+              EDStatic.messages.get(Message.EDD_SELECT_FILE_TYPE, language),
               1,
               fileTypeOptions,
               defaultIndex,
@@ -4383,7 +4415,7 @@ public abstract class EDDGrid extends EDD {
           " (<a rel=\"help\" href=\""
               + tErddapUrl
               + "/griddap/documentation.html#fileType\">"
-              + EDStatic.messages.EDDFileTypeInformationAr[language]
+              + EDStatic.messages.get(Message.EDD_FILE_TYPE_INFORMATION, language)
               + "</a>)\n");
 
       writer.write("<br>and\n");
@@ -4391,10 +4423,10 @@ public abstract class EDDGrid extends EDD {
           widgets.button(
               "button",
               "",
-              EDStatic.messages.magDownloadTooltipAr[language]
+              EDStatic.messages.get(Message.MAG_DOWNLOAD_TOOLTIP, language)
                   + "<br>"
-                  + EDStatic.messages.patientDataAr[language],
-              EDStatic.messages.magDownloadAr[language],
+                  + EDStatic.messages.get(Message.PATIENT_DATA, language),
+              EDStatic.messages.get(Message.MAG_DOWNLOAD, language),
               // "class=\"skinny\" " + //only IE needs it but only IE ignores it
               "onMouseUp='window.location=\""
                   + tErddapUrl
@@ -4413,11 +4445,12 @@ public abstract class EDDGrid extends EDD {
       String genViewHtml =
           String2.replaceAll(
               "<div class=\"standard_max_width\">"
-                  + EDStatic.messages.justGenerateAndViewGraphUrlTooltipAr[language]
+                  + EDStatic.messages.get(
+                      Message.JUST_GENERATE_AND_VIEW_GRAPH_URL_TOOLTIP, language)
                   + "</div>",
               "&protocolName;",
               dapProtocol);
-      writer.write("<tr><td>" + EDStatic.messages.magViewUrlAr[language] + ":\n");
+      writer.write("<tr><td>" + EDStatic.messages.get(Message.MAG_VIEW_URL, language) + ":\n");
       writer.write(
           widgets.textField(
               "tUrl",
@@ -4436,7 +4469,7 @@ public abstract class EDDGrid extends EDD {
               + tErddapUrl
               + "/griddap/documentation.html\" "
               + "title=\"griddap documentation\">"
-              + EDStatic.messages.magDocumentationAr[language]
+              + EDStatic.messages.get(Message.MAG_DOCUMENTATION, language)
               + "</a>\n"
               + EDStatic.htmlTooltipImage(request, language, loggedInAs, genViewHtml)
               + ")\n");
@@ -4464,15 +4497,15 @@ public abstract class EDDGrid extends EDD {
       // *** zoomLatLon stuff
       if (zoomLatLon) {
         writer.write(
-            EDStatic.messages.magZoomCenterAr[language]
+            EDStatic.messages.get(Message.MAG_ZOOM_CENTER, language)
                 + "\n"
                 + EDStatic.htmlTooltipImage(
                     request,
                     language,
                     loggedInAs,
-                    EDStatic.messages.magZoomCenterTooltipAr[language])
+                    EDStatic.messages.get(Message.MAG_ZOOM_CENTER_TOOLTIP, language))
                 + "<br><strong>"
-                + EDStatic.messages.magZoomAr[language]
+                + EDStatic.messages.get(Message.MAG_ZOOM, language)
                 + ":</strong>\n");
 
         double cRadius =
@@ -4498,9 +4531,9 @@ public abstract class EDDGrid extends EDD {
                 "button",
                 "",
                 MessageFormat.format(
-                    EDStatic.messages.magZoomOutTooltipAr[language],
-                    EDStatic.messages.magZoomOutDataAr[language]),
-                EDStatic.messages.magZoomDataAr[language],
+                    EDStatic.messages.get(Message.MAG_ZOOM_OUT_TOOLTIP, language),
+                    EDStatic.messages.get(Message.MAG_ZOOM_OUT_DATA, language)),
+                EDStatic.messages.get(Message.MAG_ZOOM_DATA, language),
                 "class=\"skinny\" "
                     + (disableZoomOut
                         ? "disabled"
@@ -4536,8 +4569,9 @@ public abstract class EDDGrid extends EDD {
             widgets.button(
                 "button",
                 "",
-                MessageFormat.format(EDStatic.messages.magZoomOutTooltipAr[language], "8x"),
-                MessageFormat.format(EDStatic.messages.magZoomOutAr[language], "8x"),
+                MessageFormat.format(
+                    EDStatic.messages.get(Message.MAG_ZOOM_OUT_TOOLTIP, language), "8x"),
+                MessageFormat.format(EDStatic.messages.get(Message.MAG_ZOOM_OUT, language), "8x"),
                 "class=\"skinny\" "
                     + (disableZoomOut
                         ? "disabled"
@@ -4572,8 +4606,9 @@ public abstract class EDDGrid extends EDD {
             widgets.button(
                 "button",
                 "",
-                MessageFormat.format(EDStatic.messages.magZoomOutTooltipAr[language], "2x"),
-                MessageFormat.format(EDStatic.messages.magZoomOutAr[language], "2x"),
+                MessageFormat.format(
+                    EDStatic.messages.get(Message.MAG_ZOOM_OUT_TOOLTIP, language), "2x"),
+                MessageFormat.format(EDStatic.messages.get(Message.MAG_ZOOM_OUT, language), "2x"),
                 "class=\"skinny\" "
                     + (disableZoomOut
                         ? "disabled"
@@ -4609,9 +4644,10 @@ public abstract class EDDGrid extends EDD {
                 "button",
                 "",
                 MessageFormat.format(
-                    EDStatic.messages.magZoomOutTooltipAr[language],
-                    EDStatic.messages.magZoomALittleAr[language]),
-                MessageFormat.format(EDStatic.messages.magZoomOutAr[language], "").trim(),
+                    EDStatic.messages.get(Message.MAG_ZOOM_OUT_TOOLTIP, language),
+                    EDStatic.messages.get(Message.MAG_ZOOM_A_LITTLE, language)),
+                MessageFormat.format(EDStatic.messages.get(Message.MAG_ZOOM_OUT, language), "")
+                    .trim(),
                 "class=\"skinny\" "
                     + (disableZoomOut
                         ? "disabled"
@@ -4643,9 +4679,10 @@ public abstract class EDDGrid extends EDD {
                     "button",
                     "",
                     MessageFormat.format(
-                        EDStatic.messages.magZoomInTooltipAr[language],
-                        EDStatic.messages.magZoomALittleAr[language]),
-                    MessageFormat.format(EDStatic.messages.magZoomInAr[language], "").trim(),
+                        EDStatic.messages.get(Message.MAG_ZOOM_IN_TOOLTIP, language),
+                        EDStatic.messages.get(Message.MAG_ZOOM_A_LITTLE, language)),
+                    MessageFormat.format(EDStatic.messages.get(Message.MAG_ZOOM_IN, language), "")
+                        .trim(),
                     "class=\"skinny\" "
                         + "onMouseUp='f1.start"
                         + lonIndex
@@ -4671,8 +4708,10 @@ public abstract class EDDGrid extends EDD {
                 + widgets.button(
                     "button",
                     "",
-                    MessageFormat.format(EDStatic.messages.magZoomInTooltipAr[language], "2x"),
-                    MessageFormat.format(EDStatic.messages.magZoomInAr[language], "2x"),
+                    MessageFormat.format(
+                        EDStatic.messages.get(Message.MAG_ZOOM_IN_TOOLTIP, language), "2x"),
+                    MessageFormat.format(
+                        EDStatic.messages.get(Message.MAG_ZOOM_IN, language), "2x"),
                     "class=\"skinny\" "
                         + "onMouseUp='f1.start"
                         + lonIndex
@@ -4698,8 +4737,10 @@ public abstract class EDDGrid extends EDD {
                 + widgets.button(
                     "button",
                     "",
-                    MessageFormat.format(EDStatic.messages.magZoomInTooltipAr[language], "8x"),
-                    MessageFormat.format(EDStatic.messages.magZoomInAr[language], "8x"),
+                    MessageFormat.format(
+                        EDStatic.messages.get(Message.MAG_ZOOM_IN_TOOLTIP, language), "8x"),
+                    MessageFormat.format(
+                        EDStatic.messages.get(Message.MAG_ZOOM_IN, language), "8x"),
                     "class=\"skinny\" "
                         + "onMouseUp='f1.start"
                         + lonIndex
@@ -4744,14 +4785,15 @@ public abstract class EDDGrid extends EDD {
                   + "   stop="
                   + Calendar2.epochSecondsToLimitedIsoStringT(time_precision, timeStop, ""));
 
-        writer.write("<strong>" + EDStatic.messages.magTimeRangeAr[language] + "</strong>\n");
+        writer.write(
+            "<strong>" + EDStatic.messages.get(Message.MAG_TIME_RANGE, language) + "</strong>\n");
 
         String timeRangeString =
             idealTimeN + " " + Calendar2.IDEAL_UNITS_OPTIONS.get(idealTimeUnits);
-        String timesVary = "<br>(" + EDStatic.messages.magTimesVaryAr[language] + ")";
+        String timesVary = "<br>(" + EDStatic.messages.get(Message.MAG_TIMES_VARY, language) + ")";
         String timeRangeTip =
-            EDStatic.messages.magTimeRangeTooltipAr[language]
-                + EDStatic.messages.magTimeRangeTooltip2Ar[language];
+            EDStatic.messages.get(Message.MAG_TIME_RANGE_TOOLTIP, language)
+                + EDStatic.messages.get(Message.MAG_TIME_RANGE_TOOLTIP2, language);
         String timeGap = "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;\n";
 
         // n = 1..100
@@ -4810,7 +4852,8 @@ public abstract class EDDGrid extends EDD {
                         EDStatic.imageDirUrl(request, loggedInAs, language) + "arrowLL.gif",
                         "|<",
                         MessageFormat.format(
-                                EDStatic.messages.magTimeRangeFirstAr[language], timeRangeString)
+                                EDStatic.messages.get(Message.MAG_TIME_RANGE_FIRST, language),
+                                timeRangeString)
                             + timesVary,
                         "class=\"B\" "
                             + // vertical-align: 'b'ottom
@@ -4840,7 +4883,8 @@ public abstract class EDDGrid extends EDD {
                         EDStatic.imageDirUrl(request, loggedInAs, language) + "minus.gif",
                         "-",
                         MessageFormat.format(
-                                EDStatic.messages.magTimeRangeBackAr[language], timeRangeString)
+                                EDStatic.messages.get(Message.MAG_TIME_RANGE_BACK, language),
+                                timeRangeString)
                             + timesVary,
                         "class=\"B\" "
                             + // vertical-align: 'b'ottom
@@ -4877,7 +4921,8 @@ public abstract class EDDGrid extends EDD {
                         EDStatic.imageDirUrl(request, loggedInAs, language) + "plus.gif",
                         "+",
                         MessageFormat.format(
-                                EDStatic.messages.magTimeRangeForwardAr[language], timeRangeString)
+                                EDStatic.messages.get(Message.MAG_TIME_RANGE_FORWARD, language),
+                                timeRangeString)
                             + timesVary,
                         "class=\"B\" "
                             + // vertical-align: 'b'ottom
@@ -4920,7 +4965,8 @@ public abstract class EDDGrid extends EDD {
                         EDStatic.imageDirUrl(request, loggedInAs, language) + "arrowRR.gif",
                         ">|",
                         MessageFormat.format(
-                                EDStatic.messages.magTimeRangeLastAr[language], timeRangeString)
+                                EDStatic.messages.get(Message.MAG_TIME_RANGE_LAST, language),
+                                timeRangeString)
                             + timesVary,
                         "class=\"B\" "
                             + // vertical-align: 'b'ottom
@@ -4969,8 +5015,8 @@ public abstract class EDDGrid extends EDD {
                       "button",
                       "zoomXzoomIn",
                       "", // value
-                      EDStatic.messages.zoomInAr[language],
-                      EDStatic.messages.zoomInAr[language], // tooltip, labelHtml
+                      EDStatic.messages.get(Message.ZOOM_IN, language),
+                      EDStatic.messages.get(Message.ZOOM_IN, language), // tooltip, labelHtml
                       "onMouseUp='f1.start"
                           + axisVarX
                           + ".value=\""
@@ -5005,8 +5051,8 @@ public abstract class EDDGrid extends EDD {
                       "button",
                       "zoomXzoomOut",
                       "", // value
-                      EDStatic.messages.zoomOutAr[language],
-                      EDStatic.messages.zoomOutAr[language], // tooltip, labelHtml
+                      EDStatic.messages.get(Message.ZOOM_OUT, language),
+                      EDStatic.messages.get(Message.ZOOM_OUT, language), // tooltip, labelHtml
                       "onMouseUp='f1.start"
                           + axisVarX
                           + ".value=\""
@@ -5027,7 +5073,7 @@ public abstract class EDDGrid extends EDD {
               HtmlWidgets.htmlTooltipImage(
                       EDStatic.imageDirUrl(request, loggedInAs, language) + "arrowLL.gif",
                       "|<",
-                      EDStatic.messages.shiftXAllTheWayLeftAr[language],
+                      EDStatic.messages.get(Message.SHIFT_X_ALL_THE_WAY_LEFT, language),
                       "class=\"B\" "
                           + // vertical-align: 'b'ottom
                           "onMouseUp='f1.start"
@@ -5049,7 +5095,7 @@ public abstract class EDDGrid extends EDD {
               HtmlWidgets.htmlTooltipImage(
                       EDStatic.imageDirUrl(request, loggedInAs, language) + "minus.gif",
                       "-",
-                      EDStatic.messages.shiftXLeftAr[language],
+                      EDStatic.messages.get(Message.SHIFT_X_LEFT, language),
                       "class=\"B\" "
                           + // vertical-align: 'b'ottom
                           "onMouseUp='f1.start"
@@ -5075,7 +5121,7 @@ public abstract class EDDGrid extends EDD {
               HtmlWidgets.htmlTooltipImage(
                       EDStatic.imageDirUrl(request, loggedInAs, language) + "plus.gif",
                       "+",
-                      EDStatic.messages.shiftXRightAr[0],
+                      EDStatic.messages.get(Message.SHIFT_X_RIGHT, language),
                       "class=\"B\" "
                           + // vertical-align: 'b'ottom
                           "onMouseUp='f1.start"
@@ -5096,7 +5142,7 @@ public abstract class EDDGrid extends EDD {
               HtmlWidgets.htmlTooltipImage(
                   EDStatic.imageDirUrl(request, loggedInAs, language) + "arrowRR.gif",
                   ">|",
-                  EDStatic.messages.shiftXAllTheWayRightAr[language],
+                  EDStatic.messages.get(Message.SHIFT_X_ALL_THE_WAY_RIGHT, language),
                   "class=\"B\" "
                       + // vertical-align: 'b'ottom
                       "onMouseUp='f1.start"
@@ -5140,7 +5186,7 @@ public abstract class EDDGrid extends EDD {
               + EDStatic.messages.imageHeights[1]
               + "\" "
               + "alt=\""
-              + EDStatic.messages.patientYourGraphAr[language]
+              + EDStatic.messages.get(Message.PATIENT_YOUR_GRAPH, language)
               + "\" "
               + "src=\""
               + XML.encodeAsHTMLAttribute(tErddapUrl + "/griddap/" + datasetID + ".png?" + aQuery)
@@ -5162,7 +5208,8 @@ public abstract class EDDGrid extends EDD {
       // *** Things you can do with graphs
       writer.write(
           String2.replaceAll(
-              MessageFormat.format(EDStatic.messages.doWithGraphsAr[language], tErddapUrl),
+              MessageFormat.format(
+                  EDStatic.messages.get(Message.DO_WITH_GRAPHS, language), tErddapUrl),
               "&erddapUrl;",
               tErddapUrl));
       writer.write("\n\n");
@@ -5171,7 +5218,7 @@ public abstract class EDDGrid extends EDD {
       writer.write(
           "<hr>\n"
               + "<h2><a class=\"selfLink\" id=\"DAS\" href=\"#DAS\" rel=\"bookmark\">"
-              + EDStatic.messages.dasTitleAr[language]
+              + EDStatic.messages.get(Message.DAS_TITLE, language)
               + "</a></h2>\n"
               + "<pre style=\"white-space:pre-wrap;\">\n");
       writeDAS(
@@ -5431,7 +5478,7 @@ public abstract class EDDGrid extends EDD {
    *     The destinationMaxString is used in the error messages.
    * @param repair If true and the less than check fails, this returns the repaired value. If false
    *     and the check fails, then an error is thrown.
-   * @param idAr A String[] with translations of the item being tested.
+   * @param id A EDMessages.Message of what is being tested
    * @param language the index of the selected language
    * @param diagnostic0 Informational string about the axis for this check. In language 0.
    * @param diagnosticl Informational string about the axis for this check. In the language that
@@ -5444,7 +5491,7 @@ public abstract class EDDGrid extends EDD {
       String stringValue,
       EDVGridAxis av,
       boolean repair,
-      String[] idAr,
+      Message id,
       int language,
       String diagnostic0,
       String diagnosticl) {
@@ -5459,7 +5506,7 @@ public abstract class EDDGrid extends EDD {
             ? Calendar2.epochSecondsToIsoStringTZ(av.destinationCoarseMax())
             : "" + av.destinationCoarseMax(),
         repair,
-        idAr,
+        id,
         language,
         diagnostic0,
         diagnosticl);
@@ -5478,7 +5525,7 @@ public abstract class EDDGrid extends EDD {
    *     The destinationMinString is used in the error messages.
    * @param repair If true and the less than check fails, this returns the repaired value. If false
    *     and the check fails, then an error is thrown.
-   * @param idAr A String[] with translations of the item being tested.
+   * @param idAr EDMessages.Message for the item.
    * @param language the index of the selected language
    * @param diagnostic0 Informational string about the axis for this check. In language 0.
    * @param diagnosticl Informational string about the axis for this check. In the language that
@@ -5491,7 +5538,7 @@ public abstract class EDDGrid extends EDD {
       String stringValue,
       EDVGridAxis av,
       boolean repair,
-      String idAr[],
+      Message id,
       int language,
       String diagnostic0,
       String diagnosticl) {
@@ -5506,7 +5553,7 @@ public abstract class EDDGrid extends EDD {
             ? Calendar2.epochSecondsToIsoStringTZ(av.destinationCoarseMin())
             : "" + av.destinationCoarseMin(),
         repair,
-        idAr,
+        id,
         language,
         diagnostic0,
         diagnosticl);
@@ -5529,7 +5576,7 @@ public abstract class EDDGrid extends EDD {
    *     should be the ISO 8601 representation.
    * @param repair If true and the less than check fails, this returns the repaired value. If false
    *     and the check fails, then an error is thrown.
-   * @param idAr A String[] with translations of the item being tested.
+   * @param id A EDMessages.Message of what is being tested
    * @param language the index of the selected language
    * @param diagnostic0 Informational string about the axis for this check. In language 0.
    * @param diagnosticl Informational string about the axis for this check. In the language that
@@ -5546,7 +5593,7 @@ public abstract class EDDGrid extends EDD {
       double coarseMax,
       String coarseMaxString,
       boolean repair,
-      String idAr[],
+      Message id,
       int language,
       String diagnostic0,
       String diagnosticl) {
@@ -5559,23 +5606,24 @@ public abstract class EDDGrid extends EDD {
                 language,
                 MustBe.THERE_IS_NO_DATA
                     + " "
-                    + EDStatic.messages.queryErrorAr[0]
+                    + EDStatic.messages.get(Message.QUERY_ERROR, 0)
                     + diagnostic0
                     + ": "
                     + MessageFormat.format(
-                        EDStatic.messages.queryErrorGridGreaterMaxAr[0],
-                        idAr[0],
+                        EDStatic.messages.get(Message.QUERY_ERROR_GRID_GREATER_MAX, 0),
+                        EDStatic.messages.get(Message.QUERY_ERROR_GRID_GREATER_MAX, 0),
+                        EDStatic.messages.get(id, 0),
                         stringValue,
                         stringMax,
                         coarseMaxString),
                 MustBe.THERE_IS_NO_DATA
                     + " "
-                    + EDStatic.messages.queryErrorAr[language]
+                    + EDStatic.messages.get(Message.QUERY_ERROR, language)
                     + diagnosticl
                     + ": "
                     + MessageFormat.format(
-                        EDStatic.messages.queryErrorGridGreaterMaxAr[language],
-                        idAr[language],
+                        EDStatic.messages.get(Message.QUERY_ERROR_GRID_GREATER_MAX, language),
+                        EDStatic.messages.get(id, language),
                         stringValue,
                         stringMax,
                         coarseMaxString)));
@@ -5616,7 +5664,7 @@ public abstract class EDDGrid extends EDD {
       double coarseMin,
       String coarseMinString,
       boolean repair,
-      String idAr[],
+      Message id,
       int language,
       String diagnostic0,
       String diagnosticl) {
@@ -5629,23 +5677,23 @@ public abstract class EDDGrid extends EDD {
                 language,
                 MustBe.THERE_IS_NO_DATA
                     + " "
-                    + EDStatic.messages.queryErrorAr[0]
+                    + EDStatic.messages.get(Message.QUERY_ERROR, 0)
                     + diagnostic0
                     + ": "
                     + MessageFormat.format(
-                        EDStatic.messages.queryErrorGridLessMinAr[0],
-                        idAr[0],
+                        EDStatic.messages.get(Message.QUERY_ERROR_GRID_LESS_MIN, 0),
+                        EDStatic.messages.get(id, 0),
                         stringValue,
                         stringMin,
                         coarseMinString),
                 MustBe.THERE_IS_NO_DATA
                     + " "
-                    + EDStatic.messages.queryErrorAr[language]
+                    + EDStatic.messages.get(Message.QUERY_ERROR, language)
                     + diagnosticl
                     + ": "
                     + MessageFormat.format(
-                        EDStatic.messages.queryErrorGridLessMinAr[language],
-                        idAr[language],
+                        EDStatic.messages.get(Message.QUERY_ERROR_GRID_LESS_MIN, language),
+                        EDStatic.messages.get(id, language),
                         stringValue,
                         stringMin,
                         coarseMinString)));
@@ -5673,13 +5721,13 @@ public abstract class EDDGrid extends EDD {
     EDVGridAxis av = axisVariables[lonIndex];
     String diagnostic0 =
         MessageFormat.format(
-            EDStatic.messages.queryErrorGridDiagnosticAr[0],
+            EDStatic.messages.get(Message.QUERY_ERROR_GRID_DIAGNOSTIC, 0),
             av.destinationName(),
             "" + lonIndex,
             av.destinationName());
     String diagnosticl =
         MessageFormat.format(
-            EDStatic.messages.queryErrorGridDiagnosticAr[language],
+            EDStatic.messages.get(Message.QUERY_ERROR_GRID_DIAGNOSTIC, language),
             av.destinationName(),
             "" + lonIndex,
             av.destinationName());
@@ -5691,7 +5739,7 @@ public abstract class EDDGrid extends EDD {
         "" + minX,
         av,
         false /* repair */,
-        EDStatic.messages.advl_minLongitudeAr,
+        Message.ADVL_MIN_LONGITUDE,
         language,
         diagnostic0,
         diagnosticl);
@@ -5701,7 +5749,7 @@ public abstract class EDDGrid extends EDD {
         "" + maxX,
         av,
         false /* repair */,
-        EDStatic.messages.advl_maxLongitudeAr,
+        Message.ADVL_MAX_LONGITUDE,
         language,
         diagnostic0,
         diagnosticl);
@@ -5710,13 +5758,13 @@ public abstract class EDDGrid extends EDD {
     av = axisVariables[latIndex];
     diagnostic0 =
         MessageFormat.format(
-            EDStatic.messages.queryErrorGridDiagnosticAr[0],
+            EDStatic.messages.get(Message.QUERY_ERROR_GRID_DIAGNOSTIC, 0),
             av.destinationName(),
             "" + latIndex,
             av.destinationName());
     diagnosticl =
         MessageFormat.format(
-            EDStatic.messages.queryErrorGridDiagnosticAr[language],
+            EDStatic.messages.get(Message.QUERY_ERROR_GRID_DIAGNOSTIC, language),
             av.destinationName(),
             "" + latIndex,
             av.destinationName());
@@ -5730,7 +5778,7 @@ public abstract class EDDGrid extends EDD {
         -91,
         "-91" /* coarseMin */,
         false /* repair */,
-        EDStatic.messages.advl_minLatitudeAr,
+        Message.ADVL_MIN_LATITUDE,
         language,
         diagnostic0,
         diagnosticl);
@@ -5743,7 +5791,7 @@ public abstract class EDDGrid extends EDD {
         91,
         "91" /* coarseMax */,
         false /* repair */,
-        EDStatic.messages.advl_maxLatitudeAr,
+        Message.ADVL_MAX_LATITUDE,
         language,
         diagnostic0,
         diagnosticl);
@@ -5754,7 +5802,7 @@ public abstract class EDDGrid extends EDD {
         "" + minY,
         av,
         false /* repair */,
-        EDStatic.messages.advl_minLatitudeAr,
+        Message.ADVL_MIN_LATITUDE,
         language,
         diagnostic0,
         diagnosticl);
@@ -5764,7 +5812,7 @@ public abstract class EDDGrid extends EDD {
         "" + maxY,
         av,
         false /* repair */,
-        EDStatic.messages.advl_maxLatitudeAr,
+        Message.ADVL_MAX_LATITUDE,
         language,
         diagnostic0,
         diagnosticl);
@@ -5790,7 +5838,7 @@ public abstract class EDDGrid extends EDD {
 
     if (gda.rowMajor())
       throw new SimpleException(
-          EDStatic.messages.errorInternalAr[0]
+          EDStatic.messages.get(Message.ERROR_INTERNAL, 0)
               + "In EDDGrid.writeNDimensionalMatlabArray, the GridDataAccessor must be column-major.");
 
     // do the first part
@@ -5801,7 +5849,7 @@ public abstract class EDDGrid extends EDD {
       // that could be a memory nightmare
       // so just don't allow it
       throw new SimpleException(
-          EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
+          EDStatic.simpleBilingual(language, Message.QUERY_ERROR)
               + "Matlab files can't have String data.");
     int nDataBytes = Matlab.writeNDimensionalArray1(stream, name, elementPAType, ndIndex);
 
@@ -5985,7 +6033,7 @@ public abstract class EDDGrid extends EDD {
             Math2.memoryTooMuchData
                 + "  "
                 + MessageFormat.format(
-                    EDStatic.messages.errorMoreThan2GBAr[0],
+                    EDStatic.messages.get(Message.ERROR_MORE_THAN_2GB, 0),
                     ".nc",
                     ((gda.totalNBytes() + 100000) / Math2.BytesPerMB) + " MB"));
 
@@ -6318,36 +6366,36 @@ public abstract class EDDGrid extends EDD {
     writer.write(widgets.beginTable("class=\"compact nowrap\""));
 
     // write the table's column names
-    String dimHelp = EDStatic.messages.EDDGridDimensionTooltipAr[language] + "\n<br>";
-    String sss = dimHelp + EDStatic.messages.EDDGridSSSTooltipAr[language] + "\n<br>";
-    String startTooltip = sss + EDStatic.messages.EDDGridStartTooltipAr[language];
-    String stopTooltip = sss + EDStatic.messages.EDDGridStopTooltipAr[language];
-    String strideTooltip = sss + EDStatic.messages.EDDGridStrideTooltipAr[language];
-    String downloadTooltip = EDStatic.messages.EDDGridDownloadTooltipAr[language];
+    String dimHelp = EDStatic.messages.get(Message.EDD_GRID_DIMENSION_TOOLTIP, language) + "\n<br>";
+    String sss = dimHelp + EDStatic.messages.get(Message.EDD_GRID_SSS_TOOLTIP, language) + "\n<br>";
+    String startTooltip = sss + EDStatic.messages.get(Message.EDD_GRID_START_TOOLTIP, language);
+    String stopTooltip = sss + EDStatic.messages.get(Message.EDD_GRID_STOP_TOOLTIP, language);
+    String strideTooltip = sss + EDStatic.messages.get(Message.EDD_GRID_STRIDE_TOOLTIP, language);
+    String downloadTooltip = EDStatic.messages.get(Message.EDD_GRID_DOWNLOAD_TOOLTIP, language);
     String gap = "&nbsp;&nbsp;&nbsp;";
     writer.write(
         "<tr>\n"
             + "  <th class=\"L\">"
-            + EDStatic.messages.EDDGridDimensionAr[language]
+            + EDStatic.messages.get(Message.EDD_GRID_DIMENSION, language)
             + " "
             + EDStatic.htmlTooltipImage(
                 request,
                 language,
                 loggedInAs,
-                dimHelp + EDStatic.messages.EDDGridVarHasDimTooltipAr[language])
+                dimHelp + EDStatic.messages.get(Message.EDD_GRID_VAR_HAS_DIM_TOOLTIP, language))
             + " </th>\n"
             + "  <th class=\"L\">"
-            + EDStatic.messages.EDDGridStartAr[language]
+            + EDStatic.messages.get(Message.EDD_GRID_START, language)
             + " "
             + EDStatic.htmlTooltipImage(request, language, loggedInAs, startTooltip)
             + " </th>\n"
             + "  <th class=\"L\">"
-            + EDStatic.messages.EDDGridStrideAr[language]
+            + EDStatic.messages.get(Message.EDD_GRID_STRIDE, language)
             + " "
             + EDStatic.htmlTooltipImage(request, language, loggedInAs, strideTooltip)
             + " </th>\n"
             + "  <th class=\"L\">"
-            + EDStatic.messages.EDDGridStopAr[language]
+            + EDStatic.messages.get(Message.EDD_GRID_STOP, language)
             + " "
             + EDStatic.htmlTooltipImage(request, language, loggedInAs, stopTooltip)
             + " </th>\n"
@@ -6356,21 +6404,24 @@ public abstract class EDDGrid extends EDD {
             //    EDStatic.htmlTooltipImage(language, loggedInAs,
             // EDStatic.messages.EDDGridDimensionFirstTooltip) + "</th>\n" +
             "  <th class=\"L\">&nbsp;"
-            + EDStatic.messages.EDDGridNValuesAr[language]
+            + EDStatic.messages.get(Message.EDD_GRID_N_VALUES, language)
             + " "
             + EDStatic.htmlTooltipImage(
-                request, language, loggedInAs, EDStatic.messages.EDDGridNValuesHtmlAr[language])
+                request,
+                language,
+                loggedInAs,
+                EDStatic.messages.get(Message.EDD_GRID_N_VALUES_HTML, language))
             + "</th>\n"
             + "  <th class=\"L\">"
             + gap
-            + EDStatic.messages.EDDGridSpacingAr[language]
+            + EDStatic.messages.get(Message.EDD_GRID_SPACING, language)
             + " "
             + EDStatic.htmlTooltipImage(
                 request,
                 language,
                 loggedInAs,
                 "<div class=\"narrow_max_width\">"
-                    + EDStatic.messages.EDDGridSpacingTooltipAr[language]
+                    + EDStatic.messages.get(Message.EDD_GRID_SPACING_TOOLTIP, language)
                     + "</div>")
             + "</th>\n"
             +
@@ -6508,7 +6559,7 @@ public abstract class EDDGrid extends EDD {
         widgets.beginTable("class=\"compact nowrap\"")
             + "<tr>\n"
             + "  <td>&nbsp;<br>"
-            + EDStatic.messages.EDDGridGridVariableHtmlAr[language]
+            + EDStatic.messages.get(Message.EDD_GRID_GRID_VARIABLE_HTML, language)
             + "&nbsp;");
 
     StringBuilder checkAll = new StringBuilder();
@@ -6523,15 +6574,15 @@ public abstract class EDDGrid extends EDD {
         widgets.button(
             "button",
             "CheckAll",
-            EDStatic.messages.EDDGridCheckAllTooltipAr[language],
-            EDStatic.messages.EDDGridCheckAllAr[language],
+            EDStatic.messages.get(Message.EDD_GRID_CHECK_ALL_TOOLTIP, language),
+            EDStatic.messages.get(Message.EDD_GRID_CHECK_ALL, language),
             "onclick=\"" + checkAll + "\""));
     writer.write(
         widgets.button(
             "button",
             "UncheckAll",
-            EDStatic.messages.EDDGridUncheckAllTooltipAr[language],
-            EDStatic.messages.EDDGridUncheckAllAr[language],
+            EDStatic.messages.get(Message.EDD_GRID_UNCHECK_ALL_TOOLTIP, language),
+            EDStatic.messages.get(Message.EDD_GRID_UNCHECK_ALL, language),
             "onclick=\"" + uncheckAll + "\""));
 
     writer.write("</td></tr>\n");
@@ -6576,12 +6627,12 @@ public abstract class EDDGrid extends EDD {
     // fileType
     writer.write(
         "<p><strong>"
-            + EDStatic.messages.EDDFileTypeAr[language]
+            + EDStatic.messages.get(Message.EDD_FILE_TYPE, language)
             + "</strong>\n"
             + " (<a rel=\"help\" href=\""
             + tErddapUrl
             + "/griddap/documentation.html#fileType\">"
-            + EDStatic.messages.moreInformationAr[language]
+            + EDStatic.messages.get(Message.MORE_INFORMATION, language)
             + "</a>)\n");
     List<String> fileTypeDescriptions =
         EDD_FILE_TYPE_INFO.values().stream()
@@ -6601,7 +6652,7 @@ public abstract class EDDGrid extends EDD {
     writer.write(
         widgets.select(
             "fileType",
-            EDStatic.messages.EDDSelectFileTypeAr[language],
+            EDStatic.messages.get(Message.EDD_SELECT_FILE_TYPE, language),
             1,
             fileTypeDescriptions,
             defaultIndex,
@@ -6673,7 +6724,7 @@ public abstract class EDDGrid extends EDD {
     String genViewHtml =
         "<div class=\"standard_max_width\">"
             + String2.replaceAll(
-                EDStatic.messages.justGenerateAndViewTooltipAr[language],
+                EDStatic.messages.get(Message.JUST_GENERATE_AND_VIEW_TOOLTIP, language),
                 "&protocolName;",
                 dapProtocol)
             + "</div>";
@@ -6682,12 +6733,17 @@ public abstract class EDDGrid extends EDD {
             "button",
             "getUrl",
             genViewHtml,
-            EDStatic.messages.justGenerateAndViewAr[language],
+            EDStatic.messages.get(Message.JUST_GENERATE_AND_VIEW, language),
             // "class=\"skinny\" " + //only IE needs it but only IE ignores it
             "onclick='" + javaScript + "'"));
     writer.write(
         widgets.textField(
-            "tUrl", EDStatic.messages.justGenerateAndViewUrlAr[language], 60, 1000, "", ""));
+            "tUrl",
+            EDStatic.messages.get(Message.JUST_GENERATE_AND_VIEW_URL, language),
+            60,
+            1000,
+            "",
+            ""));
     writer.write(
         "\n<br>(<a rel=\"help\" href=\""
             + tErddapUrl
@@ -6703,9 +6759,9 @@ public abstract class EDDGrid extends EDD {
                 "button",
                 "submit1",
                 "",
-                EDStatic.messages.submitTooltipAr[language],
+                EDStatic.messages.get(Message.SUBMIT_TOOLTIP, language),
                 "<span style=\"font-size:large;\"><strong>"
-                    + EDStatic.messages.submitAr[language]
+                    + EDStatic.messages.get(Message.SUBMIT, language)
                     + "</strong></span>",
                 "onclick='"
                     + javaScript
@@ -6713,7 +6769,7 @@ public abstract class EDDGrid extends EDD {
                     + // or open a new window: window.open(result);\n" +
                     "'")
             + " "
-            + EDStatic.messages.patientDataAr[language]
+            + EDStatic.messages.get(Message.PATIENT_DATA, language)
             + "\n");
 
     // end of form
@@ -6798,7 +6854,7 @@ public abstract class EDDGrid extends EDD {
 
     writer.write(
         "<h2><a class=\"selfLink\" id=\"instructions\" href=\"#instructions\" rel=\"bookmark\">"
-            + EDStatic.messages.usingGriddapAr[language]
+            + EDStatic.messages.get(Message.USING_GRIDDAP, language)
             + "</a></h2>\n"
             + longDapDescription(language, tErddapUrl)
             + "<p><strong>griddap request URLs must be in the form</strong>\n"
@@ -8320,127 +8376,6 @@ public abstract class EDDGrid extends EDD {
   }
 
   /**
-   * Get colorBarMinimum and Maximum for all grid variables in erddap. Currently, this is just set
-   * up for Bob's use.
-   */
-  public static void suggestGraphMinMax() throws Throwable {
-    String tDir = "c:/temp/griddap/";
-    String tName = "datasets.tsv";
-
-    while (true) {
-      String dsName = String2.getStringFromSystemIn("Grid datasetID? ");
-      if (dsName.length() == 0) dsName = "erdBAssta5day"; // hycomPacS";
-
-      Table info = new Table();
-      SSR.downloadFile(
-          "https://coastwatch.pfeg.noaa.gov/erddap/info/" + dsName + "/index.tsv",
-          tDir + tName,
-          true);
-
-      String response[] = File2.readFromFile88591(tDir + tName);
-      Test.ensureTrue(response[0].length() == 0, response[0]);
-      String2.log(
-          "Dataset info (500 chars):\n"
-              + response[1].substring(0, Math.min(response[1].length(), 500)));
-
-      info.readASCII(tDir + tName);
-      // String2.log(info.toString());
-
-      // generate request for data for range of lat and lon  and middle one of other axes
-      StringBuilder subset = new StringBuilder();
-      StringArray dataVars = new StringArray();
-      int nDim = 0;
-      for (int row = 0; row < info.nRows(); row++) {
-        String type = info.getStringData(0, row);
-        String varName = info.getStringData(1, row);
-        if (type.equals("variable")) {
-          dataVars.add(varName);
-          continue;
-        }
-
-        if (!type.equals("dimension")) continue;
-
-        // deal with dimensions
-        nDim++;
-        String s4[] = String2.split(info.getStringData(4, row), ',');
-        int nValues = String2.parseInt(String2.split(s4[0], '=')[1]);
-        String2.log(varName + " " + nValues);
-        if (varName.equals("longitude"))
-          subset.append("[0:" + (nValues / 36) + ":" + (nValues - 1) + "]");
-        else if (varName.equals("latitude"))
-          subset.append("[0:" + (nValues / 18) + ":" + (nValues - 1) + "]");
-        else subset.append("[" + (nValues / 2) + "]");
-      }
-      String2.log("subset=" + subset + "\nnDim=" + nDim + " vars=" + dataVars);
-
-      // get suggested range for each dataVariable
-      Table data = new Table();
-      int ndv = dataVars.size();
-      for (int v = 0; v < ndv; v++) {
-        try {
-          String varName = dataVars.get(v);
-          SSR.downloadFile(
-              "https://coastwatch.pfeg.noaa.gov/erddap/griddap/"
-                  + dsName
-                  + ".tsv?"
-                  + varName
-                  + subset,
-              tDir + tName,
-              true);
-
-          response = File2.readFromFile88591(tDir + tName);
-          Test.ensureTrue(response[0].length() == 0, response[0]);
-          if (response[1].startsWith("<!DOCTYPE HTML")) {
-            int start = response[1].indexOf("The error:");
-            int stop = response[1].length();
-            if (start >= 0) {
-              start = response[1].indexOf("Your request URL:");
-              stop = response[1].indexOf("</tr>", start);
-              stop = response[1].indexOf("</tr>", stop);
-              stop = response[1].indexOf("</tr>", stop);
-            }
-            if (start < 0) {
-              start = 0;
-              stop = response[1].length();
-            }
-            String2.log(
-                "Response for varName="
-                    + varName
-                    + ":\n"
-                    + String2.replaceAll(response[1].substring(start, stop), "<br>", "\n<br>"));
-          }
-
-          data.readASCII(tDir + tName);
-          PrimitiveArray pa = data.getColumn(data.nColumns() - 1);
-          double stats[] = pa.calculateStats();
-          double tMin = stats[PrimitiveArray.STATS_MIN];
-          double tMax = stats[PrimitiveArray.STATS_MAX];
-          double range = tMax - tMin;
-          double loHi[] =
-              Math2.suggestLowHigh(tMin + range / 10, tMax - range / 10); // interior range
-          String2.log(
-              "varName="
-                  + varName
-                  + " min="
-                  + tMin
-                  + " max="
-                  + tMax
-                  + "\n"
-                  + "                <att name=\"colorBarMinimum\" type=\"double\">"
-                  + loHi[0]
-                  + "</att>\n"
-                  + "                <att name=\"colorBarMaximum\" type=\"double\">"
-                  + loHi[1]
-                  + "</att>\n");
-
-        } catch (Throwable t) {
-          String2.log("\n" + MustBe.throwableToString(t));
-        }
-      }
-    }
-  }
-
-  /**
    * This responds by writing WCS info for this dataset.
    *
    * @param request the request
@@ -8476,7 +8411,9 @@ public abstract class EDDGrid extends EDD {
             + "\n"
             + "<p>"
             + String2.replaceAll(
-                EDStatic.messages.wcsLongDescriptionHtmlAr[language], "&erddapUrl;", tErddapUrl)
+                EDStatic.messages.get(Message.WCS_LONG_DESCRIPTION_HTML, language),
+                "&erddapUrl;",
+                tErddapUrl)
             + "\n"
             + "\n"
             + "<p>WCS clients send HTTP POST or GET requests (specially formed URLs) to the WCS service and get XML responses.\n"
@@ -8518,7 +8455,7 @@ public abstract class EDDGrid extends EDD {
 
     if (accessibleViaWCS().length() > 0)
       throw new SimpleException(
-          EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr) + accessibleViaWCS());
+          EDStatic.simpleBilingual(language, Message.QUERY_ERROR) + accessibleViaWCS());
 
     String tErddapUrl = EDStatic.erddapUrl(request, loggedInAs, language);
     String wcsUrl = tErddapUrl + "/wcs/" + datasetID + "/" + wcsServer;
@@ -8885,7 +8822,7 @@ public abstract class EDDGrid extends EDD {
       */
     } else {
       throw new SimpleException(
-          EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
+          EDStatic.simpleBilingual(language, Message.QUERY_ERROR)
               + "version="
               + version
               + " must be \""
@@ -8916,7 +8853,7 @@ public abstract class EDDGrid extends EDD {
 
     if (accessibleViaWCS().length() > 0)
       throw new SimpleException(
-          EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr) + accessibleViaWCS());
+          EDStatic.simpleBilingual(language, Message.QUERY_ERROR) + accessibleViaWCS());
 
     EDVGridAxis lonEdv = axisVariables[lonIndex];
     EDVGridAxis latEdv = axisVariables[latIndex];
@@ -8927,7 +8864,7 @@ public abstract class EDDGrid extends EDD {
     for (String s : coverages) {
       if (String2.indexOf(dataVariableDestinationNames(), s) < 0)
         throw new SimpleException(
-            EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
+            EDStatic.simpleBilingual(language, Message.QUERY_ERROR)
                 + "coverage="
                 + s
                 + " isn't a valid coverage name.");
@@ -9119,7 +9056,7 @@ public abstract class EDDGrid extends EDD {
 
     } else {
       throw new SimpleException(
-          EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
+          EDStatic.simpleBilingual(language, Message.QUERY_ERROR)
               + "version="
               + version
               + " must be \""
@@ -9158,7 +9095,7 @@ public abstract class EDDGrid extends EDD {
 
     if (accessibleViaWCS().length() > 0)
       throw new SimpleException(
-          EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr) + accessibleViaWCS);
+          EDStatic.simpleBilingual(language, Message.QUERY_ERROR) + accessibleViaWCS);
 
     // parse the wcsQuery
     String dapQuery[] = wcsQueryToDapQuery(language, EDD.userQueryHashMap(wcsQuery, true));
@@ -9211,7 +9148,7 @@ public abstract class EDDGrid extends EDD {
     String service = wcsQueryMap.get("service"); // test name.toLowerCase()
     if (service == null || !service.equals("WCS"))
       throw new SimpleException(
-          EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
+          EDStatic.simpleBilingual(language, Message.QUERY_ERROR)
               + "service="
               + service
               + " should have been \"WCS\".");
@@ -9220,7 +9157,7 @@ public abstract class EDDGrid extends EDD {
     String version = wcsQueryMap.get("version"); // test name.toLowerCase()
     if (!wcsVersion.equals(version)) // String2.indexOf(wcsVersions, version) < 0)
     throw new SimpleException(
-          EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
+          EDStatic.simpleBilingual(language, Message.QUERY_ERROR)
               + "version="
               + version
               + " should have been \""
@@ -9233,7 +9170,7 @@ public abstract class EDDGrid extends EDD {
     String request = wcsQueryMap.get("request"); // test name.toLowerCase()
     if (request == null || !request.equals("GetCoverage"))
       throw new SimpleException(
-          EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
+          EDStatic.simpleBilingual(language, Message.QUERY_ERROR)
               + "request="
               + request
               + " should have been \"GetCoverage\".");
@@ -9243,7 +9180,7 @@ public abstract class EDDGrid extends EDD {
     int fi = String2.caseInsensitiveIndexOf(wcsRequestFormats100, requestFormat);
     if (fi < 0)
       throw new SimpleException(
-          EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
+          EDStatic.simpleBilingual(language, Message.QUERY_ERROR)
               + "format="
               + requestFormat
               + " isn't supported.");
@@ -9252,7 +9189,7 @@ public abstract class EDDGrid extends EDD {
     // interpolation (1.0.0)
     if (wcsQueryMap.get("interpolation") != null) // test name.toLowerCase()
     throw new SimpleException(
-          EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
+          EDStatic.simpleBilingual(language, Message.QUERY_ERROR)
               + "'interpolation' isn't supported.");
 
     // GridXxx (for regridding in 1.1.2)
@@ -9266,14 +9203,14 @@ public abstract class EDDGrid extends EDD {
         || // test name.toLowerCase()
         wcsQueryMap.get("gridoffsets") != null) // test name.toLowerCase()
     throw new SimpleException(
-          EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
+          EDStatic.simpleBilingual(language, Message.QUERY_ERROR)
               + "regridding via 'GridXxx' parameters isn't supported.");
 
     // exceptions    optional
     String exceptions = wcsQueryMap.get("exceptions");
     if (exceptions != null && !exceptions.equals(wcsExceptions))
       throw new SimpleException(
-          EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
+          EDStatic.simpleBilingual(language, Message.QUERY_ERROR)
               + "exceptions="
               + exceptions
               + " must be "
@@ -9291,7 +9228,7 @@ public abstract class EDDGrid extends EDD {
     String coverage = wcsQueryMap.get(cName);
     if (String2.indexOf(dataVariableDestinationNames(), coverage) < 0)
       throw new SimpleException(
-          EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
+          EDStatic.simpleBilingual(language, Message.QUERY_ERROR)
               + cName
               + "="
               + coverage
@@ -9322,7 +9259,7 @@ public abstract class EDDGrid extends EDD {
       String bboxSA[] = String2.split(bbox, ',');
       if (bboxSA.length < 4)
         throw new SimpleException(
-            EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
+            EDStatic.simpleBilingual(language, Message.QUERY_ERROR)
                 + bboxName
                 + " must have at least 4 comma-separated values.");
       minLon = bboxSA[0]; // note goofy ordering of options
@@ -9339,7 +9276,7 @@ public abstract class EDDGrid extends EDD {
     double maxLonD = String2.parseDouble(maxLon);
     if (Double.isNaN(minLonD) || Double.isNaN(maxLonD) || minLonD > maxLonD)
       throw new SimpleException(
-          EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
+          EDStatic.simpleBilingual(language, Message.QUERY_ERROR)
               + bboxName
               + " minLongitude="
               + minLonD
@@ -9350,7 +9287,7 @@ public abstract class EDDGrid extends EDD {
     double maxLatD = String2.parseDouble(maxLat);
     if (Double.isNaN(minLatD) || Double.isNaN(maxLatD) || minLatD > maxLatD)
       throw new SimpleException(
-          EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
+          EDStatic.simpleBilingual(language, Message.QUERY_ERROR)
               + bboxName
               + " minLatitude="
               + minLatD
@@ -9362,7 +9299,7 @@ public abstract class EDDGrid extends EDD {
     if ((altIndex >= 0 || depthIndex >= 0)
         && (Double.isNaN(minAltD) || Double.isNaN(maxAltD) || minAltD > maxAltD))
       throw new SimpleException(
-          EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
+          EDStatic.simpleBilingual(language, Message.QUERY_ERROR)
               + bboxName
               + " minAltitude="
               + minAltD
@@ -9390,7 +9327,7 @@ public abstract class EDDGrid extends EDD {
         int ni = String2.parseInt(n);
         if (ni == Integer.MAX_VALUE || ni <= 0)
           throw new SimpleException(
-              EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
+              EDStatic.simpleBilingual(language, Message.QUERY_ERROR)
                   + "width="
                   + n
                   + " must be > 0.");
@@ -9399,7 +9336,7 @@ public abstract class EDDGrid extends EDD {
         double resD = String2.parseDouble(res);
         if (Double.isNaN(resD) || resD <= 0)
           throw new SimpleException(
-              EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
+              EDStatic.simpleBilingual(language, Message.QUERY_ERROR)
                   + "resx="
                   + res
                   + " must be > 0.");
@@ -9420,7 +9357,7 @@ public abstract class EDDGrid extends EDD {
         int ni = String2.parseInt(n);
         if (ni == Integer.MAX_VALUE || ni <= 0)
           throw new SimpleException(
-              EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
+              EDStatic.simpleBilingual(language, Message.QUERY_ERROR)
                   + "height="
                   + n
                   + " must be > 0.");
@@ -9431,7 +9368,7 @@ public abstract class EDDGrid extends EDD {
         double resD = String2.parseDouble(res);
         if (Double.isNaN(resD) || resD <= 0)
           throw new SimpleException(
-              EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
+              EDStatic.simpleBilingual(language, Message.QUERY_ERROR)
                   + "resy="
                   + res
                   + " must be > 0.");
@@ -9453,7 +9390,7 @@ public abstract class EDDGrid extends EDD {
           int ni = String2.parseInt(n);
           if (ni == Integer.MAX_VALUE || ni <= 0)
             throw new SimpleException(
-                EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
+                EDStatic.simpleBilingual(language, Message.QUERY_ERROR)
                     + "depth="
                     + n
                     + " must be > 0.");
@@ -9462,7 +9399,7 @@ public abstract class EDDGrid extends EDD {
           double resD = String2.parseDouble(res);
           if (Double.isNaN(resD) || resD <= 0)
             throw new SimpleException(
-                EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
+                EDStatic.simpleBilingual(language, Message.QUERY_ERROR)
                     + "resz="
                     + res
                     + " must be > 0.");
@@ -9509,7 +9446,7 @@ public abstract class EDDGrid extends EDD {
         } else {
           if (time.indexOf(',') >= 0)
             throw new SimpleException(
-                EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
+                EDStatic.simpleBilingual(language, Message.QUERY_ERROR)
                     + "comma-separated lists of "
                     + paramName
                     + "s are not supported.");
@@ -9520,7 +9457,7 @@ public abstract class EDDGrid extends EDD {
           }
           if (timeSA.length == 0 || timeSA[0].length() == 0) {
             throw new SimpleException(
-                EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
+                EDStatic.simpleBilingual(language, Message.QUERY_ERROR)
                     + "invalid "
                     + paramName
                     + "=\"\".");
@@ -9531,7 +9468,7 @@ public abstract class EDDGrid extends EDD {
             else dapQuery.append("[(" + timeSA[1] + "):(" + timeSA[0] + ")]");
           } else {
             throw new SimpleException(
-                EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
+                EDStatic.simpleBilingual(language, Message.QUERY_ERROR)
                     + paramName
                     + " resolution values are not supported.");
           }
@@ -9549,14 +9486,14 @@ public abstract class EDDGrid extends EDD {
         } else {
           if (val.indexOf(',') >= 0)
             throw new SimpleException(
-                EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
+                EDStatic.simpleBilingual(language, Message.QUERY_ERROR)
                     + "comma-separated lists of "
                     + dName
                     + "'s are not supported.");
           String valSA[] = String2.split(val, '/');
           if (valSA.length == 0 || valSA[0].length() == 0) {
             throw new SimpleException(
-                EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
+                EDStatic.simpleBilingual(language, Message.QUERY_ERROR)
                     + "invalid "
                     + paramName
                     + "=\"\".");
@@ -9571,7 +9508,7 @@ public abstract class EDDGrid extends EDD {
             double resD = String2.parseDouble(valSA[2]);
             if (Double.isNaN(minD) || Double.isNaN(maxD) || minD > maxD)
               throw new SimpleException(
-                  EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
+                  EDStatic.simpleBilingual(language, Message.QUERY_ERROR)
                       + dName
                       + " min="
                       + valSA[0]
@@ -9587,7 +9524,7 @@ public abstract class EDDGrid extends EDD {
             }
             if (Double.isNaN(resD) || resD <= 0)
               throw new SimpleException(
-                  EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
+                  EDStatic.simpleBilingual(language, Message.QUERY_ERROR)
                       + dName
                       + " res="
                       + valSA[2]
@@ -9598,7 +9535,7 @@ public abstract class EDDGrid extends EDD {
             else dapQuery.append("[(" + valSA[1] + "):" + stride + ":(" + valSA[0] + ")]");
           } else {
             throw new SimpleException(
-                EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
+                EDStatic.simpleBilingual(language, Message.QUERY_ERROR)
                     + "number="
                     + valSA.length
                     + " of values for "
@@ -9716,7 +9653,9 @@ public abstract class EDDGrid extends EDD {
     writer.write(
         "<h2><a class=\"selfLink\" id=\"description\" href=\"#description\" rel=\"bookmark\">What</a> is WCS?</h2>\n"
             + String2.replaceAll(
-                EDStatic.messages.wcsLongDescriptionHtmlAr[language], "&erddapUrl;", tErddapUrl)
+                EDStatic.messages.get(Message.WCS_LONG_DESCRIPTION_HTML, language),
+                "&erddapUrl;",
+                tErddapUrl)
             + "\n"
             + datasetListRef
             + "\n"
@@ -10169,8 +10108,8 @@ public abstract class EDDGrid extends EDD {
     // requirements
     if (lonIndex < 0 || latIndex < 0)
       throw new SimpleException(
-          EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
-              + EDStatic.messages.noXxxNoLLAr[language]);
+          EDStatic.simpleBilingual(language, Message.QUERY_ERROR)
+              + EDStatic.messages.get(Message.NO_XXX_NO_LL, language));
 
     String tErddapUrl = EDStatic.preferredErddapUrl;
     String datasetUrl = tErddapUrl + "/" + dapProtocol + "/" + datasetID();
@@ -11292,8 +11231,10 @@ public abstract class EDDGrid extends EDD {
       throw new SimpleException(
           EDStatic.bilingual(
               language,
-              EDStatic.messages.queryErrorAr[0] + EDStatic.messages.noXxxNoLLAr[0],
-              EDStatic.messages.queryErrorAr[language] + EDStatic.messages.noXxxNoLLAr[language]));
+              EDStatic.messages.get(Message.QUERY_ERROR, 0)
+                  + EDStatic.messages.get(Message.NO_XXX_NO_LL, 0),
+              EDStatic.messages.get(Message.QUERY_ERROR, language)
+                  + EDStatic.messages.get(Message.NO_XXX_NO_LL, language)));
 
     String tErddapUrl = EDStatic.preferredErddapUrl;
     String datasetUrl = tErddapUrl + "/griddap/" + datasetID;
@@ -12807,64 +12748,6 @@ public abstract class EDDGrid extends EDD {
             + "    </gmd:MD_MaintenanceInformation>\n"
             + "  </gmd:metadataMaintenance>\n"
             + "</gmi:MI_Metadata>\n");
-  }
-
-  /**
-   * This looks for missing files by looking for larger-than-expected time gaps in datasets.
-   *
-   * @param language the index of the selected language
-   * @param datasetID The datasetID of a dataset that can be constructed, or the base URL of an
-   *     existing ERDDAP dataset that you want to test.
-   * @return a newline-separated string (with a trailing newline) with a line for each time gap &gt;
-   *     the median gap or gap=NaN. If there are no gaps, this returns "".
-   * @throws throwable
-   */
-  public static String findTimeGaps(int language, String datasetID) throws Throwable {
-
-    DoubleArray times;
-    if (String2.isUrl(datasetID)) {
-      Table table = new Table();
-      table.readASCII(
-          datasetID,
-          SSR.getBufferedUrlReader(datasetID + ".csvp?time"),
-          "",
-          "",
-          0,
-          1,
-          ",",
-          null,
-          null,
-          null,
-          null,
-          false);
-      PrimitiveArray isoPA = table.getColumn(0);
-      int n = isoPA.size();
-      times = new DoubleArray(n, false);
-      for (int i = 0; i < n; i++) times.add(Calendar2.isoStringToEpochSeconds(isoPA.getString(i)));
-
-    } else {
-      EDD edd = oneFromDatasetsXml(null, datasetID);
-      if (edd instanceof EDDTable)
-        throw new SimpleException(
-            EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
-                + "datasetID="
-                + datasetID
-                + " isn't an EDDGrid dataset.");
-      EDDGrid eddGrid = (EDDGrid) edd;
-      if (eddGrid.timeIndex() < 0)
-        throw new SimpleException(
-            EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
-                + "datasetID="
-                + datasetID
-                + " has no time variable.");
-      PrimitiveArray pa = eddGrid.axisVariables[eddGrid.timeIndex].destinationValues();
-      times =
-          pa instanceof DoubleArray da
-              ? da
-              : // should be
-              new DoubleArray(pa);
-    }
-    return times.findTimeGaps();
   }
 
   /** This returns time gap information. */

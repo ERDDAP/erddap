@@ -232,6 +232,7 @@ import gov.noaa.pfel.erddap.Erddap;
 import gov.noaa.pfel.erddap.dataset.metadata.LocalizedAttributes;
 import gov.noaa.pfel.erddap.handlers.EDDTableFromCassandraHandler;
 import gov.noaa.pfel.erddap.handlers.SaxHandlerClass;
+import gov.noaa.pfel.erddap.util.EDMessages.Message;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.*;
 import java.io.BufferedReader;
@@ -1420,7 +1421,8 @@ public class EDDTableFromCassandra extends EDDTable {
 
       if (Thread.currentThread().isInterrupted())
         throw new SimpleException(
-            "EDDTableFromCassandra.getDataForDapQuery" + EDStatic.messages.caughtInterruptedAr[0]);
+            "EDDTableFromCassandra.getDataForDapQuery"
+                + EDStatic.messages.get(Message.CAUGHT_INTERRUPTED, 0));
 
       // Make the BoundStatement
       // ***!!! This method avoids CQL/SQL Injection Vulnerability !!!***

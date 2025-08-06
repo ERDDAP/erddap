@@ -4,7 +4,17 @@
  */
 package gov.noaa.pfel.coastwatch.griddata;
 
-import com.cohort.array.*;
+import com.cohort.array.Attributes;
+import com.cohort.array.ByteArray;
+import com.cohort.array.DoubleArray;
+import com.cohort.array.FloatArray;
+import com.cohort.array.IntArray;
+import com.cohort.array.PAType;
+import com.cohort.array.PrimitiveArray;
+import com.cohort.array.ShortArray;
+import com.cohort.array.StringArray;
+import com.cohort.array.UIntArray;
+import com.cohort.array.UShortArray;
 import com.cohort.util.Calendar2;
 import com.cohort.util.File2;
 import com.cohort.util.Math2;
@@ -13,7 +23,36 @@ import com.cohort.util.SimpleException;
 import com.cohort.util.String2;
 import com.cohort.util.Test;
 import com.cohort.util.XML;
-import dods.dap.*;
+import dods.dap.Attribute;
+import dods.dap.AttributeTable;
+import dods.dap.BaseType;
+import dods.dap.BaseTypePrimitiveVector;
+import dods.dap.BooleanPrimitiveVector;
+import dods.dap.BytePrimitiveVector;
+import dods.dap.DAS;
+import dods.dap.DArray;
+import dods.dap.DArrayDimension;
+import dods.dap.DBoolean;
+import dods.dap.DByte;
+import dods.dap.DConnect;
+import dods.dap.DDS;
+import dods.dap.DFloat32;
+import dods.dap.DFloat64;
+import dods.dap.DGrid;
+import dods.dap.DInt16;
+import dods.dap.DInt32;
+import dods.dap.DString;
+import dods.dap.DUInt16;
+import dods.dap.DUInt32;
+import dods.dap.DVector;
+import dods.dap.DataDDS;
+import dods.dap.Float32PrimitiveVector;
+import dods.dap.Float64PrimitiveVector;
+import dods.dap.Int16PrimitiveVector;
+import dods.dap.Int32PrimitiveVector;
+import dods.dap.PrimitiveVector;
+import dods.dap.UInt16PrimitiveVector;
+import dods.dap.UInt32PrimitiveVector;
 import gov.noaa.pfel.coastwatch.util.SSR;
 import java.io.ByteArrayOutputStream;
 import java.io.Writer;
@@ -554,39 +593,6 @@ public class OpendapHelper {
   }
 
   /**
-   * Get the values from 1+ DArrays (axis variables) in PrimitiveArrays.
-   *
-   * @param dConnect
-   * @param names the names of the DArray variables (e.g., axes).
-   * @param axis0Constraint e.g., "[12:22]", or ""
-   * @return an array of PrimitiveArrays with the requested data
-   * @throws Exception if trouble
-   */
-  public static PrimitiveArray[] getAxisValues(
-      DConnect dConnect, String[] names, String axis0Constraint) throws Exception {
-    long time = System.currentTimeMillis();
-    StringBuilder query = new StringBuilder();
-    for (int i = 0; i < names.length; i++) {
-      query.append(i == 0 ? '?' : ',');
-      query.append(names[i]);
-      if (i == 0) query.append(axis0Constraint);
-    }
-    DataDDS dataDds = dConnect.getData(query.toString(), null);
-    if (verbose)
-      String2.log(
-          "    OpendapHelper.getAxisValues done. TIME="
-              + (System.currentTimeMillis() - time)
-              + "ms\n      query="
-              + query);
-    PrimitiveArray pa[] = new PrimitiveArray[names.length];
-    for (int i = 0; i < names.length; i++) {
-      DArray da = (DArray) dataDds.getVariable(names[i]);
-      pa[i] = getPrimitiveArray(da.getPrimitiveVector());
-    }
-    return pa;
-  }
-
-  /**
    * Get a PrimitiveArray result from an opendap query.
    *
    * @param dConnect
@@ -649,37 +655,6 @@ public class OpendapHelper {
       pa.removeRange(pv.getLength(), pa.size());
     }
     return pa;
-  }
-
-  /**
-   * This converts a PrimitiveArray to a PrimitiveVector.
-   *
-   * @param name
-   * @param pa
-   * @return the corresponding PrimitiveVector
-   * @throws Exception if trouble
-   */
-  public static PrimitiveVector getPrimitiveVector(String name, PrimitiveArray pa)
-      throws Exception {
-    PrimitiveVector pv;
-    if (pa instanceof DoubleArray || pa instanceof LongArray || pa instanceof ULongArray)
-      pv = new Float64PrimitiveVector(new DFloat64(name));
-    else if (pa instanceof FloatArray) pv = new Float32PrimitiveVector(new DFloat32(name));
-    else if (pa instanceof IntArray) pv = new Int32PrimitiveVector(new DInt32(name));
-    else if (pa instanceof UIntArray) pv = new UInt32PrimitiveVector(new DUInt32(name));
-    else if (pa instanceof ShortArray) pv = new Int16PrimitiveVector(new DInt16(name));
-    else if (pa instanceof UShortArray) pv = new UInt16PrimitiveVector(new DUInt16(name));
-    else if (pa instanceof ByteArray || pa instanceof UByteArray)
-      pv = new BytePrimitiveVector(new DByte(name));
-    else
-      throw new Exception(
-          String2.ERROR
-              + "in OpendapHelper.getPrimitiveVector: The PrimitiveArray type="
-              + pa.elementTypeString()
-              + " is not supported.");
-
-    pv.setInternalStorage(pa.toObjectArray());
-    return pv;
   }
 
   /* This variant fo getAtomicType assumes strictDapMode=true. */
@@ -910,139 +885,6 @@ public class OpendapHelper {
       throw new Exception(String2.ERROR + ": The PrimitiveVector is not numeric (" + pv + ").");
     }
     return da;
-  }
-
-  /**
-   * This gets a value from a numeric primitiveVector and rounds it to an int.
-   *
-   * @param pv
-   * @param index
-   * @return the int value from pv.get(index)
-   * @throws Exception if trouble
-   */
-  public static int getInt(PrimitiveVector pv, int index) throws Exception {
-    Test.ensureNotNull(pv, "pv is null");
-    if (pv instanceof BytePrimitiveVector t) return t.getValue(index);
-    if (pv
-        instanceof UInt16PrimitiveVector t) // uint16 is instanceof int16! so must test uint16 first
-    return t.getValue(index);
-    if (pv instanceof Int16PrimitiveVector t) return t.getValue(index);
-    if (pv
-        instanceof UInt32PrimitiveVector t) // uint32 is instanceof int32! so must test uint32 first
-    return t.getValue(index);
-    if (pv instanceof Int32PrimitiveVector t) return t.getValue(index);
-    if (pv instanceof Float32PrimitiveVector t) return Math2.roundToInt(t.getValue(index));
-    if (pv instanceof Float64PrimitiveVector t) return Math2.roundToInt(t.getValue(index));
-    throw new Exception(String2.ERROR + ": The PrimitiveVector is not numeric (" + pv + ").");
-  }
-
-  /**
-   * This gets a value from a numeric primitiveVector and converts it to double.
-   *
-   * @param pv
-   * @param index
-   * @return the double value from pv.get(index)
-   * @throws Exception if trouble
-   */
-  public static double getDouble(PrimitiveVector pv, int index) throws Exception {
-    Test.ensureNotNull(pv, "pv is null");
-    if (pv instanceof Float32PrimitiveVector t) return t.getValue(index);
-    if (pv instanceof Float64PrimitiveVector t) return t.getValue(index);
-    if (pv instanceof BytePrimitiveVector t) return t.getValue(index);
-    if (pv
-        instanceof UInt16PrimitiveVector t) // uint16 is instanceof int16! so must test uint16 first
-    return t.getValue(index);
-    if (pv instanceof Int16PrimitiveVector t) return t.getValue(index);
-    if (pv
-        instanceof UInt32PrimitiveVector t) // uint32 is instanceof int32! so must test uint32 first
-    return t.getValue(index);
-    if (pv instanceof Int32PrimitiveVector t) return t.getValue(index);
-    throw new Exception(String2.ERROR + ": The PrimitiveVector is not numeric (" + pv + ").");
-  }
-
-  /**
-   * This gets a value from a primitiveVector and converts it to String.
-   *
-   * @param pv
-   * @param index
-   * @return the String value from pv.get(index)
-   * @throws Exception if trouble
-   */
-  public static String getString(PrimitiveVector pv, int index) throws Exception {
-    Test.ensureNotNull(pv, "pv is null");
-    if (pv instanceof Float32PrimitiveVector t) return "" + t.getValue(index);
-    if (pv instanceof Float64PrimitiveVector t) return "" + t.getValue(index);
-    if (pv instanceof BytePrimitiveVector t) return "" + t.getValue(index);
-    if (pv
-        instanceof UInt16PrimitiveVector t) // uint16 is instanceof int16! so must test uint16 first
-    return "" + t.getValue(index);
-    if (pv instanceof Int16PrimitiveVector t) return "" + t.getValue(index);
-    if (pv
-        instanceof UInt32PrimitiveVector t) // uint32 is instanceof int32! so must test uint32 first
-    return "" + t.getValue(index);
-    if (pv instanceof Int32PrimitiveVector t) return "" + t.getValue(index);
-    // if (pv instanceof StringPrimitiveVector t)  return t.getValue(index);
-    if (pv instanceof BooleanPrimitiveVector t) return t.getValue(index) ? "true" : "false";
-    throw new Exception(String2.ERROR + ": Unknown PrimitiveVector type (" + pv + ").");
-  }
-
-  /**
-   * This gets a value from a numeric BaseType and rounds it to an int.
-   *
-   * @param bt
-   * @return the int value from bt.get(index)
-   * @throws Exception if trouble
-   */
-  public static int getInt(BaseType bt) throws Exception {
-    Test.ensureNotNull(bt, "bt is null");
-    if (bt instanceof DByte t) return t.getValue();
-    if (bt instanceof DInt16 t) return t.getValue();
-    if (bt instanceof DUInt16 t) return t.getValue();
-    if (bt instanceof DInt32 t) return t.getValue();
-    if (bt instanceof DUInt32 t) return t.getValue();
-    if (bt instanceof DFloat32 t) return Math2.roundToInt(t.getValue());
-    if (bt instanceof DFloat64 t) return Math2.roundToInt(t.getValue());
-    throw new Exception(String2.ERROR + ": The BaseType is not numeric (" + bt + ").");
-  }
-
-  /**
-   * This gets a value from a numeric BaseType and converts it to double.
-   *
-   * @param bt
-   * @return the double value from bt.get(index)
-   * @throws Exception if trouble
-   */
-  public static double getDouble(BaseType bt) throws Exception {
-    Test.ensureNotNull(bt, "bt is null");
-    if (bt instanceof DFloat32 t) return t.getValue();
-    if (bt instanceof DFloat64 t) return t.getValue();
-    if (bt instanceof DByte t) return t.getValue();
-    if (bt instanceof DInt16 t) return t.getValue();
-    if (bt instanceof DUInt16 t) return t.getValue();
-    if (bt instanceof DInt32 t) return t.getValue();
-    if (bt instanceof DUInt32 t) return t.getValue();
-    throw new Exception(String2.ERROR + ": The BaseType is not numeric (" + bt + ").");
-  }
-
-  /**
-   * This gets a value from a BaseType and converts it to a String.
-   *
-   * @param bt
-   * @return the double value from bt.get(index)
-   * @throws Exception if trouble
-   */
-  public static String getString(BaseType bt, int index) throws Exception {
-    Test.ensureNotNull(bt, "bt is null");
-    if (bt instanceof DFloat32 t) return "" + t.getValue();
-    if (bt instanceof DFloat64 t) return "" + t.getValue();
-    if (bt instanceof DByte t) return "" + t.getValue();
-    if (bt instanceof DInt16 t) return "" + t.getValue();
-    if (bt instanceof DUInt16 t) return "" + t.getValue();
-    if (bt instanceof DInt32 t) return "" + t.getValue();
-    if (bt instanceof DUInt32 t) return "" + t.getValue();
-    if (bt instanceof DString t) return t.getValue();
-    if (bt instanceof DBoolean t) return t.getValue() ? "true" : "false";
-    throw new Exception(String2.ERROR + ": Unknown BaseType (" + bt + ").");
   }
 
   /**

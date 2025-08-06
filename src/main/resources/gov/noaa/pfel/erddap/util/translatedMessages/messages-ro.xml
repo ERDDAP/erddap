@@ -62,7 +62,6 @@ Solicitarea compresiei este opțională, dar răspunsurile comprimate sunt adese
 <acronyms>Acronime</acronyms>
 <addConstraints>Puteți adăuga constrângeri de tip tabledap la cererile pe această pagină web,
 de exemplu,</addConstraints>
-<addVarWhereAttName>Opțional: specificați un nume de atribut.</addVarWhereAttName>
 <addVarWhereAttValue>Opțional: specificați o valoare de atribut.</addVarWhereAttValue>
 <addVarWhere><![CDATA[
 Opțional:
@@ -281,9 +280,6 @@ Apoi, puteți face clic pe o categorie pentru a vedea o listă de seturi de date
 <categorySearchHtml><![CDATA[
 Alegeți un(n) <kbd>{0}</kbd>
 ]]></categorySearchHtml>
-<categorySearchDifferentHtml><![CDATA[
-Căutați seturi de date cu o altă <kbd>&category;</kbd>
-]]></categorySearchDifferentHtml>
 <categoryClickHtml>Faceți clic pe o categorie (o valoare de atribut) pentru a vedea o listă de seturi de date relevante.</categoryClickHtml>
 <categoryNotAnOption>Când attribute=&quot;{0}&quot;, value=&quot;{1}&quot; nu este o opțiune.</categoryNotAnOption>
 <caughtInterrupted>prins curent Thread().isInterrupted().</caughtInterrupted>
@@ -1710,9 +1706,6 @@ Fiecare coloană (o variabilă) are un tip de date (de exemplu, Sea Surface Temp
 Fiecare rând reprezintă un eșantion diferit de date (de exemplu, dintr-o altă oră sau locație).
 ]]></dafTableTooltip>
 <dasTitle>Structura atributelor setului de date (.das) pentru acest set de date</dasTitle>
-
-<!--  Mesajul care va fi afișat dacă datele nu pot fi descărcate (de exemplu, SeaWiFS &lt;=14 zile). -->
-<dataAccessNotAllowed>[Îmi pare rău. Datele respective nu pot fi descărcate.]</dataAccessNotAllowed>
 <databaseUnableToConnect>Nu se poate conecta la baza de date.</databaseUnableToConnect>
 <dataProviderForm>Formular furnizor de date</dataProviderForm>
 <dataProviderFormP1>Formular furnizor de date - Partea 1</dataProviderFormP1>
@@ -2028,10 +2021,6 @@ Faceți clic pe &widgetSubmitButton; pentru a trimite aceste informații adminis
 
 <br>Remediați aceste probleme, apoi „Trimiteți” din nou această parte a formularului.
 ]]></dpf_fixProblem>
-<dpf_yourName>Numele dumneavoastră</dpf_yourName>
-<dpf_emailAddress>Adresa de e-mail</dpf_emailAddress>
-<dpf_Timestamp>Timestamp-ul</dpf_Timestamp>
-<dpf_frequency>Frecvență</dpf_frequency>
 <dpf_title>titlu</dpf_title>
 <dpf_titleTooltip><![CDATA[
 Aceasta este o descriere scurtă (&lt;=80 de caractere) a setului de date.
@@ -2093,12 +2082,6 @@ Aceasta este licența și declinarea răspunderii pentru utilizarea acestor date
 &standardLicense;
 <br>
 ]]></dpf_licenseTooltip>
-<dpf_howYouStoreData><![CDATA[
-
-<br>• Eroare:
-Vă rugăm să specificați (mai jos) cum sunt stocate datele dvs.
-grilă sau tabelare.
-]]></dpf_howYouStoreData>
 <dpf_provideIfAvailable>Vă rugăm să furnizați informațiile dacă sunt disponibile pentru setul dvs. de date.</dpf_provideIfAvailable>
 <dpf_acknowledgement>confirmare</dpf_acknowledgement>
 <dpf_acknowledgementTooltip><![CDATA[
@@ -2362,10 +2345,7 @@ Marca temporală a acestui set de date este &tTimestamp; .
 <dtWMS>Faceți clic pentru a afla despre realizarea hărților acestor date prin serviciul de hărți web al acestui set de date.</dtWMS>
 <EasierAccessToScientificData>Acces mai ușor la datele științifice</EasierAccessToScientificData>
 
-<!--  Mesajele EDD sunt afișate pe formularele de acces la date tabledap și griddap. -->
-<EDDClickOnSubmitHtml><![CDATA[
-Faceți clic pe <kbd>Submit</kbd> .
-]]></EDDClickOnSubmitHtml>
+<!--Mesajele EDD sunt afișate pe formularele de acces la date depuse și griddap.-->
 <EDDDatasetID>ID setului de date</EDDDatasetID>
 <EDDFgdc>FGDC</EDDFgdc>
 <EDDFgdcMetadata>FGDC-STD-001-1998 Metadate</EDDFgdcMetadata>
@@ -2378,9 +2358,7 @@ Faceți clic pe <kbd>Submit</kbd> .
 <EDDInformation>informație</EDDInformation>
 <EDDSummary>rezumat</EDDSummary>
 <EDDDatasetTitle>Titlul setului de date</EDDDatasetTitle>
-<EDDDownloadData>Descărcați date</EDDDownloadData>
 <EDDMakeAGraph>Faceți un grafic</EDDMakeAGraph>
-<EDDMakeAMap>Faceți o hartă</EDDMakeAMap>
 <EDDMinimum>Minim</EDDMinimum>
 <EDDMaximum>Maxim</EDDMaximum>
 <EDDFileType>Tip fișier:</EDDFileType>
@@ -2445,8 +2423,6 @@ Acesta face URL-ul pentru tine.
 ]]></EDDGridDownloadDataTooltip>
 <EDDGridDimension>Dimensiuni</EDDGridDimension>
 <EDDGridDimensionRanges>Dimensiuni</EDDGridDimensionRanges>
-<EDDGridFirst>Primul</EDDGridFirst>
-<EDDGridLast>Ultimul</EDDGridLast>
 <EDDGridStart>start</EDDGridStart>
 <EDDGridStop>Stop</EDDGridStop>
 <EDDGridStartStopTooltip><![CDATA[
@@ -2487,14 +2463,6 @@ Pentru informațiile dvs.:
 aceasta este distanța medie dintre valorile unei dimensiuni (în unitățile dimensiunii) și o indicație dacă valorile sunt spațiate perfect uniform sau nu.
 O spațiere ușor ciudată, neuniformă, indică adesea că unul sau câteva fișiere lipsesc sau sunt proaste într-un set de date care altfel este perfect uniform.
 ]]></EDDGridSpacingTooltip>
-<EDDGridDimensionFirstTooltip><![CDATA[
-Pentru informarea dvs.:
-aceasta este prima valoare a unei dimensiuni.
-]]></EDDGridDimensionFirstTooltip>
-<EDDGridDimensionLastTooltip><![CDATA[
-Pentru informarea dvs.:
-aceasta este ultima valoare a unei dimensiuni.
-]]></EDDGridDimensionLastTooltip>
 <EDDGridDownloadTooltip><![CDATA[
 Selectați variabilele pe care doriți să le descărcați:
 <br>* Pentru a descărca doar date despre dimensiuni:
@@ -2748,10 +2716,6 @@ De exemplu:
 
 <!--  Aceste mesaje sunt afișate atunci când este afișat un mesaj de eroare. -->
 <errorTitle>Eroare</errorTitle>
-<errorRequestUrl>Adresa URL a cererii dvs.:</errorRequestUrl>
-<errorRequestQuery>Solicitarea dvs.:</errorRequestQuery>
-<errorTheError>Eroarea:</errorTheError>
-<errorCopyFrom>Nu se poate copia din {0}.</errorCopyFrom>
 <errorFileNotFound>Fișierul nu a fost găsit: {0} .</errorFileNotFound>
 <errorFileNotFoundImage>Fișierul nu a fost găsit în cache. Recreează imaginea și încearcă din nou.</errorFileNotFoundImage>
 <errorInternal>Eroare internă:</errorInternal>
@@ -2785,7 +2749,6 @@ De exemplu:
 <fileHelpTable_esriCsv>Descărcați un fișier ISO_8859_1 .csv pentru ArcGIS 9.x de la ESRI și mai jos (coloane separate pentru dată și oră).</fileHelpTable_esriCsv>
 <fileHelp_fgdc>Vizualizați metadatele .xml UTF-8 FGDC ale setului de date.</fileHelp_fgdc>
 <fileHelp_geoJson>Descărcați date despre longitudine, latitudine, alte coloane ca fișier UTF-8 GeoJSON .json.</fileHelp_geoJson>
-<fileHelp_graph>Vizualizați o pagină web Creați un grafic.</fileHelp_graph>
 <fileHelpGrid_help>Vizualizați o pagină web cu o descriere a griddap.</fileHelpGrid_help>
 <fileHelpTable_help>Vizualizați o pagină web cu o descriere a tabledap.</fileHelpTable_help>
 <fileHelp_html>Vizualizați un formular de acces la date HTML în stil OPeNDAP.</fileHelp_html>
@@ -2816,7 +2779,6 @@ De exemplu:
 <fileHelpTable_odvTxt>Descărcați longitudine, latitudine, timp, alte coloane ca fișier ISO-8859-1 ODV Generic Spreadsheet (.txt).</fileHelpTable_odvTxt>
 <fileHelp_parquet>Descărcați ca un fișier parchet. Metadatele conțin nume de coloane (&quot;clase_nume&quot;) și unități (&quot;coloană_unități&quot;).</fileHelp_parquet>
 <fileHelp_parquet_with_meta>Descărcați ca un fișier parchet cu metadate detaliate.</fileHelp_parquet_with_meta>
-<fileHelp_subset>Vizualizați un formular HTML care utilizează căutarea fațetă pentru a simplifica alegerea subseturi de date.</fileHelp_subset>
 <fileHelp_timeGaps>Vizualizați o listă UTF-8 de goluri în valorile de timp care sunt mai mari decât decalajul median.</fileHelp_timeGaps>
 <fileHelp_tsv>Descărcați un tabel text ISO-8859-1 separat de file (linia 1: nume; rândul 2: unități; ISO 8601 ori).</fileHelp_tsv>
 <fileHelp_tsvp>Descărcați un fișier .tsv ISO-8859-1 cu linia 1: nume (unități). Timpurile sunt șiruri ISO 8601.</fileHelp_tsvp>
@@ -2836,7 +2798,6 @@ De exemplu:
 
 <!--  Formularea Descriere și Avertisment este vagă pentru a permite unul sau mai multe seturi de date. -->
 <filesDescription>Sistemul de „fișiere” al ERDDAP vă permite să răsfoiți un sistem de fișiere virtual și să descărcați fișiere de date sursă.</filesDescription>
-<filesSort>Faceți clic pe un titlu (de exemplu, Nume, Ultima modificare, Dimensiune) pentru a modifica ordinea de sortare. „Ultima modificare” folosește fusul orar Zulu.</filesSort>
 <filesWarning><![CDATA[
 Metadatele și numele variabilelor setului de date din aceste fișiere sursă pot fi diferite decât în altă parte în ERDDAP ! S-ar putea să preferați să utilizați formularul de acces la date al setului de date.
 ]]></filesWarning>
@@ -3264,10 +3225,6 @@ De exemplu, orderByMax(&quot;stationID, time/1day&quot;) va crea un grup pentru 
 Rândul respectiv va avea suma fiecăreia dintre celelalte variabile.
 De exemplu, orderByMax(&quot;stationID, time/1day&quot;) va crea un grup pentru fiecare stationID pentru fiecare zi și va calcula și returna suma celorlalte variabile.
 ]]></functionOrderByTooltip>
-<functionOrderByExtra><![CDATA[
-Pentru orderByClosest, specificați intervalul (folosind formatul n[timeUnits], de exemplu, 1 oră) aici.
-<br>Pentru orderByLimit, specificați aici numărul maxim de rânduri per grup.
-]]></functionOrderByExtra>
 <functionOrderBySort><![CDATA[
 Acest slot este {0} slot important orderBy ....
 <br>Alegeți o variabilă din lista verticală din dreapta și/sau modificați textul din acest câmp de text.
@@ -3277,7 +3234,6 @@ Acest slot este {0} slot important orderBy ....
 <functionOrderBySort3>al treilea cel mai mult</functionOrderBySort3>
 <functionOrderBySort4>al patrulea cel mai mult</functionOrderBySort4>
 <functionOrderBySortLeast>cel mai puţin</functionOrderBySortLeast>
-<functionOrderBySortRowMax>Se va păstra doar rândul cu valoarea maximă.</functionOrderBySortRowMax>
 <generatedAt>Această pagină web a fost generată la {0} .</generatedAt>
 <geoServicesDescription><![CDATA[
 Pentru a face datele acestui ERDDAP mai accesibile utilizatorilor ArcGIS, această parte a ERDDAP imită o parte din
@@ -3566,7 +3522,6 @@ Valoarea implicită este nimic (neutilizat).
 <!--  de ex., {0}=WMS sau listAll -->
 <listOfDatasets>Lista de {0} seturi de date</listOfDatasets>
 <listAll>Toate</listAll>
-<LogIn>Autentificare</LogIn>
 <login>Autentificare</login>
 <loginHTML><![CDATA[
 
@@ -3622,22 +3577,15 @@ Oricine are un cont de e-mail Google sau ORCID iD se poate conecta, dar administ
     title="Acest link către un site extern nu constituie o aprobare."></a> este un standard deschis care vă permite să vă conectați cu parola la un site web și apoi să vă conectați fără parolă la multe alte site-uri web, inclusiv ERDDAP .
 Numai persoanele care au făcut aranjamente cu administratorul acestui ERDDAP se pot autentifica.
 ]]></loginDescribeOpenID>
-<loginErddap>Conectați-vă la ERDDAP</loginErddap>
 <loginCanNot>Acest ERDDAP nu este configurat pentru a permite utilizatorilor să se conecteze.</loginCanNot>
 <loginAreNot>Nu sunteți autentificat.</loginAreNot>
 <loginToLogIn>Pentru a vă conecta</loginToLogIn>
-<loginEmailAddress>Adresa de e-mail</loginEmailAddress>
 <loginYourEmailAddress>adresa ta de email</loginYourEmailAddress>
 <loginUserName>Nume de utilizator</loginUserName>
 <loginPassword>Parola</loginPassword>
 <loginUserNameAndPassword>Nume de utilizator și parolă</loginUserNameAndPassword>
 <loginGoogleSignIn>Autentificați-vă cu contul dvs. Google.</loginGoogleSignIn>
 <loginOrcidSignIn>Autentificați-vă cu ID-ul dvs. ORCID.</loginOrcidSignIn>
-<loginOpenID>Conectați-vă cu adresa URL OpenID</loginOpenID>
-<loginOpenIDOr>Sau conectați-vă la contul dvs. existent (non-OpenID) la</loginOpenIDOr>
-<loginOpenIDCreate>Sau creați o adresă URL OpenID la</loginOpenIDCreate>
-<loginOpenIDFree>Toate sunt gratuite!</loginOpenIDFree>
-<loginOpenIDSame>Asigurați-vă că v-ați conectat cu exact aceeași adresă URL OpenID pe care ați dat-o administratorului ERDDAP.</loginOpenIDSame>
 <loginAs>Sunteți autentificat ca {0} .</loginAs>
 <loginPartwayAs>Sunteți conectat parțial ca {0} .</loginPartwayAs>
 <loginFailed>EROARE: autentificarea eșuată</loginFailed>
@@ -3742,7 +3690,6 @@ Este posibil ca unele seturi de date să nu fie disponibile în prezent sau să 
 ]]></loginPublicAccess>
 <LogOut>Deconectați-vă</LogOut>
 <logout>deconectați-vă</logout>
-<logoutOpenID>Deconectați-vă de la furnizorul dvs. OpenID.</logoutOpenID>
 
 <!--  logoutSuccess ultima actualizare 2019-12-19 -->
 <logoutSuccess>Te-ai deconectat cu succes.
@@ -4001,10 +3948,6 @@ Dar dods.dap.DODSException nu are nicio excepție relevantă.
 Mai bine să returnați un fișier gol? Dar .nc și altele nu permit date cu lungimea 0.
  -->
 <MustBeThereIsNoData>Interogarea dvs. nu a produs niciun rezultat potrivit.</MustBeThereIsNoData>
-
-<!--  Multe tipuri de fișiere stabilesc o limită pentru cantitatea de date pe care un fișier poate conține (de exemplu, 2 GB). -->
-<MustBeNotNull>{0} nu trebuie să fie nul.</MustBeNotNull>
-<MustBeNotEmpty>{0} nu trebuie să fie un șir gol.</MustBeNotEmpty>
 <MustBeInternalError>Eroare internă</MustBeInternalError>
 <MustBeOutOfMemoryError>Eroare de memorie lipsită</MustBeOutOfMemoryError>
 
@@ -4045,11 +3988,9 @@ Mai bine să returnați un fișier gol? Dar .nc și altele nu permit date cu lun
 <noXxxNoLonIn180>nu există valori de longitudine între -180 și 360</noXxxNoLonIn180>
 <noXxxNoNonString>nu există variabile non-String</noXxxNoNonString>
 <noXxxNo2NonString>nu există cel puțin două variabile non-String</noXxxNo2NonString>
-<noXxxNoStation>cdmDataType={0} nu este „TimeSeries”</noXxxNoStation>
 <noXxxNoStationID>nu există o variabilă asemănătoare stationID</noXxxNoStationID>
 <noXxxNoSubsetVariables>subsetVariables nu a fost specificat</noXxxNoSubsetVariables>
 <noXxxNoOLLSubsetVariables>subsetVariables nu are variabilele de ofertă, longitudine și latitudine</noXxxNoOLLSubsetVariables>
-<noXxxNoMinMax>serverul de date sursă nu furnizează valori minime și maxime</noXxxNoMinMax>
 <noXxxItsGridded>este un set de date grid</noXxxItsGridded>
 <noXxxItsTabular>este un set de date tabelar</noXxxItsTabular>
 <oneRequestAtATime>Vă rugăm să faceți o singură cerere la un moment dat.</oneRequestAtATime>
@@ -4076,7 +4017,6 @@ Dezvoltatorii de programe de calculator și pagini web Java Scripted pot accesa 
 <options>Opțiuni</options>
 <orAListOfValues>sau o listă de valori</orAListOfValues>
 <orRefineSearchWith>Sau, rafinați această căutare cu</orRefineSearchWith>
-<orSearchWith>Sau, căutați seturi de date cu</orSearchWith>
 <orComma>Sau,</orComma>
 <otherFeatures>Alte caracteristici</otherFeatures>
 <outOfDateDatasets>Seturi de date învechite</outOfDateDatasets>
@@ -4133,7 +4073,6 @@ Există
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
     title="Acest link către un site extern nu constituie o aprobare."></a> .
 ]]></percentEncode>
-<pickADataset>Alegeți un set de date</pickADataset>
 
 <!--  Mesaje legate de căutările de seturi de date bazate pe protocol. -->
 <protocolSearchHtml>Căutați seturi de date după protocol</protocolSearchHtml>
@@ -4148,7 +4087,6 @@ Diferite protocoale sunt adecvate pentru diferite tipuri de date și pentru dife
 <queryError1Var>Formatul {0} poate gestiona o singură variabilă de date.</queryError1Var>
 <queryError2Var>Solicitările pentru formatul {0} trebuie să includă cel puțin două variabile numerice (pentru axele X și Y).</queryError2Var>
 <queryErrorActualRange>{0} este în afara intervalului_actual al variabilei: de la {1} la {2}</queryErrorActualRange>
-<queryErrorAscending>Pentru solicitările {0}, valorile longitudinii și ale latitudinii trebuie să fie crescătoare.</queryErrorAscending>
 <queryErrorAdjusted>Pentru solicitările {0}, valorile de longitudine ajustate (de la {1} la {2}) trebuie să fie între -180 și 180.</queryErrorAdjusted>
 <queryErrorConstraintNaN>Constraint value=&quot;{0}&quot; se evaluează la NaN. Dacă vrei cu adevărat NaN, scrie-l ca NaN.</queryErrorConstraintNaN>
 <queryErrorEqualSpacing>Pentru {0} solicitări, distanța de longitudine ({1}) trebuie să fie egală cu distanța de latitudine ({2}).</queryErrorEqualSpacing>
@@ -4180,7 +4118,6 @@ Diferite protocoale sunt adecvate pentru diferite tipuri de date și pentru dife
 <queryErrorGridNoAxisVar>O interogare de variabilă de date griddap nu poate include o variabilă de axă ({0}).</queryErrorGridNoAxisVar>
 <queryErrorGridNoDataVar>O interogare de variabilă a axei griddap nu poate include o variabilă de date ({0}).</queryErrorGridNoDataVar>
 <queryErrorGridNotIdentical>Constrângerea {0} pentru variabilă={1} nu este identică cu constrângerea {2} pentru variabilă={2}. Dacă aveți nevoie de subseturi diferite, faceți cereri separate.</queryErrorGridNotIdentical>
-<queryErrorGridSLessS>StartIndex={0} este mai mare decât StopIndex={1}.</queryErrorGridSLessS>
 <queryErrorLastEndP>{0} începe cu „(”, dar nu se termină cu „)”.</queryErrorLastEndP>
 <queryErrorLastExpected>„ultimul” era așteptat la începutul lui {0}.</queryErrorLastExpected>
 <queryErrorLastUnexpected>Caracter neașteptat după „ultimul” în {0}.</queryErrorLastUnexpected>
@@ -4421,7 +4358,6 @@ Vedea
 <SOSDocumentation>Documentația SOS a ERDDAP</SOSDocumentation>
 <WCSDocumentation>documentația WCS a ERDDAP</WCSDocumentation>
 <WMSDocumentation>Documentația WMS a ERDDAP</WMSDocumentation>
-<findOutChange>astfel încât programul dumneavoastră de calculator să poată afla dacă un set de date s-a modificat.</findOutChange>
 <requestFormatExamplesHtml><![CDATA[
 (de exemplu,
 <a rel="help" href="https://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html#sec9.3">HTTP GET <img 
@@ -4836,13 +4772,6 @@ de a elimina un abonament a fost primită.</strong>
 <br>Dacă ID-ul abonamentului și cheia se potrivesc, abonamentul va fi eliminat.</span>
 ]]></subscriptionRemoveSuccess>
 <subscriptionRSS>Abonați-vă la fluxul RSS pentru acest set de date...</subscriptionRSS>
-<subscriptionsNotAvailable><![CDATA[
-
-<p><strong>Îmi pare rău.
-Sistemul de abonare e-mail/URL nu este disponibil la această instalare ERDDAP .</strong>
-<br>Luați în considerare utilizarea serviciului de abonament
-<a rel="help" href="{0}/information.html#subscriptions">RSS</a> în schimb.
-]]></subscriptionsNotAvailable>
 <subscriptionUrlHtml><![CDATA[
 <kbd>URL/action</kbd> este o adresă URL opțională pe care ERDDAP o va contacta în loc să vă trimită un e-mail.
 <br>Deci, dacă doriți să primiți un e-mail ori de câte ori setul de date se schimbă, lăsați <kbd>URL/action</kbd> necompletat.
@@ -5091,11 +5020,6 @@ Pentru a vizualiza {0},
 <!--  Următoarea etichetă este precedată de una dintre cele 2 etichete precedente.
   {0} este subsetViewSelectDistintCombos sau subsetViewSelectRelatedCounts. -->
 <subsetWhenCounts>{0} pentru valorile {1} ale lui „{2}” sunt:</subsetWhenCounts>
-<subsetComboClickSelect><![CDATA[
-Pentru a vizualiza numărul combinațiilor distincte ale variabilelor enumerate mai sus,
-<br>bifați <kbd>{0} :
-{1}</kbd> mai sus și selectați o valoare pentru una dintre variabilele de mai sus.
-]]></subsetComboClickSelect>
 <subsetNVariableCombos>În total, există {0} rânduri de combinații distincte ale variabilelor enumerate mai sus.</subsetNVariableCombos>
 <subsetShowingAllRows>Toate rândurile sunt afișate mai sus.</subsetShowingAllRows>
 <subsetShowingNRows>Primele {0} rânduri sunt afișate mai sus. Restul de {1} rânduri nu sunt afișate.</subsetShowingNRows>
@@ -5840,7 +5764,6 @@ acolo sau puteți căuta pentru a vedea dacă întrebarea a fost deja pusă și 
 Opiniile de pe această pagină web sunt opiniile personale ale lui Bob Simons și nu reflectă neapărat nicio poziție a Guvernului sau a National Oceanic and Atmospheric Administration .
 
 ]]></theLongDescriptionHtml>
-<Then>Atunci</Then>
 <twoClickMapDefaultTooltip>Specificați un dreptunghi făcând clic pe două colțuri diagonale. Fă-o din nou dacă este nevoie.</twoClickMapDefaultTooltip>
 
 <!--  Aceasta este o modalitate de a suprascrie convertorul Standardize UDUnits al ERDDAP
@@ -7056,7 +6979,6 @@ Asta nu poate fi nimic.
 Așa că, dacă nu doriți nimic, introduceți un cuvânt farfurios care nu va fi niciodată un nume de atribut. -->
 <updateUrlsSkipAttributes>url sursă</updateUrlsSkipAttributes>
 <variableNames>Nume de variabile</variableNames>
-<viewAllDatasetsHtml>Vedeți o listă cu toate seturile de date</viewAllDatasetsHtml>
 <waitThenTryAgain>A existat o problemă (temporară?). Așteptați un minut, apoi încercați din nou. (Într-un browser, faceți clic pe butonul Reîncărcare.)</waitThenTryAgain>
 <warning>AVERTIZARE!</warning>
 <units>Unități</units>

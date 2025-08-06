@@ -63,7 +63,6 @@ Det er valgfrit at anmode om komprimering, men komprimerede svar er ofte 3-10 ga
 <acronyms>Akronymer</acronyms>
 <addConstraints>Du kan tilføje tabledap-lignende begrænsninger til anmodninger til denne webside,
 for eksempel,</addConstraints>
-<addVarWhereAttName>Valgfrit: Angiv et attributnavn.</addVarWhereAttName>
 <addVarWhereAttValue>Valgfrit: Angiv en attributværdi.</addVarWhereAttValue>
 <addVarWhere><![CDATA[
 Valgfrit:
@@ -288,9 +287,6 @@ Derefter kan du klikke på en kategori for at se en liste over relevante datasæ
 <categorySearchHtml><![CDATA[
 Vælg en (n) <kbd>{0}</kbd>
 ]]></categorySearchHtml>
-<categorySearchDifferentHtml><![CDATA[
-Søg efter datasæt med en anden <kbd>&category;</kbd>
-]]></categorySearchDifferentHtml>
 <categoryClickHtml>Klik på en kategori (en attributværdi) for at se en liste over relevante datasæt.</categoryClickHtml>
 <categoryNotAnOption>Når attribut=&quot;{0}&quot;, værdi=&quot;{1}&quot; ikke er en mulighed.</categoryNotAnOption>
 <caughtInterrupted>fanget aktuelle tråd().isInterrupted().</caughtInterrupted>
@@ -1744,9 +1740,6 @@ Hver række repræsenterer en anden stikprøve af dataene (f.eks.
 fra et andet tidspunkt eller sted).
 ]]></dafTableTooltip>
 <dasTitle>Datasætattributstrukturen (.das) for dette datasæt</dasTitle>
-
-<!--  Meddelelsen, der skal vises, hvis dataene ikke kan downloades (f.eks. SeaWiFS &lt;=14 dage gammel). -->
-<dataAccessNotAllowed>[Undskyld. Disse data kan ikke downloades.]</dataAccessNotAllowed>
 <databaseUnableToConnect>Kan ikke oprette forbindelse til databasen.</databaseUnableToConnect>
 <dataProviderForm>Dataleverandørs formular</dataProviderForm>
 <dataProviderFormP1>Dataudbyderformular - del 1</dataProviderFormP1>
@@ -2059,10 +2052,6 @@ Klik &widgetSubmitButton; for at sende denne information til ERDDAP administrato
 
 <br>Ret venligst disse problemer, og &#39;Send&#39; derefter denne del af formularen igen.
 ]]></dpf_fixProblem>
-<dpf_yourName>Dit navn</dpf_yourName>
-<dpf_emailAddress>Email adresse</dpf_emailAddress>
-<dpf_Timestamp>Tidsstempel</dpf_Timestamp>
-<dpf_frequency>Frekvens</dpf_frequency>
 <dpf_title>titel</dpf_title>
 <dpf_titleTooltip><![CDATA[
 Dette er en kort (&lt;=80 tegn) beskrivelse af datasættet.
@@ -2124,11 +2113,6 @@ Dette er licensen og ansvarsfraskrivelsen for brug af disse data.
 &standardLicense;
 <br>
 ]]></dpf_licenseTooltip>
-<dpf_howYouStoreData><![CDATA[
-
-<br>• Fejl:
-Angiv venligst (nedenfor) hvordan dine gitter- eller tabeldata gemmes.
-]]></dpf_howYouStoreData>
 <dpf_provideIfAvailable>Angiv venligst oplysningerne, hvis de er tilgængelige for dit datasæt.</dpf_provideIfAvailable>
 <dpf_acknowledgement>anerkendelse</dpf_acknowledgement>
 <dpf_acknowledgementTooltip><![CDATA[
@@ -2392,10 +2376,7 @@ Dette datasæts indsendelses tidsstempel er &tTimestamp; .
 <dtWMS>Klik for at finde ud af, hvordan du laver kort over disse data via dette datasæts webkorttjeneste.</dtWMS>
 <EasierAccessToScientificData>Lettere adgang til videnskabelige data</EasierAccessToScientificData>
 
-<!--  EDD-meddelelserne vises på tabledap- og griddap-dataadgangsformularerne. -->
-<EDDClickOnSubmitHtml><![CDATA[
-Klik på <kbd>Submit</kbd> .
-]]></EDDClickOnSubmitHtml>
+<!--EDD-meddelelser vises på indgivne og gitterdata Access-formularer.-->
 <EDDDatasetID>Datasæt-id</EDDDatasetID>
 <EDDFgdc>FGDC</EDDFgdc>
 <EDDFgdcMetadata>FGDC-STD-001-1998 Metadata</EDDFgdcMetadata>
@@ -2408,9 +2389,7 @@ Klik på <kbd>Submit</kbd> .
 <EDDInformation>Information</EDDInformation>
 <EDDSummary>Resumé</EDDSummary>
 <EDDDatasetTitle>Datasæts titel</EDDDatasetTitle>
-<EDDDownloadData>Download data</EDDDownloadData>
 <EDDMakeAGraph>Lav en graf</EDDMakeAGraph>
-<EDDMakeAMap>Lav et kort</EDDMakeAMap>
 <EDDMinimum>Minimum</EDDMinimum>
 <EDDMaximum>Maksimum</EDDMaximum>
 <EDDFileType>Filtype:</EDDFileType>
@@ -2475,8 +2454,6 @@ Det gør URL&#39;en til dig.
 ]]></EDDGridDownloadDataTooltip>
 <EDDGridDimension>Dimensioner</EDDGridDimension>
 <EDDGridDimensionRanges>Dimensioner</EDDGridDimensionRanges>
-<EDDGridFirst>Først</EDDGridFirst>
-<EDDGridLast>Sidst</EDDGridLast>
 <EDDGridStart>Start</EDDGridStart>
 <EDDGridStop>Hold op</EDDGridStop>
 <EDDGridStartStopTooltip><![CDATA[
@@ -2517,14 +2494,6 @@ Til din orientering:
 dette er den gennemsnitlige afstand mellem værdier af en dimension (i dimensionens enheder) og en indikation af, om værdierne er helt jævnt fordelt eller ej.
 En lidt ulige, ujævn afstand indikerer ofte, at en eller nogle få filer mangler eller er dårlige i et ellers helt jævnt fordelt datasæt.
 ]]></EDDGridSpacingTooltip>
-<EDDGridDimensionFirstTooltip><![CDATA[
-Til din orientering:
-dette er den første værdi af en dimension.
-]]></EDDGridDimensionFirstTooltip>
-<EDDGridDimensionLastTooltip><![CDATA[
-Til din orientering:
-dette er den sidste værdi af en dimension.
-]]></EDDGridDimensionLastTooltip>
 <EDDGridDownloadTooltip><![CDATA[
 Vælg de variabler, du vil downloade:
 <br>* For kun at downloade dimensionsdata:
@@ -2780,10 +2749,6 @@ For eksempel:
 
 <!--  Disse meddelelser vises, når der vises en fejlmeddelelse. -->
 <errorTitle>Fejl</errorTitle>
-<errorRequestUrl>Din anmodnings URL:</errorRequestUrl>
-<errorRequestQuery>Din anmodningsforespørgsel:</errorRequestQuery>
-<errorTheError>Fejlen:</errorTheError>
-<errorCopyFrom>Kan ikke kopiere fra {0}.</errorCopyFrom>
 <errorFileNotFound>Filen blev ikke fundet: {0}.</errorFileNotFound>
 <errorFileNotFoundImage>Filen blev ikke fundet i cachen. Genskab billedet, og prøv igen.</errorFileNotFoundImage>
 <errorInternal>Intern fejl:</errorInternal>
@@ -2817,7 +2782,6 @@ For eksempel:
 <fileHelpTable_esriCsv>Download en ISO_8859_1 .csv-fil til ESRI&#39;s ArcGIS 9.x og derunder (separate dato- og tidskolonner).</fileHelpTable_esriCsv>
 <fileHelp_fgdc>Se datasættets UTF-8 FGDC .xml-metadata.</fileHelp_fgdc>
 <fileHelp_geoJson>Download data for længdegrad, breddegrad, andre kolonner som en UTF-8 GeoJSON .json-fil.</fileHelp_geoJson>
-<fileHelp_graph>Se en Make A Graph-webside.</fileHelp_graph>
 <fileHelpGrid_help>Se en webside med en beskrivelse af griddap.</fileHelpGrid_help>
 <fileHelpTable_help>Se en webside med en beskrivelse af tabledap.</fileHelpTable_help>
 <fileHelp_html>Se en HTML-dataadgangsformular i OPeNDAP-stil.</fileHelp_html>
@@ -2848,7 +2812,6 @@ For eksempel:
 <fileHelpTable_odvTxt>Download længdegrad, breddegrad, tid, andre kolonner som en ISO-8859-1 ODV generisk regnearksfil (.txt).</fileHelpTable_odvTxt>
 <fileHelp_parquet>Hent som en parket fil. Metadata indeholder kolonnenavne (&quot;column_names&quot;) og enheder (&quot;column_units&quot;).</fileHelp_parquet>
 <fileHelp_parquet_with_meta>Hent som en parket fil med detaljerede metadata.</fileHelp_parquet_with_meta>
-<fileHelp_subset>Se en HTML-formular, der bruger facetteret søgning til at forenkle udvælgelsen af delmængder af dataene.</fileHelp_subset>
 <fileHelp_timeGaps>Se en UTF-8-liste over huller i tidsværdierne, der er større end mediangabet.</fileHelp_timeGaps>
 <fileHelp_tsv>Download en ISO-8859-1 fane-separeret teksttabel (linje 1: navne; linje 2: enheder; ISO 8601 gange).</fileHelp_tsv>
 <fileHelp_tsvp>Download en ISO-8859-1 .tsv-fil med linje 1: navn (enheder). Tiderne er ISO 8601 strenge.</fileHelp_tsvp>
@@ -2868,7 +2831,6 @@ For eksempel:
 
 <!--  Beskrivelsen og advarselsformuleringen er vag for at tillade et eller mange datasæt. -->
 <filesDescription>ERDDAPs &quot;filer&quot;-system lader dig gennemse et virtuelt filsystem og downloade kildedatafiler.</filesDescription>
-<filesSort>Klik på en overskrift (f.eks. Navn, Sidst ændret, Størrelse) for at ændre sorteringsrækkefølgen. &quot;Sidst ændret&quot; bruger Zulu-tidszonen.</filesSort>
 <filesWarning><![CDATA[
 Datasættets metadata og variabelnavne i disse kildefiler kan være anderledes end andre steder i ERDDAP ! Du foretrækker måske at bruge datasættets dataadgangsformular i stedet for.
 ]]></filesWarning>
@@ -3305,12 +3267,6 @@ For eksempel vil orderByMax(&quot;stationID, time/1day&quot;) oprette en gruppe 
 Den række vil have summen af hver af de andre variable.
 For eksempel vil orderByMax(&quot;stationID, time/1day&quot;) oprette en gruppe for hvert stationID for hver dag, og vil beregne og returnere summen af de andre variable.
 ]]></functionOrderByTooltip>
-<functionOrderByExtra><![CDATA[
-For orderByClosest skal du angive intervallet (ved hjælp af formatet n[timeUnits], f.eks.
-1 time) her.
-<br>For orderByLimit skal du angive det maksimale antal rækker pr.
-gruppe her.
-]]></functionOrderByExtra>
 <functionOrderBySort><![CDATA[
 Denne plads er den {0} vigtige orderBy ...
 plads.
@@ -3321,7 +3277,6 @@ plads.
 <functionOrderBySort3>tredje flest</functionOrderBySort3>
 <functionOrderBySort4>fjerde flest</functionOrderBySort4>
 <functionOrderBySortLeast>mindst</functionOrderBySortLeast>
-<functionOrderBySortRowMax>Kun rækken med den maksimale værdi bevares.</functionOrderBySortRowMax>
 <generatedAt>Denne webside blev genereret den {0} .</generatedAt>
 <geoServicesDescription><![CDATA[
 For at gøre denne ERDDAP data mere tilgængelige for ArcGIS -brugere, efterligner denne del af ERDDAP en del af
@@ -3610,7 +3565,6 @@ Standarden er ingenting (ubrugt).
 <!--  f.eks. {0}=WMS eller listAll -->
 <listOfDatasets>Liste over {0} datasæt</listOfDatasets>
 <listAll>Alle</listAll>
-<LogIn>Log på</LogIn>
 <login>Log på</login>
 <loginHTML><![CDATA[
 
@@ -3661,22 +3615,15 @@ Alle med en Google-e-mail-konto eller ORCID iD kan logge ind, men administratore
     title="Dette link til en ekstern hjemmeside udgør ikke en godkendelse."></a> er en åben standard, der lader dig logge ind med din adgangskode på én hjemmeside og derefter logge ind uden din adgangskode på mange andre hjemmesider, inklusive ERDDAP .
 Kun personer, der har lavet aftaler med administratoren af denne ERDDAP, må logge ind.
 ]]></loginDescribeOpenID>
-<loginErddap>Log ind på ERDDAP</loginErddap>
 <loginCanNot>Denne ERDDAP er ikke konfigureret til at lade brugere logge ind.</loginCanNot>
 <loginAreNot>Du er ikke logget ind.</loginAreNot>
 <loginToLogIn>For at logge ind</loginToLogIn>
-<loginEmailAddress>email adresse</loginEmailAddress>
 <loginYourEmailAddress>Din email adresse</loginYourEmailAddress>
 <loginUserName>Brugernavn</loginUserName>
 <loginPassword>Adgangskode</loginPassword>
 <loginUserNameAndPassword>Brugernavn og adgangskode</loginUserNameAndPassword>
 <loginGoogleSignIn>Godkend med din Google-konto.</loginGoogleSignIn>
 <loginOrcidSignIn>Autentificer med dit ORCID iD.</loginOrcidSignIn>
-<loginOpenID>Log ind med din OpenID URL</loginOpenID>
-<loginOpenIDOr>Eller log ind på din eksisterende (ikke-OpenID) konto på</loginOpenIDOr>
-<loginOpenIDCreate>Eller opret en OpenID URL på</loginOpenIDCreate>
-<loginOpenIDFree>De er alle gratis!</loginOpenIDFree>
-<loginOpenIDSame>Sørg for, at du loggede ind med nøjagtig den samme OpenID-URL, som du gav til ERDDAP-administratoren.</loginOpenIDSame>
 <loginAs>Du er logget ind som {0}.</loginAs>
 <loginPartwayAs>Du er logget på halvvejs som {0}.</loginPartwayAs>
 <loginFailed>FEJL: Login mislykkedes</loginFailed>
@@ -3780,7 +3727,6 @@ Det er muligt, at nogle datasæt ikke er tilgængelige i øjeblikket, eller at d
 ]]></loginPublicAccess>
 <LogOut>Log ud</LogOut>
 <logout>Log ud</logout>
-<logoutOpenID>Log ud fra din OpenID-udbyder.</logoutOpenID>
 
 <!--  logoutSuccess sidst opdateret 2019-12-19 -->
 <logoutSuccess>Du har logget ud.
@@ -4041,10 +3987,6 @@ Men dods.dap.DODSException har ingen relevant undtagelse.
 Bedre at returnere en tom fil? Men .nc og andre tillader ikke 0-længde data.
  -->
 <MustBeThereIsNoData>Din forespørgsel gav ingen matchende resultater.</MustBeThereIsNoData>
-
-<!--  Mange filtyper sætter en grænse for, hvor meget data en fil kan indeholde (f.eks. 2 GB). -->
-<MustBeNotNull>{0} må ikke være null.</MustBeNotNull>
-<MustBeNotEmpty>{0} må ikke være en tom streng.</MustBeNotEmpty>
 <MustBeInternalError>Intern fejl</MustBeInternalError>
 <MustBeOutOfMemoryError>Hukommelse fuld fejl</MustBeOutOfMemoryError>
 
@@ -4085,11 +4027,9 @@ Bedre at returnere en tom fil? Men .nc og andre tillader ikke 0-længde data.
 <noXxxNoLonIn180>der er ingen længdegradsværdier inden for -180 til 360</noXxxNoLonIn180>
 <noXxxNoNonString>der er ingen ikke-String-variabler</noXxxNoNonString>
 <noXxxNo2NonString>der er ikke mindst to ikke-strengvariabler</noXxxNo2NonString>
-<noXxxNoStation>cdmDataType={0} er ikke &quot;TimeSeries&quot;</noXxxNoStation>
 <noXxxNoStationID>der er ingen stationID-lignende variabel</noXxxNoStationID>
 <noXxxNoSubsetVariables>subsetVariables blev ikke specificeret</noXxxNoSubsetVariables>
 <noXxxNoOLLSubsetVariables>subsetVariables har ikke variablerne tilbud, længdegrad og breddegrad</noXxxNoOLLSubsetVariables>
-<noXxxNoMinMax>kildedataserveren giver ikke minimum- og maksimumværdier</noXxxNoMinMax>
 <noXxxItsGridded>det er et gitterdatasæt</noXxxItsGridded>
 <noXxxItsTabular>det er et datasæt i tabelform</noXxxItsTabular>
 <oneRequestAtATime>Indgiv venligst kun én anmodning ad gangen.</oneRequestAtATime>
@@ -4115,7 +4055,6 @@ Udviklere af computerprogrammer og Java Scripted-websider kan få adgang til ERD
 <options>Muligheder</options>
 <orAListOfValues>eller en liste over værdier</orAListOfValues>
 <orRefineSearchWith>Eller afgrænse denne søgning med</orRefineSearchWith>
-<orSearchWith>Eller søg efter datasæt med</orSearchWith>
 <orComma>Eller,</orComma>
 <otherFeatures>Andre funktioner</otherFeatures>
 <outOfDateDatasets>Forældede datasæt</outOfDateDatasets>
@@ -4170,7 +4109,6 @@ Der er
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
     title="Dette link til en ekstern hjemmeside udgør ikke en godkendelse."></a> .
 ]]></percentEncode>
-<pickADataset>Vælg et datasæt</pickADataset>
 
 <!--  Meddelelser relateret til protokolbaserede datasætsøgninger. -->
 <protocolSearchHtml>Søg efter datasæt efter protokol</protocolSearchHtml>
@@ -4185,7 +4123,6 @@ Forskellige protokoller er passende til forskellige typer data og til forskellig
 <queryError1Var>Formatet {0} kan kun håndtere én datavariabel.</queryError1Var>
 <queryError2Var>Anmodninger om formatet {0} skal indeholde mindst to numeriske variable (for X- og Y-akserne).</queryError2Var>
 <queryErrorActualRange>{0} er uden for variablens faktiske_område: {1} til {2}</queryErrorActualRange>
-<queryErrorAscending>For {0} anmodninger skal længdegradsværdierne og breddegradsværdierne være stigende.</queryErrorAscending>
 <queryErrorAdjusted>For {0} anmodninger skal de justerede længdegradsværdier ({1} til {2}) være mellem -180 og 180.</queryErrorAdjusted>
 <queryErrorConstraintNaN>Constraint value=&quot;{0}&quot; evalueres til NaN. Hvis du virkelig vil have NaN, så skriv det som NaN.</queryErrorConstraintNaN>
 <queryErrorEqualSpacing>For {0} anmodninger skal længdegradsafstanden ({1}) svare til breddegradsafstanden ({2}).</queryErrorEqualSpacing>
@@ -4217,7 +4154,6 @@ Forskellige protokoller er passende til forskellige typer data og til forskellig
 <queryErrorGridNoAxisVar>En griddap-datavariabelforespørgsel kan ikke inkludere en aksevariabel ({0}).</queryErrorGridNoAxisVar>
 <queryErrorGridNoDataVar>En forespørgsel med en griddap-aksevariabel kan ikke inkludere en datavariabel ({0}).</queryErrorGridNoDataVar>
 <queryErrorGridNotIdentical>Begrænsningen {0} for variabel={1} er ikke identisk med begrænsningen {2} for variabel={2}. Hvis du har brug for forskellige undersæt, skal du lave separate anmodninger.</queryErrorGridNotIdentical>
-<queryErrorGridSLessS>StartIndex={0} er større end StopIndex={1}.</queryErrorGridSLessS>
 <queryErrorLastEndP>{0} starter med &quot;(&quot;, men slutter ikke med &quot;)&quot;.</queryErrorLastEndP>
 <queryErrorLastExpected>&quot;sidste&quot; forventedes i begyndelsen af {0}.</queryErrorLastExpected>
 <queryErrorLastUnexpected>Uventet tegn efter &quot;sidste&quot; i {0}.</queryErrorLastUnexpected>
@@ -4460,7 +4396,6 @@ Se
 <SOSDocumentation>ERDDAPs SOS-dokumentation</SOSDocumentation>
 <WCSDocumentation>ERDDAPs WCS-dokumentation</WCSDocumentation>
 <WMSDocumentation>ERDDAPs WMS-dokumentation</WMSDocumentation>
-<findOutChange>så dit computerprogram kan finde ud af, om et datasæt er ændret.</findOutChange>
 <requestFormatExamplesHtml><![CDATA[
 (f.eks.
 <a rel="help" href="https://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html#sec9.3">HTTP GET <img 
@@ -4871,13 +4806,6 @@ Anmod i stedet om en e-mail med en
 <br>Hvis abonnements-id&#39;et og nøglen matcher, vil abonnementet blive fjernet.</span>
 ]]></subscriptionRemoveSuccess>
 <subscriptionRSS>Abonner på RSS-feedet for dette datasæt...</subscriptionRSS>
-<subscriptionsNotAvailable><![CDATA[
-
-<p><strong>Undskyld.
-E-mail/URL-abonnementssystemet er ikke tilgængeligt ved denne ERDDAP installation.</strong>
-<br>Overvej at bruge
-<a rel="help" href="{0}/information.html#subscriptions">RSS</a> -abonnementstjenesten i stedet.
-]]></subscriptionsNotAvailable>
 <subscriptionUrlHtml><![CDATA[
 <kbd>URL/action</kbd> er en valgfri URL, som ERDDAP vil kontakte i stedet for at sende dig en e-mail.
 <br>Så hvis du ønsker at modtage en e-mail, hver gang datasættet ændres, skal du lade <kbd>URL/action</kbd> stå tom.
@@ -5127,11 +5055,6 @@ For at se {0},
 <!--  Det følgende tag er indledt med 1 af de 2 foregående tags.
   {0} er subsetViewSelectDistintCombos eller subsetViewSelectRelatedCounts. -->
 <subsetWhenCounts>{0} for {1} værdierne af &quot;{2}&quot; er:</subsetWhenCounts>
-<subsetComboClickSelect><![CDATA[
-For at se antallet af distinkte kombinationer af variablerne nævnt ovenfor,
-<br>tjek <kbd>{0} :
-{1}</kbd> ovenfor, og vælg en værdi for en af variablerne ovenfor.
-]]></subsetComboClickSelect>
 <subsetNVariableCombos>I alt er der {0} rækker af forskellige kombinationer af de variabler, der er angivet ovenfor.</subsetNVariableCombos>
 <subsetShowingAllRows>Alle rækkerne er vist ovenfor.</subsetShowingAllRows>
 <subsetShowingNRows>De første {0} rækker er vist ovenfor. De resterende {1} rækker bliver ikke vist.</subsetShowingNRows>
@@ -5889,7 +5812,6 @@ Når du er medlem, kan du stille dit spørgsmål der eller søge for at se, om s
 Udtalelserne på denne webside er Bob Simons&#39; personlige meninger og afspejler ikke nødvendigvis nogen holdning fra regeringen eller National Oceanic and Atmospheric Administration .
 
 ]]></theLongDescriptionHtml>
-<Then>Derefter</Then>
 <twoClickMapDefaultTooltip>Angiv et rektangel ved at klikke på to diagonale hjørner. Gør det igen, hvis det er nødvendigt.</twoClickMapDefaultTooltip>
 
 <!--  Dette er en måde at tilsidesætte ERDDAP&#39;s Standardize UDUnits-konverter
@@ -7107,7 +7029,6 @@ Det kan ikke være noget.
 Så hvis du ikke ønsker noget, skal du indtaste et volapykord, der aldrig vil være et attributnavn. -->
 <updateUrlsSkipAttributes>sourceUrl</updateUrlsSkipAttributes>
 <variableNames>Variable navne</variableNames>
-<viewAllDatasetsHtml>Se en liste over alle datasæt</viewAllDatasetsHtml>
 <waitThenTryAgain>Der var et (midlertidigt?) problem. Vent et øjeblik, og prøv derefter igen. (I en browser skal du klikke på knappen Genindlæs.)</waitThenTryAgain>
 <warning>ADVARSEL!</warning>
 <units>Enheder</units>

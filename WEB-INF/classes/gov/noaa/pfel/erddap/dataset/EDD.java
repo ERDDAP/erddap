@@ -45,6 +45,7 @@ import gov.noaa.pfel.erddap.handlers.SaxHandlerClass;
 import gov.noaa.pfel.erddap.handlers.State;
 import gov.noaa.pfel.erddap.util.CfToFromGcmd;
 import gov.noaa.pfel.erddap.util.EDMessages;
+import gov.noaa.pfel.erddap.util.EDMessages.Message;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.util.EmailThread;
 import gov.noaa.pfel.erddap.util.Subscriptions;
@@ -1622,19 +1623,19 @@ public abstract class EDD {
           "If you want to keep this dataset up-to-date, use a small reloadEveryNMinutes.";
       if (!tryToSubscribe) {
         String2.log(
-            EDStatic.messages.warningAr[0]
+            EDStatic.messages.get(Message.WARNING, 0)
                 + " <tryToSubscribeToRemoteErddapDataset> is false. If that is permanent, then:\n"
                 + keepUpToDate);
       } else if (EDStatic.urlIsLocalhost(thisErddapUrl)) {
         String2.log(
-            EDStatic.messages.warningAr[0]
+            EDStatic.messages.get(Message.WARNING, 0)
                 + " This ERDDAP won't try to subscribe to the dataset on the remote\n"
                 + "ERDDAP because this ERDDAP isn't publicly accessible.\n"
                 + keepUpToDate);
       } else if (!String2.isSomething(EDStatic.config.emailSubscriptionsFrom)) {
         // this erddap's subscription system isn't active
         String2.log(
-            EDStatic.messages.warningAr[0]
+            EDStatic.messages.get(Message.WARNING, 0)
                 + " Subscribing to the remote ERDDAP dataset failed because\n"
                 + "emailEverythingTo wasn't specified in this ERDDAP's setup.xml.\n"
                 + keepUpToDate);
@@ -1800,11 +1801,6 @@ public abstract class EDD {
     // was: delete individual files, e.g, dir + QUICK_RESTART_FILENAME
   }
 
-  /** This deletes this dataset's cached dataset info. No error if it doesn't exist. */
-  public void deleteCachedDatasetInfo() {
-    deleteCachedDatasetInfo(datasetID);
-  }
-
   /** The full name of the quick restart .nc file for this dataset. */
   public String quickRestartFullFileName() {
     return quickRestartFullFileName(datasetID);
@@ -1888,7 +1884,7 @@ public abstract class EDD {
         + ".rss\" \n"
         + "  title=\"\"><img alt=\"RSS\"\n"
         + "    title=\""
-        + EDStatic.messages.subscriptionRSSAr[language]
+        + EDStatic.messages.get(Message.SUBSCRIPTION_RSS, language)
         + "\" \n"
         + "    src=\""
         + EDStatic.imageDirUrl(request, loggedInAs, language)
@@ -1916,7 +1912,7 @@ public abstract class EDD {
           + "&amp;showErrors=false&amp;email=\" \n"
           + "  title=\"\"><img alt=\"Subscribe\"\n"
           + "    title=\""
-          + XML.encodeAsHTMLAttribute(EDStatic.messages.subscriptionEmailAr[language])
+          + XML.encodeAsHTMLAttribute(EDStatic.messages.get(Message.SUBSCRIPTION_EMAIL, language))
           + "\" \n"
           + "    src=\""
           + EDStatic.imageDirUrl(request, loggedInAs, language)
@@ -2400,18 +2396,19 @@ public abstract class EDD {
             } else {
               // file doesn't exist
               throw new SimpleException(
-                  EDStatic.messages.resourceNotFoundAr[0]
+                  EDStatic.messages.get(Message.RESOURCE_NOT_FOUND, 0)
                       + "the <fgdcFile> specified in datasets.xml.");
             }
 
           } else {
-            accessibleViaFGDC = MessageFormat.format(EDStatic.messages.noXxxAr[0], "FGDC");
+            accessibleViaFGDC =
+                MessageFormat.format(EDStatic.messages.get(Message.NO_XXX, 0), "FGDC");
           }
 
         } catch (Throwable t) {
           String2.log(
               MessageFormat.format(
-                  EDStatic.messages.noXxxBecause2Ar[0],
+                  EDStatic.messages.get(Message.NO_XXX_BECAUSE_2, 0),
                   "FGDC",
                   (t instanceof SimpleException
                       ? MustBe.getShortErrorMessage(t)
@@ -2425,9 +2422,10 @@ public abstract class EDD {
         accessibleViaFGDC =
             String2.canonical(
                 MessageFormat.format(
-                    EDStatic.messages.noXxxBecause2Ar[0],
+                    EDStatic.messages.get(Message.NO_XXX_BECAUSE_2, 0),
                     "FGDC",
-                    MessageFormat.format(EDStatic.messages.noXxxNotActiveAr[0], "FGDC")));
+                    MessageFormat.format(
+                        EDStatic.messages.get(Message.NO_XXX_NOT_ACTIVE, 0), "FGDC")));
       }
     }
     return accessibleViaFGDC;
@@ -2472,19 +2470,19 @@ public abstract class EDD {
             } else {
               // file doesn't exist
               throw new SimpleException(
-                  EDStatic.messages.resourceNotFoundAr[0]
+                  EDStatic.messages.get(Message.RESOURCE_NOT_FOUND, 0)
                       + "the <iso19115File> specified in datasets.xml.");
             }
 
           } else {
             accessibleViaISO19115 =
-                MessageFormat.format(EDStatic.messages.noXxxAr[0], "ISO 19115-2/19139");
+                MessageFormat.format(EDStatic.messages.get(Message.NO_XXX, 0), "ISO 19115-2/19139");
           }
 
         } catch (Throwable t) {
           String2.log(
               MessageFormat.format(
-                  EDStatic.messages.noXxxBecause2Ar[0],
+                  EDStatic.messages.get(Message.NO_XXX_BECAUSE_2, 0),
                   "ISO 19115-2/19139",
                   (t instanceof SimpleException
                       ? MustBe.getShortErrorMessage(t)
@@ -2498,10 +2496,10 @@ public abstract class EDD {
         accessibleViaISO19115 =
             String2.canonical(
                 MessageFormat.format(
-                    EDStatic.messages.noXxxBecause2Ar[0],
+                    EDStatic.messages.get(Message.NO_XXX_BECAUSE_2, 0),
                     "ISO 19115-2/19139",
                     MessageFormat.format(
-                        EDStatic.messages.noXxxNotActiveAr[0], "ISO 19115-2/19139")));
+                        EDStatic.messages.get(Message.NO_XXX_NOT_ACTIVE, 0), "ISO 19115-2/19139")));
       }
     }
     return accessibleViaISO19115;
@@ -2918,7 +2916,7 @@ public abstract class EDD {
     if (which < 0)
       throw new SimpleException(
           MessageFormat.format(
-              EDStatic.messages.errorNotFoundAr[0],
+              EDStatic.messages.get(Message.ERROR_NOT_FOUND, 0),
               "sourceVariableName=" + tSourceName + " in datasetID=" + datasetID));
     return dataVariables[which];
   }
@@ -2938,7 +2936,7 @@ public abstract class EDD {
     if (which < 0)
       throw new SimpleException(
           MessageFormat.format(
-              EDStatic.messages.errorNotFoundInAr[0],
+              EDStatic.messages.get(Message.ERROR_NOT_FOUND_IN, 0),
               "destinationVariableName=" + tDestinationName,
               "datasetID=" + datasetID));
     return dataVariables[which];
@@ -3380,11 +3378,12 @@ public abstract class EDD {
     throw new SimpleException(
         EDStatic.bilingual(
             language,
-            EDStatic.messages.queryErrorAr[0]
-                + MessageFormat.format(EDStatic.messages.queryErrorFileTypeAr[0], fileTypeName),
-            EDStatic.messages.queryErrorAr[language]
+            EDStatic.messages.get(Message.QUERY_ERROR, 0)
                 + MessageFormat.format(
-                    EDStatic.messages.queryErrorFileTypeAr[language], fileTypeName)));
+                    EDStatic.messages.get(Message.QUERY_ERROR_FILE_TYPE, 0), fileTypeName),
+            EDStatic.messages.get(Message.QUERY_ERROR, language)
+                + MessageFormat.format(
+                    EDStatic.messages.get(Message.QUERY_ERROR_FILE_TYPE, language), fileTypeName)));
   }
 
   /**
@@ -3814,20 +3813,20 @@ public abstract class EDD {
       dafLink =
           "     | <a rel=\"alternate\" "
               + "title=\""
-              + EDStatic.messages.clickAccessAr[language]
+              + EDStatic.messages.get(Message.CLICK_ACCESS, language)
               + "\" \n"
               + "         href=\""
               + dapUrl
               + ".html"
               + tQuery
               + "\">"
-              + EDStatic.messages.dafAr[language]
+              + EDStatic.messages.get(Message.DAF, language)
               + "</a>\n";
     if (isAccessible && showSubsetLink && accessibleViaSubset().length() == 0)
       subsetLink =
           "     | <a rel=\"alternate\" "
               + "title=\""
-              + EDStatic.messages.dtSubsetAr[language]
+              + EDStatic.messages.get(Message.DT_SUBSET, language)
               + "\" \n"
               + "         href=\""
               + dapUrl
@@ -3837,41 +3836,43 @@ public abstract class EDD {
                   ? ""
                   : XML.encodeAsHTMLAttribute(EDDTable.DEFAULT_SUBSET_VIEWS))
               + "\">"
-              + EDStatic.messages.subsetAr[language]
+              + EDStatic.messages.get(Message.SUBSET, language)
               + "</a>\n";
     if (isAccessible && showFilesLink && accessibleViaFiles) // > because it has sourceDir
     filesLink =
           "     | <a rel=\"alternate\" "
               + "title=\""
               + XML.encodeAsHTMLAttribute(
-                  EDStatic.messages.filesDescriptionAr[language]
+                  EDStatic.messages.get(Message.FILES_DESCRIPTION, language)
                       + (this instanceof EDDTableFromFileNames
                           ? ""
                           : "\n"
-                              + EDStatic.messages.warningAr[language]
+                              + EDStatic.messages.get(Message.WARNING, language)
                               + " "
                               + String2.replaceAll(
-                                  EDStatic.messages.filesWarningAr[language], "<br>", "")))
+                                  EDStatic.messages.get(Message.FILES_WARNING, language),
+                                  "<br>",
+                                  "")))
               + "\" \n"
               + "         href=\""
               + tErddapUrl
               + "/files/"
               + datasetID
               + "/\">"
-              + EDStatic.messages.EDDFilesAr[language]
+              + EDStatic.messages.get(Message.EDD_FILES, language)
               + "</a>\n";
     if (graphsAccessible && showGraphLink && accessibleViaMAG().length() == 0)
       graphLink =
           "     | <a rel=\"alternate\" "
               + "title=\""
-              + EDStatic.messages.dtMAGAr[language]
+              + EDStatic.messages.get(Message.DT_MAG, language)
               + "\" \n"
               + "         href=\""
               + dapUrl
               + ".graph"
               + tQuery
               + "\">"
-              + EDStatic.messages.EDDMakeAGraphAr[language]
+              + EDStatic.messages.get(Message.EDD_MAKE_A_GRAPH, language)
               + "</a>\n";
     String encTitle = XML.encodeAsHTML(String2.noLongLines(title(language), 80, ""));
     encTitle = String2.replaceAll(encTitle, "\n", "<br>");
@@ -3880,7 +3881,7 @@ public abstract class EDD {
         "<table class=\"compact nowrap\">\n"
             + "  <tr>\n"
             + "    <td>"
-            + EDStatic.messages.EDDDatasetTitleAr[language]
+            + EDStatic.messages.get(Message.EDD_DATASET_TITLE, language)
             + ":&nbsp;</td>\n"
             + "    <td style=\"vertical-align:middle\"><span class=\"standoutColor\" style=\"font-size:130%; line-height:130%;\"><strong>"
             + encTitle
@@ -3898,13 +3899,13 @@ public abstract class EDD {
             + "  </tr>\n"
             + "  <tr>\n"
             + "    <td>"
-            + EDStatic.messages.EDDInstitutionAr[language]
+            + EDStatic.messages.get(Message.EDD_INSTITUTION, language)
             + ":&nbsp;</td>\n"
             + "    <td>"
             + XML.encodeAsHTML(institution(language))
             + "&nbsp;&nbsp;\n"
             + "    ("
-            + EDStatic.messages.EDDDatasetIDAr[language]
+            + EDStatic.messages.get(Message.EDD_DATASET_ID, language)
             + ": "
             + XML.encodeAsHTML(datasetID)
             + ")</td>\n"
@@ -3913,7 +3914,7 @@ public abstract class EDD {
             + "\n"
             + "  <tr>\n"
             + "    <td>"
-            + EDStatic.messages.EDDInformationAr[language]
+            + EDStatic.messages.get(Message.EDD_INFORMATION, language)
             + ":&nbsp;</td>\n"
             + "    <td>"
             + getDisplayInfo(request, language, loggedInAs)
@@ -3921,7 +3922,7 @@ public abstract class EDD {
                 ? ""
                 : "     | <a rel=\"alternate\" \n"
                     + "          title=\""
-                    + EDStatic.messages.EDDFgdcMetadataAr[language]
+                    + EDStatic.messages.get(Message.EDD_FGDC_METADATA, language)
                     + "\" \n"
                     + "          href=\""
                     + dapUrl
@@ -3932,7 +3933,7 @@ public abstract class EDD {
                 ? ""
                 : "     | <a rel=\"alternate\" \n"
                     + "          title=\""
-                    + EDStatic.messages.EDDIso19115MetadataAr[language]
+                    + EDStatic.messages.get(Message.EDD_ISO19115_METADATA, language)
                     + "\" \n"
                     + "          href=\""
                     + dapUrl
@@ -3941,23 +3942,23 @@ public abstract class EDD {
                     + "</a>\n")
             + "     | <a rel=\"alternate\" \n"
             + "          title=\""
-            + EDStatic.messages.clickInfoAr[language]
+            + EDStatic.messages.get(Message.CLICK_INFO, language)
             + "\" \n"
             + "          href=\""
             + tErddapUrl
             + "/info/"
             + datasetID
             + "/index.html\">"
-            + EDStatic.messages.EDDMetadataAr[language]
+            + EDStatic.messages.get(Message.EDD_METADATA, language)
             + "</a>\n"
             + "     | <a rel=\"bookmark\" \n"
             + "          title=\""
-            + EDStatic.messages.clickBackgroundInfoAr[language]
+            + EDStatic.messages.get(Message.CLICK_BACKGROUND_INFO, language)
             + "\" \n"
             + "          href=\""
             + XML.encodeAsHTMLAttribute(infoUrl(language))
             + "\">"
-            + EDStatic.messages.EDDBackgroundAr[language]
+            + EDStatic.messages.get(Message.EDD_BACKGROUND, language)
             + (infoUrl(language).startsWith(EDStatic.config.baseUrl)
                 ? ""
                 : EDStatic.messages.externalLinkHtml(language, tErddapUrl))
@@ -3997,11 +3998,11 @@ public abstract class EDD {
       // Handle "summary"
       if ("summary".equals(attribute)) {
         attVal = extendedSummary(language);
-        displayInfo = EDStatic.messages.EDDSummaryAr[language];
+        displayInfo = EDStatic.messages.get(Message.EDD_SUMMARY, language);
       }
       if ("license".equals(attribute)) {
         warningColor = attVal != null && !attVal.equals(EDStatic.messages.standardLicense);
-        displayInfo = EDStatic.messages.licenseAr[language];
+        displayInfo = EDStatic.messages.get(Message.LICENSE, language);
       }
       if (warningColor) {
         displayInfo = "<span class=\"warningColor\">" + displayInfo + "</span>";
@@ -4101,47 +4102,6 @@ public abstract class EDD {
     return addTable.findColumnNumber(EDV.LON_NAME) >= 0
         && addTable.findColumnNumber(EDV.LAT_NAME) >= 0
         && addTable.findColumnNumber(EDV.TIME_NAME) >= 0;
-  }
-
-  /**
-   * This is used by generateDatasetsXml to find out if a table probably has longitude, latitude,
-   * and time variables.
-   *
-   * @param sourceTable This can't be null.
-   * @param addTable with columns meanings that exactly parallel sourceTable (although, often
-   *     different column names, e.g., lat, latitude). This can't be null.
-   * @return true if it probably does
-   */
-  public static boolean probablyHasLonLatTime(Table sourceTable, Table addTable) {
-    boolean hasLon = false, hasLat = false, hasTime = false;
-    int sn = sourceTable.nColumns();
-    int an = addTable.nColumns();
-    if (sn != an)
-      throw new RuntimeException(
-          "sourceTable nColumns="
-              + sn
-              + " ("
-              + sourceTable.getColumnNamesCSVString()
-              + ")\n"
-              + "!= addTable nColumns="
-              + an
-              + " ("
-              + addTable.getColumnNamesCSVString()
-              + ")");
-    for (int col = 0; col < sn; col++) {
-      String colName = addTable.getColumnName(col).toLowerCase();
-      String units =
-          getAddOrSourceAtt(
-              addTable.columnAttributes(col), sourceTable.columnAttributes(col), "units", null);
-      if (colName.equals(EDV.LON_NAME) || colName.equals("lon") || EDV.LON_UNITS.equals(units))
-        hasLon = true;
-      else if (colName.equals(EDV.LAT_NAME) || colName.equals("lat") || EDV.LAT_UNITS.equals(units))
-        hasLat = true;
-      else if (colName.equals(EDV.TIME_NAME) || Calendar2.isTimeUnits(units)) hasTime = true;
-      // String2.log(">> colName=" + colName + " units=" + units + " hasLon=" + hasLon + " hasLat="
-      // + hasLat + " hasTime=" + hasTime);
-    }
-    return hasLon && hasLat && hasTime;
   }
 
   /**
@@ -5185,12 +5145,6 @@ public abstract class EDD {
 
   static void addIfNoAddOrSourceAtt(
       Attributes addAtts, Attributes sourceAtts, String name, String value) {
-    if (!String2.isSomething2(addAtts.getString(name))
-        && !String2.isSomething2(sourceAtts.getString(name))) addAtts.add(name, value);
-  }
-
-  static void addIfNoAddOrSourceAtt(
-      Attributes addAtts, Attributes sourceAtts, String name, PrimitiveArray value) {
     if (!String2.isSomething2(addAtts.getString(name))
         && !String2.isSomething2(sourceAtts.getString(name))) addAtts.add(name, value);
   }
@@ -11499,47 +11453,6 @@ public abstract class EDD {
   }
 
   /**
-   * This is used by subclass's generateDatasetsXml methods to write directions to datasets.xml
-   * file. <br>
-   * This doesn't have the closing "-->\n\n" so users can add other comments.
-   *
-   * @throws Throwable if trouble
-   */
-  public static String directionsForGenerateDatasetsXml() throws Throwable {
-    return """
-            <!--
-             DISCLAIMER:
-               The chunk of datasets.xml made by GenerageDatasetsXml isn't perfect.
-               YOU MUST READ AND EDIT THE XML BEFORE USING IT IN A PUBLIC ERDDAP.
-               GenerateDatasetsXml relies on a lot of rules-of-thumb which aren't always
-               correct.  *YOU* ARE RESPONSIBLE FOR ENSURING THE CORRECTNESS OF THE XML
-               THAT YOU ADD TO ERDDAP'S datasets.xml FILE.
-
-             DIRECTIONS:
-             * Read about this type of dataset in
-               https://erddap.github.io/docs/server-admin/datasets .
-             * Read https://erddap.github.io/docs/server-admin/datasets#global-attributes
-               so that you understand about sourceAttributes and addAttributes.
-             * Note: Global sourceAttributes and variable sourceAttributes are listed
-               below as comments, for informational purposes only.
-               ERDDAP combines sourceAttributes and addAttributes (which have
-               precedence) to make the combinedAttributes that are shown to the user.
-               (And other attributes are automatically added to longitude, latitude,
-               altitude, depth, and time variables).
-             * If you don't like a sourceAttribute, overwrite it by adding an
-               addAttribute with the same name but a different value
-               (or no value, if you want to remove it).
-             * All of the addAttributes are computer-generated suggestions. Edit them!
-               If you don't like an addAttribute, change it.
-             * If you want to add other addAttributes, add them.
-             * If you want to change a destinationName, change it.
-               But don't change sourceNames.
-             * You can change the order of the dataVariables or remove any of them.
-            """;
-    // This doesn't have the closing "-->\n\n" so users can add other comments.
-  }
-
-  /**
    * This is used by subclass's generateDatasetsXml methods to write the variables to the writer in
    * the datasets.xml format.
    *
@@ -12334,29 +12247,6 @@ public abstract class EDD {
   }
 
   /**
-   * This builds a user query from the parts.
-   *
-   * @param queryParts not percentEncoded
-   * @return a userQuery, &amp; separated, with percentEncoded parts, or "" if queryParts is null or
-   *     length = 0.
-   * @throws Throwable
-   */
-  public static String buildUserQuery(String queryParts[]) throws Throwable {
-    if (queryParts == null || queryParts.length == 0) return "";
-
-    for (int i = 0; i < queryParts.length; i++) {
-      int po = queryParts[i].indexOf('=');
-      if (po >= 0)
-        queryParts[i] =
-            SSR.minimalPercentEncode(queryParts[i].substring(0, po))
-                + "="
-                + SSR.minimalPercentEncode(queryParts[i].substring(po + 1));
-      else queryParts[i] = SSR.minimalPercentEncode(queryParts[i]);
-    }
-    return String2.toSVString(queryParts, "&", false);
-  }
-
-  /**
    * This returns the pngInfo file name for a request.
    *
    * @param loggedInAs
@@ -12938,7 +12828,6 @@ public abstract class EDD {
     StringBuilder results = new StringBuilder();
     // Math2.gcAndWait("EDD (between tests)"); Math2.gcAndWait("EDD (between tests)"); //used in
     // development, before getMemoryInUse
-    long memory = Math2.getMemoryInUse();
 
     if (clearCache) EDD.deleteCachedDatasetInfo(tDatasetID);
 
@@ -12986,18 +12875,6 @@ public abstract class EDD {
       }
     }
 
-    // memory
-    if (false) { // enabled when testing
-      Math2.gcAndWait("EDD (between tests)");
-      Math2.gcAndWait("EDD (between tests)"); // Used in development.  Before getMemoryInUse().
-      memory = Math2.getMemoryInUse() - memory;
-      String2.log(
-          "\n*** DasDds: memoryUse="
-              + (memory / 1024)
-              + " KB\nPress CtrlBreak in console window to generate hprof heap info.");
-      String2.pressEnterToContinue();
-    }
-
     return results.toString();
   }
 
@@ -13008,15 +12885,6 @@ public abstract class EDD {
    */
   public static void testVerboseOn() {
     testVerbose(true);
-  }
-
-  /**
-   * This sets verbose=true and reallyVerbose=true for this class and related clases, for tests.
-   *
-   * @throws Throwable if trouble
-   */
-  public static void testVerboseOff() {
-    testVerbose(false);
   }
 
   /**

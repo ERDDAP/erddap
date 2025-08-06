@@ -66,15 +66,6 @@ public class PipeToStringArray extends PipeTo {
   }
 
   /**
-   * This returns the StringArray with the info from the inputStream.
-   *
-   * @return the StringArray with the info from the inputStream
-   */
-  public String[] getStringArray() {
-    return arrayList.toArray(new String[0]);
-  }
-
-  /**
    * This returns a String with the info from the inputStream.
    *
    * @return a String with the info from the inputStream

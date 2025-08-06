@@ -63,7 +63,6 @@ La demande de compression est facultative, mais les réponses compressées sont 
 <acronyms>Acronymes</acronyms>
 <addConstraints>Vous pouvez ajouter des contraintes de type tabledap aux requêtes adressées à cette page Web,
 Par exemple,</addConstraints>
-<addVarWhereAttName>Facultatif : Spécifiez un nom d&#39;attribut.</addVarWhereAttName>
 <addVarWhereAttValue>Facultatif : Spécifiez une valeur d&#39;attribut.</addVarWhereAttValue>
 <addVarWhere><![CDATA[
 
@@ -296,9 +295,6 @@ Ensuite, vous pouvez cliquer sur une catégorie pour voir une liste d&#39;ensemb
 <categorySearchHtml><![CDATA[
 Choisissez un(e) <kbd>{0}</kbd>
 ]]></categorySearchHtml>
-<categorySearchDifferentHtml><![CDATA[
-Recherchez des ensembles de données avec une <kbd>&category;</kbd>
-]]></categorySearchDifferentHtml>
 <categoryClickHtml>Cliquez sur une catégorie (une valeur d&#39;attribut) pour voir une liste d&#39;ensembles de données pertinents.</categoryClickHtml>
 <categoryNotAnOption>Lorsque l&#39;attribut=&quot;{0}&quot;, la valeur=&quot;{1}&quot; n&#39;est pas une option.</categoryNotAnOption>
 <caughtInterrupted>attrapé currentThread().isInterrupted().</caughtInterrupted>
@@ -1793,9 +1789,6 @@ Chaque ligne représente un échantillon différent des données (par exemple, �
 
 ]]></dafTableTooltip>
 <dasTitle>La structure des attributs de l&#39;ensemble de données (.das) pour cet ensemble de données</dasTitle>
-
-<!--  Le message à afficher si les données ne peuvent pas être téléchargées (par exemple, SeaWiFS &lt;=14 jours).  -->
-<dataAccessNotAllowed>[Désolé. Ces données ne peuvent pas être téléchargées.]</dataAccessNotAllowed>
 <databaseUnableToConnect>Impossible de se connecter à la base de données.</databaseUnableToConnect>
 <dataProviderForm>Formulaire du fournisseur de données</dataProviderForm>
 <dataProviderFormP1>Formulaire du fournisseur de données - Partie 1</dataProviderFormP1>
@@ -2121,10 +2114,6 @@ Cliquez sur &widgetSubmitButton; pour envoyer ces informations à l&#39;administ
 <br>Veuillez résoudre ces problèmes, puis « Soumettre » à nouveau cette partie du formulaire.
 
 ]]></dpf_fixProblem>
-<dpf_yourName>votre nom</dpf_yourName>
-<dpf_emailAddress>Adresse e-mail</dpf_emailAddress>
-<dpf_Timestamp>Horodatage</dpf_Timestamp>
-<dpf_frequency>Fréquence</dpf_frequency>
 <dpf_title>titre</dpf_title>
 <dpf_titleTooltip><![CDATA[
 
@@ -2203,12 +2192,6 @@ Ceci est la licence et la clause de non-responsabilité pour l&#39;utilisation d
 <br><kbd>
 
 ]]></dpf_licenseTooltip>
-<dpf_howYouStoreData><![CDATA[
-
-<br>• Erreur :
-Veuillez préciser (ci-dessous) comment vos données quadrillées ou tabulaires sont stockées.
-
-]]></dpf_howYouStoreData>
 <dpf_provideIfAvailable>Veuillez fournir les informations si elles sont disponibles pour votre ensemble de données.</dpf_provideIfAvailable>
 <dpf_acknowledgement>reconnaissance</dpf_acknowledgement>
 <dpf_acknowledgementTooltip><![CDATA[
@@ -2510,10 +2493,7 @@ L&#39;horodatage de cette soumission d&#39;ensemble de données est &tTimestamp;
 <dtWMS>Cliquez pour en savoir plus sur la création de cartes à partir de ces données via le service de cartographie Web de cet ensemble de données.</dtWMS>
 <EasierAccessToScientificData>Un accès facilité aux données scientifiques</EasierAccessToScientificData>
 
-<!--  Les messages EDD sont affichés sur les formulaires d&#39;accès aux données tabledap et griddap.  -->
-<EDDClickOnSubmitHtml><![CDATA[
-Cliquez sur <kbd>Submit</kbd> .
-]]></EDDClickOnSubmitHtml>
+<!--Les messages d'EDD sont affichés sur les formulaires d'accès aux données déposés et sur les formulaires d'accès aux données maillées.-->
 <EDDDatasetID>ID de l&#39;ensemble de données</EDDDatasetID>
 <EDDFgdc>FGDC</EDDFgdc>
 <EDDFgdcMetadata>Métadonnées FGDC-STD-001-1998</EDDFgdcMetadata>
@@ -2526,9 +2506,7 @@ Cliquez sur <kbd>Submit</kbd> .
 <EDDInformation>Information</EDDInformation>
 <EDDSummary>Résumé</EDDSummary>
 <EDDDatasetTitle>Titre de l&#39;ensemble de données</EDDDatasetTitle>
-<EDDDownloadData>Télécharger les données</EDDDownloadData>
 <EDDMakeAGraph>Faire un graphique</EDDMakeAGraph>
-<EDDMakeAMap>Faire une carte</EDDMakeAMap>
 <EDDMinimum>Le minimum</EDDMinimum>
 <EDDMaximum>Maximum</EDDMaximum>
 <EDDFileType>Type de fichier:</EDDFileType>
@@ -2596,8 +2574,6 @@ Il crée l&#39;URL pour vous.
 ]]></EDDGridDownloadDataTooltip>
 <EDDGridDimension>Dimensions</EDDGridDimension>
 <EDDGridDimensionRanges>Dimensions</EDDGridDimensionRanges>
-<EDDGridFirst>D&#39;abord</EDDGridFirst>
-<EDDGridLast>Dernier</EDDGridLast>
 <EDDGridStart>Commencer</EDDGridStart>
 <EDDGridStop>Arrêt</EDDGridStop>
 <EDDGridStartStopTooltip><![CDATA[
@@ -2641,14 +2617,6 @@ il s&#39;agit de l&#39;espacement moyen entre les valeurs d&#39;une dimension (d
 Un espacement légèrement étrange et inégal indique souvent qu&#39;un ou quelques fichiers sont manquants ou défectueux dans un ensemble de données par ailleurs parfaitement espacé.
 
 ]]></EDDGridSpacingTooltip>
-<EDDGridDimensionFirstTooltip><![CDATA[
-Pour information :
-c&#39;est la première valeur d&#39;une dimension.
-]]></EDDGridDimensionFirstTooltip>
-<EDDGridDimensionLastTooltip><![CDATA[
-Pour information :
-c&#39;est la dernière valeur d&#39;une dimension.
-]]></EDDGridDimensionLastTooltip>
 <EDDGridDownloadTooltip><![CDATA[
 Sélectionnez les variables que vous souhaitez télécharger :
 <br>* Pour télécharger uniquement les données de dimension :
@@ -2922,10 +2890,6 @@ Par exemple:
 
 <!--  Ces messages s&#39;affichent lorsqu&#39;un message d&#39;erreur s&#39;affiche.  -->
 <errorTitle>Erreur</errorTitle>
-<errorRequestUrl>URL de votre demande :</errorRequestUrl>
-<errorRequestQuery>Votre requête :</errorRequestQuery>
-<errorTheError>L&#39;erreur:</errorTheError>
-<errorCopyFrom>Impossible de copier depuis {0}.</errorCopyFrom>
 <errorFileNotFound>Fichier introuvable : {0} .</errorFileNotFound>
 <errorFileNotFoundImage>Fichier introuvable dans le cache. Recréez l&#39;image et réessayez.</errorFileNotFoundImage>
 <errorInternal>Erreur interne:</errorInternal>
@@ -2959,7 +2923,6 @@ Par exemple:
 <fileHelpTable_esriCsv>Téléchargez un fichier ISO_8859_1 .csv pour ArcGIS 9.x d&#39;ESRI et versions antérieures (colonnes de date et d&#39;heure séparées).</fileHelpTable_esriCsv>
 <fileHelp_fgdc>Affichez les métadonnées UTF-8 FGDC .xml de l&#39;ensemble de données.</fileHelp_fgdc>
 <fileHelp_geoJson>Téléchargez les données de longitude, de latitude et d’autres colonnes sous forme de fichier UTF-8 GeoJSON .json.</fileHelp_geoJson>
-<fileHelp_graph>Afficher une page Web Créer un graphique.</fileHelp_graph>
 <fileHelpGrid_help>Afficher une page Web avec une description de Griddap.</fileHelpGrid_help>
 <fileHelpTable_help>Afficher une page Web avec une description de tabledap.</fileHelpTable_help>
 <fileHelp_html>Affichez un formulaire d&#39;accès aux données HTML de style OPeNDAP.</fileHelp_html>
@@ -2990,7 +2953,6 @@ Par exemple:
 <fileHelpTable_odvTxt>Téléchargez la longitude, la latitude, l&#39;heure et les autres colonnes sous forme de fichier de feuille de calcul générique ISO-8859-1 ODV (.txt).</fileHelpTable_odvTxt>
 <fileHelp_parquet>Télécharger comme un dossier de parquet. Les métadonnées contiennent des noms de colonnes (&quot;column_names&quot;) et des unités (&quot;column_units&quot;).</fileHelp_parquet>
 <fileHelp_parquet_with_meta>Télécharger comme un fichier parquet avec des métadonnées détaillées.</fileHelp_parquet_with_meta>
-<fileHelp_subset>Affichez un formulaire HTML qui utilise la recherche à facettes pour simplifier la sélection de sous-ensembles de données.</fileHelp_subset>
 <fileHelp_timeGaps>Affichez une liste UTF-8 des écarts dans les valeurs de temps qui sont supérieurs à l&#39;écart médian.</fileHelp_timeGaps>
 <fileHelp_tsv>Téléchargez un tableau de texte ISO-8859-1 séparé par des tabulations (ligne 1 : noms ; ligne 2 : unités ; ISO 8601 fois).</fileHelp_tsv>
 <fileHelp_tsvp>Téléchargez un fichier ISO-8859-1 .tsv avec la ligne 1 : nom (unités). Les temps sont des chaînes ISO 8601.</fileHelp_tsvp>
@@ -3010,7 +2972,6 @@ Par exemple:
 
 <!--  Le libellé de la description et de l&#39;avertissement est vague pour autoriser un ou plusieurs ensembles de données.  -->
 <filesDescription>Le système « fichiers » d&#39;ERDDAP vous permet de parcourir un système de fichiers virtuel et de télécharger des fichiers de données sources.</filesDescription>
-<filesSort>Cliquez sur un en-tête (par exemple, Nom, Dernière modification, Taille) pour modifier l&#39;ordre de tri.  &quot;Dernière modification&quot; utilise le fuseau horaire zoulou.</filesSort>
 <filesWarning><![CDATA[
 
 Les métadonnées et les noms de variables de l&#39;ensemble de données dans ces fichiers sources peuvent être différents de ceux ailleurs dans ERDDAP ! Vous préférerez peut-être utiliser le formulaire d&#39;accès aux données de l&#39;ensemble de données.
@@ -3449,12 +3410,6 @@ Cette ligne aura la somme de chacune des autres variables.
 Par exemple, orderByMax(&quot;stationID, time/1day&quot;) créera un groupe pour chaque stationID pour chaque jour, calculera et renverra la somme des autres variables.
 
 ]]></functionOrderByTooltip>
-<functionOrderByExtra><![CDATA[
-
-Pour orderByClosest, spécifiez ici l&#39;intervalle (en utilisant le format n[timeUnits], par exemple 1 heure).
-<br>Pour orderByLimit, spécifiez ici le nombre maximum de lignes par groupe.
-
-]]></functionOrderByExtra>
 <functionOrderBySort><![CDATA[
 
 Cet emplacement est l&#39;emplacement {0} important orderBy ....
@@ -3466,7 +3421,6 @@ Cet emplacement est l&#39;emplacement {0} important orderBy ....
 <functionOrderBySort3>troisième plus</functionOrderBySort3>
 <functionOrderBySort4>quatrième plus</functionOrderBySort4>
 <functionOrderBySortLeast>moins</functionOrderBySortLeast>
-<functionOrderBySortRowMax>Seule la ligne avec la valeur maximale sera conservée.</functionOrderBySortRowMax>
 <generatedAt>Cette page Web a été générée à {0} .</generatedAt>
 <geoServicesDescription><![CDATA[
 
@@ -3766,7 +3720,6 @@ La valeur par défaut est rien (inutilisé).
 <!--  par exemple, {0}=WMS ou listAll  -->
 <listOfDatasets>Liste de {0} ensembles de données</listOfDatasets>
 <listAll>Tous</listAll>
-<LogIn>Se connecter</LogIn>
 <login>se connecter</login>
 <loginHTML><![CDATA[
 
@@ -3825,22 +3778,15 @@ Toute personne disposant d&#39;un compte de messagerie Google ou ORCID iD peut s
 Seules les personnes ayant pris des dispositions avec l&#39;administrateur de cet ERDDAP peuvent se connecter.
 
 ]]></loginDescribeOpenID>
-<loginErddap>Connectez-vous à l&#39;ERDDAP</loginErddap>
 <loginCanNot>Cet ERDDAP n&#39;est pas configuré pour permettre aux utilisateurs de se connecter.</loginCanNot>
 <loginAreNot>Vous n&#39;êtes pas connecté.</loginAreNot>
 <loginToLogIn>Ouvrir une session</loginToLogIn>
-<loginEmailAddress>adresse e-mail</loginEmailAddress>
 <loginYourEmailAddress>Votre adresse e-mail</loginYourEmailAddress>
 <loginUserName>Nom d&#39;utilisateur</loginUserName>
 <loginPassword>Mot de passe</loginPassword>
 <loginUserNameAndPassword>Nom d&#39;utilisateur et mot de passe</loginUserNameAndPassword>
 <loginGoogleSignIn>Authentifiez-vous avec votre compte Google.</loginGoogleSignIn>
 <loginOrcidSignIn>Authentifiez-vous avec votre ORCID identifiant.</loginOrcidSignIn>
-<loginOpenID>Connectez-vous avec votre URL OpenID</loginOpenID>
-<loginOpenIDOr>Ou connectez-vous à votre compte existant (non OpenID) sur</loginOpenIDOr>
-<loginOpenIDCreate>Ou créez une URL OpenID sur</loginOpenIDCreate>
-<loginOpenIDFree>Ils sont tous gratuits !</loginOpenIDFree>
-<loginOpenIDSame>Assurez-vous que vous êtes connecté avec exactement la même URL OpenID que celle que vous avez donnée à l&#39;administrateur ERDDAP.</loginOpenIDSame>
 <loginAs>Vous êtes connecté en tant que {0} .</loginAs>
 <loginPartwayAs>Vous êtes connecté en cours en tant que {0} .</loginPartwayAs>
 <loginFailed>ERREUR : échec de la connexion</loginFailed>
@@ -3955,7 +3901,6 @@ Il est possible que certains ensembles de données ne soient pas disponibles act
 ]]></loginPublicAccess>
 <LogOut>Se déconnecter</LogOut>
 <logout>Se déconnecter</logout>
-<logoutOpenID>Déconnectez-vous de votre fournisseur OpenID.</logoutOpenID>
 
 <!--  déconnexionSuccès dernière mise à jour 2019-12-19  -->
 <logoutSuccess>Vous vous êtes déconnecté avec succès. 
@@ -4256,10 +4201,6 @@ Mais dods.dap.DODSException n&#39;a pas d&#39;exception pertinente.
 Mieux vaut renvoyer un fichier vide ? Mais .nc et autres n&#39;autorisent pas les données de longueur nulle.
  -->
 <MustBeThereIsNoData>Votre requête n&#39;a produit aucun résultat correspondant.</MustBeThereIsNoData>
-
-<!--  De nombreux types de fichiers imposent une limite à la quantité de données qu&#39;un fichier peut contenir (par exemple, 2 Go).  -->
-<MustBeNotNull>{0} ne doit pas être nul.</MustBeNotNull>
-<MustBeNotEmpty>{0} ne doit pas être une chaîne vide.</MustBeNotEmpty>
 <MustBeInternalError>Erreur interne</MustBeInternalError>
 <MustBeOutOfMemoryError>Erreur de mémoire insuffisante</MustBeOutOfMemoryError>
 
@@ -4300,11 +4241,9 @@ Mieux vaut renvoyer un fichier vide ? Mais .nc et autres n&#39;autorisent pas le
 <noXxxNoLonIn180>il n&#39;y a pas de valeurs de longitude entre -180 et 360</noXxxNoLonIn180>
 <noXxxNoNonString>il n&#39;y a pas de variables non-String</noXxxNoNonString>
 <noXxxNo2NonString>il n&#39;y a pas au moins deux variables non-String</noXxxNo2NonString>
-<noXxxNoStation>cdmDataType={0} n&#39;est pas &quot;TimeSeries&quot;</noXxxNoStation>
 <noXxxNoStationID>il n&#39;y a pas de variable de type stationID</noXxxNoStationID>
 <noXxxNoSubsetVariables>subsetVariables n&#39;a pas été spécifié</noXxxNoSubsetVariables>
 <noXxxNoOLLSubsetVariables>subsetVariables n&#39;a pas les variables d&#39;offre, de longitude et de latitude</noXxxNoOLLSubsetVariables>
-<noXxxNoMinMax>le serveur de données source ne fournit pas de valeurs minimales et maximales</noXxxNoMinMax>
 <noXxxItsGridded>c&#39;est un ensemble de données maillé</noXxxItsGridded>
 <noXxxItsTabular>c&#39;est un ensemble de données tabulaire</noXxxItsTabular>
 <oneRequestAtATime>Veuillez faire une seule demande à la fois.</oneRequestAtATime>
@@ -4331,7 +4270,6 @@ Les développeurs de programmes informatiques et de pages Web Java Scriptées pe
 <options>Possibilités</options>
 <orAListOfValues>ou une liste de valeurs</orAListOfValues>
 <orRefineSearchWith>Ou bien, affinez cette recherche avec</orRefineSearchWith>
-<orSearchWith>Ou recherchez des ensembles de données avec</orSearchWith>
 <orComma>Ou,</orComma>
 <otherFeatures>Autres caractéristiques</otherFeatures>
 <outOfDateDatasets>Ensembles de données obsolètes</outOfDateDatasets>
@@ -4391,7 +4329,6 @@ Il existe
     title="Ce lien vers un site Web externe ne constitue pas une approbation."></a> .
 
 ]]></percentEncode>
-<pickADataset>Choisissez un ensemble de données</pickADataset>
 
 <!--  Messages liés aux recherches d’ensembles de données basées sur le protocole.  -->
 <protocolSearchHtml>Rechercher des ensembles de données par protocole</protocolSearchHtml>
@@ -4408,7 +4345,6 @@ Différents protocoles conviennent à différents types de données et à diffé
 <queryError1Var>Le format {0} ne peut gérer qu&#39;une seule variable de données.</queryError1Var>
 <queryError2Var>Les requêtes au format {0} doivent inclure au moins deux variables numériques (pour les axes X et Y).</queryError2Var>
 <queryErrorActualRange>{0} se trouve en dehors de la plage_actuelle de la variable : {1} à {2}</queryErrorActualRange>
-<queryErrorAscending>Pour les requêtes {0}, les valeurs de longitude et de latitude doivent être croissantes.</queryErrorAscending>
 <queryErrorAdjusted>Pour les requêtes {0}, les valeurs de longitude ajustées ({1} à {2}) doivent être comprises entre -180 et 180.</queryErrorAdjusted>
 <queryErrorConstraintNaN>Constraint value=&quot;{0}&quot; est évalué à NaN.  Si vous voulez vraiment NaN, écrivez-le comme NaN.</queryErrorConstraintNaN>
 <queryErrorEqualSpacing>Pour les requêtes {0}, l&#39;espacement en longitude ({1}) doit être égal à l&#39;espacement en latitude ({2}).</queryErrorEqualSpacing>
@@ -4440,7 +4376,6 @@ Différents protocoles conviennent à différents types de données et à diffé
 <queryErrorGridNoAxisVar>Une requête de variable de données Griddap ne peut pas inclure de variable d&#39;axe ({0}).</queryErrorGridNoAxisVar>
 <queryErrorGridNoDataVar>Une requête de variable d&#39;axe Griddap ne peut pas inclure de variable de données ({0}).</queryErrorGridNoDataVar>
 <queryErrorGridNotIdentical>La contrainte {0} pour variable={1} n&#39;est pas identique à la contrainte {2} pour variable={2}.  Si vous avez besoin de différents sous-ensembles, effectuez des demandes distinctes.</queryErrorGridNotIdentical>
-<queryErrorGridSLessS>StartIndex={0} est supérieur à StopIndex={1}.</queryErrorGridSLessS>
 <queryErrorLastEndP>{0} commence par &quot;(&quot;, mais ne se termine pas par &quot;)&quot;.</queryErrorLastEndP>
 <queryErrorLastExpected>&quot;last&quot; était attendu au début de {0}.</queryErrorLastExpected>
 <queryErrorLastUnexpected>Caractère inattendu après &quot;dernier&quot; dans {0}.</queryErrorLastUnexpected>
@@ -4684,7 +4619,6 @@ Voir
 <SOSDocumentation>Documentation SOS d&#39;ERDDAP</SOSDocumentation>
 <WCSDocumentation>Documentation WCS d&#39;ERDDAP</WCSDocumentation>
 <WMSDocumentation>Documentation WMS d&#39;ERDDAP</WMSDocumentation>
-<findOutChange>afin que votre programme informatique puisse savoir si un ensemble de données a changé.</findOutChange>
 <requestFormatExamplesHtml><![CDATA[
 
 (par exemple,
@@ -5135,14 +5069,6 @@ Demandez plutôt un e-mail avec une
 
 ]]></subscriptionRemoveSuccess>
 <subscriptionRSS>Abonnez-vous au flux RSS de cet ensemble de données...</subscriptionRSS>
-<subscriptionsNotAvailable><![CDATA[
-
-<p><strong>Désolé.
-Le système d&#39;abonnement par e-mail/URL n&#39;est pas disponible sur cette installation ERDDAP .</strong>
-<br>Pensez plutôt à utiliser le service d’abonnement
-<a rel="help" href="{0}/information.html#subscriptions">RSS</a> .
-
-]]></subscriptionsNotAvailable>
 <subscriptionUrlHtml><![CDATA[
 
 <kbd>URL/action</kbd> est une URL facultative ERDDAP contactera au lieu de vous envoyer un e-mail.
@@ -5407,13 +5333,6 @@ Pour afficher {0},
 <!--  La balise suivante est précédée de 1 des 2 balises précédentes. 
   {0} est subsetViewSelectDistintCombos ou subsetViewSelectRelatedCounts.  -->
 <subsetWhenCounts>{0} pour les {1} valeurs de &quot;{2}&quot; sont :</subsetWhenCounts>
-<subsetComboClickSelect><![CDATA[
-
-Pour afficher le nombre de combinaisons distinctes des variables répertoriées ci-dessus,
-<br>vérifiez <kbd>{0} :
-{1}</kbd> ci-dessus et sélectionnez une valeur pour l&#39;une des variables ci-dessus.
-
-]]></subsetComboClickSelect>
 <subsetNVariableCombos>Au total, il existe {0} lignes de combinaisons distinctes des variables répertoriées ci-dessus.</subsetNVariableCombos>
 <subsetShowingAllRows>Toutes les lignes sont présentées ci-dessus.</subsetShowingAllRows>
 <subsetShowingNRows>Les {0} premières lignes sont affichées ci-dessus.  Les {1} lignes restantes ne sont pas affichées.</subsetShowingNRows>
@@ -6176,7 +6095,6 @@ Une fois que vous êtes membre, vous pouvez y poster votre question ou effectuer
 Les opinions exprimées sur cette page Web sont celles de Bob Simons et ne reflètent pas nécessairement la position du gouvernement ou de la National Oceanic and Atmospheric Administration .
 
 ]]></theLongDescriptionHtml>
-<Then>Alors</Then>
 <twoClickMapDefaultTooltip>Spécifiez un rectangle en cliquant sur deux coins diagonaux.  Répétez l&#39;opération si nécessaire.</twoClickMapDefaultTooltip>
 
 <!--  Il s&#39;agit d&#39;un moyen de remplacer le convertisseur Standardize UDUnits d&#39;ERDDAP.
@@ -7460,7 +7378,6 @@ Cela ne peut pas être rien. Alors si vous ne voulez rien, entrez un mot charabi
 ne jamais être un nom d&#39;attribut.  -->
 <updateUrlsSkipAttributes>URLsource</updateUrlsSkipAttributes>
 <variableNames>Noms des variables</variableNames>
-<viewAllDatasetsHtml>Afficher une liste de tous les ensembles de données</viewAllDatasetsHtml>
 <waitThenTryAgain>Il y a eu un problème (temporaire ?).  Attendez une minute, puis réessayez.  (Dans un navigateur, cliquez sur le bouton Recharger.)</waitThenTryAgain>
 <warning>AVERTISSEMENT!</warning>
 <units>Unités</units>

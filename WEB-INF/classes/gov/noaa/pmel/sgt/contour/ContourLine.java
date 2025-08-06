@@ -106,19 +106,9 @@ public class ContourLine {
     attr_ = attr;
   }
 
-  /** Set the <code>ContourLineAttribute</code> */
-  public void setContourLineAttribute(ContourLineAttribute attr) {
-    attr_ = attr;
-  }
-
   /** Get the <code>ContourLineAttribute</code> */
   public ContourLineAttribute getContourLineAttribute() {
     return attr_;
-  }
-
-  /** Set the <code>DefaultContourLineAttribute</code> */
-  public void setDefaultContourLineAttribute(DefaultContourLineAttribute def) {
-    defaultAttr_ = def;
   }
 
   /** Get the <code>DefaultContourLineAttribute</code> */
@@ -167,26 +157,9 @@ public class ContourLine {
     yTime_ = ytime;
   }
 
-  void setReferenceTime(GeoDate tref) {
-    timeRef_ = tref;
-  }
-
-  /** Get reference time for the time point of the <code>Point2D</code> object. */
-  public GeoDate getReferenceTime() {
-    return timeRef_;
-  }
-
-  void setXTime(boolean time) {
-    xTime_ = time;
-  }
-
   /** Is the x coordinate time? */
   public boolean isXTime() {
     return xTime_;
-  }
-
-  void setYTime(boolean time) {
-    yTime_ = time;
   }
 
   /** Is the y coordinate time? */
@@ -211,11 +184,6 @@ public class ContourLine {
   public void addLabel(int point, SGLabel lab, double hgt, double wid) {
     ContourLabel clab = new ContourLabel(point, lab, hgt, wid);
     conLabels_.add(clab);
-  }
-
-  /** Remove all labels. */
-  public void removeAllLabels() {
-    conLabels_.clear();
   }
 
   /** Used internally by sgt. */

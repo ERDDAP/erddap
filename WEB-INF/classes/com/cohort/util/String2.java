@@ -4,7 +4,6 @@
  */
 package com.cohort.util;
 
-import com.cohort.array.PrimitiveArray;
 import com.cohort.array.StringComparatorIgnoreCase;
 import com.google.common.collect.ImmutableList;
 import java.awt.Toolkit;
@@ -31,7 +30,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 import java.util.Vector;
 import java.util.WeakHashMap;
@@ -1744,30 +1742,6 @@ public class String2 {
   }
 
   /**
-   * This repeatedly replaces the text matched in the capture group with the replacement text.
-   *
-   * @param sb a StringBuilder
-   * @param regex a regular Expression
-   * @param captureGroup a capture in the regex
-   * @param replacement the replacement string
-   * @return sb for convenience
-   */
-  public static StringBuilder regexReplaceAll(
-      final StringBuilder sb,
-      final String regex,
-      final int captureGroup,
-      final String replacement) {
-
-    final Pattern pattern = Pattern.compile(regex);
-    Matcher matcher = pattern.matcher(sb);
-    while (matcher.find()) {
-      sb.replace(matcher.start(1), matcher.end(1), replacement);
-      matcher = pattern.matcher(sb); // sb has changed, so need new matcher
-    }
-    return sb;
-  }
-
-  /**
    * Returns a string where all cases of more than one space are replaced by one space. The string
    * is also trim'd to remove leading and trailing spaces. Also, spaces after { or ( and before ) or
    * } will be removed.
@@ -2476,32 +2450,6 @@ public class String2 {
   }
 
   /**
-   * This creates an ArrayList from an Object[].
-   *
-   * @param objectArray an Object[]
-   * @return arrayList with the objects
-   */
-  public static List<Object> toArrayList(final Object objectArray[]) {
-    final int n = objectArray.length;
-    final ArrayList<Object> al = new ArrayList<>(n);
-    al.addAll(Arrays.asList(objectArray));
-    return al;
-  }
-
-  /**
-   * This creates an ArrayList from an Object[].
-   *
-   * @param objectArray an PrimitiveArray[]
-   * @return arrayList with the objects
-   */
-  public static List<PrimitiveArray> toArrayList(final PrimitiveArray objectArray[]) {
-    final int n = objectArray.length;
-    final ArrayList<PrimitiveArray> al = new ArrayList<>(n);
-    al.addAll(Arrays.asList(objectArray));
-    return al;
-  }
-
-  /**
    * This returns the standard Help : About message.
    *
    * @return the standard Help : About message
@@ -2571,22 +2519,6 @@ public class String2 {
    *     is null. null elements are represented as "[null]".
    */
   public static String toCSSVString(final ImmutableList<String> al) {
-    return toSVString(al.toArray(), ", ", false);
-  }
-
-  /**
-   * Generates a Comma-Space-Separated-Value (CSSV) string.
-   *
-   * <p>CHANGED: before 2011-03-06, this didn't do anything special for strings with internal commas
-   * or quotes. Now it uses toJson for that string.
-   *
-   * <p>CHANGED: before 2011-09-04, this was called toCSVString.
-   *
-   * @param al an arrayList of objects
-   * @return a CSV String with the values with ", " after all but the last value. Returns null if ar
-   *     is null. null elements are represented as "[null]".
-   */
-  public static String toCSSVString(final List<Object> al) {
     return toSVString(al.toArray(), ", ", false);
   }
 
@@ -3713,38 +3645,6 @@ public class String2 {
   }
 
   /**
-   * This converts an ArrayList with Integers into an int[].
-   *
-   * @param al an Object[]
-   * @return the corresponding int[] (invalid values are converted to Integer.MAX_VALUE). al=null
-   *     returns null.
-   */
-  public static int[] toIntArray(List<Integer> al) {
-    if (al == null) return null;
-    int n = al.size();
-    Math2.ensureMemoryAvailable(4L * n, "String2.toIntArray");
-    int ia[] = new int[n];
-    for (int i = 0; i < n; i++) ia[i] = al.get(i);
-    return ia;
-  }
-
-  /**
-   * This converts an ArrayList with Floats into a float[].
-   *
-   * @param al an Object[]
-   * @return the corresponding float[] (invalid values are converted to Float.NaN). al=null returns
-   *     null.
-   */
-  public static float[] toFloatArray(List<Float> al) {
-    if (al == null) return null;
-    int n = al.size();
-    Math2.ensureMemoryAvailable(4L * n, "String2.toFloatArray");
-    float fa[] = new float[n];
-    for (int i = 0; i < n; i++) fa[i] = al.get(i);
-    return fa;
-  }
-
-  /**
    * This converts an ArrayList with Doubles into a double[].
    *
    * @param al an Object[]
@@ -4689,25 +4589,6 @@ public class String2 {
   public static String noLongLinesAtSpace(String s, int maxLength, String spaces) {
     if (s.length() <= maxLength) return s;
     return noLongLinesAtSpace(new StringBuilder(s), maxLength, spaces).toString();
-  }
-
-  /**
-   * This returns a string with the keys and values of the Map (sorted by the keys, ignoreCase).
-   *
-   * @param map (keys and values are objects with good toString methods). If it needs to be
-   *     thead-safe, use ConcurrentHashMap.
-   * @return a string with the sorted (ignoreCase) keys and their values ("key1: value1\nkey2:
-   *     value2\n")
-   */
-  public static String getKeysAndValuesString(Map<String, String> map) {
-    ArrayList<String> al = new ArrayList<>();
-
-    // synchronize so protected from changes in other threads
-    for (Entry<String, String> entry : map.entrySet()) {
-      al.add(entry.getKey() + ": " + entry.getValue());
-    }
-    al.sort(STRING_COMPARATOR_IGNORE_CASE);
-    return toNewlineString(al.toArray(new String[0]));
   }
 
   /**

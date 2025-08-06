@@ -128,14 +128,6 @@ public class TableTests {
     Test.ensureEqual(stats[PrimitiveArray.STATS_MIN], -3, "calculateStats min");
     Test.ensureEqual(stats[PrimitiveArray.STATS_MAX], -1, "calculateStats max");
 
-    // forceLonPM180(boolean pm180)
-    table = getTestTable(true, true);
-    PrimitiveArray lonAr = table.getColumn(1);
-    Table.forceLonPM180(lonAr, false);
-    Test.ensureEqual(lonAr.toString(), "357, 358, 359, 2147483647", "forceLonPM180f");
-    Table.forceLonPM180(lonAr, true);
-    Test.ensureEqual(lonAr.toString(), "-3, -2, -1, 2147483647", "forceLonPM180t");
-
     // clear
     table = getTestTable(true, true);
     table.clear();
@@ -196,16 +188,6 @@ public class TableTests {
         "");
     Test.ensureEqual(table.getColumnName(4), "Long Data", "");
     Test.ensureEqual(table.columnAttributes(4).getString("units"), "longs", "");
-
-    // average
-    table = new Table();
-    DoubleArray da = new DoubleArray(new double[] {10, 20, 30, 40, 50});
-    table.addColumn("a", da);
-    da = new DoubleArray(new double[] {0, 0, 1, 2, 2});
-    table.addColumn("b", da);
-    table.average(new int[] {1});
-    Test.ensureEqual(table.getColumn(0).toString(), "15.0, 30.0, 45.0", "");
-    Test.ensureEqual(table.getColumn(1).toString(), "0.0, 1.0, 2.0", "");
   }
 
   @org.junit.jupiter.api.Test
@@ -732,7 +714,9 @@ public class TableTests {
     Table table = getTestTable(true, true);
     table.setColumnName(2, "latitude"); // to test case-insensitive
 
-    table.sortColumnsByName();
+    StringArray tColNames = new StringArray(table.columnNames);
+    tColNames.sortIgnoreCase();
+    table.reorderColumns(tColNames, false);
 
     // byte
     Test.ensureEqual(table.getColumnName(0), "Byte Data", "");
@@ -2193,41 +2177,6 @@ public class TableTests {
     // ensure lut unchanged
     results = lut.toString();
     Test.ensureEqual(results, expectedLut, "lut 2 results=\n" + results);
-  }
-
-  /** test update() */
-  @org.junit.jupiter.api.Test
-  void testUpdate() throws Exception {
-    Table table = new Table();
-    table.addColumn("zero", PrimitiveArray.csvFactory(PAType.STRING, "a,    b,  c,  d,   ,  e"));
-    table.addColumn("one", PrimitiveArray.csvFactory(PAType.INT, "10,  20, 30, 40,   , 50"));
-    table.addColumn("two", PrimitiveArray.csvFactory(PAType.INT, "111,222,333,444,-99,555"));
-    table.addColumn("three", PrimitiveArray.csvFactory(PAType.DOUBLE, "1.1,2.2,3.3,4.4,4.6,5.5"));
-    table.columnAttributes(2).add("missing_value", -99);
-
-    // otherTable rows: matches, matches, partial match, new
-    // otherTable cols: keys, matches (but different type), doesn't match
-    Table otherTable = new Table();
-    otherTable.addColumn("one", PrimitiveArray.csvFactory(PAType.INT, " 50,   , 11,  5"));
-    otherTable.addColumn("zero", PrimitiveArray.csvFactory(PAType.STRING, "  e,   ,  a,  f"));
-    otherTable.addColumn("three", PrimitiveArray.csvFactory(PAType.INT, " 11, 22, 33, 44"));
-    otherTable.addColumn("five", PrimitiveArray.csvFactory(PAType.INT, "  1,  2,  3,  4"));
-
-    int nMatched = table.update(new String[] {"zero", "one"}, otherTable);
-    String results = table.dataToString();
-    String expected =
-        "zero,one,two,three\n"
-            + "a,10,111,1.1\n"
-            + "b,20,222,2.2\n"
-            + "c,30,333,3.3\n"
-            + "d,40,444,4.4\n"
-            + ",,-99,22.0\n"
-            + "e,50,555,11.0\n"
-            + "a,11,-99,33.0\n"
-            + // -99 is from missing_value
-            "f,5,-99,44.0\n"; // -99 is from missing_value
-    Test.ensureEqual(results, expected, "update results=\n" + results);
-    Test.ensureEqual(nMatched, 2, "nMatched");
   }
 
   /** This tests orderByMax, orderByMin, orderByMinMax */

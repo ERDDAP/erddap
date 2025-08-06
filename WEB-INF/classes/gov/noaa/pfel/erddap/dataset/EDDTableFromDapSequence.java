@@ -27,6 +27,7 @@ import gov.noaa.pfel.erddap.dataset.metadata.LocalizedAttributes;
 import gov.noaa.pfel.erddap.handlers.EDDTableFromDapSequenceHandler;
 import gov.noaa.pfel.erddap.handlers.SaxHandlerClass;
 import gov.noaa.pfel.erddap.util.EDMessages;
+import gov.noaa.pfel.erddap.util.EDMessages.Message;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.*;
 import java.io.ByteArrayInputStream;
@@ -793,7 +794,7 @@ public class EDDTableFromDapSequence extends EDDTable {
       throw t instanceof WaitThenTryAgainException
           ? t
           : new WaitThenTryAgainException(
-              EDStatic.simpleBilingual(language, EDStatic.messages.waitThenTryAgainAr)
+              EDStatic.simpleBilingual(language, Message.WAIT_THEN_TRY_AGAIN)
                   + "\n("
                   + EDStatic.messages.errorFromDataSource
                   + tToString

@@ -22,6 +22,7 @@ import gov.noaa.pfel.erddap.dataset.metadata.LocalizedAttributes;
 import gov.noaa.pfel.erddap.handlers.EDDTableFromAsciiServiceHandler;
 import gov.noaa.pfel.erddap.handlers.SaxHandlerClass;
 import gov.noaa.pfel.erddap.util.EDMessages;
+import gov.noaa.pfel.erddap.util.EDMessages.Message;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.DataVariableInfo;
 import java.io.BufferedReader;
@@ -237,23 +238,23 @@ public class EDDTableFromAsciiServiceNOS extends EDDTableFromAsciiService {
       throw new SimpleException(
           EDStatic.bilingual(
               language,
-              EDStatic.messages.queryErrorAr[0]
+              EDStatic.messages.get(Message.QUERY_ERROR, 0)
                   + "For this dataset, all queries must include a \"datum=\" constraint.",
-              EDStatic.messages.queryErrorAr[language]
+              EDStatic.messages.get(Message.QUERY_ERROR, language)
                   + "For this dataset, all queries must include a \"datum=\" constraint."));
     if (Double.isNaN(beginSeconds))
       throw new SimpleException(
           EDStatic.bilingual(
               language,
-              EDStatic.messages.queryErrorAr[0] + "Missing time>= constraint.",
-              EDStatic.messages.queryErrorAr[language] + "Missing time>= constraint."));
+              EDStatic.messages.get(Message.QUERY_ERROR, 0) + "Missing time>= constraint.",
+              EDStatic.messages.get(Message.QUERY_ERROR, language) + "Missing time>= constraint."));
     if (Double.isNaN(endSeconds))
       throw new SimpleException(
           EDStatic.bilingual(
               language,
-              EDStatic.messages.queryErrorAr[0]
+              EDStatic.messages.get(Message.QUERY_ERROR, 0)
                   + "If present, the time<= constraint must be valid.",
-              EDStatic.messages.queryErrorAr[language]
+              EDStatic.messages.get(Message.QUERY_ERROR, language)
                   + "If present, the time<= constraint must be valid."));
     String beginTime =
         Calendar2.epochSecondsToIsoStringTZ(beginSeconds).substring(0, 16); // no seconds

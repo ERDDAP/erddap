@@ -25,6 +25,7 @@ import gov.noaa.pfel.erddap.dataset.metadata.LocalizedAttributes;
 import gov.noaa.pfel.erddap.handlers.EDDGridLonPM180Handler;
 import gov.noaa.pfel.erddap.handlers.SaxHandlerClass;
 import gov.noaa.pfel.erddap.util.EDMessages;
+import gov.noaa.pfel.erddap.util.EDMessages.Message;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.*;
 import jakarta.servlet.http.HttpServletRequest;
@@ -243,7 +244,7 @@ public class EDDGridLonPM180 extends EDDGrid {
     setGraphsAccessibleTo(tGraphsAccessibleTo);
     if (!tAccessibleViaWMS)
       accessibleViaWMS =
-          String2.canonical(MessageFormat.format(EDStatic.messages.noXxxAr[0], "WMS"));
+          String2.canonical(MessageFormat.format(EDStatic.messages.get(Message.NO_XXX, 0), "WMS"));
     onChange = tOnChange;
     fgdcFile = tFgdcFile;
     iso19115File = tIso19115File;
@@ -500,7 +501,7 @@ public class EDDGridLonPM180 extends EDDGrid {
       if (tChildDataset == null) {
         EDD.requestReloadASAP(localChildDatasetID);
         throw new WaitThenTryAgainException(
-            EDStatic.simpleBilingual(language, EDStatic.messages.waitThenTryAgainAr)
+            EDStatic.simpleBilingual(language, Message.WAIT_THEN_TRY_AGAIN)
                 + "\n(underlying local datasetID="
                 + localChildDatasetID
                 + " not found)");

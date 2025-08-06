@@ -12,7 +12,7 @@
 
 package gov.noaa.pmel.sgt;
 
-import java.awt.*;
+import java.awt.Color;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.Objects;
@@ -31,7 +31,6 @@ public class LineAttribute implements Attribute, Cloneable {
   protected transient PropertyChangeSupport changes_ = new PropertyChangeSupport(this);
 
   private boolean batch_ = false;
-  private boolean local_ = true;
   private boolean modified_ = false;
   private String id_ = null;
   private Color color_ = Color.black;
@@ -180,20 +179,6 @@ public class LineAttribute implements Attribute, Cloneable {
   }
 
   /**
-   * Set mark height. <br>
-   * <strong>Property Change:</strong> <code>markHeightP</code>.
-   *
-   * @param markh mark height
-   */
-  public void setMarkHeightP(double markh) {
-    if (markHeightP_ != markh) {
-      Double tempOld = markHeightP_;
-      markHeightP_ = markh;
-      firePropertyChange("markHeightP", tempOld, markHeightP_);
-    }
-  }
-
-  /**
    * Get mark height
    *
    * @return mark height
@@ -328,22 +313,6 @@ public class LineAttribute implements Attribute, Cloneable {
   }
 
   /**
-   * Set plot mark <br>
-   * <strong>Property Change:</strong> <code>mark</code>.
-   *
-   * @param mark the plot mark
-   */
-  public void setMark(int mark) {
-    if (mark_ != mark) {
-      Integer tempOld = mark_;
-      if (mark <= 0) mark = 1;
-      if (mark > 51) mark = 51;
-      mark_ = mark;
-      firePropertyChange("mark", tempOld, mark_);
-    }
-  }
-
-  /**
    * Get plot mark
    *
    * @return plot mark
@@ -352,52 +321,14 @@ public class LineAttribute implements Attribute, Cloneable {
     return mark_;
   }
 
-  /**
-   * Set the current line cap style. Cap styles include <code>CAP_BUTT</code>, <code>CAP_ROUND
-   * </code>, and <code>CAP_SQUARE</code>. <br>
-   * <strong>Property Change:</strong> <code>capStyle</code>.
-   */
-  public void setCapStyle(int style) {
-    if (cap_style_ != style) {
-      Integer tempOld = cap_style_;
-      cap_style_ = style;
-      firePropertyChange("capStyle", tempOld, cap_style_);
-    }
-  }
-
   /** Get the current line cap style. */
   public int getCapStyle() {
     return cap_style_;
   }
 
-  /**
-   * Set the current miter style. Styles include <code>JOIN_MITER</code>, <code>JOIN_ROUND</code>,
-   * and <code>JOIN_BEVEL</code>. <br>
-   * <strong>Property Change:</strong> <code>miterStyle</code>.
-   */
-  public void setMiterStyle(int style) {
-    if (miter_style_ != style) {
-      Integer tempOld = miter_style_;
-      miter_style_ = style;
-      firePropertyChange("miterStyle", tempOld, miter_style_);
-    }
-  }
-
   /** Get the current miter sytle. */
   public int getMiterStyle() {
     return miter_style_;
-  }
-
-  /**
-   * Set the miter limit. <br>
-   * <strong>Property Change:</strong> <code>miterLimit</code>.
-   */
-  public void setMiterLimit(float limit) {
-    if (miter_limit_ != limit) {
-      Float tempOld = miter_limit_;
-      miter_limit_ = limit;
-      firePropertyChange("miterLimit", tempOld, miter_limit_);
-    }
   }
 
   /** Get the current miter limit. */
@@ -449,7 +380,7 @@ public class LineAttribute implements Attribute, Cloneable {
       modified_ = true;
       return;
     }
-    AttributeChangeEvent ace = new AttributeChangeEvent(this, name, oldValue, newValue, local_);
+    AttributeChangeEvent ace = new AttributeChangeEvent(this, name, oldValue, newValue);
     changes_.firePropertyChange(ace);
     modified_ = false;
   }
@@ -467,7 +398,6 @@ public class LineAttribute implements Attribute, Cloneable {
    */
   @Override
   public void setBatch(boolean batch, boolean local) {
-    local_ = local;
     batch_ = batch;
     if (!batch && modified_) firePropertyChange("batch", Boolean.TRUE, Boolean.FALSE);
   }

@@ -959,7 +959,6 @@ public class TestAll {
     TableXmlHandler txh;
     Tally tally;
     Test test;
-    Touch touch;
     UByteArray uba;
     UIntArray uia;
     ULongArray ula;

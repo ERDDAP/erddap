@@ -12,13 +12,7 @@
 
 package gov.noaa.pmel.sgt;
 
-import gov.noaa.pmel.util.Dimension2D;
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Font;
-import java.awt.FontMetrics;
 import java.awt.Graphics;
-import javax.swing.*;
 
 /**
  * Support class used to draw a PlotMark. Plot mark codes are defined in the following table. <br>
@@ -114,19 +108,9 @@ public class PlotMark {
     mark_ = mark;
   }
 
-  /** Get the mark code. */
-  public int getMark() {
-    return mark_;
-  }
-
   /** Set the mark height. */
   public void setMarkHeightP(double mHeight) {
     markHeight_ = mHeight / 8.0;
-  }
-
-  /** Get the mark height */
-  public double getMarkHeightP() {
-    return markHeight_ * 8.0;
   }
 
   /** Used internally by sgt. */
@@ -180,52 +164,6 @@ public class PlotMark {
         ydOld = yt;
       }
       if (fill_) g.fillPolygon(xl, yl, i);
-    }
-  }
-
-  public static void main(String[] args) {
-    /** hack code to create a "list" of plot marks. */
-    JFrame frame = new JFrame("Plot Marks");
-    frame.getContentPane().setLayout(new BorderLayout());
-    frame.setSize(500, 700);
-    JPane pane = new JPane("Plot Mark Pane", frame.getSize());
-    Layer layer = new Layer("Plot Mark Layer", new Dimension2D(5.0, 7.0));
-    pane.setBatch(true);
-    pane.setLayout(new StackedLayout());
-    frame.getContentPane().add(pane, BorderLayout.CENTER);
-    pane.add(layer);
-    frame.setVisible(true);
-    pane.setBatch(false);
-    PlotMark pm = new PlotMark(1);
-    Graphics g = pane.getGraphics();
-    g.setFont(new Font("Helvetica", Font.PLAIN, 18));
-    pm.setMarkHeightP(0.32);
-    int w = pane.getSize().width;
-    int h = pane.getSize().height;
-    g.setColor(Color.white);
-    g.fillRect(0, 0, w, h);
-    g.setColor(Color.black);
-    FontMetrics fm = g.getFontMetrics();
-    int hgt = fm.getAscent() / 2;
-    String label;
-    int xt = 100;
-    int yt = 400;
-    int wid = 0;
-    int mark = 1;
-    for (int j = 0; j < 13; j++) {
-      yt = 45 * j + 100;
-      for (int i = 0; i < 4; i++) {
-        xt = 120 * i + 75;
-        label = mark + ":";
-        wid = fm.stringWidth(label) + 20;
-        g.setColor(Color.blue.brighter());
-        g.drawString(label, xt - wid, yt);
-        pm.setMark(mark);
-        g.setColor(Color.black);
-        pm.paintMark(g, layer, xt, yt - hgt);
-        mark++;
-        if (mark > 51) break;
-      }
     }
   }
 

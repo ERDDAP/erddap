@@ -62,7 +62,6 @@ Solicitar a compactação é opcional, mas as respostas compactadas costumam ser
 <acronyms>Siglas</acronyms>
 <addConstraints>Você pode adicionar restrições do tipo tabledap a solicitações para esta página da web,
 por exemplo,</addConstraints>
-<addVarWhereAttName>Opcional: especifique um nome de atributo.</addVarWhereAttName>
 <addVarWhereAttValue>Opcional: especifique um valor de atributo.</addVarWhereAttValue>
 <addVarWhere><![CDATA[
 Opcional:
@@ -287,9 +286,6 @@ Em seguida, você pode clicar em uma categoria para ver uma lista de conjuntos d
 <categorySearchHtml><![CDATA[
 Escolha um (n) <kbd>{0}</kbd>
 ]]></categorySearchHtml>
-<categorySearchDifferentHtml><![CDATA[
-Procure conjuntos de dados com uma <kbd>&category;</kbd>
-]]></categorySearchDifferentHtml>
 <categoryClickHtml>Clique em uma categoria (um valor de atributo) para ver uma lista de conjuntos de dados relevantes.</categoryClickHtml>
 <categoryNotAnOption>Quando attribute = &quot;{0}&quot;, value = &quot;{1}&quot; não é uma opção.</categoryNotAnOption>
 <caughtInterrupted>capturou currentThread (). isInterrupted ().</caughtInterrupted>
@@ -1743,9 +1739,6 @@ Cada coluna (uma variável) possui um tipo de dados (por exemplo, Sea Surface Te
 Cada linha representa uma amostra diferente dos dados (por exemplo, de um horário ou local diferente).
 ]]></dafTableTooltip>
 <dasTitle>A estrutura de atributos do conjunto de dados (.das) para este conjunto de dados</dasTitle>
-
-<!--  A mensagem a ser exibida se os dados não puderem ser baixados (por exemplo, SeaWiFS &lt;= 14 dias). -->
-<dataAccessNotAllowed>[Desculpa. Esses dados não podem ser baixados.]</dataAccessNotAllowed>
 <databaseUnableToConnect>Não é possível se conectar ao banco de dados.</databaseUnableToConnect>
 <dataProviderForm>Formulário do Provedor de Dados</dataProviderForm>
 <dataProviderFormP1>Formulário do Provedor de Dados - Parte 1</dataProviderFormP1>
@@ -2054,10 +2047,6 @@ Clique &widgetSubmitButton; para enviar esta informação ao administrador ERDDA
 
 <br>Corrija esses problemas e, em seguida, &#39;Envie&#39; esta parte do formulário novamente.
 ]]></dpf_fixProblem>
-<dpf_yourName>Seu nome</dpf_yourName>
-<dpf_emailAddress>Endereço de e-mail</dpf_emailAddress>
-<dpf_Timestamp>Timestamp</dpf_Timestamp>
-<dpf_frequency>Frequência</dpf_frequency>
 <dpf_title>título</dpf_title>
 <dpf_titleTooltip><![CDATA[
 Esta é uma descrição curta (&lt;= 80 caracteres) do conjunto de dados.
@@ -2119,11 +2108,6 @@ Esta é a licença e isenção de responsabilidade para o uso desses dados.
 &standardLicense;
 <br>
 ]]></dpf_licenseTooltip>
-<dpf_howYouStoreData><![CDATA[
-
-<br>• Erro:
-especifique (abaixo) como seus dados em grade ou tabulares são armazenados.
-]]></dpf_howYouStoreData>
 <dpf_provideIfAvailable>Forneça as informações se estiverem disponíveis para seu conjunto de dados.</dpf_provideIfAvailable>
 <dpf_acknowledgement>reconhecimento</dpf_acknowledgement>
 <dpf_acknowledgementTooltip><![CDATA[
@@ -2384,10 +2368,7 @@ O carimbo de data / hora de envio deste conjunto de dados é &tTimestamp; .
 <dtWMS>Clique para descobrir como fazer mapas desses dados por meio do serviço de mapas da web deste conjunto de dados.</dtWMS>
 <EasierAccessToScientificData>Acesso mais fácil a dados científicos</EasierAccessToScientificData>
 
-<!--  As mensagens EDD são exibidas nos Formulários de Acesso a Dados tabledap e griddap. -->
-<EDDClickOnSubmitHtml><![CDATA[
-Clique em <kbd>Submit</kbd> .
-]]></EDDClickOnSubmitHtml>
+<!--As mensagens EDD são exibidas nos formulários de acesso de dados tabledap e griddap.-->
 <EDDDatasetID>ID do conjunto de dados</EDDDatasetID>
 <EDDFgdc>FGDC</EDDFgdc>
 <EDDFgdcMetadata>Metadados FGDC-STD-001-1998</EDDFgdcMetadata>
@@ -2400,9 +2381,7 @@ Clique em <kbd>Submit</kbd> .
 <EDDInformation>Informação</EDDInformation>
 <EDDSummary>Resumo</EDDSummary>
 <EDDDatasetTitle>Título do conjunto de dados</EDDDatasetTitle>
-<EDDDownloadData>Baixar dados</EDDDownloadData>
 <EDDMakeAGraph>Faça um gráfico</EDDMakeAGraph>
-<EDDMakeAMap>Faça um mapa</EDDMakeAMap>
 <EDDMinimum>Mínimo</EDDMinimum>
 <EDDMaximum>Máximo</EDDMaximum>
 <EDDFileType>Tipo de arquivo:</EDDFileType>
@@ -2467,8 +2446,6 @@ Faz o URL para você.
 ]]></EDDGridDownloadDataTooltip>
 <EDDGridDimension>Dimensões</EDDGridDimension>
 <EDDGridDimensionRanges>Dimensões</EDDGridDimensionRanges>
-<EDDGridFirst>Primeiro</EDDGridFirst>
-<EDDGridLast>Último</EDDGridLast>
 <EDDGridStart>Começar</EDDGridStart>
 <EDDGridStop>Pare</EDDGridStop>
 <EDDGridStartStopTooltip><![CDATA[
@@ -2509,14 +2486,6 @@ Para sua informação:
 este é o espaçamento médio entre os valores de uma dimensão (nas unidades da dimensão) e uma indicação se os valores estão espaçados perfeitamente ou não.
 Um espaçamento ligeiramente estranho e desigual geralmente indica que um ou alguns arquivos estão ausentes ou danificados em um conjunto de dados com espaçamento perfeitamente uniforme.
 ]]></EDDGridSpacingTooltip>
-<EDDGridDimensionFirstTooltip><![CDATA[
-Para sua informação:
-este é o primeiro valor de uma dimensão.
-]]></EDDGridDimensionFirstTooltip>
-<EDDGridDimensionLastTooltip><![CDATA[
-Para sua informação:
-este é o último valor de uma dimensão.
-]]></EDDGridDimensionLastTooltip>
 <EDDGridDownloadTooltip><![CDATA[
 Selecione as variáveis que deseja baixar:
 <br>* Para baixar apenas os dados de dimensão:
@@ -2772,10 +2741,6 @@ Por exemplo:
 
 <!--  Essas mensagens são exibidas quando uma mensagem de erro é mostrada. -->
 <errorTitle>Erro</errorTitle>
-<errorRequestUrl>Seu URL de solicitação:</errorRequestUrl>
-<errorRequestQuery>Sua consulta de solicitação:</errorRequestQuery>
-<errorTheError>O erro:</errorTheError>
-<errorCopyFrom>Não é possível copiar de {0}.</errorCopyFrom>
 <errorFileNotFound>Arquivo não encontrado: {0}.</errorFileNotFound>
 <errorFileNotFoundImage>Arquivo não encontrado no cache. Recrie a imagem e tente novamente.</errorFileNotFoundImage>
 <errorInternal>Erro interno:</errorInternal>
@@ -2809,7 +2774,6 @@ Por exemplo:
 <fileHelpTable_esriCsv>Baixe um arquivo ISO_8859_1 .csv para ArcGIS 9.x da ESRI e abaixo (colunas de data e hora separadas).</fileHelpTable_esriCsv>
 <fileHelp_fgdc>Visualize os metadados UTF-8 FGDC .xml do conjunto de dados.</fileHelp_fgdc>
 <fileHelp_geoJson>Baixe dados de longitude, latitude e outras colunas como um arquivo UTF-8 GeoJSON .json.</fileHelp_geoJson>
-<fileHelp_graph>Visualize uma página da web Make A Graph.</fileHelp_graph>
 <fileHelpGrid_help>Visualize uma página da web com uma descrição do griddap.</fileHelpGrid_help>
 <fileHelpTable_help>Visualize uma página da web com uma descrição de tabledap.</fileHelpTable_help>
 <fileHelp_html>Visualize um formulário de acesso a dados HTML no estilo OPeNDAP.</fileHelp_html>
@@ -2840,7 +2804,6 @@ Por exemplo:
 <fileHelpTable_odvTxt>Baixe longitude, latitude, hora e outras colunas como um arquivo de planilha genérica ISO-8859-1 ODV (.txt).</fileHelpTable_odvTxt>
 <fileHelp_parquet>Baixe como um arquivo em parquet. Metadata contém nomes de colunas (&quot;column_names&quot;) e unidades (&quot;column_units&quot;).</fileHelp_parquet>
 <fileHelp_parquet_with_meta>Baixe como um arquivo em parquet com metadados detalhados.</fileHelp_parquet_with_meta>
-<fileHelp_subset>Visualize um formulário HTML que usa pesquisa facetada para simplificar a seleção de subconjuntos de dados.</fileHelp_subset>
 <fileHelp_timeGaps>Veja uma lista UTF-8 de lacunas nos valores de tempo que são maiores do que a lacuna média.</fileHelp_timeGaps>
 <fileHelp_tsv>Faça download de uma tabela de texto separada por tabulação ISO-8859-1 (linha 1: nomes; linha 2: unidades; ISO 8601 vezes).</fileHelp_tsv>
 <fileHelp_tsvp>Baixe um arquivo ISO-8859-1 .tsv com a linha 1: nome (unidades). Os tempos são strings ISO 8601.</fileHelp_tsvp>
@@ -2860,7 +2823,6 @@ Por exemplo:
 
 <!--  O texto da Descrição e do Aviso é vago para permitir um ou vários conjuntos de dados. -->
 <filesDescription>O sistema de &quot;arquivos&quot; do ERDDAP permite que você navegue em um sistema de arquivos virtual e baixe os arquivos de dados de origem.</filesDescription>
-<filesSort>Clique em um título (por exemplo, Nome, Última modificação, Tamanho) para alterar a ordem de classificação. &quot;Última modificação&quot; usa o fuso horário Zulu.</filesSort>
 <filesWarning><![CDATA[
 Os metadados do conjunto de dados e os nomes das variáveis nesses arquivos de origem podem ser diferentes de outros lugares no ERDDAP ! Você pode preferir usar o Formulário de Acesso a Dados do conjunto de dados.
 ]]></filesWarning>
@@ -3286,10 +3248,6 @@ Por exemplo, orderByMax(&quot;stationID, time/1day&quot;) criará um grupo para 
 Essa linha terá a soma de cada uma das outras variáveis.
 Por exemplo, orderByMax(&quot;stationID, time/1day&quot;) criará um grupo para cada stationID para cada dia e calculará e retornará a soma das outras variáveis.
 ]]></functionOrderByTooltip>
-<functionOrderByExtra><![CDATA[
-Para orderByClosest, especifique o intervalo (usando o formato n [timeUnits], por exemplo, 1 hora) aqui.
-<br>Para orderByLimit, especifique o número máximo de linhas por grupo aqui.
-]]></functionOrderByExtra>
 <functionOrderBySort><![CDATA[
 Este é o slot {0} importante orderBy ....
 <br>Escolha uma variável da lista suspensa à direita e / ou modifique o texto neste campo de texto.
@@ -3299,7 +3257,6 @@ Este é o slot {0} importante orderBy ....
 <functionOrderBySort3>o terceiro mais</functionOrderBySort3>
 <functionOrderBySort4>quarto mais</functionOrderBySort4>
 <functionOrderBySortLeast>ao menos</functionOrderBySortLeast>
-<functionOrderBySortRowMax>Apenas a linha com o valor máximo será mantida.</functionOrderBySortRowMax>
 <generatedAt>Esta página da web foi gerada em {0}.</generatedAt>
 <geoServicesDescription><![CDATA[
 A fim de tornar os dados deste ERDDAP mais acessíveis aos usuários do ArcGIS, esta parte do ERDDAP imita parte do
@@ -3585,7 +3542,6 @@ O padrão é nada (não usado).
 <!--  por exemplo, {0} = WMS ou listAll -->
 <listOfDatasets>Lista de {0} conjuntos de dados</listOfDatasets>
 <listAll>Tudo</listAll>
-<LogIn>Conecte-se</LogIn>
 <login>Conecte-se</login>
 <loginHTML><![CDATA[
 
@@ -3636,22 +3592,15 @@ Qualquer pessoa com uma conta de e-mail do Google ou ORCID iD pode fazer login, 
     title="Este link para um site externo não constitui um endosso."></a> é um padrão aberto que permite que você faça login com sua senha em um site e, em seguida, faça login sem sua senha em muitos outros sites, incluindo ERDDAP .
 Somente pessoas que fizeram acordos com o administrador deste ERDDAP podem fazer o login.
 ]]></loginDescribeOpenID>
-<loginErddap>Entrar no ERDDAP</loginErddap>
 <loginCanNot>Este ERDDAP não está configurado para permitir que os usuários façam login.</loginCanNot>
 <loginAreNot>Você não está logado.</loginAreNot>
 <loginToLogIn>Entrar</loginToLogIn>
-<loginEmailAddress>endereço de e-mail</loginEmailAddress>
 <loginYourEmailAddress>Seu endereço de email</loginYourEmailAddress>
 <loginUserName>Nome do usuário</loginUserName>
 <loginPassword>Senha</loginPassword>
 <loginUserNameAndPassword>Usuário e senha</loginUserNameAndPassword>
 <loginGoogleSignIn>Autentique com sua conta do Google.</loginGoogleSignIn>
 <loginOrcidSignIn>Autentique com seu ORCID iD.</loginOrcidSignIn>
-<loginOpenID>Faça login com o seu URL OpenID</loginOpenID>
-<loginOpenIDOr>Ou faça login em sua conta existente (não OpenID) em</loginOpenIDOr>
-<loginOpenIDCreate>Ou crie um URL OpenID em</loginOpenIDCreate>
-<loginOpenIDFree>Eles são todos gratuitos!</loginOpenIDFree>
-<loginOpenIDSame>Certifique-se de ter feito login com o mesmo URL OpenID que você forneceu ao administrador ERDDAP.</loginOpenIDSame>
 <loginAs>Você está conectado como {0}.</loginAs>
 <loginPartwayAs>Você está logado parcialmente como {0}.</loginPartwayAs>
 <loginFailed>ERROR: Login falhou</loginFailed>
@@ -3755,7 +3704,6 @@ Seu navegador pode ter armazenado em cache a página da web antes de você efetu
 ]]></loginPublicAccess>
 <LogOut>Sair</LogOut>
 <logout>sair</logout>
-<logoutOpenID>Saia do seu provedor de OpenID.</logoutOpenID>
 
 <!--  logoutSuccess atualizado pela última vez em 19/12/2019 -->
 <logoutSuccess>Você se desconectou com sucesso.
@@ -4014,10 +3962,6 @@ Mas dods.dap.DODSException não tem exceção relevante.
 Melhor retornar um arquivo vazio? Mas .nc e outros não permitem dados de comprimento 0.
  -->
 <MustBeThereIsNoData>Sua consulta não produziu resultados correspondentes.</MustBeThereIsNoData>
-
-<!--  Muitos tipos de arquivo colocam um limite na quantidade de dados que um arquivo pode conter (por exemplo, 2 GB). -->
-<MustBeNotNull>{0} não deve ser nulo.</MustBeNotNull>
-<MustBeNotEmpty>{0} não deve ser uma string vazia.</MustBeNotEmpty>
 <MustBeInternalError>Erro interno</MustBeInternalError>
 <MustBeOutOfMemoryError>Erro de falta de memória</MustBeOutOfMemoryError>
 
@@ -4058,11 +4002,9 @@ Melhor retornar um arquivo vazio? Mas .nc e outros não permitem dados de compri
 <noXxxNoLonIn180>não há valores de longitude entre -180 e 360</noXxxNoLonIn180>
 <noXxxNoNonString>não há variáveis não String</noXxxNoNonString>
 <noXxxNo2NonString>não há pelo menos duas variáveis não String</noXxxNo2NonString>
-<noXxxNoStation>cdmDataType = {0} não é &quot;TimeSeries&quot;</noXxxNoStation>
 <noXxxNoStationID>não há variável semelhante a stationID</noXxxNoStationID>
 <noXxxNoSubsetVariables>subsetVariables não foi especificado</noXxxNoSubsetVariables>
 <noXxxNoOLLSubsetVariables>subsetVariables não tem as variáveis de oferta, longitude e latitude</noXxxNoOLLSubsetVariables>
-<noXxxNoMinMax>o servidor de dados de origem não fornece valores mínimo e máximo</noXxxNoMinMax>
 <noXxxItsGridded>é um conjunto de dados em grade</noXxxItsGridded>
 <noXxxItsTabular>é um conjunto de dados tabular</noXxxItsTabular>
 <oneRequestAtATime>Faça apenas um pedido de cada vez.</oneRequestAtATime>
@@ -4088,7 +4030,6 @@ Os desenvolvedores de programas de computador e páginas da Web com scripts Java
 <options>Opções</options>
 <orAListOfValues>ou uma lista de valores</orAListOfValues>
 <orRefineSearchWith>Ou refine esta pesquisa com</orRefineSearchWith>
-<orSearchWith>Ou pesquise conjuntos de dados com</orSearchWith>
 <orComma>Ou,</orComma>
 <otherFeatures>Outras características</otherFeatures>
 <outOfDateDatasets>Conjuntos de dados desatualizados</outOfDateDatasets>
@@ -4144,7 +4085,6 @@ Existem
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
     title="Este link para um site externo não constitui um endosso."></a> .
 ]]></percentEncode>
-<pickADataset>Escolha um conjunto de dados</pickADataset>
 
 <!--  Mensagens relacionadas a pesquisas de conjunto de dados baseadas em protocolo. -->
 <protocolSearchHtml>Pesquisar conjuntos de dados por protocolo</protocolSearchHtml>
@@ -4159,7 +4099,6 @@ Protocolos diferentes são apropriados para diferentes tipos de dados e para dif
 <queryError1Var>O formato {0} só pode lidar com uma variável de dados.</queryError1Var>
 <queryError2Var>As solicitações para o formato {0} devem incluir pelo menos duas variáveis numéricas (para os eixos X e Y).</queryError2Var>
 <queryErrorActualRange>{0} está fora do intervalo_real da variável: {1} a {2}</queryErrorActualRange>
-<queryErrorAscending>Para solicitações de {0}, os valores de longitude e latitude devem ser crescentes.</queryErrorAscending>
 <queryErrorAdjusted>Para solicitações de {0}, os valores de longitude ajustados ({1} a {2}) devem estar entre -180 e 180.</queryErrorAdjusted>
 <queryErrorConstraintNaN>Valor de restrição = &quot;{0}&quot; avalia como NaN. Se você realmente deseja NaN, escreva-o como NaN.</queryErrorConstraintNaN>
 <queryErrorEqualSpacing>Para solicitações de {0}, o espaçamento de longitude ({1}) deve ser igual ao espaçamento de latitude ({2}).</queryErrorEqualSpacing>
@@ -4191,7 +4130,6 @@ Protocolos diferentes são apropriados para diferentes tipos de dados e para dif
 <queryErrorGridNoAxisVar>Uma consulta de variável de dados griddap não pode incluir uma variável de eixo ({0}).</queryErrorGridNoAxisVar>
 <queryErrorGridNoDataVar>Uma consulta de variável de eixo de grade não pode incluir uma variável de dados ({0}).</queryErrorGridNoDataVar>
 <queryErrorGridNotIdentical>A restrição {0} para a variável = {1} não é idêntica à restrição {2} para a variável = {2}. Se você precisar de subconjuntos diferentes, faça solicitações separadas.</queryErrorGridNotIdentical>
-<queryErrorGridSLessS>StartIndex = {0} é maior que StopIndex = {1}.</queryErrorGridSLessS>
 <queryErrorLastEndP>{0} começa com &quot;(&quot;, mas não termina com &quot;)&quot;.</queryErrorLastEndP>
 <queryErrorLastExpected>&quot;last&quot; era esperado no início de {0}.</queryErrorLastExpected>
 <queryErrorLastUnexpected>Caráter inesperado depois do &quot;último&quot; em {0}.</queryErrorLastUnexpected>
@@ -4428,7 +4366,6 @@ Ver
 <SOSDocumentation>Documentação SOS do ERDDAP</SOSDocumentation>
 <WCSDocumentation>Documentação WCS do ERDDAP</WCSDocumentation>
 <WMSDocumentation>Documentação WMS do ERDDAP</WMSDocumentation>
-<findOutChange>para que seu programa de computador possa descobrir se um conjunto de dados foi alterado.</findOutChange>
 <requestFormatExamplesHtml><![CDATA[
 (por exemplo,
 <a rel="help" href="https://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html#sec9.3">HTTP GET <img 
@@ -4834,13 +4771,6 @@ Em vez disso, solicite um e-mail com uma
 <br>Se o subscriptionID e a chave corresponderem, a assinatura será removida.</span>
 ]]></subscriptionRemoveSuccess>
 <subscriptionRSS>Inscreva-se no feed RSS para este conjunto de dados ...</subscriptionRSS>
-<subscriptionsNotAvailable><![CDATA[
-
-<p><strong>Desculpa.
-O sistema de assinatura de e-mail / URL não está disponível nesta instalação ERDDAP .</strong>
-<br>Considere usar o serviço de assinatura
-<a rel="help" href="{0}/information.html#subscriptions">RSS</a> .
-]]></subscriptionsNotAvailable>
 <subscriptionUrlHtml><![CDATA[
 <kbd>URL/action</kbd> é um URL opcional com o qual ERDDAP entrará em contato em vez de enviar um e-mail.
 <br>Portanto, se você deseja receber um e-mail sempre que o conjunto de dados mudar, deixe o <kbd>URL/action</kbd> em branco.
@@ -5092,11 +5022,6 @@ Para ver {0},
 <!--  A tag a seguir é precedida por 1 das 2 tags anteriores.
   {0} é subsetViewSelectDistintCombos ou subsetViewSelectRelatedCounts. -->
 <subsetWhenCounts>{0} para os {1} valores de &quot;{2}&quot; são:</subsetWhenCounts>
-<subsetComboClickSelect><![CDATA[
-Para visualizar as contagens de combinações distintas das variáveis listadas acima,
-<br>verifique <kbd>{0} :
-{1}</kbd> acima e selecione um valor para uma das variáveis acima.
-]]></subsetComboClickSelect>
 <subsetNVariableCombos>No total, existem {0} linhas de combinações distintas das variáveis listadas acima.</subsetNVariableCombos>
 <subsetShowingAllRows>Todas as linhas são mostradas acima.</subsetShowingAllRows>
 <subsetShowingNRows>As primeiras {0} linhas são mostradas acima. As {1} linhas restantes não estão sendo mostradas.</subsetShowingNRows>
@@ -5835,7 +5760,6 @@ Depois de se tornar membro, você pode postar sua pergunta lá ou pesquisar para
 As opiniões nesta página da web são opiniões pessoais de Bob Simons e não refletem necessariamente qualquer posição do Governo ou da National Oceanic and Atmospheric Administration .
 
 ]]></theLongDescriptionHtml>
-<Then>Então</Then>
 <twoClickMapDefaultTooltip>Especifique um retângulo clicando em dois cantos diagonais. Faça novamente, se necessário.</twoClickMapDefaultTooltip>
 
 <!--  Esta é uma maneira de substituir o conversor de UDUnits padronizados do ERDDAP
@@ -7061,7 +6985,6 @@ Isso não pode ser nada.
 Portanto, se você não quiser nada, digite uma palavra sem sentido que nunca será um nome de atributo. -->
 <updateUrlsSkipAttributes>URL da fonte</updateUrlsSkipAttributes>
 <variableNames>Nomes de Variáveis</variableNames>
-<viewAllDatasetsHtml>Ver uma lista de todos os conjuntos de dados</viewAllDatasetsHtml>
 <waitThenTryAgain>Houve um problema (temporário?). Espere um minuto e tente novamente. (Em um navegador, clique no botão Atualizar.)</waitThenTryAgain>
 <warning>AVISO!</warning>
 <units>Unidades</units>

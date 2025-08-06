@@ -39,14 +39,12 @@ public class VectorAttribute2 implements Attribute, Cloneable, java.io.Serializa
 
   protected transient PropertyChangeSupport changes_ = new PropertyChangeSupport(this);
   private boolean batch_ = false;
-  private boolean local_ = true;
   private boolean modified_ = false;
   private String id_ = null;
   private int vectorStyle_ = HEAD;
   private ColorMap vectorColorMap_ = null; // if vectorColorMap is null, vectorColor is used
   private Color vectorColor_ = null;
   private double vectorScale_ = 0.01; // User units to physical
-  private double vectorMaxSize_ = 100.0;
   private double offsetAngle_ = 0.0;
 
   private double headScale_ = 1.0; // User units to physical
@@ -142,39 +140,9 @@ public class VectorAttribute2 implements Attribute, Cloneable, java.io.Serializa
     return newVector;
   }
 
-  /**
-   * Change the head style. Options include <code>NO_HEAD</code>, <code>HEAD</code>, and <code>
-   * SCALED_HEAD</code>. <br>
-   * <strong>Property Change:</strong> <code>vectorStyle</code>.
-   *
-   * @see #setVectorColor(java.awt.Color)
-   * @see #setVectorMaxSize(double)
-   * @see #setVectorScale(double)
-   * @see #setOffsetAngle(double)
-   */
-  public void setVectorStyle(int style) {
-    if (vectorStyle_ != style) {
-      Integer tempOld = vectorStyle_;
-      vectorStyle_ = style;
-      firePropertyChange("vectorStyle", tempOld, vectorStyle_);
-    }
-  }
-
   /** Get the vector head style. */
   public int getVectorStyle() {
     return vectorStyle_;
-  }
-
-  /**
-   * Change the vector colorMap. <br>
-   * <strong>Property Change:</strong> <code>vectorColorMap</code>.
-   */
-  public void setVectorColorMap(ColorMap colorMap) {
-    if (!vectorColorMap_.equals(colorMap)) {
-      ColorMap tempOld = vectorColorMap_;
-      vectorColorMap_ = colorMap;
-      firePropertyChange("vectorColor", tempOld, vectorColorMap_);
-    }
   }
 
   /** Get the vector color map. */
@@ -182,36 +150,9 @@ public class VectorAttribute2 implements Attribute, Cloneable, java.io.Serializa
     return vectorColorMap_;
   }
 
-  /**
-   * Change the vector color. <br>
-   * <strong>Property Change:</strong> <code>vectorColor</code>.
-   */
-  public void setVectorColor(Color color) {
-    if (!vectorColor_.equals(color)) {
-      Color tempOld = vectorColor_;
-      vectorColor_ = color;
-      firePropertyChange("vectorColor", tempOld, vectorColor_);
-    }
-  }
-
   /** Get the vector color. */
   public Color getVectorColor() {
     return vectorColor_;
-  }
-
-  /**
-   * Change the vector scale. The vector length is determined by the data value times the vector
-   * scale. The vector length is bounded by the maximum allowed vector length. <br>
-   * <strong>Property Change:</strong> <code>vectorScale</code>.
-   *
-   * @see #setVectorMaxSize(double)
-   */
-  public void setVectorScale(double scale) {
-    if (vectorScale_ != scale) {
-      Double tempOld = vectorScale_;
-      vectorScale_ = scale;
-      firePropertyChange("vectorScale", tempOld, vectorScale_);
-    }
   }
 
   /** Geth the vector head scale. */
@@ -219,57 +160,9 @@ public class VectorAttribute2 implements Attribute, Cloneable, java.io.Serializa
     return vectorScale_;
   }
 
-  /**
-   * Set the maximum size for a vector. <br>
-   * <strong>Property Change:</strong> <code>vectorMaxSize</code>.
-   */
-  public void setVectorMaxSize(double size) {
-    if (vectorMaxSize_ != size) {
-      Double tempOld = vectorMaxSize_;
-      vectorMaxSize_ = size;
-      firePropertyChange("vectorMaxSize", tempOld, vectorMaxSize_);
-    }
-  }
-
-  /** Get the maximum vector length allowed. */
-  public double getVectorMaxSize() {
-    return vectorMaxSize_;
-  }
-
-  /**
-   * Set the angle (clockwize positive) to rotate the vector. <br>
-   * <strong>Property Change:</strong> <code>offsetAngle</code>.
-   *
-   * @param angle in degrees
-   */
-  public void setOffsetAngle(double angle) {
-    if (offsetAngle_ != angle) {
-      Double tempOld = offsetAngle_;
-      offsetAngle_ = angle;
-      firePropertyChange("offsetAngle", tempOld, offsetAngle_);
-    }
-  }
-
   /** Get the vector rotation angle. */
   public double getOffsetAngle() {
     return offsetAngle_;
-  }
-
-  /**
-   * Change the vector head scale. The vector head size is determined by the length of the vector
-   * times the vector head scale. The vector head size is bounded by the minimum and maximum allowed
-   * head size. <br>
-   * <strong>Property Change:</strong> <code>headScale</code>.
-   *
-   * @see #setHeadMinSize(double)
-   * @see #setHeadMaxSize(double)
-   */
-  public void setHeadScale(double scale) {
-    if (headScale_ != scale) {
-      Double tempOld = headScale_;
-      headScale_ = scale;
-      firePropertyChange("headScale", tempOld, headScale_);
-    }
   }
 
   /** Get the vector head scale. */
@@ -277,33 +170,9 @@ public class VectorAttribute2 implements Attribute, Cloneable, java.io.Serializa
     return headScale_;
   }
 
-  /**
-   * Set the maximum size for a scaled vector head. <br>
-   * <strong>Property Change:</strong> <code>headMaxSize</code>.
-   */
-  public void setHeadMaxSize(double size) {
-    if (headMaxSize_ != size) {
-      Double tempOld = headMaxSize_;
-      headMaxSize_ = size;
-      firePropertyChange("headMaxSize", tempOld, headMaxSize_);
-    }
-  }
-
   /** Get the maximum vector head size. */
   public double getHeadMaxSize() {
     return headMaxSize_;
-  }
-
-  /**
-   * Set the minimum size for a scaled vector head. <br>
-   * <strong>Property Change:</strong> <code>headMinSize</code>.
-   */
-  public void setHeadMinSize(double size) {
-    if (headMinSize_ != size) {
-      Double tempOld = headMinSize_;
-      headMinSize_ = size;
-      firePropertyChange("headMinSize", tempOld, headMinSize_);
-    }
   }
 
   /** Get the minimum vector head size. */
@@ -328,59 +197,14 @@ public class VectorAttribute2 implements Attribute, Cloneable, java.io.Serializa
     return headFixedSize_;
   }
 
-  /**
-   * Set the vector origin style. Options are <code>NO_MARK</code> and <code>MARK</code>. <br>
-   * <strong>Property Change:</strong> <code>originStyle</code>.
-   *
-   * @see #setMarkColor(java.awt.Color)
-   * @see #setMark(int)
-   * @see #setMarkHeightP(double)
-   */
-  public void setOriginStyle(int style) {
-    if (originStyle_ != style) {
-      Integer tempOld = originStyle_;
-      originStyle_ = style;
-      firePropertyChange("originStyle", tempOld, originStyle_);
-    }
-  }
-
   /** Get vector origin style. */
   public int getOriginStyle() {
     return originStyle_;
   }
 
-  /**
-   * Set the color for the origin mark. <br>
-   * <strong>Property Change:</strong> <code>markColor</code>.
-   */
-  public void setMarkColor(Color color) {
-    if (!markColor_.equals(color)) {
-      Color tempOld = markColor_;
-      markColor_ = color;
-      firePropertyChange("markColor", tempOld, markColor_);
-    }
-  }
-
   /** Get the color for the origin mark. */
   public Color getMarkColor() {
     return markColor_;
-  }
-
-  /**
-   * Set the mark for the origin. <br>
-   * <strong>Property Change:</strong> <code>mark</code>.
-   *
-   * @param mark the plot mark
-   * @see PlotMark
-   */
-  public void setMark(int mark) {
-    if (mark_ != mark) {
-      Integer tempOld = mark_;
-      if (mark <= 0) mark = 1;
-      if (mark > 51) mark = 51;
-      mark_ = mark;
-      firePropertyChange("mark", tempOld, mark_);
-    }
   }
 
   /**
@@ -393,40 +217,12 @@ public class VectorAttribute2 implements Attribute, Cloneable, java.io.Serializa
   }
 
   /**
-   * Set mark height for the origin. <br>
-   * <strong>Property Change:</strong> <code>markHeightP</code>.
-   *
-   * @param markh mark height
-   */
-  public void setMarkHeightP(double markh) {
-    if (markHeightP_ != markh) {
-      Double tempOld = markHeightP_;
-      markHeightP_ = markh;
-      firePropertyChange("markHeightP", tempOld, markHeightP_);
-    }
-  }
-
-  /**
    * Get mark height for the origin.
    *
    * @return mark height
    */
   public double getMarkHeightP() {
     return markHeightP_;
-  }
-
-  /**
-   * Set the line width in physical units. <br>
-   * <strong>Property Change:</strong> <code>width</code>.
-   *
-   * @param t line width
-   */
-  public void setWidth(float t) {
-    if (width_ != t) {
-      Float tempOld = width_;
-      width_ = t;
-      firePropertyChange("width", tempOld, width_);
-    }
   }
 
   /**
@@ -438,60 +234,14 @@ public class VectorAttribute2 implements Attribute, Cloneable, java.io.Serializa
     return width_;
   }
 
-  /**
-   * Set the line Cap Style. Styles include <code>LineAttribute.CAP_BUTT</code>, <code>
-   * LineAttribute.CAP_ROUND</code>, and <code>LineAttribute.CAP_SQUARE</code>. <br>
-   * <strong>Property Change:</strong> <code>capStyle</code>.
-   *
-   * @see LineAttribute#CAP_BUTT
-   * @see LineAttribute#CAP_ROUND
-   * @see LineAttribute#CAP_SQUARE
-   */
-  public void setCapStyle(int style) {
-    if (capStyle_ != style) {
-      Integer tempOld = capStyle_;
-      capStyle_ = style;
-      firePropertyChange("capStyle", tempOld, capStyle_);
-    }
-  }
-
   /** Get the line cap style. */
   public int getCapStyle() {
     return capStyle_;
   }
 
-  /**
-   * Set the line miter style. Styles include <code>LineAttribute.JOIN_BEVEL</code>, <code>
-   * LineAttribute.JOIN_MITER</code>, and <code>LineAttribute.JOIN_ROUND</code>. <br>
-   * <strong>Property Change:</strong> <code>miterStyle</code>.
-   *
-   * @see LineAttribute#JOIN_BEVEL
-   * @see LineAttribute#JOIN_MITER
-   * @see LineAttribute#JOIN_ROUND
-   */
-  public void setMiterStyle(int style) {
-    if (miterStyle_ != style) {
-      Integer tempOld = miterStyle_;
-      miterStyle_ = style;
-      firePropertyChange("miterStyle", tempOld, miterStyle_);
-    }
-  }
-
   /** Get the line miter sytle. */
   public int getMiterStyle() {
     return miterStyle_;
-  }
-
-  /**
-   * Set the line miter limit. <br>
-   * <strong>Property Change:</strong> <code>miterLimit</code>.
-   */
-  public void setMiterLimit(float limit) {
-    if (miterLimit_ != limit) {
-      Float tempOld = miterLimit_;
-      miterLimit_ = limit;
-      firePropertyChange("miterLimit", tempOld, miterLimit_);
-    }
   }
 
   /** Get the line miter limit. */
@@ -543,7 +293,7 @@ public class VectorAttribute2 implements Attribute, Cloneable, java.io.Serializa
       modified_ = true;
       return;
     }
-    AttributeChangeEvent ace = new AttributeChangeEvent(this, name, oldValue, newValue, local_);
+    AttributeChangeEvent ace = new AttributeChangeEvent(this, name, oldValue, newValue);
     changes_.firePropertyChange(ace);
     modified_ = false;
   }
@@ -561,7 +311,6 @@ public class VectorAttribute2 implements Attribute, Cloneable, java.io.Serializa
    */
   @Override
   public void setBatch(boolean batch, boolean local) {
-    local_ = local;
     batch_ = batch;
     if (!batch && modified_) firePropertyChange("batch", Boolean.TRUE, Boolean.FALSE);
   }

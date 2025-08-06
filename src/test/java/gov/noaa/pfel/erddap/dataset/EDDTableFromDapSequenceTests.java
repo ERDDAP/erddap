@@ -574,25 +574,6 @@ class EDDTableFromDapSequenceTests {
     String tName;
     int language = 0;
 
-    if (true) {
-      // get empiricalMinMax
-      EDDTable tedd = (EDDTable) EDDTableFromDapSequence.oneFromDatasetsXml(null, "pmelArgoAll");
-      tedd.getEmpiricalMinMax(language, null, "2007-08-01", "2007-08-10", false, true);
-      String tq =
-          "longitude,latitude,id&time>=2008-06-17T16:04:12Z&time<=2008-06-24T16:04:12Z"
-              + "&.draw=markers&.marker=5|5&.color=0x000000&.colorBar=|C|Linear|||";
-      tName =
-          tedd.makeNewFileForDapQuery(
-              language,
-              null,
-              null,
-              tq,
-              EDStatic.config.fullTestCacheDirectory,
-              tedd.className() + "_GraphArgo",
-              ".png");
-      // TestUtil.displayInBrowser("file://" + EDStatic.config.fullTestCacheDirectory + tName);
-    }
-
     if (false) {
       // get summary string
       EDDTable tedd =

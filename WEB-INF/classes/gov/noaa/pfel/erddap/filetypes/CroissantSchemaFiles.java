@@ -2,6 +2,7 @@ package gov.noaa.pfel.erddap.filetypes;
 
 import com.cohort.util.File2;
 import gov.noaa.pfel.erddap.Erddap;
+import gov.noaa.pfel.erddap.util.EDMessages.Message;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import java.io.Writer;
 
@@ -36,6 +37,6 @@ public class CroissantSchemaFiles extends FileTypeInterface {
 
   @Override
   public String getHelpText(int language) {
-    return EDStatic.messages.fileHelp_croissantAr[language];
+    return EDStatic.messages.get(Message.FILE_HELP_CROISSANT, language);
   }
 }

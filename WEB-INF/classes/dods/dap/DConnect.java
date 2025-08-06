@@ -116,7 +116,7 @@ public class DConnect {
     EDStatic.cleaner.register(this, new CleanupConnect(fileStream));
   }
 
-  private static class CleanupConnect implements Runnable {
+  private static final class CleanupConnect implements Runnable {
 
     private final InputStream inputStream;
 
@@ -166,39 +166,6 @@ public class DConnect {
   public DConnect(InputStream is) {
     this.fileStream = is;
     EDStatic.cleaner.register(this, new CleanupConnect(fileStream));
-  }
-
-  /**
-   * Returns whether a file name or <code>InputStream</code> is being used instead of a URL.
-   *
-   * @return true if a file name or <code>InputStream</code> is being used.
-   */
-  public final boolean isLocal() {
-    return (fileStream != null);
-  }
-
-  /**
-   * Returns the constraint expression supplied with the URL given to the constructor. If no CE was
-   * given this returns an empty <code>String</code>.
-   *
-   * <p>Note that the CE supplied to one of this object's constructors is "sticky"; it will be used
-   * with every data request made with this object. The CE passed to <code>getData</code>, however,
-   * is not sticky; it is used only for that specific request. This method returns the sticky CE.
-   *
-   * @return the constraint expression associated with this connection.
-   */
-  public final String CE() {
-    return projString + selString;
-  }
-
-  /**
-   * Returns the URL supplied to the constructor. If the URL contained a constraint expression that
-   * is not returned.
-   *
-   * @return the URL of this connection.
-   */
-  public final String URL() {
-    return urlString;
   }
 
   /**
@@ -364,24 +331,6 @@ public class DConnect {
    * @exception DASException on an error constructing the DAS
    * @exception DODSException if an error returned by the remote server
    */
-  public DAS getDAS()
-      throws MalformedURLException, IOException, ParseException, DASException, DODSException {
-    return getDAS(-1);
-  }
-
-  // bob simons added this variant:
-
-  /**
-   * Returns the DAS object from the dataset referenced by this object's URL. The DAS object is
-   * referred to by appending `.das' to the end of a DODS URL.
-   *
-   * @return the DAS associated with the referenced dataset.
-   * @exception MalformedURLException if the URL given to the constructor has an error
-   * @exception IOException if an error connecting to the remote server
-   * @exception ParseException if the DAS parser returned an error
-   * @exception DASException on an error constructing the DAS
-   * @exception DODSException if an error returned by the remote server
-   */
   public DAS getDAS(int timeOutMillis)
       throws MalformedURLException, IOException, ParseException, DASException, DODSException {
     InputStream is;
@@ -411,24 +360,6 @@ public class DConnect {
     }
     return das;
   }
-
-  /**
-   * Returns the DDS object from the dataset referenced by this object's URL. The DDS object is
-   * referred to by appending `.dds' to the end of a DODS URL.
-   *
-   * @return the DDS associated with the referenced dataset.
-   * @exception MalformedURLException if the URL given to the constructor has an error
-   * @exception IOException if an error connecting to the remote server
-   * @exception ParseException if the DDS parser returned an error
-   * @exception DDSException on an error constructing the DDS
-   * @exception DODSException if an error returned by the remote server
-   */
-  public DDS getDDS()
-      throws MalformedURLException, IOException, ParseException, DDSException, DODSException {
-    return getDDS(-1);
-  }
-
-  // bob simons added this variant:
 
   /**
    * Returns the DDS object from the dataset referenced by this object's URL. The DDS object is
@@ -710,15 +641,6 @@ public class DConnect {
   public final DataDDS getData(StatusUI statusUI)
       throws MalformedURLException, IOException, ParseException, DDSException, DODSException {
     return getData("", statusUI, new DefaultFactory());
-  }
-
-  /**
-   * Returns the <code>ServerVersion</code> of the last connection.
-   *
-   * @return the <code>ServerVersion</code> of the last connection.
-   */
-  public final ServerVersion getServerVersion() {
-    return ver;
   }
 
   /**

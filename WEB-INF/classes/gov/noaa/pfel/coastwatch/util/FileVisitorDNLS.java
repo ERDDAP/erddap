@@ -287,11 +287,6 @@ public class FileVisitorDNLS extends SimpleFileVisitor<Path> {
     return FileVisitResult.CONTINUE;
   }
 
-  /** table.dataToString(); */
-  public String resultsToString() {
-    return table.dataToString();
-  }
-
   /**
    * This returns an empty table with Dir,Name,LastMod,Size columns suitable for the instance table
    * or oneStep.

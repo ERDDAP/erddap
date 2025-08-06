@@ -29,8 +29,12 @@ import gov.noaa.pfel.erddap.dataset.metadata.LocalizedAttributes;
 import gov.noaa.pfel.erddap.handlers.EDDGridFromEtopoHandler;
 import gov.noaa.pfel.erddap.handlers.SaxHandlerClass;
 import gov.noaa.pfel.erddap.util.EDMessages;
+import gov.noaa.pfel.erddap.util.EDMessages.Message;
 import gov.noaa.pfel.erddap.util.EDStatic;
-import gov.noaa.pfel.erddap.variable.*;
+import gov.noaa.pfel.erddap.variable.EDV;
+import gov.noaa.pfel.erddap.variable.EDVGridAxis;
+import gov.noaa.pfel.erddap.variable.EDVLatGridAxis;
+import gov.noaa.pfel.erddap.variable.EDVLonGridAxis;
 import jakarta.servlet.http.HttpServletRequest;
 import java.io.BufferedOutputStream;
 import java.io.DataInputStream;
@@ -68,8 +72,6 @@ public class EDDGridFromEtopo extends EDDGrid {
 
   /** Set by the constructor */
   protected final boolean is180;
-
-  private int nCoarse = 0, nReadFromCache = 0, nWrittenToCache = 0, nFailed = 0;
 
   /**
    * This constructs an EDDGridFromEtopo based on the information in an .xml file.
@@ -152,7 +154,7 @@ public class EDDGridFromEtopo extends EDDGrid {
         errorInMethod + "datasetID must be \"etopo180\" or \"etopo360\".");
     if (!tAccessibleViaWMS)
       accessibleViaWMS =
-          String2.canonical(MessageFormat.format(EDStatic.messages.noXxxAr[0], "WMS"));
+          String2.canonical(MessageFormat.format(EDStatic.messages.get(Message.NO_XXX, 0), "WMS"));
     accessibleViaFiles = EDStatic.config.filesActive && tAccessibleViaFiles;
     nThreads = tnThreads; // interpret invalid values (like -1) as EDStatic.nGridThreads
     dimensionValuesInMemory = tDimensionValuesInMemory;
@@ -358,7 +360,6 @@ public class EDDGridFromEtopo extends EDDGrid {
               // if (i < 10) String2.log(i + "=" + data[i]);
             }
             dis.close();
-            nReadFromCache++;
             if (verbose)
               String2.log(
                   datasetID
@@ -367,7 +368,6 @@ public class EDDGridFromEtopo extends EDDGrid {
                       + "ms");
             return results;
           } catch (Throwable t) {
-            nFailed++;
             File2.delete(cacheName);
             String2.log(
                 String2.ERROR
@@ -397,7 +397,6 @@ public class EDDGridFromEtopo extends EDDGrid {
           dos.close();
           dos = null;
           File2.rename(cacheName + random, cacheName);
-          nWrittenToCache++;
           if (verbose)
             String2.log(
                 datasetID + " writeToCache.  totalTime=" + (System.currentTimeMillis() - eTime));
@@ -409,7 +408,6 @@ public class EDDGridFromEtopo extends EDDGrid {
             }
           }
           File2.delete(cacheName + random);
-          nFailed++;
           String2.log(
               String2.ERROR
                   + " while writing "
@@ -429,7 +427,6 @@ public class EDDGridFromEtopo extends EDDGrid {
     } else {
 
       // Don't use cahce system. Coarse source files are small, so gain would be minimal.
-      nCoarse++;
       rawGetSourceData(lons, lats, data);
       if (verbose)
         String2.log(
@@ -505,19 +502,6 @@ public class EDDGridFromEtopo extends EDDGrid {
         }
       }
     }
-  }
-
-  /** This returns the cache statistics String for this dataset. */
-  public String statsString() {
-    return datasetID
-        + ": nCoarse="
-        + nCoarse
-        + ", nWrittenToCache="
-        + nWrittenToCache
-        + ", nReadFromCache="
-        + nReadFromCache
-        + ", nFailed="
-        + nFailed;
   }
 
   @Override
