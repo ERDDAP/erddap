@@ -381,9 +381,9 @@ public class Attributes {
    * @param moreImportant the Attributes to be added.
    */
   public void set(Attributes moreImportant) {
-    Enumeration en = moreImportant.hashmap.keys();
+    Enumeration<String> en = moreImportant.hashmap.keys();
     while (en.hasMoreElements()) {
-      String name = (String) en.nextElement();
+      String name = en.nextElement();
       set(name, (PrimitiveArray) moreImportant.get(name).clone());
     }
   }
@@ -701,9 +701,9 @@ public class Attributes {
    */
   public void copyTo(Attributes destination) {
     destination.hashmap.clear();
-    Enumeration en = hashmap.keys();
+    Enumeration<String> en = hashmap.keys();
     while (en.hasMoreElements()) {
-      String name = (String) en.nextElement();
+      String name = en.nextElement();
       destination.set(name, (PrimitiveArray) get(name).clone());
     }
   }
@@ -795,10 +795,10 @@ public class Attributes {
     if (otherAtts == null) return;
 
     // go through this
-    Iterator it =
+    Iterator<String> it =
         hashmap.keySet().iterator(); // iterator (not enumeration) since I use it.remove() below
     while (it.hasNext()) {
-      String name = (String) it.next();
+      String name = it.next();
       PrimitiveArray otherPa = otherAtts.get(name);
       if (otherPa != null) {
         PrimitiveArray pa = get(name);

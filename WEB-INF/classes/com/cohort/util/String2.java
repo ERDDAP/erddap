@@ -5106,27 +5106,6 @@ public class String2 {
   }
 
   /**
-   * A little weird: This returns the UTF-8 encoding of the string as a String (using only the lower
-   * byte of each 2-byte char), so a unicode string can be stored in a 1-byte/char string. This
-   * won't throw an exception and returns ERROR (as bytes) if trouble.
-   */
-  public static String stringToUtf8String(String s) {
-    try {
-      return new String(
-          s.getBytes(StandardCharsets.UTF_8), 0); // 0=highByte  this is deprecated but useful
-    } catch (Exception e) {
-      log(
-          "Caught "
-              + ERROR
-              + " in String2.stringToUtf8String("
-              + s
-              + "): "
-              + MustBe.throwableToString(e));
-      return ERROR;
-    }
-  }
-
-  /**
    * A little weird: This returns the unicode string from a UTF-8 encoded String. This won't throw
    * an exception and returns ERROR (as bytes) if trouble.
    */

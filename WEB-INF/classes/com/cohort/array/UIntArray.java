@@ -1494,7 +1494,7 @@ public class UIntArray extends PrimitiveArray {
 
     // make a hashMap with all the unique values (associated values are initially all dummy)
     final Integer dummy = -1;
-    final HashMap hashMap = new HashMap(Math2.roundToInt(1.4 * size));
+    final HashMap<Long, Integer> hashMap = new HashMap<>(Math2.roundToInt(1.4 * size));
     long lastValue = unpack(array[0]); // since lastValue often equals currentValue, cache it
     hashMap.put(lastValue, dummy);
     boolean alreadySorted = true;
@@ -1508,7 +1508,7 @@ public class UIntArray extends PrimitiveArray {
     }
 
     // quickly deal with: all unique and already sorted
-    final Set keySet = hashMap.keySet();
+    final Set<Long> keySet = hashMap.keySet();
     final int nUnique = keySet.size();
     if (nUnique == size && alreadySorted) {
       indices.ensureCapacity(size);
@@ -1517,8 +1517,8 @@ public class UIntArray extends PrimitiveArray {
     }
 
     // store all the elements in an array
-    final Object unique[] = new Object[nUnique];
-    final Iterator iterator = keySet.iterator();
+    final long[] unique = new long[nUnique];
+    final Iterator<Long> iterator = keySet.iterator();
     int count = 0;
     while (iterator.hasNext()) unique[count++] = iterator.next();
     if (nUnique != count)
@@ -1529,24 +1529,21 @@ public class UIntArray extends PrimitiveArray {
     Arrays.sort(unique);
 
     // put the unique values back in the hashMap with the ranks as the associated values
-    // and make tUnique
-    final long tUnique[] = new long[nUnique];
     for (int i = 0; i < count; i++) {
       hashMap.put(unique[i], i);
-      tUnique[i] = (Long) unique[i];
     }
 
     // convert original values to ranks
-    final int ranks[] = new int[size];
+    final int[] ranks = new int[size];
     lastValue = unpack(array[0]);
-    ranks[0] = (Integer) hashMap.get(lastValue);
+    ranks[0] = hashMap.get(lastValue);
     int lastRank = ranks[0];
     for (int i = 1; i < size; i++) {
       if (array[i] == lastValue) {
         ranks[i] = lastRank;
       } else {
         lastValue = unpack(array[i]);
-        ranks[i] = (Integer) hashMap.get(lastValue);
+        ranks[i] = hashMap.get(lastValue);
         lastRank = ranks[i];
       }
     }
@@ -1554,7 +1551,7 @@ public class UIntArray extends PrimitiveArray {
     // store the results in ranked
     indices.append(new UIntArray(ranks));
 
-    return new UIntArray(tUnique);
+    return new UIntArray(unique);
   }
 
   /**

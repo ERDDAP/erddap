@@ -565,19 +565,19 @@ class NcHelperTests {
       dims.add(timeDim);
 
       // define Variables
-      Variable.Builder timeVar = NcHelper.addVariable(rootGroup, "time", DataType.DOUBLE, dims);
+      Variable.Builder<?> timeVar = NcHelper.addVariable(rootGroup, "time", DataType.DOUBLE, dims);
       timeVar.addAttribute(new Attribute("units", "seconds since 1970-01-01"));
 
-      Variable.Builder latVar = NcHelper.addVariable(rootGroup, "lat", DataType.DOUBLE, dims);
+      Variable.Builder<?> latVar = NcHelper.addVariable(rootGroup, "lat", DataType.DOUBLE, dims);
       latVar.addAttribute(new Attribute("units", "degrees_north"));
 
-      Variable.Builder lonVar = NcHelper.addVariable(rootGroup, "lon", DataType.DOUBLE, dims);
+      Variable.Builder<?> lonVar = NcHelper.addVariable(rootGroup, "lon", DataType.DOUBLE, dims);
       lonVar.addAttribute(new Attribute("units", "degrees_east"));
 
-      Variable.Builder sstVar = NcHelper.addVariable(rootGroup, "sst", DataType.DOUBLE, dims);
+      Variable.Builder<?> sstVar = NcHelper.addVariable(rootGroup, "sst", DataType.DOUBLE, dims);
       sstVar.addAttribute(new Attribute("units", "degree_C"));
 
-      Variable.Builder commentVar =
+      Variable.Builder<?> commentVar =
           NcHelper.addNc3StringVariable(rootGroup, "comment", dims, strlen);
 
       // create the file
@@ -724,8 +724,6 @@ class NcHelperTests {
   @TagMissingFile
   void testJplG1SST() throws Exception {
     String dir = "c:/data/jplG1SST/";
-    String request[] = new String[] {"SST"};
-    StringArray varNames = new StringArray();
     NetcdfFile fi;
     Variable var; // read start:stop:stride
 

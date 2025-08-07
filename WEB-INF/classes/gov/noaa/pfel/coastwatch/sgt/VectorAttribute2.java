@@ -35,7 +35,7 @@ import java.beans.PropertyChangeSupport;
  * @see LineCartesianRenderer
  * @see ContourLevels
  */
-public class VectorAttribute2 implements Attribute, Cloneable, java.io.Serializable {
+public class VectorAttribute2 implements Attribute, Cloneable {
 
   protected transient PropertyChangeSupport changes_ = new PropertyChangeSupport(this);
   private boolean batch_ = false;

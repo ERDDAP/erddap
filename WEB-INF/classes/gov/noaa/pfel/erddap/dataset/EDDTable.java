@@ -3648,7 +3648,7 @@ public abstract class EDDTable extends EDD {
       // String2.log("unlimitied dimension exists: " + (nc.getUnlimitedDimension() != null));
 
       // add the variables
-      Variable.Builder newVars[] = new Variable.Builder[nColumns];
+      Variable.Builder<?>[] newVars = new Variable.Builder[nColumns];
       for (int col = 0; col < nColumns; col++) {
         PAType type = twawm.columnType(col);
         String tColName = twawm.columnName(col);
@@ -4030,8 +4030,8 @@ public abstract class EDDTable extends EDD {
           NcHelper.addDimension(rootGroup, "obs", nodcMode ? maxFeatureNRows : totalNObs);
 
       // add the feature variables, then the obs variables
-      Variable.Builder newVars[] = new Variable.Builder[ncNCols];
-      Variable.Builder rowSizeVar = null;
+      Variable.Builder<?>[] newVars = new Variable.Builder[ncNCols];
+      Variable.Builder<?> rowSizeVar = null;
       for (int so = 0; so < 2; so++) { // 0=feature 1=obs
         for (int col = 0; col < ncNCols; col++) {
           if ((isFeatureVar[col] && so == 0)

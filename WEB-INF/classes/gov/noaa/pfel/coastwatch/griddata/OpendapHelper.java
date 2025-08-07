@@ -1083,9 +1083,9 @@ public class OpendapHelper {
       StringArray dimNames = new StringArray();
       IntArray dimSizes = new IntArray();
       ArrayList<Dimension> dims = new ArrayList<>(); // ucar.nc2.Dimension
-      int varShape[][] = new int[nVars][];
-      boolean isString[] = new boolean[nVars]; // all false
-      Variable.Builder newVars[] = new Variable.Builder[nVars];
+      int[][] varShape = new int[nVars][];
+      boolean[] isString = new boolean[nVars]; // all false
+      Variable.Builder<?>[] newVars = new Variable.Builder[nVars];
       for (int v = 0; v < nVars; v++) {
 
         BaseType baseType = dds.getVariable(varNames[v]);

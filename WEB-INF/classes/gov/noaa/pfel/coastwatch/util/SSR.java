@@ -30,6 +30,7 @@ import java.io.OutputStream;
 import java.io.Reader;
 import java.io.Writer;
 import java.net.HttpURLConnection;
+import java.net.URI;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLDecoder;
@@ -1213,7 +1214,7 @@ public class SSR {
       }
     }
 
-    URL turl = new URL(urlString);
+    URL turl = URI.create(urlString).toURL();
     URLConnection conn = turl.openConnection();
     if (firstByte > 0 || lastByte != -1)
       // this will cause failure if server doesn't allow byte range requests
@@ -1253,7 +1254,7 @@ public class SSR {
         String location = conn.getHeaderField("location");
         if (String2.isSomething(location)) {
           String2.log("  redirect to " + location);
-          turl = new URL(location);
+          turl = URI.create(location).toURL();
           conn = turl.openConnection();
           if (firstByte > 0 || lastByte != -1)
             conn.setRequestProperty(
@@ -1694,7 +1695,7 @@ public class SSR {
     // modified from https://stackoverflow.com/questions/3324717/sending-http-post-request-in-java
 
     // create the connection where we're going to send the file
-    URL url = new URL(urlString);
+    URL url = URI.create(urlString).toURL();
     HttpURLConnection con = (HttpURLConnection) url.openConnection();
 
     // set the appropriate HTTP parameters
