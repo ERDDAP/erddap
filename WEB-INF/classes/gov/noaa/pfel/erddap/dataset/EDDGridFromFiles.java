@@ -142,8 +142,6 @@ public abstract class EDDGridFromFiles extends EDDGrid implements WatchUpdateHan
    */
   protected int matchAxisNDigits = DEFAULT_MATCH_AXIS_N_DIGITS;
 
-  protected WatchDirectory watchDirectory;
-
   // dirTable and fileTable inMemory (default=false)
   protected boolean fileTableInMemory = false;
   protected Table dirTable; // one column with dir names
