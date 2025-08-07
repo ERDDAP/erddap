@@ -16,6 +16,7 @@ import gov.noaa.pfel.coastwatch.util.HtmlWidgets;
 import gov.noaa.pfel.coastwatch.util.SSR;
 import gov.noaa.pfel.erddap.dataset.EDD;
 import gov.noaa.pfel.erddap.dataset.TableWriterHtmlTable;
+import java.net.URI;
 import java.net.URL;
 import java.text.MessageFormat;
 import java.util.HashMap;
@@ -1066,7 +1067,7 @@ public class EDMessages {
     for (int tl = 1; tl < nLanguages; tl++) {
       String tName = "messages-" + TranslateMessages.languageCodeList.get(tl) + ".xml";
       errorInMethod = "ERROR while reading " + tName + ": ";
-      URL messageFile = new URL(TranslateMessages.translatedMessagesDir + tName);
+      URL messageFile = URI.create(TranslateMessages.translatedMessagesDir + tName).toURL();
       messagesAr[tl] = ResourceBundle2.fromXml(XML.parseXml(messageFile, false));
     }
     // read all the static Strings from messages.xml

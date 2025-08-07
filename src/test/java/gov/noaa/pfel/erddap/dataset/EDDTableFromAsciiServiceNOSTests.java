@@ -92,8 +92,6 @@ class EDDTableFromAsciiServiceNOSTests {
         Calendar2.epochSecondsToIsoStringTZ(Calendar2.backNDays(-5, Double.NaN)).substring(0, 11);
     String daysAhead7 =
         Calendar2.epochSecondsToIsoStringTZ(Calendar2.backNDays(-7, Double.NaN)).substring(0, 11);
-    String commonProblems =
-        "Small differences (e.g., a missing line) and \"Your query produced no matching results\" are common.";
 
     // Raw 6 minute
     if ("nosCoopsWLR6".matches(idRegex)) {

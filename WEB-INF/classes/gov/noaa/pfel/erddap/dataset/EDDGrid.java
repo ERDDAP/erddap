@@ -5942,8 +5942,8 @@ public abstract class EDDGrid extends EDD {
         nc.setFill(false);
 
         // define the dimensions
-        Array axisArrays[] = new Array[nRAV];
-        Variable.Builder newAxisVars[] = new Variable.Builder[nRAV];
+        Array[] axisArrays = new Array[nRAV];
+        Variable.Builder<?>[] newAxisVars = new Variable.Builder[nRAV];
         for (int av = 0; av < nRAV; av++) {
           String destName = ada.axisVariables(av).destinationName();
           PrimitiveArray pa = ada.axisValues(av);
@@ -6066,8 +6066,8 @@ public abstract class EDDGrid extends EDD {
         // define the dimensions
         int nActiveAxes = activeAxes.size();
         ArrayList<Dimension> axisDimensionList = new ArrayList<>();
-        Array axisArrays[] = new Array[nActiveAxes];
-        Variable.Builder newAxisVars[] = new Variable.Builder[nActiveAxes];
+        Array[] axisArrays = new Array[nActiveAxes];
+        Variable.Builder<?>[] newAxisVars = new Variable.Builder[nActiveAxes];
         int stdShape[] = new int[nActiveAxes];
         for (int a = 0; a < nActiveAxes; a++) {
           int av = activeAxes.get(a);
@@ -6096,7 +6096,7 @@ public abstract class EDDGrid extends EDD {
         }
 
         // define the data variables
-        Variable.Builder newVars[] = new Variable.Builder[tDataVariables.length];
+        Variable.Builder<?>[] newVars = new Variable.Builder[tDataVariables.length];
         for (int dv = 0; dv < tDataVariables.length; dv++) {
           String destName = tDataVariables[dv].destinationName();
           PAType destPAType = tDataVariables[dv].destinationDataPAType();

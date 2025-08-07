@@ -940,7 +940,7 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
             : new WaitThenTryAgainException(
                 EDStatic.simpleBilingual(language, Message.WAIT_THEN_TRY_AGAIN)
                     + "\n("
-                    + EDStatic.messages.errorFromDataSource
+                    + EDMessages.errorFromDataSource
                     + t
                     + ")",
                 t);

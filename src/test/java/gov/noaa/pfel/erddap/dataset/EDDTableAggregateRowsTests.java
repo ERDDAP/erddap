@@ -415,7 +415,7 @@ class EDDTableAggregateRowsTests {
     // testVerboseOn();
     // boolean oDebugMode = debugMode;
     // debugMode = false; //normally false. Set it to true if need help.
-    String results, query, tName, expected;
+    String results, tName, expected;
     // DasDds.main(new String[]{"miniNdbc410", "-verbose"});
     EDDTable tedd = (EDDTable) EDDTestDataset.getTS_SLEV_TAD();
     String dir = EDStatic.config.fullTestCacheDirectory;
