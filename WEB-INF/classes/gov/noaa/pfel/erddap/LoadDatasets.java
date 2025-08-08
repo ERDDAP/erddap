@@ -1400,6 +1400,11 @@ public class LoadDatasets extends Thread {
             break;
           case "<erddapDatasets></user>": // do nothing
             break;
+          case "<erddapDatasets><displayInfo>", "<erddapDatasets></displayInfo>": // do nothing
+            break;
+          case "<erddapDatasets><displayAttribute>",
+              "<erddapDatasets></displayAttribute>": // do nothing
+            break;
           default:
             xmlReader.unexpectedTagException();
             break;

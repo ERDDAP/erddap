@@ -73,6 +73,7 @@ import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 import org.eclipse.jetty.ee10.webapp.WebAppContext;
 import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.util.Jetty;
 import org.eclipse.jetty.util.resource.Resource;
 import org.eclipse.jetty.util.resource.ResourceFactory;
 import org.json.JSONObject;
@@ -4921,7 +4922,9 @@ class JettyTests {
     results = results.substring(0, po + 7);
     expected =
         "HTTP/1.1 200 OK\n"
-            + "Server: Jetty(12.0.22)\n"
+            + "Server: Jetty("
+            + Jetty.VERSION
+            + ")\n"
             + "Date: Today\n"
             + "Content-Type: application/javascript;charset=utf-8\n"
             + "Content-Encoding: identity\n"
@@ -16578,7 +16581,9 @@ class JettyTests {
             + "<tr><th>STATUS:</th><td>400</td></tr>\n"
             + "<tr><th>MESSAGE:</th><td>Ambiguous URI empty segment</td></tr>\n"
             + "</table>\n"
-            + "<hr/><a href=\"https://jetty.org/\">Powered by Jetty:// 12.0.22</a><hr/>\n"
+            + "<hr/><a href=\"https://jetty.org/\">Powered by Jetty:// "
+            + Jetty.VERSION
+            + "</a><hr/>\n"
             + "\n"
             + "</body>\n"
             + "</html>)";
@@ -16608,7 +16613,9 @@ class JettyTests {
             + "<tr><th>STATUS:</th><td>400</td></tr>\n"
             + "<tr><th>MESSAGE:</th><td>Ambiguous URI empty segment</td></tr>\n"
             + "</table>\n"
-            + "<hr/><a href=\"https://jetty.org/\">Powered by Jetty:// 12.0.22</a><hr/>\n"
+            + "<hr/><a href=\"https://jetty.org/\">Powered by Jetty:// "
+            + Jetty.VERSION
+            + "</a><hr/>\n"
             + "\n"
             + "</body>\n"
             + "</html>)";
