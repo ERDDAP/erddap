@@ -242,7 +242,7 @@ public class EDConfig {
   @FeatureFlag public boolean enableCors;
   @FeatureFlag public boolean includeNcCFSubsetVariables;
   @FeatureFlag public boolean useSisISO19115 = false;
-  @FeatureFlag public boolean useHeadersForUrl = false;
+  @FeatureFlag public boolean useHeadersForUrl = true;
   @FeatureFlag public boolean generateCroissantSchema = true;
   @FeatureFlag public boolean taskCacheClear = true;
 
@@ -620,7 +620,7 @@ public class EDConfig {
         String2.split(
             String2.toLowerCase(getSetupEVString(setup, ev, "corsAllowOrigin", (String) null)),
             ',');
-    useHeadersForUrl = getSetupEVBoolean(setup, ev, "useHeadersForUrl", false);
+    useHeadersForUrl = getSetupEVBoolean(setup, ev, "useHeadersForUrl", true);
     slideSorterActive = getSetupEVBoolean(setup, ev, "slideSorterActive", true);
     variablesMustHaveIoosCategory =
         getSetupEVBoolean(setup, ev, "variablesMustHaveIoosCategory", true);
