@@ -9,7 +9,8 @@ import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 
 /**
  * This class contains static procedures generate standard error messages.
@@ -270,18 +271,17 @@ public class MustBe {
     try {
       // gather info for each thread
       // long tTime = System.currentTimeMillis();
-      Object oar[] = Thread.getAllStackTraces().entrySet().toArray();
+      Set<Entry<Thread, StackTraceElement[]>> oar = Thread.getAllStackTraces().entrySet();
       int count = 0;
       int tomcatWaiting = 0;
       int inotify = 0;
-      String sar[] = new String[oar.length];
-      for (Object o : oar) {
+      String sar[] = new String[oar.size()];
+      for (Entry<Thread, StackTraceElement[]> me : oar) {
         try {
-          Map.Entry me = (Map.Entry) o;
-          Thread t = (Thread) me.getKey();
+          Thread t = me.getKey();
           String threadName = t.getName();
           if (threadName == null) threadName = "";
-          StackTraceElement ste[] = (StackTraceElement[]) me.getValue();
+          StackTraceElement ste[] = me.getValue();
           String ste0 = ste.length < 1 ? "" : ste[0].toString();
           if (hideThisThread
               && ste0.endsWith("java.lang.Thread.dumpThreads(Native Method)")) // Java 17+

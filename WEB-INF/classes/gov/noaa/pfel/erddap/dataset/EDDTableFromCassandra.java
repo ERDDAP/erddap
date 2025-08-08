@@ -1577,9 +1577,9 @@ public class EDDTableFromCassandra extends EDDTable {
 
     // connect result set columns to table columns
     int nRv = resultsDVI.length;
-    int rvToRsCol[] = new int[nRv]; // stored as 0..
-    DataType rvToCassDataType[] = new DataType[nRv];
-    TypeCodec rvToTypeCodec[] = new TypeCodec[nRv];
+    int[] rvToRsCol = new int[nRv]; // stored as 0..
+    DataType[] rvToCassDataType = new DataType[nRv];
+    TypeCodec<?>[] rvToTypeCodec = new TypeCodec[nRv];
     for (int rv = 0; rv < nRv; rv++) {
       // find corresponding resultSet column (may not be 1:1) and other info
       // stored as 0..   -1 if not found
@@ -1703,7 +1703,7 @@ public class EDDTableFromCassandra extends EDDTable {
             // https://datastax.github.io/java-driver/upgrade_guide/
             String s = "[?]";
             try {
-              TypeCodec codec = rvToTypeCodec[rv];
+              TypeCodec<?> codec = rvToTypeCodec[rv];
               if (codec != null) {
                 java.nio.ByteBuffer bytes = r.getBytesUnsafe(rsCol);
                 s = bytes == null ? "" : codec.deserialize(bytes, protocolVersion).toString();

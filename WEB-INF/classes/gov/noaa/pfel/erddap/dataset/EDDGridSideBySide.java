@@ -25,6 +25,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 /**
  * This class represents a grid dataset created by aggregating two or more datasets side by side. So
@@ -73,7 +74,7 @@ public class EDDGridSideBySide extends EDDGrid {
     String tDatasetID = xmlReader.attributeValue("datasetID");
 
     // data to be obtained while reading xml
-    ArrayList tChildDatasets = new ArrayList();
+    List<EDD> tChildDatasets = new ArrayList<>();
     StringBuilder messages = new StringBuilder();
     String tAccessibleTo = null;
     String tGraphsAccessibleTo = null;

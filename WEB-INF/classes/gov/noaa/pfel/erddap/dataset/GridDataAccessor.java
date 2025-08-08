@@ -20,6 +20,7 @@ import com.cohort.util.Math2;
 import com.cohort.util.MustBe;
 import com.cohort.util.String2;
 import gov.noaa.pfel.coastwatch.pointdata.Table;
+import gov.noaa.pfel.erddap.util.EDMessages;
 import gov.noaa.pfel.erddap.util.EDMessages.Message;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.EDV;
@@ -615,7 +616,7 @@ public class GridDataAccessor implements AutoCloseable {
           : new WaitThenTryAgainException(
               EDStatic.simpleBilingual(language, Message.WAIT_THEN_TRY_AGAIN)
                   + "\n("
-                  + EDStatic.messages.errorFromDataSource
+                  + EDMessages.errorFromDataSource
                   + tToString
                   + ")",
               t);

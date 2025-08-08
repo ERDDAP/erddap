@@ -51,7 +51,7 @@ import java.util.List;
  * @see DVector
  * @see BaseType
  */
-public class DArray extends DVector implements Cloneable {
+public class DArray extends DVector {
   /** A Vector of DArrayDimension information (i.e. the shape) */
   private List<DArrayDimension> dimVector;
 

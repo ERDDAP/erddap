@@ -1526,7 +1526,7 @@ public class ByteArray extends PrimitiveArray {
     // make a hashMap with all the unique values (associated values are initially all dummy)
     // (actually bytes could be done more efficiently with a boolean array -128 to 127... )
     final Integer dummy = -1;
-    final HashMap hashMap = new HashMap(Math2.roundToInt(1.4 * size));
+    final HashMap<Byte, Integer> hashMap = new HashMap<>(Math2.roundToInt(1.4 * size));
     byte lastValue = array[0]; // since lastValue often equals currentValue, cache it
     hashMap.put(lastValue, dummy);
     boolean alreadySorted = true;
@@ -1540,7 +1540,7 @@ public class ByteArray extends PrimitiveArray {
     }
 
     // quickly deal with: all unique and already sorted
-    final Set keySet = hashMap.keySet();
+    final Set<Byte> keySet = hashMap.keySet();
     final int nUnique = keySet.size();
     if (nUnique == size && alreadySorted) {
       indices.ensureCapacity(size);
@@ -1549,8 +1549,8 @@ public class ByteArray extends PrimitiveArray {
     }
 
     // store all the elements in an array
-    final Object unique[] = new Object[nUnique];
-    final Iterator iterator = keySet.iterator();
+    final byte[] unique = new byte[nUnique];
+    final Iterator<Byte> iterator = keySet.iterator();
     int count = 0;
     while (iterator.hasNext()) unique[count++] = iterator.next();
     if (nUnique != count)
@@ -1561,11 +1561,8 @@ public class ByteArray extends PrimitiveArray {
     Arrays.sort(unique);
 
     // put the unique values back in the hashMap with the ranks as the associated values
-    // and make tUnique
-    final byte tUnique[] = new byte[nUnique];
     for (int i = 0; i < count; i++) {
       hashMap.put(unique[i], i);
-      tUnique[i] = (Byte) unique[i];
     }
 
     // convert original values to ranks
@@ -1586,7 +1583,7 @@ public class ByteArray extends PrimitiveArray {
     // store the results in ranked
     indices.append(new IntArray(ranks));
 
-    return new ByteArray(tUnique);
+    return new ByteArray(unique);
   }
 
   /**

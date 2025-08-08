@@ -796,7 +796,7 @@ public class EDDTableFromDapSequence extends EDDTable {
           : new WaitThenTryAgainException(
               EDStatic.simpleBilingual(language, Message.WAIT_THEN_TRY_AGAIN)
                   + "\n("
-                  + EDStatic.messages.errorFromDataSource
+                  + EDMessages.errorFromDataSource
                   + tToString
                   + ")",
               t);

@@ -195,7 +195,7 @@ public class StringArray extends PrimitiveArray {
    * @param iterator which needs to be thread-safe if the backing data store may be changed by
    *     another thread (e.g., use ConcurrentHashMap instead of HashMap).
    */
-  public StringArray(final Iterator iterator) {
+  public StringArray(final Iterator<?> iterator) {
     array = new StringHolder[8];
     while (iterator.hasNext()) {
       add(iterator.next().toString());
@@ -208,7 +208,7 @@ public class StringArray extends PrimitiveArray {
    * @param enumeration which needs to be thread-safe if the backing data store may be changed by
    *     another thread (e.g., use ConcurrentHashMap instead of HashMap).
    */
-  public StringArray(final Enumeration enumeration) {
+  public StringArray(final Enumeration<?> enumeration) {
     array = new StringHolder[8];
     while (enumeration.hasMoreElements()) {
       add(enumeration.nextElement().toString());
@@ -235,18 +235,6 @@ public class StringArray extends PrimitiveArray {
   public StringArray fromUTF8() {
     for (int i = 0; i < size; i++) set(i, String2.utf8StringToString(get(i)));
     // String2.log(">>after fromUTF8: " + toNccsv127AttString());
-    return this;
-  }
-
-  /**
-   * A little weird: A special method which encodes all the Unicode strings in this to UTF-8 bytes
-   * (stored as strings). See fromUTF8().
-   *
-   * @return this for convenience
-   */
-  public StringArray toUTF8() {
-    for (int i = 0; i < size; i++) set(i, String2.stringToUtf8String(get(i)));
-    // String2.log(">>after toUTF8: " + toNccsv127AttString());
     return this;
   }
 
@@ -1906,7 +1894,7 @@ public class StringArray extends PrimitiveArray {
 
     // make a hashMap with all the unique values (associated values are initially all dummy)
     final Integer dummy = -1;
-    final HashMap hashMap = new HashMap(Math2.roundToInt(1.4 * size));
+    final HashMap<String, Integer> hashMap = new HashMap<>(Math2.roundToInt(1.4 * size));
     String lastValue = get(0); // since lastValue often equals currentValue, cache it
     hashMap.put(lastValue, dummy); // special for String
     boolean alreadySorted = true;
@@ -1923,7 +1911,7 @@ public class StringArray extends PrimitiveArray {
     }
 
     // quickly deal with: all unique and already sorted
-    final Set keySet = hashMap.keySet();
+    final Set<String> keySet = hashMap.keySet();
     final int nUnique = keySet.size();
     if (nUnique == size && alreadySorted) {
       indices.ensureCapacity(size);
@@ -1933,8 +1921,8 @@ public class StringArray extends PrimitiveArray {
     }
 
     // store all the elements in an array
-    final String unique[] = new String[nUnique];
-    final Iterator iterator = keySet.iterator();
+    final String[] unique = new String[nUnique];
+    final Iterator<String> iterator = keySet.iterator();
     int count = 0;
     while (iterator.hasNext()) unique[count++] = (String) iterator.next();
     if (nUnique != count)
@@ -1954,7 +1942,7 @@ public class StringArray extends PrimitiveArray {
     for (int i = 0; i < count; i++) hashMap.put(unique[i], i);
 
     // convert original values to ranks
-    final int ranks[] = new int[size];
+    final int[] ranks = new int[size];
     lastValue = get(0);
     ranks[0] = (Integer) hashMap.get(lastValue);
     int lastRank = ranks[0];
@@ -2647,7 +2635,7 @@ public class StringArray extends PrimitiveArray {
    * This adds the values in hs to this StringArray and returns this StringArray for convenience.
    * The order of the elements in this StringArray is not specified.
    */
-  public StringArray addSet(final Set hs) {
+  public StringArray addSet(final Set<?> hs) {
     ensureCapacity(size + (long) hs.size());
     for (Object o : hs) add(o.toString());
     return this;

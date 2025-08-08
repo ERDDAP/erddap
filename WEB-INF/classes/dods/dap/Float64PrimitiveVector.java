@@ -20,7 +20,7 @@ import java.io.*;
  * @author jehamby
  * @see PrimitiveVector
  */
-public class Float64PrimitiveVector extends PrimitiveVector implements Cloneable {
+public class Float64PrimitiveVector extends PrimitiveVector {
   /** the array of <code>double</code> values. */
   private double vals[];
 

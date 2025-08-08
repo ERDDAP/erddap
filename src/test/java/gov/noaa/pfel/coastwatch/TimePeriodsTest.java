@@ -58,9 +58,6 @@ class TimePeriodsTest {
         "1 day",
         ""); // not an option
 
-    // getTitles
-    String tOptions2[] = {"pass", "3 day"};
-
     // endCalendarToCenteredTime(int timePeriodNHours, GregorianCalendar cal, String
     // errorInMethod)
     GregorianCalendar cal;

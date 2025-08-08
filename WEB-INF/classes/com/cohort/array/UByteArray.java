@@ -1582,7 +1582,7 @@ public class UByteArray extends PrimitiveArray {
     // make a hashMap with all the unique values (associated values are initially all dummy)
     // (actually bytes could be done more efficiently with a boolean array -128 to 127... )
     final Integer dummy = -1;
-    final HashMap hashMap = new HashMap(Math2.roundToInt(1.4 * size));
+    final HashMap<Short, Integer> hashMap = new HashMap<>(Math2.roundToInt(1.4 * size));
     short lastValue = unpack(array[0]); // since lastValue often equals currentValue, cache it
     hashMap.put(lastValue, dummy);
     boolean alreadySorted = true;
@@ -1596,7 +1596,7 @@ public class UByteArray extends PrimitiveArray {
     }
 
     // quickly deal with: all unique and already sorted
-    final Set keySet = hashMap.keySet();
+    final Set<Short> keySet = hashMap.keySet();
     final int nUnique = keySet.size();
     if (nUnique == size && alreadySorted) {
       indices.ensureCapacity(size);
@@ -1605,8 +1605,8 @@ public class UByteArray extends PrimitiveArray {
     }
 
     // store all the elements in an array
-    final Object unique[] = new Object[nUnique];
-    final Iterator iterator = keySet.iterator();
+    final short[] unique = new short[nUnique];
+    final Iterator<Short> iterator = keySet.iterator();
     int count = 0;
     while (iterator.hasNext()) unique[count++] = iterator.next();
     if (nUnique != count)
@@ -1617,15 +1617,12 @@ public class UByteArray extends PrimitiveArray {
     Arrays.sort(unique);
 
     // put the unique values back in the hashMap with the ranks as the associated values
-    // and make tUnique
-    final short tUnique[] = new short[nUnique];
     for (int i = 0; i < count; i++) {
       hashMap.put(unique[i], i);
-      tUnique[i] = (Short) unique[i];
     }
 
     // convert original values to ranks
-    final int ranks[] = new int[size];
+    final int[] ranks = new int[size];
     lastValue = unpack(array[0]);
     ranks[0] = (Integer) hashMap.get(lastValue);
     int lastRank = ranks[0];
@@ -1642,7 +1639,7 @@ public class UByteArray extends PrimitiveArray {
     // store the results in ranked
     indices.append(new IntArray(ranks));
 
-    return new UByteArray(tUnique);
+    return new UByteArray(unique);
   }
 
   /**

@@ -44,7 +44,7 @@ class EDDTableFromSOSTests {
     int language = 0;
     EDDTable eddTable = (EDDTable) EDDTestDataset.getnosSosATemp();
 
-    String name, tName, results, expected, userDapQuery;
+    String tName, results, expected;
     // it was hard to find data. station advertises 1999+ for several composites.
     // but searching January's for each year found no data until 2006
     String2.log("\n*** EDDTableFromSOS nos AirTemperature test get one station .CSV data\n");
@@ -228,7 +228,7 @@ class EDDTableFromSOSTests {
 
     int language = 0;
     EDDTable eddTable;
-    String name, tName, results, expected, userDapQuery;
+    String tName, results, expected;
 
     try {
       eddTable = (EDDTable) EDDTestDataset.getnosSosATemp();
@@ -284,7 +284,7 @@ class EDDTableFromSOSTests {
 
     int language = 0;
     EDDTable eddTable;
-    String name, tName, results, expected, userDapQuery;
+    String tName, results, expected;
 
     eddTable = (EDDTable) EDDTestDataset.getnosSosATemp();
 
@@ -328,7 +328,7 @@ class EDDTableFromSOSTests {
 
     int language = 0;
     EDDTable eddTable = (EDDTable) EDDTestDataset.getnosSosBPres();
-    String name, tName, results, expected, userDapQuery;
+    String tName, results, expected;
 
     // it was hard to find data. station advertises 1999+ for several composites.
     // but searching January's for each year found no data until 2006
@@ -521,7 +521,7 @@ class EDDTableFromSOSTests {
 
     int language = 0;
     EDDTable eddTable = (EDDTable) EDDTestDataset.getnosSosCond();
-    String name, tName, results, expected, userDapQuery;
+    String tName, results, expected;
 
     // it was hard to find data. station advertises 1999+ for several composites.
     // but searching January's for each year found no data until 2006
@@ -712,7 +712,7 @@ class EDDTableFromSOSTests {
 
     int language = 0;
     EDDTable eddTable = (EDDTable) EDDTestDataset.getnosSosCurrents();
-    String name, tName = "", results, expected, userDapQuery;
+    String tName = "", results, expected;
 
     // worked until Feb 2013: (then: no matching station)
     // That means a request for historical data stopped working!
@@ -1091,7 +1091,7 @@ class EDDTableFromSOSTests {
 
     int language = 0;
     EDDTable eddTable = (EDDTable) EDDTestDataset.getnosSosSalinity();
-    String name, tName, results, expected, userDapQuery;
+    String tName, results, expected;
 
     String2.log("\n*** EDDTableFromSOS.testNosSosSalinity .das\n");
     tName =
@@ -1377,7 +1377,7 @@ class EDDTableFromSOSTests {
 
     int language = 0;
     EDDTable eddTable = (EDDTable) EDDTestDataset.getnosSosWind();
-    String name, tName, results, expected, userDapQuery;
+    String tName, results, expected;
 
     // stopped working ~12/15/2008
     // "&station_id=\"urn:x-noaa:def:station:NOAA.NOS.CO-OPS::8419317\"&time>=2006-01-01T00&time<=2006-01-01T01",
@@ -1534,7 +1534,7 @@ class EDDTableFromSOSTests {
 
     int language = 0;
     EDDTable eddTable = (EDDTable) EDDTestDataset.getnosSosWLevel();
-    String name, tName, results, expected, userDapQuery;
+    String tName, results, expected;
 
     // 2013-11-04 used to find a station with data:
     // testFindValidStation(eddTable, testNosStations,
@@ -1772,7 +1772,7 @@ class EDDTableFromSOSTests {
 
     int language = 0;
     EDDTable eddTable = (EDDTable) EDDTestDataset.getnosSosWTemp();
-    String name, tName, results, expected, userDapQuery;
+    String tName, results, expected;
 
     String2.log("\n*** EDDTableFromSOS.testNosSosWTemp .das\n");
     String today =
@@ -2699,7 +2699,7 @@ class EDDTableFromSOSTests {
 
     int language = 0;
     EDDTable eddTable = (EDDTable) EDDTestDataset.getndbcSosSalinity();
-    String name, tName, results = null, expected, userDapQuery;
+    String tName, results = null, expected;
 
     String2.log("\n*** EDDTableFromSOS.testNdbcSosSalinity .das\n");
     String today =
@@ -2906,7 +2906,7 @@ class EDDTableFromSOSTests {
 
     int language = 0;
     EDDTable eddTable = (EDDTable) EDDTestDataset.getndbcSosWTemp();
-    String name, tName, results, expected, userDapQuery;
+    String tName, results, expected;
 
     String2.log("\n*** EDDTableFromSOS.testNdbcSosLongTime, one station .CSV data\n");
     tName =
@@ -2994,7 +2994,7 @@ class EDDTableFromSOSTests {
 
     int language = 0;
     EDDTable eddTable = (EDDTable) EDDTestDataset.getndbcSosWLevel();
-    String name, tName, results = null, expected, userDapQuery;
+    String tName, results = null, expected;
 
     // String2.log("\n*** EDDTableFromSOS.testNdbcSosWLevel .das\n");
     String today =
@@ -3165,7 +3165,7 @@ class EDDTableFromSOSTests {
 
     int language = 0;
     EDDTable eddTable = (EDDTable) EDDTestDataset.getndbcSosWTemp();
-    String name, tName, results = null, expected, userDapQuery;
+    String tName, results = null, expected;
 
     // String2.log("\n*** EDDTableFromSOS.testNdbcSosWTemp .das\n");
     String today =
@@ -3337,7 +3337,7 @@ class EDDTableFromSOSTests {
 
     int language = 0;
     EDDTable eddTable = (EDDTable) EDDTestDataset.getndbcSosWTemp();
-    String name, tName, results, expected, query;
+    String name, query;
 
     // String2.log("\n*** EDDTableFromSOS.testNdbcSosBig test get one station .CSV
     // data\n");
@@ -3345,7 +3345,7 @@ class EDDTableFromSOSTests {
     name = eddTable.className() + "_ndbcSosWTemp";
 
     EDDTableFromSOS.timeParts = true;
-    tName =
+    String tName =
         eddTable.makeNewFileForDapQuery(
             language, null, null, query, EDStatic.config.fullTestCacheDirectory, name, ".csv");
 
@@ -3379,7 +3379,7 @@ class EDDTableFromSOSTests {
     // testVerboseOn();
     int language = 0;
     EDDTable eddTable = (EDDTable) EDDTestDataset.getndbcSosWaves();
-    String name, tName, results = null, expected = null, userDapQuery;
+    String tName, results = null, expected = null;
 
     // String2.log("\n*** EDDTableFromSOS.testNdbcSosWaves .das\n");
     String today =
@@ -3818,7 +3818,7 @@ class EDDTableFromSOSTests {
     // testVerboseOn();
     int language = 0;
     EDDTable eddTable = (EDDTable) EDDTestDataset.getndbcSosWind();
-    String name, tName, results = null, expected, userDapQuery;
+    String tName, results = null, expected;
 
     String2.log("\n*** EDDTableFromSOS.testNdbcSosWind .das\n");
     String today =

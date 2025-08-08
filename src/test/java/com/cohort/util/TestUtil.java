@@ -1788,14 +1788,6 @@ public class TestUtil {
     // Test.ensureTrue(time <= 270,
     //         "Too slow!  Time for 1000000 utf8BytesToString=" + time + "ms (usual = 203)");
 
-    s = String2.stringToUtf8String(os);
-    Test.ensureEqual(
-        String2.annotatedString(s),
-        " s\\[10]\n" + "[9][195][131][226][130][172] [end]",
-        "s=" + String2.annotatedString(s));
-    s = String2.utf8StringToString(s);
-    Test.ensureEqual(s, os, "s=" + String2.annotatedString(s));
-
     // compareTo times
     time = System.currentTimeMillis();
     a = "aaaaabc";

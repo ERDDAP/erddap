@@ -36,7 +36,6 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.Writer;
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
 import java.util.GregorianCalendar;
@@ -5524,7 +5523,6 @@ class EDDTableFromNcFilesTests {
     tName =
         eddTable.makeNewFileForDapQuery(
             language, null, null, userDapQuery, dir, eddTable.className() + "_obClosest5nc", ".nc");
-    Table table = new Table();
     results = NcHelper.ncdump(dir + tName, "");
     results =
         results.replaceAll(
@@ -8084,7 +8082,6 @@ class EDDTableFromNcFilesTests {
     gc.set(Calendar2.MILLISECOND, 0);
     gc.add(Calendar2.SECOND, 1); // now it is "now"
     long nowMillis = gc.getTimeInMillis();
-    String s;
     StringArray rv = new StringArray();
     StringArray cv = new StringArray();
     StringArray co = new StringArray();
@@ -9662,9 +9659,6 @@ class EDDTableFromNcFilesTests {
 
     int language = 0;
     EDDTableFromNcFiles eddTable = (EDDTableFromNcFiles) EDDTestDataset.getminiNdbc();
-    EDV timeEdv = eddTable.dataVariables()[eddTable.timeIndex];
-    EDV lonEdv = eddTable.dataVariables()[eddTable.lonIndex];
-    String dataDir = eddTable.fileDir;
     String tDir = TEMP_DIR.toAbsolutePath().toString() + "/";
     String tName, results, expected;
 
@@ -10603,12 +10597,8 @@ class EDDTableFromNcFilesTests {
 
     String oldMinTime = "2003-03-28T19:00:00Z";
     String oldMinMillis = "1.048878E9";
-    String newMinTime = "2005-02-23T15:00:00Z"; // after renaming a file to make it invalid
-    String newMinMillis = "1.1091708E9";
     String oldMaxTime = "2015-01-23T22:00:00Z";
     String oldMaxMillis = "1.4220504E9";
-    String newMaxTime = "2015-01-23T21:00:00Z";
-    String newMaxMillis = "1.4220468E9";
 
     String oldMinLon = "-80.41";
     String oldMaxLon = "-75.402";
@@ -10873,7 +10863,6 @@ class EDDTableFromNcFilesTests {
 
       EDDTableFromNcFiles eddTable = (EDDTableFromNcFiles) EDDTestDataset.getcwwcNDBCMet();
       EDV timeEdv = eddTable.dataVariables()[eddTable.timeIndex];
-      String dataDir = eddTable.fileDir;
       String tDir = TEMP_DIR.toAbsolutePath().toString() + "/";
       String tName, results, expected;
 
@@ -11089,7 +11078,6 @@ class EDDTableFromNcFilesTests {
     String2.log(
         "\n*** EDDTableFromNcFiles.testHardFlag()\n"
             + "This test requires testTimeSince19000101 be loaded in the local ERDDAP.");
-    int language = 0;
 
     // set hardFlag
     String startTime = Calendar2.getCurrentISODateTimeStringLocalTZ();
@@ -11156,7 +11144,6 @@ class EDDTableFromNcFilesTests {
     String2.log(
         "\n*** EDDTableFromNcFiles.testByteRange()\n"
             + "!!! THIS REQURIES cwwcNDBCMet IN THE LOCALHOST ERDDAP!!!\n");
-    int language = 0;
 
     NetcdfFile ncFile =
         NcHelper.openFile(
@@ -11165,7 +11152,7 @@ class EDDTableFromNcFilesTests {
 
       // get a list of variables
       Group rootGroup = ncFile.getRootGroup();
-      List rootGroupVariables = rootGroup.getVariables();
+      List<Variable> rootGroupVariables = rootGroup.getVariables();
       String2.log("rootGroup variables=" + String2.toNewlineString(rootGroupVariables.toArray()));
 
       /*
@@ -11351,7 +11338,7 @@ class EDDTableFromNcFilesTests {
     // EDD.reallyVerbose = false;
     // EDD.debugMode = false;
     // EDDTableFromFilesCallable.debugMode = true;
-    String name, tName, results, tResults, expected, userDapQuery, tQuery;
+    String tName, results, expected, userDapQuery;
     String dir = TEMP_DIR.toAbsolutePath().toString() + "/";
     StringBuilder bigResults = new StringBuilder("\nbigResults:\n");
 
@@ -11851,9 +11838,6 @@ class EDDTableFromNcFilesTests {
     int year1 = 1990;
     int year2 = 2021;
 
-    // String2.log("\n*** testGtspp15FilesExist(" + year1 + ", " + year2 + ")\n" +
-    // "This should fail at current calendar month.");
-    int language = 0;
     for (int year = year1; year <= year2; year++) {
       for (int month = 1; month <= 12; month++) {
         String dir =
@@ -11887,10 +11871,7 @@ class EDDTableFromNcFilesTests {
   void testGtsppabFilesExist() throws Exception {
     int year1 = 1990;
     int year2 = 2021;
-    // String2.log("\n*** testGtsppabFilesExist(" + year1 + ", " + year2 + ")\n" +
-    // "This should fail at current calendar month.");
 
-    int language = 0;
     String dir =
         Path.of(EDDTableFromNcFilesTests.class.getResource("/veryLarge/points/gtsppNcCf/").toURI())
                 .toString()
@@ -11923,7 +11904,7 @@ class EDDTableFromNcFilesTests {
 
     int language = 0;
     String tDir = Image2Tests.urlToAbsolutePath(Image2Tests.OBS_DIR);
-    String tName, baseName, start, query, results, expected;
+    String tName, baseName, start, query;
     EDDTable eddTable;
 
     // test default=linear
@@ -12200,7 +12181,6 @@ class EDDTableFromNcFilesTests {
   @org.junit.jupiter.api.Test
   @TagLocalERDDAP
   void testDapErrors() throws Throwable {
-    int language = 0;
     String baseRequest = "http://localhost:8080/cwexperimental/tabledap/";
     String results, expected;
 
@@ -12398,7 +12378,7 @@ class EDDTableFromNcFilesTests {
 
     int language = 0;
     String tDir = TEMP_DIR.toAbsolutePath().toString() + "/";
-    String dapQuery, tName, start, query, results, expected;
+    String dapQuery, tName;
     EDDTable eddTable;
     tName = "/data/pacioos/wqb04_2018_02_01.nc";
     String2.log("\nContents of " + tName + ":\n" + NcHelper.ncdump(tName, "temperature"));
@@ -12430,9 +12410,8 @@ class EDDTableFromNcFilesTests {
     String2.log(
         "\n*** EDDTableFromNcFiles.testMAGOrderByGraphs()\n"
             + "This REQUIRES cwwcNDBCMet in localhost ERDDAP.");
-    int language = 0;
     String tDir = TEMP_DIR.toAbsolutePath().toString() + "/";
-    String dapQuery, tName, start, query, results, expected;
+    String dapQuery;
     EDDTable eddTable = (EDDTable) EDDTestDataset.getcwwcNDBCMet();
 
     // these test very minimal (but common) orderBy requests
@@ -12799,7 +12778,6 @@ class EDDTableFromNcFilesTests {
             + "THIS REQUIRES THE cwwcNDBCMet DATASET TO BE IN LOCALHOST ERDDAP!!!\n"
             + SgtUtil.isBufferedImageAccelerated()
             + "\n");
-    int language = 0;
     // boolean oReallyVerbose = reallyVerbose;
     // reallyVerbose = false;
     String outName;
@@ -12816,8 +12794,6 @@ class EDDTableFromNcFilesTests {
                     + "bar,atmp,dewp,vis,ptdy,tide,wspu,wspv&station=\"41006\""
                     + "&time>0."); // random integer will be appended to avoid cached response
     String baseOut = EDStatic.config.fullTestCacheDirectory + "EDDTableFromNcFilesTestSpeed";
-    ArrayList al;
-    int timeOutSeconds = 120;
     String extensions[] =
         new String[] { // .help not available at this level
           ".asc",
@@ -13362,11 +13338,8 @@ class EDDTableFromNcFilesTests {
   @org.junit.jupiter.api.Test
   @TagLocalERDDAP
   void testTimeSince19000101() throws Throwable {
-    String2.log("\n*** EDDTableFromNcFiles.testTimeSince19000101");
-    int language = 0;
 
-    EDDTable eddTable;
-    String tName, results;
+    String results;
     String query =
         "http://localhost:8080/cwexperimental/tabledap/allDatasets.csv?"
             + "datasetID,minTime,maxTime&datasetID=%22testTimeSince19000101%22";
@@ -16459,10 +16432,6 @@ class EDDTableFromNcFilesTests {
   @org.junit.jupiter.api.Test
   @TagLargeFiles
   void testSpeedMAG() throws Throwable {
-    // setup and warmup
-    // EDD.testVerbose(false);
-
-    int language = 0;
     String dir = TEMP_DIR.toAbsolutePath().toString() + "/";
     EDDTable tableDataset = (EDDTable) EDDTestDataset.getcwwcNDBCMet();
     String fileName = dir + "tableTestSpeedMAG.txt";
@@ -16504,10 +16473,6 @@ class EDDTableFromNcFilesTests {
   @org.junit.jupiter.api.Test
   @TagLargeFiles
   void testSpeedSubset() throws Throwable {
-    // setup and warmup
-    // EDD.testVerbose(false);
-
-    int language = 0;
     EDDTable tableDataset = (EDDTable) EDDTestDataset.getcwwcNDBCMet();
     String dir = TEMP_DIR.toAbsolutePath().toString() + "/";
     String fileName = dir + "tableTestSpeedSubset.txt";
@@ -16754,9 +16719,6 @@ class EDDTableFromNcFilesTests {
   @org.junit.jupiter.api.Test
   @TagLargeFiles
   void testErdGtsppBest() throws Throwable {
-
-    String tDatasetID =
-        "erdGtsppBest"; // used to test erdGtsppBestNc as well (two calls to the same test),
     // but
     // erdGtsppBestNc depends on large files
     // String2.log("\n*** EDDTableFromNcFiles.testErdGtsppBest test:" + tDatasetID);
@@ -17693,16 +17655,16 @@ class EDDTableFromNcFilesTests {
         Dimension xDim3 = NcHelper.addDimension(rootGroup3, "LON", 1);
 
         // create axis variables
-        Variable.Builder timeVar2 =
+        Variable.Builder<?> timeVar2 =
             NcHelper.addVariable(rootGroup2, "TIME", timeVar.getDataType(), Arrays.asList(tDim2));
-        Variable.Builder latVar2 =
+        Variable.Builder<?> latVar2 =
             NcHelper.addVariable(rootGroup2, "LAT", latVar.getDataType(), Arrays.asList(yDim2));
 
-        Variable.Builder timeVar3 =
+        Variable.Builder<?> timeVar3 =
             NcHelper.addVariable(rootGroup3, "TIME", timeVar.getDataType(), Arrays.asList(tDim3));
-        Variable.Builder latVar3 =
+        Variable.Builder<?> latVar3 =
             NcHelper.addVariable(rootGroup3, "LAT", latVar.getDataType(), Arrays.asList(yDim3));
-        Variable.Builder lonVar3 =
+        Variable.Builder<?> lonVar3 =
             NcHelper.addVariable(rootGroup3, "LON", lonVar.getDataType(), Arrays.asList(xDim3));
 
         // write the axis variable attributes
@@ -17721,8 +17683,8 @@ class EDDTableFromNcFilesTests {
         NcHelper.setAttributes(nc3Mode, lonVar3, atts, NcHelper.isUnsigned(lonVar.getDataType()));
 
         // create data variables
-        Variable.Builder newVars2[] = new Variable.Builder[vars.length];
-        Variable.Builder newVars3[] = new Variable.Builder[vars.length];
+        Variable.Builder<?> newVars2[] = new Variable.Builder[vars.length];
+        Variable.Builder<?> newVars3[] = new Variable.Builder[vars.length];
         for (int col = 0; col < vars.length; col++) {
           // create the data variables
           Variable var = vars[col];
@@ -17759,7 +17721,6 @@ class EDDTableFromNcFilesTests {
         for (int col = 0; col < vars.length; col++) {
           // write the data for each var
           Variable var = vars[col];
-          String varName = var.getFullName();
           ar = var.read();
           int oldShape[] = ar.getShape();
           int newShape2[] = {oldShape[0], 1};
@@ -17967,8 +17928,7 @@ class EDDTableFromNcFilesTests {
     // StringArray impossibleNanSalinity = new StringArray();
     StringArray impossibleMinSalinity = new StringArray();
     StringArray impossibleMaxSalinity = new StringArray();
-    int nLons = 0, nLats = 0, nFiles = 0;
-    int lonSum = 0, latSum = 0;
+    int nFiles = 0;
     long profilesSum = 0;
     long rowsSum = 0;
 
@@ -18862,7 +18822,6 @@ class EDDTableFromNcFilesTests {
                 }
 
                 // put data in tTable
-                int oNRows = tTable.nRows();
                 ((StringArray) tTable.getColumn(organizationCol)).addN(nDepth, organization);
                 ((StringArray) tTable.getColumn(platformCol)).addN(nDepth, platform);
                 ((StringArray) tTable.getColumn(dataTypeCol)).addN(nDepth, dataType);

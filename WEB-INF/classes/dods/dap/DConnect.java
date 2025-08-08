@@ -104,7 +104,7 @@ public class DConnect {
     // Test if the URL is really a filename, and if so, open the file
     try {
       @SuppressWarnings("unused")
-      URL unusedTestURL = new URL(urlString);
+      URL unusedTestURL = URI.create(urlString).toURL();
     } catch (MalformedURLException e) {
       try {
         fileStream = File2.getDecompressedBufferedInputStream(urlString);
@@ -336,7 +336,7 @@ public class DConnect {
     InputStream is;
     if (fileStream != null) is = parseMime(fileStream);
     else { // String2.log(">> DConnect.getDAS: " + urlString + ".das" + projString + selString);
-      URL url = new URL(urlString + ".das" + projString + selString);
+      URL url = URI.create(urlString + ".das" + projString + selString).toURL();
       boolean dumpDAS = false;
       if (dumpDAS) {
         String2.log("--DConnect.getDAS to " + url);
@@ -377,7 +377,7 @@ public class DConnect {
     InputStream is;
     if (fileStream != null) is = parseMime(fileStream);
     else {
-      URL url = new URL(urlString + ".dds" + projString + selString);
+      URL url = URI.create(urlString + ".dds" + projString + selString).toURL();
       is = openConnection(url, timeOutMillis); // bob simons added
     }
     DDS dds = new DDS();
@@ -432,7 +432,8 @@ public class DConnect {
       localSelString = "";
     }
     URL url =
-        new URL(urlString + ".dods" + projString + localProjString + selString + localSelString);
+        URI.create(urlString + ".dods" + projString + localProjString + selString + localSelString)
+            .toURL();
 
     String errorMsg = "DConnect getData failed " + url;
     int errorCode = DODSException.UNKNOWN_ERROR;

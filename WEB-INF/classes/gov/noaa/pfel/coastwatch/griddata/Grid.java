@@ -1143,7 +1143,7 @@ public class Grid {
       // find the lat, lon, and data variables
       // [COARDS] says "A longitude coordinate variable is identifiable
       // from its units string, alone."
-      List list = ncFile.getVariables();
+      List<Variable> list = ncFile.getVariables();
       Variable latVariable = null, lonVariable = null;
       Index1D index0 = new Index1D(new int[] {1});
       index0.set(0);
@@ -2181,22 +2181,22 @@ public class Grid {
 
       ArrayDouble.D1 tTime = new ArrayDouble.D1(1);
       tTime.set(0, hasTime ? centeredTimeDouble : 0);
-      Variable.Builder timeVar =
+      Variable.Builder<?> timeVar =
           NcHelper.addVariable(rootGroup, "time", DataType.DOUBLE, List.of(timeDimension));
 
       ArrayDouble.D1 tAltitude = new ArrayDouble.D1(1);
       tAltitude.set(0, 0); // I treat all as altitude=0 !!!!
-      Variable.Builder altitudeVar =
+      Variable.Builder<?> altitudeVar =
           NcHelper.addVariable(rootGroup, "altitude", DataType.DOUBLE, List.of(altitudeDimension));
 
       ArrayDouble.D1 tLat = new ArrayDouble.D1(nLat);
       for (int i = 0; i < nLat; i++) tLat.set(i, lat[i]);
-      Variable.Builder latVar =
+      Variable.Builder<?> latVar =
           NcHelper.addVariable(rootGroup, "lat", DataType.DOUBLE, List.of(latDimension));
 
       ArrayDouble.D1 tLon = new ArrayDouble.D1(nLon);
       for (int i = 0; i < nLon; i++) tLon.set(i, lon[i]);
-      Variable.Builder lonVar =
+      Variable.Builder<?> lonVar =
           NcHelper.addVariable(rootGroup, "lon", DataType.DOUBLE, List.of(lonDimension));
 
       // write values to ArrayFloat.D4
@@ -2211,7 +2211,7 @@ public class Grid {
       // order of dimensions is specified by the
       // coards standard (https://ferret.pmel.noaa.gov/noaa_coop/coop_cdf_profile.html)
       // see the topics "Number of dimensions" and "Order of dimensions"
-      Variable.Builder dataVar =
+      Variable.Builder<?> dataVar =
           NcHelper.addVariable(
               rootGroup,
               dataName,
@@ -2383,32 +2383,32 @@ public class Grid {
       ArrayDouble.D1 x_range = new ArrayDouble.D1(2);
       x_range.set(0, lon[0]);
       x_range.set(1, lon[nLon - 1]);
-      Variable.Builder xRangeVar =
+      Variable.Builder<?> xRangeVar =
           NcHelper.addVariable(rootGroup, "x_range", DataType.DOUBLE, sideDimList);
 
       ArrayDouble.D1 y_range = new ArrayDouble.D1(2);
       y_range.set(0, lat[0]);
       y_range.set(1, lat[nLat - 1]);
-      Variable.Builder yRangeVar =
+      Variable.Builder<?> yRangeVar =
           NcHelper.addVariable(rootGroup, "y_range", DataType.DOUBLE, sideDimList);
 
       ArrayDouble.D1 z_range = new ArrayDouble.D1(2);
       z_range.set(0, minData);
       z_range.set(1, maxData);
-      Variable.Builder zRangeVar =
+      Variable.Builder<?> zRangeVar =
           NcHelper.addVariable(rootGroup, "z_range", DataType.DOUBLE, sideDimList);
 
       ArrayDouble.D1 spacing = new ArrayDouble.D1(2);
       spacing.set(
           0, nLon <= 1 ? Double.NaN : lonSpacing); // if not really know, grd seems to use NaN
       spacing.set(1, nLat <= 1 ? Double.NaN : latSpacing);
-      Variable.Builder spacingVar =
+      Variable.Builder<?> spacingVar =
           NcHelper.addVariable(rootGroup, "spacing", DataType.DOUBLE, sideDimList);
 
       ArrayInt.D1 dimension = new ArrayInt.D1(2, false); // isUnsigned
       dimension.set(0, lon.length);
       dimension.set(1, lat.length);
-      Variable.Builder dimensionVar =
+      Variable.Builder<?> dimensionVar =
           NcHelper.addVariable(rootGroup, "dimension", DataType.INT, sideDimList);
 
       // write values from left to right, starting with the top row
@@ -2416,7 +2416,7 @@ public class Grid {
       int po = 0;
       for (int tLat = nLat - 1; tLat >= 0; tLat--)
         for (int tLon = 0; tLon < nLon; tLon++) tData.set(po++, (float) getData(tLon, tLat));
-      Variable.Builder zVar =
+      Variable.Builder<?> zVar =
           NcHelper.addVariable(
               rootGroup, "z", DataType.FLOAT, xysizeDimList); // grd files use "z" for the data
 

@@ -1208,7 +1208,7 @@ public class EDDTableFromDatabase extends EDDTable {
         throw t;
       } else {
         // all other errors probably from database
-        throw new Throwable(EDStatic.messages.errorFromDataSource + t, t);
+        throw new Throwable(EDMessages.errorFromDataSource + t, t);
       }
     }
   }

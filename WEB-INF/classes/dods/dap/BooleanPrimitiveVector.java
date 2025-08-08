@@ -38,7 +38,7 @@ import java.io.*;
  * @author ndp
  * @see PrimitiveVector
  */
-public class BooleanPrimitiveVector extends PrimitiveVector implements Cloneable {
+public class BooleanPrimitiveVector extends PrimitiveVector {
   /** the array of <code>float</code> values. */
   private boolean vals[];
 

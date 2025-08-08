@@ -245,7 +245,6 @@ class DigirHelperTests {
             + "    <type>metadata</type>\n"
             + "  </header>\n"
             + "</request>\n";
-    long time = System.currentTimeMillis();
 
     // get the response
     // [This is the official way to do it.

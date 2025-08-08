@@ -83,7 +83,7 @@ public final class String2LogFactory extends LogFactory {
    * @param clazz Class for which a suitable Log name will be derived
    */
   @Override
-  public Log getInstance(Class clazz) {
+  public Log getInstance(Class<?> clazz) {
     return getInstance();
   }
 
