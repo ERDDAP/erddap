@@ -1,4 +1,4 @@
-@import gov.noaa.pfel.erddap.jte.OutOfDateDatasets
+@import gov.noaa.pfel.erddap.jte.TemplateHelper
 @import gov.noaa.pfel.erddap.jte.YouAreHere
 @import gov.noaa.pfel.erddap.jte.TableOptions
 @import gov.noaa.pfel.erddap.util.EDStatic
@@ -8,15 +8,18 @@
 @param TableOptions tableOptions
 
 @template.youarehere(youAreHere)
-
-${OutOfDateDatasets.getMessage(Message.ADVC_OUT_OF_DATE,language)}
+<div class ="standard_width">
+<p>
+${TemplateHelper.getMessage(Message.ADVC_OUT_OF_DATE,language)}
 
 @if(tableOptions.getNRows() == 0)
-    [${OutOfDateDatasets.getFormated(OutOfDateDatasets.getMessage(Message.N_MATCHING,language),"0")}<br>
-    ${OutOfDateDatasets.getMessage(Message.ADVC_OUT_OF_DATE,language)}]
+    [${TemplateHelper.getFormated(TemplateHelper.getMessage(Message.N_MATCHING,language),"0")}<br>
+    ${TemplateHelper.getMessage(Message.ADVN_OUT_OF_DATE,language)}]
 @else
-    ${OutOfDateDatasets.getFormated(OutOfDateDatasets.getMessage(Message.N_MATCHING,language),""+tableOptions.getNRows())} <br>
-    ${OutOfDateDatasets.getFormated(OutOfDateDatasets.getMessage(Message.GENERATED_AT,language),OutOfDateDatasets.getCurrentTimeZulu())}<br>
+    ${TemplateHelper.getFormated(TemplateHelper.getMessage(Message.N_MATCHING,language),""+tableOptions.getNRows())} <br>
+    ${TemplateHelper.getFormated(TemplateHelper.getMessage(Message.GENERATED_AT,language),TemplateHelper.getCurrentTimeZulu())}<br>
     <br>
-    @template.Table(tableOptions)
+    @template.table(tableOptions)
 @endif
+</p>
+</div>

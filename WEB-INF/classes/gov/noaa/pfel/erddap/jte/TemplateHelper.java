@@ -1,11 +1,11 @@
 package gov.noaa.pfel.erddap.jte;
 
+import com.cohort.util.Calendar2;
 import gov.noaa.pfel.erddap.util.EDMessages.Message;
 import gov.noaa.pfel.erddap.util.EDStatic;
-import gov.noaa.pfel.erddap.util.Subscriptions;
 import java.text.MessageFormat;
 
-public class Subscription {
+public class TemplateHelper {
   public static String getFormated(String value, String val) {
     return MessageFormat.format(value, val);
   }
@@ -14,19 +14,7 @@ public class Subscription {
     return EDStatic.messages.get(message, language);
   }
 
-  public static String getAddHtml() {
-    return Subscriptions.ADD_HTML;
-  }
-
-  public static String getValidateHtml() {
-    return Subscriptions.VALIDATE_HTML;
-  }
-
-  public static String getListHtml() {
-    return Subscriptions.LIST_HTML;
-  }
-
-  public static String getRemoveHtml() {
-    return Subscriptions.REMOVE_HTML;
+  public static String getCurrentTimeZulu() {
+    return Calendar2.getCurrentISODateTimeStringZulu() + "Z";
   }
 }
