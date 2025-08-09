@@ -131,7 +131,7 @@ another.name@company.com, *@example.com</subscriptionEmailBlacklist>
 
 <dataset type="EDDTableFromMqtt" datasetID="testFromMqtt" active="true">
     <fileDir></fileDir>
-    <serverHost>broker.hivemq.com</serverHost>
+    <serverHost>localhost</serverHost>
     <serverPort>1883</serverPort>
     <clientId>clientId</clientId>
     <username>name</username>
