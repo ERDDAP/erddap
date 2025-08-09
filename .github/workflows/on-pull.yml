@@ -1,5 +1,8 @@
 name: Pull Build and test ERDDAP
 
+# no permissions by default
+permissions: {}
+
 on:
   pull_request:
     branches: [ "main" ]
@@ -8,7 +11,9 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
+      with:
+        persist-credentials: false
     - name: Free Disk Space Before Build
       run: |
         echo "Disk space before cleanup:"
@@ -24,7 +29,7 @@ jobs:
         echo "Disk space after cleanup:"
         df -h
     - name: Set up JDK 21
-      uses: actions/setup-java@v4
+      uses: actions/setup-java@c5195efecf7bdfc987ee8bae7a71cb8b11521c00  # v4.7.1
       with:
         java-version: '21'
         distribution: 'temurin'
