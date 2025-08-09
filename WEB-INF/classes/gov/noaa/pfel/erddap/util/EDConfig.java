@@ -78,6 +78,9 @@ public class EDConfig {
 
   public final String baseHttpsUrl; // won't be null, may be "(not specified)"
   public String bigParentDirectory;
+  public String mqttConfigFolder;
+  public String mqttDataFolder;
+  public String mqttExtensionsFolder;
   public final String adminInstitution;
   public final String adminInstitutionUrl;
   public final String adminIndividualName;
@@ -299,6 +302,11 @@ public class EDConfig {
     Test.ensureTrue(
         File2.isDirectory(bigParentDirectory),
         "bigParentDirectory (" + bigParentDirectory + ") doesn't exist.");
+
+    // Mqtt Brokder directories
+    mqttConfigFolder = getSetupEVString(setup, ev, "mqttConfigFolder", "");
+    mqttDataFolder = getSetupEVString(setup, ev, "mqttDataFolder", "");
+    mqttExtensionsFolder = getSetupEVString(setup, ev, "mqttExtensionsFolder", "");
 
     // email  (do early on so email can be sent if trouble later in this method)
     emailSmtpHost = getSetupEVString(setup, ev, "emailSmtpHost", (String) null);

@@ -18,13 +18,28 @@ public class MqttBrokerContextListener implements ServletContextListener {
   public void contextInitialized(ServletContextEvent sce) {
     if (enableMqttBroker) {
       try {
-        final EmbeddedHiveMQBuilder embeddedHiveMQBuilder =
-            EmbeddedHiveMQ.builder()
-                .withConfigurationFolder(Path.of("WEB-INF/classes/gov/noaa/pfel/erddap/config"))
-                .withDataFolder(Path.of("target/data"));
+        EmbeddedHiveMQBuilder embeddedHiveMQBuilder = EmbeddedHiveMQ.builder();
+
+        if (EDStatic.config.mqttConfigFolder != null
+            && !EDStatic.config.mqttConfigFolder.isEmpty()) {
+          embeddedHiveMQBuilder =
+              embeddedHiveMQBuilder.withConfigurationFolder(
+                  Path.of(EDStatic.config.mqttConfigFolder));
+        }
+        if (EDStatic.config.mqttDataFolder != null && !EDStatic.config.mqttDataFolder.isEmpty()) {
+          embeddedHiveMQBuilder =
+              embeddedHiveMQBuilder.withDataFolder(Path.of(EDStatic.config.mqttDataFolder));
+        }
+        if (EDStatic.config.mqttExtensionsFolder != null
+            && !EDStatic.config.mqttExtensionsFolder.isEmpty()) {
+          embeddedHiveMQBuilder =
+              embeddedHiveMQBuilder.withExtensionsFolder(
+                  Path.of(EDStatic.config.mqttExtensionsFolder));
+        }
+
+        embeddedHiveMQBuilder = embeddedHiveMQBuilder.withoutLoggingBootstrap();
 
         this.hiveMQ = embeddedHiveMQBuilder.build();
-
         this.hiveMQ.start().join();
 
       } catch (final Exception ex) {
@@ -38,7 +53,6 @@ public class MqttBrokerContextListener implements ServletContextListener {
   public void contextDestroyed(ServletContextEvent sce) {
     if (enableMqttBroker && this.hiveMQ != null) {
       try {
-        // 4. Stop the broker only when the application context is destroyed
         this.hiveMQ.stop().join();
       } catch (final Exception ex) {
         System.out.println("Error stopping MQTT broker");
