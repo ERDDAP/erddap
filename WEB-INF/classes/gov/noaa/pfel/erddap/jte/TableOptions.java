@@ -9,6 +9,7 @@ import gov.noaa.pfel.coastwatch.pointdata.Table;
 import java.util.List;
 
 public class TableOptions {
+
   private final String otherClasses;
   private final String bgColor;
   private final int border;
@@ -21,26 +22,72 @@ public class TableOptions {
   private final String[] fileAccessBaseUrl;
   private final String[] fileAccessSuffix;
 
-  public TableOptions(
-      String otherClasses,
-      String bgColor,
-      int border,
-      boolean writeUnits,
-      int timeColumn,
-      boolean needEncodingAsHtml,
-      boolean allowWrap,
-      Table table) {
-    this.otherClasses = otherClasses;
-    this.bgColor = bgColor;
-    this.border = border;
-    this.writeUnits = writeUnits;
-    this.timeColumn = timeColumn;
-    this.needEncodingAsHtml = needEncodingAsHtml;
-    this.allowWrap = allowWrap;
-    this.table = table;
+  private TableOptions(TableOptionsBuilder builder) {
+    this.otherClasses = builder.otherClasses;
+    this.bgColor = builder.bgColor;
+    this.border = builder.border;
+    this.writeUnits = builder.writeUnits;
+    this.timeColumn = builder.timeColumn;
+    this.needEncodingAsHtml = builder.needEncodingAsHtml;
+    this.allowWrap = builder.allowWrap;
+    this.table = builder.table;
     int nCols = table.nColumns();
     this.fileAccessBaseUrl = new String[nCols];
     this.fileAccessSuffix = new String[nCols];
+  }
+
+  public static class TableOptionsBuilder {
+    private String otherClasses = "";
+    private String bgColor = null;
+    private int border = 0;
+    private boolean writeUnits = false;
+    private int timeColumn = -1;
+    private boolean needEncodingAsHtml = false;
+    private boolean allowWrap = true;
+    private Table table;
+
+    public TableOptionsBuilder(Table table) {
+      this.table = table;
+    }
+
+    public TableOptionsBuilder otherClasses(String otherClasses) {
+      this.otherClasses = otherClasses;
+      return this;
+    }
+
+    public TableOptionsBuilder bgColor(String bgColor) {
+      this.bgColor = bgColor;
+      return this;
+    }
+
+    public TableOptionsBuilder border(int border) {
+      this.border = border;
+      return this;
+    }
+
+    public TableOptionsBuilder writeUnits(boolean writeUnits) {
+      this.writeUnits = writeUnits;
+      return this;
+    }
+
+    public TableOptionsBuilder timeColumn(int timeColumn) {
+      this.timeColumn = timeColumn;
+      return this;
+    }
+
+    public TableOptionsBuilder needEncodingAsHtml(boolean needEncodingAsHtml) {
+      this.needEncodingAsHtml = needEncodingAsHtml;
+      return this;
+    }
+
+    public TableOptionsBuilder allowWrap(boolean allowWrap) {
+      this.allowWrap = allowWrap;
+      return this;
+    }
+
+    public TableOptions build() {
+      return new TableOptions(this);
+    }
   }
 
   public String getNoData() {

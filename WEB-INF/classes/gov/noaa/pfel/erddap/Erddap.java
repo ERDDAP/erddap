@@ -14093,15 +14093,15 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
         // use html templates
         YouAreHere youAreHere = EDStatic.getYouAreHere(request, language, loggedInAs, shortTitle);
         TableOptions tableOptions =
-            new TableOptions(
-                "commonBGColor",
-                null,
-                1, // other classes, bgColor, border,
-                false,
-                mtCol,
-                false, // writeUnits, timeColumn, needEncodingAsHtml,
-                false,
-                table);
+            new TableOptions.TableOptionsBuilder(table)
+                .otherClasses("commonBGColor")
+                .bgColor(null)
+                .border(1)
+                .writeUnits(false)
+                .timeColumn(mtCol)
+                .needEncodingAsHtml(false)
+                .allowWrap(false)
+                .build();
         TemplateEngine engine = TemplateEngine.createPrecompiled(ContentType.Html);
         engine.render(
             "outofdatedatasets.jte",
