@@ -79,9 +79,11 @@ jobs:
             ghcr.io/erddap
           tags: |
             type=semver,pattern={{raw}}
-            type=raw,value=alpha-latest,enable={{is_default_branch}}
             type=raw,value={{date 'YYYYMMDDTHHmmss'}},enable={{is_default_branch}}
-            
+
+          # Temporarily disabling this to see if the alpha-latest tag was causing an error with ghcr
+          # type=raw,value=alpha-latest,enable={{is_default_branch}}
+
           # type=semver,pattern={{raw}} should cause an image to be
           # tagged with the version number from the tag, e.g., v1.2.3
           #
