@@ -15,7 +15,11 @@ import com.cohort.util.MustBe;
 import com.cohort.util.String2;
 import com.cohort.util.Test;
 import com.cohort.util.XML;
-import dods.dap.*;
+import dods.dap.AttributeTable;
+import dods.dap.BaseType;
+import dods.dap.DAS;
+import dods.dap.DDS;
+import dods.dap.DSequence;
 import gov.noaa.pfel.coastwatch.griddata.OpendapHelper;
 import gov.noaa.pfel.coastwatch.pointdata.Table;
 import gov.noaa.pfel.coastwatch.util.FileVisitorDNLS;
@@ -27,7 +31,13 @@ import gov.noaa.pfel.erddap.handlers.EDDTableFromErddapHandler;
 import gov.noaa.pfel.erddap.handlers.SaxHandlerClass;
 import gov.noaa.pfel.erddap.util.EDMessages;
 import gov.noaa.pfel.erddap.util.EDStatic;
-import gov.noaa.pfel.erddap.variable.*;
+import gov.noaa.pfel.erddap.variable.EDV;
+import gov.noaa.pfel.erddap.variable.EDVAlt;
+import gov.noaa.pfel.erddap.variable.EDVDepth;
+import gov.noaa.pfel.erddap.variable.EDVLat;
+import gov.noaa.pfel.erddap.variable.EDVLon;
+import gov.noaa.pfel.erddap.variable.EDVTime;
+import gov.noaa.pfel.erddap.variable.EDVTimeStamp;
 import jakarta.servlet.http.HttpServletRequest;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
@@ -308,14 +318,13 @@ public class EDDTableFromErddap extends EDDTable implements FromErddap {
 
         // delve into the outerSequence
         BaseType outerVariable = dds.getVariable(SEQUENCE_NAME);
-        if (!(outerVariable instanceof DSequence))
+        if (!(outerVariable instanceof DSequence outerSequence))
           throw new IllegalArgumentException(
               errorInMethod
                   + "outerVariable not a DSequence: name="
                   + outerVariable.getName()
                   + " type="
                   + outerVariable.getTypeName());
-        DSequence outerSequence = (DSequence) outerVariable;
         int nOuterColumns = outerSequence.elementCount();
         AttributeTable outerAttributeTable = das.getAttributeTable(SEQUENCE_NAME);
         for (int outerCol = 0; outerCol < nOuterColumns; outerCol++) {

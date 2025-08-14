@@ -943,6 +943,7 @@ public class GenerateThreddsXml {
    * @param args must have the 4 Strings which will be used as the 4 paramaters for
    *     generateThreddsXml.
    */
+  @SuppressWarnings("MisleadingEscapedSpace")
   public static void main(String args[]) throws Exception {
     verbose = true;
     if (args == null || args.length < 4) {

@@ -5109,7 +5109,6 @@ public class Calendar2 {
         String sample = sa.getString(sai).trim();
         if (regexPattern.matcher(sample).matches()) {
           sai = isSomething.nextSetBit(sai + 1);
-          continue;
         } else {
           break;
         }

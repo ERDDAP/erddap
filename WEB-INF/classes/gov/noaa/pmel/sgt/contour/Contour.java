@@ -720,7 +720,6 @@ public class Contour implements PropertyChangeListener {
         if (space / ark < 0.80 || !roomFound) {
           //	  drawLineSegment(g, x[k], y[k], x[k+1], y[k+1]);
           k = k + 1;
-          continue;
         } else {
           //
           // add label to contour line

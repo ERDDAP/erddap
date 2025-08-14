@@ -101,10 +101,10 @@ public abstract class CartesianRenderer implements PropertyChangeListener {
    * @param dmo DataModel object
    */
   public static CartesianRenderer getRenderer(CartesianGraph cg, SGTData dmo, Attribute attr) {
-    if (dmo instanceof SGTLine) {
-      return new LineCartesianRenderer(cg, (SGTLine) dmo, (LineAttribute) attr);
-    } else if (dmo instanceof SGTGrid) {
-      return new GridCartesianRenderer(cg, (SGTGrid) dmo, (GridAttribute) attr);
+    if (dmo instanceof SGTLine sgtLine) {
+      return new LineCartesianRenderer(cg, sgtLine, (LineAttribute) attr);
+    } else if (dmo instanceof SGTGrid sgtGrid) {
+      return new GridCartesianRenderer(cg, sgtGrid, (GridAttribute) attr);
     }
     throw new UnsupportedOperationException();
     // return null;

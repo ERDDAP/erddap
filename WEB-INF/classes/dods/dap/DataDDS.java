@@ -11,7 +11,17 @@
 
 package dods.dap;
 
-import java.io.*;
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.BufferedWriter;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.EOFException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
 import java.util.Iterator;
 import java.util.zip.DeflaterOutputStream;
@@ -41,15 +51,6 @@ public class DataDDS extends DDS {
   public DataDDS(ServerVersion ver, BaseTypeFactory btf) {
     super(btf);
     this.ver = ver;
-  }
-
-  /**
-   * Returns the <code>ServerVersion</code> given in the constructor.
-   *
-   * @return the <code>ServerVersion</code> given in the constructor.
-   */
-  public final ServerVersion getServerVersion() {
-    return ver;
   }
 
   /**

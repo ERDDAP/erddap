@@ -1441,11 +1441,10 @@ public class StringArray extends PrimitiveArray {
    */
   @Override
   public String testEquals(final Object o) {
-    if (!(o instanceof StringArray))
+    if (!(o instanceof StringArray other))
       return "The two objects aren't equal: this object is a StringArray; the other is a "
           + (o == null ? "null" : o.getClass().getName())
           + ".";
-    final StringArray other = (StringArray) o;
     if (other.size() != size)
       return "The two StringArrays aren't equal: one has "
           + size
@@ -2359,17 +2358,13 @@ public class StringArray extends PrimitiveArray {
           ch = csv.charAt(po++);
           if (ch == '\\' && po < n) {
             po++;
-            continue;
           } else if (ch == '"') {
             // matching close quote
             break;
           }
         }
-
       } else if (ch == '\\' && po < n) {
         po++;
-        continue;
-
       } else if (ch == ',') {
         // end of item
         sa.addNotCanonical(csv.substring(start, po - 1).trim()); // avoid canonical
@@ -2424,7 +2419,6 @@ public class StringArray extends PrimitiveArray {
           ch = csv.charAt(po++);
           if (ch == '\\') { // if there is no next char, that will be caught
             po++; // eat the next char
-            continue;
           } else if (ch == '"') {
             // matching close quote
             break;

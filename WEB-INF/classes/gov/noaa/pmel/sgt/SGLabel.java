@@ -88,7 +88,7 @@ public class SGLabel implements Cloneable, LayerChild, Moveable, Serializable {
       PropertyDescriptor[] descriptors = info.getPropertyDescriptors();
       for (PropertyDescriptor pd : descriptors) {
         if (pd.getName().equals("layer")) {
-          pd.setValue("transient", Boolean.TRUE);
+          pd.setValue("transient", true);
         }
       }
     } catch (IntrospectionException ie) {
@@ -192,8 +192,7 @@ public class SGLabel implements Cloneable, LayerChild, Moveable, Serializable {
    */
   @Override
   public boolean equals(Object obj) {
-    if (!(obj instanceof SGLabel)) return false;
-    SGLabel sg = (SGLabel) obj;
+    if (!(obj instanceof SGLabel sg)) return false;
     /*    boolean t1 = !ident_.equals(sg.getId());
     boolean t2 = !proxy_.getText().equals(sg.getText());
     boolean t3 = proxy_.getHeightP() != sg.getHeightP();

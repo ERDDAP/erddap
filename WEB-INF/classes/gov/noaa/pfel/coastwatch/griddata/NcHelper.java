@@ -1591,8 +1591,8 @@ public class NcHelper {
         lastRow == -1
             ? getPrimitiveArray(variable)
             : getPrimitiveArray(variable, firstRow, lastRow);
-    if (pa instanceof DoubleArray) {
-      return (DoubleArray) pa;
+    if (pa instanceof DoubleArray dpa) {
+      return dpa;
     }
 
     DoubleArray da = new DoubleArray(pa);
@@ -2251,9 +2251,8 @@ public class NcHelper {
     Variable v = nc.findVariable(structureName);
     if (v == null)
       throw new RuntimeException("structureName=" + structureName + " isn't the nc/hdf file.");
-    if (!(v instanceof Structure))
+    if (!(v instanceof Structure s))
       throw new RuntimeException(structureName + " isn't a structure.");
-    Structure s = (Structure) v;
 
     // get structure's dimensions
     List<Dimension> dims = s.getDimensions();

@@ -4,7 +4,10 @@
  */
 package gov.noaa.pfel.coastwatch.griddata;
 
-import com.cohort.array.*;
+import com.cohort.array.Attributes;
+import com.cohort.array.DoubleArray;
+import com.cohort.array.FloatArray;
+import com.cohort.array.PrimitiveArray;
 import com.cohort.util.Calendar2;
 import com.cohort.util.File2;
 import com.cohort.util.Math2;
@@ -15,8 +18,20 @@ import com.google.common.collect.ImmutableList;
 import gov.noaa.pfel.coastwatch.util.BufferedReadRandomAccessFile;
 import java.util.Arrays;
 import java.util.List;
-import ucar.ma2.*;
-import ucar.nc2.*;
+import ucar.ma2.Array;
+import ucar.ma2.ArrayByte;
+import ucar.ma2.ArrayDouble;
+import ucar.ma2.ArrayFloat;
+import ucar.ma2.ArrayInt;
+import ucar.ma2.ArrayLong;
+import ucar.ma2.ArrayShort;
+import ucar.ma2.DataType;
+import ucar.ma2.Index1D;
+import ucar.nc2.Attribute;
+import ucar.nc2.Dimension;
+import ucar.nc2.Group;
+import ucar.nc2.NetcdfFile;
+import ucar.nc2.Variable;
 import ucar.nc2.write.NetcdfFormatWriter;
 
 /**
@@ -273,10 +288,9 @@ public class Grid {
   @Override
   public boolean equals(Object o) {
     try {
-      if (!(o instanceof Grid)) {
+      if (!(o instanceof Grid grid2)) {
         return false;
       }
-      Grid grid2 = (Grid) o;
       Test.ensureEqual(latSpacing, grid2.latSpacing, "latSpacing");
       Test.ensureEqual(lonSpacing, grid2.lonSpacing, "lonSpacing");
 

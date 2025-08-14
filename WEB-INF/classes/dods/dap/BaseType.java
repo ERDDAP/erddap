@@ -11,7 +11,10 @@
 
 package dods.dap;
 
-import java.io.*;
+import java.io.BufferedWriter;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
 
 /**
@@ -342,7 +345,6 @@ public abstract class BaseType implements Cloneable {
    *     DStructure</code>), this flag indicates whether to check the semantics of the member
    *     variables, too.
    * @exception BadSemanticsException if semantics are bad, explains why.
-   * @see DDS#checkSemantics(boolean)
    */
   public void checkSemantics(boolean all) throws BadSemanticsException {
     if (_name == null)

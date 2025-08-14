@@ -49,8 +49,8 @@ public class StackedLayout implements LayoutManager {
     synchronized (parent.getTreeLock()) {
       JPane pane = null;
       boolean batch = false;
-      if (parent instanceof JPane) {
-        pane = (JPane) parent;
+      if (parent instanceof JPane p) {
+        pane = p;
         batch = pane.isBatch();
         pane.setBatch(true, "StackedLayout");
       }

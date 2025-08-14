@@ -11,7 +11,11 @@
 
 package dods.dap;
 
-import java.io.*;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.EOFException;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -122,8 +126,7 @@ public class DStructure extends DConstructor implements ClientIO {
       String field = name.substring(dotIndex + 1);
 
       BaseType aggRef = getVariable(aggregate);
-      if (aggRef instanceof DConstructor)
-        return ((DConstructor) aggRef).getVariable(field); // recurse
+      if (aggRef instanceof DConstructor dcon) return dcon.getVariable(field); // recurse
       else
         ; // fall through to throw statement
     } else {

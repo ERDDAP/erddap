@@ -43,11 +43,8 @@ public class MatFiles extends TableWriterFileType {
   @Override
   public void writeTableToFileFormat(DapRequestInfo requestInfo, TableWriter tableWriter)
       throws Throwable {
-    if (tableWriter instanceof TableWriterAllWithMetadata) {
-      saveAsMatlab(
-          requestInfo.outputStream(),
-          (TableWriterAllWithMetadata) tableWriter,
-          requestInfo.edd().datasetID());
+    if (tableWriter instanceof TableWriterAllWithMetadata twalwm) {
+      saveAsMatlab(requestInfo.outputStream(), twalwm, requestInfo.edd().datasetID());
     }
   }
 

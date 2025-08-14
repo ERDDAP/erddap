@@ -8046,9 +8046,8 @@ public abstract class EDDTable extends EDD {
                 + Calendar2.safeEpochSecondsToIsoStringTZ(timeMax, "NaN"));
 
       // If user clicked on map, change lon/lat/Min/Max
-      partValue =
-          String2.stringStartsWith(
-              queryParts, partName = ".click=?"); // ? indicates user clicked on map
+      partName = ".click=?";
+      partValue = String2.stringStartsWith(queryParts, partName); // ? indicates user clicked on map
       if (partValue != null && pngInfo != null) {
         if (reallyVerbose) String2.log("  processing " + partValue);
         try {
@@ -8098,7 +8097,8 @@ public abstract class EDDTable extends EDD {
       }
 
       // If user clicked on a zoom button, change lon/lat/Min/Max
-      partValue = String2.stringStartsWith(queryParts, partName = ".zoom=");
+      partName = ".zoom=";
+      partValue = String2.stringStartsWith(queryParts, partName);
       if (partValue != null && pngInfoDoubleWESN != null) {
         if (reallyVerbose) String2.log("  processing " + partValue);
         try {
@@ -8252,7 +8252,8 @@ public abstract class EDDTable extends EDD {
       if (lonIndex >= 0 && latIndex >= 0 && nonAxis.length >= 2) drawsSA.add("vectors");
       String draws[] = drawsSA.toArray();
       int draw = defaultDraw;
-      partValue = String2.stringStartsWith(queryParts, partName = ".draw=");
+      partName = ".draw=";
+      partValue = String2.stringStartsWith(queryParts, partName);
       if (partValue != null) {
         draw = String2.indexOf(draws, partValue.substring(partName.length()));
         if (draw < 0) draw = defaultDraw;
@@ -8986,7 +8987,8 @@ public abstract class EDDTable extends EDD {
         "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18"
       };
       if (drawLinesAndMarkers || drawMarkers) {
-        partValue = String2.stringStartsWith(queryParts, partName = ".marker=");
+        partName = ".marker=";
+        partValue = String2.stringStartsWith(queryParts, partName);
         if (partValue != null) {
           pParts = String2.split(partValue.substring(partName.length()), '|');
           if (pParts.length > 0) mType = String2.parseInt(pParts[0]);
@@ -9036,7 +9038,8 @@ public abstract class EDDTable extends EDD {
 
       // color
       paramName = "colr";
-      partValue = String2.stringStartsWith(queryParts, partName = ".color=0x");
+      partName = ".color=0x";
+      partValue = String2.stringStartsWith(queryParts, partName);
       int colori =
           HtmlWidgets.PALETTE17.indexOf(
               partValue == null ? "" : partValue.substring(partName.length()));
@@ -9060,7 +9063,8 @@ public abstract class EDDTable extends EDD {
       int palette = 0, continuous = 0, scale = 0, pSections = 0;
       String palMin = "", palMax = "";
       if (drawLinesAndMarkers || drawMarkers) {
-        partValue = String2.stringStartsWith(queryParts, partName = ".colorBar=");
+        partName = ".colorBar=";
+        partValue = String2.stringStartsWith(queryParts, partName);
         pParts =
             partValue == null
                 ? new String[0]
@@ -9209,7 +9213,8 @@ public abstract class EDDTable extends EDD {
       if (showLandOption) {
         // Draw Land
         int tLand = 0; // don't translate
-        partValue = String2.stringStartsWith(queryParts, partName = ".land=");
+        partName = ".land=";
+        partValue = String2.stringStartsWith(queryParts, partName);
         if (partValue != null) {
           partValue = partValue.substring(6);
           tLand = Math.max(0, SgtMap.drawLandMask_OPTIONS.indexOf(partValue));
@@ -9242,7 +9247,8 @@ public abstract class EDDTable extends EDD {
           graphQueryNoTime.append(tq);
         }
       } else {
-        partValue = String2.stringStartsWith(queryParts, partName = ".land=");
+        partName = ".land=";
+        partValue = String2.stringStartsWith(queryParts, partName);
         if (partValue != null) {
           // pass it through
           graphQuery.append(partValue);
@@ -9255,7 +9261,8 @@ public abstract class EDDTable extends EDD {
       String vec = "";
       if (drawVectors) {
         paramName = "vec";
-        vec = String2.stringStartsWith(queryParts, partName = ".vec=");
+        partName = ".vec=";
+        vec = String2.stringStartsWith(queryParts, partName);
         vec = vec == null ? "" : vec.substring(partName.length());
         writer.write(
             "  <tr>\n"
@@ -9287,7 +9294,8 @@ public abstract class EDDTable extends EDD {
 
       // bgColor
       Color bgColor = EDStatic.config.graphBackgroundColor;
-      String tBGColor = String2.stringStartsWith(queryParts, partName = ".bgColor=");
+      partName = ".bgColor=";
+      String tBGColor = String2.stringStartsWith(queryParts, partName);
       if (tBGColor != null) {
         String tBGColorAr[] = String2.split(tBGColor.substring(partName.length()), '|');
         if (tBGColorAr.length > 0 && tBGColorAr[0].length() > 0) {
@@ -9306,7 +9314,8 @@ public abstract class EDDTable extends EDD {
       String yAxisScale = "";
       if (true) {
         paramName = "yRange";
-        String tyRange = String2.stringStartsWith(queryParts, partName = ".yRange=");
+        partName = ".yRange=";
+        String tyRange = String2.stringStartsWith(queryParts, partName);
         if (tyRange != null) {
           String tyRangeAr[] = String2.split(tyRange.substring(partName.length()), '|');
           for (int i = 0; i < 2; i++) {

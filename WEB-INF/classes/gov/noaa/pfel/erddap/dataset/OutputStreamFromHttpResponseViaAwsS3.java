@@ -115,7 +115,8 @@ public class OutputStreamFromHttpResponseViaAwsS3 implements OutputStreamSource 
     }
 
     // make an OutpuStreamViaAwsS3 which has special close() method
-    return outputStream = new OutputStreamViaAwsS3(this);
+    outputStream = new OutputStreamViaAwsS3(this);
+    return outputStream;
   }
 
   /**

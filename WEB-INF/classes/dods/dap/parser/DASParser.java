@@ -2,7 +2,14 @@
 package dods.dap.parser;
 
 import com.cohort.util.MustBe; // Bob added
-import dods.dap.*;
+import dods.dap.Attribute;
+import dods.dap.AttributeBadValueException;
+import dods.dap.AttributeExistsException;
+import dods.dap.AttributeTable;
+import dods.dap.DAS;
+import dods.dap.DASException;
+import dods.dap.DODSException;
+import dods.dap.NoSuchAttributeException;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;
@@ -793,57 +800,9 @@ public class DASParser implements DASParserConstants {
     for (int i = 0; i < jj_2_rtns.length; i++) jj_2_rtns[i] = new JJCalls();
   }
 
-  public void ReInit(java.io.InputStream stream) {
-    jj_input_stream.ReInit(stream, 1, 1);
-    token_source.ReInit(jj_input_stream);
-    token = new Token();
-    jj_ntk = -1;
-    jj_gen = 0;
-    for (int i = 0; i < 14; i++) jj_la1[i] = -1;
-    for (int i = 0; i < jj_2_rtns.length; i++) jj_2_rtns[i] = new JJCalls();
-  }
-
-  public DASParser(java.io.Reader stream) {
-    jj_input_stream = new SimpleCharStream(stream, 1, 1);
-    token_source = new DASParserTokenManager(jj_input_stream);
-    token = new Token();
-    jj_ntk = -1;
-    jj_gen = 0;
-    for (int i = 0; i < 14; i++) jj_la1[i] = -1;
-    for (int i = 0; i < jj_2_rtns.length; i++) jj_2_rtns[i] = new JJCalls();
-  }
-
-  public void ReInit(java.io.Reader stream) {
-    jj_input_stream.ReInit(stream, 1, 1);
-    token_source.ReInit(jj_input_stream);
-    token = new Token();
-    jj_ntk = -1;
-    jj_gen = 0;
-    for (int i = 0; i < 14; i++) jj_la1[i] = -1;
-    for (int i = 0; i < jj_2_rtns.length; i++) jj_2_rtns[i] = new JJCalls();
-  }
-
-  public DASParser(DASParserTokenManager tm) {
-    token_source = tm;
-    token = new Token();
-    jj_ntk = -1;
-    jj_gen = 0;
-    for (int i = 0; i < 14; i++) jj_la1[i] = -1;
-    for (int i = 0; i < jj_2_rtns.length; i++) jj_2_rtns[i] = new JJCalls();
-  }
-
-  public void ReInit(DASParserTokenManager tm) {
-    token_source = tm;
-    token = new Token();
-    jj_ntk = -1;
-    jj_gen = 0;
-    for (int i = 0; i < 14; i++) jj_la1[i] = -1;
-    for (int i = 0; i < jj_2_rtns.length; i++) jj_2_rtns[i] = new JJCalls();
-  }
-
   private final Token jj_consume_token(int kind) throws ParseException {
-    Token oldToken;
-    if ((oldToken = token).next != null) token = token.next;
+    Token oldToken = token;
+    if (oldToken.next != null) token = token.next;
     else token = token.next = token_source.getNextToken();
     jj_ntk = -1;
     if (token.kind == kind) {
@@ -888,27 +847,14 @@ public class DASParser implements DASParserConstants {
     return (jj_scanpos.kind != kind);
   }
 
-  public final Token getNextToken() {
-    if (token.next != null) token = token.next;
-    else token = token.next = token_source.getNextToken();
-    jj_ntk = -1;
-    jj_gen++;
-    return token;
-  }
-
-  public final Token getToken(int index) {
-    Token t = token;
-    for (int i = 0; i < index; i++) {
-      if (t.next != null) t = t.next;
-      else t = t.next = token_source.getNextToken();
-    }
-    return t;
-  }
-
   private final int jj_ntk() {
-    if ((jj_nt = token.next) == null)
-      return (jj_ntk = (token.next = token_source.getNextToken()).kind);
-    else return (jj_ntk = jj_nt.kind);
+    if ((jj_nt = token.next) == null) {
+      token.next = token_source.getNextToken();
+      jj_ntk = token.next.kind;
+    } else {
+      jj_ntk = jj_nt.kind;
+    }
+    return jj_ntk;
   }
 
   private final List<int[]> jj_expentries = new ArrayList<>();
@@ -977,10 +923,6 @@ public class DASParser implements DASParserConstants {
     }
     return new ParseException(token, exptokseq, tokenImage);
   }
-
-  public final void enable_tracing() {}
-
-  public final void disable_tracing() {}
 
   private final void jj_rescan_token() {
     jj_rescan = true;

@@ -48,9 +48,9 @@ public class NcoJsonFiles extends TableWriterFileType {
   @Override
   public void writeTableToFileFormat(DapRequestInfo requestInfo, TableWriter tableWriter)
       throws Throwable {
-    if (tableWriter instanceof TableWriterAllWithMetadata) {
+    if (tableWriter instanceof TableWriterAllWithMetadata twalwm) {
       String jsonp = EDStatic.getJsonpFromQuery(requestInfo.language(), requestInfo.userDapQuery());
-      saveAsNcoJson(requestInfo.outputStream(), (TableWriterAllWithMetadata) tableWriter, jsonp);
+      saveAsNcoJson(requestInfo.outputStream(), twalwm, jsonp);
     }
   }
 

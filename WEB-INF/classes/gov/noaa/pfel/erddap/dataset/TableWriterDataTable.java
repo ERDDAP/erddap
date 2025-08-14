@@ -146,45 +146,7 @@ public class TableWriterDataTable extends TableWriter {
                       + name
                       + "\",\"pattern\":\"\",\"type\":\"string\"}");
             }
-          } else if (type == PAType.FLOAT) {
-            if (writeUnits && u != null) {
-              writer.write(
-                  "{\"id\":\""
-                      + name
-                      + "\",\"label\":\""
-                      + name
-                      + " ("
-                      + u
-                      + ") "
-                      + "\",\"pattern\":\"\",\"type\":\"number\"}");
-            } else {
-              writer.write(
-                  "{\"id\":\""
-                      + name
-                      + "\",\"label\":\""
-                      + name
-                      + "\",\"pattern\":\"\",\"type\":\"number\"}");
-            }
-          } else if (type == PAType.DOUBLE) {
-            if (writeUnits && u != null) {
-              writer.write(
-                  "{\"id\":\""
-                      + name
-                      + "\",\"label\":\""
-                      + name
-                      + " ("
-                      + u
-                      + ") "
-                      + "\",\"pattern\":\"\",\"type\":\"number\"}");
-            } else {
-              writer.write(
-                  "{\"id\":\""
-                      + name
-                      + "\",\"label\":\""
-                      + name
-                      + "\",\"pattern\":\"\",\"type\":\"number\"}");
-            }
-          } else { // Assume numeric, will be long at this point
+          } else { // Assume numeric, will be double, float, or long at this point
             if (writeUnits && u != null) {
               writer.write(
                   "{\"id\":\""

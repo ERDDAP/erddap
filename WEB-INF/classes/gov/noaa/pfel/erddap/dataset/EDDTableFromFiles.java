@@ -54,7 +54,8 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
-import java.util.regex.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * This class represents a virtual table of data from by aggregating a collection of data files.
@@ -3506,8 +3507,7 @@ public abstract class EDDTableFromFiles extends EDDTable implements WatchUpdateH
       continue;
 
       if (minMaxPa instanceof StringArray) {
-        if (edv instanceof EDVTimeStamp) {
-          EDVTimeStamp edvts = (EDVTimeStamp) edv;
+        if (edv instanceof EDVTimeStamp edvts) {
           edvts.setDestinationMinMax(
               PAOne.fromDouble(edvts.sourceTimeToEpochSeconds(minMaxPa.getString(0))),
               PAOne.fromDouble(edvts.sourceTimeToEpochSeconds(minMaxPa.getString(1))));
@@ -5026,19 +5026,19 @@ public abstract class EDDTableFromFiles extends EDDTable implements WatchUpdateH
     private int nReadHaveMatch = 0;
     private int nReadNoMatch = 0;
 
-    public void incrementMatch() {
+    private void incrementMatch() {
       nReadHaveMatch++;
     }
 
-    public void incrementNoMatch() {
+    private void incrementNoMatch() {
       nReadNoMatch++;
     }
 
-    public int getMatch() {
+    private int getMatch() {
       return nReadHaveMatch;
     }
 
-    public int getNoMatch() {
+    private int getNoMatch() {
       return nReadNoMatch;
     }
   }

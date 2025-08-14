@@ -3629,8 +3629,13 @@ public class EDStatic {
           taskOA[2] = tLocalDir + remoteRelativeDir + remoteNames.get(remoteI);
           taskOA[3] = remoteLastMod.get(remoteI); // or if unknown?
           nFilesToDownload++;
-          int tTaskNumber =
-              nFilesToDownload <= maxTasks ? (lastTask = addTask(taskOA)) : -nFilesToDownload;
+          int tTaskNumber = -1;
+          if (nFilesToDownload <= maxTasks) {
+            tTaskNumber = lastTask = addTask(taskOA);
+          } else {
+            // This is weird but the number is really only used in the log below.
+            tTaskNumber = -nFilesToDownload;
+          }
           if (reallyVerbose || (verbose && nFilesToDownload == 1))
             String2.log(
                 (tTaskNumber < 0 ? "% didn't create" : "% created")

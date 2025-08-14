@@ -46,8 +46,7 @@ public abstract class Point2D implements Serializable, Cloneable {
      */
     @Override
     public boolean equals(Object pt) {
-      if (pt instanceof Point2D.Double) {
-        Point2D.Double pt2 = (Point2D.Double) pt;
+      if (pt instanceof Point2D.Double pt2) {
         return (x == pt2.x) && (y == pt2.y);
       } else {
         return false;

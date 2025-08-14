@@ -69,11 +69,11 @@ public class OdvFiles extends TableWriterFileType {
   @Override
   public void writeTableToFileFormat(DapRequestInfo requestInfo, TableWriter tableWriter)
       throws Throwable {
-    if (tableWriter instanceof TableWriterAllWithMetadata) {
+    if (tableWriter instanceof TableWriterAllWithMetadata twalwm) {
       saveAsODV(
           requestInfo.language(),
           requestInfo.outputStream(),
-          (TableWriterAllWithMetadata) tableWriter,
+          twalwm,
           requestInfo.edd().datasetID(),
           requestInfo.edd().publicSourceUrl(requestInfo.language()),
           requestInfo.edd().infoUrl(requestInfo.language()));

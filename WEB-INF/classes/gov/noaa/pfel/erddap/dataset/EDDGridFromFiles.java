@@ -22,6 +22,7 @@ import com.cohort.util.String2;
 import com.cohort.util.Test;
 import com.cohort.util.Units2;
 import com.google.common.base.Strings;
+import com.google.common.collect.ImmutableList;
 import gov.noaa.pfel.coastwatch.pointdata.Table;
 import gov.noaa.pfel.coastwatch.util.FileVisitorDNLS;
 import gov.noaa.pfel.coastwatch.util.RegexFilenameFilter;
@@ -37,7 +38,14 @@ import gov.noaa.pfel.erddap.util.EDMessages;
 import gov.noaa.pfel.erddap.util.EDMessages.Message;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.util.ThreadedWorkManager;
-import gov.noaa.pfel.erddap.variable.*;
+import gov.noaa.pfel.erddap.variable.AxisVariableInfo;
+import gov.noaa.pfel.erddap.variable.DataVariableInfo;
+import gov.noaa.pfel.erddap.variable.EDV;
+import gov.noaa.pfel.erddap.variable.EDVAlt;
+import gov.noaa.pfel.erddap.variable.EDVGridAxis;
+import gov.noaa.pfel.erddap.variable.EDVTime;
+import gov.noaa.pfel.erddap.variable.EDVTimeGridAxis;
+import gov.noaa.pfel.erddap.variable.EDVTimeStamp;
 import jakarta.servlet.http.HttpServletRequest;
 import java.io.FileNotFoundException;
 import java.nio.file.Path;
@@ -2648,7 +2656,7 @@ public abstract class EDDGridFromFiles extends EDDGrid implements WatchUpdateHan
    *     addBadFile or requestReloadASAP().
    */
   public PrimitiveArray[] getSourceDataFromFile(
-      String tFileDir, String tFileName, EDV tDataVariables[], IntArray tConstraints)
+      String tFileDir, String tFileName, ImmutableList<EDV> tDataVariables, IntArray tConstraints)
       throws Throwable {
 
     // if using temporary cache system, ensure file is in cache
@@ -2684,7 +2692,7 @@ public abstract class EDDGridFromFiles extends EDDGrid implements WatchUpdateHan
    *     stopIndex). !!! If there is a special axis0, this will not include constraints for axis0.
    */
   public abstract PrimitiveArray[] lowGetSourceDataFromFile(
-      String tFullName, EDV tDataVariables[], IntArray tConstraints) throws Throwable;
+      String tFullName, ImmutableList<EDV> tDataVariables, IntArray tConstraints) throws Throwable;
 
   /**
    * This gets data (not yet standardized) from the data source for this EDDGrid. Because this is
@@ -2812,7 +2820,7 @@ public abstract class EDDGridFromFiles extends EDDGrid implements WatchUpdateHan
               this,
               tFileDir,
               tFileName, // it calls ensureInCache()
-              tDataVariables,
+              ImmutableList.copyOf(tDataVariables),
               ttConstraints,
               ftDirIndex.get(ftRow),
               ftLastMod.get(ftRow)));
@@ -2833,7 +2841,7 @@ public abstract class EDDGridFromFiles extends EDDGrid implements WatchUpdateHan
       EDDGridFromFiles caller,
       String tFileDir,
       String tFileName,
-      EDV[] tDataVariables,
+      ImmutableList<EDV> tDataVariables,
       IntArray tConstraints,
       int dirIndex,
       long modIndex)

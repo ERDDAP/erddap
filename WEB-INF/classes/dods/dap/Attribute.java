@@ -302,16 +302,6 @@ public class Attribute implements Cloneable {
   }
 
   /**
-   * Append a value to this attribute. Always checks the validity of the attribute's value.
-   *
-   * @param value the attribute <code>String</code> to add.
-   * @exception AttributeBadValueException thrown if the value is not a legal member of type
-   */
-  public final void appendValue(String value) throws AttributeBadValueException {
-    appendValue(value, true);
-  }
-
-  /**
    * Append a value to this attribute.
    *
    * @param value the attribute <code>String</code> to add.
@@ -323,15 +313,6 @@ public class Attribute implements Cloneable {
     if (check) dispatchCheckValue(type, value);
 
     attrList.add(value);
-  }
-
-  /**
-   * Remove the <code>i</code>'th <code>String</code> from this attribute.
-   *
-   * @param index the index of the value to remove.
-   */
-  public final void deleteValueAt(int index) {
-    attrList.remove(index);
   }
 
   /**

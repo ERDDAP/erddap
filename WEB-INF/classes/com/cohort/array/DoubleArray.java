@@ -5,7 +5,9 @@
  */
 package com.cohort.array;
 
-import com.cohort.util.*;
+import com.cohort.util.Calendar2;
+import com.cohort.util.Math2;
+import com.cohort.util.String2;
 import com.google.common.collect.ImmutableList;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -300,7 +302,7 @@ public class DoubleArray extends PrimitiveArray {
   public void addObject(final Object value) {
     if (size == array.length) // if we're at capacity
     ensureCapacity(size + 1L);
-    array[size++] = value instanceof Number ? ((Number) value).doubleValue() : Double.NaN;
+    array[size++] = value instanceof Number num ? num.doubleValue() : Double.NaN;
   }
 
   /**
@@ -970,11 +972,10 @@ public class DoubleArray extends PrimitiveArray {
    */
   @Override
   public String testEquals(final Object o) {
-    if (!(o instanceof DoubleArray))
+    if (!(o instanceof DoubleArray other))
       return "The two objects aren't equal: this object is a DoubleArray; the other is a "
           + (o == null ? "null" : o.getClass().getName())
           + ".";
-    final DoubleArray other = (DoubleArray) o;
     if (other.size() != size)
       return "The two DoubleArrays aren't equal: one has "
           + size

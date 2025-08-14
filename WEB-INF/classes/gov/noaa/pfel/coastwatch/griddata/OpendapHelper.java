@@ -945,13 +945,12 @@ public class OpendapHelper {
     while (en.hasNext()) {
       BaseType baseType = en.next();
       DArray dArray;
-      if (baseType instanceof DGrid) {
+      if (baseType instanceof DGrid dGrid) {
         // dGrid has main dArray + dimensions
-        DGrid dGrid = (DGrid) baseType;
         dArray = (DArray) dGrid.getVar(0);
-      } else if (baseType instanceof DArray) {
+      } else if (baseType instanceof DArray btdarr) {
         // dArray is usually 1 dim, but may be multidimensional
-        dArray = (DArray) baseType;
+        dArray = btdarr;
       } else {
         continue;
       }
@@ -1385,7 +1384,6 @@ public class OpendapHelper {
         } catch (Throwable t) {
           varNames[v] = null;
           if (verbose) String2.log("  removing variable: " + t);
-          continue;
         }
       }
 

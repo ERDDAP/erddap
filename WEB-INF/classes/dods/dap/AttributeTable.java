@@ -242,51 +242,6 @@ public class AttributeTable implements Cloneable {
   }
 
   /**
-   * Delete the attribute named <code>name</code>.
-   *
-   * @param name The name of the attribute to delete. This can be an attribute of any type,
-   *     including containers.
-   */
-  public final void delAttribute(String name) {
-    attr.remove(name);
-  }
-
-  /**
-   * Delete the attribute named <code>name</code>. If the attribute has a vector value, delete the
-   * <code>i</code>'th element of the vector.
-   *
-   * @param name The name of the attribute to delete. This can be an attribute of any type,
-   *     including containers.
-   * @param i If the named attribute is a vector, and <code>i</code> is non-negative, the <code>i
-   *     </code>'th entry in the vector is deleted. If <code>i</code> equals -1, the entire
-   *     attribute is deleted.
-   * @see AttributeTable#delAttribute(String)
-   */
-  public final void delAttribute(String name, int i) {
-
-    if (i == -1) { // delete the whole attribute
-
-      attr.remove(name);
-
-    } else {
-
-      Attribute a = attr.get(name);
-
-      if (a != null) {
-
-        if (a.isContainer()) {
-
-          attr.remove(name); // delete the entire container
-
-        } else {
-
-          a.deleteValueAt(i);
-        }
-      }
-    }
-  }
-
-  /**
    * Print the attribute table on the given <code>PrintWriter</code>.
    *
    * @param os the <code>PrintWriter</code> to use for output.

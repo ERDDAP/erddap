@@ -5,7 +5,8 @@
  */
 package com.cohort.array;
 
-import com.cohort.util.*;
+import com.cohort.util.Math2;
+import com.cohort.util.String2;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -332,7 +333,7 @@ public class CharArray extends PrimitiveArray {
   @Override
   public final void addObject(final Object value) {
     // double is good intermediate because it has the idea of NaN
-    addDouble(value instanceof Number ? ((Number) value).doubleValue() : Double.NaN);
+    addDouble(value instanceof Number num ? num.doubleValue() : Double.NaN);
   }
 
   /**
@@ -1148,11 +1149,10 @@ public class CharArray extends PrimitiveArray {
    */
   @Override
   public String testEquals(final Object o) {
-    if (!(o instanceof CharArray))
+    if (!(o instanceof CharArray other))
       return "The two objects aren't equal: this object is a CharArray; the other is a "
           + (o == null ? "null" : o.getClass().getName())
           + ".";
-    final CharArray other = (CharArray) o;
     if (other.size() != size)
       return "The two CharArrays aren't equal: one has "
           + size

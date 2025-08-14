@@ -144,8 +144,7 @@ public class LineAttribute implements Attribute, Cloneable {
    */
   @Override
   public boolean equals(Object obj) {
-    if (!(obj instanceof LineAttribute)) return false;
-    LineAttribute attr = (LineAttribute) obj;
+    if (!(obj instanceof LineAttribute attr)) return false;
     if (!Objects.equals(id_, attr.getId())
         || !color_.equals(attr.getColor())
         || (style_ != attr.getStyle())) return false;
@@ -399,7 +398,7 @@ public class LineAttribute implements Attribute, Cloneable {
   @Override
   public void setBatch(boolean batch, boolean local) {
     batch_ = batch;
-    if (!batch && modified_) firePropertyChange("batch", Boolean.TRUE, Boolean.FALSE);
+    if (!batch && modified_) firePropertyChange("batch", true, false);
   }
 
   /**

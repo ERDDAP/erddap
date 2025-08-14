@@ -1090,11 +1090,10 @@ public class IntArray extends PrimitiveArray {
    */
   @Override
   public String testEquals(final Object o) {
-    if (!(o instanceof IntArray))
+    if (!(o instanceof IntArray other))
       return "The two objects aren't equal: this object is a IntArray; the other is a "
           + (o == null ? "null" : o.getClass().getName())
           + ".";
-    final IntArray other = (IntArray) o;
     if (other.size() != size)
       return "The two IntArrays aren't equal: one has "
           + size

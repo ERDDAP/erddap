@@ -2184,12 +2184,21 @@ public abstract class EDD {
    */
   protected boolean setGraphsAccessibleTo(String s) {
     // dataset is public
-    if (accessibleTo == null) return graphsAccessibleToPublic = true;
+    if (accessibleTo == null) {
+      graphsAccessibleToPublic = true;
+      return graphsAccessibleToPublic;
+    }
 
     // dataset is private
-    if (s == null || s.equals("auto")) return graphsAccessibleToPublic = false;
+    if (s == null || s.equals("auto")) {
+      graphsAccessibleToPublic = false;
+      return graphsAccessibleToPublic;
+    }
 
-    if (s.equals("public")) return graphsAccessibleToPublic = true;
+    if (s.equals("public")) {
+      graphsAccessibleToPublic = true;
+      return graphsAccessibleToPublic;
+    }
 
     throw new RuntimeException(
         String2.ERROR
@@ -6085,18 +6094,18 @@ public abstract class EDD {
 
     String tValue = "";
     // add NOTE1/2/3/4/5 to summary
-    for (int i = 1; i <= 5; i++)
-      if (value.length() < 800
-          && String2.isSomething2(tValue = sourceAtts.getString("NOTE" + i))
-          && !String2.looselyContains(value, tValue))
-        value = String2.periodSpaceConcat(value, tValue);
+    for (int i = 1; i <= 5; i++) tValue = sourceAtts.getString("NOTE" + i);
+    if (value.length() < 800
+        && String2.isSomething2(tValue)
+        && !String2.looselyContains(value, tValue))
+      value = String2.periodSpaceConcat(value, tValue);
 
     // add comment1/2/3/4/5 to summary
-    for (int i = 1; i <= 5; i++)
-      if (value.length() < 800
-          && String2.isSomething2(tValue = sourceAtts.getString("comment" + i))
-          && !String2.looselyContains(value, tValue))
-        value = String2.periodSpaceConcat(value, tValue);
+    for (int i = 1; i <= 5; i++) tValue = sourceAtts.getString("comment" + i);
+    if (value.length() < 800
+        && String2.isSomething2(tValue)
+        && !String2.looselyContains(value, tValue))
+      value = String2.periodSpaceConcat(value, tValue);
 
     if (String2.isSomething2(value)) {
       // remove badly escaped FF(?)
@@ -7019,23 +7028,27 @@ public abstract class EDD {
     String s;
     if (tPublicSourceUrl.indexOf("/crm/") >= 0
         && !String2.looselyContains(tSummary, "coastal relief model")) {
-      chopUpAndAdd(s = "U.S. Coastal Relief Model. ", suggestedKeywords);
+      s = "U.S. Coastal Relief Model. ";
+      chopUpAndAdd(s, suggestedKeywords);
       tSummary = String2.periodSpaceConcat(s, tSummary);
     }
     if (tSummary.indexOf("CRUTEM") >= 0
         && // e.g., CRUTEM3
         !String2.looselyContains(tSummary, "Climatic Research Unit")) {
-      chopUpAndAdd(s = "Climatic Research Unit CRUTEM", suggestedKeywords);
+      s = "Climatic Research Unit CRUTEM";
+      chopUpAndAdd(s, suggestedKeywords);
       tSummary = String2.replaceAll(tSummary, "CRUTEM", s);
     }
     if (tPublicSourceUrl.indexOf("/dem/") >= 0 && tSummary.toLowerCase().indexOf("elevation") < 0) {
-      chopUpAndAdd(s = "Digital Elevation Model.", suggestedKeywords);
+      s = "Digital Elevation Model.";
+      chopUpAndAdd(s, suggestedKeywords);
       tSummary = String2.periodSpaceConcat(s, tSummary);
     }
     if ((tSummary.toLowerCase().indexOf("etopo") >= 0 || tPublicSourceUrl.indexOf("etopo") >= 0)
         && tSummary.toLowerCase().indexOf("topography") < 0
         && tSummary.toLowerCase().indexOf("bathymetry") < 0) {
-      chopUpAndAdd(s = "ETOPO Global Topography and Bathymetry.", suggestedKeywords);
+      s = "ETOPO Global Topography and Bathymetry.";
+      chopUpAndAdd(s, suggestedKeywords);
       tSummary = String2.periodSpaceConcat(s, tSummary);
     }
 
@@ -12785,7 +12798,6 @@ public abstract class EDD {
         String2.log(success + msg);
         nTableFileNames++;
         nCreated++;
-        continue;
       } catch (Throwable t) {
         String2.log(
             "> Attempt with EDDTableFromFileNames failed! Give up on this dir.\n"

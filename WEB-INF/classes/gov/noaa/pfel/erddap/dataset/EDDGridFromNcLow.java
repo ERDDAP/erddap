@@ -18,19 +18,25 @@ import com.cohort.util.SimpleException;
 import com.cohort.util.String2;
 import com.cohort.util.Units2;
 import com.cohort.util.XML;
+import com.google.common.collect.ImmutableList;
 import gov.noaa.pfel.coastwatch.griddata.NcHelper;
 import gov.noaa.pfel.coastwatch.griddata.OpendapHelper;
 import gov.noaa.pfel.coastwatch.pointdata.Table;
 import gov.noaa.pfel.coastwatch.util.FileVisitorDNLS;
 import gov.noaa.pfel.erddap.dataset.metadata.LocalizedAttributes;
 import gov.noaa.pfel.erddap.util.EDStatic;
-import gov.noaa.pfel.erddap.variable.*;
+import gov.noaa.pfel.erddap.variable.AxisVariableInfo;
+import gov.noaa.pfel.erddap.variable.DataVariableInfo;
+import gov.noaa.pfel.erddap.variable.EDV;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import ucar.ma2.*;
-import ucar.nc2.*;
+import ucar.ma2.StructureMembers;
+import ucar.nc2.Dimension;
+import ucar.nc2.NetcdfFile;
+import ucar.nc2.Structure;
+import ucar.nc2.Variable;
 
 /**
  * This class represents gridded data aggregated from a collection of NetCDF .nc
@@ -324,11 +330,11 @@ public abstract class EDDGridFromNcLow extends EDDGridFromFiles {
    */
   @Override
   public PrimitiveArray[] lowGetSourceDataFromFile(
-      String tFullName, EDV tDataVariables[], IntArray tConstraints) throws Throwable {
+      String tFullName, ImmutableList<EDV> tDataVariables, IntArray tConstraints) throws Throwable {
 
     // make the selection spec  and get the axis values
     int nav = tConstraints.size() / 3; // deals with special axis0
-    int ndv = tDataVariables.length;
+    int ndv = tDataVariables.size();
     PrimitiveArray[] paa = new PrimitiveArray[ndv];
     StringBuilder selectionSB = new StringBuilder();
     for (int avi = 0; avi < nav; avi++) {
@@ -347,7 +353,7 @@ public abstract class EDDGridFromNcLow extends EDDGridFromFiles {
     try (NetcdfFile ncFile = NcHelper.openFile(tFullName)) {
 
       for (int dvi = 0; dvi < ndv; dvi++) {
-        edv = tDataVariables[dvi];
+        edv = tDataVariables.get(dvi);
 
         // is it in a structure?
         int po = edv.sourceName().indexOf(NcHelper.STRUCTURE_MEMBER_SEPARATOR);

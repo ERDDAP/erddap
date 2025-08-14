@@ -5,7 +5,8 @@
  */
 package com.cohort.array;
 
-import com.cohort.util.*;
+import com.cohort.util.Math2;
+import com.cohort.util.String2;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -1184,11 +1185,10 @@ public class UShortArray extends PrimitiveArray {
    */
   @Override
   public String testEquals(final Object o) {
-    if (!(o instanceof UShortArray))
+    if (!(o instanceof UShortArray other))
       return "The two objects aren't equal: this object is a UShortArray; the other is a "
           + (o == null ? "null" : o.getClass().getName())
           + ".";
-    final UShortArray other = (UShortArray) o;
     if (other.size() != size)
       return "The two UShortArrays aren't equal: one has "
           + size

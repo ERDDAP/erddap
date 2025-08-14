@@ -399,7 +399,7 @@ public class TableWriterOrderByMean extends TableWriterAll {
       }
     }
 
-    public double getMean() {
+    private double getMean() {
       if (count == 0) return Double.NaN;
       double d = allSame ? deg : Math.toDegrees(Math.atan2(meany, meanx));
       return isDegreesTrue ? Math2.angle0360(d) : Math2.anglePM180(d);

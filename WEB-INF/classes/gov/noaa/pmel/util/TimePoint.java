@@ -44,10 +44,9 @@ public class TimePoint {
   /** Test for equality. Both x and t must be equal for equality. */
   @Override
   public boolean equals(Object o) {
-    if (!(o instanceof TimePoint)) {
+    if (!(o instanceof TimePoint tp)) {
       return false;
     }
-    TimePoint tp = (TimePoint) o;
     if (t != null && tp.t != null) {
       return (x == tp.x && t.equals(tp.t));
     } else {

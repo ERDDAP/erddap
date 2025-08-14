@@ -29,7 +29,11 @@
 
 package dods.dap;
 
-import java.io.*;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.EOFException;
+import java.io.IOException;
+import java.io.PrintWriter;
 
 /**
  * Holds a DODS <code>FLoat32</code> value.
@@ -63,15 +67,6 @@ public class DFloat32 extends BaseType implements ClientIO {
    */
   public final float getValue() {
     return val;
-  }
-
-  /**
-   * Set the current value.
-   *
-   * @param newVal the new value.
-   */
-  public final void setValue(float newVal) {
-    val = newVal;
   }
 
   /**

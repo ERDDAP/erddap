@@ -21,7 +21,8 @@ import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.MouseEvent;
-import java.awt.print.*;
+import java.awt.print.PageFormat;
+import java.awt.print.Printable;
 import java.beans.PropertyChangeListener;
 import javax.swing.SwingConstants;
 
@@ -343,8 +344,8 @@ public class JPane extends javax.swing.JLayeredPane
    */
   @Override
   public Component add(Component comp) {
-    if (comp instanceof LayerControl) {
-      ((LayerControl) comp).setPane(this);
+    if (comp instanceof LayerControl layerControl) {
+      layerControl.setPane(this);
     }
     return super.add(comp);
   }
@@ -359,8 +360,8 @@ public class JPane extends javax.swing.JLayeredPane
    */
   @Override
   public Component add(Component comp, int index) {
-    if (comp instanceof LayerControl) {
-      ((LayerControl) comp).setPane(this);
+    if (comp instanceof LayerControl layerControl) {
+      layerControl.setPane(this);
     }
     return super.add(comp, index);
   }
@@ -376,8 +377,8 @@ public class JPane extends javax.swing.JLayeredPane
   @Override
   public void add(Component comp, Object constraints) {
     super.add(comp, constraints);
-    if (comp instanceof LayerControl) {
-      ((LayerControl) comp).setPane(this);
+    if (comp instanceof LayerControl layerControl) {
+      layerControl.setPane(this);
     }
   }
 
@@ -394,8 +395,8 @@ public class JPane extends javax.swing.JLayeredPane
   @Override
   public void add(Component comp, Object constraints, int index) {
     super.add(comp, constraints, index);
-    if (comp instanceof LayerControl) {
-      ((LayerControl) comp).setPane(this);
+    if (comp instanceof LayerControl layerControl) {
+      layerControl.setPane(this);
     }
   }
 
@@ -405,8 +406,8 @@ public class JPane extends javax.swing.JLayeredPane
    */
   @Override
   public Component add(String name, Component comp) {
-    if (comp instanceof LayerControl) {
-      ((LayerControl) comp).setPane(this);
+    if (comp instanceof LayerControl layerControl) {
+      layerControl.setPane(this);
     }
     return super.add(name, comp);
   }
