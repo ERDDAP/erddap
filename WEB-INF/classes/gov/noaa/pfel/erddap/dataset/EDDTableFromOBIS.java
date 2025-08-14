@@ -788,7 +788,7 @@ public class EDDTableFromOBIS extends EDDTable {
           || tToString.indexOf(Math2.memoryTooMuchData) >= 0
           || tToString.indexOf(Math2.TooManyOpenFiles) >= 0) throw t;
 
-      throw new Throwable(EDStatic.messages.errorFromDataSource + tToString, t);
+      throw new Throwable(EDMessages.errorFromDataSource + tToString, t);
     }
     // if (reallyVerbose) String2.log(table.toString());
     table.setColumnName(table.findColumnNumber("LON"), "darwin:Longitude");

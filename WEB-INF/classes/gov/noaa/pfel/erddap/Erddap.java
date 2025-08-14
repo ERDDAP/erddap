@@ -185,8 +185,9 @@ public class Erddap extends HttpServlet {
 
   public final ConcurrentHashMap<String, int[]> failedLogins =
       new ConcurrentHashMap<>(16, 0.75f, 4);
-  public final ConcurrentHashMap<String, ConcurrentHashMap> categoryInfo =
-      new ConcurrentHashMap<>(16, 0.75f, 4);
+  public final ConcurrentHashMap<
+          String, ConcurrentHashMap<String, ConcurrentHashMap<String, Boolean>>>
+      categoryInfo = new ConcurrentHashMap<>(16, 0.75f, 4);
   public long lastClearedFailedLogins = System.currentTimeMillis();
 
   /**
@@ -331,7 +332,7 @@ public class Erddap extends HttpServlet {
     int nCat = EDStatic.config.categoryAttributes.length;
     for (int cat = 0; cat < nCat; cat++)
       categoryInfo.put(
-          EDStatic.config.categoryAttributes[cat], new ConcurrentHashMap(16, 0.75f, 4));
+          EDStatic.config.categoryAttributes[cat], new ConcurrentHashMap<>(16, 0.75f, 4));
 
     // start RunLoadDatasets
     runLoadDatasets = new RunLoadDatasets(this);
@@ -405,7 +406,7 @@ public class Erddap extends HttpServlet {
    * @return the category values for a given category attribute (or empty StringArray if none).
    */
   public StringArray categoryInfo(String attribute) {
-    ConcurrentHashMap hm = categoryInfo.get(attribute);
+    ConcurrentHashMap<String, ConcurrentHashMap<String, Boolean>> hm = categoryInfo.get(attribute);
     if (hm == null) return new StringArray();
     StringArray sa = new StringArray(hm.keys());
     sa.sortIgnoreCase();
@@ -422,9 +423,9 @@ public class Erddap extends HttpServlet {
    *     StringArray if none).
    */
   public StringArray categoryInfo(String attribute, String value) {
-    ConcurrentHashMap hm = categoryInfo.get(attribute);
+    ConcurrentHashMap<String, ConcurrentHashMap<String, Boolean>> hm = categoryInfo.get(attribute);
     if (hm == null) return new StringArray();
-    ConcurrentHashMap hs = (ConcurrentHashMap) hm.get(value);
+    ConcurrentHashMap<String, Boolean> hs = hm.get(value);
     if (hs == null) return new StringArray();
     StringArray sa = new StringArray(hs.keys());
     sa.sortIgnoreCase();
@@ -15121,7 +15122,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     String descriptionUrl = tErddapUrl + "/" + protocol + "/description.xml";
     String serviceWord = "search";
     String serviceUrl = tErddapUrl + "/" + protocol + "/" + serviceWord;
-    String tImageDirUrl = tErddapUrl + "/" + EDStatic.config.IMAGES_DIR; // has trailing /
+    String tImageDirUrl = tErddapUrl + "/" + EDConfig.IMAGES_DIR; // has trailing /
     String niceProtocol = "OpenSearch 1.1";
 
     String endOfRequestUrl =
@@ -25048,7 +25049,11 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
    * @param catInfo the new categoryInfo hashMap of hashMaps of hashSets
    * @param edd the dataset who's info should be added to catInfo
    */
-  protected void addRemoveDatasetInfo(boolean add, ConcurrentHashMap catInfo, EDD edd) {
+  protected void addRemoveDatasetInfo(
+      boolean add,
+      ConcurrentHashMap<String, ConcurrentHashMap<String, ConcurrentHashMap<String, Boolean>>>
+          catInfo,
+      EDD edd) {
 
     // go through the gridDatasets
     String id = edd.datasetID();

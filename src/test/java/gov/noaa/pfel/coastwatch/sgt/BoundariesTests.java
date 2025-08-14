@@ -21,10 +21,9 @@ class BoundariesTests {
 
     Boundaries nationalBoundaries = Boundaries.getNationalBoundaries();
     Boundaries stateBoundaries = Boundaries.getStateBoundaries();
-    SGTLine sgtLine;
 
     // warmup
-    sgtLine = nationalBoundaries.getSgtLine(2, -134, -105, 22, 49);
+    SGTLine sgtLine = nationalBoundaries.getSgtLine(2, -134, -105, 22, 49);
 
     // *** national
     // force creation of new file

@@ -609,7 +609,7 @@ class EDDTableFromFileNamesTests {
     // testVerboseOn();
     int language = 0;
     String dir = EDStatic.config.fullTestCacheDirectory;
-    String results, expected, query, tName;
+    String results, expected, tName;
 
     EDDTable tedd = (EDDTable) EDDTestDataset.gettestFileNames();
 
@@ -867,7 +867,7 @@ class EDDTableFromFileNamesTests {
     // String2.log("\n*** EDDTableFromFileNames.testAwsS3\n");
     // testVerboseOn();
     String dir = EDStatic.config.fullTestCacheDirectory;
-    String results, expected, query, tName;
+    String results, expected, tName;
     int language = 0;
 
     EDDTable tedd = (EDDTable) EDDTestDataset.gettestFileNamesAwsS3();

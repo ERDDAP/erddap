@@ -14110,10 +14110,9 @@ class JettyTests {
     // String2.log("\n*** EDDGridFromAudioFiles.testByteRangeRequest\n");
     // testVerboseOn();
 
-    String results, results2, expected;
+    String results;
     List<String> al;
     List<String> list;
-    int po;
     int timeOutSeconds = 120;
     String reqBase = "curl http://localhost:8080/erddap/";
     String req =
@@ -17879,7 +17878,6 @@ class JettyTests {
             + "    <!-- GLOBEC NEP Rosette Bottle Data (2002) -->\n"
             + "    <sourceUrl>http://localhost:8080/erddap/tabledap/erdGlobecBottle</sourceUrl>\n"
             + "</dataset>\n";
-    String fragment = expected;
     String2.log("\nresults=\n" + results);
     po = results.indexOf(expected.substring(0, 70));
     Test.ensureEqual(results.substring(po, po + expected.length()), expected, "");
