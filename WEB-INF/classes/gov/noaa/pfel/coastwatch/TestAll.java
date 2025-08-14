@@ -965,7 +965,6 @@ public class TestAll {
     Units2 u2;
     UShortArray usa;
     VectorPointsRenderer vpr;
-    WatchDirectory wdir;
     XML xml;
 
     // ERDDAP-related

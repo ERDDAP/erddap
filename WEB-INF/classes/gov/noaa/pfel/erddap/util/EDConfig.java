@@ -241,10 +241,8 @@ public class EDConfig {
   @FeatureFlag public final boolean useEddReflection;
   @FeatureFlag public boolean enableCors;
   @FeatureFlag public boolean includeNcCFSubsetVariables;
-  @FeatureFlag public boolean useSharedWatchService = true;
-  @FeatureFlag public boolean redirectDocumentationToGitHubIo = true;
   @FeatureFlag public boolean useSisISO19115 = false;
-  @FeatureFlag public boolean useHeadersForUrl = false;
+  @FeatureFlag public boolean useHeadersForUrl = true;
   @FeatureFlag public boolean generateCroissantSchema = true;
   @FeatureFlag public boolean taskCacheClear = true;
 
@@ -614,7 +612,7 @@ public class EDConfig {
     convertersActive = getSetupEVBoolean(setup, ev, "convertersActive", true);
     useSaxParser = getSetupEVBoolean(setup, ev, "useSaxParser", false);
     updateSubsRssOnFileChanges = getSetupEVBoolean(setup, ev, "updateSubsRssOnFileChanges", true);
-    useEddReflection = getSetupEVBoolean(setup, ev, "useEddReflection", false);
+    useEddReflection = getSetupEVBoolean(setup, ev, "useEddReflection", true);
     enableCors = getSetupEVBoolean(setup, ev, "enableCors", false);
     corsAllowHeaders =
         getSetupEVString(setup, ev, "corsAllowHeaders", CorsResponseFilter.DEFAULT_ALLOW_HEADERS);
@@ -622,15 +620,12 @@ public class EDConfig {
         String2.split(
             String2.toLowerCase(getSetupEVString(setup, ev, "corsAllowOrigin", (String) null)),
             ',');
-    useHeadersForUrl = getSetupEVBoolean(setup, ev, "useHeadersForUrl", false);
+    useHeadersForUrl = getSetupEVBoolean(setup, ev, "useHeadersForUrl", true);
     slideSorterActive = getSetupEVBoolean(setup, ev, "slideSorterActive", true);
     variablesMustHaveIoosCategory =
         getSetupEVBoolean(setup, ev, "variablesMustHaveIoosCategory", true);
     warName = getSetupEVString(setup, ev, "warName", "erddap");
     includeNcCFSubsetVariables = getSetupEVBoolean(setup, ev, "includeNcCFSubsetVariables", false);
-    useSharedWatchService = getSetupEVBoolean(setup, ev, "useSharedWatchService", true);
-    redirectDocumentationToGitHubIo =
-        getSetupEVBoolean(setup, ev, "redirectDocumentationToGitHubIo", true);
     useSisISO19115 = getSetupEVBoolean(setup, ev, "useSisISO19115", false);
     generateCroissantSchema = getSetupEVBoolean(setup, ev, "generateCroissantSchema", true);
     deploymentInfo = getSetupEVString(setup, ev, "deploymentInfo", "");

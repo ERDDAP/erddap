@@ -13369,7 +13369,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     String fileNameAndExt =
         requestUrl.length() <= datasetIDStartsAt ? "" : requestUrl.substring(datasetIDStartsAt);
 
-    if (EDStatic.config.redirectDocumentationToGitHubIo && "download".equals(protocol)) {
+    if ("download".equals(protocol)) {
       if (fileNameAndExt != null) {
         switch (fileNameAndExt) {
           case "AccessToPrivateDatasets.html":

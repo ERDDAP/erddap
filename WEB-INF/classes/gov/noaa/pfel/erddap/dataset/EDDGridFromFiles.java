@@ -28,7 +28,6 @@ import gov.noaa.pfel.coastwatch.util.RegexFilenameFilter;
 import gov.noaa.pfel.coastwatch.util.SSR;
 import gov.noaa.pfel.coastwatch.util.SharedWatchService;
 import gov.noaa.pfel.coastwatch.util.SimpleXMLReader;
-import gov.noaa.pfel.coastwatch.util.WatchDirectory;
 import gov.noaa.pfel.coastwatch.util.WatchUpdateHandler;
 import gov.noaa.pfel.erddap.Erddap;
 import gov.noaa.pfel.erddap.dataset.metadata.LocalizedAttributes;
@@ -42,7 +41,6 @@ import gov.noaa.pfel.erddap.variable.*;
 import jakarta.servlet.http.HttpServletRequest;
 import java.io.FileNotFoundException;
 import java.nio.file.Path;
-import java.nio.file.WatchEvent;
 import java.text.MessageFormat;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -143,8 +141,6 @@ public abstract class EDDGridFromFiles extends EDDGrid implements WatchUpdateHan
    * test. default=20. 1-18 tests that many digits for doubles and hidiv(n,2) for floats.
    */
   protected int matchAxisNDigits = DEFAULT_MATCH_AXIS_N_DIGITS;
-
-  protected WatchDirectory watchDirectory;
 
   // dirTable and fileTable inMemory (default=false)
   protected boolean fileTableInMemory = false;
@@ -908,11 +904,7 @@ public abstract class EDDGridFromFiles extends EDDGrid implements WatchUpdateHan
     // set up watchDirectory
     if (updateEveryNMillis > 0) {
       try {
-        if (EDStatic.config.useSharedWatchService) {
-          SharedWatchService.watchDirectory(fileDir, recursive, pathRegex, this, datasetID);
-        } else {
-          watchDirectory = WatchDirectory.watchDirectoryAll(fileDir, recursive, pathRegex);
-        }
+        SharedWatchService.watchDirectory(fileDir, recursive, pathRegex, this, datasetID);
       } catch (Throwable t) {
         updateEveryNMillis = 0; // disable the inotify system for this instance
         String subject = String2.ERROR + " in " + datasetID + " constructor (inotify)";
@@ -2104,38 +2096,8 @@ public abstract class EDDGridFromFiles extends EDDGrid implements WatchUpdateHan
    */
   @Override
   public boolean lowUpdate(int language, String msg, long startUpdateMillis) throws Throwable {
-    if (EDStatic.config.useSharedWatchService) {
-      SharedWatchService.processEvents();
-      return false;
-    }
-
-    // Most of this lowUpdate code is identical in EDDGridFromFiles and EDDTableFromFiles
-    if (watchDirectory == null) return false; // no changes
-
-    // get the file events
-    ArrayList<WatchEvent.Kind<?>> eventKinds = new ArrayList<>();
-    StringArray contexts = new StringArray();
-    int nEvents = watchDirectory.getEvents(eventKinds, contexts);
-    if (nEvents == 0) {
-      if (verbose) String2.log(msg + "found 0 events.");
-      return false; // no changes
-    }
-
-    // if any OVERFLOW, reload this dataset
-    for (int evi = 0; evi < nEvents; evi++) {
-      if (eventKinds.get(evi) == WatchDirectory.OVERFLOW) {
-        if (verbose)
-          String2.log(
-              msg
-                  + "caught OVERFLOW event in "
-                  + contexts.get(evi)
-                  + ", so I called requestReloadASAP() instead of making changes here.");
-        requestReloadASAP();
-        return false;
-      }
-    }
-
-    return handleEventContexts(contexts, msg);
+    SharedWatchService.processEvents();
+    return false;
   }
 
   @Override
