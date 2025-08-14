@@ -1535,7 +1535,6 @@ public class FileVisitorDNLS extends SimpleFileVisitor<Path> {
             } else if (debugMode) {
               String2.log("name matches=false: " + name);
             }
-            continue;
           } else {
             if (debugMode) String2.log(">> matches=false: " + s);
           }

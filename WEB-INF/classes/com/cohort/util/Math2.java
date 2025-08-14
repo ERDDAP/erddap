@@ -467,7 +467,8 @@ public class Math2 {
     // sleep - subtract time already used by gc
     // always wait at least shortSleep so we can see the effects of the gc
     sleep(Math.max(shortSleep, millis) - (System.currentTimeMillis() - time));
-    return lastUsingMemory = getMemoryInUse();
+    lastUsingMemory = getMemoryInUse();
+    return lastUsingMemory;
   }
 
   /**

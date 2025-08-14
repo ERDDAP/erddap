@@ -600,9 +600,10 @@ public abstract class EDDGrid extends EDD {
   public String accessibleViaNcCF() {
 
     if (accessibleViaNcCF == null) {
-      return accessibleViaNcCF =
+      accessibleViaNcCF =
           "Currently, the .ncCF and .ncCFMA file types are for tabular data only. "
               + "For this dataset, use the .nc file type.";
+      return accessibleViaNcCF;
       // String cdmType = combinedAttributes.getString("cdm_data_type");
       // if (cdmType.equals(CDM_GRID))
       //    accessibleViaNcCDM = "";
@@ -2431,9 +2432,7 @@ public abstract class EDDGrid extends EDD {
   public String changed(EDD old) {
     if (old == null) return super.changed(old); // so message is consistent
 
-    if (!(old instanceof EDDGrid)) return EDStatic.messages.EDDChangedTableToGrid + "\n";
-
-    EDDGrid oldG = (EDDGrid) old;
+    if (!(old instanceof EDDGrid oldG)) return EDStatic.messages.EDDChangedTableToGrid + "\n";
 
     // check most important things first
     int nAv = axisVariables.length;
@@ -2964,7 +2963,8 @@ public abstract class EDDGrid extends EDD {
       String draws[] = drawsSA.toArray();
       boolean preferDefaultVars = true;
       int draw = defaultDraw;
-      partValue = String2.stringStartsWith(queryParts, partName = ".draw=");
+      partName = ".draw=";
+      partValue = String2.stringStartsWith(queryParts, partName);
       if (partValue != null) {
         draw = String2.indexOf(draws, partValue.substring(partName.length()));
         if (draw >= 0) { // valid .draw was specified
@@ -3324,9 +3324,8 @@ public abstract class EDDGrid extends EDD {
                   > avStartIndex[axisVarX]; // ascending (but calculations are index based)
 
       // If user clicked on map, change some of the avXxx[], lonXxx, latXxx values.
-      partValue =
-          String2.stringStartsWith(
-              queryParts, partName = ".click=?"); // ? indicates user clicked on map
+      partName = ".click=?";
+      partValue = String2.stringStartsWith(queryParts, partName); // ? indicates user clicked on map
       if (zoomLatLon && partValue != null) {
         try {
           String xy[] = String2.split(partValue.substring(8), ','); // e.g., 24,116
@@ -3824,7 +3823,8 @@ public abstract class EDDGrid extends EDD {
       if (drawLinesAndMarkers || drawMarkers) {
         // get Marker settings
         int mType = -1, mSize = -1;
-        partValue = String2.stringStartsWith(queryParts, partName = ".marker=");
+        partName = ".marker=";
+        partValue = String2.stringStartsWith(queryParts, partName);
         if (partValue != null) {
           pParts = String2.split(partValue.substring(partName.length()), '|');
           if (pParts.length > 0) mType = String2.parseInt(pParts[0]);
@@ -3878,7 +3878,8 @@ public abstract class EDDGrid extends EDD {
 
         // color
         paramName = "colr"; // not color, to avoid possible conflict
-        partValue = String2.stringStartsWith(queryParts, partName = ".color=0x");
+        partName = ".color=0x";
+        partValue = String2.stringStartsWith(queryParts, partName);
         int colori =
             HtmlWidgets.PALETTE17.indexOf(
                 partValue == null ? "" : partValue.substring(partName.length()));
@@ -3901,7 +3902,8 @@ public abstract class EDDGrid extends EDD {
 
       if (drawLinesAndMarkers || drawMarkers || drawSurface) {
         // color bar
-        partValue = String2.stringStartsWith(queryParts, partName = ".colorBar=");
+        partName = ".colorBar=";
+        partValue = String2.stringStartsWith(queryParts, partName);
         pParts =
             partValue == null
                 ? new String[0]
@@ -4054,7 +4056,8 @@ public abstract class EDDGrid extends EDD {
 
         // Vector Standard
         paramName = "vec";
-        String vec = String2.stringStartsWith(queryParts, partName = ".vec=");
+        partName = ".vec=";
+        String vec = String2.stringStartsWith(queryParts, partName);
         vec = vec == null ? "" : vec.substring(partName.length());
         writer.write(
             "  <tr>\n"
@@ -4087,7 +4090,8 @@ public abstract class EDDGrid extends EDD {
       if (drawSurface && isMap) {
         // Draw Land
         int tLand = 0;
-        partValue = String2.stringStartsWith(queryParts, partName = ".land=");
+        partName = ".land=";
+        partValue = String2.stringStartsWith(queryParts, partName);
         if (partValue != null) {
           partValue = partValue.substring(6);
           tLand = Math.max(0, SgtMap.drawLandMask_OPTIONS.indexOf(partValue));
@@ -4122,7 +4126,8 @@ public abstract class EDDGrid extends EDD {
 
       // bgColor
       Color bgColor = EDStatic.config.graphBackgroundColor;
-      String tBGColor = String2.stringStartsWith(queryParts, partName = ".bgColor=");
+      partName = ".bgColor=";
+      String tBGColor = String2.stringStartsWith(queryParts, partName);
       if (tBGColor != null) {
         String tBGColorAr[] = String2.split(tBGColor.substring(partName.length()), '|');
         if (tBGColorAr.length > 0 && tBGColorAr[0].length() > 0) {
@@ -4138,7 +4143,8 @@ public abstract class EDDGrid extends EDD {
       String yAxisScale = ""; // ""/Linear/Log
       if (true) { // ?? && !drawVector ??
         paramName = "yRange";
-        String tyRange = String2.stringStartsWith(queryParts, partName = ".yRange=");
+        partName = ".yRange=";
+        String tyRange = String2.stringStartsWith(queryParts, partName);
         if (tyRange != null) {
           String tyRangeAr[] = String2.split(tyRange.substring(partName.length()), '|');
           for (int i = 0; i < 2; i++) {

@@ -17,8 +17,18 @@ import com.cohort.util.String2;
 import dods.dap.parser.ParseException;
 import gov.noaa.pfel.coastwatch.util.SSR;
 import gov.noaa.pfel.erddap.util.EDStatic;
-import java.io.*;
-import java.net.*;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.DataInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URL;
+import java.net.URLConnection;
 import java.util.zip.InflaterInputStream;
 
 /**
@@ -676,8 +686,8 @@ public class DConnect {
     String encoding = null;
 
     // while there are more header (non-blank) lines
-    String line;
-    while (!(line = d.readLine()).isEmpty()) {
+    String line = d.readLine();
+    while (!line.isEmpty()) {
       int spaceIndex = line.indexOf(' ');
       // all header lines should have a space in them, but if not, skip ahead
       if (spaceIndex == -1) continue;
@@ -689,6 +699,7 @@ public class DConnect {
         case "Content-Description:" -> description = value;
         case "Content-Encoding:" -> encoding = value;
       }
+      line = d.readLine();
     }
     handleContentDesc(is, description);
     return handleContentEncoding(is, encoding);

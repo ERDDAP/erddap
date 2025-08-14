@@ -30,7 +30,14 @@ import gov.noaa.pfel.erddap.handlers.EDDTableFromFileNamesHandler;
 import gov.noaa.pfel.erddap.handlers.SaxHandlerClass;
 import gov.noaa.pfel.erddap.util.EDMessages;
 import gov.noaa.pfel.erddap.util.EDStatic;
-import gov.noaa.pfel.erddap.variable.*;
+import gov.noaa.pfel.erddap.variable.DataVariableInfo;
+import gov.noaa.pfel.erddap.variable.EDV;
+import gov.noaa.pfel.erddap.variable.EDVAlt;
+import gov.noaa.pfel.erddap.variable.EDVDepth;
+import gov.noaa.pfel.erddap.variable.EDVLat;
+import gov.noaa.pfel.erddap.variable.EDVLon;
+import gov.noaa.pfel.erddap.variable.EDVTime;
+import gov.noaa.pfel.erddap.variable.EDVTimeStamp;
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -1460,7 +1467,6 @@ public class EDDTableFromFileNames extends EDDTable {
             Matcher matcher = pat.matcher(namePA.get(row));
             pa.addString(matcher.matches() ? matcher.group(extractGroup[dvi]) : "");
           }
-          continue;
         }
 
         // Remaining columns are script columns. Handle below.

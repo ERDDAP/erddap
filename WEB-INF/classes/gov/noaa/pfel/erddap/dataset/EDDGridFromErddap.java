@@ -19,7 +19,13 @@ import com.cohort.util.MustBe;
 import com.cohort.util.String2;
 import com.cohort.util.Test;
 import com.cohort.util.XML;
-import dods.dap.*;
+import dods.dap.BaseType;
+import dods.dap.DArray;
+import dods.dap.DArrayDimension;
+import dods.dap.DConnect;
+import dods.dap.DDS;
+import dods.dap.DGrid;
+import dods.dap.NoSuchVariableException;
 import gov.noaa.pfel.coastwatch.griddata.NcHelper;
 import gov.noaa.pfel.coastwatch.griddata.OpendapHelper;
 import gov.noaa.pfel.coastwatch.pointdata.Table;
@@ -33,7 +39,12 @@ import gov.noaa.pfel.erddap.handlers.SaxHandlerClass;
 import gov.noaa.pfel.erddap.util.EDMessages;
 import gov.noaa.pfel.erddap.util.EDMessages.Message;
 import gov.noaa.pfel.erddap.util.EDStatic;
-import gov.noaa.pfel.erddap.variable.*;
+import gov.noaa.pfel.erddap.variable.EDV;
+import gov.noaa.pfel.erddap.variable.EDVGridAxis;
+import gov.noaa.pfel.erddap.variable.EDVTime;
+import gov.noaa.pfel.erddap.variable.EDVTimeGridAxis;
+import gov.noaa.pfel.erddap.variable.EDVTimeStamp;
+import gov.noaa.pfel.erddap.variable.EDVTimeStampGridAxis;
 import jakarta.servlet.http.HttpServletRequest;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
@@ -284,9 +295,8 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
     String sourceInfoString = null;
     if (quickRestartAttributes != null) {
       PrimitiveArray sourceInfoBytes = quickRestartAttributes.get("sourceInfoBytes");
-      if (sourceInfoBytes instanceof ByteArray)
-        sourceInfoString =
-            new String(((ByteArray) sourceInfoBytes).toArray(), StandardCharsets.UTF_8);
+      if (sourceInfoBytes instanceof ByteArray ba)
+        sourceInfoString = new String(ba.toArray(), StandardCharsets.UTF_8);
     }
     if (sourceInfoString == null) sourceInfoString = SSR.getUrlResponseStringNewline(jsonUrl);
     Table table = new Table();

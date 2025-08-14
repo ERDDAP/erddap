@@ -16,10 +16,13 @@ import com.cohort.util.MustBe;
 import com.cohort.util.SimpleException;
 import com.cohort.util.String2;
 import com.cohort.util.XML;
+import com.google.common.collect.ImmutableList;
 import gov.noaa.pfel.coastwatch.griddata.DataHelper;
 import gov.noaa.pfel.coastwatch.util.FileVisitorDNLS;
 import gov.noaa.pfel.erddap.dataset.metadata.LocalizedAttributes;
-import gov.noaa.pfel.erddap.variable.*;
+import gov.noaa.pfel.erddap.variable.AxisVariableInfo;
+import gov.noaa.pfel.erddap.variable.DataVariableInfo;
+import gov.noaa.pfel.erddap.variable.EDV;
 import java.io.InputStream;
 import java.nio.file.FileSystemException;
 import java.time.ZoneId;
@@ -366,7 +369,7 @@ public class EDDGridFromMergeIRFiles extends EDDGridFromFiles {
    */
   @Override
   public PrimitiveArray[] lowGetSourceDataFromFile(
-      String tFullName, EDV tDataVariables[], IntArray tConstraints) throws Throwable {
+      String tFullName, ImmutableList<EDV> tDataVariables, IntArray tConstraints) throws Throwable {
 
     if (verbose)
       String2.log(
@@ -380,7 +383,7 @@ public class EDDGridFromMergeIRFiles extends EDDGridFromFiles {
 
     // make the selection spec  and get the axis values
     int nbAxisVariable = axisVariables.length;
-    int nbDataVariable = tDataVariables.length;
+    int nbDataVariable = tDataVariables.size();
     PrimitiveArray[] paa = new PrimitiveArray[nbDataVariable];
     StringBuilder selectionSB = new StringBuilder();
 
@@ -498,7 +501,7 @@ public class EDDGridFromMergeIRFiles extends EDDGridFromFiles {
         paa[0] = PrimitiveArray.factory(out1);
         paa[1] = PrimitiveArray.factory(out2);
       } else if (nbDataVariable == 1) {
-        if (tDataVariables[0].sourceName().equalsIgnoreCase("ir")) {
+        if (tDataVariables.get(0).sourceName().equalsIgnoreCase("ir")) {
           paa[0] = PrimitiveArray.factory(out1);
         } else {
           paa[0] = PrimitiveArray.factory(out2);

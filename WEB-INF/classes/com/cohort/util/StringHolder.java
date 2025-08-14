@@ -83,8 +83,8 @@ public class StringHolder implements Comparable<StringHolder> {
    */
   @Override
   public boolean equals(final Object o) {
-    if (!(o instanceof StringHolder)) return false;
-    return Arrays.equals(car, ((StringHolder) o).car); // either or both cars may be null
+    if (!(o instanceof StringHolder other)) return false;
+    return Arrays.equals(car, other.car); // either or both cars may be null
   }
 
   /**

@@ -545,12 +545,12 @@ public class Layer extends Component implements Cloneable, LayerControl {
    * @since 2.0
    */
   public boolean isDataInLayer(String id) {
-    if (graph_ instanceof CartesianGraph) {
-      CartesianRenderer cr = ((CartesianGraph) graph_).getRenderer();
-      if (cr instanceof LineCartesianRenderer) {
-        return ((LineCartesianRenderer) cr).getLine().getId().equals(id);
-      } else if (cr instanceof GridCartesianRenderer) {
-        return ((GridCartesianRenderer) cr).getGrid().getId().equals(id);
+    if (graph_ instanceof CartesianGraph cartesianGraph) {
+      CartesianRenderer cr = cartesianGraph.getRenderer();
+      if (cr instanceof LineCartesianRenderer lineRenderer) {
+        return lineRenderer.getLine().getId().equals(id);
+      } else if (cr instanceof GridCartesianRenderer gridRenderer) {
+        return gridRenderer.getGrid().getId().equals(id);
       }
     }
     return false;

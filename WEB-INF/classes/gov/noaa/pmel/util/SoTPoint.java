@@ -53,10 +53,9 @@ public class SoTPoint implements Serializable, Cloneable {
   /** Test for equality. For equality both x and y values must be equal. */
   @Override
   public boolean equals(Object o) {
-    if (!(o instanceof SoTPoint)) {
+    if (!(o instanceof SoTPoint stp)) {
       return false;
     }
-    SoTPoint stp = (SoTPoint) o;
     return (x_.equals(stp.getX()) && y_.equals(stp.getY()));
   }
 

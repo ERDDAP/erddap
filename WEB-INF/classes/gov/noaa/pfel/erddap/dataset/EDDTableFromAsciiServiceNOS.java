@@ -516,38 +516,6 @@ public class EDDTableFromAsciiServiceNOS extends EDDTableFromAsciiService {
     return false;
   } // because this gets info from a remote service
 
-  /* *
-   * This does its best to generate a read-to-use datasets.xml entry for an
-   * EDDTableFromAsciiServiceNOS.
-   * <br>The XML can then be edited by hand and added to the datasets.xml file.
-   * <br>This uses the first outerSequence (and if present, first innerSequence) found.
-   * <br>Other sequences are skipped.
-   *
-   * @param tLocalSourceUrl
-   * @param tReloadEveryNMinutes  must be a valid value, e.g., 1440 for once per day.
-   *    Use, e.g., 1000000000, for never reload.
-   * @param externalGlobalAttributes globalAttributes gleaned from external
-   *    sources, e.g., a THREDDS catalog.xml file.
-   *    These have priority over other sourceGlobalAttributes.
-   *    Okay to use null if none.
-   * @return a suggested chunk of xml for this dataset for use in datasets.xml
-   * @throws Throwable if trouble, e.g., if no Grid or Array variables are found.
-   *    If no trouble, then a valid dataset.xml chunk has been returned.
-   */
-  /*    public static String generateDatasetsXml(String tLocalSourceUrl,
-      int tReloadEveryNMinutes, Attributes externalGlobalAttributes)
-      //String outerSequenceName, String innerSequenceName, boolean sortColumnsByName)
-      throws Throwable {
-
-      String2.log("EDDTableFromAsciiServiceNOS.generateDatasetsXml" +
-          "\n  tLocalSourceUrl=" + tLocalSourceUrl);
-      String tPublicSourceUrl = convertToPublicSourceUrl(tLocalSourceUrl);
-
-
-      String2.log("\n\n*** generateDatasetsXml finished successfully.\n\n");
-      return sb.toString();
-  } */
-
   private static final String stationsFileName = "c:/programs/nos/stations.xml";
 
   /**

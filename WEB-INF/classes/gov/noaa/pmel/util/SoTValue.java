@@ -64,10 +64,10 @@ public abstract class SoTValue implements Serializable {
     /** Test for equality */
     @Override
     public boolean equals(Object val) {
-      if (!(val instanceof Time)) {
+      if (!(val instanceof Time tv)) {
         return false;
       }
-      return value_ == ((SoTValue.Time) val).getValue();
+      return value_ == tv.getValue();
     }
 
     @Override
@@ -151,10 +151,10 @@ public abstract class SoTValue implements Serializable {
     /** Test for equality */
     @Override
     public boolean equals(Object val) {
-      if (!(val instanceof Double)) {
+      if (!(val instanceof Double dval)) {
         return false;
       }
-      return value_ == ((SoTValue.Double) val).getValue();
+      return value_ == dval.getValue();
     }
 
     @Override

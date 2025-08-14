@@ -4,8 +4,6 @@
  */
 package gov.noaa.pfel.erddap;
 
-import static gov.noaa.pfel.erddap.LoadDatasets.*;
-
 import com.cohort.array.Attributes;
 import com.cohort.array.CharArray;
 import com.cohort.array.DoubleArray;
@@ -36,13 +34,40 @@ import gov.noaa.pfel.coastwatch.sgt.SgtUtil;
 import gov.noaa.pfel.coastwatch.util.HtmlWidgets;
 import gov.noaa.pfel.coastwatch.util.RegexFilenameFilter;
 import gov.noaa.pfel.coastwatch.util.SSR;
-import gov.noaa.pfel.erddap.dataset.*;
+import gov.noaa.pfel.erddap.dataset.EDD;
 import gov.noaa.pfel.erddap.dataset.EDD.EDDFileTypeInfo;
+import gov.noaa.pfel.erddap.dataset.EDDGrid;
+import gov.noaa.pfel.erddap.dataset.EDDGridFromErddap;
+import gov.noaa.pfel.erddap.dataset.EDDTable;
+import gov.noaa.pfel.erddap.dataset.EDDTableFromAllDatasets;
+import gov.noaa.pfel.erddap.dataset.EDDTableFromFileNames;
+import gov.noaa.pfel.erddap.dataset.FromErddap;
+import gov.noaa.pfel.erddap.dataset.GridDataAccessor;
+import gov.noaa.pfel.erddap.dataset.GridDataRandomAccessorInMemory;
+import gov.noaa.pfel.erddap.dataset.OutputStreamFromHttpResponse;
+import gov.noaa.pfel.erddap.dataset.OutputStreamFromHttpResponseViaAwsS3;
+import gov.noaa.pfel.erddap.dataset.OutputStreamSource;
+import gov.noaa.pfel.erddap.dataset.OutputStreamSourceSimple;
+import gov.noaa.pfel.erddap.dataset.TableWriterHtmlTable;
+import gov.noaa.pfel.erddap.dataset.TableWriterJson;
+import gov.noaa.pfel.erddap.dataset.TableWriterJsonl;
+import gov.noaa.pfel.erddap.dataset.TableWriterNccsv;
+import gov.noaa.pfel.erddap.dataset.TableWriterSeparatedValue;
+import gov.noaa.pfel.erddap.dataset.WaitThenTryAgainException;
 import gov.noaa.pfel.erddap.filetypes.TransparentPngFiles;
 import gov.noaa.pfel.erddap.handlers.SaxParsingContext;
-import gov.noaa.pfel.erddap.util.*;
+import gov.noaa.pfel.erddap.util.CfToFromGcmd;
+import gov.noaa.pfel.erddap.util.EDConfig;
 import gov.noaa.pfel.erddap.util.EDMessages.Message;
-import gov.noaa.pfel.erddap.variable.*;
+import gov.noaa.pfel.erddap.util.EDStatic;
+import gov.noaa.pfel.erddap.util.Subscriptions;
+import gov.noaa.pfel.erddap.util.TaskThread;
+import gov.noaa.pfel.erddap.util.TranslateMessages;
+import gov.noaa.pfel.erddap.variable.EDV;
+import gov.noaa.pfel.erddap.variable.EDVGridAxis;
+import gov.noaa.pfel.erddap.variable.EDVLatGridAxis;
+import gov.noaa.pfel.erddap.variable.EDVLonGridAxis;
+import gov.noaa.pfel.erddap.variable.EDVTimeGridAxis;
 import io.prometheus.metrics.model.snapshots.Unit;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
@@ -18204,10 +18229,11 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                 + ",\n"
                 + "    \"name\": "
                 + String2.toJson65536(gatts.getString(tType + "_name")));
-    if (String2.isSomething(s = gatts.getString(tType + "_email")))
-      sb.append(",\n" + "    \"email\": " + String2.toJson65536(s));
-    if (String2.isSomething(s = gatts.getString(tType + "_url")))
-      sb.append(",\n" + "    \"sameAs\": " + String2.toJson65536(s));
+    s = gatts.getString(tType + "_email");
+    if (String2.isSomething(s)) sb.append(",\n" + "    \"email\": " + String2.toJson65536(s));
+
+    s = gatts.getString(tType + "_url");
+    if (String2.isSomething(s)) sb.append(",\n" + "    \"sameAs\": " + String2.toJson65536(s));
     sb.append("\n" + "  }");
 
     return sb.toString();
@@ -18375,13 +18401,14 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     if (useCroissant) {
       try {
         writer.write(
-            "  \"recordSet\": [\n"
-                + "    {\n"
-                + "      \"@type\": \"cr:RecordSet\",\n"
-                + "      \"@id\": \"dataRecordSet\",\n"
-                + "      \"field\": [\n");
-        if (edd instanceof EDDGrid) {
-          EDDGrid grid = (EDDGrid) edd;
+            """
+            "recordSet": [
+              {
+                "@type": "cr:RecordSet",
+                "@id": "dataRecordSet",
+                "field": [
+          """);
+        if (edd instanceof EDDGrid grid) {
           for (int i = 0; i < grid.axisVariables().length; i++) {
             EDV axisVariable = grid.axisVariables()[i];
             writer.write(
@@ -25059,18 +25086,20 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     String id = edd.datasetID();
 
     // globalAtts
-    categorizeGlobalAtts(add, catInfo, edd, id);
+    LoadDatasets.categorizeGlobalAtts(add, catInfo, edd, id);
 
     // go through data variables
     int nd = edd.dataVariables().length;
-    for (int dv = 0; dv < nd; dv++)
-      categorizeVariableAtts(add, catInfo, edd.dataVariables()[dv], id);
+    for (int dv = 0; dv < nd; dv++) {
+      LoadDatasets.categorizeVariableAtts(add, catInfo, edd.dataVariables()[dv], id);
+    }
 
     if (edd instanceof EDDGrid eddGrid) {
       // go through axis variables
       int na = eddGrid.axisVariables().length;
-      for (int av = 0; av < na; av++)
-        categorizeVariableAtts(add, catInfo, eddGrid.axisVariables()[av], id);
+      for (int av = 0; av < na; av++) {
+        LoadDatasets.categorizeVariableAtts(add, catInfo, eddGrid.axisVariables()[av], id);
+      }
     }
   }
 

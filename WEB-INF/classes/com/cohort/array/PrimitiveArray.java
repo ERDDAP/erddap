@@ -162,8 +162,7 @@ public abstract class PrimitiveArray {
     if (o instanceof char[] ca) return new CharArray(ca);
     if (o instanceof String[] sa) return new StringArray(sa);
 
-    if (o instanceof Object[]) {
-      Object oar[] = (Object[]) o;
+    if (o instanceof Object[] oar) {
       int n = oar.length;
       StringArray sa = new StringArray(n, false);
       for (int i = 0; i < n; i++) sa.add(oar[i] == null ? "" : oar[i].toString());

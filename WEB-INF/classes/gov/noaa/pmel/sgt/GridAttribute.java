@@ -241,7 +241,7 @@ public class GridAttribute implements Attribute, Cloneable, PropertyChangeListen
   @Override
   public void setBatch(boolean batch, boolean local) {
     batch_ = batch;
-    if (!batch && modified_) firePropertyChange("batch", Boolean.TRUE, Boolean.FALSE);
+    if (!batch && modified_) firePropertyChange("batch", true, false);
   }
 
   /**

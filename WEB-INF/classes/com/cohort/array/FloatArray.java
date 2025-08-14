@@ -5,7 +5,8 @@
  */
 package com.cohort.array;
 
-import com.cohort.util.*;
+import com.cohort.util.Math2;
+import com.cohort.util.String2;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -984,11 +985,10 @@ public class FloatArray extends PrimitiveArray {
    */
   @Override
   public String testEquals(final Object o) {
-    if (!(o instanceof FloatArray))
+    if (!(o instanceof FloatArray other))
       return "The two objects aren't equal: this object is a FloatArray; the other is a "
           + (o == null ? "null" : o.getClass().getName())
           + ".";
-    final FloatArray other = (FloatArray) o;
     if (other.size() != size)
       return "The two FloatArrays aren't equal: one has "
           + size

@@ -55,10 +55,9 @@ public class Range2D implements java.io.Serializable, Cloneable {
   /** Test for equality. Both start, end, and delta must be equal for equality. */
   @Override
   public boolean equals(Object o) {
-    if (!(o instanceof Range2D)) {
+    if (!(o instanceof Range2D r)) {
       return false;
     }
-    Range2D r = (Range2D) o;
     if (!Double.isNaN(start) && !Double.isNaN(r.start)) {
       if (Double.isNaN(start) || Double.isNaN(r.start)) return false;
       if (start != r.start) return false;

@@ -2518,7 +2518,7 @@ public class String2 {
    * @return a CSV String with the values with ", " after all but the last value. Returns null if ar
    *     is null. null elements are represented as "[null]".
    */
-  public static String toCSSVString(final ImmutableList<String> al) {
+  public static String toCSSVString(final ImmutableList<?> al) {
     return toSVString(al.toArray(), ", ", false);
   }
 

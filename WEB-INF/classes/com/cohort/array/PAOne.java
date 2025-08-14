@@ -381,10 +381,10 @@ public class PAOne implements Comparable<PAOne> {
    */
   @Override
   public final boolean equals(Object otherPAOne) {
-    if (!(otherPAOne instanceof PAOne)) {
+    if (!(otherPAOne instanceof PAOne otherOne)) {
       return false;
     }
-    return compareTo((PAOne) otherPAOne) == 0;
+    return compareTo(otherOne) == 0;
   }
 
   @Override
