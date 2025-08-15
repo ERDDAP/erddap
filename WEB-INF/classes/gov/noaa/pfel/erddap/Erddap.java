@@ -14154,11 +14154,6 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                 "endOfRequest", endOfRequest,
                 "youAreHere", youAreHere,
                 "language", language,
-                "tErddapUrl", tErddapUrl,
-                "tableOptions", tableOptions,
-                "table", table),
-            new WriterOutput(writer));
-        endHtmlWriter(request, language, out, writer, tErddapUrl, loggedInAs, false);
       } else {
         // write html response
         writer.write("<div class=\"standard_width\">");
