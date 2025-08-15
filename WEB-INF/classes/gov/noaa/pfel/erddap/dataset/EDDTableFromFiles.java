@@ -2188,8 +2188,11 @@ public abstract class EDDTableFromFiles extends EDDTable implements WatchUpdateH
               + (readFileCumTime / Math.max(1, nReadFile))
               + "ms";
       if (verbose || fileTable.nRows() == 0) String2.log(msg);
-      if (fileTable.nRows() == 0) throw new RuntimeException("No valid files!");
-
+      if (fileTable.nRows() == 0) {
+        if (className != "EDDTableFromMqtt" && className != "EDDTableFromHttpGet") {
+          throw new RuntimeException("No valid files!");
+        }
+      }
       if (nReadFile > 0 || nRemoved > 0)
         filesChanged =
             "The list of aggregated files changed:\n"
