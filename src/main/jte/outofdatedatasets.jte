@@ -8,7 +8,7 @@
 @param TableOptions tableOptions
 
 @template.youarehere(youAreHere)
-<div class ="standard_width">
+<div class="standard_width">
 <p>
 ${TemplateHelper.getMessage(Message.ADVC_OUT_OF_DATE,language)}
 
