@@ -78,6 +78,9 @@ public class EDConfig {
 
   public final String baseHttpsUrl; // won't be null, may be "(not specified)"
   public String bigParentDirectory;
+  public String mqttConfigFolder;
+  public String mqttDataFolder;
+  public String mqttExtensionsFolder;
   public final String adminInstitution;
   public final String adminInstitutionUrl;
   public final String adminIndividualName;
@@ -221,6 +224,7 @@ public class EDConfig {
   @FeatureFlag public final boolean outOfDateDatasetsActive;
   @FeatureFlag public final boolean politicalBoundariesActive;
   @FeatureFlag public final boolean wmsClientActive;
+  @FeatureFlag public final boolean enableMqttBroker;
   @FeatureFlag public boolean sosActive;
   @FeatureFlag public final boolean wcsActive;
   @FeatureFlag public final boolean wmsActive;
@@ -297,6 +301,11 @@ public class EDConfig {
     Test.ensureTrue(
         File2.isDirectory(bigParentDirectory),
         "bigParentDirectory (" + bigParentDirectory + ") doesn't exist.");
+
+    // Mqtt Brokder directories
+    mqttConfigFolder = getSetupEVString(setup, ev, "mqttConfigFolder", "");
+    mqttDataFolder = getSetupEVString(setup, ev, "mqttDataFolder", "");
+    mqttExtensionsFolder = getSetupEVString(setup, ev, "mqttExtensionsFolder", "");
 
     // email  (do early on so email can be sent if trouble later in this method)
     emailSmtpHost = getSetupEVString(setup, ev, "emailSmtpHost", (String) null);
@@ -516,6 +525,7 @@ public class EDConfig {
     outOfDateDatasetsActive = getSetupEVBoolean(setup, ev, "outOfDateDatasetsActive", true);
     politicalBoundariesActive = getSetupEVBoolean(setup, ev, "politicalBoundariesActive", true);
     wmsClientActive = getSetupEVBoolean(setup, ev, "wmsClientActive", true);
+    enableMqttBroker = getSetupEVBoolean(setup, ev, "enableMqttBroker", false);
 
     // until SOS is finished, it is always inactive
     sosActive = false; //        sosActive                  = getSetupEVBoolean(setup, ev,

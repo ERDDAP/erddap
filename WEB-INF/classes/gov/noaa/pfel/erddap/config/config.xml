@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<hivemq xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="config.xsd">
+
+    <!-- MQTT listener configuration -->
+    <listeners>
+        <tcp-listener>
+            <port>1883</port>  <!-- Default MQTT port -->
+            <bind-address>0.0.0.0</bind-address>  <!-- Bind to all interfaces -->
+        </tcp-listener>
+    </listeners>
+
+    <!-- Basic MQTT settings with defaults -->
+    <mqtt>
+        <max-connections>10</max-connections>  <!-- Limit for dev/testing; set to -1 for unlimited -->
+        <session-expiry>
+            <max-interval>3600</max-interval>  <!-- Sessions expire after 1 hour of inactivity -->
+        </session-expiry>
+        <queued-messages>
+            <max-queue-size>1000</max-queue-size>  <!-- Max queued messages per client -->
+        </queued-messages>
+    </mqtt>
+
+</hivemq>
