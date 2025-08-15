@@ -51,9 +51,10 @@ public class MqttBrokerContextListener implements ServletContextListener {
 
   @Override
   public void contextDestroyed(ServletContextEvent sce) {
-    if (enableMqttBroker && this.hiveMQ != null) {
+    if (this.hiveMQ != null) {
       try {
         this.hiveMQ.stop().join();
+        this.hiveMQ = null;
       } catch (final Exception ex) {
         System.out.println("Error stopping MQTT broker");
         ex.printStackTrace();
