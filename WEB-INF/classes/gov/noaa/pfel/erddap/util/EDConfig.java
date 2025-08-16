@@ -241,6 +241,7 @@ public class EDConfig {
 
   @FeatureFlag public final boolean variablesMustHaveIoosCategory;
   @FeatureFlag public boolean useSaxParser;
+  @FeatureFlag public boolean publishMqttNotif;
   @FeatureFlag public boolean enableEnvParsing;
   @FeatureFlag public boolean updateSubsRssOnFileChanges;
   @FeatureFlag public final boolean useEddReflection;
@@ -623,6 +624,7 @@ public class EDConfig {
     subscriptionSystemActive = getSetupEVBoolean(setup, ev, "subscriptionSystemActive", true);
     convertersActive = getSetupEVBoolean(setup, ev, "convertersActive", true);
     useSaxParser = getSetupEVBoolean(setup, ev, "useSaxParser", false);
+    publishMqttNotif = getSetupEVBoolean(setup, ev, "publishMqttNotif", false);
     enableEnvParsing = getSetupEVBoolean(setup, ev, "enableEnvParsing", true);
     updateSubsRssOnFileChanges = getSetupEVBoolean(setup, ev, "updateSubsRssOnFileChanges", true);
     useEddReflection = getSetupEVBoolean(setup, ev, "useEddReflection", false);
