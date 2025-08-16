@@ -24460,6 +24460,14 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       try {
         StringArray actions = null;
 
+        // publish change to local broker, if enabled
+        if (EDStatic.config.publishMqttNotif) {
+          // check if client is configured and broker is localhost
+          if (EDDTableFromMqtt.asyncClient != null && EDStatic.config.enableMqttBroker) {
+            EDDTableFromMqtt.publishData(change, "change/" + tDatasetID);
+          }
+        }
+
         if (EDStatic.config.subscriptionSystemActive) {
           // get subscription actions
           try { // beware exceptions from subscriptions
