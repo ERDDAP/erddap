@@ -4654,7 +4654,6 @@ public class Table {
       String postTableHtml,
       String otherClasses,
       String bgColor,
-      int border,
       boolean writeUnits,
       int timeColumn,
       boolean needEncodingAsHtml,
@@ -4681,7 +4680,6 @@ public class Table {
           postTableHtml,
           otherClasses,
           bgColor,
-          border,
           writeUnits,
           timeColumn,
           needEncodingAsHtml,
@@ -4726,7 +4724,6 @@ public class Table {
    *     the table tag (or "" if none).
    * @param otherClasses a space separated list of other (HTML style) CSS classes (or null or "")
    * @param bgColor the backgroundColor, e.g., BGCOLOR, "#f1ecd8" or null (for none defined)
-   * @param border the line width of the cell border lines (e.g., 0, 1, 2)
    * @param writeUnits if true, the table's second row will be units (from columnAttributes "units")
    * @param timeColumn the column with epoch seconds which should be written as ISO formatted date
    *     times; if <0, this is ignored.
@@ -4744,7 +4741,6 @@ public class Table {
       String postTableHtml,
       String otherClasses,
       String bgColor,
-      int border,
       boolean writeUnits,
       int timeColumn,
       boolean needEncodingAsHtml,
@@ -4773,14 +4769,7 @@ public class Table {
     writer.write(preTableHtml);
     // write the actual table
     saveAsHtmlTable(
-        writer,
-        otherClasses,
-        bgColor,
-        border,
-        writeUnits,
-        timeColumn,
-        needEncodingAsHtml,
-        allowWrap);
+        writer, otherClasses, bgColor, writeUnits, timeColumn, needEncodingAsHtml, allowWrap);
 
     // close the document
     writer.write(postTableHtml);
@@ -4814,7 +4803,6 @@ public class Table {
    * @param writer usually already buffered
    * @param otherClasses a space separated list of other (HTML style) CSS classes (or null or "")
    * @param bgColor the backgroundColor, e.g., BGCOLOR, "#f1ecd8" or null (for none defined)
-   * @param border the line width of the cell border lines (e.g., 0, 1, 2)
    * @param writeUnits if true, the table's second row will be units (from columnAttributes "units")
    * @param timeColumn the column with epoch seconds which should be written as ISO formatted date
    *     times; if <0, this is ignored.
@@ -4829,7 +4817,6 @@ public class Table {
       Writer writer,
       String otherClasses,
       String bgColor,
-      int border,
       boolean writeUnits,
       int timeColumn,
       boolean needEncodingAsHtml,

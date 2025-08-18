@@ -7589,7 +7589,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
         writer.write("<p>" + nMatchingHtml + "\n" + "<span class=\"N\">(" + refine + ")</span>\n");
 
         table.saveAsHtmlTable(
-            writer, "commonBGColor nowrap", null, 1, false, -1, false, false); // allowWrap
+            writer, "commonBGColor nowrap", null, false, -1, false, false); // allowWrap
 
         if (lastPage > 1) writer.write("\n<p>" + nMatchingHtml);
 
@@ -14137,7 +14137,6 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
             new TableOptions.TableOptionsBuilder(table)
                 .otherClasses("commonBGColor")
                 .bgColor(null)
-                .border(1)
                 .writeUnits(false)
                 .timeColumn(mtCol)
                 .needEncodingAsHtml(false)
@@ -14179,7 +14178,6 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
               writer,
               "commonBGColor",
               null,
-              1, // other classes, bgColor, border,
               false,
               mtCol,
               false, // writeUnits, timeColumn, needEncodingAsHtml,
@@ -15055,7 +15053,6 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                 writer,
                 "commonBGColor",
                 null,
-                1,
                 false,
                 -1,
                 false,
@@ -16644,7 +16641,6 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                 writer,
                 "commonBGColor",
                 null,
-                1,
                 false,
                 -1,
                 false,
@@ -17597,7 +17593,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                 //    EDStatic.questionQuery(request.getQueryString())) +
                 "<br>&nbsp;\n"); // necessary for the blank line before the table (not <p>)
 
-        table.saveAsHtmlTable(writer, "commonBGColor", null, 1, false, -1, false, false);
+        table.saveAsHtmlTable(writer, "commonBGColor", null, false, -1, false, false);
 
         if (lastPage > 1) writer.write("\n<p>" + nMatchingHtml);
 
@@ -17823,7 +17819,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
           if (table.nRows() > 0) {
 
             // show the table of all datasets
-            table.saveAsHtmlTable(writer, "commonBGColor", null, 1, false, -1, false, false);
+            table.saveAsHtmlTable(writer, "commonBGColor", null, false, -1, false, false);
 
             if (lastPage > 1) writer.write("\n<p>" + nMatchingHtml);
 
@@ -18087,7 +18083,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
         sa.add(parts[0]);
         boolean sortByTitle = true;
         Table dsTable = makeHtmlDatasetTable(request, language, loggedInAs, sa, sortByTitle);
-        dsTable.saveAsHtmlTable(writer, "commonBGColor", null, 1, false, -1, false, false);
+        dsTable.saveAsHtmlTable(writer, "commonBGColor", null, false, -1, false, false);
 
         // html format the valueSA values
         String externalLinkHtml = EDStatic.messages.externalLinkHtml(language, tErddapUrl);
