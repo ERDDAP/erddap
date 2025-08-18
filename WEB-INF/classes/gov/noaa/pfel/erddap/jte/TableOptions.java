@@ -12,7 +12,6 @@ public class TableOptions {
 
   private final String otherClasses;
   private final String bgColor;
-  private final int border;
   private final boolean writeUnits;
   private final int timeColumn;
   private final boolean needEncodingAsHtml;
@@ -25,7 +24,6 @@ public class TableOptions {
   private TableOptions(TableOptionsBuilder builder) {
     this.otherClasses = builder.otherClasses;
     this.bgColor = builder.bgColor;
-    this.border = builder.border;
     this.writeUnits = builder.writeUnits;
     this.timeColumn = builder.timeColumn;
     this.needEncodingAsHtml = builder.needEncodingAsHtml;
@@ -39,7 +37,6 @@ public class TableOptions {
   public static class TableOptionsBuilder {
     private String otherClasses = "";
     private String bgColor = null;
-    private int border = 0;
     private boolean writeUnits = false;
     private int timeColumn = -1;
     private boolean needEncodingAsHtml = false;
@@ -57,11 +54,6 @@ public class TableOptions {
 
     public TableOptionsBuilder bgColor(String bgColor) {
       this.bgColor = bgColor;
-      return this;
-    }
-
-    public TableOptionsBuilder border(int border) {
-      this.border = border;
       return this;
     }
 
@@ -114,7 +106,7 @@ public class TableOptions {
     return table.nRows();
   }
 
-  public String insideForLoophead(int col) {
+  public String getColumnHeader(int col) {
     String s = table.getColumnName(col);
     if (needEncodingAsHtml) {
       s = XML.encodeAsHTML(s);
@@ -138,7 +130,7 @@ public class TableOptions {
     return writeUnits;
   }
 
-  public String insideForLoopUnits(int col) {
+  public String getColumnUnits(int col) {
     String tUnits = table.columnAttributes(col).getString("units");
     if (col == timeColumn) tUnits = "UTC";
     if (tUnits == null) tUnits = "";
@@ -155,7 +147,7 @@ public class TableOptions {
     return timeColumn;
   }
 
-  public String getDoubleDataConverted(int col, int row) {
+  public String getTimeString(int col, int row) {
     return Calendar2.safeEpochSecondsToIsoStringTZ(table.getDoubleData(col, row), "");
   }
 
@@ -167,7 +159,7 @@ public class TableOptions {
     return (fileAccessBaseUrl[col].length() > 0 || fileAccessSuffix[col].length() > 0);
   }
 
-  public String getTs(String s) {
+  private String getTs(String s) {
     return needEncodingAsHtml ? s : XML.decodeEntities(s);
   }
 
@@ -175,15 +167,15 @@ public class TableOptions {
     return fileAccessBaseUrl[col] + getTs(s) + fileAccessSuffix[col];
   }
 
-  public String getEncodeashtml(String s) {
+  public String getEncodeAsHtml(String s) {
     return needEncodingAsHtml ? XML.encodeAsHTML(s) : s;
   }
 
-  public boolean checkcontainsurl(String s) {
+  public boolean checkContainsUrl(String s) {
     return needEncodingAsHtml && String2.containsUrl(s);
   }
 
-  public boolean checkmouseover(String s) {
+  public boolean checkMouseOver(String s) {
     return !needEncodingAsHtml
         && !s.contains("href=")
         && !s.contains("onmouseover")
@@ -198,7 +190,7 @@ public class TableOptions {
     return String2.containsUrl(s);
   }
 
-  public String encodeaddhttps(String s) {
+  public String encodeAddHttps(String s) {
     return XML.encodeAsHTMLAttribute(String2.addHttpsForWWW(s));
   }
 
@@ -206,7 +198,7 @@ public class TableOptions {
     return !needEncodingAsHtml && String2.isUrl(XML.decodeEntities(s));
   }
 
-  public String getEncodeashtmlattribute(String s) {
+  public String getEncodeAsHtmlAttribute(String s) {
     return needEncodingAsHtml ? XML.encodeAsHTMLAttribute(s) : s;
   }
 
