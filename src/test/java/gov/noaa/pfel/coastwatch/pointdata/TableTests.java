@@ -1315,7 +1315,6 @@ public class TableTests {
         "postTextHtml\n<br>",
         null,
         Table.BGCOLOR,
-        1,
         true,
         0,
         true, // needEncodingAsHtml
