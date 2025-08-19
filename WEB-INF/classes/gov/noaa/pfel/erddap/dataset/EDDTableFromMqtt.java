@@ -246,7 +246,7 @@ public class EDDTableFromMqtt extends EDDTableFromFiles {
         .sessionExpiryInterval(sessionExpiryInterval)
         .simpleAuth()
         .username(username)
-        .password(password != null ? password.getBytes() : null)
+        .password(password.getBytes()) // Cannot be null
         .applySimpleAuth()
         .send()
         .orTimeout(connectionTimeout, TimeUnit.SECONDS)

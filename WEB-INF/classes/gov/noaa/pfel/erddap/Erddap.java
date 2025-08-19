@@ -163,7 +163,18 @@ public class Erddap extends HttpServlet {
   // MqttClient to connect to the local ERDDAP broker
   public static Mqtt5AsyncClient mqttClient =
       EDDTableFromMqtt.initialiseMqttAsyncClient(
-          "localhost", 1883, null, "dataset-change-client", null, false, 60, true, 10, 10, true);
+              "localhost",
+              1883,
+              null,
+              "dataset-change-client",
+              "password",
+              false,
+              60,
+              true,
+              10,
+              10,
+              true)
+          .join();
 
   // ************** END OF STATIC VARIABLES *****************************
 
@@ -24468,7 +24479,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
 
         // publish change to local broker, if enabled
         if (EDStatic.config.publishMqttNotif && EDStatic.config.enableMqttBroker) {
-          mqttClient.publishData(change, "change/" + tDatasetID);
+          mqttClient.publishWith().topic("change/" + tDatasetID).payload(change.getBytes()).send();
         }
 
         if (EDStatic.config.subscriptionSystemActive) {
