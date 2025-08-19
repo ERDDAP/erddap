@@ -38,7 +38,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 public class EDDTableFromMqtt extends EDDTableFromFiles {
-  public static Mqtt5AsyncClient asyncClient;
 
   public static final int DEFAULT_STANDARDIZEWHAT = 0;
   private static final int MQTT_PORT = 1883;
@@ -194,9 +193,9 @@ public class EDDTableFromMqtt extends EDDTableFromFiles {
             sessionExpiryInterval,
             connectionTimeout,
             automaticReconnect);
-    asyncClient = response.join();
+    Mqtt5AsyncClient asyncClient = response.join();
 
-    subscribeToDatasetTopics(topics, MqttQos.AT_LEAST_ONCE);
+    subscribeToDatasetTopics(asyncClient, topics, MqttQos.AT_LEAST_ONCE);
   }
 
   public static CompletableFuture<Mqtt5AsyncClient> initialiseMqttAsyncClient(
@@ -264,17 +263,13 @@ public class EDDTableFromMqtt extends EDDTableFromFiles {
             });
   }
 
-  public static void publishData(String data, String topic) {
-    asyncClient.publishWith().topic(topic).payload(data.getBytes()).send();
-  }
-
-  public void subscribeToDatasetTopics(String[] topics, MqttQos qosLevel) {
+  public void subscribeToDatasetTopics(Mqtt5AsyncClient client, String[] topics, MqttQos qosLevel) {
 
     for (String topic : topics) {
       if (topic == null || topic.trim().isEmpty()) {
         continue;
       }
-      asyncClient
+      client
           .subscribeWith()
           .topicFilter(topic)
           .qos(qosLevel)
@@ -305,6 +300,10 @@ public class EDDTableFromMqtt extends EDDTableFromFiles {
                 }
               });
     }
+  }
+
+  public void publishData(Mqtt5AsyncClient client, String data, String topic) {
+    client.publishWith().topic(topic).payload(data.getBytes()).send();
   }
 
   /**

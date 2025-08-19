@@ -25,6 +25,7 @@ import com.cohort.util.String2;
 import com.cohort.util.Units2;
 import com.cohort.util.XML;
 import com.google.common.collect.ImmutableList;
+import com.hivemq.client.mqtt.mqtt5.Mqtt5AsyncClient;
 import gov.noaa.pfel.coastwatch.griddata.DataHelper;
 import gov.noaa.pfel.coastwatch.griddata.Grid;
 import gov.noaa.pfel.coastwatch.griddata.OpendapHelper;
@@ -158,6 +159,11 @@ public class Erddap extends HttpServlet {
   // But Firefox shows TextArea's as very wide, so leads to these values.
   public static final int dpfTFWidth = 56; // data provider form TextField width
   public static final int dpfTAWidth = 58; // data provider form TextArea width
+
+  // MqttClient to connect to the local ERDDAP broker
+  public static Mqtt5AsyncClient mqttClient =
+      EDDTableFromMqtt.initialiseMqttAsyncClient(
+          "localhost", 1883, null, "dataset-change-client", null, false, 60, true, 10, 10, true);
 
   // ************** END OF STATIC VARIABLES *****************************
 
@@ -24461,11 +24467,8 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
         StringArray actions = null;
 
         // publish change to local broker, if enabled
-        if (EDStatic.config.publishMqttNotif) {
-          // check if client is configured and broker is localhost
-          if (EDDTableFromMqtt.asyncClient != null && EDStatic.config.enableMqttBroker) {
-            EDDTableFromMqtt.publishData(change, "change/" + tDatasetID);
-          }
+        if (EDStatic.config.publishMqttNotif && EDStatic.config.enableMqttBroker) {
+          mqttClient.publishData(change, "change/" + tDatasetID);
         }
 
         if (EDStatic.config.subscriptionSystemActive) {
