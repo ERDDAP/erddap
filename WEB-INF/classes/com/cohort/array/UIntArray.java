@@ -5,7 +5,8 @@
  */
 package com.cohort.array;
 
-import com.cohort.util.*;
+import com.cohort.util.Math2;
+import com.cohort.util.String2;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -1153,11 +1154,10 @@ public class UIntArray extends PrimitiveArray {
    */
   @Override
   public String testEquals(final Object o) {
-    if (!(o instanceof UIntArray))
+    if (!(o instanceof UIntArray other))
       return "The two objects aren't equal: this object is a UIntArray; the other is a "
           + (o == null ? "null" : o.getClass().getName())
           + ".";
-    final UIntArray other = (UIntArray) o;
     if (other.size() != size)
       return "The two UIntArrays aren't equal: one has "
           + size

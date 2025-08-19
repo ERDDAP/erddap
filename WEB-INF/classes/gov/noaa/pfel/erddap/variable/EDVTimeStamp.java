@@ -552,7 +552,11 @@ public class EDVTimeStamp extends EDV {
         // This commonly happens for audio files when source is string from file name.
         String s = source.getString(i);
         if (s.equals(lastS)) destPa.set(i, lastD);
-        else destPa.set(i, lastD = sourceTimeToEpochSeconds(lastS = s));
+        else {
+          lastS = s;
+          lastD = sourceTimeToEpochSeconds(lastS);
+          destPa.set(i, lastD);
+        }
       }
     }
     return destPa;

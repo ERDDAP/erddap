@@ -5,7 +5,9 @@
  */
 package com.cohort.array;
 
-import com.cohort.util.*;
+import com.cohort.util.File2;
+import com.cohort.util.Math2;
+import com.cohort.util.String2;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -418,7 +420,7 @@ public class ByteArray extends PrimitiveArray {
   @Override
   public void addObject(final Object value) {
     // double is good intermediate because it has the idea of NaN
-    addDouble(value instanceof Number ? ((Number) value).doubleValue() : Double.NaN);
+    addDouble(value instanceof Number num ? num.doubleValue() : Double.NaN);
   }
 
   /**
@@ -1201,11 +1203,10 @@ public class ByteArray extends PrimitiveArray {
    */
   @Override
   public String testEquals(final Object o) {
-    if (!(o instanceof ByteArray))
+    if (!(o instanceof ByteArray other))
       return "The two objects aren't equal: this object is a ByteArray; the other is a "
           + (o == null ? "null" : o.getClass().getName())
           + ".";
-    final ByteArray other = (ByteArray) o;
     if (other.size() != size)
       return "The two ByteArrays aren't equal: one has "
           + size

@@ -53,10 +53,9 @@ public class TimeRange implements java.io.Serializable {
   /** Test for equality. The start, end, and delta must all be equal for equality. */
   @Override
   public boolean equals(Object o) {
-    if (!(o instanceof TimeRange)) {
+    if (!(o instanceof TimeRange tr)) {
       return false;
     }
-    TimeRange tr = (TimeRange) o;
     if (start != null && tr.start != null) {
       if (!start.equals(tr.start)) return false;
     } else {

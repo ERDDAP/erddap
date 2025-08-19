@@ -46,8 +46,8 @@ public class ItxFiles extends TableWriterFileType {
   @Override
   public void writeTableToFileFormat(DapRequestInfo requestInfo, TableWriter tableWriter)
       throws Throwable {
-    if (tableWriter instanceof TableWriterAllWithMetadata) {
-      saveAsIgor(requestInfo.outputStream(), (TableWriterAllWithMetadata) tableWriter);
+    if (tableWriter instanceof TableWriterAllWithMetadata twawm) {
+      saveAsIgor(requestInfo.outputStream(), twawm);
     }
   }
 

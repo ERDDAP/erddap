@@ -125,15 +125,6 @@ public class DDS implements Cloneable {
   }
 
   /**
-   * Creates an empty <code>DDS</code> with the given dataset name.
-   *
-   * @param n the dataset name
-   */
-  public DDS(String n) {
-    this(n, new DefaultFactory());
-  }
-
-  /**
    * Creates an empty <code>DDS</code> with the given <code>BaseTypeFactory</code>. This will be
    * used for DODS servers which need to construct subclasses of the various <code>BaseType</code>
    * objects to hold additional server-side information.
@@ -194,16 +185,6 @@ public class DDS implements Cloneable {
   }
 
   /**
-   * Get the Class factory. This is the machine that builds classes for the internal representation
-   * of the data set.
-   *
-   * @return the BaseTypeFactory.
-   */
-  public final BaseTypeFactory getFactory() {
-    return factory;
-  }
-
-  /**
    * Get the dataset's name. This is the name of the dataset itself, and is not to be confused with
    * the name of the file or disk on which it is stored.
    *
@@ -233,23 +214,6 @@ public class DDS implements Cloneable {
   }
 
   /**
-   * Removes a variable from the <code>DDS</code>. Does nothing if the variable can't be found. If
-   * there are multiple variables with the same name, only the first will be removed. To detect
-   * this, call the <code>checkSemantics</code> method to verify that each variable has a unique
-   * name.
-   *
-   * @param name the name of the variable to remove.
-   * @see DDS#checkSemantics(boolean)
-   */
-  public final void delVariable(String name) {
-    try {
-      BaseType bt = getVariable(name);
-      vars.remove(bt);
-    } catch (NoSuchVariableException e) {
-    }
-  }
-
-  /**
    * Is the variable <code>var</code> a vector of DConstructors? Return true if it is, false
    * otherwise. This mess will recurse into a DVector's template BaseType (which is a
    * BaseTypePrimivitiveVector) and look to see if that is either a DConstructor or
@@ -259,10 +223,10 @@ public class DDS implements Cloneable {
    * <p>Note that the List type modifier may only appear once.
    */
   private DConstructor isVectorOfDConstructor(BaseType var) {
-    if (!(var instanceof DVector)) return null;
-    if (!(((DVector) var).getPrimitiveVector() instanceof BaseTypePrimitiveVector)) return null;
+    if (!(var instanceof DVector dvec)) return null;
+    if (!(dvec.getPrimitiveVector() instanceof BaseTypePrimitiveVector)) return null;
     // OK. We have a DVector whose template is a BaseTypePrimitiveVector.
-    BaseTypePrimitiveVector btpv = (BaseTypePrimitiveVector) ((DVector) var).getPrimitiveVector();
+    BaseTypePrimitiveVector btpv = (BaseTypePrimitiveVector) dvec.getPrimitiveVector();
     // After that nasty cast, is the template a DConstructor?
     if (btpv.getTemplate() instanceof DConstructor) return (DConstructor) btpv.getTemplate();
     else return isVectorOfDConstructor(btpv.getTemplate());
@@ -330,7 +294,7 @@ public class DDS implements Cloneable {
       Iterator<BaseType> e = null;
       DConstructor dcv;
       if (start == null) e = getVariables(); // Start with the whole DDS
-      else if (start instanceof DConstructor) e = ((DConstructor) start).getVariables();
+      else if (start instanceof DConstructor dcon) e = dcon.getVariables();
       else if ((dcv = isVectorOfDConstructor(start)) != null) e = dcv.getVariables();
       else return null;
 
@@ -366,7 +330,7 @@ public class DDS implements Cloneable {
       Iterator<BaseType> e;
       DConstructor dcv;
       if (start == null) e = getVariables(); // Start with the whole DDS
-      else if (start instanceof DConstructor) e = ((DConstructor) start).getVariables();
+      else if (start instanceof DConstructor dcon) e = dcon.getVariables();
       else if ((dcv = isVectorOfDConstructor(start)) != null) e = dcv.getVariables();
       else return false;
 
@@ -394,15 +358,6 @@ public class DDS implements Cloneable {
    */
   public final Iterator<BaseType> getVariables() {
     return vars.iterator();
-  }
-
-  /**
-   * Returns the number of variables in the dataset.
-   *
-   * @return the number of variables in the dataset.
-   */
-  public final int numVariables() {
-    return vars.size();
   }
 
   /**
@@ -440,16 +395,6 @@ public class DDS implements Cloneable {
         bt.checkSemantics(true);
       }
     }
-  }
-
-  /**
-   * Check the semantics of the <code>DDS</code>. Same as <code>checkSemantics(false)</code>.
-   *
-   * @exception BadSemanticsException if semantics are bad
-   * @see DDS#checkSemantics(boolean)
-   */
-  public final void checkSemantics() throws BadSemanticsException {
-    checkSemantics(false);
   }
 
   /**

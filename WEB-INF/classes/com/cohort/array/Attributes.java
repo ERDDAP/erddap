@@ -5,7 +5,10 @@
  */
 package com.cohort.array;
 
-import com.cohort.util.*;
+import com.cohort.util.Calendar2;
+import com.cohort.util.String2;
+import com.cohort.util.Test;
+import com.cohort.util.Units2;
 import java.math.BigInteger;
 import java.util.Enumeration;
 import java.util.HashSet;
@@ -823,7 +826,8 @@ public class Attributes {
       } else {
         // switch to trim/valid name
         pa = remove(name);
-        set(name = tName, pa);
+        name = tName;
+        set(name, pa);
       }
 
       // trim/makeValid the value?

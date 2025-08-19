@@ -16,7 +16,14 @@ import com.cohort.util.MustBe;
 import com.cohort.util.SimpleException;
 import com.cohort.util.String2;
 import com.cohort.util.XML;
-import dods.dap.*;
+import dods.dap.AttributeTable;
+import dods.dap.BaseType;
+import dods.dap.DAS;
+import dods.dap.DConnect;
+import dods.dap.DConstructor;
+import dods.dap.DDS;
+import dods.dap.DSequence;
+import dods.dap.DVector;
 import gov.noaa.pfel.coastwatch.griddata.NcHelper;
 import gov.noaa.pfel.coastwatch.griddata.OpendapHelper;
 import gov.noaa.pfel.coastwatch.pointdata.Table;
@@ -29,7 +36,14 @@ import gov.noaa.pfel.erddap.handlers.SaxHandlerClass;
 import gov.noaa.pfel.erddap.util.EDMessages;
 import gov.noaa.pfel.erddap.util.EDMessages.Message;
 import gov.noaa.pfel.erddap.util.EDStatic;
-import gov.noaa.pfel.erddap.variable.*;
+import gov.noaa.pfel.erddap.variable.DataVariableInfo;
+import gov.noaa.pfel.erddap.variable.EDV;
+import gov.noaa.pfel.erddap.variable.EDVAlt;
+import gov.noaa.pfel.erddap.variable.EDVDepth;
+import gov.noaa.pfel.erddap.variable.EDVLat;
+import gov.noaa.pfel.erddap.variable.EDVLon;
+import gov.noaa.pfel.erddap.variable.EDVTime;
+import gov.noaa.pfel.erddap.variable.EDVTimeStamp;
 import java.io.ByteArrayInputStream;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -390,14 +404,13 @@ public class EDDTableFromDapSequence extends EDDTable {
 
     // delve into the outerSequence
     BaseType outerVariable = dds.getVariable(outerSequenceName);
-    if (!(outerVariable instanceof DSequence))
+    if (!(outerVariable instanceof DSequence outerSequence))
       throw new RuntimeException(
           errorInMethod
               + "outerVariable not a DSequence: name="
               + outerVariable.getName()
               + " type="
               + outerVariable.getTypeName());
-    DSequence outerSequence = (DSequence) outerVariable;
     int nOuterColumns = outerSequence.elementCount();
     AttributeTable outerAttributeTable = das.getAttributeTable(outerSequenceName);
     for (int outerCol = 0; outerCol < nOuterColumns; outerCol++) {

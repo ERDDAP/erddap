@@ -19,7 +19,7 @@ import gov.noaa.pmel.sgt.Attribute;
 import gov.noaa.pmel.sgt.AttributeChangeEvent;
 import gov.noaa.pmel.sgt.ColorMap;
 import gov.noaa.pmel.sgt.LineAttribute;
-import java.awt.*;
+import java.awt.Color;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 
@@ -312,7 +312,7 @@ public class VectorAttribute2 implements Attribute, Cloneable {
   @Override
   public void setBatch(boolean batch, boolean local) {
     batch_ = batch;
-    if (!batch && modified_) firePropertyChange("batch", Boolean.TRUE, Boolean.FALSE);
+    if (!batch && modified_) firePropertyChange("batch", true, false);
   }
 
   /**

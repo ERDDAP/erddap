@@ -123,8 +123,13 @@ import org.apache.parquet.schema.Type;
 import org.apache.parquet.schema.Types.MessageTypeBuilder;
 import org.xml.sax.InputSource;
 import org.xml.sax.XMLReader;
-import ucar.ma2.*;
-import ucar.nc2.*;
+import ucar.ma2.Array;
+import ucar.ma2.ArrayChar;
+import ucar.ma2.DataType;
+import ucar.nc2.Dimension;
+import ucar.nc2.Group;
+import ucar.nc2.NetcdfFile;
+import ucar.nc2.Variable;
 import ucar.nc2.write.NetcdfFormatWriter;
 
 /**
@@ -2789,9 +2794,7 @@ public class Table {
           if (which < 0 || which >= nItems) // value treated as NaN. NaN will fail any test.
           continue;
           double d = String2.parseDouble(items.get(which));
-          if (d >= testMin[test] && d <= testMax[test]) { // NaN will fail this test
-            continue;
-          } else {
+          if (!(d >= testMin[test] && d <= testMax[test])) { // NaN will fail this test
             ok = false;
             if (debugMode)
               String2.log(">> skipping row=" + row + " because it failed test #" + test);
@@ -4321,7 +4324,6 @@ public class Table {
                 if (ti != Integer.MAX_VALUE) gc.add(Calendar2.HOUR, -ti);
               }
             }
-            continue;
           }
 
         } else if (nTags == 0 || tags.equals("</aws:weather>")) {
@@ -5344,7 +5346,7 @@ public class Table {
         atts.remove("_encoded_");
         setColumn(col, CharArray.fromShortArrayBytes(sa));
 
-      } else if (pa instanceof StringArray) {
+      } else if (pa instanceof StringArray stringPa) {
         String enc = atts.getString("_encoded_");
         atts.remove("_encoded_");
         if ("fromLong".equals(enc)) {
@@ -5355,7 +5357,7 @@ public class Table {
           setColumn(col, new ULongArray(pa));
         } else if (String2.JSON.equals(enc)) {
           // convert UTF-8 back to Java char-based strings
-          ((StringArray) pa).fromJson();
+          stringPa.fromJson();
         } else {
           // unexpected encoding
           String2.log(
@@ -8850,7 +8852,6 @@ public class Table {
                 outerTable.nColumns(), vNames[v], NcHelper.getPrimitiveArray(var), vatt);
             outerTable.standardizeLastColumn(standardizeWhat);
           }
-          continue;
 
         } else if (realNDims[v] == 1) {
           Dimension dim = var.getDimension(0);
@@ -10249,14 +10250,13 @@ public class Table {
     if (reallyVerbose)
       String2.log("  dConnect.getData time=" + (System.currentTimeMillis() - time) + "ms");
     BaseType firstVariable = dataDds.getVariables().next();
-    if (!(firstVariable instanceof DSequence))
+    if (!(firstVariable instanceof DSequence outerSequence))
       throw new Exception(
           errorInMethod
               + "firstVariable not a DSequence: name="
               + firstVariable.getName()
               + " type="
               + firstVariable.getTypeName());
-    DSequence outerSequence = (DSequence) firstVariable;
     int nOuterRows = outerSequence.getRowCount();
     int nOuterColumns = outerSequence.elementCount();
     AttributeTable outerAttributeTable =
@@ -10281,7 +10281,7 @@ public class Table {
         addColumn(
             obt.getName(), new ByteArray()); // .nc doesn't support booleans, so store byte=0|1
       else if (obt instanceof DString) addColumn(obt.getName(), new StringArray());
-      else if (obt instanceof DSequence) {
+      else if (obt instanceof DSequence innerSequence) {
         // *** Start Dealing With InnerSequence
         // Ensure this is the first innerSequence.
         // If there are two, the response can't be represented as a simple table.
@@ -10298,7 +10298,6 @@ public class Table {
         if (reallyVerbose) String2.log("  innerSequenceColumn=" + innerSequenceColumn);
 
         // deal with the inner sequence
-        DSequence innerSequence = (DSequence) obt;
         nInnerColumns = innerSequence.elementCount();
         AttributeTable innerAttributeTable = das.getAttributeTable(innerSequence.getName());
         // String2.log("innerAttributeTable=" + innerAttributeTable);
@@ -15251,10 +15250,9 @@ public class Table {
                                         ? "W/U"
                                         : paType == PAType.UINT
                                             ? "I/U"
-                                            : paType == PAType.ULONG
-                                                ? "T"
-                                                : // -> text. Not good, but no loss of precision.
-                                                "T"; // String and unexpected
+                                            // paType == PAType.ULONG and unexpected both branches
+                                            // "T"
+                                            : "T";
     boolean asString = it.equals("T");
 
     writer.write(

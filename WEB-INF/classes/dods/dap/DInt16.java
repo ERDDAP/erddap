@@ -29,7 +29,11 @@
 
 package dods.dap;
 
-import java.io.*;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.EOFException;
+import java.io.IOException;
+import java.io.PrintWriter;
 
 /**
  * Holds a DODS <code>Int16</code> value.
@@ -64,15 +68,6 @@ public class DInt16 extends BaseType implements ClientIO {
    */
   public final short getValue() {
     return val;
-  }
-
-  /**
-   * Set the current value.
-   *
-   * @param newVal the new value.
-   */
-  public final void setValue(short newVal) {
-    val = newVal;
   }
 
   /**

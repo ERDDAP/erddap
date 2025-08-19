@@ -83,7 +83,7 @@ public class TableWriterAll extends TableWriter {
       this.randomInt = randomInt;
     }
 
-    public void setColumnStreams(DataOutputStream[] columnStreams) {
+    private void setColumnStreams(DataOutputStream[] columnStreams) {
       this.columnStreams = columnStreams;
     }
 
@@ -123,7 +123,7 @@ public class TableWriterAll extends TableWriter {
       }
     }
 
-    public void setColumnNames(String[] columnNames) {
+    private void setColumnNames(String[] columnNames) {
       this.columnNames = columnNames;
     }
   }

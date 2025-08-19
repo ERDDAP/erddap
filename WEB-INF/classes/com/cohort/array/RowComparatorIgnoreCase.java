@@ -51,11 +51,11 @@ public class RowComparatorIgnoreCase extends RowComparator {
    */
   @Override
   public boolean equals(Object obj) {
-    if (obj instanceof RowComparatorIgnoreCase) {
-    } else return false;
+    if (!(obj instanceof RowComparatorIgnoreCase other)) {
+      return false;
+    }
 
     // make sure all the keys and ascending values are the same
-    RowComparatorIgnoreCase other = (RowComparatorIgnoreCase) obj;
     if (other.table.size() != table.size()
         || other.keys.length != keys.length
         || other.ascending.length != ascending.length) return false;

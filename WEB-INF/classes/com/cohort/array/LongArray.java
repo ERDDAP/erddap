@@ -5,7 +5,8 @@
  */
 package com.cohort.array;
 
-import com.cohort.util.*;
+import com.cohort.util.Math2;
+import com.cohort.util.String2;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -1044,11 +1045,10 @@ public class LongArray extends PrimitiveArray {
    */
   @Override
   public String testEquals(final Object o) {
-    if (!(o instanceof LongArray))
+    if (!(o instanceof LongArray other))
       return "The two objects aren't equal: this object is a LongArray; the other is a "
           + (o == null ? "null" : o.getClass().getName())
           + ".";
-    final LongArray other = (LongArray) o;
     if (other.size() != size)
       return "The two LongArrays aren't equal: one has "
           + size
