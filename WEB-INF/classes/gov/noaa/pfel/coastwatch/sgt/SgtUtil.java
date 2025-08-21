@@ -12,11 +12,6 @@ import com.cohort.util.MustBe;
 import com.cohort.util.String2;
 import com.cohort.util.Test;
 import com.cohort.util.XML;
-import com.lowagie.text.Document;
-import com.lowagie.text.PageSize;
-import com.lowagie.text.pdf.PdfContentByte;
-import com.lowagie.text.pdf.PdfTemplate;
-import com.lowagie.text.pdf.PdfWriter;
 import gov.noaa.pfel.coastwatch.util.AttributedString2;
 import java.awt.Color;
 import java.awt.Font;
@@ -32,6 +27,12 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
 import javax.imageio.ImageIO;
+import org.openpdf.text.Document;
+import org.openpdf.text.PageSize;
+import org.openpdf.text.Rectangle;
+import org.openpdf.text.pdf.PdfContentByte;
+import org.openpdf.text.pdf.PdfTemplate;
+import org.openpdf.text.pdf.PdfWriter;
 
 /**
  * This class has utilities for SgtMap and SgtGraph. A note about coordinates:
@@ -527,7 +528,7 @@ public class SgtUtil {
    */
   public static Object[] createPdf(
       PDFPageSize size, int bbWidth, int bbHeight, OutputStream outputStream) throws Exception {
-    com.lowagie.text.Rectangle pageSize =
+    Rectangle pageSize =
         size == PDFPageSize.LETTER_PORTRAIT ? PageSize.LETTER : PageSize.LETTER.rotate();
     // currently, this uses itext
     // see the sample program:
