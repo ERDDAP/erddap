@@ -1,5 +1,7 @@
 @import gg.jte.Content
 @import gov.noaa.pfel.erddap.jte.YouAreHere
+@import gov.noaa.pfel.erddap.jte.TemplateHelper
+@import gov.noaa.pfel.erddap.util.EDMessages.Message
 @param Content content
 @param String tErddapUrl
 @param int language
@@ -24,19 +26,44 @@
       style="vertical-align:middle;"></a></td> 
     <td style="text-align:left; font-size:x-large; color:#FFFFFF; ">
       <strong>ERDDAP</strong>
-      <br><small><small><small>&EasierAccessToScientificData;</small></small></small>
+      <br><small><small><small>${TemplateHelper.getMessage(Message.EASIER_ACCESS_TO_SCIENTIFIC_DATA,language)}</small></small></small>
       </td> 
       <!-- need to do further changes at the legal.html -->
     <td style="text-align:right; font-size:small;"> 
       &loginInfo; | <select name="language" 
         onchange="window.location.href='/erddap/' + (this.selectedIndex == 0 ? '' : this[this.selectedIndex].value + '/') + '${endOfRequest}'">
-  <option value="">English</option>
-  <option value="de">Deutsch</option>
-  <option value="fr">Français</option>
-  <option value="es">Español</option>
-  <!-- will add more soon -->
-</select> &nbsp; &nbsp;
-      <br>&BroughtToYouBy; 
+        <option value="en">English</option>
+        <option value="bn">বাংলা - Bengali</option>
+        <option value="zh-CN">汉语 - Chinese (Simplified)</option>
+        <option value="zh-TW">漢語 - Chinese (Transitional)</option>
+        <option value="cs">Čeština - Czech</option>
+        <option value="da">Dansk - Danish</option>
+        <option value="nl">Nederlands - Dutch</option>
+        <option value="fi">Suomi - Finnish</option>
+        <option value="fr">Français - French</option>
+        <option value="de">Deutsch - German</option>
+        <option value="el">Ελληνικά - Greek</option>
+        <option value="hi">हिन्दी - Hindi</option>
+        <option value="hu">Magyar - Hungarian</option>
+        <option value="id">Bahasa Indonesia - Indonesian</option>
+        <option value="ga">Gaeilge - Irish</option>
+        <option value="it">Italiano - Italian</option>
+        <option value="ja">日本語 - Japanese</option>
+        <option value="ko">한국어 - Korean</option>
+        <option value="no">Norsk - Norwegian</option>
+        <option value="pl">Polski - Polish</option>
+        <option value="pt">Português - Portuguese</option>
+        <option value="ro">Română - Romanian</option>
+        <option value="ru">Русский - Russian</option>
+        <option value="es">Español - Spanish</option>
+        <option value="sv">Svenska - Swedish</option>
+        <option value="tl">Wikang Tagalog - Tagalog</option>
+        <option value="th">ภาษาไทย - Thai</option>
+        <option value="tr">Türkçe - Turkish</option>
+        <option value="uk">Українська - Ukrainian</option>
+        <option value="ur">اُردُو - Urdu</option>
+      </select> &nbsp; &nbsp;
+      <br>${TemplateHelper.getMessage(Message.BROUGHT_TO_YOU_BY,language)} 
       <a title="National Oceanic and Atmospheric Administration" rel="bookmark"
       href="https://www.noaa.gov">NOAA</a>  
       <a title="National Marine Fisheries Service" rel="bookmark"
