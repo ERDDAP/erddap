@@ -163,17 +163,17 @@ public class Erddap extends HttpServlet {
   // MqttClient to connect to the local ERDDAP broker
   public static Mqtt5AsyncClient mqttClient =
       EDDTableFromMqtt.initialiseMqttAsyncClient(
-              "localhost",
-              1883,
-              null,
-              "dataset-change-client",
-              "password",
-              false,
-              60,
-              true,
-              10,
-              10,
-              true)
+              EDStatic.config.mqttServerHost,
+              EDStatic.config.mqttServerPort,
+              EDStatic.config.mqttClientId,
+              EDStatic.config.mqttUserName,
+              EDStatic.config.mqttPassword,
+              EDStatic.config.mqttSsl,
+              EDStatic.config.mqttKeepAlive,
+              EDStatic.config.mqttCleanStart,
+              EDStatic.config.mqttSessionExpiry,
+              EDStatic.config.mqttConnectionTimeout,
+              EDStatic.config.mqttAutomaticReconnect)
           .join();
 
   // ************** END OF STATIC VARIABLES *****************************

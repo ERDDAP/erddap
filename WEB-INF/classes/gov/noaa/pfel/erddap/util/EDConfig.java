@@ -177,6 +177,20 @@ public class EDConfig {
   public static final int DEFAULT_unusualActivityFailPercent = 25;
   public static final boolean DEFAULT_showLoadErrorsOnStatusPage = true;
   public static final int DEFAULT_lowMemCacheGbLimit = 4;
+
+  // Mqtt default configs
+  public static final String DEFAULT_MQTT_HOST = "localhost";
+  public static final int DEFAULT_MQTT_PORT = 1883;
+  public static final String DEFAULT_MQTT_CLIENT = "erddap-client";
+  public static final String DEFAULT_MQTT_USERNAME = "erddap-client";
+  public static final String DEFAULT_MQTT_PASSWORD = "erddap-password";
+  public static final boolean DEFAULT_SSL = false;
+  public static final int DEFAULT_KEEP_ALIVE = 60;
+  public static final boolean DEFAULT_CLEAN_START = false;
+  public static final int DEFAULT_SESSION_EXPIRY = 10;
+  public static final int DEFAULT_CONNECTION_TIMEOUT = 10;
+  public static final boolean DEFAULT_AUTO_RECONNECT = true;
+
   public long cacheMillis = DEFAULT_cacheMinutes * Calendar2.MILLIS_PER_MINUTE;
   public long cacheClearMillis = cacheMillis / 4;
   public int lowMemCacheGbLimit = DEFAULT_lowMemCacheGbLimit;
@@ -238,6 +252,18 @@ public class EDConfig {
       // be
       // used
       useLuceneSearchEngine;
+
+  @FeatureFlag public final String mqttServerHost;
+  @FeatureFlag public final int mqttServerPort;
+  @FeatureFlag public final String mqttClientId;
+  @FeatureFlag public final String mqttUserName;
+  @FeatureFlag public final String mqttPassword;
+  @FeatureFlag public final boolean mqttSsl;
+  @FeatureFlag public final int mqttKeepAlive;
+  @FeatureFlag public final boolean mqttCleanStart;
+  @FeatureFlag public final int mqttSessionExpiry;
+  @FeatureFlag public final int mqttConnectionTimeout;
+  @FeatureFlag public final boolean mqttAutomaticReconnect;
 
   @FeatureFlag public final boolean variablesMustHaveIoosCategory;
   @FeatureFlag public boolean useSaxParser;
@@ -646,7 +672,20 @@ public class EDConfig {
         getSetupEVBoolean(setup, ev, "redirectDocumentationToGitHubIo", true);
     useSisISO19115 = getSetupEVBoolean(setup, ev, "useSisISO19115", false);
     deploymentInfo = getSetupEVString(setup, ev, "deploymentInfo", "");
-
+    // Mqtt flags initialization
+    mqttServerHost = getSetupEVString(setup, ev, "mqttServerHost", DEFAULT_MQTT_HOST);
+    mqttServerPort = getSetupEVInt(setup, ev, "mqttServerPort", DEFAULT_MQTT_PORT);
+    mqttClientId = getSetupEVString(setup, ev, "mqttClientId", DEFAULT_MQTT_CLIENT);
+    mqttUserName = getSetupEVString(setup, ev, "mqttUserName", DEFAULT_MQTT_USERNAME);
+    mqttPassword = getSetupEVString(setup, ev, "mqttPassword", DEFAULT_MQTT_PASSWORD);
+    mqttSsl = getSetupEVBoolean(setup, ev, "mqttSsl", DEFAULT_SSL);
+    mqttKeepAlive = getSetupEVInt(setup, ev, "mqttKeepAlive", DEFAULT_KEEP_ALIVE);
+    mqttCleanStart = getSetupEVBoolean(setup, ev, "mqttCleanStart", DEFAULT_CLEAN_START);
+    mqttSessionExpiry = getSetupEVInt(setup, ev, "mqttSessionExpiry", DEFAULT_SESSION_EXPIRY);
+    mqttConnectionTimeout =
+        getSetupEVInt(setup, ev, "mqttConnectionTimeout", DEFAULT_CONNECTION_TIMEOUT);
+    mqttAutomaticReconnect =
+        getSetupEVBoolean(setup, ev, "mqttAutomaticReconnect", DEFAULT_AUTO_RECONNECT);
     // ensure images exist and get their sizes
     Image tImage = Image2.getImage(imageDir + lowResLogoImageFile, 10000, false);
     lowResLogoImageFileWidth = tImage.getWidth(null);

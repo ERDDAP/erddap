@@ -99,7 +99,7 @@ public class EDDTableFromMqtt extends EDDTableFromFiles {
       boolean useSsl,
       int keepAlive,
       boolean cleanStart,
-      long sessionExpiryInterval,
+      int sessionExpiryInterval,
       int connectionTimeout,
       boolean automaticReconnect)
       throws Throwable {
@@ -207,7 +207,7 @@ public class EDDTableFromMqtt extends EDDTableFromFiles {
       boolean useSsl,
       int keepAlive,
       boolean cleanStart,
-      long sessionExpiryInterval,
+      int sessionExpiryInterval,
       int connectionTimeout,
       boolean automaticReconnect) {
 
