@@ -1795,6 +1795,7 @@ public class Erddap extends HttpServlet {
         engine.render(
             "legal.html",
             Map.of(
+                "endOfRequest", endOfRequest,
                 "tErddapUrl", tErddapUrl,
                 "language", language,
                 "youAreHere", youAreHere),
@@ -5109,6 +5110,9 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       engine.render(
           "status.jte",
           Map.of(
+              "endOfRequest", endOfRequest,
+              "tErddapUrl", tErddapUrl,
+              "language", language,
               "status", status,
               "youAreHere", youAreHere),
           new WriterOutput(writer));
@@ -14106,8 +14110,10 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
         engine.render(
             "outofdatedatasets.jte",
             Map.of(
+                "endOfRequest", endOfRequest,
                 "youAreHere", youAreHere,
                 "language", language,
+                "tErddapUrl", tErddapUrl,
                 "tableOptions", tableOptions,
                 "table", table),
             new WriterOutput(writer));
@@ -18884,6 +18890,8 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       engine.render(
           "subscription.jte",
           Map.of(
+              "endOfRequest", endOfRequest,
+              "tErddapUrl", tErddapUrl,
               "youAreHere", youAreHere,
               "language", language),
           new WriterOutput(writer));
@@ -23809,11 +23817,14 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
 
     // write the information for this protocol (dataset list table and instructions)
     String tErddapUrl = EDStatic.erddapUrl(request, loggedInAs, language);
-    writer.write(EDStatic.startHeadHtml(language, tErddapUrl, addToTitle));
-    if (String2.isSomething(addToHead)) writer.write("\n" + addToHead);
-    writer.write("\n</head>\n");
-    writer.write(EDStatic.startBodyHtml(request, language, loggedInAs, endOfRequest, queryString));
-    writer.write("\n");
+    if (!useHtmlTemplates(request)) {
+      writer.write(EDStatic.startHeadHtml(language, tErddapUrl, addToTitle));
+      if (String2.isSomething(addToHead)) writer.write("\n" + addToHead);
+      writer.write("\n</head>\n");
+      writer.write(
+          EDStatic.startBodyHtml(request, language, loggedInAs, endOfRequest, queryString));
+      writer.write("\n");
+    }
     writer.write(
         HtmlWidgets.htmlTooltipScript(EDStatic.imageDirUrl(request, loggedInAs, language)));
     writer.flush(); // Steve Souder says: the sooner you can send some html to user, the better
