@@ -11,8 +11,10 @@
     youAreHere=youAreHere,
     endOfRequest=endOfRequest,
     content=@`
-        <div>$unsafe{Legal.getMessage(Message.LEGAL_NOTICES, language)}</div>
-        <div>$unsafe{Legal.getMessage(Message.STANDARD_GENERAL_DISCLAIMER, language)}</div>
-        <div>$unsafe{Legal.getLegal(language,tErddapUrl)}</div>
+        <div class="standard_width">
+            <div>$unsafe{Legal.getMessage(Message.LEGAL_NOTICES, language)}</div>
+            <div>$unsafe{Legal.getMessage(Message.STANDARD_GENERAL_DISCLAIMER, language)}</div>
+            <div>$unsafe{Legal.getLegal(language,tErddapUrl)}</div>
+        </div>
         `
 )
