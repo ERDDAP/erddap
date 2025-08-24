@@ -18,10 +18,7 @@
         $unsafe{TemplateHelper.getFormated(TemplateHelper.getMessage(Message.SUBSCRIPTION_1_HTML,language), youAreHere.getErddapUrl())}
 
     <p>
-        <strong>
-            ${TemplateHelper.getMessage(Message.OPTIONS,language)}
-            :
-        </strong>
+        <strong>${TemplateHelper.getMessage(Message.OPTIONS,language)}:</strong>
     </p>
     <ul>
         <li>
