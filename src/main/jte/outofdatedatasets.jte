@@ -3,11 +3,17 @@
 @import gov.noaa.pfel.erddap.jte.TableOptions
 @import gov.noaa.pfel.erddap.util.EDStatic
 @import gov.noaa.pfel.erddap.util.EDMessages.Message
-@param YouAreHere youAreHere
-@param int language
 @param TableOptions tableOptions
-
-@template.youarehere(youAreHere)
+@param String tErddapUrl
+@param int language
+@param YouAreHere youAreHere
+@param String endOfRequest
+@template.layout.main(
+    tErddapUrl=tErddapUrl,
+    language=language,
+    youAreHere=youAreHere,
+    endOfRequest=endOfRequest,
+    content=@`
 <div class="standard_width">
 <p>
 ${TemplateHelper.getMessage(Message.ADVC_OUT_OF_DATE,language)}
@@ -23,3 +29,4 @@ ${TemplateHelper.getMessage(Message.ADVC_OUT_OF_DATE,language)}
 @endif
 </p>
 </div>
+`)

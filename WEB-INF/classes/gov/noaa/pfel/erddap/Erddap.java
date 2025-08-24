@@ -76,6 +76,7 @@ import java.util.GregorianCalendar;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -1795,6 +1796,7 @@ public class Erddap extends HttpServlet {
         engine.render(
             "legal.html",
             Map.of(
+                "endOfRequest", endOfRequest,
                 "tErddapUrl", tErddapUrl,
                 "language", language,
                 "youAreHere", youAreHere),
@@ -5109,6 +5111,9 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       engine.render(
           "status.jte",
           Map.of(
+              "endOfRequest", endOfRequest,
+              "tErddapUrl", tErddapUrl,
+              "language", language,
               "status", status,
               "youAreHere", youAreHere),
           new WriterOutput(writer));
@@ -14106,8 +14111,10 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
         engine.render(
             "outofdatedatasets.jte",
             Map.of(
+                "endOfRequest", endOfRequest,
                 "youAreHere", youAreHere,
                 "language", language,
+                "tErddapUrl", tErddapUrl,
                 "tableOptions", tableOptions,
                 "table", table),
             new WriterOutput(writer));
@@ -18884,6 +18891,8 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       engine.render(
           "subscription.jte",
           Map.of(
+              "endOfRequest", endOfRequest,
+              "tErddapUrl", tErddapUrl,
               "youAreHere", youAreHere,
               "language", language),
           new WriterOutput(writer));
@@ -23807,16 +23816,28 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
 
     Writer writer = File2.getBufferedWriterUtf8(out);
 
-    // write the information for this protocol (dataset list table and instructions)
-    String tErddapUrl = EDStatic.erddapUrl(request, loggedInAs, language);
-    writer.write(EDStatic.startHeadHtml(language, tErddapUrl, addToTitle));
-    if (String2.isSomething(addToHead)) writer.write("\n" + addToHead);
-    writer.write("\n</head>\n");
-    writer.write(EDStatic.startBodyHtml(request, language, loggedInAs, endOfRequest, queryString));
-    writer.write("\n");
-    writer.write(
-        HtmlWidgets.htmlTooltipScript(EDStatic.imageDirUrl(request, loggedInAs, language)));
-    writer.flush(); // Steve Souder says: the sooner you can send some html to user, the better
+    // Pages which support full HTML template layouts need to be added here
+    // TODO remove this check once all pages support HTML templating
+    boolean isSupportedHtmlLayoutPage =
+        List.of("legal.html", "outOfDateDatasets.html", "status.html", "subscriptions/index.html")
+            .contains(endOfRequest);
+
+    if (!useHtmlTemplates(request) || !isSupportedHtmlLayoutPage) {
+      // write the information for this protocol (dataset list table and instructions)
+      String tErddapUrl = EDStatic.erddapUrl(request, loggedInAs, language);
+      writer.write(EDStatic.startHeadHtml(language, tErddapUrl, addToTitle));
+      if (String2.isSomething(addToHead)) writer.write("\n" + addToHead);
+      writer.write("\n</head>\n");
+      writer.write(
+          EDStatic.startBodyHtml(request, language, loggedInAs, endOfRequest, queryString));
+      writer.write("\n");
+      writer.write(
+          HtmlWidgets.htmlTooltipScript(EDStatic.imageDirUrl(request, loggedInAs, language)));
+      writer.flush(); // Steve Souders says: the sooner you can send some html to user, the better
+    } else {
+      request.setAttribute("SUPPRESS_END_HTML_WRITER", true);
+    }
+
     return writer;
   }
 
@@ -23844,9 +23865,18 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       throws Throwable {
 
     try (writer) {
-      // end of document
-      writer.write(EDStatic.endBodyHtml(request, language, tErddapUrl, loggedInAs));
-      writer.write("\n</html>\n");
+      // endOfRequest is not available here, so we check for a request
+      // attribute set in getHtmlWriterUtf8 to determine if
+      // we should suppress writing footer content here
+      // (if an html template layout is in use)
+      boolean supressEndHtmlWriter =
+          (Boolean)
+              Objects.requireNonNullElse(request.getAttribute("SUPPRESS_END_HTML_WRITER"), false);
+      if (!useHtmlTemplates(request) || !supressEndHtmlWriter) {
+        // end of document
+        writer.write(EDStatic.endBodyHtml(request, language, tErddapUrl, loggedInAs));
+        writer.write("\n</html>\n");
+      }
 
       // essential
       writer.flush();
