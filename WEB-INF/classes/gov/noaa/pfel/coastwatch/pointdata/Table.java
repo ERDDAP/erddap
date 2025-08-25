@@ -84,6 +84,8 @@ import java.sql.Statement;
 import java.sql.Time;
 import java.sql.Timestamp;
 import java.sql.Types;
+import java.time.ZonedDateTime;
+import java.time.temporal.ChronoField;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
@@ -16107,11 +16109,13 @@ public class Table {
       return (d) -> d - d % simpleInterval;
     } else {
       return (d) -> {
-        GregorianCalendar gc = Calendar2.epochSecondsToGc(d);
-        Calendar2.clearSmallerFields(gc, field);
-        while ((field == Calendar2.YEAR ? Calendar2.getYear(gc) : gc.get(field)) % intNumber != 0)
-          gc.add(field, -1);
-        return Calendar2.gcToEpochSeconds(gc);
+        ZonedDateTime dt = Calendar2.epochSecondsToZdt(d);
+        dt = Calendar2.clearSmallerFields(dt, field);
+        ChronoField chronoField = Calendar2.getChronoFieldFromCalendarField(field);
+        while ((field == Calendar2.YEAR ? dt.getYear() : dt.get(chronoField)) % intNumber != 0) {
+          dt = dt.minus(1, chronoField.getBaseUnit());
+        }
+        return Calendar2.zdtToEpochSeconds(dt);
       };
     }
   }

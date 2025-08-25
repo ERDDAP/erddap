@@ -1499,7 +1499,7 @@ public class FileVisitorDNLS extends SimpleFileVisitor<Path> {
             matched = matcher.matches();
             if (matched) {
               try {
-                millis = Calendar2.parseISODateTimeZulu(matcher.group(2)).getTimeInMillis();
+                millis = Calendar2.parseISODateTimeUtc(matcher.group(2)).toInstant().toEpochMilli();
               } catch (Throwable t2) {
                 String2.log(t2.getMessage());
               }

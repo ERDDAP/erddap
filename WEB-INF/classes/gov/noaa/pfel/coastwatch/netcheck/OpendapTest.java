@@ -14,7 +14,7 @@ import dods.dap.DDS;
 import gov.noaa.pfel.coastwatch.griddata.Opendap;
 import gov.noaa.pfel.coastwatch.griddata.OpendapHelper;
 import gov.noaa.pfel.coastwatch.util.SimpleXMLReader;
-import java.util.GregorianCalendar;
+import java.time.ZonedDateTime;
 
 /**
  * This deals with one type of netCheck test: the ability to get das and dds information and actual
@@ -28,7 +28,7 @@ public class OpendapTest extends NetCheckTest {
   private String url;
   private String variableName;
   private String missingValue;
-  private GregorianCalendar offsetDate;
+  private ZonedDateTime offsetDate;
   private double[] minMaxXY;
 
   // optional
@@ -82,7 +82,7 @@ public class OpendapTest extends NetCheckTest {
         case "<netCheck><opendapTest></missingValue>" -> missingValue = xmlReader.content();
         case "<netCheck><opendapTest></offsetDate>" ->
             offsetDate =
-                Calendar2.parseISODateTimeZulu(xmlReader.content()); // throws Exception if trouble
+                Calendar2.parseISODateTimeUtc(xmlReader.content()); // throws Exception if trouble
         case "<netCheck><opendapTest></minMaxXY>" ->
             minMaxXY = String2.csvToDoubleArray(xmlReader.content());
         case "<netCheck><opendapTest></dasMustContain>" -> dasMustContain = xmlReader.content();
@@ -145,7 +145,7 @@ public class OpendapTest extends NetCheckTest {
     this.url = url;
     this.variableName = variableName;
     this.missingValue = missingValue;
-    offsetDate = Calendar2.parseISODateTimeZulu(isoOffsetDate); // throws Exception if trouble
+    offsetDate = Calendar2.parseISODateTimeUtc(isoOffsetDate); // throws Exception if trouble
     this.minMaxXY = minMaxXY;
 
     // optional

@@ -1899,7 +1899,7 @@ public class TestUtil {
         "This is a file\n"
             + "with a few lines.\n"
             + // used below
-            Calendar2.newGCalendarLocal()
+            ZonedDateTime.now()
             + "\n"; // unique content
     Test.ensureEqual(File2.writeToFileUtf8(fileName, contents), "", "a");
 
@@ -3181,7 +3181,7 @@ public class TestUtil {
 
     String2.pressEnterToContinue(
         "getCurrentISODateTimeString = "
-            + Calendar2.formatAsISODateTimeT(Calendar2.newGCalendarLocal())
+            + Calendar2.formatAsISODateTimeT(ZonedDateTime.now())
             + "    *** Check that HOUR accounts for daylight saving time!\n\n"
             + "current UTC time = "
             + Calendar2.formatAsISODateTimeT(Calendar2.newGCalendarZulu())
@@ -3209,7 +3209,7 @@ public class TestUtil {
      * "0001-05-21T00:00:00Z",
      * "-2020-05-21T00:00:00Z"};
      * for (int i = 0; i < tests.length; i++) {
-     * gc = Calendar2.parseISODateTimeZulu(tests[i]);
+     * gc = Calendar2.parseISODateTimeUtc(tests[i]);
      * instant = Instant.parse(tests[i]); //tried instant.toEpochMilli(),
      * getEpochSecond()
      * Test.ensureEqual(gc.getTimeInMillis(), instant.toEpochMilli(),
@@ -6407,7 +6407,8 @@ public class TestUtil {
     // newGCalendar, parse/format ISODate, yyyyDDD, IsoDateHM, CompactDateTime
     String2.log("test parse/format USDate, ISODate, yyyyDDD, IsoDateHM, CompactDateTime");
     s = "2004-03-02T14:35:08"; // 'T'
-    GregorianCalendar localGC = Calendar2.newGCalendarLocal();
+    ZonedDateTime nullZdt = null;
+    GregorianCalendar localGC = new GregorianCalendar();
     GregorianCalendar zuluGC = Calendar2.newGCalendarZulu();
     Test.ensureEqual(
         Calendar2.formatAsISODateTimeT(Calendar2.parseISODateTime(localGC, s)), s, "nL");
@@ -6420,106 +6421,106 @@ public class TestUtil {
         "nZ2");
     s2 = "0001-01-01T02:00:00";
     Test.ensureEqual(
-        Calendar2.formatAsISODateTimeT(Calendar2.parseISODateTimeZulu(s2)), s2, "n0001");
+        Calendar2.formatAsISODateTimeT(Calendar2.parseISODateTimeUtc(s2)), s2, "n0001");
     s2 = "0000-02-01T00:03:00";
     Test.ensureEqual(
-        Calendar2.formatAsISODateTimeT(Calendar2.parseISODateTimeZulu(s2)), s2, "n0000");
+        Calendar2.formatAsISODateTimeT(Calendar2.parseISODateTimeUtc(s2)), s2, "n0000");
     s2 = "-0001-02-03T00:00:04";
     Test.ensureEqual(
-        Calendar2.formatAsISODateTimeT(Calendar2.parseISODateTimeZulu(s2)), s2, "n-0001");
+        Calendar2.formatAsISODateTimeT(Calendar2.parseISODateTimeUtc(s2)), s2, "n-0001");
     s2 = "1970-01-01 00:00:00.000 1:00"; // a test of timeZone offset
     Test.ensureEqual(
-        Calendar2.formatAsISODateTimeT(Calendar2.parseISODateTimeZulu(s2)),
+        Calendar2.formatAsISODateTimeT(Calendar2.parseISODateTimeUtc(s2)),
         "1969-12-31T23:00:00",
         "");
 
     // 2012-05-22 new harder tests of modified Calendar2 methods
     Test.ensureEqual(
-        Calendar2.formatAsISODateTimeT3Z(Calendar2.parseISODateTimeZulu("1970-1-2Q3:4:5.678")),
+        Calendar2.formatAsISODateTimeT3Z(Calendar2.parseISODateTimeUtc("1970-1-2Q3:4:5.678")),
         "1970-01-02T03:04:05.678Z",
         "");
     Test.ensureEqual(
-        Calendar2.formatAsISODateTimeT3Z(Calendar2.parseISODateTimeZulu("1970-1-2!3:4:5.67")),
+        Calendar2.formatAsISODateTimeT3Z(Calendar2.parseISODateTimeUtc("1970-1-2!3:4:5.67")),
         "1970-01-02T03:04:05.670Z",
         "");
     Test.ensureEqual(
-        Calendar2.formatAsISODateTimeT3Z(Calendar2.parseISODateTimeZulu("1970-1-2 3:4:5.6")),
+        Calendar2.formatAsISODateTimeT3Z(Calendar2.parseISODateTimeUtc("1970-1-2 3:4:5.6")),
         "1970-01-02T03:04:05.600Z",
         "");
     // tests of timeZone offset...
     Test.ensureEqual(
-        Calendar2.formatAsISODateTimeT3Z(Calendar2.parseISODateTimeZulu("1970-1-2 3:4:5.678 1")),
+        Calendar2.formatAsISODateTimeT3Z(Calendar2.parseISODateTimeUtc("1970-1-2 3:4:5.678 1")),
         "1970-01-02T02:04:05.678Z",
         "");
     Test.ensureEqual(
-        Calendar2.formatAsISODateTimeT3Z(Calendar2.parseISODateTimeZulu("1970-1-2 3:4:5.678+1")),
+        Calendar2.formatAsISODateTimeT3Z(Calendar2.parseISODateTimeUtc("1970-1-2 3:4:5.678+1")),
         "1970-01-02T02:04:05.678Z",
         "");
     Test.ensureEqual(
-        Calendar2.formatAsISODateTimeT3Z(Calendar2.parseISODateTimeZulu("1970-1-2 3:4:5.678-1")),
+        Calendar2.formatAsISODateTimeT3Z(Calendar2.parseISODateTimeUtc("1970-1-2 3:4:5.678-1")),
         "1970-01-02T04:04:05.678Z",
         "");
     Test.ensureEqual(
-        Calendar2.formatAsISODateTimeT3Z(Calendar2.parseISODateTimeZulu("1970-1-2 3:4:5.678 1:12")),
+        Calendar2.formatAsISODateTimeT3Z(Calendar2.parseISODateTimeUtc("1970-1-2 3:4:5.678 1:12")),
         "1970-01-02T01:52:05.678Z",
         "");
     Test.ensureEqual(
-        Calendar2.formatAsISODateTimeT3Z(Calendar2.parseISODateTimeZulu("1970-1-2 3:4:5.678+1:12")),
+        Calendar2.formatAsISODateTimeT3Z(Calendar2.parseISODateTimeUtc("1970-1-2 3:4:5.678+1:12")),
         "1970-01-02T01:52:05.678Z",
         "");
     Test.ensureEqual(
-        Calendar2.formatAsISODateTimeT3Z(Calendar2.parseISODateTimeZulu("1970-1-2 3:4:5.678-1:12")),
+        Calendar2.formatAsISODateTimeT3Z(Calendar2.parseISODateTimeUtc("1970-1-2 3:4:5.678-1:12")),
         "1970-01-02T04:16:05.678Z",
         "");
     // jump to timezone
     Test.ensureEqual(
-        Calendar2.formatAsISODateTimeT3Z(Calendar2.parseISODateTimeZulu("1970-1-2 3:4:5 1:00")),
+        Calendar2.formatAsISODateTimeT3Z(Calendar2.parseISODateTimeUtc("1970-1-2 3:4:5 1:00")),
         "1970-01-02T02:04:05.000Z",
         "");
     Test.ensureEqual(
-        Calendar2.formatAsISODateTimeT3Z(Calendar2.parseISODateTimeZulu("1970-1-2 3:4 1:00")),
+        Calendar2.formatAsISODateTimeT3Z(Calendar2.parseISODateTimeUtc("1970-1-2 3:4 1:00")),
         "1970-01-02T02:04:00.000Z",
         "");
     Test.ensureEqual(
-        Calendar2.formatAsISODateTimeT3Z(Calendar2.parseISODateTimeZulu("1970-1-2 3 1:00")),
+        Calendar2.formatAsISODateTimeT3Z(Calendar2.parseISODateTimeUtc("1970-1-2 3 1:00")),
         "1970-01-02T02:00:00.000Z",
         "");
     // just (part of) date
     Test.ensureEqual(
-        Calendar2.formatAsISODateTimeT3Z(Calendar2.parseISODateTimeZulu("1971-2-3")),
+        Calendar2.formatAsISODateTimeT3Z(Calendar2.parseISODateTimeUtc("1971-2-3")),
         "1971-02-03T00:00:00.000Z",
         "");
     Test.ensureEqual(
-        Calendar2.formatAsISODateTimeT3Z(Calendar2.parseISODateTimeZulu("1971-2")),
+        Calendar2.formatAsISODateTimeT3Z(Calendar2.parseISODateTimeUtc("1971-2")),
         "1971-02-01T00:00:00.000Z",
         "");
     Test.ensureEqual(
-        Calendar2.formatAsISODateTimeT3Z(Calendar2.parseISODateTimeZulu("1971")),
+        Calendar2.formatAsISODateTimeT3Z(Calendar2.parseISODateTimeUtc("1971")),
         "1971-01-01T00:00:00.000Z",
         "");
 
-    gc = Calendar2.parseISODateTimeZulu("2011-12-31T23:59:59.997Z");
-    Test.ensureEqual((double) gc.getTimeInMillis(), (double) 1.325376E12, "");
-    Test.ensureEqual(Calendar2.formatAsISODateTimeT3Z(gc), "2011-12-31T23:59:59.997Z", "");
+    ZonedDateTime dt = Calendar2.parseISODateTimeUtc("2011-12-31T23:59:59.997Z");
+    Test.ensureEqual((double) dt.toInstant().toEpochMilli(), (double) 1.325376E12, "");
+    Test.ensureEqual(Calendar2.formatAsISODateTimeT3Z(dt), "2011-12-31T23:59:59.997Z", "");
 
     // 2012-12-26 support comma in SS,SSS
     Test.ensureEqual(
-        Calendar2.formatAsISODateTimeT3Z(Calendar2.parseISODateTimeZulu("1970-1-2 3:4:5,6")),
+        Calendar2.formatAsISODateTimeT3Z(Calendar2.parseISODateTimeUtc("1970-1-2 3:4:5,6")),
         "1970-01-02T03:04:05.600Z",
         "");
 
     // support any T character and Z or z
     Test.ensureEqual(
-        Calendar2.formatAsISODateTimeTZ(Calendar2.parseISODateTimeZulu("1970-1-2t3:4:5z")),
+        Calendar2.formatAsISODateTimeTZ(Calendar2.parseISODateTimeUtc("1970-1-2t3:4:5z")),
         "1970-01-02T03:04:05Z",
         "");
     Test.ensureEqual(
-        Calendar2.formatAsISODateTimeTZ(Calendar2.parseISODateTimeZulu("1970-01-02a03:04:05z")),
+        Calendar2.formatAsISODateTimeTZ(Calendar2.parseISODateTimeUtc("1970-01-02a03:04:05z")),
         "1970-01-02T03:04:05Z",
         "");
 
     try {
-      Calendar2.formatAsISODateTimeT(null);
+      Calendar2.formatAsISODateTimeT(nullZdt);
       throw new Throwable("Shouldn't get here.5");
     } catch (Exception e) {
     }
@@ -6555,15 +6556,15 @@ public class TestUtil {
         "n2Z2"); // other connecting char allowed
     s2 = "0001-01-01 02:00:00";
     Test.ensureEqual(
-        Calendar2.formatAsISODateTimeSpace(Calendar2.parseISODateTimeZulu(s2)), s2, "n2 0001");
+        Calendar2.formatAsISODateTimeSpace(Calendar2.parseISODateTimeUtc(s2)), s2, "n2 0001");
     s2 = "0000-02-01 00:03:00";
     Test.ensureEqual(
-        Calendar2.formatAsISODateTimeSpace(Calendar2.parseISODateTimeZulu(s2)), s2, "n2 0000");
+        Calendar2.formatAsISODateTimeSpace(Calendar2.parseISODateTimeUtc(s2)), s2, "n2 0000");
     s2 = "-0001-03-04 00:00:04";
     Test.ensureEqual(
-        Calendar2.formatAsISODateTimeSpace(Calendar2.parseISODateTimeZulu(s2)), s2, "n2 -0001");
+        Calendar2.formatAsISODateTimeSpace(Calendar2.parseISODateTimeUtc(s2)), s2, "n2 -0001");
     try {
-      Calendar2.formatAsISODateTimeSpace(null);
+      Calendar2.formatAsISODateTimeSpace(nullZdt);
       throw new Throwable("Shouldn't get here.10");
     } catch (Exception e) {
     }
@@ -6571,7 +6572,7 @@ public class TestUtil {
     Test.ensureEqual(Calendar2.formatAsISODate(Calendar2.parseISODateTime(localGC, s)), s, "oL");
     Test.ensureEqual(Calendar2.formatAsISODate(Calendar2.parseISODateTime(zuluGC, s)), s, "oZ");
     try {
-      Calendar2.formatAsISODate(null);
+      Calendar2.formatAsISODate(nullZdt);
       throw new Throwable("Shouldn't get here.11");
     } catch (Exception e) {
     }
@@ -6588,137 +6589,137 @@ public class TestUtil {
 
     // time zones
     Test.ensureEqual(
-        Calendar2.formatAsISODateTimeT(Calendar2.parseISODateTimeZulu("2003-02-03T04:05:06")),
+        Calendar2.formatAsISODateTimeT(Calendar2.parseISODateTimeUtc("2003-02-03T04:05:06")),
         "2003-02-03T04:05:06",
         "z1");
     Test.ensureEqual(
-        Calendar2.formatAsISODateTimeT(Calendar2.parseISODateTimeZulu("2003-02-03T04:05:06.1")),
+        Calendar2.formatAsISODateTimeT(Calendar2.parseISODateTimeUtc("2003-02-03T04:05:06.1")),
         "2003-02-03T04:05:06",
         "z1");
     Test.ensureEqual(
-        Calendar2.formatAsISODateTimeT(Calendar2.parseISODateTimeZulu("2003-02-03T04:05:06.9")),
+        Calendar2.formatAsISODateTimeT(Calendar2.parseISODateTimeUtc("2003-02-03T04:05:06.9")),
         "2003-02-03T04:05:06",
         "z1");
     Test.ensureEqual(
-        Calendar2.formatAsISODateTimeT(Calendar2.parseISODateTimeZulu("2003-02-03T04:05:06Z")),
+        Calendar2.formatAsISODateTimeT(Calendar2.parseISODateTimeUtc("2003-02-03T04:05:06Z")),
         "2003-02-03T04:05:06",
         "z2");
     Test.ensureEqual(
-        Calendar2.formatAsISODateTimeT(Calendar2.parseISODateTimeZulu("2003-02-03T04:05:06-00:00")),
+        Calendar2.formatAsISODateTimeT(Calendar2.parseISODateTimeUtc("2003-02-03T04:05:06-00:00")),
         "2003-02-03T04:05:06",
         "z3");
     Test.ensureEqual(
-        Calendar2.formatAsISODateTimeT(Calendar2.parseISODateTimeZulu("2003-02-03T04:05:06-01:00")),
+        Calendar2.formatAsISODateTimeT(Calendar2.parseISODateTimeUtc("2003-02-03T04:05:06-01:00")),
         "2003-02-03T05:05:06",
         "z4");
     Test.ensureEqual(
-        Calendar2.formatAsISODateTimeT(Calendar2.parseISODateTimeZulu("2003-02-03T04:05:06-01:30")),
+        Calendar2.formatAsISODateTimeT(Calendar2.parseISODateTimeUtc("2003-02-03T04:05:06-01:30")),
         "2003-02-03T05:35:06",
         "z5");
     Test.ensureEqual(
-        Calendar2.formatAsISODateTimeT(Calendar2.parseISODateTimeZulu("2003-02-03T04:05:06+01:00")),
+        Calendar2.formatAsISODateTimeT(Calendar2.parseISODateTimeUtc("2003-02-03T04:05:06+01:00")),
         "2003-02-03T03:05:06",
         "z6");
     Test.ensureEqual(
         Calendar2.formatAsISODateTimeT(
-            Calendar2.parseISODateTimeZulu("2003-02-03T04:05:06.1+01:00")),
+            Calendar2.parseISODateTimeUtc("2003-02-03T04:05:06.1+01:00")),
         "2003-02-03T03:05:06",
         "z6");
     Test.ensureEqual(
         Calendar2.formatAsISODateTimeT(
-            Calendar2.parseISODateTimeZulu("0001-02-03T04:05:06.1+01:00")),
+            Calendar2.parseISODateTimeUtc("0001-02-03T04:05:06.1+01:00")),
         "0001-02-03T03:05:06",
         "z6");
     Test.ensureEqual(
         Calendar2.formatAsISODateTimeT(
-            Calendar2.parseISODateTimeZulu("0000-02-03T04:05:06.1+01:00")),
+            Calendar2.parseISODateTimeUtc("0000-02-03T04:05:06.1+01:00")),
         "0000-02-03T03:05:06",
         "z6");
     Test.ensureEqual(
         Calendar2.formatAsISODateTimeT(
-            Calendar2.parseISODateTimeZulu("-0001-02-03T04:05:06.1+01:00")),
+            Calendar2.parseISODateTimeUtc("-0001-02-03T04:05:06.1+01:00")),
         "-0001-02-03T03:05:06",
         "z6");
 
     // no 0 padding
     Test.ensureEqual(
-        Calendar2.formatAsISODateTimeT(Calendar2.parseISODateTimeZulu("2003-2-3")),
+        Calendar2.formatAsISODateTimeT(Calendar2.parseISODateTimeUtc("2003-2-3")),
         "2003-02-03T00:00:00",
         "oZ1");
     // year <50 before 11/13/2006, behaviour was to add 2000 to the year
     Test.ensureEqual(
-        Calendar2.formatAsISODateTimeT(Calendar2.parseISODateTimeZulu("3-1-2")),
+        Calendar2.formatAsISODateTimeT(Calendar2.parseISODateTimeUtc("3-1-2")),
         "0003-01-02T00:00:00",
         "oZ2");
     // year <50 before 11/13/2006, behaviour was to add 2000 to the year
     Test.ensureEqual(
-        Calendar2.formatAsISODateTimeT(Calendar2.parseISODateTimeZulu("3")),
+        Calendar2.formatAsISODateTimeT(Calendar2.parseISODateTimeUtc("3")),
         "0003-01-01T00:00:00",
         "oZ3");
     // year >50 before 11/13/2006, behaviour was to add 1900 to the year
     Test.ensureEqual(
-        Calendar2.formatAsISODateTimeT(Calendar2.parseISODateTimeZulu("98-11-12T10")),
+        Calendar2.formatAsISODateTimeT(Calendar2.parseISODateTimeUtc("98-11-12T10")),
         "0098-11-12T10:00:00",
         "oZ4");
     // bad
     try {
-      Calendar2.parseISODateTimeZulu("1998/03");
+      Calendar2.parseISODateTimeUtc("1998/03");
       throw new Throwable("Shouldn't get here.13");
     } catch (Exception e) {
     }
     try {
-      Calendar2.parseISODateTimeZulu("1990a");
+      Calendar2.parseISODateTimeUtc("1990a");
       throw new Throwable("Shouldn't get here.14");
     } catch (Exception e) {
     }
     try {
-      Calendar2.parseISODateTimeZulu("1998::01");
+      Calendar2.parseISODateTimeUtc("1998::01");
       throw new Throwable("Shouldn't get here.15");
     } catch (Exception e) {
     }
     try {
-      Calendar2.parseISODateTimeZulu("1990:a");
+      Calendar2.parseISODateTimeUtc("1990:a");
       throw new Throwable("Shouldn't get here.16");
     } catch (Exception e) {
     }
     try {
-      Calendar2.parseISODateTimeZulu("a");
+      Calendar2.parseISODateTimeUtc("a");
       throw new Throwable("Shouldn't get here.17");
     } catch (Exception e) {
     }
     try {
-      Calendar2.parseISODateTimeZulu("");
+      Calendar2.parseISODateTimeUtc("");
       throw new Throwable("Shouldn't get here.18");
     } catch (Exception e) {
     }
     try {
-      Calendar2.parseISODateTimeZulu(null);
+      Calendar2.parseISODateTimeUtc(null);
       throw new Throwable("Shouldn't get here.19");
     } catch (Exception e) {
     }
 
     try {
-      Calendar2.parseYYYYDDD(zuluGC, null);
+      Calendar2.parseYYYYDDD(null);
       throw new Throwable("Shouldn't get here.21");
     } catch (Exception e) {
     }
     try {
-      Calendar2.parseYYYYDDD(zuluGC, "a");
+      Calendar2.parseYYYYDDD("a");
       throw new Throwable("Shouldn't get here.22");
     } catch (Exception e) {
     }
     try {
-      Calendar2.parseYYYYDDD(zuluGC, "200600");
+      Calendar2.parseYYYYDDD("200600");
       throw new Throwable("Shouldn't get here.23");
     } catch (Exception e) {
     }
     try {
-      Calendar2.parseYYYYDDD(zuluGC, "200600a");
+      Calendar2.parseYYYYDDD("200600a");
       throw new Throwable("Shouldn't get here.24");
     } catch (Exception e) {
     }
     try {
-      Calendar2.parseYYYYDDD(zuluGC, "20060011");
+      Calendar2.parseYYYYDDD("20060011");
       throw new Throwable("Shouldn't get here.25");
     } catch (Exception e) {
     }
@@ -6733,21 +6734,6 @@ public class TestUtil {
     } catch (Exception e) {
     }
 
-    Test.ensureEqual(
-        Calendar2.formatAsISODate(Calendar2.newGCalendarZulu(2003, 365)), "2003-12-31", "cZ");
-    Test.ensureEqual(
-        Calendar2.formatAsISODate(Calendar2.newGCalendarZulu(2004, 365)), "2004-12-30", "dZ");
-    Test.ensureEqual(
-        Calendar2.formatAsISODate(Calendar2.newGCalendarZulu(1, 34)), "0001-02-03", "dZ1");
-    Test.ensureEqual(
-        Calendar2.formatAsISODate(Calendar2.newGCalendarZulu(0, 34)), "0000-02-03", "dZ0");
-    Test.ensureEqual(
-        Calendar2.formatAsISODate(Calendar2.newGCalendarZulu(-1, 34)), "-0001-02-03", "dZ-1");
-    try {
-      Calendar2.newGCalendarZulu(Integer.MAX_VALUE, 365);
-      throw new Throwable("Shouldn't get here.31");
-    } catch (Exception e) {
-    }
     Test.ensureEqual(
         Calendar2.formatAsISODate(Calendar2.newGCalendarZulu(2003, 1, 2)), "2003-01-02", "fZ");
     try {
@@ -6773,7 +6759,7 @@ public class TestUtil {
         "-00010102030405",
         "hZ");
     try {
-      Calendar2.formatAsCompactDateTime(null);
+      Calendar2.formatAsCompactDateTime(nullZdt);
       throw new Throwable("Shouldn't get here.34");
     } catch (Exception e) {
     }
@@ -6784,32 +6770,36 @@ public class TestUtil {
     }
 
     Test.ensureEqual(
-        Calendar2.formatAsUSSlashAmPm(Calendar2.parseISODateTimeZulu("2006-01-02 00:03:04")),
-        "1/2/2006 12:03:04 am",
+        Calendar2.formatAsUSSlashAmPm(Calendar2.parseISODateTimeUtc("2006-01-02 00:03:04")),
+        "1/2/2006 12:03:04 AM",
         "");
     Test.ensureEqual(
-        Calendar2.formatAsUSSlashAmPm(Calendar2.parseISODateTimeZulu("2006-01-02 01:03:00")),
-        "1/2/2006 1:03:00 am",
+        Calendar2.formatAsUSSlashAmPm(Calendar2.parseISODateTimeUtc("2006-11-12 23:03:04")),
+        "11/12/2006 11:03:04 PM",
         "");
     Test.ensureEqual(
-        Calendar2.formatAsUSSlashAmPm(Calendar2.parseISODateTimeZulu("2006-01-02 12:00:04")),
-        "1/2/2006 12:00:04 pm",
+        Calendar2.formatAsUSSlashAmPm(Calendar2.parseISODateTimeUtc("2006-01-02 01:03:00")),
+        "1/2/2006 1:03:00 AM",
         "");
     Test.ensureEqual(
-        Calendar2.formatAsUSSlashAmPm(Calendar2.parseISODateTimeZulu("2006-01-02 14:00:00")),
-        "1/2/2006 2:00:00 pm",
+        Calendar2.formatAsUSSlashAmPm(Calendar2.parseISODateTimeUtc("2006-01-02 12:00:04")),
+        "1/2/2006 12:00:04 PM",
         "");
     Test.ensureEqual(
-        Calendar2.formatAsUSSlashAmPm(Calendar2.parseISODateTimeZulu("0001-01-02 14:00:00")),
-        "1/2/0001 2:00:00 pm",
+        Calendar2.formatAsUSSlashAmPm(Calendar2.parseISODateTimeUtc("2006-01-02 14:00:00")),
+        "1/2/2006 2:00:00 PM",
         "");
     Test.ensureEqual(
-        Calendar2.formatAsUSSlashAmPm(Calendar2.parseISODateTimeZulu("0000-01-02 14:00:00")),
-        "1/2/0000 2:00:00 pm",
+        Calendar2.formatAsUSSlashAmPm(Calendar2.parseISODateTimeUtc("0001-01-02 14:00:00")),
+        "1/2/0001 2:00:00 PM",
         "");
     Test.ensureEqual(
-        Calendar2.formatAsUSSlashAmPm(Calendar2.parseISODateTimeZulu("-0001-01-02 14:00:00")),
-        "1/2/-0001 2:00:00 pm",
+        Calendar2.formatAsUSSlashAmPm(Calendar2.parseISODateTimeUtc("0000-01-02 14:00:00")),
+        "1/2/0000 2:00:00 PM",
+        "");
+    Test.ensureEqual(
+        Calendar2.formatAsUSSlashAmPm(Calendar2.parseISODateTimeUtc("-0001-01-02 14:00:00")),
+        "1/2/-0001 2:00:00 PM",
         "");
     try {
       Calendar2.formatAsUSSlashAmPm(null);
@@ -6818,62 +6808,54 @@ public class TestUtil {
     }
 
     s = "19991231235904";
+    Test.ensureEqual(Calendar2.formatAsCompactDateTime(Calendar2.parseCompactDateTime(s)), s, "rL");
+    Test.ensureEqual(Calendar2.formatAsCompactDateTime(Calendar2.parseCompactDateTime(s)), s, "rZ");
     Test.ensureEqual(
-        Calendar2.formatAsCompactDateTime(Calendar2.parseCompactDateTime(localGC, s)), s, "rL");
-    Test.ensureEqual(
-        Calendar2.formatAsCompactDateTime(Calendar2.parseCompactDateTime(zuluGC, s)), s, "rZ");
-    Test.ensureEqual(
-        Calendar2.formatAsCompactDateTime(Calendar2.parseCompactDateTime(zuluGC, "00011231235904")),
+        Calendar2.formatAsCompactDateTime(Calendar2.parseCompactDateTime("00011231235904")),
         "00011231235904",
         "rZ");
     Test.ensureEqual(
-        Calendar2.formatAsCompactDateTime(Calendar2.parseCompactDateTime(zuluGC, "00001231235904")),
+        Calendar2.formatAsCompactDateTime(Calendar2.parseCompactDateTime("00001231235904")),
         "00001231235904",
         "rZ");
     Test.ensureEqual(
-        Calendar2.formatAsCompactDateTime(
-            Calendar2.parseCompactDateTime(zuluGC, "-00011231235904")),
+        Calendar2.formatAsCompactDateTime(Calendar2.parseCompactDateTime("-00011231235904")),
         "-00011231235904",
         "rZ");
     try {
-      Calendar2.formatAsCompactDateTime(null);
+      Calendar2.formatAsCompactDateTime(nullZdt);
       throw new Throwable("Shouldn't get here.45");
     } catch (Exception e) {
     }
     try {
-      Calendar2.parseCompactDateTime(null, s);
-      throw new Throwable("Shouldn't get here.46");
-    } catch (Exception e) {
-    }
-    try {
-      Calendar2.parseCompactDateTime(zuluGC, null);
+      Calendar2.parseCompactDateTime(null);
       throw new Throwable("Shouldn't get here.47");
     } catch (Exception e) {
     }
     try {
-      Calendar2.parseCompactDateTime(zuluGC, "");
+      Calendar2.parseCompactDateTime("");
       throw new Throwable("Shouldn't get here.48");
     } catch (Exception e) {
     }
     try {
-      Calendar2.parseCompactDateTime(zuluGC, "1999123");
+      Calendar2.parseCompactDateTime("1999123");
       throw new Throwable("Shouldn't get here.49");
     } catch (Exception e) {
     }
     try {
-      Calendar2.parseCompactDateTime(zuluGC, "1999123a");
+      Calendar2.parseCompactDateTime("1999123a");
       throw new Throwable("Shouldn't get here.50");
     } catch (Exception e) {
     }
     Test.ensureEqual(
-        Calendar2.formatAsCompactDateTime(Calendar2.parseCompactDateTimeZulu(s)), s, "rL1");
+        Calendar2.formatAsCompactDateTime(Calendar2.parseCompactDateTime(s)), s, "rL1");
     try {
-      Calendar2.parseCompactDateTimeZulu(null);
+      Calendar2.parseCompactDateTime(null);
       throw new Throwable("Shouldn't get here.51");
     } catch (Exception e) {
     }
     try {
-      Calendar2.parseCompactDateTimeZulu("");
+      Calendar2.parseCompactDateTime("");
       throw new Throwable("Shouldn't get here.52");
     } catch (Exception e) {
     }
@@ -7046,18 +7028,20 @@ public class TestUtil {
     Test.ensureEqual(
         Calendar2.epochSecondsToIsoStringTZ(1125504062.0), "2005-08-31T16:01:02Z", "x3");
 
-    // gcToEpochSeconds(GregorianCalendar gc) (test with values above)
-    gc = Calendar2.parseISODateTimeZulu("2005-08-31T16:01:02");
-    Test.ensureEqual(Calendar2.gcToEpochSeconds(gc), 1125504062.0, "");
-    gc = Calendar2.parseISODateTimeZulu("0001-01-01");
-    Test.ensureEqual(Calendar2.gcToEpochSeconds(gc), m0001 / 1000.0, "");
-    gc = Calendar2.parseISODateTimeZulu("0000-01-01");
-    Test.ensureEqual(Calendar2.gcToEpochSeconds(gc), (double) m0001 / 1000 + -366 * 24 * 3600, "");
-    gc = Calendar2.parseISODateTimeZulu("-0001-01-01");
+    // zdtToEpochSeconds(ZonedDateTime dt) (test with values above)
+    dt = Calendar2.parseISODateTimeUtc("2005-08-31T16:01:02");
+    Test.ensureEqual(Calendar2.zdtToEpochSeconds(dt), 1125504062.0, "");
+    dt = Calendar2.parseISODateTimeUtc("0001-01-01");
+    long zdtM0001 = -62135596800000L;
+    Test.ensureEqual(Calendar2.zdtToEpochSeconds(dt), zdtM0001 / 1000.0, "");
+    dt = Calendar2.parseISODateTimeUtc("0000-01-01");
     Test.ensureEqual(
-        Calendar2.gcToEpochSeconds(gc), (double) m0001 / 1000 + (-365 - 366) * 24 * 3600, "");
+        Calendar2.zdtToEpochSeconds(dt), (double) zdtM0001 / 1000 + -366 * 24 * 3600, "");
+    dt = Calendar2.parseISODateTimeUtc("-0001-01-01");
+    Test.ensureEqual(
+        Calendar2.zdtToEpochSeconds(dt), (double) zdtM0001 / 1000 + (-365 - 366) * 24 * 3600, "");
     try {
-      Calendar2.gcToEpochSeconds(null);
+      Calendar2.zdtToEpochSeconds(null);
       throw new Throwable("Shouldn't get here.69");
     } catch (Exception e) {
     }
@@ -7425,44 +7409,44 @@ public class TestUtil {
     Test.ensureEqual(Calendar2.elapsedTimeString(-Double.NaN), "infinity", "");
 
     // clearSmallerFields
-    gc = Calendar2.parseISODateTimeZulu("2005-08-31T16:01:02");
-    Calendar2.clearSmallerFields(gc, Calendar2.MILLISECOND);
-    Test.ensureEqual(Calendar2.formatAsISODateTimeT(gc), "2005-08-31T16:01:02", "");
-    gc = Calendar2.parseISODateTimeZulu("2005-08-31T16:01:02");
-    Calendar2.clearSmallerFields(gc, Calendar2.SECOND);
-    Test.ensureEqual(Calendar2.formatAsISODateTimeT(gc), "2005-08-31T16:01:02", "");
-    gc = Calendar2.parseISODateTimeZulu("2005-08-31T16:01:02");
-    Calendar2.clearSmallerFields(gc, Calendar2.MINUTE);
-    Test.ensureEqual(Calendar2.formatAsISODateTimeT(gc), "2005-08-31T16:01:00", "");
-    gc = Calendar2.parseISODateTimeZulu("2005-08-31T16:01:02");
-    Calendar2.clearSmallerFields(gc, Calendar2.HOUR);
-    Test.ensureEqual(Calendar2.formatAsISODateTimeT(gc), "2005-08-31T16:00:00", "");
-    gc = Calendar2.parseISODateTimeZulu("2005-08-31T16:01:02");
-    Calendar2.clearSmallerFields(gc, Calendar2.HOUR_OF_DAY);
-    Test.ensureEqual(Calendar2.formatAsISODateTimeT(gc), "2005-08-31T16:00:00", "");
-    gc = Calendar2.parseISODateTimeZulu("2005-08-31T16:01:02");
-    Calendar2.clearSmallerFields(gc, Calendar2.DATE);
-    Test.ensureEqual(Calendar2.formatAsISODateTimeT(gc), "2005-08-31T00:00:00", "");
-    gc = Calendar2.parseISODateTimeZulu("2005-08-31T16:01:02");
-    Calendar2.clearSmallerFields(gc, Calendar2.MONTH);
-    Test.ensureEqual(Calendar2.formatAsISODateTimeT(gc), "2005-08-01T00:00:00", "");
-    gc = Calendar2.parseISODateTimeZulu("2005-08-31T16:01:02");
-    Calendar2.clearSmallerFields(gc, Calendar2.DAY_OF_YEAR);
-    Test.ensureEqual(Calendar2.formatAsISODateTimeT(gc), "2005-01-01T00:00:00", "");
-    gc = Calendar2.parseISODateTimeZulu("2005-08-31T16:01:02");
-    Calendar2.clearSmallerFields(gc, Calendar2.YEAR);
-    Test.ensureEqual(Calendar2.formatAsISODateTimeT(gc), "2005-01-01T00:00:00", "");
-    gc = Calendar2.parseISODateTimeZulu("0000-08-31T16:01:02");
-    Calendar2.clearSmallerFields(gc, Calendar2.MINUTE);
-    Test.ensureEqual(Calendar2.formatAsISODateTimeT(gc), "0000-08-31T16:01:00", "");
-    gc = Calendar2.parseISODateTimeZulu("-0000-08-31T16:01:02");
-    Calendar2.clearSmallerFields(gc, Calendar2.MINUTE);
-    Test.ensureEqual(Calendar2.formatAsISODateTimeT(gc), "0000-08-31T16:01:00", "");
-    gc = Calendar2.parseISODateTimeZulu("-0001-08-31T16:01:02");
-    Calendar2.clearSmallerFields(gc, Calendar2.MINUTE);
-    Test.ensureEqual(Calendar2.formatAsISODateTimeT(gc), "-0001-08-31T16:01:00", "");
+    dt = Calendar2.parseISODateTimeUtc("2005-08-31T16:01:02");
+    dt = Calendar2.clearSmallerFields(dt, Calendar2.MILLISECOND);
+    Test.ensureEqual(Calendar2.formatAsISODateTimeT(dt), "2005-08-31T16:01:02", "");
+    dt = Calendar2.parseISODateTimeUtc("2005-08-31T16:01:02");
+    dt = Calendar2.clearSmallerFields(dt, Calendar2.SECOND);
+    Test.ensureEqual(Calendar2.formatAsISODateTimeT(dt), "2005-08-31T16:01:02", "");
+    dt = Calendar2.parseISODateTimeUtc("2005-08-31T16:01:02");
+    dt = Calendar2.clearSmallerFields(dt, Calendar2.MINUTE);
+    Test.ensureEqual(Calendar2.formatAsISODateTimeT(dt), "2005-08-31T16:01:00", "");
+    dt = Calendar2.parseISODateTimeUtc("2005-08-31T16:01:02");
+    dt = Calendar2.clearSmallerFields(dt, Calendar2.HOUR);
+    Test.ensureEqual(Calendar2.formatAsISODateTimeT(dt), "2005-08-31T16:00:00", "");
+    dt = Calendar2.parseISODateTimeUtc("2005-08-31T16:01:02");
+    dt = Calendar2.clearSmallerFields(dt, Calendar2.HOUR_OF_DAY);
+    Test.ensureEqual(Calendar2.formatAsISODateTimeT(dt), "2005-08-31T16:00:00", "");
+    dt = Calendar2.parseISODateTimeUtc("2005-08-31T16:01:02");
+    dt = Calendar2.clearSmallerFields(dt, Calendar2.DATE);
+    Test.ensureEqual(Calendar2.formatAsISODateTimeT(dt), "2005-08-31T00:00:00", "");
+    dt = Calendar2.parseISODateTimeUtc("2005-08-31T16:01:02");
+    dt = Calendar2.clearSmallerFields(dt, Calendar2.MONTH);
+    Test.ensureEqual(Calendar2.formatAsISODateTimeT(dt), "2005-08-01T00:00:00", "");
+    dt = Calendar2.parseISODateTimeUtc("2005-08-31T16:01:02");
+    dt = Calendar2.clearSmallerFields(dt, Calendar2.DAY_OF_YEAR);
+    Test.ensureEqual(Calendar2.formatAsISODateTimeT(dt), "2005-01-01T00:00:00", "");
+    dt = Calendar2.parseISODateTimeUtc("2005-08-31T16:01:02");
+    dt = Calendar2.clearSmallerFields(dt, Calendar2.YEAR);
+    Test.ensureEqual(Calendar2.formatAsISODateTimeT(dt), "2005-01-01T00:00:00", "");
+    dt = Calendar2.parseISODateTimeUtc("0000-08-31T16:01:02");
+    dt = Calendar2.clearSmallerFields(dt, Calendar2.MINUTE);
+    Test.ensureEqual(Calendar2.formatAsISODateTimeT(dt), "0000-08-31T16:01:00", "");
+    dt = Calendar2.parseISODateTimeUtc("-0000-08-31T16:01:02");
+    dt = Calendar2.clearSmallerFields(dt, Calendar2.MINUTE);
+    Test.ensureEqual(Calendar2.formatAsISODateTimeT(dt), "0000-08-31T16:01:00", "");
+    dt = Calendar2.parseISODateTimeUtc("-0001-08-31T16:01:02");
+    dt = Calendar2.clearSmallerFields(dt, Calendar2.MINUTE);
+    Test.ensureEqual(Calendar2.formatAsISODateTimeT(dt), "-0001-08-31T16:01:00", "");
     try {
-      Calendar2.clearSmallerFields(gc, Calendar2.AM_PM);
+      dt = Calendar2.clearSmallerFields(dt, Calendar2.AM_PM);
       throw new Throwable("Shouldn't get here.79");
     } catch (Exception e) {
     }

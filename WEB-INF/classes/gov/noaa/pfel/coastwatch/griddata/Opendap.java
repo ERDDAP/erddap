@@ -16,8 +16,10 @@ import com.cohort.util.String2;
 import com.cohort.util.Test;
 import dods.dap.*;
 import gov.noaa.pfel.coastwatch.TimePeriods;
+import java.time.Instant;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.util.Arrays;
-import java.util.GregorianCalendar;
 import java.util.Iterator;
 
 /** This class holds information about an OPeNDAP grid data set for one time period. */
@@ -374,7 +376,7 @@ public class Opendap {
     double timeArray[] = gridDimensionData[gridTimeDimension];
 
     // generateTimeOptions (convert time_series values into human readable date or datetimes)
-    GregorianCalendar gcZ = Calendar2.newGCalendarZulu();
+    ZonedDateTime gcZ = ZonedDateTime.now(ZoneOffset.UTC);
     StringArray timeOptionsSA = new StringArray();
     IntArray timeOptionsIndexIA = new IntArray();
     int nTimeValues = timeArray.length;
@@ -392,17 +394,23 @@ public class Opendap {
         //    if (verbose) String2.log("Reject timeIndex = " + i + ": numberOfObservations = 0.");
       } else {
         // format the value     (rounded to nearest second)
-        gcZ.setTimeInMillis(
-            1000
-                * Math.round(
-                    Calendar2.unitsSinceToEpochSeconds(baseSeconds, factorToGetSeconds, d)));
+        gcZ =
+            ZonedDateTime.ofInstant(
+                Instant.ofEpochMilli(
+                    1000
+                        * Math.round(
+                            Calendar2.unitsSinceToEpochSeconds(
+                                baseSeconds, factorToGetSeconds, d))),
+                ZoneOffset.UTC);
 
         // adjust erd's old-style time "End Time" to centered time
         if (timeLongName != null && timeLongName.equals("End Time")) {
           try {
             // fix old-style (pre-Dec 2006) nDay and 1 month end times  so 00:00
-            if (timePeriodNHours > 1 && timePeriodNHours % 24 == 0) gcZ.add(Calendar2.SECOND, 1);
-            TimePeriods.endCalendarToCenteredTime(timePeriodNHours, gcZ, errorInMethod);
+            if (timePeriodNHours > 1 && timePeriodNHours % 24 == 0) {
+              gcZ = gcZ.plusSeconds(1);
+            }
+            gcZ = TimePeriods.endCalendarToCenteredTime(timePeriodNHours, gcZ, errorInMethod);
           } catch (Exception e) {
             String2.log(e.toString());
             continue;

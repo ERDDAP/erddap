@@ -57,6 +57,9 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.Writer;
 import java.text.MessageFormat;
+import java.time.Instant;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
@@ -2726,9 +2729,7 @@ public abstract class EDDTable extends EDD {
       }
     }
     if (Double.isNaN(requestedMax[3]))
-      requestedMax[3] =
-          Calendar2.gcToEpochSeconds(Calendar2.newGCalendarZulu())
-              + Calendar2.SECONDS_PER_HOUR; // now + 1 hr
+      requestedMax[3] = Instant.now().getEpochSecond() + Calendar2.SECONDS_PER_HOUR; // now + 1 hr
     // ???is this trouble for models which predict future?  (are any models EDDTables?)
 
     // recheck. If invalid now, it's No Data due to variable's destinationMin/Max
@@ -5714,9 +5715,7 @@ public abstract class EDDTable extends EDD {
     String fullMapDataExampleHA =
         datasetBase + ".htmlTable?" + EDStatic.messages.EDDTableMapExampleHA;
 
-    GregorianCalendar daysAgo7Gc = Calendar2.newGCalendarZulu();
-    daysAgo7Gc.add(Calendar2.DATE, -7);
-    String daysAgo7 = Calendar2.formatAsISODate(daysAgo7Gc);
+    String daysAgo7 = Calendar2.formatAsISODate(ZonedDateTime.now(ZoneOffset.UTC).minusDays(7));
 
     writer.write(
         "<h2><a class=\"selfLink\" id=\"instructions\" href=\"#instructions\" rel=\"bookmark\"\n"
@@ -16659,9 +16658,11 @@ public abstract class EDDTable extends EDD {
 
     // suggest time range for offeringi
     double maxTime = sosMaxTime.getDouble(whichOffering);
-    GregorianCalendar gc =
-        Double.isNaN(maxTime) ? Calendar2.newGCalendarZulu() : Calendar2.epochSecondsToGc(maxTime);
-    String maxTimeS = Calendar2.formatAsISODateTimeTZ(gc); // use gc, not maxTime
+    ZonedDateTime dt =
+        Double.isNaN(maxTime)
+            ? ZonedDateTime.now(ZoneOffset.UTC)
+            : Calendar2.epochSecondsToZdt(maxTime);
+    String maxTimeS = Calendar2.formatAsISODateTimeTZ(dt); // use gc, not maxTime
     double minTime = Calendar2.backNDays(7, maxTime);
     String minTimeS = Calendar2.epochSecondsToIsoStringTZ(minTime);
     double networkMinTime = Calendar2.backNDays(1, maxTime);

@@ -18,8 +18,9 @@ import com.cohort.util.Test;
 import gov.noaa.pfel.erddap.dataset.metadata.LocalizedAttributes;
 import gov.noaa.pfel.erddap.util.EDMessages;
 import gov.noaa.pfel.erddap.util.EDStatic;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.GregorianCalendar;
 import java.util.TimeZone;
 
 /**
@@ -636,10 +637,10 @@ public class EDVTimeStamp extends EDV {
       if (!Double.isFinite(tMin)) return null;
       if (!Double.isFinite(tMax)) {
         // next midnight Z
-        GregorianCalendar gc = Calendar2.newGCalendarZulu();
-        Calendar2.clearSmallerFields(gc, Calendar2.DATE);
-        gc.add(Calendar2.DATE, 1);
-        tMax = Calendar2.gcToEpochSeconds(gc);
+        ZonedDateTime dt = ZonedDateTime.now(ZoneOffset.UTC);
+        dt = Calendar2.clearSmallerFields(dt, Calendar2.DATE);
+        dt = dt.plusDays(1);
+        tMax = Calendar2.zdtToEpochSeconds(dt);
       }
 
       // get the values from Calendar2
