@@ -253,17 +253,17 @@ public class EDConfig {
       // used
       useLuceneSearchEngine;
 
-  @FeatureFlag public final String mqttServerHost;
-  @FeatureFlag public final int mqttServerPort;
-  @FeatureFlag public final String mqttClientId;
-  @FeatureFlag public final String mqttUserName;
-  @FeatureFlag public final String mqttPassword;
-  @FeatureFlag public final boolean mqttSsl;
-  @FeatureFlag public final int mqttKeepAlive;
-  @FeatureFlag public final boolean mqttCleanStart;
-  @FeatureFlag public final int mqttSessionExpiry;
-  @FeatureFlag public final int mqttConnectionTimeout;
-  @FeatureFlag public final boolean mqttAutomaticReconnect;
+  public final String mqttServerHost;
+  public final int mqttServerPort;
+  public final String mqttClientId;
+  public final String mqttUserName;
+  public final String mqttPassword;
+  public final boolean mqttSsl;
+  public final int mqttKeepAlive;
+  public final boolean mqttCleanStart;
+  public final int mqttSessionExpiry;
+  public final int mqttConnectionTimeout;
+  public final boolean mqttAutomaticReconnect;
 
   @FeatureFlag public final boolean variablesMustHaveIoosCategory;
   @FeatureFlag public boolean useSaxParser;

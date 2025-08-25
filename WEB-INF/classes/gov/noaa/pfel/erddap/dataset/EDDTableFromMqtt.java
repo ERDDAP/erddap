@@ -302,10 +302,6 @@ public class EDDTableFromMqtt extends EDDTableFromFiles {
     }
   }
 
-  public void publishData(Mqtt5AsyncClient client, String data, String topic) {
-    client.publishWith().topic(topic).payload(data.getBytes()).send();
-  }
-
   /**
    * Processes a received MQTT message, parses its JSON payload, and appends it to a .jsonl file.
    *
