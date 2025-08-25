@@ -182,7 +182,7 @@ public class EDConfig {
   public static final String DEFAULT_MQTT_HOST = "localhost";
   public static final int DEFAULT_MQTT_PORT = 1883;
   public static final String DEFAULT_MQTT_CLIENT = "erddap-client";
-  public static final String DEFAULT_MQTT_USERNAME = "erddap-client";
+  public static final String DEFAULT_MQTT_USERNAME = "erddap-username";
   public static final String DEFAULT_MQTT_PASSWORD = "erddap-password";
   public static final boolean DEFAULT_SSL = false;
   public static final int DEFAULT_KEEP_ALIVE = 60;
