@@ -99,7 +99,7 @@ public class EDDTableFromMqtt extends EDDTableFromFiles {
       boolean useSsl,
       int keepAlive,
       boolean cleanStart,
-      long sessionExpiryInterval,
+      int sessionExpiryInterval,
       int connectionTimeout,
       boolean automaticReconnect)
       throws Throwable {
@@ -207,7 +207,7 @@ public class EDDTableFromMqtt extends EDDTableFromFiles {
       boolean useSsl,
       int keepAlive,
       boolean cleanStart,
-      long sessionExpiryInterval,
+      int sessionExpiryInterval,
       int connectionTimeout,
       boolean automaticReconnect) {
 
@@ -246,7 +246,7 @@ public class EDDTableFromMqtt extends EDDTableFromFiles {
         .sessionExpiryInterval(sessionExpiryInterval)
         .simpleAuth()
         .username(username)
-        .password(password != null ? password.getBytes() : null)
+        .password(password.getBytes()) // Cannot be null
         .applySimpleAuth()
         .send()
         .orTimeout(connectionTimeout, TimeUnit.SECONDS)
