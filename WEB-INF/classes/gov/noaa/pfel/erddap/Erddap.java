@@ -24478,7 +24478,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
         StringArray actions = null;
 
         // publish change to local broker, if enabled
-        if (EDStatic.config.publishMqttNotif && EDStatic.config.enableMqttBroker) {
+        if (EDStatic.config.publishMqttNotif) {
           mqttClient.publishWith().topic("change/" + tDatasetID).payload(change.getBytes()).send();
         }
 
