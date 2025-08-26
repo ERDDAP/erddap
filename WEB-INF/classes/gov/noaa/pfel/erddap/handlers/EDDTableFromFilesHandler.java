@@ -59,7 +59,7 @@ public class EDDTableFromFilesHandler extends BaseTableHandler {
   private boolean useSsl = false;
   private int keepAlive = 60;
   private boolean cleanStart = true;
-  private long sessionExpiryInterval = 0;
+  private int sessionExpiryInterval = 0;
   private int connectionTimeout = 30;
   private boolean automaticReconnect = true;
 
@@ -902,7 +902,7 @@ public class EDDTableFromFilesHandler extends BaseTableHandler {
       case "password" -> password = contentStr;
       case "topics" -> topics = contentStr.trim().split(",");
       case "useSsl" -> useSsl = String2.parseBoolean(contentStr);
-      case "sessionExpiryInterval" -> sessionExpiryInterval = String2.parseLong(contentStr);
+      case "sessionExpiryInterval" -> sessionExpiryInterval = String2.parseInt(contentStr);
       case "connectionTimeout" -> connectionTimeout = String2.parseInt(contentStr);
       case "automaticReconnect" -> automaticReconnect = String2.parseBoolean(contentStr);
 

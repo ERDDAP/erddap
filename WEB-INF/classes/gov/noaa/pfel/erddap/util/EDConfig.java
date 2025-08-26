@@ -177,6 +177,20 @@ public class EDConfig {
   public static final int DEFAULT_unusualActivityFailPercent = 25;
   public static final boolean DEFAULT_showLoadErrorsOnStatusPage = true;
   public static final int DEFAULT_lowMemCacheGbLimit = 4;
+
+  // Mqtt default configs
+  public static final String DEFAULT_MQTT_HOST = "localhost";
+  public static final int DEFAULT_MQTT_PORT = 1883;
+  public static final String DEFAULT_MQTT_CLIENT = "erddap-client";
+  public static final String DEFAULT_MQTT_USERNAME = "erddap-username";
+  public static final String DEFAULT_MQTT_PASSWORD = "erddap-password";
+  public static final boolean DEFAULT_SSL = false;
+  public static final int DEFAULT_KEEP_ALIVE = 60;
+  public static final boolean DEFAULT_CLEAN_START = false;
+  public static final int DEFAULT_SESSION_EXPIRY = 10;
+  public static final int DEFAULT_CONNECTION_TIMEOUT = 10;
+  public static final boolean DEFAULT_AUTO_RECONNECT = true;
+
   public long cacheMillis = DEFAULT_cacheMinutes * Calendar2.MILLIS_PER_MINUTE;
   public long cacheClearMillis = cacheMillis / 4;
   public int lowMemCacheGbLimit = DEFAULT_lowMemCacheGbLimit;
@@ -239,8 +253,21 @@ public class EDConfig {
       // used
       useLuceneSearchEngine;
 
+  public final String mqttServerHost;
+  public final int mqttServerPort;
+  public final String mqttClientId;
+  public final String mqttUserName;
+  public final String mqttPassword;
+  public final boolean mqttSsl;
+  public final int mqttKeepAlive;
+  public final boolean mqttCleanStart;
+  public final int mqttSessionExpiry;
+  public final int mqttConnectionTimeout;
+  public final boolean mqttAutomaticReconnect;
+
   @FeatureFlag public final boolean variablesMustHaveIoosCategory;
   @FeatureFlag public boolean useSaxParser;
+  @FeatureFlag public boolean publishMqttNotif;
   @FeatureFlag public boolean enableEnvParsing;
   @FeatureFlag public boolean updateSubsRssOnFileChanges;
   @FeatureFlag public final boolean useEddReflection;
@@ -622,6 +649,7 @@ public class EDConfig {
     subscriptionSystemActive = getSetupEVBoolean(setup, ev, "subscriptionSystemActive", true);
     convertersActive = getSetupEVBoolean(setup, ev, "convertersActive", true);
     useSaxParser = getSetupEVBoolean(setup, ev, "useSaxParser", false);
+    publishMqttNotif = getSetupEVBoolean(setup, ev, "publishMqttNotif", false);
     enableEnvParsing = getSetupEVBoolean(setup, ev, "enableEnvParsing", true);
     updateSubsRssOnFileChanges = getSetupEVBoolean(setup, ev, "updateSubsRssOnFileChanges", true);
     useEddReflection = getSetupEVBoolean(setup, ev, "useEddReflection", true);
@@ -641,7 +669,20 @@ public class EDConfig {
     useSisISO19115 = getSetupEVBoolean(setup, ev, "useSisISO19115", false);
     generateCroissantSchema = getSetupEVBoolean(setup, ev, "generateCroissantSchema", true);
     deploymentInfo = getSetupEVString(setup, ev, "deploymentInfo", "");
-
+    // Mqtt flags initialization
+    mqttServerHost = getSetupEVString(setup, ev, "mqttServerHost", DEFAULT_MQTT_HOST);
+    mqttServerPort = getSetupEVInt(setup, ev, "mqttServerPort", DEFAULT_MQTT_PORT);
+    mqttClientId = getSetupEVString(setup, ev, "mqttClientId", DEFAULT_MQTT_CLIENT);
+    mqttUserName = getSetupEVString(setup, ev, "mqttUserName", DEFAULT_MQTT_USERNAME);
+    mqttPassword = getSetupEVString(setup, ev, "mqttPassword", DEFAULT_MQTT_PASSWORD);
+    mqttSsl = getSetupEVBoolean(setup, ev, "mqttSsl", DEFAULT_SSL);
+    mqttKeepAlive = getSetupEVInt(setup, ev, "mqttKeepAlive", DEFAULT_KEEP_ALIVE);
+    mqttCleanStart = getSetupEVBoolean(setup, ev, "mqttCleanStart", DEFAULT_CLEAN_START);
+    mqttSessionExpiry = getSetupEVInt(setup, ev, "mqttSessionExpiry", DEFAULT_SESSION_EXPIRY);
+    mqttConnectionTimeout =
+        getSetupEVInt(setup, ev, "mqttConnectionTimeout", DEFAULT_CONNECTION_TIMEOUT);
+    mqttAutomaticReconnect =
+        getSetupEVBoolean(setup, ev, "mqttAutomaticReconnect", DEFAULT_AUTO_RECONNECT);
     // ensure images exist and get their sizes
     Image tImage = Image2.getImage(imageDir + lowResLogoImageFile, 10000, false);
     lowResLogoImageFileWidth = tImage.getWidth(null);
