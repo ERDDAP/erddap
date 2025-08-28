@@ -735,7 +735,7 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
         if (cal == Calendar.MONTH) {
           dt = dt.with(field, ((dt.get(field) - 1) / n) * n + 1);
         } else {
-          dt = dt.with(field, (dt.get(field) / n) * n);
+          dt = dt.with(field, ((long) dt.get(field) / n) * n);
         }
         // Get the ISO 8601 date/time string just to that precision/field.
         String s = Calendar2.formatAsISODateTimeT3Z(dt); // to millis

@@ -14,10 +14,11 @@ import com.cohort.util.Calendar2;
 import com.cohort.util.MustBe;
 import com.cohort.util.String2;
 import com.cohort.util.Test;
+import com.google.common.base.Strings;
 import gov.noaa.pfel.erddap.dataset.metadata.LocalizedAttributes;
 import gov.noaa.pfel.erddap.util.EDMessages;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
-import java.util.TimeZone;
 
 /**
  * This class holds information about a timestamp grid axis variable.
@@ -46,7 +47,7 @@ public class EDVTimeStampGridAxis extends EDVGridAxis {
   protected String time_precision; // see Calendar2.epochSecondsToLimitedIsoStringT
   protected boolean superConstructorIsFinished = false;
   protected String timeZoneString; // if not specified, will be Zulu
-  protected TimeZone timeZone; // if not specified, will be Zulu
+  protected ZoneId timeZone; // if not specified, will be Zulu
 
   /**
    * The constructor.
@@ -123,11 +124,16 @@ public class EDVTimeStampGridAxis extends EDVGridAxis {
     timeZoneString = combinedAttributes.getString(language, "time_zone");
     combinedAttributes.remove("time_zone");
     if (!String2.isSomething(timeZoneString)) timeZoneString = "Zulu";
-    timeZone = TimeZone.getTimeZone(timeZoneString);
+    timeZone = Calendar2.getZoneId(timeZoneString);
 
     if (Calendar2.isNumericTimeUnits(sourceTimeFormat)) {
       sourceTimeIsNumeric = true;
-      double td[] = Calendar2.getTimeBaseAndFactor(sourceTimeFormat);
+      boolean doLegacyAdjust = false;
+      String legacy_adjust = tAddAttributes.getString(language, "legacy_time_adjust");
+      if (!Strings.isNullOrEmpty(legacy_adjust)) {
+        doLegacyAdjust = Boolean.parseBoolean(legacy_adjust);
+      }
+      double td[] = Calendar2.getTimeBaseAndFactor(sourceTimeFormat, doLegacyAdjust); // timeZone
       sourceTimeBase = td[0];
       sourceTimeFactor = td[1];
       if (!"Zulu".equals(timeZoneString) && !"UTC".equals(timeZoneString))

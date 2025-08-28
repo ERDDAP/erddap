@@ -18,6 +18,8 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
 import java.time.format.ResolverStyle;
 import java.time.temporal.ChronoField;
+import java.time.temporal.ChronoUnit;
+import java.time.temporal.TemporalUnit;
 import java.util.BitSet;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
@@ -2325,29 +2327,6 @@ public class Calendar2 {
   public static final boolean debugMode = false;
 
   /**
-   * For diagnostic purposes, this returns the name of one of the fields defined above (or
-   * "unknown_field").
-   *
-   * @param field
-   * @return the name of the field
-   */
-  public static String fieldName(int field) {
-    if (field == YEAR) return "year";
-    if (field == MONTH) return "month";
-    if (field == DATE) return "date";
-    if (field == DAY_OF_YEAR) return "day_of_year";
-    if (field == HOUR) return "hour"; // hour in am or pm!  0..11
-    if (field == HOUR_OF_DAY) return "hour_of_day"; // 0..23
-    if (field == MINUTE) return "minute";
-    if (field == SECOND) return "second";
-    if (field == MILLISECOND) return "millisecond";
-    if (field == AM_PM) return "am_pm";
-    if (field == ZONE_OFFSET) return "zone_offset";
-    if (field == DST_OFFSET) return "dst_offset";
-    return "unknown_field";
-  }
-
-  /**
    * This tests if the units are numeric time units. This is a good, lenient, quick hueristic. For a
    * definitive test, use getTimeBaseAndFactor(String tsUnits).
    */
@@ -2383,8 +2362,12 @@ public class Calendar2 {
   }
 
   /** This variant assumes Zulu time zone. */
+  public static double[] getTimeBaseAndFactor(String tsUnits, boolean legacyAdjust) {
+    return getTimeBaseAndFactor(tsUnits, null, legacyAdjust);
+  }
+
   public static double[] getTimeBaseAndFactor(String tsUnits) {
-    return getTimeBaseAndFactor(tsUnits, null);
+    return getTimeBaseAndFactor(tsUnits, null, false);
   }
 
   /**
@@ -2405,7 +2388,7 @@ public class Calendar2 {
    * @return double[]{baseSeconds, factorToGetSeconds}
    * @throws RuntimeException if trouble (tsUnits is null or invalid)
    */
-  public static double[] getTimeBaseAndFactor(String tsUnits, TimeZone timeZone) {
+  public static double[] getTimeBaseAndFactor(String tsUnits, ZoneId zoneId, boolean legacyAdjust) {
     String errorInMethod = String2.ERROR + " in Calendar2.getTimeBaseAndFactor(" + tsUnits + "):\n";
 
     Test.ensureNotNull(tsUnits, errorInMethod + "units string is null.");
@@ -2422,13 +2405,25 @@ public class Calendar2 {
       throw new SimpleException(errorInMethod + "unable to parse base dateTime.");
     }
 
-    GregorianCalendar baseGC =
-        parseISODateTime(
-            new GregorianCalendar(timeZone == null ? zuluTimeZone : timeZone), isoDateTime);
-    double baseSeconds = baseGC.getTimeInMillis() / 1000.0;
-    // String2.log("  time unitsString (" + tsUnits +
-    //    ") converted to factorToGetSeconds=" + factorToGetSeconds +
-    //    " baseSeconds=" + baseSeconds);
+    ZonedDateTime baseZdt = parseISODateTime(isoDateTime, zoneId == null ? ZoneOffset.UTC : zoneId);
+    double baseSeconds = baseZdt.toInstant().toEpochMilli() / 1000.0;
+
+    if (legacyAdjust) {
+      GregorianCalendar gc =
+          new GregorianCalendar(
+              baseZdt.getYear(),
+              baseZdt.getMonthValue() - 1,
+              baseZdt.getDayOfMonth(),
+              baseZdt.getHour(),
+              baseZdt.getMinute(),
+              baseZdt.getSecond());
+      if (zoneId != null) {
+        gc.setTimeZone(TimeZone.getTimeZone(zoneId));
+      } else {
+        gc.setTimeZone(TimeZone.getTimeZone(ZoneOffset.UTC));
+      }
+      baseSeconds = gc.getTimeInMillis() / 1000.0;
+    }
     return new double[] {baseSeconds, factorToGetSeconds};
   }
 
@@ -2470,30 +2465,30 @@ public class Calendar2 {
       // floor yields consistent results below for decimal months
       int intUnitsSince = Math2.roundToInt(Math.floor(unitsSince));
       if (intUnitsSince == Integer.MAX_VALUE) return Double.NaN;
-      int field;
-      if (factorToGetSeconds == 30 * SECONDS_PER_DAY) field = MONTH;
-      else if (factorToGetSeconds == 360 * SECONDS_PER_DAY) field = YEAR;
+      TemporalUnit units;
+      if (factorToGetSeconds == 30 * SECONDS_PER_DAY) units = ChronoUnit.MONTHS;
+      else if (factorToGetSeconds == 360 * SECONDS_PER_DAY) units = ChronoUnit.YEARS;
       else
         throw new RuntimeException(
             String2.ERROR
                 + " in Calendar2.unitsSinceToEpochSeconds: factorToGetSeconds=\""
                 + factorToGetSeconds
                 + "\" not expected.");
-      GregorianCalendar gc = epochSecondsToGc(baseSeconds);
-      gc.add(field, intUnitsSince);
+      ZonedDateTime zd = epochSecondsToZdt(baseSeconds);
+      zd = zd.plus(intUnitsSince, units);
       if (unitsSince != intUnitsSince) {
         double frac = unitsSince - intUnitsSince; // will be positive because floor was used
-        if (field == MONTH) {
+        if (units == ChronoUnit.MONTHS) {
           // Round fractional part to nearest day.  Better if based on nDays in current month?
           // (Note this differs from UDUNITS month = 3.15569259747e7 / 12 seconds.)
-          gc.add(DATE, Math2.roundToInt(frac * 30));
-        } else if (field == YEAR) {
+          zd = zd.plusDays(Math2.roundToInt(frac * 30));
+        } else if (units == ChronoUnit.YEARS) {
           // Round fractional part to nearest month.
           // (Note this differs from UDUNITS year = 3.15569259747e7 seconds.)
-          gc.add(MONTH, Math2.roundToInt(frac * 12));
+          zd = zd.plusMonths(Math2.roundToInt(frac * 12));
         }
       }
-      epSec = gcToEpochSeconds(gc);
+      epSec = zdtToEpochSeconds(zd);
     } else if (factorToGetSeconds >= 60) { // i.e. >= a minute
       // It's a bad idea to store to-the-second times as e.g., "days since"
       // because the floating point numbers are bruised.
@@ -2520,18 +2515,18 @@ public class Calendar2 {
       double baseSeconds, double factorToGetSeconds, double epochSeconds) {
     if (factorToGetSeconds >= 30 * SECONDS_PER_DAY) {
       if (!Double.isFinite(epochSeconds)) return Double.NaN;
-      GregorianCalendar es = epochSecondsToGc(epochSeconds);
-      GregorianCalendar bs = epochSecondsToGc(baseSeconds);
+      ZonedDateTime es = epochSecondsToZdt(epochSeconds);
+      ZonedDateTime bs = epochSecondsToZdt(baseSeconds);
       if (factorToGetSeconds == 30 * SECONDS_PER_DAY) {
         // months (and days)
         // expand this to support fractional months???
-        int esm = getYear(es) * 12 + es.get(MONTH);
-        int bsm = getYear(bs) * 12 + bs.get(MONTH);
+        int esm = es.getYear() * 12 + es.getMonthValue() - 1;
+        int bsm = bs.getYear() * 12 + bs.getMonthValue() - 1;
         return esm - bsm;
       } else if (factorToGetSeconds == 360 * SECONDS_PER_DAY) {
         // years (and months)
         // expand this to support fractional years???
-        return getYear(es) - getYear(bs);
+        return es.getYear() - bs.getYear();
       } else
         throw new RuntimeException(
             String2.ERROR
@@ -2874,18 +2869,6 @@ public class Calendar2 {
   }
 
   /**
-   * This converts a GregorianCalendar to seconds since 1970-01-01T00:00:00Z. Note that
-   * System.currentTimeMillis/1000 = epochSeconds(zulu).
-   *
-   * @param gc
-   * @return seconds, including fractional seconds (Double.NaN if trouble)
-   * @throws RuntimeException if trouble (e.g., gc is null)
-   */
-  public static double gcToEpochSeconds(GregorianCalendar gc) {
-    return gc.getTimeInMillis() / 1000.0;
-  }
-
-  /**
    * This converts a ZonedDateTime to seconds since 1970-01-01T00:00:00Z. Note that
    * System.currentTimeMillis/1000 = epochSeconds(zulu).
    *
@@ -2898,19 +2881,12 @@ public class Calendar2 {
   }
 
   /**
-   * This converts seconds since 1970-01-01T00:00:00Z to a GregorianCalendar (Zulu timezone).
+   * This converts seconds since 1970-01-01T00:00:00Z to a ZonedDateTime (UTC timezone).
    *
    * @param seconds (including fractional seconds)
-   * @return an iso zulu time-zone GregorianCalendar (rounded to nearest ms)
+   * @return an iso UTC time-zone ZonedDateTime (rounded to nearest ms)
    * @throws RuntimeException if trouble (e.g., seconds is NaN)
    */
-  public static GregorianCalendar epochSecondsToGc(double seconds) {
-    long millis = Math2.roundToLong(seconds * 1000);
-    if (millis == Long.MAX_VALUE)
-      Test.error(String2.ERROR + " in epochSecondsToGc: millis is NaN!");
-    return newGCalendarZulu(millis);
-  }
-
   public static ZonedDateTime epochSecondsToZdt(double seconds) {
     long millis = Math2.roundToLong(seconds * 1000);
     if (millis == Long.MAX_VALUE) {
@@ -3029,7 +3005,7 @@ public class Calendar2 {
     long millis = Math2.roundToLong(seconds * 1000);
     if (millis == Long.MAX_VALUE) return NaNString;
     try {
-      return millisToIsoDateString(millis);
+      return formatAsISODate(newZdtUtc(millis));
     } catch (Exception e) {
       return NaNString;
     }
@@ -3052,145 +3028,20 @@ public class Calendar2 {
   public static String epochSecondsToLimitedIsoStringT(
       String time_precision, double seconds, String NaNString) {
 
-    // should be floor(?), but round avoids issues with computer precision
+    // TODO optimization- pass the DateTimeFormatter into this function. It is common to
+    // reuse a format within a loop.
+    DateTimeFormatter format = timePrecisionToDateTimeFormatter(time_precision);
+    if (format == null) {
+      format = FORMAT_SECONDZ;
+    }
     long millis = Math2.roundToLong(seconds * 1000);
     if (millis == Long.MAX_VALUE) return NaNString;
     try {
-      return limitedFormatAsISODateTimeT(time_precision, newGCalendarZulu(millis));
+      Instant instant = Instant.ofEpochMilli(millis);
+      return ZonedDateTime.ofInstant(instant, ZoneOffset.UTC).format(format);
     } catch (Exception e) {
       return NaNString;
     }
-  }
-
-  /**
-   * This returns a 3 character month name (eg. "Jan").
-   *
-   * @param month 1..12
-   * @throws RuntimeException if month is out of range
-   */
-  public static String getMonthName3(int month) {
-    return MONTH_3.get(month - 1);
-  }
-
-  /**
-   * Get a GregorianCalendar object with the current UTC (A.K.A., GMT or Zulu) time and a UTC time
-   * zone. You can find the current Zulu/GMT time at: http://www.xav.com/time.cgi Info about UTC
-   * versus GMT versus TAI... see http://www.leapsecond.com/java/gpsclock.htm. And there was another
-   * good site... can't find it.
-   *
-   * @return the GregorianCalendar object for right now (Zulu time zone)
-   */
-  public static GregorianCalendar newGCalendarZulu() {
-    // GregorianCalendar gc = new GregorianCalendar();
-    // gc.add(MILLISECOND, -TimeZone.getDefault().getOffset());
-    // return gc;
-
-    // * Note that the time zone is still local, but the day and hour are correct for gmt.
-    // * To try to do this correctly leads to Java's timeZone hell hole.
-    // return localToUtc(new GregorianCalendar());
-
-    return new GregorianCalendar(zuluTimeZone);
-  }
-
-  /**
-   * Get a GregorianCalendar object with the specified millis time (UTC) and a UTC time zone.
-   *
-   * @param millis the epoch milliseconds value
-   * @return the GregorianCalendar object.
-   * @throws RuntimeException if trouble (e.g., millis == Long.MAX_VALUE)
-   */
-  public static GregorianCalendar newGCalendarZulu(long millis) {
-    if (millis == Long.MAX_VALUE)
-      Test.error(String2.ERROR + " in newGCalendarZulu: millis value is Long.MAX_VALUE!");
-    GregorianCalendar gcZ = newGCalendarZulu();
-    gcZ.setTimeInMillis(millis);
-    return gcZ;
-  }
-
-  /**
-   * Get a GregorianCalendar object (Zulu time zone) for the specified time. [Currently, it is
-   * lenient -- e.g., Dec 32 -&gt; Jan 1 of the next year.] Information can be retrieved via
-   * calendar.get(Calendar.XXXX), where XXXX is one of the Calendar constants, like DAY_OF_YEAR.
-   *
-   * @param year (e.g., 2005)
-   * @param month (1..12) (this is consciously different than Java's standard)
-   * @param dayOfMonth (1..31)
-   * @return the corresponding GregorianCalendar object (Zulu time zone)
-   * @throws RuntimeException if trouble (e.g., year is Integer.MAX_VALUE)
-   */
-  public static GregorianCalendar newGCalendarZulu(int year, int month, int dayOfMonth) {
-    if (year == Integer.MAX_VALUE)
-      Test.error(String2.ERROR + " in newGCalendarZulu: year is Integer.MAX_VALUE!");
-    return newGCalendarZulu(year, month, dayOfMonth, 0, 0, 0, 0);
-  }
-
-  /**
-   * Get a GregorianCalendar object (Zulu time zone) for the specified time. [Currently, it is
-   * lenient -- e.g., Dec 32 -&gt; Jan 1 of the next year.] Information can be retrieved via
-   * calendar.get(Calendar.XXXX), where XXXX is one of the Calendar constants, like DAY_OF_YEAR.
-   *
-   * @param year (e.g., 2005)
-   * @param month (1..12) (this is consciously different than Java's standard)
-   * @param dayOfMonth (1..31)
-   * @param hour (0..23)
-   * @param minute (0..59)
-   * @param second (0..59)
-   * @param millis (0..999)
-   * @return the corresponding GregorianCalendar object (Zulu time zone)
-   * @throws RuntimeException if trouble (e.g., year is Integer.MAX_VALUE)
-   */
-  public static GregorianCalendar newGCalendarZulu(
-      int year, int month, int dayOfMonth, int hour, int minute, int second, int millis) {
-
-    if (year == Integer.MAX_VALUE)
-      Test.error(String2.ERROR + " in newGCalendarZulu: year value is Integer.MAX_VALUE!");
-    GregorianCalendar gc = new GregorianCalendar(zuluTimeZone);
-    gc.clear();
-    gc.set(year, month - 1, dayOfMonth, hour, minute, second);
-    gc.set(MILLISECOND, millis);
-    gc.get(MONTH); // force recalculations
-    return gc;
-  }
-
-  /**
-   * This returns the year. For years B.C., this returns Calendar2Year = 1 - BCYear. Note that
-   * BCYears are 1..., so 1 BC is calendar2Year 0, and 2 BC is calendar2Year -1.
-   *
-   * @param gc
-   * @return the year (negative for BC).
-   */
-  public static int getYear(GregorianCalendar gc) {
-    return gc.get(ERA) == BC ? 1 - gc.get(YEAR) : gc.get(YEAR);
-  }
-
-  /**
-   * This returns the astronomical year as -?uuuu. For years B.C., this returns Calendar2Year = 1 -
-   * BCYear. Note that BCYears are 1..., so 1 BC is calendar2Year 0000, and 2 BC is calendar2Year
-   * -0001.
-   *
-   * @param gc
-   * @return the astronomical year as -?uuuu.
-   */
-  public static String formatAsISOYear(GregorianCalendar gc) {
-    int year = getYear(gc);
-    return (year < 0 ? "-" : "") + String2.zeroPad("" + Math.abs(year), 4);
-  }
-
-  /**
-   * This returns a ISO-style formatted date string e.g., "2004-01-02" using its current get()
-   * values (not influenced by the format's timeZone).
-   *
-   * @param gc a GregorianCalendar object
-   * @return the date in gc, formatted as (for example) "2004-01-02"
-   * @throws RuntimeException if trouble (e.g., gc is null)
-   */
-  public static String formatAsISODate(GregorianCalendar gc) {
-
-    return formatAsISOYear(gc)
-        + "-"
-        + String2.zeroPad("" + (gc.get(MONTH) + 1), 2)
-        + "-"
-        + String2.zeroPad("" + gc.get(DATE), 2);
   }
 
   /**
@@ -3203,29 +3054,6 @@ public class Calendar2 {
    */
   public static String formatAsISODate(ZonedDateTime dt) {
     return FORMAT_DAY.format(dt);
-  }
-
-  /**
-   * This converts a GregorianCalendar object into an ISO-format dateTime string (with 'T'
-   * separator: [-]uuuu-MM-ddTHH:mm:ss) using its current get() values (not influenced by the
-   * format's timeZone). [was calendarToString]
-   *
-   * @param gc
-   * @return the corresponding dateTime String (without timezone info).
-   * @throws RuntimeException if trouble (e.g., gc is null)
-   */
-  public static String formatAsISODateTimeT(GregorianCalendar gc) {
-    return formatAsISOYear(gc)
-        + "-"
-        + String2.zeroPad("" + (gc.get(MONTH) + 1), 2)
-        + "-"
-        + String2.zeroPad("" + gc.get(DATE), 2)
-        + "T"
-        + String2.zeroPad("" + gc.get(HOUR_OF_DAY), 2)
-        + ":"
-        + String2.zeroPad("" + gc.get(MINUTE), 2)
-        + ":"
-        + String2.zeroPad("" + gc.get(SECOND), 2);
   }
 
   /**
@@ -3244,22 +3072,6 @@ public class Calendar2 {
   /** This is like formatAsISODateTimeT(), but with trailing Z. */
   public static String formatAsISODateTimeTZ(ZonedDateTime dt) {
     return FORMAT_SECONDZ.format(dt);
-  }
-
-  /** This is like formatAsISODateTimeT(), but with trailing Z. */
-  public static String formatAsISODateTimeTZ(GregorianCalendar gc) {
-    return formatAsISOYear(gc)
-        + "-"
-        + String2.zeroPad("" + (gc.get(MONTH) + 1), 2)
-        + "-"
-        + String2.zeroPad("" + gc.get(DATE), 2)
-        + "T"
-        + String2.zeroPad("" + gc.get(HOUR_OF_DAY), 2)
-        + ":"
-        + String2.zeroPad("" + gc.get(MINUTE), 2)
-        + ":"
-        + String2.zeroPad("" + gc.get(SECOND), 2)
-        + "Z";
   }
 
   /**
@@ -3285,30 +3097,6 @@ public class Calendar2 {
   }
 
   /**
-   * Like formatAsISODateTimeTZ, but seconds will have 3 decimal digits.
-   *
-   * @param gc
-   * @return the corresponding dateTime String (with the trailing Z).
-   * @throws RuntimeException if trouble (e.g., gc is null)
-   */
-  public static String formatAsISODateTimeT3Z(GregorianCalendar gc) {
-    return formatAsISOYear(gc)
-        + "-"
-        + String2.zeroPad("" + (gc.get(MONTH) + 1), 2)
-        + "-"
-        + String2.zeroPad("" + gc.get(DATE), 2)
-        + "T"
-        + String2.zeroPad("" + gc.get(HOUR_OF_DAY), 2)
-        + ":"
-        + String2.zeroPad("" + gc.get(MINUTE), 2)
-        + ":"
-        + String2.zeroPad("" + gc.get(SECOND), 2)
-        + "."
-        + String2.zeroPad("" + gc.get(MILLISECOND), 3)
-        + "Z";
-  }
-
-  /**
    * Like formatAsISODateTimeTZ, but seconds will have 6 decimal digits.
    *
    * @param dt
@@ -3320,30 +3108,6 @@ public class Calendar2 {
   }
 
   /**
-   * Like formatAsISODateTimeTZ, but seconds will have 6 decimal digits.
-   *
-   * @param gc
-   * @return the corresponding dateTime String (with the trailing Z).
-   * @throws RuntimeException if trouble (e.g., gc is null)
-   */
-  public static String formatAsISODateTimeT6Z(GregorianCalendar gc) {
-    return formatAsISOYear(gc)
-        + "-"
-        + String2.zeroPad("" + (gc.get(MONTH) + 1), 2)
-        + "-"
-        + String2.zeroPad("" + gc.get(DATE), 2)
-        + "T"
-        + String2.zeroPad("" + gc.get(HOUR_OF_DAY), 2)
-        + ":"
-        + String2.zeroPad("" + gc.get(MINUTE), 2)
-        + ":"
-        + String2.zeroPad("" + gc.get(SECOND), 2)
-        + "."
-        + String2.zeroPad("" + gc.get(MILLISECOND), 3)
-        + "000Z"; // !!! because gc doesn't support microseconds
-  }
-
-  /**
    * Like formatAsISODateTimeTZ, but seconds will have 9 decimal digits.
    *
    * @param dt
@@ -3352,30 +3116,6 @@ public class Calendar2 {
    */
   public static String formatAsISODateTimeT9Z(ZonedDateTime dt) {
     return FORMAT_MILLISECOND9Z.format(dt);
-  }
-
-  /**
-   * Like formatAsISODateTimeTZ, but seconds will have 9 decimal digits.
-   *
-   * @param gc
-   * @return the corresponding dateTime String (with the trailing Z).
-   * @throws RuntimeException if trouble (e.g., gc is null)
-   */
-  public static String formatAsISODateTimeT9Z(GregorianCalendar gc) {
-    return formatAsISOYear(gc)
-        + "-"
-        + String2.zeroPad("" + (gc.get(MONTH) + 1), 2)
-        + "-"
-        + String2.zeroPad("" + gc.get(DATE), 2)
-        + "T"
-        + String2.zeroPad("" + gc.get(HOUR_OF_DAY), 2)
-        + ":"
-        + String2.zeroPad("" + gc.get(MINUTE), 2)
-        + ":"
-        + String2.zeroPad("" + gc.get(SECOND), 2)
-        + "."
-        + String2.zeroPad("" + gc.get(MILLISECOND), 3)
-        + "000000Z"; // !!! because gc doesn't support microseconds
   }
 
   /**
@@ -3400,6 +3140,104 @@ public class Calendar2 {
     return iso + (iso.length() >= 15 ? "Z" : ""); // if has time (hour or more precise)
   }
 
+  public static DateTimeFormatter timePrecisionToDateTimeFormatter(String time_precision) {
+    if (time_precision == null || time_precision.length() == 0) {
+      return FORMAT_SECONDZ;
+    }
+    if (time_precision.equals("1970")) {
+      return FORMAT_YEAR;
+    }
+    if (time_precision.equals("1970-01")) {
+      return FORMAT_MONTH;
+    }
+    if (time_precision.equals("1970-01-01")) {
+      return FORMAT_DAY;
+    }
+    if (time_precision.equals("1970-01-01T00")) {
+      return FORMAT_HOUR;
+    }
+    if (time_precision.equals("1970-01-01T00:00")) {
+      return FORMAT_MINUTE;
+    }
+    if (time_precision.equals("1970-01-01T00:00:00")) {
+      return FORMAT_SECOND;
+    }
+    if (time_precision.equals("1970-01-01T00:00:00.0")) {
+      return FORMAT_MILLISECOND;
+    }
+    if (time_precision.equals("1970-01-01T00:00:00.00")) {
+      return FORMAT_MILLISECOND2;
+    }
+    if (time_precision.equals("1970-01-01T00:00:00.000")) {
+      return FORMAT_MILLISECOND3;
+    }
+    if (time_precision.equals("1970-01-01T00:00:00.0000")) {
+      return FORMAT_MILLISECOND4;
+    }
+    if (time_precision.equals("1970-01-01T00:00:00.00000")) {
+      return FORMAT_MILLISECOND5;
+    }
+    if (time_precision.equals("1970-01-01T00:00:00.000000")) {
+      return FORMAT_MILLISECOND6;
+    }
+    if (time_precision.equals("1970-01-01T00:00:00.0000000")) {
+      return FORMAT_MILLISECOND7;
+    }
+    if (time_precision.equals("1970-01-01T00:00:00.00000000")) {
+      return FORMAT_MILLISECOND8;
+    }
+    if (time_precision.equals("1970-01-01T00:00:00.000000000")) {
+      return FORMAT_MILLISECOND9;
+    }
+    if (time_precision.equals("1970Z")) {
+      return FORMAT_YEARZ;
+    }
+    if (time_precision.equals("1970-01Z")) {
+      return FORMAT_MONTHZ;
+    }
+    if (time_precision.equals("1970-01-01Z")) {
+      return FORMAT_DAYZ;
+    }
+    if (time_precision.equals("1970-01-01T00Z")) {
+      return FORMAT_HOURZ;
+    }
+    if (time_precision.equals("1970-01-01T00:00Z")) {
+      return FORMAT_MINUTEZ;
+    }
+    if (time_precision.equals("1970-01-01T00:00:00Z")) {
+      return FORMAT_SECONDZ;
+    }
+    if (time_precision.equals("1970-01-01T00:00:00.0Z")) {
+      return FORMAT_MILLISECONDZ;
+    }
+    if (time_precision.equals("1970-01-01T00:00:00.00Z")) {
+      return FORMAT_MILLISECOND2Z;
+    }
+    if (time_precision.equals("1970-01-01T00:00:00.000Z")) {
+      return FORMAT_MILLISECOND3Z;
+    }
+    if (time_precision.equals("1970-01-01T00:00:00.0000Z")) {
+      return FORMAT_MILLISECOND4Z;
+    }
+    if (time_precision.equals("1970-01-01T00:00:00.00000Z")) {
+      return FORMAT_MILLISECOND5Z;
+    }
+    if (time_precision.equals("1970-01-01T00:00:00.000000Z")) {
+      return FORMAT_MILLISECOND6Z;
+    }
+    if (time_precision.equals("1970-01-01T00:00:00.0000000Z")) {
+      return FORMAT_MILLISECOND7Z;
+    }
+    if (time_precision.equals("1970-01-01T00:00:00.00000000Z")) {
+      return FORMAT_MILLISECOND8Z;
+    }
+    if (time_precision.equals("1970-01-01T00:00:00.000000000Z")) {
+      return FORMAT_MILLISECOND9Z;
+    }
+    // default
+    return FORMAT_SECONDZ;
+  }
+
   /**
    * This is like formatAsISODateTime, but returns a limited precision string.
    *
@@ -3408,98 +3246,14 @@ public class Calendar2 {
    *     matched), "1970-01-01T00:00:00.0Z", "1970-01-01T00:00:00.00Z", "1970-01-01T00:00:00.000Z".
    *     Versions without 'Z' are allowed here, but ERDDAP requires hours or finer to have 'Z'.
    */
-  public static String limitedFormatAsISODateTimeT(String time_precision, GregorianCalendar gc) {
-
-    String zString = "";
-    if (time_precision == null || time_precision.length() == 0)
-      time_precision = "1970-01-01T00:00:00Z";
-    if (time_precision.charAt(time_precision.length() - 1) == 'Z') {
-      time_precision = time_precision.substring(0, time_precision.length() - 1);
-      zString = "Z";
+  public static String limitedFormatAsISODateTimeT(String time_precision, ZonedDateTime dt) {
+    // TODO optimization- pass the DateTimeFormatter into this function. It is common to
+    // reuse a format within a loop.
+    DateTimeFormatter format = timePrecisionToDateTimeFormatter(time_precision);
+    if (format == null) {
+      format = FORMAT_SECONDZ;
     }
-
-    // build it
-    // Warning: year may be 5 chars, e.g., -0003
-    StringBuilder sb = new StringBuilder(formatAsISOYear(gc));
-    if (time_precision.equals("1970")) {
-      sb.append(zString);
-      return sb.toString();
-    }
-
-    sb.append("-" + String2.zeroPad("" + (gc.get(MONTH) + 1), 2));
-    if (time_precision.equals("1970-01")) {
-      sb.append(zString);
-      return sb.toString();
-    }
-
-    sb.append("-" + String2.zeroPad("" + gc.get(DATE), 2));
-    if (time_precision.equals("1970-01-01")) {
-      sb.append(zString);
-      return sb.toString();
-    }
-
-    sb.append("T" + String2.zeroPad("" + gc.get(HOUR_OF_DAY), 2));
-    if (time_precision.equals("1970-01-01T00")) {
-      sb.append(zString);
-      return sb.toString();
-    }
-
-    sb.append(":" + String2.zeroPad("" + gc.get(MINUTE), 2));
-    if (time_precision.equals("1970-01-01T00:00")) {
-      sb.append(zString);
-      return sb.toString();
-    }
-
-    sb.append(":" + String2.zeroPad("" + gc.get(SECOND), 2));
-    if (time_precision.length() == 0
-        || // -> default
-        time_precision.equals("1970-01-01T00:00:00")) {
-      sb.append(zString);
-      return sb.toString();
-    }
-
-    sb.append("." + String2.zeroPad("" + gc.get(MILLISECOND), 3));
-    if (time_precision.equals("1970-01-01T00:00:00.0")) {
-      sb.setLength(sb.length() - 2);
-      sb.append(zString);
-      return sb.toString();
-    }
-    if (time_precision.equals("1970-01-01T00:00:00.00")) {
-      sb.setLength(sb.length() - 1);
-      sb.append(zString);
-      return sb.toString();
-    }
-    if (time_precision.startsWith("1970-01-01T00:00:00.000")) {
-      String end = time_precision.substring(23);
-      if (end.matches("0*")) {
-        sb.append(end + zString);
-        return sb.toString();
-      } // else fall through
-    }
-
-    // default
-    sb.setLength(sb.length() - 4);
-    sb.append('Z'); // default has Z
-    return sb.toString();
-  }
-
-  /**
-   * This converts a GregorianCalendar object into an ISO-format dateTime string (with space
-   * separator: [-]uuuu-MM-dd HH:mm:ss) using its current get() values (not influenced by the
-   * format's timeZone). [was calendarToString]
-   *
-   * @param gc
-   * @return the corresponding dateTime String (without the trailing Z).
-   * @throws RuntimeException if trouble (e.g., gc is null)
-   */
-  public static String formatAsISODateTimeSpace(GregorianCalendar gc) {
-    return formatAsISODate(gc)
-        + " "
-        + String2.zeroPad("" + gc.get(HOUR_OF_DAY), 2)
-        + ":"
-        + String2.zeroPad("" + gc.get(MINUTE), 2)
-        + ":"
-        + String2.zeroPad("" + gc.get(SECOND), 2);
+    return dt.format(format);
   }
 
   /**
@@ -3519,10 +3273,10 @@ public class Calendar2 {
       DateTimeFormatter.ofPattern("uuuu/MM/dd HH:mm:ss 'UTC'");
 
   /**
-   * This converts a GregorianCalendar object into an ESRI dateTime string (YYYY/MM/DD HH:MM:SS UTC)
+   * This converts a ZonedDateTime object into an ESRI dateTime string (YYYY/MM/DD HH:MM:SS UTC)
    * using its current get() values (not influenced by the format's timeZone).
    *
-   * @param gc
+   * @param dt
    * @return the corresponding ESRI dateTime String.
    * @throws RuntimeException if trouble (e.g., gc is null)
    */
@@ -3534,24 +3288,7 @@ public class Calendar2 {
    * This returns a compact formatted [-]uuuuMMddHHmmss string e.g., "20040102030405" using its
    * current get() values (not influenced by the format's timeZone).
    *
-   * @param gc a GregorianCalendar object
-   * @return the date in gc, formatted as (for example) "20040102030405".
-   * @throws RuntimeException if trouble (e.g., gc is null)
-   */
-  public static String formatAsCompactDateTime(GregorianCalendar gc) {
-    return formatAsISOYear(gc)
-        + String2.zeroPad("" + (gc.get(MONTH) + 1), 2)
-        + String2.zeroPad("" + gc.get(DATE), 2)
-        + String2.zeroPad("" + gc.get(HOUR_OF_DAY), 2)
-        + String2.zeroPad("" + gc.get(MINUTE), 2)
-        + String2.zeroPad("" + gc.get(SECOND), 2);
-  }
-
-  /**
-   * This returns a compact formatted [-]uuuuMMddHHmmss string e.g., "20040102030405" using its
-   * current get() values (not influenced by the format's timeZone).
-   *
-   * @param gc a GregorianCalendar object
+   * @param dt a ZonedDateTime object
    * @return the date in gc, formatted as (for example) "20040102030405".
    * @throws RuntimeException if trouble (e.g., gc is null)
    */
@@ -3595,27 +3332,19 @@ public class Calendar2 {
     return sb.toString();
   }
 
+  private static DateTimeFormatter FORMAT_DDMonYYYY =
+      DateTimeFormatter.ofPattern("dd-MMM-uuuu HH:mm:ss");
+
   /**
    * This returns a DD-Mon-[-]uuuu string e.g., "31-Jul-2004 00:00:00" using its current get()
    * values (not influenced by the format's timeZone). Ferret often uses this format.
    *
-   * @param gc a GregorianCalendar object
-   * @return the date in gc, formatted as (for example) "31-Jul-2004 00:00:00".
+   * @param dt a ZonedDateTime object
+   * @return the date in dt, formatted as (for example) "31-Jul-2004 00:00:00".
    * @throws RuntimeException if trouble (e.g., gc is null)
    */
-  public static String formatAsDDMonYYYY(GregorianCalendar gc) {
-    return String2.zeroPad("" + gc.get(DATE), 2)
-        + "-"
-        + MONTH_3.get(gc.get(MONTH))
-        + "-"
-        + // 0 based
-        formatAsISOYear(gc)
-        + " "
-        + String2.zeroPad("" + gc.get(HOUR_OF_DAY), 2)
-        + ":"
-        + String2.zeroPad("" + gc.get(MINUTE), 2)
-        + ":"
-        + String2.zeroPad("" + gc.get(SECOND), 2);
+  public static String formatAsDDMonYYYY(ZonedDateTime dt) {
+    return FORMAT_DDMonYYYY.format(dt);
   }
 
   private static DateTimeFormatter FORMAT_US_SLASH_AMPM =
@@ -3624,8 +3353,7 @@ public class Calendar2 {
   /**
    * This returns a US-style slash format date time string ("1/20/2006 9:00:00 pm").
    *
-   * @param gc a GregorianCalendar object. The dateTime will be interpreted as being in gc's time
-   *     zone.
+   * @param dt a ZonedDateTime object. The dateTime will be interpreted as being in dt's time zone.
    * @return gc in the US slash format ("1/20/2006 9:00:00 pm").
    * @throws RuntimeException if trouble (e.g., gc is null)
    */
@@ -3777,93 +3505,6 @@ public class Calendar2 {
   }
 
   /**
-   * This converts an ISO date time string (variations of [-]uuuu-MM-ddTHH:mm:ss.SSS±XX:XX) into a
-   * GregorianCalendar object. <br>
-   * It is lenient; so Jan 32 is converted to Feb 1; <br>
-   * The 'T' may be any non-digit. <br>
-   * The time zone can be omitted. <br>
-   * The parts at the end of the time can be omitted. <br>
-   * If there is no time, the end parts of the date can be omitted. Year is required. <br>
-   * This tries hard to be tolerant of non-valid formats (e.g., no lead 0 "1971-1-2", or just
-   * year+month "1971-01") <br>
-   * As of 11/9/2006, NO LONGER TRUE: If year is 0..49, it is assumed to be 2000..2049. <br>
-   * As of 11/9/2006, NO LONGER TRUE: If year is 50..99, it is assumed to be 1950..1999. <br>
-   * If the string is too short, the end of "1970-01-01T00:00:00.000Z" will be added (effectively).
-   * <br>
-   * If the string is too long, the excess will be ignored. <br>
-   * If a required separator is incorrect, it is an error. <br>
-   * If the date is improperly formatted, it returns null. <br>
-   * Timezone "Z" or "" is treated as "-00:00" (UTC/Zulu time) <br>
-   * Timezones: e.g., 2007-01-02T03:04:05-01:00 is same as 2007-01-02T04:04:05
-   *
-   * @param gc a GregorianCalendar object. The dateTime will be interpreted as being in gc's time
-   *     zone. Timezone info is relative to the gc's time zone.
-   * @param s the dateTimeString in the ISO format (variations of uuuu-MM-ddTHH:mm:ss.SSS±XX:XX
-   *     where uuuu is an astronomical year) For years B.C., use calendar2Year = 1 - BCYear. Note
-   *     that BCYears are 1..., so 1 BC is calendar2Year 0 (or 0000), and 2 BC is calendar2Year -1
-   *     (or -0001). This supports ss.SSS and ss,SSS (which ISO 8601 prefers!).
-   * @return the same GregorianCalendar object, but with the date info
-   * @throws RuntimeException if trouble (e.g., gc is null or s is null or not at least #)
-   */
-  public static GregorianCalendar parseISODateTime(GregorianCalendar gc, String s) {
-
-    if (s == null) s = "";
-    s = s.trim();
-    if ("nd".equals(s)) return null;
-    boolean negative = s.startsWith("-");
-    if (negative) s = s.substring(1);
-    if (s.length() < 1 || !String2.isDigit(s.charAt(0)))
-      Test.error(
-          String2.ERROR
-              + " in parseISODateTime: for first character of dateTime='"
-              + s
-              + "' isn't a digit!");
-    if (gc == null) Test.error(String2.ERROR + " in parseISODateTime: gc is null!");
-
-    // default ymdhmsmom     year is the only required value
-    int ymdhmsmom[] = {Integer.MAX_VALUE, 1, 1, 0, 0, 0, 0, 0, 0};
-
-    // remove trailing Z or "UTC"
-    s = s.trim();
-    if (Character.toLowerCase(s.charAt(s.length() - 1)) == 'z')
-      s = s.substring(0, s.length() - 1).trim();
-    if (s.length() >= 3) {
-      String last3 = s.substring(s.length() - 3).toLowerCase();
-      if (last3.equals("utc") || last3.equals("gmt")) s = s.substring(0, s.length() - 3).trim();
-    }
-
-    // if e.g., 1970-01-01 00:00:00 0:00, change ' ' to '+' (first ' '->'+' is irrelevant)
-    s = String2.replaceAll(s, ' ', '+');
-
-    // separators (\u0000=any non-digit)
-    char separator[] = {'-', '-', '\u0000', ':', ':', '.', '±', ':', '\u0000'};
-    parseN(s, separator, ymdhmsmom);
-    if (ymdhmsmom[0] == Integer.MAX_VALUE)
-      Test.error(
-          String2.ERROR + " in parseISODateTime: dateTime='" + s + "' has an invalid format!");
-
-    // do time zone adjustment
-    // String2.log(">> #7=" + ymdhmsmom[7] + " #8=" + ymdhmsmom[8]);
-    if (ymdhmsmom[7] != 0) ymdhmsmom[3] -= ymdhmsmom[7];
-    if (ymdhmsmom[8] != 0)
-      ymdhmsmom[4] -= ymdhmsmom[8]; // parseN returns appropriately signed value
-
-    // set gc      month -1 since gc month is 0..
-    gc.set(
-        (negative ? -1 : 1) * ymdhmsmom[0],
-        ymdhmsmom[1] - 1,
-        ymdhmsmom[2],
-        ymdhmsmom[3],
-        ymdhmsmom[4],
-        ymdhmsmom[5]);
-    // String2.log(">> MILLIS=" + ymdhmsmom[6]);
-    gc.set(MILLISECOND, ymdhmsmom[6]);
-    gc.get(MONTH); // force recalculations
-
-    return gc;
-  }
-
-  /**
    * This converts an ISO (default *UTC* time zone) date time string (variations of
    * [-]uuuu-MM-ddTHH:mm:ss.SSS±XX:XX) into a ZonedDateTime object with the UTC time zone. See
    * parseISODateTime documentation.
@@ -3902,7 +3543,7 @@ public class Calendar2 {
    *     where uuuu is an astronomical year) For years B.C., use calendar2Year = 1 - BCYear. Note
    *     that BCYears are 1..., so 1 BC is calendar2Year 0 (or 0000), and 2 BC is calendar2Year -1
    *     (or -0001). This supports ss.SSS and ss,SSS (which ISO 8601 prefers!).
-   * @return the same GregorianCalendar object, but with the date info
+   * @return the same ZonedDateTime object, but with the date info
    * @throws RuntimeException if trouble (e.g., gc is null or s is null or not at least #)
    */
   public static ZonedDateTime parseISODateTime(String s, ZoneId tz) {
@@ -3946,7 +3587,8 @@ public class Calendar2 {
     if (ymdhmsmom[8] != 0)
       ymdhmsmom[4] -= ymdhmsmom[8]; // parseN returns appropriately signed value
 
-    ZonedDateTime zd = ZonedDateTime.of((negative ? -1 : 1) * ymdhmsmom[0], 1, 1, 0, 0, 0, 0, tz);
+    ZonedDateTime zd =
+        ZonedDateTime.of((negative ? -1 : 1) * ymdhmsmom[0], 1, 1, 0, 0, 0, 0, ZoneOffset.UTC);
     // Use Plus to handle things like too many days in the month.
     zd =
         zd.plusMonths(ymdhmsmom[1] - 1)
@@ -3956,21 +3598,22 @@ public class Calendar2 {
             .plusSeconds(ymdhmsmom[5])
             .plusNanos(ymdhmsmom[6] * 1000000L);
 
+    zd = zd.withZoneSameLocal(tz);
     return zd;
   }
 
   /**
-   * This converts a non-ISO (default *ZULU* time zone) date time string into a GregorianCalendar
-   * object with the Zulu time zone. See parseDateTime documentation.
+   * This converts a non-ISO (default *ZULU* time zone) date time string into a ZonedDateTime object
+   * with the UTC time zone. See parseDateTime documentation.
    *
    * @param s the dateTimeString in the specified format This may include hours, minutes, seconds,
    *     decimal, and Z or timezone offset (default=Zulu).
    * @param format a Java DateTimeFormatter format string.
-   * @return a GregorianCalendar object
+   * @return a ZonedDateTime object
    * @throws RuntimeException if trouble (e.g., s is null)
    */
-  public static GregorianCalendar parseDateTimeZulu(String s, String format) {
-    return parseDateTime(newGCalendarZulu(), s, format);
+  public static ZonedDateTime parseDateTimeZulu(String s, String format) {
+    return parseDateTime(s, format, ZoneOffset.UTC);
   }
 
   /**
@@ -4001,16 +3644,11 @@ public class Calendar2 {
    *
    * @throws RuntimeException if trouble
    */
-  public static long formattedStringToMillis(String s, String format, TimeZone timeZone) {
-
-    if (timeZone == null) timeZone = zuluTimeZone;
-
-    // if (parseWithCalendar2IsoParser(format))
-    //    return isoStringToMillis(s, timeZone);
-
-    // parse with parseDateTime
-    GregorianCalendar gc = parseDateTime(new GregorianCalendar(timeZone), s, format);
-    return gc.getTimeInMillis();
+  public static long formattedStringToMillis(String s, String format, ZoneId zoneId) {
+    if (zoneId == null) {
+      zoneId = ZoneOffset.UTC;
+    }
+    return parseDateTime(s, format, zoneId).toInstant().toEpochMilli();
   }
 
   private static String parseError(String s, String format) {
@@ -4068,39 +3706,31 @@ public class Calendar2 {
   }
 
   /**
-   * This is an alternative to java.DateTimeFormatter.parse() which has bugs (e.g., with year 0000
-   * results off by a few days). See
-   * https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/time/format/DateTimeFormatter.html
-   * See tests in TestUtil.testCalendar2. Ones marked with open/close comment at start of line had
-   * problems with Java parsing. This is a little more forgiving than DateTimeFormatter: 1) y and Y
-   * are treated as u (may be 0000 or negative). 2) E only supports 3 letter and full versions of
-   * English day-of-week names, case insensitive, but the value is ignored and isn't used or
-   * validated against the year/day numbers. 3) MMM only supports 3 letter and full versions of
-   * English month names, case insensitive, but the value isn't used or validated against the
-   * year/day numbers. 3) GQqecwWcFAnNVzOp are not supported. 4) [] (conditional/optional) can only
-   * be used in a simple way, e.g., [ ] for an optional space. 5) Not supported: GLQq
-   *
-   * <p>If you need some aspect to be more like the Java parser, email erd.data at noaa.gov.
-   *
-   * @param gc a GregorianCalendar object. The dateTime will be interpreted as being in gc's time
-   *     zone. Timezone info is relative to the gc's time zone.
    * @param s the source dateTimeString.
    * @param format A DateTimeFormatter-style specification, e.g., yyyy-DDD. Note that yyyy is
    *     processed as uuuu, so year 0 and before are supported.
-   * @return the same GregorianCalendar object, but with the date info
+   * @param timeZone the time zone to use for the ZonedDateTime.
+   * @return A ZonedDateTime object with the date info
    * @throws RuntimeException if trouble (e.g., any input param is null, or s doesn't exactly match
    *     the format.
    */
-  public static GregorianCalendar parseDateTime(GregorianCalendar gc, String s, String format) {
-    // String2.log(">> parseDateTime s=" + s + "  format=" + format);
+  public static ZonedDateTime parseDateTime(String s, String format, ZoneId timeZone) {
+    // Ideally this would just be the below.
+    // TemporalAccessor parsed = DateTimeFormatter.ofPattern(format).withZone(timeZone).parse(s);
+    // if (!parsed.isSupported(ChronoField.SECOND_OF_MINUTE)) {
+    //     LocalDate date = LocalDate.from(parsed);
+    //     return date.atStartOfDay(ZoneOffset.UTC).withZoneSameInstant(timeZone);
+    // }
+    // return ZonedDateTime.from(parsed);
+    // However there's a lot of history of lenient date time parsing in the project (including
+    // by project code, not just data). So we do the legacy manual parsing.
     int sLength = s.length();
     int formatLength = format.length();
     int sPo = 0; // next to be read
     int formatPo = 0; // next to be read
     boolean literalMode = false; // e.g., 'UTC'
     boolean optionalMode = false; // e.g., [ ]
-    gc.set(1970, 0, 1, 0, 0, 0);
-    gc.set(MILLISECOND, 0);
+    ZonedDateTime dt = ZonedDateTime.of(1970, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC);
 
     // go through formatPo to find next item to match
     while (formatPo >= 0 && formatPo < formatLength) {
@@ -4170,8 +3800,9 @@ public class Calendar2 {
               // both are titleCase
               (s2.length() == 3 ? MONTH_3 : MONTH_FULL).indexOf(s2);
           // String2.log(">>    i=" + i);
-          if (i >= 0) gc.set(MONTH, i); // month is 0..
-          else throw new RuntimeException(parseErrorUnexpectedContent(s, format, ospo));
+          if (i >= 0) {
+            dt = dt.withMonth(i + 1); // month is 0..
+          } else throw new RuntimeException(parseErrorUnexpectedContent(s, format, ospo));
 
         } else if (ch == 'E') {
           // EEE and EEEE support 3-letter or full length
@@ -4190,12 +3821,13 @@ public class Calendar2 {
 
         } else if (sPo < sLength - 1) {
           String valS = s.substring(sPo, sPo + 2).toLowerCase();
-          if (valS.equals("am")) {
-            gc.set(Calendar.AM_PM, Calendar.AM);
+          if (valS.equalsIgnoreCase("am")) {
+            // Do Nothing, the hour is set properly.
             sPo += 2;
 
-          } else if (valS.equals("pm")) {
-            gc.set(Calendar.AM_PM, Calendar.PM);
+          } else if (valS.equalsIgnoreCase("pm")) {
+            // Add 12 hours to shift the time to afternoon.
+            dt = dt.plusHours(12);
             sPo += 2;
 
             // optional mode not allowed
@@ -4274,10 +3906,8 @@ public class Calendar2 {
             sPo += 2;
           }
 
-          gc.set(
-              Calendar.ZONE_OFFSET,
-              Math2.narrowToInt( // millis
-                  HH * MILLIS_PER_HOUR + mm * MILLIS_PER_MINUTE));
+          dt = dt.withZoneSameLocal(ZoneOffset.ofHoursMinutes(HH, mm));
+          timeZone = null;
         }
 
         // parse as long int
@@ -4305,7 +3935,7 @@ public class Calendar2 {
         long valL = String2.parseLong(vals);
         if (valL == Long.MAX_VALUE)
           throw new RuntimeException(parseErrorUnexpectedContent(s, format, ospo));
-        gc.set(MILLISECOND, Math2.narrowToInt(valL / 1000000)); // gc limited to millis
+        dt = dt.plusNanos(valL);
 
         // all other letters  a-zA-Z, parse at int
       } else if (String2.isAsciiLetter(ch)) {
@@ -4353,16 +3983,22 @@ public class Calendar2 {
         int val = String2.parseInt(vals);
         if (val == Integer.MAX_VALUE)
           throw new RuntimeException(parseErrorUnexpectedContent(s, format, ospo));
-        // String2.log(">>    val=" + val);
-        if ("uYy".indexOf(ch) >= 0) gc.set(YEAR, factor * val);
-        else if (ch == 'M') gc.set(MONTH, val - 1); // month is 0..
-        else if (ch == 'm') gc.set(MINUTE, val);
-        else if (ch == 'D') gc.set(DAY_OF_YEAR, val);
-        else if (ch == 'd') gc.set(DATE, val);
-        else if (ch == 'H') gc.set(HOUR_OF_DAY, val);
-        else if (ch == 'h') gc.set(HOUR, val == 12 ? 0 : val); // clock am/pm hour, 12 -> 0
-        else if (ch == 'K') gc.set(HOUR, val); // am/pm hour
-        else if (ch == 's') gc.set(SECOND, val);
+        if ("uYy".indexOf(ch) >= 0) {
+          dt = dt.plusYears(factor * val - 1970);
+        } else if (ch == 'M') {
+          dt = dt.plusMonths(val - 1);
+        } else if (ch == 'm') dt = dt.plusMinutes(val);
+        else if (ch == 'D') {
+          dt = dt.plusDays(val - 1);
+        } else if (ch == 'd') {
+          dt = dt.plusDays(val - 1);
+        } else if (ch == 'H') {
+          dt = dt.plusHours(val);
+        } else if (ch == 'h') {
+          dt = dt.plusHours(val == 12 ? 0 : val); // clock am/pm hour, 12 -> 0
+        } else if (ch == 'K') {
+          dt = dt.plusHours(val); // am/pm hour
+        } else if (ch == 's') dt = dt.plusSeconds(val);
         else if (ch == 'S') {
           // fraction of a second
           int valsl = vals.length();
@@ -4384,10 +4020,11 @@ public class Calendar2 {
           // String2.log(">> S format=" + format + " vals=" + vals + " val=" + val);
           if (val == Integer.MAX_VALUE)
             throw new RuntimeException(parseErrorUnexpectedContent(s, format, ospo));
-          gc.set(MILLISECOND, val);
+          dt = dt.plusNanos(val * 1000000L);
 
-        } else if (ch == 'A') gc.set(MILLISECOND, val);
-        else throw new RuntimeException(parseErrorUnexpectedFormat(s, format, ch, oFormatPo));
+        } else if (ch == 'A') {
+          dt = dt.plusNanos(val * 1000000L);
+        } else throw new RuntimeException(parseErrorUnexpectedFormat(s, format, ch, oFormatPo));
 
       } else if ("{}#".indexOf(ch) >= 0) {
         // currently unsupported format characters
@@ -4412,8 +4049,10 @@ public class Calendar2 {
     }
     if (sPo != sLength) throw new RuntimeException(parseErrorUnexpectedContent(s, format, sPo));
 
-    gc.get(Calendar2.MONTH); // force recalculations
-    return gc;
+    if (timeZone != null) {
+      dt = dt.withZoneSameLocal(timeZone);
+    }
+    return dt;
   }
 
   /**
@@ -4464,17 +4103,16 @@ public class Calendar2 {
   }
 
   /**
-   * This converts a dd-MMM-[-]uuuu string e.g., "31-Jul-2004 00:00:00" into a GregorianCalendar
-   * object. It is lenient; so day 0 is converted to Dec 31 of previous year. If the date is
-   * shortenend, this does the best it can, or returns null. Ferret often uses this format.
+   * This converts a dd-MMM-[-]uuuu string e.g., "31-Jul-2004 00:00:00" into a ZonedDateTime object.
+   * It is lenient; so day 0 is converted to Dec 31 of previous year. If the date is shortenend,
+   * this does the best it can, or returns null. Ferret often uses this format.
    *
-   * @param gc a GregorianCalendar object. The dateTime will be interpreted as being in gc's time
-   *     zone.
+   * @param gc a ZonedDateTime object. The dateTime will be interpreted as being in gc's time zone.
    * @param s dateTimeString in dd-MMM-uuuu format. The time part can be shorter or missing.
-   * @return the same GregorianCalendar object, but with the date info
+   * @return the same ZonedDateTime object, but with the date info
    * @throws RuntimeException if trouble (e.g., gc is null or s is null or not dd-MMM-uuuu)
    */
-  public static GregorianCalendar parseDDMonYYYY(GregorianCalendar gc, String s) {
+  public static ZonedDateTime parseDDMonYYYY(String s) {
 
     if (s == null) s = "";
     int sLength = s.length();
@@ -4491,7 +4129,6 @@ public class Calendar2 {
         || !String2.isDigit(s.charAt(10)))
       Test.error(String2.ERROR + " in parseDDMonYYYY: s=" + s + " has an invalid format!");
 
-    gc.clear();
     int hour = 0, min = 0, sec = 0;
     if (sLength >= 13) {
       if (s.charAt(11) != ' ' || !String2.isDigit(s.charAt(12)) || !String2.isDigit(s.charAt(13)))
@@ -4518,26 +4155,24 @@ public class Calendar2 {
     if (mon == 12)
       Test.error(String2.ERROR + " in parseDDMonYYYY: s=" + s + " has an invalid format!");
 
-    gc.set(
-        (negative ? -1 : 1) * String2.parseInt(s.substring(7, 11)),
-        mon, // month is already 0..
-        String2.parseInt(s.substring(0, 2)),
-        hour,
-        min,
-        sec);
-
-    gc.get(MONTH); // force recalculations
-
-    return gc;
-  }
-
-  /**
-   * This is like parseDDMonYYYY, but assumes the time zone is Zulu.
-   *
-   * @throws RuntimeException if trouble (e.g., s is null or invalid)
-   */
-  public static GregorianCalendar parseDDMonYYYYZulu(String s) {
-    return parseDDMonYYYY(newGCalendarZulu(), s);
+    ZonedDateTime dt =
+        ZonedDateTime.of(
+            (negative ? -1 : 1) * String2.parseInt(s.substring(7, 11)),
+            1,
+            1,
+            0,
+            0,
+            0,
+            0,
+            ZoneOffset.UTC);
+    dt =
+        dt.plusMonths(mon) // dt mon starts at 1, but mon is 0 based
+            // dt days starts at 1 and the input is 1 based
+            .plusDays(String2.parseInt(s.substring(0, 2)) - 1)
+            .plusHours(hour)
+            .plusMinutes(min)
+            .plusSeconds(sec);
+    return dt;
   }
 
   private static DateTimeFormatter YYYYDDDFormat = DateTimeFormatter.ofPattern("uuuuDDD");
@@ -4670,7 +4305,7 @@ public class Calendar2 {
    * @throws RuntimeException if trouble (e.g., s is null or not at least #)
    */
   public static long isoStringToMillis(String s) {
-    return isoStringToMillis(s, zuluTimeZone);
+    return isoStringToMillis(s, ZoneOffset.UTC);
   }
 
   /**
@@ -4683,13 +4318,12 @@ public class Calendar2 {
    * @return the millis since 1970-01-01T00:00:00Z
    * @throws RuntimeException if trouble (e.g., s is null or not at least #)
    */
-  public static long isoStringToMillis(String s, TimeZone timeZone) {
+  public static long isoStringToMillis(String s, ZoneId timeZone) {
     // ZonedDateTime dt = parseISODateTime(s, timeZone == null ? ZoneOffset.UTC :
     // timeZone.toZoneId());
     // return dt.toInstant().toEpochMilli();
-    GregorianCalendar gc =
-        parseISODateTime(new GregorianCalendar(timeZone == null ? zuluTimeZone : timeZone), s);
-    return gc.getTimeInMillis();
+    ZonedDateTime dt = parseISODateTime(s, (timeZone == null ? ZoneOffset.UTC : timeZone));
+    return dt.toInstant().toEpochMilli();
   }
 
   /**
@@ -4702,9 +4336,7 @@ public class Calendar2 {
   public static String millisToIsoDateString(long millis) {
     if (millis == Long.MAX_VALUE)
       throw new RuntimeException(String2.ERROR + ": millis value is MAX_VALUE.");
-    GregorianCalendar gc = newGCalendarZulu(millis);
-    return formatAsISODate(gc);
-    // return formatAsISODate(newZdtUtc(millis));
+    return formatAsISODate(newZdtUtc(millis));
   }
 
   /**
@@ -4716,9 +4348,7 @@ public class Calendar2 {
    * @throws RuntimeException if trouble (e.g., millis is Long.MAX_VALUE)
    */
   public static String millisToIsoStringTZ(long millis) {
-    GregorianCalendar gc = newGCalendarZulu(millis);
-    return formatAsISODateTimeTZ(gc);
-    // return formatAsISODateTimeTZ(newZdtUtc(millis));
+    return formatAsISODateTimeTZ(newZdtUtc(millis));
   }
 
   /**
@@ -4729,9 +4359,7 @@ public class Calendar2 {
    * @throws RuntimeException if trouble (e.g., millis is Long.MAX_VALUE)
    */
   public static String millisToIsoStringT3Z(long millis) {
-    GregorianCalendar gc = newGCalendarZulu(millis);
-    return formatAsISODateTimeT3Z(gc);
-    // return formatAsISODateTimeT3Z(newZdtUtc(millis));
+    return formatAsISODateTimeT3Z(newZdtUtc(millis));
   }
 
   /**
@@ -4742,9 +4370,7 @@ public class Calendar2 {
    * @throws RuntimeException if trouble (e.g., millis is Long.MAX_VALUE)
    */
   public static String millisToIsoStringT6Z(long millis) {
-    GregorianCalendar gc = newGCalendarZulu(millis);
-    return formatAsISODateTimeT6Z(gc);
-    // return formatAsISODateTimeT6Z(newZdtUtc(millis));
+    return formatAsISODateTimeT6Z(newZdtUtc(millis));
   }
 
   /**
@@ -4755,9 +4381,7 @@ public class Calendar2 {
    * @throws RuntimeException if trouble (e.g., millis is Long.MAX_VALUE)
    */
   public static String millisToIsoStringT9Z(long millis) {
-    GregorianCalendar gc = newGCalendarZulu(millis);
-    return formatAsISODateTimeT9Z(gc);
-    // return formatAsISODateTimeT9Z(newZdtUtc(millis));
+    return formatAsISODateTimeT9Z(newZdtUtc(millis));
   }
 
   /**
@@ -4881,45 +4505,6 @@ public class Calendar2 {
    * @return the same gc, but modified, for convenience
    * @throws Exception if trouble (e.g., gc is null or field is not supported)
    */
-  public static GregorianCalendar clearSmallerFields(GregorianCalendar gc, int field)
-      throws Exception {
-
-    if (field == MILLISECOND
-        || field == SECOND
-        || field == MINUTE
-        || field == HOUR
-        || field == HOUR_OF_DAY
-        || field == DATE
-        || field == DAY_OF_YEAR
-        || field == MONTH
-        || field == YEAR) {
-    } else {
-      Test.error(String2.ERROR + " in Calendar2.clearSmallerFields: unsupported field=" + field);
-    }
-    if (field == MILLISECOND) return gc;
-    gc.set(MILLISECOND, 0);
-    if (field == SECOND) return gc;
-    gc.set(SECOND, 0);
-    if (field == MINUTE) return gc;
-    gc.set(MINUTE, 0);
-    if (field == HOUR || field == HOUR_OF_DAY) return gc;
-    gc.set(HOUR_OF_DAY, 0);
-    if (field == DATE) return gc;
-    gc.set(DATE, 1);
-    if (field == MONTH) return gc;
-    gc.set(MONTH, 0); // DAY_OF_YEAR works like YEAR
-    return gc;
-  }
-
-  /**
-   * This clears the fields smaller than 'field' (e.g., HOUR_OF_DAY clears MINUTE, SECOND, and
-   * MILLISECOND, but doesn't change HOUR_OF_DAY, MONTH, or YEAR).
-   *
-   * @param gc
-   * @param field e.g., HOUR_OF_DAY
-   * @return the same gc, but modified, for convenience
-   * @throws Exception if trouble (e.g., gc is null or field is not supported)
-   */
   public static ZonedDateTime clearSmallerFields(ZonedDateTime zd, int field) throws Exception {
 
     if (field == MILLISECOND
@@ -5014,35 +4599,37 @@ public class Calendar2 {
       double spd = SECONDS_PER_DAY;
       double range = stop - start;
       double mnv2 = Math2.divideNoRemainder(maxNValues, 2); // double avoids int MAX_VALUE problem
-      int field, biggerField, nice[];
+      TemporalUnit field;
+      int biggerField;
+      int[] nice;
       double divisor;
       if (range <= mnv2 * spm) {
-        field = SECOND;
+        field = ChronoUnit.SECONDS;
         biggerField = MINUTE;
         divisor = 1;
         nice = new int[] {1, 2, 5, 10, 15, 20, 30, 60};
       } else if (range <= mnv2 * sph) {
-        field = MINUTE;
+        field = ChronoUnit.MINUTES;
         biggerField = HOUR_OF_DAY;
         divisor = spm;
         nice = new int[] {1, 2, 5, 10, 15, 20, 30, 60};
       } else if (range <= mnv2 * spd) {
-        field = HOUR_OF_DAY;
+        field = ChronoUnit.HOURS;
         biggerField = DATE;
         divisor = sph;
         nice = new int[] {1, 2, 3, 4, 6, 12, 24};
       } else if (range <= mnv2 * 30 * spd) {
-        field = DATE;
+        field = ChronoUnit.DAYS;
         biggerField = MONTH;
         divisor = spd;
         nice = new int[] {1, 2, 5, 7};
       } else if (range <= mnv2 * 365 * spd) {
-        field = MONTH;
+        field = ChronoUnit.MONTHS;
         biggerField = YEAR;
         divisor = 30 * spd;
         nice = new int[] {1, 2, 3, 6, 12};
       } else {
-        field = YEAR;
+        field = ChronoUnit.YEARS;
         biggerField = -9999;
         divisor = 365 * spd;
         nice = new int[] {1, 2, 5, 10};
@@ -5054,49 +4641,34 @@ public class Calendar2 {
       // and ensure stride is at least 1.
       double dnValues = (range / divisor) / maxNValues;
       int stride = nextNice(dnValues, nice); // minimum stride will be 1
-      if (field == DATE) stride = Math.min(14, stride);
+      if (field == ChronoUnit.DAYS) stride = Math.min(14, stride);
       DoubleArray da = new DoubleArray();
       da.add(start);
-      GregorianCalendar nextGc = epochSecondsToGc(start);
-      if (field != YEAR) clearSmallerFields(nextGc, biggerField);
-      double next = gcToEpochSeconds(nextGc);
+      ZonedDateTime nextZd = epochSecondsToZdt(start);
+      if (field != ChronoUnit.YEARS) nextZd = clearSmallerFields(nextZd, biggerField);
+      double next = zdtToEpochSeconds(nextZd);
       while (next < stop) {
         if (next > start) da.add(next); // it may not be for the first few
-        if (field == DATE) {
+        if (field == ChronoUnit.DAYS) {
           // repeatedly using DATE=1 is nice, so ...
           // will subsequent value be in next month?
           // non-permanent test of this: ndbcSosSalinity has stride = 2 days; results have
           // 2008-09-27 then 2008-10-01
-          int oMonth = nextGc.get(MONTH);
-          nextGc.add(field, 2 * stride); // 2* sets subsequent value
-          if (nextGc.get(MONTH) == oMonth) {
-            nextGc.add(field, -stride); // go back to regular value
+          int oMonth = nextZd.getMonthValue();
+          nextZd = nextZd.plusDays(2L * stride); // 2* sets subsequent value
+          if (nextZd.getMonthValue() == oMonth) {
+            nextZd = nextZd.minusDays(stride); // go back to regular value
           } else {
-            nextGc.set(
-                DATE, 1); // go for DATE=1 in next month  e.g., 1,15,1,15 or 1,8,14,21,1,8,14,21,
+            nextZd =
+                nextZd.withDayOfMonth(
+                    1); // go for DATE=1 in next month  e.g., 1,15,1,15 or 1,8,14,21,1,8,14,21,
           }
         } else {
-          nextGc.add(field, stride);
+          nextZd = nextZd.plus(stride, field);
         }
-        next = gcToEpochSeconds(nextGc);
+        next = zdtToEpochSeconds(nextZd);
       }
       da.add(stop);
-      if (reallyVerbose)
-        String2.log(
-            "Calendar2.getNEvenlySpaced start="
-                + epochSecondsToIsoStringTZ(start)
-                + " stop="
-                + epochSecondsToIsoStringTZ(stop)
-                + " field="
-                + fieldName(field)
-                + "\n divisor="
-                + divisor
-                + " range/divisor/maxNValues="
-                + dnValues
-                + " stride="
-                + stride
-                + " nValues="
-                + da.size());
       return da.toArray();
 
     } catch (Exception e) {
@@ -5131,27 +4703,27 @@ public class Calendar2 {
    * @return epochSeconds, converted to Zulu GC and rounded to the nearest idealN, idealUnits (e.g.,
    *     2 months)
    */
-  public static GregorianCalendar roundToIdealGC(double epochSeconds, int idealN, int idealUnits) {
+  public static ZonedDateTime roundToIdealGC(double epochSeconds, int idealN, int idealUnits) {
     long millis = Math2.roundToLong(epochSeconds * 1000);
     if (millis == Long.MAX_VALUE) Test.error(String2.ERROR + " in roundToIdealGC: millis is NaN!");
 
-    GregorianCalendar gc = newGCalendarZulu(millis);
+    ZonedDateTime dt = newZdtUtc(millis);
     if (idealUnits == 5) { // year
-      double td = getYear(gc) + gc.get(MONTH) / 12.0; // month is 0..
+      double td = dt.getYear() + (dt.getMonthValue() - 1) / 12.0; // month is 0..
       int ti = Math2.roundToInt(td / idealN) * idealN; // round to nearest n units
-      gc = newGCalendarZulu(ti, 1, 1);
+      dt = ZonedDateTime.of(ti, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC);
 
     } else if (idealUnits == 4) { // months
-      double td = getYear(gc) * 12 + gc.get(MONTH); // month is 0..
+      double td = dt.getYear() * 12 + dt.getMonthValue() - 1; // month is 0..
       int ti = Math2.roundToInt(td / idealN) * idealN; // round to nearest n units
-      gc = newGCalendarZulu(ti / 12, (ti % 12) + 1, 1);
+      dt = ZonedDateTime.of(ti / 12, (ti % 12) + 1, 1, 0, 0, 0, 0, ZoneOffset.UTC);
 
     } else { // seconds ... days: all have consistent length
       double chunk = idealN * IDEAL_UNITS_SECONDS.get(idealUnits); // e.g., decimal number of days
       double td = Math.rint(epochSeconds / chunk) * chunk; // round to nearest n units
-      gc = newGCalendarZulu(Math2.roundToLong(td * 1000));
+      dt = newZdtUtc(Math2.roundToLong(td * 1000));
     }
-    return gc;
+    return dt;
   }
 
   /**
@@ -5531,7 +5103,7 @@ public class Calendar2 {
    * incorrect results with years before 0001.
    */
   public static String format(double epochSeconds, DateTimeFormatter dtf) {
-    String s = dtf.format(epochSecondsToGc(epochSeconds).toZonedDateTime());
+    String s = dtf.format(epochSecondsToZdt(epochSeconds));
     s = String2.replaceAll(s, "[XXX][XX]", "Z");
     return s;
   }
@@ -5586,7 +5158,7 @@ public class Calendar2 {
             .withResolverStyle(ResolverStyle.LENIENT); // needed for e.g. day 366 in a leap year
     // so dtf has either an offset (via X) or a timezone
     if (pattern.indexOf('X') < 0 && pattern.indexOf('x') < 0) {
-      dtf = dtf.withZone(String2.isSomething(zone) ? ZoneId.of(zone) : zuluZoneId);
+      dtf = dtf.withZone(String2.isSomething(zone) ? Calendar2.getZoneId(zone) : zuluZoneId);
     }
     return dtf;
   }
@@ -5603,12 +5175,40 @@ public class Calendar2 {
    * @return the epochSeconds value or NaN if trouble
    */
   public static double parseToEpochSeconds(
-      String sourceTime, String dateTimeFormat, TimeZone timeZone) {
+      String sourceTime, String dateTimeFormat, String timeZone) {
+    ZoneId zoneId = getZoneId(timeZone);
+    return parseToEpochSeconds(sourceTime, dateTimeFormat, zoneId);
+  }
+
+  public static ZoneId getZoneId(String timeZone) {
+    if (timeZone == null || timeZone.isEmpty()) {
+      return ZoneOffset.UTC;
+    }
+    try {
+      return ZoneId.of(timeZone);
+    } catch (NullPointerException e) {
+      return TimeZone.getTimeZone(timeZone).toZoneId();
+    }
+  }
+
+  /**
+   * This converts a sourceTime string into a double with epochSeconds.
+   *
+   * @param sourceTime a formatted time string
+   * @param dateTimeFormat one of the ISO8601 formats above, or a java.time.format.DateTimeFormatter
+   *     (was Joda) format. If it starts with "uuuu-M", "yyyy-M", or "YYYY-M" (Y is
+   *     discouraged/incorrect), sourceTime will be parsed with Calendar2.parseISODateTimeZulu();
+   *     else parse with Calendar2 methods (was java.time.format.DateTimeFormatter, was Joda).
+   * @param timeZone if null, default is Zulu
+   * @return the epochSeconds value or NaN if trouble
+   */
+  public static double parseToEpochSeconds(
+      String sourceTime, String dateTimeFormat, ZoneId zoneId) {
     // String2.log(">> toEpochSeconds " + sourceTime + "  " + dateTimeFormat);
     try {
 
       // parse with parseDateTime
-      return formattedStringToMillis(sourceTime, dateTimeFormat, timeZone) / 1000.0;
+      return formattedStringToMillis(sourceTime, dateTimeFormat, zoneId) / 1000.0;
 
     } catch (Throwable t) {
       if (verbose && sourceTime != null && sourceTime.length() > 0) {
@@ -5628,20 +5228,9 @@ public class Calendar2 {
     }
   }
 
-  /**
-   * A variant of parseToEpochSeconds that takes a String time zone (null or "" is treated as Zulu).
-   */
-  public static double parseToEpochSeconds(
-      String sourceTime, String dateTimeFormat, String timeZoneString) {
-    return parseToEpochSeconds(
-        sourceTime,
-        dateTimeFormat,
-        String2.isSomething(timeZoneString) ? TimeZone.getTimeZone(timeZoneString) : zuluTimeZone);
-  }
-
   /** A variant of parseToEpochSeconds that uses the Zulu time zone. */
   public static double parseToEpochSeconds(String sourceTime, String dateTimeFormat) {
-    return parseToEpochSeconds(sourceTime, dateTimeFormat, zuluTimeZone);
+    return parseToEpochSeconds(sourceTime, dateTimeFormat, ZoneOffset.UTC);
   }
 
   /**
@@ -5868,5 +5457,26 @@ public class Calendar2 {
       default ->
           throw new IllegalArgumentException("No support for calendar field: " + calendarField);
     };
+  }
+
+  public static int getGcFieldFromZdt(ZonedDateTime zdt, int field) {
+    ChronoField chronoField = getChronoFieldFromCalendarField(field);
+    if (chronoField == ChronoField.MONTH_OF_YEAR) {
+      return zdt.get(chronoField) - 1;
+    }
+    return zdt.get(chronoField);
+  }
+
+  public static ZonedDateTime setGcFieldOnZdt(ZonedDateTime zdt, int field, long value) {
+    ChronoField chronoField = getChronoFieldFromCalendarField(field);
+    if (chronoField == ChronoField.MONTH_OF_YEAR) {
+      return zdt.with(chronoField, value + 1);
+    }
+    return zdt.with(chronoField, value);
+  }
+
+  public static ZonedDateTime addGcFieldToZdt(ZonedDateTime zdt, int field, long value) {
+    ChronoField chronoField = getChronoFieldFromCalendarField(field);
+    return zdt.plus(value, chronoField.getBaseUnit());
   }
 }

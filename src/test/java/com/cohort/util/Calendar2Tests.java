@@ -2,15 +2,15 @@ package com.cohort.util;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import java.util.GregorianCalendar;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import org.junit.jupiter.api.Test;
 
 class Calendar2Tests {
   @Test
   void limitedFormatAsISODateTimeTTest() throws Throwable {
 
-    GregorianCalendar gc = new GregorianCalendar(2004, 2, 7, 3, 4, 7);
-    gc.add(GregorianCalendar.MILLISECOND, 16);
+    ZonedDateTime gc = ZonedDateTime.of(2004, 3, 7, 3, 4, 7, 16 * 1000000, ZoneOffset.UTC);
     assertEquals("2004", Calendar2.limitedFormatAsISODateTimeT("1970", gc));
     assertEquals("2004-03", Calendar2.limitedFormatAsISODateTimeT("1970-01", gc));
     assertEquals("2004-03-07", Calendar2.limitedFormatAsISODateTimeT("1970-01-01", gc));

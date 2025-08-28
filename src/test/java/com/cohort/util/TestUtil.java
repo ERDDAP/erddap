@@ -9,6 +9,7 @@ import java.io.File;
 import java.io.Writer;
 import java.lang.ref.WeakReference;
 import java.nio.file.Path;
+import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
@@ -3159,38 +3160,6 @@ public class TestUtil {
     Test.ensureEqual(s, eis, "via my parseDateTime: " + dts + "  " + dtf + "  " + tzs);
   }
 
-  /** Do the interactive tests of the methods in Calendar2. */
-  @org.junit.jupiter.api.Test
-  @TagIncompleteTest
-  void interactiveTestCalendar2() throws Exception {
-    String2.log("\n*** TestUtil.interactiveTestCalendar2");
-
-    String2.log("current time local: " + Calendar2.getCurrentISODateTimeStringLocalTZ());
-    String2.pressEnterToContinue();
-
-    try {
-      Test.ensureEqual(
-          Calendar2.format(0, DateTimeFormatter.ofPattern("yyyy-MMM-dd")),
-          "1970-Jan-01",
-          ""); // MMM -> Jan ! Really should be done by LLL?
-    } catch (Exception e) {
-      String2.pressEnterToContinue(
-          MustBe.throwableToString(e)
-              + "\nOracle Java versus AdoptOpenJDK may be slightly different for these.");
-    }
-
-    String2.pressEnterToContinue(
-        "getCurrentISODateTimeString = "
-            + Calendar2.formatAsISODateTimeT(ZonedDateTime.now())
-            + "    *** Check that HOUR accounts for daylight saving time!\n\n"
-            + "current UTC time = "
-            + Calendar2.formatAsISODateTimeT(Calendar2.newGCalendarZulu())
-            + "\n"
-            + "    *** Check that HOUR is local+7 in summer (DST), local+8 in winter (in California)\n"
-            + "                        or local+4 in summer (DST), local+5 in winter (on East Coast).\n"
-            + "    See current UTC time at http://www.xav.com/time.cgi");
-  }
-
   /** Test the methods in Calendar2. */
   @org.junit.jupiter.api.Test
   void testCalendar2() throws Throwable {
@@ -3552,41 +3521,34 @@ public class TestUtil {
     String2.log("\nparse iso format");
     // zulu time zone
     // In US, DST change has Sunday March 13, 2016
-    TimeZone zuluTZ = TimeZone.getTimeZone("Zulu"); // java
     TimeZone pacificTZ = TimeZone.getTimeZone("America/Los_Angeles"); // java
     s = "2016-03-12T00";
     s =
         s
             + " Zulu => "
-            + Calendar2.formatAsISODateTimeT(
-                Calendar2.parseISODateTime(new GregorianCalendar(zuluTZ), s))
+            + Calendar2.formatAsISODateTimeT(Calendar2.parseISODateTime(s, ZoneOffset.UTC))
             + "Z";
-    String2.log(s);
     Test.ensureEqual(s, "2016-03-12T00 Zulu => 2016-03-12T00:00:00Z", "");
 
     s = "2016-03-14T00";
     s =
         s
             + " Zulu => "
-            + Calendar2.formatAsISODateTimeT(
-                Calendar2.parseISODateTime(new GregorianCalendar(zuluTZ), s))
+            + Calendar2.formatAsISODateTimeT(Calendar2.parseISODateTime(s, ZoneOffset.UTC))
             + "Z";
-    String2.log(s);
     Test.ensureEqual(s, "2016-03-14T00 Zulu => 2016-03-14T00:00:00Z", "");
 
     // pacific time zone
     s = "2016-03-12T00";
-    gc = Calendar2.parseISODateTime(new GregorianCalendar(pacificTZ), s);
-    gc.setTimeZone(zuluTZ);
-    s = s + " Pacific => " + Calendar2.formatAsISODateTimeT(gc) + "Z";
-    String2.log(s);
+    ZonedDateTime dt = Calendar2.parseISODateTime(s, pacificTZ.toZoneId());
+    dt = dt.withZoneSameInstant(ZoneOffset.UTC);
+    s = s + " Pacific => " + Calendar2.formatAsISODateTimeT(dt) + "Z";
     Test.ensureEqual(s, "2016-03-12T00 Pacific => 2016-03-12T08:00:00Z", "");
 
     s = "2016-03-14T00";
-    gc = Calendar2.parseISODateTime(new GregorianCalendar(pacificTZ), s);
-    gc.setTimeZone(zuluTZ);
-    s = s + " Pacific => " + Calendar2.formatAsISODateTimeT(gc) + "Z";
-    String2.log(s);
+    dt = Calendar2.parseISODateTime(s, pacificTZ.toZoneId());
+    dt = dt.withZoneSameInstant(ZoneOffset.UTC);
+    s = s + " Pacific => " + Calendar2.formatAsISODateTimeT(dt) + "Z";
     Test.ensureEqual(s, "2016-03-14T00 Pacific => 2016-03-14T07:00:00Z", "");
 
     // parse
@@ -3620,14 +3582,9 @@ public class TestUtil {
     Test.ensureTrue(!Calendar2.isIsoDate("-0001"), "");
 
     // test year 0000 manipulations
-    int ymdhmsmom[];
-    gc = new GregorianCalendar(Calendar2.zuluTimeZone);
-    gc.set(1970, 0, 1, 0, 0, 0);
-    gc.set(Calendar2.YEAR, 0);
-    gc.set(Calendar2.DAY_OF_YEAR, 5);
-    gc.get(Calendar2.MONTH); // force recalculations
+    dt = ZonedDateTime.of(0, 1, 5, 0, 0, 0, 0, ZoneOffset.UTC);
     // epSec = Calendar2.gcToEpochSeconds(gc);
-    s = Calendar2.epochSecondsToIsoStringTZ(Calendar2.gcToEpochSeconds(gc));
+    s = Calendar2.epochSecondsToIsoStringTZ(Calendar2.zdtToEpochSeconds(dt));
     Test.ensureEqual(s, "0000-01-05T00:00:00Z", "");
 
     // test how Java DateTimeFormatter works by seeing what it writes out
@@ -3820,7 +3777,7 @@ public class TestUtil {
     Test.ensureEqual(Calendar2.tryToIsoString("2016-035"), "2016-02-04", "");
     Test.ensureEqual(Calendar2.tryToIsoString("2999-366"), "3000-01-01", "");
     /**/ Test.ensureEqual(Calendar2.tryToIsoString("0000-001"), "0000-01-01", "");
-    Test.ensureEqual(Calendar2.tryToIsoString("9999-399"), "10000-02-03", "");
+    Test.ensureEqual(Calendar2.tryToIsoString("9999-399"), "+10000-02-03", "");
     /**/ Test.ensureEqual(Calendar2.tryToIsoString("-4713-001"), "-4713-01-01", "");
     Test.ensureEqual(Calendar2.tryToIsoString("1985-400"), "", "");
 
@@ -4457,7 +4414,7 @@ public class TestUtil {
     Test.ensureEqual(Calendar2.tryToIsoString("9985-01-02Z"), "9985-01-02", "");
     Test.ensureEqual(Calendar2.tryToIsoString("9985-01-02"), "9985-01-02", "");
     Test.ensureEqual(Calendar2.tryToIsoString("0000-01"), "0000-01-01", "");
-    Test.ensureEqual(Calendar2.tryToIsoString("9999-19"), "10000-07-01", "");
+    Test.ensureEqual(Calendar2.tryToIsoString("9999-19"), "+10000-07-01", "");
     Test.ensureEqual(
         Calendar2.tryToIsoString("9985-01-02-08:00"),
         "9985-01-02T08:00:00Z",
@@ -4894,7 +4851,7 @@ public class TestUtil {
     Test.ensureEqual(Calendar2.tryToIsoString("9985-01-02Z"), "9985-01-02", "");
     Test.ensureEqual(Calendar2.tryToIsoString("9985-01-02"), "9985-01-02", "");
     Test.ensureEqual(Calendar2.tryToIsoString("0000-01"), "0000-01-01", "");
-    Test.ensureEqual(Calendar2.tryToIsoString("9999-19"), "10000-07-01", "");
+    Test.ensureEqual(Calendar2.tryToIsoString("9999-19"), "+10000-07-01", "");
     Test.ensureEqual(Calendar2.tryToIsoString("1985-20"), "", "");
     Test.ensureEqual(Calendar2.tryToIsoString("-1009-01-02T23:59Z"), "-1009-01-02T23:59:00Z", "");
     Test.ensureEqual(Calendar2.tryToIsoString("-1010-01-02"), "-1010-01-02", "");
@@ -5566,7 +5523,7 @@ public class TestUtil {
     Test.ensureEqual(Calendar2.parseToEpochSeconds("2015-10-12", "yyyy-MM-dd"), 1.444608E9, "");
     Test.ensureEqual(Calendar2.parseToEpochSeconds("6015-10-12", "yyyy-MM-dd"), 1.27672416E11, "");
     Test.ensureEqual(Calendar2.parseToEpochSeconds("2015-1a-12", "yyyy-MM-dd"), Double.NaN, "");
-    d = -6.21357696E10;
+    d = -6.21355968E10;
     Test.ensureEqual(Calendar2.parseToEpochSeconds("0001-01-01", "yyyy-MM-dd"), d, "");
     Test.ensureEqual(
         Calendar2.parseToEpochSeconds("0000-01-01", "yyyy-MM-dd"), d -= 366 * 86400, "");
@@ -5690,9 +5647,9 @@ public class TestUtil {
     // Fix underlying methods and then fix these tests (for Yibo Jiang PODAAC).
     String format = "yyyy-MM-dd' 'HH:mm:ss.SSS000000'Z'";
     String val = "2020-05-18 01:02:03.123000000Z";
-    gc = Calendar2.parseDateTimeZulu(val, format);
-    double epochSeconds = Calendar2.gcToEpochSeconds(gc);
-    String2.log("super-precise time gc=" + gc.toString() + " epochSeconds=" + epochSeconds);
+    dt = Calendar2.parseDateTimeZulu(val, format);
+    double epochSeconds = Calendar2.zdtToEpochSeconds(dt);
+    String2.log("super-precise time dt=" + dt.toString() + " epochSeconds=" + epochSeconds);
     Test.ensureEqual(epochSeconds, 1.589763723123E9, "");
     Test.ensureEqual(
         Calendar2.format(epochSeconds, format, ""), "2020-05-18 01:02:03.123000000Z", "");
@@ -6348,58 +6305,13 @@ public class TestUtil {
     }
     String2.log("> End of expected errors");
 
-    // getMonthName3
-    Test.ensureEqual(Calendar2.getMonthName3(1), "Jan", "a");
-    Test.ensureEqual(Calendar2.getMonthName3(12), "Dec", "b");
-    try {
-      Calendar2.getMonthName3(0);
-      throw new Throwable("Shouldn't get here.2");
-    } catch (Exception e) {
-    }
-
-    // equals
-    Test.ensureEqual(
-        Calendar2.newGCalendarZulu(2005, 9, 1).equals(Calendar2.newGCalendarZulu(2005, 8, 32)),
-        true,
-        "a1"); // 8/32 -> 9/1
-    Test.ensureEqual(
-        Calendar2.newGCalendarZulu(2005, 9, 1).equals(Calendar2.newGCalendarZulu(2005, 9, 2)),
-        false,
-        "a2");
-
     Test.ensureEqual(Calendar2.zuluTimeZone.useDaylightTime(), false, "a3");
 
-    // constructors
-    Test.ensureEqual(Calendar2.newGCalendarZulu(1970, 1, 1).getTimeInMillis(), 0, "a1970-01-01");
-    // 2 tests from http://www.xav.com/time.cgi
-    // 2005-08-31T16:00:00 was 1125504000 seconds + 1min+2sec+3milli=62003 millis
+    Test.ensureEqual(Calendar2.newZdtUtc(0).toInstant().toEpochMilli(), 0, "a8");
     Test.ensureEqual(
-        Calendar2.newGCalendarZulu(2005, 8, 31, 16, 1, 2, 3).getTimeInMillis(),
-        1125504062003L,
-        "a2005-08-31");
-    // 2005-11-02 18:04:09 was 1130954649 seconds
-    Test.ensureEqual(
-        Calendar2.newGCalendarZulu(2005, 11, 2, 18, 4, 9, 0).getTimeInMillis(),
-        1130954649000L,
-        "a2005-11-02");
-    Test.ensureEqual(
-        Calendar2.newGCalendarZulu(1, 1, 1, 0, 0, 0, 0).getTimeInMillis(),
-        -62135769600000L,
-        "a0001-01-01");
-    Test.ensureEqual(
-        Calendar2.newGCalendarZulu(0, 1, 1, 0, 0, 0, 0).getTimeInMillis(),
-        -62167392000000L,
-        "a0000-01-01");
-    Test.ensureEqual(
-        Calendar2.newGCalendarZulu(-1, 1, 1, 0, 0, 0, 0).getTimeInMillis(),
-        -62198928000000L,
-        "a-0001-01-01");
-
-    Test.ensureEqual(Calendar2.newGCalendarZulu(0).getTimeInMillis(), 0, "a8");
-    Test.ensureEqual(
-        Calendar2.newGCalendarZulu(1125504062003L).getTimeInMillis(), 1125504062003L, "a9");
+        Calendar2.newZdtUtc(1125504062003L).toInstant().toEpochMilli(), 1125504062003L, "a9");
     try {
-      Calendar2.newGCalendarZulu(Long.MAX_VALUE);
+      Calendar2.newZdtUtc(Long.MAX_VALUE);
       throw new Throwable("Shouldn't get here.4");
     } catch (Exception e) {
     }
@@ -6408,15 +6320,15 @@ public class TestUtil {
     String2.log("test parse/format USDate, ISODate, yyyyDDD, IsoDateHM, CompactDateTime");
     s = "2004-03-02T14:35:08"; // 'T'
     ZonedDateTime nullZdt = null;
-    GregorianCalendar localGC = new GregorianCalendar();
-    GregorianCalendar zuluGC = Calendar2.newGCalendarZulu();
     Test.ensureEqual(
-        Calendar2.formatAsISODateTimeT(Calendar2.parseISODateTime(localGC, s)), s, "nL");
+        Calendar2.formatAsISODateTimeT(Calendar2.parseISODateTime(s, ZoneId.systemDefault())),
+        s,
+        "nL");
     Test.ensureEqual(
-        Calendar2.formatAsISODateTimeT(Calendar2.parseISODateTime(zuluGC, s)), s, "nZ");
+        Calendar2.formatAsISODateTimeT(Calendar2.parseISODateTime(s, ZoneOffset.UTC)), s, "nZ");
     String s2 = "1970-01-01 00:00:00 UTC";
     Test.ensureEqual(
-        Calendar2.formatAsISODateTimeT(Calendar2.parseISODateTime(zuluGC, s2)),
+        Calendar2.formatAsISODateTimeT(Calendar2.parseISODateTime(s2, ZoneOffset.UTC)),
         "1970-01-01T00:00:00",
         "nZ2");
     s2 = "0001-01-01T02:00:00";
@@ -6499,7 +6411,7 @@ public class TestUtil {
         "1971-01-01T00:00:00.000Z",
         "");
 
-    ZonedDateTime dt = Calendar2.parseISODateTimeUtc("2011-12-31T23:59:59.997Z");
+    dt = Calendar2.parseISODateTimeUtc("2011-12-31T23:59:59.997Z");
     Test.ensureEqual((double) dt.toInstant().toEpochMilli(), (double) 1.325376E12, "");
     Test.ensureEqual(Calendar2.formatAsISODateTimeT3Z(dt), "2011-12-31T23:59:59.997Z", "");
 
@@ -6525,33 +6437,37 @@ public class TestUtil {
     } catch (Exception e) {
     }
     try {
-      Calendar2.parseISODateTime(zuluGC, null);
+      Calendar2.parseISODateTime(null, ZoneOffset.UTC);
       throw new Throwable("Shouldn't get here.6");
     } catch (Exception e) {
     }
     try {
-      Calendar2.parseISODateTime(zuluGC, "");
+      Calendar2.parseISODateTime("", ZoneOffset.UTC);
       throw new Throwable("Shouldn't get here.7");
     } catch (Exception e) {
     }
     try {
-      Calendar2.parseISODateTime(zuluGC, "a");
+      Calendar2.parseISODateTime("a", ZoneOffset.UTC);
       throw new Throwable("Shouldn't get here.8");
     } catch (Exception e) {
     }
     try {
-      Calendar2.parseISODateTime(null, s);
+      Calendar2.parseISODateTime(s, null);
       throw new Throwable("Shouldn't get here.9");
     } catch (Exception e) {
     }
     s = "2004-03-02 14:35:08"; // space
     Test.ensureEqual(
-        Calendar2.formatAsISODateTimeSpace(Calendar2.parseISODateTime(localGC, s)), s, "n2L");
+        Calendar2.formatAsISODateTimeSpace(Calendar2.parseISODateTime(s, ZoneId.systemDefault())),
+        s,
+        "n2L");
     Test.ensureEqual(
-        Calendar2.formatAsISODateTimeSpace(Calendar2.parseISODateTime(zuluGC, s)), s, "n2Z");
+        Calendar2.formatAsISODateTimeSpace(Calendar2.parseISODateTime(s, ZoneOffset.UTC)),
+        s,
+        "n2Z");
     Test.ensureEqual(
         Calendar2.formatAsISODateTimeSpace(
-            Calendar2.parseISODateTime(zuluGC, "2004-03-02-14:35:08")),
+            Calendar2.parseISODateTime("2004-03-02-14:35:08", ZoneOffset.UTC)),
         s,
         "n2Z2"); // other connecting char allowed
     s2 = "0001-01-01 02:00:00";
@@ -6569,8 +6485,10 @@ public class TestUtil {
     } catch (Exception e) {
     }
     s = "2003-05-16";
-    Test.ensureEqual(Calendar2.formatAsISODate(Calendar2.parseISODateTime(localGC, s)), s, "oL");
-    Test.ensureEqual(Calendar2.formatAsISODate(Calendar2.parseISODateTime(zuluGC, s)), s, "oZ");
+    Test.ensureEqual(
+        Calendar2.formatAsISODate(Calendar2.parseISODateTime(s, ZoneId.systemDefault())), s, "oL");
+    Test.ensureEqual(
+        Calendar2.formatAsISODate(Calendar2.parseISODateTime(s, ZoneOffset.UTC)), s, "oZ");
     try {
       Calendar2.formatAsISODate(nullZdt);
       throw new Throwable("Shouldn't get here.11");
@@ -6578,11 +6496,11 @@ public class TestUtil {
     }
 
     Test.ensureEqual(
-        Calendar2.formatAsDDMonYYYY(Calendar2.newGCalendarZulu(2003, 1, 2, 17, 4, 5, 6)),
+        Calendar2.formatAsDDMonYYYY(ZonedDateTime.of(2003, 1, 2, 17, 4, 5, 6, ZoneOffset.UTC)),
         "02-Jan-2003 17:04:05",
         "DDMonYYYY");
     try {
-      Calendar2.formatAsDDMonYYYY(null);
+      Calendar2.formatAsDDMonYYYY(nullZdt);
       throw new Throwable("Shouldn't get here.12");
     } catch (Exception e) {
     }
@@ -6735,37 +6653,29 @@ public class TestUtil {
     }
 
     Test.ensureEqual(
-        Calendar2.formatAsISODate(Calendar2.newGCalendarZulu(2003, 1, 2)), "2003-01-02", "fZ");
-    try {
-      Calendar2.newGCalendarZulu(Integer.MAX_VALUE, 1, 2);
-      throw new Throwable("Shouldn't get here.33");
-    } catch (Exception e) {
-    }
+        Calendar2.formatAsISODate(ZonedDateTime.of(2003, 1, 2, 0, 0, 0, 0, ZoneOffset.UTC)),
+        "2003-01-02",
+        "fZ");
 
     Test.ensureEqual(
-        Calendar2.formatAsCompactDateTime(Calendar2.newGCalendarZulu(2003, 1, 2, 3, 4, 5, 6)),
+        Calendar2.formatAsCompactDateTime(ZonedDateTime.of(2003, 1, 2, 3, 4, 5, 6, ZoneOffset.UTC)),
         "20030102030405",
         "hZ");
     Test.ensureEqual(
-        Calendar2.formatAsCompactDateTime(Calendar2.newGCalendarZulu(1, 1, 2, 3, 4, 5, 6)),
+        Calendar2.formatAsCompactDateTime(ZonedDateTime.of(1, 1, 2, 3, 4, 5, 6, ZoneOffset.UTC)),
         "00010102030405",
         "hZ");
     Test.ensureEqual(
-        Calendar2.formatAsCompactDateTime(Calendar2.newGCalendarZulu(0, 1, 2, 3, 4, 5, 6)),
+        Calendar2.formatAsCompactDateTime(ZonedDateTime.of(0, 1, 2, 3, 4, 5, 6, ZoneOffset.UTC)),
         "00000102030405",
         "hZ");
     Test.ensureEqual(
-        Calendar2.formatAsCompactDateTime(Calendar2.newGCalendarZulu(-1, 1, 2, 3, 4, 5, 6)),
+        Calendar2.formatAsCompactDateTime(ZonedDateTime.of(-1, 1, 2, 3, 4, 5, 6, ZoneOffset.UTC)),
         "-00010102030405",
         "hZ");
     try {
       Calendar2.formatAsCompactDateTime(nullZdt);
       throw new Throwable("Shouldn't get here.34");
-    } catch (Exception e) {
-    }
-    try {
-      Calendar2.newGCalendarZulu(Integer.MAX_VALUE, 1, 2, 3, 4, 5, 6);
-      throw new Throwable("Shouldn't get here.36");
     } catch (Exception e) {
     }
 
@@ -6861,47 +6771,47 @@ public class TestUtil {
     }
 
     Test.ensureEqual(
-        Calendar2.formatAsDDMonYYYY(Calendar2.newGCalendarZulu(2003, 1, 2, 3, 4, 5, 6)),
+        Calendar2.formatAsDDMonYYYY(ZonedDateTime.of(2003, 1, 2, 3, 4, 5, 6, ZoneOffset.UTC)),
         "02-Jan-2003 03:04:05",
         "hZ");
     Test.ensureEqual(
-        Calendar2.formatAsDDMonYYYY(Calendar2.newGCalendarZulu(1, 1, 2, 3, 4, 5, 6)),
+        Calendar2.formatAsDDMonYYYY(ZonedDateTime.of(1, 1, 2, 3, 4, 5, 6, ZoneOffset.UTC)),
         "02-Jan-0001 03:04:05",
         "hZ");
     Test.ensureEqual(
-        Calendar2.formatAsDDMonYYYY(Calendar2.newGCalendarZulu(0, 1, 2, 3, 4, 5, 6)),
+        Calendar2.formatAsDDMonYYYY(ZonedDateTime.of(0, 1, 2, 3, 4, 5, 6, ZoneOffset.UTC)),
         "02-Jan-0000 03:04:05",
         "hZ");
     Test.ensureEqual(
-        Calendar2.formatAsDDMonYYYY(Calendar2.newGCalendarZulu(-1, 1, 2, 3, 4, 5, 6)),
+        Calendar2.formatAsDDMonYYYY(ZonedDateTime.of(-1, 1, 2, 3, 4, 5, 6, ZoneOffset.UTC)),
         "02-Jan--0001 03:04:05",
         "hZ");
     try {
-      Calendar2.parseDDMonYYYYZulu(null);
+      Calendar2.parseDDMonYYYY(null);
       throw new Throwable("Shouldn't get here.53");
     } catch (Exception e) {
     }
     try {
-      Calendar2.parseDDMonYYYYZulu("02-Jan-200");
+      Calendar2.parseDDMonYYYY("02-Jan-200");
       throw new Throwable("Shouldn't get here.54");
     } catch (Exception e) {
     }
     try {
-      Calendar2.parseDDMonYYYYZulu("02-Jan-200a 04:05:06");
+      Calendar2.parseDDMonYYYY("02-Jan-200a 04:05:06");
       throw new Throwable("Shouldn't get here.55");
     } catch (Exception e) {
     }
     try {
-      Calendar2.parseDDMonYYYYZulu("02-Jab-2003 04:05:06");
+      Calendar2.parseDDMonYYYY("02-Jab-2003 04:05:06");
       throw new Throwable("Shouldn't get here.56");
     } catch (Exception e) {
     }
     Test.ensureEqual(
-        Calendar2.formatAsDDMonYYYY(Calendar2.parseDDMonYYYYZulu("02-Jan-2003")),
+        Calendar2.formatAsDDMonYYYY(Calendar2.parseDDMonYYYY("02-Jan-2003")),
         "02-Jan-2003 00:00:00",
         "");
     Test.ensureEqual(
-        Calendar2.formatAsDDMonYYYY(Calendar2.parseDDMonYYYYZulu("32-DEC-2003 04:05:06")),
+        Calendar2.formatAsDDMonYYYY(Calendar2.parseDDMonYYYY("32-DEC-2003 04:05:06")),
         "01-Jan-2004 04:05:06",
         "");
 
@@ -6918,68 +6828,10 @@ public class TestUtil {
       throw new Throwable("Shouldn't get here.58");
     } catch (Exception e) {
     }
-
-    // easy: test that 1970-01-01 is 0
-    long mpd = Calendar2.MILLIS_PER_DAY;
     long spd = Calendar2.SECONDS_PER_DAY;
     // Test.ensureEqual(Calendar2.utcToMillis(Calendar2.newGCalendar(1970, 1, 1)),
     // 0, "v1970");
-
-    // test years forward from 1970 (thus okay forward to 2099) (2000 was a leap
-    // year)
-    Test.ensureEqual(Calendar2.newGCalendarZulu(1971, 1, 1).getTimeInMillis(), 365 * mpd, "v1971");
-    Test.ensureEqual(
-        Calendar2.newGCalendarZulu(1972, 1, 1).getTimeInMillis(), (2 * 365) * mpd, "v1972");
-    Test.ensureEqual(
-        Calendar2.newGCalendarZulu(1973, 1, 1).getTimeInMillis(),
-        (2 * 365 + 366) * mpd,
-        "v1973"); // intervening
-    // leap
-    // day
-    Test.ensureEqual(
-        Calendar2.newGCalendarZulu(1974, 1, 1).getTimeInMillis(), (3 * 365 + 366) * mpd, "v1974");
-    Test.ensureEqual(
-        Calendar2.newGCalendarZulu(1975, 1, 1).getTimeInMillis(), (4 * 365 + 366) * mpd, "v1975");
-    Test.ensureEqual(
-        Calendar2.newGCalendarZulu(1976, 1, 1).getTimeInMillis(), (5 * 365 + 366) * mpd, "v1976");
-    Test.ensureEqual(
-        Calendar2.newGCalendarZulu(1977, 1, 1).getTimeInMillis(),
-        (5 * 365 + 2 * 366) * mpd,
-        "v1977");
-    Test.ensureEqual(
-        Calendar2.newGCalendarZulu(2000, 1, 1).getTimeInMillis(),
-        (23 * 365 + 7 * 366) * mpd,
-        "v2000");
-    Test.ensureEqual(
-        Calendar2.newGCalendarZulu(2001, 1, 1).getTimeInMillis(),
-        (23 * 365 + 8 * 366) * mpd,
-        "v2001");
-
-    // test years backward from 1970 (thus okay back to 1901)
-    Test.ensureEqual(Calendar2.newGCalendarZulu(1969, 1, 1).getTimeInMillis(), -365 * mpd, "v1969");
-    Test.ensureEqual(
-        Calendar2.newGCalendarZulu(1968, 1, 1).getTimeInMillis(),
-        -(365 + 366) * mpd,
-        "v1968"); // intervening
-    // leap
-    // day
-    Test.ensureEqual(
-        Calendar2.newGCalendarZulu(1967, 1, 1).getTimeInMillis(), -(2 * 365 + 366) * mpd, "v1967");
-    Test.ensureEqual(
-        Calendar2.newGCalendarZulu(1966, 1, 1).getTimeInMillis(), -(3 * 365 + 366) * mpd, "v1966");
-    Test.ensureEqual(
-        Calendar2.newGCalendarZulu(1965, 1, 1).getTimeInMillis(), -(4 * 365 + 366) * mpd, "v1965");
-    Test.ensureEqual(
-        Calendar2.newGCalendarZulu(1964, 1, 1).getTimeInMillis(),
-        -(4 * 365 + 2 * 366) * mpd,
-        "v1964");
-
-    long m0001 = -62135769600000L;
-    Test.ensureEqual(Calendar2.newGCalendarZulu(1, 1, 1).getTimeInMillis(), m0001, "v1");
-    Test.ensureEqual(
-        Calendar2.newGCalendarZulu(0, 1, 1).getTimeInMillis(), m0001 + -366 * mpd, "v0");
-    Test.ensureEqual(
-        Calendar2.newGCalendarZulu(-1, 1, 1).getTimeInMillis(), m0001 + (-365 - 366) * mpd, "v-1");
+    long zdtM0001 = -62135596800000L;
 
     Test.ensureEqual(Calendar2.isoStringToMillis("2005-08-31T16:01:02"), 1125504062000L, "w1");
     try {
@@ -7001,12 +6853,14 @@ public class TestUtil {
 
     // epochSecondsToIsoString
     Test.ensureEqual(Calendar2.isoStringToEpochSeconds("2005-08-31T16:01:02"), 1125504062.0, "x1");
-    Test.ensureEqual(Calendar2.isoStringToEpochSeconds("0001-01-01"), m0001 / 1000.0, "x1");
+    Test.ensureEqual(Calendar2.isoStringToEpochSeconds("0001-01-01"), zdtM0001 / 1000.0, "x1");
     Test.ensureEqual(
-        Calendar2.isoStringToEpochSeconds("0000-01-01"), (double) m0001 / 1000 - 366 * spd, "x1");
+        Calendar2.isoStringToEpochSeconds("0000-01-01"),
+        (double) zdtM0001 / 1000 - 366 * spd,
+        "x1");
     Test.ensureEqual(
         Calendar2.isoStringToEpochSeconds("-0001-01-01"),
-        (double) m0001 / 1000 + (-365 - 366) * spd,
+        (double) zdtM0001 / 1000 + (-365 - 366) * spd,
         "x1");
     try {
       Calendar2.isoStringToEpochSeconds("");
@@ -7032,7 +6886,6 @@ public class TestUtil {
     dt = Calendar2.parseISODateTimeUtc("2005-08-31T16:01:02");
     Test.ensureEqual(Calendar2.zdtToEpochSeconds(dt), 1125504062.0, "");
     dt = Calendar2.parseISODateTimeUtc("0001-01-01");
-    long zdtM0001 = -62135596800000L;
     Test.ensureEqual(Calendar2.zdtToEpochSeconds(dt), zdtM0001 / 1000.0, "");
     dt = Calendar2.parseISODateTimeUtc("0000-01-01");
     Test.ensureEqual(
@@ -7047,16 +6900,16 @@ public class TestUtil {
     }
 
     // epochSecondsToGc(double seconds) (test with values above)
-    gc = Calendar2.epochSecondsToGc(1125504062.0);
-    Test.ensureEqual(Calendar2.formatAsISODateTimeT(gc), "2005-08-31T16:01:02", "");
-    gc = Calendar2.epochSecondsToGc(m0001 / 1000.0);
-    Test.ensureEqual(Calendar2.formatAsISODateTimeT(gc), "0001-01-01T00:00:00", "");
-    gc = Calendar2.epochSecondsToGc((double) m0001 / 1000 + -366 * 24 * 3600);
-    Test.ensureEqual(Calendar2.formatAsISODateTimeT(gc), "0000-01-01T00:00:00", "");
-    gc = Calendar2.epochSecondsToGc((double) m0001 / 1000 + (-365 - 366) * 24 * 3600);
-    Test.ensureEqual(Calendar2.formatAsISODateTimeT(gc), "-0001-01-01T00:00:00", "");
+    dt = Calendar2.epochSecondsToZdt(1125504062.0);
+    Test.ensureEqual(Calendar2.formatAsISODateTimeT(dt), "2005-08-31T16:01:02", "");
+    dt = Calendar2.epochSecondsToZdt(zdtM0001 / 1000.0);
+    Test.ensureEqual(Calendar2.formatAsISODateTimeT(dt), "0001-01-01T00:00:00", "");
+    dt = Calendar2.epochSecondsToZdt((double) zdtM0001 / 1000 + -366 * 24 * 3600);
+    Test.ensureEqual(Calendar2.formatAsISODateTimeT(dt), "0000-01-01T00:00:00", "");
+    dt = Calendar2.epochSecondsToZdt((double) zdtM0001 / 1000 + (-365 - 366) * 24 * 3600);
+    Test.ensureEqual(Calendar2.formatAsISODateTimeT(dt), "-0001-01-01T00:00:00", "");
     try {
-      Calendar2.epochSecondsToGc(Double.NaN);
+      Calendar2.epochSecondsToZdt(Double.NaN);
       throw new Throwable("Shouldn't get here.70");
     } catch (Exception e) {
     }
@@ -7126,7 +6979,7 @@ public class TestUtil {
         "");
 
     da = Calendar2.getTimeBaseAndFactor("days since 1-1-1"); // test really forgiving
-    Test.ensureEqual(da[0], -6.21357696E10, "");
+    Test.ensureEqual(da[0], -6.21355968E10, "");
     Test.ensureEqual(da[1], 86400, "");
     Test.ensureEqual(
         Calendar2.epochSecondsToIsoStringTZ(Calendar2.unitsSinceToEpochSeconds(da[0], da[1], 2)),
@@ -7159,13 +7012,15 @@ public class TestUtil {
     da =
         Calendar2.getTimeBaseAndFactor(
             "days since -4712-01-01"); // -4713 BC is astronomicalYear=-4712
-    Test.ensureEqual(da[0], -2.108668032E11, "");
+    Test.ensureEqual(da[0], -2.1086352E11, "");
     Test.ensureEqual(da[1], 86400, "");
     // http://www.julian-date.com/
     Test.ensureEqual(
         Calendar2.epochSecondsToIsoStringTZ(
             Calendar2.unitsSinceToEpochSeconds(
-                da[0], da[1], 2457711.5)), // Chronological JD (CJD) starts at
+                // -38 because of a difference between java.time and extending Julian back
+                // to -4712.
+                da[0], da[1], 2457711.5 - 38)), // Chronological JD (CJD) starts at
         // midnight
         "2016-11-18T12:00:00Z",
         "");
@@ -7178,7 +7033,9 @@ public class TestUtil {
     Test.ensureEqual(
         Calendar2.epochSecondsToIsoStringTZ(
             Calendar2.unitsSinceToEpochSeconds(
-                da[0], da[1], 2452952)), // Chronological JD (CJD) starts at midnight
+                // -38 because of a difference between java.time and extending Julian back
+                // to -4712.
+                da[0], da[1], 2452952 - 38)), // Chronological JD (CJD) starts at midnight
         "2003-11-08T00:00:00Z",
         "");
 
@@ -7454,7 +7311,8 @@ public class TestUtil {
     // is System.currentTimeMillis()/1000 = current epochSeconds? (system might use
     // local time)
     double systemSec = System.currentTimeMillis() / 1000.0;
-    double epochSec = Calendar2.gcToEpochSeconds(Calendar2.newGCalendarZulu());
+    double epochSec =
+        Calendar2.zdtToEpochSeconds(ZonedDateTime.ofInstant(Instant.now(), ZoneOffset.UTC));
     Test.ensureTrue(
         Math.abs(systemSec - epochSec) < 1, "systemSec=" + systemSec + " epochSec=" + epochSec);
 

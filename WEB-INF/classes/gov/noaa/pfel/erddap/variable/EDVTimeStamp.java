@@ -15,13 +15,14 @@ import com.cohort.util.Math2;
 import com.cohort.util.MustBe;
 import com.cohort.util.String2;
 import com.cohort.util.Test;
+import com.google.common.base.Strings;
 import gov.noaa.pfel.erddap.dataset.metadata.LocalizedAttributes;
 import gov.noaa.pfel.erddap.util.EDMessages;
 import gov.noaa.pfel.erddap.util.EDStatic;
+import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.TimeZone;
 
 /**
  * This class holds information about *a* (not *the*) time variable, which is like EDV, but the
@@ -51,7 +52,7 @@ public class EDVTimeStamp extends EDV {
       dateTimeFormatter; // for generating source time if !sourceTimeIsNumeric
   protected String time_precision; // see Calendar2.epochSecondsToLimitedIsoStringT
   protected String time_zone; // if not specified, will be Zulu
-  protected TimeZone timeZone = null; // for Java   null=Zulu
+  protected ZoneId timeZone = null; // for Java   null=Zulu
 
   /**
    * This class holds information about the time variable, which is like EDV, but the
@@ -186,7 +187,12 @@ public class EDVTimeStamp extends EDV {
             "Currently, ERDDAP doesn't support time_zone's other than Zulu "
                 + "and UTC for fixedValue numeric timestamp variables.");
 
-      double td[] = Calendar2.getTimeBaseAndFactor(sourceTimeFormat); // timeZone
+      boolean doLegacyAdjust = false;
+      String legacy_adjust = tAddAttributes.getString(language, "legacy_time_adjust");
+      if (!Strings.isNullOrEmpty(legacy_adjust)) {
+        doLegacyAdjust = Boolean.parseBoolean(legacy_adjust);
+      }
+      double td[] = Calendar2.getTimeBaseAndFactor(sourceTimeFormat, doLegacyAdjust); // timeZone
       sourceTimeBase = td[0];
       sourceTimeFactor = td[1];
 
@@ -227,7 +233,7 @@ public class EDVTimeStamp extends EDV {
       if (time_zone.equals("Zulu")) { // UTC -> Zulu above
       } else {
         timeZone =
-            TimeZone.getTimeZone(
+            Calendar2.getZoneId(
                 time_zone); // VERY BAD: if failure, no exception and it returns GMT timeZone!!!
 
         // NO EASY TEST IN JAVA VERSION OF java.time (was Joda)
@@ -465,14 +471,10 @@ public class EDVTimeStamp extends EDV {
    *     sourceTime, sourceMissingValue) (which is very lenient), this returns NaN.
    */
   public double sourceTimeToEpochSeconds(double sourceTime) {
-    // String2.log(">>sourceTimeToEpochSeconds(" + sourceTime + ") sourceTimeBase=" + sourceTimeBase
-    // + " sourceTimeFactor=" + sourceTimeFactor);
     if ((Double.isNaN(sourceMissingValue) && Double.isNaN(sourceTime))
         || Math2.almostEqual(9, sourceTime, sourceMissingValue)
         || Math2.almostEqual(9, sourceTime, sourceFillValue)) return Double.NaN;
     if (scaleAddOffset) sourceTime = sourceTime * scaleFactor + addOffset;
-    // String2.log(">> sourceTimeToEp " + destinationName + " src=" + sourceTime + " ep=" + d +
-    // " = " + Calendar2.safeEpochSecondsToIsoStringTZ(d, ""));
     return Calendar2.unitsSinceToEpochSeconds(sourceTimeBase, sourceTimeFactor, sourceTime);
   }
 
@@ -507,12 +509,6 @@ public class EDVTimeStamp extends EDV {
 
     // time is a string
     try {
-      // parseISOWithCalendar2?
-      // parse with Calendar2.parseISODateTime
-      // Calendar2.isoStringToEpochSeconds(sourceTime, timeZone) :
-      // parse sourceTime
-      // String2.log("  EDVTimeStamp sourceTime=" + sourceTime + " epSec=" + d + " Calendar2=" +
-      // Calendar2.epochSecondsToIsoStringTZ(d));
       return Calendar2.parseToEpochSeconds(sourceTime, dateTimeFormat, timeZone);
     } catch (Throwable t) {
       if (verbose && sourceTime != null && sourceTime.length() > 0)
@@ -534,7 +530,6 @@ public class EDVTimeStamp extends EDV {
    */
   @Override
   public PrimitiveArray toDestination(PrimitiveArray source) {
-
     // this doesn't support scaleAddOffset
     int size = source.size();
     DoubleArray destPa =

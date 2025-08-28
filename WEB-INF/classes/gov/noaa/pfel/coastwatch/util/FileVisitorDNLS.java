@@ -1478,7 +1478,7 @@ public class FileVisitorDNLS extends SimpleFileVisitor<Path> {
           long millis = Long.MAX_VALUE;
           if (matched) {
             try {
-              millis = Calendar2.parseDDMonYYYYZulu(matcher.group(2)).getTimeInMillis();
+              millis = Calendar2.parseDDMonYYYY(matcher.group(2)).toInstant().toEpochMilli();
             } catch (Throwable t2) {
               String2.log(t2.getMessage());
             }
@@ -1488,7 +1488,7 @@ public class FileVisitorDNLS extends SimpleFileVisitor<Path> {
             matched = matcher.matches();
             if (matched) {
               try {
-                millis = Calendar2.parseDDMonYYYYZulu(matcher.group(2)).getTimeInMillis();
+                millis = Calendar2.parseDDMonYYYY(matcher.group(2)).toInstant().toEpochMilli();
               } catch (Throwable t2) {
                 String2.log(t2.getMessage());
               }
@@ -1618,7 +1618,8 @@ public class FileVisitorDNLS extends SimpleFileVisitor<Path> {
                 millis =
                     Calendar2.parseDateTimeZulu(
                             XML.decodeEntities(matcher.group(1)), Calendar2.RFC822_GMT_FORMAT)
-                        .getTimeInMillis();
+                        .toInstant()
+                        .toEpochMilli();
               } catch (Throwable t2) {
                 String2.log(t2.getMessage());
               }

@@ -63,7 +63,6 @@ import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
-import java.util.GregorianCalendar;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -10012,9 +10011,10 @@ public abstract class EDDTable extends EDD {
                   + Calendar2.IDEAL_UNITS_SECONDS.get(idealTimeUnits));
 
         // make idealized minTime
-        GregorianCalendar idMinGc = Calendar2.roundToIdealGC(timeMin, idealTimeN, idealTimeUnits);
-        GregorianCalendar idMaxGc = Calendar2.newGCalendarZulu(idMinGc.getTimeInMillis());
-        idMaxGc.add(Calendar2.IDEAL_UNITS_FIELD.get(idealTimeUnits), idealTimeN);
+        ZonedDateTime idMinDt = Calendar2.roundToIdealGC(timeMin, idealTimeN, idealTimeUnits);
+        ZonedDateTime idMaxDt =
+            Calendar2.addGcFieldToZdt(
+                idMinDt, Calendar2.IDEAL_UNITS_FIELD.get(idealTimeUnits), idealTimeN);
 
         String gqnt =
             "window.location=\""
@@ -10081,18 +10081,21 @@ public abstract class EDDTable extends EDD {
         if (!Double.isNaN(edvTimeMin)) {
 
           // make idealized beginning time
-          GregorianCalendar tidMinGc =
-              Calendar2.roundToIdealGC(edvTimeMin, idealTimeN, idealTimeUnits);
+          ZonedDateTime tidMinDt = Calendar2.roundToIdealGC(edvTimeMin, idealTimeN, idealTimeUnits);
           // if it rounded to later time period, shift to earlier time period
-          if (Math2.divideNoRemainder(tidMinGc.getTimeInMillis(), 1000) > edvTimeMin)
-            tidMinGc.add(Calendar2.IDEAL_UNITS_FIELD.get(idealTimeUnits), -idealTimeN);
-          GregorianCalendar tidMaxGc = Calendar2.newGCalendarZulu(tidMinGc.getTimeInMillis());
-          tidMaxGc.add(Calendar2.IDEAL_UNITS_FIELD.get(idealTimeUnits), idealTimeN);
+          if (tidMinDt.toEpochSecond() > edvTimeMin) {
+            tidMinDt =
+                Calendar2.addGcFieldToZdt(
+                    tidMinDt, Calendar2.IDEAL_UNITS_FIELD.get(idealTimeUnits), -idealTimeN);
+          }
+          ZonedDateTime tidMaxDt =
+              Calendar2.addGcFieldToZdt(
+                  tidMinDt, Calendar2.IDEAL_UNITS_FIELD.get(idealTimeUnits), idealTimeN);
 
           // always show button if idealTime is different from current selection
           double idRange =
               Math2.divideNoRemainder(
-                  tidMaxGc.getTimeInMillis() - tidMinGc.getTimeInMillis(), 1000);
+                  tidMaxDt.toInstant().toEpochMilli() - tidMinDt.toInstant().toEpochMilli(), 1000);
           double ratio = (timeMax - timeMin) / idRange;
 
           if (timeMin > edvTimeMin || ratio < 0.99 || ratio > 1.01) {
@@ -10107,9 +10110,9 @@ public abstract class EDDTable extends EDD {
                             + gqnt
                             + // vertical-align: 'b'ottom
                             "&amp;time%3E="
-                            + Calendar2.limitedFormatAsISODateTimeT(tTime_precision, tidMinGc)
+                            + Calendar2.limitedFormatAsISODateTimeT(tTime_precision, tidMinDt)
                             + "&amp;time%3C"
-                            + Calendar2.limitedFormatAsISODateTimeT(tTime_precision, tidMaxGc)
+                            + Calendar2.limitedFormatAsISODateTimeT(tTime_precision, tidMaxDt)
                             + timeRangeParam
                             + "\";'")
                     + "&nbsp;");
@@ -10125,8 +10128,12 @@ public abstract class EDDTable extends EDD {
         if (Double.isNaN(edvTimeMin) || (!Double.isNaN(edvTimeMin) && timeMin > edvTimeMin)) {
 
           // idealized (rounded) time shift
-          idMinGc.add(Calendar2.IDEAL_UNITS_FIELD.get(idealTimeUnits), -idealTimeN);
-          idMaxGc.add(Calendar2.IDEAL_UNITS_FIELD.get(idealTimeUnits), -idealTimeN);
+          idMinDt =
+              Calendar2.addGcFieldToZdt(
+                  idMinDt, Calendar2.IDEAL_UNITS_FIELD.get(idealTimeUnits), -idealTimeN);
+          idMaxDt =
+              Calendar2.addGcFieldToZdt(
+                  idMaxDt, Calendar2.IDEAL_UNITS_FIELD.get(idealTimeUnits), -idealTimeN);
           writer.write(
               HtmlWidgets.htmlTooltipImage(
                       EDStatic.imageDirUrl(request, loggedInAs, language) + "minus.gif",
@@ -10138,14 +10145,18 @@ public abstract class EDDTable extends EDD {
                           + gqnt
                           + // vertical-align: 'b'ottom
                           "&amp;time%3E="
-                          + Calendar2.limitedFormatAsISODateTimeT(tTime_precision, idMinGc)
+                          + Calendar2.limitedFormatAsISODateTimeT(tTime_precision, idMinDt)
                           + "&amp;time%3C"
-                          + Calendar2.limitedFormatAsISODateTimeT(tTime_precision, idMaxGc)
+                          + Calendar2.limitedFormatAsISODateTimeT(tTime_precision, idMaxDt)
                           + timeRangeParam
                           + "\";'")
                   + "&nbsp;");
-          idMinGc.add(Calendar2.IDEAL_UNITS_FIELD.get(idealTimeUnits), idealTimeN);
-          idMaxGc.add(Calendar2.IDEAL_UNITS_FIELD.get(idealTimeUnits), idealTimeN);
+          idMinDt =
+              Calendar2.addGcFieldToZdt(
+                  idMinDt, Calendar2.IDEAL_UNITS_FIELD.get(idealTimeUnits), idealTimeN);
+          idMaxDt =
+              Calendar2.addGcFieldToZdt(
+                  idMaxDt, Calendar2.IDEAL_UNITS_FIELD.get(idealTimeUnits), idealTimeN);
 
         } else {
           writer.write("&nbsp;&nbsp;&nbsp;&nbsp;");
@@ -10156,10 +10167,14 @@ public abstract class EDDTable extends EDD {
         if (Double.isNaN(edvTimeMax) || (!Double.isNaN(edvTimeMax) && timeMax < edvTimeMax)) {
 
           // idealized (rounded) time shift
-          idMinGc.add(Calendar2.IDEAL_UNITS_FIELD.get(idealTimeUnits), idealTimeN);
-          idMaxGc.add(Calendar2.IDEAL_UNITS_FIELD.get(idealTimeUnits), idealTimeN);
+          idMinDt =
+              Calendar2.addGcFieldToZdt(
+                  idMinDt, Calendar2.IDEAL_UNITS_FIELD.get(idealTimeUnits), idealTimeN);
+          idMaxDt =
+              Calendar2.addGcFieldToZdt(
+                  idMaxDt, Calendar2.IDEAL_UNITS_FIELD.get(idealTimeUnits), idealTimeN);
           String equals =
-              (!Double.isNaN(edvTimeMax) && idMaxGc.getTimeInMillis() >= edvTimeMax * 1000)
+              (!Double.isNaN(edvTimeMax) && idMaxDt.toInstant().toEpochMilli() >= edvTimeMax * 1000)
                   ? "="
                   : "";
           writer.write(
@@ -10173,16 +10188,19 @@ public abstract class EDDTable extends EDD {
                           + gqnt
                           + // vertical-align: 'b'ottom
                           "&amp;time%3E="
-                          + Calendar2.limitedFormatAsISODateTimeT(tTime_precision, idMinGc)
+                          + Calendar2.limitedFormatAsISODateTimeT(tTime_precision, idMinDt)
                           + "&amp;time%3C"
                           + equals
-                          + Calendar2.limitedFormatAsISODateTimeT(tTime_precision, idMaxGc)
+                          + Calendar2.limitedFormatAsISODateTimeT(tTime_precision, idMaxDt)
                           + timeRangeParam
                           + "\";'")
                   + "&nbsp;");
-          idMinGc.add(Calendar2.IDEAL_UNITS_FIELD.get(idealTimeUnits), -idealTimeN);
-          idMaxGc.add(Calendar2.IDEAL_UNITS_FIELD.get(idealTimeUnits), -idealTimeN);
-
+          idMinDt =
+              Calendar2.addGcFieldToZdt(
+                  idMinDt, Calendar2.IDEAL_UNITS_FIELD.get(idealTimeUnits), -idealTimeN);
+          idMaxDt =
+              Calendar2.addGcFieldToZdt(
+                  idMaxDt, Calendar2.IDEAL_UNITS_FIELD.get(idealTimeUnits), -idealTimeN);
         } else {
           writer.write("&nbsp;&nbsp;&nbsp;&nbsp;");
         }
@@ -10191,18 +10209,21 @@ public abstract class EDDTable extends EDD {
         // end time
         if (!Double.isNaN(edvTimeMax)) {
           // make idealized end time
-          GregorianCalendar tidMaxGc =
-              Calendar2.roundToIdealGC(edvTimeMax, idealTimeN, idealTimeUnits);
+          ZonedDateTime tidMaxDt = Calendar2.roundToIdealGC(edvTimeMax, idealTimeN, idealTimeUnits);
           // if it rounded to earlier time period, shift to later time period
-          if (Math2.divideNoRemainder(tidMaxGc.getTimeInMillis(), 1000) < edvTimeMax)
-            tidMaxGc.add(Calendar2.IDEAL_UNITS_FIELD.get(idealTimeUnits), idealTimeN);
-          GregorianCalendar tidMinGc = Calendar2.newGCalendarZulu(tidMaxGc.getTimeInMillis());
-          tidMinGc.add(Calendar2.IDEAL_UNITS_FIELD.get(idealTimeUnits), -idealTimeN);
+          if (tidMaxDt.toEpochSecond() < edvTimeMax) {
+            tidMaxDt =
+                Calendar2.addGcFieldToZdt(
+                    tidMaxDt, Calendar2.IDEAL_UNITS_FIELD.get(idealTimeUnits), idealTimeN);
+          }
+          ZonedDateTime tidMinDt =
+              Calendar2.addGcFieldToZdt(
+                  tidMaxDt, Calendar2.IDEAL_UNITS_FIELD.get(idealTimeUnits), -idealTimeN);
 
           // always show button if idealTime is different from current selection
           double idRange =
               Math2.divideNoRemainder(
-                  tidMaxGc.getTimeInMillis() - tidMinGc.getTimeInMillis(), 1000);
+                  tidMaxDt.toInstant().toEpochMilli() - tidMinDt.toInstant().toEpochMilli(), 1000);
           double ratio = (timeMax - timeMin) / idRange;
 
           if (timeMax < edvTimeMax || ratio < 0.99 || ratio > 1.01) {
@@ -10217,9 +10238,9 @@ public abstract class EDDTable extends EDD {
                         + gqnt
                         + // vertical-align: 'b'ottom
                         "&amp;time%3E="
-                        + Calendar2.limitedFormatAsISODateTimeT(tTime_precision, tidMinGc)
+                        + Calendar2.limitedFormatAsISODateTimeT(tTime_precision, tidMinDt)
                         + "&amp;time%3C="
-                        + Calendar2.limitedFormatAsISODateTimeT(tTime_precision, tidMaxGc)
+                        + Calendar2.limitedFormatAsISODateTimeT(tTime_precision, tidMaxDt)
                         + // yes, =
                         timeRangeParam
                         + "\";'")

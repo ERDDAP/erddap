@@ -451,7 +451,7 @@ public class ArchiveADataset {
           String fileName =
               axis0IsTimeStamp
                   ? Calendar2.formatAsCompactDateTime(
-                          Calendar2.epochSecondsToGc(axis0.destinationDouble(axis0i)))
+                          Calendar2.epochSecondsToZdt(axis0.destinationDouble(axis0i)))
                       + "Z"
                   : String2.encodeFileNameSafe(value);
           String2.log(

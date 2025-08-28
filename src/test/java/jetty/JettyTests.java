@@ -62,9 +62,10 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.file.Path;
 import java.time.Year;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -8865,11 +8866,11 @@ class JettyTests {
 
     // Tests of time related to "now" -- Many fail because this dataset has no
     // recent data.
-    GregorianCalendar gc;
+    ZonedDateTime dt;
     String s;
 
-    gc = Calendar2.newGCalendarZulu();
-    s = Calendar2.formatAsISODateTimeT(gc);
+    dt = ZonedDateTime.now(ZoneOffset.UTC);
+    s = Calendar2.formatAsISODateTimeT(dt);
     try {
       globecBottle.parseUserDapQuery(
           language, "time&time=now", rv, cv, co, cv2, false); // non-regex
@@ -8890,9 +8891,9 @@ class JettyTests {
           "results=\n" + results);
     }
 
-    gc = Calendar2.newGCalendarZulu();
-    gc.add(Calendar2.SECOND, -7);
-    s = Calendar2.formatAsISODateTimeT(gc);
+    dt = ZonedDateTime.now(ZoneOffset.UTC);
+    dt = dt.minusSeconds(7);
+    s = Calendar2.formatAsISODateTimeT(dt);
     try {
       globecBottle.parseUserDapQuery(
           language, "time&time=now-7seconds", rv, cv, co, cv2, false); // non-regex
@@ -8914,9 +8915,9 @@ class JettyTests {
           "results=\n" + results);
     }
 
-    gc = Calendar2.newGCalendarZulu();
-    gc.add(Calendar2.MINUTE, -5);
-    s = Calendar2.formatAsISODateTimeT(gc);
+    dt = ZonedDateTime.now(ZoneOffset.UTC);
+    dt = dt.minusMinutes(5);
+    s = Calendar2.formatAsISODateTimeT(dt);
     try {
       globecBottle.parseUserDapQuery(
           language, "time&time=now-5minutes", rv, cv, co, cv2, false); // non-regex
@@ -8938,9 +8939,9 @@ class JettyTests {
           "results=\n" + results);
     }
 
-    gc = Calendar2.newGCalendarZulu();
-    gc.add(Calendar2.HOUR_OF_DAY, -4);
-    s = Calendar2.formatAsISODateTimeT(gc);
+    dt = ZonedDateTime.now(ZoneOffset.UTC);
+    dt = dt.minusHours(4);
+    s = Calendar2.formatAsISODateTimeT(dt);
     try {
       globecBottle.parseUserDapQuery(
           language, "time&time=now-4hours", rv, cv, co, cv2, false); // non-regex
@@ -8962,9 +8963,9 @@ class JettyTests {
           "results=\n" + results);
     }
 
-    gc = Calendar2.newGCalendarZulu();
-    gc.add(Calendar2.DATE, -2);
-    s = Calendar2.formatAsISODateTimeT(gc);
+    dt = ZonedDateTime.now(ZoneOffset.UTC);
+    dt = dt.minusDays(2);
+    s = Calendar2.formatAsISODateTimeT(dt);
     try {
       globecBottle.parseUserDapQuery(
           language, "time&time=now-2days", rv, cv, co, cv2, false); // non-regex
@@ -8986,9 +8987,9 @@ class JettyTests {
           "results=\n" + results);
     }
 
-    gc = Calendar2.newGCalendarZulu();
-    gc.add(Calendar2.MONTH, -3);
-    s = Calendar2.formatAsISODateTimeT(gc);
+    dt = ZonedDateTime.now(ZoneOffset.UTC);
+    dt = dt.minusMonths(3);
+    s = Calendar2.formatAsISODateTimeT(dt);
     try {
       globecBottle.parseUserDapQuery(
           language, "time&time=now-3months", rv, cv, co, cv2, false); // non-regex
@@ -9010,9 +9011,9 @@ class JettyTests {
           "results=\n" + results);
     }
 
-    gc = Calendar2.newGCalendarZulu();
-    gc.add(Calendar2.YEAR, -2);
-    s = Calendar2.formatAsISODateTimeT(gc);
+    dt = ZonedDateTime.now(ZoneOffset.UTC);
+    dt = dt.minusYears(2);
+    s = Calendar2.formatAsISODateTimeT(dt);
     try {
       globecBottle.parseUserDapQuery(
           language, "time&time=now-2years", rv, cv, co, cv2, false); // non-regex
@@ -12898,6 +12899,7 @@ class JettyTests {
                       + "      :grads_step = \"1mo\";\n"
                   : "")
               + "      :ioos_category = \"Time\";\n"
+              + "      :legacy_time_adjust = \"true\";\n"
               + "      :long_name = \"Centered Time\";\n"
               + (EDStatic.config.useSaxParser
                   ? "      :maximum = \"00z15dec2010\";\n"
