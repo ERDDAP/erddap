@@ -23,6 +23,7 @@ import gov.noaa.pfel.erddap.variable.EDV;
 import jakarta.servlet.http.HttpServletRequest;
 import java.io.BufferedWriter;
 import java.io.IOException;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 /**
@@ -68,7 +69,7 @@ public class TableWriterHtmlTable extends TableWriter {
   // set firstTime
   protected volatile boolean isCharOrString[];
   protected volatile boolean isTimeStamp[];
-  protected volatile String time_precision[];
+  protected volatile DateTimeFormatter[] time_precision;
   protected volatile String fileAccessBaseUrl[];
   protected volatile String fileAccessSuffix[];
   protected volatile BufferedWriter writer;
@@ -190,7 +191,7 @@ public class TableWriterHtmlTable extends TableWriter {
     // do firstTime stuff
     if (firstTime) {
       isTimeStamp = new boolean[nColumns];
-      time_precision = new String[nColumns];
+      time_precision = new DateTimeFormatter[nColumns];
       fileAccessBaseUrl = new String[nColumns];
       fileAccessSuffix = new String[nColumns];
       int bytesPerRow =
@@ -210,7 +211,7 @@ public class TableWriterHtmlTable extends TableWriter {
           String tp = catts.getString(EDV.TIME_PRECISION);
           if (xhtmlMode && tp != null && !tp.startsWith("1970-01-01T00:00:00.0"))
             tp = null; // default
-          time_precision[col] = tp;
+          time_precision[col] = Calendar2.timePrecisionToDateTimeFormatter(tp);
         }
 
         if (isTimeStamp[col]) {

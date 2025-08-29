@@ -60,6 +60,7 @@ import java.text.MessageFormat;
 import java.time.Instant;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
@@ -732,7 +733,9 @@ public abstract class EDDTable extends EDD {
       LocalizedAttributes catts = dataVariables[timeIndex].combinedAttributes();
       PrimitiveArray pa = catts.get(language, "actual_range");
       if (pa != null) {
-        String tp = catts.getString(language, EDV.TIME_PRECISION);
+        DateTimeFormatter tp =
+            Calendar2.timePrecisionToDateTimeFormatter(
+                catts.getString(language, EDV.TIME_PRECISION));
         // "" unsets the attribute if min or max isNaN
         combinedGlobalAttributes.set(
             language,
@@ -4945,7 +4948,8 @@ public abstract class EDDTable extends EDD {
       boolean isTimeStamp = edv instanceof EDVTimeStamp;
       boolean isChar = edv.destinationDataPAType() == PAType.CHAR;
       boolean isString = edv.destinationDataPAType() == PAType.STRING;
-      String tTime_precision = isTimeStamp ? ((EDVTimeStamp) edv).time_precision() : null;
+      DateTimeFormatter tTime_precision =
+          isTimeStamp ? ((EDVTimeStamp) edv).time_precision() : null;
 
       writer.write("<tr>\n");
 
@@ -9956,7 +9960,7 @@ public abstract class EDDTable extends EDD {
         EDVTimeStamp edvTime = (EDVTimeStamp) dataVariables[timeIndex];
         double edvTimeMin = edvTime.destinationMinDouble(); // may be NaN
         double edvTimeMax = edvTime.destinationMaxDouble(); // may be NaN
-        String tTime_precision = edvTime.time_precision();
+        DateTimeFormatter tTime_precision = edvTime.time_precision();
         if (!Double.isNaN(edvTimeMin) && Double.isNaN(edvTimeMax))
           edvTimeMax = Calendar2.backNDays(-1, edvTimeMax);
 
@@ -10549,7 +10553,8 @@ public abstract class EDDTable extends EDD {
 
       EDV edv = findDataVariableByDestinationName(subsetVariables[p]);
       EDVTimeStamp edvTimeStamp = edv instanceof EDVTimeStamp t ? t : null;
-      String tTime_precision = edvTimeStamp == null ? null : edvTimeStamp.time_precision();
+      DateTimeFormatter tTime_precision =
+          edvTimeStamp == null ? null : edvTimeStamp.time_precision();
       PrimitiveArray pa = subsetTable.findColumn(subsetVariables[p]);
       if (edvTimeStamp == null && !(pa instanceof StringArray) && tParam.equals("NaN"))
         tParam = ""; // e.g., doubleArray.getString() for NaN returns ""
@@ -10578,7 +10583,8 @@ public abstract class EDDTable extends EDD {
 
       EDV edv = findDataVariableByDestinationName(subsetVariables[lastP]);
       EDVTimeStamp edvTimeStamp = edv instanceof EDVTimeStamp ts ? ts : null;
-      String tTime_precision = edvTimeStamp == null ? null : edvTimeStamp.time_precision();
+      DateTimeFormatter tTime_precision =
+          edvTimeStamp == null ? null : edvTimeStamp.time_precision();
 
       PrimitiveArray pa = subsetTable.findColumn(subsetVariables[lastP]);
       if (edvTimeStamp == null && !(pa instanceof StringArray) && tParam.equals("NaN"))
@@ -10866,7 +10872,8 @@ public abstract class EDDTable extends EDD {
         String pName = subsetVariables[p];
         EDV edv = findDataVariableByDestinationName(pName);
         EDVTimeStamp edvTimeStamp = edv instanceof EDVTimeStamp ts ? ts : null;
-        String tTime_precision = edvTimeStamp == null ? null : edvTimeStamp.time_precision();
+        DateTimeFormatter tTime_precision =
+            edvTimeStamp == null ? null : edvTimeStamp.time_precision();
 
         // work on a copy
         PrimitiveArray pa =
@@ -12483,7 +12490,7 @@ public abstract class EDDTable extends EDD {
       } else if (edv instanceof EDVTimeStamp tts) {
 
         // convert epochSeconds to iso Strings
-        String tTime_precision = tts.time_precision();
+        DateTimeFormatter tTime_precision = tts.time_precision();
         int n = pa.size();
         distinctOptions[sv] = new String[n + 1];
         distinctOptions[sv][0] = "";

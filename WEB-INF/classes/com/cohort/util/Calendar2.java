@@ -3027,15 +3027,20 @@ public class Calendar2 {
    */
   public static String epochSecondsToLimitedIsoStringT(
       String time_precision, double seconds, String NaNString) {
-
-    // TODO optimization- pass the DateTimeFormatter into this function. It is common to
-    // reuse a format within a loop.
     DateTimeFormatter format = timePrecisionToDateTimeFormatter(time_precision);
     if (format == null) {
       format = FORMAT_SECONDZ;
     }
+    return epochSecondsToLimitedIsoStringT(format, seconds, NaNString);
+  }
+
+  public static String epochSecondsToLimitedIsoStringT(
+      DateTimeFormatter format, double seconds, String NaNString) {
     long millis = Math2.roundToLong(seconds * 1000);
     if (millis == Long.MAX_VALUE) return NaNString;
+    if (format == null) {
+      format = FORMAT_SECONDZ;
+    }
     try {
       Instant instant = Instant.ofEpochMilli(millis);
       return ZonedDateTime.ofInstant(instant, ZoneOffset.UTC).format(format);
@@ -3238,18 +3243,8 @@ public class Calendar2 {
     return FORMAT_SECONDZ;
   }
 
-  /**
-   * This is like formatAsISODateTime, but returns a limited precision string.
-   *
-   * @param time_precision can be "1970", "1970-01", "1970-01-01", "1970-01-01T00Z",
-   *     "1970-01-01T00:00Z", "1970-01-01T00:00:00Z" (used if time_precision is null or not
-   *     matched), "1970-01-01T00:00:00.0Z", "1970-01-01T00:00:00.00Z", "1970-01-01T00:00:00.000Z".
-   *     Versions without 'Z' are allowed here, but ERDDAP requires hours or finer to have 'Z'.
-   */
-  public static String limitedFormatAsISODateTimeT(String time_precision, ZonedDateTime dt) {
-    // TODO optimization- pass the DateTimeFormatter into this function. It is common to
-    // reuse a format within a loop.
-    DateTimeFormatter format = timePrecisionToDateTimeFormatter(time_precision);
+  /** This is like formatAsISODateTime, but returns a limited precision string. */
+  public static String limitedFormatAsISODateTimeT(DateTimeFormatter format, ZonedDateTime dt) {
     if (format == null) {
       format = FORMAT_SECONDZ;
     }

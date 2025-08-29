@@ -58,6 +58,7 @@ import java.io.OutputStream;
 import java.io.Writer;
 import java.text.MessageFormat;
 import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -836,7 +837,9 @@ public abstract class EDDGrid extends EDD {
       if (pa != null) { // it should be; but it can be low,high or high,low, so
         double ttMin = Math.min(pa.getDouble(0), pa.getDouble(1));
         double ttMax = Math.max(pa.getDouble(0), pa.getDouble(1));
-        String tp = axisVariables[av].combinedAttributes().getString(language, EDV.TIME_PRECISION);
+        DateTimeFormatter tp =
+            Calendar2.timePrecisionToDateTimeFormatter(
+                axisVariables[av].combinedAttributes().getString(language, EDV.TIME_PRECISION));
         // "" unsets the attribute if dMin or dMax isNaN
         combinedGlobalAttributes.set(
             language,
@@ -3207,7 +3210,7 @@ public abstract class EDDGrid extends EDD {
           latRange = Double.NaN,
           lonRange = Double.NaN,
           timeRange = Double.NaN;
-      String time_precision = null;
+      DateTimeFormatter time_precision = null;
       int lonAscending = 0, latAscending = 0, timeAscending = 0;
       for (int av = 0; av < nAv; av++) {
         EDVGridAxis edvga = axisVariables[av];
@@ -3304,7 +3307,9 @@ public abstract class EDDGrid extends EDD {
           timeStop = dStop;
           timeCenter = (dStart + dStop) / 2;
           timeRange = dStop - dStart;
-          time_precision = edvga.combinedAttributes().getString(language, EDV.TIME_PRECISION);
+          time_precision =
+              Calendar2.timePrecisionToDateTimeFormatter(
+                  edvga.combinedAttributes().getString(language, EDV.TIME_PRECISION));
         }
       }
 

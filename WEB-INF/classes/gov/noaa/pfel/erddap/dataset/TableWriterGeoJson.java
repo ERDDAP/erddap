@@ -18,6 +18,7 @@ import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.EDV;
 import java.io.BufferedWriter;
 import java.io.IOException;
+import java.time.format.DateTimeFormatter;
 
 /**
  * TableWriterGeoJson provides a way to write a longitude,latitude,otherColumns table to a GeoJSON
@@ -40,7 +41,7 @@ public class TableWriterGeoJson extends TableWriter {
   protected boolean isChar[];
   protected boolean isString[];
   protected boolean isTimeStamp[];
-  protected String time_precision[];
+  protected DateTimeFormatter[] time_precision;
   protected BufferedWriter writer;
   protected double minLon = Double.MAX_VALUE, maxLon = -Double.MAX_VALUE;
   protected double minLat = Double.MAX_VALUE, maxLat = -Double.MAX_VALUE;
@@ -120,7 +121,7 @@ public class TableWriterGeoJson extends TableWriter {
                     + "Requests for GeoJSON data must include the longitude and latitude variables."));
       // it is unclear to me if specification supports altitude in coordinates info...
       isTimeStamp = new boolean[nColumns];
-      time_precision = new String[nColumns];
+      time_precision = new DateTimeFormatter[nColumns];
       for (int col = 0; col < nColumns; col++) {
         Attributes catts = table.columnAttributes(col);
         String u = catts.getString("units");
@@ -129,7 +130,7 @@ public class TableWriterGeoJson extends TableWriter {
           // just keep time_precision if it includes fractional seconds
           String tp = catts.getString(EDV.TIME_PRECISION);
           if (tp != null && !tp.startsWith("1970-01-01T00:00:00.0")) tp = null; // default
-          time_precision[col] = tp;
+          time_precision[col] = Calendar2.timePrecisionToDateTimeFormatter(tp);
         }
       }
 

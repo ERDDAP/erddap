@@ -50,7 +50,7 @@ public class EDVTimeStamp extends EDV {
   protected String dateTimeFormat; // only used if !sourceTimeIsNumeric
   protected DateTimeFormatter
       dateTimeFormatter; // for generating source time if !sourceTimeIsNumeric
-  protected String time_precision; // see Calendar2.epochSecondsToLimitedIsoStringT
+  protected DateTimeFormatter precisionFormat;
   protected String time_zone; // if not specified, will be Zulu
   protected ZoneId timeZone = null; // for Java   null=Zulu
 
@@ -108,13 +108,14 @@ public class EDVTimeStamp extends EDV {
     // value for example). Just use the default language.
     int language = EDMessages.DEFAULT_LANGUAGE;
     // time_precision e.g., 1970-01-01T00:00:00Z
-    time_precision = combinedAttributes.getString(language, EDV.TIME_PRECISION);
+    String time_precision = combinedAttributes.getString(language, EDV.TIME_PRECISION);
     if (time_precision != null) {
       // ensure not just year (can't distinguish user input a year vs. epochSeconds)
       if (time_precision.equals("1970")) time_precision = null;
       // ensure Z at end of time
       if (time_precision.length() >= 13 && !time_precision.endsWith("Z")) time_precision = null;
     }
+    precisionFormat = Calendar2.timePrecisionToDateTimeFormatter(time_precision);
 
     String errorInMethod = "datasets.xml/EDVTimeStamp error for sourceName=" + tSourceName + ":\n";
 
@@ -372,7 +373,7 @@ public class EDVTimeStamp extends EDV {
    * @return destination String
    */
   public String destinationToString(double destD) {
-    return Calendar2.epochSecondsToLimitedIsoStringT(time_precision, destD, "");
+    return Calendar2.epochSecondsToLimitedIsoStringT(precisionFormat, destD, "");
   }
 
   /**
@@ -407,8 +408,8 @@ public class EDVTimeStamp extends EDV {
    * An indication of the precision of the time values, e.g., "1970-01-01T00:00:00Z" (default) or
    * null (goes to default). See Calendar2.epochSecondsToLimitedIsoStringT()
    */
-  public String time_precision() {
-    return time_precision;
+  public DateTimeFormatter time_precision() {
+    return precisionFormat;
   }
 
   /**
@@ -643,13 +644,13 @@ public class EDVTimeStamp extends EDV {
       StringBuilder sb =
           new StringBuilder(
               toSliderString( // first value
-                  Calendar2.epochSecondsToLimitedIsoStringT(time_precision, tMin, ""), isTime));
+                  Calendar2.epochSecondsToLimitedIsoStringT(precisionFormat, tMin, ""), isTime));
       int nValues = values.length;
       for (int i = 1; i < nValues; i++) {
         sb.append(", ");
         sb.append(
             toSliderString(
-                Calendar2.epochSecondsToLimitedIsoStringT(time_precision, values[i], ""), isTime));
+                Calendar2.epochSecondsToLimitedIsoStringT(precisionFormat, values[i], ""), isTime));
       }
 
       // store in compact utf8 format

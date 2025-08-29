@@ -3295,7 +3295,10 @@ public class TestUtil {
     Test.ensureEqual(
         Calendar2.epochSecondsToLimitedIsoStringT("1970-01-01T00:00Z", Double.NaN, "zz"), "zz", "");
     Test.ensureEqual(
-        Calendar2.epochSecondsToLimitedIsoStringT(null, d, "zz"), "2020-05-22T01:02:03Z", "");
+        Calendar2.epochSecondsToLimitedIsoStringT(
+            Calendar2.timePrecisionToDateTimeFormatter(null), d, "zz"),
+        "2020-05-22T01:02:03Z",
+        "");
 
     // convertToJavaDateTimeFormat(String s) -> yyyy-MM-dd'T'HH:mm:ssZ
     // y-m-d --> push to Calendar2.parseISODateTime
@@ -7322,7 +7325,10 @@ public class TestUtil {
     String2.log(s + " = " + d);
     Test.ensureEqual(Calendar2.epochSecondsToLimitedIsoStringT("1970", Double.NaN, "."), ".", "");
     Test.ensureEqual(
-        Calendar2.epochSecondsToLimitedIsoStringT(null, d, "."), "2005-08-31T16:01:02Z", "");
+        Calendar2.epochSecondsToLimitedIsoStringT(
+            Calendar2.timePrecisionToDateTimeFormatter(null), d, "."),
+        "2005-08-31T16:01:02Z",
+        "");
     Test.ensureEqual(Calendar2.epochSecondsToLimitedIsoStringT("1970", d, "."), "2005", "");
     Test.ensureEqual(Calendar2.epochSecondsToLimitedIsoStringT("1970-01", d, "."), "2005-08", "");
     Test.ensureEqual(
@@ -7378,7 +7384,10 @@ public class TestUtil {
     String2.log(s + " = " + d);
     Test.ensureEqual(Calendar2.epochSecondsToLimitedIsoStringT("1970", Double.NaN, "."), ".", "");
     Test.ensureEqual(
-        Calendar2.epochSecondsToLimitedIsoStringT(null, d, "."), "-0005-08-31T16:01:02Z", "");
+        Calendar2.epochSecondsToLimitedIsoStringT(
+            Calendar2.timePrecisionToDateTimeFormatter(null), d, "."),
+        "-0005-08-31T16:01:02Z",
+        "");
     Test.ensureEqual(Calendar2.epochSecondsToLimitedIsoStringT("1970", d, "."), "-0005", "");
     Test.ensureEqual(Calendar2.epochSecondsToLimitedIsoStringT("1970-01", d, "."), "-0005-08", "");
     Test.ensureEqual(
