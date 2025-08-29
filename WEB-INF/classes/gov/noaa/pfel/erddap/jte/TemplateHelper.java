@@ -5,6 +5,7 @@ import com.cohort.util.String2;
 import gov.noaa.pfel.coastwatch.util.HtmlWidgets;
 import gov.noaa.pfel.erddap.util.EDMessages.Message;
 import gov.noaa.pfel.erddap.util.EDStatic;
+import jakarta.servlet.http.HttpServletRequest;
 import java.text.MessageFormat;
 
 public class TemplateHelper {
@@ -42,5 +43,9 @@ public class TemplateHelper {
                           "")));
     }
     return s;
+  }
+
+  public static String getLoginHtml(HttpServletRequest request, int language, String loggedInAs) {
+    return EDStatic.getLoginHtml(request, language, loggedInAs);
   }
 }

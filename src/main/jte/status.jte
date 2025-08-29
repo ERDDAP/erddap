@@ -1,15 +1,20 @@
 @import gov.noaa.pfel.erddap.jte.Status
 @import gov.noaa.pfel.erddap.jte.YouAreHere
+@import jakarta.servlet.http.HttpServletRequest;
 @param Status status
 @param String tErddapUrl
 @param int language
 @param YouAreHere youAreHere
+@param String loggedInAs
 @param String endOfRequest
+@param HttpServletRequest request
 @template.layout.main(
     tErddapUrl=tErddapUrl,
     language=language,
     youAreHere=youAreHere,
     endOfRequest=endOfRequest,
+    loggedInAs=loggedInAs,
+    request=request,
     content=@`
 <pre>
 Current time is ${Status.getCurrentTimeLocal()}

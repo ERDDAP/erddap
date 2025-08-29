@@ -3,15 +3,20 @@
 @import gov.noaa.pfel.erddap.jte.TemplateHelper
 @import gov.noaa.pfel.erddap.util.EDMessages.Message
 @import gov.noaa.pfel.erddap.util.Subscriptions
+@import jakarta.servlet.http.HttpServletRequest;
 @param YouAreHere youAreHere
 @param int language
 @param String tErddapUrl
+@param String loggedInAs
 @param String endOfRequest
+@param HttpServletRequest request
 @template.layout.main(
     tErddapUrl=tErddapUrl,
     language=language,
     youAreHere=youAreHere,
     endOfRequest=endOfRequest,
+    loggedInAs=loggedInAs,
+    request=request,
     content=@`
 <div class ="standard_width">
     ${TemplateHelper.getMessage(Message.SUBSCRIPTION_0_HTML,language)}
