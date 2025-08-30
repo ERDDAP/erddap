@@ -9,7 +9,8 @@
         <!-- Table Headings -->
         <tr>
             @for(int col = 0; col < tableOptions.getNColumns(); col++)
-                <th>${tableOptions.getColumnHeader(col)}</th>
+                <%-- use unsafe here because certain tables like Erddap.makeHtmlDatasetTable include html in headers --%>
+                <th>$unsafe{tableOptions.getColumnHeader(col)}</th>
             @endfor
         </tr>
         <!-- Units Row (if applicable) -->
