@@ -6705,7 +6705,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
 
     String tErddapUrl = EDStatic.erddapUrl(request, loggedInAs, language);
     String requestUrl = request.getRequestURI(); // post EDStatic.config.baseUrl, pre "?"
-    String fullRequestUrl = EDStatic.baseUrl(loggedInAs) + requestUrl;
+    String fullRequestUrl = EDStatic.baseUrl(request, loggedInAs) + requestUrl;
     String roles[] = EDStatic.getRoles(loggedInAs);
     // String2.log(">>fullRequestUrl=" + fullRequestUrl);
 
@@ -7294,7 +7294,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     if (!Arrays.equals(EDStatic.getRawRequestedPIpp(request), EDStatic.getRequestedPIpp(request))) {
       sendRedirect(
           response,
-          EDStatic.baseUrl(loggedInAs)
+          EDStatic.baseUrl(request, loggedInAs)
               + requestUrl
               + "?"
               + EDStatic.passThroughJsonpQuery(language, request)
@@ -7549,7 +7549,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                 page,
                 lastPage,
                 false, // =alphabetical
-                EDStatic.baseUrl(loggedInAs)
+                EDStatic.baseUrl(request, loggedInAs)
                     + requestUrl
                     + EDStatic.questionQuery(request.getQueryString()));
 
@@ -14879,7 +14879,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
           EDStatic.getRawRequestedPIpp(request), EDStatic.getRequestedPIpp(request))) {
         sendRedirect(
             response,
-            EDStatic.baseUrl(loggedInAs)
+            EDStatic.baseUrl(request, loggedInAs)
                 + request.getRequestURI()
                 + "?"
                 + EDStatic.passThroughJsonpQuery(language, request)
@@ -15001,7 +15001,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                     page,
                     lastPage,
                     true, // =most relevant first
-                    EDStatic.baseUrl(loggedInAs)
+                    EDStatic.baseUrl(request, loggedInAs)
                         + requestUrl
                         + EDStatic.questionQuery(request.getQueryString()));
 
@@ -15830,7 +15830,8 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                 + (queryString.length() == 0 ? "" : "&" + queryString);
       queryString = "page=1&" + queryString;
       sendRedirect(
-          response, EDStatic.baseUrl(loggedInAs) + request.getRequestURI() + "?" + queryString);
+          response,
+          EDStatic.baseUrl(request, loggedInAs) + request.getRequestURI() + "?" + queryString);
       return;
     }
     int pipp[] = EDStatic.getRequestedPIpp(request);
@@ -16595,7 +16596,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                     page,
                     lastPage,
                     searchFor.length() > 0 && !searchFor.equals("all"), // true=most relevant first
-                    EDStatic.baseUrl(loggedInAs)
+                    EDStatic.baseUrl(request, loggedInAs)
                         + requestUrl
                         + EDStatic.questionQuery(request.getQueryString()));
 
@@ -17119,7 +17120,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     if (!Arrays.equals(EDStatic.getRawRequestedPIpp(request), EDStatic.getRequestedPIpp(request))) {
       sendRedirect(
           response,
-          EDStatic.baseUrl(loggedInAs)
+          EDStatic.baseUrl(request, loggedInAs)
               + requestUrl
               + "?"
               + EDStatic.passThroughJsonpQuery(language, request)
@@ -17527,7 +17528,9 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                 page,
                 lastPage,
                 false, // =alphabetical
-                EDStatic.baseUrl(loggedInAs) + requestUrl + EDStatic.questionQuery(queryString));
+                EDStatic.baseUrl(request, loggedInAs)
+                    + requestUrl
+                    + EDStatic.questionQuery(queryString));
 
         // display datasets
         writer.write(
@@ -17664,7 +17667,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
           EDStatic.getRawRequestedPIpp(request), EDStatic.getRequestedPIpp(request))) {
         sendRedirect(
             response,
-            EDStatic.baseUrl(loggedInAs)
+            EDStatic.baseUrl(request, loggedInAs)
                 + request.getRequestURI()
                 + "?"
                 + EDStatic.passThroughJsonpQuery(language, request)
@@ -17747,7 +17750,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                           page,
                           lastPage,
                           false, // =alphabetical
-                          EDStatic.baseUrl(loggedInAs)
+                          EDStatic.baseUrl(request, loggedInAs)
                               + requestUrl
                               + EDStatic.questionQuery(request.getQueryString()))
                       + "<br>&nbsp;\n";
