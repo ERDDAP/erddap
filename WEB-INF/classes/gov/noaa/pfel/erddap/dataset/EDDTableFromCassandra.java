@@ -237,6 +237,7 @@ import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.*;
 import java.io.BufferedReader;
 import java.io.StringReader;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.Date;
@@ -283,7 +284,7 @@ public class EDDTableFromCassandra extends EDDTable {
   protected final int nPartitionKeys;
   protected final String[] partitionKeyNames; // source names
   protected final String[] partitionKeyFrom; // null or name of timestamp var it is derived from
-  protected final String[] partitionKeyPrecision; // null or precision of timestamp var
+  protected final DateTimeFormatter[] partitionKeyPrecision; // null or precision of timestamp var
   protected final String[]
       partitionKeyFixedValue; // null, or the fixed value (plain number or string in quotes)
   protected EDV partitionKeyEDV[]; // edv of each partitionKey
@@ -521,7 +522,7 @@ public class EDDTableFromCassandra extends EDDTable {
     partitionKeyNames = String2.split(tPartitionKeySourceNames, ','); // they are trimmed
     nPartitionKeys = partitionKeyNames.length;
     partitionKeyFrom = new String[nPartitionKeys]; // all nulls
-    partitionKeyPrecision = new String[nPartitionKeys]; // all nulls
+    partitionKeyPrecision = new DateTimeFormatter[nPartitionKeys]; // all nulls
     partitionKeyFixedValue = new String[nPartitionKeys]; // all nulls
     for (int i = 0; i < nPartitionKeys; i++) {
       // timestamp derived from another timestamp?  date/sampletime/1970-01-01Z
@@ -538,7 +539,7 @@ public class EDDTableFromCassandra extends EDDTable {
       } else if (sar.length == 3) {
         partitionKeyNames[i] = String2.canonical(sar[0]);
         partitionKeyFrom[i] = String2.canonical(sar[1]);
-        partitionKeyPrecision[i] = String2.canonical(sar[2]);
+        partitionKeyPrecision[i] = Calendar2.timePrecisionToDateTimeFormatter(sar[2]);
       } else {
         throw new RuntimeException(
             String2.ERROR

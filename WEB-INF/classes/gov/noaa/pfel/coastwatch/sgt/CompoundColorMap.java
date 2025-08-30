@@ -19,7 +19,8 @@ import gov.noaa.pmel.util.Range2D;
 import java.awt.Color;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
-import java.util.GregorianCalendar;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -242,6 +243,8 @@ public class CompoundColorMap extends ColorMap {
     ccm.finishUpConstruction();
   }
 
+  private DateTimeFormatter FORMAT_MONTH_NAME = DateTimeFormatter.ofPattern("MMM");
+
   /**
    * This makes a ccm for a date range. See the makeCpt parameters.
    *
@@ -377,11 +380,11 @@ public class CompoundColorMap extends ColorMap {
       String2.log("  durationNSec=" + durationNSec + " dnDurations=" + dnDurations + " nth=" + nth);
 
     // generate starting gc
-    GregorianCalendar gc = Calendar2.epochSecondsToGc(minSeconds);
-    Calendar2.clearSmallerFields(gc, duration);
-    int ti = gc.get(duration); // current Date if duration is date
+    ZonedDateTime dt = Calendar2.epochSecondsToZdt(minSeconds);
+    dt = Calendar2.clearSmallerFields(dt, duration);
+    int ti = Calendar2.getGcFieldFromZdt(dt, duration); // current Date if duration is date
     ti = ((ti - nthBase) / nth) * nth + nthBase; // integer division truncates
-    gc.set(duration, ti);
+    dt = Calendar2.setGcFieldOnZdt(dt, duration, ti);
 
     // generate the range and labels for the palette
     DoubleArray tRangeLow = new DoubleArray();
@@ -391,45 +394,44 @@ public class CompoundColorMap extends ColorMap {
         duration
             != Calendar2.YEAR; // YEAR never has major label; all other start with triggered=true
     int nPieces = 0;
-    String dt;
+    String sdt;
     // String2.log("gc=" + Calendar2.gcToEpochSeconds(gc) + " maxSeconds=" + maxSeconds);
-    while (Calendar2.gcToEpochSeconds(gc) < maxSeconds) {
-      dt = Calendar2.formatAsISODateTimeT(gc); // 2011-12-15 Bob Simons changed Space to T.
+    while (Calendar2.zdtToEpochSeconds(dt) < maxSeconds) {
+      sdt = Calendar2.formatAsISODateTimeT(dt); // 2011-12-15 Bob Simons changed Space to T.
       String tLabel =
           duration == Calendar2.MONTH
-              ? Calendar2.getMonthName3(gc.get(Calendar2.MONTH) + 1)
-              : // since java is 0..
-              dt.substring(minorDisplayBegin, minorDisplayEnd);
-      if (triggered) tLabel += "<br>" + dt.substring(majorDisplayBegin, majorDisplayEnd);
+              ? FORMAT_MONTH_NAME.format(dt)
+              : sdt.substring(minorDisplayBegin, minorDisplayEnd);
+      if (triggered) tLabel += "<br>" + sdt.substring(majorDisplayBegin, majorDisplayEnd);
       // String2.log("  piece=" + String2.right(""+nPieces,2) + " dt=" + dt + " tLabel=" + tLabel);
 
       tLeftLabel.add(tLabel);
-      tRangeLow.add(Calendar2.gcToEpochSeconds(gc) * (dataIsMillis ? 1000 : 1));
+      tRangeLow.add(Calendar2.zdtToEpochSeconds(dt) * (dataIsMillis ? 1000 : 1));
 
       // step forward nth durations
-      int oTriggerValue = gc.get(majorTrigger);
-      gc.add(duration, nth);
-      int triggerValue = gc.get(majorTrigger);
+      int oTriggerValue = Calendar2.getGcFieldFromZdt(dt, majorTrigger);
+      dt = Calendar2.addGcFieldToZdt(dt, duration, nth);
+      int triggerValue = Calendar2.getGcFieldFromZdt(dt, majorTrigger);
       triggered = oTriggerValue != triggerValue;
       // special trigger test for duration=DATE since months have diff # days
       // and, e.g., if nth is 10, you want 31st to trigger to next month
       if (!triggered && duration == Calendar2.DATE) {
-        GregorianCalendar tgc = (GregorianCalendar) gc.clone();
-        tgc.add(majorTrigger, 1); // next month
-        Calendar2.clearSmallerFields(tgc, majorTrigger); // beginning of next month
+        // next month
+        ZonedDateTime tdt = Calendar2.addGcFieldToZdt(dt, majorTrigger, 1);
+        tdt = Calendar2.clearSmallerFields(tdt, majorTrigger); // beginning of next month
         // is time to next trigger relatively small?  then triggered=true
-        if (Calendar2.gcToEpochSeconds(tgc) - Calendar2.gcToEpochSeconds(gc)
+        if (Calendar2.zdtToEpochSeconds(tdt) - Calendar2.zdtToEpochSeconds(dt)
             <= Math2.divideNoRemainder(nth * Calendar2.SECONDS_PER_DAY, 2)) {
           triggered = true;
-          gc.add(majorTrigger, 1); // clearSmallerFields done below
+          dt = Calendar2.addGcFieldToZdt(dt, majorTrigger, 1);
         }
       }
       if (triggered) {
         // duration=YEAR has intentionally goofy majorTrigger, so never triggered
         // clear smaller fields is important for duration=DATE; irrelevant for others
-        Calendar2.clearSmallerFields(gc, majorTrigger); // sets day=1
+        dt = Calendar2.clearSmallerFields(dt, majorTrigger); // sets day=1
       }
-      tRangeHigh.add(Calendar2.gcToEpochSeconds(gc) * (dataIsMillis ? 1000 : 1));
+      tRangeHigh.add(Calendar2.zdtToEpochSeconds(dt) * (dataIsMillis ? 1000 : 1));
       nPieces++;
 
       // safety valve
@@ -438,20 +440,20 @@ public class CompoundColorMap extends ColorMap {
         break;
       }
     }
-    dt = Calendar2.formatAsISODateTimeT(gc); // 2011-12-15 Bob Simons changed Space to T.
+    sdt = Calendar2.formatAsISODateTimeT(dt); // 2011-12-15 Bob Simons changed Space to T.
     String tLastLabel =
         duration == Calendar2.MONTH
-            ? Calendar2.getMonthName3(gc.get(Calendar2.MONTH) + 1)
+            ? FORMAT_MONTH_NAME.format(dt)
             : // since java is 0..
-            dt.substring(minorDisplayBegin, minorDisplayEnd);
-    if (triggered) tLastLabel += "<br>" + dt.substring(majorDisplayBegin, majorDisplayEnd);
+            sdt.substring(minorDisplayBegin, minorDisplayEnd);
+    if (triggered) tLastLabel += "<br>" + sdt.substring(majorDisplayBegin, majorDisplayEnd);
     if (reallyVerbose) String2.log("  lastPieceDt=" + dt + " tLastLabel=" + tLastLabel);
 
     Test.ensureTrue(
-        Calendar2.gcToEpochSeconds(gc) >= maxSeconds,
+        Calendar2.zdtToEpochSeconds(dt) >= maxSeconds,
         errorInMethod
             + "final gc="
-            + Calendar2.formatAsISODateTimeT(gc)
+            + Calendar2.formatAsISODateTimeT(dt)
             + " is less than maxSeconds="
             + Calendar2.epochSecondsToIsoStringTZ(maxSeconds)
             + ".");

@@ -50,13 +50,13 @@ import jakarta.servlet.http.HttpServletRequest;
 import java.io.FileNotFoundException;
 import java.nio.file.Path;
 import java.text.MessageFormat;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.TimeZone;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
@@ -123,7 +123,7 @@ public abstract class EDDGridFromFiles extends EDDGrid implements WatchUpdateHan
   protected String axis0GlobalAttName = null; // used if AXIS0_GLOBAL
   protected String axis0TimeFormat = null; // used if sourceValue is a time
   protected String axis0TimeZoneString = null;
-  protected TimeZone axis0TimeZone = null;
+  protected ZoneId axis0TimeZone = null;
   protected DateTimeFormatter axis0DateTimeFormatter = null; // java.time (was Joda)
   protected PAType axis0PAType = PAType.DOUBLE; // the default
   protected String axis0Regex = "(.*)"; // the default
@@ -624,7 +624,7 @@ public abstract class EDDGridFromFiles extends EDDGrid implements WatchUpdateHan
               if (tp.startsWith("timeFormat=")) {
                 axis0TimeFormat = tp.substring(11);
                 axis0TimeZoneString = "Zulu";
-                axis0TimeZone = TimeZone.getTimeZone(axis0TimeZoneString);
+                axis0TimeZone = Calendar2.getZoneId(axis0TimeZoneString);
                 axis0DateTimeFormatter =
                     Calendar2.makeDateTimeFormatter(axis0TimeFormat, axis0TimeZoneString);
                 tp = "double";

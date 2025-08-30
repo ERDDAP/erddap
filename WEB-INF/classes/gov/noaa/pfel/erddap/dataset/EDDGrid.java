@@ -57,9 +57,10 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.Writer;
 import java.text.MessageFormat;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.GregorianCalendar;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -836,7 +837,9 @@ public abstract class EDDGrid extends EDD {
       if (pa != null) { // it should be; but it can be low,high or high,low, so
         double ttMin = Math.min(pa.getDouble(0), pa.getDouble(1));
         double ttMax = Math.max(pa.getDouble(0), pa.getDouble(1));
-        String tp = axisVariables[av].combinedAttributes().getString(language, EDV.TIME_PRECISION);
+        DateTimeFormatter tp =
+            Calendar2.timePrecisionToDateTimeFormatter(
+                axisVariables[av].combinedAttributes().getString(language, EDV.TIME_PRECISION));
         // "" unsets the attribute if dMin or dMax isNaN
         combinedGlobalAttributes.set(
             language,
@@ -3207,7 +3210,7 @@ public abstract class EDDGrid extends EDD {
           latRange = Double.NaN,
           lonRange = Double.NaN,
           timeRange = Double.NaN;
-      String time_precision = null;
+      DateTimeFormatter time_precision = null;
       int lonAscending = 0, latAscending = 0, timeAscending = 0;
       for (int av = 0; av < nAv; av++) {
         EDVGridAxis edvga = axisVariables[av];
@@ -3304,7 +3307,9 @@ public abstract class EDDGrid extends EDD {
           timeStop = dStop;
           timeCenter = (dStart + dStop) / 2;
           timeRange = dStop - dStart;
-          time_precision = edvga.combinedAttributes().getString(language, EDV.TIME_PRECISION);
+          time_precision =
+              Calendar2.timePrecisionToDateTimeFormatter(
+                  edvga.combinedAttributes().getString(language, EDV.TIME_PRECISION));
         }
       }
 
@@ -4825,31 +4830,37 @@ public abstract class EDDGrid extends EDD {
                     + "mySubmit(true);'"));
 
         // make idealized current centered time period
-        GregorianCalendar idMinGc =
-            Calendar2.roundToIdealGC(timeCenter, idealTimeN, idealTimeUnits);
+        ZonedDateTime idMinDt = Calendar2.roundToIdealGC(timeCenter, idealTimeN, idealTimeUnits);
         // if it rounded to later time period, shift to earlier time period
-        long roundedTime = idMinGc.getTimeInMillis() / 1000;
-        if (roundedTime > timeCenter)
-          idMinGc.add(Calendar2.IDEAL_UNITS_FIELD.get(idealTimeUnits), -idealTimeN);
-        GregorianCalendar idMaxGc = Calendar2.newGCalendarZulu(idMinGc.getTimeInMillis());
-        idMaxGc.add(Calendar2.IDEAL_UNITS_FIELD.get(idealTimeUnits), idealTimeN);
+        long roundedTime = idMinDt.toInstant().toEpochMilli() / 1000;
+        if (roundedTime > timeCenter) {
+          idMinDt =
+              Calendar2.addGcFieldToZdt(
+                  idMinDt, Calendar2.IDEAL_UNITS_FIELD.get(idealTimeUnits), -idealTimeN);
+        }
+        ZonedDateTime idMaxDt =
+            Calendar2.addGcFieldToZdt(
+                idMinDt, Calendar2.IDEAL_UNITS_FIELD.get(idealTimeUnits), idealTimeN);
 
         // time back
         {
           // make idealized beginning time
-          GregorianCalendar tidMinGc =
-              Calendar2.roundToIdealGC(timeFirst, idealTimeN, idealTimeUnits);
+          ZonedDateTime tidMinDt = Calendar2.roundToIdealGC(timeFirst, idealTimeN, idealTimeUnits);
           // if it rounded to later time period, shift to earlier time period
-          long roundedTimeTid = tidMinGc.getTimeInMillis() / 1000;
-          if (roundedTimeTid > timeFirst)
-            tidMinGc.add(Calendar2.IDEAL_UNITS_FIELD.get(idealTimeUnits), -idealTimeN);
-          GregorianCalendar tidMaxGc = Calendar2.newGCalendarZulu(tidMinGc.getTimeInMillis());
-          tidMaxGc.add(Calendar2.IDEAL_UNITS_FIELD.get(idealTimeUnits), idealTimeN);
+          long roundedTimeTid = tidMinDt.toInstant().toEpochMilli() / 1000;
+          if (roundedTimeTid > timeFirst) {
+            tidMinDt =
+                Calendar2.addGcFieldToZdt(
+                    tidMinDt, Calendar2.IDEAL_UNITS_FIELD.get(idealTimeUnits), -idealTimeN);
+          }
+          ZonedDateTime tidMaxDt =
+              Calendar2.addGcFieldToZdt(
+                  tidMinDt, Calendar2.IDEAL_UNITS_FIELD.get(idealTimeUnits), idealTimeN);
 
           // always show LL button if idealTime is different from current selection
           double idRange =
               Math2.divideNoRemainder(
-                  tidMaxGc.getTimeInMillis() - tidMinGc.getTimeInMillis(), 1000);
+                  tidMaxDt.toInstant().toEpochMilli() - tidMinDt.toInstant().toEpochMilli(), 1000);
           double ratio = (timeStop - timeStart) / idRange;
           if (timeStart > timeFirst || ratio < 0.99 || ratio > 1.01) {
             writer.write(
@@ -4866,12 +4877,12 @@ public abstract class EDDGrid extends EDD {
                             "onMouseUp='f1.start"
                             + timeIndex
                             + ".value=\""
-                            + Calendar2.limitedFormatAsISODateTimeT(time_precision, tidMinGc)
+                            + Calendar2.limitedFormatAsISODateTimeT(time_precision, tidMinDt)
                             + "\"; "
                             + "f1.stop"
                             + timeIndex
                             + ".value=\""
-                            + Calendar2.limitedFormatAsISODateTimeT(time_precision, tidMaxGc)
+                            + Calendar2.limitedFormatAsISODateTimeT(time_precision, tidMaxDt)
                             + "\"; "
                             + "mySubmit(true);'"));
           } else {
@@ -4881,8 +4892,12 @@ public abstract class EDDGrid extends EDD {
           // idealized (rounded) time shift to left
           // (show based on more strict circumstances than LL (since relative shift, not absolute))
           if (timeStart > timeFirst) {
-            idMinGc.add(Calendar2.IDEAL_UNITS_FIELD.get(idealTimeUnits), -idealTimeN);
-            idMaxGc.add(Calendar2.IDEAL_UNITS_FIELD.get(idealTimeUnits), -idealTimeN);
+            idMinDt =
+                Calendar2.addGcFieldToZdt(
+                    idMinDt, Calendar2.IDEAL_UNITS_FIELD.get(idealTimeUnits), -idealTimeN);
+            idMaxDt =
+                Calendar2.addGcFieldToZdt(
+                    idMaxDt, Calendar2.IDEAL_UNITS_FIELD.get(idealTimeUnits), -idealTimeN);
             writer.write(
                 "&nbsp;"
                     + HtmlWidgets.htmlTooltipImage(
@@ -4897,16 +4912,20 @@ public abstract class EDDGrid extends EDD {
                             "onMouseUp='f1.start"
                             + timeIndex
                             + ".value=\""
-                            + Calendar2.limitedFormatAsISODateTimeT(time_precision, idMinGc)
+                            + Calendar2.limitedFormatAsISODateTimeT(time_precision, idMinDt)
                             + "\"; "
                             + "f1.stop"
                             + timeIndex
                             + ".value=\""
-                            + Calendar2.limitedFormatAsISODateTimeT(time_precision, idMaxGc)
+                            + Calendar2.limitedFormatAsISODateTimeT(time_precision, idMaxDt)
                             + "\"; "
                             + "mySubmit(true);'"));
-            idMinGc.add(Calendar2.IDEAL_UNITS_FIELD.get(idealTimeUnits), idealTimeN);
-            idMaxGc.add(Calendar2.IDEAL_UNITS_FIELD.get(idealTimeUnits), idealTimeN);
+            idMinDt =
+                Calendar2.addGcFieldToZdt(
+                    idMinDt, Calendar2.IDEAL_UNITS_FIELD.get(idealTimeUnits), idealTimeN);
+            idMaxDt =
+                Calendar2.addGcFieldToZdt(
+                    idMaxDt, Calendar2.IDEAL_UNITS_FIELD.get(idealTimeUnits), idealTimeN);
 
           } else {
             writer.write(timeGap);
@@ -4919,8 +4938,12 @@ public abstract class EDDGrid extends EDD {
           // (show based on more strict circumstances than RR (since relative shift, not absolute))
           if (timeStop < timeLast) {
             // idealized (rounded) time shift to right
-            idMinGc.add(Calendar2.IDEAL_UNITS_FIELD.get(idealTimeUnits), idealTimeN);
-            idMaxGc.add(Calendar2.IDEAL_UNITS_FIELD.get(idealTimeUnits), idealTimeN);
+            idMinDt =
+                Calendar2.addGcFieldToZdt(
+                    idMinDt, Calendar2.IDEAL_UNITS_FIELD.get(idealTimeUnits), idealTimeN);
+            idMaxDt =
+                Calendar2.addGcFieldToZdt(
+                    idMaxDt, Calendar2.IDEAL_UNITS_FIELD.get(idealTimeUnits), idealTimeN);
             writer.write(
                 "&nbsp;"
                     + HtmlWidgets.htmlTooltipImage(
@@ -4935,34 +4958,41 @@ public abstract class EDDGrid extends EDD {
                             "onMouseUp='f1.start"
                             + timeIndex
                             + ".value=\""
-                            + Calendar2.limitedFormatAsISODateTimeT(time_precision, idMinGc)
+                            + Calendar2.limitedFormatAsISODateTimeT(time_precision, idMinDt)
                             + "\"; "
                             + "f1.stop"
                             + timeIndex
                             + ".value=\""
-                            + Calendar2.limitedFormatAsISODateTimeT(time_precision, idMaxGc)
+                            + Calendar2.limitedFormatAsISODateTimeT(time_precision, idMaxDt)
                             + "\"; "
                             + "mySubmit(true);'"));
-            idMinGc.add(Calendar2.IDEAL_UNITS_FIELD.get(idealTimeUnits), -idealTimeN);
-            idMaxGc.add(Calendar2.IDEAL_UNITS_FIELD.get(idealTimeUnits), -idealTimeN);
+            idMinDt =
+                Calendar2.addGcFieldToZdt(
+                    idMinDt, Calendar2.IDEAL_UNITS_FIELD.get(idealTimeUnits), -idealTimeN);
+            idMaxDt =
+                Calendar2.addGcFieldToZdt(
+                    idMaxDt, Calendar2.IDEAL_UNITS_FIELD.get(idealTimeUnits), -idealTimeN);
           } else {
             writer.write(timeGap);
           }
 
           // make idealized end time
-          GregorianCalendar tidMaxGc =
-              Calendar2.roundToIdealGC(timeLast, idealTimeN, idealTimeUnits);
+          ZonedDateTime tidMaxDt = Calendar2.roundToIdealGC(timeLast, idealTimeN, idealTimeUnits);
           // if it rounded to earlier time period, shift to later time period
-          if (Math2.divideNoRemainder(tidMaxGc.getTimeInMillis(), 1000) < timeLast)
-            tidMaxGc.add(Calendar2.IDEAL_UNITS_FIELD.get(idealTimeUnits), idealTimeN);
-          GregorianCalendar tidMinGc = Calendar2.newGCalendarZulu(tidMaxGc.getTimeInMillis());
-          tidMinGc.add(Calendar2.IDEAL_UNITS_FIELD.get(idealTimeUnits), -idealTimeN);
+          if (tidMaxDt.toEpochSecond() < timeLast) {
+            tidMaxDt =
+                Calendar2.addGcFieldToZdt(
+                    tidMaxDt, Calendar2.IDEAL_UNITS_FIELD.get(idealTimeUnits), idealTimeN);
+          }
+          ZonedDateTime tidMinDt =
+              Calendar2.addGcFieldToZdt(
+                  tidMaxDt, Calendar2.IDEAL_UNITS_FIELD.get(idealTimeUnits), -idealTimeN);
 
           // end time
           // always show RR button if idealTime is different from current selection
           double idRange =
               Math2.divideNoRemainder(
-                  tidMaxGc.getTimeInMillis() - tidMinGc.getTimeInMillis(), 1000);
+                  tidMaxDt.toInstant().toEpochMilli() - tidMinDt.toInstant().toEpochMilli(), 1000);
           double ratio = (timeStop - timeStart) / idRange;
           if (timeStop < timeLast || ratio < 0.99 || ratio > 1.01) {
             writer.write(
@@ -4979,12 +5009,12 @@ public abstract class EDDGrid extends EDD {
                             "onMouseUp='f1.start"
                             + timeIndex
                             + ".value=\""
-                            + Calendar2.limitedFormatAsISODateTimeT(time_precision, tidMinGc)
+                            + Calendar2.limitedFormatAsISODateTimeT(time_precision, tidMinDt)
                             + "\"; "
                             + "f1.stop"
                             + timeIndex
                             + ".value=\""
-                            + Calendar2.limitedFormatAsISODateTimeT(time_precision, tidMaxGc)
+                            + Calendar2.limitedFormatAsISODateTimeT(time_precision, tidMaxDt)
                             + "\"; "
                             + "mySubmit(true);'"));
           } else {

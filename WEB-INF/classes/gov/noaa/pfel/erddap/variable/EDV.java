@@ -21,7 +21,8 @@ import gov.noaa.pfel.coastwatch.sgt.SgtMap;
 import gov.noaa.pfel.erddap.dataset.metadata.LocalizedAttributes;
 import gov.noaa.pfel.erddap.util.EDMessages;
 import gov.noaa.pfel.erddap.util.EDStatic;
-import java.util.GregorianCalendar;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 
 /**
  * This class holds information about an ErdDap axis or data Variable (EDV).
@@ -1580,14 +1581,14 @@ public class EDV {
     if (!Double.isFinite(tMax)) {
       if (this instanceof EDVTimeStamp) {
         // next midnight Z
-        GregorianCalendar gc = Calendar2.newGCalendarZulu();
+        ZonedDateTime dt = ZonedDateTime.now(ZoneOffset.UTC);
         try {
-          Calendar2.clearSmallerFields(gc, Calendar2.DATE);
+          dt = Calendar2.clearSmallerFields(dt, Calendar2.DATE);
         } catch (Throwable t) {
           String2.log(MustBe.throwableToString(t));
         }
-        gc.add(Calendar2.DATE, 1);
-        tMax = Calendar2.gcToEpochSeconds(gc);
+        dt = dt.plusDays(1);
+        tMax = Calendar2.zdtToEpochSeconds(dt);
       } else return -1;
     }
     if (tMax == tMin) return 0;

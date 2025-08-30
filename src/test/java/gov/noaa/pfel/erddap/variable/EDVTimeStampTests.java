@@ -92,7 +92,7 @@ class EDVTimeStampTests {
             "myTimeStamp",
             null,
             new LocalizedAttributes()
-                .set(language, "units", Calendar2.ISO8601T_FORMAT)
+                .set(language, "units", "yyyy-MM-dd'T'HH:mm:ss")
                 . // without Z
                 set(
                     language,
@@ -116,7 +116,7 @@ class EDVTimeStampTests {
             "myTimeStamp",
             null,
             new LocalizedAttributes()
-                .set(language, "units", Calendar2.ISO8601T3_FORMAT)
+                .set(language, "units", "yyyy-MM-dd'T'HH:mm:ss.SSS")
                 . // without Z
                 set(
                     language,

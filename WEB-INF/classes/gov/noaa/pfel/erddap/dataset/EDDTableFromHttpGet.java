@@ -35,10 +35,11 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.Writer;
 import java.math.BigInteger;
+import java.time.ZonedDateTime;
+import java.time.temporal.ChronoField;
 import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Calendar;
-import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
@@ -728,11 +729,16 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
                   + timeEpSec
                   + ")!");
         // need a new gc for each part since gc is modified
-        GregorianCalendar gc = Calendar2.epochSecondsToGc(timeEpSec);
+        ZonedDateTime dt = Calendar2.epochSecondsToZdt(timeEpSec);
         int n = tDirStructureNs.get(i);
-        gc.set(cal, (gc.get(cal) / n) * n);
+        ChronoField field = Calendar2.getChronoFieldFromCalendarField(cal);
+        if (cal == Calendar.MONTH) {
+          dt = dt.with(field, ((dt.get(field) - 1) / n) * n + 1);
+        } else {
+          dt = dt.with(field, ((long) dt.get(field) / n) * n);
+        }
         // Get the ISO 8601 date/time string just to that precision/field.
-        String s = Calendar2.formatAsISODateTimeT3Z(gc); // to millis
+        String s = Calendar2.formatAsISODateTimeT3Z(dt); // to millis
         int nChar = s.length();
         if (cal == Calendar.YEAR) nChar = 4;
         else if (cal == Calendar.MONTH) nChar = 7;

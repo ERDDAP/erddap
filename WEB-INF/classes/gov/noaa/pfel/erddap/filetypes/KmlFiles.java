@@ -28,6 +28,7 @@ import gov.noaa.pfel.erddap.variable.EDVTimeGridAxis;
 import jakarta.servlet.http.HttpServletRequest;
 import java.io.BufferedWriter;
 import java.text.MessageFormat;
+import java.time.format.DateTimeFormatter;
 
 @FileTypeClass(
     fileTypeExtension = ".kml",
@@ -246,7 +247,7 @@ public class KmlFiles extends ImageTypes {
     String columnUnits[] = new String[table.nColumns()];
     boolean columnIsString[] = new boolean[table.nColumns()];
     boolean columnIsTimeStamp[] = new boolean[table.nColumns()];
-    String columnTimePrecision[] = new String[table.nColumns()];
+    DateTimeFormatter columnTimePrecision[] = new DateTimeFormatter[table.nColumns()];
     for (int col = 0; col < table.nColumns(); col++) {
       String units = table.columnAttributes(col).getString("units");
       // test isTimeStamp before prepending " "
@@ -256,7 +257,9 @@ public class KmlFiles extends ImageTypes {
       units = (units == null || units.equals(EDV.UNITLESS)) ? "" : " " + units;
       columnUnits[col] = units;
       columnIsString[col] = table.getColumn(col) instanceof StringArray;
-      columnTimePrecision[col] = table.columnAttributes(col).getString(EDV.TIME_PRECISION);
+      columnTimePrecision[col] =
+          Calendar2.timePrecisionToDateTimeFormatter(
+              table.columnAttributes(col).getString(EDV.TIME_PRECISION));
     }
 
     // based on kmz example from http://www.coriolis.eu.org/cdc/google_earth.htm

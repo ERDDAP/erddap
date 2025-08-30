@@ -21,7 +21,8 @@ import gov.noaa.pfel.erddap.util.EDMessages;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.*;
 import java.io.Writer;
-import java.util.GregorianCalendar;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import ucar.nc2.write.NetcdfFileFormat;
 
 /**
@@ -77,9 +78,9 @@ public class ArchiveADataset {
    * @return the full name of the tgz file.
    */
   public String doIt(int language, String args[]) throws Throwable {
-    GregorianCalendar gcZ = Calendar2.newGCalendarZulu();
-    String isoTime = Calendar2.formatAsISODateTimeTZ(gcZ);
-    String compactTime = Calendar2.formatAsCompactDateTime(gcZ) + "Z";
+    ZonedDateTime dt = ZonedDateTime.now(ZoneOffset.UTC);
+    String isoTime = Calendar2.formatAsISODateTimeTZ(dt);
+    String compactTime = Calendar2.formatAsCompactDateTime(dt) + "Z";
     String aadDir = EDStatic.config.bigParentDirectory + "ArchiveADataset/";
     File2.makeDirectory(aadDir);
     String logFileName = aadDir + "log_" + compactTime + ".txt";
@@ -450,7 +451,7 @@ public class ArchiveADataset {
           String fileName =
               axis0IsTimeStamp
                   ? Calendar2.formatAsCompactDateTime(
-                          Calendar2.epochSecondsToGc(axis0.destinationDouble(axis0i)))
+                          Calendar2.epochSecondsToZdt(axis0.destinationDouble(axis0i)))
                       + "Z"
                   : String2.encodeFileNameSafe(value);
           String2.log(

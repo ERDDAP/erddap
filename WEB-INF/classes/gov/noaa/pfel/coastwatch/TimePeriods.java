@@ -8,7 +8,7 @@ import com.cohort.util.Calendar2;
 import com.cohort.util.String2;
 import com.cohort.util.Test;
 import com.google.common.collect.ImmutableList;
-import java.util.GregorianCalendar;
+import java.time.ZonedDateTime;
 
 /**
  * This class holds the master TimePeriods.OPTIONS list and related information and methods.
@@ -231,18 +231,18 @@ public class TimePeriods {
    * </pre>
    *
    * @param timePeriodNHours one of the TimePeriod.NHOURS options
-   * @param cal initially, the end time GregorianCalendar usually from getEndCalendar. This will be
+   * @param cal initially, the end time ZonedDateTime usually from getEndCalendar. This will be
    *     modified so that it holds the centered time when finished.
    * @param errorInMethod the start of the error message
    * @throws Exception if trouble
    */
-  public static void endCalendarToCenteredTime(
-      int timePeriodNHours, GregorianCalendar cal, String errorInMethod) throws Exception {
+  public static ZonedDateTime endCalendarToCenteredTime(
+      int timePeriodNHours, ZonedDateTime cal, String errorInMethod) throws Exception {
     if (timePeriodNHours <= 1) {
       // Dave says: do nothing
     } else if (timePeriodNHours % 24 != 0) {
       // covers 25, 33 hours
-      if (cal.get(Calendar2.MINUTE) != 0 || cal.get(Calendar2.SECOND) != 0) {
+      if (cal.getMinute() != 0 || cal.getSecond() != 0) {
         Test.error(
             errorInMethod
                 + "timePeriodNHours="
@@ -251,12 +251,10 @@ public class TimePeriods {
                 + Calendar2.formatAsISODateTimeT(cal)
                 + " doesn't end in 00:00.");
       }
-      cal.add(Calendar2.MINUTE, -timePeriodNHours * 60 / 2);
+      cal = cal.plusMinutes(-timePeriodNHours * 60 / 2);
     } else if (timePeriodNHours < 30 * 24) {
       // nDays
-      if (cal.get(Calendar2.HOUR_OF_DAY) != 0
-          || cal.get(Calendar2.MINUTE) != 0
-          || cal.get(Calendar2.SECOND) != 0) {
+      if (cal.getHour() != 0 || cal.getMinute() != 0 || cal.getSecond() != 0) {
         Test.error(
             errorInMethod
                 + "timePeriodNHours="
@@ -265,12 +263,10 @@ public class TimePeriods {
                 + Calendar2.formatAsISODateTimeT(cal)
                 + " doesn't end in 00:00:00.");
       }
-      cal.add(Calendar2.HOUR_OF_DAY, -timePeriodNHours / 2); // these nHours always even
+      cal = cal.plusHours(-timePeriodNHours / 2);
     } else if (timePeriodNHours == 30 * 24) {
       // 1 month
-      if (cal.get(Calendar2.HOUR_OF_DAY) != 0
-          || cal.get(Calendar2.MINUTE) != 0
-          || cal.get(Calendar2.SECOND) != 0) {
+      if (cal.getHour() != 0 || cal.getMinute() != 0 || cal.getSecond() != 0) {
         Test.error(
             errorInMethod
                 + "timePeriodNHours="
@@ -279,11 +275,12 @@ public class TimePeriods {
                 + Calendar2.formatAsISODateTimeT(cal)
                 + " doesn't end in 00:00:00.");
       }
-      cal.add(Calendar2.SECOND, -1); // -1 changes to 23:59:59 on last day of previous month
-      Calendar2.centerOfMonth(cal);
+      cal = cal.plusSeconds(-1); // -1 changes to 23:59:59 on last day of previous month
+      cal = Calendar2.centerOfMonth(cal);
     } else {
       // there are longer time periods, but no data sets used them
       Test.error(errorInMethod + "Unexpected timePeriodNHours=" + timePeriodNHours);
     }
+    return cal;
   }
 }

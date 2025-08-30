@@ -21,7 +21,8 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.Writer;
 import java.nio.file.Path;
-import java.util.GregorianCalendar;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 
 /**
  * This is a command line program to run GenerateDatasetsXml for the various EDD subclasses.
@@ -93,7 +94,7 @@ public class GenerateDatasetsXml {
         logFileName,
         false,
         String2.logFileDefaultMaxSize); // append
-    GregorianCalendar gcLocal = Calendar2.newGCalendarLocal();
+    ZonedDateTime gcLocal = ZonedDateTime.now(ZoneId.systemDefault());
     String localIsoTime = Calendar2.formatAsISODateTimeT(gcLocal);
     String localCompactTime = Calendar2.formatAsCompactDateTime(gcLocal);
     String2.log(

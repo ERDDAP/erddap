@@ -22,6 +22,7 @@ import gov.noaa.pfel.erddap.variable.EDVGridAxis;
 import gov.noaa.pfel.erddap.variable.EDVLatGridAxis;
 import gov.noaa.pfel.erddap.variable.EDVLonGridAxis;
 import gov.noaa.pfel.erddap.variable.EDVTimeGridAxis;
+import java.time.format.DateTimeFormatter;
 
 /**
  * This class provides access to the axis data corresponding to a axis data query to an EDDGrid.
@@ -222,7 +223,9 @@ public class AxisDataAccessor {
           globalAttributes.set("geospatial_vertical_max", dMax);
         }
       } else if (rAxisVariables[av] instanceof EDVTimeGridAxis) {
-        String tp = rAxisVariables[av].combinedAttributes().getString(language, EDV.TIME_PRECISION);
+        DateTimeFormatter tp =
+            Calendar2.timePrecisionToDateTimeFormatter(
+                rAxisVariables[av].combinedAttributes().getString(language, EDV.TIME_PRECISION));
         // "" unsets the attribute if dMin or dMax isNaN
         globalAttributes.set(
             "time_coverage_start", Calendar2.epochSecondsToLimitedIsoStringT(tp, dMin, ""));
