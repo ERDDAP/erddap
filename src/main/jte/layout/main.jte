@@ -35,11 +35,11 @@
       </td>
       <!-- need to do further changes at the legal.html -->
     <td style="text-align:right; font-size:small;">
-      ${TemplateHelper.getLoginHtml(request,language,loggedInAs)} | 
+      ${TemplateHelper.getLoginHtml(request,language,loggedInAs)} |
       <select name="language"
               onchange="window.location.href='/erddap/' + (this.value == 'en' ? '' : this.value + '/') + '${endOfRequest}'">
           @for(int i = 0; i < TranslateMessages.languageList.size(); i++)
-              <option value="${TranslateMessages.languageCodeList.get(i)}">
+              <option value="${TranslateMessages.languageCodeList.get(i)}" selected="${language == i}">
                   ${TranslateMessages.languageList.get(i)}
               </option>
           @endfor
