@@ -188,21 +188,8 @@ public class Erddap extends HttpServlet {
   public static final int dpfTFWidth = 56; // data provider form TextField width
   public static final int dpfTAWidth = 58; // data provider form TextArea width
 
-  // MqttClient to connect to the local ERDDAP broker
-  public static Mqtt5AsyncClient mqttClient =
-      EDDTableFromMqtt.initialiseMqttAsyncClient(
-              EDStatic.config.mqttServerHost,
-              EDStatic.config.mqttServerPort,
-              EDStatic.config.mqttClientId,
-              EDStatic.config.mqttUserName,
-              EDStatic.config.mqttPassword,
-              EDStatic.config.mqttSsl,
-              EDStatic.config.mqttKeepAlive,
-              EDStatic.config.mqttCleanStart,
-              EDStatic.config.mqttSessionExpiry,
-              EDStatic.config.mqttConnectionTimeout,
-              EDStatic.config.mqttAutomaticReconnect)
-          .join();
+  // MqttClient to connect to the configured ERDDAP broker (default is local)
+  public static Mqtt5AsyncClient mqttClient = null;
 
   // ************** END OF STATIC VARIABLES *****************************
 
@@ -25003,11 +24990,31 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
 
         // publish change to local broker, if enabled
         if (EDStatic.config.publishMqttNotif) {
-          mqttClient
-              .publishWith()
-              .topic("change/" + tDatasetID)
-              .payload(change.getBytes(StandardCharsets.UTF_8))
-              .send();
+          try {
+            if (mqttClient == null) {
+              mqttClient =
+                  EDDTableFromMqtt.initialiseMqttAsyncClient(
+                          EDStatic.config.mqttServerHost,
+                          EDStatic.config.mqttServerPort,
+                          EDStatic.config.mqttClientId,
+                          EDStatic.config.mqttUserName,
+                          EDStatic.config.mqttPassword,
+                          EDStatic.config.mqttSsl,
+                          EDStatic.config.mqttKeepAlive,
+                          EDStatic.config.mqttCleanStart,
+                          EDStatic.config.mqttSessionExpiry,
+                          EDStatic.config.mqttConnectionTimeout,
+                          EDStatic.config.mqttAutomaticReconnect)
+                      .join();
+            }
+            mqttClient
+                .publishWith()
+                .topic("change/" + tDatasetID)
+                .payload(change.getBytes(StandardCharsets.UTF_8))
+                .send();
+          } catch (Exception e) {
+            String2.log("Error connecting or publishing to MQTT client: " + e.getMessage());
+          }
         }
 
         if (EDStatic.config.subscriptionSystemActive) {
