@@ -42,6 +42,7 @@ import gov.noaa.pfel.erddap.dataset.EDDGridFromErddap;
 import gov.noaa.pfel.erddap.dataset.EDDTable;
 import gov.noaa.pfel.erddap.dataset.EDDTableFromAllDatasets;
 import gov.noaa.pfel.erddap.dataset.EDDTableFromFileNames;
+import gov.noaa.pfel.erddap.dataset.EDDTableFromMqtt;
 import gov.noaa.pfel.erddap.dataset.FromErddap;
 import gov.noaa.pfel.erddap.dataset.GridDataAccessor;
 import gov.noaa.pfel.erddap.dataset.GridDataRandomAccessorInMemory;
@@ -88,6 +89,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.StringReader;
 import java.io.Writer;
+import java.nio.charset.StandardCharsets;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -25001,7 +25003,11 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
 
         // publish change to local broker, if enabled
         if (EDStatic.config.publishMqttNotif) {
-          mqttClient.publishWith().topic("change/" + tDatasetID).payload(change.getBytes()).send();
+          mqttClient
+              .publishWith()
+              .topic("change/" + tDatasetID)
+              .payload(change.getBytes(StandardCharsets.UTF_8))
+              .send();
         }
 
         if (EDStatic.config.subscriptionSystemActive) {

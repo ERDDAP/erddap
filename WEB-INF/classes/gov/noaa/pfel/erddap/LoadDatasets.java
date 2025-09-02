@@ -35,6 +35,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.lang.management.ManagementFactory;
 import java.lang.management.OperatingSystemMXBean;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
@@ -215,7 +216,7 @@ public class LoadDatasets extends Thread {
             ReaderInputStream.builder()
                 .setReader(
                     new StringSubstitutorReader(
-                        new InputStreamReader(getInputStream(inputStream)),
+                        new InputStreamReader(getInputStream(inputStream), StandardCharsets.UTF_8),
                         new StringSubstitutor()))
                 .get();
       } else {

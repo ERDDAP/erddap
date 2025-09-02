@@ -47,8 +47,8 @@ import gov.noaa.pfel.erddap.variable.EDVLat;
 import gov.noaa.pfel.erddap.variable.EDVLon;
 import gov.noaa.pfel.erddap.variable.EDVTime;
 import gov.noaa.pfel.erddap.variable.EDVTimeStamp;
-import java.io.File;
 import jakarta.servlet.http.HttpServletRequest;
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.math.BigInteger;
 import java.nio.file.Path;
@@ -2185,7 +2185,7 @@ public abstract class EDDTableFromFiles extends EDDTable implements WatchUpdateH
               + "ms";
       if (verbose || fileTable.nRows() == 0) String2.log(msg);
       if (fileTable.nRows() == 0) {
-        if (className != "EDDTableFromMqtt" && className != "EDDTableFromHttpGet") {
+        if (!"EDDTableFromMqtt".equals(className) && !"EDDTableFromHttpGet".equals(className)) {
           throw new RuntimeException("No valid files!");
         }
       }

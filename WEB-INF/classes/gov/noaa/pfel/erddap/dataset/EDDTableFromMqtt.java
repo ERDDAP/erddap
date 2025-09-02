@@ -246,7 +246,7 @@ public class EDDTableFromMqtt extends EDDTableFromFiles {
         .sessionExpiryInterval(sessionExpiryInterval)
         .simpleAuth()
         .username(username)
-        .password(password.getBytes()) // Cannot be null
+        .password(password.getBytes(StandardCharsets.UTF_8)) // Cannot be null
         .applySimpleAuth()
         .send()
         .orTimeout(connectionTimeout, TimeUnit.SECONDS)
@@ -263,8 +263,9 @@ public class EDDTableFromMqtt extends EDDTableFromFiles {
             });
   }
 
+  // The client.subscribeWith chain is handled in the callback handler.
+  @SuppressWarnings("FutureReturnValueIgnored")
   public void subscribeToDatasetTopics(Mqtt5AsyncClient client, String[] topics, MqttQos qosLevel) {
-
     for (String topic : topics) {
       if (topic == null || topic.trim().isEmpty()) {
         continue;
