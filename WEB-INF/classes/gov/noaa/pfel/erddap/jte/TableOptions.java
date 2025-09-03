@@ -214,4 +214,6 @@ public class TableOptions {
   public boolean checkEncodingAsHtml() {
     return needEncodingAsHtml;
   }
+
+  public void getSaveAsHtmlTable() {}
 }
