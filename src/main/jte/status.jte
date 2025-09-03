@@ -1,8 +1,21 @@
 @import gov.noaa.pfel.erddap.jte.Status
 @import gov.noaa.pfel.erddap.jte.YouAreHere
-@param YouAreHere youAreHere
+@import jakarta.servlet.http.HttpServletRequest;
 @param Status status
-@template.youarehere(youAreHere)
+@param String tErddapUrl
+@param int language
+@param YouAreHere youAreHere
+@param String loggedInAs
+@param String endOfRequest
+@param HttpServletRequest request
+@template.layout.main(
+    tErddapUrl=tErddapUrl,
+    language=language,
+    youAreHere=youAreHere,
+    endOfRequest=endOfRequest,
+    loggedInAs=loggedInAs,
+    request=request,
+    content=@`
 <pre>
 Current time is ${Status.getCurrentTimeLocal()}
 Startup was at  ${Status.getStartupTimeLocal()}
@@ -115,3 +128,4 @@ ${Status.getCanonicalStats()}
 
 ${Status.getTraces()}
 </pre>
+`)

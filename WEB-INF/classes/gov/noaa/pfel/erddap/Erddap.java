@@ -76,6 +76,7 @@ import java.util.GregorianCalendar;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -1795,6 +1796,7 @@ public class Erddap extends HttpServlet {
         engine.render(
             "legal.html",
             Map.of(
+                "endOfRequest", endOfRequest,
                 "tErddapUrl", tErddapUrl,
                 "language", language,
                 "youAreHere", youAreHere),
@@ -5109,6 +5111,9 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       engine.render(
           "status.jte",
           Map.of(
+              "endOfRequest", endOfRequest,
+              "tErddapUrl", tErddapUrl,
+              "language", language,
               "status", status,
               "youAreHere", youAreHere),
           new WriterOutput(writer));
@@ -6700,7 +6705,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
 
     String tErddapUrl = EDStatic.erddapUrl(request, loggedInAs, language);
     String requestUrl = request.getRequestURI(); // post EDStatic.config.baseUrl, pre "?"
-    String fullRequestUrl = EDStatic.baseUrl(loggedInAs) + requestUrl;
+    String fullRequestUrl = EDStatic.baseUrl(request, loggedInAs) + requestUrl;
     String roles[] = EDStatic.getRoles(loggedInAs);
     // String2.log(">>fullRequestUrl=" + fullRequestUrl);
 
@@ -7289,7 +7294,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     if (!Arrays.equals(EDStatic.getRawRequestedPIpp(request), EDStatic.getRequestedPIpp(request))) {
       sendRedirect(
           response,
-          EDStatic.baseUrl(loggedInAs)
+          EDStatic.baseUrl(request, loggedInAs)
               + requestUrl
               + "?"
               + EDStatic.passThroughJsonpQuery(language, request)
@@ -7544,7 +7549,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                 page,
                 lastPage,
                 false, // =alphabetical
-                EDStatic.baseUrl(loggedInAs)
+                EDStatic.baseUrl(request, loggedInAs)
                     + requestUrl
                     + EDStatic.questionQuery(request.getQueryString()));
 
@@ -14106,8 +14111,10 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
         engine.render(
             "outofdatedatasets.jte",
             Map.of(
+                "endOfRequest", endOfRequest,
                 "youAreHere", youAreHere,
                 "language", language,
+                "tErddapUrl", tErddapUrl,
                 "tableOptions", tableOptions,
                 "table", table),
             new WriterOutput(writer));
@@ -14872,7 +14879,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
           EDStatic.getRawRequestedPIpp(request), EDStatic.getRequestedPIpp(request))) {
         sendRedirect(
             response,
-            EDStatic.baseUrl(loggedInAs)
+            EDStatic.baseUrl(request, loggedInAs)
                 + request.getRequestURI()
                 + "?"
                 + EDStatic.passThroughJsonpQuery(language, request)
@@ -14994,7 +15001,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                     page,
                     lastPage,
                     true, // =most relevant first
-                    EDStatic.baseUrl(loggedInAs)
+                    EDStatic.baseUrl(request, loggedInAs)
                         + requestUrl
                         + EDStatic.questionQuery(request.getQueryString()));
 
@@ -15823,7 +15830,8 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                 + (queryString.length() == 0 ? "" : "&" + queryString);
       queryString = "page=1&" + queryString;
       sendRedirect(
-          response, EDStatic.baseUrl(loggedInAs) + request.getRequestURI() + "?" + queryString);
+          response,
+          EDStatic.baseUrl(request, loggedInAs) + request.getRequestURI() + "?" + queryString);
       return;
     }
     int pipp[] = EDStatic.getRequestedPIpp(request);
@@ -16588,7 +16596,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                     page,
                     lastPage,
                     searchFor.length() > 0 && !searchFor.equals("all"), // true=most relevant first
-                    EDStatic.baseUrl(loggedInAs)
+                    EDStatic.baseUrl(request, loggedInAs)
                         + requestUrl
                         + EDStatic.questionQuery(request.getQueryString()));
 
@@ -17112,7 +17120,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     if (!Arrays.equals(EDStatic.getRawRequestedPIpp(request), EDStatic.getRequestedPIpp(request))) {
       sendRedirect(
           response,
-          EDStatic.baseUrl(loggedInAs)
+          EDStatic.baseUrl(request, loggedInAs)
               + requestUrl
               + "?"
               + EDStatic.passThroughJsonpQuery(language, request)
@@ -17520,7 +17528,9 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                 page,
                 lastPage,
                 false, // =alphabetical
-                EDStatic.baseUrl(loggedInAs) + requestUrl + EDStatic.questionQuery(queryString));
+                EDStatic.baseUrl(request, loggedInAs)
+                    + requestUrl
+                    + EDStatic.questionQuery(queryString));
 
         // display datasets
         writer.write(
@@ -17657,7 +17667,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
           EDStatic.getRawRequestedPIpp(request), EDStatic.getRequestedPIpp(request))) {
         sendRedirect(
             response,
-            EDStatic.baseUrl(loggedInAs)
+            EDStatic.baseUrl(request, loggedInAs)
                 + request.getRequestURI()
                 + "?"
                 + EDStatic.passThroughJsonpQuery(language, request)
@@ -17740,59 +17750,90 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                           page,
                           lastPage,
                           false, // =alphabetical
-                          EDStatic.baseUrl(loggedInAs)
+                          EDStatic.baseUrl(request, loggedInAs)
                               + requestUrl
                               + EDStatic.questionQuery(request.getQueryString()))
                       + "<br>&nbsp;\n";
-
-          writer.write(
-              "<div class=\"standard_width\">\n"
-                  +
-
-                  // getYouAreHereTable(
-                  EDStatic.youAreHere(
-                      request,
-                      language,
-                      loggedInAs,
-                      MessageFormat.format(
-                          EDStatic.messages.get(Message.LIST_OF_DATASETS, language),
-                          EDStatic.messages.get(Message.LIST_ALL, language)))
-                  + secondLine
-                  + nMatchingHtml);
-
-          /*//Or, search text
-          "&nbsp;\n" +
-          "<br>" + getSearchFormHtml(language, request, loggedInAs, EDStatic.messages.get(Message.OR_COMMA, language), ":\n<br>", "") +
-          //Or, by category
-          "<p>" + getCategoryLinksHtml(request, tErddapUrl) +
-          //Or,
-          "<p>" + EDStatic.orSearchWith +
-              getAdvancedSearchLink(loggedInAs,
-                  EDStatic.passThroughPIppQueryPage1(request))));
-          */
-
-          if (table.nRows() > 0) {
-
-            // show the table of all datasets
-            table.saveAsHtmlTable(writer, "commonBGColor", null, false, -1, false, false);
-
-            if (lastPage > 1) writer.write("\n<p>" + nMatchingHtml);
-
-            // list plain file types
+          if (useHtmlTemplates(request)) {
+            YouAreHere youAreHere =
+                EDStatic.getYouAreHere(
+                    request,
+                    language,
+                    loggedInAs,
+                    MessageFormat.format(
+                        EDStatic.messages.get(Message.LIST_OF_DATASETS, language),
+                        EDStatic.messages.get(Message.LIST_ALL, language)));
+            TableOptions tableOptions =
+                new TableOptions.TableOptionsBuilder(table)
+                    .otherClasses("commonBGColor")
+                    .bgColor(null)
+                    .writeUnits(false)
+                    .timeColumn(-1)
+                    .needEncodingAsHtml(false)
+                    .allowWrap(false)
+                    .build();
+            TemplateEngine engine = TemplateEngine.createPrecompiled(ContentType.Html);
+            engine.render(
+                "info.jte",
+                Map.of(
+                    "endOfRequest", endOfRequest,
+                    "youAreHere", youAreHere,
+                    "language", language,
+                    "tErddapUrl", tErddapUrl,
+                    "tableOptions", tableOptions,
+                    "table", table,
+                    "secondLine", secondLine,
+                    "nMatchingHtml", nMatchingHtml),
+                new WriterOutput(writer));
+          } else {
             writer.write(
-                "\n"
-                    + "<p>"
-                    + EDStatic.messages.get(Message.RESTFUL_INFORMATION_FORMATS, language)
-                    + " \n("
-                    + plainFileTypesString
-                    + // not links, which would be indexed by search engines
-                    ") <a rel=\"help\" href=\""
-                    + tErddapUrl
-                    + "/rest.html\">"
-                    + EDStatic.messages.get(Message.RESTFUL_VIA_SERVICE, language)
-                    + "</a>.\n");
-          }
+                "<div class=\"standard_width\">\n"
+                    +
 
+                    // getYouAreHereTable(
+                    EDStatic.youAreHere(
+                        request,
+                        language,
+                        loggedInAs,
+                        MessageFormat.format(
+                            EDStatic.messages.get(Message.LIST_OF_DATASETS, language),
+                            EDStatic.messages.get(Message.LIST_ALL, language)))
+                    + secondLine
+                    + nMatchingHtml);
+
+            /*//Or, search text
+            "&nbsp;\n" +
+            "<br>" + getSearchFormHtml(language, request, loggedInAs, EDStatic.messages.get(Message.OR_COMMA, language), ":\n<br>", "") +
+            //Or, by category
+            "<p>" + getCategoryLinksHtml(request, tErddapUrl) +
+            //Or,
+            "<p>" + EDStatic.orSearchWith +
+                getAdvancedSearchLink(loggedInAs,
+                    EDStatic.passThroughPIppQueryPage1(request))));
+            */
+
+            if (table.nRows() > 0) {
+
+              // show the table of all datasets
+              table.saveAsHtmlTable(writer, "commonBGColor", null, false, -1, false, false);
+
+              if (lastPage > 1) writer.write("\n<p>" + nMatchingHtml);
+
+              // list plain file types
+              writer.write(
+                  "\n"
+                      + "<p>"
+                      + EDStatic.messages.get(Message.RESTFUL_INFORMATION_FORMATS, language)
+                      + " \n("
+                      + plainFileTypesString
+                      + // not links, which would be indexed by search engines
+                      ") <a rel=\"help\" href=\""
+                      + tErddapUrl
+                      + "/rest.html\">"
+                      + EDStatic.messages.get(Message.RESTFUL_VIA_SERVICE, language)
+                      + "</a>.\n");
+            }
+          }
           // jsonld
           if (EDStatic.config.jsonldActive) { // && isSchemaDotOrgEnabled()){
             try {
@@ -17825,10 +17866,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                       + MustBe.throwableToString(e));
             }
           }
-
-          writer.write("</div>\n");
           endHtmlWriter(request, language, out, writer, tErddapUrl, loggedInAs, false);
-
         } catch (Throwable t) {
           EDStatic.rethrowClientAbortException(t); // first thing in catch{}
           writer.write(EDStatic.htmlForException(language, t));
@@ -18884,6 +18922,8 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       engine.render(
           "subscription.jte",
           Map.of(
+              "endOfRequest", endOfRequest,
+              "tErddapUrl", tErddapUrl,
               "youAreHere", youAreHere,
               "language", language),
           new WriterOutput(writer));
@@ -23807,16 +23847,32 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
 
     Writer writer = File2.getBufferedWriterUtf8(out);
 
-    // write the information for this protocol (dataset list table and instructions)
-    String tErddapUrl = EDStatic.erddapUrl(request, loggedInAs, language);
-    writer.write(EDStatic.startHeadHtml(language, tErddapUrl, addToTitle));
-    if (String2.isSomething(addToHead)) writer.write("\n" + addToHead);
-    writer.write("\n</head>\n");
-    writer.write(EDStatic.startBodyHtml(request, language, loggedInAs, endOfRequest, queryString));
-    writer.write("\n");
-    writer.write(
-        HtmlWidgets.htmlTooltipScript(EDStatic.imageDirUrl(request, loggedInAs, language)));
-    writer.flush(); // Steve Souder says: the sooner you can send some html to user, the better
+    // Pages which support full HTML template layouts need to be added here
+    // TODO remove this check once all pages support HTML templating
+    boolean isSupportedHtmlLayoutPage =
+        List.of(
+                "info/index.html",
+                "legal.html",
+                "outOfDateDatasets.html",
+                "status.html",
+                "subscriptions/index.html")
+            .contains(endOfRequest);
+
+    if (!useHtmlTemplates(request) || !isSupportedHtmlLayoutPage) {
+      // write the information for this protocol (dataset list table and instructions)
+      String tErddapUrl = EDStatic.erddapUrl(request, loggedInAs, language);
+      writer.write(EDStatic.startHeadHtml(language, tErddapUrl, addToTitle));
+      if (String2.isSomething(addToHead)) writer.write("\n" + addToHead);
+      writer.write("\n</head>\n");
+      writer.write(
+          EDStatic.startBodyHtml(request, language, loggedInAs, endOfRequest, queryString));
+      writer.write("\n");
+      writer.write(
+          HtmlWidgets.htmlTooltipScript(EDStatic.imageDirUrl(request, loggedInAs, language)));
+      writer.flush(); // Steve Souders says: the sooner you can send some html to user, the better
+    } else {
+      request.setAttribute("SUPPRESS_END_HTML_WRITER", true);
+    }
     return writer;
   }
 
@@ -23844,9 +23900,18 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       throws Throwable {
 
     try (writer) {
-      // end of document
-      writer.write(EDStatic.endBodyHtml(request, language, tErddapUrl, loggedInAs));
-      writer.write("\n</html>\n");
+      // endOfRequest is not available here, so we check for a request
+      // attribute set in getHtmlWriterUtf8 to determine if
+      // we should suppress writing footer content here
+      // (if an html template layout is in use)
+      boolean supressEndHtmlWriter =
+          (Boolean)
+              Objects.requireNonNullElse(request.getAttribute("SUPPRESS_END_HTML_WRITER"), false);
+      if (!useHtmlTemplates(request) || !supressEndHtmlWriter) {
+        // end of document
+        writer.write(EDStatic.endBodyHtml(request, language, tErddapUrl, loggedInAs));
+        writer.write("\n</html>\n");
+      }
 
       // essential
       writer.flush();

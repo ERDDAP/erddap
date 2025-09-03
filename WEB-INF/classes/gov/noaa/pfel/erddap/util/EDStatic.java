@@ -963,10 +963,11 @@ public class EDStatic {
    * @return If loggedInAs == null, this returns baseUrl, else baseHttpsUrl (neither has slash at
    *     end).
    */
-  public static String baseUrl(String loggedInAs) {
-    return loggedInAs == null
-        ? config.baseUrl
-        : config.baseHttpsUrl; // works because of loggedInAsHttps
+  public static String baseUrl(HttpServletRequest request, String loggedInAs) {
+    if (EDStatic.config.useHeadersForUrl && request != null && request.getHeader("Host") != null) {
+      return request.getScheme() + "://" + request.getHeader("Host");
+    }
+    return loggedInAs == null ? config.baseUrl : config.baseHttpsUrl;
   }
 
   /**
@@ -979,7 +980,7 @@ public class EDStatic {
    */
   protected static String getErddapUrlPrefix(HttpServletRequest request, String loggedInAs) {
     if (EDStatic.config.useHeadersForUrl && request != null && request.getHeader("Host") != null) {
-      return request.getScheme() + "://" + request.getHeader("Host") + "/" + config.warName;
+      return baseUrl(request, loggedInAs) + "/" + config.warName;
     }
     return loggedInAs == null ? erddapUrl : erddapHttpsUrl;
   }
@@ -2258,7 +2259,7 @@ public class EDStatic {
                         TranslateMessages.languageCodeList,
                         language,
                         "onchange=\"window.location.href='"
-                            + baseUrl(loggedInAs)
+                            + baseUrl(request, loggedInAs)
                             + "/"
                             + config.warName
                             + "/' + "
