@@ -23,6 +23,9 @@ import com.cohort.util.String2;
 import com.cohort.util.Units2;
 import com.cohort.util.XML;
 import com.google.common.collect.ImmutableList;
+import gg.jte.ContentType;
+import gg.jte.TemplateEngine;
+import gg.jte.output.WriterOutput;
 import gov.noaa.pfel.coastwatch.griddata.DataHelper;
 import gov.noaa.pfel.coastwatch.griddata.Grid;
 import gov.noaa.pfel.coastwatch.griddata.OpendapHelper;
@@ -56,6 +59,9 @@ import gov.noaa.pfel.erddap.dataset.TableWriterSeparatedValue;
 import gov.noaa.pfel.erddap.dataset.WaitThenTryAgainException;
 import gov.noaa.pfel.erddap.filetypes.TransparentPngFiles;
 import gov.noaa.pfel.erddap.handlers.SaxParsingContext;
+import gov.noaa.pfel.erddap.jte.Status;
+import gov.noaa.pfel.erddap.jte.TableOptions;
+import gov.noaa.pfel.erddap.jte.YouAreHere;
 import gov.noaa.pfel.erddap.util.CfToFromGcmd;
 import gov.noaa.pfel.erddap.util.EDConfig;
 import gov.noaa.pfel.erddap.util.EDMessages.Message;
@@ -95,6 +101,7 @@ import java.util.GregorianCalendar;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -393,6 +400,13 @@ public class Erddap extends HttpServlet {
   @Override
   public void destroy() {
     EDStatic.destroy();
+  }
+
+  public static boolean useHtmlTemplates(HttpServletRequest request) {
+    if (request.getParameter("jte") != null) {
+      return Boolean.parseBoolean(request.getParameter("jte"));
+    }
+    return EDStatic.config.useHtmlTemplates;
   }
 
   /**
@@ -1796,21 +1810,39 @@ public class Erddap extends HttpServlet {
             "Legal Notices",
             out);
     try {
-      writer.write(
-          "<div class=\"standard_width\">\n"
-              + EDStatic.youAreHere(
-                  request,
-                  language,
-                  loggedInAs,
-                  EDStatic.messages.get(Message.LEGAL_NOTICES_TITLE, language))
-              + EDStatic.messages.get(Message.LEGAL_NOTICES, language)
-              + "\n"
-              + EDStatic.messages.get(Message.STANDARD_GENERAL_DISCLAIMER, language)
-              + "\n\n"
-              + EDStatic.legal(language, tErddapUrl));
-      writer.write("</div>\n");
-      endHtmlWriter(request, language, out, writer, tErddapUrl, loggedInAs, false);
-
+      if (useHtmlTemplates(request)) {
+        YouAreHere youAreHere =
+            EDStatic.getYouAreHere(
+                request,
+                language,
+                loggedInAs,
+                EDStatic.messages.get(Message.LEGAL_NOTICES_TITLE, language));
+        TemplateEngine engine = TemplateEngine.createPrecompiled(ContentType.Html);
+        engine.render(
+            "legal.html",
+            Map.of(
+                "endOfRequest", endOfRequest,
+                "tErddapUrl", tErddapUrl,
+                "language", language,
+                "youAreHere", youAreHere),
+            new WriterOutput(writer));
+        endHtmlWriter(request, language, out, writer, tErddapUrl, loggedInAs, false);
+      } else {
+        writer.write(
+            "<div class=\"standard_width\">\n"
+                + EDStatic.youAreHere(
+                    request,
+                    language,
+                    loggedInAs,
+                    EDStatic.messages.get(Message.LEGAL_NOTICES_TITLE, language))
+                + EDStatic.messages.get(Message.LEGAL_NOTICES, language)
+                + "\n"
+                + EDStatic.messages.get(Message.STANDARD_GENERAL_DISCLAIMER, language)
+                + "\n\n"
+                + EDStatic.legal(language, tErddapUrl));
+        writer.write("</div>\n");
+        endHtmlWriter(request, language, out, writer, tErddapUrl, loggedInAs, false);
+      }
     } catch (Throwable t) {
       EDStatic.rethrowClientAbortException(t); // first thing in catch{}
       writer.write(EDStatic.htmlForException(language, t));
@@ -5088,58 +5120,67 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       String endOfRequest,
       String queryString)
       throws Throwable {
-
     String tErddapUrl = EDStatic.erddapUrl(request, loggedInAs, language);
     OutputStream out = getHtmlOutputStreamUtf8(request, response);
     Writer writer =
-        getHtmlWriterUtf8(
-            request,
-            language,
-            loggedInAs,
-            "status.html", // was endOfRequest,
-            queryString,
-            "Status",
-            out);
-    try {
-      writer.write(
-          "<div class=\"standard_width\">\n"
-              + EDStatic.youAreHere(
-                  request, language, loggedInAs, EDStatic.messages.get(Message.STATUS, language))
-              + "<pre>");
-      StringBuilder sb = new StringBuilder();
-      EDStatic.addIntroStatistics(sb, EDStatic.config.showLoadErrorsOnStatusPage, this);
-
-      // append number of active threads
-      String traces = MustBe.allStackTraces(true, true);
-      int po = traces.indexOf('\n');
-      if (po > 0) sb.append(traces, 0, po + 1);
-      sb.append(
-          Math2.gcCallCount
-              + " gc calls, "
-              + EDStatic.requestsShed
-              + " requests shed, and "
-              + EDStatic.dangerousMemoryEmails
-              + " dangerousMemoryEmails since last major LoadDatasets\n");
-      sb.append(Math2.memoryString() + " " + Math2.xmxMemoryString() + "\n\n");
-
-      EDStatic.addCommonStatistics(sb);
-      sb.append(traces);
-      writer.write(XML.encodeAsHTML(sb.toString()));
-      writer.write("</pre>\n");
-      writer.write("</div>\n");
+        getHtmlWriterUtf8(request, language, loggedInAs, "status.html", queryString, "Status", out);
+    if (useHtmlTemplates(request)) {
+      Status status =
+          new Status(
+              gridDatasetHashMap == null ? 0 : gridDatasetHashMap.size(),
+              tableDatasetHashMap == null ? 0 : tableDatasetHashMap.size());
+      YouAreHere youAreHere =
+          EDStatic.getYouAreHere(
+              request, language, loggedInAs, EDStatic.messages.get(Message.STATUS, language));
+      TemplateEngine engine = TemplateEngine.createPrecompiled(ContentType.Html);
+      engine.render(
+          "status.jte",
+          Map.of(
+              "endOfRequest", endOfRequest,
+              "tErddapUrl", tErddapUrl,
+              "language", language,
+              "status", status,
+              "youAreHere", youAreHere),
+          new WriterOutput(writer));
       endHtmlWriter(request, language, out, writer, tErddapUrl, loggedInAs, false);
+    } else {
+      try {
+        String youAreHereHtml =
+            EDStatic.youAreHere(
+                request, language, loggedInAs, EDStatic.messages.get(Message.STATUS, language));
 
-      // as a convenience to admins, viewing status.html calls String2.flushLog()
-      String2.flushLog();
-    } catch (Throwable t) {
-      EDStatic.rethrowClientAbortException(t); // first thing in catch{}
-      writer.write(EDStatic.htmlForException(language, t));
-      writer.write("</div>\n");
-      endHtmlWriter(request, language, out, writer, tErddapUrl, loggedInAs, false);
+        StringBuilder sb = new StringBuilder();
+        EDStatic.addIntroStatistics(sb, EDStatic.config.showLoadErrorsOnStatusPage, this);
+        String traces = MustBe.allStackTraces(true, true);
+        int po = traces.indexOf('\n');
+        if (po > 0) sb.append(traces, 0, po + 1);
+        sb.append(
+            Math2.gcCallCount
+                + " gc calls, "
+                + EDStatic.requestsShed
+                + " requests shed, and "
+                + EDStatic.dangerousMemoryEmails
+                + " dangerousMemoryEmails since last major LoadDatasets\n");
+        sb.append(Math2.memoryString()).append(" ").append(Math2.xmxMemoryString()).append("\n\n");
+        EDStatic.addCommonStatistics(sb);
+        sb.append(traces);
 
-      // as a convenience to admins, viewing status.html calls String2.flushLog()
-      String2.flushLog();
-      throw t;
+        String statisticsHtml = XML.encodeAsHTML(sb.toString());
+
+        writer.write("<div class=\"standard_width\">\n");
+        writer.write(youAreHereHtml + "<pre>" + statisticsHtml + "</pre>\n");
+
+        writer.write("</div>\n");
+        endHtmlWriter(request, language, out, writer, tErddapUrl, loggedInAs, false);
+        String2.flushLog();
+      } catch (Throwable t) {
+        EDStatic.rethrowClientAbortException(t);
+        writer.write(EDStatic.htmlForException(language, t));
+        writer.write("</div>\n");
+        endHtmlWriter(request, language, out, writer, tErddapUrl, loggedInAs, false);
+        String2.flushLog();
+        throw t;
+      }
     }
   }
 
@@ -7540,7 +7581,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
         writer.write("<p>" + nMatchingHtml + "\n" + "<span class=\"N\">(" + refine + ")</span>\n");
 
         table.saveAsHtmlTable(
-            writer, "commonBGColor nowrap", null, 1, false, -1, false, false); // allowWrap
+            writer, "commonBGColor nowrap", null, false, -1, false, false); // allowWrap
 
         if (lastPage > 1) writer.write("\n<p>" + nMatchingHtml);
 
@@ -14079,86 +14120,109 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
         titleSA.set(row, tTitle);
       }
       table.setColumn(oodCol, outOfDateSA);
-
-      // write html response
-      writer.write("<div class=\"standard_width\">");
-      writer.write(EDStatic.youAreHere(request, language, loggedInAs, shortTitle));
-      writer.write(XML.encodeAsHTML(EDStatic.messages.get(Message.ADVC_OUT_OF_DATE, language)));
-      writer.write("\n<p>");
-      if (table.nRows() == 0) {
-        writer.write(
-            "["
-                + MessageFormat.format(EDStatic.messages.get(Message.N_MATCHING, language), "0")
-                + " "
-                + EDStatic.messages.get(Message.ADVN_OUT_OF_DATE, language)
-                + "]");
+      if (useHtmlTemplates(request)) {
+        // use html templates
+        YouAreHere youAreHere = EDStatic.getYouAreHere(request, language, loggedInAs, shortTitle);
+        TableOptions tableOptions =
+            new TableOptions.TableOptionsBuilder(table)
+                .otherClasses("commonBGColor")
+                .bgColor(null)
+                .writeUnits(false)
+                .timeColumn(mtCol)
+                .needEncodingAsHtml(false)
+                .allowWrap(false)
+                .build();
+        TemplateEngine engine = TemplateEngine.createPrecompiled(ContentType.Html);
+        engine.render(
+            "outofdatedatasets.jte",
+            Map.of(
+                "endOfRequest", endOfRequest,
+                "youAreHere", youAreHere,
+                "language", language,
+                "tErddapUrl", tErddapUrl,
+                "tableOptions", tableOptions,
+                "table", table),
+            new WriterOutput(writer));
+        endHtmlWriter(request, language, out, writer, tErddapUrl, loggedInAs, false);
       } else {
+        // write html response
+        writer.write("<div class=\"standard_width\">");
+        writer.write(EDStatic.youAreHere(request, language, loggedInAs, shortTitle));
+        writer.write(XML.encodeAsHTML(EDStatic.messages.get(Message.ADVC_OUT_OF_DATE, language)));
+        writer.write("\n<p>");
+        if (table.nRows() == 0) {
+          writer.write(
+              "["
+                  + MessageFormat.format(EDStatic.messages.get(Message.N_MATCHING, language), "0")
+                  + " "
+                  + EDStatic.messages.get(Message.ADVN_OUT_OF_DATE, language)
+                  + "]");
+        } else {
+          writer.write(
+              MessageFormat.format(
+                      EDStatic.messages.get(Message.N_MATCHING, language), "" + table.nRows())
+                  + " "
+                  + MessageFormat.format(
+                      EDStatic.messages.get(Message.GENERATED_AT, language),
+                      "<span class=\"N\">" + currentTimeZulu + "</span>")
+                  + "\n<br>");
+          table.saveAsHtmlTable(
+              writer,
+              "commonBGColor",
+              null,
+              false,
+              mtCol,
+              false, // writeUnits, timeColumn, needEncodingAsHtml,
+              false); // allowWrap
+        }
+        // autoRefresh message
         writer.write(
-            MessageFormat.format(
-                    EDStatic.messages.get(Message.N_MATCHING, language), "" + table.nRows())
-                + " "
+            "<p>"
                 + MessageFormat.format(
                     EDStatic.messages.get(Message.GENERATED_AT, language),
                     "<span class=\"N\">" + currentTimeZulu + "</span>")
-                + "\n<br>");
-        table.saveAsHtmlTable(
-            writer,
-            "commonBGColor",
-            null,
-            1, // other classes, bgColor, border,
-            false,
-            mtCol,
-            false, // writeUnits, timeColumn, needEncodingAsHtml,
-            false); // allowWrap
+                + "\n<br>"
+                + MessageFormat.format(
+                    EDStatic.messages.get(Message.AUTO_REFRESH, language),
+                    "" + refreshEveryNMinutes)
+                + "\n");
+
+        // addConstraints
+        writer.write(
+            "<h3><a class=\"selfLink\" id=\"Options\" href=\"#Options\" rel=\"bookmark\">"
+                + EDStatic.messages.get(Message.OPTIONS, language)
+                + "</a></h3>\n"
+                + XML.encodeAsHTML(EDStatic.messages.get(Message.ADD_CONSTRAINTS, language))
+                + "<br><a rel=\"bookmark\" href=\""
+                + tErddapUrl
+                + "/"
+                + start
+                + "html?&amp;outOfDate%3E=0.5\">"
+                + tErddapUrl
+                + "/"
+                + start
+                + "html?&amp;outOfDate&gt;=0.5</a> .\n"
+                + String2.replaceAll(
+                    EDStatic.messages.get(Message.PERCENT_ENCODE, language),
+                    "&erddapUrl;",
+                    tErddapUrl));
+
+        // list plain file types
+        writer.write(
+            "\n"
+                + "<p>"
+                + EDStatic.messages.get(Message.RESTFUL_INFORMATION_FORMATS, language)
+                + " \n("
+                + plainFileTypesString
+                + // not links, which would be indexed by search engines
+                ") <a rel=\"help\" href=\""
+                + tErddapUrl
+                + "/rest.html\">"
+                + EDStatic.messages.get(Message.RESTFUL_VIA_SERVICE, language)
+                + "</a>.\n");
+        writer.write("</div>\n");
+        endHtmlWriter(request, language, out, writer, tErddapUrl, loggedInAs, false);
       }
-
-      // autoRefresh message
-      writer.write(
-          "<p>"
-              + MessageFormat.format(
-                  EDStatic.messages.get(Message.GENERATED_AT, language),
-                  "<span class=\"N\">" + currentTimeZulu + "</span>")
-              + "\n<br>"
-              + MessageFormat.format(
-                  EDStatic.messages.get(Message.AUTO_REFRESH, language), "" + refreshEveryNMinutes)
-              + "\n");
-
-      // addConstraints
-      writer.write(
-          "<h3><a class=\"selfLink\" id=\"Options\" href=\"#Options\" rel=\"bookmark\">"
-              + EDStatic.messages.get(Message.OPTIONS, language)
-              + "</a></h3>\n"
-              + XML.encodeAsHTML(EDStatic.messages.get(Message.ADD_CONSTRAINTS, language))
-              + "<br><a rel=\"bookmark\" href=\""
-              + tErddapUrl
-              + "/"
-              + start
-              + "html?&amp;outOfDate%3E=0.5\">"
-              + tErddapUrl
-              + "/"
-              + start
-              + "html?&amp;outOfDate&gt;=0.5</a> .\n"
-              + String2.replaceAll(
-                  EDStatic.messages.get(Message.PERCENT_ENCODE, language),
-                  "&erddapUrl;",
-                  tErddapUrl));
-
-      // list plain file types
-      writer.write(
-          "\n"
-              + "<p>"
-              + EDStatic.messages.get(Message.RESTFUL_INFORMATION_FORMATS, language)
-              + " \n("
-              + plainFileTypesString
-              + // not links, which would be indexed by search engines
-              ") <a rel=\"help\" href=\""
-              + tErddapUrl
-              + "/rest.html\">"
-              + EDStatic.messages.get(Message.RESTFUL_VIA_SERVICE, language)
-              + "</a>.\n");
-
-      writer.write("</div>\n");
-      endHtmlWriter(request, language, out, writer, tErddapUrl, loggedInAs, false);
     } catch (Throwable t) {
       EDStatic.rethrowClientAbortException(t); // first thing in catch{}
       writer.write(EDStatic.htmlForException(language, t));
@@ -14979,7 +15043,6 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                 writer,
                 "commonBGColor",
                 null,
-                1,
                 false,
                 -1,
                 false,
@@ -16568,7 +16631,6 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                 writer,
                 "commonBGColor",
                 null,
-                1,
                 false,
                 -1,
                 false,
@@ -17521,7 +17583,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                 //    EDStatic.questionQuery(request.getQueryString())) +
                 "<br>&nbsp;\n"); // necessary for the blank line before the table (not <p>)
 
-        table.saveAsHtmlTable(writer, "commonBGColor", null, 1, false, -1, false, false);
+        table.saveAsHtmlTable(writer, "commonBGColor", null, false, -1, false, false);
 
         if (lastPage > 1) writer.write("\n<p>" + nMatchingHtml);
 
@@ -17717,55 +17779,86 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                               + requestUrl
                               + EDStatic.questionQuery(request.getQueryString()))
                       + "<br>&nbsp;\n";
-
-          writer.write(
-              "<div class=\"standard_width\">\n"
-                  +
-
-                  // getYouAreHereTable(
-                  EDStatic.youAreHere(
-                      request,
-                      language,
-                      loggedInAs,
-                      MessageFormat.format(
-                          EDStatic.messages.get(Message.LIST_OF_DATASETS, language),
-                          EDStatic.messages.get(Message.LIST_ALL, language)))
-                  + secondLine
-                  + nMatchingHtml);
-
-          /*//Or, search text
-          "&nbsp;\n" +
-          "<br>" + getSearchFormHtml(language, request, loggedInAs, EDStatic.messages.get(Message.OR_COMMA, language), ":\n<br>", "") +
-          //Or, by category
-          "<p>" + getCategoryLinksHtml(request, tErddapUrl) +
-          //Or,
-          "<p>" + EDStatic.orSearchWith +
-              getAdvancedSearchLink(loggedInAs,
-                  EDStatic.passThroughPIppQueryPage1(request))));
-          */
-
-          if (table.nRows() > 0) {
-
-            // show the table of all datasets
-            table.saveAsHtmlTable(writer, "commonBGColor", null, 1, false, -1, false, false);
-
-            if (lastPage > 1) writer.write("\n<p>" + nMatchingHtml);
-
-            // list plain file types
+          if (useHtmlTemplates(request)) {
+            YouAreHere youAreHere =
+                EDStatic.getYouAreHere(
+                    request,
+                    language,
+                    loggedInAs,
+                    MessageFormat.format(
+                        EDStatic.messages.get(Message.LIST_OF_DATASETS, language),
+                        EDStatic.messages.get(Message.LIST_ALL, language)));
+            TableOptions tableOptions =
+                new TableOptions.TableOptionsBuilder(table)
+                    .otherClasses("commonBGColor")
+                    .bgColor(null)
+                    .writeUnits(false)
+                    .timeColumn(-1)
+                    .needEncodingAsHtml(false)
+                    .allowWrap(false)
+                    .build();
+            TemplateEngine engine = TemplateEngine.createPrecompiled(ContentType.Html);
+            engine.render(
+                "info.jte",
+                Map.of(
+                    "endOfRequest", endOfRequest,
+                    "youAreHere", youAreHere,
+                    "language", language,
+                    "tErddapUrl", tErddapUrl,
+                    "tableOptions", tableOptions,
+                    "table", table,
+                    "secondLine", secondLine,
+                    "nMatchingHtml", nMatchingHtml),
+                new WriterOutput(writer));
+          } else {
             writer.write(
-                "\n"
-                    + "<p>"
-                    + EDStatic.messages.get(Message.RESTFUL_INFORMATION_FORMATS, language)
-                    + " \n("
-                    + plainFileTypesString
-                    + // not links, which would be indexed by search engines
-                    ") <a rel=\"help\" href=\""
-                    + tErddapUrl
-                    + "/rest.html\">"
-                    + EDStatic.messages.get(Message.RESTFUL_VIA_SERVICE, language)
-                    + "</a>.\n");
-          }
+                "<div class=\"standard_width\">\n"
+                    +
 
+                    // getYouAreHereTable(
+                    EDStatic.youAreHere(
+                        request,
+                        language,
+                        loggedInAs,
+                        MessageFormat.format(
+                            EDStatic.messages.get(Message.LIST_OF_DATASETS, language),
+                            EDStatic.messages.get(Message.LIST_ALL, language)))
+                    + secondLine
+                    + nMatchingHtml);
+
+            /*//Or, search text
+            "&nbsp;\n" +
+            "<br>" + getSearchFormHtml(language, request, loggedInAs, EDStatic.messages.get(Message.OR_COMMA, language), ":\n<br>", "") +
+            //Or, by category
+            "<p>" + getCategoryLinksHtml(request, tErddapUrl) +
+            //Or,
+            "<p>" + EDStatic.orSearchWith +
+                getAdvancedSearchLink(loggedInAs,
+                    EDStatic.passThroughPIppQueryPage1(request))));
+            */
+
+            if (table.nRows() > 0) {
+
+              // show the table of all datasets
+              table.saveAsHtmlTable(writer, "commonBGColor", null, false, -1, false, false);
+
+              if (lastPage > 1) writer.write("\n<p>" + nMatchingHtml);
+
+              // list plain file types
+              writer.write(
+                  "\n"
+                      + "<p>"
+                      + EDStatic.messages.get(Message.RESTFUL_INFORMATION_FORMATS, language)
+                      + " \n("
+                      + plainFileTypesString
+                      + // not links, which would be indexed by search engines
+                      ") <a rel=\"help\" href=\""
+                      + tErddapUrl
+                      + "/rest.html\">"
+                      + EDStatic.messages.get(Message.RESTFUL_VIA_SERVICE, language)
+                      + "</a>.\n");
+            }
+          }
           // jsonld
           if (EDStatic.config.jsonldActive) { // && isSchemaDotOrgEnabled()){
             try {
@@ -17798,10 +17891,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                       + MustBe.throwableToString(e));
             }
           }
-
-          writer.write("</div>\n");
           endHtmlWriter(request, language, out, writer, tErddapUrl, loggedInAs, false);
-
         } catch (Throwable t) {
           EDStatic.rethrowClientAbortException(t); // first thing in catch{}
           writer.write(EDStatic.htmlForException(language, t));
@@ -18011,7 +18101,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
         sa.add(parts[0]);
         boolean sortByTitle = true;
         Table dsTable = makeHtmlDatasetTable(request, language, loggedInAs, sa, sortByTitle);
-        dsTable.saveAsHtmlTable(writer, "commonBGColor", null, 1, false, -1, false, false);
+        dsTable.saveAsHtmlTable(writer, "commonBGColor", null, false, -1, false, false);
 
         // html format the valueSA values
         String externalLinkHtml = EDStatic.messages.externalLinkHtml(language, tErddapUrl);
@@ -18848,61 +18938,79 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
             queryString,
             EDStatic.messages.get(Message.SUBSCRIPTIONS_TITLE, language),
             out);
-    try {
-      writer.write(
-          "<div class=\"standard_width\">\n"
-              + EDStatic.youAreHere(
-                  request,
-                  language,
-                  loggedInAs,
-                  EDStatic.messages.get(Message.SUBSCRIPTIONS_TITLE, language))
-              + EDStatic.messages.get(Message.SUBSCRIPTION_0_HTML, language)
-              + MessageFormat.format(
-                  EDStatic.messages.get(Message.SUBSCRIPTION_1_HTML, language), tErddapUrl)
-              + "\n");
-      writer.write(
-          "<p><strong>"
-              + EDStatic.messages.get(Message.OPTIONS, language)
-              + ":</strong>\n"
-              + "<ul>\n"
-              + "<li> <a rel=\"bookmark\" href=\""
-              + tErddapUrl
-              + "/"
-              + Subscriptions.ADD_HTML
-              + "\">"
-              + EDStatic.messages.get(Message.SUBSCRIPTION_ADD, language)
-              + "</a>\n"
-              + "<li> <a rel=\"bookmark\" href=\""
-              + tErddapUrl
-              + "/"
-              + Subscriptions.VALIDATE_HTML
-              + "\">"
-              + EDStatic.messages.get(Message.SUBSCRIPTION_VALIDATE, language)
-              + "</a>\n"
-              + "<li> <a rel=\"bookmark\" href=\""
-              + tErddapUrl
-              + "/"
-              + Subscriptions.LIST_HTML
-              + "\">"
-              + EDStatic.messages.get(Message.SUBSCRIPTION_LIST, language)
-              + "</a>\n"
-              + "<li> <a rel=\"bookmark\" href=\""
-              + tErddapUrl
-              + "/"
-              + Subscriptions.REMOVE_HTML
-              + "\">"
-              + EDStatic.messages.get(Message.SUBSCRIPTION_REMOVE, language)
-              + "</a>\n"
-              + "</ul>\n");
-      writer.write("</div>\n");
+    if (useHtmlTemplates(request)) {
+      YouAreHere youAreHere =
+          EDStatic.getYouAreHere(
+              request,
+              language,
+              loggedInAs,
+              EDStatic.messages.get(Message.SUBSCRIPTIONS_TITLE, language));
+      TemplateEngine engine = TemplateEngine.createPrecompiled(ContentType.Html);
+      engine.render(
+          "subscription.jte",
+          Map.of(
+              "endOfRequest", endOfRequest,
+              "tErddapUrl", tErddapUrl,
+              "youAreHere", youAreHere,
+              "language", language),
+          new WriterOutput(writer));
       endHtmlWriter(request, language, out, writer, tErddapUrl, loggedInAs, false);
-
-    } catch (Throwable t) {
-      EDStatic.rethrowClientAbortException(t); // first thing in catch{}
-      writer.write(EDStatic.htmlForException(language, t));
-      writer.write("</div>\n");
-      endHtmlWriter(request, language, out, writer, tErddapUrl, loggedInAs, false);
-      throw t;
+    } else {
+      try {
+        writer.write(
+            "<div class=\"standard_width\">\n"
+                + EDStatic.youAreHere(
+                    request,
+                    language,
+                    loggedInAs,
+                    EDStatic.messages.get(Message.SUBSCRIPTIONS_TITLE, language))
+                + EDStatic.messages.get(Message.SUBSCRIPTION_0_HTML, language)
+                + MessageFormat.format(
+                    EDStatic.messages.get(Message.SUBSCRIPTION_1_HTML, language), tErddapUrl)
+                + "\n");
+        writer.write(
+            "<p><strong>"
+                + EDStatic.messages.get(Message.OPTIONS, language)
+                + ":</strong>\n"
+                + "<ul>\n"
+                + "<li> <a rel=\"bookmark\" href=\""
+                + tErddapUrl
+                + "/"
+                + Subscriptions.ADD_HTML
+                + "\">"
+                + EDStatic.messages.get(Message.SUBSCRIPTION_ADD, language)
+                + "</a>\n"
+                + "<li> <a rel=\"bookmark\" href=\""
+                + tErddapUrl
+                + "/"
+                + Subscriptions.VALIDATE_HTML
+                + "\">"
+                + EDStatic.messages.get(Message.SUBSCRIPTION_VALIDATE, language)
+                + "</a>\n"
+                + "<li> <a rel=\"bookmark\" href=\""
+                + tErddapUrl
+                + "/"
+                + Subscriptions.LIST_HTML
+                + "\">"
+                + EDStatic.messages.get(Message.SUBSCRIPTION_LIST, language)
+                + "</a>\n"
+                + "<li> <a rel=\"bookmark\" href=\""
+                + tErddapUrl
+                + "/"
+                + Subscriptions.REMOVE_HTML
+                + "\">"
+                + EDStatic.messages.get(Message.SUBSCRIPTION_REMOVE, language)
+                + "</a>\n"
+                + "</ul>\n");
+        writer.write("</div>\n");
+        endHtmlWriter(request, language, out, writer, tErddapUrl, loggedInAs, false);
+      } catch (Throwable t) {
+        EDStatic.rethrowClientAbortException(t); // first thing in catch{}
+        writer.write(EDStatic.htmlForException(language, t));
+        writer.write("</div>\n");
+        endHtmlWriter(request, language, out, writer, tErddapUrl, loggedInAs, false);
+        throw t;
+      }
     }
   }
 
@@ -23766,16 +23874,32 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
 
     Writer writer = File2.getBufferedWriterUtf8(out);
 
-    // write the information for this protocol (dataset list table and instructions)
-    String tErddapUrl = EDStatic.erddapUrl(request, loggedInAs, language);
-    writer.write(EDStatic.startHeadHtml(language, tErddapUrl, addToTitle));
-    if (String2.isSomething(addToHead)) writer.write("\n" + addToHead);
-    writer.write("\n</head>\n");
-    writer.write(EDStatic.startBodyHtml(request, language, loggedInAs, endOfRequest, queryString));
-    writer.write("\n");
-    writer.write(
-        HtmlWidgets.htmlTooltipScript(EDStatic.imageDirUrl(request, loggedInAs, language)));
-    writer.flush(); // Steve Souder says: the sooner you can send some html to user, the better
+    // Pages which support full HTML template layouts need to be added here
+    // TODO remove this check once all pages support HTML templating
+    boolean isSupportedHtmlLayoutPage =
+        List.of(
+                "info/index.html",
+                "legal.html",
+                "outOfDateDatasets.html",
+                "status.html",
+                "subscriptions/index.html")
+            .contains(endOfRequest);
+
+    if (!useHtmlTemplates(request) || !isSupportedHtmlLayoutPage) {
+      // write the information for this protocol (dataset list table and instructions)
+      String tErddapUrl = EDStatic.erddapUrl(request, loggedInAs, language);
+      writer.write(EDStatic.startHeadHtml(language, tErddapUrl, addToTitle));
+      if (String2.isSomething(addToHead)) writer.write("\n" + addToHead);
+      writer.write("\n</head>\n");
+      writer.write(
+          EDStatic.startBodyHtml(request, language, loggedInAs, endOfRequest, queryString));
+      writer.write("\n");
+      writer.write(
+          HtmlWidgets.htmlTooltipScript(EDStatic.imageDirUrl(request, loggedInAs, language)));
+      writer.flush(); // Steve Souders says: the sooner you can send some html to user, the better
+    } else {
+      request.setAttribute("SUPPRESS_END_HTML_WRITER", true);
+    }
     return writer;
   }
 
@@ -23803,9 +23927,18 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       throws Throwable {
 
     try (writer) {
-      // end of document
-      writer.write(EDStatic.endBodyHtml(request, language, tErddapUrl, loggedInAs));
-      writer.write("\n</html>\n");
+      // endOfRequest is not available here, so we check for a request
+      // attribute set in getHtmlWriterUtf8 to determine if
+      // we should suppress writing footer content here
+      // (if an html template layout is in use)
+      boolean supressEndHtmlWriter =
+          (Boolean)
+              Objects.requireNonNullElse(request.getAttribute("SUPPRESS_END_HTML_WRITER"), false);
+      if (!useHtmlTemplates(request) || !supressEndHtmlWriter) {
+        // end of document
+        writer.write(EDStatic.endBodyHtml(request, language, tErddapUrl, loggedInAs));
+        writer.write("\n</html>\n");
+      }
 
       // essential
       writer.flush();
