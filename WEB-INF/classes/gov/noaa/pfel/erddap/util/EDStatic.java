@@ -944,15 +944,34 @@ public class EDStatic {
   }
 
   /**
-   * If loggedInAs is null, this returns baseUrl, else baseHttpsUrl (neither has slash at end).
+   * Return host and path prefix (if applicable) url fragment, determined by request headers.
    *
-   * @param loggedInAs
-   * @return If loggedInAs == null, this returns baseUrl, else baseHttpsUrl (neither has slash at
-   *     end).
+   * @param request the request
+   * @return ERDDAP url fragment with host and path prefix (if set)
+   */
+  private static String getHostAndPathFromRequest(HttpServletRequest request) {
+    String url = request.getHeader("Host");
+    if (request.getHeader("X-Forwarded-Prefix") != null) {
+      url += request.getHeader("X-Forwarded-Prefix");
+    }
+    return url;
+  }
+
+  /**
+   * Return the base ERDDAP URL. If useHeadersForUrl is true, use Host header to determine hostname
+   * and check X-Forwarded-Prefix to determine if a prefix path should be added before /erddap
+   * (config.warName).
+   *
+   * <p>If useHeadersForUrl is false, use configured baseUrl or baseHttpsUrl. If loggedInAs is null,
+   * this returns baseUrl, else baseHttpsUrl (neither has slash at end).
+   *
+   * @param request the request
+   * @param loggedInAs the logged in user
+   * @return ERDDAP base URL (example: http://erddap.yourdomain.com)
    */
   public static String baseUrl(HttpServletRequest request, String loggedInAs) {
     if (EDStatic.config.useHeadersForUrl && request != null && request.getHeader("Host") != null) {
-      return request.getScheme() + "://" + request.getHeader("Host");
+      return request.getScheme() + "://" + getHostAndPathFromRequest(request);
     }
     return loggedInAs == null ? config.baseUrl : config.baseHttpsUrl;
   }
@@ -1000,7 +1019,7 @@ public class EDStatic {
         && request != null
         && request.getHeader("Host") != null
         && ("https".equals(request.getScheme()) || !request.getHeader("Host").contains(":"))) {
-      httpsUrl = "https://" + request.getHeader("Host") + "/" + config.warName;
+      httpsUrl = "https://" + getHostAndPathFromRequest(request) + "/" + config.warName;
     }
     return httpsUrl + (language == 0 ? "" : "/" + TranslateMessages.languageCodeList.get(language));
   }
