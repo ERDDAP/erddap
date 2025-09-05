@@ -108,6 +108,7 @@ public class HandlerFactory {
             "EDDTableFromAwsXmlFiles",
             "EDDTableFromColumnarAsciiFiles",
             "EDDTableFromHttpGet",
+            "EDDTableFromMqtt",
             "EDDTableFromInvalidCRAFiles",
             "EDDTableFromJsonlCSVFiles",
             "EDDTableFromMultidimNcFiles",

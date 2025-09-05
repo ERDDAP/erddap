@@ -821,6 +821,18 @@ public class Table {
   }
 
   /**
+   * This returns the PrimitiveArrays for all of the columns.
+   *
+   * @return the PrimitiveArray[]
+   * @throws Exception if col is invalid
+   */
+  public PrimitiveArray[] getColumns() {
+    PrimitiveArray pa[] = new PrimitiveArray[columns.size()];
+    for (int i = 0; i < columns.size(); i++) pa[i] = getColumn(i);
+    return pa;
+  }
+
+  /**
    * This simplifies (changes the datatype to the simplest possible type) a column.
    *
    * @param col the column to be simplified, 0...
