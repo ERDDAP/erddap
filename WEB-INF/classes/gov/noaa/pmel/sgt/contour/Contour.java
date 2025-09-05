@@ -25,7 +25,6 @@ import gov.noaa.pmel.sgt.dm.SGTGrid;
 import gov.noaa.pmel.util.Debug;
 import gov.noaa.pmel.util.GeoDate;
 import gov.noaa.pmel.util.Point2D;
-import gov.noaa.pmel.util.Range2D;
 import java.awt.Graphics;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -146,17 +145,6 @@ public class Contour implements PropertyChangeListener {
   }
 
   /**
-   * Construct a <code>Contour</code> object using a range to define the <code>ContourLevels</code>.
-   */
-  public Contour(CartesianGraph cg, SGTGrid grid, Range2D range) {
-    cg_ = cg;
-    grid_ = grid;
-    contourLevels_ = ContourLevels.getDefault(range);
-    init();
-    upToDate_ = false;
-  }
-
-  /**
    * Construct a <code>Contour</code> object using an array of levels to define the <code>
    * ContourLevels</code>.
    */
@@ -181,20 +169,6 @@ public class Contour implements PropertyChangeListener {
   /** Get a reference to the <code>ContourLevels</code> object. */
   public ContourLevels getContourLevels() {
     return contourLevels_;
-  }
-
-  /**
-   * Set a <code>SGTGrid</code> object to be used to mask the data grid. The Z values are used to
-   * determine the masking, values of NaN and non-zero are set as MISSING.
-   */
-  public void setMask(SGTGrid mask) {
-    if (mask_ == null || !mask_.equals(mask)) upToDate_ = false;
-    mask_ = mask;
-  }
-
-  /** Get the mask. */
-  public SGTGrid getMask() {
-    return mask_;
   }
 
   /**
@@ -746,7 +720,6 @@ public class Contour implements PropertyChangeListener {
         if (space / ark < 0.80 || !roomFound) {
           //	  drawLineSegment(g, x[k], y[k], x[k+1], y[k+1]);
           k = k + 1;
-          continue;
         } else {
           //
           // add label to contour line

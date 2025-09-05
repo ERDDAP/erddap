@@ -6,10 +6,6 @@ import com.google.common.collect.ImmutableList;
 public class DDSParserTokenManager implements DDSParserConstants {
   public java.io.PrintStream debugStream = System.out;
 
-  public void setDebugStream(java.io.PrintStream ds) {
-    debugStream = ds;
-  }
-
   private final int jjStopAtPos(int pos, int kind) {
     jjmatchedKind = kind;
     jjmatchedPos = pos;
@@ -763,35 +759,10 @@ public class DDSParserTokenManager implements DDSParserConstants {
     input_stream = stream;
   }
 
-  public DDSParserTokenManager(SimpleCharStream stream, int lexState) {
-    this(stream);
-    SwitchTo(lexState);
-  }
-
-  public void ReInit(SimpleCharStream stream) {
-    jjmatchedPos = jjnewStateCnt = 0;
-    curLexState = defaultLexState;
-    input_stream = stream;
-    ReInitRounds();
-  }
-
   private final void ReInitRounds() {
     int i;
     jjround = 0x80000001;
     for (i = 205; i-- > 0; ) jjrounds[i] = 0x80000000;
-  }
-
-  public void ReInit(SimpleCharStream stream, int lexState) {
-    ReInit(stream);
-    SwitchTo(lexState);
-  }
-
-  public void SwitchTo(int lexState) {
-    if (lexState != 0)
-      throw new TokenMgrError(
-          "Error: Ignoring invalid lexical state : " + lexState + ". State unchanged.",
-          TokenMgrError.INVALID_LEXICAL_STATE);
-    else curLexState = lexState;
   }
 
   private final Token jjFillToken() {

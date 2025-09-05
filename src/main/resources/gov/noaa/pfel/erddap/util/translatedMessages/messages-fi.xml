@@ -64,7 +64,6 @@ Pakkaamisen pyytäminen on valinnaista, mutta pakatut vastaukset ovat usein 3-10
 <acronyms>Lyhenteet</acronyms>
 <addConstraints>Voit lisätä tabledap-tyyppisiä rajoituksia tämän verkkosivun pyyntöihin,
 esimerkiksi,</addConstraints>
-<addVarWhereAttName>Valinnainen: Määritä määritteen nimi.</addVarWhereAttName>
 <addVarWhereAttValue>Valinnainen: Määritä määritteen arvo.</addVarWhereAttValue>
 <addVarWhere><![CDATA[
 
@@ -298,9 +297,6 @@ Sitten voit napsauttaa luokkaa nähdäksesi luettelon asiaankuuluvista tietojouk
 <categorySearchHtml><![CDATA[
 Valitse (n) <kbd>{0}</kbd>
 ]]></categorySearchHtml>
-<categorySearchDifferentHtml><![CDATA[
-Etsi tietojoukkoja eri <kbd>&category;</kbd>
-]]></categorySearchDifferentHtml>
 <categoryClickHtml>Napsauta luokkaa (attribuutin arvoa) nähdäksesi luettelon asiaankuuluvista tietojoukoista.</categoryClickHtml>
 <categoryNotAnOption>Kun attribuutti=&quot;{0}&quot;, value=&quot;{1}&quot; ei ole vaihtoehto.</categoryNotAnOption>
 <caughtInterrupted>kiinni currentThread().isInterrupted().</caughtInterrupted>
@@ -1814,9 +1810,6 @@ eri ajasta tai paikasta).
 
 ]]></dafTableTooltip>
 <dasTitle>Tietojoukon attribuuttirakenne (.das) tälle tietojoukolle</dasTitle>
-
-<!--  Viesti, joka näytetään, jos tietoja ei voi ladata (esim. SeaWiFS &lt;=14 päivää vanha).  -->
-<dataAccessNotAllowed>[Anteeksi. Näitä tietoja ei voi ladata.]</dataAccessNotAllowed>
 <databaseUnableToConnect>Tietokantaan yhdistäminen ei onnistu.</databaseUnableToConnect>
 <dataProviderForm>Tietojen tarjoajan lomake</dataProviderForm>
 <dataProviderFormP1>Tietojen tarjoajan lomake – osa 1</dataProviderFormP1>
@@ -2142,10 +2135,6 @@ Napsauta &widgetSubmitButton; lähettääksesi nämä tiedot ERDDAP järjestelm�
 <br>Korjaa nämä ongelmat ja sitten &quot;Lähetä&quot; tämä lomakkeen osa uudelleen.
 
 ]]></dpf_fixProblem>
-<dpf_yourName>Sinun nimesi</dpf_yourName>
-<dpf_emailAddress>Sähköpostiosoite</dpf_emailAddress>
-<dpf_Timestamp>Aikaleima</dpf_Timestamp>
-<dpf_frequency>Taajuus</dpf_frequency>
 <dpf_title>otsikko</dpf_title>
 <dpf_titleTooltip><![CDATA[
 
@@ -2223,12 +2212,6 @@ Tämä on lisenssi ja vastuuvapauslauseke näiden tietojen käyttöön.
 <br><kbd>
 
 ]]></dpf_licenseTooltip>
-<dpf_howYouStoreData><![CDATA[
-
-<br>• Virhe:
-Määritä (alla), kuinka ruudukko- tai taulukkotietosi tallennetaan.
-
-]]></dpf_howYouStoreData>
 <dpf_provideIfAvailable>Anna tiedot, jos ne ovat saatavilla tietojoukollesi.</dpf_provideIfAvailable>
 <dpf_acknowledgement>tunnustus</dpf_acknowledgement>
 <dpf_acknowledgementTooltip><![CDATA[
@@ -2530,10 +2513,7 @@ Tämän tietojoukon lähetyksen aikaleima on &tTimestamp; .
 <dtWMS>Napsauta saadaksesi lisätietoja karttojen tekemisestä näistä tiedoista tämän tietojoukon Web-karttapalvelun kautta.</dtWMS>
 <EasierAccessToScientificData>Helpompi pääsy tieteellisiin tietoihin</EasierAccessToScientificData>
 
-<!--  EDD-viestit näkyvät tabledap- ja griddap-tietojen käyttölomakkeilla.  -->
-<EDDClickOnSubmitHtml><![CDATA[
-Napsauta <kbd>Submit</kbd> .
-]]></EDDClickOnSubmitHtml>
+<!--EDD-viestit näkyvät tabledap- ja griddap Data Access -muodossa.-->
 <EDDDatasetID>Tietojoukon tunnus</EDDDatasetID>
 <EDDFgdc>FGDC</EDDFgdc>
 <EDDFgdcMetadata>FGDC-STD-001-1998 Metatiedot</EDDFgdcMetadata>
@@ -2546,9 +2526,7 @@ Napsauta <kbd>Submit</kbd> .
 <EDDInformation>Tiedot</EDDInformation>
 <EDDSummary>Yhteenveto</EDDSummary>
 <EDDDatasetTitle>Tietojoukon otsikko</EDDDatasetTitle>
-<EDDDownloadData>Lataa tiedot</EDDDownloadData>
 <EDDMakeAGraph>Tee kaavio</EDDMakeAGraph>
-<EDDMakeAMap>Tee kartta</EDDMakeAMap>
 <EDDMinimum>Minimi</EDDMinimum>
 <EDDMaximum>Enimmäismäärä</EDDMaximum>
 <EDDFileType>Tiedostotyyppi:</EDDFileType>
@@ -2616,8 +2594,6 @@ Se tekee URL-osoitteen puolestasi.
 ]]></EDDGridDownloadDataTooltip>
 <EDDGridDimension>Mitat</EDDGridDimension>
 <EDDGridDimensionRanges>Mitat</EDDGridDimensionRanges>
-<EDDGridFirst>Ensimmäinen</EDDGridFirst>
-<EDDGridLast>Kestää</EDDGridLast>
 <EDDGridStart>alkaa</EDDGridStart>
 <EDDGridStop>Lopettaa</EDDGridStop>
 <EDDGridStartStopTooltip><![CDATA[
@@ -2661,14 +2637,6 @@ tämä on dimensioiden arvojen keskimääräinen etäisyys (mitan yksiköissä) 
 Hieman omituinen, epätasainen välilyönti osoittaa usein, että yksi tai muutama tiedosto puuttuu tai on viallinen muuten täysin tasavälisessä tietojoukossa.
 
 ]]></EDDGridSpacingTooltip>
-<EDDGridDimensionFirstTooltip><![CDATA[
-Tiedoksi:
-tämä on ulottuvuuden ensimmäinen arvo.
-]]></EDDGridDimensionFirstTooltip>
-<EDDGridDimensionLastTooltip><![CDATA[
-Tiedoksi:
-tämä on ulottuvuuden viimeinen arvo.
-]]></EDDGridDimensionLastTooltip>
 <EDDGridDownloadTooltip><![CDATA[
 Valitse muuttujat, jotka haluat ladata:
 <br>* Pelkän mittatietojen lataaminen:
@@ -2944,10 +2912,6 @@ Esimerkiksi:
 
 <!--  Nämä viestit näytetään, kun näyttöön tulee virheilmoitus.  -->
 <errorTitle>Virhe</errorTitle>
-<errorRequestUrl>Pyyntösi URL-osoite:</errorRequestUrl>
-<errorRequestQuery>Pyyntökyselysi:</errorRequestQuery>
-<errorTheError>Virhe:</errorTheError>
-<errorCopyFrom>Ei voida kopioida kohteesta {0}.</errorCopyFrom>
 <errorFileNotFound>Tiedostoa ei löydy: {0}.</errorFileNotFound>
 <errorFileNotFoundImage>Tiedostoa ei löydy välimuistista. Luo kuva uudelleen ja yritä uudelleen.</errorFileNotFoundImage>
 <errorInternal>Sisäinen virhe:</errorInternal>
@@ -2969,6 +2933,7 @@ Esimerkiksi:
 <externalLink>(Ulkoinen linkki)</externalLink>
 <externalWebSite>Tämä linkki ulkoiselle verkkosivustolle ei ole suositus.</externalWebSite>
 <fileHelp_asc>Näytä OPeNDAP-tyylinen ISO-8859-1 pilkuilla eroteltu teksti.</fileHelp_asc>
+<fileHelp_croissant>Download &quot;Croissant schema&quot;</fileHelp_croissant>
 <fileHelp_csv>Lataa ISO-8859-1 pilkuilla eroteltu tekstitaulukko (rivi 1: nimet; rivi 2: yksiköt; ISO 8601 kertaa).</fileHelp_csv>
 <fileHelp_csvp>Lataa ISO-8859-1 .csv-tiedosto, jonka rivi on 1: nimi (yksiköt). Ajat ovat ISO 8601 merkkijonoja.</fileHelp_csvp>
 <fileHelp_csv0>Lataa ISO-8859-1 .csv-tiedosto ilman sarakkeiden nimiä tai yksiköitä. Ajat ovat ISO 8601 merkkijonoja.</fileHelp_csv0>
@@ -2980,7 +2945,6 @@ Esimerkiksi:
 <fileHelpTable_esriCsv>Lataa ISO_8859_1 .csv-tiedosto ESRI:n ArcGIS 9.x:lle ja sitä vanhemmille (erilliset päivämäärä- ja aikasarakkeet).</fileHelpTable_esriCsv>
 <fileHelp_fgdc>Näytä tietojoukon UTF-8 FGDC .xml -metatiedot.</fileHelp_fgdc>
 <fileHelp_geoJson>Lataa pituusaste, leveysaste ja muut sarakkeet UTF-8 GeoJSON .json-tiedostona.</fileHelp_geoJson>
-<fileHelp_graph>Tarkastele Make A Graph -verkkosivua.</fileHelp_graph>
 <fileHelpGrid_help>Tarkastele verkkosivua, jossa on griddapin kuvaus.</fileHelpGrid_help>
 <fileHelpTable_help>Tarkastele verkkosivua, jossa on tabledap-kuvaus.</fileHelpTable_help>
 <fileHelp_html>Näytä OPeNDAP-tyylinen HTML-tietojen käyttölomake.</fileHelp_html>
@@ -3011,7 +2975,6 @@ Esimerkiksi:
 <fileHelpTable_odvTxt>Lataa pituusaste, leveysaste, aika ja muut sarakkeet ISO-8859-1 ODV Generic Spreadsheet -tiedostona (.txt).</fileHelpTable_odvTxt>
 <fileHelp_parquet>Lataa parquet-tiedostona. Metadata sisältää sarakkeiden nimiä (&quot;kolumn_nimet&quot;) ja yksiköitä (&quot;column_units&quot;).</fileHelp_parquet>
 <fileHelp_parquet_with_meta>Download &quot;Parquet-tiedosto, jossa on yksityiskohtaiset metatiedot.</fileHelp_parquet_with_meta>
-<fileHelp_subset>Tarkastele HTML-lomaketta, joka käyttää fasetoitua hakua tietojen osajoukkojen poimimisen yksinkertaistamiseksi.</fileHelp_subset>
 <fileHelp_timeGaps>Tarkastele UTF-8-luetteloa aika-arvojen aukoista, jotka ovat suurempia kuin mediaaniväli.</fileHelp_timeGaps>
 <fileHelp_tsv>Lataa ISO-8859-1 sarkaimilla eroteltu tekstitaulukko (rivi 1: nimet; rivi 2: yksiköt; ISO 8601 kertaa).</fileHelp_tsv>
 <fileHelp_tsvp>Lataa ISO-8859-1 .tsv-tiedosto, jonka rivi on 1: nimi (yksiköt). Ajat ovat ISO 8601 merkkijonoja.</fileHelp_tsvp>
@@ -3031,7 +2994,6 @@ Esimerkiksi:
 
 <!--  Kuvauksen ja varoituksen sanamuoto on epämääräinen yhden tai useamman tietojoukon sallimiseksi.  -->
 <filesDescription>ERDDAP:n &quot;tiedostojärjestelmän&quot; avulla voit selata virtuaalista tiedostojärjestelmää ja ladata lähdetietotiedostoja.</filesDescription>
-<filesSort>Napsauta otsikkoa (esim. Nimi, Viimeksi muokattu, Koko) muuttaaksesi lajittelujärjestystä.  &quot;Viimeksi muokattu&quot; käyttää zulun aikavyöhykettä.</filesSort>
 <filesWarning><![CDATA[
 
 Tietojoukon metatiedot ja muuttujien nimet voivat näissä lähdetiedostoissa olla erilaisia ​​kuin muualla ERDDAP :ssa! Voit käyttää sen sijaan tietojoukon Data Access Form -lomaketta.
@@ -3476,13 +3438,6 @@ Tällä rivillä on kaikkien muiden muuttujien summa.
 Esimerkiksi orderByMax(&quot;stationID, time/1day&quot;) luo ryhmän kullekin stationID kullekin päivälle ja laskee ja palauttaa muiden muuttujien summan.
 
 ]]></functionOrderByTooltip>
-<functionOrderByExtra><![CDATA[
-
-Määritä orderByClosest -arvolle väli (käyttäen muotoa n[timeUnits], esim.
-1 tunti).
-<br>Määritä orderByLimit rivien enimmäismäärä ryhmää kohden tässä.
-
-]]></functionOrderByExtra>
 <functionOrderBySort><![CDATA[
 
 Tämä paikka on {0} tärkeä orderBy ...
@@ -3495,7 +3450,6 @@ Tämä paikka on {0} tärkeä orderBy ...
 <functionOrderBySort3>kolmanneksi eniten</functionOrderBySort3>
 <functionOrderBySort4>neljänneksi eniten</functionOrderBySort4>
 <functionOrderBySortLeast>vähiten</functionOrderBySortLeast>
-<functionOrderBySortRowMax>Vain rivi, jolla on suurin arvo, säilytetään.</functionOrderBySortRowMax>
 <generatedAt>Tämä verkkosivu luotiin {0}.</generatedAt>
 <geoServicesDescription><![CDATA[
 
@@ -3800,7 +3754,6 @@ Oletusarvo on ei mitään (käyttämätön).
 <!--  esim. {0}=WMS tai listAll  -->
 <listOfDatasets>Luettelo {0} tietojoukosta</listOfDatasets>
 <listAll>Kaikki</listAll>
-<LogIn>Kirjaudu sisään</LogIn>
 <login>Kirjaudu sisään</login>
 <loginHTML><![CDATA[
 
@@ -3859,22 +3812,15 @@ Kuka tahansa, jolla on Google-sähköpostitili tai ORCID iD, voi kirjautua sisä
 Vain henkilöt, jotka ovat sopineet tämän ERDDAP :n ylläpitäjän kanssa, voivat kirjautua sisään.
 
 ]]></loginDescribeOpenID>
-<loginErddap>Kirjaudu sisään ERDDAP:iin</loginErddap>
 <loginCanNot>Tätä ERDDAP:tä ei ole määritetty sallimaan käyttäjien kirjautua sisään.</loginCanNot>
 <loginAreNot>Et ole kirjautunut sisään.</loginAreNot>
 <loginToLogIn>Kirjautua sisään</loginToLogIn>
-<loginEmailAddress>sähköpostiosoite</loginEmailAddress>
 <loginYourEmailAddress>Sähköpostiosoitteesi</loginYourEmailAddress>
 <loginUserName>Käyttäjänimi</loginUserName>
 <loginPassword>Salasana</loginPassword>
 <loginUserNameAndPassword>Käyttäjänimi ja salasana</loginUserNameAndPassword>
 <loginGoogleSignIn>Todennus Google-tililläsi.</loginGoogleSignIn>
 <loginOrcidSignIn>Todenna ORCID iD:lläsi.</loginOrcidSignIn>
-<loginOpenID>Kirjaudu sisään OpenID-URL-osoitteellasi</loginOpenID>
-<loginOpenIDOr>Tai kirjaudu sisään olemassa olevaan (ei OpenID-tiliisi) osoitteessa</loginOpenIDOr>
-<loginOpenIDCreate>Tai luo OpenID-URL osoitteessa</loginOpenIDCreate>
-<loginOpenIDFree>Ne ovat kaikki ilmaisia!</loginOpenIDFree>
-<loginOpenIDSame>Varmista, että kirjauduit sisään täsmälleen samalla OpenID-URL-osoitteella, jonka annoit ERDDAP-järjestelmänvalvojalle.</loginOpenIDSame>
 <loginAs>Olet kirjautunut sisään käyttäjänä {0}.</loginAs>
 <loginPartwayAs>Olet kirjautunut sisään käyttäjänä {0}.</loginPartwayAs>
 <loginFailed>VIRHE: Kirjautuminen epäonnistui</loginFailed>
@@ -3989,7 +3935,6 @@ On mahdollista, että jotkin tietojoukot eivät ole tällä hetkellä saatavilla
 ]]></loginPublicAccess>
 <LogOut>Kirjautua ulos</LogOut>
 <logout>kirjautua ulos</logout>
-<logoutOpenID>Kirjaudu ulos OpenID-palveluntarjoajaltasi.</logoutOpenID>
 
 <!--  logoutSuccess päivitetty viimeksi 19.12.2019  -->
 <logoutSuccess>Olet onnistuneesti kirjautunut ulos. 
@@ -4291,10 +4236,6 @@ Mutta dods.dap.DODSExceptionillä ei ole asiaankuuluvaa poikkeusta.
 Onko parempi palauttaa tyhjä tiedosto? Mutta .nc ja muut eivät salli 0-pituista dataa.
  -->
 <MustBeThereIsNoData>Kyselysi ei tuottanut vastaavia tuloksia.</MustBeThereIsNoData>
-
-<!--  Monet tiedostotyypit asettavat rajan sille, kuinka paljon dataa tiedostoon mahtuu (esim. 2 Gt).  -->
-<MustBeNotNull>{0} ei saa olla tyhjä.</MustBeNotNull>
-<MustBeNotEmpty>{0} ei saa olla tyhjä merkkijono.</MustBeNotEmpty>
 <MustBeInternalError>Sisäinen virhe</MustBeInternalError>
 <MustBeOutOfMemoryError>Muisti täynnä -virhe</MustBeOutOfMemoryError>
 
@@ -4335,11 +4276,9 @@ Onko parempi palauttaa tyhjä tiedosto? Mutta .nc ja muut eivät salli 0-pituist
 <noXxxNoLonIn180>pituusastearvoja ei ole välillä -180 - 360</noXxxNoLonIn180>
 <noXxxNoNonString>ei ole ei-merkkijonomuuttujia</noXxxNoNonString>
 <noXxxNo2NonString>ei ole ainakaan kahta ei-merkkijonomuuttujaa</noXxxNo2NonString>
-<noXxxNoStation>cdmDataType={0} ei ole &quot;TimeSeries&quot;</noXxxNoStation>
 <noXxxNoStationID>StationID-tyyppistä muuttujaa ei ole</noXxxNoStationID>
 <noXxxNoSubsetVariables>osajoukkomuuttujia ei määritetty</noXxxNoSubsetVariables>
 <noXxxNoOLLSubsetVariables>subsetVariables ei sisällä tarjous-, pituus- ja leveysastemuuttujia</noXxxNoOLLSubsetVariables>
-<noXxxNoMinMax>lähdetietopalvelin ei tarjoa minimi- ja enimmäisarvoja</noXxxNoMinMax>
 <noXxxItsGridded>se on ruudukkotietojoukko</noXxxItsGridded>
 <noXxxItsTabular>se on taulukkomuotoinen tietojoukko</noXxxItsTabular>
 <oneRequestAtATime>Tee vain yksi pyyntö kerrallaan.</oneRequestAtATime>
@@ -4367,7 +4306,6 @@ n tavallisia hakuvaihtoehtoja
 <options>Vaihtoehdot</options>
 <orAListOfValues>tai arvoluettelo</orAListOfValues>
 <orRefineSearchWith>Tai tarkenna tätä hakua käyttämällä</orRefineSearchWith>
-<orSearchWith>Tai etsi tietojoukkoja käyttämällä</orSearchWith>
 <orComma>Tai,</orComma>
 <otherFeatures>Muut ominaisuudet</otherFeatures>
 <outOfDateDatasets>Vanhentuneet tietojoukot</outOfDateDatasets>
@@ -4426,7 +4364,6 @@ On
     title="Tämä linkki ulkoiselle verkkosivustolle ei ole suositus."></a> .
 
 ]]></percentEncode>
-<pickADataset>Valitse tietojoukko</pickADataset>
 
 <!--  Protokollapohjaisiin tietojoukkohakuihin liittyvät viestit.  -->
 <protocolSearchHtml>Etsi tietojoukkoja protokollan mukaan</protocolSearchHtml>
@@ -4443,7 +4380,6 @@ Eri protokollat ​​sopivat erityyppisille tiedoille ja erilaisille asiakassov
 <queryError1Var>Muoto {0} voi käsitellä vain yhtä tietomuuttujaa.</queryError1Var>
 <queryError2Var>{0}-muotoa koskevissa pyynnöissä on oltava vähintään kaksi numeerista muuttujaa (X- ja Y-akseleille).</queryError2Var>
 <queryErrorActualRange>{0} on muuttujan todellisen_välin ulkopuolella: {1} - {2}</queryErrorActualRange>
-<queryErrorAscending>{0}-pyynnöissä pituus- ja leveysastearvojen on oltava nousevia.</queryErrorAscending>
 <queryErrorAdjusted>{0}-pyynnöille säädettyjen pituusastearvojen ({1} - {2}) on oltava välillä -180 ja 180.</queryErrorAdjusted>
 <queryErrorConstraintNaN>Rajoitusarvo=&quot;{0}&quot; arvoa NaN.  Jos todella haluat NaN:n, kirjoita se nimellä NaN.</queryErrorConstraintNaN>
 <queryErrorEqualSpacing>{0} pyynnön pituusastevälin ({1}) on oltava sama kuin leveysastevälin ({2}).</queryErrorEqualSpacing>
@@ -4475,7 +4411,6 @@ Eri protokollat ​​sopivat erityyppisille tiedoille ja erilaisille asiakassov
 <queryErrorGridNoAxisVar>Griddap-tietomuuttujan kysely ei voi sisältää akselimuuttujaa ({0}).</queryErrorGridNoAxisVar>
 <queryErrorGridNoDataVar>Griddap-akselin muuttujan kysely ei voi sisältää datamuuttujaa ({0}).</queryErrorGridNoDataVar>
 <queryErrorGridNotIdentical>Rajoitus {0} muuttujalle={1} ei ole identtinen muuttujan variable={2} rajoitteen {2} kanssa.  Jos tarvitset erilaisia ​​osajoukkoja, tee erilliset pyynnöt.</queryErrorGridNotIdentical>
-<queryErrorGridSLessS>StartIndex={0} on suurempi kuin StopIndex={1}.</queryErrorGridSLessS>
 <queryErrorLastEndP>{0} alkaa kirjaimella &quot;(&quot;, mutta ei pääty &quot;)&quot;.</queryErrorLastEndP>
 <queryErrorLastExpected>&quot;viimeinen&quot; odotettiin {0} alussa.</queryErrorLastExpected>
 <queryErrorLastUnexpected>Odottamaton merkki &quot;viimeisen&quot; jälkeen kohteessa {0}.</queryErrorLastUnexpected>
@@ -4715,7 +4650,6 @@ Katso
 <SOSDocumentation>ERDDAP:n SOS-dokumentaatio</SOSDocumentation>
 <WCSDocumentation>ERDDAP:n WCS-dokumentaatio</WCSDocumentation>
 <WMSDocumentation>ERDDAP:n WMS-dokumentaatio</WMSDocumentation>
-<findOutChange>jotta tietokoneohjelmasi voi selvittää, onko tietojoukko muuttunut.</findOutChange>
 <requestFormatExamplesHtml><![CDATA[
 
 (esimerkiksi
@@ -5170,14 +5104,6 @@ Pyydä sen sijaan sähköposti, jossa on
 
 ]]></subscriptionRemoveSuccess>
 <subscriptionRSS>Tilaa tämän tietojoukon RSS-syöte...</subscriptionRSS>
-<subscriptionsNotAvailable><![CDATA[
-
-<p><strong>Anteeksi.
-Sähköposti-/URL-tilausjärjestelmä ei ole käytettävissä tässä ERDDAP asennuksessa.</strong>
-<br>Harkitse sen sijaan
-<a rel="help" href="{0}/information.html#subscriptions">RSS</a> tilauspalvelun käyttöä.
-
-]]></subscriptionsNotAvailable>
 <subscriptionUrlHtml><![CDATA[
 
 <kbd>URL/action</kbd> on valinnainen URL-osoite, johon ERDDAP ottaa yhteyttä sähköpostin lähettämisen sijaan.
@@ -5444,13 +5370,6 @@ Näytä {0},
 <!--  Seuraavaa tunnistetta edeltää yksi kahdesta edellisestä tunnisteesta. 
   {0} on osajoukkoViewSelectDistintCombos tai osajoukkoViewSelectRelatedCounts.  -->
 <subsetWhenCounts>{0} arvon &quot;{2}&quot; {1} arvoille ovat:</subsetWhenCounts>
-<subsetComboClickSelect><![CDATA[
-
-Jos haluat tarkastella yllä lueteltujen muuttujien erilaisten yhdistelmien määrää,
-<br>tarkista yllä oleva <kbd>{0} :
-{1}</kbd> ja valitse arvo jollekin yllä olevista muuttujista.
-
-]]></subsetComboClickSelect>
 <subsetNVariableCombos>Kaikkiaan yllä lueteltujen muuttujien erillisiä yhdistelmiä on {0} riviä.</subsetNVariableCombos>
 <subsetShowingAllRows>Kaikki rivit näkyvät yllä.</subsetShowingAllRows>
 <subsetShowingNRows>Ensimmäiset {0} riviä näytetään yllä.  Loput {1} riviä eivät näy.</subsetShowingNRows>
@@ -6221,7 +6140,6 @@ Kun olet jäsen, voit lähettää kysymyksesi sinne tai etsiä, onko kysymys jo 
 Tällä verkkosivulla olevat mielipiteet ovat Bob Simonsin henkilökohtaisia ​​mielipiteitä, eivätkä ne välttämättä heijasta hallituksen tai National Oceanic and Atmospheric Administration kantaa.
 
 ]]></theLongDescriptionHtml>
-<Then>Sitten</Then>
 <twoClickMapDefaultTooltip>Määritä suorakulmio napsauttamalla kahta diagonaalista kulmaa.  Toista se tarvittaessa.</twoClickMapDefaultTooltip>
 
 <!--  Tämä on tapa ohittaa ERDDAP:n Standardize UDUnits -muunnin
@@ -7505,7 +7423,6 @@ Tämä ei voi olla mitään. Joten jos et halua mitään, kirjoita hölmö sana,
 ei koskaan ole attribuutin nimi.  -->
 <updateUrlsSkipAttributes>sourceUrl</updateUrlsSkipAttributes>
 <variableNames>Muuttujien nimet</variableNames>
-<viewAllDatasetsHtml>Näytä luettelo kaikista tietojoukoista</viewAllDatasetsHtml>
 <waitThenTryAgain>Oli (väliaikainen?) ongelma.  Odota hetki ja yritä sitten uudelleen.  (Napsauta selaimessa Lataa uudelleen -painiketta.)</waitThenTryAgain>
 <warning>VAROITUS!</warning>
 <units>Yksiköt</units>

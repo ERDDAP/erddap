@@ -22,6 +22,7 @@ import gov.noaa.pfel.erddap.dataset.metadata.LocalizedAttributes;
 import gov.noaa.pfel.erddap.handlers.EDDTableFromAsciiServiceHandler;
 import gov.noaa.pfel.erddap.handlers.SaxHandlerClass;
 import gov.noaa.pfel.erddap.util.EDMessages;
+import gov.noaa.pfel.erddap.util.EDMessages.Message;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.DataVariableInfo;
 import java.io.BufferedReader;
@@ -237,23 +238,23 @@ public class EDDTableFromAsciiServiceNOS extends EDDTableFromAsciiService {
       throw new SimpleException(
           EDStatic.bilingual(
               language,
-              EDStatic.messages.queryErrorAr[0]
+              EDStatic.messages.get(Message.QUERY_ERROR, 0)
                   + "For this dataset, all queries must include a \"datum=\" constraint.",
-              EDStatic.messages.queryErrorAr[language]
+              EDStatic.messages.get(Message.QUERY_ERROR, language)
                   + "For this dataset, all queries must include a \"datum=\" constraint."));
     if (Double.isNaN(beginSeconds))
       throw new SimpleException(
           EDStatic.bilingual(
               language,
-              EDStatic.messages.queryErrorAr[0] + "Missing time>= constraint.",
-              EDStatic.messages.queryErrorAr[language] + "Missing time>= constraint."));
+              EDStatic.messages.get(Message.QUERY_ERROR, 0) + "Missing time>= constraint.",
+              EDStatic.messages.get(Message.QUERY_ERROR, language) + "Missing time>= constraint."));
     if (Double.isNaN(endSeconds))
       throw new SimpleException(
           EDStatic.bilingual(
               language,
-              EDStatic.messages.queryErrorAr[0]
+              EDStatic.messages.get(Message.QUERY_ERROR, 0)
                   + "If present, the time<= constraint must be valid.",
-              EDStatic.messages.queryErrorAr[language]
+              EDStatic.messages.get(Message.QUERY_ERROR, language)
                   + "If present, the time<= constraint must be valid."));
     String beginTime =
         Calendar2.epochSecondsToIsoStringTZ(beginSeconds).substring(0, 16); // no seconds
@@ -514,38 +515,6 @@ public class EDDTableFromAsciiServiceNOS extends EDDTableFromAsciiService {
   public boolean knowsActualRange() {
     return false;
   } // because this gets info from a remote service
-
-  /* *
-   * This does its best to generate a read-to-use datasets.xml entry for an
-   * EDDTableFromAsciiServiceNOS.
-   * <br>The XML can then be edited by hand and added to the datasets.xml file.
-   * <br>This uses the first outerSequence (and if present, first innerSequence) found.
-   * <br>Other sequences are skipped.
-   *
-   * @param tLocalSourceUrl
-   * @param tReloadEveryNMinutes  must be a valid value, e.g., 1440 for once per day.
-   *    Use, e.g., 1000000000, for never reload.
-   * @param externalGlobalAttributes globalAttributes gleaned from external
-   *    sources, e.g., a THREDDS catalog.xml file.
-   *    These have priority over other sourceGlobalAttributes.
-   *    Okay to use null if none.
-   * @return a suggested chunk of xml for this dataset for use in datasets.xml
-   * @throws Throwable if trouble, e.g., if no Grid or Array variables are found.
-   *    If no trouble, then a valid dataset.xml chunk has been returned.
-   */
-  /*    public static String generateDatasetsXml(String tLocalSourceUrl,
-      int tReloadEveryNMinutes, Attributes externalGlobalAttributes)
-      //String outerSequenceName, String innerSequenceName, boolean sortColumnsByName)
-      throws Throwable {
-
-      String2.log("EDDTableFromAsciiServiceNOS.generateDatasetsXml" +
-          "\n  tLocalSourceUrl=" + tLocalSourceUrl);
-      String tPublicSourceUrl = convertToPublicSourceUrl(tLocalSourceUrl);
-
-
-      String2.log("\n\n*** generateDatasetsXml finished successfully.\n\n");
-      return sb.toString();
-  } */
 
   private static final String stationsFileName = "c:/programs/nos/stations.xml";
 

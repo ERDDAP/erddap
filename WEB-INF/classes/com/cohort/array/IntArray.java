@@ -5,7 +5,8 @@
  */
 package com.cohort.array;
 
-import com.cohort.util.*;
+import com.cohort.util.Math2;
+import com.cohort.util.String2;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -1089,11 +1090,10 @@ public class IntArray extends PrimitiveArray {
    */
   @Override
   public String testEquals(final Object o) {
-    if (!(o instanceof IntArray))
+    if (!(o instanceof IntArray other))
       return "The two objects aren't equal: this object is a IntArray; the other is a "
           + (o == null ? "null" : o.getClass().getName())
           + ".";
-    final IntArray other = (IntArray) o;
     if (other.size() != size)
       return "The two IntArrays aren't equal: one has "
           + size
@@ -1252,26 +1252,6 @@ public class IntArray extends PrimitiveArray {
   }
 
   /**
-   * This reads/adds n 24-bit elements from a DataInputStream.
-   *
-   * @param dis the DataInputStream
-   * @param n the number of elements to be read/added
-   * @throws Exception if trouble
-   */
-  public void read24BitDis(final DataInputStream dis, final int n, final boolean bigEndian)
-      throws Exception {
-    ensureCapacity(size + (long) n);
-    final byte bar[] = new byte[3];
-    for (int i = 0; i < n; i++) {
-      dis.readFully(bar);
-      array[size++] =
-          bigEndian
-              ? ((((bar[0] & 0xFF) << 24) | ((bar[1] & 0xFF) << 16) | ((bar[2] & 0xFF) << 8)) >> 8)
-              : ((((bar[2] & 0xFF) << 24) | ((bar[1] & 0xFF) << 16) | ((bar[0] & 0xFF) << 8)) >> 8);
-    }
-  }
-
-  /**
    * This is like read24BitDis, but doesn't do &gt;&gt;8.
    *
    * @param dis the DataInputStream
@@ -1414,7 +1394,7 @@ public class IntArray extends PrimitiveArray {
 
     // make a hashMap with all the unique values (associated values are initially all dummy)
     final Integer dummy = -1;
-    final HashMap hashMap = new HashMap(Math2.roundToInt(1.4 * size));
+    final HashMap<Integer, Integer> hashMap = new HashMap<>(Math2.roundToInt(1.4 * size));
     int lastValue = array[0]; // since lastValue often equals currentValue, cache it
     hashMap.put(lastValue, dummy);
     boolean alreadySorted = true;
@@ -1428,7 +1408,7 @@ public class IntArray extends PrimitiveArray {
     }
 
     // quickly deal with: all unique and already sorted
-    final Set keySet = hashMap.keySet();
+    final Set<Integer> keySet = hashMap.keySet();
     int nUnique = keySet.size();
     if (nUnique == size && alreadySorted) {
       indices.ensureCapacity(size);
@@ -1437,8 +1417,8 @@ public class IntArray extends PrimitiveArray {
     }
 
     // store all the elements in an array
-    final Object unique[] = new Object[nUnique];
-    final Iterator iterator = keySet.iterator();
+    final int[] unique = new int[nUnique];
+    final Iterator<Integer> iterator = keySet.iterator();
     int count = 0;
     while (iterator.hasNext()) unique[count++] = iterator.next();
     if (nUnique != count)
@@ -1449,11 +1429,8 @@ public class IntArray extends PrimitiveArray {
     Arrays.sort(unique);
 
     // put the unique values back in the hashMap with the ranks as the associated values
-    // and make tUnique
-    final int tUnique[] = new int[nUnique];
     for (int i = 0; i < count; i++) {
       hashMap.put(unique[i], i);
-      tUnique[i] = (Integer) unique[i];
     }
 
     // convert original values to ranks
@@ -1474,7 +1451,7 @@ public class IntArray extends PrimitiveArray {
     // store the results in ranked
     indices.append(new IntArray(ranks));
 
-    return new IntArray(tUnique);
+    return new IntArray(unique);
   }
 
   /**

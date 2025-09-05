@@ -325,18 +325,42 @@ public class EDDTestDataset {
               + "\n" //
           );
 
-      datasetsXml.append(
-          "<dataset type=\"EDDGridFromErddap\" datasetID=\"rMH1chla8day\">\n"
-              + "    <sourceUrl>http://localhost:8080/erddap/griddap/erdMH1chla8day</sourceUrl>\n"
-              + "</dataset>\n"
-              + "\n"
-              + "<dataset type=\"EDDTableFromErddap\" datasetID=\"rlPmelTaoDySst\" active=\"true\">\n"
-              + "    <sourceUrl>http://localhost:8080/erddap/tabledap/pmelTaoDySst</sourceUrl>\n"
-              + "</dataset>\n"
-              + "\n");
+      datasetsXml.append(xmlFragment_rMH1chla8day());
+
+      datasetsXml.append(xmlFragment_rlPmelTaoDySst());
       datasetsXml.append("</erddapDatasets>\n");
       datasetsXml.close();
     }
+  }
+
+  public static EDD getrMH1chla8day() throws Throwable {
+    return EDD.oneFromXmlFragment(null, xmlFragment_rMH1chla8day());
+  }
+
+  private static String xmlFragment_rMH1chla8day() {
+    return "<dataset type=\"EDDGridFromErddap\" datasetID=\"rMH1chla8day\">\n"
+        + "    <sourceUrl>http://localhost:8080/erddap/griddap/erdMH1chla8day</sourceUrl>\n"
+        + "</dataset>\n";
+  }
+
+  public static EDD getrerdCAMarCatLM() throws Throwable {
+    return EDD.oneFromXmlFragment(null, xmlFragment_rerdCAMarCatLM());
+  }
+
+  private static String xmlFragment_rerdCAMarCatLM() {
+    return "<dataset type=\"EDDTableFromErddap\" datasetID=\"rerdCAMarCatLM\">\n"
+        + "    <sourceUrl>http://localhost:8080/erddap/tabledap/erdCAMarCatLM</sourceUrl>\n"
+        + "</dataset>\n";
+  }
+
+  public static EDD getrlPmelTaoDySst() throws Throwable {
+    return EDD.oneFromXmlFragment(null, xmlFragment_rlPmelTaoDySst());
+  }
+
+  private static String xmlFragment_rlPmelTaoDySst() {
+    return "<dataset type=\"EDDTableFromErddap\" datasetID=\"rlPmelTaoDySst\" active=\"true\">\n"
+        + "    <sourceUrl>http://localhost:8080/erddap/tabledap/pmelTaoDySst</sourceUrl>\n"
+        + "</dataset>\n";
   }
 
   public static EDD gethawaii_d90f_20ee_c4cb_LonPM180() throws Throwable {

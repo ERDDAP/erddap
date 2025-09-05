@@ -7,6 +7,7 @@ import com.cohort.util.String2;
 import gov.noaa.pfel.coastwatch.util.SSR;
 import gov.noaa.pfel.erddap.dataset.EDDTable;
 import gov.noaa.pfel.erddap.dataset.TableWriterAllWithMetadata;
+import gov.noaa.pfel.erddap.util.EDMessages.Message;
 import gov.noaa.pfel.erddap.util.EDStatic;
 
 @FileTypeClass(
@@ -34,7 +35,7 @@ public class NcCFFiles extends CacheLockFiles {
     // quick reject?
     if (edd.accessibleViaNcCF().length() > 0)
       throw new SimpleException(
-          EDStatic.simpleBilingual(requestInfo.language(), EDStatic.messages.queryErrorAr)
+          EDStatic.simpleBilingual(requestInfo.language(), Message.QUERY_ERROR)
               + edd.accessibleViaNcCF());
 
     String userDapQuery = requestInfo.userDapQuery();
@@ -70,7 +71,7 @@ public class NcCFFiles extends CacheLockFiles {
       }
       if (!ok) {
         throw new SimpleException(
-            EDStatic.simpleBilingual(requestInfo.language(), EDStatic.messages.queryErrorAr)
+            EDStatic.simpleBilingual(requestInfo.language(), Message.QUERY_ERROR)
                 + ".ncCF and .ncCFMA queries for this dataset must at least one variable not on this list: "
                 + String2.toCSSVString(edd.outerCfVariables())
                 + ".");
@@ -120,6 +121,6 @@ public class NcCFFiles extends CacheLockFiles {
 
   @Override
   public String getHelpText(int language) {
-    return EDStatic.messages.fileHelp_ncCFAr[language];
+    return EDStatic.messages.get(Message.FILE_HELP_NC_CF, language);
   }
 }

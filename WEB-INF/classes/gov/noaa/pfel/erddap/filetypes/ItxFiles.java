@@ -18,6 +18,7 @@ import gov.noaa.pfel.erddap.dataset.GridDataAllAccessor;
 import gov.noaa.pfel.erddap.dataset.OutputStreamSource;
 import gov.noaa.pfel.erddap.dataset.TableWriter;
 import gov.noaa.pfel.erddap.dataset.TableWriterAllWithMetadata;
+import gov.noaa.pfel.erddap.util.EDMessages.Message;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.EDV;
 import java.io.BufferedWriter;
@@ -45,8 +46,8 @@ public class ItxFiles extends TableWriterFileType {
   @Override
   public void writeTableToFileFormat(DapRequestInfo requestInfo, TableWriter tableWriter)
       throws Throwable {
-    if (tableWriter instanceof TableWriterAllWithMetadata) {
-      saveAsIgor(requestInfo.outputStream(), (TableWriterAllWithMetadata) tableWriter);
+    if (tableWriter instanceof TableWriterAllWithMetadata twawm) {
+      saveAsIgor(requestInfo.outputStream(), twawm);
     }
   }
 
@@ -63,12 +64,12 @@ public class ItxFiles extends TableWriterFileType {
 
   @Override
   public String getHelpText(int language) {
-    return EDStatic.messages.fileHelp_itxTableAr[language];
+    return EDStatic.messages.get(Message.FILE_HELP_ITX_TABLE, language);
   }
 
   @Override
   public String getGridHelpText(int language) {
-    return EDStatic.messages.fileHelp_itxGridAr[language];
+    return EDStatic.messages.get(Message.FILE_HELP_ITX_GRID, language);
   }
 
   /**
@@ -218,7 +219,7 @@ public class ItxFiles extends TableWriterFileType {
       int nAV = grid.axisVariables().length;
       if (nAV > 4)
         throw new SimpleException(
-            EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
+            EDStatic.simpleBilingual(language, Message.QUERY_ERROR)
                 + "Igor Text Files can handle 4 dimensions, not "
                 + nAV);
 

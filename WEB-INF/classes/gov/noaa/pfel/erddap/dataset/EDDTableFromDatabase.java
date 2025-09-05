@@ -25,6 +25,7 @@ import gov.noaa.pfel.erddap.dataset.metadata.LocalizedAttributes;
 import gov.noaa.pfel.erddap.handlers.EDDTableFromDatabaseHandler;
 import gov.noaa.pfel.erddap.handlers.SaxHandlerClass;
 import gov.noaa.pfel.erddap.util.EDMessages;
+import gov.noaa.pfel.erddap.util.EDMessages.Message;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.*;
 import java.math.BigDecimal;
@@ -826,8 +827,11 @@ public class EDDTableFromDatabase extends EDDTable {
             throw new SimpleException(
                 EDStatic.bilingual(
                     language,
-                    EDStatic.messages.queryErrorAr[0] + "Invalid syntax for \"" + p + "\".",
-                    EDStatic.messages.queryErrorAr[language]
+                    EDStatic.messages.get(Message.QUERY_ERROR, 0)
+                        + "Invalid syntax for \""
+                        + p
+                        + "\".",
+                    EDStatic.messages.get(Message.QUERY_ERROR, language)
                         + "Invalid syntax for \""
                         + p
                         + "\".")); // should have been caught already
@@ -840,13 +844,13 @@ public class EDDTableFromDatabase extends EDDTable {
               throw new SimpleException(
                   EDStatic.bilingual(
                       language,
-                      EDStatic.messages.queryErrorAr[0]
+                      EDStatic.messages.get(Message.QUERY_ERROR, 0)
                           + MessageFormat.format(
-                              EDStatic.messages.queryErrorUnknownVariableAr[0],
+                              EDStatic.messages.get(Message.QUERY_ERROR_UNKNOWN_VARIABLE, 0),
                               tQueryOrderBy.get(oi)),
-                      EDStatic.messages.queryErrorAr[language]
+                      EDStatic.messages.get(Message.QUERY_ERROR, language)
                           + MessageFormat.format(
-                              EDStatic.messages.queryErrorUnknownVariableAr[language],
+                              EDStatic.messages.get(Message.QUERY_ERROR_UNKNOWN_VARIABLE, language),
                               tQueryOrderBy.get(oi))));
             String tSourceName = dataVariableSourceNames()[v];
             tQueryOrderBy.set(oi, tSourceName);
@@ -931,15 +935,15 @@ public class EDDTableFromDatabase extends EDDTable {
         throw new WaitThenTryAgainException(
             EDStatic.bilingual(
                 language,
-                EDStatic.messages.waitThenTryAgainAr[0]
+                EDStatic.messages.get(Message.WAIT_THEN_TRY_AGAIN, 0)
                     + "("
-                    + EDStatic.messages.databaseUnableToConnectAr[0]
+                    + EDStatic.messages.get(Message.DATABASE_UNABLE_TO_CONNECT, 0)
                     + ": "
                     + t
                     + ")",
-                EDStatic.messages.waitThenTryAgainAr[language]
+                EDStatic.messages.get(Message.WAIT_THEN_TRY_AGAIN, language)
                     + "("
-                    + EDStatic.messages.databaseUnableToConnectAr[language]
+                    + EDStatic.messages.get(Message.DATABASE_UNABLE_TO_CONNECT, language)
                     + ": "
                     + t
                     + ")"));
@@ -1149,7 +1153,7 @@ public class EDDTableFromDatabase extends EDDTable {
           if (Thread.currentThread().isInterrupted())
             throw new SimpleException(
                 "EDDTableFromDatabase.getDataForDapQuery"
-                    + EDStatic.messages.caughtInterruptedAr[0]);
+                    + EDStatic.messages.get(Message.CAUGHT_INTERRUPTED, 0));
 
           // convert script columns into data columns
           if (scriptNames != null)
@@ -1200,11 +1204,11 @@ public class EDDTableFromDatabase extends EDDTable {
       // String2.log("EDDTableFromDatabase caught:\n" + msg);
 
       if (msg.indexOf(MustBe.THERE_IS_NO_DATA) >= 0
-          || msg.indexOf(EDStatic.messages.caughtInterruptedAr[0]) >= 0) {
+          || msg.indexOf(EDStatic.messages.get(Message.CAUGHT_INTERRUPTED, 0)) >= 0) {
         throw t;
       } else {
         // all other errors probably from database
-        throw new Throwable(EDStatic.messages.errorFromDataSource + t, t);
+        throw new Throwable(EDMessages.errorFromDataSource + t, t);
       }
     }
   }

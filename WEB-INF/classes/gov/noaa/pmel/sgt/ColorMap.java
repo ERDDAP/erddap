@@ -13,7 +13,7 @@ package gov.noaa.pmel.sgt;
 
 import gov.noaa.pmel.util.Debug;
 import gov.noaa.pmel.util.Range2D;
-import java.awt.*;
+import java.awt.Color;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
@@ -45,7 +45,6 @@ import java.io.Serializable;
 public abstract class ColorMap implements Cloneable, PropertyChangeListener, Serializable {
   private final PropertyChangeSupport changes_ = new PropertyChangeSupport(this);
   protected boolean batch_ = false;
-  protected boolean local_ = true;
   protected boolean modified_ = false;
 
   public abstract ColorMap copy();
@@ -77,11 +76,6 @@ public abstract class ColorMap implements Cloneable, PropertyChangeListener, Ser
     changes_.addPropertyChangeListener(listener);
   }
 
-  /** Remove listener. */
-  public void removePropertyChangeListener(PropertyChangeListener listener) {
-    changes_.removePropertyChangeListener(listener);
-  }
-
   @Override
   public void propertyChange(PropertyChangeEvent evt) {
     if (Debug.EVENT) {
@@ -96,38 +90,8 @@ public abstract class ColorMap implements Cloneable, PropertyChangeListener, Ser
       modified_ = true;
       return;
     }
-    AttributeChangeEvent ace = new AttributeChangeEvent(this, name, oldValue, newValue, local_);
+    AttributeChangeEvent ace = new AttributeChangeEvent(this, name, oldValue, newValue);
     changes_.firePropertyChange(ace);
     modified_ = false;
-  }
-
-  /**
-   * Batch the changes to the ColorMap.
-   *
-   * @since 3.0
-   */
-  public void setBatch(boolean batch) {
-    setBatch(batch, true);
-  }
-
-  /**
-   * Batch the changes to the ColorMap and set local flag. Determines whether <code>
-   * AttributeChangeEvent</code> will be set local.
-   *
-   * @since 3.0
-   */
-  public void setBatch(boolean batch, boolean local) {
-    local_ = local;
-    batch_ = batch;
-    if (!batch && modified_) firePropertyChange("batch", Boolean.TRUE, Boolean.FALSE);
-  }
-
-  /**
-   * Is the attribute in batch mode?
-   *
-   * @since 3.0
-   */
-  public boolean isBatch() {
-    return batch_;
   }
 }

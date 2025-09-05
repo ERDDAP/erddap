@@ -30,7 +30,15 @@ import gov.noaa.pfel.erddap.handlers.EDDTableFromFileNamesHandler;
 import gov.noaa.pfel.erddap.handlers.SaxHandlerClass;
 import gov.noaa.pfel.erddap.util.EDMessages;
 import gov.noaa.pfel.erddap.util.EDStatic;
-import gov.noaa.pfel.erddap.variable.*;
+import gov.noaa.pfel.erddap.variable.DataVariableInfo;
+import gov.noaa.pfel.erddap.variable.EDV;
+import gov.noaa.pfel.erddap.variable.EDVAlt;
+import gov.noaa.pfel.erddap.variable.EDVDepth;
+import gov.noaa.pfel.erddap.variable.EDVLat;
+import gov.noaa.pfel.erddap.variable.EDVLon;
+import gov.noaa.pfel.erddap.variable.EDVTime;
+import gov.noaa.pfel.erddap.variable.EDVTimeStamp;
+import jakarta.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
@@ -958,6 +966,117 @@ public class EDDTableFromFileNames extends EDDTable {
     }
   }
 
+  private Table prepareFileTableToReturn(
+      Table table, HttpServletRequest request, String loggedInAs, int language) {
+    for (int i = 0; i < table.nRows(); i++) {
+      String dir = table.getStringData(0, i).replace(fileDir, "").replace("\\", "/");
+      String id = dir + table.getStringData(1, i);
+      String url =
+          EDStatic.erddapUrl(request, loggedInAs, language)
+              + "/files/"
+              + datasetID()
+              + "/"
+              + dir
+              + table.getStringData(1, i);
+      table.setStringData(0, i, id);
+      table.setStringData(1, i, url);
+    }
+    return table;
+  }
+
+  @Override
+  public Table getFilesUrlList(HttpServletRequest request, String loggedInAs, int language)
+      throws Throwable {
+    if (!accessibleViaFiles) return null;
+    try {
+      // fromOnTheFly
+      if (from == fromOnTheFly) {
+        // get it on-the-fly from source
+        // check that nextPath matches pathRegex?
+        Table dnlsTable =
+            FileVisitorDNLS.oneStep( // throws IOException if "Too many open files"
+                fileDir,
+                fileNameRegex,
+                recursive,
+                pathRegex,
+                true); // tRecursive, pathRegex, tDirectoriesToo
+        return prepareFileTableToReturn(dnlsTable, request, loggedInAs, language);
+      }
+
+      // fromFiles
+      if (from == fromFiles) {
+        // is info in cache?
+        if (String2.countAll("", '/') < 3) { // because I got 3 for cache
+          Table dnlsTable =
+              readFromFilesCache3LevelFileTable(); // It's always a copy from disk. May be null.
+          if (dnlsTable != null) {
+            return prepareFileTableToReturn(dnlsTable, request, loggedInAs, language);
+          }
+        }
+        // The code for this is very similar to the getTwoLevelsOfInfo() above.
+        // MAKE SIMILAR CHANGES?
+        String tDir = cacheDirectory(); // tDir is created by EDD.ensureValid
+        String tFileName =
+            suggestFileName(
+                null,
+                "tFileTable_", // short name
+                ".twardt");
+        TableWriterAllReduceDnlsTable twardt =
+            new TableWriterAllReduceDnlsTable(language, this, null, tDir, tFileName, fileDir);
+
+        // query to twardt
+        String shortened = fileDir;
+        char lastCh = shortened.charAt(shortened.length() - 1);
+        shortened = shortened.substring(0, shortened.length() - 1);
+        Table dnlsTable = null;
+        try {
+          fromFilesEDDTable.getDataForDapQuery(
+              language,
+              null,
+              "/erddap/tabledap/" + datasetID, // for history. Not relevant.
+              // this is effectively: startsWith(fileDir + nextPath)           //e.g. find:
+              // /foo/bar/[one thing]
+              "&directory>="
+                  + String2.toJson(fileDir)
+                  + // e.g. get:  /foo/bar/  //reject some files
+                  "&directory<"
+                  + String2.toJson(
+                      shortened + (char) (lastCh + 1)), // e.g. &get: /foo/bar0  //reject some files
+              // "&directory=~" + String2.toJson(fileDir + nextPath + "[^/]%2B"),  //2B = +
+              twardt);
+
+          // clean up twardt results
+          // The proper query above converts lastMod to double epochSeconds
+          // so convert back to long epochMillis.
+          dnlsTable = twardt.cumulativeTable();
+          dnlsTable.getColumn(2).scaleAddOffset(1000, 0);
+          dnlsTable.setColumn(2, new LongArray(dnlsTable.getColumn(2)));
+          dnlsTable.columnAttributes(2).set("units", "milliseconds since 1970-01-01T00:00:00Z");
+          dnlsTable.sortIgnoreCase(new int[] {1}, new boolean[] {true});
+        } catch (Throwable t2) {
+          if (t2.toString().indexOf(MustBe.THERE_IS_NO_DATA) < 0) throw t2;
+          dnlsTable = FileVisitorDNLS.makeEmptyTable();
+        }
+
+        String subDirs[] = twardt.subdirHash().toArray(new String[0]);
+        Arrays.sort(subDirs, String2.STRING_COMPARATOR_IGNORE_CASE);
+        return prepareFileTableToReturn(dnlsTable, request, loggedInAs, language);
+      }
+
+      Table dnlsTable =
+          from == fromRemoteFiles
+              ? getCachedDNLSTable()
+              : FileVisitorDNLS
+                  .oneStep( // fromLocalFiles   //throws IOException if "Too many open files"
+                      fileDir, fileNameRegex, recursive, pathRegex, false); // dirToo=false
+      return prepareFileTableToReturn(dnlsTable, request, loggedInAs, language);
+
+    } catch (Throwable t) {
+      String2.log("Caught ERROR in getFileList():\n" + MustBe.throwableToString(t));
+      return null;
+    }
+  }
+
   /**
    * This returns a fileTable with valid files (or null if unavailable or any trouble). This is a
    * copy of any internal data, so client can modify the contents.
@@ -1348,7 +1467,6 @@ public class EDDTableFromFileNames extends EDDTable {
             Matcher matcher = pat.matcher(namePA.get(row));
             pa.addString(matcher.matches() ? matcher.group(extractGroup[dvi]) : "");
           }
-          continue;
         }
 
         // Remaining columns are script columns. Handle below.

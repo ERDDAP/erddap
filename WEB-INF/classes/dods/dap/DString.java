@@ -11,7 +11,12 @@
 
 package dods.dap;
 
-import java.io.*;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.EOFException;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 
 /**
@@ -48,15 +53,6 @@ public class DString extends BaseType implements ClientIO {
    */
   public final String getValue() {
     return val;
-  }
-
-  /**
-   * Set the current value.
-   *
-   * @param newVal the new value.
-   */
-  public final void setValue(String newVal) {
-    val = newVal;
   }
 
   /**

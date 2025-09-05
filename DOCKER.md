@@ -116,3 +116,22 @@ docker build --build-arg BUILD_FROM_GIT=1 \
   --build-arg ERDDAP_GIT_CACHE_BUST=$(date +%s) \
   -t erddap-docker:experimental-feature-3 .
 ```
+
+## Frequently Asked Questions
+
+### I run ERDDAP via Docker on AWS S3 and the docker daemon keeps crashing, thus crashing my ERDDAP&trade; instance. How do I keep the docker daemon alive?
+
+When the docker daemon crashes, check the status using 
+```
+systemctl status docker
+```
+If the response states `docker.service; disabled;` then you need to `enable` docker:
+
+```
+sudo systemctl enable docker
+```
+Which should yeild the response:
+```
+docker.service; enabled;
+```
+Continue to monitor the system and your ERDDAP in case it crashes again. If this doesn't fix the problem, see also [docker live-restore](https://docs.docker.com/config/containers/live-restore/).

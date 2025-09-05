@@ -15,10 +15,18 @@ import gov.noaa.pfel.coastwatch.sgt.SgtMap;
 import gov.noaa.pfel.coastwatch.util.FileVisitorDNLS;
 import gov.noaa.pfel.coastwatch.util.SSR;
 import gov.noaa.pfel.coastwatch.util.SimpleXMLReader;
-import gov.noaa.pfel.erddap.dataset.*;
+import gov.noaa.pfel.erddap.dataset.EDD;
+import gov.noaa.pfel.erddap.dataset.EDDGrid;
+import gov.noaa.pfel.erddap.dataset.EDDTable;
+import gov.noaa.pfel.erddap.dataset.EDDTableFromAllDatasets;
 import gov.noaa.pfel.erddap.dataset.metadata.LocalizedAttributes;
 import gov.noaa.pfel.erddap.handlers.SaxHandler;
-import gov.noaa.pfel.erddap.util.*;
+import gov.noaa.pfel.erddap.util.EDConfig;
+import gov.noaa.pfel.erddap.util.EDMessages;
+import gov.noaa.pfel.erddap.util.EDMessages.Message;
+import gov.noaa.pfel.erddap.util.EDStatic;
+import gov.noaa.pfel.erddap.util.Metrics;
+import gov.noaa.pfel.erddap.util.TranslateMessages;
 import gov.noaa.pfel.erddap.variable.EDV;
 import io.prometheus.metrics.model.snapshots.Unit;
 import java.awt.Color;
@@ -890,7 +898,7 @@ public class LoadDatasets extends Thread {
             {
               int tnt = String2.parseInt(xmlReader.content());
               EDStatic.config.cacheMillis =
-                  (tnt < 1 || tnt == Integer.MAX_VALUE ? EDStatic.config.DEFAULT_cacheMinutes : tnt)
+                  (tnt < 1 || tnt == Integer.MAX_VALUE ? EDConfig.DEFAULT_cacheMinutes : tnt)
                       * Calendar2.MILLIS_PER_MINUTE;
               String2.log(
                   "cacheMinutes=" + EDStatic.config.cacheMillis / Calendar2.MILLIS_PER_MINUTE);
@@ -959,9 +967,7 @@ public class LoadDatasets extends Thread {
               String ts = xmlReader.content();
               int tnt = SgtMap.drawLandMask_OPTIONS.indexOf(ts);
               EDStatic.config.drawLandMask =
-                  tnt < 1
-                      ? EDStatic.config.DEFAULT_drawLandMask
-                      : SgtMap.drawLandMask_OPTIONS.get(tnt);
+                  tnt < 1 ? EDConfig.DEFAULT_drawLandMask : SgtMap.drawLandMask_OPTIONS.get(tnt);
               String2.log("drawLandMask=" + EDStatic.config.drawLandMask);
 
               break;
@@ -982,7 +988,7 @@ public class LoadDatasets extends Thread {
               int tnt =
                   String2.isSomething(ts)
                       ? String2.parseInt(ts)
-                      : EDStatic.config.DEFAULT_graphBackgroundColorInt;
+                      : EDConfig.DEFAULT_graphBackgroundColorInt;
               EDStatic.config.graphBackgroundColor = new Color(tnt, true); // hasAlpha
 
               String2.log("graphBackgroundColor=" + String2.to0xHexString(tnt, 8));
@@ -1030,7 +1036,7 @@ public class LoadDatasets extends Thread {
               int tnt = String2.parseInt(xmlReader.content());
               EDStatic.config.loadDatasetsMinMillis =
                   (tnt < 1 || tnt == Integer.MAX_VALUE
-                          ? EDStatic.config.DEFAULT_loadDatasetsMinMinutes
+                          ? EDConfig.DEFAULT_loadDatasetsMinMinutes
                           : tnt)
                       * Calendar2.MILLIS_PER_MINUTE;
               String2.log(
@@ -1044,7 +1050,7 @@ public class LoadDatasets extends Thread {
               int tnt = String2.parseInt(xmlReader.content());
               EDStatic.config.loadDatasetsMaxMillis =
                   (tnt < 1 || tnt == Integer.MAX_VALUE
-                          ? EDStatic.config.DEFAULT_loadDatasetsMaxMinutes
+                          ? EDConfig.DEFAULT_loadDatasetsMaxMinutes
                           : tnt)
                       * Calendar2.MILLIS_PER_MINUTE;
               String2.log(
@@ -1105,7 +1111,7 @@ public class LoadDatasets extends Thread {
               int tnt = String2.parseInt(xmlReader.content());
               EDStatic.config.partialRequestMaxBytes =
                   tnt < 1000000 || tnt == Integer.MAX_VALUE
-                      ? EDStatic.config.DEFAULT_partialRequestMaxBytes
+                      ? EDConfig.DEFAULT_partialRequestMaxBytes
                       : tnt;
               String2.log("partialRequestMaxBytes=" + EDStatic.config.partialRequestMaxBytes);
 
@@ -1116,7 +1122,7 @@ public class LoadDatasets extends Thread {
               int tnt = String2.parseInt(xmlReader.content());
               EDStatic.config.partialRequestMaxCells =
                   tnt < 1000 || tnt == Integer.MAX_VALUE
-                      ? EDStatic.config.DEFAULT_partialRequestMaxCells
+                      ? EDConfig.DEFAULT_partialRequestMaxCells
                       : tnt;
               String2.log("partialRequestMaxCells=" + EDStatic.config.partialRequestMaxCells);
 
@@ -1149,11 +1155,15 @@ public class LoadDatasets extends Thread {
           case "<erddapDatasets></standardContact>":
             {
               String ts = xmlReader.content();
-              ts = String2.isSomething(ts) ? ts : EDStatic.messages.DEFAULT_standardContactAr[0];
+              ts =
+                  String2.isSomething(ts)
+                      ? ts
+                      : EDStatic.messages.get(Message.DEFAULT_STANDARD_CONTACT, 0);
               ts =
                   String2.replaceAll(
                       ts, "&adminEmail;", SSR.getSafeEmailAddress(EDStatic.config.adminEmail));
-              EDStatic.messages.standardContactAr[0] = ts; // swap into place
+              EDStatic.messages.setDefault(
+                  Message.STANDARD_CONTACT, ts, Message.DEFAULT_STANDARD_CONTACT);
 
               String2.log("standardContact was set.");
 
@@ -1162,10 +1172,8 @@ public class LoadDatasets extends Thread {
           case "<erddapDatasets></standardDataLicenses>":
             {
               String ts = xmlReader.content();
-              EDStatic.messages.standardDataLicensesAr[0] =
-                  String2.isSomething(ts)
-                      ? ts
-                      : EDStatic.messages.DEFAULT_standardDataLicensesAr[0];
+              EDStatic.messages.setDefault(
+                  Message.STANDARD_DATA_LICENSES, ts, Message.DEFAULT_STANDARD_DATA_LICENSES);
               String2.log("standardDataLicenses was set.");
 
               break;
@@ -1173,10 +1181,10 @@ public class LoadDatasets extends Thread {
           case "<erddapDatasets></standardDisclaimerOfEndorsement>":
             {
               String ts = xmlReader.content();
-              EDStatic.messages.standardDisclaimerOfEndorsementAr[0] =
-                  String2.isSomething(ts)
-                      ? ts
-                      : EDStatic.messages.DEFAULT_standardDisclaimerOfEndorsementAr[0];
+              EDStatic.messages.setDefault(
+                  Message.STANDARD_DISCLAIMER_OF_ENDORSEMENT,
+                  ts,
+                  Message.DEFAULT_STANDARD_DISCLAIMER_OF_ENDORSEMENT);
               String2.log("standardDisclaimerOfEndorsement was set.");
 
               break;
@@ -1184,10 +1192,10 @@ public class LoadDatasets extends Thread {
           case "<erddapDatasets></standardDisclaimerOfExternalLinks>":
             {
               String ts = xmlReader.content();
-              EDStatic.messages.standardDisclaimerOfExternalLinksAr[0] =
-                  String2.isSomething(ts)
-                      ? ts
-                      : EDStatic.messages.DEFAULT_standardDisclaimerOfExternalLinksAr[0];
+              EDStatic.messages.setDefault(
+                  Message.STANDARD_DISCLAIMER_OF_EXTERNAL_LINKS,
+                  ts,
+                  Message.DEFAULT_STANDARD_DISCLAIMER_OF_EXTERNAL_LINKS);
               String2.log("standardDisclaimerOfExternalLinks was set.");
 
               break;
@@ -1195,10 +1203,10 @@ public class LoadDatasets extends Thread {
           case "<erddapDatasets></standardGeneralDisclaimer>":
             {
               String ts = xmlReader.content();
-              EDStatic.messages.standardGeneralDisclaimerAr[0] =
-                  String2.isSomething(ts)
-                      ? ts
-                      : EDStatic.messages.DEFAULT_standardGeneralDisclaimerAr[0];
+              EDStatic.messages.setDefault(
+                  Message.STANDARD_GENERAL_DISCLAIMER,
+                  ts,
+                  Message.DEFAULT_STANDARD_GENERAL_DISCLAIMER);
               String2.log("standardGeneralDisclaimer was set.");
 
               break;
@@ -1206,10 +1214,8 @@ public class LoadDatasets extends Thread {
           case "<erddapDatasets></standardPrivacyPolicy>":
             {
               String ts = xmlReader.content();
-              EDStatic.messages.standardPrivacyPolicyAr[0] =
-                  String2.isSomething(ts)
-                      ? ts
-                      : EDStatic.messages.DEFAULT_standardPrivacyPolicyAr[0];
+              EDStatic.messages.setDefault(
+                  Message.STANDARD_PRIVACY_POLICY, ts, Message.DEFAULT_STANDARD_PRIVACY_POLICY);
               String2.log("standardPrivacyPolicy was set.");
 
               break;
@@ -1233,8 +1239,8 @@ public class LoadDatasets extends Thread {
           case "<erddapDatasets></startBodyHtml5>":
             {
               String ts = xmlReader.content();
-              ts = String2.isSomething(ts) ? ts : EDStatic.messages.DEFAULT_startBodyHtmlAr[0];
-              EDStatic.messages.startBodyHtmlAr[0] = ts; // swap into place
+              EDStatic.messages.setDefault(
+                  Message.START_BODY_HTML, ts, Message.DEFAULT_START_BODY_HTML);
 
               String2.log("startBodyHtml5 was set.");
 
@@ -1243,12 +1249,10 @@ public class LoadDatasets extends Thread {
           case "<erddapDatasets></theShortDescriptionHtml>":
             {
               String ts = xmlReader.content();
-              ts =
-                  String2.isSomething(ts)
-                      ? ts
-                      : EDStatic.messages.DEFAULT_theShortDescriptionHtmlAr[0];
-              EDStatic.messages.theShortDescriptionHtmlAr[0] = ts; // swap into place
-
+              EDStatic.messages.setDefault(
+                  Message.THE_SHORT_DESCRIPTION_HTML,
+                  ts,
+                  Message.DEFAULT_THE_SHORT_DESCRIPTION_HTML);
               String2.log("theShortDescriptionHtml was set.");
 
               break;
@@ -1256,11 +1260,15 @@ public class LoadDatasets extends Thread {
           case "<erddapDatasets></endBodyHtml5>":
             {
               String ts = xmlReader.content();
-              EDStatic.messages.endBodyHtmlAr[0] =
+              EDStatic.messages.setDefault(
+                  Message.END_BODY_HTML,
                   String2.replaceAll(
-                      String2.isSomething(ts) ? ts : EDStatic.messages.DEFAULT_endBodyHtmlAr[0],
+                      String2.isSomething(ts)
+                          ? ts
+                          : EDStatic.messages.get(Message.DEFAULT_END_BODY_HTML, 0),
                       "&erddapVersion;",
-                      EDStatic.erddapVersion.getVersion());
+                      EDStatic.erddapVersion.getVersion()),
+                  Message.DEFAULT_END_BODY_HTML);
               String2.log("endBodyHtml5 was set.");
 
               break;
@@ -1282,9 +1290,7 @@ public class LoadDatasets extends Thread {
             {
               int tnt = String2.parseInt(xmlReader.content());
               EDStatic.config.unusualActivity =
-                  tnt < 1 || tnt == Integer.MAX_VALUE
-                      ? EDStatic.config.DEFAULT_unusualActivity
-                      : tnt;
+                  tnt < 1 || tnt == Integer.MAX_VALUE ? EDConfig.DEFAULT_unusualActivity : tnt;
               String2.log("unusualActivity=" + EDStatic.config.unusualActivity);
 
               break;
@@ -1294,7 +1300,7 @@ public class LoadDatasets extends Thread {
               int tnt = String2.parseInt(xmlReader.content());
               EDStatic.config.unusualActivityFailPercent =
                   tnt < 0 || tnt > 100 || tnt == Integer.MAX_VALUE
-                      ? EDStatic.config.DEFAULT_unusualActivityFailPercent
+                      ? EDConfig.DEFAULT_unusualActivityFailPercent
                       : tnt;
               String2.log(
                   "unusualActivityFailPercent=" + EDStatic.config.unusualActivityFailPercent);
@@ -1305,9 +1311,7 @@ public class LoadDatasets extends Thread {
             {
               int tnt = String2.parseInt(xmlReader.content());
               EDStatic.config.updateMaxEvents =
-                  tnt < 1 || tnt == Integer.MAX_VALUE
-                      ? EDStatic.config.DEFAULT_updateMaxEvents
-                      : tnt;
+                  tnt < 1 || tnt == Integer.MAX_VALUE ? EDConfig.DEFAULT_updateMaxEvents : tnt;
               String2.log("updateMaxEvents=" + EDStatic.config.updateMaxEvents);
 
               // <user username="bsimons" password="..." roles="admin, role1" />
@@ -1389,6 +1393,11 @@ public class LoadDatasets extends Thread {
 
             break;
           case "<erddapDatasets></user>": // do nothing
+            break;
+          case "<erddapDatasets><displayInfo>", "<erddapDatasets></displayInfo>": // do nothing
+            break;
+          case "<erddapDatasets><displayAttribute>",
+              "<erddapDatasets></displayAttribute>": // do nothing
             break;
           default:
             xmlReader.unexpectedTagException();
@@ -1691,14 +1700,6 @@ public class LoadDatasets extends Thread {
     return openFiles;
   }
 
-  /** Given a newline separated string in sb, this keeps the newest approximately keepLines. */
-  static void removeOldLines(StringBuffer sb, int keepLines, int lineLength) {
-    if (sb.length() > (keepLines + 1) * lineLength) {
-      int po = sb.indexOf("\n", sb.length() - keepLines * lineLength);
-      if (po > 0) sb.delete(0, po + 1);
-    }
-  }
-
   /**
    * This unloads a dataset with tId if it was active.
    *
@@ -1753,7 +1754,11 @@ public class LoadDatasets extends Thread {
    * @param id the edd.datasetID()
    */
   protected static void categorizeGlobalAtts(
-      boolean add, ConcurrentHashMap catInfo, EDD edd, String id) {
+      boolean add,
+      ConcurrentHashMap<String, ConcurrentHashMap<String, ConcurrentHashMap<String, Boolean>>>
+          catInfo,
+      EDD edd,
+      String id) {
 
     LocalizedAttributes atts = edd.combinedGlobalAttributes();
     int nCat = EDStatic.config.categoryAttributes.length;
@@ -1791,7 +1796,11 @@ public class LoadDatasets extends Thread {
    * @param id the edd.datasetID()
    */
   protected static void categorizeVariableAtts(
-      boolean add, ConcurrentHashMap catInfo, EDV edv, String id) {
+      boolean add,
+      ConcurrentHashMap<String, ConcurrentHashMap<String, ConcurrentHashMap<String, Boolean>>>
+          catInfo,
+      EDV edv,
+      String id) {
 
     LocalizedAttributes atts = edv.combinedAttributes();
     int nCat = EDStatic.config.categoryAttributes.length;
@@ -1823,16 +1832,22 @@ public class LoadDatasets extends Thread {
    * @param id the edd.datasetID() e.g., ndbcCWind41002
    */
   protected static void addRemoveIdToCatInfo(
-      boolean add, ConcurrentHashMap catInfo, String catName, String catAtt, String id) {
+      boolean add,
+      ConcurrentHashMap<String, ConcurrentHashMap<String, ConcurrentHashMap<String, Boolean>>>
+          catInfo,
+      String catName,
+      String catAtt,
+      String id) {
 
     if (catAtt.length() == 0) return;
 
-    ConcurrentHashMap hm = (ConcurrentHashMap) catInfo.get(catName); // e.g., for institution
-    ConcurrentHashMap hs = (ConcurrentHashMap) hm.get(catAtt); // e.g., for NDBC,  acts as hashset
+    ConcurrentHashMap<String, ConcurrentHashMap<String, Boolean>> hm =
+        catInfo.get(catName); // e.g., for institution
+    ConcurrentHashMap<String, Boolean> hs = hm.get(catAtt); // e.g., for NDBC,  acts as hashset
     if (hs == null) {
       if (!add) // remove mode and reference isn't there, so we're done
       return;
-      hs = new ConcurrentHashMap(16, 0.75f, 4);
+      hs = new ConcurrentHashMap<>(16, 0.75f, 4);
       hm.put(catAtt, hs);
     }
     if (add) {

@@ -9,7 +9,6 @@ import com.cohort.array.IntArray;
 import com.cohort.util.Math2;
 import com.cohort.util.MustBe;
 import com.cohort.util.String2;
-import gov.noaa.pmel.sgt.AbstractPane;
 import gov.noaa.pmel.sgt.JPane;
 import gov.noaa.pmel.sgt.Layer;
 import gov.noaa.pmel.sgt.LayerChild;
@@ -392,16 +391,6 @@ public class CompoundColorMapLayerChild implements LayerChild {
   @Override
   public void setVisible(boolean visible) {
     this.visible = visible;
-  }
-
-  /**
-   * Get <code>AbstractPane</code> of the <code>LayerChild</code>.
-   *
-   * @since 2.0
-   */
-  @Override
-  public AbstractPane getPane() {
-    return layer.getPane();
   }
 
   /**

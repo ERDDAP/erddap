@@ -22,25 +22,33 @@ import com.cohort.util.String2;
 import com.cohort.util.Test;
 import com.cohort.util.Units2;
 import com.google.common.base.Strings;
+import com.google.common.collect.ImmutableList;
 import gov.noaa.pfel.coastwatch.pointdata.Table;
 import gov.noaa.pfel.coastwatch.util.FileVisitorDNLS;
 import gov.noaa.pfel.coastwatch.util.RegexFilenameFilter;
 import gov.noaa.pfel.coastwatch.util.SSR;
 import gov.noaa.pfel.coastwatch.util.SharedWatchService;
 import gov.noaa.pfel.coastwatch.util.SimpleXMLReader;
-import gov.noaa.pfel.coastwatch.util.WatchDirectory;
 import gov.noaa.pfel.coastwatch.util.WatchUpdateHandler;
 import gov.noaa.pfel.erddap.Erddap;
 import gov.noaa.pfel.erddap.dataset.metadata.LocalizedAttributes;
 import gov.noaa.pfel.erddap.handlers.EDDGridFromFilesHandler;
 import gov.noaa.pfel.erddap.handlers.SaxHandlerClass;
 import gov.noaa.pfel.erddap.util.EDMessages;
+import gov.noaa.pfel.erddap.util.EDMessages.Message;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.util.ThreadedWorkManager;
-import gov.noaa.pfel.erddap.variable.*;
+import gov.noaa.pfel.erddap.variable.AxisVariableInfo;
+import gov.noaa.pfel.erddap.variable.DataVariableInfo;
+import gov.noaa.pfel.erddap.variable.EDV;
+import gov.noaa.pfel.erddap.variable.EDVAlt;
+import gov.noaa.pfel.erddap.variable.EDVGridAxis;
+import gov.noaa.pfel.erddap.variable.EDVTime;
+import gov.noaa.pfel.erddap.variable.EDVTimeGridAxis;
+import gov.noaa.pfel.erddap.variable.EDVTimeStamp;
+import jakarta.servlet.http.HttpServletRequest;
 import java.io.FileNotFoundException;
 import java.nio.file.Path;
-import java.nio.file.WatchEvent;
 import java.text.MessageFormat;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -141,8 +149,6 @@ public abstract class EDDGridFromFiles extends EDDGrid implements WatchUpdateHan
    * test. default=20. 1-18 tests that many digits for doubles and hidiv(n,2) for floats.
    */
   protected int matchAxisNDigits = DEFAULT_MATCH_AXIS_N_DIGITS;
-
-  protected WatchDirectory watchDirectory;
 
   // dirTable and fileTable inMemory (default=false)
   protected boolean fileTableInMemory = false;
@@ -529,7 +535,7 @@ public abstract class EDDGridFromFiles extends EDDGrid implements WatchUpdateHan
     setGraphsAccessibleTo(tGraphsAccessibleTo);
     if (!tAccessibleViaWMS)
       accessibleViaWMS =
-          String2.canonical(MessageFormat.format(EDStatic.messages.noXxxAr[0], "WMS"));
+          String2.canonical(MessageFormat.format(EDStatic.messages.get(Message.NO_XXX, 0), "WMS"));
     onChange = tOnChange;
     fgdcFile = tFgdcFile;
     iso19115File = tIso19115File;
@@ -727,7 +733,7 @@ public abstract class EDDGridFromFiles extends EDDGrid implements WatchUpdateHan
     }
 
     // load badFileMap
-    ConcurrentHashMap badFileMap = readBadFileMap();
+    ConcurrentHashMap<String, Object[]> badFileMap = readBadFileMap();
 
     // if trouble reading any, recreate all
     if (dirTable == null || fileTable == null || badFileMap == null) {
@@ -906,16 +912,13 @@ public abstract class EDDGridFromFiles extends EDDGrid implements WatchUpdateHan
     // set up watchDirectory
     if (updateEveryNMillis > 0) {
       try {
-        if (EDStatic.config.useSharedWatchService) {
-          SharedWatchService.watchDirectory(fileDir, recursive, pathRegex, this, datasetID);
-        } else {
-          watchDirectory = WatchDirectory.watchDirectoryAll(fileDir, recursive, pathRegex);
-        }
+        SharedWatchService.watchDirectory(fileDir, recursive, pathRegex, this, datasetID);
       } catch (Throwable t) {
         updateEveryNMillis = 0; // disable the inotify system for this instance
         String subject = String2.ERROR + " in " + datasetID + " constructor (inotify)";
         String tmsg = MustBe.throwableToString(t);
-        if (tmsg.indexOf("inotify instances") >= 0) tmsg += EDStatic.messages.inotifyFixAr[0];
+        if (tmsg.indexOf("inotify instances") >= 0)
+          tmsg += EDStatic.messages.get(Message.INOTIFY_FIX, 0);
         EDStatic.email(EDStatic.config.adminEmail, subject, tmsg);
       }
     }
@@ -1093,7 +1096,7 @@ public abstract class EDDGridFromFiles extends EDDGrid implements WatchUpdateHan
       while (tFileListPo < tFileNamePA.size()) {
         if (Thread.currentThread().isInterrupted())
           throw new SimpleException(
-              "EDDGridFromFiles.init" + EDStatic.messages.caughtInterruptedAr[0]);
+              "EDDGridFromFiles.init" + EDStatic.messages.get(Message.CAUGHT_INTERRUPTED, 0));
 
         int tDirI = tFileDirIndexPA.get(tFileListPo);
         String tFileS = tFileNamePA.get(tFileListPo);
@@ -1820,7 +1823,8 @@ public abstract class EDDGridFromFiles extends EDDGrid implements WatchUpdateHan
     Map<String, String> snapshot = snapshot();
 
     // get BadFile and FileTable info and make local copies
-    ConcurrentHashMap badFileMap = readBadFileMap(); // already a copy of what's in file
+    ConcurrentHashMap<String, Object[]> badFileMap =
+        readBadFileMap(); // already a copy of what's in file
     Table tDirTable = getDirTableCopy(); // not null, throws Throwable
     Table tFileTable = getFileTableCopy(); // not null, throws Throwable
     if (debugMode)
@@ -1852,7 +1856,7 @@ public abstract class EDDGridFromFiles extends EDDGrid implements WatchUpdateHan
     for (int evi = 0; evi < nEvents; evi++) {
       if (Thread.currentThread().isInterrupted())
         throw new SimpleException(
-            "EDDGridFromFiles.lowUpdate" + EDStatic.messages.caughtInterruptedAr[0]);
+            "EDDGridFromFiles.lowUpdate" + EDStatic.messages.get(Message.CAUGHT_INTERRUPTED, 0));
 
       String fullName = contexts.get(evi);
       String dirName = File2.getDirectory(fullName);
@@ -2101,38 +2105,28 @@ public abstract class EDDGridFromFiles extends EDDGrid implements WatchUpdateHan
    */
   @Override
   public boolean lowUpdate(int language, String msg, long startUpdateMillis) throws Throwable {
-    if (EDStatic.config.useSharedWatchService) {
-      SharedWatchService.processEvents();
-      return false;
+    SharedWatchService.processEvents();
+    return false;
+  }
+
+  @Override
+  public Table getFilesUrlList(HttpServletRequest request, String loggedInAs, int language)
+      throws Throwable {
+    Table table = getFileInfo(fileDir, fileNameRegex, recursive, pathRegex);
+    for (int i = 0; i < table.nRows(); i++) {
+      String dir = table.getStringData(0, i).replace(fileDir, "").replace("\\", "/");
+      String id = dir + table.getStringData(1, i);
+      String url =
+          EDStatic.erddapUrl(request, loggedInAs, language)
+              + "/files/"
+              + datasetID()
+              + "/"
+              + dir
+              + table.getStringData(1, i);
+      table.setStringData(0, i, id);
+      table.setStringData(1, i, url);
     }
-
-    // Most of this lowUpdate code is identical in EDDGridFromFiles and EDDTableFromFiles
-    if (watchDirectory == null) return false; // no changes
-
-    // get the file events
-    ArrayList<WatchEvent.Kind<?>> eventKinds = new ArrayList<>();
-    StringArray contexts = new StringArray();
-    int nEvents = watchDirectory.getEvents(eventKinds, contexts);
-    if (nEvents == 0) {
-      if (verbose) String2.log(msg + "found 0 events.");
-      return false; // no changes
-    }
-
-    // if any OVERFLOW, reload this dataset
-    for (int evi = 0; evi < nEvents; evi++) {
-      if (eventKinds.get(evi) == WatchDirectory.OVERFLOW) {
-        if (verbose)
-          String2.log(
-              msg
-                  + "caught OVERFLOW event in "
-                  + contexts.get(evi)
-                  + ", so I called requestReloadASAP() instead of making changes here.");
-        requestReloadASAP();
-        return false;
-      }
-    }
-
-    return handleEventContexts(contexts, msg);
+    return table;
   }
 
   /**
@@ -2662,7 +2656,7 @@ public abstract class EDDGridFromFiles extends EDDGrid implements WatchUpdateHan
    *     addBadFile or requestReloadASAP().
    */
   public PrimitiveArray[] getSourceDataFromFile(
-      String tFileDir, String tFileName, EDV tDataVariables[], IntArray tConstraints)
+      String tFileDir, String tFileName, ImmutableList<EDV> tDataVariables, IntArray tConstraints)
       throws Throwable {
 
     // if using temporary cache system, ensure file is in cache
@@ -2698,7 +2692,7 @@ public abstract class EDDGridFromFiles extends EDDGrid implements WatchUpdateHan
    *     stopIndex). !!! If there is a special axis0, this will not include constraints for axis0.
    */
   public abstract PrimitiveArray[] lowGetSourceDataFromFile(
-      String tFullName, EDV tDataVariables[], IntArray tConstraints) throws Throwable;
+      String tFullName, ImmutableList<EDV> tDataVariables, IntArray tConstraints) throws Throwable;
 
   /**
    * This gets data (not yet standardized) from the data source for this EDDGrid. Because this is
@@ -2727,7 +2721,7 @@ public abstract class EDDGridFromFiles extends EDDGrid implements WatchUpdateHan
       if (tFileTable == null) tFileTable = getFileTable();
     } catch (Exception e) {
       throw new WaitThenTryAgainException(
-          EDStatic.simpleBilingual(language, EDStatic.messages.waitThenTryAgainAr)
+          EDStatic.simpleBilingual(language, Message.WAIT_THEN_TRY_AGAIN)
               + "\n(Details: unable to read fileTable.)");
     }
 
@@ -2784,7 +2778,8 @@ public abstract class EDDGridFromFiles extends EDDGrid implements WatchUpdateHan
       if (Thread.currentThread().isInterrupted()) {
         if (workManager != null) workManager.forceShutdown();
         throw new SimpleException(
-            "EDDGridFromFiles.getDataForDapQuery" + EDStatic.messages.caughtInterruptedAr[0]);
+            "EDDGridFromFiles.getDataForDapQuery"
+                + EDStatic.messages.get(Message.CAUGHT_INTERRUPTED, 0));
       }
 
       // find next relevant file
@@ -2825,7 +2820,7 @@ public abstract class EDDGridFromFiles extends EDDGrid implements WatchUpdateHan
               this,
               tFileDir,
               tFileName, // it calls ensureInCache()
-              tDataVariables,
+              ImmutableList.copyOf(tDataVariables),
               ttConstraints,
               ftDirIndex.get(ftRow),
               ftLastMod.get(ftRow)));
@@ -2846,7 +2841,7 @@ public abstract class EDDGridFromFiles extends EDDGrid implements WatchUpdateHan
       EDDGridFromFiles caller,
       String tFileDir,
       String tFileName,
-      EDV[] tDataVariables,
+      ImmutableList<EDV> tDataVariables,
       IntArray tConstraints,
       int dirIndex,
       long modIndex)

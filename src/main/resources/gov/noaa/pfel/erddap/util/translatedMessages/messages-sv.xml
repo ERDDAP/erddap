@@ -63,7 +63,6 @@ Att begära komprimering är valfritt, men komprimerade svar är ofta 3-10 gång
 <acronyms>Akronymer</acronyms>
 <addConstraints>Du kan lägga till tabledap-liknande begränsningar för förfrågningar på den här webbsidan,
 till exempel,</addConstraints>
-<addVarWhereAttName>Valfritt: Ange ett attributnamn.</addVarWhereAttName>
 <addVarWhereAttValue>Valfritt: Ange ett attributvärde.</addVarWhereAttValue>
 <addVarWhere><![CDATA[
 Valfritt:
@@ -283,9 +282,6 @@ Sedan kan du klicka på en kategori för att se en lista över relevanta dataupp
 <categorySearchHtml><![CDATA[
 Välj ett (n) <kbd>{0}</kbd>
 ]]></categorySearchHtml>
-<categorySearchDifferentHtml><![CDATA[
-Sök efter datamängder med en annan <kbd>&category;</kbd>
-]]></categorySearchDifferentHtml>
 <categoryClickHtml>Klicka på en kategori (ett attributvärde) för att se en lista över relevanta datamängder.</categoryClickHtml>
 <categoryNotAnOption>När attribut=&quot;{0}&quot;, värde=&quot;{1}&quot; inte är ett alternativ.</categoryNotAnOption>
 <caughtInterrupted>fångade aktuell Thread().isInterrupted().</caughtInterrupted>
@@ -1730,9 +1726,6 @@ Varje rad representerar ett annat urval av data (t.ex.
 från en annan tid eller plats).
 ]]></dafTableTooltip>
 <dasTitle>Datauppsättningens attributstruktur (.das) för denna datauppsättning</dasTitle>
-
-<!--  Meddelandet som ska visas om data inte kan laddas ner (t.ex. SeaWiFS &lt;=14 dagar gammal). -->
-<dataAccessNotAllowed>[Förlåt. Den datan kan inte laddas ner.]</dataAccessNotAllowed>
 <databaseUnableToConnect>Kunde inte ansluta till databasen.</databaseUnableToConnect>
 <dataProviderForm>Dataleverantörsformulär</dataProviderForm>
 <dataProviderFormP1>Dataleverantörsformulär – del 1</dataProviderFormP1>
@@ -2041,10 +2034,6 @@ Klicka &widgetSubmitButton; för att skicka denna information till ERDDAP admini
 
 <br>Vänligen åtgärda dessa problem och &quot;Skicka&quot; sedan den här delen av formuläret igen.
 ]]></dpf_fixProblem>
-<dpf_yourName>Ditt namn</dpf_yourName>
-<dpf_emailAddress>E-postadress</dpf_emailAddress>
-<dpf_Timestamp>Tidsstämpel</dpf_Timestamp>
-<dpf_frequency>Frekvens</dpf_frequency>
 <dpf_title>titel</dpf_title>
 <dpf_titleTooltip><![CDATA[
 Detta är en kort (&lt;=80 tecken) beskrivning av datamängden.
@@ -2106,11 +2095,6 @@ Detta är licensen och ansvarsfriskrivningen för användning av dessa data.
 &standardLicense;
 <br>
 ]]></dpf_licenseTooltip>
-<dpf_howYouStoreData><![CDATA[
-
-<br>• Fel:
-Vänligen ange (nedan) hur dina rutnäts- eller tabelldata lagras.
-]]></dpf_howYouStoreData>
 <dpf_provideIfAvailable>Ange informationen om den är tillgänglig för din datauppsättning.</dpf_provideIfAvailable>
 <dpf_acknowledgement>bekräftelse</dpf_acknowledgement>
 <dpf_acknowledgementTooltip><![CDATA[
@@ -2371,10 +2355,7 @@ Tidsstämpeln för denna datauppsättning är &tTimestamp; .
 <dtWMS>Klicka för att ta reda på hur man gör kartor över denna data via denna datauppsättnings webbkarttjänst.</dtWMS>
 <EasierAccessToScientificData>Enklare tillgång till vetenskaplig data</EasierAccessToScientificData>
 
-<!--  EDD-meddelandena visas på tabledap och griddap Data Access Forms. -->
-<EDDClickOnSubmitHtml><![CDATA[
-Klicka på <kbd>Submit</kbd> .
-]]></EDDClickOnSubmitHtml>
+<!--EDD-meddelandena visas på tabelldap och griddap Data Access Forms.-->
 <EDDDatasetID>Datauppsättnings-ID</EDDDatasetID>
 <EDDFgdc>FGDC</EDDFgdc>
 <EDDFgdcMetadata>FGDC-STD-001-1998 Metadata</EDDFgdcMetadata>
@@ -2387,9 +2368,7 @@ Klicka på <kbd>Submit</kbd> .
 <EDDInformation>Information</EDDInformation>
 <EDDSummary>Sammanfattning</EDDSummary>
 <EDDDatasetTitle>Datauppsättningens titel</EDDDatasetTitle>
-<EDDDownloadData>Ladda ner data</EDDDownloadData>
 <EDDMakeAGraph>Gör en graf</EDDMakeAGraph>
-<EDDMakeAMap>Gör en karta</EDDMakeAMap>
 <EDDMinimum>Minimum</EDDMinimum>
 <EDDMaximum>Maximal</EDDMaximum>
 <EDDFileType>Filtyp:</EDDFileType>
@@ -2454,8 +2433,6 @@ Det gör webbadressen åt dig.
 ]]></EDDGridDownloadDataTooltip>
 <EDDGridDimension>Mått</EDDGridDimension>
 <EDDGridDimensionRanges>Mått</EDDGridDimensionRanges>
-<EDDGridFirst>Först</EDDGridFirst>
-<EDDGridLast>Sista</EDDGridLast>
 <EDDGridStart>Start</EDDGridStart>
 <EDDGridStop>Sluta</EDDGridStop>
 <EDDGridStartStopTooltip><![CDATA[
@@ -2496,14 +2473,6 @@ För din information:
 detta är det genomsnittliga avståndet mellan värdena för en dimension (i dimensionens enheter) och en indikation på om värdena är helt jämnt fördelade eller inte.
 Ett lite udda, ojämnt mellanrum indikerar ofta att en eller några filer saknas eller är dåliga i en annars helt jämnt fördelad datauppsättning.
 ]]></EDDGridSpacingTooltip>
-<EDDGridDimensionFirstTooltip><![CDATA[
-För din information:
-detta är det första värdet av en dimension.
-]]></EDDGridDimensionFirstTooltip>
-<EDDGridDimensionLastTooltip><![CDATA[
-För din information:
-detta är det sista värdet för en dimension.
-]]></EDDGridDimensionLastTooltip>
 <EDDGridDownloadTooltip><![CDATA[
 Välj de variabler som du vill ladda ner:
 <br>* För att ladda ner bara dimensionsdata:
@@ -2760,10 +2729,6 @@ Till exempel:
 
 <!--  Dessa meddelanden visas när ett felmeddelande visas. -->
 <errorTitle>Fel</errorTitle>
-<errorRequestUrl>Din begäran URL:</errorRequestUrl>
-<errorRequestQuery>Din förfrågan:</errorRequestQuery>
-<errorTheError>Felet:</errorTheError>
-<errorCopyFrom>Det går inte att kopiera från {0}.</errorCopyFrom>
 <errorFileNotFound>Filen hittades inte: {0}.</errorFileNotFound>
 <errorFileNotFoundImage>Filen hittades inte i cachen. Återskapa bilden och försök igen.</errorFileNotFoundImage>
 <errorInternal>Internt fel:</errorInternal>
@@ -2785,6 +2750,7 @@ Till exempel:
 <externalLink>(extern länk)</externalLink>
 <externalWebSite>Denna länk till en extern webbplats utgör inte ett stöd.</externalWebSite>
 <fileHelp_asc>Visa OPeNDAP-stil ISO-8859-1 kommaseparerad text.</fileHelp_asc>
+<fileHelp_croissant>Ladda ner dataset croissant schema.</fileHelp_croissant>
 <fileHelp_csv>Ladda ner en ISO-8859-1 kommaseparerad texttabell (rad 1: namn; rad 2: enheter; ISO 8601 gånger).</fileHelp_csv>
 <fileHelp_csvp>Ladda ner en ISO-8859-1 .csv-fil med rad 1: namn (enheter). Tiderna är ISO 8601-strängar.</fileHelp_csvp>
 <fileHelp_csv0>Ladda ner en ISO-8859-1 .csv-fil utan kolumnnamn eller enheter. Tiderna är ISO 8601-strängar.</fileHelp_csv0>
@@ -2796,7 +2762,6 @@ Till exempel:
 <fileHelpTable_esriCsv>Ladda ner en ISO_8859_1 .csv-fil för ESRI:s ArcGIS 9.x och nedan (separata datum- och tidskolumner).</fileHelpTable_esriCsv>
 <fileHelp_fgdc>Visa datasetets UTF-8 FGDC .xml-metadata.</fileHelp_fgdc>
 <fileHelp_geoJson>Ladda ned longitud,latitud,otherColumns-data som en UTF-8 GeoJSON .json-fil.</fileHelp_geoJson>
-<fileHelp_graph>Visa en webbsida Make A Graph.</fileHelp_graph>
 <fileHelpGrid_help>Visa en webbsida med en beskrivning av griddap.</fileHelpGrid_help>
 <fileHelpTable_help>Visa en webbsida med en beskrivning av tabledap.</fileHelpTable_help>
 <fileHelp_html>Visa ett HTML-dataåtkomstformulär i OPeNDAP-stil.</fileHelp_html>
@@ -2827,7 +2792,6 @@ Till exempel:
 <fileHelpTable_odvTxt>Ladda ner longitud,latitud,time,otherColumns som en ISO-8859-1 ODV Generic Spreadsheet File (.txt).</fileHelpTable_odvTxt>
 <fileHelp_parquet>Ladda ner som en parkettfil. Metadata innehåller kolumnnamn (&quot;column_names&quot;) och enheter (&quot;column_units&quot;).</fileHelp_parquet>
 <fileHelp_parquet_with_meta>Ladda ner som en parkettfil med detaljerad metadata.</fileHelp_parquet_with_meta>
-<fileHelp_subset>Visa ett HTML-formulär som använder facetterad sökning för att förenkla urval av delmängder av data.</fileHelp_subset>
 <fileHelp_timeGaps>Visa en UTF-8-lista över luckor i tidsvärdena som är större än mediangapet.</fileHelp_timeGaps>
 <fileHelp_tsv>Ladda ner en ISO-8859-1 tabbavgränsad texttabell (rad 1: namn; rad 2: enheter; ISO 8601 gånger).</fileHelp_tsv>
 <fileHelp_tsvp>Ladda ner en ISO-8859-1 .tsv-fil med rad 1: namn (enheter). Tiderna är ISO 8601-strängar.</fileHelp_tsvp>
@@ -2847,7 +2811,6 @@ Till exempel:
 
 <!--  Beskrivningen och varningen är vag för att tillåta en eller flera datamängder. -->
 <filesDescription>ERDDAP:s &quot;filsystem&quot; låter dig bläddra i ett virtuellt filsystem och ladda ner källdatafiler.</filesDescription>
-<filesSort>Klicka på en rubrik (t.ex. Namn, Senast ändrad, Storlek) för att ändra sorteringsordningen. &quot;Senast modifierad&quot; använder Zulus tidszon.</filesSort>
 <filesWarning><![CDATA[
 Datauppsättningens metadata och variabelnamn i dessa källfiler kan vara annorlunda än någon annanstans i ERDDAP ! Du kanske föredrar att använda datasetets dataåtkomstformulär istället.
 ]]></filesWarning>
@@ -3276,11 +3239,6 @@ Till exempel kommer orderByMax(&quot;stationID, time/1day&quot;) att skapa en gr
 Den raden kommer att ha summan av var och en av de andra variablerna.
 Till exempel kommer orderByMax(&quot;stationID, time/1day&quot;) att skapa en grupp för varje stationID för varje dag, och kommer att beräkna och returnera summan av de andra variablerna.
 ]]></functionOrderByTooltip>
-<functionOrderByExtra><![CDATA[
-För orderByClosest, ange intervallet (med formatet n[timeUnits], t.ex.
-1 timme) här.
-<br>För orderByLimit anger du det maximala antalet rader per grupp här.
-]]></functionOrderByExtra>
 <functionOrderBySort><![CDATA[
 Denna plats är den {0} viktiga orderBy ...-platsen.
 <br>Välj en variabel från rullgardinsmenyn till höger och/eller ändra texten i detta textfält.
@@ -3290,7 +3248,6 @@ Denna plats är den {0} viktiga orderBy ...-platsen.
 <functionOrderBySort3>tredje mest</functionOrderBySort3>
 <functionOrderBySort4>fjärde mest</functionOrderBySort4>
 <functionOrderBySortLeast>minst</functionOrderBySortLeast>
-<functionOrderBySortRowMax>Endast raden med maximalt värde kommer att behållas.</functionOrderBySortRowMax>
 <generatedAt>Den här webbsidan skapades den {0} .</generatedAt>
 <geoServicesDescription><![CDATA[
 För att göra denna ERDDAP :s data mer tillgänglig för ArcGIS användare, härmar denna del av ERDDAP del av
@@ -3574,7 +3531,6 @@ Standard är ingenting (oanvänd).
 <!--  t.ex. {0}=WMS eller listAll -->
 <listOfDatasets>Lista över {0} datamängder</listOfDatasets>
 <listAll>Allt</listAll>
-<LogIn>Logga in</LogIn>
 <login>logga in</login>
 <loginHTML><![CDATA[
 
@@ -3625,22 +3581,15 @@ Alla med ett e-postkonto från Google eller ORCID iD kan logga in men administra
     title="Denna länk till en extern webbplats utgör inte ett stöd."></a> är en öppen standard som låter dig logga in med ditt lösenord på en webbplats och sedan logga in utan ditt lösenord på många andra webbplatser, inklusive ERDDAP .
 Endast personer som har gjort överenskommelser med administratören av denna ERDDAP får logga in.
 ]]></loginDescribeOpenID>
-<loginErddap>Logga in på ERDDAP</loginErddap>
 <loginCanNot>Denna ERDDAP är inte konfigurerad för att låta användare logga in.</loginCanNot>
 <loginAreNot>Du är inte inloggad.</loginAreNot>
 <loginToLogIn>Att logga in</loginToLogIn>
-<loginEmailAddress>e-postadress</loginEmailAddress>
 <loginYourEmailAddress>din e-postadress</loginYourEmailAddress>
 <loginUserName>Användarnamn</loginUserName>
 <loginPassword>Lösenord</loginPassword>
 <loginUserNameAndPassword>Användarnamn och lösenord</loginUserNameAndPassword>
 <loginGoogleSignIn>Autentisera med ditt Google-konto.</loginGoogleSignIn>
 <loginOrcidSignIn>Autentisera med ditt ORCID iD.</loginOrcidSignIn>
-<loginOpenID>Logga in med din OpenID URL</loginOpenID>
-<loginOpenIDOr>Eller logga in på ditt befintliga (icke-OpenID) konto på</loginOpenIDOr>
-<loginOpenIDCreate>Eller skapa en OpenID URL på</loginOpenIDCreate>
-<loginOpenIDFree>De är alla gratis!</loginOpenIDFree>
-<loginOpenIDSame>Se till att du loggat in med exakt samma OpenID-URL som du gav till ERDDAP-administratören.</loginOpenIDSame>
 <loginAs>Du är inloggad som {0}.</loginAs>
 <loginPartwayAs>Du är inloggad halvvägs som {0} .</loginPartwayAs>
 <loginFailed>FEL: Inloggningen misslyckades</loginFailed>
@@ -3744,7 +3693,6 @@ Det är möjligt att vissa datauppsättningar inte är tillgängliga för närva
 ]]></loginPublicAccess>
 <LogOut>Logga ut</LogOut>
 <logout>logga ut</logout>
-<logoutOpenID>Logga ut från din OpenID-leverantör.</logoutOpenID>
 
 <!--  logoutSuccess senast uppdaterad 2019-12-19 -->
 <logoutSuccess>Du har loggat ut.
@@ -4004,10 +3952,6 @@ Men dods.dap.DODSException har inget relevant undantag.
 Bättre att returnera en tom fil? Men .nc och andra tillåter inte 0-längdsdata.
  -->
 <MustBeThereIsNoData>Din fråga gav inga matchande resultat.</MustBeThereIsNoData>
-
-<!--  Många filtyper sätter en gräns för hur mycket data en fil kan innehålla (t.ex. 2 GB). -->
-<MustBeNotNull>{0} får inte vara null.</MustBeNotNull>
-<MustBeNotEmpty>{0} får inte vara en tom sträng.</MustBeNotEmpty>
 <MustBeInternalError>Internt fel</MustBeInternalError>
 <MustBeOutOfMemoryError>Minneslöst fel</MustBeOutOfMemoryError>
 
@@ -4048,11 +3992,9 @@ Bättre att returnera en tom fil? Men .nc och andra tillåter inte 0-längdsdata
 <noXxxNoLonIn180>det finns inga longitudvärden inom -180 till 360</noXxxNoLonIn180>
 <noXxxNoNonString>det finns inga icke-strängvariabler</noXxxNoNonString>
 <noXxxNo2NonString>det finns inte minst två icke-strängvariabler</noXxxNo2NonString>
-<noXxxNoStation>cdmDataType={0} är inte &quot;TimeSeries&quot;</noXxxNoStation>
 <noXxxNoStationID>det finns ingen stations-ID-liknande variabel</noXxxNoStationID>
 <noXxxNoSubsetVariables>subsetVariables specificerades inte</noXxxNoSubsetVariables>
 <noXxxNoOLLSubsetVariables>subsetVariables har inte variablerna erbjudande, longitud och latitud</noXxxNoOLLSubsetVariables>
-<noXxxNoMinMax>källdataservern tillhandahåller inte minimi- och maximivärden</noXxxNoMinMax>
 <noXxxItsGridded>det är en rutnätsdatauppsättning</noXxxItsGridded>
 <noXxxItsTabular>det är en tabelluppsättning</noXxxItsTabular>
 <oneRequestAtATime>Gör bara en begäran i taget.</oneRequestAtATime>
@@ -4078,7 +4020,6 @@ Utvecklare av datorprogram och Java Scripted webbsidor kan få tillgång ERDDAP 
 <options>alternativ</options>
 <orAListOfValues>eller en värdelista</orAListOfValues>
 <orRefineSearchWith>Eller förfina den här sökningen med</orRefineSearchWith>
-<orSearchWith>Eller sök efter datauppsättningar med</orSearchWith>
 <orComma>Eller,</orComma>
 <otherFeatures>Andra funktioner</otherFeatures>
 <outOfDateDatasets>Inaktuella datamängder</outOfDateDatasets>
@@ -4133,7 +4074,6 @@ Det finns
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
     title="Denna länk till en extern webbplats utgör inte ett stöd."></a> .
 ]]></percentEncode>
-<pickADataset>Välj en datauppsättning</pickADataset>
 
 <!--  Meddelanden relaterade till protokollbaserade datauppsättningssökningar. -->
 <protocolSearchHtml>Sök efter datamängder efter protokoll</protocolSearchHtml>
@@ -4148,7 +4088,6 @@ Olika protokoll är lämpliga för olika typer av data och för olika klientappl
 <queryError1Var>Formatet {0} kan bara hantera en datavariabel.</queryError1Var>
 <queryError2Var>Begäranden om formatet {0} måste innehålla minst två numeriska variabler (för X- och Y-axlarna).</queryError2Var>
 <queryErrorActualRange>{0} är utanför variabelns faktiska_intervall: {1} till {2}</queryErrorActualRange>
-<queryErrorAscending>För {0} förfrågningar måste longitudvärdena och latitudvärdena vara stigande.</queryErrorAscending>
 <queryErrorAdjusted>För {0} förfrågningar måste de justerade longitudvärdena ({1} till {2}) vara mellan -180 och 180.</queryErrorAdjusted>
 <queryErrorConstraintNaN>Constraint value=&quot;{0}&quot; utvärderas till NaN. Om du verkligen vill ha NaN, skriv det som NaN.</queryErrorConstraintNaN>
 <queryErrorEqualSpacing>För {0} förfrågningar måste longitudavståndet ({1}) vara lika med latitudavståndet ({2}).</queryErrorEqualSpacing>
@@ -4180,7 +4119,6 @@ Olika protokoll är lämpliga för olika typer av data och för olika klientappl
 <queryErrorGridNoAxisVar>En griddap-datavariabelfråga kan inte inkludera en axelvariabel ({0}).</queryErrorGridNoAxisVar>
 <queryErrorGridNoDataVar>En griddap-axelvariabelfråga kan inte inkludera en datavariabel ({0}).</queryErrorGridNoDataVar>
 <queryErrorGridNotIdentical>Begränsningen {0} för variabel={1} är inte identisk med begränsningen {2} för variabel={2}. Om du behöver olika delmängder, gör separata förfrågningar.</queryErrorGridNotIdentical>
-<queryErrorGridSLessS>StartIndex={0} är större än StopIndex={1}.</queryErrorGridSLessS>
 <queryErrorLastEndP>{0} börjar med &quot;(&quot;, men slutar inte med &quot;)&quot;.</queryErrorLastEndP>
 <queryErrorLastExpected>&quot;sista&quot; förväntades i början av {0}.</queryErrorLastExpected>
 <queryErrorLastUnexpected>Oväntat tecken efter &quot;sista&quot; i {0}.</queryErrorLastUnexpected>
@@ -4414,7 +4352,6 @@ Ser
 <SOSDocumentation>ERDDAP:s SOS-dokumentation</SOSDocumentation>
 <WCSDocumentation>ERDDAP:s WCS-dokumentation</WCSDocumentation>
 <WMSDocumentation>ERDDAP:s WMS-dokumentation</WMSDocumentation>
-<findOutChange>så att ditt datorprogram kan ta reda på om en datauppsättning har ändrats.</findOutChange>
 <requestFormatExamplesHtml><![CDATA[
 (till exempel
 <a rel="help" href="https://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html#sec9.3">HTTP GET <img 
@@ -4821,13 +4758,6 @@ Begär istället ett e-postmeddelande med en
 <br>Om prenumerations-ID och nyckel matchar, tas prenumerationen bort.</span>
 ]]></subscriptionRemoveSuccess>
 <subscriptionRSS>Prenumerera på RSS-flödet för denna datauppsättning...</subscriptionRSS>
-<subscriptionsNotAvailable><![CDATA[
-
-<p><strong>Förlåt.
-E-post-/URL-prenumerationssystemet är inte tillgängligt vid denna ERDDAP installation.</strong>
-<br>Överväg att använda
-<a rel="help" href="{0}/information.html#subscriptions">RSS</a> -prenumerationstjänsten istället.
-]]></subscriptionsNotAvailable>
 <subscriptionUrlHtml><![CDATA[
 <kbd>URL/action</kbd> är en valfri URL som ERDDAP kommer att kontakta istället för att skicka ett e-postmeddelande.
 <br>Så om du vill få ett e-postmeddelande när datasetet ändras, lämna <kbd>URL/action</kbd> tom.
@@ -5071,11 +5001,6 @@ För att visa {0},
 <!--  Följande tagg föregås av en av de två föregående taggarna.
   {0} är subsetViewSelectDistintCombos eller subsetViewSelectRelatedCounts. -->
 <subsetWhenCounts>{0} för {1} värdena för &quot;{2}&quot; är:</subsetWhenCounts>
-<subsetComboClickSelect><![CDATA[
-För att se antalet distinkta kombinationer av variablerna som anges ovan,
-<br>kontrollera <kbd>{0} :
-{1}</kbd> ovan och välj ett värde för en av variablerna ovan.
-]]></subsetComboClickSelect>
 <subsetNVariableCombos>Totalt finns det {0} rader med distinkta kombinationer av variablerna som anges ovan.</subsetNVariableCombos>
 <subsetShowingAllRows>Alla rader visas ovan.</subsetShowingAllRows>
 <subsetShowingNRows>De första {0} raderna visas ovan. De återstående {1} raderna visas inte.</subsetShowingNRows>
@@ -5820,7 +5745,6 @@ När du är medlem kan du posta din fråga där eller söka för att se om fråg
 Åsikterna på denna webbsida är Bob Simons personliga åsikter och återspeglar inte nödvändigtvis någon ståndpunkt från regeringen eller National Oceanic and Atmospheric Administration
 
 ]]></theLongDescriptionHtml>
-<Then>Sedan</Then>
 <twoClickMapDefaultTooltip>Ange en rektangel genom att klicka på två diagonala hörn. Gör det igen om det behövs.</twoClickMapDefaultTooltip>
 
 <!--  Detta är ett sätt att åsidosätta ERDDAP:s standardisera UDUnits-omvandlare
@@ -7038,7 +6962,6 @@ Det här kan inte vara någonting.
 Så om du inte vill ha något, skriv in ett floskelord som aldrig kommer att bli ett attributnamn. -->
 <updateUrlsSkipAttributes>sourceUrl</updateUrlsSkipAttributes>
 <variableNames>Variabelnamn</variableNames>
-<viewAllDatasetsHtml>Visa en lista över alla datamängder</viewAllDatasetsHtml>
 <waitThenTryAgain>Det fanns ett (tillfälligt?) problem. Vänta en minut och försök sedan igen. (Klicka på knappen Ladda om i en webbläsare.)</waitThenTryAgain>
 <warning>VARNING!</warning>
 <units>Enheter</units>

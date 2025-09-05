@@ -5,7 +5,8 @@
  */
 package com.cohort.array;
 
-import com.cohort.util.*;
+import com.cohort.util.Math2;
+import com.cohort.util.String2;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -984,11 +985,10 @@ public class FloatArray extends PrimitiveArray {
    */
   @Override
   public String testEquals(final Object o) {
-    if (!(o instanceof FloatArray))
+    if (!(o instanceof FloatArray other))
       return "The two objects aren't equal: this object is a FloatArray; the other is a "
           + (o == null ? "null" : o.getClass().getName())
           + ".";
-    final FloatArray other = (FloatArray) o;
     if (other.size() != size)
       return "The two FloatArrays aren't equal: one has "
           + size
@@ -1243,7 +1243,7 @@ public class FloatArray extends PrimitiveArray {
 
     // make a hashMap with all the unique values (associated values are initially all dummy)
     final Integer dummy = -1;
-    final HashMap hashMap = new HashMap(Math2.roundToInt(1.4 * size));
+    final HashMap<Float, Integer> hashMap = new HashMap<>(Math2.roundToInt(1.4 * size));
     float lastValue = array[0]; // since lastValue often equals currentValue, cache it
     hashMap.put(lastValue, dummy);
     boolean alreadySorted = true;
@@ -1257,7 +1257,7 @@ public class FloatArray extends PrimitiveArray {
     }
 
     // quickly deal with: all unique and already sorted
-    final Set keySet = hashMap.keySet();
+    final Set<Float> keySet = hashMap.keySet();
     final int nUnique = keySet.size();
     if (nUnique == size && alreadySorted) {
       indices.ensureCapacity(size);
@@ -1266,8 +1266,8 @@ public class FloatArray extends PrimitiveArray {
     }
 
     // store all the elements in an array
-    final Object unique[] = new Object[nUnique];
-    final Iterator iterator = keySet.iterator();
+    final float[] unique = new float[nUnique];
+    final Iterator<Float> iterator = keySet.iterator();
     int count = 0;
     while (iterator.hasNext()) unique[count++] = iterator.next();
     if (nUnique != count)
@@ -1278,11 +1278,8 @@ public class FloatArray extends PrimitiveArray {
     Arrays.sort(unique);
 
     // put the unique values back in the hashMap with the ranks as the associated values
-    // and make tUnique
-    final float tUnique[] = new float[nUnique];
     for (int i = 0; i < count; i++) {
       hashMap.put(unique[i], i);
-      tUnique[i] = (Float) unique[i];
     }
 
     // convert original values to ranks
@@ -1303,7 +1300,7 @@ public class FloatArray extends PrimitiveArray {
     // store the results in ranked
     indices.append(new IntArray(ranks));
 
-    return new FloatArray(tUnique);
+    return new FloatArray(unique);
   }
 
   /**

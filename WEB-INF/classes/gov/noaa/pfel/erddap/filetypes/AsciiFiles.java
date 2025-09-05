@@ -11,6 +11,7 @@ import gov.noaa.pfel.erddap.dataset.GridDataAccessor;
 import gov.noaa.pfel.erddap.dataset.OutputStreamSource;
 import gov.noaa.pfel.erddap.dataset.TableWriter;
 import gov.noaa.pfel.erddap.dataset.TableWriterDodsAscii;
+import gov.noaa.pfel.erddap.util.EDMessages.Message;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.EDV;
 import java.io.Writer;
@@ -47,7 +48,7 @@ public class AsciiFiles extends TableWriterFileType {
 
   @Override
   public String getHelpText(int language) {
-    return EDStatic.messages.fileHelp_ascAr[language];
+    return EDStatic.messages.get(Message.FILE_HELP_ASC, language);
   }
 
   /**

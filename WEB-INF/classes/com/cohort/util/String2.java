@@ -4,14 +4,11 @@
  */
 package com.cohort.util;
 
-import com.cohort.array.PrimitiveArray;
 import com.cohort.array.StringComparatorIgnoreCase;
 import com.google.common.collect.ImmutableList;
 import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
-import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.StringSelection;
-import java.awt.datatransfer.Transferable;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -33,7 +30,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 import java.util.Vector;
 import java.util.WeakHashMap;
@@ -1746,30 +1742,6 @@ public class String2 {
   }
 
   /**
-   * This repeatedly replaces the text matched in the capture group with the replacement text.
-   *
-   * @param sb a StringBuilder
-   * @param regex a regular Expression
-   * @param captureGroup a capture in the regex
-   * @param replacement the replacement string
-   * @return sb for convenience
-   */
-  public static StringBuilder regexReplaceAll(
-      final StringBuilder sb,
-      final String regex,
-      final int captureGroup,
-      final String replacement) {
-
-    final Pattern pattern = Pattern.compile(regex);
-    Matcher matcher = pattern.matcher(sb);
-    while (matcher.find()) {
-      sb.replace(matcher.start(1), matcher.end(1), replacement);
-      matcher = pattern.matcher(sb); // sb has changed, so need new matcher
-    }
-    return sb;
-  }
-
-  /**
    * Returns a string where all cases of more than one space are replaced by one space. The string
    * is also trim'd to remove leading and trailing spaces. Also, spaces after { or ( and before ) or
    * } will be removed.
@@ -2478,32 +2450,6 @@ public class String2 {
   }
 
   /**
-   * This creates an ArrayList from an Object[].
-   *
-   * @param objectArray an Object[]
-   * @return arrayList with the objects
-   */
-  public static List<Object> toArrayList(final Object objectArray[]) {
-    final int n = objectArray.length;
-    final ArrayList<Object> al = new ArrayList<>(n);
-    al.addAll(Arrays.asList(objectArray));
-    return al;
-  }
-
-  /**
-   * This creates an ArrayList from an Object[].
-   *
-   * @param objectArray an PrimitiveArray[]
-   * @return arrayList with the objects
-   */
-  public static List<PrimitiveArray> toArrayList(final PrimitiveArray objectArray[]) {
-    final int n = objectArray.length;
-    final ArrayList<PrimitiveArray> al = new ArrayList<>(n);
-    al.addAll(Arrays.asList(objectArray));
-    return al;
-  }
-
-  /**
    * This returns the standard Help : About message.
    *
    * @return the standard Help : About message
@@ -2572,23 +2518,7 @@ public class String2 {
    * @return a CSV String with the values with ", " after all but the last value. Returns null if ar
    *     is null. null elements are represented as "[null]".
    */
-  public static String toCSSVString(final ImmutableList<String> al) {
-    return toSVString(al.toArray(), ", ", false);
-  }
-
-  /**
-   * Generates a Comma-Space-Separated-Value (CSSV) string.
-   *
-   * <p>CHANGED: before 2011-03-06, this didn't do anything special for strings with internal commas
-   * or quotes. Now it uses toJson for that string.
-   *
-   * <p>CHANGED: before 2011-09-04, this was called toCSVString.
-   *
-   * @param al an arrayList of objects
-   * @return a CSV String with the values with ", " after all but the last value. Returns null if ar
-   *     is null. null elements are represented as "[null]".
-   */
-  public static String toCSSVString(final List<Object> al) {
+  public static String toCSSVString(final ImmutableList<?> al) {
     return toSVString(al.toArray(), ", ", false);
   }
 
@@ -3715,38 +3645,6 @@ public class String2 {
   }
 
   /**
-   * This converts an ArrayList with Integers into an int[].
-   *
-   * @param al an Object[]
-   * @return the corresponding int[] (invalid values are converted to Integer.MAX_VALUE). al=null
-   *     returns null.
-   */
-  public static int[] toIntArray(List<Integer> al) {
-    if (al == null) return null;
-    int n = al.size();
-    Math2.ensureMemoryAvailable(4L * n, "String2.toIntArray");
-    int ia[] = new int[n];
-    for (int i = 0; i < n; i++) ia[i] = al.get(i);
-    return ia;
-  }
-
-  /**
-   * This converts an ArrayList with Floats into a float[].
-   *
-   * @param al an Object[]
-   * @return the corresponding float[] (invalid values are converted to Float.NaN). al=null returns
-   *     null.
-   */
-  public static float[] toFloatArray(List<Float> al) {
-    if (al == null) return null;
-    int n = al.size();
-    Math2.ensureMemoryAvailable(4L * n, "String2.toFloatArray");
-    float fa[] = new float[n];
-    for (int i = 0; i < n; i++) fa[i] = al.get(i);
-    return fa;
-  }
-
-  /**
    * This converts an ArrayList with Doubles into a double[].
    *
    * @param al an Object[]
@@ -4694,25 +4592,6 @@ public class String2 {
   }
 
   /**
-   * This returns a string with the keys and values of the Map (sorted by the keys, ignoreCase).
-   *
-   * @param map (keys and values are objects with good toString methods). If it needs to be
-   *     thead-safe, use ConcurrentHashMap.
-   * @return a string with the sorted (ignoreCase) keys and their values ("key1: value1\nkey2:
-   *     value2\n")
-   */
-  public static String getKeysAndValuesString(Map<String, String> map) {
-    ArrayList<String> al = new ArrayList<>();
-
-    // synchronize so protected from changes in other threads
-    for (Entry<String, String> entry : map.entrySet()) {
-      al.add(entry.getKey() + ": " + entry.getValue());
-    }
-    al.sort(STRING_COMPARATOR_IGNORE_CASE);
-    return toNewlineString(al.toArray(new String[0]));
-  }
-
-  /**
    * This returns the number formatted with up to 6 digits to the left and right of the decimal and
    * trailing decimal 0's removed. If abs(d) &lt; 0.0999995 or abs(d) &gt;= 999999.9999995, the
    * number is displayed in scientific notation (e.g., 8.954321E-5). Thus the maximum length should
@@ -5208,17 +5087,6 @@ public class String2 {
   }
 
   /**
-   * This converts all of the Strings to ISO_8859_1 encoding.
-   *
-   * @return sar for convenience
-   */
-  public static String[] toIso88591Strings(String sar[]) {
-    int n = sar.length;
-    for (int i = 0; i < n; i++) sar[i] = toIso88591String(sar[i]);
-    return sar;
-  }
-
-  /**
    * This returns the UTF-8 encoding of the string (or null if trouble). The inverse of this is
    * utf8BytesToString. This won't throw an exception and returns ERROR (as bytes) if trouble.
    *
@@ -5235,27 +5103,6 @@ public class String2 {
    */
   public static String utf8BytesToString(byte[] bar) {
     return bar == null ? null : new String(bar, File2.UTF_8_CHARSET);
-  }
-
-  /**
-   * A little weird: This returns the UTF-8 encoding of the string as a String (using only the lower
-   * byte of each 2-byte char), so a unicode string can be stored in a 1-byte/char string. This
-   * won't throw an exception and returns ERROR (as bytes) if trouble.
-   */
-  public static String stringToUtf8String(String s) {
-    try {
-      return new String(
-          s.getBytes(StandardCharsets.UTF_8), 0); // 0=highByte  this is deprecated but useful
-    } catch (Exception e) {
-      log(
-          "Caught "
-              + ERROR
-              + " in String2.stringToUtf8String("
-              + s
-              + "): "
-              + MustBe.throwableToString(e));
-      return ERROR;
-    }
   }
 
   /**
@@ -5467,11 +5314,6 @@ public class String2 {
     return s == null
         ? null
         : s.substring(20, 24) + "_" + s.substring(24, 28) + "_" + s.substring(28, 32);
-  }
-
-  /** This is like md5Hex12, but with _ and 4 random hex digits appended to the end. */
-  public static String md5Hex12PlusRandom(String password) {
-    return md5Hex(password) + "_" + String2.zeroPad(Integer.toHexString(Math2.random(0x10000)), 4);
   }
 
   /**
@@ -5775,22 +5617,6 @@ public class String2 {
     if (sb.length() == 0) sb.append("a_");
 
     return sb.toString();
-  }
-
-  /**
-   * Get gets the String from the system clipboard (or null if none). This works in a standalone
-   * Java program, not an applet. From Java Developers Almanac. This won't throw an exception.
-   */
-  public static String getClipboardString() {
-    try {
-      Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
-      Transferable t = clipboard.getContents(null);
-      if (t != null && t.isDataFlavorSupported(DataFlavor.stringFlavor))
-        return (String) t.getTransferData(DataFlavor.stringFlavor);
-    } catch (Throwable th) {
-      log(ERROR + " while getting the string from the clipboard:\n" + MustBe.throwableToString(th));
-    }
-    return null;
   }
 
   /**
@@ -6310,11 +6136,5 @@ public class String2 {
         set.remove(val);
       }
     }
-  }
-
-  public static String[] immutableListToArray(ImmutableList<String> list) {
-    String[] array = new String[list.size()];
-    array = list.toArray(array);
-    return array;
   }
 } // End of String2 class.

@@ -4,10 +4,47 @@
  */
 package gov.noaa.pfel.coastwatch.pointdata;
 
-import com.cohort.array.*;
-import com.cohort.util.*;
+import com.cohort.array.Attributes;
+import com.cohort.array.ByteArray;
+import com.cohort.array.CharArray;
+import com.cohort.array.DoubleArray;
+import com.cohort.array.FloatArray;
+import com.cohort.array.IntArray;
+import com.cohort.array.LongArray;
+import com.cohort.array.NDimensionalIndex;
+import com.cohort.array.PAOne;
+import com.cohort.array.PAType;
+import com.cohort.array.PrimitiveArray;
+import com.cohort.array.ShortArray;
+import com.cohort.array.StringArray;
+import com.cohort.array.UByteArray;
+import com.cohort.array.UIntArray;
+import com.cohort.array.ULongArray;
+import com.cohort.array.UShortArray;
+import com.cohort.util.Calendar2;
+import com.cohort.util.File2;
+import com.cohort.util.Math2;
+import com.cohort.util.MustBe;
+import com.cohort.util.SimpleException;
+import com.cohort.util.String2;
+import com.cohort.util.Test;
+import com.cohort.util.XML;
 import com.google.common.collect.ImmutableList;
-import dods.dap.*;
+import dods.dap.AttributeTable;
+import dods.dap.BaseType;
+import dods.dap.DAS;
+import dods.dap.DBoolean;
+import dods.dap.DByte;
+import dods.dap.DConnect;
+import dods.dap.DFloat32;
+import dods.dap.DFloat64;
+import dods.dap.DInt16;
+import dods.dap.DInt32;
+import dods.dap.DSequence;
+import dods.dap.DString;
+import dods.dap.DUInt16;
+import dods.dap.DUInt32;
+import dods.dap.DataDDS;
 import gov.noaa.pfel.coastwatch.griddata.DataHelper;
 import gov.noaa.pfel.coastwatch.griddata.FileNameUtility;
 import gov.noaa.pfel.coastwatch.griddata.Matlab;
@@ -86,8 +123,13 @@ import org.apache.parquet.schema.Type;
 import org.apache.parquet.schema.Types.MessageTypeBuilder;
 import org.xml.sax.InputSource;
 import org.xml.sax.XMLReader;
-import ucar.ma2.*;
-import ucar.nc2.*;
+import ucar.ma2.Array;
+import ucar.ma2.ArrayChar;
+import ucar.ma2.DataType;
+import ucar.nc2.Dimension;
+import ucar.nc2.Group;
+import ucar.nc2.NetcdfFile;
+import ucar.nc2.Variable;
 import ucar.nc2.write.NetcdfFormatWriter;
 
 /**
@@ -680,23 +722,6 @@ public class Table {
   }
 
   /**
-   * This converts the specified column from epochSeconds doubles to ISO 8601 Strings.
-   *
-   * @param timeIndex
-   */
-  public void convertEpochSecondsColumnToIso8601(int timeIndex) {
-    int tnRows = nRows();
-    PrimitiveArray pa = getColumn(timeIndex);
-    StringArray sa = new StringArray(tnRows, false);
-    for (int row = 0; row < tnRows; row++)
-      sa.add(Calendar2.safeEpochSecondsToIsoStringTZ(pa.getDouble(row), ""));
-    setColumn(timeIndex, sa);
-
-    if (String2.isSomething(columnAttributes(timeIndex).getString("units")))
-      columnAttributes(timeIndex).set("units", Calendar2.ISO8601TZ_FORMAT);
-  }
-
-  /**
    * This makes a deep clone of the current table (data and attributes).
    *
    * @param startRow
@@ -796,18 +821,6 @@ public class Table {
   }
 
   /**
-   * This returns the PrimitiveArrays for all of the columns.
-   *
-   * @return the PrimitiveArray[]
-   * @throws Exception if col is invalid
-   */
-  public PrimitiveArray[] getColumns() {
-    PrimitiveArray pa[] = new PrimitiveArray[columns.size()];
-    for (int i = 0; i < columns.size(); i++) pa[i] = getColumn(i);
-    return pa;
-  }
-
-  /**
    * This simplifies (changes the datatype to the simplest possible type) a column.
    *
    * @param col the column to be simplified, 0...
@@ -900,36 +913,6 @@ public class Table {
   public void convertIsSomething2() {
     int nColumns = columns.size();
     for (int col = 0; col < nColumns; col++) convertIsSomething2(col);
-  }
-
-  /**
-   * This copies the values from one row to another already extant row (without affecting any other
-   * rows).
-   *
-   * @param from the 'from' row
-   * @param to the 'to' row
-   */
-  public void copyRow(int from, int to) {
-    PrimitiveArray.copyRow(columns, from, to);
-  }
-
-  /**
-   * This writes a row to a DataOutputStream.
-   *
-   * @param row
-   * @param dos
-   */
-  public void writeRowToDOS(int row, DataOutputStream dos) throws Exception {
-    for (PrimitiveArray column : columns) column.writeDos(dos, row);
-  }
-
-  /**
-   * This reads/appends a row from a DataInputStream.
-   *
-   * @param dis
-   */
-  public void readRowFromDIS(DataInputStream dis) throws Exception {
-    for (PrimitiveArray column : columns) column.readDis(dis, 1); // read 1 value
   }
 
   /**
@@ -1696,137 +1679,15 @@ public class Table {
   }
 
   /**
-   * This tests that the value in a column is as expected.
+   * This add the value of one datum as an int to one of the columns, thereby increasing the number
+   * of rows in that column.
    *
-   * @throws Exception if trouble
+   * @param col the column number (0 ... nColumns-1 )
+   * @param d the value of one datum as an int.
+   * @throws Exception if trouble (e.g., row or col out of range)
    */
-  public void test1(String columnName, int row, String expected) {
-    String observed = findColumn(columnName).getString(row);
-    // ensureEqual deals with nulls
-    Test.ensureEqual(observed, expected, "colName=" + columnName + " row=" + row);
-  }
-
-  /**
-   * This tests that the value in a column is as expected.
-   *
-   * @throws Exception if trouble
-   */
-  public void test1(String columnName, int row, int expected) {
-    int observed = findColumn(columnName).getInt(row);
-    if (observed != expected) throw new RuntimeException("colName=" + columnName + " row=" + row);
-  }
-
-  /**
-   * This tests that the value in a column is as expected.
-   *
-   * @throws Exception if trouble
-   */
-  public void test1(String columnName, int row, float expected) {
-    float observed = findColumn(columnName).getFloat(row);
-    // ensureEqual does fuzzy test
-    Test.ensureEqual(observed, expected, "colName=" + columnName + " row=" + row);
-  }
-
-  /**
-   * This tests that the value in a column is as expected.
-   *
-   * @throws Exception if trouble
-   */
-  public void test1(String columnName, int row, double expected) {
-    double observed = findColumn(columnName).getDouble(row);
-    // ensureEqual does fuzzy test
-    Test.ensureEqual(observed, expected, "colName=" + columnName + " row=" + row);
-  }
-
-  /**
-   * This tests that the value in a column is as expected. The table's column should have epoch
-   * seconds values.
-   *
-   * @param expected value formatted with Calendar2.safeEpochSecondsToIsoStringTZ(seconds, "")
-   * @throws Exception if trouble
-   */
-  public void test1Time(String columnName, int row, String expected) {
-    double seconds = findColumn(columnName).getDouble(row);
-    String observed = Calendar2.safeEpochSecondsToIsoStringTZ(seconds, "");
-    if (!observed.equals(expected))
-      throw new RuntimeException("colName=" + columnName + " row=" + row);
-  }
-
-  /** This checks that the value in a column is as expected and prints PASS/FAIL and the test. */
-  public String check1(String columnName, int row, String expected) {
-    String observed = findColumn(columnName).getString(row);
-    // Test.equal deals with nulls
-    return (Test.equal(observed, expected) ? "PASS" : "FAIL")
-        + ": col="
-        + String2.left(columnName, 15)
-        + " row="
-        + String2.left("" + row, 2)
-        + " observed="
-        + observed
-        + " expected="
-        + expected;
-  }
-
-  /** This checks that the value in a column is as expected and prints PASS/FAIL and the test. */
-  public String check1(String columnName, int row, int expected) {
-    int observed = findColumn(columnName).getInt(row);
-    return (Test.equal(observed, expected) ? "PASS" : "FAIL")
-        + ": col="
-        + String2.left(columnName, 15)
-        + " row="
-        + String2.left("" + row, 2)
-        + " observed="
-        + observed
-        + " expected="
-        + expected;
-  }
-
-  /** This checks that the value in a column is as expected and prints PASS/FAIL and the test. */
-  public String check1(String columnName, int row, float expected) {
-    float observed = findColumn(columnName).getFloat(row);
-    return (Test.equal(observed, expected) ? "PASS" : "FAIL")
-        + ": col="
-        + String2.left(columnName, 15)
-        + " row="
-        + String2.left("" + row, 2)
-        + " observed="
-        + observed
-        + " expected="
-        + expected;
-  }
-
-  /** This checks that the value in a column is as expected and prints PASS/FAIL and the test. */
-  public String check1(String columnName, int row, double expected) {
-    double observed = findColumn(columnName).getDouble(row);
-    return (Test.equal(observed, expected) ? "PASS" : "FAIL")
-        + ": col="
-        + String2.left(columnName, 15)
-        + " row="
-        + String2.left("" + row, 2)
-        + " observed="
-        + observed
-        + " expected="
-        + expected;
-  }
-
-  /**
-   * This checks that the value in a column is as expected and prints PASS/FAIL and the test. The
-   * table's column should have epoch seconds values.
-   *
-   * @param expected value formatted with Calendar2.safeEpochSecondsToIsoStringTZ(seconds, "")
-   */
-  public String check1Time(String columnName, int row, String expected) {
-    double seconds = findColumn(columnName).getDouble(row);
-    String observed = Calendar2.safeEpochSecondsToIsoStringTZ(seconds, "");
-    return (Test.equal(observed, expected) ? "PASS" : "FAIL")
-        + ": col="
-        + String2.left(columnName, 15)
-        + " row="
-        + String2.left("" + row, 2)
-        + " observed="
-        + observed
-        + " expected="
-        + expected;
+  public void addLongData(int col, long d) {
+    getColumn(col).addLong(d);
   }
 
   /**
@@ -2933,9 +2794,7 @@ public class Table {
           if (which < 0 || which >= nItems) // value treated as NaN. NaN will fail any test.
           continue;
           double d = String2.parseDouble(items.get(which));
-          if (d >= testMin[test] && d <= testMax[test]) { // NaN will fail this test
-            continue;
-          } else {
+          if (!(d >= testMin[test] && d <= testMax[test])) { // NaN will fail this test
             ok = false;
             if (debugMode)
               String2.log(">> skipping row=" + row + " because it failed test #" + test);
@@ -3826,88 +3685,6 @@ public class Table {
   }
 
   /**
-   * This saves this table as an NCCSV DataOutputStream. This doesn't change representation of time
-   * (e.g., as seconds or as String). This never calls dos.flush();
-   *
-   * @param catchScalars If true, this looks at the data for scalars (just 1 value).
-   * @param writeMetadata If true, this writes the metadata section. This adds a *DATA_TYPE* or
-   *     *SCALAR* attribute to each column.
-   * @param writeDataRows This is the maximum number of data rows to write. Use Integer.MAX_VALUE to
-   *     write all.
-   * @throws Exception if trouble. No_data is not an error.
-   */
-  /* project not finished or tested
-      public void writeNccsvDos(DataOutputStream dos,   //should be Writer to a UTF-8 file
-          boolean catchScalars,
-          boolean writeMetadata, int writeDataRows) throws Exception {
-
-          //figure out what's what
-          int nc = nColumns();
-          int nr = Integer.MAX_VALUE;  //shortest non-scalar pa (may be scalars have 1, others 0 or many)
-          boolean isScalar[] = new boolean[nc];
-          boolean allScalar = true;
-          int firstNonScalar = nc;
-          for (int c = 0; c < nc; c++) {
-              PrimitiveArray pa = columns.get(c);
-              isScalar[c] = catchScalars && pa.size() > 0 && pa.allSame();
-              if (!isScalar[c]) {
-                  nr = Math.min(nr, pa.size());
-                  allScalar = false;
-                  if (firstNonScalar == nc)
-                      firstNonScalar = c;
-              }
-          }
-
-          //write metadata
-          if (writeMetadata) {
-              globalAttributes.writeNccsvDos(dos, String2.NCCSV_GLOBAL);
-
-              for (int c = 0; c < nc; c++) {
-                  //scalar
-                  if (isScalar[c]) {
-                      String2.writeNccsvDos(dos, getColumnName(c));
-                      String2.writeNccsvDos(dos, String2.NCCSV_SCALAR);
-                      columns.get(c).subset(0, 1, 0).writeNccsvDos(dos);
-                  } else {
-                      String2.writeNccsvDos(dos, getColumnName(c));
-                      String2.writeNccsvDos(dos, String2.NCCSV_DATATYPE);
-                      StringArray sa = new StringArray();
-                      sa.add(columns.get(c).elementTypeString());
-                      sa.writeNccsvDos(dos);
-                  }
-                  columnAttributes(c).writeNccsvDos(dos, getColumnName(c));
-              }
-              String2.writeNccsvDos(dos, String2.NCCSV_END_METADATA);
-          }
-
-          if (writeDataRows <= 0)
-              return;
-
-          //write the non-scalar column data
-          if (!allScalar) {
-              //column names
-              for (int c = firstNonScalar; c < nc; c++) {
-                  if (isScalar[c])
-                      continue;
-                  String2.writeNccsvDos(dos, getColumnName(c));
-              }
-
-              //csv data
-              int tnr = Math.min(nr, writeDataRows);
-              for (int r = 0; r < tnr; r++) {
-                  for (int c = firstNonScalar; c < nc; c++) {
-                      if (isScalar[c])
-                          continue;
-
-                      columns.get(c).writeNccsvDos(dos, r);
-                  }
-              }
-          }
-          //String2.writeNccsvDos(dos, String2.NCCSV_END_DATA);
-      }
-  */
-
-  /**
    * This gets data from the IOBIS website (http://www.iobis.org) by mimicing the Advanced Search
    * form (http://www.iobis.org/OBISWEB/ObisControllerServlet) which has access to a cached version
    * of all the data from all of the obis data providers/resources. So it lets you get results from
@@ -4547,7 +4324,6 @@ public class Table {
                 if (ti != Integer.MAX_VALUE) gc.add(Calendar2.HOUR, -ti);
               }
             }
-            continue;
           }
 
         } else if (nTags == 0 || tags.equals("</aws:weather>")) {
@@ -5570,7 +5346,7 @@ public class Table {
         atts.remove("_encoded_");
         setColumn(col, CharArray.fromShortArrayBytes(sa));
 
-      } else if (pa instanceof StringArray) {
+      } else if (pa instanceof StringArray stringPa) {
         String enc = atts.getString("_encoded_");
         atts.remove("_encoded_");
         if ("fromLong".equals(enc)) {
@@ -5581,7 +5357,7 @@ public class Table {
           setColumn(col, new ULongArray(pa));
         } else if (String2.JSON.equals(enc)) {
           // convert UTF-8 back to Java char-based strings
-          ((StringArray) pa).fromJson();
+          stringPa.fromJson();
         } else {
           // unexpected encoding
           String2.log(
@@ -9076,7 +8852,6 @@ public class Table {
                 outerTable.nColumns(), vNames[v], NcHelper.getPrimitiveArray(var), vatt);
             outerTable.standardizeLastColumn(standardizeWhat);
           }
-          continue;
 
         } else if (realNDims[v] == 1) {
           Dimension dim = var.getDimension(0);
@@ -10129,15 +9904,6 @@ public class Table {
   }
 
   /**
-   * This calls convertToFakeMissingValues for all columns. !!!This is used inside the saveAsXxx
-   * methods to temporarily convert to fake missing values. It is rarely called elsewhere.
-   */
-  public void convertToFakeMissingValues() {
-    int nColumns = nColumns();
-    for (int col = 0; col < nColumns; col++) convertToFakeMissingValues(col);
-  }
-
-  /**
    * This sets (or revises) the missing_value and _FillValue metadata to
    * DataHelper.FAKE_MISSING_VALUE for FloatArray and DoubleArray and the standard missing value
    * (e.g., Xxx.MAX_VALUE) for other PrimitiveArrays. This works on the current (possibly packed)
@@ -10402,338 +10168,6 @@ public class Table {
   }
 
   /**
-   * This updates the data in this table with better data from otherTable by matching rows based on
-   * the values in key columns which are in both tables (like a batch version of SQL's UPDATE
-   * https://www.w3schools.com/sql/sql_update.asp). Afterwards, this table will have rows for *all*
-   * of the values of the key columns from both tables. This is very fast and efficient, but may
-   * need lots of memory.
-   *
-   * <p>Values are grabbed from the other table by matching column names, so otherTable's values
-   * have precedence. The columns in the two tables need not be the same, nor in the same order. If
-   * otherTable doesn't have a matching column, the current value (if any) isn't changed, or the new
-   * value will be the missing_value (or _FillValue) for the column (or "" if none).
-   *
-   * <p>The names and attributes of this table's columns won't be changed. The initial rows in
-   * thisTable will be in the same order. New rows (for new key values) will be at the end (in their
-   * order from otherTable).
-   *
-   * <p>The key values are matched via their string representation, so they can have different
-   * elementPATypes as long as their strings match. E.g., byte, short, int, long, String are usually
-   * compatible. Warning: But double = int will probably fail because "1.0" != "1".
-   *
-   * @param keyNames these columns must be present in this table and otherTable
-   * @param otherTable
-   * @return the number of existing rows that were matched. The number of new rows =
-   *     otherTable.nRows() - nMatched.
-   * @throws RuntimeException if trouble (e.g., keyCols not found or lookUpTable is null)
-   */
-  public int update(String keyNames[], Table otherTable) {
-    String msg = String2.ERROR + " in Table.update: ";
-    long time = System.currentTimeMillis();
-    int nRows = nRows();
-    int nOtherRows = otherTable.nRows();
-    int nCols = nColumns();
-    int nKeyCols = keyNames.length;
-    if (nKeyCols < 1)
-      throw new RuntimeException(msg + "nKeys=" + nKeyCols + " must be at least 1.");
-    int keyCols[] = new int[nKeyCols];
-    int otherKeyCols[] = new int[nKeyCols];
-    PrimitiveArray keyPAs[] = new PrimitiveArray[nKeyCols];
-    PrimitiveArray otherKeyPAs[] = new PrimitiveArray[nKeyCols];
-    for (int key = 0; key < nKeyCols; key++) {
-      keyCols[key] = findColumnNumber(keyNames[key]);
-      otherKeyCols[key] = otherTable.findColumnNumber(keyNames[key]);
-      if (keyCols[key] < 0)
-        throw new RuntimeException(msg + "keyName=" + keyNames[key] + " not found in this table.");
-      if (otherKeyCols[key] < 0)
-        throw new RuntimeException(msg + "keyName=" + keyNames[key] + " not found in otherTable.");
-      keyPAs[key] = getColumn(keyCols[key]);
-      otherKeyPAs[key] = otherTable.getColumn(otherKeyCols[key]);
-    }
-
-    // make hashmap of this table's key values to row#
-    HashMap<String, Integer> rowHash = new HashMap<>(Math2.roundToInt(1.4 * nRows));
-    for (int row = 0; row < nRows; row++) {
-      StringBuilder sb = new StringBuilder();
-      for (int key = 0; key < nKeyCols; key++) sb.append(keyPAs[key].getString(row) + "\n");
-      rowHash.put(sb.toString(), row);
-    }
-
-    // find columns in otherTable which correspond to the columns in this table
-    int otherCols[] = new int[nCols];
-    PrimitiveArray otherPAs[] = new PrimitiveArray[nCols];
-    String missingValues[] = new String[nCols];
-    Arrays.fill(missingValues, "");
-    int nColsMatched = 0;
-    StringArray colsNotMatched = new StringArray();
-    for (int col = 0; col < nCols; col++) {
-      otherCols[col] = otherTable.findColumnNumber(getColumnName(col));
-      if (otherCols[col] >= 0) {
-        nColsMatched++;
-        otherPAs[col] = otherTable.getColumn(otherCols[col]);
-      } else {
-        colsNotMatched.add(getColumnName(col));
-      }
-
-      // collect missing values
-      Attributes atts = columnAttributes(col);
-      String mv = atts.getString("missing_value");
-      if (mv == null) mv = atts.getString("_FillValue");
-      if (mv != null) missingValues[col] = mv;
-    }
-
-    // go through rows of otherTable
-    int nNewRows = 0;
-    int nRowsMatched = 0;
-    for (int otherRow = 0; otherRow < nOtherRows; otherRow++) {
-      // for each, find the matching row in this table (or not)
-      StringBuilder sb = new StringBuilder();
-      for (int key = 0; key < nKeyCols; key++)
-        sb.append(otherKeyPAs[key].getString(otherRow) + "\n");
-      String sbString = sb.toString();
-      Integer thisRowI = rowHash.get(sbString);
-      if (thisRowI == null) {
-        // add blank row at end
-        nNewRows++;
-        rowHash.put(sbString, nRows++);
-        for (int col = 0; col < nCols; col++) {
-          if (otherPAs[col] == null) getColumn(col).addString(missingValues[col]);
-          else getColumn(col).addFromPA(otherPAs[col], otherRow);
-        }
-      } else {
-        // replace current values
-        nRowsMatched++;
-        for (int col = 0; col < nCols; col++) {
-          // if otherTable doesn't have matching column, current value isn't changed
-          if (otherPAs[col] != null) getColumn(col).setFromPA(thisRowI, otherPAs[col], otherRow);
-        }
-      }
-    }
-    if (reallyVerbose)
-      String2.log(
-          "Table.update finished."
-              + " nColsMatched="
-              + nColsMatched
-              + " of "
-              + nCols
-              + (nColsMatched == nCols ? "" : " (missing: " + colsNotMatched + ")")
-              + ", nRowsMatched="
-              + nRowsMatched
-              + ", nNewRows="
-              + nNewRows
-              + ", time="
-              + (System.currentTimeMillis() - time)
-              + "ms");
-    return nRowsMatched;
-  }
-
-  /* *  THIS IS INACTIVE.
-   * This reads a NetCDF file with no structure or groups, but with
-   * at least one dimension and at least 1 1D array variable that uses that
-   * dimension, and populates the public variables.
-   * Suitable files include LAS Intermediate NetCDF files.
-   *
-   * <p>If there is a time variable with attribute "units"="seconds",
-   *   and storing seconds since 1970-01-01T00:00:00Z.
-   *   See [COARDS] "Time or date dimension".
-   * <p>The file may have a lat variable with attribute "units"="degrees_north"
-   *   to identify the latitude variable. See [COARDS] "Latitude Dimension".
-   *   It can be of any numeric data type.
-   * <p>The file may have a lon variable with attribute "units"="degrees_east"
-   *   to identify the longitude variable. See [COARDS] "Longitude Dimension".
-   *   It can be of any numeric data type.
-   *
-   * <p>netcdf files are read with code in
-   * netcdf-X.X.XX.jar which is part of the
-   * <a href="https://www.unidata.ucar.edu/software/netcdf-java/"
-   * >NetCDF Java Library</a>
-   * renamed as netcdf-latest.jar.
-   * Put it in the classpath for the compiler and for Java.
-   *
-   * <p>This sets globalAttributes and columnAttributes.
-   *
-   * @param fullFileName the full name of the file, for diagnostic messages.
-   * @param ncFile an open ncFile
-   * @param standardizeWhat see Attributes.unpackVariable's standardizeWhat
-   * @param okRows indicates which rows should be kept.
-   *   This is used as the starting point for the tests (the tests may reject
-   *   rows which are initially ok) or can be used without tests. It may be null.
-   * @param testColumns the names of the columns to be tested (null = no tests).
-   *   All of the test columns must use the same, one, dimension that the
-   *   loadColumns use.
-   *   Ideally, the first tests will greatly restrict the range of valid rows.
-   * @param testMin the minimum allowed value for each testColumn (null = no tests)
-   * @param testMax the maximum allowed value for each testColumn (null = no tests)
-   * @param loadColumns the names of the columns to be loaded.
-   *     They must all be ArrayXxx.D1 or ArrayChar.D2 variables and use the
-   *     same, one, dimension as the first dimension.
-   *     If loadColumns is null, this will read all of the variables in the
-   *     main group which use the biggest rootGroup dimension as their
-   *     one and only dimension.
-   * @throws Exception if trouble
-   */
-  /*    public void readNetCDF(String fullFileName, NetcdfFile ncFile,
-      int standardizeWhat, BitSet okRows,
-      String testColumns[], double testMin[], double testMax[],
-      String loadColumns[]) throws Exception {
-
-      //if (reallyVerbose) String2.log(File2.hexDump(fullFileName, 300));
-      if (reallyVerbose) String2.log("Table.readNetCDF" +
-          "\n  testColumns=" + String2.toCSSVString(testColumns) +
-          "\n  testMin=" + String2.toCSSVString(testMin) +
-          "\n  testMax=" + String2.toCSSVString(testMax) +
-          "\n  loadColumns=" + String2.toCSSVString(loadColumns));
-
-      //setup
-      long time = System.currentTimeMillis();
-      clear();
-      String errorInMethod = String2.ERROR + " in Table.readNetCDF(" + fullFileName + "):\n";
-
-      //*** ncdump  //this is very slow for big files
-      //if (reallyVerbose) String2.log(NcHelper.ncdump(fullFileName, "-h"));
-
-      //read the globalAttributes
-      if (reallyVerbose) String2.log("  read the globalAttributes");
-      globalAttributes = new ArrayList();
-      List globalAttList = ncFile.globalAttributes();
-      for (int att = 0; att < globalAttList.size(); att++) {
-          Attribute gAtt = (Attribute)globalAttList.get(att);
-          globalAttributes.add(gAtt.getShortName());
-          globalAttributes.add(PrimitiveArray.factory(
-              DataHelper.getArray(gAtt.getValues())));
-      }
-
-      //find the mainDimension
-      Dimension mainDimension = null;
-      if (loadColumns == null) {
-          //assume mainDimension is the biggest dimension
-          //FUTURE: better to look for 1d arrays and find the largest?
-          //   Not really, because lat and lon could have same number
-          //   but they are different dimension.
-          List dimensions = ncFile.getDimensions(); //next nc version: rootGroup.getDimensions();
-          if (dimensions.size() == 0)
-              throw new SimpleException(errorInMethod + "the file has no dimensions.");
-          mainDimension = (Dimension)dimensions.get(0);
-          if (!mainDimension.isUnlimited()) {
-              for (int i = 1; i < dimensions.size(); i++) {
-                  if (reallyVerbose) String2.log("  look for biggest dimension, check " + i);
-                  Dimension tDimension = (Dimension)dimensions.get(i);
-                  if (tDimension.isUnlimited()) {
-                      mainDimension = tDimension;
-                      break;
-                  }
-                  if (tDimension.getLength() > mainDimension.getLength())
-                      mainDimension = tDimension;
-              }
-          }
-      } else {
-          //if loadColumns was specified, get mainDimension from loadColumns[0]
-          if (reallyVerbose) String2.log("  get mainDimension from loadColumns[0]");
-          Variable v = ncFile.findVariable(loadColumns[0]);
-          mainDimension = v.getDimension(0);
-      }
-
-
-      //make a list of the needed variables (loadColumns and testColumns)
-      ArrayList<Variable> allVariables = new ArrayList();
-      if (loadColumns == null) {
-          //get a list of all variables which use just mainDimension
-          List variableList = ncFile.getVariables();
-          for (int i = 0; i < variableList.size(); i++) {
-              if (reallyVerbose) String2.log("  get all variables which use mainDimension, check " + i);
-              Variable tVariable = (Variable)variableList.get(i);
-              List tDimensions = tVariable.getDimensions();
-              int nDimensions = tDimensions.size();
-              if (reallyVerbose) String2.log("i=" + i + " name=" + tVariable.getFullName() +
-                  " type=" + tVariable.getDataType());
-              if ((nDimensions == 1 && tDimensions.get(0).equals(mainDimension)) ||
-                  (nDimensions == 2 && tDimensions.get(0).equals(mainDimension) &&
-                       tVariable.getDataType() == DataType.CHAR)) {
-                      allVariables.add(tVariable);
-              }
-          }
-      } else {
-          //make the list from the loadColumns and testColumns
-          for (int i = 0; i < loadColumns.length; i++) {
-              if (reallyVerbose) String2.log("  getLoadColumns " + i);
-              allVariables.add(ncFile.findVariable(loadColumns[i]));
-          }
-          if (testColumns != null) {
-              for (int i = 0; i < testColumns.length; i++) {
-                  if (String2.indexOf(loadColumns, testColumns[i]) < 0) {
-                      if (reallyVerbose) String2.log("  getTestColumns " + i);
-                      allVariables.add(ncFile.findVariable(testColumns[i]));
-                  }
-              }
-          }
-      }
-      if (reallyVerbose) String2.log("  got AllVariables " + allVariables.size());
-
-      //get the data
-      getNetcdfSubset(errorInMethod, allVariables, standardizeWhat, okRows,
-          testColumns, testMin, testMax, loadColumns);
-
-      if (reallyVerbose)
-          String2.log("Table.readNetCDF nColumns=" + nColumns() +
-              " nRows=" + nRows() + " time=" + (System.currentTimeMillis() - time) + "ms");
-
-  }
-
-
-  /**  THIS IS NOT YET FINISHED.
-   * This reads all rows of all of the specified columns from an opendap
-   * dataset.
-   * This also reads global and variable attributes.
-   * The data is always unpacked.
-   *
-   * <p>If the fullName is an http address, the name needs to start with "http:\\"
-   * (upper or lower case) and the server needs to support "byte ranges"
-   * (see ucar.nc2.NetcdfFile documentation).
-   *
-   * @param fullName This may be a local file name, an "http:" address of a
-   *    .nc file, or an opendap url.
-   * @param loadColumns if null, this searches for the (pseudo)structure variables
-   * @throws Exception if trouble
-   */
-  public void readOpendap(String fullName, String loadColumns[]) throws Exception {
-
-    // get information
-    String msg = "  Table.readOpendap " + fullName;
-    long time = System.currentTimeMillis();
-    Attributes gridMappingAtts = null;
-    try (NetcdfFile netcdfFile = NcHelper.openFile(fullName)) {
-      Variable loadVariables[] = NcHelper.findVariables(netcdfFile, loadColumns);
-
-      // fill the table
-      clear();
-      appendNcRows(loadVariables, 0, -1);
-      NcHelper.getGroupAttributes(netcdfFile.getRootGroup(), globalAttributes());
-      for (int col = 0; col < loadVariables.length; col++) {
-        NcHelper.getVariableAttributes(loadVariables[col], columnAttributes(col));
-
-        // does this var point to the pseudo-data var with CF grid_mapping (projection) information?
-        if (gridMappingAtts == null) {
-          gridMappingAtts =
-              NcHelper.getGridMappingAtts(
-                  netcdfFile, columnAttributes(col).getString("grid_mapping"));
-          if (gridMappingAtts != null) globalAttributes.add(gridMappingAtts);
-        }
-      }
-
-      if (reallyVerbose)
-        String2.log(
-            msg
-                + " finished. nColumns="
-                + nColumns()
-                + " nRows="
-                + nRows()
-                + " TIME="
-                + (System.currentTimeMillis() - time)
-                + "ms");
-    }
-  }
-
-  /**
    * For compatibility with older programs, this calls readOpendapSequence(url, false). 2016-12-07:
    * With versions of Tomcat somewhere after 8.0, the url must be stongly percent-encoded.
    *
@@ -10816,14 +10250,13 @@ public class Table {
     if (reallyVerbose)
       String2.log("  dConnect.getData time=" + (System.currentTimeMillis() - time) + "ms");
     BaseType firstVariable = dataDds.getVariables().next();
-    if (!(firstVariable instanceof DSequence))
+    if (!(firstVariable instanceof DSequence outerSequence))
       throw new Exception(
           errorInMethod
               + "firstVariable not a DSequence: name="
               + firstVariable.getName()
               + " type="
               + firstVariable.getTypeName());
-    DSequence outerSequence = (DSequence) firstVariable;
     int nOuterRows = outerSequence.getRowCount();
     int nOuterColumns = outerSequence.elementCount();
     AttributeTable outerAttributeTable =
@@ -10848,7 +10281,7 @@ public class Table {
         addColumn(
             obt.getName(), new ByteArray()); // .nc doesn't support booleans, so store byte=0|1
       else if (obt instanceof DString) addColumn(obt.getName(), new StringArray());
-      else if (obt instanceof DSequence) {
+      else if (obt instanceof DSequence innerSequence) {
         // *** Start Dealing With InnerSequence
         // Ensure this is the first innerSequence.
         // If there are two, the response can't be represented as a simple table.
@@ -10865,7 +10298,6 @@ public class Table {
         if (reallyVerbose) String2.log("  innerSequenceColumn=" + innerSequenceColumn);
 
         // deal with the inner sequence
-        DSequence innerSequence = (DSequence) obt;
         nInnerColumns = innerSequence.elementCount();
         AttributeTable innerAttributeTable = das.getAttributeTable(innerSequence.getName());
         // String2.log("innerAttributeTable=" + innerAttributeTable);
@@ -11137,68 +10569,6 @@ public class Table {
       }
     }
     readOpendapSequence(url + "?" + qSB, skipDapperSpacerRows);
-  }
-
-  /**
-   * This populates the table from an opendap response.
-   *
-   * @param url This may include a constraint expression e.g.,
-   *     ?latitude,longitude,time,WTMP&time>==1124463600
-   * @param loadColumns The columns from the response to be saved in the table (use null for have
-   *     the methods search for all variables in a (pseudo)structure). These columns are not
-   *     appended to the url.
-   * @throws Exception if trouble
-   */
-  /*    public void readOpendap(String url, String loadColumns[]) throws Exception {
-
-          //get information
-          String msg = "  Table.readOpendap " + url;
-          long time = System.currentTimeMillis();
-          NetcdfFile netcdfFile = NetcdfDatasets.openDataset(url); //NetcdfDataset needed for opendap.   //2021: 's' is new API
-          try {
-              List loadVariables = findNcVariables(netcdfFile, loadColumns);
-
-              //fill the table
-              clear();
-              globalAttributes = getNcGlobalAttributes(netcdfFile);
-              columnAttributes = getNcVariableAttributes(loadVariables);
-              appendNcRows(loadVariables, 0, -1);
-              if (netcdfFile != null) try {netcdfFile.close(); } catch (Throwable t) {};
-              if (reallyVerbose) String2.log(msg +
-                  " finished. nColumns=" + nColumns() + " nRows=" + nRows() +
-                  " TIME=" + (System.currentTimeMillis() - time) + "ms");
-
-          } catch (Throwable t) {
-              String2.log(msg);
-              if (netcdfFile != null) try {netcdfFile.close(); } catch (Throwable t) {};
-              throw t;
-          }
-      }
-  */
-
-  /**
-   * This forces the values in lonAr to be +/-180 or 0..360. THIS ONLY WORKS IF MINLON AND MAXLON
-   * ARE BOTH WESTERN OR EASTERN HEMISPHERE.
-   *
-   * @param lonArray
-   * @param pm180 If true, lon values are forced to be +/-180. If false, lon values are forced to be
-   *     0..360.
-   */
-  public static void forceLonPM180(PrimitiveArray lonArray, boolean pm180) {
-    double stats[] = lonArray.calculateStats();
-    int nRows = lonArray.size();
-    String2.log("forceLon stats=" + String2.toCSSVString(stats));
-    if (pm180 && stats[PrimitiveArray.STATS_MAX] > 180) {
-      String2.log("  force >");
-      for (int row = 0; row < nRows; row++) {
-        lonArray.setDouble(row, Math2.looserAnglePM180(lonArray.getDouble(row)));
-      }
-    } else if (!pm180 && stats[PrimitiveArray.STATS_MIN] < 0) {
-      String2.log("  force <");
-      for (int row = 0; row < nRows; row++) {
-        lonArray.setDouble(row, Math2.looserAngle0360(lonArray.getDouble(row)));
-      }
-    }
   }
 
   /**
@@ -11848,14 +11218,6 @@ public class Table {
     return someConverted;
   }
 
-  /** This converts all columns. */
-  public boolean temporarilyConvertToStandardMissingValues() {
-    int nCols = nColumns();
-    int keys[] = new int[nCols];
-    for (int col = 0; col < nCols; col++) keys[col] = col;
-    return temporarilyConvertToStandardMissingValues(keys);
-  }
-
   /**
    * This converts standard (e.g., NaN) missing values to the variable's missing_value or _FillValue
    * (preferred). This is a convenience for most orderBy() variants.
@@ -12056,18 +11418,6 @@ public class Table {
   }
 
   /**
-   * This removes rows in which the value in 'column' is less than the value in the previous row.
-   * Rows with values of NaN or bigger than 1e300 are also removed. !!!Trouble: one erroneous big
-   * value will cause all subsequent valid values to be tossed.
-   *
-   * @param column the column which should be ascending
-   * @return the number of rows removed
-   */
-  public int ensureAscending(int column) {
-    return PrimitiveArray.ensureAscending(columns, column);
-  }
-
-  /**
    * The adds the data from each column in other to the end of each column in this. If old column is
    * simpler than new column, old column is upgraded. This column's metadata is unchanged.
    *
@@ -12110,16 +11460,6 @@ public class Table {
   }
 
   /**
-   * Like rank, but StringArrays are ranked in a case-insensitive way.
-   *
-   * @param keyColumns the numbers of the key columns (first is most important)
-   * @param ascending try if a given key column should be ranked ascending
-   */
-  public int[] rankIgnoreCase(int keyColumns[], boolean ascending[]) {
-    return PrimitiveArray.rankIgnoreCase(columns, keyColumns, ascending);
-  }
-
-  /**
    * This sorts the rows of data in the table by some key columns (each of which can be sorted
    * ascending or descending).
    *
@@ -12154,11 +11494,6 @@ public class Table {
     Arrays.fill(ascending, true);
 
     sort(keyColumns, ascending); // handles missingValues and _FillValues
-  }
-
-  /** Like the other sort, but assumes are are ascending. */
-  public void sort(String keyNames[]) {
-    sort(keyColumnNamesToNumbers("sort", keyNames)); // handles missingValues and _FillValues
   }
 
   /** Like the other sort, but you can specify ascending. */
@@ -12270,99 +11605,6 @@ public class Table {
     boolean ascending[] = new boolean[nSortColumns];
     Arrays.fill(ascending, true);
     sortIgnoreCase(new IntArray(0, nSortColumns - 1).toArray(), ascending);
-  }
-
-  /**
-   * This sorts the table by the keyColumns. Then, it replaces rows where the values in the
-   * keyColumns are equal, by one row with their average. If the number of rows is reduced to 1/2 or
-   * less, this calls trimToSize on each of the PrimitiveArrays. If there are no non-NaN values to
-   * average, the average is NaN.
-   *
-   * @param keyColumns the numbers of the key columns (first is most important)
-   */
-  public void average(int keyColumns[]) {
-    int nRows = nRows();
-    if (nRows == 0) return;
-
-    // sort
-    sort(keyColumns);
-
-    averageAdjacentRows(keyColumns);
-  }
-
-  /**
-   * This combines (averages) adjacent rows where the values of the keyColumns are equal. If the
-   * number of rows is reduced to 1/2 or less, this calls trimToSize on each of the PrimitiveArrays.
-   * If there are no non-NaN values to average, the average is NaN.
-   *
-   * @param keyColumns the numbers of the key columns
-   */
-  public void averageAdjacentRows(int keyColumns[]) {
-    int nRows = nRows();
-    if (nRows == 0) return;
-
-    // make a bitset of sortColumnNumbers
-    BitSet isSortColumn = new IntArray(keyColumns).toBitSet();
-
-    // gather sort columns
-    int nSortColumns = keyColumns.length;
-    PrimitiveArray sortColumns[] = new PrimitiveArray[nSortColumns];
-    for (int col = 0; col < nSortColumns; col++) sortColumns[col] = getColumn(keyColumns[col]);
-
-    // go through the data looking for groups of rows with constant values in the sortColumnNumbers
-    int nColumns = nColumns();
-    int nGood = 0;
-    int firstRowInGroup = 0;
-    while (firstRowInGroup < nRows) {
-      // find lastRowInGroup
-      int lastRowInGroup = firstRowInGroup;
-      ROW_LOOP:
-      for (int row = lastRowInGroup + 1; row < nRows; row++) {
-        for (int col = 0; col < nSortColumns; col++) {
-          if (sortColumns[col].compare(firstRowInGroup, row) != 0) break ROW_LOOP;
-        }
-        lastRowInGroup = row;
-      }
-      // if (reallyVerbose) String2.log("Table.average: first=" + firstRowInGroup +
-      //    " last=" + lastRowInGroup);
-
-      // average values in group and store in row nGood
-      if (nGood != lastRowInGroup) { // so, the group is not one row, already in place
-        for (int col = 0; col < nColumns; col++) {
-          PrimitiveArray pa = getColumn(col);
-          if (firstRowInGroup == lastRowInGroup
-              || // only one row in group
-              isSortColumn.get(col)) { // values in sortColumnNumbers in a group are all the same
-            pa.copy(firstRowInGroup, nGood);
-          } else {
-            double sum = 0;
-            int count = 0;
-            for (int row = firstRowInGroup; row <= lastRowInGroup; row++) {
-              double d = pa.getDouble(row);
-              if (!Double.isNaN(d)) {
-                count++;
-                sum += pa.getDouble(row);
-              }
-            }
-            pa.setDouble(nGood, count == 0 ? Double.NaN : sum / count);
-          }
-        }
-      }
-
-      firstRowInGroup = lastRowInGroup + 1;
-      nGood++;
-    }
-
-    // remove excess at end of column
-    for (int col = 0; col < nColumns; col++)
-      getColumn(col).removeRange(nGood, getColumn(col).size());
-
-    // trimToSize
-    if (nGood <= nRows / 2) {
-      for (int col = 0; col < nColumns; col++) getColumn(col).trimToSize();
-    }
-    if (reallyVerbose)
-      String2.log("Table.averageAdjacentRows done. old nRows=" + nRows + " new nRows=" + nGood);
   }
 
   /**
@@ -13855,31 +13097,6 @@ public class Table {
   }
 
   /**
-   * This is like saveAs4DNc but removes stringVariableColumn (often column 4 = "ID", which must
-   * have just 1 value, repeated) and saves it as a stringVariable in the 4DNc file, and then
-   * reinserts the stringVariableColumn. For files with just 1 station's data, Dapper and DChart
-   * like this format.
-   *
-   * @param stringVariableColumn is the column (
-   */
-  public void saveAs4DNcWithStringVariable(
-      String fullName, int xColumn, int yColumn, int zColumn, int tColumn, int stringVariableColumn)
-      throws Exception {
-
-    // remove ID column
-    String tName = getColumnName(stringVariableColumn);
-    Attributes tIdAtt = columnAttributes(stringVariableColumn);
-    PrimitiveArray tIdPa = getColumn(stringVariableColumn);
-    removeColumn(stringVariableColumn);
-
-    // save as 4DNc
-    saveAs4DNc(fullName, xColumn, yColumn, zColumn, tColumn, tName, tIdPa.getString(0), tIdAtt);
-
-    // reinsert ID column
-    addColumn(stringVariableColumn, tName, tIdPa, tIdAtt);
-  }
-
-  /**
    * Save this table of data as a 4D netCDF .nc file using the currently available attributes. This
    * method uses the terminology x,y,z,t, but does require that the data represent lon,lat,alt,time.
    * All columns other than the 4 dimension related columns are stored as 4D arrays. This will sort
@@ -14800,69 +14017,6 @@ public class Table {
               + // case doesn't matter here
               (cascade ? " CASCADE" : ""));
     }
-  }
-
-  /**
-   * THIS IS NOT YET FINISHED. This converts the specified String column with date (with e.g.,
-   * "2006-01-02"), time (with e.g., "23:59:59"), or timestamp values (with e.g., "2006-01-02
-   * 23:59:59" with any character between the date and time) into a double column with
-   * secondSinceEpoch (1970-01-01 00:00:00 UTC time zone). No metadata is changed by this method.
-   *
-   * @param col the number of the column (0..) with the date, time, or timestamp strings.
-   * @param type indicates the type of data in the column: 0=date, 1=time, 2=timestamp.
-   * @param timeZoneOffset this identifies the time zone associated with col (e.g., 0 if already
-   *     UTC, -7 for California in summer (DST), and -8 for California in winter, so that the data
-   *     can be converted to UTC timezone.
-   * @param strict If true, this throws an exception if a value is improperly formatted. (Missing
-   *     values of "" or null are allowed.) If false, improperly formatted values are silently
-   *     converted to missing values (Double.NaN). Regardless of 'strict', the method rolls
-   *     components as needed, for example, Jan 32 becomes Feb 1.
-   * @return the number of valid values.
-   * @throws Exception if trouble (and no changes will have been made)
-   */
-  public int isoStringToEpochSeconds(int col, int type, int timeZoneOffset, boolean strict)
-      throws Exception {
-
-    String errorInMethod = String2.ERROR + " in Table.isoStringToEpochSeconds(col=" + col + "):\n";
-    Test.ensureTrue(
-        type >= 0 && type <= 2, errorInMethod + "type=" + type + " must be between 0 and 2.");
-    String isoDatePattern = "[1-2][0-9]{3}\\-[0-1][0-9]\\-[0-3][0-9]";
-    String isoTimePattern = "[0-2][0-9]\\:[0-5][0-9]\\:[0-5][0-9]";
-    String stringPattern =
-        type == 0
-            ? isoDatePattern
-            : type == 1 ? isoTimePattern : isoDatePattern + "." + isoTimePattern;
-    Pattern pattern = Pattern.compile(stringPattern);
-    StringArray sa = (StringArray) getColumn(col);
-    int n = sa.size();
-    DoubleArray da = new DoubleArray(n, true);
-    int nGood = 0;
-    int adjust = timeZoneOffset * Calendar2.SECONDS_PER_HOUR;
-    for (int row = 0; row < n; row++) {
-      String s = sa.get(row);
-
-      // catch allowed missing values
-      if (s == null || s.length() == 0) {
-        da.array[row] = Double.NaN;
-        continue;
-      }
-
-      // catch improperly formatted values (stricter than Calendar2.isoStringToEpochSeconds below)
-      if (strict && !pattern.matcher(s).matches())
-        throw new SimpleException(
-            errorInMethod + "value=" + s + " on row=" + row + " is improperly formatted.");
-
-      // parse the string
-      if (type == 1) s = "1970-01-01 " + s;
-      double d = Calendar2.isoStringToEpochSeconds(s); // throws exception
-      if (!Double.isNaN(d)) {
-        nGood++;
-        d -= adjust;
-      }
-      da.array[row] = d;
-    }
-    setColumn(col, da);
-    return nGood;
   }
 
   /**
@@ -16096,10 +15250,9 @@ public class Table {
                                         ? "W/U"
                                         : paType == PAType.UINT
                                             ? "I/U"
-                                            : paType == PAType.ULONG
-                                                ? "T"
-                                                : // -> text. Not good, but no loss of precision.
-                                                "T"; // String and unexpected
+                                            // paType == PAType.ULONG and unexpected both branches
+                                            // "T"
+                                            : "T";
     boolean asString = it.equals("T");
 
     writer.write(
@@ -16820,294 +15973,6 @@ public class Table {
 
     // save the file (and zipIt?)
     table.saveAs(outFullName, outType, dimensionName, zipIt);
-  }
-
-  /** This rearranges the columns to be by case-insensitive alphabetical column name. */
-  public void sortColumnsByName() {
-    StringArray tColNames = new StringArray(columnNames);
-    tColNames.sortIgnoreCase();
-    reorderColumns(tColNames, false);
-  }
-
-  /**
-   * THIS IS NOT FINISHED.
-   *
-   * @param standardizeWhat see Attributes.unpackVariable's standardizeWhat
-   */
-  public void readArgoProfile(String fileName, int standardizeWhat) throws Exception {
-
-    String msg = "  Table.readArgoProfile " + fileName;
-    long tTime = System.currentTimeMillis();
-    // Attributes gridMappingAtts = null; //method is unfinished
-    try (NetcdfFile nc = NcHelper.openFile(fileName)) {
-      //   DATE_TIME = 14;
-      //   N_PROF = 632;
-      //   N_PARAM = 3;
-      //   N_LEVELS = 71;
-      //   N_CALIB = 1;
-      //   N_HISTORY = UNLIMITED;   // (0 currently)
-      Variable var;
-      PrimitiveArray pa;
-      int col;
-      NcHelper.getGroupAttributes(nc.getRootGroup(), globalAttributes);
-
-      // The plan is: make minimal changes here. Change metadata etc in ERDDAP.
-
-      var = nc.findVariable("DATA_TYPE");
-      if (var != null) {
-        col = addColumn("dataType", NcHelper.getPrimitiveArray(var));
-        NcHelper.getVariableAttributes(var, columnAttributes(col));
-      }
-
-      // skip char FORMAT_VERSION(STRING4=4);   :comment = "File format version";
-
-      var = nc.findVariable("HANDBOOK_VERSION");
-      if (var != null) {
-        col = addColumn("handbookVersion", NcHelper.getPrimitiveArray(var));
-        NcHelper.getVariableAttributes(var, columnAttributes(col));
-      }
-
-      var = nc.findVariable("REFERENCE_DATE_TIME"); // "YYYYMMDDHHMISS";
-      if (var != null) {
-        pa = NcHelper.getPrimitiveArray(var);
-        double time = Double.NaN;
-        try {
-          time = Calendar2.gcToEpochSeconds(Calendar2.parseCompactDateTimeZulu(pa.getString(0)));
-        } catch (Exception e) {
-          String2.log(e.getMessage());
-        }
-        col = addColumn("time", PrimitiveArray.factory(new double[] {time}));
-        NcHelper.getVariableAttributes(var, columnAttributes(col));
-        columnAttributes(col).set("units", Calendar2.SECONDS_SINCE_1970);
-      }
-
-      var = nc.findVariable("PLATFORM_NUMBER");
-      if (var != null) {
-        col = addColumn("platformNumber", NcHelper.getPrimitiveArray(var));
-        NcHelper.getVariableAttributes(var, columnAttributes(col));
-      }
-
-      var = nc.findVariable("PROJECTPLATFORM_NUMBER");
-      if (var != null) {
-        col = addColumn("platformNumber", NcHelper.getPrimitiveArray(var));
-        NcHelper.getVariableAttributes(var, columnAttributes(col));
-      }
-
-      /*   char PROJECT_NAME(N_PROF=632, STRING64=64);
-        :comment = "Name of the project";
-        :_FillValue = " ";
-      char PI_NAME(N_PROF=632, STRING64=64);
-        :comment = "Name of the principal investigator";
-        :_FillValue = " ";
-      char STATION_PARAMETERS(N_PROF=632, N_PARAM=3, STRING16=16);
-        :long_name = "List of available parameters for the station";
-        :conventions = "Argo reference table 3";
-        :_FillValue = " ";
-      int CYCLE_NUMBER(N_PROF=632);
-        :long_name = "Float cycle number";
-        :conventions = "0..N, 0 : launch cycle (if exists), 1 : first complete cycle";
-        :_FillValue = 99999; // int
-      char DIRECTION(N_PROF=632);
-        :long_name = "Direction of the station profiles";
-        :conventions = "A: ascending profiles, D: descending profiles";
-        :_FillValue = " ";
-      char DATA_CENTRE(N_PROF=632, STRING2=2);
-        :long_name = "Data centre in charge of float data processing";
-        :conventions = "Argo reference table 4";
-        :_FillValue = " ";
-      char DATE_CREATION(DATE_TIME=14);
-        :comment = "Date of file creation";
-        :conventions = "YYYYMMDDHHMISS";
-        :_FillValue = " ";
-      char DATE_UPDATE(DATE_TIME=14);
-        :long_name = "Date of update of this file";
-        :conventions = "YYYYMMDDHHMISS";
-        :_FillValue = " ";
-      char DC_REFERENCE(N_PROF=632, STRING32=32);
-        :long_name = "Station unique identifier in data centre";
-        :conventions = "Data centre convention";
-        :_FillValue = " ";
-      char DATA_STATE_INDICATOR(N_PROF=632, STRING4=4);
-        :long_name = "Degree of processing the data have passed through";
-        :conventions = "Argo reference table 6";
-        :_FillValue = " ";
-      char DATA_MODE(N_PROF=632);
-        :long_name = "Delayed mode or real time data";
-        :conventions = "R : real time; D : delayed mode; A : real time with adjustment";
-        :_FillValue = " ";
-      char INST_REFERENCE(N_PROF=632, STRING64=64);
-        :long_name = "Instrument type";
-        :conventions = "Brand, type, serial number";
-        :_FillValue = " ";
-      char WMO_INST_TYPE(N_PROF=632, STRING4=4);
-        :long_name = "Coded instrument type";
-        :conventions = "Argo reference table 8";
-        :_FillValue = " ";
-      double JULD(N_PROF=632);
-        :long_name = "Julian day (UTC) of the station relative to REFERENCE_DATE_TIME";
-        :units = "days since 1950-01-01 00:00:00 UTC";
-        :conventions = "Relative julian days with decimal part (as parts of day)";
-        :_FillValue = 999999.0; // double
-      char JULD_QC(N_PROF=632);
-        :long_name = "Quality on Date and Time";
-        :conventions = "Argo reference table 2";
-        :_FillValue = " ";
-      double JULD_LOCATION(N_PROF=632);
-        :long_name = "Julian day (UTC) of the location relative to REFERENCE_DATE_TIME";
-        :units = "days since 1950-01-01 00:00:00 UTC";
-        :conventions = "Relative julian days with decimal part (as parts of day)";
-        :_FillValue = 999999.0; // double
-      double LATITUDE(N_PROF=632);
-        :long_name = "Latitude of the station, best estimate";
-        :units = "degree_north";
-        :_FillValue = 99999.0; // double
-        :valid_min = -90.0; // double
-        :valid_max = 90.0; // double
-      double LONGITUDE(N_PROF=632);
-        :long_name = "Longitude of the station, best estimate";
-        :units = "degree_east";
-        :_FillValue = 99999.0; // double
-        :valid_min = -180.0; // double
-        :valid_max = 180.0; // double
-      char POSITION_QC(N_PROF=632);
-        :long_name = "Quality on position (latitude and longitude)";
-        :conventions = "Argo reference table 2";
-        :_FillValue = " ";
-      char POSITIONING_SYSTEM(N_PROF=632, STRING8=8);
-        :long_name = "Positioning system";
-        :_FillValue = " ";
-      char PROFILE_PRES_QC(N_PROF=632);
-        :long_name = "Global quality flag of PRES profile";
-        :conventions = "Argo reference table 2a";
-        :_FillValue = " ";
-      char PROFILE_TEMP_QC(N_PROF=632);
-        :long_name = "Global quality flag of TEMP profile";
-        :conventions = "Argo reference table 2a";
-        :_FillValue = " ";
-      char PROFILE_PSAL_QC(N_PROF=632);
-        :long_name = "Global quality flag of PSAL profile";
-        :conventions = "Argo reference table 2a";
-        :_FillValue = " ";
-      float PRES(N_PROF=632, N_LEVELS=71);
-        :long_name = "SEA PRESSURE";
-        :_FillValue = 99999.0f; // float
-        :units = "decibar";
-        :valid_min = 0.0f; // float
-        :valid_max = 12000.0f; // float
-        :comment = "In situ measurement, sea surface = 0";
-        :C_format = "%7.1f";
-        :FORTRAN_format = "F7.1";
-        :resolution = 0.1f; // float
-      char PRES_QC(N_PROF=632, N_LEVELS=71);
-        :long_name = "quality flag";
-        :conventions = "Argo reference table 2";
-        :_FillValue = " ";
-      float PRES_ADJUSTED(N_PROF=632, N_LEVELS=71);
-        :long_name = "SEA PRESSURE";
-        :_FillValue = 99999.0f; // float
-        :units = "decibar";
-        :valid_min = 0.0f; // float
-        :valid_max = 12000.0f; // float
-        :comment = "In situ measurement, sea surface = 0";
-        :C_format = "%7.1f";
-        :FORTRAN_format = "F7.1";
-        :resolution = 0.1f; // float
-      char PRES_ADJUSTED_QC(N_PROF=632, N_LEVELS=71);
-        :long_name = "quality flag";
-        :conventions = "Argo reference table 2";
-        :_FillValue = " ";
-      float PRES_ADJUSTED_ERROR(N_PROF=632, N_LEVELS=71);
-        :long_name = "SEA PRESSURE";
-        :_FillValue = 99999.0f; // float
-        :units = "decibar";
-        :comment = "Contains the error on the adjusted values as determined by the delayed mode QC process.";
-        :C_format = "%7.1f";
-        :FORTRAN_format = "F7.1";
-        :resolution = 0.1f; // float
-      float TEMP(N_PROF=632, N_LEVELS=71);
-        :long_name = "SEA TEMPERATURE IN SITU ITS-90 SCALE";
-        :_FillValue = 99999.0f; // float
-        :units = "degree_Celsius";
-        :valid_min = -2.0f; // float
-        :valid_max = 40.0f; // float
-        :comment = "In situ measurement";
-        :C_format = "%9.3f";
-        :FORTRAN_format = "F9.3";
-        :resolution = 0.001f; // float
-      char TEMP_QC(N_PROF=632, N_LEVELS=71);
-        :long_name = "quality flag";
-        :conventions = "Argo reference table 2";
-        :_FillValue = " ";
-      float TEMP_ADJUSTED(N_PROF=632, N_LEVELS=71);
-        :long_name = "SEA TEMPERATURE IN SITU ITS-90 SCALE";
-        :_FillValue = 99999.0f; // float
-        :units = "degree_Celsius";
-        :valid_min = -2.0f; // float
-        :valid_max = 40.0f; // float
-        :comment = "In situ measurement";
-        :C_format = "%9.3f";
-        :FORTRAN_format = "F9.3";
-        :resolution = 0.001f; // float
-      char TEMP_ADJUSTED_QC(N_PROF=632, N_LEVELS=71);
-        :long_name = "quality flag";
-        :conventions = "Argo reference table 2";
-        :_FillValue = " ";
-      float TEMP_ADJUSTED_ERROR(N_PROF=632, N_LEVELS=71);
-        :long_name = "SEA TEMPERATURE IN SITU ITS-90 SCALE";
-        :_FillValue = 99999.0f; // float
-        :units = "degree_Celsius";
-        :comment = "Contains the error on the adjusted values as determined by the delayed mode QC process.";
-        :C_format = "%9.3f";
-        :FORTRAN_format = "F9.3";
-        :resolution = 0.001f; // float
-      float PSAL(N_PROF=632, N_LEVELS=71);
-        :long_name = "PRACTICAL SALINITY";
-        :_FillValue = 99999.0f; // float
-        :units = "psu";
-        :valid_min = 0.0f; // float
-        :valid_max = 42.0f; // float
-        :comment = "In situ measurement";
-        :C_format = "%9.3f";
-        :FORTRAN_format = "F9.3";
-        :resolution = 0.001f; // float
-      char PSAL_QC(N_PROF=632, N_LEVELS=71);
-        :long_name = "quality flag";
-        :conventions = "Argo reference table 2";
-        :_FillValue = " ";
-      float PSAL_ADJUSTED(N_PROF=632, N_LEVELS=71);
-        :long_name = "PRACTICAL SALINITY";
-        :_FillValue = 99999.0f; // float
-        :units = "psu";
-        :valid_min = 0.0f; // float
-        :valid_max = 42.0f; // float
-        :comment = "In situ measurement";
-        :C_format = "%9.3f";
-        :FORTRAN_format = "F9.3";
-        :resolution = 0.001f; // float
-      char PSAL_ADJUSTED_QC(N_PROF=632, N_LEVELS=71);
-        :long_name = "quality flag";
-        :conventions = "Argo reference table 2";
-        :_FillValue = " ";
-      float PSAL_ADJUSTED_ERROR(N_PROF=632, N_LEVELS=71);
-        :long_name = "PRACTICAL SALINITY";
-        :_FillValue = 99999.0f; // float
-        :units = "psu";
-        :comment = "Contains the error on the adjusted values as determined by the delayed mode QC process.";
-        :C_format = "%9.3f";
-        :FORTRAN_format = "F9.3";
-        :resolution = 0.001f; // float
-        */
-      if (reallyVerbose)
-        String2.log(
-            msg
-                + " finished. nColumns="
-                + nColumns()
-                + " nRows="
-                + nRows()
-                + " TIME="
-                + (System.currentTimeMillis() - tTime)
-                + "ms");
-    }
   }
 
   /**

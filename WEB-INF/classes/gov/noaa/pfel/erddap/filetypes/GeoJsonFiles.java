@@ -2,6 +2,7 @@ package gov.noaa.pfel.erddap.filetypes;
 
 import gov.noaa.pfel.erddap.dataset.TableWriter;
 import gov.noaa.pfel.erddap.dataset.TableWriterGeoJson;
+import gov.noaa.pfel.erddap.util.EDMessages.Message;
 import gov.noaa.pfel.erddap.util.EDStatic;
 
 @FileTypeClass(
@@ -31,6 +32,6 @@ public class GeoJsonFiles extends TableWriterFileType {
 
   @Override
   public String getHelpText(int language) {
-    return EDStatic.messages.fileHelp_geoJsonAr[language];
+    return EDStatic.messages.get(Message.FILE_HELP_GEO_JSON, language);
   }
 }

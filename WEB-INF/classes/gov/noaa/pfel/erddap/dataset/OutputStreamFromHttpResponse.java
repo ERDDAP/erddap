@@ -11,6 +11,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.io.BufferedOutputStream;
 import java.io.OutputStream;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.zip.DeflaterOutputStream;
 import java.util.zip.GZIPOutputStream;
@@ -79,10 +80,15 @@ public class OutputStreamFromHttpResponse implements OutputStreamSource {
   }
 
   /** This is like getFiletypeInfo, but just returns the contentType. */
-  public static String getFileContentType(
-      HttpServletRequest request, String fileType, String extension) {
-    return (String) getFileTypeInfo(request, fileType, extension)[0];
+  public static String getFileContentType(String fileType, String extension) {
+    return getFileTypeInfo(fileType, extension).contentType();
   }
+
+  public record FileTypeInfo(
+      String contentType,
+      Map<String, String> headerMap,
+      boolean genericCompressed,
+      boolean otherCompressed) {}
 
   /**
    * This returns info related to a fileType.
@@ -93,8 +99,7 @@ public class OutputStreamFromHttpResponse implements OutputStreamSource {
    * @return an Object[] with {String contentType, HashMap headerMap, Boolean genericCompressed,
    *     Boolean otherCompressed). contentType will always be something. headerMap may be empty.
    */
-  public static Object[] getFileTypeInfo(
-      HttpServletRequest request, String fileType, String extension) {
+  private static FileTypeInfo getFileTypeInfo(String fileType, String extension) {
 
     // see mime type list at http://www.webmaster-toolkit.com/mime-types.shtml
     // or http://html.megalink.com/programmer/pltut/plMimeTypes.html
@@ -660,7 +665,7 @@ public class OutputStreamFromHttpResponse implements OutputStreamSource {
       // how specify file name in popup window that user is shown? see below
       // see http://forum.java.sun.com/thread.jspa?threadID=696263&messageID=4043287
     }
-    return new Object[] {contentType, headerMap, genericCompressed, otherCompressed};
+    return new FileTypeInfo(contentType, headerMap, genericCompressed, otherCompressed);
   }
 
   /**
@@ -736,13 +741,14 @@ public class OutputStreamFromHttpResponse implements OutputStreamSource {
 
     // get and apply the fileTypeInfo
     // 2020-12-07 this is the section that was inline but now uses the static methods above
-    Object fileTypeInfo[] = getFileTypeInfo(request, fileType, extension);
-    String contentType = (String) fileTypeInfo[0];
-    HashMap<String, String> headerMap = (HashMap<String, String>) fileTypeInfo[1];
+    FileTypeInfo fileTypeInfo = getFileTypeInfo(fileType, extension);
+    String contentType = fileTypeInfo.contentType();
+    Map<String, String> headerMap = fileTypeInfo.headerMap();
     boolean genericCompressed =
-        (Boolean) fileTypeInfo[2]; // true for generic compressed files, e.g., .zip
+        fileTypeInfo.genericCompressed(); // true for generic compressed files, e.g., .zip
     boolean otherCompressed =
-        (Boolean) fileTypeInfo[3]; // true for app specific compressed (but not audio/ image/ video)
+        fileTypeInfo
+            .otherCompressed; // true for app specific compressed (but not audio/ image/ video)
 
     response.setContentType(contentType);
     for (Entry<String, String> entry : headerMap.entrySet()) {

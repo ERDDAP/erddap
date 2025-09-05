@@ -20,7 +20,7 @@ import java.io.*;
  * @author jehamby
  * @see PrimitiveVector
  */
-public class Int32PrimitiveVector extends PrimitiveVector implements Cloneable {
+public class Int32PrimitiveVector extends PrimitiveVector {
   /** the array of <code>int</code> values. */
   private int vals[];
 

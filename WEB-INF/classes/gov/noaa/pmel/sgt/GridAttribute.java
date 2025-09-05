@@ -34,7 +34,6 @@ public class GridAttribute implements Attribute, Cloneable, PropertyChangeListen
   // serial version ref 1.18
   private static final long serialVersionUID = 3822340406728567524L;
   private boolean batch_ = false;
-  private boolean local_ = true;
   private boolean modified_ = false;
   private String id_ = null;
 
@@ -125,64 +124,12 @@ public class GridAttribute implements Attribute, Cloneable, PropertyChangeListen
   }
 
   /**
-   * Set the <code>ContourLevels</code>. <br>
-   * <strong>Property Change:</strong> <code>contourLevels</code>.
-   *
-   * @param clev <code>ContourLevels</code>
-   */
-  public void setContourLevels(ContourLevels clev) {
-    if (clev_ == null || !clev_.equals(clev)) {
-      ContourLevels tempOld = clev_;
-      clev_ = clev;
-      firePropertyChange("contourLevels", tempOld, clev_);
-    }
-  }
-
-  /**
    * Get the <code>ContourLevels</code>.
    *
    * @return <code>ContourLevels</code>
    */
   public ContourLevels getContourLevels() {
     return clev_;
-  }
-
-  /**
-   * Copy the <code>GridAttribute</code>.
-   *
-   * @return new <code>GridAttribute</code>
-   */
-  public GridAttribute copy() {
-    GridAttribute newGrid;
-    try {
-      newGrid = (GridAttribute) clone();
-    } catch (CloneNotSupportedException e) {
-      newGrid = new GridAttribute();
-    }
-    return newGrid;
-  }
-
-  /**
-   * Set the grid style. <br>
-   * <strong>Property Change:</strong> <code>style</code>.
-   *
-   * @param st grid style
-   */
-  public void setStyle(int st) {
-    if (style_ != st) {
-      Integer tempOld = style_;
-      style_ = st;
-      firePropertyChange("style", tempOld, style_);
-    }
-  }
-
-  /**
-   * Get grid style.
-   *
-   * @return grid style
-   */
-  public int getStyle() {
-    return style_;
   }
 
   /**
@@ -220,26 +167,6 @@ public class GridAttribute implements Attribute, Cloneable, PropertyChangeListen
    */
   public ColorMap getColorMap() {
     return cmap_;
-  }
-
-  /**
-   * Set the <code>ColorMap</code>. <br>
-   * <strong>Property Change:</strong> <code>colorMap</code>.
-   *
-   * @param cmap the <code>ColorMap</code>
-   */
-  public void setColorMap(ColorMap cmap) {
-    if (cmap_ == null && cmap == null) {
-      return;
-    } else {
-      if (cmap_ != null) cmap_.removePropertyChangeListener(this);
-      if (cmap_ == null || !cmap_.equals(cmap)) {
-        ColorMap tempOld = cmap_;
-        cmap_ = cmap;
-        firePropertyChange("colorMap", tempOld, cmap_);
-        cmap_.addPropertyChangeListener(this);
-      }
-    }
   }
 
   /**
@@ -295,7 +222,7 @@ public class GridAttribute implements Attribute, Cloneable, PropertyChangeListen
       modified_ = true;
       return;
     }
-    AttributeChangeEvent ace = new AttributeChangeEvent(this, name, oldValue, newValue, local_);
+    AttributeChangeEvent ace = new AttributeChangeEvent(this, name, oldValue, newValue);
     changes_.firePropertyChange(ace);
     modified_ = false;
   }
@@ -313,9 +240,8 @@ public class GridAttribute implements Attribute, Cloneable, PropertyChangeListen
    */
   @Override
   public void setBatch(boolean batch, boolean local) {
-    local_ = local;
     batch_ = batch;
-    if (!batch && modified_) firePropertyChange("batch", Boolean.TRUE, Boolean.FALSE);
+    if (!batch && modified_) firePropertyChange("batch", true, false);
   }
 
   /**

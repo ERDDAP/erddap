@@ -30,19 +30,19 @@ import gov.noaa.pfel.coastwatch.util.RegexFilenameFilter;
 import gov.noaa.pfel.coastwatch.util.SSR;
 import gov.noaa.pfel.coastwatch.util.SharedWatchService;
 import gov.noaa.pfel.coastwatch.util.SimpleXMLReader;
-import gov.noaa.pfel.coastwatch.util.WatchDirectory;
 import gov.noaa.pfel.coastwatch.util.WatchUpdateHandler;
 import gov.noaa.pfel.erddap.Erddap;
 import gov.noaa.pfel.erddap.dataset.metadata.LocalizedAttributes;
 import gov.noaa.pfel.erddap.handlers.EDDTableFromFilesHandler;
 import gov.noaa.pfel.erddap.handlers.SaxHandlerClass;
 import gov.noaa.pfel.erddap.util.EDMessages;
+import gov.noaa.pfel.erddap.util.EDMessages.Message;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.util.ThreadedWorkManager;
 import gov.noaa.pfel.erddap.variable.*;
+import jakarta.servlet.http.HttpServletRequest;
 import java.io.FileNotFoundException;
 import java.nio.file.Path;
-import java.nio.file.WatchEvent;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
@@ -54,7 +54,8 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
-import java.util.regex.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * This class represents a virtual table of data from by aggregating a collection of data files.
@@ -160,7 +161,6 @@ public abstract class EDDTableFromFiles extends EDDTable implements WatchUpdateH
       0; // either don't have matching data or do ('distinct' and 1 value matches)
   protected long cumNReadHaveMatch = 0,
       cumNReadNoMatch = 0; // read the data file to look for matching data
-  protected WatchDirectory watchDirectory;
 
   // dirTable and fileTable inMemory (default=false)
   protected boolean fileTableInMemory = false;
@@ -1649,7 +1649,7 @@ public abstract class EDDTableFromFiles extends EDDTable implements WatchUpdateH
     }
 
     // load badFileMap
-    ConcurrentHashMap badFileMap = readBadFileMap();
+    ConcurrentHashMap<String, Object[]> badFileMap = readBadFileMap();
 
     // if trouble reading any, recreate all
     if (dirTable == null || fileTable == null || badFileMap == null) {
@@ -1708,16 +1708,13 @@ public abstract class EDDTableFromFiles extends EDDTable implements WatchUpdateH
     // set up WatchDirectory
     if (updateEveryNMillis > 0) {
       try {
-        if (EDStatic.config.useSharedWatchService) {
-          SharedWatchService.watchDirectory(fileDir, recursive, pathRegex, this, datasetID);
-        } else {
-          watchDirectory = WatchDirectory.watchDirectoryAll(fileDir, recursive, pathRegex);
-        }
+        SharedWatchService.watchDirectory(fileDir, recursive, pathRegex, this, datasetID);
       } catch (Throwable t) {
         updateEveryNMillis = 0; // disable the inotify system for this instance
         String subject = String2.ERROR + " in " + datasetID + " constructor (inotify)";
         msg = MustBe.throwableToString(t);
-        if (msg.indexOf("inotify instances") >= 0) msg += EDStatic.messages.inotifyFixAr[0];
+        if (msg.indexOf("inotify instances") >= 0)
+          msg += EDStatic.messages.get(Message.INOTIFY_FIX, 0);
         EDStatic.email(EDStatic.config.adminEmail, subject, msg);
         msg = "";
       }
@@ -1910,7 +1907,7 @@ public abstract class EDDTableFromFiles extends EDDTable implements WatchUpdateH
       while (tFileListPo < tFileNamePA.size()) {
         if (Thread.currentThread().isInterrupted())
           throw new SimpleException(
-              "EDDTableFromFiles.init" + EDStatic.messages.caughtInterruptedAr[0]);
+              "EDDTableFromFiles.init" + EDStatic.messages.get(Message.CAUGHT_INTERRUPTED, 0));
 
         int tDirI = tFileDirIndexPA.get(tFileListPo);
         String tFileS = tFileNamePA.get(tFileListPo);
@@ -3224,7 +3221,8 @@ public abstract class EDDTableFromFiles extends EDDTable implements WatchUpdateH
     Map<String, String> snapshot = snapshot();
 
     // get BadFile and FileTable info and make local copies
-    ConcurrentHashMap badFileMap = readBadFileMap(); // already a copy of what's in file
+    ConcurrentHashMap<String, Object[]> badFileMap =
+        readBadFileMap(); // already a copy of what's in file
     Table tDirTable = getDirTableCopy(); // not null, throws Throwable
     Table tFileTable = getFileTableCopy(); // not null, throws Throwable
     if (debugMode)
@@ -3247,7 +3245,7 @@ public abstract class EDDTableFromFiles extends EDDTable implements WatchUpdateH
     for (int evi = 0; evi < nEvents; evi++) {
       if (Thread.currentThread().isInterrupted())
         throw new SimpleException(
-            "EDDTableFromFiles.lowUpdate" + EDStatic.messages.caughtInterruptedAr[0]);
+            "EDDTableFromFiles.lowUpdate" + EDStatic.messages.get(Message.CAUGHT_INTERRUPTED, 0));
 
       String fullName = contexts.get(evi);
       String dirName = File2.getDirectory(fullName);
@@ -3489,39 +3487,8 @@ public abstract class EDDTableFromFiles extends EDDTable implements WatchUpdateH
    */
   @Override
   public boolean lowUpdate(int language, String msg, long startUpdateMillis) throws Throwable {
-
-    if (EDStatic.config.useSharedWatchService) {
-      SharedWatchService.processEvents();
-      return false;
-    }
-
-    // Most of this lowUpdate code is identical in EDDGridFromFiles and
-    // EDDTableFromFiles
-    if (watchDirectory == null) return false; // no changes
-
-    // get the file events
-    ArrayList<WatchEvent.Kind<?>> eventKinds = new ArrayList<>();
-    StringArray contexts = new StringArray();
-    int nEvents = watchDirectory.getEvents(eventKinds, contexts);
-    if (nEvents == 0) {
-      if (reallyVerbose) String2.log(msg + "found 0 events.");
-      return false; // no changes
-    }
-
-    // if any OVERFLOW, reload this dataset
-    for (int evi = 0; evi < nEvents; evi++) {
-      if (eventKinds.get(evi) == WatchDirectory.OVERFLOW) {
-        if (reallyVerbose)
-          String2.log(
-              msg
-                  + "caught OVERFLOW event in "
-                  + contexts.get(evi)
-                  + ", so I called requestReloadASAP() instead of making changes here.");
-        requestReloadASAP();
-        return false;
-      }
-    }
-    return handleEventContexts(contexts, msg);
+    SharedWatchService.processEvents();
+    return false;
   }
 
   /**
@@ -3540,8 +3507,7 @@ public abstract class EDDTableFromFiles extends EDDTable implements WatchUpdateH
       continue;
 
       if (minMaxPa instanceof StringArray) {
-        if (edv instanceof EDVTimeStamp) {
-          EDVTimeStamp edvts = (EDVTimeStamp) edv;
+        if (edv instanceof EDVTimeStamp edvts) {
           edvts.setDestinationMinMax(
               PAOne.fromDouble(edvts.sourceTimeToEpochSeconds(minMaxPa.getString(0))),
               PAOne.fromDouble(edvts.sourceTimeToEpochSeconds(minMaxPa.getString(1))));
@@ -3807,6 +3773,26 @@ public abstract class EDDTableFromFiles extends EDDTable implements WatchUpdateH
   @Override
   public String changed(EDD old) {
     return super.changed(old) + filesChanged;
+  }
+
+  @Override
+  public Table getFilesUrlList(HttpServletRequest request, String loggedInAs, int language)
+      throws Throwable {
+    Table table = getFileInfo(fileDir, fileNameRegex, recursive, pathRegex);
+    for (int i = 0; i < table.nRows(); i++) {
+      String dir = table.getStringData(0, i).replace(fileDir, "").replace("\\", "/");
+      String id = dir + table.getStringData(1, i);
+      String url =
+          EDStatic.erddapUrl(request, loggedInAs, language)
+              + "/files/"
+              + datasetID()
+              + "/"
+              + dir
+              + table.getStringData(1, i);
+      table.setStringData(0, i, id);
+      table.setStringData(1, i, url);
+    }
+    return table;
   }
 
   /**
@@ -4977,7 +4963,7 @@ public abstract class EDDTableFromFiles extends EDDTable implements WatchUpdateH
         throw t;
         // throw t instanceof WaitThenTryAgainException? t :
         // new WaitThenTryAgainException(
-        // EDStatic.simpleBilingual(language, EDStatic.messages.waitThenTryAgainAr) +
+        // EDStatic.simpleBilingual(language, Message.WAIT_THEN_TRY_AGAIN) +
         // "\n(" + EDStatic.messages.errorFromDataSource + tToString + ")", t);
       }
 
@@ -5040,19 +5026,19 @@ public abstract class EDDTableFromFiles extends EDDTable implements WatchUpdateH
     private int nReadHaveMatch = 0;
     private int nReadNoMatch = 0;
 
-    public void incrementMatch() {
+    private void incrementMatch() {
       nReadHaveMatch++;
     }
 
-    public void incrementNoMatch() {
+    private void incrementNoMatch() {
       nReadNoMatch++;
     }
 
-    public int getMatch() {
+    private int getMatch() {
       return nReadHaveMatch;
     }
 
-    public int getNoMatch() {
+    private int getNoMatch() {
       return nReadNoMatch;
     }
   }

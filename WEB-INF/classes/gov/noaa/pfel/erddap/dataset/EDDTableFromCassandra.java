@@ -232,6 +232,7 @@ import gov.noaa.pfel.erddap.Erddap;
 import gov.noaa.pfel.erddap.dataset.metadata.LocalizedAttributes;
 import gov.noaa.pfel.erddap.handlers.EDDTableFromCassandraHandler;
 import gov.noaa.pfel.erddap.handlers.SaxHandlerClass;
+import gov.noaa.pfel.erddap.util.EDMessages.Message;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.*;
 import java.io.BufferedReader;
@@ -1420,7 +1421,8 @@ public class EDDTableFromCassandra extends EDDTable {
 
       if (Thread.currentThread().isInterrupted())
         throw new SimpleException(
-            "EDDTableFromCassandra.getDataForDapQuery" + EDStatic.messages.caughtInterruptedAr[0]);
+            "EDDTableFromCassandra.getDataForDapQuery"
+                + EDStatic.messages.get(Message.CAUGHT_INTERRUPTED, 0));
 
       // Make the BoundStatement
       // ***!!! This method avoids CQL/SQL Injection Vulnerability !!!***
@@ -1575,9 +1577,9 @@ public class EDDTableFromCassandra extends EDDTable {
 
     // connect result set columns to table columns
     int nRv = resultsDVI.length;
-    int rvToRsCol[] = new int[nRv]; // stored as 0..
-    DataType rvToCassDataType[] = new DataType[nRv];
-    TypeCodec rvToTypeCodec[] = new TypeCodec[nRv];
+    int[] rvToRsCol = new int[nRv]; // stored as 0..
+    DataType[] rvToCassDataType = new DataType[nRv];
+    TypeCodec<?>[] rvToTypeCodec = new TypeCodec[nRv];
     for (int rv = 0; rv < nRv; rv++) {
       // find corresponding resultSet column (may not be 1:1) and other info
       // stored as 0..   -1 if not found
@@ -1701,7 +1703,7 @@ public class EDDTableFromCassandra extends EDDTable {
             // https://datastax.github.io/java-driver/upgrade_guide/
             String s = "[?]";
             try {
-              TypeCodec codec = rvToTypeCodec[rv];
+              TypeCodec<?> codec = rvToTypeCodec[rv];
               if (codec != null) {
                 java.nio.ByteBuffer bytes = r.getBytesUnsafe(rsCol);
                 s = bytes == null ? "" : codec.deserialize(bytes, protocolVersion).toString();

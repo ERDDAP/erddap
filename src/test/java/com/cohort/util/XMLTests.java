@@ -28,8 +28,6 @@ class XMLTests {
     // test encodeAsXML
     String2.log("test encode");
     Test.ensureEqual(
-        XML.encodeAsTerminal("Hi &<>\"°\u1234Bob"), "Hi &amp;&lt;&gt;&quot;°&#x1234;Bob", "XML");
-    Test.ensureEqual(
         XML.encodeAsXML("Hi &<>\"°\u1234Bob"),
         "Hi &amp;&lt;&gt;&quot;°" + ((char) 4660) + "Bob",
         "XML");
@@ -51,46 +49,12 @@ class XMLTests {
       if (ch >= 128 && ch < 160) // don't test Windows-1252 characters
       continue;
       char ch1 = (char) ch;
-      String ch2 = XML.decodeEntities(XML.encodeAsTerminal("" + ch1));
+      String ch2 = XML.decodeEntities(XML.encodeAsXMLOpt("" + ch1, true));
       if (ch2.length() > 0 && ch != 160) // #160=nbsp decodes as #20=' '
       Test.ensureEqual(ch2, "" + ch1, "XML encode/decode ch=" + ch);
       ch2 = XML.decodeEntities(XML.encodeAsHTML("" + ch1));
       if (ch2.length() > 0) Test.ensureEqual(ch2, "" + ch1, "HTML encode/decode ch=" + ch);
     }
-
-    // test textToXMLName
-    String2.log("test textToXMLName");
-    Test.ensureEqual(XML.textToXMLName("3 my._-te#st"), "_3_my._-test", "e");
-
-    // test substitute
-    String doc =
-        "<!-- comment --> "
-            + "<tag1>a<tag2>bb</tag2>ccc<tag3>dddd<tag4>eeee</tag4></tag3></tag1>f<!--comment-->g";
-    String sub[] = new String[] {"<tag1><tag2>Nate", "<tag1><tag2><tag3><tag4>Nancy"};
-    StringBuilder sb = new StringBuilder(doc);
-    XML.substitute(sb, sub);
-    Test.ensureEqual(
-        sb.toString(),
-        "<!-- comment --> "
-            + "<tag1>a<tag2>Nate</tag2>ccc<tag3>dddd<tag4>Nancy</tag4></tag3></tag1>f<!--comment-->g",
-        "f");
-
-    sub = new String[] {"<tag1><tag2> <tag3><tag4>Nancy"}; // test non-contiguous
-    sb = new StringBuilder(doc);
-    XML.substitute(sb, sub);
-    Test.ensureEqual(
-        sb.toString(),
-        "<!-- comment --> "
-            + "<tag1>a<tag2> <tag3><tag4>Nancy</tag2>ccc<tag3>dddd<tag4>eeee</tag4></tag3></tag1>f<!--comment-->g",
-        "g");
-
-    // test removeComments
-    sb = new StringBuilder(doc);
-    XML.removeComments(sb);
-    Test.ensureEqual(
-        sb.toString(),
-        " " + "<tag1>a<tag2>bb</tag2>ccc<tag3>dddd<tag4>eeee</tag4></tag3></tag1>fg",
-        "h");
 
     // ***** tests of XPath
     XPath xPath = XML.getXPath();
@@ -128,8 +92,6 @@ class XMLTests {
         "level 1 & text",
         "get text");
     Test.ensureEqual(XML.getTextContent(null), "", "get text");
-    Test.ensureEqual(
-        XML.getTextContent1(document, xPath, "/testr/level1"), "level 1 & text", "get text");
 
     // get all <level1> tags that have an att1 attribute
     nodeList = XML.getNodeList(document, xPath, "/testr/level1[@att1]");

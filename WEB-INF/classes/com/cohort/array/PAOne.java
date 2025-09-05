@@ -302,16 +302,6 @@ public class PAOne implements Comparable<PAOne> {
   }
 
   /**
-   * This sets an element of otherPA from the value in this PAOne.
-   *
-   * @param otherPA the destination PAOne which must be of the same (or smaller) PAType.
-   * @param index the destination index in PAOne.
-   */
-  public final void writeTo(PrimitiveArray otherPA, int index) {
-    otherPA.setFromPA(index, pa, 0);
-  }
-
-  /**
    * This adds this PAOne's value to the otherPA.
    *
    * @param otherPA the destination PAOne which must be of the same (or smaller) PAType.
@@ -391,10 +381,10 @@ public class PAOne implements Comparable<PAOne> {
    */
   @Override
   public final boolean equals(Object otherPAOne) {
-    if (!(otherPAOne instanceof PAOne)) {
+    if (!(otherPAOne instanceof PAOne otherOne)) {
       return false;
     }
-    return compareTo((PAOne) otherPAOne) == 0;
+    return compareTo(otherOne) == 0;
   }
 
   @Override

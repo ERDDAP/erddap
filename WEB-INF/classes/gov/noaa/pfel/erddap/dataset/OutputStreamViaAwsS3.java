@@ -31,8 +31,7 @@ public class OutputStreamViaAwsS3 extends BufferedOutputStream {
    *
    * @param tParent the OutputStreamFromHttpResponseViaAwsS3 that created this
    */
-  public OutputStreamViaAwsS3(
-      OutputStreamFromHttpResponseViaAwsS3 tParent, String tCharacterEncoding) throws IOException {
+  public OutputStreamViaAwsS3(OutputStreamFromHttpResponseViaAwsS3 tParent) throws IOException {
 
     // make the superclass's BufferedOutputStream from an OutputStream
     super(new FileOutputStream(tParent.localDir + tParent.fileName + tParent.extension));
@@ -60,10 +59,8 @@ public class OutputStreamViaAwsS3 extends BufferedOutputStream {
 
     // get and apply the fileTypeInfo
     // 2020-12-07 this is the section that was inline but now uses a static method
-    Object fileTypeInfo[] =
-        OutputStreamFromHttpResponse.getFileTypeInfo(
-            parent.request, parent.fileType, parent.extension);
-    String contentType = (String) fileTypeInfo[0];
+    String contentType =
+        OutputStreamFromHttpResponse.getFileContentType(parent.fileType, parent.extension);
     // copy to AWS bucket
     // tell Aws about other file attributes when file accessed as from web site
     String fullAwsUrl = EDStatic.config.awsS3OutputBucketUrl + parent.fileName + parent.extension;
