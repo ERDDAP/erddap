@@ -132,7 +132,7 @@ public class TableWriterHtmlTable extends TableWriter {
     encode = tEncode;
     writeUnits = tWriteUnits;
     showFirstNRows = tShowFirstNRows >= 0 ? tShowFirstNRows : Integer.MAX_VALUE;
-    tErddapUrl = EDStatic.erddapUrl(null, loggedInAs, language);
+    tErddapUrl = EDStatic.erddapUrl(tRequest, loggedInAs, language);
     externalLinkHtml = EDStatic.messages.externalLinkHtml(language, tErddapUrl);
     questionMarkImageUrl = tQuestionMarkImageUrl;
   }
@@ -266,7 +266,7 @@ public class TableWriterHtmlTable extends TableWriter {
           writer.write("\n</head>\n");
           writer.write(
               EDStatic.startBodyHtml(
-                  null,
+                  request,
                   language,
                   loggedInAs,
                   edd == null
@@ -524,7 +524,10 @@ public class TableWriterHtmlTable extends TableWriter {
       else
         writer.write(
             EDStatic.endBodyHtml(
-                    request, language, EDStatic.erddapUrl(null, loggedInAs, language), loggedInAs)
+                    request,
+                    language,
+                    EDStatic.erddapUrl(request, loggedInAs, language),
+                    loggedInAs)
                 + "\n</html>\n");
 
     writer.flush(); // essential
@@ -583,7 +586,7 @@ public class TableWriterHtmlTable extends TableWriter {
             encode,
             writeUnits,
             tShowFirstNRows,
-            EDStatic.imageDirUrl(null, loggedInAs, language)
+            EDStatic.imageDirUrl(request, loggedInAs, language)
                 + EDStatic.messages.questionMarkImageFile);
     tw.writeAllAndFinish(table);
     tw.close();
