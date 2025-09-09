@@ -84,12 +84,13 @@ import java.sql.Statement;
 import java.sql.Time;
 import java.sql.Timestamp;
 import java.sql.Types;
+import java.time.ZonedDateTime;
+import java.time.temporal.ChronoField;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Calendar;
 import java.util.Collections;
-import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -4208,7 +4209,7 @@ public class Table {
     SimpleXMLReader xmlReader =
         new SimpleXMLReader(File2.getDecompressedBufferedInputStream(fullFileName), "aws:weather");
     try {
-      GregorianCalendar gc = null;
+      ZonedDateTime dt = null;
       int currentRow = -1;
       Attributes atts = null;
 
@@ -4231,7 +4232,7 @@ public class Table {
             boolean isStartTag = !tag2.startsWith("/");
 
             if (isStartTag) {
-              gc = null;
+              dt = null;
               atts = xmlReader.attributes(); // must make a *new* Attributes object!
 
               // attributes other than "units" become their own columns
@@ -4267,8 +4268,8 @@ public class Table {
 
             } else { // is endTag
               String value = xmlReader.content();
-              if (gc != null) {
-                value = "" + Calendar2.gcToEpochSeconds(gc);
+              if (dt != null) {
+                value = "" + Calendar2.zdtToEpochSeconds(dt);
                 atts.add("units", "seconds since 1970-01-01T00:00:00Z");
               }
               addAwsColumnValue(
@@ -4289,39 +4290,67 @@ public class Table {
             if (tag3.startsWith("/")) continue;
             switch (tag3) {
               case "aws:year" -> {
-                if (gc == null) gc = Calendar2.newGCalendarZulu(0);
+                if (dt == null) {
+                  dt = Calendar2.newZdtUtc(0);
+                }
                 int ti = String2.parseInt(xmlReader.attributeValue("number"));
-                if (ti != Integer.MAX_VALUE) gc.set(Calendar2.YEAR, ti);
+                if (ti != Integer.MAX_VALUE) {
+                  dt = dt.withYear(ti);
+                }
               }
               case "aws:month" -> {
-                if (gc == null) gc = Calendar2.newGCalendarZulu(0);
+                if (dt == null) {
+                  dt = Calendar2.newZdtUtc(0);
+                }
                 int ti = String2.parseInt(xmlReader.attributeValue("number"));
-                if (ti != Integer.MAX_VALUE) gc.set(Calendar2.MONTH, ti - 1); // 0..
+                if (ti != Integer.MAX_VALUE) {
+                  dt = dt.withMonth(ti);
+                }
               }
               case "aws:day" -> {
-                if (gc == null) gc = Calendar2.newGCalendarZulu(0);
+                if (dt == null) {
+                  dt = Calendar2.newZdtUtc(0);
+                }
                 int ti = String2.parseInt(xmlReader.attributeValue("number"));
-                if (ti != Integer.MAX_VALUE) gc.set(Calendar2.DATE, ti); // of month
+                if (ti != Integer.MAX_VALUE) {
+                  dt = dt.withDayOfMonth(ti);
+                }
               }
               case "aws:hour" -> {
-                if (gc == null) gc = Calendar2.newGCalendarZulu(0);
+                if (dt == null) {
+                  dt = Calendar2.newZdtUtc(0);
+                }
                 int ti = String2.parseInt(xmlReader.attributeValue("hour-24"));
-                if (ti != Integer.MAX_VALUE) gc.set(Calendar2.HOUR, ti);
+                if (ti != Integer.MAX_VALUE) {
+                  dt = dt.withHour(ti);
+                }
               }
               case "aws:minute" -> {
-                if (gc == null) gc = Calendar2.newGCalendarZulu(0);
+                if (dt == null) {
+                  dt = Calendar2.newZdtUtc(0);
+                }
                 int ti = String2.parseInt(xmlReader.attributeValue("number"));
-                if (ti != Integer.MAX_VALUE) gc.set(Calendar2.MINUTE, ti);
+                if (ti != Integer.MAX_VALUE) {
+                  dt = dt.withMinute(ti);
+                }
               }
               case "aws:second" -> {
-                if (gc == null) gc = Calendar2.newGCalendarZulu(0);
+                if (dt == null) {
+                  dt = Calendar2.newZdtUtc(0);
+                }
                 int ti = String2.parseInt(xmlReader.attributeValue("number"));
-                if (ti != Integer.MAX_VALUE) gc.set(Calendar2.SECOND, ti);
+                if (ti != Integer.MAX_VALUE) {
+                  dt = dt.withSecond(ti);
+                }
               }
               case "aws:time-zone" -> {
-                if (gc == null) gc = Calendar2.newGCalendarZulu(0);
+                if (dt == null) {
+                  dt = Calendar2.newZdtUtc(0);
+                }
                 int ti = String2.parseInt(xmlReader.attributeValue("offset"));
-                if (ti != Integer.MAX_VALUE) gc.add(Calendar2.HOUR, -ti);
+                if (ti != Integer.MAX_VALUE) {
+                  dt = dt.minusHours(ti);
+                }
               }
             }
           }
@@ -12225,24 +12254,30 @@ public class Table {
         //  (so I using getYear(gc) not gc.get(YEAR))
         // I'm sure there is a more efficient way, but this is quick, easy, correct.
         // This is only inefficient when intNumber is big which is unlikely for month and year.
-        GregorianCalendar gc = Calendar2.epochSecondsToGc(prevRT);
-        Calendar2.clearSmallerFields(gc, field);
-        while ((field == Calendar2.YEAR ? Calendar2.getYear(gc) : gc.get(field)) % intNumber != 0
-            || Calendar2.gcToEpochSeconds(gc) > prevRT) gc.add(field, -1);
-        double prevFloor = Calendar2.gcToEpochSeconds(gc);
-        gc.add(field, intNumber);
-        double prevCeil = Calendar2.gcToEpochSeconds(gc);
+        ZonedDateTime dt = Calendar2.epochSecondsToZdt(prevRT);
+        dt = Calendar2.clearSmallerFields(dt, field);
+        ChronoField chronoField = Calendar2.getChronoFieldFromCalendarField(field);
+        while (Calendar2.getGcFieldFromZdt(dt, field) % intNumber != 0
+            || Calendar2.zdtToEpochSeconds(dt) > prevRT) {
+          dt = dt.minus(1, chronoField.getBaseUnit());
+        }
+        double prevFloor = Calendar2.zdtToEpochSeconds(dt);
+        dt = dt.plus(intNumber, chronoField.getBaseUnit());
+        double prevCeil = Calendar2.zdtToEpochSeconds(dt);
         // < vs <= is arbitrary
         double prevClosest =
             Math.abs(prevRT - prevFloor) < Math.abs(prevRT - prevCeil) ? prevFloor : prevCeil;
 
         // this
-        gc = Calendar2.epochSecondsToGc(thisRT);
-        Calendar2.clearSmallerFields(gc, field);
+        dt = Calendar2.epochSecondsToZdt(thisRT);
+        dt = Calendar2.clearSmallerFields(dt, field);
         // String2.log(">> YEAR=" + Calendar2.getYear(gc));
-        while ((field == Calendar2.YEAR ? Calendar2.getYear(gc) : gc.get(field)) % intNumber != 0
-            || Calendar2.gcToEpochSeconds(gc) > thisRT) gc.add(field, -1);
-        double thisFloor = Calendar2.gcToEpochSeconds(gc);
+        while (Calendar2.getGcFieldFromZdt(dt, field) % intNumber != 0
+            || Calendar2.zdtToEpochSeconds(dt) > thisRT) {
+
+          dt = dt.minus(1, chronoField.getBaseUnit());
+        }
+        double thisFloor = Calendar2.zdtToEpochSeconds(dt);
         if (debugMode)
           String2.log(
               ">> this="
@@ -12250,9 +12285,9 @@ public class Table {
                   + " floor="
                   + Calendar2.safeEpochSecondsToIsoStringTZ(thisFloor, "")
                   + " YEAR="
-                  + Calendar2.getYear(gc));
-        gc.add(field, intNumber);
-        double thisCeil = Calendar2.gcToEpochSeconds(gc);
+                  + dt.getYear());
+        dt = dt.plus(intNumber, chronoField.getBaseUnit());
+        double thisCeil = Calendar2.zdtToEpochSeconds(dt);
         // < vs <= is arbitrary
         double thisClosest =
             Math.abs(thisRT - thisFloor) < Math.abs(thisRT - thisCeil) ? thisFloor : thisCeil;
@@ -15776,7 +15811,7 @@ public class Table {
               tl == Long.MAX_VALUE
                   ? ""
                   : // show hh:mm, not more
-                  Calendar2.formatAsDDMonYYYY(Calendar2.newGCalendarZulu(tl)).substring(0, 17);
+                  Calendar2.formatAsDDMonYYYY(Calendar2.newZdtUtc(tl)).substring(0, 17);
         } catch (Throwable t) {
           String2.log(
               "Caught throwable while dealing with tl=" + tl + ":\n" + MustBe.throwableToString(t));
@@ -16107,11 +16142,13 @@ public class Table {
       return (d) -> d - d % simpleInterval;
     } else {
       return (d) -> {
-        GregorianCalendar gc = Calendar2.epochSecondsToGc(d);
-        Calendar2.clearSmallerFields(gc, field);
-        while ((field == Calendar2.YEAR ? Calendar2.getYear(gc) : gc.get(field)) % intNumber != 0)
-          gc.add(field, -1);
-        return Calendar2.gcToEpochSeconds(gc);
+        ZonedDateTime dt = Calendar2.epochSecondsToZdt(d);
+        dt = Calendar2.clearSmallerFields(dt, field);
+        ChronoField chronoField = Calendar2.getChronoFieldFromCalendarField(field);
+        while ((field == Calendar2.YEAR ? dt.getYear() : dt.get(chronoField)) % intNumber != 0) {
+          dt = dt.minus(1, chronoField.getBaseUnit());
+        }
+        return Calendar2.zdtToEpochSeconds(dt);
       };
     }
   }

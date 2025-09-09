@@ -72,6 +72,8 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.FileSystems;
 import java.text.MessageFormat;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
@@ -494,7 +496,10 @@ public class EDStatic {
 
   // made/returned by luceneIndexSearcher
   private static IndexReader luceneIndexReader; // is thread-safe, but only need/want one
-  private static final Object luceneIndexReaderLock = Calendar2.newGCalendarLocal();
+
+  @SuppressWarnings("TimeInStaticInitializer")
+  private static final Object luceneIndexReaderLock = ZonedDateTime.now(ZoneId.systemDefault());
+
   public static boolean needNewLuceneIndexReader = true;
   private static IndexSearcher luceneIndexSearcher; // is thread-safe, so can reuse
   public static ConcurrentHashMap<Integer, String> luceneDocNToDatasetID;

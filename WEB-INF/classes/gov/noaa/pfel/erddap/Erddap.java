@@ -88,10 +88,11 @@ import java.io.OutputStream;
 import java.io.StringReader;
 import java.io.Writer;
 import java.text.MessageFormat;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
-import java.util.GregorianCalendar;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -12802,10 +12803,10 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                       ? "null"
                       : "["
                           + Calendar2.formatAsEsri(
-                              Calendar2.epochSecondsToGc(tEdvTime.destinationMinDouble()))
+                              Calendar2.epochSecondsToZdt(tEdvTime.destinationMinDouble()))
                           + ", "
                           + Calendar2.formatAsEsri(
-                              Calendar2.epochSecondsToGc(tEdvTime.destinationMaxDouble()))
+                              Calendar2.epochSecondsToZdt(tEdvTime.destinationMaxDouble()))
                           + "]")
                   + "<br/>\n"
                   + "</ul>\n"
@@ -13484,10 +13485,10 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       // && fileName.indexOf('/') == -1) {   //file not in a subdirectory
       // && (ext.equals(".gif") || ext.equals(".jpg") || ext.equals(".js") || ext.equals(".png"))) {
 
-      GregorianCalendar gc = Calendar2.newGCalendarZulu();
+      ZonedDateTime dt = ZonedDateTime.now(ZoneOffset.UTC);
       int nDays = 7; // one week gets most of benefit and few problems
-      gc.add(Calendar2.DATE, nDays);
-      String expires = Calendar2.formatAsRFC822GMT(gc);
+      dt = dt.plusDays(nDays);
+      String expires = Calendar2.formatAsRFC822GMT(dt);
       if (reallyVerbose) String2.log("  setting expires=" + expires + " header");
       response.setHeader(
           "Cache-Control",

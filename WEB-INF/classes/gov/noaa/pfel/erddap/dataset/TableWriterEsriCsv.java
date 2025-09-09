@@ -150,7 +150,7 @@ public class TableWriterEsriCsv extends TableWriter {
 
           if (iso.length() >= 19) {
             // "1/20/2006 9:00:00 pm"
-            String usStyle = Calendar2.formatAsUSSlashAmPm(Calendar2.epochSecondsToGc(d));
+            String usStyle = Calendar2.formatAsUSSlashAmPm(Calendar2.epochSecondsToZdt(d));
             int spo = usStyle.indexOf(' ');
             writer.write(
                 iso.substring(0, 10)

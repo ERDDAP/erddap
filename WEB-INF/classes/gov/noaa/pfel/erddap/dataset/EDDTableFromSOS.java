@@ -41,8 +41,10 @@ import gov.noaa.pfel.erddap.variable.EDVTimeStamp;
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.StringReader;
+import java.time.Instant;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
-import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -649,7 +651,7 @@ public class EDDTableFromSOS extends EDDTable {
     // values that persist for a while
     double tLon = Double.NaN, tLat = Double.NaN, tBeginTime = Double.NaN, tEndTime = Double.NaN;
     String tIndeterminateEnd = null, tStationID = "", tStationProcedure = "";
-    double currentEpochSeconds = Calendar2.gcToEpochSeconds(Calendar2.newGCalendarZulu());
+    double currentEpochSeconds = Instant.now().getEpochSecond();
     boolean tStationHasObsProp[] = new boolean[uniqueSourceObservedProperties.size()];
     // use KVP (KeyValuePair) HTTP GET request to getCapabilities
     // see section 7.2.3 of OGC 06-121r3 (OGC Web Services Common Specification) ver 1.1.0
@@ -747,10 +749,10 @@ public class EDDTableFromSOS extends EDDTable {
               + "ObservationOffering>";
 
       // default beginTime: a year ago      tamuSos needs this
-      GregorianCalendar dbt = Calendar2.newGCalendarZulu();
-      dbt.add(Calendar2.YEAR, -1);
+      ZonedDateTime dbt = ZonedDateTime.now(ZoneOffset.UTC);
+      dbt = dbt.plusYears(-1);
       double defaultBeginTime =
-          Calendar2.gcToEpochSeconds(Calendar2.clearSmallerFields(dbt, Calendar2.MONTH));
+          Calendar2.zdtToEpochSeconds(Calendar2.clearSmallerFields(dbt, Calendar2.MONTH));
       do {
         // process the tags
         // String2.log("tags=" + tags + xmlReader.content());

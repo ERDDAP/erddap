@@ -4,7 +4,7 @@ import com.cohort.util.Calendar2;
 import com.cohort.util.String2;
 import com.cohort.util.Test;
 import com.google.common.collect.ImmutableList;
-import java.util.GregorianCalendar;
+import java.time.ZonedDateTime;
 
 class TimePeriodsTest {
 
@@ -60,37 +60,37 @@ class TimePeriodsTest {
 
     // endCalendarToCenteredTime(int timePeriodNHours, GregorianCalendar cal, String
     // errorInMethod)
-    GregorianCalendar cal;
-    cal = Calendar2.parseISODateTimeZulu("2006-09-10 11:00:00");
-    TimePeriods.endCalendarToCenteredTime(0, cal, "");
+    ZonedDateTime cal;
+    cal = Calendar2.parseISODateTimeUtc("2006-09-10 11:00:00");
+    cal = TimePeriods.endCalendarToCenteredTime(0, cal, "");
     Test.ensureEqual(Calendar2.formatAsISODateTimeSpace(cal), "2006-09-10 11:00:00", "");
 
-    cal = Calendar2.parseISODateTimeZulu("2006-09-10 11:00:00");
-    TimePeriods.endCalendarToCenteredTime(1, cal, "");
+    cal = Calendar2.parseISODateTimeUtc("2006-09-10 11:00:00");
+    cal = TimePeriods.endCalendarToCenteredTime(1, cal, "");
     Test.ensureEqual(Calendar2.formatAsISODateTimeSpace(cal), "2006-09-10 11:00:00", "");
 
-    cal = Calendar2.parseISODateTimeZulu("2006-09-10 11:00:00");
-    TimePeriods.endCalendarToCenteredTime(25, cal, "");
+    cal = Calendar2.parseISODateTimeUtc("2006-09-10 11:00:00");
+    cal = TimePeriods.endCalendarToCenteredTime(25, cal, "");
     Test.ensureEqual(Calendar2.formatAsISODateTimeSpace(cal), "2006-09-09 22:30:00", "");
 
-    cal = Calendar2.parseISODateTimeZulu("2006-09-10 11:00:00");
-    TimePeriods.endCalendarToCenteredTime(33, cal, "");
+    cal = Calendar2.parseISODateTimeUtc("2006-09-10 11:00:00");
+    cal = TimePeriods.endCalendarToCenteredTime(33, cal, "");
     Test.ensureEqual(Calendar2.formatAsISODateTimeSpace(cal), "2006-09-09 18:30:00", "");
 
-    cal = Calendar2.parseISODateTimeZulu("2006-09-11 00:00:00");
-    TimePeriods.endCalendarToCenteredTime(24, cal, "");
+    cal = Calendar2.parseISODateTimeUtc("2006-09-11 00:00:00");
+    cal = TimePeriods.endCalendarToCenteredTime(24, cal, "");
     Test.ensureEqual(Calendar2.formatAsISODateTimeSpace(cal), "2006-09-10 12:00:00", "");
 
-    cal = Calendar2.parseISODateTimeZulu("2006-09-11 00:00:00");
-    TimePeriods.endCalendarToCenteredTime(3 * 24, cal, "");
+    cal = Calendar2.parseISODateTimeUtc("2006-09-11 00:00:00");
+    cal = TimePeriods.endCalendarToCenteredTime(3 * 24, cal, "");
     Test.ensureEqual(Calendar2.formatAsISODateTimeSpace(cal), "2006-09-09 12:00:00", "");
 
-    cal = Calendar2.parseISODateTimeZulu("2006-09-11 00:00:00");
-    TimePeriods.endCalendarToCenteredTime(8 * 24, cal, "");
+    cal = Calendar2.parseISODateTimeUtc("2006-09-11 00:00:00");
+    cal = TimePeriods.endCalendarToCenteredTime(8 * 24, cal, "");
     Test.ensureEqual(Calendar2.formatAsISODateTimeSpace(cal), "2006-09-07 00:00:00", "");
 
-    cal = Calendar2.parseISODateTimeZulu("2006-11-01 00:00:00");
-    TimePeriods.endCalendarToCenteredTime(30 * 24, cal, "");
+    cal = Calendar2.parseISODateTimeUtc("2006-11-01 00:00:00");
+    cal = TimePeriods.endCalendarToCenteredTime(30 * 24, cal, "");
     Test.ensureEqual(Calendar2.formatAsISODateTimeSpace(cal), "2006-10-16 12:00:00", "");
   }
 }
