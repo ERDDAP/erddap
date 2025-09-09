@@ -13,7 +13,7 @@ import gov.noaa.pfel.erddap.GenerateDatasetsXml;
 import gov.noaa.pfel.erddap.util.EDMessages;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import java.nio.file.Path;
-import java.util.TimeZone;
+import java.time.ZoneId;
 import org.junit.jupiter.api.BeforeAll;
 import tags.TagAWS;
 import tags.TagExternalERDDAP;
@@ -2929,7 +2929,7 @@ class EDDTableFromAsciiFilesTests {
     String testDir = EDStatic.config.fullTestCacheDirectory;
 
     // test Calendar2.unitsSinceToEpochSeconds() with timeZone
-    TimeZone timeZone = TimeZone.getTimeZone("US/Pacific");
+    ZoneId timeZone = ZoneId.of("America/Los_Angeles");
     double epSec;
 
     // test winter/standard time: 2005-04-03T00:00 Pacific
@@ -3067,9 +3067,10 @@ class EDDTableFromAsciiFilesTests {
             + ",,NaN\n"
             + ",,NaN\n"
             + "2005-10-30T07:00:00Z,2005-10-30T07:00:00Z,10\n"
-            + // fall time change
-            "2005-10-30T09:00:00Z,2005-10-30T08:00:00Z,11\n"
-            + "2005-10-30T09:00:00Z,2005-10-30T09:00:00Z,12\n"
+            + // fall time change- under the GregorianCalendar this was 09:00 and 09:00.
+            // Given the input either 08:00 or 09:00 could be valid (first or second 1am).
+            "2005-10-30T08:00:00Z,2005-10-30T08:00:00Z,11\n"
+            + "2005-10-30T08:00:00Z,2005-10-30T09:00:00Z,12\n"
             + // duplicate 1am -> 9am
             "2005-10-30T10:00:00Z,2005-10-30T10:00:00Z,13\n"
             + "2005-10-30T11:00:00Z,2005-10-30T11:00:00Z,14\n";

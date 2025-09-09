@@ -26,6 +26,7 @@ import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.EDV;
 import gov.noaa.pfel.erddap.variable.EDVGridAxis;
 import java.io.RandomAccessFile;
+import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.concurrent.ExecutionException;
 
@@ -265,7 +266,9 @@ public class GridDataAccessor implements AutoCloseable {
           globalAttributes.set("geospatial_vertical_max", dMax);
         }
       } else if (av == eddGrid.timeIndex) {
-        String tp = axisAttributes[av].getString(EDV.TIME_PRECISION);
+        DateTimeFormatter tp =
+            Calendar2.timePrecisionToDateTimeFormatter(
+                axisAttributes[av].getString(EDV.TIME_PRECISION));
         // "" unsets the attribute if dMin or dMax isNaN
         globalAttributes.set(
             "time_coverage_start", Calendar2.epochSecondsToLimitedIsoStringT(tp, dMin, ""));

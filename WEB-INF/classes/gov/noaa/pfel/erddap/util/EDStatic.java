@@ -72,6 +72,8 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.FileSystems;
 import java.text.MessageFormat;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
@@ -201,7 +203,7 @@ public class EDStatic {
    * anything following it. A request to http.../erddap/version will return just the number (as
    * text). A request to http.../erddap/version_string will return the full string.
    */
-  public static final Semver erddapVersion = new Semver("2.29.0-alpha");
+  public static final Semver erddapVersion = new Semver("2.28.1");
 
   /** This identifies the dods server/version that this mimics. */
   public static final String dapVersion = "DAP/2.0";
@@ -494,7 +496,10 @@ public class EDStatic {
 
   // made/returned by luceneIndexSearcher
   private static IndexReader luceneIndexReader; // is thread-safe, but only need/want one
-  private static final Object luceneIndexReaderLock = Calendar2.newGCalendarLocal();
+
+  @SuppressWarnings("TimeInStaticInitializer")
+  private static final Object luceneIndexReaderLock = ZonedDateTime.now(ZoneId.systemDefault());
+
   public static boolean needNewLuceneIndexReader = true;
   private static IndexSearcher luceneIndexSearcher; // is thread-safe, so can reuse
   public static ConcurrentHashMap<Integer, String> luceneDocNToDatasetID;
@@ -944,15 +949,34 @@ public class EDStatic {
   }
 
   /**
-   * If loggedInAs is null, this returns baseUrl, else baseHttpsUrl (neither has slash at end).
+   * Return host and path prefix (if applicable) url fragment, determined by request headers.
    *
-   * @param loggedInAs
-   * @return If loggedInAs == null, this returns baseUrl, else baseHttpsUrl (neither has slash at
-   *     end).
+   * @param request the request
+   * @return ERDDAP url fragment with host and path prefix (if set)
+   */
+  private static String getHostAndPathFromRequest(HttpServletRequest request) {
+    String url = request.getHeader("Host");
+    if (request.getHeader("X-Forwarded-Prefix") != null) {
+      url += request.getHeader("X-Forwarded-Prefix");
+    }
+    return url;
+  }
+
+  /**
+   * Return the base ERDDAP URL. If useHeadersForUrl is true, use Host header to determine hostname
+   * and check X-Forwarded-Prefix to determine if a prefix path should be added before /erddap
+   * (config.warName).
+   *
+   * <p>If useHeadersForUrl is false, use configured baseUrl or baseHttpsUrl. If loggedInAs is null,
+   * this returns baseUrl, else baseHttpsUrl (neither has slash at end).
+   *
+   * @param request the request
+   * @param loggedInAs the logged in user
+   * @return ERDDAP base URL (example: http://erddap.yourdomain.com)
    */
   public static String baseUrl(HttpServletRequest request, String loggedInAs) {
     if (EDStatic.config.useHeadersForUrl && request != null && request.getHeader("Host") != null) {
-      return request.getScheme() + "://" + request.getHeader("Host");
+      return request.getScheme() + "://" + getHostAndPathFromRequest(request);
     }
     return loggedInAs == null ? config.baseUrl : config.baseHttpsUrl;
   }
@@ -1000,7 +1024,7 @@ public class EDStatic {
         && request != null
         && request.getHeader("Host") != null
         && ("https".equals(request.getScheme()) || !request.getHeader("Host").contains(":"))) {
-      httpsUrl = "https://" + request.getHeader("Host") + "/" + config.warName;
+      httpsUrl = "https://" + getHostAndPathFromRequest(request) + "/" + config.warName;
     }
     return httpsUrl + (language == 0 ? "" : "/" + TranslateMessages.languageCodeList.get(language));
   }

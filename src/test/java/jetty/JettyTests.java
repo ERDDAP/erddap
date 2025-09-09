@@ -62,9 +62,10 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.file.Path;
 import java.time.Year;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -8865,11 +8866,11 @@ class JettyTests {
 
     // Tests of time related to "now" -- Many fail because this dataset has no
     // recent data.
-    GregorianCalendar gc;
+    ZonedDateTime dt;
     String s;
 
-    gc = Calendar2.newGCalendarZulu();
-    s = Calendar2.formatAsISODateTimeT(gc);
+    dt = ZonedDateTime.now(ZoneOffset.UTC);
+    s = Calendar2.formatAsISODateTimeT(dt);
     try {
       globecBottle.parseUserDapQuery(
           language, "time&time=now", rv, cv, co, cv2, false); // non-regex
@@ -8890,9 +8891,9 @@ class JettyTests {
           "results=\n" + results);
     }
 
-    gc = Calendar2.newGCalendarZulu();
-    gc.add(Calendar2.SECOND, -7);
-    s = Calendar2.formatAsISODateTimeT(gc);
+    dt = ZonedDateTime.now(ZoneOffset.UTC);
+    dt = dt.minusSeconds(7);
+    s = Calendar2.formatAsISODateTimeT(dt);
     try {
       globecBottle.parseUserDapQuery(
           language, "time&time=now-7seconds", rv, cv, co, cv2, false); // non-regex
@@ -8914,9 +8915,9 @@ class JettyTests {
           "results=\n" + results);
     }
 
-    gc = Calendar2.newGCalendarZulu();
-    gc.add(Calendar2.MINUTE, -5);
-    s = Calendar2.formatAsISODateTimeT(gc);
+    dt = ZonedDateTime.now(ZoneOffset.UTC);
+    dt = dt.minusMinutes(5);
+    s = Calendar2.formatAsISODateTimeT(dt);
     try {
       globecBottle.parseUserDapQuery(
           language, "time&time=now-5minutes", rv, cv, co, cv2, false); // non-regex
@@ -8938,9 +8939,9 @@ class JettyTests {
           "results=\n" + results);
     }
 
-    gc = Calendar2.newGCalendarZulu();
-    gc.add(Calendar2.HOUR_OF_DAY, -4);
-    s = Calendar2.formatAsISODateTimeT(gc);
+    dt = ZonedDateTime.now(ZoneOffset.UTC);
+    dt = dt.minusHours(4);
+    s = Calendar2.formatAsISODateTimeT(dt);
     try {
       globecBottle.parseUserDapQuery(
           language, "time&time=now-4hours", rv, cv, co, cv2, false); // non-regex
@@ -8962,9 +8963,9 @@ class JettyTests {
           "results=\n" + results);
     }
 
-    gc = Calendar2.newGCalendarZulu();
-    gc.add(Calendar2.DATE, -2);
-    s = Calendar2.formatAsISODateTimeT(gc);
+    dt = ZonedDateTime.now(ZoneOffset.UTC);
+    dt = dt.minusDays(2);
+    s = Calendar2.formatAsISODateTimeT(dt);
     try {
       globecBottle.parseUserDapQuery(
           language, "time&time=now-2days", rv, cv, co, cv2, false); // non-regex
@@ -8986,9 +8987,9 @@ class JettyTests {
           "results=\n" + results);
     }
 
-    gc = Calendar2.newGCalendarZulu();
-    gc.add(Calendar2.MONTH, -3);
-    s = Calendar2.formatAsISODateTimeT(gc);
+    dt = ZonedDateTime.now(ZoneOffset.UTC);
+    dt = dt.minusMonths(3);
+    s = Calendar2.formatAsISODateTimeT(dt);
     try {
       globecBottle.parseUserDapQuery(
           language, "time&time=now-3months", rv, cv, co, cv2, false); // non-regex
@@ -9010,9 +9011,9 @@ class JettyTests {
           "results=\n" + results);
     }
 
-    gc = Calendar2.newGCalendarZulu();
-    gc.add(Calendar2.YEAR, -2);
-    s = Calendar2.formatAsISODateTimeT(gc);
+    dt = ZonedDateTime.now(ZoneOffset.UTC);
+    dt = dt.minusYears(2);
+    s = Calendar2.formatAsISODateTimeT(dt);
     try {
       globecBottle.parseUserDapQuery(
           language, "time&time=now-2years", rv, cv, co, cv2, false); // non-regex
@@ -10005,12 +10006,12 @@ class JettyTests {
     // String2.log(results);
     expected =
         "cruise_id,ship,cast,X,Y,altitude,date,time,bottle_pos,chl_a_tota,chl_a_10um,phaeo_tota,phaeo_10um,sal00,sal11,temperatur,temperatuA,fluor_v,xmiss_v,PO4,N_N,NO3,Si,NO2,NH4,oxygen,par\n"
-            + "nh0207,New_Horizon,20,-124.4,44.0,0,2002-08-03,1:29:00 am,1,-9999.0,-9999.0,-9999.0,-9999.0,33.9939,33.9908,7.085,7.085,0.256,0.518,2.794,35.8,35.7,71.11,0.093,0.037,-9999.0,0.1545\n"
-            + "nh0207,New_Horizon,20,-124.4,44.0,0,2002-08-03,1:29:00 am,2,-9999.0,-9999.0,-9999.0,-9999.0,33.8154,33.8111,7.528,7.53,0.551,0.518,2.726,35.87,35.48,57.59,0.385,0.018,-9999.0,0.1767\n"
-            + "nh0207,New_Horizon,20,-124.4,44.0,0,2002-08-03,1:29:00 am,3,1.463,-9999.0,1.074,-9999.0,33.5858,33.5834,7.572,7.573,0.533,0.518,2.483,31.92,31.61,48.54,0.307,0.504,-9999.0,0.3875\n"
-            + "nh0207,New_Horizon,20,-124.4,44.0,0,2002-08-03,1:29:00 am,4,2.678,-9999.0,1.64,-9999.0,33.2905,33.2865,8.093,8.098,1.244,0.518,2.262,27.83,27.44,42.59,0.391,0.893,-9999.0,0.7674\n"
-            + "nh0207,New_Horizon,20,-124.4,44.0,0,2002-08-03,1:29:00 am,5,4.182,-9999.0,2.363,-9999.0,33.2871,33.2863,8.157,8.141,1.458,0.518,2.202,26.15,25.73,40.25,0.424,1.204,-9999.0,0.7609\n"
-            + "nh0207,New_Horizon,20,-124.4,44.0,0,2002-08-03,1:29:00 am,6,7.601,-9999.0,3.959,-9999.0,33.3753,33.3678,11.733,11.73,3.685,0.518,1.092,8.96,8.75,16.31,0.211,1.246,-9999.0,1.9563\n";
+            + "nh0207,New_Horizon,20,-124.4,44.0,0,2002-08-03,1:29:00 AM,1,-9999.0,-9999.0,-9999.0,-9999.0,33.9939,33.9908,7.085,7.085,0.256,0.518,2.794,35.8,35.7,71.11,0.093,0.037,-9999.0,0.1545\n"
+            + "nh0207,New_Horizon,20,-124.4,44.0,0,2002-08-03,1:29:00 AM,2,-9999.0,-9999.0,-9999.0,-9999.0,33.8154,33.8111,7.528,7.53,0.551,0.518,2.726,35.87,35.48,57.59,0.385,0.018,-9999.0,0.1767\n"
+            + "nh0207,New_Horizon,20,-124.4,44.0,0,2002-08-03,1:29:00 AM,3,1.463,-9999.0,1.074,-9999.0,33.5858,33.5834,7.572,7.573,0.533,0.518,2.483,31.92,31.61,48.54,0.307,0.504,-9999.0,0.3875\n"
+            + "nh0207,New_Horizon,20,-124.4,44.0,0,2002-08-03,1:29:00 AM,4,2.678,-9999.0,1.64,-9999.0,33.2905,33.2865,8.093,8.098,1.244,0.518,2.262,27.83,27.44,42.59,0.391,0.893,-9999.0,0.7674\n"
+            + "nh0207,New_Horizon,20,-124.4,44.0,0,2002-08-03,1:29:00 AM,5,4.182,-9999.0,2.363,-9999.0,33.2871,33.2863,8.157,8.141,1.458,0.518,2.202,26.15,25.73,40.25,0.424,1.204,-9999.0,0.7609\n"
+            + "nh0207,New_Horizon,20,-124.4,44.0,0,2002-08-03,1:29:00 AM,6,7.601,-9999.0,3.959,-9999.0,33.3753,33.3678,11.733,11.73,3.685,0.518,1.092,8.96,8.75,16.31,0.211,1.246,-9999.0,1.9563\n";
     Test.ensureEqual(results.substring(0, expected.length()), expected, "\nresults=\n" + results);
 
     // .geoJson mapDapQuery so lon and lat are in query
@@ -12898,6 +12899,7 @@ class JettyTests {
                       + "      :grads_step = \"1mo\";\n"
                   : "")
               + "      :ioos_category = \"Time\";\n"
+              + "      :legacy_time_adjust = \"true\";\n"
               + "      :long_name = \"Centered Time\";\n"
               + (EDStatic.config.useSaxParser
                   ? "      :maximum = \"00z15dec2010\";\n"

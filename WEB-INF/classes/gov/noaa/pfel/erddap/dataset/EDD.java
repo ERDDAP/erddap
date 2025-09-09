@@ -72,9 +72,10 @@ import java.io.Writer;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.text.MessageFormat;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.util.Arrays;
 import java.util.BitSet;
-import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -1552,8 +1553,8 @@ public abstract class EDD {
       //  So this treats every change as a new item with a different title,
       //    replacing the previous item.
       StringBuilder rss = new StringBuilder();
-      GregorianCalendar gc = Calendar2.newGCalendarZulu();
-      String pubDate = "    <pubDate>" + Calendar2.formatAsRFC822GMT(gc) + "</pubDate>\n";
+      ZonedDateTime zd = ZonedDateTime.now(ZoneOffset.UTC);
+      String pubDate = "    <pubDate>" + Calendar2.formatAsRFC822GMT(zd) + "</pubDate>\n";
       String link = "    <link>&erddapUrl;" + "/" + dapProtocol() + "/" + datasetID();
       rss.append(
           "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
@@ -1568,7 +1569,7 @@ public abstract class EDD {
               + pubDate
               + "    <item>\n"
               + "      <title>This dataset changed "
-              + Calendar2.formatAsISODateTimeT(gc)
+              + Calendar2.formatAsISODateTimeT(zd)
               + "Z</title>\n"
               + "  "
               + link

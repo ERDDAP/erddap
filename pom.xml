@@ -32,7 +32,7 @@
 
     <groupId>gov.noaa.pfel.erddap</groupId>
     <artifactId>ERDDAP</artifactId>
-    <version>2.29.0-alpha</version>
+    <version>2.28.1</version>
     <packaging>war</packaging>
 
     <name>erddap</name>
@@ -47,10 +47,10 @@
         <jettyVersion>12.1.0</jettyVersion>
         <error-prone.version>2.41.0</error-prone.version>
         <prometheusVersion>1.4.1</prometheusVersion>
-        <parquetVersion>1.15.2</parquetVersion>
-        <awssdkVersion>2.33.0</awssdkVersion>
+        <parquetVersion>1.16.0</parquetVersion>
+        <awssdkVersion>2.33.2</awssdkVersion>
         <luceneVersion>10.2.2</luceneVersion>
-        <nettyVersion>4.2.4.Final</nettyVersion>
+        <nettyVersion>4.2.5.Final</nettyVersion>
         <mavenTestPluginVersion>3.5.3</mavenTestPluginVersion>
         <jacocoMavenVersion>0.8.13</jacocoMavenVersion>
         <download.unpackWhenChanged>true</download.unpackWhenChanged>
@@ -411,7 +411,7 @@
             <plugin>
                 <groupId>com.github.spotbugs</groupId>
                 <artifactId>spotbugs-maven-plugin</artifactId>
-                <version>4.9.4.0</version>
+                <version>4.9.4.1</version>
                 <configuration>
                     <effort>max</effort>
                     <maxHeap>2048</maxHeap>
@@ -1022,7 +1022,7 @@
         <dependency>
             <groupId>io.dropwizard.metrics</groupId>
             <artifactId>metrics-core</artifactId>
-            <version>4.2.35</version>
+            <version>4.2.36</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/io.netty/netty-all 

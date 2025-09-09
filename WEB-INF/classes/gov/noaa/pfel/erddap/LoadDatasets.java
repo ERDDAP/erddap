@@ -36,8 +36,9 @@ import java.io.InputStreamReader;
 import java.lang.management.ManagementFactory;
 import java.lang.management.OperatingSystemMXBean;
 import java.nio.charset.StandardCharsets;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.Arrays;
-import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -465,9 +466,9 @@ public class LoadDatasets extends Thread {
         EDStatic.tooManyRequests = 0;
 
         // email daily report?, threadSummary-String,
-        GregorianCalendar reportCalendar = Calendar2.newGCalendarLocal();
+        ZonedDateTime reportCalendar = ZonedDateTime.now(ZoneId.systemDefault());
         String reportDate = Calendar2.formatAsISODate(reportCalendar);
-        int hour = reportCalendar.get(Calendar2.HOUR_OF_DAY);
+        int hour = reportCalendar.getHour();
 
         if (!reportDate.equals(erddap.lastReportDate) && hour >= 7) {
           // major reload after 7 of new day, so do daily report!

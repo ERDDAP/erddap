@@ -23,6 +23,7 @@ import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.EDV;
 import java.io.Writer;
 import java.text.MessageFormat;
+import java.time.format.DateTimeFormatter;
 import java.util.HashSet;
 
 @FileTypeClass(
@@ -417,6 +418,8 @@ public class OdvFiles extends TableWriterFileType {
     // write data
     int iso8601Col = table.findColumnNumber("time_ISO8601");
     int yyyyCol = table.findColumnNumber("yyyy-mm-ddThh:mm:ss.sss");
+    DateTimeFormatter format =
+        Calendar2.timePrecisionToDateTimeFormatter("1970-01-01T00:00:00.000Z");
     for (int row = 0; row < nRows; row++) {
       for (int col = 0; col < nCols; col++) {
         writer.write(
@@ -426,8 +429,7 @@ public class OdvFiles extends TableWriterFileType {
                 // seconds).
                 // 2020-04-14 now this matches format promised above (to ensure ODV can parse it)
                 // ODV ignores time zone info, but okay to specify, e.g., Z (see 2010-06-15 notes)
-                Calendar2.epochSecondsToLimitedIsoStringT(
-                    "1970-01-01T00:00:00.000Z", pas[col].getDouble(row), "")
+                Calendar2.epochSecondsToLimitedIsoStringT(format, pas[col].getDouble(row), "")
                 :
                 // missing numeric will be empty cell; that's fine
                 // Now UTF-8, so leave all chars as is

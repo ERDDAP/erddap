@@ -85,6 +85,8 @@ public class EDStaticTests {
 
     String requestHost = "erddap.requesthost.org";
     String requestHostHttpUrl = "http://" + requestHost + "/erddap";
+    String requestHostHttpUrlPort = "http://" + requestHost + ":8080/erddap";
+    String requestHostHttpUrlPortSubpath = "http://" + requestHost + ":8080/subpath/erddap";
     String requestHostHttpsUrl = "https://" + requestHost + "/erddap";
 
     HttpServletRequest httpRequest = Mockito.mock(HttpServletRequest.class);
@@ -94,6 +96,12 @@ public class EDStaticTests {
     HttpServletRequest httpRequestWithPort = Mockito.mock(HttpServletRequest.class);
     Mockito.when(httpRequestWithPort.getScheme()).thenReturn("http");
     Mockito.when(httpRequestWithPort.getHeader("Host")).thenReturn(requestHost + ":8080");
+
+    HttpServletRequest httpRequestWithPortAndSubpath = Mockito.mock(HttpServletRequest.class);
+    Mockito.when(httpRequestWithPortAndSubpath.getScheme()).thenReturn("http");
+    Mockito.when(httpRequestWithPortAndSubpath.getHeader("Host")).thenReturn(requestHost + ":8080");
+    Mockito.when(httpRequestWithPortAndSubpath.getHeader("X-Forwarded-Prefix"))
+        .thenReturn("/subpath");
 
     HttpServletRequest httpsRequest = Mockito.mock(HttpServletRequest.class);
     Mockito.when(httpsRequest.getScheme()).thenReturn("https");
@@ -169,6 +177,16 @@ public class EDStaticTests {
         EDStatic.getErddapUrlPrefix(httpRequest, "fakeLoggedInAs"));
 
     checkUrlExpectation(
+        "EDStatic.getErddapUrlPrefix with http request, null loggedInAs, and useHeadersForUrl = true",
+        requestHostHttpUrlPort,
+        EDStatic.getErddapUrlPrefix(httpRequestWithPort, null));
+
+    checkUrlExpectation(
+        "EDStatic.getErddapUrlPrefix with http request, subpath, loggedInAs, and useHeadersForUrl = true",
+        requestHostHttpUrlPortSubpath,
+        EDStatic.getErddapUrlPrefix(httpRequestWithPortAndSubpath, "fakeLoggedInAs"));
+
+    checkUrlExpectation(
         "EDStatic.getErddapUrlPrefix with https request, null loggedInAs, and useHeadersForUrl = true",
         requestHostHttpsUrl,
         EDStatic.getErddapUrlPrefix(httpsRequest, null));
@@ -231,8 +249,10 @@ public class EDStaticTests {
     // set useHeadersForUrl back to original value
     EDStatic.config.useHeadersForUrl = cachedUseHeadersForUrlConfig;
 
-    for (HttpServletRequest request : List.of(httpRequest, httpRequestWithPort, httpsRequest)) {
+    for (HttpServletRequest request :
+        List.of(httpRequest, httpRequestWithPort, httpRequestWithPortAndSubpath, httpsRequest)) {
       verify(request, atLeastOnce()).getHeader("Host");
+      verify(request, atLeastOnce()).getHeader("X-Forwarded-Prefix");
       verify(request, atLeastOnce()).getScheme();
       verifyNoMoreInteractions(request);
     }
