@@ -1042,7 +1042,7 @@ public class EDMessages {
     String setupFileName =
         contentDirectory + "setup" + (EDStatic.config.developmentMode ? "2" : "") + ".xml";
     String errorInMethod;
-    ResourceBundle2 setup = ResourceBundle2.fromXml(XML.parseXml(setupFileName, false));
+    ResourceBundle2 setup = ResourceBundle2.fromXml(XML.parseXml(setupFileName, false, true));
     Map<String, String> ev = System.getenv();
     // **** messages.xml *************************************************************
     // This is read AFTER setup.xml. If that is a problem for something, defer reading it in setup
@@ -1053,7 +1053,7 @@ public class EDMessages {
     if (File2.isFile(messagesFileName)) {
       String2.log("Using custom messages.xml from " + messagesFileName);
       // messagesAr[0] is either the custom messages.xml or the one provided by Erddap
-      messagesAr[0] = ResourceBundle2.fromXml(XML.parseXml(messagesFileName, false));
+      messagesAr[0] = ResourceBundle2.fromXml(XML.parseXml(messagesFileName, false, false));
     } else {
       // use default messages.xml
       String2.log("Custom messages.xml not found at " + messagesFileName);

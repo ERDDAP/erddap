@@ -307,7 +307,7 @@ public class EDConfig {
     // read static Strings from setup.xml
     String setupFileName = contentDirectory + "setup" + (developmentMode ? "2" : "") + ".xml";
     errorInMethod = "ERROR while reading " + setupFileName + ": ";
-    ResourceBundle2 setup = ResourceBundle2.fromXml(XML.parseXml(setupFileName, false));
+    ResourceBundle2 setup = ResourceBundle2.fromXml(XML.parseXml(setupFileName, false, true));
     Map<String, String> ev = System.getenv();
 
     // logLevel may be: warning, info(default), all
