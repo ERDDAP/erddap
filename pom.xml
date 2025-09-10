@@ -1146,6 +1146,18 @@
             <artifactId>semver4j</artifactId>
             <version>6.0.0</version>
         </dependency>
+
+        <dependency>
+            <groupId>com.hivemq</groupId>
+            <artifactId>hivemq-community-edition-embedded</artifactId>
+            <version>2025.4</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.hivemq</groupId>
+            <artifactId>hivemq-mqtt-client</artifactId>
+            <version>1.3.7</version>
+        </dependency>
     </dependencies>
 
     <reporting>

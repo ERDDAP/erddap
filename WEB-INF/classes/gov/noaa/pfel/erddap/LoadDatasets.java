@@ -32,8 +32,10 @@ import io.prometheus.metrics.model.snapshots.Unit;
 import java.awt.Color;
 import java.io.BufferedInputStream;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.lang.management.ManagementFactory;
 import java.lang.management.OperatingSystemMXBean;
+import java.nio.charset.StandardCharsets;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.Arrays;
@@ -44,6 +46,9 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.apache.commons.io.input.ReaderInputStream;
+import org.apache.commons.text.StringSubstitutor;
+import org.apache.commons.text.io.StringSubstitutorReader;
 
 /**
  * This class is run in a separate thread to load datasets for ERDDAP. !!!A lot of possible thread
@@ -205,7 +210,20 @@ public class LoadDatasets extends Thread {
       //    Good: easy to catch/report mistyped tag Names
       //    Low memory use.
       // I went with SimpleXMLReader
-      inputStream = getInputStream(inputStream);
+
+      // this class processes all the environment variables in the datasets.xml
+      if (EDStatic.config.enableEnvParsing) {
+        inputStream =
+            ReaderInputStream.builder()
+                .setReader(
+                    new StringSubstitutorReader(
+                        new InputStreamReader(getInputStream(inputStream), StandardCharsets.UTF_8),
+                        new StringSubstitutor()))
+                .get();
+      } else {
+        inputStream = getInputStream(inputStream);
+      }
+
       boolean useSaxParser = EDStatic.config.useSaxParser;
       int[] nTryAndDatasets = new int[2];
       if (useSaxParser) {

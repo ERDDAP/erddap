@@ -889,7 +889,7 @@ public class EDStatic {
     EDD.verbose = verbose;
     EDV.verbose = verbose;
     EmailThread.verbose = verbose;
-    Erddap.verbose = verbose;
+    // Erddap.verbose = verbose;
     File2.verbose = verbose;
     FileVisitorDNLS.reallyVerbose = reallyVerbose;
     FilledMarkerRenderer.verbose = verbose;
@@ -920,7 +920,7 @@ public class EDStatic {
     EDD.reallyVerbose = reallyVerbose;
     EDV.reallyVerbose = reallyVerbose;
     EmailThread.reallyVerbose = reallyVerbose;
-    Erddap.reallyVerbose = reallyVerbose;
+    // Erddap.reallyVerbose = reallyVerbose;
     File2.reallyVerbose = reallyVerbose;
     FileVisitorDNLS.reallyVerbose = reallyVerbose;
     FilledMarkerRenderer.reallyVerbose = reallyVerbose;
