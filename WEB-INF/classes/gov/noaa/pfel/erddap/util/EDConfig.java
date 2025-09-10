@@ -78,9 +78,9 @@ public class EDConfig {
 
   public final String baseHttpsUrl; // won't be null, may be "(not specified)"
   public String bigParentDirectory;
-  public String mqttConfigFolder;
-  public String mqttDataFolder;
-  public String mqttExtensionsFolder;
+  public final String mqttConfigFolder;
+  public final String mqttDataFolder;
+  public final String mqttExtensionsFolder;
   public final String adminInstitution;
   public final String adminInstitutionUrl;
   public final String adminIndividualName;
@@ -182,8 +182,6 @@ public class EDConfig {
   public static final String DEFAULT_MQTT_HOST = "localhost";
   public static final int DEFAULT_MQTT_PORT = 1883;
   public static final String DEFAULT_MQTT_CLIENT = "erddap-client";
-  public static final String DEFAULT_MQTT_USERNAME = "erddap-username";
-  public static final String DEFAULT_MQTT_PASSWORD = "erddap-password";
   public static final boolean DEFAULT_SSL = false;
   public static final int DEFAULT_KEEP_ALIVE = 60;
   public static final boolean DEFAULT_CLEAN_START = false;
@@ -673,8 +671,8 @@ public class EDConfig {
     mqttServerHost = getSetupEVString(setup, ev, "mqttServerHost", DEFAULT_MQTT_HOST);
     mqttServerPort = getSetupEVInt(setup, ev, "mqttServerPort", DEFAULT_MQTT_PORT);
     mqttClientId = getSetupEVString(setup, ev, "mqttClientId", DEFAULT_MQTT_CLIENT);
-    mqttUserName = getSetupEVString(setup, ev, "mqttUserName", DEFAULT_MQTT_USERNAME);
-    mqttPassword = getSetupEVString(setup, ev, "mqttPassword", DEFAULT_MQTT_PASSWORD);
+    mqttUserName = getSetupEVString(setup, ev, "mqttUserName", "");
+    mqttPassword = getSetupEVString(setup, ev, "mqttPassword", "");
     mqttSsl = getSetupEVBoolean(setup, ev, "mqttSsl", DEFAULT_SSL);
     mqttKeepAlive = getSetupEVInt(setup, ev, "mqttKeepAlive", DEFAULT_KEEP_ALIVE);
     mqttCleanStart = getSetupEVBoolean(setup, ev, "mqttCleanStart", DEFAULT_CLEAN_START);

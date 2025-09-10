@@ -134,8 +134,8 @@ another.name@company.com, *@example.com</subscriptionEmailBlacklist>
     <serverHost>localhost</serverHost>
     <serverPort>1883</serverPort>
     <clientId>clientId</clientId>
-    <username>name</username>
-    <password>pass</password>
+    <username>${localhost:canonical-name}</username>
+    <password>${date:yyyy-MM-dd}</password>
     <topics>erddap/test/topic</topics>
     <useSsl>false</useSsl>
     <sessionExpiryInterval>10</sessionExpiryInterval>
