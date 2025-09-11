@@ -375,7 +375,6 @@ public class EDDTableAggregateRows extends EDDTable {
       pa.addPAOne(tMin);
       pa.addPAOne(tMax);
       tSourceAtts.set("actual_range", pa);
-      tSourceAtts.set("actual_range", pa);
 
       // make the variable
       EDV newVar = null;
