@@ -499,12 +499,10 @@ public class EDDTableAggregateRows extends EDDTable {
     PAOne tMin[] = new PAOne[ndv];
     PAOne tMax[] = new PAOne[ndv];
     EDDTable tChild = getChild(language, 0);
-    List<EDDTable> tChildren =
-        IntStream.range(0, nChildren).mapToObj(c -> getChild(language, c)).toList();
     for (int dvi = 0; dvi < ndv; dvi++) {
 
       Pair<PAOne, PAOne> actualRange =
-          accumulateActualRange(tChildren, dvi, tChild.dataVariables[dvi].destinationDataPAType());
+          accumulateActualRange(List.of(children), dvi, tChild.dataVariables[dvi].destinationDataPAType());
 
       tMin[dvi] = actualRange.getLeft();
       tMax[dvi] = actualRange.getRight();
