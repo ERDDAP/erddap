@@ -2533,6 +2533,12 @@ public abstract class EDD {
    */
   protected abstract void writeFGDC(int language, Writer writer) throws Throwable;
 
+  public enum ISO_VERSION {
+    ISO19115_2,
+    ISO19139_2007,
+    ISO19115_3_2016,
+  }
+
   /**
    * This writes the dataset's ISO 19115-2/19139 XML to the writer. <br>
    * The template is initially based on THREDDS ncIso output from <br>
@@ -2551,6 +2557,27 @@ public abstract class EDD {
    * @throws Throwable if trouble
    */
   protected abstract void writeISO19115(int language, Writer writer) throws Throwable;
+
+  /**
+   * This writes the dataset's ISO 19115-2/19139 XML to the writer. <br>
+   * The template is initially based on THREDDS ncIso output from <br>
+   * https://oceanwatch.pfeg.noaa.gov/thredds/iso/satellite/MH/chla/8day <br>
+   * (stored on Bob's computer as F:/programs/iso19115/threddsNcIsoMHchla8dayYYYYMM.xml). <br>
+   * Made pretty via TestAll: XML.prettyXml(in, out);
+   *
+   * <p>Help with schema: http://www.schemacentral.com/sc/niem21/e-gmd_contact-1.html <br>
+   * List of nilReason: http://www.schemacentral.com/sc/niem21/a-gco_nilReason.html
+   *
+   * <p>This is usually just called by the dataset's constructor, at the end of
+   * EDDTable/Grid.ensureValid.
+   *
+   * @param language the index of the selected language
+   * @param writer a UTF-8 writer
+   * @param version the ISO version to write.
+   * @throws Throwable if trouble
+   */
+  public abstract void writeISO19115(int language, Writer writer, ISO_VERSION version)
+      throws Throwable;
 
   /**
    * This returns the dapProtocol for this dataset (e.g., griddap).

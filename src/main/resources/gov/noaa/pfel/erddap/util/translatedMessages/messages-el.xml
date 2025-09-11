@@ -2921,6 +2921,9 @@ ERDDAP είναι ένας διακομιστής δεδομένων που σα
 <fileHelp_html>Προβάλετε μια φόρμα πρόσβασης δεδομένων HTML τύπου OPeNDAP.</fileHelp_html>
 <fileHelp_htmlTable>Προβάλετε μια ιστοσελίδα UTF-8 .html με τα δεδομένα σε έναν πίνακα. Οι χρόνοι είναι συμβολοσειρές ISO 8601.</fileHelp_htmlTable>
 <fileHelp_iso19115>Δείτε τα μεταδεδομένα ISO 19115-2/19139 UTF-8 .xml του συνόλου δεδομένων.</fileHelp_iso19115>
+<fileHelp_iso19115_2>View the dataset's ISO 19115-2/19139 UTF-8 .xml metadata.</fileHelp_iso19115_2>
+<fileHelp_iso191392007>View the dataset's ISO 19139:2007 UTF-8 .xml metadata.</fileHelp_iso191392007>
+<fileHelp_iso19115_3_2016>View the dataset's ISO 19115-3:2016 UTF-8 .xml metadata.</fileHelp_iso19115_3_2016>
 <fileHelp_itxGrid>Κάντε λήψη ενός αρχείου κειμένου ISO-8859-1 Igor. Κάθε μεταβλητή άξονα και κάθε μεταβλητή δεδομένων γίνεται κύμα.</fileHelp_itxGrid>
 <fileHelp_itxTable>Κάντε λήψη ενός αρχείου κειμένου ISO-8859-1 Igor. Κάθε στήλη απόκρισης γίνεται κύμα.</fileHelp_itxTable>
 <fileHelp_json>Προβάλετε ένα αρχείο UTF-8 JSON που μοιάζει με πίνακα (που λείπει η τιμή = &#39;null&#39;. Οι χρόνοι είναι συμβολοσειρές ISO 8601).</fileHelp_json>

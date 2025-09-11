@@ -2941,6 +2941,9 @@ Na przykład:
 <fileHelp_html>Wyświetl formularz dostępu do danych HTML w stylu OPeNDAP.</fileHelp_html>
 <fileHelp_htmlTable>Wyświetl stronę internetową w formacie UTF-8 .html z danymi w tabeli. Czasy są ciągami ISO 8601.</fileHelp_htmlTable>
 <fileHelp_iso19115>Wyświetl metadane zbioru danych ISO 19115-2/19139 UTF-8 w formacie .xml.</fileHelp_iso19115>
+<fileHelp_iso19115_2>View the dataset's ISO 19115-2/19139 UTF-8 .xml metadata.</fileHelp_iso19115_2>
+<fileHelp_iso191392007>View the dataset's ISO 19139:2007 UTF-8 .xml metadata.</fileHelp_iso191392007>
+<fileHelp_iso19115_3_2016>View the dataset's ISO 19115-3:2016 UTF-8 .xml metadata.</fileHelp_iso19115_3_2016>
 <fileHelp_itxGrid>Pobierz plik tekstowy Igor ISO-8859-1. Każda zmienna osi i każda zmienna danych staje się falą.</fileHelp_itxGrid>
 <fileHelp_itxTable>Pobierz plik tekstowy Igor w formacie ISO-8859-1. Każda kolumna odpowiedzi staje się falą.</fileHelp_itxTable>
 <fileHelp_json>Wyświetl plik JSON w formacie UTF-8 przypominający tabelę (brakująca wartość = „null”; czasy to ciągi znaków ISO 8601).</fileHelp_json>

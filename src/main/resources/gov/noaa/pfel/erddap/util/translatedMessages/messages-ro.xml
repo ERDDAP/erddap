@@ -2754,6 +2754,9 @@ De exemplu:
 <fileHelp_html>Vizualizați un formular de acces la date HTML în stil OPeNDAP.</fileHelp_html>
 <fileHelp_htmlTable>Vizualizați o pagină web UTF-8 .html cu datele într-un tabel. Timpurile sunt șiruri ISO 8601.</fileHelp_htmlTable>
 <fileHelp_iso19115>Vedeți metadatele .xml ISO 19115-2/19139 UTF-8 ale setului de date.</fileHelp_iso19115>
+<fileHelp_iso19115_2>View the dataset's ISO 19115-2/19139 UTF-8 .xml metadata.</fileHelp_iso19115_2>
+<fileHelp_iso191392007>View the dataset's ISO 19139:2007 UTF-8 .xml metadata.</fileHelp_iso191392007>
+<fileHelp_iso19115_3_2016>View the dataset's ISO 19115-3:2016 UTF-8 .xml metadata.</fileHelp_iso19115_3_2016>
 <fileHelp_itxGrid>Descărcați un fișier text ISO-8859-1 Igor. Fiecare variabilă de axă și fiecare variabilă de date devin un val.</fileHelp_itxGrid>
 <fileHelp_itxTable>Descărcați un fișier text ISO-8859-1 Igor. Fiecare coloană de răspuns devine un val.</fileHelp_itxTable>
 <fileHelp_json>Vizualizați un fișier JSON UTF-8 de tip tabel (valoare lipsă = „null”; timpii sunt șiruri ISO 8601).</fileHelp_json>

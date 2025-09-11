@@ -2591,6 +2591,9 @@ ERDDAPは、科学データセットのサブセットを一般的なファイ�
 <fileHelp_html>OPeNDAP スタイルの HTML データ アクセス フォームを表示します。</fileHelp_html>
 <fileHelp_htmlTable>テーブル内のデータを含む UTF-8 .html Web ページを表示します。時刻は ISO 8601 文字列です。</fileHelp_htmlTable>
 <fileHelp_iso19115>データセットの ISO 19115-2/19139 UTF-8 .xml メタデータを表示します。</fileHelp_iso19115>
+<fileHelp_iso19115_2>View the dataset's ISO 19115-2/19139 UTF-8 .xml metadata.</fileHelp_iso19115_2>
+<fileHelp_iso191392007>View the dataset's ISO 19139:2007 UTF-8 .xml metadata.</fileHelp_iso191392007>
+<fileHelp_iso19115_3_2016>View the dataset's ISO 19115-3:2016 UTF-8 .xml metadata.</fileHelp_iso19115_3_2016>
 <fileHelp_itxGrid>ISO-8859-1 Igor テキスト ファイルをダウンロードします。各軸変数と各データ変数は波形になります。</fileHelp_itxGrid>
 <fileHelp_itxTable>ISO-8859-1 Igor テキスト ファイルをダウンロードします。各応答列が波になります。</fileHelp_itxTable>
 <fileHelp_json>表形式の UTF-8 JSON ファイルを表示します (欠損値 = &#39;null&#39;、時間は ISO 8601 文字列です)。</fileHelp_json>

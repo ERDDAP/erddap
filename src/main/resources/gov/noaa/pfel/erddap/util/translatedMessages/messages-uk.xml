@@ -2938,6 +2938,9 @@ ERDDAP — це сервер даних, який дає вам простий �
 <fileHelp_html>Перегляньте HTML-форму доступу до даних у стилі OPeNDAP.</fileHelp_html>
 <fileHelp_htmlTable>Перегляньте веб-сторінку UTF-8 .html із даними в таблиці. Часи – це рядки ISO 8601.</fileHelp_htmlTable>
 <fileHelp_iso19115>Перегляньте метадані .xml набору даних ISO 19115-2/19139 UTF-8.</fileHelp_iso19115>
+<fileHelp_iso19115_2>View the dataset's ISO 19115-2/19139 UTF-8 .xml metadata.</fileHelp_iso19115_2>
+<fileHelp_iso191392007>View the dataset's ISO 19139:2007 UTF-8 .xml metadata.</fileHelp_iso191392007>
+<fileHelp_iso19115_3_2016>View the dataset's ISO 19115-3:2016 UTF-8 .xml metadata.</fileHelp_iso19115_3_2016>
 <fileHelp_itxGrid>Завантажте текстовий файл ISO-8859-1 Igor. Кожна змінна осі та кожна змінна даних стає хвилею.</fileHelp_itxGrid>
 <fileHelp_itxTable>Завантажте текстовий файл ISO-8859-1 Igor. Кожен стовпець відповіді стає хвилею.</fileHelp_itxTable>
 <fileHelp_json>Перегляньте табличний файл JSON UTF-8 (відсутнє значення = &#39;null&#39;; час — рядки ISO 8601).</fileHelp_json>

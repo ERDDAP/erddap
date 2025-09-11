@@ -3020,6 +3020,9 @@ Például:
 <fileHelp_html>Tekintse meg az OPeNDAP-stílusú HTML adatelérési űrlapot.</fileHelp_html>
 <fileHelp_htmlTable>Tekintse meg az UTF-8 .html weboldalt az adatokkal egy táblázatban. Az idők ISO 8601 karakterláncok.</fileHelp_htmlTable>
 <fileHelp_iso19115>Tekintse meg az adatkészlet ISO 19115-2/19139 UTF-8 .xml metaadatait.</fileHelp_iso19115>
+<fileHelp_iso19115_2>View the dataset's ISO 19115-2/19139 UTF-8 .xml metadata.</fileHelp_iso19115_2>
+<fileHelp_iso191392007>View the dataset's ISO 19139:2007 UTF-8 .xml metadata.</fileHelp_iso191392007>
+<fileHelp_iso19115_3_2016>View the dataset's ISO 19115-3:2016 UTF-8 .xml metadata.</fileHelp_iso19115_3_2016>
 <fileHelp_itxGrid>Töltse le az ISO-8859-1 Igor szövegfájlt. Minden tengelyváltozó és minden adatváltozó hullámmá válik.</fileHelp_itxGrid>
 <fileHelp_itxTable>Töltse le az ISO-8859-1 Igor szövegfájlt. Minden válaszoszlop hullámmá válik.</fileHelp_itxTable>
 <fileHelp_json>Táblázatszerű UTF-8 JSON-fájl megtekintése (hiányzó érték = &#39;null&#39;; az idők ISO 8601-es karakterláncok).</fileHelp_json>

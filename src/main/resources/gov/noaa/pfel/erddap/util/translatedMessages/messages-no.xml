@@ -2940,6 +2940,9 @@ For eksempel:
 <fileHelp_html>Se et HTML-datatilgangsskjema i OPeNDAP-stil.</fileHelp_html>
 <fileHelp_htmlTable>Vis en UTF-8 .html-webside med dataene i en tabell. Tidene er ISO 8601-strenger.</fileHelp_htmlTable>
 <fileHelp_iso19115>Se datasettets ISO 19115-2/19139 UTF-8 .xml-metadata.</fileHelp_iso19115>
+<fileHelp_iso19115_2>View the dataset's ISO 19115-2/19139 UTF-8 .xml metadata.</fileHelp_iso19115_2>
+<fileHelp_iso191392007>View the dataset's ISO 19139:2007 UTF-8 .xml metadata.</fileHelp_iso191392007>
+<fileHelp_iso19115_3_2016>View the dataset's ISO 19115-3:2016 UTF-8 .xml metadata.</fileHelp_iso19115_3_2016>
 <fileHelp_itxGrid>Last ned en ISO-8859-1 Igor-tekstfil. Hver aksevariabel og hver datavariabel blir en bølge.</fileHelp_itxGrid>
 <fileHelp_itxTable>Last ned en ISO-8859-1 Igor-tekstfil. Hver svarkolonne blir en bølge.</fileHelp_itxTable>
 <fileHelp_json>Se en tabelllignende UTF-8 JSON-fil (manglende verdi = &#39;null&#39;; tidene er ISO 8601-strenger).</fileHelp_json>

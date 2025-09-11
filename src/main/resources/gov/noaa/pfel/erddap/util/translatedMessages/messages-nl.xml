@@ -2940,6 +2940,9 @@ Bijvoorbeeld:
 <fileHelp_html>Bekijk een HTML-gegevenstoegangsformulier in OPeNDAP-stijl.</fileHelp_html>
 <fileHelp_htmlTable>Bekijk een UTF-8 .html-webpagina met de gegevens in een tabel. Tijden zijn ISO 8601-reeksen.</fileHelp_htmlTable>
 <fileHelp_iso19115>Bekijk de ISO 19115-2/19139 UTF-8 .xml-metagegevens van de dataset.</fileHelp_iso19115>
+<fileHelp_iso19115_2>View the dataset's ISO 19115-2/19139 UTF-8 .xml metadata.</fileHelp_iso19115_2>
+<fileHelp_iso191392007>View the dataset's ISO 19139:2007 UTF-8 .xml metadata.</fileHelp_iso191392007>
+<fileHelp_iso19115_3_2016>View the dataset's ISO 19115-3:2016 UTF-8 .xml metadata.</fileHelp_iso19115_3_2016>
 <fileHelp_itxGrid>Download een ISO-8859-1 Igor-tekstbestand. Elke asvariabele en elke datavariabele wordt een golf.</fileHelp_itxGrid>
 <fileHelp_itxTable>Download een ISO-8859-1 Igor-tekstbestand. Elke antwoordkolom wordt een golf.</fileHelp_itxTable>
 <fileHelp_json>Bekijk een tabelachtig UTF-8 JSON-bestand (ontbrekende waarde = &#39;null&#39;; tijden zijn ISO 8601-reeksen).</fileHelp_json>

@@ -2792,6 +2792,9 @@ Například:
 <fileHelp_html>Zobrazit formulář pro přístup k datům HTML ve stylu OPeNDAP.</fileHelp_html>
 <fileHelp_htmlTable>Zobrazit webovou stránku UTF-8 .html s daty v tabulce. Časy jsou řetězce ISO 8601.</fileHelp_htmlTable>
 <fileHelp_iso19115>Prohlédněte si metadata ISO 19115-2/19139 UTF-8 .xml datové sady.</fileHelp_iso19115>
+<fileHelp_iso19115_2>View the dataset's ISO 19115-2/19139 UTF-8 .xml metadata.</fileHelp_iso19115_2>
+<fileHelp_iso191392007>View the dataset's ISO 19139:2007 UTF-8 .xml metadata.</fileHelp_iso191392007>
+<fileHelp_iso19115_3_2016>View the dataset's ISO 19115-3:2016 UTF-8 .xml metadata.</fileHelp_iso19115_3_2016>
 <fileHelp_itxGrid>Stáhněte si textový soubor ISO-8859-1 Igor. Každá proměnná osy a každá datová proměnná se stává vlnou.</fileHelp_itxGrid>
 <fileHelp_itxTable>Stáhněte si textový soubor ISO-8859-1 Igor. Každý sloupec odpovědí se stává vlnou.</fileHelp_itxTable>
 <fileHelp_json>Zobrazte soubor UTF-8 JSON podobný tabulce (chybějící hodnota = &#39;null&#39;; časy jsou řetězce ISO 8601).</fileHelp_json>

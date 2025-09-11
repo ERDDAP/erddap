@@ -2905,6 +2905,9 @@ Mar shampla:
 <fileHelp_html>Féach ar Fhoirm Rochtana Sonraí HTML ar stíl OPeNDAP.</fileHelp_html>
 <fileHelp_htmlTable>Féach ar leathanach gréasáin UTF-8 .html leis na sonraí i dtábla. Is teaghráin ISO 8601 iad na hamanna.</fileHelp_htmlTable>
 <fileHelp_iso19115>Féach ar mheiteashonraí ISO 19115-2/19139 UTF-8 .xml an tacair sonraí.</fileHelp_iso19115>
+<fileHelp_iso19115_2>View the dataset's ISO 19115-2/19139 UTF-8 .xml metadata.</fileHelp_iso19115_2>
+<fileHelp_iso191392007>View the dataset's ISO 19139:2007 UTF-8 .xml metadata.</fileHelp_iso191392007>
+<fileHelp_iso19115_3_2016>View the dataset's ISO 19115-3:2016 UTF-8 .xml metadata.</fileHelp_iso19115_3_2016>
 <fileHelp_itxGrid>Íoslódáil Téacschomhad Igor ISO-8859-1. Déantar tonn de gach athróg aise agus gach athróg sonraí.</fileHelp_itxGrid>
 <fileHelp_itxTable>Íoslódáil Téacschomhad Igor ISO-8859-1. Déantar tonn de gach colún freagartha.</fileHelp_itxTable>
 <fileHelp_json>Féach ar chomhad UTF-8 JSON atá cosúil le tábla (luach in easnamh = &#39;null&#39;; teaghráin ISO 8601 iad na hamanna).</fileHelp_json>

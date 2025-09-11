@@ -61,10 +61,12 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.zip.ZipOutputStream;
+import javax.xml.transform.stream.StreamResult;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.UnsupportedStorageException;
 import org.opengis.metadata.Metadata;
@@ -11208,7 +11210,7 @@ public abstract class EDDGrid extends EDD {
             + "</metadata>\n");
   }
 
-  private void lower_writeISO19115(int language, Writer writer)
+  private void lower_writeISO19115(int language, Writer writer, ISO_VERSION version)
       throws UnsupportedStorageException, DataStoreException, JAXBException, IOException {
 
     Metadata metadata =
@@ -11226,9 +11228,14 @@ public abstract class EDDGrid extends EDD {
      * by Apache SIS. But the legacy version published in 2007 is still in wide use.
      * The legacy version can be requested with the `METADATA_VERSION` property.
      */
-    // Map<String,String> config = Map.of(org.apache.sis.xml.XML.METADATA_VERSION, "2007");
-
-    writer.write(org.apache.sis.xml.XML.marshal(metadata));
+    Map<String, String> config = new HashMap<>();
+    if (version == ISO_VERSION.ISO19139_2007) {
+      config = Map.of(org.apache.sis.xml.XML.METADATA_VERSION, "2007");
+    }
+    if (version == ISO_VERSION.ISO19115_3_2016) {
+      config = Map.of(org.apache.sis.xml.XML.METADATA_VERSION, "2016");
+    }
+    org.apache.sis.xml.XML.marshal(metadata, new StreamResult(writer), config);
   }
 
   /**
@@ -11255,10 +11262,20 @@ public abstract class EDDGrid extends EDD {
    */
   @Override
   public void writeISO19115(int language, Writer writer) throws Throwable {
-    // FUTURE: support datasets with x,y (and not longitude,latitude)
+    writeISO19115(
+        language,
+        writer,
+        EDStatic.config.useSisISO19115
+            ? ISO_VERSION.ISO19115_3_2016
+            : EDStatic.config.useSisISO19139 ? ISO_VERSION.ISO19139_2007 : ISO_VERSION.ISO19115_2);
+  }
 
-    if (EDStatic.config.useSisISO19115) {
-      lower_writeISO19115(language, writer);
+  @Override
+  public void writeISO19115(int language, Writer writer, ISO_VERSION version) throws Throwable {
+    // FUTURE: support datasets with x,y (and not longitude,latitude)?
+
+    if (version == ISO_VERSION.ISO19115_3_2016 || version == ISO_VERSION.ISO19139_2007) {
+      lower_writeISO19115(language, writer, version);
       return;
     }
 

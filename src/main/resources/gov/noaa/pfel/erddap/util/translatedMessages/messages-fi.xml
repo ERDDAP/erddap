@@ -2950,6 +2950,9 @@ Esimerkiksi:
 <fileHelp_html>Näytä OPeNDAP-tyylinen HTML-tietojen käyttölomake.</fileHelp_html>
 <fileHelp_htmlTable>Tarkastele UTF-8 .html -verkkosivua, jonka tiedot ovat taulukossa. Ajat ovat ISO 8601 merkkijonoja.</fileHelp_htmlTable>
 <fileHelp_iso19115>Tarkastele tietojoukon ISO 19115-2/19139 UTF-8 .xml -metatietoja.</fileHelp_iso19115>
+<fileHelp_iso19115_2>View the dataset's ISO 19115-2/19139 UTF-8 .xml metadata.</fileHelp_iso19115_2>
+<fileHelp_iso191392007>View the dataset's ISO 19139:2007 UTF-8 .xml metadata.</fileHelp_iso191392007>
+<fileHelp_iso19115_3_2016>View the dataset's ISO 19115-3:2016 UTF-8 .xml metadata.</fileHelp_iso19115_3_2016>
 <fileHelp_itxGrid>Lataa ISO-8859-1 Igor-tekstitiedosto. Jokaisesta akselimuuttujasta ja jokaisesta datamuuttujasta tulee aalto.</fileHelp_itxGrid>
 <fileHelp_itxTable>Lataa ISO-8859-1 Igor-tekstitiedosto. Jokaisesta vastaussarakkeesta tulee aalto.</fileHelp_itxTable>
 <fileHelp_json>Tarkastele taulukkomaista UTF-8 JSON-tiedostoa (puuttuva arvo = &quot;null&quot;; ajat ovat ISO 8601 -merkkijonoja).</fileHelp_json>

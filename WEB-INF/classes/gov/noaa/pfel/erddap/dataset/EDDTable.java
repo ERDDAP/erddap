@@ -64,11 +64,13 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.zip.ZipOutputStream;
+import javax.xml.transform.stream.StreamResult;
 import org.apache.commons.jexl3.JexlScript;
 import org.apache.commons.jexl3.MapContext;
 import org.apache.sis.storage.DataStoreException;
@@ -18622,7 +18624,7 @@ public abstract class EDDTable extends EDD {
             + "</metadata>\n");
   }
 
-  private void lower_writeISO19115(int language, Writer writer)
+  private void lower_writeISO19115(int language, Writer writer, ISO_VERSION version)
       throws UnsupportedStorageException, DataStoreException, JAXBException, IOException {
 
     Metadata metadata =
@@ -18639,9 +18641,14 @@ public abstract class EDDTable extends EDD {
      * by Apache SIS. But the legacy version published in 2007 is still in wide use.
      * The legacy version can be requested with the `METADATA_VERSION` property.
      */
-    // Map<String,String> config = Map.of(org.apache.sis.xml.XML.METADATA_VERSION, "2007");
-
-    writer.write(org.apache.sis.xml.XML.marshal(metadata));
+    Map<String, String> config = new HashMap<>();
+    if (version == ISO_VERSION.ISO19139_2007) {
+      config = Map.of(org.apache.sis.xml.XML.METADATA_VERSION, "2007");
+    }
+    if (version == ISO_VERSION.ISO19115_3_2016) {
+      config = Map.of(org.apache.sis.xml.XML.METADATA_VERSION, "2016");
+    }
+    org.apache.sis.xml.XML.marshal(metadata, new StreamResult(writer), config);
   }
 
   /**
@@ -18675,10 +18682,20 @@ public abstract class EDDTable extends EDD {
    */
   @Override
   public void writeISO19115(int language, Writer writer) throws Throwable {
+    writeISO19115(
+        language,
+        writer,
+        EDStatic.config.useSisISO19115
+            ? ISO_VERSION.ISO19115_3_2016
+            : EDStatic.config.useSisISO19139 ? ISO_VERSION.ISO19139_2007 : ISO_VERSION.ISO19115_2);
+  }
+
+  @Override
+  public void writeISO19115(int language, Writer writer, ISO_VERSION version) throws Throwable {
     // FUTURE: support datasets with x,y (and not longitude,latitude)?
 
-    if (EDStatic.config.useSisISO19115) {
-      lower_writeISO19115(language, writer);
+    if (version == ISO_VERSION.ISO19115_3_2016 || version == ISO_VERSION.ISO19139_2007) {
+      lower_writeISO19115(language, writer, version);
       return;
     }
 

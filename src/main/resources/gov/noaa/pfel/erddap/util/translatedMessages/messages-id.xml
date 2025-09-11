@@ -2911,6 +2911,9 @@ Misalnya:
 <fileHelp_html>Lihat Formulir Akses Data HTML bergaya OPeNDAP.</fileHelp_html>
 <fileHelp_htmlTable>Lihat halaman web UTF-8 .html dengan data dalam tabel. Waktu adalah string ISO 8601.</fileHelp_htmlTable>
 <fileHelp_iso19115>Lihat metadata .xml ISO 19115-2/19139 UTF-8 .xml kumpulan data.</fileHelp_iso19115>
+<fileHelp_iso19115_2>View the dataset's ISO 19115-2/19139 UTF-8 .xml metadata.</fileHelp_iso19115_2>
+<fileHelp_iso191392007>View the dataset's ISO 19139:2007 UTF-8 .xml metadata.</fileHelp_iso191392007>
+<fileHelp_iso19115_3_2016>View the dataset's ISO 19115-3:2016 UTF-8 .xml metadata.</fileHelp_iso19115_3_2016>
 <fileHelp_itxGrid>Unduh File Teks Igor ISO-8859-1. Setiap variabel sumbu dan setiap variabel data menjadi gelombang.</fileHelp_itxGrid>
 <fileHelp_itxTable>Unduh File Teks Igor ISO-8859-1. Setiap kolom respons menjadi gelombang.</fileHelp_itxTable>
 <fileHelp_json>Lihat file JSON UTF-8 seperti tabel (nilai hilang = &#39;null&#39;; waktunya adalah string ISO 8601).</fileHelp_json>

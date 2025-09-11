@@ -3065,6 +3065,9 @@ ERDDAP 는 일반 파일 형식으로 과학 데이터 세트의 하위 집합�
 <fileHelp_html>OPeNDAP 스타일 HTML 데이터 액세스 양식을 봅니다.</fileHelp_html>
 <fileHelp_htmlTable>테이블의 데이터가 포함된 UTF-8 .html 웹 페이지를 봅니다. 시간은 ISO 8601 문자열입니다.</fileHelp_htmlTable>
 <fileHelp_iso19115>데이터 세트의 ISO 19115-2/19139 UTF-8 .xml 메타데이터를 봅니다.</fileHelp_iso19115>
+<fileHelp_iso19115_2>View the dataset's ISO 19115-2/19139 UTF-8 .xml metadata.</fileHelp_iso19115_2>
+<fileHelp_iso191392007>View the dataset's ISO 19139:2007 UTF-8 .xml metadata.</fileHelp_iso191392007>
+<fileHelp_iso19115_3_2016>View the dataset's ISO 19115-3:2016 UTF-8 .xml metadata.</fileHelp_iso19115_3_2016>
 <fileHelp_itxGrid>ISO-8859-1 Igor 텍스트 파일을 다운로드하세요. 각 축 변수와 각 데이터 변수가 웨이브가 됩니다.</fileHelp_itxGrid>
 <fileHelp_itxTable>ISO-8859-1 Igor 텍스트 파일을 다운로드하세요. 각 응답 열은 웨이브가 됩니다.</fileHelp_itxTable>
 <fileHelp_json>테이블 형식의 UTF-8 JSON 파일을 봅니다(누락된 값 = &#39;null&#39;, 시간은 ISO 8601 문자열임).</fileHelp_json>

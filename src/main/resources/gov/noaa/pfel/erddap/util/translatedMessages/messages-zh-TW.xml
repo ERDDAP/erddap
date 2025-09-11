@@ -2482,6 +2482,9 @@ ERDDAP是一個資料伺服器，它為您提供了一種簡單、一致的方�
 <fileHelp_html>查看 OPeNDAP 樣式的 HTML 資料存取表單。</fileHelp_html>
 <fileHelp_htmlTable>查看包含表中資料的 UTF-8 .html 網頁。時間是 ISO 8601 字串。</fileHelp_htmlTable>
 <fileHelp_iso19115>查看資料集的 ISO 19115-2/19139 UTF-8 .xml 元資料。</fileHelp_iso19115>
+<fileHelp_iso19115_2>View the dataset's ISO 19115-2/19139 UTF-8 .xml metadata.</fileHelp_iso19115_2>
+<fileHelp_iso191392007>View the dataset's ISO 19139:2007 UTF-8 .xml metadata.</fileHelp_iso191392007>
+<fileHelp_iso19115_3_2016>View the dataset's ISO 19115-3:2016 UTF-8 .xml metadata.</fileHelp_iso19115_3_2016>
 <fileHelp_itxGrid>下載 ISO-8859-1 Igor 文字檔。每個軸變數和每個資料變數都成為一個波。</fileHelp_itxGrid>
 <fileHelp_itxTable>下載 ISO-8859-1 Igor 文字檔。每個響應欄變成一個波。</fileHelp_itxTable>
 <fileHelp_json>查看類似表格的 UTF-8 JSON 檔案（缺失值 = &#39;null&#39;；時間為 ISO 8601 字串）。</fileHelp_json>
