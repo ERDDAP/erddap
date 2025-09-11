@@ -2026,7 +2026,8 @@ ERDDAP ایڈمنسٹریٹر آپ کو ڈیٹا کی منتقلی کا بہتر
 <dtWMS>اس ڈیٹا سیٹ کی ویب میپ سروس کے ذریعے اس ڈیٹا کے نقشے بنانے کے بارے میں جاننے کے لیے کلک کریں۔</dtWMS>
 <EasierAccessToScientificData>سائنسی ڈیٹا تک آسان رسائی</EasierAccessToScientificData>
 
-<!--ایدھی پیغامات کو ٹیبلڈپ اور گریناڈاپ ڈاٹا رسائی کی سہولت پر دکھایا جاتا ہے۔-->
+<!--ای ڈی پیغامات پر ڈسپلے کيا گيا هےtabledapاور Graddap data رسائی کے راستے.
+-->
 <EDDDatasetID>ڈیٹاسیٹ ID</EDDDatasetID>
 <EDDFgdc>ایف جی ڈی سی</EDDFgdc>
 <EDDFgdcMetadata>FGDC-STD-001-1998 میٹا ڈیٹا</EDDFgdcMetadata>
@@ -2417,10 +2418,14 @@ ERDDAP ایک ڈیٹا سرور ہے جو آپ کو عام فائل فارمیٹ
 <fileHelpTable_help>ٹیبلڈاپ کی تفصیل کے ساتھ ایک ویب صفحہ دیکھیں۔</fileHelpTable_help>
 <fileHelp_html>اوپن ڈی اے پی طرز کا ایچ ٹی ایم ایل ڈیٹا تک رسائی کا فارم دیکھیں۔</fileHelp_html>
 <fileHelp_htmlTable>ٹیبل میں ڈیٹا کے ساتھ UTF-8 .html ویب صفحہ دیکھیں۔ اوقات ISO 8601 سٹرنگز ہیں۔</fileHelp_htmlTable>
-<fileHelp_iso19115>ڈیٹا سیٹ کا ISO 19115-2/19139 UTF-8 .xml میٹا ڈیٹا دیکھیں۔</fileHelp_iso19115>
-<fileHelp_iso19115_2>View the dataset's ISO 19115-2/19139 UTF-8 .xml metadata.</fileHelp_iso19115_2>
-<fileHelp_iso191392007>View the dataset's ISO 19139:2007 UTF-8 .xml metadata.</fileHelp_iso191392007>
-<fileHelp_iso19115_3_2016>View the dataset's ISO 19115-3:2016 UTF-8 .xml metadata.</fileHelp_iso19115_3_2016>
+<fileHelp_iso19115>اعداد و شمار کا مطالعہ کریںISO 19115/19139اس سرور کے لیے ورژن کی ڈیٹنگ استعمال کرتے ہوئے UTF-8.xml metadata.
+</fileHelp_iso19115>
+<fileHelp_iso19115_2>اعداد و شمار کا مطالعہ کریںISO 19115-2/19139UTF-8.xmxl metadata.
+</fileHelp_iso19115_2>
+<fileHelp_iso191392007>اعداد و شمار کا مطالعہ کریںISO 19139:2007UTF-8.xmxl metadata.
+</fileHelp_iso191392007>
+<fileHelp_iso19115_3_2016>اعداد و شمار کا مطالعہ کریںISO 19115-3:2016UTF-8.xmxl metadata.
+</fileHelp_iso19115_3_2016>
 <fileHelp_itxGrid>ایک ISO-8859-1 Igor ٹیکسٹ فائل ڈاؤن لوڈ کریں۔ ہر محور متغیر اور ہر ڈیٹا متغیر ایک لہر بن جاتا ہے۔</fileHelp_itxGrid>
 <fileHelp_itxTable>ایک ISO-8859-1 Igor ٹیکسٹ فائل ڈاؤن لوڈ کریں۔ ہر جوابی کالم ایک لہر بن جاتا ہے۔</fileHelp_itxTable>
 <fileHelp_json>ٹیبل جیسی UTF-8 JSON فائل دیکھیں (گمشدہ ویلیو = &#39;null&#39;؛ اوقات ISO 8601 سٹرنگز ہیں)۔</fileHelp_json>

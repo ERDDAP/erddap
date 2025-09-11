@@ -2355,7 +2355,8 @@ Tidsstämpeln för denna datauppsättning är &tTimestamp; .
 <dtWMS>Klicka för att ta reda på hur man gör kartor över denna data via denna datauppsättnings webbkarttjänst.</dtWMS>
 <EasierAccessToScientificData>Enklare tillgång till vetenskaplig data</EasierAccessToScientificData>
 
-<!--EDD-meddelandena visas på tabelldap och griddap Data Access Forms.-->
+<!--EDD-meddelanden visas påtabledapoch griddap Data Access Forms.
+-->
 <EDDDatasetID>Datauppsättnings-ID</EDDDatasetID>
 <EDDFgdc>FGDC</EDDFgdc>
 <EDDFgdcMetadata>FGDC-STD-001-1998 Metadata</EDDFgdcMetadata>
@@ -2766,10 +2767,14 @@ Till exempel:
 <fileHelpTable_help>Visa en webbsida med en beskrivning av tabledap.</fileHelpTable_help>
 <fileHelp_html>Visa ett HTML-dataåtkomstformulär i OPeNDAP-stil.</fileHelp_html>
 <fileHelp_htmlTable>Visa en UTF-8 .html-webbsida med data i en tabell. Tiderna är ISO 8601-strängar.</fileHelp_htmlTable>
-<fileHelp_iso19115>Visa datasetets ISO 19115-2/19139 UTF-8 .xml-metadata.</fileHelp_iso19115>
-<fileHelp_iso19115_2>View the dataset's ISO 19115-2/19139 UTF-8 .xml metadata.</fileHelp_iso19115_2>
-<fileHelp_iso191392007>View the dataset's ISO 19139:2007 UTF-8 .xml metadata.</fileHelp_iso191392007>
-<fileHelp_iso19115_3_2016>View the dataset's ISO 19115-3:2016 UTF-8 .xml metadata.</fileHelp_iso19115_3_2016>
+<fileHelp_iso19115>Visa datasetetsISO 19115/19139UTF-8 .xml metadata med hjälp av versionen standard för denna server.
+</fileHelp_iso19115>
+<fileHelp_iso19115_2>Visa datasetetsISO 19115-2/19139UTF-8 .xml metadata.
+</fileHelp_iso19115_2>
+<fileHelp_iso191392007>Visa datasetetsISO 19139:2007UTF-8 .xml metadata.
+</fileHelp_iso191392007>
+<fileHelp_iso19115_3_2016>Visa datasetetsISO 19115-3:2016UTF-8 .xml metadata.
+</fileHelp_iso19115_3_2016>
 <fileHelp_itxGrid>Ladda ner en ISO-8859-1 Igor-textfil. Varje axelvariabel och varje datavariabel blir en våg.</fileHelp_itxGrid>
 <fileHelp_itxTable>Ladda ner en ISO-8859-1 Igor-textfil. Varje svarskolumn blir en våg.</fileHelp_itxTable>
 <fileHelp_json>Visa en tabellliknande UTF-8 JSON-fil (saknat värde = &#39;null&#39;; tiderna är ISO 8601-strängar).</fileHelp_json>

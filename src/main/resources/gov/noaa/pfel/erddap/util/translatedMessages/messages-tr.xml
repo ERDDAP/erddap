@@ -2531,7 +2531,8 @@ Bu veri kümesi gönderiminin zaman damgası &tTimestamp; .
 <dtWMS>Bu veri kümesinin Web Harita Hizmeti aracılığıyla bu verilerin haritalarının nasıl oluşturulacağını öğrenmek için tıklayın.</dtWMS>
 <EasierAccessToScientificData>Bilimsel verilere daha kolay erişim</EasierAccessToScientificData>
 
-<!--EDD mesajları masadap ve griddap Data Access Forms üzerinde gösteriliyor.-->
+<!--EDD mesajları görüntüleniyortabledapve griddap Data Access Forms.
+-->
 <EDDDatasetID>Veri Kümesi Kimliği</EDDDatasetID>
 <EDDFgdc>FODC</EDDFgdc>
 <EDDFgdcMetadata>FGDC-STD-001-1998 Meta Verileri</EDDFgdcMetadata>
@@ -2968,10 +2969,14 @@ Uzak bir ERDDAP üzerinde yeni bir özellik kullanmak istiyorsanız, ERDDAP sür
 <fileHelpTable_help>Tabledap açıklamasını içeren bir web sayfasını görüntüleyin.</fileHelpTable_help>
 <fileHelp_html>OPeNDAP tarzı HTML Veri Erişim Formunu görüntüleyin.</fileHelp_html>
 <fileHelp_htmlTable>Tablodaki verileri içeren bir UTF-8 .html web sayfasını görüntüleyin. Zamanlar ISO 8601 dizeleridir.</fileHelp_htmlTable>
-<fileHelp_iso19115>Veri kümesinin ISO 19115-2/19139 UTF-8 .xml meta verilerini görüntüleyin.</fileHelp_iso19115>
-<fileHelp_iso19115_2>View the dataset's ISO 19115-2/19139 UTF-8 .xml metadata.</fileHelp_iso19115_2>
-<fileHelp_iso191392007>View the dataset's ISO 19139:2007 UTF-8 .xml metadata.</fileHelp_iso191392007>
-<fileHelp_iso19115_3_2016>View the dataset's ISO 19115-3:2016 UTF-8 .xml metadata.</fileHelp_iso19115_3_2016>
+<fileHelp_iso19115>Dataset&#39;in görüntülerini görüntüleISO 19115/19139UTF-8 .xml metadata bu sunucu için sürüm varsayılanını kullanıyor.
+</fileHelp_iso19115>
+<fileHelp_iso19115_2>Dataset&#39;in görüntülerini görüntüleISO 19115-2/19139UTF-8 .xml metadata.
+</fileHelp_iso19115_2>
+<fileHelp_iso191392007>Dataset&#39;in görüntülerini görüntüleISO 19139:2007UTF-8 .xml metadata.
+</fileHelp_iso191392007>
+<fileHelp_iso19115_3_2016>Dataset&#39;in görüntülerini görüntüleISO 19115-3:2016UTF-8 .xml metadata.
+</fileHelp_iso19115_3_2016>
 <fileHelp_itxGrid>ISO-8859-1 Igor Metin Dosyasını indirin. Her eksen değişkeni ve her veri değişkeni bir dalgaya dönüşür.</fileHelp_itxGrid>
 <fileHelp_itxTable>ISO-8859-1 Igor Metin Dosyasını indirin. Her yanıt sütunu bir dalgaya dönüşür.</fileHelp_itxTable>
 <fileHelp_json>Tablo benzeri bir UTF-8 JSON dosyasını görüntüleyin (eksik değer = &#39;null&#39;; zamanlar ISO 8601 dizeleridir).</fileHelp_json>

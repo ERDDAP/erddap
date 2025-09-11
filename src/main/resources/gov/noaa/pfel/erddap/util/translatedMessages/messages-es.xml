@@ -2570,7 +2570,8 @@ La marca de tiempo del envío de este conjunto de datos es &tTimestamp; .
 <dtWMS>Haga clic para obtener información sobre cómo crear mapas de estos datos a través del Servicio de mapas web de este conjunto de datos.</dtWMS>
 <EasierAccessToScientificData>Acceso más fácil a los datos científicos</EasierAccessToScientificData>
 
-<!--Los mensajes EDD se muestran en los formularios de acceso de datos de tabledap y griddap.-->
+<!--Los mensajes de EDD se muestran entabledapand griddap Data Access Forms.
+-->
 <EDDDatasetID>ID del conjunto de datos</EDDDatasetID>
 <EDDFgdc>FGDC</EDDFgdc>
 <EDDFgdcMetadata>FGDC-STD-001-1998 Metadatos</EDDFgdcMetadata>
@@ -3005,10 +3006,14 @@ Por ejemplo:
 <fileHelpTable_help>Ver una página web con una descripción de tabledap.</fileHelpTable_help>
 <fileHelp_html>Vea un formulario de acceso a datos HTML estilo OPeNDAP.</fileHelp_html>
 <fileHelp_htmlTable>Ver una página web UTF-8 .html con los datos en una tabla. Los tiempos son cadenas ISO 8601.</fileHelp_htmlTable>
-<fileHelp_iso19115>Vea los metadatos .xml ISO 19115-2/19139 UTF-8 del conjunto de datos.</fileHelp_iso19115>
-<fileHelp_iso19115_2>View the dataset's ISO 19115-2/19139 UTF-8 .xml metadata.</fileHelp_iso19115_2>
-<fileHelp_iso191392007>View the dataset's ISO 19139:2007 UTF-8 .xml metadata.</fileHelp_iso191392007>
-<fileHelp_iso19115_3_2016>View the dataset's ISO 19115-3:2016 UTF-8 .xml metadata.</fileHelp_iso19115_3_2016>
+<fileHelp_iso19115>Ver el conjunto de datosISO 19115/19139Metadatos UTF-8 .xml usando la versión predeterminada para este servidor.
+</fileHelp_iso19115>
+<fileHelp_iso19115_2>Ver el conjunto de datosISO 19115-2/19139Metadatos UTF-8 .xml.
+</fileHelp_iso19115_2>
+<fileHelp_iso191392007>Ver el conjunto de datosISO 19139:2007Metadatos UTF-8 .xml.
+</fileHelp_iso191392007>
+<fileHelp_iso19115_3_2016>Ver el conjunto de datosISO 19115-3:2016Metadatos UTF-8 .xml.
+</fileHelp_iso19115_3_2016>
 <fileHelp_itxGrid>Descargue un archivo de texto Igor ISO-8859-1. Cada variable de eje y cada variable de datos se convierte en una onda.</fileHelp_itxGrid>
 <fileHelp_itxTable>Descargue un archivo de texto Igor ISO-8859-1. Cada columna de respuesta se convierte en una ola.</fileHelp_itxTable>
 <fileHelp_json>Vea un archivo JSON UTF-8 similar a una tabla (valor faltante = &#39;nulo&#39;; los tiempos son cadenas ISO 8601).</fileHelp_json>

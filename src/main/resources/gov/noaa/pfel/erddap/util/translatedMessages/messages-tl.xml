@@ -2458,7 +2458,8 @@ Ang timestamp ng pagsusumite ng dataset na ito ay &tTimestamp; .
 <dtWMS>I-click upang malaman ang tungkol sa paggawa ng mga mapa ng data na ito sa pamamagitan ng Web Map Service ng dataset na ito.</dtWMS>
 <EasierAccessToScientificData>Mas madaling pag-access sa siyentipikong data</EasierAccessToScientificData>
 
-<!--Ang mga mensahe ng EDD ay itinatanghal sa tabledap at griddap Data Access Forms.-->
+<!--Ang mga mensahe ng EDD ay idinidispley satabledapat ang griddap Data Access Forms.
+-->
 <EDDDatasetID>Dataset ID</EDDDatasetID>
 <EDDFgdc>FGDC</EDDFgdc>
 <EDDFgdcMetadata>FGDC-STD-001-1998 Metadata</EDDFgdcMetadata>
@@ -2895,10 +2896,14 @@ Halimbawa:
 <fileHelpTable_help>Tingnan ang isang web page na may paglalarawan ng tabledap.</fileHelpTable_help>
 <fileHelp_html>Tingnan ang isang OPeNDAP-style na HTML Data Access Form.</fileHelp_html>
 <fileHelp_htmlTable>Tingnan ang isang UTF-8 .html web page na may data sa isang talahanayan. Ang mga oras ay ISO 8601 na mga string.</fileHelp_htmlTable>
-<fileHelp_iso19115>Tingnan ang ISO 19115-2/19139 UTF-8 .xml metadata ng dataset.</fileHelp_iso19115>
-<fileHelp_iso19115_2>View the dataset's ISO 19115-2/19139 UTF-8 .xml metadata.</fileHelp_iso19115_2>
-<fileHelp_iso191392007>View the dataset's ISO 19139:2007 UTF-8 .xml metadata.</fileHelp_iso191392007>
-<fileHelp_iso19115_3_2016>View the dataset's ISO 19115-3:2016 UTF-8 .xml metadata.</fileHelp_iso19115_3_2016>
+<fileHelp_iso19115>Tingnan ang dataset&#39;sISO 19115/19139UTF-8 .xml metadata gamit ang bersyon default para sa server na ito.
+</fileHelp_iso19115>
+<fileHelp_iso19115_2>Tingnan ang dataset&#39;sISO 19115-2/19139UTF-8 .xml metadata.
+</fileHelp_iso19115_2>
+<fileHelp_iso191392007>Tingnan ang dataset&#39;sISO 19139:2007UTF-8 .xml metadata.
+</fileHelp_iso191392007>
+<fileHelp_iso19115_3_2016>Tingnan ang dataset&#39;sISO 19115-3:2016UTF-8 .xml metadata.
+</fileHelp_iso19115_3_2016>
 <fileHelp_itxGrid>Mag-download ng ISO-8859-1 Igor Text File. Ang bawat axis variable at bawat data variable ay nagiging wave.</fileHelp_itxGrid>
 <fileHelp_itxTable>Mag-download ng ISO-8859-1 Igor Text File. Ang bawat column ng tugon ay nagiging wave.</fileHelp_itxTable>
 <fileHelp_json>Tingnan ang isang tulad ng talahanayan na UTF-8 JSON file (nawawalang halaga = &#39;null&#39;; ang mga oras ay ISO 8601 na mga string).</fileHelp_json>

@@ -2503,7 +2503,8 @@ Tidsstempelet til denne datasettinnsendingen er &tTimestamp; .
 <dtWMS>Klikk for å finne ut hvordan du lager kart over disse dataene via dette datasettets nettkarttjeneste.</dtWMS>
 <EasierAccessToScientificData>Enklere tilgang til vitenskapelige data</EasierAccessToScientificData>
 
-<!--EDD-meldingene vises på innsendte skjemaer for datatilgang.-->
+<!--EDD-meldingene vises påtabledapog netdap Data Access Forms.
+-->
 <EDDDatasetID>Datasett-ID</EDDDatasetID>
 <EDDFgdc>FGDC</EDDFgdc>
 <EDDFgdcMetadata>FGDC-STD-001-1998 Metadata</EDDFgdcMetadata>
@@ -2939,10 +2940,14 @@ For eksempel:
 <fileHelpTable_help>Se en nettside med en beskrivelse av tabledap.</fileHelpTable_help>
 <fileHelp_html>Se et HTML-datatilgangsskjema i OPeNDAP-stil.</fileHelp_html>
 <fileHelp_htmlTable>Vis en UTF-8 .html-webside med dataene i en tabell. Tidene er ISO 8601-strenger.</fileHelp_htmlTable>
-<fileHelp_iso19115>Se datasettets ISO 19115-2/19139 UTF-8 .xml-metadata.</fileHelp_iso19115>
-<fileHelp_iso19115_2>View the dataset's ISO 19115-2/19139 UTF-8 .xml metadata.</fileHelp_iso19115_2>
-<fileHelp_iso191392007>View the dataset's ISO 19139:2007 UTF-8 .xml metadata.</fileHelp_iso191392007>
-<fileHelp_iso19115_3_2016>View the dataset's ISO 19115-3:2016 UTF-8 .xml metadata.</fileHelp_iso19115_3_2016>
+<fileHelp_iso19115>Se datasettetsISO 19115/19139UTF-8 .xml metadata ved å bruke versjonsstandarden for denne serveren.
+</fileHelp_iso19115>
+<fileHelp_iso19115_2>Se datasettetsISO 19115-2/19139UTF-8.xml metadata.
+</fileHelp_iso19115_2>
+<fileHelp_iso191392007>Se datasettetsISO 19139:2007UTF-8.xml metadata.
+</fileHelp_iso191392007>
+<fileHelp_iso19115_3_2016>Se datasettetsISO 19115-3:2016UTF-8.xml metadata.
+</fileHelp_iso19115_3_2016>
 <fileHelp_itxGrid>Last ned en ISO-8859-1 Igor-tekstfil. Hver aksevariabel og hver datavariabel blir en bølge.</fileHelp_itxGrid>
 <fileHelp_itxTable>Last ned en ISO-8859-1 Igor-tekstfil. Hver svarkolonne blir en bølge.</fileHelp_itxTable>
 <fileHelp_json>Se en tabelllignende UTF-8 JSON-fil (manglende verdi = &#39;null&#39;; tidene er ISO 8601-strenger).</fileHelp_json>

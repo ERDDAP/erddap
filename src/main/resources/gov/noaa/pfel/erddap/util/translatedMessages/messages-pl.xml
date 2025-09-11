@@ -2504,7 +2504,8 @@ Znacznik czasu przesłania tego zbioru danych to &tTimestamp; .
 <dtWMS>Kliknij, aby dowiedzieć się, jak tworzyć mapy tych danych za pośrednictwem usługi map internetowych tego zbioru danych.</dtWMS>
 <EasierAccessToScientificData>Łatwiejszy dostęp do danych naukowych</EasierAccessToScientificData>
 
-<!--Komunikaty EDD są wyświetlane na tablicach i formularzach dostępu do danych griddap.-->
+<!--Komunikaty EDD są wyświetlane natabledaporaz formularze dostępu do danych griddap.
+-->
 <EDDDatasetID>Identyfikator zbioru danych</EDDDatasetID>
 <EDDFgdc>FGDC</EDDFgdc>
 <EDDFgdcMetadata>Metadane FGDC-STD-001-1998</EDDFgdcMetadata>
@@ -2940,10 +2941,14 @@ Na przykład:
 <fileHelpTable_help>Wyświetl stronę internetową z opisem tabledap.</fileHelpTable_help>
 <fileHelp_html>Wyświetl formularz dostępu do danych HTML w stylu OPeNDAP.</fileHelp_html>
 <fileHelp_htmlTable>Wyświetl stronę internetową w formacie UTF-8 .html z danymi w tabeli. Czasy są ciągami ISO 8601.</fileHelp_htmlTable>
-<fileHelp_iso19115>Wyświetl metadane zbioru danych ISO 19115-2/19139 UTF-8 w formacie .xml.</fileHelp_iso19115>
-<fileHelp_iso19115_2>View the dataset's ISO 19115-2/19139 UTF-8 .xml metadata.</fileHelp_iso19115_2>
-<fileHelp_iso191392007>View the dataset's ISO 19139:2007 UTF-8 .xml metadata.</fileHelp_iso191392007>
-<fileHelp_iso19115_3_2016>View the dataset's ISO 19115-3:2016 UTF-8 .xml metadata.</fileHelp_iso19115_3_2016>
+<fileHelp_iso19115>Wyświetl zbiór danychISO 19115/19139Metadane UTF- 8 .xml przy użyciu domyślnej wersji dla tego serwera.
+</fileHelp_iso19115>
+<fileHelp_iso19115_2>Wyświetl zbiór danychISO 19115-2/19139Metadane UTF- 8. xml.
+</fileHelp_iso19115_2>
+<fileHelp_iso191392007>Wyświetl zbiór danychISO 19139:2007Metadane UTF- 8. xml.
+</fileHelp_iso191392007>
+<fileHelp_iso19115_3_2016>Wyświetl zbiór danychISO 19115-3:2016Metadane UTF- 8. xml.
+</fileHelp_iso19115_3_2016>
 <fileHelp_itxGrid>Pobierz plik tekstowy Igor ISO-8859-1. Każda zmienna osi i każda zmienna danych staje się falą.</fileHelp_itxGrid>
 <fileHelp_itxTable>Pobierz plik tekstowy Igor w formacie ISO-8859-1. Każda kolumna odpowiedzi staje się falą.</fileHelp_itxTable>
 <fileHelp_json>Wyświetl plik JSON w formacie UTF-8 przypominający tabelę (brakująca wartość = „null”; czasy to ciągi znaków ISO 8601).</fileHelp_json>

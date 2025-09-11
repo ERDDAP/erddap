@@ -2376,7 +2376,8 @@ Dette datasæts indsendelses tidsstempel er &tTimestamp; .
 <dtWMS>Klik for at finde ud af, hvordan du laver kort over disse data via dette datasæts webkorttjeneste.</dtWMS>
 <EasierAccessToScientificData>Lettere adgang til videnskabelige data</EasierAccessToScientificData>
 
-<!--EDD-meddelelser vises på indgivne og gitterdata Access-formularer.-->
+<!--EDD-meddelelser vises påtabledapog gitterdata Access Forms.
+-->
 <EDDDatasetID>Datasæt-id</EDDDatasetID>
 <EDDFgdc>FGDC</EDDFgdc>
 <EDDFgdcMetadata>FGDC-STD-001-1998 Metadata</EDDFgdcMetadata>
@@ -2786,10 +2787,14 @@ For eksempel:
 <fileHelpTable_help>Se en webside med en beskrivelse af tabledap.</fileHelpTable_help>
 <fileHelp_html>Se en HTML-dataadgangsformular i OPeNDAP-stil.</fileHelp_html>
 <fileHelp_htmlTable>Se en UTF-8 .html-webside med dataene i en tabel. Tiderne er ISO 8601 strenge.</fileHelp_htmlTable>
-<fileHelp_iso19115>Se datasættets ISO 19115-2/19139 UTF-8 .xml-metadata.</fileHelp_iso19115>
-<fileHelp_iso19115_2>View the dataset's ISO 19115-2/19139 UTF-8 .xml metadata.</fileHelp_iso19115_2>
-<fileHelp_iso191392007>View the dataset's ISO 19139:2007 UTF-8 .xml metadata.</fileHelp_iso191392007>
-<fileHelp_iso19115_3_2016>View the dataset's ISO 19115-3:2016 UTF-8 .xml metadata.</fileHelp_iso19115_3_2016>
+<fileHelp_iso19115>Se datasættetsISO 19115/19139UTF-8 .xml metadata ved hjælp af versionen som standard for denne server.
+</fileHelp_iso19115>
+<fileHelp_iso19115_2>Se datasættetsISO 19115-2/19139UTF-8 .xml metadata.
+</fileHelp_iso19115_2>
+<fileHelp_iso191392007>Se datasættetsISO 19139:2007UTF-8 .xml metadata.
+</fileHelp_iso191392007>
+<fileHelp_iso19115_3_2016>Se datasættetsISO 19115-3:2016UTF-8 .xml metadata.
+</fileHelp_iso19115_3_2016>
 <fileHelp_itxGrid>Download en ISO-8859-1 Igor-tekstfil. Hver aksevariabel og hver datavariabel bliver en bølge.</fileHelp_itxGrid>
 <fileHelp_itxTable>Download en ISO-8859-1 Igor-tekstfil. Hver svarkolonne bliver til en bølge.</fileHelp_itxTable>
 <fileHelp_json>Se en tabellignende UTF-8 JSON-fil (manglende værdi = &#39;null&#39;; tiderne er ISO 8601-strenge).</fileHelp_json>

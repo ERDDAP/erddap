@@ -2079,7 +2079,8 @@ ERDDAP管理員很快就會向您發送電子郵件，以找出傳輸資料的�
 <dtWMS>按一下以了解有關透過此資料集的 Web 地圖服務製作此資料的地圖的資訊。</dtWMS>
 <EasierAccessToScientificData>更輕鬆取得科學數據</EasierAccessToScientificData>
 
-<!--EDD 訊息顯示在 graddap 資料存取表上 。-->
+<!--EDD 訊息顯示在tabledap和 gradap 資料存取表。
+-->
 <EDDDatasetID>資料集ID</EDDDatasetID>
 <EDDFgdc>FGDC</EDDFgdc>
 <EDDFgdcMetadata>FGDC-STD-001-1998 元數據</EDDFgdcMetadata>
@@ -2481,10 +2482,14 @@ ERDDAP是一個資料伺服器，它為您提供了一種簡單、一致的方�
 <fileHelpTable_help>查看包含 tabledap 所描述的網頁。</fileHelpTable_help>
 <fileHelp_html>查看 OPeNDAP 樣式的 HTML 資料存取表單。</fileHelp_html>
 <fileHelp_htmlTable>查看包含表中資料的 UTF-8 .html 網頁。時間是 ISO 8601 字串。</fileHelp_htmlTable>
-<fileHelp_iso19115>查看資料集的 ISO 19115-2/19139 UTF-8 .xml 元資料。</fileHelp_iso19115>
-<fileHelp_iso19115_2>View the dataset's ISO 19115-2/19139 UTF-8 .xml metadata.</fileHelp_iso19115_2>
-<fileHelp_iso191392007>View the dataset's ISO 19139:2007 UTF-8 .xml metadata.</fileHelp_iso191392007>
-<fileHelp_iso19115_3_2016>View the dataset's ISO 19115-3:2016 UTF-8 .xml metadata.</fileHelp_iso19115_3_2016>
+<fileHelp_iso19115>檢視數據集ISO 19115/19139使用此伺服器的版本預設值的 UTF-8 . xml 中繼資料 。
+</fileHelp_iso19115>
+<fileHelp_iso19115_2>檢視數據集ISO 19115-2/19139UTF-8.xml 中繼資料 。
+</fileHelp_iso19115_2>
+<fileHelp_iso191392007>檢視數據集ISO 19139:2007UTF-8.xml 中繼資料 。
+</fileHelp_iso191392007>
+<fileHelp_iso19115_3_2016>檢視數據集ISO 19115-3:2016UTF-8.xml 中繼資料 。
+</fileHelp_iso19115_3_2016>
 <fileHelp_itxGrid>下載 ISO-8859-1 Igor 文字檔。每個軸變數和每個資料變數都成為一個波。</fileHelp_itxGrid>
 <fileHelp_itxTable>下載 ISO-8859-1 Igor 文字檔。每個響應欄變成一個波。</fileHelp_itxTable>
 <fileHelp_json>查看類似表格的 UTF-8 JSON 檔案（缺失值 = &#39;null&#39;；時間為 ISO 8601 字串）。</fileHelp_json>
