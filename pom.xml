@@ -42,15 +42,15 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <erddapcontent.download.version>content1.0.1</erddapcontent.download.version>
         <erddapreffiles.download.version>1.0.0</erddapreffiles.download.version>
-        <netcdfJavaVersion>5.9.0</netcdfJavaVersion>
+        <netcdfJavaVersion>5.9.1</netcdfJavaVersion>
         <test.resources.version>test1.04</test.resources.version>
-        <jettyVersion>12.1.0</jettyVersion>
+        <jettyVersion>12.1.1</jettyVersion>
         <error-prone.version>2.41.0</error-prone.version>
         <prometheusVersion>1.4.1</prometheusVersion>
         <parquetVersion>1.16.0</parquetVersion>
-        <awssdkVersion>2.33.2</awssdkVersion>
+        <awssdkVersion>2.33.7</awssdkVersion>
         <luceneVersion>10.2.2</luceneVersion>
-        <nettyVersion>4.2.5.Final</nettyVersion>
+        <nettyVersion>4.2.6.Final</nettyVersion>
         <mavenTestPluginVersion>3.5.3</mavenTestPluginVersion>
         <jacocoMavenVersion>0.8.13</jacocoMavenVersion>
         <download.unpackWhenChanged>true</download.unpackWhenChanged>
@@ -96,7 +96,7 @@
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>versions-maven-plugin</artifactId>
-                <version>2.18.0</version>
+                <version>2.19.0</version>
                 <configuration>
                     <!-- some location that makes sense for your company/project -->
                     <rulesUri>file:///${project.basedir}/versionrules.xml</rulesUri>
@@ -411,7 +411,7 @@
             <plugin>
                 <groupId>com.github.spotbugs</groupId>
                 <artifactId>spotbugs-maven-plugin</artifactId>
-                <version>4.9.4.1</version>
+                <version>4.9.4.2</version>
                 <configuration>
                     <effort>max</effort>
                     <maxHeap>2048</maxHeap>
@@ -1078,14 +1078,14 @@
         <dependency>
             <groupId>software.amazon.awssdk.crt</groupId>
             <artifactId>aws-crt</artifactId>
-            <version>0.38.11</version>
+            <version>0.38.12</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/com.google.auth/google-auth-library-oauth2-http -->
         <dependency>
             <groupId>com.google.auth</groupId>
             <artifactId>google-auth-library-oauth2-http</artifactId>
-            <version>1.38.0</version>
+            <version>1.39.0</version>
         </dependency>
 
         <dependency>
