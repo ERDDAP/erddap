@@ -6184,6 +6184,116 @@ class JettyTests {
     Test.ensureEqual(results, expected, "results=\n" + results);
   }
 
+  @org.junit.jupiter.api.Test
+  void testOrderFileTypes() throws Exception {
+    String results =
+        SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + "/tabledap/erdGlobecBottle.html");
+    assertTrue(
+        results.contains(
+            """
+<option>.asc - View OPeNDAP-style ISO-8859-1 comma-separated text.
+<option>.croissant - Download the dataset croissant schema.
+<option>.csv - Download a ISO-8859-1 comma-separated text table (line 1: names; line 2: units; ISO 8601 times).
+<option>.csv0 - Download a ISO-8859-1 .csv file without column names or units. Times are ISO 8601 strings.
+<option>.csvp - Download a ISO-8859-1 .csv file with line 1: name (units). Times are ISO 8601 strings.
+<option>.das - View the dataset&#39;s metadata via an ISO-8859-1 OPeNDAP Dataset Attribute Structure (DAS).
+<option>.dataTable - A JSON file formatted for use with the Google Visualization client library (Google Charts).
+<option>.dds - View the dataset&#39;s structure via an ISO-8859-1 OPeNDAP Dataset Descriptor Structure (DDS).
+<option>.dods - OPeNDAP clients use this to download the data in the DODS binary format.
+<option>.esriCsv - Download a ISO_8859_1 .csv file for ESRI&#39;s ArcGIS 9.x and below (separate date and time columns).
+<option>.fgdc - View the dataset&#39;s UTF-8 FGDC .xml metadata.
+<option>.geoJson - Download longitude,latitude,otherColumns data as a UTF-8 GeoJSON .json file.
+<option selected="selected">.htmlTable - View a UTF-8 .html web page with the data in a table. Times are ISO 8601 strings.
+<option>.iso19115 - View the dataset&#39;s ISO 19115/19139 UTF-8 .xml metadata using the version default for this server.
+<option>.iso19115_2 - View the dataset&#39;s ISO 19115-2/19139 UTF-8 .xml metadata.
+<option>.iso19115_3_2016 - View the dataset&#39;s ISO 19115-3:2016 UTF-8 .xml metadata.
+<option>.iso19139_2007 - View the dataset&#39;s ISO 19139:2007 UTF-8 .xml metadata.
+<option>.itx - Download an ISO-8859-1 Igor Text File. Each response column becomes a wave.
+<option>.json - View a table-like UTF-8 JSON file (missing value = &#39;null&#39;; times are ISO 8601 strings).
+<option>.jsonlCSV - View a UTF-8 JSON Lines CSV file without column names (mv = &#39;null&#39;; times are ISO 8601 strings).
+<option>.jsonlCSV1 - View a UTF-8 JSON Lines CSV file with column names on line 1 (mv = &#39;null&#39;; times are ISO 8601 strings).
+<option>.jsonlKVP - View a UTF-8 JSON Lines file with Key:Value pairs (missing value = &#39;null&#39;; times are ISO 8601 strings).
+<option>.mat - Download a MATLAB binary file.
+<option>.nc - Download a flat, table-like, NetCDF-3 binary file with COARDS/CF/ACDD metadata.
+<option>.ncCF - Download a NetCDF-3 CF Discrete Sampling Geometries file (Contiguous Ragged Array).
+<option>.ncCFHeader - View the UTF-8 header (the metadata) for the .ncCF file.
+<option>.ncCFMA - Download a NetCDF-3 CF Discrete Sampling Geometries file (Multidimensional Array).
+<option>.ncCFMAHeader - View the UTF-8 header (the metadata) for the .ncCFMA file.
+<option>.ncHeader - View the UTF-8 header (the metadata) for the NetCDF-3 .nc file.
+<option>.nccsv - Download a NetCDF-3-like 7-bit ASCII NCCSV .csv file with COARDS/CF/ACDD metadata.
+<option>.nccsvMetadata - View the dataset&#39;s metadata as the top half of a 7-bit ASCII NCCSV .csv file.
+<option>.ncoJson - Download a UTF-8 NCO lvl=2 JSON file with COARDS/CF/ACDD metadata.
+<option>.odvTxt - Download longitude,latitude,time,otherColumns as an ISO-8859-1 ODV Generic Spreadsheet File (.txt).
+<option>.parquet - Download as a parquet file. Metadata contains column names (&quot;column_names&quot;) and units (&quot;column_units&quot;).
+<option>.parquetWMeta - Download as a parquet file with detailed metadata.
+<option>.tsv - Download a ISO-8859-1 tab-separated text table (line 1: names; line 2: units; ISO 8601 times).
+<option>.tsv0 - Download a ISO-8859-1 .tsv file without column names or units. Times are ISO 8601 strings.
+<option>.tsvp - Download a ISO-8859-1 .tsv file with line 1: name (units). Times are ISO 8601 strings.
+<option>.wav - Download a .wav audio file. All columns must be numeric and of the same type.
+<option>.xhtml - View a UTF-8 XHTML (XML) file with the data in a table. Times are ISO 8601 strings.
+<option>.kml - View a .kml file, suitable for Google Earth.
+<option>.largePdf - View a large .pdf image file with a graph or map.
+<option>.largePng - View a large .png image file with a graph or map.
+<option>.pdf - View a standard, medium-sized .pdf image file with a graph or map.
+<option>.png - View a standard, medium-sized .png image file with a graph or map.
+<option>.smallPdf - View a small .pdf image file with a graph or map.
+<option>.smallPng - View a small .png image file with a graph or map.
+<option>.transparentPng - View a .png image file (just the data, without axes, landmask, or legend).
+            """));
+
+    results =
+        SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + "/griddap/testGriddedNcFiles.html");
+    assertTrue(
+        results.contains(
+            """
+<option>.asc - View OPeNDAP-style ISO-8859-1 comma-separated text.
+<option>.croissant - Download the dataset croissant schema.
+<option>.csv - Download a ISO-8859-1 comma-separated text table (line 1: names; line 2: units; ISO 8601 times).
+<option>.csv0 - Download a ISO-8859-1 .csv file without column names or units. Times are ISO 8601 strings.
+<option>.csvp - Download a ISO-8859-1 .csv file with line 1: name (units). Times are ISO 8601 strings.
+<option>.das - View the dataset&#39;s metadata via an ISO-8859-1 OPeNDAP Dataset Attribute Structure (DAS).
+<option>.dds - View the dataset&#39;s structure via an ISO-8859-1 OPeNDAP Dataset Descriptor Structure (DDS).
+<option>.dods - OPeNDAP clients use this to download the data in the DODS binary format.
+<option>.esriAscii - Download an ISO-8859-1 ESRI ASCII file (latitude longitude data only; longitude must be all below or all above 180).
+<option>.fgdc - View the dataset&#39;s UTF-8 FGDC .xml metadata.
+<option selected="selected">.htmlTable - View a UTF-8 .html web page with the data in a table. Times are ISO 8601 strings.
+<option>.iso19115 - View the dataset&#39;s ISO 19115/19139 UTF-8 .xml metadata using the version default for this server.
+<option>.iso19115_2 - View the dataset&#39;s ISO 19115-2/19139 UTF-8 .xml metadata.
+<option>.iso19115_3_2016 - View the dataset&#39;s ISO 19115-3:2016 UTF-8 .xml metadata.
+<option>.iso19139_2007 - View the dataset&#39;s ISO 19139:2007 UTF-8 .xml metadata.
+<option>.itx - Download an ISO-8859-1 Igor Text File. Each axis variable and each data variable becomes a wave.
+<option>.json - View a table-like UTF-8 JSON file (missing value = &#39;null&#39;; times are ISO 8601 strings).
+<option>.jsonlCSV - View a UTF-8 JSON Lines CSV file without column names (mv = &#39;null&#39;; times are ISO 8601 strings).
+<option>.jsonlCSV1 - View a UTF-8 JSON Lines CSV file with column names on line 1 (mv = &#39;null&#39;; times are ISO 8601 strings).
+<option>.jsonlKVP - View a UTF-8 JSON Lines file with Key:Value pairs (missing value = &#39;null&#39;; times are ISO 8601 strings).
+<option>.mat - Download a MATLAB binary file.
+<option>.nc - Download a NetCDF-3 binary file with COARDS/CF/ACDD metadata.
+<option>.ncHeader - View the UTF-8 header (the metadata) for the NetCDF-3 .nc file.
+<option>.nccsv - Download a NetCDF-3-like 7-bit ASCII NCCSV .csv file with COARDS/CF/ACDD metadata.
+<option>.nccsvMetadata - View the dataset&#39;s metadata as the top half of a 7-bit ASCII NCCSV .csv file.
+<option>.ncml - View the dataset&#39;s structure and metadata as a UTF-8 NCML .xml file.
+<option>.ncoJson - Download a UTF-8 NCO lvl=2 JSON file with COARDS/CF/ACDD metadata.
+<option>.odvTxt - Download time,latitude,longitude,otherVariables as an ODV Generic Spreadsheet File (.txt).
+<option>.parquet - Download as a parquet file. Metadata contains column names (&quot;column_names&quot;) and units (&quot;column_units&quot;).
+<option>.parquetWMeta - Download as a parquet file with detailed metadata.
+<option>.timeGaps - View a UTF-8 list of gaps in the time values which are larger than the median gap.
+<option>.tsv - Download a ISO-8859-1 tab-separated text table (line 1: names; line 2: units; ISO 8601 times).
+<option>.tsv0 - Download a ISO-8859-1 .tsv file without column names or units. Times are ISO 8601 strings.
+<option>.tsvp - Download a ISO-8859-1 .tsv file with line 1: name (units). Times are ISO 8601 strings.
+<option>.wav - Download a .wav audio file. All columns must be numeric and of the same type.
+<option>.xhtml - View a UTF-8 XHTML (XML) file with the data in a table. Times are ISO 8601 strings.
+<option>.geotif - View a grayscale GeoTIFF .tif file (for latitude longitude data; longitude must be all below or all above 180).
+<option>.kml - View a Google Earth .kml file (for latitude, longitude data only).
+<option>.largePdf - View a large .pdf image file with a graph or map.
+<option>.largePng - View a large .png image file with a graph or map.
+<option>.pdf - View a standard, medium-sized .pdf image file with a graph or map.
+<option>.png - View a standard, medium-sized .png image file with a graph or map.
+<option>.smallPdf - View a small .pdf image file with a graph or map.
+<option>.smallPng - View a small .png image file with a graph or map.
+<option>.transparentPng - View a .png image file (just the data, without axes, landmask, or legend).
+            """));
+  }
+
   /**
    * This checks that the links on the specified web page return error 200.
    *

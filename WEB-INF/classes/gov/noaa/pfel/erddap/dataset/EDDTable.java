@@ -259,7 +259,7 @@ public abstract class EDDTable extends EDD {
         "'sosDataResponseFormats.length' not equal to 'sosTabledapDataResponseTypes.length'.");
     defaultFileTypeOption = ".htmlTable";
 
-    List<EDDFileTypeInfo> imageTypes = EDD.getFileTypeOptions(false, true);
+    List<EDDFileTypeInfo> imageTypes = EDD.getFileTypeOptions(false, FileCategory.IMAGE);
 
     publicGraphFileTypeNames = new ArrayList<String>();
     publicGraphFileTypeNames.add(".das");
@@ -5332,9 +5332,10 @@ public abstract class EDDTable extends EDD {
             + "/tabledap/documentation.html#fileType\">"
             + EDStatic.messages.get(Message.MORE_INFORMATION, language)
             + "</a>)\n");
+    List<EDDFileTypeInfo> availableFileTypes =
+        EDD.getFileTypeOptions(false /* isGrid */, FileCategory.BOTH);
     List<String> fileTypeDescriptions =
-        EDD_FILE_TYPE_INFO.values().stream()
-            .filter(fileTypeInfo -> fileTypeInfo.getAvailableTable())
+        availableFileTypes.stream()
             .map(
                 fileTypeInfo ->
                     fileTypeInfo.getFileTypeName()
@@ -5342,8 +5343,7 @@ public abstract class EDDTable extends EDD {
                         + fileTypeInfo.getTableDescription(language))
             .toList();
     int defaultIndex =
-        EDD_FILE_TYPE_INFO.values().stream()
-            .filter(fileTypeInfo -> fileTypeInfo.getAvailableTable())
+        availableFileTypes.stream()
             .map(fileTypeInfo -> fileTypeInfo.getFileTypeName())
             .toList()
             .indexOf(defaultFileTypeOption);
@@ -5805,7 +5805,7 @@ public abstract class EDDTable extends EDD {
             + "  <br>&nbsp;\n"
             + "  <table class=\"erd\" style=\"width:100%; \">\n"
             + "    <tr><th>Data<br>fileTypes</th><th>Description</th><th>Info</th><th>Example</th></tr>\n");
-    List<EDDFileTypeInfo> dataFileTypes = EDD.getFileTypeOptions(false, false);
+    List<EDDFileTypeInfo> dataFileTypes = EDD.getFileTypeOptions(false, FileCategory.DATA);
     for (int i = 0; i < dataFileTypes.size(); i++) {
       EDDFileTypeInfo curType = dataFileTypes.get(i);
       String ft = curType.getFileTypeName();
@@ -6440,7 +6440,7 @@ public abstract class EDDTable extends EDD {
             + "   <p>The fileType options for downloading images of graphs and maps of table data are:\n"
             + "  <table class=\"erd\" style=\"width:100%; \">\n"
             + "    <tr><th>Image<br>fileTypes</th><th>Description</th><th>Info</th><th>Example</th></tr>\n");
-    List<EDDFileTypeInfo> imageFileTypes = EDD.getFileTypeOptions(false, true);
+    List<EDDFileTypeInfo> imageFileTypes = EDD.getFileTypeOptions(false, FileCategory.IMAGE);
     for (int i = 0; i < imageFileTypes.size(); i++) {
       EDDFileTypeInfo curType = imageFileTypes.get(i);
       String ft = curType.getFileTypeName();
@@ -9563,8 +9563,7 @@ public abstract class EDDTable extends EDD {
       boolean tAccessibleTo = isAccessibleTo(EDStatic.getRoles(loggedInAs));
       List<String> fileTypeOptions =
           tAccessibleTo
-              ? EDD_FILE_TYPE_INFO.values().stream()
-                  .filter(fileTypeInfo -> fileTypeInfo.getAvailableTable())
+              ? EDD.getFileTypeOptions(false /* isGrid */, FileCategory.BOTH).stream()
                   .map(fileTypeInfo -> fileTypeInfo.getFileTypeName())
                   .toList()
               : publicGraphFileTypeNames;
@@ -18519,7 +18518,7 @@ public abstract class EDDTable extends EDD {
             + "    <stdorder>\n");
 
     // data file types
-    List<EDDFileTypeInfo> dataFileTypes = EDD.getFileTypeOptions(false, false);
+    List<EDDFileTypeInfo> dataFileTypes = EDD.getFileTypeOptions(false, FileCategory.DATA);
     for (int ft = 0; ft < dataFileTypes.size(); ft++)
       writer.write(
           "      <digform>\n"
@@ -18555,7 +18554,7 @@ public abstract class EDDTable extends EDD {
               + "      </digform>\n");
 
     // image file types
-    List<EDDFileTypeInfo> imageFileTypes = EDD.getFileTypeOptions(false, true);
+    List<EDDFileTypeInfo> imageFileTypes = EDD.getFileTypeOptions(false, FileCategory.IMAGE);
     for (int ft = 0; ft < imageFileTypes.size(); ft++)
       writer.write(
           "      <digform>\n"

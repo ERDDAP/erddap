@@ -510,12 +510,31 @@ public abstract class EDD {
   /** List of all concrete/non-abstact EDD subclass EDDClassInfo */
   public static final Map<String, EDDFileTypeInfo> EDD_FILE_TYPE_INFO = initEddFileTypeInfoMap();
 
-  public static List<EDDFileTypeInfo> getFileTypeOptions(boolean isGrid, boolean isImage) {
+  public enum FileCategory {
+    DATA,
+    IMAGE,
+    BOTH
+  }
+
+  public static List<EDDFileTypeInfo> getFileTypeOptions(boolean isGrid, FileCategory category) {
     return EDD_FILE_TYPE_INFO.values().stream()
+        .sorted(
+            (o1, o2) -> {
+              if (o1.getIsImage() != o2.getIsImage()) {
+                return o1.getIsImage() ? 100 : -100;
+              }
+              return o1.getFileTypeName().compareTo(o2.getFileTypeName());
+            })
         .filter(
             fileTypeInfo ->
                 isGrid ? fileTypeInfo.getAvailableGrid() : fileTypeInfo.getAvailableTable())
-        .filter(fileTypeInfo -> isImage == fileTypeInfo.getIsImage())
+        .filter(
+            fileTypeInfo ->
+                switch (category) {
+                  case FileCategory.IMAGE -> fileTypeInfo.getIsImage();
+                  case FileCategory.DATA -> !fileTypeInfo.getIsImage();
+                  case FileCategory.BOTH -> true;
+                })
         .toList();
   }
 

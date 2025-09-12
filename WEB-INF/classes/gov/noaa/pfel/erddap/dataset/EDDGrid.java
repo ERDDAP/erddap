@@ -128,7 +128,7 @@ public abstract class EDDGrid extends EDD {
   static {
     defaultFileTypeOption = ".htmlTable";
 
-    List<EDDFileTypeInfo> imageTypes = EDD.getFileTypeOptions(true, true);
+    List<EDDFileTypeInfo> imageTypes = EDD.getFileTypeOptions(true, FileCategory.IMAGE);
     publicGraphFileTypeNames = new ArrayList<String>();
     publicGraphFileTypeNames.add(".das");
     publicGraphFileTypeNames.add(".dds");
@@ -4401,8 +4401,7 @@ public abstract class EDDGrid extends EDD {
       boolean tAccessibleTo = isAccessibleTo(EDStatic.getRoles(loggedInAs));
       List<String> fileTypeOptions =
           tAccessibleTo
-              ? EDD_FILE_TYPE_INFO.values().stream()
-                  .filter(fileTypeInfo -> fileTypeInfo.getAvailableGrid())
+              ? EDD.getFileTypeOptions(true /* isGrid */, FileCategory.BOTH).stream()
                   .map(fileTypeInfo -> fileTypeInfo.getFileTypeName())
                   .toList()
               : publicGraphFileTypeNames;
@@ -6672,9 +6671,10 @@ public abstract class EDDGrid extends EDD {
             + "/griddap/documentation.html#fileType\">"
             + EDStatic.messages.get(Message.MORE_INFORMATION, language)
             + "</a>)\n");
+    List<EDDFileTypeInfo> availableFileTypes =
+        EDD.getFileTypeOptions(true /* isGrid */, FileCategory.BOTH);
     List<String> fileTypeDescriptions =
-        EDD_FILE_TYPE_INFO.values().stream()
-            .filter(fileTypeInfo -> fileTypeInfo.getAvailableGrid())
+        availableFileTypes.stream()
             .map(
                 fileTypeInfo ->
                     fileTypeInfo.getFileTypeName()
@@ -6682,8 +6682,7 @@ public abstract class EDDGrid extends EDD {
                         + fileTypeInfo.getGridDescription(language))
             .toList();
     int defaultIndex =
-        EDD_FILE_TYPE_INFO.values().stream()
-            .filter(fileTypeInfo -> fileTypeInfo.getAvailableGrid())
+        availableFileTypes.stream()
             .map(fileTypeInfo -> fileTypeInfo.getFileTypeName())
             .toList()
             .indexOf(defaultFileTypeOption);
@@ -6977,7 +6976,7 @@ public abstract class EDDGrid extends EDD {
             + "  <br>&nbsp;\n"
             + "  <table class=\"erd\" style=\"width:100%; \">\n"
             + "    <tr><th>Data<br>fileTypes</th><th>Description</th><th>Info</th><th>Example</th></tr>\n");
-    List<EDDFileTypeInfo> dataFileTypes = EDD.getFileTypeOptions(true, false);
+    List<EDDFileTypeInfo> dataFileTypes = EDD.getFileTypeOptions(true, FileCategory.DATA);
     for (int i = 0; i < dataFileTypes.size(); i++) {
       EDDFileTypeInfo curType = dataFileTypes.get(i);
       String ft = curType.getFileTypeName();
@@ -7580,7 +7579,7 @@ public abstract class EDDGrid extends EDD {
             + "   <p>The fileType options for downloading images of graphs and maps of grid data are:\n"
             + "  <table class=\"erd\" style=\"width:100%; \">\n"
             + "    <tr><th>Image<br>fileTypes</th><th>Description</th><th>Info</th><th>Example</th></tr>\n");
-    List<EDDFileTypeInfo> imageFileTypes = EDD.getFileTypeOptions(true, true);
+    List<EDDFileTypeInfo> imageFileTypes = EDD.getFileTypeOptions(true, FileCategory.IMAGE);
     for (int i = 0; i < imageFileTypes.size(); i++) {
       EDDFileTypeInfo curType = imageFileTypes.get(i);
       String ft = curType.getFileTypeName();
@@ -11081,7 +11080,7 @@ public abstract class EDDGrid extends EDD {
             + "    <stdorder>\n");
 
     // data file types
-    List<EDDFileTypeInfo> dataFileTypes = EDD.getFileTypeOptions(true, false);
+    List<EDDFileTypeInfo> dataFileTypes = EDD.getFileTypeOptions(true, FileCategory.DATA);
     for (int ft = 0; ft < dataFileTypes.size(); ft++)
       writer.write(
           "      <digform>\n"
@@ -11135,7 +11134,7 @@ public abstract class EDDGrid extends EDD {
               + "      </digform>\n");
 
     // image file types
-    List<EDDFileTypeInfo> imageFileTypes = EDD.getFileTypeOptions(true, true);
+    List<EDDFileTypeInfo> imageFileTypes = EDD.getFileTypeOptions(true, FileCategory.IMAGE);
     for (int ft = 0; ft < imageFileTypes.size(); ft++)
       writer.write(
           "      <digform>\n"
