@@ -2737,6 +2737,9 @@ Kwa mfano:
 <fileHelp_html>Tazama Fomu ya Ufikiaji Data ya HTML ya mtindo wa OPENDAP.</fileHelp_html>
 <fileHelp_htmlTable>Tazama ukurasa wa wavuti wa UTF-8 .html wenye data kwenye jedwali. Nyakati ni mifuatano ya ISO 8601.</fileHelp_htmlTable>
 <fileHelp_iso19115>Tazama seti ya data ya ISO 19115-2/19139 UTF-8 .xml metadata.</fileHelp_iso19115>
+<fileHelp_iso19115_2>View the dataset's ISO 19115-2/19139 UTF-8 .xml metadata.</fileHelp_iso19115_2>
+<fileHelp_iso191392007>View the dataset's ISO 19139:2007 UTF-8 .xml metadata.</fileHelp_iso191392007>
+<fileHelp_iso19115_3_2016>View the dataset's ISO 19115-3:2016 UTF-8 .xml metadata.</fileHelp_iso19115_3_2016>
 <fileHelp_itxGrid>Pakua Faili ya Maandishi ya ISO-8859-1 ya Igor. Kila kutofautisha kwa mhimili na kila utaftaji wa data huwa wimbi.</fileHelp_itxGrid>
 <fileHelp_itxTable>Pakua Faili ya Maandishi ya ISO-8859-1 ya Igor. Kila safu ya majibu inakuwa wimbi.</fileHelp_itxTable>
 <fileHelp_json>Tazama faili ya UTF-8 JSON inayofanana na jedwali (thamani haipo = &#39;null&#39;; nyakati ni mifuatano ya ISO 8601).</fileHelp_json>

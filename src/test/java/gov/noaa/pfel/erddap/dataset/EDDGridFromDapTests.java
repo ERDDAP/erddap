@@ -20,6 +20,7 @@ import gov.noaa.pfel.coastwatch.griddata.NcHelper;
 import gov.noaa.pfel.coastwatch.util.SSR;
 import gov.noaa.pfel.erddap.GenerateDatasetsXml;
 import gov.noaa.pfel.erddap.dataset.EDD.EDDFileTypeInfo;
+import gov.noaa.pfel.erddap.dataset.EDD.FileCategory;
 import gov.noaa.pfel.erddap.dataset.metadata.LocalizedAttributes;
 import gov.noaa.pfel.erddap.util.EDMessages;
 import gov.noaa.pfel.erddap.util.EDStatic;
@@ -5371,7 +5372,7 @@ class EDDGridFromDapTests {
     expected = "No error.";
     // was "SimpleException: Query error: For variable=temp axis#1=depth
     // Constraint=\"[(500):(5.01)]\": StartIndex=18 is greater than StopIndex=0.";
-    List<EDDFileTypeInfo> dataTypes = EDD.getFileTypeOptions(true, false);
+    List<EDDFileTypeInfo> dataTypes = EDD.getFileTypeOptions(true, FileCategory.DATA);
     for (int i = 0; i < dataTypes.size(); i++) {
       String fileType = dataTypes.get(i).getFileTypeName();
 

@@ -2493,7 +2493,8 @@ L&#39;horodatage de cette soumission d&#39;ensemble de données est &tTimestamp;
 <dtWMS>Cliquez pour en savoir plus sur la création de cartes à partir de ces données via le service de cartographie Web de cet ensemble de données.</dtWMS>
 <EasierAccessToScientificData>Un accès facilité aux données scientifiques</EasierAccessToScientificData>
 
-<!--Les messages d'EDD sont affichés sur les formulaires d'accès aux données déposés et sur les formulaires d'accès aux données maillées.-->
+<!--Les messages EDD sont affichés sur letabledapet les formulaires d'accès aux données maillées.
+-->
 <EDDDatasetID>ID de l&#39;ensemble de données</EDDDatasetID>
 <EDDFgdc>FGDC</EDDFgdc>
 <EDDFgdcMetadata>Métadonnées FGDC-STD-001-1998</EDDFgdcMetadata>
@@ -2927,7 +2928,14 @@ Par exemple:
 <fileHelpTable_help>Afficher une page Web avec une description de tabledap.</fileHelpTable_help>
 <fileHelp_html>Affichez un formulaire d&#39;accès aux données HTML de style OPeNDAP.</fileHelp_html>
 <fileHelp_htmlTable>Affichez une page Web UTF-8 .html avec les données dans un tableau. Les temps sont des chaînes ISO 8601.</fileHelp_htmlTable>
-<fileHelp_iso19115>Affichez les métadonnées .xml ISO 19115-2/19139 UTF-8 de l&#39;ensemble de données.</fileHelp_iso19115>
+<fileHelp_iso19115>Afficher les donnéesISO 19115/19139Les métadonnées UTF-8 .xml utilisant la version par défaut pour ce serveur.
+</fileHelp_iso19115>
+<fileHelp_iso19115_2>Afficher les donnéesISO 19115-2/19139métadonnées UTF-8 .xml.
+</fileHelp_iso19115_2>
+<fileHelp_iso191392007>Afficher les donnéesISO 19139:2007métadonnées UTF-8 .xml.
+</fileHelp_iso191392007>
+<fileHelp_iso19115_3_2016>Afficher les donnéesISO 19115-3:2016métadonnées UTF-8 .xml.
+</fileHelp_iso19115_3_2016>
 <fileHelp_itxGrid>Téléchargez un fichier texte Igor ISO-8859-1. Chaque variable d&#39;axe et chaque variable de données devient une onde.</fileHelp_itxGrid>
 <fileHelp_itxTable>Téléchargez un fichier texte Igor ISO-8859-1. Chaque colonne de réponse devient une vague.</fileHelp_itxTable>
 <fileHelp_json>Affichez un fichier JSON UTF-8 de type tableau (valeur manquante = « null » ; les heures sont des chaînes ISO 8601).</fileHelp_json>

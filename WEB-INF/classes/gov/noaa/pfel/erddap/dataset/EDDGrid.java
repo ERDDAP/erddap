@@ -61,10 +61,12 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.zip.ZipOutputStream;
+import javax.xml.transform.stream.StreamResult;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.UnsupportedStorageException;
 import org.opengis.metadata.Metadata;
@@ -126,7 +128,7 @@ public abstract class EDDGrid extends EDD {
   static {
     defaultFileTypeOption = ".htmlTable";
 
-    List<EDDFileTypeInfo> imageTypes = EDD.getFileTypeOptions(true, true);
+    List<EDDFileTypeInfo> imageTypes = EDD.getFileTypeOptions(true, FileCategory.IMAGE);
     publicGraphFileTypeNames = new ArrayList<String>();
     publicGraphFileTypeNames.add(".das");
     publicGraphFileTypeNames.add(".dds");
@@ -4399,8 +4401,7 @@ public abstract class EDDGrid extends EDD {
       boolean tAccessibleTo = isAccessibleTo(EDStatic.getRoles(loggedInAs));
       List<String> fileTypeOptions =
           tAccessibleTo
-              ? EDD_FILE_TYPE_INFO.values().stream()
-                  .filter(fileTypeInfo -> fileTypeInfo.getAvailableGrid())
+              ? EDD.getFileTypeOptions(true /* isGrid */, FileCategory.BOTH).stream()
                   .map(fileTypeInfo -> fileTypeInfo.getFileTypeName())
                   .toList()
               : publicGraphFileTypeNames;
@@ -6670,9 +6671,10 @@ public abstract class EDDGrid extends EDD {
             + "/griddap/documentation.html#fileType\">"
             + EDStatic.messages.get(Message.MORE_INFORMATION, language)
             + "</a>)\n");
+    List<EDDFileTypeInfo> availableFileTypes =
+        EDD.getFileTypeOptions(true /* isGrid */, FileCategory.BOTH);
     List<String> fileTypeDescriptions =
-        EDD_FILE_TYPE_INFO.values().stream()
-            .filter(fileTypeInfo -> fileTypeInfo.getAvailableGrid())
+        availableFileTypes.stream()
             .map(
                 fileTypeInfo ->
                     fileTypeInfo.getFileTypeName()
@@ -6680,8 +6682,7 @@ public abstract class EDDGrid extends EDD {
                         + fileTypeInfo.getGridDescription(language))
             .toList();
     int defaultIndex =
-        EDD_FILE_TYPE_INFO.values().stream()
-            .filter(fileTypeInfo -> fileTypeInfo.getAvailableGrid())
+        availableFileTypes.stream()
             .map(fileTypeInfo -> fileTypeInfo.getFileTypeName())
             .toList()
             .indexOf(defaultFileTypeOption);
@@ -6975,7 +6976,7 @@ public abstract class EDDGrid extends EDD {
             + "  <br>&nbsp;\n"
             + "  <table class=\"erd\" style=\"width:100%; \">\n"
             + "    <tr><th>Data<br>fileTypes</th><th>Description</th><th>Info</th><th>Example</th></tr>\n");
-    List<EDDFileTypeInfo> dataFileTypes = EDD.getFileTypeOptions(true, false);
+    List<EDDFileTypeInfo> dataFileTypes = EDD.getFileTypeOptions(true, FileCategory.DATA);
     for (int i = 0; i < dataFileTypes.size(); i++) {
       EDDFileTypeInfo curType = dataFileTypes.get(i);
       String ft = curType.getFileTypeName();
@@ -7578,7 +7579,7 @@ public abstract class EDDGrid extends EDD {
             + "   <p>The fileType options for downloading images of graphs and maps of grid data are:\n"
             + "  <table class=\"erd\" style=\"width:100%; \">\n"
             + "    <tr><th>Image<br>fileTypes</th><th>Description</th><th>Info</th><th>Example</th></tr>\n");
-    List<EDDFileTypeInfo> imageFileTypes = EDD.getFileTypeOptions(true, true);
+    List<EDDFileTypeInfo> imageFileTypes = EDD.getFileTypeOptions(true, FileCategory.IMAGE);
     for (int i = 0; i < imageFileTypes.size(); i++) {
       EDDFileTypeInfo curType = imageFileTypes.get(i);
       String ft = curType.getFileTypeName();
@@ -11079,7 +11080,7 @@ public abstract class EDDGrid extends EDD {
             + "    <stdorder>\n");
 
     // data file types
-    List<EDDFileTypeInfo> dataFileTypes = EDD.getFileTypeOptions(true, false);
+    List<EDDFileTypeInfo> dataFileTypes = EDD.getFileTypeOptions(true, FileCategory.DATA);
     for (int ft = 0; ft < dataFileTypes.size(); ft++)
       writer.write(
           "      <digform>\n"
@@ -11133,7 +11134,7 @@ public abstract class EDDGrid extends EDD {
               + "      </digform>\n");
 
     // image file types
-    List<EDDFileTypeInfo> imageFileTypes = EDD.getFileTypeOptions(true, true);
+    List<EDDFileTypeInfo> imageFileTypes = EDD.getFileTypeOptions(true, FileCategory.IMAGE);
     for (int ft = 0; ft < imageFileTypes.size(); ft++)
       writer.write(
           "      <digform>\n"
@@ -11208,7 +11209,7 @@ public abstract class EDDGrid extends EDD {
             + "</metadata>\n");
   }
 
-  private void lower_writeISO19115(int language, Writer writer)
+  private void lower_writeISO19115(int language, Writer writer, ISO_VERSION version)
       throws UnsupportedStorageException, DataStoreException, JAXBException, IOException {
 
     Metadata metadata =
@@ -11226,9 +11227,14 @@ public abstract class EDDGrid extends EDD {
      * by Apache SIS. But the legacy version published in 2007 is still in wide use.
      * The legacy version can be requested with the `METADATA_VERSION` property.
      */
-    // Map<String,String> config = Map.of(org.apache.sis.xml.XML.METADATA_VERSION, "2007");
-
-    writer.write(org.apache.sis.xml.XML.marshal(metadata));
+    Map<String, String> config = new HashMap<>();
+    if (version == ISO_VERSION.ISO19139_2007) {
+      config = Map.of(org.apache.sis.xml.XML.METADATA_VERSION, "2007");
+    }
+    if (version == ISO_VERSION.ISO19115_3_2016) {
+      config = Map.of(org.apache.sis.xml.XML.METADATA_VERSION, "2016");
+    }
+    org.apache.sis.xml.XML.marshal(metadata, new StreamResult(writer), config);
   }
 
   /**
@@ -11255,10 +11261,20 @@ public abstract class EDDGrid extends EDD {
    */
   @Override
   public void writeISO19115(int language, Writer writer) throws Throwable {
-    // FUTURE: support datasets with x,y (and not longitude,latitude)
+    writeISO19115(
+        language,
+        writer,
+        EDStatic.config.useSisISO19115
+            ? ISO_VERSION.ISO19115_3_2016
+            : EDStatic.config.useSisISO19139 ? ISO_VERSION.ISO19139_2007 : ISO_VERSION.ISO19115_2);
+  }
 
-    if (EDStatic.config.useSisISO19115) {
-      lower_writeISO19115(language, writer);
+  @Override
+  public void writeISO19115(int language, Writer writer, ISO_VERSION version) throws Throwable {
+    // FUTURE: support datasets with x,y (and not longitude,latitude)?
+
+    if (version == ISO_VERSION.ISO19115_3_2016 || version == ISO_VERSION.ISO19139_2007) {
+      lower_writeISO19115(language, writer, version);
       return;
     }
 

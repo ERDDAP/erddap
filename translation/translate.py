@@ -1,6 +1,7 @@
 
 import argostranslate.package
 import argostranslate.translate
+import re
 from lxml import etree
 # This assumes you are running it from the project base directory not the translation directory.
 
@@ -664,6 +665,10 @@ dont_translate_strings = [
     "IOOS DIF SOS",
     "IOOS Animal Telemetry Network",
     "IrfanView",
+    "ISO 19115/19139",
+    "ISO 19115-2/19139",
+    "ISO 19115-3:2016",
+    "ISO 19139:2007",
     "Java",
     "java.net.URLEncoder",
     "Leaflet",
@@ -749,6 +754,7 @@ dont_translate_strings = [
     "UDUNITS",
     "Unidata",
     "URN",
+    "UTF-8"
     "WCS",
     "week, weeks,",
     "WFS",
@@ -841,17 +847,120 @@ def escape_text(text):
     text = text.replace("'", "&#39;")
     return text
 
+def preprocess_tag(text):
+    processed_line = {
+        "format": "{0}",
+        "translate_text": [text],
+    }
+
+    # # Handle translation placeholders
+    # for idx, chunk in enumerate(processed_line["translate_text"]):
+    #     match = re.search(r"{(.*?)}", chunk)
+    #     if match:
+    #         # before tag text
+    #         processed_line["translate_text"][idx] = chunk[:match.start()]
+    #         # text after the tag
+    #         processed_line["translate_text"].append(chunk[match.end():])
+    #         # update format {idx} -> {idx} + "<" + match.group(0) + ">" + "{length-1}"
+    #         placeholder = "{"+ str(idx) +"}"
+    #         processed_line["format"] = processed_line["format"].replace(placeholder, placeholder + match.group(0) + "{" + str(len(processed_line["translate_text"]) -1) + "}")
+
+    # # handle html tags
+    # for idx, chunk in enumerate(processed_line["translate_text"]):
+    #     match = re.search(r"<(.*?)>", chunk)
+    #     if match:
+    #         # before tag text
+    #         processed_line["translate_text"][idx] = chunk[:match.start()]
+    #         # text after the tag
+    #         processed_line["translate_text"].append(chunk[match.end():])
+    #         # update format {idx} -> {idx} + "<" + match.group(0) + ">" + "{length-1}"
+    #         placeholder = "{"+ str(idx) +"}"
+    #         processed_line["format"] = processed_line["format"].replace(placeholder, placeholder + match.group(0) + "{" + str(len(processed_line["translate_text"]) -1) + "}")
+
+    for no_translate in dont_translate_strings:
+        for idx, chunk in enumerate(processed_line["translate_text"]):
+            index = chunk.find(no_translate)
+            if index > -1:
+                # If there's more than one, we will find it later in the for loop,
+                # this iterates over chunks that are appended during the iteration
+                processed_line["translate_text"][idx] = chunk[:index]
+                processed_line["translate_text"].append(chunk[index+len(no_translate):])
+                placeholder = "{"+ str(idx) +"}"
+                processed_line["format"] = processed_line["format"].replace(placeholder, placeholder + no_translate + "{" + str(len(processed_line["translate_text"]) -1) + "}")
+
+    return processed_line
+
+def fix_invalid_escapes(text):
+  """Detects and fixes invalid escape sequences by adding an extra backslash.
+
+  Args:
+    text: The input string.
+
+  Returns:
+    The string with invalid escape sequences fixed.
+  """
+  pattern = r"(?<!\\)\\([^ntbfr\"'\\\0])"
+  while True:
+    match = re.search(pattern, text)
+    if match:
+        text = text[:match.start()] + "\\" + text[match.start():]
+    else:
+        break
+  
+  return text
+
+def postprocess_line(format, chunks):
+    # escape special characters in translation
+    for idx, chunk in enumerate(chunks):
+        chunks[idx] = chunks[idx].replace('<', '&lt;')
+        chunks[idx] = chunks[idx].replace('>', '&gt;')
+        chunks[idx] = chunks[idx].replace('!', '&#33;')
+        chunks[idx] = chunks[idx].replace('{', '&#123;')
+        chunks[idx] = chunks[idx].replace('}', '&#125;')
+    index = 0
+    end_span = 0
+    count = 0
+    while index > -1 and end_span > -1:
+        index = format.find("{", index)
+        end_span = format.find("}", index)
+        if index > -1 and end_span > -1:
+            chunk_id = format[index+1:end_span]
+            if index + 5 > end_span and chunk_id.isdigit() and int(chunk_id) < len(chunks):
+                chunk = chunks[int(chunk_id)]
+                format = format[0:index] + chunk + format[end_span+1:]
+                count = count + 1
+                index = index + len(chunk)
+            else:
+                index = index + 1
+    format = fix_invalid_escapes(format)
+    if not format.endswith('\n'):
+        format = format + "\n"
+    return format
+
+def translate_processed_tag(line_info, to_code):
+    translated_text = []
+    for chunk in line_info["translate_text"]:
+        translated_chunk = argostranslate.translate.translate(chunk, from_code=from_code, to_code=to_code)
+        # make sure quotes are escapted
+        translated_chunk = re.sub(r'(?<!\\)"', r'\\"', translated_chunk)
+        translated_text.append(translated_chunk)
+
+    return postprocess_line(line_info["format"], translated_text)
+
+
 def translate_tag(text, to_code, key):
     message_format = not key.startswith("comment") and any(entity in text for entity in message_format_entities)
     if message_format:
         text = text.replace("''", "'")
+    
     if text.startswith("<![CDATA["):
-        text = preprocess_html(text)
-        translated_text = argostranslate.translate.translate(text[9:-3], from_code=from_code, to_code=to_code)
+        processed_text = preprocess_tag(text[9:-3])
+        translated_text = translate_processed_tag(processed_text, to_code)
         translated_text = "<![CDATA[\n" + translated_text + "\n]]>"
         translated_text = postprocess_html(translated_text)
     else:
-        translated_text = argostranslate.translate.translate(text, from_code=from_code, to_code=to_code)
+        processed_text = preprocess_tag(text)
+        translated_text = translate_processed_tag(processed_text, to_code)
 
     if message_format:
         translated_text = translated_text.replace("''", "'")

@@ -3064,7 +3064,10 @@ subsets of scientific datasets in common file formats and make graphs and maps.
 <fileHelpTable_help>View a web page with a description of tabledap.</fileHelpTable_help>
 <fileHelp_html>View an OPeNDAP-style HTML Data Access Form.</fileHelp_html>
 <fileHelp_htmlTable>View a UTF-8 .html web page with the data in a table. Times are ISO 8601 strings.</fileHelp_htmlTable>
-<fileHelp_iso19115>View the dataset's ISO 19115-2/19139 UTF-8 .xml metadata.</fileHelp_iso19115>
+<fileHelp_iso19115>View the dataset's ISO 19115/19139 UTF-8 .xml metadata using the version default for this server.</fileHelp_iso19115>
+<fileHelp_iso19115_2>View the dataset's ISO 19115-2/19139 UTF-8 .xml metadata.</fileHelp_iso19115_2>
+<fileHelp_iso191392007>View the dataset's ISO 19139:2007 UTF-8 .xml metadata.</fileHelp_iso191392007>
+<fileHelp_iso19115_3_2016>View the dataset's ISO 19115-3:2016 UTF-8 .xml metadata.</fileHelp_iso19115_3_2016>
 <fileHelp_itxGrid>Download an ISO-8859-1 Igor Text File. Each axis variable and each data variable becomes a wave.</fileHelp_itxGrid>
 <fileHelp_itxTable>Download an ISO-8859-1 Igor Text File. Each response column becomes a wave.</fileHelp_itxTable>
 <fileHelp_json>View a table-like UTF-8 JSON file (missing value = 'null'; times are ISO 8601 strings).</fileHelp_json>

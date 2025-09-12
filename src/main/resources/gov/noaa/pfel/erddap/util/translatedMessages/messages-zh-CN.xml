@@ -2025,7 +2025,8 @@ ERDDAP管理员将很快向您发送电子邮件，以找出传输数据的最�
 <dtWMS>单击即可了解如何通过此数据集的 Web 地图服务制作该数据的地图。</dtWMS>
 <EasierAccessToScientificData>更轻松地获取科学数据</EasierAccessToScientificData>
 
-<!--EDD 信件显示在 graddap 和 graddap 数据访问表上 。-->
+<!--EDD 信件显示在tabledap和格网数据访问表。
+-->
 <EDDDatasetID>数据集 ID</EDDDatasetID>
 <EDDFgdc>烟气脱硫脱硝</EDDFgdc>
 <EDDFgdcMetadata>FGDC-STD-001-1998 元数据</EDDFgdcMetadata>
@@ -2413,7 +2414,14 @@ ERDDAP是一个数据服务器，它为您提供一种简单、一致的方式�
 <fileHelpTable_help>查看包含 tabledap 描述的网页。</fileHelpTable_help>
 <fileHelp_html>查看 OPeNDAP 样式的 HTML 数据访问表单。</fileHelp_html>
 <fileHelp_htmlTable>查看包含表格数据的 UTF-8 .html 网页。时间是 ISO 8601 字符串。</fileHelp_htmlTable>
-<fileHelp_iso19115>查看数据集的 ISO 19115-2/19139 UTF-8 .xml 元数据。</fileHelp_iso19115>
+<fileHelp_iso19115>查看数据集的ISO 19115/19139UTF-8.xml 元数据使用此服务器的版本默认值.
+</fileHelp_iso19115>
+<fileHelp_iso19115_2>查看数据集的ISO 19115-2/19139UTF-8.xml 元数据.
+</fileHelp_iso19115_2>
+<fileHelp_iso191392007>查看数据集的ISO 19139:2007UTF-8.xml 元数据.
+</fileHelp_iso191392007>
+<fileHelp_iso19115_3_2016>查看数据集的ISO 19115-3:2016UTF-8.xml 元数据.
+</fileHelp_iso19115_3_2016>
 <fileHelp_itxGrid>下载 ISO-8859-1 Igor 文本文件。每个轴变量和每个数据变量都变成一个波。</fileHelp_itxGrid>
 <fileHelp_itxTable>下载 ISO-8859-1 Igor 文本文件。每个响应列都变成一个波形。</fileHelp_itxTable>
 <fileHelp_json>查看表状的 UTF-8 JSON 文件（缺失值 = &#39;null&#39;；时间是 ISO 8601 字符串）。</fileHelp_json>

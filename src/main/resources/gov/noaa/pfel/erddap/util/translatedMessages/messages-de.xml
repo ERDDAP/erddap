@@ -2391,7 +2391,8 @@ Der Zeitstempel dieser Datensatzübergabe lautet &tTimestamp; .
 <dtWMS>Klicken Sie hier, um mehr über die Erstellung von Karten dieser Daten über den Web Map Service dieses Datensatzes zu erfahren.</dtWMS>
 <EasierAccessToScientificData>Einfacherer Zugang zu wissenschaftlichen Daten</EasierAccessToScientificData>
 
-<!--Die EDD-Nachrichten werden auf den Tabellen- und Rasterdatenzugriffsformularen angezeigt.-->
+<!--Die EDD-Nachrichten werden auf dertabledapund Gridap Data Access Formulare.
+-->
 <EDDDatasetID>Datensatz-ID</EDDDatasetID>
 <EDDFgdc>FGDC</EDDFgdc>
 <EDDFgdcMetadata>FGDC-STD-001-1998 Metadaten</EDDFgdcMetadata>
@@ -2800,7 +2801,14 @@ Zum Beispiel:
 <fileHelpTable_help>Sehen Sie sich eine Webseite mit einer Beschreibung von tabledap an.</fileHelpTable_help>
 <fileHelp_html>Zeigen Sie ein HTML-Datenzugriffsformular im OPeNDAP-Stil an.</fileHelp_html>
 <fileHelp_htmlTable>Zeigen Sie eine UTF-8-.html-Webseite mit den Daten in einer Tabelle an. Die Zeiten sind ISO 8601-Strings.</fileHelp_htmlTable>
-<fileHelp_iso19115>Zeigen Sie die ISO 19115-2/19139 UTF-8 .xml-Metadaten des Datensatzes an.</fileHelp_iso19115>
+<fileHelp_iso19115>Den Datensatz anzeigenISO 19115/19139UTF-8 .xml Metadaten mit der Versionseinstellung für diesen Server.
+</fileHelp_iso19115>
+<fileHelp_iso19115_2>Den Datensatz anzeigenISO 19115-2/19139UTF-8 .xml Metadaten.
+</fileHelp_iso19115_2>
+<fileHelp_iso191392007>Den Datensatz anzeigenISO 19139:2007UTF-8 .xml Metadaten.
+</fileHelp_iso191392007>
+<fileHelp_iso19115_3_2016>Den Datensatz anzeigenISO 19115-3:2016UTF-8 .xml Metadaten.
+</fileHelp_iso19115_3_2016>
 <fileHelp_itxGrid>Laden Sie eine ISO-8859-1 Igor-Textdatei herunter. Jede Achsenvariable und jede Datenvariable wird zu einer Welle.</fileHelp_itxGrid>
 <fileHelp_itxTable>Laden Sie eine ISO-8859-1 Igor-Textdatei herunter. Jede Antwortspalte wird zu einer Welle.</fileHelp_itxTable>
 <fileHelp_json>Zeigen Sie eine tabellenartige UTF-8-JSON-Datei an (fehlender Wert = &#39;null&#39;; Zeiten sind ISO 8601-Strings).</fileHelp_json>

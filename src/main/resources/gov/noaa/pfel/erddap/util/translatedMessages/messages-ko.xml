@@ -2624,7 +2624,8 @@ ERDDAP 관리자는 데이터를 전송하는 가장 좋은 방법을 파악하�
 <dtWMS>이 데이터세트의 웹 지도 서비스를 통해 이 데이터의 지도를 만드는 방법을 알아보려면 클릭하세요.</dtWMS>
 <EasierAccessToScientificData>과학 데이터에 더 쉽게 접근</EasierAccessToScientificData>
 
-<!--EDD 메시지는 Tabledap 및 griddap Data Access Forms에 표시됩니다.-->
+<!--EDD 메시지가 표시됩니다.tabledap및 griddap Data Access Forms.
+-->
 <EDDDatasetID>데이터세트 ID</EDDDatasetID>
 <EDDFgdc>FGDC</EDDFgdc>
 <EDDFgdcMetadata>FGDC-STD-001-1998 메타데이터</EDDFgdcMetadata>
@@ -3064,7 +3065,14 @@ ERDDAP 는 일반 파일 형식으로 과학 데이터 세트의 하위 집합�
 <fileHelpTable_help>tabledap에 대한 설명이 포함된 웹페이지를 봅니다.</fileHelpTable_help>
 <fileHelp_html>OPeNDAP 스타일 HTML 데이터 액세스 양식을 봅니다.</fileHelp_html>
 <fileHelp_htmlTable>테이블의 데이터가 포함된 UTF-8 .html 웹 페이지를 봅니다. 시간은 ISO 8601 문자열입니다.</fileHelp_htmlTable>
-<fileHelp_iso19115>데이터 세트의 ISO 19115-2/19139 UTF-8 .xml 메타데이터를 봅니다.</fileHelp_iso19115>
+<fileHelp_iso19115>dataset의 보기ISO 19115/19139UTF-8 .xml 메타데이터는 이 서버에 대한 버전 기본값을 사용합니다.
+</fileHelp_iso19115>
+<fileHelp_iso19115_2>dataset의 보기ISO 19115-2/19139UTF-8 .xml 메타데이터.
+</fileHelp_iso19115_2>
+<fileHelp_iso191392007>dataset의 보기ISO 19139:2007UTF-8 .xml 메타데이터.
+</fileHelp_iso191392007>
+<fileHelp_iso19115_3_2016>dataset의 보기ISO 19115-3:2016UTF-8 .xml 메타데이터.
+</fileHelp_iso19115_3_2016>
 <fileHelp_itxGrid>ISO-8859-1 Igor 텍스트 파일을 다운로드하세요. 각 축 변수와 각 데이터 변수가 웨이브가 됩니다.</fileHelp_itxGrid>
 <fileHelp_itxTable>ISO-8859-1 Igor 텍스트 파일을 다운로드하세요. 각 응답 열은 웨이브가 됩니다.</fileHelp_itxTable>
 <fileHelp_json>테이블 형식의 UTF-8 JSON 파일을 봅니다(누락된 값 = &#39;null&#39;, 시간은 ISO 8601 문자열임).</fileHelp_json>
