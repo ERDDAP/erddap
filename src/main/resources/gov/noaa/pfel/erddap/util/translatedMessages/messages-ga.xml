@@ -2470,7 +2470,8 @@ Is é stampa ama na haighneachta tacair sonraí seo ná &tTimestamp; .
 <dtWMS>Cliceáil le fáil amach faoi léarscáileanna a dhéanamh de na sonraí seo trí Sheirbhís Mapaí Gréasáin an tacair sonraí seo.</dtWMS>
 <EasierAccessToScientificData>Rochtain níos éasca ar shonraí eolaíocha</EasierAccessToScientificData>
 
-<!--Tá na teachtaireachtaí EDD ar taispeáint ar na foirmeacha iarratais agus ar na Foirmeacha Rochtana Sonraí greille.-->
+<!--Na teachtaireachtaí EDD ar taispeáint ar antabledapagus Foirmeacha Rochtana Sonraí eangaí.
+-->
 <EDDDatasetID>Aitheantas tacair sonraí</EDDDatasetID>
 <EDDFgdc>FGDC</EDDFgdc>
 <EDDFgdcMetadata>FGDC-STD-001-1998 Meiteashonraí</EDDFgdcMetadata>
@@ -2904,7 +2905,14 @@ Mar shampla:
 <fileHelpTable_help>Féach ar leathanach gréasáin le cur síos ar an tábla.</fileHelpTable_help>
 <fileHelp_html>Féach ar Fhoirm Rochtana Sonraí HTML ar stíl OPeNDAP.</fileHelp_html>
 <fileHelp_htmlTable>Féach ar leathanach gréasáin UTF-8 .html leis na sonraí i dtábla. Is teaghráin ISO 8601 iad na hamanna.</fileHelp_htmlTable>
-<fileHelp_iso19115>Féach ar mheiteashonraí ISO 19115-2/19139 UTF-8 .xml an tacair sonraí.</fileHelp_iso19115>
+<fileHelp_iso19115>Féach ar an tacar sonraíISO 19115/19139UTF-8 .xml meiteashonraí ag baint úsáide as an réamhshocraithe leagan don fhreastalaí.
+</fileHelp_iso19115>
+<fileHelp_iso19115_2>Féach ar an tacar sonraíISO 19115-2/19139UTF-8 .xml meiteashonraí.
+</fileHelp_iso19115_2>
+<fileHelp_iso191392007>Féach ar an tacar sonraíISO 19139:2007UTF-8 .xml meiteashonraí.
+</fileHelp_iso191392007>
+<fileHelp_iso19115_3_2016>Féach ar an tacar sonraíISO 19115-3:2016UTF-8 .xml meiteashonraí.
+</fileHelp_iso19115_3_2016>
 <fileHelp_itxGrid>Íoslódáil Téacschomhad Igor ISO-8859-1. Déantar tonn de gach athróg aise agus gach athróg sonraí.</fileHelp_itxGrid>
 <fileHelp_itxTable>Íoslódáil Téacschomhad Igor ISO-8859-1. Déantar tonn de gach colún freagartha.</fileHelp_itxTable>
 <fileHelp_json>Féach ar chomhad UTF-8 JSON atá cosúil le tábla (luach in easnamh = &#39;null&#39;; teaghráin ISO 8601 iad na hamanna).</fileHelp_json>

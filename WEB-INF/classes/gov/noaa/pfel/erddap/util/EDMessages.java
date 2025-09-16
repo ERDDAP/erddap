@@ -531,6 +531,9 @@ public class EDMessages {
     FILE_HELP_HTML,
     FILE_HELP_HTML_TABLE,
     FILE_HELP_ISO19115,
+    FILE_HELP_ISO191392007,
+    FILE_HELP_ISO19115_2,
+    FILE_HELP_ISO19115_3_2016,
     FILE_HELP_ITX_GRID,
     FILE_HELP_ITX_TABLE,
     FILE_HELP_JSON,
@@ -2281,6 +2284,15 @@ public class EDMessages {
     translatedMessages.put(
         Message.FILE_HELP_ISO19115,
         getNotNothingString(messagesAr, "fileHelp_iso19115", errorInMethod));
+    translatedMessages.put(
+        Message.FILE_HELP_ISO19115_2,
+        getNotNothingString(messagesAr, "fileHelp_iso19115_2", errorInMethod));
+    translatedMessages.put(
+        Message.FILE_HELP_ISO191392007,
+        getNotNothingString(messagesAr, "fileHelp_iso191392007", errorInMethod));
+    translatedMessages.put(
+        Message.FILE_HELP_ISO19115_3_2016,
+        getNotNothingString(messagesAr, "fileHelp_iso19115_3_2016", errorInMethod));
     translatedMessages.put(
         Message.FILE_HELP_ITX_GRID,
         getNotNothingString(messagesAr, "fileHelp_itxGrid", errorInMethod));
