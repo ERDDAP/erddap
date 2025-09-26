@@ -1387,35 +1387,6 @@ public abstract class EDDTableFromFiles extends EDDTable implements WatchUpdateH
     cachePartialPathRegex =
         String2.isSomething(tCachePartialPathRegex) ? tCachePartialPathRegex : null;
 
-    // class-specific things
-    if (className.equals("EDDTableFromHttpGet")) {
-      setHttpGetRequiredVariableNames(
-          tAddGlobalAttributes.getString(language, HTTP_GET_REQUIRED_VARIABLES));
-      setHttpGetDirectoryStructure(
-          tAddGlobalAttributes.getString(language, HTTP_GET_DIRECTORY_STRUCTURE));
-      setHttpGetKeys(tAddGlobalAttributes.getString(language, HTTP_GET_KEYS));
-      tAddGlobalAttributes.remove(HTTP_GET_KEYS);
-
-    } else if (className.equals("EDDTableFromMultidimNcFiles")) {
-      String ts = tAddGlobalAttributes.getString(language, TREAT_DIMENSIONS_AS);
-      if (String2.isSomething(ts)) {
-        String parts[] = String2.split(ts, ';');
-        int nParts = parts.length;
-        treatDimensionsAs = new String[nParts][];
-        for (int part = 0; part < nParts; part++) {
-          treatDimensionsAs[part] = String2.split(parts[part], ',');
-          if (reallyVerbose)
-            String2.log(
-                TREAT_DIMENSIONS_AS
-                    + "["
-                    + part
-                    + "] was set to "
-                    + String2.toCSSVString(treatDimensionsAs[part]));
-        }
-      }
-      tAddGlobalAttributes.remove(TREAT_DIMENSIONS_AS);
-    }
-
     if (!String2.isSomething(fileDir))
       throw new IllegalArgumentException(errorInMethod + "fileDir wasn't specified.");
     filesAreLocal = !String2.isTrulyRemote(fileDir);
@@ -1546,6 +1517,9 @@ public abstract class EDDTableFromFiles extends EDDTable implements WatchUpdateH
               + sourceDataNames
               + "\nsourceDataTypes="
               + String2.toCSSVString(sourceDataTypes));
+
+    // This is intended to be overridden by subclasses so they can handle early initialization.
+    earlyInitialization();
 
     if (sortedColumnSourceName.length() > 0) {
       sortedDVI = sourceDataNames.indexOf(sortedColumnSourceName);
@@ -2787,25 +2761,6 @@ public abstract class EDDTableFromFiles extends EDDTable implements WatchUpdateH
     return false;
   }
 
-  /** The constructor for EDDTableFromHttpGet calls this to set httpGetRequiredVariableNames. */
-  private void setHttpGetRequiredVariableNames(String tRequiredVariablesCSV) {
-    if (!String2.isSomething(tRequiredVariablesCSV))
-      throw new RuntimeException(
-          String2.ERROR
-              + " in EDDTableFromHttpGet constructor for datasetID="
-              + datasetID
-              + ": "
-              + HTTP_GET_REQUIRED_VARIABLES
-              + " MUST be in globalAttributes.");
-    httpGetRequiredVariableNames = StringArray.fromCSV(tRequiredVariablesCSV).toStringArray();
-    if (verbose)
-      String2.log(
-          "  "
-              + HTTP_GET_REQUIRED_VARIABLES
-              + "="
-              + String2.toCSSVString(httpGetRequiredVariableNames));
-  }
-
   /**
    * The constructor for EDDTableFromHttpGet calls this after the variables are created to set
    * httpGetRequiredVariableTypes.
@@ -2839,77 +2794,11 @@ public abstract class EDDTableFromFiles extends EDDTable implements WatchUpdateH
   }
 
   /**
-   * The constructor for EDDTableFromHttpGet calls this to set httpGetDirectoryStructure variables.
+   * This is called in the constructor after the parameters are assigned to the class fields. It is
+   * intended to handle initializing anything that needs to occur before the rest of the processing
+   * in the constructor.
    */
-  private void setHttpGetDirectoryStructure(String tDirStructure) {
-
-    if (!String2.isSomething(tDirStructure))
-      throw new RuntimeException(
-          String2.ERROR
-              + " in EDDTableFromHttpGet constructor for datasetID="
-              + datasetID
-              + ": "
-              + HTTP_GET_DIRECTORY_STRUCTURE
-              + " MUST be in globalAttributes.");
-    httpGetDirectoryStructureColumnNames = new StringArray();
-    httpGetDirectoryStructureNs = new IntArray();
-    httpGetDirectoryStructureCalendars = new IntArray();
-    EDDTableFromHttpGet.parseHttpGetDirectoryStructure(
-        tDirStructure,
-        httpGetDirectoryStructureColumnNames,
-        httpGetDirectoryStructureNs,
-        httpGetDirectoryStructureCalendars);
-    if (verbose)
-      String2.log(
-          "  httpGetDirectoryStructureColumnNames="
-              + httpGetDirectoryStructureColumnNames.toString()
-              + "\n"
-              + "  httpGetDirectoryStructureNs="
-              + httpGetDirectoryStructureNs.toString()
-              + "\n"
-              + "  httpGetDirectoryStructureCalendars="
-              + httpGetDirectoryStructureCalendars.toString());
-  }
-
-  /**
-   * The constructor for EDDTableFromHttpGet calls this to set HttpGetKeys.
-   *
-   * @param tHttpGetKeys a CSV of author_key values.
-   */
-  private void setHttpGetKeys(String tHttpGetKeys) {
-
-    String msg =
-        String2.ERROR + " in EDDTableFromHttpGet constructor for datasetID=" + datasetID + ": ";
-    String inForm =
-        "Each of the httpGetKeys must be in the form author_key, with only ASCII characters (but no space, ', \", or comma), and where the key is at least 8 characters long.";
-    if (tHttpGetKeys == null
-        || tHttpGetKeys.indexOf('\"') >= 0
-        || // be safe, avoid trickery
-        tHttpGetKeys.indexOf('\'') >= 0) // be safe, avoid trickery
-    throw new RuntimeException(msg + inForm);
-    httpGetKeys = new HashSet<>();
-    String keyAr[] = StringArray.arrayFromCSV(tHttpGetKeys);
-    for (int i = 0; i < keyAr.length; i++) {
-      if (String2.isSomething(keyAr[i])) {
-        keyAr[i] = keyAr[i].trim();
-        int po = keyAr[i].indexOf('_');
-        if (po <= 0
-            || // can't be 0: so author must be something
-            po >= keyAr[i].length() - 8
-            || // key must be 8+ chars
-            !String2.isAsciiPrintable(keyAr[i])
-            || keyAr[i].indexOf(' ') >= 0
-            || // isAsciiPrintable allows ' ' (be safe, avoid trickery)
-            keyAr[i].indexOf(',') >= 0) { // isAsciiPrintable allows , (be safe, avoid trickery)
-          throw new RuntimeException(msg + inForm + " (key #" + i + ")");
-        } else {
-          httpGetKeys.add(keyAr[i]); // not String2.canonical, because then publicly accessible
-        }
-      }
-    }
-    if (httpGetKeys.size() == 0)
-      throw new RuntimeException(msg + HTTP_GET_KEYS + " MUST be in globalAttributes.");
-  }
+  protected void earlyInitialization() {}
 
   /**
    * This extracts data from the fileName.
