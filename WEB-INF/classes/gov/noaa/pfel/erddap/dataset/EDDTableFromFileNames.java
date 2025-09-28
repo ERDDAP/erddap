@@ -751,18 +751,6 @@ public class EDDTableFromFileNames extends EDDTable {
               + "\n");
   }
 
-  /**
-   * This returns true if this EDDTable knows each variable's actual_range (e.g., EDDTableFromFiles)
-   * or false if it doesn't (e.g., EDDTableFromDatabase).
-   *
-   * @returns true if this EDDTable knows each variable's actual_range (e.g., EDDTableFromFiles) or
-   *     false if it doesn't (e.g., EDDTableFromDatabase).
-   */
-  @Override
-  public boolean knowsActualRange() {
-    return true;
-  } // it at least knows lastMod and fileSize ranges
-
   /** fileDir has forward slashes and trailing slash */
   public String fileDir() {
     return fileDir;

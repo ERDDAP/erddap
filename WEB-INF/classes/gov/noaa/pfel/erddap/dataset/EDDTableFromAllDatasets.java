@@ -131,18 +131,6 @@ public class EDDTableFromAllDatasets extends EDDTable {
   }
 
   /**
-   * This returns true if this EDDTable knows each variable's actual_range (e.g., EDDTableFromFiles)
-   * or false if it doesn't (e.g., EDDTableFromDatabase).
-   *
-   * @returns true if this EDDTable knows each variable's actual_range (e.g., EDDTableFromFiles) or
-   *     false if it doesn't (e.g., EDDTableFromDatabase).
-   */
-  @Override
-  public boolean knowsActualRange() {
-    return true;
-  } // but irrelevant, because this will never be a child dataset
-
-  /**
    * This overwrites the superclass to give the on-the-fly subsetVariables table.
    *
    * @param language the index of the selected language

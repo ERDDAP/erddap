@@ -3280,7 +3280,8 @@ class JettyTests {
             + "\t\t:Southernmost_Northing = 54.34184 ;\n"
             + "\t\t:standard_name_vocabulary = \"CF Standard Name Table v29\" ;\n"
             + "\t\t:STATION_NAME = \"Unimak3\" ;\n"
-            + "\t\t:subsetVariables = \"prof, id, cast, cruise, time, longitude, lon360, latitude\" ;\n"
+            // + "\t\t:subsetVariables = \"prof, id, cast, cruise, time, longitude, lon360,
+            // latitude\" ;\n"
             + "\t\t:summary = \"Pacific Marine Environmental Laboratory (PMEL) Fisheries-Oceanography Cooperative Investigations (FOCI) Chukchi Sea. PMEL EcoFOCI data from a local source.\" ;\n"
             + "\t\t:time_coverage_end = \"2012-09-06T23:57:00Z\" ;\n"
             + "\t\t:time_coverage_start = \"2010-09-05T11:22:00Z\" ;\n"
@@ -3411,7 +3412,8 @@ class JettyTests {
             + "\t\t:Southernmost_Northing = 54.34184 ;\n"
             + "\t\t:standard_name_vocabulary = \"CF Standard Name Table v29\" ;\n"
             + "\t\t:STATION_NAME = \"Unimak3\" ;\n"
-            + "\t\t:subsetVariables = \"prof, id, cast, cruise, time, longitude, lon360, latitude\" ;\n"
+            // + "\t\t:subsetVariables = \"prof, id, cast, cruise, time, longitude, lon360,
+            // latitude\" ;\n"
             + "\t\t:summary = \"Pacific Marine Environmental Laboratory (PMEL) Fisheries-Oceanography Cooperative Investigations (FOCI) Chukchi Sea. PMEL EcoFOCI data from a local source.\" ;\n"
             + "\t\t:time_coverage_end = \"2012-09-06T23:57:00Z\" ;\n"
             + "\t\t:time_coverage_start = \"2010-09-05T11:22:00Z\" ;\n"
