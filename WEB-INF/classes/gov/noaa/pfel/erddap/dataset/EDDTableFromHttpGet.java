@@ -36,6 +36,7 @@ import java.time.ZonedDateTime;
 import java.time.temporal.ChronoField;
 import java.util.BitSet;
 import java.util.Calendar;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
@@ -346,6 +347,108 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
           "*** EDDTableFromHttpGet constructor for datasetID="
               + datasetID
               + " finished successfully.");
+  }
+
+  @Override
+  protected void earlyInitialization() {
+    setHttpGetRequiredVariableNames(
+        addGlobalAttributes.getString(EDMessages.DEFAULT_LANGUAGE, HTTP_GET_REQUIRED_VARIABLES));
+    setHttpGetDirectoryStructure(
+        addGlobalAttributes.getString(EDMessages.DEFAULT_LANGUAGE, HTTP_GET_DIRECTORY_STRUCTURE));
+    setHttpGetKeys(addGlobalAttributes.getString(EDMessages.DEFAULT_LANGUAGE, HTTP_GET_KEYS));
+    addGlobalAttributes.remove(HTTP_GET_KEYS);
+  }
+
+  /** The constructor for EDDTableFromHttpGet calls this to set httpGetRequiredVariableNames. */
+  private void setHttpGetRequiredVariableNames(String tRequiredVariablesCSV) {
+    if (!String2.isSomething(tRequiredVariablesCSV))
+      throw new RuntimeException(
+          String2.ERROR
+              + " in EDDTableFromHttpGet constructor for datasetID="
+              + datasetID
+              + ": "
+              + HTTP_GET_REQUIRED_VARIABLES
+              + " MUST be in globalAttributes.");
+    httpGetRequiredVariableNames = StringArray.fromCSV(tRequiredVariablesCSV).toStringArray();
+    if (verbose)
+      String2.log(
+          "  "
+              + HTTP_GET_REQUIRED_VARIABLES
+              + "="
+              + String2.toCSSVString(httpGetRequiredVariableNames));
+  }
+
+  /**
+   * The constructor for EDDTableFromHttpGet calls this to set httpGetDirectoryStructure variables.
+   */
+  private void setHttpGetDirectoryStructure(String tDirStructure) {
+
+    if (!String2.isSomething(tDirStructure))
+      throw new RuntimeException(
+          String2.ERROR
+              + " in EDDTableFromHttpGet constructor for datasetID="
+              + datasetID
+              + ": "
+              + HTTP_GET_DIRECTORY_STRUCTURE
+              + " MUST be in globalAttributes.");
+    httpGetDirectoryStructureColumnNames = new StringArray();
+    httpGetDirectoryStructureNs = new IntArray();
+    httpGetDirectoryStructureCalendars = new IntArray();
+    EDDTableFromHttpGet.parseHttpGetDirectoryStructure(
+        tDirStructure,
+        httpGetDirectoryStructureColumnNames,
+        httpGetDirectoryStructureNs,
+        httpGetDirectoryStructureCalendars);
+    if (verbose)
+      String2.log(
+          "  httpGetDirectoryStructureColumnNames="
+              + httpGetDirectoryStructureColumnNames.toString()
+              + "\n"
+              + "  httpGetDirectoryStructureNs="
+              + httpGetDirectoryStructureNs.toString()
+              + "\n"
+              + "  httpGetDirectoryStructureCalendars="
+              + httpGetDirectoryStructureCalendars.toString());
+  }
+
+  /**
+   * The constructor for EDDTableFromHttpGet calls this to set HttpGetKeys.
+   *
+   * @param tHttpGetKeys a CSV of author_key values.
+   */
+  private void setHttpGetKeys(String tHttpGetKeys) {
+
+    String msg =
+        String2.ERROR + " in EDDTableFromHttpGet constructor for datasetID=" + datasetID + ": ";
+    String inForm =
+        "Each of the httpGetKeys must be in the form author_key, with only ASCII characters (but no space, ', \", or comma), and where the key is at least 8 characters long.";
+    if (tHttpGetKeys == null
+        || tHttpGetKeys.indexOf('\"') >= 0
+        || // be safe, avoid trickery
+        tHttpGetKeys.indexOf('\'') >= 0) // be safe, avoid trickery
+    throw new RuntimeException(msg + inForm);
+    httpGetKeys = new HashSet<>();
+    String keyAr[] = StringArray.arrayFromCSV(tHttpGetKeys);
+    for (int i = 0; i < keyAr.length; i++) {
+      if (String2.isSomething(keyAr[i])) {
+        keyAr[i] = keyAr[i].trim();
+        int po = keyAr[i].indexOf('_');
+        if (po <= 0
+            || // can't be 0: so author must be something
+            po >= keyAr[i].length() - 8
+            || // key must be 8+ chars
+            !String2.isAsciiPrintable(keyAr[i])
+            || keyAr[i].indexOf(' ') >= 0
+            || // isAsciiPrintable allows ' ' (be safe, avoid trickery)
+            keyAr[i].indexOf(',') >= 0) { // isAsciiPrintable allows , (be safe, avoid trickery)
+          throw new RuntimeException(msg + inForm + " (key #" + i + ")");
+        } else {
+          httpGetKeys.add(keyAr[i]); // not String2.canonical, because then publicly accessible
+        }
+      }
+    }
+    if (httpGetKeys.size() == 0)
+      throw new RuntimeException(msg + HTTP_GET_KEYS + " MUST be in globalAttributes.");
   }
 
   /**

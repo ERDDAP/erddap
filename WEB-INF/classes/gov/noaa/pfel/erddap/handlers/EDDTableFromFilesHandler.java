@@ -354,7 +354,6 @@ public class EDDTableFromFilesHandler extends BaseTableHandler {
                   tUpdateEveryNMillis,
                   tFileDir,
                   tFileNameRegex,
-                  tRecursive,
                   tPathRegex,
                   tMetadataFrom,
                   tCharset,

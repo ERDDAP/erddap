@@ -8,6 +8,7 @@ import com.cohort.array.StringArray;
 import com.cohort.util.Calendar2;
 import com.cohort.util.File2;
 import com.cohort.util.MustBe;
+import com.cohort.util.SimpleException;
 import com.cohort.util.String2;
 import com.cohort.util.XML;
 import com.hivemq.client.mqtt.MqttClient;
@@ -42,6 +43,7 @@ public class EDDTableFromMqtt extends EDDTableFromFiles {
   public static final int DEFAULT_STANDARDIZEWHAT = 0;
   private static final int MQTT_PORT = 1883;
   private static final int MQTT_SECURE_PORT = 8883;
+  private static final String SAMPLE_FILE_NAME = "sampleFile.jsonl";
 
   protected String[] columnNames;
   protected PAType[] columnPATypes;
@@ -65,7 +67,6 @@ public class EDDTableFromMqtt extends EDDTableFromFiles {
       int tUpdateEveryNMillis,
       String tFileDir,
       String tFileNameRegex,
-      boolean tRecursive,
       String tPathRegex,
       String tMetadataFrom,
       String tCharset,
@@ -120,7 +121,7 @@ public class EDDTableFromMqtt extends EDDTableFromFiles {
         tUpdateEveryNMillis,
         tFileDir,
         tFileNameRegex,
-        tRecursive,
+        true, // Since this puts data in subfolders, this needs to be on.
         tPathRegex,
         tMetadataFrom,
         tCharset,
@@ -196,6 +197,33 @@ public class EDDTableFromMqtt extends EDDTableFromFiles {
     Mqtt5AsyncClient asyncClient = response.join();
 
     subscribeToDatasetTopics(asyncClient, topics, MqttQos.AT_LEAST_ONCE);
+  }
+
+  @Override
+  protected void earlyInitialization() {
+    File2.makeDirectory(fileDir);
+
+    String[] fileNames =
+        RegexFilenameFilter.recursiveFullNameList(
+            fileDir, ".*\\.jsonl", true); // this is what the class uses to find files
+    if (fileNames.length == 0) {
+
+      // Create a new Table to hold the single row of data
+      Table table = new Table();
+      for (int i = 0; i < dataVariableSourceNames.length; i++) {
+        String colName = dataVariableSourceNames[i];
+        PrimitiveArray pa = PrimitiveArray.factory(PAType.STRING, 1, false);
+        table.addColumn(colName, pa);
+      }
+
+      // Append the data to the corresponding .jsonl file
+      try {
+        appendTableToJsonlFile(table, fileDir + SAMPLE_FILE_NAME);
+      } catch (IOException | TimeoutException e) {
+        String2.log(e.getMessage());
+        e.printStackTrace();
+      }
+    }
   }
 
   public static CompletableFuture<Mqtt5AsyncClient> initialiseMqttAsyncClient(
@@ -341,10 +369,21 @@ public class EDDTableFromMqtt extends EDDTableFromFiles {
       // Append the data to the corresponding .jsonl file
       appendTableToJsonlFile(table, fullFileName);
 
+      Table tDirTable = dirTable; // succeeds if fileTableInMemory (which it should always be)
+      Table tFileTable = fileTable;
+      if (tDirTable == null)
+        tDirTable = tryToLoadDirFileTable(datasetDir() + DIR_TABLE_FILENAME); // may be null
+      if (tFileTable == null)
+        tFileTable = tryToLoadDirFileTable(datasetDir() + FILE_TABLE_FILENAME); // may be null
+      if (tDirTable == null || tFileTable == null) {
+        requestReloadASAP();
+        throw new SimpleException("dirTable and/or fileTable are null!");
+      }
+
       EDDTableFromFiles.updateFileTableWithStats(
-          fileTable,
+          tFileTable,
           fullFileName,
-          dirTable,
+          tDirTable,
           columnNames.length,
           columnIsFixed,
           columnNames,
@@ -354,8 +393,13 @@ public class EDDTableFromMqtt extends EDDTableFromFiles {
           0,
           table.nRows());
 
+      saveDirTableFileTableBadFiles(standardizeWhat, tDirTable, tFileTable, null);
+
     } catch (IOException | InterruptedException | TimeoutException | JSONException e) {
       throw new RuntimeException("Error processing MQTT message from topic=" + topic, e);
+    } catch (Throwable e) {
+      String2.log("Error saving file table: " + e.getMessage());
+      e.printStackTrace();
     }
   }
 
