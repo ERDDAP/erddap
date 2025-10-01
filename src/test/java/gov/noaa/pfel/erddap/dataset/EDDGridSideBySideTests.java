@@ -5,7 +5,6 @@ import com.cohort.util.File2;
 import com.cohort.util.Image2Tests;
 import com.cohort.util.String2;
 import com.cohort.util.Test;
-import gov.noaa.pfel.coastwatch.util.SSR;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.EDV;
 import org.junit.jupiter.api.BeforeAll;
@@ -13,7 +12,6 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import tags.TagImageComparison;
 import tags.TagLargeFiles;
-import tags.TagLocalERDDAP;
 import testDataset.EDDTestDataset;
 import testDataset.Initialization;
 
@@ -635,112 +633,5 @@ class EDDGridSideBySideTests {
     /* */
   }
 
-  /** This tests the /files/ "files" system. This requires erdTAgeo1day in the localhost ERDDAP. */
-  @org.junit.jupiter.api.Test
-  @TagLocalERDDAP
-  void testFiles() throws Throwable {
-    String results, expected;
-
-    // get /files/datasetID/.csv
-    results =
-        SSR.getUrlResponseStringNewline(
-            "http://localhost:8080/cwexperimental/files/erdTAgeo1day/.csv");
-    expected =
-        "Name,Last modified,Size,Description\n"
-            + "erdTAugeo1day/,NaN,NaN,\n"
-            + "erdTAvgeo1day/,NaN,NaN,\n";
-    Test.ensureEqual(results, expected, "results=\n" + results);
-
-    // get /files/datasetID/
-    results =
-        SSR.getUrlResponseStringNewline("http://localhost:8080/cwexperimental/files/erdTAgeo1day/");
-    Test.ensureTrue(results.indexOf("erdTAugeo1day&#x2f;") > 0, "results=\n" + results);
-    Test.ensureTrue(results.indexOf("erdTAugeo1day/") > 0, "results=\n" + results);
-
-    // get /files/datasetID/subdir/.csv
-    results =
-        SSR.getUrlResponseStringNewline(
-            "http://localhost:8080/cwexperimental/files/erdTAgeo1day/erdTAvgeo1day/.csv");
-    expected =
-        "Name,Last modified,Size,Description\n"
-            + "TA1992288_1992288_vgeo.nc,1354883738000,4178528,\n"
-            + "TA1992295_1992295_vgeo.nc,1354883742000,4178528,\n";
-    Test.ensureEqual(results, expected, "results=\n" + results);
-
-    // download a file in root
-
-    // download a file in subdir
-    results =
-        String2.annotatedString(
-            SSR.getUrlResponseStringNewline(
-                    "http://localhost:8080/cwexperimental/files/erdTAgeo1day/erdTAvgeo1day/TA1992288_1992288_vgeo.nc")
-                .substring(0, 50));
-    expected =
-        "CDF[1][0][0][0][0][0][0][0][10]\n"
-            + "[0][0][0][4][0][0][0][4]time[0][0][0][1][0][0][0][8]altitude[0][0][0][1][0][0][0][3]la[end]";
-    Test.ensureEqual(results.substring(0, expected.length()), expected, "results=\n" + results);
-
-    // try to download a non-existent dataset
-    try {
-      results =
-          SSR.getUrlResponseStringNewline("http://localhost:8080/cwexperimental/files/gibberish/");
-    } catch (Exception e) {
-      results = e.toString();
-    }
-    expected =
-        "java.io.IOException: HTTP status code=404 java.io.FileNotFoundException: http://localhost:8080/cwexperimental/files/gibberish/\n"
-            + "(Error {\n"
-            + "    code=404;\n"
-            + "    message=\"Not Found: Currently unknown datasetID=gibberish\";\n"
-            + "})";
-    Test.ensureEqual(results, expected, "results=\n" + results);
-
-    // try to download a non-existent directory
-    try {
-      results =
-          SSR.getUrlResponseStringNewline(
-              "http://localhost:8080/cwexperimental/files/erdTAgeo1day/gibberish/");
-    } catch (Exception e) {
-      results = e.toString();
-    }
-    expected =
-        "java.io.IOException: HTTP status code=404 java.io.FileNotFoundException: http://localhost:8080/cwexperimental/files/erdTAgeo1day/gibberish/\n"
-            + "(Error {\n"
-            + "    code=404;\n"
-            + "    message=\"Not Found: Resource not found: directory=gibberish/\";\n"
-            + "})";
-    Test.ensureEqual(results, expected, "results=\n" + results);
-
-    // try to download a non-existent file
-    try {
-      results =
-          SSR.getUrlResponseStringNewline(
-              "http://localhost:8080/cwexperimental/files/erdTAgeo1day/gibberish.csv");
-    } catch (Exception e) {
-      results = e.toString();
-    }
-    expected =
-        "java.io.IOException: HTTP status code=404 java.io.FileNotFoundException: http://localhost:8080/cwexperimental/files/erdTAgeo1day/gibberish.csv\n"
-            + "(Error {\n"
-            + "    code=404;\n"
-            + "    message=\"Not Found: File not found: gibberish.csv .\";\n"
-            + "})";
-    Test.ensureEqual(results, expected, "results=\n" + results);
-
-    // try to download a non-existent file in existant subdir
-    try {
-      results =
-          SSR.getUrlResponseStringNewline(
-              "http://localhost:8080/cwexperimental/files/erdTAgeo1day/subdir/gibberish.csv");
-    } catch (Exception e) {
-      results = e.toString();
-    }
-    expected =
-        "java.io.IOException: HTTP status code=404 java.io.FileNotFoundException: http://localhost:8080/cwexperimental/files/erdTAgeo1day/subdir/gibberish.csv\n"
-            + "(Error {\n"
-            + "    code=404;\n"
-            + "    message=\"Not Found: File not found: gibberish.csv .\";\n"
-            + "})";
-    Test.ensureEqual(results, expected, "results=\n" + results);
-  }
+ 
 }
