@@ -85,7 +85,6 @@ import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.semver4j.Semver;
-import tags.TagFlaky;
 import tags.TagImageComparison;
 import tags.TagIncompleteTest;
 import tags.TagJetty;
@@ -17122,8 +17121,6 @@ class JettyTests {
   /** This tests dapToNc DGrid. */
   @org.junit.jupiter.api.Test
   @TagJetty
-  @TagFlaky // It seems if data is not cached to frequently fail for one of the sides
-  // in erdQSwindmday
   void testDapToNcDGrid() throws Throwable {
     String2.log("\n\n*** OpendapHelper.testDapToNcDGrid");
     String fileName, expected, results;
@@ -17553,8 +17550,6 @@ class JettyTests {
   /** This tests findVarsWithSharedDimensions. */
   @org.junit.jupiter.api.Test
   @TagJetty
-  @TagFlaky // It seems if data is not cached to frequently fail for one of the sides
-  // in erdQSwindmday
   void testFindVarsWithSharedDimensions() throws Throwable {
     String2.log("\n\n*** OpendapHelper.findVarsWithSharedDimensions");
     String expected, results;
@@ -20257,5 +20252,118 @@ class JettyTests {
     assertTrue(results.contains(expected4), "Mismatch on end of schema. results=\n" + results);
     tResults = results.substring(0, Math.min(results.length(), expected.length()));
     Test.ensureEqual(tResults, expected, "results=\n" + results);
+  }
+
+  /** This tests the /files/ "files" system. This requires erdQSwindmday in the localhost ERDDAP. */
+  @org.junit.jupiter.api.Test
+  @TagJetty
+  void testEDDGridSideBySideFiles() throws Throwable {
+    String results, expected;
+
+    // get /files/datasetID/.csv
+    results = SSR.getUrlResponseStringNewline(EDStatic.erddapUrl + "/files/erdQSwindmday/.csv");
+    expected =
+        "Name,Last modified,Size,Description\n"
+            + "erdQSux10mday/,NaN,NaN,\n"
+            + "erdQSuy10mday/,NaN,NaN,\n";
+    Test.ensureEqual(results, expected, "results=\n" + results);
+
+    // get /files/datasetID/
+    results = SSR.getUrlResponseStringNewline(EDStatic.erddapUrl + "/files/erdQSwindmday/");
+    Test.ensureTrue(results.indexOf("erdQSux10mday&#x2f;") > 0, "results=\n" + results);
+    Test.ensureTrue(results.indexOf("erdQSux10mday/") > 0, "results=\n" + results);
+
+    // get /files/datasetID/subdir/.csv
+    results =
+        SSR.getUrlResponseStringNewline(
+            EDStatic.erddapUrl + "/files/erdQSwindmday/erdQSux10mday/.csv");
+    expected =
+        "Name,Last modified,Size,Description\n"
+            + "QS1999213_1999243_ux10.nc,1278088334000,13878880,\n"
+            + "QS1999244_1999273_ux10.nc,1278088418000,13878868,\n";
+    Test.ensureEqual(results, expected, "results=\n" + results);
+
+    // download a file in root
+
+    // download a file in subdir
+    results =
+        String2.annotatedString(
+            SSR.getUrlResponseStringNewline(
+                    EDStatic.erddapUrl
+                        + "/files/erdQSwindmday/erdQSux10mday/QS1999213_1999243_ux10.nc")
+                .substring(0, 50));
+    expected =
+        "CDF[1][0][0][0][0][0][0][0][10]\n"
+            + "[0][0][0][4][0][0][0][4]time[0][0][0][1][0][0][0][8]altitude[0][0][0][1][0][0][0][3]la[end]";
+    Test.ensureEqual(results.substring(0, expected.length()), expected, "results=\n" + results);
+
+    // try to download a non-existent dataset
+    try {
+      results = SSR.getUrlResponseStringNewline(EDStatic.erddapUrl + "/files/gibberish/");
+    } catch (Exception e) {
+      results = e.toString();
+    }
+    expected =
+        "java.io.IOException: HTTP status code=404 java.io.FileNotFoundException: "
+            + EDStatic.erddapUrl
+            + "/files/gibberish/\n"
+            + "(Error {\n"
+            + "    code=404;\n"
+            + "    message=\"Not Found: Currently unknown datasetID=gibberish\";\n"
+            + "})";
+    Test.ensureEqual(results, expected, "results=\n" + results);
+
+    // try to download a non-existent directory
+    try {
+      results =
+          SSR.getUrlResponseStringNewline(EDStatic.erddapUrl + "/files/erdQSwindmday/gibberish/");
+    } catch (Exception e) {
+      results = e.toString();
+    }
+    expected =
+        "java.io.IOException: HTTP status code=404 java.io.FileNotFoundException: "
+            + EDStatic.erddapUrl
+            + "/files/erdQSwindmday/gibberish/\n"
+            + "(Error {\n"
+            + "    code=404;\n"
+            + "    message=\"Not Found: Resource not found: directory=gibberish/\";\n"
+            + "})";
+    Test.ensureEqual(results, expected, "results=\n" + results);
+
+    // try to download a non-existent file
+    try {
+      results =
+          SSR.getUrlResponseStringNewline(
+              EDStatic.erddapUrl + "/files/erdQSwindmday/gibberish.csv");
+    } catch (Exception e) {
+      results = e.toString();
+    }
+    expected =
+        "java.io.IOException: HTTP status code=404 java.io.FileNotFoundException: "
+            + EDStatic.erddapUrl
+            + "/files/erdQSwindmday/gibberish.csv\n"
+            + "(Error {\n"
+            + "    code=404;\n"
+            + "    message=\"Not Found: File not found: gibberish.csv .\";\n"
+            + "})";
+    Test.ensureEqual(results, expected, "results=\n" + results);
+
+    // try to download a non-existent file in existant subdir
+    try {
+      results =
+          SSR.getUrlResponseStringNewline(
+              EDStatic.erddapUrl + "/files/erdQSwindmday/subdir/gibberish.csv");
+    } catch (Exception e) {
+      results = e.toString();
+    }
+    expected =
+        "java.io.IOException: HTTP status code=404 java.io.FileNotFoundException: "
+            + EDStatic.erddapUrl
+            + "/files/erdQSwindmday/subdir/gibberish.csv\n"
+            + "(Error {\n"
+            + "    code=404;\n"
+            + "    message=\"Not Found: File not found: gibberish.csv .\";\n"
+            + "})";
+    Test.ensureEqual(results, expected, "results=\n" + results);
   }
 }
