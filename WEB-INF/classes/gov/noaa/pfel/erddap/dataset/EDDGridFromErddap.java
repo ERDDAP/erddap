@@ -146,12 +146,12 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
         case "</reloadEveryNMinutes>" -> tReloadEveryNMinutes = String2.parseInt(content);
         case "</updateEveryNMillis>" -> tUpdateEveryNMillis = String2.parseInt(content);
 
-          // Since this erddap can never be logged in to the remote ERDDAP,
-          // it can never get dataset info from the remote erddap dataset (which should have
-          // restricted
-          // access).
-          // Plus there is no way to pass accessibleTo info between ERDDAP's (but not to users).
-          // So there is currently no way to make this work.
+        // Since this erddap can never be logged in to the remote ERDDAP,
+        // it can never get dataset info from the remote erddap dataset (which should have
+        // restricted
+        // access).
+        // Plus there is no way to pass accessibleTo info between ERDDAP's (but not to users).
+        // So there is currently no way to make this work.
         case "<accessibleTo>" -> {}
         case "</accessibleTo>" -> tAccessibleTo = content;
         case "</graphsAccessibleTo>" -> tGraphsAccessibleTo = content;
@@ -449,6 +449,8 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
         case EDV.DEPTH_NAME -> depthIndex = av;
         case EDV.TIME_NAME -> timeIndex = av;
       }
+      String ioosCategory = axisVariables[av].sourceAttributes().getString("ioos_category");
+      if (ioosCategory.equals(EDV.PRESSURE_LONGNAME)) altIndex = av;
     }
 
     int ndv = tDataVariables.size();

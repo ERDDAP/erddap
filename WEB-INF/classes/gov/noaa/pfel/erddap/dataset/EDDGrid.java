@@ -183,6 +183,13 @@ public abstract class EDDGrid extends EDD {
       LocalizedAttributes tAddAtt,
       PrimitiveArray sourceAxisValues)
       throws Throwable {
+    int language = EDMessages.DEFAULT_LANGUAGE;
+    String ioosCategory = null;
+    if (tSourceAtt != null && tSourceAtt.getString("ioos_category") != null) {
+      ioosCategory = tSourceAtt.getString("ioos_category");
+    } else if (tAddAtt != null && tAddAtt.getString(language, "ioos_category") != null) {
+      ioosCategory = tAddAtt.getString(language, "ioos_category");
+    }
 
     if (EDV.LON_NAME.equals(tDestName)) {
       if (av >= 0) lonIndex = av;
@@ -196,6 +203,10 @@ public abstract class EDDGrid extends EDD {
       if (av >= 0) altIndex = av;
       return new EDVAltGridAxis(
           tParentDatasetID, tSourceName, tSourceAtt, tAddAtt, sourceAxisValues);
+    } else if (EDV.PRESSURE_LONGNAME.equals(ioosCategory)) {
+      if (av >= 0) altIndex = av;
+      return new EDVAltGridAxis(
+          tParentDatasetID, tSourceName, tSourceAtt, tAddAtt, sourceAxisValues, true);
     } else if (EDV.DEPTH_NAME.equals(tDestName)) {
       if (av >= 0) depthIndex = av;
       return new EDVDepthGridAxis(
@@ -3551,7 +3562,8 @@ public abstract class EDDGrid extends EDD {
                     MessageFormat.format(
                             EDStatic.messages.get(Message.MAG_AXIS_VAR_HELP, language), varHelp[v])
                         + EDStatic.messages.get(Message.MAG_AXIS_VAR_HELP_GRID, language)));
-        writer.write("""
+        writer.write(
+            """
                   </td>
                 </tr>
                 """);
@@ -3898,7 +3910,8 @@ public abstract class EDDGrid extends EDD {
                 + ":&nbsp;</td>\n"
                 + "    <td colspan=\"5\">");
         writer.write(widgets.color17("", paramName, "", colori, ""));
-        writer.write("""
+        writer.write(
+            """
                 </td>
                   </tr>
                 """);
@@ -3977,7 +3990,8 @@ public abstract class EDDGrid extends EDD {
                 EDV.VALID_SCALES0,
                 scale,
                 ""));
-        writer.write("""
+        writer.write(
+            """
                 </td>
                   </tr>
                 """);
@@ -4037,7 +4051,8 @@ public abstract class EDDGrid extends EDD {
                 EDStatic.paletteSections,
                 pSections,
                 ""));
-        writer.write("""
+        writer.write(
+            """
                 </td>
                   </tr>
                 """);
@@ -4485,7 +4500,8 @@ public abstract class EDDGrid extends EDD {
               + "</a>\n"
               + EDStatic.htmlTooltipImage(request, language, loggedInAs, genViewHtml)
               + ")\n");
-      writer.write("""
+      writer.write(
+          """
               </td></tr>
               </table>
 
@@ -5267,7 +5283,8 @@ public abstract class EDDGrid extends EDD {
       writer.write("</pre>\n");
 
       // then write DAP instructions
-      writer.write("""
+      writer.write(
+          """
               <br>&nbsp;
               <hr>
               """);
@@ -10548,7 +10565,8 @@ public abstract class EDDGrid extends EDD {
               "          </citeinfo>\n"
               + "        </lworkcit>\n");
 
-    writer.write("""
+    writer.write(
+        """
                   </citeinfo>
                 </citation>
             """);
@@ -10969,7 +10987,8 @@ public abstract class EDDGrid extends EDD {
               + "      </procstep>\n");
     }
 
-    writer.write("""
+    writer.write(
+        """
                 </lineage>
               </dataqual>
             """);
