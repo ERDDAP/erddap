@@ -2503,7 +2503,8 @@ Il timestamp dell&#39;invio del set di dati è &tTimestamp; .
 <dtWMS>Fare clic per scoprire come creare mappe di questi dati tramite il servizio Web Map di questo set di dati.</dtWMS>
 <EasierAccessToScientificData>Accesso più facile ai dati scientifici</EasierAccessToScientificData>
 
-<!--I messaggi EDD vengono visualizzati sul tabledap e sul form di accesso dati griglia.-->
+<!--I messaggi EDD vengono visualizzati sultabledape Gridap Data Access Forms.
+-->
 <EDDDatasetID>ID del set di dati</EDDDatasetID>
 <EDDFgdc>FGDC</EDDFgdc>
 <EDDFgdcMetadata>Metadati FGDC-STD-001-1998</EDDFgdcMetadata>
@@ -2938,7 +2939,14 @@ Per esempio:
 <fileHelpTable_help>Visualizza una pagina web con una descrizione di tabledap.</fileHelpTable_help>
 <fileHelp_html>Visualizza un modulo di accesso ai dati HTML in stile OPeNDAP.</fileHelp_html>
 <fileHelp_htmlTable>Visualizza una pagina Web UTF-8 .html con i dati in una tabella. I tempi sono stringhe ISO 8601.</fileHelp_htmlTable>
-<fileHelp_iso19115>Visualizza i metadati ISO 19115-2/19139 UTF-8 .xml del set di dati.</fileHelp_iso19115>
+<fileHelp_iso19115>Visualizzare il datasetISO 19115/19139UTF-8 .xml metadati utilizzando la versione predefinita per questo server.
+</fileHelp_iso19115>
+<fileHelp_iso19115_2>Visualizzare il datasetISO 19115-2/19139metadati UTF-8 .xml.
+</fileHelp_iso19115_2>
+<fileHelp_iso191392007>Visualizzare il datasetISO 19139:2007metadati UTF-8 .xml.
+</fileHelp_iso191392007>
+<fileHelp_iso19115_3_2016>Visualizzare il datasetISO 19115-3:2016metadati UTF-8 .xml.
+</fileHelp_iso19115_3_2016>
 <fileHelp_itxGrid>Scarica un file di testo Igor ISO-8859-1. Ogni variabile dell&#39;asse e ogni variabile dei dati diventa un&#39;onda.</fileHelp_itxGrid>
 <fileHelp_itxTable>Scarica un file di testo Igor ISO-8859-1. Ogni colonna di risposta diventa un&#39;onda.</fileHelp_itxTable>
 <fileHelp_json>Visualizza un file JSON UTF-8 simile a una tabella (valore mancante = &#39;null&#39;; i tempi sono stringhe ISO 8601).</fileHelp_json>

@@ -2578,7 +2578,8 @@ Ennek az adatkészlet-beküldésnek az időbélyege &tTimestamp; .
 <dtWMS>Kattintson ide, ha megtudhatja, hogyan készíthet térképeket ezen adatokról az adatkészlet webes térképszolgáltatásán keresztül.</dtWMS>
 <EasierAccessToScientificData>Könnyebb hozzáférés a tudományos adatokhoz</EasierAccessToScientificData>
 
-<!--Az EDD-üzenetek az asztali és hálózati adathozzáférési formákon jelennek meg.-->
+<!--Az EDD üzenetek jelennek meg atabledapés a griddap Data Access Forms.
+-->
 <EDDDatasetID>Adatkészlet azonosítója</EDDDatasetID>
 <EDDFgdc>FGDC</EDDFgdc>
 <EDDFgdcMetadata>FGDC-STD-001-1998 Metaadatok</EDDFgdcMetadata>
@@ -3019,7 +3020,14 @@ Például:
 <fileHelpTable_help>Tekintse meg a tabledap leírását tartalmazó weboldalt.</fileHelpTable_help>
 <fileHelp_html>Tekintse meg az OPeNDAP-stílusú HTML adatelérési űrlapot.</fileHelp_html>
 <fileHelp_htmlTable>Tekintse meg az UTF-8 .html weboldalt az adatokkal egy táblázatban. Az idők ISO 8601 karakterláncok.</fileHelp_htmlTable>
-<fileHelp_iso19115>Tekintse meg az adatkészlet ISO 19115-2/19139 UTF-8 .xml metaadatait.</fileHelp_iso19115>
+<fileHelp_iso19115>Az adatkészlet megtekintéseISO 19115/19139UTF-8 .xml metaadata használja a verzió alapértelmezettségét ehhez a szerverhez.
+</fileHelp_iso19115>
+<fileHelp_iso19115_2>Az adatkészlet megtekintéseISO 19115-2/19139UTF-8 .xml metaadata.
+</fileHelp_iso19115_2>
+<fileHelp_iso191392007>Az adatkészlet megtekintéseISO 19139:2007UTF-8 .xml metaadata.
+</fileHelp_iso191392007>
+<fileHelp_iso19115_3_2016>Az adatkészlet megtekintéseISO 19115-3:2016UTF-8 .xml metaadata.
+</fileHelp_iso19115_3_2016>
 <fileHelp_itxGrid>Töltse le az ISO-8859-1 Igor szövegfájlt. Minden tengelyváltozó és minden adatváltozó hullámmá válik.</fileHelp_itxGrid>
 <fileHelp_itxTable>Töltse le az ISO-8859-1 Igor szövegfájlt. Minden válaszoszlop hullámmá válik.</fileHelp_itxTable>
 <fileHelp_json>Táblázatszerű UTF-8 JSON-fájl megtekintése (hiányzó érték = &#39;null&#39;; az idők ISO 8601-es karakterláncok).</fileHelp_json>

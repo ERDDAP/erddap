@@ -39,9 +39,18 @@ import gov.noaa.pfel.erddap.util.EDMessages;
 import gov.noaa.pfel.erddap.util.EDMessages.Message;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.util.ThreadedWorkManager;
-import gov.noaa.pfel.erddap.variable.*;
+import gov.noaa.pfel.erddap.variable.DataVariableInfo;
+import gov.noaa.pfel.erddap.variable.EDV;
+import gov.noaa.pfel.erddap.variable.EDVAlt;
+import gov.noaa.pfel.erddap.variable.EDVDepth;
+import gov.noaa.pfel.erddap.variable.EDVLat;
+import gov.noaa.pfel.erddap.variable.EDVLon;
+import gov.noaa.pfel.erddap.variable.EDVTime;
+import gov.noaa.pfel.erddap.variable.EDVTimeStamp;
 import jakarta.servlet.http.HttpServletRequest;
+import java.io.File;
 import java.io.FileNotFoundException;
+import java.math.BigInteger;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -53,7 +62,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -1376,35 +1387,6 @@ public abstract class EDDTableFromFiles extends EDDTable implements WatchUpdateH
     cachePartialPathRegex =
         String2.isSomething(tCachePartialPathRegex) ? tCachePartialPathRegex : null;
 
-    // class-specific things
-    if (className.equals("EDDTableFromHttpGet")) {
-      setHttpGetRequiredVariableNames(
-          tAddGlobalAttributes.getString(language, HTTP_GET_REQUIRED_VARIABLES));
-      setHttpGetDirectoryStructure(
-          tAddGlobalAttributes.getString(language, HTTP_GET_DIRECTORY_STRUCTURE));
-      setHttpGetKeys(tAddGlobalAttributes.getString(language, HTTP_GET_KEYS));
-      tAddGlobalAttributes.remove(HTTP_GET_KEYS);
-
-    } else if (className.equals("EDDTableFromMultidimNcFiles")) {
-      String ts = tAddGlobalAttributes.getString(language, TREAT_DIMENSIONS_AS);
-      if (String2.isSomething(ts)) {
-        String parts[] = String2.split(ts, ';');
-        int nParts = parts.length;
-        treatDimensionsAs = new String[nParts][];
-        for (int part = 0; part < nParts; part++) {
-          treatDimensionsAs[part] = String2.split(parts[part], ',');
-          if (reallyVerbose)
-            String2.log(
-                TREAT_DIMENSIONS_AS
-                    + "["
-                    + part
-                    + "] was set to "
-                    + String2.toCSSVString(treatDimensionsAs[part]));
-        }
-      }
-      tAddGlobalAttributes.remove(TREAT_DIMENSIONS_AS);
-    }
-
     if (!String2.isSomething(fileDir))
       throw new IllegalArgumentException(errorInMethod + "fileDir wasn't specified.");
     filesAreLocal = !String2.isTrulyRemote(fileDir);
@@ -1535,6 +1517,9 @@ public abstract class EDDTableFromFiles extends EDDTable implements WatchUpdateH
               + sourceDataNames
               + "\nsourceDataTypes="
               + String2.toCSSVString(sourceDataTypes));
+
+    // This is intended to be overridden by subclasses so they can handle early initialization.
+    earlyInitialization();
 
     if (sortedColumnSourceName.length() > 0) {
       sortedDVI = sourceDataNames.indexOf(sortedColumnSourceName);
@@ -2173,8 +2158,11 @@ public abstract class EDDTableFromFiles extends EDDTable implements WatchUpdateH
               + (readFileCumTime / Math.max(1, nReadFile))
               + "ms";
       if (verbose || fileTable.nRows() == 0) String2.log(msg);
-      if (fileTable.nRows() == 0) throw new RuntimeException("No valid files!");
-
+      if (fileTable.nRows() == 0) {
+        if (!"EDDTableFromMqtt".equals(className) && !"EDDTableFromHttpGet".equals(className)) {
+          throw new RuntimeException("No valid files!");
+        }
+      }
       if (nReadFile > 0 || nRemoved > 0)
         filesChanged =
             "The list of aggregated files changed:\n"
@@ -2773,25 +2761,6 @@ public abstract class EDDTableFromFiles extends EDDTable implements WatchUpdateH
     return false;
   }
 
-  /** The constructor for EDDTableFromHttpGet calls this to set httpGetRequiredVariableNames. */
-  private void setHttpGetRequiredVariableNames(String tRequiredVariablesCSV) {
-    if (!String2.isSomething(tRequiredVariablesCSV))
-      throw new RuntimeException(
-          String2.ERROR
-              + " in EDDTableFromHttpGet constructor for datasetID="
-              + datasetID
-              + ": "
-              + HTTP_GET_REQUIRED_VARIABLES
-              + " MUST be in globalAttributes.");
-    httpGetRequiredVariableNames = StringArray.fromCSV(tRequiredVariablesCSV).toStringArray();
-    if (verbose)
-      String2.log(
-          "  "
-              + HTTP_GET_REQUIRED_VARIABLES
-              + "="
-              + String2.toCSSVString(httpGetRequiredVariableNames));
-  }
-
   /**
    * The constructor for EDDTableFromHttpGet calls this after the variables are created to set
    * httpGetRequiredVariableTypes.
@@ -2825,77 +2794,11 @@ public abstract class EDDTableFromFiles extends EDDTable implements WatchUpdateH
   }
 
   /**
-   * The constructor for EDDTableFromHttpGet calls this to set httpGetDirectoryStructure variables.
+   * This is called in the constructor after the parameters are assigned to the class fields. It is
+   * intended to handle initializing anything that needs to occur before the rest of the processing
+   * in the constructor.
    */
-  private void setHttpGetDirectoryStructure(String tDirStructure) {
-
-    if (!String2.isSomething(tDirStructure))
-      throw new RuntimeException(
-          String2.ERROR
-              + " in EDDTableFromHttpGet constructor for datasetID="
-              + datasetID
-              + ": "
-              + HTTP_GET_DIRECTORY_STRUCTURE
-              + " MUST be in globalAttributes.");
-    httpGetDirectoryStructureColumnNames = new StringArray();
-    httpGetDirectoryStructureNs = new IntArray();
-    httpGetDirectoryStructureCalendars = new IntArray();
-    EDDTableFromHttpGet.parseHttpGetDirectoryStructure(
-        tDirStructure,
-        httpGetDirectoryStructureColumnNames,
-        httpGetDirectoryStructureNs,
-        httpGetDirectoryStructureCalendars);
-    if (verbose)
-      String2.log(
-          "  httpGetDirectoryStructureColumnNames="
-              + httpGetDirectoryStructureColumnNames.toString()
-              + "\n"
-              + "  httpGetDirectoryStructureNs="
-              + httpGetDirectoryStructureNs.toString()
-              + "\n"
-              + "  httpGetDirectoryStructureCalendars="
-              + httpGetDirectoryStructureCalendars.toString());
-  }
-
-  /**
-   * The constructor for EDDTableFromHttpGet calls this to set HttpGetKeys.
-   *
-   * @param tHttpGetKeys a CSV of author_key values.
-   */
-  private void setHttpGetKeys(String tHttpGetKeys) {
-
-    String msg =
-        String2.ERROR + " in EDDTableFromHttpGet constructor for datasetID=" + datasetID + ": ";
-    String inForm =
-        "Each of the httpGetKeys must be in the form author_key, with only ASCII characters (but no space, ', \", or comma), and where the key is at least 8 characters long.";
-    if (tHttpGetKeys == null
-        || tHttpGetKeys.indexOf('\"') >= 0
-        || // be safe, avoid trickery
-        tHttpGetKeys.indexOf('\'') >= 0) // be safe, avoid trickery
-    throw new RuntimeException(msg + inForm);
-    httpGetKeys = new HashSet<>();
-    String keyAr[] = StringArray.arrayFromCSV(tHttpGetKeys);
-    for (int i = 0; i < keyAr.length; i++) {
-      if (String2.isSomething(keyAr[i])) {
-        keyAr[i] = keyAr[i].trim();
-        int po = keyAr[i].indexOf('_');
-        if (po <= 0
-            || // can't be 0: so author must be something
-            po >= keyAr[i].length() - 8
-            || // key must be 8+ chars
-            !String2.isAsciiPrintable(keyAr[i])
-            || keyAr[i].indexOf(' ') >= 0
-            || // isAsciiPrintable allows ' ' (be safe, avoid trickery)
-            keyAr[i].indexOf(',') >= 0) { // isAsciiPrintable allows , (be safe, avoid trickery)
-          throw new RuntimeException(msg + inForm + " (key #" + i + ")");
-        } else {
-          httpGetKeys.add(keyAr[i]); // not String2.canonical, because then publicly accessible
-        }
-      }
-    }
-    if (httpGetKeys.size() == 0)
-      throw new RuntimeException(msg + HTTP_GET_KEYS + " MUST be in globalAttributes.");
-  }
+  protected void earlyInitialization() {}
 
   /**
    * This extracts data from the fileName.
@@ -3164,6 +3067,212 @@ public abstract class EDDTableFromFiles extends EDDTable implements WatchUpdateH
     }
     if (verbose) String2.log("minMaxTable=\n" + minMaxTable.dataToString()); // it's always small
     return minMaxTable;
+  }
+
+  // TODO: This is static because EDDTableFromHttpGet doesn't handle fileTable and dirTable
+  // normally.
+  public static void updateFileTableWithStats(
+      Table fileTable,
+      String fullFileName,
+      Table dirTable,
+      int nColumns,
+      boolean[] columnIsFixed,
+      String columnNames[],
+      PAType columnPATypes[],
+      PrimitiveArray columnMvFv[],
+      PrimitiveArray columnValues[],
+      int startRow,
+      int stopRow)
+      throws InterruptedException, TimeoutException {
+
+    if (fileTable == null) {
+      return;
+    }
+
+    String columnMinString[] = new String[nColumns];
+    String columnMaxString[] = new String[nColumns];
+    long columnMinLong[] = new long[nColumns];
+    long columnMaxLong[] = new long[nColumns];
+    BigInteger columnMinULong[] = new BigInteger[nColumns];
+    BigInteger columnMaxULong[] = new BigInteger[nColumns];
+    double columnMinDouble[] = new double[nColumns];
+    double columnMaxDouble[] = new double[nColumns];
+    boolean columnHasNaN[] = new boolean[nColumns];
+
+    boolean columnIsString[] = new boolean[nColumns];
+    boolean columnIsLong[] = new boolean[nColumns];
+    boolean columnIsULong[] = new boolean[nColumns];
+    for (int col = 0; col < nColumns; col++) {
+      columnIsString[col] = columnPATypes[col] == PAType.STRING; // char treated as numeric
+      columnIsLong[col] = columnPATypes[col] == PAType.LONG;
+      columnIsULong[col] = columnPATypes[col] == PAType.ULONG;
+    }
+
+    Arrays.fill(columnMinString, "\uFFFF");
+    Arrays.fill(columnMaxString, "\u0000");
+    Arrays.fill(columnMinLong, Long.MAX_VALUE);
+    Arrays.fill(columnMaxLong, Long.MIN_VALUE);
+    Arrays.fill(columnMinDouble, Double.MAX_VALUE);
+    Arrays.fill(columnMaxDouble, -Double.MAX_VALUE);
+    Arrays.fill(columnHasNaN, false);
+
+    // calculate statistics
+    for (int tRow = startRow; tRow < stopRow; tRow++) {
+      for (int col = 0; col < nColumns; col++) {
+        if (columnIsFixed[col]) {
+          // do nothing
+        } else if (columnIsString[col]) {
+          String s = columnValues[col].getString(tRow);
+          if (s.length() == 0 || (columnMvFv[col] != null && columnMvFv[col].indexOf(s) >= 0))
+            columnHasNaN[col] = true;
+          else {
+            if (s.compareTo(columnMinString[col]) < 0) columnMinString[col] = s;
+            if (s.compareTo(columnMaxString[col]) > 0) columnMaxString[col] = s;
+          }
+        } else if (columnIsLong[col]) {
+          long d = columnValues[col].getLong(tRow);
+          if (d == Long.MAX_VALUE
+              || (columnMvFv[col] != null
+                  && columnMvFv[col].indexOf(columnValues[col].getString(tRow)) >= 0))
+            columnHasNaN[col] = true;
+          else {
+            if (d < columnMinLong[col]) columnMinLong[col] = d;
+            if (d > columnMaxLong[col]) columnMaxLong[col] = d;
+          }
+        } else if (columnIsULong[col]) {
+          BigInteger d = columnValues[col].getULong(tRow);
+          if (d.equals(Math2.ULONG_MAX_VALUE)
+              || (columnMvFv[col] != null
+                  && columnMvFv[col].indexOf(columnValues[col].getString(tRow)) >= 0))
+            columnHasNaN[col] = true;
+          else {
+            if (d.compareTo(columnMinULong[col]) < 0) columnMinULong[col] = d;
+            if (d.compareTo(columnMaxULong[col]) > 0) columnMaxULong[col] = d;
+          }
+        } else {
+          double d = columnValues[col].getDouble(tRow);
+          if (Double.isNaN(d)
+              || (columnMvFv[col] != null
+                  && columnMvFv[col].indexOf(columnValues[col].getString(tRow)) >= 0))
+            columnHasNaN[col] = true;
+          else {
+            if (d < columnMinDouble[col]) columnMinDouble[col] = d;
+            if (d > columnMaxDouble[col]) columnMaxDouble[col] = d;
+          }
+        }
+      }
+    }
+
+    ReentrantLock lock2 = String2.canonicalLock(fileTable);
+
+    if (!lock2.tryLock(String2.longTimeoutSeconds, TimeUnit.SECONDS))
+      throw new TimeoutException("Timeout waiting for lock on fileTable in EDDTableFromHttpGet.");
+    try {
+      String fileDir = File2.getDirectory(fullFileName);
+      String fileName = File2.getNameAndExtension(fullFileName);
+
+      // which row in dirTable?
+      int dirTableRow = dirTable.getColumn(0).indexOf(fileDir);
+      if (dirTableRow < 0) {
+        dirTableRow = dirTable.getColumn(0).size();
+        dirTable.getColumn(0).addString(fileDir);
+      }
+
+      // which row in the fileTable?
+      int fileTableRow = 0;
+      ShortArray fileTableDirPA = (ShortArray) fileTable.getColumn(FT_DIR_INDEX_COL);
+      StringArray fileTableNamePA = (StringArray) fileTable.getColumn(FT_FILE_LIST_COL);
+      int fileTableNRows = fileTable.nRows();
+      while (fileTableRow < fileTableNRows
+          && (fileTableDirPA.get(fileTableRow) != dirTableRow
+              || !fileTableNamePA.get(fileTableRow).equals(fileName))) {
+        fileTableRow++;
+      }
+
+      if (fileTableRow == fileTableNRows) {
+        // add row to fileTable
+        fileTableDirPA.addInt(dirTableRow);
+        fileTableNamePA.add(fileName);
+        fileTable.getColumn(FT_LAST_MOD_COL).addLong(0); // will be updated below
+        fileTable.getColumn(FT_SIZE_COL).addLong(0); // will be updated below
+        fileTable.getColumn(FT_SORTED_SPACING_COL).addDouble(1); // irrelevant
+        for (int col = 0; col < nColumns; col++) {
+          int baseFTC =
+              dv0 + col * 3; // first of 3 File Table Columns (min, max, hasNaN) for this col
+          if (columnIsFixed[col]) {
+            fileTable.getColumn(baseFTC).addString(columnNames[col].substring(1)); // ???
+            fileTable.getColumn(baseFTC + 1).addString(columnNames[col].substring(1));
+          } else if (columnIsString[col]) {
+            fileTable.getColumn(baseFTC).addString(columnMinString[col]);
+            fileTable.getColumn(baseFTC + 1).addString(columnMaxString[col]);
+          } else if (columnIsLong[col]) {
+            fileTable.getColumn(baseFTC).addLong(columnMinLong[col]);
+            fileTable.getColumn(baseFTC + 1).addLong(columnMaxLong[col]);
+          } else {
+            fileTable.getColumn(baseFTC).addDouble(columnMinDouble[col]);
+            fileTable.getColumn(baseFTC + 1).addDouble(columnMaxDouble[col]);
+          }
+          fileTable.getColumn(baseFTC + 2).addInt(columnHasNaN[col] ? 1 : 0);
+        }
+
+      } else {
+        // adjust current row:
+        // dir unchanged
+        // name unchanged
+        // lastMod will be updated below
+        // size be updated below
+        // spacing unchanged/irrelevant
+        for (int col = 0; col < nColumns; col++) {
+          int baseFTC =
+              dv0 + col * 3; // first of 3 File Table Columns (min, max, hasNaN) for this col
+          PrimitiveArray minColPA = fileTable.getColumn(baseFTC);
+          PrimitiveArray maxColPA = fileTable.getColumn(baseFTC + 1);
+          if (columnIsFixed[col]) {
+            // already has fixed value
+          } else if (columnIsString[col]) {
+            String tt = columnMinString[col];
+            if (!tt.equals("\uFFFF")) { // has data
+              if (tt.compareTo(minColPA.getString(fileTableRow)) < 0)
+                minColPA.setString(fileTableRow, tt);
+              tt = columnMaxString[col];
+              if (tt.compareTo(maxColPA.getString(fileTableRow)) > 0)
+                maxColPA.setString(fileTableRow, tt);
+            }
+          } else if (columnIsLong[col]) {
+            long tt = columnMinLong[col];
+            if (tt != Long.MAX_VALUE) { // has data
+              if (tt < minColPA.getLong(fileTableRow)) minColPA.setLong(fileTableRow, tt);
+              if (tt > maxColPA.getLong(fileTableRow)) maxColPA.setLong(fileTableRow, tt);
+            }
+          } else {
+            double tt = columnMinDouble[col];
+            if (!Double.isNaN(tt)) { // has data
+              if (tt < minColPA.getDouble(fileTableRow)) minColPA.setDouble(fileTableRow, tt);
+              if (tt > maxColPA.getDouble(fileTableRow)) maxColPA.setDouble(fileTableRow, tt);
+            }
+          }
+          if (columnHasNaN[col]) fileTable.getColumn(baseFTC + 2).setInt(fileTableRow, 1);
+        }
+      }
+
+      // update file's lastMod and size
+      long tLastMod = -1;
+      long tLength = -1;
+      try {
+        File file = new File(fullFileName);
+        tLastMod = file.lastModified();
+        tLength = file.length();
+      } catch (Exception e) {
+        String2.log(
+            String2.ERROR
+                + " in EDDTableFromHttpGet while getting lastModified and length of "
+                + fullFileName);
+      }
+      fileTable.getColumn(FT_LAST_MOD_COL).setLong(fileTableRow, tLastMod);
+      fileTable.getColumn(FT_SIZE_COL).setLong(fileTableRow, tLength);
+    } finally {
+      lock2.unlock();
+    }
   }
 
   @Override

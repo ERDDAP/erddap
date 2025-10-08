@@ -26,6 +26,7 @@ import gov.noaa.pfel.erddap.util.EDMessages.Message;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.DataVariableInfo;
 import java.io.BufferedReader;
+import java.time.Instant;
 import java.util.BitSet;
 import java.util.HashMap;
 import java.util.List;
@@ -204,7 +205,7 @@ public class EDDTableFromAsciiServiceNOS extends EDDTableFromAsciiService {
     String datum = null;
     double beginSeconds = Double.NaN;
     // default endTime is an hour ahead of now (for safety)
-    double endSeconds = Calendar2.gcToEpochSeconds(Calendar2.newGCalendarZulu()) + 3600;
+    double endSeconds = Instant.now().getEpochSecond() + 3600;
     int nConstraints = constraintVariables.size();
     for (int c = 0; c < nConstraints; c++) {
       String conVar = constraintVariables.get(c);

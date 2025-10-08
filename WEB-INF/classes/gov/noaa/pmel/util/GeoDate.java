@@ -432,7 +432,7 @@ public class GeoDate implements java.io.Serializable, Comparable<GeoDate> {
 
   /**
    * Convert <code>GeoDate</code> to <code>String</code> using provided format. The <code>
-   * SimpleDateFormat</code> and the <code>GregorianCalendar</code> is used to format the <code>
+   * SimpleDateFormat</code> and the <code>ZonedDateTime</code> is used to format the <code>
    * GeoDate</code>. A format of "decade" will create a string of the form 1990 or 1980.
    *
    * @see SimpleDateFormat

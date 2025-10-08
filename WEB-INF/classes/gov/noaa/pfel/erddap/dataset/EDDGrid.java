@@ -57,13 +57,16 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.Writer;
 import java.text.MessageFormat;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.GregorianCalendar;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.zip.ZipOutputStream;
+import javax.xml.transform.stream.StreamResult;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.UnsupportedStorageException;
 import org.opengis.metadata.Metadata;
@@ -125,7 +128,7 @@ public abstract class EDDGrid extends EDD {
   static {
     defaultFileTypeOption = ".htmlTable";
 
-    List<EDDFileTypeInfo> imageTypes = EDD.getFileTypeOptions(true, true);
+    List<EDDFileTypeInfo> imageTypes = EDD.getFileTypeOptions(true, FileCategory.IMAGE);
     publicGraphFileTypeNames = new ArrayList<String>();
     publicGraphFileTypeNames.add(".das");
     publicGraphFileTypeNames.add(".dds");
@@ -836,7 +839,9 @@ public abstract class EDDGrid extends EDD {
       if (pa != null) { // it should be; but it can be low,high or high,low, so
         double ttMin = Math.min(pa.getDouble(0), pa.getDouble(1));
         double ttMax = Math.max(pa.getDouble(0), pa.getDouble(1));
-        String tp = axisVariables[av].combinedAttributes().getString(language, EDV.TIME_PRECISION);
+        DateTimeFormatter tp =
+            Calendar2.timePrecisionToDateTimeFormatter(
+                axisVariables[av].combinedAttributes().getString(language, EDV.TIME_PRECISION));
         // "" unsets the attribute if dMin or dMax isNaN
         combinedGlobalAttributes.set(
             language,
@@ -3207,7 +3212,7 @@ public abstract class EDDGrid extends EDD {
           latRange = Double.NaN,
           lonRange = Double.NaN,
           timeRange = Double.NaN;
-      String time_precision = null;
+      DateTimeFormatter time_precision = null;
       int lonAscending = 0, latAscending = 0, timeAscending = 0;
       for (int av = 0; av < nAv; av++) {
         EDVGridAxis edvga = axisVariables[av];
@@ -3304,7 +3309,9 @@ public abstract class EDDGrid extends EDD {
           timeStop = dStop;
           timeCenter = (dStart + dStop) / 2;
           timeRange = dStop - dStart;
-          time_precision = edvga.combinedAttributes().getString(language, EDV.TIME_PRECISION);
+          time_precision =
+              Calendar2.timePrecisionToDateTimeFormatter(
+                  edvga.combinedAttributes().getString(language, EDV.TIME_PRECISION));
         }
       }
 
@@ -4394,8 +4401,7 @@ public abstract class EDDGrid extends EDD {
       boolean tAccessibleTo = isAccessibleTo(EDStatic.getRoles(loggedInAs));
       List<String> fileTypeOptions =
           tAccessibleTo
-              ? EDD_FILE_TYPE_INFO.values().stream()
-                  .filter(fileTypeInfo -> fileTypeInfo.getAvailableGrid())
+              ? EDD.getFileTypeOptions(true /* isGrid */, FileCategory.BOTH).stream()
                   .map(fileTypeInfo -> fileTypeInfo.getFileTypeName())
                   .toList()
               : publicGraphFileTypeNames;
@@ -4825,31 +4831,37 @@ public abstract class EDDGrid extends EDD {
                     + "mySubmit(true);'"));
 
         // make idealized current centered time period
-        GregorianCalendar idMinGc =
-            Calendar2.roundToIdealGC(timeCenter, idealTimeN, idealTimeUnits);
+        ZonedDateTime idMinDt = Calendar2.roundToIdealGC(timeCenter, idealTimeN, idealTimeUnits);
         // if it rounded to later time period, shift to earlier time period
-        long roundedTime = idMinGc.getTimeInMillis() / 1000;
-        if (roundedTime > timeCenter)
-          idMinGc.add(Calendar2.IDEAL_UNITS_FIELD.get(idealTimeUnits), -idealTimeN);
-        GregorianCalendar idMaxGc = Calendar2.newGCalendarZulu(idMinGc.getTimeInMillis());
-        idMaxGc.add(Calendar2.IDEAL_UNITS_FIELD.get(idealTimeUnits), idealTimeN);
+        long roundedTime = idMinDt.toInstant().toEpochMilli() / 1000;
+        if (roundedTime > timeCenter) {
+          idMinDt =
+              Calendar2.addGcFieldToZdt(
+                  idMinDt, Calendar2.IDEAL_UNITS_FIELD.get(idealTimeUnits), -idealTimeN);
+        }
+        ZonedDateTime idMaxDt =
+            Calendar2.addGcFieldToZdt(
+                idMinDt, Calendar2.IDEAL_UNITS_FIELD.get(idealTimeUnits), idealTimeN);
 
         // time back
         {
           // make idealized beginning time
-          GregorianCalendar tidMinGc =
-              Calendar2.roundToIdealGC(timeFirst, idealTimeN, idealTimeUnits);
+          ZonedDateTime tidMinDt = Calendar2.roundToIdealGC(timeFirst, idealTimeN, idealTimeUnits);
           // if it rounded to later time period, shift to earlier time period
-          long roundedTimeTid = tidMinGc.getTimeInMillis() / 1000;
-          if (roundedTimeTid > timeFirst)
-            tidMinGc.add(Calendar2.IDEAL_UNITS_FIELD.get(idealTimeUnits), -idealTimeN);
-          GregorianCalendar tidMaxGc = Calendar2.newGCalendarZulu(tidMinGc.getTimeInMillis());
-          tidMaxGc.add(Calendar2.IDEAL_UNITS_FIELD.get(idealTimeUnits), idealTimeN);
+          long roundedTimeTid = tidMinDt.toInstant().toEpochMilli() / 1000;
+          if (roundedTimeTid > timeFirst) {
+            tidMinDt =
+                Calendar2.addGcFieldToZdt(
+                    tidMinDt, Calendar2.IDEAL_UNITS_FIELD.get(idealTimeUnits), -idealTimeN);
+          }
+          ZonedDateTime tidMaxDt =
+              Calendar2.addGcFieldToZdt(
+                  tidMinDt, Calendar2.IDEAL_UNITS_FIELD.get(idealTimeUnits), idealTimeN);
 
           // always show LL button if idealTime is different from current selection
           double idRange =
               Math2.divideNoRemainder(
-                  tidMaxGc.getTimeInMillis() - tidMinGc.getTimeInMillis(), 1000);
+                  tidMaxDt.toInstant().toEpochMilli() - tidMinDt.toInstant().toEpochMilli(), 1000);
           double ratio = (timeStop - timeStart) / idRange;
           if (timeStart > timeFirst || ratio < 0.99 || ratio > 1.01) {
             writer.write(
@@ -4866,12 +4878,12 @@ public abstract class EDDGrid extends EDD {
                             "onMouseUp='f1.start"
                             + timeIndex
                             + ".value=\""
-                            + Calendar2.limitedFormatAsISODateTimeT(time_precision, tidMinGc)
+                            + Calendar2.limitedFormatAsISODateTimeT(time_precision, tidMinDt)
                             + "\"; "
                             + "f1.stop"
                             + timeIndex
                             + ".value=\""
-                            + Calendar2.limitedFormatAsISODateTimeT(time_precision, tidMaxGc)
+                            + Calendar2.limitedFormatAsISODateTimeT(time_precision, tidMaxDt)
                             + "\"; "
                             + "mySubmit(true);'"));
           } else {
@@ -4881,8 +4893,12 @@ public abstract class EDDGrid extends EDD {
           // idealized (rounded) time shift to left
           // (show based on more strict circumstances than LL (since relative shift, not absolute))
           if (timeStart > timeFirst) {
-            idMinGc.add(Calendar2.IDEAL_UNITS_FIELD.get(idealTimeUnits), -idealTimeN);
-            idMaxGc.add(Calendar2.IDEAL_UNITS_FIELD.get(idealTimeUnits), -idealTimeN);
+            idMinDt =
+                Calendar2.addGcFieldToZdt(
+                    idMinDt, Calendar2.IDEAL_UNITS_FIELD.get(idealTimeUnits), -idealTimeN);
+            idMaxDt =
+                Calendar2.addGcFieldToZdt(
+                    idMaxDt, Calendar2.IDEAL_UNITS_FIELD.get(idealTimeUnits), -idealTimeN);
             writer.write(
                 "&nbsp;"
                     + HtmlWidgets.htmlTooltipImage(
@@ -4897,16 +4913,20 @@ public abstract class EDDGrid extends EDD {
                             "onMouseUp='f1.start"
                             + timeIndex
                             + ".value=\""
-                            + Calendar2.limitedFormatAsISODateTimeT(time_precision, idMinGc)
+                            + Calendar2.limitedFormatAsISODateTimeT(time_precision, idMinDt)
                             + "\"; "
                             + "f1.stop"
                             + timeIndex
                             + ".value=\""
-                            + Calendar2.limitedFormatAsISODateTimeT(time_precision, idMaxGc)
+                            + Calendar2.limitedFormatAsISODateTimeT(time_precision, idMaxDt)
                             + "\"; "
                             + "mySubmit(true);'"));
-            idMinGc.add(Calendar2.IDEAL_UNITS_FIELD.get(idealTimeUnits), idealTimeN);
-            idMaxGc.add(Calendar2.IDEAL_UNITS_FIELD.get(idealTimeUnits), idealTimeN);
+            idMinDt =
+                Calendar2.addGcFieldToZdt(
+                    idMinDt, Calendar2.IDEAL_UNITS_FIELD.get(idealTimeUnits), idealTimeN);
+            idMaxDt =
+                Calendar2.addGcFieldToZdt(
+                    idMaxDt, Calendar2.IDEAL_UNITS_FIELD.get(idealTimeUnits), idealTimeN);
 
           } else {
             writer.write(timeGap);
@@ -4919,8 +4939,12 @@ public abstract class EDDGrid extends EDD {
           // (show based on more strict circumstances than RR (since relative shift, not absolute))
           if (timeStop < timeLast) {
             // idealized (rounded) time shift to right
-            idMinGc.add(Calendar2.IDEAL_UNITS_FIELD.get(idealTimeUnits), idealTimeN);
-            idMaxGc.add(Calendar2.IDEAL_UNITS_FIELD.get(idealTimeUnits), idealTimeN);
+            idMinDt =
+                Calendar2.addGcFieldToZdt(
+                    idMinDt, Calendar2.IDEAL_UNITS_FIELD.get(idealTimeUnits), idealTimeN);
+            idMaxDt =
+                Calendar2.addGcFieldToZdt(
+                    idMaxDt, Calendar2.IDEAL_UNITS_FIELD.get(idealTimeUnits), idealTimeN);
             writer.write(
                 "&nbsp;"
                     + HtmlWidgets.htmlTooltipImage(
@@ -4935,34 +4959,41 @@ public abstract class EDDGrid extends EDD {
                             "onMouseUp='f1.start"
                             + timeIndex
                             + ".value=\""
-                            + Calendar2.limitedFormatAsISODateTimeT(time_precision, idMinGc)
+                            + Calendar2.limitedFormatAsISODateTimeT(time_precision, idMinDt)
                             + "\"; "
                             + "f1.stop"
                             + timeIndex
                             + ".value=\""
-                            + Calendar2.limitedFormatAsISODateTimeT(time_precision, idMaxGc)
+                            + Calendar2.limitedFormatAsISODateTimeT(time_precision, idMaxDt)
                             + "\"; "
                             + "mySubmit(true);'"));
-            idMinGc.add(Calendar2.IDEAL_UNITS_FIELD.get(idealTimeUnits), -idealTimeN);
-            idMaxGc.add(Calendar2.IDEAL_UNITS_FIELD.get(idealTimeUnits), -idealTimeN);
+            idMinDt =
+                Calendar2.addGcFieldToZdt(
+                    idMinDt, Calendar2.IDEAL_UNITS_FIELD.get(idealTimeUnits), -idealTimeN);
+            idMaxDt =
+                Calendar2.addGcFieldToZdt(
+                    idMaxDt, Calendar2.IDEAL_UNITS_FIELD.get(idealTimeUnits), -idealTimeN);
           } else {
             writer.write(timeGap);
           }
 
           // make idealized end time
-          GregorianCalendar tidMaxGc =
-              Calendar2.roundToIdealGC(timeLast, idealTimeN, idealTimeUnits);
+          ZonedDateTime tidMaxDt = Calendar2.roundToIdealGC(timeLast, idealTimeN, idealTimeUnits);
           // if it rounded to earlier time period, shift to later time period
-          if (Math2.divideNoRemainder(tidMaxGc.getTimeInMillis(), 1000) < timeLast)
-            tidMaxGc.add(Calendar2.IDEAL_UNITS_FIELD.get(idealTimeUnits), idealTimeN);
-          GregorianCalendar tidMinGc = Calendar2.newGCalendarZulu(tidMaxGc.getTimeInMillis());
-          tidMinGc.add(Calendar2.IDEAL_UNITS_FIELD.get(idealTimeUnits), -idealTimeN);
+          if (tidMaxDt.toEpochSecond() < timeLast) {
+            tidMaxDt =
+                Calendar2.addGcFieldToZdt(
+                    tidMaxDt, Calendar2.IDEAL_UNITS_FIELD.get(idealTimeUnits), idealTimeN);
+          }
+          ZonedDateTime tidMinDt =
+              Calendar2.addGcFieldToZdt(
+                  tidMaxDt, Calendar2.IDEAL_UNITS_FIELD.get(idealTimeUnits), -idealTimeN);
 
           // end time
           // always show RR button if idealTime is different from current selection
           double idRange =
               Math2.divideNoRemainder(
-                  tidMaxGc.getTimeInMillis() - tidMinGc.getTimeInMillis(), 1000);
+                  tidMaxDt.toInstant().toEpochMilli() - tidMinDt.toInstant().toEpochMilli(), 1000);
           double ratio = (timeStop - timeStart) / idRange;
           if (timeStop < timeLast || ratio < 0.99 || ratio > 1.01) {
             writer.write(
@@ -4979,12 +5010,12 @@ public abstract class EDDGrid extends EDD {
                             "onMouseUp='f1.start"
                             + timeIndex
                             + ".value=\""
-                            + Calendar2.limitedFormatAsISODateTimeT(time_precision, tidMinGc)
+                            + Calendar2.limitedFormatAsISODateTimeT(time_precision, tidMinDt)
                             + "\"; "
                             + "f1.stop"
                             + timeIndex
                             + ".value=\""
-                            + Calendar2.limitedFormatAsISODateTimeT(time_precision, tidMaxGc)
+                            + Calendar2.limitedFormatAsISODateTimeT(time_precision, tidMaxDt)
                             + "\"; "
                             + "mySubmit(true);'"));
           } else {
@@ -6640,9 +6671,10 @@ public abstract class EDDGrid extends EDD {
             + "/griddap/documentation.html#fileType\">"
             + EDStatic.messages.get(Message.MORE_INFORMATION, language)
             + "</a>)\n");
+    List<EDDFileTypeInfo> availableFileTypes =
+        EDD.getFileTypeOptions(true /* isGrid */, FileCategory.BOTH);
     List<String> fileTypeDescriptions =
-        EDD_FILE_TYPE_INFO.values().stream()
-            .filter(fileTypeInfo -> fileTypeInfo.getAvailableGrid())
+        availableFileTypes.stream()
             .map(
                 fileTypeInfo ->
                     fileTypeInfo.getFileTypeName()
@@ -6650,8 +6682,7 @@ public abstract class EDDGrid extends EDD {
                         + fileTypeInfo.getGridDescription(language))
             .toList();
     int defaultIndex =
-        EDD_FILE_TYPE_INFO.values().stream()
-            .filter(fileTypeInfo -> fileTypeInfo.getAvailableGrid())
+        availableFileTypes.stream()
             .map(fileTypeInfo -> fileTypeInfo.getFileTypeName())
             .toList()
             .indexOf(defaultFileTypeOption);
@@ -6945,7 +6976,7 @@ public abstract class EDDGrid extends EDD {
             + "  <br>&nbsp;\n"
             + "  <table class=\"erd\" style=\"width:100%; \">\n"
             + "    <tr><th>Data<br>fileTypes</th><th>Description</th><th>Info</th><th>Example</th></tr>\n");
-    List<EDDFileTypeInfo> dataFileTypes = EDD.getFileTypeOptions(true, false);
+    List<EDDFileTypeInfo> dataFileTypes = EDD.getFileTypeOptions(true, FileCategory.DATA);
     for (int i = 0; i < dataFileTypes.size(); i++) {
       EDDFileTypeInfo curType = dataFileTypes.get(i);
       String ft = curType.getFileTypeName();
@@ -7548,7 +7579,7 @@ public abstract class EDDGrid extends EDD {
             + "   <p>The fileType options for downloading images of graphs and maps of grid data are:\n"
             + "  <table class=\"erd\" style=\"width:100%; \">\n"
             + "    <tr><th>Image<br>fileTypes</th><th>Description</th><th>Info</th><th>Example</th></tr>\n");
-    List<EDDFileTypeInfo> imageFileTypes = EDD.getFileTypeOptions(true, true);
+    List<EDDFileTypeInfo> imageFileTypes = EDD.getFileTypeOptions(true, FileCategory.IMAGE);
     for (int i = 0; i < imageFileTypes.size(); i++) {
       EDDFileTypeInfo curType = imageFileTypes.get(i);
       String ft = curType.getFileTypeName();
@@ -11049,7 +11080,7 @@ public abstract class EDDGrid extends EDD {
             + "    <stdorder>\n");
 
     // data file types
-    List<EDDFileTypeInfo> dataFileTypes = EDD.getFileTypeOptions(true, false);
+    List<EDDFileTypeInfo> dataFileTypes = EDD.getFileTypeOptions(true, FileCategory.DATA);
     for (int ft = 0; ft < dataFileTypes.size(); ft++)
       writer.write(
           "      <digform>\n"
@@ -11103,7 +11134,7 @@ public abstract class EDDGrid extends EDD {
               + "      </digform>\n");
 
     // image file types
-    List<EDDFileTypeInfo> imageFileTypes = EDD.getFileTypeOptions(true, true);
+    List<EDDFileTypeInfo> imageFileTypes = EDD.getFileTypeOptions(true, FileCategory.IMAGE);
     for (int ft = 0; ft < imageFileTypes.size(); ft++)
       writer.write(
           "      <digform>\n"
@@ -11178,7 +11209,7 @@ public abstract class EDDGrid extends EDD {
             + "</metadata>\n");
   }
 
-  private void lower_writeISO19115(int language, Writer writer)
+  private void lower_writeISO19115(int language, Writer writer, ISO_VERSION version)
       throws UnsupportedStorageException, DataStoreException, JAXBException, IOException {
 
     Metadata metadata =
@@ -11196,9 +11227,14 @@ public abstract class EDDGrid extends EDD {
      * by Apache SIS. But the legacy version published in 2007 is still in wide use.
      * The legacy version can be requested with the `METADATA_VERSION` property.
      */
-    // Map<String,String> config = Map.of(org.apache.sis.xml.XML.METADATA_VERSION, "2007");
-
-    writer.write(org.apache.sis.xml.XML.marshal(metadata));
+    Map<String, String> config = new HashMap<>();
+    if (version == ISO_VERSION.ISO19139_2007) {
+      config = Map.of(org.apache.sis.xml.XML.METADATA_VERSION, "2007");
+    }
+    if (version == ISO_VERSION.ISO19115_3_2016) {
+      config = Map.of(org.apache.sis.xml.XML.METADATA_VERSION, "2016");
+    }
+    org.apache.sis.xml.XML.marshal(metadata, new StreamResult(writer), config);
   }
 
   /**
@@ -11225,10 +11261,20 @@ public abstract class EDDGrid extends EDD {
    */
   @Override
   public void writeISO19115(int language, Writer writer) throws Throwable {
-    // FUTURE: support datasets with x,y (and not longitude,latitude)
+    writeISO19115(
+        language,
+        writer,
+        EDStatic.config.useSisISO19115
+            ? ISO_VERSION.ISO19115_3_2016
+            : EDStatic.config.useSisISO19139 ? ISO_VERSION.ISO19139_2007 : ISO_VERSION.ISO19115_2);
+  }
 
-    if (EDStatic.config.useSisISO19115) {
-      lower_writeISO19115(language, writer);
+  @Override
+  public void writeISO19115(int language, Writer writer, ISO_VERSION version) throws Throwable {
+    // FUTURE: support datasets with x,y (and not longitude,latitude)?
+
+    if (version == ISO_VERSION.ISO19115_3_2016 || version == ISO_VERSION.ISO19139_2007) {
+      lower_writeISO19115(language, writer, version);
       return;
     }
 

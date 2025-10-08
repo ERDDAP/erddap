@@ -2440,7 +2440,8 @@ ERDDAP преобразует их в байты, 1 или 0.
 <dtWMS>Щелкните здесь, чтобы узнать о создании карт на основе этих данных с помощью веб-картографической службы этого набора данных.</dtWMS>
 <EasierAccessToScientificData>Более легкий доступ к научным данным</EasierAccessToScientificData>
 
-<!--Сообщения EDD отображаются на таблдапе и сетке форм доступа к данным.-->
+<!--Сообщения EDD отображаются наtabledapФормы доступа к данным griddap.
+-->
 <EDDDatasetID>ID набора данных</EDDDatasetID>
 <EDDFgdc>FGDC</EDDFgdc>
 <EDDFgdcMetadata>FGDC-STD-001-1998 Метаданные</EDDFgdcMetadata>
@@ -2852,7 +2853,14 @@ ERDDAP - это сервер данных, который дает вам про
 <fileHelpTable_help>Просмотр веб-страницы с описанием tabledap.</fileHelpTable_help>
 <fileHelp_html>Просмотр HTML-формы доступа к данным в стиле OPeNDAP.</fileHelp_html>
 <fileHelp_htmlTable>Просмотрите веб-страницу UTF-8 .html с данными в таблице. Время - это строки ISO 8601.</fileHelp_htmlTable>
-<fileHelp_iso19115>Просмотрите метаданные ISO 19115-2 / 19139 UTF-8 .xml набора данных.</fileHelp_iso19115>
+<fileHelp_iso19115>Посмотреть набор данныхISO 19115/19139Метаданные UTF-8.xml с использованием версии по умолчанию для этого сервера.
+</fileHelp_iso19115>
+<fileHelp_iso19115_2>Посмотреть набор данныхISO 19115-2/19139Метаданные UTF-8.xml.
+</fileHelp_iso19115_2>
+<fileHelp_iso191392007>Посмотреть набор данныхISO 19139:2007Метаданные UTF-8.xml.
+</fileHelp_iso191392007>
+<fileHelp_iso19115_3_2016>Посмотреть набор данныхISO 19115-3:2016Метаданные UTF-8.xml.
+</fileHelp_iso19115_3_2016>
 <fileHelp_itxGrid>Загрузите текстовый файл Игоря ISO-8859-1. Каждая переменная оси и каждая переменная данных становится волной.</fileHelp_itxGrid>
 <fileHelp_itxTable>Загрузите текстовый файл Игоря ISO-8859-1. Каждый столбец ответов становится волной.</fileHelp_itxTable>
 <fileHelp_json>Просмотр табличного файла JSON UTF-8 (отсутствующее значение = &#39;null&#39;; время - строки ISO 8601).</fileHelp_json>

@@ -57,15 +57,20 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.Writer;
 import java.text.MessageFormat;
+import java.time.Instant;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
-import java.util.GregorianCalendar;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.zip.ZipOutputStream;
+import javax.xml.transform.stream.StreamResult;
 import org.apache.commons.jexl3.JexlScript;
 import org.apache.commons.jexl3.MapContext;
 import org.apache.sis.storage.DataStoreException;
@@ -254,7 +259,7 @@ public abstract class EDDTable extends EDD {
         "'sosDataResponseFormats.length' not equal to 'sosTabledapDataResponseTypes.length'.");
     defaultFileTypeOption = ".htmlTable";
 
-    List<EDDFileTypeInfo> imageTypes = EDD.getFileTypeOptions(false, true);
+    List<EDDFileTypeInfo> imageTypes = EDD.getFileTypeOptions(false, FileCategory.IMAGE);
 
     publicGraphFileTypeNames = new ArrayList<String>();
     publicGraphFileTypeNames.add(".das");
@@ -730,7 +735,9 @@ public abstract class EDDTable extends EDD {
       LocalizedAttributes catts = dataVariables[timeIndex].combinedAttributes();
       PrimitiveArray pa = catts.get(language, "actual_range");
       if (pa != null) {
-        String tp = catts.getString(language, EDV.TIME_PRECISION);
+        DateTimeFormatter tp =
+            Calendar2.timePrecisionToDateTimeFormatter(
+                catts.getString(language, EDV.TIME_PRECISION));
         // "" unsets the attribute if min or max isNaN
         combinedGlobalAttributes.set(
             language,
@@ -2726,9 +2733,7 @@ public abstract class EDDTable extends EDD {
       }
     }
     if (Double.isNaN(requestedMax[3]))
-      requestedMax[3] =
-          Calendar2.gcToEpochSeconds(Calendar2.newGCalendarZulu())
-              + Calendar2.SECONDS_PER_HOUR; // now + 1 hr
+      requestedMax[3] = Instant.now().getEpochSecond() + Calendar2.SECONDS_PER_HOUR; // now + 1 hr
     // ???is this trouble for models which predict future?  (are any models EDDTables?)
 
     // recheck. If invalid now, it's No Data due to variable's destinationMin/Max
@@ -4945,7 +4950,8 @@ public abstract class EDDTable extends EDD {
       boolean isTimeStamp = edv instanceof EDVTimeStamp;
       boolean isChar = edv.destinationDataPAType() == PAType.CHAR;
       boolean isString = edv.destinationDataPAType() == PAType.STRING;
-      String tTime_precision = isTimeStamp ? ((EDVTimeStamp) edv).time_precision() : null;
+      DateTimeFormatter tTime_precision =
+          isTimeStamp ? ((EDVTimeStamp) edv).time_precision() : null;
 
       writer.write("<tr>\n");
 
@@ -5326,9 +5332,10 @@ public abstract class EDDTable extends EDD {
             + "/tabledap/documentation.html#fileType\">"
             + EDStatic.messages.get(Message.MORE_INFORMATION, language)
             + "</a>)\n");
+    List<EDDFileTypeInfo> availableFileTypes =
+        EDD.getFileTypeOptions(false /* isGrid */, FileCategory.BOTH);
     List<String> fileTypeDescriptions =
-        EDD_FILE_TYPE_INFO.values().stream()
-            .filter(fileTypeInfo -> fileTypeInfo.getAvailableTable())
+        availableFileTypes.stream()
             .map(
                 fileTypeInfo ->
                     fileTypeInfo.getFileTypeName()
@@ -5336,8 +5343,7 @@ public abstract class EDDTable extends EDD {
                         + fileTypeInfo.getTableDescription(language))
             .toList();
     int defaultIndex =
-        EDD_FILE_TYPE_INFO.values().stream()
-            .filter(fileTypeInfo -> fileTypeInfo.getAvailableTable())
+        availableFileTypes.stream()
             .map(fileTypeInfo -> fileTypeInfo.getFileTypeName())
             .toList()
             .indexOf(defaultFileTypeOption);
@@ -5714,9 +5720,7 @@ public abstract class EDDTable extends EDD {
     String fullMapDataExampleHA =
         datasetBase + ".htmlTable?" + EDStatic.messages.EDDTableMapExampleHA;
 
-    GregorianCalendar daysAgo7Gc = Calendar2.newGCalendarZulu();
-    daysAgo7Gc.add(Calendar2.DATE, -7);
-    String daysAgo7 = Calendar2.formatAsISODate(daysAgo7Gc);
+    String daysAgo7 = Calendar2.formatAsISODate(ZonedDateTime.now(ZoneOffset.UTC).minusDays(7));
 
     writer.write(
         "<h2><a class=\"selfLink\" id=\"instructions\" href=\"#instructions\" rel=\"bookmark\"\n"
@@ -5801,7 +5805,7 @@ public abstract class EDDTable extends EDD {
             + "  <br>&nbsp;\n"
             + "  <table class=\"erd\" style=\"width:100%; \">\n"
             + "    <tr><th>Data<br>fileTypes</th><th>Description</th><th>Info</th><th>Example</th></tr>\n");
-    List<EDDFileTypeInfo> dataFileTypes = EDD.getFileTypeOptions(false, false);
+    List<EDDFileTypeInfo> dataFileTypes = EDD.getFileTypeOptions(false, FileCategory.DATA);
     for (int i = 0; i < dataFileTypes.size(); i++) {
       EDDFileTypeInfo curType = dataFileTypes.get(i);
       String ft = curType.getFileTypeName();
@@ -6436,7 +6440,7 @@ public abstract class EDDTable extends EDD {
             + "   <p>The fileType options for downloading images of graphs and maps of table data are:\n"
             + "  <table class=\"erd\" style=\"width:100%; \">\n"
             + "    <tr><th>Image<br>fileTypes</th><th>Description</th><th>Info</th><th>Example</th></tr>\n");
-    List<EDDFileTypeInfo> imageFileTypes = EDD.getFileTypeOptions(false, true);
+    List<EDDFileTypeInfo> imageFileTypes = EDD.getFileTypeOptions(false, FileCategory.IMAGE);
     for (int i = 0; i < imageFileTypes.size(); i++) {
       EDDFileTypeInfo curType = imageFileTypes.get(i);
       String ft = curType.getFileTypeName();
@@ -9559,8 +9563,7 @@ public abstract class EDDTable extends EDD {
       boolean tAccessibleTo = isAccessibleTo(EDStatic.getRoles(loggedInAs));
       List<String> fileTypeOptions =
           tAccessibleTo
-              ? EDD_FILE_TYPE_INFO.values().stream()
-                  .filter(fileTypeInfo -> fileTypeInfo.getAvailableTable())
+              ? EDD.getFileTypeOptions(false /* isGrid */, FileCategory.BOTH).stream()
                   .map(fileTypeInfo -> fileTypeInfo.getFileTypeName())
                   .toList()
               : publicGraphFileTypeNames;
@@ -9958,7 +9961,7 @@ public abstract class EDDTable extends EDD {
         EDVTimeStamp edvTime = (EDVTimeStamp) dataVariables[timeIndex];
         double edvTimeMin = edvTime.destinationMinDouble(); // may be NaN
         double edvTimeMax = edvTime.destinationMaxDouble(); // may be NaN
-        String tTime_precision = edvTime.time_precision();
+        DateTimeFormatter tTime_precision = edvTime.time_precision();
         if (!Double.isNaN(edvTimeMin) && Double.isNaN(edvTimeMax))
           edvTimeMax = Calendar2.backNDays(-1, edvTimeMax);
 
@@ -10013,9 +10016,10 @@ public abstract class EDDTable extends EDD {
                   + Calendar2.IDEAL_UNITS_SECONDS.get(idealTimeUnits));
 
         // make idealized minTime
-        GregorianCalendar idMinGc = Calendar2.roundToIdealGC(timeMin, idealTimeN, idealTimeUnits);
-        GregorianCalendar idMaxGc = Calendar2.newGCalendarZulu(idMinGc.getTimeInMillis());
-        idMaxGc.add(Calendar2.IDEAL_UNITS_FIELD.get(idealTimeUnits), idealTimeN);
+        ZonedDateTime idMinDt = Calendar2.roundToIdealGC(timeMin, idealTimeN, idealTimeUnits);
+        ZonedDateTime idMaxDt =
+            Calendar2.addGcFieldToZdt(
+                idMinDt, Calendar2.IDEAL_UNITS_FIELD.get(idealTimeUnits), idealTimeN);
 
         String gqnt =
             "window.location=\""
@@ -10082,18 +10086,21 @@ public abstract class EDDTable extends EDD {
         if (!Double.isNaN(edvTimeMin)) {
 
           // make idealized beginning time
-          GregorianCalendar tidMinGc =
-              Calendar2.roundToIdealGC(edvTimeMin, idealTimeN, idealTimeUnits);
+          ZonedDateTime tidMinDt = Calendar2.roundToIdealGC(edvTimeMin, idealTimeN, idealTimeUnits);
           // if it rounded to later time period, shift to earlier time period
-          if (Math2.divideNoRemainder(tidMinGc.getTimeInMillis(), 1000) > edvTimeMin)
-            tidMinGc.add(Calendar2.IDEAL_UNITS_FIELD.get(idealTimeUnits), -idealTimeN);
-          GregorianCalendar tidMaxGc = Calendar2.newGCalendarZulu(tidMinGc.getTimeInMillis());
-          tidMaxGc.add(Calendar2.IDEAL_UNITS_FIELD.get(idealTimeUnits), idealTimeN);
+          if (tidMinDt.toEpochSecond() > edvTimeMin) {
+            tidMinDt =
+                Calendar2.addGcFieldToZdt(
+                    tidMinDt, Calendar2.IDEAL_UNITS_FIELD.get(idealTimeUnits), -idealTimeN);
+          }
+          ZonedDateTime tidMaxDt =
+              Calendar2.addGcFieldToZdt(
+                  tidMinDt, Calendar2.IDEAL_UNITS_FIELD.get(idealTimeUnits), idealTimeN);
 
           // always show button if idealTime is different from current selection
           double idRange =
               Math2.divideNoRemainder(
-                  tidMaxGc.getTimeInMillis() - tidMinGc.getTimeInMillis(), 1000);
+                  tidMaxDt.toInstant().toEpochMilli() - tidMinDt.toInstant().toEpochMilli(), 1000);
           double ratio = (timeMax - timeMin) / idRange;
 
           if (timeMin > edvTimeMin || ratio < 0.99 || ratio > 1.01) {
@@ -10108,9 +10115,9 @@ public abstract class EDDTable extends EDD {
                             + gqnt
                             + // vertical-align: 'b'ottom
                             "&amp;time%3E="
-                            + Calendar2.limitedFormatAsISODateTimeT(tTime_precision, tidMinGc)
+                            + Calendar2.limitedFormatAsISODateTimeT(tTime_precision, tidMinDt)
                             + "&amp;time%3C"
-                            + Calendar2.limitedFormatAsISODateTimeT(tTime_precision, tidMaxGc)
+                            + Calendar2.limitedFormatAsISODateTimeT(tTime_precision, tidMaxDt)
                             + timeRangeParam
                             + "\";'")
                     + "&nbsp;");
@@ -10126,8 +10133,12 @@ public abstract class EDDTable extends EDD {
         if (Double.isNaN(edvTimeMin) || (!Double.isNaN(edvTimeMin) && timeMin > edvTimeMin)) {
 
           // idealized (rounded) time shift
-          idMinGc.add(Calendar2.IDEAL_UNITS_FIELD.get(idealTimeUnits), -idealTimeN);
-          idMaxGc.add(Calendar2.IDEAL_UNITS_FIELD.get(idealTimeUnits), -idealTimeN);
+          idMinDt =
+              Calendar2.addGcFieldToZdt(
+                  idMinDt, Calendar2.IDEAL_UNITS_FIELD.get(idealTimeUnits), -idealTimeN);
+          idMaxDt =
+              Calendar2.addGcFieldToZdt(
+                  idMaxDt, Calendar2.IDEAL_UNITS_FIELD.get(idealTimeUnits), -idealTimeN);
           writer.write(
               HtmlWidgets.htmlTooltipImage(
                       EDStatic.imageDirUrl(request, loggedInAs, language) + "minus.gif",
@@ -10139,14 +10150,18 @@ public abstract class EDDTable extends EDD {
                           + gqnt
                           + // vertical-align: 'b'ottom
                           "&amp;time%3E="
-                          + Calendar2.limitedFormatAsISODateTimeT(tTime_precision, idMinGc)
+                          + Calendar2.limitedFormatAsISODateTimeT(tTime_precision, idMinDt)
                           + "&amp;time%3C"
-                          + Calendar2.limitedFormatAsISODateTimeT(tTime_precision, idMaxGc)
+                          + Calendar2.limitedFormatAsISODateTimeT(tTime_precision, idMaxDt)
                           + timeRangeParam
                           + "\";'")
                   + "&nbsp;");
-          idMinGc.add(Calendar2.IDEAL_UNITS_FIELD.get(idealTimeUnits), idealTimeN);
-          idMaxGc.add(Calendar2.IDEAL_UNITS_FIELD.get(idealTimeUnits), idealTimeN);
+          idMinDt =
+              Calendar2.addGcFieldToZdt(
+                  idMinDt, Calendar2.IDEAL_UNITS_FIELD.get(idealTimeUnits), idealTimeN);
+          idMaxDt =
+              Calendar2.addGcFieldToZdt(
+                  idMaxDt, Calendar2.IDEAL_UNITS_FIELD.get(idealTimeUnits), idealTimeN);
 
         } else {
           writer.write("&nbsp;&nbsp;&nbsp;&nbsp;");
@@ -10157,10 +10172,14 @@ public abstract class EDDTable extends EDD {
         if (Double.isNaN(edvTimeMax) || (!Double.isNaN(edvTimeMax) && timeMax < edvTimeMax)) {
 
           // idealized (rounded) time shift
-          idMinGc.add(Calendar2.IDEAL_UNITS_FIELD.get(idealTimeUnits), idealTimeN);
-          idMaxGc.add(Calendar2.IDEAL_UNITS_FIELD.get(idealTimeUnits), idealTimeN);
+          idMinDt =
+              Calendar2.addGcFieldToZdt(
+                  idMinDt, Calendar2.IDEAL_UNITS_FIELD.get(idealTimeUnits), idealTimeN);
+          idMaxDt =
+              Calendar2.addGcFieldToZdt(
+                  idMaxDt, Calendar2.IDEAL_UNITS_FIELD.get(idealTimeUnits), idealTimeN);
           String equals =
-              (!Double.isNaN(edvTimeMax) && idMaxGc.getTimeInMillis() >= edvTimeMax * 1000)
+              (!Double.isNaN(edvTimeMax) && idMaxDt.toInstant().toEpochMilli() >= edvTimeMax * 1000)
                   ? "="
                   : "";
           writer.write(
@@ -10174,16 +10193,19 @@ public abstract class EDDTable extends EDD {
                           + gqnt
                           + // vertical-align: 'b'ottom
                           "&amp;time%3E="
-                          + Calendar2.limitedFormatAsISODateTimeT(tTime_precision, idMinGc)
+                          + Calendar2.limitedFormatAsISODateTimeT(tTime_precision, idMinDt)
                           + "&amp;time%3C"
                           + equals
-                          + Calendar2.limitedFormatAsISODateTimeT(tTime_precision, idMaxGc)
+                          + Calendar2.limitedFormatAsISODateTimeT(tTime_precision, idMaxDt)
                           + timeRangeParam
                           + "\";'")
                   + "&nbsp;");
-          idMinGc.add(Calendar2.IDEAL_UNITS_FIELD.get(idealTimeUnits), -idealTimeN);
-          idMaxGc.add(Calendar2.IDEAL_UNITS_FIELD.get(idealTimeUnits), -idealTimeN);
-
+          idMinDt =
+              Calendar2.addGcFieldToZdt(
+                  idMinDt, Calendar2.IDEAL_UNITS_FIELD.get(idealTimeUnits), -idealTimeN);
+          idMaxDt =
+              Calendar2.addGcFieldToZdt(
+                  idMaxDt, Calendar2.IDEAL_UNITS_FIELD.get(idealTimeUnits), -idealTimeN);
         } else {
           writer.write("&nbsp;&nbsp;&nbsp;&nbsp;");
         }
@@ -10192,18 +10214,21 @@ public abstract class EDDTable extends EDD {
         // end time
         if (!Double.isNaN(edvTimeMax)) {
           // make idealized end time
-          GregorianCalendar tidMaxGc =
-              Calendar2.roundToIdealGC(edvTimeMax, idealTimeN, idealTimeUnits);
+          ZonedDateTime tidMaxDt = Calendar2.roundToIdealGC(edvTimeMax, idealTimeN, idealTimeUnits);
           // if it rounded to earlier time period, shift to later time period
-          if (Math2.divideNoRemainder(tidMaxGc.getTimeInMillis(), 1000) < edvTimeMax)
-            tidMaxGc.add(Calendar2.IDEAL_UNITS_FIELD.get(idealTimeUnits), idealTimeN);
-          GregorianCalendar tidMinGc = Calendar2.newGCalendarZulu(tidMaxGc.getTimeInMillis());
-          tidMinGc.add(Calendar2.IDEAL_UNITS_FIELD.get(idealTimeUnits), -idealTimeN);
+          if (tidMaxDt.toEpochSecond() < edvTimeMax) {
+            tidMaxDt =
+                Calendar2.addGcFieldToZdt(
+                    tidMaxDt, Calendar2.IDEAL_UNITS_FIELD.get(idealTimeUnits), idealTimeN);
+          }
+          ZonedDateTime tidMinDt =
+              Calendar2.addGcFieldToZdt(
+                  tidMaxDt, Calendar2.IDEAL_UNITS_FIELD.get(idealTimeUnits), -idealTimeN);
 
           // always show button if idealTime is different from current selection
           double idRange =
               Math2.divideNoRemainder(
-                  tidMaxGc.getTimeInMillis() - tidMinGc.getTimeInMillis(), 1000);
+                  tidMaxDt.toInstant().toEpochMilli() - tidMinDt.toInstant().toEpochMilli(), 1000);
           double ratio = (timeMax - timeMin) / idRange;
 
           if (timeMax < edvTimeMax || ratio < 0.99 || ratio > 1.01) {
@@ -10218,9 +10243,9 @@ public abstract class EDDTable extends EDD {
                         + gqnt
                         + // vertical-align: 'b'ottom
                         "&amp;time%3E="
-                        + Calendar2.limitedFormatAsISODateTimeT(tTime_precision, tidMinGc)
+                        + Calendar2.limitedFormatAsISODateTimeT(tTime_precision, tidMinDt)
                         + "&amp;time%3C="
-                        + Calendar2.limitedFormatAsISODateTimeT(tTime_precision, tidMaxGc)
+                        + Calendar2.limitedFormatAsISODateTimeT(tTime_precision, tidMaxDt)
                         + // yes, =
                         timeRangeParam
                         + "\";'")
@@ -10529,7 +10554,8 @@ public abstract class EDDTable extends EDD {
 
       EDV edv = findDataVariableByDestinationName(subsetVariables[p]);
       EDVTimeStamp edvTimeStamp = edv instanceof EDVTimeStamp t ? t : null;
-      String tTime_precision = edvTimeStamp == null ? null : edvTimeStamp.time_precision();
+      DateTimeFormatter tTime_precision =
+          edvTimeStamp == null ? null : edvTimeStamp.time_precision();
       PrimitiveArray pa = subsetTable.findColumn(subsetVariables[p]);
       if (edvTimeStamp == null && !(pa instanceof StringArray) && tParam.equals("NaN"))
         tParam = ""; // e.g., doubleArray.getString() for NaN returns ""
@@ -10558,7 +10584,8 @@ public abstract class EDDTable extends EDD {
 
       EDV edv = findDataVariableByDestinationName(subsetVariables[lastP]);
       EDVTimeStamp edvTimeStamp = edv instanceof EDVTimeStamp ts ? ts : null;
-      String tTime_precision = edvTimeStamp == null ? null : edvTimeStamp.time_precision();
+      DateTimeFormatter tTime_precision =
+          edvTimeStamp == null ? null : edvTimeStamp.time_precision();
 
       PrimitiveArray pa = subsetTable.findColumn(subsetVariables[lastP]);
       if (edvTimeStamp == null && !(pa instanceof StringArray) && tParam.equals("NaN"))
@@ -10846,7 +10873,8 @@ public abstract class EDDTable extends EDD {
         String pName = subsetVariables[p];
         EDV edv = findDataVariableByDestinationName(pName);
         EDVTimeStamp edvTimeStamp = edv instanceof EDVTimeStamp ts ? ts : null;
-        String tTime_precision = edvTimeStamp == null ? null : edvTimeStamp.time_precision();
+        DateTimeFormatter tTime_precision =
+            edvTimeStamp == null ? null : edvTimeStamp.time_precision();
 
         // work on a copy
         PrimitiveArray pa =
@@ -12463,7 +12491,7 @@ public abstract class EDDTable extends EDD {
       } else if (edv instanceof EDVTimeStamp tts) {
 
         // convert epochSeconds to iso Strings
-        String tTime_precision = tts.time_precision();
+        DateTimeFormatter tTime_precision = tts.time_precision();
         int n = pa.size();
         distinctOptions[sv] = new String[n + 1];
         distinctOptions[sv][0] = "";
@@ -16659,9 +16687,11 @@ public abstract class EDDTable extends EDD {
 
     // suggest time range for offeringi
     double maxTime = sosMaxTime.getDouble(whichOffering);
-    GregorianCalendar gc =
-        Double.isNaN(maxTime) ? Calendar2.newGCalendarZulu() : Calendar2.epochSecondsToGc(maxTime);
-    String maxTimeS = Calendar2.formatAsISODateTimeTZ(gc); // use gc, not maxTime
+    ZonedDateTime dt =
+        Double.isNaN(maxTime)
+            ? ZonedDateTime.now(ZoneOffset.UTC)
+            : Calendar2.epochSecondsToZdt(maxTime);
+    String maxTimeS = Calendar2.formatAsISODateTimeTZ(dt); // use gc, not maxTime
     double minTime = Calendar2.backNDays(7, maxTime);
     String minTimeS = Calendar2.epochSecondsToIsoStringTZ(minTime);
     double networkMinTime = Calendar2.backNDays(1, maxTime);
@@ -18488,7 +18518,7 @@ public abstract class EDDTable extends EDD {
             + "    <stdorder>\n");
 
     // data file types
-    List<EDDFileTypeInfo> dataFileTypes = EDD.getFileTypeOptions(false, false);
+    List<EDDFileTypeInfo> dataFileTypes = EDD.getFileTypeOptions(false, FileCategory.DATA);
     for (int ft = 0; ft < dataFileTypes.size(); ft++)
       writer.write(
           "      <digform>\n"
@@ -18524,7 +18554,7 @@ public abstract class EDDTable extends EDD {
               + "      </digform>\n");
 
     // image file types
-    List<EDDFileTypeInfo> imageFileTypes = EDD.getFileTypeOptions(false, true);
+    List<EDDFileTypeInfo> imageFileTypes = EDD.getFileTypeOptions(false, FileCategory.IMAGE);
     for (int ft = 0; ft < imageFileTypes.size(); ft++)
       writer.write(
           "      <digform>\n"
@@ -18593,7 +18623,7 @@ public abstract class EDDTable extends EDD {
             + "</metadata>\n");
   }
 
-  private void lower_writeISO19115(int language, Writer writer)
+  private void lower_writeISO19115(int language, Writer writer, ISO_VERSION version)
       throws UnsupportedStorageException, DataStoreException, JAXBException, IOException {
 
     Metadata metadata =
@@ -18610,9 +18640,14 @@ public abstract class EDDTable extends EDD {
      * by Apache SIS. But the legacy version published in 2007 is still in wide use.
      * The legacy version can be requested with the `METADATA_VERSION` property.
      */
-    // Map<String,String> config = Map.of(org.apache.sis.xml.XML.METADATA_VERSION, "2007");
-
-    writer.write(org.apache.sis.xml.XML.marshal(metadata));
+    Map<String, String> config = new HashMap<>();
+    if (version == ISO_VERSION.ISO19139_2007) {
+      config = Map.of(org.apache.sis.xml.XML.METADATA_VERSION, "2007");
+    }
+    if (version == ISO_VERSION.ISO19115_3_2016) {
+      config = Map.of(org.apache.sis.xml.XML.METADATA_VERSION, "2016");
+    }
+    org.apache.sis.xml.XML.marshal(metadata, new StreamResult(writer), config);
   }
 
   /**
@@ -18646,10 +18681,20 @@ public abstract class EDDTable extends EDD {
    */
   @Override
   public void writeISO19115(int language, Writer writer) throws Throwable {
+    writeISO19115(
+        language,
+        writer,
+        EDStatic.config.useSisISO19115
+            ? ISO_VERSION.ISO19115_3_2016
+            : EDStatic.config.useSisISO19139 ? ISO_VERSION.ISO19139_2007 : ISO_VERSION.ISO19115_2);
+  }
+
+  @Override
+  public void writeISO19115(int language, Writer writer, ISO_VERSION version) throws Throwable {
     // FUTURE: support datasets with x,y (and not longitude,latitude)?
 
-    if (EDStatic.config.useSisISO19115) {
-      lower_writeISO19115(language, writer);
+    if (version == ISO_VERSION.ISO19115_3_2016 || version == ISO_VERSION.ISO19139_2007) {
+      lower_writeISO19115(language, writer, version);
       return;
     }
 

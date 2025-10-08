@@ -531,6 +531,9 @@ public class EDMessages {
     FILE_HELP_HTML,
     FILE_HELP_HTML_TABLE,
     FILE_HELP_ISO19115,
+    FILE_HELP_ISO191392007,
+    FILE_HELP_ISO19115_2,
+    FILE_HELP_ISO19115_3_2016,
     FILE_HELP_ITX_GRID,
     FILE_HELP_ITX_TABLE,
     FILE_HELP_JSON,
@@ -1042,7 +1045,7 @@ public class EDMessages {
     String setupFileName =
         contentDirectory + "setup" + (EDStatic.config.developmentMode ? "2" : "") + ".xml";
     String errorInMethod;
-    ResourceBundle2 setup = ResourceBundle2.fromXml(XML.parseXml(setupFileName, false));
+    ResourceBundle2 setup = ResourceBundle2.fromXml(XML.parseXml(setupFileName, false, true));
     Map<String, String> ev = System.getenv();
     // **** messages.xml *************************************************************
     // This is read AFTER setup.xml. If that is a problem for something, defer reading it in setup
@@ -1053,7 +1056,7 @@ public class EDMessages {
     if (File2.isFile(messagesFileName)) {
       String2.log("Using custom messages.xml from " + messagesFileName);
       // messagesAr[0] is either the custom messages.xml or the one provided by Erddap
-      messagesAr[0] = ResourceBundle2.fromXml(XML.parseXml(messagesFileName, false));
+      messagesAr[0] = ResourceBundle2.fromXml(XML.parseXml(messagesFileName, false, false));
     } else {
       // use default messages.xml
       String2.log("Custom messages.xml not found at " + messagesFileName);
@@ -2281,6 +2284,15 @@ public class EDMessages {
     translatedMessages.put(
         Message.FILE_HELP_ISO19115,
         getNotNothingString(messagesAr, "fileHelp_iso19115", errorInMethod));
+    translatedMessages.put(
+        Message.FILE_HELP_ISO19115_2,
+        getNotNothingString(messagesAr, "fileHelp_iso19115_2", errorInMethod));
+    translatedMessages.put(
+        Message.FILE_HELP_ISO191392007,
+        getNotNothingString(messagesAr, "fileHelp_iso191392007", errorInMethod));
+    translatedMessages.put(
+        Message.FILE_HELP_ISO19115_3_2016,
+        getNotNothingString(messagesAr, "fileHelp_iso19115_3_2016", errorInMethod));
     translatedMessages.put(
         Message.FILE_HELP_ITX_GRID,
         getNotNothingString(messagesAr, "fileHelp_itxGrid", errorInMethod));
