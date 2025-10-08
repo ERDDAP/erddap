@@ -2345,7 +2345,8 @@ Marca temporală a acestui set de date este &tTimestamp; .
 <dtWMS>Faceți clic pentru a afla despre realizarea hărților acestor date prin serviciul de hărți web al acestui set de date.</dtWMS>
 <EasierAccessToScientificData>Acces mai ușor la datele științifice</EasierAccessToScientificData>
 
-<!--Mesajele EDD sunt afișate pe formularele de acces la date depuse și griddap.-->
+<!--Mesajele EDD sunt afișate petabledapși griddap Formulare de acces la date.
+-->
 <EDDDatasetID>ID setului de date</EDDDatasetID>
 <EDDFgdc>FGDC</EDDFgdc>
 <EDDFgdcMetadata>FGDC-STD-001-1998 Metadate</EDDFgdcMetadata>
@@ -2753,7 +2754,14 @@ De exemplu:
 <fileHelpTable_help>Vizualizați o pagină web cu o descriere a tabledap.</fileHelpTable_help>
 <fileHelp_html>Vizualizați un formular de acces la date HTML în stil OPeNDAP.</fileHelp_html>
 <fileHelp_htmlTable>Vizualizați o pagină web UTF-8 .html cu datele într-un tabel. Timpurile sunt șiruri ISO 8601.</fileHelp_htmlTable>
-<fileHelp_iso19115>Vedeți metadatele .xml ISO 19115-2/19139 UTF-8 ale setului de date.</fileHelp_iso19115>
+<fileHelp_iso19115>Vizualizează setul de dateISO 19115/19139Metadate UTF-8.xml folosind versiunea implicită pentru acest server.
+</fileHelp_iso19115>
+<fileHelp_iso19115_2>Vizualizează setul de dateISO 19115-2/19139Metadate UTF-8.xml.
+</fileHelp_iso19115_2>
+<fileHelp_iso191392007>Vizualizează setul de dateISO 19139:2007Metadate UTF-8.xml.
+</fileHelp_iso191392007>
+<fileHelp_iso19115_3_2016>Vizualizează setul de dateISO 19115-3:2016Metadate UTF-8.xml.
+</fileHelp_iso19115_3_2016>
 <fileHelp_itxGrid>Descărcați un fișier text ISO-8859-1 Igor. Fiecare variabilă de axă și fiecare variabilă de date devin un val.</fileHelp_itxGrid>
 <fileHelp_itxTable>Descărcați un fișier text ISO-8859-1 Igor. Fiecare coloană de răspuns devine un val.</fileHelp_itxTable>
 <fileHelp_json>Vizualizați un fișier JSON UTF-8 de tip tabel (valoare lipsă = „null”; timpii sunt șiruri ISO 8601).</fileHelp_json>

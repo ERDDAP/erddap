@@ -14,6 +14,8 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.xpath.XPath;
+import org.apache.commons.text.StringSubstitutor;
+import org.apache.commons.text.io.StringSubstitutorReader;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -584,9 +586,16 @@ public class XML {
    * @return a DOM Document
    * @throws Exception if trouble
    */
-  public static Document parseXml(String fileName, boolean validating) throws Exception {
+  public static Document parseXml(String fileName, boolean validating, boolean withEnvSubstitutions)
+      throws Exception {
     try (BufferedReader reader = File2.getDecompressedBufferedFileReader(fileName, File2.UTF_8)) {
-      return parseXml(new InputSource(reader), validating);
+      InputSource source;
+      if (withEnvSubstitutions) {
+        source = new InputSource(new StringSubstitutorReader(reader, new StringSubstitutor()));
+      } else {
+        source = new InputSource(reader);
+      }
+      return parseXml(source, validating);
     }
   }
 

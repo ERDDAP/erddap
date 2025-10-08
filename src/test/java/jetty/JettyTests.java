@@ -62,9 +62,10 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.file.Path;
 import java.time.Year;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -6183,6 +6184,116 @@ class JettyTests {
     Test.ensureEqual(results, expected, "results=\n" + results);
   }
 
+  @org.junit.jupiter.api.Test
+  void testOrderFileTypes() throws Exception {
+    String results =
+        SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + "/tabledap/erdGlobecBottle.html");
+    assertTrue(
+        results.contains(
+            """
+<option>.asc - View OPeNDAP-style ISO-8859-1 comma-separated text.
+<option>.croissant - Download the dataset croissant schema.
+<option>.csv - Download a ISO-8859-1 comma-separated text table (line 1: names; line 2: units; ISO 8601 times).
+<option>.csv0 - Download a ISO-8859-1 .csv file without column names or units. Times are ISO 8601 strings.
+<option>.csvp - Download a ISO-8859-1 .csv file with line 1: name (units). Times are ISO 8601 strings.
+<option>.das - View the dataset&#39;s metadata via an ISO-8859-1 OPeNDAP Dataset Attribute Structure (DAS).
+<option>.dataTable - A JSON file formatted for use with the Google Visualization client library (Google Charts).
+<option>.dds - View the dataset&#39;s structure via an ISO-8859-1 OPeNDAP Dataset Descriptor Structure (DDS).
+<option>.dods - OPeNDAP clients use this to download the data in the DODS binary format.
+<option>.esriCsv - Download a ISO_8859_1 .csv file for ESRI&#39;s ArcGIS 9.x and below (separate date and time columns).
+<option>.fgdc - View the dataset&#39;s UTF-8 FGDC .xml metadata.
+<option>.geoJson - Download longitude,latitude,otherColumns data as a UTF-8 GeoJSON .json file.
+<option selected="selected">.htmlTable - View a UTF-8 .html web page with the data in a table. Times are ISO 8601 strings.
+<option>.iso19115 - View the dataset&#39;s ISO 19115/19139 UTF-8 .xml metadata using the version default for this server.
+<option>.iso19115_2 - View the dataset&#39;s ISO 19115-2/19139 UTF-8 .xml metadata.
+<option>.iso19115_3_2016 - View the dataset&#39;s ISO 19115-3:2016 UTF-8 .xml metadata.
+<option>.iso19139_2007 - View the dataset&#39;s ISO 19139:2007 UTF-8 .xml metadata.
+<option>.itx - Download an ISO-8859-1 Igor Text File. Each response column becomes a wave.
+<option>.json - View a table-like UTF-8 JSON file (missing value = &#39;null&#39;; times are ISO 8601 strings).
+<option>.jsonlCSV - View a UTF-8 JSON Lines CSV file without column names (mv = &#39;null&#39;; times are ISO 8601 strings).
+<option>.jsonlCSV1 - View a UTF-8 JSON Lines CSV file with column names on line 1 (mv = &#39;null&#39;; times are ISO 8601 strings).
+<option>.jsonlKVP - View a UTF-8 JSON Lines file with Key:Value pairs (missing value = &#39;null&#39;; times are ISO 8601 strings).
+<option>.mat - Download a MATLAB binary file.
+<option>.nc - Download a flat, table-like, NetCDF-3 binary file with COARDS/CF/ACDD metadata.
+<option>.ncCF - Download a NetCDF-3 CF Discrete Sampling Geometries file (Contiguous Ragged Array).
+<option>.ncCFHeader - View the UTF-8 header (the metadata) for the .ncCF file.
+<option>.ncCFMA - Download a NetCDF-3 CF Discrete Sampling Geometries file (Multidimensional Array).
+<option>.ncCFMAHeader - View the UTF-8 header (the metadata) for the .ncCFMA file.
+<option>.ncHeader - View the UTF-8 header (the metadata) for the NetCDF-3 .nc file.
+<option>.nccsv - Download a NetCDF-3-like 7-bit ASCII NCCSV .csv file with COARDS/CF/ACDD metadata.
+<option>.nccsvMetadata - View the dataset&#39;s metadata as the top half of a 7-bit ASCII NCCSV .csv file.
+<option>.ncoJson - Download a UTF-8 NCO lvl=2 JSON file with COARDS/CF/ACDD metadata.
+<option>.odvTxt - Download longitude,latitude,time,otherColumns as an ISO-8859-1 ODV Generic Spreadsheet File (.txt).
+<option>.parquet - Download as a parquet file. Metadata contains column names (&quot;column_names&quot;) and units (&quot;column_units&quot;).
+<option>.parquetWMeta - Download as a parquet file with detailed metadata.
+<option>.tsv - Download a ISO-8859-1 tab-separated text table (line 1: names; line 2: units; ISO 8601 times).
+<option>.tsv0 - Download a ISO-8859-1 .tsv file without column names or units. Times are ISO 8601 strings.
+<option>.tsvp - Download a ISO-8859-1 .tsv file with line 1: name (units). Times are ISO 8601 strings.
+<option>.wav - Download a .wav audio file. All columns must be numeric and of the same type.
+<option>.xhtml - View a UTF-8 XHTML (XML) file with the data in a table. Times are ISO 8601 strings.
+<option>.kml - View a .kml file, suitable for Google Earth.
+<option>.largePdf - View a large .pdf image file with a graph or map.
+<option>.largePng - View a large .png image file with a graph or map.
+<option>.pdf - View a standard, medium-sized .pdf image file with a graph or map.
+<option>.png - View a standard, medium-sized .png image file with a graph or map.
+<option>.smallPdf - View a small .pdf image file with a graph or map.
+<option>.smallPng - View a small .png image file with a graph or map.
+<option>.transparentPng - View a .png image file (just the data, without axes, landmask, or legend).
+            """));
+
+    results =
+        SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + "/griddap/testGriddedNcFiles.html");
+    assertTrue(
+        results.contains(
+            """
+<option>.asc - View OPeNDAP-style ISO-8859-1 comma-separated text.
+<option>.croissant - Download the dataset croissant schema.
+<option>.csv - Download a ISO-8859-1 comma-separated text table (line 1: names; line 2: units; ISO 8601 times).
+<option>.csv0 - Download a ISO-8859-1 .csv file without column names or units. Times are ISO 8601 strings.
+<option>.csvp - Download a ISO-8859-1 .csv file with line 1: name (units). Times are ISO 8601 strings.
+<option>.das - View the dataset&#39;s metadata via an ISO-8859-1 OPeNDAP Dataset Attribute Structure (DAS).
+<option>.dds - View the dataset&#39;s structure via an ISO-8859-1 OPeNDAP Dataset Descriptor Structure (DDS).
+<option>.dods - OPeNDAP clients use this to download the data in the DODS binary format.
+<option>.esriAscii - Download an ISO-8859-1 ESRI ASCII file (latitude longitude data only; longitude must be all below or all above 180).
+<option>.fgdc - View the dataset&#39;s UTF-8 FGDC .xml metadata.
+<option selected="selected">.htmlTable - View a UTF-8 .html web page with the data in a table. Times are ISO 8601 strings.
+<option>.iso19115 - View the dataset&#39;s ISO 19115/19139 UTF-8 .xml metadata using the version default for this server.
+<option>.iso19115_2 - View the dataset&#39;s ISO 19115-2/19139 UTF-8 .xml metadata.
+<option>.iso19115_3_2016 - View the dataset&#39;s ISO 19115-3:2016 UTF-8 .xml metadata.
+<option>.iso19139_2007 - View the dataset&#39;s ISO 19139:2007 UTF-8 .xml metadata.
+<option>.itx - Download an ISO-8859-1 Igor Text File. Each axis variable and each data variable becomes a wave.
+<option>.json - View a table-like UTF-8 JSON file (missing value = &#39;null&#39;; times are ISO 8601 strings).
+<option>.jsonlCSV - View a UTF-8 JSON Lines CSV file without column names (mv = &#39;null&#39;; times are ISO 8601 strings).
+<option>.jsonlCSV1 - View a UTF-8 JSON Lines CSV file with column names on line 1 (mv = &#39;null&#39;; times are ISO 8601 strings).
+<option>.jsonlKVP - View a UTF-8 JSON Lines file with Key:Value pairs (missing value = &#39;null&#39;; times are ISO 8601 strings).
+<option>.mat - Download a MATLAB binary file.
+<option>.nc - Download a NetCDF-3 binary file with COARDS/CF/ACDD metadata.
+<option>.ncHeader - View the UTF-8 header (the metadata) for the NetCDF-3 .nc file.
+<option>.nccsv - Download a NetCDF-3-like 7-bit ASCII NCCSV .csv file with COARDS/CF/ACDD metadata.
+<option>.nccsvMetadata - View the dataset&#39;s metadata as the top half of a 7-bit ASCII NCCSV .csv file.
+<option>.ncml - View the dataset&#39;s structure and metadata as a UTF-8 NCML .xml file.
+<option>.ncoJson - Download a UTF-8 NCO lvl=2 JSON file with COARDS/CF/ACDD metadata.
+<option>.odvTxt - Download time,latitude,longitude,otherVariables as an ODV Generic Spreadsheet File (.txt).
+<option>.parquet - Download as a parquet file. Metadata contains column names (&quot;column_names&quot;) and units (&quot;column_units&quot;).
+<option>.parquetWMeta - Download as a parquet file with detailed metadata.
+<option>.timeGaps - View a UTF-8 list of gaps in the time values which are larger than the median gap.
+<option>.tsv - Download a ISO-8859-1 tab-separated text table (line 1: names; line 2: units; ISO 8601 times).
+<option>.tsv0 - Download a ISO-8859-1 .tsv file without column names or units. Times are ISO 8601 strings.
+<option>.tsvp - Download a ISO-8859-1 .tsv file with line 1: name (units). Times are ISO 8601 strings.
+<option>.wav - Download a .wav audio file. All columns must be numeric and of the same type.
+<option>.xhtml - View a UTF-8 XHTML (XML) file with the data in a table. Times are ISO 8601 strings.
+<option>.geotif - View a grayscale GeoTIFF .tif file (for latitude longitude data; longitude must be all below or all above 180).
+<option>.kml - View a Google Earth .kml file (for latitude, longitude data only).
+<option>.largePdf - View a large .pdf image file with a graph or map.
+<option>.largePng - View a large .png image file with a graph or map.
+<option>.pdf - View a standard, medium-sized .pdf image file with a graph or map.
+<option>.png - View a standard, medium-sized .png image file with a graph or map.
+<option>.smallPdf - View a small .pdf image file with a graph or map.
+<option>.smallPng - View a small .png image file with a graph or map.
+<option>.transparentPng - View a .png image file (just the data, without axes, landmask, or legend).
+            """));
+  }
+
   /**
    * This checks that the links on the specified web page return error 200.
    *
@@ -8865,11 +8976,11 @@ class JettyTests {
 
     // Tests of time related to "now" -- Many fail because this dataset has no
     // recent data.
-    GregorianCalendar gc;
+    ZonedDateTime dt;
     String s;
 
-    gc = Calendar2.newGCalendarZulu();
-    s = Calendar2.formatAsISODateTimeT(gc);
+    dt = ZonedDateTime.now(ZoneOffset.UTC);
+    s = Calendar2.formatAsISODateTimeT(dt);
     try {
       globecBottle.parseUserDapQuery(
           language, "time&time=now", rv, cv, co, cv2, false); // non-regex
@@ -8890,9 +9001,9 @@ class JettyTests {
           "results=\n" + results);
     }
 
-    gc = Calendar2.newGCalendarZulu();
-    gc.add(Calendar2.SECOND, -7);
-    s = Calendar2.formatAsISODateTimeT(gc);
+    dt = ZonedDateTime.now(ZoneOffset.UTC);
+    dt = dt.minusSeconds(7);
+    s = Calendar2.formatAsISODateTimeT(dt);
     try {
       globecBottle.parseUserDapQuery(
           language, "time&time=now-7seconds", rv, cv, co, cv2, false); // non-regex
@@ -8914,9 +9025,9 @@ class JettyTests {
           "results=\n" + results);
     }
 
-    gc = Calendar2.newGCalendarZulu();
-    gc.add(Calendar2.MINUTE, -5);
-    s = Calendar2.formatAsISODateTimeT(gc);
+    dt = ZonedDateTime.now(ZoneOffset.UTC);
+    dt = dt.minusMinutes(5);
+    s = Calendar2.formatAsISODateTimeT(dt);
     try {
       globecBottle.parseUserDapQuery(
           language, "time&time=now-5minutes", rv, cv, co, cv2, false); // non-regex
@@ -8938,9 +9049,9 @@ class JettyTests {
           "results=\n" + results);
     }
 
-    gc = Calendar2.newGCalendarZulu();
-    gc.add(Calendar2.HOUR_OF_DAY, -4);
-    s = Calendar2.formatAsISODateTimeT(gc);
+    dt = ZonedDateTime.now(ZoneOffset.UTC);
+    dt = dt.minusHours(4);
+    s = Calendar2.formatAsISODateTimeT(dt);
     try {
       globecBottle.parseUserDapQuery(
           language, "time&time=now-4hours", rv, cv, co, cv2, false); // non-regex
@@ -8962,9 +9073,9 @@ class JettyTests {
           "results=\n" + results);
     }
 
-    gc = Calendar2.newGCalendarZulu();
-    gc.add(Calendar2.DATE, -2);
-    s = Calendar2.formatAsISODateTimeT(gc);
+    dt = ZonedDateTime.now(ZoneOffset.UTC);
+    dt = dt.minusDays(2);
+    s = Calendar2.formatAsISODateTimeT(dt);
     try {
       globecBottle.parseUserDapQuery(
           language, "time&time=now-2days", rv, cv, co, cv2, false); // non-regex
@@ -8986,9 +9097,9 @@ class JettyTests {
           "results=\n" + results);
     }
 
-    gc = Calendar2.newGCalendarZulu();
-    gc.add(Calendar2.MONTH, -3);
-    s = Calendar2.formatAsISODateTimeT(gc);
+    dt = ZonedDateTime.now(ZoneOffset.UTC);
+    dt = dt.minusMonths(3);
+    s = Calendar2.formatAsISODateTimeT(dt);
     try {
       globecBottle.parseUserDapQuery(
           language, "time&time=now-3months", rv, cv, co, cv2, false); // non-regex
@@ -9010,9 +9121,9 @@ class JettyTests {
           "results=\n" + results);
     }
 
-    gc = Calendar2.newGCalendarZulu();
-    gc.add(Calendar2.YEAR, -2);
-    s = Calendar2.formatAsISODateTimeT(gc);
+    dt = ZonedDateTime.now(ZoneOffset.UTC);
+    dt = dt.minusYears(2);
+    s = Calendar2.formatAsISODateTimeT(dt);
     try {
       globecBottle.parseUserDapQuery(
           language, "time&time=now-2years", rv, cv, co, cv2, false); // non-regex
@@ -10005,12 +10116,12 @@ class JettyTests {
     // String2.log(results);
     expected =
         "cruise_id,ship,cast,X,Y,altitude,date,time,bottle_pos,chl_a_tota,chl_a_10um,phaeo_tota,phaeo_10um,sal00,sal11,temperatur,temperatuA,fluor_v,xmiss_v,PO4,N_N,NO3,Si,NO2,NH4,oxygen,par\n"
-            + "nh0207,New_Horizon,20,-124.4,44.0,0,2002-08-03,1:29:00 am,1,-9999.0,-9999.0,-9999.0,-9999.0,33.9939,33.9908,7.085,7.085,0.256,0.518,2.794,35.8,35.7,71.11,0.093,0.037,-9999.0,0.1545\n"
-            + "nh0207,New_Horizon,20,-124.4,44.0,0,2002-08-03,1:29:00 am,2,-9999.0,-9999.0,-9999.0,-9999.0,33.8154,33.8111,7.528,7.53,0.551,0.518,2.726,35.87,35.48,57.59,0.385,0.018,-9999.0,0.1767\n"
-            + "nh0207,New_Horizon,20,-124.4,44.0,0,2002-08-03,1:29:00 am,3,1.463,-9999.0,1.074,-9999.0,33.5858,33.5834,7.572,7.573,0.533,0.518,2.483,31.92,31.61,48.54,0.307,0.504,-9999.0,0.3875\n"
-            + "nh0207,New_Horizon,20,-124.4,44.0,0,2002-08-03,1:29:00 am,4,2.678,-9999.0,1.64,-9999.0,33.2905,33.2865,8.093,8.098,1.244,0.518,2.262,27.83,27.44,42.59,0.391,0.893,-9999.0,0.7674\n"
-            + "nh0207,New_Horizon,20,-124.4,44.0,0,2002-08-03,1:29:00 am,5,4.182,-9999.0,2.363,-9999.0,33.2871,33.2863,8.157,8.141,1.458,0.518,2.202,26.15,25.73,40.25,0.424,1.204,-9999.0,0.7609\n"
-            + "nh0207,New_Horizon,20,-124.4,44.0,0,2002-08-03,1:29:00 am,6,7.601,-9999.0,3.959,-9999.0,33.3753,33.3678,11.733,11.73,3.685,0.518,1.092,8.96,8.75,16.31,0.211,1.246,-9999.0,1.9563\n";
+            + "nh0207,New_Horizon,20,-124.4,44.0,0,2002-08-03,1:29:00 AM,1,-9999.0,-9999.0,-9999.0,-9999.0,33.9939,33.9908,7.085,7.085,0.256,0.518,2.794,35.8,35.7,71.11,0.093,0.037,-9999.0,0.1545\n"
+            + "nh0207,New_Horizon,20,-124.4,44.0,0,2002-08-03,1:29:00 AM,2,-9999.0,-9999.0,-9999.0,-9999.0,33.8154,33.8111,7.528,7.53,0.551,0.518,2.726,35.87,35.48,57.59,0.385,0.018,-9999.0,0.1767\n"
+            + "nh0207,New_Horizon,20,-124.4,44.0,0,2002-08-03,1:29:00 AM,3,1.463,-9999.0,1.074,-9999.0,33.5858,33.5834,7.572,7.573,0.533,0.518,2.483,31.92,31.61,48.54,0.307,0.504,-9999.0,0.3875\n"
+            + "nh0207,New_Horizon,20,-124.4,44.0,0,2002-08-03,1:29:00 AM,4,2.678,-9999.0,1.64,-9999.0,33.2905,33.2865,8.093,8.098,1.244,0.518,2.262,27.83,27.44,42.59,0.391,0.893,-9999.0,0.7674\n"
+            + "nh0207,New_Horizon,20,-124.4,44.0,0,2002-08-03,1:29:00 AM,5,4.182,-9999.0,2.363,-9999.0,33.2871,33.2863,8.157,8.141,1.458,0.518,2.202,26.15,25.73,40.25,0.424,1.204,-9999.0,0.7609\n"
+            + "nh0207,New_Horizon,20,-124.4,44.0,0,2002-08-03,1:29:00 AM,6,7.601,-9999.0,3.959,-9999.0,33.3753,33.3678,11.733,11.73,3.685,0.518,1.092,8.96,8.75,16.31,0.211,1.246,-9999.0,1.9563\n";
     Test.ensureEqual(results.substring(0, expected.length()), expected, "\nresults=\n" + results);
 
     // .geoJson mapDapQuery so lon and lat are in query
@@ -12898,6 +13009,7 @@ class JettyTests {
                       + "      :grads_step = \"1mo\";\n"
                   : "")
               + "      :ioos_category = \"Time\";\n"
+              + "      :legacy_time_adjust = \"true\";\n"
               + "      :long_name = \"Centered Time\";\n"
               + (EDStatic.config.useSaxParser
                   ? "      :maximum = \"00z15dec2010\";\n"

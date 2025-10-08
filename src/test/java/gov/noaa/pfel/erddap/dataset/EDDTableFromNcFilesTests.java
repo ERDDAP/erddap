@@ -36,9 +36,11 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.Writer;
 import java.nio.file.Path;
+import java.time.Instant;
+import java.time.ZonedDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.BitSet;
-import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -8078,83 +8080,80 @@ class EDDTableFromNcFilesTests {
     // these query tests need a dataset that has recent data (or request is
     // rejected)
     // these tests moved here 2014-01-23
-    GregorianCalendar gc = Calendar2.newGCalendarZulu();
-    gc.set(Calendar2.MILLISECOND, 0);
-    gc.add(Calendar2.SECOND, 1); // now it is "now"
-    long nowMillis = gc.getTimeInMillis();
+    long nowMillis = Instant.now().truncatedTo(ChronoUnit.SECONDS).plusSeconds(1).toEpochMilli();
     StringArray rv = new StringArray();
     StringArray cv = new StringArray();
     StringArray co = new StringArray();
     StringArray cv2 = new StringArray();
 
-    gc = Calendar2.newGCalendarZulu(nowMillis);
-    String2.log("now          = " + Calendar2.formatAsISODateTimeT3Z(gc));
+    ZonedDateTime dt = Calendar2.newZdtUtc(nowMillis);
+    String2.log("now          = " + Calendar2.formatAsISODateTimeT3Z(dt));
     // non-regex EDVTimeStamp conValues will be ""+epochSeconds
     tedd.parseUserDapQuery(language, "time&time=now", rv, cv, co, cv2, false);
     Test.ensureEqual(rv.toString(), "time", "");
     Test.ensureEqual(cv.toString(), "time", "");
     Test.ensureEqual(co.toString(), "=", "");
-    Test.ensureEqual(cv2.toString(), "" + Calendar2.gcToEpochSeconds(gc), "");
+    Test.ensureEqual(cv2.toString(), "" + Calendar2.zdtToEpochSeconds(dt), "");
 
-    gc = Calendar2.newGCalendarZulu(nowMillis);
-    gc.add(Calendar2.SECOND, -1);
-    String2.log("now-1second  = " + Calendar2.formatAsISODateTimeT3Z(gc));
+    dt = Calendar2.newZdtUtc(nowMillis);
+    dt = dt.minusSeconds(-1);
+    String2.log("now-1second  = " + Calendar2.formatAsISODateTimeT3Z(dt));
     // non-regex EDVTimeStamp conValues will be ""+epochSeconds
     tedd.parseUserDapQuery(language, "time&time=now-1second", rv, cv, co, cv2, false);
     Test.ensureEqual(rv.toString(), "time", "");
     Test.ensureEqual(cv.toString(), "time", "");
     Test.ensureEqual(co.toString(), "=", "");
-    Test.ensureEqual(cv2.toString(), "" + Calendar2.gcToEpochSeconds(gc), "");
+    Test.ensureEqual(cv2.toString(), "" + Calendar2.zdtToEpochSeconds(dt), "");
 
-    gc = Calendar2.newGCalendarZulu(nowMillis);
-    gc.add(Calendar2.SECOND, 2);
-    String2.log("now+2seconds = " + Calendar2.formatAsISODateTimeT3Z(gc));
+    dt = Calendar2.newZdtUtc(nowMillis);
+    dt = dt.plusSeconds(2);
+    String2.log("now+2seconds = " + Calendar2.formatAsISODateTimeT3Z(dt));
     // non-regex EDVTimeStamp conValues will be ""+epochSeconds
     tedd.parseUserDapQuery(language, "time&time=now%2B2seconds", rv, cv, co, cv2, false);
-    Test.ensureEqual(cv2.toString(), "" + Calendar2.gcToEpochSeconds(gc), "");
+    Test.ensureEqual(cv2.toString(), "" + Calendar2.zdtToEpochSeconds(dt), "");
 
     // non-%encoded '+' will be decoded as ' ', so treat ' ' as equal to '+'
-    gc = Calendar2.newGCalendarZulu(nowMillis);
-    gc.add(Calendar2.SECOND, 2);
-    String2.log("now 2seconds = " + Calendar2.formatAsISODateTimeT3Z(gc));
+    dt = Calendar2.newZdtUtc(nowMillis);
+    dt = dt.plusSeconds(2);
+    String2.log("now 2seconds = " + Calendar2.formatAsISODateTimeT3Z(dt));
     // non-regex EDVTimeStamp conValues will be ""+epochSeconds
     tedd.parseUserDapQuery(language, "time&time=now 2seconds", rv, cv, co, cv2, false);
-    Test.ensureEqual(cv2.toString(), "" + Calendar2.gcToEpochSeconds(gc), "");
+    Test.ensureEqual(cv2.toString(), "" + Calendar2.zdtToEpochSeconds(dt), "");
 
-    gc = Calendar2.newGCalendarZulu(nowMillis);
-    gc.add(Calendar2.MINUTE, -3);
-    String2.log("now-3minutes = " + Calendar2.formatAsISODateTimeT3Z(gc));
+    dt = Calendar2.newZdtUtc(nowMillis);
+    dt = dt.minusMinutes(3);
+    String2.log("now-3minutes = " + Calendar2.formatAsISODateTimeT3Z(dt));
     // non-regex EDVTimeStamp conValues will be ""+epochSeconds
     tedd.parseUserDapQuery(language, "time&time=now-3minutes", rv, cv, co, cv2, false);
-    Test.ensureEqual(cv2.toString(), "" + Calendar2.gcToEpochSeconds(gc), "");
+    Test.ensureEqual(cv2.toString(), "" + Calendar2.zdtToEpochSeconds(dt), "");
 
-    gc = Calendar2.newGCalendarZulu(nowMillis);
-    gc.add(Calendar2.HOUR_OF_DAY, -4);
-    String2.log("now-4hours   = " + Calendar2.formatAsISODateTimeT3Z(gc));
+    dt = Calendar2.newZdtUtc(nowMillis);
+    dt = dt.minusHours(4);
+    String2.log("now-4hours   = " + Calendar2.formatAsISODateTimeT3Z(dt));
     // non-regex EDVTimeStamp conValues will be ""+epochSeconds
     tedd.parseUserDapQuery(language, "time&time=now-4hours", rv, cv, co, cv2, false);
-    Test.ensureEqual(cv2.toString(), "" + Calendar2.gcToEpochSeconds(gc), "");
+    Test.ensureEqual(cv2.toString(), "" + Calendar2.zdtToEpochSeconds(dt), "");
 
-    gc = Calendar2.newGCalendarZulu(nowMillis);
-    gc.add(Calendar2.DATE, -5);
-    String2.log("now-5days    = " + Calendar2.formatAsISODateTimeT3Z(gc));
+    dt = Calendar2.newZdtUtc(nowMillis);
+    dt = dt.minusDays(5);
+    String2.log("now-5days    = " + Calendar2.formatAsISODateTimeT3Z(dt));
     // non-regex EDVTimeStamp conValues will be ""+epochSeconds
     tedd.parseUserDapQuery(language, "time&time=now-5days", rv, cv, co, cv2, false);
-    Test.ensureEqual(cv2.toString(), "" + Calendar2.gcToEpochSeconds(gc), "");
+    Test.ensureEqual(cv2.toString(), "" + Calendar2.zdtToEpochSeconds(dt), "");
 
-    gc = Calendar2.newGCalendarZulu(nowMillis);
-    gc.add(Calendar2.MONTH, -6);
-    String2.log("now-6months  = " + Calendar2.formatAsISODateTimeT3Z(gc));
+    dt = Calendar2.newZdtUtc(nowMillis);
+    dt = dt.minusMonths(6);
+    String2.log("now-6months  = " + Calendar2.formatAsISODateTimeT3Z(dt));
     // non-regex EDVTimeStamp conValues will be ""+epochSeconds
     tedd.parseUserDapQuery(language, "time&time=now-6months", rv, cv, co, cv2, false);
-    Test.ensureEqual(cv2.toString(), "" + Calendar2.gcToEpochSeconds(gc), "");
+    Test.ensureEqual(cv2.toString(), "" + Calendar2.zdtToEpochSeconds(dt), "");
 
-    gc = Calendar2.newGCalendarZulu(nowMillis);
-    gc.add(Calendar2.YEAR, -2);
-    String2.log("now-7years   = " + Calendar2.formatAsISODateTimeT3Z(gc));
+    dt = Calendar2.newZdtUtc(nowMillis);
+    dt = dt.minusYears(2);
+    String2.log("now-7years   = " + Calendar2.formatAsISODateTimeT3Z(dt));
     // non-regex EDVTimeStamp conValues will be ""+epochSeconds
     tedd.parseUserDapQuery(language, "time&time=now-2years", rv, cv, co, cv2, false);
-    Test.ensureEqual(cv2.toString(), "" + Calendar2.gcToEpochSeconds(gc), "");
+    Test.ensureEqual(cv2.toString(), "" + Calendar2.zdtToEpochSeconds(dt), "");
     // if (true) throw new RuntimeException("stop here");
   }
 

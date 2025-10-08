@@ -72,6 +72,8 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.FileSystems;
 import java.text.MessageFormat;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
@@ -201,7 +203,7 @@ public class EDStatic {
    * anything following it. A request to http.../erddap/version will return just the number (as
    * text). A request to http.../erddap/version_string will return the full string.
    */
-  public static final Semver erddapVersion = new Semver("2.28.1");
+  public static final Semver erddapVersion = new Semver("2.29.0-alpha");
 
   /** This identifies the dods server/version that this mimics. */
   public static final String dapVersion = "DAP/2.0";
@@ -494,7 +496,10 @@ public class EDStatic {
 
   // made/returned by luceneIndexSearcher
   private static IndexReader luceneIndexReader; // is thread-safe, but only need/want one
-  private static final Object luceneIndexReaderLock = Calendar2.newGCalendarLocal();
+
+  @SuppressWarnings("TimeInStaticInitializer")
+  private static final Object luceneIndexReaderLock = ZonedDateTime.now(ZoneId.systemDefault());
+
   public static boolean needNewLuceneIndexReader = true;
   private static IndexSearcher luceneIndexSearcher; // is thread-safe, so can reuse
   public static ConcurrentHashMap<Integer, String> luceneDocNToDatasetID;
@@ -884,7 +889,7 @@ public class EDStatic {
     EDD.verbose = verbose;
     EDV.verbose = verbose;
     EmailThread.verbose = verbose;
-    Erddap.verbose = verbose;
+    // Erddap.verbose = verbose;
     File2.verbose = verbose;
     FileVisitorDNLS.reallyVerbose = reallyVerbose;
     FilledMarkerRenderer.verbose = verbose;
@@ -915,7 +920,7 @@ public class EDStatic {
     EDD.reallyVerbose = reallyVerbose;
     EDV.reallyVerbose = reallyVerbose;
     EmailThread.reallyVerbose = reallyVerbose;
-    Erddap.reallyVerbose = reallyVerbose;
+    // Erddap.reallyVerbose = reallyVerbose;
     File2.reallyVerbose = reallyVerbose;
     FileVisitorDNLS.reallyVerbose = reallyVerbose;
     FilledMarkerRenderer.reallyVerbose = reallyVerbose;

@@ -35,7 +35,6 @@ jobs:
       with:
         java-version: '21'
         distribution: 'temurin'
-        cache: maven
     - name: Build and test with Maven
       run: >
         mvn --batch-mode
@@ -58,6 +57,9 @@ jobs:
         with:
           persist-credentials: false
 
+      - name: Clean up Docker
+        run: docker system prune -a --volumes -f
+
       - name: Set up QEMU
         uses: docker/setup-qemu-action@29109295f81e9208d7d86ff1c6c12d2833863392  # v3.6.0
 
@@ -78,7 +80,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Docker Metadata action
-        uses: docker/metadata-action@v5.7.0
+        uses: docker/metadata-action@c1e51972afc2121e065aed6d45c65596fe445f3f
         id: meta
         with:
           images: |

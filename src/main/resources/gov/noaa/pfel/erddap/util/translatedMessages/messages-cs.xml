@@ -2380,7 +2380,8 @@ Administrátor ERDDAP vám brzy zašle e-mail, abyste zjistili nejlepší způso
 <dtWMS>Kliknutím získáte informace o vytváření map těchto dat prostřednictvím webové mapové služby této datové sady.</dtWMS>
 <EasierAccessToScientificData>Snazší přístup k vědeckým údajům</EasierAccessToScientificData>
 
-<!--Zprávy EDD jsou zobrazeny na předložených formulářích pro přístup k datům.-->
+<!--EDD zprávy jsou zobrazeny natabledapa Griddap Data Access Forms.
+-->
 <EDDDatasetID>ID datové sady</EDDDatasetID>
 <EDDFgdc>FGDC</EDDFgdc>
 <EDDFgdcMetadata>FGDC-STD-001-1998 Metadata</EDDFgdcMetadata>
@@ -2791,7 +2792,14 @@ Například:
 <fileHelpTable_help>Zobrazit webovou stránku s popisem tabledap.</fileHelpTable_help>
 <fileHelp_html>Zobrazit formulář pro přístup k datům HTML ve stylu OPeNDAP.</fileHelp_html>
 <fileHelp_htmlTable>Zobrazit webovou stránku UTF-8 .html s daty v tabulce. Časy jsou řetězce ISO 8601.</fileHelp_htmlTable>
-<fileHelp_iso19115>Prohlédněte si metadata ISO 19115-2/19139 UTF-8 .xml datové sady.</fileHelp_iso19115>
+<fileHelp_iso19115>Zobrazit soubor datISO 19115/19139UTF-8 .xml metadata pomocí výchozí verze pro tento server.
+</fileHelp_iso19115>
+<fileHelp_iso19115_2>Zobrazit soubor datISO 19115-2/19139UTF-8.xml metadata.
+</fileHelp_iso19115_2>
+<fileHelp_iso191392007>Zobrazit soubor datISO 19139:2007UTF-8.xml metadata.
+</fileHelp_iso191392007>
+<fileHelp_iso19115_3_2016>Zobrazit soubor datISO 19115-3:2016UTF-8.xml metadata.
+</fileHelp_iso19115_3_2016>
 <fileHelp_itxGrid>Stáhněte si textový soubor ISO-8859-1 Igor. Každá proměnná osy a každá datová proměnná se stává vlnou.</fileHelp_itxGrid>
 <fileHelp_itxTable>Stáhněte si textový soubor ISO-8859-1 Igor. Každý sloupec odpovědí se stává vlnou.</fileHelp_itxTable>
 <fileHelp_json>Zobrazte soubor UTF-8 JSON podobný tabulce (chybějící hodnota = &#39;null&#39;; časy jsou řetězce ISO 8601).</fileHelp_json>

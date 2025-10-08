@@ -72,9 +72,10 @@ import java.io.Writer;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.text.MessageFormat;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.util.Arrays;
 import java.util.BitSet;
-import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -509,12 +510,31 @@ public abstract class EDD {
   /** List of all concrete/non-abstact EDD subclass EDDClassInfo */
   public static final Map<String, EDDFileTypeInfo> EDD_FILE_TYPE_INFO = initEddFileTypeInfoMap();
 
-  public static List<EDDFileTypeInfo> getFileTypeOptions(boolean isGrid, boolean isImage) {
+  public enum FileCategory {
+    DATA,
+    IMAGE,
+    BOTH
+  }
+
+  public static List<EDDFileTypeInfo> getFileTypeOptions(boolean isGrid, FileCategory category) {
     return EDD_FILE_TYPE_INFO.values().stream()
+        .sorted(
+            (o1, o2) -> {
+              if (o1.getIsImage() != o2.getIsImage()) {
+                return o1.getIsImage() ? 100 : -100;
+              }
+              return o1.getFileTypeName().compareTo(o2.getFileTypeName());
+            })
         .filter(
             fileTypeInfo ->
                 isGrid ? fileTypeInfo.getAvailableGrid() : fileTypeInfo.getAvailableTable())
-        .filter(fileTypeInfo -> isImage == fileTypeInfo.getIsImage())
+        .filter(
+            fileTypeInfo ->
+                switch (category) {
+                  case FileCategory.IMAGE -> fileTypeInfo.getIsImage();
+                  case FileCategory.DATA -> !fileTypeInfo.getIsImage();
+                  case FileCategory.BOTH -> true;
+                })
         .toList();
   }
 
@@ -1552,8 +1572,8 @@ public abstract class EDD {
       //  So this treats every change as a new item with a different title,
       //    replacing the previous item.
       StringBuilder rss = new StringBuilder();
-      GregorianCalendar gc = Calendar2.newGCalendarZulu();
-      String pubDate = "    <pubDate>" + Calendar2.formatAsRFC822GMT(gc) + "</pubDate>\n";
+      ZonedDateTime zd = ZonedDateTime.now(ZoneOffset.UTC);
+      String pubDate = "    <pubDate>" + Calendar2.formatAsRFC822GMT(zd) + "</pubDate>\n";
       String link = "    <link>&erddapUrl;" + "/" + dapProtocol() + "/" + datasetID();
       rss.append(
           "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
@@ -1568,7 +1588,7 @@ public abstract class EDD {
               + pubDate
               + "    <item>\n"
               + "      <title>This dataset changed "
-              + Calendar2.formatAsISODateTimeT(gc)
+              + Calendar2.formatAsISODateTimeT(zd)
               + "Z</title>\n"
               + "  "
               + link
@@ -2532,6 +2552,12 @@ public abstract class EDD {
    */
   protected abstract void writeFGDC(int language, Writer writer) throws Throwable;
 
+  public enum ISO_VERSION {
+    ISO19115_2,
+    ISO19139_2007,
+    ISO19115_3_2016,
+  }
+
   /**
    * This writes the dataset's ISO 19115-2/19139 XML to the writer. <br>
    * The template is initially based on THREDDS ncIso output from <br>
@@ -2550,6 +2576,27 @@ public abstract class EDD {
    * @throws Throwable if trouble
    */
   protected abstract void writeISO19115(int language, Writer writer) throws Throwable;
+
+  /**
+   * This writes the dataset's ISO 19115-2/19139 XML to the writer. <br>
+   * The template is initially based on THREDDS ncIso output from <br>
+   * https://oceanwatch.pfeg.noaa.gov/thredds/iso/satellite/MH/chla/8day <br>
+   * (stored on Bob's computer as F:/programs/iso19115/threddsNcIsoMHchla8dayYYYYMM.xml). <br>
+   * Made pretty via TestAll: XML.prettyXml(in, out);
+   *
+   * <p>Help with schema: http://www.schemacentral.com/sc/niem21/e-gmd_contact-1.html <br>
+   * List of nilReason: http://www.schemacentral.com/sc/niem21/a-gco_nilReason.html
+   *
+   * <p>This is usually just called by the dataset's constructor, at the end of
+   * EDDTable/Grid.ensureValid.
+   *
+   * @param language the index of the selected language
+   * @param writer a UTF-8 writer
+   * @param version the ISO version to write.
+   * @throws Throwable if trouble
+   */
+  public abstract void writeISO19115(int language, Writer writer, ISO_VERSION version)
+      throws Throwable;
 
   /**
    * This returns the dapProtocol for this dataset (e.g., griddap).

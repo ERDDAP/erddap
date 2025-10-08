@@ -23,6 +23,7 @@ import com.cohort.util.String2;
 import com.cohort.util.Units2;
 import com.cohort.util.XML;
 import com.google.common.collect.ImmutableList;
+import com.hivemq.client.mqtt.mqtt5.Mqtt5AsyncClient;
 import gov.noaa.pfel.coastwatch.griddata.DataHelper;
 import gov.noaa.pfel.coastwatch.griddata.Grid;
 import gov.noaa.pfel.coastwatch.griddata.OpendapHelper;
@@ -41,6 +42,7 @@ import gov.noaa.pfel.erddap.dataset.EDDGridFromErddap;
 import gov.noaa.pfel.erddap.dataset.EDDTable;
 import gov.noaa.pfel.erddap.dataset.EDDTableFromAllDatasets;
 import gov.noaa.pfel.erddap.dataset.EDDTableFromFileNames;
+import gov.noaa.pfel.erddap.dataset.EDDTableFromMqtt;
 import gov.noaa.pfel.erddap.dataset.FromErddap;
 import gov.noaa.pfel.erddap.dataset.GridDataAccessor;
 import gov.noaa.pfel.erddap.dataset.GridDataRandomAccessorInMemory;
@@ -87,11 +89,13 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.StringReader;
 import java.io.Writer;
+import java.nio.charset.StandardCharsets;
 import java.text.MessageFormat;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
-import java.util.GregorianCalendar;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -184,6 +188,9 @@ public class Erddap extends HttpServlet {
   // But Firefox shows TextArea's as very wide, so leads to these values.
   public static final int dpfTFWidth = 56; // data provider form TextField width
   public static final int dpfTAWidth = 58; // data provider form TextArea width
+
+  // MqttClient to connect to the configured ERDDAP broker (default is local)
+  public static Mqtt5AsyncClient mqttClient = null;
 
   // ************** END OF STATIC VARIABLES *****************************
 
@@ -12802,10 +12809,10 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                       ? "null"
                       : "["
                           + Calendar2.formatAsEsri(
-                              Calendar2.epochSecondsToGc(tEdvTime.destinationMinDouble()))
+                              Calendar2.epochSecondsToZdt(tEdvTime.destinationMinDouble()))
                           + ", "
                           + Calendar2.formatAsEsri(
-                              Calendar2.epochSecondsToGc(tEdvTime.destinationMaxDouble()))
+                              Calendar2.epochSecondsToZdt(tEdvTime.destinationMaxDouble()))
                           + "]")
                   + "<br/>\n"
                   + "</ul>\n"
@@ -13484,10 +13491,10 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       // && fileName.indexOf('/') == -1) {   //file not in a subdirectory
       // && (ext.equals(".gif") || ext.equals(".jpg") || ext.equals(".js") || ext.equals(".png"))) {
 
-      GregorianCalendar gc = Calendar2.newGCalendarZulu();
+      ZonedDateTime dt = ZonedDateTime.now(ZoneOffset.UTC);
       int nDays = 7; // one week gets most of benefit and few problems
-      gc.add(Calendar2.DATE, nDays);
-      String expires = Calendar2.formatAsRFC822GMT(gc);
+      dt = dt.plusDays(nDays);
+      String expires = Calendar2.formatAsRFC822GMT(dt);
       if (reallyVerbose) String2.log("  setting expires=" + expires + " header");
       response.setHeader(
           "Cache-Control",
@@ -24981,6 +24988,35 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       if (!String2.isSomething(subject)) subject = "Change to datasetID=" + tDatasetID;
       try {
         StringArray actions = null;
+
+        // publish change to local broker, if enabled
+        if (EDStatic.config.publishMqttNotif) {
+          try {
+            if (mqttClient == null) {
+              mqttClient =
+                  EDDTableFromMqtt.initialiseMqttAsyncClient(
+                          EDStatic.config.mqttServerHost,
+                          EDStatic.config.mqttServerPort,
+                          EDStatic.config.mqttClientId,
+                          EDStatic.config.mqttUserName,
+                          EDStatic.config.mqttPassword,
+                          EDStatic.config.mqttSsl,
+                          EDStatic.config.mqttKeepAlive,
+                          EDStatic.config.mqttCleanStart,
+                          EDStatic.config.mqttSessionExpiry,
+                          EDStatic.config.mqttConnectionTimeout,
+                          EDStatic.config.mqttAutomaticReconnect)
+                      .join();
+            }
+            mqttClient
+                .publishWith()
+                .topic("change/" + tDatasetID)
+                .payload(change.getBytes(StandardCharsets.UTF_8))
+                .send();
+          } catch (Exception e) {
+            String2.log("Error connecting or publishing to MQTT client: " + e.getMessage());
+          }
+        }
 
         if (EDStatic.config.subscriptionSystemActive) {
           // get subscription actions

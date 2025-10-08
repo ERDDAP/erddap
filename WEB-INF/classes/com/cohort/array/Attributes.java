@@ -1330,8 +1330,9 @@ public class Attributes {
           newAtts.set("units", Calendar2.ISO8601TZ_FORMAT);
         } else {
           // else just date
-          for (int i = 0; i < n; i++)
+          for (int i = 0; i < n; i++) {
             dataPa.addString(Calendar2.safeEpochSecondsToIsoDateString(da.get(i), ""));
+          }
           newAtts.set("units", Calendar2.ISO8601DATE_FORMAT);
         }
 

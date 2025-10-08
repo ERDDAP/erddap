@@ -19,6 +19,7 @@ import gov.noaa.pfel.erddap.variable.EDVGridAxis;
 import gov.noaa.pfel.erddap.variable.EDVTimeStamp;
 import gov.noaa.pfel.erddap.variable.EDVTimeStampGridAxis;
 import java.io.Writer;
+import java.time.format.DateTimeFormatter;
 
 @FileTypeClass(
     fileTypeExtension = ".csv",
@@ -49,8 +50,9 @@ public class NccsvMetadataFiles extends FileTypeInterface {
         PrimitiveArray pa = catts.get("actual_range");
         if (pa instanceof DoubleArray && pa.size() == 2) {
           StringArray sa = new StringArray();
+          DateTimeFormatter format = Calendar2.timePrecisionToDateTimeFormatter(timePre);
           for (int i = 0; i < 2; i++)
-            sa.add(Calendar2.epochSecondsToLimitedIsoStringT(timePre, pa.getDouble(i), ""));
+            sa.add(Calendar2.epochSecondsToLimitedIsoStringT(format, pa.getDouble(i), ""));
           catts.set("actual_range", sa);
         }
       }
@@ -103,8 +105,9 @@ public class NccsvMetadataFiles extends FileTypeInterface {
           PrimitiveArray pa = catts.get("actual_range");
           if (pa instanceof DoubleArray && pa.size() == 2) {
             StringArray sa = new StringArray();
+            DateTimeFormatter format = Calendar2.timePrecisionToDateTimeFormatter(timePre);
             for (int i = 0; i < 2; i++)
-              sa.add(Calendar2.epochSecondsToLimitedIsoStringT(timePre, pa.getDouble(i), ""));
+              sa.add(Calendar2.epochSecondsToLimitedIsoStringT(format, pa.getDouble(i), ""));
             catts.set("actual_range", sa);
           }
         }
