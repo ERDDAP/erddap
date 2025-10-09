@@ -895,6 +895,7 @@ public class SSR {
    * @param region The S3 region from bro[1].
    */
   public static S3TransferManager buildS3TransferManager(String region) {
+    // FIXME make ssl configurable?
     S3CrtHttpConfiguration httpConfiguration =
         S3CrtHttpConfiguration.builder().trustAllCertificatesEnabled(true).build();
     return S3TransferManager.builder()

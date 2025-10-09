@@ -110,6 +110,12 @@ public class String2 {
   /** If testing a "dir", url should have a trailing slash. Patterns are thread-safe. */
   private static final Pattern AWS_S3_PATTERN = Pattern.compile(AWS_S3_REGEX);
 
+  public static final String S3_PROTOCOL = "s3";
+  public static final String AMAZONAWS_COM = ".amazonaws.com";
+
+  private static final Pattern S3_URI_REGEX =
+      Pattern.compile("^s3://(?<bucketName>[^/]+)/(?<objectName>.*?([^/]+)/?)$");
+
   /**
    * email regex used to identify likely email addresses. This is intended to accept most common
    * valid addresses and reject most invalid addresses. Modified from
@@ -6051,12 +6057,6 @@ public class String2 {
       return new String[] {matcher.group(1), matcher.group(3), matcher.group(4)};
     return null;
   }
-
-  public static final String S3_PROTOCOL = "s3";
-  public static final String AMAZONAWS_COM = ".amazonaws.com";
-
-  private static final Pattern S3_URI_REGEX =
-      Pattern.compile("^s3://(?<bucketName>[^/]+)/(?<objectName>.*?([^/]+)/?)$");
 
   public static String[] parseAwsS3Uri(String uri) {
     Matcher matcher = S3_URI_REGEX.matcher(uri);

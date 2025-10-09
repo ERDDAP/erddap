@@ -1145,6 +1145,8 @@ public class File2 {
    */
   @MustBeClosed
   public static S3Client getS3Client(String region) {
+    // FIXME close all instances
+    // FIXME make ssl configurable?
     AttributeMap attributeMap =
         AttributeMap.builder().put(SdkHttpConfigurationOption.TRUST_ALL_CERTIFICATES, true).build();
     SdkHttpClient sdkHttpClient = new DefaultSdkHttpClientBuilder().buildWithDefaults(attributeMap);
