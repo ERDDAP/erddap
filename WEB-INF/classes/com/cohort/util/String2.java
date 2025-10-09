@@ -4974,7 +4974,7 @@ public class String2 {
 
   /**
    * This returns the index of the first non-Unicode character. Currently, valid characters are #32
-   * - #126, #160+.
+   * - #127, #160+.
    *
    * @param s
    * @param alsoOK a string with characters (e.g., \r, \n, \t) which are also valid
