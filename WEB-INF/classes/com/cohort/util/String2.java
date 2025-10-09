@@ -4982,7 +4982,7 @@ public class String2 {
 
   /**
    * This returns the index of the first non-Unicode character. Currently, valid characters are #32
-   * - #126, #160+.
+   * - #127, #160+.
    *
    * @param s
    * @param alsoOK a string with characters (e.g., \r, \n, \t) which are also valid
@@ -4994,7 +4994,7 @@ public class String2 {
       char ch = s.charAt(i);
       if (alsoOK.indexOf(ch) >= 0) continue;
       if (ch < 32) return i;
-      if (ch <= 126) continue;
+      if (ch <= 127) continue; // allow up to DELETE char
       if (ch <= 159) return i;
       // 160+ is valid
     }
