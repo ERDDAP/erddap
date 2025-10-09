@@ -4986,7 +4986,7 @@ public class String2 {
       char ch = s.charAt(i);
       if (alsoOK.indexOf(ch) >= 0) continue;
       if (ch < 32) return i;
-      if (ch <= 126) continue;
+      if (ch <= 127) continue; // allow up to DELETE char
       if (ch <= 159) return i;
       // 160+ is valid
     }
