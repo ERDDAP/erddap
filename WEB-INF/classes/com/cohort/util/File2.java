@@ -5,6 +5,7 @@
 package com.cohort.util;
 
 import com.google.common.collect.ImmutableList;
+import com.google.errorprone.annotations.MustBeClosed;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
@@ -29,7 +30,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
@@ -39,12 +39,16 @@ import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.apache.commons.compress.compressors.bzip2.BZip2CompressorInputStream;
 import org.apache.commons.compress.compressors.gzip.GzipCompressorInputStream;
 import org.apache.commons.compress.compressors.z.ZCompressorInputStream;
+import software.amazon.awssdk.core.internal.http.loader.DefaultSdkHttpClientBuilder;
+import software.amazon.awssdk.http.SdkHttpClient;
+import software.amazon.awssdk.http.SdkHttpConfigurationOption;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 import software.amazon.awssdk.services.s3.model.HeadObjectRequest;
 import software.amazon.awssdk.services.s3.model.NoSuchKeyException;
+import software.amazon.awssdk.utils.AttributeMap;
 
 /** File2 has useful static methods for working with files. */
 public class File2 {
@@ -294,8 +298,6 @@ public class File2 {
   public static boolean reallyVerbose = false;
 
   private static String tempDirectory; // lazy creation by getSystemTempDirectory
-
-  private static final ConcurrentHashMap<String, S3Client> s3ClientMap = new ConcurrentHashMap<>();
 
   public static String getClassPath() {
     String find = "/com/cohort/util/String2.class";
@@ -734,9 +736,8 @@ public class File2 {
     // https://docs.aws.amazon.com/sdk-for-java/latest/developer-guide/examples-s3-objects.html#delete-object
     String bro[] = String2.parseAwsS3Url(awsUrl);
     if (bro == null) return false;
-    try {
-      getS3Client(bro[1])
-          .deleteObject(DeleteObjectRequest.builder().bucket(bro[0]).key(bro[2]).build());
+    try (S3Client s3Client = getS3Client(bro[1])) {
+      s3Client.deleteObject(DeleteObjectRequest.builder().bucket(bro[0]).key(bro[2]).build());
       return true;
     } catch (Exception e) {
       String2.log("Caught exception while deleting " + awsUrl + " : " + e);
@@ -930,9 +931,11 @@ public class File2 {
         return file.length();
       } else {
         // isAwsS3Url
-        return getS3Client(bro[1])
-            .headObject(HeadObjectRequest.builder().bucket(bro[0]).key(bro[2]).build())
-            .contentLength();
+        try (S3Client s3Client = getS3Client(bro[1])) {
+          return s3Client
+              .headObject(HeadObjectRequest.builder().bucket(bro[0]).key(bro[2]).build())
+              .contentLength();
+        }
       }
     } catch (NoSuchKeyException nske) { // if aws key/object doesn't exist
       return -1;
@@ -957,10 +960,12 @@ public class File2 {
         return file.lastModified();
       } else {
         // isAwsS3Url
-        return getS3Client(bro[1])
-            .headObject(HeadObjectRequest.builder().bucket(bro[0]).key(bro[2]).build())
-            .lastModified()
-            .toEpochMilli();
+        try (S3Client s3Client = getS3Client(bro[1])) {
+          return s3Client
+              .headObject(HeadObjectRequest.builder().bucket(bro[0]).key(bro[2]).build())
+              .lastModified()
+              .toEpochMilli();
+        }
       }
 
     } catch (Exception e) {
@@ -1138,31 +1143,12 @@ public class File2 {
    * @param region
    * @return an S3Client
    */
+  @MustBeClosed
   public static S3Client getS3Client(String region) {
-    // This code is based on
-    // https://docs.aws.amazon.com/sdk-for-java/latest/developer-guide/examples-s3-objects.html#list-object
-    //  was v1.1 https://docs.aws.amazon.com/AmazonS3/latest/dev/ListingObjectKeysUsingJava.html
-    // Yes, S3Client is thread safe and reuse is encouraged.
-    //  Notably, the same ssl connection is reused if requests close together in time (so more
-    // efficient).
-    //  see https://github.com/aws/aws-sdk-cpp/issues/266
-    S3Client s3Client = s3ClientMap.get(region);
-    if (s3Client == null) {
-      // I'm not being super careful with concurrency here because 2 initial
-      //  simultaneous calls for the same region are unlikely and it doesn't
-      //  matter if 2 are made initially (and only 1 kept ultimately).
-      // Presumably, this throws exceptions if trouble (eg unknown/invalid region).
-      // Presumably, the s3Client is smart enough to fix itself if there is trouble
-      //  (or there's nothing to fix since it's just a specification).
-      s3Client =
-          S3Client.builder()
-              // was .credentials(ProfileCredentialsProvider.create()) //now it uses default
-              // credentials
-              .region(Region.of(region))
-              .build();
-      s3ClientMap.put(region, s3Client);
-    }
-    return s3Client;
+    AttributeMap attributeMap =
+        AttributeMap.builder().put(SdkHttpConfigurationOption.TRUST_ALL_CERTIFICATES, true).build();
+    SdkHttpClient sdkHttpClient = new DefaultSdkHttpClientBuilder().buildWithDefaults(attributeMap);
+    return S3Client.builder().httpClient(sdkHttpClient).region(Region.of(region)).build();
   }
 
   /**

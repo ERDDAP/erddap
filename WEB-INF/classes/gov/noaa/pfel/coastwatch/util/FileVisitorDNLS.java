@@ -364,7 +364,7 @@ public class FileVisitorDNLS extends SimpleFileVisitor<Path> {
     if (!String2.isSomething(tPathRegex)) tPathRegex = ".*";
 
     // is tDir an http URL?
-    if (tDir.matches(FileVisitorDNLS.HTTP_REGEX)) {
+    if (tDir.matches(FileVisitorDNLS.HTTP_REGEX) || tDir.startsWith(String2.S3_PROTOCOL)) {
 
       // Is it an S3 bucket with "files"?
       // If testing a "dir", url should have a trailing slash.
@@ -431,89 +431,92 @@ public class FileVisitorDNLS extends SimpleFileVisitor<Path> {
                 reqBuilder.delimiter("/"); // Using it just gets files in this dir (not subdir)
 
           ListObjectsV2Request request = reqBuilder.build();
-          S3Client s3client = File2.getS3Client(region);
+          try (S3Client s3client = File2.getS3Client(region)) {
 
-          // complete example (start at line 98):
-          // https://github.com/awsdocs/aws-doc-sdk-examples/blob/main/javav2/example_code/s3/src/main/java/com/example/s3/S3ObjectOperations.java
-          // but example is stupid: sets maxKeys to 1 so it makes a separate request for each item!
-          int nParts = 0;
-          while (true) {
-            ListObjectsV2Response response = s3client.listObjectsV2(request);
-            if (debugMode) String2.log(">> maxKeys=" + S3_MAX_KEYS + " part #" + nParts++);
+            // complete example (start at line 98):
+            // https://github.com/awsdocs/aws-doc-sdk-examples/blob/main/javav2/example_code/s3/src/main/java/com/example/s3/S3ObjectOperations.java
+            // but example is stupid: sets maxKeys to 1 so it makes a separate request for each
+            // item!
+            int nParts = 0;
+            while (true) {
+              ListObjectsV2Response response = s3client.listObjectsV2(request);
+              if (debugMode) String2.log(">> maxKeys=" + S3_MAX_KEYS + " part #" + nParts++);
 
-            // get common prefixes
-            if (tDirectoriesToo) {
-              List<CommonPrefix> list = response.commonPrefixes();
-              for (CommonPrefix commonPrefix : list) {
-                String td2 = baseURL + commonPrefix.prefix(); // list.get(i)= e.g., BCSD/
-                dirHashSet.add(td2);
-                // String2.log(">> add dir=" + td2);
+              // get common prefixes
+              if (tDirectoriesToo) {
+                List<CommonPrefix> list = response.commonPrefixes();
+                for (CommonPrefix commonPrefix : list) {
+                  String td2 = baseURL + commonPrefix.prefix(); // list.get(i)= e.g., BCSD/
+                  dirHashSet.add(td2);
+                  // String2.log(">> add dir=" + td2);
+                }
               }
-            }
 
-            List<S3Object> objects = response.contents();
-            for (S3Object s3Object : objects) {
-              String keyFullName = s3Object.key();
-              String keyDir = File2.getDirectory(baseURL + keyFullName);
-              String keyName = File2.getNameAndExtension(keyFullName);
-              boolean matchesPath =
-                  keyDir.startsWith(tDir)
-                      && // it should
-                      (keyDir.length() == tDir.length()
-                          || (tRecursive && pathRegexPattern.matcher(keyDir).matches()));
-              if (debugMode) String2.log(">> key=" + keyFullName);
-              // + "\n>> matchesPathRegex=" + matchesPath);
-              if (matchesPath) {
+              List<S3Object> objects = response.contents();
+              for (S3Object s3Object : objects) {
+                String keyFullName = s3Object.key();
+                String keyDir = File2.getDirectory(baseURL + keyFullName);
+                String keyName = File2.getNameAndExtension(keyFullName);
+                boolean matchesPath =
+                    keyDir.startsWith(tDir)
+                        && // it should
+                        (keyDir.length() == tDir.length()
+                            || (tRecursive && pathRegexPattern.matcher(keyDir).matches()));
+                if (debugMode) String2.log(">> key=" + keyFullName);
+                // + "\n>> matchesPathRegex=" + matchesPath);
+                if (matchesPath) {
 
-                // store this dir
-                if (tDirectoriesToo) {
-                  // S3 only returns object keys. I must infer/collect directories.
-                  // Store this dir and parents back to tDir.
-                  String choppedKeyDir = keyDir;
-                  while (choppedKeyDir.length() >= tDir.length()) {
-                    // String2.log(">> choppedKeyDir=" + choppedKeyDir);
-                    if (!dirHashSet.add(choppedKeyDir))
-                      break; // hash set already had this, so it will already have parents
+                  // store this dir
+                  if (tDirectoriesToo) {
+                    // S3 only returns object keys. I must infer/collect directories.
+                    // Store this dir and parents back to tDir.
+                    String choppedKeyDir = keyDir;
+                    while (choppedKeyDir.length() >= tDir.length()) {
+                      // String2.log(">> choppedKeyDir=" + choppedKeyDir);
+                      if (!dirHashSet.add(choppedKeyDir))
+                        break; // hash set already had this, so it will already have parents
 
-                    // chop off last subdirectory
-                    choppedKeyDir =
-                        File2.getDirectory(
-                            choppedKeyDir.substring(
-                                0, choppedKeyDir.length() - 1)); // remove trailing /
+                      // chop off last subdirectory
+                      choppedKeyDir =
+                          File2.getDirectory(
+                              choppedKeyDir.substring(
+                                  0, choppedKeyDir.length() - 1)); // remove trailing /
+                    }
+                  }
+
+                  // store this file's information
+                  // Sometimes directories appear as files named "" with size=0.
+                  // I don't store those as files.
+                  boolean matches =
+                      keyName.length() > 0 && fileNameRegexPattern.matcher(keyName).matches();
+                  // if (debugMode) String2.log(">> matchesFileNameRegex=(" + tFileNameRegex + ")="
+                  // +
+                  // matches);
+                  if (matches) {
+                    directoryPA.add(keyDir);
+                    namePA.add(keyName);
+                    lastModifiedPA.add(s3Object.lastModified().toEpochMilli());
+                    sizePA.add(s3Object.size()); // long
                   }
                 }
 
-                // store this file's information
-                // Sometimes directories appear as files named "" with size=0.
-                // I don't store those as files.
-                boolean matches =
-                    keyName.length() > 0 && fileNameRegexPattern.matcher(keyName).matches();
-                // if (debugMode) String2.log(">> matchesFileNameRegex=(" + tFileNameRegex + ")=" +
-                // matches);
-                if (matches) {
-                  directoryPA.add(keyDir);
-                  namePA.add(keyName);
-                  lastModifiedPA.add(s3Object.lastModified().toEpochMilli());
-                  sizePA.add(s3Object.size()); // long
+                // write a chunk to file?
+                if ((response.isTruncated() && table.nRows() > S3_CHUNK_TO_FILE)
+                    || // write a chunk
+                    (!response.isTruncated() && writtenToFile)) { // write final chunk
+                  if (!writtenToFile)
+                    File2.makeDirectory(File2.getDirectory(dnlsFileName)); // ensure dir exists
+                  table.writeJsonlCSV(dnlsFileName, writtenToFile); // append
+                  table.removeAllRows();
+                  writtenToFile = true;
                 }
               }
 
-              // write a chunk to file?
-              if ((response.isTruncated() && table.nRows() > S3_CHUNK_TO_FILE)
-                  || // write a chunk
-                  (!response.isTruncated() && writtenToFile)) { // write final chunk
-                if (!writtenToFile)
-                  File2.makeDirectory(File2.getDirectory(dnlsFileName)); // ensure dir exists
-                table.writeJsonlCSV(dnlsFileName, writtenToFile); // append
-                table.removeAllRows();
-                writtenToFile = true;
-              }
+              if (response.nextContinuationToken() == null) break;
+
+              request =
+                  request.toBuilder().continuationToken(response.nextContinuationToken()).build();
             }
-
-            if (response.nextContinuationToken() == null) break;
-
-            request =
-                request.toBuilder().continuationToken(response.nextContinuationToken()).build();
           }
 
           // read the file

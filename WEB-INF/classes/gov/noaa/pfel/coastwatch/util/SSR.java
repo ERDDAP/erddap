@@ -50,6 +50,7 @@ import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3AsyncClient;
+import software.amazon.awssdk.services.s3.crt.S3CrtHttpConfiguration;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import software.amazon.awssdk.transfer.s3.S3TransferManager;
 import software.amazon.awssdk.transfer.s3.model.FileDownload;
@@ -894,13 +895,14 @@ public class SSR {
    * @param region The S3 region from bro[1].
    */
   public static S3TransferManager buildS3TransferManager(String region) {
+    S3CrtHttpConfiguration httpConfiguration =
+        S3CrtHttpConfiguration.builder().trustAllCertificatesEnabled(true).build();
     return S3TransferManager.builder()
         .s3Client(
             S3AsyncClient.crtBuilder()
+                .httpConfiguration(httpConfiguration)
                 .region(Region.of(region))
-                // .credentialsProvider(credentialProvider)  //handled by default credentials
-                // provider
-                .targetThroughputInGbps(20.0) // ??? make a separate setting?
+                .targetThroughputInGbps(20.0)
                 .minimumPartSizeInBytes((long) (8 * Math2.BytesPerMB))
                 .build())
         .build();
@@ -1024,8 +1026,7 @@ public class SSR {
     if (bro != null) {
       // sample code and javadoc:
       // https://sdk.amazonaws.com/java/api/latest/index.html?software/amazon/awssdk/transfer/s3/S3TransferManager.html
-      try {
-        S3TransferManager tm = buildS3TransferManager(bro[1]); // !!! ??? reuse these???
+      try (S3TransferManager tm = buildS3TransferManager(bro[1]); ) {
         FileDownload download =
             tm.downloadFile(
                 d ->
