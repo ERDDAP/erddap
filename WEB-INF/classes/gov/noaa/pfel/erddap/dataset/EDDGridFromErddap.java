@@ -445,7 +445,7 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
       switch (tName) {
         case EDV.LON_NAME -> lonIndex = av;
         case EDV.LAT_NAME -> latIndex = av;
-        case EDV.ALT_NAME -> altIndex = av;
+        case EDV.ALT_NAME, EDV.PRESSURE_NAME -> altIndex = av;
         case EDV.DEPTH_NAME -> depthIndex = av;
         case EDV.TIME_NAME -> timeIndex = av;
       }

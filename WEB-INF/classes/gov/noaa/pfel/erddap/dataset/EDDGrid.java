@@ -202,8 +202,9 @@ public abstract class EDDGrid extends EDD {
     } else if (EDV.ALT_NAME.equals(tDestName)) {
       if (av >= 0) altIndex = av;
       return new EDVAltGridAxis(
-          tParentDatasetID, tSourceName, tSourceAtt, tAddAtt, sourceAxisValues);
-    } else if (EDV.PRESSURE_LONGNAME.equals(ioosCategory)) {
+          tParentDatasetID, tSourceName, tSourceAtt, tAddAtt, sourceAxisValues, false);
+    } else if (EDV.PRESSURE_NAME.equals(tDestName) || EDV.PRESSURE_LONGNAME.equals(ioosCategory)) {
+      // destinationName = "pressure" or ioosCategory = "Pressure" are supported for isobaric levels
       if (av >= 0) altIndex = av;
       return new EDVAltGridAxis(
           tParentDatasetID, tSourceName, tSourceAtt, tAddAtt, sourceAxisValues, true);

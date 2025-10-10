@@ -30,62 +30,6 @@ public class EDVAltGridAxis extends EDVGridAxis {
    *     from combinedAttributes. If this is null, an empty addAttributes will be created.
    * @param tSourceValues has the values from the source. This can't be a StringArray. There must be
    *     at least one element.
-   * @throws Throwable if trouble
-   */
-  public EDVAltGridAxis(
-      String tParentDatasetID,
-      String tSourceName,
-      Attributes tSourceAttributes,
-      LocalizedAttributes tAddAttributes,
-      PrimitiveArray tSourceValues)
-      throws Throwable {
-
-    super(
-        tParentDatasetID, tSourceName, ALT_NAME, tSourceAttributes, tAddAttributes, tSourceValues);
-
-    // The attributes this gets/sets should not need to be localized (max/min
-    // value for example). Just use the default language.
-    int language = EDMessages.DEFAULT_LANGUAGE;
-    if (destinationDataType().equals("String"))
-      throw new RuntimeException(
-          "datasets.xml error: "
-              + "The destination dataType for the altitude variable must be a numeric dataType.");
-
-    longName = ALT_LONGNAME;
-    units = ALT_UNITS;
-    combinedAttributes.set(language, "_CoordinateAxisType", "Height"); // unidata
-    combinedAttributes.set(language, "_CoordinateZisPositive", "up"); // unidata
-    combinedAttributes.set(language, "axis", "Z");
-    combinedAttributes.set(language, "ioos_category", LOCATION_CATEGORY);
-    combinedAttributes.set(language, "long_name", longName);
-    combinedAttributes.set(language, "positive", "up"); // cf
-    combinedAttributes.set(language, "standard_name", ALT_STANDARD_NAME);
-    EDVAlt.ensureUnitsAreM(combinedAttributes.getString(language, "units"), "altitude", "up");
-    combinedAttributes.set(language, "units", units);
-
-    if (destinationMin.compareTo(destinationMax) > 0) {
-      PAOne d1 = destinationMin;
-      destinationMin = destinationMax;
-      destinationMax = d1;
-    }
-    setActualRangeFromDestinationMinMax(language);
-    initializeAverageSpacingAndCoarseMinMax();
-    // no need to deal with missingValue stuff, since gridAxis can't have mv's
-  }
-
-  /**
-   * Additional constructor to override attributes for pressure axis variable.
-   *
-   * @param tParentDatasetID This is needed if dimensionValuesInMemory is false, so sourceValues
-   *     sometimes need to be read from [cacheDirectory(tParentDatasetID)]/dimensionSourceValues.nc
-   * @param tSourceName the name of the axis variable in the dataset source (usually with no
-   *     spaces).
-   * @param tSourceAttributes are the attributes for the variable in the source
-   * @param tAddAttributes the attributes which will be added when data is extracted and which have
-   *     precedence over sourceAttributes. Special case: value="null" causes that item to be removed
-   *     from combinedAttributes. If this is null, an empty addAttributes will be created.
-   * @param tSourceValues has the values from the source. This can't be a StringArray. There must be
-   *     at least one element.
    * @param isPressure boolean flag used to run this constructor to build pressure axis variable
    * @throws Throwable if trouble
    */
@@ -97,32 +41,50 @@ public class EDVAltGridAxis extends EDVGridAxis {
       PrimitiveArray tSourceValues,
       boolean isPressure)
       throws Throwable {
-
     super(
         tParentDatasetID,
         tSourceName,
-        PRESSURE_NAME,
+        isPressure ? PRESSURE_NAME : ALT_NAME,
         tSourceAttributes,
         tAddAttributes,
         tSourceValues);
 
+    // The attributes this gets/sets should not need to be localized (max/min
+    // value for example). Just use the default language.
+    int language = EDMessages.DEFAULT_LANGUAGE;
     if (destinationDataType().equals("String"))
       throw new RuntimeException(
           "datasets.xml error: "
               + "The destination dataType for the variable must be a numeric dataType.");
 
-    // The attributes this gets/sets should not need to be localized (max/min
-    // value for example). Just use the default language.
-    int language = EDMessages.DEFAULT_LANGUAGE;
-    combinedAttributes.set(language, "_CoordinateAxisType", "Height"); // unidata
-    combinedAttributes.set(language, "_CoordinateZisPositive", "down"); // unidata
-    combinedAttributes.set(language, "axis", "Z");
-    combinedAttributes.set(language, "ioos_category", PRESSURE_LONGNAME);
-    combinedAttributes.set(language, "long_name", PRESSURE_LONGNAME);
-    combinedAttributes.set(language, "positive", "down"); // cf
-    combinedAttributes.set(language, "standard_name", PRESSURE_STANDARD_NAME);
-    EDVAlt.ensureUnitsArePressure(
-        combinedAttributes.getString(language, "units"), "variable", "down");
+    if (isPressure) {
+      longName = PRESSURE_LONGNAME;
+      units = combinedAttributes.getString(language, "units");
+      if (units == null) units = PRESSURE_UNITS;
+      combinedAttributes.set(language, "_CoordinateAxisType", "Height"); // unidata
+      combinedAttributes.set(language, "_CoordinateZisPositive", "down"); // unidata
+      combinedAttributes.set(language, "axis", "Z");
+      combinedAttributes.set(language, "ioos_category", PRESSURE_LONGNAME);
+      combinedAttributes.set(language, "long_name", PRESSURE_LONGNAME);
+      combinedAttributes.set(language, "positive", "down"); // cf
+      combinedAttributes.set(language, "standard_name", PRESSURE_STANDARD_NAME);
+      EDVAlt.ensureUnitsArePressure(
+          combinedAttributes.getString(language, "units"), "variable", "down");
+      combinedAttributes.set(language, "units", units);
+
+    } else {
+      longName = ALT_LONGNAME;
+      units = ALT_UNITS;
+      combinedAttributes.set(language, "_CoordinateAxisType", "Height"); // unidata
+      combinedAttributes.set(language, "_CoordinateZisPositive", "up"); // unidata
+      combinedAttributes.set(language, "axis", "Z");
+      combinedAttributes.set(language, "ioos_category", LOCATION_CATEGORY);
+      combinedAttributes.set(language, "long_name", longName);
+      combinedAttributes.set(language, "positive", "up"); // cf
+      combinedAttributes.set(language, "standard_name", ALT_STANDARD_NAME);
+      EDVAlt.ensureUnitsAreM(combinedAttributes.getString(language, "units"), "altitude", "up");
+      combinedAttributes.set(language, "units", units);
+    }
 
     if (destinationMin.compareTo(destinationMax) > 0) {
       PAOne d1 = destinationMin;

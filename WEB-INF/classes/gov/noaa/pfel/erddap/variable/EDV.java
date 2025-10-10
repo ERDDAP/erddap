@@ -77,7 +77,7 @@ public class EDV {
       PRESSURE_NAME = "pressure",
       PRESSURE_LONGNAME = "Pressure",
       PRESSURE_STANDARD_NAME = "pressure",
-      PRESSURE_UNITS = "";
+      PRESSURE_UNITS = "hPa";
 
   public static final ImmutableList<String> LON_UNITS_VARIANTS =
       ImmutableList.of(LON_UNITS, "degree_east", "degreeE", "degree_E", "degreesE", "degrees_E");
