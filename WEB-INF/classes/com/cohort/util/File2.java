@@ -39,6 +39,7 @@ import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.apache.commons.compress.compressors.bzip2.BZip2CompressorInputStream;
 import org.apache.commons.compress.compressors.gzip.GzipCompressorInputStream;
 import org.apache.commons.compress.compressors.z.ZCompressorInputStream;
+import org.apache.commons.io.input.ProxyInputStream;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
@@ -1141,7 +1142,6 @@ public class File2 {
    */
   @MustBeClosed
   public static S3Client getS3Client(String region) {
-    // FIXME close all instances
     return S3Client.builder().region(Region.of(region)).build();
   }
 
@@ -1164,6 +1164,7 @@ public class File2 {
    * @return a buffered InputStream from a file or S3 URL, ready to read firstByte.
    * @throws Exception if trouble
    */
+  @SuppressWarnings("MustBeClosed")
   public static BufferedInputStream getBufferedInputStream(
       String fullFileName, long firstByte, long lastByte) throws Exception {
 
@@ -1186,7 +1187,15 @@ public class File2 {
         // yes 'bytes=', not space. see
         // https://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.35
         builder.range("bytes=" + firstByte + "-" + (lastByte < 0 ? "" : "" + lastByte));
-      is = getS3Client(bro[1]).getObject(builder.build());
+      final S3Client s3Client = getS3Client(bro[1]);
+      is =
+          new ProxyInputStream(s3Client.getObject(builder.build())) {
+            @Override
+            public void close() throws IOException {
+              super.close();
+              s3Client.close();
+            }
+          };
     }
 
     // Buffer it.  Recommended by https://commons.apache.org/proper/commons-compress/examples.html

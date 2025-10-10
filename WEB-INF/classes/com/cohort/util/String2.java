@@ -6058,6 +6058,16 @@ public class String2 {
     return null;
   }
 
+  /**
+   * Parse the bucket name and object name from an S3 URI. This will use the default region
+   * configured for the user.
+   *
+   * <p><a href="https://docs.aws.amazon.com/cli/latest/reference/s3/">S3 CLI Reference</a>
+   *
+   * @param uri s3:// URI to the desired object.
+   * @return String [bucketName, region, objectName], or null if url isn't an s3 URL. region and
+   *     objectName may be "".
+   */
   public static String[] parseAwsS3Uri(String uri) {
     Matcher matcher = S3_URI_REGEX.matcher(uri);
     if (matcher.matches()) {
@@ -6070,6 +6080,9 @@ public class String2 {
     }
   }
 
+  /**
+   * @return Default AWS region name configured for the user.
+   */
   public static String defaultAwsRegion() {
     try (S3Client s3Client = S3Client.builder().build()) {
       Region region = s3Client.serviceClientConfiguration().region();
