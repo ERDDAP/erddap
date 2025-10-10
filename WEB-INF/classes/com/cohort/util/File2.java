@@ -39,16 +39,12 @@ import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.apache.commons.compress.compressors.bzip2.BZip2CompressorInputStream;
 import org.apache.commons.compress.compressors.gzip.GzipCompressorInputStream;
 import org.apache.commons.compress.compressors.z.ZCompressorInputStream;
-import software.amazon.awssdk.core.internal.http.loader.DefaultSdkHttpClientBuilder;
-import software.amazon.awssdk.http.SdkHttpClient;
-import software.amazon.awssdk.http.SdkHttpConfigurationOption;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 import software.amazon.awssdk.services.s3.model.HeadObjectRequest;
 import software.amazon.awssdk.services.s3.model.NoSuchKeyException;
-import software.amazon.awssdk.utils.AttributeMap;
 
 /** File2 has useful static methods for working with files. */
 public class File2 {
@@ -1146,11 +1142,7 @@ public class File2 {
   @MustBeClosed
   public static S3Client getS3Client(String region) {
     // FIXME close all instances
-    // FIXME make ssl configurable?
-    AttributeMap attributeMap =
-        AttributeMap.builder().put(SdkHttpConfigurationOption.TRUST_ALL_CERTIFICATES, true).build();
-    SdkHttpClient sdkHttpClient = new DefaultSdkHttpClientBuilder().buildWithDefaults(attributeMap);
-    return S3Client.builder().httpClient(sdkHttpClient).region(Region.of(region)).build();
+    return S3Client.builder().region(Region.of(region)).build();
   }
 
   /**

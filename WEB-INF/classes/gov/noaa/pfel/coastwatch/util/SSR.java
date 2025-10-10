@@ -13,6 +13,7 @@ import com.cohort.util.MustBe;
 import com.cohort.util.String2;
 import com.cohort.util.XML;
 import com.sun.mail.smtp.SMTPTransport;
+import gov.noaa.pfel.erddap.util.EDStatic;
 import jakarta.mail.Message;
 import jakarta.mail.PasswordAuthentication;
 import jakarta.mail.Session;
@@ -50,7 +51,6 @@ import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3AsyncClient;
-import software.amazon.awssdk.services.s3.crt.S3CrtHttpConfiguration;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import software.amazon.awssdk.transfer.s3.S3TransferManager;
 import software.amazon.awssdk.transfer.s3.model.FileDownload;
@@ -895,18 +895,21 @@ public class SSR {
    * @param region The S3 region from bro[1].
    */
   public static S3TransferManager buildS3TransferManager(String region) {
-    // FIXME make ssl configurable?
-    S3CrtHttpConfiguration httpConfiguration =
-        S3CrtHttpConfiguration.builder().trustAllCertificatesEnabled(true).build();
-    return S3TransferManager.builder()
-        .s3Client(
-            S3AsyncClient.crtBuilder()
-                .httpConfiguration(httpConfiguration)
-                .region(Region.of(region))
-                .targetThroughputInGbps(20.0)
-                .minimumPartSizeInBytes((long) (8 * Math2.BytesPerMB))
-                .build())
-        .build();
+    if (EDStatic.config.useAwsCrt) {
+      return S3TransferManager.builder()
+          .s3Client(
+              S3AsyncClient.crtBuilder()
+                  .region(Region.of(region))
+                  .targetThroughputInGbps(20.0) // ??? make a separate setting?
+                  .targetThroughputInGbps(20.0)
+                  .minimumPartSizeInBytes((long) (8 * Math2.BytesPerMB))
+                  .build())
+          .build();
+    } else {
+      return S3TransferManager.builder()
+          .s3Client(S3AsyncClient.builder().region(Region.of(region)).build())
+          .build();
+    }
   }
 
   /**

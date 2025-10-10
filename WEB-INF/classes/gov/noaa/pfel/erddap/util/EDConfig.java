@@ -214,6 +214,7 @@ public class EDConfig {
   public String awsS3OutputBucketUrl = null; // ends in slash
   public String awsS3OutputBucket = null; // the short name of the bucket
   public S3TransferManager awsS3OutputTransferManager = null;
+  public boolean useAwsCrt = true;
 
   public final String corsAllowHeaders;
   public final String[] corsAllowOrigin;
@@ -534,6 +535,9 @@ public class EDConfig {
       // but LifecycleRule precision seems to be days, not e.g., minutes
       // So make my own system
     }
+
+    // optional parameter to disable AWS Common Runtime
+    useAwsCrt = getSetupEVBoolean(setup, ev, "useAwsCrt", true);
 
     units_standard = getSetupEVString(setup, ev, "units_standard", "UDUNITS");
 
