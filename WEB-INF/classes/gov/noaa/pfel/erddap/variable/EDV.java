@@ -73,7 +73,11 @@ public class EDV {
       TIME_NAME = "time",
       TIME_LONGNAME = "Time",
       TIME_STANDARD_NAME = "time",
-      TIME_UNITS = Calendar2.SECONDS_SINCE_1970;
+      TIME_UNITS = Calendar2.SECONDS_SINCE_1970,
+      PRESSURE_NAME = "pressure",
+      PRESSURE_LONGNAME = "Pressure",
+      PRESSURE_STANDARD_NAME = "pressure",
+      PRESSURE_UNITS = "hPa";
 
   public static final ImmutableList<String> LON_UNITS_VARIANTS =
       ImmutableList.of(LON_UNITS, "degree_east", "degreeE", "degree_E", "degreesE", "degrees_E");
@@ -81,6 +85,7 @@ public class EDV {
       ImmutableList.of(LAT_UNITS, "degree_north", "degreeN", "degree_N", "degreesN", "degrees_N");
   public static final ImmutableList<String> METERS_VARIANTS =
       ImmutableList.of(ALT_UNITS, "meter", "meters", "metre", "metres");
+  public static String[] PRESSURE_VARIANTS = {"Pa", "Pascal", "Pascals", "mbar", "millibar", "hPa"};
 
   /** */
   public static final String TIME_UCUM_UNITS = Units2.udunitsToUcum(TIME_UNITS);

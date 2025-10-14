@@ -183,6 +183,13 @@ public abstract class EDDGrid extends EDD {
       LocalizedAttributes tAddAtt,
       PrimitiveArray sourceAxisValues)
       throws Throwable {
+    int language = EDMessages.DEFAULT_LANGUAGE;
+    String ioosCategory = null;
+    if (tSourceAtt != null && tSourceAtt.getString("ioos_category") != null) {
+      ioosCategory = tSourceAtt.getString("ioos_category");
+    } else if (tAddAtt != null && tAddAtt.getString(language, "ioos_category") != null) {
+      ioosCategory = tAddAtt.getString(language, "ioos_category");
+    }
 
     if (EDV.LON_NAME.equals(tDestName)) {
       if (av >= 0) lonIndex = av;
@@ -195,7 +202,12 @@ public abstract class EDDGrid extends EDD {
     } else if (EDV.ALT_NAME.equals(tDestName)) {
       if (av >= 0) altIndex = av;
       return new EDVAltGridAxis(
-          tParentDatasetID, tSourceName, tSourceAtt, tAddAtt, sourceAxisValues);
+          tParentDatasetID, tSourceName, tSourceAtt, tAddAtt, sourceAxisValues, false);
+    } else if (EDV.PRESSURE_NAME.equals(tDestName) || EDV.PRESSURE_LONGNAME.equals(ioosCategory)) {
+      // destinationName = "pressure" or ioosCategory = "Pressure" are supported for isobaric levels
+      if (av >= 0) altIndex = av;
+      return new EDVAltGridAxis(
+          tParentDatasetID, tSourceName, tSourceAtt, tAddAtt, sourceAxisValues, true);
     } else if (EDV.DEPTH_NAME.equals(tDestName)) {
       if (av >= 0) depthIndex = av;
       return new EDVDepthGridAxis(
