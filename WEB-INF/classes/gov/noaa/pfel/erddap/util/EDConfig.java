@@ -214,7 +214,8 @@ public class EDConfig {
   public String awsS3OutputBucketUrl = null; // ends in slash
   public String awsS3OutputBucket = null; // the short name of the bucket
   public S3TransferManager awsS3OutputTransferManager = null;
-  public boolean useAwsCrt = true;
+  public boolean useAwsCrt;
+  public boolean useAwsAnonymous;
 
   public final String corsAllowHeaders;
   public final String[] corsAllowOrigin;
@@ -538,6 +539,7 @@ public class EDConfig {
 
     // optional parameter to disable AWS Common Runtime
     useAwsCrt = getSetupEVBoolean(setup, ev, "useAwsCrt", true);
+    useAwsAnonymous = getSetupEVBoolean(setup, ev, "useAwsAnonymous", false);
 
     units_standard = getSetupEVString(setup, ev, "units_standard", "UDUNITS");
 

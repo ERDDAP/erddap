@@ -49,12 +49,16 @@ import java.util.zip.InflaterInputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
+import software.amazon.awssdk.auth.credentials.AnonymousCredentialsProvider;
+import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider;
+import software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3AsyncClient;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import software.amazon.awssdk.transfer.s3.S3TransferManager;
 import software.amazon.awssdk.transfer.s3.model.FileDownload;
 import software.amazon.awssdk.transfer.s3.model.FileUpload;
+import software.amazon.awssdk.utils.builder.SdkBuilder;
 
 /**
  * This Shell Script Replacement class has static methods to facilitate using Java programs in place
@@ -895,21 +899,26 @@ public class SSR {
    * @param region The S3 region from bro[1].
    */
   public static S3TransferManager buildS3TransferManager(String region) {
-    if (EDStatic.config.useAwsCrt) {
-      return S3TransferManager.builder()
-          .s3Client(
-              S3AsyncClient.crtBuilder()
-                  .region(Region.of(region))
-                  .targetThroughputInGbps(20.0) // ??? make a separate setting?
-                  .targetThroughputInGbps(20.0)
-                  .minimumPartSizeInBytes((long) (8 * Math2.BytesPerMB))
-                  .build())
-          .build();
-    } else {
-      return S3TransferManager.builder()
-          .s3Client(S3AsyncClient.builder().region(Region.of(region)).build())
-          .build();
+    SdkBuilder<?, S3AsyncClient> builder;
+    AwsCredentialsProvider credentialsProvider = DefaultCredentialsProvider.builder().build();
+    if (EDStatic.config.useAwsAnonymous) {
+      credentialsProvider = AnonymousCredentialsProvider.create();
     }
+    if (EDStatic.config.useAwsCrt) {
+      builder =
+          S3AsyncClient.crtBuilder()
+              .credentialsProvider(credentialsProvider)
+              .region(Region.of(region))
+              .targetThroughputInGbps(20.0) // ??? make a separate setting?
+              .targetThroughputInGbps(20.0)
+              .minimumPartSizeInBytes((long) (8 * Math2.BytesPerMB));
+    } else {
+      builder =
+          S3AsyncClient.builder()
+              .credentialsProvider(credentialsProvider)
+              .region(Region.of(region));
+    }
+    return S3TransferManager.builder().s3Client(builder.build()).build();
   }
 
   /**

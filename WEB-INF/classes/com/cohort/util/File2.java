@@ -6,6 +6,7 @@ package com.cohort.util;
 
 import com.google.common.collect.ImmutableList;
 import com.google.errorprone.annotations.MustBeClosed;
+import gov.noaa.pfel.erddap.util.EDStatic;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
@@ -40,6 +41,9 @@ import org.apache.commons.compress.compressors.bzip2.BZip2CompressorInputStream;
 import org.apache.commons.compress.compressors.gzip.GzipCompressorInputStream;
 import org.apache.commons.compress.compressors.z.ZCompressorInputStream;
 import org.apache.commons.io.input.ProxyInputStream;
+import software.amazon.awssdk.auth.credentials.AnonymousCredentialsProvider;
+import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider;
+import software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
@@ -1142,7 +1146,14 @@ public class File2 {
    */
   @MustBeClosed
   public static S3Client getS3Client(String region) {
-    return S3Client.builder().region(Region.of(region)).build();
+    AwsCredentialsProvider credentialsProvider = DefaultCredentialsProvider.builder().build();
+    if (EDStatic.config.useAwsAnonymous) {
+      credentialsProvider = AnonymousCredentialsProvider.create();
+    }
+    return S3Client.builder()
+        .credentialsProvider(credentialsProvider)
+        .region(Region.of(region))
+        .build();
   }
 
   /**

@@ -114,7 +114,7 @@ public class String2 {
   public static final String AMAZONAWS_COM = ".amazonaws.com";
 
   private static final Pattern S3_URI_REGEX =
-      Pattern.compile("^s3://(?<bucketName>[^/]+)/(?<objectName>.*?([^/]+)/?)$");
+      Pattern.compile("^s3://(?<bucketName>[^/]+)/(?<objectName>.*?)$");
 
   /**
    * email regex used to identify likely email addresses. This is intended to accept most common
