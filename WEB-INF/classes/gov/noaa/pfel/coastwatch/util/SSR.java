@@ -1774,7 +1774,8 @@ public class SSR {
       String source, OutputStream out, long firstByte, long lastByte, boolean handleS3ViaSDK) {
     if (source.startsWith("http://")
         || source.startsWith("https://")
-        || source.startsWith("ftp://")) { // untested. presumably anonymous
+        || source.startsWith("ftp://")
+        || source.startsWith("s3://")) { // untested. presumably anonymous
       // URL
       try (BufferedInputStream in =
           (BufferedInputStream)

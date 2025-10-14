@@ -52,6 +52,7 @@ import software.amazon.awssdk.services.s3.model.CommonPrefix;
 import software.amazon.awssdk.services.s3.model.ListObjectsV2Request;
 import software.amazon.awssdk.services.s3.model.ListObjectsV2Response;
 import software.amazon.awssdk.services.s3.model.S3Object;
+import software.amazon.awssdk.services.s3.paginators.ListObjectsV2Iterable;
 
 /**
  * This class gathers basic information about a group of files. This follows Linux symbolic links,
@@ -438,8 +439,9 @@ public class FileVisitorDNLS extends SimpleFileVisitor<Path> {
             // but example is stupid: sets maxKeys to 1 so it makes a separate request for each
             // item!
             int nParts = 0;
-            while (true) {
-              ListObjectsV2Response response = s3client.listObjectsV2(request);
+            ListObjectsV2Iterable pagination = s3client.listObjectsV2Paginator(request);
+            for (ListObjectsV2Response response : pagination) {
+
               if (debugMode) String2.log(">> maxKeys=" + S3_MAX_KEYS + " part #" + nParts++);
 
               // get common prefixes
@@ -489,7 +491,8 @@ public class FileVisitorDNLS extends SimpleFileVisitor<Path> {
                   // I don't store those as files.
                   boolean matches =
                       keyName.length() > 0 && fileNameRegexPattern.matcher(keyName).matches();
-                  // if (debugMode) String2.log(">> matchesFileNameRegex=(" + tFileNameRegex + ")="
+                  // if (debugMode) String2.log(">> matchesFileNameRegex=(" + tFileNameRegex +
+                  // ")="
                   // +
                   // matches);
                   if (matches) {
@@ -511,11 +514,6 @@ public class FileVisitorDNLS extends SimpleFileVisitor<Path> {
                   writtenToFile = true;
                 }
               }
-
-              if (response.nextContinuationToken() == null) break;
-
-              request =
-                  request.toBuilder().continuationToken(response.nextContinuationToken()).build();
             }
           }
 
