@@ -37,6 +37,8 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.apache.commons.codec.binary.Base64;
+import software.amazon.awssdk.regions.Region;
+import software.amazon.awssdk.services.s3.S3Client;
 
 /** A class with static String methods that add to native String methods. All are static methods. */
 public class String2 {
@@ -107,6 +109,12 @@ public class String2 {
 
   /** If testing a "dir", url should have a trailing slash. Patterns are thread-safe. */
   private static final Pattern AWS_S3_PATTERN = Pattern.compile(AWS_S3_REGEX);
+
+  public static final String S3_PROTOCOL = "s3";
+  public static final String AMAZONAWS_COM = ".amazonaws.com";
+
+  private static final Pattern S3_URI_REGEX =
+      Pattern.compile("^s3://(?<bucketName>[^/]+)/(?<objectName>.*?)$");
 
   /**
    * email regex used to identify likely email addresses. This is intended to accept most common
@@ -1354,7 +1362,7 @@ public class String2 {
     protocol.equals("sftp") ||
     protocol.equals("smb"); */
     return switch (protocol) {
-      case "file", "ftp", "http", "https", "sftp", "smb" -> true;
+      case "file", "ftp", "http", "https", "sftp", "smb", "s3" -> true;
       default -> false;
     };
   }
@@ -6019,7 +6027,8 @@ public class String2 {
    */
   public static boolean isAwsS3Url(String url) {
     if (url == null) return false;
-    if (url.endsWith(".amazonaws.com")) url += "/";
+    if (url.startsWith(S3_PROTOCOL)) return true;
+    if (url.endsWith(AMAZONAWS_COM)) url += "/";
     Matcher matcher = AWS_S3_PATTERN.matcher(url);
     return matcher.matches();
   }
@@ -6041,11 +6050,44 @@ public class String2 {
    */
   public static String[] parseAwsS3Url(String url) {
     if (url == null) return null;
-    if (url.endsWith(".amazonaws.com")) url += "/";
+    if (url.startsWith(S3_PROTOCOL)) return parseAwsS3Uri(url);
+    if (url.endsWith(AMAZONAWS_COM)) url += "/";
     Matcher matcher = AWS_S3_PATTERN.matcher(url);
     if (matcher.matches())
       return new String[] {matcher.group(1), matcher.group(3), matcher.group(4)};
     return null;
+  }
+
+  /**
+   * Parse the bucket name and object name from an S3 URI. This will use the default region
+   * configured for the user.
+   *
+   * <p><a href="https://docs.aws.amazon.com/cli/latest/reference/s3/">S3 CLI Reference</a>
+   *
+   * @param uri s3:// URI to the desired object.
+   * @return String [bucketName, region, objectName], or null if url isn't an s3 URL. region and
+   *     objectName may be "".
+   */
+  public static String[] parseAwsS3Uri(String uri) {
+    Matcher matcher = S3_URI_REGEX.matcher(uri);
+    if (matcher.matches()) {
+      String bucketName = matcher.group("bucketName");
+      String objectName = matcher.group("objectName");
+      String region = defaultAwsRegion();
+      return new String[] {bucketName, region, objectName};
+    } else {
+      return null;
+    }
+  }
+
+  /**
+   * @return Default AWS region name configured for the user.
+   */
+  public static String defaultAwsRegion() {
+    try (S3Client s3Client = S3Client.builder().build()) {
+      Region region = s3Client.serviceClientConfiguration().region();
+      return region.toString();
+    }
   }
 
   /**

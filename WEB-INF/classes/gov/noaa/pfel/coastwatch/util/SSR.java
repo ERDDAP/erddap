@@ -13,6 +13,7 @@ import com.cohort.util.MustBe;
 import com.cohort.util.String2;
 import com.cohort.util.XML;
 import com.sun.mail.smtp.SMTPTransport;
+import gov.noaa.pfel.erddap.util.EDStatic;
 import jakarta.mail.Message;
 import jakarta.mail.PasswordAuthentication;
 import jakarta.mail.Session;
@@ -48,12 +49,16 @@ import java.util.zip.InflaterInputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
+import software.amazon.awssdk.auth.credentials.AnonymousCredentialsProvider;
+import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider;
+import software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3AsyncClient;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import software.amazon.awssdk.transfer.s3.S3TransferManager;
 import software.amazon.awssdk.transfer.s3.model.FileDownload;
 import software.amazon.awssdk.transfer.s3.model.FileUpload;
+import software.amazon.awssdk.utils.builder.SdkBuilder;
 
 /**
  * This Shell Script Replacement class has static methods to facilitate using Java programs in place
@@ -894,16 +899,25 @@ public class SSR {
    * @param region The S3 region from bro[1].
    */
   public static S3TransferManager buildS3TransferManager(String region) {
-    return S3TransferManager.builder()
-        .s3Client(
-            S3AsyncClient.crtBuilder()
-                .region(Region.of(region))
-                // .credentialsProvider(credentialProvider)  //handled by default credentials
-                // provider
-                .targetThroughputInGbps(20.0) // ??? make a separate setting?
-                .minimumPartSizeInBytes((long) (8 * Math2.BytesPerMB))
-                .build())
-        .build();
+    SdkBuilder<?, S3AsyncClient> builder;
+    AwsCredentialsProvider credentialsProvider = DefaultCredentialsProvider.builder().build();
+    if (EDStatic.config.useAwsAnonymous) {
+      credentialsProvider = AnonymousCredentialsProvider.create();
+    }
+    if (EDStatic.config.useAwsCrt) {
+      builder =
+          S3AsyncClient.crtBuilder()
+              .credentialsProvider(credentialsProvider)
+              .region(Region.of(region))
+              .targetThroughputInGbps(20.0) // ??? make a separate setting?
+              .minimumPartSizeInBytes((long) (8 * Math2.BytesPerMB));
+    } else {
+      builder =
+          S3AsyncClient.builder()
+              .credentialsProvider(credentialsProvider)
+              .region(Region.of(region));
+    }
+    return S3TransferManager.builder().s3Client(builder.build()).build();
   }
 
   /**
@@ -1024,8 +1038,7 @@ public class SSR {
     if (bro != null) {
       // sample code and javadoc:
       // https://sdk.amazonaws.com/java/api/latest/index.html?software/amazon/awssdk/transfer/s3/S3TransferManager.html
-      try {
-        S3TransferManager tm = buildS3TransferManager(bro[1]); // !!! ??? reuse these???
+      try (S3TransferManager tm = buildS3TransferManager(bro[1]); ) {
         FileDownload download =
             tm.downloadFile(
                 d ->
@@ -1760,7 +1773,8 @@ public class SSR {
       String source, OutputStream out, long firstByte, long lastByte, boolean handleS3ViaSDK) {
     if (source.startsWith("http://")
         || source.startsWith("https://")
-        || source.startsWith("ftp://")) { // untested. presumably anonymous
+        || source.startsWith("ftp://")
+        || source.startsWith("s3://")) { // untested. presumably anonymous
       // URL
       try (BufferedInputStream in =
           (BufferedInputStream)

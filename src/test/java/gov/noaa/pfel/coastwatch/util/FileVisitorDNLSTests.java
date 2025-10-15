@@ -518,6 +518,163 @@ class FileVisitorDNLSTests {
     String2.log("\n*** FileVisitorDNLS.testAWSS3 finished.");
   }
 
+  /** This tests this class with Amazon AWS S3 file system using the */
+  @org.junit.jupiter.api.Test
+  @TagAWS
+  void testAWSS3WithS3URI() throws Throwable {
+    // set region property
+    System.setProperty("aws.region", "us-west-2");
+
+    Table table;
+    String results, expected;
+    String parent = "s3://nasanex/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/";
+    String child = "CONUS/";
+    String pathRegex = null;
+
+    {
+
+      // !recursive and dirToo
+      table =
+          FileVisitorDNLS.oneStep(
+              "s3://nasanex/",
+              ".*",
+              false,
+              ".*",
+              true); // fileNameRegex, tRecursive, pathRegex, tDirectoriesToo
+      results = table.dataToString();
+      expected =
+          "directory,name,lastModified,size\n"
+              + "s3://nasanex/AVHRR/,,,\n"
+              + "s3://nasanex/CMIP5/,,,\n"
+              + "s3://nasanex/Landsat/,,,\n"
+              + "s3://nasanex/LOCA/,,,\n"
+              + "s3://nasanex/MAIAC/,,,\n"
+              + "s3://nasanex/MODIS/,,,\n"
+              + "s3://nasanex/NAIP/,,,\n"
+              + "s3://nasanex/NEX-DCP30/,,,\n"
+              + "s3://nasanex/NEX-GDDP/,,,\n";
+      Test.ensureEqual(results, expected, "results=\n" + results);
+
+      // !recursive and dirToo
+      table =
+          FileVisitorDNLS.oneStep(
+              "s3://nasanex/NEX-DCP30/",
+              ".*",
+              false,
+              ".*",
+              true); // fileNameRegex, tRecursive, pathRegex, tDirectoriesToo
+      results = table.dataToString();
+      expected =
+          "directory,name,lastModified,size\n"
+              + "s3://nasanex/NEX-DCP30/,,,\n"
+              + "s3://nasanex/NEX-DCP30/,doi.txt,1380418295000,35\n"
+              + "s3://nasanex/NEX-DCP30/,nex-dcp30-s3-files.json,1473288687000,2717227\n"
+              + "s3://nasanex/NEX-DCP30/BCSD/,,,\n"
+              + "s3://nasanex/NEX-DCP30/CONTRIB/,,,\n"
+              + "s3://nasanex/NEX-DCP30/NEX-quartile/,,,\n";
+      Test.ensureEqual(results, expected, "results=\n" + results);
+
+      // !recursive and !dirToo
+      table =
+          FileVisitorDNLS.oneStep(
+              "s3://nasanex",
+              ".*",
+              false,
+              ".*",
+              false); // fileNameRegex, tRecursive, pathRegex, tDirectoriesToo
+      results = table.dataToString();
+      expected = "directory,name,lastModified,size\n";
+      Test.ensureEqual(results, expected, "results=\n" + results);
+
+      // !recursive and !dirToo
+      table =
+          FileVisitorDNLS.oneStep(
+              "s3://nasanex/NEX-DCP30/",
+              ".*",
+              false,
+              ".*",
+              false); // fileNameRegex, tRecursive, pathRegex, tDirectoriesToo
+      results = table.dataToString();
+      expected =
+          "directory,name,lastModified,size\n"
+              + "s3://nasanex/NEX-DCP30/,doi.txt,1380418295000,35\n"
+              + "s3://nasanex/NEX-DCP30/,nex-dcp30-s3-files.json,1473288687000,2717227\n";
+      Test.ensureEqual(results, expected, "results=\n" + results);
+
+      // recursive and dirToo
+      table = FileVisitorDNLS.oneStep(parent, ".*\\.nc", true, pathRegex, true);
+      results = table.dataToString();
+      expected =
+          "directory,name,lastModified,size\n"
+              + "s3://nasanex/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/,,,\n"
+              + "s3://nasanex/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/,,,\n"
+              + "s3://nasanex/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/,tasmin_amon_BCSD_rcp26_r1i1p1_CONUS_bcc-csm1-1_200601-201012.nc,1380652638000,1368229240\n"
+              + "s3://nasanex/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/,tasmin_amon_BCSD_rcp26_r1i1p1_CONUS_bcc-csm1-1_201101-201512.nc,1380649780000,1368487462\n"
+              + "s3://nasanex/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/,tasmin_amon_BCSD_rcp26_r1i1p1_CONUS_bcc-csm1-1_201601-202012.nc,1380651065000,1368894133\n";
+      if (expected.length() > results.length()) String2.log("results=\n" + results);
+      Test.ensureEqual(results.substring(0, expected.length()), expected, "results=\n" + results);
+
+      // recursive and !dirToo
+      table = FileVisitorDNLS.oneStep(parent, ".*\\.nc", true, pathRegex, false);
+      results = table.dataToString();
+      expected =
+          "directory,name,lastModified,size\n"
+              + "s3://nasanex/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/,tasmin_amon_BCSD_rcp26_r1i1p1_CONUS_bcc-csm1-1_200601-201012.nc,1380652638000,1368229240\n"
+              + "s3://nasanex/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/,tasmin_amon_BCSD_rcp26_r1i1p1_CONUS_bcc-csm1-1_201101-201512.nc,1380649780000,1368487462\n"
+              + "s3://nasanex/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/,tasmin_amon_BCSD_rcp26_r1i1p1_CONUS_bcc-csm1-1_201601-202012.nc,1380651065000,1368894133\n";
+      if (expected.length() > results.length()) String2.log("results=\n" + results);
+      Test.ensureEqual(results.substring(0, expected.length()), expected, "results=\n" + results);
+
+      // !recursive and dirToo
+      table = FileVisitorDNLS.oneStep(parent + child, ".*\\.nc", false, pathRegex, true);
+      results = table.dataToString();
+      expected =
+          "directory,name,lastModified,size\n"
+              + "s3://nasanex/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/,,,\n"
+              + "s3://nasanex/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/,tasmin_amon_BCSD_rcp26_r1i1p1_CONUS_bcc-csm1-1_200601-201012.nc,1380652638000,1368229240\n"
+              + "s3://nasanex/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/,tasmin_amon_BCSD_rcp26_r1i1p1_CONUS_bcc-csm1-1_201101-201512.nc,1380649780000,1368487462\n"
+              + "s3://nasanex/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/,tasmin_amon_BCSD_rcp26_r1i1p1_CONUS_bcc-csm1-1_201601-202012.nc,1380651065000,1368894133\n";
+      if (expected.length() > results.length()) String2.log("results=\n" + results);
+      Test.ensureEqual(results.substring(0, expected.length()), expected, "results=\n" + results);
+
+      // !recursive and !dirToo
+      table = FileVisitorDNLS.oneStep(parent + child, ".*\\.nc", false, pathRegex, false);
+      results = table.dataToString();
+      expected =
+          "directory,name,lastModified,size\n"
+              + "s3://nasanex/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/,tasmin_amon_BCSD_rcp26_r1i1p1_CONUS_bcc-csm1-1_200601-201012.nc,1380652638000,1368229240\n"
+              + "s3://nasanex/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/,tasmin_amon_BCSD_rcp26_r1i1p1_CONUS_bcc-csm1-1_201101-201512.nc,1380649780000,1368487462\n"
+              + "s3://nasanex/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/,tasmin_amon_BCSD_rcp26_r1i1p1_CONUS_bcc-csm1-1_201601-202012.nc,1380651065000,1368894133\n";
+      if (expected.length() > results.length()) String2.log("results=\n" + results);
+      Test.ensureEqual(results.substring(0, expected.length()), expected, "results=\n" + results);
+    }
+
+    // set region property
+    System.setProperty("aws.region", "us-east-1");
+    // recursive and dirToo
+    // reallyVerbose = true;
+    // debugMode = true;
+    parent = "s3://noaa-goes17/ABI-L1b-RadC/2018/338/";
+    pathRegex = ".*";
+    table = FileVisitorDNLS.oneStep(parent, ".*\\.nc", true, pathRegex, true);
+    results = table.dataToString();
+    expected =
+        "directory,name,lastModified,size\n"
+            + "s3://noaa-goes17/ABI-L1b-RadC/2018/338/,,,\n"
+            + "s3://noaa-goes17/ABI-L1b-RadC/2018/338/00/,,,\n"
+            + "s3://noaa-goes17/ABI-L1b-RadC/2018/338/00/,OR_ABI-L1b-RadC-M3C01_G17_s20183380002190_e20183380004563_c20183380004595.nc,1582123265000,12524368\n"
+            + "s3://noaa-goes17/ABI-L1b-RadC/2018/338/00/,OR_ABI-L1b-RadC-M3C01_G17_s20183380007190_e20183380009563_c20183380009597.nc,1582123265000,12357541\n"
+            + "s3://noaa-goes17/ABI-L1b-RadC/2018/338/00/,OR_ABI-L1b-RadC-M3C01_G17_s20183380012190_e20183380014503_c20183380014536.nc,1582123255000,12187253\n";
+
+    if (expected.length() > results.length()) String2.log("results=\n" + results);
+    Test.ensureEqual(
+        results.substring(0, expected.length()),
+        expected,
+        "results=\n" + results.substring(0, 1000));
+
+    String2.log("\n*** FileVisitorDNLS.testAWSS3 finished.");
+  }
+
   /**
    * This tests this class with Amazon AWS S3 file system and reading all from a big directory. Your
    * S3 credentials must be in <br>
