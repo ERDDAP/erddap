@@ -518,15 +518,7 @@ class FileVisitorDNLSTests {
     String2.log("\n*** FileVisitorDNLS.testAWSS3 finished.");
   }
 
-  /**
-   * This tests this class with Amazon AWS S3 file system. Your S3 credentials must be in <br>
-   * ~/.aws/credentials on Linux, OS X, or Unix <br>
-   * C:\Users\USERNAME\.aws\credentials on Windows See
-   * https://docs.aws.amazon.com/AmazonS3/latest/dev/UsingMetadata.html See
-   * https://docs.aws.amazon.com/AmazonS3/latest/dev/UsingBucket.html See
-   * https://docs.aws.amazon.com/AmazonS3/latest/dev/ListingKeysHierarchy.html See
-   * https://docs.aws.amazon.com/sdk-for-java/latest/developer-guide/setup.html#setup-credentials
-   */
+  /** This tests this class with Amazon AWS S3 file system using the */
   @org.junit.jupiter.api.Test
   @TagAWS
   void testAWSS3WithS3URI() throws Throwable {

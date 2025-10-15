@@ -910,7 +910,6 @@ public class SSR {
               .credentialsProvider(credentialsProvider)
               .region(Region.of(region))
               .targetThroughputInGbps(20.0) // ??? make a separate setting?
-              .targetThroughputInGbps(20.0)
               .minimumPartSizeInBytes((long) (8 * Math2.BytesPerMB));
     } else {
       builder =
