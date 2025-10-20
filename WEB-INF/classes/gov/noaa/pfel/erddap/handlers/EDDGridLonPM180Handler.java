@@ -11,6 +11,8 @@ import org.xml.sax.SAXException;
 public class EDDGridLonPM180Handler extends BaseGridHandler {
   private final SaxParsingContext context;
 
+  private double maxSourceLon = 360;
+
   public EDDGridLonPM180Handler(
       SaxHandler saxHandler, String datasetID, State completeState, SaxParsingContext context) {
     super(saxHandler, datasetID, completeState);
@@ -62,6 +64,7 @@ public class EDDGridLonPM180Handler extends BaseGridHandler {
     switch (localName) {
       case "updateEveryNMillis" -> tUpdateEveryNMillis = String2.parseInt(contentStr);
       case "accessibleViaFiles" -> tAccessibleViaFiles = String2.parseBoolean(contentStr);
+      case "maxSourceLon" -> maxSourceLon = String2.parseDouble(contentStr);
       default -> {
         return false;
       }
@@ -87,6 +90,7 @@ public class EDDGridLonPM180Handler extends BaseGridHandler {
         tUpdateEveryNMillis,
         tChildDataset,
         tnThreads,
-        tDimensionValuesInMemory);
+        tDimensionValuesInMemory,
+        maxSourceLon);
   }
 }
