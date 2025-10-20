@@ -311,6 +311,7 @@ public class EDDTestDataset {
       datasetsXml.append(xmlFragment_TS_ATMP_AAD());
       datasetsXml.append(xmlFragment_erdMPOC1day_AsATable());
       datasetsXml.append(xmlFragment_testParquet());
+      datasetsXml.append(xmlFragment_TableAggregateRows_nceiPH53sst());
 
       datasetsXml.append(
           "<!-- Here are some excellent gridded datasets that you can include in your ERDDAP\n"
@@ -24509,7 +24510,7 @@ public class EDDTestDataset {
         + "            <att name=\"valid_min\" type=\"short\">0</att>\n"
         + "        </sourceAttributes -->\n"
         + "        <addAttributes>\n"
-        + "            <att name=\"_FillValue\" type=\"short\">32767</att> <!-- added by addFillValueAttributes at 2020-10-28T11:47:36 -->\n"
+        + "            <att name=\"_FillValue\">null</att> <!-- added by addFillValueAttributes at 2020-10-28T11:47:36 -->\n"
         + "            <att name=\"_ChunkSizes\">null</att>\n"
         + "            <att name=\"add_offset\">null</att>\n"
         + "            <att name=\"colorBarMaximum\" type=\"double\">300.0</att>\n"
@@ -43866,6 +43867,38 @@ public class EDDTestDataset {
         + "            <att name=\"long_name\">Source Name</att>\n"
         + "        </addAttributes>\n"
         + "    </dataVariable>\n"
+        + "</dataset>\n";
+  }
+
+  public static EDD getTableAggregateRows_nceiPH53sst() throws Throwable {
+    return EDD.oneFromXmlFragment(null, xmlFragment_TableAggregateRows_nceiPH53sst());
+  }
+
+  private static String xmlFragment_TableAggregateRows_nceiPH53sst() {
+    return "<dataset type=\"EDDTableAggregateRows\" datasetID=\"TableAggregateRows_nceiPH53sst\" active=\"true\">\n"
+        + "    <reloadEveryNMinutes>60</reloadEveryNMinutes>\n"
+        + "    <dataset type=\"EDDTableFromEDDGrid\" datasetID=\"nceiPH53sstd1day_AsATable\" active=\"true\">\n"
+        + "        <accessibleTo>String for accessibleTo</accessibleTo>\n"
+        + "        <addAttributes>\n"
+        + "            <att name=\"summary\">MODIS Aqua, Level-3 Standard Mapped Image (SMI), Global, 4km, Particulate Organic Carbon (POC) (1 Day Composite)</att>\n"
+        + "            <att name=\"title\">MODIS Aqua, Level-3 SMI, Global, 4km, Particulate Organic Carbon, 2003-present (1 Day Composite) as Table</att>\n"
+        + "            <att name=\"maxAxis0\" type=\"int\">0</att>\n"
+        + "        </addAttributes>\n"
+        + "        <dataset type=\"EDDGridFromErddap\" datasetID=\"nceiPH53sstd1day_AsATableChild\">\n"
+        + "            <sourceUrl>http://localhost:8080/erddap/griddap/nceiPH53sstd1day</sourceUrl>\n"
+        + "        </dataset>\n"
+        + "    </dataset>\n"
+        + "    <dataset type=\"EDDTableFromEDDGrid\" datasetID=\"nceiPH53sstn1day_AsATable\" active=\"true\">\n"
+        + "        <accessibleTo>String for accessibleTo</accessibleTo>\n"
+        + "        <addAttributes>\n"
+        + "            <att name=\"summary\">MODIS Aqua, Level-3 Standard Mapped Image (SMI), Global, 4km, Particulate Organic Carbon (POC) (1 Day Composite)</att>\n"
+        + "            <att name=\"title\">MODIS Aqua, Level-3 SMI, Global, 4km, Particulate Organic Carbon, 2003-present (1 Day Composite) as Table</att>\n"
+        + "            <att name=\"maxAxis0\" type=\"int\">0</att>\n"
+        + "        </addAttributes>\n"
+        + "        <dataset type=\"EDDGridFromErddap\" datasetID=\"nceiPH53sstn1day_AsATableChild\">\n"
+        + "            <sourceUrl>http://localhost:8080/erddap/griddap/nceiPH53sstn1day</sourceUrl>\n"
+        + "        </dataset>\n"
+        + "    </dataset>\n"
         + "</dataset>\n";
   }
 }

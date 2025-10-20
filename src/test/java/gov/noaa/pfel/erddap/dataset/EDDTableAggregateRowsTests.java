@@ -7,7 +7,6 @@ import com.cohort.util.Test;
 import gov.noaa.pfel.coastwatch.griddata.NcHelper;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import org.junit.jupiter.api.BeforeAll;
-import tags.TagExternalERDDAP;
 import testDataset.EDDTestDataset;
 import testDataset.Initialization;
 
@@ -409,14 +408,8 @@ class EDDTableAggregateRowsTests {
 
   /** */
   @org.junit.jupiter.api.Test
-  @TagExternalERDDAP // Dataset not available
   void testAllChildAggregation() throws Throwable {
-    // String2.log("\nEDDTableAggregateRows.testBasic()");
-    // testVerboseOn();
-    // boolean oDebugMode = debugMode;
-    // debugMode = false; //normally false. Set it to true if need help.
     String results, tName, expected;
-    // DasDds.main(new String[]{"miniNdbc410", "-verbose"});
     EDDTable tedd = (EDDTable) EDDTestDataset.getTS_SLEV_TAD();
     String dir = EDStatic.config.fullTestCacheDirectory;
     int tPo;
@@ -587,8 +580,8 @@ class EDDTableAggregateRowsTests {
             + "    String keywords \"above, data, datum, depth, DEPTH_QC, earth, Earth Science > Oceans > Sea Surface Topography > Sea Surface Height, flag, height, latitude, local, longitude, method, ocean, oceans, position, POSITION_QC, processing, quality, reference, science, sea, seawater, SLEV, SLEV_DM, SLEV_QC, source, specific, surface, time, TIME_QC, topography, water\";\n"
             + "    String keywords_vocabulary \"GCMD Science Keywords\";\n"
             + "    String license \"Creative Commons Attribution Share-Alike http://www.opendefinition.org/licenses/cc-by-sa\";\n"
-            + "    String metadata_dataset \"https://er2webapps.emodnet-physics.eu/erddap/tabledap/TS_SLEV_TAD_METADATA.htmlTable?%26PLATFORMCODE%3D%2219%22\";\n"
-            + "    String metadata_document \"https://metadata.emodnet-physics.eu/datasetfile/emodnet/TS_SLEV_TAD_19\";\n"
+            + "    String metadata_dataset \"https://ercompwebapps.emodnet-physics.eu/erddap/tabledap/EP_PLATFORMS_METADATA.html\";\n"
+            + "    String metadata_document \"https://ercompwebapps.emodnet-physics.eu/erddap/tabledap/EP_PLATFORMS_METADATA.csv?&parameters=~\\\".*'SLEV'.\\\"&integrator_id=\\\"tad\\\"\";\n"
             + "    Float64 Northernmost_Northing 36.1429;\n"
             + "    String platformType_description \"Tide Gauge\";\n"
             + "    String qc_reference_table \"https://er2webapps.emodnet-physics.eu/erddap/tabledap/qc_reference_table.html\";\n"
