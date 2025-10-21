@@ -283,6 +283,7 @@ public class EDDTestDataset {
       datasetsXml.append(xmlFragment_erdMBsstdmday());
       datasetsXml.append(xmlFragment_erdMBsstdmday_LonPM180());
       // datasetsXml.append(xmlFragment_test_erdPHsstamday_LonPM180()); //AxisVariable=time has tied
+      datasetsXml.append(xmlFragment_ecmwfTest_LonPM180());
       // values
       datasetsXml.append(xmlFragment_testPM180LonValidMinMax());
       datasetsXml.append(xmlFragment_testInvalidCRAFiles());
@@ -34192,6 +34193,198 @@ public class EDDTestDataset {
         + "        <sourceUrl>http://localhost:8080/erddap/griddap/erdMH1chla1day</sourceUrl>\n"
         + "    </dataset>\n"
         + "</dataset>\n";
+  }
+
+  private static String xmlFragment_ecmwfTest_LonPM180() {
+    return """
+    <dataset type="EDDGridLonPM180" datasetID="ECMWF-FIXED" active="true">
+        <maxSourceLon>540</maxSourceLon>
+        <dataset type="EDDGridFromNcFiles" datasetID="ECMWF" active="true">
+            <reloadEveryNMinutes>10080</reloadEveryNMinutes>
+            <updateEveryNMillis>10000</updateEveryNMillis>
+            <fileDir>C:\\Users\\schampagne\\Workspace\\nerddap\\erddap\\test-data\\data</fileDir>
+            <fileNameRegex>ecmwf-temp.*\\.grib2</fileNameRegex>
+            <recursive>true</recursive>
+            <pathRegex>.*</pathRegex>
+            <metadataFrom>last</metadataFrom>
+            <matchAxisNDigits>20</matchAxisNDigits>
+            <fileTableInMemory>false</fileTableInMemory>
+            <!-- sourceAttributes>
+            <att name="Conventions">CF-1.6</att>
+            <att name="featureType">GRID</att>
+            <att name="file_format">GRIB-2</att>
+            <att name="GRIB_table_version">34,0</att>
+            <att name="history">Read using CDM IOSP GribCollection v3</att>
+            <att name="Originating_or_generating_Center">European Centre for Medium Range Weather Forecasts
+            (ECMWF) (RSMC)</att>
+            <att name="Originating_or_generating_Subcenter">0</att>
+            <att name="Type_of_generating_process">Forecast</att>
+        </sourceAttributes -->
+            <addAttributes>
+                <att name="cdm_data_type">Grid</att>
+                <att name="Conventions">CF-1.10, COARDS, ACDD-1.3</att>
+                <att name="creator_name">ECMWF (RSMC)</att>
+                <att name="creator_type">institution</att>
+                <att name="grid_mapping_earth_radius" type="double">6371229.0</att>
+                <att name="grid_mapping_name">latitude_longitude</att>
+                <att name="infoUrl">???</att>
+                <att name="institution">ECMWF (RSMC)</att>
+                <att name="keywords">centre, component, data, ecmwf, european, forecasts, isobaric,
+                    local, medium, medium-range, pressure, range, rsmc, source, surface, temperature,
+                    Temperature_isobaric, time, u-component, u-component_of_wind_isobaric, v-component,
+                    v-component_of_wind_isobaric, weather, wind
+                </att>
+                <att name="license">[standard]</att>
+                <att name="standard_name_vocabulary">CF Standard Name Table v70</att>
+                <att name="summary">European Centre for Medium-Range Weather Forecasts (ECMWF) (RSMC)
+                    data from a local source.
+                </att>
+                <att name="testOutOfDate">now-8days</att>
+                <att name="title">ECMWF (RSMC) data from a local source.</att>
+            </addAttributes>
+            <axisVariable>
+                <sourceName>time</sourceName>
+                <destinationName>time</destinationName>
+                <!-- sourceAttributes>
+                <att name="calendar">proleptic_gregorian</att>
+                <att name="long_name">GRIB forecast or observation time</att>
+                <att name="standard_name">time</att>
+                <att name="units">Hour since 2025-09-26T00:00:00Z</att>
+            </sourceAttributes -->
+                <addAttributes>
+                    <att name="ioos_category">Time</att>
+                    <att name="units">hours since 2025-09-29T00:00:00Z</att>
+                </addAttributes>
+            </axisVariable>
+            <axisVariable>
+                <sourceName>isobaric</sourceName>
+                <destinationName>isobaric</destinationName>
+                <!-- sourceAttributes>
+                <att name="Grib_level_type" type="int">100</att>
+                <att name="long_name">Isobaric surface</att>
+                <att name="positive">down</att>
+                <att name="units">Pa</att>
+            </sourceAttributes -->
+                <addAttributes>
+                    <att name="ioos_category">Pressure</att>
+                    <att name="units">hPa</att>
+                    <att name="scale_factor" type="float">0.01</att>
+                </addAttributes>
+            </axisVariable>
+            <axisVariable>
+                <sourceName>lat</sourceName>
+                <destinationName>latitude</destinationName>
+                <!-- sourceAttributes>
+                <att name="units">degrees_north</att>
+            </sourceAttributes -->
+                <addAttributes>
+                    <att name="ioos_category">Location</att>
+                    <att name="long_name">Latitude</att>
+                    <att name="standard_name">latitude</att>
+                </addAttributes>
+            </axisVariable>
+            <axisVariable>
+                <sourceName>lon</sourceName>
+                <destinationName>longitude</destinationName>
+                <!-- sourceAttributes>
+                <att name="units">degrees_east</att>
+            </sourceAttributes -->
+                <addAttributes>
+                    <att name="ioos_category">Location</att>
+                    <att name="long_name">Longitude</att>
+                    <att name="standard_name">longitude</att>
+                </addAttributes>
+            </axisVariable>
+            <dataVariable>
+                <sourceName>Temperature_isobaric</sourceName>
+                <destinationName>Temperature_isobaric</destinationName>
+                <dataType>float</dataType>
+                <!-- sourceAttributes>
+                <att name="abbreviation">mx2t24</att>
+                <att name="coordinates">reftime time isobaric lat lon </att>
+                <att name="Grib2_Generating_Process_Type">Forecast</att>
+                <att name="Grib2_Level_Desc">Isobaric surface</att>
+                <att name="Grib2_Level_Type" type="int">100</att>
+                <att name="Grib2_Parameter" type="intList">0 0 0</att>
+                <att name="Grib2_Parameter_Category">Temperature</att>
+                <att name="Grib2_Parameter_Discipline">Meteorological products</att>
+                <att name="Grib2_Parameter_Name">Temperature</att>
+                <att name="Grib2_Statistical_Process_Type">UnknownStatType- - 1</att>
+                <att name="Grib_Variable_Id">VAR_0-0-0_L100</att>
+                <att name="grid_mapping">LatLon_Projection</att>
+                <att name="long_name">Temperature @ Isobaric surface</att>
+                <att name="missing_value" type="float">NaN</att>
+                <att name="units">K</att>
+            </sourceAttributes -->
+                <addAttributes>
+                    <att name="colorBarMaximum" type="double">313.0</att>
+                    <att name="colorBarMinimum" type="double">263.0</att>
+                    <att name="coordinates">null</att>
+                    <att name="grid_mapping">null</att>
+                    <att name="ioos_category">Temperature</att>
+                </addAttributes>
+            </dataVariable>
+            <dataVariable>
+                <sourceName>u-component_of_wind_isobaric</sourceName>
+                <destinationName>u_component_of_wind_isobaric</destinationName>
+                <dataType>float</dataType>
+                <!-- sourceAttributes>
+                <att name="coordinates">reftime time isobaric lat lon </att>
+                <att name="description">u-component of wind</att>
+                <att name="Grib2_Generating_Process_Type">Forecast</att>
+                <att name="Grib2_Level_Desc">Isobaric surface</att>
+                <att name="Grib2_Level_Type" type="int">100</att>
+                <att name="Grib2_Parameter" type="intList">0 2 2</att>
+                <att name="Grib2_Parameter_Category">Momentum</att>
+                <att name="Grib2_Parameter_Discipline">Meteorological products</att>
+                <att name="Grib2_Parameter_Name">u-component of wind</att>
+                <att name="Grib2_Statistical_Process_Type">UnknownStatType- - 1</att>
+                <att name="Grib_Variable_Id">VAR_0-2-2_L100</att>
+                <att name="grid_mapping">LatLon_Projection</att>
+                <att name="long_name">u-component of wind @ Isobaric surface</att>
+                <att name="missing_value" type="float">NaN</att>
+                <att name="units">m/s</att>
+            </sourceAttributes -->
+                <addAttributes>
+                    <att name="coordinates">null</att>
+                    <att name="grid_mapping">null</att>
+                    <att name="ioos_category">Pressure</att>
+                </addAttributes>
+            </dataVariable>
+            <dataVariable>
+                <sourceName>v-component_of_wind_isobaric</sourceName>
+                <destinationName>v_component_of_wind_isobaric</destinationName>
+                <dataType>float</dataType>
+                <!-- sourceAttributes>
+                <att name="coordinates">reftime time isobaric lat lon </att>
+                <att name="description">v-component of wind</att>
+                <att name="Grib2_Generating_Process_Type">Forecast</att>
+                <att name="Grib2_Level_Desc">Isobaric surface</att>
+                <att name="Grib2_Level_Type" type="int">100</att>
+                <att name="Grib2_Parameter" type="intList">0 2 3</att>
+                <att name="Grib2_Parameter_Category">Momentum</att>
+                <att name="Grib2_Parameter_Discipline">Meteorological products</att>
+                <att name="Grib2_Parameter_Name">v-component of wind</att>
+                <att name="Grib2_Statistical_Process_Type">UnknownStatType- - 1</att>
+                <att name="Grib_Variable_Id">VAR_0-2-3_L100</att>
+                <att name="grid_mapping">LatLon_Projection</att>
+                <att name="long_name">v-component of wind @ Isobaric surface</att>
+                <att name="missing_value" type="float">NaN</att>
+                <att name="units">m/s</att>
+            </sourceAttributes -->
+                <addAttributes>
+                    <att name="coordinates">null</att>
+                    <att name="grid_mapping">null</att>
+                    <att name="ioos_category">Pressure</att>
+                </addAttributes>
+            </dataVariable>
+        </dataset>
+    </dataset>
+""";
+  }
+
+  public static EDD getEDD_ecmwfTemp_LonPM180() throws Throwable {
+    return EDD.oneFromXmlFragment(null, xmlFragment_ecmwfTest_LonPM180());
   }
 
   public static EDD geterdMBsstdmday() throws Throwable {

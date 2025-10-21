@@ -637,6 +637,103 @@ class EDDGridLonPM180Tests {
     // String2.log("\n*** EDDGridLonPM180.test0to360 finished.");
   }
 
+  /**
+   * This tests a dataset that is initially 180to540.
+   *
+   * @throws Throwable if trouble
+   */
+  @org.junit.jupiter.api.Test
+  @TagMissingDataset // Souce 404
+  @TagImageComparison
+  void test180to540() throws Throwable {
+    // String2.log("\n****************** EDDGridLonPM180.test0to360()
+    // *****************\n");
+    // testVerboseOn();
+    int language = 0;
+    String tName, userDapQuery, results, expected;
+    int po;
+    String dir = EDStatic.config.fullTestCacheDirectory;
+
+    EDDGrid eddGrid = (EDDGrid) EDDTestDataset.getEDD_ecmwfTemp_LonPM180();
+
+    tName =
+        eddGrid.makeNewFileForDapQuery(language, null, null, "", dir, eddGrid.className(), ".dds");
+    results = File2.directReadFrom88591File(dir + tName);
+    expected =
+        """
+Dataset {
+  Float64 time[time = 1];
+  Float32 pressure[pressure = 13];
+  Float32 latitude[latitude = 721];
+  Float32 longitude[longitude = 1440];
+  GRID {
+    ARRAY:
+      Float32 Temperature_isobaric[time = 1][pressure = 13][latitude = 721][longitude = 1440];
+    MAPS:
+      Float64 time[time = 1];
+      Float32 pressure[pressure = 13];
+      Float32 latitude[latitude = 721];
+      Float32 longitude[longitude = 1440];
+  } Temperature_isobaric;
+  GRID {
+    ARRAY:
+      Float32 u_component_of_wind_isobaric[time = 1][pressure = 13][latitude = 721][longitude = 1440];
+    MAPS:
+      Float64 time[time = 1];
+      Float32 pressure[pressure = 13];
+      Float32 latitude[latitude = 721];
+      Float32 longitude[longitude = 1440];
+  } u_component_of_wind_isobaric;
+  GRID {
+    ARRAY:
+      Float32 v_component_of_wind_isobaric[time = 1][pressure = 13][latitude = 721][longitude = 1440];
+    MAPS:
+      Float64 time[time = 1];
+      Float32 pressure[pressure = 13];
+      Float32 latitude[latitude = 721];
+      Float32 longitude[longitude = 1440];
+  } v_component_of_wind_isobaric;
+} ECMWF-FIXED;
+""";
+    Test.ensureEqual(results, expected, "results=\n" + results);
+
+    tName =
+        eddGrid.makeNewFileForDapQuery(language, null, null, "", dir, eddGrid.className(), ".das");
+    results = File2.directReadFrom88591File(dir + tName);
+    String2.log(results);
+    expected =
+        """
+  longitude {
+    String _CoordinateAxisType "Lon";
+    Float32 actual_range -180.0, 179.75;
+    String axis "X";
+    String ioos_category "Location";
+    String long_name "Longitude";
+    String standard_name "longitude";
+    String units "degrees_east";
+  }
+""";
+    po = results.indexOf(expected.substring(0, 30));
+    Test.ensureEqual(
+        results.substring(po, po + expected.length()), expected, "results=\n" + results);
+
+    expected =
+        """
+    Float64 geospatial_lon_max 179.75;
+    Float64 geospatial_lon_min -180.0;
+    Float64 geospatial_lon_resolution 0.25;
+    String geospatial_lon_units "degrees_east";
+""";
+    po = results.indexOf(expected.substring(0, 30));
+    Test.ensureEqual(
+        results.substring(po, po + expected.length()), expected, "results=\n" + results);
+
+    expected = "    Float64 Westernmost_Easting -180.0;";
+    po = results.indexOf(expected.substring(0, 30));
+    Test.ensureEqual(
+        results.substring(po, po + expected.length()), expected, "results=\n" + results);
+  }
+
   /** This tests badFilesFlag. */
   @org.junit.jupiter.api.Test
   @TagLocalERDDAP
