@@ -643,8 +643,6 @@ class EDDGridLonPM180Tests {
    * @throws Throwable if trouble
    */
   @org.junit.jupiter.api.Test
-  @TagMissingDataset // Souce 404
-  @TagImageComparison
   void test180to540() throws Throwable {
     // String2.log("\n****************** EDDGridLonPM180.test0to360()
     // *****************\n");

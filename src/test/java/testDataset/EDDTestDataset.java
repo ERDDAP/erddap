@@ -34195,14 +34195,18 @@ public class EDDTestDataset {
         + "</dataset>\n";
   }
 
-  private static String xmlFragment_ecmwfTest_LonPM180() {
+  private static String xmlFragment_ecmwfTest_LonPM180() throws URISyntaxException {
     return """
     <dataset type="EDDGridLonPM180" datasetID="ECMWF-FIXED" active="true">
         <maxSourceLon>540</maxSourceLon>
         <dataset type="EDDGridFromNcFiles" datasetID="ECMWF" active="true">
             <reloadEveryNMinutes>10080</reloadEveryNMinutes>
             <updateEveryNMillis>10000</updateEveryNMillis>
-            <fileDir>C:\\Users\\schampagne\\Workspace\\nerddap\\erddap\\test-data\\data</fileDir>
+            <fileDir>
+            """
+        + Path.of(EDDTestDataset.class.getResource("/data/grib/").toURI()).toString()
+        + """
+            </fileDir>
             <fileNameRegex>ecmwf-temp.*\\.grib2</fileNameRegex>
             <recursive>true</recursive>
             <pathRegex>.*</pathRegex>
