@@ -446,7 +446,7 @@ class EDDTableFromDatabaseTests {
     Test.ensureEqual(results, expected, "\nresults=\n" + results);
     String2.log("  subset time=" + (System.currentTimeMillis() - eTime) + "ms");
 
-    // constrain numeric variable (even though knowsActualRange=false)
+    // constrain numeric variable
     tName =
         tedd.makeNewFileForDapQuery(
             language, null, null, "&height<162", dir, tedd.className() + "_ht162", ".csv");

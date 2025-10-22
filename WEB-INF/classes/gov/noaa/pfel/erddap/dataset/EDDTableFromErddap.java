@@ -55,7 +55,6 @@ public class EDDTableFromErddap extends EDDTable implements FromErddap {
   protected String publicSourceErddapUrl;
   protected boolean subscribeToRemoteErddapDataset;
   private boolean redirect = true;
-  private boolean knowsActualRange;
 
   /**
    * This constructs an EDDTableFromErddap based on the information in an .xml file.
@@ -352,7 +351,6 @@ public class EDDTableFromErddap extends EDDTable implements FromErddap {
 
     // make the dataVariables
     ArrayList<EDV> tDataVariables = new ArrayList<>();
-    knowsActualRange = false;
     for (int col = 0; col < sourceTable.nColumns(); col++) {
 
       String tSourceName = sourceTable.getColumnName(col);
@@ -455,8 +453,6 @@ public class EDDTableFromErddap extends EDDTable implements FromErddap {
         edv.setActualRangeFromDestinationMinMax(language);
       }
       tDataVariables.add(edv);
-      if (!edv.destinationMin().isMissingValue() || !edv.destinationMax().isMissingValue())
-        knowsActualRange = true; // if any min or max is know, say that in general they are known
     }
     dataVariables = new EDV[tDataVariables.size()];
     for (int dv = 0; dv < tDataVariables.size(); dv++) dataVariables[dv] = tDataVariables.get(dv);
@@ -531,18 +527,6 @@ public class EDDTableFromErddap extends EDDTable implements FromErddap {
               + (cTime >= 600000 ? "  (>10m!)" : cTime >= 10000 ? "  (>10s!)" : "")
               + "\n");
   }
-
-  /**
-   * This returns true if this EDDTable knows each variable's actual_range (e.g., EDDTableFromFiles)
-   * or false if it doesn't (e.g., EDDTableFromDatabase).
-   *
-   * @returns true if this EDDTable knows each variable's actual_range (e.g., EDDTableFromFiles) or
-   *     false if it doesn't (e.g., EDDTableFromDatabase).
-   */
-  @Override
-  public boolean knowsActualRange() {
-    return knowsActualRange;
-  } // depends on the type of remote dataset
 
   /** This returns the source ERDDAP's version number, e.g., 1.22 */
   @Override

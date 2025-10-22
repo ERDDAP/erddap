@@ -25,7 +25,6 @@ import gov.noaa.pfel.erddap.variable.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.IntStream;
 import org.apache.commons.lang3.tuple.Pair;
 
 /**
@@ -46,7 +45,6 @@ public class EDDTableAggregateRows extends EDDTable {
   // erddap.tableDatasetHashMap.get(localChildrenID).
   private Erddap erddap;
   private String localChildrenID[]; // [c] is null if NOT local fromErddap
-  private boolean knowsActualRange;
 
   /**
    * This constructs an EDDTableAggregateRows based on the information in an .xml file.
@@ -208,7 +206,6 @@ public class EDDTableAggregateRows extends EDDTable {
     localChildrenID = new String[nChildren]; // the instance datasetIDs if   local fromErddap
     EDDTable tChildren[] = new EDDTable[nChildren]; // stable local instance
     int ndv = -1;
-    knowsActualRange = true; // only true if true for all children
     for (int c = 0; c < nChildren; c++) {
       if (oChildren[c] == null)
         throw new RuntimeException(errorInMethod + "The child dataset[" + c + "] is null.");
@@ -261,8 +258,6 @@ public class EDDTableAggregateRows extends EDDTable {
                 + ndv
                 + ").");
       }
-
-      if (!tChildren[c].knowsActualRange()) knowsActualRange = false;
     }
     // for rest of constructor, use temporary, stable tChildren reference.
 
@@ -459,18 +454,6 @@ public class EDDTableAggregateRows extends EDDTable {
   }
 
   /**
-   * This returns true if this EDDTable knows each variable's actual_range (e.g., EDDTableFromFiles)
-   * or false if it doesn't (e.g., EDDTableFromDatabase).
-   *
-   * @returns true if this EDDTable knows each variable's actual_range (e.g., EDDTableFromFiles) or
-   *     false if it doesn't (e.g., EDDTableFromDatabase).
-   */
-  @Override
-  public boolean knowsActualRange() {
-    return knowsActualRange;
-  } // depends on the children
-
-  /**
    * This does the actual incremental update of this dataset (i.e., for real time datasets).
    *
    * <p>Concurrency issue: The changes here are first prepared and then applied as quickly as
@@ -502,7 +485,8 @@ public class EDDTableAggregateRows extends EDDTable {
     for (int dvi = 0; dvi < ndv; dvi++) {
 
       Pair<PAOne, PAOne> actualRange =
-          accumulateActualRange(List.of(children), dvi, tChild.dataVariables[dvi].destinationDataPAType());
+          accumulateActualRange(
+              List.of(children), dvi, tChild.dataVariables[dvi].destinationDataPAType());
 
       tMin[dvi] = actualRange.getLeft();
       tMax[dvi] = actualRange.getRight();

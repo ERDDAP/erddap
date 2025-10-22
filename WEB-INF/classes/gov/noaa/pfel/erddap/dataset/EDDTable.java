@@ -855,15 +855,6 @@ public abstract class EDDTable extends EDD {
   }
 
   /**
-   * This returns true if this EDDTable knows each variable's actual_range (e.g., EDDTableFromFiles)
-   * or false if it doesn't (e.g., EDDTableFromDatabase).
-   *
-   * @returns true if this EDDTable knows each variable's actual_range (e.g., EDDTableFromFiles) or
-   *     false if it doesn't (e.g., EDDTableFromDatabase).
-   */
-  public abstract boolean knowsActualRange();
-
-  /**
    * This returns 0=CONSTRAIN_NO (not at all), 1=CONSTRAIN_PARTIAL, or 2=CONSTRAIN_YES (completely),
    * indicating if the source can handle all non-regex constraints on numericDataVariables (either
    * via constraints in the query or in the getSourceData method).

@@ -3280,7 +3280,8 @@ class JettyTests {
             + "\t\t:Southernmost_Northing = 54.34184 ;\n"
             + "\t\t:standard_name_vocabulary = \"CF Standard Name Table v29\" ;\n"
             + "\t\t:STATION_NAME = \"Unimak3\" ;\n"
-            + "\t\t:subsetVariables = \"prof, id, cast, cruise, time, longitude, lon360, latitude\" ;\n"
+            // + "\t\t:subsetVariables = \"prof, id, cast, cruise, time, longitude, lon360,
+            // latitude\" ;\n"
             + "\t\t:summary = \"Pacific Marine Environmental Laboratory (PMEL) Fisheries-Oceanography Cooperative Investigations (FOCI) Chukchi Sea. PMEL EcoFOCI data from a local source.\" ;\n"
             + "\t\t:time_coverage_end = \"2012-09-06T23:57:00Z\" ;\n"
             + "\t\t:time_coverage_start = \"2010-09-05T11:22:00Z\" ;\n"
@@ -3411,7 +3412,8 @@ class JettyTests {
             + "\t\t:Southernmost_Northing = 54.34184 ;\n"
             + "\t\t:standard_name_vocabulary = \"CF Standard Name Table v29\" ;\n"
             + "\t\t:STATION_NAME = \"Unimak3\" ;\n"
-            + "\t\t:subsetVariables = \"prof, id, cast, cruise, time, longitude, lon360, latitude\" ;\n"
+            // + "\t\t:subsetVariables = \"prof, id, cast, cruise, time, longitude, lon360,
+            // latitude\" ;\n"
             + "\t\t:summary = \"Pacific Marine Environmental Laboratory (PMEL) Fisheries-Oceanography Cooperative Investigations (FOCI) Chukchi Sea. PMEL EcoFOCI data from a local source.\" ;\n"
             + "\t\t:time_coverage_end = \"2012-09-06T23:57:00Z\" ;\n"
             + "\t\t:time_coverage_start = \"2010-09-05T11:22:00Z\" ;\n"
@@ -17434,6 +17436,288 @@ class JettyTests {
       // change timestamp back to original
       File2.setLastModified(fullName, timestamp);
     }
+  }
+
+  /** EDDTableAggregateRows, nceiPH53sst */
+  @org.junit.jupiter.api.Test
+  void testAllChildAggregation_nceiPH53sst() throws Throwable {
+    String results, tName, expected;
+    EDDTable tedd = (EDDTable) EDDTestDataset.getTableAggregateRows_nceiPH53sst();
+    String dir = EDStatic.config.fullTestCacheDirectory;
+    int tPo;
+    int language = 0;
+
+    // das
+    tName =
+        tedd.makeNewFileForDapQuery(language, null, null, "", dir, tedd.className() + "1", ".das");
+    results = File2.directReadFrom88591File(dir + tName);
+    expected =
+        """
+Attributes {
+ s {
+  longitude {
+    UInt32 _ChunkSizes 8640;
+    String _CoordinateAxisType "Lon";
+    Float32 actual_range -179.979, 179.979;
+    String axis "X";
+    String grids "uniform grids from -180 to 180 by 0.04";
+    String ioos_category "Location";
+    String long_name "Longitude";
+    String reference_datum "Geographical coordinates, WGS84 datum";
+    String standard_name "longitude";
+    String units "degrees_east";
+    Float32 valid_max 180.0;
+    Float32 valid_min -180.0;
+  }
+  latitude {
+    UInt32 _ChunkSizes 4320;
+    String _CoordinateAxisType "Lat";
+    Float32 actual_range -89.979, 89.979;
+    String axis "Y";
+    String grids "uniform grids from 90.0 to -90.0 by 0.04";
+    String ioos_category "Location";
+    String long_name "Latitude";
+    String reference_datum "Geographical coordinates, WGS84 datum";
+    String standard_name "latitude";
+    String units "degrees_north";
+    Float32 valid_max 90.0;
+    Float32 valid_min -90.0;
+  }
+  time {
+    String _CoordinateAxisType "Time";
+    Float64 actual_range 3.675888e+8, 1.609416e+9;
+    String axis "T";
+    String comment "This is the centered, reference time.";
+    String ioos_category "Time";
+    String long_name "Centered Time";
+    String standard_name "time";
+    String time_origin "01-JAN-1970 00:00:00";
+    String units "seconds since 1970-01-01T00:00:00Z";
+  }
+  sea_surface_temperature {
+    Float64 _FillValue NaN;
+    String ancillary_variables "quality_level pathfinder_quality_level l2p_flags";
+    Float64 colorBarMaximum 32.0;
+    Float64 colorBarMinimum 0.0;
+    String comment "Skin temperature of the ocean";
+    String coverage_content_type "physicalMeasurement";
+    String grid_mapping "crs";
+    String ioos_category "Temperature";
+    String long_name "NOAA Climate Data Record of sea surface skin temperature";
+    String platform "NOAA-19";
+    String source "AVHRR_GAC-CLASS-L1B-NOAA_19-v1";
+    String standard_name "sea_surface_skin_temperature";
+    String units "degree_C";
+    Float64 valid_max 45.0;
+    Float64 valid_min -1.7999999999999545;
+  }
+  dt_analysis {
+    Float64 _FillValue NaN;
+    Float64 colorBarMaximum 5.0;
+    Float64 colorBarMinimum 0.0;
+    String comment "The difference between this SST and the previous day's SST.";
+    String coverage_content_type "auxiliaryInformation";
+    String grid_mapping "crs";
+    String ioos_category "Statistics";
+    String long_name "deviation from last SST analysis";
+    String platform "NOAA-19";
+    String references "AVHRR_OI, with inland values populated from AVHRR_Pathfinder daily climatological SST. For more information on this reference field see https://data.nodc.noaa.gov/cgi-bin/iso?id=gov.noaa.nodc:0071180.";
+    String source "NOAA Daily 25km Global Optimally Interpolated Sea Surface Temperature (OISST)";
+    String units "degree_C";
+    Float64 valid_max 12.700000000000001;
+    Float64 valid_min -12.700000000000001;
+  }
+  wind_speed {
+    String _Unsigned "false";
+    Float64 colorBarMaximum 15.0;
+    Float64 colorBarMinimum 0.0;
+    String comment "These wind speeds were created by NCEP-DOE Atmospheric Model Intercomparison Project (AMIP-II) reanalysis (R-2) and represent winds at 10 metres above the sea surface.";
+    String coverage_content_type "auxiliaryInformation";
+    String grid_mapping "crs";
+    String height "10 m";
+    String ioos_category "Wind";
+    String long_name "10m wind speed";
+    String source "NCEP/DOE AMIP-II Reanalysis (Reanalysis-2): u_wind.10m.gauss.2020.nc, v_wind.10m.gauss.2020.nc";
+    String standard_name "wind_speed";
+    Float64 time_offset 3.1036;
+    String units "m s-1";
+    Byte valid_max 127;
+    Byte valid_min -127;
+  }
+  sea_ice_fraction {
+    Float64 _FillValue NaN;
+    Float64 colorBarMaximum 1.0;
+    Float64 colorBarMinimum 0.0;
+    String comment "Sea ice concentration data are taken from the EUMETSAT Ocean and Sea Ice Satellite Application Facility (OSISAF) Global Daily Sea Ice Concentration Reprocessing Data Set (https://data.nodc.noaa.gov/cgi-bin/iso?id=gov.noaa.nodc:0068294) when these data are available. The data are reprojected and interpolated from their original polar stereographic projection at 10km spatial resolution to the 4km Pathfinder Version 5.3 grid. When the OSISAF data are not available for both hemispheres on a given day, the sea ice concentration data are taken from the sea_ice_fraction variable found in the L4 GHRSST DailyOI SST product from NOAA/NCDC, and are interpolated from the 25km DailyOI grid to the 4km Pathfinder Version 5.3 grid.";
+    String coverage_content_type "auxiliaryInformation";
+    String grid_mapping "crs";
+    String ioos_category "Ice Distribution";
+    String long_name "sea ice fraction";
+    String references "Reynolds, et al.(2006) Daily High-resolution Blended Analyses. Available at http://doi.org/10.7289/V5SQ8XB5";
+    String source "NOAA/NESDIS/NCDC Daily optimum interpolation(OI) SST on 1/4-degree grid: 20201231120000-NCEI-L4_GHRSST-SSTblend-AVHRR_OI-GLOB-v02.0-fv02.1.nc.gz";
+    String standard_name "sea_ice_area_fraction";
+    Float64 time_offset 2.0;
+    String units "%";
+    Float64 valid_max 1.27;
+    Float64 valid_min -1.27;
+  }
+  quality_level {
+    Byte _FillValue 127;
+    String _Unsigned "false";
+    String ancillary_variables "pathfinder_quality_level";
+    String colorBarContinuous "false";
+    Float64 colorBarMaximum 6.0;
+    Float64 colorBarMinimum 0.0;
+    Int32 colorBarNSections 6;
+    String comment "These are the overall quality indicators and are used for all GHRSST SSTs. Note, the native Pathfinder processing system returns quality levels ranging from 0 to 7 (7 is best quality; -1 represents missing data) and has been converted to the extent possible into the six levels required by the GDS2 (ranging from 0 to 5, where 5 is best). Below is the conversion table:\s
+ GDS2 required quality_level 5  =  native Pathfinder quality level 7 == best_quality\s
+ GDS2 required quality_level 4  =  native Pathfinder quality level 4-6 == acceptable_quality\s
+ GDS2 required quality_level 3  =  native Pathfinder quality level 2-3 == low_quality\s
+ GDS2 required quality_level 2  =  native Pathfinder quality level 1 == worst_quality\s
+ GDS2 required quality_level 1  =  native Pathfinder quality level 0 = bad_data\s
+ GDS2 required quality_level 0  =  native Pathfinder quality level -1 = missing_data\s
+ The original Pathfinder quality level is recorded in the optional variable pathfinder_quality_level.";
+    String coverage_content_type "qualityInformation";
+    String flag_meanings "no_data bad_data worst_quality low_quality acceptable_quality best_quality";
+    Byte flag_values 0, 1, 2, 3, 4, 5;
+    String grid_mapping "crs";
+    String ioos_category "Quality";
+    String long_name "quality level of SST pixel";
+    String platform "NOAA-19";
+    String source "AVHRR_GAC-CLASS-L1B-NOAA_19-v1";
+    String units "1";
+    Byte valid_max 5;
+    Byte valid_min 1;
+  }
+  pathfinder_quality_level {
+    Byte _FillValue 127;
+    String _Unsigned "false";
+    String colorBarContinuous "false";
+    Float64 colorBarMaximum 8.0;
+    Float64 colorBarMinimum 0.0;
+    Int32 colorBarNSections 8;
+    String comment "This variable contains the native Pathfinder processing system quality levels, ranging from 0 to 7, where 0 is worst and 7 is best. And value -1 represents missing data.";
+    String coverage_content_type "qualityInformation";
+    String flag_meanings "bad_data worst_quality low_quality low_quality acceptable_quality acceptable_quality acceptable_quality best_quality";
+    Byte flag_values 0, 1, 2, 3, 4, 5, 6, 7;
+    String grid_mapping "crs";
+    String ioos_category "Quality";
+    String long_name "Pathfinder SST quality flag";
+    String platform "NOAA-19";
+    String source "AVHRR_GAC-CLASS-L1B-NOAA_19-v1";
+    String units "1";
+    Byte valid_max 7;
+    Byte valid_min 0;
+  }
+  l2p_flags {
+    Float64 colorBarMaximum 300.0;
+    Float64 colorBarMinimum 0.0;
+    String comment "Bit zero (0) is always set to zero to indicate infrared data. Bit one (1) is set to zero for any pixel over water (ocean, lakes and rivers). Land pixels were determined by rasterizing the Global Self-consistent Hierarchical High-resolution Shoreline (GSHHS) Database from the NOAA National Geophysical Data Center. Any 4 km Pathfinder pixel whose area is 50% or more covered by land has bit one (1) set to 1. Bit two (2) is set to 1 when the sea_ice_fraction is 0.15 or greater. Bits three (3) and four (4) indicate lake and river pixels, respectively, and were determined by rasterizing the US World Wildlife Fund's Global Lakes and Wetlands Database. Any 4 km Pathfinder pixel whose area is 50% or more covered by lake has bit three (3) set to 1. Any 4 km Pathfinder pixel whose area is 50% or more covered by river has bit four (4) set to 1.";
+    String coverage_content_type "auxiliaryInformation";
+    Int16 flag_masks 1, 2, 4, 8, 16, 32, 64, 128, 256;
+    String flag_meanings "microwave land ice lake river reserved_for_future_use unused_currently unused_currently unused_currently";
+    String grid_mapping "crs";
+    String ioos_category "Quality";
+    String long_name "L2P flags";
+    String platform "NOAA-19";
+    String source "AVHRR_GAC-CLASS-L1B-NOAA_19-v1";
+    String units "1";
+    Int16 valid_max 256;
+    Int16 valid_min 0;
+  }
+ }
+  NC_GLOBAL {
+    String _NCProperties "version=2,netcdf=4.7.4,hdf5=1.10.5";
+    String acknowledgement "Please acknowledge the use of these data with the following statement: These data were provided by GHRSST and the NOAA National Centers for Environmental Information (NCEI). This project was supported in part by a grant from the NOAA Climate Data Record (CDR) Program for satellites.";
+    String cdm_data_type "Point";
+    String cdr_id "gov.noaa.ncdc:C00983";
+    String cdr_program "NOAA Climate Data Record Program for satellites";
+    String cdr_variable "sea_surface_temperature";
+    String comment "SST from AVHRR Pathfinder";
+    String contributor_name "Robert Evans";
+    String contributor_role "Principal Investigator";
+    String Conventions "CF-1.6, ACDD-1.3, COARDS";
+    String creator_email "Kenneth.Casey@noaa.gov";
+    String creator_institution "US DOC; NOAA; National Environmental Satellite Data and Information Service; National Centers for Environmental Information";
+    String creator_name "Kenneth S. Casey";
+    String creator_type "person";
+    String creator_url "https://pathfinder.nodc.noaa.gov";
+    String date_created "2021-01-15T20:58:10Z";
+    String date_issued "2016-03-01T00:00:00Z";
+    String date_metadata_modified "2016-01-25T00:00:00Z";
+    String date_modified "2021-01-15T20:58:10Z";
+    String day_or_night "Day";
+    Float64 Easternmost_Easting 179.979;
+    String featureType "Point";
+    String gds_version_id "2.0";
+    String geospatial_bounds "-180.0000 -90.0000, 180.0000 90.0000";
+    String geospatial_bounds_crs "EPSG:4326";
+    Float64 geospatial_lat_max 89.979;
+    Float64 geospatial_lat_min -89.979;
+    Float64 geospatial_lat_resolution 0.04166658948830748;
+    String geospatial_lat_units "degrees_north";
+    Float64 geospatial_lon_max 179.979;
+    Float64 geospatial_lon_min -179.979;
+    Float64 geospatial_lon_resolution 0.041666628081953934;
+    String geospatial_lon_units "degrees_east";
+    String history""";
+    Test.ensureEqual(results.substring(0, expected.length()), expected, "results=\n" + results);
+
+    expected =
+        """
+    String id "AVHRR_Pathfinder-NCEI-L3C-v5.3";
+    String infoUrl "https://data.nodc.noaa.gov/cgi-bin/iso?id=gov.noaa.nodc:AVHRR_Pathfinder-NCEI-L3C-v5.3";
+    String institution "NCEI";
+    String instrument "AVHRR-3";
+    String instrument_vocabulary "NASA Global Change Master Directory (GCMD) Science Keywords v8.4";
+    String keywords "10m, advanced, aerosol, aerosol_dynamic_indicator, analysis, area, atmosphere, atmospheric, avhrr, bias, centers, climate, collated, cryosphere, data, deviation, difference, distribution, dt_analysis, dynamic, Earth Science > Atmosphere > Atmospheric Winds > Surface Winds, Earth Science > Cryosphere > Sea Ice > Ice Extent, Earth Science > Oceans > Ocean Temperature > Sea Surface Temperature, Earth Science > Oceans > Sea Ice > Ice Extent, environmental, error, estimate, extent, flag, flags, fraction, ghrsst, global, high, high-resolution, ice, ice distribution, indicator, information, l2p, l2p_flags, l3-collated, l3c, level, national, ncei, noaa, ocean, oceans, optical, optical properties, pathfinder, pathfinder_quality_level, pixel, properties, quality, quality_level, radiometer, record, reference, resolution, sea, sea_ice_area_fraction, sea_ice_fraction, sea_surface_skin_temperature, sea_surface_temperature, sensor, single, skin, speed, sses, sses_bias, sses_standard_deviation, sst, sst_dtime, standard, statistics, surface, temperature, time, version, very, vhrr, wind, wind_speed, winds";
+    String keywords_vocabulary "GCMD Science Keywords";
+    String license "These data are available for use without restriction.
+The data may be used and redistributed for free but is not intended
+for legal use, since it may contain inaccuracies. Neither the data
+Contributor, ERD, NOAA, nor the United States Government, nor any
+of their employees or contractors, makes any warranty, express or
+implied, including warranties of merchantability and fitness for a
+particular purpose, or assumes any legal liability for the accuracy,
+completeness, or usefulness, of this information.";
+    Int32 maxAxis0 0;
+    String metadata_link "https://data.nodc.noaa.gov/cgi-bin/iso?id=gov.noaa.nodc:AVHRR_Pathfinder-NCEI-L3C-v5.3";
+    String naming_authority "org.ghrsst";
+    String ncei_template_version "NCEI_NetCDF_Grid_Template_v2.0";
+    Float64 Northernmost_Northing 89.979;
+    String orbit_node "Ascending";
+    String platform "NOAA-19";
+    String platform_vocabulary "NASA Global Change Master Directory (GCMD) Science Keywords v8.4";
+    String processing_level "L3C";
+    String product_version "PFV5.3";
+    String program "NOAA Climate Data Record (CDR) Program for satellites";
+    String project "Group for High Resolution Sea Surface Temperature";
+    String publisher_email "ghrsst-po@nceo.ac.uk";
+    String publisher_name "GHRSST Project Office";
+    String publisher_type "group";
+    String publisher_url "https://www.ghrsst.org";
+    String references "https://pathfinder.nodc.noaa.gov and Casey, K.S., T.B. Brandon, P. Cornillon, and R. Evans: The Past, Present and Future of the AVHRR Pathfinder SST Program, in Oceanography from Space: Revisited, eds. V. Barale, J.F.R. Gower, and L. Alberotanza, Springer, 2010. DOI: 10.1007/978-90-481-8681-5_16.";
+    String sea_name "World-Wide Distribution";
+    String sensor "AVHRR-3";
+    String source "AVHRR_GAC-CLASS-L1B-NOAA_19-v1";
+    String sourceUrl "https://www.ncei.noaa.gov/thredds-ocean/catalog/pathfinder/Version5.3/L3C/catalog.html";
+    Float64 Southernmost_Northing -89.979;
+    String spatial_resolution "0.0416667 degree";
+    String standard_name_vocabulary "CF Standard Name Table v70";
+    String summary "MODIS Aqua, Level-3 Standard Mapped Image (SMI), Global, 4km, Particulate Organic Carbon (POC) (1 Day Composite)";
+    String time_coverage_duration "P1D";
+    String time_coverage_end "2020-12-31T12:00:00Z";
+    String time_coverage_resolution "P1D";
+    String time_coverage_start "1981-08-25T12:00:00Z";
+    String title "MODIS Aqua, Level-3 SMI, Global, 4km, Particulate Organic Carbon, 2003-present (1 Day Composite) as Table";
+    Float64 Westernmost_Easting -179.979;
+  }
+}""";
+    tPo = results.indexOf("    String id ");
+    Test.ensureTrue(tPo >= 0, "tPo=-1 results=\n" + results);
+    Test.ensureTrue(tPo + expected.length() <= results.length(), "results too short=\n" + results);
+    Test.ensureEqual(
+        results.substring(tPo, tPo + expected.length()), expected, "results=\n" + results);
   }
 
   /** EDDTableFromErddap */
