@@ -95,6 +95,7 @@ public class EDDGridLonPM180 extends EDDGrid {
     int tUpdateEveryNMillis = Integer.MAX_VALUE; // unusual
     int tnThreads = -1; // interpret invalid values (like -1) as EDStatic.nGridThreads
     boolean tDimensionValuesInMemory = true;
+    double maxSourceLon = 360;
 
     // process the tags
     String startOfTags = xmlReader.allTags();
@@ -155,7 +156,8 @@ public class EDDGridLonPM180 extends EDDGrid {
             "<accessibleViaWMS>",
             "<graphsAccessibleTo>",
             "<accessibleTo>",
-            "<updateEveryNMillis>" -> {}
+            "<updateEveryNMillis>",
+            "<maxSourceLon>" -> {}
         case "</reloadEveryNMinutes>" -> tReloadEveryNMinutes = String2.parseInt(content);
         case "</updateEveryNMillis>" -> tUpdateEveryNMillis = String2.parseInt(content);
         case "</accessibleTo>" -> tAccessibleTo = content;
@@ -170,6 +172,7 @@ public class EDDGridLonPM180 extends EDDGrid {
         case "</nThreads>" -> tnThreads = String2.parseInt(content);
         case "</dimensionValuesInMemory>" ->
             tDimensionValuesInMemory = String2.parseBoolean(content);
+        case "</maxSourceLon>" -> maxSourceLon = String2.parseDouble(content);
         default -> xmlReader.unexpectedTagException();
       }
     }
@@ -191,7 +194,8 @@ public class EDDGridLonPM180 extends EDDGrid {
         tUpdateEveryNMillis,
         tChildDataset,
         tnThreads,
-        tDimensionValuesInMemory);
+        tDimensionValuesInMemory,
+        maxSourceLon);
   }
 
   /**
@@ -229,7 +233,8 @@ public class EDDGridLonPM180 extends EDDGrid {
       int tUpdateEveryNMillis,
       EDDGrid oChildDataset,
       int tnThreads,
-      boolean tDimensionValuesInMemory)
+      boolean tDimensionValuesInMemory,
+      double maxSourceLon)
       throws Throwable {
     int language = EDMessages.DEFAULT_LANGUAGE;
     if (verbose) String2.log("\n*** constructing EDDGridLonPM180 " + tDatasetID);
@@ -371,20 +376,22 @@ public class EDDGridLonPM180 extends EDDGrid {
       sloni179 = -1;
     }
     sloni180 = sloni179 + 1; // first index >=180
-    if (childLonValues.getDouble(sloni180) > 360)
+    if (childLonValues.getDouble(sloni180) > maxSourceLon)
       throw new RuntimeException(
           errorInMethod + "There are no child longitude values in the range 180 to 360!");
     sloni359 =
         childLonValues.binaryFindLastLE(
-            sloni180, nChildLonValues - 1, clvPAOne.setDouble(360)); // last index <=360
-    if (childLonValues.getDouble(sloni359) == 360
-        && // there is a value=360
+            sloni180,
+            nChildLonValues - 1,
+            clvPAOne.setDouble(maxSourceLon)); // last index <=maxSourceLon
+    if (childLonValues.getDouble(sloni359) == maxSourceLon
+        && // there is a value=maxSourceLon
         sloni359 > sloni180
-        && // and it isn't the only value in the range 180 to 360...
+        && // and it isn't the only value in the range 180 to maxSourceLon...
         sloni0 >= 0
         && // and if there is a sloni0
         childLonValues.getDouble(sloni0) == 0) // with value == 0
-    sloni359--; // 360 is a duplicate of 0, so ignore it
+    sloni359--; // maxSourceLon is a duplicate of 0, so ignore it
     PrimitiveArray newLonValues =
         childLonValues.subset(sloni180, 1, sloni359); // always a new backing array
     newLonValues.addOffsetScale(-360, 1); // 180 ... 359 -> -180 ... -1
