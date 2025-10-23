@@ -15,7 +15,14 @@ import com.cohort.util.Calendar2;
 import com.cohort.util.Math2;
 import com.cohort.util.String2;
 import gov.noaa.pfel.erddap.util.EDStatic;
-import gov.noaa.pfel.erddap.variable.*;
+import gov.noaa.pfel.erddap.variable.EDV;
+import gov.noaa.pfel.erddap.variable.EDVAltGridAxis;
+import gov.noaa.pfel.erddap.variable.EDVDepthGridAxis;
+import gov.noaa.pfel.erddap.variable.EDVGridAxis;
+import gov.noaa.pfel.erddap.variable.EDVLatGridAxis;
+import gov.noaa.pfel.erddap.variable.EDVLonGridAxis;
+import gov.noaa.pfel.erddap.variable.EDVTimeGridAxis;
+import java.time.format.DateTimeFormatter;
 
 /**
  * This class provides access to the axis data corresponding to a axis data query to an EDDGrid.
@@ -75,12 +82,13 @@ public class AxisDataAccessor {
     StringArray destinationNames = new StringArray();
     constraints = new IntArray();
     eddGrid.parseAxisDapQuery(language, userDapQuery, destinationNames, constraints, false);
-    if (reallyVerbose)
+    if (reallyVerbose) {
       String2.log(
           "      requestedAxisVariables="
               + destinationNames
               + "\n      constraints="
               + constraints);
+    }
 
     // make globalAttributes
     globalAttributes = eddGrid.combinedGlobalAttributes().toAttributes(language); // a copy
@@ -215,7 +223,9 @@ public class AxisDataAccessor {
           globalAttributes.set("geospatial_vertical_max", dMax);
         }
       } else if (rAxisVariables[av] instanceof EDVTimeGridAxis) {
-        String tp = rAxisVariables[av].combinedAttributes().getString(language, EDV.TIME_PRECISION);
+        DateTimeFormatter tp =
+            Calendar2.timePrecisionToDateTimeFormatter(
+                rAxisVariables[av].combinedAttributes().getString(language, EDV.TIME_PRECISION));
         // "" unsets the attribute if dMin or dMax isNaN
         globalAttributes.set(
             "time_coverage_start", Calendar2.epochSecondsToLimitedIsoStringT(tp, dMin, ""));
@@ -223,34 +233,6 @@ public class AxisDataAccessor {
             "time_coverage_end", Calendar2.epochSecondsToLimitedIsoStringT(tp, dMax, ""));
       }
     }
-  }
-
-  /**
-   * This returns the EDDGrid that is the source of this data.
-   *
-   * @return the EDDGrid that is the source of this data.
-   */
-  public EDDGrid eddGrid() {
-    return eddGrid;
-  }
-
-  /**
-   * This returns the userDapQuery used to make this.
-   *
-   * @return the userDapQuery used to make this, still percentEncoded, may be null.
-   */
-  public String userDapQuery() {
-    return userDapQuery;
-  }
-
-  /**
-   * This returns the constraints derived from the userDapQuery. This is the internal data
-   * structure, so don't change it.
-   *
-   * @return the constraints derived from the userDapQuery.
-   */
-  public IntArray constraints() {
-    return constraints;
   }
 
   /**

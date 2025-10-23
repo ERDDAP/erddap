@@ -1,5 +1,6 @@
 package gov.noaa.pfel.erddap.filetypes;
 
+import gov.noaa.pfel.erddap.util.EDMessages.Message;
 import gov.noaa.pfel.erddap.util.EDStatic;
 
 @FileTypeClass(
@@ -16,11 +17,11 @@ public class NcHeaderFiles extends NcFiles {
 
   @Override
   public String getHelpText(int language) {
-    return EDStatic.messages.fileHelp_nc3HeaderAr[language];
+    return EDStatic.messages.get(Message.FILE_HELP_NC3_HEADER, language);
   }
 
   @Override
   public String getGridHelpText(int language) {
-    return EDStatic.messages.fileHelp_nc3HeaderAr[language];
+    return EDStatic.messages.get(Message.FILE_HELP_NC3_HEADER, language);
   }
 }

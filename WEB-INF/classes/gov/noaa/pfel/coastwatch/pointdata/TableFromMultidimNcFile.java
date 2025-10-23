@@ -37,11 +37,11 @@ public class TableFromMultidimNcFile {
   private Attributes gridMappingAtts = null;
 
   private static class VarData {
-    public PrimitiveArray pa;
-    public Attributes atts;
-    public List<Dimension> dims;
-    public int nDims;
-    public boolean isCharArray;
+    private PrimitiveArray pa;
+    private Attributes atts;
+    private List<Dimension> dims;
+    private int nDims;
+    private boolean isCharArray;
 
     private void loadDims(TableFromMultidimNcFile tableMultidim, Variable tVar) {
       dims = tVar.getDimensions();
@@ -63,13 +63,13 @@ public class TableFromMultidimNcFile {
       pa = atts.standardizeVariable(tableMultidim.standardizeWhat, tVar.getFullName(), pa);
     }
 
-    public static VarData dimsFromVariable(TableFromMultidimNcFile tableMultidim, Variable tVar) {
+    private static VarData dimsFromVariable(TableFromMultidimNcFile tableMultidim, Variable tVar) {
       VarData data = new VarData();
       data.loadDims(tableMultidim, tVar);
       return data;
     }
 
-    public static VarData fromVariableIfDimsMatch(
+    private static VarData fromVariableIfDimsMatch(
         TableFromMultidimNcFile tableMultidim, Variable tVar, VarData other, int nd0)
         throws Exception {
       int index = tableMultidim.loadVarNames.indexOf(tVar.getFullName());
@@ -93,7 +93,7 @@ public class TableFromMultidimNcFile {
       return data;
     }
 
-    public static VarData fromVariable(TableFromMultidimNcFile tableMultidim, Variable tVar)
+    private static VarData fromVariable(TableFromMultidimNcFile tableMultidim, Variable tVar)
         throws Exception {
       int index = tableMultidim.loadVarNames.indexOf(tVar.getFullName());
       if (index > -1 && tableMultidim.cachedVarData[index] != null) {

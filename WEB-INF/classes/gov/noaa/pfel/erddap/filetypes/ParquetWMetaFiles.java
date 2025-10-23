@@ -2,6 +2,8 @@ package gov.noaa.pfel.erddap.filetypes;
 
 import gov.noaa.pfel.erddap.dataset.TableWriter;
 import gov.noaa.pfel.erddap.dataset.TableWriterAllWithMetadata;
+import gov.noaa.pfel.erddap.util.EDMessages.Message;
+import gov.noaa.pfel.erddap.util.EDStatic;
 
 @FileTypeClass(
     fileTypeExtension = ".parquet",
@@ -13,11 +15,11 @@ public class ParquetWMetaFiles extends ParquetFiles {
   @Override
   public void writeTableToFileFormat(DapRequestInfo requestInfo, TableWriter tableWriter)
       throws Throwable {
-    if (tableWriter instanceof TableWriterAllWithMetadata) {
+    if (tableWriter instanceof TableWriterAllWithMetadata twalwm) {
       saveAsParquet(
           requestInfo.language(),
           requestInfo.outputStream(),
-          (TableWriterAllWithMetadata) tableWriter,
+          twalwm,
           requestInfo.edd().datasetID(),
           true);
     }
@@ -32,5 +34,10 @@ public class ParquetWMetaFiles extends ParquetFiles {
         requestInfo.outputStream(),
         true,
         requestInfo.getEDDGrid());
+  }
+
+  @Override
+  public String getHelpText(int language) {
+    return EDStatic.messages.get(Message.FILE_HELP_PARQUET_WITH_META, language);
   }
 }

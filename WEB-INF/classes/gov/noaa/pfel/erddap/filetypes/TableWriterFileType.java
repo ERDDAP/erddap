@@ -3,6 +3,7 @@ package gov.noaa.pfel.erddap.filetypes;
 import com.cohort.util.SimpleException;
 import gov.noaa.pfel.erddap.dataset.EDDTable;
 import gov.noaa.pfel.erddap.dataset.TableWriter;
+import gov.noaa.pfel.erddap.util.EDMessages.Message;
 import gov.noaa.pfel.erddap.util.EDStatic;
 
 public abstract class TableWriterFileType extends FileTypeInterface {
@@ -18,9 +19,10 @@ public abstract class TableWriterFileType extends FileTypeInterface {
       throw new SimpleException(
           EDStatic.bilingual(
               requestInfo.language(),
-              EDStatic.messages.queryErrorAr[0] + EDStatic.messages.errorInternalAr[0],
-              EDStatic.messages.queryErrorAr[requestInfo.language()]
-                  + EDStatic.messages.errorInternalAr[requestInfo.language()]));
+              EDStatic.messages.get(Message.QUERY_ERROR, 0)
+                  + EDStatic.messages.get(Message.ERROR_INTERNAL, 0),
+              EDStatic.messages.get(Message.QUERY_ERROR, requestInfo.language())
+                  + EDStatic.messages.get(Message.ERROR_INTERNAL, requestInfo.language())));
     }
     TableWriter tableWriter = generateTableWriter(requestInfo);
     if (tableWriter != null) {

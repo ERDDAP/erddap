@@ -16,6 +16,7 @@ import gov.noaa.pfel.erddap.dataset.GridDataAccessor;
 import gov.noaa.pfel.erddap.dataset.OutputStreamSource;
 import gov.noaa.pfel.erddap.dataset.TableWriter;
 import gov.noaa.pfel.erddap.dataset.TableWriterAllWithMetadata;
+import gov.noaa.pfel.erddap.util.EDMessages.Message;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.EDV;
 import java.io.DataOutputStream;
@@ -42,11 +43,8 @@ public class MatFiles extends TableWriterFileType {
   @Override
   public void writeTableToFileFormat(DapRequestInfo requestInfo, TableWriter tableWriter)
       throws Throwable {
-    if (tableWriter instanceof TableWriterAllWithMetadata) {
-      saveAsMatlab(
-          requestInfo.outputStream(),
-          (TableWriterAllWithMetadata) tableWriter,
-          requestInfo.edd().datasetID());
+    if (tableWriter instanceof TableWriterAllWithMetadata twalwm) {
+      saveAsMatlab(requestInfo.outputStream(), twalwm, requestInfo.edd().datasetID());
     }
   }
 
@@ -62,7 +60,7 @@ public class MatFiles extends TableWriterFileType {
 
   @Override
   public String getHelpText(int language) {
-    return EDStatic.messages.fileHelp_matAr[language];
+    return EDStatic.messages.get(Message.FILE_HELP_MAT, language);
   }
 
   /**
@@ -94,9 +92,9 @@ public class MatFiles extends TableWriterFileType {
           Math2.memoryTooMuchData
               + "  "
               + MessageFormat.format(
-                  EDStatic.messages.errorMoreThan2GBAr[0],
+                  EDStatic.messages.get(Message.ERROR_MORE_THAN_2GB, 0),
                   ".mat",
-                  tnRows + " " + EDStatic.messages.rowsAr[0]));
+                  tnRows + " " + EDStatic.messages.get(Message.ROWS, 0)));
     int nCols = twawm.nColumns();
     int nRows = (int) tnRows; // safe since checked above
 
@@ -133,7 +131,7 @@ public class MatFiles extends TableWriterFileType {
           Math2.memoryTooMuchData
               + "  "
               + MessageFormat.format(
-                  EDStatic.messages.errorMoreThan2GBAr[0],
+                  EDStatic.messages.get(Message.ERROR_MORE_THAN_2GB, 0),
                   ".mat",
                   (cumSize / Math2.BytesPerMB) + " MB"));
 
@@ -308,7 +306,7 @@ public class MatFiles extends TableWriterFileType {
           // that could be a memory nightmare
           // so just don't allow it
           throw new SimpleException(
-              EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
+              EDStatic.simpleBilingual(language, Message.QUERY_ERROR)
                   + "ERDDAP doesn't support String data in Matlab grid data files.");
         // largest = Math.max(largest,
         //    tDataVariables[dv].destinationBytesPerElement());
@@ -339,7 +337,7 @@ public class MatFiles extends TableWriterFileType {
             Math2.memoryTooMuchData
                 + "  "
                 + MessageFormat.format(
-                    EDStatic.messages.errorMoreThan2GBAr[0],
+                    EDStatic.messages.get(Message.ERROR_MORE_THAN_2GB, 0),
                     ".mat",
                     (cumSize / Math2.BytesPerMB) + " MB"));
       // "Error: " +

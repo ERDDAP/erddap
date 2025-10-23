@@ -15,16 +15,12 @@ package gov.noaa.pmel.sgt;
 import com.cohort.util.MustBe;
 import com.cohort.util.String2;
 import gov.noaa.pmel.sgt.swing.Draggable;
-import gov.noaa.pmel.util.Dimension2D;
-import gov.noaa.pmel.util.Rectangle2D;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.Iterator;
 import java.util.List;
 
 // jdk1.2
@@ -298,28 +294,6 @@ public class Layer extends Component implements Cloneable, LayerControl {
     return yoff_ - (int) (ay_ * yp);
   }
 
-  /**
-   * Transform physical units to device for x coordinate.
-   *
-   * @param xp x physical coordinate
-   * @return x device coordinate
-   * @since 3.0
-   */
-  public double getXPtoD2(double xp) {
-    return ax_ * xp + xoff2_;
-  }
-
-  /**
-   * Transform physcial units to device for y coordinate.
-   *
-   * @param yp y physical coordinate
-   * @return y device coordinate
-   * @since 3.0
-   */
-  public double getYPtoD2(double yp) {
-    return yoff2_ - ay_ * yp;
-  }
-
   public double getXSlope() {
     return ax_;
   }
@@ -357,69 +331,17 @@ public class Layer extends Component implements Cloneable, LayerControl {
   }
 
   /**
-   * Create a <code>Layer</code> object. The <code>Layer</code> is created with a default width and
-   * height equal to 1.0.
-   *
-   * @param id identifier for Layer
-   */
-  public Layer(String id) {
-    this(id, new Dimension2D(1.0, 1.0));
-  }
-
-  /**
    * Create a <code>Layer</code> object. The <code>Layer</code> is created with the specified
    * dimensions and identifier.
    *
    * @param id identifier for Layer
    * @param psize The physical dimensions of the Layer
    */
-  public Layer(String id, Dimension2D psize) {
+  public Layer(String id, double pWidth, double pHeight) {
     ident_ = id;
-    pWidth_ = psize.width;
-    pHeight_ = psize.height;
+    pWidth_ = pWidth;
+    pHeight_ = pHeight;
     children_ = new ArrayList<>();
-  }
-
-  /**
-   * Default constructor for <code>Layer</code>. The <code>Layer</code> is created with an empty
-   * identifier and a width and height equal to 1.0f.
-   */
-  public Layer() {
-    this("");
-  }
-
-  /**
-   * Copy the <code>Layer</code> and its attached classes.
-   *
-   * @return copy
-   */
-  public Layer copy() {
-    Layer newLayer;
-    try {
-      newLayer = (Layer) clone();
-    } catch (CloneNotSupportedException e) {
-      newLayer = new Layer(ident_, new Dimension2D(pWidth_, pHeight_));
-    }
-    //
-    // copy children
-    //
-    newLayer.children_ = new ArrayList<>();
-    //
-    if (!children_.isEmpty()) {
-      LayerChild newChild;
-      for (LayerChild child : children_) {
-        newChild = child.copy();
-        newLayer.addChild(newChild);
-      }
-    }
-    //
-    // copy Graph
-    //
-    if (graph_ != null) {
-      Graph newGraph = graph_.copy();
-      newLayer.setGraph(newGraph);
-    }
-    return newLayer;
   }
 
   /**
@@ -430,30 +352,16 @@ public class Layer extends Component implements Cloneable, LayerControl {
    */
   @Override
   public void draw(Graphics g) throws PaneNotFoundException {
-    if (pane_ == null) throw new PaneNotFoundException();
-    computeScale();
-
-    if (false) {
-      System.out.println("\nLayer.draw(g): " + ident_);
-      System.out.println("   layer.getBounds(" + ident_ + ") = " + getBounds());
-      System.out.println("   layer.getBoundsP(" + ident_ + ") = " + getBoundsP());
-      System.out.println("   pane.getBounds(" + pane_.getId() + ") = " + pane_.getBounds());
+    if (pane_ == null) {
+      throw new PaneNotFoundException();
     }
-    /*    int x0, y0, x1, y1;
-    x0 = getXPtoD(0.0f);
-    y0 = getYPtoD(0.0f);
-    Rectangle2D.Double psize_ = getBoundsP();
-    x1 = getXPtoD(psize_.width);
-    y1 = getYPtoD(psize_.height);
-    g.setColor(Color.blue);
-    g.drawRect(x0,y1,x1-x0-1,y0-y1-1); */
-    //    System.out.println("Layer.draw(g): " + ident_ + ", [" + ax_ + ", " + ay_ + "], [" +
-    //                       xoff2_ + ", " + yoff2_ + "]");
-
+    computeScale();
     //
     // draw Graph
     //
-    if (graph_ != null) graph_.draw(g);
+    if (graph_ != null) {
+      graph_.draw(g);
+    }
     //
     // draw children
     //
@@ -503,15 +411,6 @@ public class Layer extends Component implements Cloneable, LayerControl {
   }
 
   /**
-   * Get the <code>Graph</code> attached to the layer.
-   *
-   * @return Reference to the <code>Graph</code>.
-   */
-  public Graph getGraph() {
-    return graph_;
-  }
-
-  /**
    * Add a <code>LayerChild</code> to the <code>Layer</code>. Each <code>Layer</code> can contain as
    * many children as needed.
    *
@@ -528,183 +427,6 @@ public class Layer extends Component implements Cloneable, LayerControl {
   }
 
   /**
-   * Remove a <code>LayerChild</code> object from the <code>Layer</code>.
-   *
-   * @param child A <code>ChildLayer</code> object associated with the <code>Layer</code>
-   * @exception ChildNotFoundException The child is not associated with the <code>Layer</code>
-   * @see SGLabel
-   * @see LineKey
-   * @see ColorKey
-   * @see Ruler
-   */
-  public void removeChild(LayerChild child) throws ChildNotFoundException {
-    if (!children_.isEmpty()) {
-      boolean found = children_.remove(child);
-      if (!found) throw new ChildNotFoundException();
-      else {
-        modified("Layer: removeChild(LayerChild)");
-      }
-    } else {
-      throw new ChildNotFoundException();
-    }
-  }
-
-  /**
-   * Remove a <code>LayerChild</code> object from the <code>Layer</code>.
-   *
-   * @param labid An identifier for a <code>LayerChild</code> associated with the <code>Layer</code>
-   * @exception ChildNotFoundException The child is not associated with the <code>Layer</code>
-   * @see SGLabel
-   * @see LineKey
-   * @see ColorKey
-   * @see Ruler
-   */
-  public void removeChild(String labid) throws ChildNotFoundException {
-    if (!children_.isEmpty()) {
-      LayerChild toRemove = null;
-      for (LayerChild child : children_) {
-        if (child.getId().equals(labid)) {
-          toRemove = child;
-        }
-      }
-      if (toRemove == null) throw new ChildNotFoundException();
-      else {
-        children_.remove(toRemove);
-        modified("Layer: removeChild(String)");
-      }
-    } else {
-      throw new ChildNotFoundException();
-    }
-  }
-
-  /**
-   * Find <code>LayerChild</code> in <code>Layer</code>.
-   *
-   * @param id LayerChild identifier
-   * @return LayerChild
-   * @since 3.0
-   */
-  public LayerChild findChild(String id) {
-    for (LayerChild child : children_) {
-      if (child.getId().equals(id)) return child;
-    }
-    return null;
-  }
-
-  /**
-   * Tests if a <code>LayerChild</code> is attached to the <code>Layer</code>.
-   *
-   * @param child LayerChild to test
-   * @return true if attached to Layer
-   * @since 2.0
-   */
-  public boolean isChildAttached(LayerChild child) {
-    boolean found = false;
-    if (!children_.isEmpty()) {
-      for (LayerChild chld : children_) {
-        if (chld.equals(child)) {
-          children_.remove(child);
-          found = true;
-          break;
-        }
-      }
-    }
-    return found;
-  }
-
-  /** Remove all <code>LayerChild</code> objects from the <code>Layer</code>. */
-  public void removeAllChildren() {
-    children_.clear();
-    modified("Layer: removeAllChildren()");
-  }
-
-  /**
-   * Get a child associated with the <code>Layer</code>.
-   *
-   * @param labid A <code>LayerChild</code> object identifier
-   * @return layerChild with id
-   * @exception ChildNotFoundException The child is not associated with the <code>Layer</code>
-   * @see SGLabel
-   * @see LineKey
-   * @see ColorKey
-   * @see Ruler
-   */
-  public LayerChild getChild(String labid) throws ChildNotFoundException {
-    if (!children_.isEmpty()) {
-      for (LayerChild child : children_) {
-        if (child.getId().equals(labid)) return child;
-      }
-    }
-    throw new ChildNotFoundException();
-  }
-
-  /**
-   * Create a <code>Enumeration</code> for the <code>LayerChild</code>'s associated with the <code>
-   * Layer</code>.
-   *
-   * @return <code>Enumeration</code> for the <code>LayerChild</code> objects.
-   * @see Enumeration
-   * @see SGLabel
-   * @see LineKey
-   * @see ColorKey
-   * @see Ruler
-   */
-  public Iterator<LayerChild> childElements() {
-    return children_.iterator();
-  }
-
-  /**
-   * @since 3.0
-   */
-  public Iterator<LayerChild> childIterator() {
-    return children_.iterator();
-  }
-
-  /**
-   * @since 3.0
-   */
-  public LayerChild[] getChildren() {
-    LayerChild[] childs = new LayerChild[0];
-    childs = children_.toArray(childs);
-    return childs;
-  }
-
-  /**
-   * Set the size of the <code>Layer</code> in physical coordinates.
-   *
-   * @param psize The physical size of the <code>Layer</code>.
-   */
-  public void setSizeP(Dimension2D psize) {
-    pWidth_ = psize.width;
-    pHeight_ = psize.height;
-    computeScale();
-    modified("Layer: setSizeP()");
-  }
-
-  /**
-   * Get the <code>Layer</code> size in physical coordinates. This returns the physical coordinate
-   * size of the <code>Layer</code>.
-   *
-   * @return A <code>Dimension2D</code> containing the physical size of the <code>Layer</code>.
-   * @see Dimension2D
-   */
-  public Dimension2D getSizeP() {
-    return new Dimension2D(pWidth_, pHeight_);
-  }
-
-  /**
-   * Get the <code>Layer</code> bounds in physical coordinates. The origin of the bounding
-   * rectangle, for a <code>Layer</code>, is always (0,0).
-   *
-   * @return A <code>Rectangle2D.Double</code> containing the physical bounds of the <code>Layer
-   *     </code>.
-   * @see java.awt.geom.Rectangle2D.Double
-   */
-  public Rectangle2D.Double getBoundsP() {
-    return new Rectangle2D.Double(0.0, 0.0, pWidth_, pHeight_);
-  }
-
-  /**
    * Get the <code>Layer</code> identifier.
    *
    * @return The identifier.
@@ -712,15 +434,6 @@ public class Layer extends Component implements Cloneable, LayerControl {
   @Override
   public String getId() {
     return ident_;
-  }
-
-  /**
-   * Set the <code>Layer</code> identifier.
-   *
-   * @param id identifier
-   */
-  public void setId(String id) {
-    ident_ = id;
   }
 
   /**
@@ -814,39 +527,6 @@ public class Layer extends Component implements Cloneable, LayerControl {
   }
 
   /**
-   * Find objects associated with a MOUSE_DOWN event. The getObjecstAt method scans through all the
-   * objects associated with the layer to find those whose bounding box contains the mouse location.
-   *
-   * <p>This method should not be called by a user.
-   *
-   * @param x mouse coordinate
-   * @param y mouse coordinate
-   * @param check if selectable
-   * @return object array
-   * @since 3.0
-   */
-  public Object[] getObjectsAt(int x, int y, boolean check) {
-    Point pt = new Point(x, y);
-    ArrayList<Object> obList = new ArrayList<>();
-    Object obj = null;
-    Rectangle bnds;
-    if (!children_.isEmpty()) {
-      for (LayerChild child : children_) {
-        bnds = child.getBounds();
-        if (bnds.contains(pt) && (!check || child.isSelectable()) && child.isVisible()) {
-          if (child != null) obList.add(child);
-        }
-      }
-    }
-    if (graph_ != null) {
-      obj = graph_.getObjectAt(pt);
-      if (obj != null) obList.add(obj);
-    }
-
-    return obList.toArray();
-  }
-
-  /**
    * Get a <code>String</code> representation of the <code>Layer</code>.
    *
    * @return <code>String</code> representation
@@ -865,12 +545,12 @@ public class Layer extends Component implements Cloneable, LayerControl {
    * @since 2.0
    */
   public boolean isDataInLayer(String id) {
-    if (graph_ instanceof CartesianGraph) {
-      CartesianRenderer cr = ((CartesianGraph) graph_).getRenderer();
-      if (cr instanceof LineCartesianRenderer) {
-        return ((LineCartesianRenderer) cr).getLine().getId().equals(id);
-      } else if (cr instanceof GridCartesianRenderer) {
-        return ((GridCartesianRenderer) cr).getGrid().getId().equals(id);
+    if (graph_ instanceof CartesianGraph cartesianGraph) {
+      CartesianRenderer cr = cartesianGraph.getRenderer();
+      if (cr instanceof LineCartesianRenderer lineRenderer) {
+        return lineRenderer.getLine().getId().equals(id);
+      } else if (cr instanceof GridCartesianRenderer gridRenderer) {
+        return gridRenderer.getGrid().getId().equals(id);
       }
     }
     return false;

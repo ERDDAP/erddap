@@ -11,7 +11,11 @@
 
 package dods.dap;
 
-import java.io.*;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.EOFException;
+import java.io.IOException;
+import java.io.PrintWriter;
 
 /**
  * This class holds a one-dimensional array of DODS data types. It is the parent of both <code>DList
@@ -74,18 +78,6 @@ public abstract class DVector extends BaseType implements ClientIO {
   public int getLength() {
     if (vals == null) return 0;
     else return vals.getLength();
-  }
-
-  /**
-   * Sets the number of elements in the vector. Allocates a new array of the desired size. Note that
-   * if this is called multiple times, the old array and its contents will be lost!
-   *
-   * <p>Only called inside of <code>deserialize</code> method or in derived classes on server.
-   *
-   * @param len the number of elements in the array.
-   */
-  public void setLength(int len) {
-    vals.setLength(len);
   }
 
   /**

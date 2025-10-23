@@ -20,6 +20,7 @@ import gov.noaa.pfel.coastwatch.griddata.NcHelper;
 import gov.noaa.pfel.erddap.dataset.EDD;
 import gov.noaa.pfel.erddap.dataset.metadata.LocalizedAttributes;
 import gov.noaa.pfel.erddap.util.EDMessages;
+import gov.noaa.pfel.erddap.util.EDMessages.Message;
 import gov.noaa.pfel.erddap.util.EDStatic;
 
 /**
@@ -207,17 +208,6 @@ public class EDVGridAxis extends EDV {
         tSourceValues != null && tSourceValues.size() > 0,
         errorInMethod + "'sourceValues' is null or has 0 values.");
     // ensure no null values???
-  }
-
-  /**
-   * This is used by the EDVGridAxis constructor to determine if this EDVGridAxis is valid.
-   *
-   * @throws Throwable if this EDVGridAxis is not valid
-   */
-  public void ensureValid() throws Throwable {
-    String errorInMethod =
-        "datasets.xml/EDVGridAxis.ensureValid error for sourceName=" + sourceName + ":\n";
-    ensureValid(errorInMethod);
   }
 
   /**
@@ -502,14 +492,6 @@ public class EDVGridAxis extends EDV {
     return destinationCoarseMax;
   }
 
-  public void setDestinationCoarseMin(double tMin) {
-    destinationCoarseMin = tMin;
-  }
-
-  public void setDestinationCoarseMax(double tMax) {
-    destinationCoarseMax = tMax;
-  }
-
   /**
    * This returns true if the values are ascending (tied is ok); otherwise, it returns false
    * (descending or unordered).
@@ -563,7 +545,7 @@ public class EDVGridAxis extends EDV {
   public String spacingDescription(int language) {
     boolean isTimeStamp = this instanceof EDVTimeStampGridAxis;
     if (sourceValues().size() == 1)
-      return "(" + EDStatic.messages.EDDGridJustOneValueAr[language] + ")";
+      return "(" + EDStatic.messages.get(Message.EDD_GRID_JUST_ONE_VALUE, language) + ")";
     String s =
         isTimeStamp
             ? Calendar2.elapsedTimeString(Math.rint(averageSpacing()) * 1000)
@@ -571,8 +553,8 @@ public class EDVGridAxis extends EDV {
     return s
         + " ("
         + (isEvenlySpaced()
-            ? EDStatic.messages.EDDGridEvenAr[language]
-            : EDStatic.messages.EDDGridUnevenAr[language])
+            ? EDStatic.messages.get(Message.EDD_GRID_EVEN, language)
+            : EDStatic.messages.get(Message.EDD_GRID_UNEVEN, language))
         + ")";
   }
 
@@ -612,8 +594,8 @@ public class EDVGridAxis extends EDV {
         + "<br>"
         + "with "
         + (isEvenlySpaced()
-            ? EDStatic.messages.EDDGridEvenAr[language]
-            : EDStatic.messages.EDDGridUnevenAr[language])
+            ? EDStatic.messages.get(Message.EDD_GRID_EVEN, language)
+            : EDStatic.messages.get(Message.EDD_GRID_UNEVEN, language))
         + " spacing "
         + (isEvenlySpaced() ? "" : "~")
         + "= "

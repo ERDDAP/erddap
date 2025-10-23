@@ -97,13 +97,6 @@ public class PaneProxy { // Bob Simons made public
     testJava2D();
   }
 
-  /**
-   * @since 3.0
-   */
-  public static String getVersion() {
-    return SGTVersion;
-  }
-
   private void testJava2D() {
     @SuppressWarnings("unused")
     Class unusedCl;
@@ -119,10 +112,6 @@ public class PaneProxy { // Bob Simons made public
     } else {
       strokeDrawer = new StrokeDrawer1();
     }
-  }
-
-  public Dimension getSize() {
-    return panesize_;
   }
 
   void draw() {
@@ -173,9 +162,9 @@ public class PaneProxy { // Bob Simons made public
   void draw(Graphics g, int width, int height) {
     ignoreModified_ = true;
     if (Debug.DEBUG) System.out.println("PaneProxy: [" + ident_ + "] draw(g), batch=" + batch_);
-    if (g instanceof PrintGraphics) {
+    if (g instanceof PrintGraphics pg) {
       printer_ = true;
-      pagesize_ = ((PrintGraphics) g).getPrintJob().getPageDimension();
+      pagesize_ = pg.getPrintJob().getPageDimension();
     } else {
       printer_ = false;
       pagesize_ = null;
@@ -209,10 +198,6 @@ public class PaneProxy { // Bob Simons made public
     opaque_ = opaque;
   }
 
-  boolean isOpaque() {
-    return opaque_;
-  }
-
   void drawLayers(Graphics g) {
     if (!printer_) {
       if (opaque_) {
@@ -231,10 +216,10 @@ public class PaneProxy { // Bob Simons made public
     Component[] comps = pane_.getComponents();
     for (Component comp : comps) {
       try {
-        if (comp instanceof Layer) {
-          ((Layer) comp).draw(g);
-        } else if (comp instanceof LayerControl) {
-          ((LayerControl) comp).draw(g);
+        if (comp instanceof Layer layer) {
+          layer.draw(g);
+        } else if (comp instanceof LayerControl layerControl) {
+          layerControl.draw(g);
         }
         /*       if(printer_ && comps[i] instanceof Panel) {
           ((Panel)comps[i]).paintBorder(g);
@@ -253,8 +238,8 @@ public class PaneProxy { // Bob Simons made public
     Component[] comps = pane_.getComponents();
     for (Component comp : comps) {
       try {
-        if (comp instanceof LayerControl) {
-          ((LayerControl) comp).drawDraggableItems(g);
+        if (comp instanceof LayerControl layerControl) {
+          layerControl.drawDraggableItems(g);
         }
       } catch (PaneNotFoundException e) {
       }
@@ -262,16 +247,6 @@ public class PaneProxy { // Bob Simons made public
   }
 
   void paint(Graphics g) {
-    if (Debug.DEBUG || Debug.DRAW_TRACE)
-      System.out.println(
-          "PaneProxy: ["
-              + ident_
-              + "] paint(g): "
-              + g.getClipBounds()
-              + ", batch="
-              + batch_
-              + ", modified="
-              + modified_);
     Dimension isze = pane_.getSize();
     if (isze.width != panesize_.width || isze.height != panesize_.height) offscreen_ = null;
     if (offscreen_ != null && !modified_) {
@@ -338,8 +313,8 @@ public class PaneProxy { // Bob Simons made public
   Layer getFirstLayer() {
     Component[] comps = pane_.getComponents();
     for (Component comp : comps) {
-      if (comp instanceof Layer) {
-        return (Layer) comp;
+      if (comp instanceof Layer layer) {
+        return layer;
       }
     }
     return null;
@@ -348,8 +323,8 @@ public class PaneProxy { // Bob Simons made public
   Layer getLayer(String id) throws LayerNotFoundException {
     Component[] comps = pane_.getComponents();
     for (Component comp : comps) {
-      if (comp instanceof Layer) {
-        if (java.util.Objects.equals(((Layer) comp).getId(), id)) return (Layer) comp;
+      if (comp instanceof Layer layer) {
+        if (java.util.Objects.equals(layer.getId(), id)) return layer;
       }
     }
     throw new LayerNotFoundException();
@@ -358,8 +333,8 @@ public class PaneProxy { // Bob Simons made public
   Layer getLayerFromDataId(String id) throws LayerNotFoundException {
     Component[] comps = pane_.getComponents();
     for (Component comp : comps) {
-      if (comp instanceof Layer) {
-        if (((Layer) comp).isDataInLayer(id)) return (Layer) comp;
+      if (comp instanceof Layer layer) {
+        if (layer.isDataInLayer(id)) return layer;
       }
     }
     throw new LayerNotFoundException();
@@ -389,8 +364,8 @@ public class PaneProxy { // Bob Simons made public
     Object obj = null;
     Component[] comps = pane_.getComponents();
     for (Component comp : comps) {
-      if (comp instanceof Layer) {
-        obj = ((Layer) comp).getObjectAt(x, y, false);
+      if (comp instanceof Layer layer) {
+        obj = layer.getObjectAt(x, y, false);
         if (obj != null) return obj;
       }
     }
@@ -405,8 +380,8 @@ public class PaneProxy { // Bob Simons made public
     Object obj = null;
     Component[] comps = pane_.getComponents();
     for (Component comp : comps) {
-      if (comp instanceof Layer) {
-        obj = ((Layer) comp).getObjectAt(x, y, false);
+      if (comp instanceof Layer layer) {
+        obj = layer.getObjectAt(x, y, false);
         if (obj != null) obList.add(obj);
       }
     }
@@ -482,8 +457,8 @@ public class PaneProxy { // Bob Simons made public
     Component[] comps = pane_.getComponents();
     if (comps.length != 0) {
       for (Component comp : comps) {
-        if (comp instanceof Layer) {
-          obj = ((Layer) comp).getObjectAt(event.getX(), event.getY());
+        if (comp instanceof Layer layer) {
+          obj = layer.getObjectAt(event.getX(), event.getY());
           if (obj != null) {
             selectedobject_ = obj;
             break;
@@ -609,8 +584,8 @@ public class PaneProxy { // Bob Simons made public
       Component[] comps = pane_.getComponents();
       if (comps.length != 0) {
         for (Component comp : comps) {
-          if (comp instanceof Layer) {
-            obj = ((Layer) comp).getObjectAt(event.getX(), event.getY());
+          if (comp instanceof Layer layer) {
+            obj = layer.getObjectAt(event.getX(), event.getY());
             if (obj != null) {
               selectedobject_ = obj;
               break;
@@ -867,21 +842,9 @@ public class PaneProxy { // Bob Simons made public
     return batch_;
   }
 
-  void setIgnoreModified(boolean ig) {
-    ignoreModified_ = ig;
-  }
-
-  void clearModified() {
-    modified_ = false;
-  }
-
   void setModified(boolean mod, String mess) {
     if (ignoreModified_) return;
     modified_ = mod;
-    if (Debug.EVENT && batch_) {
-      System.out.println(
-          "PaneProxy: [" + ident_ + "] setModified(" + modified_ + "), Batch on: " + mess);
-    }
     if (modified_ && !batch_) {
       if (Debug.EVENT)
         System.out.println(

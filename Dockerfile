@@ -1,5 +1,5 @@
 # Build the ERDDAP war from source
-FROM --platform=$BUILDPLATFORM maven:3.9.9-eclipse-temurin-21-jammy AS build
+FROM --platform=$BUILDPLATFORM maven:3.9.11-eclipse-temurin-21-noble AS build
 
 # install zip so certain tests can pass
 RUN apt-get update && \
@@ -34,16 +34,15 @@ RUN --mount=type=cache,id=m2_repo,target=/root/.m2/repository \
     && find target -maxdepth 1 -type d -name 'ERDDAP-*' -exec mv {} target/ERDDAP \;
 
 # Run the built erddap war via a tomcat instance
-FROM tomcat:11.0.7-jdk21-temurin-jammy
+FROM tomcat:11.0.11-jdk21-temurin-noble
 
 RUN apt-get update && apt-get install -y \
     unzip \
     zip \
     && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
-
-# Remove default Tomcat web applications
-RUN rm -rf ${CATALINA_HOME}/webapps/* ${CATALINA_HOME}/webapps.dist
+    && rm -rf /var/lib/apt/lists/* \
+    # Remove default Tomcat web applications
+    && rm -rf ${CATALINA_HOME}/webapps/* ${CATALINA_HOME}/webapps.dist
 
 COPY --from=build /app/content /usr/local/tomcat/content
 COPY --from=build /app/target/ERDDAP /usr/local/tomcat/webapps/erddap
@@ -78,9 +77,8 @@ ENV ERDDAP_deploymentInfo="docker" \
     ERDDAP_adminStateOrProvince="MD" \
     ERDDAP_adminPostalCode="12345" \
     ERDDAP_adminCountry="USA" \
-    ERDDAP_adminEmail="set-me@domain.com"
-
-ENV ERDDAP_VERSION_SUFFIX="docker"
+    ERDDAP_adminEmail="set-me@domain.com" \
+    ERDDAP_VERSION_SUFFIX="docker"
 
 COPY ./docker/entrypoint.sh /entrypoint.sh
 

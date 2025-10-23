@@ -14,7 +14,11 @@
  */
 package gov.noaa.pfel.coastwatch.sgt;
 
-import gov.noaa.pmel.sgt.*;
+import gov.noaa.pmel.sgt.Axis;
+import gov.noaa.pmel.sgt.LayerNotFoundException;
+import gov.noaa.pmel.sgt.PlainAxis;
+import gov.noaa.pmel.sgt.SGLabel;
+import gov.noaa.pmel.sgt.SpaceAxis;
 import gov.noaa.pmel.util.Point2D;
 import java.awt.Graphics;
 

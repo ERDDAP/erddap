@@ -72,11 +72,6 @@ public class GridDataRandomAccessorInMemory {
     }
   }
 
-  /** This returns the PAType of the specified data variable. */
-  public PAType dataPAType(int i) {
-    return dataPAType[i];
-  }
-
   /**
    * Call this to get the specified (current) data value (as a PAOne) from the specified
    * dataVariable.

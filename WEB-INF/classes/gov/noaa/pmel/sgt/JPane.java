@@ -21,7 +21,8 @@ import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.MouseEvent;
-import java.awt.print.*;
+import java.awt.print.PageFormat;
+import java.awt.print.Printable;
 import java.beans.PropertyChangeListener;
 import javax.swing.SwingConstants;
 
@@ -291,15 +292,6 @@ public class JPane extends javax.swing.JLayeredPane
     this("", new Dimension(50, 50));
   }
 
-  /**
-   * Return the version of SGT.
-   *
-   * @since 3.0
-   */
-  public static String getVersion() {
-    return PaneProxy.getVersion();
-  }
-
   @Override
   public void draw() {
     proxy_.setOpaque(isOpaque());
@@ -352,8 +344,8 @@ public class JPane extends javax.swing.JLayeredPane
    */
   @Override
   public Component add(Component comp) {
-    if (comp instanceof LayerControl) {
-      ((LayerControl) comp).setPane(this);
+    if (comp instanceof LayerControl layerControl) {
+      layerControl.setPane(this);
     }
     return super.add(comp);
   }
@@ -368,8 +360,8 @@ public class JPane extends javax.swing.JLayeredPane
    */
   @Override
   public Component add(Component comp, int index) {
-    if (comp instanceof LayerControl) {
-      ((LayerControl) comp).setPane(this);
+    if (comp instanceof LayerControl layerControl) {
+      layerControl.setPane(this);
     }
     return super.add(comp, index);
   }
@@ -385,8 +377,8 @@ public class JPane extends javax.swing.JLayeredPane
   @Override
   public void add(Component comp, Object constraints) {
     super.add(comp, constraints);
-    if (comp instanceof LayerControl) {
-      ((LayerControl) comp).setPane(this);
+    if (comp instanceof LayerControl layerControl) {
+      layerControl.setPane(this);
     }
   }
 
@@ -403,8 +395,8 @@ public class JPane extends javax.swing.JLayeredPane
   @Override
   public void add(Component comp, Object constraints, int index) {
     super.add(comp, constraints, index);
-    if (comp instanceof LayerControl) {
-      ((LayerControl) comp).setPane(this);
+    if (comp instanceof LayerControl layerControl) {
+      layerControl.setPane(this);
     }
   }
 
@@ -414,8 +406,8 @@ public class JPane extends javax.swing.JLayeredPane
    */
   @Override
   public Component add(String name, Component comp) {
-    if (comp instanceof LayerControl) {
-      ((LayerControl) comp).setPane(this);
+    if (comp instanceof LayerControl layerControl) {
+      layerControl.setPane(this);
     }
     return super.add(name, comp);
   }
@@ -486,56 +478,6 @@ public class JPane extends javax.swing.JLayeredPane
   @Override
   public Layer getLayerFromDataId(String id) throws LayerNotFoundException {
     return proxy_.getLayerFromDataId(id);
-  }
-
-  /**
-   * Move the <code>Layer</code> up in the stack. The order of the layers determine when they are
-   * drawn. Moving the <code>Layer</code> up causes the <code>Layer</code> to be drawn later and
-   * over earlier layers.
-   *
-   * @param lyr <code>Layer</code> object.
-   * @exception LayerNotFoundException The specified <code>Layer</code> was not found in the list.
-   * @see Layer
-   */
-  public void moveLayerUp(Layer lyr) throws LayerNotFoundException {
-    throw new MethodNotImplementedError();
-  }
-
-  /**
-   * Move the <code>Layer</code> up in the stack. The order of the layers determine when they are
-   * drawn. Moving the <code>Layer</code> up causes the <code>Layer</code> to be drawn later and
-   * over earlier layers.
-   *
-   * @param id identifier.
-   * @exception LayerNotFoundException The specified <code>Layer</code> was not found in the list.
-   * @see Layer
-   */
-  public void moveLayerUp(String id) throws LayerNotFoundException {
-    throw new MethodNotImplementedError();
-  }
-
-  /**
-   * Move the <code>Layer</code> down in the stack. The order of the layers determine when they are
-   * drawn. Moving the <code>Layer</code> down causes the <code>Layer</code> to be drawn earlier.
-   *
-   * @param lyr <code>Layer</code> object.
-   * @exception LayerNotFoundException The specified <code>Layer</code> was not found in the list.
-   * @see Layer
-   */
-  public void moveLayerDown(Layer lyr) throws LayerNotFoundException {
-    throw new MethodNotImplementedError();
-  }
-
-  /**
-   * Move the <code>Layer</code> down in the stack. The order of the layers determine when they are
-   * drawn. Moving the <code>Layer</code> down causes the <code>Layer</code> to be drawn earlier.
-   *
-   * @param id identifier
-   * @exception LayerNotFoundException The specified <code>Layer</code> was not found in the list.
-   * @see Layer
-   */
-  public void moveLayerDown(String id) throws LayerNotFoundException {
-    throw new MethodNotImplementedError();
   }
 
   @Override
@@ -666,12 +608,6 @@ public class JPane extends javax.swing.JLayeredPane
     return proxy_.isMouseEventsEnabled();
   }
 
-  /** Set the horizontal and vertical block increments. */
-  public void setScrollableBlockIncrement(int horiz, int vert) {
-    horizBlockIncrement = horiz;
-    vertBlockIncrement = vert;
-  }
-
   @Override
   public int getScrollableBlockIncrement(Rectangle visibleRect, int orientation, int direction) {
     if (orientation == SwingConstants.HORIZONTAL) {
@@ -687,12 +623,6 @@ public class JPane extends javax.swing.JLayeredPane
         return vertBlockIncrement;
       }
     }
-  }
-
-  /** Set the horizontal and vertical unit increments. */
-  public void setScrollableUnitIncrement(int horiz, int vert) {
-    horizUnitIncrement = horiz;
-    vertUnitIncrement = vert;
   }
 
   @Override
@@ -745,14 +675,6 @@ public class JPane extends javax.swing.JLayeredPane
   @Override
   public int getPageScaleMode() {
     return proxy_.getPageScaleMode();
-  }
-
-  public void drawPage(Graphics g, PageFormat pf, boolean scale) {
-    if (scale) {
-      drawPage(g, pf);
-    } else {
-      proxy_.drawPage(g, pf.getImageableWidth(), pf.getImageableHeight());
-    }
   }
 
   /** Used by internally by sgt. */

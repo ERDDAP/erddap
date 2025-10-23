@@ -29,11 +29,4 @@ public interface IndexedColor {
    * @since 3.0
    */
   Color getColorByIndex(int index);
-
-  void setColor(int index, Color color);
-
-  void setColor(int index, int red, int green, int blue);
-
-  /** Get the maximum legal value of the color index. */
-  int getMaximumIndex();
 }

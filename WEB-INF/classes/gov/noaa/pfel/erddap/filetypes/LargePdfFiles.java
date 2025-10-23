@@ -1,5 +1,6 @@
 package gov.noaa.pfel.erddap.filetypes;
 
+import gov.noaa.pfel.erddap.util.EDMessages.Message;
 import gov.noaa.pfel.erddap.util.EDStatic;
 
 @FileTypeClass(
@@ -13,6 +14,6 @@ public class LargePdfFiles extends ImageFiles {
 
   @Override
   public String getHelpText(int language) {
-    return EDStatic.messages.fileHelp_largePdfAr[language];
+    return EDStatic.messages.get(Message.FILE_HELP_LARGE_PDF, language);
   }
 }

@@ -420,7 +420,7 @@ public class EDDTableFromNcFiles extends EDDTableFromFiles {
       try (NetcdfFile ncFile = NcHelper.openFile(sampleFileName)) {
 
         Group rootGroup = ncFile.getRootGroup();
-        List rootGroupVariables = rootGroup.getVariables();
+        List<Variable> rootGroupVariables = rootGroup.getVariables();
         for (Object rootGroupVariable : rootGroupVariables) {
           Variable var = (Variable) rootGroupVariable;
           boolean isChar = var.getDataType() == DataType.CHAR;

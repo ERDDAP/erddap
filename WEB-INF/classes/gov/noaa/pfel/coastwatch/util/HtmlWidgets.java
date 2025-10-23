@@ -5,19 +5,13 @@
 package gov.noaa.pfel.coastwatch.util;
 
 import com.cohort.util.File2;
-import com.cohort.util.Math2;
-import com.cohort.util.MustBe;
 import com.cohort.util.String2;
 import com.cohort.util.XML;
 import com.google.common.collect.ImmutableList;
+import gov.noaa.pfel.erddap.util.EDMessages.Message;
 import gov.noaa.pfel.erddap.util.EDStatic;
-import java.io.File;
 import java.text.MessageFormat;
-import java.util.Iterator;
 import java.util.List;
-import javax.imageio.ImageIO;
-import javax.imageio.ImageReader;
-import javax.imageio.stream.ImageInputStream;
 
 /**
  * HtmlWidgets has methods to simplify creation of widgets in HTML forms.
@@ -274,14 +268,6 @@ public class HtmlWidgets {
     imageDirUrl = tImageDirUrl;
   }
 
-  /** This is mostly used internally; it returns the formatted style. */
-  public String completeStyle(String tStyle) {
-    // note space at beginning and end
-    return tStyle == null || tStyle.length() == 0
-        ? ""
-        : " style=\"" + XML.encodeAsHTMLAttribute(tStyle) + "\" ";
-  }
-
   /**
    * This is mostly used internally; it returns the formatted tooltip.
    *
@@ -296,77 +282,6 @@ public class HtmlWidgets {
     return htmlTooltips
         ? "\n  " + htmlTooltip(tooltip) + " "
         : "\n  title=\"" + XML.encodeAsHTMLAttribute(tooltip) + "\" ";
-  }
-
-  /**
-   * This returns the html which displays an image (from a local file!) in a htmlTooltip represented
-   * by a '?' icon.
-   *
-   * @param localFileName
-   * @param xmlEncodedUrlFileName
-   * @param questionMarkImageUrl
-   * @return the html which displays an image (from a local file!) in a htmlTooltip represented by a
-   *     '?' icon (or "" if trouble).
-   */
-  public static String imageInTooltip(
-      String localFileName, String xmlEncodedUrlFileName, String questionMarkImageUrl) {
-
-    // Problem: image initially isn't loaded, so tooltip size is too small.
-    // I couldn't figure out how to use image onload= to trigger redraw (once).
-    // In any case, that doesn't deal with huge images that need to be scaled down.
-    // So I get the image size here and explicitly set <img width= height= >.
-    try {
-      int width = 0, height = 0;
-      // from
-      // https://stackoverflow.com/questions/1559253/java-imageio-getting-image-dimensions-without-reading-the-entire-file
-      try (ImageInputStream in = ImageIO.createImageInputStream(new File(localFileName))) {
-        if (in != null) {
-          Iterator<ImageReader> readers = ImageIO.getImageReaders(in);
-          if (readers.hasNext()) {
-            ImageReader reader = readers.next();
-            try {
-              reader.setInput(in);
-              width = reader.getWidth(0);
-              height = reader.getHeight(0);
-            } finally {
-              reader.dispose();
-            }
-          }
-          if (width <= 0) return "";
-
-          int max = Math.max(width, height);
-          if (max > 600) {
-            // scale to max=600
-            double scale = 600.0 / max;
-            width = Math2.roundToInt(width * scale);
-            height = Math2.roundToInt(height * scale);
-          }
-          return htmlTooltipImage(
-              questionMarkImageUrl,
-              "?",
-              "<img src=\""
-                  + xmlEncodedUrlFileName
-                  + "\" alt=\""
-                  + xmlEncodedUrlFileName
-                  + "\" width=\""
-                  + width
-                  + "px\" height=\""
-                  + height
-                  + "px\">",
-              // a failed attempt to have this work without pre-specifying width and height:
-              // " onload=\"var ps = this.parentElement.style; ps.width=this.style.width+'px';
-              // ps.height=this.style.height+'px'; \">",
-              ""); // other
-        }
-      }
-    } catch (Exception e2) {
-      String2.log(
-          "Caught Exception while making imageInTooltip for "
-              + localFileName
-              + ":\n"
-              + MustBe.throwableToString(e2));
-    }
-    return "";
   }
 
   /**
@@ -562,17 +477,17 @@ public class HtmlWidgets {
         // "copy text/image to clipboard" buttons
         "\ndata:image/png;base64\n"
         + "<button type=\"button\" onclick=\"javascript:if(navigator.clipboard==undefined){alert('"
-        + EDStatic.messages.copyToClipboardNotAvailableAr[language]
+        + EDStatic.messages.get(Message.COPY_TO_CLIPBOARD_NOT_AVAILABLE, language)
         + "');return false};navigator.clipboard.writeText("
         + "document.getElementById('"
         + img2ID
         + "').getAttribute('data-src')"
         + // reuse img2Url data from img2ID.data-src
         ");\" style=\"cursor: pointer; cursor: hand;\" >"
-        + EDStatic.messages.copyTextToClipboardAr[language]
+        + EDStatic.messages.get(Message.COPY_TEXT_TO_CLIPBOARD, language)
         + "</button>\n"
         + "<button type=\"button\" onclick=\"javascript:if(navigator.clipboard==undefined){alert('"
-        + EDStatic.messages.copyToClipboardNotAvailableAr[language]
+        + EDStatic.messages.get(Message.COPY_TO_CLIPBOARD_NOT_AVAILABLE, language)
         + "');return false};"
         + " var img = new Image();"
         + " img.onload = () => {"
@@ -588,7 +503,7 @@ public class HtmlWidgets {
         + // reuse img2Url data from img2ID.data-src
         " return false;\""
         + " style=\"cursor: pointer; cursor: hand;\" >"
-        + EDStatic.messages.copyImageToClipboardAr[language]
+        + EDStatic.messages.get(Message.COPY_IMAGE_TO_CLIPBOARD, language)
         + "</button>";
   }
 
@@ -730,26 +645,6 @@ public class HtmlWidgets {
   /**
    * This creates the HTML code to begin a table.
    *
-   * @param lineWidth width of lines (in pixels, 0 = none)
-   * @param otherStyle e.g., width:2%;
-   * @param otherAtts e.g., class="b0p0"
-   * @return the HTML code to begin a table.
-   */
-  public String beginTable(int lineWidth, String otherStyle, String otherAtts) {
-    // second param was int padding
-    return "<table style=\"border:"
-        + lineWidth
-        + "px; "
-        + "border-collapse:collapse; "
-        + otherStyle
-        + "\" "
-        + otherAtts
-        + ">\n";
-  }
-
-  /**
-   * This creates the HTML code to begin a table.
-   *
    * @param otherAtts attributes e.g., "style=\"width:100%;\" class=\"b0p0\""
    * @return the HTML code to begin a table.
    */
@@ -881,16 +776,6 @@ public class HtmlWidgets {
   }
 
   /**
-   * This create the HTML code for a comment.
-   *
-   * @param comment
-   * @return the HTML code for a comment.
-   */
-  public String comment(String comment) {
-    return "<!-- " + XML.encodeAsHTML(comment) + " -->\n";
-  }
-
-  /**
    * This creates the HTML code for a hidden widget.
    *
    * @param name the name of the widget (name=value is returned when the form is submitted)
@@ -904,71 +789,6 @@ public class HtmlWidgets {
         + " value=\""
         + XML.encodeAsHTMLAttribute(value)
         + "\" >\n";
-  }
-
-  /**
-   * This creates the HTML code for a series of radio buttons.
-   *
-   * @param name the name of the widget (name=optionText is returned when the form is submitted)
-   * @param tooltip If htmlTooltips is true, this is already html. If it is false, this is plain
-   *     text. Or "" if no tooltip.
-   * @param onARow if true, the radio buttons will all be put on one row. Otherwise, they are put on
-   *     separate lines separated by a linebreak.
-   * @param optionTexts which provides the plain text to be displayed for each of the options
-   *     (special characters will be html-encoded).
-   * @param selected the index of the selected item or -1 if none
-   * @param other e.g., "onclick=\"pleaseWait();\"" For radioButtons(), use onclick, not onchange
-   *     (which IE doesn't generate).
-   * @return the HTML code for a series of radio buttons.
-   */
-  public String radioButtons(
-      String name,
-      String tooltip,
-      boolean onARow,
-      String optionTexts[],
-      int selected,
-      String other) {
-
-    StringBuilder sb = new StringBuilder();
-    String br = onARow ? "    " : "    <br>";
-    for (int i = 0; i < optionTexts.length; i++) {
-      sb.append(i == 0 ? "    " : br);
-      sb.append(radioButton(name, tooltip, optionTexts[i], i == selected, other));
-    }
-    return sb.toString();
-  }
-
-  /**
-   * This creates the HTML code for one radio button.
-   *
-   * @param name the name of the widget (name=optionText is returned when the form is submitted)
-   * @param tooltip If htmlTooltips is true, this is already html. If it is false, this is plain
-   *     text. Or "" if no tooltip.
-   * @param optionText which provides the plain text to be displayed for this option.
-   * @param selected indicates if this item is selected
-   * @param other e.g., "onclick=\"pleaseWait();\"" For radioButton(), use onclick, not onchange
-   *     (which IE doesn't generate).
-   * @return the HTML code for one radio button.
-   */
-  public String radioButton(
-      String name, String tooltip, String optionText, boolean selected, String other) {
-
-    String s = XML.encodeAsHTMLAttribute(optionText);
-    return
-    // <span> avoids check box and value being separated by newline when lots of options
-    "<span class=\"nowrap\"><input type=\"radio\" name=\""
-        + XML.encodeAsHTMLAttribute(name)
-        + "\""
-        + " value=\""
-        + s
-        + "\""
-        + (selected ? " checked" : "")
-        + completeTooltip(tooltip)
-        + " "
-        + other
-        + " >"
-        + s
-        + "</span>\n";
   }
 
   /**
@@ -2011,143 +1831,6 @@ public class HtmlWidgets {
         // subtraction+1)
         540,
         -180,
-        180,
-        90, // lonRange, lonMin, latRange, latMax
-        null,
-        debugInBrowser);
-  }
-
-  /**
-   * A common use of twoClickMap to show a lon=-180 to 180 map.
-   *
-   * @param language the index of the selected language
-   */
-  public static String[] myTwoClickMap180Big(
-      int language, String formName, String imageUrl, boolean debugInBrowser) {
-    return twoClickMap(
-        language,
-        formName,
-        "minLon",
-        "maxLon",
-        "minLat",
-        "maxLat",
-        imageUrl,
-        285,
-        155,
-        17,
-        12,
-        254,
-        128, // map left, top, width, height  (via subtraction+1)
-        360,
-        -180,
-        180,
-        90,
-        null,
-        debugInBrowser);
-  }
-
-  /**
-   * A common use of twoClickMap to show a lon=0 to 360 map.
-   *
-   * @param language the index of the selected language
-   */
-  public static String[] myTwoClickMap360Big(
-      int language, String formName, String imageUrl, boolean debugInBrowser) {
-    return twoClickMap(
-        language,
-        formName,
-        "minLon",
-        "maxLon",
-        "minLat",
-        "maxLat",
-        imageUrl,
-        284,
-        155,
-        16,
-        12,
-        254,
-        128, // map left, top, width, height  (via subtraction+1)
-        360,
-        0,
-        180,
-        90,
-        null,
-        debugInBrowser);
-  }
-
-  /**
-   * A common use of twoClickMap to show a lon=-180 to 540 map.
-   *
-   * @param language the index of the selected language
-   */
-  public static String[] myTwoClickMap540(
-      int language, String formName, String imageUrl, boolean debugInBrowser) {
-    return twoClickMap(
-        language,
-        formName,
-        "minLon",
-        "maxLon",
-        "minLat",
-        "maxLat",
-        imageUrl,
-        293,
-        113,
-        18,
-        10,
-        261,
-        87, // map left, top, width, height  (via subtraction+1)
-        540,
-        -180,
-        180,
-        90,
-        null,
-        debugInBrowser);
-  }
-
-  /** A common use of twoClickMap to show a lon=-180 to 180 map. */
-  public static String[] myTwoClickMap180(
-      int language, String formName, String imageUrl, boolean debugInBrowser) {
-    return twoClickMap(
-        language,
-        formName,
-        "minLon",
-        "maxLon",
-        "minLat",
-        "maxLat",
-        imageUrl,
-        205,
-        113,
-        18,
-        10,
-        174,
-        87, // map left, top, width, height  (via subtraction+1)
-        360,
-        -180,
-        180,
-        90,
-        null,
-        debugInBrowser);
-  }
-
-  /** A common use of twoClickMap to show a lon=0 to 360 map. */
-  public static String[] myTwoClickMap360(
-      int language, String formName, String imageUrl, boolean debugInBrowser) {
-    return twoClickMap(
-        language,
-        formName,
-        "minLon",
-        "maxLon",
-        "minLat",
-        "maxLat",
-        imageUrl,
-        205,
-        113,
-        18,
-        10,
-        174,
-        87, // map left, top, width, height  (via subtraction+1)
-        360,
-        0,
         180,
         90, // lonRange, lonMin, latRange, latMax
         null,

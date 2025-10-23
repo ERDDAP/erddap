@@ -14,10 +14,11 @@ import com.cohort.util.Calendar2;
 import com.cohort.util.MustBe;
 import com.cohort.util.String2;
 import com.cohort.util.Test;
+import com.google.common.base.Strings;
 import gov.noaa.pfel.erddap.dataset.metadata.LocalizedAttributes;
 import gov.noaa.pfel.erddap.util.EDMessages;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
-import java.util.TimeZone;
 
 /**
  * This class holds information about a timestamp grid axis variable.
@@ -43,10 +44,10 @@ public class EDVTimeStampGridAxis extends EDVGridAxis {
   protected String dateTimeFormat; // only used if !sourceTimeIsNumeric, which currently is never
   protected DateTimeFormatter
       dateTimeFormatter; // currently never used: for generating source time if !sourceTimeIsNumeric
-  protected String time_precision; // see Calendar2.epochSecondsToLimitedIsoStringT
+  protected DateTimeFormatter precisionFormat;
   protected boolean superConstructorIsFinished = false;
   protected String timeZoneString; // if not specified, will be Zulu
-  protected TimeZone timeZone; // if not specified, will be Zulu
+  protected ZoneId timeZone; // if not specified, will be Zulu
 
   /**
    * The constructor.
@@ -98,14 +99,14 @@ public class EDVTimeStampGridAxis extends EDVGridAxis {
     // value for example). Just use the default language.
     int language = EDMessages.DEFAULT_LANGUAGE;
     // time_precision e.g., 1970-01-01T00:00:00Z
-    time_precision = combinedAttributes.getString(language, EDV.TIME_PRECISION);
+    String time_precision = combinedAttributes.getString(language, EDV.TIME_PRECISION);
     if (time_precision != null) {
       // ensure not just year (can't distinguish user input a year vs. epochSeconds)
       if (time_precision.equals("1970")) time_precision = null;
       // ensure Z at end of time
       if (time_precision.length() >= 13 && !time_precision.endsWith("Z")) time_precision = null;
     }
-
+    precisionFormat = Calendar2.timePrecisionToDateTimeFormatter(time_precision);
     // currently, EDVTimeStampGridAxis doesn't support String sourceValues
     String errorInMethod =
         "datasets.xml/EDVTimeStampGridAxis constructor error for sourceName=" + tSourceName + ":\n";
@@ -123,11 +124,16 @@ public class EDVTimeStampGridAxis extends EDVGridAxis {
     timeZoneString = combinedAttributes.getString(language, "time_zone");
     combinedAttributes.remove("time_zone");
     if (!String2.isSomething(timeZoneString)) timeZoneString = "Zulu";
-    timeZone = TimeZone.getTimeZone(timeZoneString);
+    timeZone = Calendar2.getZoneId(timeZoneString);
 
     if (Calendar2.isNumericTimeUnits(sourceTimeFormat)) {
       sourceTimeIsNumeric = true;
-      double td[] = Calendar2.getTimeBaseAndFactor(sourceTimeFormat);
+      boolean doLegacyAdjust = false;
+      String legacy_adjust = tAddAttributes.getString(language, "legacy_time_adjust");
+      if (!Strings.isNullOrEmpty(legacy_adjust)) {
+        doLegacyAdjust = Boolean.parseBoolean(legacy_adjust);
+      }
+      double td[] = Calendar2.getTimeBaseAndFactor(sourceTimeFormat, doLegacyAdjust); // timeZone
       sourceTimeBase = td[0];
       sourceTimeFactor = td[1];
       if (!"Zulu".equals(timeZoneString) && !"UTC".equals(timeZoneString))
@@ -265,34 +271,6 @@ public class EDVTimeStampGridAxis extends EDVGridAxis {
   }
 
   /**
-   * sourceTimeFormat is either a udunits string describing how to interpret numbers (e.g., "seconds
-   * since 1970-01-01T00:00:00") or a java.text.SimpleDateFormat string describing how to interpret
-   * string times (see
-   * https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/text/SimpleDateFormat.html)).
-   * Examples: <br>
-   * Date and Time Pattern Result <br>
-   * "yyyy.MM.dd G 'at' HH:mm:ss z" 2001.07.04 AD at 12:08:56 PDT <br>
-   * "EEE, MMM d, ''yy" Wed, Jul 4, '01 <br>
-   * "yyyyy.MMMMM.dd GGG hh:mm aaa" 02001.July.04 AD 12:08 PM <br>
-   * "yyMMddHHmmssZ" 010704120856-0700 <br>
-   * "yyyy-MM-dd'T'HH:mm:ss.SSSZ" 2001-07-04T12:08:56.235-0700
-   *
-   * @return the source time's units
-   */
-  public String sourceTimeFormat() {
-    return sourceTimeFormat;
-  }
-
-  /**
-   * This returns true if the source time is numeric.
-   *
-   * @return true if the source time is numeric.
-   */
-  public boolean sourceTimeIsNumeric() {
-    return sourceTimeIsNumeric;
-  }
-
-  /**
    * This returns true if the destinationValues equal the sourceValues (e.g., scaleFactor = 1 and
    * addOffset = 0). <br>
    * Some subclasses overwrite this to cover other situations: <br>
@@ -318,7 +296,7 @@ public class EDVTimeStampGridAxis extends EDVGridAxis {
    */
   @Override
   public String destinationToString(double destD) {
-    return Calendar2.epochSecondsToLimitedIsoStringT(time_precision, destD, "");
+    return Calendar2.epochSecondsToLimitedIsoStringT(precisionFormat, destD, "");
   }
 
   /**
@@ -362,14 +340,6 @@ public class EDVTimeStampGridAxis extends EDVGridAxis {
         destinationMax
             .getDouble()); // time always full precision, not "niceDouble", but it is already a
     // double
-  }
-
-  /**
-   * An indication of the precision of the time values, e.g., "1970-01-01T00:00:00Z" (default) or
-   * null (goes to default). See Calendar2.epochSecondsToLimitedIsoStringT()
-   */
-  public String time_precision() {
-    return time_precision;
   }
 
   /**
@@ -471,13 +441,13 @@ public class EDVTimeStampGridAxis extends EDVGridAxis {
         sa.set(
             i,
             Calendar2.epochSecondsToLimitedIsoStringT(
-                time_precision, sourceTimeToEpochSeconds(source.getNiceDouble(i)), ""));
+                precisionFormat, sourceTimeToEpochSeconds(source.getNiceDouble(i)), ""));
     } else {
       for (int i = 0; i < n; i++)
         sa.set(
             i,
             Calendar2.epochSecondsToLimitedIsoStringT(
-                time_precision, sourceTimeToEpochSeconds(source.getString(i)), ""));
+                precisionFormat, sourceTimeToEpochSeconds(source.getString(i)), ""));
     }
     return sa;
   }
@@ -580,29 +550,6 @@ public class EDVTimeStampGridAxis extends EDVGridAxis {
     if (Double.isNaN(epochSeconds)) return sourceTimeIsNumeric ? "" + sourceMissingValue : "";
     if (sourceTimeIsNumeric) return "" + epochSecondsToSourceTimeDouble(epochSeconds);
     return Calendar2.format(epochSeconds, dateTimeFormatter);
-  }
-
-  /**
-   * This converts a source time to a (limited) destination ISO TZ time.
-   *
-   * @param sourceTime
-   * @return a (limited) ISO T Time (e.g., "1993-12-31T23:59:59Z"). If sourceTime is invalid, this
-   *     returns "" (but there shouldn't ever be missing values).
-   */
-  public String sourceTimeToIsoStringT(double sourceTime) {
-    double destD = sourceTimeToEpochSeconds(sourceTime);
-    return destinationToString(destD);
-  }
-
-  /**
-   * This converts a destination ISO time to a source time.
-   *
-   * @param isoString an ISO T Time (e.g., "1993-12-31T23:59:59").
-   * @return sourceTime
-   * @throws Throwable if ISO time is invalid
-   */
-  public double isoStringToSourceTime(String isoString) {
-    return epochSecondsToSourceTimeDouble(Calendar2.isoStringToEpochSeconds(isoString));
   }
 
   /**

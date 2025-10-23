@@ -63,6 +63,9 @@ Use netcat to test if this works:
 
 <!- - JSPC servlet mappings start -->
 
+    <listener>
+        <listener-class>gov.noaa.pfel.erddap.MqttBrokerContextListener</listener-class>
+    </listener>
     <filter>
         <filter-name>CorsResponseFilter</filter-name>
         <filter-class>gov.noaa.pfel.erddap.http.CorsResponseFilter</filter-class>

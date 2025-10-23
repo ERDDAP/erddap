@@ -64,7 +64,6 @@ Sıkıştırma isteğinde bulunmak isteğe bağlıdır, ancak sıkıştırılmı
 <acronyms>Kısaltmalar</acronyms>
 <addConstraints>Bu web sayfasına yapılan isteklere tabledap benzeri kısıtlamalar ekleyebilirsiniz,
 Örneğin,</addConstraints>
-<addVarWhereAttName>İsteğe bağlı: Bir özellik adı belirtin.</addVarWhereAttName>
 <addVarWhereAttValue>İsteğe bağlı: Bir özellik değeri belirtin.</addVarWhereAttValue>
 <addVarWhere><![CDATA[
 
@@ -297,9 +296,6 @@ Daha sonra ilgili veri kümelerinin listesini görmek için bir kategoriye tıkl
 <categorySearchHtml><![CDATA[
 Bir(n) <kbd>{0}</kbd> seçin
 ]]></categorySearchHtml>
-<categorySearchDifferentHtml><![CDATA[
-Farklı bir <kbd>&category;</kbd>
-]]></categorySearchDifferentHtml>
 <categoryClickHtml>İlgili veri kümelerinin listesini görmek için bir kategoriye (bir nitelik değeri) tıklayın.</categoryClickHtml>
 <categoryNotAnOption>feature = &quot;{0}&quot; olduğunda, değer = &quot;{1}&quot; bir seçenek değildir.</categoryNotAnOption>
 <caughtInterrupted>currentThread().isInterrupted()&#39;u yakaladı.</caughtInterrupted>
@@ -1823,9 +1819,6 @@ Her satır, verilerin farklı bir örneğini temsil eder (örneğin, farklı bir
 
 ]]></dafTableTooltip>
 <dasTitle>Bu Veri Kümesinin Veri Kümesi Öznitelik Yapısı (.das)</dasTitle>
-
-<!--  Veriler indirilemiyorsa görüntülenecek mesaj (örn. SeaWiFS &lt;=14 günlük).  -->
-<dataAccessNotAllowed>[Üzgünüm. Bu veriler indirilemez.]</dataAccessNotAllowed>
 <databaseUnableToConnect>Veritabanına bağlanılamıyor.</databaseUnableToConnect>
 <dataProviderForm>Veri Sağlayıcı Formu</dataProviderForm>
 <dataProviderFormP1>Veri Sağlayıcı Formu - Bölüm 1</dataProviderFormP1>
@@ -2156,10 +2149,6 @@ Ancak dikkate almamış olabileceğiniz bazı şeyler şunlardır:
 <br>Lütfen bu sorunları düzeltin ve ardından formun bu bölümünü tekrar &#39;Gönderin&#39;.
 
 ]]></dpf_fixProblem>
-<dpf_yourName>Adınız</dpf_yourName>
-<dpf_emailAddress>E-posta Adresi</dpf_emailAddress>
-<dpf_Timestamp>Zaman damgası</dpf_Timestamp>
-<dpf_frequency>Sıklık</dpf_frequency>
 <dpf_title>başlık</dpf_title>
 <dpf_titleTooltip><![CDATA[
 
@@ -2237,12 +2226,6 @@ Bu, bu verilerin kullanımına ilişkin lisans ve sorumluluk reddi beyanıdır.
 <br><kbd>
 
 ]]></dpf_licenseTooltip>
-<dpf_howYouStoreData><![CDATA[
-
-<br>• Hata:
-Lütfen grid veya tablo halindeki verilerinizin nasıl saklandığını (aşağıda) belirtin.
-
-]]></dpf_howYouStoreData>
 <dpf_provideIfAvailable>Lütfen veri kümeniz için mevcutsa bilgileri sağlayın.</dpf_provideIfAvailable>
 <dpf_acknowledgement>teşekkür</dpf_acknowledgement>
 <dpf_acknowledgementTooltip><![CDATA[
@@ -2548,10 +2531,8 @@ Bu veri kümesi gönderiminin zaman damgası &tTimestamp; .
 <dtWMS>Bu veri kümesinin Web Harita Hizmeti aracılığıyla bu verilerin haritalarının nasıl oluşturulacağını öğrenmek için tıklayın.</dtWMS>
 <EasierAccessToScientificData>Bilimsel verilere daha kolay erişim</EasierAccessToScientificData>
 
-<!--  EDD mesajları tabledap ve griddap Veri Erişim Formlarında görüntülenir.  -->
-<EDDClickOnSubmitHtml><![CDATA[
-<kbd>Submit</kbd> tıklayın.
-]]></EDDClickOnSubmitHtml>
+<!--EDD mesajları görüntüleniyortabledapve griddap Data Access Forms.
+-->
 <EDDDatasetID>Veri Kümesi Kimliği</EDDDatasetID>
 <EDDFgdc>FODC</EDDFgdc>
 <EDDFgdcMetadata>FGDC-STD-001-1998 Meta Verileri</EDDFgdcMetadata>
@@ -2564,9 +2545,7 @@ Bu veri kümesi gönderiminin zaman damgası &tTimestamp; .
 <EDDInformation>Bilgi</EDDInformation>
 <EDDSummary>Özet</EDDSummary>
 <EDDDatasetTitle>Veri Kümesi Başlığı</EDDDatasetTitle>
-<EDDDownloadData>Verileri indir</EDDDownloadData>
 <EDDMakeAGraph>Grafik oluştur</EDDMakeAGraph>
-<EDDMakeAMap>Harita yap</EDDMakeAMap>
 <EDDMinimum>Asgari</EDDMinimum>
 <EDDMaximum>Maksimum</EDDMaximum>
 <EDDFileType>Dosya tipi:</EDDFileType>
@@ -2635,8 +2614,6 @@ Sizin için URL&#39;yi oluşturur.
 ]]></EDDGridDownloadDataTooltip>
 <EDDGridDimension>Boyutlar</EDDGridDimension>
 <EDDGridDimensionRanges>Boyutlar</EDDGridDimensionRanges>
-<EDDGridFirst>Birinci</EDDGridFirst>
-<EDDGridLast>Son</EDDGridLast>
 <EDDGridStart>Başlangıç</EDDGridStart>
 <EDDGridStop>Durmak</EDDGridStop>
 <EDDGridStartStopTooltip><![CDATA[
@@ -2680,14 +2657,6 @@ bu, bir boyutun değerleri arasındaki ortalama aralıktır (boyutun birimleri c
 Biraz tuhaf, eşit olmayan aralıklar genellikle, mükemmel şekilde eşit aralıklarla yerleştirilmiş bir veri kümesinde bir veya birkaç dosyanın eksik veya bozuk olduğunu gösterir.
 
 ]]></EDDGridSpacingTooltip>
-<EDDGridDimensionFirstTooltip><![CDATA[
-Bilginiz olsun:
-Bu, bir boyutun ilk değeridir.
-]]></EDDGridDimensionFirstTooltip>
-<EDDGridDimensionLastTooltip><![CDATA[
-Bilginiz olsun:
-Bu, bir boyutun son değeridir.
-]]></EDDGridDimensionLastTooltip>
 <EDDGridDownloadTooltip><![CDATA[
 İndirmek istediğiniz değişkenleri seçin:
 <br>* Yalnızca boyut verilerini indirmek için:
@@ -2963,10 +2932,6 @@ Uzak bir ERDDAP üzerinde yeni bir özellik kullanmak istiyorsanız, ERDDAP sür
 
 <!--  Bu mesajlar bir hata mesajı gösterildiğinde görüntülenir.  -->
 <errorTitle>Hata</errorTitle>
-<errorRequestUrl>İstek URL&#39;niz:</errorRequestUrl>
-<errorRequestQuery>Talep sorgunuz:</errorRequestQuery>
-<errorTheError>Hata:</errorTheError>
-<errorCopyFrom>{0} kaynağından kopyalanamıyor.</errorCopyFrom>
 <errorFileNotFound>Dosya bulunamadı: {0} .</errorFileNotFound>
 <errorFileNotFoundImage>Dosya önbellekte bulunamadı. Görüntüyü yeniden oluşturun ve tekrar deneyin.</errorFileNotFoundImage>
 <errorInternal>İç hata:</errorInternal>
@@ -2988,6 +2953,7 @@ Uzak bir ERDDAP üzerinde yeni bir özellik kullanmak istiyorsanız, ERDDAP sür
 <externalLink>(harici bağlantı)</externalLink>
 <externalWebSite>Harici bir web sitesine verilen bu bağlantı, bir onay teşkil etmez.</externalWebSite>
 <fileHelp_asc>OPeNDAP stili ISO-8859-1 virgülle ayrılmış metni görüntüleyin.</fileHelp_asc>
+<fileHelp_croissant>Veri kümesi croissant şemasını indirin.</fileHelp_croissant>
 <fileHelp_csv>ISO-8859-1 virgülle ayrılmış metin tablosunu indirin (1. satır: adlar; 2. satır: birimler; ISO 8601 kez).</fileHelp_csv>
 <fileHelp_csvp>1. satır: ad (birimler) içeren bir ISO-8859-1 .csv dosyası indirin. Zamanlar ISO 8601 dizeleridir.</fileHelp_csvp>
 <fileHelp_csv0>Sütun adları veya birimleri olmayan bir ISO-8859-1 .csv dosyasını indirin. Zamanlar ISO 8601 dizeleridir.</fileHelp_csv0>
@@ -2999,12 +2965,18 @@ Uzak bir ERDDAP üzerinde yeni bir özellik kullanmak istiyorsanız, ERDDAP sür
 <fileHelpTable_esriCsv>ESRI&#39;nin ArcGIS 9.x ve altı için ISO_8859_1 .csv dosyasını indirin (ayrı tarih ve saat sütunları).</fileHelpTable_esriCsv>
 <fileHelp_fgdc>Veri kümesinin UTF-8 FGDC .xml meta verilerini görüntüleyin.</fileHelp_fgdc>
 <fileHelp_geoJson>Boylam, enlem,otherColumns verilerini UTF-8 GeoJSON .json dosyası olarak indirin.</fileHelp_geoJson>
-<fileHelp_graph>Grafik Yap web sayfasını görüntüleyin.</fileHelp_graph>
 <fileHelpGrid_help>Griddap açıklamasını içeren bir web sayfasını görüntüleyin.</fileHelpGrid_help>
 <fileHelpTable_help>Tabledap açıklamasını içeren bir web sayfasını görüntüleyin.</fileHelpTable_help>
 <fileHelp_html>OPeNDAP tarzı HTML Veri Erişim Formunu görüntüleyin.</fileHelp_html>
 <fileHelp_htmlTable>Tablodaki verileri içeren bir UTF-8 .html web sayfasını görüntüleyin. Zamanlar ISO 8601 dizeleridir.</fileHelp_htmlTable>
-<fileHelp_iso19115>Veri kümesinin ISO 19115-2/19139 UTF-8 .xml meta verilerini görüntüleyin.</fileHelp_iso19115>
+<fileHelp_iso19115>Dataset&#39;in görüntülerini görüntüleISO 19115/19139UTF-8 .xml metadata bu sunucu için sürüm varsayılanını kullanıyor.
+</fileHelp_iso19115>
+<fileHelp_iso19115_2>Dataset&#39;in görüntülerini görüntüleISO 19115-2/19139UTF-8 .xml metadata.
+</fileHelp_iso19115_2>
+<fileHelp_iso191392007>Dataset&#39;in görüntülerini görüntüleISO 19139:2007UTF-8 .xml metadata.
+</fileHelp_iso191392007>
+<fileHelp_iso19115_3_2016>Dataset&#39;in görüntülerini görüntüleISO 19115-3:2016UTF-8 .xml metadata.
+</fileHelp_iso19115_3_2016>
 <fileHelp_itxGrid>ISO-8859-1 Igor Metin Dosyasını indirin. Her eksen değişkeni ve her veri değişkeni bir dalgaya dönüşür.</fileHelp_itxGrid>
 <fileHelp_itxTable>ISO-8859-1 Igor Metin Dosyasını indirin. Her yanıt sütunu bir dalgaya dönüşür.</fileHelp_itxTable>
 <fileHelp_json>Tablo benzeri bir UTF-8 JSON dosyasını görüntüleyin (eksik değer = &#39;null&#39;; zamanlar ISO 8601 dizeleridir).</fileHelp_json>
@@ -3030,7 +3002,6 @@ Uzak bir ERDDAP üzerinde yeni bir özellik kullanmak istiyorsanız, ERDDAP sür
 <fileHelpTable_odvTxt>Longitude,latitude,time,otherColumns&#39;u ISO-8859-1 ODV Genel Elektronik Tablo Dosyası (.txt) olarak indirin.</fileHelpTable_odvTxt>
 <fileHelp_parquet>Bir parke dosyası olarak indirin. Metadata sütun isimleri (&quot;column_names&quot;) ve birimler (&quot;column_units&quot;) içerir.</fileHelp_parquet>
 <fileHelp_parquet_with_meta>Detaylı metadata ile bir parke dosyası olarak indirin.</fileHelp_parquet_with_meta>
-<fileHelp_subset>Verilerin alt kümelerini seçmeyi kolaylaştırmak için yönlü aramayı kullanan bir HTML formunu görüntüleyin.</fileHelp_subset>
 <fileHelp_timeGaps>Zaman değerlerinde medyan boşluktan daha büyük olan boşlukların UTF-8 listesini görüntüleyin.</fileHelp_timeGaps>
 <fileHelp_tsv>ISO-8859-1 sekmeyle ayrılmış bir metin tablosu indirin (1. satır: adlar; 2. satır: birimler; ISO 8601 kez).</fileHelp_tsv>
 <fileHelp_tsvp>1. satır: ad (birimler) içeren bir ISO-8859-1 .tsv dosyası indirin. Zamanlar ISO 8601 dizeleridir.</fileHelp_tsvp>
@@ -3050,7 +3021,6 @@ Uzak bir ERDDAP üzerinde yeni bir özellik kullanmak istiyorsanız, ERDDAP sür
 
 <!--  Açıklama ve Uyarı ifadeleri bir veya daha fazla veri kümesine izin verecek kadar belirsizdir.  -->
 <filesDescription>ERDDAP&#39;ın &quot;dosyalar&quot; sistemi, sanal bir dosya sistemine göz atmanıza ve kaynak veri dosyalarını indirmenize olanak tanır.</filesDescription>
-<filesSort>Sıralama düzenini değiştirmek için bir başlığa (örneğin Ad, Son değiştirilme, Boyut) tıklayın.  &quot;Son değiştirilme&quot; Zulu saat dilimini kullanır.</filesSort>
 <filesWarning><![CDATA[
 
 Bu kaynak dosyalardaki veri kümesinin meta verileri ve değişken adları ERDDAP diğer yerlerden farklı olabilir! Bunun yerine veri kümesinin Veri Erişim Formunu kullanmayı tercih edebilirsiniz.
@@ -3506,12 +3476,6 @@ Bu satırda diğer değişkenlerin her birinin toplamı olacaktır.
 Örneğin, orderByMax(&quot;stationID, time/1day&quot;) her gün için her stationID için bir grup oluşturacak ve diğer değişkenlerin toplamını hesaplayıp döndürecektir.
 
 ]]></functionOrderByTooltip>
-<functionOrderByExtra><![CDATA[
-
-orderByClosest için aralığı burada belirtin (n[timeUnits] biçimini kullanarak, örneğin 1 saat).
-<br>orderByLimit için grup başına maksimum satır sayısını burada belirtin.
-
-]]></functionOrderByExtra>
 <functionOrderBySort><![CDATA[
 
 Bu slot, {0} önemli orderBy ...
@@ -3524,7 +3488,6 @@ slotudur.
 <functionOrderBySort3>en çok üçüncü</functionOrderBySort3>
 <functionOrderBySort4>en çok dördüncü</functionOrderBySort4>
 <functionOrderBySortLeast>en az</functionOrderBySortLeast>
-<functionOrderBySortRowMax>Yalnızca maksimum değere sahip satır tutulacaktır.</functionOrderBySortRowMax>
 <generatedAt>Bu web sayfası {0} tarihinde oluşturuldu.</generatedAt>
 <geoServicesDescription><![CDATA[
 
@@ -3833,7 +3796,6 @@ Varsayılan değer hiçbir şey değildir (kullanılmamış).
 <!--  ör., {0}=WMS veya listAll  -->
 <listOfDatasets>{0} Veri Kümesinin Listesi</listOfDatasets>
 <listAll>Tüm</listAll>
-<LogIn>Giriş yapmak</LogIn>
 <login>giriş yapmak</login>
 <loginHTML><![CDATA[
 
@@ -3892,22 +3854,15 @@ Google e-posta hesabına veya ORCID iD&#39;sine sahip olan herkes giriş yapabil
 Yalnızca bu ERDDAP yöneticisi ile anlaşma yapmış kişiler giriş yapabilir.
 
 ]]></loginDescribeOpenID>
-<loginErddap>ERDDAP&#39;a giriş yapın</loginErddap>
 <loginCanNot>Bu ERDDAP, kullanıcıların oturum açmasına izin verecek şekilde yapılandırılmadı.</loginCanNot>
 <loginAreNot>Giriş yapmadınız.</loginAreNot>
 <loginToLogIn>Giriş yapmak</loginToLogIn>
-<loginEmailAddress>e-posta adresi</loginEmailAddress>
 <loginYourEmailAddress>E-posta adresiniz</loginYourEmailAddress>
 <loginUserName>Kullanıcı adı</loginUserName>
 <loginPassword>Şifre</loginPassword>
 <loginUserNameAndPassword>Kullanıcı adı ve şifre</loginUserNameAndPassword>
 <loginGoogleSignIn>Google hesabınızla kimlik doğrulaması yapın.</loginGoogleSignIn>
 <loginOrcidSignIn>ORCID iD&#39;nizle kimlik doğrulaması yapın.</loginOrcidSignIn>
-<loginOpenID>OpenID URL&#39;nizle giriş yapın</loginOpenID>
-<loginOpenIDOr>Veya şu adresten mevcut (OpenID olmayan) hesabınıza giriş yapın:</loginOpenIDOr>
-<loginOpenIDCreate>Veya şu adreste bir OpenID URL&#39;si oluşturun:</loginOpenIDCreate>
-<loginOpenIDFree>Hepsi özgür!</loginOpenIDFree>
-<loginOpenIDSame>ERDDAP yöneticisine verdiğiniz OpenID URL&#39;sinin aynısıyla oturum açtığınızdan emin olun.</loginOpenIDSame>
 <loginAs>{0} olarak oturum açtınız.</loginAs>
 <loginPartwayAs>Yarıda {0} olarak oturum açtınız.</loginPartwayAs>
 <loginFailed>HATA: Giriş başarısız oldu</loginFailed>
@@ -4023,7 +3978,6 @@ Bazı veri kümelerinin şu anda mevcut olmaması veya bunlara erişim izninizin
 ]]></loginPublicAccess>
 <LogOut>Çıkış Yap</LogOut>
 <logout>çıkış Yap</logout>
-<logoutOpenID>OpenID sağlayıcınızdan çıkış yapın.</logoutOpenID>
 
 <!--  Oturumu kapatBaşarı son güncelleme tarihi: 2019-12-19  -->
 <logoutSuccess>Başarıyla çıkış yaptınız. 
@@ -4324,10 +4278,6 @@ Ancak dods.dap.DODSException&#39;ın konuyla ilgili bir istisnası yoktur.
 Boş bir dosyayı iade etmek daha mı iyi? Ancak .nc ve diğerleri 0 uzunluktaki verilere izin vermez.
  -->
 <MustBeThereIsNoData>Sorgunuz eşleşen sonuç üretmedi.</MustBeThereIsNoData>
-
-<!--  Birçok dosya türü, bir dosyanın tutabileceği veri miktarına (ör. 2 GB) bir sınır koyar.  -->
-<MustBeNotNull>{0} boş olmamalıdır.</MustBeNotNull>
-<MustBeNotEmpty>{0} boş bir dize olmamalıdır.</MustBeNotEmpty>
 <MustBeInternalError>İç hata</MustBeInternalError>
 <MustBeOutOfMemoryError>Bellek Yetersiz Hatası</MustBeOutOfMemoryError>
 
@@ -4368,11 +4318,9 @@ Boş bir dosyayı iade etmek daha mı iyi? Ancak .nc ve diğerleri 0 uzunluktaki
 <noXxxNoLonIn180>-180 ila 360 arasında boylam değeri yoktur</noXxxNoLonIn180>
 <noXxxNoNonString>String olmayan değişken yok</noXxxNoNonString>
 <noXxxNo2NonString>en az iki String olmayan değişken yok</noXxxNo2NonString>
-<noXxxNoStation>cdmDataType={0} &quot;TimeSeries&quot; değil</noXxxNoStation>
 <noXxxNoStationID>istasyon kimliği benzeri bir değişken yok</noXxxNoStationID>
 <noXxxNoSubsetVariables>subsetVariables belirtilmedi</noXxxNoSubsetVariables>
 <noXxxNoOLLSubsetVariables>subsetVariables teklif, boylam ve enlem değişkenlerine sahip değil</noXxxNoOLLSubsetVariables>
-<noXxxNoMinMax>kaynak veri sunucusu minimum ve maksimum değerleri sağlamıyor</noXxxNoMinMax>
 <noXxxItsGridded>ızgaralı bir veri kümesidir</noXxxItsGridded>
 <noXxxItsTabular>tablo halinde bir veri kümesidir</noXxxItsTabular>
 <oneRequestAtATime>Lütfen tek seferde yalnızca bir istekte bulunun.</oneRequestAtATime>
@@ -4399,7 +4347,6 @@ Bilgisayar programları ve Java Scriptli web sayfaları geliştiricileri, ERDDAP
 <options>Seçenekler</options>
 <orAListOfValues>veya Değerler Listesi</orAListOfValues>
 <orRefineSearchWith>Veya bu aramayı şununla hassaslaştırın:</orRefineSearchWith>
-<orSearchWith>Veya şunu içeren veri kümelerini arayın:</orSearchWith>
 <orComma>Veya,</orComma>
 <otherFeatures>Diğer özellikler</otherFeatures>
 <outOfDateDatasets>Güncel Olmayan Veri Kümeleri</outOfDateDatasets>
@@ -4461,7 +4408,6 @@ A-Za-z0-9_-!.~&#39;()* dışındaki tüm karakterler %HH olarak kodlanmalıdır;
     title="Harici bir web sitesine verilen bu bağlantı, bir onay anlamına gelmez."></a> .
 
 ]]></percentEncode>
-<pickADataset>Bir Veri Kümesi Seçin</pickADataset>
 
 <!--  Protokol tabanlı veri kümesi aramalarıyla ilgili mesajlar.  -->
 <protocolSearchHtml>Veri Kümelerini Protokole Göre Arama</protocolSearchHtml>
@@ -4478,7 +4424,6 @@ Farklı veri türleri ve farklı istemci uygulamaları için farklı protokoller
 <queryError1Var>{0} biçimi yalnızca bir veri değişkenini işleyebilir.</queryError1Var>
 <queryError2Var>{0} biçimine yönelik istekler en az iki sayısal değişken içermelidir (X ve Y eksenleri için).</queryError2Var>
 <queryErrorActualRange>{0}, değişkenin gerçek_aralığının dışında: {1} ila {2}</queryErrorActualRange>
-<queryErrorAscending>{0} istekleri için boylam değerleri ve enlem değerleri artan olmalıdır.</queryErrorAscending>
 <queryErrorAdjusted>{0} istekleri için ayarlanan boylam değerleri ({1} - {2}) -180 ile 180 arasında olmalıdır.</queryErrorAdjusted>
 <queryErrorConstraintNaN>Constraint value=&quot;{0}&quot;, NaN olarak değerlendirilir.  Eğer gerçekten NaN istiyorsanız, bunu NaN olarak yazın.</queryErrorConstraintNaN>
 <queryErrorEqualSpacing>{0} istekleri için boylam aralığı ({1}), enlem aralığına ({2}) eşit olmalıdır.</queryErrorEqualSpacing>
@@ -4510,7 +4455,6 @@ Farklı veri türleri ve farklı istemci uygulamaları için farklı protokoller
 <queryErrorGridNoAxisVar>Griddap veri değişkeni sorgusu bir eksen değişkeni ({0}) içeremez.</queryErrorGridNoAxisVar>
 <queryErrorGridNoDataVar>Griddap ekseni değişkeni sorgusu bir veri değişkeni ({0}) içeremez.</queryErrorGridNoDataVar>
 <queryErrorGridNotIdentical>Değişken={1} için {0} kısıtı, değişken={2} için {2} kısıtıyla aynı değildir.  Farklı alt kümelere ihtiyacınız varsa ayrı taleplerde bulunun.</queryErrorGridNotIdentical>
-<queryErrorGridSLessS>StartIndex={0}, StopIndex={1} değerinden büyük.</queryErrorGridSLessS>
 <queryErrorLastEndP>{0} &quot;(&quot; ile başlar ancak &quot;)&quot; ile bitmez.</queryErrorLastEndP>
 <queryErrorLastExpected>&quot;son&quot;un {0} başında olması bekleniyordu.</queryErrorLastExpected>
 <queryErrorLastUnexpected>{0}&#39;da &quot;son&quot;dan sonra beklenmeyen karakter.</queryErrorLastUnexpected>
@@ -4754,7 +4698,6 @@ Görmek
 <SOSDocumentation>ERDDAP&#39;ın SOS belgeleri</SOSDocumentation>
 <WCSDocumentation>ERDDAP&#39;ın WCS belgeleri</WCSDocumentation>
 <WMSDocumentation>ERDDAP&#39;ın WMS belgeleri</WMSDocumentation>
-<findOutChange>böylece bilgisayar programınız bir veri kümesinin değişip değişmediğini öğrenebilir.</findOutChange>
 <requestFormatExamplesHtml><![CDATA[
 
 (örneğin,
@@ -5208,14 +5151,6 @@ Bunun yerine,
 
 ]]></subscriptionRemoveSuccess>
 <subscriptionRSS>Bu veri kümesi için RSS beslemesine abone olun...</subscriptionRSS>
-<subscriptionsNotAvailable><![CDATA[
-
-<p><strong>Üzgünüm.
-Bu ERDDAP kurulumunda e-posta/URL abonelik sistemi mevcut değildir.</strong>
-<br>Bunun yerine
-<a rel="help" href="{0}/information.html#subscriptions">RSS</a> abonelik hizmetini kullanmayı düşünün.
-
-]]></subscriptionsNotAvailable>
 <subscriptionUrlHtml><![CDATA[
 
 <kbd>URL/action</kbd> ERDDAP size e-posta göndermek yerine iletişim kuracağı isteğe bağlı bir URL&#39;dir.
@@ -5480,13 +5415,6 @@ Bu özel ERDDAP kurulumunda oşinografik veriler bulunmaktadır (örneğin, uydu
 <!--  Aşağıdaki etiketin önünde, önceki 2 etiketten 1&#39;i bulunur. 
   {0}, subsetViewSelectDistintCombos veya subsetViewSelectRelatedCounts&#39;tur.  -->
 <subsetWhenCounts>&quot;{2}&quot;nin {1} değerleri için {0}:</subsetWhenCounts>
-<subsetComboClickSelect><![CDATA[
-
-Yukarıda listelenen değişkenlerin farklı kombinasyonlarının sayısını görüntülemek için,
-<br>yukarıdaki <kbd>{0} :
-{1}</kbd> işaretleyin ve yukarıdaki değişkenlerden biri için bir değer seçin.
-
-]]></subsetComboClickSelect>
 <subsetNVariableCombos>Toplamda, yukarıda listelenen değişkenlerin farklı kombinasyonlarından oluşan {0} satır vardır.</subsetNVariableCombos>
 <subsetShowingAllRows>Tüm satırlar yukarıda gösterilmiştir.</subsetShowingAllRows>
 <subsetShowingNRows>İlk {0} satır yukarıda gösterilmiştir.  Kalan {1} satır gösterilmiyor.</subsetShowingNRows>
@@ -6268,7 +6196,6 @@ href="https://groups.google.com/forum/#!forum/erddap"><img
 Bu web sayfasındaki görüşler Bob Simons&#39;un kişisel görüşleridir ve Hükümetin veya National Oceanic and Atmospheric Administration herhangi bir görüşünü yansıtmaz.
 
 ]]></theLongDescriptionHtml>
-<Then>Daha sonra</Then>
 <twoClickMapDefaultTooltip>İki çapraz köşeye tıklayarak bir dikdörtgen belirtin.  Gerekirse tekrar yapın.</twoClickMapDefaultTooltip>
 
 <!--  Bu, ERDDAP&#39;ın UDUnits dönüştürücüsünü standartlaştırmayı geçersiz kılmanın bir yoludur
@@ -7552,7 +7479,6 @@ Bu hiçbir şey olamaz. Yani hiçbir şey istemiyorsanız, anlamsız bir kelime 
 asla bir özellik adı olmayın.  -->
 <updateUrlsSkipAttributes>kaynakUrl</updateUrlsSkipAttributes>
 <variableNames>Değişken Adları</variableNames>
-<viewAllDatasetsHtml>Tüm Veri Kümelerinin Listesini Görüntüleyin</viewAllDatasetsHtml>
 <waitThenTryAgain>(Geçici?) bir sorun vardı.  Bir dakika bekleyip tekrar deneyin.  (Tarayıcıda Yeniden Yükle düğmesini tıklayın.)</waitThenTryAgain>
 <warning>UYARI!</warning>
 <units>Birimler</units>

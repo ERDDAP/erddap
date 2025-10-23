@@ -13,15 +13,19 @@ import com.cohort.util.SimpleException;
 import com.cohort.util.String2;
 import com.cohort.util.Test;
 import gov.noaa.pfel.coastwatch.pointdata.Table;
+import gov.noaa.pfel.coastwatch.util.FileVisitorDNLS;
 import gov.noaa.pfel.coastwatch.util.SimpleXMLReader;
 import gov.noaa.pfel.erddap.Erddap;
 import gov.noaa.pfel.erddap.handlers.EDDGridSideBySideHandler;
 import gov.noaa.pfel.erddap.handlers.SaxHandlerClass;
+import gov.noaa.pfel.erddap.util.EDMessages.Message;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.*;
+import jakarta.servlet.http.HttpServletRequest;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 /**
  * This class represents a grid dataset created by aggregating two or more datasets side by side. So
@@ -70,7 +74,7 @@ public class EDDGridSideBySide extends EDDGrid {
     String tDatasetID = xmlReader.attributeValue("datasetID");
 
     // data to be obtained while reading xml
-    ArrayList tChildDatasets = new ArrayList();
+    List<EDD> tChildDatasets = new ArrayList<>();
     StringBuilder messages = new StringBuilder();
     String tAccessibleTo = null;
     String tGraphsAccessibleTo = null;
@@ -246,7 +250,7 @@ public class EDDGridSideBySide extends EDDGrid {
     setGraphsAccessibleTo(tGraphsAccessibleTo);
     if (!tAccessibleViaWMS)
       accessibleViaWMS =
-          String2.canonical(MessageFormat.format(EDStatic.messages.noXxxAr[0], "WMS"));
+          String2.canonical(MessageFormat.format(EDStatic.messages.get(Message.NO_XXX, 0), "WMS"));
     onChange = tOnChange;
     fgdcFile = tFgdcFile;
     iso19115File = tIso19115File;
@@ -628,6 +632,21 @@ public class EDDGridSideBySide extends EDDGrid {
     }
 
     return cumResults;
+  }
+
+  @Override
+  public Table getFilesUrlList(HttpServletRequest request, String loggedInAs, int language)
+      throws Throwable {
+    Table table = FileVisitorDNLS.makeEmptyTable();
+    for (int child = 0; child < childDatasets.length; child++) {
+      if (childDatasets[child].accessibleViaFiles) {
+        Table childTable = childDatasets[child].getFilesUrlList(request, loggedInAs, language);
+        if (childTable != null) {
+          table.append(childTable);
+        }
+      }
+    }
+    return table;
   }
 
   /**

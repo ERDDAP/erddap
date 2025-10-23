@@ -5,7 +5,9 @@
  */
 package com.cohort.array;
 
-import com.cohort.util.*;
+import com.cohort.util.Calendar2;
+import com.cohort.util.Math2;
+import com.cohort.util.String2;
 import com.google.common.collect.ImmutableList;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -300,7 +302,7 @@ public class DoubleArray extends PrimitiveArray {
   public void addObject(final Object value) {
     if (size == array.length) // if we're at capacity
     ensureCapacity(size + 1L);
-    array[size++] = value instanceof Number ? ((Number) value).doubleValue() : Double.NaN;
+    array[size++] = value instanceof Number num ? num.doubleValue() : Double.NaN;
   }
 
   /**
@@ -970,11 +972,10 @@ public class DoubleArray extends PrimitiveArray {
    */
   @Override
   public String testEquals(final Object o) {
-    if (!(o instanceof DoubleArray))
+    if (!(o instanceof DoubleArray other))
       return "The two objects aren't equal: this object is a DoubleArray; the other is a "
           + (o == null ? "null" : o.getClass().getName())
           + ".";
-    final DoubleArray other = (DoubleArray) o;
     if (other.size() != size)
       return "The two DoubleArrays aren't equal: one has "
           + size
@@ -1228,7 +1229,7 @@ public class DoubleArray extends PrimitiveArray {
 
     // make a hashMap with all the unique values (associated values are initially all dummy)
     final Integer dummy = -1;
-    final HashMap hashMap = new HashMap(Math2.roundToInt(1.4 * size));
+    final HashMap<Double, Integer> hashMap = new HashMap<>(Math2.roundToInt(1.4 * size));
     double lastValue = array[0]; // since lastValue often equals currentValue, cache it
     hashMap.put(lastValue, dummy);
     boolean alreadySorted = true;
@@ -1242,7 +1243,7 @@ public class DoubleArray extends PrimitiveArray {
     }
 
     // quickly deal with: all unique and already sorted
-    final Set keySet = hashMap.keySet();
+    final Set<Double> keySet = hashMap.keySet();
     final int nUnique = keySet.size();
     if (nUnique == size && alreadySorted) {
       indices.ensureCapacity(size);
@@ -1252,8 +1253,8 @@ public class DoubleArray extends PrimitiveArray {
     }
 
     // store all the elements in an array
-    final Object unique[] = new Object[nUnique];
-    final Iterator iterator = keySet.iterator();
+    final double[] unique = new double[nUnique];
+    final Iterator<Double> iterator = keySet.iterator();
     int count = 0;
     while (iterator.hasNext()) unique[count++] = iterator.next();
     if (nUnique != count)
@@ -1264,11 +1265,8 @@ public class DoubleArray extends PrimitiveArray {
     Arrays.sort(unique);
 
     // put the unique values back in the hashMap with the ranks as the associated values
-    // and make tUnique
-    final double tUnique[] = new double[nUnique];
     for (int i = 0; i < count; i++) {
       hashMap.put(unique[i], i);
-      tUnique[i] = (Double) unique[i];
     }
 
     // convert original values to ranks
@@ -1289,7 +1287,7 @@ public class DoubleArray extends PrimitiveArray {
     // store the results in ranked
     indices.append(new IntArray(ranks));
 
-    return new DoubleArray(tUnique);
+    return new DoubleArray(unique);
   }
 
   /**

@@ -54,7 +54,6 @@ messages-de.xml 和 -ga 有许多链接重复。我怀疑还有更多这样的�
 <acronyms>缩略词</acronyms>
 <addConstraints>您可以向对此网页的请求添加类似 tabledap 的约束，
 例如，</addConstraints>
-<addVarWhereAttName>可选：指定属性名称。</addVarWhereAttName>
 <addVarWhereAttValue>可选：指定属性值。</addVarWhereAttValue>
 <addVarWhere><![CDATA[
 
@@ -277,9 +276,6 @@ messages-de.xml 和 -ga 有许多链接重复。我怀疑还有更多这样的�
 <categorySearchHtml><![CDATA[
 挑选一个<kbd>{0}</kbd>
 ]]></categorySearchHtml>
-<categorySearchDifferentHtml><![CDATA[
-搜索具有不同<kbd>&category;</kbd>的数据集
-]]></categorySearchDifferentHtml>
 <categoryClickHtml>单击一个类别（属性值）可以查看相关数据集的列表。</categoryClickHtml>
 <categoryNotAnOption>当 attribute=&quot;{0}&quot; 时，value=&quot;{1}&quot; 不是一个选项。</categoryNotAnOption>
 <caughtInterrupted>捕获了 currentThread().isInterrupted()。</caughtInterrupted>
@@ -1413,9 +1409,6 @@ href="{0}/convert/time.txt?units=SEC%20SINCE%20Jan%202%2C%201985"
 
 ]]></dafTableTooltip>
 <dasTitle>此数据集的数据集属性结构 (.das)</dasTitle>
-
-<!-- 如果无法下载数据则显示的消息（例如，SeaWiFS &lt;=14 天前）。 -->
-<dataAccessNotAllowed>[抱歉。无法下载该数据。]</dataAccessNotAllowed>
 <databaseUnableToConnect>无法连接到数据库。</databaseUnableToConnect>
 <dataProviderForm>数据提供者表格</dataProviderForm>
 <dataProviderFormP1>数据提供者表格 - 第 1 部分</dataProviderFormP1>
@@ -1698,10 +1691,6 @@ y_wind</DEFAULT_commonStandardNames>
 <br>请解决这些问题，然后再次“提交”表单的此部分。
 
 ]]></dpf_fixProblem>
-<dpf_yourName>你的名字</dpf_yourName>
-<dpf_emailAddress>电子邮件地址</dpf_emailAddress>
-<dpf_Timestamp>时间戳</dpf_Timestamp>
-<dpf_frequency>频率</dpf_frequency>
 <dpf_title>标题</dpf_title>
 <dpf_titleTooltip><![CDATA[
 
@@ -1773,11 +1762,6 @@ y_wind</DEFAULT_commonStandardNames>
 <br><kbd>
 
 ]]></dpf_licenseTooltip>
-<dpf_howYouStoreData><![CDATA[
-
-<br>• 错误：请指定（如下）您的网格或表格数据的存储方式。
-
-]]></dpf_howYouStoreData>
 <dpf_provideIfAvailable>如果您的数据集有此信息，请提供。</dpf_provideIfAvailable>
 <dpf_acknowledgement>致谢</dpf_acknowledgement>
 <dpf_acknowledgementTooltip><![CDATA[
@@ -2041,10 +2025,8 @@ ERDDAP管理员将很快向您发送电子邮件，以找出传输数据的最�
 <dtWMS>单击即可了解如何通过此数据集的 Web 地图服务制作该数据的地图。</dtWMS>
 <EasierAccessToScientificData>更轻松地获取科学数据</EasierAccessToScientificData>
 
-<!-- EDD 消息显示在 tabledap 和 griddap 数据访问表单上。 -->
-<EDDClickOnSubmitHtml><![CDATA[
-点击<kbd>Submit</kbd> 。
-]]></EDDClickOnSubmitHtml>
+<!--EDD 信件显示在tabledap和格网数据访问表。
+-->
 <EDDDatasetID>数据集 ID</EDDDatasetID>
 <EDDFgdc>烟气脱硫脱硝</EDDFgdc>
 <EDDFgdcMetadata>FGDC-STD-001-1998 元数据</EDDFgdcMetadata>
@@ -2057,9 +2039,7 @@ ERDDAP管理员将很快向您发送电子邮件，以找出传输数据的最�
 <EDDInformation>信息</EDDInformation>
 <EDDSummary>概括</EDDSummary>
 <EDDDatasetTitle>数据集标题</EDDDatasetTitle>
-<EDDDownloadData>下载数据</EDDDownloadData>
 <EDDMakeAGraph>制作图表</EDDMakeAGraph>
-<EDDMakeAMap>制作地图</EDDMakeAMap>
 <EDDMinimum>最低限度</EDDMinimum>
 <EDDMaximum>最大限度</EDDMaximum>
 <EDDFileType>文件类型：</EDDFileType>
@@ -2121,8 +2101,6 @@ new={3}。</EDDChangedAxes2Different>
 ]]></EDDGridDownloadDataTooltip>
 <EDDGridDimension>方面</EDDGridDimension>
 <EDDGridDimensionRanges>方面</EDDGridDimensionRanges>
-<EDDGridFirst>第一的</EDDGridFirst>
-<EDDGridLast>最后的</EDDGridLast>
 <EDDGridStart>开始</EDDGridStart>
 <EDDGridStop>停止</EDDGridStop>
 <EDDGridStartStopTooltip><![CDATA[
@@ -2162,12 +2140,6 @@ new={3}。</EDDChangedAxes2Different>
 供您参考：这是维度值之间的平均间距（以维度的单位表示），表示值是否完全均匀分布。略显奇怪、不均匀的间距通常表示在原本完全均匀分布的数据集中，一个或几个文件缺失或损坏。
 
 ]]></EDDGridSpacingTooltip>
-<EDDGridDimensionFirstTooltip><![CDATA[
-供您参考：这是维度的第一个值。
-]]></EDDGridDimensionFirstTooltip>
-<EDDGridDimensionLastTooltip><![CDATA[
-供您参考：这是维度的最后一个值。
-]]></EDDGridDimensionLastTooltip>
 <EDDGridDownloadTooltip><![CDATA[
 选择您要下载的变量：
 <br>* 仅下载尺寸数据：只需选择一个或多个尺寸（轴）。
@@ -2405,10 +2377,6 @@ ERDDAP是一个数据服务器，它为您提供一种简单、一致的方式�
 
 <!-- 当出现错误消息时会显示这些消息。 -->
 <errorTitle>错误</errorTitle>
-<errorRequestUrl>您的请求网址：</errorRequestUrl>
-<errorRequestQuery>您的请求查询：</errorRequestQuery>
-<errorTheError>错误：</errorTheError>
-<errorCopyFrom>无法从 {0} 复制。</errorCopyFrom>
 <errorFileNotFound>未找到文件：{0}。</errorFileNotFound>
 <errorFileNotFoundImage>缓存中未找到文件。请重新创建图像并重试。</errorFileNotFoundImage>
 <errorInternal>内部错误：</errorInternal>
@@ -2430,6 +2398,7 @@ ERDDAP是一个数据服务器，它为您提供一种简单、一致的方式�
 <externalLink>（外部链接）</externalLink>
 <externalWebSite>此外部网站链接并不构成认可。</externalWebSite>
 <fileHelp_asc>查看 OPeNDAP 样式 ISO-8859-1 逗号分隔的文本。</fileHelp_asc>
+<fileHelp_croissant>下载数据集 croissant schema.</fileHelp_croissant>
 <fileHelp_csv>下载 ISO-8859-1 逗号分隔的文本表（第 1 行：名称；第 2 行：单位；ISO 8601 时间）。</fileHelp_csv>
 <fileHelp_csvp>下载 ISO-8859-1 .csv 文件，其中第 1 行：名称（单位）。时间是 ISO 8601 字符串。</fileHelp_csvp>
 <fileHelp_csv0>下载不含列名或单位的 ISO-8859-1 .csv 文件。时间是 ISO 8601 字符串。</fileHelp_csv0>
@@ -2441,12 +2410,18 @@ ERDDAP是一个数据服务器，它为您提供一种简单、一致的方式�
 <fileHelpTable_esriCsv>下载适用于 ESRI ArcGIS 9.x 及以下版本的 ISO_8859_1 .csv 文件（单独的日期和时间列）。</fileHelpTable_esriCsv>
 <fileHelp_fgdc>查看数据集的 UTF-8 FGDC .xml 元数据。</fileHelp_fgdc>
 <fileHelp_geoJson>将经度、纬度、其他列数据下载为 UTF-8 GeoJSON .json 文件。</fileHelp_geoJson>
-<fileHelp_graph>查看“制作图表”网页。</fileHelp_graph>
 <fileHelpGrid_help>查看包含 griddap 描述的网页。</fileHelpGrid_help>
 <fileHelpTable_help>查看包含 tabledap 描述的网页。</fileHelpTable_help>
 <fileHelp_html>查看 OPeNDAP 样式的 HTML 数据访问表单。</fileHelp_html>
 <fileHelp_htmlTable>查看包含表格数据的 UTF-8 .html 网页。时间是 ISO 8601 字符串。</fileHelp_htmlTable>
-<fileHelp_iso19115>查看数据集的 ISO 19115-2/19139 UTF-8 .xml 元数据。</fileHelp_iso19115>
+<fileHelp_iso19115>查看数据集的ISO 19115/19139UTF-8.xml 元数据使用此服务器的版本默认值.
+</fileHelp_iso19115>
+<fileHelp_iso19115_2>查看数据集的ISO 19115-2/19139UTF-8.xml 元数据.
+</fileHelp_iso19115_2>
+<fileHelp_iso191392007>查看数据集的ISO 19139:2007UTF-8.xml 元数据.
+</fileHelp_iso191392007>
+<fileHelp_iso19115_3_2016>查看数据集的ISO 19115-3:2016UTF-8.xml 元数据.
+</fileHelp_iso19115_3_2016>
 <fileHelp_itxGrid>下载 ISO-8859-1 Igor 文本文件。每个轴变量和每个数据变量都变成一个波。</fileHelp_itxGrid>
 <fileHelp_itxTable>下载 ISO-8859-1 Igor 文本文件。每个响应列都变成一个波形。</fileHelp_itxTable>
 <fileHelp_json>查看表状的 UTF-8 JSON 文件（缺失值 = &#39;null&#39;；时间是 ISO 8601 字符串）。</fileHelp_json>
@@ -2472,7 +2447,6 @@ ERDDAP是一个数据服务器，它为您提供一种简单、一致的方式�
 <fileHelpTable_odvTxt>将经度、纬度、时间、其他列下载为 ISO-8859-1 ODV 通用电子表格文件 (.txt)。</fileHelpTable_odvTxt>
 <fileHelp_parquet>下载为 parquet 文件 。 元数据包含列名(&quot;列_名称&quot;)和单位(&quot;列_单位&quot;).</fileHelp_parquet>
 <fileHelp_parquet_with_meta>下载为带有详细元数据的 parquet 文件 。</fileHelp_parquet_with_meta>
-<fileHelp_subset>查看使用分面搜索来简化选择数据子集的 HTML 表单。</fileHelp_subset>
 <fileHelp_timeGaps>查看时间值中大于中位差距的差距的 UTF-8 列表。</fileHelp_timeGaps>
 <fileHelp_tsv>下载 ISO-8859-1 制表符分隔的文本表（第 1 行：名称；第 2 行：单位；ISO 8601 时间）。</fileHelp_tsv>
 <fileHelp_tsvp>下载包含第 1 行的 ISO-8859-1 .tsv 文件：名称（单位）。时间是 ISO 8601 字符串。</fileHelp_tsvp>
@@ -2492,7 +2466,6 @@ ERDDAP是一个数据服务器，它为您提供一种简单、一致的方式�
 
 <!-- 描述和警告措辞模糊，允许一个或多个数据集。 -->
 <filesDescription>ERDDAP 的“文件”系统让您浏览虚拟文件系统并下载源数据文件。</filesDescription>
-<filesSort>单击标题（例如，名称、上次修改、大小）可更改排序顺序。“上次修改”使用祖鲁时区。</filesSort>
 <filesWarning><![CDATA[
 
 这些源文件中数据集的元数据和变量名称可能与ERDDAP中的其他地方不同！您可能更喜欢使用数据集的数据访问表单。
@@ -2806,12 +2779,6 @@ orderBy ...
 <p><strong>orderBy Sum</strong>将结果表的行按组排序，并为每个组返回一行。该行将包含其他每个变量的总和。例如， orderByMax(&quot;stationID, time/1day&quot;)将为每天的每个stationID创建一个组，并计算并返回其他变量的总和。
 
 ]]></functionOrderByTooltip>
-<functionOrderByExtra><![CDATA[
-
-对于orderByClosest ，在此处指定间隔（使用格式 n[timeUnits]，例如 1 小时）。
-<br>对于orderByLimit ，在此处指定每个组的最大行数。
-
-]]></functionOrderByExtra>
 <functionOrderBySort><![CDATA[
 
 此槽是{0}重要的orderBy ...
@@ -2824,7 +2791,6 @@ orderBy ...
 <functionOrderBySort3>第三</functionOrderBySort3>
 <functionOrderBySort4>第四名</functionOrderBySort4>
 <functionOrderBySortLeast>至少</functionOrderBySortLeast>
-<functionOrderBySortRowMax>仅保留具有最大值的行。</functionOrderBySortRowMax>
 <generatedAt>该网页于 {0} 生成。</generatedAt>
 <geoServicesDescription><![CDATA[
 
@@ -3081,7 +3047,6 @@ justGenerateAndViewHtml 消息可以包含 &protocolName; 。
 <!-- 例如，{0}=WMS 或 listAll -->
 <listOfDatasets>{0} 数据集列表</listOfDatasets>
 <listAll>全部</listAll>
-<LogIn>登录</LogIn>
 <login>登录</login>
 <loginHTML><![CDATA[
 
@@ -3124,22 +3089,15 @@ justGenerateAndViewHtml 消息可以包含 &protocolName; 。
     title="此外部网站链接并不构成认可。"></a>是一项开放标准，它允许您在一个网站上使用密码登录，然后在许多其他网站（包括ERDDAP上无需密码即可登录。只有与此ERDDAP管理员达成协议的人才可以登录。
 
 ]]></loginDescribeOpenID>
-<loginErddap>登录 ERDDAP</loginErddap>
 <loginCanNot>此 ERDDAP 未配置为允许用户登录。</loginCanNot>
 <loginAreNot>您尚未登录。</loginAreNot>
 <loginToLogIn>登录</loginToLogIn>
-<loginEmailAddress>电子邮件地址</loginEmailAddress>
 <loginYourEmailAddress>您的电子邮件地址</loginYourEmailAddress>
 <loginUserName>用户名</loginUserName>
 <loginPassword>密码</loginPassword>
 <loginUserNameAndPassword>用户名和密码</loginUserNameAndPassword>
 <loginGoogleSignIn>使用您的 Google 帐户进行身份验证。</loginGoogleSignIn>
 <loginOrcidSignIn>使用您的 ORCID iD 进行身份验证。</loginOrcidSignIn>
-<loginOpenID>使用您的 OpenID URL 登录</loginOpenID>
-<loginOpenIDOr>或者登录您现有的（非 OpenID）帐户</loginOpenIDOr>
-<loginOpenIDCreate>或者创建 OpenID URL</loginOpenIDCreate>
-<loginOpenIDFree>它们都是免费的！</loginOpenIDFree>
-<loginOpenIDSame>确保您使用向 ERDDAP 管理员提供的完全相同的 OpenID URL 登录。</loginOpenIDSame>
 <loginAs>您已作为 {0} 登录。</loginAs>
 <loginPartwayAs>您已以 {0} 身份部分登录。</loginPartwayAs>
 <loginFailed>错误：登录失败</loginFailed>
@@ -3239,7 +3197,6 @@ justGenerateAndViewHtml 消息可以包含 &protocolName; 。
 ]]></loginPublicAccess>
 <LogOut>登出</LogOut>
 <logout>登出</logout>
-<logoutOpenID>从您的 OpenID 提供商注销。</logoutOpenID>
 
 <!-- 退出成功 最后更新时间 2019-12-19 -->
 <logoutSuccess>您已成功退出。
@@ -3521,10 +3478,6 @@ justGenerateAndViewHtml 消息可以包含 &protocolName; 。
 最好返回一个空文件？但 .nc 和其他文件不允许 0 长度的数据。
  -->
 <MustBeThereIsNoData>您的查询未产生匹配的结果。</MustBeThereIsNoData>
-
-<!-- 许多文件类型对文件可容纳的数据量进行了限制（例如 2GB）。 -->
-<MustBeNotNull>{0} 不能为空。</MustBeNotNull>
-<MustBeNotEmpty>{0} 不能是空字符串。</MustBeNotEmpty>
 <MustBeInternalError>内部错误</MustBeInternalError>
 <MustBeOutOfMemoryError>内存不足错误</MustBeOutOfMemoryError>
 
@@ -3565,11 +3518,9 @@ justGenerateAndViewHtml 消息可以包含 &protocolName; 。
 <noXxxNoLonIn180>没有 -180 至 360 范围内的经度值</noXxxNoLonIn180>
 <noXxxNoNonString>没有非字符串变量</noXxxNoNonString>
 <noXxxNo2NonString>至少没有两个非字符串变量</noXxxNo2NonString>
-<noXxxNoStation>cdmDataType={0} 不是“TimeSeries”</noXxxNoStation>
 <noXxxNoStationID>没有类似 stationID 的变量</noXxxNoStationID>
 <noXxxNoSubsetVariables>未指定 subsetVariables</noXxxNoSubsetVariables>
 <noXxxNoOLLSubsetVariables>subsetVariables 没有 offering、longitude 和 latitude 变量</noXxxNoOLLSubsetVariables>
-<noXxxNoMinMax>源数据服务器未提供最小值和最大值</noXxxNoMinMax>
 <noXxxItsGridded>这是一个网格数据集</noXxxItsGridded>
 <noXxxItsTabular>这是一个表格数据集</noXxxItsTabular>
 <oneRequestAtATime>请每次仅提出一个请求。</oneRequestAtATime>
@@ -3593,7 +3544,6 @@ justGenerateAndViewHtml 消息可以包含 &protocolName; 。
 <options>选项</options>
 <orAListOfValues>或值列表</orAListOfValues>
 <orRefineSearchWith>或者，使用以下方式优化搜索</orRefineSearchWith>
-<orSearchWith>或者，使用以下方式搜索数据集</orSearchWith>
 <orComma>或者，</orComma>
 <otherFeatures>其他特性</otherFeatures>
 <outOfDateDatasets>过时的数据集</outOfDateDatasets>
@@ -3646,7 +3596,6 @@ KT_speed, KT_tempo, KT_thermal, KT_turbid, EK80</palettes>
  
 
 ]]></percentEncode>
-<pickADataset>选择一个数据集</pickADataset>
 
 <!-- 与基于协议的数据集搜索相关的消息。 -->
 <protocolSearchHtml>按协议搜索数据集</protocolSearchHtml>
@@ -3662,7 +3611,6 @@ KT_speed, KT_tempo, KT_thermal, KT_turbid, EK80</palettes>
 <queryError1Var>{0} 格式只能处理一个数据变量。</queryError1Var>
 <queryError2Var>{0} 格式的请求必须至少包含两个数字变量（用于 X 轴和 Y 轴）。</queryError2Var>
 <queryErrorActualRange>{0} 超出了变量的实际范围：{1} 至 {2}</queryErrorActualRange>
-<queryErrorAscending>对于 {0} 请求，经度值和纬度值必须按升序排列。</queryErrorAscending>
 <queryErrorAdjusted>对于 {0} 请求，调整后的经度值（{1} 至 {2}）必须介于 -180 至 180 之间。</queryErrorAdjusted>
 <queryErrorConstraintNaN>约束值=&quot;{0}&quot; 计算结果为 NaN。如果您确实想要 NaN，请将其写为 NaN。</queryErrorConstraintNaN>
 <queryErrorEqualSpacing>对于 {0} 请求，经度间距 ({1}) 必须等于纬度间距 ({2})。</queryErrorEqualSpacing>
@@ -3694,7 +3642,6 @@ KT_speed, KT_tempo, KT_thermal, KT_turbid, EK80</palettes>
 <queryErrorGridNoAxisVar>griddap 数据变量查询不能包含轴变量 ({0})。</queryErrorGridNoAxisVar>
 <queryErrorGridNoDataVar>griddap 轴变量查询不能包含数据变量 ({0})。</queryErrorGridNoDataVar>
 <queryErrorGridNotIdentical>变量={1} 的约束 {0} 与变量={2} 的约束 {2} 不同。如果您需要不同的子集，请发出单独的请求。</queryErrorGridNotIdentical>
-<queryErrorGridSLessS>StartIndex={0} 大于 StopIndex={1}。</queryErrorGridSLessS>
 <queryErrorLastEndP>{0} 以“(”开头，但不以“)”结尾。</queryErrorLastEndP>
 <queryErrorLastExpected>{0} 的开头应为“last”。</queryErrorLastExpected>
 <queryErrorLastUnexpected>{0} 中的“last”之后有意外字符。</queryErrorLastUnexpected>
@@ -3861,7 +3808,6 @@ ERDDAP具有以下计算机程序的 URL 访问点：
 <SOSDocumentation>ERDDAP 的 SOS 文档</SOSDocumentation>
 <WCSDocumentation>ERDDAP 的 WCS 文档</WCSDocumentation>
 <WMSDocumentation>ERDDAP 的 WMS 文档</WMSDocumentation>
-<findOutChange>这样你的计算机程序就可以查明数据集是否发生了变化。</findOutChange>
 <requestFormatExamplesHtml><![CDATA[
 
 （例如，
@@ -4259,12 +4205,6 @@ ERDDAP有一个电子邮件/URL 订阅系统，以便您可以在数据集发生
 
 ]]></subscriptionRemoveSuccess>
 <subscriptionRSS>订阅此数据集的 RSS 提要...</subscriptionRSS>
-<subscriptionsNotAvailable><![CDATA[
-
-<p><strong>抱歉。此ERDDAP安装不提供电子邮件/URL 订阅系统。</strong>
-<br>考虑使用<a rel="help" href="{0}/information.html#subscriptions">RSS</a>订阅服务。
-
-]]></subscriptionsNotAvailable>
 <subscriptionUrlHtml><![CDATA[
 
 <kbd>URL/action</kbd>是ERDDAP将联系而不是向您发送电子邮件的可选 URL。
@@ -4488,13 +4428,6 @@ favicon.ico 是浏览器与您的网站关联的图像。
 <!-- 以下标记前面有 2 个标记中的 1 个。
 {0} 是 subsetViewSelectDistintCombos 或 subsetViewSelectRelatedCounts。 -->
 <subsetWhenCounts>“{2}”的 {1} 值的 {0} 为：</subsetWhenCounts>
-<subsetComboClickSelect><![CDATA[
-
-要查看上面列出的变量的不同组合的计数，
-<br>检查上面的<kbd>{0} :
-{1}</kbd> ，并为上面的某个变量选择一个值。
-
-]]></subsetComboClickSelect>
 <subsetNVariableCombos>总体而言，上面列出的变量有 {0} 行不同的组合。</subsetNVariableCombos>
 <subsetShowingAllRows>所有行均显示于上方。</subsetShowingAllRows>
 <subsetShowingNRows>前 {0} 行已显示在上面。剩余的 {1} 行未显示。</subsetShowingNRows>
@@ -4966,7 +4899,6 @@ href="https://groups.google.com/forum/#!forum/erddap"><img
 <p>免责声明：本网页上的观点为鲍勃·西蒙斯的个人观点，并不一定反映政府或National Oceanic and Atmospheric Administration的任何立场。
 
 ]]></theLongDescriptionHtml>
-<Then>然后</Then>
 <twoClickMapDefaultTooltip>通过单击两个对角线角来指定一个矩形。如果需要，请重复此操作。</twoClickMapDefaultTooltip>
 
 <!-- 这是通过提供特定转换来覆盖 ERDDAP 的 Standardize UDUnits 转换器的一种方法。
@@ -6249,7 +6181,6 @@ https://www.usgin.org
 这不能是空的。因此，如果您不想要空的，请输入一个永远不会成为属性名称的乱码单词。 -->
 <updateUrlsSkipAttributes>源网址</updateUrlsSkipAttributes>
 <variableNames>变量名</variableNames>
-<viewAllDatasetsHtml>查看所有数据集列表</viewAllDatasetsHtml>
 <waitThenTryAgain>出现了（暂时的？）问题。请稍等片刻，然后重试。（在浏览器中，单击“重新加载”按钮。）</waitThenTryAgain>
 <warning>警告！</warning>
 <units>单位</units>

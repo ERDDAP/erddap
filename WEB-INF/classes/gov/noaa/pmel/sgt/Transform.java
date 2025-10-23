@@ -39,39 +39,12 @@ public interface Transform extends Serializable {
   public void setRangeP(double p1, double p2);
 
   /**
-   * Set physical coordinate range.
-   *
-   * @param prange physcial coordinate range
-   * @see Range2D
-   * @see LinearTransform
-   */
-  public void setRangeP(Range2D prange);
-
-  /**
    * Get the physical coordinate range.
    *
    * @return physcial coordinate range
    * @see Range2D
    */
   public Range2D getRangeP();
-
-  /**
-   * Set the user coordinate range for double values.
-   *
-   * @param u1 minimum value, user coordinates
-   * @param u2 maximum value, user coordinates
-   * @see LinearTransform
-   */
-  public void setRangeU(double u1, double u2);
-
-  /**
-   * Set the user coordinate range for double values.
-   *
-   * @param urange user coordinate range
-   * @see Range2D
-   * @see LinearTransform
-   */
-  public void setRangeU(Range2D urange);
 
   /**
    * Get the user coordinate range for double values.
@@ -88,14 +61,6 @@ public interface Transform extends Serializable {
    * @return physical value
    */
   abstract double getTransP(double u);
-
-  /**
-   * Transform from physical to user coordinates.
-   *
-   * @param p physical value
-   * @return user value
-   */
-  abstract double getTransU(double p);
 
   /**
    * Add listener for changes to transform properties.

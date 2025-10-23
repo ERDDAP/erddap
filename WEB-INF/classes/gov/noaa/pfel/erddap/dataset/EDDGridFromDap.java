@@ -33,6 +33,7 @@ import gov.noaa.pfel.erddap.dataset.metadata.LocalizedAttributes;
 import gov.noaa.pfel.erddap.handlers.EDDGridFromDapHandler;
 import gov.noaa.pfel.erddap.handlers.SaxHandlerClass;
 import gov.noaa.pfel.erddap.util.EDMessages;
+import gov.noaa.pfel.erddap.util.EDMessages.Message;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.*;
 import java.io.ByteArrayInputStream;
@@ -272,7 +273,7 @@ public class EDDGridFromDap extends EDDGrid {
     setGraphsAccessibleTo(tGraphsAccessibleTo);
     if (!tAccessibleViaWMS)
       accessibleViaWMS =
-          String2.canonical(MessageFormat.format(EDStatic.messages.noXxxAr[0], "WMS"));
+          String2.canonical(MessageFormat.format(EDStatic.messages.get(Message.NO_XXX, 0), "WMS"));
     onChange = tOnChange;
     fgdcFile = tFgdcFile;
     iso19115File = tIso19115File;
@@ -635,7 +636,7 @@ public class EDDGridFromDap extends EDDGrid {
     int newSize = dad.getSize();
     if (newSize < oldSize)
       throw new WaitThenTryAgainException(
-          EDStatic.simpleBilingual(language, EDStatic.messages.waitThenTryAgainAr)
+          EDStatic.simpleBilingual(language, Message.WAIT_THEN_TRY_AGAIN)
               + "\n("
               + msg
               + "["
@@ -689,7 +690,7 @@ public class EDDGridFromDap extends EDDGrid {
     }
     if (oldValues.elementType() != newValues.elementType()) // they're canonical, so != works
     throw new WaitThenTryAgainException(
-          EDStatic.simpleBilingual(language, EDStatic.messages.waitThenTryAgainAr)
+          EDStatic.simpleBilingual(language, Message.WAIT_THEN_TRY_AGAIN)
               + "\n("
               + msg
               + edvga.destinationName()
@@ -703,7 +704,7 @@ public class EDDGridFromDap extends EDDGrid {
     // ensure last old value is unchanged
     if (oldValues.getDouble(oldSize - 1) != newValues.getDouble(0)) // they should be exactly equal
     throw new WaitThenTryAgainException(
-          EDStatic.simpleBilingual(language, EDStatic.messages.waitThenTryAgainAr)
+          EDStatic.simpleBilingual(language, Message.WAIT_THEN_TRY_AGAIN)
               + "\n("
               + msg
               + edvga.destinationName()
@@ -739,7 +740,7 @@ public class EDDGridFromDap extends EDDGrid {
     String error = edvga.isAscending() ? newValues.isAscending() : newValues.isDescending();
     if (error.length() > 0)
       throw new WaitThenTryAgainException(
-          EDStatic.simpleBilingual(language, EDStatic.messages.waitThenTryAgainAr)
+          EDStatic.simpleBilingual(language, Message.WAIT_THEN_TRY_AGAIN)
               + "\n("
               + edvga.destinationName()
               + " was "
@@ -995,9 +996,9 @@ public class EDDGridFromDap extends EDDGrid {
         throw t instanceof WaitThenTryAgainException
             ? t
             : new WaitThenTryAgainException(
-                EDStatic.simpleBilingual(language, EDStatic.messages.waitThenTryAgainAr)
+                EDStatic.simpleBilingual(language, Message.WAIT_THEN_TRY_AGAIN)
                     + "\n("
-                    + EDStatic.messages.errorFromDataSource
+                    + EDMessages.errorFromDataSource
                     + t
                     + ")",
                 t);
@@ -1030,7 +1031,7 @@ public class EDDGridFromDap extends EDDGrid {
             String tError = results[av].almostEqual(pa[av + 1]);
             if (tError.length() > 0)
               throw new WaitThenTryAgainException(
-                  EDStatic.simpleBilingual(language, EDStatic.messages.waitThenTryAgainAr)
+                  EDStatic.simpleBilingual(language, Message.WAIT_THEN_TRY_AGAIN)
                       + "\nDetails: The axis values for dataVariable=0,axis="
                       + av
                       + ")\ndon't equal the axis values for dataVariable="
@@ -1044,7 +1045,7 @@ public class EDDGridFromDap extends EDDGrid {
 
       } else {
         throw new WaitThenTryAgainException(
-            EDStatic.simpleBilingual(language, EDStatic.messages.waitThenTryAgainAr)
+            EDStatic.simpleBilingual(language, Message.WAIT_THEN_TRY_AGAIN)
                 + "\nDetails: An unexpected data structure was returned from the source (size observed="
                 + pa.length
                 + ", expected="
@@ -2473,16 +2474,14 @@ public class EDDGridFromDap extends EDDGrid {
             StringBuilder tSummary = new StringBuilder();
             String infoUrl = null;
             Attributes atts = new Attributes();
-            List list;
             if (String2.isSomething(dataset.getRights())) tLicense.append(dataset.getRights());
             if (String2.isSomething(dataset.getSummary())) tSummary.append(dataset.getSummary());
 
-            list = dataset.getContributors();
-            if (list != null && list.size() > 0) {
+            List<Contributor> contributors = dataset.getContributors();
+            if (contributors != null && contributors.size() > 0) {
               StringBuilder names = new StringBuilder();
               StringBuilder roles = new StringBuilder();
-              for (Object o : list) {
-                Contributor contributor = (Contributor) o;
+              for (Contributor contributor : contributors) {
                 String2.ifSomethingConcat(names, ", ", contributor.getName());
                 String2.ifSomethingConcat(roles, ", ", contributor.getRole());
               }
@@ -2490,18 +2489,17 @@ public class EDDGridFromDap extends EDDGrid {
               atts.add("contributor_role", roles.toString());
             }
 
-            list = dataset.getCreators();
-            if (list != null && list.size() > 0) {
-              Source source = (Source) list.getFirst();
+            List<Source> sources = dataset.getCreators();
+            if (sources != null && sources.size() > 0) {
+              Source source = sources.getFirst();
               atts.add("creator_name", source.getName());
               atts.add("creator_email", source.getEmail());
               atts.add("creator_url", source.getUrl());
             }
 
-            list = dataset.getDocumentation();
-            if (list != null) {
-              for (Object o : list) {
-                Documentation id = (Documentation) o;
+            List<Documentation> documentations = dataset.getDocumentation();
+            if (documentations != null) {
+              for (Documentation id : documentations) {
                 // String2.log(">> Doc#" + i + ": type:" + id.getType());
                 // String2.log(">> Doc#" + i + ": inlineContent:" + id.getInlineContent());
                 // String2.log(">> Doc#" + i + ": URI:" + id.getURI());
@@ -2530,7 +2528,6 @@ public class EDDGridFromDap extends EDDGrid {
             // String2.pressEnterToContinue(">> title=" + title.toString() + " name=" +
             // dataset.getName());
             StringBuilder fullName = new StringBuilder(dataset.getName());
-            if (fullName == null) fullName = new StringBuilder();
             Dataset tParentDataset = dataset.getParentDataset();
             while (tParentDataset != null) {
               String tpName = tParentDataset.getName();
@@ -2544,11 +2541,10 @@ public class EDDGridFromDap extends EDDGrid {
                     .toString()); // 2020-01-17 in netcdfjava 4.6, there was dataset.getFullName()
             String2.ifSomethingConcat(history, "\n", dataset.getHistory());
 
-            list = dataset.getKeywords();
-            if (list != null) {
+            List<Vocab> vocabs = dataset.getKeywords();
+            if (vocabs != null) {
               StringBuilder sb = new StringBuilder();
-              for (Object o : list) {
-                Vocab v = (Vocab) o;
+              for (Vocab v : vocabs) {
                 // if (i == 0) String2.listMethods(v);
                 sb.append(v.getText() + ", ");
               }
@@ -2566,9 +2562,9 @@ public class EDDGridFromDap extends EDDGrid {
             atts.add("id", dataset.getID());
             atts.add("naming_authority", dataset.getAuthority());
 
-            list = dataset.getPublishers();
-            if (list != null && list.size() > 0) {
-              Source source = (Source) list.getFirst();
+            List<Source> publishers = dataset.getPublishers();
+            if (publishers != null && publishers.size() > 0) {
+              Source source = publishers.getFirst();
               atts.add("publisher_name", source.getName());
               atts.add("publisher_email", source.getEmail());
               atts.add("publisher_url", source.getUrl());

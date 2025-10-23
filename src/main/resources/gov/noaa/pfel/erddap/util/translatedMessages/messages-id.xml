@@ -63,7 +63,6 @@ Meminta kompresi bersifat opsional, namun respons terkompresi seringkali 3-10 ka
 <acronyms>Akronim</acronyms>
 <addConstraints>Anda dapat menambahkan batasan seperti tabledap ke permintaan ke halaman web ini,
 Misalnya,</addConstraints>
-<addVarWhereAttName>Opsional: Tentukan nama atribut.</addVarWhereAttName>
 <addVarWhereAttValue>Opsional: Tentukan nilai atribut.</addVarWhereAttValue>
 <addVarWhere><![CDATA[
 
@@ -296,9 +295,6 @@ Kemudian, Anda dapat mengklik kategori untuk melihat daftar kumpulan data yang r
 <categorySearchHtml><![CDATA[
 Pilih a(n) <kbd>{0}</kbd>
 ]]></categorySearchHtml>
-<categorySearchDifferentHtml><![CDATA[
-Cari Dataset dengan <kbd>&category;</kbd>
-]]></categorySearchDifferentHtml>
 <categoryClickHtml>Klik pada kategori (nilai atribut) untuk melihat daftar kumpulan data yang relevan.</categoryClickHtml>
 <categoryNotAnOption>Ketika atribut=&quot;{0}&quot;, value=&quot;{1}&quot; bukan merupakan opsi.</categoryNotAnOption>
 <caughtInterrupted>tertangkap CurrentThread().isInterrupted().</caughtInterrupted>
@@ -1777,9 +1773,6 @@ Setiap baris mewakili sampel data yang berbeda (misalnya, dari waktu atau lokasi
 
 ]]></dafTableTooltip>
 <dasTitle>Struktur Atribut Kumpulan Data (.das) untuk Kumpulan Data ini</dasTitle>
-
-<!--  Pesan yang akan ditampilkan jika data tidak dapat diunduh (misalnya, SeaWiFS &lt;=14 hari).  -->
-<dataAccessNotAllowed>[Maaf. Data tersebut tidak dapat diunduh.]</dataAccessNotAllowed>
 <databaseUnableToConnect>Tidak dapat terhubung ke database.</databaseUnableToConnect>
 <dataProviderForm>Formulir Penyedia Data</dataProviderForm>
 <dataProviderFormP1>Formulir Penyedia Data - Bagian 1</dataProviderFormP1>
@@ -2105,10 +2098,6 @@ Klik &widgetSubmitButton; untuk mengirimkan informasi ini ke administrator ERDDA
 <br>Harap perbaiki masalah ini, lalu &#39;Kirimkan&#39; lagi bagian formulir ini.
 
 ]]></dpf_fixProblem>
-<dpf_yourName>Namamu</dpf_yourName>
-<dpf_emailAddress>Alamat email</dpf_emailAddress>
-<dpf_Timestamp>Stempel waktu</dpf_Timestamp>
-<dpf_frequency>Frekuensi</dpf_frequency>
 <dpf_title>judul</dpf_title>
 <dpf_titleTooltip><![CDATA[
 
@@ -2186,12 +2175,6 @@ Ini adalah lisensi dan penafian untuk penggunaan data ini.
 <br><kbd>
 
 ]]></dpf_licenseTooltip>
-<dpf_howYouStoreData><![CDATA[
-
-<br>• Kesalahan:
-Silakan tentukan (di bawah) bagaimana data grid atau tabel Anda disimpan.
-
-]]></dpf_howYouStoreData>
 <dpf_provideIfAvailable>Harap berikan informasi jika tersedia untuk kumpulan data Anda.</dpf_provideIfAvailable>
 <dpf_acknowledgement>pengakuan</dpf_acknowledgement>
 <dpf_acknowledgementTooltip><![CDATA[
@@ -2493,10 +2476,8 @@ Stempel waktu pengiriman kumpulan data ini adalah &tTimestamp; .
 <dtWMS>Klik untuk mengetahui cara membuat peta data ini melalui Layanan Peta Web kumpulan data ini.</dtWMS>
 <EasierAccessToScientificData>Akses yang lebih mudah terhadap data ilmiah</EasierAccessToScientificData>
 
-<!--  Pesan EDD ditampilkan pada Formulir Akses Data tabledap dan griddap.  -->
-<EDDClickOnSubmitHtml><![CDATA[
-Klik <kbd>Submit</kbd> .
-]]></EDDClickOnSubmitHtml>
+<!--Pesan EDD ditampilkan ditabledapdan Formulir Akses Data griddap.
+-->
 <EDDDatasetID>ID kumpulan data</EDDDatasetID>
 <EDDFgdc>FGDC</EDDFgdc>
 <EDDFgdcMetadata>Metadata FGDC-STD-001-1998</EDDFgdcMetadata>
@@ -2509,9 +2490,7 @@ Klik <kbd>Submit</kbd> .
 <EDDInformation>Informasi</EDDInformation>
 <EDDSummary>Ringkasan</EDDSummary>
 <EDDDatasetTitle>Judul Kumpulan Data</EDDDatasetTitle>
-<EDDDownloadData>Unduh datanya</EDDDownloadData>
 <EDDMakeAGraph>Buatlah grafik</EDDMakeAGraph>
-<EDDMakeAMap>Buatlah peta</EDDMakeAMap>
 <EDDMinimum>Minimum</EDDMinimum>
 <EDDMaximum>Maksimum</EDDMaximum>
 <EDDFileType>Jenis berkas:</EDDFileType>
@@ -2579,8 +2558,6 @@ Itu membuat URL untuk Anda.
 ]]></EDDGridDownloadDataTooltip>
 <EDDGridDimension>Ukuran</EDDGridDimension>
 <EDDGridDimensionRanges>Ukuran</EDDGridDimensionRanges>
-<EDDGridFirst>Pertama</EDDGridFirst>
-<EDDGridLast>Terakhir</EDDGridLast>
 <EDDGridStart>Awal</EDDGridStart>
 <EDDGridStop>Berhenti</EDDGridStop>
 <EDDGridStartStopTooltip><![CDATA[
@@ -2624,14 +2601,6 @@ ini adalah jarak rata-rata antara nilai suatu dimensi (dalam satuan dimensi) dan
 Jarak yang sedikit aneh dan tidak rata sering kali menunjukkan bahwa satu atau beberapa file hilang atau buruk dalam kumpulan data yang jaraknya sama sempurna.
 
 ]]></EDDGridSpacingTooltip>
-<EDDGridDimensionFirstTooltip><![CDATA[
-Sekadar informasi:
-ini adalah nilai pertama dari sebuah dimensi.
-]]></EDDGridDimensionFirstTooltip>
-<EDDGridDimensionLastTooltip><![CDATA[
-Sekadar informasi:
-ini adalah nilai terakhir dari suatu dimensi.
-]]></EDDGridDimensionLastTooltip>
 <EDDGridDownloadTooltip><![CDATA[
 Pilih variabel yang ingin Anda unduh:
 <br>* Untuk mengunduh data dimensi saja:
@@ -2905,10 +2874,6 @@ Misalnya:
 
 <!--  Pesan-pesan ini ditampilkan ketika pesan kesalahan ditampilkan.  -->
 <errorTitle>Kesalahan</errorTitle>
-<errorRequestUrl>URL permintaan Anda:</errorRequestUrl>
-<errorRequestQuery>Permintaan permintaan Anda:</errorRequestQuery>
-<errorTheError>Kesalahannya:</errorTheError>
-<errorCopyFrom>Tidak dapat menyalin dari {0}.</errorCopyFrom>
 <errorFileNotFound>Berkas tidak ditemukan: {0} .</errorFileNotFound>
 <errorFileNotFoundImage>File tidak ditemukan di cache. Buat ulang gambar dan coba lagi.</errorFileNotFoundImage>
 <errorInternal>Kesalahan internal:</errorInternal>
@@ -2930,6 +2895,7 @@ Misalnya:
 <externalLink>(tautan eksternal)</externalLink>
 <externalWebSite>Tautan ke situs web eksternal ini bukan merupakan suatu dukungan.</externalWebSite>
 <fileHelp_asc>Lihat teks yang dipisahkan koma ISO-8859-1 gaya OPeNDAP.</fileHelp_asc>
+<fileHelp_croissant>Download dataset croissant schema.</fileHelp_croissant>
 <fileHelp_csv>Unduh tabel teks ISO-8859-1 yang dipisahkan koma (baris 1: nama; baris 2: unit; ISO 8601 kali).</fileHelp_csv>
 <fileHelp_csvp>Unduh file ISO-8859-1 .csv dengan baris 1: nama (unit). Waktu adalah string ISO 8601.</fileHelp_csvp>
 <fileHelp_csv0>Unduh file .csv ISO-8859-1 tanpa nama kolom atau unit. Waktu adalah string ISO 8601.</fileHelp_csv0>
@@ -2941,12 +2907,18 @@ Misalnya:
 <fileHelpTable_esriCsv>Unduh file ISO_8859_1 .csv untuk ArcGIS 9.x ESRI dan yang lebih lama (pisahkan kolom tanggal dan waktu).</fileHelpTable_esriCsv>
 <fileHelp_fgdc>Lihat metadata .xml UTF-8 FGDC kumpulan data.</fileHelp_fgdc>
 <fileHelp_geoJson>Unduh data bujur, lintang, kolom lain sebagai file UTF-8 GeoJSON .json.</fileHelp_geoJson>
-<fileHelp_graph>Lihat halaman web Make A Graph.</fileHelp_graph>
 <fileHelpGrid_help>Lihat halaman web dengan deskripsi griddap.</fileHelpGrid_help>
 <fileHelpTable_help>Lihat halaman web dengan deskripsi tabledap.</fileHelpTable_help>
 <fileHelp_html>Lihat Formulir Akses Data HTML bergaya OPeNDAP.</fileHelp_html>
 <fileHelp_htmlTable>Lihat halaman web UTF-8 .html dengan data dalam tabel. Waktu adalah string ISO 8601.</fileHelp_htmlTable>
-<fileHelp_iso19115>Lihat metadata .xml ISO 19115-2/19139 UTF-8 .xml kumpulan data.</fileHelp_iso19115>
+<fileHelp_iso19115>Lihat datasetISO 19115/19139UTF-8 .xml metadata menggunakan versi default untuk server ini.
+</fileHelp_iso19115>
+<fileHelp_iso19115_2>Lihat datasetISO 19115-2/19139UTF-8 .xml metadata.
+</fileHelp_iso19115_2>
+<fileHelp_iso191392007>Lihat datasetISO 19139:2007UTF-8 .xml metadata.
+</fileHelp_iso191392007>
+<fileHelp_iso19115_3_2016>Lihat datasetISO 19115-3:2016UTF-8 .xml metadata.
+</fileHelp_iso19115_3_2016>
 <fileHelp_itxGrid>Unduh File Teks Igor ISO-8859-1. Setiap variabel sumbu dan setiap variabel data menjadi gelombang.</fileHelp_itxGrid>
 <fileHelp_itxTable>Unduh File Teks Igor ISO-8859-1. Setiap kolom respons menjadi gelombang.</fileHelp_itxTable>
 <fileHelp_json>Lihat file JSON UTF-8 seperti tabel (nilai hilang = &#39;null&#39;; waktunya adalah string ISO 8601).</fileHelp_json>
@@ -2972,7 +2944,6 @@ Misalnya:
 <fileHelpTable_odvTxt>Unduh bujur, lintang, waktu, kolom lain sebagai File Spreadsheet Generik ODV ISO-8859-1 (.txt).</fileHelpTable_odvTxt>
 <fileHelp_parquet>Unduh sebagai file parket. Metadata mengandung nama kolom (&quot;column_names&quot;) dan unit (&quot;kolumn_units&quot;).</fileHelp_parquet>
 <fileHelp_parquet_with_meta>Unduh sebagai file parket dengan metadata rinci.</fileHelp_parquet_with_meta>
-<fileHelp_subset>Lihat formulir HTML yang menggunakan penelusuran tersaring untuk menyederhanakan pemilihan subkumpulan data.</fileHelp_subset>
 <fileHelp_timeGaps>Lihat daftar kesenjangan UTF-8 dalam nilai waktu yang lebih besar dari kesenjangan median.</fileHelp_timeGaps>
 <fileHelp_tsv>Unduh tabel teks yang dipisahkan tab ISO-8859-1 (baris 1: nama; baris 2: unit; ISO 8601 kali).</fileHelp_tsv>
 <fileHelp_tsvp>Unduh file ISO-8859-1 .tsv dengan baris 1: nama (unit). Waktu adalah string ISO 8601.</fileHelp_tsvp>
@@ -2992,7 +2963,6 @@ Misalnya:
 
 <!--  Kata-kata Deskripsi dan Peringatan tidak jelas untuk memungkinkan satu atau beberapa kumpulan data.  -->
 <filesDescription>Sistem &quot;file&quot; ERDDAP memungkinkan Anda menelusuri sistem file virtual dan mengunduh file data sumber.</filesDescription>
-<filesSort>Klik pada judul (misalnya, Nama, Terakhir diubah, Ukuran) untuk mengubah urutannya.  &quot;Terakhir diubah&quot; menggunakan zona waktu Zulu.</filesSort>
 <filesWarning><![CDATA[
 
 Metadata kumpulan data dan nama variabel dalam file sumber ini mungkin berbeda dengan di tempat lain di ERDDAP ! Anda mungkin lebih memilih menggunakan Formulir Akses Data kumpulan data.
@@ -3430,12 +3400,6 @@ Baris tersebut akan berisi jumlah dari masing-masing variabel lainnya.
 Misalnya, orderByMax(&quot;stationID, time/1day&quot;) akan membuat grup untuk setiap stationID setiap hari, dan akan menghitung serta mengembalikan jumlah variabel lainnya.
 
 ]]></functionOrderByTooltip>
-<functionOrderByExtra><![CDATA[
-
-Untuk orderByClosest, tentukan intervalnya (menggunakan format n[timeUnits], misalnya 1 jam) di sini.
-<br>Untuk orderByLimit, tentukan jumlah maksimum baris per grup di sini.
-
-]]></functionOrderByExtra>
 <functionOrderBySort><![CDATA[
 
 Slot ini adalah slot {0} orderBy ...
@@ -3448,7 +3412,6 @@ yang penting.
 <functionOrderBySort3>terbanyak ketiga</functionOrderBySort3>
 <functionOrderBySort4>terbanyak keempat</functionOrderBySort4>
 <functionOrderBySortLeast>paling sedikit</functionOrderBySortLeast>
-<functionOrderBySortRowMax>Hanya baris dengan nilai maksimum yang akan dipertahankan.</functionOrderBySortRowMax>
 <generatedAt>Laman web ini dibuat pada {0} .</generatedAt>
 <geoServicesDescription><![CDATA[
 
@@ -3748,7 +3711,6 @@ Defaultnya adalah tidak ada apa-apa (tidak terpakai).
 <!--  misalnya, {0}=WMS atau listAll  -->
 <listOfDatasets>Daftar {0} Kumpulan Data</listOfDatasets>
 <listAll>Semua</listAll>
-<LogIn>Gabung</LogIn>
 <login>Gabung</login>
 <loginHTML><![CDATA[
 
@@ -3807,22 +3769,15 @@ Siapa pun yang memiliki akun email Google atau ORCID iD dapat masuk tetapi admin
 Hanya orang yang telah membuat perjanjian dengan administrator ERDDAP ini yang dapat login.
 
 ]]></loginDescribeOpenID>
-<loginErddap>Masuk ke ERDDAP</loginErddap>
 <loginCanNot>ERDDAP ini tidak dikonfigurasi untuk mengizinkan pengguna masuk.</loginCanNot>
 <loginAreNot>Anda belum masuk.</loginAreNot>
 <loginToLogIn>Untuk masuk</loginToLogIn>
-<loginEmailAddress>alamat email</loginEmailAddress>
 <loginYourEmailAddress>Alamat email anda</loginYourEmailAddress>
 <loginUserName>Nama belakang</loginUserName>
 <loginPassword>Kata sandi</loginPassword>
 <loginUserNameAndPassword>Nama pengguna dan kata sandi</loginUserNameAndPassword>
 <loginGoogleSignIn>Otentikasi dengan akun Google Anda.</loginGoogleSignIn>
 <loginOrcidSignIn>Otentikasi dengan iD ORCID Anda.</loginOrcidSignIn>
-<loginOpenID>Masuk dengan URL OpenID Anda</loginOpenID>
-<loginOpenIDOr>Atau masuk ke akun Anda yang ada (non-OpenID) di</loginOpenIDOr>
-<loginOpenIDCreate>Atau buat URL OpenID di</loginOpenIDCreate>
-<loginOpenIDFree>Semuanya gratis!</loginOpenIDFree>
-<loginOpenIDSame>Pastikan Anda masuk dengan URL OpenID yang sama persis dengan yang Anda berikan kepada administrator ERDDAP.</loginOpenIDSame>
 <loginAs>Anda masuk sebagai {0} .</loginAs>
 <loginPartwayAs>Anda masuk sebagian sebagai {0} .</loginPartwayAs>
 <loginFailed>KESALAHAN: Gagal masuk</loginFailed>
@@ -3937,7 +3892,6 @@ Ada kemungkinan beberapa kumpulan data saat ini tidak tersedia atau Anda tidak m
 ]]></loginPublicAccess>
 <LogOut>Keluar</LogOut>
 <logout>keluar</logout>
-<logoutOpenID>Keluar dari penyedia OpenID Anda.</logoutOpenID>
 
 <!--  logoutSuccess terakhir diperbarui 2019-12-19  -->
 <logoutSuccess>Anda telah berhasil logout. 
@@ -4238,10 +4192,6 @@ Namun dods.dap.DODSException tidak memiliki pengecualian yang relevan.
 Lebih baik mengembalikan file kosong? Namun .nc dan lainnya tidak mengizinkan data dengan panjang 0.
  -->
 <MustBeThereIsNoData>Kueri Anda tidak memberikan hasil yang cocok.</MustBeThereIsNoData>
-
-<!--  Banyak jenis file yang membatasi jumlah data yang dapat ditampung suatu file (misalnya, 2 GB).  -->
-<MustBeNotNull>{0} tidak boleh nol.</MustBeNotNull>
-<MustBeNotEmpty>{0} tidak boleh berupa string kosong.</MustBeNotEmpty>
 <MustBeInternalError>Kesalahan internal</MustBeInternalError>
 <MustBeOutOfMemoryError>Kesalahan Kehabisan Memori</MustBeOutOfMemoryError>
 
@@ -4282,11 +4232,9 @@ Lebih baik mengembalikan file kosong? Namun .nc dan lainnya tidak mengizinkan da
 <noXxxNoLonIn180>tidak ada nilai garis bujur dalam -180 hingga 360</noXxxNoLonIn180>
 <noXxxNoNonString>tidak ada variabel non-String</noXxxNoNonString>
 <noXxxNo2NonString>setidaknya tidak ada dua variabel non-String</noXxxNo2NonString>
-<noXxxNoStation>cdmDataType={0} bukan &quot;TimeSeries&quot;</noXxxNoStation>
 <noXxxNoStationID>tidak ada variabel seperti stationID</noXxxNoStationID>
 <noXxxNoSubsetVariables>subsetVariables tidak ditentukan</noXxxNoSubsetVariables>
 <noXxxNoOLLSubsetVariables>subsetVariables tidak memiliki variabel penawaran, garis bujur, dan garis lintang</noXxxNoOLLSubsetVariables>
-<noXxxNoMinMax>server data sumber tidak memberikan nilai minimum dan maksimum</noXxxNoMinMax>
 <noXxxItsGridded>ini adalah kumpulan data grid</noXxxItsGridded>
 <noXxxItsTabular>ini adalah kumpulan data tabel</noXxxItsTabular>
 <oneRequestAtATime>Harap buat satu permintaan saja dalam satu waktu.</oneRequestAtATime>
@@ -4313,7 +4261,6 @@ Pengembang program komputer dan halaman web Java Script dapat mengakses opsi pen
 <options>Pilihan</options>
 <orAListOfValues>atau Daftar Nilai</orAListOfValues>
 <orRefineSearchWith>Atau, persempit penelusuran ini dengan</orRefineSearchWith>
-<orSearchWith>Atau, cari kumpulan data dengan</orSearchWith>
 <orComma>Atau,</orComma>
 <otherFeatures>Fitur lainnya</otherFeatures>
 <outOfDateDatasets>Kumpulan Data Kedaluwarsa</outOfDateDatasets>
@@ -4374,7 +4321,6 @@ Ada
     title="Tautan ke situs web eksternal ini bukan merupakan suatu dukungan."></a> .
 
 ]]></percentEncode>
-<pickADataset>Pilih Kumpulan Data</pickADataset>
 
 <!--  Pesan terkait pencarian kumpulan data berbasis protokol.  -->
 <protocolSearchHtml>Cari Kumpulan Data berdasarkan Protokol</protocolSearchHtml>
@@ -4391,7 +4337,6 @@ Protokol yang berbeda sesuai untuk tipe data yang berbeda dan untuk aplikasi kli
 <queryError1Var>Format {0} hanya dapat menangani satu variabel data.</queryError1Var>
 <queryError2Var>Permintaan untuk format {0} harus menyertakan setidaknya dua variabel numerik (untuk sumbu X dan Y).</queryError2Var>
 <queryErrorActualRange>{0} berada di luar rentang_aktual variabel: {1} hingga {2}</queryErrorActualRange>
-<queryErrorAscending>Untuk permintaan {0}, nilai garis bujur dan nilai garis lintang harus menaik.</queryErrorAscending>
 <queryErrorAdjusted>Untuk permintaan {0}, nilai garis bujur yang disesuaikan ({1} hingga {2}) harus antara -180 dan 180.</queryErrorAdjusted>
 <queryErrorConstraintNaN>Batasan value=&quot;{0}&quot; dievaluasi menjadi NaN.  Jika Anda benar-benar menginginkan NaN, tulislah sebagai NaN.</queryErrorConstraintNaN>
 <queryErrorEqualSpacing>Untuk permintaan {0}, jarak garis bujur ({1}) harus sama dengan jarak garis lintang ({2}).</queryErrorEqualSpacing>
@@ -4423,7 +4368,6 @@ Protokol yang berbeda sesuai untuk tipe data yang berbeda dan untuk aplikasi kli
 <queryErrorGridNoAxisVar>Kueri variabel data griddap tidak boleh menyertakan variabel sumbu ({0}).</queryErrorGridNoAxisVar>
 <queryErrorGridNoDataVar>Kueri variabel sumbu griddap tidak boleh menyertakan variabel data ({0}).</queryErrorGridNoDataVar>
 <queryErrorGridNotIdentical>Batasan {0} untuk variabel={1} tidak sama dengan batasan {2} untuk variabel={2}.  Jika Anda memerlukan subset yang berbeda, buat permintaan terpisah.</queryErrorGridNotIdentical>
-<queryErrorGridSLessS>StartIndex={0} lebih besar dari StopIndex={1}.</queryErrorGridSLessS>
 <queryErrorLastEndP>{0} dimulai dengan &quot;(&quot;, tetapi tidak diakhiri dengan &quot;)&quot;.</queryErrorLastEndP>
 <queryErrorLastExpected>&quot;terakhir&quot; diharapkan pada awal {0}.</queryErrorLastExpected>
 <queryErrorLastUnexpected>Karakter tak terduga setelah &quot;terakhir&quot; di {0}.</queryErrorLastUnexpected>
@@ -4664,7 +4608,6 @@ Melihat
 <SOSDocumentation>Dokumentasi SOS ERDDAP</SOSDocumentation>
 <WCSDocumentation>Dokumentasi WCS ERDDAP</WCSDocumentation>
 <WMSDocumentation>Dokumentasi WMS ERDDAP</WMSDocumentation>
-<findOutChange>sehingga program komputer Anda dapat mengetahui apakah suatu dataset telah berubah.</findOutChange>
 <requestFormatExamplesHtml><![CDATA[
 
 (misalnya,
@@ -5114,14 +5057,6 @@ Sebagai gantinya, mintalah email berisi
 
 ]]></subscriptionRemoveSuccess>
 <subscriptionRSS>Berlangganan umpan RSS untuk kumpulan data ini...</subscriptionRSS>
-<subscriptionsNotAvailable><![CDATA[
-
-<p><strong>Maaf.
-Sistem berlangganan email/URL tidak tersedia pada instalasi ERDDAP ini.</strong>
-<br>Pertimbangkan untuk menggunakan layanan berlangganan
-<a rel="help" href="{0}/information.html#subscriptions">RSS</a> .
-
-]]></subscriptionsNotAvailable>
 <subscriptionUrlHtml><![CDATA[
 
 <kbd>URL/action</kbd> adalah URL opsional yang akan dihubungi ERDDAP alih-alih mengirimi Anda email.
@@ -5385,13 +5320,6 @@ Untuk melihat {0},
 <!--  Tag berikut didahului oleh 1 dari 2 tag sebelumnya. 
   {0} adalah subsetViewSelectDstintCombos atau subsetViewSelectRelatedCounts.  -->
 <subsetWhenCounts>{0} untuk nilai {1} dari &quot;{2}&quot; adalah:</subsetWhenCounts>
-<subsetComboClickSelect><![CDATA[
-
-Untuk melihat jumlah kombinasi berbeda dari variabel-variabel yang tercantum di atas,
-<br>centang <kbd>{0} :
-{1}</kbd> di atas dan pilih nilai untuk salah satu variabel di atas.
-
-]]></subsetComboClickSelect>
 <subsetNVariableCombos>Secara total, ada {0} baris kombinasi berbeda dari variabel-variabel yang tercantum di atas.</subsetNVariableCombos>
 <subsetShowingAllRows>Semua baris ditampilkan di atas.</subsetShowingAllRows>
 <subsetShowingNRows>{0} baris pertama ditampilkan di atas.  {1} baris sisanya tidak ditampilkan.</subsetShowingNRows>
@@ -6148,7 +6076,6 @@ Setelah Anda menjadi anggota, Anda dapat memposting pertanyaan Anda di sana atau
 Pendapat di halaman web ini adalah pendapat pribadi Bob Simons dan tidak mencerminkan posisi Pemerintah atau National Oceanic and Atmospheric Administration .
 
 ]]></theLongDescriptionHtml>
-<Then>Kemudian</Then>
 <twoClickMapDefaultTooltip>Tentukan persegi panjang dengan mengklik dua sudut diagonal.  Lakukan lagi jika diperlukan.</twoClickMapDefaultTooltip>
 
 <!--  Ini adalah cara untuk mengganti konverter Standardize UDUnits ERDDAP
@@ -7432,7 +7359,6 @@ Ini tidak mungkin apa-apa. Jadi jika Anda tidak menginginkan apa pun, masukkan k
 tidak pernah menjadi nama atribut.  -->
 <updateUrlsSkipAttributes>sumberUrl</updateUrlsSkipAttributes>
 <variableNames>Nama Variabel</variableNames>
-<viewAllDatasetsHtml>Lihat Daftar Semua Kumpulan Data</viewAllDatasetsHtml>
 <waitThenTryAgain>Ada masalah (sementara?).  Tunggu sebentar, lalu coba lagi.  (Di browser, klik tombol Muat Ulang.)</waitThenTryAgain>
 <warning>PERINGATAN!</warning>
 <units>Satuan</units>

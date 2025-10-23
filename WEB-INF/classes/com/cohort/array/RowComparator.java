@@ -5,7 +5,8 @@
  */
 package com.cohort.array;
 
-import com.cohort.util.*;
+import com.cohort.util.String2;
+import com.cohort.util.Test;
 import java.util.Comparator;
 import java.util.List;
 
@@ -66,11 +67,11 @@ public class RowComparator implements Comparator<Integer> {
    */
   @Override
   public boolean equals(Object obj) {
-    if (obj instanceof RowComparator) {
-    } else return false;
+    if (!(obj instanceof RowComparator other)) {
+      return false;
+    }
 
     // make sure all the keys and ascending values are the same
-    RowComparator other = (RowComparator) obj;
     if (other.table.size() != table.size()
         || other.keys.length != keys.length
         || other.ascending.length != ascending.length) return false;

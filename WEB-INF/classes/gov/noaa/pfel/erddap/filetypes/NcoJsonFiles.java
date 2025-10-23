@@ -19,6 +19,7 @@ import gov.noaa.pfel.erddap.dataset.GridDataAllAccessor;
 import gov.noaa.pfel.erddap.dataset.OutputStreamSource;
 import gov.noaa.pfel.erddap.dataset.TableWriter;
 import gov.noaa.pfel.erddap.dataset.TableWriterAllWithMetadata;
+import gov.noaa.pfel.erddap.util.EDMessages.Message;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.EDV;
 import gov.noaa.pfel.erddap.variable.EDVGridAxis;
@@ -47,9 +48,9 @@ public class NcoJsonFiles extends TableWriterFileType {
   @Override
   public void writeTableToFileFormat(DapRequestInfo requestInfo, TableWriter tableWriter)
       throws Throwable {
-    if (tableWriter instanceof TableWriterAllWithMetadata) {
+    if (tableWriter instanceof TableWriterAllWithMetadata twalwm) {
       String jsonp = EDStatic.getJsonpFromQuery(requestInfo.language(), requestInfo.userDapQuery());
-      saveAsNcoJson(requestInfo.outputStream(), (TableWriterAllWithMetadata) tableWriter, jsonp);
+      saveAsNcoJson(requestInfo.outputStream(), twalwm, jsonp);
     }
   }
 
@@ -65,7 +66,7 @@ public class NcoJsonFiles extends TableWriterFileType {
 
   @Override
   public String getHelpText(int language) {
-    return EDStatic.messages.fileHelp_ncoJsonAr[language];
+    return EDStatic.messages.get(Message.FILE_HELP_NCO_JSON, language);
   }
 
   /**

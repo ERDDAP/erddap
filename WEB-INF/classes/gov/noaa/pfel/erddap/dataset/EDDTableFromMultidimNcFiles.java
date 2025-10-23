@@ -19,6 +19,7 @@ import gov.noaa.pfel.coastwatch.pointdata.Table;
 import gov.noaa.pfel.coastwatch.pointdata.TableFromMultidimNcFile;
 import gov.noaa.pfel.coastwatch.util.FileVisitorDNLS;
 import gov.noaa.pfel.erddap.dataset.metadata.LocalizedAttributes;
+import gov.noaa.pfel.erddap.util.EDMessages;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.*;
 import java.util.List;
@@ -142,6 +143,27 @@ public class EDDTableFromMultidimNcFiles extends EDDTableFromFiles {
         tCacheSizeGB,
         tCachePartialPathRegex,
         tAddVariablesWhere);
+  }
+
+  @Override
+  protected void earlyInitialization() {
+    String ts = addGlobalAttributes.getString(EDMessages.DEFAULT_LANGUAGE, TREAT_DIMENSIONS_AS);
+    if (String2.isSomething(ts)) {
+      String parts[] = String2.split(ts, ';');
+      int nParts = parts.length;
+      treatDimensionsAs = new String[nParts][];
+      for (int part = 0; part < nParts; part++) {
+        treatDimensionsAs[part] = String2.split(parts[part], ',');
+        if (reallyVerbose)
+          String2.log(
+              TREAT_DIMENSIONS_AS
+                  + "["
+                  + part
+                  + "] was set to "
+                  + String2.toCSSVString(treatDimensionsAs[part]));
+      }
+    }
+    addGlobalAttributes.remove(TREAT_DIMENSIONS_AS);
   }
 
   /**

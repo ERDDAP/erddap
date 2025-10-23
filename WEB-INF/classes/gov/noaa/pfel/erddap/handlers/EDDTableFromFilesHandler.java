@@ -49,6 +49,20 @@ public class EDDTableFromFilesHandler extends BaseTableHandler {
   private int tCacheSizeGB = -1;
   private String tCachePartialPathRegex = null;
 
+  // Mqtt specific parameters
+  private String serverHost = null;
+  private Integer serverPort = null;
+  private String clientId = null;
+  private String username = null;
+  private String password = null;
+  private String[] topics = null;
+  private boolean useSsl = false;
+  private int keepAlive = 60;
+  private boolean cleanStart = true;
+  private int sessionExpiryInterval = 0;
+  private int connectionTimeout = 30;
+  private boolean automaticReconnect = true;
+
   @Override
   public void startElement(String uri, String localName, String qName, Attributes attributes)
       throws SAXException {
@@ -321,6 +335,62 @@ public class EDDTableFromFilesHandler extends BaseTableHandler {
                   tCacheSizeGB,
                   tCachePartialPathRegex,
                   tAddVariablesWhere);
+      case "EDDTableFromMqtt" ->
+          dataset =
+              new EDDTableFromMqtt(
+                  "EDDTableFromMqtt",
+                  datasetID,
+                  tAccessibleTo,
+                  tGraphsAccessibleTo,
+                  tOnChange,
+                  tFgdcFile,
+                  tIso19115File,
+                  tSosOfferingPrefix,
+                  tDefaultDataQuery,
+                  tDefaultGraphQuery,
+                  tGlobalAttributes,
+                  tDataVariables,
+                  tReloadEveryNMinutes,
+                  tUpdateEveryNMillis,
+                  tFileDir,
+                  tFileNameRegex,
+                  tPathRegex,
+                  tMetadataFrom,
+                  tCharset,
+                  tSkipHeaderToRegex,
+                  tSkipLinesRegex,
+                  tColumnNamesRow,
+                  tFirstDataRow,
+                  tColumnSeparator,
+                  tPreExtractRegex,
+                  tPostExtractRegex,
+                  tExtractRegex,
+                  tColumnNameForExtract,
+                  tSortedColumnSourceName,
+                  tSortFilesBySourceNames,
+                  tSourceNeedsExpandedFP_EQ,
+                  tFileTableInMemory,
+                  tAccessibleViaFiles,
+                  tRemoveMVRows,
+                  tStandardizeWhat,
+                  tNThreads,
+                  tCacheFromUrl,
+                  tCacheSizeGB,
+                  tCachePartialPathRegex,
+                  tAddVariablesWhere,
+                  // Mqtt specific parameters
+                  serverHost,
+                  serverPort,
+                  clientId,
+                  username,
+                  password,
+                  topics,
+                  useSsl,
+                  keepAlive,
+                  cleanStart,
+                  sessionExpiryInterval,
+                  connectionTimeout,
+                  automaticReconnect);
       case "EDDTableFromInvalidCRAFiles" ->
           dataset =
               new EDDTableFromInvalidCRAFiles(
@@ -824,6 +894,16 @@ public class EDDTableFromFilesHandler extends BaseTableHandler {
       case "cacheFromUrl" -> tCacheFromUrl = contentStr;
       case "cacheSizeGB" -> tCacheSizeGB = String2.parseInt(contentStr);
       case "cachePartialPathRegex" -> tCachePartialPathRegex = contentStr;
+      case "serverHost" -> serverHost = contentStr;
+      case "serverPort" -> serverPort = String2.parseIntObject(contentStr);
+      case "clientId" -> clientId = contentStr;
+      case "username" -> username = contentStr;
+      case "password" -> password = contentStr;
+      case "topics" -> topics = contentStr.trim().split(",");
+      case "useSsl" -> useSsl = String2.parseBoolean(contentStr);
+      case "sessionExpiryInterval" -> sessionExpiryInterval = String2.parseInt(contentStr);
+      case "connectionTimeout" -> connectionTimeout = String2.parseInt(contentStr);
+      case "automaticReconnect" -> automaticReconnect = String2.parseBoolean(contentStr);
 
       default -> {
         return false;

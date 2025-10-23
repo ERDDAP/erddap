@@ -20,10 +20,13 @@ import com.cohort.util.Math2;
 import com.cohort.util.MustBe;
 import com.cohort.util.String2;
 import gov.noaa.pfel.coastwatch.pointdata.Table;
+import gov.noaa.pfel.erddap.util.EDMessages;
+import gov.noaa.pfel.erddap.util.EDMessages.Message;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.EDV;
 import gov.noaa.pfel.erddap.variable.EDVGridAxis;
 import java.io.RandomAccessFile;
+import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.concurrent.ExecutionException;
 
@@ -263,7 +266,9 @@ public class GridDataAccessor implements AutoCloseable {
           globalAttributes.set("geospatial_vertical_max", dMax);
         }
       } else if (av == eddGrid.timeIndex) {
-        String tp = axisAttributes[av].getString(EDV.TIME_PRECISION);
+        DateTimeFormatter tp =
+            Calendar2.timePrecisionToDateTimeFormatter(
+                axisAttributes[av].getString(EDV.TIME_PRECISION));
         // "" unsets the attribute if dMin or dMax isNaN
         globalAttributes.set(
             "time_coverage_start", Calendar2.epochSecondsToLimitedIsoStringT(tp, dMin, ""));
@@ -389,16 +394,6 @@ public class GridDataAccessor implements AutoCloseable {
   }
 
   /**
-   * This returns the driverIndex.
-   *
-   * @return driverIndex so you can call .size(), .shape(), .current(), .... Don't call
-   *     driverIndex.increment() or make other changes to its state.
-   */
-  public NDimensionalIndex driverIndex() {
-    return driverIndex;
-  }
-
-  /**
    * This returns the partialIndex.
    *
    * @return partialIndex so you can call .size(), .shape(), .current(), .... Don't call
@@ -452,15 +447,6 @@ public class GridDataAccessor implements AutoCloseable {
    */
   public IntArray constraints() {
     return constraints;
-  }
-
-  /**
-   * This returns the constraints derived from the userDapQuery as a String.
-   *
-   * @return the constraints string derived from the userDapQuery.
-   */
-  public String constraintsString() {
-    return EDDGrid.buildDapArrayQuery(constraints);
   }
 
   /**
@@ -631,9 +617,9 @@ public class GridDataAccessor implements AutoCloseable {
       throw t instanceof WaitThenTryAgainException
           ? t
           : new WaitThenTryAgainException(
-              EDStatic.simpleBilingual(language, EDStatic.messages.waitThenTryAgainAr)
+              EDStatic.simpleBilingual(language, Message.WAIT_THEN_TRY_AGAIN)
                   + "\n("
-                  + EDStatic.messages.errorFromDataSource
+                  + EDMessages.errorFromDataSource
                   + tToString
                   + ")",
               t);
@@ -710,7 +696,7 @@ public class GridDataAccessor implements AutoCloseable {
               || !Math2.almostEqual(
                   9, pa.getDouble(0), avInDriverExpectedValues[av])) { // source values
             throw new WaitThenTryAgainException(
-                EDStatic.simpleBilingual(language, EDStatic.messages.waitThenTryAgainAr)
+                EDStatic.simpleBilingual(language, Message.WAIT_THEN_TRY_AGAIN)
                     + "\n(Details: GridDataAccessor.increment: partialResults["
                     + av
                     + "]=\""
@@ -725,7 +711,7 @@ public class GridDataAccessor implements AutoCloseable {
           String tError = gda.axisValues[av].almostEqual(pa); // destination values
           if (tError.length() > 0)
             throw new WaitThenTryAgainException(
-                EDStatic.simpleBilingual(language, EDStatic.messages.waitThenTryAgainAr)
+                EDStatic.simpleBilingual(language, Message.WAIT_THEN_TRY_AGAIN)
                     + "\n(Details: GridDataAccessor.increment: partialResults["
                     + av
                     + "] was not as expected.\n"
@@ -803,16 +789,6 @@ public class GridDataAccessor implements AutoCloseable {
    */
   public PAOne getAxisValueAsPAOne(int av, PAOne paOne) {
     return paOne.readFrom(axisValues[av], totalIndex.getCurrent()[av]);
-  }
-
-  /**
-   * Call this after increment() to get a current axis destination value (as a double).
-   *
-   * @param av an axisVariable number
-   * @return the axis destination value
-   */
-  public double getAxisValueAsDouble(int av) {
-    return axisValues[av].getDouble(totalIndex.getCurrent()[av]);
   }
 
   /**

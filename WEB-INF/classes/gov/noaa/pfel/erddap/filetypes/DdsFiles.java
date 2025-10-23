@@ -3,6 +3,7 @@ package gov.noaa.pfel.erddap.filetypes;
 import com.cohort.util.File2;
 import gov.noaa.pfel.coastwatch.pointdata.Table;
 import gov.noaa.pfel.erddap.dataset.EDDTable;
+import gov.noaa.pfel.erddap.util.EDMessages.Message;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import java.io.Writer;
 
@@ -50,6 +51,6 @@ public class DdsFiles extends FileTypeInterface {
 
   @Override
   public String getHelpText(int language) {
-    return EDStatic.messages.fileHelp_ddsAr[language];
+    return EDStatic.messages.get(Message.FILE_HELP_DDS, language);
   }
 }

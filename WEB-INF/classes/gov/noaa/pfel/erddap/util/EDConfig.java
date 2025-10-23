@@ -78,6 +78,9 @@ public class EDConfig {
 
   public final String baseHttpsUrl; // won't be null, may be "(not specified)"
   public String bigParentDirectory;
+  public final String mqttConfigFolder;
+  public final String mqttDataFolder;
+  public final String mqttExtensionsFolder;
   public final String adminInstitution;
   public final String adminInstitutionUrl;
   public final String adminIndividualName;
@@ -174,6 +177,18 @@ public class EDConfig {
   public static final int DEFAULT_unusualActivityFailPercent = 25;
   public static final boolean DEFAULT_showLoadErrorsOnStatusPage = true;
   public static final int DEFAULT_lowMemCacheGbLimit = 4;
+
+  // Mqtt default configs
+  public static final String DEFAULT_MQTT_HOST = "localhost";
+  public static final int DEFAULT_MQTT_PORT = 1883;
+  public static final String DEFAULT_MQTT_CLIENT = "erddap-client";
+  public static final boolean DEFAULT_SSL = false;
+  public static final int DEFAULT_KEEP_ALIVE = 60;
+  public static final boolean DEFAULT_CLEAN_START = false;
+  public static final int DEFAULT_SESSION_EXPIRY = 10;
+  public static final int DEFAULT_CONNECTION_TIMEOUT = 10;
+  public static final boolean DEFAULT_AUTO_RECONNECT = true;
+
   public long cacheMillis = DEFAULT_cacheMinutes * Calendar2.MILLIS_PER_MINUTE;
   public long cacheClearMillis = cacheMillis / 4;
   public int lowMemCacheGbLimit = DEFAULT_lowMemCacheGbLimit;
@@ -199,6 +214,8 @@ public class EDConfig {
   public String awsS3OutputBucketUrl = null; // ends in slash
   public String awsS3OutputBucket = null; // the short name of the bucket
   public S3TransferManager awsS3OutputTransferManager = null;
+  public boolean useAwsCrt;
+  public boolean useAwsAnonymous;
 
   public final String corsAllowHeaders;
   public final String[] corsAllowOrigin;
@@ -221,6 +238,7 @@ public class EDConfig {
   @FeatureFlag public final boolean outOfDateDatasetsActive;
   @FeatureFlag public final boolean politicalBoundariesActive;
   @FeatureFlag public final boolean wmsClientActive;
+  @FeatureFlag public final boolean enableMqttBroker;
   @FeatureFlag public boolean sosActive;
   @FeatureFlag public final boolean wcsActive;
   @FeatureFlag public final boolean wmsActive;
@@ -235,16 +253,30 @@ public class EDConfig {
       // used
       useLuceneSearchEngine;
 
+  public final String mqttServerHost;
+  public final int mqttServerPort;
+  public final String mqttClientId;
+  public final String mqttUserName;
+  public final String mqttPassword;
+  public final boolean mqttSsl;
+  public final int mqttKeepAlive;
+  public final boolean mqttCleanStart;
+  public final int mqttSessionExpiry;
+  public final int mqttConnectionTimeout;
+  public final boolean mqttAutomaticReconnect;
+
   @FeatureFlag public final boolean variablesMustHaveIoosCategory;
   @FeatureFlag public boolean useSaxParser;
+  @FeatureFlag public boolean publishMqttNotif;
+  @FeatureFlag public boolean enableEnvParsing;
   @FeatureFlag public boolean updateSubsRssOnFileChanges;
   @FeatureFlag public final boolean useEddReflection;
   @FeatureFlag public boolean enableCors;
   @FeatureFlag public boolean includeNcCFSubsetVariables;
-  @FeatureFlag public boolean useSharedWatchService = true;
-  @FeatureFlag public boolean redirectDocumentationToGitHubIo = true;
   @FeatureFlag public boolean useSisISO19115 = false;
-  @FeatureFlag public boolean useHeadersForUrl = false;
+  @FeatureFlag public boolean useSisISO19139 = false;
+  @FeatureFlag public boolean useHeadersForUrl = true;
+  @FeatureFlag public boolean generateCroissantSchema = true;
   @FeatureFlag public boolean taskCacheClear = true;
 
   public EDConfig(String webInfParentDirectory) throws Exception {
@@ -278,7 +310,7 @@ public class EDConfig {
     // read static Strings from setup.xml
     String setupFileName = contentDirectory + "setup" + (developmentMode ? "2" : "") + ".xml";
     errorInMethod = "ERROR while reading " + setupFileName + ": ";
-    ResourceBundle2 setup = ResourceBundle2.fromXml(XML.parseXml(setupFileName, false));
+    ResourceBundle2 setup = ResourceBundle2.fromXml(XML.parseXml(setupFileName, false, true));
     Map<String, String> ev = System.getenv();
 
     // logLevel may be: warning, info(default), all
@@ -297,6 +329,11 @@ public class EDConfig {
     Test.ensureTrue(
         File2.isDirectory(bigParentDirectory),
         "bigParentDirectory (" + bigParentDirectory + ") doesn't exist.");
+
+    // Mqtt Brokder directories
+    mqttConfigFolder = getSetupEVString(setup, ev, "mqttConfigFolder", "");
+    mqttDataFolder = getSetupEVString(setup, ev, "mqttDataFolder", "");
+    mqttExtensionsFolder = getSetupEVString(setup, ev, "mqttExtensionsFolder", "");
 
     // email  (do early on so email can be sent if trouble later in this method)
     emailSmtpHost = getSetupEVString(setup, ev, "emailSmtpHost", (String) null);
@@ -500,6 +537,10 @@ public class EDConfig {
       // So make my own system
     }
 
+    // optional parameter to disable AWS Common Runtime
+    useAwsCrt = getSetupEVBoolean(setup, ev, "useAwsCrt", true);
+    useAwsAnonymous = getSetupEVBoolean(setup, ev, "useAwsAnonymous", false);
+
     units_standard = getSetupEVString(setup, ev, "units_standard", "UDUNITS");
 
     fgdcActive = getSetupEVBoolean(setup, ev, "fgdcActive", true);
@@ -516,6 +557,7 @@ public class EDConfig {
     outOfDateDatasetsActive = getSetupEVBoolean(setup, ev, "outOfDateDatasetsActive", true);
     politicalBoundariesActive = getSetupEVBoolean(setup, ev, "politicalBoundariesActive", true);
     wmsClientActive = getSetupEVBoolean(setup, ev, "wmsClientActive", true);
+    enableMqttBroker = getSetupEVBoolean(setup, ev, "enableMqttBroker", false);
 
     // until SOS is finished, it is always inactive
     sosActive = false; //        sosActive                  = getSetupEVBoolean(setup, ev,
@@ -612,8 +654,10 @@ public class EDConfig {
     subscriptionSystemActive = getSetupEVBoolean(setup, ev, "subscriptionSystemActive", true);
     convertersActive = getSetupEVBoolean(setup, ev, "convertersActive", true);
     useSaxParser = getSetupEVBoolean(setup, ev, "useSaxParser", false);
+    publishMqttNotif = getSetupEVBoolean(setup, ev, "publishMqttNotif", false);
+    enableEnvParsing = getSetupEVBoolean(setup, ev, "enableEnvParsing", true);
     updateSubsRssOnFileChanges = getSetupEVBoolean(setup, ev, "updateSubsRssOnFileChanges", true);
-    useEddReflection = getSetupEVBoolean(setup, ev, "useEddReflection", false);
+    useEddReflection = getSetupEVBoolean(setup, ev, "useEddReflection", true);
     enableCors = getSetupEVBoolean(setup, ev, "enableCors", false);
     corsAllowHeaders =
         getSetupEVString(setup, ev, "corsAllowHeaders", CorsResponseFilter.DEFAULT_ALLOW_HEADERS);
@@ -621,18 +665,30 @@ public class EDConfig {
         String2.split(
             String2.toLowerCase(getSetupEVString(setup, ev, "corsAllowOrigin", (String) null)),
             ',');
-    useHeadersForUrl = getSetupEVBoolean(setup, ev, "useHeadersForUrl", false);
+    useHeadersForUrl = getSetupEVBoolean(setup, ev, "useHeadersForUrl", true);
     slideSorterActive = getSetupEVBoolean(setup, ev, "slideSorterActive", true);
     variablesMustHaveIoosCategory =
         getSetupEVBoolean(setup, ev, "variablesMustHaveIoosCategory", true);
     warName = getSetupEVString(setup, ev, "warName", "erddap");
     includeNcCFSubsetVariables = getSetupEVBoolean(setup, ev, "includeNcCFSubsetVariables", false);
-    useSharedWatchService = getSetupEVBoolean(setup, ev, "useSharedWatchService", true);
-    redirectDocumentationToGitHubIo =
-        getSetupEVBoolean(setup, ev, "redirectDocumentationToGitHubIo", true);
     useSisISO19115 = getSetupEVBoolean(setup, ev, "useSisISO19115", false);
+    useSisISO19139 = getSetupEVBoolean(setup, ev, "useSisISO19139", false);
+    generateCroissantSchema = getSetupEVBoolean(setup, ev, "generateCroissantSchema", true);
     deploymentInfo = getSetupEVString(setup, ev, "deploymentInfo", "");
-
+    // Mqtt flags initialization
+    mqttServerHost = getSetupEVString(setup, ev, "mqttServerHost", DEFAULT_MQTT_HOST);
+    mqttServerPort = getSetupEVInt(setup, ev, "mqttServerPort", DEFAULT_MQTT_PORT);
+    mqttClientId = getSetupEVString(setup, ev, "mqttClientId", DEFAULT_MQTT_CLIENT);
+    mqttUserName = getSetupEVString(setup, ev, "mqttUserName", "");
+    mqttPassword = getSetupEVString(setup, ev, "mqttPassword", "");
+    mqttSsl = getSetupEVBoolean(setup, ev, "mqttSsl", DEFAULT_SSL);
+    mqttKeepAlive = getSetupEVInt(setup, ev, "mqttKeepAlive", DEFAULT_KEEP_ALIVE);
+    mqttCleanStart = getSetupEVBoolean(setup, ev, "mqttCleanStart", DEFAULT_CLEAN_START);
+    mqttSessionExpiry = getSetupEVInt(setup, ev, "mqttSessionExpiry", DEFAULT_SESSION_EXPIRY);
+    mqttConnectionTimeout =
+        getSetupEVInt(setup, ev, "mqttConnectionTimeout", DEFAULT_CONNECTION_TIMEOUT);
+    mqttAutomaticReconnect =
+        getSetupEVBoolean(setup, ev, "mqttAutomaticReconnect", DEFAULT_AUTO_RECONNECT);
     // ensure images exist and get their sizes
     Image tImage = Image2.getImage(imageDir + lowResLogoImageFile, 10000, false);
     lowResLogoImageFileWidth = tImage.getWidth(null);

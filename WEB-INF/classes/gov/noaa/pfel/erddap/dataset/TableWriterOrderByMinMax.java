@@ -7,6 +7,7 @@ package gov.noaa.pfel.erddap.dataset;
 import com.cohort.util.SimpleException;
 import com.cohort.util.String2;
 import gov.noaa.pfel.coastwatch.pointdata.Table;
+import gov.noaa.pfel.erddap.util.EDMessages.Message;
 import gov.noaa.pfel.erddap.util.EDStatic;
 
 /**
@@ -54,7 +55,7 @@ public class TableWriterOrderByMinMax extends TableWriterAll {
     super(tLanguage, tEdd, tNewHistory, tDir, tFileNameNoExt);
     otherTableWriter = tOtherTableWriter;
     String err =
-        EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
+        EDStatic.simpleBilingual(language, Message.QUERY_ERROR)
             + "No column names were specified for 'orderByMinMax'.";
     if (tOrderByCsv == null || tOrderByCsv.trim().length() == 0) throw new SimpleException(err);
     orderBy = String2.split(tOrderByCsv, ',');

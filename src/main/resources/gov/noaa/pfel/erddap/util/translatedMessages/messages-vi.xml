@@ -3028,6 +3028,9 @@ Ví dụ:
 <fileHelp_html>Xem Biểu mẫu truy cập dữ liệu HTML kiểu OPeNDAP.</fileHelp_html>
 <fileHelp_htmlTable>Xem trang web UTF-8 .html với dữ liệu trong bảng. Thời gian là chuỗi ISO 8601.</fileHelp_htmlTable>
 <fileHelp_iso19115>Xem siêu dữ liệu .xml ISO 19115-2/19139 UTF-8 của tập dữ liệu.</fileHelp_iso19115>
+<fileHelp_iso19115_2>View the dataset's ISO 19115-2/19139 UTF-8 .xml metadata.</fileHelp_iso19115_2>
+<fileHelp_iso191392007>View the dataset's ISO 19139:2007 UTF-8 .xml metadata.</fileHelp_iso191392007>
+<fileHelp_iso19115_3_2016>View the dataset's ISO 19115-3:2016 UTF-8 .xml metadata.</fileHelp_iso19115_3_2016>
 <fileHelp_itxGrid>Tải xuống tệp văn bản Igor ISO-8859-1. Mỗi biến trục và mỗi biến dữ liệu sẽ trở thành một làn sóng.</fileHelp_itxGrid>
 <fileHelp_itxTable>Tải xuống tệp văn bản Igor ISO-8859-1. Mỗi cột phản hồi sẽ trở thành một làn sóng.</fileHelp_itxTable>
 <fileHelp_json>Xem tệp JSON UTF-8 giống như bảng (thiếu giá trị = &#39;null&#39;; thời gian là chuỗi ISO 8601).</fileHelp_json>

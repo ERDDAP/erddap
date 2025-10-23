@@ -66,7 +66,7 @@ public class ScriptCalendar2 {
    * @throws RuntimeException if trouble (tsUnits is null or invalid)
    */
   public static double[] getTimeBaseAndFactor(String tsUnits, TimeZone timeZone) {
-    return Calendar2.getTimeBaseAndFactor(tsUnits, timeZone);
+    return Calendar2.getTimeBaseAndFactor(tsUnits, timeZone.toZoneId(), true);
   }
 
   /**

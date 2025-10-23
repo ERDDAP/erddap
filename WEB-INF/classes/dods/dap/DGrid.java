@@ -141,7 +141,7 @@ public class DGrid extends DConstructor implements ClientIO {
   @Override
   public void addVariable(BaseType v, int part) {
 
-    if (!(v instanceof DArray))
+    if (!(v instanceof DArray darray))
       throw new IllegalArgumentException(
           "Grid `" + getName() + "'s' member `" + arrayVar.getName() + "' must be an array");
 
@@ -149,7 +149,7 @@ public class DGrid extends DConstructor implements ClientIO {
 
     switch (part) {
       case ARRAY:
-        arrayVar = (DArray) v;
+        arrayVar = darray;
         return;
 
       case MAPS:
@@ -179,8 +179,7 @@ public class DGrid extends DConstructor implements ClientIO {
       String field = name.substring(dotIndex + 1);
 
       BaseType aggRef = getVariable(aggregate);
-      if (aggRef instanceof DConstructor)
-        return ((DConstructor) aggRef).getVariable(field); // recurse
+      if (aggRef instanceof DConstructor dcon) return dcon.getVariable(field); // recurse
       else
         ; // fall through to throw statement
     } else {

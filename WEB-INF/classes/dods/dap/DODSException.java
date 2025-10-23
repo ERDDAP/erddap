@@ -13,7 +13,11 @@ package dods.dap;
 
 import dods.dap.parser.ErrorParser;
 import dods.dap.parser.ParseException;
-import java.io.*;
+import java.io.BufferedWriter;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
 
 /**
@@ -83,22 +87,6 @@ public class DODSException extends Exception {
    */
   private String errorMessage;
 
-  /**
-   * The program type.
-   *
-   * @serial
-   */
-  private int programType;
-
-  /**
-   * The program source. if programType is TCL_PROGRAM, then this is ASCII text. Otherwise,
-   * undefined (this will need to become a byte[] array if the server sends Java bytecodes, for
-   * example).
-   *
-   * @serial
-   */
-  private String programSource;
-
   /** Construct an empty <code>DODSException</code>. */
   public DODSException() {
     // this should never be seen, since this class overrides getMessage()
@@ -144,24 +132,6 @@ public class DODSException extends Exception {
   }
 
   /**
-   * Returns the program type.
-   *
-   * @return the program type.
-   */
-  public final int getProgramType() {
-    return programType;
-  }
-
-  /**
-   * Returns the program source.
-   *
-   * @return the program source.
-   */
-  public final String getProgramSource() {
-    return programSource;
-  }
-
-  /**
    * Returns the detail message of this throwable object.
    *
    * @return the detail message of this throwable object.
@@ -187,24 +157,6 @@ public class DODSException extends Exception {
    */
   public final void setErrorMessage(String msg) {
     errorMessage = msg;
-  }
-
-  /**
-   * Sets the program type.
-   *
-   * @param type the program type.
-   */
-  public final void setProgramType(int type) {
-    programType = type;
-  }
-
-  /**
-   * Sets the program source.
-   *
-   * @param source the program source.
-   */
-  public final void setProgramSource(String source) {
-    programSource = source;
   }
 
   /**

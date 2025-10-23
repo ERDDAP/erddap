@@ -25,8 +25,6 @@ import java.io.BufferedReader;
 import java.util.ArrayList;
 import java.util.List;
 
-// import java.util.GregorianCalendar;
-
 /**
  * This is the abstract superclass for classes which deal with a table of data from a web service
  * that returns ASCII files.

@@ -54,7 +54,6 @@ addEntry، closeEntry میں مشکلات کی وجہ سے \&quot;کمپریس\&
 <acronyms>مخففات</acronyms>
 <addConstraints>آپ اس ویب صفحہ کی درخواستوں میں ٹیبلڈاپ جیسی رکاوٹیں شامل کر سکتے ہیں،
 مثال کے طور پر،</addConstraints>
-<addVarWhereAttName>اختیاری: ایک انتساب نام کی وضاحت کریں۔</addVarWhereAttName>
 <addVarWhereAttValue>اختیاری: ایک خصوصیت کی قدر کی وضاحت کریں۔</addVarWhereAttValue>
 <addVarWhere><![CDATA[
 
@@ -275,9 +274,6 @@ addEntry، closeEntry میں مشکلات کی وجہ سے \&quot;کمپریس\&
 <categorySearchHtml><![CDATA[
 منتخب کریں a(n) <kbd>{0}</kbd>
 ]]></categorySearchHtml>
-<categorySearchDifferentHtml><![CDATA[
-مختلف <kbd>&category;</kbd>
-]]></categorySearchDifferentHtml>
 <categoryClickHtml>متعلقہ ڈیٹاسیٹس کی فہرست دیکھنے کے لیے زمرہ (ایک وصف قدر) پر کلک کریں۔</categoryClickHtml>
 <categoryNotAnOption>جب attribute=&quot;{0}&quot;, value=&quot;{1}&quot; کوئی آپشن نہیں ہے۔</categoryNotAnOption>
 <caughtInterrupted>کرنٹ تھریڈ().isInterrupted().</caughtInterrupted>
@@ -1416,9 +1412,6 @@ A-Za-z0-9_-!.~&#39;()* کے علاوہ تمام حروف کو %HH کے بطور 
 
 ]]></dafTableTooltip>
 <dasTitle>اس ڈیٹاسیٹ کے لیے ڈیٹاسیٹ انتساب کا ڈھانچہ (.das)</dasTitle>
-
-<!--  اگر ڈیٹا ڈاؤن لوڈ نہیں کیا جا سکتا ہے تو پیغام ڈسپلے کیا جائے گا (جیسے SeaWiFS &lt;=14 دن پرانا)۔  -->
-<dataAccessNotAllowed>[معذرت۔ اس ڈیٹا کو ڈاؤن لوڈ نہیں کیا جا سکتا۔]</dataAccessNotAllowed>
 <databaseUnableToConnect>ڈیٹا بیس سے رابطہ ممکن نہیں.</databaseUnableToConnect>
 <dataProviderForm>ڈیٹا فراہم کرنے والا فارم</dataProviderForm>
 <dataProviderFormP1>ڈیٹا فراہم کرنے والا فارم - حصہ 1</dataProviderFormP1>
@@ -1686,10 +1679,6 @@ y_wind</DEFAULT_commonStandardNames>
 <br>براہ کرم ان مسائل کو حل کریں، پھر فارم کے اس حصے کو دوبارہ &#39;جمع کروائیں&#39;۔
 
 ]]></dpf_fixProblem>
-<dpf_yourName>تمھارا نام</dpf_yourName>
-<dpf_emailAddress>ای میل اڈریس</dpf_emailAddress>
-<dpf_Timestamp>ٹائم اسٹیمپ</dpf_Timestamp>
-<dpf_frequency>تعدد</dpf_frequency>
 <dpf_title>عنوان</dpf_title>
 <dpf_titleTooltip><![CDATA[
 
@@ -1762,12 +1751,6 @@ y_wind</DEFAULT_commonStandardNames>
 <br><kbd>
 
 ]]></dpf_licenseTooltip>
-<dpf_howYouStoreData><![CDATA[
-
-<br>• خرابی:
-براہ کرم وضاحت کریں (نیچے) آپ کا گرڈڈ یا ٹیبلر ڈیٹا کیسے محفوظ کیا جاتا ہے۔
-
-]]></dpf_howYouStoreData>
 <dpf_provideIfAvailable>براہ کرم معلومات فراہم کریں اگر یہ آپ کے ڈیٹا سیٹ کے لیے دستیاب ہے۔</dpf_provideIfAvailable>
 <dpf_acknowledgement>اعتراف</dpf_acknowledgement>
 <dpf_acknowledgementTooltip><![CDATA[
@@ -2043,10 +2026,8 @@ ERDDAP ایڈمنسٹریٹر آپ کو ڈیٹا کی منتقلی کا بہتر
 <dtWMS>اس ڈیٹا سیٹ کی ویب میپ سروس کے ذریعے اس ڈیٹا کے نقشے بنانے کے بارے میں جاننے کے لیے کلک کریں۔</dtWMS>
 <EasierAccessToScientificData>سائنسی ڈیٹا تک آسان رسائی</EasierAccessToScientificData>
 
-<!--  EDD پیغامات ٹیبلڈاپ اور گرڈاپ ڈیٹا تک رسائی کے فارم پر دکھائے جاتے ہیں۔  -->
-<EDDClickOnSubmitHtml><![CDATA[
-<kbd>Submit</kbd> پر کلک کریں۔
-]]></EDDClickOnSubmitHtml>
+<!--ای ڈی پیغامات پر ڈسپلے کيا گيا هےtabledapاور Graddap data رسائی کے راستے.
+-->
 <EDDDatasetID>ڈیٹاسیٹ ID</EDDDatasetID>
 <EDDFgdc>ایف جی ڈی سی</EDDFgdc>
 <EDDFgdcMetadata>FGDC-STD-001-1998 میٹا ڈیٹا</EDDFgdcMetadata>
@@ -2059,9 +2040,7 @@ ERDDAP ایڈمنسٹریٹر آپ کو ڈیٹا کی منتقلی کا بہتر
 <EDDInformation>معلومات</EDDInformation>
 <EDDSummary>خلاصہ</EDDSummary>
 <EDDDatasetTitle>ڈیٹا سیٹ کا عنوان</EDDDatasetTitle>
-<EDDDownloadData>ڈیٹا ڈاؤن لوڈ کریں۔</EDDDownloadData>
 <EDDMakeAGraph>ایک گراف بنائیں</EDDMakeAGraph>
-<EDDMakeAMap>نقشہ بنائیں</EDDMakeAMap>
 <EDDMinimum>کم از کم</EDDMinimum>
 <EDDMaximum>زیادہ سے زیادہ</EDDMaximum>
 <EDDFileType>فائل کی قسم:</EDDFileType>
@@ -2118,8 +2097,6 @@ ERDDAP ایڈمنسٹریٹر آپ کو ڈیٹا کی منتقلی کا بہتر
 ]]></EDDGridDownloadDataTooltip>
 <EDDGridDimension>طول و عرض</EDDGridDimension>
 <EDDGridDimensionRanges>طول و عرض</EDDGridDimensionRanges>
-<EDDGridFirst>پہلا</EDDGridFirst>
-<EDDGridLast>آخری</EDDGridLast>
 <EDDGridStart>شروع کریں۔</EDDGridStart>
 <EDDGridStop>رک جاؤ</EDDGridStop>
 <EDDGridStartStopTooltip><![CDATA[
@@ -2162,14 +2139,6 @@ ERDDAP ایڈمنسٹریٹر آپ کو ڈیٹا کی منتقلی کا بہتر
 یہ ایک طول و عرض کی قدروں کے درمیان اوسط فاصلہ ہے (طول و عرض کی اکائیوں میں) اور اس بات کا اشارہ ہے کہ آیا قدریں بالکل یکساں فاصلہ پر ہیں یا نہیں۔ تھوڑا سا عجیب، ناہموار وقفہ کاری اکثر اس بات کی نشاندہی کرتی ہے کہ ایک یا چند فائلیں غائب ہیں یا بصورت دیگر بالکل یکساں فاصلہ والے ڈیٹاسیٹ میں خراب ہیں۔
 
 ]]></EDDGridSpacingTooltip>
-<EDDGridDimensionFirstTooltip><![CDATA[
-آپ کی معلومات کے لیے:
-یہ ایک طول و عرض کی پہلی قدر ہے۔
-]]></EDDGridDimensionFirstTooltip>
-<EDDGridDimensionLastTooltip><![CDATA[
-آپ کی معلومات کے لیے:
-یہ ایک طول و عرض کی آخری قدر ہے۔
-]]></EDDGridDimensionLastTooltip>
 <EDDGridDownloadTooltip><![CDATA[
 وہ متغیر منتخب کریں جنہیں آپ ڈاؤن لوڈ کرنا چاہتے ہیں:
 <br>* صرف ڈائمینشن ڈیٹا ڈاؤن لوڈ کرنے کے لیے:
@@ -2412,10 +2381,6 @@ ERDDAP ایک ڈیٹا سرور ہے جو آپ کو عام فائل فارمیٹ
 
 <!--  یہ پیغامات اس وقت ظاہر ہوتے ہیں جب غلطی کا پیغام دکھایا جاتا ہے۔  -->
 <errorTitle>خرابی</errorTitle>
-<errorRequestUrl>آپ کی درخواست کا URL:</errorRequestUrl>
-<errorRequestQuery>آپ کی درخواست کا استفسار:</errorRequestQuery>
-<errorTheError>غلطی:</errorTheError>
-<errorCopyFrom>{0} سے کاپی کرنے سے قاصر۔</errorCopyFrom>
 <errorFileNotFound>فائل نہیں ملی: {0}</errorFileNotFound>
 <errorFileNotFoundImage>کیشے میں فائل نہیں ملی۔ تصویر دوبارہ بنائیں اور دوبارہ کوشش کریں۔</errorFileNotFoundImage>
 <errorInternal>داخلی خامی:</errorInternal>
@@ -2437,6 +2402,7 @@ ERDDAP ایک ڈیٹا سرور ہے جو آپ کو عام فائل فارمیٹ
 <externalLink>(بیرونی لنک)</externalLink>
 <externalWebSite>کسی بیرونی ویب سائٹ کا یہ لنک توثیق نہیں کرتا۔</externalWebSite>
 <fileHelp_asc>OPeNDAP طرز کا ISO-8859-1 کوما سے الگ کردہ متن دیکھیں۔</fileHelp_asc>
+<fileHelp_croissant>اعداد و شمار کو گرا ئيں</fileHelp_croissant>
 <fileHelp_csv>ISO-8859-1 کوما سے الگ کردہ ٹیکسٹ ٹیبل ڈاؤن لوڈ کریں (لائن 1: نام؛ لائن 2: یونٹس؛ ISO 8601 بار)۔</fileHelp_csv>
 <fileHelp_csvp>لائن 1: نام (یونٹ) کے ساتھ ISO-8859-1 .csv فائل ڈاؤن لوڈ کریں۔ اوقات ISO 8601 سٹرنگز ہیں۔</fileHelp_csvp>
 <fileHelp_csv0>کالم کے ناموں یا اکائیوں کے بغیر ISO-8859-1 .csv فائل ڈاؤن لوڈ کریں۔ اوقات ISO 8601 سٹرنگز ہیں۔</fileHelp_csv0>
@@ -2448,12 +2414,18 @@ ERDDAP ایک ڈیٹا سرور ہے جو آپ کو عام فائل فارمیٹ
 <fileHelpTable_esriCsv>ESRI کے ArcGIS 9.x اور اس سے نیچے کے لیے ISO_8859_1 .csv فائل ڈاؤن لوڈ کریں (الگ تاریخ اور وقت کے کالم)۔</fileHelpTable_esriCsv>
 <fileHelp_fgdc>ڈیٹا سیٹ کا UTF-8 FGDC .xml میٹا ڈیٹا دیکھیں۔</fileHelp_fgdc>
 <fileHelp_geoJson>UTF-8 GeoJSON .json فائل کے طور پر طول البلد، عرض بلد، دیگر کالم ڈیٹا ڈاؤن لوڈ کریں۔</fileHelp_geoJson>
-<fileHelp_graph>میک اے گراف ویب صفحہ دیکھیں۔</fileHelp_graph>
 <fileHelpGrid_help>griddap کی تفصیل کے ساتھ ایک ویب صفحہ دیکھیں۔</fileHelpGrid_help>
 <fileHelpTable_help>ٹیبلڈاپ کی تفصیل کے ساتھ ایک ویب صفحہ دیکھیں۔</fileHelpTable_help>
 <fileHelp_html>اوپن ڈی اے پی طرز کا ایچ ٹی ایم ایل ڈیٹا تک رسائی کا فارم دیکھیں۔</fileHelp_html>
 <fileHelp_htmlTable>ٹیبل میں ڈیٹا کے ساتھ UTF-8 .html ویب صفحہ دیکھیں۔ اوقات ISO 8601 سٹرنگز ہیں۔</fileHelp_htmlTable>
-<fileHelp_iso19115>ڈیٹا سیٹ کا ISO 19115-2/19139 UTF-8 .xml میٹا ڈیٹا دیکھیں۔</fileHelp_iso19115>
+<fileHelp_iso19115>اعداد و شمار کا مطالعہ کریںISO 19115/19139اس سرور کے لیے ورژن کی ڈیٹنگ استعمال کرتے ہوئے UTF-8.xml metadata.
+</fileHelp_iso19115>
+<fileHelp_iso19115_2>اعداد و شمار کا مطالعہ کریںISO 19115-2/19139UTF-8.xmxl metadata.
+</fileHelp_iso19115_2>
+<fileHelp_iso191392007>اعداد و شمار کا مطالعہ کریںISO 19139:2007UTF-8.xmxl metadata.
+</fileHelp_iso191392007>
+<fileHelp_iso19115_3_2016>اعداد و شمار کا مطالعہ کریںISO 19115-3:2016UTF-8.xmxl metadata.
+</fileHelp_iso19115_3_2016>
 <fileHelp_itxGrid>ایک ISO-8859-1 Igor ٹیکسٹ فائل ڈاؤن لوڈ کریں۔ ہر محور متغیر اور ہر ڈیٹا متغیر ایک لہر بن جاتا ہے۔</fileHelp_itxGrid>
 <fileHelp_itxTable>ایک ISO-8859-1 Igor ٹیکسٹ فائل ڈاؤن لوڈ کریں۔ ہر جوابی کالم ایک لہر بن جاتا ہے۔</fileHelp_itxTable>
 <fileHelp_json>ٹیبل جیسی UTF-8 JSON فائل دیکھیں (گمشدہ ویلیو = &#39;null&#39;؛ اوقات ISO 8601 سٹرنگز ہیں)۔</fileHelp_json>
@@ -2479,7 +2451,6 @@ ERDDAP ایک ڈیٹا سرور ہے جو آپ کو عام فائل فارمیٹ
 <fileHelpTable_odvTxt>طول البلد، عرض البلد، وقت، دیگر کالموں کو ISO-8859-1 ODV جنرک اسپریڈشیٹ فائل (.txt) کے بطور ڈاؤن لوڈ کریں۔</fileHelpTable_odvTxt>
 <fileHelp_parquet>ایک پیراکی فائل کے طور پر نیچے گر. Metadata میں ستونوں کے نام (&quot;East_ames&quot;) اور یونٹس (انگریزی:</fileHelp_parquet>
 <fileHelp_parquet_with_meta>ایک پیراکی فائل کے طور پر اتاری گئی جس میں تفصیلی metata ہے۔</fileHelp_parquet_with_meta>
-<fileHelp_subset>ایک HTML فارم دیکھیں جو ڈیٹا کے سب سیٹوں کو چننے کو آسان بنانے کے لیے جہتی تلاش کا استعمال کرتا ہے۔</fileHelp_subset>
 <fileHelp_timeGaps>وقت کی قدروں میں فرقوں کی UTF-8 فہرست دیکھیں جو درمیانی فرق سے زیادہ ہیں۔</fileHelp_timeGaps>
 <fileHelp_tsv>ISO-8859-1 ٹیب سے الگ کردہ ٹیکسٹ ٹیبل ڈاؤن لوڈ کریں (لائن 1: نام؛ لائن 2: یونٹس؛ ISO 8601 بار)۔</fileHelp_tsv>
 <fileHelp_tsvp>لائن 1: نام (یونٹ) کے ساتھ ISO-8859-1 .tsv فائل ڈاؤن لوڈ کریں۔ اوقات ISO 8601 سٹرنگز ہیں۔</fileHelp_tsvp>
@@ -2499,7 +2470,6 @@ ERDDAP ایک ڈیٹا سرور ہے جو آپ کو عام فائل فارمیٹ
 
 <!--  تفصیل اور انتباہی الفاظ ایک یا بہت سے ڈیٹا سیٹس کی اجازت دینے کے لیے مبہم ہیں۔  -->
 <filesDescription>ERDDAP کا &quot;فائلز&quot; سسٹم آپ کو ورچوئل فائل سسٹم کو براؤز کرنے اور سورس ڈیٹا فائلوں کو ڈاؤن لوڈ کرنے دیتا ہے۔</filesDescription>
-<filesSort>ترتیب ترتیب کو تبدیل کرنے کے لیے سرخی (جیسے نام، آخری ترمیم، سائز) پر کلک کریں۔  &quot;آخری ترمیم&quot; میں زولو ٹائم زون استعمال ہوتا ہے۔</filesSort>
 <filesWarning><![CDATA[
 
 ان سورس فائلوں میں ڈیٹاسیٹ کا میٹا ڈیٹا اور متغیر نام ERDDAP میں کہیں اور سے مختلف ہو سکتے ہیں! اس کے بجائے آپ ڈیٹا سیٹ کے ڈیٹا ایکسیس فارم کو استعمال کرنے کو ترجیح دے سکتے ہیں۔
@@ -2777,12 +2747,6 @@ orderBy ...
 افعال یہ ہیں:<p style=";text-align:right;direction:rtl"><strong>orderBy</strong> صعودی ترتیب میں، مخصوص متغیرات کے مطابق نتائج کی میز کی قطاروں کو ترتیب دیتا ہے۔ مثال کے طور پر، orderBy(&quot;stationID, time&quot;) نتائج کو بنیادی طور پر stationID کے لحاظ سے اور دوسرے طور پر وقت کے لحاظ سے ترتیب دیتا ہے۔<p style=";text-align:right;direction:rtl"><strong>orderBy Descending</strong> نتائج کے ٹیبل کی قطاروں کو مخصوص متغیر کے مطابق نزولی ترتیب میں ترتیب دیتا ہے۔ مثال کے طور پر، orderBy(&quot;stationID, time&quot;) نتائج کو بنیادی طور پر stationID کے لحاظ سے اور دوسرے طور پر وقت کے لحاظ سے ترتیب دیتا ہے۔<p style=";text-align:right;direction:rtl"><strong>orderByClosest</strong> نتائج کی میز کی قطاروں کو متعین متغیرات کے مطابق ترتیب دیتا ہے۔ آخری متغیر کا ایک عددی متغیر ہونا چاہیے جس میں تقسیم ہو۔ صرف تقسیم کار کے وقفہ کے قریب ترین قطاریں رکھی جائیں گی۔ مثال کے طور پر، orderByClosest(&quot;stationID, time/2hours&quot;) stationID اور وقت کے لحاظ سے ترتیب دیں گے، لیکن صرف ہر stationID کے لیے قطاریں واپس کریں گے جہاں آخری orderBy کالم (وقت) 2 گھنٹے کے وقفوں کے قریب ہے۔<p style=";text-align:right;direction:rtl"><strong>orderByCount</strong> نتائج کے جدول کی قطاروں کو گروپس میں ترتیب دیتا ہے اور صرف ہر گروپ کے لیے غیر غائب اقدار کی تعداد کی گنتی لوٹاتا ہے۔ مثال کے طور پر، orderByCount(&quot;stationID, time/1day&quot;) stationID کے لحاظ سے ترتیب دے گا اور ہر دن کے لیے ہر stationID کے لیے ایک قطار واپس کرے گا، جس میں ہر دوسرے متغیر کے لیے غیر غائب اقدار کی تعداد کی گنتی ہوگی۔<p style=";text-align:right;direction:rtl"><strong>orderByLimit</strong> نتائج کے جدول کی قطاروں کو گروپس میں ترتیب دیتا ہے اور ہر گروپ کے اندر صرف پہلی nRows (جیسا کہ آخری orderByLimit قدر کے ذریعہ بیان کیا گیا ہے) لوٹاتا ہے۔ مثال کے طور پر، orderByMax(&quot;stationID, time/1day, 10&quot;) stationID اور وقت کے لحاظ سے ترتیب دیں گے، لیکن ہر دن کے لیے ہر stationID کے لیے صرف پہلی 10 قطاریں واپس کریں گے۔<p style=";text-align:right;direction:rtl"><strong>orderByMax</strong> نتائج کے جدول کی قطاروں کو گروپس میں ترتیب دیتا ہے اور درخواست میں آخری orderByMax متغیر کی زیادہ سے زیادہ قدر کے ساتھ ہر گروپ کے اندر قطار واپس کرتا ہے۔ مثال کے طور پر، orderByMax(&quot;stationID, time/1day, temperature&quot;) stationID اور ہر دن کے حساب سے قطاروں کو گروپ کرے گا، لیکن صرف ہر stationID کے لیے ہر دن کے لیے زیادہ سے زیادہ درجہ حرارت والی قطار واپس کرے گا۔<p style=";text-align:right;direction:rtl"><strong>orderBy Min،</strong> orderByMax کی طرح ہے، لیکن صرف آخری orderBy Min متغیر کے لیے کم از کم قدر کے ساتھ قطار رکھتا ہے۔<p style=";text-align:right;direction:rtl"><strong>orderByMinMax</strong> orderBy Min plus orderByMax کی طرح ہے۔ ہر ترتیب والے گروپ کے اندر، صرف کم از کم قدر والی قطار اور آخری orderByMinMax متغیر کے لیے زیادہ سے زیادہ قدر والی قطار رکھی جائے گی۔ مثال کے طور پر، orderByMinMax(&quot;stationID, time/1day, temperature&quot;) کم از کم درجہ حرارت کی قدر کے ساتھ قطار اور ہر دن کے لیے ہر stationID کے لیے زیادہ سے زیادہ درجہ حرارت کی قدر والی قطار واپس کرے گا۔<p style=";text-align:right;direction:rtl"><strong>orderByMean</strong> نتائج کی میز کی قطاروں کو گروپس میں ترتیب دیتا ہے اور ہر گروپ کے لیے صرف ایک قطار لوٹاتا ہے۔ اس قطار میں دوسرے متغیرات میں سے ہر ایک کا اوسط ہوگا۔ مثال کے طور پر، orderByMax(&quot;stationID, time/1day&quot;) ہر stationID کے لیے ہر دن کے لیے ایک گروپ بنائے گا، اور دوسرے متغیرات کے اوسط کا حساب لگائے گا اور واپس کرے گا۔<p style=";text-align:right;direction:rtl"><strong>orderBy Sum</strong> نتائج کی میز کی قطاروں کو گروپس میں ترتیب دیتا ہے اور ہر گروپ کے لیے صرف ایک قطار لوٹاتا ہے۔ اس قطار میں دوسرے متغیرات میں سے ہر ایک کا مجموعہ ہوگا۔ مثال کے طور پر، orderByMax(&quot;stationID, time/1day&quot;) ہر stationID کے لیے ہر دن کے لیے ایک گروپ بنائے گا، اور دوسرے متغیرات کا حساب لگا کر واپس کرے گا۔
 
 ]]></functionOrderByTooltip>
-<functionOrderByExtra><![CDATA[
-
-orderByClosest کے لیے، یہاں وقفہ (فارمیٹ n[timeUnits] کا استعمال کرتے ہوئے، مثلاً 1 گھنٹہ) کی وضاحت کریں۔
-<br>orderByLimit کے لیے، یہاں فی گروپ قطاروں کی زیادہ سے زیادہ تعداد کی وضاحت کریں۔
-
-]]></functionOrderByExtra>
 <functionOrderBySort><![CDATA[
 
 یہ سلاٹ {0} اہم orderBy ...
@@ -2795,7 +2759,6 @@ orderByClosest کے لیے، یہاں وقفہ (فارمیٹ n[timeUnits] کا �
 <functionOrderBySort3>تیسرا سب سے زیادہ</functionOrderBySort3>
 <functionOrderBySort4>چوتھا سب سے زیادہ</functionOrderBySort4>
 <functionOrderBySortLeast>کم از کم</functionOrderBySortLeast>
-<functionOrderBySortRowMax>صرف زیادہ سے زیادہ قدر والی قطار رکھی جائے گی۔</functionOrderBySortRowMax>
 <generatedAt>یہ ویب صفحہ {0} پر بنایا گیا تھا۔</generatedAt>
 <geoServicesDescription><![CDATA[
 
@@ -3050,7 +3013,6 @@ ERDDAP کے افقی لیجنڈ کے لیے، legendTitle1 اور 2 کو ایک 
 <!--  جیسے، {0}=WMS یا listAll  -->
 <listOfDatasets>{0} ڈیٹا سیٹس کی فہرست</listOfDatasets>
 <listAll>تمام</listAll>
-<LogIn>لاگ ان کریں</LogIn>
 <login>لاگ ان کریں</login>
 <loginHTML><![CDATA[
 
@@ -3094,22 +3056,15 @@ ERDDAP کے افقی لیجنڈ کے لیے، legendTitle1 اور 2 کو ایک 
     title="کسی بیرونی ویب سائٹ کا یہ لنک توثیق نہیں کرتا۔"></a> ایک کھلا معیار ہے جو آپ کو ایک ویب سائٹ پر اپنے پاس ورڈ کے ساتھ لاگ ان کرنے دیتا ہے اور پھر ERDDAP سمیت کئی دیگر ویب سائٹس پر اپنے پاس ورڈ کے بغیر لاگ ان کرنے دیتا ہے۔ صرف وہی لوگ لاگ ان ہو سکتے ہیں جنہوں نے اس ERDDAP کے منتظم کے ساتھ انتظامات کیے ہیں۔
 
 ]]></loginDescribeOpenID>
-<loginErddap>ERDDAP میں لاگ ان کریں۔</loginErddap>
 <loginCanNot>یہ ERDDAP صارفین کو لاگ ان کرنے کے لیے کنفیگر نہیں کیا گیا ہے۔</loginCanNot>
 <loginAreNot>آپ لاگ ان نہیں ہیں۔</loginAreNot>
 <loginToLogIn>لاگ ان کرنے کے لیے</loginToLogIn>
-<loginEmailAddress>ای میل اڈریس</loginEmailAddress>
 <loginYourEmailAddress>آپ کا ای میل پتہ</loginYourEmailAddress>
 <loginUserName>صارف کا نام</loginUserName>
 <loginPassword>پاس ورڈ</loginPassword>
 <loginUserNameAndPassword>صارف کا نام اور پاس ورڈ</loginUserNameAndPassword>
 <loginGoogleSignIn>اپنے گوگل اکاؤنٹ سے تصدیق کریں۔</loginGoogleSignIn>
 <loginOrcidSignIn>اپنے ORCID آئی ڈی کے ساتھ تصدیق کریں۔</loginOrcidSignIn>
-<loginOpenID>اپنے OpenID URL کے ساتھ لاگ ان کریں۔</loginOpenID>
-<loginOpenIDOr>یا اپنے موجودہ (غیر اوپن آئی ڈی) اکاؤنٹ میں لاگ ان کریں۔</loginOpenIDOr>
-<loginOpenIDCreate>یا پر ایک OpenID URL بنائیں</loginOpenIDCreate>
-<loginOpenIDFree>وہ سب آزاد ہیں!</loginOpenIDFree>
-<loginOpenIDSame>یقینی بنائیں کہ آپ نے بالکل اسی OpenID URL کے ساتھ لاگ ان کیا ہے جو آپ نے ERDDAP منتظم کو دیا تھا۔</loginOpenIDSame>
 <loginAs>آپ بطور {0} لاگ ان ہیں۔</loginAs>
 <loginPartwayAs>آپ جزوی طور پر {0} کے طور پر لاگ ان ہیں۔</loginPartwayAs>
 <loginFailed>خرابی: لاگ ان ناکام ہو گیا۔</loginFailed>
@@ -3188,7 +3143,6 @@ ERDDAP کے افقی لیجنڈ کے لیے، legendTitle1 اور 2 کو ایک 
 ]]></loginPublicAccess>
 <LogOut>لاگ آوٹ</LogOut>
 <logout>لاگ آوٹ</logout>
-<logoutOpenID>اپنے OpenID فراہم کنندہ سے لاگ آؤٹ کریں۔</logoutOpenID>
 
 <!--  logoutSuccess آخری بار 2019-12-19 کو اپ ڈیٹ ہوا۔  -->
 <logoutSuccess>آپ کامیابی سے لاگ آؤٹ ہو گئے ہیں۔ 
@@ -3449,10 +3403,6 @@ ERDDAP کے افقی لیجنڈ کے لیے، legendTitle1 اور 2 کو ایک 
 خالی فائل واپس کرنا بہتر ہے؟ لیکن .nc اور دیگر 0 لمبائی والے ڈیٹا کی اجازت نہیں دیتے ہیں۔
  -->
 <MustBeThereIsNoData>آپ کے استفسار سے کوئی مماثل نتیجہ نہیں نکلا۔</MustBeThereIsNoData>
-
-<!--  فائل کی بہت سی قسمیں اس بات کی حد رکھتی ہیں کہ ایک فائل کتنا ڈیٹا رکھ سکتی ہے (جیسے 2GB)۔  -->
-<MustBeNotNull>{0} کو کالعدم نہیں ہونا چاہیے۔</MustBeNotNull>
-<MustBeNotEmpty>{0} ایک خالی تار نہیں ہونا چاہیے۔</MustBeNotEmpty>
 <MustBeInternalError>داخلی خامی</MustBeInternalError>
 <MustBeOutOfMemoryError>میموری کی خرابی</MustBeOutOfMemoryError>
 
@@ -3493,11 +3443,9 @@ ERDDAP کے افقی لیجنڈ کے لیے، legendTitle1 اور 2 کو ایک 
 <noXxxNoLonIn180>-180 سے 360 کے اندر کوئی طول البلد اقدار نہیں ہیں۔</noXxxNoLonIn180>
 <noXxxNoNonString>کوئی غیر سٹرنگ متغیرات نہیں ہیں۔</noXxxNoNonString>
 <noXxxNo2NonString>کم از کم دو نان اسٹرنگ متغیرات نہیں ہیں۔</noXxxNo2NonString>
-<noXxxNoStation>cdmDataType={0} &quot;TimeSeries&quot; نہیں ہے</noXxxNoStation>
 <noXxxNoStationID>کوئی اسٹیشن آئی ڈی جیسا متغیر نہیں ہے۔</noXxxNoStationID>
 <noXxxNoSubsetVariables>سب سیٹ ویری ایبلز کی وضاحت نہیں کی گئی تھی۔</noXxxNoSubsetVariables>
 <noXxxNoOLLSubsetVariables>subsetVariables میں پیشکش، طول البلد، اور عرض البلد متغیرات نہیں ہیں۔</noXxxNoOLLSubsetVariables>
-<noXxxNoMinMax>سورس ڈیٹا سرور کم از کم اور زیادہ سے زیادہ اقدار فراہم نہیں کرتا ہے۔</noXxxNoMinMax>
 <noXxxItsGridded>یہ ایک گرڈڈ ڈیٹاسیٹ ہے۔</noXxxItsGridded>
 <noXxxItsTabular>یہ ایک ٹیبلر ڈیٹاسیٹ ہے۔</noXxxItsTabular>
 <oneRequestAtATime>براہ کرم ایک وقت میں صرف ایک درخواست کریں۔</oneRequestAtATime>
@@ -3519,7 +3467,6 @@ ERDDAP کے افقی لیجنڈ کے لیے، legendTitle1 اور 2 کو ایک 
 <options>اختیارات</options>
 <orAListOfValues>یا اقدار کی فہرست</orAListOfValues>
 <orRefineSearchWith>یا، اس تلاش کو اس کے ساتھ بہتر کریں۔</orRefineSearchWith>
-<orSearchWith>یا، کے ساتھ ڈیٹاسیٹس تلاش کریں۔</orSearchWith>
 <orComma>یا،</orComma>
 <otherFeatures>دیگر خصوصیات</otherFeatures>
 <outOfDateDatasets>پرانے ڈیٹاسیٹس</outOfDateDatasets>
@@ -3576,7 +3523,6 @@ A-Za-z0-9_-!.~&#39;()* کے علاوہ تمام حروف کو %HH کے بطور 
     title="کسی بیرونی ویب سائٹ کا یہ لنک توثیق نہیں کرتا۔"></a> .
 
 ]]></percentEncode>
-<pickADataset>ایک ڈیٹا سیٹ منتخب کریں۔</pickADataset>
 
 <!--  پروٹوکول پر مبنی ڈیٹا سیٹ کی تلاش سے متعلق پیغامات۔  -->
 <protocolSearchHtml>پروٹوکول کے ذریعہ ڈیٹاسیٹس تلاش کریں۔</protocolSearchHtml>
@@ -3592,7 +3538,6 @@ A-Za-z0-9_-!.~&#39;()* کے علاوہ تمام حروف کو %HH کے بطور 
 <queryError1Var>{0} فارمیٹ صرف ایک ڈیٹا متغیر کو ہینڈل کر سکتا ہے۔</queryError1Var>
 <queryError2Var>{0} فارمیٹ کی درخواستوں میں کم از کم دو عددی متغیرات (X اور Y محوروں کے لیے) شامل ہونے چاہئیں۔</queryError2Var>
 <queryErrorActualRange>{0} متغیر کی اصل_رینج سے باہر ہے: {1} سے {2}</queryErrorActualRange>
-<queryErrorAscending>{0} درخواستوں کے لیے، عرض البلد کی قدریں اور عرض البلد کی قدروں کا صعودی ہونا ضروری ہے۔</queryErrorAscending>
 <queryErrorAdjusted>{0} درخواستوں کے لیے، ایڈجسٹ شدہ طول البلد کی قدریں ({1} سے {2}) -180 اور 180 کے درمیان ہونی چاہیے۔</queryErrorAdjusted>
 <queryErrorConstraintNaN>Constraint value=&quot;{0}&quot; NaN کی تشخیص کرتی ہے۔  اگر آپ واقعی NaN چاہتے ہیں تو اسے NaN لکھیں۔</queryErrorConstraintNaN>
 <queryErrorEqualSpacing>{0} درخواستوں کے لیے، طول البلد کی جگہ ({1}) کو عرض بلد کی جگہ ({2}) کے برابر ہونا چاہیے۔</queryErrorEqualSpacing>
@@ -3624,7 +3569,6 @@ A-Za-z0-9_-!.~&#39;()* کے علاوہ تمام حروف کو %HH کے بطور 
 <queryErrorGridNoAxisVar>گرڈاپ ڈیٹا متغیر استفسار میں محور متغیر ({0}) شامل نہیں ہو سکتا۔</queryErrorGridNoAxisVar>
 <queryErrorGridNoDataVar>گرڈاپ ایکسس متغیر استفسار میں ڈیٹا متغیر ({0}) شامل نہیں ہو سکتا۔</queryErrorGridNoDataVar>
 <queryErrorGridNotIdentical>متغیر={1} کے لیے رکاوٹ {0} متغیر={2} کے لیے رکاوٹ {2} جیسی نہیں ہے۔  اگر آپ کو مختلف ذیلی سیٹوں کی ضرورت ہے تو، علیحدہ درخواستیں کریں۔</queryErrorGridNotIdentical>
-<queryErrorGridSLessS>StartIndex={0} StopIndex={1} سے بڑا ہے۔</queryErrorGridSLessS>
 <queryErrorLastEndP>{0} &quot;(&quot; سے شروع ہوتا ہے لیکن &quot;)&quot; پر ختم نہیں ہوتا۔</queryErrorLastEndP>
 <queryErrorLastExpected>&quot;آخری&quot; کی توقع {0} کے شروع میں تھی۔</queryErrorLastExpected>
 <queryErrorLastUnexpected>{0} میں &quot;آخری&quot; کے بعد غیر متوقع کردار۔</queryErrorLastUnexpected>
@@ -3765,7 +3709,6 @@ ERDDAP پاس کمپیوٹر پروگراموں کے لیے URL تک رسائی 
 <SOSDocumentation>ERDDAP کی SOS دستاویزات</SOSDocumentation>
 <WCSDocumentation>ERDDAP کی WCS دستاویزات</WCSDocumentation>
 <WMSDocumentation>ERDDAP کی WMS دستاویزات</WMSDocumentation>
-<findOutChange>تاکہ آپ کا کمپیوٹر پروگرام معلوم کر سکے کہ آیا ڈیٹا سیٹ تبدیل ہوا ہے۔</findOutChange>
 <requestFormatExamplesHtml><![CDATA[
 
 (مثال کے طور پر،
@@ -4165,13 +4108,6 @@ ERDDAP کے پاس ای میل/یو آر ایل سبسکرپشن سسٹم ہے �
 
 ]]></subscriptionRemoveSuccess>
 <subscriptionRSS>اس ڈیٹاسیٹ کے لیے RSS فیڈ کو سبسکرائب کریں...</subscriptionRSS>
-<subscriptionsNotAvailable><![CDATA[
-
-<p style=";text-align:right;direction:rtl"><strong>معذرت ای میل/یو آر ایل سبسکرپشن سسٹم اس ERDDAP انسٹالیشن پر دستیاب نہیں ہے۔</strong>
-<br>اس کے بجائے
-<a rel="help" href="{0}/information.html#subscriptions">RSS</a> سبسکرپشن سروس استعمال کرنے پر غور کریں۔
-
-]]></subscriptionsNotAvailable>
 <subscriptionUrlHtml><![CDATA[
 
 <kbd>URL/action</kbd> ایک اختیاری URL ہے جس سے ERDDAP آپ کو ای میل بھیجنے کے بجائے رابطہ کرے گا۔
@@ -4386,13 +4322,6 @@ messages.xml میں &lt;theLongDescriptionHtml&gt;۔
 <!--  مندرجہ ذیل ٹیگ 2 پچھلے ٹیگز میں سے 1 سے آگے ہے۔ 
   {0} subsetViewSelectDistintCombos یا subsetViewSelectRelatedCounts ہے۔  -->
 <subsetWhenCounts>&quot;{2}&quot; کی {1} اقدار کے لیے {0} ہیں:</subsetWhenCounts>
-<subsetComboClickSelect><![CDATA[
-
-اوپر دیے گئے متغیرات کے الگ الگ امتزاج کی گنتی دیکھنے کے لیے،
-<br>اوپر <kbd>{0} :
-{1}</kbd> چیک کریں اور اوپر دیے گئے متغیرات میں سے ایک کے لیے ایک قدر منتخب کریں۔
-
-]]></subsetComboClickSelect>
 <subsetNVariableCombos>مجموعی طور پر، اوپر درج متغیرات کے الگ الگ امتزاج کی {0} قطاریں ہیں۔</subsetNVariableCombos>
 <subsetShowingAllRows>تمام قطاریں اوپر دکھائی گئی ہیں۔</subsetShowingAllRows>
 <subsetShowingNRows>پہلی {0} قطاریں اوپر دکھائی گئی ہیں۔  باقی {1} قطاریں نہیں دکھائی جا رہی ہیں۔</subsetShowingNRows>
@@ -4848,7 +4777,6 @@ href="https://groups.google.com/forum/#!forum/erddap"><img
 اس ویب پیج پر دی گئی آراء باب سائمنز کی ذاتی رائے ہیں اور ضروری نہیں کہ حکومت یا National Oceanic and Atmospheric Administration کے کسی موقف کی عکاسی کریں۔
 
 ]]></theLongDescriptionHtml>
-<Then>پھر</Then>
 <twoClickMapDefaultTooltip>دو اخترن کونوں پر کلک کرکے ایک مستطیل کی وضاحت کریں۔  اگر ضرورت ہو تو اسے دوبارہ کریں۔</twoClickMapDefaultTooltip>
 
 <!--  یہ ERDDAP کے سٹینڈرڈائز UDUnits کنورٹر کو اوور رائیڈ کرنے کا ایک طریقہ ہے۔
@@ -6132,7 +6060,6 @@ https://www.usgin.org
 کبھی بھی صفت کا نام نہ بنیں۔  -->
 <updateUrlsSkipAttributes>سورس یو آر ایل</updateUrlsSkipAttributes>
 <variableNames>متغیر نام</variableNames>
-<viewAllDatasetsHtml>تمام ڈیٹاسیٹس کی فہرست دیکھیں</viewAllDatasetsHtml>
 <waitThenTryAgain>ایک (عارضی؟) مسئلہ تھا۔  ایک منٹ انتظار کریں، پھر دوبارہ کوشش کریں۔  (براؤزر میں، دوبارہ لوڈ بٹن پر کلک کریں۔)</waitThenTryAgain>
 <warning>وارننگ!</warning>
 <units>یونٹس</units>

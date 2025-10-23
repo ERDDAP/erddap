@@ -47,7 +47,7 @@ class SharedWatchServiceTests {
 
     StringArray contexts = new StringArray();
     String testDataDir =
-        Path.of(WatchDirectoryTests.class.getResource("/data/").toURI())
+        Path.of(SharedWatchServiceTests.class.getResource("/data/").toURI())
             .toString()
             .replace('\\', '/');
     String sourceDir = testDataDir;

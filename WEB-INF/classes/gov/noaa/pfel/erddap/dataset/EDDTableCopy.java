@@ -20,6 +20,7 @@ import gov.noaa.pfel.erddap.handlers.SaxHandlerClass;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.util.TaskThread;
 import gov.noaa.pfel.erddap.variable.*;
+import jakarta.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -756,6 +757,13 @@ public class EDDTableCopy extends EDDTable {
       throws Throwable {
 
     localEdd.getDataForDapQuery(language, loggedInAs, requestUrl, userDapQuery, tableWriter);
+  }
+
+  @Override
+  public Table getFilesUrlList(HttpServletRequest request, String loggedInAs, int language)
+      throws Throwable {
+    if (!accessibleViaFiles) return null;
+    return localEdd.getFilesUrlList(request, loggedInAs, language);
   }
 
   /**

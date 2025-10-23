@@ -64,7 +64,6 @@ stand-in για κάτι που θα αντικατασταθεί στη θέσ�
 <acronyms>Ακρωνύμια</acronyms>
 <addConstraints>Μπορείτε να προσθέσετε περιορισμούς τύπου tabledap σε αιτήματα σε αυτήν την ιστοσελίδα,
 για παράδειγμα,</addConstraints>
-<addVarWhereAttName>Προαιρετικό: Καθορίστε ένα όνομα χαρακτηριστικού.</addVarWhereAttName>
 <addVarWhereAttValue>Προαιρετικό: Καθορίστε μια τιμή χαρακτηριστικού.</addVarWhereAttValue>
 <addVarWhere><![CDATA[
 
@@ -299,9 +298,6 @@ stand-in για κάτι που θα αντικατασταθεί στη θέσ�
 <categorySearchHtml><![CDATA[
 Επιλέξτε ένα(n) <kbd>{0}</kbd>
 ]]></categorySearchHtml>
-<categorySearchDifferentHtml><![CDATA[
-Αναζήτηση για σύνολα δεδομένων με διαφορετική <kbd>&category;</kbd>
-]]></categorySearchDifferentHtml>
 <categoryClickHtml>Κάντε κλικ σε μια κατηγορία (μια τιμή χαρακτηριστικού) για να δείτε μια λίστα σχετικών συνόλων δεδομένων.</categoryClickHtml>
 <categoryNotAnOption>Όταν το χαρακτηριστικό=&quot;{0}&quot;, το value=&quot;{1}&quot; δεν είναι επιλογή.</categoryNotAnOption>
 <caughtInterrupted>έπιασε το currentThread().isInterrupted().</caughtInterrupted>
@@ -1787,9 +1783,6 @@ Sea Surface Temperature ).
 
 ]]></dafTableTooltip>
 <dasTitle>Η δομή του χαρακτηριστικού συνόλου δεδομένων (.das) για αυτό το σύνολο δεδομένων</dasTitle>
-
-<!--  Το μήνυμα που θα εμφανιστεί εάν δεν είναι δυνατή η λήψη των δεδομένων (π.χ. SeaWiFS &lt;=14 ημερών).  -->
-<dataAccessNotAllowed>[Συγνώμη. Δεν είναι δυνατή η λήψη αυτών των δεδομένων.]</dataAccessNotAllowed>
 <databaseUnableToConnect>Αδυναμία σύνδεσης με την βάση δεδομένων.</databaseUnableToConnect>
 <dataProviderForm>Φόρμα παρόχου δεδομένων</dataProviderForm>
 <dataProviderFormP1>Φόρμα παρόχου δεδομένων - Μέρος 1</dataProviderFormP1>
@@ -2112,10 +2105,6 @@ y_wind</DEFAULT_commonStandardNames>
 <br>Διορθώστε αυτά τα προβλήματα και, στη συνέχεια, &quot;Υποβάλετε&quot; ξανά αυτό το τμήμα της φόρμας.
 
 ]]></dpf_fixProblem>
-<dpf_yourName>Το όνομα σου</dpf_yourName>
-<dpf_emailAddress>Διεύθυνση ηλεκτρονικού ταχυδρομείου</dpf_emailAddress>
-<dpf_Timestamp>Χρονική σήμανση</dpf_Timestamp>
-<dpf_frequency>Συχνότητα</dpf_frequency>
 <dpf_title>τίτλος</dpf_title>
 <dpf_titleTooltip><![CDATA[
 
@@ -2193,12 +2182,6 @@ y_wind</DEFAULT_commonStandardNames>
 <br><kbd>
 
 ]]></dpf_licenseTooltip>
-<dpf_howYouStoreData><![CDATA[
-
-<br>• Σφάλμα:
-Προσδιορίστε (παρακάτω) πώς αποθηκεύονται τα πλέγματα ή τα δεδομένα σας σε πίνακα.
-
-]]></dpf_howYouStoreData>
 <dpf_provideIfAvailable>Δώστε τις πληροφορίες εάν είναι διαθέσιμες για το σύνολο δεδομένων σας.</dpf_provideIfAvailable>
 <dpf_acknowledgement>αναγνώριση</dpf_acknowledgement>
 <dpf_acknowledgementTooltip><![CDATA[
@@ -2499,10 +2482,8 @@ ERDDAP θα τα μετατρέψει σε byte, 1 ή 0.
 <dtWMS>Κάντε κλικ για να μάθετε σχετικά με τη δημιουργία χαρτών αυτών των δεδομένων μέσω της Υπηρεσίας χαρτών Ιστού αυτού του συνόλου δεδομένων.</dtWMS>
 <EasierAccessToScientificData>Ευκολότερη πρόσβαση σε επιστημονικά δεδομένα</EasierAccessToScientificData>
 
-<!--  Τα μηνύματα EDD εμφανίζονται στις φόρμες πρόσβασης δεδομένων επιτραπέζιου και πλέγματος.  -->
-<EDDClickOnSubmitHtml><![CDATA[
-Κάντε κλικ στο <kbd>Submit</kbd> .
-]]></EDDClickOnSubmitHtml>
+<!--Τα μηνύματα EDD εμφανίζονται στοtabledapκαι griddap φόρμες πρόσβασης δεδομένων.
+-->
 <EDDDatasetID>Αναγνωριστικό συνόλου δεδομένων</EDDDatasetID>
 <EDDFgdc>FGDC</EDDFgdc>
 <EDDFgdcMetadata>FGDC-STD-001-1998 Μεταδεδομένα</EDDFgdcMetadata>
@@ -2515,9 +2496,7 @@ ERDDAP θα τα μετατρέψει σε byte, 1 ή 0.
 <EDDInformation>Πληροφορίες</EDDInformation>
 <EDDSummary>Περίληψη</EDDSummary>
 <EDDDatasetTitle>Τίτλος συνόλου δεδομένων</EDDDatasetTitle>
-<EDDDownloadData>Λήψη δεδομένων</EDDDownloadData>
 <EDDMakeAGraph>Κάντε ένα γράφημα</EDDMakeAGraph>
-<EDDMakeAMap>Φτιάξτε έναν χάρτη</EDDMakeAMap>
 <EDDMinimum>Ελάχιστο</EDDMinimum>
 <EDDMaximum>Ανώτατο όριο</EDDMaximum>
 <EDDFileType>Τύπος αρχείου:</EDDFileType>
@@ -2586,8 +2565,6 @@ ERDDAP θα τα μετατρέψει σε byte, 1 ή 0.
 ]]></EDDGridDownloadDataTooltip>
 <EDDGridDimension>Διαστάσεις</EDDGridDimension>
 <EDDGridDimensionRanges>Διαστάσεις</EDDGridDimensionRanges>
-<EDDGridFirst>Πρώτα</EDDGridFirst>
-<EDDGridLast>τελευταίος</EDDGridLast>
 <EDDGridStart>Αρχή</EDDGridStart>
 <EDDGridStop>Να σταματήσει</EDDGridStop>
 <EDDGridStartStopTooltip><![CDATA[
@@ -2631,14 +2608,6 @@ ERDDAP θα τα μετατρέψει σε byte, 1 ή 0.
 Ένα ελαφρώς περίεργο, ανομοιόμορφο διάστημα υποδηλώνει συχνά ότι λείπουν ένα ή μερικά αρχεία ή είναι κακά σε ένα κατά τα άλλα τέλεια ομοιόμορφα διαστήματα δεδομένων.
 
 ]]></EDDGridSpacingTooltip>
-<EDDGridDimensionFirstTooltip><![CDATA[
-Προς ενημέρωσή σας:
-αυτή είναι η πρώτη τιμή μιας διάστασης.
-]]></EDDGridDimensionFirstTooltip>
-<EDDGridDimensionLastTooltip><![CDATA[
-Προς ενημέρωσή σας:
-αυτή είναι η τελευταία τιμή μιας διάστασης.
-]]></EDDGridDimensionLastTooltip>
 <EDDGridDownloadTooltip><![CDATA[
 Επιλέξτε τις μεταβλητές που θέλετε να κατεβάσετε:
 <br>* Για λήψη δεδομένων μόνο διαστάσεων:
@@ -2915,10 +2884,6 @@ ERDDAP είναι ένας διακομιστής δεδομένων που σα
 
 <!--  Αυτά τα μηνύματα εμφανίζονται όταν εμφανίζεται ένα μήνυμα σφάλματος.  -->
 <errorTitle>Λάθος</errorTitle>
-<errorRequestUrl>Το URL του αιτήματός σας:</errorRequestUrl>
-<errorRequestQuery>Το ερώτημα του αιτήματός σας:</errorRequestQuery>
-<errorTheError>Το λάθος:</errorTheError>
-<errorCopyFrom>Δεν είναι δυνατή η αντιγραφή από το {0}.</errorCopyFrom>
 <errorFileNotFound>Το αρχείο δεν βρέθηκε: {0} .</errorFileNotFound>
 <errorFileNotFoundImage>Το αρχείο δεν βρέθηκε στην κρυφή μνήμη. Δημιουργήστε ξανά την εικόνα και δοκιμάστε ξανά.</errorFileNotFoundImage>
 <errorInternal>Εσωτερικό σφάλμα:</errorInternal>
@@ -2940,6 +2905,7 @@ ERDDAP είναι ένας διακομιστής δεδομένων που σα
 <externalLink>(εξωτερικός σύνδεσμος)</externalLink>
 <externalWebSite>Αυτός ο σύνδεσμος προς έναν εξωτερικό ιστότοπο δεν αποτελεί έγκριση.</externalWebSite>
 <fileHelp_asc>Προβολή κειμένου τύπου OPeNDAP ISO-8859-1 διαχωρισμένου με κόμματα.</fileHelp_asc>
+<fileHelp_croissant>Κατεβάστε το σύνολο δεδομένων croissant σχήμα.</fileHelp_croissant>
 <fileHelp_csv>Κάντε λήψη ενός πίνακα κειμένου διαχωρισμένου με κόμματα ISO-8859-1 (γραμμή 1: ονόματα, γραμμή 2: μονάδες, ISO 8601 φορές).</fileHelp_csv>
 <fileHelp_csvp>Κάντε λήψη ενός αρχείου .csv ISO-8859-1 με γραμμή 1: όνομα (μονάδες). Οι χρόνοι είναι συμβολοσειρές ISO 8601.</fileHelp_csvp>
 <fileHelp_csv0>Κάντε λήψη ενός αρχείου .csv ISO-8859-1 χωρίς ονόματα στηλών ή μονάδες. Οι χρόνοι είναι συμβολοσειρές ISO 8601.</fileHelp_csv0>
@@ -2951,12 +2917,18 @@ ERDDAP είναι ένας διακομιστής δεδομένων που σα
 <fileHelpTable_esriCsv>Κάντε λήψη ενός αρχείου ISO_8859_1 .csv για το ArcGIS 9.x της ESRI και παρακάτω (ξεχωριστές στήλες ημερομηνίας και ώρας).</fileHelpTable_esriCsv>
 <fileHelp_fgdc>Δείτε τα μεταδεδομένα UTF-8 FGDC .xml του συνόλου δεδομένων.</fileHelp_fgdc>
 <fileHelp_geoJson>Λήψη δεδομένων γεωγραφικού μήκους, γεωγραφικού πλάτους, άλλων στηλών ως αρχείο UTF-8 GeoJSON .json.</fileHelp_geoJson>
-<fileHelp_graph>Προβολή μιας ιστοσελίδας Make A Graph.</fileHelp_graph>
 <fileHelpGrid_help>Δείτε μια ιστοσελίδα με περιγραφή του griddap.</fileHelpGrid_help>
 <fileHelpTable_help>Προβάλετε μια ιστοσελίδα με μια περιγραφή του επιτραπέζια.</fileHelpTable_help>
 <fileHelp_html>Προβάλετε μια φόρμα πρόσβασης δεδομένων HTML τύπου OPeNDAP.</fileHelp_html>
 <fileHelp_htmlTable>Προβάλετε μια ιστοσελίδα UTF-8 .html με τα δεδομένα σε έναν πίνακα. Οι χρόνοι είναι συμβολοσειρές ISO 8601.</fileHelp_htmlTable>
-<fileHelp_iso19115>Δείτε τα μεταδεδομένα ISO 19115-2/19139 UTF-8 .xml του συνόλου δεδομένων.</fileHelp_iso19115>
+<fileHelp_iso19115>Προβολή του συνόλου δεδομένωνISO 19115/19139UTF-8 .xml μεταδεδομένα χρησιμοποιώντας την προεπιλεγμένη έκδοση για αυτόν τον εξυπηρετητή.
+</fileHelp_iso19115>
+<fileHelp_iso19115_2>Προβολή του συνόλου δεδομένωνISO 19115-2/19139μεταδεδομένα UTF-8 .xml.
+</fileHelp_iso19115_2>
+<fileHelp_iso191392007>Προβολή του συνόλου δεδομένωνISO 19139:2007μεταδεδομένα UTF-8 .xml.
+</fileHelp_iso191392007>
+<fileHelp_iso19115_3_2016>Προβολή του συνόλου δεδομένωνISO 19115-3:2016μεταδεδομένα UTF-8 .xml.
+</fileHelp_iso19115_3_2016>
 <fileHelp_itxGrid>Κάντε λήψη ενός αρχείου κειμένου ISO-8859-1 Igor. Κάθε μεταβλητή άξονα και κάθε μεταβλητή δεδομένων γίνεται κύμα.</fileHelp_itxGrid>
 <fileHelp_itxTable>Κάντε λήψη ενός αρχείου κειμένου ISO-8859-1 Igor. Κάθε στήλη απόκρισης γίνεται κύμα.</fileHelp_itxTable>
 <fileHelp_json>Προβάλετε ένα αρχείο UTF-8 JSON που μοιάζει με πίνακα (που λείπει η τιμή = &#39;null&#39;. Οι χρόνοι είναι συμβολοσειρές ISO 8601).</fileHelp_json>
@@ -2982,7 +2954,6 @@ ERDDAP είναι ένας διακομιστής δεδομένων που σα
 <fileHelpTable_odvTxt>Λήψη γεωγραφικού μήκους, γεωγραφικού πλάτους, χρόνου, άλλων στηλών ως αρχείου γενικού υπολογιστικού φύλλου ISO-8859-1 ODV (.txt).</fileHelpTable_odvTxt>
 <fileHelp_parquet>Λήψη ως parquet αρχείο. Μεταδεδομένα περιέχει ονόματα στήλης (&quot;στήλη_όνομα&quot;) και μονάδες (&quot;στήλη_μονάδες&quot;).</fileHelp_parquet>
 <fileHelp_parquet_with_meta>Λήψη ως parquet αρχείο με λεπτομερή μεταδεδομένα.</fileHelp_parquet_with_meta>
-<fileHelp_subset>Προβάλετε μια φόρμα HTML που χρησιμοποιεί πολύπλευρη αναζήτηση για να απλοποιήσει την επιλογή υποσυνόλων των δεδομένων.</fileHelp_subset>
 <fileHelp_timeGaps>Προβάλετε μια λίστα UTF-8 με κενά στις τιμές χρόνου που είναι μεγαλύτερες από το διάμεσο χάσμα.</fileHelp_timeGaps>
 <fileHelp_tsv>Κάντε λήψη ενός πίνακα κειμένου διαχωρισμένου με καρτέλες ISO-8859-1 (γραμμή 1: ονόματα, γραμμή 2: μονάδες, ISO 8601 φορές).</fileHelp_tsv>
 <fileHelp_tsvp>Κάντε λήψη ενός αρχείου .tsv ISO-8859-1 με γραμμή 1: όνομα (μονάδες). Οι χρόνοι είναι συμβολοσειρές ISO 8601.</fileHelp_tsvp>
@@ -3002,7 +2973,6 @@ ERDDAP είναι ένας διακομιστής δεδομένων που σα
 
 <!--  Η διατύπωση Περιγραφή και Προειδοποίηση είναι ασαφής για να επιτρέπει ένα ή πολλά σύνολα δεδομένων.  -->
 <filesDescription>Το σύστημα &quot;αρχείων&quot; του ERDDAP σάς επιτρέπει να περιηγηθείτε σε ένα εικονικό σύστημα αρχείων και να κατεβάσετε αρχεία δεδομένων πηγής.</filesDescription>
-<filesSort>Κάντε κλικ σε μια επικεφαλίδα (π.χ. Όνομα, Τελευταία τροποποίηση, Μέγεθος) για να αλλάξετε τη σειρά ταξινόμησης.  Το &quot;Τελευταία τροποποίηση&quot; χρησιμοποιεί τη ζώνη ώρας των Ζουλού.</filesSort>
 <filesWarning><![CDATA[
 
 Τα μεταδεδομένα του συνόλου δεδομένων και τα ονόματα των μεταβλητών σε αυτά τα αρχεία προέλευσης ενδέχεται να διαφέρουν από οπουδήποτε αλλού στο ERDDAP ! Ίσως προτιμήσετε να χρησιμοποιήσετε τη Φόρμα Πρόσβασης Δεδομένων του συνόλου δεδομένων.
@@ -3441,13 +3411,6 @@ ERDDAP + curl είναι εκπληκτικά ισχυρό και σας επι�
 Για παράδειγμα, orderByMax(&quot;stationID, time/1day&quot;) θα δημιουργήσει μια ομάδα για κάθε stationID για κάθε ημέρα και θα υπολογίσει και θα επιστρέψει το άθροισμα των άλλων μεταβλητών.
 
 ]]></functionOrderByTooltip>
-<functionOrderByExtra><![CDATA[
-
-Για orderByClosest, καθορίστε το διάστημα (χρησιμοποιώντας τη μορφή n[timeUnits], π.χ.
-1 ώρα) εδώ.
-<br>Για orderByLimit, καθορίστε εδώ τον μέγιστο αριθμό σειρών ανά ομάδα.
-
-]]></functionOrderByExtra>
 <functionOrderBySort><![CDATA[
 
 Αυτή η υποδοχή είναι η {0} σημαντική orderBy ....
@@ -3459,7 +3422,6 @@ ERDDAP + curl είναι εκπληκτικά ισχυρό και σας επι�
 <functionOrderBySort3>τρίτο περισσότερο</functionOrderBySort3>
 <functionOrderBySort4>τέταρτο περισσότερο</functionOrderBySort4>
 <functionOrderBySortLeast>ελάχιστα</functionOrderBySortLeast>
-<functionOrderBySortRowMax>Θα διατηρηθεί μόνο η σειρά με τη μέγιστη τιμή.</functionOrderBySortRowMax>
 <generatedAt>Αυτή η ιστοσελίδα δημιουργήθηκε στο {0} .</generatedAt>
 <geoServicesDescription><![CDATA[
 
@@ -3758,7 +3720,6 @@ href="https://groups.google.com/forum/#!forum/erddap">https://groups.google.com/
 <!--  π.χ., {0}=WMS ή listAll  -->
 <listOfDatasets>Λίστα συνόλων δεδομένων {0}</listOfDatasets>
 <listAll>Ολα</listAll>
-<LogIn>Σύνδεση</LogIn>
 <login>Σύνδεση</login>
 <loginHTML><![CDATA[
 
@@ -3817,22 +3778,15 @@ href="https://groups.google.com/forum/#!forum/erddap">https://groups.google.com/
 Μόνο άτομα που έχουν συνεννοηθεί με τον διαχειριστή αυτού του ERDDAP μπορούν να συνδεθούν.
 
 ]]></loginDescribeOpenID>
-<loginErddap>Συνδεθείτε στο ERDDAP</loginErddap>
 <loginCanNot>Αυτό το ERDDAP δεν έχει διαμορφωθεί για να επιτρέπει στους χρήστες να συνδέονται.</loginCanNot>
 <loginAreNot>Δεν είστε συνδεδεμένοι.</loginAreNot>
 <loginToLogIn>Για να συνδεθείς</loginToLogIn>
-<loginEmailAddress>διεύθυνση ηλεκτρονικού ταχυδρομείου</loginEmailAddress>
 <loginYourEmailAddress>η ηλεκτρονική σου διεύθυνση</loginYourEmailAddress>
 <loginUserName>Ονομα χρήστη</loginUserName>
 <loginPassword>Κωδικός πρόσβασης</loginPassword>
 <loginUserNameAndPassword>Ονομα χρήστη και κωδικός</loginUserNameAndPassword>
 <loginGoogleSignIn>Πραγματοποιήστε έλεγχο ταυτότητας με τον λογαριασμό σας Google.</loginGoogleSignIn>
 <loginOrcidSignIn>Πραγματοποιήστε έλεγχο ταυτότητας με το αναγνωριστικό ORCID.</loginOrcidSignIn>
-<loginOpenID>Συνδεθείτε με το OpenID URL σας</loginOpenID>
-<loginOpenIDOr>Ή συνδεθείτε στον υπάρχοντα (μη OpenID) λογαριασμό σας στο</loginOpenIDOr>
-<loginOpenIDCreate>Ή δημιουργήστε μια διεύθυνση URL OpenID στο</loginOpenIDCreate>
-<loginOpenIDFree>Είναι όλοι δωρεάν!</loginOpenIDFree>
-<loginOpenIDSame>Βεβαιωθείτε ότι έχετε συνδεθεί με την ίδια ακριβώς διεύθυνση URL OpenID που δώσατε στον διαχειριστή του ERDDAP.</loginOpenIDSame>
 <loginAs>Έχετε συνδεθεί ως {0} .</loginAs>
 <loginPartwayAs>Έχετε συνδεθεί εν μέρει ως {0} .</loginPartwayAs>
 <loginFailed>ΣΦΑΛΜΑ: Η σύνδεση απέτυχε</loginFailed>
@@ -3947,7 +3901,6 @@ href="https://groups.google.com/forum/#!forum/erddap">https://groups.google.com/
 ]]></loginPublicAccess>
 <LogOut>Αποσύνδεση</LogOut>
 <logout>Αποσύνδεση</logout>
-<logoutOpenID>Αποσυνδεθείτε από τον πάροχο OpenID.</logoutOpenID>
 
 <!--  logoutSuccess τελευταία ενημέρωση 2019-12-19  -->
 <logoutSuccess>Έχετε αποσυνδεθεί με επιτυχία. 
@@ -4249,10 +4202,6 @@ href="https://groups.google.com/forum/#!forum/erddap">https://groups.google.com/
 Καλύτερα να επιστρέψετε ένα κενό αρχείο; Αλλά το .nc και άλλα δεν επιτρέπουν δεδομένα μήκους 0.
  -->
 <MustBeThereIsNoData>Το ερώτημά σας δεν έδωσε αποτελέσματα που να ταιριάζουν.</MustBeThereIsNoData>
-
-<!--  Πολλοί τύποι αρχείων θέτουν ένα όριο στο πόσα δεδομένα μπορεί να χωρέσει ένα αρχείο (π.χ. 2 GB).  -->
-<MustBeNotNull>Το {0} δεν πρέπει να είναι μηδενικό.</MustBeNotNull>
-<MustBeNotEmpty>Το {0} δεν πρέπει να είναι κενή συμβολοσειρά.</MustBeNotEmpty>
 <MustBeInternalError>Εσωτερικό σφάλμα</MustBeInternalError>
 <MustBeOutOfMemoryError>Σφάλμα εκτός μνήμης</MustBeOutOfMemoryError>
 
@@ -4293,11 +4242,9 @@ href="https://groups.google.com/forum/#!forum/erddap">https://groups.google.com/
 <noXxxNoLonIn180>δεν υπάρχουν τιμές γεωγραφικού μήκους από -180 έως 360</noXxxNoLonIn180>
 <noXxxNoNonString>δεν υπάρχουν μεταβλητές χωρίς συμβολοσειρά</noXxxNoNonString>
 <noXxxNo2NonString>δεν υπάρχουν τουλάχιστον δύο μη-String μεταβλητές</noXxxNo2NonString>
-<noXxxNoStation>Το cdmDataType={0} δεν είναι &quot;TimeSeries&quot;</noXxxNoStation>
 <noXxxNoStationID>δεν υπάρχει μεταβλητή τύπου stationID</noXxxNoStationID>
 <noXxxNoSubsetVariables>Το subsetVariables δεν καθορίστηκε</noXxxNoSubsetVariables>
 <noXxxNoOLLSubsetVariables>Το subsetVariables δεν έχει τις μεταβλητές προσφοράς, γεωγραφικού μήκους και γεωγραφικού πλάτους</noXxxNoOLLSubsetVariables>
-<noXxxNoMinMax>ο διακομιστής δεδομένων πηγής δεν παρέχει ελάχιστες και μέγιστες τιμές</noXxxNoMinMax>
 <noXxxItsGridded>είναι ένα πλέγμα δεδομένων</noXxxItsGridded>
 <noXxxItsTabular>είναι ένα πίνακα δεδομένων</noXxxItsTabular>
 <oneRequestAtATime>Κάντε μόνο ένα αίτημα κάθε φορά.</oneRequestAtATime>
@@ -4324,7 +4271,6 @@ href="https://groups.google.com/forum/#!forum/erddap">https://groups.google.com/
 <options>Επιλογές</options>
 <orAListOfValues>ή μια λίστα αξιών</orAListOfValues>
 <orRefineSearchWith>Ή, κάντε πιο συγκεκριμένη αυτή την αναζήτηση με</orRefineSearchWith>
-<orSearchWith>Ή, αναζητήστε σύνολα δεδομένων με</orSearchWith>
 <orComma>Ή,</orComma>
 <otherFeatures>Αλλα χαρακτηριστικά</otherFeatures>
 <outOfDateDatasets>Μη ενημερωμένα σύνολα δεδομένων</outOfDateDatasets>
@@ -4383,7 +4329,6 @@ KT_speed, KT_tempo, KT_thermal, KT_turbid, EK80</palettes>
     title="Αυτός ο σύνδεσμος προς έναν εξωτερικό ιστότοπο δεν αποτελεί έγκριση."></a> .
 
 ]]></percentEncode>
-<pickADataset>Επιλέξτε ένα σύνολο δεδομένων</pickADataset>
 
 <!--  Μηνύματα που σχετίζονται με αναζητήσεις δεδομένων βάσει πρωτοκόλλου.  -->
 <protocolSearchHtml>Αναζήτηση για σύνολα δεδομένων βάσει πρωτοκόλλου</protocolSearchHtml>
@@ -4400,7 +4345,6 @@ KT_speed, KT_tempo, KT_thermal, KT_turbid, EK80</palettes>
 <queryError1Var>Η μορφή {0} μπορεί να χειριστεί μόνο μία μεταβλητή δεδομένων.</queryError1Var>
 <queryError2Var>Τα αιτήματα για τη μορφή {0} πρέπει να περιλαμβάνουν τουλάχιστον δύο αριθμητικές μεταβλητές (για τους άξονες X και Y).</queryError2Var>
 <queryErrorActualRange>Το {0} βρίσκεται εκτός του πραγματικού_εύρους_της μεταβλητής: {1} έως {2}</queryErrorActualRange>
-<queryErrorAscending>Για αιτήματα {0}, οι τιμές γεωγραφικού μήκους και γεωγραφικού πλάτους πρέπει να είναι αύξουσες.</queryErrorAscending>
 <queryErrorAdjusted>Για αιτήματα {0}, οι προσαρμοσμένες τιμές γεωγραφικού μήκους ({1} έως {2}) πρέπει να είναι μεταξύ -180 και 180.</queryErrorAdjusted>
 <queryErrorConstraintNaN>Η τιμή περιορισμού=&quot;{0}&quot; αποτιμάται σε NaN.  Εάν θέλετε πραγματικά NaN, γράψτε το ως NaN.</queryErrorConstraintNaN>
 <queryErrorEqualSpacing>Για {0} αιτήματα, η απόσταση γεωγραφικού μήκους ({1}) πρέπει να ισούται με την απόσταση γεωγραφικού πλάτους ({2}).</queryErrorEqualSpacing>
@@ -4432,7 +4376,6 @@ KT_speed, KT_tempo, KT_thermal, KT_turbid, EK80</palettes>
 <queryErrorGridNoAxisVar>Ένα ερώτημα μεταβλητής δεδομένων griddap δεν μπορεί να περιλαμβάνει μεταβλητή άξονα ({0}).</queryErrorGridNoAxisVar>
 <queryErrorGridNoDataVar>Ένα ερώτημα μεταβλητής άξονα griddap δεν μπορεί να περιλαμβάνει μεταβλητή δεδομένων ({0}).</queryErrorGridNoDataVar>
 <queryErrorGridNotIdentical>Ο περιορισμός {0} για τη μεταβλητή={1} δεν είναι πανομοιότυπος με τον περιορισμό {2} για τη μεταβλητή={2}.  Εάν χρειάζεστε διαφορετικά υποσύνολα, κάντε ξεχωριστά αιτήματα.</queryErrorGridNotIdentical>
-<queryErrorGridSLessS>StartIndex={0} είναι μεγαλύτερο από StopIndex={1}.</queryErrorGridSLessS>
 <queryErrorLastEndP>Το {0} ξεκινά με &quot;(&quot;, αλλά δεν τελειώνει με &quot;)&quot;.</queryErrorLastEndP>
 <queryErrorLastExpected>Το &quot;τελευταίο&quot; αναμενόταν στις αρχές του {0}.</queryErrorLastExpected>
 <queryErrorLastUnexpected>Απροσδόκητος χαρακτήρας μετά το &quot;last&quot; στο {0}.</queryErrorLastUnexpected>
@@ -4671,7 +4614,6 @@ ERDDAP έχει αυτά τα σημεία πρόσβασης URL για προ�
 <SOSDocumentation>Τεκμηρίωση SOS του ΕΡΔΔΑΠ</SOSDocumentation>
 <WCSDocumentation>Τεκμηρίωση WCS του ERDDAP</WCSDocumentation>
 <WMSDocumentation>Τεκμηρίωση WMS του ERDDAP</WMSDocumentation>
-<findOutChange>έτσι ώστε το πρόγραμμα του υπολογιστή σας να μπορεί να ανακαλύψει εάν ένα σύνολο δεδομένων έχει αλλάξει.</findOutChange>
 <requestFormatExamplesHtml><![CDATA[
 
 (για παράδειγμα,
@@ -5124,14 +5066,6 @@ ERDDAP θα εντοπίσει αμέσως πότε αυτό το σύνολο 
 
 ]]></subscriptionRemoveSuccess>
 <subscriptionRSS>Εγγραφείτε στη ροή RSS για αυτό το σύνολο δεδομένων...</subscriptionRSS>
-<subscriptionsNotAvailable><![CDATA[
-
-<p><strong>Συγνώμη.
-Το σύστημα συνδρομής email/URL δεν είναι διαθέσιμο σε αυτήν την εγκατάσταση ERDDAP .</strong>
-<br>Εξετάστε το ενδεχόμενο να χρησιμοποιήσετε τη συνδρομητική υπηρεσία
-<a rel="help" href="{0}/information.html#subscriptions">RSS</a> .
-
-]]></subscriptionsNotAvailable>
 <subscriptionUrlHtml><![CDATA[
 
 <kbd>URL/action</kbd> είναι μια προαιρετική διεύθυνση URL με την οποία θα επικοινωνήσει ERDDAP αντί να σας στείλει ένα μήνυμα ηλεκτρονικού ταχυδρομείου.
@@ -5395,13 +5329,6 @@ href="https://www.ngdc.noaa.gov/wiki/index.php/Data_Access_Technical_Recommendat
 <!--  Πριν από την ακόλουθη ετικέτα υπάρχει 1 από τις 2 προηγούμενες ετικέτες. 
   Το {0} είναι subsetViewSelectDistintCombos ή subsetViewSelectRelatedCounts.  -->
 <subsetWhenCounts>Το {0} για τις {1} τιμές του &quot;{2}&quot; είναι:</subsetWhenCounts>
-<subsetComboClickSelect><![CDATA[
-
-Για να δείτε τον αριθμό των διαφορετικών συνδυασμών των μεταβλητών που αναφέρονται παραπάνω,
-<br>επιλέξτε <kbd>{0} :
-{1}</kbd> παραπάνω και επιλέξτε μια τιμή για μία από τις παραπάνω μεταβλητές.
-
-]]></subsetComboClickSelect>
 <subsetNVariableCombos>Συνολικά, υπάρχουν {0} σειρές διαφορετικών συνδυασμών των μεταβλητών που αναφέρονται παραπάνω.</subsetNVariableCombos>
 <subsetShowingAllRows>Όλες οι σειρές φαίνονται παραπάνω.</subsetShowingAllRows>
 <subsetShowingNRows>Οι πρώτες {0} σειρές εμφανίζονται παραπάνω.  Οι υπόλοιπες {1} σειρές δεν εμφανίζονται.</subsetShowingNRows>
@@ -6160,7 +6087,6 @@ href="https://groups.google.com/forum/#!forum/erddap">https://groups.google.com/
 Οι απόψεις σε αυτήν την ιστοσελίδα είναι προσωπικές απόψεις του Bob Simons και δεν αντικατοπτρίζουν απαραίτητα οποιαδήποτε θέση της κυβέρνησης ή της National Oceanic and Atmospheric Administration .
 
 ]]></theLongDescriptionHtml>
-<Then>Επειτα</Then>
 <twoClickMapDefaultTooltip>Καθορίστε ένα ορθογώνιο κάνοντας κλικ σε δύο διαγώνιες γωνίες.  Κάντε το ξανά αν χρειαστεί.</twoClickMapDefaultTooltip>
 
 <!--  Αυτός είναι ένας τρόπος για να παρακάμψετε τον μετατροπέα Standardize UDUnits του ERDDAP
@@ -7444,7 +7370,6 @@ https://www.usgin.org
 να μην είναι ποτέ όνομα χαρακτηριστικού.  -->
 <updateUrlsSkipAttributes>sourceUrl</updateUrlsSkipAttributes>
 <variableNames>Ονόματα μεταβλητών</variableNames>
-<viewAllDatasetsHtml>Προβολή λίστας όλων των συνόλων δεδομένων</viewAllDatasetsHtml>
 <waitThenTryAgain>Υπήρχε ένα (προσωρινό;) πρόβλημα.  Περιμένετε ένα λεπτό και μετά δοκιμάστε ξανά.  (Σε ένα πρόγραμμα περιήγησης, κάντε κλικ στο κουμπί Επαναφόρτωση.)</waitThenTryAgain>
 <warning>ΠΡΟΕΙΔΟΠΟΙΗΣΗ!</warning>
 <units>Μονάδες</units>

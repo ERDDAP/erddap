@@ -4,9 +4,6 @@
  */
 package gov.noaa.pfel.coastwatch.util;
 
-import com.cohort.array.LongArray;
-import com.cohort.array.PrimitiveArray;
-import com.cohort.array.StringArray;
 import com.cohort.util.File2;
 import com.cohort.util.MustBe;
 import com.cohort.util.String2;
@@ -105,58 +102,6 @@ public class RegexFilenameFilter implements FilenameFilter {
       String2.log(MustBe.throwableToString(e));
       return null;
     }
-  }
-
-  /**
-   * DEPRECATED - USE FileVisitorDNLS INSTEAD! This gathers information about all subdirectories
-   * (regardless of regex) and all files matching the regex in the specified directory (e.g.,
-   * "c:/cohort");
-   *
-   * @param dir the directory of interest (with or without a trailing slash)
-   * @param regex See regEx documentation in Java Docs for java.util.regex.Pattern.
-   * @return PrimitiveArray[] [0]=dirNames(StringArray) with trailing / or \\,
-   *     [1]=fileNames(StringArray), [2]=fileLastModified(LongArray), [3]=fileSize(LongArray).
-   *     dirNames will not include parent ("..") or self ("."). The sizes of [1], [2], [3] will be
-   *     the same. [0] and [1] will each be sorted (ignoringCase).
-   * @throws RuntimeException if trouble
-   */
-  public static PrimitiveArray[] gatherInfo(String dir, String regex) {
-
-    // add slash to end of dir (if none)
-    dir = File2.addSlash(dir);
-
-    StringArray dirNames = new StringArray();
-    StringArray fileNames = new StringArray();
-    LongArray fileLastModified = new LongArray();
-    LongArray fileSize = new LongArray();
-    PrimitiveArray paAr[] = new PrimitiveArray[] {dirNames, fileNames, fileLastModified, fileSize};
-
-    // get a list of files and dirs
-    String[] names = new File(dir).list();
-    if (names == null) return paAr;
-
-    // for each, determine if it is a file or a dir
-    Arrays.sort(names, String2.STRING_COMPARATOR_IGNORE_CASE);
-    for (String tName : names) {
-      File tFile = new File(dir + tName);
-      if (tFile.isDirectory()) {
-        if (!tName.equals(".")) // ignore self
-        dirNames.add(tName);
-      } else if (tFile.isFile()) {
-        if (tName.matches(regex)) {
-          fileNames.add(tName);
-          fileLastModified.add(tFile.lastModified());
-          fileSize.add(tFile.length());
-        }
-      } else
-        String2.log(
-            String2.ERROR
-                + " in RegexFilenameFilter.gatherInfo: \""
-                + dir
-                + tName
-                + "\" isn't a file or a directory.  (symbolic link?)");
-    }
-    return paAr;
   }
 
   /**

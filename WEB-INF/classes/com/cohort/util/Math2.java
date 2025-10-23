@@ -391,16 +391,6 @@ public class Math2 {
   /**
    * This returns the number of bytes currently in use by this program.
    *
-   * @param allocatedMemory the value from getAllocatedMemory()
-   * @return the number of bytes currently in use by this program
-   */
-  public static long getMemoryInUse(final long allocatedMemory) {
-    return allocatedMemory - Runtime.getRuntime().freeMemory();
-  }
-
-  /**
-   * This returns the number of bytes currently in use by this program.
-   *
    * @return the number of bytes currently in use by this program
    */
   public static long getMemoryInUse() {
@@ -429,44 +419,6 @@ public class Math2 {
   /** This returns the Xmx memory string (max amount jvm was instructed to use). */
   public static String xmxMemoryString() {
     return "(Xmx ~= " + (maxMemory / BytesPerMB) + " MB)";
-  }
-
-  /**
-   * This checks memory usage (calls gc if memory usage is much bigger) and sleeps for a specified
-   * number of milliseconds. This will always sleep or yield. It will call gc() (not incgc) if
-   * memory use is creeping up. 2013-12-05 Years ago, I called this often. But now Java recommends
-   * letting Java handle memory/gc.
-   *
-   * @param caller for diagnostics, the name of the caller
-   * @param millis the number of millis to sleep
-   */
-  public static void incgc(final String caller, final long millis) {
-    // long time = System.currentTimeMillis(); //diagnostic
-
-    // get usingMemory
-    final long using = getMemoryInUse();
-    maxUsingMemory = Math.max(maxUsingMemory, using); // before gc
-
-    // memory usage declined?
-    if (using < lastUsingMemory) {
-      lastUsingMemory = using;
-      sleep(millis);
-
-      // big increase in memory usage -- call gc
-      // trigger number (32MB) is my choice for
-      //  how tight I want it to be
-      // smaller numbers will cause more gc's
-    } else if ((using - lastUsingMemory) > gcTrigger) {
-      gc(caller, millis); // this will also sleep or yield
-
-      // intermediate, just sleep
-    } else {
-      sleep(millis);
-    }
-
-    // if (millis == 0) //diagnostic
-    //    System.err.println("incgc0 " + (System.currentTimeMillis() - time));
-
   }
 
   /**
@@ -515,7 +467,8 @@ public class Math2 {
     // sleep - subtract time already used by gc
     // always wait at least shortSleep so we can see the effects of the gc
     sleep(Math.max(shortSleep, millis) - (System.currentTimeMillis() - time));
-    return lastUsingMemory = getMemoryInUse();
+    lastUsingMemory = getMemoryInUse();
+    return lastUsingMemory;
   }
 
   /**
@@ -1093,19 +1046,6 @@ public class Math2 {
   }
 
   /**
-   * Safely rounds a double to the nearest integer (stored as a double).
-   *
-   * @param bi any BigInteger
-   * @return Double.NaN if d is &gt;= ULONG_MAX_VALUE, otherwise bi rounded to the nearest double.
-   *     !!!Rounding method???
-   */
-  public static final double roundToDouble(final BigInteger bi) {
-    double d =
-        bi == null || bi.compareTo(Math2.ULONG_MAX_VALUE) >= 0 ? Double.NaN : bi.doubleValue();
-    return Double.isFinite(d) ? d : Double.NaN;
-  }
-
-  /**
    * Rounds the value to the specified number of decimal places.
    *
    * @param d any double
@@ -1137,20 +1077,6 @@ public class Math2 {
   }
 
   /**
-   * Safely narrows a BigInteger to a byte.
-   *
-   * @param i any BigInteger
-   * @return Byte.MAX_VALUE if i is too small or too big; otherwise i.
-   */
-  public static final byte narrowToByte(final BigInteger i) {
-    return i == null
-            || i.compareTo(new BigInteger("" + Byte.MAX_VALUE)) > 0
-            || i.compareTo(new BigInteger("" + Byte.MIN_VALUE)) < 0
-        ? Byte.MAX_VALUE
-        : (byte) i.intValue();
-  }
-
-  /**
    * Safely narrows an int to a char.
    *
    * @param i any int
@@ -1168,20 +1094,6 @@ public class Math2 {
    */
   public static final char narrowToChar(final long i) {
     return i > Character.MAX_VALUE || i < Character.MIN_VALUE ? Character.MAX_VALUE : (char) i;
-  }
-
-  /**
-   * Safely narrows a BigInteger to a char.
-   *
-   * @param i any BigInteger
-   * @return Character.MAX_VALUE if i is too small or too big; otherwise i.
-   */
-  public static final char narrowToChar(final BigInteger i) {
-    return i == null
-            || i.compareTo(new BigInteger("" + (int) Character.MAX_VALUE)) > 0
-            || i.compareTo(new BigInteger("" + (int) Character.MIN_VALUE)) < 0
-        ? Character.MAX_VALUE
-        : (char) i.longValue();
   }
 
   /**
@@ -1205,20 +1117,6 @@ public class Math2 {
   }
 
   /**
-   * Safely narrows a BigInteger to a short.
-   *
-   * @param i any BigInteger
-   * @return Short.MAX_VALUE if i is too small or too big; otherwise i.
-   */
-  public static final short narrowToShort(final BigInteger i) {
-    return i == null
-            || i.compareTo(new BigInteger("" + Short.MAX_VALUE)) > 0
-            || i.compareTo(new BigInteger("" + Short.MIN_VALUE)) < 0
-        ? Short.MAX_VALUE
-        : (short) i.longValue();
-  }
-
-  /**
    * Safely narrows a long to an int.
    *
    * @param i any long
@@ -1229,54 +1127,6 @@ public class Math2 {
   }
 
   /**
-   * Safely narrows a BigInteger to a int.
-   *
-   * @param i any BigInteger
-   * @return Integer.MAX_VALUE if i is too small or too big; otherwise i.
-   */
-  public static final int narrowToInt(final BigInteger i) {
-    return i == null
-            || i.compareTo(new BigInteger("" + Integer.MAX_VALUE)) > 0
-            || i.compareTo(new BigInteger("" + Integer.MIN_VALUE)) < 0
-        ? Integer.MAX_VALUE
-        : (int) i.longValue();
-  }
-
-  /**
-   * Safely narrows an int to a ubyte.
-   *
-   * @param i any int
-   * @return UBYTE_MAX_VALUE if i is too small or too big; otherwise i.
-   */
-  public static final short narrowToUByte(final int i) {
-    return i > UBYTE_MAX_VALUE || i < UBYTE_MIN_VALUE ? UBYTE_MAX_VALUE : (short) i;
-  }
-
-  /**
-   * Safely narrows a long to a ubyte.
-   *
-   * @param i any long
-   * @return UBYTE_MAX_VALUE if i is too small or too big; otherwise i.
-   */
-  public static final short narrowToUByte(final long i) {
-    return i > UBYTE_MAX_VALUE || i < UBYTE_MIN_VALUE ? UBYTE_MAX_VALUE : (short) i;
-  }
-
-  /**
-   * Safely narrows a BigInteger to a ubyte.
-   *
-   * @param i any BigInteger
-   * @return UBYTE_MAX_VALUE if i is too small or too big; otherwise i.
-   */
-  public static final short narrowToUByte(final BigInteger i) {
-    return i == null
-            || i.compareTo(new BigInteger("" + UBYTE_MAX_VALUE)) > 0
-            || i.compareTo(new BigInteger("" + UBYTE_MIN_VALUE)) < 0
-        ? UBYTE_MAX_VALUE
-        : (short) i.longValue();
-  }
-
-  /**
    * Safely narrows an int to a ushort.
    *
    * @param i any int
@@ -1284,54 +1134,6 @@ public class Math2 {
    */
   public static final int narrowToUShort(final int i) {
     return i > USHORT_MAX_VALUE || i < USHORT_MIN_VALUE ? USHORT_MAX_VALUE : i;
-  }
-
-  /**
-   * Safely narrows a long to a ushort.
-   *
-   * @param i any long
-   * @return USHORT_MAX_VALUE if i is too small or too big; otherwise i.
-   */
-  public static final int narrowToUShort(final long i) {
-    return i > USHORT_MAX_VALUE || i < USHORT_MIN_VALUE ? USHORT_MAX_VALUE : (int) i;
-  }
-
-  /**
-   * Safely narrows a BigInteger to a ushort.
-   *
-   * @param i any BigInteger
-   * @return UBYTE_MAX_VALUE if i is too small or too big; otherwise i.
-   */
-  public static final int narrowToUShort(final BigInteger i) {
-    return i == null
-            || i.compareTo(new BigInteger("" + USHORT_MAX_VALUE)) > 0
-            || i.compareTo(new BigInteger("" + USHORT_MIN_VALUE)) < 0
-        ? USHORT_MAX_VALUE
-        : (int) i.longValue();
-  }
-
-  /**
-   * Safely narrows a long to a uint.
-   *
-   * @param i any long
-   * @return UINT_MAX_VALUE if i is too small or too big; otherwise i.
-   */
-  public static final long narrowToUInt(final long i) {
-    return i > UINT_MAX_VALUE || i < UINT_MIN_VALUE ? UINT_MAX_VALUE : i;
-  }
-
-  /**
-   * Safely narrows a BigInteger to a uint.
-   *
-   * @param i any BigInteger
-   * @return UBYTE_MAX_VALUE if i is too small or too big; otherwise i.
-   */
-  public static final long narrowToUInt(final BigInteger i) {
-    return i == null
-            || i.compareTo(new BigInteger("" + UINT_MAX_VALUE)) > 0
-            || i.compareTo(new BigInteger("" + UINT_MIN_VALUE)) < 0
-        ? UINT_MAX_VALUE
-        : i.longValue();
   }
 
   /**
@@ -2252,32 +2054,6 @@ public class Math2 {
     return a == b
         || // handles +infinity==+infinity and -infinity==-infinity
         (Float.isNaN(a) && Float.isNaN(b));
-  }
-
-  /**
-   * This converts a BigDecimal[] into a double[]. null values are converted to Double.NaN values.
-   *
-   * @param bdar a BigDecimal array
-   */
-  public static double[] toDoubleArray(final BigDecimal bdar[]) {
-    if (bdar == null) return null;
-    int n = bdar.length;
-    double dar[] = new double[n];
-    for (int i = 0; i < n; i++) dar[i] = bdar[i] == null ? Double.NaN : bdar[i].doubleValue();
-    return dar;
-  }
-
-  /**
-   * This converts a BigDecimal[] into a double[]. null values are converted to Double.NaN values.
-   *
-   * @param dar a double array
-   */
-  public static BigDecimal[] toBigDecimalArray(final double dar[]) {
-    if (dar == null) return null;
-    int n = dar.length;
-    BigDecimal bdar[] = new BigDecimal[n];
-    for (int i = 0; i < n; i++) bdar[i] = Double.isFinite(dar[i]) ? new BigDecimal(dar[i]) : null;
-    return bdar;
   }
 
   /**

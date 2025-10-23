@@ -13,6 +13,7 @@ import com.cohort.util.MustBe;
 import com.cohort.util.String2;
 import com.cohort.util.XML;
 import com.sun.mail.smtp.SMTPTransport;
+import gov.noaa.pfel.erddap.util.EDStatic;
 import jakarta.mail.Message;
 import jakarta.mail.PasswordAuthentication;
 import jakarta.mail.Session;
@@ -30,6 +31,7 @@ import java.io.OutputStream;
 import java.io.Reader;
 import java.io.Writer;
 import java.net.HttpURLConnection;
+import java.net.URI;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLDecoder;
@@ -42,18 +44,21 @@ import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
-import java.util.regex.Pattern;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.InflaterInputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
+import software.amazon.awssdk.auth.credentials.AnonymousCredentialsProvider;
+import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider;
+import software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3AsyncClient;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import software.amazon.awssdk.transfer.s3.S3TransferManager;
 import software.amazon.awssdk.transfer.s3.model.FileDownload;
 import software.amazon.awssdk.transfer.s3.model.FileUpload;
+import software.amazon.awssdk.utils.builder.SdkBuilder;
 
 /**
  * This Shell Script Replacement class has static methods to facilitate using Java programs in place
@@ -128,30 +133,6 @@ public class SSR {
       while ((s = bufferedReader.readLine()) != null) { // null = end-of-file
         // String2.log(s);
         if (s.startsWith(start)) return s;
-      }
-    }
-    return null;
-  }
-
-  /**
-   * This finds the first line in the specified text file which matches 'regex'.
-   *
-   * @param resourceFile the name of the text file
-   * @param charset e.g., File2.ISO_8859_1.
-   * @param regex the regex text to be matched
-   * @return the first line in the specified text file which matches regex (or null if none found).
-   * @throws Exception if error opening, reading, or closing the file
-   */
-  public static String getFirstLineMatching(URL resourceFile, String charset, String regex)
-      throws Exception {
-    try (InputStream decompressedStream = File2.getDecompressedBufferedInputStream(resourceFile);
-        InputStreamReader reader = new InputStreamReader(decompressedStream, charset);
-        BufferedReader bufferedReader = new BufferedReader(reader)) {
-      String s;
-      Pattern pattern = Pattern.compile(regex);
-      while ((s = bufferedReader.readLine()) != null) { // null = end-of-file
-        // String2.log(s);
-        if (pattern.matcher(s).matches()) return s;
       }
     }
     return null;
@@ -499,87 +480,6 @@ public class SSR {
     }
     // close the ZIP file
     if (verbose) String2.log("  zip done. TIME=" + (System.currentTimeMillis() - tTime) + "ms\n");
-  }
-
-  /**
-   * THIS DOES NOT YET WORK PERFECTLY (BUT CLOSE). I DIDN'T SPEND TIME TRYING. This returns the
-   * PostScript code to embed an eps file in another PostScript file.
-   *
-   * @param left
-   * @param bottom
-   * @param angle the angle to rotate (degrees)
-   * @param xScale
-   * @param yScale
-   * @param bBoxLLX the incoming file's bounding box lower left X
-   * @param bBoxLLY
-   * @param epsContents
-   * @return the PostScript code to embed an eps file in another PostScript file.
-   */
-  public static String embedEPSF(
-      double left,
-      double bottom,
-      double angle,
-      double xScale,
-      double yScale,
-      double bBoxLLX,
-      double bBoxLLY,
-      String epsContents) {
-    // "} bind def\n" +
-    return
-    // This is from PostScript Language Reference Manual 2nd ed, pg 726
-    // (in "Appendix H: Encapsulated PostScript File Format - Version 3.0"
-    // BeginEPSF and EndEPSF were definitions (to be put in the prolog),
-    // but the def stuff is commented out here so this can be used inline
-    // in case you don't have access to the prolog of the ps file you are creating.
-    // "/BeginEPSF { %def\n" +                         //prepare for EPS file
-    "  /b4_inc_state save def\n"
-        + // save state for cleanup
-        "  /dict_count countdictstack def\n"
-        + "  /op_count count 1 sub def\n"
-        + // count objects on op stack
-        "  userdict begin\n"
-        + // make userdict current dict
-        "  /showpage {} def\n"
-        + // redifine showpage to be null
-        "  0 setgray 0 setlinecap\n"
-        + "  1 setlinewidth 0 setlinejoin\n"
-        + "  10 setmiterlimit [] 0 setdash newpath\n"
-        + "  /languagelevel where\n"
-        + // if not equal to 1 then
-        "  {pop languagelevel\n"
-        + // set strokeadjust and
-        "  1 ne\n"
-        + // overprint to their defaults
-        "    {false setstrokeadjust false setoverprint\n"
-        + "    } if\n"
-        + "  } if\n"
-        +
-        // "  } bind def\n" +
-
-        // the code that actually embeds the content
-        left
-        + " "
-        + bottom
-        + " translate\n"
-        + angle
-        + " rotate\n"
-        + xScale
-        + " "
-        + yScale
-        + " scale\n"
-        + bBoxLLX
-        + " "
-        + bBoxLLY
-        + " translate\n"
-        + epsContents
-        + "\n"
-        +
-
-        // "/EndEPSF { %def \n" +
-        "  count op_count sub {pop} repeat\n"
-        + "  countdictstack dict_count sub {end} repeat\n"
-        + // clean up dict stack
-        "  b4_inc_state restore\n";
   }
 
   /**
@@ -999,16 +899,25 @@ public class SSR {
    * @param region The S3 region from bro[1].
    */
   public static S3TransferManager buildS3TransferManager(String region) {
-    return S3TransferManager.builder()
-        .s3Client(
-            S3AsyncClient.crtBuilder()
-                .region(Region.of(region))
-                // .credentialsProvider(credentialProvider)  //handled by default credentials
-                // provider
-                .targetThroughputInGbps(20.0) // ??? make a separate setting?
-                .minimumPartSizeInBytes((long) (8 * Math2.BytesPerMB))
-                .build())
-        .build();
+    SdkBuilder<?, S3AsyncClient> builder;
+    AwsCredentialsProvider credentialsProvider = DefaultCredentialsProvider.builder().build();
+    if (EDStatic.config.useAwsAnonymous) {
+      credentialsProvider = AnonymousCredentialsProvider.create();
+    }
+    if (EDStatic.config.useAwsCrt) {
+      builder =
+          S3AsyncClient.crtBuilder()
+              .credentialsProvider(credentialsProvider)
+              .region(Region.of(region))
+              .targetThroughputInGbps(20.0) // ??? make a separate setting?
+              .minimumPartSizeInBytes((long) (8 * Math2.BytesPerMB));
+    } else {
+      builder =
+          S3AsyncClient.builder()
+              .credentialsProvider(credentialsProvider)
+              .region(Region.of(region));
+    }
+    return S3TransferManager.builder().s3Client(builder.build()).build();
   }
 
   /**
@@ -1129,8 +1038,7 @@ public class SSR {
     if (bro != null) {
       // sample code and javadoc:
       // https://sdk.amazonaws.com/java/api/latest/index.html?software/amazon/awssdk/transfer/s3/S3TransferManager.html
-      try {
-        S3TransferManager tm = buildS3TransferManager(bro[1]); // !!! ??? reuse these???
+      try (S3TransferManager tm = buildS3TransferManager(bro[1]); ) {
         FileDownload download =
             tm.downloadFile(
                 d ->
@@ -1319,7 +1227,7 @@ public class SSR {
       }
     }
 
-    URL turl = new URL(urlString);
+    URL turl = URI.create(urlString).toURL();
     URLConnection conn = turl.openConnection();
     if (firstByte > 0 || lastByte != -1)
       // this will cause failure if server doesn't allow byte range requests
@@ -1359,7 +1267,7 @@ public class SSR {
         String location = conn.getHeaderField("location");
         if (String2.isSomething(location)) {
           String2.log("  redirect to " + location);
-          turl = new URL(location);
+          turl = URI.create(location).toURL();
           conn = turl.openConnection();
           if (firstByte > 0 || lastByte != -1)
             conn.setRequestProperty(
@@ -1800,7 +1708,7 @@ public class SSR {
     // modified from https://stackoverflow.com/questions/3324717/sending-http-post-request-in-java
 
     // create the connection where we're going to send the file
-    URL url = new URL(urlString);
+    URL url = URI.create(urlString).toURL();
     HttpURLConnection con = (HttpURLConnection) url.openConnection();
 
     // set the appropriate HTTP parameters
@@ -1865,7 +1773,8 @@ public class SSR {
       String source, OutputStream out, long firstByte, long lastByte, boolean handleS3ViaSDK) {
     if (source.startsWith("http://")
         || source.startsWith("https://")
-        || source.startsWith("ftp://")) { // untested. presumably anonymous
+        || source.startsWith("ftp://")
+        || source.startsWith("s3://")) { // untested. presumably anonymous
       // URL
       try (BufferedInputStream in =
           (BufferedInputStream)

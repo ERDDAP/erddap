@@ -12,12 +12,14 @@ import gov.noaa.pfel.coastwatch.pointdata.Table;
 import gov.noaa.pfel.erddap.dataset.EDD;
 import gov.noaa.pfel.erddap.dataset.EDDGrid;
 import gov.noaa.pfel.erddap.dataset.OutputStreamSource;
+import gov.noaa.pfel.erddap.util.EDMessages.Message;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.EDV;
 import gov.noaa.pfel.erddap.variable.EDVGridAxis;
 import gov.noaa.pfel.erddap.variable.EDVTimeStamp;
 import gov.noaa.pfel.erddap.variable.EDVTimeStampGridAxis;
 import java.io.Writer;
+import java.time.format.DateTimeFormatter;
 
 @FileTypeClass(
     fileTypeExtension = ".csv",
@@ -48,8 +50,9 @@ public class NccsvMetadataFiles extends FileTypeInterface {
         PrimitiveArray pa = catts.get("actual_range");
         if (pa instanceof DoubleArray && pa.size() == 2) {
           StringArray sa = new StringArray();
+          DateTimeFormatter format = Calendar2.timePrecisionToDateTimeFormatter(timePre);
           for (int i = 0; i < 2; i++)
-            sa.add(Calendar2.epochSecondsToLimitedIsoStringT(timePre, pa.getDouble(i), ""));
+            sa.add(Calendar2.epochSecondsToLimitedIsoStringT(format, pa.getDouble(i), ""));
           catts.set("actual_range", sa);
         }
       }
@@ -67,7 +70,7 @@ public class NccsvMetadataFiles extends FileTypeInterface {
 
   @Override
   public String getHelpText(int language) {
-    return EDStatic.messages.fileHelp_nccsvMetadataAr[language];
+    return EDStatic.messages.get(Message.FILE_HELP_NCCSV_METADATA, language);
   }
 
   /**
@@ -102,8 +105,9 @@ public class NccsvMetadataFiles extends FileTypeInterface {
           PrimitiveArray pa = catts.get("actual_range");
           if (pa instanceof DoubleArray && pa.size() == 2) {
             StringArray sa = new StringArray();
+            DateTimeFormatter format = Calendar2.timePrecisionToDateTimeFormatter(timePre);
             for (int i = 0; i < 2; i++)
-              sa.add(Calendar2.epochSecondsToLimitedIsoStringT(timePre, pa.getDouble(i), ""));
+              sa.add(Calendar2.epochSecondsToLimitedIsoStringT(format, pa.getDouble(i), ""));
             catts.set("actual_range", sa);
           }
         }
