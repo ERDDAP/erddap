@@ -17,7 +17,14 @@ package gov.noaa.pfel.coastwatch.sgt;
 import com.cohort.array.IntArray;
 import com.cohort.util.MustBe;
 import com.cohort.util.String2;
-import gov.noaa.pmel.sgt.*;
+import gov.noaa.pmel.sgt.Attribute;
+import gov.noaa.pmel.sgt.CartesianGraph;
+import gov.noaa.pmel.sgt.CartesianRenderer;
+import gov.noaa.pmel.sgt.ColorMap;
+import gov.noaa.pmel.sgt.Graph;
+import gov.noaa.pmel.sgt.JPane;
+import gov.noaa.pmel.sgt.Layer;
+import gov.noaa.pmel.sgt.PlotMark;
 import gov.noaa.pmel.sgt.dm.SGTData;
 import java.awt.BasicStroke;
 import java.awt.Color;
@@ -68,10 +75,14 @@ public class VectorPointsRenderer extends CartesianRenderer {
       resultBaseX = null;
       resultBaseY = null;
       resultRowNumber = null;
-      if (JPane.debug) String2.log("sgt.SGTPointsVector.releaseResources() finished");
+      if (JPane.debug) {
+        String2.log("sgt.SGTPointsVector.releaseResources() finished");
+      }
     } catch (Throwable t) {
       String2.log(MustBe.throwableToString(t));
-      if (JPane.debug) String2.pressEnterToContinue();
+      if (JPane.debug) {
+        String2.pressEnterToContinue();
+      }
     }
   }
 
@@ -274,12 +285,17 @@ public class VectorPointsRenderer extends CartesianRenderer {
    * @see Graph
    */
   public VectorPointsRenderer(
-      CartesianGraph cg, SGTPointsVector sgtPointsVector, VectorAttribute2 attr) {
+      CartesianGraph cg,
+      double[] xValues,
+      double[] yValues,
+      double[] uValues,
+      double[] vValues,
+      VectorAttribute2 attr) {
     cg_ = cg;
-    xValues = sgtPointsVector.xValues;
-    yValues = sgtPointsVector.yValues;
-    uValues = sgtPointsVector.uValues;
-    vValues = sgtPointsVector.vValues;
+    this.xValues = xValues;
+    this.yValues = yValues;
+    this.uValues = uValues;
+    this.vValues = vValues;
     attr_ = attr;
     if (attr_ != null) attr_.addPropertyChangeListener(this);
   }
@@ -332,26 +348,6 @@ public class VectorPointsRenderer extends CartesianRenderer {
     //
     Rectangle rect = cg_.getLayer().getPane().getBounds();
     g.setClip(rect);
-  }
-
-  /**
-   * Set the <code>VectorAttribute2</code>. The line appearance is controlled by this object.
-   *
-   * @param l <code>VectorAttribute2</code>
-   */
-  public void setVectorAttribute(VectorAttribute2 l) {
-    if (attr_ != null) attr_.removePropertyChangeListener(this);
-    attr_ = l;
-    if (attr_ != null) attr_.addPropertyChangeListener(this);
-  }
-
-  /**
-   * Get the <code>VectorAttribute2</code>.
-   *
-   * @return <code>VectorAttribute2</code>
-   */
-  public VectorAttribute2 getVectorAttribute() {
-    return attr_;
   }
 
   /**

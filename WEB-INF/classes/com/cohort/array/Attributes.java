@@ -5,7 +5,10 @@
  */
 package com.cohort.array;
 
-import com.cohort.util.*;
+import com.cohort.util.Calendar2;
+import com.cohort.util.String2;
+import com.cohort.util.Test;
+import com.cohort.util.Units2;
 import java.math.BigInteger;
 import java.util.Enumeration;
 import java.util.HashSet;
@@ -141,24 +144,6 @@ public class Attributes {
   }
 
   /**
-   * A convenience method which assumes the first element of the attribute's value PrimitiveArray is
-   * a CSV String and which splits the string into parts.
-   *
-   * @param name the name of an attribute
-   * @return a String[] or null if trouble (e.g., not found)
-   */
-  public String[] getStringsFromCSV(String name) {
-    try {
-      PrimitiveArray pa = get(name);
-      if (pa == null || pa.size() == 0) return null;
-      String csv = pa.getRawString(0);
-      return StringArray.arrayFromCSV(csv);
-    } catch (Exception e) {
-      return null;
-    }
-  }
-
-  /**
    * This is like the similar set() method, but returns 'this'. add() lets you string several set
    * commands together, e.g., (new Attributes()).add("name", "Abe").add("height", 197);
    *
@@ -170,23 +155,6 @@ public class Attributes {
   public Attributes add(String name, PAOne value) {
     set(name, value == null ? null : value.pa().clone());
     return this;
-  }
-
-  /**
-   * A convenience method which returns the first element of the attribute's value PrimitiveArray as
-   * a PAOne.
-   *
-   * @param name the name of an attribute
-   * @return the attribute as a PAOne (or null if trouble (e.g., not found))
-   */
-  public PAOne getPAOne(String name) {
-    try {
-      PrimitiveArray pa = get(name);
-      if (pa == null || pa.size() == 0) return null;
-      return new PAOne(pa, 0);
-    } catch (Exception e) {
-      return null;
-    }
   }
 
   /**
@@ -416,9 +384,9 @@ public class Attributes {
    * @param moreImportant the Attributes to be added.
    */
   public void set(Attributes moreImportant) {
-    Enumeration en = moreImportant.hashmap.keys();
+    Enumeration<String> en = moreImportant.hashmap.keys();
     while (en.hasMoreElements()) {
-      String name = (String) en.nextElement();
+      String name = en.nextElement();
       set(name, (PrimitiveArray) moreImportant.get(name).clone());
     }
   }
@@ -611,20 +579,6 @@ public class Attributes {
   }
 
   /**
-   * A convenience method which changes the name of an attribute.
-   *
-   * @param oldName the current name of the attribute to be changed
-   * @param newName the new name for the attribute
-   * @return the PrimitiveArray with the attribute's value (will be null if oldName doesn't exist)
-   */
-  public PrimitiveArray changeName(String oldName, String newName) {
-    PrimitiveArray pa = remove(oldName);
-    if (pa != null) return null;
-    add(newName, pa);
-    return pa;
-  }
-
-  /**
    * This is like the similar set() method, but returns 'this'. add() lets you string several set
    * commands together, e.g., (new Attributes()).add("name", "Bob").add("height", 197);
    *
@@ -700,22 +654,6 @@ public class Attributes {
   }
 
   /**
-   * This removes any entry which has a String value of 'value'. value must equal the pa.toString()
-   * of the attribute's value, so a string with the word null must be requesth here as "\"null\""
-   *
-   * @param value Any attribute that has this value (when evaluated as a String) will be removed.
-   */
-  public void removeValue(String value) {
-    Iterator it =
-        hashmap.keySet().iterator(); // iterator (not enumeration) since I use it.remove() below
-    while (it.hasNext()) {
-      String name = (String) it.next();
-      // String2.log(">> lookFor=" + value + " found=" + get(name).toString());
-      if (get(name).toString().equals(value)) it.remove();
-    }
-  }
-
-  /**
    * This generates a String with "[prefix][name] = [value][suffix]" on each line.
    *
    * <p>This nc-style version is used to print netcdf header attributes. It uses String2.toJson for
@@ -766,9 +704,9 @@ public class Attributes {
    */
   public void copyTo(Attributes destination) {
     destination.hashmap.clear();
-    Enumeration en = hashmap.keys();
+    Enumeration<String> en = hashmap.keys();
     while (en.hasMoreElements()) {
-      String name = (String) en.nextElement();
+      String name = en.nextElement();
       destination.set(name, (PrimitiveArray) get(name).clone());
     }
   }
@@ -860,37 +798,16 @@ public class Attributes {
     if (otherAtts == null) return;
 
     // go through this
-    Iterator it =
+    Iterator<String> it =
         hashmap.keySet().iterator(); // iterator (not enumeration) since I use it.remove() below
     while (it.hasNext()) {
-      String name = (String) it.next();
+      String name = it.next();
       PrimitiveArray otherPa = otherAtts.get(name);
       if (otherPa != null) {
         PrimitiveArray pa = get(name);
         if (pa.equals(otherPa))
           // if atts are equal, remove in this Attributes
           it.remove();
-      }
-    }
-  }
-
-  /** This trim()s all names/keys and trim()s all 1 String values. */
-  public void trim() {
-    for (String name : hashmap.keySet()) {
-      String tName = name.trim();
-      PrimitiveArray pa = null;
-      if (name.equals(tName)) {
-        pa = get(name);
-      } else {
-        // switch to trim'd name
-        pa = remove(name);
-        set(name = tName, pa);
-      }
-
-      // trim value?
-      if (pa.elementType() == PAType.STRING && pa.size() > 0) {
-        pa.setString(0, String2.trimStart(pa.getRawString(0)));
-        pa.setString(pa.size() - 1, String2.trimEnd(pa.getRawString(pa.size() - 1)));
       }
     }
   }
@@ -909,7 +826,8 @@ public class Attributes {
       } else {
         // switch to trim/valid name
         pa = remove(name);
-        set(name = tName, pa);
+        name = tName;
+        set(name, pa);
       }
 
       // trim/makeValid the value?
@@ -934,35 +852,6 @@ public class Attributes {
       PrimitiveArray pa = get(name);
       if (pa.elementType() == PAType.STRING) ((StringArray) pa).fromNccsv();
     }
-  }
-
-  /**
-   * This makes a set of addAttributes which are needed to change a into b. If an attribute in 'a'
-   * needs to be set to null, this sets it to the String "null" instead of just nulling it.
-   *
-   * @param a an Attributes object
-   * @param b another Attributes object
-   * @return a set of Attributes which are needed to change a into b.
-   */
-  public static Attributes makeALikeB(Attributes a, Attributes b) {
-    Attributes addAtts = new Attributes();
-
-    // remove/change atts already in 'a' that aren't correct
-    String[] aNames = a.getNames();
-    for (String aName : aNames) {
-      PrimitiveArray aPA = a.get(aName);
-      PrimitiveArray bPA = b.get(aName);
-      if (bPA == null) addAtts.set(aName, "null");
-      else if (!aPA.equals(bPA)) addAtts.set(aName, bPA);
-    }
-
-    // add atts from 'b' that aren't already in 'a'
-    String[] bNames = b.getNames();
-    for (String bName : bNames) {
-      if (a.get(bName) == null) addAtts.set(bName, b.get(bName));
-    }
-
-    return addAtts;
   }
 
   /**
@@ -1022,71 +911,6 @@ public class Attributes {
     return sb.toString();
   }
 
-  /**
-   * This throws a RuntimeException if any attribute name is !String2.isVariableNameSafe(attName).
-   *
-   * @param sourceDescripton e.g., "In the combined attributes for the variable with
-   *     destinationName="sst"". This is just used in the error message.
-   */
-  public void ensureNamesAreVariableNameSafe(String sourceDescription) {
-    String names[] = getNames();
-    for (String name : names) {
-      if (!String2.isVariableNameSafe(name))
-        throw new RuntimeException(
-            sourceDescription
-                + ", attributeName="
-                + String2.toJson(name)
-                + " isn't variableNameSafe. It must start with iso8859Letter|_ and contain only iso8859Letter|_|0-9 .");
-    }
-  }
-
-  /**
-   * This writes the attributes for a variable (or *GLOBAL*) to an NCCSV Binary DataOutputStream.
-   * This doesn't write *SCALAR* or dataType attributes. This doesn't change any of the attributes.
-   * For each attribute, this writes: varName, attName, attPA.
-   *
-   * @param dos the DataOutputStream to be written to.
-   * @param varName The name of the variable to which these attributes are associated.
-   */
-  /* project not finished or tested
-      public void writeNccsvDos(DataOutputStream dos, String varName) throws Exception {
-          String tName;
-
-          //special case: *GLOBAL* Conventions
-          if (varName.equals(String2.NCCSV_GLOBAL)) {
-              String2.writeNccsvDos(dos, varName);
-              tName = "Conventions";
-              String2.writeNccsvDos(dos, tName);
-              String val = getString(tName);
-              if (String2.isSomething(val)) {
-                  if (val.indexOf("NCCSV") < 0)
-                      val += ", " + String2.NCCSV_BINARY_VERSION;
-              } else {
-                  val = "COARDS, CF-1.6, ACDD-1.3, " + String2.NCCSV_BINARY_VERSION;
-              }
-              StringArray sa = new StringArray();
-              sa.add(val);
-              sa.writeNccsvDos(dos);
-          }
-
-          //each of the attributes
-          String names[] = getNames();
-          for (int ni = 0; ni < names.length; ni++) {
-              tName = names[ni];
-              if (varName.equals(String2.NCCSV_GLOBAL) && tName.equals("Conventions"))
-                  continue;
-              if (!String2.isSomething(tName) ||
-                  tName.equals("_NCProperties"))
-                  continue;
-              PrimitiveArray tValue = get(tName);
-              if (tValue == null || tValue.size() == 0 || tValue.toString().length() == 0)
-                  continue; //do nothing
-              String2.writeNccsvDos(dos, varName);
-              String2.writeNccsvDos(dos, tName);
-              tValue.writeNccsvDos(dos);
-          }
-      }
-  */
   /**
    * This writes the attributes for a variable (or *GLOBAL*) to a String using NCO JSON lvl=2
    * pedantic style. See https://nco.sourceforge.net/nco.html#json This doesn't change any of the
@@ -1506,8 +1330,9 @@ public class Attributes {
           newAtts.set("units", Calendar2.ISO8601TZ_FORMAT);
         } else {
           // else just date
-          for (int i = 0; i < n; i++)
+          for (int i = 0; i < n; i++) {
             dataPa.addString(Calendar2.safeEpochSecondsToIsoDateString(da.get(i), ""));
+          }
           newAtts.set("units", Calendar2.ISO8601DATE_FORMAT);
         }
 
@@ -1764,49 +1589,6 @@ public class Attributes {
   }
 
   /**
-   * If _Unsigned=true, change tSourceType. This does not call
-   * tSourceAttributes.convertSomeSignedToUnsigned().
-   *
-   * @param tSourceType the CoHort String name for the type. If !something, this returns current
-   *     value. If invalid type, this throws exception.
-   * @param tSourceAtts the source attributes.
-   * @param tAddAtts the add attributes. If _Unsigned existed, _Unsigned=null will be added here.
-   * @return the original tSourceType or the adjusted tSourceType.
-   * @throws Exception if tSourceAtts or tAddAtts is null
-   */
-  public static String adjustSourceType(
-      String tSourceType, Attributes tSourceAtts, Attributes tAddAtts) {
-    if (!String2.isSomething(tSourceType)) return tSourceType;
-    PAType paType = PAType.fromCohortStringCaseInsensitive(tSourceType); // throws exception
-
-    PrimitiveArray us = tAddAtts.remove("_Unsigned");
-    if (us == null) us = tSourceAtts.remove("_Unsigned");
-    if (us == null) return tSourceType;
-
-    if ("true".equals(us.toString())) paType = PAType.makeUnsigned(paType);
-    else if ("false".equals(us.toString())) paType = PAType.makeSigned(paType);
-
-    tAddAtts.set("_Unsigned", "null");
-
-    return PAType.toCohortString(paType);
-  }
-
-  /**
-   * This variant of adjustSourceType works with a pa, not sourceType string.
-   *
-   * @param pa the PrimitiveArray of source values. If null, this throws exception.
-   * @param tSourceAtts the source attributes
-   * @param tAddAtts the add attributes. If _Unsigned existed, _Unsigned=null will be added here.
-   * @return the original tSourceType or the adjusted tSourceType.
-   */
-  public static PrimitiveArray adjustSourceType(
-      PrimitiveArray pa, Attributes tSourceAtts, Attributes tAddAtts) {
-
-    String tSourceType = adjustSourceType(pa.elementTypeString(), tSourceAtts, tAddAtts);
-    return PrimitiveArray.factory(PAType.fromCohortStringCaseInsensitive(tSourceType), pa);
-  }
-
-  /**
    * Use this when a unsigned variable has been stored in a signed nc3 variable, because nc3 doesn't
    * support unsigned attributes. This converts some signed attributes into the correct unsigned
    * attributes.
@@ -1816,19 +1598,6 @@ public class Attributes {
     for (String name : signedToUnsignedAttNames) {
       PrimitiveArray tPa = get(name);
       if (tPa != null && !tPa.isUnsigned()) set(name, tPa.makeUnsignedPA());
-    }
-  }
-
-  /**
-   * Use this when a unsigned variable needs to be stored in a signed nc3 variable, because nc3
-   * doesn't support unsigned attributes. This converts some unsigned attributes into temporary
-   * signed attributes.
-   */
-  public void convertSomeUnsignedToSigned() {
-    // if var isUnsigned and select atts in nc3 file are signed, change to unsigned
-    for (String name : signedToUnsignedAttNames) {
-      PrimitiveArray tPa = get(name);
-      if (tPa != null && tPa.isUnsigned()) set(name, tPa.makeSignedPA());
     }
   }
 }

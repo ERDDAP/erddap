@@ -132,7 +132,7 @@ public abstract class CacheLockFiles extends FileTypeInterface {
       // copy file to AWS and redirect user
       String contentType =
           OutputStreamFromHttpResponse.getFileContentType(
-              requestInfo.request(), requestInfo.fileTypeName(), fileTypeExtension);
+              requestInfo.fileTypeName(), fileTypeExtension);
       String fullAwsUrl =
           EDStatic.config.awsS3OutputBucketUrl + File2.getNameAndExtension(fullName);
       SSR.uploadFileToAwsS3(

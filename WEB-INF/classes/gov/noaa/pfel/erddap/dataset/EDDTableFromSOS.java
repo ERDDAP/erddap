@@ -29,13 +29,22 @@ import gov.noaa.pfel.erddap.dataset.metadata.LocalizedAttributes;
 import gov.noaa.pfel.erddap.handlers.EDDTableFromSOSHandler;
 import gov.noaa.pfel.erddap.handlers.SaxHandlerClass;
 import gov.noaa.pfel.erddap.util.EDMessages;
+import gov.noaa.pfel.erddap.util.EDMessages.Message;
 import gov.noaa.pfel.erddap.util.EDStatic;
-import gov.noaa.pfel.erddap.variable.*;
+import gov.noaa.pfel.erddap.variable.DataVariableInfo;
+import gov.noaa.pfel.erddap.variable.EDV;
+import gov.noaa.pfel.erddap.variable.EDVAlt;
+import gov.noaa.pfel.erddap.variable.EDVLat;
+import gov.noaa.pfel.erddap.variable.EDVLon;
+import gov.noaa.pfel.erddap.variable.EDVTime;
+import gov.noaa.pfel.erddap.variable.EDVTimeStamp;
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.StringReader;
+import java.time.Instant;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
-import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -209,7 +218,7 @@ public class EDDTableFromSOS extends EDDTable {
     double tAltitudeSourceMaximum = Double.NaN;
     String tTimeSourceName = null;
     String tTimeSourceFormat = null;
-    ArrayList<DataVariableInfo> tDataVariables = new ArrayList<>();
+    List<DataVariableInfo> tDataVariables = new ArrayList<>();
     int tReloadEveryNMinutes = Integer.MAX_VALUE;
     String tAccessibleTo = null;
     String tGraphsAccessibleTo = null;
@@ -642,7 +651,7 @@ public class EDDTableFromSOS extends EDDTable {
     // values that persist for a while
     double tLon = Double.NaN, tLat = Double.NaN, tBeginTime = Double.NaN, tEndTime = Double.NaN;
     String tIndeterminateEnd = null, tStationID = "", tStationProcedure = "";
-    double currentEpochSeconds = Calendar2.gcToEpochSeconds(Calendar2.newGCalendarZulu());
+    double currentEpochSeconds = Instant.now().getEpochSecond();
     boolean tStationHasObsProp[] = new boolean[uniqueSourceObservedProperties.size()];
     // use KVP (KeyValuePair) HTTP GET request to getCapabilities
     // see section 7.2.3 of OGC 06-121r3 (OGC Web Services Common Specification) ver 1.1.0
@@ -740,10 +749,10 @@ public class EDDTableFromSOS extends EDDTable {
               + "ObservationOffering>";
 
       // default beginTime: a year ago      tamuSos needs this
-      GregorianCalendar dbt = Calendar2.newGCalendarZulu();
-      dbt.add(Calendar2.YEAR, -1);
+      ZonedDateTime dbt = ZonedDateTime.now(ZoneOffset.UTC);
+      dbt = dbt.plusYears(-1);
       double defaultBeginTime =
-          Calendar2.gcToEpochSeconds(Calendar2.clearSmallerFields(dbt, Calendar2.MONTH));
+          Calendar2.zdtToEpochSeconds(Calendar2.clearSmallerFields(dbt, Calendar2.MONTH));
       do {
         // process the tags
         // String2.log("tags=" + tags + xmlReader.content());
@@ -758,7 +767,6 @@ public class EDDTableFromSOS extends EDDTable {
         } else if (tags.startsWith(offeringTag)) {
           String endOfTag = tags.substring(offeringTag.length());
           String content = xmlReader.content();
-          String fatalError = null;
 
           // String2.log("endOfTag=" + endOfTag + xmlReader.content());
 
@@ -965,18 +973,6 @@ public class EDDTableFromSOS extends EDDTable {
                 String2.log("    has composite observedProperty> #" + opPo + " " + tid);
             }
           }
-
-          // handle the error
-          // but this isn't used; problems above are logged, but only cause this station not to be
-          // used (see 'invalid' below)
-          if (fatalError != null)
-            throw new IllegalArgumentException(
-                "Error on xml line #"
-                    + xmlReader.lineNumber()
-                    + " stationID="
-                    + tStationID
-                    + ": "
-                    + fatalError);
 
           // all data gathered; create the station
         } else if (tags.equals(offeringEndTag)) {
@@ -1465,7 +1461,8 @@ public class EDDTableFromSOS extends EDDTable {
     for (int station = 0; station < nStations; station++) {
       if (Thread.currentThread().isInterrupted())
         throw new SimpleException(
-            "EDDTableFromSOS.getDataForDapQuery" + EDStatic.messages.caughtInterruptedAr[0]);
+            "EDDTableFromSOS.getDataForDapQuery"
+                + EDStatic.messages.get(Message.CAUGHT_INTERRUPTED, 0));
 
       String tStationLonString = "",
           tStationLatString = "",
@@ -1697,11 +1694,6 @@ public class EDDTableFromSOS extends EDDTable {
             String2.log("  requestURL=" + localSourceUrl + getSB);
             // aConstraintShown = true;
           }
-          if (false) { // debugMode) {
-            String2.log("*** Begin response");
-            String2.log(SSR.getUrlResponseStringUnchanged(localSourceUrl + getSB.toString()));
-            String2.log("*** End response");
-          }
 
           // *** read the data
           if (whoiServer) {
@@ -1783,10 +1775,7 @@ public class EDDTableFromSOS extends EDDTable {
       throw t instanceof WaitThenTryAgainException
           ? t
           : new WaitThenTryAgainException(
-              EDStatic.simpleBilingual(language, EDStatic.messages.waitThenTryAgainAr)
-                  + "\n("
-                  + t
-                  + ")");
+              EDStatic.simpleBilingual(language, Message.WAIT_THEN_TRY_AGAIN) + "\n(" + t + ")");
     }
 
     try {
@@ -1877,7 +1866,7 @@ public class EDDTableFromSOS extends EDDTable {
               xmlReader.nextTag();
               tags = xmlReader.allTags();
             } while (!tags.startsWith("</"));
-            if (errorText == null)
+            if (errorText == null || errorText.isEmpty())
               throw new RuntimeException("Source sent an ExceptionReport (no text).");
             else return;
 
@@ -2113,10 +2102,7 @@ public class EDDTableFromSOS extends EDDTable {
       throw t instanceof WaitThenTryAgainException
           ? t
           : new WaitThenTryAgainException(
-              EDStatic.simpleBilingual(language, EDStatic.messages.waitThenTryAgainAr)
-                  + "\n("
-                  + t
-                  + ")");
+              EDStatic.simpleBilingual(language, Message.WAIT_THEN_TRY_AGAIN) + "\n(" + t + ")");
     }
     try {
 
@@ -2195,7 +2181,6 @@ public class EDDTableFromSOS extends EDDTable {
           if (tags.startsWith(ofInterest)) { // i.e., within <om:Observation>
             String endOfTag = tags.substring(ofInterest.length());
             String content = xmlReader.content();
-            String error = null;
 
             switch (endOfTag) {
               case "<om:observedProperty><swe:CompositePhenomenon><swe:component>" -> {
@@ -2370,11 +2355,6 @@ public class EDDTableFromSOS extends EDDTable {
                 }
               }
             }
-
-            // handle the error
-            if (error != null)
-              throw new RuntimeException(
-                  "Data source error on xml line #" + xmlReader.lineNumber() + ": " + error);
           }
 
           // get the next tag
@@ -2453,10 +2433,7 @@ public class EDDTableFromSOS extends EDDTable {
       throw t instanceof WaitThenTryAgainException
           ? t
           : new WaitThenTryAgainException(
-              EDStatic.simpleBilingual(language, EDStatic.messages.waitThenTryAgainAr)
-                  + "\n("
-                  + t
-                  + ")");
+              EDStatic.simpleBilingual(language, Message.WAIT_THEN_TRY_AGAIN) + "\n(" + t + ")");
     }
 
     try {
@@ -2518,7 +2495,6 @@ public class EDDTableFromSOS extends EDDTable {
           if (tags.startsWith(ofInterest)) { // i.e., within <om:Observation>
             String endOfTag = tags.substring(ofInterest.length());
             String content = xmlReader.content();
-            String error = null;
 
             switch (endOfTag) {
               case "<om:featureOfInterest><swe:GeoReferenceableFeature>"
@@ -2730,11 +2706,6 @@ public class EDDTableFromSOS extends EDDTable {
                 }
               }
             }
-
-            // handle the error
-            if (error != null)
-              throw new RuntimeException(
-                  "Data source error on xml line #" + xmlReader.lineNumber() + ": " + error);
           }
 
           // get the next tag
@@ -3091,7 +3062,6 @@ public class EDDTableFromSOS extends EDDTable {
         } else if (tags.startsWith(offeringTag)) {
           String endOfTag = tags.substring(offeringTag.length());
           String content = xmlReader.content();
-          String error = null;
           if (tags.equals(offeringTag)) offeringTagCount++;
           // if (debugMode) String2.log("offering=" + endOfTag + xmlReader.content());
 
@@ -3180,17 +3150,6 @@ public class EDDTableFromSOS extends EDDTable {
               tStationObsPropList.setCharAt(opPo, (char) (65 + opPo));
             }
           }
-
-          // handle the error
-          if (error != null)
-            throw new RuntimeException(
-                "Error on capabilities xml line #"
-                    + xmlReader.lineNumber()
-                    + " stationID="
-                    + tStationID
-                    + ": "
-                    + error);
-
           // end of a station
         } else if (tags.startsWith(offeringEndTag)) {
           // String2.log("endTag");
@@ -3519,7 +3478,6 @@ public class EDDTableFromSOS extends EDDTable {
         } else if (tags.startsWith(offeringTag)) {
           String endOfTag = tags.substring(offeringTag.length());
           String content = xmlReader.content();
-          String error = null;
           // String2.log("endOfTag=" + endOfTag + xmlReader.content());
 
           /* separate phenomena
@@ -3608,16 +3566,6 @@ public class EDDTableFromSOS extends EDDTable {
               tStationObsPropList.setCharAt(opPo, (char) (65 + opPo));
             }
           }
-
-          // handle the error
-          if (error != null)
-            throw new RuntimeException(
-                "Error on SOS GetCapabilities xml line #"
-                    + xmlReader.lineNumber()
-                    + " stationID="
-                    + tStationID
-                    + ": "
-                    + error);
 
           // end of a station
         } else if (tags.startsWith(offeringEndTag)) {

@@ -4,7 +4,6 @@
  */
 package gov.noaa.pfel.coastwatch.util;
 
-import com.cohort.util.File2;
 import java.io.BufferedOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -28,16 +27,6 @@ public class DataStream {
   }
 
   /**
-   * This creates a buffered file DataInputStream for reading data from a file.
-   *
-   * @param fullFileName
-   * @return a buffered file dataInputStream
-   */
-  public static DataInputStream getDataInputStream(String fullFileName) throws Exception {
-    return new DataInputStream(File2.getDecompressedBufferedInputStream(fullFileName));
-  }
-
-  /**
    * Read a short from the stream.
    *
    * @param littleEndian if true, the component bytes are read lsb to msb, not the normal Java way
@@ -57,23 +46,6 @@ public class DataStream {
   }
 
   /**
-   * Write a short to the stream.
-   *
-   * @param littleEndian if true, the component bytes are written lsb to msb, not the normal Java
-   *     way (msb to lsb).
-   * @param stream the stream to be written to
-   * @param value the value to be written (the low 16 bits)
-   * @throws exception if trouble
-   */
-  public static void writeShort(boolean littleEndian, DataOutputStream stream, int value)
-      throws Exception {
-    if (littleEndian) {
-      stream.write(value); // write() writes low 8 bits of value
-      stream.write(value >> 8);
-    } else stream.writeShort(value);
-  }
-
-  /**
    * Read an int from the stream.
    *
    * @param littleEndian if true, the component bytes are read lsb to msb, not the normal Java way
@@ -90,28 +62,6 @@ public class DataStream {
       return (((((buffer[3] << 8) | (buffer[2] & 255)) << 8) | (buffer[1] & 255)) << 8)
           | (buffer[0] & 255);
     } else return stream.readInt();
-  }
-
-  /**
-   * Write an int to the stream.
-   *
-   * @param littleEndian if true, the component bytes are written lsb to msb, not the normal Java
-   *     way (msb to lsb).
-   * @param stream the stream to be written to
-   * @param value the value to be written
-   * @throws exception if trouble
-   */
-  public static void writeInt(boolean littleEndian, DataOutputStream stream, int value)
-      throws Exception {
-    if (littleEndian) {
-      stream.write(value);
-      value >>= 8; // write(value) writes low 8 bits of value
-      stream.write(value);
-      value >>= 8;
-      stream.write(value);
-      value >>= 8;
-      stream.write(value);
-    } else stream.writeInt(value);
   }
 
   /**
@@ -143,38 +93,6 @@ public class DataStream {
   }
 
   /**
-   * Write a long to the stream.
-   *
-   * @param littleEndian if true, the component bytes are written lsb to msb, not the normal Java
-   *     way (msb to lsb).
-   * @param stream the stream to be written to
-   * @param value the value to be written
-   * @throws exception if trouble
-   */
-  public static void writeLong(boolean littleEndian, DataOutputStream stream, long value)
-      throws Exception {
-    if (littleEndian) {
-      // do most of the calculations as int (faster)
-      int i = (int) value; // safe (just lower 32 bits)
-      stream.write(i);
-      i >>= 8; // write(i) writes low 8 bits of i
-      stream.write(i);
-      i >>= 8;
-      stream.write(i);
-      i >>= 8;
-      stream.write(i);
-      i = (int) (value >> 32); // safe (just 32 bits)
-      stream.write(i);
-      i >>= 8;
-      stream.write(i);
-      i >>= 8;
-      stream.write(i);
-      i >>= 8;
-      stream.write(i);
-    } else stream.writeLong(value);
-  }
-
-  /**
    * Read a float from the stream.
    *
    * @param littleEndian if true, the component bytes are read lsb to msb, not the normal Java way
@@ -189,21 +107,6 @@ public class DataStream {
     return littleEndian
         ? Float.intBitsToFloat(readInt(littleEndian, stream, buffer))
         : stream.readFloat();
-  }
-
-  /**
-   * Write a float from the stream.
-   *
-   * @param littleEndian if true, the component bytes are written lsb to msb, not the normal Java
-   *     way (msb to lsb).
-   * @param stream the stream to be written to
-   * @param value the value to be written
-   * @throws exception if trouble
-   */
-  public static void writeFloat(boolean littleEndian, DataOutputStream stream, float value)
-      throws Exception {
-    if (littleEndian) writeInt(littleEndian, stream, Float.floatToIntBits(value));
-    else stream.writeFloat(value);
   }
 
   /**
@@ -224,49 +127,6 @@ public class DataStream {
   }
 
   /**
-   * Write a double from the stream.
-   *
-   * @param littleEndian if true, the component bytes are written lsb to msb, not the normal Java
-   *     way (msb to lsb).
-   * @param stream the stream to be written to
-   * @param value the value to be written
-   * @throws exception if trouble
-   */
-  public static void writeDouble(boolean littleEndian, DataOutputStream stream, double value)
-      throws Exception {
-    if (littleEndian) writeLong(littleEndian, stream, Double.doubleToLongBits(value));
-    else stream.writeDouble(value);
-  }
-
-  /**
-   * Read a String from bytes (terminated by #0) from the stream.
-   *
-   * @param stream the stream to be read from
-   * @throws exception if trouble
-   */
-  public static String readZString(DataInputStream stream) throws Exception {
-    StringBuilder sb = new StringBuilder();
-    byte b = stream.readByte();
-    while (b != 0) {
-      sb.append((char) b);
-      b = stream.readByte();
-    }
-    return sb.toString();
-  }
-
-  /**
-   * Write a String to the stream as bytes (and add a terminating #0).
-   *
-   * @param stream the stream to be written to
-   * @param value the String to be written
-   * @throws exception if trouble
-   */
-  public static void writeZString(DataOutputStream stream, String value) throws Exception {
-    for (int i = 0; i < value.length(); i++) stream.writeByte(value.charAt(i));
-    stream.writeByte(0);
-  }
-
-  /**
    * Read a byte array from the stream.
    *
    * @param stream the stream to be read from
@@ -277,24 +137,6 @@ public class DataStream {
   public static byte[] readByteArray(DataInputStream stream, int n) throws Exception {
     byte a[] = new byte[n];
     for (int i = 0; i < n; i++) a[i] = stream.readByte();
-    return a;
-  }
-
-  /**
-   * Read a short array from the stream.
-   *
-   * @param littleEndian if true, the component bytes are read lsb to msb, not the normal Java way
-   *     (msb to lsb).
-   * @param stream the stream to be read from
-   * @param buffer a temporary buffer which can be used to read 2 bytes
-   * @param n the number of shorts to be read
-   * @return a short array
-   * @throws exception if trouble
-   */
-  public static short[] readShortArray(
-      boolean littleEndian, DataInputStream stream, byte[] buffer, int n) throws Exception {
-    short a[] = new short[n];
-    for (int i = 0; i < n; i++) a[i] = readShort(littleEndian, stream, buffer);
     return a;
   }
 
@@ -313,60 +155,6 @@ public class DataStream {
       boolean littleEndian, DataInputStream stream, byte[] buffer, int n) throws Exception {
     int a[] = new int[n];
     for (int i = 0; i < n; i++) a[i] = readInt(littleEndian, stream, buffer);
-    return a;
-  }
-
-  /**
-   * Read a long array from the stream.
-   *
-   * @param littleEndian if true, the component bytes are read lsb to msb, not the normal Java way
-   *     (msb to lsb).
-   * @param stream the stream to be read from
-   * @param buffer a temporary buffer which can be used to read 8 bytes
-   * @param n the number of longs to be read
-   * @return a long array
-   * @throws exception if trouble
-   */
-  public static long[] readLongArray(
-      boolean littleEndian, DataInputStream stream, byte[] buffer, int n) throws Exception {
-    long a[] = new long[n];
-    for (int i = 0; i < n; i++) a[i] = readLong(littleEndian, stream, buffer);
-    return a;
-  }
-
-  /**
-   * Read a float array from the stream.
-   *
-   * @param littleEndian if true, the component bytes are read lsb to msb, not the normal Java way
-   *     (msb to lsb).
-   * @param stream the stream to be read from
-   * @param buffer a temporary buffer which can be used to read 4 bytes
-   * @param n the number of floats to be read
-   * @return a float array
-   * @throws exception if trouble
-   */
-  public static float[] readFloatArray(
-      boolean littleEndian, DataInputStream stream, byte[] buffer, int n) throws Exception {
-    float a[] = new float[n];
-    for (int i = 0; i < n; i++) a[i] = readFloat(littleEndian, stream, buffer);
-    return a;
-  }
-
-  /**
-   * Read a double array from the stream.
-   *
-   * @param littleEndian if true, the component bytes are read lsb to msb, not the normal Java way
-   *     (msb to lsb).
-   * @param stream the stream to be read from
-   * @param buffer a temporary buffer which can be used to read 8 bytes
-   * @param n the number of doubles to be read
-   * @return a double array
-   * @throws exception if trouble
-   */
-  public static double[] readDoubleArray(
-      boolean littleEndian, DataInputStream stream, byte[] buffer, int n) throws Exception {
-    double a[] = new double[n];
-    for (int i = 0; i < n; i++) a[i] = readDouble(littleEndian, stream, buffer);
     return a;
   }
 

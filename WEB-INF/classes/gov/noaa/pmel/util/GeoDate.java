@@ -33,7 +33,6 @@ import java.time.format.DateTimeFormatter;
 public class GeoDate implements java.io.Serializable, Comparable<GeoDate> {
   private final int[] max_day_ = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
   private boolean splitDone_;
-  private int yearday_;
   private int year_;
   private int month_;
   private int day_;
@@ -244,7 +243,6 @@ public class GeoDate implements java.io.Serializable, Comparable<GeoDate> {
     minute_ = dateTime.getMinute();
     second_ = dateTime.getSecond();
     msec_ = dateTime.getNano() / 1000000; // Nano to millis
-    yearday_ = dateTime.getDayOfYear();
 
     splitDone_ = true;
   }
@@ -272,7 +270,7 @@ public class GeoDate implements java.io.Serializable, Comparable<GeoDate> {
   public GeoDate increment(double val, int tu) {
     int leap;
     int ival = (int) val;
-    double fract = (val - ival);
+    double fract = val - ival;
     long MSec = getTime();
     switch (tu) {
       case MSEC:
@@ -347,12 +345,6 @@ public class GeoDate implements java.io.Serializable, Comparable<GeoDate> {
     return val;
   }
 
-  /** Get year-day number (Jan 1 = 1) */
-  public int getYearday() {
-    splitTimeFormat();
-    return yearday_;
-  }
-
   /**
    * Get year
    *
@@ -412,12 +404,6 @@ public class GeoDate implements java.io.Serializable, Comparable<GeoDate> {
     return minute_;
   }
 
-  /** Get secondss @Deprecated replaced by {@link #getGMTSeconds}. */
-  public double getSecondss() {
-    splitTimeFormat();
-    return second_;
-  }
-
   /** Get int seconds. //doc said +fraction, that's wasn't true */
   public int getGMTSeconds() { // was double; bob made int
     splitTimeFormat();
@@ -446,7 +432,7 @@ public class GeoDate implements java.io.Serializable, Comparable<GeoDate> {
 
   /**
    * Convert <code>GeoDate</code> to <code>String</code> using provided format. The <code>
-   * SimpleDateFormat</code> and the <code>GregorianCalendar</code> is used to format the <code>
+   * SimpleDateFormat</code> and the <code>ZonedDateTime</code> is used to format the <code>
    * GeoDate</code>. A format of "decade" will create a string of the form 1990 or 1980.
    *
    * @see SimpleDateFormat

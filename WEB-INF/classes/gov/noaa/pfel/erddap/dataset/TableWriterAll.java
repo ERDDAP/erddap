@@ -69,7 +69,7 @@ public class TableWriterAll extends TableWriter {
     EDStatic.cleaner.register(this, cleanupAction);
   }
 
-  private static class CleanupTableWriterAction implements Runnable {
+  private static final class CleanupTableWriterAction implements Runnable {
 
     private DataOutputStream[] columnStreams;
     private String[] columnNames;
@@ -83,7 +83,7 @@ public class TableWriterAll extends TableWriter {
       this.randomInt = randomInt;
     }
 
-    public void setColumnStreams(DataOutputStream[] columnStreams) {
+    private void setColumnStreams(DataOutputStream[] columnStreams) {
       this.columnStreams = columnStreams;
     }
 
@@ -123,7 +123,7 @@ public class TableWriterAll extends TableWriter {
       }
     }
 
-    public void setColumnNames(String[] columnNames) {
+    private void setColumnNames(String[] columnNames) {
       this.columnNames = columnNames;
     }
   }
@@ -250,30 +250,6 @@ public class TableWriterAll extends TableWriter {
   public PrimitiveArray columnEmptyPA(int col) {
     return PrimitiveArray.factory(columnType(col), 1, false)
         .setMaxIsMV(columnMaxIsMV[col]); // safe since checked above
-  }
-
-  /**
-   * This is like the other column(col), but just gets up to the firstNRows.
-   *
-   * @param col 0..
-   * @param firstNRows puts a limit on the max number of rows this will return
-   * @return a PrimitiveArray with the requested data for one of the columns.
-   * @throws Throwable if trouble
-   */
-  public PrimitiveArray column(int col, int firstNRows) throws Throwable {
-    // get it from cumulativeTable
-    if (cumulativeTable != null) return cumulativeTable.getColumn(col);
-
-    // get it from DOSFile
-    Math2.ensureArraySizeOkay(totalNRows, "TableWriterAll");
-    PrimitiveArray pa =
-        PrimitiveArray.factory(
-            columnType(col), (int) totalNRows, false); // safe since checked above
-    pa.setMaxIsMV(columnMaxIsMV[col]);
-    try (DataInputStream dis = dataInputStream(col)) {
-      pa.readDis(dis, Math.min(firstNRows, Math2.narrowToInt(totalNRows)));
-    }
-    return pa;
   }
 
   /**

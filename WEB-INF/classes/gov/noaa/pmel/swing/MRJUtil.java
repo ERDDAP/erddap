@@ -12,8 +12,6 @@
 
 package gov.noaa.pmel.swing;
 
-import javax.swing.UIManager;
-
 /**
  * Uility methods for dealing with Aqua interfaces
  *
@@ -21,19 +19,10 @@ import javax.swing.UIManager;
  * @version $Revision: 1.3 $, $Date: 2003/09/15 16:48:49 $
  * @since 3.0
  */
-public class MRJUtil {
+public final class MRJUtil {
 
-  public MRJUtil() {}
-
-  /**
-   * MacOS Look and feel test
-   *
-   * @return true if using Aqua Look n' Feel
-   */
-  public static boolean isAquaLookAndFeel() {
-    return System.getProperty("mrj.version") != null
-        && UIManager.getSystemLookAndFeelClassName()
-            .equals(UIManager.getLookAndFeel().getClass().getName());
+  private MRJUtil() {
+    // Intentional empty constructor
   }
 
   /** MacOS Java version test */

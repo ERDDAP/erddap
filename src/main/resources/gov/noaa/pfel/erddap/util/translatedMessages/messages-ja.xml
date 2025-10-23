@@ -58,7 +58,6 @@ x-gzip=gzip および x-compress=compress と記載されています。
 <acronyms>頭字語</acronyms>
 <addConstraints>このウェブページへのリクエストにtabledapのような制約を追加できます。
 たとえば、</addConstraints>
-<addVarWhereAttName>オプション: 属性名を指定します。</addVarWhereAttName>
 <addVarWhereAttValue>オプション: 属性値を指定します。</addVarWhereAttValue>
 <addVarWhere><![CDATA[
 
@@ -285,9 +284,6 @@ x-gzip=gzip および x-compress=compress と記載されています。
 <categorySearchHtml><![CDATA[
 <kbd>{0}</kbd>を選択してください
 ]]></categorySearchHtml>
-<categorySearchDifferentHtml><![CDATA[
-異なる<kbd>&category;</kbd>でデータセットを検索
-]]></categorySearchDifferentHtml>
 <categoryClickHtml>カテゴリ (属性値) をクリックすると、関連するデータセットのリストが表示されます。</categoryClickHtml>
 <categoryNotAnOption>attribute=&quot;{0}&quot; の場合、value=&quot;{1}&quot; はオプションではありません。</categoryNotAnOption>
 <caughtInterrupted>currentThread().isInterrupted() をキャッチしました。</caughtInterrupted>
@@ -1535,9 +1531,6 @@ Sea Surface Temperature ) が含まれます。各行は、データの異なる
 
 ]]></dafTableTooltip>
 <dasTitle>このデータセットのデータセット属性構造 (.das)</dasTitle>
-
-<!-- データをダウンロードできない場合に表示されるメッセージ (例: SeaWiFS &lt;=14 日前)。 -->
-<dataAccessNotAllowed>[申し訳ございません。そのデータはダウンロードできません。]</dataAccessNotAllowed>
 <databaseUnableToConnect>データベースに接続できません。</databaseUnableToConnect>
 <dataProviderForm>データプロバイダーフォーム</dataProviderForm>
 <dataProviderFormP1>データプロバイダーフォーム - パート 1</dataProviderFormP1>
@@ -1834,10 +1827,6 @@ y_wind</DEFAULT_commonStandardNames>
 <br>これらの問題を修正してから、フォームのこの部分を再度「送信」してください。
 
 ]]></dpf_fixProblem>
-<dpf_yourName>あなたの名前</dpf_yourName>
-<dpf_emailAddress>電子メールアドレス</dpf_emailAddress>
-<dpf_Timestamp>タイムスタンプ</dpf_Timestamp>
-<dpf_frequency>頻度</dpf_frequency>
 <dpf_title>タイトル</dpf_title>
 <dpf_titleTooltip><![CDATA[
 
@@ -1910,12 +1899,6 @@ y_wind</DEFAULT_commonStandardNames>
 <br><kbd>
 
 ]]></dpf_licenseTooltip>
-<dpf_howYouStoreData><![CDATA[
-
-<br>• エラー:
-グリッド形式または表形式のデータがどのように保存されるかを (下記に) 指定してください。
-
-]]></dpf_howYouStoreData>
 <dpf_provideIfAvailable>データセットで利用可能な場合は情報を提供してください。</dpf_provideIfAvailable>
 <dpf_acknowledgement>了承</dpf_acknowledgement>
 <dpf_acknowledgementTooltip><![CDATA[
@@ -2195,10 +2178,8 @@ ERDDAP管理者は、データの転送方法やその他の詳細を検討す�
 <dtWMS>このデータセットの Web マップ サービスを使用してこのデータのマップを作成する方法については、ここをクリックしてください。</dtWMS>
 <EasierAccessToScientificData>科学データへのより容易なアクセス</EasierAccessToScientificData>
 
-<!-- EDD メッセージは、tabledap および griddap データ アクセス フォームに表示されます。 -->
-<EDDClickOnSubmitHtml><![CDATA[
-<kbd>Submit</kbd>をクリックします。
-]]></EDDClickOnSubmitHtml>
+<!--EDDメッセージが表示されます。tabledapおよびgriddapのデータ アクセス フォーム。
+-->
 <EDDDatasetID>データセットID</EDDDatasetID>
 <EDDFgdc>ＦＧＤＣ</EDDFgdc>
 <EDDFgdcMetadata>FGDC-STD-001-1998 メタデータ</EDDFgdcMetadata>
@@ -2211,9 +2192,7 @@ ERDDAP管理者は、データの転送方法やその他の詳細を検討す�
 <EDDInformation>情報</EDDInformation>
 <EDDSummary>まとめ</EDDSummary>
 <EDDDatasetTitle>データセットのタイトル</EDDDatasetTitle>
-<EDDDownloadData>データをダウンロード</EDDDownloadData>
 <EDDMakeAGraph>グラフを作成する</EDDMakeAGraph>
-<EDDMakeAMap>地図を作る</EDDMakeAMap>
 <EDDMinimum>最小</EDDMinimum>
 <EDDMaximum>最大</EDDMaximum>
 <EDDFileType>ファイルの種類：</EDDFileType>
@@ -2276,8 +2255,6 @@ ERDDAP管理者は、データの転送方法やその他の詳細を検討す�
 ]]></EDDGridDownloadDataTooltip>
 <EDDGridDimension>寸法</EDDGridDimension>
 <EDDGridDimensionRanges>寸法</EDDGridDimensionRanges>
-<EDDGridFirst>初め</EDDGridFirst>
-<EDDGridLast>最後</EDDGridLast>
 <EDDGridStart>始める</EDDGridStart>
 <EDDGridStop>停止</EDDGridStop>
 <EDDGridStartStopTooltip><![CDATA[
@@ -2320,14 +2297,6 @@ ERDDAP管理者は、データの転送方法やその他の詳細を検討す�
 これは、ディメンションの値間の平均間隔 (ディメンションの単位) であり、値が完全に均等に間隔が空いているかどうかを示します。わずかに奇妙で不均等な間隔は、完全に均等に間隔が空いているデータセットで 1 つまたはいくつかのファイルが欠落しているか不良であることを示すことがよくあります。
 
 ]]></EDDGridSpacingTooltip>
-<EDDGridDimensionFirstTooltip><![CDATA[
-ご参考までに:
-これはディメンションの最初の値です。
-]]></EDDGridDimensionFirstTooltip>
-<EDDGridDimensionLastTooltip><![CDATA[
-ご参考までに:
-これはディメンションの最後の値です。
-]]></EDDGridDimensionLastTooltip>
 <EDDGridDownloadTooltip><![CDATA[
 ダウンロードする変数を選択します:
 <br>* ディメンション データのみをダウンロードするには、1 つまたは複数のディメンション (軸) を選択します。
@@ -2585,10 +2554,6 @@ ERDDAPは、科学データセットのサブセットを一般的なファイ�
 
 <!-- これらのメッセージは、エラー メッセージが表示されるときに表示されます。 -->
 <errorTitle>エラー</errorTitle>
-<errorRequestUrl>リクエストURL:</errorRequestUrl>
-<errorRequestQuery>リクエストクエリ:</errorRequestQuery>
-<errorTheError>エラー：</errorTheError>
-<errorCopyFrom>{0} からコピーできません。</errorCopyFrom>
 <errorFileNotFound>ファイルが見つかりません: {0}。</errorFileNotFound>
 <errorFileNotFoundImage>キャッシュ内にファイルが見つかりません。イメージを再作成して再試行してください。</errorFileNotFoundImage>
 <errorInternal>内部エラー：</errorInternal>
@@ -2610,6 +2575,7 @@ ERDDAPは、科学データセットのサブセットを一般的なファイ�
 <externalLink>（外部リンク）</externalLink>
 <externalWebSite>この外部ウェブサイトへのリンクは推奨を意味するものではありません。</externalWebSite>
 <fileHelp_asc>OPeNDAP スタイルの ISO-8859-1 カンマ区切りテキストを表示します。</fileHelp_asc>
+<fileHelp_croissant>データセットクロワッサンスキーマをダウンロードします。</fileHelp_croissant>
 <fileHelp_csv>ISO-8859-1 のカンマ区切りテキスト テーブル (行 1: 名前、行 2: 単位、ISO 8601 時間) をダウンロードします。</fileHelp_csv>
 <fileHelp_csvp>行 1: 名前 (単位) を含む ISO-8859-1 .csv ファイルをダウンロードします。時間は ISO 8601 文字列です。</fileHelp_csvp>
 <fileHelp_csv0>列名や単位のない ISO-8859-1 .csv ファイルをダウンロードします。時間は ISO 8601 文字列です。</fileHelp_csv0>
@@ -2621,12 +2587,18 @@ ERDDAPは、科学データセットのサブセットを一般的なファイ�
 <fileHelpTable_esriCsv>ESRI の ArcGIS 9.x 以前用の ISO_8859_1 .csv ファイルをダウンロードします (日付と時刻の列が別々になっています)。</fileHelpTable_esriCsv>
 <fileHelp_fgdc>データセットの UTF-8 FGDC .xml メタデータを表示します。</fileHelp_fgdc>
 <fileHelp_geoJson>経度、緯度、その他の列のデータを UTF-8 GeoJSON .json ファイルとしてダウンロードします。</fileHelp_geoJson>
-<fileHelp_graph>「Make A Graph」Web ページを表示します。</fileHelp_graph>
 <fileHelpGrid_help>griddap の説明が記載された Web ページを表示します。</fileHelpGrid_help>
 <fileHelpTable_help>tabledap の説明を含む Web ページを表示します。</fileHelpTable_help>
 <fileHelp_html>OPeNDAP スタイルの HTML データ アクセス フォームを表示します。</fileHelp_html>
 <fileHelp_htmlTable>テーブル内のデータを含む UTF-8 .html Web ページを表示します。時刻は ISO 8601 文字列です。</fileHelp_htmlTable>
-<fileHelp_iso19115>データセットの ISO 19115-2/19139 UTF-8 .xml メタデータを表示します。</fileHelp_iso19115>
+<fileHelp_iso19115>データセットの表示ISO 19115/19139UTF-8 .xml は、このサーバーのデフォルトでバージョンのデフォルト値を使用します。
+</fileHelp_iso19115>
+<fileHelp_iso19115_2>データセットの表示ISO 19115-2/19139UTF-8 .xml メタデータ。
+</fileHelp_iso19115_2>
+<fileHelp_iso191392007>データセットの表示ISO 19139:2007UTF-8 .xml メタデータ。
+</fileHelp_iso191392007>
+<fileHelp_iso19115_3_2016>データセットの表示ISO 19115-3:2016UTF-8 .xml メタデータ。
+</fileHelp_iso19115_3_2016>
 <fileHelp_itxGrid>ISO-8859-1 Igor テキスト ファイルをダウンロードします。各軸変数と各データ変数は波形になります。</fileHelp_itxGrid>
 <fileHelp_itxTable>ISO-8859-1 Igor テキスト ファイルをダウンロードします。各応答列が波になります。</fileHelp_itxTable>
 <fileHelp_json>表形式の UTF-8 JSON ファイルを表示します (欠損値 = &#39;null&#39;、時間は ISO 8601 文字列です)。</fileHelp_json>
@@ -2652,7 +2624,6 @@ ERDDAPは、科学データセットのサブセットを一般的なファイ�
 <fileHelpTable_odvTxt>経度、緯度、時間、その他の列を ISO-8859-1 ODV 汎用スプレッドシート ファイル (.txt) としてダウンロードします。</fileHelpTable_odvTxt>
 <fileHelp_parquet>パーケットファイルとしてダウンロードします。 Metadataには、カラム名(「column_names」)とユニット(「column_units」)が含まれています。</fileHelp_parquet>
 <fileHelp_parquet_with_meta>詳細なメタデータでパーケットファイルとしてダウンロードします。</fileHelp_parquet_with_meta>
-<fileHelp_subset>ファセット検索を使用してデータのサブセットの選択を簡素化する HTML フォームを表示します。</fileHelp_subset>
 <fileHelp_timeGaps>中央値のギャップより大きい時間値のギャップの UTF-8 リストを表示します。</fileHelp_timeGaps>
 <fileHelp_tsv>ISO-8859-1 タブ区切りテキスト テーブル (行 1: 名前、行 2: 単位、ISO 8601 時間) をダウンロードします。</fileHelp_tsv>
 <fileHelp_tsvp>1 行目に「名前 (単位)」が含まれる ISO-8859-1 .tsv ファイルをダウンロードします。時間は ISO 8601 文字列です。</fileHelp_tsvp>
@@ -2672,7 +2643,6 @@ ERDDAPは、科学データセットのサブセットを一般的なファイ�
 
 <!-- 説明と警告の文言は、1 つまたは複数のデータセットを許可するように曖昧になっています。 -->
 <filesDescription>ERDDAP の「ファイル」システムを使用すると、仮想ファイル システムを参照し、ソース データ ファイルをダウンロードできます。</filesDescription>
-<filesSort>見出し (名前、最終更新日、サイズなど) をクリックすると、並べ替え順序が変更されます。「最終更新日」では、ズールー タイム ゾーンが使用されます。</filesSort>
 <filesWarning><![CDATA[
 
 これらのソース ファイル内のデータセットのメタデータと変数名は、 ERDDAPの他の部分とは異なる場合があります。代わりにデータセットのデータ アクセス フォームを使用することをお勧めします。
@@ -3030,12 +3000,6 @@ orderBy ...
 <p><strong>orderBy Sum は</strong>、結果テーブルの行をグループに並べ替え、グループごとに 1 行だけを返します。その行には、他の各変数の合計が含まれます。たとえば、 orderByMax(&quot;stationID, time/1day&quot;)各日のstationIDごとにグループを作成し、他の変数の合計を計算して返します。
 
 ]]></functionOrderByTooltip>
-<functionOrderByExtra><![CDATA[
-
-orderByClosestの場合、ここで間隔を指定します（n[timeUnits]形式、例：1時間）。
-<br>orderByLimitの場合、ここでグループあたりの最大行数を指定します。
-
-]]></functionOrderByExtra>
 <functionOrderBySort><![CDATA[
 
 このスロットは、{0} 重要なorderBy ...
@@ -3048,7 +3012,6 @@ orderByClosestの場合、ここで間隔を指定します（n[timeUnits]形式
 <functionOrderBySort3>3番目に多い</functionOrderBySort3>
 <functionOrderBySort4>4番目に多い</functionOrderBySort4>
 <functionOrderBySortLeast>少しでも</functionOrderBySortLeast>
-<functionOrderBySortRowMax>最大値を持つ行のみが保持されます。</functionOrderBySortRowMax>
 <generatedAt>この Web ページは {0} に生成されました。</generatedAt>
 <geoServicesDescription><![CDATA[
 
@@ -3320,7 +3283,6 @@ ERDDAP の水平凡例の場合、legendTitle1 と 2 は同じ行に配置され
 <!-- 例: {0}=WMS または listAll -->
 <listOfDatasets>{0} データセットのリスト</listOfDatasets>
 <listAll>全て</listAll>
-<LogIn>ログイン</LogIn>
 <login>ログイン</login>
 <loginHTML><![CDATA[
 
@@ -3365,22 +3327,15 @@ ERDDAP の水平凡例の場合、legendTitle1 と 2 は同じ行に配置され
     title="この外部ウェブサイトへのリンクは推奨を意味するものではありません。"></a>は、あるウェブサイトでパスワードを使用してログインし、その後、 ERDDAPを含む他の多くのウェブサイトでパスワードを使用せずにログインできるオープン スタンダードです。このERDDAPの管理者と取り決めをした人だけがログインできます。
 
 ]]></loginDescribeOpenID>
-<loginErddap>ERDDAPにログイン</loginErddap>
 <loginCanNot>この ERDDAP は、ユーザーがログインできるように構成されていません。</loginCanNot>
 <loginAreNot>ログインされていません。</loginAreNot>
 <loginToLogIn>ログインします</loginToLogIn>
-<loginEmailAddress>電子メールアドレス</loginEmailAddress>
 <loginYourEmailAddress>あなたのメールアドレス</loginYourEmailAddress>
 <loginUserName>ユーザー名</loginUserName>
 <loginPassword>パスワード</loginPassword>
 <loginUserNameAndPassword>ユーザー名とパスワード</loginUserNameAndPassword>
 <loginGoogleSignIn>Google アカウントで認証します。</loginGoogleSignIn>
 <loginOrcidSignIn>ORCID iD で認証します。</loginOrcidSignIn>
-<loginOpenID>OpenID URLでログイン</loginOpenID>
-<loginOpenIDOr>または、既存の（OpenID以外の）アカウントにログインしてください。</loginOpenIDOr>
-<loginOpenIDCreate>またはOpenID URLを作成します</loginOpenIDCreate>
-<loginOpenIDFree>すべて無料です！</loginOpenIDFree>
-<loginOpenIDSame>ERDDAP 管理者に提供したのとまったく同じ OpenID URL を使用してログインしていることを確認してください。</loginOpenIDSame>
 <loginAs>{0} としてログインしています。</loginAs>
 <loginPartwayAs>{0} として途中までログインしています。</loginPartwayAs>
 <loginFailed>エラー: ログインに失敗しました</loginFailed>
@@ -3482,7 +3437,6 @@ ERDDAP の水平凡例の場合、legendTitle1 と 2 は同じ行に配置され
 ]]></loginPublicAccess>
 <LogOut>ログアウト</LogOut>
 <logout>ログアウト</logout>
-<logoutOpenID>OpenID プロバイダーからログアウトします。</logoutOpenID>
 
 <!-- ログアウト成功 最終更新日 2019-12-19 -->
 <logoutSuccess>ログアウトに成功しました。
@@ -3771,10 +3725,6 @@ ERDDAP の水平凡例の場合、legendTitle1 と 2 は同じ行に配置され
 空のファイルを返す方がよいですか? ただし、.nc などでは長さ 0 のデータが許可されません。
  -->
 <MustBeThereIsNoData>検索に一致する結果は生成されませんでした。</MustBeThereIsNoData>
-
-<!-- 多くのファイルタイプでは、ファイルが保存できるデータの量に制限が設けられています (例: 2GB)。 -->
-<MustBeNotNull>{0} は null であってはなりません。</MustBeNotNull>
-<MustBeNotEmpty>{0} は空の文字列であってはなりません。</MustBeNotEmpty>
 <MustBeInternalError>内部エラー</MustBeInternalError>
 <MustBeOutOfMemoryError>メモリ不足エラー</MustBeOutOfMemoryError>
 
@@ -3815,11 +3765,9 @@ ERDDAP の水平凡例の場合、legendTitle1 と 2 は同じ行に配置され
 <noXxxNoLonIn180>-180から360の範囲内に経度値はありません</noXxxNoLonIn180>
 <noXxxNoNonString>文字列以外の変数はありません</noXxxNoNonString>
 <noXxxNo2NonString>少なくとも2つの非文字列変数が存在しない</noXxxNo2NonString>
-<noXxxNoStation>cdmDataType={0} は「TimeSeries」ではありません</noXxxNoStation>
 <noXxxNoStationID>ステーションIDのような変数はありません</noXxxNoStationID>
 <noXxxNoSubsetVariables>subsetVariablesが指定されていません</noXxxNoSubsetVariables>
 <noXxxNoOLLSubsetVariables>subsetVariablesには、offering、longitude、latitude変数がありません。</noXxxNoOLLSubsetVariables>
-<noXxxNoMinMax>ソースデータサーバーは最小値と最大値を提供しません</noXxxNoMinMax>
 <noXxxItsGridded>グリッド化されたデータセットです</noXxxItsGridded>
 <noXxxItsTabular>これは表形式のデータセットです</noXxxItsTabular>
 <oneRequestAtATime>一度にリクエストは 1 つだけ行ってください。</oneRequestAtATime>
@@ -3844,7 +3792,6 @@ ERDDAP の水平凡例の場合、legendTitle1 と 2 は同じ行に配置され
 <options>オプション</options>
 <orAListOfValues>または値のリスト</orAListOfValues>
 <orRefineSearchWith>または、この検索を絞り込むには</orRefineSearchWith>
-<orSearchWith>または、データセットを検索します</orSearchWith>
 <orComma>または、</orComma>
 <otherFeatures>その他の機能</otherFeatures>
 <outOfDateDatasets>古いデータセット</outOfDateDatasets>
@@ -3901,7 +3848,6 @@ A-Za-z0-9_-!.~&#39;()* 以外のすべての文字は %HH としてエンコー�
  
 
 ]]></percentEncode>
-<pickADataset>データセットを選択</pickADataset>
 
 <!-- プロトコルベースのデータセット検索に関連するメッセージ。 -->
 <protocolSearchHtml>プロトコルによるデータセットの検索</protocolSearchHtml>
@@ -3917,7 +3863,6 @@ A-Za-z0-9_-!.~&#39;()* 以外のすべての文字は %HH としてエンコー�
 <queryError1Var>{0} 形式では 1 つのデータ変数のみを処理できます。</queryError1Var>
 <queryError2Var>{0} 形式のリクエストには、少なくとも 2 つの数値変数 (X 軸と Y 軸用) が含まれている必要があります。</queryError2Var>
 <queryErrorActualRange>{0} は変数の実際の範囲外です: {1} ～ {2}</queryErrorActualRange>
-<queryErrorAscending>{0} リクエストの場合、経度値と緯度値は昇順である必要があります。</queryErrorAscending>
 <queryErrorAdjusted>{0} リクエストの場合、調整された経度値 ({1} から {2}) は -180 から 180 の間である必要があります。</queryErrorAdjusted>
 <queryErrorConstraintNaN>制約値=&quot;{0}&quot; は NaN と評価されます。本当に NaN が必要な場合は、NaN と記述してください。</queryErrorConstraintNaN>
 <queryErrorEqualSpacing>{0} リクエストの場合、経度の間隔 ({1}) は緯度の間隔 ({2}) と等しくなければなりません。</queryErrorEqualSpacing>
@@ -3949,7 +3894,6 @@ A-Za-z0-9_-!.~&#39;()* 以外のすべての文字は %HH としてエンコー�
 <queryErrorGridNoAxisVar>GridDAP データ変数クエリに軸変数 ({0}) を含めることはできません。</queryErrorGridNoAxisVar>
 <queryErrorGridNoDataVar>グリッド AP 軸変数クエリにデータ変数 ({0}) を含めることはできません。</queryErrorGridNoDataVar>
 <queryErrorGridNotIdentical>変数={1} の制約 {0} は、変数={2} の制約 {2} と同じではありません。異なるサブセットが必要な場合は、個別のリクエストを作成してください。</queryErrorGridNotIdentical>
-<queryErrorGridSLessS>StartIndex={0} は StopIndex={1} より大きいです。</queryErrorGridSLessS>
 <queryErrorLastEndP>{0} は「(」で始まりますが、「)」で終わっていません。</queryErrorLastEndP>
 <queryErrorLastExpected>{0} の先頭には「last」が必要です。</queryErrorLastExpected>
 <queryErrorLastUnexpected>{0} の「last」の後に予期しない文字があります。</queryErrorLastUnexpected>
@@ -4121,7 +4065,6 @@ ERDDAPには、コンピュータ プログラム用の次の URL アクセス �
 <SOSDocumentation>ERDDAP の SOS ドキュメント</SOSDocumentation>
 <WCSDocumentation>ERDDAP の WCS ドキュメント</WCSDocumentation>
 <WMSDocumentation>ERDDAP の WMS ドキュメント</WMSDocumentation>
-<findOutChange>コンピュータ プログラムがデータセットが変更されたかどうかを検出できるようにします。</findOutChange>
 <requestFormatExamplesHtml><![CDATA[
 
 （例えば、
@@ -4524,12 +4467,6 @@ ERDDAPには電子メール/URL サブスクリプション システムがあ�
 
 ]]></subscriptionRemoveSuccess>
 <subscriptionRSS>このデータセットの RSS フィードを購読する...</subscriptionRSS>
-<subscriptionsNotAvailable><![CDATA[
-
-<p><strong>申し訳ございません。このERDDAPインストールでは、電子メール/URL サブスクリプション システムは利用できません。</strong>
-<br>代わりに<a rel="help" href="{0}/information.html#subscriptions">RSS</a>サブスクリプション サービスの使用を検討してください。
-
-]]></subscriptionsNotAvailable>
 <subscriptionUrlHtml><![CDATA[
 
 <kbd>URL/action</kbd>は、 ERDDAP電子メールを送信する代わりに連絡するオプションの URL です。
@@ -4747,13 +4684,6 @@ ERDDAP が https を使用できる場合、参照されるすべての画像フ
 <!-- 次のタグの前には、前の 2 つのタグのうちの 1 つがあります。
 {0} は、subsetViewSelectDistintCombos または subsetViewSelectRelatedCounts です。 -->
 <subsetWhenCounts>「{2}」の {1} 値の {0} は次のとおりです:</subsetWhenCounts>
-<subsetComboClickSelect><![CDATA[
-
-上記の変数の異なる組み合わせの数を表示するには、
-<br>上記の<kbd>{0} :
-{1}</kbd>を確認し、上記の変数のいずれかの値を選択してください。
-
-]]></subsetComboClickSelect>
 <subsetNVariableCombos>合計すると、上記の変数の異なる組み合わせが {0} 行あります。</subsetNVariableCombos>
 <subsetShowingAllRows>すべての行が上に表示されています。</subsetShowingAllRows>
 <subsetShowingNRows>最初の {0} 行が上に表示されています。残りの {1} 行は表示されていません。</subsetShowingNRows>
@@ -5291,7 +5221,6 @@ href="https://groups.google.com/forum/#!forum/erddap"><img
 この Web ページ上の意見は Bob Simons の個人的意見であり、必ずしも政府またはNational Oceanic and Atmospheric Administrationの立場を反映するものではありません。
 
 ]]></theLongDescriptionHtml>
-<Then>それから</Then>
 <twoClickMapDefaultTooltip>2 つの対角角をクリックして長方形を指定します。必要に応じて再度実行します。</twoClickMapDefaultTooltip>
 
 <!-- これは、特定の変換を提供することで、ERDDAP の Standardize UDUnits コンバーターをオーバーライドする方法です。
@@ -6567,7 +6496,6 @@ https://www.usgin.org
 何も指定できません。何も指定しない場合は、属性名にならない意味不明な単語を入力してください。 -->
 <updateUrlsSkipAttributes>ソースURL</updateUrlsSkipAttributes>
 <variableNames>変数名</variableNames>
-<viewAllDatasetsHtml>すべてのデータセットのリストを表示する</viewAllDatasetsHtml>
 <waitThenTryAgain>(一時的な?) 問題が発生しました。 1 分ほど待ってから、もう一度お試しください。 (ブラウザで、[再読み込み] ボタンをクリックします。)</waitThenTryAgain>
 <warning>警告！</warning>
 <units>ユニット</units>

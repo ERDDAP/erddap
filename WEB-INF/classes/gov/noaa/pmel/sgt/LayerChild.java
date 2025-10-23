@@ -95,13 +95,6 @@ public interface LayerChild extends Selectable {
   public void setVisible(boolean visible);
 
   /**
-   * Get <code>AbstractPane</code> of the <code>LayerChild</code>.
-   *
-   * @since 2.0
-   */
-  public AbstractPane getPane();
-
-  /**
    * Used by sgt internally.
    *
    * @since 2.0

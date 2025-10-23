@@ -4,16 +4,22 @@
  */
 package gov.noaa.pfel.coastwatch.griddata;
 
+import static java.time.temporal.TemporalAdjusters.lastDayOfMonth;
+
 import com.cohort.array.IntArray;
 import com.cohort.array.PrimitiveArray;
 import com.cohort.array.StringArray;
 import com.cohort.util.Calendar2;
 import com.cohort.util.File2;
+import com.cohort.util.Math2;
 import com.cohort.util.ResourceBundle2;
 import com.cohort.util.String2;
 import com.cohort.util.Test;
+import gov.noaa.pfel.coastwatch.TimePeriods;
 import gov.noaa.pfel.coastwatch.util.RegexFilenameFilter;
+import gov.noaa.pfel.coastwatch.util.SSR;
 import java.io.File;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -493,8 +499,8 @@ public class GenerateThreddsXml {
           // pick the first and last files and generate cwNames
           String daveName0 = files[0];
           String daveNameN = files[files.length - 1];
-          String cwName0 = FileNameUtility.convertDaveNameToCWBrowserName(daveName0);
-          String cwNameN = FileNameUtility.convertDaveNameToCWBrowserName(daveNameN);
+          String cwName0 = convertDaveNameToCWBrowserName(daveName0);
+          String cwNameN = convertDaveNameToCWBrowserName(daveNameN);
           String twoFour = twoName + "/" + fourName;
           String twoFourTime = twoFour + "/" + timePeriodInFileName;
           // if (verbose) String2.log("      daveNameN=" + daveNameN +
@@ -531,11 +537,11 @@ public class GenerateThreddsXml {
           // calculate time coverage
           String startIsoTime =
               Calendar2.formatAsISODateTimeSpace( // throws exception if trouble
-                      FileNameUtility.getCenteredCalendar(cwName0))
+                      getCenteredCalendar(cwName0))
                   + "Z";
           String endIsoTime =
               Calendar2.formatAsISODateTimeSpace( // throws exception if trouble
-                      FileNameUtility.getCenteredCalendar(cwNameN))
+                      getCenteredCalendar(cwNameN))
                   + "Z";
           // endIsoTime is within last 40 days?
           if (Calendar2.isoStringToEpochSeconds(Calendar2.getCurrentISODateStringZulu())
@@ -943,6 +949,7 @@ public class GenerateThreddsXml {
    * @param args must have the 4 Strings which will be used as the 4 paramaters for
    *     generateThreddsXml.
    */
+  @SuppressWarnings("MisleadingEscapedSpace")
   public static void main(String args[]) throws Exception {
     verbose = true;
     if (args == null || args.length < 4) {
@@ -977,5 +984,223 @@ public class GenerateThreddsXml {
                            stored in the Satellite/aggregsat'twoName' subdirectory of xmlMainDir.""");
     }
     generateThreddsXml(args[0], args[1], args[2], args[3]);
+  }
+
+  /**
+   * This converts a a Dave-style file name (e.g., "AH2001068_2001070_ssta_westus" for composites,
+   * or "AH2005069_044200h_ssta_westus" for single passes) into a CWBrowser file name (e.g., (days
+   * 31 + 28 + n) "LAHsstaS3day_20030310120000_x-135_X-105_y22_Y50" for composites or
+   * "LAHsstaSpass_20050310044200_x-135_X-105_y22_Y50" for single passes). It is ok if daveName
+   * doesn't have "_<region>"; if so, the resulting cwName won't have WESN info. But if it does have
+   * a region, it must be in the STANDARD_REGIONS_FILE_NAME. The time period implied by the begin
+   * and end dates must be one of the TimePeriod options.
+   *
+   * @param daveName the .extension is ignored and not required
+   * @return cwBrowserStyleName Source is always 'L'ocal. Units are always 'S'tandard. There is
+   *     extension in the file name.
+   * @throws Exception if trouble
+   */
+  public static String convertDaveNameToCWBrowserName(String daveName) throws Exception {
+
+    String errorIn =
+        String2.ERROR
+            + " in FileNameUtility.convertDaveNameToCWBrowserName\n  daveName="
+            + daveName
+            + "\n  ";
+
+    // determine the timePeriod, centeredDate and centeredTime
+    String timePeriodInFileName, centeredIsoDateTime = "";
+    if (daveName.charAt(16) == 'h') {
+      String yyyyddd = daveName.substring(2, 9);
+      String fileIsoDateTime =
+          Calendar2.yyyydddToIsoDate(yyyyddd)
+              + // may throw exception
+              "T"
+              + daveName.substring(10, 12)
+              + ":"
+              + daveName.substring(12, 14)
+              + ":"
+              + daveName.substring(14, 16);
+
+      // center 25 and 33hour files  GA2005069_120000h_t24h
+      String fourName = daveName.substring(18, 22);
+      if (fourNameIs25Hour(fourName)) {
+        timePeriodInFileName = TimePeriods.IN_FILE_NAMES.get(TimePeriods._25HOUR_INDEX);
+        centeredIsoDateTime =
+            Calendar2.formatAsISODateTimeT(
+                Calendar2.isoDateTimeAdd(fileIsoDateTime, -25 * 60 / 2, Calendar2.MINUTE));
+      } else if (fourNameIs33Hour(fourName)) {
+        timePeriodInFileName = TimePeriods.IN_FILE_NAMES.get(TimePeriods._33HOUR_INDEX);
+        centeredIsoDateTime =
+            Calendar2.formatAsISODateTimeT(
+                Calendar2.isoDateTimeAdd(fileIsoDateTime, -33 * 60 / 2, Calendar2.MINUTE));
+      } else {
+        // hday
+        timePeriodInFileName = "pass";
+        centeredIsoDateTime = fileIsoDateTime;
+      }
+
+    } else { // 2nd date is end date
+      ZonedDateTime startGC =
+          Calendar2.parseYYYYDDDZulu(daveName.substring(2, 9)); // throws Exception if trouble
+      ZonedDateTime endGC =
+          Calendar2.parseYYYYDDDZulu(daveName.substring(10, 17)); // throws Exception if trouble
+      // add 1 day to endGC so precise end time
+      endGC = endGC.plusDays(1);
+      centeredIsoDateTime =
+          Calendar2.epochSecondsToIsoStringT(
+              (double)
+                  Math2.roundToLong(
+                      ((startGC.toInstant().toEpochMilli() + endGC.toInstant().toEpochMilli())
+                              / 2.0)
+                          / 1000.0));
+      int nDays =
+          Math2.roundToInt(
+              (endGC.toInstant().toEpochMilli() - startGC.toInstant().toEpochMilli() + 0.0)
+                  / Calendar2.MILLIS_PER_DAY);
+      int timePeriodIndex;
+      if (nDays >= 28) {
+        // must be 1 month; ensure start date is 1 and rawEnd date is last in same month
+        ZonedDateTime rawEndGC =
+            Calendar2.parseYYYYDDDZulu(daveName.substring(10, 17)); // throws Exception if trouble
+        timePeriodIndex = TimePeriods.exactTimePeriod(TimePeriods.MONTHLY_OPTION);
+        Test.ensureEqual(
+            startGC.getYear(),
+            rawEndGC.getYear(),
+            "Monthly file: Begin and end year not the same.");
+        Test.ensureEqual(
+            startGC.getMonth(),
+            rawEndGC.getMonth(),
+            "Monthly file: Begin and end month not the same.");
+        Test.ensureEqual(startGC.getDayOfMonth(), 1, "Monthly file: Begin date isn't 1.");
+        Test.ensureEqual(
+            rawEndGC.getDayOfMonth(),
+            rawEndGC.with(lastDayOfMonth()).getDayOfMonth(),
+            "Monthly file: End date isn't last date in month.");
+      } else {
+        // EEEK! "closest" is useful to do the match
+        // BUT if there is an unknown time period (e.g., 7 days),
+        //  this will find the closest and not complain.
+        // So at least insist on exact match
+        // BUT!!! no way to tell if Dave intended e.g., 5 day and file name is e.g., 4 day.
+        timePeriodIndex = TimePeriods.closestTimePeriod(nDays * 24, TimePeriods.OPTIONS);
+        Test.ensureEqual(
+            nDays,
+            TimePeriods.N_HOURS.get(timePeriodIndex) / 24,
+            errorIn + nDays + "-day time period not yet supported.");
+      }
+      timePeriodInFileName = TimePeriods.IN_FILE_NAMES.get(timePeriodIndex);
+    }
+    String centeredDateTime = Calendar2.removeSpacesDashesColons(centeredIsoDateTime);
+
+    // convert Dave's region name to WESN info
+    int po = daveName.indexOf('.', 21); // 21 must exist
+    if (po < 0) po = daveName.length();
+    String region = po < 23 ? "" : daveName.substring(23, po);
+    StringBuilder wesnSB = new StringBuilder();
+    if (region.length() > 0) {
+      // get the line in the regions file with the region
+      String line =
+          SSR.getFirstLineStartsWith(
+              FileNameUtility.STANDARD_REGIONS_FILE_NAME, File2.ISO_8859_1, region);
+      Test.ensureNotNull(
+          line,
+          errorIn
+              + "region \""
+              + region
+              + "\" not found in "
+              + FileNameUtility.STANDARD_REGIONS_FILE_NAME
+              + ".");
+
+      // split at whitespace
+      String fields[] = line.split("\\s+"); // s = whitespace regex
+      Test.ensureTrue(
+          fields.length >= 2,
+          errorIn
+              + "no range defined for "
+              + region
+              + " in "
+              + FileNameUtility.STANDARD_REGIONS_FILE_NAME
+              + ".");
+      wesnSB.append("_x" + fields[1]); // e.g., now _x225/255/22/50
+      po = wesnSB.indexOf("/");
+      wesnSB.replace(po, po + 1, "_X");
+      po = wesnSB.indexOf("/");
+      wesnSB.replace(po, po + 1, "_y");
+      po = wesnSB.indexOf("/");
+      wesnSB.replace(po, po + 1, "_Y"); // e.g., "_x225_X255_y22_Y50";
+    }
+
+    // return the desired file name
+    // always the 'L'ocal variant
+    // e.g., AT
+    // e.g., ssta
+    // always the standard units   (all files now stored that way)
+    // String2.log("convertDaveNameToCWBrowserName " + daveName + " -> " + cwName);
+    return "L"
+        + // always the 'L'ocal variant
+        daveName.substring(0, 2)
+        + // e.g., AT
+        daveName.substring(18, 22)
+        + // e.g., ssta
+        "S"
+        + // always the standard units   (all files now stored that way)
+        timePeriodInFileName
+        + "_"
+        + centeredDateTime
+        + wesnSB;
+  }
+
+  /**
+   * This indicates if a 4 letter variable name is from a 25 hour file, which is often handled as a
+   * special case in this class. Yes, it is an anomaly that Dave's 24h variable names represent 25
+   * hours, but 33h variable names represent 33 hours. Dave changed all use of 24h to 25h around
+   * 2006-06-01. [No, still GAt24h.]
+   *
+   * @param fourName e.g., u24h or u25h (true) or ssta (false)
+   * @return true if this is a special 25 hour file.
+   */
+  public static boolean fourNameIs25Hour(String fourName) {
+    String s = fourName.substring(1, 4);
+    return s.equals("24h") || s.equals("25h");
+  }
+
+  /**
+   * This indicates if a 4 letter variable name is from a 33 hour file, which is often handled as a
+   * special case in this class.
+   *
+   * @param fourName e.g., u33h or u33h (true) or ssta (false)
+   * @return true if this is a special 33 hour file.
+   */
+  public static boolean fourNameIs33Hour(String fourName) {
+    String s = fourName.substring(1, 4);
+    return s.equals("33h");
+  }
+
+  /**
+   * This returns the centered date String (e.g., 20030304 or 20030304hhmmss) in the compact form
+   * straight from the file name.
+   *
+   * @param fileName a base or custom file name.
+   * @return the compact end date String.
+   */
+  public static String getRawDateString(String fileName) {
+    int po1 = fileName.indexOf('_');
+    int po2 = fileName.indexOf('_', po1 + 1);
+    if (po2 < 0) po2 = fileName.indexOf('.', po1 + 1);
+    if (po2 < 0) po2 = fileName.length();
+    // String2.log("getRawDateString fileName=" + fileName + " -> " + d);
+    return fileName.substring(po1 + 1, po2);
+  }
+
+  /**
+   * This returns the centered dateTime (straight from getRawDateString) as a ZonedDateTime object.
+   *
+   * @param fileName a base or custom file name.
+   * @return the ZonedDateTime object
+   */
+  public static ZonedDateTime getCenteredCalendar(String fileName) throws Exception {
+    return Calendar2.parseCompactDateTime(
+        getRawDateString(fileName)); // throws Exception if trouble
   }
 }

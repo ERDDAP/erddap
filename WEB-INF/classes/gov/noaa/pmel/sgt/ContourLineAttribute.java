@@ -12,7 +12,8 @@
 
 package gov.noaa.pmel.sgt;
 
-import java.awt.*;
+import java.awt.Color;
+import java.awt.Font;
 
 /**
  * Sets the rendering style for a contour line. <code>Color</code>, width, and dash characteristics
@@ -135,19 +136,6 @@ public class ContourLineAttribute extends LineAttribute {
     return labelText_;
   }
 
-  /**
-   * Enable/disable the contour label. <br>
-   * <strong>Property Change:</strong> <code>labelEnabled</code>.
-   */
-  public void setLabelEnabled(boolean sle) {
-    if (labelEnabled_ != sle) {
-      labelEnabledOverridden_ = true;
-      Boolean tempOld = labelEnabled_;
-      labelEnabled_ = sle;
-      changes_.firePropertyChange("labelEnabled", tempOld, Boolean.valueOf(labelEnabled_));
-    }
-  }
-
   /** Test if the contour label is enabled. */
   public boolean isLabelEnabled() {
     return labelEnabled_;
@@ -189,19 +177,6 @@ public class ContourLineAttribute extends LineAttribute {
     return labelHeightP_;
   }
 
-  /**
-   * Set the contour label font. <br>
-   * <strong>Property Change:</strong> <code>labelFont</code>.
-   */
-  public void setLabelFont(Font font) {
-    if (labelFont_ == null || !labelFont_.equals(font)) {
-      labelFontOverridden_ = true;
-      Font tempOld = labelFont_;
-      labelFont_ = font;
-      changes_.firePropertyChange("labelFont", tempOld, labelFont_);
-    }
-  }
-
   /** Get the contour label font */
   public Font getLabelFont() {
     return labelFont_;
@@ -210,8 +185,6 @@ public class ContourLineAttribute extends LineAttribute {
   /**
    * Set the format for the contour label. The format is used with <code>Format</code>. <br>
    * <strong>Property Change:</strong> <code>labelFormat</code>.
-   *
-   * @see Format
    */
   public void setLabelFormat(String format) {
     if (!labelFormat_.equals(format)) {
@@ -227,18 +200,6 @@ public class ContourLineAttribute extends LineAttribute {
     return labelFormat_;
   }
 
-  /**
-   * Create contour label from value and format. <br>
-   * <strong>Property Change:</strong> <code>autoLabel</code>.
-   */
-  public void setAutoLabel(boolean auto) {
-    if (autoLabel_ != auto) {
-      Boolean tempOld = autoLabel_;
-      autoLabel_ = auto;
-      changes_.firePropertyChange("autoLabel", tempOld, Boolean.valueOf(autoLabel_));
-    }
-  }
-
   /** Is auto labelling on? */
   public boolean isAutoLabel() {
     return autoLabel_;
@@ -249,41 +210,9 @@ public class ContourLineAttribute extends LineAttribute {
     return labelEnabledOverridden_;
   }
 
-  /**
-   * Enable/disable having <code>DefaultContourLineAttribute</code> override <code>
-   * ContourLineAttribute</code> behavior of labelEnabled. <br>
-   * <strong>Property Change:</strong> <code>labelEnabledOverridden</code>.
-   *
-   * @see DefaultContourLineAttribute
-   */
-  public void setLabelEnabledOverridden(boolean override) {
-    if (labelEnabledOverridden_ != override) {
-      Boolean tempOld = labelEnabledOverridden_;
-      labelEnabledOverridden_ = override;
-      changes_.firePropertyChange(
-          "labelEnabledOverridden", tempOld, Boolean.valueOf(labelEnabledOverridden_));
-    }
-  }
-
   /** Test if labelColor is overridden by <code>DefaultContourLineAttribute</code>. */
   public boolean isLabelColorOverridden() {
     return labelColorOverridden_;
-  }
-
-  /**
-   * Enable/disable having <code>DefaultContourLineAttribute</code> override <code>
-   * ContourLineAttribute</code> behavior of labelColor. <br>
-   * <strong>Property Change:</strong> <code>labelColorOverridden</code>.
-   *
-   * @see DefaultContourLineAttribute
-   */
-  public void setLabelColorOverridden(boolean override) {
-    if (labelColorOverridden_ != override) {
-      Boolean tempOld = labelColorOverridden_;
-      labelColorOverridden_ = override;
-      changes_.firePropertyChange(
-          "labelColorOverridden", tempOld, Boolean.valueOf(labelColorOverridden_));
-    }
   }
 
   /** Test if labelHeightP is overridden by <code>DefaultContourLineAttribute</code>. */
@@ -291,62 +220,14 @@ public class ContourLineAttribute extends LineAttribute {
     return labelHeightPOverridden_;
   }
 
-  /**
-   * Enable/disable having <code>DefaultContourLineAttribute</code> override <code>
-   * ContourLineAttribute</code> behavior of labelHeightP. <br>
-   * <strong>Property Change:</strong> <code>labelHeightPOverridden</code>.
-   *
-   * @see DefaultContourLineAttribute
-   */
-  public void setLabelHeightPOverridden(boolean override) {
-    if (labelHeightPOverridden_ != override) {
-      Boolean tempOld = labelHeightPOverridden_;
-      labelHeightPOverridden_ = override;
-      changes_.firePropertyChange(
-          "labelHeightPOverridden", tempOld, Boolean.valueOf(labelHeightPOverridden_));
-    }
-  }
-
   /** Test if labelFont is overridden by <code>DefaultContourLineAttribute</code>. */
   public boolean isLabelFontOverridden() {
     return labelFontOverridden_;
   }
 
-  /**
-   * Enable/disable having <code>DefaultContourLineAttribute</code> override <code>
-   * ContourLineAttribute</code> behavior of labelFont. <br>
-   * <strong>Property Change:</strong> <code>labelFontOverridden</code>.
-   *
-   * @see DefaultContourLineAttribute
-   */
-  public void setLabelFontOverridden(boolean override) {
-    if (labelFontOverridden_ != override) {
-      Boolean tempOld = labelFontOverridden_;
-      labelFontOverridden_ = override;
-      changes_.firePropertyChange(
-          "labelFontOverridden", tempOld, Boolean.valueOf(labelFontOverridden_));
-    }
-  }
-
   /** Test if labelFormat is overridden by <code>DefaultContourLineAttribute</code>. */
   public boolean isLabelFormatOverridden() {
     return labelFormatOverridden_;
-  }
-
-  /**
-   * Enable/disable having <code>DefaultContourLineAttribute</code> override <code>
-   * ContourLineAttribute</code> behavior of labelFormat. <br>
-   * <strong>Property Change:</strong> <code>labelFormatOverridden</code>.
-   *
-   * @see DefaultContourLineAttribute
-   */
-  public void setLabelFormatOverridden(boolean override) {
-    if (labelFormatOverridden_ != override) {
-      Boolean tempOld = labelFormatOverridden_;
-      labelFormatOverridden_ = override;
-      changes_.firePropertyChange(
-          "labelFormatOverridden", tempOld, Boolean.valueOf(labelFormatOverridden_));
-    }
   }
 
   @Override
@@ -360,22 +241,6 @@ public class ContourLineAttribute extends LineAttribute {
     return dashArrayOverridden_;
   }
 
-  /**
-   * Enable/disable having <code>DefaultContourLineAttribute</code> override <code>
-   * ContourLineAttribute</code> behavior of dashArray. <br>
-   * <strong>Property Change:</strong> <code>dashArrayOverridden</code>.
-   *
-   * @see DefaultContourLineAttribute
-   */
-  public void setDashArrayOverridden(boolean override) {
-    if (dashArrayOverridden_ != override) {
-      Boolean tempOld = dashArrayOverridden_;
-      dashArrayOverridden_ = override;
-      changes_.firePropertyChange(
-          "dashArrayOverridden", tempOld, Boolean.valueOf(dashArrayOverridden_));
-    }
-  }
-
   @Override
   public void setDashPhase(float phase) {
     dashPhaseOverridden_ = true;
@@ -385,22 +250,6 @@ public class ContourLineAttribute extends LineAttribute {
   /** Test if dashPhase is overridden by <code>DefaultContourLineAttribute</code>. */
   public boolean isDashPhaseOverridden() {
     return dashPhaseOverridden_;
-  }
-
-  /**
-   * Enable/disable having <code>DefaultContourLineAttribute</code> override <code>
-   * ContourLineAttribute</code> behavior of dashPhase. <br>
-   * <strong>Property Change:</strong> <code>dashPhaseOverridden</code>.
-   *
-   * @see DefaultContourLineAttribute
-   */
-  public void setDashPhaseOverridden(boolean override) {
-    if (dashPhaseOverridden_ != override) {
-      Boolean tempOld = dashPhaseOverridden_;
-      dashPhaseOverridden_ = override;
-      changes_.firePropertyChange(
-          "dashPhaseOverridden", tempOld, Boolean.valueOf(dashPhaseOverridden_));
-    }
   }
 
   @Override
@@ -441,21 +290,6 @@ public class ContourLineAttribute extends LineAttribute {
     return colorOverridden_;
   }
 
-  /**
-   * Enable/disable having <code>DefaultContourLineAttribute</code> override <code>
-   * ContourLineAttribute</code> behavior of color. <br>
-   * <strong>Property Change:</strong> <code>colorOverridden</code>.
-   *
-   * @see DefaultContourLineAttribute
-   */
-  public void setColorOverridden(boolean override) {
-    if (colorOverridden_ != override) {
-      Boolean tempOld = colorOverridden_;
-      colorOverridden_ = override;
-      changes_.firePropertyChange("colorOverridden", tempOld, Boolean.valueOf(colorOverridden_));
-    }
-  }
-
   @Override
   public void setWidth(float t) {
     widthOverridden_ = true;
@@ -467,52 +301,9 @@ public class ContourLineAttribute extends LineAttribute {
     return widthOverridden_;
   }
 
-  /**
-   * Enable/disable having <code>DefaultContourLineAttribute</code> override <code>
-   * ContourLineAttribute</code> behavior of width. <br>
-   * <strong>Property Change:</strong> <code>widthOverridden</code>.
-   *
-   * @see DefaultContourLineAttribute
-   */
-  public void setWidthOverridden(boolean override) {
-    if (widthOverridden_ != override) {
-      Boolean tempOld = widthOverridden_;
-      widthOverridden_ = override;
-      changes_.firePropertyChange("widthOverridden", tempOld, Boolean.valueOf(widthOverridden_));
-    }
-  }
-
-  @Override
-  public void setCapStyle(int style) {
-    capStyleOverridden_ = true;
-    super.setCapStyle(style);
-  }
-
   /** Test if cap style is overridden by <code>DefaultContourLineAttribute</code>. */
   public boolean isCapStyleOverridden() {
     return capStyleOverridden_;
-  }
-
-  /**
-   * Enable/disable having <code>DefaultContourLineAttribute</code> override <code>
-   * ContourLineAttribute</code> behavior of cap style. <br>
-   * <strong>Property Change:</strong> <code>capStyleOverridden</code>.
-   *
-   * @see DefaultContourLineAttribute
-   */
-  public void setCapStyleOverridden(boolean override) {
-    if (capStyleOverridden_ != override) {
-      Boolean tempOld = capStyleOverridden_;
-      capStyleOverridden_ = override;
-      changes_.firePropertyChange(
-          "capStyleOverridden", tempOld, Boolean.valueOf(capStyleOverridden_));
-    }
-  }
-
-  @Override
-  public void setMiterStyle(int style) {
-    miterStyleOverridden_ = true;
-    super.setMiterStyle(style);
   }
 
   /** Test if miter style is overridden by <code>DefaultContourLineAttribute</code>. */
@@ -520,47 +311,9 @@ public class ContourLineAttribute extends LineAttribute {
     return miterStyleOverridden_;
   }
 
-  /**
-   * Enable/disable having <code>DefaultContourLineAttribute</code> override <code>
-   * ContourLineAttribute</code> behavior of miter style. <br>
-   * <strong>Property Change:</strong> <code>miterStyleOverridden</code>.
-   *
-   * @see DefaultContourLineAttribute
-   */
-  public void setMiterStyleOverridden(boolean override) {
-    if (miterStyleOverridden_ != override) {
-      Boolean tempOld = miterStyleOverridden_;
-      miterStyleOverridden_ = override;
-      changes_.firePropertyChange(
-          "miterStyleOverridden", tempOld, Boolean.valueOf(miterStyleOverridden_));
-    }
-  }
-
-  @Override
-  public void setMiterLimit(float t) {
-    miterLimitOverridden_ = true;
-    super.setMiterLimit(t);
-  }
-
   /** Test if miter limit is overridden by <code>DefaultContourLineAttribute</code>. */
   public boolean isMiterLimitOverridden() {
     return miterLimitOverridden_;
-  }
-
-  /**
-   * Enable/disable having <code>DefaultContourLineAttribute</code> override <code>
-   * ContourLineAttribute</code> behavior of miter limit. <br>
-   * <strong>Property Change:</strong> <code>miterLimitOverridden</code>.
-   *
-   * @see DefaultContourLineAttribute
-   */
-  public void setMiterLimitOverridden(boolean override) {
-    if (miterLimitOverridden_ != override) {
-      Boolean tempOld = miterLimitOverridden_;
-      miterLimitOverridden_ = override;
-      changes_.firePropertyChange(
-          "miterLimitOverridden", tempOld, Boolean.valueOf(miterLimitOverridden_));
-    }
   }
 
   @Override

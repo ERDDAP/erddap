@@ -1,5 +1,6 @@
 package gov.noaa.pfel.erddap.filetypes;
 
+import gov.noaa.pfel.erddap.util.EDMessages.Message;
 import gov.noaa.pfel.erddap.util.EDStatic;
 
 @FileTypeClass(
@@ -16,6 +17,6 @@ public class Tsv0Files extends SeparatedValue {
 
   @Override
   public String getHelpText(int language) {
-    return EDStatic.messages.fileHelp_tsv0Ar[language];
+    return EDStatic.messages.get(Message.FILE_HELP_TSV0, language);
   }
 }

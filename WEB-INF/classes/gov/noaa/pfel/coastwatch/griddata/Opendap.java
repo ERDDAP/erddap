@@ -16,8 +16,10 @@ import com.cohort.util.String2;
 import com.cohort.util.Test;
 import dods.dap.*;
 import gov.noaa.pfel.coastwatch.TimePeriods;
+import java.time.Instant;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.util.Arrays;
-import java.util.GregorianCalendar;
 import java.util.Iterator;
 
 /** This class holds information about an OPeNDAP grid data set for one time period. */
@@ -116,7 +118,7 @@ public class Opendap {
    *     need for a new index.
    * @throws Exception if trouble
    */
-  public Opendap(String url, boolean acceptDeflate, String flagDirectory) throws Exception {
+  public Opendap(String url, boolean acceptDeflate) throws Exception {
     this.url = url;
     this.acceptDeflate = acceptDeflate;
 
@@ -126,104 +128,6 @@ public class Opendap {
     if (verbose)
       String2.log(
           "  Opendap constructor done.  TIME=" + (System.currentTimeMillis() - time) + "ms");
-  }
-
-  /**
-   * Given a das, this gets globalAttributeTable.
-   *
-   * @param das from dConnect.getDAS()
-   * @throws Exception if trouble (e.g., das attribute table with "GLOBAL" in name not found)
-   */
-  public AttributeTable getGlobalAttributeTable(DAS das) throws Exception {
-
-    // find the GLOBAL attributes
-    // this assumes that GLOBAL is in the name (I've see GLOBAL and NC_GLOBAL)
-    Iterator<String> names = das.getNames();
-    while (names.hasNext()) {
-      String s = names.next();
-      if (s.indexOf("GLOBAL") >= 0) {
-        return das.getAttributeTable(s);
-      }
-    }
-    Test.error(
-        String2.ERROR
-            + " in Opendap.getGlobalAttributeTable:\n"
-            + "'GLOBAL' attribute table not found for "
-            + url);
-    return null;
-  }
-
-  /**
-   * Get the length of an array from the DDS info.
-   *
-   * @param dds from dConnect.getDDS(OpendapHelper.DEFAULT_TIMEOUT)
-   * @param dimensionName e.g. "lat". This searches top-level variables and variables within Grids.
-   * @return int the length of the array (or -1 if not found)
-   */
-  public int getArrayLength(DDS dds, String dimensionName) {
-    try {
-      // search top-level variables
-      // dds is read-only so no need to use sychronized(dds)
-      int len;
-      Iterator<BaseType> e = dds.getVariables();
-      while (e.hasNext()) {
-        BaseType bt = e.next();
-        len = getDArrayLength(bt, dimensionName);
-        if (len > 0) return len;
-        if (bt instanceof DGrid dg) {
-          Iterator<BaseType> e2 = dg.getVariables();
-          while (e2.hasNext()) {
-            len = getDArrayLength(e2.next(), dimensionName);
-            if (len > 0) {
-              if (verbose) String2.log("Opendap.getArrayLength(" + dimensionName + ") = " + len);
-              return len;
-            }
-          }
-        }
-      }
-    } catch (Exception e) {
-    }
-    if (verbose) String2.log("Opendap.getArrayLength: '" + dimensionName + "' not found.");
-    return -1;
-  }
-
-  /**
-   * Get the name of the grids from the dds. A sample dds:
-   *
-   * <pre>
-   * Dataset {
-   * Float32 altitude[altitude = 1];
-   * Float32 lat[lat = 2321];
-   * Float32 lon[lon = 4001];
-   * Float64 time[time = 171];
-   * Grid {
-   * ARRAY:
-   * Float32 MOk490[time = 171][altitude = 1][lat = 2321][lon = 4001];
-   * MAPS:
-   * Float64 time[time = 171];
-   * Float32 altitude[altitude = 1];
-   * Float32 lat[lat = 2321];
-   * Float32 lon[lon = 4001];
-   * } MOk490;
-   * } dodsC/satellite/MO/k490/hday;
-   * </pre>
-   *
-   * @param dds from getDds(OpendapHelper.DEFAULT_TIMEOUT)
-   * @return a StringArray with the names of the Grid variables (size 0 if no Grids).
-   */
-  public StringArray getGridNames(DDS dds) {
-    String ddsString = OpendapHelper.getDdsString(dds);
-    StringArray results = new StringArray();
-    int po = ddsString.indexOf("Grid {");
-    while (po > 0) {
-      po = ddsString.indexOf('}', po + 6); // if not found, ddsString is ill-formed
-      int semiPo = ddsString.indexOf(';', po + 2);
-      results.add(ddsString.substring(po + 2, semiPo));
-
-      // find the next grid
-      po = ddsString.indexOf("Grid {", semiPo + 1);
-    }
-    return results;
   }
 
   /**
@@ -472,7 +376,7 @@ public class Opendap {
     double timeArray[] = gridDimensionData[gridTimeDimension];
 
     // generateTimeOptions (convert time_series values into human readable date or datetimes)
-    GregorianCalendar gcZ = Calendar2.newGCalendarZulu();
+    ZonedDateTime gcZ = ZonedDateTime.now(ZoneOffset.UTC);
     StringArray timeOptionsSA = new StringArray();
     IntArray timeOptionsIndexIA = new IntArray();
     int nTimeValues = timeArray.length;
@@ -490,17 +394,23 @@ public class Opendap {
         //    if (verbose) String2.log("Reject timeIndex = " + i + ": numberOfObservations = 0.");
       } else {
         // format the value     (rounded to nearest second)
-        gcZ.setTimeInMillis(
-            1000
-                * Math.round(
-                    Calendar2.unitsSinceToEpochSeconds(baseSeconds, factorToGetSeconds, d)));
+        gcZ =
+            ZonedDateTime.ofInstant(
+                Instant.ofEpochMilli(
+                    1000
+                        * Math.round(
+                            Calendar2.unitsSinceToEpochSeconds(
+                                baseSeconds, factorToGetSeconds, d))),
+                ZoneOffset.UTC);
 
         // adjust erd's old-style time "End Time" to centered time
         if (timeLongName != null && timeLongName.equals("End Time")) {
           try {
             // fix old-style (pre-Dec 2006) nDay and 1 month end times  so 00:00
-            if (timePeriodNHours > 1 && timePeriodNHours % 24 == 0) gcZ.add(Calendar2.SECOND, 1);
-            TimePeriods.endCalendarToCenteredTime(timePeriodNHours, gcZ, errorInMethod);
+            if (timePeriodNHours > 1 && timePeriodNHours % 24 == 0) {
+              gcZ = gcZ.plusSeconds(1);
+            }
+            gcZ = TimePeriods.endCalendarToCenteredTime(timePeriodNHours, gcZ, errorInMethod);
           } catch (Exception e) {
             String2.log(e.toString());
             continue;
@@ -1200,106 +1110,6 @@ public class Opendap {
 
     return grid;
   }
-
-  /**
-   * If bt instanceOf DArray and one of the dimensions is named dimensionName, this returns the
-   * length of that dimension.
-   *
-   * @param bt a BaseType that might be a DArray
-   * @param dimensionName the desired dimensionName
-   * @return the length of the matching dimension (or -1 if not found)
-   */
-  private static int getDArrayLength(BaseType bt, String dimensionName) {
-    if (bt instanceof DArray da) {
-      // bt is read-only so no need to use sychronized(bt)
-      Iterator<DArrayDimension> e = da.getDimensions();
-      while (e.hasNext()) {
-        DArrayDimension dam = e.next();
-        if (dam.getName().equals(dimensionName)) {
-          return dam.getStop() + 1; // start = 0; stop is inclusive; so nValues = getStop()+1
-        }
-      }
-    }
-    return -1;
-  }
-
-  /* *
-   * Find the last element (if you go from min to max)
-   * which is <= x in an ascending or descending sorted array.
-   *
-   * @param pv a numeric, sorted PrimitiveVector which may not have duplicate values
-   * @param x
-   * @return the last element which is <= x in a sorted array.
-   *   If x < the smallest element, this returns -1  (no element is appropriate).
-   *   If x > the largest element, this returns pv.length-1.
-   */
-  /*out of date and maybe not exactly right. see DataHelper.binaryFindStartIndex
-   public static int findLastLE(PrimitiveVector pv, double x) {
-      //since pv doubles are hard to get at, use a linear search
-
-      //array is ascending?
-      int i, n = pv.getLength();
-      if (getDouble(pv, n - 1) > getDouble(pv, 0)) {
-          i = n - 1;
-          while (i >= 0) {
-              double d = getDouble(pv, i);
-              if (Math2.almostEqual(5, d, x) || d <= x)
-                  return i;
-              i--;
-          }
-      } else {
-          i = 0;
-          while (i < n) {
-              double d = getDouble(pv, i);
-              if (Math2.almostEqual(5, d, x) || d <= x)
-                  return i;
-              i++;
-          }
-      }
-
-      return i;
-
-
-  }
-
-
-  /* *
-   * Find the first element (if you go from min to max)
-   * which is >= x in an ascending or descending sorted array.
-   *
-   * @param pv a numeric, sorted PrimitiveVector which may not have duplicate values
-   * @param x
-   * @return the first element which is >= x in a sorted array.
-   *   If x < the smallest element, this returns 0.
-   *   If x > the largest element, this returns pv.length (no element is appropriate).
-   */
-  /*out of date and maybe not exactly right. see DataHelper.findEndIndex
-   public static int findFirstGE(PrimitiveVector pv, double x) {
-
-       //array is ascending?
-       int i, n = pv.getLength();
-       if (getDouble(pv, n - 1) > getDouble(pv, 0)) {
-           i = 0;
-           while (i < n) {
-               double d = getDouble(pv, i);
-               if (Math2.almostEqual(5, d, x) || d >= x)
-                   return i;
-               i++;
-           }
-       } else {
-           i = n - 1;
-           while (i >= 0) {
-               double d = getDouble(pv, i);
-               if (Math2.almostEqual(5, d, x) || d >= x)
-                   return i;
-               i--;
-           }
-       }
-
-       return i;
-   }
-
-  */
 
   /**
    * This performs some diagnostic tests of Opendap.

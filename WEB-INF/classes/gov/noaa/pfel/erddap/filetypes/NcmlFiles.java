@@ -11,9 +11,11 @@ import com.cohort.util.XML;
 import gov.noaa.pfel.coastwatch.griddata.NcHelper;
 import gov.noaa.pfel.erddap.dataset.EDDGrid;
 import gov.noaa.pfel.erddap.dataset.OutputStreamSource;
+import gov.noaa.pfel.erddap.util.EDMessages.Message;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.EDV;
 import gov.noaa.pfel.erddap.variable.EDVGridAxis;
+import jakarta.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.io.Writer;
 
@@ -34,6 +36,7 @@ public class NcmlFiles extends FileTypeInterface {
   @Override
   public void writeGridToStream(DapRequestInfo requestInfo) throws Throwable {
     saveAsNCML(
+        requestInfo.request(),
         requestInfo.language(),
         requestInfo.loggedInAs(),
         requestInfo.outputStream(),
@@ -42,7 +45,7 @@ public class NcmlFiles extends FileTypeInterface {
 
   @Override
   public String getHelpText(int language) {
-    return EDStatic.messages.fileHelp_ncmlAr[language];
+    return EDStatic.messages.get(Message.FILE_HELP_NCML, language);
   }
 
   /**
@@ -89,7 +92,11 @@ public class NcmlFiles extends FileTypeInterface {
    * @throws Throwable if trouble.
    */
   private void saveAsNCML(
-      int language, String loggedInAs, OutputStreamSource outputStreamSource, EDDGrid grid)
+      HttpServletRequest request,
+      int language,
+      String loggedInAs,
+      OutputStreamSource outputStreamSource,
+      EDDGrid grid)
       throws Throwable {
     if (EDDGrid.reallyVerbose) String2.log("  EDDGrid.saveAsNCML " + grid.datasetID());
     long time = System.currentTimeMillis();
@@ -97,7 +104,8 @@ public class NcmlFiles extends FileTypeInterface {
     // get the writer
     try (Writer writer =
         File2.getBufferedWriterUtf8(outputStreamSource.outputStream(File2.UTF_8))) {
-      String opendapBaseUrl = EDStatic.baseUrl(loggedInAs) + "/griddap/" + grid.datasetID();
+      String opendapBaseUrl =
+          EDStatic.baseUrl(request, loggedInAs) + "/griddap/" + grid.datasetID();
       writer.write( // NCML
           "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
               + "<netcdf xmlns=\"https://www.unidata.ucar.edu/namespaces/netcdf/ncml-2.2\" "

@@ -47,8 +47,7 @@ class OpendapTests {
 
     // test THREDDS //was :8081
     opendap =
-        new Opendap(
-            "https://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/GA/ssta/3day", true, null);
+        new Opendap("https://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/GA/ssta/3day", true);
     DConnect dConnect = new DConnect(opendap.url, opendap.acceptDeflate, 1, 1);
     opendap.getGridInfo(
         dConnect.getDAS(OpendapHelper.DEFAULT_TIMEOUT),
@@ -66,7 +65,7 @@ class OpendapTests {
     // test THREDDS
     opendap =
         new Opendap( // was :8081
-            "https://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/AG/ssta/3day", true, null);
+            "https://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/AG/ssta/3day", true);
     dConnect = new DConnect(opendap.url, opendap.acceptDeflate, 1, 1);
     opendap.getGridInfo(dConnect.getDAS(60000), dConnect.getDDS(60000), "AGssta", "-1.0e34");
     Test.ensureEqual(opendap.getLat(0), -75, "");

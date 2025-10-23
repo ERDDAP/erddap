@@ -5,7 +5,9 @@
  */
 package com.cohort.array;
 
-import com.cohort.util.*;
+import com.cohort.util.File2;
+import com.cohort.util.Math2;
+import com.cohort.util.String2;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -418,7 +420,7 @@ public class ByteArray extends PrimitiveArray {
   @Override
   public void addObject(final Object value) {
     // double is good intermediate because it has the idea of NaN
-    addDouble(value instanceof Number ? ((Number) value).doubleValue() : Double.NaN);
+    addDouble(value instanceof Number num ? num.doubleValue() : Double.NaN);
   }
 
   /**
@@ -1201,11 +1203,10 @@ public class ByteArray extends PrimitiveArray {
    */
   @Override
   public String testEquals(final Object o) {
-    if (!(o instanceof ByteArray))
+    if (!(o instanceof ByteArray other))
       return "The two objects aren't equal: this object is a ByteArray; the other is a "
           + (o == null ? "null" : o.getClass().getName())
           + ".";
-    final ByteArray other = (ByteArray) o;
     if (other.size() != size)
       return "The two ByteArrays aren't equal: one has "
           + size
@@ -1526,7 +1527,7 @@ public class ByteArray extends PrimitiveArray {
     // make a hashMap with all the unique values (associated values are initially all dummy)
     // (actually bytes could be done more efficiently with a boolean array -128 to 127... )
     final Integer dummy = -1;
-    final HashMap hashMap = new HashMap(Math2.roundToInt(1.4 * size));
+    final HashMap<Byte, Integer> hashMap = new HashMap<>(Math2.roundToInt(1.4 * size));
     byte lastValue = array[0]; // since lastValue often equals currentValue, cache it
     hashMap.put(lastValue, dummy);
     boolean alreadySorted = true;
@@ -1540,7 +1541,7 @@ public class ByteArray extends PrimitiveArray {
     }
 
     // quickly deal with: all unique and already sorted
-    final Set keySet = hashMap.keySet();
+    final Set<Byte> keySet = hashMap.keySet();
     final int nUnique = keySet.size();
     if (nUnique == size && alreadySorted) {
       indices.ensureCapacity(size);
@@ -1549,8 +1550,8 @@ public class ByteArray extends PrimitiveArray {
     }
 
     // store all the elements in an array
-    final Object unique[] = new Object[nUnique];
-    final Iterator iterator = keySet.iterator();
+    final byte[] unique = new byte[nUnique];
+    final Iterator<Byte> iterator = keySet.iterator();
     int count = 0;
     while (iterator.hasNext()) unique[count++] = iterator.next();
     if (nUnique != count)
@@ -1561,11 +1562,8 @@ public class ByteArray extends PrimitiveArray {
     Arrays.sort(unique);
 
     // put the unique values back in the hashMap with the ranks as the associated values
-    // and make tUnique
-    final byte tUnique[] = new byte[nUnique];
     for (int i = 0; i < count; i++) {
       hashMap.put(unique[i], i);
-      tUnique[i] = (Byte) unique[i];
     }
 
     // convert original values to ranks
@@ -1586,7 +1584,7 @@ public class ByteArray extends PrimitiveArray {
     // store the results in ranked
     indices.append(new IntArray(ranks));
 
-    return new ByteArray(tUnique);
+    return new ByteArray(unique);
   }
 
   /**

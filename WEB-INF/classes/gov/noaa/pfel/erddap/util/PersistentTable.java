@@ -134,7 +134,7 @@ public class PersistentTable implements AutoCloseable {
     EDStatic.cleaner.register(this, new CleanupPersistentTable(raf));
   }
 
-  private static class CleanupPersistentTable implements Runnable {
+  private static final class CleanupPersistentTable implements Runnable {
 
     private RandomAccessFile raf;
 
@@ -279,59 +279,11 @@ public class PersistentTable implements AutoCloseable {
   }
 
   /**
-   * This converts the boolean to text (T|F) and then to byte[BOOLEAN_LENGTH] then writes it to the
-   * file. Later, use read to read the value from the file.
-   */
-  public void writeBoolean(int col, int row, boolean b) throws IOException {
-    write(col, row, b ? new byte[] {(byte) 'T'} : new byte[] {(byte) 'F'});
-  }
-
-  /**
-   * This converts the byte to text and then to byte[BYTE_LENGTH] then writes it to the file. Later,
-   * use readByte to read the value from the file.
-   */
-  public void writeByte(int col, int row, byte b) throws IOException {
-    write(col, row, String2.toByteArray(String2.right("" + b, BYTE_LENGTH)));
-  }
-
-  /**
-   * This converts the short to text and then to byte[SHORT_LENGTH] then writes it to the file.
-   * Later, use readShort to read the value from the file.
-   */
-  public void writeShort(int col, int row, short s) throws IOException {
-    write(col, row, String2.toByteArray(String2.right("" + s, SHORT_LENGTH)));
-  }
-
-  /**
    * This converts the int to text and then to byte[INT_LENGTH] then writes it to the file. Later,
    * use readInt to read the value from the file.
    */
   public void writeInt(int col, int row, int i) throws IOException {
     write(col, row, String2.toByteArray(String2.right("" + i, INT_LENGTH)));
-  }
-
-  /**
-   * This converts the long to text and then to byte[LONG_LENGTH] then writes it to the file. Later,
-   * use readLong to read the value from the file.
-   */
-  public void writeLong(int col, int row, long i) throws IOException {
-    write(col, row, String2.toByteArray(String2.right("" + i, LONG_LENGTH)));
-  }
-
-  /**
-   * This converts the float to text and then to byte[FLOAT_LENGTH] then writes it to the file.
-   * Later, use readFloat to read the value from the file.
-   */
-  public void writeFloat(int col, int row, float f) throws IOException {
-    write(col, row, String2.toByteArray(String2.right("" + f, FLOAT_LENGTH)));
-  }
-
-  /**
-   * This converts the double to text and then to byte[DOUBLE_LENGTH] then writes it to the file.
-   * Later, use readDouble to read the value from the file.
-   */
-  public void writeDouble(int col, int row, double d) throws IOException {
-    write(col, row, String2.toByteArray(String2.right("" + d, DOUBLE_LENGTH)));
   }
 
   /*******
@@ -341,60 +293,6 @@ public class PersistentTable implements AutoCloseable {
   public void writeBinaryByte(int col, int row, byte b) throws IOException {
     raf.seek(row * nBytesPerRow + columnStartAt[col]);
     raf.writeByte(b);
-  }
-
-  /**
-   * This writes the binary char to the file. Later, use readBinaryChar to read the value from the
-   * file.
-   */
-  public void writeBinaryChar(int col, int row, char ch) throws IOException {
-    raf.seek(row * nBytesPerRow + columnStartAt[col]);
-    raf.writeChar(ch);
-  }
-
-  /**
-   * This writes the binary short to the file. Later, use readBinaryShort to read the value from the
-   * file.
-   */
-  public void writeBinaryShort(int col, int row, short s) throws IOException {
-    raf.seek(row * nBytesPerRow + columnStartAt[col]);
-    raf.writeShort(s);
-  }
-
-  /**
-   * This writes the binary int to the file. Later, use readBinaryInt to read the value from the
-   * file.
-   */
-  public void writeBinaryInt(int col, int row, int i) throws IOException {
-    raf.seek(row * nBytesPerRow + columnStartAt[col]);
-    raf.writeInt(i);
-  }
-
-  /**
-   * This writes the binary long to the file. Later, use readBinaryLong to read the value from the
-   * file.
-   */
-  public void writeBinaryLong(int col, int row, long i) throws IOException {
-    raf.seek(row * nBytesPerRow + columnStartAt[col]);
-    raf.writeLong(i);
-  }
-
-  /**
-   * This writes the binary float to the file. Later, use readBinaryFloat to read the value from the
-   * file.
-   */
-  public void writeBinaryFloat(int col, int row, float f) throws IOException {
-    raf.seek(row * nBytesPerRow + columnStartAt[col]);
-    raf.writeFloat(f);
-  }
-
-  /**
-   * This writes the binary double to the file. Later, use readBinaryDouble to read the value from
-   * the file.
-   */
-  public void writeBinaryDouble(int col, int row, double d) throws IOException {
-    raf.seek(row * nBytesPerRow + columnStartAt[col]);
-    raf.writeDouble(d);
   }
 
   /***************************************************************
@@ -411,80 +309,14 @@ public class PersistentTable implements AutoCloseable {
     return new String(ar, StandardCharsets.UTF_8).trim();
   }
 
-  /** This reads a boolean (stored as T|F) from the file (or false if trouble). */
-  public boolean readBoolean(int col, int row) throws IOException {
-    return readString(col, row).charAt(0) == 'T';
-  }
-
-  /** This reads a byte from the file (or Byte.MAX_VALUE if trouble). */
-  public byte readByte(int col, int row) throws IOException {
-    return Math2.narrowToByte(String2.parseInt(readString(col, row)));
-  }
-
-  /** This reads a short from the file (or Short.MAX_VALUE if trouble). */
-  public short readShort(int col, int row) throws IOException {
-    return Math2.narrowToShort(String2.parseInt(readString(col, row)));
-  }
-
   /** This reads an int from the file (or Integer.MAX_VALUE if trouble). */
   public int readInt(int col, int row) throws IOException {
     return String2.parseInt(readString(col, row));
-  }
-
-  /** This reads a long from the file (or Long.MAX_VALUE if trouble). */
-  public long readLong(int col, int row) throws IOException {
-    return String2.parseLong(readString(col, row));
-  }
-
-  /** This reads a float from the file (or Float.NaN if trouble). */
-  public float readFloat(int col, int row) throws IOException {
-    return String2.parseFloat(readString(col, row));
-  }
-
-  /** This reads a double from the file (or Double.NaN if trouble). */
-  public double readDouble(int col, int row) throws IOException {
-    return String2.parseDouble(readString(col, row));
   }
 
   /****** This reads a binary byte from the file. */
   public byte readBinaryByte(int col, int row) throws IOException {
     raf.seek(row * nBytesPerRow + columnStartAt[col]);
     return raf.readByte();
-  }
-
-  /** This reads a binary char from the file. */
-  public char readBinaryChar(int col, int row) throws IOException {
-    raf.seek(row * nBytesPerRow + columnStartAt[col]);
-    return raf.readChar();
-  }
-
-  /** This reads a binary short from the file. */
-  public short readBinaryShort(int col, int row) throws IOException {
-    raf.seek(row * nBytesPerRow + columnStartAt[col]);
-    return raf.readShort();
-  }
-
-  /** This reads a binary int from the file. */
-  public int readBinaryInt(int col, int row) throws IOException {
-    raf.seek(row * nBytesPerRow + columnStartAt[col]);
-    return raf.readInt();
-  }
-
-  /** This reads a binary long from the file. */
-  public long readBinaryLong(int col, int row) throws IOException {
-    raf.seek(row * nBytesPerRow + columnStartAt[col]);
-    return raf.readLong();
-  }
-
-  /** This reads a binary float from the file. */
-  public float readBinaryFloat(int col, int row) throws IOException {
-    raf.seek(row * nBytesPerRow + columnStartAt[col]);
-    return raf.readFloat();
-  }
-
-  /** This reads a binary double from the file. */
-  public double readBinaryDouble(int col, int row) throws IOException {
-    raf.seek(row * nBytesPerRow + columnStartAt[col]);
-    return raf.readDouble();
   }
 }

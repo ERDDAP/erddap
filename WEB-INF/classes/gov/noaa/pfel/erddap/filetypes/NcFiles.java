@@ -4,6 +4,7 @@ import com.cohort.util.File2;
 import gov.noaa.pfel.erddap.dataset.EDDGrid;
 import gov.noaa.pfel.erddap.dataset.EDDTable;
 import gov.noaa.pfel.erddap.dataset.TableWriterAllWithMetadata;
+import gov.noaa.pfel.erddap.util.EDMessages.Message;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import ucar.nc2.write.NetcdfFileFormat;
 
@@ -70,11 +71,11 @@ public class NcFiles extends CacheLockFiles {
 
   @Override
   public String getHelpText(int language) {
-    return EDStatic.messages.fileHelpTable_nc3Ar[language];
+    return EDStatic.messages.get(Message.FILE_HELP_TABLE_NC3, language);
   }
 
   @Override
   public String getGridHelpText(int language) {
-    return EDStatic.messages.fileHelpGrid_nc3Ar[language];
+    return EDStatic.messages.get(Message.FILE_HELP_GRID_NC3, language);
   }
 }

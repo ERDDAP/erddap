@@ -15,7 +15,6 @@ package gov.noaa.pmel.sgt;
 import gov.noaa.pmel.util.Point2D;
 import java.awt.Graphics;
 import java.awt.Rectangle;
-import java.util.ArrayList;
 
 // jdk1.2
 // import java.awt.geom.Point2D;
@@ -55,11 +54,6 @@ public class PlainAxis extends SpaceAxis implements Cloneable {
     } catch (CloneNotSupportedException e) {
       newAxis = new PlainAxis();
     }
-    //
-    // remove registered axes and transforms
-    //
-    newAxis.registeredAxes_ = new ArrayList<>();
-    newAxis.registeredTransforms_ = new ArrayList<>();
     //
     return newAxis;
   }
@@ -341,12 +335,4 @@ public class PlainAxis extends SpaceAxis implements Cloneable {
     }
     return new Rectangle(x, y, width, height);
   }
-
-  /** Not implemented. */
-  public void setBounds(Rectangle r) {
-    setBounds(r.x, r.y, r.width, r.height);
-  }
-
-  /** Not implemented. */
-  public void setBounds(int x, int y, int width, int height) {}
 }

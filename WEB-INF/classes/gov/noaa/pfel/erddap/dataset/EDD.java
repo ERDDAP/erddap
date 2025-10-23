@@ -45,6 +45,7 @@ import gov.noaa.pfel.erddap.handlers.SaxHandlerClass;
 import gov.noaa.pfel.erddap.handlers.State;
 import gov.noaa.pfel.erddap.util.CfToFromGcmd;
 import gov.noaa.pfel.erddap.util.EDMessages;
+import gov.noaa.pfel.erddap.util.EDMessages.Message;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.util.EmailThread;
 import gov.noaa.pfel.erddap.util.Subscriptions;
@@ -71,9 +72,10 @@ import java.io.Writer;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.text.MessageFormat;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.util.Arrays;
 import java.util.BitSet;
-import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -508,12 +510,31 @@ public abstract class EDD {
   /** List of all concrete/non-abstact EDD subclass EDDClassInfo */
   public static final Map<String, EDDFileTypeInfo> EDD_FILE_TYPE_INFO = initEddFileTypeInfoMap();
 
-  public static List<EDDFileTypeInfo> getFileTypeOptions(boolean isGrid, boolean isImage) {
+  public enum FileCategory {
+    DATA,
+    IMAGE,
+    BOTH
+  }
+
+  public static List<EDDFileTypeInfo> getFileTypeOptions(boolean isGrid, FileCategory category) {
     return EDD_FILE_TYPE_INFO.values().stream()
+        .sorted(
+            (o1, o2) -> {
+              if (o1.getIsImage() != o2.getIsImage()) {
+                return o1.getIsImage() ? 100 : -100;
+              }
+              return o1.getFileTypeName().compareTo(o2.getFileTypeName());
+            })
         .filter(
             fileTypeInfo ->
                 isGrid ? fileTypeInfo.getAvailableGrid() : fileTypeInfo.getAvailableTable())
-        .filter(fileTypeInfo -> isImage == fileTypeInfo.getIsImage())
+        .filter(
+            fileTypeInfo ->
+                switch (category) {
+                  case FileCategory.IMAGE -> fileTypeInfo.getIsImage();
+                  case FileCategory.DATA -> !fileTypeInfo.getIsImage();
+                  case FileCategory.BOTH -> true;
+                })
         .toList();
   }
 
@@ -1551,8 +1572,8 @@ public abstract class EDD {
       //  So this treats every change as a new item with a different title,
       //    replacing the previous item.
       StringBuilder rss = new StringBuilder();
-      GregorianCalendar gc = Calendar2.newGCalendarZulu();
-      String pubDate = "    <pubDate>" + Calendar2.formatAsRFC822GMT(gc) + "</pubDate>\n";
+      ZonedDateTime zd = ZonedDateTime.now(ZoneOffset.UTC);
+      String pubDate = "    <pubDate>" + Calendar2.formatAsRFC822GMT(zd) + "</pubDate>\n";
       String link = "    <link>&erddapUrl;" + "/" + dapProtocol() + "/" + datasetID();
       rss.append(
           "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
@@ -1567,7 +1588,7 @@ public abstract class EDD {
               + pubDate
               + "    <item>\n"
               + "      <title>This dataset changed "
-              + Calendar2.formatAsISODateTimeT(gc)
+              + Calendar2.formatAsISODateTimeT(zd)
               + "Z</title>\n"
               + "  "
               + link
@@ -1622,19 +1643,19 @@ public abstract class EDD {
           "If you want to keep this dataset up-to-date, use a small reloadEveryNMinutes.";
       if (!tryToSubscribe) {
         String2.log(
-            EDStatic.messages.warningAr[0]
+            EDStatic.messages.get(Message.WARNING, 0)
                 + " <tryToSubscribeToRemoteErddapDataset> is false. If that is permanent, then:\n"
                 + keepUpToDate);
       } else if (EDStatic.urlIsLocalhost(thisErddapUrl)) {
         String2.log(
-            EDStatic.messages.warningAr[0]
+            EDStatic.messages.get(Message.WARNING, 0)
                 + " This ERDDAP won't try to subscribe to the dataset on the remote\n"
                 + "ERDDAP because this ERDDAP isn't publicly accessible.\n"
                 + keepUpToDate);
       } else if (!String2.isSomething(EDStatic.config.emailSubscriptionsFrom)) {
         // this erddap's subscription system isn't active
         String2.log(
-            EDStatic.messages.warningAr[0]
+            EDStatic.messages.get(Message.WARNING, 0)
                 + " Subscribing to the remote ERDDAP dataset failed because\n"
                 + "emailEverythingTo wasn't specified in this ERDDAP's setup.xml.\n"
                 + keepUpToDate);
@@ -1800,11 +1821,6 @@ public abstract class EDD {
     // was: delete individual files, e.g, dir + QUICK_RESTART_FILENAME
   }
 
-  /** This deletes this dataset's cached dataset info. No error if it doesn't exist. */
-  public void deleteCachedDatasetInfo() {
-    deleteCachedDatasetInfo(datasetID);
-  }
-
   /** The full name of the quick restart .nc file for this dataset. */
   public String quickRestartFullFileName() {
     return quickRestartFullFileName(datasetID);
@@ -1888,7 +1904,7 @@ public abstract class EDD {
         + ".rss\" \n"
         + "  title=\"\"><img alt=\"RSS\"\n"
         + "    title=\""
-        + EDStatic.messages.subscriptionRSSAr[language]
+        + EDStatic.messages.get(Message.SUBSCRIPTION_RSS, language)
         + "\" \n"
         + "    src=\""
         + EDStatic.imageDirUrl(request, loggedInAs, language)
@@ -1916,7 +1932,7 @@ public abstract class EDD {
           + "&amp;showErrors=false&amp;email=\" \n"
           + "  title=\"\"><img alt=\"Subscribe\"\n"
           + "    title=\""
-          + XML.encodeAsHTMLAttribute(EDStatic.messages.subscriptionEmailAr[language])
+          + XML.encodeAsHTMLAttribute(EDStatic.messages.get(Message.SUBSCRIPTION_EMAIL, language))
           + "\" \n"
           + "    src=\""
           + EDStatic.imageDirUrl(request, loggedInAs, language)
@@ -2188,12 +2204,21 @@ public abstract class EDD {
    */
   protected boolean setGraphsAccessibleTo(String s) {
     // dataset is public
-    if (accessibleTo == null) return graphsAccessibleToPublic = true;
+    if (accessibleTo == null) {
+      graphsAccessibleToPublic = true;
+      return graphsAccessibleToPublic;
+    }
 
     // dataset is private
-    if (s == null || s.equals("auto")) return graphsAccessibleToPublic = false;
+    if (s == null || s.equals("auto")) {
+      graphsAccessibleToPublic = false;
+      return graphsAccessibleToPublic;
+    }
 
-    if (s.equals("public")) return graphsAccessibleToPublic = true;
+    if (s.equals("public")) {
+      graphsAccessibleToPublic = true;
+      return graphsAccessibleToPublic;
+    }
 
     throw new RuntimeException(
         String2.ERROR
@@ -2299,6 +2324,22 @@ public abstract class EDD {
   }
 
   /**
+   * Gets the list of files that make up the dataset.
+   *
+   * @return a table, which contains the list of files for the dataset.
+   * @throws Throwable
+   */
+  public Table getFilesUrlList(HttpServletRequest request, String loggedInAs, int language)
+      throws Throwable {
+    // Default is null, for dataset types that have a file list, override this.
+    return null;
+  }
+
+  public String getFilesetUrl(HttpServletRequest request, String loggedInAs, int language) {
+    return EDStatic.erddapUrl(request, loggedInAs, language) + "/files/" + datasetID() + "/";
+  }
+
+  /**
    * This converts a dnlsTable into a table ready for /files/ response.
    *
    * @param fileTable Input columns: directory (String), name (String), lastModified (long), size
@@ -2384,18 +2425,19 @@ public abstract class EDD {
             } else {
               // file doesn't exist
               throw new SimpleException(
-                  EDStatic.messages.resourceNotFoundAr[0]
+                  EDStatic.messages.get(Message.RESOURCE_NOT_FOUND, 0)
                       + "the <fgdcFile> specified in datasets.xml.");
             }
 
           } else {
-            accessibleViaFGDC = MessageFormat.format(EDStatic.messages.noXxxAr[0], "FGDC");
+            accessibleViaFGDC =
+                MessageFormat.format(EDStatic.messages.get(Message.NO_XXX, 0), "FGDC");
           }
 
         } catch (Throwable t) {
           String2.log(
               MessageFormat.format(
-                  EDStatic.messages.noXxxBecause2Ar[0],
+                  EDStatic.messages.get(Message.NO_XXX_BECAUSE_2, 0),
                   "FGDC",
                   (t instanceof SimpleException
                       ? MustBe.getShortErrorMessage(t)
@@ -2409,9 +2451,10 @@ public abstract class EDD {
         accessibleViaFGDC =
             String2.canonical(
                 MessageFormat.format(
-                    EDStatic.messages.noXxxBecause2Ar[0],
+                    EDStatic.messages.get(Message.NO_XXX_BECAUSE_2, 0),
                     "FGDC",
-                    MessageFormat.format(EDStatic.messages.noXxxNotActiveAr[0], "FGDC")));
+                    MessageFormat.format(
+                        EDStatic.messages.get(Message.NO_XXX_NOT_ACTIVE, 0), "FGDC")));
       }
     }
     return accessibleViaFGDC;
@@ -2456,19 +2499,19 @@ public abstract class EDD {
             } else {
               // file doesn't exist
               throw new SimpleException(
-                  EDStatic.messages.resourceNotFoundAr[0]
+                  EDStatic.messages.get(Message.RESOURCE_NOT_FOUND, 0)
                       + "the <iso19115File> specified in datasets.xml.");
             }
 
           } else {
             accessibleViaISO19115 =
-                MessageFormat.format(EDStatic.messages.noXxxAr[0], "ISO 19115-2/19139");
+                MessageFormat.format(EDStatic.messages.get(Message.NO_XXX, 0), "ISO 19115-2/19139");
           }
 
         } catch (Throwable t) {
           String2.log(
               MessageFormat.format(
-                  EDStatic.messages.noXxxBecause2Ar[0],
+                  EDStatic.messages.get(Message.NO_XXX_BECAUSE_2, 0),
                   "ISO 19115-2/19139",
                   (t instanceof SimpleException
                       ? MustBe.getShortErrorMessage(t)
@@ -2482,10 +2525,10 @@ public abstract class EDD {
         accessibleViaISO19115 =
             String2.canonical(
                 MessageFormat.format(
-                    EDStatic.messages.noXxxBecause2Ar[0],
+                    EDStatic.messages.get(Message.NO_XXX_BECAUSE_2, 0),
                     "ISO 19115-2/19139",
                     MessageFormat.format(
-                        EDStatic.messages.noXxxNotActiveAr[0], "ISO 19115-2/19139")));
+                        EDStatic.messages.get(Message.NO_XXX_NOT_ACTIVE, 0), "ISO 19115-2/19139")));
       }
     }
     return accessibleViaISO19115;
@@ -2509,6 +2552,12 @@ public abstract class EDD {
    */
   protected abstract void writeFGDC(int language, Writer writer) throws Throwable;
 
+  public enum ISO_VERSION {
+    ISO19115_2,
+    ISO19139_2007,
+    ISO19115_3_2016,
+  }
+
   /**
    * This writes the dataset's ISO 19115-2/19139 XML to the writer. <br>
    * The template is initially based on THREDDS ncIso output from <br>
@@ -2527,6 +2576,27 @@ public abstract class EDD {
    * @throws Throwable if trouble
    */
   protected abstract void writeISO19115(int language, Writer writer) throws Throwable;
+
+  /**
+   * This writes the dataset's ISO 19115-2/19139 XML to the writer. <br>
+   * The template is initially based on THREDDS ncIso output from <br>
+   * https://oceanwatch.pfeg.noaa.gov/thredds/iso/satellite/MH/chla/8day <br>
+   * (stored on Bob's computer as F:/programs/iso19115/threddsNcIsoMHchla8dayYYYYMM.xml). <br>
+   * Made pretty via TestAll: XML.prettyXml(in, out);
+   *
+   * <p>Help with schema: http://www.schemacentral.com/sc/niem21/e-gmd_contact-1.html <br>
+   * List of nilReason: http://www.schemacentral.com/sc/niem21/a-gco_nilReason.html
+   *
+   * <p>This is usually just called by the dataset's constructor, at the end of
+   * EDDTable/Grid.ensureValid.
+   *
+   * @param language the index of the selected language
+   * @param writer a UTF-8 writer
+   * @param version the ISO version to write.
+   * @throws Throwable if trouble
+   */
+  public abstract void writeISO19115(int language, Writer writer, ISO_VERSION version)
+      throws Throwable;
 
   /**
    * This returns the dapProtocol for this dataset (e.g., griddap).
@@ -2902,7 +2972,7 @@ public abstract class EDD {
     if (which < 0)
       throw new SimpleException(
           MessageFormat.format(
-              EDStatic.messages.errorNotFoundAr[0],
+              EDStatic.messages.get(Message.ERROR_NOT_FOUND, 0),
               "sourceVariableName=" + tSourceName + " in datasetID=" + datasetID));
     return dataVariables[which];
   }
@@ -2922,7 +2992,7 @@ public abstract class EDD {
     if (which < 0)
       throw new SimpleException(
           MessageFormat.format(
-              EDStatic.messages.errorNotFoundInAr[0],
+              EDStatic.messages.get(Message.ERROR_NOT_FOUND_IN, 0),
               "destinationVariableName=" + tDestinationName,
               "datasetID=" + datasetID));
     return dataVariables[which];
@@ -3364,11 +3434,12 @@ public abstract class EDD {
     throw new SimpleException(
         EDStatic.bilingual(
             language,
-            EDStatic.messages.queryErrorAr[0]
-                + MessageFormat.format(EDStatic.messages.queryErrorFileTypeAr[0], fileTypeName),
-            EDStatic.messages.queryErrorAr[language]
+            EDStatic.messages.get(Message.QUERY_ERROR, 0)
                 + MessageFormat.format(
-                    EDStatic.messages.queryErrorFileTypeAr[language], fileTypeName)));
+                    EDStatic.messages.get(Message.QUERY_ERROR_FILE_TYPE, 0), fileTypeName),
+            EDStatic.messages.get(Message.QUERY_ERROR, language)
+                + MessageFormat.format(
+                    EDStatic.messages.get(Message.QUERY_ERROR_FILE_TYPE, language), fileTypeName)));
   }
 
   /**
@@ -3798,20 +3869,20 @@ public abstract class EDD {
       dafLink =
           "     | <a rel=\"alternate\" "
               + "title=\""
-              + EDStatic.messages.clickAccessAr[language]
+              + EDStatic.messages.get(Message.CLICK_ACCESS, language)
               + "\" \n"
               + "         href=\""
               + dapUrl
               + ".html"
               + tQuery
               + "\">"
-              + EDStatic.messages.dafAr[language]
+              + EDStatic.messages.get(Message.DAF, language)
               + "</a>\n";
     if (isAccessible && showSubsetLink && accessibleViaSubset().length() == 0)
       subsetLink =
           "     | <a rel=\"alternate\" "
               + "title=\""
-              + EDStatic.messages.dtSubsetAr[language]
+              + EDStatic.messages.get(Message.DT_SUBSET, language)
               + "\" \n"
               + "         href=\""
               + dapUrl
@@ -3821,41 +3892,43 @@ public abstract class EDD {
                   ? ""
                   : XML.encodeAsHTMLAttribute(EDDTable.DEFAULT_SUBSET_VIEWS))
               + "\">"
-              + EDStatic.messages.subsetAr[language]
+              + EDStatic.messages.get(Message.SUBSET, language)
               + "</a>\n";
     if (isAccessible && showFilesLink && accessibleViaFiles) // > because it has sourceDir
     filesLink =
           "     | <a rel=\"alternate\" "
               + "title=\""
               + XML.encodeAsHTMLAttribute(
-                  EDStatic.messages.filesDescriptionAr[language]
+                  EDStatic.messages.get(Message.FILES_DESCRIPTION, language)
                       + (this instanceof EDDTableFromFileNames
                           ? ""
                           : "\n"
-                              + EDStatic.messages.warningAr[language]
+                              + EDStatic.messages.get(Message.WARNING, language)
                               + " "
                               + String2.replaceAll(
-                                  EDStatic.messages.filesWarningAr[language], "<br>", "")))
+                                  EDStatic.messages.get(Message.FILES_WARNING, language),
+                                  "<br>",
+                                  "")))
               + "\" \n"
               + "         href=\""
               + tErddapUrl
               + "/files/"
               + datasetID
               + "/\">"
-              + EDStatic.messages.EDDFilesAr[language]
+              + EDStatic.messages.get(Message.EDD_FILES, language)
               + "</a>\n";
     if (graphsAccessible && showGraphLink && accessibleViaMAG().length() == 0)
       graphLink =
           "     | <a rel=\"alternate\" "
               + "title=\""
-              + EDStatic.messages.dtMAGAr[language]
+              + EDStatic.messages.get(Message.DT_MAG, language)
               + "\" \n"
               + "         href=\""
               + dapUrl
               + ".graph"
               + tQuery
               + "\">"
-              + EDStatic.messages.EDDMakeAGraphAr[language]
+              + EDStatic.messages.get(Message.EDD_MAKE_A_GRAPH, language)
               + "</a>\n";
     String encTitle = XML.encodeAsHTML(String2.noLongLines(title(language), 80, ""));
     encTitle = String2.replaceAll(encTitle, "\n", "<br>");
@@ -3864,7 +3937,7 @@ public abstract class EDD {
         "<table class=\"compact nowrap\">\n"
             + "  <tr>\n"
             + "    <td>"
-            + EDStatic.messages.EDDDatasetTitleAr[language]
+            + EDStatic.messages.get(Message.EDD_DATASET_TITLE, language)
             + ":&nbsp;</td>\n"
             + "    <td style=\"vertical-align:middle\"><span class=\"standoutColor\" style=\"font-size:130%; line-height:130%;\"><strong>"
             + encTitle
@@ -3882,13 +3955,13 @@ public abstract class EDD {
             + "  </tr>\n"
             + "  <tr>\n"
             + "    <td>"
-            + EDStatic.messages.EDDInstitutionAr[language]
+            + EDStatic.messages.get(Message.EDD_INSTITUTION, language)
             + ":&nbsp;</td>\n"
             + "    <td>"
             + XML.encodeAsHTML(institution(language))
             + "&nbsp;&nbsp;\n"
             + "    ("
-            + EDStatic.messages.EDDDatasetIDAr[language]
+            + EDStatic.messages.get(Message.EDD_DATASET_ID, language)
             + ": "
             + XML.encodeAsHTML(datasetID)
             + ")</td>\n"
@@ -3897,7 +3970,7 @@ public abstract class EDD {
             + "\n"
             + "  <tr>\n"
             + "    <td>"
-            + EDStatic.messages.EDDInformationAr[language]
+            + EDStatic.messages.get(Message.EDD_INFORMATION, language)
             + ":&nbsp;</td>\n"
             + "    <td>"
             + getDisplayInfo(request, language, loggedInAs)
@@ -3905,7 +3978,7 @@ public abstract class EDD {
                 ? ""
                 : "     | <a rel=\"alternate\" \n"
                     + "          title=\""
-                    + EDStatic.messages.EDDFgdcMetadataAr[language]
+                    + EDStatic.messages.get(Message.EDD_FGDC_METADATA, language)
                     + "\" \n"
                     + "          href=\""
                     + dapUrl
@@ -3916,7 +3989,7 @@ public abstract class EDD {
                 ? ""
                 : "     | <a rel=\"alternate\" \n"
                     + "          title=\""
-                    + EDStatic.messages.EDDIso19115MetadataAr[language]
+                    + EDStatic.messages.get(Message.EDD_ISO19115_METADATA, language)
                     + "\" \n"
                     + "          href=\""
                     + dapUrl
@@ -3925,23 +3998,23 @@ public abstract class EDD {
                     + "</a>\n")
             + "     | <a rel=\"alternate\" \n"
             + "          title=\""
-            + EDStatic.messages.clickInfoAr[language]
+            + EDStatic.messages.get(Message.CLICK_INFO, language)
             + "\" \n"
             + "          href=\""
             + tErddapUrl
             + "/info/"
             + datasetID
             + "/index.html\">"
-            + EDStatic.messages.EDDMetadataAr[language]
+            + EDStatic.messages.get(Message.EDD_METADATA, language)
             + "</a>\n"
             + "     | <a rel=\"bookmark\" \n"
             + "          title=\""
-            + EDStatic.messages.clickBackgroundInfoAr[language]
+            + EDStatic.messages.get(Message.CLICK_BACKGROUND_INFO, language)
             + "\" \n"
             + "          href=\""
             + XML.encodeAsHTMLAttribute(infoUrl(language))
             + "\">"
-            + EDStatic.messages.EDDBackgroundAr[language]
+            + EDStatic.messages.get(Message.EDD_BACKGROUND, language)
             + (infoUrl(language).startsWith(EDStatic.config.baseUrl)
                 ? ""
                 : EDStatic.messages.externalLinkHtml(language, tErddapUrl))
@@ -3981,11 +4054,11 @@ public abstract class EDD {
       // Handle "summary"
       if ("summary".equals(attribute)) {
         attVal = extendedSummary(language);
-        displayInfo = EDStatic.messages.EDDSummaryAr[language];
+        displayInfo = EDStatic.messages.get(Message.EDD_SUMMARY, language);
       }
       if ("license".equals(attribute)) {
         warningColor = attVal != null && !attVal.equals(EDStatic.messages.standardLicense);
-        displayInfo = EDStatic.messages.licenseAr[language];
+        displayInfo = EDStatic.messages.get(Message.LICENSE, language);
       }
       if (warningColor) {
         displayInfo = "<span class=\"warningColor\">" + displayInfo + "</span>";
@@ -4085,47 +4158,6 @@ public abstract class EDD {
     return addTable.findColumnNumber(EDV.LON_NAME) >= 0
         && addTable.findColumnNumber(EDV.LAT_NAME) >= 0
         && addTable.findColumnNumber(EDV.TIME_NAME) >= 0;
-  }
-
-  /**
-   * This is used by generateDatasetsXml to find out if a table probably has longitude, latitude,
-   * and time variables.
-   *
-   * @param sourceTable This can't be null.
-   * @param addTable with columns meanings that exactly parallel sourceTable (although, often
-   *     different column names, e.g., lat, latitude). This can't be null.
-   * @return true if it probably does
-   */
-  public static boolean probablyHasLonLatTime(Table sourceTable, Table addTable) {
-    boolean hasLon = false, hasLat = false, hasTime = false;
-    int sn = sourceTable.nColumns();
-    int an = addTable.nColumns();
-    if (sn != an)
-      throw new RuntimeException(
-          "sourceTable nColumns="
-              + sn
-              + " ("
-              + sourceTable.getColumnNamesCSVString()
-              + ")\n"
-              + "!= addTable nColumns="
-              + an
-              + " ("
-              + addTable.getColumnNamesCSVString()
-              + ")");
-    for (int col = 0; col < sn; col++) {
-      String colName = addTable.getColumnName(col).toLowerCase();
-      String units =
-          getAddOrSourceAtt(
-              addTable.columnAttributes(col), sourceTable.columnAttributes(col), "units", null);
-      if (colName.equals(EDV.LON_NAME) || colName.equals("lon") || EDV.LON_UNITS.equals(units))
-        hasLon = true;
-      else if (colName.equals(EDV.LAT_NAME) || colName.equals("lat") || EDV.LAT_UNITS.equals(units))
-        hasLat = true;
-      else if (colName.equals(EDV.TIME_NAME) || Calendar2.isTimeUnits(units)) hasTime = true;
-      // String2.log(">> colName=" + colName + " units=" + units + " hasLon=" + hasLon + " hasLat="
-      // + hasLat + " hasTime=" + hasTime);
-    }
-    return hasLon && hasLat && hasTime;
   }
 
   /**
@@ -5173,12 +5205,6 @@ public abstract class EDD {
         && !String2.isSomething2(sourceAtts.getString(name))) addAtts.add(name, value);
   }
 
-  static void addIfNoAddOrSourceAtt(
-      Attributes addAtts, Attributes sourceAtts, String name, PrimitiveArray value) {
-    if (!String2.isSomething2(addAtts.getString(name))
-        && !String2.isSomething2(sourceAtts.getString(name))) addAtts.add(name, value);
-  }
-
   /**
    * For generateDatasetsXml, this adds _FillValue and/or missing_value attributes to addAtts if
    * needed.
@@ -6115,18 +6141,18 @@ public abstract class EDD {
 
     String tValue = "";
     // add NOTE1/2/3/4/5 to summary
-    for (int i = 1; i <= 5; i++)
-      if (value.length() < 800
-          && String2.isSomething2(tValue = sourceAtts.getString("NOTE" + i))
-          && !String2.looselyContains(value, tValue))
-        value = String2.periodSpaceConcat(value, tValue);
+    for (int i = 1; i <= 5; i++) tValue = sourceAtts.getString("NOTE" + i);
+    if (value.length() < 800
+        && String2.isSomething2(tValue)
+        && !String2.looselyContains(value, tValue))
+      value = String2.periodSpaceConcat(value, tValue);
 
     // add comment1/2/3/4/5 to summary
-    for (int i = 1; i <= 5; i++)
-      if (value.length() < 800
-          && String2.isSomething2(tValue = sourceAtts.getString("comment" + i))
-          && !String2.looselyContains(value, tValue))
-        value = String2.periodSpaceConcat(value, tValue);
+    for (int i = 1; i <= 5; i++) tValue = sourceAtts.getString("comment" + i);
+    if (value.length() < 800
+        && String2.isSomething2(tValue)
+        && !String2.looselyContains(value, tValue))
+      value = String2.periodSpaceConcat(value, tValue);
 
     if (String2.isSomething2(value)) {
       // remove badly escaped FF(?)
@@ -7049,23 +7075,27 @@ public abstract class EDD {
     String s;
     if (tPublicSourceUrl.indexOf("/crm/") >= 0
         && !String2.looselyContains(tSummary, "coastal relief model")) {
-      chopUpAndAdd(s = "U.S. Coastal Relief Model. ", suggestedKeywords);
+      s = "U.S. Coastal Relief Model. ";
+      chopUpAndAdd(s, suggestedKeywords);
       tSummary = String2.periodSpaceConcat(s, tSummary);
     }
     if (tSummary.indexOf("CRUTEM") >= 0
         && // e.g., CRUTEM3
         !String2.looselyContains(tSummary, "Climatic Research Unit")) {
-      chopUpAndAdd(s = "Climatic Research Unit CRUTEM", suggestedKeywords);
+      s = "Climatic Research Unit CRUTEM";
+      chopUpAndAdd(s, suggestedKeywords);
       tSummary = String2.replaceAll(tSummary, "CRUTEM", s);
     }
     if (tPublicSourceUrl.indexOf("/dem/") >= 0 && tSummary.toLowerCase().indexOf("elevation") < 0) {
-      chopUpAndAdd(s = "Digital Elevation Model.", suggestedKeywords);
+      s = "Digital Elevation Model.";
+      chopUpAndAdd(s, suggestedKeywords);
       tSummary = String2.periodSpaceConcat(s, tSummary);
     }
     if ((tSummary.toLowerCase().indexOf("etopo") >= 0 || tPublicSourceUrl.indexOf("etopo") >= 0)
         && tSummary.toLowerCase().indexOf("topography") < 0
         && tSummary.toLowerCase().indexOf("bathymetry") < 0) {
-      chopUpAndAdd(s = "ETOPO Global Topography and Bathymetry.", suggestedKeywords);
+      s = "ETOPO Global Topography and Bathymetry.";
+      chopUpAndAdd(s, suggestedKeywords);
       tSummary = String2.periodSpaceConcat(s, tSummary);
     }
 
@@ -11483,47 +11513,6 @@ public abstract class EDD {
   }
 
   /**
-   * This is used by subclass's generateDatasetsXml methods to write directions to datasets.xml
-   * file. <br>
-   * This doesn't have the closing "-->\n\n" so users can add other comments.
-   *
-   * @throws Throwable if trouble
-   */
-  public static String directionsForGenerateDatasetsXml() throws Throwable {
-    return """
-            <!--
-             DISCLAIMER:
-               The chunk of datasets.xml made by GenerageDatasetsXml isn't perfect.
-               YOU MUST READ AND EDIT THE XML BEFORE USING IT IN A PUBLIC ERDDAP.
-               GenerateDatasetsXml relies on a lot of rules-of-thumb which aren't always
-               correct.  *YOU* ARE RESPONSIBLE FOR ENSURING THE CORRECTNESS OF THE XML
-               THAT YOU ADD TO ERDDAP'S datasets.xml FILE.
-
-             DIRECTIONS:
-             * Read about this type of dataset in
-               https://erddap.github.io/docs/server-admin/datasets .
-             * Read https://erddap.github.io/docs/server-admin/datasets#global-attributes
-               so that you understand about sourceAttributes and addAttributes.
-             * Note: Global sourceAttributes and variable sourceAttributes are listed
-               below as comments, for informational purposes only.
-               ERDDAP combines sourceAttributes and addAttributes (which have
-               precedence) to make the combinedAttributes that are shown to the user.
-               (And other attributes are automatically added to longitude, latitude,
-               altitude, depth, and time variables).
-             * If you don't like a sourceAttribute, overwrite it by adding an
-               addAttribute with the same name but a different value
-               (or no value, if you want to remove it).
-             * All of the addAttributes are computer-generated suggestions. Edit them!
-               If you don't like an addAttribute, change it.
-             * If you want to add other addAttributes, add them.
-             * If you want to change a destinationName, change it.
-               But don't change sourceNames.
-             * You can change the order of the dataVariables or remove any of them.
-            """;
-    // This doesn't have the closing "-->\n\n" so users can add other comments.
-  }
-
-  /**
    * This is used by subclass's generateDatasetsXml methods to write the variables to the writer in
    * the datasets.xml format.
    *
@@ -11942,8 +11931,8 @@ public abstract class EDD {
   }
 
   /** This returns a new, empty, badFileMap (a thead-safe map). */
-  public ConcurrentHashMap newEmptyBadFileMap() {
-    return new ConcurrentHashMap(16, 0.75f, 4);
+  public ConcurrentHashMap<String, Object[]> newEmptyBadFileMap() {
+    return new ConcurrentHashMap<>(16, 0.75f, 4);
   }
 
   /** The name of the badFileMap file. */
@@ -11968,8 +11957,8 @@ public abstract class EDD {
    *
    * @return a thread-safe ConcurrentHashMap
    */
-  public ConcurrentHashMap readBadFileMap() {
-    ConcurrentHashMap badFilesMap = newEmptyBadFileMap();
+  public ConcurrentHashMap<String, Object[]> readBadFileMap() {
+    ConcurrentHashMap<String, Object[]> badFilesMap = newEmptyBadFileMap();
     String fileName = badFileMapFileName();
     String msg = "badFileMap has old/unsupported ";
     try {
@@ -12024,8 +12013,8 @@ public abstract class EDD {
    * @param badFilesMap
    * @throws Throwable if trouble
    */
-  public void writeBadFileMap(String randomFileName, ConcurrentHashMap badFilesMap)
-      throws Throwable {
+  public void writeBadFileMap(
+      String randomFileName, ConcurrentHashMap<String, Object[]> badFilesMap) throws Throwable {
 
     try {
       // gather the fileNames and reasons
@@ -12071,7 +12060,11 @@ public abstract class EDD {
    * @param reason
    */
   public void addBadFile(
-      ConcurrentHashMap badFileMap, int dirIndex, String fileName, long lastMod, String reason) {
+      ConcurrentHashMap<String, Object[]> badFileMap,
+      int dirIndex,
+      String fileName,
+      long lastMod,
+      String reason) {
     String2.log(datasetID + " addBadFile: " + fileName + "\n  reason=" + reason);
     badFileMap.put(dirIndex + "/" + fileName, new Object[] {lastMod, reason});
   }
@@ -12090,7 +12083,7 @@ public abstract class EDD {
   public String addBadFileToTableOnDisk(
       int dirIndex, String fileName, long lastMod, String reason) {
 
-    ConcurrentHashMap badFileMap = readBadFileMap();
+    ConcurrentHashMap<String, Object[]> badFileMap = readBadFileMap();
     addBadFile(badFileMap, dirIndex, fileName, lastMod, reason);
     String badFileMapFileName = badFileMapFileName();
     int random = Math2.random(Integer.MAX_VALUE);
@@ -12114,7 +12107,8 @@ public abstract class EDD {
    * @return a string representation of the information in a badFileMap. If there are no badFiles,
    *     this returns "".
    */
-  public String badFileMapToString(ConcurrentHashMap badFileMap, StringArray dirList) {
+  public String badFileMapToString(
+      ConcurrentHashMap<String, Object[]> badFileMap, StringArray dirList) {
 
     Object keys[] = badFileMap.keySet().toArray();
     if (keys.length == 0) return "";
@@ -12204,7 +12198,10 @@ public abstract class EDD {
    * @throws Throwable if trouble
    */
   public void saveDirTableFileTableBadFiles(
-      int tStandardizeWhat, Table dirTable, Table fileTable, ConcurrentHashMap badFileMap)
+      int tStandardizeWhat,
+      Table dirTable,
+      Table fileTable,
+      ConcurrentHashMap<String, Object[]> badFileMap)
       throws Throwable {
 
     String dirTableFileName = datasetDir() + DIR_TABLE_FILENAME;
@@ -12315,29 +12312,6 @@ public abstract class EDD {
       }
     }
     return queryHash;
-  }
-
-  /**
-   * This builds a user query from the parts.
-   *
-   * @param queryParts not percentEncoded
-   * @return a userQuery, &amp; separated, with percentEncoded parts, or "" if queryParts is null or
-   *     length = 0.
-   * @throws Throwable
-   */
-  public static String buildUserQuery(String queryParts[]) throws Throwable {
-    if (queryParts == null || queryParts.length == 0) return "";
-
-    for (int i = 0; i < queryParts.length; i++) {
-      int po = queryParts[i].indexOf('=');
-      if (po >= 0)
-        queryParts[i] =
-            SSR.minimalPercentEncode(queryParts[i].substring(0, po))
-                + "="
-                + SSR.minimalPercentEncode(queryParts[i].substring(po + 1));
-      else queryParts[i] = SSR.minimalPercentEncode(queryParts[i]);
-    }
-    return String2.toSVString(queryParts, "&", false);
   }
 
   /**
@@ -12871,7 +12845,6 @@ public abstract class EDD {
         String2.log(success + msg);
         nTableFileNames++;
         nCreated++;
-        continue;
       } catch (Throwable t) {
         String2.log(
             "> Attempt with EDDTableFromFileNames failed! Give up on this dir.\n"
@@ -12906,11 +12879,6 @@ public abstract class EDD {
     return resultsSB.toString();
   }
 
-  /** This calls testDasDds(tDatasetID, true). */
-  public static String testDasDds(String tDatasetID) throws Throwable {
-    return testDasDds(true, tDatasetID, true);
-  }
-
   /** Return a dataset's .das and .dds (usually for test purposes when setting up a dataset). */
   public static String testDasDds(boolean clearCache, String tDatasetID, boolean tReallyVerbose)
       throws Throwable {
@@ -12927,7 +12895,6 @@ public abstract class EDD {
     StringBuilder results = new StringBuilder();
     // Math2.gcAndWait("EDD (between tests)"); Math2.gcAndWait("EDD (between tests)"); //used in
     // development, before getMemoryInUse
-    long memory = Math2.getMemoryInUse();
 
     if (clearCache) EDD.deleteCachedDatasetInfo(tDatasetID);
 
@@ -12975,18 +12942,6 @@ public abstract class EDD {
       }
     }
 
-    // memory
-    if (false) { // enabled when testing
-      Math2.gcAndWait("EDD (between tests)");
-      Math2.gcAndWait("EDD (between tests)"); // Used in development.  Before getMemoryInUse().
-      memory = Math2.getMemoryInUse() - memory;
-      String2.log(
-          "\n*** DasDds: memoryUse="
-              + (memory / 1024)
-              + " KB\nPress CtrlBreak in console window to generate hprof heap info.");
-      String2.pressEnterToContinue();
-    }
-
     return results.toString();
   }
 
@@ -12997,15 +12952,6 @@ public abstract class EDD {
    */
   public static void testVerboseOn() {
     testVerbose(true);
-  }
-
-  /**
-   * This sets verbose=true and reallyVerbose=true for this class and related clases, for tests.
-   *
-   * @throws Throwable if trouble
-   */
-  public static void testVerboseOff() {
-    testVerbose(false);
   }
 
   /**

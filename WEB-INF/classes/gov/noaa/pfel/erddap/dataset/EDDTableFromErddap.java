@@ -15,9 +15,14 @@ import com.cohort.util.MustBe;
 import com.cohort.util.String2;
 import com.cohort.util.Test;
 import com.cohort.util.XML;
-import dods.dap.*;
+import dods.dap.AttributeTable;
+import dods.dap.BaseType;
+import dods.dap.DAS;
+import dods.dap.DDS;
+import dods.dap.DSequence;
 import gov.noaa.pfel.coastwatch.griddata.OpendapHelper;
 import gov.noaa.pfel.coastwatch.pointdata.Table;
+import gov.noaa.pfel.coastwatch.util.FileVisitorDNLS;
 import gov.noaa.pfel.coastwatch.util.SSR;
 import gov.noaa.pfel.coastwatch.util.SimpleXMLReader;
 import gov.noaa.pfel.erddap.Erddap;
@@ -26,12 +31,21 @@ import gov.noaa.pfel.erddap.handlers.EDDTableFromErddapHandler;
 import gov.noaa.pfel.erddap.handlers.SaxHandlerClass;
 import gov.noaa.pfel.erddap.util.EDMessages;
 import gov.noaa.pfel.erddap.util.EDStatic;
-import gov.noaa.pfel.erddap.variable.*;
+import gov.noaa.pfel.erddap.variable.EDV;
+import gov.noaa.pfel.erddap.variable.EDVAlt;
+import gov.noaa.pfel.erddap.variable.EDVDepth;
+import gov.noaa.pfel.erddap.variable.EDVLat;
+import gov.noaa.pfel.erddap.variable.EDVLon;
+import gov.noaa.pfel.erddap.variable.EDVTime;
+import gov.noaa.pfel.erddap.variable.EDVTimeStamp;
+import jakarta.servlet.http.HttpServletRequest;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.BitSet;
+import java.util.Queue;
 import org.semver4j.Semver;
 
 /**
@@ -261,8 +275,11 @@ public class EDDTableFromErddap extends EDDTable implements FromErddap {
 
       double sourceVersion = sourceGlobalAttributes.getDouble("sourceErddapVersion");
       sourceGlobalAttributes.remove("sourceErddapVersion");
-      if (Double.isNaN(sourceVersion)) sourceVersion = 1.22;
-      sourceErddapVersion = EDStatic.getSemver(String.valueOf(sourceVersion));
+      if (Double.isNaN(sourceVersion)) {
+        sourceErddapVersion = getRemoteErddapVersion(localSourceUrl);
+      } else {
+        sourceErddapVersion = EDStatic.getSemver(String.valueOf(sourceVersion));
+      }
       useNccsv = sourceErddapVersion.isGreaterThanOrEqualTo(EDStatic.getSemver("1.76"));
 
     } else {
@@ -300,14 +317,13 @@ public class EDDTableFromErddap extends EDDTable implements FromErddap {
 
         // delve into the outerSequence
         BaseType outerVariable = dds.getVariable(SEQUENCE_NAME);
-        if (!(outerVariable instanceof DSequence))
+        if (!(outerVariable instanceof DSequence outerSequence))
           throw new IllegalArgumentException(
               errorInMethod
                   + "outerVariable not a DSequence: name="
                   + outerVariable.getName()
                   + " type="
                   + outerVariable.getTypeName());
-        DSequence outerSequence = (DSequence) outerVariable;
         int nOuterColumns = outerSequence.elementCount();
         AttributeTable outerAttributeTable = das.getAttributeTable(SEQUENCE_NAME);
         for (int outerCol = 0; outerCol < nOuterColumns; outerCol++) {
@@ -600,6 +616,60 @@ public class EDDTableFromErddap extends EDDTable implements FromErddap {
     // String2.log(table.toString());
     standardizeResultsTable(language, requestUrl, userDapQuery, table); // not necessary?
     tableWriter.writeAllAndFinish(table);
+  }
+
+  private void getFilesForSubdir(String subDir, Table resultsTable, Queue<String> subdirs)
+      throws Exception {
+    String url =
+        String2.replaceAll(localSourceUrl, "/tabledap/", "/files/")
+            + "/"
+            + subDir
+            + (subDir.length() > 0 ? "/" : "")
+            + ".csv";
+    BufferedReader reader = SSR.getBufferedUrlReader(url);
+    Table table = new Table();
+    table.readASCII(
+        url, reader, "", "", 0, 1, ",", null, null, null, null,
+        false); // testColumns[], testMin[], testMax[], loadColumns[], simplify)
+    table.setColumn(1, new LongArray(table.getColumn(1)));
+    table.setColumn(2, new LongArray(table.getColumn(2)));
+    StringArray names = (StringArray) table.getColumn(0);
+    for (int row = 0; row < table.nRows(); row++) {
+      String name = names.get(row);
+      if (name.endsWith("/")) {
+        subdirs.add(
+            subDir + (subDir.length() > 0 ? "/" : "") + name.substring(0, name.length() - 1));
+      } else {
+        resultsTable.addStringData(0, subDir + name);
+        resultsTable.addStringData(
+            1,
+            String2.replaceAll(localSourceUrl, "/tabledap/", "/files/")
+                + "/"
+                + subDir
+                + "/"
+                + name);
+        resultsTable.addLongData(2, table.getLongData(1, row));
+        resultsTable.addLongData(3, table.getLongData(2, row));
+      }
+    }
+  }
+
+  @Override
+  public Table getFilesUrlList(HttpServletRequest request, String loggedInAs, int language)
+      throws Throwable {
+    Table resultsTable = FileVisitorDNLS.makeEmptyTable();
+    Queue<String> subdirs = new ArrayDeque<>();
+    subdirs.add("");
+    while (subdirs.size() > 0) {
+      String subdir = subdirs.remove();
+      getFilesForSubdir(subdir, resultsTable, subdirs);
+    }
+    return resultsTable;
+  }
+
+  @Override
+  public String getFilesetUrl(HttpServletRequest request, String loggedInAs, int language) {
+    return String2.replaceAll(localSourceUrl, "/tabledap/", "/files/") + "/";
   }
 
   /**

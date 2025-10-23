@@ -905,7 +905,6 @@ public class TestAll {
     ResourceBundle2 rb2;
     RowComparator rc;
     RowComparatorIgnoreCase rcic;
-    SaveOpendap so;
     SgtGraph sgtGraph;
     SgtMap sgtMap;
     SgtUtil sgtUtil;
@@ -960,14 +959,12 @@ public class TestAll {
     TableXmlHandler txh;
     Tally tally;
     Test test;
-    Touch touch;
     UByteArray uba;
     UIntArray uia;
     ULongArray ula;
     Units2 u2;
     UShortArray usa;
     VectorPointsRenderer vpr;
-    WatchDirectory wdir;
     XML xml;
 
     // ERDDAP-related

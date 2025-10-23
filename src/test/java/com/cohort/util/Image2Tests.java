@@ -96,6 +96,30 @@ public class Image2Tests {
   }
 
   /**
+   * Saves an image as a non-transparent .gif or .png based on the fullImageName's extension. This
+   * will overwrite an existing file. Gif's are saved with ImageMagick's convert (which does great
+   * color reduction).
+   *
+   * @param bi
+   * @param fullName with directory and extension
+   * @throws Exception if trouble
+   */
+  public static void saveImage(BufferedImage bi, String fullName) throws Exception {
+    String shortName =
+        fullName.substring(0, fullName.length() - 4); // currently, all extensions are 4 char
+    if (fullName.endsWith(".gif")) SgtUtil.saveAsGif(bi, shortName);
+    else if (fullName.endsWith(".png")) SgtUtil.saveAsPng(bi, shortName);
+    // else if (fullName.endsWith(".jpg"))
+    //    saveAsJpg(bi, shortName);
+    else
+      Test.error(
+          String2.ERROR
+              + " in SgtUtil.saveImage: "
+              + "Unsupported image type for fileName="
+              + fullName);
+  }
+
+  /**
    * This is like the other testImagesIdentical, but uses DEFAULT_ALLOW_N_PIXELS_DIFFERENT.
    *
    * @param observed the full name of the image file to be tested (.gif, .jpg, or .png)

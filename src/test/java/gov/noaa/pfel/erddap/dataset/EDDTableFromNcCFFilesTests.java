@@ -1884,17 +1884,6 @@ class EDDTableFromNcCFFilesTests {
     String testCacheDir = EDStatic.config.fullTestCacheDirectory;
     String scalarVars = ",crs,WODf,WODfd";
 
-    // From Ajay Krishnan, NCEI/NODC, from
-    // https://data.nodc.noaa.gov/thredds/catalog/testdata/wod_ragged/05052016/catalog.html?dataset=testdata/wod_ragged/05052016/ind199105_ctd.nc
-    // See low level reading test: Table.testReadNcCF7SampleDims()
-    String fileName =
-        Path.of(
-                EDDTableFromNcCFFilesTests.class
-                    .getResource("/data/nccf/ncei/ind199105_ctd.nc")
-                    .toURI())
-            .toString();
-    // String2.log(NcHelper.ncdump(fileName, "-h"));
-
     String id = "testNcCF7SampleDimensions";
     EDDTableFromNcCFFiles.deleteCachedDatasetInfo(id);
     EDDTable eddTable = (EDDTable) EDDTestDataset.gettestNcCF7SampleDimensions();

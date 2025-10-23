@@ -14,15 +14,12 @@ package gov.noaa.pmel.sgt;
 
 import com.cohort.util.MustBe;
 import com.cohort.util.String2;
-import gov.noaa.pmel.util.Range2D;
 import gov.noaa.pmel.util.SoTPoint;
 import gov.noaa.pmel.util.SoTRange;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Rectangle;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Abstract base class for Cartesian axes. Cartesian axes are designed to be used with the <code>
@@ -48,8 +45,6 @@ public abstract class Axis implements Selectable {
    */
   public CartesianGraph graph_;
 
-  public List<Axis> registeredAxes_;
-  public List<Transform> registeredTransforms_;
   public Color lineColor_;
   public int numSmallTics_;
   public double largeTicHeight_;
@@ -70,7 +65,6 @@ public abstract class Axis implements Selectable {
    */
   public SGLabel title_;
 
-  public Range2D pRange_;
   public boolean space_;
   public int orientation_;
   public boolean selected_;
@@ -103,32 +97,13 @@ public abstract class Axis implements Selectable {
 
   public static final int AUTO = 3;
 
-  protected abstract void updateRegisteredTransforms();
-
-  protected abstract void updateRegisteredAxes();
-
-  //
-
   /** Bob Simons added this to avoid memory leak problems. */
   public void releaseResources() throws Exception {
     try {
       // objects from Axis
       graph_ = null;
-      if (registeredAxes_ != null) {
-        List<Axis> o = registeredAxes_;
-        registeredAxes_ = null;
-        for (Axis o2 : o) o2.releaseResources();
-        o.clear();
-      }
-      if (registeredTransforms_ != null) {
-        List<Transform> o = registeredTransforms_;
-        registeredTransforms_ = null;
-        for (Transform o2 : o) o2.releaseResources();
-        o.clear();
-      }
       labelFont_ = null;
       title_ = null;
-      pRange_ = null;
       if (JPane.debug) String2.log("sgt.PlainAxis.releaseResources() finished");
     } catch (Throwable t) {
       String2.log(MustBe.throwableToString(t));
@@ -263,8 +238,6 @@ public abstract class Axis implements Selectable {
    */
   public Axis(String id) {
     ident_ = id;
-    registeredAxes_ = new ArrayList<>();
-    registeredTransforms_ = new ArrayList<>();
     //
     // set defaults
     //
@@ -303,25 +276,6 @@ public abstract class Axis implements Selectable {
   }
 
   /**
-   * Get the <code>Graph</code> associated with the axis.
-   *
-   * @return Graph object.
-   */
-  public CartesianGraph getGraph() {
-    return graph_;
-  }
-
-  /**
-   * Get the parent pane.
-   *
-   * @return AbstractPane
-   * @since 2.0
-   */
-  public AbstractPane getPane() {
-    return graph_.getPane();
-  }
-
-  /**
    * Used internally by sgt.
    *
    * @since 2.0
@@ -329,79 +283,6 @@ public abstract class Axis implements Selectable {
   public void modified(String mess) {
     //    if(Debug.EVENT) System.out.println("Axis: modified()");
     if (graph_ != null) graph_.modified(mess);
-  }
-
-  /**
-   * Register an axis. Registered axes will be notified of changes to the user coordinate range.
-   *
-   * @param axis An Axis object.
-   */
-  public void register(Axis axis) {
-    registeredAxes_.add(axis);
-  }
-
-  /**
-   * Register an <code>AxisTransform</code>. Registered <code>AxisTransform</code>s will be notified
-   * of changes to the user coordinate range and physical coordinate range.
-   *
-   * @param trns A AxisTransform object.
-   */
-  public void register(AxisTransform trns) {
-    registeredTransforms_.add(trns);
-  }
-
-  /**
-   * Unregister an axis. Axis will no longer be notified of changes in the user range.
-   *
-   * @param axis An Axis object.
-   */
-  public void clear(Axis axis) {
-    if (!registeredAxes_.isEmpty()) {
-      registeredAxes_.remove(axis);
-    }
-  }
-
-  /**
-   * Unregister an <code>AxisTransform</code>. The <code>AxisTransform</code> will no longer be
-   * notified of changes to the user or physical coordinate range.
-   *
-   * @param trns A AxisTransform ojbect.
-   */
-  public void clear(AxisTransform trns) {
-    if (!registeredTransforms_.isEmpty()) {
-      registeredTransforms_.remove(trns);
-    }
-  }
-
-  /** Unregister all axes. No axes will be notified of changes in the user range. */
-  public void clearAllRegisteredAxes() {
-    registeredAxes_.clear();
-  }
-
-  /**
-   * Unregister all <code>AxisTransform</code>s. No <code>AxisTransform</code>s will be notified of
-   * changes in the user of physical range.
-   */
-  public void clearAllRegisteredTransforms() {
-    registeredTransforms_.clear();
-  }
-
-  /**
-   * Get the number of currently registered transforms.
-   *
-   * @return number of registered transforms
-   */
-  public int getNumberRegisteredTransforms() {
-    return registeredTransforms_.size();
-  }
-
-  /**
-   * Get the number of currently registered axes.
-   *
-   * @return number of registered axes
-   */
-  public int getNumberRegisteredAxes() {
-    return registeredAxes_.size();
   }
 
   /**
@@ -417,15 +298,6 @@ public abstract class Axis implements Selectable {
   }
 
   /**
-   * Get the large tic height.
-   *
-   * @return large tic height in physcial units.
-   */
-  public double getLargeTicHeightP() {
-    return largeTicHeight_;
-  }
-
-  /**
    * Set the number of small tics between large tics.
    *
    * @param nstic number of small tics.
@@ -438,15 +310,6 @@ public abstract class Axis implements Selectable {
   }
 
   /**
-   * Get the number of small tics between large tics.
-   *
-   * @return number of small tics.
-   */
-  public int getNumberSmallTics() {
-    return numSmallTics_;
-  }
-
-  /**
    * Set the small tic height in physical units.
    *
    * @param sthgt small tic height.
@@ -456,58 +319,6 @@ public abstract class Axis implements Selectable {
       smallTicHeight_ = sthgt;
       modified("Axis: setSmallTicHeightP()");
     }
-  }
-
-  /**
-   * Get the small tic height.
-   *
-   * @return small tic height in physical units.
-   */
-  public double getSmallTicHeightP() {
-    return smallTicHeight_;
-  }
-
-  /**
-   * Set the thick tic width in physical units. Minimum thickness is 3 pixels.
-   *
-   * @param wid thick tic width.
-   */
-  public void setThickTicWidthP(double wid) {
-    if (thickTicWidth_ != wid) {
-      thickTicWidth_ = wid;
-      modified("Axis: setThickTicWidthP()");
-    }
-  }
-
-  /**
-   * Get the thick tic width.
-   *
-   * @return thick tic width in physical units.
-   */
-  public double getThickTicWidthP() {
-    return thickTicWidth_;
-  }
-
-  /**
-   * Set the tic position. Tic position can be <code>POSITIVE_SIDE</code>, <code>NEGATIVE_SIDE
-   * </code>, or <code>BOTH_SIDES</code>.
-   *
-   * @param tpos tic position
-   */
-  public void setTicPosition(int tpos) {
-    if (ticPosition_ != tpos) {
-      ticPosition_ = tpos;
-      modified("Axis: setTicPosition()");
-    }
-  }
-
-  /**
-   * Get the tic position.
-   *
-   * @return tic position
-   */
-  public int getTicPosition() {
-    return ticPosition_;
   }
 
   /**
@@ -524,15 +335,6 @@ public abstract class Axis implements Selectable {
   }
 
   /**
-   * Get the label position.
-   *
-   * @return label position
-   */
-  public int getLabelPosition() {
-    return labelPosition_;
-  }
-
-  /**
    * Set the label font.
    *
    * @param fnt label font
@@ -545,61 +347,6 @@ public abstract class Axis implements Selectable {
   }
 
   /**
-   * Get the label font.
-   *
-   * @return label font
-   */
-  public Font getLabelFont() {
-    return labelFont_;
-  }
-
-  /**
-   * Set the line and tick color.
-   *
-   * @param color line and tick color
-   * @since 3.0
-   */
-  public void setLineColor(Color color) {
-    if (lineColor_ == null || !lineColor_.equals(color)) {
-      lineColor_ = color;
-      modified("Axis: setLineColor()");
-    }
-  }
-
-  /**
-   * Get the line color.
-   *
-   * @since 3.0
-   * @return color
-   */
-  public Color getLineColor() {
-    return lineColor_;
-  }
-
-  /**
-   * Set the label color.
-   *
-   * @param color label color
-   * @since 2.0
-   */
-  public void setLabelColor(Color color) {
-    if (labelColor_ == null || !labelColor_.equals(color)) {
-      labelColor_ = color;
-      modified("Axis: setLabelColor()");
-    }
-  }
-
-  /**
-   * Get the label color.
-   *
-   * @since 2.0
-   * @return color
-   */
-  public Color getLabelColor() {
-    return labelColor_;
-  }
-
-  /**
    * Set the label height in physical units.
    *
    * @param lhgt label height.
@@ -609,15 +356,6 @@ public abstract class Axis implements Selectable {
       labelHeight_ = lhgt;
       modified("Axis: setLabelHeightP()");
     }
-  }
-
-  /**
-   * Get the label height.
-   *
-   * @return label height
-   */
-  public double getLabelHeightP() {
-    return labelHeight_;
   }
 
   /**
@@ -643,43 +381,6 @@ public abstract class Axis implements Selectable {
   }
 
   /**
-   * Set the physical range. This method updates any registered <code>Transform</code>s. If no
-   * <code>Transform</CODE>s are registered, the <code>setRangeP</code> method has no effect.
-   *
-   * @param pr physcial range
-   */
-  public void setRangeP(Range2D pr) {
-    if (pRange_ == null || !pRange_.equals(pr)) {
-      pRange_ = pr;
-      updateRegisteredTransforms();
-      modified("Axis: setRangeP()");
-    }
-  }
-
-  /**
-   * Get the physical range. Obtains the physical range from the associated <code>CartesianGraph
-   * </code> object and attached <code>Transform</code>.
-   *
-   * @return physical range
-   */
-  public Range2D getRangeP() {
-    if (orientation_ == HORIZONTAL) {
-      return graph_.xTransform_.getRangeP();
-    } else {
-      return graph_.yTransform_.getRangeP();
-    }
-  }
-
-  /**
-   * Set the axis identifier.
-   *
-   * @param id identifier
-   */
-  public void setId(String id) {
-    ident_ = id;
-  }
-
-  /**
    * Get the axis identifier.
    *
    * @return identifier
@@ -699,33 +400,6 @@ public abstract class Axis implements Selectable {
       orientation_ = or;
       modified("Axis: setOrientation()");
     }
-  }
-
-  /**
-   * Get axis orientation
-   *
-   * @return axis orientation
-   */
-  public int getOrientation() {
-    return orientation_;
-  }
-
-  /**
-   * Tests if axis is space.
-   *
-   * @return true if space
-   */
-  public boolean isSpace() {
-    return space_;
-  }
-
-  /**
-   * Tests if axis is time.
-   *
-   * @return true if time
-   */
-  public boolean isTime() {
-    return !space_;
   }
 
   /**
@@ -784,27 +458,6 @@ public abstract class Axis implements Selectable {
   }
 
   /**
-   * Determines if the axis is visible.
-   *
-   * @since 2.0
-   */
-  public boolean isVisible() {
-    return visible_;
-  }
-
-  /**
-   * Set the visibility state.
-   *
-   * @since 2.0
-   */
-  public void setVisible(boolean visible) {
-    if (visible_ != visible) {
-      visible_ = visible;
-      modified("Axis: setVisible()");
-    }
-  }
-
-  /**
    * Set the axis location.
    *
    * @since 2.0
@@ -812,23 +465,9 @@ public abstract class Axis implements Selectable {
   public abstract void setLocationU(SoTPoint pt);
 
   /**
-   * Get current axis location.
-   *
-   * @since 2.0
-   */
-  public abstract SoTPoint getSoTLocationU();
-
-  /**
    * Set user range.
    *
    * @since 2.0
    */
   public abstract void setRangeU(SoTRange range);
-
-  /**
-   * Get user range.
-   *
-   * @since 2.0
-   */
-  public abstract SoTRange getSoTRangeU();
 }

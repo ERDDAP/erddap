@@ -232,10 +232,12 @@ import gov.noaa.pfel.erddap.Erddap;
 import gov.noaa.pfel.erddap.dataset.metadata.LocalizedAttributes;
 import gov.noaa.pfel.erddap.handlers.EDDTableFromCassandraHandler;
 import gov.noaa.pfel.erddap.handlers.SaxHandlerClass;
+import gov.noaa.pfel.erddap.util.EDMessages.Message;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.*;
 import java.io.BufferedReader;
 import java.io.StringReader;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.Date;
@@ -282,7 +284,7 @@ public class EDDTableFromCassandra extends EDDTable {
   protected final int nPartitionKeys;
   protected final String[] partitionKeyNames; // source names
   protected final String[] partitionKeyFrom; // null or name of timestamp var it is derived from
-  protected final String[] partitionKeyPrecision; // null or precision of timestamp var
+  protected final DateTimeFormatter[] partitionKeyPrecision; // null or precision of timestamp var
   protected final String[]
       partitionKeyFixedValue; // null, or the fixed value (plain number or string in quotes)
   protected EDV partitionKeyEDV[]; // edv of each partitionKey
@@ -520,7 +522,7 @@ public class EDDTableFromCassandra extends EDDTable {
     partitionKeyNames = String2.split(tPartitionKeySourceNames, ','); // they are trimmed
     nPartitionKeys = partitionKeyNames.length;
     partitionKeyFrom = new String[nPartitionKeys]; // all nulls
-    partitionKeyPrecision = new String[nPartitionKeys]; // all nulls
+    partitionKeyPrecision = new DateTimeFormatter[nPartitionKeys]; // all nulls
     partitionKeyFixedValue = new String[nPartitionKeys]; // all nulls
     for (int i = 0; i < nPartitionKeys; i++) {
       // timestamp derived from another timestamp?  date/sampletime/1970-01-01Z
@@ -537,7 +539,7 @@ public class EDDTableFromCassandra extends EDDTable {
       } else if (sar.length == 3) {
         partitionKeyNames[i] = String2.canonical(sar[0]);
         partitionKeyFrom[i] = String2.canonical(sar[1]);
-        partitionKeyPrecision[i] = String2.canonical(sar[2]);
+        partitionKeyPrecision[i] = Calendar2.timePrecisionToDateTimeFormatter(sar[2]);
       } else {
         throw new RuntimeException(
             String2.ERROR
@@ -1408,7 +1410,8 @@ public class EDDTableFromCassandra extends EDDTable {
 
       if (Thread.currentThread().isInterrupted())
         throw new SimpleException(
-            "EDDTableFromCassandra.getDataForDapQuery" + EDStatic.messages.caughtInterruptedAr[0]);
+            "EDDTableFromCassandra.getDataForDapQuery"
+                + EDStatic.messages.get(Message.CAUGHT_INTERRUPTED, 0));
 
       // Make the BoundStatement
       // ***!!! This method avoids CQL/SQL Injection Vulnerability !!!***
@@ -1563,9 +1566,9 @@ public class EDDTableFromCassandra extends EDDTable {
 
     // connect result set columns to table columns
     int nRv = resultsDVI.length;
-    int rvToRsCol[] = new int[nRv]; // stored as 0..
-    DataType rvToCassDataType[] = new DataType[nRv];
-    TypeCodec rvToTypeCodec[] = new TypeCodec[nRv];
+    int[] rvToRsCol = new int[nRv]; // stored as 0..
+    DataType[] rvToCassDataType = new DataType[nRv];
+    TypeCodec<?>[] rvToTypeCodec = new TypeCodec[nRv];
     for (int rv = 0; rv < nRv; rv++) {
       // find corresponding resultSet column (may not be 1:1) and other info
       // stored as 0..   -1 if not found
@@ -1689,7 +1692,7 @@ public class EDDTableFromCassandra extends EDDTable {
             // https://datastax.github.io/java-driver/upgrade_guide/
             String s = "[?]";
             try {
-              TypeCodec codec = rvToTypeCodec[rv];
+              TypeCodec<?> codec = rvToTypeCodec[rv];
               if (codec != null) {
                 java.nio.ByteBuffer bytes = r.getBytesUnsafe(rsCol);
                 s = bytes == null ? "" : codec.deserialize(bytes, protocolVersion).toString();

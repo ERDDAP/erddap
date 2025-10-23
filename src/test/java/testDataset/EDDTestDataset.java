@@ -326,18 +326,42 @@ public class EDDTestDataset {
               + "\n" //
           );
 
-      datasetsXml.append(
-          "<dataset type=\"EDDGridFromErddap\" datasetID=\"rMH1chla8day\">\n"
-              + "    <sourceUrl>http://localhost:8080/erddap/griddap/erdMH1chla8day</sourceUrl>\n"
-              + "</dataset>\n"
-              + "\n"
-              + "<dataset type=\"EDDTableFromErddap\" datasetID=\"rlPmelTaoDySst\" active=\"true\">\n"
-              + "    <sourceUrl>http://localhost:8080/erddap/tabledap/pmelTaoDySst</sourceUrl>\n"
-              + "</dataset>\n"
-              + "\n");
+      datasetsXml.append(xmlFragment_rMH1chla8day());
+
+      datasetsXml.append(xmlFragment_rlPmelTaoDySst());
       datasetsXml.append("</erddapDatasets>\n");
       datasetsXml.close();
     }
+  }
+
+  public static EDD getrMH1chla8day() throws Throwable {
+    return EDD.oneFromXmlFragment(null, xmlFragment_rMH1chla8day());
+  }
+
+  private static String xmlFragment_rMH1chla8day() {
+    return "<dataset type=\"EDDGridFromErddap\" datasetID=\"rMH1chla8day\">\n"
+        + "    <sourceUrl>http://localhost:8080/erddap/griddap/erdMH1chla8day</sourceUrl>\n"
+        + "</dataset>\n";
+  }
+
+  public static EDD getrerdCAMarCatLM() throws Throwable {
+    return EDD.oneFromXmlFragment(null, xmlFragment_rerdCAMarCatLM());
+  }
+
+  private static String xmlFragment_rerdCAMarCatLM() {
+    return "<dataset type=\"EDDTableFromErddap\" datasetID=\"rerdCAMarCatLM\">\n"
+        + "    <sourceUrl>http://localhost:8080/erddap/tabledap/erdCAMarCatLM</sourceUrl>\n"
+        + "</dataset>\n";
+  }
+
+  public static EDD getrlPmelTaoDySst() throws Throwable {
+    return EDD.oneFromXmlFragment(null, xmlFragment_rlPmelTaoDySst());
+  }
+
+  private static String xmlFragment_rlPmelTaoDySst() {
+    return "<dataset type=\"EDDTableFromErddap\" datasetID=\"rlPmelTaoDySst\" active=\"true\">\n"
+        + "    <sourceUrl>http://localhost:8080/erddap/tabledap/pmelTaoDySst</sourceUrl>\n"
+        + "</dataset>\n";
   }
 
   public static EDD gethawaii_d90f_20ee_c4cb_LonPM180() throws Throwable {
@@ -508,6 +532,7 @@ public class EDDTestDataset {
         + "            <att name=\"resolution\"></att>\n"
         + "            <att name=\"units\">days since 0001-01-01T00:00:00</att>\n"
         + "            <att name=\"standard_name\">time</att>\n"
+        + "            <att name=\"legacy_time_adjust\">true</att>\n"
         + "        </addAttributes>\n"
         + "    </axisVariable>\n"
         + "    <axisVariable>\n"
@@ -8404,6 +8429,7 @@ public class EDDTestDataset {
         + "        <addAttributes>\n"
         + "            <att name=\"standard_name\">time</att>\n"
         + "            <att name=\"cf_role\">profile_id</att>\n"
+        + "            <att name=\"legacy_time_adjust\">true</att>\n"
         + "        </addAttributes>\n"
         + "    </dataVariable>\n"
         + "    <dataVariable>\n"
@@ -15628,6 +15654,65 @@ public class EDDTestDataset {
         + "        <addAttributes>\n"
         + "            <att name=\"ioos_category\">Unknown</att>\n"
         + "            <att name=\"long_name\">Notes</att>\n"
+        + "        </addAttributes>\n"
+        + "    </dataVariable>\n"
+        + "</dataset>\n";
+  }
+
+  public static EDD gettestFromMqtt() throws Throwable {
+    return EDD.oneFromXmlFragment(null, xmlFragment_testFromMqtt());
+  }
+
+  private static String xmlFragment_testFromMqtt() throws URISyntaxException {
+    return "<dataset type=\"EDDTableFromMqtt\" datasetID=\"testFromMqtt\" active=\"true\">\n"
+        + "    <fileDir>"
+        + Path.of(EDDTestDataset.class.getResource("/testFromMqtt").toURI())
+        + "    </fileDir>\n"
+        + "    <serverHost>broker.hivemq.com</serverHost>\n"
+        + "    <serverPort>1883</serverPort>\n"
+        + "    <clientId>client-id</clientId>\n"
+        + "    <username>${localhost:canonical-name}</username>\n"
+        + "    <password>${date:yyyy-MM-dd}</password>\n"
+        + "    <topics>test/topic1</topics>\n"
+        + "    <useSsl>false</useSsl>\n"
+        + "    <sessionExpiryInterval>10</sessionExpiryInterval>\n"
+        + "    <connectionTimeout>10</connectionTimeout>\n"
+        + "    <automaticReconnect>true</automaticReconnect>"
+        + "    <fileTableInMemory>false</fileTableInMemory>\n"
+        + "    <addAttributes>\n"
+        + "        <att name=\"cdm_data_type\">Other</att>\n"
+        + "        <att name=\"Conventions\">COARDS, CF-1.6, ACDD-1.3</att>\n"
+        + "        <att name=\"creator_name\">NOAA NDBC</att>\n"
+        + "        <att name=\"creator_url\">https://www.ndbc.noaa.gov/</att>\n"
+        + "        <att name=\"infoUrl\">https://www.ndbc.noaa.gov/</att>\n"
+        + "        <att name=\"institution\">NOAA NDBC</att>\n"
+        + "        <att name=\"keywords\">boolean, byte, char, double, float, int, long, ndbc, newer, noaa, short, string, title</att>\n"
+        + "        <att name=\"license\">[standard]</att>\n"
+        + "        <att name=\"Metadata_Conventions\">null</att>\n"
+        + "        <att name=\"sourceUrl\">(local files)</att>\n"
+        + "        <att name=\"standard_name_vocabulary\">CF Standard Name Table v70</att>\n"
+        + "        <att name=\"summary\">The new summary!</att>\n"
+        + "        <att name=\"title\">The Newer Title!</att>\n"
+        + "    </addAttributes>\n"
+        + "    <dataVariable>\n"
+        + "        <sourceName>lat</sourceName>\n"
+        + "        <dataType>double</dataType>\n"
+        + "        <addAttributes>\n"
+        + "            <att name=\"ioos_category\">Identifier</att>\n"
+        + "        </addAttributes>\n"
+        + "    </dataVariable>\n"
+        + "    <dataVariable>\n"
+        + "        <sourceName>lon</sourceName>\n"
+        + "        <dataType>double</dataType>\n"
+        + "        <addAttributes>\n"
+        + "            <att name=\"ioos_category\">Identifier</att>\n"
+        + "        </addAttributes>\n"
+        + "    </dataVariable>\n"
+        + "    <dataVariable>\n"
+        + "        <sourceName>temperature</sourceName>\n"
+        + "        <dataType>double</dataType>\n"
+        + "        <addAttributes>\n"
+        + "            <att name=\"ioos_category\">Identifier</att>\n"
         + "        </addAttributes>\n"
         + "    </dataVariable>\n"
         + "</dataset>\n";

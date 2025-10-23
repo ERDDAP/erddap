@@ -164,18 +164,7 @@ public class DSequence extends DConstructor implements ClientIO {
   public void addVariable(BaseType v, int part) {
     v.setParent(this);
     varTemplate.add(v);
-    if (v instanceof DSequence) ((DSequence) v).setLevel(getLevel() + 1);
-  }
-
-  /**
-   * Adds a row to the container. This is assumed to contain a <code>Vector</code> of variables of
-   * the same type and in the same order as the variable template added with the <code>addVariable
-   * </code> method.
-   *
-   * @param row the <code>Vector</code> to add.
-   */
-  public final void addRow(List<BaseType> row) {
-    allValues.add(row);
+    if (v instanceof DSequence dseq) dseq.setLevel(getLevel() + 1);
   }
 
   /**
@@ -187,16 +176,6 @@ public class DSequence extends DConstructor implements ClientIO {
    */
   public final List<BaseType> getRow(int row) {
     return allValues.get(row);
-  }
-
-  /**
-   * Deletes a row from the container.
-   *
-   * @param row the row number to delete.
-   * @exception ArrayIndexOutOfBoundsException if the index was invalid.
-   */
-  public final void delRow(int row) {
-    allValues.remove(row);
   }
 
   /**
@@ -217,7 +196,6 @@ public class DSequence extends DConstructor implements ClientIO {
    * @param name the name of the variable.
    * @return the named variable.
    * @exception NoSuchVariableException if the named variable does not exist in this container.
-   * @see DSequence#getVariable(int, String)
    */
   @Override
   public BaseType getVariable(String name) throws NoSuchVariableException {
@@ -229,8 +207,7 @@ public class DSequence extends DConstructor implements ClientIO {
       String field = name.substring(dotIndex + 1);
 
       BaseType aggRef = getVariable(aggregate);
-      if (aggRef instanceof DConstructor)
-        return ((DConstructor) aggRef).getVariable(field); // recurse
+      if (aggRef instanceof DConstructor dcon) return dcon.getVariable(field); // recurse
       else
         ; // fall through to throw statement
     } else {
@@ -254,36 +231,6 @@ public class DSequence extends DConstructor implements ClientIO {
 
     if (index < varTemplate.size()) return varTemplate.get(index);
     else throw new NoSuchVariableException("DSequence.getVariable(" + index + " - 1)");
-  }
-
-  /**
-   * Returns the named variable in the given row of the sequence.
-   *
-   * @param row the row number to retrieve.
-   * @param name the name of the variable.
-   * @return the named variable.
-   * @exception NoSuchVariableException if the named variable does not exist in this container.
-   */
-  public BaseType getVariable(int row, String name) throws NoSuchVariableException {
-
-    int dotIndex = name.indexOf('.');
-
-    if (dotIndex != -1) { // name contains "."
-      String aggregate = name.substring(0, dotIndex);
-      String field = name.substring(dotIndex + 1);
-
-      BaseType aggRef = getVariable(aggregate);
-      if (aggRef instanceof DConstructor)
-        return ((DConstructor) aggRef).getVariable(field); // recurse
-      else
-        ; // fall through to throw statement
-    } else {
-      List<BaseType> selectedRow = allValues.get(row);
-      for (BaseType v : selectedRow) {
-        if (v.getName().equals(name)) return v;
-      }
-    }
-    throw new NoSuchVariableException("DSequence: getVariable()");
   }
 
   /**

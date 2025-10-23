@@ -34,9 +34,6 @@ public abstract class Point2D implements Serializable, Cloneable {
     /** y coordinate */
     public double y;
 
-    /** Default constructor */
-    public Double() {}
-
     public Double(double x, double y) {
       this.x = x;
       this.y = y;
@@ -49,8 +46,7 @@ public abstract class Point2D implements Serializable, Cloneable {
      */
     @Override
     public boolean equals(Object pt) {
-      if (pt instanceof Point2D.Double) {
-        Point2D.Double pt2 = (Point2D.Double) pt;
+      if (pt instanceof Point2D.Double pt2) {
         return (x == pt2.x) && (y == pt2.y);
       } else {
         return false;
@@ -66,19 +62,6 @@ public abstract class Point2D implements Serializable, Cloneable {
     public String toString() {
       return "(" + x + ", " + y + ")";
     }
-
-    /**
-     * Make a copy of the <code>Rectangle2D</code>.
-     *
-     * @since sgt 3.0
-     */
-    public Point2D copy() {
-      try {
-        return (Point2D) clone();
-      } catch (CloneNotSupportedException e) {
-        return null;
-      }
-    }
   }
 
   /**
@@ -86,5 +69,7 @@ public abstract class Point2D implements Serializable, Cloneable {
    * subclasses are available for instantiation and provide a number of formats for storing the
    * information necessary to satisfy the various accessor methods below.
    */
-  protected Point2D() {}
+  protected Point2D() {
+    // Intentional empty constructor
+  }
 }

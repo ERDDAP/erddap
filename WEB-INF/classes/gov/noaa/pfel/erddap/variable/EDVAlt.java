@@ -8,6 +8,7 @@ import com.cohort.array.Attributes;
 import com.cohort.array.PAOne;
 import com.cohort.array.PrimitiveArray;
 import com.cohort.util.SimpleException;
+import com.cohort.util.String2;
 import gov.noaa.pfel.erddap.dataset.metadata.LocalizedAttributes;
 import gov.noaa.pfel.erddap.util.EDMessages;
 
@@ -101,6 +102,22 @@ public class EDVAlt extends EDV {
    */
   public static void ensureUnitsAreM(String cUnits, String altitudeDepth, String upDown) {
     if (cUnits != null && EDV.METERS_VARIANTS.indexOf(cUnits) >= 0) return;
+
+    throw new SimpleException(
+        "When a variable's destinationName is \""
+            + altitudeDepth
+            + "\", "
+            + "the sourceAttributes or addAttributes \"units\" MUST be \"m\" (not \""
+            + cUnits
+            + "\").\n"
+            + "If needed, use \"scale_factor\" to convert the source values to meters (positive="
+            + upDown
+            + "),\n"
+            + "use a different destinationName for this variable.");
+  }
+
+  public static void ensureUnitsArePressure(String cUnits, String altitudeDepth, String upDown) {
+    if (cUnits != null && String2.indexOf(EDV.PRESSURE_VARIANTS, cUnits) >= 0) return;
 
     throw new SimpleException(
         "When a variable's destinationName is \""

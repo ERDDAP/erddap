@@ -5,6 +5,7 @@ import com.cohort.util.SimpleException;
 import gov.noaa.pfel.erddap.dataset.EDDGrid;
 import gov.noaa.pfel.erddap.dataset.EDDTable;
 import gov.noaa.pfel.erddap.dataset.TableWriterAllWithMetadata;
+import gov.noaa.pfel.erddap.util.EDMessages.Message;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import ucar.nc2.write.NetcdfFileFormat;
 
@@ -30,7 +31,7 @@ public class Nc4Files extends CacheLockFiles {
 
     if (EDStatic.config.accessibleViaNC4.length() > 0)
       throw new SimpleException(
-          EDStatic.simpleBilingual(requestInfo.language(), EDStatic.messages.queryErrorAr)
+          EDStatic.simpleBilingual(requestInfo.language(), Message.QUERY_ERROR)
               + EDStatic.config.accessibleViaNC4);
 
     EDDTable edd = requestInfo.getEDDTable();
@@ -77,11 +78,11 @@ public class Nc4Files extends CacheLockFiles {
 
   @Override
   public String getHelpText(int language) {
-    return EDStatic.messages.fileHelpTable_nc4Ar[language];
+    return EDStatic.messages.get(Message.FILE_HELP_TABLE_NC4, language);
   }
 
   @Override
   public String getGridHelpText(int language) {
-    return EDStatic.messages.fileHelpGrid_nc4Ar[language];
+    return EDStatic.messages.get(Message.FILE_HELP_GRID_NC4, language);
   }
 }

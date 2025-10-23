@@ -63,7 +63,6 @@ Het aanvragen van compressie is optioneel, maar gecomprimeerde reacties zijn vaa
 <acronyms>Acroniemen</acronyms>
 <addConstraints>U kunt tabledap-achtige beperkingen toevoegen aan verzoeken aan deze webpagina,
 Bijvoorbeeld,</addConstraints>
-<addVarWhereAttName>Optioneel: Geef een attribuutnaam op.</addVarWhereAttName>
 <addVarWhereAttValue>Optioneel: Geef een attribuutwaarde op.</addVarWhereAttValue>
 <addVarWhere><![CDATA[
 
@@ -296,9 +295,6 @@ Vervolgens kunt u op een categorie klikken om een ​​lijst met relevante data
 <categorySearchHtml><![CDATA[
 Kies een(n) <kbd>{0}</kbd>
 ]]></categorySearchHtml>
-<categorySearchDifferentHtml><![CDATA[
-Zoek naar gegevenssets met een andere <kbd>&category;</kbd>
-]]></categorySearchDifferentHtml>
 <categoryClickHtml>Klik op een categorie (een attribuutwaarde) om een ​​lijst met relevante datasets te zien.</categoryClickHtml>
 <categoryNotAnOption>Wanneer attribuut=&quot;{0}&quot;, value=&quot;{1}&quot; geen optie is.</categoryNotAnOption>
 <caughtInterrupted>gevangen currentThread().isInterrupted().</caughtInterrupted>
@@ -1804,9 +1800,6 @@ Elke rij vertegenwoordigt een ander voorbeeld van de gegevens (bijvoorbeeld van 
 
 ]]></dafTableTooltip>
 <dasTitle>De gegevenssetkenmerkstructuur (.das) voor deze gegevensset</dasTitle>
-
-<!--  Het bericht dat wordt weergegeven als de gegevens niet kunnen worden gedownload (bijvoorbeeld SeaWiFS &lt;=14 dagen oud).  -->
-<dataAccessNotAllowed>[Sorry. Die gegevens kunnen niet worden gedownload.]</dataAccessNotAllowed>
 <databaseUnableToConnect>Kan geen verbinding maken met de database.</databaseUnableToConnect>
 <dataProviderForm>Formulier gegevensprovider</dataProviderForm>
 <dataProviderFormP1>Formulier voor gegevensprovider - Deel 1</dataProviderFormP1>
@@ -2132,10 +2125,6 @@ Klik op &widgetSubmitButton; om deze informatie naar de ERDDAP beheerder te stur
 <br>Los deze problemen op en &#39;verstuur&#39; dit deel van het formulier opnieuw.
 
 ]]></dpf_fixProblem>
-<dpf_yourName>Uw naam</dpf_yourName>
-<dpf_emailAddress>E-mailadres</dpf_emailAddress>
-<dpf_Timestamp>Tijdstempel</dpf_Timestamp>
-<dpf_frequency>Frequentie</dpf_frequency>
 <dpf_title>titel</dpf_title>
 <dpf_titleTooltip><![CDATA[
 
@@ -2213,12 +2202,6 @@ Dit is de licentie en disclaimer voor het gebruik van deze gegevens.
 <br><kbd>
 
 ]]></dpf_licenseTooltip>
-<dpf_howYouStoreData><![CDATA[
-
-<br>• Fout:
-geef (hieronder) aan hoe uw raster- of tabelgegevens worden opgeslagen.
-
-]]></dpf_howYouStoreData>
 <dpf_provideIfAvailable>Geef de informatie op als deze beschikbaar is voor uw dataset.</dpf_provideIfAvailable>
 <dpf_acknowledgement>erkenning</dpf_acknowledgement>
 <dpf_acknowledgementTooltip><![CDATA[
@@ -2519,10 +2502,8 @@ De tijdstempel van deze datasetinzending is &tTimestamp; .
 <dtWMS>Klik hier voor meer informatie over het maken van kaarten van deze gegevens via de Web Map Service van deze dataset.</dtWMS>
 <EasierAccessToScientificData>Gemakkelijkere toegang tot wetenschappelijke gegevens</EasierAccessToScientificData>
 
-<!--  De EDD-berichten worden weergegeven op de tabledap- en griddap-gegevenstoegangsformulieren.  -->
-<EDDClickOnSubmitHtml><![CDATA[
-Klik op <kbd>Submit</kbd> .
-]]></EDDClickOnSubmitHtml>
+<!--De EDD-berichten worden weergegeven op detabledapen griddap Data Access Forms.
+-->
 <EDDDatasetID>Gegevensset-ID</EDDDatasetID>
 <EDDFgdc>FGDC</EDDFgdc>
 <EDDFgdcMetadata>FGDC-STD-001-1998 Metagegevens</EDDFgdcMetadata>
@@ -2535,9 +2516,7 @@ Klik op <kbd>Submit</kbd> .
 <EDDInformation>Informatie</EDDInformation>
 <EDDSummary>Samenvatting</EDDSummary>
 <EDDDatasetTitle>Titel van gegevensset</EDDDatasetTitle>
-<EDDDownloadData>Gegevens downloaden</EDDDownloadData>
 <EDDMakeAGraph>Maak een grafiek</EDDMakeAGraph>
-<EDDMakeAMap>Maak een kaart</EDDMakeAMap>
 <EDDMinimum>Minimum</EDDMinimum>
 <EDDMaximum>Maximaal</EDDMaximum>
 <EDDFileType>Bestandstype:</EDDFileType>
@@ -2606,8 +2585,6 @@ Het maakt de URL voor u.
 ]]></EDDGridDownloadDataTooltip>
 <EDDGridDimension>Dimensies</EDDGridDimension>
 <EDDGridDimensionRanges>Dimensies</EDDGridDimensionRanges>
-<EDDGridFirst>Eerst</EDDGridFirst>
-<EDDGridLast>Laatst</EDDGridLast>
 <EDDGridStart>Begin</EDDGridStart>
 <EDDGridStop>Stop</EDDGridStop>
 <EDDGridStartStopTooltip><![CDATA[
@@ -2651,14 +2628,6 @@ dit is de gemiddelde afstand tussen waarden van een dimensie (in de eenheden van
 Een enigszins vreemde, ongelijkmatige spatiëring geeft vaak aan dat een of enkele bestanden ontbreken of slecht zijn in een verder perfect gelijkmatig verdeelde dataset.
 
 ]]></EDDGridSpacingTooltip>
-<EDDGridDimensionFirstTooltip><![CDATA[
-Ter informatie:
-dit is de eerste waarde van een dimensie.
-]]></EDDGridDimensionFirstTooltip>
-<EDDGridDimensionLastTooltip><![CDATA[
-Ter informatie:
-dit is de laatste waarde van een dimensie.
-]]></EDDGridDimensionLastTooltip>
 <EDDGridDownloadTooltip><![CDATA[
 Selecteer de variabelen die u wilt downloaden:
 <br>* Om alleen dimensiegegevens te downloaden:
@@ -2934,10 +2903,6 @@ Bijvoorbeeld:
 
 <!--  Deze berichten worden weergegeven wanneer er een foutmelding wordt weergegeven.  -->
 <errorTitle>Fout</errorTitle>
-<errorRequestUrl>Uw verzoek-URL:</errorRequestUrl>
-<errorRequestQuery>Uw verzoekvraag:</errorRequestQuery>
-<errorTheError>De fout:</errorTheError>
-<errorCopyFrom>Kan niet kopiëren van {0}.</errorCopyFrom>
 <errorFileNotFound>Bestand niet gevonden: {0} .</errorFileNotFound>
 <errorFileNotFoundImage>Bestand niet gevonden in cache. Maak de afbeelding opnieuw en probeer het opnieuw.</errorFileNotFoundImage>
 <errorInternal>Interne fout:</errorInternal>
@@ -2959,6 +2924,7 @@ Bijvoorbeeld:
 <externalLink>(externe link)</externalLink>
 <externalWebSite>Deze link naar een externe website houdt geen goedkeuring in.</externalWebSite>
 <fileHelp_asc>Bekijk ISO-8859-1 door komma&#39;s gescheiden tekst in OPeNDAP-stijl.</fileHelp_asc>
+<fileHelp_croissant>Download de dataset croissant schema.</fileHelp_croissant>
 <fileHelp_csv>Download een ISO-8859-1 door komma&#39;s gescheiden teksttabel (regel 1: namen; regel 2: eenheden; ISO 8601 keer).</fileHelp_csv>
 <fileHelp_csvp>Download een ISO-8859-1 .csv-bestand met regel 1: naam (eenheden). Tijden zijn ISO 8601-reeksen.</fileHelp_csvp>
 <fileHelp_csv0>Download een ISO-8859-1 .csv-bestand zonder kolomnamen of eenheden. Tijden zijn ISO 8601-reeksen.</fileHelp_csv0>
@@ -2970,12 +2936,18 @@ Bijvoorbeeld:
 <fileHelpTable_esriCsv>Download een ISO_8859_1 .csv-bestand voor ESRI&#39;s ArcGIS 9.x en lager (afzonderlijke datum- en tijdkolommen).</fileHelpTable_esriCsv>
 <fileHelp_fgdc>Bekijk de UTF-8 FGDC .xml-metagegevens van de dataset.</fileHelp_fgdc>
 <fileHelp_geoJson>Download gegevens over lengtegraad, breedtegraad, andere kolommen als een UTF-8 GeoJSON .json-bestand.</fileHelp_geoJson>
-<fileHelp_graph>Bekijk een Make A Graph-webpagina.</fileHelp_graph>
 <fileHelpGrid_help>Bekijk een webpagina met een beschrijving van griddap.</fileHelpGrid_help>
 <fileHelpTable_help>Bekijk een webpagina met een beschrijving van tabledap.</fileHelpTable_help>
 <fileHelp_html>Bekijk een HTML-gegevenstoegangsformulier in OPeNDAP-stijl.</fileHelp_html>
 <fileHelp_htmlTable>Bekijk een UTF-8 .html-webpagina met de gegevens in een tabel. Tijden zijn ISO 8601-reeksen.</fileHelp_htmlTable>
-<fileHelp_iso19115>Bekijk de ISO 19115-2/19139 UTF-8 .xml-metagegevens van de dataset.</fileHelp_iso19115>
+<fileHelp_iso19115>Datasets tonenISO 19115/19139UTF-8 .xml metadata met de standaard versie voor deze server.
+</fileHelp_iso19115>
+<fileHelp_iso19115_2>Datasets tonenISO 19115-2/19139UTF-8 .xml metadata.
+</fileHelp_iso19115_2>
+<fileHelp_iso191392007>Datasets tonenISO 19139:2007UTF-8 .xml metadata.
+</fileHelp_iso191392007>
+<fileHelp_iso19115_3_2016>Datasets tonenISO 19115-3:2016UTF-8 .xml metadata.
+</fileHelp_iso19115_3_2016>
 <fileHelp_itxGrid>Download een ISO-8859-1 Igor-tekstbestand. Elke asvariabele en elke datavariabele wordt een golf.</fileHelp_itxGrid>
 <fileHelp_itxTable>Download een ISO-8859-1 Igor-tekstbestand. Elke antwoordkolom wordt een golf.</fileHelp_itxTable>
 <fileHelp_json>Bekijk een tabelachtig UTF-8 JSON-bestand (ontbrekende waarde = &#39;null&#39;; tijden zijn ISO 8601-reeksen).</fileHelp_json>
@@ -3001,7 +2973,6 @@ Bijvoorbeeld:
 <fileHelpTable_odvTxt>Download lengtegraad, breedtegraad, tijd, andere kolommen als een ISO-8859-1 ODV generiek spreadsheetbestand (.txt).</fileHelpTable_odvTxt>
 <fileHelp_parquet>Download als parketbestand. Metadata bevat kolomnamen (&quot;kolom_namen&quot;) en eenheden (&quot;kolom_eenheden&quot;).</fileHelp_parquet>
 <fileHelp_parquet_with_meta>Download als parketbestand met gedetailleerde metadata.</fileHelp_parquet_with_meta>
-<fileHelp_subset>Bekijk een HTML-formulier dat gefacetteerd zoeken gebruikt om het kiezen van subsets van de gegevens te vereenvoudigen.</fileHelp_subset>
 <fileHelp_timeGaps>Bekijk een UTF-8-lijst met hiaten in de tijdwaarden die groter zijn dan de mediane kloof.</fileHelp_timeGaps>
 <fileHelp_tsv>Download een ISO-8859-1 door tabs gescheiden teksttabel (regel 1: namen; regel 2: eenheden; ISO 8601 keer).</fileHelp_tsv>
 <fileHelp_tsvp>Download een ISO-8859-1 .tsv-bestand met regel 1: naam (eenheden). Tijden zijn ISO 8601-reeksen.</fileHelp_tsvp>
@@ -3021,7 +2992,6 @@ Bijvoorbeeld:
 
 <!--  De formuleringen Beschrijving en Waarschuwing zijn vaag om één of meerdere datasets mogelijk te maken.  -->
 <filesDescription>Met het &quot;bestanden&quot;-systeem van ERDDAP kunt u door een virtueel bestandssysteem bladeren en brongegevensbestanden downloaden.</filesDescription>
-<filesSort>Klik op een kop (bijvoorbeeld Naam, Laatst gewijzigd, Grootte) om de sorteervolgorde te wijzigen.  &quot;Laatst gewijzigd&quot; gebruikt de Zoeloe-tijdzone.</filesSort>
 <filesWarning><![CDATA[
 
 De metadata en variabelenamen van de dataset in deze bronbestanden kunnen anders zijn dan elders in ERDDAP ! Mogelijk geeft u er de voorkeur aan om in plaats daarvan het gegevenstoegangsformulier van de gegevensset te gebruiken.
@@ -3460,12 +3430,6 @@ Die rij bevat de som van elk van de andere variabelen.
 orderByMax(&quot;stationID, time/1day&quot;) maakt bijvoorbeeld voor elke dag een groep aan voor elke stationID en berekent en retourneert de som van de andere variabelen.
 
 ]]></functionOrderByTooltip>
-<functionOrderByExtra><![CDATA[
-
-Voor orderByClosest geeft u hier het interval op (met behulp van de notatie n[timeUnits], bijvoorbeeld 1 uur).
-<br>Voor orderByLimit geeft u hier het maximale aantal rijen per groep op.
-
-]]></functionOrderByExtra>
 <functionOrderBySort><![CDATA[
 
 Dit slot is het {0} belangrijke orderBy ...
@@ -3478,7 +3442,6 @@ slot.
 <functionOrderBySort3>derde meest</functionOrderBySort3>
 <functionOrderBySort4>vierde meest</functionOrderBySort4>
 <functionOrderBySortLeast>minst</functionOrderBySortLeast>
-<functionOrderBySortRowMax>Alleen de rij met de maximale waarde wordt behouden.</functionOrderBySortRowMax>
 <generatedAt>Deze webpagina is gegenereerd op {0}.</generatedAt>
 <geoServicesDescription><![CDATA[
 
@@ -3781,7 +3744,6 @@ De standaardwaarde is niets (ongebruikt).
 <!--  bijvoorbeeld {0}=WMS of lijstAlles  -->
 <listOfDatasets>Lijst met {0} gegevenssets</listOfDatasets>
 <listAll>Alle</listAll>
-<LogIn>Log in</LogIn>
 <login>Log in</login>
 <loginHTML><![CDATA[
 
@@ -3840,22 +3802,15 @@ Iedereen met een Google e-mailaccount of ORCID iD kan inloggen, maar de beheerde
 Alleen mensen die afspraken hebben gemaakt met de beheerder van dit ERDDAP kunnen inloggen.
 
 ]]></loginDescribeOpenID>
-<loginErddap>Log in op ERDDAP</loginErddap>
 <loginCanNot>Deze ERDDAP is niet geconfigureerd om gebruikers te laten inloggen.</loginCanNot>
 <loginAreNot>Je bent niet ingelogd.</loginAreNot>
 <loginToLogIn>Inloggen</loginToLogIn>
-<loginEmailAddress>e-mailadres</loginEmailAddress>
 <loginYourEmailAddress>jouw e-mailadres</loginYourEmailAddress>
 <loginUserName>Gebruikersnaam</loginUserName>
 <loginPassword>Wachtwoord</loginPassword>
 <loginUserNameAndPassword>Gebruikersnaam en wachtwoord</loginUserNameAndPassword>
 <loginGoogleSignIn>Authenticeer met uw Google-account.</loginGoogleSignIn>
 <loginOrcidSignIn>Authenticeer met uw ORCID iD.</loginOrcidSignIn>
-<loginOpenID>Log in met uw OpenID-URL</loginOpenID>
-<loginOpenIDOr>Of log in op uw bestaande (niet-OpenID) account op</loginOpenIDOr>
-<loginOpenIDCreate>Of maak een OpenID-URL aan op</loginOpenIDCreate>
-<loginOpenIDFree>Ze zijn allemaal gratis!</loginOpenIDFree>
-<loginOpenIDSame>Zorg ervoor dat u bent ingelogd met exact dezelfde OpenID-URL die u aan de ERDDAP-beheerder hebt gegeven.</loginOpenIDSame>
 <loginAs>U bent ingelogd als {0}.</loginAs>
 <loginPartwayAs>Je bent gedeeltelijk ingelogd als {0}.</loginPartwayAs>
 <loginFailed>FOUT: Inloggen mislukt</loginFailed>
@@ -3970,7 +3925,6 @@ Het is mogelijk dat sommige datasets momenteel niet beschikbaar zijn of dat u ge
 ]]></loginPublicAccess>
 <LogOut>Uitloggen</LogOut>
 <logout>uitloggen</logout>
-<logoutOpenID>Meld u af bij uw OpenID-provider.</logoutOpenID>
 
 <!--  uitloggenSucces laatst bijgewerkt 2019-12-19  -->
 <logoutSuccess>Je bent succesvol uitgelogd. 
@@ -4271,10 +4225,6 @@ Maar dods.dap.DODSException heeft geen relevante uitzondering.
 Is het beter om een ​​leeg bestand terug te sturen? Maar .nc en anderen staan ​​geen gegevens met een lengte van 0 toe.
  -->
 <MustBeThereIsNoData>Uw zoekopdracht heeft geen overeenkomende resultaten opgeleverd.</MustBeThereIsNoData>
-
-<!--  Veel bestandstypen stellen een limiet aan de hoeveelheid gegevens die een bestand kan bevatten (bijvoorbeeld 2 GB).  -->
-<MustBeNotNull>{0} mag niet nul zijn.</MustBeNotNull>
-<MustBeNotEmpty>{0} mag geen lege tekenreeks zijn.</MustBeNotEmpty>
 <MustBeInternalError>Interne fout</MustBeInternalError>
 <MustBeOutOfMemoryError>Onvoldoende geheugen fout</MustBeOutOfMemoryError>
 
@@ -4315,11 +4265,9 @@ Is het beter om een ​​leeg bestand terug te sturen? Maar .nc en anderen staa
 <noXxxNoLonIn180>er zijn geen lengtegraadwaarden tussen -180 en 360</noXxxNoLonIn180>
 <noXxxNoNonString>er zijn geen niet-String-variabelen</noXxxNoNonString>
 <noXxxNo2NonString>er zijn niet minstens twee niet-String-variabelen</noXxxNo2NonString>
-<noXxxNoStation>cdmDataType={0} is niet &quot;TimeSeries&quot;</noXxxNoStation>
 <noXxxNoStationID>er is geen stationID-achtige variabele</noXxxNoStationID>
 <noXxxNoSubsetVariables>subsetVariables is niet opgegeven</noXxxNoSubsetVariables>
 <noXxxNoOLLSubsetVariables>subsetVariables heeft niet de variabelen offer, longitude en latitude</noXxxNoOLLSubsetVariables>
-<noXxxNoMinMax>de brongegevensserver biedt geen minimum- en maximumwaarden</noXxxNoMinMax>
 <noXxxItsGridded>het is een gerasterde dataset</noXxxItsGridded>
 <noXxxItsTabular>het is een dataset in tabelvorm</noXxxItsTabular>
 <oneRequestAtATime>Dien slechts één verzoek per keer in.</oneRequestAtATime>
@@ -4346,7 +4294,6 @@ Ontwikkelaars van computerprogramma&#39;s en Java Script-webpagina&#39;s hebben 
 <options>Opties</options>
 <orAListOfValues>of een lijst met waarden</orAListOfValues>
 <orRefineSearchWith>Of verfijn deze zoekopdracht met</orRefineSearchWith>
-<orSearchWith>Of zoek naar datasets met</orSearchWith>
 <orComma>Of,</orComma>
 <otherFeatures>Andere mogelijkheden</otherFeatures>
 <outOfDateDatasets>Verouderde datasets</outOfDateDatasets>
@@ -4407,7 +4354,6 @@ Er zijn
     title="Deze link naar een externe website houdt geen goedkeuring in."></a> .
 
 ]]></percentEncode>
-<pickADataset>Kies een gegevensset</pickADataset>
 
 <!--  Berichten gerelateerd aan op protocol gebaseerde zoekopdrachten naar datasets.  -->
 <protocolSearchHtml>Zoek naar gegevenssets op protocol</protocolSearchHtml>
@@ -4424,7 +4370,6 @@ Verschillende protocollen zijn geschikt voor verschillende soorten gegevens en v
 <queryError1Var>De indeling {0} kan slechts één gegevensvariabele verwerken.</queryError1Var>
 <queryError2Var>Verzoeken voor de indeling {0} moeten ten minste twee numerieke variabelen bevatten (voor de X- en Y-as).</queryError2Var>
 <queryErrorActualRange>{0} valt buiten het werkelijke_bereik van de variabele: {1} tot {2}</queryErrorActualRange>
-<queryErrorAscending>Voor {0}-verzoeken moeten de lengtegraadwaarden en breedtegraadwaarden oplopend zijn.</queryErrorAscending>
 <queryErrorAdjusted>Voor {0}-verzoeken moeten de aangepaste lengtegraadwaarden ({1} tot en met {2}) tussen -180 en 180 liggen.</queryErrorAdjusted>
 <queryErrorConstraintNaN>Beperkingswaarde = &quot;{0}&quot; resulteert in NaN.  Als je echt NaN wilt, schrijf het dan als NaN.</queryErrorConstraintNaN>
 <queryErrorEqualSpacing>Voor {0}-verzoeken moet de lengtegraadafstand ({1}) gelijk zijn aan de breedtegraadafstand ({2}).</queryErrorEqualSpacing>
@@ -4456,7 +4401,6 @@ Verschillende protocollen zijn geschikt voor verschillende soorten gegevens en v
 <queryErrorGridNoAxisVar>Een query voor griddap-gegevensvariabelen mag geen asvariabele ({0}) bevatten.</queryErrorGridNoAxisVar>
 <queryErrorGridNoDataVar>Een query voor een griddap-asvariabele kan geen gegevensvariabele ({0}) bevatten.</queryErrorGridNoDataVar>
 <queryErrorGridNotIdentical>De beperking {0} voor variabele={1} is niet identiek aan de beperking {2} voor variabele={2}.  Als u verschillende subsets nodig heeft, dient u afzonderlijke verzoeken in.</queryErrorGridNotIdentical>
-<queryErrorGridSLessS>StartIndex={0} is groter dan StopIndex={1}.</queryErrorGridSLessS>
 <queryErrorLastEndP>{0} begint met &quot;(&quot;, maar eindigt niet met &quot;)&quot;.</queryErrorLastEndP>
 <queryErrorLastExpected>&quot;laatste&quot; werd begin {0} verwacht.</queryErrorLastExpected>
 <queryErrorLastUnexpected>Onverwacht teken na &#39;laatste&#39; in {0}.</queryErrorLastUnexpected>
@@ -4698,7 +4642,6 @@ Zien
 <SOSDocumentation>ERDDAP&#39;s SOS-documentatie</SOSDocumentation>
 <WCSDocumentation>ERDDAP&#39;s WCS-documentatie</WCSDocumentation>
 <WMSDocumentation>ERDDAP&#39;s WMS-documentatie</WMSDocumentation>
-<findOutChange>zodat uw computerprogramma kan achterhalen of een dataset is gewijzigd.</findOutChange>
 <requestFormatExamplesHtml><![CDATA[
 
 (bijvoorbeeld
@@ -5150,14 +5093,6 @@ Vraag in plaats daarvan een e-mail aan met een
 
 ]]></subscriptionRemoveSuccess>
 <subscriptionRSS>Abonneer u op de RSS-feed voor deze dataset...</subscriptionRSS>
-<subscriptionsNotAvailable><![CDATA[
-
-<p><strong>Sorry.
-Het e-mail/URL-abonnementssysteem is niet beschikbaar bij deze ERDDAP installatie.</strong>
-<br>Overweeg in plaats daarvan de
-<a rel="help" href="{0}/information.html#subscriptions">RSS</a> abonnementsservice te gebruiken.
-
-]]></subscriptionsNotAvailable>
 <subscriptionUrlHtml><![CDATA[
 
 <kbd>URL/action</kbd> is een optionele URL waarmee ERDDAP contact kan opnemen in plaats van u een e-mail te sturen.
@@ -5422,13 +5357,6 @@ Om {0} te bekijken,
 <!--  De volgende tag wordt voorafgegaan door 1 van de 2 voorgaande tags. 
   {0} is subsetViewSelectDistintCombos of subsetViewSelectRelatedCounts.  -->
 <subsetWhenCounts>{0} voor de {1} waarden van &quot;{2}&quot; zijn:</subsetWhenCounts>
-<subsetComboClickSelect><![CDATA[
-
-Om de tellingen van verschillende combinaties van de hierboven genoemde variabelen te bekijken,
-<br>vink <kbd>{0} :
-{1}</kbd> hierboven aan en selecteer een waarde voor een van de bovenstaande variabelen.
-
-]]></subsetComboClickSelect>
 <subsetNVariableCombos>In totaal zijn er {0} rijen met verschillende combinaties van de hierboven genoemde variabelen.</subsetNVariableCombos>
 <subsetShowingAllRows>Alle rijen worden hierboven weergegeven.</subsetShowingAllRows>
 <subsetShowingNRows>De eerste {0} rijen worden hierboven weergegeven.  De overige {1} rijen worden niet weergegeven.</subsetShowingNRows>
@@ -6199,7 +6127,6 @@ Als u eenmaal lid bent, kunt u daar uw vraag posten of zoeken of de vraag al ges
 De meningen op deze webpagina zijn de persoonlijke meningen van Bob Simons en weerspiegelen niet noodzakelijkerwijs enig standpunt van de regering of de National Oceanic and Atmospheric Administration .
 
 ]]></theLongDescriptionHtml>
-<Then>Dan</Then>
 <twoClickMapDefaultTooltip>Geef een rechthoek op door op twee diagonale hoeken te klikken.  Doe het indien nodig opnieuw.</twoClickMapDefaultTooltip>
 
 <!--  Dit is een manier om de UDUnits-converter Standaardiseren van ERDDAP te overschrijven
@@ -7483,7 +7410,6 @@ Dit kan niet niets zijn. Dus als je niets wilt, voer dan een wartaal woord in da
 mag nooit een attribuutnaam zijn.  -->
 <updateUrlsSkipAttributes>bronUrl</updateUrlsSkipAttributes>
 <variableNames>Variabele namen</variableNames>
-<viewAllDatasetsHtml>Bekijk een lijst met alle gegevenssets</viewAllDatasetsHtml>
 <waitThenTryAgain>Er was een (tijdelijk?) probleem.  Wacht een minuut en probeer het opnieuw.  (Klik in een browser op de knop Opnieuw laden.)</waitThenTryAgain>
 <warning>WAARSCHUWING!</warning>
 <units>Eenheden</units>

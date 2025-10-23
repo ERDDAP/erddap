@@ -13,10 +13,12 @@ import com.cohort.util.MustBe;
 import com.cohort.util.SimpleException;
 import com.cohort.util.String2;
 import gov.noaa.pfel.coastwatch.pointdata.Table;
+import gov.noaa.pfel.erddap.util.EDMessages.Message;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.EDV;
 import java.io.BufferedWriter;
 import java.io.IOException;
+import java.time.format.DateTimeFormatter;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
@@ -36,7 +38,7 @@ public class TableWriterJsonl extends TableWriter {
 
   // set by firstTime
   protected volatile boolean isTimeStamp[];
-  protected volatile String time_precision[];
+  protected volatile DateTimeFormatter[] time_precision;
   protected volatile BufferedWriter writer;
 
   // other
@@ -72,10 +74,7 @@ public class TableWriterJsonl extends TableWriter {
     jsonp = tJsonp;
     if (jsonp != null && !String2.isJsonpNameSafe(jsonp))
       throw new SimpleException(
-          EDStatic.bilingual(
-              language,
-              EDStatic.messages.queryErrorAr,
-              EDStatic.messages.errorJsonpFunctionNameAr));
+          EDStatic.bilingual(language, Message.QUERY_ERROR, Message.ERROR_JSONP_FUNCTION_NAME));
   }
 
   /**
@@ -105,7 +104,7 @@ public class TableWriterJsonl extends TableWriter {
     // do firstTime stuff
     if (firstTime) {
       isTimeStamp = new boolean[nColumns];
-      time_precision = new String[nColumns];
+      time_precision = new DateTimeFormatter[nColumns];
       for (int col = 0; col < nColumns; col++) {
         Attributes catts = table.columnAttributes(col);
         String u = catts.getString("units");
@@ -114,7 +113,7 @@ public class TableWriterJsonl extends TableWriter {
           // just keep time_precision if it includes fractional seconds
           String tp = catts.getString(EDV.TIME_PRECISION);
           if (tp != null && !tp.startsWith("1970-01-01T00:00:00.0")) tp = null; // default
-          time_precision[col] = tp;
+          time_precision[col] = Calendar2.timePrecisionToDateTimeFormatter(tp);
         }
       }
 

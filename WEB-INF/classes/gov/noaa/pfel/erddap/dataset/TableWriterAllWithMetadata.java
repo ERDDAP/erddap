@@ -14,6 +14,7 @@ import com.cohort.util.SimpleException;
 import com.cohort.util.String2;
 import gov.noaa.pfel.coastwatch.pointdata.Table;
 import gov.noaa.pfel.erddap.variable.EDV;
+import java.time.format.DateTimeFormatter;
 
 /**
  * TableWriterAllWithMetadata is a subclass of TableWriterAll that cleans up the final metadata
@@ -222,7 +223,9 @@ public class TableWriterAllWithMetadata extends TableWriterAll {
         if (Double.isNaN(dMin)) {
           // "time_coverage_start" etc removed above
         } else { // always iso string
-          String tp = columnAttributes(col).getString(EDV.TIME_PRECISION);
+          DateTimeFormatter tp =
+              Calendar2.timePrecisionToDateTimeFormatter(
+                  columnAttributes(col).getString(EDV.TIME_PRECISION));
           // "" unsets the attribute if min or max isNaN
           globalAttributes.set(
               "time_coverage_start", Calendar2.epochSecondsToLimitedIsoStringT(tp, dMin, ""));

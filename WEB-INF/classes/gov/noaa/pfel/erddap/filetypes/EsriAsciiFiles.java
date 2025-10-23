@@ -11,6 +11,7 @@ import gov.noaa.pfel.erddap.dataset.EDDGrid;
 import gov.noaa.pfel.erddap.dataset.GridDataAccessor;
 import gov.noaa.pfel.erddap.dataset.GridDataRandomAccessor;
 import gov.noaa.pfel.erddap.dataset.OutputStreamSource;
+import gov.noaa.pfel.erddap.util.EDMessages.Message;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.EDV;
 import java.io.Writer;
@@ -43,7 +44,7 @@ public class EsriAsciiFiles extends FileTypeInterface {
 
   @Override
   public String getHelpText(int language) {
-    return EDStatic.messages.fileHelpGrid_esriAsciiAr[language];
+    return EDStatic.messages.get(Message.FILE_HELP_GRID_ESRI_ASCII, language);
   }
 
   /**
@@ -79,43 +80,45 @@ public class EsriAsciiFiles extends FileTypeInterface {
       throw new SimpleException(
           EDStatic.bilingual(
               language,
-              EDStatic.messages.queryErrorAr[0]
+              EDStatic.messages.get(Message.QUERY_ERROR, 0)
                   + MessageFormat.format(
-                      EDStatic.messages.noXxxBecause2Ar[0],
+                      EDStatic.messages.get(Message.NO_XXX_BECAUSE_2, 0),
                       ".esriAscii",
-                      EDStatic.messages.noXxxNoLLAr[0]),
-              EDStatic.messages.queryErrorAr[language]
+                      EDStatic.messages.get(Message.NO_XXX_NO_LL, 0)),
+              EDStatic.messages.get(Message.QUERY_ERROR, language)
                   + MessageFormat.format(
-                      EDStatic.messages.noXxxBecause2Ar[language],
+                      EDStatic.messages.get(Message.NO_XXX_BECAUSE_2, language),
                       ".esriAscii",
-                      EDStatic.messages.noXxxNoLLAr[language])));
+                      EDStatic.messages.get(Message.NO_XXX_NO_LL, language))));
 
     if (!eddGrid.axisVariables()[latIndex].isEvenlySpaced()
         || !eddGrid.axisVariables()[lonIndex].isEvenlySpaced())
       throw new SimpleException(
           EDStatic.bilingual(
               language,
-              EDStatic.messages.queryErrorAr[0]
+              EDStatic.messages.get(Message.QUERY_ERROR, 0)
                   + MessageFormat.format(
-                      EDStatic.messages.noXxxBecause2Ar[0],
+                      EDStatic.messages.get(Message.NO_XXX_BECAUSE_2, 0),
                       ".esriAscii",
-                      EDStatic.messages.noXxxNoLLEvenlySpacedAr[0]),
-              EDStatic.messages.queryErrorAr[language]
+                      EDStatic.messages.get(Message.NO_XXX_NO_LL_EVENLY_SPACED, 0)),
+              EDStatic.messages.get(Message.QUERY_ERROR, language)
                   + MessageFormat.format(
-                      EDStatic.messages.noXxxBecause2Ar[language],
+                      EDStatic.messages.get(Message.NO_XXX_BECAUSE_2, language),
                       ".esriAscii",
-                      EDStatic.messages.noXxxNoLLEvenlySpacedAr[language])));
+                      EDStatic.messages.get(Message.NO_XXX_NO_LL_EVENLY_SPACED, language))));
 
     // can't handle axis request
     if (eddGrid.isAxisDapQuery(userDapQuery))
       throw new SimpleException(
           EDStatic.bilingual(
               language,
-              EDStatic.messages.queryErrorAr[0]
-                  + MessageFormat.format(EDStatic.messages.queryErrorNotAxisAr[0], ".esriAscii"),
-              EDStatic.messages.queryErrorAr[language]
+              EDStatic.messages.get(Message.QUERY_ERROR, 0)
                   + MessageFormat.format(
-                      EDStatic.messages.queryErrorNotAxisAr[language], ".esriAscii")));
+                      EDStatic.messages.get(Message.QUERY_ERROR_NOT_AXIS, 0), ".esriAscii"),
+              EDStatic.messages.get(Message.QUERY_ERROR, language)
+                  + MessageFormat.format(
+                      EDStatic.messages.get(Message.QUERY_ERROR_NOT_AXIS, language),
+                      ".esriAscii")));
 
     // parse the userDapQuery and get the GridDataAccessor
     // this also tests for error when parsing query
@@ -126,11 +129,12 @@ public class EsriAsciiFiles extends FileTypeInterface {
         throw new SimpleException(
             EDStatic.bilingual(
                 language,
-                EDStatic.messages.queryErrorAr[0]
-                    + MessageFormat.format(EDStatic.messages.queryError1VarAr[0], ".esriAscii"),
-                EDStatic.messages.queryErrorAr[language]
+                EDStatic.messages.get(Message.QUERY_ERROR, 0)
                     + MessageFormat.format(
-                        EDStatic.messages.queryError1VarAr[language], ".esriAscii")));
+                        EDStatic.messages.get(Message.QUERY_ERROR_1_VAR, 0), ".esriAscii"),
+                EDStatic.messages.get(Message.QUERY_ERROR, language)
+                    + MessageFormat.format(
+                        EDStatic.messages.get(Message.QUERY_ERROR_1_VAR, language), ".esriAscii")));
       EDV edv = gridDataAccessor.dataVariables()[0];
       PAType edvPAType = edv.destinationDataPAType();
       PAOne edvPAOne = new PAOne(edvPAType);
@@ -148,14 +152,14 @@ public class EsriAsciiFiles extends FileTypeInterface {
             throw new SimpleException(
                 EDStatic.bilingual(
                     language,
-                    EDStatic.messages.queryErrorAr[0]
+                    EDStatic.messages.get(Message.QUERY_ERROR, 0)
                         + MessageFormat.format(
-                            EDStatic.messages.queryError1ValueAr[0],
+                            EDStatic.messages.get(Message.QUERY_ERROR_1_VALUE, 0),
                             ".esriAscii",
                             eddGrid.axisVariables()[av].destinationName()),
-                    EDStatic.messages.queryErrorAr[language]
+                    EDStatic.messages.get(Message.QUERY_ERROR, language)
                         + MessageFormat.format(
-                            EDStatic.messages.queryError1ValueAr[language],
+                            EDStatic.messages.get(Message.QUERY_ERROR_1_VALUE, language),
                             ".esriAscii",
                             eddGrid.axisVariables()[av].destinationName())));
         }
@@ -189,11 +193,13 @@ public class EsriAsciiFiles extends FileTypeInterface {
         throw new SimpleException(
             EDStatic.bilingual(
                 language,
-                EDStatic.messages.queryErrorAr[0]
-                    + MessageFormat.format(EDStatic.messages.queryErrorLLGt1Ar[0], ".esriAscii"),
-                EDStatic.messages.queryErrorAr[language]
+                EDStatic.messages.get(Message.QUERY_ERROR, 0)
                     + MessageFormat.format(
-                        EDStatic.messages.queryErrorLLGt1Ar[language], ".esriAscii")));
+                        EDStatic.messages.get(Message.QUERY_ERROR_LL_GT_1, 0), ".esriAscii"),
+                EDStatic.messages.get(Message.QUERY_ERROR, language)
+                    + MessageFormat.format(
+                        EDStatic.messages.get(Message.QUERY_ERROR_LL_GT_1, language),
+                        ".esriAscii")));
 
       // for almostEqual(3, lonSpacing, latSpacing) DON'T GO BELOW 3!!!
       // For example: PHssta has 4096 lon points so spacing is ~.0878
@@ -204,15 +210,15 @@ public class EsriAsciiFiles extends FileTypeInterface {
         throw new SimpleException(
             EDStatic.bilingual(
                 language,
-                EDStatic.messages.queryErrorAr[0]
+                EDStatic.messages.get(Message.QUERY_ERROR, 0)
                     + MessageFormat.format(
-                        EDStatic.messages.queryErrorEqualSpacingAr[0],
+                        EDStatic.messages.get(Message.QUERY_ERROR_EQUAL_SPACING, 0),
                         ".esriAscii",
                         "" + lonSpacing,
                         "" + latSpacing),
-                EDStatic.messages.queryErrorAr[language]
+                EDStatic.messages.get(Message.QUERY_ERROR, language)
                     + MessageFormat.format(
-                        EDStatic.messages.queryErrorEqualSpacingAr[language],
+                        EDStatic.messages.get(Message.QUERY_ERROR_EQUAL_SPACING, language),
                         ".esriAscii",
                         "" + lonSpacing,
                         "" + latSpacing)));
@@ -220,25 +226,26 @@ public class EsriAsciiFiles extends FileTypeInterface {
         throw new SimpleException(
             EDStatic.bilingual(
                 language,
-                EDStatic.messages.queryErrorAr[0]
-                    + MessageFormat.format(EDStatic.messages.queryError180Ar[0], ".esriAscii"),
-                EDStatic.messages.queryErrorAr[language]
+                EDStatic.messages.get(Message.QUERY_ERROR, 0)
                     + MessageFormat.format(
-                        EDStatic.messages.queryError180Ar[language], ".esriAscii")));
+                        EDStatic.messages.get(Message.QUERY_ERROR_180, 0), ".esriAscii"),
+                EDStatic.messages.get(Message.QUERY_ERROR, language)
+                    + MessageFormat.format(
+                        EDStatic.messages.get(Message.QUERY_ERROR_180, language), ".esriAscii")));
       double lonAdjust = lonPa.getDouble(0) >= 180 ? -360 : 0;
       if (minX + lonAdjust < -180 || maxX + lonAdjust > 180)
         throw new SimpleException(
             EDStatic.bilingual(
                 language,
-                EDStatic.messages.queryErrorAr[0]
+                EDStatic.messages.get(Message.QUERY_ERROR, 0)
                     + MessageFormat.format(
-                        EDStatic.messages.queryErrorAdjustedAr[0],
+                        EDStatic.messages.get(Message.QUERY_ERROR_ADJUSTED, 0),
                         ".esriAscii",
                         "" + (minX + lonAdjust),
                         "" + (maxX + lonAdjust)),
-                EDStatic.messages.queryErrorAr[language]
+                EDStatic.messages.get(Message.QUERY_ERROR, language)
                     + MessageFormat.format(
-                        EDStatic.messages.queryErrorAdjustedAr[language],
+                        EDStatic.messages.get(Message.QUERY_ERROR_ADJUSTED, language),
                         ".esriAscii",
                         "" + (minX + lonAdjust),
                         "" + (maxX + lonAdjust))));

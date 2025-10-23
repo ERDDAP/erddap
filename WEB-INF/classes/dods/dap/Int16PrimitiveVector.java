@@ -38,7 +38,7 @@ import java.io.*;
  * @author npotter
  * @see PrimitiveVector
  */
-public class Int16PrimitiveVector extends PrimitiveVector implements Cloneable {
+public class Int16PrimitiveVector extends PrimitiveVector {
   /** the array of <code>short</code> values. */
   private short vals[];
 
